@@ -65,7 +65,7 @@ services.SeedService.maxUniqueEngines :  20
 
 # physics.producers.g4MTrun.SDConfig.enableAllSDs : true
 physics.producers.g4MTrun.SDConfig.enableSD     : [tracker, calorimeter, calorimeterRO, CRV, virtualdetector, stoppingtarget ]
-physics.producers.g4MTrun.BirksConsts : { G4_POLYSTYRENE : 0.07943 } // {string : mm/MeV }
+physics.producers.g4MTrun.physics.BirksConsts : { G4_POLYSTYRENE : 0.07943 } // {string : mm/MeV }
 
 // Enable diagnsotic printout for pedagogical purposes.
 #physics.producers.g4MTrun.errorOnFailureToPut : false
@@ -76,7 +76,7 @@ physics.producers.g4MTrun.BirksConsts : { G4_POLYSTYRENE : 0.07943 } // {string 
 
 services.GeometryService.simulatedDetector.tool_type : "Mu2e"
 
-physics.producers.g4MTrun.physicsListName : "QGSP_BERT"
+physics.producers.g4MTrun.physics.physicsListName : "QGSP_BERT"
 
 physics.producers.g4run.debug.diagLevel : 0
 physics.producers.g4MTrun.debug.mtDebugOutput : false
