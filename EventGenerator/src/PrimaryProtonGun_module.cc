@@ -17,7 +17,6 @@
 
 // Particular generators that this code knows about.
 #include "EventGenerator/inc/PrimaryProtonGunImpl.hh"
-#include "EventGenerator/inc/PrimaryProtonGunConfig.hh"
 #include "SeedService/inc/SeedService.hh"
 
 // Includes from art and its toolchain.
@@ -25,7 +24,6 @@
 #include "art/Framework/Principal/Event.h"
 #include "art/Framework/Core/ModuleMacros.h"
 #include "art/Framework/Services/Registry/ServiceHandle.h"
-//#include "art/Framework/Principal/Handle.h"
 #include "messagefacility/MessageLogger/MessageLogger.h"
 
 // C++ includes.
@@ -41,7 +39,7 @@ namespace mu2e {
 
   public:
       
-      typedef art::ReplicatedProducer::Table<PrimaryProtonGunConfig> Parameters;
+      typedef art::ReplicatedProducer::Table<PrimaryProtonGunImpl::PrimaryProtonGunConfig> Parameters;
       
       explicit PrimaryProtonGun(Parameters const& params, art::ProcessingFrame const& pF);
       // Accept compiler written d'tor.  Modules are never moved or copied.
@@ -51,7 +49,7 @@ namespace mu2e {
 
   private:
 
-      const PrimaryProtonGunConfig& _config;
+      const PrimaryProtonGunImpl::PrimaryProtonGunConfig _config;
 
       //This engine implementation is only necessary for art versions below v3_02_06
       //the fix in v3_02_06 allows The RandomNumberService to be used in a Replicated Module
