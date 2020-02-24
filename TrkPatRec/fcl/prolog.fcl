@@ -33,25 +33,25 @@ TimeClusterFinder : {
   TestFlag : true
 }
 
-#TimeClusterFinder : {
-#  module_type  : TimeAndPhiClusterFinder
-#  ComboHitCollection : "makePH"
-#  StrawHitFlagCollection : "FlagBkgHits:ComboHits"
-#  CaloClusterCollection  : "CaloClusterFromProtoCluster"
-#  UseCaloCluster         : false
-#  UseCaloClusterPosition : false
-#  CaloClusterWeight      : 10.0
-#  TimeClusterMVA : { MVAWeights : "TrkPatRec/test/TimeCluster3.weights.xml" }
-#  TestFlag     : true
-#  maxTimeDT    : 30
-#  MVAScoreCut  : 0.7
-#  timeStrategy : 1
+TimeAndPhiClusterFinder : {
+  module_type  : TimeAndPhiClusterFinder
+  ComboHitCollection : "makePH"
+  StrawHitFlagCollection : "FlagBkgHits:ComboHits"
+  CaloClusterCollection  : "CaloClusterFromProtoCluster"
+  UseCaloCluster         : false
+  UseCaloClusterPosition : false
+  CaloClusterWeight      : 10.0
+  TimeClusterMVA : { MVAWeights : "TrkPatRec/test/TimeCluster3.weights.xml" }
+  TestFlag     : true
+  maxTimeDT    : 30
+  MVAScoreCut  : 0.75
+  timeStrategy : 1
     
-#  diagPlugin : { tool_type : "TimeAndPhiClusterFinderDiag"
-#    MCDiag : false
-#    StrawDigiMCCollection : "compressDigiMCs"
-#  }
-#}
+  diagPlugin : { tool_type : "TimeAndPhiClusterFinderDiag"
+    MCDiag : false
+    StrawDigiMCCollection : "compressDigiMCs"
+  }
+}
 
 
 
