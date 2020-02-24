@@ -150,9 +150,8 @@ namespace mu2e {
        
        unsigned nbins = (unsigned)rint((tmax_-tmin_)/tbin_);
        tmax_ = tmin_+ nbins*tbin_;
-       
+              
        if (diag_>0) diagTool_ = art::make_tool<ModuleHistToolBase>   (pset.get<fhicl::ParameterSet>("diagPlugin"));
-       else         diagTool_ = std::make_unique<ModuleHistToolBase>();
        
        if (diag_>1)
        {
