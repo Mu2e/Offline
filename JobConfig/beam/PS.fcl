@@ -107,10 +107,7 @@ physics : {
    }
 
    producers: {
-      generate: {
-         module_type          : EventGenerator
-         inputfile            : "JobConfig/beam/genconfig_PrimaryProtons.txt"
-      }
+      generate: @local::PrimaryProtonGun
 
       genCounter: {
          module_type: GenEventCounter
