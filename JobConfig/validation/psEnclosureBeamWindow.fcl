@@ -48,10 +48,7 @@ physics : {
    }
 
    producers: {
-      generate: {
-         module_type          : EventGenerator
-         inputfile            : "JobConfig/beam/genconfig_PrimaryProtons.txt"
-      }
+      generate: @local::PrimaryProtonGun
 
       genCounter: {
          module_type: GenEventCounter
@@ -104,3 +101,4 @@ physics.producers.g4run.physics.physicsListName: "QGSP_BERT"
 // Initialze seeding of random engines: do not put these lines in base .fcl files for grid jobs.
 services.SeedService.baseSeed         :  8
 services.SeedService.maxUniqueEngines :  20
+services.GeometryService.simulatedDetector.tool_type : "Mu2e"
