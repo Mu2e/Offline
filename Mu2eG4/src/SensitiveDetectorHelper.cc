@@ -154,10 +154,10 @@ namespace mu2e {
     for ( InstanceMap::iterator i=stepInstances_.begin();
           i != stepInstances_.end(); ++i ) {
       StepInstance& step(i->second);
-      //      if (verbosityLevel_ > 0 ) {
+            if (verbosityLevel_ > 0 ) {
         std::cout << __func__ << " looking for sd with name: "
                   << step.stepName << std::endl;
-        //      }
+            }
       bool printWarnings = (verbosityLevel_ > -1) ? true : false;
       step.sensitiveDetector =
         dynamic_cast<Mu2eSensitiveDetector*>(sdManager->FindSensitiveDetector(step.stepName.c_str(),printWarnings));
