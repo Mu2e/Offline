@@ -65,6 +65,7 @@ env = Environment( CPPPATH = sch.cppPath(mu2eOpts),   # $ART_INC ...
                    LINKCOMSTR = linkcomstr,
                    SHLINKCOMSTR= linkcomstr,
 )
+env.Tool('compilation_db')
 
 # Define and register the rule for building dictionaries.
 # sources are classes.h, classes_def.xml, 
@@ -105,6 +106,10 @@ ss = sch.sconscriptList(mu2eOpts)
 
 # make sure lib, bin and tmp are there
 sch.makeSubDirs(mu2eOpts)
+
+
+compileCommands = env.CompilationDatabase('compile_commands.json')
+compileDb = env.Alias("compiledb", compileCommands)
 
 # operate on the SConscript files
 # regular python commands like os.path() are executed immediately as they are encontered, 
