@@ -2,7 +2,7 @@
 
 #include "JobConfig/beam/beam_defs_g4s1MT.fcl"
 
-physics.producers.g4mtrun.maxEventsToSeed              : 20000
+physics.producers.g4run.maxEventsToSeed              : 20000
 //services.scheduler.num_threads                       : 5
 //services.scheduler.num_schedules                     : 5
 
