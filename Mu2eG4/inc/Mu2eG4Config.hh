@@ -34,6 +34,8 @@ namespace mu2e {
       fhicl::Atom<int> worldVerbosityLevel {Name("worldVerbosityLevel"), 0};
       fhicl::Atom<int> steppingVerbosityLevel {Name("steppingVerbosityLevel"), 0};
       fhicl::Atom<int> trackingVerbosityLevel {Name("trackingVerbosityLevel"), 0};
+      fhicl::Atom<bool> navigatorCheckMode {Name("navigatorCheckMode"), false};
+      fhicl::Atom<int> navigatorVerbosityLevel {Name("navigatorVerbosityLevel"), 0};
       fhicl::Atom<int> PiENuPolicyVerbosity {Name("PiENuPolicyVerbosity"), 0};
       fhicl::Atom<bool> mtDebugOutput {Name("mtDebugOutput"), false};
 

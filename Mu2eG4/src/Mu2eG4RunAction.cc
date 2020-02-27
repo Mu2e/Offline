@@ -16,6 +16,7 @@
 
 //G4 includes
 #include "G4RunManager.hh"
+#include "G4TransportationManager.hh"
 
 //CLHEP includes
 #include "CLHEP/Vector/ThreeVector.h"
@@ -73,6 +74,10 @@ namespace mu2e {
     _trackingAction->beginRun( _physVolHelper, _processInfo, originInWorld );
     _steppingAction->beginRun( _processInfo, originInWorld );
     _steppingAction->finishConstruction();
+    G4Navigator* navigator =
+      G4TransportationManager::GetTransportationManager()->GetNavigatorForTracking();
+    navigator->CheckMode(debug_.navigatorCheckMode());
+    navigator->SetVerboseLevel(debug_.navigatorVerbosityLevel());
 
   }
 
