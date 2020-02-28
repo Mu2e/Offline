@@ -1,7 +1,7 @@
 ---
 BasedOnStyle: LLVM
 AlignAfterOpenBracket: Align
-BreakBeforeBraces: Stroustrup
+BreakBeforeBraces: Allman
 ColumnLimit: '100'
 DerivePointerAlignment: 'false'
 IndentWidth: '4'
