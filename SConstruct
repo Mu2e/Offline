@@ -109,8 +109,7 @@ ss = sch.sconscriptList(mu2eOpts)
 # make sure lib, bin and tmp are there
 sch.makeSubDirs(mu2eOpts)
 
-# Allow a compilation database (compile_commands.json) to be
-# generated if requested (scons -Q compiledb).
+# Allow a compile_commands.json to be generated if requested (scons -Q compiledb).
 compileCommands = env.CompilationDatabase('compile_commands.json')
 compileDb = env.Alias("compiledb", compileCommands)
 
