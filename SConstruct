@@ -65,6 +65,8 @@ env = Environment( CPPPATH = sch.cppPath(mu2eOpts),   # $ART_INC ...
                    LINKCOMSTR = linkcomstr,
                    SHLINKCOMSTR= linkcomstr,
 )
+
+# Make the Compilation DB generator available in the environment
 env.Tool('compilation_db')
 
 # Define and register the rule for building dictionaries.
@@ -107,7 +109,8 @@ ss = sch.sconscriptList(mu2eOpts)
 # make sure lib, bin and tmp are there
 sch.makeSubDirs(mu2eOpts)
 
-
+# Allow a compilation database (compile_commands.json) to be
+# generated if requested (scons -Q compiledb).
 compileCommands = env.CompilationDatabase('compile_commands.json')
 compileDb = env.Alias("compiledb", compileCommands)
 
