@@ -1,11 +1,15 @@
 #ifndef _MU2E_UTILITIES_PARAMETRICFIT_HH
 #define _MU2E_UTILITIES_PARAMETRICFIT_HH
 
-#include "Math/VectorUtil.h"
-#include "TMatrix.h"
-#include "RecoDataProducts/inc/ComboHit.hh"
-#include "DataProducts/inc/XYZVec.hh"
-#include "RecoDataProducts/inc/CosmicTrack.hh"
+#include <vector>                               // for vector
+
+#include "DataProducts/inc/XYZVec.hh"           // for XYZVec
+#include "RecoDataProducts/inc/CosmicTrack.hh"  // for TrackAxes
+#include "DataProducts/inc/StrawEnd.hh"         // for mu2e
+
+namespace mu2e {
+struct ComboHit;
+}  // namespace mu2e
 
 using namespace mu2e;
 namespace ParametricFit{

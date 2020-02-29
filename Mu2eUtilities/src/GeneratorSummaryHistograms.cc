@@ -8,24 +8,26 @@
 // Contact person Rob Kutschke
 //
 
+#include <cmath>                                            // for M_PI
+#include <vector>                                           // for vector
+
 // Mu2e includes
 #include "Mu2eUtilities/inc/GeneratorSummaryHistograms.hh"
-#include "GeometryService/inc/DetectorSystem.hh"
-#include "GeometryService/inc/GeomHandle.hh"
-#include "StoppingTargetGeom/inc/zBinningForFoils.hh"
-#include "StoppingTargetGeom/inc/StoppingTarget.hh"
-
+#include "GeometryService/inc/DetectorSystem.hh"            // for DetectorS...
+#include "GeometryService/inc/GeomHandle.hh"                // for GeomHandle
+#include "StoppingTargetGeom/inc/zBinningForFoils.hh"       // for zBinningF...
+#include "StoppingTargetGeom/inc/StoppingTarget.hh"         // for StoppingT...
 // Framework includes
-#include "art_root_io/TFileService.h"
-#include "art/Framework/Services/Registry/ServiceHandle.h"
-
-// Root includes
-#include "TH1F.h"
-#include "TH2F.h"
-
-// C++ includes
-#include <iostream>
-#include <cmath>
+#include "art_root_io/TFileService.h"                       // for TFileService
+#include "art/Framework/Services/Registry/ServiceHandle.h"  // for ServiceHa...
+#include "CLHEP/Vector/LorentzVector.h"                     // for HepLorent...
+#include "CLHEP/Vector/ThreeVector.h"                       // for Hep3Vector
+#include "GeneralUtilities/inc/Binning.hh"                  // for Binning
+#include "MCDataProducts/inc/GenId.hh"                      // for GenId
+#include "TH1.h"                                            // for TH1F
+#include "TH2.h"                                            // for TH2F
+#include "art_root_io/TFileDirectory.h"                     // for TFileDire...
+#include "canvas/Utilities/Exception.h"                     // for Exception
 
 namespace mu2e {
 

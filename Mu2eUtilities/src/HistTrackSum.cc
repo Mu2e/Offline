@@ -1,10 +1,11 @@
+#include <memory>                                // for allocator_traits<>::...
+#include <vector>                                // for vector
+
 #include "Mu2eUtilities/inc/HistTrackSum.hh"
-
-#include "art_root_io/TFileDirectory.h"
-
-#include "TH1.h"
-
-#include "RecoDataProducts/inc/TrackSummary.hh"
+#include "art_root_io/TFileDirectory.h"          // for TFileDirectory
+#include "TH1.h"                                 // for TH1D, TH1
+#include "RecoDataProducts/inc/TrackSummary.hh"  // for TrackSummary, TrackS...
+#include "CLHEP/Vector/ThreeVector.h"            // for Hep3Vector
 
 namespace mu2e {
 

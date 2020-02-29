@@ -1,17 +1,22 @@
+#include <exception>                                            // for excep...
+#include <string>                                               // for string
+
 #include "Mu2eUtilities/inc/BinnedSpectrum.hh"
-
-#include "GlobalConstantsService/inc/GlobalConstantsHandle.hh"
-#include "GlobalConstantsService/inc/ParticleDataTable.hh"
-#include "GlobalConstantsService/inc/PhysicsParams.hh"
-#include "ConfigTools/inc/ConfigFileLookupPolicy.hh"
-
-#include "Mu2eUtilities/inc/CzarneckiSpectrum.hh"
-#include "Mu2eUtilities/inc/SimpleSpectrum.hh"
-#include "Mu2eUtilities/inc/ConversionSpectrum.hh"
-#include "Mu2eUtilities/inc/EjectedProtonSpectrum.hh"
-#include "Mu2eUtilities/inc/MuonCaptureSpectrum.hh"
-#include "Mu2eUtilities/inc/PionCaptureSpectrum.hh"
-#include "DataProducts/inc/PDGCode.hh"
+#include "GlobalConstantsService/inc/GlobalConstantsHandle.hh"  // for Globa...
+#include "GlobalConstantsService/inc/ParticleDataTable.hh"      // for Parti...
+#include "GlobalConstantsService/inc/PhysicsParams.hh"          // for Physi...
+#include "ConfigTools/inc/ConfigFileLookupPolicy.hh"            // for Confi...
+#include "Mu2eUtilities/inc/CzarneckiSpectrum.hh"               // for Czarn...
+#include "Mu2eUtilities/inc/SimpleSpectrum.hh"                  // for Simpl...
+#include "Mu2eUtilities/inc/ConversionSpectrum.hh"              // for Conve...
+#include "Mu2eUtilities/inc/EjectedProtonSpectrum.hh"           // for Eject...
+#include "Mu2eUtilities/inc/MuonCaptureSpectrum.hh"             // for MuonC...
+#include "Mu2eUtilities/inc/PionCaptureSpectrum.hh"             // for PionC...
+#include "DataProducts/inc/PDGCode.hh"                          // for PDGCode
+#include "HepPDT/Measurement.hh"                                // for Measu...
+#include "HepPDT/ParticleData.hh"                               // for Parti...
+#include "fhiclcpp/ParameterSet.h"                              // for Param...
+#include "fhiclcpp/exception.h"                                 // for excep...
 
 namespace mu2e {
 
@@ -48,7 +53,7 @@ namespace mu2e {
       // should be total energy
       double elow = psphys.get<double>("elow",0);
       double ehi  = psphys.get<double>("ehi" );
-                                        // for radiatively corrected spectrum, elow and ehi are derivatives 
+                                        // for radiatively corrected spectrum, elow and ehi are derivatives
       double bin   = psphys.get<double>("spectrumResolution");
       // int    ratio = *ehi/bin;
       // *ehi         = (ratio+1.)*bin;
@@ -87,7 +92,7 @@ namespace mu2e {
       double elow = psphys.get<double>("elow",0);
       double ehi = psphys.get<double>("ehi",0);
       this->initialize(loadTable<2>( ConfigFileLookupPolicy()( psphys.get<std::string>("spectrumFileName"))),psphys.get<bool>("BinCenter", false),elow,ehi);
-    
+
       if(_xmin < 0.0) throw cet::exception("BADCONFIG")
         << "BinnedSpectrum: negative energy endpoint "<< _xmin  <<"\n";
     }

@@ -1,6 +1,9 @@
 #ifndef Mu2eUtilities_rm48_hh
 #define Mu2eUtilities_rm48_hh
 
+namespace CLHEP {
+class RandFlat;
+}  // namespace CLHEP
 //
 //  Adapter to make CLHEP::RandFlat look like the cernlib rn48.
 //
@@ -21,8 +24,6 @@
 //  There is a potential problem.  If other codes also want
 //  to use rm48, this implementation will break the rule
 //  that each module gets its own random engine.
-
-#include "CLHEP/Random/RandFlat.h"
 
 // Called by the Daya Bay comsic code.
 extern "C" {

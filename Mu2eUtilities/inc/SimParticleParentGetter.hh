@@ -35,17 +35,18 @@
 #ifndef Mu2eUtilities_SimParticleParentGetter_hh
 #define Mu2eUtilities_SimParticleParentGetter_hh
 
-#include <map>
+#include <map>                              // for map, map<>::value_compare
 
-#include "canvas/Persistency/Common/Ptr.h"
+#include "canvas/Persistency/Common/Ptr.h"  // for Ptr, operator<
 
-#include "MCDataProducts/inc/GenParticle.hh"
-#include "MCDataProducts/inc/SimParticle.hh"
-#include "MCDataProducts/inc/StepPointMC.hh"
-
-namespace art { class Event; }
+namespace art {
+class Event;
+}  // namespace art
 
 namespace mu2e {
+class GenParticle;
+class StepPointMC;
+struct SimParticle;
 
   class SimParticleParentGetter {
     const art::Event *evt_;

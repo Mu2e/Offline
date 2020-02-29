@@ -38,16 +38,10 @@
 // No free function currently exists for adding coordinates, but it
 // would be straightforward to do if needed.
 
-// C++ includes
-#include <algorithm>
-#include <array>
-#include <fstream>
-#include <iostream>
-#include <iterator>
-#include <utility>
-
-// Framework includes
-#include "cetlib_except/exception.h"
+#include <array>    // for array
+#include <fstream>  // for size_t
+#include <utility>  // for pair
+#include <string>   // for string
 
 namespace mu2e {
   

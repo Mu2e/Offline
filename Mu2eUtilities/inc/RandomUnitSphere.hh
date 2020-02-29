@@ -15,12 +15,13 @@
 //
 //
 
-#include <cmath>
+#include "CLHEP/Random/RandFlat.h"       // for RandFlat
+#include "CLHEP/Vector/ThreeVector.h"    // for Hep3Vector
+#include "CLHEP/Units/SystemOfUnits.h"   // for twopi
 
-#include "CLHEP/Random/RandFlat.h"
-#include "CLHEP/Random/RandomEngine.h"
-#include "CLHEP/Units/PhysicalConstants.h"
-#include "CLHEP/Vector/ThreeVector.h"
+namespace CLHEP {
+class HepRandomEngine;
+}  // namespace CLHEP
 
 namespace mu2e {
 

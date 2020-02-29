@@ -1,15 +1,12 @@
+#include <algorithm>                          // for binary_search, for_each
+
 #include "Mu2eUtilities/inc/SimParticleGetTau.hh"
-
 // Framework includes
-#include "canvas/Persistency/Common/Ptr.h"
-
-// CLHEP includes
-#include "CLHEP/Vector/LorentzVector.h"
-
+#include "canvas/Persistency/Common/Ptr.h"    // for Ptr
 // cetlib includes
-#include "cetlib_except/exception.h"
-
-#include <iostream>
+#include "cetlib_except/exception.h"          // for operator<<, exception
+#include "MCDataProducts/inc/ProcessCode.hh"  // for ProcessCode, ProcessCod...
+#include "MCDataProducts/inc/SimParticle.hh"  // for SimParticle
 
 namespace mu2e {
   

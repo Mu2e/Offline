@@ -9,8 +9,10 @@
 //
 // Original author: Kyle Knoepfel
 
+#include <numeric>    // for accumulate
+#include <algorithm>  // for max, for_each
+
 #include "Mu2eUtilities/inc/Table.hh"
-#include <numeric>
 
 namespace mu2e {
 

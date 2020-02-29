@@ -1,10 +1,14 @@
+#include <exception>                      // for exception
+#include <memory>                                // for allocator_traits<>::...
+#include <vector>                                // for vector
+
 #include "Mu2eUtilities/inc/TrackCuts.hh"
-
-#include "fhiclcpp/ParameterSet.h"
-
-#include "TH1.h"
-
-#include "RecoDataProducts/inc/TrackSummary.hh"
+#include "fhiclcpp/ParameterSet.h"               // for ParameterSet
+#include "TH1.h"                                 // for TH1, TH1D
+#include "RecoDataProducts/inc/TrackSummary.hh"  // for TrackSummary, TrackS...
+#include "CLHEP/Vector/ThreeVector.h"            // for Hep3Vector
+#include "cetlib_except/exception.h"             // for exception, operator<<
+#include "fhiclcpp/exception.h"                  // for exception
 
 namespace mu2e {
 
@@ -83,7 +87,7 @@ namespace mu2e {
       lastfailed = 5;
     }
 
-    const bool timeCutPassed = 
+    const bool timeCutPassed =
       (cutt0min_ < cutt0max_) ?  // check for time wrapping
       ((cutt0min_ < trk.t0()) && (trk.t0() < cutt0max_)) : // no wrapping
       ((trk.t0() < cutt0max_) || (cutt0min_ < trk.t0()));  // time wrapped, discontinuous acceptance region
