@@ -9,11 +9,12 @@
 // Original author Rob Kutschke
 //
 
-#include <cmath>
+#include <cmath>                                 // for cos, sin
 
-#include "Mu2eUtilities/inc/ThreeVectorUtil.hh"
-#include "GeneralUtilities/inc/safeSqrt.hh"
-#include "GeneralUtilities/inc/sqrtOrThrow.hh"
+#include "Mu2eUtilities/inc/ThreeVectorUtil.hh"  // for polar3Vector
+#include "GeneralUtilities/inc/safeSqrt.hh"      // for safeSqrt
+#include "GeneralUtilities/inc/sqrtOrThrow.hh"   // for sqrtOrThrow
+#include "CLHEP/Vector/ThreeVector.h"            // for Hep3Vector
 
 using CLHEP::Hep3Vector;
 

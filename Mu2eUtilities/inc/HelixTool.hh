@@ -1,16 +1,16 @@
 #ifndef Mu2eUtilities_HelixTool_hh
 #define Mu2eUtilities_HelixTool_hh
+#include "Math/GenVector/VectorUtil.h"  // for VectorUtil
+
+namespace mu2e {
+class Tracker;
+struct HelixSeed;
+}  // namespace mu2e
 //
 // Original author G. Pezzullo
 //
 
-#include "RecoDataProducts/inc/HelixSeed.hh"
-#include "RecoDataProducts/inc/ComboHit.hh"
-#include "RecoDataProducts/inc/StrawHitFlagCollection.hh"
-#include "DataProducts/inc/StrawId.hh"
-#include "TrackerGeom/inc/Tracker.hh"
 
-#include "Math/VectorUtil.h"
 using namespace ROOT::Math::VectorUtil;
 
 namespace mu2e {

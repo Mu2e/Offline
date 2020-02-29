@@ -1,6 +1,12 @@
 // Andrei Gaponenko, 2013
 
+#include <utility>                            // for pair
+
 #include "Mu2eUtilities/inc/SimParticleCollectionPrinter.hh"
+#include "CLHEP/Vector/LorentzVector.h"       // for operator<<
+#include "CLHEP/Vector/ThreeVector.h"         // for operator<<
+#include "MCDataProducts/inc/ProcessCode.hh"  // for operator<<
+#include "cetlib/map_vector.h"                // for operator<<
 
 namespace mu2e {
   //================================================================

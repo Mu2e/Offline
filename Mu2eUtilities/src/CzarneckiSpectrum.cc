@@ -9,19 +9,18 @@
 // $Date: 2014/05/01 18:12:26 $
 //
 
+#include <array>                                                // for array
+#include <string>                                               // for alloc...
+#include <utility>                                              // for pair
+
 // Mu2e includes
-#include "GlobalConstantsService/inc/GlobalConstantsHandle.hh"
-#include "GlobalConstantsService/inc/PhysicsParams.hh"
-#include "ConfigTools/inc/ConfigFileLookupPolicy.hh"
-#include "Mu2eUtilities/inc/CzarneckiSpectrum.hh"
-
+#include "GlobalConstantsService/inc/GlobalConstantsHandle.hh"  // for Globa...
+#include "GlobalConstantsService/inc/PhysicsParams.hh"          // for Physi...
+#include "ConfigTools/inc/ConfigFileLookupPolicy.hh"            // for Confi...
+#include "Mu2eUtilities/inc/CzarneckiSpectrum.hh"               // for Czarn...
 // Framework includes
-#include "cetlib/pow.h"
-
-// C++ includes
-#include <fstream>
-#include <iostream>
-#include <vector>
+#include "cetlib/pow.h"                                         // for square
+#include "Mu2eUtilities/inc/Table.hh"                           // for Table
 
 namespace mu2e {
 

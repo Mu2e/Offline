@@ -4,14 +4,13 @@
 // Original author Gianni Onorato
 //
 
+//C++ includes
+#include <cmath>                      // for exp, log
+
 // Framework includes
 #include "Mu2eUtilities/inc/RandomLimitedExpo.hh"
-
-//C++ includes
-#include <cmath>
-
 //CLHEP includes
-#include "CLHEP/Random/RandFlat.h"
+#include "CLHEP/Random/RandFlat.h"    // for RandFlat
 
 namespace mu2e{
 

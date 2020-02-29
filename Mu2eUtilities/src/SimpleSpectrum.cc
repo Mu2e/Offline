@@ -5,11 +5,14 @@
 // $Date: 2014/02/25 17:14:10 $
 //
 
+#include <cstddef>                    // for size_t, std
+#include <vector>                     // for vector, allocator
+
 // Mu2e includes
 #include "Mu2eUtilities/inc/SimpleSpectrum.hh"
-
 // Framework includes
-#include "cetlib/pow.h"
+#include "cetlib/pow.h"               // for square
+#include "cetlib_except/exception.h"  // for exception, operator<<
 
 using namespace std;
 

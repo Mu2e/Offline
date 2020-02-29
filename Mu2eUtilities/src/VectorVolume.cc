@@ -5,8 +5,12 @@
 // _original author Stefano Roberto Soleti
 //
 
-#include <iostream>
-#include "Mu2eUtilities/inc/VectorVolume.hh"
+#include <iostream>                           // for std
+#include <vector>                             // for vector
+
+#include "Mu2eUtilities/inc/VectorVolume.hh"  // for VectorVolume
+#include "CLHEP/Vector/ThreeVector.h"         // for Hep3Vector
+#include "GeneralUtilities/inc/safeSqrt.hh"   // for safeSqrt
 
 using namespace std;
 

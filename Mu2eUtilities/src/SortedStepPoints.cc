@@ -7,9 +7,11 @@
 // Original author Rob Kutschke
 //
 
-#include "Mu2eUtilities/inc/SortedStepPoints.hh"
+#include <math.h>                        // for abs
+#include <iostream>                      // for std
 
-#include <iostream>
+#include "Mu2eUtilities/inc/SortedStepPoints.hh"
+#include "CLHEP/Vector/ThreeVector.h"    // for Hep3Vector
 //#include "MCDataProducts/inc/StepPointMCCollection.hh"
 
 using namespace std;

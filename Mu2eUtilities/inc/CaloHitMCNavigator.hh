@@ -10,10 +10,15 @@
 // Original author Rob Kutschke
 //
 
-#include "RecoDataProducts/inc/CaloHitCollection.hh"
-#include "MCDataProducts/inc/CaloHitMCTruthCollection.hh"
-#include "MCDataProducts/inc/PtrStepPointMCVectorCollection.hh"
-#include "MCDataProducts/inc/CaloHitSimPartMCCollection.hh"
+#include <ext/alloc_traits.h>                                // for __alloc_...
+#include <stddef.h>                                          // for size_t
+
+#include "RecoDataProducts/inc/CaloHitCollection.hh"         // for CaloHitC...
+#include "MCDataProducts/inc/CaloHitMCTruthCollection.hh"    // for CaloHitM...
+#include "MCDataProducts/inc/CaloHitSimPartMCCollection.hh"  // for CaloHitS...
+#include "MCDataProducts/inc/CaloHitMCTruth.hh"              // for CaloHitM...
+#include "MCDataProducts/inc/CaloHitSimPartMC.hh"            // for CaloHitS...
+#include "RecoDataProducts/inc/CaloHit.hh"                   // for CaloHit
 
 namespace mu2e {
 

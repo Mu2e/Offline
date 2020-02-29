@@ -1,9 +1,9 @@
 //-----------------------------------------------------------------------------
 // LsqSums4
 //-----------------------------------------------------------------------------
-#include <cstdio>
-#include <cmath>
-#include "Mu2eUtilities/inc/LsqSums4.hh"
+#include <cmath>                          // for sqrt
+
+#include "Mu2eUtilities/inc/LsqSums4.hh"  // for LsqSums4
 
 
 LsqSums4::LsqSums4() {

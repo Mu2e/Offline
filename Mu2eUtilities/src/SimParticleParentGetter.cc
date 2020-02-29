@@ -1,16 +1,22 @@
+#include <memory>                                       // for unique_ptr
+#include <string>                                       // for string
+#include <typeinfo>                                     // for type_info
+#include <utility>                                      // for pair, make_pair
+#include <vector>                                       // for vector, vecto...
+
 #include "Mu2eUtilities/inc/SimParticleParentGetter.hh"
+#include "art/Framework/Principal/Event.h"              // for Event
+#include "MCDataProducts/inc/SimParticle.hh"            // for SimParticle
+#include "MCDataProducts/inc/StepPointMC.hh"            // for StepPointMC
+#include "MCDataProducts/inc/GenParticleSPMHistory.hh"  // for GenParticleSP...
+#include "MCDataProducts/inc/GenSimParticleLink.hh"     // for GenSimParticl...
+#include "cetlib_except/exception.h"                    // for operator<<
+#include "art/Framework/Principal/Handle.h"             // for Handle
+#include "canvas/Persistency/Common/Assns.h"            // for Assns, Assns<...
 
-#include "art/Framework/Principal/Event.h"
-#include "art/Framework/Principal/Provenance.h"
-#include "canvas/Persistency/Common/FindOne.h"
-#include "canvas/Utilities/InputTag.h"
-
-#include "MCDataProducts/inc/SimParticle.hh"
-#include "MCDataProducts/inc/StepPointMC.hh"
-#include "MCDataProducts/inc/GenParticleSPMHistory.hh"
-#include "MCDataProducts/inc/GenSimParticleLink.hh"
-
-#include "cetlib_except/exception.h"
+namespace mu2e {
+class GenParticle;
+}  // namespace mu2e
 
 //#define AGDEBUG(stuff) std::cerr<<"AG: "<<__FILE__<<", line "<<__LINE__<<": "<<stuff<<std::endl;
 #define AGDEBUG(stuff)

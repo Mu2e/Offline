@@ -1,12 +1,26 @@
-#include "Mu2eUtilities/inc/SimParticleTimeOffset.hh"
+#include <exception>                            // for exception
+#include <algorithm>                                   // for max
+#include <map>                                         // for _Rb_tree_iterator
+#include <memory>                                      // for allocator, uni...
+#include <string>                                      // for string
+#include <typeinfo>                                    // for type_info
+#include <utility>                                     // for pair
+#include <vector>                                      // for vector
 
-#include "cetlib_except/exception.h"
-
-#include "fhiclcpp/ParameterSet.h"
-#include "art/Framework/Principal/Event.h"
-
-#include "MCDataProducts/inc/StepPointMC.hh"
-#include "MCDataProducts/inc/StrawGasStep.hh"
+#include "Mu2eUtilities/inc/SimParticleTimeOffset.hh"  // for SimParticleTim...
+#include "cetlib_except/exception.h"                   // for exception, ope...
+#include "fhiclcpp/ParameterSet.h"                     // for ParameterSet
+#include "art/Framework/Principal/Event.h"             // for Event
+#include "MCDataProducts/inc/StepPointMC.hh"           // for StepPointMC
+#include "MCDataProducts/inc/StrawGasStep.hh"          // for StrawGasStep
+#include "MCDataProducts/inc/SimParticle.hh"           // for SimParticle
+#include "MCDataProducts/inc/SimParticleTimeMap.hh"    // for SimParticleTim...
+#include "art/Framework/Principal/Handle.h"            // for ValidHandle
+#include "canvas/Persistency/Common/Ptr.h"             // for Ptr, operator<<
+#include "canvas/Utilities/InputTag.h"                 // for InputTag
+#include "fhiclcpp/coding.h"                           // for ps_sequence_t
+#include "fhiclcpp/exception.h"                        // for exception
+#include "fhiclcpp/types/Sequence.h"                   // for Sequence
 
 
 namespace mu2e {

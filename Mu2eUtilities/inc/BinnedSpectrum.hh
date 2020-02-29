@@ -13,15 +13,22 @@
 //
 
 // C++ includes
-#include <assert.h>
-#include <iostream>
-#include <string>
-#include <utility>
-#include <vector>
+#include <assert.h>                    // for assert
+#include <stddef.h>                    // for size_t
+#include <iostream>                    // for operator<<, basic_ostream, bas...
+#include <utility>                     // for pair, move, make_pair, forward
+#include <vector>                      // for vector, vector<>::iterator
+#include <algorithm>                   // for max, reverse
+#include <array>                       // for array
+#include <memory>                      // for allocator_traits<>::value_type
+#include <type_traits>                 // for remove_reference<>::type
 
-#include "Mu2eUtilities/inc/Table.hh"
+#include "Mu2eUtilities/inc/Table.hh"  // for Table
+#include "cetlib_except/exception.h"   // for exception, operator<<
 
-namespace fhicl { class ParameterSet; }
+namespace fhicl {
+class ParameterSet;
+}  // namespace fhicl
 
 namespace mu2e {
 
