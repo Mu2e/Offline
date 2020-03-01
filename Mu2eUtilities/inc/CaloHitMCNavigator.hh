@@ -10,7 +10,6 @@
 // Original author Rob Kutschke
 //
 
-#include <ext/alloc_traits.h>                                // for __alloc_...
 #include <stddef.h>                                          // for size_t
 
 #include "RecoDataProducts/inc/CaloHitCollection.hh"         // for CaloHitC...
