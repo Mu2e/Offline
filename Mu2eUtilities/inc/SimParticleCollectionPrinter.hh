@@ -3,7 +3,7 @@
 #ifndef Mu2eUtilities_inc_SimParticleCollectionPrinter_hh
 #define Mu2eUtilities_inc_SimParticleCollectionPrinter_hh
 
-#include <bits/exception.h>                   // for exception
+#include <exception>                          // for exception
 #include <ostream>                            // for ostream
 #include <string>                             // for string, allocator
 
