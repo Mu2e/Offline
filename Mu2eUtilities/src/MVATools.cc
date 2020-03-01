@@ -1,8 +1,7 @@
 #include <xercesc/util/PlatformUtils.hpp>             // for XMLPlatformUtils
 #include <xercesc/parsers/XercesDOMParser.hpp>        // for XercesDOMParser
-#include <exception>                           // for exception
-#include <ext/alloc_traits.h>                         // for __alloc_traits<...
-#include <cmath>                                     // for expf, tanh
+#include <exception>                                  // for exception
+#include <cmath>                                      // for expf, tanh
 #include <stdlib.h>                                   // for atoi, NULL, strtof
 #include <iostream>                                   // for operator<<, endl
 #include <string>                                     // for string, operator<<
