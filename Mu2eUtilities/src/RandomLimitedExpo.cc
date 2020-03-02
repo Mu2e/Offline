@@ -9,7 +9,7 @@
 
 //CLHEP includes
 #include "CLHEP/Random/RandFlat.h"
-#include "CLHEP/Random/RandFlat.icc"
+
 
 // Framework includes
 #include "Mu2eUtilities/inc/RandomLimitedExpo.hh"

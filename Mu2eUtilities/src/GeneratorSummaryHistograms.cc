@@ -12,9 +12,9 @@
 #include <vector>
 
 #include "CLHEP/Vector/LorentzVector.h"
-#include "CLHEP/Vector/LorentzVector.icc"
+
 #include "CLHEP/Vector/ThreeVector.h"
-#include "CLHEP/Vector/ThreeVector.icc"
+
 #include "GeneralUtilities/inc/Binning.hh"
 #include "GeometryService/inc/DetectorSystem.hh"
 #include "GeometryService/inc/GeomHandle.hh"

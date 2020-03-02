@@ -22,7 +22,7 @@
 #include "CLHEP/Units/PhysicalConstants.h"
 #include "CLHEP/Units/SystemOfUnits.h"
 #include "CLHEP/Vector/ThreeVector.h"
-#include "CLHEP/Vector/ThreeVector.icc"
+
 
 namespace CLHEP { class HepRandomEngine; }
 

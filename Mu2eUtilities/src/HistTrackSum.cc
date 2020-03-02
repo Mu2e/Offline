@@ -2,7 +2,7 @@
 #include <vector>
 
 #include "CLHEP/Vector/ThreeVector.h"
-#include "CLHEP/Vector/ThreeVector.icc"
+
 #include "RecoDataProducts/inc/TrackSummary.hh"
 #include "TH1.h"
 #include "art_root_io/TFileDirectory.h"

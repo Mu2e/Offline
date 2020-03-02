@@ -3,7 +3,7 @@
 #include <vector>
 
 #include "CLHEP/Vector/ThreeVector.h"
-#include "CLHEP/Vector/ThreeVector.icc"
+
 #include "RecoDataProducts/inc/TrackSummary.hh"
 #include "TH1.h"
 #include "cetlib_except/exception.h"
@@ -89,7 +89,7 @@ namespace mu2e {
       lastfailed = 5;
     }
 
-    const bool timeCutPassed = 
+    const bool timeCutPassed =
       (cutt0min_ < cutt0max_) ?  // check for time wrapping
       ((cutt0min_ < trk.t0()) && (trk.t0() < cutt0max_)) : // no wrapping
       ((trk.t0() < cutt0max_) || (cutt0min_ < trk.t0()));  // time wrapped, discontinuous acceptance region

@@ -9,7 +9,7 @@
 // Original author Rob Kutschke
 //
 
-#include "CLHEP/Random/RandFlat.icc"
+
 
 #include "Mu2eUtilities/inc/RandomUnitSphere.hh"
 #include "Mu2eUtilities/inc/ThreeVectorUtil.hh"
