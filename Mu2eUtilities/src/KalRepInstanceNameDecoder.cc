@@ -6,8 +6,8 @@
 //
 
 #include "Mu2eUtilities/inc/KalRepInstanceNameDecoder.hh"
-#include "cetlib_except/exception.h"                   // for exception, ope...
-#include "GeneralUtilities/inc/EnumToStringSparse.hh"  // for EnumToStringSp...
+
+#include "cetlib_except/exception.h"
 
 mu2e::KalRepInstanceNameDecoder::KalRepInstanceNameDecoder( std::string const& instanceName ):
   instanceName_(instanceName),

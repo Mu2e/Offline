@@ -1,18 +1,14 @@
 // Andrei Gaponenko, 2016
 
-#include <exception>                   // for exception
-#include <memory>                             // for unique_ptr
-#include <typeinfo>                           // for type_info
-
 #include "Mu2eUtilities/inc/EventWeightHelper.hh"
-#include "fhiclcpp/ParameterSet.h"            // for ParameterSet
-#include "art/Framework/Principal/Event.h"    // for Event
-#include "art_root_io/TFileDirectory.h"       // for TFileDirectory
-#include "MCDataProducts/inc/EventWeight.hh"  // for EventWeight
-#include "TH1.h"                              // for TH1D, TH1
-#include "art/Framework/Principal/Handle.h"   // for ValidHandle
-#include "fhiclcpp/coding.h"                  // for ps_sequence_t, sequence_t
-#include "fhiclcpp/exception.h"               // for exception
+
+#include "fhiclcpp/ParameterSet.h"
+#include "art/Framework/Principal/Event.h"
+#include "art_root_io/TFileDirectory.h"
+
+#include "MCDataProducts/inc/EventWeight.hh"
+
+#include "TH1.h"
 
 namespace mu2e {
 

@@ -17,10 +17,7 @@
 // Contact person, Rob Kutschke
 //
 
-#include <map>                                         // for map
-#include <string>                                      // for string
-
-#include "GeneralUtilities/inc/EnumToStringSparse.hh"  // for EnumToStringSp...
+#include "GeneralUtilities/inc/EnumToStringSparse.hh"
 
 namespace mu2e {
 

@@ -29,9 +29,10 @@
 //     mean +/- width*sqrt(mean), rounded to integers with, at most, 100
 //     bins.
 //
-#include <cmath>  // for floor, sqrt, ceil
-
 #include "Mu2eUtilities/inc/PoissonHistogramBinning.hh"
+
+#include <iostream>
+#include <cmath>
 
 using namespace std;
 

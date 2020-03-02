@@ -20,13 +20,14 @@
 //                by Czarnecki, et al (PRD 84, 013006)
 
 // C++ includes
-#include <map>                                                  // for map
-#include <string>                                               // for string
+#include <map>
+#include <utility>
+#include <vector>
 
 // Mu2e includes
-#include "GlobalConstantsService/inc/GlobalConstantsHandle.hh"  // for Globa...
-#include "GlobalConstantsService/inc/PhysicsParams.hh"          // for Physi...
-#include "GeneralUtilities/inc/EnumToStringSparse.hh"           // for EnumT...
+#include "GlobalConstantsService/inc/GlobalConstantsHandle.hh"
+#include "GlobalConstantsService/inc/PhysicsParams.hh"
+#include "GeneralUtilities/inc/EnumToStringSparse.hh"
 
 namespace mu2e {
 

@@ -8,6 +8,7 @@
 //
 
 #include "CLHEP/Random/RandFlat.h"
+#include "CLHEP/Random/RandomEngine.h"
 #include "art/Framework/Services/Optional/RandomNumberGenerator.h"
 
 namespace mu2e {

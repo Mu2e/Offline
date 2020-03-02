@@ -4,17 +4,7 @@
 // Contact person, Rob Kutschke
 //
 
-#include <exception>                           // for exception
-#include <memory>                                     // for allocator, uniq...
-#include <typeinfo>                                   // for type_info
-
 #include "Mu2eUtilities/inc/KalRepCollectionInfo.hh"
-#include "art/Framework/Principal/Event.h"            // for Event
-#include "art/Framework/Principal/Handle.h"           // for Handle, ValidHa...
-#include "art/Framework/Principal/Provenance.h"       // for Provenance
-#include "canvas/Persistency/Provenance/ProductID.h"  // for ProductID
-#include "fhiclcpp/ParameterSet.h"                    // for ParameterSet
-#include "fhiclcpp/exception.h"                       // for exception
 
 namespace {
 

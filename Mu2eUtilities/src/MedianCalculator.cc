@@ -1,9 +1,6 @@
-#include <iostream>                   // for endl
-#include <algorithm>                  // for sort
-#include <memory>                     // for allocator_traits<>::value_type
-
 #include "Mu2eUtilities/inc/MedianCalculator.hh"
-#include "cetlib_except/exception.h"  // for exception, operator<<
+#include <iostream>
+#include "cetlib_except/exception.h"
 
 namespace mu2e {
 

@@ -7,9 +7,10 @@
 // from a set of elements that are stored internally in a vector
 //
 
-#include <stddef.h>    // for size_t
-#include <vector>      // for vector
-#include <functional>  // for binary_function
+#include <vector>
+//#include <utility>
+#include <numeric>
+#include <functional>
 
 namespace mu2e { 
   class MedianCalculator{

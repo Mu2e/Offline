@@ -10,11 +10,10 @@
 //
 
 #include "Mu2eUtilities/inc/RandomUnitSphere.hh"
-#include "Mu2eUtilities/inc/ThreeVectorUtil.hh"  // for polar3Vector
+#include "Mu2eUtilities/inc/ThreeVectorUtil.hh"
 
-namespace CLHEP {
-class HepRandomEngine;
-}  // namespace CLHEP
+#include "art/Framework/Services/Registry/ServiceHandle.h"
+#include "art/Framework/Services/Optional/RandomNumberGenerator.h"
 
 using CLHEP::Hep3Vector;
 using CLHEP::RandFlat;

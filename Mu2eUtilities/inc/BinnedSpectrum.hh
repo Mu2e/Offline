@@ -9,26 +9,20 @@
 // $Author: knoepfel $
 // $Date: 2014/04/25 17:26:42 $
 //
-// Original author Kyle Knoepfel
-//
+// Original author Kyle Knoepfel 
+//                 
 
 // C++ includes
-#include <assert.h>                    // for assert
-#include <stddef.h>                    // for size_t
-#include <iostream>                    // for operator<<, basic_ostream, bas...
-#include <utility>                     // for pair, move, make_pair, forward
-#include <vector>                      // for vector, vector<>::iterator
-#include <algorithm>                   // for max, reverse
-#include <array>                       // for array
-#include <memory>                      // for allocator_traits<>::value_type
-#include <type_traits>                 // for remove_reference<>::type
+#include <assert.h>
+#include <iostream>
+#include <string>
+#include <utility>
+#include <vector>
 
-#include "Mu2eUtilities/inc/Table.hh"  // for Table
-#include "cetlib_except/exception.h"   // for exception, operator<<
+#include "cetlib_except/exception.h"
 
-namespace fhicl {
-class ParameterSet;
-}  // namespace fhicl
+#include "Mu2eUtilities/inc/Table.hh"
+#include "fhiclcpp/ParameterSet.h"
 
 namespace mu2e {
 
@@ -86,14 +80,14 @@ namespace mu2e {
       if (_fixMax){
         for (double step = XMax-_binWidth/2.; step >= XMin + _binWidth/2.; step += _binWidth){
           abscissa.push_back( step );
-          pdf     .push_back( s.getWeight(step) );
+          pdf     .push_back( s.getWeight(step) ); 
         }
         std::reverse(abscissa.begin(),abscissa.end());
         std::reverse(pdf.begin(),pdf.end());
       }else{
-        for ( double step = XMin+_binWidth/2. ; step <= XMax-_binWidth/2.; step += _binWidth ) {
+        for ( double step = XMin+_binWidth/2. ; step <= XMax-_binWidth/2.; step += _binWidth ) {	 
           abscissa.push_back( step );
-          pdf     .push_back( s.getWeight(step) );
+          pdf     .push_back( s.getWeight(step) ); 
         }
       }
       if (_finalBin && abscissa[abscissa.size()-1] + _binWidth/2. < XMax){

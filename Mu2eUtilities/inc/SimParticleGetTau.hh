@@ -10,16 +10,16 @@
 #define Mu2eUtilities_SimParticleGetTau_hh
 
 // C++ includes
-#include <vector>                                               // for vector
+#include <vector>
+
+// Framework includes
+#include "canvas/Persistency/Common/Ptr.h"
 
 // Mu2e includes
-#include "GlobalConstantsService/inc/GlobalConstantsHandle.hh"  // for Globa...
-#include "GlobalConstantsService/inc/PhysicsParams.hh"          // for Physi...
-#include "MCDataProducts/inc/StepPointMC.hh"                    // for StepP...
-
-namespace art {
-template <typename T> class Ptr;
-}  // namespace art
+#include "GlobalConstantsService/inc/GlobalConstantsHandle.hh"
+#include "GlobalConstantsService/inc/PhysicsParams.hh"
+#include "MCDataProducts/inc/SimParticle.hh"
+#include "MCDataProducts/inc/StepPointMCCollection.hh"
 
 namespace mu2e {
 

@@ -10,7 +10,7 @@
 //  See rm48.hh for details.
 
 #include "Mu2eUtilities/inc/rm48.hh"
-#include "CLHEP/Random/RandFlat.h"    // for RandFlat
+#include "CLHEP/Random/RandFlat.h"
 
 // Scope is local to this file so namespace is irrelevant.
 static CLHEP::RandFlat* distribution(0);

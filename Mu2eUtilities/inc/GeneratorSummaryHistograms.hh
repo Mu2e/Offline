@@ -10,13 +10,11 @@
 // Contact person Rob Kutschke
 //
 
-#include <string>                             // for string
+#include "MCDataProducts/inc/GenParticleCollection.hh"
 
-#include "MCDataProducts/inc/GenParticle.hh"  // for GenParticleCollection
+#include "art_root_io/TFileDirectory.h"
 
-namespace art {
-class TFileDirectory;
-}  // namespace art
+#include <string>
 
 // Forward declarations
 
