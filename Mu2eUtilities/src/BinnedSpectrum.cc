@@ -7,7 +7,7 @@
 #include "GlobalConstantsService/inc/ParticleDataTable.hh"
 #include "GlobalConstantsService/inc/PhysicsParams.hh"
 #include "HepPDT/Measurement.hh"
-#include "HepPDT/Measurement.icc"
+
 #include "HepPDT/ParticleData.hh"
 #include "fhiclcpp/ParameterSet.h"
 #include "fhiclcpp/exception.h"
@@ -55,7 +55,7 @@ namespace mu2e {
       // should be total energy
       double elow = psphys.get<double>("elow",0);
       double ehi  = psphys.get<double>("ehi" );
-                                        // for radiatively corrected spectrum, elow and ehi are derivatives 
+                                        // for radiatively corrected spectrum, elow and ehi are derivatives
       double bin   = psphys.get<double>("spectrumResolution");
       // int    ratio = *ehi/bin;
       // *ehi         = (ratio+1.)*bin;
@@ -94,7 +94,7 @@ namespace mu2e {
       double elow = psphys.get<double>("elow",0);
       double ehi = psphys.get<double>("ehi",0);
       this->initialize(loadTable<2>( ConfigFileLookupPolicy()( psphys.get<std::string>("spectrumFileName"))),psphys.get<bool>("BinCenter", false),elow,ehi);
-    
+
       if(_xmin < 0.0) throw cet::exception("BADCONFIG")
         << "BinnedSpectrum: negative energy endpoint "<< _xmin  <<"\n";
     }

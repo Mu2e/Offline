@@ -11,7 +11,7 @@
 #include <iostream>
 
 #include "CLHEP/Vector/ThreeVector.h"
-#include "CLHEP/Vector/ThreeVector.icc"
+
 
 #include "Mu2eUtilities/inc/SortedStepPoints.hh"
 //#include "MCDataProducts/inc/StepPointMCCollection.hh"

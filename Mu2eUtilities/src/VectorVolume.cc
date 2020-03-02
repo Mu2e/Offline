@@ -9,7 +9,7 @@
 #include <vector>
 
 #include "CLHEP/Vector/ThreeVector.h"
-#include "CLHEP/Vector/ThreeVector.icc"
+
 #include "GeneralUtilities/inc/safeSqrt.hh"
 
 #include "Mu2eUtilities/inc/VectorVolume.hh"

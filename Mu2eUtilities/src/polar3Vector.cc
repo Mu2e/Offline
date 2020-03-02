@@ -12,7 +12,7 @@
 #include <cmath>
 
 #include "CLHEP/Vector/ThreeVector.h"
-#include "CLHEP/Vector/ThreeVector.icc"
+
 #include "GeneralUtilities/inc/safeSqrt.hh"
 #include "GeneralUtilities/inc/sqrtOrThrow.hh"
 

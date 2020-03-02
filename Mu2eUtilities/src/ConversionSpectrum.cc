@@ -1,6 +1,6 @@
 //
 // conversion electron/positron spectrum, radiatively corrected
-// 
+//
 //
 // Mu2e includes
 #include <stddef.h>
@@ -12,7 +12,7 @@
 #include "GlobalConstantsService/inc/GlobalConstantsHandle.hh"
 #include "GlobalConstantsService/inc/ParticleDataTable.hh"
 #include "HepPDT/Measurement.hh"
-#include "HepPDT/Measurement.icc"
+
 #include "HepPDT/ParticleData.hh"
 #include "gsl/gsl_integration.h"
 #include "gsl/gsl_math.h"
@@ -21,12 +21,12 @@
 
 using namespace std;
 
-  
+
 namespace mu2e {
- 
+
   ConversionSpectrum::ConversionSpectrum(double maxEnergy, double bin, int RadCorrected) :
     _bin          (bin         ),
-    _spectrumType (RadCorrected) 
+    _spectrumType (RadCorrected)
   {
     GlobalConstantsHandle<ParticleDataTable> pdt;
 
@@ -40,13 +40,13 @@ namespace mu2e {
       de = _par.eMax-_bin*(_nbins-1);
     }
 					// calculate integral.... for n-1 bins;
-     _integral = evalIntegral(de); 
+     _integral = evalIntegral(de);
 
   }
 
 
-//-----------------------------------------------------------------------------      
-  double ConversionSpectrum::my_f(double E, void *p) { 
+//-----------------------------------------------------------------------------
+  double ConversionSpectrum::my_f(double E, void *p) {
     double eMax  = ((ConversionSpectrum::Params_t*) p)->eMax;
     double me    = ((ConversionSpectrum::Params_t*) p)->me;
     double alpha = ((ConversionSpectrum::Params_t*) p)->alpha;
@@ -59,22 +59,22 @@ namespace mu2e {
     return f;
   }
 
-//-----------------------------------------------------------------------------  
+//-----------------------------------------------------------------------------
   double ConversionSpectrum::getCorrectedConversionSpectrum(double e) const {
     return ConversionSpectrum::my_f(e,(void*) &_par);
   }
 
-//-----------------------------------------------------------------------------  
+//-----------------------------------------------------------------------------
 // this function is called only from one place - BinnedSpectrum.hh
-// the whole thing is inconsistent, but assume that. for the caller, 
+// the whole thing is inconsistent, but assume that. for the caller,
 // E represents the left edge of the bin, so need to shift it by half-bin
 // RJB - fixed so now BinnedSpectrum calls from bin center
 //-----------------------------------------------------------------------------
   double ConversionSpectrum::getWeight(double E) const {
-    
+
     double weight(0.);
-  
-    int    bin = E/_bin ; 
+
+    int    bin = E/_bin ;
 
     if (bin < _nbins-1) {
       weight = _bin* getCorrectedConversionSpectrum(E);
@@ -83,11 +83,11 @@ namespace mu2e {
       // last bin
       weight =( 1.-_integral);
     }
-    
+
     return weight;
   }
 
-//-----------------------------------------------------------------------------  
+//-----------------------------------------------------------------------------
   double ConversionSpectrum::evalIntegral(double de){
     gsl_function F;
     F.function = &my_f;
@@ -96,7 +96,7 @@ namespace mu2e {
     size_t limit  = 1000;
     double epsabs = 0.001;
     double epsrel = 0.001;
-  
+
     gsl_integration_workspace * ws = gsl_integration_workspace_alloc(10000);
 
     double result, abserr;

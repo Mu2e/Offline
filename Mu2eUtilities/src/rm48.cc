@@ -10,7 +10,7 @@
 //  See rm48.hh for details.
 
 #include "CLHEP/Random/RandFlat.h"
-#include "CLHEP/Random/RandFlat.icc"
+
 
 #include "Mu2eUtilities/inc/rm48.hh"
 

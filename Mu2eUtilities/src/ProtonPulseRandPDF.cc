@@ -16,7 +16,7 @@
 #include <vector>
 
 #include "CLHEP/Random/RandGeneral.h"
-#include "CLHEP/Random/RandGeneral.icc"
+
 #include "ConditionsService/inc/AcceleratorParams.hh"
 // Mu2e includes
 #include "ConditionsService/inc/ConditionsHandle.hh"

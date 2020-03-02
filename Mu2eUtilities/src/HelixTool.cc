@@ -4,7 +4,7 @@
 #include <vector>
 
 #include "CLHEP/Vector/ThreeVector.h"
-#include "CLHEP/Vector/ThreeVector.icc"
+
 #include "DataProducts/inc/XYZVec.hh"
 #include "GeomPrimitives/inc/TubsParams.hh"
 #include "RecoDataProducts/inc/ComboHit.hh"

@@ -13,7 +13,7 @@
 #include <iostream>
 
 #include "CLHEP/Vector/ThreeVector.h"
-#include "CLHEP/Vector/ThreeVector.icc"
+
 
 #include "Mu2eUtilities/inc/TwoLinePCA.hh"
 

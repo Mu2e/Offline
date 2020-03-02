@@ -10,17 +10,17 @@
 
 // CLHEP includes
 #include "CLHEP/Random/RandFlat.h"
-#include "CLHEP/Random/RandFlat.icc"
+
 #include "CLHEP/Vector/LorentzVector.h"
-#include "CLHEP/Vector/LorentzVector.icc"
+
 #include "CLHEP/Vector/ThreeVector.h"
-#include "CLHEP/Vector/ThreeVector.icc"
+
 #include "DataProducts/inc/PDGCode.hh"
 #include "GlobalConstantsService/inc/GlobalConstantsHandle.hh"
 #include "GlobalConstantsService/inc/ParticleDataTable.hh"
 #include "GlobalConstantsService/inc/PhysicsParams.hh"
 #include "HepPDT/Measurement.hh"
-#include "HepPDT/Measurement.icc"
+
 #include "HepPDT/ParticleData.hh"
 #include "cetlib/pow.h"
 
