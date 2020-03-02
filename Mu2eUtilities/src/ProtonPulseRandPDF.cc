@@ -6,7 +6,7 @@
 //
 // Original author: Kyle Knoepfel
 
-#include <bits/exception.h>
+#include <exception>
 #include <stdlib.h>
 // C++ includes
 #include <algorithm>

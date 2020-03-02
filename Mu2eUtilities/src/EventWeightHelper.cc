@@ -1,6 +1,6 @@
 // Andrei Gaponenko, 2016
 
-#include <bits/exception.h>
+#include <exception>
 #include <memory>
 #include <typeinfo>
 

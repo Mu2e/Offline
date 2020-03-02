@@ -3,7 +3,7 @@
 //  reconstruct a given track.
 //
 
-#include <bits/exception.h>
+#include <exception>
 #include <memory>
 #include <string>
 #include <typeinfo>
