@@ -5,7 +5,7 @@
 // $Date: 2014/02/05 21:32:26 $
 //
 
-#include <math.h>                                               // for sqrt
+#include <cmath>                                               // for sqrt
 #include <stdlib.h>                                             // for abs
 // C++ includes
 #include <iostream>                                             // for std

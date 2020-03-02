@@ -7,7 +7,7 @@
 // Original author Rob Kutschke
 //
 
-#include <math.h>                        // for abs
+#include <cmath>                        // for abs
 #include <iostream>                      // for std
 
 #include "Mu2eUtilities/inc/SortedStepPoints.hh"

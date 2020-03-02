@@ -2,7 +2,7 @@
 // radiative muon capture; largely cloned from radiative pion capture.  see doc-db 4378
 //
 // Mu2e includes
-#include <math.h>                                               // for sqrt
+#include <cmath>                                               // for sqrt
 #include <stdlib.h>                                             // for abs
 // C++ includes
 #include <iostream>                                             // for std
