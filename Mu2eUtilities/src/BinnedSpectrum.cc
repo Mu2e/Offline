@@ -1,4 +1,4 @@
-#include <bits/exception.h>
+#include <exception>
 #include <string>
 
 #include "ConfigTools/inc/ConfigFileLookupPolicy.hh"
