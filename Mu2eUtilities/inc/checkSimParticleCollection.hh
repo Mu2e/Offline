@@ -1,7 +1,6 @@
 #ifndef Mu2eUtilities_checkSimParticleCollection_hh
 #define Mu2eUtilities_checkSimParticleCollection_hh
 
-#include "MCDataProducts/inc/SimParticle.hh"  // for SimParticleCollection
 //
 // Within a SimParticleColleciton, check that all mother/daughter pointers are self-consistent.
 //
@@ -11,6 +10,8 @@
 //
 // Contact person Rob Kutschke
 //
+
+#include "MCDataProducts/inc/SimParticleCollection.hh"
 
 namespace mu2e{
 

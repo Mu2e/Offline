@@ -10,21 +10,12 @@
 // Contact person, Rob Kutschke
 //
 
-#include <string>                                          // for string
+#include "Mu2eUtilities/inc/TrackPatRecType.hh"
+#include "Mu2eUtilities/inc/KalRepInstanceNameDecoder.hh"
+#include "RecoDataProducts/inc/KalRepCollection.hh"
+#include "RecoDataProducts/inc/KalRepPtrCollection.hh"
 
-#include "Mu2eUtilities/inc/TrackPatRecType.hh"            // for TrackPatRe...
-#include "Mu2eUtilities/inc/KalRepInstanceNameDecoder.hh"  // for KalRepInst...
-#include "RecoDataProducts/inc/KalRepCollection.hh"        // for KalRepColl...
-#include "RecoDataProducts/inc/KalRepPtrCollection.hh"     // for KalRepPtr
-#include "Mu2eUtilities/inc/TrkSpecies.hh"                 // for TrkSpecies
-#include "RecoDataProducts/inc/TrkFitDirection.hh"         // for TrkFitDire...
-
-namespace art {
-class Event;
-class ProductID;
-template <typename T> class Handle;
-template <typename T> class ValidHandle;
-}  // namespace art
+#include "art/Framework/Principal/Event.h"
 
 namespace mu2e {
 

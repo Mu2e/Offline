@@ -18,8 +18,14 @@
 #include "CLHEP/Units/PhysicalConstants.h"
 
 // Framework includes
+#include "art/Framework/Core/EDProducer.h"
+#include "art/Framework/Core/ModuleMacros.h"
+#include "art/Framework/Principal/Event.h"
+#include "art/Framework/Principal/Run.h"
+#include "art/Framework/Principal/Handle.h"
 #include "canvas/Utilities/InputTag.h"
 #include "art/Framework/Services/Registry/ServiceHandle.h"
+#include "art_root_io/TFileService.h"
 #include "fhiclcpp/ParameterSet.h"
 
 // Mu2e includes
@@ -30,15 +36,11 @@
 #include "MCDataProducts/inc/EventWeight.hh"
 #include "Mu2eUtilities/inc/BinnedSpectrum.hh"
 
-namespace art {
-  class Event;
-}
-
 namespace mu2e {
 
   class BinnedSpectrumWeightPhys {
     enum SpectrumVar  { TOTAL_ENERGY, KINETIC_ENERGY, MOMENTUM };
-
+    
   private :
     fhicl::ParameterSet psphys_;
     art::InputTag input_;
@@ -76,20 +78,20 @@ namespace mu2e {
       if (spectrumVariable_ == TOTAL_ENERGY){
         for ( const auto& i: *genColl ) {
           if ((i.pdgId() == genPdg_ || genPdg_ == PDGCode::null) && i.generatorId() == genId_ ) {
-            sampleVal += i.momentum().e();
+            sampleVal += i.momentum().e(); 
           }
         }
       }else if (spectrumVariable_ == KINETIC_ENERGY){
         for ( const auto& i: *genColl ) {
           if ((i.pdgId() == genPdg_ || genPdg_ == PDGCode::null) && i.generatorId() == genId_ ) {
-            sampleVal += i.momentum().e() - i.momentum().restMass();
+            sampleVal += i.momentum().e() - i.momentum().restMass(); 
           }
         }
       }else{
         CLHEP::Hep3Vector mom(0,0,0);
         for ( const auto& i: *genColl ) {
           if ((i.pdgId() == genPdg_ || genPdg_ == PDGCode::null) && i.generatorId() == genId_ ) {
-            mom += i.momentum().vect();
+            mom += i.momentum().vect(); 
           }
         }
         sampleVal = mom.mag();

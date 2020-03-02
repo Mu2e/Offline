@@ -1,7 +1,9 @@
 //-----------------------------------------------------------------------------
 // LsqSums2
 //-----------------------------------------------------------------------------
-#include "Mu2eUtilities/inc/LsqSums2.hh"  // for LsqSums2
+#include <cstdio>
+#include <cmath>
+#include "Mu2eUtilities/inc/LsqSums2.hh"
 
 
 LsqSums2::LsqSums2() {

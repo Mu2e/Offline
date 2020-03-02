@@ -1,20 +1,4 @@
-#include <cmath>                                // for sqrtf, fabs, M_PI
-#include <stddef.h>                              // for size_t
-#include <array>                                 // for array
-#include <vector>                                // for vector
-
 #include "Mu2eUtilities/inc/HelixTool.hh"
-#include "CLHEP/Vector/ThreeVector.h"            // for Hep3Vector
-#include "DataProducts/inc/XYZVec.hh"            // for XYZVec
-#include "GeomPrimitives/inc/TubsParams.hh"      // for TubsParams
-#include "RecoDataProducts/inc/ComboHit.hh"      // for ComboHit, ComboHitCo...
-#include "RecoDataProducts/inc/HelixSeed.hh"     // for HelixSeed
-#include "RecoDataProducts/inc/RobustHelix.hh"   // for RobustHelix
-#include "RecoDataProducts/inc/StrawHitFlag.hh"  // for StrawHitFlag
-#include "TrackerGeom/inc/Panel.hh"              // for Panel
-#include "TrackerGeom/inc/Plane.hh"              // for Plane
-#include "TrackerGeom/inc/Straw.hh"              // for Straw
-#include "TrackerGeom/inc/Tracker.hh"            // for Tracker
 
 
 namespace mu2e {
@@ -73,7 +57,7 @@ namespace mu2e {
       int   nPanels = pln->nPanels();
       if (nPanels == 0 )         continue;
       std::array<int,2>   idPanels = {0, (nPanels-1)};
-
+	
       for (size_t ipn=0; ipn<idPanels.size(); ++ipn){
 	const Panel* panel = &pln->getPanel(ipn);
 	float    z = (panel->getStraw(0).getMidPoint().z()+panel->getStraw(1).getMidPoint().z())/2.;
@@ -83,12 +67,12 @@ namespace mu2e {
 	XYZVec  pos;
 	pos.SetZ(z);
 	robustHel->position(pos);
-
+	
 	//now check that we are in the active area of tracker
 	float   hitR = sqrtf(pos.x()*pos.x() + pos.y()*pos.y());
 	if (hitR < _trackerRIn )  continue;
 	if (hitR > _trackerROut)  continue;
-
+	  
 	++expected_faces;
       }//end loop over the two panels
     }//end loop over the planes

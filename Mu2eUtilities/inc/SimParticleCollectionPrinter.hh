@@ -3,16 +3,13 @@
 #ifndef Mu2eUtilities_inc_SimParticleCollectionPrinter_hh
 #define Mu2eUtilities_inc_SimParticleCollectionPrinter_hh
 
-#include <exception>                          // for exception
-#include <ostream>                            // for ostream
-#include <string>                             // for string, allocator
+#include <ostream>
+#include <string>
 
-#include "fhiclcpp/types/Atom.h"              // for Atom
-#include "MCDataProducts/inc/SimParticle.hh"  // for SimParticle (ptr only)
-#include "fhiclcpp/ParameterSet.h"            // for ParameterSet
-#include "fhiclcpp/exception.h"               // for exception
-#include "fhiclcpp/types/Comment.h"           // for Comment
-#include "fhiclcpp/types/Name.h"              // for Name
+#include "fhiclcpp/types/Atom.h"
+#include "fhiclcpp/types/OptionalAtom.h"
+
+#include "MCDataProducts/inc/SimParticleCollection.hh"
 
 namespace mu2e {
   class SimParticleCollectionPrinter {

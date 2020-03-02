@@ -8,12 +8,12 @@
 // Original author Rob Kutschke
 //
 
-#include <cmath>                            // for cos, sin, atan2, sqrt, M_PI
-#include <iostream>                         // for std
+#include <cmath>
+#include <iostream>
 
-#include "Mu2eUtilities/inc/TrackTool.hh"   // for TrackTool
-#include "CLHEP/Units/PhysicalConstants.h"  // for c_light
-#include "CLHEP/Vector/ThreeVector.h"       // for Hep3Vector
+#include "Mu2eUtilities/inc/TrackTool.hh"
+
+#include "CLHEP/Units/PhysicalConstants.h"
 
 using namespace std;
 //using CLHEP::Hep3Vector;

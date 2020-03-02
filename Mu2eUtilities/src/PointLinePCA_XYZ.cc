@@ -1,9 +1,4 @@
-#include <iosfwd>                                 // for std
-
 #include "Mu2eUtilities/inc/PointLinePCA_XYZ.hh"
-#include "Math/GenVector/Cartesian3D.h"           // for Cartesian3D
-#include "Math/GenVector/DisplacementVector3D.h"  // for operator-, Displace...
-
 using namespace std;
 namespace mu2e{
 	PointLinePCA_XYZ::PointLinePCA_XYZ( XYZVec const& point,

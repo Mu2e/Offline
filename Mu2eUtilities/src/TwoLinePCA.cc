@@ -10,10 +10,8 @@
 // Original author Rob Kutschke
 //
 
-#include <iostream>                         // for std
-
-#include "Mu2eUtilities/inc/TwoLinePCA.hh"  // for TwoLinePCA
-#include "CLHEP/Vector/ThreeVector.h"       // for Hep3Vector
+#include <iostream>
+#include "Mu2eUtilities/inc/TwoLinePCA.hh"
 
 using namespace std;
 

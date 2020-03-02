@@ -1,13 +1,8 @@
 //
 // Original author: Kyle Knoepfel
 
-#include <cstdlib>                            // for atof, atoi
-#include <iostream>                           // for cout
-#include <memory>                             // for allocator, allocator_tr...
-#include <vector>                             // for vector
-
 #include "Mu2eUtilities/inc/CoordinateString.hh"
-#include "GeneralUtilities/inc/splitLine.hh"  // for splitLine
+#include "GeneralUtilities/inc/splitLine.hh"
 
 namespace mu2e {
 

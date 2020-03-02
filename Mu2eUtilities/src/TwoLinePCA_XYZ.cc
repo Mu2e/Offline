@@ -10,12 +10,8 @@
 // Original author Rob Kutschke
 //
 
-#include <iostream>                               // for std
-
-#include "Mu2eUtilities/inc/TwoLinePCA_XYZ.hh"    // for TwoLinePCA_XYZ
-#include "DataProducts/inc/XYZVec.hh"             // for XYZVec
-#include "Math/GenVector/Cartesian3D.h"           // for Cartesian3D
-#include "Math/GenVector/DisplacementVector3D.h"  // for DisplacementVector3D
+#include <iostream>
+#include "Mu2eUtilities/inc/TwoLinePCA_XYZ.hh"
 
 using namespace std;
 

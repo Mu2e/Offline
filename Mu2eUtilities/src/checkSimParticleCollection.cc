@@ -7,16 +7,15 @@
 //
 // Contact person Rob Kutschke
 
-#include <vector>                                         // for vector, all...
-#include <cstddef>                                        // for size_t, std
-#include <utility>                                        // for pair
-
 // Mu2e includes
 #include "Mu2eUtilities/inc/checkSimParticleCollection.hh"
+#include "MCDataProducts/inc/SimParticleCollection.hh"
+
 // art includes
-#include "messagefacility/MessageLogger/MessageLogger.h"  // for MaybeLogger_
-#include "cetlib_except/exception.h"                      // for exception
-#include "cetlib/map_vector.h"                            // for operator<<
+#include "messagefacility/MessageLogger/MessageLogger.h"
+#include "cetlib_except/exception.h"
+
+#include <vector>
 
 using namespace std;
 

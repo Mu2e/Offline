@@ -8,24 +8,23 @@
 // $Date: 2014/05/01 18:12:26 $
 //
 
-#include <stddef.h>                                             // for size_t
-#include <iostream>                                             // for opera...
-#include <array>                                                // for array
-#include <utility>                                              // for pair
-#include <vector>                                               // for alloc...
-
 // Mu2e includes
-#include "GlobalConstantsService/inc/ParticleDataTable.hh"      // for Parti...
-#include "GlobalConstantsService/inc/PhysicsParams.hh"          // for Physi...
-#include "GlobalConstantsService/inc/GlobalConstantsHandle.hh"  // for Globa...
-#include "ConfigTools/inc/ConfigFileLookupPolicy.hh"            // for Confi...
-#include "DataProducts/inc/PDGCode.hh"                          // for PDGCode
-#include "Mu2eUtilities/inc/ShankerWatanabeSpectrum.hh"         // for Shank...
+#include "GlobalConstantsService/inc/ParticleDataTable.hh"
+#include "GlobalConstantsService/inc/PhysicsParams.hh"
+#include "GlobalConstantsService/inc/GlobalConstantsHandle.hh"
+#include "ConfigTools/inc/ConfigFileLookupPolicy.hh"
+#include "DataProducts/inc/PDGCode.hh"
+#include "Mu2eUtilities/inc/ShankerWatanabeSpectrum.hh"
+
+// CLHEP includes
+#include "CLHEP/Units/PhysicalConstants.h"
+
 // Framework includes
-#include "cetlib/pow.h"                                         // for square
-#include "HepPDT/Measurement.hh"                                // for Measu...
-#include "HepPDT/ParticleData.hh"                               // for Parti...
-#include "Mu2eUtilities/inc/Table.hh"                           // for Table
+#include "cetlib/pow.h"
+
+// C++ includes
+#include <fstream>
+#include <iostream>
 
 using namespace std;
 
@@ -34,7 +33,7 @@ namespace mu2e {
   ShankerWatanabeSpectrum::ShankerWatanabeSpectrum() :
     _table ( loadTable<2,false>( ConfigFileLookupPolicy()("ConditionsService/data/watanabe.tbl" ) ) )
   {
-    _wanaEndPoint    = _table(0,0);
+    _wanaEndPoint    = _table(0,0); 
     _wanaEndPointVal = _table(0,1);
     _norm     = _wanaEndPointVal / evaluateShanker( _wanaEndPoint );
   }
@@ -67,14 +66,14 @@ namespace mu2e {
 
     const double deltaPrimeMax = mumass - bindEnergy;
     const double muEndPoint    = deltaPrimeMax - cet::square(deltaPrimeMax)/(2*phy->getAtomicMass());
-
+    
     if (E > muEndPoint) return 0;
-
+    
     const double delta1 = mumass - bindEnergy - E - cet::square(E)/(2*phy->getAtomicMass());
 
     double shD(0.), shE(0.), shF(0.);
     unsigned zpower (1);
-
+    
     for ( size_t i(0); i < phy->getShankerNcoeffs() ; i++ ) {
       shD    += phy->getShankerDcoefficients().at(i)*zpower;
       shE    += phy->getShankerEcoefficients().at(i)*zpower;
@@ -107,17 +106,17 @@ namespace mu2e {
   }
 
 
-  double ShankerWatanabeSpectrum::interpolate(const double E,
+  double ShankerWatanabeSpectrum::interpolate(const double E, 
                                               const TableRow<2>& row_after,
                                               const TableRow<2>& row,
                                               const TableRow<2>& row_before ) const {
-
+    
     const double e1(  row_after.first );  const double p1(  row_after.second.at(0) );
     const double e2(        row.first );  const double p2(        row.second.at(0) );
     const double e3( row_before.first );  const double p3( row_before.second.at(0) );
-
+    
     const double discr = e1*e1*e2 + e1*e3*e3 + e2*e2*e3 - e3*e3*e2 - e1*e1*e3 - e1*e2*e2;
-
+    
     const double A = (p1*e2 + p3*e1 + p2*e3 - p3*e2 - p1*e3 - p2*e1) / discr;
 
     const double B = (e1*e1*p2 + e3*e3*p1 + e2*e2*p3 - e3*e3*p2 - e1*e1*p3 - e2*e2*p1) / discr;

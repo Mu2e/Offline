@@ -8,10 +8,6 @@
 
 #include "Mu2eUtilities/inc/ModuleHistToolBase.hh"
 
-namespace art {
-class TFileService;
-}  // namespace art
-
 namespace mu2e {
 
   // ModuleHist::ModuleHist() {

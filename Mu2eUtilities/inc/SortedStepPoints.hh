@@ -9,12 +9,14 @@
 // Original author Rob Kutschke
 //
 
-#include <vector>                             // for vector
-
-#include "MCDataProducts/inc/SimParticle.hh"  // for SimParticleCollection
-#include "MCDataProducts/inc/StepPointMC.hh"  // for StepPointMC (ptr only)
+#include "CLHEP/Vector/ThreeVector.h"
+#include "MCDataProducts/inc/SimParticleCollection.hh"
+#include "MCDataProducts/inc/StepPointMCCollection.hh"
+#include <vector>
 
 namespace mu2e {
+
+  class StepPointMC;
 
   class SortedStepPoints{
 
