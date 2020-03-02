@@ -3,15 +3,7 @@
 #
 #include "Validation/fcl/potSim.fcl"
 
-# Note that all parameters except the following ones should mostly be
+# Note that all parameters except the following should mostly be
 # set in the non MT file included above (which includes prolog files)
 
-# Give this job a name.
-process_name : potSimMT
-
 physics.producers.g4run.module_type : "Mu2eG4MT"
-
-# histogram file
-services.TFileService.fileName : "nts.owner.val-potSimMT.dsconf.seq.root"
-# art file
-outputs.fullOutput.fileName: "sim.owner.val-potSimMT.dsconf.seq.art"
