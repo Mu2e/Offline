@@ -8,23 +8,26 @@
 // $Date: 2014/05/01 18:12:26 $
 //
 
+#include <stddef.h>
+#include <array>
+#include <iostream>
+#include <utility>
+#include <vector>
+
+#include "ConfigTools/inc/ConfigFileLookupPolicy.hh"
+#include "DataProducts/inc/PDGCode.hh"
+#include "GlobalConstantsService/inc/GlobalConstantsHandle.hh"
 // Mu2e includes
 #include "GlobalConstantsService/inc/ParticleDataTable.hh"
 #include "GlobalConstantsService/inc/PhysicsParams.hh"
-#include "GlobalConstantsService/inc/GlobalConstantsHandle.hh"
-#include "ConfigTools/inc/ConfigFileLookupPolicy.hh"
-#include "DataProducts/inc/PDGCode.hh"
-#include "Mu2eUtilities/inc/ShankerWatanabeSpectrum.hh"
-
-// CLHEP includes
-#include "CLHEP/Units/PhysicalConstants.h"
-
+#include "HepPDT/Measurement.hh"
+#include "HepPDT/Measurement.icc"
+#include "HepPDT/ParticleData.hh"
 // Framework includes
 #include "cetlib/pow.h"
 
-// C++ includes
-#include <fstream>
-#include <iostream>
+#include "Mu2eUtilities/inc/ShankerWatanabeSpectrum.hh"
+#include "Mu2eUtilities/inc/Table.hh"
 
 using namespace std;
 

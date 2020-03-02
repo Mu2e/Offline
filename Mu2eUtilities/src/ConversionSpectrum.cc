@@ -3,25 +3,21 @@
 // 
 //
 // Mu2e includes
-#include "GlobalConstantsService/inc/GlobalConstantsHandle.hh"
-#include "GlobalConstantsService/inc/PhysicsParams.hh"
-#include "GlobalConstantsService/inc/ParticleDataTable.hh"
-#include "Mu2eUtilities/inc/ConversionSpectrum.hh"
-#include "Mu2eUtilities/inc/RandomUnitSphere.hh"
-
-// Framework includes
-#include "cetlib/pow.h"
-
-// CLHEP includes
-#include "CLHEP/Random/RandFlat.h"
-
+#include <stddef.h>
+#include <cmath>
 // C++ includes
 #include <iostream>
-#include <cmath>
 
-//GSL includes
-#include "stdio.h"
+#include "DataProducts/inc/PDGCode.hh"
+#include "GlobalConstantsService/inc/GlobalConstantsHandle.hh"
+#include "GlobalConstantsService/inc/ParticleDataTable.hh"
+#include "HepPDT/Measurement.hh"
+#include "HepPDT/Measurement.icc"
+#include "HepPDT/ParticleData.hh"
 #include "gsl/gsl_integration.h"
+#include "gsl/gsl_math.h"
+
+#include "Mu2eUtilities/inc/ConversionSpectrum.hh"
 
 using namespace std;
 

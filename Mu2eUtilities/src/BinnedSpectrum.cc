@@ -1,17 +1,24 @@
-#include "Mu2eUtilities/inc/BinnedSpectrum.hh"
+#include <bits/exception.h>
+#include <string>
 
+#include "ConfigTools/inc/ConfigFileLookupPolicy.hh"
+#include "DataProducts/inc/PDGCode.hh"
 #include "GlobalConstantsService/inc/GlobalConstantsHandle.hh"
 #include "GlobalConstantsService/inc/ParticleDataTable.hh"
 #include "GlobalConstantsService/inc/PhysicsParams.hh"
-#include "ConfigTools/inc/ConfigFileLookupPolicy.hh"
+#include "HepPDT/Measurement.hh"
+#include "HepPDT/Measurement.icc"
+#include "HepPDT/ParticleData.hh"
+#include "fhiclcpp/ParameterSet.h"
+#include "fhiclcpp/exception.h"
 
-#include "Mu2eUtilities/inc/CzarneckiSpectrum.hh"
-#include "Mu2eUtilities/inc/SimpleSpectrum.hh"
+#include "Mu2eUtilities/inc/BinnedSpectrum.hh"
 #include "Mu2eUtilities/inc/ConversionSpectrum.hh"
+#include "Mu2eUtilities/inc/CzarneckiSpectrum.hh"
 #include "Mu2eUtilities/inc/EjectedProtonSpectrum.hh"
 #include "Mu2eUtilities/inc/MuonCaptureSpectrum.hh"
 #include "Mu2eUtilities/inc/PionCaptureSpectrum.hh"
-#include "DataProducts/inc/PDGCode.hh"
+#include "Mu2eUtilities/inc/SimpleSpectrum.hh"
 
 namespace mu2e {
 

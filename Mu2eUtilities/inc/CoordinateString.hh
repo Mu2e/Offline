@@ -44,6 +44,7 @@
 #include <fstream>
 #include <iostream>
 #include <iterator>
+#include <string>
 #include <utility>
 
 // Framework includes
