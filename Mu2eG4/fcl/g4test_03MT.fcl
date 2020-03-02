@@ -3,15 +3,7 @@
 #
 #include "Mu2eG4/fcl/g4test_03.fcl"
 
-# Note that all parameters except the following ones should mostly be
+# Note that all parameters except the following should mostly be
 # set in the non MT file included above (which includes prolog files)
 
-# Give this job a name.
-process_name : G4Test03MT
-
 physics.producers.g4run.module_type : "Mu2eG4MT"
-
-# histogram file
-services.TFileService.fileName : "g4test_03MT.root"
-# art file
-outputs.fullOutput.fileName: "g4test_03MT.art"
