@@ -9,10 +9,13 @@
 // Original author Rob Kutschke
 //
 
-#include "CLHEP/Vector/ThreeVector.h"
-#include "MCDataProducts/inc/SimParticleCollection.hh"
-#include "MCDataProducts/inc/StepPointMCCollection.hh"
 #include <vector>
+
+#include "CLHEP/Vector/ThreeVector.h"
+#include "MCDataProducts/inc/SimParticle.hh"
+#include "MCDataProducts/inc/SimParticleCollection.hh"
+#include "MCDataProducts/inc/StepPointMC.hh"
+#include "MCDataProducts/inc/StepPointMCCollection.hh"
 
 namespace mu2e {
 

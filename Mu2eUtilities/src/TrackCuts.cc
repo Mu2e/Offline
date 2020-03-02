@@ -1,10 +1,16 @@
-#include "Mu2eUtilities/inc/TrackCuts.hh"
+#include <bits/exception.h>
+#include <memory>
+#include <vector>
 
-#include "fhiclcpp/ParameterSet.h"
-
-#include "TH1.h"
-
+#include "CLHEP/Vector/ThreeVector.h"
+#include "CLHEP/Vector/ThreeVector.icc"
 #include "RecoDataProducts/inc/TrackSummary.hh"
+#include "TH1.h"
+#include "cetlib_except/exception.h"
+#include "fhiclcpp/ParameterSet.h"
+#include "fhiclcpp/exception.h"
+
+#include "Mu2eUtilities/inc/TrackCuts.hh"
 
 namespace mu2e {
 
