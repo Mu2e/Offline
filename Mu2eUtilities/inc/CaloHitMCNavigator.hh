@@ -10,7 +10,7 @@
 // Original author Rob Kutschke
 //
 
-#include <ext/alloc_traits.h>
+
 #include <stddef.h>
 
 #include "MCDataProducts/inc/CaloHitMCTruth.hh"
