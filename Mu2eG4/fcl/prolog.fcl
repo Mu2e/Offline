@@ -1,4 +1,3 @@
-# -*- mode:tcl -*-
 #------------------------------------------------------------------------------
 # this file is included by fcl/standardProducers.fcl inside the PROLOG section
 #------------------------------------------------------------------------------
@@ -87,17 +86,17 @@ mu2eg4DefaultTrajectories: {
     saveTrajectoryMomentumCut : 50  // MeV/c
 
     perVolumeMinDistance : {
-	PSVacuum : 15
-	TS1Vacuum : 15
-	TS2Vacuum : 15
-	TS3Vacuum : 15
-	TS4Vacuum : 15
-	TS5Vacuum : 15
-	DS1Vacuum : 15
-	DS2Vacuum : 15
-	DS3Vacuum : 15
-	TrackerMother: 15
-	CalorimeterMother: 15
+        PSVacuum : 15
+        TS1Vacuum : 15
+        TS2Vacuum : 15
+        TS3Vacuum : 15
+        TS4Vacuum : 15
+        TS5Vacuum : 15
+        DS1Vacuum : 15
+        DS2Vacuum : 15
+        DS3Vacuum : 15
+        TrackerMother: 15
+        CalorimeterMother: 15
         StoppingTargetMother: 15
     }
 }
@@ -117,6 +116,8 @@ mu2eg4DefaultDebug: {
     mtDebugOutput : false
     trackingVerbosityLevel : 0
     steppingVerbosityLevel : 0
+    navigatorVerbosityLevel : 0
+    navigatorCheckMode : false
     checkFieldMap : 0
     writeGDML : false
     GDMLFileName : "mu2e.gdml"
@@ -149,50 +150,6 @@ mu2eg4runDefaultSingleStage: {
 
     SDConfig : {
         verbosityLevel : 0
-	enableAllSDs : false  # this would activate all SDs listed in StepInstanceName enum
-	# activate minimal set of sensitive detectors used by everybody
-	enableSD : [ tracker, calorimeter, calorimeterRO, CRV, virtualdetector ]
-        # in the including fcl file set e.g. physics.producers.g4run.SDConfig.enableSD : @erase
-        # whan setting enableAllSDs : true
-	TimeVD: { times: [] }
-    }
-
-    debug:  @local::mu2eg4DefaultDebug
-    visualization: @local::mu2eg4NoVisualization
-
-    SimParticlePrinter : {
-	enabled             : false
-	primariesOnly       : false
-	prefix              : "SimParticle: "
-    }
-}
-
-#------------------------------------------------------------------------------
-# Many legacy configurations use "g4run"
-g4run: @local::mu2eg4runDefaultSingleStage
-
-Mu2eG4: {
-    producers : {
-	g4run : { @table::mu2eg4runDefaultSingleStage }
-    }
-}
-
-#----------------------------------------------------------------
-# For running in MT mode
-MTmu2eg4runDefaultSingleStage: {
-    module_type           : Mu2eG4MT
-    physics               : @local::mu2eg4DefaultPhysics
-    ResourceLimits        : @local::mu2eg4DefaultResourceLimits
-    TrajectoryControl     : @local::mu2eg4DefaultTrajectories
-
-    Mu2eG4StackingOnlyCut : @local::mu2eg4CutNeutrinos
-    Mu2eG4SteppingOnlyCut : @local::mu2eg4NoCut
-    Mu2eG4CommonCut	  : @local::mu2eg4NoCut
-
-    generatorModuleLabel  : generate
-
-    SDConfig : {
-        verbosityLevel : 0
         enableAllSDs : false  # this would activate all SDs listed in StepInstanceName enum
         # activate minimal set of sensitive detectors used by everybody
         enableSD : [ tracker, calorimeter, calorimeterRO, CRV, virtualdetector ]
@@ -211,12 +168,26 @@ MTmu2eg4runDefaultSingleStage: {
     }
 }
 
-Mu2eG4MT: {
+#------------------------------------------------------------------------------
+# Many legacy configurations use "g4run"
+g4run: @local::mu2eg4runDefaultSingleStage
+
+Mu2eG4: {
     producers : {
-        g4mtrun : { @table::MTmu2eg4runDefaultSingleStage }
+        g4run : { @table::mu2eg4runDefaultSingleStage }
     }
 }
 
+#----------------------------------------------------------------
+# For running in MT mode
+Mu2eG4MT: {
+    producers : {
+        g4run : {
+            @table::mu2eg4runDefaultSingleStage
+            module_type : "Mu2eG4MT"
+        }
+    }
+}
 
 #----------------------------------------------------------------
 END_PROLOG

@@ -1,65 +1,9 @@
 #
 # generate protons on target and simulate through the detector
 #
-#include "fcl/minimalMessageService.fcl"
-#include "fcl/standardServices.fcl"
-#include "fcl/standardProducers.fcl"
+#include "Validation/fcl/potSim.fcl"
 
+# Note that all parameters except the following should mostly be
+# set in the non MT file included above (which includes prolog files)
 
-process_name : potSimMT
-
-services : @local::Services.Sim
-
-source.module_type : EmptyEvent
-
-physics : {
-   producers: {
-      generate: @local::PrimaryProtonGun
-      @table::Mu2eG4MT.producers
-    }
-
-   filters : {
-      g4status: {
-         module_type: FilterStatusG4
-         input: "g4mtrun"
-      }
-   }
-
-    all_path : [  generate, g4mtrun, g4status ]
-
-    trigger_paths  : [ all_path ]
-    out : [ fullOutput ]
-
-}
-
-outputs: {
-    fullOutput : {
-      module_type : RootOutput
-      fileName    : @nil
-      outputCommands : [
-         "keep *_*_*_*",
-	 "drop mu2e::StepPointMCs_*_calorimeterRO_*"
-     ]
-
-    }
-}
-
-
-# print summaries
-services.scheduler.wantSummary: true
-services.TimeTracker.printSummary: true
-
-# histogram file
-services.TFileService.fileName : "nts.owner.val-potSimMT.dsconf.seq.root"
-# art file
-outputs.fullOutput.fileName: "sim.owner.val-potSimMT.dsconf.seq.art"
-
-# run 1h by default
-source.maxEvents: 500
-
-# Initialze seeding of random engines
-services.SeedService.baseSeed         :  8
-services.SeedService.maxUniqueEngines :  20
-
-# use the geometry on the head
-services.GeometryService.inputFile : "Mu2eG4/geom/geom_common_current.txt"
+physics.producers.g4run.module_type : "Mu2eG4MT"
