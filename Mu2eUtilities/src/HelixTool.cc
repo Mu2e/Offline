@@ -1,4 +1,4 @@
-#include <math.h>                                // for sqrtf, fabs, M_PI
+#include <cmath>                                // for sqrtf, fabs, M_PI
 #include <stddef.h>                              // for size_t
 #include <array>                                 // for array
 #include <vector>                                // for vector
