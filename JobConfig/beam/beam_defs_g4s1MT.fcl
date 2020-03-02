@@ -134,7 +134,7 @@ physics : {
          module_type: GenEventCounter
       }
 
-      g4mtrun : {
+      g4run : {
          module_type: Mu2eG4MT
          physics: @local::mu2eg4DefaultPhysics
          ResourceLimits: @local::mu2eg4DefaultResourceLimits
@@ -170,87 +170,87 @@ physics : {
 
       compressPVmuonBeam : {
          module_type: CompressPhysicalVolumes
-         volumesInput : "g4mtrun"
+         volumesInput : "g4run"
          hitInputs : []
          particleInputs : [ "muonBeamFilter" ]
       }
 
       compressPVdsRegion : {
          module_type: CompressPhysicalVolumes
-         volumesInput : "g4mtrun"
+         volumesInput : "g4run"
          hitInputs : []
          particleInputs : [ "dsRegionFilter" ]
       }
 
       compressPVextmonBeam : {
          module_type: CompressPhysicalVolumes
-         volumesInput : "g4mtrun"
+         volumesInput : "g4run"
          hitInputs : []
          particleInputs : [ "extmonBeamFilter" ]
       }
 
       compressPVextmonRegion : {
          module_type: CompressPhysicalVolumes
-         volumesInput : "g4mtrun"
+         volumesInput : "g4run"
          hitInputs : []
          particleInputs : [ "extmonRegionFilter" ]
       }
 
       compressPVFull : {
          module_type: CompressPhysicalVolumes
-         volumesInput : "g4mtrun"
+         volumesInput : "g4run"
          hitInputs : []
-         particleInputs : [ "g4mtrun" ]
+         particleInputs : [ "g4run" ]
       }
    }
 
    filters: {
       muonBeamFilter: {
          module_type: FilterG4Out
-         mainHitInputs : [ "g4mtrun:mubeam" ]
-         extraHitInputs : [ "g4mtrun:virtualdetector" ]
+         mainHitInputs : [ "g4run:mubeam" ]
+         extraHitInputs : [ "g4run:virtualdetector" ]
          vetoDaughters: []
       }
 
       dsRegionFilter: {
          module_type: FilterG4Out
-         mainHitInputs : [ "g4mtrun:dsregion" ]
-         extraHitInputs : [ "g4mtrun:virtualdetector" ]
+         mainHitInputs : [ "g4run:dsregion" ]
+         extraHitInputs : [ "g4run:virtualdetector" ]
          vetoDaughters: []
       }
 
       extmonBeamFilter: {
          module_type: FilterG4Out
-         mainHitInputs : [ "g4mtrun:extmonbeam" ]
-         extraHitInputs : [ "g4mtrun:virtualdetector" ]
+         mainHitInputs : [ "g4run:extmonbeam" ]
+         extraHitInputs : [ "g4run:virtualdetector" ]
          vetoDaughters: []
       }
 
       extmonRegionFilter: {
          module_type: FilterG4Out
-         mainHitInputs : [ "g4mtrun:extmonregion" ]
-         extraHitInputs : [ "g4mtrun:virtualdetector" ]
+         mainHitInputs : [ "g4run:extmonregion" ]
+         extraHitInputs : [ "g4run:virtualdetector" ]
          vetoDaughters: []
       }
 
       g4status: {
          module_type: FilterStatusG4
-         input: "g4mtrun"
+         input: "g4run"
 	 maxAcceptedStatus: 1  #  status 2 and above means StepPointMCCollection may have non-dereferencable pointers
       }
 
       g4consistent: {
          module_type: FilterStatusG4
-         input: "g4mtrun"
+         input: "g4run"
 	 maxAcceptedStatus: 9  #  status 10 and above means StepPointMCCollection may have non-dereferencable pointers
       }
    }
 
-   trigmubeam : [generate, genCounter, g4mtrun, g4consistent, muonBeamFilter, compressPVmuonBeam]
-   trigdsregion : [generate, genCounter, g4mtrun, g4consistent, dsRegionFilter, compressPVdsRegion]
-//   trigextmonbeam : [generate, genCounter, g4mtrun, g4consistent, extmonBeamFilter, compressPVextmonBeam]
-//   trigextmonregion : [generate, genCounter, g4mtrun, g4consistent, extmonRegionFilter, compressPVextmonRegion]
-   g4StatusFilter : [generate, genCounter, g4mtrun, "!g4status", compressPVFull ]
+   trigmubeam : [generate, genCounter, g4run, g4consistent, muonBeamFilter, compressPVmuonBeam]
+   trigdsregion : [generate, genCounter, g4run, g4consistent, dsRegionFilter, compressPVdsRegion]
+//   trigextmonbeam : [generate, genCounter, g4run, g4consistent, extmonBeamFilter, compressPVextmonBeam]
+//   trigextmonregion : [generate, genCounter, g4run, g4consistent, extmonRegionFilter, compressPVextmonRegion]
+   g4StatusFilter : [generate, genCounter, g4run, "!g4status", compressPVFull ]
 //   trigger_paths  : [trigmubeam, trigdsregion, trigextmonbeam, trigextmonregion, g4StatusFilter]
    trigger_paths  : [trigmubeam, trigdsregion, g4StatusFilter]
 
@@ -316,15 +316,15 @@ outputs: {
          "keep mu2e::GenParticles_*_*_*",
          "keep mu2e::GenEventCount_*_*_*",
          "keep mu2e::StatusG4_*_*_*",
-         "keep *_g4mtrun_*_*",
-         "drop uintmu2e::PhysicalVolumeInfomvstd::pairs_g4mtrun_*_*",
+         "keep *_g4run_*_*",
+         "drop uintmu2e::PhysicalVolumeInfomvstd::pairs_g4run_*_*",
          "keep *_compressPVFull_*_*"
       ]
    }
 
 }
 // Larger range cut for the first stage
-physics.producers.g4mtrun.physics.minRangeCut : 1. // mm
+physics.producers.g4run.physics.minRangeCut : 1. // mm
 
 // Limit the amount of "Begin processing the ... record" messages
 services.message.destinations.log.categories.ArtReport.reportEvery : 1
