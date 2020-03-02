@@ -5,6 +5,7 @@
 #include "GeometryService/inc/GeomHandle.hh"
 #include "GeometryService/inc/GeometryService.hh"
 #include "MCDataProducts/inc/CrvCoincidenceClusterMCCollection.hh"
+#include "MCDataProducts/inc/MCTrajectoryCollection.hh"
 #include "RecoDataProducts/inc/CrvCoincidenceClusterCollection.hh"
 #include "art/Framework/Core/ModuleMacros.h"
 #include "art/Framework/Principal/Handle.h"
@@ -13,13 +14,16 @@ namespace mu2e
 {
   void CRVAnalysis::FillCrvHitInfoCollections(const std::string &crvCoincidenceClusterModuleLabel,
                                               const std::string &crvCoincidenceClusterMCModuleLabel,
-                                              const art::Event& event, CrvHitInfoRecoCollection &recoInfo, CrvHitInfoMCCollection &MCInfo)
+                                              const art::Event& event, CrvHitInfoRecoCollection &recoInfo, CrvHitInfoMCCollection &MCInfo,
+                                              CrvPlaneInfoMCCollection &MCInfoPlane, double crvPlaneY)
   {
     art::Handle<CrvCoincidenceClusterCollection>   crvCoincidenceClusterCollection;
     art::Handle<CrvCoincidenceClusterMCCollection> crvCoincidenceClusterMCCollection;
+    std::vector<art::Handle<MCTrajectoryCollection> > trajectoryCollections;
 
     event.getByLabel(crvCoincidenceClusterModuleLabel,"",crvCoincidenceClusterCollection);
     event.getByLabel(crvCoincidenceClusterMCModuleLabel,"",crvCoincidenceClusterMCCollection);
+    event.getManyByType(trajectoryCollections);
 
     if(!crvCoincidenceClusterCollection.isValid()) return;
     size_t nClusters=crvCoincidenceClusterCollection->size();
@@ -63,7 +67,44 @@ namespace mu2e
         }
         else MCInfo.emplace_back();
       }
-    }//loop through all clusters
+    }
+
+    //locate points where the cosmic MC trajectories cross the xz plane of CRV-T
+    for(size_t n=0; n<trajectoryCollections.size(); n++)
+    {
+      std::map<art::Ptr<mu2e::SimParticle>,mu2e::MCTrajectory>::const_iterator trajectoryIter;
+      for(trajectoryIter=trajectoryCollections[n]->begin(); trajectoryIter!=trajectoryCollections[n]->end(); trajectoryIter++)
+      {
+        const art::Ptr<SimParticle> &trajectorySimParticle = trajectoryIter->first;
+        const art::Ptr<SimParticle> &trajectoryPrimaryParticle = FindPrimaryParticle(trajectorySimParticle);
+        GenId genId = trajectoryPrimaryParticle->genParticle()->generatorId();
+        if(genId==GenId::cosmicToy || genId==GenId::cosmicDYB || genId==GenId::cosmic || genId==GenId::cosmicCRY)
+        {
+          const std::vector<MCTrajectoryPoint> &points = trajectoryIter->second.points();
+          if(points.size()<1) continue;
+          CLHEP::Hep3Vector previousPos=points[0].pos();
+          for(size_t m=1; m<points.size(); m++)
+          {
+            CLHEP::Hep3Vector pos=points[m].pos();
+            if((previousPos.y()>crvPlaneY && pos.y()<=crvPlaneY) || (previousPos.y()<crvPlaneY && pos.y()>=crvPlaneY))
+            {
+              double fraction=(crvPlaneY-pos.y())/(previousPos.y()-pos.y());
+              CLHEP::Hep3Vector planePos=fraction*(previousPos-pos)+pos;
+              double planeTime=fraction*(points[m-1].t()-points[m].t())+points[m].t();
+              double planeKineticEnergy=fraction*(points[m-1].kineticEnergy()-points[m].kineticEnergy())+points[m].kineticEnergy();
+              MCInfoPlane.emplace_back(trajectorySimParticle->pdgId(), 
+                                       trajectoryPrimaryParticle->pdgId(),
+                                       trajectoryPrimaryParticle->startMomentum().e(),
+                                       trajectoryPrimaryParticle->startPosition(),
+                                       planePos,
+                                       planeTime,
+                                       planeKineticEnergy);
+            }
+            previousPos=pos;
+          }
+        }
+      }
+    }
   }//FillCrvInfoStructure
 
 }

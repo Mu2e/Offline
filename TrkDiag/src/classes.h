@@ -14,6 +14,7 @@
 #include "TrkDiag/inc/ComboHitInfo.hh"
 #include "CRVAnalysis/inc/CrvHitInfoReco.hh"
 #include "CRVAnalysis/inc/CrvHitInfoMC.hh"
+#include "CRVAnalysis/inc/CrvPlaneInfoMC.hh"
 #include "TrkDiag/inc/TrkInfo.hh"
 #include "TrkDiag/inc/TrkCaloHitInfo.hh"
 #include "TrkDiag/inc/TrkQualInfo.hh"

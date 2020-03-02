@@ -212,6 +212,7 @@ BEGIN_PROLOG
     FillTrkPIDInfo : true
     ProcessEmptyEvents : false
     AnalyzeCRV : true
+    CrvPlaneY : 2751.485
     PrimaryParticleTag : "compressRecoMCs"
     KalSeedMCAssns : "SelectRecoMC"
     CaloClusterMCAssns : "SelectRecoMC"
