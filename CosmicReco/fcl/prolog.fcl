@@ -43,25 +43,53 @@ CHD : {
 	StrawHitFlagCollection : "FlagBkgHits:ComboHits"
 	TimeOffsets : {inputs : [ @sequence::DigiCompression.NoCosmicTimeMaps ]}
 }
-CosmicTrackFinder : {
+CosmicTrackFinder : { #split into Loose and tight below for efficieny studies
+    module_type		: CosmicTrackFinder
+    ComboHitCollection     : "makePH"
+    TimeClusterCollection  : "TimeClusterFinderCosmics"
+    StrawDigiMCCollection : "compressDigiMCs"
+   
+}
+
+CosmicTrackFinderLoose : {
     module_type		: CosmicTrackFinder
     ComboHitCollection     : "makePH"
     TimeClusterCollection  : "TimeClusterFinderCosmics"
     StrawDigiMCCollection : "compressDigiMCs"
     DoDrift : true
+    CosmicTrackFit :{
+	minNComboHits : 4
+	MaxSeedChi2DOF : 10
+ 	MaxDeltaChi2 : 0.5
+	MaxPosDev : 20000
+	MaxHitPullForSeed : 1000
+	Noutliers : 2
+	GaussianSeedTimeResolution : 24
+	MaxTimeResidual : 40
+    }
+   
+}
+
+CosmicTrackFinderTight : {
+    module_type		: CosmicTrackFinder
+    ComboHitCollection     : "makePH"
+    TimeClusterCollection  : "TimeClusterFinderCosmics"
+    StrawDigiMCCollection : "compressDigiMCs"
+    DoDrift : true
+    CosmicTrackFit :{
+	minNComboHits : 8
+	MaxSeedChi2DOF : 2.5
+ 	MaxDeltaChi2 : 0.001
+	MaxPosDev : 200
+	MaxHitPullForSeed : 100
+	Noutliers : 2
+	GaussianSeedTimeResolution : 24
+	MaxTimeResidual : 40
+    }
 }
 
  CosmicAnalysis : {
 	module_type : CosmicAnalyzer
-	ComboHitCollection : "makePH"
-	TimeClusterCollection : TimeClusterFinderCosmics
-        CosmicTrackSeedCollection : CosmicTrackFinder
-	StrawDigiMCCollection : "compressDigiMCs"
-	TimeOffsets : {inputs : [ @sequence::DigiCompression.NoCosmicTimeMaps ]}
-  }
-
- CosmicTrackDetails : {
-	module_type : CosmicTrackDetails
 	ComboHitCollection : "makePH"
 	TimeClusterCollection : TimeClusterFinderCosmics
         CosmicTrackSeedCollection : CosmicTrackFinder
@@ -102,12 +130,13 @@ CosmicTracking : {
   producers :{
     TimeClusterFinderCosmics  : @local::TimeClusterFinderCosmics
     CosmicTrackFinder  : @local::CosmicTrackFinder
+    CosmicTrackFinderLoose  : @local::CosmicTrackFinderLoose
+    CosmicTrackFinderTight  : @local::CosmicTrackFinderTight
  }
   analyzers : {
       
       CosmicAnalysis : @local::CosmicAnalysis
       CosmicFitDisplay : @local::CosmicFitDisplay
-      CosmicTrackDetails : @local::CosmicTrackDetails
    }
   filters : {
 	CosmicMuonInfo: @local::CosmicMuonInfo
@@ -134,5 +163,7 @@ CosmicTracking : {
 
 #production sequence to find straight track
 CosmicTracking.FindCosmics : [  TimeClusterFinderCosmics, CosmicTrackFinder ]
+CosmicTracking.FindCosmicsLoose : [  TimeClusterFinderCosmics, CosmicTrackFinderLoose ]
+CosmicTracking.FindCosmicsTight : [  TimeClusterFinderCosmics, CosmicTrackFinderTight ]
 
 END_PROLOG

@@ -70,7 +70,7 @@ namespace mu2e
 	      fhicl::Atom<float> gaussTres{Name("GaussianSeedTimeResolution"),Comment("The resolution of the Gaussian seed fit in time"), 24 };
               fhicl::Atom<float> maxTres{Name("MaxTimeResidual"),Comment("The maxiumum allowed time residual for any hit used for full drift fit"), 40 };
 	      fhicl::Atom<float> maxd{Name("MaxTrackLength"),Comment("The maxiumum allowed length of track") ,2000.};
-	      fhicl::Atom<float> maxpull{Name("MaxHitPullSForeed"),Comment("The maxiumum allowed combo hit pull from fit") ,100.};
+	      fhicl::Atom<float> maxpull{Name("MaxHitPullForSeed"),Comment("The maxiumum allowed combo hit pull from fit") ,100.};
     	};
 		
 		explicit CosmicTrackFit(const Config& conf);
