@@ -68,8 +68,6 @@ namespace mu2e {
     std::vector<double> timeVDtimes_;
     Mu2eG4ResourceLimits mu2eLimits_;
 
-    ExtMonFNALPixelSD* extMonFNALPixelSD_;
-
     std::unique_ptr<IMu2eG4Cut> stackingCuts_;
     std::unique_ptr<IMu2eG4Cut> steppingCuts_;
     std::unique_ptr<IMu2eG4Cut> commonCuts_;

@@ -116,25 +116,6 @@ namespace mu2e {
       }
       StoreRNGStatus(fileN);
     }
-<<<<<<< HEAD
-    
-    
-void Mu2eG4MTRunManager::stopG4()
-    {
-<<<<<<< HEAD
-      if ( verboseLevel > 1 ) {
-        G4cout << __func__ << " called" << G4endl;
-      }
-        WaitForEndEventLoopWorkers();
-=======
-        G4GeometryManager::GetInstance()->OpenGeometry();
-        G4StateManager::GetStateManager()->SetNewState(G4State_Quit);
-        
-        if (!m_runTerminated) {
-            terminateRun();
-        }
->>>>>>> modifications for converting Mu2eG4_module to MT art
-=======
 
     /////////////////////////////////////////////////////////////////////////////////////
     /////////////////////////////////////////////////////////////////////////////////////
@@ -167,7 +148,6 @@ void Mu2eG4MTRunManager::stopG4()
              << " to distribute events to all threads.";
         G4Exception("G4MTRunManager::InitializeEventLoop()", "Run10035", JustWarning, msgd);
       }
->>>>>>> Whitespace fixes.
     }
     else {
       eventModulo = int(std::sqrt(double(numberOfEventToBeProcessed/numworkers)));

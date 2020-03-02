@@ -161,8 +161,6 @@ namespace mu2e {
     // do a counter that counts how mnay times it was called with an unknown process
     PhysicalVolumeHelper _physVolHelper;
 
-    ExtMonFNALPixelSD       *_extMonFNALPixelSD;
-
     // Instance name of the timeVD StepPointMC data product.
     const StepInstanceName _tvdOutputName;
     bool timeVD_enabled_;

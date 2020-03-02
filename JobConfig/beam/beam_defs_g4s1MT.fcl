@@ -104,8 +104,8 @@ services : {
 
 
    message               : @local::default_message
-   TFileService          : { }
-   RandomNumberGenerator : { }
+   TFileService          : { fileName : "nts.owner.beam-g4s1.version.sequencer.root" }
+   RandomNumberGenerator : {defaultEngineKind: "MixMaxRng" }
 
    GeometryService        : { inputFile      : "Mu2eG4/geom/geom_common_current.txt" }
    ConditionsService      : { conditionsfile : "Mu2eG4/test/conditions_01.txt"      }

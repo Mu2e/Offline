@@ -41,12 +41,7 @@
 #include "art/Framework/Principal/Handle.h"
 #include "art/Framework/Core/ModuleMacros.h"
 #include "art_root_io/TFileService.h"
-
-//Geom
-#include "TrackerGeom/inc/Tracker.hh"
-#include "TrackerGeom/inc/Straw.hh"
-#include "TrackerConditions/inc/StrawResponse.hh"
-// ROOT incldues
+//ROOT
 #include "TStyle.h"
 #include "Rtypes.h"
 #include "TH1F.h"

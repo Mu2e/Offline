@@ -1443,8 +1443,9 @@ namespace mu2e {
 
   void RobustHelixFinder::refitHelix(RobustHelixFinderData& helixData) {
     // reset the fit status flags, in case this is called iteratively
+
     helixData._hseed._status.clear(TrkFitFlag::helixOK);
-    _hfit.fitCircle(helixData, _targetcon);
+    _hfit.fitCircle(helixData, _targetcon, _useTripletAreaWt);
     if (helixData._hseed._status.hasAnyProperty(TrkFitFlag::circleOK)) {
       _hfit.fitFZ(helixData);
       if (_hfit.goodHelix(helixData._hseed._helix)) helixData._hseed._status.merge(TrkFitFlag::helixOK);
