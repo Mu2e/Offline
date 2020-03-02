@@ -666,7 +666,7 @@ namespace mu2e
 		CosmicTrack st = sts._track;
 		TrkFitFlag const& status = sts._status;
         	if (!status.hasAllProperties(TrkFitFlag::helixOK) ){ continue;}
-		if(st.converged == false or st.minuit_converged  == false) { continue;}
+		if(st.converged == false or st.minuit_converged  == false) { continue;} //or 
 		std::vector<int> panels, planes, stations;
 
 		_reco_phi_angle->Fill(st.get_fit_phi()); 
