@@ -15,6 +15,8 @@
 #include "CRVAnalysis/inc/CrvHitInfoReco.hh"
 #include "CRVAnalysis/inc/CrvHitInfoMC.hh"
 #include "CRVAnalysis/inc/CrvPlaneInfoMC.hh"
+#include "CRVAnalysis/inc/CrvSummaryReco.hh"
+#include "CRVAnalysis/inc/CrvSummaryMC.hh"
 #include "TrkDiag/inc/TrkInfo.hh"
 #include "TrkDiag/inc/TrkCaloHitInfo.hh"
 #include "TrkDiag/inc/TrkQualInfo.hh"
