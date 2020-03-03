@@ -207,12 +207,15 @@ BEGIN_PROLOG
     PBIWeightTag : "PBIWeight"
     CrvCoincidenceModuleLabel : "SelectRecoMC"
     CrvCoincidenceMCModuleLabel : "compressRecoMCs"
+    CrvRecoPulseLabel : "SelectRecoMC"
+    CrvStepPointMCLabel : "compressRecoMCs"
+    MCTrajectoryLabel : "compressRecoMCs"
+    CrvPlaneY : 2751.485
     FillMCInfo : true
     FillTrkQualInfo : true
     FillTrkPIDInfo : true
     ProcessEmptyEvents : false
     AnalyzeCRV : true
-    CrvPlaneY : 2751.485
     PrimaryParticleTag : "compressRecoMCs"
     KalSeedMCAssns : "SelectRecoMC"
     CaloClusterMCAssns : "SelectRecoMC"
