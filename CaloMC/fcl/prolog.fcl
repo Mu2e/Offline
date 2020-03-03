@@ -61,7 +61,7 @@ CaloDigiFromShower :
     endTimeBuffer         : 80
     bufferDigi            : 5  
     pulseIntegralSteps    : 50
-
+    nBinsPeak		  : 3 #needs optimizing/checking
     diagLevel             : 0
 }
 

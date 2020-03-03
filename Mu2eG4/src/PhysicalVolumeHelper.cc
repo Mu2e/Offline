@@ -45,9 +45,9 @@ using namespace std;
 namespace mu2e {
 
   PhysicalVolumeHelper::PhysicalVolumeHelper():
-    _persistentInfo(),
-    _volumeMap(){
-  }
+    _volumeMap(),
+    m_helperInitialized(false)
+    {}
 
   // Return the index into _persistentInfo for the volume attached to this track.
   int PhysicalVolumeHelper::index( const G4Track* track ) const{
@@ -89,13 +89,13 @@ namespace mu2e {
 
   // Build _persistentInfo and _volumeMap from G4PhysicalVolumeStore.
   void PhysicalVolumeHelper::beginRun(){
-      
+
     _volumeMap.clear();
-    _persistentInfo.clear();
     _pSingleStage.clear();
 
     // Loop over physical volume store.
     G4PhysicalVolumeStore* pstore = G4PhysicalVolumeStore::GetInstance();
+    unsigned current(0u);
     for ( std::vector<G4VPhysicalVolume*>::const_iterator i=pstore->begin(); i!=pstore->end(); ++i){
 
       // Add volume to the map; it's an error if its already there.
@@ -110,21 +110,17 @@ namespace mu2e {
           << " already exisist!\n";
       }
 
-      // Add volume to the persistent info.
-      _persistentInfo.emplace_back(vpv->GetName(),
-                                   vpv->GetCopyNo(),
-                                   vpv->GetLogicalVolume()->GetMaterial()->GetName()
-                                   );
-
-      _pSingleStage[cet::map_vector_key(_persistentInfo.size()-1)] = _persistentInfo.back();
+      _pSingleStage[cet::map_vector_key(current++)] =
+        PhysicalVolumeInfo(vpv->GetName(), vpv->GetCopyNo(), vpv->GetLogicalVolume()->GetMaterial()->GetName() );
     }
+
+    m_helperInitialized = true;
 
   }
 
   // Clear information at the end of a run.
   void PhysicalVolumeHelper::endRun(){
     _volumeMap.clear();
-    _persistentInfo.clear();
   }
 
 }

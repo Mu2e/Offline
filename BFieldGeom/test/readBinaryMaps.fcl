@@ -17,7 +17,7 @@ services : {
 
   message               : @local::default_message
   TFileService          : { fileName : "readBinaryMaps.root" }
-  RandomNumberGenerator : { }
+  RandomNumberGenerator : {defaultEngineKind: "MixMaxRng" }
 
   GeometryService        : { inputFile      : "BFieldGeom/test/geom_readBinaries.txt" }
   ConditionsService      : { conditionsfile : "Mu2eG4/test/conditions_01.txt"         }
@@ -73,7 +73,7 @@ physics : {
 
 }
 
-services.SeedService.baseSeed         :  0
+services.SeedService.baseSeed         :  8
 services.SeedService.maxUniqueEngines :  20
 
 physics.producers.g4run.SDConfig.enableSD : [tracker, calorimeter, calorimeterRO, CRV, virtualdetector, stoppingtarget ]

@@ -8,22 +8,21 @@
 
 namespace mu2e {
 
-  Mu2eG4StackingAction::Mu2eG4StackingAction(const fhicl::ParameterSet&,
-                                             IMu2eG4Cut& stackingCuts,
+  Mu2eG4StackingAction::Mu2eG4StackingAction(IMu2eG4Cut& stackingCuts,
                                              IMu2eG4Cut& commonCuts)
     : stackingCuts_(&stackingCuts)
     , commonCuts_(&commonCuts)
   {}
-    
-    G4ClassificationOfNewTrack Mu2eG4StackingAction::ClassifyNewTrack(const G4Track* trk){
-        if(stackingCuts_->stackingActionCut(trk)) {
-            return fKill;
-        }
-        if(commonCuts_->stackingActionCut(trk)) {
-            return fKill;
-        }
-        return fUrgent;
+
+  G4ClassificationOfNewTrack Mu2eG4StackingAction::ClassifyNewTrack(const G4Track* trk){
+    if(stackingCuts_->stackingActionCut(trk)) {
+      return fKill;
     }
+    if(commonCuts_->stackingActionCut(trk)) {
+      return fKill;
+    }
+    return fUrgent;
+  }
 
 
 

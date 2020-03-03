@@ -12,7 +12,7 @@ namespace mu2e {
   class HelixSeed;
   class TimeCluster;
   class CaloTrigSeed;
-
+  class CosmicTrackSeed;
   struct TriggerInfo
   {
      
@@ -23,6 +23,7 @@ namespace mu2e {
     const art::Ptr<HelixSeed>&     helix()           const { return _helix; }
     const art::Ptr<TimeCluster>&   hitCluster()      const { return _hitCluster; }
     const art::Ptr<CaloTrigSeed>&  caloTrigSeed()    const { return _caloTrigSeed; }
+    const art::Ptr<CosmicTrackSeed>&  cosmic()    const { return _cosmic; }
 
     TriggerFlag	           _triggerBits{}; 
     std::string            _triggerPath; 
@@ -31,6 +32,7 @@ namespace mu2e {
     art::Ptr<HelixSeed>    _helix; // associated helix
     art::Ptr<TimeCluster>  _hitCluster; // associated time cluster
     art::Ptr<CaloTrigSeed> _caloTrigSeed; //associated CaloTrigSeed
+    art::Ptr<CosmicTrackSeed>      _cosmic; // associated CosmicTrackSeed
   };
   typedef std::vector<mu2e::TriggerInfo> TriggerInfoCollection;
 } 

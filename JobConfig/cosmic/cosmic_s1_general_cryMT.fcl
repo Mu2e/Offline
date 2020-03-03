@@ -1,10 +1,7 @@
 #include "JobConfig/cosmic/cosmic_defs_s1s2.fclinc"
 
 physics.producers.generate.inputFile    : "EventGenerator/defaultConfigs/defaultCRYconfig.txt"
-physics.producers.generate.module_type  : CRYEventGeneratorN
-physics.producers.generate.stashSize    : 1000
-physics.producers.g4run.runinMTMode     : true
-physics.producers.g4run.numberOfThreads : 10
+//physics.producers.generate.module_type  : CRYEventGeneratorN
 
 services.TFileService.fileName       : "nts.owner.cosmic-g4s1s2-crygeneral.version.sequencer.root"
 outputs.filteredOutput.fileName      : "sim.owner.cosmic-g4s1s2-crygeneral.version.sequencer.art"

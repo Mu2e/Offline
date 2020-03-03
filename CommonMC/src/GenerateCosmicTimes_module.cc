@@ -100,7 +100,8 @@ namespace mu2e {
 	  if(res->find(part) == res->end()){
 	    if(part->genParticle()->generatorId() == GenId::cosmicCRY   ||
 	       part->genParticle()->generatorId() == GenId::cosmicDYB   ||
-	       part->genParticle()->generatorId() == GenId::cosmic )
+	       part->genParticle()->generatorId() == GenId::cosmic      ||
+               part->genParticle()->generatorId() == GenId::cosmicCORSIKA)
 	      {
 		(*res)[part] = _randflat.fire(tmin_ - firstTrackerHit, tmax_ - firstTrackerHit);
 		if(verbosityLevel_ > 0)

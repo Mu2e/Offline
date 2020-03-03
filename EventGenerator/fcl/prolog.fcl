@@ -94,10 +94,22 @@ CeplusEndpointGun : {
     muonStops      : @local::mu2e.tgtMuonStops
 }
 
-PrimaryProtonGunN: {
-    module_type : PrimaryProtonGunN
-    inputfile   : "Mu2eG4/test/genconfig_PrimaryProtonsN.txt"
-    stashSize   : @nil
+PrimaryProtonGun: {
+    module_type : PrimaryProtonGun
+    beamDisplacementOnTarget : [0.,0.,0.]
+    beamRotationTheta : 0.
+    beamRotationPhi   : 0.
+    beamRotationPsi   : 0.
+    beamSpotSigma     : 1.
+    phimin	      : 0
+    czmin	      : -1.
+    czmax	      : -1.
+    tmin	      : 0.
+    tmax	      : 0.
+    shape	      : "gaus"
+    rmax	      : 100.
+    mean	      : -1.
+
 }
 
 
@@ -106,13 +118,6 @@ StoppedParticleReactionGun: {
     physics:  { @table::CeEndpointGun.physics
 	genId : StoppedParticleReactionGun
     }
-}
-
-
-StoppedParticleReactionGunN: {
-    @table::StoppedParticleReactionGun
-    module_type    : StoppedParticleReactionGunN
-    stashSize      : @nil
 }
 
 
@@ -149,8 +154,6 @@ EventGenerator : { @table::EventGenerator
     producers : {
 	CeEndpointGun               : { @table::CeEndpointGun               }
 	StoppedParticleReactionGun  : { @table::StoppedParticleReactionGun  }
-        StoppedParticleReactionGunN : { @table::StoppedParticleReactionGunN }
-        PrimaryProtonGunN           : { @table::PrimaryProtonGunN           }
 #------------------------------------------------------------------------------
 # new implementation from Eleonora, doesn't require tabulations of LL spectra
 # conversion e- and e+ on Al27 

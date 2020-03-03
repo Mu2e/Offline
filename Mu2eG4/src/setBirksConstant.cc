@@ -23,18 +23,18 @@
 #include <vector>
 #include <utility>
 
+#include "fhiclcpp/ParameterSet.h"
+
 namespace mu2e{
 
-  void setBirksConstant(const fhicl::ParameterSet& pset) {
+  void setBirksConstant(const Mu2eG4Config::Physics& phys, const Mu2eG4Config::Debug& debug) {
 
-    const fhicl::ParameterSet& birksConstsPSet{
-      pset.get<fhicl::ParameterSet>("physics.BirksConsts",fhicl::ParameterSet())};
-
-    if (!birksConstsPSet.is_empty()) {
+    fhicl::ParameterSet birksConstsPSet;
+    if(phys.BirksConsts.get_if_present(birksConstsPSet)) {
 
       const std::vector<std::string> matNames{birksConstsPSet.get_names()};
 
-      int verbosityLevel = pset.get<int>("debug.diagLevel",0);
+      int verbosityLevel = debug.diagLevel();
 
       // in principle we could do it without this map and set values direcly from pset
       std::map<std::string,double> birksConstsMap;
@@ -50,9 +50,7 @@ namespace mu2e{
         G4Material *gmat = findMaterialOrThrow( mat );
         gmat->GetIonisation()->SetBirksConstant(birksConstsMap[mat]*CLHEP::mm/CLHEP::MeV);
       }
-
     }
-
   }
 
 }  // end namespace mu2e

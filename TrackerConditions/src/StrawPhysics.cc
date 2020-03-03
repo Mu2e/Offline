@@ -4,7 +4,7 @@
 
 // boost
 #include "boost/math/special_functions/gamma.hpp"
-#include <math.h>
+#include <cmath>
 #include <algorithm>
 #include <iostream>
 

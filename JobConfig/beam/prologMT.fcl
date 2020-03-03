@@ -1,0 +1,234 @@
+#include "fcl/minimalMessageService.fcl"
+#include "fcl/standardServices.fcl"
+#include "CaloMC/fcl/prolog.fcl"
+#include "Mu2eG4/fcl/prolog.fcl"
+#include "EventGenerator/fcl/prolog.fcl"
+
+BEGIN_PROLOG
+
+mu2e.services.simServices: {
+   message: @local::default_message
+   TFileService: { fileName: @nil }
+   RandomNumberGenerator: { }
+   GeometryService: { inputFile: "JobConfig/common/geom_baseline.txt" }
+   ConditionsService: { conditionsfile: "Mu2eG4/test/conditions_01.txt" }
+   GlobalConstantsService: { inputFile: "Mu2eG4/test/globalConstants_01.txt" }
+   G4Helper: {}
+   SeedService: @local::automaticSeeds
+}
+
+// Default seeding of random engines - the seed will be overwritten in grid jobs
+mu2e.services.simServices.SeedService.baseSeed:  0
+mu2e.services.simServices.SeedService.maxUniqueEngines:  20
+
+// Limit the amount of "Begin processing the ... record" messages
+mu2e.services.simServices.message.destinations.log.categories.ArtReport.reportEvery: 1
+mu2e.services.simServices.message.destinations.log.categories.ArtReport.limit: 1
+mu2e.services.simServices.message.destinations.log.categories.ArtReport.timespan: 300
+
+#================================================================
+mu2e.physics.producers.g4run.commonBase: {
+   module_type: Mu2eG4MT
+   physics: @local::mu2eg4DefaultPhysics
+   ResourceLimits: @local::mu2eg4DefaultResourceLimits
+   TrajectoryControl: @local::mu2eg4NoTrajectories
+   debug:  @local::mu2eg4DefaultDebug
+   visualization: @local::mu2eg4NoVisualization
+
+   generatorModuleLabel: @nil
+
+   SDConfig: {
+      enableSD: [ tracker, calorimeter, calorimeterRO, CRV, virtualdetector, protonabsorber ]
+      TimeVD: { times: [] }
+      preSimulatedHits: @nil
+   }
+
+   Mu2eG4StackingOnlyCut: @local::mu2eg4CutNeutrinos
+   Mu2eG4SteppingOnlyCut: {}
+   Mu2eG4CommonCut: {}
+}
+
+#----------------------------------------------------------------
+mu2e.physics.producers.g4run.flash: @local::mu2e.physics.producers.g4run.commonBase
+mu2e.physics.producers.g4run.flash.generatorModuleLabel: ""
+mu2e.physics.producers.g4run.flash.MultiStageParameters: {
+   simParticleNumberOffset: 300000
+   genInputHits:  [ "mothersFilter:DetectorMother" ]
+   inputSimParticles: "mothersFilter"
+   inputMCTrajectories: ""
+   inputPhysVolumeMultiInfo: "compressPVMothers"
+}
+mu2e.physics.producers.g4run.flash.SDConfig.preSimulatedHits:  ["mothersFilter:virtualdetector"]
+
+#----------------------------------------------------------------
+mu2e.physics.producers.g4run.muons: @local::mu2e.physics.producers.g4run.commonBase
+mu2e.physics.producers.g4run.muons.generatorModuleLabel: "generate"
+mu2e.physics.producers.g4run.muons.SDConfig.preSimulatedHits: []
+
+#================================================================
+mu2e.outputs.g4s4Defs: {
+   detectorOutput: {
+      module_type: RootOutput
+      SelectEvents: [detPath]
+      outputCommands:   [ "drop *_*_*_*",
+         "keep mu2e::GenParticles_*_*_*",
+         "keep mu2e::GenEventCount_*_*_*",
+         "keep mu2e::StatusG4_*_*_*",
+         "keep *_detectorFilter_*_*",
+         "keep *_CaloShowerCrystalSteps_*_*",
+         "keep *_CaloShowerROSteps_*_*",
+         "keep *_compressPVDetector_*_*"
+      ]
+      fileName: @nil
+   }
+
+   crvOutput: {
+      module_type: RootOutput
+      SelectEvents: [crvPath]
+      outputCommands:   [ "drop *_*_*_*",
+         "keep mu2e::GenParticles_*_*_*",
+         "keep mu2e::GenEventCount_*_*_*",
+         "keep mu2e::StatusG4_*_*_*",
+         "keep *_crvFilter_*_*",
+         "keep *_compressPVCRV_*_*"
+      ]
+      fileName: @nil
+   }
+
+   truncatedEvtsOutput: {
+      module_type: RootOutput
+      SelectEvents: [g4StatusPath]
+      outputCommands:   [ "drop *_*_*_*",
+         "keep mu2e::GenParticles_*_*_*",
+         "keep mu2e::GenEventCount_*_*_*",
+         "keep mu2e::StatusG4_*_*_*",
+         "keep *_g4run_*_*",
+         "drop uintmu2e::PhysicalVolumeInfomvstd::pairs_*_*_*",
+         "keep *_compressPVFull_*_*"
+      ]
+      fileName: @nil
+   }
+}
+
+#================================================================
+mu2e.physics.g4s4CommonBase: {
+   producers: {
+      g4run: @nil
+
+      CaloShowerStepFromStepPt: @local::CaloShowerStepFromStepPt
+
+      CaloShowerCrystalSteps: {
+	 module_type: CaloShowerUpdater
+	 showerInput: "CaloShowerStepFromStepPt:calorimeter"
+	 newSimParticles: "detectorFilter"
+      }
+
+      CaloShowerROSteps: {
+	 module_type: CaloShowerUpdater
+	 showerInput: "CaloShowerStepFromStepPt:calorimeterRO"
+	 newSimParticles: "detectorFilter"
+      }
+
+      compressPVDetector: {
+	 module_type: CompressPhysicalVolumes
+	 volumesInput: "g4run"
+	 hitInputs: []
+	 particleInputs: [ "detectorFilter" ]
+      }
+      compressPVCRV: {
+	 module_type: CompressPhysicalVolumes
+	 volumesInput: "g4run"
+	 hitInputs: []
+	 particleInputs: [ "crvFilter" ]
+      }
+      compressPVFull: {
+	 module_type: CompressPhysicalVolumes
+	 volumesInput: "g4run"
+	 hitInputs: []
+	 particleInputs: [ "g4run" ]
+      }
+   }
+
+   filters: {
+      detectorFilter: {
+	 module_type: FilterG4Out
+	 mainHitInputs: [ "g4run:tracker" ]
+	 mainSPPtrInputs: [ "CaloShowerStepFromStepPt" ]
+	 extraHitInputs: [ "g4run:virtualdetector", "g4run:protonabsorber" ]
+	 vetoDaughters: []
+      }
+
+      crvFilter: {
+	 module_type: FilterG4Out
+	 mainHitInputs: [ "g4run:CRV"]
+	 extraHitInputs: [ "g4run:virtualdetector" ]
+	 vetoDaughters: []
+      }
+
+      TrkStepFilter : {
+	module_type : MinimumHits
+	mode : "trackerOnly"
+	MinNStraws : 10
+	MinPartMom : 40.0  # MeV/c
+	PDGCodes : [11,-11, 13, -13] 
+	generatorModuleLabel : "generate"
+	g4ModuleLabel : "g4run"
+      }
+
+      g4status: {
+	 module_type: FilterStatusG4
+	 input: "g4run"
+      }
+      g4consistent: {
+	 module_type: FilterStatusG4
+	 input: "g4run"
+	 maxAcceptedStatus: 9  #  status 10 and above means StepPointMCCollection may have non-dereferencable pointers
+      }
+   }
+
+   analyzers: { genCountLogger: { module_type: GenEventCountReader } }
+
+   crvPath: @nil
+   detPath: @nil
+   g4StatusPath: @nil
+   trigger_paths: [ detPath, crvPath, g4StatusPath ]
+
+   out: [ detectorOutput, crvOutput, truncatedEvtsOutput ]
+   gcl: [genCountLogger]
+   end_paths: [out, gcl]
+}
+
+crvPathCommon: [ g4run, g4consistent, crvFilter, compressPVCRV ]
+detPathCommon: [ g4run, g4consistent, CaloShowerStepFromStepPt, detectorFilter, CaloShowerCrystalSteps, CaloShowerROSteps, compressPVDetector ]
+g4StatusPathCommon:  [ g4run, "!g4status", compressPVFull ]
+
+#----------------------------------------------------------------
+mu2e.physics.g4s4Flash: @local::mu2e.physics.g4s4CommonBase
+mu2e.physics.g4s4Flash.producers.g4run: @local::mu2e.physics.producers.g4run.flash
+mu2e.physics.g4s4Flash.crvPath: [ @sequence::crvPathCommon ]
+mu2e.physics.g4s4Flash.detPath: [ @sequence::detPathCommon ]
+mu2e.physics.g4s4Flash.g4StatusPath: [ @sequence::g4StatusPathCommon ]
+
+#----------------------------------------------------------------
+mu2e.physics.g4s4Muons: @local::mu2e.physics.g4s4CommonBase
+mu2e.physics.g4s4Muons.producers.g4run: @local::mu2e.physics.producers.g4run.muons
+
+mu2e.physics.g4s4Muons.producers.generate: {
+   module_type: StoppedParticleReactionGun
+   verbosityLevel : 1
+   physics: @nil
+   muonStops : @local::mu2e.tgtMuonStops
+}
+
+mu2e.physics.g4s4Muons.producers.genCounter: {
+   module_type: GenEventCounter
+}
+
+mu2e.physics.g4s4Muons.crvPath: [ generate, genCounter,  @sequence::crvPathCommon ]
+mu2e.physics.g4s4Muons.detPath: [ generate, genCounter,  @sequence::detPathCommon ]
+mu2e.physics.g4s4Muons.g4StatusPath:  [ generate, genCounter, @sequence::g4StatusPathCommon ]
+mu2e.physics.Signal.detPath : [ generate, genCounter,  g4run, g4consistent, CaloShowerStepFromStepPt, TrkStepFilter, detectorFilter, CaloShowerCrystalSteps, CaloShowerROSteps, compressPVDetector ]
+
+#================================================================
+
+END_PROLOG

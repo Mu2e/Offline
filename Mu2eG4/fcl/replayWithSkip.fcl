@@ -28,7 +28,7 @@ services :
     fileName : "replayWithSkip.root"
   }
 
-  RandomNumberGeneratorService : 
+  RandomNumberGenerator : 
   {
     restoreStateLabel :  randomsaver 
   }

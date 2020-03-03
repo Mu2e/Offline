@@ -29,6 +29,10 @@
 #include "art_root_io/TFileService.h"
 #include "art/Framework/Core/ModuleMacros.h"
 #include "canvas/Persistency/Common/TriggerResults.h"
+#include "fhiclcpp/types/Atom.h"
+#include "fhiclcpp/types/OptionalAtom.h"
+#include "fhiclcpp/types/Table.h"
+#include "fhiclcpp/types/OptionalSequence.h"
 
 // ROOT incldues
 #include "Rtypes.h"
@@ -125,6 +129,7 @@ namespace mu2e {
       fhicl::Atom<bool> filltrkqual{Name("FillTrkQualInfo"),false};
       fhicl::Atom<bool> filltrkpid{Name("FillTrkPIDInfo"),false};
       fhicl::Atom<bool> filltrig{Name("FillTriggerInfo"),false};
+      fhicl::Atom<std::string> trigpathsuffix{Name("TriggerPathSuffix"), "_trigger"}; // all trigger paths have this in the name
       fhicl::Atom<int> diag{Name("diagLevel"),1};
       fhicl::Atom<int> debug{Name("debugLevel"),0};
       fhicl::Atom<art::InputTag> primaryParticleTag{Name("PrimaryParticleTag"), Comment("Tag for PrimaryParticle"), art::InputTag()};
@@ -180,6 +185,7 @@ namespace mu2e {
     // trigger information
     unsigned _trigbits;
     TH1F* _trigbitsh; // plot of trigger bits: just an example
+    std::map<size_t,unsigned> _tmap; // map between path and trigger ID.  ID should come from trigger itself FIXME!
     // MC truth branches (inputs)
     art::Handle<PrimaryParticle> _pph;
     art::Handle<KalSeedMCAssns> _ksmcah;
@@ -228,6 +234,7 @@ namespace mu2e {
   TrackAnalysisReco::TrackAnalysisReco(const Parameters& conf):
     art::EDAnalyzer(conf),
     _conf(conf()),
+    _trigbitsh(0),
     _infoMCStructHelper(conf().infoMCStructHelper())
   {
     _midvids.push_back(VirtualDetectorId::TT_Mid);
@@ -333,7 +340,6 @@ namespace mu2e {
 // trigger info.  Actual names should come from the BeginRun object FIXME
     if(_conf.filltrig()) {
       _trkana->Branch("trigbits",&_trigbits,"trigbits/i");
-      _trigbitsh = tfs->make<TH1F>("trigbits","Trigger Bits",16,-0.5,15.5);
     }
 // calorimeter information for the downstream electron track
 // CRV info
@@ -557,37 +563,50 @@ namespace mu2e {
 
   void TrackAnalysisReco::fillTriggerBits(const art::Event& event,std::string const& process) {
     //get the TriggerResult from the process that created the KalFinalFit downstream collection
-    static const std::string tname("_trigger"); // all trigger paths have this in the name
-    static bool first(true);
-    static std::array<bool,16> istrig = {false};
     art::InputTag const tag{Form("TriggerResults::%s", process.c_str())};
     auto trigResultsH = event.getValidHandle<art::TriggerResults>(tag);
     const art::TriggerResults* trigResults = trigResultsH.product();
     TriggerResultsNavigator tnav(trigResults);
-   _trigbits = 0;
+    _trigbits = 0;
    // setup the bin labels
-    if(first){ // is there a better way to do this?  I think not
-      for(size_t id=0;id < trigResults->size(); ++id){
-	if (tnav.getTrigPath(id).find(tname) != std::string::npos) {
-	  _trigbitsh->GetXaxis()->SetBinLabel(id+1,tnav.getTrigPath(id).c_str());
-	  istrig[id] =true;
+    if(_trigbitsh == 0){ // is there a better way to do this?  I think not
+      unsigned ntrig(0);
+      unsigned npath = trigResults->size();
+      for(size_t ipath=0;ipath < npath; ++ipath){
+	if (tnav.getTrigPath(ipath).find(_conf.trigpathsuffix()) != std::string::npos) {
+	  _tmap[ipath] = ntrig;
+	  ntrig++;
 	}
       }
-      first = false;
+      // build trigger histogram
+      art::ServiceHandle<art::TFileService> tfs;
+      _trigbitsh = tfs->make<TH1F>("trigbits","Trigger IDs",ntrig,-0.5,ntrig-0.5);
+      for(size_t ipath=0;ipath < npath; ++ipath){
+	auto ifnd = _tmap.find(ipath);
+	if(ifnd != _tmap.end()){
+	  _trigbitsh->GetXaxis()->SetBinLabel(ifnd->second+1,tnav.getTrigPath(ipath).c_str());
+	}
+      }
     }
-    for(size_t id=0;id < trigResults->size(); ++id){
-      if(trigResults->accept(id) && istrig[id]) {
-	_trigbitsh->Fill(id);
-	_trigbits |= 1 << id;
-	if(_conf.debug() > 1)
-	  cout << "Trigger path " << tnav.getTrigPath(id) << " returns " << trigResults->accept(id) << endl;
+    for(size_t ipath=0;ipath < trigResults->size(); ++ipath){
+      if(trigResults->accept(ipath)) {
+	auto ifnd = _tmap.find(ipath);
+	if(ifnd != _tmap.end()){
+	  unsigned itrig = ifnd->second;
+	  _trigbitsh->Fill(itrig);
+	  _trigbits |= 1 << itrig;
+	  if(_conf.debug() > 1)
+	    cout << "Trigger path " << tnav.getTrigPath(ipath) << " Trigger ID " << itrig << " returns " << trigResults->accept(ipath) << endl;
+	}
       }
     }
     if(_conf.debug() > 0){
       cout << "Found TriggerResults for process " << process << " with " << trigResults->size() << " Lines"
 	<< " trigger bits word " << _trigbits << endl;
-      TriggerResultsNavigator tnav(trigResults);
-      tnav.print();
+      if(_conf.debug() > 1){
+	TriggerResultsNavigator tnav(trigResults);
+	tnav.print();
+      }
     }
   }
 

@@ -40,12 +40,7 @@ TrackSeedDiag::TrackSeedDiag(){
    	InitialChiTot = 0;
    	
 	}
-TrackDriftDiag::TrackDriftDiag(){
-   	FinalChiX = 0;
-   	FinalChiY = 0;
-   	FinalChiTot = 0;
 
-	}
 namespace mu2e{
 
 	CosmicTrack::CosmicTrack() {
@@ -57,8 +52,6 @@ namespace mu2e{
           	InitParams.B1 = 0;
           	InitParams.T0 = 0;
           	
-		_Sagitta = 0.;
-		
     		//Pos.SetXYZ(0,0,0);
 	        Direction.SetXYZ(0,0,0);
     		
@@ -66,9 +59,7 @@ namespace mu2e{
    			
 	 }
     
-	double GetSagitta(){
-		return 1.;
-	}
+
 
 	// Destructor
 	CosmicTrack::~CosmicTrack() {}
@@ -82,20 +73,6 @@ namespace mu2e{
 	}
 	
 	
-	void CosmicTrack::clear_diag(){
-          Diag.FinalErrX.erase(Diag.FinalErrX.begin(),Diag.FinalErrX.end());
-	  Diag.FinalErrY.erase(Diag.FinalErrY.begin(),Diag.FinalErrY.end());
-	  Diag.FinalResidualsX.erase(Diag.FinalResidualsX.begin(),Diag.FinalResidualsX.end());
-	  Diag.FinalResidualsY.erase(Diag.FinalResidualsY.begin(),Diag.FinalResidualsY.end());
-
-	}
-
-	void CosmicTrack::clear_errors() {  
-	 
-	  Diag.FinalErrX.erase(Diag.FinalErrX.begin(),Diag.FinalErrX.end());
-	  Diag.FinalErrY.erase(Diag.FinalErrY.begin(),Diag.FinalErrY.end());
-	  		  
-	}
 	void CosmicTrack::clear_cov() {  
 	 
 	  FitParams.Covarience.sigA0 = 0.;
@@ -107,4 +84,3 @@ namespace mu2e{
 	
 	
 }
-

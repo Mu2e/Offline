@@ -26,7 +26,7 @@ services :
 {
   message : @local::default_message
   TFileService : { fileName : @nil }
-  RandomNumberGenerator: { }
+  RandomNumberGenerator: {defaultEngineKind: "MixMaxRng" }
 
   GeometryService        : { inputFile : "Mu2eG4/geom/geom_common_cd3_s4p2.txt" }
   ConditionsService      : { conditionsfile : "Mu2eG4/test/conditions_01.txt"      }

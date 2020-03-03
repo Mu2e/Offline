@@ -14,10 +14,16 @@ if [ "$COMMAND" == "DEPS"  ]; then
     scons -Q --tree=prune | deps -i > gen/txt/deps.txt
     [ $? -ne 0 ] && RC=1
 elif [ "$COMMAND" == "GDML"  ]; then
+    # if mu2e.gdml exists, save it
+    if [ -f mu2e.gdml ]; then
+	STR=$(date +%s)
+	echo "save existing mu2e.gdml: mv mu2e.gdml mu2e.gdml.$STR"
+	/bin/mv mu2e.gdml mu2e.gdml.$STR
+    fi
     # make the standard gdml file
     mu2e -c Mu2eG4/fcl/gdmldump.fcl; 
     [ $? -ne 0 ] && RC=1
-    mv mu2e.gdml gen/gdml/mu2e.gdml
+    /bin/mv mu2e.gdml gen/gdml/mu2e.gdml
     [ $? -ne 0 ] && RC=1
 elif [ "$COMMAND" == "TEST03"  ]; then
     # see if this fcl runs

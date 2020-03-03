@@ -40,6 +40,7 @@
 #include "MCDataProducts/inc/StepPointMCCollection.hh"
 #include "MCDataProducts/inc/PtrStepPointMCVectorCollection.hh"
 #include "MCDataProducts/inc/StrawDigiMCCollection.hh"
+#include "MCDataProducts/inc/StrawGasStep.hh"
 // MC structures
 #include "TrackerMC/inc/StrawClusterSequencePair.hh"
 #include "TrackerMC/inc/StrawWaveform.hh"
@@ -184,7 +185,7 @@ namespace mu2e {
       Int_t _tdc[2], _tot[2];
       TTree* _sdiag;
       Float_t _steplen, _stepE, _qsum, _esum, _eesum, _qe, _partP, _steptime;
-      Int_t _nclusd, _netot, _partPDG;
+      Int_t _nclust, _netot, _partPDG;
       vector<IonCluster> _clusters;
       Float_t _ewMarkerOffset;
       array<Float_t, StrawId::_nupanels> _ewMarkerROCdt;
@@ -300,7 +301,7 @@ namespace mu2e {
         _sdiag->Branch("eesum",&_eesum,"eesum/F");
         _sdiag->Branch("qe",&_qe,"qe/F");
         _sdiag->Branch("steptime",&_steptime,"steptime/F");
-        _sdiag->Branch("nclust",&_nclusd,"nclust/I");
+        _sdiag->Branch("nclust",&_nclust,"nclust/I");
         _sdiag->Branch("netot",&_netot,"netot/I");
         _sdiag->Branch("partPDG",&_partPDG,"partPDG/I");
         _sdiag->Branch("clusters",&_clusters);
@@ -593,8 +594,9 @@ namespace mu2e {
             // convert from
             double ctime = microbunchTime(strawele,gtime);
             // create the clust
-            StrawCluster clust(StrawCluster::primary,sid,end,ctime,weq._charge,wireq._dd,wireq._phi,weq._wdist,wireq._time,weq._time,
-                               spmcptr,CLHEP::HepLorentzVector(iclu->_pos,mbtime)); //JB: + wireq._phi
+            StrawCluster clust(StrawCluster::primary,sid,end,ctime,
+	    weq._charge,wireq._dd,wireq._phi,weq._wdist,wireq._time,weq._time,
+		spmcptr,CLHEP::HepLorentzVector(Geom::Hep3Vec(iclu->_pos),mbtime)); 
 
             // add the clusts to the appropriate sequence.
             shsp.clustSequence(end).insert(clust);
@@ -616,8 +618,8 @@ namespace mu2e {
       }
 
       // get tracker information
-      const Tracker& tracker = *GeomHandle<Tracker>(); //JB
-      const Straw& straw = tracker.getStraw(step.strawId());//JB
+      const Tracker& tracker = *GeomHandle<Tracker>(); 
+      const Straw& straw = tracker.getStraw(step.strawId());
       // if the step length is small compared to the mean free path, or this is an
       // uncharged particle, put all the energy in a single cluster
       if (charge == 0.0 || step.stepLength() < strawphys.meanFreePath()){
@@ -625,11 +627,11 @@ namespace mu2e {
         double fne = cen/strawphys.meanElectronEnergy();
         unsigned ne = std::max( static_cast<unsigned>(_randP(fne)),(unsigned)1);
 
-        Hep3Vector cdir = (step.position()-straw.getMidPoint());//JB
-        cdir -= straw.getDirection()*(cdir.dot(straw.getDirection()));//JB
-        double phi = cdir.theta(); //JB
+        Hep3Vector cdir = (step.position()-straw.getMidPoint());
+        cdir -= straw.getDirection()*(cdir.dot(straw.getDirection()));
+        double phi = cdir.theta(); 
         for (size_t i=0;i<ne;i++){
-          IonCluster cluster(step.position(),phi,strawphys.ionizationCharge((unsigned)1),cen/(float)ne,1); //JB + phi
+          IonCluster cluster(Geom::toXYZVec(step.position()),phi,strawphys.ionizationCharge((unsigned)1),cen/(float)ne,1);
           clusters.push_back(cluster);
         }
       }
@@ -677,7 +679,7 @@ namespace mu2e {
           cdir -= straw.getDirection()*(cdir.dot(straw.getDirection()));
           double phi = cdir.theta(); //JB: point1 and point2 are the DCA on/to the track/wire. theta takes the angle to the z-axis
           for (size_t i=0;i<ne[ic];i++){
-            IonCluster cluster(cpos[ic],phi,strawphys.ionizationCharge((unsigned)1),cen[ic]/(float)ne[ic],1);
+            IonCluster cluster(Geom::toXYZVec(cpos[ic]),phi,strawphys.ionizationCharge((unsigned)1),cen[ic]/(float)ne[ic],1);
             clusters.push_back(cluster);
           }
           //cout <<"phi1b = "<<phi<<"\n";
@@ -690,7 +692,7 @@ namespace mu2e {
         _steptime = microbunchTime(strawele,_toff.timeWithOffsetsApplied(step));
         _partP = step.momentum().mag();
         _partPDG = step.simParticle()->pdgId();
-        _nclusd = (int)clusters.size();
+        _nclust = (int)clusters.size();
         _netot = 0;
         _qsum = _esum = _eesum = 0.0;
         for(auto iclust=clusters.begin();iclust != clusters.end();++iclust){
@@ -708,7 +710,7 @@ namespace mu2e {
                 StrawPhysics const& strawphys,Straw const& straw,
                 IonCluster const& cluster, WireCharge& wireq ) {
       // Compute the vector from the cluster to the wire
-      Hep3Vector cpos = cluster._pos-straw.getMidPoint();
+      Hep3Vector cpos = Geom::Hep3Vec(cluster._pos)-straw.getMidPoint();
       // drift distance perp to wire, and angle WRT magnetic field (for Lorentz effect)
       double dd = min(cpos.perp(straw.getDirection()),straw.innerRadius());
       // sample the gain for this cluster
@@ -1120,7 +1122,7 @@ namespace mu2e {
       _mcthreshpdg = _mcthreshproc = _mcnstep = 0;
       art::Ptr<StepPointMC> const& spmc = xpair[0]._iclust->stepPointMC();
       if(!spmc.isNull()){
-        _mctime = _toff.timeWithOffsetsApplied(*spmc);
+        _mctime = _toff.timeWithOffsetsApplied(*spmc) -_ewMarkerOffset;
         // compute the doca for this step
         TwoLinePCA pca( straw.getMidPoint(), straw.getDirection(),
             spmc->position(), spmc->momentum().unit() );
@@ -1144,7 +1146,7 @@ namespace mu2e {
       // sum the energy from the explicit trigger particle, and find it's releationship
       _mcthreshenergy = 0.0;
       _mcnstep = mcdigi.stepPointMCs().size();
-      art::Ptr<StepPointMC> threshpart = mcdigi.stepPointMC(StrawEnd::cal);
+      auto threshpart = mcdigi.stepPointMC(StrawEnd::cal);
       if(threshpart.isNull()) threshpart = mcdigi.stepPointMC(StrawEnd::hv);
       for(auto imcs = mcdigi.stepPointMCs().begin(); imcs!= mcdigi.stepPointMCs().end(); ++ imcs){
         // if the SimParticle for this step is the same as the one which fired the discrim, add the energy

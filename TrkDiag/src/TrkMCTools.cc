@@ -22,31 +22,17 @@
 namespace mu2e {
   namespace TrkMCTools {
 
-    int stepPoint(art::Ptr<StepPointMC>& sp, StrawDigiMC const& mcdigi) {
-      int retval(-1);
-      if(mcdigi.wireEndTime(StrawEnd::cal) < mcdigi.wireEndTime(StrawEnd::hv)) {
-	sp = mcdigi.stepPointMC(StrawEnd::cal);
-	retval = StrawEnd::cal;
-      } else {
-	sp = mcdigi.stepPointMC(StrawEnd::hv);
-	retval = StrawEnd::hv;
-      };
-      return retval;
-    }
-
     bool CEDigi(StrawDigiMC const& mcdigi) {
       bool conversion(false);
-      art::Ptr<StepPointMC> spmcp;
-      if(stepPoint(spmcp,mcdigi) >= 0){
-	art::Ptr<SimParticle> const& spp = spmcp->simParticle();
-	int gid(-1);
-	if(spp->genParticle().isNonnull())
-	  gid = spp->genParticle()->generatorId().id();
-	// a conversion electron is an electron from the CE generator.  The momentum requirement
-	// removes cases where the CE loses a catastrophic amount of energy (ie albedo backsplash
-	// from the calorimeter).
-	conversion = (spp->pdgId() == 11 && gid == 2 && spmcp->momentum().mag()>90.0);
-      }
+      auto const& spmcp = mcdigi.earlyStrawGasStep();
+      art::Ptr<SimParticle> const& spp = spmcp->simParticle();
+      int gid(-1);
+      if(spp->genParticle().isNonnull())
+	gid = spp->genParticle()->generatorId().id();
+      // a conversion electron is an electron from the CE generator.  The momentum requirement
+      // removes cases where the CE loses a catastrophic amount of energy (ie albedo backsplash
+      // from the calorimeter).
+      conversion = (spp->pdgId() == 11 && gid == 2 && sqrt(spmcp->momentum().mag2())>90.0);
       return conversion;
     }
 
@@ -56,45 +42,32 @@ namespace mu2e {
 
       for( auto hi : hits ) {
 	StrawDigiMC const& mcdigi = mcdigis->at(hi);
-	art::Ptr<SimParticle> spp;
-	if(simParticle(spp,mcdigi) > 0 ){
-	  auto ispp = spmap.find(spp);
-	  if(ispp != spmap.end())
-	    ++(ispp->second);
-	  else
-	    spmap[spp] = 1;
-	}
+	art::Ptr<SimParticle> spp = mcdigi.earlyStrawGasStep()->simParticle();
+	auto ispp = spmap.find(spp);
+	if(ispp != spmap.end())
+	  ++(ispp->second);
+	else
+	  spmap[spp] = 1;
       }
       for( auto imap : spmap ) {
 	if(imap.second > retval){
 	  retval = imap.second;
 	  pspp = imap.first;
 	}
-     }
-     return retval;
+      }
+      return retval;
     }
 
     unsigned countDigis(art::Ptr<SimParticle> const& pspp, const StrawDigiMCCollection* mcdigis) {
       unsigned retval(0);
       for( auto mcdigi : *mcdigis ) {
-	art::Ptr<SimParticle> spp;
-	if(simParticle(spp,mcdigi) > 0 && spp == pspp) {
+	art::Ptr<SimParticle> spp = mcdigi.earlyStrawGasStep()->simParticle();
+	if(spp == pspp) {
 	  ++retval;
 	}
       }
       return retval;
     }
-
-    unsigned simParticle(art::Ptr<SimParticle>& spp, StrawDigiMC const& mcdigi) {
-      unsigned retval(0);
-      if( mcdigi.stepPointMC(StrawEnd::cal)->simParticle() ==
-	  mcdigi.stepPointMC(StrawEnd::hv)->simParticle() ) {
-	spp = mcdigi.stepPointMC(StrawEnd::cal)->simParticle();
-	retval = 2;
-      }
-      return retval;
-    }
-
 
     void findMCTrk(const KalSeed& kseed,art::Ptr<SimParticle>& spp, StrawDigiMCCollection const& mcdigis) {
       static art::Ptr<SimParticle> nullvec;
@@ -114,7 +87,7 @@ namespace mu2e {
 	// loop over the hits and find the associated steppoints
 	bool isactive = tshs.flag().hasAllProperties(active);
 	StrawDigiMC const& mcdigi = mcdigis.at(tshs.index());
-	art::Ptr<SimParticle> spp = mcdigi.earlyStepPointMC()->simParticle();
+	art::Ptr<SimParticle> spp = mcdigi.earlyStrawGasStep()->simParticle();
 	// see if this particle has already been found; if so, increment, if not, add it
 	bool found(false);
 	for(auto& spc : sct ) {
@@ -125,22 +98,6 @@ namespace mu2e {
 	  }
 	}
 	if(!found)sct.push_back(spcount(spp,isactive));
-      }
-      if(saveall){
-	// add the SimParticles that contributed non-trigger energy.  These have 0 count
-	for(const auto& tshs : kseed.hits()) {
-	  StrawDigiMC const& mcdigi = mcdigis.at(tshs.index());
-	  for(auto const& spmc : mcdigi.stepPointMCs()){
-	    bool found(false);
-	    for(auto& spc : sct ) {
-	      if(spc._spp == spmc->simParticle() ){
-		found = true;
-		break;
-	      }
-	    }
-	    if(!found)sct.push_back(spcount(spmc->simParticle()));
-	  }
-	}
       }
       // sort by # of contributions
       sort(sct.begin(),sct.end(),spcountcomp());
@@ -170,15 +127,15 @@ namespace mu2e {
 	unsigned count(0);
 	art::Ptr<SimParticle> sp;
 	for(auto sdi : indices) {
-	// find relation of this digi to the primary
-	  MCRelationship prel(spp,sdmccol.at(sdi).earlyStepPointMC()->simParticle());
+	  // find relation of this digi to the primary
+	  MCRelationship prel(spp,sdmccol.at(sdi).earlyStrawGasStep()->simParticle());
 	  // count the highest relationship for these digis
 	  if(prel == mcrel && prel != MCRelationship::none)
 	    count++;
 	  else if(prel > mcrel){
 	    mcrel = prel;
 	    count = 1;
-	    sp = sdmccol.at(sdi).earlyStepPointMC()->simParticle();
+	    sp = sdmccol.at(sdi).earlyStrawGasStep()->simParticle();
 	  }
 	}
 	if(count > nprimary){

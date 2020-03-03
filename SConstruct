@@ -16,8 +16,15 @@ AddOption('--mu2ePrint', dest='mu2ePrint',
           type='int',nargs=1,default=1,
           help='mu2e print level (0-10) default=1')
 mu2ePrint = GetOption("mu2ePrint")
-
 mu2eOpts["mu2ePrint"] = mu2ePrint
+
+# add an option to print only short lines for each target
+AddOption('--mu2eCompactPrint', dest='mu2eCompactPrint', 
+          action="store_true",default=False,
+          help='print only a short text line for each target')
+mu2eCompactPrint = GetOption("mu2eCompactPrint")
+
+mu2eOpts["mu2eCompactPrint"] = mu2eCompactPrint
 
 # Check that some important environment variables have been set; 
 # result is a dictionary of the options
@@ -38,19 +45,35 @@ if mu2ePrint > 5:
     print ("\nBABARLIBS = ", sch.BaBarLibs())
     print ("\nmerge Flags =",sch.mergeFlags(mu2eOpts))
 
+# if requested, simplfy the text printed per target
+cccomstr = ""
+linkcomstr = ""
+genreflexcomstr = ""
+if mu2eCompactPrint :
+    cccomstr = "Compiling $SOURCE"
+    linkcomstr = "Linking $TARGET"
+    genreflexcomstr = "genreflex ${SOURCES[1]}"
+
 # this the scons object which contains the methods to build code
 env = Environment( CPPPATH = sch.cppPath(mu2eOpts),   # $ART_INC ...
                    LIBPATH = sch.libPath(mu2eOpts),   # /lib, $ART_LIB ...
                    ENV = sch.exportedOSEnvironment(), # LD_LIBRARY_PATH, ROOTSYS, ...
                    FORTRAN = 'gfortran',
-                   BABARLIBS = sch.BaBarLibs()
-                 )
+                   BABARLIBS = sch.BaBarLibs(),
+                   CXXCOMSTR = cccomstr,
+                   SHCXXCOMSTR = cccomstr,
+                   LINKCOMSTR = linkcomstr,
+                   SHLINKCOMSTR= linkcomstr,
+)
+
+# Make the Compilation DB generator available in the environment
+env.Tool('compilation_db')
 
 # Define and register the rule for building dictionaries.
 # sources are classes.h, classes_def.xml, 
 # targets are dict.cpp, .rootmap and .pcm
 # LIBTEXT is the library for the dict - not a target, only text for names
-genreflex = Builder(action="export HOME="+os.environ["HOME"]+"; "+"genreflex ${SOURCES[0]} -s ${SOURCES[1]} $_CPPINCFLAGS -l $LIBTEXT -o ${TARGETS[0]} --fail_on_warnings --rootmap-lib=$LIBTEXT  --rootmap=${TARGETS[1]} $DEBUG_FLAG" )
+genreflex = Builder(action=Action("export HOME="+os.environ["HOME"]+"; "+"genreflex ${SOURCES[0]} -s ${SOURCES[1]} $_CPPINCFLAGS -l $LIBTEXT -o ${TARGETS[0]} --fail_on_warnings --rootmap-lib=$LIBTEXT  --rootmap=${TARGETS[1]} $DEBUG_FLAG",genreflexcomstr))
 env.Append(BUILDERS = {'DictionarySource' : genreflex})
 
 # a generic builder, some files transform to others
@@ -85,6 +108,10 @@ ss = sch.sconscriptList(mu2eOpts)
 
 # make sure lib, bin and tmp are there
 sch.makeSubDirs(mu2eOpts)
+
+# Allow a compile_commands.json to be generated if requested (scons -Q compiledb).
+compileCommands = env.CompilationDatabase('compile_commands.json')
+compileDb = env.Alias("compiledb", compileCommands)
 
 # operate on the SConscript files
 # regular python commands like os.path() are executed immediately as they are encontered, 

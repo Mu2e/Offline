@@ -32,7 +32,6 @@
 #include "BTrk/BaBar/BaBar.hh"
 #include "BTrk/TrkBase/HelixParams.hh"
 #include "BTrk/TrkBase/HelixTraj.hh"
-#include "BTrkData/inc/TrkStrawHit.hh"
 #include "RecoDataProducts/inc/KalRepPtrCollection.hh"
 
 // C++ includes
@@ -85,13 +84,13 @@ namespace mu2e {
     double                                           t0Err() const;
     double                                         tOrigin() const;
     double                                      tOriginErr() const;
-    CLHEP::Hep3Vector                                  t0Momentum() const;
-    BbrVectorErr                             t0MomentumErr() const;
+    CLHEP::Hep3Vector                     entranceMomentum() const;
+    BbrVectorErr                       entranceMomentumErr() const;
     HepPoint                              entrancePosition() const;
     BbrPointErr                        entrancePositionErr() const;
     HepPoint                                  exitPosition() const;
     BbrPointErr                            exitPositionErr() const;
-    CLHEP::Hep3Vector                                    momentum() const;
+    CLHEP::Hep3Vector                             momentum() const;
     BbrVectorErr                               momentumErr() const;
     KalRepPtr const&                                   trk() const{ return _trk; }
 

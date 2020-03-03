@@ -1,7 +1,7 @@
 //S Middleton - March 19
 //Class to store the summations which for elements of gamma and beta matrices for straight track cosmic fits
 #include <cstdio>
-#include <math.h>
+#include <cmath>
 #include<exception>
 #include "DataProducts/inc/XYZVec.hh"
 #include "Mu2eUtilities/inc/BuildLinearFitMatrixSums.hh"
@@ -102,7 +102,7 @@ TMatrixD BuildLinearFitMatrixSums::GetGammaX(){
 
 TMatrixD BuildLinearFitMatrixSums::GetCovX(){
 	TMatrixD GammaINV = GetGammaX();
-	double* det = NULL;                  
+	double* det = nullptr;                  
 	try {
     	        GammaINV.Invert(det);
         } catch (std::exception& exc) {
@@ -129,7 +129,7 @@ TMatrixD BuildLinearFitMatrixSums::GetBetaX(){
 TMatrixD BuildLinearFitMatrixSums::GetAlphaX(){
         TMatrixD Gamma = GetGammaX();
 	TMatrixD Beta  = GetBetaX();
-	double* det = NULL;                  
+	double* det = nullptr;                  
 	try {
     	        Gamma.Invert(det);
     
@@ -153,7 +153,7 @@ TMatrixD BuildLinearFitMatrixSums::GetGammaY(){
 }
 TMatrixD BuildLinearFitMatrixSums::GetCovY(){
 	TMatrixD GammaINV = GetGammaY();
-	double* det = NULL;                  
+	double* det = nullptr;                  
 	try {
     	        GammaINV.Invert(det);
         } catch (std::exception& exc) {
@@ -179,7 +179,7 @@ TMatrixD BuildLinearFitMatrixSums::GetBetaY(){
 TMatrixD BuildLinearFitMatrixSums::GetAlphaY(){
         TMatrixD Gamma = GetGammaY();
 	TMatrixD Beta  = GetBetaY();
-	double* det = NULL; 
+	double* det = nullptr; 
 	                 
 	try {
     	        Gamma.Invert(det);
@@ -197,7 +197,7 @@ double BuildLinearFitMatrixSums::GetChi2X(){
 	TMatrixD GammaX = GetGammaX();
 	TMatrixD BetaX  = GetBetaX();
 	//TMatrixD AlphaX = GetAlphaX();
-        double* det = NULL;                  
+        double* det = nullptr;                  
 	try {
     	        GammaX.Invert(det);
   	   } catch (std::exception& exc) {
@@ -219,7 +219,7 @@ double BuildLinearFitMatrixSums::GetChi2Y(){
 
 	TMatrixD GammaY = GetGammaY();
 	TMatrixD BetaY  = GetBetaY();
-        double* det = NULL;                  
+        double* det = nullptr;                  
 	try {
     	        GammaY.Invert(det);
     

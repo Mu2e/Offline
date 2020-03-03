@@ -69,6 +69,7 @@ helper.make_plugins( [
    'mu2e_DataProducts',
    'mu2e_GeneralUtilities',
    'mu2e_TrkReco',
+   'mu2e_GeomPrimitives',
    babarlibs,
    'art_Framework_Core',
    'art_Framework_Principal',

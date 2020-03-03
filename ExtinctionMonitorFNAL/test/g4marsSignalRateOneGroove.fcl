@@ -25,7 +25,7 @@ services.GeometryService.inputFile : "ExtinctionMonitorFNAL/test/geom_marsOneGro
 services.TFileService.fileName : "hg4smarsOneGroove.root"
 outputs.outVDFiltered.fileName : "vdg4smarsOneGroove.root"
 
-services.SeedService.baseSeed         :  0
+services.SeedService.baseSeed         :  8
 services.SeedService.maxUniqueEngines :  20
 
 // This tells emacs to view this file in the JavaScript mode.
