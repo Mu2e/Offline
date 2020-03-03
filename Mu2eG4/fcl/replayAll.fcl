@@ -76,10 +76,8 @@ outputs: {
 
 services.TFileService.fileName : "replayAll.root"
 # be careful when setting restoreStateLabel and make sure that
-# defaultEngineKind is set to "MixMaxRng"
+# defaultEngineKind is set to "MixMaxRng" by using proper override method
 services.RandomNumberGenerator.restoreStateLabel :  randomsaver
-services.RandomNumberGenerator.defaultEngineKind : "MixMaxRng"
-
 
 services.SeedService.baseSeed         :  100
 services.SeedService.maxUniqueEngines :  20
