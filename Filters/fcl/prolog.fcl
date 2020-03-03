@@ -36,25 +36,25 @@ VetoIncorrectHits: {
 
 DigiCompressionTags : {
     
-    commonStrawDigiMCTag : "makeSD"
-    commonExtraStepPointMCTags : [ "g4run:virtualdetector", "g4run:protonabsorber" ]
-    commonCaloShowerSimTag : "CaloShowerStepROFromShowerStep"
+    commonStrawDigiMCTag      : "makeSD"
+    commonExtraStepPointMCTags: [ "g4run:virtualdetector", "g4run:protonabsorber" ]
+    commonCaloShowerSimTag    : "CaloShowerStepROFromShowerStep"
     commonCaloShowerStepROTag : "CaloShowerStepROFromShowerStep"
-    commonCrvDigiMCTag : "CrvWaveforms"
+    commonCrvDigiMCTag        : "CrvWaveforms"
 
-    primarySimParticleTag : "g4run"
+    primarySimParticleTag     : "g4run"
     primaryCaloShowerStepTags : [ "CaloShowerStepFromStepPt:calorimeter", "CaloShowerStepFromStepPt:calorimeterRO" ]
 }
 
 DigiCompression : {
   # redefine TimeMaps
-    TimeMaps : [ "compressDigiMCs:protonTimeMap", "compressDigiMCs:muonTimeMap", "compressDigiMCs:cosmicTimeMap" ]
+    TimeMaps         : [ "compressDigiMCs:protonTimeMap", "compressDigiMCs:muonTimeMap", "compressDigiMCs:cosmicTimeMap" ]
     # for legacy data sets
     NoCosmicTimeMaps : [ "compressDigiMCs:protonTimeMap", "compressDigiMCs:muonTimeMap" ]
 }
 
 RecoCompression : {
-    TimeMaps : [ "compressRecoMCs:protonTimeMap", "compressRecoMCs:muonTimeMap", "compressRecoMCs:cosmicTimeMap" ]
+    TimeMaps         : [ "compressRecoMCs:protonTimeMap", "compressRecoMCs:muonTimeMap", "compressRecoMCs:cosmicTimeMap" ]
     NoCosmicTimeMaps : [ "compressRecoMCs:protonTimeMap", "compressRecoMCs:muonTimeMap" ]
 }
 

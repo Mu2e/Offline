@@ -5,7 +5,9 @@
 
 BEGIN_PROLOG
 
-TIME_MAPS : [ protonTimeMap, muonTimeMap, cosmicTimeMap ]
+TIME_MAPS            : [ protonTimeMap, muonTimeMap, cosmicTimeMap ]
+TIME_MAPS_NO_COSMICS : [ protonTimeMap, muonTimeMap ]
+TIME_MAPS_PRIMARY    : [ protonTimeMapPrimary, muonTimeMapPrimary, cosmicTimeMapPrimary ]
 
 CommonMC: {
   producers: {
@@ -33,12 +35,12 @@ CommonMC: {
     EWMProducer : { module_type : EventWindowMarkerProducer }
   }
   TimeMaps        : @local::TIME_MAPS
-  TimeMapsPrimary : [ protonTimeMapPrimary, muonTimeMapPrimary, cosmicTimeMapPrimary ]
-  FindMCPrimary : {
-    module_type : FindMCPrimary
-    debugLevel : 0
-    GenParticles : "compressDigiMCs"
-    SimParticles : "compressDigiMCs"
+  TimeMapsPrimary : @local::TIME_MAPS_PRIMARY
+  FindMCPrimary   : {
+    module_type   : FindMCPrimary
+    debugLevel    : 0
+    GenParticles  : "compressDigiMCs"
+    SimParticles  : "compressDigiMCs"
     PrimaryGenIds : ["CeEndpoint", "CeLeadingLog", "dioTail",
 	"cosmicDYB", "CosmicCRY", "CosmicCORSIKA", 
  	"InternalRPC" , "InternalRMC", "ExternalRPC", "ExternalRMC"  ]
@@ -48,7 +50,7 @@ CommonMC: {
     debugLevel : 0
   }
 }
-CommonMC.DigiSim : [ @sequence::CommonMC.TimeMaps, EWMProducer ]
+CommonMC.DigiSim        : [ @sequence::CommonMC.TimeMaps       , EWMProducer ]
 CommonMC.PrimaryDigiSim : [ @sequence::CommonMC.TimeMapsPrimary, EWMProducer ]
 
 #------------------------------------------------------------------------------
