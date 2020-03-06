@@ -98,7 +98,7 @@ source : {
 services : {
 
    message               : @local::default_message
-   TFileService          : { fileName : "beamg4s1.root" }
+   TFileService          : { }
    RandomNumberGenerator : {defaultEngineKind: "MixMaxRng" }
 
    GeometryService        : { inputFile      : "Mu2eG4/geom/geom_common_current.txt" }
@@ -257,7 +257,6 @@ outputs: {
    mubeamout : {
       module_type : RootOutput
       SelectEvents: ["trigmubeam"]
-      fileName : "mubeamout_beamg4s1.root"
       outputCommands:   [ "drop *_*_*_*",
          "keep mu2e::GenParticles_*_*_*",
          "keep mu2e::GenEventCount_*_*_*",
@@ -271,7 +270,6 @@ outputs: {
 dsout : {
       module_type : RootOutput
       SelectEvents: ["trigdsregion"]
-      fileName : "dsout_beamg4s1.root"
       outputCommands:   [ "drop *_*_*_*",
          "keep mu2e::GenParticles_*_*_*",
          "keep mu2e::GenEventCount_*_*_*",
@@ -308,7 +306,6 @@ dsout : {
    truncatedEvtsOutput : {
       module_type : RootOutput
       SelectEvents: ["g4StatusFilter"]
-      fileName : "truncatedEvtsOutput_beamg4s1.root"
       outputCommands:   [ "drop *_*_*_*",
          "keep mu2e::GenParticles_*_*_*",
          "keep mu2e::GenEventCount_*_*_*",
@@ -331,5 +328,3 @@ services.message.destinations.log.categories.ArtReport.timespan : 300
 // Initialze seeding of random engines: do not put these lines in base .fcl files for grid jobs.
 services.SeedService.baseSeed         :  8
 services.SeedService.maxUniqueEngines :  20
-
-services.GeometryService.simulatedDetector.tool_type : "Mu2e"
