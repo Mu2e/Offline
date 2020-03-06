@@ -122,9 +122,7 @@ physics : {
 
    producers: {
 
-      generate: {
-         module_type          : PrimaryProtonGun
-      }
+      generate: @local::PrimaryProtonGun
 
       genCounter: {
          module_type: GenEventCounter
@@ -268,7 +266,8 @@ outputs: {
       ]
    }
 
-   dsout : {
+   
+dsout : {
       module_type : RootOutput
       SelectEvents: ["trigdsregion"]
       outputCommands:   [ "drop *_*_*_*",
