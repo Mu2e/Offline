@@ -26,7 +26,7 @@ double RMS::rms ( int npar) const {
 
   double fac= double(n_)/double(n_-npar);
 
-  return sqrt(fac*tmp);
+  return sqrtx(fac*tmp);
 }
 
 double RMS::rms0 ( int npar) const {
