@@ -140,7 +140,8 @@ namespace mu2e {
     const double mcTrajCurrentCut = mcTrajectoryMinDistanceCut(prept->GetPhysicalVolume());
     // In some cases we know to accept the point even without computing the distance
     bool computeMCTrajDistance = (!_trajectory.empty()) && (mcTrajCurrentCut > 0.);
-    if(!computeMCTrajDistance || (((prept->GetPosition() - _mu2eOrigin) -  _trajectory.back().pos()).mag() >= mcTrajCurrentCut)) {
+    if(!computeMCTrajDistance ||
+       (((prept->GetPosition() - _mu2eOrigin) -  _trajectory.back().pos()).mag() >= mcTrajCurrentCut)) {
       _trajectory.emplace_back ( prept->GetPosition() - _mu2eOrigin,
                                  prept->GetGlobalTime(),
                                  prept->GetKineticEnergy()
@@ -245,7 +246,8 @@ namespace mu2e {
 
     if ( stepLimitKillerVerbose_ ) {
       G4cout << __func__ << " WARNING: kill particle in "
-             << track->GetStep()->GetPreStepPoint()->GetPhysicalVolume()->GetLogicalVolume()->GetName()
+             << track->GetStep()->GetPreStepPoint()->
+        GetPhysicalVolume()->GetLogicalVolume()->GetName()
              << " due to large number of steps." << G4endl;
       Mu2eG4UserHelpers::printKilledTrackInfo(track);
     }
@@ -255,7 +257,8 @@ namespace mu2e {
   }
 
   // Record why the track is to be killed, then kill it.
-  void Mu2eG4SteppingAction::killTrack( G4Track* track, ProcessCode::enum_type code, G4TrackStatus status ){
+  void Mu2eG4SteppingAction::killTrack( G4Track* track,
+                                        ProcessCode::enum_type code, G4TrackStatus status ){
 
     // Get user track informaton object from the track.
     G4VUserTrackInformation* info = track->GetUserInformation();
@@ -312,7 +315,8 @@ namespace mu2e {
   double Mu2eG4SteppingAction::mcTrajectoryMinDistanceCut(const G4VPhysicalVolume* vol) const {
 
     const auto it = mcTrajectoryVolumePtDistances_.find(vol);
-    return (it != mcTrajectoryVolumePtDistances_.end()) ? it->second : trajectoryControl_->defaultMinPointDistance();
+    return (it != mcTrajectoryVolumePtDistances_.end()) ?
+      it->second : trajectoryControl_->defaultMinPointDistance();
   }
 
 } // end namespace mu2e

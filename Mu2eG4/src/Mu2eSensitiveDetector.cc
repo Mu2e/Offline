@@ -51,7 +51,7 @@ namespace mu2e {
     sdKeyName<<"g4."<< SensitiveDetectorName << "SDEventList";
     // G4cout << __func__ << " sdKeyName: " << sdKeyName.str() << G4endl;
     // G4cout << __func__ << " sd name: " << name << G4endl;
- 
+
     string key(sdKeyName.str());
     if ( config.hasName(key) ){
       vector<int> list;
@@ -71,7 +71,7 @@ namespace mu2e {
 
     if ( _sizeLimit>0 && _currentSize>_sizeLimit ) {
       if( (_currentSize - _sizeLimit)==1 ) {
-        mf::LogWarning("G4") << "Maximum number of particles reached in " 
+        mf::LogWarning("G4") << "Maximum number of particles reached in "
                              << SensitiveDetectorName
                              << ": "
                              << _currentSize << endl;
@@ -79,12 +79,11 @@ namespace mu2e {
       return false;
     }
 
-      
 // this little section of code containing 'if ( _debugList.inList() )'
 // was occasionally causing seg faults in MT mode
 // this issue seems to have been fixed
 // but I have taken it out to reduce output 05/18
-      
+
 /*    if ( _debugList.inList() )  {
             G4cout<<"edep "<<aStep->GetTotalEnergyDeposit()
                   <<" nidep "<<aStep->GetNonIonizingEnergyDeposit()
@@ -92,11 +91,11 @@ namespace mu2e {
             G4cout<<"Step vol name "<<aStep->GetTrack()->GetVolume()->GetName()<<G4endl;
     }
 */
-      
+
     // Which process caused this step to end?
     ProcessCode endCode(_processInfo->
                 findAndCount(Mu2eG4UserHelpers::findStepStoppingProcessName(aStep)));
-      
+
       // Add the hit to the framework collection.
       // The point's coordinates are saved in the mu2e coordinate system.
     _collection->
@@ -151,7 +150,7 @@ namespace mu2e {
     _collection  = &outputHits;
     _processInfo = &processInfo;
     _spHelper    = &spHelper;
-      
+
     return;
 
   }//beforeG4Event
