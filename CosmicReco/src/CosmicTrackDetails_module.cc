@@ -102,11 +102,6 @@ namespace mu2e
       //TTree Info:
       TTree* _cosmic_tree;
       const Tracker* tracker;
-      //True MC paramets in global coords:
-      Float_t _TrueA1;
-      Float_t _TrueB1;
-      Float_t _TrueA0;
-      Float_t _TrueB0;
       
       //Angles Info:
       Float_t _mc_phi_angle;
@@ -114,7 +109,7 @@ namespace mu2e
       Float_t _mc_theta_angle;
       Float_t _reco_theta_angle;
 
-	//Track Parameters from end of minuit minimzation rotuine:
+      //Track Parameters from end of minuit minimzation rotuine:
       Float_t _MinuitA0;
       Float_t _MinuitA1;
       Float_t _MinuitB1;
@@ -132,7 +127,16 @@ namespace mu2e
       Float_t _ErrorB1;
       Float_t _ErrorB0;
 
-      	//Drift diags:
+      Float_t _TrueA0;
+      Float_t _TrueA1;
+      Float_t _TrueB1;
+      Float_t _TrueB0;
+
+      Float_t _PhiSIM;
+      Float_t _ThetaSIM;
+      Float_t _MomentumSIM;
+
+      //Drift diags:
       float _FitDOCAs[8129];
       float _TrueDOCAs[8129];
       float _FitTOCAs[8129];
@@ -166,6 +170,7 @@ namespace mu2e
       vector<ComboHitInfoMC> _chinfomc;
       CosmicTrackMCInfo FitMC(const StrawDigiMCCollection*& _mcdigis);
       CosmicTrackMCInfo FillDriftMC(ComboHit const& chi, double reco_ambig, CosmicTrackMCInfo info, double t0, const Tracker* tracker);
+
       bool findData(const art::Event& evt);
     };
 
@@ -222,11 +227,11 @@ namespace mu2e
 	_cosmic_tree->Branch("MinuitB0",&_MinuitA0,"MinuitB0/F");
         _cosmic_tree->Branch("MinuitB1",&_MinuitA1,"MinuitB1/F");
 
+
 	_cosmic_tree->Branch("ErrorA0",&_ErrorA0,"ErrorA0/F");
         _cosmic_tree->Branch("ErrorA1",&_ErrorA1,"ErrorA1/F");
 	_cosmic_tree->Branch("ErrorB0",&_ErrorA0,"ErrorB0/F");
         _cosmic_tree->Branch("ErrorB1",&_ErrorA1,"ErrorB1/F");
-
 	
 	_cosmic_tree->Branch("FitCovA0",&_FitCovA0,"FitCovA0/F");
         _cosmic_tree->Branch("FitCovA1",&_FitCovA1,"FitCovA1/F");
@@ -237,8 +242,7 @@ namespace mu2e
 
        	_cosmic_tree->Branch("RecoPhi",&_reco_phi_angle, "RecoPhi/F");
 	_cosmic_tree->Branch("RecoTheta",&_reco_theta_angle, "RecoTheta/F");
-
-       
+   
         _cosmic_tree->Branch("FitDOCAs",&_FitDOCAs,"FitDOCAs[nused]/F");
 	_cosmic_tree->Branch("RecoAmbig",&_RecoAmbig,"RecoAmbig[nused]/F");
 	_cosmic_tree->Branch("FitTOCAs",&_FitTOCAs,"FitTOCAs[nused]/F");
@@ -256,6 +260,8 @@ namespace mu2e
 	_cosmic_tree->Branch("TrueDOCAs",&_TrueDOCAs,"TrueDOCAs[nused]/F");
 	_cosmic_tree->Branch("TrueTimeResiduals",&_TrueTimeResiduals,"TrueTimeResiduals[nused]/F");
 	_cosmic_tree->Branch("TrueAmbig",&_TrueAmbig,"TrueAmbig[nused]/F");
+
+	_cosmic_tree->Branch("Momentum", &_MomentumSIM, "Momentum/F");
 	
 	}
 	
@@ -358,6 +364,7 @@ namespace mu2e
 		    		_TrueDOCAs[_nused] =DriftFitUtils::GetTestDOCA(chit, trueinfo.TrueFitEquation.Pos.X(), trueinfo.TrueFitEquation.Dir.X(), trueinfo.TrueFitEquation.Pos.Y(),trueinfo.TrueFitEquation.Dir.Y(),  tracker);
 				_TrueTimeResiduals[_nused] = _TrueDOCAs[_nused]/0.0625;//TODO
     				_TrueAmbig[_nused] = DriftFitUtils::GetAmbig(chit, trueinfo.TrueFitEquation.Pos.X(), trueinfo.TrueFitEquation.Dir.X(), trueinfo.TrueFitEquation.Pos.Y(),trueinfo.TrueFitEquation.Dir.Y(), tracker);
+				_MomentumSIM = trueinfo.TrueMomentum;
 			
 		           }
 		}
@@ -438,9 +445,26 @@ CosmicTrackMCInfo CosmicTrackDetails::FitMC(const StrawDigiMCCollection*& _mcdig
      TrackTrueInfo.TrueFitEquation = (TrueTrack);
      TrackTrueInfo.TruePhi =(atan(TrueDir.y()/TrueDir.x()));
      TrackTrueInfo.TrueTheta = (acos(TrueDir.x()/sqrt(TrueDir.Mag2())));
+
+
+     int n{-1};
+     for(size_t ich = 0;ich < _mcdigis->size(); ++ich){
+        StrawDigiMC digimc= (*_mcdigis)[ich];
+	auto const& sim_cal = digimc.strawGasStep(mu2e::StrawEnd::cal)->simParticle();
+	auto const& sim_hv  = digimc.strawGasStep(mu2e::StrawEnd::cal)->simParticle();
+	if ( sim_cal == sim_hv ){
+	  
+	  if (n == 0){
+		TrackTrueInfo.TrueMomentum = sqrt(digimc.strawGasStep(mu2e::StrawEnd::cal)->momentum().mag2());;
+	    	TrackTrueInfo.TrueThetaSIM = acos(digimc.strawGasStep(mu2e::StrawEnd::cal)->momentum().z()/TrackTrueInfo.TrueMomentum );
+	    	TrackTrueInfo.TruePhiSIM = atan(digimc.strawGasStep(mu2e::StrawEnd::cal)->momentum().y()/digimc.strawGasStep(mu2e::StrawEnd::cal)->momentum().x());
+	 }
+         n++;
+      }
+    }
      
-     return TrackTrueInfo;
-     }
+    return TrackTrueInfo;
+   }
 
 CosmicTrackMCInfo CosmicTrackDetails::FillDriftMC(ComboHit const& chit, double RecoAmbig, CosmicTrackMCInfo info, double t0,  const Tracker* tracker){
      //StrawResponse& strawResponse;
@@ -450,9 +474,13 @@ CosmicTrackMCInfo CosmicTrackDetails::FillDriftMC(ComboHit const& chit, double R
      info.Ambig.push_back(trueambig);
      info.TrueDOCA.push_back(true_doca);
      //info.TrueTimeResiduals.push_back(true_time_residual);
+
+
     
      return info;
 }
+
+
 
 bool CosmicTrackDetails::findData(const art::Event& evt){
 	_chcol = 0; 
