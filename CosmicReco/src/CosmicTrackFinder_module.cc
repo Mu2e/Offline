@@ -141,6 +141,7 @@ namespace mu2e{
    
     CosmicTrackFinderData                 _stResult;
     ProditionsHandle<StrawResponse> _strawResponse_h; 
+    ProditionsHandle<Tracker> _alignedTracker_h;
     void     OrderHitsY(CosmicTrackFinderData& TrackData); //Order in height
     void     OrderHitsYMC(CosmicTrackFinderData& TrackData, art::Event& event); //Same but for MCDigis
     void     fillGoodHits(CosmicTrackFinderData& TrackData);//apply "good" cut
@@ -187,10 +188,12 @@ namespace mu2e{
 //----------------------------------------------------------*/
   void CosmicTrackFinder::beginRun(art::Run& run) {
     
-   mu2e::GeomHandle<mu2e::Tracker> th;
-   const Tracker* tracker = th.get();
+   //mu2e::GeomHandle<mu2e::Tracker> th;
+   //const Tracker* tracker = th.get();
   
    _stResult.run = &run;
+   Tracker const& tracker = _alignedTracker_h.get(event.id());
+   _tfit.setTracker(&tracker);
    _tfit.setTracker  (tracker);
    
 

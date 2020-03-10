@@ -35,6 +35,14 @@ TimeClusterFinderCosmics : {
   UseCaloClusterPosition : false
 }
 
+SimpleTimeCluster : {
+  module_type : SimpleTimeCluster
+  ComboHitCollection : "makePH"
+  StrawHitFlagCollection : "FlagBkgHits:ComboHits"
+  T0Calculator : { CaloT0Offset : @local::TrackCaloMatching.DtOffset }
+  TestFlag : false
+}
+
 CHD : {
 	module_type : ComboHitDiag
 	StrawDigiMCCollection : "compressDigiMCs"
@@ -43,10 +51,11 @@ CHD : {
 	StrawHitFlagCollection : "FlagBkgHits:ComboHits"
 	TimeOffsets : {inputs : [ @sequence::DigiCompression.NoCosmicTimeMaps ]}
 }
+
 CosmicTrackFinder : { #split into Loose and tight below for efficieny studies
     module_type		: CosmicTrackFinder
     ComboHitCollection     : "makePH"
-    TimeClusterCollection  : "TimeClusterFinderCosmics"
+    TimeClusterCollection  : "SimpleTimeCluster"
     StrawDigiMCCollection : "compressDigiMCs"
    
 }
@@ -54,7 +63,8 @@ CosmicTrackFinder : { #split into Loose and tight below for efficieny studies
 CosmicTrackFinderLoose : {
     module_type		: CosmicTrackFinder
     ComboHitCollection     : "makePH"
-    TimeClusterCollection  : "TimeClusterFinderCosmics"
+    TimeClusterCollection  : "SimpleTimeCluster"
+   # TimeClusterCollection  : "TimeClusterFinderCosmics"
     StrawDigiMCCollection : "compressDigiMCs"
     DoDrift : true
     CosmicTrackFit :{
@@ -73,7 +83,7 @@ CosmicTrackFinderLoose : {
 CosmicTrackFinderTight : {
     module_type		: CosmicTrackFinder
     ComboHitCollection     : "makePH"
-    TimeClusterCollection  : "TimeClusterFinderCosmics"
+    TimeClusterCollection  : "SimpleTimeCluster"
     StrawDigiMCCollection : "compressDigiMCs"
     DoDrift : true
     CosmicTrackFit :{
@@ -88,10 +98,21 @@ CosmicTrackFinderTight : {
     }
 }
 
+ CosmicTrackDetails : {
+	module_type : CosmicTrackDetails
+	ComboHitCollection : "makePH"
+	TimeClusterCollection : SimpleTimeCluster
+        #TimeClusterCollection : TimeClusterFinderCosmics
+        CosmicTrackSeedCollection : CosmicTrackFinderLoose
+	StrawDigiMCCollection : "compressDigiMCs"
+	TimeOffsets : {inputs : [ @sequence::DigiCompression.NoCosmicTimeMaps ]}
+  }
+
  CosmicAnalysis : {
 	module_type : CosmicAnalyzer
 	ComboHitCollection : "makePH"
-	TimeClusterCollection : TimeClusterFinderCosmics
+	TimeClusterCollection : SimpleTimeCluster
+        #TimeClusterCollection : TimeClusterFinderCosmics
         CosmicTrackSeedCollection : CosmicTrackFinder
 	StrawDigiMCCollection : "compressDigiMCs"
 	TimeOffsets : {inputs : [ @sequence::DigiCompression.NoCosmicTimeMaps ]}
@@ -104,7 +125,7 @@ CosmicFitDisplay : {
         _tctag : TimeClusterFinderCosmics
         _sttag : CosmicTrackFinder
         doDisplay            : true
-	TimeClusterCollection : TimeClusterFinderCosmics
+	TimeClusterCollection : TimeClusterFinderCosmicsr
         CosmicTrackSeedCollection : CosmicTrackFinder
         
   }
@@ -128,7 +149,8 @@ CosmicMuonInfo : {
 }
 CosmicTracking : {
   producers :{
-    TimeClusterFinderCosmics  : @local::TimeClusterFinderCosmics
+    SimpleTimeCluster  : @local::SimpleTimeCluster
+    TimeClusterFinderCosmics : @local::TimeClusterFinderCosmics
     CosmicTrackFinder  : @local::CosmicTrackFinder
     CosmicTrackFinderLoose  : @local::CosmicTrackFinderLoose
     CosmicTrackFinderTight  : @local::CosmicTrackFinderTight
@@ -137,6 +159,8 @@ CosmicTracking : {
       
       CosmicAnalysis : @local::CosmicAnalysis
       CosmicFitDisplay : @local::CosmicFitDisplay
+      CosmicTrackDetails : @local::CosmicTrackDetails
+
    }
   filters : {
 	CosmicMuonInfo: @local::CosmicMuonInfo
@@ -162,8 +186,8 @@ CosmicTracking : {
   }
 
 #production sequence to find straight track
-CosmicTracking.FindCosmics : [  TimeClusterFinderCosmics, CosmicTrackFinder ]
-CosmicTracking.FindCosmicsLoose : [  TimeClusterFinderCosmics, CosmicTrackFinderLoose ]
-CosmicTracking.FindCosmicsTight : [  TimeClusterFinderCosmics, CosmicTrackFinderTight ]
+CosmicTracking.FindCosmics : [  SimpleTimeCluster, CosmicTrackFinder ]
+CosmicTracking.FindCosmicsLoose : [  SimpleTimeCluster, CosmicTrackFinderLoose ]
+CosmicTracking.FindCosmicsTight : [  SimpleTimeCluster, CosmicTrackFinderTight ]
 
 END_PROLOG
