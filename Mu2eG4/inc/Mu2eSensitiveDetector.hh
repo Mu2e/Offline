@@ -37,11 +37,11 @@ namespace mu2e {
 
     Mu2eSensitiveDetector(G4String const name, SimpleConfig const & config);
 
-    virtual void Initialize(G4HCofThisEvent*);
+    virtual void Initialize(G4HCofThisEvent*) override;
 
-    virtual G4bool ProcessHits(G4Step*, G4TouchableHistory*);
+    virtual G4bool ProcessHits(G4Step*, G4TouchableHistory*) override;
 
-    virtual void EndOfEvent(G4HCofThisEvent*);
+    virtual void EndOfEvent(G4HCofThisEvent*) override;
 
     void beforeG4Event(StepPointMCCollection& outputHits,
                        PhysicsProcessInfo & processInfo,

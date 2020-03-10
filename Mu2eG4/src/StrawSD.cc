@@ -240,6 +240,7 @@ namespace mu2e {
                                         sid.asUint16(),
                                         edep,
                                         aStep->GetNonIonizingEnergyDeposit(),
+                                        0., // visible energy deposit; used in scintillators
                                         aStep->GetPreStepPoint()->GetGlobalTime(),
                                         aStep->GetPreStepPoint()->GetProperTime(),
                                         prePosTracker,

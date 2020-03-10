@@ -290,8 +290,9 @@ namespace mu2e {
     tvd_collection_->
       push_back(StepPointMC(_spHelper->particlePtr(aStep->GetTrack()),
                             id,
-                            0,
-                            0,
+                            aStep->GetTotalEnergyDeposit(),
+                            aStep->GetNonIonizingEnergyDeposit(),
+                            0., // visible energy deposit; used in scintillators
                             aStep->GetPostStepPoint()->GetGlobalTime(),
                             aStep->GetPostStepPoint()->GetProperTime(),
                             aStep->GetPostStepPoint()->GetPosition() - _mu2eOrigin,
