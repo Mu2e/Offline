@@ -192,16 +192,16 @@ namespace mu2e{
    //const Tracker* tracker = th.get();
   
    _stResult.run = &run;
-   Tracker const& tracker = _alignedTracker_h.get(event.id());
-   _tfit.setTracker(&tracker);
-   _tfit.setTracker  (tracker);
+ 
+   //_tfit.setTracker  (tracker);
    
 
    }
 
   void CosmicTrackFinder::produce(art::Event& event ) {
-
-     auto _srep = _strawResponse_h.getPtr(event.id());
+    Tracker const& tracker = _alignedTracker_h.get(event.id());
+    _tfit.setTracker(&tracker);
+    auto _srep = _strawResponse_h.getPtr(event.id());
     StrawResponse const& srep = * _srep.get();
 
      if (_debug != 0) std::cout<<"Producing Cosmic Track in  Finder..."<<std::endl;
