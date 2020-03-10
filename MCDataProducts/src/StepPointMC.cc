@@ -29,6 +29,7 @@ namespace mu2e {
 
     ost << "  energy deposit: "                 << _totalEnergyDeposit
         << "  non ionizing energy deposit: "    << _nonIonizingEnergyDeposit
+        << "  visible energy deposit: "         << _visibleEnergyDeposit
         << "  position: "                       << _position
         << "  momentum: "                       << _momentum
         << "  time: "                           << _time

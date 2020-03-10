@@ -19,6 +19,7 @@
 
 // G4 includes
 #include "G4RunManager.hh"
+#include "G4LossTableManager.hh"
 #include "G4Step.hh"
 #include "G4ios.hh"
 
@@ -60,10 +61,15 @@ namespace mu2e {
     //<<"   "<<touchableHandle->GetHistory()->GetTransform(touchableHandle->GetHistoryDepth()-i).TransformPoint(posWorld)
     //<<"  "<<touchableHandle->GetSolid(i)->GetName()<<"   "<<touchableHandle->GetVolume(i)->GetName()<<std::endl;
 
+    // VisibleEnergyDeposit suggested by Ralf E
+    double visEDep =
+      G4LossTableManager::Instance()->EmSaturation()->VisibleEnergyDepositionAtAStep(aStep);
+
     _collection->push_back(StepPointMC(_spHelper->particlePtr(aStep->GetTrack()),
                                        copyNo,
                                        edep,
                                        aStep->GetNonIonizingEnergyDeposit(),
+                                       visEDep,
                                        aStep->GetPreStepPoint()->GetGlobalTime(),
                                        aStep->GetPreStepPoint()->GetProperTime(),
                                        aStep->GetPreStepPoint()->GetPosition() - _mu2eOrigin,

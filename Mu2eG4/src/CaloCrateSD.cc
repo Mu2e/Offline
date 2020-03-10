@@ -57,6 +57,7 @@ namespace mu2e {
                                        idro,
                                        aStep->GetTotalEnergyDeposit(),
                                        aStep->GetNonIonizingEnergyDeposit(),
+                                       0., // visible energy deposit; used in scintillators
                                        aStep->GetPreStepPoint()->GetGlobalTime(),
                                        aStep->GetPreStepPoint()->GetProperTime(),
                                        aStep->GetPreStepPoint()->GetPosition() - _mu2eOrigin,

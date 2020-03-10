@@ -60,6 +60,7 @@
 #include "Mu2eG4/inc/ExtMonFNALPixelSD.hh"
 #include "Mu2eG4/inc/TrackerWireSD.hh"
 #include "Mu2eG4/inc/Mu2eSensitiveDetector.hh"
+#include "Mu2eG4/inc/CRVSD.hh"
 #include "Mu2eG4/inc/StrawSD.hh"
 #include "Mu2eG4/inc/TrackerPlaneSupportSD.hh"
 #include "Mu2eG4/inc/findMaterialOrThrow.hh"
@@ -1099,8 +1100,8 @@ namespace mu2e {
    /************************** CRV **************************/
     if(sdHelper_->enabled(StepInstanceName::CRV)) {
 
-      Mu2eSensitiveDetector* sbSD =
-        new Mu2eSensitiveDetector( SensitiveDetectorName::CRSScintillatorBar(), _config );
+      CRVSD* sbSD =
+        new CRVSD( SensitiveDetectorName::CRSScintillatorBar(), _config );
       SDman->AddNewDetector(sbSD);
 
       for(G4LogicalVolumeStore::iterator pos=store->begin(); pos!=store->end(); pos++){

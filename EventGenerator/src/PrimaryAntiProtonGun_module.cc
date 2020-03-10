@@ -596,6 +596,7 @@ namespace mu2e {
                                    ,oldParent.endVolumeIndex()  // starts where parent ends
                                    ,0.                          // total energy deposit
                                    ,0.                          // non-ionizing energy deposit
+                                   ,0.            // visible energy deposit; used in scintillators
                                    ,oldParent.endGlobalTime()   // as above
                                    ,0.                          // proper time is zero for this new particle
                                    ,oldParent.endPosition()     // born where parent stopped

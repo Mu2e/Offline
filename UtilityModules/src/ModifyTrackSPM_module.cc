@@ -57,6 +57,7 @@ namespace mu2e {
                                oldTSPM.volumeId(),
                                oldTSPM.totalEDep(),
                                oldTSPM.nonIonizingEDep(),
+                               oldTSPM.visibleEDep(),
                                oldTSPM.time(),
                                oldTSPM.properTime(),
                                oldTSPM.position() + offset,
