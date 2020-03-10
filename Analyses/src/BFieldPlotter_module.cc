@@ -50,9 +50,7 @@ namespace mu2e {
 
     void analyze(const art::Event& e);
 
-    void fillHistogram(std::shared_ptr<BFMap> map, art::ServiceHandle<art::TFileService> tfs);
-
-    void endJob();
+    void fillHistogram(BFMap* map, art::ServiceHandle<art::TFileService> tfs);
 
   private:
 
@@ -98,17 +96,17 @@ namespace mu2e {
     art::ServiceHandle<art::TFileService> tfs;
     // Get the magnetic field manager and the map lists
     GeomHandle<BFieldManager> bf;
-    const BFieldManager::MapContainerType innerMaps = bf->getInnerMaps();
-    const BFieldManager::MapContainerType outerMaps = bf->getOuterMaps();
+    const BFieldManager::MapContainerType& innerMaps = bf->getInnerMaps();
+    const BFieldManager::MapContainerType& outerMaps = bf->getOuterMaps();
  
     //plot inner maps
-    for(std::shared_ptr<BFMap> map : innerMaps) { 
-      fillHistogram(map, tfs);
+    for(std::shared_ptr<BFMap> const & map : innerMaps) { 
+      fillHistogram(map.get(), tfs);
     } 
     
     //plot outer maps
-    for(std::shared_ptr<BFMap> map : outerMaps) { 
-      fillHistogram(map, tfs);
+    for(std::shared_ptr<BFMap> const & map : outerMaps) { 
+      fillHistogram(map.get(), tfs);
     } 
 
     //plot the default field returned from the manager
@@ -117,7 +115,7 @@ namespace mu2e {
 
 
   //fill a histogram with the magnetic field
-  void BFieldPlotter::fillHistogram(std::shared_ptr<BFMap> map, art::ServiceHandle<art::TFileService> tfs) {
+  void BFieldPlotter::fillHistogram(BFMap* map, art::ServiceHandle<art::TFileService> tfs) {
     //define histogram binning
     int nbinsOne = (_axisOneMax - _axisOneMin)/_mapBinSize + 1;
     int nbinsTwo = (_axisTwoMax - _axisTwoMin)/_mapBinSize + 1;
@@ -162,12 +160,7 @@ namespace mu2e {
     } //end axis one loop
   } //end fillHistorgram
 
-  void BFieldPlotter::endJob() {
-
-  } // end endJob
-
 
 }  // end namespace mu2e
 
-using mu2e::BFieldPlotter;
-DEFINE_ART_MODULE(BFieldPlotter);
+DEFINE_ART_MODULE(mu2e::BFieldPlotter);
