@@ -9,7 +9,7 @@
 #include "RecoDataProducts/inc/CosmicTrack.hh"
 #include "RecoDataProducts/inc/CosmicTrackSeed.hh"
 #include "CosmicReco/inc/CosmicTrackMCInfo.hh"
-
+#include "ProditionsService/inc/ProditionsHandle.hh"
 //Mu2e Data Prods:
 #include "RecoDataProducts/inc/StrawHitFlagCollection.hh"
 #include "RecoDataProducts/inc/StrawHit.hh"
@@ -32,6 +32,7 @@
 #include "GeneralUtilities/inc/ParameterSetHelpers.hh"
 #include "GeometryService/inc/GeomHandle.hh"
 #include "GeometryService/inc/DetectorSystem.hh"
+
 // Framework includes.
 #include "art/Framework/Core/EDAnalyzer.h"
 #include "art/Framework/Principal/Event.h"
@@ -230,7 +231,8 @@ namespace mu2e
       Int_t _n_planes; // # stations
       int n_analyze =0;
       Float_t _hit_time, _hit_drift_time, _cluster_time, _dt;
-      const Tracker* tracker;
+      //const Tracker* tracker;
+      ProditionsHandle<Tracker> _alignedTracker_h;
       //Flags:
       Bool_t _StraightTrackInit, _StraightTrackConverged, _StraightTrackOK, _hitsOK;
       Int_t _strawid; 
@@ -637,12 +639,12 @@ namespace mu2e
       } 
 
     void CosmicAnalyzer::beginRun(const art::Run& run){
-	mu2e::GeomHandle<mu2e::Tracker> th;
-       tracker = th.get();
+	//mu2e::GeomHandle<mu2e::Tracker> th;
+       //tracker = th.get();
 
 }
       void CosmicAnalyzer::analyze(const art::Event& event) {
-       
+       Tracker const* tracker = _alignedTracker_h.getPtr(event.id()).get();
         _evt = event.id().event();  // add event id
         if(!findData(event)) // find data
       		throw cet::exception("RECO")<<"No Time Clusters in event"<< endl; 
