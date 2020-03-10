@@ -2,8 +2,12 @@
 # Example of running BFieldPlotter
 #
 
-#include "JobConfig/primary/flateminus.fcl"
+#include "fcl/minimalMessageService.fcl"
+#include "fcl/standardServices.fcl"
+
 process_name : BFieldPlotter
+
+services : @local::Services.Core
 
 physics.analyzers.bfieldplotter : {
     module_type : BFieldPlotter
@@ -18,15 +22,9 @@ physics.analyzers.bfieldplotter : {
 
 physics.e1             : [bfieldplotter]
 physics.end_paths      : [e1]
-physics.p1             : [generate, g4run]
-physics.trigger_paths  : [p1]
 
 services.TFileService.fileName: "nts.owner.bfieldplotter.x_-10000.sequencer.root"
-outputs.Output.fileName       : "dig.owner.bfieldplotter.version.sequencer.art" #shouldn't be generated
 
 #Use file with altered field maps
 services.GeometryService.inputFile : "Analyses/test/geom_bfieldplotter.txt"
-
-#Don't need full physics to map the field
-physics.producers.g4run.physics.physicsListName : "Minimal" 
 
