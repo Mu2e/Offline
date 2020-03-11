@@ -50,7 +50,7 @@ namespace mu2e {
 
     void analyze(const art::Event& e);
 
-    void fillHistogram(BFMap* map, art::ServiceHandle<art::TFileService> tfs);
+    void fillHistogram(BFMap const *map, art::ServiceHandle<art::TFileService> tfs);
 
   private:
 
@@ -115,7 +115,7 @@ namespace mu2e {
 
 
   //fill a histogram with the magnetic field
-  void BFieldPlotter::fillHistogram(BFMap* map, art::ServiceHandle<art::TFileService> tfs) {
+  void BFieldPlotter::fillHistogram(BFMap const *map, art::ServiceHandle<art::TFileService> tfs) {
     //define histogram binning
     int nbinsOne = (_axisOneMax - _axisOneMin)/_mapBinSize + 1;
     int nbinsTwo = (_axisTwoMax - _axisTwoMin)/_mapBinSize + 1;
@@ -136,10 +136,11 @@ namespace mu2e {
     
     GeomHandle<BFieldManager> bf; //only needed in null map case
     //Loop through the points in the magnetic field
-    double axisOne = _axisOneMin;
-    while(axisOne <= _axisOneMax) {
-      double axisTwo = _axisTwoMin;
-      while(axisTwo <= _axisTwoMax) {
+    double axisOne, axisTwo;
+    for(int binOne = 0; binOne < nbinsOne; ++binOne) {
+      axisOne = _axisOneMin + binOne*_mapBinSize;
+      for(int binTwo = 0; binTwo < nbinsTwo; ++binTwo) {
+	axisTwo = _axisTwoMin + binTwo*_mapBinSize;
 	CLHEP::Hep3Vector point;
 	CLHEP::Hep3Vector field;
 	if(_plane == "x") 
@@ -154,9 +155,7 @@ namespace mu2e {
 	  bf->getBFieldWithStatus(point,field);
 
 	_hMap[name]->Fill(axisOne, axisTwo, field.mag()); //fill with weight of the field magnitude
-	axisTwo += _mapBinSize;
       } //end axis two loop
-      axisOne += _mapBinSize;
     } //end axis one loop
   } //end fillHistorgram
 
