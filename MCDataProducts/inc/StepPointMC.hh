@@ -108,6 +108,7 @@ namespace mu2e {
       _nonIonizingEnergyDeposit(0.),
       _visibleEnergyDeposit(0.),
       _position(),
+      _postPosition(),
       _momentum(),
       _time(0.),
       _proper(0.),
@@ -123,6 +124,7 @@ namespace mu2e {
                  double                       time,
                  double                       proper,
                  CLHEP::Hep3Vector const&     position,
+                 CLHEP::Hep3Vector const&     postPosition,
                  CLHEP::Hep3Vector const&     momentum,
                  double                       stepLength,
                  ProcessCode                  endProcessCode
@@ -133,6 +135,7 @@ namespace mu2e {
       _nonIonizingEnergyDeposit(nonIonizingEDep),
       _visibleEnergyDeposit(visEDep),
       _position(position),
+      _postPosition(postPosition),
       _momentum(momentum),
       _time(time),
       _proper(proper),
@@ -164,6 +167,7 @@ namespace mu2e {
     double                       ionizingEdep()     const { return _totalEnergyDeposit-_nonIonizingEnergyDeposit; }
     double                       visibleEDep()      const { return _visibleEnergyDeposit; }
     CLHEP::Hep3Vector const&     position()         const { return _position;  }
+    CLHEP::Hep3Vector const&     postPosition()     const { return _postPosition;  }
     CLHEP::Hep3Vector const&     momentum()         const { return _momentum;  }
     double                       time()             const { return _time;      }
     double                       properTime()       const { return _proper;      }
@@ -190,15 +194,18 @@ namespace mu2e {
 
   private:
 
+    // note that the energy deposits and step length are internally floats
+
     art::Ptr<SimParticle> _track;
     VolumeId_type         _volumeId;
     float                 _totalEnergyDeposit;
     float                 _nonIonizingEnergyDeposit;
     float                 _visibleEnergyDeposit; // used in scintillators
     CLHEP::Hep3Vector     _position;
+    CLHEP::Hep3Vector     _postPosition;
     CLHEP::Hep3Vector     _momentum;
-    float                 _time;
-    float                 _proper;
+    double                _time;
+    double                _proper;
     float                 _stepLength;
     ProcessCode           _endProcessCode;
 

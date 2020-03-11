@@ -600,6 +600,7 @@ namespace mu2e {
                                    ,oldParent.endGlobalTime()   // as above
                                    ,0.                          // proper time is zero for this new particle
                                    ,oldParent.endPosition()     // born where parent stopped
+                                   ,oldParent.endPosition()     // making both post and pre step point positions the same
                                    ,momPbar.vect()              // momentum created here
                                    ,0.                          // step length
                                    ,ProcessCode::Transportation // this is like a virtual detector

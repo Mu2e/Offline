@@ -61,6 +61,7 @@ namespace mu2e {
                                oldTSPM.time(),
                                oldTSPM.properTime(),
                                oldTSPM.position() + offset,
+                               oldTSPM.postPosition() + offset,
                                oldTSPM.momentum(),
                                oldTSPM.stepLength(),
                                oldTSPM.endProcessCode() );

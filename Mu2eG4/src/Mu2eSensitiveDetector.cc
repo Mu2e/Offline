@@ -1,9 +1,5 @@
 //
-// Defines sensitive detector for a typicaly numbered volume using mu2e reference frame
-//
-// $Id: Mu2eSensitiveDetector.cc,v 1.6 2013/09/06 16:14:00 gandr Exp $
-// $Author: gandr $
-// $Date: 2013/09/06 16:14:00 $
+// DefinesGeant4  sensitive detector for a typicaly numbered volume using Mu2e reference frame
 //
 // Original author KLG
 //
@@ -107,6 +103,7 @@ namespace mu2e {
                             aStep->GetPreStepPoint()->GetGlobalTime(),
                             aStep->GetPreStepPoint()->GetProperTime(),
                             aStep->GetPreStepPoint()->GetPosition() - _mu2eOrigin,
+                            aStep->GetPostStepPoint()->GetPosition() - _mu2eOrigin,
                             aStep->GetPreStepPoint()->GetMomentum(),
                             aStep->GetStepLength(),
                             endCode
