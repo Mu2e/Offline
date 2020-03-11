@@ -3,7 +3,7 @@
 // incident on the upstream face of the production target.
 // See the header file for details.
 //
-// $Id: PrimaryProtonGun.cc,v 1.24 2013/12/13 21:35:07 gandr Exp $
+// $Id: PrimaryProtonGunImpl.cc,v 1.24 2013/12/13 21:35:07 gandr Exp $
 // $Author: gandr $
 // $Date: 2013/12/13 21:35:07 $
 //
@@ -13,22 +13,18 @@
 // C++ includes.
 
 // Framework includes
-#include "art/Framework/Principal/Run.h"
 #include "art/Framework/Services/Registry/ServiceHandle.h"
 #include "messagefacility/MessageLogger/MessageLogger.h"
 
 // Mu2e includes
-#include "EventGenerator/inc/PrimaryProtonGun.hh"
+#include "EventGenerator/inc/PrimaryProtonGunImpl.hh"
 #include "DataProducts/inc/PDGCode.hh"
-#include "ConfigTools/inc/SimpleConfig.hh"
 #include "GlobalConstantsService/inc/GlobalConstantsHandle.hh"
 #include "GlobalConstantsService/inc/ParticleDataTable.hh"
-#include "GlobalConstantsService/inc/PhysicsParams.hh"
 #include "GeometryService/inc/GeomHandle.hh"
 #include "ProductionTargetGeom/inc/ProductionTarget.hh"
 
 // CLHEP includes.
-#include "CLHEP/Units/PhysicalConstants.h"
 #include "CLHEP/Vector/Rotation.h"
 #include "CLHEP/Units/SystemOfUnits.h"
 
@@ -36,7 +32,7 @@ using namespace std;
 
 namespace mu2e {
 
-    PrimaryProtonGun::PrimaryProtonGun(CLHEP::HepRandomEngine& engine, art::Run const& run, SimpleConfig const& config):
+    PrimaryProtonGunImpl::PrimaryProtonGunImpl(CLHEP::HepRandomEngine& engine, const PrimaryProtonGunConfig& config):
     
     _gunRotation(GeomHandle<ProductionTarget>()->protonBeamRotation()),
     _gunOrigin(GeomHandle<ProductionTarget>()->targetPositionByVersion()
@@ -45,36 +41,35 @@ namespace mu2e {
     _proton_mass(GlobalConstantsHandle<ParticleDataTable>()->particle(PDGCode::p_plus).ref().mass().value()),
 
     // Parameters from the run time configuration.
-    _p(config.getDouble("primaryProtonGun.p", GlobalConstantsHandle<PhysicsParams>()->getProtonMomentum() )),
-    _beamDisplacementOnTarget(config.getHep3Vector("beamDisplacementOnTarget")),
-    _beamRotationTheta(config.getDouble("beamRotationTheta", 0)),
-    _beamRotationPhi(config.getDouble("beamRotationPhi", 0)),
-    _beamRotationPsi(config.getDouble("beamRotationPsi", 0)),
-    _beamSpotSigma(config.getDouble("primaryProtonGun.beamSpotSigma")),
-    _czmin(config.getDouble("primaryProtonGun.czmin", -1.)),
-    _czmax(config.getDouble("primaryProtonGun.czmax", -1.)),
-    _phimin(config.getDouble("primaryProtonGun.phimin", 0. )),
-    _phimax(config.getDouble("primaryProtonGun.phimax", CLHEP::twopi)),
-    _tmin(config.getDouble("primaryProtonGun.tmin",   0.)),
-    _tmax(config.getDouble("primaryProtonGun.tmax", 100.)),
-    _shape(config.getString("primaryProtonGun.shape", "gaus")),
-    _rmax(config.getDouble("primaryProtonGun.rmax", 100.)),
-    _mean(config.getDouble("primaryProtonGun.mean", -1.)),
+    _config(config),
+    _p(GlobalConstantsHandle<PhysicsParams>()->getProtonMomentum()),
+    _beamDisplacementOnTarget(config.beamDisplacementOnTarget()),
+    _beamRotationTheta(config.beamRotationTheta()),
+    _beamRotationPhi(config.beamRotationPhi()),
+    _beamRotationPsi(config.beamRotationPsi()),
+    _tmin(config.tmin()),
+    _tmax(config.tmax()),
+    _shape(config.shape()),
+    _rmax(config.rmax()),
+    
     // For all distributions, use the engine managed by the RandomNumberGenerator.
-    _randPoissonQ{engine, std::abs(_mean)},
+    _randPoissonQ{engine, std::abs(config.mean())},
     _randFlat{engine},
-    _randGaussQ{engine, 0., _beamSpotSigma},
-    _randomUnitSphere{engine, _czmin, _czmax, _phimin, _phimax}
-    {}
+    _randGaussQ{engine, 0., config.beamSpotSigma()},
+    _randomUnitSphere{engine, config.czmin(), config.czmax(), config.phimin(), config.phimax()}
+    {
+        _config.proton_momentum(_p);
+        
+    }
 
-  void PrimaryProtonGun::generate( GenParticleCollection& genParts ){
-    long n = _mean < 0 ? static_cast<long>(-_mean): _randPoissonQ.fire();
+  void PrimaryProtonGunImpl::generate( GenParticleCollection& genParts ){
+    long n = _config.mean() < 0 ? static_cast<long>(-_config.mean()): _randPoissonQ.fire();
     for ( int j =0; j<n; ++j ){
       generateOne(genParts);
     }
   }
 
-  void PrimaryProtonGun::generateOne( GenParticleCollection& genParts ){
+  void PrimaryProtonGunImpl::generateOne( GenParticleCollection& genParts ){
 
     // Simulate the size of the beam spot.
     double dx = 0;
@@ -124,5 +119,6 @@ namespace mu2e {
                                      time));
       
   }//generateOne
+    
 
 }

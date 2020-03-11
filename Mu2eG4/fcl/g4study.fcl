@@ -106,9 +106,7 @@ physics.producers.g4run.physics.physicsListName : "ShieldingM"
 physics.producers.g4run.debug.diagLevel         : 1
 physics.producers.g4run.debug.printElements     : true
 physics.producers.g4run.debug.worldVerbosityLevel : 2
-physics.producers.g4run.debug.fillDiagnosticHistograms : true
 #physics.producers.g4run.debug.checkFieldMap : 0 // not implemented (no field)
-physics.producers.g4run.debug.printPhysicsProcessSummary : true
 physics.producers.g4run.TrajectoryControl.mcTrajectoryMinSteps:     0
 physics.producers.g4run.TrajectoryControl.mcTrajectoryMomentumCut : 0. // MeV/c
 physics.producers.g4run.TrajectoryControl.saveTrajectoryMomentumCut : 0.  // MeV/c

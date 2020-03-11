@@ -90,7 +90,6 @@ physics : {
       visualization: @local::mu2eg4NoVisualization
 
       generatorModuleLabel: corsikaGen
-      MultiStageParameters: {} // this is the first stage
 
       SDConfig:
       {

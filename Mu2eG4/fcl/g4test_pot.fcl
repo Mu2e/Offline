@@ -31,10 +31,8 @@ physics : {
   producers: {
 
     # Generate the event.
-      generate: {
-         module_type          : PrimaryProtonGunR
-         inputfile            : "Mu2eG4/test/genconfig_PrimaryProtonsR.txt"
-      }
+    generate: @local::PrimaryProtonGun
+        
 
     # Run G4 and add its output to the event.
     g4run : @local::mu2eg4runDefaultSingleStage
@@ -68,11 +66,6 @@ services.SeedService.maxUniqueEngines :  20
 
 # physics.producers.g4run.SDConfig.enableAllSDs : true
 physics.producers.g4run.SDConfig.enableSD     : [tracker, calorimeter, calorimeterRO, CRV, virtualdetector, stoppingtarget ]
-physics.producers.g4run.BirksConsts : { G4_POLYSTYRENE : 0.07943 } // {string : mm/MeV }
-
-
-
-services.GeometryService.simulatedDetector.tool_type : "Mu2e"
-
-physics.producers.g4run.physicsListName : "QGSP_BERT"
+physics.producers.g4run.physics.BirksConsts : { G4_POLYSTYRENE : 0.07943 } // {string : mm/MeV }
+physics.producers.g4run.physics.physicsListName : "QGSP_BERT"
 

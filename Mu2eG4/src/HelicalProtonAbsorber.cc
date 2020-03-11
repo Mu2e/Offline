@@ -12,7 +12,7 @@
 // Construct the Helical Proton Absorber
 
 // C++ includes
-#include <math.h>
+#include <cmath>
 
 // Mu2e includes.
 #include "Mu2eG4/inc/HelicalProtonAbsorber.hh"

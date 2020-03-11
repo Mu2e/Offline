@@ -8,11 +8,12 @@
 // $Author: genser $
 // $Date: 2012/06/04 19:28:01 $
 //
-namespace fhicl { class ParameterSet; }
+
+#include "Mu2eG4/inc/Mu2eG4Config.hh"
 
 namespace mu2e{
 
-  void preG4InitializeTasks(const fhicl::ParameterSet& pset);
+  void preG4InitializeTasks(const Mu2eG4Config::Physics& phys, const Mu2eG4Config::Debug& debug);
 
 }  // end namespace mu2e
 
