@@ -293,11 +293,11 @@ namespace mu2e {
                             aStep->GetTotalEnergyDeposit(),
                             aStep->GetNonIonizingEnergyDeposit(),
                             0., // visible energy deposit; used in scintillators
-                            aStep->GetPostStepPoint()->GetGlobalTime(),
-                            aStep->GetPostStepPoint()->GetProperTime(),
+                            aStep->GetPreStepPoint()->GetGlobalTime(),
+                            aStep->GetPreStepPoint()->GetProperTime(),
+                            aStep->GetPreStepPoint()->GetPosition() - _mu2eOrigin,
                             aStep->GetPostStepPoint()->GetPosition() - _mu2eOrigin,
-                            aStep->GetPostStepPoint()->GetPosition() - _mu2eOrigin,
-                            aStep->GetPostStepPoint()->GetMomentum(),
+                            aStep->GetPreStepPoint()->GetMomentum(),
                             aStep->GetStepLength(),
                             endCode
                             ));
