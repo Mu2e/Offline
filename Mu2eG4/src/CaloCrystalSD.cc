@@ -73,6 +73,7 @@ namespace mu2e {
                                        aStep->GetPreStepPoint()->GetGlobalTime(),
                                        aStep->GetPreStepPoint()->GetProperTime(),
                                        aStep->GetPreStepPoint()->GetPosition() - _mu2eOrigin,
+                                       aStep->GetPostStepPoint()->GetPosition() - _mu2eOrigin,
                                        aStep->GetPreStepPoint()->GetMomentum(),
                                        aStep->GetStepLength(),
                                        endCode

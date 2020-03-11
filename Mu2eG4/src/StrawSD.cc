@@ -147,6 +147,9 @@ namespace mu2e {
     G4ThreeVector prePosWorld   = aStep->GetPreStepPoint()->GetPosition();
     G4ThreeVector prePosTracker = prePosWorld - detectorOrigin;
 
+    G4ThreeVector postPosWorld = aStep->GetPostStepPoint()->GetPosition();
+    G4ThreeVector postPosTracker = postPosWorld - detectorOrigin;
+
     G4ThreeVector preMomWorld = aStep->GetPreStepPoint()->GetMomentum();
 
     G4Event const* event = G4RunManager::GetRunManager()->GetCurrentEvent();
@@ -244,6 +247,7 @@ namespace mu2e {
                                         aStep->GetPreStepPoint()->GetGlobalTime(),
                                         aStep->GetPreStepPoint()->GetProperTime(),
                                         prePosTracker,
+                                        postPosTracker,
                                         preMomWorld,
                                         step,
                                         endCode
@@ -315,7 +319,6 @@ namespace mu2e {
     G4AffineTransform const& toLocal = touchableHandle->GetHistory()->GetTopTransform();
     G4AffineTransform        toWorld = toLocal.Inverse();
 
-    G4ThreeVector postPosWorld = aStep->GetPostStepPoint()->GetPosition();
     G4ThreeVector postPosLocal = toLocal.TransformPoint(postPosWorld);
 
     G4ThreeVector prePosLocal  = toLocal.TransformPoint(prePosWorld);
