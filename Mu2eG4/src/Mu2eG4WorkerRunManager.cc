@@ -87,7 +87,8 @@ namespace mu2e {
     if (m_mtDebugOutput) {
       G4cout << "WorkerRM on thread " << workerID_ << " is being created\n!";
     }
-
+    //to see random number seeds for each event and other verbosity, uncomment this
+    //SetPrintProgress(1);
   }
 
   // Destructor of base is called automatically.  No need to do anything.
@@ -120,8 +121,6 @@ namespace mu2e {
       //    if ( sv ) { G4VSteppingVerbose::SetInstance(sv); }
       //}
 
-      //if(perThreadObjects_->steppingVerbose){std::cout << "WE HAVE STEPV1" << std::endl;}
-      //if(G4VSteppingVerbose::GetInstance()){std::cout << "WE HAVE STEPV2" << std::endl;}
       //WE CANNOT INSTANTIATE THIS ONE RIGHT NOW SINCE WE ALREADY HAVE ONE
       //perThreadObjects_->steppingVerbose = new SteppingVerbose();
       //SteppingVerbose* sv = perThreadObjects_->steppingVerbose;
@@ -155,7 +154,6 @@ namespace mu2e {
     G4StateManager::GetStateManager()->SetNewState(G4State_Init);
     kernel->InitializePhysics();
 
-    //WHY IS THIS DONE HERE???????????????????????????
     const bool kernelInit = kernel->RunInitialization();
     if (!kernelInit) {
       throw cet::exception("WorkerRUNMANAGER")
@@ -221,89 +219,74 @@ namespace mu2e {
 
   void Mu2eG4WorkerRunManager::initializeRun(art::Event* art_event){
 
+    perThreadObjects_->currentRunNumber = art_event->id().run();
+      
+    ConstructScoringWorlds();
 
-    if (art_event->id().run() != perThreadObjects_->currentRunNumber) {
-      if (perThreadObjects_->currentRunNumber != 0 && !perThreadObjects_->runTerminated) {
-        //terminateRun();
-        throw cet::exception("WorkerRUNMANAGER") << "Error: There is a problem with Run Numbering\n";
-      }
+    //following taken from G4WorkerRunManager::RunInitialization()
+    fakeRun = false;
+    if(!(kernel->RunInitialization(fakeRun))) return;
 
+    CleanUpPreviousEvents();
+    if(currentRun) delete currentRun;
+    currentRun = 0;
 
-      //following taken from G4WorkerRunManager::RunInitialization()
-      fakeRun = false;
-      if(!(kernel->RunInitialization(fakeRun))) return;
+    if(fGeometryHasBeenDestroyed) G4ParallelWorldProcessStore::GetInstance()->UpdateWorlds();
+    if(userRunAction) currentRun = userRunAction->GenerateRun();
 
-      runAborted = false;
-      numberOfEventProcessed = 0;
+    if(!currentRun) currentRun = new G4Run();
+    currentRun->SetRunID(runIDCounter);
+    currentRun->SetNumberOfEventToBeProcessed(numberOfEventToBeProcessed);
+    currentRun->SetDCtable(DCtable);
 
-      CleanUpPreviousEvents();
-      if(currentRun) delete currentRun;
-      currentRun = 0;
+    G4SDManager* fSDM = G4SDManager::GetSDMpointerIfExist();
 
-      if(fGeometryHasBeenDestroyed) G4ParallelWorldProcessStore::GetInstance()->UpdateWorlds();
-      if(userRunAction) currentRun = userRunAction->GenerateRun();
+    if(fSDM) currentRun->SetHCtable(fSDM->GetHCtable());
 
-      if(!currentRun) currentRun = new G4Run();
-      currentRun->SetRunID(runIDCounter);
-      currentRun->SetNumberOfEventToBeProcessed(numberOfEventToBeProcessed);
-      currentRun->SetDCtable(DCtable);
+    std::ostringstream oss;
+    G4Random::saveFullState(oss);
+    randomNumberStatusForThisRun = oss.str();
+    currentRun->SetRandomNumberStatus(randomNumberStatusForThisRun);
 
-      G4SDManager* fSDM = G4SDManager::GetSDMpointerIfExist();
-
-      if(fSDM) currentRun->SetHCtable(fSDM->GetHCtable());
-
-      //AGAIN, WHAT LIBRARY?
-      //std::ostringstream oss;
-      //G4Random::saveFullState(oss);
-      //randomNumberStatusForThisRun = oss.str();
-      //currentRun->SetRandomNumberStatus(randomNumberStatusForThisRun);
-
-      for(G4int i_prev=0;i_prev<n_perviousEventsToBeStored;i_prev++) {
-        previousEvents->push_back((G4Event*)0);
-      }
-
-      if(printModulo>=0 || verboseLevel>0) {
-        G4cout << "### Run " << currentRun->GetRunID() << " starts." << G4endl;
-      }
-
-      if(userRunAction) userRunAction->BeginOfRunAction(currentRun);
-
-      if(storeRandomNumberStatus) {
-        G4String fileN = "currentRun";
-        if ( rngStatusEventsFlag ) {
-          std::ostringstream os;
-          os << "run" << currentRun->GetRunID();
-          fileN = os.str();
-
-        }
-        StoreRNGStatus(fileN);
-      }
-
+    for(G4int i_prev=0;i_prev<n_perviousEventsToBeStored;i_prev++) {
+      previousEvents->push_back((G4Event*)0);
     }
 
-    perThreadObjects_->currentRunNumber = art_event->id().run();
+    if(printModulo>=0 || verboseLevel>0) {
+      G4cout << "### Run " << currentRun->GetRunID() << " starts." << G4endl;
+    }
 
+    if(userRunAction) userRunAction->BeginOfRunAction(currentRun);
+
+    if(storeRandomNumberStatus) {
+      G4String fileN = "currentRun";
+      if ( rngStatusEventsFlag ) {
+        std::ostringstream os;
+        os << "run" << currentRun->GetRunID();
+        fileN = os.str();
+      }
+      StoreRNGStatus(fileN);
+    }
+
+    runAborted = false;
+    numberOfEventProcessed = 0;
     m_managerInitialized = true;
+    
   }
 
 
   void Mu2eG4WorkerRunManager::processEvent(art::Event* event){
 
     numberOfEventToBeProcessed = 1;
-    numberOfEventProcessed = 0;
-    ConstructScoringWorlds();
-
-    eventLoopOnGoing = true;
-    while(seedsQueue.size()>0)
-      { seedsQueue.pop(); }
-    // for each run, worker should receive at least one set of random number seeds.
+    
     runIsSeeded = false;
-
     eventLoopOnGoing = true;
+    G4int i_event = -1;
+    nevModulo = -1;
+    currEvID = -1;
 
-    ProcessOneEvent(event->id().event());
-
+    ProcessOneEvent(i_event);
+    
   }
-
 
 } // end namespace mu2e
