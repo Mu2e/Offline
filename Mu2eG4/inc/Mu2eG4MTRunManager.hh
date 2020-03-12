@@ -61,9 +61,6 @@ namespace mu2e {
     G4VUserPhysicsList* physicsList_;
 
     int rmvlevel_;
-
-    G4int maxNumEventstoSeed_;
-
   };
 
 } // end namespace mu2e

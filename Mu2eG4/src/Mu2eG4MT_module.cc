@@ -421,8 +421,9 @@ namespace mu2e {
     }
 
     perThreadStore->clearData();
+    
     scheduleWorkerRM->TerminateOneEvent();
-
+    
   }//end Mu2eG4MT::produce
 
 

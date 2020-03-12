@@ -56,8 +56,7 @@ namespace mu2e {
     sensitiveDetectorHelper_(conf.SDConfig()),
     masterRunAction_(nullptr),
     physicsList_(nullptr),
-    rmvlevel_(conf.debug().diagLevel()),
-    maxNumEventstoSeed_(conf.maxEventsToSeed())
+    rmvlevel_(conf.debug().diagLevel())
   {}
 
   // Destructor of base is called automatically.  No need to do anything.
@@ -102,10 +101,9 @@ namespace mu2e {
     if(fSDM)
       { currentRun->SetHCtable(fSDM->GetHCtable()); }
     std::ostringstream oss;
-    //WHAT LIBRARY TO USE?
-    //G4Random::saveFullState(oss);
-    //randomNumberStatusForThisRun = oss.str();
-    //currentRun->SetRandomNumberStatus(randomNumberStatusForThisRun);
+    G4Random::saveFullState(oss);
+    randomNumberStatusForThisRun = oss.str();
+    currentRun->SetRandomNumberStatus(randomNumberStatusForThisRun);
 
     if(storeRandomNumberStatus) {
       G4String fileN = "currentRun";
@@ -118,13 +116,11 @@ namespace mu2e {
     }
 
     /////////////////////////////////////////////////////////////////////////////////////
-    /////////////////////////////////////////////////////////////////////////////////////
-    //RANDOM NUMBER SEEDING: NEED TO FIGURE THIS OUT
-    //taken from G4MTRunManager::InitializeEventLoop()
-    int numevents = maxNumEventstoSeed_;
+    //RANDOM NUMBER SEEDING
+    SetEventModulo(1);//this sets eventModuloDef
+    int seedbunchsize = 10000;
     int numworkers = 1;
-    SetNumberOfEventsToBeProcessed(numevents);
-    //numberOfEventToBeProcessed = 1000;//this needs to be filled from the # of events we are processing
+    numberOfEventToBeProcessed = std::numeric_limits<int>::max();
     numberOfEventProcessed = 0;
 
     nSeedsUsed = 0;
@@ -132,41 +128,21 @@ namespace mu2e {
 
     if(verboseLevel>0)
       { timer->Start(); }
-
-    //initialize seeds
-    //If user did not implement InitializeSeeds,
-    // use default: nSeedsPerEvent seeds per event
-    //eventModuloDef = 0 by default
-    if( eventModuloDef > 0 ) {
-      eventModulo = eventModuloDef;
-      if(eventModulo > numberOfEventToBeProcessed/numworkers) {
-        eventModulo = numberOfEventToBeProcessed/numworkers;
-        if(eventModulo<1) eventModulo =1;
-
-        G4ExceptionDescription msgd;
-        msgd << "Event modulo is reduced to " << eventModulo
-             << " to distribute events to all threads.";
-        G4Exception("G4MTRunManager::InitializeEventLoop()", "Run10035", JustWarning, msgd);
-      }
-    }
-    else {
-      eventModulo = int(std::sqrt(double(numberOfEventToBeProcessed/numworkers)));
-      if(eventModulo<1) eventModulo = 1;
-    }
-
-    if ( InitializeSeeds(numevents) == false && numevents>0 ) {
+    
+    //if we are using G4's seed filling scheme
+    if ( InitializeSeeds(seedbunchsize) == false && seedbunchsize>0 ) {
 
       G4RNGHelper* helper = G4RNGHelper::GetInstance();
       switch(seedOncePerCommunication)
         {
         case 0://default value
-          nSeedsFilled = numevents;
+          nSeedsFilled = seedbunchsize;
           break;
         case 1:
           nSeedsFilled = numworkers;
           break;
         case 2:
-          nSeedsFilled = numevents/eventModulo + 1;
+          nSeedsFilled = seedbunchsize/eventModulo + 1;
           break;
         default:
           G4ExceptionDescription msgd;
@@ -174,15 +150,19 @@ namespace mu2e {
                << "> of seedOncePerCommunication is invalid. It is reset to 0." ;
           G4Exception("G4MTRunManager::InitializeEventLoop()", "Run10036", JustWarning, msgd);
           seedOncePerCommunication = 0;
-          nSeedsFilled = numevents;
+          nSeedsFilled = seedbunchsize;
         }
+      
+      if (m_managerInitialized) {
+      G4cout << "in G4MTRM, nSeedsFilled = " << nSeedsFilled << G4endl;
+      }
 
       // Generates up to nSeedsMax seed pairs only.
       if(nSeedsFilled>nSeedsMax) nSeedsFilled=nSeedsMax;
       const_cast<CLHEP::HepRandomEngine*>(getMasterRandomEngine())->flatArray(nSeedsPerEvent*nSeedsFilled,randDbl);
-      helper->Fill(randDbl,nSeedsFilled,numevents,nSeedsPerEvent);
+      helper->Fill(randDbl,nSeedsFilled,seedbunchsize,nSeedsPerEvent);
     }
-  }
+  }//Mu2eG4MTRunManager::initializeG4
 
 
   // this function is a protected member of G4MTRunManager but we need to access it
@@ -195,8 +175,6 @@ namespace mu2e {
 
     if ( userWorkerThreadInitialization == 0 )
       { userWorkerThreadInitialization = new G4UserWorkerThreadInitialization(); }
-
-
 
     G4bool cond = ConfirmBeamOnCondition();
     if (cond) {
