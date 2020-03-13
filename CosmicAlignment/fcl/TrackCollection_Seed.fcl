@@ -1,0 +1,13 @@
+#include "CosmicAlignment/fcl/TrackCollection.fcl"
+
+physics.filters.AlignTrackCollector.SeedOnly : true
+physics.producers.CosmicTrackFinder.DoDrift : false
+
+outputs.recoTracks.fileName : "rec.owner.bootstrap-alignment.SEED-CosmicTrackCollection-sequencer.art"
+
+# set Millepede output filenames explicitly here
+physics.filters.AlignTrackCollector.TrackDataOutputFile : "etc.owner.bootstrap-alignment.millepede-SEED-trackcollection-sequencer.bin"
+physics.filters.AlignTrackCollector.LabelsOutputFile : "labels.txt" # set to "none" if you don't want to write these.
+
+# diagnostics and plots, usually
+services.TFileService.fileName: "rec.owner.bootstrap-alignment.SEED-trackdiag-sequencer.root"

@@ -1,0 +1,48 @@
+
+#include "fcl/minimalMessageService.fcl"
+#include "fcl/standardProducers.fcl"
+#include "fcl/standardServices.fcl"
+#include "TrkDiag/fcl/prolog.fcl"
+#include "CosmicReco/fcl/prolog.fcl"
+#include "CosmicAlignment/fcl/prolog.fcl"
+
+
+process_name : AlignTrackCollector
+
+source : { module_type : RootInput }
+
+services : @local::Services.Reco
+
+physics :
+{
+  producers :
+  {
+    @table::TrkHitReco.producers
+    @table::CosmicTracking.producers
+  }
+  filters : {
+      AlignTrackCollector: { @table::AlignTrackCollector }
+  }
+
+}
+  outputs: {
+    recoTracks : {
+      module_type: RootOutput
+      outputCommands : [ "keep *_*_*_*" ]
+    }
+  }
+
+physics.RecoPath : [ @sequence::TrkHitReco.PrepareHits,  @sequence::CosmicTracking.FindCosmicsTight, AlignTrackCollector ]
+physics.EndPath : [  ]
+
+
+# select an event only if we wrote one or more tracks in an event
+outputs.recoTracks.SelectEvents : [ RecoPath ]
+outputs.recoTracks.fileName : "rec.owner.bootstrap-alignment.CosmicTrackCollection-sequencer.art"
+
+# set Millepede output filenames explicitly here
+physics.filters.AlignTrackCollector.TrackDataOutputFile : "etc.owner.bootstrap-alignment.millepede-trackcollection-sequencer.bin"
+physics.filters.AlignTrackCollector.LabelsOutputFile : "labels.txt" # set to "none" if you don't want to write these.
+
+# diagnostics and plots, usually
+services.TFileService.fileName: "rec.owner.bootstrap-alignment.trackdiag-sequencer.root"

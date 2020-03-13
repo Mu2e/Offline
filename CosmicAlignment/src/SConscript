@@ -29,7 +29,6 @@ mainlib = helper.make_mainlib ( [
     'mu2e_Mu2eInterfaces',
     'mu2e_DataProducts',
     'mu2e_GeneralUtilities',
-    'mu2e_GeomPrimitives',
     babarlibs,
     'art_Framework_Core',
     'art_Framework_Principal',
@@ -48,6 +47,7 @@ mainlib = helper.make_mainlib ( [
     'HepPDT',
     'xerces-c',
     'boost_system',
+    'boost_math_c99',
     extrarootlibs,
     ] )
 
@@ -71,7 +71,8 @@ helper.make_plugins( [
    'mu2e_GeneralUtilities',
    'mu2e_TrkReco',
    'mu2e_GeomPrimitives',
-   babarlibs,
+
+    babarlibs,
    'art_Framework_Core',
    'art_Framework_Principal',
    'art_Framework_Services_Registry',
@@ -92,6 +93,7 @@ helper.make_plugins( [
    'xerces-c',
    'boost_filesystem',
    'boost_system',
+   'boost_math_c99',
    'pthread',
    extrarootlibs
 
@@ -108,7 +110,8 @@ helper.make_dict_and_map( [
         'cetlib_except',
         'CLHEP',
         'Core',
-        'boost_system'
+        'boost_system',
+        'boost_math_c99',
     ] )
 
 
