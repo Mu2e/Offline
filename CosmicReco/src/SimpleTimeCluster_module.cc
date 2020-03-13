@@ -1,5 +1,5 @@
-//Author: R Bonventre
-//Date: Feb2020
+//Author: R Bonventre 
+//Date: Feb 2020
 //Purpose: To improve TimeClustering for Cosmics
 
 #include "art/Framework/Principal/Event.h"
