@@ -10,7 +10,6 @@
 
 // Framework includes
 #include "messagefacility/MessageLogger/MessageLogger.h"
-#include "cetlib_except/exception.h"
 
 // Mu2e includes
 #include "Mu2eG4/inc/CRVSD.hh"
@@ -18,14 +17,10 @@
 #include "Mu2eG4/inc/SimParticleHelper.hh"
 #include "Mu2eG4/inc/PhysicsProcessInfo.hh"
 #include "ConfigTools/inc/SimpleConfig.hh"
-#include "GeometryService/inc/GeomHandle.hh"
-#include "GeometryService/inc/WorldG4.hh"
-#include "TrackerGeom/inc/Tracker.hh"
 
 // G4 includes
 #include "G4LossTableManager.hh"
 #include "G4Step.hh"
-#include "G4ios.hh"
 
 using namespace std;
 
@@ -41,7 +36,7 @@ namespace mu2e {
 
     if ( _sizeLimit>0 && _currentSize>_sizeLimit ) {
       if( (_currentSize - _sizeLimit)==1 ) {
-        mf::LogWarning("G4") << "Maximum number of particles reached in "
+        mf::LogWarning("G4") << "Maximum number of steps reached in "
                              << SensitiveDetectorName
                              << ": "
                              << _currentSize << endl;
