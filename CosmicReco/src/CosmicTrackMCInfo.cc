@@ -1,8 +1,13 @@
 #include "CosmicReco/inc/CosmicTrackMCInfo.hh"
+
 CosmicTrackMCInfo::CosmicTrackMCInfo(){
      TrueTheta =0;
      TruePhi =0;
-	
+     
+     TruePhiSIM = 0;
+     TrueThetaSIM = 0;
+     TrueMomentum = 0;
+
      TrueFitEquation.Pos.SetXYZ(0,0,0);
      TrueFitEquation.Dir.SetXYZ(0,0,0);
      TrueTrackCoordSystem._XDoublePrime.SetXYZ(0,0,0);

@@ -1,6 +1,7 @@
-////Author: S Middleton
-//Date: Dec 2019
-//Purpose: For Devloping Straight Track Trigger
+// Author: S Middleton
+// Date: Dec 2019
+// Purpose: For Developing Straight Track Trigger
+
 #include "art/Framework/Core/EDFilter.h"
 #include "art/Framework/Core/ModuleMacros.h"
 #include "art/Framework/Principal/Event.h"
@@ -12,14 +13,13 @@
 #include "RecoDataProducts/inc/CosmicTrackSeed.hh"
 #include "RecoDataProducts/inc/TriggerInfo.hh"
 
-using namespace CLHEP;
-// c++
 #include <string>
 #include <vector>
 #include <iostream>
 #include <memory>
 
 using namespace std;
+using namespace CLHEP;
 
 namespace mu2e
 {
@@ -64,18 +64,17 @@ namespace mu2e
     // find the collection
     auto cosH = evt.getValidHandle<CosmicTrackSeedCollection>(_cosmicTag);
     const CosmicTrackSeedCollection* coscol = cosH.product();
-    // loop over the collection: if any pass the selection, pass this event
+
     for(auto icos = coscol->begin(); icos != coscol->end(); ++icos) {
       auto const& cosmic = *icos;
      
-      if( cosmic.status().hasAllProperties(_goodcosmic) && cosmic.status().hasAllProperties(_convergedcosmic) && cosmic.hits().size()>_minnch && cosmic.trkstrawhits().size() > _minnsh ){ //TODO - timecluster check 
+      if( cosmic.status().hasAllProperties(_goodcosmic) && cosmic.status().hasAllProperties(_convergedcosmic) && cosmic.hits().size()>_minnch && cosmic.trkstrawhits().size() > _minnsh ){ 
        
         ++_npass;
-        // Fill the trigger info object
-        triginfo->_triggerBits.merge(TriggerFlag::track); //use the old track flag
+        
+        triginfo->_triggerBits.merge(TriggerFlag::track); 
         triginfo->_triggerPath = _trigPath;
-        // associate to the helix which triggers.  Note there may be other helices which also pass the filter
-        // but filtering is by event!
+    
         size_t index = std::distance(coscol->begin(),icos);
         triginfo->_cosmic = art::Ptr<CosmicTrackSeed>(cosH,index);
         if(_debug > 1){
