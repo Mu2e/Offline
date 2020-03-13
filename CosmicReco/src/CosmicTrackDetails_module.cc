@@ -276,8 +276,7 @@ namespace mu2e
     void CosmicTrackDetails::analyze(const art::Event& event) {
 
 	const Tracker *tracker = _alignedTracker_h.getPtr(event.id()).get();
-	auto _srep = _strawResponse_h.getPtr(event.id());
-    	StrawResponse const& srep = * _srep.get();
+	StrawResponse const& srep = _strawResponse_h.get(event.id());
 
 	_evt = event.id().event();  
 

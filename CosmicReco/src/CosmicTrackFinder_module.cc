@@ -190,8 +190,7 @@ namespace mu2e{
     void CosmicTrackFinder::produce(art::Event& event ) {
 	Tracker const& tracker = _alignedTracker_h.get(event.id());
 	_tfit.setTracker(&tracker);
-	auto _srep = _strawResponse_h.getPtr(event.id());
-	StrawResponse const& srep = * _srep.get();
+	StrawResponse const& srep = _strawResponse_h.get(event.id());
 
 	if (_debug != 0) std::cout<<"Producing Cosmic Track in  Finder..."<<std::endl;
 	unique_ptr<CosmicTrackSeedCollection> seed_col(new CosmicTrackSeedCollection());
@@ -284,8 +283,7 @@ namespace mu2e{
 				std::vector<ComboHitCollection::const_iterator> StrawLevelCHitIndices = chids;
 				for (auto const& it : chids){
 				
-					const mu2e::ComboHit chit = it[0];
-					tmpResult._tseed._straw_chits.push_back(chit);
+					tmpResult._tseed._straw_chits.push_back(it[0]);
 		      	 
 	      	      		}
 	
@@ -325,7 +323,7 @@ namespace mu2e{
 							tmpHits.push_back(chit);
 						}
 				      }
-				      tmpResult._tseed._straw_chits = tmpHits;
+				      tmpResult._tseed._straw_chits = std::move(tmpHits);
 		      		}
 		      		track_seed_vec.push_back(tmpResult._tseed);
 		     

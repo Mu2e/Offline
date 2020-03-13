@@ -213,11 +213,11 @@ FullDriftFit::FullDriftFit(ComboHitCollection _chits, StrawResponse const& _srep
     double GaussianPDFFit::operator() (const std::vector<double> &x) const
    {
  
-	double a0 = x[0];
-	double a1 = x[1];
-	double b0 = x[2];
-	double b1 = x[3];
-	double t0 = x[4]; 
+	double const& a0 = x[0];
+	double const& a1 = x[1];
+	double const& b0 = x[2];
+	double const& b1 = x[3];
+	double t0 = x[4];
 	long double llike = 0;
   
   
@@ -247,10 +247,10 @@ FullDriftFit::FullDriftFit(ComboHitCollection _chits, StrawResponse const& _srep
 		return 1e10;
 	}
 
-	double a0 = x[0];
-	double a1 = x[1];
-	double b0 = x[2];
-	double b1 = x[3];
+	double const& a0 = x[0];
+	double const& a1 = x[1];
+	double const& b0 = x[2];
+	double const& b1 = x[3];
 	double t0 = x[4]; 
 	long double llike = 0;
 

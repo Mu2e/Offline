@@ -31,7 +31,6 @@
 #include <vector>
 #include <utility>
 #include <string>
-#include <math.h>
 #include <cmath>
 #include <algorithm>
 
