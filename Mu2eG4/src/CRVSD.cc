@@ -50,17 +50,19 @@ namespace mu2e {
 
     // Add the hit to the framework collection.
     // The point's coordinates are saved in the mu2e coordinate system.
-
-    // VisibleEnergyDeposit suggested by Ralf E
-    double visEDep =
-      G4LossTableManager::Instance()->EmSaturation()->VisibleEnergyDepositionAtAStep(aStep);
+    // VisibleEnergyDepositition suggested by Ralf E
 
     _collection->
       push_back(StepPointMC(_spHelper->particlePtr(aStep->GetTrack()),
                             aStep->GetPreStepPoint()->GetTouchableHandle()->GetCopyNumber(),
                             aStep->GetTotalEnergyDeposit(),
                             aStep->GetNonIonizingEnergyDeposit(),
-                            visEDep,
+                            G4LossTableManager::Instance()->EmSaturation()->
+                            VisibleEnergyDeposition(aStep->GetTrack()->GetParticleDefinition(),
+                                                    aStep->GetTrack()->GetMaterialCutsCouple(),
+                                                    aStep->GetStepLength(),
+                                                    aStep->GetTotalEnergyDeposit(),
+                                                    aStep->GetNonIonizingEnergyDeposit()),
                             aStep->GetPreStepPoint()->GetGlobalTime(),
                             aStep->GetPreStepPoint()->GetProperTime(),
                             aStep->GetPreStepPoint()->GetPosition() - _mu2eOrigin,
