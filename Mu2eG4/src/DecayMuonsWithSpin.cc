@@ -38,10 +38,6 @@
 
 #include "Mu2eG4/inc/DecayMuonsWithSpin.hh"
 
-#include "ConfigTools/inc/SimpleConfig.hh"
-#include "fhiclcpp/ParameterSet.h"
-
-
 #include "G4ParticleDefinition.hh"
 #include "G4ProcessManager.hh"
 
@@ -107,16 +103,16 @@ void DecayMuonsWithSpin::ConstructParticle()
 
   G4DecayTable* MuonPlusDecayTable = new G4DecayTable();
   MuonPlusDecayTable -> Insert(new
-			       G4MuonDecayChannelWithSpin("mu+",0.986));
+                               G4MuonDecayChannelWithSpin("mu+",0.986));
   MuonPlusDecayTable -> Insert(new
-			       G4MuonRadiativeDecayChannelWithSpin("mu+",0.014));
+                               G4MuonRadiativeDecayChannelWithSpin("mu+",0.014));
   G4MuonPlus::MuonPlusDefinition() -> SetDecayTable(MuonPlusDecayTable);
 
   G4DecayTable* MuonMinusDecayTable = new G4DecayTable();
   MuonMinusDecayTable -> Insert(new
-				G4MuonDecayChannelWithSpin("mu-",0.986));
+                                G4MuonDecayChannelWithSpin("mu-",0.986));
   MuonMinusDecayTable -> Insert(new
-				G4MuonRadiativeDecayChannelWithSpin("mu-",0.014));
+                                G4MuonRadiativeDecayChannelWithSpin("mu-",0.014));
   G4MuonMinus::MuonMinusDefinition() -> SetDecayTable(MuonMinusDecayTable);
 }
 
@@ -228,12 +224,4 @@ void DecayMuonsWithSpin::ConstructProcess()
   }
 
 
-}
-
-bool getDecayMuonsWithSpin(const mu2e::SimpleConfig& config) {
-  return config.getBool( "g4.decayMuonsWithSpin", false);
-}
-
-bool getDecayMuonsWithSpin(const fhicl::ParameterSet& pset) {
-  return pset.get<bool>( "physics.decayMuonsWithSpin", false);
 }

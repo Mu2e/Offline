@@ -54,26 +54,26 @@ namespace mu2e {
   class IMu2eG4Cut {
   public:
 
-      virtual bool steppingActionCut(const G4Step  *step) = 0;
-      virtual bool stackingActionCut(const G4Track *trk) = 0;
+    virtual bool steppingActionCut(const G4Step  *step) = 0;
+    virtual bool stackingActionCut(const G4Track *trk) = 0;
 
-      virtual void declareProducts(art::ProducesCollector& collector) =  0;
+    virtual void declareProducts(art::ProducesCollector& collector) =  0;
 
-      virtual void finishConstruction(const CLHEP::Hep3Vector& mu2eOriginInWorld) = 0;
+    virtual void finishConstruction(const CLHEP::Hep3Vector& mu2eOriginInWorld) = 0;
 
-      // Create data products and pre-fill with input hits, if any; to be called at the start of each event.
-      virtual void beginEvent(const art::Event& evt, const SimParticleHelper& spHelper) = 0;
+    // Create data products and pre-fill with input hits, if any; to be called at the start of each event.
+    virtual void beginEvent(const art::Event& evt, const SimParticleHelper& spHelper) = 0;
 
-      // put data into the stash
-      virtual void insertCutsDataIntoPerThreadStorage(Mu2eG4PerThreadStorage* per_thread_store) = 0;
-      
-      // delete data if we don't need it
-      virtual void deleteCutsData() = 0;
-      
-      // Put the data products into the event.
-      //virtual void put(art::Event& event) = 0;
-      
-      virtual ~IMu2eG4Cut() {}
+    // put data into the stash
+    virtual void insertCutsDataIntoPerThreadStorage(Mu2eG4PerThreadStorage* per_thread_store) = 0;
+
+    // delete data if we don't need it
+    virtual void deleteCutsData() = 0;
+
+    // Put the data products into the event.
+    //virtual void put(art::Event& event) = 0;
+
+    virtual ~IMu2eG4Cut() {}
   };
 
   //================================================================

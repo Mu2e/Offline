@@ -128,30 +128,17 @@ namespace mu2e {
   }
 
 
-  Hep3Vector TrkToCaloExtrapol::t0Momentum() const{
-
-    //KalRep* kalrep = const_cast<KalRep *> ( kalrepc);
-
-    //const TrkStrawHit* firsthit = dynamic_cast<const TrkStrawHit*>( _trk->firstHit()->kalHit()->hit() );
-    //double fltlen = firsthit->fltLen();
-    double fltlen = _trk->firstHit()->kalHit()->hit()->fltLen();
+  Hep3Vector TrkToCaloExtrapol::entranceMomentum() const{
+    //double fltlen = _trk->firstHit()->kalHit()->hit()->fltLen();
     //std::cout<<" TrkToCaloExtrapol-> fltlen = "<<fltlen<<std::endl;
 
-    return _trk->momentum(fltlen);
-    //return (*_trk.get())->momentum(0.0);
+    return _trk->momentum(_pathLengthEntrance);
   }
 
-  BbrVectorErr TrkToCaloExtrapol::t0MomentumErr() const{
+  BbrVectorErr TrkToCaloExtrapol::entranceMomentumErr() const{
+    //    double fltlen = _trk->firstHit()->kalHit()->hit()->fltLen();
 
-    //   const KalRep* kalrepc = dynamic_cast<const KalRep*>( ((*_trk.get()) ));//->getRep(PdtPid::electron)) );
-    //KalRep* kalrep = const_cast<KalRep *> ( kalrepc);
-
-    //const TrkStrawHit* firsthit = dynamic_cast<const TrkStrawHit*>( _trk->firstHit()->kalHit()->hit() );
-
-    //double fltlen = firsthit->fltLen();
-    double fltlen = _trk->firstHit()->kalHit()->hit()->fltLen();
-
-    return _trk->momentumErr(fltlen);
+    return _trk->momentumErr(_pathLengthEntrance);
   }
 
   double TrkToCaloExtrapol::pathLengthExit() const{

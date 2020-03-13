@@ -21,7 +21,7 @@ services : {
    GeometryService        : { inputFile      : "JobConfig/common/geom_baseline.txt" }
    GlobalConstantsService : { inputFile      : "Mu2eG4/test/globalConstants_01.txt" }
    SeedService            : @local::automaticSeeds
-   RandomNumberGenerator : { }
+   RandomNumberGenerator : {defaultEngineKind: "MixMaxRng" }
 }
 
 //services.scheduler: {
@@ -32,11 +32,7 @@ physics : {
  
    producers: {
 
-      generate: {
-         module_type          : PrimaryProtonGunR
-         inputfile            : "Mu2eG4/test/genconfig_PrimaryProtonsR.txt"
-      }
-
+      generate: @local::PrimaryProtonGun
    }
 
 
@@ -59,7 +55,7 @@ outputs: {
 
 
 // Initialize seeding of random engines: do not put these lines in base .fcl files for grid jobs.
-services.SeedService.baseSeed         :  0
+services.SeedService.baseSeed         :  8
 services.SeedService.maxUniqueEngines :  20
 
 services.GeometryService.simulatedDetector.tool_type : "Mu2e"

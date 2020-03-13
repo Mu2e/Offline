@@ -1,12 +1,12 @@
-#include "JobConfig/beam/beam_defs_g4s1.fcl"
+// Lisa Goodenough, Jan 2020
 
-physics.producers.generate.module_type  : PrimaryProtonGunN
-physics.producers.generate.inputfile    : "Mu2eG4/test/genconfig_PrimaryProtonsN.txt"
-physics.producers.generate.stashSize    : 1000
-physics.producers.g4run.runinMTMode     : true
-physics.producers.g4run.numberOfThreads : 64
+#include "JobConfig/beam/beam_defs_g4s1MT.fcl"
 
-services.TFileService.fileName			     : "nts.owner.beam-g4s1.version.sequencer.root"
+physics.producers.g4run.maxEventsToSeed              : 20000
+//services.scheduler.num_threads                       : 5
+//services.scheduler.num_schedules                     : 5
+
+services.TFileService.fileName			     : "nts.owner.beam-g4s1mt.version.sequencer.root"
 services.GeometryService.inputFile		     : "Mu2eG4/geom/geom_common_phase1.txt"
 services.GeometryService.simulatedDetector.tool_type : "Mu2e"
 outputs.mubeamout.fileName           		     : "sim.owner.beam-g4s1-mubeam.version.sequencer.art"

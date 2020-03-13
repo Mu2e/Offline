@@ -1,0 +1,131 @@
+/*
+//_hviewxy = tfs->make<TH2F>("hxy", "hxy",  350,-700,700,350,-700,700  );
+	//_hfit = tfs->make<TH1F>("EoP","EoP", 50, 0, 1);
+	//canvas_ = tfs->make<TCanvas>("canvas XY", "XY" ,1300,800);
+
+
+ void IPACaloCalibAna::endJob(){
+	//MostProbEoP= GetMostProbEoP(_hfit);
+	//fitEoP(_hfit);
+	//FillXY();
+	
+  } 
+
+
+delete [] _genmomX;
+	delete [] _genmomY;
+	delete [] _genmomZ;
+	delete [] _genStartX;
+	delete [] _genStartY; 
+	delete [] _genStartZ;
+	delete [] _genStartT;
+	delete [] _cryId;
+	delete [] _crySectionId;
+	delete [] _crySimIdx;
+	delete [] _crySimLen;
+	delete [] _cryTime;
+	delete [] _cryEdep;
+	delete [] _cryDose;
+	delete [] _cryPosX;
+	delete [] _cryPosY;
+	delete [] _cryPosZ;
+	delete [] _cryLeak;
+	delete [] _cryTotE;
+	delete [] _cryTotSum;
+	delete [] _cryTotEErr;
+	delete [] _cryRadius;
+	delete [] _cryMaxEoP;
+	delete [] _cryMaxR;
+	delete [] _clusterId;
+	delete [] _clusterdiskId;
+	delete [] _clustertime;
+	delete [] _clustertimeErr;
+	delete [] _clusterEdep;
+	delete [] _clusterEDepErr;
+	delete [] _clusterangle;
+	delete [] _clustercog3VectorX;
+	delete [] _clustercog3VectorY;
+	delete [] _clustercog3VectorZ; 
+	delete [] _clusterR;
+	delete [] _clusterNHits;
+	delete [] _clustermaxECrystal;
+	delete [] _clusterindexMaxECrystal;
+	delete [] _clusterERatio;
+	delete [] _TrackT0;
+	delete [] _TrackT0Err;
+	delete [] _TrackMom;
+	delete [] _MaxEoP; 
+	delete []_EoP;
+	delete [] _TrackBackTime;
+	delete [] _TrackBackOmega;
+	delete [] _TrackBackD0;
+	delete [] _TrackBackZ0;
+	delete [] _TrackBackPhi0;
+	delete [] _TrackBackTanDip;
+	delete [] _TrackChi2;
+	delete [] _TrackChi2DOF;
+	delete [] _TrackCosTheta;
+	delete [] _matchChi2;
+	delete [] _matchEDep;
+	delete [] _matchPosXCl;
+	delete [] _matchPosYCl;
+	delete [] _matchPosZCl;
+	delete [] _matchPathLen;
+	delete [] _matchR;
+	delete [] _matchDt;
+	delete [] _matchPosXtrk;
+	delete [] _matchPosYtrk;
+	delete [] _matchPosZtrk;
+	delete [] _matchTtrks;
+
+void IPACaloCalibAna::FillXY(){
+	TBox box;
+	TArc arc;
+	auto xyplot = canvas_->DrawFrame(-1000,-1000, 1000,1000);
+	xyplot->GetYaxis()->SetTitleOffset(1.25);
+	xyplot->SetTitle( "XY; X(mm);Y(mm)");
+	art::ServiceHandle<GeometryService> geom;
+        if( ! geom->hasElement<Calorimeter>() ) return;
+        Calorimeter const & cal = *(GeomHandle<Calorimeter>());
+	canvas_->SetTitle("foo title");
+	Disk const & disk =  cal.disk(1);
+	double disk_outR = disk.outerRadius();
+	double disk_inR= disk.innerRadius();
+	arc.SetFillStyle(0);
+      	arc.DrawArc(0.,0., disk_inR);
+      	arc.DrawArc(0.,0., disk_outR);
+	for(int i=0;i<NCrystals;i++){
+	        Crystal const &crystal = cal.crystal(i);
+	   	double crystalXLen = crystal.size().x();
+		double crystalYLen = crystal.size().y();
+		CLHEP::Hep3Vector crystalPos   = cal.geomUtil().mu2eToDiskFF(1,crystal.position());
+	  	if(crystallist[i] ==0) box.SetFillColor(0);
+		if(crystallist[i]>0 and crystallist[i]<11) box.SetFillColor(kViolet-10+crystallist[i]);
+		if(crystallist[i]>10 and crystallist[i]<21)box.SetFillColor(kBlue-20+crystallist[i]);
+		if(crystallist[i]>20 and crystallist[i]<31)box.SetFillColor(kAzure-30+crystallist[i]);
+		if(crystallist[i]>31 and crystallist[i]<41) box.SetFillColor(kAzure-30+crystallist[i]);
+		if(crystallist[i]>40 and crystallist[i]<51)box.SetFillColor(kTeal-50+crystallist[i]);
+		if(crystallist[i]>50 and crystallist[i]<61)box.SetFillColor(kTeal-50+crystallist[i]);
+		if(crystallist[i]>60 and crystallist[i]<71) box.SetFillColor(kGreen-70+crystallist[i]);
+		if(crystallist[i]>70 and crystallist[i]<81)box.SetFillColor(kGreen-70+crystallist[i]);
+		if(crystallist[i]>80 and crystallist[i]<91)box.SetFillColor(kYellow-90+crystallist[i]);
+		if(crystallist[i]>90 and crystallist[i]<101)box.SetFillColor(kYellow-90+crystallist[i]);
+		if(crystallist[i]>100 and crystallist[i]<111)box.SetFillColor(kOrange-110+crystallist[i]);
+		if(crystallist[i]>110 and crystallist[i]<121)box.SetFillColor(kOrange-110+crystallist[i]);
+		if(crystallist[i]>100) box.SetFillColor(kRed+4);
+		box.DrawBox(crystalPos.x()-crystalXLen/2, crystalPos.y()-crystalYLen/2,crystalPos.x()+crystalXLen/2, crystalPos.y()+crystalYLen/2);
+		if(crystallist[i] !=0){
+			TLatex latex;
+			stringstream crys;
+                	crys<<crystallist[i];
+                	const char* str_crys = crys.str().c_str();
+		   	latex.SetTextSize(0.02);
+		   	latex.DrawLatex(crystalPos.x()-crystalXLen/2, crystalPos.y()-crystalYLen/2,str_crys);
+		   }
+	}
+	canvas_->Update();
+	canvas_->SaveAs("AllCrystalsInAllEvents.root");
+	
+}
+
+*/

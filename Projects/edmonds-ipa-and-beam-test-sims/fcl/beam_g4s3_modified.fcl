@@ -12,7 +12,7 @@ services : {
 
    message               : @local::default_message
    TFileService          : { fileName : "nts.owner.cd3-beam-g4s3.version.sequencer.root" }
-   RandomNumberGenerator : { }
+   RandomNumberGenerator : {defaultEngineKind: "MixMaxRng" }
 
    GeometryService        : { inputFile      : "JobConfig/common/geom_baseline.txt" }
    ConditionsService      : { conditionsfile : "Mu2eG4/test/conditions_01.txt"      }
@@ -287,5 +287,5 @@ services.message.destinations.log.categories.ArtReport.timespan : 300
 physics.producers.g4run.physics.minRangeCut : 0.010 // mm
 
 // Initialze seeding of random engines: do not put these lines in base .fcl files for grid jobs.
-services.SeedService.baseSeed         :  0
+services.SeedService.baseSeed         :  8
 services.SeedService.maxUniqueEngines :  20

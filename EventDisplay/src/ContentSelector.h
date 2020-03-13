@@ -14,7 +14,6 @@
 #include "RecoDataProducts/inc/CaloCrystalHitCollection.hh"
 #include "RecoDataProducts/inc/CaloHitCollection.hh"
 #include "RecoDataProducts/inc/CrvRecoPulseCollection.hh"
-#include "MCDataProducts/inc/PhysicalVolumeInfoCollection.hh"
 #include "MCDataProducts/inc/PhysicalVolumeInfoMultiCollection.hh"
 #include "MCDataProducts/inc/MCTrajectoryCollection.hh"
 #include "MCDataProducts/inc/SimParticleCollection.hh"
@@ -58,9 +57,8 @@ class ContentSelector
   std::vector<art::Handle<mu2e::KalSeedCollection> > _kalSeedTrkVector;
   std::vector<art::Handle<mu2e::KalSeedCollection> > _kalSeedHitVector;
   std::vector<art::Handle<mu2e::TrkExtTrajCollection> > _trkExtTrajVector;
-  art::Handle<mu2e::PhysicalVolumeInfoCollection> _physicalVolumes;
   art::Handle<mu2e::PhysicalVolumeInfoMultiCollection> _physicalVolumesMulti;
-  bool _hasPhysicalVolumes, _hasPhysicalVolumesMulti;
+  bool _hasPhysicalVolumesMulti;
 
   TGComboBox  *_hitBox;
   TGComboBox  *_caloHitBox;
@@ -113,7 +111,6 @@ class ContentSelector
   template<typename CollectionType> const CollectionType* getSelectedCaloHitCollection() const;
   template<typename CollectionType> const CollectionType* getSelectedCrvHitCollection() const;
   template<typename CollectionType> std::vector<const CollectionType*> getSelectedTrackCollection(std::vector<trackInfoStruct> &v) const;
-  const mu2e::PhysicalVolumeInfoCollection *getPhysicalVolumeInfoCollection() const;
   const mu2e::PhysicalVolumeInfoMultiCollection *getPhysicalVolumeInfoMultiCollection() const;
   const mu2e::MCTrajectoryCollection *getMCTrajectoryCollection(const trackInfoStruct &t) const;
 

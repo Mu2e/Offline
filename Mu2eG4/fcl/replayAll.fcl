@@ -3,9 +3,8 @@
 # event contains both sets of data products, those created in
 # the first run and those created in the second run.
 #
-# $Id: replayAll.fcl,v 1.1 2014/08/29 16:16:17 knoepfel Exp $
-# $Author: knoepfel $
-# $Date: 2014/08/29 16:16:17 $
+# Author: knoepfel
+#
 
 #include "fcl/minimalMessageService.fcl"
 #include "fcl/standardProducers.fcl"
@@ -76,7 +75,9 @@ outputs: {
 }
 
 services.TFileService.fileName : "replayAll.root"
-services.RandomNumberGenerator : { restoreStateLabel :  randomsaver }
+# be careful when setting restoreStateLabel and make sure that
+# defaultEngineKind is set to "MixMaxRng" by using proper override method
+services.RandomNumberGenerator.restoreStateLabel :  randomsaver
 
 services.SeedService.baseSeed         :  100
 services.SeedService.maxUniqueEngines :  20

@@ -14,27 +14,40 @@ source : {
   maxEvents : 1000
 }
 
-services : @local::Services.SimAndReco
+services : {
+  @table::Services.SimAndReco
+  TFileService : { fileName : "transportOnly.root" }
+}
 
 physics : {
 
   producers:  {
 
-    generate : @local::generate
-    g4run :  @local::g4run
+    # Generate the event.
+    generate: @local::CeEndpointGun
 
+    # Run G4 and add its output to the event.
+    g4run : @local::g4run
+
+    # Work needed to setup the digi makers.
     @table::CommonMC.producers
     @table::TrackerMC.producers
 
+    # Calorimeter sequence
     @table::CaloDigiMC.producers
     @table::CaloReco.producers
 
-    randomsaver          : @local::randomsaver
+    # Save state of the random number engines.
+    randomsaver : @local::randomsaver
 
   }
 
-
   analyzers: {
+
+    readGens: {
+      module_type : GenParticlesAnalyzer
+      inputs      : "generate"
+    }
 
     checkhits: {
       module_type            : ReadBack
@@ -45,26 +58,19 @@ physics : {
       maxFullPrint           : 201
     }
 
-    # Look at the hits from TrackerPlaneSupport Sensitive Detectors
-    checksdd: {
-      module_type          : ReadTrackerDSDetectors
-      diagLevel            : 0
-      hitMakerModuleLabel  : g4run
-      sddStepPoints        : trackerDS
-      maxFullPrint         : 201
-    }
     # Look at the hits from virtualdetectors
     readvd: {
       module_type      : ReadVirtualDetector
-      vdStepPoints     : virtualdetector
-      savePDG          : [13 , -211]
-      maxPrint         : 200
+      vdStepPoints     : "g4run:virtualdetector"
+      savePDG          : [11]
+      maxPrint         : 201
     }
 
   }
 
   p1 : [generate , g4run, @sequence::CommonMC.DigiSim, @sequence::TrackerMC.DigiSim, @sequence::CaloDigiMC.DigiSim, @sequence::CaloReco.Reco,randomsaver ]
-  e1 : [checkhits, checksdd, readvd, outfile]
+#  e1 : [readGens, checkhits, readvd, outfile, dump]
+  e1 : [readGens, checkhits, readvd, outfile]
 
   trigger_paths  : [p1]
   end_paths      : [e1]
@@ -75,28 +81,41 @@ outputs:  {
 
   outfile : {
     module_type   :   RootOutput
-    fileName      :   "data_06.root"
+    fileName      :   "transportOnly.art"
   }
+  # Print info about all data products in the file.
+#  dump:
+#  {
+#    module_type   : DataProductDump
+#    # temporary patch for crash until art 2_10 or 2_11
+#    wantResolvedOnly: true
+#  }
 
 }
 
-// Disable all physics except transport.
-physics.producers.g4run.physics.physicsListName: "Minimal"
-physics.producers.g4run.SDConfig.enableSD     : [tracker, calorimeter, calorimeterRO, CRV, virtualdetector, stoppingtarget ]
-#physics.producers.g4run.SDConfig.enableSD     : @erase
-#physics.producers.g4run.SDConfig.enableAllSDs     : true
-
-services.TFileService.fileName : "transportOnly.root"
-
 // Initialze seeding of random engines: do not put these lines in base .fcl files for grid jobs.
-services.SeedService.baseSeed         :  0
+services.SeedService.baseSeed         :   8
 services.SeedService.maxUniqueEngines :  20
 
-physics.producers.generate.inputfile   : "Mu2eG4/test/genconfig_tonly.txt"
+services.scheduler.wantSummary: true
+services.TimeTracker.printSummary: true
+
+// Disable all physics except transport.
+physics.producers.g4run.physics.physicsListName: "Minimal"
+
+# physics.producers.g4run.SDConfig.enableAllSDs : true
+physics.producers.g4run.SDConfig.enableSD     : [tracker, calorimeter, calorimeterRO, CRV, virtualdetector, stoppingtarget ]
+#physics.producers.g4run.SDConfig.enableSD     : @erase
+
+# mu stops
+physics.producers.generate.muonStops.inputFiles : @local::mergedMuon_tgtStops_mdc2018
+
+// Enable diagnsotic printout for pedagogical purposes.
 physics.producers.makeSH.diagLevel     : 0
 physics.producers.makeSH.maxFullPrint  : 5
 physics.producers.makeSH.minimumEnergy : 0
 
-physics.producers.CaloShowerStepFromStepPt.physVolInfoInput : "g4run"
-
 #physics.producers.g4run.visualization.initMacro : "Mu2eG4/test/vismqt.mac"
+#physics.producers.CaloShowerStepFromStepPt.physVolInfoInput : "g4run"
+physics.producers.g4run.debug.diagLevel : 1
+#physics.producers.g4run.debug.worldVerbosityLevel : 1

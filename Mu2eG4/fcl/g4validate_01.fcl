@@ -28,7 +28,7 @@ services : {
 
   message               : @local::default_message
   TFileService          : { fileName : "g4validate_01.root" }
-  RandomNumberGenerator : { }
+  RandomNumberGenerator : {defaultEngineKind: "MixMaxRng" }
 
   GeometryService        : { inputFile      : "Mu2eG4/geom/geom_common.txt"            }
   ConditionsService      : { conditionsfile : "Mu2eG4/test/conditions_01.txt"      }
@@ -106,7 +106,7 @@ physics : {
 physics.analyzers.RKFDeM.KalFitMC.diaglLevel : 2
 
 // Initialze seeding of random engines: do not put these lines in base .fcl files for grid jobs.
-services.SeedService.baseSeed         :  0
+services.SeedService.baseSeed         :  8
 services.SeedService.maxUniqueEngines :  20
 
 // this adds stoppingtarget to Mu2eG4/fcl/prolog.fcl definition

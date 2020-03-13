@@ -40,7 +40,7 @@ services : {
     #  message.destinations.log.default.limit : 5
     
     TFileService          : { fileName   : "calPatRec.root" }
-    RandomNumberGenerator : { }
+    RandomNumberGenerator : {defaultEngineKind: "MixMaxRng" }
 
     GeometryService        : { inputFile : "Mu2eG4/geom/geom_common.txt" }
     ConditionsService      : { conditionsfile : "Mu2eG4/test/conditions_01.txt" }

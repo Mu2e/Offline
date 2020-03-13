@@ -54,6 +54,33 @@ namespace mu2e {
       return StepInstanceName::name(StepInstanceName::stoppingtarget).c_str();
     }
 
+    static char const * ProductionTargetCoreSection(){
+      return StepInstanceName::name(StepInstanceName::ProductionTargetCoreSection).c_str();
+    }
+    static char const * ProductionTargetStartingCoreSection(){
+      return StepInstanceName::name(StepInstanceName::ProductionTargetStartingCoreSection).c_str();
+    }
+    static char const * ProductionTargetFinStartingSection(){
+      return StepInstanceName::name(StepInstanceName::ProductionTargetFinStartingSection).c_str();
+    }
+
+    static char const * ProductionTargetNegativeEndRing(){
+      return StepInstanceName::name(StepInstanceName::ProductionTargetNegativeEndRing).c_str();
+    }
+
+    static char const * ProductionTargetPositiveEndRing(){
+      return StepInstanceName::name(StepInstanceName::ProductionTargetPositiveEndRing).c_str();
+    }
+    static char const * ProductionTargetFinSection(){
+      return StepInstanceName::name(StepInstanceName::ProductionTargetFinSection).c_str();
+    }
+    static char const * ProductionTargetFinTopSection(){
+      return StepInstanceName::name(StepInstanceName::ProductionTargetFinTopSection).c_str();
+    }
+    static char const * ProductionTargetFinTopStartingSection(){
+      return StepInstanceName::name(StepInstanceName::ProductionTargetFinTopStartingSection).c_str();
+    }
+
     static char const * CRSScintillatorBar(){
       return StepInstanceName::name(StepInstanceName::CRV).c_str();
     }

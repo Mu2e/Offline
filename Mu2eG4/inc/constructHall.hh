@@ -19,6 +19,7 @@
 namespace mu2e {
 
   class ExtrudedSolid;
+  class GenericTrap;
   class SimpleConfig;
   class VolumeInfo;
   class NotchManager;
@@ -30,6 +31,12 @@ namespace mu2e {
 		        const std::map<std::string,ExtrudedSolid>& solidMap,
 			const CLHEP::HepRotation& rot,
 			const NotchManager& notchMgr);
+
+  void constructTrapSolids( const SimpleConfig& config,
+			    const VolumeInfo& hallInfo, 
+			    const std::map<std::string,GenericTrap>& solidMap,
+			    const CLHEP::HepRotation& rot,
+			    const NotchManager& notchMgr);
 
 }
 

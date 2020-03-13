@@ -150,7 +150,7 @@ namespace mu2e {
                 const Hep3Vector position(x, _targetBoxYmax, z);
                 const HepLorentzVector mom4(P_x, P_y, P_z, energy);
 
-                const float particleTime = block[k + 6];
+                const float particleTime = block[k + 6] * _ns2s;
 
                 GenParticle part(static_cast<PDGCode::type>(pdgId),
                                   GenId::cosmicCORSIKA, position, mom4,
@@ -293,7 +293,7 @@ namespace mu2e {
                   const Hep3Vector position(x, _targetBoxYmax, z);
                   const HepLorentzVector mom4(P_x, P_y, P_z, energy);
 
-                  const float particleTime = block[k + 6];
+                  const float particleTime = block[k + 6] * _ns2s;
 
                   GenParticle part(static_cast<PDGCode::type>(pdgId),
                                    GenId::cosmicCORSIKA, position, mom4,
@@ -373,7 +373,8 @@ namespace mu2e {
 
       for (unsigned int i = 0; i < crossingParticles.size(); i++) {
           GenParticle part = crossingParticles[i];
-          genParts.push_back(GenParticle(part.pdgId(), part.generatorId(), part.position(), part.momentum(), part.time()-timeOffset+_tOffset));
+          // std::cout << "Time offset " << timeOffset << std::endl;
+          genParts.push_back(GenParticle(part.pdgId(), part.generatorId(), part.position(), part.momentum(), part.time()+_tOffset-timeOffset));
       }
       _particles_map.erase(_particles_map.begin()->first);
 

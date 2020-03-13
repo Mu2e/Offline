@@ -1,0 +1,15 @@
+{
+    "content_status": "good",
+    "parents": [],
+    "data_tier": "cnf",
+    "dh.configuration": "v0",
+    "dh.dataset": "cnf.sophie.RPC.v0.fcl",
+    "dh.description": "RPC",
+    "dh.owner": "sophie",
+    "dh.sequencer": "001002_00000002",
+    "dh.sha256": "a7b9270086fca448b769554f7be974252fd0aa2f2bc82d9430816dfbb0c510af",
+    "file_format": "fcl",
+    "file_name": "cnf.sophie.RPC.v0.001002_00000002.fcl",
+    "file_size": 2109,
+    "file_type": "mc"
+}

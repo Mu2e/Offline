@@ -87,8 +87,11 @@ outputs: {
 }
 
 // Initialze seeding of random engines: do not put these lines in base .fcl files for grid jobs.
-services.SeedService.baseSeed         :  0
+services.SeedService.baseSeed         :  8
 services.SeedService.maxUniqueEngines :  20
+
+services.scheduler.wantSummary: true
+services.TimeTracker.printSummary: true
 
 # physics.producers.g4run.SDConfig.enableAllSDs : true
 physics.producers.g4run.SDConfig.enableSD     : [tracker, calorimeter, calorimeterRO, CRV, virtualdetector, stoppingtarget ]

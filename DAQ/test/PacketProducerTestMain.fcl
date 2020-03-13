@@ -20,7 +20,7 @@ services :
 {
   message : @local::default_message
   TFileService : { fileName : "PacketProducerTest.root" }
-  RandomNumberGenerator: { }
+  RandomNumberGenerator: {defaultEngineKind: "MixMaxRng" }
 
 #  GeometryService        : { inputFile : "Mu2eG4/geom/geom_common.txt" }
   GeometryService        : { inputFile : "Mu2eG4/geom/geom_common_cd3_s4p2.txt" }

@@ -28,7 +28,7 @@ services :
     fileName      : "stoppingTarget00.root"
   }
 
-  RandomNumberGeneratorService : { }
+  RandomNumberGenerator : {defaultEngineKind: "MixMaxRng" }
 
   GeometryService :
   {

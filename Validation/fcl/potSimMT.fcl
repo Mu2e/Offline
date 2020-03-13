@@ -1,22 +1,17 @@
 #
 # generate protons on target and simulate through the detector
 #
-
 #include "Validation/fcl/potSim.fcl"
 
-process_name : potSimMT
+# Note that all parameters except the following should mostly be
+# set in the non MT file included above (which includes prolog files)
 
-# MT mode related changes
+physics.producers.g4run.module_type : "Mu2eG4MT"
 
-physics.producers.g4run.runinMTMode     : true
-physics.producers.g4run.numberOfThreads : 4
-physics.producers.generate: {
-   module_type          : PrimaryProtonGunN
-   inputfile            : "Mu2eG4/test/genconfig_PrimaryProtonsN.txt"
-   stashSize            : 40
-}
+# this sets the number of threads used in MT mode
+# number and threads and number of schedules should
+# be the same
 
-# histogram file
-services.TFileService.fileName : "nts.owner.val-potSimMT.dsconf.seq.root"
-# art file
-outputs.fullOutput.fileName    : "sim.owner.val-potSimMT.dsconf.seq.art"
+services.scheduler.num_schedules  : 2
+services.scheduler.num_threads    : 2
+

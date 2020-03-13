@@ -1,0 +1,10 @@
+/pnfs/mu2e/scratch/datasets/usr-etc/cnf/sophie/RPC/v0/fcl/19/0d/cnf.sophie.RPC.v0.001002_00000008.fcl
+/pnfs/mu2e/scratch/datasets/usr-etc/cnf/sophie/RPC/v0/fcl/37/4f/cnf.sophie.RPC.v0.001002_00000009.fcl
+/pnfs/mu2e/scratch/datasets/usr-etc/cnf/sophie/RPC/v0/fcl/4a/94/cnf.sophie.RPC.v0.001002_00000004.fcl
+/pnfs/mu2e/scratch/datasets/usr-etc/cnf/sophie/RPC/v0/fcl/65/e9/cnf.sophie.RPC.v0.001002_00000003.fcl
+/pnfs/mu2e/scratch/datasets/usr-etc/cnf/sophie/RPC/v0/fcl/97/98/cnf.sophie.RPC.v0.001002_00000007.fcl
+/pnfs/mu2e/scratch/datasets/usr-etc/cnf/sophie/RPC/v0/fcl/a1/ae/cnf.sophie.RPC.v0.001002_00000005.fcl
+/pnfs/mu2e/scratch/datasets/usr-etc/cnf/sophie/RPC/v0/fcl/bc/47/cnf.sophie.RPC.v0.001002_00000001.fcl
+/pnfs/mu2e/scratch/datasets/usr-etc/cnf/sophie/RPC/v0/fcl/d6/96/cnf.sophie.RPC.v0.001002_00000002.fcl
+/pnfs/mu2e/scratch/datasets/usr-etc/cnf/sophie/RPC/v0/fcl/d6/f5/cnf.sophie.RPC.v0.001002_00000000.fcl
+/pnfs/mu2e/scratch/datasets/usr-etc/cnf/sophie/RPC/v0/fcl/e2/ad/cnf.sophie.RPC.v0.001002_00000006.fcl

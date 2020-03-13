@@ -1,363 +1,384 @@
-//
-
 #include "art/Framework/Principal/Event.h"
-#include "fhiclcpp/ParameterSet.h"
 #include "art/Framework/Principal/Handle.h"
-#include "GeometryService/inc/GeomHandle.hh"
 #include "art/Framework/Core/EDProducer.h"
 #include "art/Framework/Core/ModuleMacros.h"
 #include "art_root_io/TFileService.h"
+#include "canvas/Utilities/InputTag.h"
+#include "fhiclcpp/types/Atom.h"
+#include "fhiclcpp/types/Sequence.h"
 
 #include "ConditionsService/inc/ConditionsHandle.hh"
 #include "ConfigTools/inc/ConfigFileLookupPolicy.hh"
+#include "ConditionsService/inc/AcceleratorParams.hh"
 
+#include "MCDataProducts/inc/StrawDigiMCCollection.hh"
 #include "RecoDataProducts/inc/StrawHit.hh"
 #include "RecoDataProducts/inc/StrawHitFlag.hh"
 #include "RecoDataProducts/inc/ComboHit.hh"
 #include "RecoDataProducts/inc/BkgCluster.hh"
+#include "RecoDataProducts/inc/BkgClusterHit.hh"
 #include "RecoDataProducts/inc/BkgQual.hh"
 
-#include "TrkReco/inc/TLTClusterer.hh"
-#include "TrkReco/inc/TNTClusterer.hh"
 #include "Mu2eUtilities/inc/MVATools.hh"
+#include "TrkReco/inc/TNTClusterer.hh"
 
-#include "CLHEP/Units/PhysicalConstants.h"
-#include "TMath.h"
-#include "TH1F.h"
-#include "TMVA/Reader.h"
-#include "Math/VectorUtil.h"
-#include "MCDataProducts/inc/StrawDigiMCCollection.hh"
-#include "TMVA/Config.h"
-
-#include <boost/accumulators/accumulators.hpp>
-#include <boost/accumulators/statistics/mean.hpp>
-#include <boost/accumulators/statistics/median.hpp>
-#include <boost/accumulators/statistics/stats.hpp>
-#include <boost/accumulators/statistics/moment.hpp>
-#include <boost/accumulators/statistics/variance.hpp>
-#include <boost/accumulators/statistics/min.hpp>
-#include <boost/accumulators/statistics/max.hpp>
-#include <boost/accumulators/statistics/weighted_variance.hpp>
-
-#include <iostream>
-#include <fstream>
 #include <string>
-#include <memory>
-#include <functional>
-#include <float.h>
 #include <vector>
-#include <set>
-#include <map>
-#include <numeric>
 
-using namespace boost::accumulators;
-using namespace ROOT::Math::VectorUtil;
 
 namespace mu2e
 {
 
   class FlagBkgHits : public art::EDProducer
   {
-  public:
-    enum clusterer { TwoLevelThreshold=1, TwoNiveauThreshold=2};
-    explicit FlagBkgHits(fhicl::ParameterSet const&);
-    void beginJob() override;
-    void produce(art::Event& event) override;
+      public:
+          
+         struct Config 
+         {
+             using Name = fhicl::Name;
+             using Comment = fhicl::Comment;
+             fhicl::Atom<art::InputTag>         comboHitCollection{   Name("ComboHitCollection"),   Comment("ComboHit collection name") };
+             fhicl::Atom<art::InputTag>         strawHitCollection{   Name("StrawHitCollection"),   Comment("StrawHit collection name") };
+             fhicl::Atom<unsigned>              minActiveHits{        Name("MinActiveHits"),        Comment("Minumim number of active hits in a cluster") };
+             fhicl::Atom<unsigned>              minNPlanes{           Name("MinNPlanes"),           Comment("Minumim number of planes in a cluster") };
+             fhicl::Atom<float>                 clusterPositionError{ Name("ClusterPositionError"), Comment("Cluster poisiton error") };
+             fhicl::Atom<int>                   clusterAlgorithm{     Name("ClusterAlgorithm"),     Comment("Clusterer algorithm") };
+             fhicl::Atom<bool>                  filterOutput{         Name("FilterOutput"),         Comment("Produce filtered ComboHit collection")  };
+             fhicl::Atom<bool>                  flagComboHits{        Name("FlagComboHits"),        Comment("Produce filtered flag comboHit collection") };
+             fhicl::Atom<bool>                  flagStrawHits {       Name("FlagStrawHits"),        Comment("Produce filtered flag strawHit collection") };
+             fhicl::Sequence<std::string>       backgroundMask{       Name("BackgroundMask"),       Comment("Bkg hit selection mask") };
+             fhicl::Sequence<std::string>       stereoSelection{      Name("StereoSelection"),      Comment("Stereo hit selection mask") };
+             fhicl::Atom<float>                 bkgMVAcut{            Name("BkgMVACut"),            Comment("Bkg MVA cut") };
+             fhicl::Table<MVATools::Config>     bkgMVA{               Name("BkgMVA"),               Comment("MVA Configuration") };
+             fhicl::Atom<bool>                  saveBkgClusters{      Name("SaveBkgClusters"),      Comment("Save bkg clusters"),false };
+             fhicl::Atom<int>                   debugLevel{           Name("DebugLevel"),           Comment("Debug"),0 };
+             fhicl::Atom<int>                   printFrequency{       Name("PrintFrequency"),       Comment("Print frequency"),100 };
+             fhicl::Table<TNTClusterer::Config> TNTClustering{        Name("TNTClustering"),        Comment("TNT Clusterer config") };
+         };
 
-  private:
+         enum clusterer {TwoNiveauThreshold=1};
+         explicit FlagBkgHits(const art::EDProducer::Table<Config>& config);
+         void beginJob() override;
+         void produce(art::Event& event) override;        
 
-    int const _debug;
-    int const _printfreq;
-    art::ProductToken<ComboHitCollection> const _chtoken;
-    art::ProductToken<StrawHitCollection> const _shtoken;
-    bool  _filter, _flagch, _flagsh;
-    unsigned _minnhits;
-    unsigned _minnstereo;
-    unsigned _minnp;
-    unsigned _maxisolated;
-    bool _savebkg;
-    StrawHitFlag _bkgmsk, _stereo;
-    const ComboHitCollection* _chcol;
-    BkgClusterer* _clusterer;
-    float        _cperr2;
-    bool         _useMVA;
-    float        _bkgMVAcut;
-    MVATools     _bkgMVA;
+      private:
+         const art::ProductToken<ComboHitCollection> chtoken_;
+         const art::ProductToken<StrawHitCollection> shtoken_;
+         unsigned                                    minnhits_;
+         unsigned                                    minnp_;
+         bool                                        filter_, flagch_, flagsh_;
+         bool                                        savebkg_;
+         StrawHitFlag                                bkgmsk_, stereo_;
+         BkgClusterer*                               clusterer_;
+         float                                       cperr2_;
+         float                                       bkgMVAcut_;
+         MVATools                                    bkgMVA_;
+         int const                                   debug_;
+         int const                                   printfreq_;
+         int                                         iev_;
 
-
-    void classifyClusters(BkgClusterCollection& clusters,BkgQualCollection& cquals) const;
-    void fillBkgQual(const BkgCluster& cluster,BkgQual& cqual) const;
-    void countHits(const BkgCluster& cluster, unsigned& nactive, unsigned& nstereo) const;
-    void countPlanes(const BkgCluster& cluster,BkgQual& cqual) const;
+         void classifyCluster(BkgClusterCollection& bkgccol, BkgQualCollection& bkgqcol, 
+                              StrawHitFlagCollection& chfcol, const ComboHitCollection& chcol) const;
+         void fillBkgQual(    const BkgCluster& cluster, BkgQual& cqual, const ComboHitCollection& chcol) const;
+         void fillMVA(        BkgQual& cqual) const;
+         void countHits(      const BkgCluster& cluster, unsigned& nactive, unsigned& nstereo, const ComboHitCollection& chcol) const;
+         void countPlanes(    const BkgCluster& cluster, BkgQual& cqual, const ComboHitCollection& chcol) const;
+         int  findClusterIdx( BkgClusterCollection& bkgccol, unsigned ich) const;
   };
 
-  FlagBkgHits::FlagBkgHits(const fhicl::ParameterSet& pset) :
-    art::EDProducer{pset},
-    _debug(pset.get<int>(                       "debugLevel",0)),
-    _printfreq(pset.get<int>(                   "printFrequency",101)),
-    _chtoken{consumes<ComboHitCollection>(pset.get<art::InputTag>("ComboHitCollection"))},
-    _shtoken{consumes<StrawHitCollection>(pset.get<art::InputTag>("StrawHitCollection"))},
-    _filter(pset.get<bool>(                     "FilterOutput")),
-    _flagch(pset.get<bool>(                     "FlagComboHits")),
-    _flagsh(pset.get<bool>(                     "FlagStrawHits")),
-    _minnhits(pset.get<unsigned>(               "MinActiveHits",3)),
-    _minnstereo(pset.get<unsigned>(             "MinStereoHits",0)),
-    _minnp(pset.get<unsigned>(                  "MinNPlanes",2)),
-    _maxisolated(pset.get<unsigned>(            "MaxIsolated",0)),
-    _savebkg(pset.get<bool>(                    "SaveBkgClusters",false)),
-    _bkgmsk(pset.get<std::vector<std::string> >("BackgroundMask",std::vector<std::string>{"Background"})),
-    _stereo(pset.get<std::vector<std::string> >("StereoSelection",std::vector<std::string>{"Stereo","PanelCombo"})),
-    _useMVA(pset.get<bool>(                     "UseBkgMVA",true)),
-    _bkgMVAcut(pset.get<float>(                 "BkgMVACut",0.5)),
-    _bkgMVA(pset.get<fhicl::ParameterSet>(      "BkgMVA", {}))
+
+  FlagBkgHits::FlagBkgHits(const art::EDProducer::Table<Config>& config) :
+     art::EDProducer{config},
+     chtoken_{     consumes<ComboHitCollection>(config().comboHitCollection()) },
+     shtoken_{     consumes<StrawHitCollection>(config().strawHitCollection()) },
+     minnhits_(    config().minActiveHits() ),
+     minnp_(       config().minNPlanes()),
+     filter_(      config().filterOutput()),
+     flagch_(      config().flagComboHits()),
+     flagsh_(      config().flagStrawHits()),
+     savebkg_(     config().saveBkgClusters()),
+     bkgmsk_(      config().backgroundMask()),
+     stereo_(      config().stereoSelection()),
+     bkgMVAcut_(   config().bkgMVAcut()),
+     bkgMVA_(      config().bkgMVA()),
+     debug_(       config().debugLevel()),
+     printfreq_(   config().printFrequency()),
+     iev_(0)
   {
-    // Must call consumesMany because fillStrawHitIndices calls getManyByType.
-    consumesMany<ComboHitCollection>();
+      // Must call consumesMany because fillStrawHitIndices calls getManyByType.
+      consumesMany<ComboHitCollection>();
 
-    if (_flagch) produces<StrawHitFlagCollection>("ComboHits");
-    if (_flagsh) produces<StrawHitFlagCollection>("StrawHits");
-    if (_filter) produces<ComboHitCollection>();
-    if (_savebkg)
+      if (flagch_) produces<StrawHitFlagCollection>("ComboHits");
+      if (flagsh_) produces<StrawHitFlagCollection>("StrawHits");
+      if (filter_) produces<ComboHitCollection>();
+      if (savebkg_)
       {
-        produces<BkgClusterCollection>();
-        produces<BkgQualCollection>();
+          produces<BkgClusterHitCollection>();
+          produces<BkgClusterCollection>();
+          produces<BkgQualCollection>();
       }
 
-    clusterer ctype = static_cast<clusterer>(pset.get<int>("Clusterer",TwoLevelThreshold));
-    switch ( ctype )
-      {
-      case TwoLevelThreshold:
-        _clusterer = new TLTClusterer(pset.get<fhicl::ParameterSet>("TLTClusterer", {}));
-        break;
-      case TwoNiveauThreshold:
-        _clusterer = new TNTClusterer(pset.get<fhicl::ParameterSet>("TNTClusterer", {}));
-        break;
-      default:
-        throw cet::exception("RECO")<< "Unknown clusterer" << ctype << std::endl;
-      }
+      float cperr = config().clusterPositionError();
+      cperr2_ = cperr*cperr;
 
-    float cperr = pset.get<float>("ClusterPositionError",10.0);
-    _cperr2 = cperr*cperr;
-    // stop the default TMVA::Reader print
-    TMVA::gConfig().SetSilent(true);
+      clusterer ctype = static_cast<clusterer>(config().clusterAlgorithm());     
+      switch ( ctype )
+      {
+        case TwoNiveauThreshold:
+           clusterer_ = new TNTClusterer(config().TNTClustering());
+           break;
+       default:
+           throw cet::exception("RECO")<< "Unknown clusterer" << ctype << std::endl;
+      }
   }
+
 
   void FlagBkgHits::beginJob()
   {
-    _clusterer->init();
-    if (_useMVA) _bkgMVA.initMVA();
+      clusterer_->init();
+      bkgMVA_.initMVA();
   }
 
+
+  //------------------------------------------------------------------------------------------
   void FlagBkgHits::produce(art::Event& event )
   {
-    unsigned iev=event.id().event();
-    if (_debug > 0 && iev%_printfreq==0) std::cout<<"FlagBkgHits: event="<<iev<<std::endl;
+    
+     //unsigned iev=event.event();
+      if (debug_ > 0 && iev_%printfreq_==0) std::cout<<"FlagBkgHits: event="<<iev_<<std::endl;
 
-    auto chH = event.getValidHandle(_chtoken);
-    _chcol = chH.product();
-    unsigned nch = _chcol->size();
-    // the primary output is either a deep copy of selected inputs or a flag collection on those
-    // intermediate results: keep these on the heap unless requested for diagnostics later
-    BkgClusterCollection bkgccol;
-    bkgccol.reserve(nch/2);
-    BkgQualCollection bkgqcol;
-    if (_savebkg) bkgqcol.reserve(bkgccol.size());
-    StrawHitFlagCollection chfcol(nch);
+      ConditionsHandle<AcceleratorParams> accPar("ignored");
+      float mbtime = accPar->deBuncherPeriod;
 
-    // find clusters
-    _clusterer->findClusters(bkgccol,*_chcol);
-
-    // evaluate results and put in the data products
-    for (auto& cluster : bkgccol) {
-      BkgQual cqual;
-      fillBkgQual(cluster,cqual);
-      StrawHitFlag flag(StrawHitFlag::bkgclust);
-      if(cluster.hits().size() <= _maxisolated){
-        flag.merge(StrawHitFlag::isolated);
-        if(_savebkg)cluster._flag.merge(BkgClusterFlag::iso);
-      }
-      if(cqual.MVAOutput() > _bkgMVAcut){
-        flag.merge(StrawHitFlag::bkg);
-        if(_savebkg)cluster._flag.merge(BkgClusterFlag::bkg);
-      }
-      for (auto const& chit : cluster.hits())
-        chfcol[chit.index()] = flag;
-      if(_savebkg)bkgqcol.push_back(std::move(cqual));
-    }
-
-    if (_filter){
-      auto chcol = std::make_unique<ComboHitCollection>();
-      chcol->reserve(nch);
-      // same parent as the original collection
-      chcol->setParent(_chcol->parent());
-      for(size_t ich=0;ich < nch; ++ich){
-        StrawHitFlag const& flag = chfcol[ich];
-        if(!flag.hasAnyProperty(_bkgmsk)) {
-          chcol->push_back((*_chcol)[ich]);
-          chcol->back()._flag.merge(flag);
-        }
-      }
-      event.put(std::move(chcol));
-    }
-
-    if(_flagsh){
-      auto shH = event.getValidHandle(_shtoken);
-      const StrawHitCollection* shcol  = shH.product();
-      // first, copy over the original flags
-      unsigned nsh = shcol->size();
-      auto shfcol = std::make_unique<StrawHitFlagCollection>(nsh);
-      std::vector<std::vector<StrawHitIndex> > shids;
-      _chcol->fillStrawHitIndices(event,shids);
-      for(size_t ich = 0;ich < _chcol->size();++ich) {
-        StrawHitFlag flag = chfcol[ich];
-        flag.merge((*_chcol)[ich].flag());
-        for(auto ish : shids[ich])
-          (*shfcol)[ish] = flag;
-      }
-
-      event.put(std::move(shfcol),"StrawHits");
-    }
-
-    if (_flagch){
-      for(size_t ich=0;ich < nch; ++ich) chfcol[ich].merge((*_chcol)[ich].flag());
-      event.put(std::make_unique<StrawHitFlagCollection>(std::move(chfcol)),"ComboHits");
-    }
-
-    if (_savebkg){
-      event.put(std::make_unique<BkgClusterCollection>(bkgccol));
-      event.put(std::make_unique<BkgQualCollection>(bkgqcol));
-    }
-
-    return;
-  }
+      auto chH = event.getValidHandle(chtoken_);
+      const ComboHitCollection& chcol = *chH.product();
+      unsigned nch = chcol.size();
 
 
-  void FlagBkgHits::fillBkgQual(const BkgCluster& cluster, BkgQual& cqual) const
-  {
-    unsigned nactive, nstereo;
-    countHits(cluster,nactive,nstereo);
-    cqual.setMVAStatus(MVAStatus::unset);
+      // the primary output is either a deep copy of selected inputs or a flag collection on those
+      // intermediate results: keep these on the heap unless requested for diagnostics later
+      BkgClusterCollection bkgccol;
+      BkgQualCollection bkgqcol;
+      BkgClusterHitCollection bkghitcol;
+      bkgccol.reserve(nch/2);
+      if (savebkg_) bkgqcol.reserve(bkgccol.size());
+      if (savebkg_) bkghitcol.reserve(nch);
 
-    if (nactive >= _minnhits && nstereo >= _minnstereo)
+      // find clusters, sort is needed for recovery algorithm
+      clusterer_->findClusters(bkgccol,chcol, mbtime, iev_);
+      sort(bkgccol.begin(),bkgccol.end(),[](const BkgCluster& c1,const BkgCluster& c2) {return c1.time() < c2.time();});
+
+
+      // classify clusters                  
+      StrawHitFlagCollection chfcol(nch);
+      classifyCluster(bkgccol, bkgqcol, chfcol,chcol);
+
+
+      //produce BkgClusterHit info collection
+      if (savebkg_)
       {
-        cqual[BkgQual::nhits] = nactive;
-        cqual[BkgQual::sfrac] = static_cast<float>(nstereo)/nactive;
-        cqual[BkgQual::crho] = sqrtf(cluster.pos().perp2());
+          for (size_t ich=0;ich < chcol.size(); ++ich)
+          {          
+              const ComboHit& ch = chcol[ich];
+              int icl = findClusterIdx(bkgccol,ich);
+              if (icl > -1) bkghitcol.emplace_back(BkgClusterHit(clusterer_->distance(bkgccol[icl],ch),ch.flag()));
+              else          bkghitcol.emplace_back(BkgClusterHit(999.0,ch.flag()));
+          }    
+      }
 
-        countPlanes(cluster,cqual);
-        if (cqual[BkgQual::np] >= _minnp)
+      //produce filtered ComboHit collection
+      if (filter_)
+      {
+          auto chcolFilter = std::make_unique<ComboHitCollection>();
+          chcolFilter->reserve(nch);
+          // same parent as the original collection
+          chcolFilter->setParent(chcol.parent());
+          for(size_t ich=0;ich < nch; ++ich)
           {
-            accumulator_set<float, stats<tag::weighted_variance>, float> racc;
-            accumulator_set<float, stats<tag::variance(lazy)> > tacc;
-            std::vector<float> hz;
-            for (const auto& chit : cluster.hits())
+              StrawHitFlag const& flag = chfcol[ich];
+              if (!flag.hasAnyProperty(bkgmsk_))
               {
-                if (chit.flag().hasAllProperties(StrawHitFlag::active))
-                  {
-                    const ComboHit& ch = (*_chcol)[chit.index()];
-                    hz.push_back(ch.pos().z());
-                    float dt = ch.time() - cluster.time();
-                    tacc(dt);
-                    // compute the transverse radius of this hit WRT the cluster center
-                    XYZVec psep = PerpVector(ch.pos()-cluster.pos(),Geom::ZDir());
-                    float rho = sqrtf(psep.mag2());
-                    // project the hit position error along the radial direction to compute the weight
-                    XYZVec pdir = psep.unit();
-                    XYZVec tdir(-ch.wdir().y(),ch.wdir().x(),0.0);
-                    float rwerr = ch.posRes(ComboHit::wire)*pdir.Dot(ch.wdir());
-                    float rterr = ch.posRes(ComboHit::trans)*pdir.Dot(tdir);
-                    // include the cluster center position error when computing the weight
-                    float rwt = 1.0/sqrtf(rwerr*rwerr + rterr*rterr + _cperr2/nactive);
-                    racc(rho,weight=rwt);
-                  }
+                  chcolFilter->push_back(chcol[ich]);
+                  chcolFilter->back()._flag.merge(flag);
               }
-            cqual[BkgQual::hrho]  = extract_result<tag::weighted_mean>(racc);
-            cqual[BkgQual::shrho] = sqrtf(std::max(extract_result<tag::weighted_variance>(racc),float(0.0)));
-            cqual[BkgQual::sdt]  = sqrtf(std::max(extract_result<tag::variance>(tacc),float(0.0)));
-
-            // find the min, max and gap from the sorted Z positions
-            std::sort(hz.begin(),hz.end());
-            cqual[BkgQual::zmin] = hz.front();
-            cqual[BkgQual::zmax] = hz.back();
-
-            // find biggest Z gap
-            float zgap = 0.0;
-            for (unsigned iz=1;iz<hz.size();++iz) zgap=std::max(zgap,hz[iz]-hz[iz-1]);
-            cqual[BkgQual::zgap] = zgap;
-
-            // compute MVA
-            cqual.setMVAStatus(MVAStatus::filled);
-            if (_useMVA)
-              {
-                // reduce values down to what's actually used in the MVA.  This functionality
-                // should be in MVATool, FIXME!
-                std::vector<float> mvavars(9,0.0);
-                mvavars[0] = cqual.varValue(BkgQual::hrho);
-                mvavars[1] = cqual.varValue(BkgQual::shrho);
-                mvavars[2] = cqual.varValue(BkgQual::crho);
-                mvavars[3] = cqual.varValue(BkgQual::zmin);
-                mvavars[4] = cqual.varValue(BkgQual::zmax);
-                mvavars[5] = cqual.varValue(BkgQual::zgap);
-                mvavars[6] = cqual.varValue(BkgQual::np);
-                mvavars[7] = cqual.varValue(BkgQual::npfrac);
-                mvavars[8] = cqual.varValue(BkgQual::nhits);
-                float mvaout = _bkgMVA.evalMVA(mvavars);
-
-                cqual.setMVAValue(mvaout);
-                cqual.setMVAStatus(MVAStatus::calculated);
-              }
-          } else {
-          cqual[BkgQual::hrho] = -1.0;
-          cqual[BkgQual::shrho] = -1.0;
-          cqual[BkgQual::sdt] = -1.0;
-          cqual[BkgQual::zmin] = -1.0;
-          cqual[BkgQual::zmax] = -1.0;
-          cqual[BkgQual::zgap] = -1.0;
-        }
+          }
+          event.put(std::move(chcolFilter));
       }
-  }
 
-
-  void FlagBkgHits::countPlanes(const BkgCluster& cluster, BkgQual& cqual ) const
-  {
-    std::array<int,StrawId::_nplanes> hitplanes{0};
-    for (const auto& chit : cluster.hits())
+      //produce StrawHit flags
+      // Note: fillStrawHitIndices is quite slow and should be improved 
+      if (flagsh_)
       {
-        if (!chit.flag().hasAllProperties(StrawHitFlag::active)) continue;
-        const ComboHit& ch = (*_chcol)[chit.index()];
-        hitplanes[ch.strawId().plane()] += ch.nStrawHits();
+          auto shH = event.getValidHandle(shtoken_);
+          const StrawHitCollection* shcol  = shH.product();
+
+          unsigned nsh = shcol->size();
+          auto shfcol  = std::make_unique<StrawHitFlagCollection>(nsh);
+          std::vector<std::vector<StrawHitIndex> > shids;
+          chcol.fillStrawHitIndices(event,shids);
+          for (size_t ich = 0;ich < nch;++ich)
+          {
+              StrawHitFlag flag = chfcol[ich];
+              flag.merge(chcol[ich].flag());
+              for(auto ish : shids[ich]) (*shfcol)[ish] = flag;
+          }
+
+          event.put(std::move(shfcol),"StrawHits");
       }
 
-    unsigned ipmin(0),ipmax(StrawId::_nplanes-1);
-    while (hitplanes[ipmin]==0) ++ipmin;
-    while (hitplanes[ipmax]==0) --ipmax;
-
-    unsigned npexp(0),np(0),nphits(0);
-    for(unsigned ip = ipmin; ip <= ipmax; ++ip)
+      //produce ComboHit flags
+      if (flagch_)
       {
-        npexp++; // should use Tracker to see if plane is physically present FIXME!
-        if (hitplanes[ip]> 0)++np;
-        nphits += hitplanes[ip];
+          for(size_t ich=0;ich < nch; ++ich) chfcol[ich].merge(chcol[ich].flag());
+          event.put(std::make_unique<StrawHitFlagCollection>(std::move(chfcol)),"ComboHits");
+      } 
+
+      //produce background collection
+      if (savebkg_)
+      {
+          event.put(std::make_unique<BkgClusterHitCollection>(bkghitcol));
+          event.put(std::make_unique<BkgClusterCollection>(bkgccol));
+          event.put(std::make_unique<BkgQualCollection>(bkgqcol));
       }
 
-    cqual[BkgQual::np] = np;
-    cqual[BkgQual::npexp] = npexp;
-    cqual[BkgQual::npfrac] = static_cast<float>(np)/static_cast<float>(npexp);
-    cqual[BkgQual::nphits] = static_cast<float>(nphits)/static_cast<float>(np);
+      ++iev_;
+      return;
   }
+ 
+ 
+  //------------------------------------------------------------------------------------------
+  void FlagBkgHits::classifyCluster(BkgClusterCollection& bkgccol, BkgQualCollection& bkgqcol, 
+                                    StrawHitFlagCollection& chfcol, const ComboHitCollection& chcol) const
+  {   
+      for (auto& cluster : bkgccol)
+      {                
+           BkgQual cqual;
+           fillBkgQual(cluster, cqual, chcol);
+           fillMVA(cqual);
 
-  void FlagBkgHits::countHits(const BkgCluster& cluster, unsigned& nactive, unsigned& nstereo) const
+           StrawHitFlag flag(StrawHitFlag::bkgclust);
+           if (cqual.MVAOutput() > bkgMVAcut_)
+           {
+	      flag.merge(StrawHitFlag::bkg);
+	      if (savebkg_) cluster._flag.merge(BkgClusterFlag::bkg);
+           } 
+
+           for (const auto& chit : cluster.hits()) chfcol[chit] = flag;
+           if (savebkg_) bkgqcol.push_back(std::move(cqual));
+
+      }
+  }   
+  
+  
+  //--------------------------------------------------------------------------------------------------------------
+  void FlagBkgHits::fillBkgQual(const BkgCluster& cluster, BkgQual& cqual, const ComboHitCollection& chcol) const
   {
-    nactive = nstereo = 0;
-    for (const auto& chit : cluster.hits()) {
-      const ComboHit& ch = (*_chcol)[chit.index()];
-      if (chit.flag().hasAllProperties(StrawHitFlag::active))
+     unsigned nactive, nstereo;
+     countHits(cluster, nactive, nstereo,chcol);
+     cqual.setMVAStatus(MVAStatus::unset);
+
+     if (nactive < minnhits_) return;
+     countPlanes(cluster,cqual,chcol);
+          
+     cqual[BkgQual::hrho]  = 0;
+     cqual[BkgQual::shrho] = 0;
+     cqual[BkgQual::nhits] = nactive;
+     cqual[BkgQual::sfrac] = static_cast<float>(nstereo)/nactive;
+     cqual[BkgQual::crho] = sqrtf(cluster.pos().perp2());
+
+     if (cqual[BkgQual::np] >= minnp_)
+     {
+         std::vector<float> hz;        
+         for (const auto& chit : cluster.hits()) hz.push_back(chcol[chit].pos().z());
+
+         // find the min, max and largest gap from the sorted Z positions
+         std::sort(hz.begin(),hz.end());
+         float zgap = 0.0;
+         for (unsigned iz=1;iz<hz.size();++iz) zgap=std::max(zgap,hz[iz]-hz[iz-1]);
+         cqual[BkgQual::zmin] = hz.front();
+         cqual[BkgQual::zmax] = hz.back();
+         cqual[BkgQual::zgap] = zgap;
+
+         cqual.setMVAStatus(MVAStatus::filled);
+     } 
+     else 
+     {
+         cqual[BkgQual::zmin]  = -1.0;
+         cqual[BkgQual::zmax]  = -1.0;
+         cqual[BkgQual::zgap]  = -1.0;
+     }      
+  }
+  
+  
+  //----------------------------------------------
+  void FlagBkgHits::fillMVA(BkgQual& cqual) const
+  {
+       if (cqual.status() == MVAStatus::unset) return;
+
+       std::vector<float> mvavars(7,0.0);
+       mvavars[0] = cqual.varValue(BkgQual::crho);
+       mvavars[1] = cqual.varValue(BkgQual::zmin);
+       mvavars[2] = cqual.varValue(BkgQual::zmax);
+       mvavars[3] = cqual.varValue(BkgQual::zgap);
+       mvavars[4] = cqual.varValue(BkgQual::np);
+       mvavars[5] = cqual.varValue(BkgQual::npfrac);
+       mvavars[6] = cqual.varValue(BkgQual::nhits);
+       float mvaout = bkgMVA_.evalMVA(mvavars);
+
+       cqual.setMVAValue(mvaout);
+       cqual.setMVAStatus(MVAStatus::calculated);
+   }
+
+
+
+   //-------------------------------------------------------------------------------------------------------------
+   void FlagBkgHits::countPlanes(const BkgCluster& cluster, BkgQual& cqual, const ComboHitCollection& chcol) const 
+   {
+        std::array<int,StrawId::_nplanes> hitplanes{0};
+        for (const auto& chit : cluster.hits()) 
         {
-          nactive += ch.nStrawHits();
-          if (chit.flag().hasAnyProperty(_stereo) ) nstereo += ch.nStrawHits();
+            const ComboHit& ch = chcol[chit];
+            hitplanes[ch.strawId().plane()] += ch.nStrawHits();
         }
-    }
-  }
+
+        unsigned ipmin(0),ipmax(StrawId::_nplanes-1);
+        while (hitplanes[ipmin]==0) ++ipmin;
+        while (hitplanes[ipmax]==0) --ipmax;
+
+        unsigned npexp(0),np(0),nphits(0);
+        for(unsigned ip = ipmin; ip <= ipmax; ++ip)
+        {
+            npexp++; // should use TTracker to see if plane is physically present FIXME!
+            if (hitplanes[ip]> 0)++np;
+            nphits += hitplanes[ip];
+        }
+
+        cqual[BkgQual::np]     = np;
+        cqual[BkgQual::npexp]  = npexp;
+        cqual[BkgQual::npfrac] = static_cast<float>(np)/static_cast<float>(npexp);
+        cqual[BkgQual::nphits] = static_cast<float>(nphits)/static_cast<float>(np);
+   }
+
+   //----------------------------------------------------------------------------------------------------------------------------------
+   void FlagBkgHits::countHits(const BkgCluster& cluster, unsigned& nactive, unsigned& nstereo, const ComboHitCollection& chcol) const 
+   {
+        nactive = nstereo = 0;
+        for (const auto& chit : cluster.hits())
+        {
+           const ComboHit& ch = chcol[chit];
+           nactive += ch.nStrawHits();
+           if (ch.flag().hasAnyProperty(stereo_)) nstereo += ch.nStrawHits();
+        }
+   }
+   
+
+   //----------------------------------------------------------------------------------
+   int FlagBkgHits::findClusterIdx(BkgClusterCollection& bkgccol, unsigned ich) const
+   {
+       for (size_t icl=0;icl < bkgccol.size(); ++icl)
+           if (std::find(bkgccol[icl].hits().begin(),bkgccol[icl].hits().end(),ich) != bkgccol[icl].hits().end()) return icl;
+       return -1;      
+   }
 
 }
 

@@ -1,0 +1,71 @@
+# Configuration file for G4Test03
+#
+#  - Generate 200 events including one conversion electron plus
+#    some number of background processes.
+#  - Run these through G4.
+#  - No event display.
+#  - Form StrawHits from StepPointMC objects
+#  - Write event data to an output file
+#  - Save state of random numbers to the event-data output file
+#
+
+#include "fcl/minimalMessageService.fcl"
+#include "fcl/standardServices.fcl"
+#include "fcl/standardProducers.fcl"
+
+
+# Give this job a name.
+process_name : G4TestPOT
+
+# Start from an empty source
+source : {
+  module_type : EmptyEvent
+  maxEvents : 200
+}
+
+services : @local::Services.SimAndReco
+
+
+physics : {
+
+  producers: {
+
+    # Generate the event.
+    generate: @local::PrimaryProtonGun
+        
+
+    # Run G4 and add its output to the event.
+    g4run : @local::mu2eg4runDefaultSingleStage
+
+    # Save state of the random number engines.
+    randomsaver : @local::randomsaver
+
+  }
+
+  p1 : [generate, g4run, randomsaver ]
+  e1 : [outfile]
+
+  trigger_paths  : [p1]
+  end_paths      : [e1]
+
+}
+
+outputs: {
+
+  outfile : {
+    module_type : RootOutput
+    fileName    : "data_beam_forart3.root"
+  }
+
+}
+
+
+// Initialize seeding of random engines: do not put these lines in base .fcl files for grid jobs.
+services.SeedService.baseSeed         :  8
+services.SeedService.maxUniqueEngines :  20
+
+# physics.producers.g4run.SDConfig.enableAllSDs : true
+physics.producers.g4run.SDConfig.enableSD     : [tracker, calorimeter, calorimeterRO, CRV, virtualdetector, stoppingtarget ]
+physics.producers.g4run.physics.BirksConsts : { G4_POLYSTYRENE : 0.07943 } // {string : mm/MeV }
+physics.producers.g4run.physics.physicsListName : "QGSP_BERT"
+
