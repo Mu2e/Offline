@@ -8,7 +8,7 @@
 #include "fcl/minimalMessageService.fcl"
 #include "fcl/standardServices.fcl"
 
-process_name : FileDumper
+process_name : BinaryFromDigi
 
 
 services : @local::Services.Reco
@@ -25,13 +25,12 @@ physics : {
 
     producers : {
 	binaryOutput: {
-	    #      module_type     : BinaryPacketsFromDataBlocks
 	    module_type     : ArtBinaryPacketsFromDigis
 	    # diagLevel       : 2
-	    diagLevel       : 4
+	    diagLevel       : 0
 	    maxFullPrint    : 0
 
-	    includeTracker : 0
+	    includeTracker : 1
 	    includeCalorimeter : 1
 	    # includeCosmicRayVeto: 1
 	    includeCosmicRayVeto: 0
@@ -41,7 +40,8 @@ physics : {
 	    generateTimestampTable : 1
 	    generateBinaryFile : 1
 	    
-	    outputFile      : "DTC_packets_calo.bin"
+	    #	    outputFile      : "DTC_packets_from_fragment.bin"
+	    outputFile      : "DTC_packets_NoPrimary.bin"
 	    maxDMABlockSize : 32000
 	    bufferSize      : 1000
 	}
@@ -49,26 +49,11 @@ physics : {
 
 
     t1 : [ binaryOutput ] 
-    e1 : [ outfile ]
+    e1 : [  ]
 
     trigger_paths  : [t1]
     end_paths      : [e1]
 
-}
-
-outputs:  {
-    outfile :  {
-	module_type   :   RootOutput
-	fileName      :   "packet_data.root"
-
-	#    outputCommands: [ "drop *",
-	#		      "keep mu2e::StrawDigis_makeSD_*_*",
-	#		      "keep mu2e::CaloDigis_CaloDigiFromShower_*_*",
-	#                      "keep mu2e::DataBlocks_TrackerPacketProducer_*_*",
-	#                      "keep mu2e::DataBlocks_CalorimeterPacketProducer_*_*",
-	#                      "keep mu2e::DataBlocks_CosmicRayVetoPacketProducer_*_*"
-	#                     ]
-    }
 }
 
 #services.message.destinations.log.categories.ArtReport.reportEvery : 1

@@ -18,32 +18,48 @@ source : {
 physics : {
 
   producers : {
-    makeSD:
-    {
-      module_type: StrawAndCaloDigisFromFragments
-      diagLevel: 3
-      parseCAL: 1
-      parseTRK: 1
+      makeSD:
+      {
+	  module_type: StrawAndCaloDigisFromFragments
+	  diagLevel: 0
+	  parseCAL: 0
+	  parseTRK: 1
+	  
+	  trkTag  : "daq:trk"
+	  caloTag : "daq:calo"
+      }
 
-      trkTag: "FragmentGenerator:offlinetrk"
-      caloTag: "FragmentGenerator:offlinecalo"
-    }
+      CaloDigiFromShower:		
+      {
+	  module_type: StrawAndCaloDigisFromFragments
+	  diagLevel: 0
+	  parseCAL: 1
+	  parseTRK: 0
+	  
+	  trkTag  : "daq:trk"
+	  caloTag : "daq:calo"
+      }
   }
 
-  t1 : [ makeSD ] 
+#  t1 : [ makeSD ] 
+  t1 : [ makeSD,
+	 CaloDigiFromShower ] 
   e1 : [ outfile ]
 
   trigger_paths  : [t1]
   end_paths      : [e1]
+#  end_paths      : []
 
 }
 
 outputs:  {
   outfile :  {
-    module_type   :   RootOutput
-    fileName      :   "digis_from_frags.root"
+      module_type   :   RootOutput
+      fileName      :   "digis_from_frags_debug.art"
 
-#    outputCommands: [ "drop *",
+      outputCommands: [ "drop *_*_*_*",
+			"keep *_*_*_*"
+		       ]
 #		      "keep mu2e::StrawDigis_makeSD_*_*",
 #		      "keep mu2e::CaloDigis_CaloDigiFromShower_*_*",
 #                      "keep mu2e::DataBlocks_TrackerPacketProducer_*_*",
