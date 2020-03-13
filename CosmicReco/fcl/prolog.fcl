@@ -33,11 +33,19 @@ TimeClusterFinderCosmics : {
 
 SimpleTimeCluster : {
 	module_type : SimpleTimeCluster
-	ComboHitCollection : "makePH"
+	ComboHitCollection : "makeSH"
 	StrawHitFlagCollection : "FlagBkgHits:ComboHits"
 	T0Calculator : { CaloT0Offset : @local::TrackCaloMatching.DtOffset }
 	TestFlag : false
 }
+
+LineFinder : {
+    module_type : LineFinder
+    ComboHitCollection : "makeSH"
+    TimeClusterCollection : "SimpleTimeCluster"
+}
+
+
 
 CHD : {
 	module_type : ComboHitDiag
@@ -159,6 +167,7 @@ CosmicTracking : {
 		CosmicTrackFinder  : @local::CosmicTrackFinder
 		CosmicTrackFinderLoose  : @local::CosmicTrackFinderLoose
 		CosmicTrackFinderTight  : @local::CosmicTrackFinderTight
+                LineFinder : @local::LineFinder
 	}
 	analyzers : {
 
