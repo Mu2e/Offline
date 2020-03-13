@@ -64,16 +64,16 @@ CrvDigisFromFragments::CrvDigisFromFragments(fhicl::ParameterSet const& pset)
   , diagLevel_(pset.get<int>("diagLevel",0))
   , parseCRV_(pset.get<int>("parseCRV",1))
   , crvFragmentsTag_(pset.get<art::InputTag>("crvTag","daq:crv"))
-{
-  produces<EventNumber_t>(); 
-  produces<mu2e::CrvDigiCollection>();
-}
+  {
+    produces<EventNumber_t>(); 
+    produces<mu2e::CrvDigiCollection>();
+  }
 
 // ----------------------------------------------------------------------
 
 void
-  CrvDigisFromFragments::
-  produce( Event & event )
+CrvDigisFromFragments::
+produce( Event & event )
 {
 
   art::EventNumber_t eventNumber = event.event();
@@ -150,97 +150,116 @@ void
 	std::cout << std::endl;
       }	    
 
-      adc_t rocID = cc.DBH_ROCID(pos);
-      adc_t valid = cc.DBH_Valid(pos);
-      adc_t packetCount = cc.DBH_PacketCount(pos);
-	    
-      uint32_t timestampLow    = cc.DBH_TimestampLow(pos);
-      uint32_t timestampMedium = cc.DBH_TimestampMedium(pos);
-      size_t timestamp = timestampLow | (timestampMedium<<16);
-      
-      adc_t EVBMode = cc.DBH_EVBMode(pos);
-      adc_t sysID = cc.DBH_SubsystemID(pos);
-      adc_t dtcID = cc.DBH_DTCID(pos);
+      auto hdr = cc.GetHeader(curBlockIdx);
+      if(hdr == nullptr) {
+	std::cerr << "Unable to retrieve header from block " << curBlockIdx << "!" << std::endl;
+	continue;
+      }
 
-      eventNumber = timestamp;
+      eventNumber = hdr->GetTimestamp();
       
-      if(sysID!=2) {
+      if(hdr->SubsystemID!=2) {
 	throw cet::exception("DATA") << " CRV packet does not have system ID 2";
       }
 
       // Parse phyiscs information from the CRV packets
-      if(packetCount>0 && parseCRV_>0) {
+      if(hdr->PacketCount>0 && parseCRV_>0) {
+	auto crvRocHdr = cc.GetCRVROCStatusPacket(curBlockIdx);
+	if(crvRocHdr == nullptr) {
+	  std::cerr << "Error retrieving CRV ROC Status Packet from DataBlock " << curBlockIdx << "!" << std::endl;
+	  continue;
+	}
 
-	for(size_t i=0; i<cc.DBVR_NumHits(pos); i++) {
+	bool err = false;
+	for(size_t i=0; i<cc.GetCRVHitCount(curBlockIdx); i++) {
+
+	  auto crvHit = cc.GetCRVHitReadoutPacket(curBlockIdx, i);
+	  if(crvHit == nullptr) {
+	    std::cerr << "Error retrieving CRV Hit at index " << i << " from DataBlock " << curBlockIdx << "! Aborting processing of this block!";
+	    err = true;
+	    break;
+	  }
 
 	  // Fill the CrvDigiCollection
 	  // CrvDigi(const std::array<unsigned int, NSamples> &ADCs, unsigned int startTDC,
 	  //         mu2e::CRSScintillatorBarIndex scintillatorBarIndex, int SiPMNumber) :
-	  crv_digis->emplace_back(cc.DBV_ADCs(pos,i),
-				  cc.DBV_startTDC(pos,i),
-				  mu2e::CRSScintillatorBarIndex(cc.DBV_sipmID(pos,i)/4),
-				  cc.DBV_sipmID(pos,i)%4);
+	  crv_digis->emplace_back(crvHit->Waveform(),
+				  crvHit->HitTime,
+				  mu2e::CRSScintillatorBarIndex(crvHit->SiPMID/4),
+				  crvHit->SiPMID%4);
 	}
+	if(err) continue;
 
 	if( diagLevel_ > 1 ) {
 
-	  for(size_t i=0; i<cc.DBVR_NumHits(pos); i++) {
-	    std::cout << "MAKEDIGI: " << cc.DBV_sipmID(pos,i)%4 << " " << cc.DBV_sipmID(pos,i)/4 << " " << cc.DBV_startTDC(pos,i)
-		      << " " << cc.DBVR_NumHits(pos) << " ";
+	  for(size_t i=0; i<cc.GetCRVHitCount(curBlockIdx); i++) {
+	    auto crvHit = cc.GetCRVHitReadoutPacket(curBlockIdx, i);
+	    if(crvHit == nullptr) {
+	      std::cerr << "Error retrieving CRV Hit at index " << i << " from DataBlock " << curBlockIdx << "! Aborting processing of this block!";
+	      break;
+	    }
+	    std::cout << "MAKEDIGI: " << crvHit->SiPMID%4 << " " << crvHit->SiPMID/4 << " " << crvHit->HitTime
+		      << " " << cc.GetCRVHitCount(curBlockIdx) << " ";
 	    
-	    for(size_t j=0; j<mu2e::CrvDigi::NSamples; j++) {
-	      std::cout << cc.DBV_ADCs(pos,i)[j];
-	      if(j<mu2e::CrvDigi::NSamples-1) {
+	    auto hits = crvHit->Waveform();
+	    for(size_t j=0; j<hits.size(); j++) {
+	      std::cout << hits[j];
+	      if(j<hits.size()-1) {
 		std::cout << " ";
 	      }
 	    }
 	    std::cout << std::endl;
          
 
-	    std::cout << "timestamp: " << timestamp << std::endl;
-	    std::cout << "sysID: " << sysID << std::endl;
-	    std::cout << "dtcID: " << dtcID << std::endl;
-	    std::cout << "rocID: " << rocID << std::endl;
-	    std::cout << "packetCount: " << packetCount << std::endl;
-	    std::cout << "valid: " << valid << std::endl;
-	    std::cout << "EVB mode: " << EVBMode << std::endl;
+	    std::cout << "timestamp: " << hdr->GetTimestamp() << std::endl;
+	    std::cout << "hdr->SubsystemID: " << hdr->SubsystemID << std::endl;
+	    std::cout << "hdr->DTCID: " << hdr->DTCID << std::endl;
+	    std::cout << "rocID: " << hdr->ROCID << std::endl;
+	    std::cout << "packetCount: " << hdr->PacketCount << std::endl;
+	    std::cout << "valid: " << hdr->Valid << std::endl;
+	    std::cout << "EVB mode: " << hdr->EVBMode << std::endl;
 	    
-//	    for(int i=7; i>=0; i--) {
-//	      std::cout << (adc_t) *(pos+8+i);
-//	      std::cout << " ";
-//	    }
-//	    std::cout << std::endl;
-//	    
-//	    for(int i=7; i>=0; i--) {
-//	      std::cout << (adc_t) *(pos+8*2+i);
-//	      std::cout << " ";
-//	    }
-//	    std::cout << std::endl;
+	    //	    for(int i=7; i>=0; i--) {
+	    //	      std::cout << (adc_t) *(pos+8+i);
+	    //	      std::cout << " ";
+	    //	    }
+	    //	    std::cout << std::endl;
+	    //	    
+	    //	    for(int i=7; i>=0; i--) {
+	    //	      std::cout << (adc_t) *(pos+8*2+i);
+	    //	      std::cout << " ";
+	    //	    }
+	    //	    std::cout << std::endl;
 	  
-	    std::cout << "SiPMNumber: " << cc.DBV_sipmID(pos,i)%4 << std::endl;
-	    std::cout << "scintillatorBarIndex: " << cc.DBV_sipmID(pos,i)/4 << std::endl;
-	    std::cout << "TDC: " << cc.DBV_startTDC(pos,i) << std::endl;
-	    std::cout << "Waveform: {";
-	    for(size_t j=0; j<mu2e::CrvDigi::NSamples; j++) {
-	      std::cout << cc.DBV_ADCs(pos,i)[j];
-	      if(j<mu2e::CrvDigi::NSamples-1) {
-		std::cout << ",";
+	    std::cout << "SiPMNumber: " << crvHit->SiPMID%4 << std::endl;
+	    std::cout << "scintillatorBarIndex: " << crvHit->SiPMID/4 << std::endl;
+	    std::cout << "TDC: " << crvHit->HitTime << std::endl;
+	    std::cout << "Waveform: {";for(size_t j=0; j<hits.size(); j++) {
+	      std::cout << hits[j];
+	      if(j<hits.size()-1) {
+		std::cout << " ";
 	      }
 	    }
 	    std::cout << "}" << std::endl;
 	  }
 
 	  
-	  std::cout << "LOOP: " << eventNumber << " " << curBlockIdx << " " << "(" << timestamp << ")" << std::endl;	    
+	  std::cout << "LOOP: " << eventNumber << " " << curBlockIdx << " " << "(" << hdr->GetTimestamp() << ")" << std::endl;	    
 
-	  for(size_t i=0; i<cc.DBVR_NumHits(pos); i++) {
+	  for(size_t i=0; i<cc.GetCRVHitCount(curBlockIdx); i++) {
+	    auto crvHit = cc.GetCRVHitReadoutPacket(curBlockIdx, i);
+	    if(crvHit == nullptr) {
+	      std::cerr << "Error retrieving CRV Hit at index " << i << " from DataBlock " << curBlockIdx << "! Aborting processing of this block!";
+	      break;
+	    }
 	    // Text format: timestamp sipmID tdc nsamples sample_list
-	    std::cout << "GREPMECRV: " << timestamp << " ";
-	    std::cout << cc.DBV_sipmID(pos,i) << " ";
-	    std::cout << cc.DBV_startTDC(pos,i) << " ";
-	    for(size_t j=0; j<mu2e::CrvDigi::NSamples; j++) {
-	      std::cout << cc.DBV_ADCs(pos,i)[j];
-	      if(j<mu2e::CrvDigi::NSamples-1) {
+	    std::cout << "GREPMECRV: " << hdr->GetTimestamp() << " ";
+	    std::cout << crvHit->SiPMID << " ";
+	    std::cout << crvHit->HitTime << " ";
+	    auto hits = crvHit->Waveform();
+	    for(size_t j=0; j<hits.size(); j++) {
+	      std::cout << hits[j];
+	      if(j<hits.size()-1) {
 		std::cout << " ";
 	      }
 	    }
