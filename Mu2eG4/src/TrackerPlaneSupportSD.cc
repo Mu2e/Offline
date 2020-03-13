@@ -13,10 +13,10 @@
 // Mu2e includes
 #include "Mu2eG4/inc/TrackerPlaneSupportSD.hh"
 #include "Mu2eG4/inc/Mu2eG4UserHelpers.hh"
+#include "Mu2eG4/inc/SimParticleHelper.hh"
 #include "Mu2eG4/inc/PhysicsProcessInfo.hh"
 #include "ConfigTools/inc/SimpleConfig.hh"
 #include "GeometryService/inc/GeomHandle.hh"
-#include "GeometryService/inc/WorldG4.hh"
 #include "TrackerGeom/inc/Tracker.hh"
 
 // G4 includes
@@ -55,7 +55,7 @@ namespace mu2e {
 
     if ( _sizeLimit>0 && _currentSize>_sizeLimit ) {
       if( (_currentSize - _sizeLimit)==1 ) {
-        mf::LogWarning("G4") << "Maximum number of particles reached in "
+        mf::LogWarning("G4") << "Maximum number of steps reached in "
                              << SensitiveDetectorName
                              << ": "
                              << _currentSize << endl;
