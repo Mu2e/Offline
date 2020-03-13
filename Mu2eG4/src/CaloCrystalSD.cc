@@ -48,25 +48,28 @@ namespace mu2e {
 
     G4int copyNo = touchableHandle->GetCopyNumber(1);  // Make sure to get the right copy number level here
 
-    G4AffineTransform const& toLocal = touchableHandle->GetHistory()->GetTopTransform();
     G4ThreeVector posWorld           = aStep->GetPreStepPoint()->GetPosition();
-    G4ThreeVector posLocal           = toLocal.TransformPoint(posWorld);
 
+    // G4AffineTransform const& toLocal = touchableHandle->GetHistory()->GetTopTransform();
+    // G4ThreeVector posLocal           = toLocal.TransformPoint(posWorld);
 
     // diagnosis purposes only when playing with the geometry, uncomment next two line
     //for (int i=0;i<=touchableHandle->GetHistoryDepth();++i) std::cout<<"Cry Transform level "<<i<<"   "<<touchableHandle->GetCopyNumber(i)
     //<<"   "<<touchableHandle->GetHistory()->GetTransform(touchableHandle->GetHistoryDepth()-i).TransformPoint(posWorld)
     //<<"  "<<touchableHandle->GetSolid(i)->GetName()<<"   "<<touchableHandle->GetVolume(i)->GetName()<<std::endl;
 
-    // VisibleEnergyDeposit suggested by Ralf E
-    double visEDep =
-      G4LossTableManager::Instance()->EmSaturation()->VisibleEnergyDepositionAtAStep(aStep);
+    // VisibleEnergyDeposition suggested by Ralf E
 
     _collection->push_back(StepPointMC(_spHelper->particlePtr(aStep->GetTrack()),
                                        copyNo,
                                        edep,
                                        aStep->GetNonIonizingEnergyDeposit(),
-                                       visEDep,
+                                       G4LossTableManager::Instance()->EmSaturation()->
+                                       VisibleEnergyDeposition(aStep->GetTrack()->GetParticleDefinition(),
+                                                               aStep->GetTrack()->GetMaterialCutsCouple(),
+                                                               aStep->GetStepLength(),
+                                                               edep,
+                                                               aStep->GetNonIonizingEnergyDeposit()),
                                        aStep->GetPreStepPoint()->GetGlobalTime(),
                                        aStep->GetPreStepPoint()->GetProperTime(),
                                        aStep->GetPreStepPoint()->GetPosition() - _mu2eOrigin,
