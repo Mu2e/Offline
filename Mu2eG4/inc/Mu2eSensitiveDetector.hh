@@ -12,15 +12,12 @@
 
 // Mu2e includes
 #include "Mu2eG4/inc/EventNumberList.hh"
-#include "Mu2eG4/inc/SimParticleHelper.hh"
 #include "MCDataProducts/inc/StepPointMCCollection.hh"
 
 // G4 includes
 #include "G4VSensitiveDetector.hh"
 
 // Art includes
-#include "canvas/Persistency/Provenance/ProductID.h"
-#include "art/Framework/Principal/Event.h"
 
 class G4Step;
 class G4HCofThisEvent;
@@ -30,6 +27,7 @@ namespace mu2e {
   // Forward declarations in mu2e namespace
   class SimpleConfig;
   class PhysicsProcessInfo;
+  class SimParticleHelper;
 
   class Mu2eSensitiveDetector : public G4VSensitiveDetector{
 

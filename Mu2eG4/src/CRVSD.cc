@@ -15,6 +15,7 @@
 // Mu2e includes
 #include "Mu2eG4/inc/CRVSD.hh"
 #include "Mu2eG4/inc/Mu2eG4UserHelpers.hh"
+#include "Mu2eG4/inc/SimParticleHelper.hh"
 #include "Mu2eG4/inc/PhysicsProcessInfo.hh"
 #include "ConfigTools/inc/SimpleConfig.hh"
 #include "GeometryService/inc/GeomHandle.hh"
