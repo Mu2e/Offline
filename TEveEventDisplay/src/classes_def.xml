@@ -1,8 +1,0 @@
-<lcgdict>
- <class name="mu2e::EvtDisplayUtils"/> 
- <class name="mu2e::NavState"/> 
- <class name="mu2e::Geom_Interface"/>
- <class name="mu2e::Collection_Interface"/>
- <class name="mu2e::ParticleTrack"/>
-</lcgdict>
-
