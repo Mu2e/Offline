@@ -141,6 +141,7 @@ namespace mu2e{
    
     CosmicTrackFinderData                 _stResult;
     ProditionsHandle<StrawResponse> _strawResponse_h; 
+
     ProditionsHandle<Tracker> _alignedTracker_h;
     void     OrderHitsY(CosmicTrackFinderData& TrackData); //Order in height
     void     OrderHitsYMC(CosmicTrackFinderData& TrackData, art::Event& event); //Same but for MCDigis
