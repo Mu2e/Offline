@@ -31,7 +31,6 @@
 // Framework includes
 #include "cetlib_except/exception.h"
 #include "messagefacility/MessageLogger/MessageLogger.h"
-#include "fhiclcpp/ParameterSet.h"
 
 // Mu2e includes
 #include "Mu2eG4/inc/physicsListDecider.hh"
@@ -66,51 +65,13 @@ using namespace std;
 
 namespace mu2e{
 
-  namespace {
-
-    std::string getPhysicsListName(const fhicl::ParameterSet& pset) {
-      return pset.get<std::string>("physics.physicsListName");
-    }
-
-    bool turnOffRadioactiveDecay(const fhicl::ParameterSet& pset) {
-      return pset.get<bool>("physics.turnOffRadioactiveDecay",false);
-    }
-
-    bool turnOnRadioactiveDecay(const fhicl::ParameterSet& pset) {
-      return pset.get<bool>("physics.turnOnRadioactiveDecay",false);
-    }
-
-    int getDiagLevel(const fhicl::ParameterSet& pset) {
-      return pset.get<int>("debug.diagLevel");
-    }
-
-    std::string getStepperName(const fhicl::ParameterSet& pset) {
-      return pset.get<std::string>("physics.stepper");
-    }
-
-#if G4VERSION>4103
-    bool modifyEMOption4(const fhicl::ParameterSet& pset) {
-      return pset.get<bool>("physics.modifyEMOption4",false);
-    }
-
-    bool useEmOption4InTracker(const fhicl::ParameterSet& pset) {
-      return pset.get<bool>("physics.useEmOption4InTracker",false);
-    }
-
-    bool modifyEMOption0(const fhicl::ParameterSet& pset) {
-      return pset.get<bool>("physics.modifyEMOption0",false);
-    }
-#endif
-
-  }
-
-  G4VUserPhysicsList* physicsListDecider(const fhicl::ParameterSet& pset) {
+  G4VUserPhysicsList* physicsListDecider(const Mu2eG4Config::Physics& phys, const Mu2eG4Config::Debug& debug) {
 
     G4VModularPhysicsList* tmpPL(nullptr);
 
-    const string name = getPhysicsListName(pset);
+    const string name = phys.physicsListName();
 
-    getDiagLevel(pset)>-1 && G4cout << __func__ << " invoked with " << name << G4endl;
+    debug.diagLevel()>-1 && G4cout << __func__ << " invoked with " << name << G4endl;
 
     // special cases
     if ( name  == "Minimal" ) {
@@ -123,16 +84,16 @@ namespace mu2e{
 
     else if ( name  == "ErrorPhysicsList" ) {
       // rather special case of G4VUserPhysicsList for Track Error
-      // Propagation, with special Energy Loss implementation 
+      // Propagation, with special Energy Loss implementation
       // (see User's Guide: For Application Developers)
-      return new G4ErrorPhysicsList(); 
+      return new G4ErrorPhysicsList();
     }
 
     // General case
     else {
 
       G4PhysListFactory physListFactory;
-      physListFactory.SetVerbose(getDiagLevel(pset));
+      physListFactory.SetVerbose(debug.diagLevel());
       tmpPL = physListFactory.GetReferencePhysList(name);
 
     }
@@ -148,73 +109,74 @@ namespace mu2e{
     tmpPL->RegisterPhysics( new StepLimiterPhysConstructor() );
 
     // Mu2e Customizations
-    tmpPL->RegisterPhysics( new Mu2eG4CustomizationPhysicsConstructor(&pset));
+    tmpPL->RegisterPhysics( new Mu2eG4CustomizationPhysicsConstructor(&phys, &debug));
 
-    if (turnOffRadioactiveDecay(pset)) {
+    if (phys.turnOffRadioactiveDecay()) {
       tmpPL->RemovePhysics("G4RadioactiveDecay");
     }
 
-    if ( turnOffRadioactiveDecay(pset) && turnOnRadioactiveDecay(pset) ) {
+    if ( phys.turnOffRadioactiveDecay() && phys.turnOnRadioactiveDecay() ) {
       mf::LogError("Config") << "Inconsistent config";
       G4cout << "Error: turnOnRadioactiveDecay & turnOffRadioactiveDecay on" << G4endl;
       throw cet::exception("BADINPUT")<<" decide on turnOn/OffRadioactiveDecay\n";
     }
 
-    if (turnOnRadioactiveDecay(pset)) {
-      tmpPL->RegisterPhysics(new G4RadioactiveDecayPhysics(getDiagLevel(pset)));
+    if (phys.turnOnRadioactiveDecay()) {
+      tmpPL->RegisterPhysics(new G4RadioactiveDecayPhysics(debug.diagLevel()));
     }
 
 #if G4VERSION>4103
     // for version 4105 it will need to be rplaced with
     // emParams->SetMscEnergyLimit(115.0*CLHEP::MeV);
-    if ( modifyEMOption4(pset) && (name.find("_EMZ") != std::string::npos) ) {
+    if ( phys.modifyEMOption4() && (name.find("_EMZ") != std::string::npos) ) {
       tmpPL->RemovePhysics(("G4EmStandard_opt4"));
-      if (getDiagLevel(pset)>0) {
+      if (debug.diagLevel()>0) {
         G4cout << __func__ << " Registering Mu2eEmStandardPhysics_option4" << G4endl;
       }
-      tmpPL->RegisterPhysics( new Mu2eEmStandardPhysics_option4(getDiagLevel(pset)));
+      tmpPL->RegisterPhysics( new Mu2eEmStandardPhysics_option4(debug.diagLevel()));
     }
 
-    if ( useEmOption4InTracker(pset) && (name.find("_EMZ") == std::string::npos) ) {
+    if ( phys.useEmOption4InTracker() && (name.find("_EMZ") == std::string::npos) ) {
       // assign Mu2eEmStandard_opt4 to the tracker
-      if (getDiagLevel(pset)>0) {
-        G4cout << __func__ << " Assigning EmStandardPhysics_option4 to the tracker" << G4endl;
+      if (debug.diagLevel()>0) {
+        G4cout << __func__
+               << " Assigning EmStandardPhysics_option4 to the TrackerMother" << G4endl;
       }
       G4EmParameters* emParams = G4EmParameters::Instance();
       // fixme: get the value from fhicl and key on modifyEMOption once using 4105
       // emParams->SetMscEnergyLimit(115.0*CLHEP::MeV);
-      emParams->AddPhysics("Tracker", "G4EmStandard_opt4");
+      emParams->AddPhysics("TrackerMother", "G4EmStandard_opt4");
     }
 
-    if ( modifyEMOption0(pset) && (name.find("_EM") == std::string::npos) ) {
+    if ( phys.modifyEMOption0() && (name.find("_EM") == std::string::npos) ) {
       tmpPL->RemovePhysics(("G4EmStandard"));
-      if (getDiagLevel(pset)>0) {
+      if (debug.diagLevel()>0) {
         G4cout << __func__ << " Registering Mu2eEmStandardPhysics" << G4endl;
       }
-      tmpPL->RegisterPhysics( new Mu2eEmStandardPhysics(getDiagLevel(pset)));
+      tmpPL->RegisterPhysics( new Mu2eEmStandardPhysics(debug.diagLevel()));
     }
 #endif
 
     // Muon Spin and Radiative decays plus pion muons with spin
-    if ( getDecayMuonsWithSpin(pset) ) {
+    if ( phys.decayMuonsWithSpin() ) {
 
       // requires spin tracking: G4ClassicalRK4WSpin
-      if ( getStepperName(pset) != "G4ClassicalRK4WSpin" &&
-           getStepperName(pset) != "G4DormandPrince745WSpin" ) {
+      if ( phys.stepper() != "G4ClassicalRK4WSpin" &&
+           phys.stepper() != "G4DormandPrince745WSpin" ) {
         mf::LogError("Config") << "Inconsistent config";
         G4cout << "Error: DecayMuonsWithSpin requires enabling spin tracking" << G4endl;
         throw cet::exception("BADINPUT")<<" DecayMuonsWithSpin requires enabling spin tracking\n";
       }
 
-      tmpPL->RegisterPhysics( new DecayMuonsWithSpin(getDiagLevel(pset)));
+      tmpPL->RegisterPhysics( new DecayMuonsWithSpin(debug.diagLevel()));
     }
 
-    G4double productionCut = pset.get<double>("physics.minRangeCut");
-    G4double protonProductionCut = pset.get<double>("physics.protonProductionCut");
+    G4double productionCut = phys.minRangeCut();
+    G4double protonProductionCut = phys.protonProductionCut();
     mf::LogInfo("GEOM_MINRANGECUT")
       << "Setting production cut to " << productionCut
       << ", protonProductionCut to " << protonProductionCut << " mm";
-    if (pset.get<int>("debug.diagLevel") > 0) {
+    if (debug.diagLevel() > 0) {
       G4cout << __func__ << " Setting gamma, e- and e+ production cut"
              << " to " << productionCut << " mm and for proton to "
              << protonProductionCut << " mm" << G4endl;
@@ -224,7 +186,7 @@ namespace mu2e{
     tmpPL->SetCutValue(protonProductionCut, "proton");
     // regional cuts (if any) are set during the geometry construction
 
-    if (getDiagLevel(pset) > 0) tmpPL->DumpCutValuesTable();
+    if (debug.diagLevel() > 0) tmpPL->DumpCutValuesTable();
 
     return dynamic_cast<G4VUserPhysicsList*>(tmpPL);
 

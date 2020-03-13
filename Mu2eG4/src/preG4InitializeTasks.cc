@@ -10,17 +10,14 @@
 //
 
 #include "Mu2eG4/inc/preG4InitializeTasks.hh"
-
-#include "fhiclcpp/ParameterSet.h"
-
 #include "Mu2eG4/inc/setBirksConstant.hh"
 
 namespace mu2e{
 
-  void preG4InitializeTasks(const fhicl::ParameterSet& pset) {
+  void preG4InitializeTasks(const Mu2eG4Config::Physics& phys, const Mu2eG4Config::Debug& debug) {
 
     // Modify Birks Constant for some materials
-    setBirksConstant(pset);
+    setBirksConstant(phys, debug);
 
   }
 

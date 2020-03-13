@@ -6,7 +6,9 @@
 #include "JobConfig/primary/prolog.fcl"
 process_name: IPAMichel
 
-source: { module_type : EmptyEvent }
+source: { module_type : EmptyEvent 
+	  maxEvents : 100000000
+}
 services: @local::Services.Sim
 physics : { 
   producers : {

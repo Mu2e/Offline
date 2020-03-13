@@ -192,8 +192,8 @@ string    ds.CableRunCal.material  = "CalCableRunOuter";//"Electronics";
 
 // Optical "core" placed in the "Cable"
 double    ds.CableRunCalCore.RadiusFraction  = 0.5; // 0.5 = centered in the volume
-double    ds.CableRunCalCore.dRadiusFraction = 0.0864; //.0117 nominally to set so the cross section matches expectations with portion near IFB
-double    ds.CableRunCalCore.dPhiFraction    = 0.0864;//.0117 
+double    ds.CableRunCalCore.dRadiusFraction = 0.0117; //set so the cross section matches expectations with portion near IFB
+double    ds.CableRunCalCore.dPhiFraction    = 0.0117; 
 string    ds.CableRunCalCore.material        = "CalCableRunFiber";//"G4_SILICON_DIOXIDE";
 
 double    ds.CableRunTrk.length    = 1933; // actually halflength
@@ -206,8 +206,8 @@ string    ds.CableRunTrk.material  = "TrkCableRunOuter"; //"Electronics";
 
 // Optical "core" placed in the "Cable"
 double    ds.CableRunTrkCore.RadiusFraction  = 0.5; // 0.5 = centered in the volume
-double    ds.CableRunTrkCore.dRadiusFraction = 0.1051; // changed to be 100 mm^2 .0331; // Set so the cross section matches expectations with portion near IFB
-double    ds.CableRunTrkCore.dPhiFraction    = 0.1051; //.0331; // 
+double    ds.CableRunTrkCore.dRadiusFraction = 0.0331; // Set so the cross section matches expectations with portion near IFB
+double    ds.CableRunTrkCore.dPhiFraction    = 0.0331;
 string    ds.CableRunTrkCore.material        = "TrkCableRunFiber"; //"G4_SILICON_DIOXIDE";
 
 //Cabling At Outside of IFB

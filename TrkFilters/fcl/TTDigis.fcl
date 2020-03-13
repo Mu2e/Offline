@@ -24,7 +24,7 @@ services : {
     message               : @local::default_message
     TFileService          : { fileName : "TTDigis.hist" }
 
-    RandomNumberGenerator : { }
+    RandomNumberGenerator : {defaultEngineKind: "MixMaxRng" }
     #   Timing                : { }
 
     GeometryService        : { inputFile      : "Mu2eG4/geom/geom_common.txt"          }
@@ -33,7 +33,7 @@ services : {
     G4Helper               : { }
     BTrkHelper             : @local::BTrkHelperDefault
     SeedService            : { @table::automaticSeeds
-	baseSeed         :  0
+	baseSeed         :  8
 	maxUniqueEngines :  20
     }
     

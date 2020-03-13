@@ -10,8 +10,8 @@ physics.filters.cprLowPSeedDePHSFilter.maxChi2XY : 5.0
 physics.filters.cprLowPSeedDePHSFilter.maxChi2PhiZ : 5.0
 physics.filters.cprLowPSeedDePHSFilter.maxD0 : 300.0
 physics.filters.cprLowPSeedDePHSFilter.minD0 : -150.0
-physics.filters.cprLowPSeedDePHSFilter.minAbsLambda : 100.0
-physics.filters.cprLowPSeedDePHSFilter.maxAbsLambda : 330.0
+physics.filters.cprLowPSeedDePHSFilter.minAbsLambda : 50.0
+physics.filters.cprLowPSeedDePHSFilter.maxAbsLambda : 500.0
 physics.filters.cprLowPSeedDePHSFilter.minNLoops     : 0
 physics.filters.cprLowPSeedDePHSFilter.maxNLoops     : 30
 physics.filters.cprLowPSeedDePHSFilter.prescaleUsingD0Phi  : false

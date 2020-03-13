@@ -1,0 +1,30 @@
+# -*- mode:tcl -*-
+# Example of running BFieldPlotter
+#
+
+#include "fcl/minimalMessageService.fcl"
+#include "fcl/standardServices.fcl"
+
+process_name : BFieldPlotter
+
+services : @local::Services.Core
+
+physics.analyzers.bfieldplotter : {
+    module_type : BFieldPlotter
+    plane       :  "x"
+    planeValue  :  -10000.
+    axisOneMin  : -8050.  # -8050. #-10500.
+    axisOneMax  :  8050.  #  8050. # 10500.
+    axisTwoMin  : -25000. # -8050. # -25000.
+    axisTwoMax  :  45000. #  8050. #  45000.
+    mapBinSize  :  10.
+}
+
+physics.e1             : [bfieldplotter]
+physics.end_paths      : [e1]
+
+services.TFileService.fileName: "nts.owner.bfieldplotter.x_-10000.sequencer.root"
+
+#Use file with altered field maps
+services.GeometryService.inputFile : "Analyses/test/geom_bfieldplotter.txt"
+

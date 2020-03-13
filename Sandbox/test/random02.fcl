@@ -13,7 +13,12 @@ source : {
 
 services : {
   message               : @local::default_message
-  RandomNumberGenerator : {  restoreStateLabel :  randomsaver }
+  RandomNumberGenerator : {
+#   be careful when setting restoreStateLabel and make sure that
+#   defaultEngineKind is set to "MixMaxRng"
+      restoreStateLabel : randomsaver
+      defaultEngineKind : "MixMaxRng"
+   }
 
   SeedService : @local::automaticSeeds
 

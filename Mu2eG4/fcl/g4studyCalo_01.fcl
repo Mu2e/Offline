@@ -28,7 +28,7 @@ services : {
 
   message               : @local::default_message
   TFileService          : { fileName : "g4studyCalo_01.root" }
-  RandomNumberGenerator : { }
+  RandomNumberGenerator : {defaultEngineKind: "MixMaxRng" }
 
   GeometryService        : { inputFile      : "Mu2eG4/test/g4studyGeomCalo_01.txt"  }
   ConditionsService      : { conditionsfile : "Mu2eG4/test/conditions_01.txt"      }
@@ -94,7 +94,7 @@ outputs:  {
 }
 
 // Initialze seeding of random engines: do not put these lines in base .fcl files for grid jobs.
-services.SeedService.baseSeed         :  0
+services.SeedService.baseSeed         :  8
 services.SeedService.maxUniqueEngines :  20
 #services.message.destinations.log.noTimeStamps : true
 # inform the geometry service it is not the standard Mu2e Detector

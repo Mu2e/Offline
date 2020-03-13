@@ -43,7 +43,7 @@ using namespace CLHEP;
 // C++ includes.
 #include <iostream>
 #include <string>
-#include <math.h>
+#include <cmath>
 #include <memory>
 // This is fragile and needs to be last until CLHEP is
 // properly qualified and included in the BaBar classes.

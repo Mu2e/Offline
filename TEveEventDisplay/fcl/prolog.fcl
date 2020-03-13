@@ -1,0 +1,30 @@
+# -*- mode: tcl -*-
+#------------------------------------------------------------------------------
+# this file is included by fcl/standardProducers.fcl inside the PROLOG section
+#------------------------------------------------------------------------------
+
+
+BEGIN_PROLOG
+
+TEveEventDisplay : {
+      module_type : TEveEventDisplay
+       ComboHitCollection : "makePH"
+      _chtag : "makePH"
+      strawStepsTag        : "compressDigiMCs:tracker"
+      strawDigisTag        : "makeSD"
+      strawHitsTag         : "makeSH"
+      comboHitsTag         : "makeSH"
+      generatorModuleLabel : generate
+      g4ModuleLabel        : g4run
+      hitMakerModuleLabel  : makeSH
+      trackerStepPoints    : tracker
+      minEnergyDep         : 0.0001
+      minHits              : 5
+      doDisplay            : true
+      clickToAdvance       : true
+  }
+
+TEveDis : {  
+	analyzers : { TEveEventDisplay : @local::TEveEventDisplay }
+}
+END_PROLOG

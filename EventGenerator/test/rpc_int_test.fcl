@@ -21,7 +21,7 @@ process_name : RpcIntTest
 services : {
     message               : @local::default_message
     TFileService          : { fileName        : "nts._USER_._DATASET_._DSCONF_.sequencer.root" }
-    RandomNumberGenerator : { }
+    RandomNumberGenerator : {defaultEngineKind: "MixMaxRng" }
 
     GeometryService        : { inputFile      : "Mu2eG4/geom/geom_common.txt"   }
     ConditionsService      : { conditionsfile : "Mu2eG4/test/conditions_01.txt"        }
@@ -29,7 +29,7 @@ services : {
     BTrkHelper             : @local::BTrkHelperDefault
     G4Helper               : { }
     SeedService            : { @table::automaticSeeds
-	baseSeed         :  0
+	baseSeed         :  8
 	maxUniqueEngines :  20
     }
 

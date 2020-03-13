@@ -28,9 +28,12 @@ services :
     fileName : "replayWithSkip.root"
   }
 
-  RandomNumberGeneratorService : 
+  RandomNumberGenerator :
   {
-    restoreStateLabel :  randomsaver 
+#   be careful when setting restoreStateLabel and make sure that
+#   defaultEngineKind is set to "MixMaxRng"
+    restoreStateLabel :  randomsaver
+    defaultEngineKind : "MixMaxRng"
   }
 
   GeometryService :
