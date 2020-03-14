@@ -3,7 +3,7 @@
 CosmicTrackMCInfo::CosmicTrackMCInfo(){
      TrueTheta =0;
      TruePhi =0;
-
+     
      TruePhiSIM = 0;
      TrueThetaSIM = 0;
      TrueMomentum = 0;
@@ -17,7 +17,7 @@ CosmicTrackMCInfo::CosmicTrackMCInfo(){
      RawTrueParams.A1 = 0.;
      RawTrueParams.B0 =0;
      RawTrueParams.B1 = 0.;
-
-}
+	
+} 
 
 
