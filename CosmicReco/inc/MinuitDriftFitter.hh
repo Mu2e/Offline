@@ -30,29 +30,29 @@
 
 using namespace mu2e;
     struct FitResult{
-public:
-std::vector<std::string> names;
-std::vector<double> bestfit;
-std::vector<double> bestfiterrors;
-std::vector<double> bestfitcov;
+	public:
+		std::vector<std::string> names;
+		std::vector<double> bestfit;
+		std::vector<double> bestfiterrors;
+		std::vector<double> bestfitcov;
 
-std::vector<double> StartDOCAs;
-std::vector<double> StartTimeResiduals;
+		std::vector<double> StartDOCAs;
+		std::vector<double> StartTimeResiduals;
 
-std::vector<double> GaussianEndDOCAs;
-std::vector<double> GaussianEndTimeResiduals;
+		std::vector<double> GaussianEndDOCAs;
+		std::vector<double> GaussianEndTimeResiduals;
 
-std::vector<double> FullFitEndDOCAs;
-std::vector<double> FullFitEndTimeResiduals;
+		std::vector<double> FullFitEndDOCAs;
+		std::vector<double> FullFitEndTimeResiduals;
 
-std::vector<double> RecoAmbigs;
+		std::vector<double> RecoAmbigs;
+		
+		double NLL;
 
-double NLL;
-
-};
+	};
 
     namespace MinuitDriftFitter {
-FitResult DoFit(int diag, CosmicTrackFinderData& trackdata, StrawResponse const& srep, const Tracker* tracker, double doca_cut, unsigned int MinNCh_cut, int LogLcut, double _gaussTres, double _maxTres);
+	FitResult DoFit(int diag, CosmicTrackFinderData& trackdata, StrawResponse const& srep, const Tracker* tracker, double doca_cut, unsigned int MinNCh_cut, int LogLcut, double _gaussTres, double _maxTres);
 
     }
 

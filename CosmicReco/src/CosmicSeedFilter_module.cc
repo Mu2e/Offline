@@ -33,10 +33,10 @@ namespace mu2e
   private:
 
     art::InputTag   _cosmicTag;
-    TrkFitFlag      _goodcosmic;
+    TrkFitFlag      _goodcosmic; 
     TrkFitFlag      _convergedcosmic;
     unsigned int _minnsh;
-    unsigned int _minnch;
+    unsigned int _minnch;    
     unsigned int _minNHitsTimeCluster;
     std::string     _trigPath;
     int             _debug;
@@ -67,14 +67,14 @@ namespace mu2e
 
     for(auto icos = coscol->begin(); icos != coscol->end(); ++icos) {
       auto const& cosmic = *icos;
-
-      if( cosmic.status().hasAllProperties(_goodcosmic) && cosmic.status().hasAllProperties(_convergedcosmic) && cosmic.hits().size()>_minnch && cosmic.trkstrawhits().size() > _minnsh ){
-
+     
+      if( cosmic.status().hasAllProperties(_goodcosmic) && cosmic.status().hasAllProperties(_convergedcosmic) && cosmic.hits().size()>_minnch && cosmic.trkstrawhits().size() > _minnsh ){ 
+       
         ++_npass;
-
-        triginfo->_triggerBits.merge(TriggerFlag::track);
+        
+        triginfo->_triggerBits.merge(TriggerFlag::track); 
         triginfo->_triggerPath = _trigPath;
-
+    
         size_t index = std::distance(coscol->begin(),icos);
         triginfo->_cosmic = art::Ptr<CosmicTrackSeed>(cosH,index);
         if(_debug > 1){
