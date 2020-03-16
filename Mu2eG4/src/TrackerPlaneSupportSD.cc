@@ -1,9 +1,5 @@
 //
-// Define a sensitive detector for TrackerPlaneSupport
-//
-// $Id: TrackerPlaneSupportSD.cc,v 1.6 2013/08/28 05:58:17 gandr Exp $
-// $Author: gandr $
-// $Date: 2013/08/28 05:58:17 $
+// Sensitive detector for TrackerPlaneSupport
 //
 // Original author KLG
 //
@@ -17,10 +13,10 @@
 // Mu2e includes
 #include "Mu2eG4/inc/TrackerPlaneSupportSD.hh"
 #include "Mu2eG4/inc/Mu2eG4UserHelpers.hh"
+#include "Mu2eG4/inc/SimParticleHelper.hh"
 #include "Mu2eG4/inc/PhysicsProcessInfo.hh"
 #include "ConfigTools/inc/SimpleConfig.hh"
 #include "GeometryService/inc/GeomHandle.hh"
-#include "GeometryService/inc/WorldG4.hh"
 #include "TrackerGeom/inc/Tracker.hh"
 
 // G4 includes
@@ -43,7 +39,7 @@ namespace mu2e {
     if ( !geom->hasElement<Tracker>() ) {
       throw cet::exception("GEOM")
         << "Expected Tracker but did not find it.\n";
-    } 
+    }
     else {
       _TrackerVersion = config.getInt("TrackerVersion",3);
       if ( _TrackerVersion < 3) {
@@ -59,7 +55,7 @@ namespace mu2e {
 
     if ( _sizeLimit>0 && _currentSize>_sizeLimit ) {
       if( (_currentSize - _sizeLimit)==1 ) {
-        mf::LogWarning("G4") << "Maximum number of particles reached in " 
+        mf::LogWarning("G4") << "Maximum number of steps reached in "
                              << SensitiveDetectorName
                              << ": "
                              << _currentSize << endl;
@@ -107,13 +103,13 @@ namespace mu2e {
         touchableHandle->GetVolume(3)->GetName() << " " <<
         touchableHandle->GetVolume(4)->GetName() << endl;
 
-      cout << "TrackerPlaneSupportSD::" << __func__ 
+      cout << "TrackerPlaneSupportSD::" << __func__
            << " Debugging hit info event track copyn replican: " <<
         setw(4) << en << " " <<
         setw(4) << ti << " " <<
         setw(4) << cn << endl;
 
-      cout << "TrackerPlaneSupportSD::" << __func__ << " Debugging _TrackerVersion: " << 
+      cout << "TrackerPlaneSupportSD::" << __func__ << " Debugging _TrackerVersion: " <<
         _TrackerVersion << endl;
 
     }
@@ -132,9 +128,11 @@ namespace mu2e {
                             sdcn,
                             aStep->GetTotalEnergyDeposit(),
                             aStep->GetNonIonizingEnergyDeposit(),
+                            0., // visible energy deposit; used in scintillators
                             aStep->GetPreStepPoint()->GetGlobalTime(),
                             aStep->GetPreStepPoint()->GetProperTime(),
                             aStep->GetPreStepPoint()->GetPosition() - _mu2eOrigin,
+                            aStep->GetPostStepPoint()->GetPosition() - _mu2eOrigin,
                             aStep->GetPreStepPoint()->GetMomentum(),
                             aStep->GetStepLength(),
                             endCode
@@ -143,7 +141,7 @@ namespace mu2e {
     if (verboseLevel >0) {
       cout << "TrackerPlaneSupportSD::" << __func__ << " Event " << setw(4) <<
         G4RunManager::GetRunManager()->GetCurrentEvent()->GetEventID() <<
-        " TrackerPlaneSupport " << 
+        " TrackerPlaneSupport " <<
         touchableHandle->GetVolume(1)->GetName() << " " <<
         setw(4) << touchableHandle->GetVolume(1)->GetCopyNo() <<
         " hit at: " << aStep->GetPreStepPoint()->GetPosition() - _mu2eOrigin << endl;
