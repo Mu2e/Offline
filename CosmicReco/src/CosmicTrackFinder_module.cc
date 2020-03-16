@@ -323,7 +323,7 @@ namespace mu2e{
 							tmpHits.push_back(chit);
 						}
 				      }
-				      tmpResult._tseed._straw_chits = std::move(tmpHits);
+				      tmpResult._tseed._straw_chits = tmpHits;
 		      		}
 		      		track_seed_vec.push_back(tmpResult._tseed);
 		     
