@@ -20,17 +20,11 @@ physics :
     @table::TrkHitReco.producers
     @table::CosmicTracking.producers
   }
-  filters : {
+  analyzers : {
       AlignTrackCollector: { @table::AlignTrackCollector }
   }
-
 }
-  outputs: {
-    recoTracks : {
-      module_type: RootOutput
-      outputCommands : [ "keep *_*_*_*" ]
-    }
-  }
+
 
 physics.RecoPath : [ @sequence::TrkHitReco.PrepareHits,  @sequence::CosmicTracking.FindCosmicsTight, AlignTrackCollector ]
 physics.EndPath : [  ]
