@@ -26,8 +26,8 @@ physics :
 }
 
 
-physics.RecoPath : [ @sequence::TrkHitReco.PrepareHits,  @sequence::CosmicTracking.FindCosmicsTight, AlignTrackCollector ]
-physics.EndPath : [  ]
+physics.RecoPath : [ @sequence::TrkHitReco.PrepareHits,  @sequence::CosmicTracking.FindCosmicsTight  ]
+physics.EndPath : [  AlignTrackCollector ]
 
 
 # select an event only if we wrote one or more tracks in an event
