@@ -21,18 +21,15 @@ physics :
     @table::CosmicTracking.producers
   }
   analyzers : {
+      CosmicTrackDetails : { @table::CosmicTrackDetails }
       AlignTrackCollector: { @table::AlignTrackCollector }
   }
 }
 
 
 physics.RecoPath : [ @sequence::TrkHitReco.PrepareHits,  @sequence::CosmicTracking.FindCosmicsTight  ]
-physics.EndPath : [  AlignTrackCollector ]
+physics.EndPath : [ CosmicTrackDetails ]
 
-
-# select an event only if we wrote one or more tracks in an event
-outputs.recoTracks.SelectEvents : [ RecoPath ]
-outputs.recoTracks.fileName : "rec.owner.bootstrap-alignment.CosmicTrackCollection-sequencer.art"
 
 # set Millepede output filenames explicitly here
 physics.analyzers.AlignTrackCollector.TrackDataOutputFile : "etc.owner.bootstrap-alignment.millepede-trackcollection-sequencer.bin"
