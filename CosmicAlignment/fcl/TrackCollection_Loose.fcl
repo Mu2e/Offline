@@ -3,7 +3,7 @@ physics.TrigPath : [ @sequence::TrkHitReco.PrepareHits,  @sequence::CosmicTracki
 
 physics.analyzers.AlignTrackCollector.CosmicTrackSeedCollection : "CosmicTrackFinderLoose"
 physics.analyzers.CosmicTrackDetails.CosmicTrackSeedCollection : "CosmicTrackFinderLoose"
-physics.analyzers.CosmicTrackFinderLoose.ComboHitCollection : "makePH"
+physics.producers.CosmicTrackFinderLoose.ComboHitCollection : "makePH"
 
 
 outputs.recoTracks.fileName : "rec.owner.bootstrap-alignment.LOOSE-CosmicTrackCollection-sequencer.art"

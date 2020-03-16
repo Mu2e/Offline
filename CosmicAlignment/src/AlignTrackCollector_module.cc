@@ -392,13 +392,13 @@ namespace mu2e
                 Hep3Vector td(A1, B1, 1);
                 td = td.unit();
                 Hep3Vector rperp = td - (td.dot(straw.getDirection()) * straw.getDirection());
+                double phi = rperp.theta();
 
                 // Distance of Closest Approach (DOCA)
                 TwoLinePCA_XYZ PCA = TwoLinePCA_XYZ(track_pos, track_dir, Geom::toXYZVec(straw_mp),
                         Geom::toXYZVec(wire_dir), 1.e-8);
 
-                double phi = rperp.theta();
-                double drift_distance = // TODO: check this with Dave
+                double drift_distance =
                     _srep.driftTimeToDistance(straw_id, straw_hit.driftTime(),
                                              phi);
 
