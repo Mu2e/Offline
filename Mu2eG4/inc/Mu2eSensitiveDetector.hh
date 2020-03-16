@@ -12,15 +12,12 @@
 
 // Mu2e includes
 #include "Mu2eG4/inc/EventNumberList.hh"
-#include "Mu2eG4/inc/SimParticleHelper.hh"
 #include "MCDataProducts/inc/StepPointMCCollection.hh"
 
 // G4 includes
 #include "G4VSensitiveDetector.hh"
 
 // Art includes
-#include "canvas/Persistency/Provenance/ProductID.h"
-#include "art/Framework/Principal/Event.h"
 
 class G4Step;
 class G4HCofThisEvent;
@@ -30,6 +27,7 @@ namespace mu2e {
   // Forward declarations in mu2e namespace
   class SimpleConfig;
   class PhysicsProcessInfo;
+  class SimParticleHelper;
 
   class Mu2eSensitiveDetector : public G4VSensitiveDetector{
 
@@ -37,11 +35,11 @@ namespace mu2e {
 
     Mu2eSensitiveDetector(G4String const name, SimpleConfig const & config);
 
-    virtual void Initialize(G4HCofThisEvent*);
+    virtual void Initialize(G4HCofThisEvent*) override;
 
-    virtual G4bool ProcessHits(G4Step*, G4TouchableHistory*);
+    virtual G4bool ProcessHits(G4Step*, G4TouchableHistory*) override;
 
-    virtual void EndOfEvent(G4HCofThisEvent*);
+    virtual void EndOfEvent(G4HCofThisEvent*) override;
 
     void beforeG4Event(StepPointMCCollection& outputHits,
                        PhysicsProcessInfo & processInfo,
