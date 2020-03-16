@@ -30,6 +30,7 @@ physics :
 physics.RecoPath : [ @sequence::TrkHitReco.PrepareHits,  @sequence::CosmicTracking.FindCosmicsTight  ]
 physics.EndPath : [ CosmicTrackDetails ]
 
+physics.analyzers.AlignTrackCollector.CosmicTrackSeedCollection : CosmicTrackFinderTight
 
 # set Millepede output filenames explicitly here
 physics.analyzers.AlignTrackCollector.TrackDataOutputFile : "etc.owner.bootstrap-alignment.millepede-trackcollection-sequencer.bin"
