@@ -312,6 +312,9 @@ void CosmicTrackFinder::produce(art::Event& event)
                     tmpResult._tseed._status.clear(TrkFitFlag::helixOK);
                     continue;
                 }
+
+                ComboHitCollection tmpHits;
+
                 if (_DoDrift) {
                     _tfit.DriftFit(tmpResult, srep);
                     if (tmpResult._tseed._track.minuit_converged == false) {
@@ -319,11 +322,9 @@ void CosmicTrackFinder::produce(art::Event& event)
                         tmpResult._tseed._status.clear(TrkFitFlag::helixOK);
                         continue;
                     }
-                	ComboHitCollection tmpHits;
+
                     for (auto const& chit : tmpResult._tseed._straw_chits) {
-
                         if (!chit._flag.hasAnyProperty(StrawHitFlag::outlier)) {
-
                             tmpHits.push_back(chit);
                         }
                     }
