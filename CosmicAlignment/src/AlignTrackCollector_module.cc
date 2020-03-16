@@ -324,6 +324,8 @@ namespace mu2e
                 continue;
             }
 
+            std::cout << "Have track." << std::endl;
+
             XYZVec track_pos(st.MinuitFitParams.A0, st.MinuitFitParams.B0, 0);
             XYZVec track_dir(st.MinuitFitParams.A1, st.MinuitFitParams.B1, 1);
 
@@ -395,14 +397,15 @@ namespace mu2e
 
                 double phi = rperp.theta();
                 double drift_distance = // TODO: check this with Dave
-                    //_srep.driftTimeToDistance(straw_id, straw_hit.driftTime(),
-                    //                          phi);
-                    straw_hit.driftTime() * 0.065;
+                    _srep.driftTimeToDistance(straw_id, straw_hit.driftTime(),
+                                             phi);
 
                 // signed DCA.
                 double residual = (PCA.LRambig() * PCA.dca()) - drift_distance;
                 double residual_error =
                     _srep.driftDistanceError(straw_id, drift_distance, phi, PCA.dca());
+
+                std::cout << "residual " << residual << " +- " << residual_error << std::endl;
 
                 if (isnan(residual))
                     continue;
