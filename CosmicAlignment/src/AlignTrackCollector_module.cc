@@ -16,7 +16,7 @@
 #include "boost/math/distributions/chi_squared.hpp"
 #include "boost/math/distributions/normal.hpp"
 
-#include "art/Framework/Core/EDFilter.h"                   // for EDFilter
+#include "art/Framework/Core/EDAnalyzer.h"                   // for EDAnalyzer
 #include "art/Framework/Core/ModuleMacros.h"               // for DEFINE_AR...
 #include "art/Framework/Core/ProducerTable.h"              // for ProducerT...
 #include "art/Framework/Principal/Event.h"                 // for Event
@@ -70,7 +70,7 @@ using namespace mu2e;
 namespace mu2e
 {
 
-    class AlignTrackCollector : public art::EDFilter
+    class AlignTrackCollector : public art::EDAnalyzer
     {
         private:
             // Histograms for diagnostic purposes
@@ -125,12 +125,12 @@ namespace mu2e
                         Comment("Use seed tracks only"), false
                 };
             };
-            typedef art::EDFilter::Table<Config> Parameters;
+            typedef art::EDAnalyzer::Table<Config> Parameters;
 
             void beginJob();
             void endJob();
-            bool beginRun(art::Run&);
-            bool filter(art::Event&);
+            bool beginRun(art::Run const&);
+            bool analyze(art::Event const&);
             bool filter_CosmicTrackSeedCollection(art::Event const& event, Tracker const& tracker,
                     StrawResponse const& _srep,
                     CosmicTrackSeedCollection const& _coscol);
@@ -138,7 +138,7 @@ namespace mu2e
             int getLabel(int const&, int const&, int const&);
 
             AlignTrackCollector(const Parameters& conf)
-                : art::EDFilter(conf), _diag(conf().diaglvl()), _costag(conf().costag()),
+                : art::EDAnalyzer(conf), _diag(conf().diaglvl()), _costag(conf().costag()),
                 _output_filename(conf().millefile()), _labels_filename(conf().labelsfile()),
                 track_type(conf().tracktype()), seed_only(conf().seedonly())
         {
@@ -148,11 +148,11 @@ namespace mu2e
             int nobj = 0;
             for (int o_cls = 1; o_cls < 3; o_cls++) // labels start at 1.
             {
-                if (o_cls == 1) 
+                if (o_cls == 1)
                 {
                     nobj = StrawId::_nplanes;
                 }
-                else if (o_cls == 2) 
+                else if (o_cls == 2)
                 {
                     nobj = StrawId::_nupanels;
                 }
@@ -274,7 +274,7 @@ namespace mu2e
         std::cout << "AlignTrackCollector: wrote labels to " << _labels_filename << std::endl;
     }
 
-    bool AlignTrackCollector::beginRun(art::Run&) { return true; }
+    bool AlignTrackCollector::beginRun(art::Run const&) { return true; }
 
     void AlignTrackCollector::endJob()
     {
@@ -396,7 +396,7 @@ namespace mu2e
                 double phi = rperp.theta();
                 double drift_distance = // TODO: check this with Dave
                     //_srep.driftTimeToDistance(straw_id, straw_hit.driftTime(),
-                    //                          phi); 
+                    //                          phi);
                     straw_hit.driftTime() * 0.065;
 
                 // signed DCA.
@@ -475,7 +475,7 @@ namespace mu2e
         return object_cls * 10000 + obj_uid * 10 + dof_id;
     }
 
-    bool AlignTrackCollector::filter(art::Event& event)
+    bool AlignTrackCollector::analyze(art::Event const& event)
     {
         StrawResponse const& _srep = srep_h.get(event.id());
         Tracker const& tracker = _proditionsTracker_h.get(event.id());
