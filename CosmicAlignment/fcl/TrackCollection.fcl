@@ -21,16 +21,17 @@ physics :
     @table::CosmicTracking.producers
   }
   analyzers : {
-      CosmicTrackDetails : { @table::CosmicTrackDetails }
       AlignTrackCollector: { @table::AlignTrackCollector }
+      CosmicTrackDetails: { @table::CosmicTrackDetails }
   }
 }
 
 
 physics.RecoPath : [ @sequence::TrkHitReco.PrepareHits,  @sequence::CosmicTracking.FindCosmicsTight  ]
-physics.EndPath : [ CosmicTrackDetails ]
+physics.EndPath : [ AlignTrackCollector, CosmicTrackDetails ]
 
 physics.analyzers.AlignTrackCollector.CosmicTrackSeedCollection : CosmicTrackFinderTight
+physics.analyzers.CosmicTrackDetails.CosmicTrackSeedCollection : CosmicTrackFinderTight
 
 # set Millepede output filenames explicitly here
 physics.analyzers.AlignTrackCollector.TrackDataOutputFile : "etc.owner.bootstrap-alignment.millepede-trackcollection-sequencer.bin"
