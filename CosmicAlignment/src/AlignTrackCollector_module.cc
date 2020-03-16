@@ -292,12 +292,14 @@ namespace mu2e
             CosmicTrackSeedCollection const& coscol)
     {
         bool wrote_track = false; // did we write any tracks at all?
-
+        std::cout << "called by event processor" << std::endl;
         // dedicated to CosmicTrackSeedCollection
         for (CosmicTrackSeed const& sts : coscol)
         {
             CosmicTrack const& st = sts._track;
             TrkFitFlag const& status = sts._status;
+
+            std::cout << "found track object" << std::endl;
 
             if (!status.hasAllProperties(TrkFitFlag::helixOK))
             {
