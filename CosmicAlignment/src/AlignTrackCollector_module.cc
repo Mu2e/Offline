@@ -129,8 +129,8 @@ namespace mu2e
 
             void beginJob();
             void endJob();
-            bool beginRun(art::Run const&);
-            bool analyze(art::Event const&);
+            void beginRun(art::Run const&);
+            void analyze(art::Event const&);
             bool filter_CosmicTrackSeedCollection(art::Event const& event, Tracker const& tracker,
                     StrawResponse const& _srep,
                     CosmicTrackSeedCollection const& _coscol);
@@ -274,7 +274,7 @@ namespace mu2e
         std::cout << "AlignTrackCollector: wrote labels to " << _labels_filename << std::endl;
     }
 
-    bool AlignTrackCollector::beginRun(art::Run const&) { return true; }
+    void AlignTrackCollector::beginRun(art::Run const&) { return; }
 
     void AlignTrackCollector::endJob()
     {
@@ -475,17 +475,17 @@ namespace mu2e
         return object_cls * 10000 + obj_uid * 10 + dof_id;
     }
 
-    bool AlignTrackCollector::analyze(art::Event const& event)
+    void AlignTrackCollector::analyze(art::Event const& event)
     {
         StrawResponse const& _srep = srep_h.get(event.id());
         Tracker const& tracker = _proditionsTracker_h.get(event.id());
 
         auto stH = event.getValidHandle<CosmicTrackSeedCollection>(_costag);
-        if (stH.product() == 0) return false;
+        if (stH.product() == 0) return;
 
         CosmicTrackSeedCollection const& coscol = *stH.product();
 
-        return filter_CosmicTrackSeedCollection(event, tracker, _srep, coscol);
+        filter_CosmicTrackSeedCollection(event, tracker, _srep, coscol);
     }
 
 }; // namespace mu2e
