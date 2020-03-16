@@ -1,5 +1,8 @@
 #include "CosmicAlignment/fcl/TrackCollection.fcl"
-physics.TrigPath : [ @sequence::TrkHitReco.PrepareHits,  @sequence::CosmicTracking.FindCosmicsLoose, AlignTrackCollector ]
+physics.TrigPath : [ @sequence::TrkHitReco.PrepareHits,  @sequence::CosmicTracking.FindCosmicsLoose ]
+
+physics.analyzers.AlignTrackCollector.CosmicTrackSeedCollection : CosmicTrackFinderLoose
+physics.analyzers.CosmicTrackDetails.CosmicTrackSeedCollection : CosmicTrackFinderLoose
 
 
 outputs.recoTracks.fileName : "rec.owner.bootstrap-alignment.LOOSE-CosmicTrackCollection-sequencer.art"
