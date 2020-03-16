@@ -1,10 +1,9 @@
 ---
 BasedOnStyle: LLVM
 AlignAfterOpenBracket: Align
-BreakBeforeBraces: Stroustrup
 ColumnLimit: '100'
 DerivePointerAlignment: 'false'
-IndentWidth: '4'
+IndentWidth: '2'
 Language: Cpp
 PointerAlignment: Left
 ReflowComments: 'true'
@@ -14,5 +13,5 @@ SpacesInSquareBrackets: 'false'
 Standard: Auto
 TabWidth: '4'
 UseTab: Never
-
+BreakConstructorInitializers: AfterColon
 ...
