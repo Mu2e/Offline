@@ -3,6 +3,7 @@
 
 #include "RecoDataProducts/inc/ComboHit.hh"
 #include "RecoDataProducts/inc/CosmicTrack.hh"
+#include "RecoDataProducts/inc/LineSeed.hh"
 #include "DataProducts/inc/XYZVec.hh"
 
 //Tracker Details:
@@ -64,6 +65,20 @@ using namespace mu2e;
 		double *pdf;
 		int k;
 		double operator() (const std::vector<double> &x) const;
+};
+
+class GaussianDriftFit : public ROOT::Minuit2::FCNBase {
+  public:
+    ComboHitCollection shs;
+    StrawResponse const& srep;
+    const Tracker* tracker;
+
+    GaussianDriftFit(ComboHitCollection _shs, StrawResponse const& _srep, const Tracker* _tracker) : shs(_shs), srep(_srep), tracker(_tracker){}; 
+
+    double Up() const { return 0.5;};
+    double operator() (const std::vector<double> &x) const;
+
+    void setResults(LineSeed &lseed, std::vector<double> const&results);
 };
 
 #endif

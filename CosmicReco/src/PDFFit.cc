@@ -29,6 +29,7 @@
 //Utilities:
 #include "CosmicReco/inc/PDFFit.hh"
 #include "CosmicReco/inc/DriftFitUtils.hh"
+#include "Mu2eUtilities/inc/TwoLinePCA.hh"
 
 //Minuit
 #include <Minuit2/FCNBase.h>
@@ -285,3 +286,50 @@ FullDriftFit::FullDriftFit(ComboHitCollection _chits, StrawResponse const& _srep
  	return llike;
 }
 
+double GaussianDriftFit::operator() (const std::vector<double> &x) const
+{
+  double a0 = x[0];
+  double b0 = x[1];
+  double a1 = x[2];
+  double b1 = x[3];
+  double t0 = x[4]; 
+  long double llike = 0;
+
+  CLHEP::Hep3Vector intercept(a0,0,b0);
+  CLHEP::Hep3Vector dir(a1,-1,b1);
+  dir = dir.unit();
+
+  for (size_t i=0;i<this->shs.size();i++){
+    Straw const& straw = tracker->getStraw(this->shs[i].strawId());
+    TwoLinePCA pca(straw.getMidPoint(), straw.getDirection(), intercept, dir);
+    double longdist = (pca.point1()-straw.getMidPoint()).dot(straw.getDirection());
+    double longres = srep.wpRes(this->shs[i].energyDep()*1000., fabs(longdist));
+
+    llike += pow(longdist-this->shs[i].wireDist(),2)/pow(longres,2);
+
+    double drift_time = srep.driftDistanceToTime(this->shs[i].strawId(), pca.dca(), 0);
+    drift_time += srep.driftDistanceOffset(this->shs[i].strawId(), 0, 0, pca.dca());
+
+    double drift_res = srep.driftDistanceError(this->shs[i].strawId(), 0, 0, pca.dca());
+
+    double traj_time = ((pca.point2() - intercept).dot(dir))/299.9;
+    double hit_t0 = this->shs[i].time() - this->shs[i].propTime() - traj_time - drift_time;
+    llike += pow(hit_t0-t0,2)/pow(drift_res,2);
+  }
+//  std::cout << x[0] << " " << x[1] << " " << x[2] << " " << x[3] << " " << x[4] << "  =>  " << llike << std::endl;
+  
+  return llike;
+}
+
+void GaussianDriftFit::setResults(LineSeed &lseed, std::vector<double> const& results)
+{
+  double a0 = results[0];
+  double b0 = results[1];
+  double a1 = results[2];
+  double b1 = results[3];
+  double t0 = results[4]; 
+
+  lseed._t0 = t0;
+  lseed._seedInt = CLHEP::Hep3Vector(a0,0,b0);
+  lseed._seedDir = CLHEP::Hep3Vector(a1,-1,b1).unit();
+}

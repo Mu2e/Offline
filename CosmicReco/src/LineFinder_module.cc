@@ -52,8 +52,8 @@ namespace mu2e{
         fhicl::Atom<int> minpeak{Name("minPeak"), Comment("Minimum hits in accumulator peak"),3};
         fhicl::Atom<float> maxDOCA{Name("maxDOCA"), Comment("Largest DOCA that is considered on the track (mm)"),3};
         fhicl::Atom<float> t0offset{Name("t0offset"), Comment("T0 offset"), 0};
-        fhicl::Atom<int> nsteps{Name("NSteps"), Comment("Number of steps per straw"), 16};
-        fhicl::Atom<float> stepsize{Name("StepSize"), Comment("Size of each step in fraction of res"), 0.25};
+        fhicl::Atom<int> nsteps{Name("NSteps"), Comment("Number of steps per straw"), 8};
+        fhicl::Atom<float> stepsize{Name("StepSize"), Comment("Size of each step in fraction of res"), 0.5};
         fhicl::Atom<art::InputTag> shToken{Name("ComboHitCollection"),Comment("tag for straw hit collection")};
         fhicl::Atom<art::InputTag> tcToken{Name("TimeClusterCollection"),Comment("tag for time cluster collection")};
       };
