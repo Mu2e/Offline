@@ -117,12 +117,12 @@ namespace mu2e {
     inline double ionizationEnergy(double q) const { return _strawPhysics->ionizationEnergy(q); }
     
     const std::string& name() const { return _name; }
+    double wpRes(double kedep, double wdist) const;
   private:
 
     std::string _name;
 
     // helper functions
-    double wpRes(double kedep, double wdist) const;
     static double PieceLine(std::vector<double> const& xvals, 
 			    std::vector<double> const& yvals, double xval);
 

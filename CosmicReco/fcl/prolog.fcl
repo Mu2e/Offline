@@ -40,10 +40,18 @@ SimpleTimeCluster : {
 }
 
 LineFinder : {
-    module_type : LineFinder
-    ComboHitCollection : "makeSH"
-    TimeClusterCollection : "SimpleTimeCluster"
+        module_type : LineFinder
+        ComboHitCollection : "makeSH"
+        TimeClusterCollection : "SimpleTimeCluster"
 }
+
+CosmicDriftFit : {
+        module_type : CosmicDriftFit
+        ComboHitCollection : "makeSH"
+        LineSeedCollection : "LineFinder"
+}
+
+
 
 
 
@@ -136,11 +144,9 @@ CosmicFitDisplay : {
 
 CosmicTrackDiag : {
 	module_type : CosmicTrackDiag
-	ComboHitCollection : "makePH"
+	ComboHitCollection : "makeSH"
 	TimeClusterCollection : SimpleTimeCluster
-	CosmicTrackSeedCollection : CosmicTrackFinder
 	StrawDigiMCCollection : "compressDigiMCs"
-	TimeOffsets : {inputs : [ @sequence::DigiCompression.NoCosmicTimeMaps ]}
   }
 
 CosmicMuonInfo : {
@@ -168,6 +174,7 @@ CosmicTracking : {
 		CosmicTrackFinderLoose  : @local::CosmicTrackFinderLoose
 		CosmicTrackFinderTight  : @local::CosmicTrackFinderTight
                 LineFinder : @local::LineFinder
+                CosmicDriftFit : @local::CosmicDriftFit
 	}
 	analyzers : {
 
