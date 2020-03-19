@@ -18,7 +18,7 @@ physics :
 # Add another TrkQual module with a different training
 # (NB to be read out by TrkAna it must have the same suffix)
 physics.producers.TrkQualNewDeM : @local::TrkQualDeM
-physics.producers.TrkQualNewDeM.TrkQualMVA.MVAWeights : "TrkDiag/test/TrkQualNew.weights.xml"
+physics.producers.TrkQualNewDeM.TrainingName : "TrkQualNew"
 
 physics.TrkAnaTrigPath : [ @sequence::TrkAnaReco.TrigSequence, TrkQualNewDeM ]
 physics.TrkAnaEndPath : [ @sequence::TrkAnaReco.EndSequence ]

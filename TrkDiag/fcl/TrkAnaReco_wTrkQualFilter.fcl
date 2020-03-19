@@ -30,7 +30,7 @@ physics :
 }
 
 physics.producers.TrkQualNewDeM : @local::TrkQualDeM
-physics.producers.TrkQualNewDeM.TrkQualMVA.MVAWeights : "TrkDiag/test/TrkQualNew.weights.xml"
+physics.producers.TrkQualNewDeM.TrainingName : "TrkQualNew"
 
 physics.TrkAnaTrigPath : [ @sequence::TrkAnaReco.TrigSequence, trkQualFilter ]
 physics.TrkAnaNewTrigPath : [ @sequence::TrkAnaReco.TrigSequence, TrkQualNewDeM, trkQualNewFilter ]

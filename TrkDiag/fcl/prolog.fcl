@@ -83,9 +83,9 @@ BEGIN_PROLOG
   	  module_type : TrackQuality
   }
   TrkQualNeg : @local::TrkQual
-  TrkQualNeg.TrkQualMVA.MVAWeights : "TrkDiag/test/TrkQual.weights.xml"
+  TrkQualNeg.TrainingName : "TrkQual"
   TrkQualPos : @local::TrkQual
-  TrkQualPos.TrkQualMVA.MVAWeights : "TrkDiag/test/TrkQualPos.weights.xml"
+  TrkQualPos.TrainingName : "TrkQualPos"
 
   TrkQualDeM		       : @local::TrkQualNeg
   TrkQualDeM.KalSeedCollection : "KFFDeM"
