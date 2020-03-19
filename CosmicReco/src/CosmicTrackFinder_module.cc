@@ -36,6 +36,7 @@
 #include "RecoDataProducts/inc/TrkFitFlag.hh"
 #include "TrkReco/inc/TrkTimeCalculator.hh"
 #include "ProditionsService/inc/ProditionsHandle.hh"
+#include "RecoDataProducts/inc/LineSeed.hh"
 
 //utils:
 #include "Mu2eUtilities/inc/ParametricFit.hh"
@@ -108,6 +109,7 @@ namespace mu2e{
 	      fhicl::Atom<TrkFitFlag> saveflag {Name("SaveTrackFlag"),Comment("if set to OK then save the track"), TrkFitFlag::helixOK};
 	      fhicl::Atom<int> minNHitsTimeCluster{Name("minNHitsTimeCluster"),Comment("minium allowed time cluster"), 1 };
 	      fhicl::Atom<art::InputTag> chToken{Name("ComboHitCollection"),Comment("tag for combo hit collection")};
+	      fhicl::Atom<art::InputTag> shToken{Name("StrawHitCollection"),Comment("tag for straw hit collection")};
 	      fhicl::Atom<art::InputTag> tcToken{Name("TimeClusterCollection"),Comment("tag for time cluster collection")};
 	      fhicl::Atom<art::InputTag> mcToken{Name("StrawDigiMCCollection"),Comment("StrawDigi collection tag")};
 	      fhicl::Atom<bool> DoDrift{Name("DoDrift"),Comment("turn on for drift fit")};
@@ -133,6 +135,7 @@ namespace mu2e{
 	float				_max_seed_chi2; ///maximum chi2 allowed for seed
 
 	art::InputTag  _chToken;
+	art::InputTag  _shToken;
 	art::InputTag  _tcToken;
 	art::InputTag  _mcToken;
 
@@ -164,15 +167,18 @@ namespace mu2e{
 	_saveflag  (conf().saveflag()),
 	_minNHitsTimeCluster(conf().minNHitsTimeCluster()),
 	_chToken (conf().chToken()),
+        _shToken (conf().shToken()),
 	_tcToken (conf().tcToken()),
 	_mcToken (conf().mcToken()),
 	_DoDrift (conf().DoDrift()),
 	_tfit (conf().tfit())
 	{
 		consumes<ComboHitCollection>(_chToken);
+		consumes<ComboHitCollection>(_shToken);
 		consumes<TimeClusterCollection>(_tcToken);
 		consumes<StrawDigiMCCollection>(_mcToken);
 		produces<CosmicTrackSeedCollection>();
+                produces<LineSeedCollection>();
 	    
  	}
 
@@ -203,6 +209,8 @@ namespace mu2e{
 
 	auto const& chH = event.getValidHandle<ComboHitCollection>(_chToken);
 	const ComboHitCollection& chcol(*chH);
+	auto const& shH = event.getValidHandle<ComboHitCollection>(_shToken);
+	const ComboHitCollection& shcol(*shH);
 	auto  const& tcH = event.getValidHandle<TimeClusterCollection>(_tcToken);
 	const TimeClusterCollection& tccol(*tcH);
 
@@ -212,6 +220,7 @@ namespace mu2e{
 		_stResult._mccol =  &mccol;
 	}
 
+        unique_ptr<LineSeedCollection> lseed_col(new LineSeedCollection());
 
 	_stResult.event   = &event;
 	_stResult._chcol  = &chcol; 
@@ -331,12 +340,42 @@ namespace mu2e{
 		      
 		      		if ((_DoDrift and tmpHits.size() == 0) or track_seed_vec.size() == 0)     continue;
 		      		col->push_back(tmpResult._tseed);  
+
+                                LineSeed lseed;
+                                lseed._t0 = 0;
+                                lseed._converged = tmpResult._tseed._track.minuit_converged;
+                                lseed._seedSize = 0;
+                                lseed._timeCluster = tmpResult._tseed.timeCluster();
+                                std::vector<StrawHitIndex> strawHitIdxs;
+		                for (size_t i=0; i<tmpResult._tseed._straw_chits.size();i++){
+			          ComboHit const& chit0 = tmpResult._tseed._straw_chits[i];
+                                  bool found = false;
+                                  for (size_t j=0;j<shcol.size();j++){
+			            ComboHit const& chit1 = shcol[j];
+                                    if (chit1.strawId() == chit0.strawId() && chit1.time() == chit0.time()){
+                                      strawHitIdxs.push_back(j);
+                                      found = true;
+                                      break;
+                                    }
+                                  }
+                                  if (!found)
+                                    std::cout << "COULD NOT FIND HIT ======================================================================================================" << std::endl;
+                                }
+                                lseed._strawHitIdxs = strawHitIdxs;
+                                lseed._seedInt = CLHEP::Hep3Vector(tmpResult._tseed._track.MinuitFitParams.A0,tmpResult._tseed._track.MinuitFitParams.B0,0);
+                                lseed._seedDir = CLHEP::Hep3Vector(tmpResult._tseed._track.MinuitFitParams.A1,tmpResult._tseed._track.MinuitFitParams.B1,1).unit();
+                                if (lseed._seedDir.y() > 0)
+                                  lseed._seedDir *= -1;
+
+                                LineSeedCollection* lscol = lseed_col.get();
+                                lscol->push_back(lseed);
 			          
               		}
         	}
     	}
  
   	event.put(std::move(seed_col));    
+        event.put(std::move(lseed_col));
      }
 
     void CosmicTrackFinder::fillGoodHits(CosmicTrackFinderData& trackData){

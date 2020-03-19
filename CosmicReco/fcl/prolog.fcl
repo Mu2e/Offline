@@ -67,6 +67,7 @@ CHD : {
 CosmicTrackFinder : { #split into Loose and tight below for efficieny studies
 	module_type		: CosmicTrackFinder
 	ComboHitCollection     : "makePH"
+	StrawHitCollection     : "makeSH"
 	TimeClusterCollection  : "SimpleTimeCluster"
 	StrawDigiMCCollection : "compressDigiMCs"
    
