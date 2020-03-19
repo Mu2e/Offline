@@ -1,9 +1,9 @@
 //
-// EDProducer module for converting straw hit digis into DTC formatted
-// packets (which are stored in DataBlock data products)
+// EDProducer module for converting tracker/calo digis 
+// into DTC formatted packets 
 //
 //
-// Original author Tomonari Miyashita
+// Original author G. Pezzullo and E. Flumerfelt
 //
 //
 
@@ -48,19 +48,13 @@
 #include <stdexcept>
 
 
-// Definitions and typedefs needed for compatibility with HLS codeblock
-#define NUM_PRESAMPLES 4
-#define START_SAMPLES 5 // 0 indexed
-#define NUM_SAMPLES 15
-#define LOWER_TDC 16000
-#define UPPER_TDC 64000
-
-typedef uint16_t tdc_type;
-typedef uint8_t  tot_type;
-typedef uint16_t adc_type;
-typedef uint16_t calib_constant_type;
-typedef uint8_t  flag_mask_type;
-typedef uint64_t timestamp;
+// Typedefs needed for compatibility with HLS codeblock
+using tdc_type = uint16_t;
+using tot_type = uint8_t;
+using adc_type = uint16_t;
+using calib_constant_type = uint16_t;
+using flag_mask_type = uint8_t;
+using timestamp = uint64_t;
 
 using namespace std;
 
@@ -91,6 +85,12 @@ typedef std::deque<calo_data_block_t> calo_data_block_list_t;
 namespace mu2e {
 
   constexpr int format_version = 6;
+  constexpr int NUM_PRESAMPLES = 4;
+  constexpr int START_SAMPLES = 5; // 0 indexed
+  constexpr int NUM_SAMPLES = 15;
+  constexpr int LOWER_TDC = 16000;
+  constexpr int UPPER_TDC = 64000;
+
   //--------------------------------------------------------------------
   //
   //
@@ -100,9 +100,9 @@ namespace mu2e {
     explicit ArtBinaryPacketsFromDigis(fhicl::ParameterSet const& pset);
 
     virtual void beginJob() override;
-    virtual void beginRun(art::Run&);
+    virtual void beginRun(art::Run&) override;
 
-    virtual void endJob();
+    virtual void endJob() override;
 
     void produce(art::Event&) override;
 
@@ -223,7 +223,7 @@ namespace mu2e {
 
     void   printCalorimeterData(CaloDataPacket const& curDataBlock);
 
-    size_t waveformMaximumIndex(std::vector<adc_t>& waveform);
+    const size_t waveformMaximumIndex(std::vector<adc_t>const& waveform);
 
     void flushBuffer(raw_data_list_t& buffers);
     void closeDataBuffer(raw_data_list_t& dataStream, bool openNew = true) {     
@@ -267,7 +267,7 @@ namespace mu2e {
   // temporary function used to find the location of the waveform peak in the 
   // calorimeter digitized waveform
   //--------------------------------------------------------------------------------
-  size_t ArtBinaryPacketsFromDigis::waveformMaximumIndex(std::vector<adc_t>& waveform) {
+  const size_t ArtBinaryPacketsFromDigis::waveformMaximumIndex(std::vector<adc_t>const & waveform) {
     size_t  indexMax(0), content(0);
     for (size_t i = 0; i < waveform.size(); ++i) {
       if (waveform[i] > content) {
@@ -529,21 +529,9 @@ namespace mu2e {
 
     TrkTypes::ADCWaveform const& theWaveform = SD.adcWaveform();
 
-    TrkData.SetWaveform(0,  theWaveform[0]);
-    TrkData.SetWaveform(1,  theWaveform[1]);
-    TrkData.SetWaveform(2,  theWaveform[2]);
-    TrkData.SetWaveform(3,  theWaveform[3]);
-    TrkData.SetWaveform(4,  theWaveform[4]);
-    TrkData.SetWaveform(5,  theWaveform[5]);
-    TrkData.SetWaveform(6,  theWaveform[6]);
-    TrkData.SetWaveform(7,  theWaveform[7]);  
-    TrkData.SetWaveform(8,  theWaveform[8]);  
-    TrkData.SetWaveform(9,  theWaveform[9]);  
-    TrkData.SetWaveform(10, theWaveform[10]);  
-    TrkData.SetWaveform(11, theWaveform[11]); 
-    TrkData.SetWaveform(12, theWaveform[12]); 
-    TrkData.SetWaveform(13, theWaveform[13]); 
-    TrkData.SetWaveform(14, theWaveform[14]); 
+    for (size_t i=0; i<TrkTypes::NADC; ++i){
+      TrkData.SetWaveform(i,  theWaveform[i]);
+    }
 
     TrkData.PreprocessingFlags = 0;
 
@@ -1109,5 +1097,4 @@ namespace mu2e {
 }
 
 
-using mu2e::ArtBinaryPacketsFromDigis;
-DEFINE_ART_MODULE(ArtBinaryPacketsFromDigis);
+DEFINE_ART_MODULE(mu2e::ArtBinaryPacketsFromDigis);
