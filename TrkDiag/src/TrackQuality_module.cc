@@ -37,7 +37,17 @@ namespace mu2e
   class TrackQuality : public art::EDProducer
   {
   public:
-    TrackQuality(fhicl::ParameterSet const&);
+    struct Config {
+      using Name=fhicl::Name;
+      using Comment=fhicl::Comment;
+
+      fhicl::Atom<art::InputTag> kalSeedTag{Name("KalSeedCollection"), Comment("Input tag for KalSeedCollection")};
+      fhicl::Table<MVATools::Config> trkqualmva{Name("TrkQualMVA"), Comment("MVATools configuration")};
+      fhicl::Atom<bool> printmva{Name("PrintMVA"), Comment("Print the MVA used"), false};
+    };
+
+    using Parameters = art::EDProducer::Table<Config>;
+    TrackQuality(const Parameters& conf);
 
   private:
     void produce(art::Event& event) override;
@@ -50,10 +60,11 @@ namespace mu2e
     InfoStructHelper _infoStructHelper;
   };
 
-  TrackQuality::TrackQuality(fhicl::ParameterSet const& pset) :
-    art::EDProducer{pset},
-    _kalSeedTag(pset.get<art::InputTag>("KalSeedCollection", "")),
-    _trkqualmva(new MVATools(pset.get<fhicl::ParameterSet>("TrkQualMVA", fhicl::ParameterSet())))
+  TrackQuality::TrackQuality(const Parameters& conf) :
+    art::EDProducer{conf},
+    _kalSeedTag(conf().kalSeedTag()), 
+    _trkqualmva(new MVATools(conf().trkqualmva()))
+    //new MVATools(pset.get<fhicl::ParameterSet>("TrkQualMVA", fhicl::ParameterSet())))
 
   {
     produces<TrkQualCollection>();
@@ -73,7 +84,7 @@ namespace mu2e
 	}
       }
     }
-    if(pset.get<bool>("PrintMVA",false))
+    if(conf().printmva())
       _trkqualmva->showMVA();
   }
 
