@@ -237,6 +237,12 @@ StrawResponse : {
       0.156641, 0.151196, 0.146546, 0.144069, 0.139858, 0.135838, 0.13319, 
       0.132159, 0.130062, 0.123545, 0.120212 ]
 
+   useParameterizedDriftErrors : false
+   parameterizedDriftBins : 25000
+   parameterizedDriftSigma : 1.39
+   parameterizedDriftTau : 11.22
+
+
    wireLengthBuffer : 2.0
    strawLengthFactor : 0.9
    errorFactor : 1.0
