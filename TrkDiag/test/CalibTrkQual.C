@@ -9,12 +9,9 @@
 using namespace std;
 
 double EfficiencyToTrkQual(TTree* inpt_tree, const char* train_name, double effic, int subdivs=10000);
+std::string CalibTrkQual_Eff(TTree* tree, std::string train_name);
 
-void CalibTrkQual_Eff(TTree* tree, std::string train_name) {
-
-  double min_eff = 0.0;
-  double max_eff = 1.0;
-  double eff_step = 0.1;
+void CalibTrkQual(TTree* tree, std::string train_name) {
 
   std::string xmlfilename = "TrkDiag/test/" + train_name + ".weights.xml";
   std::ifstream xmlfile(xmlfilename, std::ofstream::in);
@@ -24,6 +21,10 @@ void CalibTrkQual_Eff(TTree* tree, std::string train_name) {
 
   const int n_chars = 256;
   char xmlline[n_chars];
+  if (!xmlfile.good()) {
+    std::cout << "Problem with xml file " << xmlfilename << std::endl;
+    return;
+  }
   while (xmlfile.good()) {
     xmlfile.getline(xmlline, n_chars);
 
@@ -34,29 +35,45 @@ void CalibTrkQual_Eff(TTree* tree, std::string train_name) {
       return;
     }
 
-    int counter = 0;
     if (xml_string.find("</MethodSetup>") != std::string::npos) {
       // Add the calibration block just before the end
       outfile << "  <Calibration>" << std::endl;
-      for (double i_eff = min_eff; i_eff <= max_eff; i_eff += eff_step) {
-	double trkqual_cut = EfficiencyToTrkQual(tree, train_name.c_str(), i_eff);
-	outfile << "    <Calib Index=\"" << counter << "\" Eff=\"" << i_eff << "\" Cut=\"" << trkqual_cut << "\"/>" << std::endl;
-	++counter;
-      }
+
+      const auto& calibtable_eff = CalibTrkQual_Eff(tree, train_name);
+      outfile << calibtable_eff;
+
+      // TODO: if we ever have a definition of background rejection for TrkQual, we can calibrate it here
+      //      const auto& calibtable_bkg_rej = CalibTrkQual_BkgRej(tree, train_name);
+      //      outfile << calibtable_bkg_rej;
+
       outfile << "  </Calibration>" << std::endl;
-    }
-
+    }    
     outfile << xml_string << std::endl;
-  }
-  
+  }  
   outfile.close();
-
   std::cout << "Done!" << std::endl;
+}
+
+std::string CalibTrkQual_Eff(TTree* tree, std::string train_name) {
+
+  double min_eff = 0.0;
+  double max_eff = 1.0;
+  double eff_step = 0.1;
+  std::stringstream calibtable;
+  calibtable.str("");
+
+  int counter = 0;
+  for (double i_eff = min_eff; i_eff <= max_eff; i_eff += eff_step) {
+    double trkqual_cut = EfficiencyToTrkQual(tree, train_name.c_str(), i_eff);
+    calibtable << "    <Calib Index=\"" << counter << "\" Eff=\"" << i_eff << "\" Cut=\"" << trkqual_cut << "\"/>" << std::endl;
+    ++counter;
+  }
+  return calibtable.str();
 }
 
 double EfficiencyToTrkQual(TTree* inpt_tree, const char* train_name, double effic, int subdivs) {
   // Given a target efficiency and a TrkAna tree with TrkQual training, function returns a TrkQual cut value
-  // that approximately achieves the target efficiently
+  // that approximately achieves the target efficiency
   //
   // Returned cut value's significant figures grow roughly as log10(subdivs)
 
