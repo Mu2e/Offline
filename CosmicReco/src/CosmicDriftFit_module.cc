@@ -173,10 +173,14 @@ void CosmicDriftFit::produce(art::Event& event ) {
     newseed._strawHitIdxs = lseed._strawHitIdxs;
 
     if (min.IsValid()){
-      std::cout << "CONVERGED " << minval << std::endl;
+      if(_diag > 1){
+        std::cout << "CONVERGED " << minval << std::endl;
+      }
       newseed._converged = 1;
     }else{
-      std::cout << "DID NOT CONVERGE " << minval << std::endl;
+      if(_diag > 1){
+        std::cout << "DID NOT CONVERGE " << minval << std::endl;
+      }
       newseed._converged = 0;
     }
     fit.setResults(newseed,results.Params());

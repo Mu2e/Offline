@@ -122,6 +122,7 @@ namespace mu2e
       Float_t _lfdoca, _lfangle;
       Int_t _tcnhits, _lfsize;
       Int_t _converged;
+      Float_t _maxllike, _maxtresid, _lfllike;
 
       // hit tree 
       Float_t _hitlfdoca, _hitlflong, _hitlfdpocat;
@@ -186,6 +187,9 @@ namespace mu2e
       _trackT->Branch("lfsize",&_lfsize,"lfsize/I");
       _trackT->Branch("ewmoffset",&_ewMarkerOffset,"ewmoffset/F");
       _trackT->Branch("converged",&_converged,"converged/I");
+      _trackT->Branch("lfllike",&_lfllike,"lfllike/F");
+      _trackT->Branch("maxtresid",&_maxtresid,"maxtresid/F");
+      _trackT->Branch("maxllike",&_maxllike,"maxllike/F");
       if (_mcdiag){
         _trackT->Branch("mcnsh",&_mcnsh,"mcnsh/I");
         _trackT->Branch("mct0",&_mct0,"mct0/F");
@@ -209,6 +213,9 @@ namespace mu2e
       _hitT->Branch("t0",&_fitt0,"t0/F");
       _hitT->Branch("ewmoffset",&_ewMarkerOffset,"ewmoffset/F");
       _hitT->Branch("converged",&_converged,"converged/I");
+      _hitT->Branch("lfllike",&_lfllike,"lfllike/F");
+      _hitT->Branch("maxtresid",&_maxtresid,"maxtresid/F");
+      _hitT->Branch("maxllike",&_maxllike,"maxllike/F");
 
       if (_mcdiag){
         _hitT->Branch("background",&_hitbackground,"background/I");
@@ -274,21 +281,60 @@ namespace mu2e
     _ntrack = -1;
 
     if (_lfcol->size() > 0){
+      auto lseed = _lfcol->at(0);
 
-      auto tclust = (*_lfcol->at(0)._timeCluster);
+      auto tclust = lseed._timeCluster;
       _tcnhits = 0;
-      const std::vector<StrawHitIndex>& shIndices = tclust.hits();
+      const std::vector<StrawHitIndex>& shIndices = tclust->hits();
       for (size_t i=0; i<shIndices.size(); ++i) {
         int loc = shIndices[i];
-        const ComboHit& ch  = (*_chcol)[loc];
+        const ComboHit& ch  = _chcol->at(loc);
         _tcnhits += ch.nStrawHits();
       }
-      _lfsize = _lfcol->at(0)._seedSize;
-      _fitt0 = _lfcol->at(0)._t0;
-      _converged = _lfcol->at(0)._converged;
+
+      _lfsize = lseed._seedSize;
+      _fitt0 = lseed._t0;
+      _converged = lseed._converged;
       _ntrack = 0;
-      auto lfpos = _lfcol->at(0)._seedInt; 
-      auto lfdir = _lfcol->at(0)._seedDir.unit();
+      auto lfpos = lseed._seedInt; 
+      auto lfdir = lseed._seedDir.unit();
+
+      const std::vector<StrawHitIndex>& lseedShIndices = lseed._strawHitIdxs;
+      _maxtresid = 0;
+      _maxllike = 0;
+      _lfllike = 0;
+      for (size_t i=0; i<lseedShIndices.size(); ++i) {
+        int loc = lseedShIndices[i];
+        //FIXME this for loop only makes sense if chcol is strawhits
+        if (loc >= (int)_chcol->size())
+          continue;
+        const ComboHit& sh  = _chcol->at(loc);
+        
+        double llike = 0;
+        Straw const& straw = tracker->getStraw(sh.strawId());
+        TwoLinePCA pca(straw.getMidPoint(), straw.getDirection(), lfpos, lfdir);
+        double longdist = (pca.point1()-straw.getMidPoint()).dot(straw.getDirection());
+        double longres = srep.wpRes(sh.energyDep()*1000., fabs(longdist));
+
+        llike += pow(longdist-sh.wireDist(),2)/pow(longres,2);
+
+        double drift_time = srep.driftDistanceToTime(sh.strawId(), pca.dca(), 0);
+        drift_time += srep.driftDistanceOffset(sh.strawId(), 0, 0, pca.dca());
+
+        double drift_res = srep.driftDistanceError(sh.strawId(), 0, 0, pca.dca());
+
+        double traj_time = ((pca.point2() - lfpos).dot(lfdir))/299.9;
+        double hit_t0 = sh.time() - sh.propTime() - traj_time - drift_time;
+        double tresid = hit_t0-_fitt0;
+        llike += pow(tresid,2)/pow(drift_res,2);
+
+        if (fabs(tresid) > _maxtresid)
+          _maxtresid = fabs(tresid);
+        if (llike > _maxllike)
+          _maxllike = llike;
+        _lfllike += llike;
+      }
+
 
       TwoLinePCA lfpca( _mcpos, _mcdir, lfpos, lfdir);
       _lfdoca = lfpca.dca(); 
