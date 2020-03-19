@@ -14,6 +14,8 @@
 #include "art/Utilities/make_tool.h"
 // utilities
 #include "Mu2eUtilities/inc/MVATools.hh"
+#include "DbService/inc/DbHandle.hh"
+#include "DbTables/inc/TrkQualDb.hh"
 #include "TrkDiag/inc/InfoStructHelper.hh"
 #include "TrkDiag/inc/TrkInfo.hh"
 // data
@@ -34,16 +36,16 @@ using CLHEP::HepVector;
 namespace mu2e
 {
 
-  class TrackQuality : public art::EDProducer
-  {
+class TrackQuality : public art::EDProducer
+{
   public:
     struct Config {
       using Name=fhicl::Name;
       using Comment=fhicl::Comment;
 
       fhicl::Atom<art::InputTag> kalSeedTag{Name("KalSeedCollection"), Comment("Input tag for KalSeedCollection")};
-      fhicl::Table<MVATools::Config> trkqualmva{Name("TrkQualMVA"), Comment("MVATools configuration")};
-      fhicl::Atom<bool> printmva{Name("PrintMVA"), Comment("Print the MVA used"), false};
+      fhicl::Atom<std::string> trainName{Name("TrainingName"), Comment("Name of the training (e.g. TrkQual)")};
+      fhicl::Atom<bool> printMVA{Name("PrintMVA"), Comment("Print the MVA used"), false};
     };
 
     using Parameters = art::EDProducer::Table<Config>;
@@ -53,6 +55,10 @@ namespace mu2e
     void produce(art::Event& event) override;
 
     art::InputTag _kalSeedTag;
+    std::string _trainName;
+  bool _printMVA;
+
+    mu2e::DbHandle<mu2e::TrkQualDb> _trkQualDb;
 
     MVATools* _trkqualmva;
     MVAMask _mvamask;
@@ -63,29 +69,11 @@ namespace mu2e
   TrackQuality::TrackQuality(const Parameters& conf) :
     art::EDProducer{conf},
     _kalSeedTag(conf().kalSeedTag()), 
-    _trkqualmva(new MVATools(conf().trkqualmva()))
-    //new MVATools(pset.get<fhicl::ParameterSet>("TrkQualMVA", fhicl::ParameterSet())))
-
+    _trainName(conf().trainName()),
+    _printMVA(conf().printMVA())
   {
     produces<TrkQualCollection>();
     produces<RecoQualCollection>();
-    
-    _trkqualmva->initMVA();
-
-    // create the MVA mask in case we have removed variables
-    const auto& labels = _trkqualmva->labels();
-    _mvamask = 0;
-    for (int i_var = 0; i_var < TrkQual::n_vars; ++i_var) {
-      for (const auto& i_label : labels) {
-	std::string i_varName = TrkQual::varName(static_cast<TrkQual::MVA_varindex>(i_var));
-	if (i_label.find(i_varName) != std::string::npos) {
-	  _mvamask ^= (1 << i_var);
-	  break;
-	}
-      }
-    }
-    if(conf().printmva())
-      _trkqualmva->showMVA();
   }
 
   void TrackQuality::produce(art::Event& event ) {
@@ -97,6 +85,34 @@ namespace mu2e
     art::Handle<KalSeedCollection> kalSeedHandle;
     event.getByLabel(_kalSeedTag, kalSeedHandle);
     const auto& kalSeeds = *kalSeedHandle;
+
+    auto const& trkQualTable = _trkQualDb.get(event.id());
+    for (const auto& i_row : trkQualTable.rows()) {
+      if (i_row.mvaname() == _trainName) { // check the training name
+	_trkqualmva = new MVATools(i_row.xmlfilename());
+
+	_trkqualmva->initMVA();
+	// create the MVA mask in case we have removed variables
+	const auto& labels = _trkqualmva->labels();
+	_mvamask = 0;
+	for (int i_var = 0; i_var < TrkQual::n_vars; ++i_var) {
+	  for (const auto& i_label : labels) {
+	    std::string i_varName = TrkQual::varName(static_cast<TrkQual::MVA_varindex>(i_var));
+	    if (i_label.find(i_varName) != std::string::npos) {
+	      _mvamask ^= (1 << i_var);
+	      break;
+	    }
+	  }
+	}
+	if(_printMVA) {
+	  _trkqualmva->showMVA();
+	}
+	break;
+      }
+    }
+    if(!_trkqualmva) {
+      throw cet::exception("TrackQuality") << "_trkqualmva not initialized properly" << std::endl;
+    }
 
     for (const auto& i_kalSeed : kalSeeds) {
       TrkQual trkqual;
