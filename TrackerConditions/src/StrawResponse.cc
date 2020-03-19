@@ -72,7 +72,11 @@ namespace mu2e {
 
   double StrawResponse::driftDistanceError(StrawId strawId, 
 		      double ddist, double phi, double DOCA) const {
-    if(useDriftError()){
+    if (useParameterizedDriftError()){
+      if (DOCA > 2.5)
+        DOCA = 2.5;
+      return PieceLine(_parDriftDocas, _parDriftRes, DOCA);
+    }else if(useDriftError()){
       // maximum drift is the straw radius.  should come from conditions FIXME!
       static double rstraw(2.5);
       double doca = std::min(fabs(DOCA),rstraw);
@@ -88,8 +92,7 @@ namespace mu2e {
   }
 
   double StrawResponse::driftDistanceOffset(StrawId strawId, double ddist, double phi, double DOCA) const {
-    // fixme
-    return 0;
+    return PieceLine(_parDriftDocas, _parDriftOffsets, DOCA);
   }
 
   bool StrawResponse::wireDistance(Straw const& straw, double edep, 
