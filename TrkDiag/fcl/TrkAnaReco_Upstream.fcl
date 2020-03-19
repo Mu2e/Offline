@@ -8,6 +8,7 @@ process_name : TrkAnaRecoUpstream
 source : { module_type : RootInput }
 
 services : @local::Services.Reco
+services.DbService.textFile : ["TrkDiag/test/TrkQualDb.txt" ]
 
 physics :
 {
