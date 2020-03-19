@@ -134,12 +134,6 @@ setup -B mu2e_artdaq_core v1_03_07 -q${MU2E_UPS_QUALIFIERS}:+${MU2E_ART_SQUALIFI
 # Other libraries we need.
 setup -B pcie_linux_kernel_module v2_02_13 -q${MU2E_UPS_QUALIFIERS}:+${MU2E_ART_SQUALIFIER}
 
-# # Get access to raw data formats.
-# setup -B mu2e_artdaq_core v1_02_30a -q${MU2E_UPS_QUALIFIERS}:+${MU2E_ART_SQUALIFIER}:offline
-
-# # Other libraries we need.
-# setup -B pcie_linux_kernel_module v2_02_07b -q${MU2E_UPS_QUALIFIERS}:+${MU2E_ART_SQUALIFIER}
-
 setup -B heppdt   v3_04_01j -q${MU2E_UPS_QUALIFIERS}
 setup -B BTrk   v1_02_21  -q${MU2E_UPS_QUALIFIERS}
 setup -B cry   v1_7m  -q${MU2E_UPS_QUALIFIERS}

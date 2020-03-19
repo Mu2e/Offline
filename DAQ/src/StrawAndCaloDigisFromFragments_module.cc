@@ -11,6 +11,7 @@
 #include "fhiclcpp/ParameterSet.h"
 
 #include "art/Framework/Principal/Handle.h"
+#include "mu2e-artdaq-core/Overlays/FragmentType.hh"
 #include "mu2e-artdaq-core/Overlays/ArtFragmentReader.hh"
 
 #include <artdaq-core/Data/Fragment.hh>
@@ -56,6 +57,8 @@ private:
 
   art::InputTag trkFragmentsTag_;
   art::InputTag caloFragmentsTag_;
+  
+  const int hexShiftPrint = 7;
 
 };  // StrawAndCaloDigisFromFragments
 
@@ -113,16 +116,17 @@ produce( Event & event )
 
     size_t totalSize = 0;
     for(size_t idx = 0; idx < numTrkFrags; ++idx) {
-      auto size = ((*trkFragments)[idx]).size() * sizeof(artdaq::RawDataType);
+      auto size = ((*trkFragments)[idx]).size();// * sizeof(artdaq::RawDataType);
       totalSize += size;
       //      std::cout << "\tTRK Fragment " << idx << " has size " << size << std::endl;
     }
     for(size_t idx = 0; idx < numCalFrags; ++idx) {
-      auto size = ((*calFragments)[idx]).size() * sizeof(artdaq::RawDataType);
+      auto size = ((*calFragments)[idx]).size();// * sizeof(artdaq::RawDataType);
       totalSize += size;
       //      std::cout << "\tCAL Fragment " << idx << " has size " << size << std::endl;
     }
-    
+    totalSize *= sizeof(artdaq::RawDataType);
+
     std::cout << "\tTotal Size: " << (int)totalSize << " bytes." << std::endl;  
   }
 
@@ -162,7 +166,7 @@ produce( Event & event )
       std::cout << "\t" << "=========================" << std::endl;
     }
     
-    std::string mode_;
+    mu2e::FragmentType mode_;
 
     for(size_t curBlockIdx=0; curBlockIdx<cc.block_count(); curBlockIdx++) {
 
@@ -187,7 +191,7 @@ produce( Event & event )
 	cc.printPacketAtByte(cc.blockIndexBytes(0)+16*(2+3*curBlockIdx));
 	
 	// Print out decimal values of 16 bit chunks of packet data
-	for(int i=7; i>=0; i--) {
+	for(int i=hexShiftPrint; i>=0; i--) {
 	  std::cout <<"0x" << std::hex << std::setw(4) << std::setfill('0')<< (adc_t) *(pos+i) << std::dec << std::setw(0);
 	  std::cout << " ";
 	}
@@ -211,7 +215,7 @@ produce( Event & event )
 	std::cout << "valid: " << static_cast<int>(hdr->Valid) << std::endl;
 	std::cout << "EVB mode: " << static_cast<int>(hdr->EVBMode) << std::endl;
 
-	    for(int i=7; i>=0; i--) {
+	    for(int i=hexShiftPrint; i>=0; i--) {
 	      std::cout << (adc_t) *(pos+8+i);
 	      std::cout << " ";
 	    }
@@ -227,16 +231,16 @@ produce( Event & event )
       // }
 
       if(idx < numTrkFrags){
-	mode_ = "TRK";
+	mode_ = mu2e::FragmentType::TRK;//"TRK";
       }else {
-	mode_ = "CAL";
+	mode_ = mu2e::FragmentType::CAL;//"CAL";
       }
       // if(idx>=numTrkFrags && mode_ == "TRK") {
       // 	printf("[StrawAndCaloDigisFromFragments::produce] wrong mode assigned!\n");
       // }
 
       // Parse phyiscs information from TRK packets
-      if(mode_ == "TRK" && hdr->PacketCount>0 && parseTRK_>0) {
+      if(mode_ == mu2e::FragmentType::TRK && hdr->PacketCount>0 && parseTRK_>0) {
 
 	// Create the StrawDigi data products
 	auto trkData = cc.GetTrackerData(curBlockIdx);
@@ -282,7 +286,7 @@ produce( Event & event )
 	  }
 	  std::cout << std::endl;
 	  	  
-	  for(int i=7; i>=0; i--) {
+	  for(int i=hexShiftPrint; i>=0; i--) {
 	    std::cout << (adc_t) *(pos+8*2+i);
 	    std::cout << " ";
 	  }
@@ -333,7 +337,7 @@ produce( Event & event )
 	} // End debug output
 
 
-      } else if(mode_ == "CAL" && hdr->PacketCount>0 && parseCAL_>0) {	// Parse phyiscs information from CAL packets
+      } else if(mode_ == mu2e::FragmentType::CAL && hdr->PacketCount>0 && parseCAL_>0) {	// Parse phyiscs information from CAL packets
 	
 	auto calData = cc.GetCalorimeterData(curBlockIdx);
 	if(calData == nullptr) {
