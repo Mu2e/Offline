@@ -36,8 +36,8 @@ using CLHEP::HepVector;
 namespace mu2e
 {
 
-class TrackQuality : public art::EDProducer
-{
+  class TrackQuality : public art::EDProducer
+  {
   public:
     struct Config {
       using Name=fhicl::Name;
@@ -53,13 +53,14 @@ class TrackQuality : public art::EDProducer
 
   private:
     void produce(art::Event& event) override;
+    void initializeMVA(std::string xmlfilename);
 
     art::InputTag _kalSeedTag;
     std::string _trainName;
-  bool _printMVA;
+    bool _printMVA;
 
     mu2e::DbHandle<mu2e::TrkQualDb> _trkQualDb;
-
+    std::string _currentXmlFile;
     MVATools* _trkqualmva;
     MVAMask _mvamask;
 
@@ -76,6 +77,32 @@ class TrackQuality : public art::EDProducer
     produces<RecoQualCollection>();
   }
 
+  void TrackQuality::initializeMVA(std::string xmlfilename) {
+    // Initialize MVA
+    _trkqualmva = new MVATools(xmlfilename);
+    _trkqualmva->initMVA();
+
+    // create the MVA mask in case we have removed variables
+    const auto& labels = _trkqualmva->labels();
+    _mvamask = 0;
+    for (int i_var = 0; i_var < TrkQual::n_vars; ++i_var) {
+      for (const auto& i_label : labels) {
+	std::string i_varName = TrkQual::varName(static_cast<TrkQual::MVA_varindex>(i_var));
+	if (i_label.find(i_varName) != std::string::npos) {
+	  _mvamask ^= (1 << i_var);
+	  break;
+	}
+      }
+    }
+
+    // print some extra info, if requested
+    if(_printMVA) {
+      _trkqualmva->showMVA();
+    }
+
+    _currentXmlFile = xmlfilename; // store which file we've just initialized
+  }
+
   void TrackQuality::produce(art::Event& event ) {
     // create output
     unique_ptr<TrkQualCollection> tqcol(new TrkQualCollection());
@@ -86,26 +113,13 @@ class TrackQuality : public art::EDProducer
     event.getByLabel(_kalSeedTag, kalSeedHandle);
     const auto& kalSeeds = *kalSeedHandle;
 
+    // get the XML filename for this TrkQual training
     auto const& trkQualTable = _trkQualDb.get(event.id());
     for (const auto& i_row : trkQualTable.rows()) {
       if (i_row.mvaname() == _trainName) { // check the training name
-	_trkqualmva = new MVATools(i_row.xmlfilename());
-
-	_trkqualmva->initMVA();
-	// create the MVA mask in case we have removed variables
-	const auto& labels = _trkqualmva->labels();
-	_mvamask = 0;
-	for (int i_var = 0; i_var < TrkQual::n_vars; ++i_var) {
-	  for (const auto& i_label : labels) {
-	    std::string i_varName = TrkQual::varName(static_cast<TrkQual::MVA_varindex>(i_var));
-	    if (i_label.find(i_varName) != std::string::npos) {
-	      _mvamask ^= (1 << i_var);
-	      break;
-	    }
-	  }
-	}
-	if(_printMVA) {
-	  _trkqualmva->showMVA();
+	std::string xmlfilename = i_row.xmlfilename();
+	if (xmlfilename != _currentXmlFile) {
+	  initializeMVA(xmlfilename);
 	}
 	break;
       }
@@ -114,6 +128,7 @@ class TrackQuality : public art::EDProducer
       throw cet::exception("TrackQuality") << "_trkqualmva not initialized properly" << std::endl;
     }
 
+    // Go through the tracks and calculate their track qualities
     for (const auto& i_kalSeed : kalSeeds) {
       TrkQual trkqual;
 

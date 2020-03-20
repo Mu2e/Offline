@@ -27,7 +27,6 @@ namespace mu2e
        virtual ~MVATools();
        xercesc::DOMDocument* getXmlDoc();
        void     initMVA();
-       void     calibMVA();
        float    evalMVA(const std::vector<float>&,MVAMask vmask=0xffffffff) const;
        float    evalMVA(const std::vector<double>&,MVAMask vmask=0xffffffff) const;
        void     showMVA()const;

@@ -82,7 +82,9 @@ MVATools::MVATools(const std::string& xmlfilename) :
   oldMVA_(false),
   isNorm_(false) { }
 
-MVATools::~MVATools() {}
+MVATools::~MVATools() {
+  XMLPlatformUtils::Terminate();
+}
 
 xercesc::DOMDocument* MVATools::getXmlDoc() {
 
@@ -107,7 +109,9 @@ xercesc::DOMDocument* MVATools::getXmlDoc() {
   parser->parse(xmlFile);
   XMLString::release( &xmlFile ) ;
   
-  xercesc::DOMDocument* xmlDoc = parser->getDocument() ;
+  xercesc::DOMDocument* xmlDoc = parser->adoptDocument() ; // adopt the document so that the parser no longer owns it...
+  delete parser; // ...can then delete the parser and solve a memory leak
+
   return xmlDoc;
 }
 
@@ -121,6 +125,8 @@ void MVATools::initMVA()
     getOpts(xmlDoc);
     getNorm(xmlDoc);
     getWgts(xmlDoc);
+
+    xmlDoc->release();
 }
 
 void MVATools::getGen(xercesc::DOMDocument* xmlDoc)
@@ -392,6 +398,7 @@ void MVATools::getWgts(xercesc::DOMDocument* xmlDoc)
     XMLString::release(&ATT_INDEX);
     XMLString::release(&ATT_EFF);
     XMLString::release(&ATT_CUT);
+    xmlDoc->release();
 }
 
 
