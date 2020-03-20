@@ -255,9 +255,15 @@
     <Calib Index="7" Eff="0.7" Cut="0.9701"/>
     <Calib Index="8" Eff="0.8" Cut="0.9127"/>
     <Calib Index="9" Eff="0.9" Cut="0.6515"/>
-    <Calib Index="10" Eff="1" Cut="0.0005"/>
+    <Calib Index="10" Eff="1" Cut="0"/>
   </Calibration>
 </MethodSetup>
+
+
+
+
+
+
 
 
 

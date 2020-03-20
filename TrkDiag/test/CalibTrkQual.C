@@ -13,6 +13,8 @@ std::string CalibTrkQual_Eff(TTree* tree, std::string train_name);
 
 void CalibTrkQual(TTree* tree, std::string train_name) {
 
+  std::cout << "Calibrating " << train_name << "..." << std::endl;
+
   std::string xmlfilename = "TrkDiag/test/" + train_name + ".weights.xml";
   std::ifstream xmlfile(xmlfilename, std::ofstream::in);
 
@@ -106,7 +108,10 @@ double EfficiencyToTrkQual(TTree* inpt_tree, const char* train_name, double effi
   }
 
   double approx_trkqual = ((double) ind) / subdivs;
+  if (approx_trkqual < 10.0/subdivs) {
+    approx_trkqual = 0;
+  }
   string add_on = " && dequal.";
-  //  cout << "Relative Efficiency " << inpt_tree->GetEntries((std_cuts+add_on+train_str+" > "+to_string(approx_trkqual)).c_str())/hist->GetEntries() << "\n" << endl;
+  //  //  cout << "Relative Efficiency " << inpt_tree->GetEntries((std_cuts+add_on+train_str+" > "+to_string(approx_trkqual)).c_str())/hist->GetEntries() << "\n" << endl;
   return approx_trkqual;  
 }
