@@ -63,6 +63,7 @@ namespace mu2e
     std::string _currentXmlFile;
     MVATools* _trkqualmva;
     MVAMask _mvamask;
+    std::map<Float_t, Float_t> _effCalib;
 
     InfoStructHelper _infoStructHelper;
   };
@@ -120,6 +121,10 @@ namespace mu2e
 	std::string xmlfilename = i_row.xmlfilename();
 	if (xmlfilename != _currentXmlFile) {
 	  initializeMVA(xmlfilename);
+
+	  if (i_row.calibrated() == 1) {
+	    _effCalib = trkQualTable.getCalib(i_row.idx()); // get the calibration if it exists
+	  }
 	}
 	break;
       }
@@ -185,7 +190,18 @@ namespace mu2e
 	}
       }
       tqcol->push_back(trkqual);
-      rqcol->push_back(RecoQual(trkqual.status(),trkqual.MVAValue()));
+
+      // Get the efficiency cut that this track passes
+      Float_t passEff = -1;
+      if (_effCalib.size() > 0) {
+	for (const auto& i_pair : _effCalib) {
+	  if (trkqual.MVAValue() >= i_pair.second) {
+	    passEff = i_pair.first;
+	    break;
+	  }
+	}
+      }
+      rqcol->push_back(RecoQual(trkqual.status(),trkqual.MVAValue(), passEff));
     }
 
     if ( (tqcol->size() != rqcol->size()) || (tqcol->size() != kalSeeds.size()) ) {
