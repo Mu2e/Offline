@@ -660,10 +660,12 @@ namespace mu2e {
     }
 
 // all RecoQuals
-    std::vector<Float_t> recoQuals;
+    std::vector<Float_t> recoQuals; // for the output value
     for (const auto& i_recoQualHandle : _allRQCHs.at(i_branch)) {
-      double recoQual = i_recoQualHandle->at(i_kseed)._value;
+      Float_t recoQual = i_recoQualHandle->at(i_kseed)._value;
       recoQuals.push_back(recoQual);
+      Float_t recoQualEff = i_recoQualHandle->at(i_kseed)._eff;
+      recoQuals.push_back(recoQualEff);
     }
     _allRQIs.at(i_branch).setQuals(recoQuals);
 // TrkQual
