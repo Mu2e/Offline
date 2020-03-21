@@ -7,6 +7,7 @@
 # set in the non MT file included above (which includes prolog files)
 
 physics.producers.g4run.module_type : "Mu2eG4MT"
+physics.producers.g4run.initialSeed  : 10
 
 # this sets the number of threads used in MT mode
 # number and threads and number of schedules should
