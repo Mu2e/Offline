@@ -43,6 +43,8 @@
 
 using namespace std;
 
+namespace {G4Mutex setUpEventMutex = G4MUTEX_INITIALIZER;}
+
 namespace mu2e {
 
   // If the c'tor is called a second time, the c'tor of base will
@@ -56,8 +58,11 @@ namespace mu2e {
     sensitiveDetectorHelper_(conf.SDConfig()),
     masterRunAction_(nullptr),
     physicsList_(nullptr),
-    rmvlevel_(conf.debug().diagLevel())
-  {}
+    rmvlevel_(conf.debug().diagLevel()),
+    initialSeed_(conf.initialSeed())
+  {
+    const_cast<CLHEP::HepRandomEngine*>(getMasterRandomEngine())->setSeed(initialSeed_,0);
+  }
 
   // Destructor of base is called automatically.  No need to do anything.
   Mu2eG4MTRunManager::~Mu2eG4MTRunManager()
@@ -153,10 +158,6 @@ namespace mu2e {
           nSeedsFilled = seedbunchsize;
         }
       
-      if (m_managerInitialized) {
-      G4cout << "in G4MTRM, nSeedsFilled = " << nSeedsFilled << G4endl;
-      }
-
       // Generates up to nSeedsMax seed pairs only.
       if(nSeedsFilled>nSeedsMax) nSeedsFilled=nSeedsMax;
       const_cast<CLHEP::HepRandomEngine*>(getMasterRandomEngine())->flatArray(nSeedsPerEvent*nSeedsFilled,randDbl);
@@ -249,6 +250,33 @@ namespace mu2e {
       G4RunManager::RunTermination();
     }
     m_runTerminated = true;
+  }
+  
+  G4bool Mu2eG4MTRunManager::SetUpAnEvent(G4Event* evt, long& s1, long& s2, long& s3,
+                                          G4bool reseedRequired) {
+
+    G4AutoLock l(&setUpEventMutex);
+    
+    if( numberOfEventProcessed < numberOfEventToBeProcessed ) {
+      
+      if(reseedRequired) {
+        G4RNGHelper* helper = G4RNGHelper::GetInstance();
+        G4int idx_rndm = nSeedsPerEvent*(evt->GetEventID()-1);
+        s1 = helper->GetSeed(idx_rndm);
+        s2 = helper->GetSeed(idx_rndm+1);
+        if(nSeedsPerEvent==3) s3 = helper->GetSeed(idx_rndm+2);
+        nSeedsUsed++;
+        //G4cout << "nSeedsUsed = " << nSeedsUsed << ", nSeedsFilled = " << nSeedsFilled << "\n";
+        if(nSeedsUsed==nSeedsFilled) {
+          RefillSeeds();
+          //G4cout << "Refilling Seeds\n";
+        }
+      }
+      numberOfEventProcessed++;
+      return true;
+    }
+    
+    return false;
   }
 
 

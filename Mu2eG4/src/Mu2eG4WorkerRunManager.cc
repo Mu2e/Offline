@@ -281,11 +281,89 @@ namespace mu2e {
     
     runIsSeeded = false;
     eventLoopOnGoing = true;
-    G4int i_event = -1;
-    nevModulo = -1;
-    currEvID = -1;
-
-    ProcessOneEvent(i_event);
+    G4int i_event = event->id().event();
+        
+    // below code is from ProcessOneEvent(i_event);
+     currentEvent = generateEvt(i_event);
+    
+     if(eventLoopOnGoing) {
+     eventManager->ProcessOneEvent(currentEvent);
+     AnalyzeEvent(currentEvent);
+     UpdateScoring();
+     }
+  }
+  
+  
+  G4Event* Mu2eG4WorkerRunManager::generateEvt(G4int i_event){
+    
+    G4Event* anEvent = new G4Event(i_event);
+    long s1 = 0;
+    long s2 = 0;
+    long s3 = 0;
+    G4bool eventHasToBeSeeded = true;
+    
+    eventLoopOnGoing = G4MTRunManager::GetMasterRunManager()->SetUpAnEvent(anEvent,s1,s2,s3,eventHasToBeSeeded);
+    runIsSeeded = true;
+    
+    if(!eventLoopOnGoing)
+    {
+      delete anEvent;
+      return 0;
+    }
+    
+    if(eventHasToBeSeeded)
+    {
+      long seeds[3] = { s1, s2, 0 };
+      G4Random::setTheSeeds(seeds,-1);
+      runIsSeeded = true;
+    }
+    
+    //This is the filename base constructed from run and event
+    const auto filename = [&] {
+      std::ostringstream os;
+      os << "run" << currentRun->GetRunID() << "evt" << anEvent->GetEventID();
+      return os.str();
+    };
+    
+    G4bool RNGstatusReadFromFile = false;
+    if ( readStatusFromFile ) {
+      //Build full path of RNG status file for this event
+      std::ostringstream os;
+      os << filename() << ".rndm";
+      const G4String& randomStatusFile = os.str();
+      std::ifstream ifile(randomStatusFile.c_str());
+      if ( ifile ) { //File valid and readable
+        RNGstatusReadFromFile = true;
+        G4Random::restoreEngineStatus(randomStatusFile.c_str());
+      }
+    }
+    
+    
+    if(storeRandomNumberStatusToG4Event==1 || storeRandomNumberStatusToG4Event==3) {
+      std::ostringstream oss;
+      G4Random::saveFullState(oss);
+      randomNumberStatusForThisEvent = oss.str();
+      anEvent->SetRandomNumberStatus(randomNumberStatusForThisEvent);
+    }
+    
+    if(storeRandomNumberStatus && ! RNGstatusReadFromFile ) { //If reading from file, avoid to rewrite the same
+      G4String fileN = "currentEvent";
+      if ( rngStatusEventsFlag ) {
+        fileN = filename();
+      }
+      StoreRNGStatus(fileN);
+    }
+    
+    if(printModulo > 0 && anEvent->GetEventID()%printModulo == 0 ) {
+      G4cout << "--> Event " << anEvent->GetEventID() << " starts";
+      if(eventHasToBeSeeded) {
+        G4cout << " with initial seeds (" << s1 << "," << s2 << ")";
+      }
+      G4cout << "." << G4endl;
+    }
+    
+    userPrimaryGeneratorAction->GeneratePrimaries(anEvent);
+    return anEvent;
     
   }
 
