@@ -1,9 +1,9 @@
 # Run StrawAndCaloDigisFromFragments module to convert artdaq::Fragment collections
-# into TRK and CAL collections.
-# Usage: mu2e -c DAQ/test/StrawAndCaloDigisFromFragmentsTest.fcl -s <input root files> -n '-1'
+# into TRK and CAL digi collections.
+# Usage: mu2e -c DAQ/test/generateDigiFromFragment.fcl -s <input art files> -n '-1'
 #
 #
-# Contact person Tomonari Miyashita
+# Contact person G. Pezzullo
 
 process_name : FragmentToDigi
 
@@ -41,10 +41,9 @@ physics : {
       }
   }
 
-#  t1 : [ makeSD ] 
-  t1 : [ makeSD,
-	 CaloDigiFromShower ] 
-  e1 : [ outfile ]
+   #  t1 : [ makeSD ] 
+   t1 : [ makeSD, CaloDigiFromShower ] 
+   e1 : [ outfile ]
 
   trigger_paths  : [t1]
   end_paths      : [e1]

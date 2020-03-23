@@ -1,9 +1,9 @@
-# Run BinaryPacketsFromDataBlocks module to combine DataBlocks from
+# Run ArtBinaryPacketsFromDigis module to combine DataBlocks from
 # specified input root files
-# Usage: mu2e -c DAQ/test/BinaryPacketsFromDataBlocksTest.fcl -s <input root files> -n '-1'
+# Usage: mu2e -c DAQ/test/generateBinaryFromDigi.fcl -s <input root files> -n '-1'
 #
 #
-# Contact person Tomonari Miyashita
+# Contact person G. Pezzullo
 
 #include "fcl/minimalMessageService.fcl"
 #include "fcl/standardServices.fcl"

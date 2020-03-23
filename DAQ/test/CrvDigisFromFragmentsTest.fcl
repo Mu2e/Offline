@@ -3,7 +3,7 @@
 # Usage: mu2e -c DAQ/test/CrvDigisFromFragmentsTest.fcl -s <input root files> -n '-1'
 #
 #
-# Contact person Tomonari Miyashita
+# Contact person G. Pezzullo
 
 process_name : FragmentToDigi
 
@@ -18,17 +18,17 @@ source : {
 physics : {
 
   producers : {
-    makeSD:
+    CrvDigi:
     {
       module_type: CrvDigisFromFragments
       diagLevel: 3
       parseCRV: 1
 
-      crvTag: "FragmentGenerator:offlinecrv"
+      crvTag: "daq:crv"
     }
   }
 
-  t1 : [ makeSD ] 
+  t1 : [ CrvDigi ] 
   e1 : [ outfile ]
 
   trigger_paths  : [t1]
