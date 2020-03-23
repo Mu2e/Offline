@@ -113,7 +113,7 @@ namespace mu2e {
 
   // now set the aligned Panel midpoint and direction
   panel._straw0Direction = panel.getStraw(0).getDirection();
-  panel._straw0MidPoint = aligned_straw0MidPoint;
+  panel._straw0MidPoint = aligned_straw0MidPoint / StrawId::_nlayers;
 
       } // panel loop
 
