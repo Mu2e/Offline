@@ -119,7 +119,7 @@ namespace mu2e {
 
       // set the aligned plane origin
       // because we're a friend of Tracker, we can access the non-const Plane object
-      tracker._planes.at(plane.id().asUint16())._origin = plane_temp * Hep3Vector(0,0,0);
+      tracker._planes.at(plane.id().getPlane())._origin = plane_temp * Hep3Vector(0,0,0);
     } // plane loop
 
     return ptr;
