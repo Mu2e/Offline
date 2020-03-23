@@ -82,9 +82,11 @@ namespace mu2e {
 	// make an intermediate multiplication
 	HepTransform panel_temp = plane_temp * (panel_to_plane * align_panel);
 
+  Hep3Vector aligned_straw0MidPoint;
+
 	for(size_t istr=0; istr< StrawId::_nstraws; istr++) {
           Straw &straw = tracker.getStraw(panel.getStraw(istr).id());
-	  
+
           // how to place the straw in the panel
 	  double dx = straw.getMidPoint().perp()
 	    - panel.straw0MidPoint().perp();
@@ -106,7 +108,13 @@ namespace mu2e {
 	  straw._c = aligned_straw;
 	  straw._w = aligned_straw_dir;
 
+    aligned_straw0MidPoint += straw.getMidPoint();
 	} // straw loop
+
+  // now set the aligned Panel midpoint and direction
+  panel._straw0Direction = panel.getStraw(0).getDirection();
+  panel._straw0MidPoint = aligned_straw0MidPoint;
+
       } // panel loop
     } // plane loop
 
