@@ -4,7 +4,7 @@
 #
 #
 # Contact person G. Pezzullo
-
+#include "DAQ/fcl/prolog_trigger.fcl"
 process_name : FragmentToDigi
 
 source : {
@@ -20,24 +20,12 @@ physics : {
   producers : {
       makeSD:
       {
-	  module_type: StrawAndCaloDigisFromFragments
-	  diagLevel: 0
-	  parseCAL: 0
-	  parseTRK: 1
-	  
-	  trkTag  : "daq:trk"
-	  caloTag : "daq:calo"
+	 @table::DAQ.producers.makeSD
       }
 
       CaloDigiFromShower:		
-      {
-	  module_type: StrawAndCaloDigisFromFragments
-	  diagLevel: 0
-	  parseCAL: 1
-	  parseTRK: 0
-	  
-	  trkTag  : "daq:trk"
-	  caloTag : "daq:calo"
+      {	 
+	 @table::DAQ.producers.makeSD
       }
   }
 
@@ -67,7 +55,3 @@ outputs:  {
 #                     ]
   }
 }
-
-#services.message.destinations.log.categories.ArtReport.reportEvery : 1
-#services.message.destinations.log.categories.ArtReport.limit : 1
-#services.message.destinations.log.categories.ArtReport.timespan : 300

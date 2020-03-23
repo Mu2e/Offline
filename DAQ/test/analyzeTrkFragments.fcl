@@ -7,6 +7,7 @@
 
 #include "fcl/minimalMessageService.fcl"
 #include "fcl/standardServices.fcl"
+#include "DAQ/fcl/prolog_trigger.fcl"
 
 services : @local::Services.Reco
 
@@ -35,13 +36,7 @@ physics : {
   producers : {
       makeSD:
       {
-	  module_type: StrawAndCaloDigisFromFragments
-	  diagLevel: 0
-	  parseCAL: 0
-	  parseTRK: 1
-	  
-	  trkTag  : "daq:trk"
-	  caloTag : "daq:calo"
+	 @table::DAQ.producers.makeSD
       }
   }
   
