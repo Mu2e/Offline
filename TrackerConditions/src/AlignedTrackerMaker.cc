@@ -116,6 +116,8 @@ namespace mu2e {
   panel._straw0MidPoint = aligned_straw0MidPoint;
 
       } // panel loop
+
+      plane._origin += plane_temp * Hep3Vector(0,0,0);
     } // plane loop
 
     return ptr;
