@@ -80,15 +80,15 @@ namespace mu2e {
     if(_axisOneMin >= _axisOneMax || _axisTwoMin >= _axisTwoMax) {
       throw cet::exception("BADCONFIG") << "BField mapping plane ill defined: "
 					<< _axisOneMin << " < axisOneValues < " << _axisOneMax << ", "
-					<< _axisTwoMin << " < axisTwoValues < " << _axisTwoMax << endl;
+					<< _axisTwoMin << " < axisTwoValues < " << _axisTwoMax;
     }
     if(_mapBinSize <= 0.) {
-      throw cet::exception("BADCONFIG") << "BField map binning should be >= 0 but given as " << _mapBinSize << endl;
+      throw cet::exception("BADCONFIG") << "BField map binning should be >= 0 but given as " << _mapBinSize;
     }
 
     if(!(_plane == "x" || _plane == "y" || _plane == "z")) {
       throw cet::exception("BADCONFIG") << "BField map plane not recognized! Options are x, y, or z but given " 
-					<< _plane.c_str() << endl;
+					<< _plane.c_str();
     }
 
   } //end constructor
@@ -124,12 +124,12 @@ namespace mu2e {
     if(std::abs(_axisOneMin + (nbinsOne-1)*_mapBinSize - _axisOneMax > (_axisOneMax-_axisOneMin)/(100.*(nbinsOne-1))))
       throw cet::exception("BADCONFIG") << "BField mapping axis values not steppable with step size given: "
 					<< _axisOneMin << " < axisOneValues < " << _axisOneMax << ", "
-					<< "step size = " << _mapBinSize << endl;
+					<< "step size = " << _mapBinSize;
 	
     if(std::abs(_axisTwoMin + (nbinsTwo-1)*_mapBinSize - _axisTwoMax > (_axisTwoMax-_axisTwoMin)/(100.*(nbinsTwo-1))))
       throw cet::exception("BADCONFIG") << "BField mapping axis values not steppable with step size given: "
 					<< _axisTwoMin << " < axisTwoValues < " << _axisTwoMax << ", "
-					<< "step size = " << _mapBinSize << endl;
+					<< "step size = " << _mapBinSize;
 
     //if a null map, plot the default field from the manager
     const std::string name = (map) ? map->getKey() : "default";
