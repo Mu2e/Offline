@@ -23,16 +23,16 @@ namespace mu2e {
 
     if ( _config.verbose() > 0 ) {
       cout << "AlignedTrackerMaker::fromFcl made Tracker with nStraws = "
-	   << ptr->nStraws() << endl;
+     << ptr->nStraws() << endl;
     }
 
     return ptr;
   }
 
   Tracker::ptr_t AlignedTrackerMaker::fromDb(
-			  TrkAlignTracker::cptr_t tatr_p,
-			  TrkAlignPlane::cptr_t   tapl_p,
-			  TrkAlignPanel::cptr_t   tapa_p ) {
+        TrkAlignTracker::cptr_t tatr_p,
+        TrkAlignPlane::cptr_t   tapl_p,
+        TrkAlignPanel::cptr_t   tapa_p ) {
 
 
 
@@ -47,69 +47,68 @@ namespace mu2e {
     // the whole tracker has nominal center on 0,0,0
     auto const& rowtr = tatr_p->rowAt(0);
     HepTransform align_tracker(rowtr.dx(),rowtr.dy(),rowtr.dz(),
-			       rowtr.rx(),rowtr.ry(),rowtr.rz());
+             rowtr.rx(),rowtr.ry(),rowtr.rz());
 
     for(auto& plane : tracker.getPlanes()) {
 
       auto const& rowpl = tapl_p->rowAt( plane.id().plane() );
       HepTransform align_plane(rowpl.dx(),rowpl.dy(),rowpl.dz(),
-			       rowpl.rx(),rowpl.ry(),rowpl.rz());
+             rowpl.rx(),rowpl.ry(),rowpl.rz());
 
 
-	if ( _config.verbose() > 0 ) {
-	  cout << "AlignedTrackerMaker::fromDb plane ID " << plane.id().plane() << " alignment constants: " << align_plane << endl;
-	}
+      if ( _config.verbose() > 0 ) {
+        cout << "AlignedTrackerMaker::fromDb plane ID " << plane.id().plane() << " alignment constants: " << align_plane << endl;
+      }
       // how to place the plane in the tracker
       HepTransform plane_to_tracker(0.0,0.0,plane.origin().z(),0.0,0.0,0.0);
 
       // make an intermediate multiplication
       HepTransform plane_temp = align_tracker
-	* (plane_to_tracker * align_plane);
+        * (plane_to_tracker * align_plane);
 
       for(auto panel_p : plane.getPanels()) {
-	auto& panel = *panel_p;
-	auto const& rowpa = tapa_p->rowAt( panel.id().uniquePanel() );
-	HepTransform align_panel(rowpa.dx(),rowpa.dy(),rowpa.dz(),
-				 rowpa.rx(),rowpa.ry(),rowpa.rz());
+        auto& panel = *panel_p;
+        auto const& rowpa = tapa_p->rowAt( panel.id().uniquePanel() );
+        HepTransform align_panel(rowpa.dx(),rowpa.dy(),rowpa.dz(),
+              rowpa.rx(),rowpa.ry(),rowpa.rz());
 
-	// how to place the panel in the plane
-	Hep3Vector dv = panel.straw0MidPoint()
-	  - plane_to_tracker.displacement();
-	double rz = dv.phi();
+        // how to place the panel in the plane
+        Hep3Vector dv = panel.straw0MidPoint()
+          - plane_to_tracker.displacement();
+        double rz = dv.phi();
 
-	HepTransform panel_to_plane(dv.x(),dv.y(),dv.z(),0.0,0.0,rz);
+        HepTransform panel_to_plane(dv.x(),dv.y(),dv.z(),0.0,0.0,rz);
 
-	// make an intermediate multiplication
-	HepTransform panel_temp = plane_temp * (panel_to_plane * align_panel);
+        // make an intermediate multiplication
+        HepTransform panel_temp = plane_temp * (panel_to_plane * align_panel);
 
-  Hep3Vector aligned_straw0MidPoint;
+        Hep3Vector aligned_straw0MidPoint;
 
-	for(size_t istr=0; istr< StrawId::_nstraws; istr++) {
-    Straw &straw = tracker.getStraw(panel.getStraw(istr).id());
+        for(size_t istr=0; istr< StrawId::_nstraws; istr++) {
+          Straw &straw = tracker.getStraw(panel.getStraw(istr).id());
 
           // how to place the straw in the panel
-	  double dx = straw.getMidPoint().perp()
-	    - panel.straw0MidPoint().perp();
-	  double dz = ( straw.getMidPoint()
-			- panel.straw0MidPoint() ).z();
+          double dx = straw.getMidPoint().perp()
+            - panel.straw0MidPoint().perp();
+          double dz = ( straw.getMidPoint()
+            - panel.straw0MidPoint() ).z();
 
-	  Hep3Vector straw_to_panel = Hep3Vector(dx,0.0,dz);
-	  Hep3Vector straw_dir = Hep3Vector(0.0,1.0,0.0);
+          Hep3Vector straw_to_panel = Hep3Vector(dx,0.0,dz);
+          Hep3Vector straw_dir = Hep3Vector(0.0,1.0,0.0);
 
-	  Hep3Vector aligned_straw = panel_temp*straw_to_panel;
-	  Hep3Vector aligned_straw_dir = panel_temp.rotation()*straw_dir;
+          Hep3Vector aligned_straw = panel_temp*straw_to_panel;
+          Hep3Vector aligned_straw_dir = panel_temp.rotation()*straw_dir;
 
-	  // aligned straw position inserted in the Tracker object
-	  //we need to go the long way to get non-const access
+          // aligned straw position inserted in the Tracker object
 
-	  Hep3Vector pdif = aligned_straw - straw.getMidPoint();
-	  Hep3Vector ddif = aligned_straw_dir - straw.getDirection();
+          Hep3Vector pdif = aligned_straw - straw.getMidPoint();
+          Hep3Vector ddif = aligned_straw_dir - straw.getDirection();
 
-	  straw._c = aligned_straw;
-	  straw._w = aligned_straw_dir;
+          straw._c = aligned_straw;
+          straw._w = aligned_straw_dir;
 
-    aligned_straw0MidPoint += straw.getMidPoint();
-	} // straw loop
+          aligned_straw0MidPoint += straw.getMidPoint();
+        } // straw loop
 
         // now set the aligned Panel midpoint and direction
         panel._straw0Direction = panel.getStraw(0).getDirection();
