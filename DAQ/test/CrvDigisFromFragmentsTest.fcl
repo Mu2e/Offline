@@ -5,6 +5,8 @@
 #
 # Contact person G. Pezzullo
 
+#include "DAQ/fcl/prolog_trigger.fcl"
+
 process_name : FragmentToDigi
 
 source : {
@@ -19,13 +21,12 @@ physics : {
 
   producers : {
     CrvDigi:
-    {
-      module_type: CrvDigisFromFragments
-      diagLevel: 3
-      parseCRV: 1
-
-      crvTag: "daq:crv"
-    }
+      {
+	 @table::DAQ.producers.CrvDigi
+	 diagLevel: 3
+	 parseCRV: 1	 
+	 crvTag: "daq:crv"
+      }
   }
 
   t1 : [ CrvDigi ] 

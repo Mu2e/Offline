@@ -7,6 +7,7 @@
 
 #include "fcl/minimalMessageService.fcl"
 #include "fcl/standardServices.fcl"
+#include "DAQ/fcl/prolog_trigger.fcl"
 
 process_name : BinaryFromDigi
 
@@ -23,39 +24,18 @@ source : {
 
 physics : {
 
-    producers : {
-	binaryOutput: {
-	    module_type     : ArtBinaryPacketsFromDigis
-	    # diagLevel       : 2
-	    diagLevel       : 0
-	    maxFullPrint    : 0
-
-	    includeTracker : 1
-	    includeCalorimeter : 1
-	    # includeCosmicRayVeto: 1
-	    includeCosmicRayVeto: 0
-	    includeDMAHeaders: 1
-	    # Cosmic ray veto module is currently incomplete
-
-	    generateTimestampTable : 1
-	    generateBinaryFile : 1
-	    
-	    #	    outputFile      : "DTC_packets_from_fragment.bin"
-	    outputFile      : "DTC_packets_NoPrimary.bin"
-	    maxDMABlockSize : 32000
-	    bufferSize      : 1000
-	}
-    }
+   producers : {
+      binaryOutput: {
+	 @table::DAQ.producers.binaryOutput
+	 generateTimestampTable : 1
+      }
+   }
 
 
-    t1 : [ binaryOutput ] 
-    e1 : [  ]
+   t1 : [ binaryOutput ] 
+   e1 : [  ]
 
-    trigger_paths  : [t1]
-    end_paths      : [e1]
+   trigger_paths  : [t1]
+   end_paths      : [e1]
 
 }
-
-#services.message.destinations.log.categories.ArtReport.reportEvery : 1
-#services.message.destinations.log.categories.ArtReport.limit : 1
-#services.message.destinations.log.categories.ArtReport.timespan : 300
