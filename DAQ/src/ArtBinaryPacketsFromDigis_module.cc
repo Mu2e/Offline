@@ -106,13 +106,6 @@ namespace mu2e {
 
     void produce(art::Event&) override;
 
-    flag_mask_type filter(TrackerDataPacket& trkData,
-			  calib_constant_type clockstart,
-			  calib_constant_type panelTDCoffset, calib_constant_type hvoffset, calib_constant_type caloffset,
-			  calib_constant_type energy_max_LSHIFT8, calib_constant_type energy_min_LSHIFT8,
-			  calib_constant_type gain_RSHIFT15,
-			  calib_constant_type inverse_ionization_energy_LSHIFT26);
-
   private:
 
     size_t _generateTimestampTable;
@@ -167,8 +160,6 @@ namespace mu2e {
 
     // Diagnostics level.
     int _diagLevel;
-
-    int _enableFPGAEmulation;
 
     // Limit on number of events for which there will be full printout.
     int _maxFullPrint;
@@ -539,23 +530,6 @@ namespace mu2e {
 
     TrkData.PreprocessingFlags = 0;
 
-    //    TrkData.unused1 = ;
-    if (_enableFPGAEmulation) {
-      // Note: Eventually, there will be a calibration database to provide these sorts of values
-      // For now, these are just placeholders
-      calib_constant_type clockstart = 320; //10 / .03125 (tdclsb)
-      calib_constant_type maxenergyls8 = 583, minenergyls8 = 0;
-      calib_constant_type gainrs15 = 1389;
-      calib_constant_type inverseionizationenergyls26 = 633;
-      calib_constant_type panelTDCoffset = 0, hvoffset = 0, caloffset = 0;
-
-
-      flag_mask_type f = filter(TrkData,
-				clockstart, panelTDCoffset, hvoffset, caloffset,
-				maxenergyls8, minenergyls8, gainrs15, inverseionizationenergyls26);
-
-      TrkData.PreprocessingFlags = f & 0xFF;
-    }
   }
 
 
@@ -574,7 +548,6 @@ namespace mu2e {
 		       _outputFile(pset.get<string>("outputFile", "DTC_packets.bin")),
 		       _generateTextFile(pset.get<int>("generateTextFile", 0)),
 		       _diagLevel(pset.get<int>("diagLevel", 0)),
-		       _enableFPGAEmulation(pset.get<int>("enableFPGAEmulation", 0)),
 		       _maxFullPrint(pset.get<int>("maxFullPrint", 5)),
 		       _sdtoken{ consumes<StrawDigiCollection>(pset.get<std::string>("StrawDigiCollection","makeSD")) },
 		       _cdtoken{ consumes<CaloDigiCollection>(pset.get<std::string>("CaloDigiCollection","CaloDigiFromShower")) }{
@@ -594,11 +567,6 @@ namespace mu2e {
 	   << _diagLevel << " "
 	   << _maxFullPrint
 	   << endl;
-
-      if (_enableFPGAEmulation) {
-	cout << "FPGA Emulation Enabled" << endl;
-      }
-
     }
 
   }
@@ -1054,52 +1022,6 @@ namespace mu2e {
 	}
       } //Done looping over the ROCs in a given DTC
     }
-  }
-
-
-
-  flag_mask_type ArtBinaryPacketsFromDigis::filter(TrackerDataPacket& TrkData,
-						   calib_constant_type clockstart,
-						   calib_constant_type panelTDCoffset, calib_constant_type hvoffset, calib_constant_type caloffset,
-						   calib_constant_type energy_max_LSHIFT8, calib_constant_type energy_min_LSHIFT8,
-						   calib_constant_type gain_RSHIFT15,
-						   calib_constant_type inverse_ionization_energy_LSHIFT26) {
-
-    int failed_time = 0;
-    int failed_energy = 0;
-    int thistdc = TrkData.TDC0 < TrkData.TDC1 ? TrkData.TDC0 + hvoffset : TrkData.TDC1 + caloffset;
-    thistdc = thistdc + clockstart + panelTDCoffset;
-    if (thistdc < LOWER_TDC || thistdc > UPPER_TDC) {
-      failed_time = 1;
-    }
-    std::array<adc_t, 15> const waveform = TrkData.Waveform();
-    //sum up presamples
-    int pedsum = 0;
-    for (int i = 0; i < NUM_PRESAMPLES; i++) {
-      pedsum += waveform[i];
-    }
-    int pedestal = pedsum / NUM_PRESAMPLES;
-
-    int peak = 0;
-    for (int i = START_SAMPLES; i < NUM_SAMPLES; i++) {
-      if (TrkData.Waveform().at(i) > peak) {
-	peak = waveform[i];
-      }
-      else {
-	break;
-      }
-    }
-
-    int energy = peak - pedestal;
-
-    int energy_max_adjusted = ((((energy_max_LSHIFT8 * gain_RSHIFT15) >> 9)* inverse_ionization_energy_LSHIFT26) >> 10);
-    int energy_min_adjusted = ((((energy_min_LSHIFT8 * gain_RSHIFT15) >> 9)* inverse_ionization_energy_LSHIFT26) >> 10);
-    if (energy > energy_max_adjusted || energy < energy_min_adjusted) {
-      failed_energy = 1;
-    }
-
-    return (failed_energy << 1) | failed_time;
-
   }
 
 }
