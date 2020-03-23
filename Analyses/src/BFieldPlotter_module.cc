@@ -25,6 +25,7 @@
 #include <iomanip>
 #include <vector>
 #include <string>
+#include <cmath>
 
 using namespace std;
 
@@ -37,11 +38,11 @@ namespace mu2e {
       using Comment=fhicl::Comment;
       fhicl::Atom<std::string> plane     {Name("plane"     ), Comment("Axis plane is defined by (x, y, or z)")};
       fhicl::Atom<double>      planeValue{Name("planeValue"), Comment("Value on the axis the plane intersects (mm)")};
-      fhicl::Atom<double>      axisOneMin{Name("axisOneMin"), Comment("Axis one lower edge for plotting (mm) (plane = x/y/z --> axis one = y/x/x)")};
-      fhicl::Atom<double>      axisOneMax{Name("axisOneMax"), Comment("Axis one upper edge for plotting (mm) (plane = x/y/z --> axis one = y/x/x)")};
-      fhicl::Atom<double>      axisTwoMin{Name("axisTwoMin"), Comment("Axis two lower edge for plotting (mm) (plane = x/y/z --> axis two = z/z/y)")};
-      fhicl::Atom<double>      axisTwoMax{Name("axisTwoMax"), Comment("Axis two upper edge for plotting (mm) (plane = x/y/z --> axis two = z/z/y)")};
-      fhicl::Atom<double>      mapBinSize{Name("mapBinSize"), Comment("Map bin size (mm)"), 10.};
+      fhicl::Atom<double>      axisOneMin{Name("axisOneMin"), Comment("Axis one lower edge (bin centered) for plotting (mm) (plane = x/y/z --> axis one = y/x/x)")};
+      fhicl::Atom<double>      axisOneMax{Name("axisOneMax"), Comment("Axis one upper edge (bin centered) for plotting (mm) (plane = x/y/z --> axis one = y/x/x)")};
+      fhicl::Atom<double>      axisTwoMin{Name("axisTwoMin"), Comment("Axis two lower edge (bin centered) for plotting (mm) (plane = x/y/z --> axis two = z/z/y)")};
+      fhicl::Atom<double>      axisTwoMax{Name("axisTwoMax"), Comment("Axis two upper edge (bin centered) for plotting (mm) (plane = x/y/z --> axis two = z/z/y)")};
+      fhicl::Atom<double>      mapBinSize{Name("mapBinSize"), Comment("Map bin size (mm) (must be a divisor of both axis lengths)"), 10.};
     };
     typedef art::EDAnalyzer::Table<Config> Parameters;
 
@@ -79,15 +80,15 @@ namespace mu2e {
     if(_axisOneMin >= _axisOneMax || _axisTwoMin >= _axisTwoMax) {
       throw cet::exception("BADCONFIG") << "BField mapping plane ill defined: "
 					<< _axisOneMin << " < axisOneValues < " << _axisOneMax << ", "
-					<< _axisTwoMin << " < axisTwoValues < " << _axisTwoMax;
+					<< _axisTwoMin << " < axisTwoValues < " << _axisTwoMax << endl;
     }
     if(_mapBinSize <= 0.) {
-      throw cet::exception("BADCONFIG") << "BField map binning should be >= 0 but given as " << _mapBinSize;
+      throw cet::exception("BADCONFIG") << "BField map binning should be >= 0 but given as " << _mapBinSize << endl;
     }
 
     if(!(_plane == "x" || _plane == "y" || _plane == "z")) {
       throw cet::exception("BADCONFIG") << "BField map plane not recognized! Options are x, y, or z but given " 
-					<< _plane.c_str();
+					<< _plane.c_str() << endl;
     }
 
   } //end constructor
@@ -116,10 +117,20 @@ namespace mu2e {
 
   //fill a histogram with the magnetic field
   void BFieldPlotter::fillHistogram(BFMap const *map, art::ServiceHandle<art::TFileService> tfs) {
-    //define histogram binning
-    int nbinsOne = (_axisOneMax - _axisOneMin)/_mapBinSize + 1;
-    int nbinsTwo = (_axisTwoMax - _axisTwoMin)/_mapBinSize + 1;
-    
+    //define histogram binning such that map edges are bin centers and inside histogram
+    long nbinsOne = std::lround((_axisOneMax - _axisOneMin)/_mapBinSize) + 1;
+    long nbinsTwo = std::lround((_axisTwoMax - _axisTwoMin)/_mapBinSize) + 1;
+    //check that the map bin step size works with the edges given
+    if(std::abs(_axisOneMin + (nbinsOne-1)*_mapBinSize - _axisOneMax > (_axisOneMax-_axisOneMin)/(100.*(nbinsOne-1))))
+      throw cet::exception("BADCONFIG") << "BField mapping axis values not steppable with step size given: "
+					<< _axisOneMin << " < axisOneValues < " << _axisOneMax << ", "
+					<< "step size = " << _mapBinSize << endl;
+	
+    if(std::abs(_axisTwoMin + (nbinsTwo-1)*_mapBinSize - _axisTwoMax > (_axisTwoMax-_axisTwoMin)/(100.*(nbinsTwo-1))))
+      throw cet::exception("BADCONFIG") << "BField mapping axis values not steppable with step size given: "
+					<< _axisTwoMin << " < axisTwoValues < " << _axisTwoMax << ", "
+					<< "step size = " << _mapBinSize << endl;
+
     //if a null map, plot the default field from the manager
     const std::string name = (map) ? map->getKey() : "default";
 
@@ -139,8 +150,12 @@ namespace mu2e {
     double axisOne, axisTwo;
     for(int binOne = 0; binOne < nbinsOne; ++binOne) {
       axisOne = _axisOneMin + binOne*_mapBinSize;
+      if(binOne == 0 || binOne == nbinsOne-1) //if first or last bin, at slight step into map to avoid edge issues
+	axisOne += (binOne) ? -_mapBinSize/100. : _mapBinSize/100.;
       for(int binTwo = 0; binTwo < nbinsTwo; ++binTwo) {
 	axisTwo = _axisTwoMin + binTwo*_mapBinSize;
+	if(binTwo == 0 || binTwo == nbinsTwo-1) //if first or last bin, at slight step into map to avoid edge issues
+	  axisTwo += (binTwo) ? -_mapBinSize/100. : _mapBinSize/100.;
 	CLHEP::Hep3Vector point;
 	CLHEP::Hep3Vector field;
 	if(_plane == "x") 
