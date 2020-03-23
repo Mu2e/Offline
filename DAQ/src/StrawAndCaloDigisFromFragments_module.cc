@@ -38,12 +38,21 @@ class art::StrawAndCaloDigisFromFragments
 {
 
 public:
-
+  struct Config 
+  {
+    using Name = fhicl::Name;
+    using Comment = fhicl::Comment;
+    fhicl::Atom<int>            diagLevel             { Name("diagLevel"),         Comment("diagnostic level")};
+    fhicl::Atom<int>            parseCAL              { Name("parseCAL"),          Comment("parseCAL")};
+    fhicl::Atom<int>            parseTRK              { Name("parseTRK"),          Comment("parseTRK")};
+    fhicl::Atom<art::InputTag>  caloTag               { Name("caloTag"),           Comment("caloTag") };
+    fhicl::Atom<art::InputTag>  trkTag                { Name("trkTag"),            Comment("trkTag") };
+  };
   using EventNumber_t = art::EventNumber_t;
   using adc_t = mu2e::ArtFragmentReader::adc_t;
   
   // --- C'tor/d'tor:
-  explicit  StrawAndCaloDigisFromFragments(fhicl::ParameterSet const& pset);
+  explicit  StrawAndCaloDigisFromFragments(const art::EDProducer::Table<Config>& config);
   virtual  ~StrawAndCaloDigisFromFragments()  { }
 
   // --- Production:
@@ -64,22 +73,21 @@ private:
 
 // ======================================================================
 
-StrawAndCaloDigisFromFragments::StrawAndCaloDigisFromFragments(fhicl::ParameterSet const& pset)
-  : EDProducer(pset)
-  , diagLevel_(pset.get<int>("diagLevel",0))
-  , parseCAL_(pset.get<int>("parseCAL",1))
-  , parseTRK_(pset.get<int>("parseTRK",1))
-  , trkFragmentsTag_(pset.get<art::InputTag>("trkTag","daq:trk"))
-  , caloFragmentsTag_(pset.get<art::InputTag>("caloTag","daq:calo"))
-{
-  produces<EventNumber_t>(); 
-  if (parseTRK_){
-    produces<mu2e::StrawDigiCollection>();
+StrawAndCaloDigisFromFragments::StrawAndCaloDigisFromFragments(const art::EDProducer::Table<Config>& config):
+  art::EDProducer{ config },
+  diagLevel_       (config().diagLevel()),
+  parseCAL_        (config().parseCAL()),
+  parseTRK_        (config().parseTRK()),
+  trkFragmentsTag_ (config().trkTag()),
+  caloFragmentsTag_(config().caloTag()){
+    produces<EventNumber_t>(); 
+    if (parseTRK_){
+      produces<mu2e::StrawDigiCollection>();
+    }
+    if (parseCAL_){
+      produces<mu2e::CaloDigiCollection>();
+    }
   }
-  if (parseCAL_){
-    produces<mu2e::CaloDigiCollection>();
-  }
-}
 
 // ----------------------------------------------------------------------
 
