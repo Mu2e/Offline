@@ -33,31 +33,32 @@ DAQ : {
       
       makeSD:
       {
-	  module_type: StrawAndCaloDigisFromFragments
-	  diagLevel: 0
-	  parseCAL: 0
-	  parseTRK: 1
-	  
-	  trkTag  : "daq:trk"
-	  caloTag : "daq:calo"
+	 module_type: StrawAndCaloDigisFromFragments
+	 diagLevel: 0
+	 parseCAL: 0
+	 parseTRK: 1
+	 
+	 trkTag  : "daq:trk"
+	 caloTag : "daq:calo"
       }
 
       CaloDigiFromShower:		
       {
-	  module_type: StrawAndCaloDigisFromFragments
-	  diagLevel: 0
-	  parseCAL: 1
-	  parseTRK: 0
-	  
-	  trkTag  : "daq:trk"
-	  caloTag : "daq:calo"
+	 module_type: StrawAndCaloDigisFromFragments
+	 diagLevel: 0
+	 parseCAL: 1
+	 parseTRK: 0
+	 
+	 trkTag  : "daq:trk"
+	 caloTag : "daq:calo"
       }
 
       CrvDigi:
       {
-	  module_type: CrvDigisFromFragments
-	  diagLevel: 0
-	  crvTag   : "daq:crv"
+	 module_type: CrvDigisFromFragments
+	 diagLevel: 0
+	 crvTag   : "daq:crv"
       }
    }
 }
+END_PROLOG
