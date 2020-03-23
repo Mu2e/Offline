@@ -74,13 +74,12 @@ struct CaloDataPacket {
   std::vector<uint16_t> hitIndex;
 };
 
-typedef std::deque<std::pair<mu2e_databuff_t, size_t>> raw_data_list_t;
-typedef std::pair<DataBlockHeader, TrackerDataPacket> tracker_data_block_t;
-typedef std::pair<DataBlockHeader, CaloDataPacket> calo_data_block_t;
-// typedef std::pair<DataBlockHeader,CRVDataPacket> crv_data_block_t;
+using raw_data_list_t      = std::deque<std::pair<mu2e_databuff_t, size_t>>; 
+using tracker_data_block_t = std::pair<DataBlockHeader, TrackerDataPacket>;  
+using calo_data_block_t    = std::pair<DataBlockHeader, CaloDataPacket>;     
 
-typedef std::deque<tracker_data_block_t> tracker_data_block_list_t;
-typedef std::deque<calo_data_block_t> calo_data_block_list_t;
+using tracker_data_block_list_t = std::deque<tracker_data_block_t> ;
+using calo_data_block_list_t    = std::deque<calo_data_block_t>;
 
 namespace mu2e {
 
@@ -97,7 +96,26 @@ namespace mu2e {
   class ArtBinaryPacketsFromDigis : public art::EDProducer {
   public:
 
-    explicit ArtBinaryPacketsFromDigis(fhicl::ParameterSet const& pset);
+    struct Config 
+    {
+      using Name = fhicl::Name;
+      using Comment = fhicl::Comment;
+      fhicl::Atom<size_t>         generateTimestampTable{ Name("generateTimestampTable"), Comment("generate Timestamp table")};
+      fhicl::Atom<std::string>    tableFile             { Name("tableFile"),              Comment("table file name")};
+      fhicl::Atom<size_t>         timestampOffset       { Name("timestampOffset"),        Comment("timestamp Offset")};
+      fhicl::Atom<int>            includeTracker        { Name("includeTracker"),         Comment("include Tracker digis")};
+      fhicl::Atom<int>            includeCalorimeter    { Name("includeCalorimeter"),     Comment("include Calorimeter digis")};
+      fhicl::Atom<int>            includeDMAHeaders     { Name("includeDMAHeaders"),      Comment("include DMA Headers")};
+      fhicl::Atom<int>            generateBinaryFile    { Name("generateBinaryFile"),     Comment("generate BinaryFile")};
+      fhicl::Atom<std::string>    outputFile            { Name("outputFile"),             Comment("output File name")};
+      fhicl::Atom<int>            generateTextFile      { Name("generateTextFile"),       Comment("generate Text File")};
+      fhicl::Atom<int>            diagLevel             { Name("diagLevel"),              Comment("diagnostic Level")};
+      fhicl::Atom<int>            maxFullPrint          { Name("maxFullPrint"),           Comment("maxFullPrint")};
+      fhicl::Atom<art::InputTag>  sdtoken               { Name("caloDigiCollection"),     Comment("Straw digi collection name") };
+      fhicl::Atom<art::InputTag>  cdtoken               { Name("strawDigiCollection"),    Comment("Calo digi collection name") };
+    };
+
+    explicit ArtBinaryPacketsFromDigis(const art::EDProducer::Table<Config>& config);
 
     virtual void beginJob() override;
     virtual void beginRun(art::Run&) override;
@@ -115,11 +133,8 @@ namespace mu2e {
     std::vector< std::pair<timestamp, timestamp> > tsTable;
 
     size_t  _timestampOffset;
-    size_t  _numWordsWritten;
-    size_t  _numEventsProcessed;
     int     _includeTracker;
     int     _includeCalorimeter;
-    int     _includeCosmicRayVeto;
 
     int _includeDMAHeaders;
 
@@ -167,6 +182,10 @@ namespace mu2e {
     // Label of the module that made the hits.
     art::ProductToken<StrawDigiCollection> const  _sdtoken;
     art::ProductToken<CaloDigiCollection>  const  _cdtoken;
+
+    size_t  _numWordsWritten;
+    size_t  _numEventsProcessed;
+
 
     const Calorimeter* _calorimeter; // cached pointer to the calorimeter geometry
 
@@ -533,32 +552,30 @@ namespace mu2e {
   }
 
 
-  ArtBinaryPacketsFromDigis::ArtBinaryPacketsFromDigis(fhicl::ParameterSet const& pset) :
-    art::EDProducer{ pset },
-		       _generateTimestampTable(pset.get<size_t>("generateTimestampTable", 0)),
-		       _tableFile(pset.get<std::string>("tableFile", "tsTable.bin")),
-		       _timestampOffset(pset.get<size_t>("timestampOffset", 0)),
-		       _numWordsWritten(0),
-		       _numEventsProcessed(0),
-		       _includeTracker(pset.get<int>("includeTracker", 1)),
-		       _includeCalorimeter(pset.get<int>("includeCalorimeter", 1)),
-		       _includeCosmicRayVeto(pset.get<int>("includeCosmicRayVeto", 0)),
-		       _includeDMAHeaders(pset.get<int>("includeDMAHeaders", 1)),
-		       _generateBinaryFile(pset.get<int>("generateBinaryFile", 1)),
-		       _outputFile(pset.get<string>("outputFile", "DTC_packets.bin")),
-		       _generateTextFile(pset.get<int>("generateTextFile", 0)),
-		       _diagLevel(pset.get<int>("diagLevel", 0)),
-		       _maxFullPrint(pset.get<int>("maxFullPrint", 5)),
-		       _sdtoken{ consumes<StrawDigiCollection>(pset.get<std::string>("StrawDigiCollection","makeSD")) },
-		       _cdtoken{ consumes<CaloDigiCollection>(pset.get<std::string>("CaloDigiCollection","CaloDigiFromShower")) }{
+  ArtBinaryPacketsFromDigis::ArtBinaryPacketsFromDigis(const art::EDProducer::Table<Config>& config):
+    art::EDProducer{ config },
+    _generateTimestampTable(config().generateTimestampTable()),
+    _tableFile             (config().tableFile()),
+    _timestampOffset       (config().timestampOffset()),
+    _includeTracker        (config().includeTracker()),
+    _includeCalorimeter    (config().includeCalorimeter()),
+    _includeDMAHeaders     (config().includeDMAHeaders()),
+    _generateBinaryFile    (config().generateBinaryFile()),
+    _outputFile            (config().outputFile()),
+    _generateTextFile      (config().generateTextFile()),
+    _diagLevel             (config().diagLevel()),
+    _maxFullPrint          (config().maxFullPrint()),
+    _sdtoken               { consumes<mu2e::StrawDigiCollection>(config().sdtoken())},
+    _cdtoken               { consumes<mu2e::CaloDigiCollection> (config().cdtoken())},
+    _numWordsWritten(0),
+    _numEventsProcessed(0){
 
-			 produces<timestamp>();
-			 //		produces< raw_data_list_t >();
+      produces<timestamp>();
 
-			 if (_generateBinaryFile == 1) {
-			   outputStream.open(_outputFile, std::ios::out | std::ios::binary);
-			 }
-		       }
+      if (_generateBinaryFile == 1) {
+	outputStream.open(_outputFile, std::ios::out | std::ios::binary);
+      }
+    }
 
   void ArtBinaryPacketsFromDigis::beginJob() {
 

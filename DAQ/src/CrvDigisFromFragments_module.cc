@@ -38,11 +38,19 @@ class art::CrvDigisFromFragments
 
 public:
 
+  struct Config 
+  {
+    using Name = fhicl::Name;
+    using Comment = fhicl::Comment;
+  
+    fhicl::Atom<int>            diagLevel             { Name("diagLevel"),           Comment("diagnostic Level")};
+    fhicl::Atom<art::InputTag>  crvFragmentsTag       { Name("crvTag"),              Comment("crv Fragments Tag") };
+  };
   using EventNumber_t = art::EventNumber_t;
   using adc_t = mu2e::ArtFragmentReader::adc_t;
   
   // --- C'tor/d'tor:
-  explicit  CrvDigisFromFragments(fhicl::ParameterSet const& pset);
+  explicit  CrvDigisFromFragments(const art::EDProducer::Table<Config>& config);
   virtual  ~CrvDigisFromFragments()  { }
 
   // --- Production:
@@ -51,20 +59,16 @@ public:
 private:
   int   diagLevel_;
 
-  int   parseCRV_;
-
   art::InputTag crvFragmentsTag_;
 
 };  // CrvDigisFromFragments
 
 // ======================================================================
 
-CrvDigisFromFragments::CrvDigisFromFragments(fhicl::ParameterSet const& pset)
-  : EDProducer{pset}
-  , diagLevel_(pset.get<int>("diagLevel",0))
-  , parseCRV_(pset.get<int>("parseCRV",1))
-  , crvFragmentsTag_(pset.get<art::InputTag>("crvTag","daq:crv"))
-  {
+CrvDigisFromFragments::CrvDigisFromFragments(const art::EDProducer::Table<Config>& config):
+  art::EDProducer{ config },
+  diagLevel_      (config().diagLevel()),
+  crvFragmentsTag_(config().crvFragmentsTag()){
     produces<EventNumber_t>(); 
     produces<mu2e::CrvDigiCollection>();
   }
@@ -72,8 +76,7 @@ CrvDigisFromFragments::CrvDigisFromFragments(fhicl::ParameterSet const& pset)
 // ----------------------------------------------------------------------
 
 void
-CrvDigisFromFragments::
-produce( Event & event )
+CrvDigisFromFragments::produce( Event & event )
 {
 
   art::EventNumber_t eventNumber = event.event();
@@ -163,7 +166,7 @@ produce( Event & event )
       }
 
       // Parse phyiscs information from the CRV packets
-      if(hdr->PacketCount>0 && parseCRV_>0) {
+      if(hdr->PacketCount>0) {
 	auto crvRocHdr = cc.GetCRVROCStatusPacket(curBlockIdx);
 	if(crvRocHdr == nullptr) {
 	  std::cerr << "Error retrieving CRV ROC Status Packet from DataBlock " << curBlockIdx << "!" << std::endl;
