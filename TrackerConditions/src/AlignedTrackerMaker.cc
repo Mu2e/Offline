@@ -85,7 +85,7 @@ namespace mu2e {
   Hep3Vector aligned_straw0MidPoint;
 
 	for(size_t istr=0; istr< StrawId::_nstraws; istr++) {
-          Straw &straw = tracker.getStraw(panel.getStraw(istr).id());
+    Straw &straw = tracker.getStraw(panel.getStraw(istr).id());
 
           // how to place the straw in the panel
 	  double dx = straw.getMidPoint().perp()
