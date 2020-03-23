@@ -34,6 +34,7 @@ namespace mu2e {
   class Panel{
 
     friend class TrackerMaker;
+    friend class AlignedTrackerMaker;
     friend class Tracker; // needed for deep copy
 
   public:
