@@ -17,7 +17,6 @@
 #include "GeometryService/inc/WorldG4.hh"
 #include "Mu2eG4/inc/PhysicalVolumeHelper.hh"
 #include "ConfigTools/inc/ConfigFileLookupPolicy.hh"
-#include "SeedService/inc/SeedService.hh"
 #include "Mu2eG4/inc/Mu2eG4ResourceLimits.hh"
 #include "Mu2eG4/inc/Mu2eG4MultiStageParameters.hh"
 #include "Mu2eG4/inc/checkConfigRelics.hh"

@@ -185,7 +185,7 @@ Mu2eG4MT: {
         g4run : {
             @table::mu2eg4runDefaultSingleStage
             module_type : "Mu2eG4MT"
-            initialSeed : 8 
+//            initialSeed : 8 
         }
     }
 }
