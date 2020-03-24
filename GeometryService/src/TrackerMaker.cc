@@ -771,12 +771,12 @@ namespace mu2e {
     panel._EBKeyPhiExtraRotation = _EBKeyPhiExtraRotation;
 
     // set the panel origin for alignment
-    Hep3Vector dv = panel.straw0MidPoint()
+    CLHEP::Hep3Vector dv = panel.straw0MidPoint()
       - plane_to_tracker.displacement();
     double rz = dv.phi();
 
-    HepTransform panel_to_tracker(dv.x(),dv.y(),plane.origin().z()+dv.z(),0.0,0.0,rz);
-    panel._origin = (panel_to_tracker) * Hep3Vector(0,0,0);
+    CLHEP::HepTransform panel_to_tracker(dv.x(),dv.y(),plane.origin().z()+dv.z(),0.0,0.0,rz);
+    panel._origin = (panel_to_tracker) * CLHEP::Hep3Vector(0,0,0);
 
   }  // end makePanel
 
