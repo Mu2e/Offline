@@ -118,7 +118,7 @@ namespace mu2e {
         panel._straw0Direction = panel.getStraw(0).getDirection();
         panel._straw0MidPoint = aligned_straw0MidPoint;
 
-        panel._origin = (plane_temp * panel_to_plane) * Hep3Vector(0,0,0);
+        panel._origin = ((plane_temp * panel_to_plane) * Hep3Vector(0,0,0));
 
       } // panel loop
 
