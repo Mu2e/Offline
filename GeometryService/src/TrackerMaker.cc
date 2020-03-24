@@ -16,6 +16,7 @@
 #include "messagefacility/MessageLogger/MessageLogger.h"
 #include "GeometryService/inc/G4GeometryOptions.hh"
 #include "GeometryService/inc/GeomHandle.hh"
+#include "Mu2eUtilities/inc/HepTransform.hh"
 
 #include <cmath>
 #include <iomanip>
@@ -771,12 +772,13 @@ namespace mu2e {
     panel._EBKeyPhiExtraRotation = _EBKeyPhiExtraRotation;
 
     // set the panel origin for alignment
+    HepTransform plane_to_tracker(0.0,0.0,plane.origin().z(),0.0,0.0,0.0);
     CLHEP::Hep3Vector dv = panel.straw0MidPoint()
-      - plane_to_tracker.displacement();
+        - plane_to_tracker.displacement();
     double rz = dv.phi();
 
-    CLHEP::HepTransform panel_to_tracker(dv.x(),dv.y(),plane.origin().z()+dv.z(),0.0,0.0,rz);
-    panel._origin = (panel_to_tracker) * CLHEP::Hep3Vector(0,0,0);
+    HepTransform panel_to_plane(dv.x(), dv.y(), dv.z(),0.0,0.0,rz);
+    panel._origin = (plane_to_tracker * panel_to_plane) * CLHEP::Hep3Vector(0,0,0);
 
   }  // end makePanel
 
