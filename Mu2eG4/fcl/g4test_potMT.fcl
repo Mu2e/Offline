@@ -1,8 +1,0 @@
-#include "Mu2eG4/fcl/g4test_pot.fcl"
-
-physics.producers.g4run.module_type: "Mu2eG4MT"
-
-// Enable diagnsotic printout for pedagogical purposes.
-
-physics.producers.g4run.debug.diagLevel : 0
-#physics.producers.g4run.debug.mtDebugOutput : false

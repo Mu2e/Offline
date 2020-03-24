@@ -14,18 +14,15 @@
 
 //Mu2e includes
 #include "Mu2eG4/inc/Mu2eG4MTRunManager.hh"
-
+#include "SeedService/inc/SeedService.hh"
 #include "GeometryService/inc/GeometryService.hh"
 #include "GeometryService/inc/GeomHandle.hh"
 #include "Mu2eHallGeom/inc/Mu2eHall.hh"
 #include "GeometryService/inc/WorldG4.hh"
-
 #include "Mu2eG4/inc/WorldMaker.hh"
 #include "Mu2eG4/inc/Mu2eWorld.hh"
-
 #include "Mu2eG4/inc/physicsListDecider.hh"
 #include "Mu2eG4/inc/preG4InitializeTasks.hh"
-
 #include "Mu2eG4/inc/ActionInitialization.hh"
 #include "Mu2eG4/inc/Mu2eG4MasterRunAction.hh"
 
@@ -58,10 +55,10 @@ namespace mu2e {
     sensitiveDetectorHelper_(conf.SDConfig()),
     masterRunAction_(nullptr),
     physicsList_(nullptr),
-    rmvlevel_(conf.debug().diagLevel()),
-    initialSeed_(conf.initialSeed())
+    rmvlevel_(conf.debug().diagLevel())
+    //initialSeed_(art::ServiceHandle<SeedService>()->getSeed())
   {
-    const_cast<CLHEP::HepRandomEngine*>(getMasterRandomEngine())->setSeed(initialSeed_,0);
+    const_cast<CLHEP::HepRandomEngine*>(getMasterRandomEngine())->setSeed(art::ServiceHandle<SeedService>()->getSeed(),0);
   }
 
   // Destructor of base is called automatically.  No need to do anything.
