@@ -114,9 +114,11 @@ namespace mu2e {
         }
         aligned_straw0MidPoint /= StrawId::_nlayers;
 
-        // now set the aligned Panel midpoint and direction
+        // now set the aligned straw0 midpoint and direction, and set new aligned panel origin
         panel._straw0Direction = panel.getStraw(0).getDirection();
         panel._straw0MidPoint = aligned_straw0MidPoint;
+
+        panel._origin = (plane_temp * panel_to_plane) * Hep3Vector(0,0,0);
 
       } // panel loop
 
