@@ -150,7 +150,7 @@ namespace mu2e {
     mutable CLHEP::Hep3Vector _straw0Direction;
 
     // panel origin
-    CLHEP::Hep3Vector _origin;
+    mutable CLHEP::Hep3Vector _origin;
 
     // electronic boards; they are placed wrt to the panel, but in a
     // different mother volume one per panel
