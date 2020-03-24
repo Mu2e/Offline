@@ -16,7 +16,7 @@
 #include "messagefacility/MessageLogger/MessageLogger.h"
 #include "GeometryService/inc/G4GeometryOptions.hh"
 #include "GeometryService/inc/GeomHandle.hh"
-#include "Mu2eUtilities/inc/HepTransform.hh"
+#include "GeneralUtilities/inc/HepTransform.hh"
 
 #include <cmath>
 #include <iomanip>
