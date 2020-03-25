@@ -79,6 +79,11 @@ BEGIN_PROLOG
   }
 
   # Track quality module
+  TrkQualCatalog : {
+   verbose : 1
+   useDb : true
+  }
+
   TrkQual : {
   	  module_type : TrackQuality
   }
