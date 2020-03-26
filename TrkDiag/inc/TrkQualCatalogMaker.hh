@@ -13,6 +13,9 @@ namespace mu2e {
   class TrkQualCatalogMaker {
   public:
     TrkQualCatalogMaker(TrkQualCatalogConfig const& config):_config(config) {}
+
+    TrkQualCatalog::ptr_t fillEntries();
+    void initializeMVAs(TrkQualCatalog::ptr_t ptr);
     TrkQualCatalog::ptr_t fromFcl();
     TrkQualCatalog::ptr_t fromDb(TrkQualDb::cptr_t tqDb);
   private:

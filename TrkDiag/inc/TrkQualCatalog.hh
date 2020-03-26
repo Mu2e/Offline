@@ -8,15 +8,40 @@
 // Mu2e includes
 #include "Mu2eInterfaces/inc/ProditionsEntity.hh"
 #include "Mu2eUtilities/inc/MVATools.hh"
+#include "RecoDataProducts/inc/TrkQual.hh"
 #include "fhiclcpp/ParameterSet.h"
 
 namespace mu2e {
 
   struct TrkQualEntry {
-    TrkQualEntry(std::string trainName, std::string xmlFileName) : _trainName(trainName), _mvaTool(new MVATools(xmlFileName)) {}
+    TrkQualEntry(std::string trainName, std::string xmlFileName) : _trainName(trainName), _xmlFileName(xmlFileName) { }
+    ~TrkQualEntry() {
+      delete _mvaTool;
+    }
+
+    void initializeMVA() {
+      _mvaTool = new MVATools(_xmlFileName);
+      _mvaTool->initMVA();
+
+      // create the MVA mask in case we have removed variables
+      const auto& labels = _mvaTool->labels();
+      _mvaMask = 0;
+      for (int i_var = 0; i_var < TrkQual::n_vars; ++i_var) {
+	for (const auto& i_label : labels) {
+	  std::string i_varName = TrkQual::varName(static_cast<TrkQual::MVA_varindex>(i_var));
+	  if (i_label.find(i_varName) != std::string::npos) {
+	    _mvaMask ^= (1 << i_var);
+	    break;
+	  }
+	}
+      }
+    }
     
     std::string _trainName;
+    std::string _xmlFileName;
+
     MVATools* _mvaTool;
+    MVAMask _mvaMask;
   };
   typedef std::vector<TrkQualEntry> TrkQualEntries;
 
