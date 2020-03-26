@@ -17,11 +17,9 @@
 #include "GeometryService/inc/WorldG4.hh"
 #include "Mu2eG4/inc/PhysicalVolumeHelper.hh"
 #include "ConfigTools/inc/ConfigFileLookupPolicy.hh"
-#include "SeedService/inc/SeedService.hh"
 #include "Mu2eG4/inc/Mu2eG4ResourceLimits.hh"
 #include "Mu2eG4/inc/Mu2eG4MultiStageParameters.hh"
 #include "Mu2eG4/inc/checkConfigRelics.hh"
-#include "Mu2eG4/inc/Mu2eG4MTRunManager.hh"
 #include "Mu2eG4/inc/Mu2eG4WorkerRunManager.hh"
 #include "Mu2eG4/inc/MTMasterThread.hh"
 #include "Mu2eG4/inc/SimParticleHelper.hh"
@@ -150,8 +148,6 @@ namespace mu2e {
     // pass the filtering in Mu2eG4EventAction
     int numExcludedEvents = 0;
 
-    CLHEP::HepJamesRandom _engine;
-
     int const num_schedules{art::Globals::instance()->nschedules()};
     int const num_threads{art::Globals::instance()->nthreads()};
 
@@ -187,10 +183,7 @@ namespace mu2e {
     timeVD_enabled_(pars().SDConfig().TimeVD().enabled()),
     physVolHelper_(),
     sensitiveDetectorHelper_(pars().SDConfig()),
-    standardMu2eDetector_((art::ServiceHandle<GeometryService>())->isStandardMu2eDetector()),
-
-    //NEED TO FIGURE OUT HOW TO CONNECT THIS ENGINE TO THE G4 ENGINE
-    _engine{art::ServiceHandle<SeedService>{}->getSeed()}
+    standardMu2eDetector_((art::ServiceHandle<GeometryService>())->isStandardMu2eDetector())
     {
       if((_generatorModuleLabel == art::InputTag()) && multiStagePars_.genInputHits().empty()) {
         throw cet::exception("CONFIG")
@@ -248,10 +241,6 @@ namespace mu2e {
       for (auto const& tag : multiStagePars_.genInputHits()) {
         consumes<StepPointMCCollection>(tag);
       }
-
-      // The string "G4Engine" is magic; see the docs for RandomNumberGenerator.
-      // This does not work in a Shared Module
-      //createEngine( art::ServiceHandle<SeedService>()->getSeed(), "G4Engine");
 
       G4cout << "WE WILL RUN " << num_schedules << " SCHEDULES" <<  G4endl;
     } // end Mu2eG4MT constructor
@@ -421,8 +410,9 @@ namespace mu2e {
     }
 
     perThreadStore->clearData();
+    
     scheduleWorkerRM->TerminateOneEvent();
-
+    
   }//end Mu2eG4MT::produce
 
 

@@ -51,6 +51,7 @@ namespace mu2e {
     void initializeUserActions(const G4ThreeVector& origin_in_world);
     void initializeRun(art::Event* art_event);
     void processEvent(art::Event*);
+    G4Event* generateEvt(G4int i_event);
 
     inline bool workerRMInitialized() const { return m_managerInitialized; }
 
