@@ -1,12 +1,12 @@
-#ifndef TrkDiag_TrkQualCatalogCache_hh
-#define TrkDiag_TrkQualCatalogCache_hh
+#ifndef Mu2eUtilities_TrkQualCatalogCache_hh
+#define Mu2eUtilities_TrkQualCatalogCache_hh
 
 #include "Mu2eInterfaces/inc/ProditionsCache.hh"
 #include "DbTables/inc/DbIoV.hh"
 #include "DbService/inc/DbHandle.hh"
 #include "DbTables/inc/TrkQualDb.hh"
 
-#include "TrkDiag/inc/TrkQualCatalogMaker.hh"
+#include "Mu2eUtilities/inc/TrkQualCatalogMaker.hh"
 
 
 namespace mu2e {

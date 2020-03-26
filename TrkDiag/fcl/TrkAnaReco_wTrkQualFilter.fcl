@@ -17,12 +17,12 @@ physics :
   analyzers : { @table::TrkAnaReco.analyzers }
   filters : { 
     trkQualFilter : { module_type : TrkQualFilter
-    		      trkqual : "TrkQual"
+    		      trainName : "TrkQual"
 		      trkHypo : "DeM"
 		      effRequest : 0.8
 		    }
     trkQualNewFilter : { module_type : TrkQualFilter
-       		       	 trkqual : "TrkQualNew"
+       		       	 trainName : "TrkQualNew"
 		      	 trkHypo : "DeM"
 		      	 effRequest : 0.4
 		       }

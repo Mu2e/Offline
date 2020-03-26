@@ -1,5 +1,5 @@
-#ifndef TrkDiag_TrkQualCatalog_hh
-#define TrkDiag_TrkQualCatalog_hh
+#ifndef Mu2eUtilities_TrkQualCatalog_hh
+#define Mu2eUtilities_TrkQualCatalog_hh
 
 //
 // TrkQualCatalog is the ProditionsEntry for TrkQualDb

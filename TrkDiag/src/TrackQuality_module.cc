@@ -15,9 +15,9 @@
 // utilities
 #include "ProditionsService/inc/ProditionsHandle.hh"
 #include "Mu2eUtilities/inc/MVATools.hh"
+#include "Mu2eUtilities/inc/TrkQualCatalog.hh"
 #include "TrkDiag/inc/InfoStructHelper.hh"
 #include "TrkDiag/inc/TrkInfo.hh"
-#include "TrkDiag/inc/TrkQualCatalog.hh"
 // data
 #include "RecoDataProducts/inc/KalSeed.hh"
 #include "RecoDataProducts/inc/TrkQual.hh"

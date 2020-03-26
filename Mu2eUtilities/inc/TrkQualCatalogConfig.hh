@@ -1,5 +1,5 @@
-#ifndef TrkDiag_TrkQualCatalogConfig_hh
-#define TrkDiag_TrkQualCatalogConfig_hh
+#ifndef Mu2eUtilities_TrkQualCatalogConfig_hh
+#define Mu2eUtilities_TrkQualCatalogConfig_hh
 
 //
 // Configuration for the TrkQualCatalog ProditionsEntitiy

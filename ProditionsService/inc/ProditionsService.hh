@@ -31,7 +31,7 @@
 #include "TrackerConditions/inc/Mu2eMaterialConfig.hh"
 #include "TrackerConditions/inc/Mu2eDetectorConfig.hh"
 
-#include "TrkDiag/inc/TrkQualCatalogConfig.hh"
+#include "Mu2eUtilities/inc/TrkQualCatalogConfig.hh"
 
 namespace mu2e {
 
