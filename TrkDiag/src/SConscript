@@ -103,6 +103,7 @@ helper.make_plugins( [
    'boost_filesystem',
    'boost_system',
    'hep_concurrency', 
+    'pthread'
     ] )
 
 # Fixme: do I need all of babarlibs below?

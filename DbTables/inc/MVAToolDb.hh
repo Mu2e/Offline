@@ -6,14 +6,18 @@
 #include <iomanip>
 #include <sstream>
 #include <map>
-#include "Mu2eUtilities/inc/MVATools.hh"
 #include "cetlib_except/exception.h"
 #include "DbTables/inc/DbTable.hh"
 
 namespace mu2e {
 
   class MVAToolDb : public DbTable {
+
   public:
+  
+    typedef std::shared_ptr<MVAToolDb> ptr_t;
+    typedef std::shared_ptr<const MVAToolDb> cptr_t;
+
 
     class Row {
     public:
@@ -25,12 +29,12 @@ namespace mu2e {
       std::string  xmlfilename() const { return _xmlfilename; }
       int calibrated() const { return _calibrated; }
 
-      void setCalib() {
-	MVATools* mva = new MVATools(xmlfilename());
-	mva->getCalib(_effCalib);
-      }
+      //      void setCalib() {
+      //	MVATools* mva = new MVATools(xmlfilename());
+      //	mva->getCalib(_effCalib);
+      //      }
 
-      const std::map<float, float>& effCalib() const { return _effCalib; }
+      //      const std::map<float, float>& effCalib() const { return _effCalib; }
 
     private:
       int _idx;
@@ -38,7 +42,7 @@ namespace mu2e {
       std::string _xmlfilename;
       int _calibrated;
 
-      std::map<float, float> _effCalib;
+      //      std::map<float, float> _effCalib;
     };
 
 
@@ -78,10 +82,10 @@ namespace mu2e {
       // add this idx to the map index - optional
       _chanIndex[_rows.back().idx()] = _rows.size()-1;
 
-      // calibrate if we can
-      if (calibrated == 1) {
-	_rows.back().setCalib();
-      }
+      // // calibrate if we can
+      // if (calibrated == 1) {
+      // 	_rows.back().setCalib();
+      // }
     }
 
     void rowToCsv(std::ostringstream& sstream, std::size_t irow) const {
@@ -92,12 +96,12 @@ namespace mu2e {
     }
 
 
-    const std::map<float, float>& getCalib(const int idx) const {
-      if (row(idx).calibrated()!=1) {
-	throw cet::exception("MVATOOLDB_BAD_GETCALIB") << "MVAToolDb::getCalib tried to get calibration when \"calibrated = " << row(idx).calibrated() << "\"" << std::endl;
-      }
-      return row(idx).effCalib();
-    }
+    // const std::map<float, float>& getCalib(const int idx) const {
+    //   if (row(idx).calibrated()!=1) {
+    // 	throw cet::exception("MVATOOLDB_BAD_GETCALIB") << "MVAToolDb::getCalib tried to get calibration when \"calibrated = " << row(idx).calibrated() << "\"" << std::endl;
+    //   }
+    //   return row(idx).effCalib();
+    // }
 
     virtual void clear() { _csv.clear(); _rows.clear(); _chanIndex.clear();}
 

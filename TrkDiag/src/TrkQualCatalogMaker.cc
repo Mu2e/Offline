@@ -1,9 +1,15 @@
 #include "TrkDiag/inc/TrkQualCatalogMaker.hh"
+#include "Mu2eUtilities/inc/MVATools.hh"
 
 namespace mu2e {
 
   TrkQualCatalog::ptr_t TrkQualCatalogMaker::fromFcl() {
-    auto ptr = std::make_shared<TrkQualCatalog>();//_config.deadTimeAnalog(), 
+    TrkQualEntries trkQualEntries;
+    for (const auto& i_entryConf : _config.trkQualConfigs()) {
+      trkQualEntries.push_back(TrkQualEntry(i_entryConf.trainName(), i_entryConf.xmlFileName()));
+    }
+
+    auto ptr = std::make_shared<TrkQualCatalog>(trkQualEntries);//_config.deadTimeAnalog(), 
     return ptr;
   }
 
@@ -12,7 +18,13 @@ namespace mu2e {
     auto ptr = fromFcl();
 
     // now overwrite with db values
-    //tqDb....
+    for (auto& i_trkQualEntry : ptr->modifiableEntries()) {
+      for (const auto& i_row : tqDb->rows()) {
+	if (i_row.mvaname() == i_trkQualEntry._trainName) { // check the training name
+	  i_trkQualEntry._mvaTool = new MVATools(i_row.xmlfilename());
+	}
+      }
+    }
 
     return ptr;
   }

@@ -13,11 +13,11 @@
 #include "art_root_io/TFileService.h"
 #include "art/Utilities/make_tool.h"
 // utilities
+#include "ProditionsService/inc/ProditionsHandle.hh"
 #include "Mu2eUtilities/inc/MVATools.hh"
-#include "DbService/inc/DbHandle.hh"
-#include "DbTables/inc/TrkQualDb.hh"
 #include "TrkDiag/inc/InfoStructHelper.hh"
 #include "TrkDiag/inc/TrkInfo.hh"
+#include "TrkDiag/inc/TrkQualCatalog.hh"
 // data
 #include "RecoDataProducts/inc/KalSeed.hh"
 #include "RecoDataProducts/inc/TrkQual.hh"
@@ -59,7 +59,8 @@ namespace mu2e
     std::string _trainName;
     bool _printMVA;
 
-    mu2e::DbHandle<mu2e::TrkQualDb> _trkQualDb;
+    //    mu2e::DbHandle<mu2e::TrkQualDb> _trkQualDb;
+    mu2e::ProditionsHandle<mu2e::TrkQualCatalog> _trkQualCatalogH;
     std::string _currentXmlFile;
     MVATools* _trkqualmva;
     MVAMask _mvamask;
@@ -114,24 +115,31 @@ namespace mu2e
     event.getByLabel(_kalSeedTag, kalSeedHandle);
     const auto& kalSeeds = *kalSeedHandle;
 
-    // get the XML filename for this TrkQual training
-    auto const& trkQualTable = _trkQualDb.get(event.id());
-    for (const auto& i_row : trkQualTable.rows()) {
-      if (i_row.mvaname() == _trainName) { // check the training name
-	std::string xmlfilename = i_row.xmlfilename();
-	if (xmlfilename != _currentXmlFile) {
-	  initializeMVA(xmlfilename);
-
-	  if (i_row.calibrated() == 1) {
-	    _effCalib = trkQualTable.getCalib(i_row.idx()); // get the calibration if it exists
-	  }
-	}
-	break;
+    TrkQualCatalog const& trkQualCatalog = _trkQualCatalogH.get(event.id());
+    for (const auto& i_trkQualEntry : trkQualCatalog.entries()) {
+      if (i_trkQualEntry._trainName == _trainName) {
+	_trkqualmva = i_trkQualEntry._mvaTool;
       }
     }
-    if(!_trkqualmva) {
-      throw cet::exception("TrackQuality") << "_trkqualmva not initialized properly" << std::endl;
-    }
+
+    // // get the XML filename for this TrkQual training
+    // auto const& trkQualTable = _trkQualDb.get(event.id());
+    // for (const auto& i_row : trkQualTable.rows()) {
+    //   if (i_row.mvaname() == _trainName) { // check the training name
+    // 	std::string xmlfilename = i_row.xmlfilename();
+    // 	if (xmlfilename != _currentXmlFile) { // only reinitialize if the XML file has changed
+    // 	  initializeMVA(xmlfilename);
+
+    // 	  if (i_row.calibrated() == 1) {
+    // 	    _effCalib = trkQualTable.getCalib(i_row.idx()); // get the calibration if it exists
+    // 	  }
+    // 	}
+    // 	break;
+    //   }
+    // }
+    // if(!_trkqualmva) {
+    //   throw cet::exception("TrackQuality") << "_trkqualmva not initialized properly" << std::endl;
+    // }
 
     // Go through the tracks and calculate their track qualities
     for (const auto& i_kalSeed : kalSeeds) {
