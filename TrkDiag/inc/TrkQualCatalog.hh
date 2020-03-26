@@ -14,7 +14,9 @@
 namespace mu2e {
 
   struct TrkQualEntry {
-    TrkQualEntry(std::string trainName, std::string xmlFileName) : _trainName(trainName), _xmlFileName(xmlFileName) { }
+    TrkQualEntry(std::string trainName, std::string xmlFileName, bool calibrated = false) : 
+      _trainName(trainName), _xmlFileName(xmlFileName), _calibrated(calibrated)
+    { }
     ~TrkQualEntry() {
       delete _mvaTool;
     }
@@ -35,13 +37,19 @@ namespace mu2e {
 	  }
 	}
       }
+
+      if (_calibrated) {
+	_mvaTool->getCalib(_effCalib);
+      }
     }
     
     std::string _trainName;
     std::string _xmlFileName;
+    bool _calibrated;
 
     MVATools* _mvaTool;
     MVAMask _mvaMask;
+    std::map<Float_t, Float_t> _effCalib;
   };
   typedef std::vector<TrkQualEntry> TrkQualEntries;
 
