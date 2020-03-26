@@ -59,12 +59,7 @@ namespace mu2e
     std::string _trainName;
     bool _printMVA;
 
-    //    mu2e::DbHandle<mu2e::TrkQualDb> _trkQualDb;
     mu2e::ProditionsHandle<mu2e::TrkQualCatalog> _trkQualCatalogH;
-    //    std::string _currentXmlFile;
-    //    MVATools* _trkqualmva;
-    //    MVAMask _mvamask;
-    std::map<Float_t, Float_t> _effCalib;
 
     InfoStructHelper _infoStructHelper;
   };
@@ -96,26 +91,6 @@ namespace mu2e
 	if(_printMVA) {
 	  i_trkQualEntry._mvaTool->showMVA();
 	}
-
-
-	// // get the XML filename for this TrkQual training
-	// auto const& trkQualTable = _trkQualDb.get(event.id());
-	// for (const auto& i_row : trkQualTable.rows()) {
-	//   if (i_row.mvaname() == _trainName) { // check the training name
-	// 	std::string xmlfilename = i_row.xmlfilename();
-	// 	if (xmlfilename != _currentXmlFile) { // only reinitialize if the XML file has changed
-	// 	  initializeMVA(xmlfilename);
-
-	// 	  if (i_row.calibrated() == 1) {
-	// 	    _effCalib = trkQualTable.getCalib(i_row.idx()); // get the calibration if it exists
-	// 	  }
-	// 	}
-	// 	break;
-	//   }
-	// }
-	// if(!i_trkQualEntry._mvaTool) {
-	//   throw cet::exception("TrackQuality") << "i_trkQualEntry._mvaTool not initialized properly" << std::endl;
-	// }
 
 	// Go through the tracks and calculate their track qualities
 	for (const auto& i_kalSeed : kalSeeds) {
@@ -177,8 +152,8 @@ namespace mu2e
 
 	  // Get the efficiency cut that this track passes
 	  Float_t passEff = -1;
-	  if (_effCalib.size() > 0) {
-	    for (const auto& i_pair : _effCalib) {
+	  if (i_trkQualEntry._calibrated) {
+	    for (const auto& i_pair : i_trkQualEntry._effCalib) {
 	      if (trkqual.MVAValue() >= i_pair.second) {
 		passEff = i_pair.first;
 		break;

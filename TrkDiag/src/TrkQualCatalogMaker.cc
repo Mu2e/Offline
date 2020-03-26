@@ -6,7 +6,7 @@ namespace mu2e {
   TrkQualCatalog::ptr_t TrkQualCatalogMaker::fillEntries() {
     TrkQualEntries trkQualEntries;
     for (const auto& i_entryConf : _config.trkQualConfigs()) {
-      trkQualEntries.push_back(TrkQualEntry(i_entryConf.trainName(), i_entryConf.xmlFileName()));
+      trkQualEntries.push_back(TrkQualEntry(i_entryConf.trainName(), i_entryConf.xmlFileName(), i_entryConf.calibrated()));
     }
 
     auto ptr = std::make_shared<TrkQualCatalog>(trkQualEntries);//_config.deadTimeAnalog(), 
@@ -42,11 +42,12 @@ namespace mu2e {
       for (auto& i_trkQualEntry : ptr->modifiableEntries()) {
 	if (i_row.mvaname() == i_trkQualEntry._trainName) {
 	  i_trkQualEntry._xmlFileName = i_row.xmlfilename();
+	  i_trkQualEntry._calibrated = i_row.calibrated();
 	  break; // break from inner for loop since this entry alread exists
 	}
       }
       // if we get here, then we need to add a new entry
-      ptr->modifiableEntries().push_back(TrkQualEntry(i_row.mvaname(), i_row.xmlfilename()));
+      ptr->modifiableEntries().push_back(TrkQualEntry(i_row.mvaname(), i_row.xmlfilename(), i_row.calibrated()));
     }
 
     initializeMVAs(ptr);

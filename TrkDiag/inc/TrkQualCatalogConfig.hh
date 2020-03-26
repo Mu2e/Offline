@@ -18,6 +18,8 @@ namespace mu2e {
       Name("trainName"), Comment("Name of this training")};
     fhicl::Atom<std::string> xmlFileName{
       Name("xmlFileName"), Comment("XML file name for this training")};
+    fhicl::Atom<bool> calibrated{
+      Name("calibrated"), Comment("TrkQual training calibrated?"), false};
   };
 
   struct TrkQualCatalogConfig {
