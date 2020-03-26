@@ -1,4 +1,4 @@
-#include "TrkDiag/inc/TrkQualCatalogMaker.hh"
+#include "Mu2eUtilities/inc/TrkQualCatalogMaker.hh"
 #include "Mu2eUtilities/inc/MVATools.hh"
 
 namespace mu2e {

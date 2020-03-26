@@ -17,7 +17,7 @@
 #include "TrackerConditions/inc/Mu2eMaterialCache.hh"
 #include "TrackerConditions/inc/Mu2eDetectorCache.hh"
 
-#include "TrkDiag/inc/TrkQualCatalogCache.hh"
+#include "Mu2eUtilities/inc/TrkQualCatalogCache.hh"
 
 using namespace std;
 

@@ -1,4 +1,4 @@
-#include "TrkDiag/inc/TrkQualCatalog.hh"
+#include "Mu2eUtilities/inc/TrkQualCatalog.hh"
 
 namespace mu2e {
 

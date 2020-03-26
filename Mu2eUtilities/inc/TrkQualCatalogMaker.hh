@@ -1,12 +1,12 @@
-#ifndef TrkDiag_TrkQualCatalogMaker_hh
-#define TrkDiag_TrkQualCatalogMaker_hh
+#ifndef Mu2eUtilities_TrkQualCatalogMaker_hh
+#define Mu2eUtilities_TrkQualCatalogMaker_hh
 
 //
 // Makes the TrkQualCatalog ProditionsEntitiy
 //
 
-#include "TrkDiag/inc/TrkQualCatalog.hh"
-#include "TrkDiag/inc/TrkQualCatalogConfig.hh"
+#include "Mu2eUtilities/inc/TrkQualCatalog.hh"
+#include "Mu2eUtilities/inc/TrkQualCatalogConfig.hh"
 #include "DbTables/inc/TrkQualDb.hh"
 
 namespace mu2e {
