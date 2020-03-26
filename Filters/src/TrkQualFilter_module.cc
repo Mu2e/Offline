@@ -74,18 +74,18 @@ namespace mu2e {
   bool TrkQualFilter::filter(art::Event& event) {
 
     float trkQualCut = -1;
-    auto const& trkQualTable = _trkQualDb.get(event.id());
-    for (const auto& i_row : trkQualTable.rows()) {
-      if (i_row.mvaname() == _trkqual) {
-	const auto& calib = trkQualTable.getCalib(i_row.idx());
-	for (const auto& i_pair : calib) {
-	  if (i_pair.first == _effRequest) {
-	    trkQualCut = i_pair.second;
-	    break;
-	  }
-	}
-      }
-    }
+    // auto const& trkQualTable = _trkQualDb.get(event.id());
+    // for (const auto& i_row : trkQualTable.rows()) {
+    //   if (i_row.mvaname() == _trkqual) { // check the training name
+    // 	const auto& calib = trkQualTable.getCalib(i_row.idx()); // get the calibration
+    // 	for (const auto& i_pair : calib) {
+    // 	  if (i_pair.first == _effRequest) {
+    // 	    trkQualCut = i_pair.second;
+    // 	    break;
+    // 	  }
+    // 	}
+    //   }
+    // }
 
     if (trkQualCut < 0) {
       throw cet::exception("TrkQualFilter") << "trkQualCut is less than 0 (value = " << trkQualCut << ")" << std::endl;
