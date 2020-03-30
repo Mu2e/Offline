@@ -14,8 +14,6 @@ namespace mu2e {
 //-------------construct:----------------------------------
   CosmicTrackFinderData::CosmicTrackFinderData() {
     _chHitsToProcess.reserve(kNMaxChHits); //Hits
-    _mcDigisToProcess.reserve(kNMaxChHits); //MC
-    _chHitsWPos     .reserve(kNMaxChHits); //Wires
   }
 
 
@@ -53,17 +51,12 @@ Orders the channels. Starts by finding the face of the X channel (i.e. the origi
   }
 
 
-  void CosmicTrackFinderData::clearMCVariables() {
-       _mcDigisToProcess.clear();
-  }
-  
   void CosmicTrackFinderData::clearTempVariables() {
 
     _timeCluster    = NULL;
     _timeClusterPtr = art::Ptr<TimeCluster>();
     
     _chHitsToProcess.clear();
-    _chHitsWPos.clear();
     
     
     _nStrawHits = 0;
