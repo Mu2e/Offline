@@ -5,13 +5,14 @@
 #include "TFile.h"
 #include "TH1.h"
 #include "TTree.h"
+#include "TCut.h"
 
 using namespace std;
 
-double EfficiencyToTrkQual(TTree* inpt_tree, const char* train_name, double effic, int subdivs=10000);
-std::string CalibTrkQual_Eff(TTree* tree, std::string train_name);
+double EfficiencyToTrkQual(TTree* inpt_tree, const char* train_name, double effic, TCut signal_cut, int subdivs=10000);
+std::string CalibTrkQual_Eff(TTree* tree, std::string train_name, TCut signal_cut);
 
-void CalibTrkQual(TTree* tree, std::string train_name) {
+void CalibTrkQual(TTree* tree, std::string train_name, TCut signal_cut) {
 
   std::cout << "Calibrating " << train_name << "..." << std::endl;
 
@@ -41,7 +42,7 @@ void CalibTrkQual(TTree* tree, std::string train_name) {
       // Add the calibration block just before the end
       outfile << "  <Calibration>" << std::endl;
 
-      const auto& calibtable_eff = CalibTrkQual_Eff(tree, train_name);
+      const auto& calibtable_eff = CalibTrkQual_Eff(tree, train_name, signal_cut);
       outfile << calibtable_eff;
 
       // TODO: if we ever have a definition of background rejection for TrkQual, we can calibrate it here
@@ -56,7 +57,7 @@ void CalibTrkQual(TTree* tree, std::string train_name) {
   std::cout << "Done!" << std::endl;
 }
 
-std::string CalibTrkQual_Eff(TTree* tree, std::string train_name) {
+std::string CalibTrkQual_Eff(TTree* tree, std::string train_name, TCut signal_cut) {
 
   double min_eff = 0.0;
   double max_eff = 1.0;
@@ -66,14 +67,14 @@ std::string CalibTrkQual_Eff(TTree* tree, std::string train_name) {
 
   int counter = 0;
   for (double i_eff = min_eff; i_eff <= max_eff; i_eff += eff_step) {
-    double trkqual_cut = EfficiencyToTrkQual(tree, train_name.c_str(), i_eff);
+    double trkqual_cut = EfficiencyToTrkQual(tree, train_name.c_str(), i_eff, signal_cut);
     calibtable << "    <Calib Index=\"" << counter << "\" Eff=\"" << i_eff << "\" Cut=\"" << trkqual_cut << "\"/>" << std::endl;
     ++counter;
   }
   return calibtable.str();
 }
 
-double EfficiencyToTrkQual(TTree* inpt_tree, const char* train_name, double effic, int subdivs) {
+double EfficiencyToTrkQual(TTree* inpt_tree, const char* train_name, double effic, TCut signal_cut, int subdivs) {
   // Given a target efficiency and a TrkAna tree with TrkQual training, function returns a TrkQual cut value
   // that approximately achieves the target efficiency
   //
@@ -81,9 +82,7 @@ double EfficiencyToTrkQual(TTree* inpt_tree, const char* train_name, double effi
 
   string train_str(train_name);
   string leaf_hist_str = "dequal."+train_str+">>hist("+to_string(subdivs)+",0,1)";
-  const char* std_cuts = "de.t0>700 && de.t0<1695 && deent.td > 0.577350 && deent.td < 1.000 && deent.d0>-80 && "
-                         "de.d0<105 && detrkqual.MaxRadius>450 && detrkqual.MaxRadius<680";
-
+  TCut std_cuts = signal_cut;
 
   inpt_tree->Draw(leaf_hist_str.c_str(), std_cuts, "goff");
   TH1F *hist = (TH1F*) gDirectory->Get("hist");
@@ -111,7 +110,7 @@ double EfficiencyToTrkQual(TTree* inpt_tree, const char* train_name, double effi
   if (approx_trkqual < 10.0/subdivs) {
     approx_trkqual = 0;
   }
-  string add_on = " && dequal.";
+  //  string add_on = " && dequal.";
   //  //  cout << "Relative Efficiency " << inpt_tree->GetEntries((std_cuts+add_on+train_str+" > "+to_string(approx_trkqual)).c_str())/hist->GetEntries() << "\n" << endl;
   return approx_trkqual;  
 }
