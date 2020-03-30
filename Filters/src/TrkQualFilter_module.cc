@@ -74,8 +74,10 @@ namespace mu2e {
 
     float trkQualCut = -1;
     TrkQualCatalog const& trkQualCatalog = _trkQualCatalogH.get(event.id());
+    bool found = false;
     for (const auto& i_trkQualEntry : trkQualCatalog.entries()) {
       if (i_trkQualEntry._trainName == _trainName) {
+	found = true;
 	const auto& calib = i_trkQualEntry._effCalib; // get the calibration
     	for (const auto& i_pair : calib) {
     	  if (i_pair.first == _effRequest) {
@@ -84,6 +86,9 @@ namespace mu2e {
     	  }
 	}
       }
+    }
+    if (!found) {
+      throw cet::exception("TrkQualFilter") << "TrkQual training with name " << _trainName << " was not found in the TrkQualCatalog" << std::endl;
     }
     if (trkQualCut < 0) {
       throw cet::exception("TrkQualFilter") << "trkQualCut is less than 0 (value = " << trkQualCut << ")" << std::endl;
