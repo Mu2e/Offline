@@ -29,20 +29,11 @@ namespace mu2e {
       std::string  xmlfilename() const { return _xmlfilename; }
       int calibrated() const { return _calibrated; }
 
-      //      void setCalib() {
-      //	MVATools* mva = new MVATools(xmlfilename());
-      //	mva->getCalib(_effCalib);
-      //      }
-
-      //      const std::map<float, float>& effCalib() const { return _effCalib; }
-
     private:
       int _idx;
       std::string _mvaname;
       std::string _xmlfilename;
       int _calibrated;
-
-      //      std::map<float, float> _effCalib;
     };
 
 

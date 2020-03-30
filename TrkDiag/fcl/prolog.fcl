@@ -82,7 +82,7 @@ BEGIN_PROLOG
   TrkQualCatalog : {
    verbose : 1
    useDb : true
-   trkQualConfigs : [ ]
+   mvaConfigs : [ ]
   }
 
   TrkQual : {
