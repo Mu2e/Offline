@@ -69,12 +69,30 @@ namespace mu2e {
     MVAEntries<T>& modifiableEntries() { return _entries;} 
     MVAEntries<T> const& entries() const { return _entries;} 
 
+    const std::string print() const {
+      std::stringstream out;
+      print(out);
+      return out.str();
+    }
+
     void print(std::ostream& os) const {
       os << "Entries in " << _name << ":" << std::endl;
       for (const auto& i_entry : _entries) {
 	os << "Train Name: " << i_entry._trainName << ", XML File: " << i_entry._xmlFileName << std::endl;
       }
       os << std::endl;
+    }
+
+    MVAEntry<T> const& find(std::string name) const {
+      for (const auto& i_entry : entries()) {
+	if (i_entry._trainName == name) {
+	  return i_entry;
+	}
+      }
+      // if we get this far, then we haven't found the MVAEntry requested
+      throw cet::exception("MVACatalog") << "MVA training with name " << name << " was not found in this MVACatalog: " << std::endl << print();
+
+      return entries().at(0);
     }
 
     // typedefs
