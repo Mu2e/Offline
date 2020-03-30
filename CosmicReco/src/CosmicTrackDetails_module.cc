@@ -9,7 +9,6 @@
 
 // Cosmic Tracks:
 #include "CosmicReco/inc/CosmicTrackFit.hh"
-#include "CosmicReco/inc/CosmicTrackFinderData.hh"
 #include "RecoDataProducts/inc/CosmicTrack.hh"
 #include "RecoDataProducts/inc/CosmicTrackSeed.hh"
 #include "CosmicReco/inc/CosmicTrackMCInfo.hh"
@@ -32,6 +31,7 @@
 #include "CosmicReco/inc/DriftFitUtils.hh"
 #include "Mu2eUtilities/inc/ParametricFit.hh"
 #include "TrackerConditions/inc/StrawResponse.hh"
+#include "Mu2eUtilities/inc/BuildLinearFitMatrixSums.hh"
 
 // Mu2e diagnostics
 #include "TrkDiag/inc/ComboHitInfo.hh"

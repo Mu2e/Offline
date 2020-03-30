@@ -9,9 +9,7 @@
 #endif/*__GCCXML__*/
 
 //Mu2e Cosmics:
-#include "CosmicReco/inc/CosmicTrackFinderData.hh"
 #include "RecoDataProducts/inc/CosmicTrackSeed.hh"
-#include "CosmicReco/inc/CosmicTrackFinderData.hh"
 
 // Products
 #include "RecoDataProducts/inc/ComboHit.hh"
@@ -76,7 +74,7 @@ namespace mu2e
 		explicit CosmicTrackFit(const Config& conf);
     		virtual ~CosmicTrackFit(){};
 
-                bool initCosmicTrack(const char* title, CosmicTrackFinderData& TrackData);
+                bool initCosmicTrack(const char* title, CosmicTrackSeed& tseed, ComboHitCollection &combohits);
 		std::vector<XYZVec> SortPoints(std::vector<XYZVec> pointY);
                 XYZVec InitLineDirection(const ComboHit *ch0, const ComboHit *chN);
                 
@@ -84,14 +82,14 @@ namespace mu2e
                 XYZVec ConvertPointToDetFrame(XYZVec vec);
 
                 XYZVec GetTrackDirection(std::vector<XYZVec> hitXYZ, XYZVec XDoublePrime, XYZVec YDoublePrime, XYZVec ZPrime); 
-                void BeginFit(const char* title, CosmicTrackFinderData& TrackData);
-                void RunFitChi2(const char* title, CosmicTrackFinderData& trackData);
-                void FitAll(const char* title, CosmicTrackFinderData& trackData,CosmicTrack* track);
+                CosmicTrackSeed BeginFit(const char* title, CosmicTrackSeed &tseed, ComboHitCollection &combohits);
+                void RunFitChi2(const char* title, CosmicTrackSeed& tseed, ComboHitCollection &combohits);
+                void FitAll(const char* title, CosmicTrackSeed &tseed, ComboHitCollection &combohits, CosmicTrack* cosmictrack);
 
-		void ConvertFitToDetectorFrame(CosmicTrackFinderData& trackData, TrackAxes axes, XYZVec Position, XYZVec Direction, CosmicTrack* cosmictrack, bool isseed, bool det);
+		void ConvertFitToDetectorFrame(TrackAxes axes, XYZVec Position, XYZVec Direction, CosmicTrack* cosmictrack, bool isseed, bool det);
 		
                 bool goodTrack(CosmicTrack& track);
-		void DriftFit(CosmicTrackFinderData& trackData, StrawResponse const& srep);
+		void DriftFit(CosmicTrackSeed& tseed, StrawResponse const& srep);
 		
                 const Tracker*            _tracker;
     		void  setTracker    (const Tracker*    Tracker) { _tracker     = Tracker; }
