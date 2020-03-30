@@ -31,7 +31,7 @@
 #include "TrackerConditions/inc/Mu2eMaterialConfig.hh"
 #include "TrackerConditions/inc/Mu2eDetectorConfig.hh"
 
-#include "Mu2eUtilities/inc/TrkQualCatalogConfig.hh"
+#include "Mu2eUtilities/inc/MVACatalogConfig.hh"
 
 namespace mu2e {
 
@@ -71,7 +71,7 @@ namespace mu2e {
       fhicl::Table<Mu2eDetectorConfig> mu2eDetector{
 	  Name("mu2eDetector"), 
 	  Comment("Mu2e detector model for BTrk") };
-      fhicl::Table<TrkQualCatalogConfig> trkQualCatalog{
+      fhicl::Table<MVACatalogConfig> trkQualCatalog{
 	  Name("trkQualCatalog"), 
 	  Comment("Catalog of TrkQual trainings") };
     };

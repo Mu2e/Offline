@@ -13,6 +13,9 @@ namespace mu2e {
   
   class TrkQualDb : public MVAToolDb {
   public:
+    typedef std::shared_ptr<TrkQualDb> ptr_t;
+    typedef std::shared_ptr<const TrkQualDb> cptr_t;
+
     TrkQualDb():MVAToolDb("TrkQualDb") {
     }
   };

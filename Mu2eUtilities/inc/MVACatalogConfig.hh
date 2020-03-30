@@ -1,8 +1,8 @@
-#ifndef Mu2eUtilities_TrkQualCatalogConfig_hh
-#define Mu2eUtilities_TrkQualCatalogConfig_hh
+#ifndef Mu2eUtilities_MVACatalogConfig_hh
+#define Mu2eUtilities_MVACatalogConfig_hh
 
 //
-// Configuration for the TrkQualCatalog ProditionsEntitiy
+// Configuration for the MVACatalog ProditionsEntitiy
 //
 
 #include "fhiclcpp/types/Atom.h"
@@ -10,7 +10,7 @@
 #include "fhiclcpp/types/Sequence.h"
 
 namespace mu2e {
-  struct TrkQualEntryConfig {
+  struct MVAEntryConfig {
     using Name=fhicl::Name;
     using Comment=fhicl::Comment;
 
@@ -19,18 +19,18 @@ namespace mu2e {
     fhicl::Atom<std::string> xmlFileName{
       Name("xmlFileName"), Comment("XML file name for this training")};
     fhicl::Atom<bool> calibrated{
-      Name("calibrated"), Comment("TrkQual training calibrated?"), false};
+      Name("calibrated"), Comment("MVA training calibrated?"), false};
   };
 
-  struct TrkQualCatalogConfig {
+  struct MVACatalogConfig {
     using Name=fhicl::Name;
     using Comment=fhicl::Comment;
     fhicl::Atom<int> verbose{
       Name("verbose"), Comment("verbosity: 0 or 1")}; 
     fhicl::Atom<bool> useDb{
       Name("useDb"), Comment("use database or fcl")}; 
-    fhicl::Sequence< fhicl::Table<TrkQualEntryConfig> > trkQualConfigs{
-      Name("trkQualConfigs"), Comment("list of configurations of available TrkQual trainings")};
+    fhicl::Sequence< fhicl::Table<MVAEntryConfig> > mvaConfigs{
+      Name("mvaConfigs"), Comment("list of configurations of available MVA trainings")};
   };
 }
 
