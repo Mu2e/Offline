@@ -11,7 +11,6 @@
 #include "RecoDataProducts/inc/StrawHitIndex.hh"
 #include "RecoDataProducts/inc/ComboHit.hh"
 #include "RecoDataProducts/inc/StrawHit.hh"
-#include "MCDataProducts/inc/StrawDigiMC.hh"
 #include "RecoDataProducts/inc/CosmicTrackSeed.hh" //CHANGE SEED
 #include "Mu2eUtilities/inc/BuildLinearFitMatrixSums.hh"
 #include "TrkReco/inc/TrkFaceData.hh"
@@ -70,7 +69,6 @@ namespace mu2e {
     const ComboHitCollection*         _chcol;
     const StrawHitCollection*         _shcol;
     const TimeClusterCollection*      _tccol;
-    const StrawDigiMCCollection*      _mccol;
     ::BuildLinearFitMatrixSums         _S;//USED?
 
 //-----------------------------------------------------------------------------
@@ -78,8 +76,6 @@ namespace mu2e {
 //-----------------------------------------------------------------------------
     std::array<FaceZ_t,StrawId::_ntotalfaces>         _oTracker;//array of faces, length of number of faces
     ComboHitCollection                                _chHitsToProcess;
-    std::vector<XYWVec>                               _chHitsWPos;
-    std::vector<StrawDigiMC>		              _mcDigisToProcess;
 //-----------------------------------------------------------------------------
 // functions
 //-----------------------------------------------------------------------------
@@ -93,7 +89,6 @@ namespace mu2e {
     void          orderID           (ChannelID* X, ChannelID* O);
     void          deleteTrack ();
     void          print(const char* Title);
-    void          clearMCVariables();
     void          clearTempVariables();
     void          clearResults();
     

@@ -24,10 +24,6 @@
 #include "art/Utilities/make_tool.h"
 #include "canvas/Persistency/Common/Ptr.h"
 
-// MC data
-#include "MCDataProducts/inc/SimParticle.hh"
-#include "MCDataProducts/inc/StrawDigiMC.hh"
-
 //MU2E:
 #include "RecoDataProducts/inc/StrawHitCollection.hh"
 #include "RecoDataProducts/inc/StrawHitPositionCollection.hh"
@@ -71,26 +67,15 @@ using CLHEP::Hep3Vector;
 using CLHEP::HepVector;
 
 namespace{
+
+    struct ycomp_iter : public std::binary_function<std::vector<ComboHit>::const_iterator, std::vector<ComboHit>::const_iterator, bool> {
+      bool operator()(std::vector<ComboHit>::const_iterator p1, std::vector<ComboHit>::const_iterator p2) { return p1->_pos.y() > p2->_pos.y(); }
+    };
     
     struct ycomp : public std::binary_function<mu2e::ComboHit,mu2e::ComboHit,bool> {
     bool operator()(mu2e::ComboHit const& p1, mu2e::ComboHit const& p2) { return p1._pos.y() > p2._pos.y(); }
   };
   
-    struct ycomp_digi : public std::binary_function<mu2e::StrawDigiMC,mu2e::StrawDigiMC,bool> {
-    bool operator()(mu2e::StrawDigiMC const& p1, mu2e::StrawDigiMC const& p2) {
-    auto const& spmcp1 = p1.strawGasStep(mu2e::StrawEnd::cal); 
-    auto const& spmcp2 = p2.strawGasStep(mu2e::StrawEnd::cal);
-    
-    return spmcp1->position().y() > spmcp2->position().y(); }
-  };
-
-  struct ycomp_MC : public std::binary_function<mu2e::StrawDigiMC,mu2e::StrawDigiMC,bool> {
-    bool operator()(art::Ptr<mu2e::StrawGasStep> const& spmcp1, art::Ptr<mu2e::StrawGasStep> const& spmcp2) {
-    return spmcp1->position().y() > spmcp2->position().y(); }
-  };
-   struct zcomp : public std::binary_function<mu2e::ComboHit,mu2e::ComboHit,bool> {
-    bool operator()(mu2e::ComboHit const& p1, mu2e::ComboHit const& p2) { return p1._pos.z() < p2._pos.z(); }
-  }; 
 
 }
 
@@ -101,7 +86,6 @@ namespace mu2e{
 	struct Config{
 	      using Name=fhicl::Name;
 	      using Comment=fhicl::Comment;
-	      fhicl::Atom<int> mcdiag{Name("mcdiag"), Comment("set on for MC info"),2};
 	      fhicl::Atom<int> debug{Name("debugLevel"), Comment("set to 1 for debug prints"),1};
 	      fhicl::Atom<int> printfreq{Name("printFrequency"), Comment("print frquency"), 101};
 	      fhicl::Atom<int> minnsh {Name("minNStrawHits"), Comment("minimum number of straw hits "),2};
@@ -111,7 +95,6 @@ namespace mu2e{
 	      fhicl::Atom<art::InputTag> chToken{Name("ComboHitCollection"),Comment("tag for combo hit collection")};
 	      fhicl::Atom<art::InputTag> shToken{Name("StrawHitCollection"),Comment("tag for straw hit collection")};
 	      fhicl::Atom<art::InputTag> tcToken{Name("TimeClusterCollection"),Comment("tag for time cluster collection")};
-	      fhicl::Atom<art::InputTag> mcToken{Name("StrawDigiMCCollection"),Comment("StrawDigi collection tag")};
 	      fhicl::Atom<bool> DoDrift{Name("DoDrift"),Comment("turn on for drift fit")};
 	      fhicl::Table<CosmicTrackFit::Config> tfit{Name("CosmicTrackFit"), Comment("fit")};
 	};
@@ -126,7 +109,7 @@ namespace mu2e{
     
 	Config _conf;
 
-	int 				_mcdiag, _debug;
+	int 				_debug;
 	int                                 _printfreq;
 	int 				_minnsh; // minimum # of strawHits in CH
 	int 				_minnch; // minimum # of ComboHits for viable fit
@@ -137,7 +120,6 @@ namespace mu2e{
 	art::InputTag  _chToken;
 	art::InputTag  _shToken;
 	art::InputTag  _tcToken;
-	art::InputTag  _mcToken;
 
 	bool 	   _DoDrift;
 
@@ -150,7 +132,6 @@ namespace mu2e{
 
 	ProditionsHandle<Tracker> _alignedTracker_h;
 	void     OrderHitsY(CosmicTrackFinderData& TrackData); 
-	void     OrderHitsYMC(CosmicTrackFinderData& TrackData, art::Event& event); 
 	void     fillGoodHits(CosmicTrackFinderData& TrackData);
 	int      goodHitsTimeCluster(const TimeCluster TCluster, ComboHitCollection chcol);
    
@@ -159,7 +140,6 @@ namespace mu2e{
 
     CosmicTrackFinder::CosmicTrackFinder(const Parameters& conf) :
 	art::EDProducer(conf),
-	_mcdiag (conf().mcdiag()),
 	_debug  (conf().debug()),
 	_printfreq  (conf().printfreq()),
 	_minnsh   (conf().minnsh()),
@@ -169,14 +149,12 @@ namespace mu2e{
 	_chToken (conf().chToken()),
         _shToken (conf().shToken()),
 	_tcToken (conf().tcToken()),
-	_mcToken (conf().mcToken()),
 	_DoDrift (conf().DoDrift()),
 	_tfit (conf().tfit())
 	{
 		consumes<ComboHitCollection>(_chToken);
 		consumes<ComboHitCollection>(_shToken);
 		consumes<TimeClusterCollection>(_tcToken);
-		consumes<StrawDigiMCCollection>(_mcToken);
 		produces<CosmicTrackSeedCollection>();
                 produces<LineSeedCollection>();
 	    
@@ -201,7 +179,6 @@ namespace mu2e{
 	if (_debug != 0) std::cout<<"Producing Cosmic Track in  Finder..."<<std::endl;
 	unique_ptr<CosmicTrackSeedCollection> seed_col(new CosmicTrackSeedCollection());
 
-	_stResult.clearMCVariables();
 	int _iev=event.id().event();
 	if (_debug > 0){
 		std::cout<<"ST Finder Event #"<<_iev<<std::endl;
@@ -214,13 +191,9 @@ namespace mu2e{
 	auto  const& tcH = event.getValidHandle<TimeClusterCollection>(_tcToken);
 	const TimeClusterCollection& tccol(*tcH);
 
-	if(_mcdiag>0){ 	 
-		auto const& mcdH = event.getValidHandle<StrawDigiMCCollection>(_mcToken);
-		const StrawDigiMCCollection& mccol(*mcdH);
-		_stResult._mccol =  &mccol;
-	}
-
         unique_ptr<LineSeedCollection> lseed_col(new LineSeedCollection());
+
+        std::vector<StrawHitIndex> panelHitIdxs;
 
 	_stResult.event   = &event;
 	_stResult._chcol  = &chcol; 
@@ -257,15 +230,6 @@ namespace mu2e{
 		_stResult._tseed._status.merge(TrkFitFlag::hitsOK);
 		_stResult._tseed._panel_hits = _stResult._chHitsToProcess;
       
-		if(_mcdiag > 0 && _stResult._chHitsToProcess.size() > 0){
-			OrderHitsYMC(_stResult, event);
-			for(auto const & mcd : _stResult._mcDigisToProcess){
-				auto const& spmcp = mcd.strawGasStep(StrawEnd::cal);
-				XYZVec posN(spmcp->startPosition());
-				
-			}
-	        }
-
 		ostringstream title;
 		title << "Run: " << event.id().run()
 		<< "  Subrun: " << event.id().subRun()
@@ -391,72 +355,52 @@ namespace mu2e{
 		trackData._tseed._panel_hits.push_back(thit);
 	}
     }
-    void CosmicTrackFinder::OrderHitsYMC(CosmicTrackFinderData& TrackData, art::Event& event){
-	int     size  = _stResult._chHitsToProcess.size();
-	StrawDigiMCCollection ordDigiCol;
-	ordDigiCol.reserve(size);
 
-	for (int i=0; i<size; ++i) {
-		std::vector<StrawDigiIndex> shids;  
-		_stResult._chHitsToProcess.fillStrawDigiIndices(event,i,shids);    
-		StrawDigiMC const& mcd1 = _stResult._mccol->at(shids[0]);  
-		ordDigiCol.push_back(mcd1); 
-	}
+  void CosmicTrackFinder::OrderHitsY(CosmicTrackFinderData& TrackData){ //, std::vector<StrawHitIndex> &inputIdx, std::vector<StrawHitIndex> &outputIdxs){
+    if (_debug != 0){
+      std::cout<<"Ordering Hits..."<<std::endl;
+    }
+    const vector<StrawHitIndex>& shIndices = TrackData._timeCluster->hits();
 
-	if (_debug != 0) std::cout<<"Number of Digis: "<<ordDigiCol.size()<<std::endl;
-	std::sort(ordDigiCol.begin(), ordDigiCol.end(),ycomp_digi());
+    int	    h;
+    int     size  = _stResult._chcol->size();
+    int     nFiltComboHits(0), nFiltStrawHits(0);
 
-	for (unsigned i=0; i<ordDigiCol.size(); ++i) { 
-		StrawDigiMC const& mcd1 = ordDigiCol[i]; 
-		_stResult._mcDigisToProcess.push_back(mcd1);
+    ComboHitCollection ordChCol;
+    ordChCol.reserve(size);
 
-	}
-
+    for (int i=0; i<size; ++i) {
+      h = shIndices[i];
+      const ComboHit& ch  = (*_stResult._chcol)[h];
+      ordChCol.push_back(ComboHit(ch)); 
     }
 
-    void CosmicTrackFinder::OrderHitsY(CosmicTrackFinderData& TrackData){
-	    if (_debug != 0){
-		 std::cout<<"Ordering Hits..."<<std::endl;
-	    }
-	    const vector<StrawHitIndex>& shIndices = TrackData._timeCluster->hits();
-	    mu2e::CosmicTrackFinderData::ChannelID cx, co;
+//    std::vector<ComboHitCollection::CHCIter> ordChColIters;
+    std::vector<std::vector<ComboHit>::const_iterator> ordChColIters;
+    for (auto iter=_stResult._chcol->begin(); iter!= _stResult._chcol->end(); ++iter){
+      std::vector<ComboHit>::const_iterator tempiter = iter;
+//      ComboHitCollection::CHCIter tempiter = iter;
+      ordChColIters.push_back(tempiter);
+    }
+    for (unsigned i=0;i<ordChCol.size();++i){
+      std::cout << "UNSORTED " << ordChCol[i].strawId() << " " << ordChColIters[i]->strawId() << " ( " << ordChCol[i]._pos.y() << " " << ordChColIters[i]->_pos.y() << " ) " << std::endl;
+    }
+    std::sort(ordChColIters.begin(), ordChColIters.end(),ycomp_iter());
 
-	    int	    h;
-	    int     size  = shIndices.size();
-	    int     nFiltComboHits(0), nFiltStrawHits(0);
-	    
-	    ComboHitCollection ordChCol;
-	    ordChCol.reserve(size);
- 
-	for (int i=0; i<size; ++i) {
-		h = shIndices[i];
-		const ComboHit& ch  = (*_stResult._chcol)[h];
-		ordChCol.push_back(ComboHit(ch)); 
-	}
+    //if (_debug != 0) std::cout<<"Number of ComboHits: "<<inputIdx.size()<<std::endl;
+    std::sort(ordChCol.begin(), ordChCol.end(),ycomp());
+    for (unsigned i=0; i<ordChCol.size(); ++i) { 
+      ComboHit& ch = ordChCol[i];
+      std::cout << "SORTED: " << ch.strawId() << " " << ordChColIters[i]->strawId() << " ( " << ch._pos.y() << " " << ordChColIters[i]->_pos.y() << " ) " << std::endl;
+      ComboHit hit(ch);
+      _stResult._chHitsToProcess.push_back(hit);
 
-	if (_debug != 0) std::cout<<"Number of ComboHits: "<<ordChCol.size()<<std::endl;
-	std::sort(ordChCol.begin(), ordChCol.end(),ycomp());
-	for (unsigned i=0; i<ordChCol.size(); ++i) { 
-		ComboHit& ch = ordChCol[i];
-		ComboHit hit(ch);
-		_stResult._chHitsToProcess.push_back(hit);
-		
-		cx.Station                 = ch.strawId().station();
-		cx.Plane                   = ch.strawId().plane() % 2;
-		cx.Face                    = ch.strawId().face();
-		cx.Panel                   = ch.strawId().panel();
-		
-		TrackData.orderID(&cx, &co);
-		
-		int of       = co.Face;
-		
-		_stResult._chHitsWPos.push_back(XYWVec(hit.pos(),  of, hit.nStrawHits()));
-		++nFiltComboHits;
-		nFiltStrawHits += ch.nStrawHits();
-    	}
-	TrackData._nFiltComboHits = nFiltComboHits;  //ComboHit counter
-	TrackData._nFiltStrawHits = nFiltStrawHits;  //StrawHit counter
-   }
+      ++nFiltComboHits;
+      nFiltStrawHits += ch.nStrawHits();
+    }
+    TrackData._nFiltComboHits = nFiltComboHits;  //ComboHit counter
+    TrackData._nFiltStrawHits = nFiltStrawHits;  //StrawHit counter
+  }
   
     int  CosmicTrackFinder::goodHitsTimeCluster(const TimeCluster TCluster, ComboHitCollection chcol){
 	int   nhits         = TCluster.nhits();
