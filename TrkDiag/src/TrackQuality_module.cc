@@ -85,8 +85,10 @@ namespace mu2e
     const auto& kalSeeds = *kalSeedHandle;
 
     TrkQualCatalog const& trkQualCatalog = _trkQualCatalogH.get(event.id());
+    bool found = false;
     for (const auto& i_trkQualEntry : trkQualCatalog.entries()) {
       if (i_trkQualEntry._trainName == _trainName) {
+	found = true;
 
 	if(_printMVA) {
 	  i_trkQualEntry._mvaTool->showMVA();
@@ -167,6 +169,10 @@ namespace mu2e
 	  throw cet::exception("TrackQuality") << "KalSeed, TrkQual and RecoQual sizes are inconsistent (" << kalSeeds.size() << ", " << tqcol->size() << ", " << rqcol->size() << " respectively)";
 	}
       }
+    }
+
+    if (!found) {
+      throw cet::exception("TrackQuality") << "TrkQual training with name " << _trainName << " was not found in the TrkQualCatalog" << std::endl;
     }
 
     // put the output products into the event
