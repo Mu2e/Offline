@@ -18,6 +18,7 @@ namespace mu2e {
 
     typename MVACatalog<T>::ptr_t fillEntries() {
       MVAEntries<T> mvaEntries;
+      mvaEntries.reserve(_config.mvaConfigs().size()); // need this to avoid a segfault....
       for (const auto& i_entryConf : _config.mvaConfigs()) {
 	mvaEntries.push_back(MVAEntry<T>(i_entryConf.trainName(), i_entryConf.xmlFileName(), i_entryConf.calibrated()));
       }
