@@ -85,94 +85,85 @@ namespace mu2e
     const auto& kalSeeds = *kalSeedHandle;
 
     TrkQualCatalog const& trkQualCatalog = _trkQualCatalogH.get(event.id());
-    bool found = false;
-    for (const auto& i_trkQualEntry : trkQualCatalog.entries()) {
-      if (i_trkQualEntry._trainName == _trainName) {
-	found = true;
+    TrkQualEntry const& trkQualEntry = trkQualCatalog.find(_trainName);
 
-	if(_printMVA) {
-	  i_trkQualEntry._mvaTool->showMVA();
-	}
-
-	// Go through the tracks and calculate their track qualities
-	for (const auto& i_kalSeed : kalSeeds) {
-	  TrkQual trkqual;
-
-	  static TrkFitFlag goodfit(TrkFitFlag::kalmanOK);
-	  if (i_kalSeed.status().hasAllProperties(goodfit)) {
-
-	    // fill the hit count variables
-	    TrkInfo tinfo;
-	    _infoStructHelper.fillTrkInfoHits(i_kalSeed, tinfo);
-	    _infoStructHelper.fillTrkInfoStraws(i_kalSeed, tinfo);
-	    trkqual[TrkQual::nactive] = tinfo._nactive;
-	    trkqual[TrkQual::factive] = (double) tinfo._nactive / tinfo._nhits;
-	    trkqual[TrkQual::fdouble] = (double) tinfo._ndactive / tinfo._nactive;
-	    trkqual[TrkQual::fnullambig] = (double) tinfo._nnullambig / tinfo._nactive;
-	    trkqual[TrkQual::fstraws] = (double)tinfo._nmatactive / tinfo._nactive;
-
-	    // fill fit consistency and t0 variables
-	    if (i_kalSeed.fitConsistency() > FLT_MIN) {
-	      trkqual[TrkQual::log10fitcon] = log10(i_kalSeed.fitConsistency());
-	    }
-	    else {
-	      trkqual[TrkQual::log10fitcon] = -50.0;
-	    }
-	    trkqual[TrkQual::t0err] = i_kalSeed.t0().t0Err();
-	
-	    // find the best KalSegment and fill variables relating to it
-	    KalSegment kseg;
-	    std::vector<KalSegment> const& ksegs = i_kalSeed.segments();
-	    auto bestkseg = ksegs.begin();
-	    double zpos = -1631.11;
-	    for(auto ikseg = ksegs.begin(); ikseg != ksegs.end(); ++ikseg){
-	      HelixVal const& hel = ikseg->helix();
-	      // check for a segment whose range includes zpos.  There should be a better way of doing this, FIXME
-	      double sind = hel.tanDip()/sqrt(1.0+hel.tanDip()*hel.tanDip());
-	      if(hel.z0()+sind*ikseg->fmin() < zpos && hel.z0()+sind*ikseg->fmax() > zpos){
-		bestkseg = ikseg;
-		break;
-	      }
-	    }
-	    kseg = *bestkseg;
-	    if (bestkseg != ksegs.end()) {
-	      double charge = i_kalSeed.particle().charge();
-	  
-	      trkqual[TrkQual::momerr] = bestkseg->momerr();
-	      trkqual[TrkQual::d0] = -1*charge*bestkseg->helix().d0();
-	      trkqual[TrkQual::rmax] = -1*charge*(bestkseg->helix().d0() + 2.0/bestkseg->helix().omega());
-	  
-	      trkqual.setMVAStatus(MVAStatus::calculated);
-	      trkqual.setMVAValue(i_trkQualEntry._mvaTool->evalMVA(trkqual.values(), i_trkQualEntry._mvaMask));
-
-	    }
-	    else {
-	      trkqual.setMVAStatus(MVAStatus::filled);
-	    }
-	  }
-	  tqcol->push_back(trkqual);
-
-	  // Get the efficiency cut that this track passes
-	  Float_t passEff = -1;
-	  if (i_trkQualEntry._calibrated) {
-	    for (const auto& i_pair : i_trkQualEntry._effCalib) {
-	      if (trkqual.MVAValue() >= i_pair.second) {
-		passEff = i_pair.first;
-		break;
-	      }
-	    }
-	  }
-	  rqcol->push_back(RecoQual(trkqual.status(),trkqual.MVAValue(), passEff));
-	}
-
-	if ( (tqcol->size() != rqcol->size()) || (tqcol->size() != kalSeeds.size()) ) {
-	  throw cet::exception("TrackQuality") << "KalSeed, TrkQual and RecoQual sizes are inconsistent (" << kalSeeds.size() << ", " << tqcol->size() << ", " << rqcol->size() << " respectively)";
-	}
-      }
+    if(_printMVA) {
+      trkQualEntry._mvaTool->showMVA();
     }
 
-    if (!found) {
-      throw cet::exception("TrackQuality") << "TrkQual training with name " << _trainName << " was not found in the TrkQualCatalog" << std::endl;
+    // Go through the tracks and calculate their track qualities
+    for (const auto& i_kalSeed : kalSeeds) {
+      TrkQual trkqual;
+
+      static TrkFitFlag goodfit(TrkFitFlag::kalmanOK);
+      if (i_kalSeed.status().hasAllProperties(goodfit)) {
+
+	// fill the hit count variables
+	TrkInfo tinfo;
+	_infoStructHelper.fillTrkInfoHits(i_kalSeed, tinfo);
+	_infoStructHelper.fillTrkInfoStraws(i_kalSeed, tinfo);
+	trkqual[TrkQual::nactive] = tinfo._nactive;
+	trkqual[TrkQual::factive] = (double) tinfo._nactive / tinfo._nhits;
+	trkqual[TrkQual::fdouble] = (double) tinfo._ndactive / tinfo._nactive;
+	trkqual[TrkQual::fnullambig] = (double) tinfo._nnullambig / tinfo._nactive;
+	trkqual[TrkQual::fstraws] = (double)tinfo._nmatactive / tinfo._nactive;
+
+	// fill fit consistency and t0 variables
+	if (i_kalSeed.fitConsistency() > FLT_MIN) {
+	  trkqual[TrkQual::log10fitcon] = log10(i_kalSeed.fitConsistency());
+	}
+	else {
+	  trkqual[TrkQual::log10fitcon] = -50.0;
+	}
+	trkqual[TrkQual::t0err] = i_kalSeed.t0().t0Err();
+	
+	// find the best KalSegment and fill variables relating to it
+	KalSegment kseg;
+	std::vector<KalSegment> const& ksegs = i_kalSeed.segments();
+	auto bestkseg = ksegs.begin();
+	double zpos = -1631.11;
+	for(auto ikseg = ksegs.begin(); ikseg != ksegs.end(); ++ikseg){
+	  HelixVal const& hel = ikseg->helix();
+	  // check for a segment whose range includes zpos.  There should be a better way of doing this, FIXME
+	  double sind = hel.tanDip()/sqrt(1.0+hel.tanDip()*hel.tanDip());
+	  if(hel.z0()+sind*ikseg->fmin() < zpos && hel.z0()+sind*ikseg->fmax() > zpos){
+	    bestkseg = ikseg;
+	    break;
+	  }
+	}
+	kseg = *bestkseg;
+	if (bestkseg != ksegs.end()) {
+	  double charge = i_kalSeed.particle().charge();
+	  
+	  trkqual[TrkQual::momerr] = bestkseg->momerr();
+	  trkqual[TrkQual::d0] = -1*charge*bestkseg->helix().d0();
+	  trkqual[TrkQual::rmax] = -1*charge*(bestkseg->helix().d0() + 2.0/bestkseg->helix().omega());
+	  
+	  trkqual.setMVAStatus(MVAStatus::calculated);
+	  trkqual.setMVAValue(trkQualEntry._mvaTool->evalMVA(trkqual.values(), trkQualEntry._mvaMask));
+
+	}
+	else {
+	  trkqual.setMVAStatus(MVAStatus::filled);
+	}
+      }
+      tqcol->push_back(trkqual);
+
+      // Get the efficiency cut that this track passes
+      Float_t passEff = -1;
+      if (trkQualEntry._calibrated) {
+	for (const auto& i_pair : trkQualEntry._effCalib) {
+	  if (trkqual.MVAValue() >= i_pair.second) {
+	    passEff = i_pair.first;
+	    break;
+	  }
+	}
+      }
+      rqcol->push_back(RecoQual(trkqual.status(),trkqual.MVAValue(), passEff));
+    }
+
+    if ( (tqcol->size() != rqcol->size()) || (tqcol->size() != kalSeeds.size()) ) {
+      throw cet::exception("TrackQuality") << "KalSeed, TrkQual and RecoQual sizes are inconsistent (" << kalSeeds.size() << ", " << tqcol->size() << ", " << rqcol->size() << " respectively)";
     }
 
     // put the output products into the event

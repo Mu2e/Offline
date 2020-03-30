@@ -11,6 +11,7 @@
 
 namespace mu2e {
 
+  typedef MVAEntry<TrkQual> TrkQualEntry;
   typedef MVACatalog<TrkQual> TrkQualCatalog;
 }
 
