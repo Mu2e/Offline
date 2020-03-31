@@ -19,8 +19,6 @@ namespace mu2e {
   struct CosmicTrackSeed {
 
     TrkT0 const& t0() const { return _t0; }//from the Time cluster
-    const std::vector<StrawHitIndex>& strawHits       () const { return _strawHitIdxs; }
-    const std::vector<StrawHitIndex>& panelHits       () const { return _panelHitIdxs; }
     CosmicTrack const& track() const { return _track; }
     TrkFitFlag const& status() const { return _status; }
     art::Ptr<TimeCluster> const& timeCluster() const { return _timeCluster; }
@@ -31,16 +29,9 @@ namespace mu2e {
     TrkFitFlag	             _status;      // status of processes used to create this seed
     // helixOK: ???, helixConverged: ???, circleInit: ???, Straight: ???, hitsOK: ???
     art::Ptr<TimeCluster>    _timeCluster; // associated time cluster
-    std::vector<StrawHitIndex> _strawHitIdxs; // associated straw hits: can be empty
-    std::vector<StrawHitIndex> _panelHitIdxs; // associated straw hits: can be empty
     
-    
-    // CosmicTrackFinder only
-    ComboHitCollection const& hits() const { return _panel_hits; }
-    ComboHitCollection       _panel_hits;	      // hits for track (panel hits)
     ComboHitCollection       _straw_chits;    // get the straw level hits and store here (need to find panel hits first)
  
-    
     // For future use only
     std::vector<TrkStrawHitSeed> const& trkstrawhits() const { return _trkstrawhits;}
     std::vector<TrkStrawHitSeed>  _trkstrawhits; //vector of associated trkstrawhits
