@@ -361,8 +361,8 @@ void MVATools::getWgts(xercesc::DOMDocument* xmlDoc)
 
     XMLCh* TAG_CALIBRATION = XMLString::transcode("Calib");
     XMLCh* ATT_INDEX = XMLString::transcode("Index");
-    XMLCh* ATT_EFF = XMLString::transcode("Eff");
-    XMLCh* ATT_CUT = XMLString::transcode("Cut");
+    XMLCh* ATT_EFF = XMLString::transcode("TrkQualCalib");
+    XMLCh* ATT_CUT = XMLString::transcode("TrkQual");
     
     XMLCh *xpathStr = XMLString::transcode("/MethodSetup/Calibration");
     DOMXPathResult* xpathRes = xmlDoc->evaluate(xpathStr,xmlDoc->getDocumentElement(),NULL,
