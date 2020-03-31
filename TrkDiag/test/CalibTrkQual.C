@@ -9,7 +9,7 @@
 
 using namespace std;
 
-double EfficiencyToTrkQual(TTree* inpt_tree, const char* train_name, double effic, TCut signal_cut, int subdivs=10000);
+double EfficiencyToTrkQual(TTree* inpt_tree, const char* train_name, double effic, TCut signal_cut, int subdivs=1000000);
 std::string CalibTrkQual_Eff(TTree* tree, std::string train_name, TCut signal_cut);
 
 void CalibTrkQual(TTree* tree, std::string train_name, TCut signal_cut) {
@@ -34,7 +34,7 @@ void CalibTrkQual(TTree* tree, std::string train_name, TCut signal_cut) {
     std::string xml_string(xmlline);
 
     if (xml_string.find("<Calibration>") != std::string::npos) {
-      std::cout << "Calibration block already exists... Aborting..." << std::endl;
+      std::cout << "Calibration block already exists! Skipping to next weights file..." << std::endl;
       return;
     }
 
@@ -52,7 +52,8 @@ void CalibTrkQual(TTree* tree, std::string train_name, TCut signal_cut) {
       outfile << "  </Calibration>" << std::endl;
     }    
     outfile << xml_string << std::endl;
-  }  
+  }
+  std::rename(outfilename.c_str(), xmlfilename.c_str());
   outfile.close();
   std::cout << "Done!" << std::endl;
 }
@@ -61,14 +62,14 @@ std::string CalibTrkQual_Eff(TTree* tree, std::string train_name, TCut signal_cu
 
   double min_eff = 0.0;
   double max_eff = 1.0;
-  double eff_step = 0.1;
+  double eff_step = 0.01;
   std::stringstream calibtable;
   calibtable.str("");
 
   int counter = 0;
   for (double i_eff = min_eff; i_eff <= max_eff; i_eff += eff_step) {
     double trkqual_cut = EfficiencyToTrkQual(tree, train_name.c_str(), i_eff, signal_cut);
-    calibtable << "    <Calib Index=\"" << counter << "\" Eff=\"" << i_eff << "\" Cut=\"" << trkqual_cut << "\"/>" << std::endl;
+    calibtable << "    <Calib Index=\"" << counter << "\" TrkQualCalib=\"" << 1-i_eff << "\" TrkQual=\"" << trkqual_cut << "\"/>" << std::endl;
     ++counter;
   }
   return calibtable.str();
@@ -107,9 +108,9 @@ double EfficiencyToTrkQual(TTree* inpt_tree, const char* train_name, double effi
   }
 
   double approx_trkqual = ((double) ind) / subdivs;
-  if (approx_trkqual < 10.0/subdivs) {
-    approx_trkqual = 0;
-  }
+  // if (approx_trkqual < 10.0/subdivs) {
+  //   approx_trkqual = 0;
+  // }
   //  string add_on = " && dequal.";
   //  //  cout << "Relative Efficiency " << inpt_tree->GetEntries((std_cuts+add_on+train_str+" > "+to_string(approx_trkqual)).c_str())/hist->GetEntries() << "\n" << endl;
   return approx_trkqual;  

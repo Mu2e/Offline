@@ -664,8 +664,8 @@ namespace mu2e {
     for (const auto& i_recoQualHandle : _allRQCHs.at(i_branch)) {
       Float_t recoQual = i_recoQualHandle->at(i_kseed)._value;
       recoQuals.push_back(recoQual);
-      Float_t recoQualEff = i_recoQualHandle->at(i_kseed)._eff;
-      recoQuals.push_back(recoQualEff);
+      Float_t recoQualCalib = i_recoQualHandle->at(i_kseed)._calib;
+      recoQuals.push_back(recoQualCalib);
     }
     _allRQIs.at(i_branch).setQuals(recoQuals);
 // TrkQual

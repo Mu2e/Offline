@@ -150,16 +150,22 @@ namespace mu2e
       tqcol->push_back(trkqual);
 
       // Get the efficiency cut that this track passes
-      Float_t passEff = -1;
+      Float_t passCalib = 0.0; // everything will pass a 100% efficient cut
       if (trkQualEntry._calibrated) {
+	//	std::cout << _trainName << " = " << trkqual.MVAValue() << std::endl;
 	for (const auto& i_pair : trkQualEntry._effCalib) {
+	  //	  std::cout << i_pair.first << ", " << i_pair.second << ": ";
 	  if (trkqual.MVAValue() >= i_pair.second) {
-	    passEff = i_pair.first;
+	    //	    std::cout << "PASSES" << std::endl;
+	    passCalib = i_pair.first;
+	  }
+	  else {
+	    //	    std::cout << "FAILS" << std::endl;
 	    break;
 	  }
 	}
       }
-      rqcol->push_back(RecoQual(trkqual.status(),trkqual.MVAValue(), passEff));
+      rqcol->push_back(RecoQual(trkqual.status(),trkqual.MVAValue(), passCalib));
     }
 
     if ( (tqcol->size() != rqcol->size()) || (tqcol->size() != kalSeeds.size()) ) {

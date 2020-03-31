@@ -21,5 +21,6 @@ void RunCalibTrkQual(){
 
     CalibTrkQual(tree, train_name, signal_cut);
   }
+  std::cout << "All calibrations finished!" << std::endl;
 }
 

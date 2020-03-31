@@ -245,19 +245,117 @@
     </Layout>
   </Weights>
   <Calibration>
-    <Calib Index="0" Eff="0" Cut="0.9995"/>
-    <Calib Index="1" Eff="0.1" Cut="0.9995"/>
-    <Calib Index="2" Eff="0.2" Cut="0.9993"/>
-    <Calib Index="3" Eff="0.3" Cut="0.9985"/>
-    <Calib Index="4" Eff="0.4" Cut="0.9971"/>
-    <Calib Index="5" Eff="0.5" Cut="0.9939"/>
-    <Calib Index="6" Eff="0.6" Cut="0.9875"/>
-    <Calib Index="7" Eff="0.7" Cut="0.9701"/>
-    <Calib Index="8" Eff="0.8" Cut="0.9127"/>
-    <Calib Index="9" Eff="0.9" Cut="0.6515"/>
-    <Calib Index="10" Eff="1" Cut="0"/>
+    <Calib Index="0" TrkQualCalib="1" TrkQual="0.999987"/>
+    <Calib Index="1" TrkQualCalib="0.99" TrkQual="0.999933"/>
+    <Calib Index="2" TrkQualCalib="0.98" TrkQual="0.999911"/>
+    <Calib Index="3" TrkQualCalib="0.97" TrkQual="0.999887"/>
+    <Calib Index="4" TrkQualCalib="0.96" TrkQual="0.999863"/>
+    <Calib Index="5" TrkQualCalib="0.95" TrkQual="0.999839"/>
+    <Calib Index="6" TrkQualCalib="0.94" TrkQual="0.999819"/>
+    <Calib Index="7" TrkQualCalib="0.93" TrkQual="0.999789"/>
+    <Calib Index="8" TrkQualCalib="0.92" TrkQual="0.999761"/>
+    <Calib Index="9" TrkQualCalib="0.91" TrkQual="0.999735"/>
+    <Calib Index="10" TrkQualCalib="0.9" TrkQual="0.999705"/>
+    <Calib Index="11" TrkQualCalib="0.89" TrkQual="0.999673"/>
+    <Calib Index="12" TrkQualCalib="0.88" TrkQual="0.999637"/>
+    <Calib Index="13" TrkQualCalib="0.87" TrkQual="0.999605"/>
+    <Calib Index="14" TrkQualCalib="0.86" TrkQual="0.999565"/>
+    <Calib Index="15" TrkQualCalib="0.85" TrkQual="0.999523"/>
+    <Calib Index="16" TrkQualCalib="0.84" TrkQual="0.999483"/>
+    <Calib Index="17" TrkQualCalib="0.83" TrkQual="0.999437"/>
+    <Calib Index="18" TrkQualCalib="0.82" TrkQual="0.999383"/>
+    <Calib Index="19" TrkQualCalib="0.81" TrkQual="0.999337"/>
+    <Calib Index="20" TrkQualCalib="0.8" TrkQual="0.999285"/>
+    <Calib Index="21" TrkQualCalib="0.79" TrkQual="0.999225"/>
+    <Calib Index="22" TrkQualCalib="0.78" TrkQual="0.999163"/>
+    <Calib Index="23" TrkQualCalib="0.77" TrkQual="0.999101"/>
+    <Calib Index="24" TrkQualCalib="0.76" TrkQual="0.999029"/>
+    <Calib Index="25" TrkQualCalib="0.75" TrkQual="0.998955"/>
+    <Calib Index="26" TrkQualCalib="0.74" TrkQual="0.998875"/>
+    <Calib Index="27" TrkQualCalib="0.73" TrkQual="0.998791"/>
+    <Calib Index="28" TrkQualCalib="0.72" TrkQual="0.998705"/>
+    <Calib Index="29" TrkQualCalib="0.71" TrkQual="0.998613"/>
+    <Calib Index="30" TrkQualCalib="0.7" TrkQual="0.998509"/>
+    <Calib Index="31" TrkQualCalib="0.69" TrkQual="0.998401"/>
+    <Calib Index="32" TrkQualCalib="0.68" TrkQual="0.998285"/>
+    <Calib Index="33" TrkQualCalib="0.67" TrkQual="0.998163"/>
+    <Calib Index="34" TrkQualCalib="0.66" TrkQual="0.998033"/>
+    <Calib Index="35" TrkQualCalib="0.65" TrkQual="0.997889"/>
+    <Calib Index="36" TrkQualCalib="0.64" TrkQual="0.997745"/>
+    <Calib Index="37" TrkQualCalib="0.63" TrkQual="0.997585"/>
+    <Calib Index="38" TrkQualCalib="0.62" TrkQual="0.997415"/>
+    <Calib Index="39" TrkQualCalib="0.61" TrkQual="0.997229"/>
+    <Calib Index="40" TrkQualCalib="0.6" TrkQual="0.997029"/>
+    <Calib Index="41" TrkQualCalib="0.59" TrkQual="0.996821"/>
+    <Calib Index="42" TrkQualCalib="0.58" TrkQual="0.996601"/>
+    <Calib Index="43" TrkQualCalib="0.57" TrkQual="0.996357"/>
+    <Calib Index="44" TrkQualCalib="0.56" TrkQual="0.996099"/>
+    <Calib Index="45" TrkQualCalib="0.55" TrkQual="0.995813"/>
+    <Calib Index="46" TrkQualCalib="0.54" TrkQual="0.995517"/>
+    <Calib Index="47" TrkQualCalib="0.53" TrkQual="0.995197"/>
+    <Calib Index="48" TrkQualCalib="0.52" TrkQual="0.994847"/>
+    <Calib Index="49" TrkQualCalib="0.51" TrkQual="0.994469"/>
+    <Calib Index="50" TrkQualCalib="0.5" TrkQual="0.994055"/>
+    <Calib Index="51" TrkQualCalib="0.49" TrkQual="0.993603"/>
+    <Calib Index="52" TrkQualCalib="0.48" TrkQual="0.993127"/>
+    <Calib Index="53" TrkQualCalib="0.47" TrkQual="0.992619"/>
+    <Calib Index="54" TrkQualCalib="0.46" TrkQual="0.992057"/>
+    <Calib Index="55" TrkQualCalib="0.45" TrkQual="0.991467"/>
+    <Calib Index="56" TrkQualCalib="0.44" TrkQual="0.990807"/>
+    <Calib Index="57" TrkQualCalib="0.43" TrkQual="0.990099"/>
+    <Calib Index="58" TrkQualCalib="0.42" TrkQual="0.989323"/>
+    <Calib Index="59" TrkQualCalib="0.41" TrkQual="0.988447"/>
+    <Calib Index="60" TrkQualCalib="0.4" TrkQual="0.987497"/>
+    <Calib Index="61" TrkQualCalib="0.39" TrkQual="0.986443"/>
+    <Calib Index="62" TrkQualCalib="0.38" TrkQual="0.985295"/>
+    <Calib Index="63" TrkQualCalib="0.37" TrkQual="0.984015"/>
+    <Calib Index="64" TrkQualCalib="0.36" TrkQual="0.982587"/>
+    <Calib Index="65" TrkQualCalib="0.35" TrkQual="0.981039"/>
+    <Calib Index="66" TrkQualCalib="0.34" TrkQual="0.979315"/>
+    <Calib Index="67" TrkQualCalib="0.33" TrkQual="0.977397"/>
+    <Calib Index="68" TrkQualCalib="0.32" TrkQual="0.975261"/>
+    <Calib Index="69" TrkQualCalib="0.31" TrkQual="0.972895"/>
+    <Calib Index="70" TrkQualCalib="0.3" TrkQual="0.970197"/>
+    <Calib Index="71" TrkQualCalib="0.29" TrkQual="0.967241"/>
+    <Calib Index="72" TrkQualCalib="0.28" TrkQual="0.963921"/>
+    <Calib Index="73" TrkQualCalib="0.27" TrkQual="0.960139"/>
+    <Calib Index="74" TrkQualCalib="0.26" TrkQual="0.955677"/>
+    <Calib Index="75" TrkQualCalib="0.25" TrkQual="0.950801"/>
+    <Calib Index="76" TrkQualCalib="0.24" TrkQual="0.945135"/>
+    <Calib Index="77" TrkQualCalib="0.23" TrkQual="0.938687"/>
+    <Calib Index="78" TrkQualCalib="0.22" TrkQual="0.931147"/>
+    <Calib Index="79" TrkQualCalib="0.21" TrkQual="0.922603"/>
+    <Calib Index="80" TrkQualCalib="0.2" TrkQual="0.912695"/>
+    <Calib Index="81" TrkQualCalib="0.19" TrkQual="0.901353"/>
+    <Calib Index="82" TrkQualCalib="0.18" TrkQual="0.888409"/>
+    <Calib Index="83" TrkQualCalib="0.17" TrkQual="0.873141"/>
+    <Calib Index="84" TrkQualCalib="0.16" TrkQual="0.854925"/>
+    <Calib Index="85" TrkQualCalib="0.15" TrkQual="0.833057"/>
+    <Calib Index="86" TrkQualCalib="0.14" TrkQual="0.807565"/>
+    <Calib Index="87" TrkQualCalib="0.13" TrkQual="0.777629"/>
+    <Calib Index="88" TrkQualCalib="0.12" TrkQual="0.741755"/>
+    <Calib Index="89" TrkQualCalib="0.11" TrkQual="0.699713"/>
+    <Calib Index="90" TrkQualCalib="0.1" TrkQual="0.651537"/>
+    <Calib Index="91" TrkQualCalib="0.09" TrkQual="0.593675"/>
+    <Calib Index="92" TrkQualCalib="0.08" TrkQual="0.526085"/>
+    <Calib Index="93" TrkQualCalib="0.07" TrkQual="0.451437"/>
+    <Calib Index="94" TrkQualCalib="0.06" TrkQual="0.368983"/>
+    <Calib Index="95" TrkQualCalib="0.05" TrkQual="0.280109"/>
+    <Calib Index="96" TrkQualCalib="0.04" TrkQual="0.196493"/>
+    <Calib Index="97" TrkQualCalib="0.03" TrkQual="0.115733"/>
+    <Calib Index="98" TrkQualCalib="0.02" TrkQual="0.051205"/>
+    <Calib Index="99" TrkQualCalib="0.01" TrkQual="0.010807"/>
   </Calibration>
 </MethodSetup>
+
+
+
+
+
+
+
+
+
 
 
 
