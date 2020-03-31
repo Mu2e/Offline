@@ -48,10 +48,10 @@ namespace MinuitDriftFitter{
 	CosmicTrack cosmictrack = tseed._track;
 
 	//Seed Gaussian PDF using seed fit parameters stored in track info 
-	seed[0] = tseed._track.FitEquationXYZ.Pos.X();
-	seed[1] = tseed._track.FitEquationXYZ.Dir.X();
-	seed[2] = tseed._track.FitEquationXYZ.Pos.Y();
-	seed[3] = tseed._track.FitEquationXYZ.Dir.Y();
+	seed[0] = tseed._track.FitEquation.Pos.X();
+	seed[1] = tseed._track.FitEquation.Dir.X();
+	seed[2] = tseed._track.FitEquation.Pos.Y();
+	seed[3] = tseed._track.FitEquation.Dir.Y();
 	seed[4] = tseed._t0.t0();
 
 	//Seed errors = covarience of parameters in seed fit
