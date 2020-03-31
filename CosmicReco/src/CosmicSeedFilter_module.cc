@@ -68,7 +68,7 @@ namespace mu2e
     for(auto icos = coscol->begin(); icos != coscol->end(); ++icos) {
       auto const& cosmic = *icos;
      
-      if( cosmic.status().hasAllProperties(_goodcosmic) && cosmic.status().hasAllProperties(_convergedcosmic) && cosmic.hits().size()>_minnch && cosmic.trkstrawhits().size() > _minnsh ){ 
+      if( cosmic.status().hasAllProperties(_goodcosmic) && cosmic.status().hasAllProperties(_convergedcosmic) && cosmic.trkstrawhits().size() > _minnsh ){ // && cosmic._panelHitIdxs.size() >_minnch
        
         ++_npass;
         
