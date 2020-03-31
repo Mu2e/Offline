@@ -413,7 +413,7 @@ namespace mu2e
 
       // Normalize the input data and add the bias node, skip masked values
       size_t ival(0);
-      for (size_t ivar=0; ivar < voffset_.size(); ivar++)
+      for (size_t ivar=0; ivar < v.size(); ivar++)
       {
          if ( mask & (1<<ivar) )
          {
@@ -424,7 +424,7 @@ namespace mu2e
       x_[ival] = 1.0;
 
       if (ival != links_[0]-1)
-          throw cet::exception("RECO")<<"mu2e::MVATools: mismatch input dimension and network architecture" << std::endl;
+	throw cet::exception("RECO")<<"mu2e::MVATools: mismatch input dimension (ival = " << ival << ") and network architecture (links_[0]-1 = " << links_[0]-1 << ")" << std::endl;
 
 
       //perform feed forward calculation up to the last hidden layer
