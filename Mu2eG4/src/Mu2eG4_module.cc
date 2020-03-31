@@ -343,20 +343,20 @@ namespace mu2e {
 
       allMu2e =
         (new WorldMaker<Mu2eWorld>(std::make_unique<Mu2eWorld>(conf_, &(_sensitiveDetectorHelper)  ),
-                                   std::make_unique<ConstructMaterials>(conf_.debug())) );
+                                   std::make_unique<ConstructMaterials>(conf_)) );
 
       _originInWorld = (GeomHandle<WorldG4>())->mu2eOriginInWorld();
     }
     else {
       allMu2e =
         (new WorldMaker<Mu2eStudyWorld>(std::make_unique<Mu2eStudyWorld>(conf_, &(_sensitiveDetectorHelper) ),
-                                        std::make_unique<ConstructMaterials>(conf_.debug())) );
+                                        std::make_unique<ConstructMaterials>(conf_)) );
 
       // non-Mu2e detector: the system origin os set to (0.,0.,0.); do not use geometry service for that
       _originInWorld = G4ThreeVector(0.0,0.0,0.0);
     }
 
-    preG4InitializeTasks(conf_.physics(), conf_.debug());
+    preG4InitializeTasks(conf_);
 
     _runManager->SetVerboseLevel(_rmvlevel);
 
