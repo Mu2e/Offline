@@ -3,10 +3,6 @@
 //
 // Construct materials requested by the run-time configuration system.
 //
-// $Id: ConstructMaterials.hh,v 1.6 2014/09/04 14:22:45 knoepfel Exp $
-// $Author: knoepfel $
-// $Date: 2014/09/04 14:22:45 $
-//
 // Original author Rob Kutschke
 //
 
@@ -39,7 +35,7 @@ namespace mu2e {
   class ConstructMaterials{
   public:
 
-    explicit ConstructMaterials(const Mu2eG4Config::Debug& debug);
+    explicit ConstructMaterials(const Mu2eG4Config::Top& config);
 
     ~ConstructMaterials();
 
@@ -47,6 +43,7 @@ namespace mu2e {
     void construct();
 
   private:
+    const Mu2eG4Config::Top& config_;
     bool mu2eStandardDetector_;
     bool printElements_;
     bool printMaterials_;
