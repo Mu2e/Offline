@@ -130,7 +130,7 @@ namespace mu2e {
 
     if(verboseLevel>0)
       { timer->Start(); }
-    
+
     //if we are using G4's seed filling scheme
     if ( InitializeSeeds(seedbunchsize) == false && seedbunchsize>0 ) {
 
@@ -154,7 +154,7 @@ namespace mu2e {
           seedOncePerCommunication = 0;
           nSeedsFilled = seedbunchsize;
         }
-      
+
       // Generates up to nSeedsMax seed pairs only.
       if(nSeedsFilled>nSeedsMax) nSeedsFilled=nSeedsMax;
       const_cast<CLHEP::HepRandomEngine*>(getMasterRandomEngine())->flatArray(nSeedsPerEvent*nSeedsFilled,randDbl);
@@ -197,14 +197,14 @@ namespace mu2e {
 
     if ((art::ServiceHandle<GeometryService>())->isStandardMu2eDetector()) {
       allMu2e = (new WorldMaker<Mu2eWorld>(make_unique<Mu2eWorld>(conf_, &sensitiveDetectorHelper_),
-                                           make_unique<ConstructMaterials>(conf_.debug())));
+                                           make_unique<ConstructMaterials>(conf_)));
     }
     else {
       throw cet::exception("CONFIG")
         << "Error: You are trying to run in MT mode without the Standard Mu2e Detector!\n";
     }
 
-    preG4InitializeTasks(conf_.physics(), conf_.debug());
+    preG4InitializeTasks(conf_);
 
     physicsList_ = physicsListDecider(conf_.physics(), conf_.debug());
 
@@ -248,14 +248,14 @@ namespace mu2e {
     }
     m_runTerminated = true;
   }
-  
+
   G4bool Mu2eG4MTRunManager::SetUpAnEvent(G4Event* evt, long& s1, long& s2, long& s3,
                                           G4bool reseedRequired) {
 
     G4AutoLock l(&setUpEventMutex);
-    
+
     if( numberOfEventProcessed < numberOfEventToBeProcessed ) {
-      
+
       if(reseedRequired) {
         G4RNGHelper* helper = G4RNGHelper::GetInstance();
         G4int idx_rndm = nSeedsPerEvent*(evt->GetEventID()-1);
@@ -272,7 +272,7 @@ namespace mu2e {
       numberOfEventProcessed++;
       return true;
     }
-    
+
     return false;
   }
 
