@@ -301,8 +301,8 @@ namespace mu2e{
                 std::cout << "COULD NOT FIND HIT ======================================================================================================" << std::endl;
             }
             lseed._strawHitIdxs = strawHitIdxs;
-            lseed._seedInt = CLHEP::Hep3Vector(tseed._track.MinuitFitParams.A0,tseed._track.MinuitFitParams.B0,0);
-            lseed._seedDir = CLHEP::Hep3Vector(tseed._track.MinuitFitParams.A1,tseed._track.MinuitFitParams.B1,1).unit();
+            lseed._seedInt = CLHEP::Hep3Vector(tseed._track.MinuitParams.A0,tseed._track.MinuitParams.B0,0);
+            lseed._seedDir = CLHEP::Hep3Vector(tseed._track.MinuitParams.A1,tseed._track.MinuitParams.B1,1).unit();
             if (lseed._seedDir.y() > 0)
               lseed._seedDir *= -1;
 

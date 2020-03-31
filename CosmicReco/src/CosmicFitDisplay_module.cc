@@ -191,9 +191,9 @@ Below here are a series of macros -  they are not glamorous but they produce use
 		if(track._track.converged == false){continue;}
 		if(track._track.minuit_converged == false){continue;}
 
-		xprimes_seed.push_back(track._track.TrackCoordSystem._XDoublePrime);
-		yprimes_seed.push_back(track._track.TrackCoordSystem._YDoublePrime);
-		zprimes_seed.push_back(track._track.TrackCoordSystem._ZPrime);
+		xprimes_seed.push_back(track._track.FitCoordSystem._XDoublePrime);
+		yprimes_seed.push_back(track._track.FitCoordSystem._YDoublePrime);
+		zprimes_seed.push_back(track._track.FitCoordSystem._ZPrime);
 		
 		xprimes_drift.push_back(track._track.MinuitCoordSystem._XDoublePrime);
 		yprimes_drift.push_back(track._track.MinuitCoordSystem._YDoublePrime);
@@ -205,10 +205,10 @@ Below here are a series of macros -  they are not glamorous but they produce use
 			a1seed.push_back(track._track.FitParams.A1);
 			b0seed.push_back(track._track.FitParams.B0);
 			b1seed.push_back(track._track.FitParams.B1);
-			a0drift.push_back(track._track.MinuitFitParams.A0);
-			a1drift.push_back(track._track.MinuitFitParams.A1);
-			b0drift.push_back(track._track.MinuitFitParams.B0);
-			b1drift.push_back(track._track.MinuitFitParams.B1);
+			a0drift.push_back(track._track.MinuitParams.A0);
+			a1drift.push_back(track._track.MinuitParams.A1);
+			b0drift.push_back(track._track.MinuitParams.B0);
+			b1drift.push_back(track._track.MinuitParams.B1);
 			
 			for(size_t i =0; i < _nch; i++){
 				ComboHit const& chit =(*_chcol)[i];
@@ -495,13 +495,13 @@ Below here are a series of macros -  they are not glamorous but they produce use
                 
         	CosmicTrackSeed track =(*_coscol)[i];
 		if(track._track.converged == false){continue;}
-		xprimes.push_back(track._track.TrackCoordSystem._XDoublePrime);
-		yprimes.push_back(track._track.TrackCoordSystem._YDoublePrime);
-		zprimes.push_back(track._track.TrackCoordSystem._ZPrime);
+		xprimes.push_back(track._track.FitCoordSystem._XDoublePrime);
+		yprimes.push_back(track._track.FitCoordSystem._YDoublePrime);
+		zprimes.push_back(track._track.FitCoordSystem._ZPrime);
 		
-		xprimesinit.push_back(track._track.InitTrackCoordSystem._XDoublePrime);
-		yprimesinit.push_back(track._track.InitTrackCoordSystem._YDoublePrime);
-		zprimesinit.push_back(track._track.InitTrackCoordSystem._ZPrime);
+		xprimesinit.push_back(track._track.InitCoordSystem._XDoublePrime);
+		yprimesinit.push_back(track._track.InitCoordSystem._YDoublePrime);
+		zprimesinit.push_back(track._track.InitCoordSystem._ZPrime);
 		
 		if(isnan(track._track.FitParams.A0) == true && isnan(track._track.FitParams.A1) == true && isnan(track._track.FitParams.B0) == true && isnan(track._track.FitParams.B1) == true) continue;
 			
@@ -1099,10 +1099,10 @@ Below here are a series of macros -  they are not glamorous but they produce use
        
         //Get track coordinate system and fit parameters
         for(auto const& track: *Tracks){
-        xprimes.push_back(track._track.TrackCoordSystem._XDoublePrime);
-        yprimes.push_back(track._track.TrackCoordSystem._YDoublePrime);
-        zprimes.push_back(track._track.TrackCoordSystem._ZPrime);
-        initial_track_direction.push_back(track._track.GetInitTrackDirection() );
+        xprimes.push_back(track._track.FitCoordSystem._XDoublePrime);
+        yprimes.push_back(track._track.FitCoordSystem._YDoublePrime);
+        zprimes.push_back(track._track.FitCoordSystem._ZPrime);
+        initial_track_direction.push_back(track._track.InitParams.Direction() );
         a1.push_back(track._track.FitParams.A0);
         a0.push_back(track._track.FitParams.A1);
         b1.push_back(track._track.FitParams.B0);
@@ -1244,10 +1244,10 @@ Below here are a series of macros -  they are not glamorous but they produce use
        
         //Get track coordinate system and fit parameters
         for(auto const& track: *Tracks){
-        xprimes.push_back(track._track.TrackCoordSystem._XDoublePrime);
-        yprimes.push_back(track._track.TrackCoordSystem._YDoublePrime);
-        zprimes.push_back(track._track.TrackCoordSystem._ZPrime);
-        initial_track_direction.push_back(track._track.GetInitTrackDirection() );
+        xprimes.push_back(track._track.FitCoordSystem._XDoublePrime);
+        yprimes.push_back(track._track.FitCoordSystem._YDoublePrime);
+        zprimes.push_back(track._track.FitCoordSystem._ZPrime);
+        initial_track_direction.push_back(track._track.InitParams.Direction() );
         a1.push_back(track._track.FitParams.A0);
         a0.push_back(track._track.FitParams.A1);
         b1.push_back(track._track.FitParams.B0);
