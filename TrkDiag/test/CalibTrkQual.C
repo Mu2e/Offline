@@ -69,7 +69,7 @@ std::string CalibTrkQual_Eff(TTree* tree, std::string train_name, TCut signal_cu
   int counter = 0;
   for (double i_eff = min_eff; i_eff <= max_eff; i_eff += eff_step) {
     double trkqual_cut = EfficiencyToTrkQual(tree, train_name.c_str(), i_eff, signal_cut);
-    calibtable << "    <Calib Index=\"" << counter << "\" TrkQualCalib=\"" << 1-i_eff << "\" TrkQual=\"" << trkqual_cut << "\"/>" << std::endl;
+    calibtable << "    <Calib Index=\"" << counter << "\" CalibVal=\"" << 1-i_eff << "\" Val=\"" << trkqual_cut << "\"/>" << std::endl;
     ++counter;
   }
   return calibtable.str();
