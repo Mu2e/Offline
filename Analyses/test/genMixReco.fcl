@@ -39,7 +39,7 @@ services : {
 
     message               : @local::default_message
     TFileService          : { fileName : "genReco.hist" }
-    RandomNumberGenerator : { }
+    RandomNumberGenerator : {defaultEngineKind: "MixMaxRng" }
 
     # Mu2e services
     GeometryService        : { inputFile      : "JobConfig/TDR/geom_MothersToHits.txt" }
@@ -188,7 +188,7 @@ outputs: {
 #------------------------------------------------------------------------------
 # 1. only for interactive submission
 #------------------------------------------------------------------------------
-services.SeedService.baseSeed             :  0
+services.SeedService.baseSeed             :  8
 services.SeedService.maxUniqueEngines     :  20
 
 # print per event timing for ::event entry points

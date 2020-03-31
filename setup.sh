@@ -123,16 +123,16 @@ setup -B art_root_io v1_02_00 -q${MU2E_UPS_QUALIFIERS}
 
 # Geant4 and its cross-section files.
 if [[ $($MU2E_BASE_RELEASE/buildopts --trigger) == "off" ]]; then
-  setup -B geant4 v4_10_4_p03b -q${MU2E_UPS_QUALIFIERS}${MU2E_G4_GRAPHICS_QUALIFIER}${MU2E_G4_MT_QUALIFIER}${MU2E_G4_EXTRA_QUALIFIER}
+  setup -B geant4 v4_10_5_p01a -q${MU2E_UPS_QUALIFIERS}${MU2E_G4_GRAPHICS_QUALIFIER}${MU2E_G4_MT_QUALIFIER}${MU2E_G4_EXTRA_QUALIFIER}
 else
   setup -B xerces_c v3_2_2   -q${MU2E_UPS_QUALIFIERS}
 fi
 
 # Get access to raw data formats.
-setup -B mu2e_artdaq_core v1_02_30a -q${MU2E_UPS_QUALIFIERS}:+${MU2E_ART_SQUALIFIER}:offline
+setup -B mu2e_artdaq_core v1_03_07 -q${MU2E_UPS_QUALIFIERS}:+${MU2E_ART_SQUALIFIER}:online
 
 # Other libraries we need.
-setup -B pcie_linux_kernel_module v2_02_07b -q${MU2E_UPS_QUALIFIERS}:+${MU2E_ART_SQUALIFIER}
+setup -B pcie_linux_kernel_module v2_02_13 -q${MU2E_UPS_QUALIFIERS}:+${MU2E_ART_SQUALIFIER}
 
 setup -B heppdt   v3_04_01j -q${MU2E_UPS_QUALIFIERS}
 setup -B BTrk   v1_02_21  -q${MU2E_UPS_QUALIFIERS}

@@ -17,42 +17,35 @@
 #include "G4Threading.hh"
 
 //Mu2e includes
+#include "Mu2eG4/inc/Mu2eG4Config.hh"
 #include "Mu2eG4/inc/Mu2eG4TrajectoryControl.hh"
-#include "Mu2eUtilities/inc/SimParticleCollectionPrinter.hh"
 #include "Mu2eG4/inc/Mu2eG4ResourceLimits.hh"
 #include "Mu2eG4/inc/PhysicsProcessInfo.hh"
-#include "Mu2eG4/inc/Mu2eG4ResourceLimits.hh"
 
 
 //C++ includes
 #include <vector>
 #include <memory>
 
-namespace fhicl { class ParameterSet; }
-
 namespace CLHEP { class Hep3Vector; }
 
 namespace mu2e {
 
-    class SensitiveDetectorHelper;
-    class IMu2eG4Cut;
-    class PrimaryGeneratorAction;
-    class GenEventBroker;
-    class PerEventObjectsManager;
-    class PhysicalVolumeHelper;
+  class SensitiveDetectorHelper;
+  class IMu2eG4Cut;
+  class PrimaryGeneratorAction;
+  class Mu2eG4PerThreadStorage;
+  class PhysicalVolumeHelper;
 
 
-class ActionInitialization : public G4VUserActionInitialization
-{
+  class ActionInitialization : public G4VUserActionInitialization
+  {
   public:
-    ActionInitialization(const fhicl::ParameterSet& pset,
-                         std::vector< SensitiveDetectorHelper> &sensitive_detectorhelper_vector,
-                         GenEventBroker* gen_eventbroker,
+    ActionInitialization(const Mu2eG4Config::Top& conf,
+                         SensitiveDetectorHelper* sensitive_detectorhelper,
+                         Mu2eG4PerThreadStorage* per_thread_storage,
                          PhysicalVolumeHelper* phys_volume_helper,
-                         const bool using_MT,
-                         const int num_threads,
                          CLHEP::Hep3Vector const& origin_in_world,
-                         Mu2eG4ResourceLimits const& mu2e_limits,
                          unsigned stage_offset_for_tracking_action
                          );
 
@@ -67,36 +60,27 @@ class ActionInitialization : public G4VUserActionInitialization
     virtual G4VSteppingVerbose* InitializeSteppingVerbose() const;
 
 
-   private:
+  private:
 
-    fhicl::ParameterSet const& pset_;
+    Mu2eG4Config::Top conf_;
 
-    //these are set using pset
     Mu2eG4TrajectoryControl trajectoryControl_;
-    SimParticleCollectionPrinter simParticlePrinter_;
     std::vector<double> timeVDtimes_;
-    Mu2eG4ResourceLimits mu2elimits_;
+    Mu2eG4ResourceLimits mu2eLimits_;
 
+    std::unique_ptr<IMu2eG4Cut> stackingCuts_;
+    std::unique_ptr<IMu2eG4Cut> steppingCuts_;
+    std::unique_ptr<IMu2eG4Cut> commonCuts_;
 
-    std::vector < std::unique_ptr<IMu2eG4Cut> > stackingCutsVector;
-    std::vector < std::unique_ptr<IMu2eG4Cut> > steppingCutsVector;
-    std::vector < std::unique_ptr<IMu2eG4Cut> > commonCutsVector;
+    SensitiveDetectorHelper* sensitiveDetectorHelper_;
+    Mu2eG4PerThreadStorage*  perThreadStorage_;
+    PhysicalVolumeHelper* physVolHelper_;
 
-    GenEventBroker* _genEventBroker;
-    PhysicalVolumeHelper* _physVolHelper;
-    mutable PhysicsProcessInfo processInfo;
+    mutable PhysicsProcessInfo physicsProcessInfo_;
 
-    const bool use_G4MT_;
-    const int numthreads;
-    CLHEP::Hep3Vector const& originInWorld;
-    Mu2eG4ResourceLimits const& mu2eLimits;
-    unsigned stageOffset;
-
-    mutable std::vector< PerEventObjectsManager > perEvtObjManagerVector;
-    mutable std::vector< PhysicsProcessInfo > physicsProcessInfoVector;
-    std::vector< SensitiveDetectorHelper > &sensitiveDetectorHelperVector;
-
-};
+    CLHEP::Hep3Vector const& originInWorld_;
+    unsigned stageOffset_;
+  };
 
 }  // end namespace mu2e
 #endif /* Mu2eG4_ActionInitialization_hh */

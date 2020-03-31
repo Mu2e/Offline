@@ -98,6 +98,8 @@ namespace mu2e {
                      shell.originInMu2e() - parent.centerInMu2e(),
                      parent.centerInWorld);
 
+
+      //      std::cout << "inside " << __func__ << "PSSShieldShell"+osnum.str() << " " << shell.originInMu2e() << " " << parent.centerInMu2e() << parent.centerInWorld << std::endl;
       G4SubtractionSolid* aSolid =
         new G4SubtractionSolid ( pss.name,
                                  psssolid,
@@ -123,8 +125,8 @@ namespace mu2e {
                     placePV,
                     doSurfaceCheck
                     );
+      //    std::cout << "and after finish nesting = " << pss.centerInParent << std::endl;
     }
-
     // Insert the endRings if this is version 2 or higher
     // Treat the extra water and stainless sheath as end rings.
     if ( version > 1 ) {
@@ -144,7 +146,7 @@ namespace mu2e {
 	VolumeInfo pser("PSShieldEndRing"+osnum.str(),
 		       eRing.originInMu2e() - parent.centerInMu2e(),
 		       parent.centerInWorld);
-	
+	//	std::cout << "endring = " << eRing.originInMu2e() << " " << parent.centerInMu2e() << std::endl;
 	G4VSolid *aSolid = 0;
 	if ( 1 == iER ) {
 	  // downstream - beam inlet tube penetrates

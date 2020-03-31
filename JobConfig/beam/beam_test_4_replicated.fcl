@@ -1,0 +1,62 @@
+// Lisa Goodenough, June 2019
+//fcl file for running PrimaryProtonGun as a Replicated module
+
+#include "fcl/minimalMessageService.fcl"
+#include "fcl/standardProducers.fcl"
+#include "fcl/standardServices.fcl"
+
+
+# Give this job a name.
+process_name :  beamtest4replicated
+
+source : {
+   module_type : EmptyEvent
+   maxEvents : @nil
+}
+
+services : {
+
+   message                : @local::default_message
+//   TFileService           : { fileName : "beam_test_4_replicated.root" }
+   GeometryService        : { inputFile      : "JobConfig/common/geom_baseline.txt" }
+   GlobalConstantsService : { inputFile      : "Mu2eG4/test/globalConstants_01.txt" }
+   SeedService            : @local::automaticSeeds
+   RandomNumberGenerator : {defaultEngineKind: "MixMaxRng" }
+}
+
+//services.scheduler: {
+//  num_schedules: 2
+//}
+
+physics : {
+ 
+   producers: {
+
+      generate: @local::PrimaryProtonGun
+   }
+
+
+   p1 : [generate]  
+   e1 : [outfile]
+
+   trigger_paths  : [p1] 
+   end_paths: [e1]
+}
+
+
+outputs: {
+
+  outfile : {
+    module_type : RootOutput
+    fileName    : "data_beam_test_4_replicated.root"
+  }
+
+}
+
+
+// Initialize seeding of random engines: do not put these lines in base .fcl files for grid jobs.
+services.SeedService.baseSeed         :  8
+services.SeedService.maxUniqueEngines :  20
+
+services.GeometryService.simulatedDetector.tool_type : "Mu2e"
+

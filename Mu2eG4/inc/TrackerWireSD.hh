@@ -3,10 +3,6 @@
 //
 // Defines a generic Tracker wire sensitive detector
 //
-// $Id: TrackerWireSD.hh,v 1.2 2012/12/04 00:51:28 tassiell Exp $
-// $Author: tassiell $
-// $Date: 2012/12/04 00:51:28 $
-//
 // Original author G. Tassielli
 //
 
@@ -21,7 +17,7 @@ namespace mu2e {
     TrackerWireSD(G4String, const SimpleConfig& config);
     ~TrackerWireSD();
 
-    virtual G4bool ProcessHits(G4Step*, G4TouchableHistory*);
+    virtual G4bool ProcessHits(G4Step*, G4TouchableHistory*) override;
 
     static void setMu2eDetCenterInWorld(const G4ThreeVector &origin) {
             _mu2eDetCenter = origin;

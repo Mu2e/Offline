@@ -29,6 +29,10 @@
 #include "art_root_io/TFileService.h"
 #include "art/Framework/Core/ModuleMacros.h"
 #include "canvas/Persistency/Common/TriggerResults.h"
+#include "fhiclcpp/types/Atom.h"
+#include "fhiclcpp/types/OptionalAtom.h"
+#include "fhiclcpp/types/Table.h"
+#include "fhiclcpp/types/OptionalSequence.h"
 
 // ROOT incldues
 #include "Rtypes.h"

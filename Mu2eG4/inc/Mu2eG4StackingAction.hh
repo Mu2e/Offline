@@ -5,18 +5,15 @@
 
 #include "G4UserStackingAction.hh"
 
-#include "fhiclcpp/ParameterSet.h"
-
 #include "Mu2eG4/inc/IMu2eG4Cut.hh"
 
 namespace mu2e {
 
   class Mu2eG4StackingAction: public G4UserStackingAction{
   public:
-    Mu2eG4StackingAction(const fhicl::ParameterSet& pset,
-                         IMu2eG4Cut& stackingCuts,
+    Mu2eG4StackingAction(IMu2eG4Cut& stackingCuts,
                          IMu2eG4Cut& commonCuts);
-      
+
     G4ClassificationOfNewTrack ClassifyNewTrack(const G4Track* aTrack) override;
 
   private:

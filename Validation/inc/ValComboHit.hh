@@ -24,17 +24,16 @@ namespace mu2e {
     TH1D* _hVer;
     TH1D* _hN;
     TH1D* _hN2;
-    TH1D* _hsid;
-    TH1D* _hNcmb;
     TH1D* _hNstr;
-    TH1D* _hx;
-    TH1D* _hy;
-    TH1D* _hz;
+    TH1D* _hWD;
+    TH1D* _hDE;
     TH1D* _ht;
     TH1D* _hE;
     TH1D* _hqual;
     TH1D* _hwres;
     TH1D* _htres;
+    TH1D* _hPanel;
+    TH1D* _hStraw;
 
   };
 }

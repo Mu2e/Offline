@@ -93,7 +93,7 @@ physics : {
    
 services.TFileService.fileName            : "nts._USER_.testStoppedParticleReactionGun.xxx.000001.root"
 services.GeometryService.inputFile : "JobConfig/common/geom_baseline.txt"
-services.SeedService.baseSeed : 0
+services.SeedService.baseSeed : 8
 services.SeedService.maxUniqueEngines : 20
 services.scheduler.wantSummary: true
 #------------------------------------------------------------------------------

@@ -1,10 +1,6 @@
 //
 // An EDAnalyzer module that reads the Trigger Info 
 //
-// $Id:  $
-// $Author:  $
-// $Date:  $
-//
 // Original author G. Pezzullo
 //
 
@@ -29,6 +25,7 @@
 #include "BFieldGeom/inc/BFieldManager.hh"
 #include "GeometryService/inc/GeomHandle.hh"
 #include "GeometryService/inc/DetectorSystem.hh"
+#include "TrackerGeom/inc/Tracker.hh"
 
 //Conditions
 #include "ConditionsService/inc/AcceleratorParams.hh"
@@ -55,7 +52,6 @@
 #include "MCDataProducts/inc/StepPointMC.hh"
 #include "MCDataProducts/inc/StepPointMCCollection.hh"
 #include "MCDataProducts/inc/ProtonBunchIntensity.hh"
-#include "TrkDiag/inc/TrkMCTools.hh"
 
 #include "GlobalConstantsService/inc/GlobalConstantsHandle.hh"
 #include "GlobalConstantsService/inc/ParticleDataTable.hh"
@@ -88,13 +84,29 @@ namespace mu2e {
       kNTrackTrig    = 20,
       kNTrackTrigVar = 30,
       kNHelixTrig    = 10,
-      kNHelixTrigVar = 30,
+      kNHelixTrigVar = 100,
       kNCaloCalib    = 5,
       kNCaloCalibVar = 5,
       kNCaloOnly     = 5,
       kNCaloOnlyVar  = 5,
       kNOcc          = 40,
       kNOccVar       = 10
+    };
+
+    struct MCInfo {
+      double  pMC;  
+      double  pTMC;  
+      double  pZMC;  
+      double  dpMC;  
+      double  dpTMC; 
+      double  dpZMC; 
+      double  pdg;   
+      double  origZ; 
+      double  origR; 
+      double  pdgM;  
+      double  lambda;
+      double  d0;
+      double  p;
     };
 
     struct  trigInfo_ {
@@ -201,9 +213,10 @@ namespace mu2e {
     void     bookOccupancyInfoHist    (art::ServiceHandle<art::TFileService> & Tfs, occupancyHist_         &Hist);
 
 
-    void     findTrigIndex            (std::vector<trigInfo_> Vec, std::string ModuleLabel, int &Index);
+    void     findTrigIndex            (std::vector<trigInfo_> &Vec, std::string &ModuleLabel, int &Index);
     void     fillTrackTrigInfo        (int TrkTrigIndex  , const KalSeed*   KSeed, trackInfoHist_         &Hist);
     void     fillHelixTrigInfo        (int HelTrigIndex  , const HelixSeed* HSeed, helixInfoHist_         &Hist);
+    void     fillHelixTrigInfoAdd     (int HelTrigIndex  , int MCMotherIndex, const HelixSeed* HSeed, helixInfoHist_         &Hist, MCInfo &TMPMCInfo);
     void     fillCaloTrigSeedInfo     (int CTrigSeedIndex, const CaloTrigSeed*HCl, caloTrigSeedHist_      &Hist);
     void     fillCaloCalibTrigInfo    (int ClCalibIndex  , const CaloCluster* HCl, caloCalibrationHist_   &Hist);
     void     fillOccupancyInfo        (int Index         , const StrawDigiCollection*SDCol, const CaloDigiCollection*CDCol, occupancyHist_   &Hist);
@@ -230,6 +243,7 @@ namespace mu2e {
 
     float                     _nProcess;
     double                    _bz0;
+
     double                    _nPOT;
     
     std::vector<trigInfo_>    _trigAll;	     
@@ -248,6 +262,8 @@ namespace mu2e {
     caloCalibrationHist_      _caloCalibHist;
     occupancyHist_            _occupancyHist;
 
+    const mu2e::Tracker*      _tracker;
+    
     //the following pointer is needed to navigate the MC truth info of the strawHits
     const mu2e::StrawDigiMCCollection* _mcdigis;
     const mu2e::ComboHitCollection*    _chcol;
@@ -364,7 +380,8 @@ namespace mu2e {
       Hist._hHelInfo[i][5] = helInfoDir.make<TH1F>(Form("hChi2dZPhi_%i", i), "Helix #chi^{2}_{z#phi}/ndof;#chi^{2}_{z#phi}/ndof", 100, 0, 50);
       Hist._hHelInfo[i][6] = helInfoDir.make<TH1F>(Form("hClE_%i"      , i), "calorimeter Cluster energy; E [MeV]", 240, 0, 120);
       Hist._hHelInfo[i][7] = helInfoDir.make<TH1F>(Form("hLambda_%i"   , i), "Helix #lambda=dz/d#phi; |#lambda| [mm/rad]", 500, 0, 500);
-      Hist._hHelInfo[i][8] = helInfoDir.make<TH1F>(Form("hNLoops_%i"   , i), "Helix nLoops", 500, 0, 50);
+      Hist._hHelInfo[i][8] = helInfoDir.make<TH1F>(Form("hNLoops_%i"   , i), "Helix nLoops; nLoops", 500, 0, 50);
+      Hist._hHelInfo[i][9] = helInfoDir.make<TH1F>(Form("hHitRatio_%i" , i), "Helix hitRatio; NComboHits/nExpectedComboHits", 200, 0, 2);
 
         
       Hist._hHelInfo[i][10] = helInfoDir.make<TH1F>(Form("hPMC_%i" , i), "MC Track Momentum @ tracker front; p[MeV/c]", 400, 0, 200);
@@ -377,8 +394,97 @@ namespace mu2e {
       Hist._hHelInfo[i][17] = helInfoDir.make<TH1F>(Form("hGenZ_%i" , i), "z origin; z-origin [mm]"              , 300,   0,   15000);
       Hist._hHelInfo[i][18] = helInfoDir.make<TH1F>(Form("hGenR_%i" , i), "radial position origin; r-origin [mm]", 500,   0,   5000);
       Hist._hHelInfo[i][19] = helInfoDir.make<TH1F>(Form("hPDGM_%i" , i), "PDG Mother Id; PdgId-mother"          , 2253,   -30.5,   2222.5);
-      Hist._hHelInfo[i][20] = helInfoDir.make<TH1F>(Form("hEMC_%i"  , i), "MC Energy; E_{MC} [MeV]"              , 400,   0,   200);
+      //      Hist._hHelInfo[i][20] = helInfoDir.make<TH1F>(Form("hEMC_%i"  , i), "MC Energy; E_{MC} [MeV]"              , 400,   0,   200);
+      
+      Hist._hHelInfo[i][20] = helInfoDir.make<TH1F>(Form("hMuMinusPMC_%i" , i), "MC Track Momentum @ tracker front; p[MeV/c]", 400, 0, 200);
+      Hist._hHelInfo[i][21] = helInfoDir.make<TH1F>(Form("hMuMinusP_%i", i), "Track P; p [MeV/c]" , 400, 0, 200);
+      Hist._hHelInfo[i][22] = helInfoDir.make<TH1F>(Form("hMuMinusD0_%i", i), "Helix impact parameter; d0 [mm]", 801, -400.5, 400.5);
+      Hist._hHelInfo[i][23] = helInfoDir.make<TH1F>(Form("hMuMinusDP_%i"  , i), "#Delta p @ tracker front; #Delta p = p_{hel} - p_{MC} [MeV/c]"     , 800, -200, 200);
+      Hist._hHelInfo[i][24] = helInfoDir.make<TH1F>(Form("hMuMinusDPt_%i"  , i), "#Delta pT @ tracker front; #Delta pT = pT_{hel} - pT_{MC} [MeV/c]", 800, -200, 200);
+      Hist._hHelInfo[i][25] = helInfoDir.make<TH1F>(Form("hMuMinusDPz_%i"  , i), "#Delta pZ @ tracker front; #Delta pZ = pZ_{hel} - pZ_{MC} [MeV/c]", 800, -200, 200);
+      Hist._hHelInfo[i][26] = helInfoDir.make<TH1F>(Form("hMuMinusPDG_%i"  , i), "PDG Id; PdgId"                        , 2253,   -30.5,   2222.5);
+      Hist._hHelInfo[i][27] = helInfoDir.make<TH1F>(Form("hMuMinusGenZ_%i" , i), "origin; z-origin [mm]", 300,   0,   15000);
+      Hist._hHelInfo[i][28] = helInfoDir.make<TH1F>(Form("hMuMinusGenR_%i" , i), "r origin; r-origin [mm]",500,   0,   5000);
+      Hist._hHelInfo[i][29] = helInfoDir.make<TH1F>(Form("hMuMinusLambda_%i" , i), "Helix #lambda=dz/d#phi; |#lambda| [mm/rad]", 500, 0, 500);
+     
+      Hist._hHelInfo[i][30] = helInfoDir.make<TH1F>(Form("hMuPlusPMC_%i" , i), "MC Track Momentum @ tracker front; p[MeV/c]", 400, 0, 200);
+      Hist._hHelInfo[i][31] = helInfoDir.make<TH1F>(Form("hMuPlusP_%i", i), "Track P; p [MeV/c]" , 400, 0, 200);
+      Hist._hHelInfo[i][32] = helInfoDir.make<TH1F>(Form("hMuPlusD0_%i", i), "Helix impact parameter; d0 [mm]", 801, -400.5, 400.5);
+      Hist._hHelInfo[i][33] = helInfoDir.make<TH1F>(Form("hMuPlusDP_%i"  , i), "#Delta p @ tracker front; #Delta p = p_{hel} - p_{MC} [MeV/c]"     , 800, -200, 200);
+      Hist._hHelInfo[i][34] = helInfoDir.make<TH1F>(Form("hMuPlusDPt_%i"  , i), "#Delta pT @ tracker front; #Delta pT = pT_{hel} - pT_{MC} [MeV/c]", 800, -200, 200);
+      Hist._hHelInfo[i][35] = helInfoDir.make<TH1F>(Form("hMuPlusDPz_%i"  , i), "#Delta pZ @ tracker front; #Delta pZ = pZ_{hel} - pZ_{MC} [MeV/c]", 800, -200, 200);
+      Hist._hHelInfo[i][36] = helInfoDir.make<TH1F>(Form("hMuPlusPDG_%i"  , i), "PDG Id; PdgId"                        , 2253,   -30.5,   2222.5);
+      Hist._hHelInfo[i][37] = helInfoDir.make<TH1F>(Form("hMuPlusGenZ_%i" , i), "origin; z-origin [mm];", 300,   0,   15000);
+      Hist._hHelInfo[i][38] = helInfoDir.make<TH1F>(Form("hMuPlusGenR_%i" , i), "r origin;  r-origin [mm]", 500,   0,   5000);
+      Hist._hHelInfo[i][39] = helInfoDir.make<TH1F>(Form("hMuPlusLambda_%i" , i), "Helix #lambda=dz/d#phi; |#lambda| [mm/rad]", 500, 0, 500);
 
+      Hist._hHelInfo[i][40] = helInfoDir.make<TH1F>(Form("hIPAMuPMC_%i" , i), "MC Track Momentum @ tracker front; p[MeV/c]", 400, 0, 200);
+      Hist._hHelInfo[i][41] = helInfoDir.make<TH1F>(Form("hIPAMuP_%i", i), "Track P; p [MeV/c]" , 400, 0, 200);
+      Hist._hHelInfo[i][42] = helInfoDir.make<TH1F>(Form("hIPAMuD0_%i", i), "Helix impact parameter; d0 [mm]", 801, -400.5, 400.5);
+      Hist._hHelInfo[i][43] = helInfoDir.make<TH1F>(Form("hIPAMuDP_%i"  , i), "#Delta p @ tracker front; #Delta p = p_{hel} - p_{MC} [MeV/c]"     , 800, -200, 200);
+      Hist._hHelInfo[i][44] = helInfoDir.make<TH1F>(Form("hIPAMuDPt_%i"  , i), "#Delta pT @ tracker front; #Delta pT = pT_{hel} - pT_{MC} [MeV/c]", 800, -200, 200);
+      Hist._hHelInfo[i][45] = helInfoDir.make<TH1F>(Form("hIPAMuDPz_%i"  , i), "#Delta pZ @ tracker front; #Delta pZ = pZ_{hel} - pZ_{MC} [MeV/c]", 800, -200, 200);
+      Hist._hHelInfo[i][46] = helInfoDir.make<TH1F>(Form("hIPAMuPDG_%i"  , i), "PDG Id; PdgId"                        , 2253,   -30.5,   2222.5);
+      Hist._hHelInfo[i][47] = helInfoDir.make<TH1F>(Form("hIPAMuGenZ_%i" , i), "z origin; z-origin [mm]", 300,   0,   15000);
+      Hist._hHelInfo[i][48] = helInfoDir.make<TH1F>(Form("hIPAMuGenR_%i" , i), "r origin; r-origin [mm]", 500,   0,   5000);
+      Hist._hHelInfo[i][49] = helInfoDir.make<TH1F>(Form("hIPAMuLambda_%i" , i), "Helix #lambda=dz/d#phi; |#lambda| [mm/rad]", 500, 0, 500);
+
+      Hist._hHelInfo[i][50] = helInfoDir.make<TH1F>(Form("hGammaPMC_%i" , i), "MC Track Momentum @ tracker front; p[MeV/c]", 400, 0, 200);
+      Hist._hHelInfo[i][51] = helInfoDir.make<TH1F>(Form("hGammaP_%i", i), "Track P; p [MeV/c]" , 400, 0, 200);
+      Hist._hHelInfo[i][52] = helInfoDir.make<TH1F>(Form("hGammaD0_%i", i), "Helix impact parameter; d0 [mm]", 801, -400.5, 400.5);
+      Hist._hHelInfo[i][53] = helInfoDir.make<TH1F>(Form("hGammaDP_%i"  , i), "#Delta p @ tracker front; #Delta p = p_{hel} - p_{MC} [MeV/c]"     , 800, -200, 200);
+      Hist._hHelInfo[i][54] = helInfoDir.make<TH1F>(Form("hGammaDPt_%i"  , i), "#Delta pT @ tracker front; #Delta pT = pT_{hel} - pT_{MC} [MeV/c]", 800, -200, 200);
+      Hist._hHelInfo[i][55] = helInfoDir.make<TH1F>(Form("hGammaDPz_%i"  , i), "#Delta pZ @ tracker front; #Delta pZ = pZ_{hel} - pZ_{MC} [MeV/c]", 800, -200, 200);
+      Hist._hHelInfo[i][56] = helInfoDir.make<TH1F>(Form("hGammaPDG_%i"  , i), "PDG Id; PdgId"                        , 2253,   -30.5,   2222.5);
+      Hist._hHelInfo[i][57] = helInfoDir.make<TH1F>(Form("hGammaGenZ_%i" , i), "origin; z-origin [mm]", 300,   0,   15000);
+      Hist._hHelInfo[i][58] = helInfoDir.make<TH1F>(Form("hGammaGenR_%i" , i), "radial position origin; r-origin [mm]", 500,   0,   5000);
+      Hist._hHelInfo[i][59] = helInfoDir.make<TH1F>(Form("hGammaLambda_%i" , i), "Helix #lambda=dz/d#phi; |#lambda| [mm/rad]", 500, 0, 500);
+
+      Hist._hHelInfo[i][60] = helInfoDir.make<TH1F>(Form("hProtonPMC_%i" , i), "MC Track Momentum @ tracker front; p[MeV/c]", 400, 0, 200);
+      Hist._hHelInfo[i][61] = helInfoDir.make<TH1F>(Form("hProtonP_%i", i), "Track P; p [MeV/c]" , 400, 0, 200);
+      Hist._hHelInfo[i][62] = helInfoDir.make<TH1F>(Form("hProtonD0_%i", i), "Helix impact parameter; d0 [mm]", 801, -400.5, 400.5);
+      Hist._hHelInfo[i][63] = helInfoDir.make<TH1F>(Form("hProtonDP_%i"  , i), "#Delta p @ tracker front; #Delta p = p_{hel} - p_{MC} [MeV/c]"     , 800, -200, 200);
+      Hist._hHelInfo[i][64] = helInfoDir.make<TH1F>(Form("hProtonDPt_%i"  , i), "#Delta pT @ tracker front; #Delta pT = pT_{hel} - pT_{MC} [MeV/c]", 800, -200, 200);
+      Hist._hHelInfo[i][65] = helInfoDir.make<TH1F>(Form("hProtonDPz_%i"  , i), "#Delta pZ @ tracker front; #Delta pZ = pZ_{hel} - pZ_{MC} [MeV/c]", 800, -200, 200);
+      Hist._hHelInfo[i][66] = helInfoDir.make<TH1F>(Form("hProtonPDG_%i"  , i), "PDG Id; PdgId"                        , 2253,   -30.5,   2222.5);
+      Hist._hHelInfo[i][67] = helInfoDir.make<TH1F>(Form("hProtonGenZ_%i" , i), "origin; z-origin [mm]", 300,   0,   15000);
+      Hist._hHelInfo[i][68] = helInfoDir.make<TH1F>(Form("hProtonGenR_%i" , i), "radial position origin; r-origin [mm]", 500,   0,   5000);
+      Hist._hHelInfo[i][69] = helInfoDir.make<TH1F>(Form("hProtonLambda_%i" , i), "Helix #lambda=dz/d#phi; |#lambda| [mm/rad]", 500, 0, 500);
+
+      Hist._hHelInfo[i][70] = helInfoDir.make<TH1F>(Form("hN0PMC_%i" , i), "MC Track Momentum @ tracker front; p[MeV/c]", 400, 0, 200);
+      Hist._hHelInfo[i][71] = helInfoDir.make<TH1F>(Form("hN0P_%i", i), "Track P; p [MeV/c]" , 400, 0, 200);
+      Hist._hHelInfo[i][72] = helInfoDir.make<TH1F>(Form("hN0D0_%i", i), "Helix impact parameter; d0 [mm]", 801, -400.5, 400.5);
+      Hist._hHelInfo[i][73] = helInfoDir.make<TH1F>(Form("hN0DP_%i"  , i), "#Delta p @ tracker front; #Delta p = p_{hel} - p_{MC} [MeV/c]"     , 800, -200, 200);
+      Hist._hHelInfo[i][74] = helInfoDir.make<TH1F>(Form("hN0DPt_%i"  , i), "#Delta pT @ tracker front; #Delta pT = pT_{hel} - pT_{MC} [MeV/c]", 800, -200, 200);
+      Hist._hHelInfo[i][75] = helInfoDir.make<TH1F>(Form("hN0DPz_%i"  , i), "#Delta pZ @ tracker front; #Delta pZ = pZ_{hel} - pZ_{MC} [MeV/c]", 800, -200, 200);
+      Hist._hHelInfo[i][76] = helInfoDir.make<TH1F>(Form("hN0PDG_%i"  , i), "PDG Id; PdgId"                        , 2253,   -30.5,   2222.5);
+      Hist._hHelInfo[i][77] = helInfoDir.make<TH1F>(Form("hN0GenZ_%i" , i), "origin; z-origin [mm]", 300,   0,   15000);
+      Hist._hHelInfo[i][78] = helInfoDir.make<TH1F>(Form("hN0GenR_%i" , i), "radial position origin; r-origin [mm]", 500,   0,   5000);
+      Hist._hHelInfo[i][79] = helInfoDir.make<TH1F>(Form("hN0Lambda_%i" , i), "Helix #lambda=dz/d#phi; |#lambda| [mm/rad]", 500, 0, 500);
+      
+      Hist._hHelInfo[i][80] = helInfoDir.make<TH1F>(Form("hPiMinusPMC_%i" , i), "MC Track Momentum @ tracker front; p[MeV/c]", 400, 0, 200);
+      Hist._hHelInfo[i][81] = helInfoDir.make<TH1F>(Form("hPiMinusP_%i", i), "Track P; p [MeV/c]" , 400, 0, 200);
+      Hist._hHelInfo[i][82] = helInfoDir.make<TH1F>(Form("hPiMinusD0_%i", i), "Helix impact parameter; d0 [mm]", 801, -400.5, 400.5);
+      Hist._hHelInfo[i][83] = helInfoDir.make<TH1F>(Form("hPiMinusDP_%i"  , i), "#Delta p @ tracker front; #Delta p = p_{hel} - p_{MC} [MeV/c]"     , 800, -200, 200);
+      Hist._hHelInfo[i][84] = helInfoDir.make<TH1F>(Form("hPiMinusDPt_%i"  , i), "#Delta pT @ tracker front; #Delta pT = pT_{hel} - pT_{MC} [MeV/c]", 800, -200, 200);
+      Hist._hHelInfo[i][85] = helInfoDir.make<TH1F>(Form("hPiMinusDPz_%i"  , i), "#Delta pZ @ tracker front; #Delta pZ = pZ_{hel} - pZ_{MC} [MeV/c]", 800, -200, 200);
+      Hist._hHelInfo[i][86] = helInfoDir.make<TH1F>(Form("hPiMinusPDG_%i"  , i), "PDG Id; PdgId"                        , 2253,   -30.5,   2222.5);
+      Hist._hHelInfo[i][87] = helInfoDir.make<TH1F>(Form("hPiMinusGenZ_%i" , i), "origin; z-origin [mm]", 300,   0,   15000);
+      Hist._hHelInfo[i][88] = helInfoDir.make<TH1F>(Form("hPiMinusGenR_%i" , i), "r origin; r-origin [mm]",500,   0,   5000);
+      Hist._hHelInfo[i][89] = helInfoDir.make<TH1F>(Form("hPiMinusLambda_%i" , i), "Helix #lambda=dz/d#phi; |#lambda| [mm/rad]", 500, 0, 500);
+     
+      Hist._hHelInfo[i][90] = helInfoDir.make<TH1F>(Form("hPiPlusPMC_%i" , i), "MC Track Momentum @ tracker front; p[MeV/c]", 400, 0, 200);
+      Hist._hHelInfo[i][91] = helInfoDir.make<TH1F>(Form("hPiPlusP_%i", i), "Track P; p [MeV/c]" , 400, 0, 200);
+      Hist._hHelInfo[i][92] = helInfoDir.make<TH1F>(Form("hPiPlusD0_%i", i), "Helix impact parameter; d0 [mm]", 801, -400.5, 400.5);
+      Hist._hHelInfo[i][93] = helInfoDir.make<TH1F>(Form("hPiPlusDP_%i"  , i), "#Delta p @ tracker front; #Delta p = p_{hel} - p_{MC} [MeV/c]"     , 800, -200, 200);
+      Hist._hHelInfo[i][94] = helInfoDir.make<TH1F>(Form("hPiPlusDPt_%i"  , i), "#Delta pT @ tracker front; #Delta pT = pT_{hel} - pT_{MC} [MeV/c]", 800, -200, 200);
+      Hist._hHelInfo[i][95] = helInfoDir.make<TH1F>(Form("hPiPlusDPz_%i"  , i), "#Delta pZ @ tracker front; #Delta pZ = pZ_{hel} - pZ_{MC} [MeV/c]", 800, -200, 200);
+      Hist._hHelInfo[i][96] = helInfoDir.make<TH1F>(Form("hPiPlusPDG_%i"  , i), "PDG Id; PdgId"                        , 2253,   -30.5,   2222.5);
+      Hist._hHelInfo[i][97] = helInfoDir.make<TH1F>(Form("hPiPlusGenZ_%i" , i), "origin; z-origin [mm];", 300,   0,   15000);
+      Hist._hHelInfo[i][98] = helInfoDir.make<TH1F>(Form("hPiPlusGenR_%i" , i), "r origin;  r-origin [mm]", 500,   0,   5000);
+      Hist._hHelInfo[i][99] = helInfoDir.make<TH1F>(Form("hPiPlusLambda_%i" , i), "Helix #lambda=dz/d#phi; |#lambda| [mm/rad]", 500, 0, 500);
+
+ 
     }
   }
   //--------------------------------------------------------------------------------//
@@ -681,6 +787,9 @@ namespace mu2e {
     GeomHandle<DetectorSystem> det;
     CLHEP::Hep3Vector vpoint_mu2e = det->toMu2e(CLHEP::Hep3Vector(0.0,0.0,0.0));
     _bz0 = bfmgr->getBField(vpoint_mu2e).z();
+
+    mu2e::GeomHandle<mu2e::Tracker> th;
+    _tracker  = th.get();
   }
 
   void ReadTriggerInfo::endSubRun(const art::SubRun& sr){}
@@ -695,9 +804,9 @@ namespace mu2e {
       _nPOT  = (double)evtWeightH->intensity();
     }
 
-    std::vector<art::Handle<TriggerInfo> > hTrigInfoVec;
+    //    std::vector<art::Handle<TriggerInfo> > hTrigInfoVec;
     
-    event.getManyByType(hTrigInfoVec);
+    //    event.getManyByType(hTrigInfoVec);
 
     //get the TriggerResult
     art::InputTag const tag{Form("TriggerResults::%s", _processName.c_str())};  
@@ -744,108 +853,88 @@ namespace mu2e {
     if (cdH.isValid()) {
       cdCol = cdH.product();
     }
-
-    // std::vector<std::string>   trigNames = {"caloCalibCosmic","caloMVACE", "tprSeedDeM", "tprSeedDeP", "cprSeedDeM", "cprSeedDeP"};
-    // if (trigAlg != 0) {
-    //   for (unsigned i=0; i<6; ++i){
-    // 	if (trigMap->find(trigNames[i]) != trigMap->end()) 
-    // 	  if (trigAlg->hasAnyProperty(trigMap->find(trigNames[i])->second) ) _sumHist._hTrigInfo[15]->Fill((double)i);
-    //   }
-    // }
-
     
     //fill the general occupancy histogram
     fillOccupancyInfo   (_nTrackTrig+_nCaloTrig, sdCol, cdCol, _occupancyHist);
 
-    art::Handle<TriggerInfo>       hTrigInfo;
-    TriggerFlag                    prescalerFlag       = TriggerFlag::prescaleRandom;
-    TriggerFlag                    trackFlag           = TriggerFlag::track;
-    TriggerFlag                    helixFlag           = TriggerFlag::helix;
-    TriggerFlag                    caloFlag            = TriggerFlag::caloCluster;
-    TriggerFlag                    caloCalibFlag       = TriggerFlag::caloCalib;
-    TriggerFlag                    caloTrigSeedFlag    = TriggerFlag::caloTrigSeed;
-    TriggerFlag                    caloOrTrackFlag     = trackFlag; caloOrTrackFlag.merge(caloFlag); caloOrTrackFlag.merge(caloCalibFlag); caloOrTrackFlag.merge(caloTrigSeedFlag);// caloOrTrackFlag.merge(helixFlag);
-    
     std::vector<int>   trigFlagAll_index, trigFlag_index;
+
+    art::Handle<TriggerInfo> hTrigInfoH;
+    const mu2e::TriggerInfo* trigInfo(0);
+
+    for (unsigned int i=0; i< _trigPaths.size(); ++i){
+      string&path = _trigPaths.at(i);
+      if (trigNavig.accepted(path)) {
+	std::vector<std::string>      moduleNames = trigNavig.triggerModules(path);
+
+	for (size_t j=0; j<moduleNames.size(); ++j){
+	  std::string  moduleLabel = moduleNames[j];
+	  int          index_all(0);         
+	  int          index(0);         
     
-    for (size_t i=0; i<hTrigInfoVec.size(); ++i){
-      hTrigInfo = hTrigInfoVec.at(i);
-      if (!hTrigInfo.isValid())         continue;
-      const TriggerInfo* trigInfo  = hTrigInfo.product();
-      const TriggerFlag  flag      = trigInfo->triggerBits();
+	  //fill the Global Trigger bits info
+	  findTrigIndex(_trigAll, moduleLabel, index_all);
+	  _trigAll[index_all].label  = moduleLabel;
 
-      std::string    moduleLabel   = hTrigInfo.provenance()->moduleLabel();
-      int            index_all(0);         
-      int            index(0);         
-      
-      //fill the Global Trigger bits info
-      findTrigIndex(_trigAll, moduleLabel, index_all);
-      _trigAll[index_all].label  = moduleLabel;
+	  event.getByLabel(moduleLabel, hTrigInfoH);
+	  if (hTrigInfoH.isValid()){
+	    trigInfo = hTrigInfoH.product();
+	  }
+	  if ( moduleLabel.find(std::string("HSFilter")) != std::string::npos) {
+	    findTrigIndex(_trigHelix, moduleLabel, index);
+	    _trigHelix[index].label  = moduleLabel;
+	    _trigHelix[index].counts = _trigHelix[index].counts + 1;
+	    const HelixSeed*hseed = trigInfo->helix().get();
+	    if(hseed) {
+	      fillHelixTrigInfo(index, hseed, _helHist);
+	      fillOccupancyInfo(_nTrackTrig+index, sdCol, cdCol, _occupancyHist);
+	    }
+	    
+	  }else if ( moduleLabel.find("TSFilter") != std::string::npos){
+	    findTrigIndex(_trigTrack, moduleLabel, index);
+	    _trigTrack[index].label  = moduleLabel;
+	    _trigTrack[index].counts = _trigTrack[index].counts + 1;
+	    const KalSeed*kseed = trigInfo->track().get();
+	    if(kseed) {
+	      fillTrackTrigInfo(index, kseed, _trkHist);
+	      fillOccupancyInfo(index, sdCol, cdCol, _occupancyHist);
+	    }
+	    trigFlag_index.push_back(index_all);
+	  }else if ( moduleLabel.find("EventPrescale") != std::string::npos){
+	    findTrigIndex(_trigEvtPS, moduleLabel, index);
+	    _trigEvtPS[index].label  = moduleLabel;
+	    _trigEvtPS[index].counts = _trigEvtPS[index].counts + 1;
+	  }else if ( moduleLabel.find("CaloCosmicCalib") != std::string::npos){
+	    findTrigIndex(_trigCaloCalib, moduleLabel, index);
+	    _trigCaloCalib[index].label  = moduleLabel;
+	    _trigCaloCalib[index].counts = _trigCaloCalib[index].counts + 1;
+	    const CaloCluster*cluster = trigInfo->caloCluster().get();
+	    if(cluster) fillCaloCalibTrigInfo(index, cluster, _caloCalibHist);
+	    trigFlag_index.push_back(index_all);
+	  }else if ( (moduleLabel.find("caloMVACEFilter") != std::string::npos) || (moduleLabel.find("caloLHCEFilter") != std::string::npos) ){
+	    findTrigIndex(_trigCaloOnly, moduleLabel, index);
+	    _trigCaloOnly[index].label  = moduleLabel;
+	    _trigCaloOnly[index].counts = _trigCaloOnly[index].counts + 1;
+	    const CaloTrigSeed*clseed = trigInfo->caloTrigSeed().get();
+	    if(clseed) {
+	      fillCaloTrigSeedInfo(index, clseed, _caloTSeedHist);
+	      fillOccupancyInfo   (_nTrackTrig*2+index, sdCol, cdCol, _occupancyHist);
+	    }
+	    trigFlag_index.push_back(index_all);	    
+	  }
+	  
 
-      findTrigIndex(_trigFinal, moduleLabel, index);
-      if ( flag.hasAnyProperty(caloOrTrackFlag)){ 
-	_trigFinal[index].label    = moduleLabel;
-	_trigFinal[index].counts   = _trigFinal[index].counts + 1;
-	_trigAll[index_all].counts = _trigAll[index_all].counts + 1;
-	trigFlagAll_index.push_back(index_all);
+	  if ( moduleLabel.find("caloMVACEFilter") || moduleLabel.find("TSFilter")){ 
+	    findTrigIndex(_trigFinal, moduleLabel, index);
+	    _trigFinal[index].label    = moduleLabel;
+	    _trigFinal[index].counts   = _trigFinal[index].counts + 1;
+	    _trigAll[index_all].counts = _trigAll[index_all].counts + 1;
+	    trigFlagAll_index.push_back(index_all);
+	  }
+	}//end loop over the modules in a given trigger path
       }
-      //fill the Calo-Only Trigger bits info
-      findTrigIndex(_trigCaloOnly, moduleLabel, index);
-      if ( flag.hasAnyProperty(caloFlag) || flag.hasAnyProperty(caloTrigSeedFlag)){ 
-	_trigCaloOnly[index].label  = moduleLabel;
-	_trigCaloOnly[index].counts = _trigCaloOnly[index].counts + 1;
-	const CaloTrigSeed*clseed = trigInfo->caloTrigSeed().get();
-	if(clseed) {
-	  fillCaloTrigSeedInfo(index, clseed, _caloTSeedHist);
-	  fillOccupancyInfo   (_nTrackTrig*2+index, sdCol, cdCol, _occupancyHist);
-	}
-	trigFlag_index.push_back(index_all);
-      }
-
-      //fill the CaloCalib Trigger bits info
-      findTrigIndex(_trigCaloCalib, moduleLabel, index);
-      if ( flag.hasAnyProperty(caloCalibFlag)){ 
-	_trigCaloCalib[index].label  = moduleLabel;
-	_trigCaloCalib[index].counts = _trigCaloCalib[index].counts + 1;
-	const CaloCluster*cluster = trigInfo->caloCluster().get();
-	if(cluster) fillCaloCalibTrigInfo(index, cluster, _caloCalibHist);
-	trigFlag_index.push_back(index_all);
-      }
-      
-      //fill the Track Trigger bits info
-      findTrigIndex(_trigTrack, moduleLabel, index);
-      if ( flag.hasAnyProperty(trackFlag)){ 
-	_trigTrack[index].label  = moduleLabel;
-	_trigTrack[index].counts = _trigTrack[index].counts + 1;
-	const KalSeed*kseed = trigInfo->track().get();
-	if(kseed) {
-	  fillTrackTrigInfo(index, kseed, _trkHist);
-	  fillOccupancyInfo(index, sdCol, cdCol, _occupancyHist);
-	}
-	trigFlag_index.push_back(index_all);
-      }
-       //fill the Helix Trigger bits info
-      findTrigIndex(_trigHelix, moduleLabel, index);
-      if ( flag.hasAnyProperty(helixFlag)){ 
-	_trigHelix[index].label  = moduleLabel;
-	_trigHelix[index].counts = _trigHelix[index].counts + 1;
-	const HelixSeed*hseed = trigInfo->helix().get();
-	if(hseed) {
-	  fillHelixTrigInfo(index, hseed, _helHist);
-	  fillOccupancyInfo(_nTrackTrig+index, sdCol, cdCol, _occupancyHist);
-	}
-      }
-      
-      //fill the Event-Prescaler Trigger bits info
-      findTrigIndex(_trigEvtPS, moduleLabel, index);
-      if ( flag.hasAnyProperty(prescalerFlag)){ 
-	_trigEvtPS[index].label  = moduleLabel;
-	_trigEvtPS[index].counts = _trigEvtPS[index].counts + 1;
-      }
-      
-      
-    }//end loop over the TriggerInfo Handles
-
+    }
+  
     //now fill the correlation matrix
     for (size_t i=0; i<trigFlagAll_index.size(); ++i){
       for (size_t j=0; j<trigFlagAll_index.size(); ++j){
@@ -857,7 +946,7 @@ namespace mu2e {
 
   }
   
-  void   ReadTriggerInfo::findTrigIndex(std::vector<trigInfo_> Vec, std::string ModuleLabel, int &Index){
+  void   ReadTriggerInfo::findTrigIndex(std::vector<trigInfo_> &Vec, std::string& ModuleLabel, int &Index){
     //reset the index value
     Index = 0;
     for (size_t i=0; i<Vec.size(); ++i){
@@ -872,7 +961,7 @@ namespace mu2e {
 
   void   ReadTriggerInfo::fillTrackTrigInfo(int TrkTrigIndex, const KalSeed*KSeed, trackInfoHist_   &Hist){
     GlobalConstantsHandle<ParticleDataTable> pdt;
-    HelixTool helTool(KSeed->helix().get());
+    HelixTool helTool(KSeed->helix().get(), _tracker);
 
     int                nsh = (int)KSeed->hits().size();
     KalSegment const& fseg = KSeed->segments().front();
@@ -906,13 +995,13 @@ namespace mu2e {
 	int  hitIndex  = int(KSeed->hits().at(j).index());
 	hit            = &_chcol->at(hitIndex);
 	loc            = hit - hit_0;
-	const mu2e::StepPointMC* step(0);
+	const mu2e::StrawGasStep* step(0);
 	const mu2e::StrawDigiMC* sdmc = &_mcdigis->at(loc);
 	if (sdmc->wireEndTime(mu2e::StrawEnd::cal) < sdmc->wireEndTime(mu2e::StrawEnd::hv)) {
-	  step = sdmc->stepPointMC(mu2e::StrawEnd::cal).get();
+	  step = sdmc->strawGasStep(mu2e::StrawEnd::cal).get();
 	}
 	else {
-	  step = sdmc->stepPointMC(mu2e::StrawEnd::hv ).get();
+	  step = sdmc->strawGasStep(mu2e::StrawEnd::hv ).get();
 	}
 	
 	if (step) {
@@ -941,25 +1030,15 @@ namespace mu2e {
       }
     
       //finally, get the info of the first StrawDigi
-      const mu2e::StepPointMC* step(0);
       const mu2e::StrawDigiMC* sdmc = &_mcdigis->at(mostvalueindex);
-      if (sdmc->wireEndTime(mu2e::StrawEnd::cal) < sdmc->wireEndTime(mu2e::StrawEnd::hv)) {
-	step = sdmc->stepPointMC(mu2e::StrawEnd::cal).get();
-      }
-      else {
-	step = sdmc->stepPointMC(mu2e::StrawEnd::hv ).get();
-      }
-      
-      const mu2e::SimParticle * sim (0);
-
-      if (step) {
-	art::Ptr<mu2e::SimParticle> const& simptr = step->simParticle(); 
+	art::Ptr<mu2e::SimParticle> const& simptr = sdmc->earlyStrawGasStep()->simParticle();
 	int     pdg   = simptr->pdgId();
 	art::Ptr<mu2e::SimParticle> mother = simptr;
 
-	while(mother->hasParent()) mother = mother->parent();
-	sim = mother.operator ->();
-	int      pdgM   = sim->pdgId();
+	while(mother->hasParent()) 
+	  mother = mother->parent();
+	//sim = mother.operator->();
+	int      pdgM   = mother->pdgId();
 	double   pXMC   = simptr->startMomentum().x();
 	double   pYMC   = simptr->startMomentum().y();
 	double   pZMC   = simptr->startMomentum().z();
@@ -991,14 +1070,28 @@ namespace mu2e {
 	Hist._hTrkInfo[TrkTrigIndex][18]->Fill(origin_r);
 	Hist._hTrkInfo[TrkTrigIndex][19]->Fill(pdgM);
 	Hist._hTrkInfo[TrkTrigIndex][20]->Fill(energy);
-      }
     }
   }
+
+
+  void     ReadTriggerInfo::fillHelixTrigInfoAdd     (int HelTrigIndex  , int MCMotherIndex, const HelixSeed* HSeed, helixInfoHist_         &Hist, MCInfo &TMPMCInfo){
+    Hist._hHelInfo[HelTrigIndex][MCMotherIndex + 0]->Fill(TMPMCInfo.pMC);	   
+    Hist._hHelInfo[HelTrigIndex][MCMotherIndex + 1]->Fill(TMPMCInfo.p);	   
+    Hist._hHelInfo[HelTrigIndex][MCMotherIndex + 2]->Fill(TMPMCInfo.d0);	   
+    Hist._hHelInfo[HelTrigIndex][MCMotherIndex + 3]->Fill(TMPMCInfo.dpMC);   
+    Hist._hHelInfo[HelTrigIndex][MCMotherIndex + 4]->Fill(TMPMCInfo.dpTMC); 
+    Hist._hHelInfo[HelTrigIndex][MCMotherIndex + 5]->Fill(TMPMCInfo.dpZMC); 
+    Hist._hHelInfo[HelTrigIndex][MCMotherIndex + 6]->Fill(TMPMCInfo.pdg);	   
+    Hist._hHelInfo[HelTrigIndex][MCMotherIndex + 7]->Fill(TMPMCInfo.origZ);
+    Hist._hHelInfo[HelTrigIndex][MCMotherIndex + 8]->Fill(TMPMCInfo.origR);  
+    Hist._hHelInfo[HelTrigIndex][MCMotherIndex + 9]->Fill(TMPMCInfo.lambda);      
+  }
+
 
   
   void   ReadTriggerInfo::fillHelixTrigInfo(int HelTrigIndex, const HelixSeed*HSeed, helixInfoHist_  &Hist){
     GlobalConstantsHandle<ParticleDataTable> pdt;
-    HelixTool helTool(HSeed);
+    HelixTool helTool(HSeed, _tracker);
 
     int        nch       = (int)HSeed->hits().size();
     int        nsh(0);
@@ -1026,6 +1119,7 @@ namespace mu2e {
     Hist._hHelInfo[HelTrigIndex][6]->Fill(clE);
     Hist._hHelInfo[HelTrigIndex][7]->Fill(lambda);
     Hist._hHelInfo[HelTrigIndex][8]->Fill(nLoops);
+    Hist._hHelInfo[HelTrigIndex][9]->Fill(helTool.hitRatio());
 
      //add the MC info if available
     if (_mcdigis) {
@@ -1039,18 +1133,14 @@ namespace mu2e {
 
 	for (size_t k=0; k<shids.size(); ++k) {
 	  const mu2e::StrawDigiMC* sdmc = &_mcdigis->at(shids[k]);
-	  art::Ptr<mu2e::StepPointMC>  spmcp;
-	  mu2e::TrkMCTools::stepPoint(spmcp,*sdmc);
-	  const mu2e::StepPointMC* step = spmcp.get();
-	  if (step) {
-	    art::Ptr<mu2e::SimParticle> const& simptr = step->simParticle(); 
+	  auto const& spmcp = sdmc->earlyStrawGasStep();
+	    art::Ptr<mu2e::SimParticle> const& simptr = spmcp->simParticle(); 
 	    int sim_id        = simptr->id().asInt();
-	    float   dz        = step->position().z();// - trackerZ0;
+	    float   dz        = spmcp->position().z();// - trackerZ0;
 	    hits_simp_id.push_back   (sim_id); 
 	    hits_simp_index.push_back(shids[k]);
 	    hits_simp_z.push_back(dz);
 	    break;
-	  }
 	}
       }//end loop over the hits
     
@@ -1071,27 +1161,64 @@ namespace mu2e {
     
       //finally, get the info of the first StrawDigi
       const mu2e::StrawDigiMC* sdmc = &_mcdigis->at(mostvalueindex);
-      art::Ptr<mu2e::StepPointMC>  spmcp;
-      mu2e::TrkMCTools::stepPoint(spmcp,*sdmc);
-      const mu2e::StepPointMC*     step = spmcp.get();  
-      const mu2e::SimParticle *    sim (0);
-
-      if (step) {
-	art::Ptr<mu2e::SimParticle> const& simptr = step->simParticle(); 
+      auto const& spmcp = sdmc->earlyStrawGasStep();
+	art::Ptr<mu2e::SimParticle> const& simptr = spmcp->simParticle(); 
 	int     pdg   = simptr->pdgId();
 	art::Ptr<mu2e::SimParticle> mother = simptr;
 
 	while(mother->hasParent()) mother = mother->parent();
-	sim = mother.operator ->();
-	int      pdgM   = sim->pdgId();
-	double   pXMC   = step->momentum().x();
-	double   pYMC   = step->momentum().y();
-	double   pZMC   = step->momentum().z();
-	double   mass(-1.);//  = part->Mass();
-	double   energy(-1.);// = sqrt(px*px+py*py+pz*pz+mass*mass);
-	mass   = pdt->particle(pdg).ref().mass();
-	energy = sqrt(pXMC*pXMC+pYMC*pYMC+pZMC*pZMC+mass*mass);
+	int      pdgM   = mother->pdgId();
+	double   pXMC   = spmcp->momentum().x();
+	double   pYMC   = spmcp->momentum().y();
+	double   pZMC   = spmcp->momentum().z();
+	// double   mass(-1.);//  = part->Mass();
+	// double   energy(-1.);// = sqrt(px*px+py*py+pz*pz+mass*mass);
+	// mass   = pdt->particle(pdg).ref().mass();
+	// energy = sqrt(pXMC*pXMC+pYMC*pYMC+pZMC*pZMC+mass*mass);
       
+	//need to check the mother of the particle
+	//the possible cases we are interested are:
+	// 1) IPA negative muon: 
+	// 2) atmospheric negative muon:
+	// 3) atmospheric positive muon:
+	// 4) photon
+	// 5) proton
+	// 6) neutron
+
+	int   indexMother(-1);
+
+	if (pdgM == 13){ //negative muon
+	  XYZVec  mother_origin;
+	  mother_origin.SetX(mother->startPosition().x()+3904);
+	  mother_origin.SetY(mother->startPosition().y());
+	  mother_origin.SetZ(mother->startPosition().z());
+	  double mother_origin_r =  sqrt(mother_origin.x()*mother_origin.x() + mother_origin.y()*mother_origin.y());
+	  double IPA_z(7400.), IPA_z_tolerance(600.);
+	  // case 1: origin in the IPA and PDG-Id
+	  if ( (fabs(mother_origin_r) <= 300.5) && 
+	       (fabs(mother_origin_r) >= 299.5) && 
+	       (fabs(mother_origin.z() - IPA_z) < IPA_z_tolerance) &&
+	       (mother->startMomentum().px() < 1e-10) &&
+	       (mother->startMomentum().py() < 1e-10) &&
+	       (mother->startMomentum().pz() < 1e-10)){
+	    indexMother = 40;
+	  }else{//case 2: negative cosmic muon
+	    indexMother = 20;	  
+	  }
+	}else if (pdgM == -13){//case 3: positive muon
+	  indexMother = 30;
+	}else if (pdgM == 22){//case 4: photon
+	  indexMother = 50;
+	}else if (pdgM == 2212){//case 5: proton
+	  indexMother = 60;
+	}else if (pdgM == 2112){ //case 6: neutron
+	  indexMother = 70;
+	}else if (pdgM == -211){ //case 7: pi minus
+	  indexMother = 80;
+	}else if (pdgM == 211){ //case 8: pi plus
+	  indexMother = 90;
+	}
+
 	double   pTMC   = sqrt(pXMC*pXMC + pYMC*pYMC);
 	double   pMC    = sqrt(pZMC*pZMC + pTMC*pTMC);
       
@@ -1105,19 +1232,41 @@ namespace mu2e {
 	double pz     = sqrt(p*p - pt*pt);
 
 	//now fill the MC histograms
-	Hist._hHelInfo[HelTrigIndex][10]->Fill(pMC);
-	Hist._hHelInfo[HelTrigIndex][11]->Fill(pTMC);
-	Hist._hHelInfo[HelTrigIndex][12]->Fill(pZMC);
-	Hist._hHelInfo[HelTrigIndex][13]->Fill(p - pMC);
-	Hist._hHelInfo[HelTrigIndex][14]->Fill(pt - pTMC);
-	Hist._hHelInfo[HelTrigIndex][15]->Fill(pz - pZMC);
-	Hist._hHelInfo[HelTrigIndex][16]->Fill(pdg);
+	Hist._hHelInfo[HelTrigIndex][10]->Fill(pMC);	   
+	Hist._hHelInfo[HelTrigIndex][11]->Fill(pTMC);	   
+	Hist._hHelInfo[HelTrigIndex][12]->Fill(pZMC);	   
+	Hist._hHelInfo[HelTrigIndex][13]->Fill(p - pMC);   
+	Hist._hHelInfo[HelTrigIndex][14]->Fill(pt - pTMC); 
+	Hist._hHelInfo[HelTrigIndex][15]->Fill(pz - pZMC); 
+	Hist._hHelInfo[HelTrigIndex][16]->Fill(pdg);	   
 	Hist._hHelInfo[HelTrigIndex][17]->Fill(origin.z());
-	Hist._hHelInfo[HelTrigIndex][18]->Fill(origin_r);
-	Hist._hHelInfo[HelTrigIndex][19]->Fill(pdgM);
-	Hist._hHelInfo[HelTrigIndex][20]->Fill(energy);
+	Hist._hHelInfo[HelTrigIndex][18]->Fill(origin_r);  
+	Hist._hHelInfo[HelTrigIndex][19]->Fill(pdgM);      
+
+	//fill the "add" info
+	if (indexMother>0){
+	  MCInfo tmpMCInfo;
+	  tmpMCInfo.pMC   = (pMC);	
+	  tmpMCInfo.pTMC  = (pTMC);	
+	  tmpMCInfo.pZMC  = (pZMC);	
+	  tmpMCInfo.dpMC  = (p - pMC); 
+	  tmpMCInfo.dpTMC = (pt - pTMC);
+	  tmpMCInfo.dpZMC = (pz - pZMC);
+	  tmpMCInfo.pdg   = (pdg);	 
+	  tmpMCInfo.origZ = (origin.z());
+	  tmpMCInfo.origR = (origin_r);  
+	  tmpMCInfo.pdgM  = (pdgM);      
+	  tmpMCInfo.lambda  = lambda;      
+	  tmpMCInfo.d0    = d0;      
+	  tmpMCInfo.p     = p;      
+	  
+
+	  fillHelixTrigInfoAdd(HelTrigIndex, indexMother, HSeed, Hist, tmpMCInfo);
+	}
+
+	// Hist._hHelInfo[HelTrigIndex][20]->Fill(energy);
       }
-    }
+    
   }
   //--------------------------------------------------------------------------------
   

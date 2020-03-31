@@ -52,8 +52,6 @@ using namespace CLHEP;
 #include "MCDataProducts/inc/StepPointMCCollection.hh"
 #include "MCDataProducts/inc/StepPointMC.hh"
 #include "MCDataProducts/inc/SimParticle.hh"
-#include "MCDataProducts/inc/PointTrajectoryCollection.hh"
-#include "MCDataProducts/inc/PointTrajectory.hh"
 #include "DataProducts/inc/VirtualDetectorId.hh"
 #include "GeneralUtilities/inc/safeSqrt.hh"
 

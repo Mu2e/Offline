@@ -19,7 +19,7 @@ source : {
 services : {
     message                : @local::default_message
     TFileService           : { fileName       : "nts.owner.pions-g4s4-IntConv.version.sequencer.root" }
-    RandomNumberGenerator  : {}
+    RandomNumberGenerator  : {defaultEngineKind: "MixMaxRng"}
     GeometryService        : { inputFile      : "JobConfig/common/geom_baseline.txt"                      }
     ConditionsService      : { conditionsfile : "Mu2eG4/test/conditions_01.txt"                        }
     GlobalConstantsService : { inputFile      : "Mu2eG4/test/globalConstants_01.txt"                   }
@@ -64,8 +64,6 @@ physics : {
             TrajectoryControl : @local::mu2eg4NoTrajectories
             debug             : @local::mu2eg4DefaultDebug
             visualization     : @local::mu2eg4NoVisualization
-
-	    MultiStageParameters : {}
 
             generatorModuleLabel        : generate
             doWriteLegacyPhysVolumeInfo : false
@@ -116,5 +114,5 @@ outputs : {
 }
 
 # Setting the seed values, since automaticSeeds sets to @nil by default.
-services.SeedService.baseSeed         : 0
+services.SeedService.baseSeed         : 8
 services.SeedService.maxUniqueEngines : 20
