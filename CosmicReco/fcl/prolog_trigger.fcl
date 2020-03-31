@@ -1,0 +1,108 @@
+# -*- mode: tcl -*-
+#------------------------------------------------------------------------------
+#------------------------------------------------------------------------------
+
+BEGIN_PROLOG
+
+TTtimeClusterFinder : { @table::TimeClusterFinder
+    ComboHitCollection     : "TTflagBkgHits"
+    CaloClusterCollection  : "CaloClusterFast"
+    StrawHitFlagCollection : "none"
+    TestFlag               : false
+    T0Calculator 	   : @local::TimeCalculator
+}
+
+TTCosmicSTTracktimeClusterFinder : { @table::TimeClusterFinderCosmics
+    ComboHitCollection     : "TTflagBkgHits"
+    CaloClusterCollection  : "none"
+    StrawHitFlagCollection : "none"
+    TestFlag               : false
+    T0Calculator 	   : @local::TimeCalculator
+   
+}
+
+#PreEvent PreScaler:
+CosmicSTTrackFilters : {
+    CosmicSTTrackEventPrescale : {
+	    module_type 	: PrescaleEvent
+	    nPrescale         	: 1
+    	    triggerPath         : "CosmicSTTrackTrigger"	    	    
+	    triggerFlag   	: ["PrescaleRandom"]	    
+	}
+
+#From Filter, only by hits currently: 
+    CosmicSTTrackSeedFilter : {
+	module_type            : CosmicSTTrackSeedFilter
+        minnsh                 : 8
+        minnch 		       : 8
+	debugLevel             : 0	      
+	triggerPath            : "CosmicSTTrackTrigger"	
+        triggerFlag 	       : ["Track"]    
+    }
+
+  
+}
+
+CosmicSTTrackFilters : { @table::CosmicSTTrackFilters
+    
+    producers : {
+    	
+	fetchDigis : { module_type: PrefetchData 
+	    debugLevel                    : 0
+	    mcDiag                        : true
+
+	    fetchCaloDigis                : 0
+	    fetchStrawDigis               : 1
+	    fetchStrawHits                : 1
+	    fetchStrawHitFlags            : 1
+	    fetchStrawHitPositions        : 1
+	    fetchComboHits                : 1
+
+	    strawDigiCollection           : makeSD
+	    strawHitCollectionTag         : TTmakeSH
+	    strawHitPositionCollectionTag : TTmakeSH
+	    strawHitFlagCollectionTag     : TTmakeSH
+	    comboHitCollectionTag         : TTmakePH
+	}
+    
+    }
+
+    filters   : {
+	
+	CosmicSTTrackCountFilter     : { 
+        module_type : DigiFilter #defined in Triggers
+	    strawDigiCollection : makeSD
+	    caloDigiCollection  : notUsed
+	    useStrawDigi        : true
+	    useCaloDigi         : false
+	    minNStrawDigi       : 8 
+	    maxNStrawDigi       : 100
+	    minNCaloDigi        : -1
+	    maxNCaloDigi        : -1
+	    maxCaloEnergy       : -1
+	    triggerPath         : "CosmicSTTrackTrigger"	    	    	    
+	}
+
+#PreScaler for Passed Events: 
+	CosmicSTTrackEndEventPrescale : {
+	    module_type 	: PrescaleEvent
+	    nPrescale           : 1
+            useFilteredEvents   : true
+	    triggerPath         : "CosmicSTTrackTrigger"	    	    
+	    triggerFlag   	: ["PrescaleGoodEvents"]	    
+	}
+
+	CosmicSTTrackTriggerPreselect   : { @table::CosmicReco.CosmicSTTrackTriggerPreselect  }
+	
+	CosmicSTTrackFilter  : { @table::CosmicReco.CosmicSTTrackFilters }
+	
+    }
+
+    sequences   : {
+	
+	CosmicSTTrackTrigger  : [ CosmicSTTrackEventPrescale, TTprepareHits CosmicSTTrackCountFilter, TTCosmicSTTracktimeClusterFinder, TTtimeClusterFinder, CosmicTrackFinder, CosmicSTTrackSeedFilter, CosmicSTTrackEndEventPrescale ] 
+	
+	
+}
+
+END_PROLOG

@@ -119,6 +119,7 @@ namespace mu2e
 
     ProditionsHandle<StrawResponse> _strawResponse_h;
     ProditionsHandle<Mu2eDetector> _mu2eDetector_h;
+    ProditionsHandle<Tracker> _alignedTracker_h;
     // flow diagnostic
   };
 
@@ -156,7 +157,7 @@ namespace mu2e
 // provide for interactive diagnostics
 //-----------------------------------------------------------------------------
     _data.result    = &_result;
-    
+
     if (_diag != 0) {
       _hmanager = art::make_tool<ModuleHistToolBase>(pset.get<fhicl::ParameterSet>("diagPlugin"));
       fhicl::ParameterSet ps1 = pset.get<fhicl::ParameterSet>("KalFit.DoubletAmbigResolver");
@@ -180,16 +181,11 @@ namespace mu2e
     }
   }
 //-----------------------------------------------------------------------------
-  void KalFinalFit::beginRun(art::Run& ) {
-    mu2e::GeomHandle<mu2e::Tracker> th;
-    _data.tracker     = th.get();
-
+  void KalFinalFit::beginRun(art::Run& r) {
     mu2e::GeomHandle<mu2e::Calorimeter> ch;
     _data.calorimeter = ch.get();
-    
+
     _kfit.setCalorimeter (_data.calorimeter);
-    _kfit.setTracker     (_data.tracker);
-    
     _kfit.setCaloGeom();
   }
 
@@ -198,6 +194,9 @@ namespace mu2e
 
     auto srep = _strawResponse_h.getPtr(event.id());
     auto detmodel = _mu2eDetector_h.getPtr(event.id());
+
+    _data.tracker = _alignedTracker_h.getPtr(event.id()).get();
+    _kfit.setTracker(_data.tracker);
 
     // event printout
     _iev=event.id().event();
@@ -222,7 +221,7 @@ namespace mu2e
       if(_shfcol != 0) flag.merge(_shfcol->at(index++));
       shfcol->push_back(flag);
     }
- 
+
     if (_diag!=0){
       _data.event  = &event;
       _data.eventNumber = event.event();
@@ -301,19 +300,19 @@ namespace mu2e
 	      int icc = _kfit.addTrkCaloHit(detmodel, _result);
 	      if(icc >=0){
 	      // set the CaloCluster Ptr for the TrkCaloHitSeed.
-		ccPtr = art::Ptr<CaloCluster>(clH,(size_t)icc);	
+		ccPtr = art::Ptr<CaloCluster>(clH,(size_t)icc);
 	      }
 	    }
 	    if ( hasTrkCaloHit(_result)) _kfit.weedTrkCaloHit(_result);
 	    if (_diag!=0) {
 	      _kfit.fillTchDiag(_result);
-	      _data.tchDiskId  = _result.diag.diskId;	 
-	      _data.tchAdded   = _result.diag.added;	 
-	      _data.tchDepth   = _result.diag.depth;	  
-	      _data.tchDOCA    = _result.diag.doca;	   
-	      _data.tchDt      = _result.diag.dt;     
-	      _data.tchTrkPath = _result.diag.trkPath;	
-	      _data.tchEnergy  = _result.diag.energy;    
+	      _data.tchDiskId  = _result.diag.diskId;
+	      _data.tchAdded   = _result.diag.added;
+	      _data.tchDepth   = _result.diag.depth;
+	      _data.tchDOCA    = _result.diag.doca;
+	      _data.tchDt      = _result.diag.dt;
+	      _data.tchTrkPath = _result.diag.trkPath;
+	      _data.tchEnergy  = _result.diag.energy;
 
 	    }
 	  }
@@ -327,7 +326,7 @@ namespace mu2e
 	  if(_debug > 1)
 	    cout << "AddHits Fit result " << _result.krep->fitStatus()
 	    << " NDOF = " << _result.krep->nDof() << endl;
-	  
+
 //-----------------------------------------------------------------------------
 // and weed hits again to insure that addHits doesn't add junk
 //-----------------------------------------------------------------------------
@@ -434,7 +433,7 @@ namespace mu2e
     event.put(move(kscol));
     event.put(move(shfcol));
   }
-  
+
   // find the input data objects
   bool KalFinalFit::findData(const art::Event& evt){
     _chcol = 0;
@@ -534,7 +533,7 @@ namespace mu2e
 	}
 
         if (! found) {
-					// estimate trajectory length to hit 
+					// estimate trajectory length to hit
 	  double hflt = 0;
 	  TrkHelixUtils::findZFltlen(*reftraj,zhit,hflt);
 
@@ -563,7 +562,7 @@ namespace mu2e
 	  double      rdrift;//, hit_error(0.2);
 
 	  TrkStrawHit hit(srep,sh,straw,istr,hitt0,hflt,1.,1.);//hit_error,1.,_maxadddoca,1.);
-	  
+
 	  double tdrift=hit.time()-hit.hitT0()._t0;
 
 	  //	  tcal->TimeToDistance(straw.index(),tdrift,tdir,t2d);
@@ -628,8 +627,8 @@ namespace mu2e
 
     //clear the array
     kalData.missingHits.clear();
+    const Tracker& tracker = *_data.tracker;
 
-    const Tracker& tracker = *GeomHandle<Tracker>();
     //  Trajectory info
     Hep3Vector tdir;
     HepPoint tpos;
@@ -661,7 +660,7 @@ namespace mu2e
 	    Hep3Vector tpos(tp.x(),tp.y(),tp.z()); // ugly conversion FIXME!
 	    double hitlen = hdir.dot(tpos - hpos);
 	    TrkPoca hitpoca(krep->pieceTraj(),fltlen,htraj,hitlen);
-	    
+
 	    // flag hits with small residuals
 	    if(fabs(hitpoca.doca()) < _maxadddoca){
 	      MissingHit_t m;
@@ -675,14 +674,14 @@ namespace mu2e
       }
     }
   }
-  
+
 //--------------------------------------------------------------------------------
 // function to check the presence of a TrkCaloHit in the KalRep
 //--------------------------------------------------------------------------------
   bool KalFinalFit::hasTrkCaloHit(KalFitData&kalData){
     bool retval(false);
 
-    TrkHitVector *thv      = &(kalData.krep->hitVector());    
+    TrkHitVector *thv      = &(kalData.krep->hitVector());
     for (auto ihit=thv->begin();ihit!=thv->end(); ++ihit){
       TrkCaloHit*hit = dynamic_cast<TrkCaloHit*>(*ihit);
       if (hit != 0){
@@ -690,11 +689,11 @@ namespace mu2e
 	break;
       }
     }
-    
+
     return retval;
   }
 
-  
+
 }// mu2e
 
 DEFINE_ART_MODULE(mu2e::KalFinalFit);

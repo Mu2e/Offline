@@ -15,7 +15,7 @@ services :
 {
   message               : @local::default_message
   TFileService          : { fileName : "dark_noise.root" }
-  RandomNumberGenerator : { }
+  RandomNumberGenerator : {defaultEngineKind: "MixMaxRng" }
 
   GeometryService        : { inputFile      : "CRVResponse/singleCounter/geom.txt" }
   ConditionsService      : { conditionsfile : "Mu2eG4/test/conditions_01.txt" }

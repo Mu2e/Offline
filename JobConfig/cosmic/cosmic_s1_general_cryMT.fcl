@@ -1,11 +1,16 @@
 #include "JobConfig/cosmic/cosmic_defs_s1s2.fclinc"
 
-physics.producers.generate.inputFile    : "EventGenerator/defaultConfigs/defaultCRYconfig.txt"
-physics.producers.generate.module_type  : CRYEventGeneratorN
-physics.producers.generate.stashSize    : 1000
-physics.producers.g4run.runinMTMode     : true
-physics.producers.g4run.numberOfThreads : 10
+# this sets the number of threads used in MT mode
+# number and threads and number of schedules should
+# be the same
+services.scheduler.num_schedules : 5
+services.scheduler.num_threads   : 5
 
+physics.producers.g4run.module_type     : "Mu2eG4MT"
+physics.producers.generate.inputFile    : "EventGenerator/defaultConfigs/defaultCRYconfig.txt"
+physics.producers.generate.module_type  : CRYEventGenerator
+
+services.GeometryService.simulatedDetector.tool_type : "Mu2e"
 services.TFileService.fileName       : "nts.owner.cosmic-g4s1s2-crygeneral.version.sequencer.root"
 outputs.filteredOutput.fileName      : "sim.owner.cosmic-g4s1s2-crygeneral.version.sequencer.art"
 outputs.truncatedEvtsOutput.fileName : "sim.owner.cosmic-g4s1s2-truncated-crygeneral.version.sequencer.art"

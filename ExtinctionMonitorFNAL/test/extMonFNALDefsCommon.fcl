@@ -20,7 +20,7 @@ END_PROLOG
 services : {
     message: @local::default_message
     scheduler: { defaultExceptions : false }
-    RandomNumberGenerator : {}
+    RandomNumberGenerator : {defaultEngineKind: "MixMaxRng"}
 
     GeometryService: {
         printConfig : true

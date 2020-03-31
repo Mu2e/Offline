@@ -39,10 +39,7 @@ physics : {
 
     # Work needed to setup the digi makers.
     @table::CommonMC.producers
-
-    # Form StrawHits (SH).
-    makeSD               : @local::makeSD
-    makeSH               : @local::makeSH
+    @table::TrackerMC.producers
 
     # Calorimeter sequence
     @table::CaloDigiMC.producers
@@ -69,21 +66,11 @@ physics : {
       maxFullPrint           : 201
     }
 
-    readStrawHits: {
-      module_type      : ReadStrawHit
-      recoModuleLabel : makeSH
-      simModuleLabel : makeSD
-      diagLevel        : 3
-      maxFullPrint     : 100
-
-    }
-
-
   }
 
-  p1 : [generate, g4run, @sequence::CommonMC.DigiSim, makeSD, makeSH, @sequence::CaloDigiMC.DigiSim,
+  p1 : [generate, g4run, @sequence::CommonMC.DigiSim, @sequence::TrackerMC.DigiSim, @sequence::CaloDigiMC.DigiSim,
          @sequence::CaloReco.Reco,randomsaver ]
-  e1 : [readGens, checkhits, readStrawHits, outfile]
+  e1 : [readGens, checkhits, outfile]
 
   trigger_paths  : [p1]
   end_paths      : [e1]
@@ -100,8 +87,11 @@ outputs: {
 }
 
 // Initialze seeding of random engines: do not put these lines in base .fcl files for grid jobs.
-services.SeedService.baseSeed         :  0
+services.SeedService.baseSeed         :  8
 services.SeedService.maxUniqueEngines :  20
+
+services.scheduler.wantSummary: true
+services.TimeTracker.printSummary: true
 
 # physics.producers.g4run.SDConfig.enableAllSDs : true
 physics.producers.g4run.SDConfig.enableSD     : [tracker, calorimeter, calorimeterRO, CRV, virtualdetector, stoppingtarget ]

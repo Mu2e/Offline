@@ -1,0 +1,29 @@
+// West ledge for DS area hatch block
+
+string building.dsArea.hatchwledge.name     = "dsAreaHatchWLedge";
+
+string building.dsArea.hatchwledge.material = "CONCRETE_MARS";
+
+double building.dsArea.hatchwledge.offsetFromMu2eOrigin.x   = 947.4;
+double building.dsArea.hatchwledge.offsetFromFloorSurface.y = 6400.8;
+double building.dsArea.hatchwledge.offsetFromMu2eOrigin.z   = -3581.4;
+
+double building.dsArea.hatchwledge.yHalfThickness           = 457.2;
+
+vector<double> building.dsArea.hatchwledge.xPositions = {
+  7315.2,   // B
+  7543.8,   // C
+  7543.8,   // C1
+  7315.2   // A
+};
+
+vector<double> building.dsArea.hatchwledge.yPositions = {
+  -1168.4,   // B
+  -1168.4,   // C
+  -8534.4,   // C1
+  -8534.4   // A
+};
+
+// Local Variables:
+// mode:c++
+// End:

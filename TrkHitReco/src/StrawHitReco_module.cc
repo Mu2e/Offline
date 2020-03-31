@@ -89,12 +89,13 @@ namespace mu2e {
        float peakMinusPed(StrawId id, TrkTypes::ADCWaveform const& adcData) const;
     ProditionsHandle<StrawResponse> _strawResponse_h;
     ProditionsHandle<DeadStraw> _deadStraw_h;
+    ProditionsHandle<Tracker> _alignedTracker_h;
 
 
  };
 
   StrawHitReco::StrawHitReco(fhicl::ParameterSet const& pset) :
-      art::EDProducer{pset}, 
+      art::EDProducer{pset},
       _fittype((TrkHitReco::FitType) pset.get<unsigned>("FitType",TrkHitReco::FitType::peakminuspedavg)),
       _usecc(pset.get<bool>(         "UseCalorimeter",false)),
       _clusterDt(pset.get<float>(   "clusterDt",100)),
@@ -160,7 +161,8 @@ namespace mu2e {
   {
       if (_printLevel > 0) std::cout << "In StrawHitReco produce " << std::endl;
 
-      const Tracker& tt(*GeomHandle<Tracker>());
+      const Tracker& tt = _alignedTracker_h.get(event.id());
+
       size_t nplanes = tt.nPlanes();
       size_t npanels = tt.getPlane(0).nPanels();
       auto const& srep = _strawResponse_h.get(event.id());
@@ -172,7 +174,7 @@ namespace mu2e {
         auto ccH = event.getValidHandle(_cctoken);
         caloClusters = ccH.product();
       }
-      
+
       double ewmOffset = 0;
       art::Handle<EventWindowMarker> ewMarkerHandle;
       if (event.getByLabel(_ewMarkerTag, ewMarkerHandle)){
@@ -281,7 +283,7 @@ namespace mu2e {
 	ch._sid = straw.id();
 	ch._dtime = srep.driftTime(straw,tot,energy);
         ch._ptime = propd/(2*halfpv);
-	ch._pathlength = srep.pathLength(straw,tot); 
+	ch._pathlength = srep.pathLength(straw,tot);
 	ch.addIndex(isd); // reference the digi; this allows MC truth matching to work
 	// crude initial estimate of the transverse error
 	static const float invsqrt12 = 1.0/sqrt(12.0);

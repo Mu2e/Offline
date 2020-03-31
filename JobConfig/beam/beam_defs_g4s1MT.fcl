@@ -1,0 +1,14 @@
+// Lisa Goodenough, January 2020
+// Include this for beam_g4s1MT_phase1.fcl
+// Yuri: turned off extinction monitor output streams
+
+#include "JobConfig/beam/beam_defs_g4s1.fcl"
+
+# Note that all parameters except the following should be set
+# in the non MT file included above (which includes prolog files)
+
+
+physics.producers.g4run.module_type : "Mu2eG4MT"
+
+services.scheduler.num_schedules : 5
+services.scheduler.num_threads   : 5

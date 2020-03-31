@@ -47,19 +47,19 @@
 
 class DecayMuonsWithSpin : public G4VPhysicsConstructor
 {
-  public: 
+  public:
     DecayMuonsWithSpin(G4int ver = 1);
     DecayMuonsWithSpin(const G4String& name, G4int ver = 1);
     virtual ~DecayMuonsWithSpin();
 
-  public: 
-    // This method will be invoked in the Construct() method. 
+  public:
+    // This method will be invoked in the Construct() method.
     // each particle type will be instantiated
   virtual void ConstructParticle();
- 
+
     // This method will be invoked in the Construct() method.
     // each physics process will be instantiated and
-    // registered to the process manager of each particle type 
+    // registered to the process manager of each particle type
   virtual void ConstructProcess();
 
   virtual G4Decay* GetDecayProcess() { return fDecayWithSpinProcess; }
@@ -70,11 +70,5 @@ private:
   G4bool   wasActivated;
 };
 
-
-namespace mu2e { class SimpleConfig; }
-bool getDecayMuonsWithSpin(const mu2e::SimpleConfig& config);
-
-namespace fhicl { class ParameterSet; } 
-bool getDecayMuonsWithSpin(const fhicl::ParameterSet& pset);
 
 #endif

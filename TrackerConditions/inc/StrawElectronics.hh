@@ -15,6 +15,8 @@
 #include "DataProducts/inc/StrawId.hh"
 #include "DataProducts/inc/StrawEnd.hh"
 #include "DataProducts/inc/TrkTypes.hh"
+#include "TrackerGeom/inc/Straw.hh"
+#include "TrackerGeom/inc/Tracker.hh"
 #include "Mu2eInterfaces/inc/ProditionsEntity.hh"
 #include "fhiclcpp/ParameterSet.h"
 
@@ -31,8 +33,8 @@ namespace mu2e {
       double _normalization;
       double _sigma;
       double _t0;
-      double _tmax[StrawElectronics::npaths]; // time at which value is maximum
-      double _linmax[StrawElectronics::npaths]; // linear response to unit charge at max
+      std::vector<double> _tmax[StrawElectronics::npaths]; // time at which value is maximum
+      std::vector<double> _linmax[StrawElectronics::npaths]; // linear response to unit charge at max
       std::vector<double> _currentPulse;
       std::vector<double> _preampResponse;
       std::vector<double> _adcResponse;
@@ -41,7 +43,7 @@ namespace mu2e {
       WireDistancePoint(double distance, double mean, double normalization, 
 			double sigma, double t0) : 
 	_distance(distance), _mean(mean), _normalization(normalization), 
-	_sigma(sigma), _t0(t0) {};
+        _sigma(sigma), _t0(t0) {};
     };
 
     typedef std::shared_ptr<StrawElectronics> ptr_t;
@@ -70,6 +72,11 @@ namespace mu2e {
 		      std::vector<double> currentNormalizations, 
 		      std::vector<double> currentSigmas, 
 		      std::vector<double> currentT0s, 
+                      double reflectionTimeShift,
+                      double reflectionVelocity,
+                      double reflectionALength,
+                      double reflectionFrac,
+                      double triggerHysteresis,
 		      double clusterLookbackTime, 
 		      std::vector<double> timeOffsetPanel, 
 		      std::vector<double> timeOffsetStrawHV, 
@@ -92,6 +99,11 @@ namespace mu2e {
       _preampToAdc2Zeros(preampToAdc2Zeros), _wireDistances(wireDistances), 
       _currentMeans(currentMeans), _currentNormalizations(currentNormalizations), 
       _currentSigmas(currentSigmas), _currentT0s(currentT0s), 
+      _reflectionTimeShift(reflectionTimeShift),
+      _reflectionVelocity(reflectionVelocity),
+      _reflectionALength(reflectionALength),
+      _reflectionFrac(reflectionFrac),
+      _triggerHysteresis(triggerHysteresis),
       _clusterLookbackTime(clusterLookbackTime), 
       _timeOffsetPanel(timeOffsetPanel), 
       _timeOffsetStrawHV(timeOffsetStrawHV), 
@@ -101,12 +113,12 @@ namespace mu2e {
     
     // linear response to a charge pulse.  This does NOT include saturation effects,
     // since those are cumulative and cannot be computed for individual charges
-    double linearResponse(StrawId sid, Path ipath, double time,double charge,double distance,bool forsaturation=false) const; // mvolts per pCoulomb
+    double linearResponse(Straw const& straw, Path ipath, double time, double charge, double distance, bool forsaturation=false) const; // mvolts per pCoulomb
     double adcImpulseResponse(StrawId sid, double time, double charge) const;
     // Given a (linear) total voltage, compute the saturated voltage
     double saturatedResponse(double lineearresponse) const;
     // relative time when linear response is maximal
-    double maxResponseTime(Path ipath,double distance) const;
+    double maxResponseTime(StrawId id, Path ipath,double distance) const;
     // digization
     TrkTypes::ADCValue adcResponse(StrawId id, double mvolts) const; // ADC response to analog inputs
     TrkTypes::TDCValue tdcResponse(double time) const; // TDC response to a signal input to electronics at a given time (in ns since eventWindowMarker)
@@ -143,6 +155,7 @@ namespace mu2e {
     double TDCResolution() const { return _tdcResolution; }
     double electronicsTimeDelay() const { return _electronicsTimeDelay; }
     double eventWindowMarkerROCJitter() const { return _ewMarkerROCJitter; }
+    double triggerHysteresis() const { return _triggerHysteresis; }
     
     double currentToVoltage(StrawId sid, Path ipath) const { return _dVdI[ipath][sid.getStraw()]; }
     double maxLinearResponse(StrawId sid, Path ipath,double distance,double charge=1.0) const;
@@ -246,6 +259,11 @@ namespace mu2e {
     std::vector<double> _currentNormalizations;
     std::vector<double> _currentSigmas;
     std::vector<double> _currentT0s;
+    double _reflectionTimeShift;
+    double _reflectionVelocity;
+    double _reflectionALength;
+    double _reflectionFrac;
+    double _triggerHysteresis;
     
     std::vector<double> _currentImpulse;
     std::vector<double> _preampToAdc2Response;
@@ -257,7 +275,7 @@ namespace mu2e {
     std::vector<double> _timeOffsetPanel;
     std::vector<double> _timeOffsetStrawHV;
     std::vector<double> _timeOffsetStrawCal;
-    
+
   };
   
 }

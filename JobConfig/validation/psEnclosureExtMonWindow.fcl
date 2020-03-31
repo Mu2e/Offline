@@ -20,7 +20,7 @@ services : {
 
    message               : @local::default_message
    TFileService          : { fileName : "hist_beam_pseextmonwin.root" }
-   RandomNumberGenerator : { }
+   RandomNumberGenerator : {defaultEngineKind: "MixMaxRng" }
 
    GeometryService        : { inputFile      : "JobConfig/validation/geom_psEnclosure.txt" }
    ConditionsService      : { conditionsfile : "Mu2eG4/test/conditions_01.txt"      }
@@ -50,10 +50,7 @@ physics : {
    }
 
    producers: {
-      generate: {
-         module_type          : EventGenerator
-         inputfile            : "JobConfig/beam/genconfig_PrimaryProtons.txt"
-      }
+      generate: @local::PrimaryProtonGun
 
       genCounter: {
          module_type: GenEventCounter
@@ -68,7 +65,6 @@ physics : {
          visualization: @local::mu2eg4NoVisualization
 
          generatorModuleLabel: generate
-         MultiStageParameters: {} // this is the first stage
 
          SDConfig: {
             enableSD: [ virtualdetector ] // activate just the explicitly listed SDs
@@ -116,5 +112,6 @@ physics.producers.g4run.physics.minRangeCut : 1. // mm
 physics.producers.g4run.physics.physicsListName: "QGSP_BERT"
 
 // Initialze seeding of random engines: do not put these lines in base .fcl files for grid jobs.
-services.SeedService.baseSeed         :  0
+services.SeedService.baseSeed         :  8
 services.SeedService.maxUniqueEngines :  20
+services.GeometryService.simulatedDetector.tool_type : "Mu2e"

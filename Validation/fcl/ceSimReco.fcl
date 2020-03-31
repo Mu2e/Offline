@@ -82,7 +82,7 @@ outputs.Output.fileName : "mcs.owner.val-ceSimReco.dsconf.seq.art"
 source.maxEvents: 5000
 
 # Initialze seeding of random engines
-services.SeedService.baseSeed         :  0
+services.SeedService.baseSeed         :  8
 services.SeedService.maxUniqueEngines :  20
 
 # use the geometry on the head

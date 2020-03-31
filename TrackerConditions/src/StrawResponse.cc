@@ -1,6 +1,6 @@
 
 #include "TrackerConditions/inc/StrawResponse.hh"
-#include <math.h>
+#include <cmath>
 #include <algorithm>
 
 using namespace std;

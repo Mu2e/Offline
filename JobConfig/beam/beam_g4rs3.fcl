@@ -18,7 +18,7 @@ services : {
 
    message                : @local::default_message
    TFileService           : { fileName : "nts.owner.beam-g4rs3.version.sequencer.root" }
-   RandomNumberGenerator  : { }
+   RandomNumberGenerator  : {defaultEngineKind: "MixMaxRng" }
    GeometryService        : { @table::Services.Core.GeometryService inputFile : "JobConfig/common/geom_baseline.txt" }
    ConditionsService      : { conditionsfile : "Mu2eG4/test/conditions_01.txt"      }
    GlobalConstantsService : { inputFile      : "Mu2eG4/test/globalConstants_01.txt" }
@@ -58,7 +58,6 @@ physics : {
          visualization: @local::mu2eg4NoVisualization
 
          generatorModuleLabel: generate
-         MultiStageParameters : {}
 
          SDConfig : {
             enableSD : [ virtualdetector, CRV ] // activate just the explicitly listed SDs
@@ -195,5 +194,5 @@ services.message.destinations.log.categories.ArtReport.timespan : 300
 physics.producers.g4run.physics.minRangeCut : 1.0 // mm
 
 // Initialze seeding of random engines: do not put these lines in base .fcl files for grid jobs.
-services.SeedService.baseSeed         :  0
+services.SeedService.baseSeed         :  8
 services.SeedService.maxUniqueEngines :  20

@@ -70,17 +70,17 @@ using CLHEP::HepVector;
 
 namespace mu2e
 {
-  
+
   using namespace KalSeedFitTypes;
 
-  
+
   class KalSeedFit : public art::EDProducer
   {
   public:
     explicit KalSeedFit(fhicl::ParameterSet const&);
     virtual ~KalSeedFit();
     virtual void beginRun(art::Run&);
-    virtual void produce(art::Event& event ); 
+    virtual void produce(art::Event& event );
   private:
     unsigned _iev;
     // configuration parameters
@@ -105,7 +105,7 @@ namespace mu2e
     vector<double> _perr; // diagonal parameter errors to use in the fit
     Helicity _helicity; // cached value of helicity expected for this fit
     double _upz, _downz; // z positions to extend the segment
-    double _amsign; // cached sign of angular momentum WRT the z axis 
+    double _amsign; // cached sign of angular momentum WRT the z axis
     double _bz000;        // sign of the magnetic field at (0,0,0)
     HepSymMatrix _hcovar; // cache of parameter error covariance matrix
     TrkFitFlag  _ksf; // default fit flag
@@ -121,6 +121,7 @@ namespace mu2e
     ProditionsHandle<StrawResponse> _strawResponse_h;
     ProditionsHandle<Mu2eMaterial> _mu2eMaterial_h;
     ProditionsHandle<Mu2eDetector> _mu2eDetector_h;
+    ProditionsHandle<Tracker> _alignedTracker_h;
 
     // diagnostic
     Data_t                                _data;
@@ -169,7 +170,7 @@ namespace mu2e
     // mock covariance matrix, all diagonal
     _hcovar = HepSymMatrix(HelixTraj::NHLXPRM,0);
     for(size_t ipar = 0; ipar < HelixTraj::NHLXPRM; ++ipar){
-      _hcovar(ipar+1,ipar+1) = _perr[ipar]*_perr[ipar]; // clhep indexing starts a 1    
+      _hcovar(ipar+1,ipar+1) = _perr[ipar]*_perr[ipar]; // clhep indexing starts a 1
     }
 
 //-----------------------------------------------------------------------------
@@ -177,7 +178,7 @@ namespace mu2e
 //-----------------------------------------------------------------------------
     _data.result    = &_result;
 
-    
+
     if (_diag != 0) _hmanager = art::make_tool<ModuleHistToolBase>(pset.get<fhicl::ParameterSet>("diagPlugin"));
     else            _hmanager = std::make_unique<ModuleHistToolBase>();
   }
@@ -188,17 +189,10 @@ namespace mu2e
     // calculate the helicity
     GeomHandle<BFieldManager> bfmgr;
     GeomHandle<DetectorSystem> det;
-    GeomHandle<mu2e::Tracker> th;
-    _tracker = th.get();
+    
     // initialize the BTrk material and particle models
     _mu2eMaterial_h.get(run.id());
 
-    ///_data.tracker     = th.get();
-
-    //    mu2e::GeomHandle<mu2e::Calorimeter> ch;
-    //    _data.calorimeter = ch.get();
-    //    _kfit.setCalorimeter (ch.get());
-    _kfit.setTracker     (_tracker);
     _kfit.setCaloGeom();
 
     // change coordinates to mu2e
@@ -216,6 +210,9 @@ namespace mu2e
 
     auto srep = _strawResponse_h.getPtr(event.id());
     auto detmodel = _mu2eDetector_h.getPtr(event.id());
+
+    _tracker = _alignedTracker_h.getPtr(event.id()).get();
+    _kfit.setTracker(_tracker);
 
     // create output collection
     unique_ptr<KalSeedCollection> kscol(new KalSeedCollection());
@@ -244,13 +241,13 @@ namespace mu2e
     for (size_t iseed=0; iseed<_hscol->size(); ++iseed) {
       // convert the HelixSeed to a TrkDef
       HelixSeed const& hseed(_hscol->at(iseed));
-      
+
       if (hseed.caloCluster()) _result.caloCluster = hseed.caloCluster().get();
       _result.helixSeed = &hseed;
 //-----------------------------------------------------------------------------
-// 2018-12-08 PM : allow list of helices to contain helices of different 
-// helicities and corresponding to particles of opposite signs. Assume that the 
-// PDG particle coding scheme is used such that the particle and antiparticle 
+// 2018-12-08 PM : allow list of helices to contain helices of different
+// helicities and corresponding to particles of opposite signs. Assume that the
+// PDG particle coding scheme is used such that the particle and antiparticle
 // PDG codes have opposite signs
 //-----------------------------------------------------------------------------
       TrkParticle tpart(_tpart);
@@ -293,7 +290,7 @@ namespace mu2e
 	double           mom   = TrkMomCalculator::vecMom(*htraj, _kfit.bField(), flt0).mag();
 	double           vflt  = seeddef.particle().beta(mom)*CLHEP::c_light;
 	double           helt0 = hseed.t0().t0();
-	
+
 	//	KalSeed kf(_tpart,_fdir, hseed.t0(), flt0, seedok);
 	KalSeed kf(tpart,_fdir, hseed.t0(), flt0, hseed.status());
 	auto hsH = event.getValidHandle(_hsToken);
@@ -303,7 +300,7 @@ namespace mu2e
 	for (int i=0; i< nsh; ++i){
 	  size_t          istraw   = seeddef.strawHitIndices().at(i);
           const ComboHit& strawhit(_chcol->at(istraw));
-	  const Straw&    straw    = _tracker->getStraw(strawhit.strawId());	  
+	  const Straw&    straw    = _tracker->getStraw(strawhit.strawId());
 	  double          fltlen   = htraj->zFlight(straw.getMidPoint().z());
 	  double          propTime = (fltlen-flt0)/vflt;
 
@@ -311,10 +308,10 @@ namespace mu2e
 	  TrkStrawHitSeed tshs;
 	  tshs._index  = istraw;
 	  tshs._t0     = TrkT0(helt0 + propTime, hseed.t0().t0Err());
-	  tshs._trklen = fltlen; 
+	  tshs._trklen = fltlen;
 	  kf._hits.push_back(tshs);
 	}
-	
+
 	if(kf._hits.size() >= _minnhits) kf._status.merge(TrkFitFlag::hitsOK);
 	// extract the helix trajectory from the fit (there is just 1)
 	// use this to create segment.  This will be the only segment in this track
@@ -342,7 +339,7 @@ namespace mu2e
 	    cout << "Seed Fit result " << _result.krep->fitStatus()  << endl;
 	}
 	if(_result.krep != 0 && (_result.krep->fitStatus().success() || _saveall)){
-	  if (_rescueHits) { 
+	  if (_rescueHits) {
 	    int nrescued = 0;
 	    findMissingHits(_result);
 	    nrescued = _result.missingHits.size();
@@ -392,7 +389,7 @@ namespace mu2e
 	    } else {
 	      kseg._fmax = upflt;
 	      kseg._fmin = downflt;
-	    } 
+	    }
 	    kseed._segments.push_back(kseg);
 	    // push this seed into the collection
 	    kscol->push_back(kseed);
@@ -439,7 +436,9 @@ namespace mu2e
     double flt0 = mydef.helix().zFlight(0.0);
     mydef.helix().getInfo(flt0,tposp,tdir);
     // tracker and conditions
-    const Tracker& tracker = *GeomHandle<Tracker>();
+    const Tracker& tracker = *_tracker;
+
+
     const vector<StrawHitIndex>& indices = mydef.strawHitIndices();
     vector<StrawHitIndex> goodhits;
     for(unsigned ihit=0;ihit<indices.size();++ihit){
@@ -466,7 +465,7 @@ namespace mu2e
   }
 
   //-----------------------------------------------------------------------------
-  // look for hits which were not a part of the helix hit list around the 
+  // look for hits which were not a part of the helix hit list around the
   // trajectory found by the seed fit
   // look at all hits included into the corresponding time cluster
   // first reactivate already associated hits
@@ -501,7 +500,7 @@ namespace mu2e
     //-----------------------------------------------------------------------------
     const HelixSeed*   hseed = kalData.helixSeed;
     const  std::vector<StrawHitIndex>& tchits = hseed->timeCluster()->hits();
- 
+
     int n = tchits.size();
     for (int i=0; i<n; ++i) {
       hit_index = tchits.at(i);

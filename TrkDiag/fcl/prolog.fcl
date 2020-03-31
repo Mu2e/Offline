@@ -13,6 +13,7 @@ BEGIN_PROLOG
 	StrawDigiMCCollection : "compressDigiMCs"
 	ComboHitCollection : "makePH"
 	StrawHitFlagCollection : "FlagBkgHits:ComboHits"
+        BackgroundHitClusterCollection:"FlagBkgHits"
 	UseFlagCollection : true
 	TimeOffsets : {
 	  inputs : [ @sequence::DigiCompression.TimeMaps ]

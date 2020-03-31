@@ -24,7 +24,6 @@
 #include <vector>
 #include <utility>
 #include <string>
-#include <math.h>
 #include <cmath>
 
 using namespace std;
@@ -108,10 +107,10 @@ namespace mu2e
   {}
 
 
-  void RobustHelixFit::fitHelix(RobustHelixFinderData& HelixData, bool forceTargetCon) {
+  void RobustHelixFit::fitHelix(RobustHelixFinderData& HelixData, bool forceTargetCon, bool useTripletAreaWt) {
     HelixData._hseed._status.clear(TrkFitFlag::helixOK);
 
-    fitCircle(HelixData, forceTargetCon);
+    fitCircle(HelixData, forceTargetCon, useTripletAreaWt);
     if (HelixData._hseed._status.hasAnyProperty(TrkFitFlag::circleOK))
       {
 	fitFZ(HelixData);
@@ -120,26 +119,26 @@ namespace mu2e
       }
   }
 
-  bool RobustHelixFit::initCircle(RobustHelixFinderData& HelixData, bool forceTargetCon) {
+  bool RobustHelixFit::initCircle(RobustHelixFinderData& HelixData, bool forceTargetCon, bool useTripletAreaWt) {
     bool retval(false);
 
     switch ( _cinit ) {
     case median : default :
-      fitCircleMedian(HelixData, forceTargetCon);
+      fitCircleMedian(HelixData, forceTargetCon, useTripletAreaWt);
       retval = HelixData._hseed._status.hasAllProperties(TrkFitFlag::circleOK);
       break;
     }
     return retval;
   }
 
-  void RobustHelixFit::fitCircle(RobustHelixFinderData& HelixData, bool forceTargetCon) {
+  void RobustHelixFit::fitCircle(RobustHelixFinderData& HelixData, bool forceTargetCon, bool useTripleAreaWt) {
     HelixData._hseed._status.clear(TrkFitFlag::circleOK);
 
     // if required, initialize
     bool init(false);
     if (!HelixData._hseed._status.hasAllProperties(TrkFitFlag::circleInit)) {
       init = true;
-      if (initCircle(HelixData, forceTargetCon))
+      if (initCircle(HelixData, forceTargetCon, useTripleAreaWt))
 	HelixData._hseed._status.merge(TrkFitFlag::circleInit);
       else
 	return;
@@ -149,7 +148,7 @@ namespace mu2e
     if(!init || _cfit != _cinit) {
       switch ( _cfit ) {
       case median : default :
-	fitCircleMedian(HelixData, forceTargetCon);
+	fitCircleMedian(HelixData, forceTargetCon, useTripleAreaWt);
 	break;
       case mean :
 	fitCircleMean(HelixData);
@@ -1099,7 +1098,7 @@ namespace mu2e
   }
 
   // simple median fit.  No initialization required
-  void RobustHelixFit::fitCircleMedian(RobustHelixFinderData& HelixData, bool forceTargetCon) 
+  void RobustHelixFit::fitCircleMedian(RobustHelixFinderData& HelixData, bool forceTargetCon, bool useTripleAreaWt) 
   {
     const float mind2 = _mindist*_mindist;
     const float maxd2 = _maxdist*_maxdist;
@@ -1177,7 +1176,12 @@ namespace mu2e
 	    {
 	      ++ntriple;
 
-	      float wt = cbrtf(wposP1.weight()*wposP2.weight()*wposP3.weight()); 
+	      float wt(0);
+	      if (!useTripleAreaWt){
+		wt  = cbrtf(wposP1.weight()*wposP2.weight()*wposP3.weight());
+	      } else{
+		wt = area2;
+	      }
 	      
 	      accx.push(cx,wt);
 	      accy.push(cy,wt);

@@ -6,19 +6,19 @@
 // Original author David Brown, LBNL
 //
 #include "TrackerMC/inc/StrawWaveform.hh"
-#include <math.h>
+#include <cmath>
 #include <boost/math/special_functions/binomial.hpp>
 
 using namespace std;
 namespace mu2e {
   using namespace TrkTypes;
   namespace TrackerMC {
-    StrawWaveform::StrawWaveform(StrawClusterSequence const& hseq, XTalk const& xtalk) :
-      _cseq(hseq), _xtalk(xtalk), _sid(hseq.strawId())
+    StrawWaveform::StrawWaveform(Straw const& straw, StrawClusterSequence const& hseq, XTalk const& xtalk) :
+      _cseq(hseq), _xtalk(xtalk), _straw(straw)
     {}
 
     StrawWaveform::StrawWaveform(StrawWaveform const& other) : _cseq(other._cseq),
-    _xtalk(other._xtalk), _sid(other._sid)
+    _xtalk(other._xtalk), _straw(other._straw)
     {}
 
     bool StrawWaveform::crossesThreshold(StrawElectronics const& strawele,double threshold,WFX& wfx) const {
@@ -43,7 +43,7 @@ namespace mu2e {
 	    //// check if this clust could cross threshold
 	    //if(wfx._vstart + maxLinearResponse(wfx._iclust) > threshold){
 	      // check the actual response
-	      double maxtime = wfx._iclust->time()+strawele.maxResponseTime(StrawElectronics::thresh,wfx._iclust->wireDistance());
+	      double maxtime = wfx._iclust->time()+strawele.maxResponseTime(_straw.id(),StrawElectronics::thresh,wfx._iclust->wireDistance());
 	      double maxresp = sampleWaveform(strawele,StrawElectronics::thresh,maxtime);
 	      if(maxresp > threshold){
 		// interpolate to find the precise crossing
@@ -64,7 +64,7 @@ namespace mu2e {
     void StrawWaveform::returnCrossing(StrawElectronics const& strawele, double threshold, WFX& wfx) const {
       while(wfx._iclust != _cseq.clustList().end() && wfx._vstart > threshold) {
 	// move forward in time at least as twice the time to the maxium for this clust
-	double time = wfx._iclust->time()+strawele.clusterLookbackTime() + 2*strawele.maxResponseTime(StrawElectronics::thresh,wfx._iclust->wireDistance());
+	double time = wfx._iclust->time()+strawele.clusterLookbackTime() + 2*strawele.maxResponseTime(_straw.id(),StrawElectronics::thresh,wfx._iclust->wireDistance());
 	while(wfx._iclust != _cseq.clustList().end() &&
 	    wfx._iclust->time()-strawele.clusterLookbackTime() < time){
 	  ++(wfx._iclust);
@@ -95,7 +95,7 @@ namespace mu2e {
     bool StrawWaveform::fineCrossing(StrawElectronics const& strawele, double threshold,double maxresp, WFX& wfx) const {
       static double timestep(0.020); // interpolation minimum to use linear threshold crossing calculation
       double pretime = wfx._iclust->time()-strawele.clusterLookbackTime();
-      double posttime = pretime + strawele.clusterLookbackTime() + strawele.maxResponseTime(StrawElectronics::thresh,wfx._iclust->wireDistance());
+      double posttime = pretime + strawele.clusterLookbackTime() + strawele.maxResponseTime(_straw.id(),StrawElectronics::thresh,wfx._iclust->wireDistance());
       double presample = wfx._vstart;
       double postsample = maxresp;
       static const unsigned maxstep(10); // 10 steps max
@@ -139,21 +139,21 @@ namespace mu2e {
       return dt < timestep;
     }
 
-    double StrawWaveform::maxLinearResponse(StrawElectronics const& strawele,ClusterList::const_iterator const& iclust) const {
+    double StrawWaveform::maxLinearResponse(StrawElectronics const& strawele,StrawClusterList::const_iterator const& iclust) const {
       // ignore saturation effects
-      double linresp = strawele.maxLinearResponse(_sid,StrawElectronics::thresh,iclust->wireDistance(),iclust->charge());
+      double linresp = strawele.maxLinearResponse(_straw.id(),StrawElectronics::thresh,iclust->wireDistance(),iclust->charge());
       linresp *= (_xtalk._preamp + _xtalk._postamp);
       return linresp;
     }
 
     double StrawWaveform::sampleWaveform(StrawElectronics const& strawele,StrawElectronics::Path ipath,double time) const {
       // loop over all clusts and add their response at this time
-      ClusterList const& hlist = _cseq.clustList();
+      StrawClusterList const& hlist = _cseq.clustList();
       double linresp(0.0);
       auto iclust = hlist.begin();
       while(iclust != hlist.end() && iclust->time()-strawele.clusterLookbackTime() < time){
 	// compute the linear straw electronics response to this charge.  This is pre-saturation
-	linresp += strawele.linearResponse(_sid,ipath,time-iclust->time(),iclust->charge(),iclust->wireDistance());
+	linresp += strawele.linearResponse(_straw,ipath,time-iclust->time(),iclust->charge(),iclust->wireDistance());
 	// move to next clust
 	++iclust;
       }
@@ -207,7 +207,7 @@ namespace mu2e {
           double response = 0;
           auto jclust = iclust;
           while(jclust != _cseq.clustList().end() && jclust->time()-strawele.clusterLookbackTime() < time){
-            response += strawele.linearResponse(_sid,StrawElectronics::thresh,time-jclust->time(),jclust->charge(),jclust->wireDistance(),true);
+            response += strawele.linearResponse(_straw,StrawElectronics::thresh,time-jclust->time(),jclust->charge(),jclust->wireDistance(),true);
             ++jclust;
           }
           // now saturate it
@@ -215,7 +215,7 @@ namespace mu2e {
           // then calculate the impulse response at each of the adctimes and add it to that
           for (size_t j=0;j<times.size();j++){
             // this function includes multiplication by number of steps in saturationTimeStep
-            volts[j] += strawele.adcImpulseResponse(_sid,times[j]-time,sat_response);
+            volts[j] += strawele.adcImpulseResponse(_straw.id(),times[j]-time,sat_response);
           }
         }
       }else{
@@ -227,7 +227,7 @@ namespace mu2e {
 
   unsigned short StrawWaveform::digitizeTOT(StrawElectronics const& strawele, double threshold, double time) const {
       for (size_t i=1;i<strawele.maxTOT();i++){
-        if (sampleWaveform(strawele,StrawElectronics::thresh,time + i*strawele.totLSB()) < threshold)
+        if (sampleWaveform(strawele,StrawElectronics::thresh,time + i*strawele.totLSB()) < threshold - strawele.triggerHysteresis())
           return static_cast<unsigned short>(i);
       }
       return static_cast<unsigned short>(strawele.maxTOT());

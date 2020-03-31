@@ -27,7 +27,7 @@ services :
     fileName      : "transportMuonStudy_onlyTransport_tmp.root"
   }
 
-  RandomNumberGenerator : { }
+  RandomNumberGenerator : {defaultEngineKind: "MixMaxRng" }
 
   GeometryService   : { inputFile : "Analyses/test/geom_transportOnly.txt" }
 
@@ -112,5 +112,5 @@ outputs:
 physics.producers.generate.inputfile : "Analyses/test/muonInTS.txt"
 //physics.producers.g4run.diagLevel : 2
 //physics.producers.g4run.visMacro: "Mu2eG4/test/visVols.mac"
-services.SeedService.baseSeed         :  0
+services.SeedService.baseSeed         :  8
 services.SeedService.maxUniqueEngines :  20

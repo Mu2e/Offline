@@ -36,6 +36,7 @@ namespace mu2e {
   class Tracker : public Detector, public ProditionsEntity {
 
         friend class TrackerMaker;
+        friend class AlignedTrackerMaker;
 
   public:
 
@@ -158,7 +159,11 @@ namespace mu2e {
     }
 
     const Straw& getStraw( const StrawId id) const{
-      return *(_allStraws_p.at(id.asUint16()));
+      return getStrawById(id);
+    }
+
+    Straw &getStraw(StrawId const& id) {
+      return const_cast<Straw &>(getStrawById(id));
     }
 
     std::array<Straw,StrawId::_nustraws> const& getStraws() const{
@@ -181,6 +186,7 @@ namespace mu2e {
     TubsParams strawWirePlate(StrawId const& id) const;
 
   protected:
+
 
     std::string _name;
 
@@ -280,6 +286,9 @@ namespace mu2e {
     Tracker(Tracker&& other) noexcept; // move constructor
     Tracker& operator=(Tracker&& other) noexcept; // move assignment
 
+    Straw const& getStrawById(StrawId const&id) const {
+        return *(_allStraws_p.at(id.asUint16()));
+    }
   };
 
 } //namespace mu2e

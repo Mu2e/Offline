@@ -194,8 +194,7 @@ art::Ptr<SimParticle> const& primary, art::Event const& evt);
       _mcmidt0 = -1000;
      // loop over the digis and find the ones that match
       for(auto mcd : *_mcdigis) {
-        art::Ptr<SimParticle> sp;
-        TrkMCTools::simParticle(sp,mcd);
+        art::Ptr<SimParticle> sp = mcd.earlyStrawGasStep()->simParticle();
         if(sp.isNonnull() &&
             sp->genParticle().isNonnull() &&
             sp->genParticle()->generatorId().id() == _mcgen){
@@ -392,18 +391,16 @@ art::Ptr<SimParticle> const& primary, art::Event const& evt);
 	_chcol->fillStrawDigiIndices(event,ich,shids);
 	StrawDigiMC const& mcdigi = _mcdigis->at(shids[0]);// FIXME!
 	StrawEnd itdc;
-	tchi._mctime = _toff.timeWithOffsetsApplied( *mcdigi.stepPointMC(itdc));
-	tchi._mcmom = mcdigi.stepPointMC(itdc)->momentum().mag();
-	art::Ptr<SimParticle> sp;
-	if(TrkMCTools::simParticle(sp,mcdigi) > 0){
-	  tchi._mcpdg = sp->pdgId();
-	  tchi._mcproc = sp->creationCode();
-	  if(sp->genParticle().isNonnull())
-	    tchi._mcgen = sp->genParticle()->generatorId().id();
-	  if(primary.isNonnull()){
-	    MCRelationship rel(primary,sp);
-	    tchi._mcrel = rel.relationship();
-	  }
+	tchi._mctime = _toff.timeWithOffsetsApplied( *mcdigi.strawGasStep(itdc));
+	tchi._mcmom = sqrt(mcdigi.strawGasStep(itdc)->momentum().mag2());
+	art::Ptr<SimParticle> sp = mcdigi.earlyStrawGasStep()->simParticle();
+	tchi._mcpdg = sp->pdgId();
+	tchi._mcproc = sp->creationCode();
+	if(sp->genParticle().isNonnull())
+	  tchi._mcgen = sp->genParticle()->generatorId().id();
+	if(primary.isNonnull()){
+	  MCRelationship rel(primary,sp);
+	  tchi._mcrel = rel.relationship();
 	}
       }
       _tchinfo.push_back(tchi);
@@ -528,19 +525,17 @@ art::Ptr<SimParticle> const& primary, art::Event const& evt);
       for(auto shid : shids ) {
 	StrawDigiMC const& mcdigi = _mcdigis->at(shid);
 	StrawEnd itdc;
-	art::Ptr<SimParticle> sp;
-	if(TrkMCTools::simParticle(sp,mcdigi) > 0){
-	  bool found(false);
-	  for(size_t isp=0;isp<sct.size();++isp){
-	    // count direct daughter/parent as part the same particle
-	    if(sct[isp]._spp == sp ){
-	      found = true;
-	      sct[isp].append(sp);
-	      break;
-	    }
+	art::Ptr<SimParticle> sp = mcdigi.earlyStrawGasStep()->simParticle();
+	bool found(false);
+	for(size_t isp=0;isp<sct.size();++isp){
+	  // count direct daughter/parent as part the same particle
+	  if(sct[isp]._spp == sp ){
+	    found = true;
+	    sct[isp].append(sp);
+	    break;
 	  }
-	  if(!found)sct.push_back(sp);
 	}
+	if(!found)sct.push_back(sp);
       }
     }
     // sort by # of contributions

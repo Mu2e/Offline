@@ -42,8 +42,6 @@
 
 #include "Mu2eG4/inc/customizeChargedPionDecay.hh"
 #include "DataProducts/inc/PDGCode.hh"
-#include "ConfigTools/inc/SimpleConfig.hh"
-#include "fhiclcpp/ParameterSet.h"
 
 #include "messagefacility/MessageLogger/MessageLogger.h"
 #include "cetlib_except/exception.h"
@@ -108,14 +106,16 @@ namespace mu2e{
     // A helper class to parse the configuration parameter.
     struct Control {
 
-      Control (const std::string& option):
-        brENu(0.),
-        brMuNu(1.),
-        addENu(true){
+      explicit Control ( const Mu2eG4Config::Physics& phys)
+        : brENu(0.)
+        , brMuNu(1.)
+        , addENu(true)
+      {
 
         // FIXME:  Get this from the global conditions service.
         double pdgBR = 1.23e-4;
 
+        const std::string option = phys.PiENuPolicy();
         if ( option == "PDG" ){
           brENu = pdgBR;
           brMuNu = 1.-brENu;
@@ -160,14 +160,6 @@ namespace mu2e{
         }
       }
 
-      Control ( const SimpleConfig& config)
-        : Control(config.getString("g4.PiENuPolicy","PDG"))
-      {}
-
-      Control ( const fhicl::ParameterSet& pset)
-        : Control(pset.get<std::string>("physics.PiENuPolicy"))
-      {}
-
       // Branching fraction for pi -> e nu_e
       double brENu;
 
@@ -179,21 +171,13 @@ namespace mu2e{
 
     }; // end class Control
 
-    int getPiENuPolicyVerbosity(const SimpleConfig& config) {
-      return config.getInt("g4.PiENuPolicyVerbosity",0);
-    }
-    int getPiENuPolicyVerbosity(const fhicl::ParameterSet& pset) {
-      return pset.get<int>("debug.PiENuPolicyVerbosity");
-    }
-
   } // end anonymous namespace
 
-  template<class Config>
-  void customizeChargedPionDecay(const Config& config) {
+  void customizeChargedPionDecay(const Mu2eG4Config::Physics& phys, const Mu2eG4Config::Debug& debug) {
 
     // Figure out what we need to do.
-    Control ctrl(config);
-    int verbosity = getPiENuPolicyVerbosity(config);
+    Control ctrl(phys);
+    int verbosity = debug.PiENuPolicyVerbosity();
 
     // Nothing to do or to print out.
     if ( !ctrl.addENu && verbosity == 0 ) return;
@@ -264,8 +248,5 @@ namespace mu2e{
     }
 
   }
-
-  template void customizeChargedPionDecay(const SimpleConfig&);
-  template void customizeChargedPionDecay(const fhicl::ParameterSet&);
 
 } // end namespace mu2e

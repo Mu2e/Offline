@@ -30,7 +30,7 @@ services :
     fileName : "CrystalHit_pileUp_backgrounds.root"
   }
 
-  RandomNumberGenerator : { }   
+  RandomNumberGenerator : {defaultEngineKind: "MixMaxRng" }   
         
   GeometryService :
   {

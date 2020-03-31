@@ -80,9 +80,13 @@ Mixing : {
       cutMax: 11.7e7  // cut the tail at 3 times the mean
     }
    # tracker digis for primary selection
+    makeSGSPrimary : {
+      @table::makeSGS
+    }
     makeSDPrimary : {
-      module_type : StrawDigisFromStepPointMCs
-      TimeOffsets   : { inputs : [ @sequence::CommonMC.TimeMapsPrimary ] }
+      @table::makeSD
+      StrawGasStepModule : makeSGSPrimary
+      TimeOffsets :  [ @sequence::CommonMC.TimeMapsPrimary ] 
     }
    # digi compression
     compressDigiMCs : @local::DigiCompression.Mixing
@@ -136,7 +140,7 @@ Mixing : {
   CreatePrimarySequence : [
     @sequence::Primary.GenAndG4,
     @sequence::CommonMC.PrimaryDigiSim,
-    makeSDPrimary, DigiFilter ]
+    makeSGSPrimary, makeSDPrimary, DigiFilter ]
 # paths and output
   EndPath : [ @sequence::Primary.EndPath ] 
   Output : {

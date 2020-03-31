@@ -17,7 +17,6 @@
 // C++
 #include <vector>
 #include <string>
-#include <math.h>
 #include <cmath>
 using CLHEP::Hep3Vector;
 using namespace std;

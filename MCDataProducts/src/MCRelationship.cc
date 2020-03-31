@@ -9,11 +9,11 @@ namespace mu2e
   using std::vector;
 
   MCRelationship::MCRelationship(StrawDigiMC const& mcd1, StrawDigiMC const& mcd2) :
-    MCRelationship(mcd1.earlyStepPointMC()->simParticle(),mcd2.earlyStepPointMC()->simParticle())
+    MCRelationship(mcd1.earlyStrawGasStep()->simParticle(),mcd2.earlyStrawGasStep()->simParticle())
   {}
 
   MCRelationship::MCRelationship(StrawDigiMC const& mcd, SPPtr const& spp) :
-    MCRelationship(mcd.earlyStepPointMC()->simParticle(),spp)
+    MCRelationship(mcd.earlyStrawGasStep()->simParticle(),spp)
   {}
 
   MCRelationship::MCRelationship(SPPtr const& sppi,SPPtr const& sppj) : _rel(none), _rem(-1) {

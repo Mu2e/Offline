@@ -16,6 +16,7 @@
 #include "messagefacility/MessageLogger/MessageLogger.h"
 #include "GeometryService/inc/G4GeometryOptions.hh"
 #include "GeometryService/inc/GeomHandle.hh"
+#include "GeneralUtilities/inc/HepTransform.hh"
 
 #include <cmath>
 #include <iomanip>
@@ -410,7 +411,7 @@ namespace mu2e {
   void plntest( const Plane& plane){
     cout << "Plane: "
          << plane.id() << " "
-         << plane.origin() 
+         << plane.origin()
          << endl;
   }
 
@@ -604,7 +605,7 @@ namespace mu2e {
     // create a Panel in the Tracker global list of all panels
     panels.at(pnlId.uniquePanel()) = Panel(pnlId);
     Panel& panel = panels.at(pnlId.uniquePanel());
-    // put a pointer to this Panel on its Plane 
+    // put a pointer to this Panel on its Plane
     plane._panels.at(pnlId.getPanel()) = &panel;
 
     _strawPanelConstrCount = -1;
@@ -769,6 +770,15 @@ namespace mu2e {
     panel._EBKeyMaterial         = _EBKeyMaterial;
     panel._EBKeyShieldMaterial   = _EBKeyShieldMaterial;
     panel._EBKeyPhiExtraRotation = _EBKeyPhiExtraRotation;
+
+    // set the panel origin for alignment
+    HepTransform plane_to_tracker(0.0,0.0,plane.origin().z(),0.0,0.0,0.0);
+    CLHEP::Hep3Vector dv = panel.straw0MidPoint()
+        - plane_to_tracker.displacement();
+    double rz = dv.phi();
+
+    HepTransform panel_to_plane(dv.x(), dv.y(), dv.z(),0.0,0.0,rz);
+    panel._origin = (plane_to_tracker * panel_to_plane) * CLHEP::Hep3Vector(0,0,0);
 
   }  // end makePanel
 
@@ -1206,7 +1216,7 @@ namespace mu2e {
           << "TrackerMaker::makeSupportStructure expected an even number of planes. Saw " << StrawId::_nplanes << " planes.\n";
       }
 
-      // From upstream end of most upstream station to the 
+      // From upstream end of most upstream station to the
       // downstream end of the most downstream station.
       // Including all materials.
       double overallLength = (StrawId::_nstations-1)*_planeSpacing + 2.*_planeHalfSeparation + 2.* _innerRingHalfLength;

@@ -2,7 +2,7 @@
 // LsqSums4
 //-----------------------------------------------------------------------------
 #include <cstdio>
-#include <math.h>
+#include <cmath>
 #include "Mu2eUtilities/inc/LsqSums4.hh"
 
 

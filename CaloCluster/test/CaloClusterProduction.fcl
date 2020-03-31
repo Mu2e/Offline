@@ -31,7 +31,7 @@ services :
     fileName : "CaloClusterTest.root"
   }
 
-  RandomNumberGenerator : { }
+  RandomNumberGenerator : {defaultEngineKind: "MixMaxRng" }
 
   GeometryService :
   {
