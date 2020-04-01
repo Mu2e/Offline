@@ -132,25 +132,50 @@ namespace mu2e
 
     }
 
-  void CosmicTrackFit::BeginFit(const char* title, CosmicTrackSeed &tseed, ComboHitCollection const& chcol, std::vector<StrawHitIndex> &panelHitIdxs){ 
-    ComboHitCollection combohits;
-    combohits.setParent(chcol.parent());
-    for (size_t i=0;i<panelHitIdxs.size();i++){
-      combohits.push_back(chcol[panelHitIdxs[i]]);
+    void CosmicTrackFit::BeginFit(const char* title, CosmicTrackSeed &tseed, art::Event const& event, ComboHitCollection const& chcol, std::vector<StrawHitIndex> &panelHitIdxs){ 
+      ComboHitCollection combohits;
+      combohits.setParent(chcol.parent());
+      for (size_t i=0;i<panelHitIdxs.size();i++){
+        combohits.push_back(chcol[panelHitIdxs[i]]);
+      }
+      tseed._status.clear(TrkFitFlag::helixOK); 
+      bool init(false);
+      if (!tseed._status.hasAllProperties(TrkFitFlag::circleInit)) {
+        init = true;
+        if (initCosmicTrack( title, tseed, combohits)){
+          tseed._status.merge(TrkFitFlag::circleInit);
+        }
+        else { 
+          FillTrackHitCollections(tseed, event, chcol, panelHitIdxs);
+          return;
+        }
+      } 
+      if (!init)RunFitChi2(title, tseed, combohits);
+
+      FillTrackHitCollections(tseed, event, chcol, panelHitIdxs);
+
+      return;
     }
-	tseed._status.clear(TrkFitFlag::helixOK); 
-	bool init(false);
-	if (!tseed._status.hasAllProperties(TrkFitFlag::circleInit)) {
-		init = true;
-		if (initCosmicTrack( title, tseed, combohits)){
-			tseed._status.merge(TrkFitFlag::circleInit);
-		}
-		else { 
-			return;
-		}
-	} 
-	if (!init)RunFitChi2(title, tseed, combohits);
-        return;
+
+    void CosmicTrackFit::FillTrackHitCollections(CosmicTrackSeed &tseed, art::Event const& event, ComboHitCollection const& chcol, std::vector<StrawHitIndex> &panelHitIdxs){
+      std::vector<ComboHitCollection::const_iterator> chids;  
+      chcol.fillComboHits(event, panelHitIdxs, chids); 
+      for (auto const& it : chids){
+        tseed._straw_chits.push_back(it[0]);
+      }
+      for(size_t ich= 0; ich<tseed._straw_chits.size(); ich++){  
+        std::vector<StrawHitIndex> shitids;          	          		
+        tseed._straw_chits.fillStrawHitIndices(event, ich, shitids);  
+
+        for(auto const& ids : shitids){ 
+          size_t    istraw   = (ids);
+          TrkStrawHitSeed tshs;
+          tshs._index  = istraw;
+          tshs._t0 = tseed._t0;
+          tseed._trkstrawhits.push_back(tshs); 
+        }  
+      }
+
     }
 
    void CosmicTrackFit::RunFitChi2(const char* title, CosmicTrackSeed& tseed, ComboHitCollection &combohits) {   

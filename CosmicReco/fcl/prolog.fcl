@@ -33,7 +33,7 @@ TimeClusterFinderCosmics : {
 
 SimpleTimeCluster : {
 	module_type : SimpleTimeCluster
-	ComboHitCollection : "makeSH"
+	ComboHitCollection : "makePH"
 	StrawHitFlagCollection : "FlagBkgHits:ComboHits"
 	T0Calculator : { CaloT0Offset : @local::TrackCaloMatching.DtOffset }
 	TestFlag : false
@@ -41,7 +41,7 @@ SimpleTimeCluster : {
 
 LineFinder : {
         module_type : LineFinder
-        ComboHitCollection : "makeSH"
+        ComboHitCollection : "makePH"
         TimeClusterCollection : "SimpleTimeCluster"
 }
 
@@ -69,6 +69,7 @@ CosmicTrackFinder : { #split into Loose and tight below for efficieny studies
 	ComboHitCollection     : "makePH"
 	StrawHitCollection     : "makeSH"
 	TimeClusterCollection  : "SimpleTimeCluster"
+        UseLineFinder : false
    
 }
 
@@ -78,6 +79,7 @@ CosmicTrackFinderLoose : {
 	TimeClusterCollection  : "SimpleTimeCluster"
 	# TimeClusterCollection  : "TimeClusterFinderCosmics"
 	DoDrift : true
+        UseLineFinder : false
 	CosmicTrackFit :{
 		minNComboHits : 4
 		MaxSeedChi2DOF : 10
@@ -96,6 +98,7 @@ CosmicTrackFinderTight : {
 	ComboHitCollection     : "makePH"
 	TimeClusterCollection  : "SimpleTimeCluster"
 	DoDrift : true
+        UseLineFinder : false
 	CosmicTrackFit :{
 		minNComboHits : 8
 		MaxSeedChi2DOF : 2.5
