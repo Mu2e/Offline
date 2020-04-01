@@ -52,6 +52,7 @@ using namespace mu2e;
 
     namespace MinuitDriftFitter {
 	FitResult DoFit(int diag, CosmicTrackSeed& tseed, StrawResponse const& srep, const Tracker* tracker, double doca_cut, unsigned int MinNCh_cut, int LogLcut, double _gaussTres, double _maxTres);
+        void DoDriftTimeFit(int diag, CosmicTrackSeed& tseed, StrawResponse const& srep, const Tracker* tracker );
 
     }
 

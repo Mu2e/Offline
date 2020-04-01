@@ -78,6 +78,7 @@ CosmicTrackFinderLoose : {
 	TimeClusterCollection  : "SimpleTimeCluster"
 	# TimeClusterCollection  : "TimeClusterFinderCosmics"
 	DoDrift : true
+        UseTime : false
         UseLineFinder : false
 	CosmicTrackFit :{
 		minNComboHits : 4
@@ -97,6 +98,7 @@ CosmicTrackFinderTight : {
 	ComboHitCollection     : "makePH"
 	TimeClusterCollection  : "SimpleTimeCluster"
 	DoDrift : true
+        UseTime : false
         UseLineFinder : false
 	CosmicTrackFit :{
 		minNComboHits : 8
@@ -109,6 +111,20 @@ CosmicTrackFinderTight : {
 		MaxTimeResidual : 40
 	}
 }
+
+CosmicTrackFinderTimeFit : {
+	module_type		: CosmicTrackFinder
+	ComboHitCollection     : "makePH"
+	TimeClusterCollection  : "SimpleTimeCluster"
+	DoDrift : true
+        UseTime : true
+        UseLineFinder : true
+        minNStrawHits : 4
+        minNComboHits : 0
+        debugLevel : 0
+}
+
+
 
  CosmicTrackDetails : {
 	module_type : CosmicTrackDetails
@@ -174,6 +190,7 @@ CosmicTracking : {
 		CosmicTrackFinder  : @local::CosmicTrackFinder
 		CosmicTrackFinderLoose  : @local::CosmicTrackFinderLoose
 		CosmicTrackFinderTight  : @local::CosmicTrackFinderTight
+		CosmicTrackFinderTimeFit  : @local::CosmicTrackFinderTimeFit
                 LineFinder : @local::LineFinder
                 CosmicDriftFit : @local::CosmicDriftFit
 	}
