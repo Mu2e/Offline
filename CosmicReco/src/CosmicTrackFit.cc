@@ -497,6 +497,8 @@ void CosmicTrackFit::ConvertFitToDetectorFrame(TrackAxes axes, XYZVec Position, 
 
       TrackAxes XYZ(X,Y,Z);
       tseed._track.MinuitCoordSystem = XYZ; 
+      tseed._track.MinuitEquation.Pos = XYZVec(tseed._track.MinuitParams.A0,tseed._track.MinuitParams.B0,0);
+      tseed._track.MinuitEquation.Dir = XYZVec(tseed._track.MinuitParams.A1,tseed._track.MinuitParams.B1,1);
 
       unsigned int n_outliers = 0;
       if(endresult.FullFitEndTimeResiduals.size() >0){

@@ -67,7 +67,6 @@ CHD : {
 CosmicTrackFinder : { #split into Loose and tight below for efficieny studies
 	module_type		: CosmicTrackFinder
 	ComboHitCollection     : "makePH"
-	StrawHitCollection     : "makeSH"
 	TimeClusterCollection  : "SimpleTimeCluster"
         UseLineFinder : false
    
@@ -145,9 +144,10 @@ CosmicFitDisplay : {
 
 CosmicTrackDiag : {
 	module_type : CosmicTrackDiag
-	ComboHitCollection : "makeSH"
+	StrawHitCollection : "makeSH"
 	TimeClusterCollection : SimpleTimeCluster
 	StrawDigiMCCollection : "compressDigiMCs"
+        CosmicTrackSeedCollection : "CosmicTrackFinder"
   }
 
 CosmicMuonInfo : {
