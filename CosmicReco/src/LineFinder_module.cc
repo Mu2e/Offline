@@ -23,7 +23,7 @@
 
 #include "RecoDataProducts/inc/ComboHit.hh"
 #include "RecoDataProducts/inc/TimeCluster.hh"
-#include "RecoDataProducts/inc/LineSeed.hh"
+#include "RecoDataProducts/inc/CosmicTrackSeed.hh"
 
 #include "CLHEP/Units/PhysicalConstants.h"
 #include "CLHEP/Matrix/Vector.h"
@@ -54,7 +54,7 @@ namespace mu2e{
         fhicl::Atom<float> t0offset{Name("t0offset"), Comment("T0 offset"), 0};
         fhicl::Atom<int> nsteps{Name("NSteps"), Comment("Number of steps per straw"), 8};
         fhicl::Atom<float> stepsize{Name("StepSize"), Comment("Size of each step in fraction of res"), 0.5};
-        fhicl::Atom<art::InputTag> shToken{Name("ComboHitCollection"),Comment("tag for straw hit collection")};
+        fhicl::Atom<art::InputTag> chToken{Name("ComboHitCollection"),Comment("tag for straw hit collection")};
         fhicl::Atom<art::InputTag> tcToken{Name("TimeClusterCollection"),Comment("tag for time cluster collection")};
       };
       typedef art::EDProducer::Table<Config> Parameters;
@@ -73,10 +73,10 @@ namespace mu2e{
       float _t0offset;
       int _Nsteps;
       float _stepSize;
-      art::InputTag  _shToken;
+      art::InputTag  _chToken;
       art::InputTag  _tcToken;
 
-      void findLine(const ComboHitCollection& shC, LineSeed &lseed);
+      int findLine(const ComboHitCollection& shC, art::Event const& event, CosmicTrackSeed &tseed);
   };
 
 
@@ -88,61 +88,68 @@ namespace mu2e{
         _t0offset (conf().t0offset()),
         _Nsteps (conf().nsteps()),
         _stepSize (conf().stepsize()),
-    	_shToken (conf().shToken()),
+    	_chToken (conf().chToken()),
 	_tcToken (conf().tcToken())
 {
-  consumes<ComboHitCollection>(_shToken);
+  consumes<ComboHitCollection>(_chToken);
   consumes<TimeClusterCollection>(_tcToken);
-  produces<LineSeedCollection>();
+  produces<CosmicTrackSeedCollection>();
 	    
  }
 
 void LineFinder::produce(art::Event& event ) {
 
-  auto const& shH = event.getValidHandle<ComboHitCollection>(_shToken);
-  const ComboHitCollection& shcol(*shH);
+  auto const& chH = event.getValidHandle<ComboHitCollection>(_chToken);
+  const ComboHitCollection& chcol(*chH);
   auto  const& tcH = event.getValidHandle<TimeClusterCollection>(_tcToken);
   const TimeClusterCollection& tccol(*tcH);
 
 
 
-  std::unique_ptr<LineSeedCollection> seed_col(new LineSeedCollection());
+  std::unique_ptr<CosmicTrackSeedCollection> seed_col(new CosmicTrackSeedCollection());
 
   for (size_t index=0;index< tccol.size();++index) {
     const auto& tclust = tccol[index];
 
-    const std::vector<StrawHitIndex>& shIndices = tclust.hits();
     ComboHitCollection tchits;
     
     int nhits = 0;
-    for (size_t i=0; i<shIndices.size(); ++i) {
-      int loc = shIndices[i];
-      const ComboHit& sh  = shcol[loc];
-      tchits.push_back(ComboHit(sh));
-      nhits += sh.nStrawHits();
+    std::vector<ComboHitCollection::const_iterator> chids;  
+    chcol.fillComboHits(event, tclust.hits(), chids); 
+    for (auto const& it : chids){
+      tchits.push_back(it[0]);
+      nhits += it[0].nStrawHits();
     }
 
-    LineSeed lseed;
-    lseed._timeCluster = art::Ptr<TimeCluster>(tcH,index);
-    lseed._converged = 1;
-    findLine(tchits, lseed);
+    CosmicTrackSeed tseed;
+    tseed._timeCluster = art::Ptr<TimeCluster>(tcH,index);
+    tseed._track.converged = true;
 
-    if (lseed._seedSize >= _minPeak){
-      LineSeedCollection*  lcol  = seed_col.get();
-      lcol->push_back(lseed);
+    int seedSize = findLine(tchits, event, tseed);
+
+    if (seedSize >= _minPeak){
+      tseed._status.merge(TrkFitFlag::Straight);
+      tseed._status.merge(TrkFitFlag::hitsOK);
+      tseed._status.merge(TrkFitFlag::helixOK);
+      tseed._status.merge(TrkFitFlag::helixConverged);
+
+      CosmicTrackSeedCollection*  tcol  = seed_col.get();
+      tcol->push_back(tseed);
     }
   }
 
   event.put(std::move(seed_col));    
 }
 
-void LineFinder::findLine(const ComboHitCollection& shC, LineSeed& lseed){
+int LineFinder::findLine(const ComboHitCollection& shC, art::Event const& event, CosmicTrackSeed& tseed){
 
   mu2e::GeomHandle<mu2e::Tracker> th;
   auto tracker = th.get();
   int bestcount = 0;
   double bestll = 0;
   
+  CLHEP::Hep3Vector seedDir(0,0,0);
+  CLHEP::Hep3Vector seedInt(0,0,0);
  
   // lets get the best pairwise vector
   for (size_t i=0;i<shC.size();i++){
@@ -171,9 +178,9 @@ void LineFinder::findLine(const ComboHitCollection& shC, LineSeed& lseed){
           if (count > bestcount || (count == bestcount && ll < bestll)){
             bestcount = count;
             bestll = ll;
-            lseed._seedDir = newdir.unit();
-            if (lseed._seedDir.y() > 0) lseed._seedDir *= -1;
-            lseed._seedInt = ipos - newdir*ipos.y()/newdir.y();
+            seedDir = newdir.unit();
+            if (seedDir.y() > 0) seedDir *= -1;
+            seedInt = ipos - newdir*ipos.y()/newdir.y();
           }
         }
       }
@@ -185,21 +192,54 @@ void LineFinder::findLine(const ComboHitCollection& shC, LineSeed& lseed){
   for (size_t k=0;k<shC.size();k++){
     Straw const& strawk = tracker->getStraw(shC[k].strawId());
     TwoLinePCA pca( strawk.getMidPoint(), strawk.getDirection(),
-        lseed._seedInt, lseed._seedDir);
+        seedInt, seedDir);
     double dist = (pca.point1()-strawk.getMidPoint()).dot(strawk.getDirection());
     if (pca.dca() < _maxDOCA && fabs(dist) < strawk.halfLength()){
-      double traj_time = ((pca.point2() - lseed._seedInt).dot(lseed._seedDir))/299.9;
+      double traj_time = ((pca.point2() - seedInt).dot(seedDir))/299.9;
       double hit_t0 = shC[k].time() - shC[k].driftTime() - shC[k].propTime() - traj_time;
       avg_t0 += hit_t0;
       good_hits++;
-      lseed._strawHitIdxs.push_back(k);
+      tseed._straw_chits.push_back(shC[k]);
     }
   }
   avg_t0 /= good_hits;
 
+  tseed._t0._t0 = avg_t0-_t0offset;
 
-  lseed._seedSize = good_hits;
-  lseed._t0 = avg_t0-_t0offset;
+  // get pos and direction into Z alignment
+  if (seedDir.z() != 0){
+    seedDir /= seedDir.z();
+    seedInt -= seedDir*seedInt.z()/seedDir.z();
+  }
+  
+  tseed._track.FitParams.A0 = seedInt.x(); 
+  tseed._track.FitParams.B0 = seedInt.y(); 
+  tseed._track.FitParams.A1 = seedDir.x(); 
+  tseed._track.FitParams.B1 = seedDir.y(); 
+  XYZVec X(1,0,0);
+  XYZVec Y(0,1,0);
+  XYZVec Z(0,0,1);
+  TrackAxes XYZ(X,Y,Z);
+  tseed._track.InitCoordSystem = XYZ; 
+  tseed._track.FitCoordSystem = XYZ; 
+  TrackEquation XYZTrack(Geom::toXYZVec(seedInt), Geom::toXYZVec(seedDir));
+  tseed._track.SetFitEquation(XYZTrack);
+
+  // For compatibility FIXME
+  for(size_t ich= 0; ich<tseed._straw_chits.size(); ich++){  
+    std::vector<StrawHitIndex> shitids;          	          		
+    tseed._straw_chits.fillStrawHitIndices(event, ich, shitids);  
+
+    for(auto const& ids : shitids){ 
+      size_t    istraw   = (ids);
+      TrkStrawHitSeed tshs;
+      tshs._index  = istraw;
+      tshs._t0 = tseed._t0;
+      tseed._trkstrawhits.push_back(tshs); 
+    }  
+  }
+
+  return good_hits;
 }
 
 }//end mu2e namespace

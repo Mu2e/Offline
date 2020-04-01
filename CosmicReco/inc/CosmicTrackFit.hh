@@ -82,9 +82,10 @@ namespace mu2e
                 XYZVec ConvertPointToDetFrame(XYZVec vec);
 
                 XYZVec GetTrackDirection(std::vector<XYZVec> hitXYZ, XYZVec XDoublePrime, XYZVec YDoublePrime, XYZVec ZPrime); 
-                void BeginFit(const char* title, CosmicTrackSeed &tseed, ComboHitCollection const& chcol, std::vector<StrawHitIndex> &panelHitIdxs);
+                void BeginFit(const char* title, CosmicTrackSeed &tseed, art::Event const& event, ComboHitCollection const& chcol, std::vector<StrawHitIndex> &panelHitIdxs);
                 void RunFitChi2(const char* title, CosmicTrackSeed& tseed, ComboHitCollection &combohits);
                 void FitAll(const char* title, CosmicTrackSeed &tseed, ComboHitCollection &combohits, CosmicTrack* cosmictrack);
+                void FillTrackHitCollections(CosmicTrackSeed &tseed, art::Event const& event, ComboHitCollection const& chcol, std::vector<StrawHitIndex> &panelHitIdxs);
 
 		void ConvertFitToDetectorFrame(TrackAxes axes, XYZVec Position, XYZVec Direction, CosmicTrack* cosmictrack, bool isseed, bool det);
 		
