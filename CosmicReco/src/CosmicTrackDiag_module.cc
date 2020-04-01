@@ -344,6 +344,10 @@ namespace mu2e
       TwoLinePCA minuitpca( _mcpos, _mcdir, minuitpos, minuitdir);
       _minuitdoca = minuitpca.dca(); 
       _minuitangle = _mcdir.dot(minuitdir);
+
+      if (_printlevel > 0){
+        std::cout << "Track found! angle: " << _minuitangle << " hits on track: " << _ontrackhits << " / " << _nsh << std::endl;
+      }
     }
     _trackT->Fill();
 
@@ -618,7 +622,7 @@ namespace mu2e
         _hitllike += pow(_hittresid,2)/pow(_hittresidrms,2);
 
 
-        if (_printlevel > 0){
+        if (_printlevel > 1){
           if (_hitused){
             std::cout << "   " << _hitminuitdoca << " " << _hitminuitlong << " " << _hitmcdoca << " " << _hitmclong << " " << sh.strawId() << std::endl;
           }else{

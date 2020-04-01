@@ -9,6 +9,7 @@
 #include "CosmicReco/inc/MinuitDriftFitter.hh"
 #include "CosmicReco/inc/PDFFit.hh"
 #include "Mu2eUtilities/inc/ParametricFit.hh"
+#include "Mu2eUtilities/inc/TwoLinePCA.hh"
 #include "TrackerGeom/inc/Tracker.hh"
 
 //For Drift:
@@ -195,5 +196,93 @@ namespace MinuitDriftFitter{
 	 return FitResult;
  
   }
+
+  void DoDriftTimeFit(int diag, CosmicTrackSeed& tseed, StrawResponse const& srep, const Tracker* tracker ){
+
+      auto dir = tseed._track.FitEquation.Dir;
+      auto intercept = tseed._track.FitEquation.Pos;
+      dir /= -1*dir.y();
+      intercept -= dir*intercept.y()/dir.y();
+
+      // now gaussian fit, transverse distance only
+      std::vector<double> errors(5,0);
+      std::vector<double> seed(5,0);
+      seed[0] = intercept.x();
+      seed[1] = intercept.z();
+      seed[2] = dir.x();
+      seed[3] = dir.z();
+      seed[4] = tseed._t0._t0;
+
+      errors[0] = tseed._track.FitParams.Covarience.sigA0; 
+      errors[1] = tseed._track.FitParams.Covarience.sigB0;
+      errors[2] = tseed._track.FitParams.Covarience.sigA1;
+      errors[3] = tseed._track.FitParams.Covarience.sigB1;
+      errors[4] = tseed._t0.t0Err();
+
+      //Define the PDF used by Minuit:
+      GaussianDriftFit fit(tseed._straw_chits, srep, tracker);
+
+      //Initiate Minuit Fit:
+      ROOT::Minuit2::MnStrategy mnStrategy(2); 
+      ROOT::Minuit2::MnUserParameters params(seed,errors);
+      ROOT::Minuit2::MnMigrad migrad(fit,params,mnStrategy);
+      //Define Minimization method as "MIGRAD" (see minuit documentation)
+      ROOT::Minuit2::FunctionMinimum min = migrad(0, 0.1);
+      if(diag > 1){
+        ROOT::Minuit2::MnPrint::SetLevel(3);
+        ROOT::Minuit2::operator<<(cout, min);
+      }else{
+        ROOT::Minuit2::MnPrint::SetLevel(0);
+      }
+      //Will be the results of the fit routine:
+      ROOT::Minuit2::MnUserParameters results = min.UserParameters();
+//      double minval = min.Fval();
+
+      if (min.IsValid())
+        tseed._track.minuit_converged = true;
+      else
+        tseed._track.minuit_converged = false;
+
+      tseed._track.MinuitParams.A0 =  results.Params()[0];
+      tseed._track.MinuitParams.A1 =  results.Params()[2];
+      tseed._track.MinuitParams.B0 =  results.Params()[1];
+      tseed._track.MinuitParams.B1 =  results.Params()[3];
+      tseed._track.MinuitParams.T0 =  results.Params()[4];
+
+      tseed._track.MinuitParams.deltaA0 =  results.Errors()[0];
+      tseed._track.MinuitParams.deltaA1 =  results.Errors()[2];
+      tseed._track.MinuitParams.deltaB0 =  results.Errors()[1];
+      tseed._track.MinuitParams.deltaB1 =  results.Errors()[3];
+      tseed._track.MinuitParams.deltaT0 =  results.Errors()[4];
+
+      tseed._t0._t0 = tseed._track.MinuitParams.T0;
+      tseed._t0._t0err = tseed._track.MinuitParams.deltaT0;
+
+      if (min.HasValidCovariance()){
+        auto cov = min.UserCovariance().Data();
+        //FIXME
+      }
+
+      XYZVec X(1,0,0);
+      XYZVec Y(0,1,0);
+      XYZVec Z(0,0,1);
+
+      TrackAxes XYZ(X,Y,Z);
+      tseed._track.MinuitCoordSystem = XYZ; 
+      tseed._track.MinuitEquation.Pos = XYZVec(tseed._track.MinuitParams.A0,0,tseed._track.MinuitParams.B0);
+      tseed._track.MinuitEquation.Dir = XYZVec(tseed._track.MinuitParams.A1,-1,tseed._track.MinuitParams.B1);
+
+      for (size_t i=0;i<tseed._straw_chits.size();i++){
+        Straw const& straw = tracker->getStraw(tseed._straw_chits[i].strawId());
+        TwoLinePCA pca(straw.getMidPoint(), straw.getDirection(), Geom::Hep3Vec(tseed._track.MinuitEquation.Pos), Geom::Hep3Vec(tseed._track.MinuitEquation.Dir));
+        if (pca.dca() > 2.5){
+          tseed._straw_chits[i]._flag.merge(StrawHitFlag::outlier); 
+        }
+      }
+
+
+    }
+
+
   
 }

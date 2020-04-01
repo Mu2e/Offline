@@ -31,6 +31,7 @@
 #include "RecoDataProducts/inc/TrkFitFlag.hh"
 #include "TrkReco/inc/TrkTimeCalculator.hh"
 #include "ProditionsService/inc/ProditionsHandle.hh"
+#include "CosmicReco/inc/MinuitDriftFitter.hh"
 
 //utils:
 #include "Mu2eUtilities/inc/ParametricFit.hh"
@@ -80,7 +81,6 @@ namespace mu2e{
 	      using Name=fhicl::Name;
 	      using Comment=fhicl::Comment;
 	      fhicl::Atom<int> debug{Name("debugLevel"), Comment("set to 1 for debug prints"),1};
-	      fhicl::Atom<int> printfreq{Name("printFrequency"), Comment("print frquency"), 101};
 	      fhicl::Atom<int> minnsh {Name("minNStrawHits"), Comment("minimum number of straw hits "),2};
 	      fhicl::Atom<int> minnch {Name("minNComboHits"), Comment("number of combohits allowed"),8};
 	      fhicl::Atom<TrkFitFlag> saveflag {Name("SaveTrackFlag"),Comment("if set to OK then save the track"), TrkFitFlag::helixOK};
@@ -90,6 +90,7 @@ namespace mu2e{
               fhicl::Atom<bool> UseLineFinder{Name("UseLineFinder"),Comment("use line finder for seeding drift fit")};
               fhicl::Atom<art::InputTag> lfToken{Name("LineFinderTag"),Comment("tag for line finder seed"),"LineFinder"};
 	      fhicl::Atom<bool> DoDrift{Name("DoDrift"),Comment("turn on for drift fit")};
+	      fhicl::Atom<bool> UseTime{Name("UseTime"),Comment("use time for drift fit")};
 	      fhicl::Table<CosmicTrackFit::Config> tfit{Name("CosmicTrackFit"), Comment("fit")};
 	};
 	typedef art::EDProducer::Table<Config> Parameters;
@@ -104,7 +105,6 @@ namespace mu2e{
 	Config _conf;
 
 	int 				_debug;
-	int                                 _printfreq;
 	int 				_minnsh; // minimum # of strawHits in CH
 	int 				_minnch; // minimum # of ComboHits for viable fit
 	TrkFitFlag				_saveflag;//write tracks that satisfy these flags
@@ -118,6 +118,7 @@ namespace mu2e{
         art::InputTag _lfToken;
 
 	bool 	   _DoDrift;
+        bool       _UseTime;
 
 	CosmicTrackFit     _tfit;
 
@@ -133,7 +134,6 @@ namespace mu2e{
     CosmicTrackFinder::CosmicTrackFinder(const Parameters& conf) :
 	art::EDProducer(conf),
 	_debug  (conf().debug()),
-	_printfreq  (conf().printfreq()),
 	_minnsh   (conf().minnsh()),
 	_minnch  (conf().minnch()),
 	_saveflag  (conf().saveflag()),
@@ -143,6 +143,7 @@ namespace mu2e{
         _UseLineFinder (conf().UseLineFinder()),
         _lfToken (conf().lfToken()),
 	_DoDrift (conf().DoDrift()),
+	_UseTime (conf().UseTime()),
 	_tfit (conf().tfit())
 	{
 		consumes<ComboHitCollection>(_chToken);
@@ -251,7 +252,11 @@ namespace mu2e{
           if (tseed.status().hasAnyProperty(_saveflag)){
 
             if(_DoDrift){
-              _tfit.DriftFit(tseed, srep);
+              if (_UseTime){
+                MinuitDriftFitter::DoDriftTimeFit(_debug,tseed, srep, &tracker );
+              }else{
+                _tfit.DriftFit(tseed, srep);
+              }
               if( tseed._track.minuit_converged == false)
                 continue;
 
