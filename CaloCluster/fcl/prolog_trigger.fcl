@@ -67,7 +67,6 @@ CaloClusterTrigger :
 
    Reco : [ CaloClusterFast ]
    NewReco : [ NewCaloClusterFast ]
-   CrystalReco : [FastCaloRecoDigiFromDigi, FastCaloCrystalHitFromHit]
 }
 
 
