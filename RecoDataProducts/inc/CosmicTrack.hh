@@ -39,7 +39,8 @@ using namespace std;
   	double deltaT0;
   	TrackParams();
   	TrackParams(double a0, double a1, double  b0, double b1) : A0(a0), A1(a1), B0(b0) , B1(b1){};
-	TrackCov Covarience;
+	TrackCov Covarience; //FIXME backwards compatibility
+        std::vector<double> cov;
 
 	XYZVec Direction() const { return XYZVec(A1, B1, 1).unit();};
 	XYZVec Position() const { return XYZVec(A0, B0, 0);};

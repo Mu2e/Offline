@@ -115,13 +115,14 @@ namespace mu2e
       Int_t _n_panels; // # panels
       Int_t _n_stations; // # stations
       Int_t _n_planes; // # stations
-      Float_t _mct0;
-      Float_t _fitt0;
       Int_t _mcnsh;
       Float_t _minuitdoca, _minuitangle;
       Int_t _tcnhits, _ontrackhits;
       Int_t _converged, _minuitconverged;
       Float_t _maxllike, _maxtresid, _llike;
+      Float_t _a0,_b0,_a1,_b1,_t0;
+      Float_t _a0err,_b0err,_a1err,_b1err,_t0err;
+      Float_t _mca0,_mcb0,_mca1,_mcb1, _mct0;
 
       // hit tree 
       Float_t _hitminuitdoca, _hitminuitlong, _hitminuitdpocat;
@@ -181,7 +182,16 @@ namespace mu2e
       _trackT->Branch("PlanesCrossedInEvent", &_n_planes, "PlanesCrossedInEvent/I");
       _trackT->Branch("StationsCrossedInEvent", &_n_stations, "StationsCrossedInEvent/I");
       _trackT->Branch("TimeClustersInEvent", &_ntc, "TimeClusterInEvent/I"); 
-      _trackT->Branch("t0",&_fitt0,"t0/F");
+      _trackT->Branch("a0",&_a0,"a0/F");
+      _trackT->Branch("b0",&_b0,"b0/F");
+      _trackT->Branch("a1",&_a1,"a1/F");
+      _trackT->Branch("b1",&_b1,"b1/F");
+      _trackT->Branch("t0",&_t0,"t0/F");
+      _trackT->Branch("a0err",&_a0err,"a0err/F");
+      _trackT->Branch("b0err",&_b0err,"b0err/F");
+      _trackT->Branch("a1err",&_a1err,"a1err/F");
+      _trackT->Branch("b1err",&_b1err,"b1err/F");
+      _trackT->Branch("t0err",&_t0err,"t0err/F");
       _trackT->Branch("tcnhits",&_tcnhits,"tcnhits/I");
       _trackT->Branch("ontrackhits",&_ontrackhits,"ontrackhits/I");
       _trackT->Branch("ewmoffset",&_ewMarkerOffset,"ewmoffset/F");
@@ -192,6 +202,10 @@ namespace mu2e
       _trackT->Branch("maxllike",&_maxllike,"maxllike/F");
       if (_mcdiag){
         _trackT->Branch("mcnsh",&_mcnsh,"mcnsh/I");
+        _trackT->Branch("mca0",&_mca0,"mca0/F");
+        _trackT->Branch("mcb0",&_mcb0,"mcb0/F");
+        _trackT->Branch("mca1",&_mca1,"mca1/F");
+        _trackT->Branch("mcb1",&_mcb1,"mcb1/F");
         _trackT->Branch("mct0",&_mct0,"mct0/F");
         _trackT->Branch("minuitdoca",&_minuitdoca,"minuitdoca/F");
         _trackT->Branch("minuitangle",&_minuitangle,"minuitangle/F");
@@ -210,7 +224,7 @@ namespace mu2e
       _hitT->Branch("llike",&_hitllike,"llike/F");
       _hitT->Branch("tcnhits",&_tcnhits,"tcnhits/I");
       _hitT->Branch("ontrackhits",&_ontrackhits,"ontrackhits/I");
-      _hitT->Branch("t0",&_fitt0,"t0/F");
+      _hitT->Branch("t0",&_t0,"t0/F");
       _hitT->Branch("ewmoffset",&_ewMarkerOffset,"ewmoffset/F");
       _hitT->Branch("converged",&_converged,"converged/I");
       _hitT->Branch("minuitconverged",&_minuitconverged,"minuitconverged/I");
@@ -280,6 +294,9 @@ namespace mu2e
     _n_stations = stations.size();
     _ntrack = -1;
 
+    _minuitconverged = 0;
+    _converged = 0;
+    //FIXME more than one track per event?
     if (_tscol->size() > 0){
       auto tseed = _tscol->at(0);
 
@@ -292,7 +309,16 @@ namespace mu2e
         _tcnhits += ch.nStrawHits();
       }
 
-      _fitt0 = tseed._t0._t0;
+      _a0 = tseed._track.MinuitParams.A0;
+      _b0 = tseed._track.MinuitParams.B0;
+      _a1 = tseed._track.MinuitParams.A1;
+      _b1 = tseed._track.MinuitParams.B1;
+      _a0err = tseed._track.MinuitParams.deltaA0;
+      _b0err = tseed._track.MinuitParams.deltaB0;
+      _a1err = tseed._track.MinuitParams.deltaA1;
+      _b1err = tseed._track.MinuitParams.deltaB1;
+      _t0 = tseed._t0._t0;
+      _t0err = tseed._t0._t0err;
       _converged = tseed._track.converged;
       _minuitconverged = tseed._track.minuit_converged;
       _ntrack = 0;
@@ -330,7 +356,7 @@ namespace mu2e
 
         double traj_time = ((pca.point2() - minuitpos).dot(minuitdir))/299.9;
         double hit_t0 = sh.time() - sh.propTime() - traj_time - drift_time;
-        double tresid = hit_t0-_fitt0;
+        double tresid = hit_t0-_t0;
         llike += pow(tresid,2)/pow(drift_res,2);
 
         if (fabs(tresid) > _maxtresid)
@@ -446,6 +472,14 @@ namespace mu2e
         max = count;
         _mcpos = ppintercept;
         _mcdir = ppdirection;
+        if (ppdirection.y() != 0){
+          ppdirection /= -1*ppdirection.y();
+          ppintercept -= ppdirection*ppintercept.y()/ppdirection.y();
+        }
+        _mca0 = ppintercept.x();
+        _mcb0 = ppintercept.z();
+        _mca1 = ppdirection.x();
+        _mcb1 = ppdirection.z();
         _mct0 = avg_t0/count;
       }
     }

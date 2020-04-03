@@ -259,8 +259,9 @@ namespace MinuitDriftFitter{
       tseed._t0._t0err = tseed._track.MinuitParams.deltaT0;
 
       if (min.HasValidCovariance()){
-        auto cov = min.UserCovariance().Data();
-        //FIXME
+        tseed._track.MinuitParams.cov = min.UserCovariance().Data();
+      }else{
+        tseed._track.MinuitParams.cov = std::vector<double>(15,0);
       }
 
       XYZVec X(1,0,0);
@@ -279,10 +280,6 @@ namespace MinuitDriftFitter{
           tseed._straw_chits[i]._flag.merge(StrawHitFlag::outlier); 
         }
       }
-
-
     }
-
-
   
 }

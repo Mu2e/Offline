@@ -3,7 +3,7 @@
 
 #include "RecoDataProducts/inc/ComboHit.hh"
 #include "RecoDataProducts/inc/CosmicTrack.hh"
-#include "RecoDataProducts/inc/LineSeed.hh"
+#include "RecoDataProducts/inc/CosmicTrackSeed.hh"
 #include "DataProducts/inc/XYZVec.hh"
 
 //Tracker Details:
@@ -78,7 +78,17 @@ class GaussianDriftFit : public ROOT::Minuit2::FCNBase {
     double Up() const { return 0.5;};
     double operator() (const std::vector<double> &x) const;
 
-    void setResults(LineSeed &lseed, std::vector<double> const&results);
+    double DOCAresidual(ComboHit const& sh, CosmicTrackSeed const& tseed) const {
+      std::vector<double> x = {tseed._track.MinuitParams.A0,tseed._track.MinuitParams.B0,tseed._track.MinuitParams.A1,tseed._track.MinuitParams.B1,tseed._track.MinuitParams.T0};
+      return DOCAresidual(sh, x);
+    }
+    double DOCAresidualError(ComboHit const& sh, CosmicTrackSeed const& tseed) const {
+      std::vector<double> x = {tseed._track.MinuitParams.A0,tseed._track.MinuitParams.B0,tseed._track.MinuitParams.A1,tseed._track.MinuitParams.B1,tseed._track.MinuitParams.T0};
+      return DOCAresidualError(sh, x, tseed._track.MinuitParams.cov);
+    }
+
+    double DOCAresidual(ComboHit const& sh, const std::vector<double> &x) const;
+    double DOCAresidualError(ComboHit const& sh, const std::vector<double> &x, const std::vector<double> &cov) const;
 };
 
 #endif
