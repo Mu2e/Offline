@@ -9,6 +9,7 @@
 #include "RecoDataProducts/inc/CosmicTrackSeed.hh"
 #include "CosmicReco/inc/CosmicTrackMCInfo.hh"
 #include "DataProducts/inc/EventWindowMarker.hh"
+#include "CosmicReco/inc/PDFFit.hh"
 
 //Mu2e Data Prods:
 #include "RecoDataProducts/inc/StrawHitFlagCollection.hh"
@@ -135,6 +136,7 @@ namespace mu2e
       Int_t _hitambig, _hitmcambig;
       Float_t _hitrecolongrms;
       Float_t _hittresid, _hittresidrms, _hitllike;
+      Float_t _hitdresid, _hitdresiderr;
       Float_t _hitedep;
 
 
@@ -221,6 +223,8 @@ namespace mu2e
       _hitT->Branch("recolongrms",&_hitrecolongrms,"recolongrms/F");
       _hitT->Branch("tresid",&_hittresid,"tresid/F");
       _hitT->Branch("tresidrms",&_hittresid,"tresidrms/F");
+      _hitT->Branch("dresid",&_hitdresid,"dresid/F");
+      _hitT->Branch("dresiderr",&_hitdresiderr,"dresiderr/F");
       _hitT->Branch("llike",&_hitllike,"llike/F");
       _hitT->Branch("tcnhits",&_tcnhits,"tcnhits/I");
       _hitT->Branch("ontrackhits",&_ontrackhits,"ontrackhits/I");
@@ -523,6 +527,7 @@ namespace mu2e
   }
 
   void CosmicTrackDiag::hitDiag(const art::Event& event, StrawResponse const& srep) {
+    GaussianDriftFit gdf(_shcol, srep, tracker);
     // loop over combohits
     for (size_t ich=0;ich<_shcol->size();ich++){
       const ComboHit &sh = _shcol->at(ich);
@@ -543,6 +548,8 @@ namespace mu2e
       _hitrecolongrms = -999;
       _hittresid = -999;
       _hittresidrms = -999;
+      _hitdresid = -999;
+      _hitdresiderr = -999;
       _hitllike = -999;
       _hitrecodoca = -999;
       _hitambig = -999;
@@ -655,6 +662,8 @@ namespace mu2e
         _hittresid = hit_t0-tseed._t0._t0;
         _hitllike += pow(_hittresid,2)/pow(_hittresidrms,2);
 
+        _hitdresid = gdf.DOCAresidual(sh,tseed);
+        _hitdresiderr = gdf.DOCAresidualError(sh,tseed);
 
         if (_printlevel > 1){
           if (_hitused){

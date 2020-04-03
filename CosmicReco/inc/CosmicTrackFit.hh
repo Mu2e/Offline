@@ -69,6 +69,7 @@ namespace mu2e
               fhicl::Atom<float> maxTres{Name("MaxTimeResidual"),Comment("The maxiumum allowed time residual for any hit used for full drift fit"), 40 };
 	      fhicl::Atom<float> maxd{Name("MaxTrackLength"),Comment("The maxiumum allowed length of track") ,2000.};
 	      fhicl::Atom<float> maxpull{Name("MaxHitPullForSeed"),Comment("The maxiumum allowed combo hit pull from fit") ,100.};
+              fhicl::Atom<bool> UseTSeedDirection{Name("UseTSeedDirection"),Comment("Uses the direction in the input tseed to initialize fit"), false};
     	};
 		
 		explicit CosmicTrackFit(const Config& conf);
@@ -117,6 +118,7 @@ namespace mu2e
 		float _maxTres;//maximum allowed time residual in drift fit
 		float _maxd;//unused
 		float _maxpull;
+                bool _useTSeedDirection;
   };
 	
 
