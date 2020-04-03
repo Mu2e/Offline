@@ -13,6 +13,7 @@
 #include <utility>       // for move
 #include <vector>        // for vector<>:...
 
+#include "CosmicReco/inc/PDFFit.hh"
 #include "boost/math/distributions/chi_squared.hpp"
 #include "boost/math/distributions/normal.hpp"
 
@@ -313,6 +314,8 @@ bool AlignTrackCollector::filter_CosmicTrackSeedCollection(art::Event const& eve
         double B0 = st.MinuitParams.B0;
         double B1 = st.MinuitParams.B1;
 
+        GaussianDriftFit fit_object(sts._straw_chits, _srep, &tracker);
+
         double chisq = 0;
         double chsqndof = 0;
 
@@ -352,21 +355,8 @@ bool AlignTrackCollector::filter_CosmicTrackSeedCollection(art::Event const& eve
                                             plane_origin.x(), plane_origin.y(), plane_origin.z(),
                                             panel_origin.x(), panel_origin.y(), panel_origin.z());
 
-            Hep3Vector td(A1, B1, 1);
-            td = td.unit();
-            Hep3Vector rperp = td - (td.dot(straw.getDirection()) * straw.getDirection());
-            double phi = rperp.theta();
-
-            // Distance of Closest Approach (DOCA)
-            TwoLinePCA_XYZ PCA = TwoLinePCA_XYZ(track_pos, track_dir, Geom::toXYZVec(straw_mp),
-                                                Geom::toXYZVec(wire_dir), 1.e-8);
-
-            double drift_distance = _srep.driftTimeToDistance(straw_id, straw_hit.driftTime(), phi);
-
-            // signed DCA.
-            double residual = (PCA.LRambig() * PCA.dca()) - drift_distance;
-            double residual_error =
-                _srep.driftDistanceError(straw_id, drift_distance, phi, PCA.dca());
+            double residual = fit_object.DOCAresidual(straw_hit, sts);
+            double residual_error = fit_object.DOCAresidualError(straw_hit, sts);
 
             std::cout << "residual " << residual << " +- " << residual_error << std::endl;
 
@@ -390,6 +380,7 @@ bool AlignTrackCollector::filter_CosmicTrackSeedCollection(art::Event const& eve
                                      panel_dof_labels[panel_uid].end());
             if (_diag > 0 && global_dof_labels.size() != 12)
                 std::cout << "WARNING: we should have 12 labels!" << std::endl;
+
             // write the hit to the track buffer
             millepede->mille(derivativesLocal.size(), derivativesLocal.data(),
                              derivativesGlobal.size(), derivativesGlobal.data(),
@@ -401,10 +392,7 @@ bool AlignTrackCollector::filter_CosmicTrackSeedCollection(art::Event const& eve
                 resid_err->Fill(residual_error);
                 plane_tracks->Fill(straw_id.plane());
                 plane_residsum->Fill(straw_id.plane(), residual);
-
                 drift_time->Fill(straw_hit.driftTime());
-                drift_dist->Fill(drift_distance);
-                doca_h->Fill((PCA.LRambig() * PCA.dca()));
             }
         }
         if (wrote_hits) {
