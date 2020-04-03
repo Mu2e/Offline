@@ -119,6 +119,7 @@ CosmicTrackFinderTimeFit : {
 	DoDrift : true
         UseTime : true
         UseLineFinder : true
+        UseChiFit : false
         minNStrawHits : 4
         minNComboHits : 0
         debugLevel : 0

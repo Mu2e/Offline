@@ -327,7 +327,7 @@ double GaussianDriftFit::DOCAresidual(ComboHit const& sh, const std::vector<doub
   double b0 = x[1];
   double a1 = x[2];
   double b1 = x[3];
-//  double t0 = x[4]; 
+  double t0 = x[4]; 
 
   CLHEP::Hep3Vector intercept(a0,0,b0);
   CLHEP::Hep3Vector dir(a1,-1,b1);
@@ -335,9 +335,11 @@ double GaussianDriftFit::DOCAresidual(ComboHit const& sh, const std::vector<doub
 
   Straw const& straw = tracker->getStraw(sh.strawId());
   TwoLinePCA pca(straw.getMidPoint(), straw.getDirection(), intercept, dir);
+  double traj_time = ((pca.point2() - intercept).dot(dir))/299.9;
+  double hit_t0 = sh.propTime() + traj_time + t0;
 
   double predictedDistance = pca.dca();
-  double measuredDistance = srep.driftTimeToDistance(sh.strawId(), sh.time(), 0);
+  double measuredDistance = srep.driftTimeToDistance(sh.strawId(), sh.time()-hit_t0, 0);
 
   return predictedDistance-measuredDistance;
 }
