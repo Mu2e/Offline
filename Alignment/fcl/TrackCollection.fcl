@@ -1,0 +1,43 @@
+
+#include "fcl/minimalMessageService.fcl"
+#include "fcl/standardProducers.fcl"
+#include "fcl/standardServices.fcl"
+#include "TrkDiag/fcl/prolog.fcl"
+#include "CosmicReco/fcl/prolog.fcl"
+#include "CosmicAlignment/fcl/prolog.fcl"
+
+
+process_name : AlignTrackCollector
+
+source : { module_type : RootInput }
+
+services : @local::Services.Reco
+
+physics :
+{
+  producers :
+  {
+    @table::TrkHitReco.producers
+    @table::CosmicTracking.producers
+  }
+  analyzers : {
+      AlignTrackCollector: { @table::AlignTrackCollector }
+      CosmicTrackDetails: { @table::CosmicTrackDetails }
+  }
+}
+
+
+physics.RecoPath : [ @sequence::TrkHitReco.PrepareHits,  @sequence::CosmicTracking.FindCosmicsTight  ]
+physics.EndPath : [ AlignTrackCollector, CosmicTrackDetails ]
+
+physics.analyzers.AlignTrackCollector.CosmicTrackSeedCollection : "CosmicTrackFinderTight"
+physics.analyzers.CosmicTrackDetails.CosmicTrackSeedCollection : "CosmicTrackFinderTight"
+physics.producers.CosmicTrackFinderTight.ComboHitCollection : "makePH"
+
+
+# set Millepede output filenames explicitly here
+physics.analyzers.AlignTrackCollector.TrackDataOutputFile : "etc.owner.bootstrap-alignment.millepede-trackcollection-sequencer.bin"
+physics.analyzers.AlignTrackCollector.LabelsOutputFile : "labels.txt" # set to "none" if you don't want to write these.
+
+# diagnostics and plots, usually
+services.TFileService.fileName: "rec.owner.bootstrap-alignment.trackdiag-sequencer.root"
