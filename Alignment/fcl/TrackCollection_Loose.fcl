@@ -1,0 +1,16 @@
+#include "CosmicAlignment/fcl/TrackCollection.fcl"
+physics.TrigPath : [ @sequence::TrkHitReco.PrepareHits,  @sequence::CosmicTracking.FindCosmicsLoose ]
+
+physics.analyzers.AlignTrackCollector.CosmicTrackSeedCollection : "CosmicTrackFinderLoose"
+physics.analyzers.CosmicTrackDetails.CosmicTrackSeedCollection : "CosmicTrackFinderLoose"
+physics.producers.CosmicTrackFinderLoose.ComboHitCollection : "makePH"
+
+
+outputs.recoTracks.fileName : "rec.owner.bootstrap-alignment.LOOSE-CosmicTrackCollection-sequencer.art"
+
+# set Millepede output filenames explicitly here
+physics.analyzers.AlignTrackCollector.TrackDataOutputFile : "etc.owner.bootstrap-alignment.millepede-LOOSE-trackcollection-sequencer.bin"
+physics.analyzers.AlignTrackCollector.LabelsOutputFile : "labels.txt" # set to "none" if you don't want to write these.
+
+# diagnostics and plots, usually
+services.TFileService.fileName: "rec.owner.bootstrap-alignment.LOOSE-trackdiag-sequencer.root"
