@@ -1,0 +1,57 @@
+# Run StrawAndCaloDigisFromFragments module to convert artdaq::Fragment collections
+# into TRK and CAL digi collections.
+# Usage: mu2e -c DAQ/test/generateDigiFromFragment.fcl -s <input art files> -n '-1'
+#
+#
+# Contact person G. Pezzullo
+#include "DAQ/fcl/prolog_trigger.fcl"
+process_name : FragmentToDigi
+
+source : {
+  module_type : RootInput
+  fileNames   : @nil
+
+  # firstEvent  : 500
+  maxEvents   : -1
+}
+
+physics : {
+
+  producers : {
+      makeSD:
+      {
+	 @table::DAQ.producers.makeSD
+      }
+
+      CaloDigiFromShower:		
+      {	 
+	 @table::DAQ.producers.makeSD
+      }
+  }
+
+   #  t1 : [ makeSD ] 
+   t1 : [ makeSD, CaloDigiFromShower ] 
+   e1 : [ outfile ]
+
+  trigger_paths  : [t1]
+  end_paths      : [e1]
+#  end_paths      : []
+
+}
+
+outputs:  {
+  outfile :  {
+      module_type   :   RootOutput
+      fileName      :   "digis_from_frags_debug.art"
+
+      outputCommands: [ "drop *_*_*_*",
+			"keep *_*_*_*"
+		       ]
+#		      "keep mu2e::StrawDigis_makeSD_*_*",
+#		      "keep mu2e::CaloDigis_CaloDigiFromShower_*_*",
+#                      "keep mu2e::DataBlocks_TrackerPacketProducer_*_*",
+#                      "keep mu2e::DataBlocks_CalorimeterPacketProducer_*_*"
+##                      "keep mu2e::DataBlocks_CosmicRayVetoPacketProducer_*_*"
+#                     ]
+  }
+}
