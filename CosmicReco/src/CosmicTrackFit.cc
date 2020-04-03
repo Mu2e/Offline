@@ -82,7 +82,8 @@ namespace mu2e
 	_gaussTres (conf.gaussTres()),
 	_maxTres (conf.maxTres()),
 	_maxd (conf.maxd()),
-	_maxpull (conf.maxpull())
+	_maxpull (conf.maxpull()),
+        _useTSeedDirection (conf.UseTSeedDirection())
 	{}
 	 
     /* ---------------Initialize Fit----------------//
@@ -198,7 +199,12 @@ namespace mu2e
      const ComboHit* chN = &combohits[combohits.size()-1]; 
 
      //Step 1: Get Initial Estimate of track direction
-     XYZVec ZPrime = InitLineDirection(ch0, chN);  
+     XYZVec ZPrime;
+     if (_useTSeedDirection){
+       ZPrime = tseed._track.FitEquation.Dir;
+     }else{
+       ZPrime = InitLineDirection(ch0, chN);
+     }
      std::vector<XYZVec> AxesList = ParametricFit::GetAxes(ZPrime);
      TrackAxes InitAxes = ParametricFit::GetTrackAxes(ZPrime);
     
