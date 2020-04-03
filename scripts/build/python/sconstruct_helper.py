@@ -33,6 +33,7 @@ def mu2eEnvironment():
     mu2eOpts['libdir'] = base+'/lib'
     mu2eOpts['bindir'] = base+'/bin'
     mu2eOpts['tmpdir'] = base+'/tmp'
+    mu2eOpts['gendir'] = base+'/gen'
 
     envopts = os.environ['MU2E_SETUP_BUILDOPTS'].strip()
     fsopts  = subprocess.check_output(primaryBase+"/buildopts",shell=True).strip().decode() # decode to convert byte string to text
@@ -173,7 +174,7 @@ def sconscriptList(mu2eOpts):
 
 # Make sure the build directories are created
 def makeSubDirs(mu2eOpts):
-    for dir in ['libdir','bindir','tmpdir'] :
+    for dir in ['libdir','bindir','tmpdir', 'gendir'] :
         cmd = "mkdir -p "+mu2eOpts[dir]
         subprocess.call(cmd, shell=True)
 
