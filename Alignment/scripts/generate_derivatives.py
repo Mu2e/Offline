@@ -194,11 +194,11 @@ def generate_expressions(approximate=True, remove_globalparam_dependence=True):
     # track parametrisation
     a0 = Symbol('a0', real=True)
     b0 = Symbol('b0', real=True)
-    track_pos = Matrix([a0, b0, 0])
+    track_pos = Matrix([a0,0, b0])
 
     a1 = Symbol('a1', real=True)
     b1 = Symbol('b1', real=True)
-    track_dir = Matrix([a1, b1, 1])
+    track_dir = Matrix([a1,-1, b1])
     # t0 = Symbol('t0')
 
     # wire position (midpoint) and direction
