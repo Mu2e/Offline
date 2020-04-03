@@ -57,9 +57,9 @@
 #include "fhiclcpp/types/Table.h"                      // for Table::me...
 #include "fhiclcpp/types/detail/validationException.h" // for validatio...
 
-#include "CosmicAlignment/inc/AlignTrackTypes.hh"    // for AlignTrac...
-#include "CosmicAlignment/inc/Mille.h"               // for Mille
-#include "CosmicAlignment/inc/RigidBodyDOCADeriv.hh" // for CosmicTra...
+#include "Alignment/inc/AlignTrackTypes.hh"    // for AlignTrac...
+#include "Alignment/inc/Mille.h"               // for Mille
+#include "Alignment/inc/RigidBodyDOCADeriv.hh" // for CosmicTra...
 
 namespace art {
 class Run;
@@ -312,13 +312,13 @@ bool AlignTrackCollector::filter_CosmicTrackSeedCollection(art::Event const& eve
         XYZVec track_dir(st.MinuitFitParams.A1, st.MinuitFitParams.B1, 1);
 
         if (seed_only) {
-            track_pos = st.FitEquationXYZ.Pos;
-            track_dir = st.FitEquationXYZ.Dir;
+            //track_pos = st.FitEquationXYZ.Pos;
+            //track_dir = st.FitEquationXYZ.Dir;
         }
-        double A0 = track_pos.X();
-        double A1 = track_dir.X();
-        double B0 = track_pos.Y();
-        double B1 = track_dir.Y();
+        double A0 = st.MinuitFitParams.A0//track_pos.X();
+        double A1 = st.MinuitFitParams.A1;//track_dir.X();
+        double B0 = st.MinuitFitParams.B0;
+        double B1 = st.MinuitFitParams.B1;
 
         double chisq = 0;
         double chsqndof = 0;
@@ -349,19 +349,13 @@ bool AlignTrackCollector::filter_CosmicTrackSeedCollection(art::Event const& eve
                 CosmicTrack_DCA_LocalDeriv(A0, B0, A1, B1, straw_mp.x(), straw_mp.y(), straw_mp.z(),
                                            wire_dir.x(), wire_dir.y(), wire_dir.z(),
 
-                                           // warning: this is not changed in AlignedTrackerMaker
-                                           // this is a problem if our starting geometry is not
-                                           // simply the nominal geometry
                                            plane_origin.x(), plane_origin.y(), plane_origin.z(),
                                            panel_origin.x(), panel_origin.y(), panel_origin.z());
 
             auto derivativesGlobal =
                 CosmicTrack_DCA_GlobalDeriv(A0, B0, A1, B1, straw_mp.x(), straw_mp.y(),
                                             straw_mp.z(), wire_dir.x(), wire_dir.y(), wire_dir.z(),
-
-                                            // warning: this is not changed in AlignedTrackerMaker
-                                            // this is a problem if our starting geometry is not
-                                            // simply the nominal geometry
+                                            
                                             plane_origin.x(), plane_origin.y(), plane_origin.z(),
                                             panel_origin.x(), panel_origin.y(), panel_origin.z());
 
