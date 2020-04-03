@@ -80,7 +80,7 @@ namespace mu2e {
     const auto& calib = trkQualEntry._effCalib; // get the calibration
     float trkQualCut = -1;
     for (const auto& i_pair : calib) {
-      if (i_pair.first == _effRequest) {
+      if (std::fabs(i_pair.first - (1 - _effRequest))<1e-5) {
 	trkQualCut = i_pair.second;
 	break;
       }
@@ -88,19 +88,19 @@ namespace mu2e {
     if (trkQualCut < 0) {
       throw cet::exception("TrkQualFilter") << "trkQualCut is less than 0 (value = " << trkQualCut << ")" << std::endl;
     }
+    //    std::cout << _trainName << " Cut = " << trkQualCut << std::endl;
     
     auto trkQualCollsH = event.getValidHandle<TrkQualCollection>(_inputTag);
 
     bool pass = false;
     for(const auto& i_trkQual : *trkQualCollsH) {
-      std::cout << _trainName << " = " << i_trkQual.MVAOutput() << std::endl;
-      
+      //      std::cout << _trainName << " = " << i_trkQual.MVAOutput() << std::endl;
+            
       if (i_trkQual.MVAOutput() >= trkQualCut) {
       	pass = true;
       }
     }
-
-    std::cout << "Passed? " << pass << std::endl;
+    //    std::cout << "Passed? " << pass << std::endl;
 
     if (pass) {
       return true;

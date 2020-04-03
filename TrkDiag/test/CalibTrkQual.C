@@ -72,6 +72,7 @@ std::string CalibTrkQual_Eff(TTree* tree, std::string train_name, TCut signal_cu
     calibtable << "    <Calib Index=\"" << counter << "\" CalibVal=\"" << 1-i_eff << "\" Val=\"" << trkqual_cut << "\"/>" << std::endl;
     ++counter;
   }
+  calibtable << "    <Calib Index=\"" << counter << "\" CalibVal=\"0\" Val=\"0.0\"/>" << std::endl;
   return calibtable.str();
 }
 

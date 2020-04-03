@@ -300,8 +300,10 @@
     <Calib Index="97" CalibVal="0.03" Val="0.085503"/>
     <Calib Index="98" CalibVal="0.02" Val="0.036463"/>
     <Calib Index="99" CalibVal="0.01" Val="0.007343"/>
+    <Calib Index="100" CalibVal="0" Val="0.0"/>
   </Calibration>
 </MethodSetup>
+
 
 
 
