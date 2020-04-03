@@ -86,9 +86,9 @@ namespace mu2e {
   {
     if (m_mtDebugOutput) {
       G4cout << "WorkerRM on thread " << workerID_ << " is being created\n!";
+      //to see random number seeds for each event and other verbosity, uncomment this
+      SetPrintProgress(1);
     }
-    //to see random number seeds for each event and other verbosity, uncomment this
-    SetPrintProgress(1);
   }
 
   // Destructor of base is called automatically.  No need to do anything.

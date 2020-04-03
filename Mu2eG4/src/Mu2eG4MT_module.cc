@@ -60,7 +60,6 @@
 
 // TBB includes
 #include "tbb/concurrent_hash_map.h"
-#include "tbb/task_group.h"
 
 using namespace std;
 
@@ -153,6 +152,7 @@ namespace mu2e {
 
     typedef tbb::concurrent_hash_map< std::thread::id, std::unique_ptr<Mu2eG4WorkerRunManager> > WorkerRMMap;
     WorkerRMMap myworkerRunManagerMap;
+    
   }; // end G4 header
 
 
@@ -320,7 +320,7 @@ namespace mu2e {
 
   // Create one G4 event and copy its output to the art::event.
   void Mu2eG4MT::produce(art::Event& event, art::ProcessingFrame const& procFrame) {
-
+    
     art::Handle<GenParticleCollection> gensHandle;
     if(!(_generatorModuleLabel == art::InputTag())) {
       event.getByLabel(_generatorModuleLabel, gensHandle);
@@ -422,27 +422,13 @@ namespace mu2e {
     G4cout << "At endRun, we have " << myworkerRunManagerMap.size() << " members in the map\n";
     // KJK - should move this to endJob
 
-    std::atomic<int> threads_left = myworkerRunManagerMap.size();//num_threads;
-
-
-    tbb::task_group g;
-    for (int i = 0; i < static_cast<int>(myworkerRunManagerMap.size()); ++i) {
-
-      auto destroy_worker = [&threads_left, this] {
-        WorkerRMMap::accessor access_workerMap;
-        std::thread::id this_tid = std::this_thread::get_id();
-        if (myworkerRunManagerMap.find(access_workerMap, this_tid)) {
-          access_workerMap->second.reset();
-        }
-        access_workerMap.release();
-        --threads_left;
-        while (threads_left != 0) {}
-        return;
-      };
-      g.run(destroy_worker);
+    WorkerRMMap::iterator it = myworkerRunManagerMap.begin();
+    
+    while (it != myworkerRunManagerMap.end()) {
+      it->second.release();
+      it++;
     }
-    g.wait();
-
+        
     if (storePhysicsTablesDir_!="") {
       if ( _rmvlevel > 0 ) {
         G4cout << __func__ << " Will write out physics tables to "
