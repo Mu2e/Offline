@@ -433,6 +433,7 @@ bool filter_CosmicKalSeedCollection(art::Event const& event, Tracker const& trac
                                     StrawResponse const& _srep,
                                     CosmicTrackSeedCollection const& coscol)
 {
+    return false;
 }
 
 int AlignTrackCollector::getLabel(int const& object_cls, int const& obj_uid, int const& dof_id)
