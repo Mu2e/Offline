@@ -285,40 +285,33 @@ bool AlignTrackCollector::filter_CosmicTrackSeedCollection(art::Event const& eve
         CosmicTrack const& st = sts._track;
         TrkFitFlag const& status = sts._status;
 
-        std::cout << "found track object" << std::endl;
+        std::cout << "found track candidate " << std::endl;
 
         if (!status.hasAllProperties(TrkFitFlag::helixOK)) {
             continue;
         }
 
-        if (_diag > 0 && st.converged) {
-            // fill seed diagnostics
-            for (ComboHit const& hit : sts.hits()) {
-                plane_seedtracks->Fill(hit.strawId().plane());
-            } // Ask Richie about seed chi squared
-        }
-
-        if (!st.converged || (!st.minuit_converged && !seed_only)) {
+        if (!st.converged || (!st.minuit_converged)) {
             continue;
         }
 
-        if (!seed_only && isnan(st.MinuitFitParams.A0)) {
+        if (isnan(st.MinuitParams.A0)) {
             continue;
         }
 
         std::cout << "Have track." << std::endl;
 
-        XYZVec track_pos(st.MinuitFitParams.A0, st.MinuitFitParams.B0, 0);
-        XYZVec track_dir(st.MinuitFitParams.A1, st.MinuitFitParams.B1, 1);
+        XYZVec track_pos(st.MinuitParams.A0, 0, st.MinuitParams.B0);
+        XYZVec track_dir(st.MinuitParams.A1, -1, st.MinuitParams.B1);
 
         if (seed_only) {
             //track_pos = st.FitEquationXYZ.Pos;
             //track_dir = st.FitEquationXYZ.Dir;
         }
-        double A0 = st.MinuitFitParams.A0//track_pos.X();
-        double A1 = st.MinuitFitParams.A1;//track_dir.X();
-        double B0 = st.MinuitFitParams.B0;
-        double B1 = st.MinuitFitParams.B1;
+        double A0 = st.MinuitParams.A0;//track_pos.X();
+        double A1 = st.MinuitParams.A1;//track_dir.X();
+        double B0 = st.MinuitParams.B0;
+        double B1 = st.MinuitParams.B1;
 
         double chisq = 0;
         double chsqndof = 0;
@@ -355,7 +348,7 @@ bool AlignTrackCollector::filter_CosmicTrackSeedCollection(art::Event const& eve
             auto derivativesGlobal =
                 CosmicTrack_DCA_GlobalDeriv(A0, B0, A1, B1, straw_mp.x(), straw_mp.y(),
                                             straw_mp.z(), wire_dir.x(), wire_dir.y(), wire_dir.z(),
-                                            
+
                                             plane_origin.x(), plane_origin.y(), plane_origin.z(),
                                             panel_origin.x(), panel_origin.y(), panel_origin.z());
 
@@ -421,13 +414,15 @@ bool AlignTrackCollector::filter_CosmicTrackSeedCollection(art::Event const& eve
 
                 chsqndof -= 4.0; // 4 track parameters
                 boost::math::chi_squared mydist(chsqndof);
-                track_pvalue->Fill(boost::math::cdf(mydist, chisq));
 
+                // currently hopeless! FIXME
+                track_pvalue->Fill(boost::math::cdf(mydist, chisq));
                 track_chisq->Fill(chisq / chsqndof);
             }
             // Write the track buffer to file if we wrote a track
             millepede->end();
 
+            std::cout << "wrote track " << tracks_written << std::endl;
             wrote_track = true;
         }
     }
