@@ -29,7 +29,7 @@
  *  (last update by $Author: flucke $)
  */
 
-#include "CosmicAlignment/inc/Mille.h"
+#include "Alignment/inc/Mille.h"
 
 #include <fstream>
 #include <iostream>
