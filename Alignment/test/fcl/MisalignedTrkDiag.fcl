@@ -1,0 +1,12 @@
+#include "TrkDiag/fcl/TrkAnaDigisReco.fcl"
+
+#include "JobConfig/reco/misalign_epilog.fcl"
+#
+services.ProditionsService.alignedTracker.useDb: true
+services.ProditionsService.alignedTracker.verbose: 2
+
+services.ProditionsService.mu2eDetector.useDb: true
+services.ProditionsService.mu2eDetector.verbose: 2
+physics.analyzers.TrkAnaNeg.diagLevel: 2
+
+services.DbService.textFile: ["misalignments/PlaneTranslationOnly.txt"]
