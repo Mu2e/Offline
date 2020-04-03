@@ -88,6 +88,7 @@ namespace mu2e{
 	      fhicl::Atom<art::InputTag> chToken{Name("ComboHitCollection"),Comment("tag for combo hit collection")};
 	      fhicl::Atom<art::InputTag> tcToken{Name("TimeClusterCollection"),Comment("tag for time cluster collection")};
               fhicl::Atom<bool> UseLineFinder{Name("UseLineFinder"),Comment("use line finder for seeding drift fit")};
+              fhicl::Atom<bool> UseChiFit{Name("UseChiFit"),Comment("use chi fit to improve seed"),true};
               fhicl::Atom<art::InputTag> lfToken{Name("LineFinderTag"),Comment("tag for line finder seed"),"LineFinder"};
 	      fhicl::Atom<bool> DoDrift{Name("DoDrift"),Comment("turn on for drift fit")};
 	      fhicl::Atom<bool> UseTime{Name("UseTime"),Comment("use time for drift fit")};
@@ -115,6 +116,7 @@ namespace mu2e{
 	art::InputTag  _tcToken;
 
         bool _UseLineFinder;
+        bool _UseChiFit;
         art::InputTag _lfToken;
 
 	bool 	   _DoDrift;
@@ -141,6 +143,7 @@ namespace mu2e{
 	_chToken (conf().chToken()),
 	_tcToken (conf().tcToken()),
         _UseLineFinder (conf().UseLineFinder()),
+        _UseChiFit (conf().UseChiFit()),
         _lfToken (conf().lfToken()),
 	_DoDrift (conf().DoDrift()),
 	_UseTime (conf().UseTime()),
@@ -238,7 +241,9 @@ namespace mu2e{
           tseed._timeCluster = art::Ptr<TimeCluster>(tcH,index);
           tseed._status.merge(TrkFitFlag::Straight);
           tseed._status.merge(TrkFitFlag::hitsOK);
+        }
 
+        if (_UseChiFit){
           _tfit.BeginFit(title.str().c_str(), tseed, event, chcol,panelHitIdxs);
 
           if( _tfit.goodTrack(tseed._track) == false){
