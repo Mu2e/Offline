@@ -454,7 +454,7 @@ void AlignTrackCollector::analyze(art::Event const& event)
     switch (collect_track) {
 
     case CosmicRecoTrack:
-
+    {
         auto stH = event.getValidHandle<CosmicTrackSeedCollection>(_costag);
         if (stH.product() == 0)
             return;
@@ -462,6 +462,10 @@ void AlignTrackCollector::analyze(art::Event const& event)
         CosmicTrackSeedCollection const& coscol = *stH.product();
         filter_CosmicTrackSeedCollection(event, tracker, _srep, coscol);
 
+        break;
+    }
+    case CosmicKalmanTrack:
+        break;
     }
 }
 
