@@ -200,9 +200,6 @@ namespace mu2e {
       fhicl::Atom<std::string> generatorModuleLabel {Name("generatorModuleLabel"), ""};
 
       fhicl::Atom<bool> G4InteralFiltering {Name("G4InteralFiltering"), false};
-//      fhicl::Atom<long> initialSeed {Name("initialSeed"),
-//         Comment("Only used by Mu2eG4MTRunManager when running in MT mode"),
-//          8 };
     };
   }
 }
