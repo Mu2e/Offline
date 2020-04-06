@@ -18,6 +18,8 @@
 #include "DataProducts/inc/TrkTypes.hh"
 #include "RecoDataProducts/inc/StrawDigiCollection.hh"
 #include "RecoDataProducts/inc/CaloDigiCollection.hh"
+#include "ProditionsService/inc/ProditionsHandle.hh"
+#include "TrackerConditions/inc/TrackerDAQConditions.hh"
 
 #include <iostream>
 
@@ -66,6 +68,8 @@ private:
 
   art::InputTag trkFragmentsTag_;
   art::InputTag caloFragmentsTag_;
+
+  mu2e::ProditionsHandle<mu2e::TrackerDAQConditions> _trackerdaqconds_h;
   
   const int hexShiftPrint = 7;
 
@@ -96,6 +100,8 @@ StrawAndCaloDigisFromFragments::
 produce( Event & event )
 {
   art::EventNumber_t eventNumber = event.event();
+  
+  mu2e::TrackerDAQConditions const& trackerdaqconds = _trackerdaqconds_h.get(event.id());
 
   art::Handle<artdaq::Fragments> trkFragments, calFragments;
   size_t numTrkFrags(0), numCalFrags(0);
@@ -257,7 +263,7 @@ produce( Event & event )
 	  continue;
 	}
 
-	mu2e::StrawId sid(trkData->StrawIndex);
+	mu2e::StrawId sid = trackerdaqconds.packetIdToStrawId(trkData->StrawIndex);
 	mu2e::TrkTypes::TDCValues tdc = {trkData->TDC0 , trkData->TDC1};
 	mu2e::TrkTypes::TOTValues tot = {trkData->TOT0 , trkData->TOT1};
 

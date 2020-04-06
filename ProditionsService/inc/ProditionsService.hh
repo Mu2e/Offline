@@ -30,6 +30,7 @@
 #include "TrackerConfig/inc/AlignedTrackerConfig.hh"
 #include "TrackerConfig/inc/Mu2eMaterialConfig.hh"
 #include "TrackerConfig/inc/Mu2eDetectorConfig.hh"
+#include "TrackerConfig/inc/TrackerDAQConditionsConfig.hh"
 
 
 namespace mu2e {
@@ -70,6 +71,9 @@ namespace mu2e {
       fhicl::Table<Mu2eDetectorConfig> mu2eDetector{
 	  Name("mu2eDetector"), 
 	  Comment("Mu2e detector model for BTrk") };
+      fhicl::Table<TrackerDAQConditionsConfig> trackerDAQConditions{
+          Name("trackerDAQConditions"),
+          Comment("DAQ channel maps for tracker") };
 
     };
 

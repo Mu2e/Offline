@@ -16,6 +16,7 @@
 #include "TrackerConditions/inc/AlignedTrackerCache.hh"
 #include "TrackerConditions/inc/Mu2eMaterialCache.hh"
 #include "TrackerConditions/inc/Mu2eDetectorCache.hh"
+#include "TrackerConditions/inc/TrackerDAQConditionsCache.hh"
 
 using namespace std;
 
@@ -47,6 +48,8 @@ namespace mu2e {
     auto mmc = std::make_shared<mu2e::Mu2eMaterialCache>(_config.mu2eMaterial());
     _caches[mmc->name()] = mmc;
     auto mdc = std::make_shared<mu2e::Mu2eDetectorCache>(_config.mu2eDetector());
+    _caches[mdc->name()] = mdc;
+    auto tdc = std::make_shared<mu2e::TrackerDAQConditionsCache>(_config.trackerDAQConditions());
     _caches[mdc->name()] = mdc;
 
     if( _config.verbose()>0) {
