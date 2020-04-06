@@ -41,6 +41,8 @@
 #include "RecoDataProducts/inc/StrawDigiCollection.hh"
 #include "RecoDataProducts/inc/CaloDigiCollection.hh"
 //#include "DAQDataProducts/inc/DataBlockCollection.hh"
+#include "ProditionsService/inc/ProditionsHandle.hh"
+#include "TrackerConditions/inc/TrackerDAQConditions.hh"
 
 #include "SeedService/inc/SeedService.hh"
 
@@ -138,6 +140,8 @@ namespace mu2e {
 
     int _includeDMAHeaders;
 
+    mu2e::ProditionsHandle<mu2e::TrackerDAQConditions> _trackerdaqconds_h;
+
     // Set to 1 to save packet data to a binary file
     int _generateBinaryFile;
 
@@ -195,7 +199,7 @@ namespace mu2e {
     //--------------------------------------------------------------------------------
     //  methods used to process the tracker data
     //--------------------------------------------------------------------------------
-    void   fillTrackerDataPacket(const StrawDigi& SD, TrackerDataPacket& TrkData);
+    void   fillTrackerDataPacket(mu2e::TrackerDAQConditions const& trackerdaqconds, const StrawDigi& SD, TrackerDataPacket& TrkData);
 
     void   fillTrackerHeaderDataPacket(const StrawDigi& SD, DataBlockHeader& HeaderData, uint64_t& EventNum);
 
@@ -533,9 +537,9 @@ namespace mu2e {
 
   }
 
-  void   ArtBinaryPacketsFromDigis::fillTrackerDataPacket(const StrawDigi& SD, TrackerDataPacket& TrkData) {
+  void   ArtBinaryPacketsFromDigis::fillTrackerDataPacket(mu2e::TrackerDAQConditions const& trackerdaqconds, const StrawDigi& SD, TrackerDataPacket& TrkData) {
 
-    TrkData.StrawIndex = SD.strawId().asUint16();
+    TrkData.StrawIndex = trackerdaqconds.strawIdToPacketId(SD.strawId());
     TrkData.TDC0 = SD.TDC(StrawEnd::cal);
     TrkData.TDC1 = SD.TDC(StrawEnd::hv);
     TrkData.TOT0 = SD.TOT(StrawEnd::cal);
@@ -976,6 +980,8 @@ namespace mu2e {
 						     tracker_data_block_list_t &trackerData) {
     auto  const& sdH = evt.getValidHandle(_sdtoken);
     const StrawDigiCollection& hits_SD(*sdH);
+    
+    mu2e::TrackerDAQConditions const& trackerdaqconds = _trackerdaqconds_h.get(evt.id());
 
     tracker_data_block_list_t tmpTrackerData;
 
@@ -984,7 +990,7 @@ namespace mu2e {
 
       // Fill struct with info for current hit
       TrackerDataPacket trkData;
-      fillTrackerDataPacket(SD, trkData);
+      fillTrackerDataPacket(trackerdaqconds, SD, trkData);
       DataBlockHeader   headerData;
       fillTrackerHeaderDataPacket(SD, headerData, eventNum);
 

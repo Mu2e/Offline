@@ -34,6 +34,7 @@ namespace mu2e {
     void print(std::ostream& os) const;
 
     StrawId packetIdToStrawId(uint16_t packetId) const;
+    uint16_t strawIdToPacketId(StrawId const& strawId) const;
 
     // all of these must be called to fill this object
     void setDRACStrawMap(std::vector<uint16_t> DRACStrawMap) { _DRACStrawMap = DRACStrawMap; }
