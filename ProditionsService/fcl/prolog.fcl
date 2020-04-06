@@ -12,6 +12,7 @@ Proditions : {
    alignedTracker : @local::AlignedTracker
    mu2eMaterial : @local::Mu2eMaterial
    mu2eDetector : @local::Mu2eDetector
+   trackerDAQConditions : @local::TrackerDAQConditions
    verbose : 0
 }
 
