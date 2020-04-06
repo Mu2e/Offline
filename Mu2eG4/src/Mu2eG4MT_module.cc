@@ -25,6 +25,7 @@
 #include "Mu2eG4/inc/SimParticleHelper.hh"
 #include "Mu2eG4/inc/SimParticlePrimaryHelper.hh"
 #include "Mu2eG4/inc/Mu2eG4Config.hh"
+#include "Mu2eG4/inc/Mu2eG4MTRunManager.hh"
 
 // Data products that will be produced by this module.
 #include "MCDataProducts/inc/GenParticleCollection.hh"
@@ -46,6 +47,7 @@
 
 // Geant4 includes
 #include "G4Run.hh"
+#include "G4VUserPhysicsList.hh"
 
 // C++ includes.
 #include <cstdlib>
@@ -419,14 +421,14 @@ namespace mu2e {
   // Tell G4 that this run is over.
   void Mu2eG4MT::endRun(art::Run & run, art::ProcessingFrame const& procFrame) {
 
-    G4cout << "At endRun, we have " << myworkerRunManagerMap.size() << " members in the map\n";
-    // KJK - should move this to endJob
-
+    if (_mtDebugOutput){
+      G4cout << "At endRun, we have " << myworkerRunManagerMap.size() << " members in the map\n";
+    }
     WorkerRMMap::iterator it = myworkerRunManagerMap.begin();
     
     while (it != myworkerRunManagerMap.end()) {
       it->second.release();
-      it++;
+      ++it;
     }
         
     if (storePhysicsTablesDir_!="") {
@@ -435,7 +437,7 @@ namespace mu2e {
                << storePhysicsTablesDir_
                << G4endl;
       }
-      //NEED TO ADD THIS BACK IN  physicsList_->StorePhysicsTable(storePhysicsTablesDir_);
+      masterThread->masterRunManagerPtr()->getMasterPhysicsList()->StorePhysicsTable(storePhysicsTablesDir_);
     }
 
     G4cout << "at endRun: numExcludedEvents = " << numExcludedEvents << G4endl;
