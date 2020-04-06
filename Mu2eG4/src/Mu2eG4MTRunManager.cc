@@ -56,7 +56,6 @@ namespace mu2e {
     masterRunAction_(nullptr),
     physicsList_(nullptr),
     rmvlevel_(conf.debug().diagLevel())
-    //initialSeed_(art::ServiceHandle<SeedService>()->getSeed())
   {
     const_cast<CLHEP::HepRandomEngine*>(getMasterRandomEngine())->setSeed(art::ServiceHandle<SeedService>()->getSeed(),0);
   }
