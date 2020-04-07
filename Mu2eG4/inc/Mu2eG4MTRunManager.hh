@@ -65,7 +65,6 @@ namespace mu2e {
     G4VUserPhysicsList* physicsList_;
 
     int rmvlevel_;
-    //long initialSeed_;
   };
 
 } // end namespace mu2e

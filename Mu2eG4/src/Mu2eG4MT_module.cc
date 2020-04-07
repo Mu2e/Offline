@@ -25,6 +25,7 @@
 #include "Mu2eG4/inc/SimParticleHelper.hh"
 #include "Mu2eG4/inc/SimParticlePrimaryHelper.hh"
 #include "Mu2eG4/inc/Mu2eG4Config.hh"
+#include "Mu2eG4/inc/Mu2eG4MTRunManager.hh"
 
 // Data products that will be produced by this module.
 #include "MCDataProducts/inc/GenParticleCollection.hh"
@@ -46,6 +47,7 @@
 
 // Geant4 includes
 #include "G4Run.hh"
+#include "G4VUserPhysicsList.hh"
 
 // C++ includes.
 #include <cstdlib>
@@ -60,7 +62,6 @@
 
 // TBB includes
 #include "tbb/concurrent_hash_map.h"
-#include "tbb/task_group.h"
 
 using namespace std;
 
@@ -153,6 +154,7 @@ namespace mu2e {
 
     typedef tbb::concurrent_hash_map< std::thread::id, std::unique_ptr<Mu2eG4WorkerRunManager> > WorkerRMMap;
     WorkerRMMap myworkerRunManagerMap;
+    
   }; // end G4 header
 
 
@@ -320,7 +322,7 @@ namespace mu2e {
 
   // Create one G4 event and copy its output to the art::event.
   void Mu2eG4MT::produce(art::Event& event, art::ProcessingFrame const& procFrame) {
-
+    
     art::Handle<GenParticleCollection> gensHandle;
     if(!(_generatorModuleLabel == art::InputTag())) {
       event.getByLabel(_generatorModuleLabel, gensHandle);
@@ -419,37 +421,23 @@ namespace mu2e {
   // Tell G4 that this run is over.
   void Mu2eG4MT::endRun(art::Run & run, art::ProcessingFrame const& procFrame) {
 
-    G4cout << "At endRun, we have " << myworkerRunManagerMap.size() << " members in the map\n";
-    // KJK - should move this to endJob
-
-    std::atomic<int> threads_left = myworkerRunManagerMap.size();//num_threads;
-
-
-    tbb::task_group g;
-    for (int i = 0; i < static_cast<int>(myworkerRunManagerMap.size()); ++i) {
-
-      auto destroy_worker = [&threads_left, this] {
-        WorkerRMMap::accessor access_workerMap;
-        std::thread::id this_tid = std::this_thread::get_id();
-        if (myworkerRunManagerMap.find(access_workerMap, this_tid)) {
-          access_workerMap->second.reset();
-        }
-        access_workerMap.release();
-        --threads_left;
-        while (threads_left != 0) {}
-        return;
-      };
-      g.run(destroy_worker);
+    if (_mtDebugOutput){
+      G4cout << "At endRun, we have " << myworkerRunManagerMap.size() << " members in the map\n";
     }
-    g.wait();
-
+    WorkerRMMap::iterator it = myworkerRunManagerMap.begin();
+    
+    while (it != myworkerRunManagerMap.end()) {
+      it->second.release();
+      ++it;
+    }
+        
     if (storePhysicsTablesDir_!="") {
       if ( _rmvlevel > 0 ) {
         G4cout << __func__ << " Will write out physics tables to "
                << storePhysicsTablesDir_
                << G4endl;
       }
-      //NEED TO ADD THIS BACK IN  physicsList_->StorePhysicsTable(storePhysicsTablesDir_);
+      masterThread->masterRunManagerPtr()->getMasterPhysicsList()->StorePhysicsTable(storePhysicsTablesDir_);
     }
 
     G4cout << "at endRun: numExcludedEvents = " << numExcludedEvents << G4endl;
