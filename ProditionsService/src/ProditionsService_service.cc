@@ -50,7 +50,7 @@ namespace mu2e {
     auto mdc = std::make_shared<mu2e::Mu2eDetectorCache>(_config.mu2eDetector());
     _caches[mdc->name()] = mdc;
     auto tdc = std::make_shared<mu2e::TrackerDAQConditionsCache>(_config.trackerDAQConditions());
-    _caches[mdc->name()] = mdc;
+    _caches[tdc->name()] = tdc;
 
     if( _config.verbose()>0) {
       cout << "Proditions built caches:" << endl;
