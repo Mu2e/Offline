@@ -886,7 +886,7 @@ namespace mu2e {
     }
     while (sz % 16 != 0) sz++;
 
-    if(sz > sizeof(mu2e_databuff_t)){
+    if(sz >= sizeof(mu2e_databuff_t)){
       throw cet::exception("Online-RECO")<<"ArtBinaryPacketsFromDigis::fillCalorimeterDataStream : sz < sizeof(mu2e_databuff_t)" << std::endl;
     }
     if (dataStream.back().second + sz >= sizeof(mu2e_databuff_t)) {
