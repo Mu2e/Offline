@@ -21,6 +21,7 @@
 #include "GeometryService/inc/WorldG4.hh"
 #include "GeometryService/inc/DetectorSystem.hh"
 #include "GeometryService/inc/Mu2eEnvelope.hh"
+#include "SeedService/inc/SeedService.hh"
 #include "MCDataProducts/inc/GenParticle.hh"
 #include "MCDataProducts/inc/GenParticleCollection.hh"
 #include "CalorimeterGeom/inc/Calorimeter.hh"
@@ -65,7 +66,6 @@ struct Config
   fhicl::Atom<float> targetBoxYmax{Name("targetBoxYmax"), Comment("Target box y max")};
   fhicl::Atom<float> targetBoxZmin{Name("targetBoxZmin"), Comment("Target box z min")};
   fhicl::Atom<float> targetBoxZmax{Name("targetBoxZmax"), Comment("Target box z max")};
-  fhicl::Atom<int> seed{Name("seed"), Comment("Seed for particle random offset")};
   fhicl::Atom<bool> resample{Name("resample"), Comment("Resampling flag")};
   fhicl::Atom<bool> compact{Name("compact"), Comment("CORSIKA compact output flag")};
 };
@@ -78,7 +78,7 @@ namespace mu2e {
   class CosmicCORSIKA {
 
     public:
-      CosmicCORSIKA(const Config& conf);
+      CosmicCORSIKA(const Config& conf, SeedService::seed_t seed);
       // CosmicCORSIKA(art::Run &run, CLHEP::HepRandomEngine &engine);
       ~CosmicCORSIKA();
 
