@@ -12,7 +12,7 @@ using CLHEP::HepLorentzVector;
 
 namespace mu2e {
 
-  CosmicCORSIKA::CosmicCORSIKA(const Config &conf)
+  CosmicCORSIKA::CosmicCORSIKA(const Config &conf, SeedService::seed_t seed)
       : _fluxConstant(conf.fluxConstant()),
         _tOffset(conf.tOffset()),
         _projectToTargetBox(conf.projectToTargetBox()),
@@ -25,7 +25,7 @@ namespace mu2e {
         _targetBoxZmax(conf.targetBoxZmax()),  // mm
         _resample(conf.resample()),
         _compact(conf.compact()),
-        _engine(conf.seed()),
+        _engine(seed),
         _randFlatX(_engine, -(_targetBoxXmax-_targetBoxXmin+_showerAreaExtension)/2, +(_targetBoxXmax-_targetBoxXmin+_showerAreaExtension)/2),
         _randFlatZ(_engine, -(_targetBoxZmax-_targetBoxZmin+_showerAreaExtension)/2, +(_targetBoxZmax-_targetBoxZmin+_showerAreaExtension)/2)
   {
