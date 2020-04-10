@@ -16,10 +16,10 @@ void CalibTrkQual(TTree* tree, std::string train_name, TCut signal_cut) {
 
   std::cout << "Calibrating " << train_name << "..." << std::endl;
 
-  std::string xmlfilename = "TrkDiag/test/" + train_name + ".weights.xml";
+  std::string xmlfilename = "AnalysisConditions/weights/" + train_name + ".weights.xml";
   std::ifstream xmlfile(xmlfilename, std::ofstream::in);
 
-  std::string outfilename = "TrkDiag/test/" + train_name + ".weights.xml_calibrating";
+  std::string outfilename = "AnalysisConditions/weights/" + train_name + ".weights.xml_calibrating";
   std::ofstream outfile(outfilename, std::ofstream::out);
 
   const int n_chars = 256;
