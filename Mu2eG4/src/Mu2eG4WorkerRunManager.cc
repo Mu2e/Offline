@@ -84,7 +84,7 @@ namespace mu2e {
     steppingCuts_(createMu2eG4Cuts(conf.Mu2eG4SteppingOnlyCut.get<fhicl::ParameterSet>(), mu2elimits_)),
     commonCuts_(createMu2eG4Cuts(conf.Mu2eG4CommonCut.get<fhicl::ParameterSet>(), mu2elimits_))
   {
-    if (m_mtDebugOutput) {
+    if (m_mtDebugOutput > 0) {
       G4cout << "WorkerRM on thread " << workerID_ << " is being created\n!";
       //to see random number seeds for each event and other verbosity, uncomment this
       SetPrintProgress(1);
@@ -93,7 +93,7 @@ namespace mu2e {
 
   // Destructor of base is called automatically.  No need to do anything.
   Mu2eG4WorkerRunManager::~Mu2eG4WorkerRunManager(){
-    if (m_mtDebugOutput) {
+    if (m_mtDebugOutput > 0) {
       G4cout << "WorkerRM on thread " << workerID_ << " is being destroyed\n!";
     }
   }
@@ -103,7 +103,7 @@ namespace mu2e {
 
     masterRM = mRM;
 
-    if (m_mtDebugOutput) {
+    if (m_mtDebugOutput > 0) {
       G4cout << "starting WorkerRM::initializeThread on thread: " << workerID_ << G4endl;
     }
 
@@ -167,7 +167,7 @@ namespace mu2e {
 
     //we have to do this so that the state is correct for RunInitialization
     G4StateManager::GetStateManager()->SetNewState(G4State_Idle);
-    if (m_mtDebugOutput) {
+    if (m_mtDebugOutput > 0) {
       G4cout << "completed WorkerRM::initializeThread on thread " << workerID_ << G4endl;
     }
   }
