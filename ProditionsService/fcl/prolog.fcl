@@ -1,5 +1,5 @@
 #include "TrackerConditions/fcl/prolog.fcl"
-#include "TrkDiag/fcl/prolog.fcl"
+#include "AnalysisConditions/fcl/prolog.fcl"
 
 BEGIN_PROLOG
 

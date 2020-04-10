@@ -18,7 +18,7 @@
 #include "RecoDataProducts/inc/TrkQual.hh"
 #include "Mu2eUtilities/inc/MVATools.hh"
 #include "ProditionsService/inc/ProditionsHandle.hh"
-#include "Mu2eUtilities/inc/TrkQualCatalog.hh"
+#include "AnalysisConditions/inc/TrkQualCatalog.hh"
 
 #include <iostream>
 #include <string>

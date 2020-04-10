@@ -1,17 +1,17 @@
-#ifndef Mu2eUtilities_MVACatalogCache_hh
-#define Mu2eUtilities_MVACatalogCache_hh
+#ifndef AnalysisConditions_MVACatalogCache_hh
+#define AnalysisConditions_MVACatalogCache_hh
 
 //
 // MVACatalogCache for ProditionsCache
 // This is a templated class that takes the MVAStruct<DETAIL> class and the MVAToolDb class
-// For an example use see Mu2eUtilities/inc/TrkQualCatalogCache.hh
+// For an example use see AnalysisConditions/inc/TrkQualCatalogCache.hh
 //
 
 #include "Mu2eInterfaces/inc/ProditionsCache.hh"
 #include "DbTables/inc/DbIoV.hh"
 #include "DbService/inc/DbHandle.hh"
 #include "DbTables/inc/MVAToolDb.hh"
-#include "Mu2eUtilities/inc/MVACatalogMaker.hh"
+#include "AnalysisConditions/inc/MVACatalogMaker.hh"
 
 namespace mu2e {
   template <class T, class DB>

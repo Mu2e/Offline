@@ -31,7 +31,7 @@
 #include "TrackerConfig/inc/Mu2eMaterialConfig.hh"
 #include "TrackerConfig/inc/Mu2eDetectorConfig.hh"
 
-#include "Mu2eUtilities/inc/MVACatalogConfig.hh"
+#include "AnalysisConfig/inc/MVACatalogConfig.hh"
 
 namespace mu2e {
 

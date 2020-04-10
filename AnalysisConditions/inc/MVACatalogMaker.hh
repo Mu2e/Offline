@@ -1,12 +1,12 @@
-#ifndef Mu2eUtilities_MVACatalogMaker_hh
-#define Mu2eUtilities_MVACatalogMaker_hh
+#ifndef AnalysisConditions_MVACatalogMaker_hh
+#define AnalysisConditions_MVACatalogMaker_hh
 
 //
 // Makes the MVACatalog ProditionsEntitiy
 //
 
-#include "Mu2eUtilities/inc/MVACatalog.hh"
-#include "Mu2eUtilities/inc/MVACatalogConfig.hh"
+#include "AnalysisConditions/inc/MVACatalog.hh"
+#include "AnalysisConfig/inc/MVACatalogConfig.hh"
 #include "DbTables/inc/MVAToolDb.hh"
 
 namespace mu2e {
