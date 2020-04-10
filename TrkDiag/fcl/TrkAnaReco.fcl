@@ -8,7 +8,7 @@ process_name : TrkAnaReco
 source : { module_type : RootInput }
 
 services : @local::Services.Reco
-services.DbService.textFile : ["TrkDiag/test/TrkQualDb.txt" ]
+services.DbService.textFile : [ @local::TrkQualCatalogDbOverride ]
 
 physics :
 {

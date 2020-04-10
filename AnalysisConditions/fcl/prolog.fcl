@@ -4,4 +4,6 @@ BEGIN_PROLOG
    useDb : true
    mvaConfigs : [ ]
   }
+
+  TrkQualCatalogDbOverride : "AnalysisConditions/fcl/TrkQualDb.txt"
 END_PROLOG
