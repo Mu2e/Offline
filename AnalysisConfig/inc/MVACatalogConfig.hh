@@ -1,5 +1,5 @@
-#ifndef Mu2eUtilities_MVACatalogConfig_hh
-#define Mu2eUtilities_MVACatalogConfig_hh
+#ifndef AnalysisConfig_MVACatalogConfig_hh
+#define AnalysisConfig_MVACatalogConfig_hh
 
 //
 // Configuration for the MVACatalog ProditionsEntitiy

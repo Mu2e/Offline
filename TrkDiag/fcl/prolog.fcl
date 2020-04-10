@@ -80,11 +80,6 @@ BEGIN_PROLOG
   }
 
   # Track quality module
-  TrkQualCatalog : {
-   verbose : 1
-   useDb : true
-   mvaConfigs : [ ]
-  }
   # Example of how to define XML file for a training here in fcl
   # -- trainName is the name of the training
   # -- xmlFileName is the name of the XML file

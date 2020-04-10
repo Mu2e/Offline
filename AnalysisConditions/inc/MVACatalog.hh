@@ -1,10 +1,10 @@
-#ifndef Mu2eUtilities_MVACatalog_hh
-#define Mu2eUtilities_MVACatalog_hh
+#ifndef AnalysisConditions_MVACatalog_hh
+#define AnalysisConditions_MVACatalog_hh
 
 //
 // MVACatalog is the ProditionsEntry for MVAToolDb
 // This is a templated class that takes the MVAStruct<DETAIL> class
-// See Mu2eUtilities/inc/TrkQualCatalog.hh for an example use
+// See AnalysisConditions/inc/TrkQualCatalog.hh for an example use
 //
 
 // Mu2e includes

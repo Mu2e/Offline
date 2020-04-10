@@ -1,0 +1,7 @@
+BEGIN_PROLOG
+  TrkQualCatalog : {
+   verbose : 1
+   useDb : true
+   mvaConfigs : [ ]
+  }
+END_PROLOG
