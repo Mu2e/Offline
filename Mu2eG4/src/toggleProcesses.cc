@@ -43,15 +43,16 @@
 
 // Mu2e includes
 #include "Mu2eG4/inc/Mu2eRecorderProcess.hh"
-#include "fhiclcpp/ParameterSet.h"
+
+#include "Mu2eG4/inc/toggleProcesses.hh"
 
 namespace mu2e{
 
   //================================================================
-  void switchDecayOff(const fhicl::ParameterSet& pset) {
+  void switchDecayOff(const Mu2eG4Config::Physics& phys, const Mu2eG4Config::Debug& debug) {
 
-    std::vector<int> plist = pset.get<std::vector<int> >("physics.noDecay");
-    int diagLevel = pset.get<int>("debug.diagLevel",0);
+    std::vector<int> plist = phys.noDecay();
+    int diagLevel = debug.diagLevel();
 
     G4ParticleTable *theParticleTable = G4ParticleTable::GetParticleTable();
     for( size_t i=0; i<plist.size(); ++i ) {
@@ -90,10 +91,10 @@ namespace mu2e{
 
   }
 
-  void switchCaptureDModel(const fhicl::ParameterSet& pset) {
+  void switchCaptureDModel(const Mu2eG4Config::Physics& phys, const Mu2eG4Config::Debug& debug) {
 
-    std::string cDModel= pset.get<std::string>("physics.captureDModel");
-    int diagLevel = pset.get<int>("debug.diagLevel",0);
+    std::string cDModel= phys.captureDModel();
+    int diagLevel = debug.diagLevel();
 
     // change muMinusCaptureAtRest deexcitation model to muMinusNuclearCapture
     // this is limited to muon minus only
@@ -144,10 +145,10 @@ namespace mu2e{
   }
 
   //================================================================
-  void addUserProcesses(const fhicl::ParameterSet& pset) {
-    std::vector<std::string> plist = pset.get<std::vector<std::string> >("physics.addProcesses");
+  void addUserProcesses(const Mu2eG4Config::Physics& phys, const Mu2eG4Config::Debug& debug) {
+    std::vector<std::string> plist = phys.addProcesses();
 
-    int diagLevel = pset.get<int>("debug.diagLevel",0);
+    int diagLevel = debug.diagLevel();
 
     // search for process names, we assume process implies specific particle, for now
 
@@ -197,15 +198,13 @@ namespace mu2e{
     }
 
     // special process to look at the track before post step interaction
-    // fixme: make it a function guarded by pset flag and access to the stepping verbosity level
-
     if (diagLevel>0) {
       G4cout << __func__
              << " adding Mu2eRecorderProcess to all G4ParticleTable particles" << G4endl;
     }
 
     Mu2eRecorderProcess* rmp = new Mu2eRecorderProcess();
-    rmp->SetVerboseLevel(pset.get<int>("debug.steppingVerbosityLevel",0)-1);
+    rmp->SetVerboseLevel(debug.steppingVerbosityLevel()-1);
     G4ParticleTable* ptable = G4ParticleTable::GetParticleTable();
     G4ParticleTable::G4PTblDicIterator* iter = ptable->GetIterator();
     iter->reset();

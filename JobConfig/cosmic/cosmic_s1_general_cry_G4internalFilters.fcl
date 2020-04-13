@@ -1,0 +1,16 @@
+#include "JobConfig/cosmic/cosmic_defs_s1s2_G4internalFilters.fclinc"
+
+# this sets the number of threads used in MT mode
+# number and threads and number of schedules should
+# be the same
+
+physics.producers.generate.inputFile    : "EventGenerator/defaultConfigs/defaultCRYconfig.txt"
+physics.producers.generate.module_type  : CRYEventGenerator
+
+physics.producers.g4run.G4InteralFiltering   : true
+physics.producers.g4run.errorOnFailureToPut : false
+
+services.GeometryService.simulatedDetector.tool_type : "Mu2e"
+services.TFileService.fileName       : "nts.owner.cosmic-g4s1s2-crygeneral.version.sequencer.root"
+outputs.filteredOutput.fileName      : "sim.owner.cosmic-g4s1s2-crygeneral.version.sequencer.art"
+outputs.truncatedEvtsOutput.fileName : "sim.owner.cosmic-g4s1s2-truncated-crygeneral.version.sequencer.art"

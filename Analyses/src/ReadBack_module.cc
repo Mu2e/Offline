@@ -695,6 +695,7 @@ namespace mu2e {
              << mom                << " "
              << point.mag()        << " "
              << hit.eDep()         << " "
+             << hit.visibleEDep()  << " "
              << s
              << endl;
       }

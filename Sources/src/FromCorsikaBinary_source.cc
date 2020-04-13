@@ -110,7 +110,7 @@ namespace mu2e {
       , _lowE(conf().lowE())
       , _highE(conf().highE())
       , _fluxConstant(conf().fluxConstant())
-      , _corsikaGen(conf())
+      , _corsikaGen(conf(), art::ServiceHandle<SeedService>{}->getInputSourceSeed())
     {
       if(!art::RunID(runNumber_).isValid()) {
         throw cet::exception("BADCONFIG", " FromCorsikaBinary: ")
@@ -121,7 +121,6 @@ namespace mu2e {
       rh.reconstitutes<mu2e::CosmicLivetime,art::InEvent>(myModuleLabel_);
       _area = (conf().targetBoxXmax() + 2 * conf().showerAreaExtension() - conf().targetBoxXmin())
             * (conf().targetBoxZmax() + 2 * conf().showerAreaExtension() - conf().targetBoxZmin()) * _mm22m2; // m^2
-
     }
 
     //----------------------------------------------------------------

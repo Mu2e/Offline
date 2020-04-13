@@ -44,7 +44,6 @@ physics :
        visualization: @local::mu2eg4NoVisualization
 
        generatorModuleLabel: generate
-       MultiStageParameters: {} // this is the first stage
 
        SDConfig: 
        {

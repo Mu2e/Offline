@@ -3,17 +3,13 @@
 //
 // Set the G4 BirksConstant as specified in the fhicl file.
 //
-// $Id: setBirksConstant.hh,v 1.1 2015/11/04 19:28:01 genser Exp $
-// $Author: genser $
-// $Date: 2015/11/04 19:28:01 $
-//
 //-----------------------------------------------------------------------------
 
-namespace fhicl { class ParameterSet; }
+#include "Mu2eG4/inc/Mu2eG4Config.hh"
 
 namespace mu2e{
 
-  void setBirksConstant(const fhicl::ParameterSet& pset);
+  void setBirksConstant(const Mu2eG4Config::Top& config);
 
 }  // end namespace mu2e
 

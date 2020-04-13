@@ -1,7 +1,7 @@
 //S Middleton - March 19
 //Class to store the summations which for elements of gamma and beta matrices for straight track cosmic fits
 #include <cstdio>
-#include <math.h>
+#include <cmath>
 #include<exception>
 #include "DataProducts/inc/XYZVec.hh"
 #include "Mu2eUtilities/inc/BuildLinearFitMatrixSums.hh"

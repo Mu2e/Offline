@@ -1,0 +1,20 @@
+// -*- mode:c++ -*-
+
+// default to the most current implementation, since geometry shouldn't matter too much other than running
+#include "Mu2eG4/geom/geom_common_current.txt"
+
+//redefine the fields here if desired, to plot different maps
+vector<string> bfield.innerMaps = {
+  "BFieldMaps/Mau13/DSMap.header"
+ ,"BFieldMaps/Mau13/PSMap.header"
+ ,"BFieldMaps/Mau13/TSuMap_fix.header"
+ ,"BFieldMaps/Mau13/TSdMap.header"
+ ,"BFieldMaps/Mau13/PStoDumpAreaMap.header"
+ ,"BFieldMaps/Mau13/ProtonDumpAreaMap.header"
+ ,"BFieldMaps/Mau13/DSSweepExtension.header"
+};
+
+vector<string> bfield.outerMaps = {
+  "BFieldMaps/Mau9/PSAreaMap.header"
+ ,"BFieldMaps/Mau13/WorldMap.header"
+};

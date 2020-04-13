@@ -17,8 +17,8 @@
 #include "G4Threading.hh"
 
 //Mu2e includes
+#include "Mu2eG4/inc/Mu2eG4Config.hh"
 #include "Mu2eG4/inc/Mu2eG4TrajectoryControl.hh"
-#include "Mu2eUtilities/inc/SimParticleCollectionPrinter.hh"
 #include "Mu2eG4/inc/Mu2eG4ResourceLimits.hh"
 #include "Mu2eG4/inc/PhysicsProcessInfo.hh"
 
@@ -27,23 +27,21 @@
 #include <vector>
 #include <memory>
 
-namespace fhicl { class ParameterSet; }
-
 namespace CLHEP { class Hep3Vector; }
 
 namespace mu2e {
 
-    class SensitiveDetectorHelper;
-    class IMu2eG4Cut;
-    class PrimaryGeneratorAction;
-    class Mu2eG4PerThreadStorage;
-    class PhysicalVolumeHelper;
+  class SensitiveDetectorHelper;
+  class IMu2eG4Cut;
+  class PrimaryGeneratorAction;
+  class Mu2eG4PerThreadStorage;
+  class PhysicalVolumeHelper;
 
 
-class ActionInitialization : public G4VUserActionInitialization
-{
+  class ActionInitialization : public G4VUserActionInitialization
+  {
   public:
-    ActionInitialization(const fhicl::ParameterSet& pset,
+    ActionInitialization(const Mu2eG4Config::Top& conf,
                          SensitiveDetectorHelper* sensitive_detectorhelper,
                          Mu2eG4PerThreadStorage* per_thread_storage,
                          PhysicalVolumeHelper* phys_volume_helper,
@@ -62,13 +60,11 @@ class ActionInitialization : public G4VUserActionInitialization
     virtual G4VSteppingVerbose* InitializeSteppingVerbose() const;
 
 
-   private:
+  private:
 
-    fhicl::ParameterSet const& pset_;
+    Mu2eG4Config::Top conf_;
 
-    //these are set using pset
     Mu2eG4TrajectoryControl trajectoryControl_;
-    SimParticleCollectionPrinter simParticlePrinter_;
     std::vector<double> timeVDtimes_;
     Mu2eG4ResourceLimits mu2eLimits_;
 
@@ -79,12 +75,12 @@ class ActionInitialization : public G4VUserActionInitialization
     SensitiveDetectorHelper* sensitiveDetectorHelper_;
     Mu2eG4PerThreadStorage*  perThreadStorage_;
     PhysicalVolumeHelper* physVolHelper_;
-    
+
     mutable PhysicsProcessInfo physicsProcessInfo_;
-    
+
     CLHEP::Hep3Vector const& originInWorld_;
     unsigned stageOffset_;
-};
+  };
 
 }  // end namespace mu2e
 #endif /* Mu2eG4_ActionInitialization_hh */

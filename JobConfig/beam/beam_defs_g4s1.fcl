@@ -122,9 +122,7 @@ physics : {
 
    producers: {
 
-      generate: {
-         module_type          : PrimaryProtonGun
-      }
+      generate: @local::PrimaryProtonGun
 
       genCounter: {
          module_type: GenEventCounter
@@ -139,7 +137,6 @@ physics : {
          visualization: @local::mu2eg4NoVisualization
 
          generatorModuleLabel: generate
-         MultiStageParameters: {} // this is the first stage
 
          SDConfig: {
             enableSD: [ virtualdetector ] // activate just the explicitly listed SDs
@@ -269,7 +266,8 @@ outputs: {
       ]
    }
 
-   dsout : {
+   
+dsout : {
       module_type : RootOutput
       SelectEvents: ["trigdsregion"]
       outputCommands:   [ "drop *_*_*_*",

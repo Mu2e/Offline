@@ -1,14 +1,23 @@
 #include "Mu2eG4/inc/Mu2eG4MultiStageParameters.hh"
 
-#include "fhiclcpp/ParameterSet.h"
-
 namespace mu2e {
-  Mu2eG4MultiStageParameters::Mu2eG4MultiStageParameters(const fhicl::ParameterSet& pset)
-    : multiStage_(!pset.is_empty())
-    , simParticleNumberOffset_{multiStage_ ? pset.get<unsigned>("simParticleNumberOffset") : 0 }
-    , inputSimParticles_{multiStage_ ? pset.get<std::string>("inputSimParticles") : "" }
-    , inputMCTrajectories_{multiStage_ ? pset.get<std::string>("inputMCTrajectories") : "" }
-    , inputPhysVolumeMultiInfo_{multiStage_ ? pset.get<std::string>("inputPhysVolumeMultiInfo") : "" }
-    , genInputHits_{multiStage_ ? pset.get<std::vector<art::InputTag> >("genInputHits") : std::vector<art::InputTag>() }
-  {}
+  Mu2eG4MultiStageParameters::Mu2eG4MultiStageParameters(const Mu2eG4Config::Top& conf)
+    : multiStage_(false)
+    , simParticleNumberOffset_{0 }
+    , inputSimParticles_{""}
+    , inputMCTrajectories_{""}
+    , inputPhysVolumeMultiInfo_{""}
+    , genInputHits_{std::vector<art::InputTag>()}
+  {
+    Mu2eG4Config::MultiStageParameters_ msp;
+    multiStage_ = conf.MultiStageParameters(msp);
+    if(multiStage_) {
+      simParticleNumberOffset_ = msp.simParticleNumberOffset();
+      inputSimParticles_ = msp.inputSimParticles();
+      inputMCTrajectories_ = msp.inputMCTrajectories();
+      inputPhysVolumeMultiInfo_ = msp.inputPhysVolumeMultiInfo();
+      genInputHits_ = msp.genInputHits();
+    }
+
+  }
 }
