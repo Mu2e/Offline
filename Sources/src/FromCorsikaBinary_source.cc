@@ -137,13 +137,32 @@ namespace mu2e {
 
     //----------------------------------------------------------------
     unsigned CorsikaBinaryDetail::getSubRunNumber(const std::string& filename) const {
-      const std::string::size_type islash = filename.find("DAT") ;
-      const std::string basename = (islash == std::string::npos) ? filename : filename.substr(islash + 3);
+      const std::string::size_type corsikaConvention = filename.find("DAT");
+      const std::string::size_type mu2eConvention = filename.find(".csk");
+
       unsigned sr(-1);
-      std::istringstream is(basename);
-      if(!(is>>sr)) {
-        throw cet::exception("BADINPUTS")<<"Expect an unsigned integer at the beginning of input file name, got "<<basename<<"\n";
+
+      if (corsikaConvention != std::string::npos) {
+          const std::string basename = filename.substr(corsikaConvention + 3);
+          std::istringstream is(basename);
+          if (!(is >> sr)) {
+              throw cet::exception("BADINPUTS")
+                  << "Expect an unsigned integer at the beginning of input file name, got "
+                  << basename << "\n";
+          }
+      } else if (mu2eConvention != std::string::npos) {
+          unsigned last = filename.find_last_of(".");
+          std::string filenameNoExt = filename.substr(0, last);
+          last = filenameNoExt.find_last_of(".");
+          std::string subrun = filenameNoExt.substr(last+1);
+          std::istringstream is(subrun);
+          if (!(is >> sr)) {
+              throw cet::exception("BADINPUTS")
+                  << "Expect an unsigned integer as fifth field in the filename, got "
+                  << filename << "\n";
+          }
       }
+
       return sr;
     }
 
