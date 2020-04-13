@@ -28,11 +28,14 @@
 namespace mu2e {
  
   using TimeAndPhiClusterFinderTypes::Data_t;
+  using TimeAndPhiClusterFinderTypes::Config;
   
   class TimeAndPhiClusterFinderDiag: public mu2e::ModuleHistToolBase  {
 
     public:
-        TimeAndPhiClusterFinderDiag(const fhicl::ParameterSet& PSet);
+        
+        explicit TimeAndPhiClusterFinderDiag(const Config& config);
+        explicit TimeAndPhiClusterFinderDiag(const fhicl::ParameterSet& PSet);
        ~TimeAndPhiClusterFinderDiag() = default;
 
        virtual int bookHistograms(art::ServiceHandle<art::TFileService>& Tfs) override;
@@ -50,6 +53,12 @@ namespace mu2e {
        art::InputTag  mcdigisTag_;
   };
      
+  
+  TimeAndPhiClusterFinderDiag::TimeAndPhiClusterFinderDiag(const Config& config) : 
+    treeInit_(  false),
+    mcdiag_(    config.mcDiag()),
+    mcdigisTag_(config.strawDigiMCCollection())
+  {}
   
   TimeAndPhiClusterFinderDiag::TimeAndPhiClusterFinderDiag(const fhicl::ParameterSet& pset) : 
     treeInit_(  false),
@@ -107,7 +116,6 @@ namespace mu2e {
      // we need to set up the branches once the data_ structure has been allocated
      if (!treeInit_) setupBranches();
      
-/*
      // fix the MC truth for the MVA, and set MVAsel for conversion clusters
      if (mcdiag_)
      {
@@ -119,7 +127,7 @@ namespace mu2e {
             std::vector<StrawDigiIndex> dids;
             data_->chcol_->fillStrawDigiIndices(*data_->event_,data_->hitIdxMVA_[i],dids);      
             const StrawDigiMC& mcdigi        = mcdigis.at(dids[0]);// taking 1st digi: is there a better idea??
-            const art::Ptr<SimParticle>& spp = mcdigi.stepPointMC(StrawEnd::cal)->simParticle();
+            const art::Ptr<SimParticle>& spp = mcdigi.earlyStrawGasStep()->simParticle();
             int genId(-1);
             if (spp->genParticle().isNonnull()) genId = spp->genParticle()->generatorId().id();
             data_->MVAsig_[i]  = genId;  
@@ -131,11 +139,6 @@ namespace mu2e {
          for (int i=0;i<data_->nhitMVA_;++i) 
             if (signalCluster.find(data_->ncluMVA_[i]) != signalCluster.end()) data_->MVAsel_[i]=1;
      }     
-*/     
-     
-     
-     
-     
      
      trkdiag_->Fill();
      return 0; 

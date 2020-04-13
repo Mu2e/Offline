@@ -15,16 +15,17 @@ FitDir : {
 }
 # duplicated: FIXME!
 TimeCalculator : {
-  CaloT0Offset : @local::TrackCaloMatching.DtOffset
+  TrkToCaloTimeOffset : @local::TrackCaloMatching.DtOffset
   CaloTimeErr : 0.5
 }
 
-TTtimeClusterFinder : { @table::TimeClusterFinder
+TTtimeClusterFinder : { 
+    @table::TimeClusterFinder
     ComboHitCollection     : "TTflagBkgHits"
-    CaloClusterCollection  : "CaloClusterFast"
     StrawHitFlagCollection : "none"
+    CaloClusterCollection  : "CaloClusterFast"
     TestFlag               : false
-    T0Calculator : @local::TimeCalculator
+    T0Calculator           : @local::TimeCalculator
 }
 
 TTrobustHelixFinder : { @table::RobustHelixFinder

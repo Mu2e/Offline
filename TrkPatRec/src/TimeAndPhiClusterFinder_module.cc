@@ -1,14 +1,18 @@
 //
-// TTracker time / phi cluster finder
+// Tracker time / phi cluster finder
 //
 // Original author B. Echenard
 //
+
 #include "art/Utilities/make_tool.h"
 #include "art/Framework/Principal/Event.h"
-#include "fhiclcpp/ParameterSet.h"
 #include "art/Framework/Principal/Handle.h"
 #include "art/Framework/Core/EDProducer.h"
 #include "art/Framework/Core/ModuleMacros.h"
+#include "canvas/Utilities/InputTag.h"
+#include "fhiclcpp/types/Atom.h"
+#include "fhiclcpp/types/Sequence.h"
+#include "fhiclcpp/types/Table.h"
 
 #include "GeneralUtilities/inc/Angles.hh"
 #include "Mu2eUtilities/inc/polyAtan2.hh"
@@ -28,35 +32,73 @@
 
 
 
-namespace {
- 
-  struct TimeCandidate
-  {
-     TimeCandidate()  {strawIdx_.reserve(32);} 
-     
-     float                       t0_       = 0;
-     unsigned                    nsh_      = 0;
-     std::vector<StrawHitIndex>  strawIdx_ = {};
-     art::Ptr<mu2e::CaloCluster> caloCluster_;     
-  };  
-  
-  typedef std::vector<TimeCandidate> TimeCandidateCollection;
+namespace
+{ 
+   struct TimeCandidate
+   {
+      TimeCandidate()  {strawIdx_.reserve(32);} 
 
+      float                       t0_       = 0;
+      unsigned                    nsh_      = 0;
+      std::vector<StrawHitIndex>  strawIdx_ = {};
+      art::Ptr<mu2e::CaloCluster> caloCluster_;     
+   };  
+
+   typedef std::vector<TimeCandidate> TimeCandidateCollection;
 }
 
 
 
-namespace mu2e {
 
+namespace mu2e {
+  
   using TimeAndPhiClusterFinderTypes::Data_t;
 
   class TimeAndPhiClusterFinder : public art::EDProducer 
-  {
+  {     
      public:
-       explicit TimeAndPhiClusterFinder(const fhicl::ParameterSet& pset);
+       
+       struct Config
+       {
+           using Name    = fhicl::Name;
+           using Comment = fhicl::Comment;
+           fhicl::Atom<art::InputTag>              comboHitCollection     {Name("ComboHitCollection"),     Comment("ComboHit collection {Name") };
+           fhicl::Atom<art::InputTag>              strawHitFlagCollection {Name("StrawHitFlagCollection"), Comment("StrawHitFlag collection {Name") };
+           fhicl::Atom<art::InputTag>              caloClusterCollection  {Name("CaloClusterCollection"),  Comment("Calo cluster collection {Name") };
+           fhicl::Table<MVATools::Config>          tcMVA                  {Name("TimeClusterMVA"),         Comment("MVA config for TimeAndPhi clutering") }; 
+           fhicl::Sequence<std::string>            hsel                   {Name("HitSelectionBits"),       Comment("HitSelectionBits") }; 
+           fhicl::Sequence<std::string>            hbkg                   {Name("HitBackgroundBits"),      Comment("HitBackgroundBits") }; 
+           fhicl::Atom<bool>                       testflag               {Name("TestFlag"),               Comment("Test hit flags") }; 
+           fhicl::Atom<float>                      tmin                   {Name("Tmin"),                   Comment("Time histogram start") }; 
+           fhicl::Atom<float>                      tmax                   {Name("Tmax"),                   Comment("Time histogram end") }; 
+           fhicl::Atom<float>                      tbin                   {Name("Tbin"),                   Comment("Time histogram bin width") }; 
+           fhicl::Atom<float>                      pbin                   {Name("Pbin"),                   Comment("Phi search algorithm bin width") }; 
+           fhicl::Atom<unsigned>                   minNSHits              {Name("MinNSHits"),              Comment("Minimum number of hits for cluster") }; 
+           fhicl::Atom<bool>                       usecc                  {Name("UseCaloCluster"),         Comment("Use calorimeter cluster") }; 
+           fhicl::Atom<float>                      ccmine                 {Name("CaloClusterMinE"),        Comment("Minimum energy for calorimeter cluster") }; 
+           fhicl::Atom<float>                      ccweight               {Name("CaloClusterWeight"),      Comment("Weight of cluster in tracker hits") }; 
+           fhicl::Table<TrkTimeCalculator::Config> ttcalc                 {Name("T0Calculator"),           Comment("TimeTracker calculator config") }; 
+           fhicl::Atom<float>                      pitch                  {Name("AveragePitch"),           Comment("Average track pitch") }; 
+           fhicl::Atom<unsigned>                   timeStrategy           {Name("TimeStrategy"),           Comment("Strategy to search for time peaks") }; 
+           fhicl::Atom<unsigned>                   windowTime             {Name("WindowTime"),             Comment("Window width for time scan") }; 
+           fhicl::Atom<unsigned>                   minTimeYbin            {Name("MinTimeYbin"),            Comment("Minimum number of bins to start recording max for scanning algo") }; 
+           fhicl::Atom<float>                      maxTimeDT              {Name("MaxTimeDT"),              Comment("Max time difference for hits in cluster") }; 
+           fhicl::Atom<float>                      maxTimeDTCal           {Name("MaxTimeDTCal"),           Comment("Max calo time difference for hits in cluster") }; 
+           fhicl::Atom<unsigned>                   minHitSplit            {Name("MinHitSplit"),            Comment("Minimum numnber of hits to split phi cluster") }; 
+           fhicl::Atom<float>                      MVAScoreCut            {Name("MVAScoreCut"),            Comment("min MVA score to remove hit") }; 
+           fhicl::Atom<bool>                       recover                {Name("Recover"),                Comment("Apply hit recovery algorithm") }; 
+           fhicl::Atom<float>                      dphiMaxReco            {Name("DphiMaxReco"),            Comment("Max phi difference for recovering hits") }; 
+           fhicl::Atom<int>                        printfreq              {Name("Printfreq"),              Comment("Print frequency"), 100 }; 
+           fhicl::Atom<int>                        diag                   {Name("Diag"),                   Comment("Diag level"), 0 }; 
+           fhicl::Table<TimeAndPhiClusterFinderTypes::Config> diagPlugin  {Name("DiagPlugin"),             Comment("Diag Plugin config")}; 
+       };
 
-       void beginJob() override;
-       void produce(art::Event& e) override;
+
+       explicit TimeAndPhiClusterFinder(const art::EDProducer::Table<Config>& config);
+       ~TimeAndPhiClusterFinder() = default;
+       
+       void     beginJob() override;
+       void     produce(art::Event& e) override;
 
 
      private:
@@ -72,7 +114,7 @@ namespace mu2e {
        float                                           tmin_, tmax_, tbin_, pbin_;
        unsigned                                        minNSHits_;
        bool                                            usecc_;
-       float                                           ccmine_;
+       float                                           ccmine_,ccweight_;
        TrkTimeCalculator                               ttcalc_;
        float		                               pitch_; 
        unsigned                                        timeStrategy_;
@@ -89,69 +131,65 @@ namespace mu2e {
        Data_t                                          data_;
 
 
-       void findClusters(           const art::Handle<CaloClusterCollection>& ccH, TimeClusterCollection& tccol);
-       void findCaloSeeds(          const art::Handle<CaloClusterCollection>& ccH, TimeCandidateCollection& tccol);
-       void findTimePeaks(          const art::Handle<CaloClusterCollection>& ccH, TimeCandidateCollection& seeds,const std::vector<float>& comboHitTime);
-       void timePeakScan(           const std::vector<unsigned>& timeHist, std::vector<unsigned>& timePeaks);
-       void timePeakBlind(          const std::vector<unsigned>& timeHist, std::vector<unsigned>& timePeaks, const unsigned nbins);
-       void findPhiPeaks(           TimeCandidate& tc, TimeClusterCollection& tccol); 
-       void associateScan(          const std::vector<unsigned>& phiHist, std::vector<unsigned>& istart, std::vector<unsigned>& iend);
+       void findClusters           (const art::Handle<CaloClusterCollection>& ccH, TimeClusterCollection& tccol);
+       void findCaloSeeds          (const art::Handle<CaloClusterCollection>& ccH, TimeCandidateCollection& tccol);
+       void findTimePeaks          (const art::Handle<CaloClusterCollection>& ccH, TimeCandidateCollection& seeds,const std::vector<float>& comboHitTime);
+       void timePeakScan           (const std::vector<unsigned>& timeHist, std::vector<unsigned>& timePeaks);
+       void timePeakBlind          (const std::vector<unsigned>& timeHist, std::vector<unsigned>& timePeaks, const unsigned nbins);
+       void findPhiPeaks           (TimeCandidate& tc, TimeClusterCollection& tccol); 
+       void associateScan          (const std::vector<unsigned>& phiHist, std::vector<unsigned>& istart, std::vector<unsigned>& iend);
        void filterClusterSequential(TimeCluster& tc, const std::vector<float>& comboHitTime);
-       void recoverHits(            TimeCluster& tc, const std::vector<float>& comboHitTime, const std::vector<std::vector<unsigned>>& hitIndex);       
-       void calculateMean(          TimeCluster& tc, const std::vector<float>& comboHitTime);
-       
-       void fillDiagPreClean(       const TimeCandidateCollection& timeCandidates, const TimeClusterCollection& tccol);
-       void fillDiagPostClean(      const TimeClusterCollection& tccol);
-       void fillDiagMVA(            unsigned iworseHit, const std::vector<float>& mva);
+       void recoverHits            (TimeCluster& tc, const std::vector<float>& comboHitTime, const std::vector<std::vector<unsigned>>& hitIndex);       
+       void calculateMean          (TimeCluster& tc, const std::vector<float>& comboHitTime);       
+       void fillDiagPreClean       (const TimeCandidateCollection& timeCandidates, const TimeClusterCollection& tccol);
+       void fillDiagPostClean      (const TimeClusterCollection& tccol);
+       void fillDiagMVA            (unsigned iworseHit, const std::vector<float>& mva);
 
        inline bool goodHit(const StrawHitFlag& flag) const {return flag.hasAllProperties(hsel_) && !flag.hasAnyProperty(hbkg_);}
        
   };
 
-  
-  
-
-  
-  
-  TimeAndPhiClusterFinder::TimeAndPhiClusterFinder(fhicl::ParameterSet const& pset) :
-    art::EDProducer{pset},
-    iev_(0),
-    chToken_      {consumes<ComboHitCollection>       (pset.get<art::InputTag>("ComboHitCollection"))},
-    shfToken_     {mayConsume<StrawHitFlagCollection> (pset.get<art::InputTag>("StrawHitFlagCollection"))},
-    ccToken_      {mayConsume<CaloClusterCollection>  (pset.get<art::InputTag>("CaloClusterCollection"))},
-    tcMVA_        (pset.get<fhicl::ParameterSet>      ("TimeClusterMVA",        {})),
-    hsel_         (pset.get<std::vector<std::string>> ("HitSelectionBits", std::vector<std::string>{"EnergySelection","TimeSelection","RadiusSelection"})),
-    hbkg_         (pset.get<std::vector<std::string>> ("HitBackgroundBits",std::vector<std::string>{"Background"})),
-    testflag_     (pset.get<bool>                     ("TestFlag")),
-    tmin_         (pset.get<float>                    ("tmin",                  450.0)),
-    tmax_         (pset.get<float>                    ("tmax",                  1750.0)),
-    tbin_         (pset.get<float>                    ("tbin",                  15.0)),
-    pbin_         (pset.get<float>                    ("pbin",                  0.2)),     
-    minNSHits_    (pset.get<unsigned>                 ("minNSHits",              7)),
-    usecc_        (pset.get<bool>                     ("useCaloCluster",        false)),
-    ccmine_       (pset.get<float>                    ("caloClusterMinE",       50.0)),
-    ttcalc_       (pset.get<fhicl::ParameterSet>      ("T0Calculator",          fhicl::ParameterSet())),
-    pitch_        (pset.get<float>                    ("averagePitch",          0.6)), // =sin(lambda)
-    timeStrategy_ (pset.get<unsigned>                 ("timeStrategy",          2)), 
-    windowTime_   (pset.get<unsigned>                 ("timePeakWidth",         1)), 
-    minTimeYbin_  (pset.get<unsigned>                 ("minTimeYbin",           5)),
-    maxTimeDT_    (pset.get<float>                    ("maxTimeDT",             25.0)),
-    maxTimeDTCal_ (pset.get<float>                    ("maxTimeDTCal",          30.0)),
-    minHitSplit_  (pset.get<unsigned>                 ("minHitSplit",           30)), 
-    MVAScoreCut_  (pset.get<float>                    ("MVAScoreCut",           0.8)), 
-    recover_      (pset.get<bool>                     ("recoverHits",           true)), 
-    dphiMaxReco_  (pset.get<bool>                     ("dphiMaxReco",           1.2)), 
-    printfreq_    (pset.get<int>                      ("printFrequency",        100)),
-    diag_         (pset.get<int>                      ("diagLevel",             0)),
-    diagTool_(),
-    data_()
+  TimeAndPhiClusterFinder::TimeAndPhiClusterFinder(const art::EDProducer::Table<Config>& config) :
+     art::EDProducer{config},
+     iev_(0),
+     chToken_      {consumes<ComboHitCollection>      (config().comboHitCollection()) },
+     shfToken_     {mayConsume<StrawHitFlagCollection>(config().strawHitFlagCollection()) },
+     ccToken_      {mayConsume<CaloClusterCollection> (config().caloClusterCollection()) },
+     tcMVA_        (config().tcMVA()),
+     hsel_         (config().hsel()),
+     hbkg_         (config().hbkg()),
+     testflag_     (config().testflag()),
+     tmin_         (config().tmin()),
+     tmax_         (config().tmax()),
+     tbin_         (config().tbin()),
+     pbin_         (config().pbin()),
+     minNSHits_    (config().minNSHits()),
+     usecc_        (config().usecc()),
+     ccmine_       (config().ccmine()),
+     ccweight_     (config().ccweight()),
+     ttcalc_       (config().ttcalc()),
+     pitch_        (config().pitch()),
+     timeStrategy_ (config().timeStrategy()),
+     windowTime_   (config().windowTime()),
+     minTimeYbin_  (config().minTimeYbin()),
+     maxTimeDT_    (config().maxTimeDT()),
+     maxTimeDTCal_ (config().maxTimeDTCal()),
+     minHitSplit_  (config().minHitSplit()),
+     MVAScoreCut_  (config().MVAScoreCut()),
+     recover_      (config().recover()),
+     dphiMaxReco_  (config().dphiMaxReco()),
+     printfreq_    (config().printfreq()),
+     diag_         (config().diag()),
+     diagTool_(),
+     data_()
   {
        produces<TimeClusterCollection>();
        
        unsigned nbins = (unsigned)rint((tmax_-tmin_)/tbin_);
        tmax_ = tmin_+ nbins*tbin_;
-              
-       if (diag_>0) diagTool_ = art::make_tool<ModuleHistToolBase>   (pset.get<fhicl::ParameterSet>("diagPlugin"));
+       
+       //if (diag_>0) diagTool_ = art::make_tool<ModuleHistToolBase>(config.get_PSet().get<fhicl::ParameterSet>("diagPlugin"));       
+       if (diag_>0) diagTool_ = art::make_tool<ModuleHistToolBase>(config().diagPlugin," ");
        
        if (diag_>1)
        {
@@ -188,10 +226,10 @@ namespace mu2e {
 
       if (testflag_)
       {
-         const auto& shfH = event.getValidHandle(shfToken_);
-         shfcol_ = shfH.product();
-         if (shfcol_->size() != chcol_->size())
-	   throw cet::exception("RECO")<<"TimeAndPhiClusterFinder: inconsistent flag collection length " << std::endl;
+          const auto& shfH = event.getValidHandle(shfToken_);
+          shfcol_ = shfH.product();
+          if (shfcol_->size() != chcol_->size())
+	     throw cet::exception("RECO")<<"TimeAndPhiClusterFinder: inconsistent flag collection length " << std::endl;
       }
 
       if (diag_>0) {data_.reset(); data_.event_=&event; data_.chcol_ = chcol_;}
@@ -208,15 +246,15 @@ namespace mu2e {
 
   
 
-  
-
   //--------------------------------------------------------------------------------------------------------------
   void TimeAndPhiClusterFinder::findClusters(const art::Handle<CaloClusterCollection>& ccH, TimeClusterCollection& tccol)
   {            
       
-      // Cache good ComboHit and their recalculated time. Map hits per time slices
+      // Cache good ComboHit and their recalculated time. Map hits per time slices 
+      // (the 0.02 corresponds to 50 bins, an internal parameter that isn't part of the interface)
+      
       unsigned hitIndexSize = unsigned((tmax_-tmin_)*0.02f);
-      std::vector<std::vector<unsigned>> hitIndex(hitIndexSize,std::vector<unsigned>());;
+      std::vector<std::vector<unsigned>> hitIndex(hitIndexSize,std::vector<unsigned>());
       for (auto& vec : hitIndex) vec.reserve(128);
            
       std::vector<float> comboHitTime(chcol_->size(),0.0);
@@ -259,10 +297,6 @@ namespace mu2e {
   }
 
   
-
-
-
-
 
 
   //--------------------------------------------------------------------------------------------------------------
@@ -419,10 +453,10 @@ namespace mu2e {
 
        for (auto ish : tc.strawIdx_) 
        {
-           const ComboHit& ch = chcol_->at(ish);
-           float phi          = ch.pos().phi()+M_PI;
-           unsigned ibin      = unsigned(phi/pbin_);
-           phiHist[ibin]     += ch.nStrawHits();
+            const ComboHit& ch = chcol_->at(ish);
+            float phi          = ch.pos().phi()+M_PI;
+            unsigned ibin      = unsigned(phi/pbin_);
+            phiHist[ibin]     += ch.nStrawHits();
        }
        
        std::vector<unsigned> istart,iend;
@@ -444,8 +478,8 @@ namespace mu2e {
                                      
                if (ibin >= istart[ic] && ibin<iend[ic])
                {
-                  tclu._nsh +=ch.nStrawHits(); 
-                  tclu._strawHitIdxs.emplace_back(sIdx);
+                   tclu._nsh +=ch.nStrawHits(); 
+                   tclu._strawHitIdxs.emplace_back(sIdx);
                }
            } 
            if (tclu._nsh > minNSHits_) tccol.push_back(tclu);
@@ -489,8 +523,8 @@ namespace mu2e {
               unsigned minSum(99),imin(99),leftSum(0),rightSum(0);
               for (unsigned i=is+2;i<ie-2;++i)
               {
-                 unsigned sum = phiHist[(i-1)%len]+phiHist[i%len]+phiHist[(i+1)%len];
-                 if (sum < minSum) {minSum=sum; imin=i;}          
+                  unsigned sum = phiHist[(i-1)%len]+phiHist[i%len]+phiHist[(i+1)%len];
+                  if (sum < minSum) {minSum=sum; imin=i;}          
               }
               for (unsigned i=is;i<imin;++i) leftSum += phiHist[i%len];
               for (unsigned i=imin;i<ie;++i) rightSum += phiHist[i%len];
@@ -515,10 +549,10 @@ namespace mu2e {
           unsigned is0(0);
           for (unsigned i=2;i<phiHist.size()-2;++i)
           {             
-             if (phiHist[(i-1)%len]+phiHist[(i+1)%len]+phiHist[i%len]>1) continue;
-             if (phiHist[i]==1) ++i;
-             if (i-is0>1) { istart.push_back(is0);iend.push_back(i);}
-             is0=i;
+              if (phiHist[(i-1)%len]+phiHist[(i+1)%len]+phiHist[i%len]>1) continue;
+              if (phiHist[i]==1) ++i;
+              if (i-is0>1) { istart.push_back(is0);iend.push_back(i);}
+              is0=i;
           }
           if (phiHist.size()-is0>1) {istart.push_back(is0);iend.push_back(phiHist.size());}
       }
@@ -570,7 +604,7 @@ namespace mu2e {
          if (diag_>1) fillDiagMVA(*worseHit, mvaWorst);
          
          tc._strawHitIdxs.erase(worseHit);                              
-         calculateMean(tc,comboHitTime); //as fast as recalculating time/pos by removing one hit and much cleaner!
+         calculateMean(tc,comboHitTime); //nearly as fast as recalculating time/pos by removing one hit but much cleaner!
      }
      if (diag_>1) ++data_.icluMVA_;
   }
@@ -580,7 +614,7 @@ namespace mu2e {
   void TimeAndPhiClusterFinder::recoverHits(TimeCluster& tc, const std::vector<float>& comboHitTime, 
                                             const std::vector<std::vector<unsigned>>& hitIndex)
   {           
-      float cluPhiMean = polyAtan2( tc._pos.y(), tc._pos.x());
+      float cluPhiMean = polyAtan2(tc._pos.y(), tc._pos.x());
       float cluRadMean = sqrtf(tc._pos.y()*tc._pos.y()+tc._pos.x()*tc._pos.x());
       float cluTime    = tc._t0._t0;
       
@@ -629,18 +663,18 @@ namespace mu2e {
       float tacc(0),tacc2(0),xacc(0),yacc(0),zacc(0),weight(0);
       for (auto ish :tc._strawHitIdxs) 
       {
-         const ComboHit& ch = chcol_->at(ish);
-         tc._nsh += ch.nStrawHits();
+          const ComboHit& ch = chcol_->at(ish);
+          tc._nsh += ch.nStrawHits();
 
-         float htime = comboHitTime[ish];
-         float hwt   = ch.nStrawHits();
+          float htime = comboHitTime[ish];
+          float hwt   = ch.nStrawHits();
 
-         weight += hwt;
-         tacc   += htime*hwt;
-         tacc2  += htime*htime*hwt;
-         xacc   += ch.pos().x()*hwt;
-         yacc   += ch.pos().y()*hwt;
-         zacc   += ch.pos().z()*hwt;
+          weight += hwt;
+          tacc   += htime*hwt;
+          tacc2  += htime*htime*hwt;
+          xacc   += ch.pos().x()*hwt;
+          yacc   += ch.pos().y()*hwt;
+          zacc   += ch.pos().z()*hwt;
       }
       
       tacc/=weight;
@@ -711,18 +745,18 @@ namespace mu2e {
 
   void TimeAndPhiClusterFinder::fillDiagPostClean(const TimeClusterCollection& tccol)
   {
-     int iclu3(0), ih3(0);         
-     for (const auto& tc : tccol) 
-     {
-        for (auto ish : tc._strawHitIdxs)
-        {
-           data_.nclu3_[ih3]  = iclu3; 
-           data_.hitIdx3_[ih3]= ish; 
-           ++ih3; 
-        }                                                      
-        ++iclu3;            
-     }
-     data_.nhit3_=ih3;
+      int iclu3(0), ih3(0);         
+      for (const auto& tc : tccol) 
+      {
+          for (auto ish : tc._strawHitIdxs)
+          {
+             data_.nclu3_[ih3]  = iclu3; 
+             data_.hitIdx3_[ih3]= ish; 
+             ++ih3; 
+          }                                                      
+          ++iclu3;    
+      }
+      data_.nhit3_=ih3;
    }
   
    void TimeAndPhiClusterFinder::fillDiagMVA(unsigned iworseHit, const std::vector<float>& mva)
@@ -739,6 +773,6 @@ namespace mu2e {
   
 }
 
-using mu2e::TimeAndPhiClusterFinder;
-DEFINE_ART_MODULE(TimeAndPhiClusterFinder);
+
+DEFINE_ART_MODULE(mu2e::TimeAndPhiClusterFinder);
 

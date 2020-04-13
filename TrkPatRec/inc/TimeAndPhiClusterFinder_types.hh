@@ -1,6 +1,8 @@
 #ifndef TimeAndPhiClusterFinderTypes_hh
 #define TimeAndPhiClusterFinderTypes_hh
 
+#include "fhiclcpp/types/Atom.h"
+#include "fhiclcpp/types/Sequence.h"
 #include "TTree.h"
 
 namespace art {
@@ -14,6 +16,14 @@ namespace mu2e {
   
   namespace TimeAndPhiClusterFinderTypes {
   
+    struct Config
+    {
+       fhicl::Atom<std::string>   tool_type{             fhicl::Name("tool_type"),             fhicl::Comment("Needed fot backward compatibility"), "" }; 
+       fhicl::Atom<bool>          mcDiag{                fhicl::Name("MCDiag"),                fhicl::Comment("Switch to perform MC diag"), true }; 
+       fhicl::Atom<art::InputTag> strawDigiMCCollection{ fhicl::Name("StrawDigiMCCollection"), fhicl::Comment("StrawDigiMC collection name"), "makeSD" };
+    };       
+    
+    
     struct Data_t {
       
       enum  {kMaxHits = 8192};
