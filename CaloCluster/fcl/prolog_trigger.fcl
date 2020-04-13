@@ -1,7 +1,10 @@
 # -*- mode: tcl -*-
 #------------------------------------------------------------------------------
 #------------------------------------------------------------------------------
-
+BEGIN_PROLOG
+  HitMakerBlindTime      : 500. # ns
+  HitMakerDigiSampling   : 5    # ns
+END_PROLOG
 
 BEGIN_PROLOG
 
@@ -40,6 +43,18 @@ CaloClusterFast :
     includeCrystalHits    : true
 }
 
+NewCaloClusterFast :
+{
+  module_type            : CaloClusterOnline
+  caloCrystalModuleLabel : FastCaloCrystalHitFromHit
+  minClusterEnergy       : 50
+  EminSeed               : 20 
+  ExpandCut              : 1 
+  EnoiseCut              : 1
+  timeCut                : @local::HitMakerBlindTime   
+  deltaTime              : 5.01
+  diagLevel              : 0
+}  
 
 
 CaloClusterTrigger :
@@ -47,9 +62,12 @@ CaloClusterTrigger :
    producers : {
        CaloClusterFast  : @local::CaloClusterFast
        CaloTrigger      : @local::CaloTrigger
+       NewCaloClusterFast  : @local::NewCaloClusterFast
    }
 
    Reco : [ CaloClusterFast ]
+   NewReco : [ NewCaloClusterFast ]
+   CrystalReco : [FastCaloRecoDigiFromDigi, FastCaloCrystalHitFromHit]
 }
 
 

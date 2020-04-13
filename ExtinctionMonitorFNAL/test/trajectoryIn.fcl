@@ -51,7 +51,6 @@ physics : {
          debug: @local::mu2eg4DefaultDebug
          visualization: @local::mu2eg4NoVisualization
          generatorModuleLabel: generate
-         MultiStageParameters: {} // this is the first stage
          SDConfig: {
             enableSD: [ ] // activate just the explicitly listed SDs
             TimeVD: { times: [] }

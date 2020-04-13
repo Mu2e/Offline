@@ -72,7 +72,7 @@ namespace mu2e {
       hTime_     = tfs->make<TH1F>("hTime",   "Hit time ",                  12000,   0., 2000);
       hNRo_      = tfs->make<TH1F>("hNRo",    "Number RO ",                    10,   0.,   10);
       hEdep_Cry_ = tfs->make<TH1F>("hEdepCry","Energy deposited per crystal",2000,   0., 2000);
-      hDelta_    = tfs->make<TH1F>("hDelta",  "Hit time difference",          200, -20,    20);
+      hDelta_    = tfs->make<TH1F>("hDelta",  "Hit time difference",          200, -1,    1);
       hNRo2_     = tfs->make<TH2F>("hNRo2",   "Number RO ",                    5,    0., 5, 50, 0, 50);
       hEdep1_    = tfs->make<TH1F>("hEdep1",  "Hit energy deposition",        200,   0.,  100);
       hEdep2_    = tfs->make<TH1F>("hEdep2",  "Hit energy deposition",        200,   0.,  100);
@@ -133,7 +133,7 @@ namespace mu2e {
           {
             double deltaTime = (*endHit)->time()-(*startHit)->time();
             if (diagLevel_ > 2) hDelta_->Fill(deltaTime);
-
+		
             if (deltaTime > time4Merge_)
               {
                 //double time = timeW/timeWtot;

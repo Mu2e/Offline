@@ -5,7 +5,7 @@ Based on Paul Rubinov's C# code
 
 #include "CRVResponse/inc/MakeCrvSiPMCharges.hh"
 
-#include <math.h>
+#include <cmath>
 #include <iostream>
 #include <algorithm>
 

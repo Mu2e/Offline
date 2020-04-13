@@ -65,8 +65,6 @@ physics : {
             debug             : @local::mu2eg4DefaultDebug
             visualization     : @local::mu2eg4NoVisualization
 
-	    MultiStageParameters : {}
-
             generatorModuleLabel        : generate
             doWriteLegacyPhysVolumeInfo : false
 

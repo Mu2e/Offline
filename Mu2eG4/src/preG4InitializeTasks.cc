@@ -4,23 +4,18 @@
 //
 // Do not put G4 code in this steering routine.
 //
-// $Id: preG4InitializeTasks.cc,v 1.4 2012/11/04 22:06:17 genser Exp $
-// $Author: genser $
-// $Date: 2015/11/04 22:06:17 $
-//
+
 
 #include "Mu2eG4/inc/preG4InitializeTasks.hh"
-
-#include "fhiclcpp/ParameterSet.h"
-
-#include "Mu2eG4/inc/setBirksConstant.hh"
+//#include "Mu2eG4/inc/setBirksConstant.hh"
 
 namespace mu2e{
 
-  void preG4InitializeTasks(const fhicl::ParameterSet& pset) {
+  void preG4InitializeTasks(const Mu2eG4Config::Top& config) {
 
     // Modify Birks Constant for some materials
-    setBirksConstant(pset);
+    // doing it here does not work for Mu2e materials; moving it to ConstructAterials
+    //    setBirksConstant(config);
 
   }
 
