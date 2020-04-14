@@ -59,7 +59,8 @@ namespace mu2e {
           virtual ~TNTClusterer() {};
 
           void          init();
-          virtual void  findClusters(BkgClusterCollection& clusters, const ComboHitCollection& shcol, float mbtime, int iev);
+          virtual void  findClusters(BkgClusterCollection& preFilterClusters, BkgClusterCollection& postFilterClusters, 
+                                     const ComboHitCollection& shcol, float mbtime, int iev);
           virtual float distance(const BkgCluster& cluster, const ComboHit& hit) const; 
 
 

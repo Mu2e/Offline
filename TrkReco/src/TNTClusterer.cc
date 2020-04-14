@@ -38,7 +38,8 @@ namespace mu2e
 
 
    //----------------------------------------------------------------------------------------------------------
-   void TNTClusterer::findClusters(BkgClusterCollection& clusters, const ComboHitCollection& chcol, float mbtime, int iev)
+   void TNTClusterer::findClusters(BkgClusterCollection& preFilterClusters, BkgClusterCollection& postFilterClusters, 
+                                   const ComboHitCollection& chcol, float mbtime, int iev)
    {        
         std::vector<BkgHit> BkgHits;
         BkgHits.reserve(chcol.size());
@@ -50,16 +51,16 @@ namespace mu2e
         hitDtIdx_.clear();
         for (int i=0;i<=ditime;++i) {hitDtIdx_.push_back(i); if (i>0) hitDtIdx_.push_back(-i);}                 
 
-        initClu(chcol, clusters, BkgHits);
-        clusterAlgo(chcol, clusters, BkgHits, tbin);
+        initClu(chcol, postFilterClusters, BkgHits);
+        clusterAlgo(chcol, postFilterClusters, BkgHits, tbin);
 
         //a final merge does almost nothing but we leave it in case of need
-        //mergeClusters(clusters, chcol, dt_, dd2_);
+        //mergeClusters(postFilterClusters, chcol, dt_, dd2_);
 
-        clusters.erase(std::remove_if(clusters.begin(),clusters.end(),[](auto& cluster){return cluster.hits().empty();}),clusters.end());
+        postFilterClusters.erase(std::remove_if(postFilterClusters.begin(),postFilterClusters.end(),[](auto& cluster){return cluster.hits().empty();}),postFilterClusters.end());
 
         //Transform BkgHits indices into ComboHit indices
-        for (auto& cluster: clusters)
+        for (auto& cluster: postFilterClusters)
             std::transform(cluster.hits().begin(),cluster.hits().end(),cluster.hits().begin(),
                            [&BkgHits] (const int i){return BkgHits[i].chidx_;});
    }
@@ -185,21 +186,20 @@ namespace mu2e
 
        for (unsigned ic=0;ic<clusters.size();++ic)
        {
-           BkgCluster& cluster = clusters[ic];
-           if (cluster._flag == BkgClusterFlag::update) 
-           {
-              cluster._flag = BkgClusterFlag::unchanged; 
-              updateCluster(cluster, chcol, BkgHits); 
+            BkgCluster& cluster = clusters[ic];
+            if (cluster._flag == BkgClusterFlag::update) 
+            {
+               cluster._flag = BkgClusterFlag::unchanged; 
+               updateCluster(cluster, chcol, BkgHits); 
 
-              if (cluster.hits().size()==1)       
-                  BkgHits[cluster.hits().at(0)].distance_ = 0.0f; 
-              else 
-                  for (auto& hit : cluster.hits()) BkgHits[hit].distance_ = distance(cluster,chcol[BkgHits[hit].chidx_]);                                                                
+               if (cluster.hits().size()==1)       
+                   BkgHits[cluster.hits().at(0)].distance_ = 0.0f; 
+               else 
+                   for (auto& hit : cluster.hits()) BkgHits[hit].distance_ = distance(cluster,chcol[BkgHits[hit].chidx_]);
+            }
 
-           }
-
-           int itimeClu  = int(cluster.time()/tbin);
-           hitIndex[itimeClu].emplace_back(ic);             
+            int itimeClu  = int(cluster.time()/tbin);
+            hitIndex[itimeClu].emplace_back(ic);             
        }
 
        return nchanged;
