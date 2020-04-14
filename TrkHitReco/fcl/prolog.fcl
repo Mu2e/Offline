@@ -47,6 +47,30 @@ TNTClusterer : {
     SignalMask       : ["TimeSelection", "EnergySelection","RadiusSelection"]
 }
 
+ScanTPClusterer : { 
+    Tmin             : 450
+    Tmax             : 1750
+    Tbin             : 20.0
+    Pbin             : 0.1
+    MinPeakHit       : 2
+    MinSeedHit       : 5
+    MinRadHit        :  50     
+    HitDistance      : 5.0
+    SeedDistance     : 20.0
+    ClusterDiameter  : 5.0
+    ClusterTime      : 20.0
+    MaxHitTimeDiff   : 30.0
+    MaxDistance      : 100.0
+    MinHitError      : 5.0
+    TimeRMS          : 2.0
+    DeltaTimeBinMin  : 10
+    FilterAlgo       : 1
+    ComboInit        : true
+    TestFlag         : true
+    BackgroundMask   : []
+    SignalMask       : ["TimeSelection", "EnergySelection","RadiusSelection"]
+}
+
 # Now configure the module
 FlagBkgHits : {
   module_type          : FlagBkgHits
@@ -54,9 +78,9 @@ FlagBkgHits : {
   StrawHitCollection   : "makeSH"
   ClusterAlgorithm     : 1
   TNTClustering        : { @table::TNTClusterer }
+  ScanTPClustering     : { @table::ScanTPClusterer }
   MinActiveHits        : 3
   MinNPlanes           : 2
-  #MaxIsolated          : 0  
   ClusterPositionError : 10
   BkgMVA               : { MVAWeights : "TrkHitReco/data/BkgMVAPanel.weights.xml" }
   BkgMVACut            : 0.5
@@ -65,10 +89,8 @@ FlagBkgHits : {
   FlagStrawHits        : true
   BackgroundMask       : ["Background"]
   StereoSelection      : ["Stereo","PanelCombo"]
-  
-  
-
 }
+
 
 SflagBkgHits : {
   @table::FlagBkgHits
