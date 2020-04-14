@@ -213,7 +213,7 @@ void AlignTrackCollector::beginJob()
     if (_diag > 0) {
         // TODO: extend these diagnostics  (could fill a TTree?)
         art::ServiceHandle<art::TFileService> tfs;
-        residuum = tfs->make<TH1F>("residuum", "Straw Hit Residuals ", 100, -40, 25);
+        residuum = tfs->make<TH1F>("residuum", "Straw Hit Residuals ", 100, -10, 10);
         residuum->GetXaxis()->SetTitle("Residual (DOCA - Estimated Drift Distance) (mm)");
 
         resid_err = tfs->make<TH1F>("resid_err", "Straw Hit Drift distance error", 100, -5, 5);
