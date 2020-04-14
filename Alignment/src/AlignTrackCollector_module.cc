@@ -2,7 +2,6 @@
 // Module calling upon Mille to set up bootstrap alignment
 
 #include <algorithm> // for max, all_of
-#include <bits/stdint-uintn.h>
 #include <cmath>   // for isnan
 #include <cstddef> // for size_t
 #include <exception>
