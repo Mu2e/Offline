@@ -78,13 +78,9 @@ class AlignTrackCollector : public art::EDAnalyzer {
     TH1F* plane_tracks;
     TH1F* plane_residsum;
     TH1F* plane_seedtracks;
-    TH1F* plane_seedresidualsum;
 
     TH1F* track_chisq;
     TH1F* track_pvalue;
-
-    TH1F* seedtrack_chisq;
-    TH1F* seedtrack_pvalue;
 
     TH1F* resid_err;
     TH1F* doca_h;
@@ -306,12 +302,8 @@ bool AlignTrackCollector::filter_CosmicTrackSeedCollection(art::Event const& eve
         XYZVec track_pos(st.MinuitParams.A0, 0, st.MinuitParams.B0);
         XYZVec track_dir(st.MinuitParams.A1, -1, st.MinuitParams.B1);
 
-        if (seed_only) {
-            //track_pos = st.FitEquationXYZ.Pos;
-            //track_dir = st.FitEquationXYZ.Dir;
-        }
-        double A0 = st.MinuitParams.A0;//track_pos.X();
-        double A1 = st.MinuitParams.A1;//track_dir.X();
+        double A0 = st.MinuitParams.A0; // track_pos.X();
+        double A1 = st.MinuitParams.A1; // track_dir.X();
         double B0 = st.MinuitParams.B0;
         double B1 = st.MinuitParams.B1;
 
@@ -364,16 +356,15 @@ bool AlignTrackCollector::filter_CosmicTrackSeedCollection(art::Event const& eve
             if (isnan(residual))
                 continue;
 
-            //FIXME: crude! doesn't belong here!
-            CLHEP::Hep3Vector intercept(A0,0,B0);
-            CLHEP::Hep3Vector dir(A1,-1,B1);
+            // FIXME: crude! doesn't belong here!
+            CLHEP::Hep3Vector intercept(A0, 0, B0);
+            CLHEP::Hep3Vector dir(A1, -1, B1);
             dir = dir.unit();
             TwoLinePCA pca(straw.getMidPoint(), straw.getDirection(), intercept, dir);
-
             chisq += (residual * residual) / pca.dca();
             ndof++;
 
-            // TODO: this is horrendous. surely there is a better way to combine the DOF labels
+            // FIXME! seems messy!
             std::vector<int> global_dof_labels;
 
             global_dof_labels.reserve(_dof_per_plane + _dof_per_panel);
@@ -446,8 +437,7 @@ void AlignTrackCollector::analyze(art::Event const& event)
 
     switch (collect_track) {
 
-    case CosmicRecoTrack:
-    {
+    case CosmicRecoTrack: {
         auto stH = event.getValidHandle<CosmicTrackSeedCollection>(_costag);
         if (stH.product() == 0)
             return;
