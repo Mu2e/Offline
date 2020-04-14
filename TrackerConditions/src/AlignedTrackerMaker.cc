@@ -117,11 +117,8 @@ namespace mu2e {
         // now set the aligned straw0 midpoint and direction, and set new aligned panel origin
         panel._straw0Direction = panel.getStraw(0).getDirection();
         panel._straw0MidPoint = aligned_straw0MidPoint;
-
-        panel._origin = ((plane_temp * panel_to_plane) * Hep3Vector(0,0,0));
-
+        panel._origin = panel_temp * Hep3Vector(0,0,0);
       } // panel loop
-
 
       // set the aligned plane origin
       // because we're a friend of Tracker, we can access the non-const Plane object
