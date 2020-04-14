@@ -270,6 +270,8 @@ void AlignTrackCollector::writeLabelsFile(Tracker const& aligned_tracker)
                                    nominal_tracker.getPlane(p).getPanel(panel->id()).origin()
                             << std::endl;
         }
+
+        label_info_file << std::endl;
     }
 
     label_info_file.close();
