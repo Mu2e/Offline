@@ -2,8 +2,9 @@
 // Module calling upon Mille to set up bootstrap alignment
 
 #include <algorithm> // for max, all_of
-#include <cmath>     // for isnan
-#include <cstddef>   // for size_t
+#include <bits/stdint-uintn.h>
+#include <cmath>   // for isnan
+#include <cstddef> // for size_t
 #include <exception>
 #include <iostream>      // for operator<<
 #include <memory>        // for unique_ptr
@@ -14,6 +15,7 @@
 #include <vector>        // for vector<>:...
 
 #include "CosmicReco/inc/PDFFit.hh"
+#include "GeometryService/inc/GeomHandle.hh"
 #include "Mu2eUtilities/inc/TwoLinePCA.hh"
 #include "boost/math/distributions/chi_squared.hpp"
 #include "boost/math/distributions/normal.hpp"
@@ -125,7 +127,7 @@ class AlignTrackCollector : public art::EDAnalyzer {
     bool filter_CosmicTrackSeedCollection(art::Event const& event, Tracker const& tracker,
                                           StrawResponse const& _srep,
                                           CosmicTrackSeedCollection const& _coscol);
-    void writeLabelsFile();
+    void writeLabelsFile(Tracker const& aligned_tracker);
     int getLabel(int const&, int const&, int const&);
 
     AlignTrackCollector(const Parameters& conf)
@@ -135,9 +137,11 @@ class AlignTrackCollector : public art::EDAnalyzer {
     {
         // generate hashtable of plane, or panel number to DOF labels
         // we prepare them like this because millepede wants arrays of labels
-        // (I'd rather cache them in memory than re-calculate them for every single track)
+        // (I'd rather cache them in memory than re-calculate them for every single hit on an element)
         int nobj = 0;
-        for (int o_cls = 1; o_cls < 3; o_cls++) // labels start at 1.
+        // o_cls == 1: planes
+        // o_cls == 2: panels
+        for (int o_cls = 1; o_cls < 3; o_cls++) // either 1 or 2
         {
             if (o_cls == 1) {
                 nobj = StrawId::_nplanes;
@@ -147,7 +151,8 @@ class AlignTrackCollector : public art::EDAnalyzer {
             }
             else
                 continue;
-            for (uint16_t i = 0; i < nobj; i++) {
+
+            for (int i = 0; i < nobj; i++) {
                 std::vector<int> labels;
                 for (size_t dof_n = 0; dof_n < 6; dof_n++)
                     labels.push_back(getLabel(o_cls, i, dof_n));
@@ -205,8 +210,6 @@ void AlignTrackCollector::beginJob()
 {
     millepede = std::make_unique<Mille>(_output_filename.c_str());
 
-    writeLabelsFile();
-
     if (_diag > 0) {
         // TODO: extend these diagnostics  (could fill a TTree?)
         art::ServiceHandle<art::TFileService> tfs;
@@ -233,8 +236,11 @@ void AlignTrackCollector::beginJob()
     }
 }
 
-void AlignTrackCollector::writeLabelsFile()
+void AlignTrackCollector::writeLabelsFile(Tracker const& aligned_tracker)
 {
+    // nominal tracking geometry
+    Tracker const& nominal_tracker = *GeomHandle<Tracker>();
+
     // essentially a form of csv output letting you know what labels were
     // assigned to each element
     if (_labels_filename == "none")
@@ -244,22 +250,40 @@ void AlignTrackCollector::writeLabelsFile()
 
     label_info_file << "%element_type,uid,dof_idx,global_label" << std::endl;
 
-    for (uint16_t p = 0; p < StrawId::_nplanes; ++p)
-        for (size_t l_idx = 0; l_idx < plane_dof_labels[p].size(); ++l_idx)
+    for (uint16_t p = 0; p < StrawId::_nplanes; ++p) {
+        for (size_t l_idx = 0; l_idx < plane_dof_labels[p].size(); ++l_idx) {
             label_info_file << "Plane," << p << "," << l_idx << "," << plane_dof_labels[p][l_idx]
                             << std::endl;
+        }
+        label_info_file << "# position diff: "
+                        << aligned_tracker.getPlane(p).origin() -
+                               nominal_tracker.getPlane(p).origin()
+                        << std::endl;
 
-    for (uint16_t p = 0; p < StrawId::_nupanels; ++p)
-        for (size_t l_idx = 0; l_idx < panel_dof_labels[p].size(); ++l_idx)
-            label_info_file << "Panel," << p << "," << l_idx << "," << panel_dof_labels[p][l_idx]
+        for (Panel const* panel : aligned_tracker.getPlane(p).getPanels()) {
+            uint16_t pa = panel->id().uniquePanel();
+            for (size_t l_idx_pa = 0; l_idx_pa < panel_dof_labels[pa].size(); ++l_idx_pa) {
+                label_info_file << "Panel," << pa << "," << l_idx_pa << ","
+                                << panel_dof_labels[pa][l_idx_pa] << std::endl;
+            }
+            label_info_file << "# position diff: "
+                            << panel->origin() -
+                                   nominal_tracker.getPlane(p).getPanel(panel->id()).origin()
                             << std::endl;
+        }
+    }
 
     label_info_file.close();
 
     std::cout << "AlignTrackCollector: wrote labels to " << _labels_filename << std::endl;
 }
 
-void AlignTrackCollector::beginRun(art::Run const&) { return; }
+void AlignTrackCollector::beginRun(art::Run const& run)
+{
+    writeLabelsFile(_proditionsTracker_h.get(run.id()));
+
+    return;
+}
 
 void AlignTrackCollector::endJob()
 {
