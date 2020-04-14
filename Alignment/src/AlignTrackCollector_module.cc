@@ -328,7 +328,7 @@ bool AlignTrackCollector::filter_CosmicTrackSeedCollection(art::Event const& eve
             // straw and plane info
             StrawId const& straw_id = straw_hit.strawId();
             Straw const& straw = tracker.getStraw(straw_id);
-            auto plane_id = straw_id.plane();
+            auto plane_id = straw_id.getPlane();
             auto panel_uid = straw_id.uniquePanel();
             auto panel_id = straw_id.getPanelId();
 
@@ -390,8 +390,8 @@ bool AlignTrackCollector::filter_CosmicTrackSeedCollection(art::Event const& eve
             if (_diag > 0) {
                 residuum->Fill(residual);
                 resid_err->Fill(residual_error);
-                plane_tracks->Fill(straw_id.plane());
-                plane_residsum->Fill(straw_id.plane(), residual);
+                plane_tracks->Fill(plane_id);
+                plane_residsum->Fill(plane_id, residual);
                 drift_time->Fill(straw_hit.driftTime());
             }
         }
