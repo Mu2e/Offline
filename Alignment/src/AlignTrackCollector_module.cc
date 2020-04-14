@@ -14,6 +14,7 @@
 #include <vector>        // for vector<>:...
 
 #include "CosmicReco/inc/PDFFit.hh"
+#include "Mu2eUtilities/inc/TwoLinePCA.hh"
 #include "boost/math/distributions/chi_squared.hpp"
 #include "boost/math/distributions/normal.hpp"
 
@@ -317,7 +318,7 @@ bool AlignTrackCollector::filter_CosmicTrackSeedCollection(art::Event const& eve
         GaussianDriftFit fit_object(sts._straw_chits, _srep, &tracker);
 
         double chisq = 0;
-        double chsqndof = 0;
+        double ndof = 0;
 
         bool wrote_hits = false; // did we write any hits for the track?
 
@@ -363,8 +364,14 @@ bool AlignTrackCollector::filter_CosmicTrackSeedCollection(art::Event const& eve
             if (isnan(residual))
                 continue;
 
-            chisq += residual * residual;
-            chsqndof++;
+            //FIXME: crude! doesn't belong here!
+            CLHEP::Hep3Vector intercept(A0,0,B0);
+            CLHEP::Hep3Vector dir(A1,-1,B1);
+            dir = dir.unit();
+            TwoLinePCA pca(straw.getMidPoint(), straw.getDirection(), intercept, dir);
+
+            chisq += (residual * residual) / pca.dca();
+            ndof++;
 
             // TODO: this is horrendous. surely there is a better way to combine the DOF labels
             std::vector<int> global_dof_labels;
@@ -398,14 +405,11 @@ bool AlignTrackCollector::filter_CosmicTrackSeedCollection(art::Event const& eve
         if (wrote_hits) {
             tracks_written++;
 
-            if (chsqndof > 4 && _diag > 0) {
-
-                chsqndof -= 4.0; // 4 track parameters
-                boost::math::chi_squared mydist(chsqndof);
-
-                // currently hopeless! FIXME
+            if (ndof > 4 && _diag > 0) {
+                ndof -= 4.0; // 4 track parameters
+                boost::math::chi_squared mydist(ndof);
                 track_pvalue->Fill(boost::math::cdf(mydist, chisq));
-                track_chisq->Fill(chisq / chsqndof);
+                track_chisq->Fill(chisq / ndof);
             }
             // Write the track buffer to file if we wrote a track
             millepede->end();
