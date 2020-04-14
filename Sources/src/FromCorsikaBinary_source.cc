@@ -137,8 +137,8 @@ namespace mu2e {
 
     //----------------------------------------------------------------
     unsigned CorsikaBinaryDetail::getSubRunNumber(const std::string& filename) const {
-      const std::string::size_type corsikaConvention = filename.find("DAT");
-      const std::string::size_type mu2eConvention = filename.find(".csk");
+      const std::string::size_type corsikaConvention = filename.find_last_of("DAT");
+      const std::string::size_type mu2eConvention = filename.find_last_of(".csk");
 
       unsigned sr(-1);
 

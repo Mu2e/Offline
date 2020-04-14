@@ -48,9 +48,6 @@ struct Config
   using Name = fhicl::Name;
   using Comment = fhicl::Comment;
   fhicl::Sequence<std::string> showerInputFiles{Name("fileNames"),Comment("List of CORSIKA binary output paths")};
-  fhicl::Atom<int> firstEventNumber{Name("firstEventNumber"), Comment("First event number"), 0};
-  fhicl::Atom<int> firstSubRunNumber{Name("firstSubRunNumber"), Comment("First subrun number"), 0};
-  fhicl::Atom<int> maxEvents{Name("maxEvents"), Comment("Max number of events"), 0};
   fhicl::Atom<unsigned int> runNumber{Name("runNumber"), Comment("First run number"), 0};
   fhicl::Atom<std::string> module_label{Name("module_label"), Comment("Art module label"), ""};
   fhicl::Atom<std::string> module_type{Name("module_type"), Comment("Art module type"), ""};
