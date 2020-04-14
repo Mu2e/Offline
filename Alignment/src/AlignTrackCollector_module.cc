@@ -14,6 +14,7 @@
 #include <vector>        // for vector<>:...
 
 #include "CosmicReco/inc/PDFFit.hh"
+#include "Mu2eUtilities/inc/TwoLinePCA.hh"
 #include "boost/math/distributions/chi_squared.hpp"
 #include "boost/math/distributions/normal.hpp"
 
@@ -77,13 +78,9 @@ class AlignTrackCollector : public art::EDAnalyzer {
     TH1F* plane_tracks;
     TH1F* plane_residsum;
     TH1F* plane_seedtracks;
-    TH1F* plane_seedresidualsum;
 
     TH1F* track_chisq;
     TH1F* track_pvalue;
-
-    TH1F* seedtrack_chisq;
-    TH1F* seedtrack_pvalue;
 
     TH1F* resid_err;
     TH1F* doca_h;
@@ -213,7 +210,7 @@ void AlignTrackCollector::beginJob()
     if (_diag > 0) {
         // TODO: extend these diagnostics  (could fill a TTree?)
         art::ServiceHandle<art::TFileService> tfs;
-        residuum = tfs->make<TH1F>("residuum", "Straw Hit Residuals ", 100, -40, 25);
+        residuum = tfs->make<TH1F>("residuum", "Straw Hit Residuals ", 100, -10, 10);
         residuum->GetXaxis()->SetTitle("Residual (DOCA - Estimated Drift Distance) (mm)");
 
         resid_err = tfs->make<TH1F>("resid_err", "Straw Hit Drift distance error", 100, -5, 5);
@@ -305,19 +302,15 @@ bool AlignTrackCollector::filter_CosmicTrackSeedCollection(art::Event const& eve
         XYZVec track_pos(st.MinuitParams.A0, 0, st.MinuitParams.B0);
         XYZVec track_dir(st.MinuitParams.A1, -1, st.MinuitParams.B1);
 
-        if (seed_only) {
-            //track_pos = st.FitEquationXYZ.Pos;
-            //track_dir = st.FitEquationXYZ.Dir;
-        }
-        double A0 = st.MinuitParams.A0;//track_pos.X();
-        double A1 = st.MinuitParams.A1;//track_dir.X();
+        double A0 = st.MinuitParams.A0; // track_pos.X();
+        double A1 = st.MinuitParams.A1; // track_dir.X();
         double B0 = st.MinuitParams.B0;
         double B1 = st.MinuitParams.B1;
 
         GaussianDriftFit fit_object(sts._straw_chits, _srep, &tracker);
 
         double chisq = 0;
-        double chsqndof = 0;
+        double ndof = 0;
 
         bool wrote_hits = false; // did we write any hits for the track?
 
@@ -363,10 +356,15 @@ bool AlignTrackCollector::filter_CosmicTrackSeedCollection(art::Event const& eve
             if (isnan(residual))
                 continue;
 
-            chisq += residual * residual;
-            chsqndof++;
+            // FIXME: crude! doesn't belong here!
+            CLHEP::Hep3Vector intercept(A0, 0, B0);
+            CLHEP::Hep3Vector dir(A1, -1, B1);
+            dir = dir.unit();
+            TwoLinePCA pca(straw.getMidPoint(), straw.getDirection(), intercept, dir);
+            chisq += (residual * residual) / pca.dca();
+            ndof++;
 
-            // TODO: this is horrendous. surely there is a better way to combine the DOF labels
+            // FIXME! seems messy!
             std::vector<int> global_dof_labels;
 
             global_dof_labels.reserve(_dof_per_plane + _dof_per_panel);
@@ -398,14 +396,11 @@ bool AlignTrackCollector::filter_CosmicTrackSeedCollection(art::Event const& eve
         if (wrote_hits) {
             tracks_written++;
 
-            if (chsqndof > 4 && _diag > 0) {
-
-                chsqndof -= 4.0; // 4 track parameters
-                boost::math::chi_squared mydist(chsqndof);
-
-                // currently hopeless! FIXME
+            if (ndof > 4 && _diag > 0) {
+                ndof -= 4.0; // 4 track parameters
+                boost::math::chi_squared mydist(ndof);
                 track_pvalue->Fill(boost::math::cdf(mydist, chisq));
-                track_chisq->Fill(chisq / chsqndof);
+                track_chisq->Fill(chisq / ndof);
             }
             // Write the track buffer to file if we wrote a track
             millepede->end();
@@ -442,8 +437,7 @@ void AlignTrackCollector::analyze(art::Event const& event)
 
     switch (collect_track) {
 
-    case CosmicRecoTrack:
-    {
+    case CosmicRecoTrack: {
         auto stH = event.getValidHandle<CosmicTrackSeedCollection>(_costag);
         if (stH.product() == 0)
             return;
