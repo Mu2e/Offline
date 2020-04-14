@@ -1,4 +1,4 @@
-#include "AnalysisUtilities/test/TrainTrkQual.C+"
+#include "AnalysisUtilities/scripts/TrainTrkQual.C+"
 #include "TFile.h"
 #include "TTree.h"
 #include "TChain.h"
