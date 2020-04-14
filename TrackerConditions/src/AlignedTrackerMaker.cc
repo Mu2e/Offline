@@ -103,6 +103,9 @@ namespace mu2e {
           Hep3Vector pdif = aligned_straw - straw.getMidPoint();
           Hep3Vector ddif = aligned_straw_dir - straw.getDirection();
 
+          if (pdif.x() != 0)
+            std::cout << pdif << std::endl;
+
           straw._c = aligned_straw;
           straw._w = aligned_straw_dir;
         } // straw loop
