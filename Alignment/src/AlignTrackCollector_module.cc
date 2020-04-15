@@ -97,6 +97,9 @@ class AlignTrackCollector : public art::EDAnalyzer {
     Int_t ndof;
     Double_t pvalue;
 
+    Int_t panels_trav;
+    Int_t planes_trav;
+
     // Histograms for diagnostics
     TH1F* plane_tracks;
     TH1F* plane_residsum;
@@ -248,6 +251,9 @@ void AlignTrackCollector::beginJob()
         diagtree->Branch("ndof", &ndof, "ndof/I");
         diagtree->Branch("pvalue", &pvalue, "pvalue/D");
 
+        diagtree->Branch("panels_trav", &panels_trav, "panels_trav/I");
+        diagtree->Branch("planes_trav", &planes_trav, "planes_trav/I");
+
         plane_tracks = tfs->make<TH1F>("plane_trackcount", "Tracks per plane", 36, 0, 36);
         plane_residsum = tfs->make<TH1F>("plane_residusum", "Residual sum per plane", 36, 0, 36);
 
@@ -345,6 +351,9 @@ bool AlignTrackCollector::filter_CosmicTrackSeedCollection(art::Event const& eve
 
         std::cout << "Have track." << std::endl;
 
+        std::set<uint16_t> planes_traversed;
+        std::set<uint16_t> panels_traversed;
+
         XYZVec track_pos(st.MinuitParams.A0, 0, st.MinuitParams.B0);
         XYZVec track_dir(st.MinuitParams.A1, -1, st.MinuitParams.B1);
 
@@ -352,11 +361,13 @@ bool AlignTrackCollector::filter_CosmicTrackSeedCollection(art::Event const& eve
         A1 = st.MinuitParams.A1; // track_dir.X();
         B0 = st.MinuitParams.B0;
         B1 = st.MinuitParams.B1;
+        T0 = st.MinuitParams.T0;
 
         GaussianDriftFit fit_object(sts._straw_chits, _srep, &tracker);
 
         chisq = 0;
         ndof = 0;
+        pvalue = 0;
         nHits = 0;
 
         bool wrote_hits = false; // did we write any hits for the track?
@@ -371,6 +382,9 @@ bool AlignTrackCollector::filter_CosmicTrackSeedCollection(art::Event const& eve
             auto plane_id = straw_id.getPlane();
             auto panel_uuid = straw_id.uniquePanel();
             auto panel_id = straw_id.getPanelId();
+
+            planes_traversed.insert(plane_id);
+            panels_traversed.insert(panel_uuid);
 
             // geometry info
             auto const& plane_origin = tracker.getPlane(plane_id).origin();
@@ -415,8 +429,10 @@ bool AlignTrackCollector::filter_CosmicTrackSeedCollection(art::Event const& eve
             panel_uid[nHits] = panel_uuid;
             plane_uid[nHits] = plane_id;
 
-            std::cout << "residual " << doca_residual[nHits] << " +- " << doca_resid_err[nHits] << std::endl;
-
+            if (_diag > 0)
+            {
+                std::cout << "pl" << plane_id << " pa" << panel_uuid << ": resid " << doca_residual[nHits] << " +- " << doca_resid_err[nHits] << std::endl;
+            }
 
             // FIXME! seems messy!
             std::vector<int> global_dof_labels;
@@ -455,9 +471,14 @@ bool AlignTrackCollector::filter_CosmicTrackSeedCollection(art::Event const& eve
                 track_pvalue->Fill(pvalue);
                 track_chisq->Fill(chisq / ndof);
             }
+
+            planes_trav = planes_traversed.size();
+            panels_trav = panels_traversed.size();
             // Write the track buffer to file if we wrote a track
             millepede->end();
-            diagtree->Fill();
+
+            if (_diag > 0)
+                diagtree->Fill();
             std::cout << "wrote track " << tracks_written << std::endl;
             wrote_track = true;
         }
