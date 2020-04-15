@@ -10,6 +10,7 @@
 
 // Mu2e includes
 #include "DataProducts/inc/StrawId.hh"
+#include "DataProducts/inc/TrackerPacketId.hh"
 #include "Mu2eInterfaces/inc/ProditionsEntity.hh"
 #include "fhiclcpp/ParameterSet.h"
 
@@ -33,8 +34,8 @@ namespace mu2e {
     std::string const& name() const { return _name; }
     void print(std::ostream& os) const;
 
-    StrawId packetIdToStrawId(uint16_t packetId) const;
-    uint16_t strawIdToPacketId(StrawId const& strawId) const;
+    StrawId packetIdToStrawId(TrackerPacketId const& packetId) const;
+    TrackerPacketId strawIdToPacketId(StrawId const& strawId) const;
 
     // all of these must be called to fill this object
     void setDRACStrawMap(std::vector<uint16_t> DRACStrawMap) { _DRACStrawMap = DRACStrawMap; }

@@ -538,7 +538,7 @@ namespace mu2e {
 
   void   ArtBinaryPacketsFromDigis::fillTrackerDataPacket(mu2e::TrackerDAQConditions const& trackerdaqconds, const StrawDigi& SD, TrackerDataPacket& TrkData) {
 
-    TrkData.StrawIndex = trackerdaqconds.strawIdToPacketId(SD.strawId());
+    TrkData.StrawIndex = trackerdaqconds.strawIdToPacketId(SD.strawId()).asUint16();
 
     TrkData.TDC0 = SD.TDC(StrawEnd::cal);
     TrkData.TDC1 = SD.TDC(StrawEnd::hv);

@@ -263,7 +263,8 @@ produce( Event & event )
 	  continue;
 	}
 
-	mu2e::StrawId sid = trackerdaqconds.packetIdToStrawId(trkData->StrawIndex);
+        mu2e::TrackerPacketId pid(trkData->StrawIndex);
+	mu2e::StrawId sid = trackerdaqconds.packetIdToStrawId(pid);
 	mu2e::TrkTypes::TDCValues tdc = {trkData->TDC0 , trkData->TDC1};
 	mu2e::TrkTypes::TOTValues tot = {trkData->TOT0 , trkData->TOT1};
 

@@ -4,10 +4,9 @@
 using namespace std;
 namespace mu2e {
 
-  StrawId TrackerDAQConditions::packetIdToStrawId(uint16_t packetId) const {
-    //FIXME this is made up for now
-    uint16_t dracChannel = packetId & 0xFF; 
-    uint16_t rocNumber = (packetId & 0xFF00) >> 8;
+  StrawId TrackerDAQConditions::packetIdToStrawId(TrackerPacketId const& packetId) const {
+    uint16_t dracChannel = packetId.channel(); 
+    uint16_t rocNumber = packetId.roc();
 
     if (dracChannel >= _DRACStrawMap.size() || rocNumber >= _ROCPanelMap.size()){
       throw cet::exception("BADINPUTS")<<"TrackerDAQConditions::packetIdToStrawId : packetId dracChannel/rocNumber out of range" << std::endl;
@@ -22,7 +21,7 @@ namespace mu2e {
     return StrawId(plane,panel,straw);
   }
   
-  uint16_t TrackerDAQConditions::strawIdToPacketId(StrawId const& strawId) const {
+  TrackerPacketId TrackerDAQConditions::strawIdToPacketId(StrawId const& strawId) const {
     auto iterStraw = std::find(_DRACStrawMap.begin(),_DRACStrawMap.end(),strawId.getStraw());
     if (iterStraw == _DRACStrawMap.end())
       throw cet::exception("BADINPUTS")<<"TrackerDAQConditions::strawIdToPacketId : strawId out of range" << std::endl;
@@ -30,7 +29,7 @@ namespace mu2e {
     if (iterPanel == _ROCPanelMap.end())
       throw cet::exception("BADINPUTS")<<"TrackerDAQConditions::strawIdToPacketId : strawId out of range" << std::endl;
 
-    return ((*iterPanel & 0xFF) << 8) | (*iterStraw & 0xFF);
+    return TrackerPacketId(*iterStraw, *iterPanel);
   }
 
   void TrackerDAQConditions::print(std::ostream& os) const {
