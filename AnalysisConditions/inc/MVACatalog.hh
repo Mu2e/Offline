@@ -44,6 +44,25 @@ namespace mu2e {
 	_mvaTool->getCalib(_effCalib);
       }
     }
+
+    float getCutVal(float calib_value) const {
+      // Get the lower and upper bound of the requestd value
+      // NB std::map::lower_bound and std::map::upper_bound return the same iterator 
+      // when we search for an interpolated value...
+      const auto& upper = _effCalib.upper_bound(calib_value);
+      const auto& lower = std::prev(upper); // ...so we have to do this to get the bracketed values
+
+      // In C++20 we will have std::lerp for liner interpolations (a + t(b-a)), for now have to do it ourselves
+      float t = ((calib_value - lower->first)/(upper->first - lower->first));
+      float result = lower->second + t*(upper->second - lower->second);
+      // std::cout << "Request = " << calib_value << std::endl;
+      // std::cout << "Lower = " << lower->first << ", " << lower->second << std::endl;
+      // std::cout << "Upper = " << upper->first << ", " << upper->second << std::endl;
+      // std::cout << "Request - Lower = " << calib_value - lower->first << std::endl;
+      // std::cout << "Interpolated Value = " << result << std::endl;
+
+      return result;
+    }
     
     std::string _trainName;
     std::string _xmlFileName;
