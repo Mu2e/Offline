@@ -664,10 +664,12 @@ namespace mu2e {
     if ( pbarWindow._nStrips > 0 ) {
       c.getVectorDouble("pbarwedge.stripHeights",pbarWindow._stripHeights,pbarWindow._nStrips);
     }
-      // for version 4 (variable thickness strips)
-      if (pbarWindow._nStrips > 0 && pbarWindow._version == 4) {
-	c.getVectorDouble("pbarwedge.stripThicknesses",pbarWindow._stripThicknesses,pbarWindow._nStrips);
+    // for version 4 (variable thickness strips)
+    if (pbarWindow._nStrips > 0 && pbarWindow._version == 4) {
+      c.getVectorDouble("pbarwedge.stripThicknesses",pbarWindow._stripThicknesses,pbarWindow._nStrips);
     }
+    // allow for the wedge and window to have different materials
+    pbarWindow._wedgeMaterial = c.getString("pbarwedge.wedgeMaterial",pbarWindow._material); //default to window material
   }
 
 } // namespace mu2e
