@@ -14,8 +14,11 @@
 #include <vector>        // for vector<>:...
 
 #include "CosmicReco/inc/PDFFit.hh"
+#include "GeneralUtilities/inc/BitMap.hh"
 #include "GeometryService/inc/GeomHandle.hh"
 #include "Mu2eUtilities/inc/TwoLinePCA.hh"
+#include "RtypesCore.h"
+#include "TTree.h"
 #include "boost/math/distributions/chi_squared.hpp"
 #include "boost/math/distributions/normal.hpp"
 
@@ -73,21 +76,34 @@ namespace mu2e {
 
 class AlignTrackCollector : public art::EDAnalyzer {
   private:
-    // Histograms for diagnostic purposes
-    TH1F* residuum;
 
+    // Tree and tree fill members
+    TTree* diagtree;
+    Int_t nHits;
+    Float_t doca_residual[500];
+    Float_t doca_resid_err[500];
+    Float_t doca[500];
+    Float_t time[500];
+    Int_t plane_uid[500];
+    Int_t panel_uid[500];
+
+    Double_t A0;
+    Double_t A1;
+    Double_t B0;
+    Double_t B1;
+    Double_t T0;
+
+    Double_t chisq;
+    Int_t ndof;
+    Double_t pvalue;
+
+    // Histograms for diagnostics
     TH1F* plane_tracks;
     TH1F* plane_residsum;
-    TH1F* plane_seedtracks;
 
     TH1F* track_chisq;
     TH1F* track_pvalue;
 
-    TH1F* resid_err;
-    TH1F* doca_h;
-
-    TH1F* drift_dist;
-    TH1F* drift_time;
 
   public:
     const size_t _dof_per_plane = 6; // dx, dy, dz, a, b, g (translation, rotation)
@@ -212,23 +228,28 @@ void AlignTrackCollector::beginJob()
     if (_diag > 0) {
         // TODO: extend these diagnostics  (could fill a TTree?)
         art::ServiceHandle<art::TFileService> tfs;
-        residuum = tfs->make<TH1F>("residuum", "Straw Hit Residuals ", 100, -10, 10);
-        residuum->GetXaxis()->SetTitle("Residual (DOCA - Estimated Drift Distance) (mm)");
 
-        resid_err = tfs->make<TH1F>("resid_err", "Straw Hit Drift distance error", 100, -5, 5);
+        diagtree = tfs->make<TTree>("tracks", "Tracks collected for an alignment iteration");
+        diagtree->Branch("nHits", &nHits, "nHits/I");
+        diagtree->Branch("doca_resid", &doca_residual, "doca_resid[nHits]/F");
+        diagtree->Branch("doca_resid_err", &doca_resid_err, "doca_resid_err[nHits]/F");
+        diagtree->Branch("doca", &doca, "doca[nHits]/F");
+        diagtree->Branch("time", &time, "time[nHits]/F");
+        diagtree->Branch("plane", &doca, "doca[nHits]/F");
+        diagtree->Branch("panel", &time, "time[nHits]/F");
 
-        plane_seedtracks = tfs->make<TH1F>("plane_seedtrackcount", "Tracks per plane", 36, 0, 36);
-        // plane_seedresidualsum = tfs->make<TH1F>("plane_seedresidsum", "Residual sum per plane",
-        // 36, 0, 36);
+        diagtree->Branch("A0", &A0, "A0/D");
+        diagtree->Branch("A1", &A1, "A1/D");
+        diagtree->Branch("B0", &B0, "B0/D");
+        diagtree->Branch("B1", &B1, "B1/D");
+        diagtree->Branch("T0", &T0, "T0/D");
+
+        diagtree->Branch("chisq", &chisq, "chisq/D");
+        diagtree->Branch("ndof", &ndof, "ndof/I");
+        diagtree->Branch("pvalue", &pvalue, "pvalue/D");
+
         plane_tracks = tfs->make<TH1F>("plane_trackcount", "Tracks per plane", 36, 0, 36);
         plane_residsum = tfs->make<TH1F>("plane_residusum", "Residual sum per plane", 36, 0, 36);
-
-        // seedtrack_chisq = tfs->make<TH1F>("seedtrack_chisq", "Seed Track chi squared/ndof", 30,
-        // 0, 4);  seedtrack_pvalue = tfs->make<TH1F>("seedtrack_pvalue", "Seed Track P Value", 30,
-        // 0, 1);
-        drift_time = tfs->make<TH1F>("drift_time", "Drift Time", 100, 0, 300); // ns
-        drift_dist = tfs->make<TH1F>("drift_dist", "Drift Dist", 50, 0, 50);   // mm
-        doca_h = tfs->make<TH1F>("doca", "DOCA", 50, -4, 4);
 
         track_chisq = tfs->make<TH1F>("track_chisq", "Track ChiSq/NDOF", 30, 0, 4);
         track_pvalue = tfs->make<TH1F>("track_pvalue", "Track p-value", 30, 0, 1);
@@ -327,15 +348,16 @@ bool AlignTrackCollector::filter_CosmicTrackSeedCollection(art::Event const& eve
         XYZVec track_pos(st.MinuitParams.A0, 0, st.MinuitParams.B0);
         XYZVec track_dir(st.MinuitParams.A1, -1, st.MinuitParams.B1);
 
-        double A0 = st.MinuitParams.A0; // track_pos.X();
-        double A1 = st.MinuitParams.A1; // track_dir.X();
-        double B0 = st.MinuitParams.B0;
-        double B1 = st.MinuitParams.B1;
+        A0 = st.MinuitParams.A0; // track_pos.X();
+        A1 = st.MinuitParams.A1; // track_dir.X();
+        B0 = st.MinuitParams.B0;
+        B1 = st.MinuitParams.B1;
 
         GaussianDriftFit fit_object(sts._straw_chits, _srep, &tracker);
 
-        double chisq = 0;
-        double ndof = 0;
+        chisq = 0;
+        ndof = 0;
+        nHits = 0;
 
         bool wrote_hits = false; // did we write any hits for the track?
 
@@ -347,7 +369,7 @@ bool AlignTrackCollector::filter_CosmicTrackSeedCollection(art::Event const& eve
             StrawId const& straw_id = straw_hit.strawId();
             Straw const& straw = tracker.getStraw(straw_id);
             auto plane_id = straw_id.getPlane();
-            auto panel_uid = straw_id.uniquePanel();
+            auto panel_uuid = straw_id.uniquePanel();
             auto panel_id = straw_id.getPanelId();
 
             // geometry info
@@ -373,12 +395,9 @@ bool AlignTrackCollector::filter_CosmicTrackSeedCollection(art::Event const& eve
                                             plane_origin.x(), plane_origin.y(), plane_origin.z(),
                                             panel_origin.x(), panel_origin.y(), panel_origin.z());
 
-            double residual = fit_object.DOCAresidual(straw_hit, sts);
-            double residual_error = fit_object.DOCAresidualError(straw_hit, sts);
+            double resid_tmp = fit_object.DOCAresidual(straw_hit, sts);
 
-            std::cout << "residual " << residual << " +- " << residual_error << std::endl;
-
-            if (isnan(residual))
+            if (isnan(resid_tmp))
                 continue;
 
             // FIXME: crude! doesn't belong here!
@@ -386,8 +405,18 @@ bool AlignTrackCollector::filter_CosmicTrackSeedCollection(art::Event const& eve
             CLHEP::Hep3Vector dir(A1, -1, B1);
             dir = dir.unit();
             TwoLinePCA pca(straw.getMidPoint(), straw.getDirection(), intercept, dir);
-            chisq += (residual * residual) / pca.dca();
+            chisq += (resid_tmp * resid_tmp) / pca.dca();
             ndof++;
+
+            doca_residual[nHits] = resid_tmp;
+            doca_resid_err[nHits] = fit_object.DOCAresidualError(straw_hit, sts);
+            doca[nHits] = pca.dca();
+            time[nHits] = straw_hit.time();
+            panel_uid[nHits] = panel_uuid;
+            plane_uid[nHits] = plane_id;
+
+            std::cout << "residual " << doca_residual[nHits] << " +- " << doca_resid_err[nHits] << std::endl;
+
 
             // FIXME! seems messy!
             std::vector<int> global_dof_labels;
@@ -407,29 +436,28 @@ bool AlignTrackCollector::filter_CosmicTrackSeedCollection(art::Event const& eve
             // write the hit to the track buffer
             millepede->mille(derivativesLocal.size(), derivativesLocal.data(),
                              derivativesGlobal.size(), derivativesGlobal.data(),
-                             global_dof_labels.data(), (float)residual, (float)residual_error);
-            wrote_hits = true;
+                             global_dof_labels.data(), (float)resid_tmp, (float)doca_resid_err[nHits]);
+
             // diagnostic information
             if (_diag > 0) {
-                residuum->Fill(residual);
-                resid_err->Fill(residual_error);
                 plane_tracks->Fill(plane_id);
-                plane_residsum->Fill(plane_id, residual);
-                drift_time->Fill(straw_hit.driftTime());
+                plane_residsum->Fill(plane_id, resid_tmp);
             }
+            wrote_hits = true;
+            ++nHits;
         }
         if (wrote_hits) {
             tracks_written++;
 
             if (ndof > 4 && _diag > 0) {
                 ndof -= 4.0; // 4 track parameters
-                boost::math::chi_squared mydist(ndof);
-                track_pvalue->Fill(boost::math::cdf(mydist, chisq));
+                pvalue = boost::math::cdf(boost::math::chi_squared(ndof), chisq);
+                track_pvalue->Fill(pvalue);
                 track_chisq->Fill(chisq / ndof);
             }
             // Write the track buffer to file if we wrote a track
             millepede->end();
-
+            diagtree->Fill();
             std::cout << "wrote track " << tracks_written << std::endl;
             wrote_track = true;
         }
