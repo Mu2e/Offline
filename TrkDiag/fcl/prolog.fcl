@@ -84,22 +84,22 @@ BEGIN_PROLOG
   # -- trainName is the name of the training
   # -- xmlFileName is the name of the XML file
   #  TrkQualConfig : { trainName : "TrkQual"
-  #  		       xmlFileName : "TrkDiag/test/TrkQualNew.weights.xml"
+  #  		       xmlFileName : "TrkDiag/test/TrkQualNeg.weights.xml"
   #		     }
-  #  TrkQualNewConfig : { trainName : "TrkQualNew"
-  #    		       	  xmlFileName : "TrkDiag/test/TrkQualNew.weights.xml"
+  #  TrkQualNegConfig : { trainName : "TrkQualNeg"
+  #    		       	  xmlFileName : "TrkDiag/test/TrkQualNeg.weights.xml"
   #		     	}
   #  TrkQualPosConfig : { trainName : "TrkQualPos"
   #  		       	  xmlFileName : "TrkDiag/test/TrkQualPos.weights.xml"
   #		     	}
   #  TrkQualCatalog.useDb : false
-  #  TrkQualCatalog.mvaConfigs : [ @local::TrkQualConfig, @local::TrkQualNewConfig, @local::TrkQualPosConfig ] 
+  #  TrkQualCatalog.mvaConfigs : [ @local::TrkQualConfig, @local::TrkQualNegConfig, @local::TrkQualPosConfig ] 
 
   TrkQual : {
   	  module_type : TrackQuality
   }
   TrkQualNeg : @local::TrkQual
-  TrkQualNeg.TrainingName : "TrkQual"
+  TrkQualNeg.TrainingName : "TrkQualNeg"
   TrkQualPos : @local::TrkQual
   TrkQualPos.TrainingName : "TrkQualPos"
 
