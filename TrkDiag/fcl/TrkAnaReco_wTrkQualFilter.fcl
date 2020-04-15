@@ -19,7 +19,7 @@ physics :
     trkQualFilter : { module_type : TrkQualFilter
     		      trainName : "TrkQual"
 		      trkHypo : "DeM"
-		      effRequest : 0.5
+		      effRequest : 0.505
 		    }
     trkQualNewFilter : { module_type : TrkQualFilter
        		       	 trainName : "TrkQualNew"
@@ -39,7 +39,7 @@ physics.TrkAnaNewTrigPath : [ @sequence::TrkAnaReco.TrigSequence, TrkQualNewDeM,
 physics.TrkAnaEndPath : [ @sequence::TrkAnaReco.EndSequence ]
 
 # Take events that pass one filter
-physics.analyzers.TrkAnaNeg.SelectEvents : [ TrkAnaNewTrigPath ]
+physics.analyzers.TrkAnaNeg.SelectEvents : [ TrkAnaTrigPath ]
 
 # Take events that pass either filter
 #physics.analyzers.TrkAnaNeg.SelectEvents : [ TrkAnaTrigPath, TrkAnaNewTrigPath ]
