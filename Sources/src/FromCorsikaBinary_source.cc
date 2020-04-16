@@ -8,6 +8,7 @@
 #include <cassert>
 #include <set>
 #include <string>
+#include <regex>
 
 #include "CLHEP/Vector/LorentzVector.h"
 #include "CLHEP/Vector/ThreeVector.h"
@@ -137,30 +138,27 @@ namespace mu2e {
 
     //----------------------------------------------------------------
     unsigned CorsikaBinaryDetail::getSubRunNumber(const std::string& filename) const {
-      const std::string::size_type corsikaConvention = filename.find_last_of("DAT");
-      const std::string::size_type mu2eConvention = filename.find_last_of(".csk");
+      std::regex re_corsika("^(.*/)?DAT([0-9]+)$");
+      std::regex re_mu2e("^(.*/)?sim\\.\\w+\\.[\\w-]+\\.[\\w-]+\\.([0-9]+)\\.csk$");
 
       unsigned sr(-1);
 
-      if (corsikaConvention != std::string::npos) {
-          const std::string basename = filename.substr(corsikaConvention + 3);
-          std::istringstream is(basename);
-          if (!(is >> sr)) {
-              throw cet::exception("BADINPUTS")
-                  << "Expect an unsigned integer at the beginning of input file name, got "
-                  << basename << "\n";
-          }
-      } else if (mu2eConvention != std::string::npos) {
-          unsigned last = filename.find_last_of(".");
-          std::string filenameNoExt = filename.substr(0, last);
-          last = filenameNoExt.find_last_of(".");
-          std::string subrun = filenameNoExt.substr(last+1);
-          std::istringstream is(subrun);
-          if (!(is >> sr)) {
-              throw cet::exception("BADINPUTS")
-                  << "Expect an unsigned integer as fifth field in the filename, got "
-                  << filename << "\n";
-          }
+      std::smatch match;
+      if(std::regex_search(filename, match, re_corsika)) {
+        // [0]: the whole string
+        // [1]: dirname or emtpy
+        // [2]: the run number string
+        sr = std::stoi(match.str(2));
+      }
+      else if(std::regex_search(filename, match, re_mu2e)) {
+        // [0]: the whole string
+        // [1]: dirname or emtpy
+        // [2]: the run number string
+        sr = std::stoi(match.str(2));
+      }
+      else {
+        throw cet::exception("BADINPUT", " FromCorsikaBinary: ")
+          << " Can not parse filename to extract subrun number:  "<<filename<<"\n";
       }
 
       return sr;
