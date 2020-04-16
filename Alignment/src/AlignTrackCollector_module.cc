@@ -76,7 +76,7 @@ namespace mu2e {
 
 class AlignTrackCollector : public art::EDAnalyzer {
   private:
-    static constexpr int MAX_NHITS = 50;
+    static constexpr int MAX_NHITS = 100;
 
     // Tree and tree fill members
     TTree* diagtree;
