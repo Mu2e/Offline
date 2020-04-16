@@ -135,7 +135,9 @@ class AlignTrackCollector : public art::EDAnalyzer {
             Comment("The type of track to collect. Default: CosmicTrackSeedCollection"),
             "CosmicTrackSeedCollection"};
 
-        fhicl::Atom<bool> seedonly{Name("SeedOnly"), Comment("Use seed tracks only"), false};
+        fhicl::Atom<int> minplanetraverse{
+            Name("MinTraversedPlanes"),
+            Comment("How many planes must be traversed for a track to be accepted"), 3};
     };
     typedef art::EDAnalyzer::Table<Config> Parameters;
 
@@ -152,7 +154,7 @@ class AlignTrackCollector : public art::EDAnalyzer {
     AlignTrackCollector(const Parameters& conf)
         : art::EDAnalyzer(conf), _diag(conf().diaglvl()), _costag(conf().costag()),
           _output_filename(conf().millefile()), _labels_filename(conf().labelsfile()),
-          track_type(conf().tracktype()), seed_only(conf().seedonly())
+          track_type(conf().tracktype()), min_plane_traverse(conf().minplanetraverse())
     {
         // generate hashtable of plane, or panel number to DOF labels
         // we prepare them like this because millepede wants arrays of labels
@@ -209,7 +211,7 @@ class AlignTrackCollector : public art::EDAnalyzer {
     std::string _output_filename;
     std::string _labels_filename;
     std::string track_type;
-    bool seed_only;
+    int min_plane_traverse;
 
     AlignTrackType collect_track;
 
@@ -434,8 +436,8 @@ bool AlignTrackCollector::filter_CosmicTrackSeedCollection(art::Event const& eve
             plane_uid[nHits] = plane_id;
 
             if (_diag > 0) {
-                std::cout << "pl" << plane_id << " pa" << panel_uuid << ": resid "
-                          << resid_tmp << " +- " << resid_err_tmp << std::endl;
+                std::cout << "pl" << plane_id << " pa" << panel_uuid << ": resid " << resid_tmp
+                          << " +- " << resid_err_tmp << std::endl;
             }
 
             // FIXME! seems messy!
@@ -457,8 +459,7 @@ bool AlignTrackCollector::filter_CosmicTrackSeedCollection(art::Event const& eve
             // write the hit to the track buffer
             millepede->mille(derivativesLocal.size(), derivativesLocal.data(),
                              derivativesGlobal.size(), derivativesGlobal.data(),
-                             global_dof_labels.data(), (float)resid_tmp,
-                             (float)resid_err_tmp);
+                             global_dof_labels.data(), (float)resid_tmp, (float)resid_err_tmp);
 
             // diagnostic information
             if (_diag > 0) {
@@ -482,6 +483,18 @@ bool AlignTrackCollector::filter_CosmicTrackSeedCollection(art::Event const& eve
 
             planes_trav = planes_traversed.size();
             panels_trav = panels_traversed.size();
+
+            // track acceptance cuts
+            if (min_plane_traverse != 0 && planes_trav < min_plane_traverse) {
+                millepede->kill(); // delete track from buffer, move on!
+
+                if (_diag > 0) {
+                    std::cout << "track failed min plane traversal cut" << std::endl;
+                }
+
+                continue;
+            }
+
             // Write the track buffer to file if we wrote a track
             millepede->end();
 
