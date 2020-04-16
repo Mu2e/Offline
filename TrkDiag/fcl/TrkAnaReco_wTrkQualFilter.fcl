@@ -9,8 +9,6 @@ source : { module_type : RootInput }
 
 services : @local::Services.Reco
 
-services.DbService.textFile : [ @local::TrkQualCatalogDbOverride ]
-
 physics :
 {
   producers : { @table::TrkAnaReco.producers }
@@ -21,20 +19,20 @@ physics :
 		      trkHypo : "DeM"
 		      effRequest : 0.505
 		    }
-    trkQualNewFilter : { module_type : TrkQualFilter
-       		       	 trainName : "TrkQualNew"
+    trkQualNegFilter : { module_type : TrkQualFilter
+       		       	 trainName : "TrkQualNeg"
 		      	 trkHypo : "DeM"
 		      	 effRequest : 0.5
 		       }
   }
 }
 
-physics.producers.TrkQualNewDeM : @local::TrkQualDeM
-physics.producers.TrkQualNewDeM.TrainingName : "TrkQualNew"
+physics.producers.TrkQualNegDeM : @local::TrkQualDeM
+physics.producers.TrkQualNegDeM.TrainingName : "TrkQualNeg"
 
 physics.TrkAnaTrigPath : [ @sequence::TrkAnaReco.TrigSequence, trkQualFilter ]
-physics.TrkAnaNewTrigPath : [ @sequence::TrkAnaReco.TrigSequence, TrkQualNewDeM, trkQualNewFilter ]
-#physics.TrkAnaBothTrigPath : [ @sequence::physics.TrkAnaTrigPath, @sequence::physics.TrkAnaNewTrigPath ]
+physics.TrkAnaNegTrigPath : [ @sequence::TrkAnaReco.TrigSequence, TrkQualNegDeM, trkQualNegFilter ]
+#physics.TrkAnaBothTrigPath : [ @sequence::physics.TrkAnaTrigPath, @sequence::physics.TrkAnaNegTrigPath ]
 
 physics.TrkAnaEndPath : [ @sequence::TrkAnaReco.EndSequence ]
 
@@ -42,7 +40,7 @@ physics.TrkAnaEndPath : [ @sequence::TrkAnaReco.EndSequence ]
 physics.analyzers.TrkAnaNeg.SelectEvents : [ TrkAnaTrigPath ]
 
 # Take events that pass either filter
-#physics.analyzers.TrkAnaNeg.SelectEvents : [ TrkAnaTrigPath, TrkAnaNewTrigPath ]
+#physics.analyzers.TrkAnaNeg.SelectEvents : [ TrkAnaTrigPath, TrkAnaNegTrigPath ]
 
 # Take events that pass both filters
 #physics.analyzers.TrkAnaNeg.SelectEvents : [ TrkAnaBothTrigPath ]
