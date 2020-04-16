@@ -241,8 +241,8 @@ void AlignTrackCollector::beginJob()
         diagtree->Branch("doca_resid_err", &doca_resid_err, "doca_resid_err[nHits]/F");
         diagtree->Branch("doca", &doca, "doca[nHits]/F");
         diagtree->Branch("time", &time, "time[nHits]/F");
-        diagtree->Branch("plane", &plane_uid, "plane[nHits]/F");
-        diagtree->Branch("panel", &panel_uid, "panel[nHits]/F");
+        diagtree->Branch("plane", &plane_uid, "plane[nHits]/I");
+        diagtree->Branch("panel", &panel_uid, "panel[nHits]/I");
 
         diagtree->Branch("A0", &A0, "A0/D");
         diagtree->Branch("A1", &A1, "A1/D");
@@ -441,7 +441,6 @@ bool AlignTrackCollector::filter_CosmicTrackSeedCollection(art::Event const& eve
 
             // FIXME! seems messy!
             std::vector<int> global_dof_labels;
-
             global_dof_labels.reserve(_dof_per_plane + _dof_per_panel);
 
             // Convention note:
