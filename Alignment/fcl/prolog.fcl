@@ -3,9 +3,13 @@ BEGIN_PROLOG
  AlignTrackCollector : {
     module_type		: AlignTrackCollector
     diagLevel : 2
+
     CosmicTrackSeedCollection : "CosmicTrackFinderTimeFit"
     TrackDataOutputFile : "etc.owner.bootstrap-alignment.millepede-trackcollection-sequencer.root"
     LabelsOutputFile : "labels.txt"
+
+
+    MinTraversedPlanes : 3
 }
 
 END_PROLOG
