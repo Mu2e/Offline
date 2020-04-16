@@ -436,7 +436,8 @@ bool AlignTrackCollector::filter_CosmicTrackSeedCollection(art::Event const& eve
             CLHEP::Hep3Vector dir(A1, -1, B1);
             dir = dir.unit();
             TwoLinePCA pca(straw.getMidPoint(), straw.getDirection(), intercept, dir);
-            chisq += (resid_tmp * resid_tmp) / pca.dca();
+
+            chisq += (resid_tmp * resid_tmp) / (pca.s2() > 0 ? 1 : -1) * pca.dca();
             ndof++;
 
             doca_residual[nHits] = resid_tmp;
@@ -446,7 +447,7 @@ bool AlignTrackCollector::filter_CosmicTrackSeedCollection(art::Event const& eve
             panel_uid[nHits] = panel_uuid;
             plane_uid[nHits] = plane_id;
 
-            if (_diag > 0) {
+            if (_diag > 1) {
                 std::cout << "pl" << plane_id << " pa" << panel_uuid << ": resid " << resid_tmp
                           << " +- " << resid_err_tmp << std::endl;
             }

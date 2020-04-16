@@ -1,4 +1,4 @@
-//Author: S Middleton 
+//Author: S Middleton
 //Date: August 2019
 //Purpose: PDF Functions for minuit fitting
 
@@ -50,8 +50,8 @@ const int N_tbins = 500;
 const int N_taubins = 50;
 const int N_sbins = 50;
 
-float wireradius = 12.5/1000.; //12.5 um in mm 
-float strawradius = 2.5; //2.5 mm in mm 
+float wireradius = 12.5/1000.; //12.5 um in mm
+float strawradius = 2.5; //2.5 mm in mm
 
 FullDriftFit::FullDriftFit(ComboHitCollection _chits, StrawResponse const& _srep , CosmicTrack _track, std::vector<double> &_constraint_means, std::vector<double> &_constraints, double _sigma_t, int _k, const Tracker* _tracker) : GaussianPDFFit(_chits,  _srep, _track,  _constraint_means, _constraints, _sigma_t, _k, _tracker)
 {
@@ -96,7 +96,7 @@ FullDriftFit::FullDriftFit(ComboHitCollection _chits, StrawResponse const& _srep
     }
 
     void FullDriftFit::CalculateFullPDF() {
-  
+
 	for (int is=0;is<N_sbins;is++){
 		double sigma = this->pdf_sigmas[is];
 		for (int it0=0;it0<N_tbins;it0++){
@@ -109,8 +109,8 @@ FullDriftFit::FullDriftFit(ComboHitCollection _chits, StrawResponse const& _srep
 				  	double time_tau = this->delta_T*it1;
 				  	double val_tau = pow(1/tau,k)*pow(time_tau,k-1)*exp(-time_tau/tau)/(double) Factorial(k-1);
 				  	this->pdf[is * N_taubins * N_tbins + itau * N_tbins + (it0+it1)] += time_gaussian * val_tau;
-			 
-				}	
+
+				}
 		      	}
 	    	}
   	}
@@ -121,7 +121,7 @@ FullDriftFit::FullDriftFit(ComboHitCollection _chits, StrawResponse const& _srep
 			for (int it=0;it<N_tbins;it++){
 				total += this->pdf[is * N_taubins * N_tbins + itau * N_tbins + it];
 			}
-      
+
 	      	for (int it=0;it<N_tbins;it++){
 			this->pdf[(is*N_taubins*N_tbins)+(itau*N_tbins) + it] /= total;
 	      }
@@ -130,7 +130,7 @@ FullDriftFit::FullDriftFit(ComboHitCollection _chits, StrawResponse const& _srep
 }
 
     void FullDriftFit::DeleteArrays() const{
-    
+
 	delete []  pdf_sigmas;
 	delete []  pdf_taus;
 	delete []  pdf_times;
@@ -196,12 +196,12 @@ FullDriftFit::FullDriftFit(ComboHitCollection _chits, StrawResponse const& _srep
 
     // This 3 functions talk to the drift util:
     double GaussianPDFFit::calculate_DOCA(ComboHit const& chit, double a0, double a1, double b0, double b1, const Tracker* tracker)const{
-	double doca = DriftFitUtils::GetTestDOCA(chit, a0,a1,b0,b1, tracker); 
+	double doca = DriftFitUtils::GetTestDOCA(chit, a0,a1,b0,b1, tracker);
 	return (doca);
 }
 
     double GaussianPDFFit::calculate_ambig(ComboHit const& chit, double a0, double a1, double b0, double b1, const Tracker* tracker)const{
-	double ambig = DriftFitUtils::GetAmbig(chit, a0,a1,b0,b1, tracker); 
+	double ambig = DriftFitUtils::GetAmbig(chit, a0,a1,b0,b1, tracker);
 	return (ambig);
 }
 
@@ -213,22 +213,22 @@ FullDriftFit::FullDriftFit(ComboHitCollection _chits, StrawResponse const& _srep
 
     double GaussianPDFFit::operator() (const std::vector<double> &x) const
    {
- 
+
 	double const& a0 = x[0];
 	double const& a1 = x[1];
 	double const& b0 = x[2];
 	double const& b1 = x[3];
 	double t0 = x[4];
 	long double llike = 0;
-  
-  
+
+
 	for (size_t i=0;i<this->chits.size();i++){
-		double doca = calculate_DOCA(this->chits[i], a0, a1, b0, b1,  this->tracker); 
+		double doca = calculate_DOCA(this->chits[i], a0, a1, b0, b1,  this->tracker);
 		double time_residual = this->TimeResidual(doca, this->srep, t0,this->chits[i], this->tracker);
 		double pdf_t = 1/sqrt(2*TMath::Pi()*this->sigma_t*this->sigma_t) * exp(-(time_residual*time_residual)/(2*this->sigma_t*this->sigma_t));
-	
+
 		llike -=log(pdf_t);
-		t0 += time_residual/this->chits.size(); 
+		t0 += time_residual/this->chits.size();
 
   	}
 
@@ -237,13 +237,13 @@ FullDriftFit::FullDriftFit(ComboHitCollection _chits, StrawResponse const& _srep
 			llike += pow((x[i]-this->constraint_means[i])/this->constraints[i],2);
 		}
   	}
-  
+
   	return llike;
     }
 
     double FullDriftFit::operator() (const std::vector<double> &x) const
     {
-  
+
 	if (sigma > Max_s){
 		return 1e10;
 	}
@@ -252,18 +252,18 @@ FullDriftFit::FullDriftFit(ComboHitCollection _chits, StrawResponse const& _srep
 	double const& a1 = x[1];
 	double const& b0 = x[2];
 	double const& b1 = x[3];
-	double t0 = x[4]; 
+	double t0 = x[4];
 	long double llike = 0;
 
 	for (size_t i=0;i<this->chits.size();i++){
-		double doca = calculate_DOCA(this->chits[i], a0, a1, b0, b1, this->tracker); 
-		double doca_penalty = 1; 
+		double doca = calculate_DOCA(this->chits[i], a0, a1, b0, b1, this->tracker);
+		double doca_penalty = 1;
 		double time_residual = this->TimeResidual(doca, this->srep, t0, this->chits[i], this->tracker);
 
 		if(time_residual>40){
 			time_residual = 40;
 		}
-    
+
 		double hypotenuse = sqrt(pow(doca,2) + pow((tau * 0.0625),2));
 
 		double tau_eff = (hypotenuse/0.0625) - (doca/0.0625);
@@ -275,7 +275,7 @@ FullDriftFit::FullDriftFit(ComboHitCollection _chits, StrawResponse const& _srep
 			pdf_val = 1e-3;
 		}
 		llike -= log(pdf_val);
-    
+
   	}
 
 	for (int i=0;i<7;i++){
@@ -292,7 +292,7 @@ double GaussianDriftFit::operator() (const std::vector<double> &x) const
   double b0 = x[1];
   double a1 = x[2];
   double b1 = x[3];
-  double t0 = x[4]; 
+  double t0 = x[4];
   long double llike = 0;
 
   CLHEP::Hep3Vector intercept(a0,0,b0);
@@ -317,7 +317,7 @@ double GaussianDriftFit::operator() (const std::vector<double> &x) const
     llike += pow(hit_t0-t0,2)/pow(drift_res,2);
   }
 //  std::cout << x[0] << " " << x[1] << " " << x[2] << " " << x[3] << " " << x[4] << "  =>  " << llike << std::endl;
-  
+
   return llike;
 }
 
@@ -327,7 +327,7 @@ double GaussianDriftFit::DOCAresidual(ComboHit const& sh, const std::vector<doub
   double b0 = x[1];
   double a1 = x[2];
   double b1 = x[3];
-  double t0 = x[4]; 
+  double t0 = x[4];
 
   CLHEP::Hep3Vector intercept(a0,0,b0);
   CLHEP::Hep3Vector dir(a1,-1,b1);
@@ -338,7 +338,7 @@ double GaussianDriftFit::DOCAresidual(ComboHit const& sh, const std::vector<doub
   double traj_time = ((pca.point2() - intercept).dot(dir))/299.9;
   double hit_t0 = sh.propTime() + traj_time + t0 + srep.driftDistanceOffset(sh.strawId(), 0, 0, pca.dca());
 
-  double predictedDistance = pca.dca();
+  double predictedDistance = (pca.s2() > 0 ? 1 : -1) * pca.dca();
   double measuredDistance = srep.driftTimeToDistance(sh.strawId(), sh.time()-hit_t0, 0);
 
   return predictedDistance-measuredDistance;
