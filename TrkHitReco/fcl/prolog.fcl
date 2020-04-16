@@ -41,6 +41,7 @@ TNTClusterer : {
     TimeRMS          : 2.0
     DeltaTimeBinMin  : 10
     MedianCentroid   : false
+    FilterAlgo       : 1
     ComboInit        : true
     TestFlag         : true
     BackgroundMask   : []
@@ -52,9 +53,9 @@ ScanTPClusterer : {
     Tmax             : 1750
     Tbin             : 20.0
     Pbin             : 0.1
-    MinPeakHit       : 2
+    MinPeakHit       : 3
     MinSeedHit       : 5
-    MinRadHit        :  50     
+    MinRadHit        : 50     
     HitDistance      : 5.0
     SeedDistance     : 20.0
     ClusterDiameter  : 5.0
@@ -64,7 +65,7 @@ ScanTPClusterer : {
     MinHitError      : 5.0
     TimeRMS          : 2.0
     DeltaTimeBinMin  : 10
-    FilterAlgo       : 1
+    FilterAlgo       : 3
     ComboInit        : true
     TestFlag         : true
     BackgroundMask   : []
@@ -76,7 +77,7 @@ FlagBkgHits : {
   module_type          : FlagBkgHits
   ComboHitCollection   : "makePH"
   StrawHitCollection   : "makeSH"
-  ClusterAlgorithm     : 1
+  ClusterAlgorithm     : 2
   TNTClustering        : { @table::TNTClusterer }
   ScanTPClustering     : { @table::ScanTPClusterer }
   MinActiveHits        : 3

@@ -63,6 +63,7 @@ namespace mu2e {
           static const int numBuckets = 200; //number of buckets to store the clusters vs time - seems fine
           void fastFilter1(BkgClusterCollection& clusters, const ComboHitCollection& chcol, std::vector<unsigned>& hitSel);
           void fastFilter2(BkgClusterCollection& clusters, const ComboHitCollection& chcol, std::vector<unsigned>& hitSel);
+          void fastFilter3(BkgClusterCollection& clusters, const ComboHitCollection& chcol, std::vector<unsigned>& hitSel);
           void fastCluster(BkgClusterCollection& clusters, const ComboHitCollection& chcol, const std::vector<unsigned>& hitSel, float mbtime);
        
 

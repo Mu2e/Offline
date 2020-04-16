@@ -27,8 +27,8 @@ TimeClusterFinder : {
   CaloClusterCollection : "CaloClusterFromProtoCluster"
   # enable calorimeter cluster info in time clustering
   CaloClusterCollection : "CaloClusterFromProtoCluster"
-  UseCaloCluster : true
-  UseCaloClusterPosition : true
+  UseCaloCluster : false
+  UseCaloClusterPosition : false
   CaloClusterWeight : 10.0
   TestFlag : true
 }

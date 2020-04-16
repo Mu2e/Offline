@@ -15,6 +15,7 @@ namespace mu2e
       maxDistSum_(config.maxSumDistance()),   
       maxNiter_  (config.maxCluIterations()),
       useMedian_ (config.medianCentroid()),         
+      filterAlgo_(config.filterAlgo()),         
       comboInit_ (config.comboInit()),         
       bkgmask_   (config.bkgmsk()),
       sigmask_   (config.sigmsk()),
@@ -51,7 +52,11 @@ namespace mu2e
         hitDtIdx_.clear();
         for (int i=0;i<=ditime;++i) {hitDtIdx_.push_back(i); if (i>0) hitDtIdx_.push_back(-i);}                 
 
-        initClu(chcol, postFilterClusters, BkgHits);
+        std::vector<unsigned> hitSel(chcol.size(),1); 
+        if (filterAlgo_==1) fastFilter1(preFilterClusters,chcol,hitSel);
+
+
+        initClu(chcol, postFilterClusters, BkgHits, hitSel);
         clusterAlgo(chcol, postFilterClusters, BkgHits, tbin);
 
         //a final merge does almost nothing but we leave it in case of need
@@ -66,13 +71,76 @@ namespace mu2e
    }
    
 
+   
+   //----------------------------------------------------------------------------------------------------------------------
+   void TNTClusterer::fastFilter1(BkgClusterCollection& clusters, const ComboHitCollection& chcol, std::vector<unsigned>& hitSel)
+   {                            
+const int minSumHit_ = 5;
+const int minPeakHit_ = 3;
+const float tmin_ = 450.0;
+const float tmax_ = 1750.0;
+const float tbin_ = 20.0;
+const float pbin_ = 0.1;
+       
+       const unsigned nTimeBins = unsigned((tmax_-tmin_)/tbin_);
+       const unsigned nPhiBins  = unsigned(2*M_PI/pbin_+1e-5)+1;
+       const unsigned nTotBins  = nTimeBins*nPhiBins;
+
+       std::vector<unsigned> timePhiHist(nTotBins,0), blindIdx(nTotBins,0);
+       for (unsigned ich=0; ich<chcol.size();++ich)
+       {
+           const ComboHit& hit = chcol[ich];          
+           if (testflag_ && (!hit.flag().hasAllProperties(sigmask_) || hit.flag().hasAnyProperty(bkgmask_))) continue;            
+
+           unsigned pOffset = unsigned( (hit.phi()+M_PI)/pbin_);
+           unsigned tOffset = unsigned( (hit.time()-tmin_)/tbin_);
+           unsigned idx     =  tOffset + pOffset*nTimeBins;
+           timePhiHist[idx] += 1;  //we could make it nStrawHits here instead
+       }
+
+      for (unsigned idx=1;idx<nTotBins-1;++idx)
+      {     
+          if (idx%nTimeBins==0 || idx%nTimeBins+1==nTimeBins) continue;   
+
+          unsigned idxUp = (idx+nTimeBins+nTotBins)%nTotBins;
+          unsigned idxDown = (idx-nTimeBins+nTotBins)%nTotBins;
+          
+          unsigned sum = timePhiHist[idx]+timePhiHist[idx-1]+timePhiHist[idx+1]+
+                         timePhiHist[idxUp]+timePhiHist[idxUp-1]+timePhiHist[idxUp+1]+
+                         timePhiHist[idxDown]+timePhiHist[idxDown-1]+timePhiHist[idxDown+1];
+
+          if (timePhiHist[idx]>=minPeakHit_ || sum> minSumHit_)
+          {
+              blindIdx[idx]     = 1;
+              blindIdx[idx+1]   = blindIdx[idx-1]     = 1;
+              blindIdx[idxUp]   = blindIdx[idxUp+1]   = blindIdx[idxUp-1]   = 1;
+              blindIdx[idxDown] = blindIdx[idxDown+1] = blindIdx[idxDown-1] = 1;
+          }                          
+      }
+
+      //collect all preFiltered hits in a single cluster
+      clusters.emplace_back(BkgCluster(XYZVec(0,0,0), 0));
+      for (unsigned ich=0; ich<chcol.size();++ich)
+      {
+          const ComboHit& hit = chcol[ich];          
+          unsigned pOffset = unsigned( (hit.phi()+M_PI)/pbin_);
+          unsigned tOffset = unsigned( (hit.time()-tmin_)/tbin_);
+          unsigned idx     =  tOffset + pOffset*nTimeBins;
+
+          if (blindIdx[idx]==0) continue;
+          hitSel[ich]=0;
+          clusters.back().addHit(ich);  
+      }        
+   }
+
    //------------------------------------------------------------------------------------------------------------------------
-   void TNTClusterer::initClu(const ComboHitCollection& chcol, std::vector<BkgCluster>& clusters, std::vector<BkgHit>& BkgHits) 
+   void TNTClusterer::initClu(const ComboHitCollection& chcol, std::vector<BkgCluster>& clusters, std::vector<BkgHit>& BkgHits, const std::vector<unsigned>& hitSel) 
    {      
-        for (size_t ish=0; ish<chcol.size(); ++ish)
+        for (size_t ich=0; ich<chcol.size(); ++ich)
         {         
-             if (testflag_ && (!chcol[ish].flag().hasAllProperties(sigmask_) || chcol[ish].flag().hasAnyProperty(bkgmask_))) continue;           
-             BkgHits.emplace_back(BkgHit(ish));                 
+             if (hitSel[ich]==0) continue;
+             if (testflag_ && (!chcol[ich].flag().hasAllProperties(sigmask_) || chcol[ich].flag().hasAnyProperty(bkgmask_))) continue;           
+             BkgHits.emplace_back(BkgHit(ich));                 
         }
 
         if (comboInit_) std::sort(BkgHits.begin(),BkgHits.end(),

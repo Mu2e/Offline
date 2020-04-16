@@ -53,6 +53,7 @@ namespace mu2e
                 
         if (filterAlgo_==1) fastFilter1(preFilterClusters,chcol,hitSel);
         if (filterAlgo_==2) fastFilter2(preFilterClusters,chcol,hitSel);
+        if (filterAlgo_==3) fastFilter3(preFilterClusters,chcol,hitSel);
 
         if (comboInit_) std::sort(hitSel.begin(),hitSel.end(),
                                  [&chcol](const auto& i, const auto& j) 
@@ -227,6 +228,78 @@ namespace mu2e
 
 
 
+
+
+   //----------------------------------------------------------------------------------------------------------------------
+   void ScanTPClusterer::fastFilter3(BkgClusterCollection& clusters, const ComboHitCollection& chcol, std::vector<unsigned>& hitSel)
+   {                            
+const int minSumHit_ = 5;
+       
+       const unsigned nTimeBins = unsigned((tmax_-tmin_)/tbin_);
+       const unsigned nPhiBins  = unsigned(2*M_PI/pbin_+1e-5)+1;
+       const unsigned nTotBins  = nTimeBins*nPhiBins;
+
+       std::vector<unsigned> timePhiHist(nTotBins,0), blindIdx(nTotBins,0);
+       for (unsigned ich=0; ich<chcol.size();++ich)
+       {
+           const ComboHit& hit = chcol[ich];          
+           if (testflag_ && (!hit.flag().hasAllProperties(sigmask_) || hit.flag().hasAnyProperty(bkgmask_))) continue;            
+
+           unsigned pOffset = unsigned( (hit.phi()+M_PI)/pbin_);
+           unsigned tOffset = unsigned( (hit.time()-tmin_)/tbin_);
+           unsigned idx     =  tOffset + pOffset*nTimeBins;
+           timePhiHist[idx] += 1;  //we could make it nStrawHits here instead
+       }
+
+      for (unsigned idx=1;idx<nTotBins-1;++idx)
+      {     
+          if (idx%nTimeBins==0 || idx%nTimeBins+1==nTimeBins) continue;   
+
+          unsigned idxUp = (idx+nTimeBins+nTotBins)%nTotBins;
+          unsigned idxDown = (idx-nTimeBins+nTotBins)%nTotBins;
+          
+          unsigned sum = timePhiHist[idx]+timePhiHist[idx-1]+timePhiHist[idx+1]+
+                         timePhiHist[idxUp]+timePhiHist[idxUp-1]+timePhiHist[idxUp+1]+
+                         timePhiHist[idxDown]+timePhiHist[idxDown-1]+timePhiHist[idxDown+1];
+
+          if (timePhiHist[idx]>=minPeakHit_ || sum> minSumHit_)
+          {
+              blindIdx[idx]     = 1;
+              blindIdx[idx+1]   = blindIdx[idx-1]     = 1;
+              blindIdx[idxUp]   = blindIdx[idxUp+1]   = blindIdx[idxUp-1]   = 1;
+              blindIdx[idxDown] = blindIdx[idxDown+1] = blindIdx[idxDown-1] = 1;
+          }                          
+      }
+
+      /*
+      for (unsigned idx=1;idx<nTotBins-1;++idx)
+      {     
+          if (timePhiHist[idx] < minPeakHit_) continue;
+          if (idx%nTimeBins==0 || idx%nTimeBins+1==nTimeBins) continue;   
+
+          unsigned idxUp = (idx+nTimeBins+nTotBins)%nTotBins;
+          unsigned idxDown = (idx-nTimeBins+nTotBins)%nTotBins;
+          
+          blindIdx[idx]     = 1;
+          blindIdx[idx+1]   = blindIdx[idx-1]     = 1;
+          blindIdx[idxUp]   = blindIdx[idxUp+1]   = blindIdx[idxUp-1]   = 1;
+          blindIdx[idxDown] = blindIdx[idxDown+1] = blindIdx[idxDown-1] = 1;                                    
+      }
+      */
+
+      //collect all preFiltered hits in a single cluster
+      clusters.emplace_back(BkgCluster(XYZVec(0,0,0), 0));
+      for (unsigned ich=0; ich<chcol.size();++ich)
+      {
+          const ComboHit& hit = chcol[ich];          
+          unsigned pOffset = unsigned( (hit.phi()+M_PI)/pbin_);
+          unsigned tOffset = unsigned( (hit.time()-tmin_)/tbin_);
+          unsigned idx     =  tOffset + pOffset*nTimeBins;
+
+          if (blindIdx[idx]==0) hitSel.emplace_back(ich);
+          else clusters.back().addHit(ich);  
+      }        
+   }
 
 
 
