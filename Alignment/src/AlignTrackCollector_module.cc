@@ -233,7 +233,6 @@ void AlignTrackCollector::beginJob()
     millepede = std::make_unique<Mille>(_output_filename.c_str());
 
     if (_diag > 0) {
-        // TODO: extend these diagnostics  (could fill a TTree?)
         art::ServiceHandle<art::TFileService> tfs;
 
         diagtree = tfs->make<TTree>("tracks", "Tracks collected for an alignment iteration");
@@ -242,8 +241,8 @@ void AlignTrackCollector::beginJob()
         diagtree->Branch("doca_resid_err", &doca_resid_err, "doca_resid_err[nHits]/F");
         diagtree->Branch("doca", &doca, "doca[nHits]/F");
         diagtree->Branch("time", &time, "time[nHits]/F");
-        diagtree->Branch("plane", &plane_uid, "doca[nHits]/F");
-        diagtree->Branch("panel", &panel_uid, "time[nHits]/F");
+        diagtree->Branch("plane", &plane_uid, "plane[nHits]/F");
+        diagtree->Branch("panel", &panel_uid, "panel[nHits]/F");
 
         diagtree->Branch("A0", &A0, "A0/D");
         diagtree->Branch("A1", &A1, "A1/D");
