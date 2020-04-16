@@ -12,21 +12,21 @@ from mu2e_helper import mu2e_helper
 mu2eOpts = {}
 
 # add a mu2e debug print option like "--mu2ePrint=5"
-AddOption('--mu2ePrint', dest='mu2ePrint', 
+AddOption('--mu2ePrint', dest='mu2ePrint',
           type='int',nargs=1,default=1,
           help='mu2e print level (0-10) default=1')
 mu2ePrint = GetOption("mu2ePrint")
 mu2eOpts["mu2ePrint"] = mu2ePrint
 
 # add an option to print only short lines for each target
-AddOption('--mu2eCompactPrint', dest='mu2eCompactPrint', 
+AddOption('--mu2eCompactPrint', dest='mu2eCompactPrint',
           action="store_true",default=False,
           help='print only a short text line for each target')
 mu2eCompactPrint = GetOption("mu2eCompactPrint")
 
 mu2eOpts["mu2eCompactPrint"] = mu2eCompactPrint
 
-# Check that some important environment variables have been set; 
+# Check that some important environment variables have been set;
 # result is a dictionary of the options
 moreOpts = sch.mu2eEnvironment()
 mu2eOpts.update(moreOpts)
@@ -66,8 +66,11 @@ env = Environment( CPPPATH = sch.cppPath(mu2eOpts),   # $ART_INC ...
                    SHLINKCOMSTR= linkcomstr,
 )
 
+# Make the Compilation DB generator available in the environment
+env.Tool('compilation_db')
+
 # Define and register the rule for building dictionaries.
-# sources are classes.h, classes_def.xml, 
+# sources are classes.h, classes_def.xml,
 # targets are dict.cpp, .rootmap and .pcm
 # LIBTEXT is the library for the dict - not a target, only text for names
 genreflex = Builder(action=Action("export HOME="+os.environ["HOME"]+"; "+"genreflex ${SOURCES[0]} -s ${SOURCES[1]} $_CPPINCFLAGS -l $LIBTEXT -o ${TARGETS[0]} --fail_on_warnings --rootmap-lib=$LIBTEXT  --rootmap=${TARGETS[1]} $DEBUG_FLAG",genreflexcomstr))
@@ -106,8 +109,12 @@ ss = sch.sconscriptList(mu2eOpts)
 # make sure lib, bin and tmp are there
 sch.makeSubDirs(mu2eOpts)
 
+# Generate a compile_commands.json
+compileCommands = env.CompilationDatabase('gen/compile_commands.json')
+compileDb = env.Alias("compiledb", compileCommands)
+
 # operate on the SConscript files
-# regular python commands like os.path() are executed immediately as they are encontered, 
+# regular python commands like os.path() are executed immediately as they are encontered,
 # scons builder commands like env.SharedLibrary are examined for dependences and scheduled
 # to be executed in parallel, as possible
 env.SConscript(ss)

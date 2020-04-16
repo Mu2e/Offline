@@ -3,9 +3,6 @@
 
 // C++ includes
 
-// Framework includes
-#include "fhiclcpp/ParameterSet.h"
-
 // Mu2e includes
 #include "Mu2eG4/inc/Mu2eG4CustomizationPhysicsConstructor.hh"
 #include "Mu2eG4/inc/customizeChargedPionDecay.hh"
@@ -27,9 +24,10 @@ namespace mu2e {
   G4ThreadLocal G4bool Mu2eG4CustomizationPhysicsConstructor::wasActivated = false;
 
   Mu2eG4CustomizationPhysicsConstructor::
-  Mu2eG4CustomizationPhysicsConstructor(const fhicl::ParameterSet* pset)
-    : G4VPhysicsConstructor("Mu2eCustomizations",bUnknown),
-      pset_(pset)
+  Mu2eG4CustomizationPhysicsConstructor(const Mu2eG4Config::Physics* phys, const Mu2eG4Config::Debug* debug)
+    : G4VPhysicsConstructor("Mu2eCustomizations",bUnknown)
+    , phys_(phys)
+    , debug_(debug)
       // bUnknown disables duplication check for physics builder type
   {}
 
@@ -37,6 +35,8 @@ namespace mu2e {
   Mu2eG4CustomizationPhysicsConstructor::
   Mu2eG4CustomizationPhysicsConstructor()
     : G4VPhysicsConstructor("Mu2eCustomizations",bUnknown)
+    , phys_(nullptr)
+    , debug_(nullptr)
   {}
 
   Mu2eG4CustomizationPhysicsConstructor::~Mu2eG4CustomizationPhysicsConstructor()
@@ -52,7 +52,7 @@ namespace mu2e {
     if(wasActivated) { return; }
     wasActivated = true;
 
-    if (pset_->get<int>("debug.diagLevel",0)>0) {
+    if (debug_->diagLevel()>0) {
       G4cout << "Mu2eG4CustomizationPhysicsConstructor::"
              << __func__ << " Called" << G4endl;
     }
@@ -61,22 +61,22 @@ namespace mu2e {
 
       // G4 does not include pi+ -> e+ nu + cc. Fix that in one of several ways.
       // decay tables are common
-      customizeChargedPionDecay(*pset_);
+      customizeChargedPionDecay(*phys_, *debug_);
 
     }
 
     // Switch off the decay of some particles
-    switchDecayOff(*pset_);
+    switchDecayOff(*phys_, *debug_);
 
     // add conditional and special mu2e processes
-    addUserProcesses(*pset_);
+    addUserProcesses(*phys_, *debug_);
 
     // swap Bertini Cascade with Precompound model in G4MuonMinusCapture if requested
-    switchCaptureDModel(*pset_);
+    switchCaptureDModel(*phys_, *debug_);
 
     // use more accurate boundary crossing algorithm for muons and hadrons
     // place this late in the setup sequence to avoid a subsequent change
-    if (pset_->get<bool>("physics.setMuHadLateralDisplacement",false)) {
+    if (phys_->setMuHadLateralDisplacement()) {
       G4EmParameters* params = G4EmParameters::Instance();
       params->SetMuHadLateralDisplacement(true);
     }

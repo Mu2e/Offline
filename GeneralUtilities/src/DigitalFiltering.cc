@@ -1,6 +1,6 @@
 #include "GeneralUtilities/inc/DigitalFiltering.hh"
 #include <stddef.h>
-#include <math.h>
+#include <cmath>
 
 namespace mu2e {
   namespace DigitalFiltering {

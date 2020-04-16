@@ -1,3 +1,7 @@
+//Author: S Middleton
+//Date: April 2019
+//Purpose: (DEPRECATED - Almost!) Not very nice analyzer for Cosmics. Would be better to use the CosmicTrackDetails. This will be removed soon but might be useful for comparison with old code.
+
 #define _USE_MATH_DEFINES
 #include <iostream>
 #include <string>
@@ -9,6 +13,7 @@
 #include "RecoDataProducts/inc/CosmicTrack.hh"
 #include "RecoDataProducts/inc/CosmicTrackSeed.hh"
 #include "CosmicReco/inc/CosmicTrackMCInfo.hh"
+#include "ProditionsService/inc/ProditionsHandle.hh"
 
 //Mu2e Data Prods:
 #include "RecoDataProducts/inc/StrawHitFlagCollection.hh"
@@ -32,12 +37,14 @@
 #include "GeneralUtilities/inc/ParameterSetHelpers.hh"
 #include "GeometryService/inc/GeomHandle.hh"
 #include "GeometryService/inc/DetectorSystem.hh"
+
 // Framework includes.
 #include "art/Framework/Core/EDAnalyzer.h"
 #include "art/Framework/Principal/Event.h"
 #include "art/Framework/Principal/Handle.h"
 #include "art/Framework/Core/ModuleMacros.h"
 #include "art_root_io/TFileService.h"
+
 //ROOT
 #include "TStyle.h"
 #include "Rtypes.h"
@@ -53,8 +60,8 @@ using namespace std;
 
 namespace mu2e 
 {
-  class CosmicAnalyzer : public art::EDAnalyzer {
-    public:
+	class CosmicAnalyzer : public art::EDAnalyzer {
+	public:
 	struct Config{
 	      using Name=fhicl::Name;
 	      using Comment=fhicl::Comment;
@@ -66,178 +73,180 @@ namespace mu2e
 	      fhicl::Atom<art::InputTag> mcdigistag{Name("StrawDigiMCCollection"),Comment("StrawDigi collection tag"),"makeSD"};
 	      fhicl::Table<SimParticleTimeOffset::Config> toff{Name("TimeOffsets"), Comment("Sim particle time offset ")};
 	    };
-      typedef art::EDAnalyzer::Table<Config> Parameters;
+	typedef art::EDAnalyzer::Table<Config> Parameters;
 
-      explicit CosmicAnalyzer(const Parameters& conf);
-      virtual ~CosmicAnalyzer();
-      virtual void beginJob() override;
-      virtual void beginRun(const art::Run& r) override;
-      virtual void analyze(const art::Event& e) override;
-      virtual void endJob() override;
+	explicit CosmicAnalyzer(const Parameters& conf);
+	virtual ~CosmicAnalyzer();
+	virtual void beginJob() override;
+	virtual void beginRun(const art::Run& r) override;
+	virtual void analyze(const art::Event& e) override;
+	virtual void endJob() override;
     private: 
       
-      Config _conf;
+	Config _conf;
 
-      int  _diag;
-      bool _mcdiag;
-      std::ofstream outputfile;
-      art::InputTag   _chtag;//combo
-      art::InputTag   _tctag;//timeclusters
-      art::InputTag   _costag;//Striaght tracks
-      art::InputTag   _mcdigistag; //MC digis
-      SimParticleTimeOffset _toff;
-      const ComboHitCollection* _chcol;
-      const CosmicTrackSeedCollection* _coscol;
-      const TimeClusterCollection* _tccol;
-      const StrawDigiMCCollection* _mcdigis;
-      CosmicTrackMCInfo trueinfo;
+	int  _diag;
+	bool _mcdiag;
+	std::ofstream outputfile;
+	art::InputTag   _chtag;//combo
+	art::InputTag   _tctag;//timeclusters
+	art::InputTag   _costag;//Striaght tracks
+	art::InputTag   _mcdigistag; //MC digis
+	SimParticleTimeOffset _toff;
+	const ComboHitCollection* _chcol;
+	const CosmicTrackSeedCollection* _coscol;
+	const TimeClusterCollection* _tccol;
+	const StrawDigiMCCollection* _mcdigis;
+	CosmicTrackMCInfo trueinfo;
 
     
-      	//TTree Info:
-      TTree* _cosmic_analysis;
+	//TTree Info:
+	TTree* _cosmic_analysis;
 
-      	//Seed Info:
-      TH1F* _seed_a1;
-      TH1F* _seed_b1;
-      TH1F* _seed_a0;
-      TH1F* _seed_b0;
+	//Seed Info:
+	TH1F* _seed_a1;
+	TH1F* _seed_b1;
+	TH1F* _seed_a0;
+	TH1F* _seed_b0;
 
-      	//Seed Info in Det Frame:
-      TH1F* _seed_a1XYZ;
-      TH1F* _seed_b1XYZ;
-      TH1F* _seed_a0XYZ;
-      TH1F* _seed_b0XYZ;
-      TH1F* _niters;
+	//Seed Info in Det Frame:
+	TH1F* _seed_a1XYZ;
+	TH1F* _seed_b1XYZ;
+	TH1F* _seed_a0XYZ;
+	TH1F* _seed_b0XYZ;
+	TH1F* _niters;
 
-     //Looking for geo bias:
-      TH2F* _chi_v_true_theta;
+	//Looking for geo bias:
+	TH2F* _chi_v_true_theta;
 
-     //Looking for hidden correlations between seed paramters
-      TH2F* _seedA0_v_seedA1;
-      TH2F* _seedB0_v_seedB1;
-      TH2F* _seedA0_v_seedB1;
-      TH2F* _seedB1_v_seedA1;
-      TH2F* _seedA0_v_seedB0;
-    
-    //True MC paramets in global coords:
-      TH1F* _truea1XYZ;
-      TH1F* _trueb1XYZ;
-      TH1F* _truea0XYZ;
-      TH1F* _trueb0XYZ;
-      
-      //Angles Info:
-      TH1F* _mc_phi_angle;
-      TH1F* _reco_phi_angle;
-      TH1F* _mc_theta_angle;
-      TH1F* _reco_theta_angle;
+	//Looking for hidden correlations between seed paramters
+	TH2F* _seedA0_v_seedA1;
+	TH2F* _seedB0_v_seedB1;
+	TH2F* _seedA0_v_seedB1;
+	TH2F* _seedB1_v_seedA1;
+	TH2F* _seedA0_v_seedB0;
 
-      //Looking for difference between seed parameter and true parameters:
-      TH1F* _A0SeedMCDiff;
-      TH1F* _A1SeedMCDiff;
-      TH1F* _B0SeedMCDiff;
-      TH1F* _B1SeedMCDiff;
+	//True MC paramets in global coords:
+	TH1F* _truea1XYZ;
+	TH1F* _trueb1XYZ;
+	TH1F* _truea0XYZ;
+	TH1F* _trueb0XYZ;
 
-     //Look at distributions of covarience of each seed parameter:
-      TH1F* _Seed_Cov_A0;
-      TH1F* _Seed_Cov_A1;
-      TH1F* _Seed_Cov_B0;
-      TH1F* _Seed_Cov_B1;
-      TH1F* _Seed_Cov_B0B1;
-      TH1F* _Seed_Cov_A0A1;
+	//Angles Info:
+	TH1F* _mc_phi_angle;
+	TH1F* _reco_phi_angle;
+	TH1F* _mc_theta_angle;
+	TH1F* _reco_theta_angle;
 
-     //look for correlataions between true angle and parameters pulls
-      TProfile* _A0pull_v_theta_true;
-      TProfile* _B0pull_v_theta_true;
-      TProfile* _A1pull_v_theta_true;
-      TProfile* _B1pull_v_theta_true;
+	//Looking for difference between seed parameter and true parameters:
+	TH1F* _A0SeedMCDiff;
+	TH1F* _A1SeedMCDiff;
+	TH1F* _B0SeedMCDiff;
+	TH1F* _B1SeedMCDiff;
 
-      //Seed Diagnostics:
-      TH1F* _total_residualsX_init;
-      TH1F* _total_pullsX_init;
-      TH1F* _total_residualsY_init;
-      TH1F* _total_pullsY_init;
-      TH1F* _chisq_ndf_plot_final;
-      TH1F* _chisq_ndf_plot_finalX;
-      TH1F* _chisq_ndf_plot_finalY;
-      TH1F* _chisq_ndf_plot_initX;
-      TH1F* _chisq_ndf_plot_initY;
-      TH1F* _chisq_ndf_plot_init;
-      TH1F* _change_chisq_ndf_plot_X;
-      TH1F* _change_chisq_ndf_plot_Y;
-      TH1F* _change_chisq_ndf_plot_Total;
-      TH1F* _total_residualsX_final;
-      TH1F* _total_pullsX_final;
-      TH1F* _total_residualsY_final;
-      TH1F* _total_pullsY_final;
-      TH1F* _FinalErrX;
-      TH1F* _FinalErrY;
-      TH1F* _InitErrX;
-      TH1F* _InitErrY;
-      TH1F* _FinalErrTot;
-      TH1F* _InitErrTot;
+	//Look at distributions of covarience of each seed parameter:
+	TH1F* _Seed_Cov_A0;
+	TH1F* _Seed_Cov_A1;
+	TH1F* _Seed_Cov_B0;
+	TH1F* _Seed_Cov_B1;
+	TH1F* _Seed_Cov_B0B1;
+	TH1F* _Seed_Cov_A0A1;
 
-      	//Drift Parameters
-      TH1F* _total_residualsX_Minuit;
-      TH1F* _total_residualsY_Minuit;
+	//look for correlataions between true angle and parameters pulls
+	TProfile* _A0pull_v_theta_true;
+	TProfile* _B0pull_v_theta_true;
+	TProfile* _A1pull_v_theta_true;
+	TProfile* _B1pull_v_theta_true;
+
+	//Seed Diagnostics:
+	TH1F* _total_residualsX_init;
+	TH1F* _total_pullsX_init;
+	TH1F* _total_residualsY_init;
+	TH1F* _total_pullsY_init;
+	TH1F* _chisq_ndf_plot_final;
+	TH1F* _chisq_ndf_plot_finalX;
+	TH1F* _chisq_ndf_plot_finalY;
+	TH1F* _chisq_ndf_plot_initX;
+	TH1F* _chisq_ndf_plot_initY;
+	TH1F* _chisq_ndf_plot_init;
+	TH1F* _change_chisq_ndf_plot_X;
+	TH1F* _change_chisq_ndf_plot_Y;
+	TH1F* _change_chisq_ndf_plot_Total;
+	TH1F* _total_residualsX_final;
+	TH1F* _total_pullsX_final;
+	TH1F* _total_residualsY_final;
+	TH1F* _total_pullsY_final;
+	TH1F* _FinalErrX;
+	TH1F* _FinalErrY;
+	TH1F* _InitErrX;
+	TH1F* _InitErrY;
+	TH1F* _FinalErrTot;
+	TH1F* _InitErrTot;
+
+	//Drift Parameters
+	TH1F* _total_residualsX_Minuit;
+	TH1F* _total_residualsY_Minuit;
 
 	//difference between seed and minuit fits
-      TH1F* _A0MinuitFitDiff;
-      TH1F* _A1MinuitFitDiff;
-      TH1F* _B0MinuitFitDiff;
-      TH1F* _B1MinuitFitDiff;
+	TH1F* _A0MinuitFitDiff;
+	TH1F* _A1MinuitFitDiff;
+	TH1F* _B0MinuitFitDiff;
+	TH1F* _B1MinuitFitDiff;
 
 	//Track Parameters from end of minuit minimzation rotuine:
-      TH1F* _A0Minuit;
-      TH1F* _A1Minuit;
-      TH1F* _B0Minuit;
-      TH1F* _B1Minuit;
+	TH1F* _A0Minuit;
+	TH1F* _A1Minuit;
+	TH1F* _B0Minuit;
+	TH1F* _B1Minuit;
 	//Difference in minuit derived parameters and MC true
-      TH1F* _A0MinuitMCDiff;
-      TH1F* _A1MinuitMCDiff;
-      TH1F* _B0MinuitMCDiff;
-      TH1F* _B1MinuitMCDiff;
-      
+	TH1F* _A0MinuitMCDiff;
+	TH1F* _A1MinuitMCDiff;
+	TH1F* _B0MinuitMCDiff;
+	TH1F* _B1MinuitMCDiff;
 
-      	//Drift diags:
-      TH1F* _FullFitEndDOCAs;
-      TH1F* _TrueDOCAs;
-      TH1F* _FullFitEndTimeResiduals;
-      TH1F* _StartTimeResiduals;
-      TH1F* _TrueTimeResiduals;
-      TH1F* _StartDOCAs;
-      TH1F* _GaussianEndDOCAs;
-      TH1F* _GaussianEndTimeResiduals;
-      TH1F* _minuit_pullsX_final;
-      TH1F* _minuit_pullsY_final;
-      TH1F* _NLL;
-      TH2F* _AMBIG;
 
-         //Compare residual with end result :
-      TH2F* _seedDeltaA0_v_minuitA0;
-      TH2F* _seedDeltaA1_v_minuitA1;
-      TH2F* _seedDeltaB0_v_minuitB0;
-      TH2F* _seedDeltaB1_v_minuitB1;
+	//Drift diags:
+	TH1F* _FullFitEndDOCAs;
+	TH1F* _TrueDOCAs;
+	TH1F* _FullFitEndTimeResiduals;
+	TH1F* _StartTimeResiduals;
+	TH1F* _TrueTimeResiduals;
+	TH1F* _StartDOCAs;
+	TH1F* _GaussianEndDOCAs;
+	TH1F* _GaussianEndTimeResiduals;
+	TH1F* _minuit_pullsX_final;
+	TH1F* _minuit_pullsY_final;
+	TH1F* _NLL;
+	TH2F* _AMBIG;
 
-      // add event id
-      Int_t _evt; 
+	 //Compare residual with end result :
+	TH2F* _seedDeltaA0_v_minuitA0;
+	TH2F* _seedDeltaA1_v_minuitA1;
+	TH2F* _seedDeltaB0_v_minuitB0;
+	TH2F* _seedDeltaB1_v_minuitB1;
 
-      //Numbers:
-      Int_t _nsh, _nch; // # associated straw hits / event
-      Int_t _ntc; // # clusters/event
-      Int_t _nhits, _nused; // # hits used
-      Int_t _n_panels; // # panels
-      Int_t _n_stations; // # stations
-      Int_t _n_planes; // # stations
-      int n_analyze =0;
-      Float_t _hit_time, _hit_drift_time, _cluster_time, _dt;
-      const Tracker* tracker;
-      //Flags:
-      Bool_t _StraightTrackInit, _StraightTrackConverged, _StraightTrackOK, _hitsOK;
-      Int_t _strawid; 
-      vector<ComboHitInfoMC> _chinfomc;
-      CosmicTrackMCInfo FitMC(const StrawDigiMCCollection*& _mcdigis);
-      CosmicTrackMCInfo FillDriftMC(ComboHit const& chit, double reco_ambig, CosmicTrackMCInfo info, const Tracker* tracker);
-      bool findData(const art::Event& evt);
+	// add event id
+	Int_t _evt; 
+
+	//Numbers:
+	Int_t _nsh, _nch; // # associated straw hits / event
+	Int_t _ntc; // # clusters/event
+	Int_t _nhits, _nused; // # hits used
+	Int_t _n_panels; // # panels
+	Int_t _n_stations; // # stations
+	Int_t _n_planes; // # stations
+
+	Float_t _hit_time, _hit_drift_time, _cluster_time, _dt;
+
+	ProditionsHandle<Tracker> _alignedTracker_h;
+
+	Bool_t _StraightTrackInit, _StraightTrackConverged, _StraightTrackOK, _hitsOK;
+	Int_t _strawid; 
+	vector<ComboHitInfoMC> _chinfomc;
+
+	CosmicTrackMCInfo FitMC(const StrawDigiMCCollection*& _mcdigis);
+	CosmicTrackMCInfo FillDriftMC(ComboHit const& chit, double reco_ambig, CosmicTrackMCInfo info, const Tracker* tracker);
+	bool findData(const art::Event& evt);
     };
 
     CosmicAnalyzer::CosmicAnalyzer(const Parameters& conf) :
@@ -263,17 +272,15 @@ namespace mu2e
 
     void CosmicAnalyzer::beginJob() {
       
-      // create diagnostics if requested...
       if(_diag > 0){
 	if(_mcdiag) { 
 		outputfile.open("CosmicAnalysis.csv");
 	}
 	art::ServiceHandle<art::TFileService> tfs;
-	//Tree for detailed diagnostics
+	
 	_cosmic_analysis=tfs->make<TTree>("cosmic_analysis"," Diagnostics for Cosmic Track Fitting");
 
-        //Create branches:
-        _cosmic_analysis->Branch("evt",&_evt,"evt/I");  // add event id
+        _cosmic_analysis->Branch("evt",&_evt,"evt/I"); 
         _cosmic_analysis->Branch("nhits",&_nhits,"nhits/I");
         _cosmic_analysis->Branch("StrawHitsInEvent", &_nsh, "StrawHitsInEvent/I");
 	_cosmic_analysis->Branch("ComboHitsInEvent", &_nch, "ComboHitsInEvent/I");
@@ -290,8 +297,6 @@ namespace mu2e
         _cosmic_analysis->Branch("StraightTrackOK",&_StraightTrackOK,"StraightTrackOK/B");
         _cosmic_analysis->Branch("StraightTrackConverged",&_StraightTrackConverged,"StraightTrackConverged/B");
         
-	
-	//--------------------------------Truth----------------------------------------//
 	if(_mcdiag ){
 		
 		_truea0XYZ = tfs->make<TH1F>("True Track Parameter A0 XYZ","True Track Parameter A0 XYZ " ,50,-10000, 10000);
@@ -396,9 +401,6 @@ namespace mu2e
 	_reco_phi_angle = tfs->make<TH1F>("#phi Angle of Reconstructred Track","#phi_{reco} Angle of Tracl " ,20,0,3.141529);
 	_reco_phi_angle->GetXaxis()->SetTitle("#phi_{reco} [rad]");
 	_reco_phi_angle->SetStats();
-	
-
-        //------------------------------------------Seed---------------------------- --------------//
 
 	_seed_a0 = tfs->make<TH1F>("Seed Track Parameter A0 ","Seed Track Parameter A0 " ,50,-2000, 2000);
 	_seed_a0->GetXaxis()->SetTitle("Seed Track Parameter A0");
@@ -636,74 +638,67 @@ namespace mu2e
 	}
       } 
 
-    void CosmicAnalyzer::beginRun(const art::Run& run){
-	mu2e::GeomHandle<mu2e::Tracker> th;
-       tracker = th.get();
+    void CosmicAnalyzer::beginRun(const art::Run& run){}
 
-}
-      void CosmicAnalyzer::analyze(const art::Event& event) {
-       
-        _evt = event.id().event();  // add event id
-        if(!findData(event)) // find data
-      		throw cet::exception("RECO")<<"No Time Clusters in event"<< endl; 
-       
-        //find time clusters:
-    	_ntc = _tccol->size();
-        _nch = _chcol->size();
-        
-        for(size_t itc=0; itc<_tccol->size();++itc){
+    void CosmicAnalyzer::analyze(const art::Event& event) {
+	Tracker const* tracker = _alignedTracker_h.getPtr(event.id()).get();
+	_evt = event.id().event();  
+	if(!findData(event)) 
+		throw cet::exception("RECO")<<"No Time Clusters in event"<< endl; 
+
+	_ntc = _tccol->size();
+	_nch = _chcol->size();
+
+	for(size_t itc=0; itc<_tccol->size();++itc){
 		TimeCluster tc = (*_tccol)[itc];
-        	_cluster_time =  tc._t0._t0;
+		_cluster_time =  tc._t0._t0;
                 
 	}
 	
-	
-        //loop over tracks
         for(size_t ist = 0;ist < _coscol->size(); ++ist){
-        	n_analyze+=1;
-        	
-        	CosmicTrackSeed sts =(*_coscol)[ist];
+
+		CosmicTrackSeed sts =(*_coscol)[ist];
 		CosmicTrack st = sts._track;
 		TrkFitFlag const& status = sts._status;
-        	if (!status.hasAllProperties(TrkFitFlag::helixOK) ){ continue;}
-		if(st.converged == false or st.minuit_converged  == false) { continue;}
+		if (!status.hasAllProperties(TrkFitFlag::helixOK) ){ continue;}
+		if(st.converged == false or st.minuit_converged  == false) { continue;} 
 		std::vector<int> panels, planes, stations;
 
 		_reco_phi_angle->Fill(st.get_fit_phi()); 
 		_niters->Fill(st.get_iter()); 
-		
-                _seed_a1->Fill(st.FitParams.A1);
-                _seed_b1->Fill(st.FitParams.B1);
-                _seed_a0->Fill(st.FitParams.A0);
-                _seed_b0->Fill(st.FitParams.B0);
+
+		_seed_a1->Fill(st.FitParams.A1);
+		_seed_b1->Fill(st.FitParams.B1);
+		_seed_a0->Fill(st.FitParams.A0);
+		_seed_b0->Fill(st.FitParams.B0);
 
 		_seed_a1XYZ->Fill(st.FitEquationXYZ.Dir.X());
-                _seed_b1XYZ->Fill(st.FitEquationXYZ.Dir.Y());
-                _seed_a0XYZ->Fill(st.FitEquationXYZ.Pos.X());
-                _seed_b0XYZ->Fill(st.FitEquationXYZ.Pos.Y());
+		_seed_b1XYZ->Fill(st.FitEquationXYZ.Dir.Y());
+		_seed_a0XYZ->Fill(st.FitEquationXYZ.Pos.X());
+		_seed_b0XYZ->Fill(st.FitEquationXYZ.Pos.Y());
 
-                _Seed_Cov_A0->Fill(st.FitParams.Covarience.sigA0);
-                _Seed_Cov_A1->Fill(st.FitParams.Covarience.sigA1);
-                _Seed_Cov_B0->Fill(st.FitParams.Covarience.sigB0);
-                _Seed_Cov_B1->Fill(st.FitParams.Covarience.sigB1);
-                _Seed_Cov_B0B1->Fill(st.FitParams.Covarience.sigB1B0);
+		_Seed_Cov_A0->Fill(st.FitParams.Covarience.sigA0);
+		_Seed_Cov_A1->Fill(st.FitParams.Covarience.sigA1);
+		_Seed_Cov_B0->Fill(st.FitParams.Covarience.sigB0);
+		_Seed_Cov_B1->Fill(st.FitParams.Covarience.sigB1);
+		_Seed_Cov_B0B1->Fill(st.FitParams.Covarience.sigB1B0);
 		_Seed_Cov_A0A1->Fill(st.FitParams.Covarience.sigA1A0);
-	
-                _seedA0_v_seedA1->Fill(st.FitParams.A1,st.FitParams.A0);
-                _seedB0_v_seedB1->Fill(st.FitParams.B1,st.FitParams.B0);
-                _seedA0_v_seedB1->Fill(st.FitParams.B1,st.FitParams.A0);
-	        _seedA0_v_seedB0->Fill(st.FitParams.A0,st.FitParams.B0);
-	        _seedB1_v_seedA1->Fill(st.FitParams.B1,st.FitParams.A1);
-	 	
+
+		_seedA0_v_seedA1->Fill(st.FitParams.A1,st.FitParams.A0);
+		_seedB0_v_seedB1->Fill(st.FitParams.B1,st.FitParams.B0);
+		_seedA0_v_seedB1->Fill(st.FitParams.B1,st.FitParams.A0);
+		_seedA0_v_seedB0->Fill(st.FitParams.A0,st.FitParams.B0);
+		_seedB1_v_seedA1->Fill(st.FitParams.B1,st.FitParams.A1);
+
 		_A0MinuitFitDiff->Fill(st.MinuitFitParams.A0-st.FitEquationXYZ.Pos.X());
 		_A1MinuitFitDiff->Fill(st.MinuitFitParams.A1-st.FitEquationXYZ.Dir.X());
 		_B0MinuitFitDiff->Fill(st.MinuitFitParams.B0- st.FitEquationXYZ.Pos.Y());
 		_B1MinuitFitDiff->Fill(st.MinuitFitParams.B1-st.FitEquationXYZ.Dir.Y());
-		
-	        _A0Minuit->Fill(st.MinuitFitParams.A0);
-	        _A1Minuit->Fill(st.MinuitFitParams.A1);
-	        _B0Minuit->Fill(st.MinuitFitParams.B0);
-	        _B1Minuit->Fill(st.MinuitFitParams.B1);
+
+		_A0Minuit->Fill(st.MinuitFitParams.A0);
+		_A1Minuit->Fill(st.MinuitFitParams.A1);
+		_B0Minuit->Fill(st.MinuitFitParams.B0);
+		_B1Minuit->Fill(st.MinuitFitParams.B1);
 
 	       if(_mcdiag){
 			
@@ -718,14 +713,13 @@ namespace mu2e
 		        _trueb0XYZ->Fill(trueinfo.TrueFitEquation.Pos.Y());
 
 			if(st.MinuitFitParams.Covarience.sigA0 !=0){
-				_A0MinuitMCDiff->Fill((trueinfo.TrueFitEquation.Pos.X()- st.MinuitFitParams.A0));///(st.MinuitFitParams.Covarience.sigA0));
+				_A0MinuitMCDiff->Fill((trueinfo.TrueFitEquation.Pos.X()- st.MinuitFitParams.A0));
 			}if(st.MinuitFitParams.Covarience.sigA1 !=0){
-				_A1MinuitMCDiff->Fill((trueinfo.TrueFitEquation.Dir.X() - st.MinuitFitParams.A1));///(st.MinuitFitParams.Covarience.sigA1));
-		 	}if(st.MinuitFitParams.Covarience.sigB0 !=0){
-				_B0MinuitMCDiff->Fill((trueinfo.TrueFitEquation.Pos.Y()- st.MinuitFitParams.B0));///(st.MinuitFitParams.Covarience.sigB0));
+				_A1MinuitMCDiff->Fill((trueinfo.TrueFitEquation.Dir.X() - st.MinuitFitParams.A1));
+				_B0MinuitMCDiff->Fill((trueinfo.TrueFitEquation.Pos.Y()- st.MinuitFitParams.B0));
 				
 			}if(st.MinuitFitParams.Covarience.sigB1 !=0){
-				_B1MinuitMCDiff->Fill((trueinfo.TrueFitEquation.Dir.Y() - st.MinuitFitParams.B1));//(st.MinuitFitParams.Covarience.sigB1));
+				_B1MinuitMCDiff->Fill((trueinfo.TrueFitEquation.Dir.Y() - st.MinuitFitParams.B1));
 		       }
 
 		      	_A0SeedMCDiff->Fill(trueinfo.TrueFitEquation.Pos.X()- st.FitEquationXYZ.Pos.X());
@@ -758,18 +752,14 @@ namespace mu2e
 			    ComboHit const& chit = sts._straw_chits[i];
 			    
 			    double StartDOCA = DriftFitUtils::GetTestDOCA(chit, st.FitParams.A0,st.FitParams.A1, st.FitParams.B0, st.FitParams.B1,tracker);
-			    _StartDOCAs->Fill(StartDOCA);
-			    //double StartTOCA = DriftFitUtils::TimeResidual(StartDOCA, srep, sts._t0.t0(), chit);
-			    //_FullFitEndTimeResiduals->Fill(TOCA);
-			    ///_StartTimeResiduals->Fill(st.DriftDiag.StartTimeResiduals[i]);
-
+			    
+			   
 			    double DOCA = DriftFitUtils::GetTestDOCA(chit, st.MinuitFitParams.A0,st.MinuitFitParams.A1, st.MinuitFitParams.B0, st.MinuitFitParams.B1,  tracker);
-			    _FullFitEndDOCAs->Fill(DOCA);
-			    //double TOCA = DriftFitUtils::TimeResidual(DOCA, srep, sts._t0.t0(), chit);
-			    //_FullFitEndTimeResiduals->Fill(TOCA);
+			    
 			   int RecoAmbig = DriftFitUtils::GetAmbig(chit, st.MinuitFitParams.A0,st.MinuitFitParams.A1, st.MinuitFitParams.B0, st.MinuitFitParams.B1, tracker);
-			    _FullFitEndDOCAs->Fill(DOCA);
 
+			    _FullFitEndDOCAs->Fill(DOCA);
+			    _StartDOCAs->Fill(StartDOCA);
 		   	if(_mcdiag){
 				trueinfo = FitMC(_mcdigis);
 				trueinfo = FillDriftMC(chit, RecoAmbig, trueinfo, tracker);
@@ -794,23 +784,22 @@ namespace mu2e
 		for(size_t ich = 0;ich < _chcol->size(); ++ich){
                         ComboHit const& chit =(*_chcol)[ich];
 			
-                //-----------Fill diag details:----------//
                         _nhits = chit.nStrawHits();
                         _nsh = chit.nStrawHits(); 
                         panels.push_back(chit.strawId().panel());
 		        planes.push_back(chit.strawId().plane());
 			stations.push_back(chit.strawId().station());
-		//-----------Hit details:---------------//
+		
 		        _hit_time = chit.time();
 			_hit_drift_time = chit.driftTime();
                         _dt =  _hit_time - _cluster_time;
 			}
-                //----------------Get panels/planes/stations per track:------------------//
+
                 _n_panels = std::set<float>( panels.begin(), panels.end() ).size();
 		_n_planes = std::set<float>( planes.begin(), planes.end() ).size();
 		_n_stations = std::set<float>( stations.begin(), stations.end() ).size();
 	 
-      }//end analyze
+      }
       _cosmic_analysis->Fill();
       if(_mcdiag){
 	      cout<<"true + "<< _AMBIG->GetBinContent(2,2)/_AMBIG->Integral()<<endl;
@@ -859,61 +848,61 @@ CosmicTrackMCInfo CosmicAnalyzer::FitMC(const StrawDigiMCCollection*& _mcdigis){
             XYZVec Z(0,0,1);
             S.addPoint( point, X,Y,Z, 1,1);
             
-        }   
+	}   
     
-     TrackParams RawTrueParams(S.GetAlphaX()[0][0], S.GetAlphaX()[1][0], S.GetAlphaY()[0][0], S.GetAlphaY()[1][0]);
-     
-     XYZVec TruePos(S.GetAlphaX()[0][0], S.GetAlphaY()[0][0], 0);
-     
-     XYZVec TrueDir(S.GetAlphaX()[1][0], S.GetAlphaY()[1][0], 1);
-     TrueDir = TrueDir.Unit();
-     TrueDir = TrueDir/TrueDir.Z();
-     
-     pos0.SetX(pos0.X()-(dir0.X()*pos0.Z()/dir0.Z()));
-     pos0.SetY(pos0.Y()-(dir0.Y()*pos0.Z()/dir0.Z()));
-     pos0.SetZ(pos0.Z()-(dir0.Z()*pos0.Z()/dir0.Z()));
-     dir0 = dir0/dir0.Z();
-  
-     TrackEquation TrueTrack(pos0, dir0);
-     
-     TrackTrueInfo.TrueFitEquation = (TrueTrack);
-     TrackTrueInfo.TruePhi =(atan(TrueDir.y()/TrueDir.x()));
-     TrackTrueInfo.TrueTheta = (acos(TrueDir.x()/sqrt(TrueDir.Mag2())));
-     
-     return TrackTrueInfo;
+	TrackParams RawTrueParams(S.GetAlphaX()[0][0], S.GetAlphaX()[1][0], S.GetAlphaY()[0][0], S.GetAlphaY()[1][0]);
+
+	XYZVec TruePos(S.GetAlphaX()[0][0], S.GetAlphaY()[0][0], 0);
+
+	XYZVec TrueDir(S.GetAlphaX()[1][0], S.GetAlphaY()[1][0], 1);
+	TrueDir = TrueDir.Unit();
+	TrueDir = TrueDir/TrueDir.Z();
+
+	pos0.SetX(pos0.X()-(dir0.X()*pos0.Z()/dir0.Z()));
+	pos0.SetY(pos0.Y()-(dir0.Y()*pos0.Z()/dir0.Z()));
+	pos0.SetZ(pos0.Z()-(dir0.Z()*pos0.Z()/dir0.Z()));
+	dir0 = dir0/dir0.Z();
+
+	TrackEquation TrueTrack(pos0, dir0);
+
+	TrackTrueInfo.TrueFitEquation = (TrueTrack);
+	TrackTrueInfo.TruePhi =(atan(TrueDir.y()/TrueDir.x()));
+	TrackTrueInfo.TrueTheta = (acos(TrueDir.x()/sqrt(TrueDir.Mag2())));
+
+	return TrackTrueInfo;
      }
 
-CosmicTrackMCInfo CosmicAnalyzer::FillDriftMC(ComboHit const& chit, double RecoAmbig, CosmicTrackMCInfo info, const Tracker* tracker){
+  CosmicTrackMCInfo CosmicAnalyzer::FillDriftMC(ComboHit const& chit, double RecoAmbig, CosmicTrackMCInfo info, const Tracker* tracker){
 
-     double true_doca = DriftFitUtils::GetTestDOCA(chit, info.TrueFitEquation.Pos.X(), info.TrueFitEquation.Dir.X(), info.TrueFitEquation.Pos.Y(),info.TrueFitEquation.Dir.Y(),  tracker);
-     double trueambig = DriftFitUtils::GetAmbig(chit, info.TrueFitEquation.Pos.X(), info.TrueFitEquation.Dir.X(), info.TrueFitEquation.Pos.Y(),info.TrueFitEquation.Dir.Y(),  tracker);
-     //double true_time_residual = DriftFitUtils::TimeResidual(true_doca, _srep, sts._t0.t0(), chit);
-     info.Ambig.push_back(trueambig);
-     info.TrueDOCA.push_back(true_doca);
-     //info.TrueTimeResiduals.push_back(true_time_residual);
-     _TrueDOCAs->Fill(true_doca);
-     //_TrueTimeResiduals->Fill(true_time_residual);
-     _AMBIG->Fill(RecoAmbig, trueambig);
-     return info;
+	double true_doca = DriftFitUtils::GetTestDOCA(chit, info.TrueFitEquation.Pos.X(), info.TrueFitEquation.Dir.X(), info.TrueFitEquation.Pos.Y(),info.TrueFitEquation.Dir.Y(),  tracker);
+	double trueambig = DriftFitUtils::GetAmbig(chit, info.TrueFitEquation.Pos.X(), info.TrueFitEquation.Dir.X(), info.TrueFitEquation.Pos.Y(),info.TrueFitEquation.Dir.Y(),  tracker);
+	//double true_time_residual = DriftFitUtils::TimeResidual(true_doca, _srep, sts._t0.t0(), chit);
+	info.Ambig.push_back(trueambig);
+	info.TrueDOCA.push_back(true_doca);
+	//info.TrueTimeResiduals.push_back(true_time_residual);
+	_TrueDOCAs->Fill(true_doca);
+	//_TrueTimeResiduals->Fill(true_time_residual);
+	_AMBIG->Fill(RecoAmbig, trueambig);
+	return info;
 }
 
 bool CosmicAnalyzer::findData(const art::Event& evt){
 	_chcol = 0; 
-        _tccol = 0;
-        _coscol = 0; 
+	_tccol = 0;
+	_coscol = 0; 
 	auto chH = evt.getValidHandle<ComboHitCollection>(_chtag);
 	_chcol = chH.product();
 	auto tcH = evt.getValidHandle<TimeClusterCollection>(_tctag);
 	_tccol =tcH.product();
 	auto stH = evt.getValidHandle<CosmicTrackSeedCollection>(_costag);
 	_coscol =stH.product();
-        if(_mcdiag){
-	    
-	   _mcdigis=0;
-           auto mcdH = evt.getValidHandle<StrawDigiMCCollection>(_mcdigistag);
-           _mcdigis = mcdH.product();
-           _toff.updateMap(evt);
-        }
+	if(_mcdiag){
+
+		_mcdigis=0;
+		auto mcdH = evt.getValidHandle<StrawDigiMCCollection>(_mcdigistag);
+		_mcdigis = mcdH.product();
+		_toff.updateMap(evt);
+	}
 	return _chcol != 0 && _tccol!=0 && _coscol !=0 && (_mcdigis != 0 || !_mcdiag);
        }
 

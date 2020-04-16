@@ -148,10 +148,6 @@ bool   vd.solid          = false;
 // Region visualization
 //---------------------------------------
 #include "Mu2eG4/geom/visualization_regions.txt"
-//bool PS.doSurfaceCheck = true;
-//bool targetPS.doSurfaceCheck = true;
-bool PS.isVisible = true;
-bool targetPS.isVisible = true;
 
 
 //

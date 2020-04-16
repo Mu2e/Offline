@@ -1,9 +1,12 @@
-//Author: S Middleton
+// Author: S Middleton
+// Date: March 2019
 // Purpose: Holds functions for the fitting of Cosmic Tracks in tracker
+
 // Mu2e Cosmics:
 #include "CosmicReco/inc/CosmicTrackFit.hh"
 #include "CosmicReco/inc/CosmicTrackFinderData.hh"
 #include "RecoDataProducts/inc/CosmicTrack.hh"
+
 // art
 #include "canvas/Persistency/Common/Ptr.h"
 
@@ -25,12 +28,14 @@
 #include "BTrk/TrkBase/TrkPoca.hh"
 #include "BTrk/ProbTools/ChisqConsistency.hh"
 #include "BTrk/TrkBase/TrkMomCalculator.hh"
+
 //Fitting
 #include "Mu2eUtilities/inc/ParametricFit.hh"
 #include "Mu2eUtilities/inc/BuildLinearFitMatrixSums.hh"
 #include "CosmicReco/inc/MinuitDriftFitter.hh"
 #include "CosmicReco/inc/DriftFitUtils.hh"
 #include "DataProducts/inc/XYZVec.hh"
+
 //ROOT:
 #include "TMatrixD.h"
 #include "Math/VectorUtil.h"
@@ -42,6 +47,7 @@
 #include <boost/accumulators/accumulators.hpp>
 #include <boost/accumulators/statistics/stats.hpp>
 #include <boost/accumulators/statistics/mean.hpp>
+
 //String:
 #include <string>
 
@@ -60,17 +66,16 @@ struct ycomp : public std::binary_function<XYZVec,XYZVec,bool> {
 
 namespace mu2e
 {
-  
     CosmicTrackFit::CosmicTrackFit(const Config& conf) :
 	_Npara (conf.Npara()),
-   	_diag (conf.diag()),
-   	_debug  (conf.debug()),
+	_diag (conf.diag()),
+	_debug  (conf.debug()),
 	_dontuseflag (conf.dontuseflag()),
-    	_minnsh   (conf.minnsh()),
-    	_minnch  (conf.minnch()),
-    	_n_outliers (conf.n_outliers()),
+	_minnsh   (conf.minnsh()),
+	_minnch  (conf.minnch()),
+	_n_outliers (conf.n_outliers()),
 	_maxniter (conf.maxniter()),
-        _max_seed_chi2 (conf.max_seed_chi2()),
+	_max_seed_chi2 (conf.max_seed_chi2()),
 	_max_chi2_change (conf.max_chi2_change()),
 	_max_position_deviation (conf.max_position_deviation()),
 	_maxHitDOCA (conf.maxHitDOCA()),
@@ -79,16 +84,16 @@ namespace mu2e
 	_maxTres (conf.maxTres()),
 	_maxd (conf.maxd()),
 	_maxpull (conf.maxpull())
-    	{}
+	{}
 	 
     /* ---------------Initialize Fit----------------//
     //----------------------------------------------*/
     bool CosmicTrackFit::initCosmicTrack(const char* title, CosmicTrackFinderData& TrackData) {
     
-    bool is_ok(false);
-    RunFitChi2(title, TrackData);
-    is_ok = TrackData._tseed._status.hasAllProperties(TrkFitFlag::helixOK);
-    return is_ok;
+	bool is_ok(false);
+	RunFitChi2(title, TrackData);
+	is_ok = TrackData._tseed._status.hasAllProperties(TrkFitFlag::helixOK);
+	return is_ok;
   }
 
   std::vector<XYZVec> SortPoints(std::vector<XYZVec> pointY){
@@ -103,7 +108,7 @@ namespace mu2e
   /*-------------Line Direction-------------------------//
     Range of methods for finding track directions - some are redundent-check!
   //----------------------------------------------*/
-  //ComboHits
+
   XYZVec CosmicTrackFit::InitLineDirection(const ComboHit *ch0, const ComboHit *chN) {
       float tx = chN->pos().x() - ch0->pos().x();
       float ty = chN->pos().y() - ch0->pos().y();
@@ -127,41 +132,34 @@ namespace mu2e
 	return XYZ;
 
     }
-//--------------Fit-----------------//
-// This is the top level call to Fitting routines....
-//-------------------------------------------// 
+
   void CosmicTrackFit::BeginFit(const char* title, CosmicTrackFinderData& TrackData){ 
-    //Clear Previous Flags:
-    TrackData._tseed._status.clear(TrkFitFlag::helixOK); 
-    // Initialize:
-    bool init(false);
-    if (!TrackData._tseed._status.hasAllProperties(TrkFitFlag::circleInit)) {
-      init = true;
-      if (initCosmicTrack( title, TrackData))
-	TrackData._tseed._status.merge(TrkFitFlag::circleInit);
-      else
-	return;
-    } 
-    //Start Chi2 Fitting:
-    if (!init)RunFitChi2(title, TrackData);
-  }
-/*------------------------------Chi 2 Fit----------------------------//
-//   Adds Chi-2 optimization to fitting routine //
-//   Refits and adjusts track fit paramters by weights//
-//------------------------------------------------------------------*/
-void CosmicTrackFit::RunFitChi2(const char* title, CosmicTrackFinderData& TrackData) {   
-   CosmicTrack* track = &TrackData._tseed._track; 
-   TrackData._tseed._status.merge(TrkFitFlag::helixOK);  
-   TrackData._tseed._status.merge(TrkFitFlag::helixConverged);
-   FitAll(title, TrackData, track); 
+	TrackData._tseed._status.clear(TrkFitFlag::helixOK); 
+	bool init(false);
+	if (!TrackData._tseed._status.hasAllProperties(TrkFitFlag::circleInit)) {
+		init = true;
+		if (initCosmicTrack( title, TrackData)){
+			TrackData._tseed._status.merge(TrkFitFlag::circleInit);
+		}
+		else { 
+			return;
+		}
+	} 
+	if (!init)RunFitChi2(title, TrackData);
+    }
+
+   void CosmicTrackFit::RunFitChi2(const char* title, CosmicTrackFinderData& TrackData) {   
+	CosmicTrack* track = &TrackData._tseed._track; 
+	TrackData._tseed._status.merge(TrkFitFlag::helixOK);  
+	TrackData._tseed._status.merge(TrkFitFlag::helixConverged);
+	FitAll(title, TrackData, track); 
    
-}
+    }
 
 
 
- void CosmicTrackFit::FitAll(const char* title, CosmicTrackFinderData& trackData,  CosmicTrack* cosmictrack){
+    void CosmicTrackFit::FitAll(const char* title, CosmicTrackFinderData& trackData,  CosmicTrack* cosmictrack){
  
-     //auto S = std::make_unique<::BuildLinearFitMatrixSums>();// S;
      ::BuildLinearFitMatrixSums S;
      ComboHit   *hitP1(0), *hitP2(0); 
      size_t nHits (trackData._chHitsToProcess.size());   
@@ -294,20 +292,18 @@ void CosmicTrackFit::RunFitChi2(const char* title, CosmicTrackFinderData& TrackD
                 cosmictrack=BestTrack;      	
 	      }
 
-         //If on any iteration the change in chi2 becomes small than we can assume we have converged on a track
          if( abs(changed_chi2) < _max_chi2_change ){
                   converged = true;
                   cosmictrack->converged = true;     
  	      }
- 	      
-           //If at end of the iteration process but the track is still not converging then remove it
+ 	  
            if(niter == _maxniter && converged ==false ){
  		    trackData._tseed._status.clear(TrkFitFlag::helixOK);
  		    trackData._tseed._status.clear(TrkFitFlag::helixConverged);
  		    continue;
 		 }
 		 
-   }//end while 
+   }
    cosmictrack=BestTrack;
    if(cosmictrack->converged and  _diag > 0){
 	 for (size_t f5=0; f5<nHits; ++f5){
@@ -320,7 +316,7 @@ void CosmicTrackFit::RunFitChi2(const char* title, CosmicTrackFinderData& TrackD
 		
 	      	float newRx = ParametricFit::GetResidualX(BestTrack->FitParams.A0, BestTrack->FitParams.A1, point_prime);
 		float newRy = ParametricFit::GetResidualY(BestTrack->FitParams.B0, BestTrack->FitParams.B1, point_prime);
-		// Remove bad tracks:
+		
 		if(abs(newRx)/ErrorsXY[0] > _maxpull or abs(newRy)/ErrorsXY[1] > _maxpull ){ cosmictrack->converged = false;}
 
 		BestTrack->SetCovarience(S_niteration.GetCovX()[0][0],S_niteration.GetCovX()[0][1], S_niteration.GetCovX()[1][0], S_niteration.GetCovX()[1][1], S_niteration.GetCovY()[0][0], S_niteration.GetCovY()[0][1], S_niteration.GetCovY()[1][0], S_niteration.GetCovY()[1][1]);
@@ -434,47 +430,43 @@ void CosmicTrackFit::ConvertFitToDetectorFrame(CosmicTrackFinderData& trackData,
 		cosmictrack->set_fit_theta(acos(Dir.y()/sqrt(Dir.Mag2())));
 	}
 
-}
+    }
 
 
-bool CosmicTrackFit::goodTrack(CosmicTrack& track) //Not used
-  { 
-    if(track.Diag.FinalChiTot < _max_seed_chi2) return true;
-    else return false;
-  }
+    bool CosmicTrackFit::goodTrack(CosmicTrack& track) 
+    { 
+	if(track.Diag.FinalChiTot < _max_seed_chi2) return true;
+	else return false; 
+    }
 
-/*--------------USE? ---------------------------//
-//          Checks if flag                        //
-//------------------------------------------------*/
-bool CosmicTrackFit::use_hit(const ComboHit& thit) const //currently not used -keep option to set 
-  {
-    return (!thit._flag.hasAnyProperty(_dontuseflag));
-  }
-bool CosmicTrackFit::use_track(double track_length) const //not used but keep for now
-  {
-     return (track_length > _maxd) ? false : true ;
-  }
- /*-------------Drift Fit Diagnotics--------------//
-This is were the fitter "talks" to the Minuit fitter. "EndResult" is the minimzed track parameters 
-//------------------------------------------------*/
-void CosmicTrackFit::DriftFit(CosmicTrackFinderData& trackData, StrawResponse const& _srep ){
+    bool CosmicTrackFit::use_hit(const ComboHit& thit) const 
+    {
+        return (!thit._flag.hasAnyProperty(_dontuseflag));
+    }
+
+    bool CosmicTrackFit::use_track(double track_length) const 
+    {
+	return (track_length > _maxd) ? false : true ;
+    }
+
+    void CosmicTrackFit::DriftFit(CosmicTrackFinderData& trackData, StrawResponse const& _srep ){
 	 
-	 FitResult endresult = MinuitDriftFitter::DoFit(_diag, trackData, _srep, _tracker, _maxHitDOCA, _minnch, _maxLogL, _gaussTres, _maxTres);
-         
+	FitResult endresult = MinuitDriftFitter::DoFit(_diag, trackData, _srep, _tracker, _maxHitDOCA, _minnch, _maxLogL, _gaussTres, _maxTres);
 
-         trackData._tseed._track.MinuitFitParams.A0 =  endresult.bestfit[0];//a0
-         trackData._tseed._track.MinuitFitParams.A1 =  endresult.bestfit[1];//a1
-         trackData._tseed._track.MinuitFitParams.B0 =  endresult.bestfit[2];//b0
-         trackData._tseed._track.MinuitFitParams.B1 =  endresult.bestfit[3];//b1
-         trackData._tseed._track.MinuitFitParams.T0 =  endresult.bestfit[4];//t0
 
-	 trackData._tseed._track.MinuitFitParams.deltaA0 =  endresult.bestfiterrors[0];//erra0
-         trackData._tseed._track.MinuitFitParams.deltaA1 =  endresult.bestfiterrors[1];//erra1
-         trackData._tseed._track.MinuitFitParams.deltaB0 =  endresult.bestfiterrors[2];//errb0
-         trackData._tseed._track.MinuitFitParams.deltaB1 =  endresult.bestfiterrors[3];//errb1
-         trackData._tseed._track.MinuitFitParams.deltaT0 =  endresult.bestfiterrors[4];//errt0
+	trackData._tseed._track.MinuitFitParams.A0 =  endresult.bestfit[0];//a0
+	trackData._tseed._track.MinuitFitParams.A1 =  endresult.bestfit[1];//a1
+	trackData._tseed._track.MinuitFitParams.B0 =  endresult.bestfit[2];//b0
+	trackData._tseed._track.MinuitFitParams.B1 =  endresult.bestfit[3];//b1
+	trackData._tseed._track.MinuitFitParams.T0 =  endresult.bestfit[4];//t0
 
-         if(endresult.bestfitcov.size() !=0 ){
+	trackData._tseed._track.MinuitFitParams.deltaA0 =  endresult.bestfiterrors[0];//erra0
+	trackData._tseed._track.MinuitFitParams.deltaA1 =  endresult.bestfiterrors[1];//erra1
+	trackData._tseed._track.MinuitFitParams.deltaB0 =  endresult.bestfiterrors[2];//errb0
+	trackData._tseed._track.MinuitFitParams.deltaB1 =  endresult.bestfiterrors[3];//errb1
+	trackData._tseed._track.MinuitFitParams.deltaT0 =  endresult.bestfiterrors[4];//errt0
+
+	if(endresult.bestfitcov.size() !=0 ){
 		 TrackCov Cov(endresult.bestfitcov[0], 0., 0., endresult.bestfitcov[1], endresult.bestfitcov[2],0.,0., endresult.bestfitcov[3]);
 		 trackData._tseed._track.MinuitFitParams.Covarience = Cov;
          }
@@ -500,22 +492,7 @@ void CosmicTrackFit::DriftFit(CosmicTrackFinderData& trackData, StrawResponse co
         if( trackData._tseed._track.n_outliers  > _n_outliers) {
 		trackData._tseed._track.minuit_converged = false;
 	  }
-	
-	/*This code was built to help transofrm into BTrk - it didnt work but may be useful:
- 	std::vector<TrkStrawHitSeed>const trkseeds = trackData._tseed.trkstrawhits();
-        cout<<"size track seed "<<trkseeds.size()<<" "<<trackData._tseed._straw_chits.size()<<std::endl;
-     	for(auto const& ths : trkseeds ){
-      	
-     	 	size_t index = ths.index();
-     		const ComboHit& strawhit(trackData._tseed._straw_chits.at(index));
-      		const Straw& straw = _tracker->getStraw(strawhit.strawId());
-        	
-        	cout<<"nSH "<<strawhit.nStrawHits()<<endl;
-        	TrkStrawHit* trkhit = new TrkStrawHit(_srep, strawhit, straw, ths.index(),ths.t0(),100., 5.,1.);
-        	cout<<" Phi "<<trkhit->driftPhi()<<" v drift "<<trkhit->driftVelocity()<<" time"<<trkhit->driftTime()<<endl;
-        
- 		}*/
-     
+  
 }
 
 }//end namespace

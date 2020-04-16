@@ -58,7 +58,6 @@ physics : {
          visualization: @local::mu2eg4NoVisualization
 
          generatorModuleLabel: generate
-         MultiStageParameters : {}
 
          SDConfig : {
             enableSD : [ virtualdetector, CRV ] // activate just the explicitly listed SDs
