@@ -437,7 +437,7 @@ bool AlignTrackCollector::filter_CosmicTrackSeedCollection(art::Event const& eve
             dir = dir.unit();
             TwoLinePCA pca(straw.getMidPoint(), straw.getDirection(), intercept, dir);
 
-            chisq += (resid_tmp * resid_tmp) / pca.dca();
+            chisq += pow(resid_tmp / resid_err_tmp, 2);
             ndof++;
 
             doca_residual[nHits] = resid_tmp;
