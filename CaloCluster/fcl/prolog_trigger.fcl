@@ -25,7 +25,7 @@ CaloTrigger : {
 }
 
 
-CaloClusterFast :
+OldCaloClusterFast :
 { 
     module_type           : CaloClusterFast
     caloDigiModuleLabel   : CaloDigiFromShower
@@ -43,7 +43,7 @@ CaloClusterFast :
     includeCrystalHits    : true
 }
 
-NewCaloClusterFast :
+CaloClusterFast :
 {
   module_type            : CaloClusterOnline
   caloCrystalModuleLabel : FastCaloCrystalHitFromHit
@@ -60,14 +60,13 @@ NewCaloClusterFast :
 CaloClusterTrigger :
 {
    producers : {
-       CaloClusterFast  : @local::CaloClusterFast
-       CaloTrigger      : @local::CaloTrigger
-       NewCaloClusterFast  : @local::NewCaloClusterFast
+       OldCaloClusterFast  : @local::OldCaloClusterFast
+       CaloTrigger         : @local::CaloTrigger
+       CaloClusterFast     : @local::CaloClusterFast
    }
 
-   Reco : [ CaloClusterFast ]
-   NewReco : [ NewCaloClusterFast ]
-   CrystalReco : [FastCaloRecoDigiFromDigi, FastCaloCrystalHitFromHit]
+   OldReco : [ OldCaloClusterFast ]
+   Reco    : [ CaloClusterFast ]
 }
 
 
