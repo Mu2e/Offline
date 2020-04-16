@@ -130,14 +130,14 @@ namespace mu2e
       Float_t _hittruedoca, _hitmcdoca, _hitrecodoca;
       Float_t _hitmcdpocat;
       Float_t _hittruelong, _hitmclong, _hitrecolong;
-      Float_t _hitmctresid;
+      Float_t _hitmctresid, _hitmctresidrms, _hitmcdrifttime, _hitmcdrifttimeoffset, _hitmctrajtime;
       Int_t _hitbackground;
       Int_t _hitused;
       Int_t _hitambig, _hitmcambig;
       Float_t _hitrecolongrms;
-      Float_t _hittresid, _hittresidrms, _hitllike;
+      Float_t _hittresid, _hittresidrms, _hitdrifttime, _hitdrifttimeoffset, _hittrajtime, _hitllike;
       Float_t _hitdresid, _hitdresiderr;
-      Float_t _hitedep;
+      Float_t _hitedep, _hitproptime, _hittime;
 
 
       void GetMCTrack(const art::Event& event, const StrawDigiMCCollection& mccol);
@@ -218,6 +218,11 @@ namespace mu2e
       _hitT->Branch("doca",&_hitminuitdoca,"doca/F");
       _hitT->Branch("hitused",&_hitused,"hitused/I");
       _hitT->Branch("long",&_hitminuitlong,"long/F");
+      _hitT->Branch("time",&_hittime,"time/F");
+      _hitT->Branch("proptime",&_hitproptime,"proptime/F");
+      _hitT->Branch("trajtime",&_hittrajtime,"trajtime/F");
+      _hitT->Branch("drifttime",&_hitdrifttime,"drifttime/F");
+      _hitT->Branch("drifttimeoffset",&_hitdrifttimeoffset,"drifttimeoffset/F");
       _hitT->Branch("recolong",&_hitrecolong,"recolong/F");
       _hitT->Branch("recodoca",&_hitrecodoca,"recodoca/F");
       _hitT->Branch("recolongrms",&_hitrecolongrms,"recolongrms/F");
@@ -242,6 +247,10 @@ namespace mu2e
         _hitT->Branch("truedoca",&_hittruedoca,"truedoca/F");
         _hitT->Branch("mcdoca",&_hitmcdoca,"mcdoca/F");
         _hitT->Branch("mctresid",&_hitmctresid,"mctresid/F");
+        _hitT->Branch("mctresidrms",&_hitmctresidrms,"mctresidrms/F");
+        _hitT->Branch("mcdrifttime",&_hitmcdrifttime,"mcdrifttime/F");
+        _hitT->Branch("mcdrifttimeoffset",&_hitmcdrifttimeoffset,"mcdrifttimeoffset/F");
+        _hitT->Branch("mctrajtime",&_hitmctrajtime,"mctrajtime/F");
         _hitT->Branch("mcdpocat",&_hitmcdpocat,"mcdpocat/F");
         _hitT->Branch("minuitdpocat",&_hitminuitdpocat,"minuitdpocat/F");
         _hitT->Branch("truelong",&_hittruelong,"truelong/F");
@@ -563,6 +572,9 @@ namespace mu2e
       _hitrecolongrms = sh.wireRes();
       _hitrecodoca = sh.driftTime();
 
+      _hitproptime = sh.propTime();
+      _hittime = sh.time(); 
+
       CLHEP::Hep3Vector pcapoint2(0,0,0);
       if (_mcdiag){
         // get the StrawDigi indices for this combohit
@@ -608,11 +620,13 @@ namespace mu2e
 
         TwoLinePCA mcpca( _mcpos, _mcdir,
             Geom::Hep3Vec(sgs.startPosition()), Geom::Hep3Vec(sgs.endPosition()-sgs.startPosition()) );
-        double trajtime = (mcpca.point1()-_mcpos).dot(_mcdir.unit())/299.9;
+        _hitmctrajtime = (mcpca.point1()-_mcpos).dot(_mcdir.unit())/299.9;
         if (mcpca.closeToParallel()){
-          trajtime = (Geom::Hep3Vec(sgs.startPosition())-_mcpos).dot(_mcdir.unit())/299.9;
+          _hitmctrajtime = (Geom::Hep3Vec(sgs.startPosition())-_mcpos).dot(_mcdir.unit())/299.9;
         }
-        _hitmctresid = sh.time() - (_mct0 + trajtime);
+        _hitmcdrifttime = srep.driftDistanceToTime(sh.strawId(), pca1.dca(), 0);
+        _hitmcdrifttimeoffset = srep.driftDistanceOffset(sh.strawId(), 0, 0, pca1.dca());
+        _hitmctresid = sh.time() - (_mct0 + _hitmctrajtime + sh.propTime() + _hitmcdrifttime + _hitmcdrifttimeoffset);
 
       }
 
@@ -652,13 +666,14 @@ namespace mu2e
 
         _hitllike = pow(_hitminuitlong-_hitrecolong,2)/pow(_hitrecolongrms,2);
 
-        double traj_time = ((pca3.point2() - minuitpos).dot(minuitdir))/299.9;
 
-        double drift_time = srep.driftDistanceToTime(sh.strawId(), pca3.dca(), 0);
-        drift_time += srep.driftDistanceOffset(sh.strawId(), 0, 0, pca3.dca());
-
+        _hitdrifttime = srep.driftDistanceToTime(sh.strawId(), pca3.dca(), 0);
+        _hitdrifttimeoffset = srep.driftDistanceOffset(sh.strawId(), 0, 0, pca3.dca());
+        _hittrajtime = ((pca3.point2() - minuitpos).dot(minuitdir))/299.9;
         _hittresidrms = srep.driftDistanceError(sh.strawId(), 0, 0, pca3.dca());
-        double hit_t0 = sh.time() - sh.propTime() - traj_time - drift_time;
+
+        double hit_t0 = sh.time() - sh.propTime() - _hittrajtime - _hitdrifttime - _hitdrifttimeoffset;
+
         _hittresid = hit_t0-tseed._t0._t0;
         _hitllike += pow(_hittresid,2)/pow(_hittresidrms,2);
 
