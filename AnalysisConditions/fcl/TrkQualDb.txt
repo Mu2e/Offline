@@ -1,6 +1,0 @@
-TABLE TrkQualDb
-#idx,name,xmlfile,calibrated?
-0,TrkQual,AnalysisConditions/weights/TrkQual.weights.xml,1
-1,TrkQualNeg,AnalysisConditions/weights/TrkQualNeg.weights.xml,1
-2,TrkQualPos,AnalysisConditions/weights/TrkQualPos.weights.xml,0
-

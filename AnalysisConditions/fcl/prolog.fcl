@@ -1,9 +1,22 @@
 BEGIN_PROLOG
+
+ TrkQualConfig : { trainName : "TrkQual"
+	       	   xmlFileName : "AnalysisConditions/weights/TrkQualNeg.weights.xml"
+		   calibrated : true
+ }
+ TrkQualNegConfig : { trainName : "TrkQualNeg"
+ 	       	      xmlFileName : "AnalysisConditions/weights/TrkQualNeg.weights.xml"
+		      calibrated : true
+ }
+ TrkQualPosConfig : { trainName : "TrkQualPos"
+ 	       	      xmlFileName : "AnalysisConditions/weights/TrkQualPos.weights.xml"
+		      calibrated : false
+ }
+
+
   TrkQualCatalog : {
    verbose : 1
-   useDb : true
-   mvaConfigs : [ ]
+   useDb : false
+   mvaConfigs : [ @local::TrkQualConfig, @local::TrkQualNegConfig, @local::TrkQualPosConfig ]
   }
-
-  TrkQualCatalogDbOverride : "AnalysisConditions/fcl/TrkQualDb.txt"
 END_PROLOG

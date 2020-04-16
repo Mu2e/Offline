@@ -270,6 +270,10 @@ namespace mu2e
     xercesc::DOMDocument* xmlDoc = parser->adoptDocument() ; // adopt the document so that the parser no longer owns it...
     delete parser; // ...can then delete the parser and solve a memory leak
 
+    if (!xmlDoc) {
+      throw cet::exception("RECO") << "mu2e::MVATools could not create xmlDoc with filename " << mvaWgtsFile_.c_str() << std::endl;
+    }
+
     return xmlDoc;
   }
 

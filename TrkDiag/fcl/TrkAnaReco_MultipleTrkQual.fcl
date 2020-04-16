@@ -9,8 +9,6 @@ source : { module_type : RootInput }
 
 services : @local::Services.Reco
 
-services.DbService.textFile : [ @local::TrkQualCatalogDbOverride ]
-
 physics :
 {
   producers : { @table::TrkAnaReco.producers }
