@@ -28,7 +28,7 @@ TimeClusterFinder : {
   ClusterCaloMVA         : { MVAWeights : "TrkPatRec/test/TimeClusterCalo.weights.xml" }
   HitSelectionBits       : ["EnergySelection","TimeSelection","RadiusSelection"]
   HitBackgroundBits      : ["Background"]
-  UseCaloCluster         : false
+  UseCaloCluster         : true
   UseCaloClusterPosition : true
   CaloClusterWeight      : 10.0
   TestFlag               : true
