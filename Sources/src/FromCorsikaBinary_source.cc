@@ -8,6 +8,7 @@
 #include <cassert>
 #include <set>
 #include <string>
+#include <regex>
 
 #include "CLHEP/Vector/LorentzVector.h"
 #include "CLHEP/Vector/ThreeVector.h"
@@ -137,13 +138,29 @@ namespace mu2e {
 
     //----------------------------------------------------------------
     unsigned CorsikaBinaryDetail::getSubRunNumber(const std::string& filename) const {
-      const std::string::size_type islash = filename.find("DAT") ;
-      const std::string basename = (islash == std::string::npos) ? filename : filename.substr(islash + 3);
+      std::regex re_corsika("^(.*/)?DAT([0-9]+)$");
+      std::regex re_mu2e("^(.*/)?sim\\.\\w+\\.[\\w-]+\\.[\\w-]+\\.([0-9]+)\\.csk$");
+
       unsigned sr(-1);
-      std::istringstream is(basename);
-      if(!(is>>sr)) {
-        throw cet::exception("BADINPUTS")<<"Expect an unsigned integer at the beginning of input file name, got "<<basename<<"\n";
+
+      std::smatch match;
+      if(std::regex_search(filename, match, re_corsika)) {
+        // [0]: the whole string
+        // [1]: dirname or emtpy
+        // [2]: the run number string
+        sr = std::stoi(match.str(2));
       }
+      else if(std::regex_search(filename, match, re_mu2e)) {
+        // [0]: the whole string
+        // [1]: dirname or emtpy
+        // [2]: the run number string
+        sr = std::stoi(match.str(2));
+      }
+      else {
+        throw cet::exception("BADINPUT", " FromCorsikaBinary: ")
+          << " Can not parse filename to extract subrun number:  "<<filename<<"\n";
+      }
+
       return sr;
     }
 
