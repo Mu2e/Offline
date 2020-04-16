@@ -2,8 +2,8 @@
 // Module calling upon Mille to set up bootstrap alignment
 
 #include <algorithm> // for max, all_of
-#include <cmath>   // for isnan
-#include <cstddef> // for size_t
+#include <cmath>     // for isnan
+#include <cstddef>   // for size_t
 #include <exception>
 #include <iostream>      // for operator<<
 #include <memory>        // for unique_ptr
@@ -76,16 +76,18 @@ namespace mu2e {
 
 class AlignTrackCollector : public art::EDAnalyzer {
   private:
+    static constexpr int MAX_NHITS = 50;
 
     // Tree and tree fill members
     TTree* diagtree;
+
     Int_t nHits;
-    Float_t doca_residual[500];
-    Float_t doca_resid_err[500];
-    Float_t doca[500];
-    Float_t time[500];
-    Int_t plane_uid[500];
-    Int_t panel_uid[500];
+    Float_t doca_residual[MAX_NHITS];
+    Float_t doca_resid_err[MAX_NHITS];
+    Float_t doca[MAX_NHITS];
+    Float_t time[MAX_NHITS];
+    Int_t plane_uid[MAX_NHITS];
+    Int_t panel_uid[MAX_NHITS];
 
     Double_t A0;
     Double_t A1;
@@ -106,7 +108,6 @@ class AlignTrackCollector : public art::EDAnalyzer {
 
     TH1F* track_chisq;
     TH1F* track_pvalue;
-
 
   public:
     const size_t _dof_per_plane = 6; // dx, dy, dz, a, b, g (translation, rotation)
@@ -155,7 +156,8 @@ class AlignTrackCollector : public art::EDAnalyzer {
     {
         // generate hashtable of plane, or panel number to DOF labels
         // we prepare them like this because millepede wants arrays of labels
-        // (I'd rather cache them in memory than re-calculate them for every single hit on an element)
+        // (I'd rather cache them in memory than re-calculate them for every single hit on an
+        // element)
         int nobj = 0;
         // o_cls == 1: planes
         // o_cls == 2: panels
@@ -269,9 +271,9 @@ void AlignTrackCollector::writeLabelsFile(Tracker const& aligned_tracker)
 
     // essentially a form of csv output letting you know what labels were
     // assigned to each element
-    if (_labels_filename == "none")
+    if (_labels_filename == "none") {
         return;
-
+    }
     std::ofstream label_info_file(_labels_filename);
 
     label_info_file << "%element_type,uid,dof_idx,global_label" << std::endl;
@@ -318,9 +320,10 @@ void AlignTrackCollector::endJob()
     // ensure the file is closed once the job finishes
     millepede->~Mille();
 
-    if (_diag > 0)
+    if (_diag > 0) {
         std::cout << "AlignTrackCollector: wrote " << tracks_written << " tracks to "
                   << _output_filename << std::endl;
+    }
 }
 
 bool AlignTrackCollector::filter_CosmicTrackSeedCollection(art::Event const& event,
@@ -349,7 +352,7 @@ bool AlignTrackCollector::filter_CosmicTrackSeedCollection(art::Event const& eve
             continue;
         }
 
-        std::cout << "Have track." << std::endl;
+        std::cout << "Track appears sane." << std::endl;
 
         std::set<uint16_t> planes_traversed;
         std::set<uint16_t> panels_traversed;
@@ -410,6 +413,7 @@ bool AlignTrackCollector::filter_CosmicTrackSeedCollection(art::Event const& eve
                                             panel_origin.x(), panel_origin.y(), panel_origin.z());
 
             double resid_tmp = fit_object.DOCAresidual(straw_hit, sts);
+            double resid_err_tmp = fit_object.DOCAresidualError(straw_hit, sts);
 
             if (isnan(resid_tmp))
                 continue;
@@ -423,15 +427,15 @@ bool AlignTrackCollector::filter_CosmicTrackSeedCollection(art::Event const& eve
             ndof++;
 
             doca_residual[nHits] = resid_tmp;
-            doca_resid_err[nHits] = fit_object.DOCAresidualError(straw_hit, sts);
+            doca_resid_err[nHits] = resid_err_tmp;
             doca[nHits] = pca.dca();
             time[nHits] = straw_hit.time();
             panel_uid[nHits] = panel_uuid;
             plane_uid[nHits] = plane_id;
 
-            if (_diag > 0)
-            {
-                std::cout << "pl" << plane_id << " pa" << panel_uuid << ": resid " << doca_residual[nHits] << " +- " << doca_resid_err[nHits] << std::endl;
+            if (_diag > 0) {
+                std::cout << "pl" << plane_id << " pa" << panel_uuid << ": resid "
+                          << resid_tmp << " +- " << resid_err_tmp << std::endl;
             }
 
             // FIXME! seems messy!
@@ -452,13 +456,15 @@ bool AlignTrackCollector::filter_CosmicTrackSeedCollection(art::Event const& eve
             // write the hit to the track buffer
             millepede->mille(derivativesLocal.size(), derivativesLocal.data(),
                              derivativesGlobal.size(), derivativesGlobal.data(),
-                             global_dof_labels.data(), (float)resid_tmp, (float)doca_resid_err[nHits]);
+                             global_dof_labels.data(), (float)resid_tmp,
+                             (float)resid_err_tmp);
 
             // diagnostic information
             if (_diag > 0) {
                 plane_tracks->Fill(plane_id);
                 plane_residsum->Fill(plane_id, resid_tmp);
             }
+
             wrote_hits = true;
             ++nHits;
         }
@@ -467,6 +473,7 @@ bool AlignTrackCollector::filter_CosmicTrackSeedCollection(art::Event const& eve
 
             if (ndof > 4 && _diag > 0) {
                 ndof -= 4.0; // 4 track parameters
+
                 pvalue = boost::math::cdf(boost::math::chi_squared(ndof), chisq / ndof);
                 track_pvalue->Fill(pvalue);
                 track_chisq->Fill(chisq / ndof);
