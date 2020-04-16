@@ -448,8 +448,9 @@ bool AlignTrackCollector::filter_CosmicTrackSeedCollection(art::Event const& eve
             // a, b, g This is reflected also in the generated DOCA derivatives.
             global_dof_labels.insert(global_dof_labels.end(), plane_dof_labels[plane_id].begin(),
                                      plane_dof_labels[plane_id].end());
-            global_dof_labels.insert(global_dof_labels.end(), panel_dof_labels[panel_uid].begin(),
-                                     panel_dof_labels[panel_uid].end());
+            global_dof_labels.insert(global_dof_labels.end(), panel_dof_labels[panel_uuid].begin(),
+                                     panel_dof_labels[panel_uuid].end());
+
             if (_diag > 0 && global_dof_labels.size() != 12)
                 std::cout << "WARNING: we should have 12 labels!" << std::endl;
 
