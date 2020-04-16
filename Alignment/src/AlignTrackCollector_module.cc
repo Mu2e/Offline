@@ -475,7 +475,7 @@ bool AlignTrackCollector::filter_CosmicTrackSeedCollection(art::Event const& eve
             if (ndof > 4 && _diag > 0) {
                 ndof -= 4.0; // 4 track parameters
 
-                pvalue = boost::math::cdf(boost::math::chi_squared(ndof), chisq / ndof);
+                pvalue = boost::math::cdf(boost::math::chi_squared(ndof), chisq);
                 track_pvalue->Fill(pvalue);
                 track_chisq->Fill(chisq / ndof);
             }
