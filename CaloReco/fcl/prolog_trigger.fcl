@@ -29,7 +29,7 @@ FastCaloCrystalHitFromHit:
     diagLevel             : 0
 }
 
-OnlineCaloReco : 
+CaloHitRecoTrigger : 
 {
    producers : {
      FastCaloRecoDigiFromDigi    : @local::FastCaloRecoDigiFromDigi 

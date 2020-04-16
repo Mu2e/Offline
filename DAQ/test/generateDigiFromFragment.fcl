@@ -25,7 +25,7 @@ physics : {
 
       CaloDigiFromShower:		
       {	 
-	 @table::DAQ.producers.makeSD
+	 @table::DAQ.producers.CaloDigiFromShower
       }
   }
 
