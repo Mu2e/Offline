@@ -135,9 +135,17 @@ class AlignTrackCollector : public art::EDAnalyzer {
             Comment("The type of track to collect. Default: CosmicTrackSeedCollection"),
             "CosmicTrackSeedCollection"};
 
-        fhicl::Atom<int> minplanetraverse{
-            Name("MinTraversedPlanes"),
-            Comment("How many planes must be traversed for a track to be accepted"), 3};
+        fhicl::Atom<int> minplanetraverse{Name("MinTraversedPlanes"),
+                                          Comment("How many planes must be traversed for a track "
+                                                  "to be accepted. 0: does not apply the cut."),
+                                          3};
+
+        fhicl::Atom<int> minpaneltraverse{
+            Name("MinTraversedPanelsPerPlane"),
+            Comment("How many panels must be traversed PER PLANE. 0: does not apply the cut."), 0};
+
+        fhicl::Atom<double> minpvalue{Name("MinPValue"),
+                                      Comment("Require that the track p-value > MinPValue"), 0.005};
     };
     typedef art::EDAnalyzer::Table<Config> Parameters;
 
@@ -154,7 +162,9 @@ class AlignTrackCollector : public art::EDAnalyzer {
     AlignTrackCollector(const Parameters& conf)
         : art::EDAnalyzer(conf), _diag(conf().diaglvl()), _costag(conf().costag()),
           _output_filename(conf().millefile()), _labels_filename(conf().labelsfile()),
-          track_type(conf().tracktype()), min_plane_traverse(conf().minplanetraverse())
+          track_type(conf().tracktype()), min_plane_traverse(conf().minplanetraverse()),
+          min_panel_traverse_per_plane(conf().minpaneltraverse()),
+          min_pvalue(conf().minpvalue())
     {
         // generate hashtable of plane, or panel number to DOF labels
         // we prepare them like this because millepede wants arrays of labels
@@ -212,6 +222,8 @@ class AlignTrackCollector : public art::EDAnalyzer {
     std::string _labels_filename;
     std::string track_type;
     int min_plane_traverse;
+    int min_panel_traverse_per_plane;
+    double min_pvalue;
 
     AlignTrackType collect_track;
 
@@ -483,11 +495,13 @@ bool AlignTrackCollector::filter_CosmicTrackSeedCollection(art::Event const& eve
             panels_trav = panels_traversed.size();
 
             // track acceptance cuts
-            if (min_plane_traverse != 0 && planes_trav < min_plane_traverse) {
+            if ((min_plane_traverse != 0 && planes_trav < min_plane_traverse) ||
+                (min_panel_traverse_per_plane != 0 && (panels_trav/planes_trav) < min_panel_traverse_per_plane) ||
+                (min_pvalue > pvalue)) {
                 millepede->kill(); // delete track from buffer, move on!
 
                 if (_diag > 0) {
-                    std::cout << "track failed min plane traversal cut" << std::endl;
+                    std::cout << "track failed quality cuts" << std::endl;
                 }
 
                 continue;
