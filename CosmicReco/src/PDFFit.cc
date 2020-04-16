@@ -336,7 +336,7 @@ double GaussianDriftFit::DOCAresidual(ComboHit const& sh, const std::vector<doub
   Straw const& straw = tracker->getStraw(sh.strawId());
   TwoLinePCA pca(straw.getMidPoint(), straw.getDirection(), intercept, dir);
   double traj_time = ((pca.point2() - intercept).dot(dir))/299.9;
-  double hit_t0 = sh.propTime() + traj_time + t0;
+  double hit_t0 = sh.propTime() + traj_time + t0 + srep.driftDistanceOffset(sh.strawId(), 0, 0, pca.dca());
 
   double predictedDistance = pca.dca();
   double measuredDistance = srep.driftTimeToDistance(sh.strawId(), sh.time()-hit_t0, 0);
