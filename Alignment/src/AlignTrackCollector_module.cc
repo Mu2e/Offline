@@ -240,8 +240,8 @@ void AlignTrackCollector::beginJob()
         diagtree->Branch("doca_resid_err", &doca_resid_err, "doca_resid_err[nHits]/F");
         diagtree->Branch("doca", &doca, "doca[nHits]/F");
         diagtree->Branch("time", &time, "time[nHits]/F");
-        diagtree->Branch("plane", &doca, "doca[nHits]/F");
-        diagtree->Branch("panel", &time, "time[nHits]/F");
+        diagtree->Branch("plane", &plane_uid, "doca[nHits]/F");
+        diagtree->Branch("panel", &panel_uid, "time[nHits]/F");
 
         diagtree->Branch("A0", &A0, "A0/D");
         diagtree->Branch("A1", &A1, "A1/D");
