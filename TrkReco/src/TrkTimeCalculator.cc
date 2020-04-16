@@ -4,7 +4,6 @@
 #include "GeometryService/inc/GeomHandle.hh"
 #include "CalorimeterGeom/inc/Calorimeter.hh"
 
-
 namespace mu2e
 {
 
