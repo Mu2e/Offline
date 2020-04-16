@@ -47,6 +47,7 @@ namespace mu2e {
               fhicl::Atom<float>            timeRMS{          Name("TimeRMS"),          Comment("Cluster time RMS")  };
               fhicl::Atom<unsigned>         maxCluIterations{ Name("MaxCluIterations"), Comment("Maximum number of cluster algo iterations") };
               fhicl::Atom<bool>             medianCentroid {  Name("MedianCentroid"),   Comment("Use median to calculate cluster centroid") };
+              fhicl::Atom<unsigned>         filterAlgo{       Name("FilterAlgo"),       Comment("Fast filter algorithm") };
               fhicl::Atom<bool>             comboInit{        Name("ComboInit"),        Comment("Start with combo hits") };
               fhicl::Sequence<std::string>  bkgmsk{           Name("BackgroundMask"),   Comment("Bkg hit selection mask") };
               fhicl::Sequence<std::string>  sigmsk{           Name("SignalMask"),       Comment("Signal hit selection mask") };
@@ -68,7 +69,9 @@ namespace mu2e {
           static const int numBuckets = 256; //number of buckets to store the clusters vs time - optimized for speed
           using arrayVecBkg = std::array<std::vector<int>,numBuckets>;
 
-          void     initClu(const ComboHitCollection& chcol, std::vector<BkgCluster>& clusters, std::vector<BkgHit>& hinfo); 
+          void     initClu(const ComboHitCollection& chcol, std::vector<BkgCluster>& clusters, std::vector<BkgHit>& hinfo, const std::vector<unsigned>& hitSel ); 
+          void     fastFilter1(BkgClusterCollection& clusters, const ComboHitCollection& chcol, std::vector<unsigned>& hitSel);
+
           void     clusterAlgo(const ComboHitCollection& chcol, std::vector<BkgCluster>& clusters, 
                                std::vector<BkgHit>& hinfo, float tbin);
           unsigned formClusters(const ComboHitCollection& chcol, std::vector<BkgCluster>& clusters, float tbin, 
@@ -94,6 +97,7 @@ namespace mu2e {
           float            maxDistSum_; 
           unsigned         maxNiter_;    
           bool             useMedian_;  
+          bool             filterAlgo_;  
           bool             comboInit_;  
           StrawHitFlag     bkgmask_;    
           StrawHitFlag     sigmask_;    
