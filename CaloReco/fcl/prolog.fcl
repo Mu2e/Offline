@@ -6,6 +6,7 @@
 BEGIN_PROLOG
 
 
+
 CaloRecoDigiFromDigi :
 { 
 
@@ -40,6 +41,7 @@ CaloCrystalHitFromHit:
     time4Merge            : 4.0   #ns
     diagLevel             : 0
 }
+
 
 
 CaloReco : 

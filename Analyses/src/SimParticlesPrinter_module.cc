@@ -19,18 +19,31 @@ namespace mu2e {
   //================================================================
   class SimParticlesPrinter : public art::EDAnalyzer {
   public:
-    explicit SimParticlesPrinter(fhicl::ParameterSet const& pset);
+    struct Config {
+      using Name = fhicl::Name;
+      using Comment = fhicl::Comment;
+      fhicl::Atom<art::InputTag> inputCollection {Name("inputCollection"),
+          Comment("Collection to print")
+          };
+
+      fhicl::Table<SimParticleCollectionPrinter::Config> printer { Name("printer") };
+    };
+
+    using Parameters = art::EDAnalyzer::Table<Config>;
+    explicit SimParticlesPrinter(const Parameters& pars);
+
     void analyze(const art::Event& evt) override;
+
   private:
     art::InputTag input_;
     SimParticleCollectionPrinter pr_;
   };
 
   //================================================================
-  SimParticlesPrinter::SimParticlesPrinter(const fhicl::ParameterSet& pset)
-    : art::EDAnalyzer(pset)
-    , input_(pset.get<std::string>("inputCollection"))
-    , pr_(pset.get<fhicl::ParameterSet>("printer", fhicl::ParameterSet()))
+  SimParticlesPrinter::SimParticlesPrinter(const Parameters& pars)
+    : art::EDAnalyzer(pars)
+    , input_(pars().inputCollection())
+    , pr_(pars().printer())
   {}
 
   //================================================================

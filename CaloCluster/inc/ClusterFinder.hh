@@ -31,8 +31,11 @@ namespace mu2e {
 
 
              ClusterFinder(Calorimeter const& cal, CaloCrystalHit const* crystalSeed, double deltaTime, double ExpandCut);              
-             ~ClusterFinder(){};
+        
              
+             ClusterFinder(Calorimeter const& cal, CaloCrystalHit const* crystalSeed, double deltaTime, double ExpandCut, bool isOnline);  
+
+	     ~ClusterFinder(){};            
              
              CaloCrystalList const& clusterList()  const {return clusterList_;}
              
@@ -52,6 +55,8 @@ namespace mu2e {
 
              double                 deltaTime_; 
              double                 ExpandCut_;
+
+ 	     bool 		    isOnline_;
 
     };
 

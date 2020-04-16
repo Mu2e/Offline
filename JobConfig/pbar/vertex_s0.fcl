@@ -40,11 +40,7 @@ services : {
 
 physics : {
    producers : {
-      generate : {
-         module_type : EventGenerator
-         inputfile   : "JobConfig/beam/genconfig_PrimaryProtons.txt"
-      }
-    
+      generate: @local::PrimaryProtonGun    
 
       genCounter: { module_type : GenEventCounter }
 
@@ -57,7 +53,6 @@ physics : {
          visualization     : @local::mu2eg4NoVisualization
 
          generatorModuleLabel : generate
-         MultiStageParameters : {} // This is the first stage
 
          SDConfig: {
             enableSD : [] // activate just the explicitly listed SDs
@@ -173,3 +168,6 @@ physics.producers.g4run.Mu2eG4StackingOnlyCut : {
    ]
 
 }
+
+
+services.GeometryService.simulatedDetector.tool_type : "Mu2e"

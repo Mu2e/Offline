@@ -128,6 +128,7 @@
 
  <class name="mu2e::BkgClusterHit"/>
  <class name="std::vector<mu2e::BkgClusterHit>"/>
+ <class name="art::Wrapper<mu2e::BkgClusterHitCollection>"/>
  <class name="mu2e::BkgCluster"/>
  <class name="mu2e::BkgClusterCollection"/>
  <class name="art::Wrapper<mu2e::BkgClusterCollection>"/>

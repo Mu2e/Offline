@@ -68,7 +68,6 @@ physics : {
       visualization: @local::mu2eg4NoVisualization
 
       generatorModuleLabel: cryGen
-      MultiStageParameters: {} // this is the first stage
 
       SDConfig: 
       {

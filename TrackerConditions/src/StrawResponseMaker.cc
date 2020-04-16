@@ -1,7 +1,7 @@
 
 #include "TrackerConditions/inc/StrawResponseMaker.hh"
 // data products
-#include <math.h>
+#include <cmath>
 #include <algorithm>
 #include "DataProducts/inc/StrawId.hh"
 #include "TrackerConditions/inc/StrawDrift.hh"

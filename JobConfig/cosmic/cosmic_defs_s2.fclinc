@@ -169,11 +169,9 @@ physics :
       detectorFilter:
       {
          module_type: FilterG4Out
-	 noInstanceName : true
          mainHitInputs: [ "g4run:tracker", "g4run:calorimeter", "g4run:calorimeterRO", "g4run:CRV" ]
          extraHitInputs : [ "g4run:virtualdetector" ]
          mcTrajectoryInputs : [ "g4run" ]
-         numSimParticleCollections : 1
          vetoDaughters: []
       }
 

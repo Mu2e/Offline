@@ -4,10 +4,6 @@
 // Manage all of the magnetic field maps for Mu2e.
 // This class holds the actual field maps, and provides an interface to compute B field.
 //
-// $Id: BFieldManager.hh,v 1.22 2013/08/30 22:25:22 kutschke Exp $
-// $Author: kutschke $
-// $Date: 2013/08/30 22:25:22 $
-//
 // Modified by Brian Pollack to allow for polymorphic BField class.
 //
 // Notes:
@@ -27,6 +23,7 @@
 #include "BFieldGeom/inc/BFMap.hh"
 #include "BFieldGeom/inc/BFMapType.hh"
 #include "BFieldGeom/inc/BFParamMap.hh"
+#include "DataProducts/inc/XYZVec.hh"
 #include "Mu2eInterfaces/inc/Detector.hh"
 
 namespace mu2e {
@@ -61,6 +58,17 @@ namespace mu2e {
             CLHEP::Hep3Vector result;
             getBFieldWithStatus(pos, cmgr, result);
             return result;
+        }
+
+        XYZVec getBField(const XYZVec& pos) const {
+          // Default c'tor sets all components to zero - which is what we need here.
+          CLHEP::Hep3Vector b;
+
+          CLHEP::Hep3Vector p(pos.x(), pos.y(), pos.z());
+          getBFieldWithStatus(p, b);
+          XYZVec result(b.x(), b.y(), b.z());
+
+          return result;
         }
 
         BFCacheManager cacheManager() const { return cm_; }
