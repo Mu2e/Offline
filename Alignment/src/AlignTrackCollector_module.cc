@@ -83,6 +83,7 @@ class AlignTrackCollector : public art::EDAnalyzer {
 
     Int_t nHits;
     Float_t doca_residual[MAX_NHITS];
+    Float_t time_residual[MAX_NHITS];
     Float_t doca_resid_err[MAX_NHITS];
     Float_t doca[MAX_NHITS];
     Float_t time[MAX_NHITS];
@@ -250,6 +251,8 @@ void AlignTrackCollector::beginJob()
         diagtree = tfs->make<TTree>("tracks", "Tracks collected for an alignment iteration");
         diagtree->Branch("nHits", &nHits, "nHits/I");
         diagtree->Branch("doca_resid", &doca_residual, "doca_resid[nHits]/F");
+        diagtree->Branch("time_resid", &time_residual, "time_resid[nHits]/F");
+
         diagtree->Branch("doca_resid_err", &doca_resid_err, "doca_resid_err[nHits]/F");
         diagtree->Branch("doca", &doca, "doca[nHits]/F");
         diagtree->Branch("time", &time, "time[nHits]/F");
@@ -483,15 +486,17 @@ bool AlignTrackCollector::filter_CosmicTrackSeedCollection(art::Event const& eve
         }
         if (wrote_hits) {
             tracks_written++;
-            ndof -= 4.0; // 4 track parameters
+            ndof -= 5.0; // 5 track parameters
 
-            if (ndof != 0)
+            if (ndof != 0 && _diag > 0) {
                 chisq /= ndof;
-
-            if (ndof > 4 && _diag > 0) {
                 pvalue = boost::math::cdf(boost::math::chi_squared(ndof), chisq);
                 track_pvalue->Fill(pvalue);
                 track_chisq->Fill(chisq);
+            }
+            else {
+                chisq = -1;
+                pvalue = -1;
             }
 
             planes_trav = planes_traversed.size();
