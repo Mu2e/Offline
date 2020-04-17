@@ -337,14 +337,13 @@ double GaussianDriftFit::DOCAresidual(ComboHit const& sh, const std::vector<doub
   TwoLinePCA pca(straw.getMidPoint(), straw.getDirection(), intercept, dir);
   double traj_time = ((pca.point2() - intercept).dot(dir))/299.9;
 
-  double predictedDistance = (pca.s2() > 0 ? 1 : -1) * pca.dca();
-
+  double predictedDistance = pca.dca();
 
   double hit_t0 = sh.propTime() + traj_time + t0 + srep.driftDistanceOffset(sh.strawId(), 0, 0, pca.dca());
 
   double measuredDistance = srep.driftTimeToDistance(sh.strawId(), sh.time()-hit_t0, 0);
 
-  return predictedDistance-measuredDistance;
+  return (pca.s2() > 0 ? 1 : -1) * (predictedDistance-measuredDistance);
 }
 
 double GaussianDriftFit::DOCAresidualError(ComboHit const& sh, const std::vector<double> &x, const std::vector<double> &cov) const
