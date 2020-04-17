@@ -145,7 +145,7 @@ class AlignTrackCollector : public art::EDAnalyzer {
             Comment("How many panels must be traversed PER PLANE. 0: does not apply the cut."), 0};
 
         fhicl::Atom<double> minpvalue{Name("MinPValue"),
-                                      Comment("Require that the track p-value > MinPValue"), 0.005};
+                                      Comment("Require that the track p-value > MinPValue"), 0};
     };
     typedef art::EDAnalyzer::Table<Config> Parameters;
 
