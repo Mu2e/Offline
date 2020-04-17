@@ -442,7 +442,7 @@ bool AlignTrackCollector::filter_CosmicTrackSeedCollection(art::Event const& eve
 
             doca_residual[nHits] = resid_tmp;
             doca_resid_err[nHits] = resid_err_tmp;
-            doca[nHits] = (pca.s2() > 0 ? 1 : -1) * pca.dca();
+            doca[nHits] = pca.dca();
             time[nHits] = straw_hit.time();
             panel_uid[nHits] = panel_uuid;
             plane_uid[nHits] = plane_id;
