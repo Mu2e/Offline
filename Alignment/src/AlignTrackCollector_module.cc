@@ -147,6 +147,9 @@ class AlignTrackCollector : public art::EDAnalyzer {
 
         fhicl::Atom<double> minpvalue{Name("MinPValue"),
                                       Comment("Require that the track p-value > MinPValue"), 0};
+
+        fhicl::Atom<double> mindoca{Name("MinDOCA"),
+                                    Comment("Require that the drift distance > MinDOCA"), 0.5};
     };
     typedef art::EDAnalyzer::Table<Config> Parameters;
 
@@ -164,8 +167,8 @@ class AlignTrackCollector : public art::EDAnalyzer {
         : art::EDAnalyzer(conf), _diag(conf().diaglvl()), _costag(conf().costag()),
           _output_filename(conf().millefile()), _labels_filename(conf().labelsfile()),
           track_type(conf().tracktype()), min_plane_traverse(conf().minplanetraverse()),
-          min_panel_traverse_per_plane(conf().minpaneltraverse()),
-          min_pvalue(conf().minpvalue())
+          min_panel_traverse_per_plane(conf().minpaneltraverse()), min_pvalue(conf().minpvalue()),
+          min_doca(conf().mindoca())
     {
         // generate hashtable of plane, or panel number to DOF labels
         // we prepare them like this because millepede wants arrays of labels
@@ -225,6 +228,7 @@ class AlignTrackCollector : public art::EDAnalyzer {
     int min_plane_traverse;
     int min_panel_traverse_per_plane;
     double min_pvalue;
+    double min_doca;
 
     AlignTrackType collect_track;
 
@@ -441,6 +445,10 @@ bool AlignTrackCollector::filter_CosmicTrackSeedCollection(art::Event const& eve
             dir = dir.unit();
             TwoLinePCA pca(straw.getMidPoint(), straw.getDirection(), intercept, dir);
 
+            if (pca.dca() < min_doca) {
+                continue; // remove hit!
+            }
+
             chisq += pow(resid_tmp / resid_err_tmp, 2);
             ndof++;
 
@@ -506,7 +514,8 @@ bool AlignTrackCollector::filter_CosmicTrackSeedCollection(art::Event const& eve
 
             // track acceptance cuts
             if ((min_plane_traverse != 0 && planes_trav < min_plane_traverse) ||
-                (min_panel_traverse_per_plane != 0 && (panels_trav/planes_trav) < min_panel_traverse_per_plane) ||
+                (min_panel_traverse_per_plane != 0 &&
+                 (panels_trav / planes_trav) < min_panel_traverse_per_plane) ||
                 (min_pvalue > pvalue)) {
                 millepede->kill(); // delete track from buffer, move on!
 
