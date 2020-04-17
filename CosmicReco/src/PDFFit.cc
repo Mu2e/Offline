@@ -362,9 +362,9 @@ double GaussianDriftFit::TimeResidual(ComboHit const& sh, const std::vector<doub
 
   double predictedTime = srep.driftDistanceToTime(sh.strawId(), pca.dca(), 0);
   double hit_t0 = sh.propTime() + traj_time + t0 + srep.driftDistanceOffset(sh.strawId(), 0, 0, pca.dca());
-  double measuredTime = sh.time()-hit_t0;
+  double measuredTime = sh.time() - hit_t0;
 
-  return (predictedTime-measuredTime);
+  return (pca.s2() > 0 ? 1 : -1) * (predictedTime-measuredTime);
 }
 
 double GaussianDriftFit::DOCAresidualError(ComboHit const& sh, const std::vector<double> &x, const std::vector<double> &cov) const
