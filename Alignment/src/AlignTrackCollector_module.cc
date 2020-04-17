@@ -145,8 +145,8 @@ class AlignTrackCollector : public art::EDAnalyzer {
             Name("MinTraversedPanelsPerPlane"),
             Comment("How many panels must be traversed PER PLANE. 0: does not apply the cut."), 0};
 
-        fhicl::Atom<double> minpvalue{Name("MinPValue"),
-                                      Comment("Require that the track p-value > MinPValue"), 0};
+        fhicl::Atom<double> maxpvalue{Name("MaxPValue"),
+                                      Comment("Require that the track p-value < MaxPValue"), 1};
 
         fhicl::Atom<double> mindoca{Name("MinDOCA"),
                                     Comment("Require that the drift distance > MinDOCA"), 0.5};
@@ -167,7 +167,7 @@ class AlignTrackCollector : public art::EDAnalyzer {
         : art::EDAnalyzer(conf), _diag(conf().diaglvl()), _costag(conf().costag()),
           _output_filename(conf().millefile()), _labels_filename(conf().labelsfile()),
           track_type(conf().tracktype()), min_plane_traverse(conf().minplanetraverse()),
-          min_panel_traverse_per_plane(conf().minpaneltraverse()), min_pvalue(conf().minpvalue()),
+          min_panel_traverse_per_plane(conf().minpaneltraverse()), max_mvalue(conf().maxpvalue()),
           min_doca(conf().mindoca())
     {
         // generate hashtable of plane, or panel number to DOF labels
@@ -227,7 +227,7 @@ class AlignTrackCollector : public art::EDAnalyzer {
     std::string track_type;
     int min_plane_traverse;
     int min_panel_traverse_per_plane;
-    double min_pvalue;
+    double max_pvalue;
     double min_doca;
 
     AlignTrackType collect_track;
@@ -498,7 +498,7 @@ bool AlignTrackCollector::filter_CosmicTrackSeedCollection(art::Event const& eve
             tracks_written++;
             ndof -= 5.0; // 5 track parameters
 
-            if (ndof > 0 && _diag > 0) {
+            if (ndof  0 && _diag > 0) {
                 chisq /= ndof;
                 pvalue = boost::math::cdf(boost::math::chi_squared(ndof), chisq);
                 track_pvalue->Fill(pvalue);
@@ -516,7 +516,7 @@ bool AlignTrackCollector::filter_CosmicTrackSeedCollection(art::Event const& eve
             if ((min_plane_traverse != 0 && planes_trav < min_plane_traverse) ||
                 (min_panel_traverse_per_plane != 0 &&
                  (panels_trav / planes_trav) < min_panel_traverse_per_plane) ||
-                (min_pvalue > pvalue)) {
+                (max_pvalue < pvalue)) {
                 millepede->kill(); // delete track from buffer, move on!
 
                 if (_diag > 0) {
