@@ -406,9 +406,6 @@ bool AlignTrackCollector::filter_CosmicTrackSeedCollection(art::Event const& eve
             auto panel_uuid = straw_id.uniquePanel();
             auto panel_id = straw_id.getPanelId();
 
-            planes_traversed.insert(plane_id);
-            panels_traversed.insert(panel_uuid);
-
             // geometry info
             auto const& plane_origin = tracker.getPlane(plane_id).origin();
 
@@ -451,6 +448,9 @@ bool AlignTrackCollector::filter_CosmicTrackSeedCollection(art::Event const& eve
 
             chisq += pow(resid_tmp / resid_err_tmp, 2);
             ndof++;
+
+            planes_traversed.insert(plane_id);
+            panels_traversed.insert(panel_uuid);
 
             doca_residual[nHits] = resid_tmp;
             time_residual[nHits] = time_resid;
