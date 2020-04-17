@@ -167,7 +167,7 @@ class AlignTrackCollector : public art::EDAnalyzer {
         : art::EDAnalyzer(conf), _diag(conf().diaglvl()), _costag(conf().costag()),
           _output_filename(conf().millefile()), _labels_filename(conf().labelsfile()),
           track_type(conf().tracktype()), min_plane_traverse(conf().minplanetraverse()),
-          min_panel_traverse_per_plane(conf().minpaneltraverse()), max_mvalue(conf().maxpvalue()),
+          min_panel_traverse_per_plane(conf().minpaneltraverse()), max_pvalue(conf().maxpvalue()),
           min_doca(conf().mindoca())
     {
         // generate hashtable of plane, or panel number to DOF labels
