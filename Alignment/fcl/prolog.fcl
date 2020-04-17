@@ -10,6 +10,10 @@ BEGIN_PROLOG
 
 
     MinTraversedPlanes : 3
+    MinPValue : 0
+    MinTraversedPanelsPerPlane : 0
+    MinDOCA : 0.5
+
 }
 
 END_PROLOG
