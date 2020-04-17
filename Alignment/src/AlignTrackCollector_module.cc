@@ -442,7 +442,7 @@ bool AlignTrackCollector::filter_CosmicTrackSeedCollection(art::Event const& eve
 
             doca_residual[nHits] = resid_tmp;
             doca_resid_err[nHits] = resid_err_tmp;
-            doca[nHits] = pca.dca();
+            doca[nHits] = (pca.s2() > 0 ? 1 : -1) * pca.dca();
             time[nHits] = straw_hit.time();
             panel_uid[nHits] = panel_uuid;
             plane_uid[nHits] = plane_id;
@@ -483,13 +483,15 @@ bool AlignTrackCollector::filter_CosmicTrackSeedCollection(art::Event const& eve
         }
         if (wrote_hits) {
             tracks_written++;
+            ndof -= 4.0; // 4 track parameters
+
+            if (ndof != 0)
+                chisq /= ndof;
 
             if (ndof > 4 && _diag > 0) {
-                ndof -= 4.0; // 4 track parameters
-
                 pvalue = boost::math::cdf(boost::math::chi_squared(ndof), chisq);
                 track_pvalue->Fill(pvalue);
-                track_chisq->Fill(chisq / ndof);
+                track_chisq->Fill(chisq);
             }
 
             planes_trav = planes_traversed.size();
