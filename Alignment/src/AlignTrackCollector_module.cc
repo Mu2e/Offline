@@ -252,8 +252,8 @@ void AlignTrackCollector::beginJob()
         diagtree->Branch("nHits", &nHits, "nHits/I");
         diagtree->Branch("doca_resid", &doca_residual, "doca_resid[nHits]/F");
         diagtree->Branch("time_resid", &time_residual, "time_resid[nHits]/F");
-
         diagtree->Branch("doca_resid_err", &doca_resid_err, "doca_resid_err[nHits]/F");
+
         diagtree->Branch("doca", &doca, "doca[nHits]/F");
         diagtree->Branch("time", &time, "time[nHits]/F");
         diagtree->Branch("plane", &plane_uid, "plane[nHits]/I");
@@ -429,6 +429,7 @@ bool AlignTrackCollector::filter_CosmicTrackSeedCollection(art::Event const& eve
                                             panel_origin.x(), panel_origin.y(), panel_origin.z());
 
             double resid_tmp = fit_object.DOCAresidual(straw_hit, sts);
+            double time_resid = fit_object.TimeResidual(straw_hit, sts);
             double resid_err_tmp = fit_object.DOCAresidualError(straw_hit, sts);
 
             if (isnan(resid_tmp))
@@ -444,6 +445,7 @@ bool AlignTrackCollector::filter_CosmicTrackSeedCollection(art::Event const& eve
             ndof++;
 
             doca_residual[nHits] = resid_tmp;
+            time_residual[nHits] = time_resid;
             doca_resid_err[nHits] = resid_err_tmp;
             doca[nHits] = pca.dca();
             time[nHits] = straw_hit.time();
