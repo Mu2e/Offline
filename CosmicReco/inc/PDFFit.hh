@@ -38,7 +38,7 @@ using namespace mu2e;
 		std::vector<double> DOCAs;
 		std::vector<double> TimeResiduals;
 
-		int nparams =5; 
+		int nparams =5;
 
 		GaussianPDFFit(ComboHitCollection _chits, StrawResponse const& _srep, CosmicTrack _track, std::vector<double> &_constraint_means, std::vector<double> &_constraints, double _sigma_t, int _k,  const Tracker* _tracker) :  chits(_chits),  srep(_srep), track(_track), constraint_means(_constraint_means), constraints(_constraints) , sigma_t(_sigma_t), k(_k), tracker(_tracker) {};
 
@@ -73,7 +73,7 @@ class GaussianDriftFit : public ROOT::Minuit2::FCNBase {
     StrawResponse const& srep;
     const Tracker* tracker;
 
-    GaussianDriftFit(ComboHitCollection _shs, StrawResponse const& _srep, const Tracker* _tracker) : shs(_shs), srep(_srep), tracker(_tracker){}; 
+    GaussianDriftFit(ComboHitCollection _shs, StrawResponse const& _srep, const Tracker* _tracker) : shs(_shs), srep(_srep), tracker(_tracker){};
 
     double Up() const { return 0.5;};
     double operator() (const std::vector<double> &x) const;
@@ -82,12 +82,18 @@ class GaussianDriftFit : public ROOT::Minuit2::FCNBase {
       std::vector<double> x = {tseed._track.MinuitParams.A0,tseed._track.MinuitParams.B0,tseed._track.MinuitParams.A1,tseed._track.MinuitParams.B1,tseed._track.MinuitParams.T0};
       return DOCAresidual(sh, x);
     }
+	double TimeResidual(ComboHit const& sh, CosmicTrackSeed const& tseed) const {
+      std::vector<double> x = {tseed._track.MinuitParams.A0,tseed._track.MinuitParams.B0,tseed._track.MinuitParams.A1,tseed._track.MinuitParams.B1,tseed._track.MinuitParams.T0};
+      return TimeResidual(sh, x);
+    }
     double DOCAresidualError(ComboHit const& sh, CosmicTrackSeed const& tseed) const {
       std::vector<double> x = {tseed._track.MinuitParams.A0,tseed._track.MinuitParams.B0,tseed._track.MinuitParams.A1,tseed._track.MinuitParams.B1,tseed._track.MinuitParams.T0};
       return DOCAresidualError(sh, x, tseed._track.MinuitParams.cov);
     }
 
     double DOCAresidual(ComboHit const& sh, const std::vector<double> &x) const;
+	double TimeResidual(ComboHit const& sh, const std::vector<double> &x) const;
+
     double DOCAresidualError(ComboHit const& sh, const std::vector<double> &x, const std::vector<double> &cov) const;
 };
 
