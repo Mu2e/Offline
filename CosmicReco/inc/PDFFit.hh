@@ -92,6 +92,7 @@ class GaussianDriftFit : public ROOT::Minuit2::FCNBase {
     }
 
     double DOCAresidual(ComboHit const& sh, const std::vector<double> &x) const;
+
 	double TimeResidual(ComboHit const& sh, const std::vector<double> &x) const;
 
     double DOCAresidualError(ComboHit const& sh, const std::vector<double> &x, const std::vector<double> &cov) const;
