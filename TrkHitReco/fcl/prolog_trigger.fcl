@@ -64,23 +64,12 @@ TTmakeSTH : {
     ComboHitCollection : "TTSmakePH"
 }
 TTflagBkgHits : {
-
-  module_type          : FlagBkgHits
+  @table::FlagBkgHits
   ComboHitCollection   : "TTmakePH"
   StrawHitCollection   : "TTmakeSH"
-  ClusterAlgorithm     : 1
-  TNTClustering        : { @table::TNTClusterer }
-  MinActiveHits        : 3
-  MinNPlanes           : 2
-  #MaxIsolated          : 0  
-  ClusterPositionError : 10
-  BkgMVA               : { MVAWeights : "TrkHitReco/data/BkgMVAPanel.weights.xml" }
-  BkgMVACut            : 0.5
   FilterOutput         : true
   FlagComboHits        : true
   FlagStrawHits        : false
-  BackgroundMask       : ["Background"]
-  StereoSelection      : ["Stereo","PanelCombo"]
 }
 
 # stereo versions
