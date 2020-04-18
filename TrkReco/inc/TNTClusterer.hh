@@ -1,5 +1,6 @@
 //
 // Two Niveau Threshold (TNT) algorithm, optimized version of two level threshold clustering originally developed from Dave Brown.
+// Include fast preFilterting algorithm as well
 //
 //  Bertrand Echenard (2017) CIT
 //
@@ -47,7 +48,10 @@ namespace mu2e {
               fhicl::Atom<float>            timeRMS{          Name("TimeRMS"),          Comment("Cluster time RMS")  };
               fhicl::Atom<unsigned>         maxCluIterations{ Name("MaxCluIterations"), Comment("Maximum number of cluster algo iterations") };
               fhicl::Atom<bool>             medianCentroid {  Name("MedianCentroid"),   Comment("Use median to calculate cluster centroid") };
-              fhicl::Atom<unsigned>         filterAlgo{       Name("FilterAlgo"),       Comment("Fast filter algorithm") };
+              fhicl::Atom<bool>             preFilter{        Name("preFilter"),        Comment("Fast preFiltering algorithm") };
+              fhicl::Atom<float>            pfTimeBin{        Name("pfTimeBin"),        Comment("Time bin size for preFiltering algorithm") };
+              fhicl::Atom<float>            pfPhiBin{         Name("pfPhiBin"),         Comment("Phi bin size for preFiltering algorithm") };
+              fhicl::Atom<unsigned>         pfMinHit{         Name("pfMinHit"),         Comment("Minimum number of hits inside bin for preFitlering algorithm") };
               fhicl::Atom<bool>             comboInit{        Name("ComboInit"),        Comment("Start with combo hits") };
               fhicl::Sequence<std::string>  bkgmsk{           Name("BackgroundMask"),   Comment("Bkg hit selection mask") };
               fhicl::Sequence<std::string>  sigmsk{           Name("SignalMask"),       Comment("Signal hit selection mask") };
@@ -70,7 +74,7 @@ namespace mu2e {
           using arrayVecBkg = std::array<std::vector<int>,numBuckets>;
 
           void     initClu(const ComboHitCollection& chcol, std::vector<BkgCluster>& clusters, std::vector<BkgHit>& hinfo, const std::vector<unsigned>& hitSel ); 
-          void     fastFilter1(BkgClusterCollection& clusters, const ComboHitCollection& chcol, std::vector<unsigned>& hitSel);
+          void     preFilter(BkgClusterCollection& clusters, const ComboHitCollection& chcol, std::vector<unsigned>& hitSel, const float mbtime);
 
           void     clusterAlgo(const ComboHitCollection& chcol, std::vector<BkgCluster>& clusters, 
                                std::vector<BkgHit>& hinfo, float tbin);
@@ -97,7 +101,10 @@ namespace mu2e {
           float            maxDistSum_; 
           unsigned         maxNiter_;    
           bool             useMedian_;  
-          bool             filterAlgo_;  
+          bool             preFilter_;  
+          float            pfTimeBin_;
+          float            pfPhiBin_;
+          unsigned         pfMinHit_;
           bool             comboInit_;  
           StrawHitFlag     bkgmask_;    
           StrawHitFlag     sigmask_;    

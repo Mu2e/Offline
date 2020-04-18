@@ -41,31 +41,10 @@ TNTClusterer : {
     TimeRMS          : 2.0
     DeltaTimeBinMin  : 10
     MedianCentroid   : false
-    FilterAlgo       : 1
-    ComboInit        : true
-    TestFlag         : true
-    BackgroundMask   : []
-    SignalMask       : ["TimeSelection", "EnergySelection","RadiusSelection"]
-}
-
-ScanTPClusterer : { 
-    Tmin             : 450
-    Tmax             : 1750
-    Tbin             : 20.0
-    Pbin             : 0.1
-    MinPeakHit       : 3
-    MinSeedHit       : 5
-    MinRadHit        : 50     
-    HitDistance      : 5.0
-    SeedDistance     : 20.0
-    ClusterDiameter  : 5.0
-    ClusterTime      : 20.0
-    MaxHitTimeDiff   : 30.0
-    MaxDistance      : 100.0
-    MinHitError      : 5.0
-    TimeRMS          : 2.0
-    DeltaTimeBinMin  : 10
-    FilterAlgo       : 3
+    preFilter        : true
+    pfTimeBin        : 20 
+    pfPhiBin         : 0.1
+    pfMinHit         : 5
     ComboInit        : true
     TestFlag         : true
     BackgroundMask   : []
@@ -77,9 +56,8 @@ FlagBkgHits : {
   module_type          : FlagBkgHits
   ComboHitCollection   : "makePH"
   StrawHitCollection   : "makeSH"
-  ClusterAlgorithm     : 2
+  ClusterAlgorithm     : 1
   TNTClustering        : { @table::TNTClusterer }
-  ScanTPClustering     : { @table::ScanTPClusterer }
   MinActiveHits        : 3
   MinNPlanes           : 2
   ClusterPositionError : 10
