@@ -5,7 +5,7 @@ BEGIN_PROLOG
     diagLevel : 1
 
     CosmicTrackSeedCollection : "CosmicTrackFinderTimeFit"
-    TrackDataOutputFile : "etc.owner.bootstrap-alignment.millepede-trackcollection-sequencer.root"
+    TrackDataOutputFile : "etc.owner.AlignTrackCollector.millepede-trackcollection-sequencer.root"
     LabelsOutputFile : "labels.txt"
 
 
