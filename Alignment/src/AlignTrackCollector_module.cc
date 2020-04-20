@@ -149,7 +149,7 @@ class AlignTrackCollector : public art::EDAnalyzer {
                                       Comment("Require that the track p-value < MaxPValue"), 1};
 
         fhicl::Atom<double> mindoca{Name("MinDOCA"),
-                                    Comment("Require that the drift distance > MinDOCA"), 0.5};
+                                    Comment("Require that the drift distance > MinDOCA"), 0.0};
     };
     typedef art::EDAnalyzer::Table<Config> Parameters;
 

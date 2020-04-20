@@ -12,7 +12,7 @@ BEGIN_PROLOG
     MinTraversedPlanes : 3
     MaxPValue : 1
     MinTraversedPanelsPerPlane : 0
-    MinDOCA : 0.5
+    MinDOCA : 0.0
 }
 
 END_PROLOG
