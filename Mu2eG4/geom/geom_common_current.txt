@@ -3,7 +3,7 @@
 // and features that will eventually become default -
 // the latest for testing..
 
-#include "Mu2eG4/geom/top_MDC2020_01.txt"
+#include "Mu2eG4/geom/top_MDC2020_v01.txt"
 
 // This tells emacs to view this file in c++ mode.
 // Local Variables:
