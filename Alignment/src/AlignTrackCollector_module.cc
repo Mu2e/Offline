@@ -433,6 +433,7 @@ bool AlignTrackCollector::filter_CosmicTrackSeedCollection(art::Event const& eve
             double time_resid = fit_object.TimeResidual(straw_hit, sts);
             double resid_err_tmp = fit_object.DOCAresidualError(straw_hit, sts);
 
+
             if (isnan(resid_tmp))
                 continue;
 
@@ -442,12 +443,17 @@ bool AlignTrackCollector::filter_CosmicTrackSeedCollection(art::Event const& eve
             dir = dir.unit();
             TwoLinePCA pca(straw.getMidPoint(), straw.getDirection(), intercept, dir);
 
+
+            // if it was used to fit, it should be in the chi squared stat
+            chisq += pow(resid_tmp / resid_err_tmp, 2);
+            ndof++;
+
+
+            // FIXME should apply this in track fit instead
+
             if (pca.dca() < min_doca) {
                 continue; // remove hit!
             }
-
-            chisq += pow(resid_tmp / resid_err_tmp, 2);
-            ndof++;
 
             planes_traversed.insert(plane_id);
             panels_traversed.insert(panel_uuid);
@@ -517,8 +523,8 @@ bool AlignTrackCollector::filter_CosmicTrackSeedCollection(art::Event const& eve
             if ((min_plane_traverse != 0 && planes_trav < min_plane_traverse) ||
                 (min_panel_traverse_per_plane != 0 &&
                  (panels_trav / planes_trav) < min_panel_traverse_per_plane) ||
-                (max_pvalue < pvalue)) {
-                millepede->kill(); // delete track from buffer, move on!
+                (pvalue > max_pvalue)) {
+                millepede->kill(); // delete track from buffer
 
                 if (_diag > 0) {
                     std::cout << "track failed quality cuts" << std::endl;
