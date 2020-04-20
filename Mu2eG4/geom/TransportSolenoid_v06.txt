@@ -1,0 +1,18 @@
+// Correct the pbar window used in TS5
+#include "Mu2eG4/geom/TransportSolenoid_v05.txt"
+
+// Pbar Absorber
+int    pbar.version        = 4;
+double pbar.halfLength     = 0.127; 
+string pbar.materialName   = "A1100";
+
+int    pbarwedge.nStrips              = 3;
+double pbarwedge.stripThickness       = 0.127; // mm
+vector<double> pbarwedge.stripThicknesses = {0.0635,0.0635,0.0635}; // mm
+vector<double> pbarwedge.stripHeights = {23, 69, 115}; // mm
+
+// This tells emacs to view this file in c++ mode.
+// Local Variables:
+// mode:c++
+// End:
+

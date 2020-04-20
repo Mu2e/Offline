@@ -1,0 +1,10 @@
+// Top level geometry, using the hayman_v2 production target geometry file and a correcteted TS3 pbar window
+#include "Mu2eG4/geom/geom_common_hayman_v2.txt"
+#include "Mu2eG4/geom/TransportSolenoid_v06.txt"
+
+
+
+// This tells emacs to view this file in c++ mode.
+// Local Variables:
+// mode:c++
+// End:
