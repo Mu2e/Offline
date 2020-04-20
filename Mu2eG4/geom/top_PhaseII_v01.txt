@@ -1,6 +1,6 @@
 // Phase-II configuration is the same as phase-I, with updated shielding materials
 
-#include "Mu2eG4/geom/geom_2019_PhaseI.txt"
+#include "Mu2eG4/geom/top_MDC2020_v01.txt"
 // External Shielding
 #include "Mu2eG4/geom/ExtShieldUpstream_v05.txt"
 #include "Mu2eG4/geom/ExtShieldDownstream_v05.txt"
