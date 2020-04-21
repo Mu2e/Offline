@@ -67,7 +67,7 @@ namespace mu2e
 {
   using namespace KalFinalFitTypes;
 
-  class KalFinalFit : public art::EDProducer
+  class KalFinalFit : publ art::EDProducer
   {
   public:
     explicit KalFinalFit(fhicl::ParameterSet const&);
