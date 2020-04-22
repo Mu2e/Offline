@@ -434,6 +434,8 @@ bool AlignTrackCollector::filter_CosmicTrackSeedCollection(art::Event const& eve
             double resid_err_tmp = fit_object.DOCAresidualError(straw_hit, sts);
 
 
+
+
             if (isnan(resid_tmp))
                 continue;
 
@@ -442,10 +444,11 @@ bool AlignTrackCollector::filter_CosmicTrackSeedCollection(art::Event const& eve
             CLHEP::Hep3Vector dir(A1, -1, B1);
             dir = dir.unit();
             TwoLinePCA pca(straw.getMidPoint(), straw.getDirection(), intercept, dir);
+            double drift_res = _srep.driftDistanceError(straw_hit.strawId(), 0, 0, pca.dca());
 
 
             // if it was used to fit, it should be in the chi squared stat
-            chisq += pow(resid_tmp / resid_err_tmp, 2);
+            chisq += pow(time_resid / drift_res, 2);
             ndof++;
 
 
