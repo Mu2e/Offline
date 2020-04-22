@@ -394,6 +394,7 @@ bool AlignTrackCollector::filter_CosmicTrackSeedCollection(art::Event const& eve
         nHits = 0;
 
         bool wrote_hits = false; // did we write any hits for the track?
+        bool bad_track = false;
 
         // get residuals and their derivatives with respect
         // to all local and global parameters
@@ -442,14 +443,16 @@ bool AlignTrackCollector::filter_CosmicTrackSeedCollection(art::Event const& eve
             TwoLinePCA pca(straw.getMidPoint(), straw.getDirection(), intercept, dir);
             double drift_res = _srep.driftDistanceError(straw_hit.strawId(), 0, 0, pca.dca());
 
-
-
-            if (isnan(resid_tmp) || isnan(time_resid) || isnan(drift_res))
-                continue;
-
-            // if it was used to fit, it should be in the chi squared stat
             chisq += pow(time_resid / drift_res, 2);
             ndof++;
+
+
+            if (isnan(resid_tmp) || isnan(time_resid) || isnan(drift_res)) {
+                bad_track = true;
+                continue;
+            }
+
+            // if it was used to fit, it should be in the chi squared stat
 
 
             // FIXME should apply this in track fit instead
