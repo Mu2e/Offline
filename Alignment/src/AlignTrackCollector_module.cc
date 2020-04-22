@@ -529,7 +529,7 @@ bool AlignTrackCollector::filter_CosmicTrackSeedCollection(art::Event const& eve
             if ((min_plane_traverse != 0 && planes_trav < min_plane_traverse) ||
                 (min_panel_traverse_per_plane != 0 &&
                  (panels_trav / planes_trav) < min_panel_traverse_per_plane) ||
-                (pvalue > max_pvalue)) {
+                (pvalue > max_pvalue) || bad_track) {
                 millepede->kill(); // delete track from buffer
 
                 if (_diag > 0) {
