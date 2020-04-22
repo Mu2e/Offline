@@ -1,0 +1,10 @@
+Cfiles
+{datafiles}
+{constraintfiles}
+
+Parameter
+{parameters}
+
+method inversion {n_iterations} {convergence_criteria}
+
+end
