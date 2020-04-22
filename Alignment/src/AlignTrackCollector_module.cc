@@ -435,10 +435,6 @@ bool AlignTrackCollector::filter_CosmicTrackSeedCollection(art::Event const& eve
 
 
 
-
-            if (isnan(resid_tmp))
-                continue;
-
             // FIXME: crude! doesn't belong here!
             CLHEP::Hep3Vector intercept(A0, 0, B0);
             CLHEP::Hep3Vector dir(A1, -1, B1);
@@ -446,6 +442,10 @@ bool AlignTrackCollector::filter_CosmicTrackSeedCollection(art::Event const& eve
             TwoLinePCA pca(straw.getMidPoint(), straw.getDirection(), intercept, dir);
             double drift_res = _srep.driftDistanceError(straw_hit.strawId(), 0, 0, pca.dca());
 
+
+
+            if (isnan(resid_tmp) || isnan(time_resid) || isnan(drift_res))
+                continue;
 
             // if it was used to fit, it should be in the chi squared stat
             chisq += pow(time_resid / drift_res, 2);
