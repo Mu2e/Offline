@@ -6,7 +6,7 @@
 # TODO: extend to time domain (see how this affects the derivatives first)
 
 import sympy
-from sympy import Symbol, Matrix, diff, sqrt
+from sympy import Symbol, Matrix, diff, sqrt, atan2
 from sympy.physics.vector import ReferenceFrame
 from sympy.vector import matrix_to_vector, CoordSys3D
 from sympy.functions import sign
@@ -117,6 +117,116 @@ def DOCA(p1, t1, p2, t2):
 
     return sympy.Piecewise((dca, _s2 > 0), (-dca, True))
 
+def distance_to_time(self, dist):
+    linvel = 0
+    return dist / linvel
+
+def colvec_perp(matrix):
+    return sqrt(matrix[0]*matrix[0] + matrix[1]*matrix[1])
+
+
+class HepTransform:
+    def __init__(self, trl, rot, mat=False):
+        self._trl = trl
+
+        if mat:
+            self._rotmat = rot
+            return
+
+        a,b,g = rot
+
+        self._rotmat = Matrix([[1, g, b],
+                        [-g, 1, a],
+                        [b, -a, 1]])
+
+    def trl(self):
+        return self._trl
+
+    def rotmat(self):
+        return self._rotmat
+
+
+    def combine(self, b):
+        v = self._trl + self._rotmat * b._trl
+        r = self._rotmat * b._rotmat
+        return HepTransform(v, r, mat=True)
+
+    def transform(self, vector):
+        return self._rotmat * vector + self._trl
+
+    #   HepTransform align_plane(rowpl.dx(),rowpl.dy(),rowpl.dz(),
+    #          rowpl.rx(),rowpl.ry(),rowpl.rz());
+
+
+    #   if ( _config.verbose() > 0 ) {
+    #     cout << "AlignedTrackerMaker::fromDb plane ID " << plane.id().plane() << " alignment constants: " << align_plane << endl;
+    #   }
+    #   // how to place the plane in the tracker
+    #   HepTransform plane_to_tracker(0.0,0.0,plane.origin().z(),0.0,0.0,0.0);
+
+    #   // make an intermediate multiplication
+    #   HepTransform plane_temp = align_tracker
+    #     * (plane_to_tracker * align_plane);
+        # HepTransform align_panel(rowpa.dx(),rowpa.dy(),rowpa.dz(),
+        #       rowpa.rx(),rowpa.ry(),rowpa.rz());
+
+        # // how to place the panel in the plane
+        # Hep3Vector dv = panel.straw0MidPoint()
+        #   - plane_to_tracker.displacement();
+        # double rz = dv.phi();
+
+        # HepTransform panel_to_plane(dv.x(),dv.y(),dv.z(),0.0,0.0,rz);
+
+        # // make an intermediate multiplication
+        # HepTransform panel_temp = plane_temp * (panel_to_plane * align_panel);
+
+
+        # for(size_t istr=0; istr< StrawId::_nstraws; istr++) {
+        #   Straw &straw = tracker.getStraw(panel.getStraw(istr).id());
+
+        #   // how to place the straw in the panel
+        #   double dx = straw.getMidPoint().perp()
+        #     - panel.straw0MidPoint().perp();
+        #   double dz = ( straw.getMidPoint()
+        #     - panel.straw0MidPoint() ).z();
+
+        #   Hep3Vector straw_to_panel = Hep3Vector(dx,0.0,dz);
+        #   Hep3Vector straw_dir = Hep3Vector(0.0,1.0,0.0);
+
+        #   Hep3Vector aligned_straw = panel_temp*straw_to_panel;
+        #   Hep3Vector aligned_straw_dir = panel_temp.rotation()*straw_dir;
+
+
+def nested_transform_alignment(wire_pos, wire_dir,
+    plane_origin, panel_straw0mp,
+    plane_trl, plane_rot, panel_trl, panel_rot):
+
+    align_plane = HepTransform(plane_trl, plane_rot)
+    align_panel = HepTransform(panel_trl, panel_rot)
+    plane_to_tracker = HepTransform(Matrix([0, 0.0, plane_origin[2]]), [0.0,0.0,0.0])
+
+    dv = panel_straw0mp - Matrix([0, 0.0, plane_origin[2]])
+
+    rz = 0
+    if not (dv[0] == 0.0 and dv[1] == 0.0):
+        rz = atan2(dv[1], dv[0])
+
+    panel_to_plane = HepTransform(dv, [0.0, 0.0, rz])
+
+    transform = plane_to_tracker.combine(align_plane.combine(panel_to_plane.combine(align_panel)))
+
+    dx = colvec_perp(wire_pos) - colvec_perp(panel_straw0mp)
+    dz = (wire_pos - panel_straw0mp)[2]
+
+    straw_to_panel = Matrix([dx,0.0,dz])
+    straw_dir = Matrix([0.0,1.0,0.0])
+
+    wire_pos_a = transform.transform(straw_to_panel)
+    wire_dir_a = transform.rotmat() * straw_dir
+
+    return wire_pos_a, wire_dir_a
+
+
 
 def exact_alignment(wire_pos, wire_dir, body_origin, translation, rotation):
     a, b, g = rotation
@@ -163,7 +273,7 @@ def small_alignment_approximation(wire_pos, wire_dir, body_origin, translation, 
     return aligned_wire_pos, aligned_wire_dir
 
 
-def generate_expressions(approximate=True, remove_globalparam_dependence=True):
+def generate_expressions(approximate=False, remove_globalparam_dependence=True):
     # define symbols for alignment and track parameters
 
     # plane alignment
@@ -177,7 +287,7 @@ def generate_expressions(approximate=True, remove_globalparam_dependence=True):
     dx = Symbol('plane_dx', real=True)
     dy = Symbol('plane_dy', real=True)
     dz = Symbol('plane_dz', real=True)
-    trl = Matrix([dx, dy, dz])
+    plane_trl = Matrix([dx, dy, dz])
 
     # panel alignment
     panel_a = Symbol('panel_a', real=True)
@@ -219,10 +329,10 @@ def generate_expressions(approximate=True, remove_globalparam_dependence=True):
     plane_origin = Matrix([ppx, ppy, ppz])
 
     # origin of the panel being aligned
-    panel_x = Symbol('panel_x', real=True)
-    panel_y = Symbol('panel_y', real=True)
-    panel_z = Symbol('panel_z', real=True)
-    panel_origin = Matrix([panel_x, panel_y, panel_z])
+    panel_x = Symbol('panel_straw0x', real=True)
+    panel_y = Symbol('panel_straw0y', real=True)
+    panel_z = Symbol('panel_straw0z', real=True)
+    panel_straw0mp = Matrix([panel_x, panel_y, panel_z])
 
     local_params = [a0, b0, a1, b1]
     global_params = [dx, dy, dz, a, b, g]
@@ -245,19 +355,27 @@ def generate_expressions(approximate=True, remove_globalparam_dependence=True):
     }
 
     # choose method to align vectors with
-    alignment_func = exact_alignment
-    if approximate:
-        alignment_func = small_alignment_approximation
+    # alignment_func = exact_alignment
+    # if approximate:
+    #     alignment_func = small_alignment_approximation
+
+    alignment_func = nested_transform_alignment
 
     # recalculate wire position and rotation according to alignment parameters
-
-    # plane translation
     aligned_wpos, aligned_wdir = alignment_func(
-        wire_pos, wire_dir, plane_origin, trl, plane_rot)
+        wire_pos, wire_dir,
+        plane_origin, panel_straw0mp,
+        plane_trl, plane_rot,
+        panel_trl, panel_rot)
 
-    # panel translation
-    aligned_wpos, aligned_wdir = alignment_func(
-        aligned_wpos, aligned_wdir, panel_origin, panel_trl, panel_rot)
+
+    # # plane translation
+    # aligned_wpos, aligned_wdir = alignment_func(
+    #     wire_pos, wire_dir, plane_origin, trl, plane_rot)
+
+    # # panel translation
+    # aligned_wpos, aligned_wdir = alignment_func(
+    #     aligned_wpos, aligned_wdir, panel_straw0mp, panel_trl, panel_rot)
 
     aligned_doca = DOCA(track_pos, track_dir, aligned_wpos, aligned_wdir)
 
