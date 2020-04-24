@@ -1,6 +1,6 @@
 
 
-# include "Alignment/inc/RigidBodyDOCADeriv.hh"
+# include "CosmicAlignment/inc/RigidBodyDOCADeriv.hh"
 # include <math.h>
 # include <vector>
 
@@ -30,741 +30,824 @@ double CosmicTrack_DCA(double a0, double b0, double a1, double b1, double wire_x
 }
 
 
-double CosmicTrack_DCA_Deriv_a0(double a0, double b0, double a1, double b1, double wire_x, double wire_y, double wire_z, double wdir_x, double wdir_y, double wdir_z, double plane_x, double plane_y, double plane_z, double panel_x, double panel_y, double panel_z)
+double CosmicTrack_DCA_Deriv_a0(double a0, double b0, double a1, double b1, double wire_x, double wire_y, double wire_z, double wdir_x, double wdir_y, double wdir_z, double plane_x, double plane_y, double plane_z, double panel_straw0x, double panel_straw0y, double panel_straw0z)
 {
     double R0 = pow(pow(a1, 2) + pow(b1, 2) + 1, -1.0/2.0);
-    double R1 = R0*wdir_y;
-    double R2 = R0*a1;
-    double R3 = R2*wdir_x;
-    double R4 = R0*b1;
-    double R5 = R4*wdir_z;
-    double R6 = -R1 + R3 + R5;
-    double R7 = 1.0/(1 - pow(R6, 2));
-    double R8 = R0*wire_y;
-    double R9 = a0 - wire_x;
-    double R10 = R2*R9;
-    double R11 = b0 - wire_z;
-    double R12 = R11*R4;
-    double R13 = R11*wdir_z + R9*wdir_x - wdir_y*wire_y;
-    double R14 = R7*(R13 - R6*(R10 + R12 + R8));
-    double R15 = R7*(-R10 - R12 + R13*R6 - R8);
-    double R16 = -R0*R15 - R14*wdir_y - wire_y;
-    double R17 = -R14*wdir_x + R15*R2 + R9;
-    double R18 = R11 - R14*wdir_z + R15*R4;
-    double R19 = 2*R7;
-    double R20 = R19*(R2*(R1 - R3 - R5) + wdir_x);
-    double R21 = R19*(-R2 + R6*wdir_x);
-    double R22 = ((1.0/2.0)*R16*(-R0*R21 - R20*wdir_y) + (1.0/2.0)*R17*(R2*R21 - R20*wdir_x + 2) + (1.0/2.0)*R18*(-R20*wdir_z + R21*R4))/sqrt(pow(R16, 2) + pow(R17, 2) + pow(R18, 2));
-    double result = ((R14 > 0) ? (
-   R22
+    double R1 = R0*b1;
+    double R2 = 1.0*R0;
+    double R3 = atan2(panel_straw0y, panel_straw0x);
+    double R4 = R2*R3*a1;
+    double R5 = -R2 + R4;
+    double R6 = 1.0/(1 - pow(R5, 2));
+    double R7 = b0 - wire_z;
+    double R8 = R1*R7;
+    double R9 = sqrt(pow(panel_straw0x, 2) + pow(panel_straw0y, 2));
+    double R10 = sqrt(pow(wire_x, 2) + pow(wire_y, 2));
+    double R11 = -R10 + R9 + a0 - panel_straw0x;
+    double R12 = R0*a1;
+    double R13 = R11*R12;
+    double R14 = R3*(R10 - R9);
+    double R15 = R14 - panel_straw0y;
+    double R16 = R0*R15;
+    double R17 = 1.0*R3;
+    double R18 = R11*R17 + 1.0*R14 - 1.0*panel_straw0y;
+    double R19 = R6*(-R13 + R16 + R18*R5 - R8);
+    double R20 = R1*R19 + R7;
+    double R21 = R6*(R18 - R5*(R13 - R16 + R8));
+    double R22 = R11 + R12*R19 - R17*R21;
+    double R23 = -R0*R19 + R15 - 1.0*R21;
+    double R24 = R6*(-R12 + R17*R5);
+    double R25 = 2.0*R6*(R12*(R2 - R4) + R17);
+    double R26 = 2*R24;
+    double R27 = (R1*R20*R24 + (1.0/2.0)*R22*(R12*R26 - R25*R3 + 2) + (1.0/2.0)*R23*(-R0*R26 - R25))/sqrt(pow(R20, 2) + pow(R22, 2) + pow(R23, 2));
+    double result = ((R21 > 0) ? (
+   R27
 )
 : (
-   -R22
+   -R27
 ));
     return result;
 }
 
 
-double CosmicTrack_DCA_Deriv_b0(double a0, double b0, double a1, double b1, double wire_x, double wire_y, double wire_z, double wdir_x, double wdir_y, double wdir_z, double plane_x, double plane_y, double plane_z, double panel_x, double panel_y, double panel_z)
-{
-    double R0 = pow(pow(a1, 2) + pow(b1, 2) + 1, -1.0/2.0);
-    double R1 = R0*wdir_y;
-    double R2 = R0*a1;
-    double R3 = R2*wdir_x;
-    double R4 = R0*b1;
-    double R5 = R4*wdir_z;
-    double R6 = -R1 + R3 + R5;
-    double R7 = 1.0/(1 - pow(R6, 2));
-    double R8 = R0*wire_y;
-    double R9 = a0 - wire_x;
-    double R10 = R2*R9;
-    double R11 = b0 - wire_z;
-    double R12 = R11*R4;
-    double R13 = R11*wdir_z + R9*wdir_x - wdir_y*wire_y;
-    double R14 = R7*(R13 - R6*(R10 + R12 + R8));
-    double R15 = R7*(-R10 - R12 + R13*R6 - R8);
-    double R16 = -R0*R15 - R14*wdir_y - wire_y;
-    double R17 = -R14*wdir_x + R15*R2 + R9;
-    double R18 = R11 - R14*wdir_z + R15*R4;
-    double R19 = 2*R7;
-    double R20 = R19*(R4*(R1 - R3 - R5) + wdir_z);
-    double R21 = R19*(-R4 + R6*wdir_z);
-    double R22 = ((1.0/2.0)*R16*(-R0*R21 - R20*wdir_y) + (1.0/2.0)*R17*(R2*R21 - R20*wdir_x) + (1.0/2.0)*R18*(-R20*wdir_z + R21*R4 + 2))/sqrt(pow(R16, 2) + pow(R17, 2) + pow(R18, 2));
-    double result = ((R14 > 0) ? (
-   R22
-)
-: (
-   -R22
-));
-    return result;
-}
-
-
-double CosmicTrack_DCA_Deriv_a1(double a0, double b0, double a1, double b1, double wire_x, double wire_y, double wire_z, double wdir_x, double wdir_y, double wdir_z, double plane_x, double plane_y, double plane_z, double panel_x, double panel_y, double panel_z)
-{
-    double R0 = pow(a1, 2);
-    double R1 = R0 + pow(b1, 2) + 1;
-    double R2 = pow(R1, -1.0/2.0);
-    double R3 = R2*wdir_y;
-    double R4 = R2*wdir_x;
-    double R5 = R4*a1;
-    double R6 = R2*b1;
-    double R7 = R6*wdir_z;
-    double R8 = -R3 + R5 + R7;
-    double R9 = 1 - pow(R8, 2);
-    double R10 = 1.0/R9;
-    double R11 = R2*wire_y;
-    double R12 = a0 - wire_x;
-    double R13 = R12*R2;
-    double R14 = R13*a1;
-    double R15 = b0 - wire_z;
-    double R16 = R15*R6;
-    double R17 = R11 + R14 + R16;
-    double R18 = R12*wdir_x + R15*wdir_z - wdir_y*wire_y;
-    double R19 = -R17*R8 + R18;
-    double R20 = R10*R19;
-    double R21 = -R11 - R14 - R16 + R18*R8;
-    double R22 = R10*R21;
-    double R23 = R2*R22;
-    double R24 = -R20*wdir_y - R23 - wire_y;
-    double R25 = R12 - R20*wdir_x + R23*a1;
-    double R26 = R15 - R20*wdir_z + R22*R6;
-    double R27 = pow(R1, -3.0/2.0);
-    double R28 = R27*a1;
-    double R29 = 2*R22;
-    double R30 = R28*wire_y;
-    double R31 = R28*b1;
-    double R32 = R15*R31;
-    double R33 = R0*R27;
-    double R34 = R12*R33;
-    double R35 = R28*wdir_y;
-    double R36 = R31*wdir_z;
-    double R37 = R33*wdir_x;
-    double R38 = 2*R10;
-    double R39 = R38*(-R13 + R18*(R35 - R36 - R37 + R4) + R30 + R32 + R34);
-    double R40 = R2*R39;
-    double R41 = 2*R8*(2*R35 - 2*R36 - 2*R37 + 2*R4)/pow(R9, 2);
-    double R42 = R19*R41;
-    double R43 = R38*(R17*(-R35 + R36 + R37 - R4) + (R3 - R5 - R7)*(R13 - R30 - R32 - R34));
-    double R44 = R21*R41;
-    double R45 = R2*R44;
-    double R46 = ((1.0/2.0)*R24*(R28*R29 - R40 - R42*wdir_y - R43*wdir_y - R45) + (1.0/2.0)*R25*(2*R23 - R29*R33 + R40*a1 - R42*wdir_x - R43*wdir_x + R45*a1) + (1.0/2.0)*R26*(-R29*R31 + R39*R6 - R42*wdir_z - R43*wdir_z + R44*R6))/sqrt(pow(R24, 2) + pow(R25, 2) + pow(R26, 2));
-    double result = ((R20 > 0) ? (
-   R46
-)
-: (
-   -R46
-));
-    return result;
-}
-
-
-double CosmicTrack_DCA_Deriv_b1(double a0, double b0, double a1, double b1, double wire_x, double wire_y, double wire_z, double wdir_x, double wdir_y, double wdir_z, double plane_x, double plane_y, double plane_z, double panel_x, double panel_y, double panel_z)
+double CosmicTrack_DCA_Deriv_b0(double a0, double b0, double a1, double b1, double wire_x, double wire_y, double wire_z, double wdir_x, double wdir_y, double wdir_z, double plane_x, double plane_y, double plane_z, double panel_straw0x, double panel_straw0y, double panel_straw0z)
 {
     double R0 = pow(b1, 2);
     double R1 = R0 + pow(a1, 2) + 1;
     double R2 = pow(R1, -1.0/2.0);
-    double R3 = R2*wdir_y;
-    double R4 = R2*a1;
-    double R5 = R4*wdir_x;
-    double R6 = R2*wdir_z;
-    double R7 = R6*b1;
-    double R8 = -R3 + R5 + R7;
+    double R3 = R2*b1;
+    double R4 = 1.0*R2;
+    double R5 = atan2(panel_straw0y, panel_straw0x);
+    double R6 = R4*R5*a1;
+    double R7 = -R4 + R6;
+    double R8 = 1.0/(1 - pow(R7, 2));
+    double R9 = b0 - wire_z;
+    double R10 = R3*R9;
+    double R11 = sqrt(pow(panel_straw0x, 2) + pow(panel_straw0y, 2));
+    double R12 = sqrt(pow(wire_x, 2) + pow(wire_y, 2));
+    double R13 = R11 - R12 + a0 - panel_straw0x;
+    double R14 = R2*a1;
+    double R15 = R13*R14;
+    double R16 = R5*(-R11 + R12);
+    double R17 = R16 - panel_straw0y;
+    double R18 = R17*R2;
+    double R19 = 1.0*R5;
+    double R20 = R13*R19 + 1.0*R16 - 1.0*panel_straw0y;
+    double R21 = R8*(-R10 - R15 + R18 + R20*R7);
+    double R22 = R21*R3 + R9;
+    double R23 = R8*(R20 - R7*(R10 + R15 - R18));
+    double R24 = R13 + R14*R21 - R19*R23;
+    double R25 = R17 - R2*R21 - 1.0*R23;
+    double R26 = 2*R8/R1;
+    double R27 = R26*b1;
+    double R28 = 2.0*R3*R8*(R4 - R6);
+    double R29 = ((1.0/2.0)*R22*(-R0*R26 + 2) + (1.0/2.0)*R24*(-R27*a1 - R28*R5) + (1.0/2.0)*R25*(R27 - R28))/sqrt(pow(R22, 2) + pow(R24, 2) + pow(R25, 2));
+    double result = ((R23 > 0) ? (
+   R29
+)
+: (
+   -R29
+));
+    return result;
+}
+
+
+double CosmicTrack_DCA_Deriv_a1(double a0, double b0, double a1, double b1, double wire_x, double wire_y, double wire_z, double wdir_x, double wdir_y, double wdir_z, double plane_x, double plane_y, double plane_z, double panel_straw0x, double panel_straw0y, double panel_straw0z)
+{
+    double R0 = pow(a1, 2);
+    double R1 = R0 + pow(b1, 2) + 1;
+    double R2 = pow(R1, -1.0/2.0);
+    double R3 = R2*b1;
+    double R4 = 1.0*R2;
+    double R5 = atan2(panel_straw0y, panel_straw0x);
+    double R6 = R4*R5;
+    double R7 = R6*a1;
+    double R8 = -R4 + R7;
     double R9 = 1 - pow(R8, 2);
     double R10 = 1.0/R9;
-    double R11 = R2*wire_y;
-    double R12 = a0 - wire_x;
-    double R13 = R12*R4;
-    double R14 = b0 - wire_z;
-    double R15 = R14*R2;
-    double R16 = R15*b1;
-    double R17 = R11 + R13 + R16;
-    double R18 = R12*wdir_x + R14*wdir_z - wdir_y*wire_y;
-    double R19 = -R17*R8 + R18;
-    double R20 = R10*R19;
-    double R21 = -R11 - R13 - R16 + R18*R8;
-    double R22 = R10*R21;
-    double R23 = R2*R22;
-    double R24 = -R20*wdir_y - R23 - wire_y;
-    double R25 = R12 - R20*wdir_x + R22*R4;
-    double R26 = R14 - R20*wdir_z + R23*b1;
-    double R27 = pow(R1, -3.0/2.0);
-    double R28 = R27*b1;
-    double R29 = 2*R22;
-    double R30 = R28*wire_y;
-    double R31 = R28*a1;
-    double R32 = R12*R31;
-    double R33 = R0*R27;
-    double R34 = R14*R33;
-    double R35 = R28*wdir_y;
-    double R36 = R31*wdir_x;
-    double R37 = R33*wdir_z;
-    double R38 = 2*R10;
-    double R39 = R38*(-R15 + R18*(R35 - R36 - R37 + R6) + R30 + R32 + R34);
-    double R40 = R2*R39;
-    double R41 = 2*R8*(2*R35 - 2*R36 - 2*R37 + 2*R6)/pow(R9, 2);
-    double R42 = R19*R41;
-    double R43 = R38*(R17*(-R35 + R36 + R37 - R6) + (R3 - R5 - R7)*(R15 - R30 - R32 - R34));
-    double R44 = R21*R41;
-    double R45 = R2*R44;
-    double R46 = ((1.0/2.0)*R24*(R28*R29 - R40 - R42*wdir_y - R43*wdir_y - R45) + (1.0/2.0)*R25*(-R29*R31 + R39*R4 + R4*R44 - R42*wdir_x - R43*wdir_x) + (1.0/2.0)*R26*(2*R23 - R29*R33 + R40*b1 - R42*wdir_z - R43*wdir_z + R45*b1))/sqrt(pow(R24, 2) + pow(R25, 2) + pow(R26, 2));
-    double result = ((R20 > 0) ? (
-   R46
-)
-: (
-   -R46
-));
-    return result;
-}
-
-
-double CosmicTrack_DCA_Deriv_plane_dx(double a0, double b0, double a1, double b1, double wire_x, double wire_y, double wire_z, double wdir_x, double wdir_y, double wdir_z, double plane_x, double plane_y, double plane_z, double panel_x, double panel_y, double panel_z)
-{
-    double R0 = pow(pow(a1, 2) + pow(b1, 2) + 1, -1.0/2.0);
-    double R1 = R0*wdir_y;
-    double R2 = R0*a1;
-    double R3 = R2*wdir_x;
-    double R4 = R0*b1;
-    double R5 = R4*wdir_z;
-    double R6 = -R1 + R3 + R5;
-    double R7 = 1.0/(1 - pow(R6, 2));
-    double R8 = R0*wire_y;
-    double R9 = a0 - wire_x;
-    double R10 = R2*R9;
     double R11 = b0 - wire_z;
-    double R12 = R11*R4;
-    double R13 = R11*wdir_z + R9*wdir_x - wdir_y*wire_y;
-    double R14 = R7*(R13 - R6*(R10 + R12 + R8));
-    double R15 = R7*(-R10 - R12 + R13*R6 - R8);
-    double R16 = -R0*R15 - R14*wdir_y - wire_y;
-    double R17 = -R14*wdir_x + R15*R2 + R9;
-    double R18 = R11 - R14*wdir_z + R15*R4;
-    double R19 = 2*R7;
-    double R20 = R19*(-R2*(R1 - R3 - R5) - wdir_x);
-    double R21 = R19*(R2 - R6*wdir_x);
-    double R22 = ((1.0/2.0)*R16*(-R0*R21 - R20*wdir_y) + (1.0/2.0)*R17*(R2*R21 - R20*wdir_x - 2) + (1.0/2.0)*R18*(-R20*wdir_z + R21*R4))/sqrt(pow(R16, 2) + pow(R17, 2) + pow(R18, 2));
-    double result = ((R14 > 0) ? (
-   R22
+    double R12 = R11*R3;
+    double R13 = sqrt(pow(panel_straw0x, 2) + pow(panel_straw0y, 2));
+    double R14 = sqrt(pow(wire_x, 2) + pow(wire_y, 2));
+    double R15 = R13 - R14 + a0 - panel_straw0x;
+    double R16 = R15*R2;
+    double R17 = R16*a1;
+    double R18 = R5*(-R13 + R14);
+    double R19 = R18 - panel_straw0y;
+    double R20 = R19*R2;
+    double R21 = 1.0*R5;
+    double R22 = R15*R21 + 1.0*R18 - 1.0*panel_straw0y;
+    double R23 = -R12 - R17 + R20 + R22*R8;
+    double R24 = R10*R23;
+    double R25 = R11 + R24*R3;
+    double R26 = R12 + R17 - R20;
+    double R27 = R22 - R26*R8;
+    double R28 = R10*R27;
+    double R29 = R2*R24;
+    double R30 = R15 - R21*R28 + R29*a1;
+    double R31 = R19 - 1.0*R28 - R29;
+    double R32 = pow(R1, -3.0/2.0);
+    double R33 = R32*a1;
+    double R34 = R33*b1;
+    double R35 = 2*R24;
+    double R36 = R11*R34;
+    double R37 = R0*R32;
+    double R38 = R15*R37;
+    double R39 = R19*R33;
+    double R40 = 1.0*R33;
+    double R41 = R21*R37;
+    double R42 = R10*(-R16 + R22*(R40 - R41 + R6) + R36 + R38 - R39);
+    double R43 = 2*R3;
+    double R44 = 2.0*R5;
+    double R45 = R8*(R2*R44 + 2.0*R33 - R37*R44)/pow(R9, 2);
+    double R46 = R23*R45;
+    double R47 = 2*R2;
+    double R48 = R42*R47;
+    double R49 = R27*R45;
+    double R50 = R46*R47;
+    double R51 = R10*(R26*(-R40 + R41 - R6) + (R4 - R7)*(R16 - R36 - R38 + R39));
+    double R52 = ((1.0/2.0)*R25*(-R34*R35 + R42*R43 + R43*R46) + (1.0/2.0)*R30*(2*R29 - R35*R37 - R44*R49 - R44*R51 + R48*a1 + R50*a1) + (1.0/2.0)*R31*(R33*R35 - R48 - 2.0*R49 - R50 - 2.0*R51))/sqrt(pow(R25, 2) + pow(R30, 2) + pow(R31, 2));
+    double result = ((R28 > 0) ? (
+   R52
 )
 : (
-   -R22
+   -R52
 ));
     return result;
 }
 
 
-double CosmicTrack_DCA_Deriv_plane_dy(double a0, double b0, double a1, double b1, double wire_x, double wire_y, double wire_z, double wdir_x, double wdir_y, double wdir_z, double plane_x, double plane_y, double plane_z, double panel_x, double panel_y, double panel_z)
+double CosmicTrack_DCA_Deriv_b1(double a0, double b0, double a1, double b1, double wire_x, double wire_y, double wire_z, double wdir_x, double wdir_y, double wdir_z, double plane_x, double plane_y, double plane_z, double panel_straw0x, double panel_straw0y, double panel_straw0z)
 {
-    double R0 = pow(pow(a1, 2) + pow(b1, 2) + 1, -1.0/2.0);
-    double R1 = R0*wdir_y;
-    double R2 = R0*a1;
-    double R3 = R2*wdir_x;
-    double R4 = R0*b1;
-    double R5 = R4*wdir_z;
-    double R6 = -R1 + R3 + R5;
-    double R7 = 1.0/(1 - pow(R6, 2));
-    double R8 = R0*wire_y;
-    double R9 = a0 - wire_x;
-    double R10 = R2*R9;
-    double R11 = b0 - wire_z;
-    double R12 = R11*R4;
-    double R13 = R11*wdir_z + R9*wdir_x - wdir_y*wire_y;
-    double R14 = R7*(R13 - R6*(R10 + R12 + R8));
-    double R15 = R7*(-R10 - R12 + R13*R6 - R8);
-    double R16 = -R0*R15 - R14*wdir_y - wire_y;
-    double R17 = -R14*wdir_x + R15*R2 + R9;
-    double R18 = R11 - R14*wdir_z + R15*R4;
-    double R19 = 2*R7;
-    double R20 = R19*(R0*(R1 - R3 - R5) - wdir_y);
-    double R21 = R19*(-R0 - R6*wdir_y);
-    double R22 = ((1.0/2.0)*R16*(-R0*R21 - R20*wdir_y - 2) + (1.0/2.0)*R17*(R2*R21 - R20*wdir_x) + (1.0/2.0)*R18*(-R20*wdir_z + R21*R4))/sqrt(pow(R16, 2) + pow(R17, 2) + pow(R18, 2));
-    double result = ((R14 > 0) ? (
-   R22
-)
-: (
-   -R22
-));
-    return result;
-}
-
-
-double CosmicTrack_DCA_Deriv_plane_dz(double a0, double b0, double a1, double b1, double wire_x, double wire_y, double wire_z, double wdir_x, double wdir_y, double wdir_z, double plane_x, double plane_y, double plane_z, double panel_x, double panel_y, double panel_z)
-{
-    double R0 = pow(pow(a1, 2) + pow(b1, 2) + 1, -1.0/2.0);
-    double R1 = R0*wdir_y;
-    double R2 = R0*a1;
-    double R3 = R2*wdir_x;
-    double R4 = R0*b1;
-    double R5 = R4*wdir_z;
-    double R6 = -R1 + R3 + R5;
-    double R7 = 1.0/(1 - pow(R6, 2));
-    double R8 = R0*wire_y;
-    double R9 = a0 - wire_x;
-    double R10 = R2*R9;
-    double R11 = b0 - wire_z;
-    double R12 = R11*R4;
-    double R13 = R11*wdir_z + R9*wdir_x - wdir_y*wire_y;
-    double R14 = R7*(R13 - R6*(R10 + R12 + R8));
-    double R15 = R7*(-R10 - R12 + R13*R6 - R8);
-    double R16 = -R0*R15 - R14*wdir_y - wire_y;
-    double R17 = -R14*wdir_x + R15*R2 + R9;
-    double R18 = R11 - R14*wdir_z + R15*R4;
-    double R19 = 2*R7;
-    double R20 = R19*(-R4*(R1 - R3 - R5) - wdir_z);
-    double R21 = R19*(R4 - R6*wdir_z);
-    double R22 = ((1.0/2.0)*R16*(-R0*R21 - R20*wdir_y) + (1.0/2.0)*R17*(R2*R21 - R20*wdir_x) + (1.0/2.0)*R18*(-R20*wdir_z + R21*R4 - 2))/sqrt(pow(R16, 2) + pow(R17, 2) + pow(R18, 2));
-    double result = ((R14 > 0) ? (
-   R22
-)
-: (
-   -R22
-));
-    return result;
-}
-
-
-double CosmicTrack_DCA_Deriv_plane_a(double a0, double b0, double a1, double b1, double wire_x, double wire_y, double wire_z, double wdir_x, double wdir_y, double wdir_z, double plane_x, double plane_y, double plane_z, double panel_x, double panel_y, double panel_z)
-{
-    double R0 = pow(pow(a1, 2) + pow(b1, 2) + 1, -1.0/2.0);
-    double R1 = R0*wdir_y;
-    double R2 = R0*a1;
-    double R3 = R2*wdir_x;
-    double R4 = R0*wdir_z;
-    double R5 = R4*b1;
-    double R6 = -R1 + R3 + R5;
-    double R7 = 1 - pow(R6, 2);
-    double R8 = 1.0/R7;
-    double R9 = R0*wire_y;
-    double R10 = a0 - wire_x;
-    double R11 = R10*R2;
-    double R12 = -wire_z;
-    double R13 = R12 + b0;
-    double R14 = R0*b1;
-    double R15 = R13*R14;
-    double R16 = R11 + R15 + R9;
-    double R17 = R10*wdir_x + R13*wdir_z - wdir_y*wire_y;
-    double R18 = -R16*R6 + R17;
-    double R19 = R18*R8;
-    double R20 = R19*wdir_y;
-    double R21 = -R11 - R15 + R17*R6 - R9;
-    double R22 = R21*R8;
-    double R23 = -R0*R22 - R20 - wire_y;
-    double R24 = R10 - R19*wdir_x + R2*R22;
-    double R25 = R19*wdir_z;
-    double R26 = R13 + R14*R22 - R25;
-    double R27 = R12 + plane_z;
-    double R28 = R0*R27;
-    double R29 = -plane_y + wire_y;
-    double R30 = R14*R29;
-    double R31 = R1*b1;
-    double R32 = -R13*wdir_y + R27*wdir_y + R29*wdir_z - wdir_z*wire_y;
-    double R33 = 2*R8;
-    double R34 = R33*(R17*(-R31 - R4) + R28 - R30 + R32*R6);
-    double R35 = 2*R6*(-2*R31 - 2*R4)/pow(R7, 2);
-    double R36 = R18*R35;
-    double R37 = R33*(R16*(R31 + R4) + R32 + (-R28 + R30)*(R1 - R3 - R5));
-    double R38 = R21*R35;
-    double R39 = ((1.0/2.0)*R23*(-R0*R34 - R0*R38 - 2*R25 - R36*wdir_y - R37*wdir_y + 2*plane_z - 2*wire_z) + (1.0/2.0)*R24*(R2*R34 + R2*R38 - R36*wdir_x - R37*wdir_x) + (1.0/2.0)*R26*(R14*R34 + R14*R38 + 2*R20 - R36*wdir_z - R37*wdir_z - 2*plane_y + 2*wire_y))/sqrt(pow(R23, 2) + pow(R24, 2) + pow(R26, 2));
-    double result = ((R19 > 0) ? (
-   R39
-)
-: (
-   -R39
-));
-    return result;
-}
-
-
-double CosmicTrack_DCA_Deriv_plane_b(double a0, double b0, double a1, double b1, double wire_x, double wire_y, double wire_z, double wdir_x, double wdir_y, double wdir_z, double plane_x, double plane_y, double plane_z, double panel_x, double panel_y, double panel_z)
-{
-    double R0 = pow(pow(a1, 2) + pow(b1, 2) + 1, -1.0/2.0);
-    double R1 = R0*wdir_y;
-    double R2 = R0*a1;
-    double R3 = R2*wdir_x;
-    double R4 = R0*b1;
-    double R5 = R4*wdir_z;
-    double R6 = -R1 + R3 + R5;
-    double R7 = 1 - pow(R6, 2);
-    double R8 = 1.0/R7;
-    double R9 = R0*wire_y;
-    double R10 = -wire_x;
-    double R11 = R10 + a0;
-    double R12 = R11*R2;
-    double R13 = -wire_z;
-    double R14 = R13 + b0;
-    double R15 = R14*R4;
-    double R16 = R12 + R15 + R9;
-    double R17 = R11*wdir_x + R14*wdir_z - wdir_y*wire_y;
-    double R18 = -R16*R6 + R17;
-    double R19 = R18*R8;
-    double R20 = -R12 - R15 + R17*R6 - R9;
-    double R21 = R20*R8;
-    double R22 = -R0*R21 - R19*wdir_y - wire_y;
-    double R23 = R19*wdir_x;
-    double R24 = R11 + R2*R21 - R23;
-    double R25 = R19*wdir_z;
-    double R26 = R14 + R21*R4 - R25;
-    double R27 = R13 + plane_z;
-    double R28 = R2*R27;
-    double R29 = R10 + plane_x;
-    double R30 = R29*R4;
-    double R31 = R2*wdir_z;
-    double R32 = R4*wdir_x;
-    double R33 = R11*wdir_z + R14*wdir_x + R27*wdir_x + R29*wdir_z;
-    double R34 = 2*R8;
-    double R35 = R34*(R17*(R31 + R32) - R28 - R30 + R33*R6);
-    double R36 = 2*R6*(2*R31 + 2*R32)/pow(R7, 2);
-    double R37 = R18*R36;
-    double R38 = R34*(R16*(-R31 - R32) + R33 + (R28 + R30)*(R1 - R3 - R5));
-    double R39 = R20*R36;
-    double R40 = ((1.0/2.0)*R22*(-R0*R35 - R0*R39 - R37*wdir_y - R38*wdir_y) + (1.0/2.0)*R24*(R2*R35 + R2*R39 - 2*R25 - R37*wdir_x - R38*wdir_x + 2*plane_z - 2*wire_z) + (1.0/2.0)*R26*(-2*R23 + R35*R4 - R37*wdir_z - R38*wdir_z + R39*R4 + 2*plane_x - 2*wire_x))/sqrt(pow(R22, 2) + pow(R24, 2) + pow(R26, 2));
-    double result = ((R19 > 0) ? (
-   R40
-)
-: (
-   -R40
-));
-    return result;
-}
-
-
-double CosmicTrack_DCA_Deriv_plane_g(double a0, double b0, double a1, double b1, double wire_x, double wire_y, double wire_z, double wdir_x, double wdir_y, double wdir_z, double plane_x, double plane_y, double plane_z, double panel_x, double panel_y, double panel_z)
-{
-    double R0 = -wire_y;
-    double R1 = pow(pow(a1, 2) + pow(b1, 2) + 1, -1.0/2.0);
-    double R2 = R1*wdir_y;
-    double R3 = R1*wdir_x;
-    double R4 = R3*a1;
-    double R5 = R1*b1;
-    double R6 = R5*wdir_z;
-    double R7 = -R2 + R4 + R6;
+    double R0 = pow(b1, 2);
+    double R1 = R0 + pow(a1, 2) + 1;
+    double R2 = pow(R1, -1.0/2.0);
+    double R3 = 1.0*R2;
+    double R4 = atan2(panel_straw0y, panel_straw0x);
+    double R5 = R4*a1;
+    double R6 = R3*R5;
+    double R7 = -R3 + R6;
     double R8 = 1 - pow(R7, 2);
     double R9 = 1.0/R8;
-    double R10 = R1*wire_y;
-    double R11 = a0 - wire_x;
-    double R12 = R1*a1;
-    double R13 = R11*R12;
-    double R14 = b0 - wire_z;
-    double R15 = R14*R5;
-    double R16 = R10 + R13 + R15;
-    double R17 = R11*wdir_x + R14*wdir_z - wdir_y*wire_y;
-    double R18 = -R16*R7 + R17;
-    double R19 = R18*R9;
-    double R20 = R19*wdir_y;
-    double R21 = -R10 - R13 - R15 + R17*R7;
-    double R22 = R21*R9;
-    double R23 = R0 - R1*R22 - R20;
-    double R24 = R19*wdir_x;
-    double R25 = R11 + R12*R22 - R24;
-    double R26 = R14 - R19*wdir_z + R22*R5;
-    double R27 = -plane_x + wire_x;
-    double R28 = R1*R27;
-    double R29 = R0 + plane_y;
-    double R30 = R12*R29;
-    double R31 = R2*a1;
-    double R32 = R11*wdir_y + R27*wdir_y + R29*wdir_x + wdir_x*wire_y;
-    double R33 = 2*R9;
-    double R34 = R33*(R17*(R3 + R31) + R28 - R30 + R32*R7);
-    double R35 = 2*R7*(2*R3 + 2*R31)/pow(R8, 2);
-    double R36 = R18*R35;
-    double R37 = R33*(R16*(-R3 - R31) + R32 + (-R28 + R30)*(R2 - R4 - R6));
-    double R38 = R21*R35;
-    double R39 = ((1.0/2.0)*R23*(-R1*R34 - R1*R38 + 2*R24 - R36*wdir_y - R37*wdir_y - 2*plane_x + 2*wire_x) + (1.0/2.0)*R25*(R12*R34 + R12*R38 - 2*R20 - R36*wdir_x - R37*wdir_x + 2*plane_y - 2*wire_y) + (1.0/2.0)*R26*(R34*R5 - R36*wdir_z - R37*wdir_z + R38*R5))/sqrt(pow(R23, 2) + pow(R25, 2) + pow(R26, 2));
-    double result = ((R19 > 0) ? (
-   R39
-)
-: (
-   -R39
-));
-    return result;
-}
-
-
-double CosmicTrack_DCA_Deriv_panel_dx(double a0, double b0, double a1, double b1, double wire_x, double wire_y, double wire_z, double wdir_x, double wdir_y, double wdir_z, double plane_x, double plane_y, double plane_z, double panel_x, double panel_y, double panel_z)
-{
-    double R0 = pow(pow(a1, 2) + pow(b1, 2) + 1, -1.0/2.0);
-    double R1 = R0*wdir_y;
-    double R2 = R0*a1;
-    double R3 = R2*wdir_x;
-    double R4 = R0*b1;
-    double R5 = R4*wdir_z;
-    double R6 = -R1 + R3 + R5;
-    double R7 = 1.0/(1 - pow(R6, 2));
-    double R8 = R0*wire_y;
-    double R9 = a0 - wire_x;
-    double R10 = R2*R9;
-    double R11 = b0 - wire_z;
-    double R12 = R11*R4;
-    double R13 = R11*wdir_z + R9*wdir_x - wdir_y*wire_y;
-    double R14 = R7*(R13 - R6*(R10 + R12 + R8));
-    double R15 = R7*(-R10 - R12 + R13*R6 - R8);
-    double R16 = -R0*R15 - R14*wdir_y - wire_y;
-    double R17 = -R14*wdir_x + R15*R2 + R9;
-    double R18 = R11 - R14*wdir_z + R15*R4;
-    double R19 = 2*R7;
-    double R20 = R19*(-R2*(R1 - R3 - R5) - wdir_x);
-    double R21 = R19*(R2 - R6*wdir_x);
-    double R22 = ((1.0/2.0)*R16*(-R0*R21 - R20*wdir_y) + (1.0/2.0)*R17*(R2*R21 - R20*wdir_x - 2) + (1.0/2.0)*R18*(-R20*wdir_z + R21*R4))/sqrt(pow(R16, 2) + pow(R17, 2) + pow(R18, 2));
-    double result = ((R14 > 0) ? (
-   R22
-)
-: (
-   -R22
-));
-    return result;
-}
-
-
-double CosmicTrack_DCA_Deriv_panel_dy(double a0, double b0, double a1, double b1, double wire_x, double wire_y, double wire_z, double wdir_x, double wdir_y, double wdir_z, double plane_x, double plane_y, double plane_z, double panel_x, double panel_y, double panel_z)
-{
-    double R0 = pow(pow(a1, 2) + pow(b1, 2) + 1, -1.0/2.0);
-    double R1 = R0*wdir_y;
-    double R2 = R0*a1;
-    double R3 = R2*wdir_x;
-    double R4 = R0*b1;
-    double R5 = R4*wdir_z;
-    double R6 = -R1 + R3 + R5;
-    double R7 = 1.0/(1 - pow(R6, 2));
-    double R8 = R0*wire_y;
-    double R9 = a0 - wire_x;
-    double R10 = R2*R9;
-    double R11 = b0 - wire_z;
-    double R12 = R11*R4;
-    double R13 = R11*wdir_z + R9*wdir_x - wdir_y*wire_y;
-    double R14 = R7*(R13 - R6*(R10 + R12 + R8));
-    double R15 = R7*(-R10 - R12 + R13*R6 - R8);
-    double R16 = -R0*R15 - R14*wdir_y - wire_y;
-    double R17 = -R14*wdir_x + R15*R2 + R9;
-    double R18 = R11 - R14*wdir_z + R15*R4;
-    double R19 = 2*R7;
-    double R20 = R19*(R0*(R1 - R3 - R5) - wdir_y);
-    double R21 = R19*(-R0 - R6*wdir_y);
-    double R22 = ((1.0/2.0)*R16*(-R0*R21 - R20*wdir_y - 2) + (1.0/2.0)*R17*(R2*R21 - R20*wdir_x) + (1.0/2.0)*R18*(-R20*wdir_z + R21*R4))/sqrt(pow(R16, 2) + pow(R17, 2) + pow(R18, 2));
-    double result = ((R14 > 0) ? (
-   R22
-)
-: (
-   -R22
-));
-    return result;
-}
-
-
-double CosmicTrack_DCA_Deriv_panel_dz(double a0, double b0, double a1, double b1, double wire_x, double wire_y, double wire_z, double wdir_x, double wdir_y, double wdir_z, double plane_x, double plane_y, double plane_z, double panel_x, double panel_y, double panel_z)
-{
-    double R0 = pow(pow(a1, 2) + pow(b1, 2) + 1, -1.0/2.0);
-    double R1 = R0*wdir_y;
-    double R2 = R0*a1;
-    double R3 = R2*wdir_x;
-    double R4 = R0*b1;
-    double R5 = R4*wdir_z;
-    double R6 = -R1 + R3 + R5;
-    double R7 = 1.0/(1 - pow(R6, 2));
-    double R8 = R0*wire_y;
-    double R9 = a0 - wire_x;
-    double R10 = R2*R9;
-    double R11 = b0 - wire_z;
-    double R12 = R11*R4;
-    double R13 = R11*wdir_z + R9*wdir_x - wdir_y*wire_y;
-    double R14 = R7*(R13 - R6*(R10 + R12 + R8));
-    double R15 = R7*(-R10 - R12 + R13*R6 - R8);
-    double R16 = -R0*R15 - R14*wdir_y - wire_y;
-    double R17 = -R14*wdir_x + R15*R2 + R9;
-    double R18 = R11 - R14*wdir_z + R15*R4;
-    double R19 = 2*R7;
-    double R20 = R19*(-R4*(R1 - R3 - R5) - wdir_z);
-    double R21 = R19*(R4 - R6*wdir_z);
-    double R22 = ((1.0/2.0)*R16*(-R0*R21 - R20*wdir_y) + (1.0/2.0)*R17*(R2*R21 - R20*wdir_x) + (1.0/2.0)*R18*(-R20*wdir_z + R21*R4 - 2))/sqrt(pow(R16, 2) + pow(R17, 2) + pow(R18, 2));
-    double result = ((R14 > 0) ? (
-   R22
-)
-: (
-   -R22
-));
-    return result;
-}
-
-
-double CosmicTrack_DCA_Deriv_panel_a(double a0, double b0, double a1, double b1, double wire_x, double wire_y, double wire_z, double wdir_x, double wdir_y, double wdir_z, double plane_x, double plane_y, double plane_z, double panel_x, double panel_y, double panel_z)
-{
-    double R0 = pow(pow(a1, 2) + pow(b1, 2) + 1, -1.0/2.0);
-    double R1 = R0*wdir_y;
-    double R2 = R0*a1;
-    double R3 = R2*wdir_x;
-    double R4 = R0*wdir_z;
-    double R5 = R4*b1;
-    double R6 = -R1 + R3 + R5;
-    double R7 = 1 - pow(R6, 2);
-    double R8 = 1.0/R7;
-    double R9 = R0*wire_y;
-    double R10 = a0 - wire_x;
+    double R10 = b0 - wire_z;
     double R11 = R10*R2;
-    double R12 = -wire_z;
-    double R13 = R12 + b0;
-    double R14 = R0*b1;
-    double R15 = R13*R14;
-    double R16 = R11 + R15 + R9;
-    double R17 = R10*wdir_x + R13*wdir_z - wdir_y*wire_y;
-    double R18 = -R16*R6 + R17;
-    double R19 = R18*R8;
-    double R20 = R19*wdir_y;
-    double R21 = -R11 - R15 + R17*R6 - R9;
-    double R22 = R21*R8;
-    double R23 = -R0*R22 - R20 - wire_y;
-    double R24 = R10 - R19*wdir_x + R2*R22;
-    double R25 = R19*wdir_z;
-    double R26 = R13 + R14*R22 - R25;
-    double R27 = R12 + panel_z;
-    double R28 = R0*R27;
-    double R29 = -panel_y + wire_y;
-    double R30 = R14*R29;
-    double R31 = R1*b1;
-    double R32 = -R13*wdir_y + R27*wdir_y + R29*wdir_z - wdir_z*wire_y;
-    double R33 = 2*R8;
-    double R34 = R33*(R17*(-R31 - R4) + R28 - R30 + R32*R6);
-    double R35 = 2*R6*(-2*R31 - 2*R4)/pow(R7, 2);
-    double R36 = R18*R35;
-    double R37 = R33*(R16*(R31 + R4) + R32 + (-R28 + R30)*(R1 - R3 - R5));
-    double R38 = R21*R35;
-    double R39 = ((1.0/2.0)*R23*(-R0*R34 - R0*R38 - 2*R25 - R36*wdir_y - R37*wdir_y + 2*panel_z - 2*wire_z) + (1.0/2.0)*R24*(R2*R34 + R2*R38 - R36*wdir_x - R37*wdir_x) + (1.0/2.0)*R26*(R14*R34 + R14*R38 + 2*R20 - R36*wdir_z - R37*wdir_z - 2*panel_y + 2*wire_y))/sqrt(pow(R23, 2) + pow(R24, 2) + pow(R26, 2));
-    double result = ((R19 > 0) ? (
-   R39
+    double R12 = R11*b1;
+    double R13 = sqrt(pow(panel_straw0x, 2) + pow(panel_straw0y, 2));
+    double R14 = sqrt(pow(wire_x, 2) + pow(wire_y, 2));
+    double R15 = R13 - R14 + a0 - panel_straw0x;
+    double R16 = R2*a1;
+    double R17 = R15*R16;
+    double R18 = R4*(-R13 + R14);
+    double R19 = R18 - panel_straw0y;
+    double R20 = R19*R2;
+    double R21 = 1.0*R4;
+    double R22 = R15*R21 + 1.0*R18 - 1.0*panel_straw0y;
+    double R23 = -R12 - R17 + R20 + R22*R7;
+    double R24 = R23*R9;
+    double R25 = R2*R24;
+    double R26 = R10 + R25*b1;
+    double R27 = R12 + R17 - R20;
+    double R28 = R22 - R27*R7;
+    double R29 = R28*R9;
+    double R30 = R15 + R16*R24 - R21*R29;
+    double R31 = R19 - R25 - 1.0*R29;
+    double R32 = pow(R1, -3.0/2.0);
+    double R33 = R0*R32;
+    double R34 = 2*R24;
+    double R35 = 2*R2;
+    double R36 = R10*R33;
+    double R37 = R32*b1;
+    double R38 = R37*a1;
+    double R39 = R15*R38;
+    double R40 = R19*R37;
+    double R41 = 1.0*R37;
+    double R42 = R21*R38;
+    double R43 = R9*(-R11 + R22*(R41 - R42) + R36 + R39 - R40);
+    double R44 = R35*R43;
+    double R45 = 2.0*R37;
+    double R46 = R7*(-R45*R5 + R45)/pow(R8, 2);
+    double R47 = R23*R46;
+    double R48 = R35*R47;
+    double R49 = 2.0*R28*R46;
+    double R50 = 2.0*R9*(R27*(-R41 + R42) + (R3 - R6)*(R11 - R36 - R39 + R40));
+    double R51 = 2*R16;
+    double R52 = ((1.0/2.0)*R26*(2*R25 - R33*R34 + R44*b1 + R48*b1) + (1.0/2.0)*R30*(-R34*R38 - R4*R49 - R4*R50 + R43*R51 + R47*R51) + (1.0/2.0)*R31*(R34*R37 - R44 - R48 - R49 - R50))/sqrt(pow(R26, 2) + pow(R30, 2) + pow(R31, 2));
+    double result = ((R29 > 0) ? (
+   R52
 )
 : (
-   -R39
+   -R52
 ));
     return result;
 }
 
 
-double CosmicTrack_DCA_Deriv_panel_b(double a0, double b0, double a1, double b1, double wire_x, double wire_y, double wire_z, double wdir_x, double wdir_y, double wdir_z, double plane_x, double plane_y, double plane_z, double panel_x, double panel_y, double panel_z)
+double CosmicTrack_DCA_Deriv_plane_dx(double a0, double b0, double a1, double b1, double wire_x, double wire_y, double wire_z, double wdir_x, double wdir_y, double wdir_z, double plane_x, double plane_y, double plane_z, double panel_straw0x, double panel_straw0y, double panel_straw0z)
 {
     double R0 = pow(pow(a1, 2) + pow(b1, 2) + 1, -1.0/2.0);
-    double R1 = R0*wdir_y;
-    double R2 = R0*a1;
-    double R3 = R2*wdir_x;
-    double R4 = R0*b1;
-    double R5 = R4*wdir_z;
-    double R6 = -R1 + R3 + R5;
-    double R7 = 1 - pow(R6, 2);
-    double R8 = 1.0/R7;
-    double R9 = R0*wire_y;
-    double R10 = -wire_x;
-    double R11 = R10 + a0;
-    double R12 = R11*R2;
-    double R13 = -wire_z;
-    double R14 = R13 + b0;
-    double R15 = R14*R4;
-    double R16 = R12 + R15 + R9;
-    double R17 = R11*wdir_x + R14*wdir_z - wdir_y*wire_y;
-    double R18 = -R16*R6 + R17;
-    double R19 = R18*R8;
-    double R20 = -R12 - R15 + R17*R6 - R9;
-    double R21 = R20*R8;
-    double R22 = -R0*R21 - R19*wdir_y - wire_y;
-    double R23 = R19*wdir_x;
-    double R24 = R11 + R2*R21 - R23;
-    double R25 = R19*wdir_z;
-    double R26 = R14 + R21*R4 - R25;
-    double R27 = R13 + panel_z;
-    double R28 = R2*R27;
-    double R29 = R10 + panel_x;
-    double R30 = R29*R4;
-    double R31 = R2*wdir_z;
-    double R32 = R4*wdir_x;
-    double R33 = R11*wdir_z + R14*wdir_x + R27*wdir_x + R29*wdir_z;
-    double R34 = 2*R8;
-    double R35 = R34*(R17*(R31 + R32) - R28 - R30 + R33*R6);
-    double R36 = 2*R6*(2*R31 + 2*R32)/pow(R7, 2);
-    double R37 = R18*R36;
-    double R38 = R34*(R16*(-R31 - R32) + R33 + (R28 + R30)*(R1 - R3 - R5));
-    double R39 = R20*R36;
-    double R40 = ((1.0/2.0)*R22*(-R0*R35 - R0*R39 - R37*wdir_y - R38*wdir_y) + (1.0/2.0)*R24*(R2*R35 + R2*R39 - 2*R25 - R37*wdir_x - R38*wdir_x + 2*panel_z - 2*wire_z) + (1.0/2.0)*R26*(-2*R23 + R35*R4 - R37*wdir_z - R38*wdir_z + R39*R4 + 2*panel_x - 2*wire_x))/sqrt(pow(R22, 2) + pow(R24, 2) + pow(R26, 2));
-    double result = ((R19 > 0) ? (
-   R40
+    double R1 = R0*b1;
+    double R2 = 1.0*R0;
+    double R3 = atan2(panel_straw0y, panel_straw0x);
+    double R4 = R2*R3*a1;
+    double R5 = -R2 + R4;
+    double R6 = 1.0/(1 - pow(R5, 2));
+    double R7 = b0 - wire_z;
+    double R8 = R1*R7;
+    double R9 = sqrt(pow(panel_straw0x, 2) + pow(panel_straw0y, 2));
+    double R10 = sqrt(pow(wire_x, 2) + pow(wire_y, 2));
+    double R11 = -R10 + R9 + a0 - panel_straw0x;
+    double R12 = R0*a1;
+    double R13 = R11*R12;
+    double R14 = R3*(R10 - R9);
+    double R15 = R14 - panel_straw0y;
+    double R16 = R0*R15;
+    double R17 = 1.0*R3;
+    double R18 = R11*R17 + 1.0*R14 - 1.0*panel_straw0y;
+    double R19 = R6*(-R13 + R16 + R18*R5 - R8);
+    double R20 = R1*R19 + R7;
+    double R21 = R6*(R18 - R5*(R13 - R16 + R8));
+    double R22 = R11 + R12*R19 - R17*R21;
+    double R23 = -R0*R19 + R15 - 1.0*R21;
+    double R24 = R6*(R12 - R17*R5);
+    double R25 = 2.0*R6*(-R12*(R2 - R4) - R17);
+    double R26 = 2*R24;
+    double R27 = (R1*R20*R24 + (1.0/2.0)*R22*(R12*R26 - R25*R3 - 2) + (1.0/2.0)*R23*(-R0*R26 - R25))/sqrt(pow(R20, 2) + pow(R22, 2) + pow(R23, 2));
+    double result = ((R21 > 0) ? (
+   R27
 )
 : (
-   -R40
+   -R27
 ));
     return result;
 }
 
 
-double CosmicTrack_DCA_Deriv_panel_g(double a0, double b0, double a1, double b1, double wire_x, double wire_y, double wire_z, double wdir_x, double wdir_y, double wdir_z, double plane_x, double plane_y, double plane_z, double panel_x, double panel_y, double panel_z)
+double CosmicTrack_DCA_Deriv_plane_dy(double a0, double b0, double a1, double b1, double wire_x, double wire_y, double wire_z, double wdir_x, double wdir_y, double wdir_z, double plane_x, double plane_y, double plane_z, double panel_straw0x, double panel_straw0y, double panel_straw0z)
 {
-    double R0 = -wire_y;
-    double R1 = pow(pow(a1, 2) + pow(b1, 2) + 1, -1.0/2.0);
-    double R2 = R1*wdir_y;
-    double R3 = R1*wdir_x;
-    double R4 = R3*a1;
-    double R5 = R1*b1;
-    double R6 = R5*wdir_z;
-    double R7 = -R2 + R4 + R6;
+    double R0 = pow(a1, 2);
+    double R1 = R0 + pow(b1, 2) + 1;
+    double R2 = pow(R1, -1.0/2.0);
+    double R3 = R2*b1;
+    double R4 = 1.0*R2;
+    double R5 = atan2(panel_straw0y, panel_straw0x);
+    double R6 = R5*a1;
+    double R7 = R4*R6;
+    double R8 = -R4 + R7;
+    double R9 = 1.0/(1 - pow(R8, 2));
+    double R10 = b0 - wire_z;
+    double R11 = R10*R3;
+    double R12 = sqrt(pow(panel_straw0x, 2) + pow(panel_straw0y, 2));
+    double R13 = sqrt(pow(wire_x, 2) + pow(wire_y, 2));
+    double R14 = R12 - R13 + a0 - panel_straw0x;
+    double R15 = R2*a1;
+    double R16 = R14*R15;
+    double R17 = R5*(-R12 + R13);
+    double R18 = R17 - panel_straw0y;
+    double R19 = R18*R2;
+    double R20 = 1.0*R5;
+    double R21 = R14*R20 + 1.0*R17 - 1.0*panel_straw0y;
+    double R22 = R9*(-R11 - R16 + R19 + R21*R8);
+    double R23 = R10 + R22*R3;
+    double R24 = R9*(R21 - R8*(R11 + R16 - R19));
+    double R25 = R14 + R15*R22 - R20*R24;
+    double R26 = R18 - R2*R22 - 1.0*R24;
+    double R27 = 1.0/R1;
+    double R28 = 2.0*R9;
+    double R29 = R27*R28;
+    double R30 = R28*(R2*(R4 - R7) - 1.0);
+    double R31 = (-R20*R23*R27*R9*a1*b1 + (1.0/2.0)*R25*(-R0*R29*R5 - R30*R5) + (1.0/2.0)*R26*(R29*R6 - R30 - 2))/sqrt(pow(R23, 2) + pow(R25, 2) + pow(R26, 2));
+    double result = ((R24 > 0) ? (
+   R31
+)
+: (
+   -R31
+));
+    return result;
+}
+
+
+double CosmicTrack_DCA_Deriv_plane_dz(double a0, double b0, double a1, double b1, double wire_x, double wire_y, double wire_z, double wdir_x, double wdir_y, double wdir_z, double plane_x, double plane_y, double plane_z, double panel_straw0x, double panel_straw0y, double panel_straw0z)
+{
+    double R0 = pow(b1, 2);
+    double R1 = R0 + pow(a1, 2) + 1;
+    double R2 = pow(R1, -1.0/2.0);
+    double R3 = R2*b1;
+    double R4 = 1.0*R2;
+    double R5 = atan2(panel_straw0y, panel_straw0x);
+    double R6 = R4*R5*a1;
+    double R7 = -R4 + R6;
+    double R8 = 1.0/(1 - pow(R7, 2));
+    double R9 = b0 - wire_z;
+    double R10 = R3*R9;
+    double R11 = sqrt(pow(panel_straw0x, 2) + pow(panel_straw0y, 2));
+    double R12 = sqrt(pow(wire_x, 2) + pow(wire_y, 2));
+    double R13 = R11 - R12 + a0 - panel_straw0x;
+    double R14 = R2*a1;
+    double R15 = R13*R14;
+    double R16 = R5*(-R11 + R12);
+    double R17 = R16 - panel_straw0y;
+    double R18 = R17*R2;
+    double R19 = 1.0*R5;
+    double R20 = R13*R19 + 1.0*R16 - 1.0*panel_straw0y;
+    double R21 = R8*(-R10 - R15 + R18 + R20*R7);
+    double R22 = R21*R3 + R9;
+    double R23 = R8*(R20 - R7*(R10 + R15 - R18));
+    double R24 = R13 + R14*R21 - R19*R23;
+    double R25 = R17 - R2*R21 - 1.0*R23;
+    double R26 = 2*R8/R1;
+    double R27 = R26*b1;
+    double R28 = 2.0*R3*R8*(R4 - R6);
+    double R29 = ((1.0/2.0)*R22*(R0*R26 - 2) + (1.0/2.0)*R24*(R27*a1 + R28*R5) + (1.0/2.0)*R25*(-R27 + R28))/sqrt(pow(R22, 2) + pow(R24, 2) + pow(R25, 2));
+    double result = ((R23 > 0) ? (
+   R29
+)
+: (
+   -R29
+));
+    return result;
+}
+
+
+double CosmicTrack_DCA_Deriv_plane_a(double a0, double b0, double a1, double b1, double wire_x, double wire_y, double wire_z, double wdir_x, double wdir_y, double wdir_z, double plane_x, double plane_y, double plane_z, double panel_straw0x, double panel_straw0y, double panel_straw0z)
+{
+    double R0 = pow(b1, 2);
+    double R1 = R0 + pow(a1, 2) + 1;
+    double R2 = pow(R1, -1.0/2.0);
+    double R3 = R2*b1;
+    double R4 = 1.0*R2;
+    double R5 = atan2(panel_straw0y, panel_straw0x);
+    double R6 = R4*R5*a1;
+    double R7 = -R4 + R6;
     double R8 = 1 - pow(R7, 2);
     double R9 = 1.0/R8;
-    double R10 = R1*wire_y;
-    double R11 = a0 - wire_x;
-    double R12 = R1*a1;
-    double R13 = R11*R12;
-    double R14 = b0 - wire_z;
-    double R15 = R14*R5;
-    double R16 = R10 + R13 + R15;
-    double R17 = R11*wdir_x + R14*wdir_z - wdir_y*wire_y;
-    double R18 = -R16*R7 + R17;
-    double R19 = R18*R9;
-    double R20 = R19*wdir_y;
-    double R21 = -R10 - R13 - R15 + R17*R7;
-    double R22 = R21*R9;
-    double R23 = R0 - R1*R22 - R20;
-    double R24 = R19*wdir_x;
-    double R25 = R11 + R12*R22 - R24;
-    double R26 = R14 - R19*wdir_z + R22*R5;
-    double R27 = -panel_x + wire_x;
-    double R28 = R1*R27;
-    double R29 = R0 + panel_y;
-    double R30 = R12*R29;
-    double R31 = R2*a1;
-    double R32 = R11*wdir_y + R27*wdir_y + R29*wdir_x + wdir_x*wire_y;
-    double R33 = 2*R9;
-    double R34 = R33*(R17*(R3 + R31) + R28 - R30 + R32*R7);
-    double R35 = 2*R7*(2*R3 + 2*R31)/pow(R8, 2);
-    double R36 = R18*R35;
-    double R37 = R33*(R16*(-R3 - R31) + R32 + (-R28 + R30)*(R2 - R4 - R6));
-    double R38 = R21*R35;
-    double R39 = ((1.0/2.0)*R23*(-R1*R34 - R1*R38 + 2*R24 - R36*wdir_y - R37*wdir_y - 2*panel_x + 2*wire_x) + (1.0/2.0)*R25*(R12*R34 + R12*R38 - 2*R20 - R36*wdir_x - R37*wdir_x + 2*panel_y - 2*wire_y) + (1.0/2.0)*R26*(R34*R5 - R36*wdir_z - R37*wdir_z + R38*R5))/sqrt(pow(R23, 2) + pow(R25, 2) + pow(R26, 2));
-    double result = ((R19 > 0) ? (
-   R39
+    double R10 = -wire_z;
+    double R11 = R10 + b0;
+    double R12 = R11*R3;
+    double R13 = sqrt(pow(panel_straw0x, 2) + pow(panel_straw0y, 2));
+    double R14 = sqrt(pow(wire_x, 2) + pow(wire_y, 2));
+    double R15 = R13 - R14;
+    double R16 = R15 + a0 - panel_straw0x;
+    double R17 = R2*a1;
+    double R18 = R16*R17;
+    double R19 = R5*(-R13 + R14);
+    double R20 = R19 - panel_straw0y;
+    double R21 = R2*R20;
+    double R22 = 1.0*R5;
+    double R23 = R16*R22 + 1.0*R19 - 1.0*panel_straw0y;
+    double R24 = -R12 - R18 + R21 + R23*R7;
+    double R25 = R24*R9;
+    double R26 = R11 + R25*R3;
+    double R27 = R12 + R18 - R21;
+    double R28 = R23 - R27*R7;
+    double R29 = R28*R9;
+    double R30 = R16 + R17*R25 - R22*R29;
+    double R31 = -R2*R25 + R20 - 1.0*R29;
+    double R32 = R15*R5;
+    double R33 = R2*(R10 + plane_z);
+    double R34 = -1.0*b0 + 1.0*plane_z;
+    double R35 = R3*(R32 + panel_straw0y);
+    double R36 = R4*b1;
+    double R37 = 2*R9*(-R23*R36 + R33 + R34*R7 - R35);
+    double R38 = 4.0*R7/pow(R8, 2);
+    double R39 = R24*R38/R1;
+    double R40 = 2.0*R9*(R27*R36 + R34 + (-R33 + R35)*(R4 - R6));
+    double R41 = R39*b1;
+    double R42 = R28*R3*R38;
+    double R43 = ((1.0/2.0)*R26*(-R0*R39 + 2.0*R29 + R3*R37 + 2*R32 + 2*panel_straw0y) + (1.0/2.0)*R30*(R17*R37 - R40*R5 - R41*a1 + R42*R5) + (1.0/2.0)*R31*(-R2*R37 - R40 + R41 + R42 + 2*plane_z - 2*wire_z))/sqrt(pow(R26, 2) + pow(R30, 2) + pow(R31, 2));
+    double result = ((R29 > 0) ? (
+   R43
 )
 : (
-   -R39
+   -R43
 ));
     return result;
 }
 
 
-std::vector<float> CosmicTrack_DCA_LocalDeriv(double a0, double b0, double a1, double b1, double wire_x, double wire_y, double wire_z, double wdir_x, double wdir_y, double wdir_z, double plane_x, double plane_y, double plane_z, double panel_x, double panel_y, double panel_z)
+double CosmicTrack_DCA_Deriv_plane_b(double a0, double b0, double a1, double b1, double wire_x, double wire_y, double wire_z, double wdir_x, double wdir_y, double wdir_z, double plane_x, double plane_y, double plane_z, double panel_straw0x, double panel_straw0y, double panel_straw0z)
 {
-        std::vector<float> result = {(float)CosmicTrack_DCA_Deriv_a0(a0,b0,a1,b1,wire_x,wire_y,wire_z,wdir_x,wdir_y,wdir_z,plane_x,plane_y,plane_z,panel_x,panel_y,panel_z),
-(float)CosmicTrack_DCA_Deriv_b0(a0,b0,a1,b1,wire_x,wire_y,wire_z,wdir_x,wdir_y,wdir_z,plane_x,plane_y,plane_z,panel_x,panel_y,panel_z),
-(float)CosmicTrack_DCA_Deriv_a1(a0,b0,a1,b1,wire_x,wire_y,wire_z,wdir_x,wdir_y,wdir_z,plane_x,plane_y,plane_z,panel_x,panel_y,panel_z),
-(float)CosmicTrack_DCA_Deriv_b1(a0,b0,a1,b1,wire_x,wire_y,wire_z,wdir_x,wdir_y,wdir_z,plane_x,plane_y,plane_z,panel_x,panel_y,panel_z)};
+    double R0 = pow(b1, 2);
+    double R1 = R0 + pow(a1, 2) + 1;
+    double R2 = pow(R1, -1.0/2.0);
+    double R3 = R2*b1;
+    double R4 = 1.0*R2;
+    double R5 = atan2(panel_straw0y, panel_straw0x);
+    double R6 = R4*R5;
+    double R7 = R6*a1;
+    double R8 = -R4 + R7;
+    double R9 = 1 - pow(R8, 2);
+    double R10 = 1.0/R9;
+    double R11 = -wire_z;
+    double R12 = R11 + b0;
+    double R13 = R12*R3;
+    double R14 = sqrt(pow(panel_straw0x, 2) + pow(panel_straw0y, 2));
+    double R15 = sqrt(pow(wire_x, 2) + pow(wire_y, 2));
+    double R16 = R14 - R15 - panel_straw0x;
+    double R17 = R16 + a0;
+    double R18 = R2*a1;
+    double R19 = R17*R18;
+    double R20 = R5*(-R14 + R15);
+    double R21 = R20 - panel_straw0y;
+    double R22 = R2*R21;
+    double R23 = 1.0*R5;
+    double R24 = R17*R23 + 1.0*R20 - 1.0*panel_straw0y;
+    double R25 = -R13 - R19 + R22 + R24*R8;
+    double R26 = R10*R25;
+    double R27 = R12 + R26*R3;
+    double R28 = R13 + R19 - R22;
+    double R29 = R24 - R28*R8;
+    double R30 = R10*R29;
+    double R31 = R17 + R18*R26 - R23*R30;
+    double R32 = -R2*R26 + R21 - 1.0*R30;
+    double R33 = R11 + plane_z;
+    double R34 = R18*R33;
+    double R35 = R16*R3;
+    double R36 = R12*R23 + R23*R33;
+    double R37 = R6*b1;
+    double R38 = 2*R10*(R24*R37 - R34 - R35 + R36*R8);
+    double R39 = 4.0*R8/pow(R9, 2);
+    double R40 = R39*R5;
+    double R41 = R25*R40/R1;
+    double R42 = 2.0*R10*(-R28*R37 + R36 + (R34 + R35)*(R4 - R7));
+    double R43 = R41*b1;
+    double R44 = R29*R3;
+    double R45 = ((1.0/2.0)*R27*(R0*R41 + 2*R14 - 2*R15 + R3*R38 - 2.0*R30*R5 - 2*panel_straw0x) + (1.0/2.0)*R31*(R18*R38 - R39*R44*pow(R5, 2) - R42*R5 + R43*a1 + 2*plane_z - 2*wire_z) + (1.0/2.0)*R32*(-R2*R38 - R40*R44 - R42 - R43))/sqrt(pow(R27, 2) + pow(R31, 2) + pow(R32, 2));
+    double result = ((R30 > 0) ? (
+   R45
+)
+: (
+   -R45
+));
+    return result;
+}
+
+
+double CosmicTrack_DCA_Deriv_plane_g(double a0, double b0, double a1, double b1, double wire_x, double wire_y, double wire_z, double wdir_x, double wdir_y, double wdir_z, double plane_x, double plane_y, double plane_z, double panel_straw0x, double panel_straw0y, double panel_straw0z)
+{
+    double R0 = pow(pow(a1, 2) + pow(b1, 2) + 1, -1.0/2.0);
+    double R1 = R0*b1;
+    double R2 = 1.0*R0;
+    double R3 = atan2(panel_straw0y, panel_straw0x);
+    double R4 = R2*a1;
+    double R5 = R3*R4;
+    double R6 = -R2 + R5;
+    double R7 = 1 - pow(R6, 2);
+    double R8 = 1.0/R7;
+    double R9 = b0 - wire_z;
+    double R10 = R1*R9;
+    double R11 = sqrt(pow(panel_straw0x, 2) + pow(panel_straw0y, 2));
+    double R12 = sqrt(pow(wire_x, 2) + pow(wire_y, 2));
+    double R13 = R11 - R12;
+    double R14 = R13 + a0 - panel_straw0x;
+    double R15 = R0*a1;
+    double R16 = R14*R15;
+    double R17 = -panel_straw0y;
+    double R18 = -R11 + R12;
+    double R19 = R18*R3;
+    double R20 = R17 + R19;
+    double R21 = R0*R20;
+    double R22 = 1.0*R3;
+    double R23 = R14*R22 + 1.0*R19 - 1.0*panel_straw0y;
+    double R24 = -R10 - R16 + R21 + R23*R6;
+    double R25 = R24*R8;
+    double R26 = R1*R25 + R9;
+    double R27 = R10 + R16 - R21;
+    double R28 = R23 - R27*R6;
+    double R29 = R28*R8;
+    double R30 = R14 + R15*R25 - R22*R29;
+    double R31 = -R0*R25 + R20 - 1.0*R29;
+    double R32 = 2.0*R3;
+    double R33 = R6*(R0*R32 + 2.0*R15)/pow(R7, 2);
+    double R34 = R24*R33;
+    double R35 = 2*R34;
+    double R36 = R0*(R18 + panel_straw0x);
+    double R37 = R13*R3;
+    double R38 = R17 - R37;
+    double R39 = R15*R38;
+    double R40 = R2*R3;
+    double R41 = -R20*R22 + R22*R38 + 1.0*a0;
+    double R42 = R8*(R23*(R4 + R40) + R36 - R39 + R41*R6);
+    double R43 = 2*R42;
+    double R44 = R28*R33;
+    double R45 = 2*R0;
+    double R46 = R8*(R27*(-R4 - R40) + R41 + (R2 - R5)*(-R36 + R39));
+    double R47 = ((1.0/2.0)*R26*(R1*R35 + R1*R43) + (1.0/2.0)*R30*(R15*R35 + R15*R43 - 2.0*R29 - R32*R44 - R32*R46 - 2*R37 - 2*panel_straw0y) + (1.0/2.0)*R31*(-2*R11 + 2*R12 + R29*R32 - R34*R45 - R42*R45 - 2.0*R44 - 2.0*R46 + 2*panel_straw0x))/sqrt(pow(R26, 2) + pow(R30, 2) + pow(R31, 2));
+    double result = ((R29 > 0) ? (
+   R47
+)
+: (
+   -R47
+));
+    return result;
+}
+
+
+double CosmicTrack_DCA_Deriv_panel_dx(double a0, double b0, double a1, double b1, double wire_x, double wire_y, double wire_z, double wdir_x, double wdir_y, double wdir_z, double plane_x, double plane_y, double plane_z, double panel_straw0x, double panel_straw0y, double panel_straw0z)
+{
+    double R0 = pow(pow(a1, 2) + pow(b1, 2) + 1, -1.0/2.0);
+    double R1 = R0*b1;
+    double R2 = 1.0*R0;
+    double R3 = atan2(panel_straw0y, panel_straw0x);
+    double R4 = R2*R3*a1;
+    double R5 = -R2 + R4;
+    double R6 = 1.0/(1 - pow(R5, 2));
+    double R7 = b0 - wire_z;
+    double R8 = R1*R7;
+    double R9 = sqrt(pow(panel_straw0x, 2) + pow(panel_straw0y, 2));
+    double R10 = sqrt(pow(wire_x, 2) + pow(wire_y, 2));
+    double R11 = -R10 + R9 + a0 - panel_straw0x;
+    double R12 = R0*a1;
+    double R13 = R11*R12;
+    double R14 = R3*(R10 - R9);
+    double R15 = R14 - panel_straw0y;
+    double R16 = R0*R15;
+    double R17 = 1.0*R3;
+    double R18 = R11*R17 + 1.0*R14 - 1.0*panel_straw0y;
+    double R19 = R6*(-R13 + R16 + R18*R5 - R8);
+    double R20 = R1*R19 + R7;
+    double R21 = R6*(R18 - R5*(R13 - R16 + R8));
+    double R22 = R11 + R12*R19 - R17*R21;
+    double R23 = -R0*R19 + R15 - 1.0*R21;
+    double R24 = R0*R3;
+    double R25 = R6*(R12 + R24);
+    double R26 = 2*R25;
+    double R27 = 2.0*R6*(-R12 - R24)*(R2 - R4);
+    double R28 = (R1*R20*R25 + (1.0/2.0)*R22*(R12*R26 - R27*R3 - 2) + (1.0/2.0)*R23*(-R0*R26 - R27 + 2*R3))/sqrt(pow(R20, 2) + pow(R22, 2) + pow(R23, 2));
+    double result = ((R21 > 0) ? (
+   R28
+)
+: (
+   -R28
+));
+    return result;
+}
+
+
+double CosmicTrack_DCA_Deriv_panel_dy(double a0, double b0, double a1, double b1, double wire_x, double wire_y, double wire_z, double wdir_x, double wdir_y, double wdir_z, double plane_x, double plane_y, double plane_z, double panel_straw0x, double panel_straw0y, double panel_straw0z)
+{
+    double R0 = pow(pow(a1, 2) + pow(b1, 2) + 1, -1.0/2.0);
+    double R1 = R0*b1;
+    double R2 = 1.0*R0;
+    double R3 = atan2(panel_straw0y, panel_straw0x);
+    double R4 = R2*R3*a1;
+    double R5 = -R2 + R4;
+    double R6 = 1.0/(1 - pow(R5, 2));
+    double R7 = b0 - wire_z;
+    double R8 = R1*R7;
+    double R9 = sqrt(pow(panel_straw0x, 2) + pow(panel_straw0y, 2));
+    double R10 = sqrt(pow(wire_x, 2) + pow(wire_y, 2));
+    double R11 = -R10 + R9 + a0 - panel_straw0x;
+    double R12 = R0*a1;
+    double R13 = R11*R12;
+    double R14 = R3*(R10 - R9);
+    double R15 = R14 - panel_straw0y;
+    double R16 = R0*R15;
+    double R17 = 1.0*R3;
+    double R18 = R11*R17 + 1.0*R14 - 1.0*panel_straw0y;
+    double R19 = R6*(-R13 + R16 + R18*R5 - R8);
+    double R20 = R1*R19 + R7;
+    double R21 = R6*(R18 - R5*(R13 - R16 + R8));
+    double R22 = R11 + R12*R19 - R17*R21;
+    double R23 = -R0*R19 + R15 - 1.0*R21;
+    double R24 = R12*R3;
+    double R25 = -1.0*pow(R3, 2) - 1.0;
+    double R26 = R6*(-R0 + R24 + R25*R5);
+    double R27 = 2.0*R6*(R25 + (R0 - R24)*(R2 - R4));
+    double R28 = 2*R26;
+    double R29 = (R1*R20*R26 + (1.0/2.0)*R22*(R12*R28 - R27*R3 - 2*R3) + (1.0/2.0)*R23*(-R0*R28 - R27 - 2))/sqrt(pow(R20, 2) + pow(R22, 2) + pow(R23, 2));
+    double result = ((R21 > 0) ? (
+   R29
+)
+: (
+   -R29
+));
+    return result;
+}
+
+
+double CosmicTrack_DCA_Deriv_panel_dz(double a0, double b0, double a1, double b1, double wire_x, double wire_y, double wire_z, double wdir_x, double wdir_y, double wdir_z, double plane_x, double plane_y, double plane_z, double panel_straw0x, double panel_straw0y, double panel_straw0z)
+{
+    double R0 = pow(b1, 2);
+    double R1 = R0 + pow(a1, 2) + 1;
+    double R2 = pow(R1, -1.0/2.0);
+    double R3 = R2*b1;
+    double R4 = 1.0*R2;
+    double R5 = atan2(panel_straw0y, panel_straw0x);
+    double R6 = R4*R5*a1;
+    double R7 = -R4 + R6;
+    double R8 = 1.0/(1 - pow(R7, 2));
+    double R9 = b0 - wire_z;
+    double R10 = R3*R9;
+    double R11 = sqrt(pow(panel_straw0x, 2) + pow(panel_straw0y, 2));
+    double R12 = sqrt(pow(wire_x, 2) + pow(wire_y, 2));
+    double R13 = R11 - R12 + a0 - panel_straw0x;
+    double R14 = R2*a1;
+    double R15 = R13*R14;
+    double R16 = R5*(-R11 + R12);
+    double R17 = R16 - panel_straw0y;
+    double R18 = R17*R2;
+    double R19 = 1.0*R5;
+    double R20 = R13*R19 + 1.0*R16 - 1.0*panel_straw0y;
+    double R21 = R8*(-R10 - R15 + R18 + R20*R7);
+    double R22 = R21*R3 + R9;
+    double R23 = R8*(R20 - R7*(R10 + R15 - R18));
+    double R24 = R13 + R14*R21 - R19*R23;
+    double R25 = R17 - R2*R21 - 1.0*R23;
+    double R26 = 2*R8/R1;
+    double R27 = R26*b1;
+    double R28 = 2.0*R3*R8*(R4 - R6);
+    double R29 = ((1.0/2.0)*R22*(R0*R26 - 2) + (1.0/2.0)*R24*(R27*a1 + R28*R5) + (1.0/2.0)*R25*(-R27 + R28))/sqrt(pow(R22, 2) + pow(R24, 2) + pow(R25, 2));
+    double result = ((R23 > 0) ? (
+   R29
+)
+: (
+   -R29
+));
+    return result;
+}
+
+
+double CosmicTrack_DCA_Deriv_panel_a(double a0, double b0, double a1, double b1, double wire_x, double wire_y, double wire_z, double wdir_x, double wdir_y, double wdir_z, double plane_x, double plane_y, double plane_z, double panel_straw0x, double panel_straw0y, double panel_straw0z)
+{
+    double R0 = pow(b1, 2);
+    double R1 = R0 + pow(a1, 2) + 1;
+    double R2 = pow(R1, -1.0/2.0);
+    double R3 = R2*b1;
+    double R4 = 1.0*R2;
+    double R5 = atan2(panel_straw0y, panel_straw0x);
+    double R6 = R5*a1;
+    double R7 = R4*R6;
+    double R8 = -R4 + R7;
+    double R9 = 1 - pow(R8, 2);
+    double R10 = 1.0/R9;
+    double R11 = -wire_z;
+    double R12 = R11 + b0;
+    double R13 = R12*R3;
+    double R14 = sqrt(pow(panel_straw0x, 2) + pow(panel_straw0y, 2));
+    double R15 = sqrt(pow(wire_x, 2) + pow(wire_y, 2));
+    double R16 = R14 - R15 + a0 - panel_straw0x;
+    double R17 = R2*a1;
+    double R18 = R16*R17;
+    double R19 = R5*(-R14 + R15);
+    double R20 = R19 - panel_straw0y;
+    double R21 = R2*R20;
+    double R22 = 1.0*R5;
+    double R23 = R16*R22 + 1.0*R19 - 1.0*panel_straw0y;
+    double R24 = -R13 - R18 + R21 + R23*R8;
+    double R25 = R10*R24;
+    double R26 = R12 + R25*R3;
+    double R27 = R13 + R18 - R21;
+    double R28 = R23 - R27*R8;
+    double R29 = R10*R28;
+    double R30 = R16 + R17*R25 - R22*R29;
+    double R31 = -R2*R25 + R20 - 1.0*R29;
+    double R32 = R11 + panel_straw0z;
+    double R33 = R2*R32;
+    double R34 = R33*R6;
+    double R35 = 1.0*R32*pow(R5, 2) - 1.0*b0 + 1.0*panel_straw0z;
+    double R36 = R4*b1;
+    double R37 = 2*R10*(-R23*R36 + R33 - R34 + R35*R8);
+    double R38 = 4.0*R8/pow(R9, 2);
+    double R39 = R24*R38/R1;
+    double R40 = 2.0*R10*(R27*R36 + R35 + (-R33 + R34)*(R4 - R7));
+    double R41 = R39*b1;
+    double R42 = R28*R3*R38;
+    double R43 = ((1.0/2.0)*R26*(-R0*R39 + 2.0*R29 + R3*R37) + (1.0/2.0)*R30*(R17*R37 + 2*R32*R5 - R40*R5 - R41*a1 + R42*R5) + (1.0/2.0)*R31*(-R2*R37 - R40 + R41 + R42 + 2*panel_straw0z - 2*wire_z))/sqrt(pow(R26, 2) + pow(R30, 2) + pow(R31, 2));
+    double result = ((R29 > 0) ? (
+   R43
+)
+: (
+   -R43
+));
+    return result;
+}
+
+
+double CosmicTrack_DCA_Deriv_panel_b(double a0, double b0, double a1, double b1, double wire_x, double wire_y, double wire_z, double wdir_x, double wdir_y, double wdir_z, double plane_x, double plane_y, double plane_z, double panel_straw0x, double panel_straw0y, double panel_straw0z)
+{
+    double R0 = pow(pow(a1, 2) + pow(b1, 2) + 1, -1.0/2.0);
+    double R1 = R0*b1;
+    double R2 = 1.0*R0;
+    double R3 = atan2(panel_straw0y, panel_straw0x);
+    double R4 = R2*R3*a1;
+    double R5 = -R2 + R4;
+    double R6 = 1.0/(1 - pow(R5, 2));
+    double R7 = -wire_z;
+    double R8 = R7 + b0;
+    double R9 = R1*R8;
+    double R10 = sqrt(pow(panel_straw0x, 2) + pow(panel_straw0y, 2));
+    double R11 = sqrt(pow(wire_x, 2) + pow(wire_y, 2));
+    double R12 = R10 - R11;
+    double R13 = R12 + a0 - panel_straw0x;
+    double R14 = R0*a1;
+    double R15 = R13*R14;
+    double R16 = R3*(-R10 + R11);
+    double R17 = R16 - panel_straw0y;
+    double R18 = R0*R17;
+    double R19 = 1.0*R3;
+    double R20 = R13*R19 + 1.0*R16 - 1.0*panel_straw0y;
+    double R21 = R6*(-R15 + R18 + R20*R5 - R9);
+    double R22 = R1*R21 + R8;
+    double R23 = R6*(R20 - R5*(R15 - R18 + R9));
+    double R24 = R13 + R14*R21 - R19*R23;
+    double R25 = -R0*R21 + R17 - 1.0*R23;
+    double R26 = R7 + panel_straw0z;
+    double R27 = R14*R26;
+    double R28 = R26*R3;
+    double R29 = R0*R28;
+    double R30 = R1*R12;
+    double R31 = 2*R6*(-R27 - R29 - R30);
+    double R32 = 2.0*R6*(R2 - R4)*(R27 + R29 + R30);
+    double R33 = ((1.0/2.0)*R22*(R1*R31 + 2*R10 - 2*R11) + (1.0/2.0)*R24*(R14*R31 - R3*R32 + 2*panel_straw0z - 2*wire_z) + (1.0/2.0)*R25*(-R0*R31 - 2*R28 - R32))/sqrt(pow(R22, 2) + pow(R24, 2) + pow(R25, 2));
+    double result = ((R23 > 0) ? (
+   R33
+)
+: (
+   -R33
+));
+    return result;
+}
+
+
+double CosmicTrack_DCA_Deriv_panel_g(double a0, double b0, double a1, double b1, double wire_x, double wire_y, double wire_z, double wdir_x, double wdir_y, double wdir_z, double plane_x, double plane_y, double plane_z, double panel_straw0x, double panel_straw0y, double panel_straw0z)
+{
+    double R0 = pow(pow(a1, 2) + pow(b1, 2) + 1, -1.0/2.0);
+    double R1 = R0*b1;
+    double R2 = 1.0*R0;
+    double R3 = atan2(panel_straw0y, panel_straw0x);
+    double R4 = R2*a1;
+    double R5 = R3*R4;
+    double R6 = -R2 + R5;
+    double R7 = 1 - pow(R6, 2);
+    double R8 = 1.0/R7;
+    double R9 = b0 - wire_z;
+    double R10 = R1*R9;
+    double R11 = sqrt(pow(panel_straw0x, 2) + pow(panel_straw0y, 2));
+    double R12 = sqrt(pow(wire_x, 2) + pow(wire_y, 2));
+    double R13 = R11 - R12;
+    double R14 = R13 + a0 - panel_straw0x;
+    double R15 = R0*a1;
+    double R16 = R14*R15;
+    double R17 = R3*(-R11 + R12);
+    double R18 = R17 - panel_straw0y;
+    double R19 = R0*R18;
+    double R20 = 1.0*R3;
+    double R21 = R14*R20 + 1.0*R17 - 1.0*panel_straw0y;
+    double R22 = -R10 - R16 + R19 + R21*R6;
+    double R23 = R22*R8;
+    double R24 = R1*R23 + R9;
+    double R25 = R10 + R16 - R19;
+    double R26 = R21 - R25*R6;
+    double R27 = R26*R8;
+    double R28 = R14 + R15*R23 - R20*R27;
+    double R29 = -R0*R23 + R18 - 1.0*R27;
+    double R30 = 2.0*R3;
+    double R31 = R6*(R0*R30 + 2.0*R15)/pow(R7, 2);
+    double R32 = R22*R31;
+    double R33 = 2*R32;
+    double R34 = R0*R13;
+    double R35 = R3*R34*a1;
+    double R36 = R2*R3;
+    double R37 = -1.0*R13*pow(R3, 2) - R18*R20 + 1.0*a0 - 1.0*panel_straw0x;
+    double R38 = R8*(R21*(R36 + R4) - R34 + R35 + R37*R6);
+    double R39 = 2*R38;
+    double R40 = R26*R31;
+    double R41 = 2*R0;
+    double R42 = R8*(R25*(-R36 - R4) + R37 + (R2 - R5)*(R34 - R35));
+    double R43 = ((1.0/2.0)*R24*(R1*R33 + R1*R39) + (1.0/2.0)*R28*(-2*R13*R3 + R15*R33 + R15*R39 - 2.0*R27 - R30*R40 - R30*R42) + (1.0/2.0)*R29*(-2*R11 + 2*R12 + R27*R30 - R32*R41 - R38*R41 - 2.0*R40 - 2.0*R42))/sqrt(pow(R24, 2) + pow(R28, 2) + pow(R29, 2));
+    double result = ((R27 > 0) ? (
+   R43
+)
+: (
+   -R43
+));
+    return result;
+}
+
+
+std::vector<float> CosmicTrack_DCA_LocalDeriv(double a0, double b0, double a1, double b1, double wire_x, double wire_y, double wire_z, double wdir_x, double wdir_y, double wdir_z, double plane_x, double plane_y, double plane_z, double panel_straw0x, double panel_straw0y, double panel_straw0z)
+{
+        std::vector<float> result = {(float)CosmicTrack_DCA_Deriv_a0(a0,b0,a1,b1,wire_x,wire_y,wire_z,wdir_x,wdir_y,wdir_z,plane_x,plane_y,plane_z,panel_straw0x,panel_straw0y,panel_straw0z),
+(float)CosmicTrack_DCA_Deriv_b0(a0,b0,a1,b1,wire_x,wire_y,wire_z,wdir_x,wdir_y,wdir_z,plane_x,plane_y,plane_z,panel_straw0x,panel_straw0y,panel_straw0z),
+(float)CosmicTrack_DCA_Deriv_a1(a0,b0,a1,b1,wire_x,wire_y,wire_z,wdir_x,wdir_y,wdir_z,plane_x,plane_y,plane_z,panel_straw0x,panel_straw0y,panel_straw0z),
+(float)CosmicTrack_DCA_Deriv_b1(a0,b0,a1,b1,wire_x,wire_y,wire_z,wdir_x,wdir_y,wdir_z,plane_x,plane_y,plane_z,panel_straw0x,panel_straw0y,panel_straw0z)};
 return result;
 }
 
-std::vector<float> CosmicTrack_DCA_GlobalDeriv(double a0, double b0, double a1, double b1, double wire_x, double wire_y, double wire_z, double wdir_x, double wdir_y, double wdir_z, double plane_x, double plane_y, double plane_z, double panel_x, double panel_y, double panel_z)
+std::vector<float> CosmicTrack_DCA_GlobalDeriv(double a0, double b0, double a1, double b1, double wire_x, double wire_y, double wire_z, double wdir_x, double wdir_y, double wdir_z, double plane_x, double plane_y, double plane_z, double panel_straw0x, double panel_straw0y, double panel_straw0z)
 {
-        std::vector<float> result = {(float)CosmicTrack_DCA_Deriv_plane_dx(a0,b0,a1,b1,wire_x,wire_y,wire_z,wdir_x,wdir_y,wdir_z,plane_x,plane_y,plane_z,panel_x,panel_y,panel_z),
-(float)CosmicTrack_DCA_Deriv_plane_dy(a0,b0,a1,b1,wire_x,wire_y,wire_z,wdir_x,wdir_y,wdir_z,plane_x,plane_y,plane_z,panel_x,panel_y,panel_z),
-(float)CosmicTrack_DCA_Deriv_plane_dz(a0,b0,a1,b1,wire_x,wire_y,wire_z,wdir_x,wdir_y,wdir_z,plane_x,plane_y,plane_z,panel_x,panel_y,panel_z),
-(float)CosmicTrack_DCA_Deriv_plane_a(a0,b0,a1,b1,wire_x,wire_y,wire_z,wdir_x,wdir_y,wdir_z,plane_x,plane_y,plane_z,panel_x,panel_y,panel_z),
-(float)CosmicTrack_DCA_Deriv_plane_b(a0,b0,a1,b1,wire_x,wire_y,wire_z,wdir_x,wdir_y,wdir_z,plane_x,plane_y,plane_z,panel_x,panel_y,panel_z),
-(float)CosmicTrack_DCA_Deriv_plane_g(a0,b0,a1,b1,wire_x,wire_y,wire_z,wdir_x,wdir_y,wdir_z,plane_x,plane_y,plane_z,panel_x,panel_y,panel_z),
-(float)CosmicTrack_DCA_Deriv_panel_dx(a0,b0,a1,b1,wire_x,wire_y,wire_z,wdir_x,wdir_y,wdir_z,plane_x,plane_y,plane_z,panel_x,panel_y,panel_z),
-(float)CosmicTrack_DCA_Deriv_panel_dy(a0,b0,a1,b1,wire_x,wire_y,wire_z,wdir_x,wdir_y,wdir_z,plane_x,plane_y,plane_z,panel_x,panel_y,panel_z),
-(float)CosmicTrack_DCA_Deriv_panel_dz(a0,b0,a1,b1,wire_x,wire_y,wire_z,wdir_x,wdir_y,wdir_z,plane_x,plane_y,plane_z,panel_x,panel_y,panel_z),
-(float)CosmicTrack_DCA_Deriv_panel_a(a0,b0,a1,b1,wire_x,wire_y,wire_z,wdir_x,wdir_y,wdir_z,plane_x,plane_y,plane_z,panel_x,panel_y,panel_z),
-(float)CosmicTrack_DCA_Deriv_panel_b(a0,b0,a1,b1,wire_x,wire_y,wire_z,wdir_x,wdir_y,wdir_z,plane_x,plane_y,plane_z,panel_x,panel_y,panel_z),
-(float)CosmicTrack_DCA_Deriv_panel_g(a0,b0,a1,b1,wire_x,wire_y,wire_z,wdir_x,wdir_y,wdir_z,plane_x,plane_y,plane_z,panel_x,panel_y,panel_z)};
+        std::vector<float> result = {(float)CosmicTrack_DCA_Deriv_plane_dx(a0,b0,a1,b1,wire_x,wire_y,wire_z,wdir_x,wdir_y,wdir_z,plane_x,plane_y,plane_z,panel_straw0x,panel_straw0y,panel_straw0z),
+(float)CosmicTrack_DCA_Deriv_plane_dy(a0,b0,a1,b1,wire_x,wire_y,wire_z,wdir_x,wdir_y,wdir_z,plane_x,plane_y,plane_z,panel_straw0x,panel_straw0y,panel_straw0z),
+(float)CosmicTrack_DCA_Deriv_plane_dz(a0,b0,a1,b1,wire_x,wire_y,wire_z,wdir_x,wdir_y,wdir_z,plane_x,plane_y,plane_z,panel_straw0x,panel_straw0y,panel_straw0z),
+(float)CosmicTrack_DCA_Deriv_plane_a(a0,b0,a1,b1,wire_x,wire_y,wire_z,wdir_x,wdir_y,wdir_z,plane_x,plane_y,plane_z,panel_straw0x,panel_straw0y,panel_straw0z),
+(float)CosmicTrack_DCA_Deriv_plane_b(a0,b0,a1,b1,wire_x,wire_y,wire_z,wdir_x,wdir_y,wdir_z,plane_x,plane_y,plane_z,panel_straw0x,panel_straw0y,panel_straw0z),
+(float)CosmicTrack_DCA_Deriv_plane_g(a0,b0,a1,b1,wire_x,wire_y,wire_z,wdir_x,wdir_y,wdir_z,plane_x,plane_y,plane_z,panel_straw0x,panel_straw0y,panel_straw0z),
+(float)CosmicTrack_DCA_Deriv_panel_dx(a0,b0,a1,b1,wire_x,wire_y,wire_z,wdir_x,wdir_y,wdir_z,plane_x,plane_y,plane_z,panel_straw0x,panel_straw0y,panel_straw0z),
+(float)CosmicTrack_DCA_Deriv_panel_dy(a0,b0,a1,b1,wire_x,wire_y,wire_z,wdir_x,wdir_y,wdir_z,plane_x,plane_y,plane_z,panel_straw0x,panel_straw0y,panel_straw0z),
+(float)CosmicTrack_DCA_Deriv_panel_dz(a0,b0,a1,b1,wire_x,wire_y,wire_z,wdir_x,wdir_y,wdir_z,plane_x,plane_y,plane_z,panel_straw0x,panel_straw0y,panel_straw0z),
+(float)CosmicTrack_DCA_Deriv_panel_a(a0,b0,a1,b1,wire_x,wire_y,wire_z,wdir_x,wdir_y,wdir_z,plane_x,plane_y,plane_z,panel_straw0x,panel_straw0y,panel_straw0z),
+(float)CosmicTrack_DCA_Deriv_panel_b(a0,b0,a1,b1,wire_x,wire_y,wire_z,wdir_x,wdir_y,wdir_z,plane_x,plane_y,plane_z,panel_straw0x,panel_straw0y,panel_straw0z),
+(float)CosmicTrack_DCA_Deriv_panel_g(a0,b0,a1,b1,wire_x,wire_y,wire_z,wdir_x,wdir_y,wdir_z,plane_x,plane_y,plane_z,panel_straw0x,panel_straw0y,panel_straw0z)};
 return result;
 }
 
