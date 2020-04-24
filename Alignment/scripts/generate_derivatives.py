@@ -22,7 +22,7 @@ from sympy.matrices.dense import matrix_multiply_elementwise
 
 c_template = """
 
-# include "CosmicAlignment/inc/RigidBodyDOCADeriv.hh"
+# include "Alignment/inc/RigidBodyDOCADeriv.hh"
 # include <math.h>
 # include <vector>
 
