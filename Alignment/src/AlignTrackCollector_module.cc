@@ -85,6 +85,7 @@ class AlignTrackCollector : public art::EDAnalyzer {
     Float_t doca_residual[MAX_NHITS];
     Float_t time_residual[MAX_NHITS];
     Float_t doca_resid_err[MAX_NHITS];
+    Float_t pull[MAX_NHITS];
     Float_t doca[MAX_NHITS];
     Float_t time[MAX_NHITS];
     Int_t plane_uid[MAX_NHITS];
@@ -257,6 +258,7 @@ void AlignTrackCollector::beginJob()
         diagtree->Branch("doca_resid", &doca_residual, "doca_resid[nHits]/F");
         diagtree->Branch("time_resid", &time_residual, "time_resid[nHits]/F");
         diagtree->Branch("doca_resid_err", &doca_resid_err, "doca_resid_err[nHits]/F");
+        diagtree->Branch("pull", &pull, "pull[nHits]/F");
 
         diagtree->Branch("doca", &doca, "doca[nHits]/F");
         diagtree->Branch("time", &time, "time[nHits]/F");
@@ -467,6 +469,7 @@ bool AlignTrackCollector::filter_CosmicTrackSeedCollection(art::Event const& eve
             doca_residual[nHits] = resid_tmp;
             time_residual[nHits] = time_resid;
             doca_resid_err[nHits] = resid_err_tmp;
+            pull[nHits] = resid_tmp / resid_err_tmp;
             doca[nHits] = pca.dca();
             time[nHits] = straw_hit.time();
             panel_uid[nHits] = panel_uuid;
@@ -494,7 +497,7 @@ bool AlignTrackCollector::filter_CosmicTrackSeedCollection(art::Event const& eve
 
             // write the hit to the track buffer
             millepede->mille(derivativesLocal.size(), derivativesLocal.data(),
-                             derivativesGlobal.size(), derivativesGlobal.data(),
+                             derivativesGlobal.size()-6, derivativesGlobal.data()-6,
                              global_dof_labels.data(), (float)resid_tmp, (float)resid_err_tmp);
 
             // diagnostic information
