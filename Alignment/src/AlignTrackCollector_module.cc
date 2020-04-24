@@ -419,15 +419,17 @@ bool AlignTrackCollector::filter_CosmicTrackSeedCollection(art::Event const& eve
 
             // now calculate the derivatives.
             auto derivativesLocal =
-                CosmicTrack_DCA_LocalDeriv(A0, B0, A1, B1, straw_mp.x(), straw_mp.y(), straw_mp.z(),
+                CosmicTrack_DCA_LocalDeriv(A0, B0, A1, B1,
+                                           straw_mp.x(), straw_mp.y(), straw_mp.z(),
                                            wire_dir.x(), wire_dir.y(), wire_dir.z(),
 
                                            plane_origin.x(), plane_origin.y(), plane_origin.z(),
                                            panel_origin.x(), panel_origin.y(), panel_origin.z());
 
             auto derivativesGlobal =
-                CosmicTrack_DCA_GlobalDeriv(A0, B0, A1, B1, straw_mp.x(), straw_mp.y(),
-                                            straw_mp.z(), wire_dir.x(), wire_dir.y(), wire_dir.z(),
+                CosmicTrack_DCA_GlobalDeriv(A0, B0, A1, B1,
+                                            straw_mp.x(), straw_mp.y(), straw_mp.z(),
+                                            wire_dir.x(), wire_dir.y(), wire_dir.z(),
 
                                             plane_origin.x(), plane_origin.y(), plane_origin.z(),
                                             panel_origin.x(), panel_origin.y(), panel_origin.z());
@@ -435,7 +437,6 @@ bool AlignTrackCollector::filter_CosmicTrackSeedCollection(art::Event const& eve
             double resid_tmp = fit_object.DOCAresidual(straw_hit, sts);
             double time_resid = fit_object.TimeResidual(straw_hit, sts);
             double resid_err_tmp = fit_object.DOCAresidualError(straw_hit, sts);
-
 
 
             // FIXME: crude! doesn't belong here!
@@ -497,7 +498,7 @@ bool AlignTrackCollector::filter_CosmicTrackSeedCollection(art::Event const& eve
 
             // write the hit to the track buffer
             millepede->mille(derivativesLocal.size(), derivativesLocal.data(),
-                             derivativesGlobal.size()-6, derivativesGlobal.data()-6,
+                             derivativesGlobal.size(), derivativesGlobal.data(),
                              global_dof_labels.data(), (float)resid_tmp, (float)resid_err_tmp);
 
             // diagnostic information
