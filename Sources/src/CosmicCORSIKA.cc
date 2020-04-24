@@ -261,7 +261,6 @@ namespace mu2e {
       for (unsigned int i = 0; i < particles.size(); i++) {
         GenParticle particle = particles[i];
 
-
         _targetBoxIntersections.clear();
         VectorVolume particleTarget(particle.position(), particle.momentum().vect(),
                                     _targetBoxXmin, _targetBoxXmax,
