@@ -55,7 +55,7 @@ namespace mu2e {
       std::set<art::SubRunID> seenSRIDs_;
 
       std::string currentFileName_;
-      FILE *currentFile_ = nullptr;
+      std::ifstream *currentFile_ = nullptr;
       float garbage;
 
       unsigned currentSubRunNumber_; // from file
@@ -108,8 +108,6 @@ namespace mu2e {
       , runNumber_(conf().runNumber())
       , currentSubRunNumber_(-1U)
       , currentEventNumber_(0)
-      , _lowE(conf().lowE())
-      , _highE(conf().highE())
       , _fluxConstant(conf().fluxConstant())
       , _corsikaGen(conf(), art::ServiceHandle<SeedService>{}->getInputSourceSeed())
     {
@@ -128,46 +126,23 @@ namespace mu2e {
     void CorsikaBinaryDetail::readFile(const std::string& filename, art::FileBlock*& fb) {
 
       currentFileName_ = filename;
-      currentSubRunNumber_ = getSubRunNumber(filename);
       currentEventNumber_ = 0;
 
-      currentFile_ = fopen(filename.c_str(), "r");
-      _corsikaGen.openFile(currentFile_);
+      currentFile_ = new ifstream(currentFileName_);
+
+      unsigned subrun = 0;
+      float lowE, highE;
+      _corsikaGen.openFile(currentFile_, subrun, lowE, highE);
+      currentSubRunNumber_ = subrun;
+      _lowE = lowE;
+      _highE = highE;
       fb = new art::FileBlock(art::FileFormatVersion(1, "CorsikaBinaryInput"), currentFileName_);
-    }
-
-    //----------------------------------------------------------------
-    unsigned CorsikaBinaryDetail::getSubRunNumber(const std::string& filename) const {
-      std::regex re_corsika("^(.*/)?DAT([0-9]+)$");
-      std::regex re_mu2e("^(.*/)?sim\\.\\w+\\.[\\w-]+\\.[\\w-]+\\.([0-9]+)\\.csk$");
-
-      unsigned sr(-1);
-
-      std::smatch match;
-      if(std::regex_search(filename, match, re_corsika)) {
-        // [0]: the whole string
-        // [1]: dirname or emtpy
-        // [2]: the run number string
-        sr = std::stoi(match.str(2));
-      }
-      else if(std::regex_search(filename, match, re_mu2e)) {
-        // [0]: the whole string
-        // [1]: dirname or emtpy
-        // [2]: the run number string
-        sr = std::stoi(match.str(2));
-      }
-      else {
-        throw cet::exception("BADINPUT", " FromCorsikaBinary: ")
-          << " Can not parse filename to extract subrun number:  "<<filename<<"\n";
-      }
-
-      return sr;
     }
 
     //----------------------------------------------------------------
     void CorsikaBinaryDetail::closeCurrentFile() {
       currentFileName_ = "";
-      fclose(currentFile_);
+      currentFile_->close();
     }
 
     //----------------------------------------------------------------
@@ -180,6 +155,7 @@ namespace mu2e {
       std::unique_ptr<GenParticleCollection> particles(new GenParticleCollection());
       unsigned int primaries;
       bool still_data = _corsikaGen.generate(*particles, primaries);
+
       if (!still_data) {
         return false;
       }
