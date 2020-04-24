@@ -1,6 +1,6 @@
 
 
-# include "CosmicAlignment/inc/RigidBodyDOCADeriv.hh"
+# include "Alignment/inc/RigidBodyDOCADeriv.hh"
 # include <math.h>
 # include <vector>
 
