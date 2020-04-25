@@ -17,7 +17,7 @@ source : {
 services : {
     message : @local::default_message
     scheduler: { defaultExceptions : false }
-    RandomNumberGenerator : {}
+    RandomNumberGenerator : {defaultEngineKind: "MixMaxRng"}
     GeometryService : { inputFile : "ExtinctionMonitorFNAL/test/geom_s2EMFTwoGrooves.txt" }
     SeedService       : @local::automaticSeeds
 }
@@ -37,7 +37,7 @@ physics : {
 }
 
 //----------------------------------------------------------------
-services.SeedService.baseSeed         :  0
+services.SeedService.baseSeed         :  8
 services.SeedService.maxUniqueEngines :  20
 
 // This tells emacs to view this file in the JavaScript mode.

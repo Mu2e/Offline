@@ -25,7 +25,7 @@ services : {
     #    TFileService          : { fileName : "e11s6220.hist" }
     TFileService          : { fileName : "/mu2e/data/users/gianipez/hist/readDigis.hist" }
 
-    RandomNumberGenerator : { }
+    RandomNumberGenerator : {defaultEngineKind: "MixMaxRng" }
     #   Timing                : { }
 
     GeometryService        : { inputFile      : "Mu2eG4/geom/geom_common.txt"          }
@@ -34,7 +34,7 @@ services : {
     G4Helper               : { }
     BTrkHelper             : @local::BTrkHelperDefault
     SeedService            : { @table::automaticSeeds
-	baseSeed         :  0
+	baseSeed         :  8
 	maxUniqueEngines :  20
     }
     

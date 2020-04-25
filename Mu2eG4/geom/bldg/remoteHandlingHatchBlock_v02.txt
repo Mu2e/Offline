@@ -1,0 +1,31 @@
+// SimpleConfig geometry file automatically produced for original file: 
+//
+//   geom/geom_remoteHatchBlock.ccl
+
+string building.remote.handling.hatch.block.name     = "remoteHandlingHatchBlock";
+
+string building.remote.handling.hatch.block.material = "CONCRETE_MARS";
+
+double building.remote.handling.hatch.block.offsetFromMu2eOrigin.x   = 947.4;
+double building.remote.handling.hatch.block.offsetFromFloorSurface.y = 7010.4; 
+double building.remote.handling.hatch.block.offsetFromMu2eOrigin.z   = -3581.4;
+
+double building.remote.handling.hatch.block.yHalfThickness           = 1828.8; 
+
+vector<double> building.remote.handling.hatch.block.xPositions = {
+  3733.8,   // R0
+  9220.2,   // R1
+  9220.2,   // R2
+  3733.8    // R3
+};
+
+vector<double> building.remote.handling.hatch.block.yPositions = {
+  16129.0,   // R0
+  16129.0,   // R1
+  13385.9,   // R2
+  13385.9   // R3
+};
+
+// Local Variables:
+// mode:c++
+// End:

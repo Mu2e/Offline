@@ -15,7 +15,7 @@ source : {
 services: {
     message: @local::default_message
     scheduler: { defaultExceptions : false }
-    RandomNumberGenerator : {}
+    RandomNumberGenerator : {defaultEngineKind: "MixMaxRng"}
     GlobalConstantsService : { inputFile : "Mu2eG4/test/globalConstants_01.txt" }
     SeedService       : @local::automaticSeeds
 }
@@ -66,7 +66,7 @@ process_name : g4s1EMFMARSRoomHist
 services.GeometryService.inputFile : "ExtinctionMonitorFNAL/test/geom_s1EMFMARSRoom.txt"
 services.TFileService.fileName : "s1EMFMARSRoomHistos.root"
 
-services.SeedService.baseSeed         :  0
+services.SeedService.baseSeed         :  8
 services.SeedService.maxUniqueEngines :  20
 
 //services.Timing : {}

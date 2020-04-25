@@ -14,7 +14,7 @@ source : { module_type : EmptyEvent maxEvents : 1 }
 
 services : {
    message               : @local::mf_errorsOnly
-   RandomNumberGenerator : { }
+   RandomNumberGenerator : {defaultEngineKind: "MixMaxRng" }
 
    GeometryService        : { inputFile      : "ExtinctionMonitorFNAL/test/geom_Mau11.txt" }
    ConditionsService      : { conditionsfile : "Mu2eG4/test/conditions_01.txt"      }
@@ -51,7 +51,6 @@ physics : {
          debug: @local::mu2eg4DefaultDebug
          visualization: @local::mu2eg4NoVisualization
          generatorModuleLabel: generate
-         MultiStageParameters: {} // this is the first stage
          SDConfig: {
             enableSD: [ ] // activate just the explicitly listed SDs
             TimeVD: { times: [] }
@@ -72,5 +71,5 @@ physics.producers.g4run.debug.eventList: [ 0, 1 ]
 physics.producers.g4run.debug.worldVerbosityLevel: 2
 
 // Initialze seeding of random engines: do not put these lines in base .fcl files for grid jobs.
-services.SeedService.baseSeed         :  0
+services.SeedService.baseSeed         :  8
 services.SeedService.maxUniqueEngines :  20

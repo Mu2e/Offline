@@ -99,7 +99,7 @@ services :
     fileName : "CaloClusterCogCorrFunc.root"
   }
 
-  RandomNumberGenerator : { }
+  RandomNumberGenerator : {defaultEngineKind: "MixMaxRng" }
 
   GeometryService :
   {
@@ -240,6 +240,6 @@ outputs:
 #physics.producers.CaloCrystalHitsMaker.maxFullPrint : 0
 physics.producers.generate.inputfile : "CaloCluster/test/genconfig_giani.txt"
 #physics.producers.generate.inputfile : "Analyses/test/genconfig_fromBeam.txt"
-services.SeedService.baseSeed         :  0
+services.SeedService.baseSeed         :  8
 services.SeedService.maxUniqueEngines :  20
 

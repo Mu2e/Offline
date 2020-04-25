@@ -8,13 +8,13 @@
 
 #include "canvas/Utilities/InputTag.h"
 
-namespace fhicl { class ParameterSet; }
+#include "Mu2eG4/inc/Mu2eG4Config.hh"
 
 namespace mu2e {
 
   class Mu2eG4MultiStageParameters {
   public:
-    explicit Mu2eG4MultiStageParameters(const fhicl::ParameterSet& pset);
+    explicit Mu2eG4MultiStageParameters(const Mu2eG4Config::Top& conf);
 
     bool multiStage() const { return multiStage_; }
 

@@ -16,7 +16,7 @@ source       : { module_type : EmptyEvent   }
 services : {
     message               : @local::default_message
     TFileService          : { fileName        : "nts.user.cePLeadingLog_test.xxx.000001.root" }
-    RandomNumberGenerator : { }
+    RandomNumberGenerator : {defaultEngineKind: "MixMaxRng" }
 
     GeometryService        : { inputFile      : "JobConfig/common/geom_baseline.txt"  }
     ConditionsService      : { conditionsfile : "Mu2eG4/test/conditions_01.txt"       }
@@ -24,7 +24,7 @@ services : {
     BTrkHelper             : @local::BTrkHelperDefault
     G4Helper               : { }
     SeedService            : { @table::automaticSeeds
-	baseSeed         :  0
+	baseSeed         :  8
 	maxUniqueEngines :  20
     }
 

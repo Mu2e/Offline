@@ -17,7 +17,7 @@
 //
 //    SeedService : {
 //       policy           : "autoIncrement"  // Required: Other legal value are listed in SEED_SERVICE_POLICIES
-//       baseSeed         : 0                // Required: An integer >= 0.
+//       baseSeed         : 0                // Required: An integer > 0.
 //       checkRange       : true             // Optional: legal values true or false; defaults to true
 //       maxUniqueEngines : 20               // Required iff checkRange is true.
 //
@@ -152,6 +152,7 @@ namespace mu2e {
     // Return the seed value for this module label (instance name).
     seed_t getSeed();
     seed_t getSeed( std::string const& instanceName );
+    seed_t getInputSourceSeed(); // to be called from InputSource constructor
 
     // Print known (EngineId,seed) pairs.
     template<class Stream> void print(Stream&) const;
@@ -196,7 +197,7 @@ namespace mu2e {
 
     // Helper functions for all policies
     void setPolicy       ( );
-    void ensureValidState( );
+    void ensureValidState( SeedServiceHelper::EngineId const& id);
     void ensureRange     ( SeedServiceHelper::EngineId const& id, seed_t seed );
     void ensureUnique    ( SeedServiceHelper::EngineId const& id, seed_t seed );
     void parseCommon     ();

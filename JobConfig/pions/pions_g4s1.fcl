@@ -27,7 +27,7 @@ source : {
 services : {
     message                : @local::default_message
     TFileService           : { fileName : "nts.owner.pions-g4s1.version.sequencer.root" }
-    RandomNumberGenerator  : {}
+    RandomNumberGenerator  : {defaultEngineKind: "MixMaxRng"}
     GeometryService        : { inputFile      : "JobConfig/common/geom_baseline.txt"    }
     ConditionsService      : { conditionsfile : "Mu2eG4/test/conditions_01.txt"      }
     GlobalConstantsService : { inputFile      : "Mu2eG4/test/globalConstants_01.txt" }
@@ -39,10 +39,7 @@ physics : {
 
     producers : {
 
-        generate : {
-            module_type : EventGenerator
-            inputfile   : "JobConfig/beam/genconfig_PrimaryProtons.txt"
-        }
+        generate: @local::PrimaryProtonGun
 
         genCounter : { module_type : GenEventCounter }
 
@@ -56,7 +53,6 @@ physics : {
             visualization     : @local::mu2eg4NoVisualization
 
             generatorModuleLabel : generate
-            MultiStageParameters : {} // This is the first stage
 
             SDConfig : {
                 enableSD : [ virtualdetector ] // activate just the explicitly listed SDs
@@ -142,5 +138,6 @@ services.message.destinations.log.categories.ArtReport.limit : 1
 services.message.destinations.log.categories.ArtReport.timespan : 300
 
 // Initialze seeding of random engines: do not put these lines in base .fcl files for grid jobs.
-services.SeedService.baseSeed          : 0
+services.SeedService.baseSeed          : 8
 services.SeedService.maxUniqueEngines  : 20
+services.GeometryService.simulatedDetector.tool_type : "Mu2e"

@@ -11,7 +11,7 @@ services : {
 
     scheduler: { defaultExceptions : false }
     TFileService : {}
-    RandomNumberGenerator : {}
+    RandomNumberGenerator : {defaultEngineKind: "MixMaxRng"}
 
     GeometryService : { inputFile : "Mu2eG4/geom/geom_common.txt" }
     ConditionsService : { conditionsfile : "Mu2eG4/test/conditions_01.txt" }
@@ -68,7 +68,7 @@ physics : {
 outputs: { FullOutput : { module_type : RootOutput } }
 
 //----------------------------------------------------------------
-services.SeedService.baseSeed         :  0
+services.SeedService.baseSeed         :  8
 services.SeedService.maxUniqueEngines :  20
 
 // somewhat reduce the amount of "volatile" printouts

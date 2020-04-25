@@ -5,21 +5,20 @@
 //
 #ifndef BkgClusterer_HH
 #define BkgClusterer_HH
-// data
-#include "RecoDataProducts/inc/ComboHit.hh"
+
 #include "RecoDataProducts/inc/BkgCluster.hh"
-//
+#include "RecoDataProducts/inc/ComboHit.hh"
+
 namespace mu2e 
 {
-  class BkgClusterer
-  {
-  public:
-    virtual ~BkgClusterer() {}
-// initialize
-    virtual void init() = 0;
-// main function: given the straw hits and associated data, find the clusters.
-    virtual void findClusters(BkgClusterCollection& clusters,
-      ComboHitCollection const& shcol) = 0;
-  };
+    class BkgClusterer
+    {
+        public:
+            virtual ~BkgClusterer() {}
+            virtual void  init() = 0;
+            virtual void  findClusters(BkgClusterCollection& clusters, const ComboHitCollection& shcol, float mbtime, int iev) = 0;
+            virtual float distance(const BkgCluster& cluster, const ComboHit& hit) const = 0; 
+    };
 }
+
 #endif

@@ -29,7 +29,7 @@ source : {
 services : {
    message               : @local::default_message
    TFileService          : { fileName : "nts.owner.pbar_g4s0.version.sequencer.root" }
-   RandomNumberGenerator : { }
+   RandomNumberGenerator : {defaultEngineKind: "MixMaxRng" }
 
    GeometryService        : { inputFile      : "JobConfig/common/geom_baseline.txt"    }
    ConditionsService      : { conditionsfile : "Mu2eG4/test/conditions_01.txt"      }
@@ -40,11 +40,7 @@ services : {
 
 physics : {
    producers : {
-      generate : {
-         module_type : EventGenerator
-         inputfile   : "JobConfig/beam/genconfig_PrimaryProtons.txt"
-      }
-    
+      generate: @local::PrimaryProtonGun    
 
       genCounter: { module_type : GenEventCounter }
 
@@ -57,7 +53,6 @@ physics : {
          visualization     : @local::mu2eg4NoVisualization
 
          generatorModuleLabel : generate
-         MultiStageParameters : {} // This is the first stage
 
          SDConfig: {
             enableSD : [] // activate just the explicitly listed SDs
@@ -151,7 +146,7 @@ services.message.destinations.log.categories.ArtReport.timespan : 300
 
 // Initialze seeding of random engines for an out-of-the-box test job.
 // Grid jobs will overwrite this to use different seeds.
-services.SeedService.baseSeed          : 0
+services.SeedService.baseSeed          : 8
 services.SeedService.maxUniqueEngines  : 20
 
 physics.producers.g4run.Mu2eG4SteppingOnlyCut : { }
@@ -173,3 +168,6 @@ physics.producers.g4run.Mu2eG4StackingOnlyCut : {
    ]
 
 }
+
+
+services.GeometryService.simulatedDetector.tool_type : "Mu2e"

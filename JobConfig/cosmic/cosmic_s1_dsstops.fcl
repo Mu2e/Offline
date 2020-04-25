@@ -113,7 +113,7 @@ services :
 
    message               : @local::default_message
    TFileService          : { }
-   RandomNumberGenerator : { }
+   RandomNumberGenerator : {defaultEngineKind: "MixMaxRng" }
 
    GeometryService        : { inputFile      : "JobConfig/cosmic/geom_cosmic.txt" }
    ConditionsService      : { conditionsfile : "Mu2eG4/test/conditions_01.txt"      }
@@ -165,7 +165,6 @@ physics :
          visualization: @local::mu2eg4NoVisualization
 
          generatorModuleLabel: generate
-         MultiStageParameters: {} // this is the first stage
 
          SDConfig: 
          {
@@ -301,14 +300,11 @@ services.message.destinations.log.categories.ArtReport.limit : 1
 services.message.destinations.log.categories.ArtReport.timespan : 300
 
 // Initialze seeding of random engines: do not put these lines in base .fcl files for grid jobs.
-services.SeedService.baseSeed         :  0
+services.SeedService.baseSeed         :  8
 services.SeedService.maxUniqueEngines :  20
 
 physics.producers.generate.inputFile    : "EventGenerator/defaultConfigs/defaultCRYconfig.txt"
-physics.producers.generate.module_type  : CRYEventGeneratorN
-physics.producers.generate.stashSize    : 10000
-physics.producers.g4run.runinMTMode     : false
-physics.producers.g4run.numberOfThreads : 8
+physics.producers.generate.module_type  : CRYEventGenerator
 
 physics.producers.g4run.G4InteralFiltering  : false
 physics.producers.g4run.errorOnFailureToPut : false

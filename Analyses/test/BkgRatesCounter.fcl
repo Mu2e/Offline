@@ -122,5 +122,5 @@ physics.producers.makeSH.maxFullPrint : 0
 physics.producers.generate.inputfile : "Analyses/test/genconfig_Bkg.txt"
 #physics.producers.generate.inputfile : "Analyses/test/genconfig_fromBeam.txt"
 services.TFileService.fileName : "BkgRates.root"
-services.SeedService.baseSeed         :  0
+services.SeedService.baseSeed         :  8
 services.SeedService.maxUniqueEngines :  20

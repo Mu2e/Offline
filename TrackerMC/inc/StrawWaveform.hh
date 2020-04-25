@@ -20,6 +20,7 @@
 #include "ConditionsService/inc/ConditionsHandle.hh"
 #include "TrackerConditions/inc/StrawElectronics.hh"
 #include "DataProducts/inc/TrkTypes.hh"
+#include "TrackerGeom/inc/Straw.hh"
 #include "TrackerMC/inc/StrawClusterSequence.hh"
 
 namespace mu2e {
@@ -40,7 +41,7 @@ namespace mu2e {
     class StrawWaveform{
       public:
 	// construct from a clust sequence and response object.  Scale affects the voltage
-	StrawWaveform(StrawClusterSequence const& hseqq, XTalk const& xtalk);
+	StrawWaveform(Straw const& straw, StrawClusterSequence const& hseqq, XTalk const& xtalk);
 	// disallow copy and assignment
 	StrawWaveform() = delete; // don't allow default constructor, references can't be assigned empty
 	StrawWaveform(StrawWaveform const& other);
@@ -58,24 +59,24 @@ namespace mu2e {
 	StrawClusterSequence const& clusts() const { return _cseq; }
 	XTalk const& xtalk() const { return _xtalk; }
 	StrawEnd const& strawEnd() const { return _cseq.strawEnd(); }
-        StrawId const& strawId() const { return _sid; }
+        Straw const& straw() const { return _straw;}
       private:
 	// clust sequence used in this waveform
 	StrawClusterSequence const& _cseq;
 	XTalk _xtalk; // X-talk applied to all voltages
-        StrawId const& _sid;
+        Straw const& _straw;
 	// helper functions
 	void returnCrossing(StrawElectronics const& strawele, double threshold, WFX& wfx) const;
 	bool roughCrossing(StrawElectronics const& strawele, double threshold, WFX& wfx) const;
 	bool fineCrossing(StrawElectronics const& strawele, double threshold, double vmax, WFX& wfx) const;
-	double maxLinearResponse(StrawElectronics const& strawele,ClusterList::const_iterator const& iclust) const;
+	double maxLinearResponse(StrawElectronics const& strawele,StrawClusterList::const_iterator const& iclust) const;
     };
 
     struct WFX { // waveform crossing
       double _time; // time waveform crossed threhold.  Note this includes noise effects
       double _vstart; // starting voltage, at time 0 of the referenced clust
       double _vcross; // crossing voltage
-      ClusterList::const_iterator _iclust; // iterator to clust associated with this crossing
+      StrawClusterList::const_iterator _iclust; // iterator to clust associated with this crossing
       WFX() = delete; // disallow
       WFX(StrawWaveform const& wf, double time) : _time(time), _vstart(0.0), _vcross(0.0),
       _iclust(wf.clusts().clustList().begin()) {}

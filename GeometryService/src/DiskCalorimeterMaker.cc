@@ -48,7 +48,7 @@
 #include "CLHEP/Units/PhysicalConstants.h"
 #include "CLHEP/Matrix/DiagMatrix.h"
 
-#include <math.h>
+#include <cmath>
 #include <memory>
 
 

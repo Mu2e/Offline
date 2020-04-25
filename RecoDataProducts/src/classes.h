@@ -34,6 +34,7 @@
 #include "RecoDataProducts/inc/RobustHelix.hh"
 #include "RecoDataProducts/inc/HelixSeed.hh"
 #include "RecoDataProducts/inc/BkgCluster.hh"
+#include "RecoDataProducts/inc/BkgClusterHit.hh"
 #include "RecoDataProducts/inc/BkgQual.hh"
 
 // tracking output

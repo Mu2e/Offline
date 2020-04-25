@@ -1,9 +1,5 @@
 //
-// Defines sensitive detector for a typicaly numbered volume using mu2e reference frame
-//
-// $Id: Mu2eSensitiveDetector.cc,v 1.6 2013/09/06 16:14:00 gandr Exp $
-// $Author: gandr $
-// $Date: 2013/09/06 16:14:00 $
+// DefinesGeant4  sensitive detector for a typicaly numbered volume using Mu2e reference frame
 //
 // Original author KLG
 //
@@ -16,6 +12,7 @@
 
 // Mu2e includes
 #include "Mu2eG4/inc/Mu2eSensitiveDetector.hh"
+#include "MCDataProducts/inc/StepPointMCCollection.hh"
 #include "Mu2eG4/inc/Mu2eG4UserHelpers.hh"
 #include "Mu2eG4/inc/PhysicsProcessInfo.hh"
 #include "Mu2eG4/inc/SimParticleHelper.hh"
@@ -47,12 +44,11 @@ namespace mu2e {
    // Get list of events for which to make debug printout.
     // we generate the key string based on the detector name
     // consult Mu2eG4/inc/SensitiveDetectorName.hh for the names
-
     std::ostringstream sdKeyName;
     sdKeyName<<"g4."<< SensitiveDetectorName << "SDEventList";
     // G4cout << __func__ << " sdKeyName: " << sdKeyName.str() << G4endl;
     // G4cout << __func__ << " sd name: " << name << G4endl;
- 
+
     string key(sdKeyName.str());
     if ( config.hasName(key) ){
       vector<int> list;
@@ -72,7 +68,7 @@ namespace mu2e {
 
     if ( _sizeLimit>0 && _currentSize>_sizeLimit ) {
       if( (_currentSize - _sizeLimit)==1 ) {
-        mf::LogWarning("G4") << "Maximum number of particles reached in " 
+        mf::LogWarning("G4") << "Maximum number of steps reached in "
                              << SensitiveDetectorName
                              << ": "
                              << _currentSize << endl;
@@ -80,12 +76,11 @@ namespace mu2e {
       return false;
     }
 
-      
 // this little section of code containing 'if ( _debugList.inList() )'
 // was occasionally causing seg faults in MT mode
 // this issue seems to have been fixed
 // but I have taken it out to reduce output 05/18
-      
+
 /*    if ( _debugList.inList() )  {
             G4cout<<"edep "<<aStep->GetTotalEnergyDeposit()
                   <<" nidep "<<aStep->GetNonIonizingEnergyDeposit()
@@ -93,11 +88,11 @@ namespace mu2e {
             G4cout<<"Step vol name "<<aStep->GetTrack()->GetVolume()->GetName()<<G4endl;
     }
 */
-      
+
     // Which process caused this step to end?
     ProcessCode endCode(_processInfo->
                 findAndCount(Mu2eG4UserHelpers::findStepStoppingProcessName(aStep)));
-      
+
       // Add the hit to the framework collection.
       // The point's coordinates are saved in the mu2e coordinate system.
     _collection->
@@ -105,9 +100,11 @@ namespace mu2e {
                             aStep->GetPreStepPoint()->GetTouchableHandle()->GetCopyNumber(),
                             aStep->GetTotalEnergyDeposit(),
                             aStep->GetNonIonizingEnergyDeposit(),
+                            0., // visible energy deposit; used in scintillators
                             aStep->GetPreStepPoint()->GetGlobalTime(),
                             aStep->GetPreStepPoint()->GetProperTime(),
                             aStep->GetPreStepPoint()->GetPosition() - _mu2eOrigin,
+                            aStep->GetPostStepPoint()->GetPosition() - _mu2eOrigin,
                             aStep->GetPreStepPoint()->GetMomentum(),
                             aStep->GetStepLength(),
                             endCode
@@ -152,7 +149,7 @@ namespace mu2e {
     _collection  = &outputHits;
     _processInfo = &processInfo;
     _spHelper    = &spHelper;
-      
+
     return;
 
   }//beforeG4Event

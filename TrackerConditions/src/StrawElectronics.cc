@@ -12,7 +12,7 @@
 #include "GeneralUtilities/inc/DigitalFiltering.hh"
 #include "cetlib_except/exception.h"
 #include "TMath.h"
-#include <math.h>
+#include <cmath>
 #include <complex>
 #include <algorithm>
 
@@ -70,12 +70,23 @@ namespace mu2e {
       response[i] *= 1 / gain_160;
   }
 
-  double StrawElectronics::linearResponse(StrawId sid, Path ipath, double time, double charge, double distance, bool forsaturation) const {
+  double StrawElectronics::linearResponse(Straw const& straw, Path ipath, double time, double charge, double distance, bool forsaturation) const {
     int index = time*_sampleRate + _responseBins/2.;
     if ( index >= _responseBins)
       index = _responseBins-1;
     if (index < 0)
       index = 0;
+
+    double straw_length = 2*straw.halfLength();
+    double reflection_time = _reflectionTimeShift + (2*straw_length-2*distance)/_reflectionVelocity;
+    int index_refl = (time - reflection_time)*_sampleRate + _responseBins/2.;
+    if (index_refl >= _responseBins)
+      index_refl = _responseBins-1;
+    if (index_refl < 0)
+      index_refl = 0;
+
+    double reflection_scale = _reflectionFrac * exp(-(2*straw_length-2*distance)/_reflectionALength);
+
     int  distIndex = 0;
     for (size_t i=1;i<_wPoints.size()-1;i++){
       if (distance < _wPoints[i]._distance)
@@ -86,17 +97,17 @@ namespace mu2e {
     double p0, p1;
     if (ipath == thresh){
       if (forsaturation){
-        p0 = _wPoints[distIndex]._preampToAdc1Response[index];
-        p1 = _wPoints[distIndex + 1]._preampToAdc1Response[index];
+        p0 = _wPoints[distIndex]._preampToAdc1Response[index]      + _wPoints[distIndex]._preampToAdc1Response[index_refl]*reflection_scale;
+        p1 = _wPoints[distIndex + 1]._preampToAdc1Response[index]  + _wPoints[distIndex + 1]._preampToAdc1Response[index_refl]*reflection_scale;
       }else{
-        p0 = _wPoints[distIndex]._preampResponse[index];
-        p1 = _wPoints[distIndex + 1]._preampResponse[index];
+        p0 = _wPoints[distIndex]._preampResponse[index]      + _wPoints[distIndex]._preampResponse[index_refl]*reflection_scale;
+        p1 = _wPoints[distIndex + 1]._preampResponse[index]  + _wPoints[distIndex + 1]._preampResponse[index_refl]*reflection_scale;
       }
     }else{
-      p0 = _wPoints[distIndex]._adcResponse[index];
-      p1 = _wPoints[distIndex + 1]._adcResponse[index];
+      p0 = _wPoints[distIndex]._adcResponse[index]      + _wPoints[distIndex]._adcResponse[index_refl]*reflection_scale;
+      p1 = _wPoints[distIndex + 1]._adcResponse[index]  + _wPoints[distIndex + 1]._adcResponse[index_refl]*reflection_scale;
     }
-    return charge * ( p0 * distFrac + p1 * (1 - distFrac)) * _dVdI[ipath][sid.getStraw()];
+    return charge * ( p0 * distFrac + p1 * (1 - distFrac)) * _dVdI[ipath][straw.id().getStraw()];
   }
 
   double StrawElectronics::adcImpulseResponse(StrawId sid, double time, double charge) const {
@@ -115,7 +126,7 @@ namespace mu2e {
       return _vsat;
   }
 
-  double StrawElectronics::maxResponseTime(Path ipath,double distance) const {
+  double StrawElectronics::maxResponseTime(StrawId sid, Path ipath,double distance) const {
     int  distIndex = 0;
     for (size_t i=1;i<_wPoints.size()-1;i++){
       if (distance < _wPoints[i]._distance)
@@ -123,8 +134,8 @@ namespace mu2e {
       distIndex = i;
     }
     double distFrac = 1 - (distance - _wPoints[distIndex]._distance)/(_wPoints[distIndex+1]._distance - _wPoints[distIndex]._distance);
-    double p0 = _wPoints[distIndex]._tmax[ipath];
-    double p1 = _wPoints[distIndex + 1]._tmax[ipath];
+    double p0 = _wPoints[distIndex]._tmax[ipath][sid.getStraw()];
+    double p1 = _wPoints[distIndex + 1]._tmax[ipath][sid.getStraw()];
     
     return p0 * distFrac + p1 * (1 - distFrac);
   }
@@ -137,8 +148,8 @@ namespace mu2e {
       distIndex = i;
     }
     double distFrac = 1 - (distance - _wPoints[distIndex]._distance)/(_wPoints[distIndex+1]._distance - _wPoints[distIndex]._distance);
-    double p0 = _wPoints[distIndex]._linmax[ipath];
-    double p1 = _wPoints[distIndex + 1]._linmax[ipath];
+    double p0 = _wPoints[distIndex]._linmax[ipath][sid.getStraw()];
+    double p1 = _wPoints[distIndex + 1]._linmax[ipath][sid.getStraw()];
  
     return charge * (p0 * distFrac + p1 * (1 - distFrac)) * _dVdI[ipath][sid.getStraw()];
   }
@@ -308,10 +319,6 @@ namespace mu2e {
       os << "   normalization = " << _wPoints[i]._normalization << endl;
       os << "   sigma = " << _wPoints[i]._sigma << endl;
       os << "   t0 = " << _wPoints[i]._t0 << endl;
-      os << "   tmax = " << _wPoints[i]._tmax[0] << " " 
-	 << _wPoints[i]._tmax[1] << endl;
-      os << "   linmax = " << _wPoints[i]._linmax[0] << " " 
-	 << _wPoints[i]._linmax[1] << endl;
       printVector(os,"   currentPulse",_wPoints[i]._currentPulse);
       printVector(os,"   preampResponse",_wPoints[i]._preampResponse);
       printVector(os,"   adcResponse",_wPoints[i]._adcResponse);

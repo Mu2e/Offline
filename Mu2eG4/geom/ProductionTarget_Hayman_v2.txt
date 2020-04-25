@@ -1,0 +1,42 @@
+// A geometry file for using the version 2 Production Target Geometry.
+// Most of the geometry is inherited from the existing Production target
+// geometry, except as below.
+//
+// Information on the update of the target geometry design is found in
+// Docdb-15597.  Refer to slide 5 for the definitions of the parameters
+// below.
+// At this time, the parameters are set to the value from Design #8
+// from the study detailed in the note.  The other strongly considered
+// designs are #13, #16, and #18.
+
+// This file is not stand-alone - it builds on an earlier version of the target.
+#include "Mu2eG4/geom/ProductionTargetInPS.txt"
+
+// Next line must come after the #include so that it overrides the definition in there.
+string targetPS_model = "Hayman_v2";
+
+// Now the specific items for Hayman 2.0 versionof the Production Target
+//double targetPS_rotY              =     45.00; // degree.
+int targetPS_version           = 2;
+
+double targetMotherRadius  = 200.;    //mm
+double targetMotherHalfLength  = 200.;    //mm
+
+int targetPS_nFins             = 4;
+
+double targetPS_finHeight      = 13.0;    // mm 
+double targetPS_finThickness   = 1.0;     // mm  
+double targetPS_rOut	       = 3.15;    // mm  
+
+double targetPS_innerRadiusRing = 15.;
+double targetPS_outerRadiusRing = 17.;
+double targetPS_halfLengthRing  =  2.;
+
+vector<double> finAngle = {45.,135.,225.,315.};
+string targetPS_materialName = "G4_";
+double targetPS_halfLength   = 110.; 
+
+// This tells emacs to view this file in c++ mode.
+// Local Variables:
+// mode:c++
+// End:

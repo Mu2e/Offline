@@ -13,7 +13,7 @@ services.TFileService.fileName: "nts.owner.val-ceSimReco.dsconf.seq.root"
 outputs.fullOutput.fileName : "mcs.owner.val-ceSimReco.dsconf.seq.art"
 
 # Initialze seeding of random engines
-services.SeedService.baseSeed         :  0
+services.SeedService.baseSeed         :  8
 services.SeedService.maxUniqueEngines :  20
 
 # use the geometry on the head

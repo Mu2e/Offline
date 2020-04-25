@@ -16,10 +16,10 @@
 // Mu2e includes
 #include "DataProducts/inc/StrawId.hh"
 #include "DataProducts/inc/StrawEnd.hh"
-#include "MCDataProducts/inc/StepPointMC.hh"
+#include "TrackerMC/inc/StrawPosition.hh"
+#include "MCDataProducts/inc/StrawGasStep.hh"
 // toolkit includes
 #include "canvas/Persistency/Common/Ptr.h"
-#include "CLHEP/Vector/LorentzVector.h"
 
 namespace mu2e {
   namespace TrackerMC {
@@ -28,54 +28,49 @@ namespace mu2e {
       enum ClusterType {unknown=-1,primary=0,xtalk=1,noise=2};
       // constructors
       StrawCluster();
-      StrawCluster(const StrawCluster&);
       // x-talk constructor
-      explicit StrawCluster(const StrawCluster& primary, StrawId const& sid, double xfactor);
+      explicit StrawCluster(const StrawCluster& primary, StrawId const& sid, float xfactor);
       // ghost constructor
       explicit StrawCluster(const StrawCluster& primary, double deltat);
-      StrawCluster(ClusterType type,
-                   StrawId sid,
-                   StrawEnd end,
-                   double time,
-                   double charge,
-                   double ddist,
-                   double phi, //JB: added
-                   double wiredist,
-                   double drifttime,
-                   double proptime,
-                   art::Ptr<StepPointMC> const& stepmc,
-                   CLHEP::HepLorentzVector const& cpos);
-
-      StrawCluster& operator = (StrawCluster const& other);
-
+      explicit StrawCluster(ClusterType type,StrawId sid,
+	  StrawEnd end,
+	  float time,
+	  float charge,
+	  float wdist,
+	  StrawPosition const& pos,
+	  float drifttime,
+	  float proptime,
+	  art::Ptr<StrawGasStep> const& sgs,
+	  float ctime);
+      // use compiler version of copy, assignment
       // Accessors
       ClusterType type() const { return _type; }
       StrawId strawId() const { return _strawId; }
       StrawEnd strawEnd() const { return _end; }
-      double   time()       const { return _time;}
-      double   charge()  const { return _charge; }
-      double   driftDistance() const { return _ddist; }
-      double   phi() const { return _phi; } //JB: added
-      double   wireDistance() const { return _wdist; }
-      double   driftTime() const { return _drifttime; }
-      double   propTime() const { return _proptime; }
-      art::Ptr<StepPointMC> const&  stepPointMC() const { return _stepMC; }
-      CLHEP::HepLorentzVector const& clusterPosition() const { return _cpos; }
+      double time()       const { return _time;}
+      float   charge()  const { return _charge; }
+      StrawPosition const& cluPos() const { return _pos; }
+      float wireDistance() const { return _wdist; }
+      float driftDistance() const { return _pos.Rho(); }
+      float driftPhi() const { return _pos.Phi(); }
+      float   driftTime() const { return _drifttime; }
+      float   propTime() const { return _proptime; }
+      art::Ptr<StrawGasStep> const& strawGasStep() const { return _sgsptr; }
+      float cluTime() const { return _ctime; }
       // Print contents of the object.
       void print( std::ostream& ost = std::cout, bool doEndl = true ) const;
     private:
-      ClusterType _type; // type of clust
+      ClusterType _type; // type of cluster
       StrawId  _strawId;      // Straw id
       StrawEnd	_end;		  // which end of the straw
-      double     _time;            // microbunch time at the wire end, in ns since EventWindowMarker
-      double     _charge;          // charge at the wire end, in units of pC
-      double	_ddist;		  // drift distance charge traveled to the wire
-      double _phi;    //JB: angle between E and B at ionization event
-      double	_wdist;		  // distance along the wire the charge has traveled, used to calculate dispersion
-      double _drifttime;
-      double _proptime;
-      art::Ptr<StepPointMC>  _stepMC;	  // Ptr into StepPointMC collection
-      CLHEP::HepLorentzVector _cpos; // position and time of the cluster that created this clust
+      float  _time;            // microbunch time at the wire end, in ns since EventWindowMarker, offsets and wrapping applied
+      float  _charge;          // charge at the wire end, in units of pC
+      float _wdist;    // propagation distance from cluster to the wire end
+      StrawPosition _pos;  // cluster position WRT the straw 
+      float _drifttime; // drift time to the wire
+      float _proptime;  // propagation time to the wire end
+      art::Ptr<StrawGasStep> _sgsptr; 
+      float _ctime; 
     };
   } // namespace TrackerMC
 } // namespace mu2e

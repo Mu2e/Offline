@@ -392,7 +392,7 @@ services :
 {
   message               : @local::default_message
   TFileService          : { fileName : "nts.owner.crv-efficiency.version.sequencer.root" }
-  RandomNumberGenerator : { }
+  RandomNumberGenerator : {defaultEngineKind: "MixMaxRng" }
 
   GeometryService        : { inputFile      : "CRVResponse/efficiencyCheck/geom_T.txt" }  //REPLACE
   ConditionsService      : { conditionsfile : "Mu2eG4/test/conditions_01.txt" }
@@ -421,7 +421,6 @@ physics :
        visualization: @local::mu2eg4NoVisualization
 
        generatorModuleLabel: generate
-       MultiStageParameters: {} // this is the first stage
 
        SDConfig: 
        {

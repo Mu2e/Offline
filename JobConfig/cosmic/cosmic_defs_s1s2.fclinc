@@ -135,7 +135,6 @@ physics :
          visualization: @local::mu2eg4NoVisualization
 
          generatorModuleLabel: generate
-         MultiStageParameters: {} // this is the first stage
 
          SDConfig: 
          {
@@ -194,11 +193,9 @@ physics :
       cosmicFilter: 
       {
          module_type: FilterG4Out
-         noInstanceName : true
          mainHitInputs : [ "g4run:tracker", "g4run:CRV" ]
          extraHitInputs : []               //stores only StepPoints of tracks which also have StepPoints in the mainHitInputs
          mcTrajectoryInputs : [ "g4run" ]
-         numSimParticleCollections : 1
          vetoDaughters: []
       }
 
@@ -210,11 +207,9 @@ physics :
       detectorFilter:
       {
          module_type: FilterG4Out
-	 noInstanceName : true
          mainHitInputs: [ "g4run:tracker", "g4run:calorimeter", "g4run:calorimeterRO", "g4run:CRV" ]
          extraHitInputs : [ "g4run:virtualdetector" ]
          mcTrajectoryInputs : [ "g4run" ]
-         numSimParticleCollections : 1
          vetoDaughters: []
       }
 

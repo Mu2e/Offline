@@ -306,21 +306,27 @@ namespace mu2e {
                                           G4Colour::Blue(),
 					  "PS"
                                           );
+    //    std::cout << "inside " << __func__ << psVacuumParams.originInMu2e() << " " << _hallOriginInMu2e << std::endl;
 
     // Build the production target.
 
     if ( targetPS_model == "MDC2018" ){
+      verbosityLevel> 0 && std::cout << __func__ << "MDC 2018 target" << std::endl;
       constructTargetPS(psVacuumInfo, _config );
     } else if ( targetPS_model == "HaymanLowerDensity" ){
+      verbosityLevel> 0 && std::cout << __func__ << "HaymanLowerDensity target" << std::endl;
       constructHaymanRings(psVacuumInfo, _config);
+    } else if (targetPS_model == "Hayman_v_2_0"){
+      verbosityLevel> 0 && std::cout << __func__ << "Hayman 2.0 target" << std::endl;
+      constructTargetPS(psVacuumInfo, _config );
     } else{
       throw cet::exception("CONFIG")
         << "In constructPS.cc unrecognized production target model name: "
         << targetPS_model
         << "\n";
     }
-
-    // FIXME: make unconditional
+ 
+   // FIXME: make unconditional
     if(art::ServiceHandle<GeometryService>()->hasElement<PSShield>()) {
       constructPSShield(psVacuumInfo, _config);
     }

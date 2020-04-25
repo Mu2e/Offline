@@ -77,6 +77,7 @@ class TrkAnaPlots {
   void StrawMat();
   void TrkCaloHit(float tqcut,int pdg=11);
   void TrkCaloHitMC();
+  void dEdx();
   void t0();
   void Eff(unsigned norm, double plo, double phi, int q=-1);
   void PlotIPA();
@@ -128,8 +129,8 @@ void TrkAnaPlots::BuildCuts(float momwin){
   _eplustq = TCut("dequal.TrkQualDeP>0.8");
   _eminuspid = TCut("dequal.TrkPIDDeM>0.95");
   _epluspid = TCut("dequal.TrkPIDDeP>0.95");
-  _eminustrig = TCut("(trigbits&0x208)>0"); // negative, TrkPatRec or CalPatRec
-  _eplustrig = TCut("(trigbits&0x410)>0"); // positive, TrkPatRec or CalPatRec
+  _eminustrig = TCut("(trigbits&0x80080)>0"); // negative, TrkPatRec or CalPatRec
+  _eplustrig = TCut("(trigbits&0x100100)>0"); // positive, TrkPatRec or CalPatRec
   snprintf(ctext,200,"abs(deent.mom-%f)<%f",eminusmom,momwin);
   _eminusrmom = TCut(ctext);
   snprintf(ctext,200,"abs(deent.mom-%f)<%f",eplusmom,momwin);
@@ -1938,3 +1939,23 @@ void TrkAnaPlots::Alg() {
   algpd0mu->Draw();
 }
 
+void TrkAnaPlots::dEdx() {
+  TCut momcut("abs(deent.mom-105)<10");
+  TH1F* ededx = new TH1F("ededx","Median Active Hit dE/dx;dE/dx (KeV/mm)",100,0,0.4);
+  TH1F* mudedx = new TH1F("mudedx","Median Active Hit dE/dx;dE/dx (KeV/mm)",100,0,0.4);
+  ededx->SetLineColor(kRed);
+  mudedx->SetLineColor(kBlue);
+  ededx->SetStats(0);
+  mudedx->SetStats(0);
+  _tn->Project("ededx","1000*detrkpid.mdedx",_eminus+_downstream+momcut);
+  _tn->Project("mudedx","1000*detrkpid.mdedx",_muminus+_downstream+momcut);
+  _tp->Project("+ededx","1000*detrkpid.mdedx",_eplus+_downstream+momcut);
+  _tp->Project("+mudedx","1000*detrkpid.mdedx",_muplus+_downstream+momcut);
+  TCanvas* dedxcan = new TCanvas("dedxcan","dedxcan",600,600);
+  ededx->Draw();
+  mudedx->Draw("same");
+  TLegend* dedxleg = new TLegend(0.6,0.7,0.9,0.9);
+  dedxleg->AddEntry(ededx,"True Electrons","L");
+  dedxleg->AddEntry(mudedx,"True Muons","L");
+  dedxleg->Draw();
+}

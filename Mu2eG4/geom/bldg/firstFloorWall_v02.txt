@@ -1,0 +1,47 @@
+// SimpleConfig geometry file automatically produced for original file: 
+//
+//   geom/geom_firstFloor_Wall.ccl
+
+string building.firstFloor.wall.name     = "firstFloorWall";
+
+string building.firstFloor.wall.material = "CONCRETE_MARS";
+
+double building.firstFloor.wall.offsetFromMu2eOrigin.x   = 947.4;
+double building.firstFloor.wall.offsetFromFloorSurface.y = 9601.2;
+double building.firstFloor.wall.offsetFromMu2eOrigin.z   = -3581.4;
+
+double building.firstFloor.wall.yHalfThickness           = 1828.8;
+
+vector<double> building.firstFloor.wall.xPositions = {
+  -2921,   // a
+  -2286,   // b
+  -2286,   // c
+  7975.6,   // d
+  7975.6,   // e
+  13233.4,   // p1 northwest pillar
+  13233.4,   // p2
+  14046.2,   // p3
+  14046.2,    // p4
+  45745.4,   // f
+  45745.4,   // g
+  -2921   // h
+};
+
+vector<double> building.firstFloor.wall.yPositions = {
+  -4292.6,   // a
+  -4292.6,   // b
+  609.6,   // c
+  609.6,   // d
+  2032,   // e
+  2032,   // p1 northwest pillar
+  1524.0,   // p2
+  1524.0,   // p3
+  2032,   // p4
+  2032,   // f
+  2438.4,   // g
+  2438.4   // h
+};
+
+// Local Variables:
+// mode:c++
+// End:
