@@ -58,9 +58,19 @@ namespace mu2e {
         (e.inTag, e.resolvedInstanceName(), &Mu2eProductMixer::mixStepPointMCs, *this);
     }
 
+    for(const auto& e: conf.mcTrajectoryMixer().mixingMap()) {
+      helper.declareMixOp
+        (e.inTag, e.resolvedInstanceName(), &Mu2eProductMixer::mixMCTrajectories, *this);
+    }
+
     for(const auto& e: conf.caloShowerStepMixer().mixingMap()) {
       helper.declareMixOp
         (e.inTag, e.resolvedInstanceName(), &Mu2eProductMixer::mixCaloShowerSteps, *this);
+    }
+
+    for(const auto& e: conf.strawGasStepMixer().mixingMap()) {
+      helper.declareMixOp
+        (e.inTag, e.resolvedInstanceName(), &Mu2eProductMixer::mixStrawGasSteps, *this);
     }
 
     for(const auto& e: conf.extMonSimHitMixer().mixingMap()) {
@@ -76,6 +86,11 @@ namespace mu2e {
     for(const auto& e: conf.protonTimeMapMixer().mixingMap()) {
       helper.declareMixOp
         (e.inTag, e.resolvedInstanceName(), &Mu2eProductMixer::mixProtonTimeMap, *this);
+    }
+
+    for(const auto& e: conf.eventIDMixer().mixingMap()) {
+      helper.declareMixOp
+        (e.inTag, e.resolvedInstanceName(), &Mu2eProductMixer::mixEventIDs, *this);
     }
 
   }
@@ -153,6 +168,34 @@ namespace mu2e {
   }
 
   //----------------------------------------------------------------
+  bool Mu2eProductMixer::mixMCTrajectories(std::vector<MCTrajectoryCollection const*> const& in,
+                                           MCTrajectoryCollection& out,
+                                           art::PtrRemapper const& remap)
+  {
+    // flattenCollections() does not seem to preserve enough info to remap ptrs in the output map.
+    // Follow the pattern, including the nullptr checks, but add custom remapping code.
+
+    for(std::vector<MCTrajectoryCollection const*>::size_type ieIndex = 0; ieIndex < in.size(); ++ieIndex) {
+      if (in[ieIndex] != nullptr) {
+        for(const auto & orig : *in[ieIndex]) {
+          auto res = out.insert(std::make_pair(remap(orig.first, simOffsets_[ieIndex]),
+                                               MCTrajectory(remap(orig.second.sim(), simOffsets_[ieIndex]),
+                                                            orig.second.points())
+                                               ));
+
+          if(!res.second) {
+            throw cet::exception("BUG")<<"mixMCTrajectories(): failed to insert an entry, ieIndex="<<ieIndex
+                                       <<", orig ptr = "<<orig.first
+                                       <<std::endl;
+          }
+        }
+      }
+    }
+
+    return true;
+  }
+
+  //----------------------------------------------------------------
   bool Mu2eProductMixer::mixCaloShowerSteps(std::vector<CaloShowerStepCollection const*> const& in,
                                             CaloShowerStepCollection& out,
                                             art::PtrRemapper const& remap)
@@ -164,6 +207,23 @@ namespace mu2e {
       auto ie = getInputEventIndex(i, stepOffsets);
       auto& step = out[i];
       step.setSimParticle( remap(step.simParticle(), simOffsets_[ie]) );
+    }
+
+    return true;
+  }
+
+  //----------------------------------------------------------------
+  bool Mu2eProductMixer::mixStrawGasSteps(std::vector<StrawGasStepCollection const*> const& in,
+                                          StrawGasStepCollection& out,
+                                          art::PtrRemapper const& remap)
+  {
+    std::vector<StrawGasStepCollection::size_type> stepOffsets;
+    art::flattenCollections(in, out, stepOffsets);
+
+    for(StrawGasStepCollection::size_type i=0; i<out.size(); ++i) {
+      auto ie = getInputEventIndex(i, stepOffsets);
+      auto& step = out[i];
+      step.simParticle() = remap(step.simParticle(), simOffsets_[ie]);
     }
 
     return true;
@@ -199,21 +259,32 @@ namespace mu2e {
   }
 
   bool Mu2eProductMixer::mixProtonTimeMap(std::vector<SimParticleTimeMap const*> const& in,
-                                                 SimParticleTimeMap& out,
-                                                 art::PtrRemapper const& remap)
+                                          SimParticleTimeMap& out,
+                                          art::PtrRemapper const& remap)
   {
-   for(size_t incount = 0; incount < in.size(); ++incount) {
-      auto const& timemap = *in[incount]; 
+    for(size_t incount = 0; incount < in.size(); ++incount) {
+      auto const& timemap = *in[incount];
       //std::cout << "Mixing time map " << incount << " size " << timemap.size() << std::endl;
       for(auto & imap : timemap) {
-	auto newptr = remap(imap.first, simOffsets_[incount]);
-	out[newptr] = imap.second;
-	// do I need to go down the chain?  I think not
+        auto newptr = remap(imap.first, simOffsets_[incount]);
+        out[newptr] = imap.second;
+        // do I need to go down the chain?  I think not
       }
     }
 
     return true;
   }
+
+  //----------------------------------------------------------------
+  bool Mu2eProductMixer::mixEventIDs(std::vector<art::EventIDSequence const*> const &in,
+                                     art::EventIDSequence& out,
+                                     art::PtrRemapper const&)
+  {
+    art::flattenCollections(in, out);
+    return true;
+  }
+
+  //----------------------------------------------------------------
 
 }
 //================================================================

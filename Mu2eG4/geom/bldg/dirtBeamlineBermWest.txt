@@ -1,0 +1,49 @@
+// Berm along the west side
+
+string dirt.beamline.berm.west.name     = "dirtBeamlineBermWest";
+
+string dirt.beamline.berm.west.material = "MBOverburden";
+
+double dirt.beamline.berm.west.offsetFromMu2eOrigin.x   = 947.4;
+double dirt.beamline.berm.west.offsetFromFloorSurface.y = 9017; 
+double dirt.beamline.berm.west.offsetFromMu2eOrigin.z   = -3581.4;
+
+double dirt.beamline.berm.west.yHalfThickness           =1244.6; 
+
+//trapezoid vertices
+vector<int>    dirt.beamline.berm.west.xreplace   = { 1,2,5,6 }; 
+vector<double> dirt.beamline.berm.west.xPositions = {
+  -20527.11,   // p1
+  -50000,      // p2
+  -50000,      // p3
+  -20527.11,   // p4
+  -20527.11,   // p5
+  -50000,      // p6
+  -50000,      // p7
+  -20527.11    // p5
+};
+
+  // -21038.6, // P2 delta X from dirtbeamlineberm slope delta y / delta x ~ -1.955
+  // -20527.1, // P3
+  // -14605.,  // P4
+  // -2000.    // P5
+vector<int>    dirt.beamline.berm.west.yreplace   = { 2}; 
+vector<double> dirt.beamline.berm.west.yPositions = {
+  -7505.7,  // p1
+  -7505.7,  // p2
+  50000,    // p3
+  8866.56,    // p4
+  -7505.7,  // p5
+  -7505.7,  // p6
+  20840.2,    // p7
+  8866.56     // p8
+};
+
+  // 9866.57,   // P2
+  // 8866.57,   // P3
+  // 10312.4,   // P4
+  // 10312.4    // P5
+
+// Local Variables:
+// mode:c++
+// End:

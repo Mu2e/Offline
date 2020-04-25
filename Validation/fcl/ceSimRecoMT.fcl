@@ -1,0 +1,15 @@
+#
+# generate conversion electrons from stopped muon file
+# and simulate all the way through the detector
+# run calorimeter and tracker reco
+#
+#include "Validation/fcl/ceSimReco.fcl"
+physics.producers.g4run.module_type: "Mu2eG4MT"
+
+# this sets the number of threads used in MT mode
+# number and threads and number of schedules should
+# be the same
+services.scheduler.num_schedules : 5
+services.scheduler.num_threads   : 5
+ 
+

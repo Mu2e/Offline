@@ -14,10 +14,8 @@ source.module_type : EmptyEvent
 
 physics : {
    producers: {
-      generate: {
-         module_type          : EventGenerator
-         inputfile            : "JobConfig/beam/genconfig_PrimaryProtons.txt"
-      }
+      generate: @local::PrimaryProtonGun
+
       @table::Mu2eG4.producers
     }
 
@@ -61,7 +59,7 @@ outputs.fullOutput.fileName: "sim.owner.val-potSim.dsconf.seq.art"
 source.maxEvents: 500
 
 # Initialze seeding of random engines
-services.SeedService.baseSeed         :  0
+services.SeedService.baseSeed         :  8
 services.SeedService.maxUniqueEngines :  20
 
 # use the geometry on the head

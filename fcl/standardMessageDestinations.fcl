@@ -139,6 +139,7 @@ mf_coutInfo:
    GEOM_MINRANGECUT : { limit : 0 }
    GEOM_PARTICLECUT : { limit : 0 }
    Configuration : { limit : 0 }
+   HITS : { limit : 0 }
  } # end categories
 } # end mf_coutInfo
 mf_coutInfoStats : 

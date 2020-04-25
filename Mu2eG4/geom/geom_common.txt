@@ -3,7 +3,7 @@
 // The file that is included will be time dependent.
 //
 
-#include "Mu2eG4/geom/geom_common_current.txt"
+#include "Mu2eG4/geom/geom_common_hayman_v2.txt"
 
 // This tells emacs to view this file in c++ mode.
 // Local Variables:

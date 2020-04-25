@@ -6,7 +6,6 @@ namespace mu2e_eventdisplay
 
 ContentSelector::ContentSelector(TGComboBox *hitBox, TGComboBox *caloHitBox, TGComboBox *crvHitBox, TGListBox *trackBox, std::string const &g4ModuleLabel, std::string const &physicalVolumesMultiLabel)
   :
-  _hasPhysicalVolumes(false),
   _hitBox(hitBox),
   _caloHitBox(caloHitBox),
   _crvHitBox(crvHitBox),
@@ -180,7 +179,6 @@ void ContentSelector::setAvailableCollections(const art::Event& event)
   event.getManyByType(_mcTrajectoryVector);
 
 //Other
-  _hasPhysicalVolumes=event.getRun().getByLabel(_g4ModuleLabel, _physicalVolumes);
   _hasPhysicalVolumesMulti=event.getSubRun().getByLabel(_physicalVolumesMultiLabel, _physicalVolumesMulti);
 }
 
@@ -402,12 +400,6 @@ template std::vector<const mu2e::SimParticleCollection*> ContentSelector::getSel
 template std::vector<const mu2e::KalRepCollection*> ContentSelector::getSelectedTrackCollection<mu2e::KalRepCollection>(std::vector<trackInfoStruct> &v) const;
 template std::vector<const mu2e::TrkExtTrajCollection*> ContentSelector::getSelectedTrackCollection<mu2e::TrkExtTrajCollection>(std::vector<trackInfoStruct> &v) const;
 template std::vector<const mu2e::KalSeedCollection*> ContentSelector::getSelectedTrackCollection<mu2e::KalSeedCollection>(std::vector<trackInfoStruct> &v) const;
-
-const mu2e::PhysicalVolumeInfoCollection* ContentSelector::getPhysicalVolumeInfoCollection() const
-{
-  if(_hasPhysicalVolumes) return(_physicalVolumes.product());
-  else return(nullptr);
-}
 
 const mu2e::PhysicalVolumeInfoMultiCollection* ContentSelector::getPhysicalVolumeInfoMultiCollection() const
 {

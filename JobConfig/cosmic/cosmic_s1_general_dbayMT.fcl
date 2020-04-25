@@ -1,10 +1,16 @@
 #include "JobConfig/cosmic/cosmic_defs_s1s2.fclinc"
 
-physics.producers.generate.inputfile : "JobConfig/cosmic/genconfig_cosmic_general.txt"
-physics.producers.generate.stashSize    : 1000
-physics.producers.g4run.runinMTMode     : true
-physics.producers.g4run.numberOfThreads : 64
+physics.producers.g4run.module_type: "Mu2eG4MT"
 
+# this sets the number of threads used in MT mode
+# number and threads and number of schedules should
+# be the same
+services.scheduler.num_schedules : 5
+services.scheduler.num_threads   : 5
+
+physics.producers.generate.inputfile : "JobConfig/cosmic/genconfig_cosmic_general.txt"
+
+services.GeometryService.simulatedDetector.tool_type : "Mu2e"
 services.TFileService.fileName       : "nts.owner.cosmic-g4s1s2-dybgeneral.version.sequencer.root"
 outputs.filteredOutput.fileName      : "sim.owner.cosmic-g4s1s2-dybgeneral.version.sequencer.art"
 outputs.truncatedEvtsOutput.fileName : "sim.owner.cosmic-g4s1s2-truncated-dybgeneral.version.sequencer.art"

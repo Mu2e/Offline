@@ -29,7 +29,7 @@ services :
     fileName      : "TestTO.root"
   }
 
-  RandomNumberGenerator : { }
+  RandomNumberGenerator : {defaultEngineKind: "MixMaxRng" }
 
   GeometryService :
   {
@@ -115,5 +115,5 @@ outputs:
 physics.producers.generate.inputfile : "EventGenerator/defaultConfigs/conversionGun.txt"
 physics.producers.makeDcHWTO.diagLevel : 1
 physics.producers.makeDcHWTO.cellsToTurnOff : 10
-services.SeedService.baseSeed         :  0
+services.SeedService.baseSeed         :  8
 services.SeedService.maxUniqueEngines :  20

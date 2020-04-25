@@ -295,27 +295,19 @@ DEFINE_ART_MODULE(mu2e::CaloProtoClusterFromCrystalHit);
 
 
 /*
-
 // Just in case
 // This is a snippet of code to include only the hits compatible with the time of potential seeds in the map.
 // The gain in performance is small, and I find it obscures the code, so I left the old version
-
-
 //fast forward iterator until first crystal in time
 std::vector<CaloCrystalHit>::const_iterator allCrystal = CaloCrystalHits.begin();
 while (allCrystal->time() < timeCut_ && allCrystal != CaloCrystalHits.end()) ++allCrystal;
 if (allCrystal == CaloCrystalHits.end()) return;
-
-
 //fast forward iterator until first high energy crystal
 std::vector<CaloCrystalHit>::const_iterator highCrystal = allCrystal;
 while (highCrystal->energyDep() < EminSeed_ && highCrystal != CaloCrystalHits.end()) ++highCrystal;
 if (highCrystal == CaloCrystalHits.end() ) return;
-
-
 double maxTime = highCrystal->time() + deltaTime_Plus;
 double minTime = highCrystal->time() - deltaTime_Minus;
-
 while( allCrystal != CaloCrystalHits.end() )
 {
 if (allCrystal->time() > maxTime && highCrystal != CaloCrystalHits.end())
@@ -326,7 +318,6 @@ maxTime = highCrystal->time() + deltaTime_Plus;
 minTime = highCrystal->time() - deltaTime_Minus;
 continue;
 }
-
 if (allCrystal->energyDep() > EnoiseCut_ && allCrystal->time() > minTime )
 {
 const CaloCrystalHit* hit = &(*allCrystal);
@@ -335,8 +326,6 @@ seedList.add(hit);
 }
 ++allCrystal;
 }
-
-
 //--------------------------------------------------------------------------------------------------------------------
 namespace
 {

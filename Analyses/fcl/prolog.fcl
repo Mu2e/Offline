@@ -1,6 +1,7 @@
 # -*- mode: tcl -*-
 BEGIN_PROLOG
 
+
 CosmicFilter: {
     module_type           : CosmicFilter
     diagLevel             : 0
@@ -19,6 +20,16 @@ PrintStrawHits : {
 TrackSummaryMaker: {
     module_type: TrackSummaryMaker
     trackInput : "TrkPatRec:DeM"
+}
+
+CaloClusterCompareNew : {
+	module_type : CaloClusterCompare
+        CaloClusterCollection : NewCaloClusterFast
+}
+
+CaloClusterCompareOld : {
+	module_type : CaloClusterCompare
+        CaloClusterCollection : CaloClusterFast
 }
 
 VirtualDetectorDefaults: {
@@ -63,5 +74,20 @@ VirtualDetectorDefaults: {
 
 # Many configurations use "readvd"
 readvd: @local::VirtualDetectorDefaults
+ClusterCompareNew :
+{
+   analyzers : {
+	CaloClusterCompareNew : @local::CaloClusterCompareNew
+   }
+   Analysis : [CaloClusterCompareNew]
+}
+
+ClusterCompareOld :
+{
+   analyzers : {
+	CaloClusterCompareOld : @local::CaloClusterCompareOld
+   }
+   Analysis : [CaloClusterCompareOld]
+}
 
 END_PROLOG

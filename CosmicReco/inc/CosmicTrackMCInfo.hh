@@ -7,8 +7,12 @@
 
 struct CosmicTrackMCInfo{
 
-     double TrueTheta ;
-     double TruePhi ;
+     double TrueTheta = 0;
+     double TruePhi = 0;
+     double TruePhiSIM = 0;
+     double TrueThetaSIM = 0;
+     double TrueMomentum = 0;
+     
      std::vector<double> TrueTimeResiduals;
      std::vector<double> TrueDOCA;
      std::vector<double> Ambig;

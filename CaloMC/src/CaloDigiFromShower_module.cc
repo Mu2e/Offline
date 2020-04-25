@@ -72,6 +72,7 @@ namespace mu2e {
       ADCTomV_      = dynamicRange_/float(maxADCCounts_);
       mVToADC_      = float(maxADCCounts_)/dynamicRange_;
       nROperCard_   = 40;
+      nBinsPeak_    = pset.get<size_t>("nBinsPeak");
     }
 
   private:
@@ -107,7 +108,8 @@ namespace mu2e {
     double                  mVToADC_;
     const Calorimeter*      calorimeter_;
     int                     nROperCard_;
-
+    
+    size_t  		    nBinsPeak_;
     std::vector< std::vector<double> > pulseDigitized_;
     std::vector< std::vector<double> > waveforms_;
 
@@ -270,15 +272,33 @@ namespace mu2e {
 
             if (sampleStop == sampleStart) continue;  //check if peak is acceptable and digitize
 
-            double sampleMax = *std::max_element(&itWave.at(sampleStart),&itWave.at(sampleStop));
-            if (sampleMax*ADCTomV_ < thresholdAmplitude_) continue;
+		
+		float wfInt(0);
+		size_t peakP(0);
+		for(size_t i =sampleStart; i<sampleStop-nBinsPeak_;++i){
+
+			float sum(0);
+			for(size_t j=0; j< nBinsPeak_;++j){
+				sum+=itWave.at(i+j);
+			}
+			if(sum>wfInt){
+				wfInt = sum;
+				peakP = i+nBinsPeak_/2;
+			}
+
+
+		}
+			
+		double sampleMax = itWave.at(peakP);
+		peakP = peakP - sampleStart;
+            	if (sampleMax*ADCTomV_ < thresholdAmplitude_) continue;
 
 
             int t0 = int(sampleStart*digiSampling_+ blindTime_);
             std::vector<int> wf;
             for (int i=sampleStart; i<=sampleStop; ++i) wf.push_back(int(itWave.at(i)));
 
-            caloDigiColl.emplace_back( CaloDigi(iRO,t0,wf) );
+            caloDigiColl.emplace_back( CaloDigi(iRO,t0,wf, peakP) );
 
             if (diagLevel_ > 4) diag1(iRO,t0,wf);
           }

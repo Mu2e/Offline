@@ -9,7 +9,7 @@ BEGIN_PROLOG
 mu2e.services.simServices: {
    message: @local::default_message
    TFileService: { fileName: @nil }
-   RandomNumberGenerator: { }
+   RandomNumberGenerator: {defaultEngineKind: "MixMaxRng" }
    GeometryService: { inputFile: "JobConfig/common/geom_baseline.txt" }
    ConditionsService: { conditionsfile: "Mu2eG4/test/conditions_01.txt" }
    GlobalConstantsService: { inputFile: "Mu2eG4/test/globalConstants_01.txt" }
@@ -18,7 +18,7 @@ mu2e.services.simServices: {
 }
 
 // Default seeding of random engines - the seed will be overwritten in grid jobs
-mu2e.services.simServices.SeedService.baseSeed:  0
+mu2e.services.simServices.SeedService.baseSeed:  8
 mu2e.services.simServices.SeedService.maxUniqueEngines:  20
 
 // Limit the amount of "Begin processing the ... record" messages
@@ -36,7 +36,6 @@ mu2e.physics.producers.g4run.commonBase: {
    visualization: @local::mu2eg4NoVisualization
 
    generatorModuleLabel: @nil
-   MultiStageParameters: @nil
 
    SDConfig: {
       enableSD: [ tracker, calorimeter, calorimeterRO, CRV, virtualdetector, protonabsorber ]
@@ -64,7 +63,6 @@ mu2e.physics.producers.g4run.flash.SDConfig.preSimulatedHits:  ["mothersFilter:v
 #----------------------------------------------------------------
 mu2e.physics.producers.g4run.muons: @local::mu2e.physics.producers.g4run.commonBase
 mu2e.physics.producers.g4run.muons.generatorModuleLabel: "generate"
-mu2e.physics.producers.g4run.muons.MultiStageParameters:  {}
 mu2e.physics.producers.g4run.muons.SDConfig.preSimulatedHits: []
 
 #================================================================

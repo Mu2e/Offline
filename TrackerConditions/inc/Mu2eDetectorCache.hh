@@ -9,7 +9,7 @@
 #include "Mu2eInterfaces/inc/ProditionsCache.hh"
 #include "TrackerGeom/inc/Tracker.hh"
 #include "TrackerConditions/inc/Mu2eDetectorMaker.hh"
-
+#include "ProditionsService/inc/ProditionsHandle.hh"
 
 namespace mu2e {
   class Mu2eDetectorCache : public ProditionsCache {

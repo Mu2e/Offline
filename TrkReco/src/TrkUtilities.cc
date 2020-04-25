@@ -30,7 +30,7 @@
 #include "CLHEP/Matrix/Vector.h"
 #include "CLHEP/Matrix/SymMatrix.h"
 //C++
-#include <math.h>
+#include <cmath>
 using CLHEP::Hep3Vector;
 using CLHEP::HepSymMatrix;
 using CLHEP::HepVector;

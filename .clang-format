@@ -1,0 +1,17 @@
+---
+BasedOnStyle: LLVM
+AlignAfterOpenBracket: Align
+ColumnLimit: '100'
+DerivePointerAlignment: 'false'
+IndentWidth: '2'
+Language: Cpp
+PointerAlignment: Left
+ReflowComments: 'true'
+SpaceInEmptyParentheses: 'false'
+SpacesInParentheses: 'false'
+SpacesInSquareBrackets: 'false'
+Standard: Auto
+TabWidth: '4'
+UseTab: Never
+BreakConstructorInitializers: AfterColon
+...

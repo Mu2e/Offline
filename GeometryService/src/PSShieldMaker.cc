@@ -14,6 +14,7 @@
 
 #include "ConfigTools/inc/SimpleConfig.hh"
 
+
 namespace mu2e {
 
   PSShield::Groove PSShieldMaker::readGroove(int i, const SimpleConfig& c) {
@@ -55,7 +56,8 @@ namespace mu2e {
                                                + c.getDouble("PSShield.zOffsetFromProductionTarget")
                                                - zPlane[0]
                                                );
-
+    c.getInt("PSShield.verbosityLevel") > 0 && std::cout << " PSShieldMaker " << __func__ << productionTargetCenter.z() 
+						      << " " << c.getDouble("PSShield.zOffsetFromProductionTarget") << " " << zPlane[0] << std::endl;
     //----------------------------------------------------------------
     // Read in the shells
 

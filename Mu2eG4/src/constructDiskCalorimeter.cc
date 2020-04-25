@@ -262,11 +262,11 @@ namespace mu2e {
 
        //this is the full front panel
        G4Tubs* frontPlate = new G4Tubs("caloFrontPlate",FPInnerRadius,FPCoolPipeTorRadius+FPCoolPipeRadius,frontPanelHalfThick,0,CLHEP::twopi);       
-       G4LogicalVolume* frontPlateLog = caloBuildLogical(frontPlate, vacuumMaterial, "caloFrontPlateLog",0,G4Color::White(),0,0);
+       G4LogicalVolume* frontPlateLog = caloBuildLogical(frontPlate, vacuumMaterial, "caloFrontPlateLog_"+std::to_string(idisk),0,G4Color::White(),0,0);
 
        //carbon fiber panels
        G4Tubs*          frontPanelCarb    = new G4Tubs("caloFPCarb",FPInnerRadius,FPOuterRadius,FPCarbonDZ,0,CLHEP::twopi);       
-       G4LogicalVolume* frontPanelCarbLog = caloBuildLogical(frontPanelCarb, FPCarbonMaterial, "caloFPCarbLog",isPipeVisible,G4Color::Grey(),0,forceEdge);       
+       G4LogicalVolume* frontPanelCarbLog = caloBuildLogical(frontPanelCarb, FPCarbonMaterial, "caloFPCarbLog_"+std::to_string(idisk),isPipeVisible,G4Color::Grey(),0,forceEdge);       
        
        pv = new G4PVPlacement(0,G4ThreeVector(0.0,0.0,ZposCarbon1), frontPanelCarbLog, "caloFPCarbPV1", frontPlateLog, false, 0, false);
        doSurfaceCheck && checkForOverlaps( pv, config, verbosityLevel>0);                
@@ -275,7 +275,7 @@ namespace mu2e {
 
        //Foam panel
        G4Tubs*          frontPanelFoam    = new G4Tubs("caloFPFoam",FPInnerRadius,FPOuterRadius,FPFoamDZ,0,CLHEP::twopi);       
-       G4LogicalVolume* frontPanelFoamLog = caloBuildLogical(frontPanelFoam, FPFoamMaterial, "caloFPFoamLog",isPipeVisible,G4Color::Brown(),0,forceEdge);
+       G4LogicalVolume* frontPanelFoamLog = caloBuildLogical(frontPanelFoam, FPFoamMaterial, "caloFPFoamLog_"+std::to_string(idisk),isPipeVisible,G4Color::Brown(),0,forceEdge);
        pv = new G4PVPlacement(0,G4ThreeVector(0.0,0.0,ZposFoam), frontPanelFoamLog, "caloFPFoamPV", frontPlateLog, false, 0, false);
        doSurfaceCheck && checkForOverlaps( pv, config, verbosityLevel>0);                
                     
@@ -287,7 +287,7 @@ namespace mu2e {
        reg.add(rotFPPipe);
        
        G4Torus*         coolFP     = new G4Torus("caloCoolFP",FPCoolPipeRadius-FPCoolPipeThickness, FPCoolPipeRadius, FPCoolPipeTorRadius, angMax, CLHEP::twopi-2.0*angMax);
-       G4LogicalVolume* coolFPLog  = caloBuildLogical(coolFP, pipeMaterial, "caloCoolFPLog",isPipeVisible,G4Color::Red(),isPipeSolid,0);
+       G4LogicalVolume* coolFPLog  = caloBuildLogical(coolFP, pipeMaterial, "caloCoolFPLog_"+std::to_string(idisk),isPipeVisible,G4Color::Red(),isPipeSolid,0);
        pv = new G4PVPlacement(rotFPPipe,G4ThreeVector(0.0,0.0,ZposPipe), coolFPLog, "caloCoolFPPV", frontPlateLog, false, 0, false);
        doSurfaceCheck && checkForOverlaps( pv, config, verbosityLevel>0);                
        
@@ -314,8 +314,8 @@ namespace mu2e {
 
            G4Torus* pipe1 = new G4Torus("caloPipe",pipeRadius-pipeThickness, pipeRadius, pipeTorRadius[ipipe],angle, CLHEP::pi-2*angle);
            G4Tubs*  pipe2 = new G4Tubs("caloPipe2",pipeRadius-pipeThickness, pipeRadius,0.5*length,0,CLHEP::twopi);       
-           G4LogicalVolume* pipe1Log = caloBuildLogical(pipe1, pipeMaterial, "caloPipe1Log",isPipeVisible,G4Color::Cyan(),isPipeSolid,forceEdge);
-           G4LogicalVolume* pipe2Log = caloBuildLogical(pipe2, pipeMaterial, "caloPipe2Log",isPipeVisible,G4Color::Cyan(),isPipeSolid,forceEdge);
+           G4LogicalVolume* pipe1Log = caloBuildLogical(pipe1, pipeMaterial, "caloPipe1Log_"+std::to_string(idisk),isPipeVisible,G4Color::Cyan(),isPipeSolid,forceEdge);
+           G4LogicalVolume* pipe2Log = caloBuildLogical(pipe2, pipeMaterial, "caloPipe2Log_"+std::to_string(idisk),isPipeVisible,G4Color::Cyan(),isPipeSolid,forceEdge);
 
            pv = new G4PVPlacement(rotPipe1,G4ThreeVector(0,0,z), pipe1Log, "caloPipePV", frontPanelFoamLog, false, ipipe, false);
            doSurfaceCheck && checkForOverlaps( pv, config, verbosityLevel>0);                
@@ -400,16 +400,16 @@ namespace mu2e {
 
        //-----------------------------------------
        // Build wrapper crystal unit, including frame. the wrapper is not covering the front face
-       //----
+       //----        
        G4Box* crystalWrap    = new G4Box("caloCrystalWrap",   wrapperDXY,wrapperDXY,wrapperDZ);
        G4Box* crystal        = new G4Box("caloCrystal",       crystalDXY,crystalDXY,crystalDZ);
        G4Box* crystalFrame   = new G4Box("caloCrystalFrame",  crystalDXY,crystalDXY,crystalFrameDZ);
        G4Box* crystalFrameIn = new G4Box("caloCrystalFrameIn",crystalFrameDXY,crystalFrameDXY,crystalFrameDZ);
        
-       G4LogicalVolume *crystalLog        = caloBuildLogical(crystal,        crysMaterial,      "caloCrystalLog",       isCrystalVisible, G4Color::Cyan(), isCrystalSolid,forceEdge);
-       G4LogicalVolume *crystalFrameLog   = caloBuildLogical(crystalFrame,   crysFrameMaterial, "caloCrystalFrameLog",  isCrystalVisible, G4Color::White(),isCrystalSolid,forceEdge);
-       G4LogicalVolume *crystalFrameInLog = caloBuildLogical(crystalFrameIn, vacuumMaterial,    "caloCrystalFrameInLog",isCrystalVisible, G4Color::Black(),isCrystalSolid,forceEdge);
-       G4LogicalVolume *wrapperLog        = caloBuildLogical(crystalWrap,    wrapMaterial,      "caloCrystalWrapLog",   isCrystalVisible, G4Color::Cyan(), isCrystalSolid,forceEdge);  
+       G4LogicalVolume *crystalLog        = caloBuildLogical(crystal,        crysMaterial,      "caloCrystalLog_"+std::to_string(idisk),         isCrystalVisible, G4Color::Cyan(), isCrystalSolid,forceEdge);
+       G4LogicalVolume *crystalFrameLog   = caloBuildLogical(crystalFrame,   crysFrameMaterial, "caloCrystalFrameLog_"+std::to_string(idisk),    isCrystalVisible, G4Color::White(),isCrystalSolid,forceEdge);
+       G4LogicalVolume *crystalFrameInLog = caloBuildLogical(crystalFrameIn, vacuumMaterial,    "caloCrystalFrameInLog_"+std::to_string(idisk),isCrystalVisible, G4Color::Black(),isCrystalSolid,forceEdge);
+       G4LogicalVolume *wrapperLog        = caloBuildLogical(crystalWrap,    wrapMaterial,      "caloCrystalWrapLog_"+std::to_string(idisk),     isCrystalVisible, G4Color::Cyan(), isCrystalSolid,forceEdge);  
 
        pv = new G4PVPlacement(0,G4ThreeVector(0.0,0.0,0.0),crystalFrameInLog,"crystalFrameInPV",crystalFrameLog,false,0,false);
        doSurfaceCheck && checkForOverlaps( pv, config, verbosityLevel>0);
@@ -427,10 +427,10 @@ namespace mu2e {
        G4Tubs* outerRingDisk    = new G4Tubs("caloOuterRingDisk",   diskOuterRingIn, diskOuterRingOut, diskCaseDZLength,      0,CLHEP::twopi);       
        G4Tubs* outerRailDisk    = new G4Tubs("caloOuterRailCase",   diskOuterRingOut,diskOuterRailOut, outerRingEdgeDZLength, 0,CLHEP::twopi);       
 
-       G4LogicalVolume* fullCrystalDiskLog = caloBuildLogical(fullCrystalDisk, vacuumMaterial,    "calofullCrystalDiskLog", 0, G4Color::Black(),0,0);   
-       G4LogicalVolume* innerRingDiskLog   = caloBuildLogical(innerRingDisk,   innerRingMaterial, "caloInnerRingLog"      , isDiskVisible,G4Color::Yellow(),isDiskSolid,forceEdge);   
-       G4LogicalVolume* outerRingDiskLog   = caloBuildLogical(outerRingDisk,   outerRingMaterial, "caloOuterRingLog"      , isDiskVisible,G4Color::Yellow(),isDiskSolid,forceEdge);   
-       G4LogicalVolume* outerRailDiskLog   = caloBuildLogical(outerRailDisk,   outerRingMaterial, "caloouterRailDiskLog"  , isDiskVisible,G4Color::Yellow(),isDiskSolid,forceEdge);   
+       G4LogicalVolume* fullCrystalDiskLog = caloBuildLogical(fullCrystalDisk, vacuumMaterial,    "calofullCrystalDiskLog_"+std::to_string(idisk), 0, G4Color::Black(),0,0);   
+       G4LogicalVolume* innerRingDiskLog   = caloBuildLogical(innerRingDisk,   innerRingMaterial, "caloInnerRingLog_"+std::to_string(idisk)      , isDiskVisible,G4Color::Yellow(),isDiskSolid,forceEdge);   
+       G4LogicalVolume* outerRingDiskLog   = caloBuildLogical(outerRingDisk,   outerRingMaterial, "caloOuterRingLog_"+std::to_string(idisk)      , isDiskVisible,G4Color::Yellow(),isDiskSolid,forceEdge);   
+       G4LogicalVolume* outerRailDiskLog   = caloBuildLogical(outerRailDisk,   outerRingMaterial, "caloouterRailDiskLog_" +std::to_string(idisk) , isDiskVisible,G4Color::Yellow(),isDiskSolid,forceEdge);   
 
        pv = new G4PVPlacement(0,G4ThreeVector(0.0,0,0),innerRingDiskLog,"innerRingDiskPV",fullCrystalDiskLog,true,0,false);
        doSurfaceCheck && checkForOverlaps(pv,config,verbosityLevel>0);
@@ -445,7 +445,7 @@ namespace mu2e {
        //------------------------------------------------------------
        // add two cooling pipes running between the rails. Make them similar to front plate cooling pipes.        
        G4Torus* coolPipe            = new G4Torus("caloPipe",FPCoolPipeRadius-FPCoolPipeThickness, FPCoolPipeRadius, diskOuterRingOut+FPCoolPipeRadius,0,1.2*CLHEP::pi);
-       G4LogicalVolume* coolPipeLog = caloBuildLogical(coolPipe, coolPipeMaterial, "caloCoolFPLog",isDiskVisible,G4Color::Red(),isDiskSolid,0);
+       G4LogicalVolume* coolPipeLog = caloBuildLogical(coolPipe, coolPipeMaterial, "caloCoolFPLog_"+std::to_string(idisk),isDiskVisible,G4Color::Red(),isDiskSolid,0);
        G4RotationMatrix* rotPipe    = new G4RotationMatrix(CLHEP::HepRotation::IDENTITY); rotPipe->rotateZ(0.1*CLHEP::pi);
        reg.add(rotPipe);
        
@@ -463,7 +463,7 @@ namespace mu2e {
            G4Box* box2 = new G4Box("ShimIn",stepsInX[i]-diskStepThickness,wrapperDXY-diskStepThickness,crystalDZ-diskStepThickness);
            G4SubtractionSolid* hollowBox = new G4SubtractionSolid("HollowBox shim", box, box2, 0, G4ThreeVector(0,0,0));           
            G4SubtractionSolid* cutShim   = new G4SubtractionSolid("Cropped shim", hollowBox, holeIn,0, G4ThreeVector(0,-stepsInY[i],0));
-           G4LogicalVolume* cutShimLog   = caloBuildLogical(cutShim, innerStepMaterial, "cutShimLog",  isDiskVisible, G4Color::Yellow(), isDiskSolid, forceEdge);   
+           G4LogicalVolume* cutShimLog   = caloBuildLogical(cutShim, innerStepMaterial, "cutShimLog_"+std::to_string(idisk),  isDiskVisible, G4Color::Yellow(), isDiskSolid, forceEdge);   
            pv = new G4PVPlacement(0,CLHEP::Hep3Vector(0,stepsInY[i],0),cutShimLog,"steps",fullCrystalDiskLog,true,0,false);
            doSurfaceCheck && checkForOverlaps( pv, config, verbosityLevel>0);
        }
@@ -475,12 +475,12 @@ namespace mu2e {
            double xlen = sqrt(diskOuterRingOut*diskOuterRingOut-stepsOutY[i]*stepsOutY[i])-stepsOutX[i];
            G4Box* box = new G4Box("ShimOut",xlen,wrapperDXY,crystalDZ);
            G4IntersectionSolid* cutShim1 = new G4IntersectionSolid("Cropped shim", crystalOut, box,0, G4ThreeVector(stepsOutX[i]+xlen,stepsOutY[i],0));
-           G4LogicalVolume* cutShim1Log = caloBuildLogical(cutShim1, outerRingMaterial, "cutShimLog",  isDiskVisible, G4Color::Yellow(), isDiskSolid, forceEdge);   
+           G4LogicalVolume* cutShim1Log = caloBuildLogical(cutShim1, outerRingMaterial, "cutShimLog_"+std::to_string(idisk),  isDiskVisible, G4Color::Yellow(), isDiskSolid, forceEdge);   
            pv = new G4PVPlacement(0,CLHEP::Hep3Vector(0,0,0),cutShim1Log,"steps",fullCrystalDiskLog,true,0,false);
            doSurfaceCheck && checkForOverlaps( pv, config, verbosityLevel>0);
 
            G4IntersectionSolid* cutShim2 = new G4IntersectionSolid("Cropped shim", crystalOut, box,0, G4ThreeVector(-stepsOutX[i]-xlen,stepsOutY[i],0));
-           G4LogicalVolume* cutShim2Log = caloBuildLogical(cutShim2, outerRingMaterial, "cutShimLog",  isDiskVisible, G4Color::Yellow(), isDiskSolid, forceEdge);   
+           G4LogicalVolume* cutShim2Log = caloBuildLogical(cutShim2, outerRingMaterial, "cutShimLog_"+std::to_string(idisk),  isDiskVisible, G4Color::Yellow(), isDiskSolid, forceEdge);   
            pv = new G4PVPlacement(0,CLHEP::Hep3Vector(0,0,0),cutShim2Log,"steps",fullCrystalDiskLog,true,0,false);
            doSurfaceCheck && checkForOverlaps( pv, config, verbosityLevel>0);
        }
@@ -495,8 +495,8 @@ namespace mu2e {
            G4IntersectionSolid* cutShim1 = new G4IntersectionSolid("Cropped shim", crystalOut, box,0, G4ThreeVector(0,ylow,0));
            G4IntersectionSolid* cutShim2 = new G4IntersectionSolid("Cropped shim", crystalOut, box,0, G4ThreeVector(0,yup,0));
 
-           G4LogicalVolume* cutShim1Log = caloBuildLogical(cutShim1, outerRingMaterial, "cutShimLog",  isDiskVisible, G4Color::Yellow(), isDiskSolid, forceEdge);   
-           G4LogicalVolume* cutShim2Log = caloBuildLogical(cutShim2, outerRingMaterial, "cutShimLog",  isDiskVisible, G4Color::Yellow(), isDiskSolid, forceEdge);   
+           G4LogicalVolume* cutShim1Log = caloBuildLogical(cutShim1, outerRingMaterial, "cutShimLog_"+std::to_string(idisk),  isDiskVisible, G4Color::Yellow(), isDiskSolid, forceEdge);   
+           G4LogicalVolume* cutShim2Log = caloBuildLogical(cutShim2, outerRingMaterial, "cutShimLog_"+std::to_string(idisk),  isDiskVisible, G4Color::Yellow(), isDiskSolid, forceEdge);   
 
            pv = new G4PVPlacement(0,CLHEP::Hep3Vector(0,0,0),cutShim1Log,"steps",fullCrystalDiskLog,true,0,false);
            doSurfaceCheck && checkForOverlaps( pv, config, verbosityLevel>0);
@@ -607,8 +607,8 @@ namespace mu2e {
        G4Box *holeBack    = new G4Box("caloHoleBack",    holeDX,holeDY,holeDZ);
        G4Box *crystalRO   = new G4Box("caloCrystalRO",   RODX,RODY,RODZ);
 
-       G4LogicalVolume* holeBackLog    = caloBuildLogical(holeBack,   vacuumMaterial, "caloHoleBackLog",  isROVisible, G4Color::Black(),isROSolid,forceEdge);   
-       G4LogicalVolume* crystalROLog   = caloBuildLogical(crystalRO,  ROMaterial,     "caloCrystalROLog", isROVisible, G4Color::Grey(), isROSolid,forceEdge);        
+       G4LogicalVolume* holeBackLog    = caloBuildLogical(holeBack,   vacuumMaterial, "caloHoleBackLog_"+std::to_string(idisk),  isROVisible, G4Color::Black(),isROSolid,forceEdge);   
+       G4LogicalVolume* crystalROLog   = caloBuildLogical(crystalRO,  ROMaterial,     "caloCrystalROLog_"+std::to_string(idisk), isROVisible, G4Color::Grey(), isROSolid,forceEdge);        
 
        pv = new G4PVPlacement(0,G4ThreeVector(RODX, 0, -holeDZ+RODZ),  crystalROLog,"caloROPV_0", holeBackLog, true,0,false);
        doSurfaceCheck && checkForOverlaps( pv, config, verbosityLevel>0);
@@ -617,14 +617,14 @@ namespace mu2e {
 
        //----------------------
        // Build FEE in copper box
-       //----
+       //----       
        G4Box *FEEBox    = new G4Box("caloFEEBox",  FEEBoxDX,FEEBoxDY,FEEBoxDZ);
        G4Box *FEEBoxIn  = new G4Box("caloFEEBoxIn",FEEBoxDX-FEEBoxThickness,FEEBoxDY-FEEBoxThickness,FEEBoxDZ-0.5*FEEBoxThickness);
        G4Box *FEECard   = new G4Box("caloFEECard", FEEDX,FEEDY,FEEDZ);
 
-       G4LogicalVolume* FEEBoxLog   = caloBuildLogical(FEEBox,   FEEBoxMaterial, "caloFEEBoxLog",   0, G4Color::Yellow(),0,forceEdge);   
-       G4LogicalVolume* FEEBoxInLog = caloBuildLogical(FEEBoxIn, vacuumMaterial, "caloFEEBoxInLog", 0, G4Color::Black(),0,0);   
-       G4LogicalVolume* FEECardLog  = caloBuildLogical(FEECard,  FEEMaterial,    "caloFEECardROLog",isROVisible, G4Color::Green(),isROSolid,forceEdge);       
+       G4LogicalVolume* FEEBoxLog   = caloBuildLogical(FEEBox,   FEEBoxMaterial, "caloFEEBoxLog_"+std::to_string(idisk),   0, G4Color::Yellow(),0,forceEdge);   
+       G4LogicalVolume* FEEBoxInLog = caloBuildLogical(FEEBoxIn, vacuumMaterial, "caloFEEBoxInLog_"+std::to_string(idisk), 0, G4Color::Black(),0,0);   
+       G4LogicalVolume* FEECardLog  = caloBuildLogical(FEECard,  FEEMaterial,    "caloFEECardROLog_"+std::to_string(idisk),isROVisible, G4Color::Green(),isROSolid,forceEdge);       
 
        // cards touch top of the box    
        double dFEEsize = FEEBoxDZ-0.5*FEEBoxThickness - FEEDZ;
@@ -642,7 +642,7 @@ namespace mu2e {
        for (int i=0;i<idisk;++i) nTotCrystal+=cal.disk(idisk).nCrystals();
 
        G4Tubs* backPlate = new G4Tubs("caloBackPlate",BPInnerRadius,BPOuterRadius,holeDZ,0,CLHEP::twopi);       
-       G4LogicalVolume* backPlateLog = caloBuildLogical(backPlate, backPlateMaterial, "caloBackPlateLog", isROVisible, G4Color::Blue(),isROSolid,forceEdge);
+       G4LogicalVolume* backPlateLog = caloBuildLogical(backPlate, backPlateMaterial, "caloBackPlateLog_"+std::to_string(idisk), isROVisible, G4Color::Blue(),isROSolid,forceEdge);
 
        for(unsigned ic=0; ic <cal.disk(idisk).nCrystals(); ++ic)
        {	      
@@ -728,11 +728,12 @@ namespace mu2e {
        // Build FEE boxes and last cooling pipes
        //----                     
        G4Tubs* backPlateFEE = new G4Tubs("caloBackFEEPlate",BPInnerRadius,BPOuterRadius,BPFEEDZ,0,CLHEP::twopi);       
-       G4LogicalVolume* backPlateFEELog = caloBuildLogical(backPlateFEE, vacuumMaterial, "caloBackPlateFEELog",0, G4Color::Green(),0,0);
+       std::ostringstream bpname;bpname<<"caloBackPlateFEELog_" <<idisk;
+       G4LogicalVolume* backPlateFEELog = caloBuildLogical(backPlateFEE, vacuumMaterial,bpname.str(),0, G4Color::Green(),0,0);
 
        for(unsigned ic=0; ic <cal.disk(idisk).nCrystals(); ++ic)
        {	      
-	   G4int id = nTotCrystal+ic;
+           G4int id = nTotCrystal+ic;
 	   std::ostringstream name;name<<"caloFEEPV_" <<id;
            CLHEP::Hep3Vector unitPosition = cal.disk(idisk).crystal(ic).localPosition();
            unitPosition.setZ(-BPFEEDZ + FEEBoxDZ); 
@@ -748,10 +749,10 @@ namespace mu2e {
        G4Torus* BPPipe3 = new G4Torus("BPPipe3",BPPipeRadiusHigh-BPPipeThickness, BPPipeRadiusHigh,BPPipeTorRadiusLow,  0.5*CLHEP::pi, 0.9*CLHEP::pi);
        G4Torus* BPPipe4 = new G4Torus("BPPipe4",BPPipeRadiusLow-BPPipeThickness,  BPPipeRadiusLow, BPPipeTorRadiusLow,  0.5*CLHEP::pi, 0.7*CLHEP::pi);
 
-       G4LogicalVolume* BPPipe1Log = caloBuildLogical(BPPipe1, pipeMaterial, "caloBPPipe11Log",isROVisible,G4Color::Blue(),isROSolid,forceEdge);      
-       G4LogicalVolume* BPPipe2Log = caloBuildLogical(BPPipe2, pipeMaterial, "caloBPPipe12Log",isROVisible,G4Color::Blue(),isROSolid,forceEdge);
-       G4LogicalVolume* BPPipe3Log = caloBuildLogical(BPPipe3, pipeMaterial, "caloBPPipe13Log",isROVisible,G4Color::Red() ,isROSolid,forceEdge);      
-       G4LogicalVolume* BPPipe4Log = caloBuildLogical(BPPipe4, pipeMaterial, "caloBPPipe14Log",isROVisible,G4Color::Red() ,isROSolid,forceEdge);
+       G4LogicalVolume* BPPipe1Log = caloBuildLogical(BPPipe1, pipeMaterial, "caloBPPipe11Log_"+std::to_string(idisk),isROVisible,G4Color::Blue(),isROSolid,forceEdge);      
+       G4LogicalVolume* BPPipe2Log = caloBuildLogical(BPPipe2, pipeMaterial, "caloBPPipe12Log_"+std::to_string(idisk),isROVisible,G4Color::Blue(),isROSolid,forceEdge);
+       G4LogicalVolume* BPPipe3Log = caloBuildLogical(BPPipe3, pipeMaterial, "caloBPPipe13Log_"+std::to_string(idisk),isROVisible,G4Color::Red() ,isROSolid,forceEdge);      
+       G4LogicalVolume* BPPipe4Log = caloBuildLogical(BPPipe4, pipeMaterial, "caloBPPipe14Log_"+std::to_string(idisk),isROVisible,G4Color::Red() ,isROSolid,forceEdge);
 
        G4RotationMatrix* rotY = new G4RotationMatrix(CLHEP::HepRotation::IDENTITY);rotY->rotateY(CLHEP::pi);
 
@@ -770,7 +771,7 @@ namespace mu2e {
        // Make the final full back plate
        //----                     
        G4Tubs* fullBackPlateFEE = new G4Tubs("caloFullBackPlate",BPInnerRadius,BPOuterRadius,BPFEEDZ+holeDZ,0,CLHEP::twopi);       
-       G4LogicalVolume* fullBackPlateFEELog = caloBuildLogical(fullBackPlateFEE, vacuumMaterial, "caloFullBackPlateLog", 0, G4Color::Black(),0,0);
+       G4LogicalVolume* fullBackPlateFEELog = caloBuildLogical(fullBackPlateFEE, vacuumMaterial, "caloFullBackPlateLog_"+std::to_string(idisk), 0, G4Color::Black(),0,0);
 
        pv = new G4PVPlacement(0,G4ThreeVector(0,0,-BPFEEDZ),backPlateLog,"caloFullBP1PV",fullBackPlateFEELog,false,0,false);
        doSurfaceCheck && checkForOverlaps( pv, config, verbosityLevel>0);

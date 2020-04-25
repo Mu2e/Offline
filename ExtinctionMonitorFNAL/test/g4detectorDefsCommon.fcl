@@ -33,7 +33,7 @@ services : {
 
     scheduler: { defaultExceptions : false }
     TFileService: {}
-    RandomNumberGenerator: {}
+    RandomNumberGenerator: {defaultEngineKind: "MixMaxRng"}
 
    GeometryService: {@table::Services.Core.GeometryService}
    ConditionsService: { conditionsfile : "Mu2eG4/test/conditions_01.txt" }
@@ -58,7 +58,6 @@ physics : {
          visualization: @local::mu2eg4NoVisualization
 
          generatorModuleLabel: generate
-         MultiStageParameters: {} // this is the first stage
 
          SDConfig: {
             enableSD: [ ExtMonFNAL, virtualdetector ] // activate just the explicitly listed SDs
@@ -109,7 +108,7 @@ outputs: {
 physics.producers.g4run.physics.physicsListName: "QGSP_BERT"
 
 //----------------------------------------------------------------
-services.SeedService.baseSeed         :  0
+services.SeedService.baseSeed         :  8
 services.SeedService.maxUniqueEngines :  20
 
 // This tells emacs to view this file in the JavaScript mode.

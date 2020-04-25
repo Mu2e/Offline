@@ -20,7 +20,7 @@ services : {
 
     scheduler: { defaultExceptions : false }
     TFileService : { fileName : "g4hists_ExtMonCommon.root" }
-    RandomNumberGenerator : {}
+    RandomNumberGenerator : {defaultEngineKind: "MixMaxRng"}
 
     GeometryService : { inputFile : "Mu2eG4/test/geom_extMonCommon.txt" }
     ConditionsService : { conditionsfile : "Mu2eG4/test/conditions_01.txt" }

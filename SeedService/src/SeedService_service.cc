@@ -60,7 +60,7 @@ namespace mu2e {
     policy_(unDefined),
     pSet_(pSet),
     knownSeeds_(),
-    baseSeed_(0),
+    baseSeed_(8),
     checkRange_(true),
     maxUniqueEngines_(20),
 
@@ -110,6 +110,12 @@ namespace mu2e {
     return getSeed(id);
   }
 
+  // User callable entry for InputSource
+  SeedService::seed_t SeedService::getInputSourceSeed(){
+    SeedServiceHelper::EngineId id("_source_");
+    return getSeed(id);
+  }
+
   // Print summary information.
   void SeedService::print( ) const{
     mf::LogInfo log("SEEDS");
@@ -120,7 +126,7 @@ namespace mu2e {
   SeedService::seed_t SeedService::getSeed( SeedServiceHelper::EngineId const& id ){
 
     // Are we being called from the right place?
-    ensureValidState();
+    ensureValidState(id);
 
     // Check for an already computed seed.
     std::pair<map_type::iterator,bool> result = knownSeeds_.insert(pair<SeedServiceHelper::EngineId,seed_t>(id,0));
@@ -283,9 +289,13 @@ namespace mu2e {
   }
 
   // getSeed may only be called from a c'tor or from a beginRun method. In all other cases, throw.
-  void SeedService::ensureValidState( ){
+  void SeedService::ensureValidState(SeedServiceHelper::EngineId const& id){
 
-    if ( state_.state == SeedServiceHelper::ArtState::unDefined ) {
+    if( (state_.state == SeedServiceHelper::ArtState::unDefined) &&
+        // A kludge to allow use from a Source constructor.
+        // Note that the underscore can never occur in a real module label.
+        (id.moduleLabel != "_source_")
+        ) {
       throw cet::exception("SEEDS")
         << "SeedService: not in a module constructor or beginRun method. May not call getSeed.\n";
     }

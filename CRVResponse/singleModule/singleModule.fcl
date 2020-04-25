@@ -15,7 +15,7 @@ services :
 {
   message               : @local::default_message
   TFileService          : { fileName : "hist.root" }
-  RandomNumberGenerator : { }
+  RandomNumberGenerator : {defaultEngineKind: "MixMaxRng" }
 
   GeometryService        : { inputFile      : "CRVResponse/singleModule/geom.txt" }
   ConditionsService      : { conditionsfile : "Mu2eG4/test/conditions_01.txt" }
@@ -44,7 +44,6 @@ physics :
        visualization: @local::mu2eg4NoVisualization
 
        generatorModuleLabel: generate
-       MultiStageParameters: {} // this is the first stage
 
        SDConfig: 
        {

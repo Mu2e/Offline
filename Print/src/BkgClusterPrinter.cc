@@ -96,7 +96,7 @@ mu2e::BkgClusterPrinter::Print(const mu2e::BkgCluster& obj, int ind, std::ostrea
     os 
       << "   hits: " ;
     for(auto bch : obj.hits()) {
-      os << " " << std::setw(5) << bch.index();
+      os << " " << std::setw(5) << bch;
     }
     os << std::endl;
   }

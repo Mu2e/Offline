@@ -450,13 +450,12 @@ namespace mu2e {
 
     int n,np,nn,na,ni;
     n=np=nn=na=ni=0;
-    std::vector<art::Ptr<StepPointMC> > ptrs;
+    std::vector<art::Ptr<StrawGasStep> > ptrs;
     for(auto const& d: coll) { // loop over the collection
       n++;
       // assemble all the pointer in the object
-      ptrs = d.stepPointMCs();
-      ptrs.push_back(d.stepPointMC(StrawEnd::cal));
-      ptrs.push_back(d.stepPointMC(StrawEnd::hv ));
+      ptrs.push_back(d.strawGasStep(StrawEnd::cal));
+      ptrs.push_back(d.strawGasStep(StrawEnd::hv ));
       // check them
       for(auto const& p: ptrs) {
 	np++;

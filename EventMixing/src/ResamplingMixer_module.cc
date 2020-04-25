@@ -20,51 +20,80 @@
 //================================================================
 namespace mu2e {
 
-  namespace {
-    using namespace fhicl;
-    struct MyTopConfig {
-      Table<Mu2eProductMixer::Config> products { Name("products") };
-
-      Atom<unsigned> nSecondaries { Name("nSecondaries"),
-          Comment("Number of secondary events per single primary, a positive integer."),
-          1u };
-    };
-
-    // The following hack will hopefully go away after
-    // https://cdcvs.fnal.gov/redmine/issues/19970
-    // is resolved.
-    MyTopConfig
-    retrieveConfiguration(const std::string& subTableName, const fhicl::ParameterSet& pset)
-    {
-      std::set<std::string> ignorable_keys;
-
-      // Ignore everything but the subtable
-      const auto& allnames = pset.get_names();
-      for(const auto& i: allnames) {
-        if(i != subTableName) {
-          ignorable_keys.insert(i);
-        }
-      }
-
-      return fhicl::Table<MyTopConfig>(pset.get<fhicl::ParameterSet>(subTableName),
-                                       ignorable_keys )();
-    }
-  }
-
   //----------------------------------------------------------------
   // Our "detail" class for art/Framework/Modules/MixFilter.h
   class ResamplingMixerDetail {
     Mu2eProductMixer spm_;
     const unsigned nSecondaries_;
+
+    bool writeEventIDs_;
+    art::EventIDSequence idseq_;
+
   public:
-    ResamplingMixerDetail(const fhicl::ParameterSet& pset, art::MixHelper &helper);
+
+    struct Mu2eConfig {
+      using Name = fhicl::Name;
+      using Comment = fhicl::Comment;
+
+      fhicl::Table<Mu2eProductMixer::Config> products { Name("products"),
+          Comment("A table specifying products to be mixed.  For each supported data type\n"
+                  "there is a mixingMap sequence that defines mapping of inputs to outputs.\n"
+                  "Each entry in the top-level mixingMap sequence is a sequence of two strings:\n"
+                  "    [ \"InputTag\", \"outputInstanceName\" ]\n"
+                  "The output instance name colon \":\" is special: it means take instance name from the input tag.\n"
+                  "For example, with this config:\n"
+                  "   mixingMap: [ [ \"detectorFilter:tracker\", \"tracker\" ], [ \"detectorFilter:virtualdetector\", \":\" ] ]\n"
+                  "the outputs will be named \"tracker\" and \"virtualdetector\"\n"
+                  )
+          };
+
+      fhicl::Atom<unsigned> nSecondaries { Name("nSecondaries"),
+          Comment("Number of secondary events per single primary, a positive integer."),
+          1u };
+
+      fhicl::Atom<bool> writeEventIDs { Name("writeEventIDs"),
+          Comment("Write out IDs of events on the secondary input stream."),
+          true
+          };
+    };
+
+    struct Config {
+      fhicl::Table<Mu2eConfig> mu2e { fhicl::Name("mu2e") };
+    };
+
+    using Parameters = art::MixFilterTable<Config>;
+    ResamplingMixerDetail(const Parameters& pset, art::MixHelper &helper);
+
     size_t nSecondaries() const { return nSecondaries_; }
+
+    void processEventIDs(const art::EventIDSequence& seq);
+
+    void finalizeEvent(art::Event& e);
   };
 
-  ResamplingMixerDetail::ResamplingMixerDetail(const fhicl::ParameterSet& pset, art::MixHelper& helper)
-    : spm_{ retrieveConfiguration("mu2e", pset).products(), helper }
-    , nSecondaries_{ retrieveConfiguration("mu2e", pset).nSecondaries() }
-  {}
+  ResamplingMixerDetail::ResamplingMixerDetail(const Parameters& pars, art::MixHelper& helper)
+    : spm_{ pars().mu2e().products(), helper }
+    , nSecondaries_{ pars().mu2e().nSecondaries() }
+    , writeEventIDs_{ pars().mu2e().writeEventIDs() }
+  {
+    if(writeEventIDs_) {
+      helper.produces<art::EventIDSequence>();
+    }
+  }
+
+  void ResamplingMixerDetail::processEventIDs(const art::EventIDSequence& seq) {
+    if(writeEventIDs_) {
+      idseq_ = seq;
+    }
+  }
+
+  void ResamplingMixerDetail::finalizeEvent(art::Event& e) {
+    if(writeEventIDs_) {
+      auto o = std::make_unique<art::EventIDSequence>();
+      o->swap(idseq_);
+      e.put(std::move(o));
+    }
+  }
 
 }
 

@@ -25,6 +25,7 @@
 #include "RecoDataProducts/inc/ComboHit.hh"
 #include "RecoDataProducts/inc/StrawHitFlag.hh"
 #include "MCDataProducts/inc/StrawDigiMC.hh"
+#include "DataProducts/inc/EventWindowMarker.hh"
 // Utilities
 #include "Mu2eUtilities/inc/SimParticleTimeOffset.hh"
 using namespace std;
@@ -49,6 +50,7 @@ namespace mu2e
       art::InputTag _shTag;
       art::InputTag _chTag;
       art::InputTag _shfTag;
+      art::InputTag _ewMarkerTag;
       art::InputTag _stTag;
       art::InputTag _mcdigisTag;
       // cache of event objects
@@ -85,6 +87,7 @@ namespace mu2e
       Int_t _sid, _plane, _panel, _layer, _straw;
       Float_t _shwres, _shtres;
       Bool_t _mcxtalk;
+      Float_t _ewMarkerOffset;
       // helper array
       StrawEnd _end[2];
   };
@@ -96,6 +99,7 @@ namespace mu2e
     _shTag(pset.get<string>("StrawHitCollection","makeSH")),
     _chTag(pset.get<string>("ComboHitCollection","makeSH")),
     _shfTag(pset.get<string>("StrawHitFlagCollection")),
+    _ewMarkerTag(pset.get<art::InputTag>("EventWindowMarkerLabel","EWMProducer")),
     _mcdigisTag(pset.get<art::InputTag>("StrawDigiMCCollection","makeSD")),
     _toff(pset.get<fhicl::ParameterSet>("TimeOffsets")),
     _end{StrawEnd::cal,StrawEnd::hv}
@@ -133,6 +137,7 @@ namespace mu2e
     _chcol = 0;
     _shfcol = 0;
     _mcdigis = 0;
+    _ewMarkerOffset = 0;
     // nb: getValidHandle does the protection (exception) on handle validity so I don't have to
     auto shH = evt.getValidHandle<StrawHitCollection>(_shTag);
     _shcol = shH.product();
@@ -148,6 +153,9 @@ namespace mu2e
       // update time offsets
       _toff.updateMap(evt);
     }
+    auto ewMarkerHandle = evt.getValidHandle<EventWindowMarker>(_ewMarkerTag);
+    auto ewMarker = ewMarkerHandle.product();
+    _ewMarkerOffset = ewMarker->timeOffset();
     return _shcol != 0 && _chcol != 0 && (_shfcol != 0 || !_useshfcol) && (_mcdigis != 0  || !_mcdiag);
   }
 
@@ -302,15 +310,15 @@ namespace mu2e
         StrawDigiMC const& mcdigi = _mcdigis->at(istr);
         // use TDC channel 0 to define the MC match
         StrawEnd itdc;
-        art::Ptr<StepPointMC> const& spmcp = mcdigi.stepPointMC(itdc);
+        auto const& spmcp = mcdigi.strawGasStep(itdc);
         art::Ptr<SimParticle> const& spp = spmcp->simParticle();
 	SimParticle const& osp = spp->originParticle();
 	Hep3Vector dprod = spmcp->position()-det->toDetector(osp.startPosition());
 	static Hep3Vector zdir(0.0,0.0,1.0);
         _pdist = dprod.mag();
         _pperp = dprod.perp(zdir);
-        _pmom = spmcp->momentum().mag();
-        _mcnsteps = mcdigi.stepPointMCs().size();
+        _pmom = sqrt(spmcp->momentum().mag2());
+        _mcnsteps = 2; // FIXME!
         // compute energy sum
         _mcedep = mcdigi.energySum();
         _mcetrig = mcdigi.triggerEnergySum(StrawEnd::cal);
@@ -319,7 +327,7 @@ namespace mu2e
         _mcgen = -1;
         if(osp.genParticle().isNonnull())
           _mcgen = osp.genParticle()->generatorId().id();
-        _mcsptime = _toff.timeWithOffsetsApplied(*spmcp);
+        _mcsptime = _toff.timeWithOffsetsApplied(*spmcp) - _ewMarkerOffset;
 	for(size_t iend=0;iend<2; ++iend){
 	  _mcwt[iend] = mcdigi.wireEndTime(_end[iend]);
 	  _mcct[iend] = mcdigi.clusterPosition(_end[iend]).t();
@@ -334,7 +342,7 @@ namespace mu2e
         _mcoe = osp.startMomentum().e();
         _mcom = osp.startMomentum().vect().mag();
         _mcshlen = (spmcp->position()-straw.getMidPoint()).dot(straw.getDirection());
-	Hep3Vector mdir = spmcp->momentum().unit();
+	Hep3Vector mdir = Geom::Hep3Vec(spmcp->momentum()).unit();
 	Hep3Vector tdir = (straw.getDirection().cross(mdir)).unit();
         _mcshd = (spmcp->position()-straw.getMidPoint()).dot(tdir);
 	double scos = mdir.dot(straw.getDirection());

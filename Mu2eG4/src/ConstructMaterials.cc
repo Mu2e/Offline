@@ -1,10 +1,7 @@
 //
 // Construct materials requested by the run-time configuration system.
 //
-// $Id: ConstructMaterials.cc,v 1.48 2014/09/04 14:22:45 knoepfel Exp $
-// $Author: knoepfel $
-// $Date: 2014/09/04 14:22:45 $
-//
+
 // Original author Rob Kutschke
 //
 // Notes:
@@ -25,11 +22,11 @@
 // Framework includes
 #include "messagefacility/MessageLogger/MessageLogger.h"
 #include "cetlib_except/exception.h"
-#include "fhiclcpp/ParameterSet.h"
 
 // Mu2e includes
 #include "Mu2eG4/inc/ConstructMaterials.hh"
 #include "Mu2eG4/inc/findMaterialOrThrow.hh"
+#include "Mu2eG4/inc/setBirksConstant.hh"
 #include "DetectorSolenoidGeom/inc/DetectorSolenoid.hh"
 #include "ProductionSolenoidGeom/inc/PSVacuum.hh"
 #include "GeometryService/inc/GeometryService.hh"
@@ -59,17 +56,10 @@ using namespace std;
 
 namespace mu2e {
 
-  ConstructMaterials::ConstructMaterials() {
-    art::ServiceHandle<GeometryService> geom;
-    SimpleConfig const& config = geom->config();
-    mu2eStandardDetector_ = geom->isStandardMu2eDetector();
-    printElements_ = config.getBool("g4.printElements",false);
-    printMaterials_ = config.getBool("g4.printMaterials",false);
-  }
-
-  ConstructMaterials::ConstructMaterials(const fhicl::ParameterSet& pset)
-    : printElements_(pset.get<bool>("debug.printElements"))
-    , printMaterials_(pset.get<bool>("debug.printMaterials"))
+  ConstructMaterials::ConstructMaterials(const Mu2eG4Config::Top& config)
+    : config_(config)
+    , printElements_(config.debug().printElements())
+    , printMaterials_(config.debug().printMaterials())
   {
     art::ServiceHandle<GeometryService> geom;
     mu2eStandardDetector_ = geom->isStandardMu2eDetector();
@@ -84,7 +74,7 @@ namespace mu2e {
     if (!mu2eStandardDetector_) {
       cout  << "Non standard mu2e configuration, Will NOT construct mu2e materials " << endl;
       // one could move this down to constructMu2eMaterials before using GeomHandle's
-     return;
+      return;
     }
 
     // Construct the requested materials.
@@ -117,13 +107,13 @@ namespace mu2e {
   //    multiple C++ definitions of (e.g.) density, temperature, etc., which are objects
   //    that have G4-specific types (G4double).  Removing the braces would require removing
   //    the G4double typename in front of the variable strings for assignments after the first
-//    one, possibly making things a little confusing for people needing to define materials.
-//  **************** Added Note *********************
-//  Because of warnings from the compiler about too many variables in the
-//  construct function, we have split the constructMu2eMaterials function into
-//  two functions.  New materials should be added to the second function,
-//  named constructMu2eMaterials2.
-//  *************************************************
+  //    one, possibly making things a little confusing for people needing to define materials.
+  //  **************** Added Note *********************
+  //  Because of warnings from the compiler about too many variables in the
+  //  construct function, we have split the constructMu2eMaterials function into
+  //  two functions.  New materials should be added to the second function,
+  //  named constructMu2eMaterials2.
+  //  *************************************************
   void ConstructMaterials::constructMu2eMaterials(){
 
 
@@ -894,11 +884,11 @@ namespace mu2e {
       G4double density = StrawLeak->GetDensity()*pressure*refTemp/(refPress*temperature);
 
       G4Material* DSVacuum =
-	new G4Material(mat.name, density, StrawLeak->GetNumberOfElements(),
-		       kStateGas, temperature, pressure);
+        new G4Material(mat.name, density, StrawLeak->GetNumberOfElements(),
+                       kStateGas, temperature, pressure);
 
       for (size_t i = 0 ; i < StrawLeak->GetNumberOfElements(); ++i) {
-	DSVacuum->AddElement(StrawLeak->GetElementVector()->at(i), StrawLeak->GetFractionVector()[i]);
+        DSVacuum->AddElement(StrawLeak->GetElementVector()->at(i), StrawLeak->GetFractionVector()[i]);
       }
 
     }
@@ -920,11 +910,11 @@ namespace mu2e {
       G4double density = gas->GetDensity()*pressure*refTemp/(refPress*temperature);
 
       G4Material* PSVacuum =
-	new G4Material(mat.name, density, gas->GetNumberOfElements(),
-		       kStateGas, temperature, pressure);
+        new G4Material(mat.name, density, gas->GetNumberOfElements(),
+                       kStateGas, temperature, pressure);
 
       for (size_t i = 0 ; i < gas->GetNumberOfElements(); ++i) {
-	PSVacuum->AddElement(gas->GetElementVector()->at(i), gas->GetFractionVector()[i]);
+        PSVacuum->AddElement(gas->GetElementVector()->at(i), gas->GetFractionVector()[i]);
       }
 
     }
@@ -959,7 +949,7 @@ namespace mu2e {
 
       G4Material *GasMix = new G4Material( mat.name, density, nel=3,
                                            kStateGas, temperature= 293.15*CLHEP::kelvin,
-					   pressure= 1.*CLHEP::atmosphere);
+                                           pressure= 1.*CLHEP::atmosphere);
 
       G4Element* He = getElementOrThrow("He");
       G4Element* C  = getElementOrThrow("C");
@@ -994,7 +984,7 @@ namespace mu2e {
 
       G4Material *GasMix = new G4Material( mat.name, density, nel=3,
                                            kStateGas, temperature= 293.15*CLHEP::kelvin,
-					   pressure= 1.*CLHEP::atmosphere);
+                                           pressure= 1.*CLHEP::atmosphere);
 
       G4Element* He = getElementOrThrow("He");
       G4Element* C  = getElementOrThrow("C");
@@ -1065,7 +1055,7 @@ namespace mu2e {
 
       G4Material *GasMix = new G4Material( mat.name, density, nel=3,
                                            kStateGas, temperature= 293.15*CLHEP::kelvin,
-					   pressure= 1.*CLHEP::atmosphere);
+                                           pressure= 1.*CLHEP::atmosphere);
 
       G4Element* He = getElementOrThrow("He");
       G4Element* C  = getElementOrThrow("C");
@@ -1101,7 +1091,7 @@ namespace mu2e {
 
       G4Material *GasMix = new G4Material( mat.name, density, nel=3,
                                            kStateGas, temperature= 293.15*CLHEP::kelvin,
-					   pressure= 1.*CLHEP::atmosphere);
+                                           pressure= 1.*CLHEP::atmosphere);
 
       G4Element* He = getElementOrThrow("He");
       G4Element* C  = getElementOrThrow("C");
@@ -1180,10 +1170,10 @@ namespace mu2e {
     }
 
     mat = uniqueMaterialOrThrow("PET_P100");
-      G4Material* PET_P100 = new G4Material( mat.name, 0.11*CLHEP::g/CLHEP::cm3, 3);
-      PET_P100->AddElement( getElementOrThrow("C"), 10);
-      PET_P100->AddElement( getElementOrThrow("H"),  8);
-      PET_P100->AddElement( getElementOrThrow("O"),  4);
+    G4Material* PET_P100 = new G4Material( mat.name, 0.11*CLHEP::g/CLHEP::cm3, 3);
+    PET_P100->AddElement( getElementOrThrow("C"), 10);
+    PET_P100->AddElement( getElementOrThrow("H"),  8);
+    PET_P100->AddElement( getElementOrThrow("O"),  4);
 
     mat = uniqueMaterialOrThrow( "Lyso_01");  /// Alessandra
     {
@@ -1208,9 +1198,9 @@ namespace mu2e {
     }
 
     mat = uniqueMaterialOrThrow( "CuW1090");
-     G4Material* CuW1090 = new G4Material(mat.name, 17.3*CLHEP::g/CLHEP::cm3, 2);
-     CuW1090->AddMaterial( findMaterialOrThrow("G4_W"),0.90);
-     CuW1090->AddMaterial( findMaterialOrThrow("G4_Cu"),0.10);
+    G4Material* CuW1090 = new G4Material(mat.name, 17.3*CLHEP::g/CLHEP::cm3, 2);
+    CuW1090->AddMaterial( findMaterialOrThrow("G4_W"),0.90);
+    CuW1090->AddMaterial( findMaterialOrThrow("G4_Cu"),0.10);
 
 
     mat = uniqueMaterialOrThrow("CorrugatedPolypropylene");
@@ -1240,7 +1230,7 @@ namespace mu2e {
     mat = uniqueMaterialOrThrow( "Electronics2" );
     {
       // This material represents the passive part of the board in the Calorimeter crates
-     G4double density;
+      G4double density;
 
       G4Material* Electronics2 =
         new G4Material(mat.name, density = 4.52*CLHEP::g/CLHEP::cm3, 2);
@@ -1255,7 +1245,7 @@ namespace mu2e {
       G4int nel;
       G4Material *AluminumHoneycomb = new G4Material(mat.name, density = 0.03*CLHEP::g/CLHEP::cm3, nel=1);
       AluminumHoneycomb->AddMaterial(findMaterialOrThrow("G4_Al"), 100.0*CLHEP::perCent);
-     }
+    }
 
     mat = uniqueMaterialOrThrow( "PolypropyleneFoam");
     {
@@ -1528,9 +1518,31 @@ namespace mu2e {
     // Completed constructMu2eMaterials2(), second function for
     // building all Mu2e materials.
 
+
+
+    mat = uniqueMaterialOrThrow("ProductionTargetTungstenLa2_O3");
+    {
+
+     G4Material* ProductionTargetTungstenLa2_O3 = new G4Material(mat.name
+                                                                 ,18.75*CLHEP::g/CLHEP::cm3
+                                                                 ,2);
+     constexpr double wPercentage = 99.;
+
+     // first define lanthanum oxide
+     //     G4Element* lanthanum = new G4Element("Lanthanum","La",57.,138.905*CLHEP::g/CLHEP::mole);
+     //G4Element* oxygen = new G4Element("Oxygen","O",8.,15.999*CLHEP::g/CLHEP::mole);
+     G4Material* La2_O3 = new G4Material("La2_O3", 6.51*CLHEP::g/CLHEP::cm3  ,2);
+     La2_O3->AddElement(getElementOrThrow("La"),2);
+     La2_O3->AddElement(getElementOrThrow("O"),3);
+     //
+     // and now tungsten
+     ProductionTargetTungstenLa2_O3->AddMaterial(La2_O3,(100. - wPercentage)*CLHEP::perCent);
+     ProductionTargetTungstenLa2_O3->AddElement(getElementOrThrow("W"),wPercentage*CLHEP::perCent);
+    }
+
+    setBirksConstant(config_);
+
   }
-
-
 
 
   // Check to see if the named material already exists.

@@ -38,6 +38,9 @@ namespace mu2e {
 
 	//conversion factor between ADC counts and MeV for a specific RO
 	_ADC2MeV  = config.getDouble("ADC2MeVConversionFactor");
+
+	//conversion factor between ADC counts and MeV for Fast clustering
+	_Peak2MeV  = config.getDouble("Peak2MeVConversionFactor");
       
       }
 }
