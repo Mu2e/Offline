@@ -14,10 +14,11 @@ namespace mu2e
     Float_t             _primaryE;         //energy of the primary particle of this MC particle
     Float_t             _primaryX, _primaryY, _primaryZ;   //starting point of the primary particle of this MC particle
     Float_t             _x, _y, _z;        //position of the MC particle when it crosses the xz plane of CRV-T
+    Float_t             _xDir, _yDir, _zDir;    //direction of the MC particle when it crosses the xz plane of CRV-T
     Float_t             _time;             //time of the MC particle when it crosses the xz plane of CRV-T
     Float_t             _kineticEnergy;    //time of the MC particle when it crosses the xz plane of CRV-T
     CrvPlaneInfoMC(int pdgId, int primaryPdgId, float primaryE, CLHEP::Hep3Vector primaryPos, 
-              CLHEP::Hep3Vector pos, float time, float kineticEnergy) :
+              CLHEP::Hep3Vector pos, CLHEP::Hep3Vector dir, float time, float kineticEnergy) :
               _pdgId(pdgId),
               _primaryPdgId(primaryPdgId),
               _primaryE(primaryE),
@@ -25,6 +26,7 @@ namespace mu2e
               _primaryY(primaryPos.y()),
               _primaryZ(primaryPos.z()),
               _x(pos.x()), _y(pos.y()), _z(pos.z()),
+              _xDir(dir.x()), _yDir(dir.y()), _zDir(dir.z()),
               _time(time),
               _kineticEnergy(kineticEnergy)
               {}
@@ -36,6 +38,7 @@ namespace mu2e
               _primaryY(0),
               _primaryZ(0),
               _x(0), _y(0), _z(0),
+              _xDir(0), _yDir(0), _zDir(0),
               _time(0),
               _kineticEnergy(0)
               {}

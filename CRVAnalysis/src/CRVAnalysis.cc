@@ -118,6 +118,7 @@ namespace mu2e
           const std::vector<MCTrajectoryPoint> &points = trajectoryIter->second.points();
           if(points.size()<1) continue;
           CLHEP::Hep3Vector previousPos=points[0].pos();
+#if 0
           for(size_t i=1; i<points.size(); i++)
           {
             CLHEP::Hep3Vector pos=points[i].pos();
@@ -125,6 +126,7 @@ namespace mu2e
             {
               double fraction=(crvPlaneY-pos.y())/(previousPos.y()-pos.y());
               CLHEP::Hep3Vector planePos=fraction*(previousPos-pos)+pos;
+              CLHEP::Hep3Vector planeDir=(pos-previousPos).unit();
               double planeTime=fraction*(points[i-1].t()-points[i].t())+points[i].t();
               double planeKineticEnergy=fraction*(points[i-1].kineticEnergy()-points[i].kineticEnergy())+points[i].kineticEnergy();
               MCInfoPlane.emplace_back(trajectorySimParticle->pdgId(), 
@@ -132,14 +134,35 @@ namespace mu2e
                                        trajectoryPrimaryParticle->startMomentum().e(),
                                        trajectoryPrimaryParticle->startPosition(),
                                        planePos,
+                                       planeDir,
                                        planeTime,
                                        planeKineticEnergy);
             }
             previousPos=pos;
           }
+#else
+          //extrapolation
+          if(points.size()>=2)
+          {
+            double fraction=(crvPlaneY-points[0].pos().y())/(points[1].pos().y()-points[0].pos().y());
+            CLHEP::Hep3Vector planePos=fraction*(points[1].pos()-points[0].pos())+points[0].pos();
+            CLHEP::Hep3Vector planeDir=(points[1].pos()-points[0].pos()).unit();
+            double planeTime=fraction*(points[1].t()-points[0].t())+points[0].t();
+            double planeKineticEnergy=fraction*(points[1].kineticEnergy()-points[0].kineticEnergy())+points[0].kineticEnergy();
+              MCInfoPlane.emplace_back(trajectorySimParticle->pdgId(), 
+                                       trajectoryPrimaryParticle->pdgId(),
+                                       trajectoryPrimaryParticle->startMomentum().e(),
+                                       trajectoryPrimaryParticle->startPosition(),
+                                       planePos,
+                                       planeDir,
+                                       planeTime,
+                                       planeKineticEnergy);
+          }
+#endif
         }
       }
     }
+
   }//FillCrvInfoStructure
 
 }
