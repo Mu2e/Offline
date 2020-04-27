@@ -85,6 +85,8 @@ class AlignTrackCollector : public art::EDAnalyzer {
     Float_t doca_residual[MAX_NHITS];
     Float_t time_residual[MAX_NHITS];
     Float_t doca_resid_err[MAX_NHITS];
+    Float_t drift_reso[MAX_NHITS];
+
     Float_t pull_doca[MAX_NHITS];
     Float_t pull_hittime[MAX_NHITS];
 
@@ -260,6 +262,9 @@ void AlignTrackCollector::beginJob()
         diagtree->Branch("doca_resid", &doca_residual, "doca_resid[nHits]/F");
         diagtree->Branch("time_resid", &time_residual, "time_resid[nHits]/F");
         diagtree->Branch("doca_resid_err", &doca_resid_err, "doca_resid_err[nHits]/F");
+        diagtree->Branch("drift_res", &drift_reso, "drift_res[nHits]/F");
+
+
         diagtree->Branch("pull_doca", &pull_doca, "pull_doca[nHits]/F");
         diagtree->Branch("pull_hittime", &pull_hittime, "pull_doca[nHits]/F");
 
@@ -313,6 +318,7 @@ void AlignTrackCollector::writeLabelsFile(Tracker const& aligned_tracker)
                                nominal_tracker.getPlane(p).origin()
                         << std::endl;
 
+
         for (Panel const* panel : aligned_tracker.getPlane(p).getPanels()) {
             uint16_t pa = panel->id().uniquePanel();
             for (size_t l_idx_pa = 0; l_idx_pa < panel_dof_labels[pa].size(); ++l_idx_pa) {
@@ -323,6 +329,21 @@ void AlignTrackCollector::writeLabelsFile(Tracker const& aligned_tracker)
                             << panel->origin() -
                                    nominal_tracker.getPlane(p).getPanel(panel->id()).origin()
                             << std::endl;
+            // auto straw0 = panel->getStraw(0);
+            // auto straw0pos = straw0.getMidPoint();
+            // auto straw0dir = straw0.getDirection();
+
+            // label_info_file << "# generated code Panel Straw0 actual vs. expected position: "
+            //     << "actual pos: " << straw0pos << " dir: " << straw0dir
+            //     << "expected " << CosmicTrack_DCAalignpos_x(0.5, 0.5, 0,
+            //     0,0,0, 0,0,0, 0,0,0,
+            //     double plane_x, double plane_y, double plane_z,
+
+            //     double panel_straw0x, double panel_straw0y, double panel_straw0z,
+
+            //     double wire_x, double wire_y, double wire_z,
+            //     double wdir_x, double wdir_y, double wdir_z)
+
         }
 
         label_info_file << std::endl;
@@ -475,6 +496,8 @@ bool AlignTrackCollector::filter_CosmicTrackSeedCollection(art::Event const& eve
             doca_resid_err[nHits] = resid_err_tmp;
             pull_doca[nHits] = resid_tmp / resid_err_tmp;
             pull_hittime[nHits] = time_resid / drift_res;
+
+            drift_reso[nHits] = drift_res;
 
             doca[nHits] = pca.dca();
             time[nHits] = straw_hit.time();
