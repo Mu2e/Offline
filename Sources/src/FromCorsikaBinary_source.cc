@@ -8,7 +8,6 @@
 #include <cassert>
 #include <set>
 #include <string>
-#include <regex>
 
 #include "CLHEP/Vector/LorentzVector.h"
 #include "CLHEP/Vector/ThreeVector.h"
@@ -21,7 +20,6 @@
 #include "art/Framework/Principal/SubRunPrincipal.h"
 #include "art/Framework/Principal/EventPrincipal.h"
 #include "art/Framework/IO/Sources/put_product_in_principal.h"
-#include "art/Utilities/Globals.h" // FIXME-KJK: should not be necessary to use this
 #include "canvas/Persistency/Provenance/Timestamp.h"
 #include "canvas/Persistency/Provenance/RunID.h"
 #include "canvas/Persistency/Provenance/SubRunID.h"
