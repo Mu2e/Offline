@@ -27,8 +27,8 @@ DAQ : {
 
 	 generateBinaryFile : 1
 	 outputFile      : "DTC_packets.bin"
-	 maxDMABlockSize : 32000
-	 bufferSize      : 1000
+
+         generateTextFile : 0
       }
       
       makeSD:
