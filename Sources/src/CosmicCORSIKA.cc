@@ -125,6 +125,10 @@ namespace mu2e {
           throw std::runtime_error("Error: reclen too small");
         }
 
+        if(reclen > 4*_fbsize_words) {
+          throw std::runtime_error("Error: reclen too big");
+        }
+
         // Read the full record
         if(!input->read(_buf.ch, reclen)) {
           break;
