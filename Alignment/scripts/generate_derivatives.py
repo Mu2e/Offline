@@ -76,7 +76,6 @@ def build_ccode_function(return_type, fn_name, symbolslist, fn_body):
     return function_header_code, code
 
 
-
 def generate_code_function(name, return_type, expr, symbols):
     args = 'double %s' % (', double '.join([p.name for p in symbols]))
 
@@ -117,9 +116,11 @@ def DOCA(p1, t1, p2, t2):
 
     return sympy.Piecewise((dca, _s2 > 0), (-dca, True))
 
+
 def distance_to_time(self, dist):
     linvel = 0
     return dist / linvel
+
 
 def colvec_perp(matrix):
     return sqrt(matrix[0]*matrix[0] + matrix[1]*matrix[1])
@@ -133,18 +134,17 @@ class HepTransform:
             self._rotmat = rot
             return
 
-        a,b,g = rot
+        a, b, g = rot
 
         self._rotmat = Matrix([[1, g, b],
-                        [-g, 1, a],
-                        [b, -a, 1]])
+                               [-g, 1, a],
+                               [b, -a, 1]])
 
     def trl(self):
         return self._trl
 
     def rotmat(self):
         return self._rotmat
-
 
     def combine(self, b):
         v = self._trl + self._rotmat * b._trl
@@ -156,7 +156,6 @@ class HepTransform:
 
     #   HepTransform align_plane(rowpl.dx(),rowpl.dy(),rowpl.dz(),
     #          rowpl.rx(),rowpl.ry(),rowpl.rz());
-
 
     #   if ( _config.verbose() > 0 ) {
     #     cout << "AlignedTrackerMaker::fromDb plane ID " << plane.id().plane() << " alignment constants: " << align_plane << endl;
@@ -180,7 +179,6 @@ class HepTransform:
         # // make an intermediate multiplication
         # HepTransform panel_temp = plane_temp * (panel_to_plane * align_panel);
 
-
         # for(size_t istr=0; istr< StrawId::_nstraws; istr++) {
         #   Straw &straw = tracker.getStraw(panel.getStraw(istr).id());
 
@@ -198,12 +196,13 @@ class HepTransform:
 
 
 def nested_transform_alignment(wire_pos, wire_dir,
-    plane_origin, panel_straw0mp,
-    plane_trl, plane_rot, panel_trl, panel_rot):
+                               plane_origin, panel_straw0mp,
+                               plane_trl, plane_rot, panel_trl, panel_rot):
 
     align_plane = HepTransform(plane_trl, plane_rot)
     align_panel = HepTransform(panel_trl, panel_rot)
-    plane_to_tracker = HepTransform(Matrix([0, 0.0, plane_origin[2]]), [0.0,0.0,0.0])
+    plane_to_tracker = HepTransform(
+        Matrix([0, 0.0, plane_origin[2]]), [0.0, 0.0, 0.0])
 
     dv = panel_straw0mp - Matrix([0, 0.0, plane_origin[2]])
 
@@ -213,19 +212,19 @@ def nested_transform_alignment(wire_pos, wire_dir,
 
     panel_to_plane = HepTransform(dv, [0.0, 0.0, rz])
 
-    transform = plane_to_tracker.combine(align_plane.combine(panel_to_plane.combine(align_panel)))
+    transform = plane_to_tracker.combine(
+        align_plane.combine(panel_to_plane.combine(align_panel)))
 
     dx = colvec_perp(wire_pos) - colvec_perp(panel_straw0mp)
     dz = (wire_pos - panel_straw0mp)[2]
 
-    straw_to_panel = Matrix([dx,0.0,dz])
-    straw_dir = Matrix([0.0,1.0,0.0])
+    straw_to_panel = Matrix([dx, 0.0, dz])
+    straw_dir = Matrix([0.0, 1.0, 0.0])
 
     wire_pos_a = transform.transform(straw_to_panel)
     wire_dir_a = transform.rotmat() * straw_dir
 
     return wire_pos_a, wire_dir_a
-
 
 
 def exact_alignment(wire_pos, wire_dir, body_origin, translation, rotation):
@@ -304,11 +303,11 @@ def generate_expressions(approximate=False, remove_globalparam_dependence=True):
     # track parametrisation
     a0 = Symbol('a0', real=True)
     b0 = Symbol('b0', real=True)
-    track_pos = Matrix([a0,0, b0])
+    track_pos = Matrix([a0, 0, b0])
 
     a1 = Symbol('a1', real=True)
     b1 = Symbol('b1', real=True)
-    track_dir = Matrix([a1,-1, b1])
+    track_dir = Matrix([a1, -1, b1])
     # t0 = Symbol('t0')
 
     # wire position (midpoint) and direction
@@ -368,7 +367,6 @@ def generate_expressions(approximate=False, remove_globalparam_dependence=True):
         plane_trl, plane_rot,
         panel_trl, panel_rot)
 
-
     # # plane translation
     # aligned_wpos, aligned_wdir = alignment_func(
     #     wire_pos, wire_dir, plane_origin, trl, plane_rot)
@@ -381,7 +379,8 @@ def generate_expressions(approximate=False, remove_globalparam_dependence=True):
 
     # now generate optimised C code to calculate each deriv
     if remove_globalparam_dependence:
-        param_dict['all'] = local_params + wire_params + plane_position + panel_position
+        param_dict['all'] = local_params + \
+            wire_params + plane_position + panel_position
 
     expressions = []
     for parameter in local_params + global_params:
@@ -401,17 +400,18 @@ def generate_expressions(approximate=False, remove_globalparam_dependence=True):
                 panel_a: 0,
                 panel_b: 0,
                 panel_g: 0
-                })
+            })
         expressions.append(pdev)
 
     nominal_doca = DOCA(track_pos, track_dir, wire_pos, wire_dir)
 
-    return expressions, param_dict, nominal_doca
+    return expressions, param_dict, nominal_doca, aligned_wpos, aligned_wdir
+
 
 def main():
     function_prefix = "CosmicTrack_DCA"
 
-    exprs, params, nominal_doca = generate_expressions()
+    exprs, params, nominal_doca, aligned_wpos, aligned_wdir = generate_expressions()
     lgparams = params['local'] + params['global']
 
     generated_code = []
@@ -419,6 +419,21 @@ def main():
     # generate code for DOCA calculation ( no global parameter dependence )
     generated_code.append(generate_code_function(
         function_prefix, 'double', nominal_doca, params['local'] + params['wire']))
+
+    # generate code for alignment function
+    generated_code.append(generate_code_function(
+        function_prefix+'alignpos_x', 'double', aligned_wpos[0], params['global'] + params['plane_pos'] + params['panel_pos'] + params['wire']))
+    generated_code.append(generate_code_function(
+        function_prefix+'alignpos_y', 'double', aligned_wpos[1], params['global'] + params['plane_pos'] + params['panel_pos'] + params['wire']))
+    generated_code.append(generate_code_function(
+        function_prefix+'alignpos_z', 'double', aligned_wpos[2], params['global'] + params['plane_pos'] + params['panel_pos'] + params['wire']))
+
+    generated_code.append(generate_code_function(
+        function_prefix+'aligndir_x', 'double', aligned_wdir[0], params['global'] + params['plane_pos'] + params['panel_pos'] + params['wire']))
+    generated_code.append(generate_code_function(
+        function_prefix+'aligndir_y', 'double', aligned_wdir[1], params['global'] + params['plane_pos'] + params['panel_pos'] + params['wire']))
+    generated_code.append(generate_code_function(
+        function_prefix+'aligndir_z', 'double', aligned_wdir[2], params['global'] + params['plane_pos'] + params['panel_pos'] + params['wire']))
 
     # generate code for all expressions
     generated_code += [generate_code_function('{}_Deriv_{}'.format(
@@ -431,15 +446,14 @@ def main():
         code += ',\n'.join(['(float){fn}({args})'.format(
                 fn=function_prefix + '_Deriv_' + symb.name,
                 args=','.join([p.name for p in params['all']])
-            ) for symb in params[params_type]
+        ) for symb in params[params_type]
         ])
         code += '};\nreturn result;'
         return [build_ccode_function(
-            'std::vector<float>', '{}_{}Deriv'.format(function_prefix,params_type.capitalize()), params['all'], code)]
+            'std::vector<float>', '{}_{}Deriv'.format(function_prefix, params_type.capitalize()), params['all'], code)]
 
     generated_code += generate_dcaderiv_arraybuilder_fn('local')
     generated_code += generate_dcaderiv_arraybuilder_fn('global')
-
 
     # pull everything together and write to file
     functions, code = zip(*generated_code)
@@ -451,6 +465,7 @@ def main():
 
     with open('inc/RigidBodyDOCADeriv.hh', 'w') as f:
         f.write(c_header)
+
 
 if __name__ == "__main__":
     main()
