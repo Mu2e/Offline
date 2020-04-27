@@ -234,10 +234,11 @@ namespace mu2e {
       static constexpr float _GeV2MeV = CLHEP::GeV / CLHEP::MeV;
       static constexpr float _cm2mm = CLHEP::cm / CLHEP::mm;
       static constexpr float _ns2s = CLHEP::ns / CLHEP::s;
-      static constexpr unsigned _fbsize_words = 5733 + 2;
+      static constexpr unsigned _fbsize_words = 5733 + 2; ///< CORSIKA fixed block size plus possible g77 padding per footnote 105
+                                                          ///< in the User Guide https://web.ikp.kit.edu/corsika/usersguide/usersguide.pdf
 
       CLHEP::Hep3Vector _cosmicReferencePointInMu2e;
-      float _fluxConstant = 1.8e4;
+      float _fluxConstant = 1.8e4; ///< Primary nucleon intensity for cosmic rays, as quoted in the PDG. Used for cosmic live-time calculation
       float _tOffset = 0; ///< Time offset of sample, defaults to zero (no offset) [s]
       bool _projectToTargetBox = false;
       float _showerAreaExtension = 0; ///< Extend distribution of corsika particles in x,z by this much (e.g. 1000 will extend 10 m in -x, +x, -z, and +z) [mm]
