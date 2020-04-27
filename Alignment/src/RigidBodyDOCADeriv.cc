@@ -30,6 +30,54 @@ double CosmicTrack_DCA(double a0, double b0, double a1, double b1, double wire_x
 }
 
 
+double CosmicTrack_DCAalignpos_x(double plane_dx, double plane_dy, double plane_dz, double plane_a, double plane_b, double plane_g, double panel_dx, double panel_dy, double panel_dz, double panel_a, double panel_b, double panel_g, double plane_x, double plane_y, double plane_z, double panel_straw0x, double panel_straw0y, double panel_straw0z, double wire_x, double wire_y, double wire_z, double wdir_x, double wdir_y, double wdir_z)
+{
+    double R0 = atan2(panel_straw0y, panel_straw0x);
+    double result = R0*panel_dy + panel_dx + panel_straw0x + plane_b*(panel_dz + panel_straw0z - plane_z) + plane_dx + plane_g*(-R0*panel_dx + panel_dy + panel_straw0y) + (-panel_straw0z + wire_z)*(R0*panel_a + panel_b + plane_b + plane_g*(-R0*panel_b + panel_a)) + (-sqrt(pow(panel_straw0x, 2) + pow(panel_straw0y, 2)) + sqrt(pow(wire_x, 2) + pow(wire_y, 2)))*(-R0*panel_g + panel_b*plane_b + plane_g*(-R0 - panel_g) + 1);
+    return result;
+}
+
+
+double CosmicTrack_DCAalignpos_y(double plane_dx, double plane_dy, double plane_dz, double plane_a, double plane_b, double plane_g, double panel_dx, double panel_dy, double panel_dz, double panel_a, double panel_b, double panel_g, double plane_x, double plane_y, double plane_z, double panel_straw0x, double panel_straw0y, double panel_straw0z, double wire_x, double wire_y, double wire_z, double wdir_x, double wdir_y, double wdir_z)
+{
+    double R0 = atan2(panel_straw0y, panel_straw0x);
+    double result = -R0*panel_dx + panel_dy + panel_straw0y + plane_a*(panel_dz + panel_straw0z - plane_z) + plane_dy - plane_g*(R0*panel_dy + panel_dx + panel_straw0x) + (-panel_straw0z + wire_z)*(-R0*panel_b + panel_a + plane_a - plane_g*(R0*panel_a + panel_b)) + (-sqrt(pow(panel_straw0x, 2) + pow(panel_straw0y, 2)) + sqrt(pow(wire_x, 2) + pow(wire_y, 2)))*(-R0 + panel_b*plane_a - panel_g - plane_g*(-R0*panel_g + 1));
+    return result;
+}
+
+
+double CosmicTrack_DCAalignpos_z(double plane_dx, double plane_dy, double plane_dz, double plane_a, double plane_b, double plane_g, double panel_dx, double panel_dy, double panel_dz, double panel_a, double panel_b, double panel_g, double plane_x, double plane_y, double plane_z, double panel_straw0x, double panel_straw0y, double panel_straw0z, double wire_x, double wire_y, double wire_z, double wdir_x, double wdir_y, double wdir_z)
+{
+    double R0 = atan2(panel_straw0y, panel_straw0x);
+    double result = panel_dz + panel_straw0z - plane_a*(-R0*panel_dx + panel_dy + panel_straw0y) + plane_b*(R0*panel_dy + panel_dx + panel_straw0x) + plane_dz + (-panel_straw0z + wire_z)*(-plane_a*(-R0*panel_b + panel_a) + plane_b*(R0*panel_a + panel_b) + 1) + (-sqrt(pow(panel_straw0x, 2) + pow(panel_straw0y, 2)) + sqrt(pow(wire_x, 2) + pow(wire_y, 2)))*(panel_b - plane_a*(-R0 - panel_g) + plane_b*(-R0*panel_g + 1));
+    return result;
+}
+
+
+double CosmicTrack_DCAaligndir_x(double plane_dx, double plane_dy, double plane_dz, double plane_a, double plane_b, double plane_g, double panel_dx, double panel_dy, double panel_dz, double panel_a, double panel_b, double panel_g, double plane_x, double plane_y, double plane_z, double panel_straw0x, double panel_straw0y, double panel_straw0z, double wire_x, double wire_y, double wire_z, double wdir_x, double wdir_y, double wdir_z)
+{
+    double R0 = atan2(panel_straw0y, panel_straw0x);
+    double result = 1.0*R0 - 1.0*panel_a*plane_b + 1.0*panel_g + 1.0*plane_g*(-R0*panel_g + 1);
+    return result;
+}
+
+
+double CosmicTrack_DCAaligndir_y(double plane_dx, double plane_dy, double plane_dz, double plane_a, double plane_b, double plane_g, double panel_dx, double panel_dy, double panel_dz, double panel_a, double panel_b, double panel_g, double plane_x, double plane_y, double plane_z, double panel_straw0x, double panel_straw0y, double panel_straw0z, double wire_x, double wire_y, double wire_z, double wdir_x, double wdir_y, double wdir_z)
+{
+    double R0 = atan2(panel_straw0y, panel_straw0x);
+    double result = -1.0*R0*panel_g - 1.0*panel_a*plane_a - 1.0*plane_g*(R0 + panel_g) + 1.0;
+    return result;
+}
+
+
+double CosmicTrack_DCAaligndir_z(double plane_dx, double plane_dy, double plane_dz, double plane_a, double plane_b, double plane_g, double panel_dx, double panel_dy, double panel_dz, double panel_a, double panel_b, double panel_g, double plane_x, double plane_y, double plane_z, double panel_straw0x, double panel_straw0y, double panel_straw0z, double wire_x, double wire_y, double wire_z, double wdir_x, double wdir_y, double wdir_z)
+{
+    double R0 = atan2(panel_straw0y, panel_straw0x);
+    double result = -1.0*panel_a - 1.0*plane_a*(-R0*panel_g + 1) + 1.0*plane_b*(R0 + panel_g);
+    return result;
+}
+
+
 double CosmicTrack_DCA_Deriv_a0(double a0, double b0, double a1, double b1, double wire_x, double wire_y, double wire_z, double wdir_x, double wdir_y, double wdir_z, double plane_x, double plane_y, double plane_z, double panel_straw0x, double panel_straw0y, double panel_straw0z)
 {
     double R0 = pow(pow(a1, 2) + pow(b1, 2) + 1, -1.0/2.0);
