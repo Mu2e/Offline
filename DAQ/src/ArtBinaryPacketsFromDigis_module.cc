@@ -111,8 +111,8 @@ namespace mu2e {
       fhicl::Atom<int>            generateTextFile      { Name("generateTextFile"),       Comment("generate Text File")};
       fhicl::Atom<int>            diagLevel             { Name("diagLevel"),              Comment("diagnostic Level")};
       fhicl::Atom<int>            maxFullPrint          { Name("maxFullPrint"),           Comment("maxFullPrint")};
-      fhicl::Atom<art::InputTag>  sdtoken               { Name("caloDigiCollection"),     Comment("Straw digi collection name") };
-      fhicl::Atom<art::InputTag>  cdtoken               { Name("strawDigiCollection"),    Comment("Calo digi collection name") };
+      fhicl::Atom<art::InputTag>  cdtoken               { Name("caloDigiCollection"),     Comment("Straw digi collection name") };
+      fhicl::Atom<art::InputTag>  sdtoken               { Name("strawDigiCollection"),    Comment("Calo digi collection name") };
     };
 
     explicit ArtBinaryPacketsFromDigis(const art::EDProducer::Table<Config>& config);
@@ -369,8 +369,8 @@ namespace mu2e {
 
     auto sz = sizeof(DataBlockHeader);
     //check that the trkDataBlock is not empty
-
-    if(trackerData.first.PacketCount == 0 || trackerData.first.PacketCount == 2){ // Tracker DataBlocks have 0 or 2 DataPackets
+    
+    if(trackerData.first.PacketCount != 0 && trackerData.first.PacketCount != 2){ // Tracker DataBlocks have 0 or 2 DataPackets
       throw cet::exception("Online-RECO")<<"ArtBinaryPacketsFromDigis::fillTrackerDataStream : trackerData.first.PacketCount == 0 || trackerData.first.PacketCount == 2)" << std::endl;
     }
     if (trackerData.first.PacketCount > 0) {
@@ -392,7 +392,7 @@ namespace mu2e {
     pos += sizeof(DataBlockHeader);
 
     if (trackerData.first.PacketCount > 0) {
-      if(sizeof(TrackerDataPacket) % 16 == 0){ // Make sure that TrackerDataPacket is an even number of DataPackets!
+      if(sizeof(TrackerDataPacket) % 16 != 0){ // Make sure that TrackerDataPacket is an even number of DataPackets!
 	throw cet::exception("Online-RECO")<<"ArtBinaryPacketsFromDigis::fillTrackerDataStream : sizeof(TrackerDataPacket) % 16 == 0" << std::endl;
       }
       memcpy(&dataStream.back().first[pos], &trackerData.second, sizeof(TrackerDataPacket));
@@ -882,14 +882,14 @@ namespace mu2e {
     }
     while (sz % 16 != 0) sz++;
 
-    if(sz < sizeof(mu2e_databuff_t)){
+    if(sz >= sizeof(mu2e_databuff_t)){
       throw cet::exception("Online-RECO")<<"ArtBinaryPacketsFromDigis::fillCalorimeterDataStream : sz < sizeof(mu2e_databuff_t)" << std::endl;
     }
     if (dataStream.back().second + sz >= sizeof(mu2e_databuff_t)) {
       closeDataBuffer(dataStream);
     }
 
-    if(sz == caloData.first.ByteCount){
+    if(sz != caloData.first.ByteCount){
       throw cet::exception("Online-RECO")<<"ArtBinaryPacketsFromDigis::fillCalorimeterDataStream : sz == caloData.first.ByteCount" << std::endl;
     }
 
