@@ -390,13 +390,11 @@ bool AlignTrackCollector::filter_CosmicTrackSeedCollection(art::Event const& eve
                                                            CosmicTrackSeedCollection const& coscol)
 {
     bool wrote_track = false; // did we write any tracks at all?
-    std::cout << "called by event processor" << std::endl;
+
     // dedicated to CosmicTrackSeedCollection
     for (CosmicTrackSeed const& sts : coscol) {
         CosmicTrack const& st = sts._track;
         TrkFitFlag const& status = sts._status;
-
-        std::cout << "found track candidate " << std::endl;
 
         if (!status.hasAllProperties(TrkFitFlag::helixOK)) {
             continue;
@@ -410,7 +408,6 @@ bool AlignTrackCollector::filter_CosmicTrackSeedCollection(art::Event const& eve
             continue;
         }
 
-        std::cout << "Track appears sane." << std::endl;
 
         std::set<uint16_t> planes_traversed;
         std::set<uint16_t> panels_traversed;
@@ -449,8 +446,6 @@ bool AlignTrackCollector::filter_CosmicTrackSeedCollection(art::Event const& eve
 
             // geometry info
             auto const& plane_origin = tracker.getPlane(plane_id).origin();
-
-            // TODO: check consistency with AlignedTrackerMaker rotation pivot
             auto const& panel_origin = tracker.getPanel(panel_id).straw0MidPoint();
             auto const& straw_mp = straw.getMidPoint();
             auto const& wire_dir = straw.getDirection().unit();
@@ -523,7 +518,7 @@ bool AlignTrackCollector::filter_CosmicTrackSeedCollection(art::Event const& eve
                           << " +- " << resid_err_tmp << std::endl;
             }
 
-            if (time_resid > max_time_res_track)
+            if (abs(time_resid) > max_time_res_track)
                 max_time_res_track = time_resid;
 
             // FIXME! seems messy!
