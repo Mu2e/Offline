@@ -52,6 +52,7 @@ namespace mu2e {
               fhicl::Atom<float>            pfTimeBin{        Name("pfTimeBin"),        Comment("Time bin size for preFiltering algorithm") };
               fhicl::Atom<float>            pfPhiBin{         Name("pfPhiBin"),         Comment("Phi bin size for preFiltering algorithm") };
               fhicl::Atom<unsigned>         pfMinHit{         Name("pfMinHit"),         Comment("Minimum number of hits inside bin for preFitlering algorithm") };
+              fhicl::Atom<unsigned>         pfMinSumHit{      Name("pfMinSumHit"),      Comment("Minimum number of hits for sum of bins for preFitlering algorithm") };
               fhicl::Atom<bool>             comboInit{        Name("ComboInit"),        Comment("Start with combo hits") };
               fhicl::Sequence<std::string>  bkgmsk{           Name("BackgroundMask"),   Comment("Bkg hit selection mask") };
               fhicl::Sequence<std::string>  sigmsk{           Name("SignalMask"),       Comment("Signal hit selection mask") };
@@ -105,6 +106,7 @@ namespace mu2e {
           float            pfTimeBin_;
           float            pfPhiBin_;
           unsigned         pfMinHit_;
+          unsigned         pfMinSumHit_;
           bool             comboInit_;  
           StrawHitFlag     bkgmask_;    
           StrawHitFlag     sigmask_;    
