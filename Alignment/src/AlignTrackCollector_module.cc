@@ -547,7 +547,6 @@ bool AlignTrackCollector::filter_CosmicTrackSeedCollection(art::Event const& eve
             ++nHits;
         }
         if (wrote_hits) {
-            tracks_written++;
             ndof = sts._straw_chits.size() - 5; // 5 track parameters
 
             if (ndof > 0 && _diag > 0) {
@@ -585,6 +584,7 @@ bool AlignTrackCollector::filter_CosmicTrackSeedCollection(art::Event const& eve
 
             if (_diag > 0)
                 diagtree->Fill();
+            tracks_written++;
             std::cout << "wrote track " << tracks_written << std::endl;
             wrote_track = true;
         }
