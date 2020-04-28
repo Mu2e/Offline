@@ -155,6 +155,11 @@ class AlignTrackCollector : public art::EDAnalyzer {
 
         fhicl::Atom<double> mindoca{Name("MinDOCA"),
                                     Comment("Require that the drift distance > MinDOCA"), 0.0};
+
+
+        fhicl::Atom<double> maxtimeres{Name("MaxTimeRes"),
+                                    Comment("Require that the maximum time residual on track hits < MaxTimeRes. Setting a negative value does not apply the cut."), -1.0};
+
     };
     typedef art::EDAnalyzer::Table<Config> Parameters;
 
@@ -173,7 +178,7 @@ class AlignTrackCollector : public art::EDAnalyzer {
           _output_filename(conf().millefile()), _labels_filename(conf().labelsfile()),
           track_type(conf().tracktype()), min_plane_traverse(conf().minplanetraverse()),
           min_panel_traverse_per_plane(conf().minpaneltraverse()), max_pvalue(conf().maxpvalue()),
-          min_doca(conf().mindoca())
+          min_doca(conf().mindoca()), max_timeres(conf().maxtimeres())
     {
         // generate hashtable of plane, or panel number to DOF labels
         // we prepare them like this because millepede wants arrays of labels
@@ -234,6 +239,7 @@ class AlignTrackCollector : public art::EDAnalyzer {
     int min_panel_traverse_per_plane;
     double max_pvalue;
     double min_doca;
+    double max_timeres;
 
     AlignTrackType collect_track;
 
@@ -422,6 +428,8 @@ bool AlignTrackCollector::filter_CosmicTrackSeedCollection(art::Event const& eve
         bool wrote_hits = false; // did we write any hits for the track?
         bool bad_track = false;
 
+        double max_time_res_track = -1;
+
         // get residuals and their derivatives with respect
         // to all local and global parameters
         // get also plane id hit by straw hits
@@ -509,6 +517,9 @@ bool AlignTrackCollector::filter_CosmicTrackSeedCollection(art::Event const& eve
                           << " +- " << resid_err_tmp << std::endl;
             }
 
+            if (time_resid > max_time_res_track)
+                max_time_res_track = time_resid;
+
             // FIXME! seems messy!
             std::vector<int> global_dof_labels;
             global_dof_labels.reserve(_dof_per_plane + _dof_per_panel);
@@ -561,7 +572,9 @@ bool AlignTrackCollector::filter_CosmicTrackSeedCollection(art::Event const& eve
             if ((min_plane_traverse != 0 && planes_trav < min_plane_traverse) ||
                 (min_panel_traverse_per_plane != 0 &&
                  (panels_trav / planes_trav) < min_panel_traverse_per_plane) ||
-                (pvalue > max_pvalue) || bad_track) {
+                (pvalue > max_pvalue) ||
+                (max_time_res_track > max_timeres && max_timeres > 0) ||
+                bad_track) {
                 millepede->kill(); // delete track from buffer
 
                 if (_diag > 0) {
