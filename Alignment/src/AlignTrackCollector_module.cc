@@ -185,9 +185,8 @@ class AlignTrackCollector : public art::EDAnalyzer {
           min_doca(conf().mindoca()), max_timeres(conf().maxtimeres()), min_track_hits(conf().mintrackhits())
     {
         // generate hashtable of plane, or panel number to DOF labels
-        // we prepare them like this because millepede wants arrays of labels
-        // (I'd rather cache them in memory than re-calculate them for every single hit on an
-        // element)
+        // millepede wants arrays of labels
+
         int nobj = 0;
         // o_cls == 1: planes
         // o_cls == 2: panels
@@ -477,21 +476,18 @@ bool AlignTrackCollector::filter_CosmicTrackSeedCollection(art::Event const& eve
             CLHEP::Hep3Vector dir(A1, -1, B1);
             dir = dir.unit();
             TwoLinePCA pca(straw.getMidPoint(), straw.getDirection(), intercept, dir);
+
+            // this is a time
             double drift_res = _srep.driftDistanceError(straw_hit.strawId(), 0, 0, pca.dca());
 
             chisq += pow(time_resid / drift_res, 2);
-            ndof++;
-
 
             if (isnan(resid_tmp) || isnan(time_resid) || isnan(drift_res)) {
                 bad_track = true;
                 continue;
             }
 
-            // if it was used to fit, it should be in the chi squared stat
-
-
-            // FIXME should apply this in track fit instead
+            // FIXME perhaps should get rid of this
 
             if (pca.dca() < min_doca) {
                 continue; // remove hit!
@@ -552,18 +548,16 @@ bool AlignTrackCollector::filter_CosmicTrackSeedCollection(art::Event const& eve
         }
         if (wrote_hits) {
             tracks_written++;
-            ndof -= 5.0; // 5 track parameters
+            ndof = sts._straw_chits.size() - 5; // 5 track parameters
 
             if (ndof > 0 && _diag > 0) {
                 pvalue = boost::math::cdf(boost::math::chi_squared(ndof), chisq);
                 chisq /= ndof;
-
-                track_pvalue->Fill(pvalue);
-                track_chisq->Fill(chisq);
             }
             else {
                 chisq = -1;
                 pvalue = -1;
+                ndof = -1;
             }
 
             planes_trav = planes_traversed.size();
