@@ -21,6 +21,7 @@
 
 #include "Mu2eUtilities/inc/MVATools.hh"
 #include "TrkReco/inc/TNTClusterer.hh"
+#include "TrkReco/inc/ScanClusterer.hh"
 
 #include <string>
 #include <vector>
@@ -54,9 +55,10 @@ namespace mu2e
              fhicl::Atom<int>                      debugLevel{           Name("DebugLevel"),           Comment("Debug"),0 };
              fhicl::Atom<int>                      printFrequency{       Name("PrintFrequency"),       Comment("Print frequency"),100 };
              fhicl::Table<TNTClusterer::Config>    TNTClustering{        Name("TNTClustering"),        Comment("TNT Clusterer config") };
+             fhicl::Table<ScanClusterer::Config>   ScanClustering{       Name("ScanClustering"),       Comment("Scan Clusterer config") };
          };
 
-         enum clusterer {TwoNiveauThreshold=1};
+         enum clusterer {TwoNiveauThreshold=1, ComptonKiller=2};
          explicit FlagBkgHits(const art::EDProducer::Table<Config>& config);
          void beginJob() override;
          void produce(art::Event& event) override;        
@@ -117,7 +119,6 @@ namespace mu2e
           produces<BkgClusterCollection>();
           produces<BkgQualCollection>();
       }
-
       float cperr = config().clusterPositionError();
       cperr2_ = cperr*cperr;
 
@@ -126,6 +127,9 @@ namespace mu2e
       {
         case TwoNiveauThreshold:
            clusterer_ = new TNTClusterer(config().TNTClustering());
+           break;
+        case ComptonKiller:
+           clusterer_ = new ScanClusterer(config().ScanClustering());
            break;
        default:
            throw cet::exception("RECO")<< "Unknown clusterer" << ctype << std::endl;

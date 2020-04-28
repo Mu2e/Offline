@@ -7,24 +7,25 @@ namespace mu2e
 {
    TNTClusterer::TNTClusterer(const Config& config) :
       hitDtIdx_(),
-      dhit_      (config.hitDistance()),           
-      dseed_     (config.seedDistance()),           
-      dd_        (config.clusterDiameter()),   
-      dt_        (config.clusterTime()),    
-      tbinMin_   (config.deltaTimeBinMin()),    
-      maxHitdt_  (config.maxHitTimeDiff()),      
-      maxDistSum_(config.maxSumDistance()),   
-      maxNiter_  (config.maxCluIterations()),
-      useMedian_ (config.medianCentroid()),         
-      preFilter_ (config.preFilter()),         
-      pfTimeBin_ (config.pfTimeBin()),      
-      pfPhiBin_  (config.pfPhiBin()),      
-      pfMinHit_  (config.pfMinHit()),      
-      comboInit_ (config.comboInit()),         
-      bkgmask_   (config.bkgmsk()),
-      sigmask_   (config.sigmsk()),
-      testflag_  (config.testflag()),
-      diag_      (config.diag())
+      dhit_       (config.hitDistance()),           
+      dseed_      (config.seedDistance()),           
+      dd_         (config.clusterDiameter()),   
+      dt_         (config.clusterTime()),    
+      tbinMin_    (config.deltaTimeBinMin()),    
+      maxHitdt_   (config.maxHitTimeDiff()),      
+      maxDistSum_ (config.maxSumDistance()),   
+      maxNiter_   (config.maxCluIterations()),
+      useMedian_  (config.medianCentroid()),         
+      preFilter_  (config.preFilter()),         
+      pfTimeBin_  (config.pfTimeBin()),      
+      pfPhiBin_   (config.pfPhiBin()),      
+      pfMinHit_   (config.pfMinHit()),
+      pfMinSumHit_(config.pfMinSumHit()),
+      comboInit_  (config.comboInit()),         
+      bkgmask_    (config.bkgmsk()),
+      sigmask_    (config.sigmsk()),
+      testflag_   (config.testflag()),
+      diag_       (config.diag())
    {
        // cache some values
        float minerr (config.minHitError());
@@ -76,12 +77,12 @@ namespace mu2e
 
    
    //----------------------------------------------------------------------------------------------------------------------
-   // PRE-FILTRING ALGORITHMS
+   // PRE-FILTRING ALGORITHM(S)
    
    void TNTClusterer::preFilter(BkgClusterCollection& clusters, const ComboHitCollection& chcol, std::vector<unsigned>& hitSel, const float mbtime)
    {                            
           
-       const unsigned nTimeBins = unsigned(mbtime/pfTimeBin_);
+       const unsigned nTimeBins = unsigned(mbtime/pfTimeBin_)+2;
        const unsigned nPhiBins  = unsigned(2*M_PI/pfPhiBin_+1e-5)+1;
        const unsigned nTotBins  = nTimeBins*nPhiBins;
 
@@ -99,11 +100,15 @@ namespace mu2e
 
        for (unsigned idx=1;idx<nTotBins-1;++idx)
        {     
-           if (timePhiHist[idx]<pfMinHit_) continue;   
            if (idx%nTimeBins==0 || idx%nTimeBins+1==nTimeBins) continue;   
 
            unsigned idxUp    = (idx+nTimeBins+nTotBins)%nTotBins;
            unsigned idxDown  = (idx-nTimeBins+nTotBins)%nTotBins;
+           unsigned sum      = timePhiHist[idx]+timePhiHist[idx-1]+timePhiHist[idx+1]+timePhiHist[idxUp]+
+                               timePhiHist[idxUp-1]+timePhiHist[idxUp+1]+timePhiHist[idxDown]+
+                               timePhiHist[idxDown-1]+timePhiHist[idxDown+1];
+           
+           if (timePhiHist[idx]<pfMinHit_ && sum < pfMinSumHit_) continue;   
            
            blindIdx[idx]     = 1;
            blindIdx[idx+1]   = blindIdx[idx-1]     = 1;
@@ -123,8 +128,9 @@ namespace mu2e
            if (blindIdx[idx]==0) continue;
            hitSel[ich]=0;
            clusters.back().addHit(ich);  
-       }        
-   }
+       }
+   }    
+   
    
    //----------------------------------------------------------------------------------------------------------------------
    // CLUSTERING ALGORITHM
