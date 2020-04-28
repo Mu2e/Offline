@@ -160,6 +160,10 @@ class AlignTrackCollector : public art::EDAnalyzer {
         fhicl::Atom<double> maxtimeres{Name("MaxTimeRes"),
                                     Comment("Require that the maximum time residual on track hits < MaxTimeRes. Setting a negative value does not apply the cut."), -1.0};
 
+        fhicl::Atom<int> mintrackhits{Name("MinTrackSH"),
+                                    Comment("Require that the minimum Straw hits in an event > MinTrackSH."),0};
+
+
     };
     typedef art::EDAnalyzer::Table<Config> Parameters;
 
@@ -178,7 +182,7 @@ class AlignTrackCollector : public art::EDAnalyzer {
           _output_filename(conf().millefile()), _labels_filename(conf().labelsfile()),
           track_type(conf().tracktype()), min_plane_traverse(conf().minplanetraverse()),
           min_panel_traverse_per_plane(conf().minpaneltraverse()), max_pvalue(conf().maxpvalue()),
-          min_doca(conf().mindoca()), max_timeres(conf().maxtimeres())
+          min_doca(conf().mindoca()), max_timeres(conf().maxtimeres()), min_track_hits(conf().mintrackhits())
     {
         // generate hashtable of plane, or panel number to DOF labels
         // we prepare them like this because millepede wants arrays of labels
@@ -240,6 +244,8 @@ class AlignTrackCollector : public art::EDAnalyzer {
     double max_pvalue;
     double min_doca;
     double max_timeres;
+
+    int min_track_hits;
 
     AlignTrackType collect_track;
 
@@ -574,6 +580,7 @@ bool AlignTrackCollector::filter_CosmicTrackSeedCollection(art::Event const& eve
                  (panels_trav / planes_trav) < min_panel_traverse_per_plane) ||
                 (pvalue > max_pvalue) ||
                 (max_time_res_track > max_timeres && max_timeres > 0) ||
+                (nHits < min_track_hits) ||
                 bad_track) {
                 millepede->kill(); // delete track from buffer
 
