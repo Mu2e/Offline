@@ -515,7 +515,7 @@ bool AlignTrackCollector::filter_CosmicTrackSeedCollection(art::Event const& eve
             }
 
             if (abs(time_resid) > max_time_res_track)
-                max_time_res_track = time_resid;
+                max_time_res_track = abs(time_resid);
 
             // FIXME! seems messy!
             std::vector<int> global_dof_labels;
