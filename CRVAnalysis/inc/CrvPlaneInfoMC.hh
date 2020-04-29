@@ -17,8 +17,9 @@ namespace mu2e
     Float_t             _xDir, _yDir, _zDir;    //direction of the MC particle when it crosses the xz plane of CRV-T
     Float_t             _time;             //time of the MC particle when it crosses the xz plane of CRV-T
     Float_t             _kineticEnergy;    //time of the MC particle when it crosses the xz plane of CRV-T
+    Int_t               _dataSource;       //temporary variable; will be removed (1...data from stepPointMCs, 2...data from trajectory extrapolation)
     CrvPlaneInfoMC(int pdgId, int primaryPdgId, float primaryE, CLHEP::Hep3Vector primaryPos, 
-              CLHEP::Hep3Vector pos, CLHEP::Hep3Vector dir, float time, float kineticEnergy) :
+              CLHEP::Hep3Vector pos, CLHEP::Hep3Vector dir, float time, float kineticEnergy, bool dataSource) :
               _pdgId(pdgId),
               _primaryPdgId(primaryPdgId),
               _primaryE(primaryE),
@@ -28,7 +29,8 @@ namespace mu2e
               _x(pos.x()), _y(pos.y()), _z(pos.z()),
               _xDir(dir.x()), _yDir(dir.y()), _zDir(dir.z()),
               _time(time),
-              _kineticEnergy(kineticEnergy)
+              _kineticEnergy(kineticEnergy),
+              _dataSource(dataSource)
               {}
     CrvPlaneInfoMC() :
               _pdgId(0),
@@ -40,7 +42,8 @@ namespace mu2e
               _x(0), _y(0), _z(0),
               _xDir(0), _yDir(0), _zDir(0),
               _time(0),
-              _kineticEnergy(0)
+              _kineticEnergy(0),
+              _dataSource(0)
               {}
   };
 

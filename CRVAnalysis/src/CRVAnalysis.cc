@@ -18,6 +18,7 @@ namespace mu2e
                                               const std::string &crvCoincidenceClusterMCModuleLabel,
                                               const std::string &crvRecoPulseLabel,
                                               const std::string &crvStepPointMCLabel,
+                                              const std::string &simParticleLabel,
                                               const std::string &mcTrajectoryLabel,
                                               const art::Event& event, CrvHitInfoRecoCollection &recoInfo, CrvHitInfoMCCollection &MCInfo,
                                               CrvSummaryReco &recoSummary, CrvSummaryMC &MCSummary,
@@ -27,12 +28,14 @@ namespace mu2e
     art::Handle<CrvCoincidenceClusterMCCollection> crvCoincidenceClusterMCCollection;
     art::Handle<CrvRecoPulseCollection>            crvRecoPulseCollection;
     art::Handle<StepPointMCCollection>             crvStepPointMCCollection;
+    art::Handle<SimParticleCollection>             simParticleCollection;
     art::Handle<MCTrajectoryCollection>            mcTrajectoryCollection;
 
     event.getByLabel(crvCoincidenceClusterModuleLabel,"",crvCoincidenceClusterCollection);
     event.getByLabel(crvCoincidenceClusterMCModuleLabel,"",crvCoincidenceClusterMCCollection);
     event.getByLabel(crvRecoPulseLabel,"",crvRecoPulseCollection);
     event.getByLabel(crvStepPointMCLabel,"CRV",crvStepPointMCCollection);
+    event.getByLabel(simParticleLabel,"",simParticleCollection);
     event.getByLabel(mcTrajectoryLabel,"",mcTrajectoryCollection);
 
     if(!crvCoincidenceClusterCollection.isValid()) return;
@@ -103,7 +106,7 @@ namespace mu2e
       MCSummary._nHitCounters=counters.size();
     }
 
-
+#if 0
     //locate points where the cosmic MC trajectories cross the xz plane of CRV-T
     if(mcTrajectoryCollection.isValid())
     {
@@ -111,6 +114,7 @@ namespace mu2e
       for(trajectoryIter=mcTrajectoryCollection->begin(); trajectoryIter!=mcTrajectoryCollection->end(); trajectoryIter++)
       {
         const art::Ptr<SimParticle> &trajectorySimParticle = trajectoryIter->first;
+        if(abs(trajectorySimParticle->pdgId())!=13) continue;
         const art::Ptr<SimParticle> &trajectoryPrimaryParticle = FindPrimaryParticle(trajectorySimParticle);
         GenId genId = trajectoryPrimaryParticle->genParticle()->generatorId();
         if(genId==GenId::cosmicToy || genId==GenId::cosmicDYB || genId==GenId::cosmic || genId==GenId::cosmicCRY)
@@ -118,7 +122,6 @@ namespace mu2e
           const std::vector<MCTrajectoryPoint> &points = trajectoryIter->second.points();
           if(points.size()<1) continue;
           CLHEP::Hep3Vector previousPos=points[0].pos();
-#if 0
           for(size_t i=1; i<points.size(); i++)
           {
             CLHEP::Hep3Vector pos=points[i].pos();
@@ -136,32 +139,92 @@ namespace mu2e
                                        planePos,
                                        planeDir,
                                        planeTime,
-                                       planeKineticEnergy);
+                                       planeKineticEnergy,
+                                       0);  //unused
             }
             previousPos=pos;
           }
-#else
-          //extrapolation
-          if(points.size()>=2)
-          {
-            double fraction=(crvPlaneY-points[0].pos().y())/(points[1].pos().y()-points[0].pos().y());
-            CLHEP::Hep3Vector planePos=fraction*(points[1].pos()-points[0].pos())+points[0].pos();
-            CLHEP::Hep3Vector planeDir=(points[1].pos()-points[0].pos()).unit();
-            double planeTime=fraction*(points[1].t()-points[0].t())+points[0].t();
-            double planeKineticEnergy=fraction*(points[1].kineticEnergy()-points[0].kineticEnergy())+points[0].kineticEnergy();
-              MCInfoPlane.emplace_back(trajectorySimParticle->pdgId(), 
-                                       trajectoryPrimaryParticle->pdgId(),
-                                       trajectoryPrimaryParticle->startMomentum().e(),
-                                       trajectoryPrimaryParticle->startPosition(),
-                                       planePos,
-                                       planeDir,
-                                       planeTime,
-                                       planeKineticEnergy);
-          }
-#endif
         }
       }
     }
+#else   //only a temporary section due to the missing trajectories at the CRV. needs to be deleted soon
+    {
+      int pdgId=0;
+      CLHEP::Hep3Vector primaryPos, planePos, planeDir;
+      double primaryEnergy=NAN;
+      double planeTime=NAN;
+      double earliestTime=NAN;
+      double planeKineticEnergy=0;
+      int dataSource=0;
+      if(crvStepPointMCCollection.isValid())
+      {
+        size_t nStepPoints=crvStepPointMCCollection->size();
+        for(size_t i=0; i<nStepPoints; i++)
+        {
+          if(crvStepPointMCCollection->at(i).simParticle()->id().asInt()==0 //only sim particles with ID 0
+             && crvStepPointMCCollection->at(i).position().y()>=2653) //only step points at the CRV top
+          {
+            if(crvStepPointMCCollection->at(i).time()<earliestTime || isnan(earliestTime))
+            {
+              pdgId=crvStepPointMCCollection->at(i).simParticle()->pdgId();
+              primaryPos=crvStepPointMCCollection->at(i).simParticle()->startPosition();
+              primaryEnergy=crvStepPointMCCollection->at(i).simParticle()->startMomentum().e();
+
+              planePos=crvStepPointMCCollection->at(i).position();
+              planeDir=crvStepPointMCCollection->at(i).momentum().unit();
+              double fraction=(crvPlaneY-planePos.y())/planeDir.y();
+              planePos=fraction*planeDir+planePos;
+
+              planeTime=crvStepPointMCCollection->at(i).time();
+              earliestTime=planeTime;
+
+              double momentum = crvStepPointMCCollection->at(i).momentum().mag();
+              planeKineticEnergy=sqrt(momentum*momentum+105.7*105.7)-105.7;
+
+              dataSource=1;
+            }
+          }
+        }
+      }
+      if(dataSource==0)  //StepPoints not found for this event
+      {
+        if(mcTrajectoryCollection.isValid())
+        {
+          std::map<art::Ptr<mu2e::SimParticle>,mu2e::MCTrajectory>::const_iterator trajectoryIter;
+          for(trajectoryIter=mcTrajectoryCollection->begin(); trajectoryIter!=mcTrajectoryCollection->end(); trajectoryIter++)
+          {
+            if(trajectoryIter->first->id().asInt()==0)  //sim particle with ID 0
+            {
+              const std::vector<MCTrajectoryPoint> &points = trajectoryIter->second.points();
+              if(points.size()>=2)
+              {
+                pdgId=trajectoryIter->first->pdgId();
+                primaryPos=trajectoryIter->first->startPosition();
+                primaryEnergy=trajectoryIter->first->startMomentum().e();
+                double fraction=(crvPlaneY-points[1].pos().y())/(points[0].pos().y()-points[1].pos().y());
+                planePos=fraction*(points[0].pos()-points[1].pos())+points[1].pos();
+                planeDir=(points[1].pos()-points[0].pos()).unit();
+                planeTime=fraction*(points[0].t()-points[1].t())+points[1].t();
+                planeKineticEnergy=points[0].kineticEnergy();  //use Ekin of first point
+              
+                dataSource=2;
+              }
+              break;
+            }
+          }
+        }
+      }
+      MCInfoPlane.emplace_back(pdgId,
+                               pdgId,
+                               primaryEnergy,
+                               primaryPos,
+                               planePos,
+                               planeDir,
+                               planeTime,
+                               planeKineticEnergy,
+                               dataSource);
+    }
+#endif
 
   }//FillCrvInfoStructure
 

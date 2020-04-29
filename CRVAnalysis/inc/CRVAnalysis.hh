@@ -20,6 +20,7 @@ namespace mu2e
                                           const std::string &crvCoincidenceClusterMCModuleLabel,
                                           const std::string &crvRecoPulseLabel,
                                           const std::string &crvStepPointMCLabel,
+                                          const std::string &simParticleLabel,
                                           const std::string &mcTrajectoryLabel,
                                           const art::Event& event, CrvHitInfoRecoCollection &recoInfo, CrvHitInfoMCCollection &MCInfo,
                                           CrvSummaryReco &recoSummary, CrvSummaryMC &MCSummary,
@@ -29,6 +30,10 @@ namespace mu2e
     static const art::Ptr<SimParticle> &FindPrimaryParticle(const art::Ptr<SimParticle> &simParticle) 
     {
       return simParticle->hasParent() ? FindPrimaryParticle(simParticle->parent()) : simParticle;
+    }
+    static const SimParticle &FindPrimaryParticle(const SimParticle &simParticle) 
+    {
+      return simParticle.hasParent() ? *FindPrimaryParticle(simParticle.parent()) : simParticle;
     }
   };
 

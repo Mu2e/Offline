@@ -82,46 +82,6 @@ namespace mu2e
                                      earliestHitTime, earliestHitPos, mostLikelySimParticle);
   }
 
-  unsigned long CrvHelper::GetSiPMID(const GeomHandle<CosmicRayShield> &CRS, 
-                                     mu2e::CRSScintillatorBarIndex crvBarIndex, 
-                                     int SiPMNumber)
-  {
-    const CRSScintillatorBar &crvCounter = CRS->getBar(crvBarIndex);
-    const CRSScintillatorBarId &crvCounterId = crvCounter.id();
-
-    unsigned long SiPMID=SiPMNumber<<_crvSiPMNumberShift;
-    SiPMID+=crvCounterId.getBarNumber()<<_crvCounterNumberShift;       //CRV counter within a CRV layer of a module
-    SiPMID+=crvCounterId.getLayerNumber()<<_crvLayerNumberShift;
-    SiPMID+=crvCounterId.getModuleNumber()<<_crvModuleNumberShift;
-    SiPMID+=crvCounterId.getShieldNumber()<<_crvSectorNumberShift;  //CRV sector
-    
-    unsigned long barIndex=crvBarIndex.asUint();
-    SiPMID+=barIndex<<_crvBarIndexShift;
-
-    return SiPMID;
-  }
-
-  mu2e::CRSScintillatorBarIndex CrvHelper::GetBarIndex(unsigned long SiPMID)
-  {
-    int barIndex     =(SiPMID&_crvBarIndexMask)>>_crvBarIndexShift;
-    return mu2e::CRSScintillatorBarIndex(barIndex);
-  }
-
-  int CrvHelper::GetSiPMNumber(unsigned long SiPMID)
-  {
-    int SiPMNumber   =(SiPMID&_crvSiPMNumberMask)>>_crvSiPMNumberShift;
-    return SiPMNumber;
-  }
-
-  void CrvHelper::GetCrvCounterInfo(unsigned long SiPMID, 
-                                    int &sectorNumber, int &moduleNumber, int &layerNumber, int &counterNumber)
-  {
-    sectorNumber =(SiPMID&_crvSectorNumberMask)>>_crvSectorNumberShift;
-    moduleNumber =(SiPMID&_crvModuleNumberMask)>>_crvModuleNumberShift;
-    layerNumber  =(SiPMID&_crvLayerNumberMask)>>_crvLayerNumberShift;
-    counterNumber=(SiPMID&_crvCounterNumberMask)>>_crvCounterNumberShift;
-  }
-
   void CrvHelper::GetCrvCounterInfo(const GeomHandle<CosmicRayShield> &CRS, 
                                     mu2e::CRSScintillatorBarIndex crvBarIndex,
                                     int &sectorNumber, int &moduleNumber, int &layerNumber, int &counterNumber)
@@ -145,14 +105,6 @@ namespace mu2e
   {
     const CRSScintillatorShield &sector = CRS->getCRSScintillatorShields().at(sectorNumber);
     return sector.getSectorType();
-  }
-
-  CLHEP::Hep3Vector CrvHelper::GetCrvCounterPos(const GeomHandle<CosmicRayShield> &CRS,
-                                     unsigned long SiPMID)
-  {
-    const mu2e::CRSScintillatorBarIndex &crvBarIndex = CrvHelper::GetBarIndex(SiPMID);
-    const CRSScintillatorBar &crvCounter = CRS->getBar(crvBarIndex);
-    return crvCounter.getPosition();
   }
 
   CLHEP::Hep3Vector CrvHelper::GetCrvCounterPos(const GeomHandle<CosmicRayShield> &CRS, 
