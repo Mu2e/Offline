@@ -44,6 +44,8 @@ namespace mu2e {
       cout << "AlignedTrackerMaker::fromDb now aligning Tracker " << endl;
     }
 
+    bool printed=false;
+
     // the whole tracker has nominal center on 0,0,0
     auto const& rowtr = tatr_p->rowAt(0);
     HepTransform align_tracker(rowtr.dx(),rowtr.dy(),rowtr.dz(),
@@ -102,6 +104,17 @@ namespace mu2e {
 
           Hep3Vector pdif = aligned_straw - straw.getMidPoint();
           Hep3Vector ddif = aligned_straw_dir - straw.getDirection();
+
+          if (!printed){
+          std::cout << "------------------------------------" << std::endl
+                    << "plane " << plane.id().getPlane() << " panel" << panel.id().getPanel() << " straw " << straw.id().getStraw() << std::endl
+                    << "straw position before: " << straw._c<< std::endl
+                    << "straw pos after: " << aligned_straw<< std::endl
+                    << "plane origin: " << plane.origin()<< std::endl
+                    << "panel straw0mp: " << panel.straw0MidPoint() << std::endl;
+
+                    printed = true;
+          }
 
           if (pdif.x() != 0)
             std::cout << pdif << std::endl;
