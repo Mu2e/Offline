@@ -101,13 +101,13 @@ namespace mu2e {
     art::TFileDirectory calDir = tfs->mkdir("calorimeter");
     art::TFileDirectory trkDir = tfs->mkdir("tracker");
 
-    _hTrkNFragment = trkDir.make<TH1F>("hTrkNFragment", "n fragments from the tracker; nTrkFragments", 4000, 0., 4000.);
+    _hTrkNFragment = trkDir.make<TH1F>("hTrkNFragment", "n fragments from the tracker; nTrkFragments", 1000, 0., 10000.);
     _hTrkStrawId   = trkDir.make<TH1F>("hTrkStrawId", "trk fragment strawId; strawId", 20000, 0., 20000.); 
-    _hTrkTDC       = trkDir.make<TH1F>("hTrkTDC", "trk fragment average TDC; (TDC[0]+TDC[1])/2", 200, 0., 2000.);	 
+    _hTrkTDC       = trkDir.make<TH1F>("hTrkTDC", "trk fragment average TDC; (TDC[0]+TDC[1])/2", 2000, 0., 20000.);	 
     _hTrkTOT       = trkDir.make<TH1F>("hTrkTOT", "trk fragment average TOT; (TOT[0]+TOT[1])/2", 100, 0., 200.);	 
-    _hTrkWfSize    = trkDir.make<TH1F>("hTrkWfSize", "trk fragment waveform size; trkFragment_wf_size", 200, 0., 200.);	 
+    _hTrkWfSize    = trkDir.make<TH1F>("hTrkWfSize", "trk fragment waveform size; trkFragment_wf_size", 20, 0., 20.);	 
                   
-    _hCalNFragment = calDir.make<TH1F>("hCalNFragment", "n fragments from the calorimeter; nCalFragments", 4000, 0., 4000.);
+    _hCalNFragment = calDir.make<TH1F>("hCalNFragment", "n fragments from the calorimeter; nCalFragments", 400, 0., 400.);
     _hCalROId 	   = calDir.make<TH1F>("hCalROId", "calo fragment roId; calFragment_roId", 4000, 0., 4000.);
     _hCalT0	   = calDir.make<TH1F>("hCalT0", "calo fragment t0; calFragment_t0 [ns]", 200, 0., 2000.);
     _hCalPeakPos   = calDir.make<TH1F>("hCalPeakPos", "calo fragment peakPos; calFragment_peakPos", 100, 0., 100.);
