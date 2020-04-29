@@ -115,13 +115,6 @@ class AlignTrackCollector : public art::EDAnalyzer {
     Int_t panels_trav;
     Int_t planes_trav;
 
-    // Histograms for diagnostics
-    TH1F* plane_tracks;
-    TH1F* plane_residsum;
-
-    TH1F* track_chisq;
-    TH1F* track_pvalue;
-
   public:
     const size_t _dof_per_plane = 6; // dx, dy, dz, a, b, g (translation, rotation)
     const size_t _dof_per_panel = 6; // dx, dy, dz, a, b, g (translation, rotation)
@@ -190,6 +183,7 @@ class AlignTrackCollector : public art::EDAnalyzer {
     bool filter_CosmicTrackSeedCollection(art::Event const& event, Tracker const& tracker,
                                           StrawResponse const& _srep,
                                           CosmicTrackSeedCollection const& _coscol);
+
     void writeLabelsFile(Tracker const& aligned_tracker);
     int getLabel(int const&, int const&, int const&);
     std::vector<int> generateDOFLabels(StrawId const& strw);
@@ -210,13 +204,6 @@ class AlignTrackCollector : public art::EDAnalyzer {
                       << StrawId::_nupanels * _dof_per_panel << std::endl;
         }
 
-        if (track_type == "CosmicTrackSeedCollection") {
-            collect_track = CosmicRecoTrack;
-        }
-        else {
-            throw cet::exception("RECO")
-                << "AlignTrackCollector: Cannot collect track type " << track_type << std::endl;
-        }
     }
 
     virtual ~AlignTrackCollector() {}
@@ -228,6 +215,7 @@ class AlignTrackCollector : public art::EDAnalyzer {
     std::string _output_filename;
     std::string _labels_filename;
     std::string track_type;
+
     int min_plane_traverse;
     int min_panel_traverse_per_plane;
     double max_pvalue;
@@ -236,16 +224,11 @@ class AlignTrackCollector : public art::EDAnalyzer {
     int min_track_hits;
     bool use_timeresid;
 
-    AlignTrackType collect_track;
-
     std::unique_ptr<Mille> millepede;
     const CosmicTrackSeedCollection* _coscol;
     const Tracker* _tracker;
 
     size_t tracks_written = 0;
-
-    std::unordered_map<uint16_t, std::vector<int>> plane_dof_labels;
-    std::unordered_map<uint16_t, std::vector<int>> panel_dof_labels;
 
     ProditionsHandle<Tracker> _proditionsTracker_h;
     ProditionsHandle<StrawResponse> srep_h;
@@ -287,12 +270,6 @@ void AlignTrackCollector::beginJob()
 
         diagtree->Branch("panels_trav", &panels_trav, "panels_trav/I");
         diagtree->Branch("planes_trav", &planes_trav, "planes_trav/I");
-
-        plane_tracks = tfs->make<TH1F>("plane_trackcount", "Tracks per plane", 36, 0, 36);
-        plane_residsum = tfs->make<TH1F>("plane_residusum", "Residual sum per plane", 36, 0, 36);
-
-        track_chisq = tfs->make<TH1F>("track_chisq", "Track ChiSq/NDOF", 30, 0, 4);
-        track_pvalue = tfs->make<TH1F>("track_pvalue", "Track p-value", 30, 0, 1);
     }
 }
 
@@ -534,11 +511,6 @@ bool AlignTrackCollector::filter_CosmicTrackSeedCollection(art::Event const& eve
                                  derivativesGlobal.size(), derivativesGlobal.data(),
                                  global_dof_labels.data(), (float)time_resid, (float)drift_res);
             }
-            // diagnostic information
-            if (_diag > 0) {
-                plane_tracks->Fill(plane_id);
-                plane_residsum->Fill(plane_id, resid_tmp);
-            }
 
             wrote_hits = true;
             ++nHits;
@@ -618,21 +590,12 @@ void AlignTrackCollector::analyze(art::Event const& event)
     StrawResponse const& _srep = srep_h.get(event.id());
     Tracker const& tracker = _proditionsTracker_h.get(event.id());
 
-    switch (collect_track) {
+    auto stH = event.getValidHandle<CosmicTrackSeedCollection>(_costag);
+    if (stH.product() == 0)
+        return;
 
-    case CosmicRecoTrack: {
-        auto stH = event.getValidHandle<CosmicTrackSeedCollection>(_costag);
-        if (stH.product() == 0)
-            return;
-
-        CosmicTrackSeedCollection const& coscol = *stH.product();
-        filter_CosmicTrackSeedCollection(event, tracker, _srep, coscol);
-
-        break;
-    }
-    case CosmicKalmanTrack:
-        break;
-    }
+    CosmicTrackSeedCollection const& coscol = *stH.product();
+    filter_CosmicTrackSeedCollection(event, tracker, _srep, coscol);
 }
 
 }; // namespace mu2e
