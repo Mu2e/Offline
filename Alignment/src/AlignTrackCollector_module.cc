@@ -282,8 +282,6 @@ std::vector<int> AlignTrackCollector::generateDOFLabels(StrawId const& strw) {
 }
 
 void AlignTrackCollector::beginRun(art::Run const& run) {
-  writeLabelsFile(_proditionsTracker_h.get(run.id()));
-
   return;
 }
 
