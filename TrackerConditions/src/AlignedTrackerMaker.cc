@@ -116,8 +116,8 @@ namespace mu2e {
                     printed = true;
           }
 
-          if (pdif.x() != 0)
-            std::cout << pdif << std::endl;
+          //if (pdif.x() != 0)
+          //  std::cout << pdif << std::endl;
 
           straw._c = aligned_straw;
           straw._w = aligned_straw_dir;
