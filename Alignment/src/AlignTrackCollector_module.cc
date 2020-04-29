@@ -1,5 +1,11 @@
 // Ryunosuke O'Neil, 2019
-// Module calling upon Mille to set up bootstrap alignment
+// roneil@fnal.gov
+// ryunoneil@gmail.com
+
+// A module to collect Cosmic NoField tracks and write out 'Mille' data files used as input to a
+// Millepede-II alignment fit.
+
+// Consult README.md for more information
 
 #include <algorithm> // for max, all_of
 #include <cmath>     // for isnan
@@ -159,16 +165,21 @@ class AlignTrackCollector : public art::EDAnalyzer {
 
         fhicl::Atom<double> maxtimeres{
             Name("MaxTimeRes"),
-            Comment("Require that the maximum time residual on track hits < MaxTimeRes. Setting a "
+            Comment("Require that the maximum ABSOLUTE time residual over all track hits < MaxTimeRes. Setting a "
                     "negative value does not apply the cut."),
             -1.0};
 
         fhicl::Atom<int> mintrackhits{
             Name("MinTrackSH"),
-            Comment("Require that the minimum Straw hits in an event > MinTrackSH."), 0};
+            Comment("Require that the minimum straw hits in a track > MinTrackSH."), 0};
 
+
+        // FIXME! generate separate headers and sets of functions for UseTimeDomain: true and false
         fhicl::Atom<bool> usetimeresid{
-            Name("UseTimeDomain"), Comment("Write the alignment data in the time domain."), true};
+            Name("UseTimeDomain"),
+            Comment("Write the alignment data in the time domain. i.e. measurement = Time "
+                    "Residual, sigma = driftTimeError."),
+            true};
     };
     typedef art::EDAnalyzer::Table<Config> Parameters;
 
@@ -181,6 +192,7 @@ class AlignTrackCollector : public art::EDAnalyzer {
                                           CosmicTrackSeedCollection const& _coscol);
     void writeLabelsFile(Tracker const& aligned_tracker);
     int getLabel(int const&, int const&, int const&);
+    std::vector<int> generateDOFLabels(StrawId const& strw);
 
     AlignTrackCollector(const Parameters& conf)
         : art::EDAnalyzer(conf), _diag(conf().diaglvl()), _costag(conf().costag()),
@@ -190,34 +202,6 @@ class AlignTrackCollector : public art::EDAnalyzer {
           min_doca(conf().mindoca()), max_timeres(conf().maxtimeres()),
           min_track_hits(conf().mintrackhits()), use_timeresid(conf().usetimeresid())
     {
-        // generate hashtable of plane, or panel number to DOF labels
-        // millepede wants arrays of labels
-
-        int nobj = 0;
-        // o_cls == 1: planes
-        // o_cls == 2: panels
-        for (int o_cls = 1; o_cls < 3; o_cls++) // either 1 or 2
-        {
-            if (o_cls == 1) {
-                nobj = StrawId::_nplanes;
-            }
-            else if (o_cls == 2) {
-                nobj = StrawId::_nupanels;
-            }
-            else
-                continue;
-
-            for (int i = 0; i < nobj; i++) {
-                std::vector<int> labels;
-                for (size_t dof_n = 0; dof_n < 6; dof_n++)
-                    labels.push_back(getLabel(o_cls, i, dof_n));
-
-                if (o_cls == 1)
-                    plane_dof_labels[i] = std::move(labels);
-                else
-                    panel_dof_labels[i] = std::move(labels);
-            }
-        }
         if (_diag > 0) {
             std::cout << "AlignTrackCollector: Total number of plane degrees of freedom = "
                       << StrawId::_nplanes * _dof_per_plane << std::endl;
@@ -312,6 +296,22 @@ void AlignTrackCollector::beginJob()
     }
 }
 
+std::vector<int> AlignTrackCollector::generateDOFLabels(StrawId const& strw)
+{
+    std::vector<int> labels;
+    labels.reserve(_dof_per_plane + _dof_per_panel);
+
+    for (size_t dof_n = 0; dof_n < _dof_per_plane; dof_n++) {
+        labels.push_back(getLabel(1, strw.getPlane(), dof_n));
+    }
+    for (size_t dof_n = 0; dof_n < _dof_per_panel; dof_n++) {
+        labels.push_back(getLabel(2, strw.getPanel(), dof_n));
+    }
+
+    return labels; // should 'move' the vector, not copy it
+}
+
+// FIXME! did not turn out to be very useful - consider removing this
 void AlignTrackCollector::writeLabelsFile(Tracker const& aligned_tracker)
 {
     // nominal tracking geometry
@@ -346,20 +346,6 @@ void AlignTrackCollector::writeLabelsFile(Tracker const& aligned_tracker)
                             << panel->origin() -
                                    nominal_tracker.getPlane(p).getPanel(panel->id()).origin()
                             << std::endl;
-            // auto straw0 = panel->getStraw(0);
-            // auto straw0pos = straw0.getMidPoint();
-            // auto straw0dir = straw0.getDirection();
-
-            // label_info_file << "# generated code Panel Straw0 actual vs. expected position: "
-            //     << "actual pos: " << straw0pos << " dir: " << straw0dir
-            //     << "expected " << CosmicTrack_DCAalignpos_x(0.5, 0.5, 0,
-            //     0,0,0, 0,0,0, 0,0,0,
-            //     double plane_x, double plane_y, double plane_z,
-
-            //     double panel_straw0x, double panel_straw0y, double panel_straw0z,
-
-            //     double wire_x, double wire_y, double wire_z,
-            //     double wdir_x, double wdir_y, double wdir_z)
         }
 
         label_info_file << std::endl;
@@ -379,7 +365,9 @@ void AlignTrackCollector::beginRun(art::Run const& run)
 
 void AlignTrackCollector::endJob()
 {
-    // ensure the file is closed once the job finishes
+    // ensure the binary Mille file is explicitly closed in endJob,
+    // not just when this module goes out of scope
+    // (handled in Mille destructor)
     millepede->~Mille();
 
     if (_diag > 0) {
@@ -404,7 +392,7 @@ bool AlignTrackCollector::filter_CosmicTrackSeedCollection(art::Event const& eve
             continue;
         }
 
-        if (!st.converged || (!st.minuit_converged)) {
+        if (!st.converged || !st.minuit_converged) {
             continue;
         }
 
@@ -418,8 +406,8 @@ bool AlignTrackCollector::filter_CosmicTrackSeedCollection(art::Event const& eve
         XYZVec track_pos(st.MinuitParams.A0, 0, st.MinuitParams.B0);
         XYZVec track_dir(st.MinuitParams.A1, -1, st.MinuitParams.B1);
 
-        A0 = st.MinuitParams.A0; // track_pos.X();
-        A1 = st.MinuitParams.A1; // track_dir.X();
+        A0 = st.MinuitParams.A0;
+        A1 = st.MinuitParams.A1;
         B0 = st.MinuitParams.B0;
         B1 = st.MinuitParams.B1;
         T0 = st.MinuitParams.T0;
@@ -432,10 +420,11 @@ bool AlignTrackCollector::filter_CosmicTrackSeedCollection(art::Event const& eve
         pvalue = 0;
         nHits = 0;
 
+        // for the max timeresidual track quality cut
+        double max_time_res_track = -1;
+
         bool wrote_hits = false; // did we write any hits for the track?
         bool bad_track = false;
-
-        double max_time_res_track = -1;
 
         // get residuals and their derivatives with respect
         // to all local and global parameters
@@ -444,6 +433,7 @@ bool AlignTrackCollector::filter_CosmicTrackSeedCollection(art::Event const& eve
             // straw and plane info
             StrawId const& straw_id = straw_hit.strawId();
             Straw const& straw = tracker.getStraw(straw_id);
+
             auto plane_id = straw_id.getPlane();
             auto panel_uuid = straw_id.uniquePanel();
             auto panel_id = straw_id.getPanelId();
@@ -456,8 +446,8 @@ bool AlignTrackCollector::filter_CosmicTrackSeedCollection(art::Event const& eve
 
             // now calculate the derivatives.
             auto derivativesLocal =
-                CosmicTrack_DCA_LocalDeriv(A0, B0, A1, B1, T0, straw_mp.x(), straw_mp.y(), straw_mp.z(),
-                                           wire_dir.x(), wire_dir.y(), wire_dir.z(),
+                CosmicTrack_DCA_LocalDeriv(A0, B0, A1, B1, T0, straw_mp.x(), straw_mp.y(),
+                                           straw_mp.z(), wire_dir.x(), wire_dir.y(), wire_dir.z(),
 
                                            plane_origin.x(), plane_origin.y(), plane_origin.z(),
                                            panel_origin.x(), panel_origin.y(), panel_origin.z());
@@ -479,11 +469,11 @@ bool AlignTrackCollector::filter_CosmicTrackSeedCollection(art::Event const& eve
             dir = dir.unit();
             TwoLinePCA pca(straw.getMidPoint(), straw.getDirection(), intercept, dir);
 
-            // this is a time
+            // FIXME! this is a time, not distance
             double drift_res = _srep.driftDistanceError(straw_hit.strawId(), 0, 0, pca.dca());
 
+            // FIXME! use newly implemented chisq function in fit object
             chisq += pow(time_resid / drift_res, 2);
-
             chisq_doca += pow(resid_tmp / resid_err_tmp, 2);
 
             if (isnan(resid_tmp) || isnan(time_resid) || isnan(drift_res)) {
@@ -492,7 +482,6 @@ bool AlignTrackCollector::filter_CosmicTrackSeedCollection(art::Event const& eve
             }
 
             // FIXME perhaps should get rid of this
-
             if (pca.dca() < min_doca) {
                 continue; // remove hit!
             }
@@ -505,9 +494,7 @@ bool AlignTrackCollector::filter_CosmicTrackSeedCollection(art::Event const& eve
             doca_resid_err[nHits] = resid_err_tmp;
             pull_doca[nHits] = resid_tmp / resid_err_tmp;
             pull_hittime[nHits] = time_resid / drift_res;
-
             drift_reso[nHits] = drift_res;
-
             doca[nHits] = pca.dca();
             time[nHits] = straw_hit.time();
             panel_uid[nHits] = panel_uuid;
@@ -521,24 +508,20 @@ bool AlignTrackCollector::filter_CosmicTrackSeedCollection(art::Event const& eve
             if (abs(time_resid) > max_time_res_track)
                 max_time_res_track = abs(time_resid);
 
-            // FIXME! seems messy!
-            std::vector<int> global_dof_labels;
-            global_dof_labels.reserve(_dof_per_plane + _dof_per_panel);
-
             // Convention note:
             // The DoF order is : (planes) dx, dy, dz, a, b, g, followed by (panel) dx, dy, dz, dz,
             // a, b, g This is reflected also in the generated DOCA derivatives.
-            global_dof_labels.insert(global_dof_labels.end(), plane_dof_labels[plane_id].begin(),
-                                     plane_dof_labels[plane_id].end());
-            global_dof_labels.insert(global_dof_labels.end(), panel_dof_labels[panel_uuid].begin(),
-                                     panel_dof_labels[panel_uuid].end());
+            std::vector<int> global_dof_labels = generateDOFLabels(straw_id);
 
-            if (_diag > 0 && global_dof_labels.size() != 12)
-                std::cout << "WARNING: we should have 12 labels!" << std::endl;
+            if (_diag > 0 && global_dof_labels.size() != 12) {
+                throw cet::exception("RECO") << "Did not see 12 DOF labels ... Something is wrong!";
+            }
 
-            if (derivativesLocal.size() != 5 && use_timeresid)
-                throw cet::exception("RECO", "The generated derivatives provided are not correct "
-                                             "for Time Residual mode. Please check and recompile.");
+            if (derivativesLocal.size() != 5 && use_timeresid) {
+                throw cet::exception("RECO")
+                                     << "Did not see 5 local derivatives (corrsp. to 5 fit "
+                                     << "parameters) ... This is weird! (N.B. UseTimeDomain is TRUE)";
+            }
 
             // write the hit to the track buffer
             if (!use_timeresid) {
@@ -561,9 +544,10 @@ bool AlignTrackCollector::filter_CosmicTrackSeedCollection(art::Event const& eve
             ++nHits;
         }
         if (wrote_hits) {
-            ndof = sts._straw_chits.size() - 5; // 5 track parameters
+            // number of hits - 5 track parameters
+            ndof = sts._straw_chits.size() - 5;
 
-            if (ndof > 0 && _diag > 0) {
+            if (ndof > 0) {
                 pvalue = boost::math::cdf(boost::math::chi_squared(ndof), chisq);
                 chisq /= ndof;
             }
@@ -571,6 +555,7 @@ bool AlignTrackCollector::filter_CosmicTrackSeedCollection(art::Event const& eve
                 chisq = -1;
                 pvalue = -1;
                 ndof = -1;
+                bad_track = true;
             }
 
             planes_trav = planes_traversed.size();
@@ -596,9 +581,13 @@ bool AlignTrackCollector::filter_CosmicTrackSeedCollection(art::Event const& eve
 
             if (_diag > 0)
                 diagtree->Fill();
+
             tracks_written++;
-            std::cout << "wrote track " << tracks_written << std::endl;
             wrote_track = true;
+
+            if (_diag > 0) {
+                std::cout << "wrote track " << tracks_written << std::endl;
+            }
         }
     }
     return wrote_track;
@@ -608,6 +597,8 @@ bool filter_CosmicKalSeedCollection(art::Event const& event, Tracker const& trac
                                     StrawResponse const& _srep,
                                     CosmicTrackSeedCollection const& coscol)
 {
+    // Futureproofing... Although I think it would make a lot more sense to move mp-II kalman
+    // track collection to its own module
     return false;
 }
 
