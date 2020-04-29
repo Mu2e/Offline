@@ -85,20 +85,19 @@ namespace mu2e {
 
   CaloDigiAna::CaloDigiAna(fhicl::ParameterSet const& pset) :
     art::EDAnalyzer(pset),
-    _caloDigisModuleLabel          (pset.get<std::string>("caloDigisModuleLabel")){}
+    _caloDigisModuleLabel          (pset.get<std::string>("digisTag")){}
 
   void CaloDigiAna::beginRun(art::Run const& ){
     mu2e::GeomHandle<mu2e::Calorimeter> ch;
     _calorimeter = ch.get();
   }
   void CaloDigiAna::beginJob(){
-    mu2e::GeomHandle<mu2e::Calorimeter> ch;
-    _calorimeter = ch.get();
 
     art::ServiceHandle<art::TFileService> tfs;
-    art::TFileDirectory tfdir = tfs->mkdir("diag");
 
     for (int i=0; i<2; ++i){
+      art::TFileDirectory tfdir = tfs->mkdir(Form("disk%i",i));
+
       _histDisk[i]._hNCaloDigi         = tfdir.make<TH1F>(Form("hNHitsDisk%i", i)      ,
 							  "Disk0: N caloDigis ", 1e4, 0, 1e4);
       _histDisk[i]._hCDT0              = tfdir.make<TH1F>(Form("hCDT0Disk%i", i)      ,
