@@ -94,7 +94,7 @@ def unit_vector(v):
 
 
 def DOCAToTOCA(dca):
-    return dca * 0.0625
+    return dca / 0.0625
 
 def DOCA(p1, t1, p2, t2):
     t1 = unit_vector(t1)
