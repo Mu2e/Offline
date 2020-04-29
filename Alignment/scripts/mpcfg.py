@@ -95,7 +95,13 @@ def generate_constraint_cfg(args):
     write_output(args, constraints)
 
 def generate_param_cfg(args):
-    parameters = get_params(1) + get_params(2)
+    parameters = ''
+
+    opts = args.constr_dofs.split(',')
+
+    # TODO: allow fine tuning of params (fixing, etc) using opts
+    parameters += get_params(1)
+    parameters += get_params(2)
 
     write_output(args, parameters)
 
@@ -106,7 +112,7 @@ def main():
 
     group = parser.add_mutually_exclusive_group()
     group.add_argument("--constr-dofs", type=str,
-                        help='Constrain average rotation or translation to zero. comma separated list containing any or all of: pl-[trl/rot], pa-[trl/rot]')
+                        help='Constrain average rotation or translation to zero. comma separated list containing any or all of: all, pl-[trl/rot], pa-[trl/rot]')
 
     group.add_argument("--fix-dofs", type=str,
                         help='comma separated list containing any or all of: plane-[trl/rot], panel-[trl/rot]')
