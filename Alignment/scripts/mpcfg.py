@@ -81,7 +81,7 @@ def generate_steering(args):
         constraints='',
         parameters='',
         method='inversion',
-        n_iterations='5',
+        n_iterations='10',
         convergence_criteria='0.1'
     )
 
@@ -101,14 +101,14 @@ def generate_param_cfg(args):
 
     # TODO: allow fine tuning of params (fixing, etc) using opts
     parameters += get_params(1)
-    parameters += get_params(2)
+    parameters += get_params(2, fix=True)
 
     write_output(args, parameters)
 
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("operating_mode", type=str,
-                        help="operating mode. can be: steer, constrain, param")
+                        help="operating mode. can be: steer, constr, param")
 
     group = parser.add_mutually_exclusive_group()
     group.add_argument("--constr-dofs", type=str,
@@ -133,7 +133,7 @@ def main():
     if args.operating_mode == 'steer':
         generate_steering(args)
 
-    elif args.operating_mode == 'constrain':
+    elif args.operating_mode == 'constr':
         generate_constraint_cfg(args)
 
     elif args.operating_mode == 'param':
