@@ -204,6 +204,7 @@ def nested_transform_alignment(wire_pos, wire_dir,
 
     align_plane = HepTransform(plane_trl, plane_rot)
     align_panel = HepTransform(panel_trl, panel_rot)
+
     plane_to_tracker = HepTransform(
         Matrix([0, 0.0, plane_origin[2]]), [0.0, 0.0, 0.0])
 
@@ -416,13 +417,58 @@ def generate_expressions(approximate=False, remove_globalparam_dependence=True, 
 
     nominal_doca = DOCA(track_pos, track_dir, wire_pos, wire_dir)
 
+
+    if VALIDATE:
+
+        print(aligned_wpos)
+
+        aligned_wpos = aligned_wpos.subs({
+            dx: 1.50269,
+            dy: -1.94275,
+            dz: 3.27363,
+
+            a: 0,
+            b: 0,
+            g: 0,
+
+            panel_dx: 0,
+            panel_dy: 0,
+            panel_dz: 0,
+            panel_a: 0,
+            panel_b: 0,
+            panel_g: 0,
+
+            wx:367.052, # wire pos before (straw 0 plane 0 panel 0)
+            wy:98.3512,
+            wz:-1490.37,
+
+            panel_x:368.561, # panel straw0mp
+            panel_y:98.7556,
+            panel_z:-1493.08,
+
+            ppx:0, # plane origin
+            ppy:0,
+            ppz:-1504.35
+        })
+
+        print (aligned_wpos)
+
     return expressions, param_dict, nominal_doca, aligned_wpos, aligned_wdir
+
+
+VALIDATE = False
 
 
 def main():
     function_prefix = "CosmicTrack_DCA"
 
     exprs, params, nominal_doca, aligned_wpos, aligned_wdir = generate_expressions()
+
+
+    if VALIDATE:
+        return
+
+
     lgparams = params['local'] + params['global']
 
     generated_code = []
