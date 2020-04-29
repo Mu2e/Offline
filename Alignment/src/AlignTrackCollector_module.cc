@@ -102,6 +102,7 @@ class AlignTrackCollector : public art::EDAnalyzer {
     Double_t T0;
 
     Double_t chisq;
+    Double_t chisq_doca;
     Int_t ndof;
     Double_t pvalue;
 
@@ -291,6 +292,8 @@ void AlignTrackCollector::beginJob()
         diagtree->Branch("T0", &T0, "T0/D");
 
         diagtree->Branch("chisq", &chisq, "chisq/D");
+        diagtree->Branch("chisq_doca", &chisq_doca, "chisq_doca/D");
+
         diagtree->Branch("ndof", &ndof, "ndof/I");
         diagtree->Branch("pvalue", &pvalue, "pvalue/D");
 
@@ -423,6 +426,7 @@ bool AlignTrackCollector::filter_CosmicTrackSeedCollection(art::Event const& eve
         GaussianDriftFit fit_object(sts._straw_chits, _srep, &tracker);
 
         chisq = 0;
+        chisq_doca = 0;
         ndof = 0;
         pvalue = 0;
         nHits = 0;
@@ -481,6 +485,8 @@ bool AlignTrackCollector::filter_CosmicTrackSeedCollection(art::Event const& eve
             double drift_res = _srep.driftDistanceError(straw_hit.strawId(), 0, 0, pca.dca());
 
             chisq += pow(time_resid / drift_res, 2);
+
+            chisq_doca += pow(resid_tmp / resid_err_tmp, 2);
 
             if (isnan(resid_tmp) || isnan(time_resid) || isnan(drift_res)) {
                 bad_track = true;
