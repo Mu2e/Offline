@@ -402,10 +402,10 @@ produce( Event & event )
 	  adc_t crystalID  = hitPkt->DIRACB & 0x0FFF;
 	  adc_t apdID      = hitPkt->DIRACB >> 12;
 
-
 	  calo_digis->emplace_back((crystalID*2 + apdID),
 				   hitPkt->Time,
-				   cwf
+				   cwf,
+				   hitPkt->IndexOfMaxDigitizerSample
 				   );
 
 	  if( diagLevel_ > 1 ) {

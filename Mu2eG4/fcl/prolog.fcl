@@ -113,7 +113,7 @@ mu2eg4DefaultDebug: {
     exportPDTEnd : false
     warnEveryNewRun : false
     diagLevel : 0
-    mtDebugOutput : false
+    mtDebugOutput : 0
     trackingVerbosityLevel : 0
     steppingVerbosityLevel : 0
     navigatorVerbosityLevel : 0
@@ -185,7 +185,6 @@ Mu2eG4MT: {
         g4run : {
             @table::mu2eg4runDefaultSingleStage
             module_type : "Mu2eG4MT"
-//            initialSeed : 8 
         }
     }
 }
