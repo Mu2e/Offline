@@ -350,7 +350,6 @@ double GaussianDriftFit::reduced_chisq(const std::vector<double> &x)
 	double const& b0 = x[1];
 	double const& a1 = x[2];
 	double const& b1 = x[3];
-	double const& t0 = x[4];
 
 	CLHEP::Hep3Vector intercept(a0,0,b0);
 	CLHEP::Hep3Vector dir(a1,-1,b1);
