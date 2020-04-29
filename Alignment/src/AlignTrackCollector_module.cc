@@ -182,7 +182,6 @@ public:
                                         StrawResponse const& _srep,
                                         CosmicTrackSeedCollection const& _coscol);
 
-  void writeLabelsFile(Tracker const& aligned_tracker);
   int getLabel(int const&, int const&, int const&);
   std::vector<int> generateDOFLabels(StrawId const& strw);
 
