@@ -1,104 +1,41 @@
 # Ryunosuke O'Neil, 2019
 # Symbolic derivation of DOCA partial derivatives with respect to alignment and track params
 
-# A few things need to be done to make this viable:
-# TODO: support Kalman tracks
-# TODO: extend to time domain (see how this affects the derivatives first)
+# TODO: support Kalman tracks (KinKal?)
+
+# TODO: cleanup
+
+# TODO: unit testing
+
+# TODO: DOCAtoTOCA should be a replica of D2T which properly accounts for nonlinear drift effects
 
 import sympy
-from sympy import Symbol, Matrix, diff, sqrt, atan2
+from sympy import Symbol, Matrix, diff, sqrt, atan2, cos, sin
 from sympy.physics.vector import ReferenceFrame
 from sympy.vector import matrix_to_vector, CoordSys3D
 from sympy.functions import sign
 
-from sympy.vector.orienters import AxisOrienter
+from sympy.vector.orienters import BodyOrienter
 from sympy.simplify.cse_main import cse
-from sympy.utilities.codegen import codegen, Routine
+from sympy.utilities.codegen import codegen
 from sympy.printing import ccode
 from sympy.utilities.iterables import numbered_symbols
 from sympy.functions import Abs
 from sympy.matrices.dense import matrix_multiply_elementwise
 
 
-c_template = """
-
-# include "Alignment/inc/RigidBodyDOCADeriv.hh"
-# include <math.h>
-# include <vector>
-
-%s
-
-"""
-
-h_template = """
-# ifndef RIGIDBODYDOCADERIV_H
-# define RIGIDBODYDOCADERIV_H
-# include <vector>
-%s
-
-# endif
-
-"""
-
-fn_template = "%s %s(%s);"
-
-
-def cseexpr_to_ccode(symname, symfunc, symbolslist):
-    tmpsyms = numbered_symbols("R")
-    symbols, simple = cse(symfunc, symbols=tmpsyms)
-
-    code = "double %s(%s)\n" % (str(symname), ", ".join(
-        "double %s" % x for x in symbolslist))
-    code += "{\n"
-    for s in symbols:
-        code += "    double %s = %s;\n" % (ccode(s[0]), ccode(s[1]))
-    code += "    double result = %s;\n" % ccode(simple[0])
-    code += "    return result;\n"
-    code += "}\n"
-
-    return code
-
-
-def build_ccode_function(return_type, fn_name, symbolslist, fn_body):
-    args = 'double ' + ', double '.join([symb.name for symb in symbolslist])
-    code = """{return_type} {fn_name}({arg_list})
-{{
-        {body}
-}}""".format(
-        return_type=return_type,
-        fn_name=fn_name,
-        arg_list=args,
-        body=fn_body
-    )
-
-    function_header_code = fn_template % (return_type, fn_name, args)
-
-    return function_header_code, code
-
-
-def generate_code_function(name, return_type, expr, symbols):
-    args = 'double %s' % (', double '.join([p.name for p in symbols]))
-
-    function_header_code = fn_template % (return_type, name, args)
-    function_code = cseexpr_to_ccode(name, expr, symbols)
-
-    return function_header_code, function_code
-
-
 def unit_vector(v):
     tot2 = v.dot(v)
-    # sympy.Piecewise((1 / sqrt(tot2), tot2 > 0), (1, True)) * v
     return v/sqrt(tot2)
-
-# Based on TwoLinePCAXYZ.
 
 
 def DOCAToTOCA(dca):
     return dca / 0.0625
 
+
 def DOCA(p1, t1, p2, t2):
     t1 = unit_vector(t1)
-    # t2 = unit_vector(t2) t2 should already be a unit vector
+    # t2 should already be a unit vector
 
     c = t2.dot(t1)
 
@@ -129,6 +66,22 @@ def colvec_perp(matrix):
     return sqrt(matrix[0]*matrix[0] + matrix[1]*matrix[1])
 
 
+def exact_rotation_matrix(a, b, g):
+    R_x = Matrix([[1, 0, 0],
+                  [0, cos(a), -sin(a)],
+                  [0, sin(a), cos(a)]])
+
+    R_y = Matrix([[cos(b), 0, sin(b)],
+                  [0,      1, 0],
+                  [-sin(b),0, cos(b)]])
+
+    R_z = Matrix([[cos(g), -sin(g), 0],
+                  [sin(g), cos(g),  0],
+                  [0,      0,       1]])
+
+    return R_z*(R_y*R_x)
+
+
 class HepTransform:
     def __init__(self, trl, rot, mat=False):
         self._trl = trl
@@ -139,9 +92,12 @@ class HepTransform:
 
         a, b, g = rot
 
-        self._rotmat = Matrix([[1, g, b],
-                               [-g, 1, a],
-                               [b, -a, 1]])
+        # This is an approximation.
+        # self._rotmat = Matrix([[1, g, b],
+        #                        [-g, 1, a],
+        #                        [b, -a, 1]])
+
+        self._rotmat = exact_rotation_matrix(a, b, g)
 
     def trl(self):
         return self._trl
@@ -156,46 +112,6 @@ class HepTransform:
 
     def transform(self, vector):
         return self._rotmat * vector + self._trl
-
-    #   HepTransform align_plane(rowpl.dx(),rowpl.dy(),rowpl.dz(),
-    #          rowpl.rx(),rowpl.ry(),rowpl.rz());
-
-    #   if ( _config.verbose() > 0 ) {
-    #     cout << "AlignedTrackerMaker::fromDb plane ID " << plane.id().plane() << " alignment constants: " << align_plane << endl;
-    #   }
-    #   // how to place the plane in the tracker
-    #   HepTransform plane_to_tracker(0.0,0.0,plane.origin().z(),0.0,0.0,0.0);
-
-    #   // make an intermediate multiplication
-    #   HepTransform plane_temp = align_tracker
-    #     * (plane_to_tracker * align_plane);
-        # HepTransform align_panel(rowpa.dx(),rowpa.dy(),rowpa.dz(),
-        #       rowpa.rx(),rowpa.ry(),rowpa.rz());
-
-        # // how to place the panel in the plane
-        # Hep3Vector dv = panel.straw0MidPoint()
-        #   - plane_to_tracker.displacement();
-        # double rz = dv.phi();
-
-        # HepTransform panel_to_plane(dv.x(),dv.y(),dv.z(),0.0,0.0,rz);
-
-        # // make an intermediate multiplication
-        # HepTransform panel_temp = plane_temp * (panel_to_plane * align_panel);
-
-        # for(size_t istr=0; istr< StrawId::_nstraws; istr++) {
-        #   Straw &straw = tracker.getStraw(panel.getStraw(istr).id());
-
-        #   // how to place the straw in the panel
-        #   double dx = straw.getMidPoint().perp()
-        #     - panel.straw0MidPoint().perp();
-        #   double dz = ( straw.getMidPoint()
-        #     - panel.straw0MidPoint() ).z();
-
-        #   Hep3Vector straw_to_panel = Hep3Vector(dx,0.0,dz);
-        #   Hep3Vector straw_dir = Hep3Vector(0.0,1.0,0.0);
-
-        #   Hep3Vector aligned_straw = panel_temp*straw_to_panel;
-        #   Hep3Vector aligned_straw_dir = panel_temp.rotation()*straw_dir;
 
 
 def nested_transform_alignment(wire_pos, wire_dir,
@@ -231,66 +147,22 @@ def nested_transform_alignment(wire_pos, wire_dir,
     return wire_pos_a, wire_dir_a
 
 
-def exact_alignment(wire_pos, wire_dir, body_origin, translation, rotation):
-    a, b, g = rotation
-
-    X = CoordSys3D('X')
-    R_a = AxisOrienter(a, X.i).rotation_matrix(X)
-    R_b = AxisOrienter(b, X.j).rotation_matrix(X)
-    R_g = AxisOrienter(g, X.k).rotation_matrix(X)
-
-    aligned_wire_pos = body_origin + \
-        (R_a * R_b * R_g * (wire_pos - body_origin)) + translation
-    # direction unaffected by translation of plane/panel
-    aligned_wire_dir = (R_a * R_b * R_g * wire_dir)
-
-    return aligned_wire_pos, aligned_wire_dir
-
-
-def small_alignment_approximation(wire_pos, wire_dir, body_origin, translation, rotation):
-    # for small a, b, g (corrections to nominal rotation transforms)
-    # we can approximate (according to Millepede documentation)
-
-    # the overall rotation matrix to:
-    # 1   g  -b
-    # -g  1   a
-    #  b -a   1
-    # Thanks to: https://www.desy.de/~kleinwrt/MP2/doc/html/draftman_page.html (See: Linear Transformations in 3D)
-    a, b, g = rotation
-
-    R_abg_approx = Matrix([[1, g, b],
-                           [-g, 1, a],
-                           [b, -a, 1]])
-
-    # go to the coordinate system with the body at the center
-    # rotate wire position vector
-    # restore tracker coordinate system
-    # apply translation
-
-    aligned_wire_pos = (body_origin + (R_abg_approx *
-                                       (wire_pos - body_origin))) + translation
-
-    # rotate wire direction by the rotation vector
-    aligned_wire_dir = R_abg_approx * wire_dir
-
-    return aligned_wire_pos, aligned_wire_dir
-
-
 def generate_expressions(approximate=False, remove_globalparam_dependence=True, time_domain=True):
     # define symbols for alignment and track parameters
 
     # plane alignment
-    # rotation angles
-    a = Symbol('plane_a', real=True)
-    b = Symbol('plane_b', real=True)
-    g = Symbol('plane_g', real=True)
-    plane_rot = (a, b, g)
 
     # translation vector
     dx = Symbol('plane_dx', real=True)
     dy = Symbol('plane_dy', real=True)
     dz = Symbol('plane_dz', real=True)
     plane_trl = Matrix([dx, dy, dz])
+
+    # rotation angles
+    a = Symbol('plane_a', real=True)
+    b = Symbol('plane_b', real=True)
+    g = Symbol('plane_g', real=True)
+    plane_rot = (a, b, g)
 
     # panel alignment
     panel_a = Symbol('panel_a', real=True)
@@ -359,10 +231,6 @@ def generate_expressions(approximate=False, remove_globalparam_dependence=True, 
     }
 
     # choose method to align vectors with
-    # alignment_func = exact_alignment
-    # if approximate:
-    #     alignment_func = small_alignment_approximation
-
     alignment_func = nested_transform_alignment
 
     # recalculate wire position and rotation according to alignment parameters
@@ -372,21 +240,13 @@ def generate_expressions(approximate=False, remove_globalparam_dependence=True, 
         plane_trl, plane_rot,
         panel_trl, panel_rot)
 
-    # # plane translation
-    # aligned_wpos, aligned_wdir = alignment_func(
-    #     wire_pos, wire_dir, plane_origin, trl, plane_rot)
-
-    # # panel translation
-    # aligned_wpos, aligned_wdir = alignment_func(
-    #     aligned_wpos, aligned_wdir, panel_straw0mp, panel_trl, panel_rot)
-
-
     # this is the residual expression (excluding terms with no dependence on local
     # and global parameters )
     aligned_doca = DOCA(track_pos, track_dir, aligned_wpos, aligned_wdir)
 
     if time_domain:
         # we convert the DOCA to a TOCA and add T0 (since it is a local param)
+        # the hit time has no explicit track parameter dependence
         aligned_doca = DOCAToTOCA(aligned_doca) + t0
 
     # now generate optimised C code to calculate each deriv
@@ -400,8 +260,8 @@ def generate_expressions(approximate=False, remove_globalparam_dependence=True, 
         pdev = diff(aligned_doca, parameter)
 
         if remove_globalparam_dependence:
-            # since these derivatives are intended for use BEFORE
-            # any corrections are applied, we substitute zero for
+            # since these derivatives are evaluated with alignment dofs kept to zero
+            # we substitute zero for
             # a, b, g, dx, dy, dz in our final expressions
             pdev = pdev.subs({
                 dx: 0, dy: 0, dz: 0,
@@ -416,7 +276,6 @@ def generate_expressions(approximate=False, remove_globalparam_dependence=True, 
         expressions.append(pdev)
 
     nominal_doca = DOCA(track_pos, track_dir, wire_pos, wire_dir)
-
 
     if VALIDATE:
 
@@ -438,25 +297,91 @@ def generate_expressions(approximate=False, remove_globalparam_dependence=True, 
             panel_b: 0,
             panel_g: 0,
 
-            wx:367.052, # wire pos before (straw 0 plane 0 panel 0)
-            wy:98.3512,
-            wz:-1490.37,
+            wx: 367.052,  # wire pos before (straw 0 plane 0 panel 0)
+            wy: 98.3512,
+            wz: -1490.37,
 
-            panel_x:368.561, # panel straw0mp
-            panel_y:98.7556,
-            panel_z:-1493.08,
+            panel_x: 368.561,  # panel straw0mp
+            panel_y: 98.7556,
+            panel_z: -1493.08,
 
-            ppx:0, # plane origin
-            ppy:0,
-            ppz:-1504.35
+            ppx: 0,  # plane origin
+            ppy: 0,
+            ppz: -1504.35
         })
 
-        print (aligned_wpos)
+        print(aligned_wpos)
+
+        print('should be (368.555,96.4085,-1487.1)')
 
     return expressions, param_dict, nominal_doca, aligned_wpos, aligned_wdir
 
 
 VALIDATE = False
+
+c_template = """
+
+# include "Alignment/inc/AlignmentDerivatives.hh"
+# include <math.h>
+# include <vector>
+
+%s
+
+"""
+
+h_template = """
+# ifndef RIGIDBODYDOCADERIV_H
+# define RIGIDBODYDOCADERIV_H
+# include <vector>
+%s
+
+# endif
+
+"""
+
+fn_template = "%s %s(%s);"
+
+
+def cseexpr_to_ccode(symname, symfunc, symbolslist):
+    tmpsyms = numbered_symbols("R")
+    symbols, simple = cse(symfunc, symbols=tmpsyms)
+
+    code = "double %s(%s)\n" % (str(symname), ", ".join(
+        "double %s" % x for x in symbolslist))
+    code += "{\n"
+    for s in symbols:
+        code += "    double %s = %s;\n" % (ccode(s[0]), ccode(s[1]))
+    code += "    double result = %s;\n" % ccode(simple[0])
+    code += "    return result;\n"
+    code += "}\n"
+
+    return code
+
+
+def build_ccode_function(return_type, fn_name, symbolslist, fn_body):
+    args = 'double ' + ', double '.join([symb.name for symb in symbolslist])
+    code = """{return_type} {fn_name}({arg_list})
+{{
+        {body}
+}}""".format(
+        return_type=return_type,
+        fn_name=fn_name,
+        arg_list=args,
+        body=fn_body
+    )
+
+    function_header_code = fn_template % (return_type, fn_name, args)
+
+    return function_header_code, code
+
+
+def generate_code_function(name, return_type, expr, symbols):
+    args = 'double %s' % (', double '.join([p.name for p in symbols]))
+
+    function_header_code = fn_template % (return_type, name, args)
+    function_code = cseexpr_to_ccode(name, expr, symbols)
+
+    return function_header_code, function_code
 
 
 def main():
@@ -464,10 +389,8 @@ def main():
 
     exprs, params, nominal_doca, aligned_wpos, aligned_wdir = generate_expressions()
 
-
     if VALIDATE:
         return
-
 
     lgparams = params['local'] + params['global']
 
@@ -517,10 +440,10 @@ def main():
     c_code = c_template % ('\n\n'.join(code))
     c_header = h_template % '\n\n'.join(functions)
 
-    with open('src/RigidBodyDOCADeriv.cc', 'w') as f:
+    with open('src/AlignmentDerivatives.cc', 'w') as f:
         f.write(c_code)
 
-    with open('inc/RigidBodyDOCADeriv.hh', 'w') as f:
+    with open('inc/AlignmentDerivatives.hh', 'w') as f:
         f.write(c_header)
 
 
