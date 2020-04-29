@@ -91,6 +91,9 @@ class GaussianDriftFit : public ROOT::Minuit2::FCNBase {
       return DOCAresidualError(sh, x, tseed._track.MinuitParams.cov);
     }
 
+	double reduced_chisq(const std::vector<double> &x);
+
+
     double DOCAresidual(ComboHit const& sh, const std::vector<double> &x) const;
 
 	double TimeResidual(ComboHit const& sh, const std::vector<double> &x) const;

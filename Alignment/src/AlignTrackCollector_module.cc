@@ -157,14 +157,18 @@ class AlignTrackCollector : public art::EDAnalyzer {
         fhicl::Atom<double> mindoca{Name("MinDOCA"),
                                     Comment("Require that the drift distance > MinDOCA"), 0.0};
 
+        fhicl::Atom<double> maxtimeres{
+            Name("MaxTimeRes"),
+            Comment("Require that the maximum time residual on track hits < MaxTimeRes. Setting a "
+                    "negative value does not apply the cut."),
+            -1.0};
 
-        fhicl::Atom<double> maxtimeres{Name("MaxTimeRes"),
-                                    Comment("Require that the maximum time residual on track hits < MaxTimeRes. Setting a negative value does not apply the cut."), -1.0};
+        fhicl::Atom<int> mintrackhits{
+            Name("MinTrackSH"),
+            Comment("Require that the minimum Straw hits in an event > MinTrackSH."), 0};
 
-        fhicl::Atom<int> mintrackhits{Name("MinTrackSH"),
-                                    Comment("Require that the minimum Straw hits in an event > MinTrackSH."),0};
-
-
+        fhicl::Atom<bool> usetimeresid{
+            Name("UseTimeDomain"), Comment("Write the alignment data in the time domain."), true};
     };
     typedef art::EDAnalyzer::Table<Config> Parameters;
 
@@ -183,7 +187,8 @@ class AlignTrackCollector : public art::EDAnalyzer {
           _output_filename(conf().millefile()), _labels_filename(conf().labelsfile()),
           track_type(conf().tracktype()), min_plane_traverse(conf().minplanetraverse()),
           min_panel_traverse_per_plane(conf().minpaneltraverse()), max_pvalue(conf().maxpvalue()),
-          min_doca(conf().mindoca()), max_timeres(conf().maxtimeres()), min_track_hits(conf().mintrackhits())
+          min_doca(conf().mindoca()), max_timeres(conf().maxtimeres()),
+          min_track_hits(conf().mintrackhits()), use_timeresid(conf().usetimeresid())
     {
         // generate hashtable of plane, or panel number to DOF labels
         // millepede wants arrays of labels
@@ -244,8 +249,8 @@ class AlignTrackCollector : public art::EDAnalyzer {
     double max_pvalue;
     double min_doca;
     double max_timeres;
-
     int min_track_hits;
+    bool use_timeresid;
 
     AlignTrackType collect_track;
 
@@ -275,7 +280,6 @@ void AlignTrackCollector::beginJob()
         diagtree->Branch("time_resid", &time_residual, "time_resid[nHits]/F");
         diagtree->Branch("doca_resid_err", &doca_resid_err, "doca_resid_err[nHits]/F");
         diagtree->Branch("drift_res", &drift_reso, "drift_res[nHits]/F");
-
 
         diagtree->Branch("pull_doca", &pull_doca, "pull_doca[nHits]/F");
         diagtree->Branch("pull_hittime", &pull_hittime, "pull_doca[nHits]/F");
@@ -332,7 +336,6 @@ void AlignTrackCollector::writeLabelsFile(Tracker const& aligned_tracker)
                                nominal_tracker.getPlane(p).origin()
                         << std::endl;
 
-
         for (Panel const* panel : aligned_tracker.getPlane(p).getPanels()) {
             uint16_t pa = panel->id().uniquePanel();
             for (size_t l_idx_pa = 0; l_idx_pa < panel_dof_labels[pa].size(); ++l_idx_pa) {
@@ -357,7 +360,6 @@ void AlignTrackCollector::writeLabelsFile(Tracker const& aligned_tracker)
 
             //     double wire_x, double wire_y, double wire_z,
             //     double wdir_x, double wdir_y, double wdir_z)
-
         }
 
         label_info_file << std::endl;
@@ -410,7 +412,6 @@ bool AlignTrackCollector::filter_CosmicTrackSeedCollection(art::Event const& eve
             continue;
         }
 
-
         std::set<uint16_t> planes_traversed;
         std::set<uint16_t> panels_traversed;
 
@@ -455,17 +456,15 @@ bool AlignTrackCollector::filter_CosmicTrackSeedCollection(art::Event const& eve
 
             // now calculate the derivatives.
             auto derivativesLocal =
-                CosmicTrack_DCA_LocalDeriv(A0, B0, A1, B1,
-                                           straw_mp.x(), straw_mp.y(), straw_mp.z(),
+                CosmicTrack_DCA_LocalDeriv(A0, B0, A1, B1, T0, straw_mp.x(), straw_mp.y(), straw_mp.z(),
                                            wire_dir.x(), wire_dir.y(), wire_dir.z(),
 
                                            plane_origin.x(), plane_origin.y(), plane_origin.z(),
                                            panel_origin.x(), panel_origin.y(), panel_origin.z());
 
             auto derivativesGlobal =
-                CosmicTrack_DCA_GlobalDeriv(A0, B0, A1, B1,
-                                            straw_mp.x(), straw_mp.y(), straw_mp.z(),
-                                            wire_dir.x(), wire_dir.y(), wire_dir.z(),
+                CosmicTrack_DCA_GlobalDeriv(A0, B0, A1, B1, T0, straw_mp.x(), straw_mp.y(),
+                                            straw_mp.z(), wire_dir.x(), wire_dir.y(), wire_dir.z(),
 
                                             plane_origin.x(), plane_origin.y(), plane_origin.z(),
                                             panel_origin.x(), panel_origin.y(), panel_origin.z());
@@ -473,7 +472,6 @@ bool AlignTrackCollector::filter_CosmicTrackSeedCollection(art::Event const& eve
             double resid_tmp = fit_object.DOCAresidual(straw_hit, sts);
             double time_resid = fit_object.TimeResidual(straw_hit, sts);
             double resid_err_tmp = fit_object.DOCAresidualError(straw_hit, sts);
-
 
             // FIXME: crude! doesn't belong here!
             CLHEP::Hep3Vector intercept(A0, 0, B0);
@@ -538,11 +536,21 @@ bool AlignTrackCollector::filter_CosmicTrackSeedCollection(art::Event const& eve
             if (_diag > 0 && global_dof_labels.size() != 12)
                 std::cout << "WARNING: we should have 12 labels!" << std::endl;
 
-            // write the hit to the track buffer
-            millepede->mille(derivativesLocal.size(), derivativesLocal.data(),
-                             derivativesGlobal.size(), derivativesGlobal.data(),
-                             global_dof_labels.data(), (float)resid_tmp, (float)resid_err_tmp);
+            if (derivativesLocal.size() != 5 && use_timeresid)
+                throw cet::exception("RECO", "The generated derivatives provided are not correct "
+                                             "for Time Residual mode. Please check and recompile.");
 
+            // write the hit to the track buffer
+            if (!use_timeresid) {
+                millepede->mille(derivativesLocal.size(), derivativesLocal.data(),
+                                 derivativesGlobal.size(), derivativesGlobal.data(),
+                                 global_dof_labels.data(), (float)resid_tmp, (float)resid_err_tmp);
+            }
+            else {
+                millepede->mille(derivativesLocal.size(), derivativesLocal.data(),
+                                 derivativesGlobal.size(), derivativesGlobal.data(),
+                                 global_dof_labels.data(), (float)time_resid, (float)drift_res);
+            }
             // diagnostic information
             if (_diag > 0) {
                 plane_tracks->Fill(plane_id);
@@ -572,10 +580,8 @@ bool AlignTrackCollector::filter_CosmicTrackSeedCollection(art::Event const& eve
             if ((min_plane_traverse != 0 && planes_trav < min_plane_traverse) ||
                 (min_panel_traverse_per_plane != 0 &&
                  (panels_trav / planes_trav) < min_panel_traverse_per_plane) ||
-                (pvalue > max_pvalue) ||
-                (max_time_res_track > max_timeres && max_timeres > 0) ||
-                (nHits < min_track_hits) ||
-                bad_track) {
+                (pvalue > max_pvalue) || (max_time_res_track > max_timeres && max_timeres > 0) ||
+                (nHits < min_track_hits) || bad_track) {
                 millepede->kill(); // delete track from buffer
 
                 if (_diag > 0) {
