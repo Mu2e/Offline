@@ -69,8 +69,10 @@ namespace mu2e {
 
     TH1F*  _hTrkNFragment;
     TH1F*  _hTrkStrawId; 
-    TH1F*  _hTrkTDC;	 
+    TH1F*  _hTrkTDC[4];	 
     TH1F*  _hTrkTOT;	 
+    TH1F*  _hTrkMeanADC;
+    TH1F*  _hTrkMaxADC;
     TH1F*  _hTrkWfSize;	 
 	                 
     TH1F*  _hCalNFragment;
@@ -102,11 +104,16 @@ namespace mu2e {
     art::TFileDirectory trkDir = tfs->mkdir("tracker");
 
     _hTrkNFragment = trkDir.make<TH1F>("hTrkNFragment", "n fragments from the tracker; nTrkFragments", 1000, 0., 10000.);
-    _hTrkStrawId   = trkDir.make<TH1F>("hTrkStrawId", "trk fragment strawId; strawId", 20000, 0., 20000.); 
-    _hTrkTDC       = trkDir.make<TH1F>("hTrkTDC", "trk fragment average TDC; (TDC[0]+TDC[1])/2", 2000, 0., 20000.);	 
-    _hTrkTOT       = trkDir.make<TH1F>("hTrkTOT", "trk fragment average TOT; (TOT[0]+TOT[1])/2", 100, 0., 200.);	 
-    _hTrkWfSize    = trkDir.make<TH1F>("hTrkWfSize", "trk fragment waveform size; trkFragment_wf_size", 20, 0., 20.);	 
-                  
+    _hTrkStrawId   = trkDir.make<TH1F>("hTrkStrawId"  , "trk fragment strawId; strawId", 20000, 0., 20000.); 
+    _hTrkTDC[0]    = trkDir.make<TH1F>("hTrkTDC0"     , "trk fragment TDC0; TDC[0]", 264,   0.,  264000);
+    _hTrkTDC[1]    = trkDir.make<TH1F>("hTrkTDC1"     , "trk fragment TDC1; TDC[1]", 264,   0.,  264000); 
+    _hTrkTDC[2]    = trkDir.make<TH1F>("hTrkTDCMean"  , "trk fragment average TDC; (TDC[0]+TDC[1])/2", 2000, 0., 20000.);	     
+    _hTrkTDC[3]    = trkDir.make<TH1F>("hTrkTDCDelta" , "trk fragment delta TDC; TDC[1]-TDC[0]", 220, -100., 10000.);
+    _hTrkTOT       = trkDir.make<TH1F>("hTrkTOT"      , "trk fragment average TOT; (TOT[0]+TOT[1])/2", 100, 0., 200.);	 
+    _hTrkMeanADC   = trkDir.make<TH1F>("hTrkMeanADC"  , "trk fragment Mean ADC; <ADC>", 250,  0., 2500. );
+    _hTrkMaxADC    = trkDir.make<TH1F>("hTrkMaxADC"   , "trk fragment Max ADC; Max_ADC",  250,  0., 2500. );
+    _hTrkWfSize    = trkDir.make<TH1F>("hTrkWfSize"   , "trk fragment waveform size; trkFragment_wf_size", 20, 0., 20.);  
+
     _hCalNFragment = calDir.make<TH1F>("hCalNFragment", "n fragments from the calorimeter; nCalFragments", 400, 0., 400.);
     _hCalROId 	   = calDir.make<TH1F>("hCalROId", "calo fragment roId; calFragment_roId", 4000, 0., 4000.);
     _hCalT0	   = calDir.make<TH1F>("hCalT0", "calo fragment t0; calFragment_t0 [ns]", 200, 0., 2000.);
@@ -234,13 +241,24 @@ namespace mu2e {
 	  mu2e::StrawId sid(trkData->StrawIndex);
 	  mu2e::TrkTypes::TDCValues   tdc = {trkData->TDC0 , trkData->TDC1};
 	  mu2e::TrkTypes::TOTValues   tot = {trkData->TOT0 , trkData->TOT1};
-	  mu2e::TrkTypes::ADCWaveform wf  = trkData->Waveform();	
-
+	  mu2e::TrkTypes::ADCWaveform adcs  = trkData->Waveform();	
+	  int sum{0};
+	  unsigned short maxadc{0};
+	  for ( auto adc : adcs ){
+	    sum += adc;
+	    maxadc = std::max( maxadc, adc);
+	  }
 	  // Fill the StrawDigiCollection
 	  _hTrkStrawId->Fill(sid.asUint16());
-	  _hTrkTDC    ->Fill((tdc[0] + tdc[1])/2.);
+	  _hTrkTDC[0] ->Fill(tdc[0]);
+	  _hTrkTDC[1] ->Fill(tdc[1]);
+	  _hTrkTDC[2] ->Fill((tdc[0] + tdc[1])/2.);
+	  _hTrkTDC[3] ->Fill(tdc[1] - tdc[0]);
 	  _hTrkTOT    ->Fill((tot[0] + tot[1])/2.);
-	  _hTrkWfSize ->Fill(wf.size());
+	  int mean = ( adcs.size() != 0 ) ? sum/adcs.size() : -1.;
+	  _hTrkMeanADC->Fill(mean);
+	  _hTrkMaxADC ->Fill(maxadc);
+	  _hTrkWfSize ->Fill(adcs.size());
 
 
 	} else if(mode_ == mu2e::FragmentType::CAL && hdr->PacketCount>0 && parseCAL_>0) {	// Parse phyiscs information from CAL packets
