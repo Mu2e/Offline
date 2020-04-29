@@ -2,11 +2,8 @@
 # Symbolic derivation of DOCA partial derivatives with respect to alignment and track params
 
 # TODO: support Kalman tracks (KinKal?)
-
 # TODO: cleanup
-
 # TODO: unit testing
-
 # TODO: DOCAtoTOCA should be a replica of D2T which properly accounts for nonlinear drift effects
 
 import sympy
