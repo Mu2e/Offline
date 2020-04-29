@@ -344,6 +344,32 @@ double GaussianDriftFit::DOCAresidual(ComboHit const& sh, const std::vector<doub
   return (pca.s2() > 0 ? 1 : -1) * (predictedDistance-measuredDistance);
 }
 
+double GaussianDriftFit::reduced_chisq(const std::vector<double> &x)
+{
+	double const& a0 = x[0];
+	double const& b0 = x[1];
+	double const& a1 = x[2];
+	double const& b1 = x[3];
+	double const& t0 = x[4];
+
+	CLHEP::Hep3Vector intercept(a0,0,b0);
+	CLHEP::Hep3Vector dir(a1,-1,b1);
+	dir = dir.unit();
+
+	double chi_sq = 0;
+	size_t ndof = this->shs.size() - x.size();
+
+	for (size_t i=0;i<this->shs.size();i++) {
+		Straw const& straw = tracker->getStraw(shs[i].strawId());
+		TwoLinePCA pca(straw.getMidPoint(), straw.getDirection(), intercept, dir);
+
+		double drift_res = srep.driftDistanceError(shs[i].strawId(), 0, 0, pca.dca());
+		chi_sq += pow(TimeResidual(shs[i], x) / drift_res, 2);
+	}
+
+	return chi_sq / ndof;
+}
+
 double GaussianDriftFit::TimeResidual(ComboHit const& sh, const std::vector<double> &x) const
 {
   double a0 = x[0];

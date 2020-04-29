@@ -93,6 +93,9 @@ def unit_vector(v):
 # Based on TwoLinePCAXYZ.
 
 
+def DOCAToTOCA(dca):
+    return dca * 0.0625
+
 def DOCA(p1, t1, p2, t2):
     t1 = unit_vector(t1)
     # t2 = unit_vector(t2) t2 should already be a unit vector
@@ -272,7 +275,7 @@ def small_alignment_approximation(wire_pos, wire_dir, body_origin, translation, 
     return aligned_wire_pos, aligned_wire_dir
 
 
-def generate_expressions(approximate=False, remove_globalparam_dependence=True):
+def generate_expressions(approximate=False, remove_globalparam_dependence=True, time_domain=True):
     # define symbols for alignment and track parameters
 
     # plane alignment
@@ -308,7 +311,8 @@ def generate_expressions(approximate=False, remove_globalparam_dependence=True):
     a1 = Symbol('a1', real=True)
     b1 = Symbol('b1', real=True)
     track_dir = Matrix([a1, -1, b1])
-    # t0 = Symbol('t0')
+
+    t0 = Symbol('t0')
 
     # wire position (midpoint) and direction
     wx = Symbol('wire_x', real=True)
@@ -333,7 +337,7 @@ def generate_expressions(approximate=False, remove_globalparam_dependence=True):
     panel_z = Symbol('panel_straw0z', real=True)
     panel_straw0mp = Matrix([panel_x, panel_y, panel_z])
 
-    local_params = [a0, b0, a1, b1]
+    local_params = [a0, b0, a1, b1, t0]
     global_params = [dx, dy, dz, a, b, g]
     global_params += [panel_dx, panel_dy, panel_dz, panel_a, panel_b, panel_g]
 
@@ -375,7 +379,14 @@ def generate_expressions(approximate=False, remove_globalparam_dependence=True):
     # aligned_wpos, aligned_wdir = alignment_func(
     #     aligned_wpos, aligned_wdir, panel_straw0mp, panel_trl, panel_rot)
 
+
+    # this is the residual expression (excluding terms with no dependence on local
+    # and global parameters )
     aligned_doca = DOCA(track_pos, track_dir, aligned_wpos, aligned_wdir)
+
+    if time_domain:
+        # we convert the DOCA to a TOCA and add T0 (since it is a local param)
+        aligned_doca = DOCAToTOCA(aligned_doca) + t0
 
     # now generate optimised C code to calculate each deriv
     if remove_globalparam_dependence:
