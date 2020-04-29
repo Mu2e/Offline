@@ -50,7 +50,7 @@ namespace mu2e {
         while (true) {
           // Signal main thread that it can proceed
           m_mainCanProceed = true;
-          if (m_mtDebugOutput) {
+          if (m_mtDebugOutput > 0) {
             G4cout << "Master thread: State loop, notify main thread" << G4endl;
           }
 
@@ -58,32 +58,32 @@ namespace mu2e {
 
           // Wait until the main thread sends signal
           m_masterCanProceed = false;
-          if (m_mtDebugOutput) {
+          if (m_mtDebugOutput > 0) {
             G4cout << "Master thread: State loop, starting wait" << G4endl;
           }
           m_notifyMasterCV.wait(lk2, [&] { return m_masterCanProceed; });
 
           // Act according to the state
-          if (m_mtDebugOutput) {
+          if (m_mtDebugOutput > 0) {
             G4cout << "Master thread: Woke up, state is " << static_cast<int>(m_masterThreadState) << G4endl;
           }
 
           if (m_masterThreadState == ThreadState::BeginRun) {
             // Initialize Geant4
-            if (m_mtDebugOutput) {
+            if (m_mtDebugOutput > 0) {
               G4cout << "Master thread: Initializing Geant4" << G4endl;
             }
             masterRunManager->initializeG4(run_number);
             isG4Alive = true;
           } else if (m_masterThreadState == ThreadState::EndRun) {
             // Stop Geant4
-            if (m_mtDebugOutput) {
+            if (m_mtDebugOutput > 0) {
               G4cout << "Master thread: Stopping Geant4" << G4endl;
             }
             masterRunManager->stopG4();
             isG4Alive = false;
           } else if (m_masterThreadState == ThreadState::Destruct) {
-            if (m_mtDebugOutput) {
+            if (m_mtDebugOutput > 0) {
               G4cout << "Master thread: Breaking out of state loop" << G4endl;
             }
             if (isG4Alive)
@@ -97,7 +97,7 @@ namespace mu2e {
         }
 
         // Cleanup
-        if (m_mtDebugOutput) {
+        if (m_mtDebugOutput > 0) {
           G4cout << "MTMasterThread: start Mu2eG4MTRunManager destruction\n";
           G4cout << "Master thread: Am I unique owner of masterRunManager? "
           << masterRunManager.unique() << G4endl;
@@ -106,11 +106,11 @@ namespace mu2e {
         masterRunManager.reset();
         //G4PhysicalVolumeStore::Clean();
 
-        if (m_mtDebugOutput) {
+        if (m_mtDebugOutput > 0) {
           G4cout << "Master thread: reset shared_ptr" << G4endl;
         }
         lk2.unlock();
-        if (m_mtDebugOutput) {
+        if (m_mtDebugOutput > 0) {
           G4cout << "MTMasterThread: Master thread is finished" << G4endl;
         }
       });
@@ -118,13 +118,13 @@ namespace mu2e {
     // Start waiting for a signal from the condition variable (releases the lock temporarily)
     // First for initialization
     m_mainCanProceed = false;
-    if (m_mtDebugOutput) {
+    if (m_mtDebugOutput > 0) {
       G4cout << "Main thread: Signal master for initialization" << G4endl;
     }
     m_notifyMainCV.wait(lk, [&]() { return m_mainCanProceed; });
 
     lk.unlock();
-    if (m_mtDebugOutput) {
+    if (m_mtDebugOutput > 0) {
       G4cout << "MTMasterThread: Master thread is constructed" << G4endl;
     }
   }
@@ -146,14 +146,14 @@ namespace mu2e {
     m_masterThreadState = ThreadState::BeginRun;
     m_masterCanProceed = true;
     m_mainCanProceed = false;
-    if (m_mtDebugOutput) {
+    if (m_mtDebugOutput > 0) {
       G4cout << "MTMasterThread: Signal master for BeginRun" << G4endl;
     }
     m_notifyMasterCV.notify_one();
     m_notifyMainCV.wait(lk2, [&]() { return m_mainCanProceed; });
 
     lk2.unlock();
-    if (m_mtDebugOutput) {
+    if (m_mtDebugOutput > 0) {
       G4cout << "MTMasterThread: finish BeginRun" << G4endl;
     }
   }
@@ -167,13 +167,13 @@ namespace mu2e {
     m_masterThreadState = ThreadState::EndRun;
     m_mainCanProceed = false;
     m_masterCanProceed = true;
-    if (m_mtDebugOutput) {
+    if (m_mtDebugOutput > 0) {
       G4cout << "MTMasterThread: Signal master for EndRun" <<G4endl;
     }
     m_notifyMasterCV.notify_one();
     m_notifyMainCV.wait(lk2, [&]() { return m_mainCanProceed; });
     lk2.unlock();
-    if (m_mtDebugOutput) {
+    if (m_mtDebugOutput > 0) {
       G4cout << "MTMasterThread: finish EndRun" << G4endl;
     }
   }
@@ -183,7 +183,7 @@ namespace mu2e {
     if (m_stopped) {
       return;
     }
-    if (m_mtDebugOutput) {
+    if (m_mtDebugOutput > 0) {
       G4cout << "MTMasterThread::stopThread: stop main thread" << G4endl;
     }
 
@@ -192,23 +192,23 @@ namespace mu2e {
     // thread, and join it.
     std::unique_lock<std::mutex> lk2(m_threadMutex);
     m_masterRunManager.reset();
-    if (m_mtDebugOutput) {
+    if (m_mtDebugOutput > 0) {
       G4cout << "Main thread: reset shared_ptr" << G4endl;
     }
 
     m_masterThreadState = ThreadState::Destruct;
     m_masterCanProceed = true;
-    if (m_mtDebugOutput) {
+    if (m_mtDebugOutput > 0) {
       G4cout << "MTMasterThread::stopThread: notify" << G4endl;
     }
     m_notifyMasterCV.notify_one();
     lk2.unlock();
 
-    if (m_mtDebugOutput) {
+    if (m_mtDebugOutput > 0) {
       G4cout << "Main thread: joining master thread" << G4endl;
     }
     m_masterThread.join();
-    if (m_mtDebugOutput) {
+    if (m_mtDebugOutput > 0) {
       G4cout << "MTMasterThread::stopThread: main thread finished" << G4endl;
     }
     m_stopped = true;

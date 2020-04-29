@@ -21,7 +21,6 @@ source: {
     showerAreaExtension  : 10000
     maxEvents: -1
     @table::targetParams
-    seed: 1
     resample: false
     compact: true
     fluxConstant: 1.8e4

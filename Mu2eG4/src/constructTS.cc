@@ -1877,9 +1877,9 @@ namespace mu2e {
 	    G4cout << "pbarWedgeTrans = " << pbarWedgeTrans << G4endl;
 	  }
 	  pbarWedgeInfo.solid = stairCase;
-	  
+	  G4Material* wedgeMaterial  = findMaterialOrThrow(pbarWindow.wedgeMaterial()); //defaults to window material if not specified
 	  finishNesting(pbarWedgeInfo,
-			pbarMaterial,
+			wedgeMaterial,
 			pbarWedgeRot,
 			pbarWedgeTrans,
 			parent.logical,
