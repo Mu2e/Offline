@@ -39,6 +39,9 @@ namespace mu2e {
       fhicl::Atom<int> PiENuPolicyVerbosity {Name("PiENuPolicyVerbosity"), 0};
       fhicl::Atom<int> mtDebugOutput {Name("mtDebugOutput"), 0};
 
+      fhicl::Atom<bool> preCreateIsomers {Name("preCreateIsomers"), false};
+      fhicl::Atom<int> pdgIdToGenerate {Name("pdgIdToGenerate"), -1111111111};
+
       fhicl::Atom<int> checkFieldMap {Name("checkFieldMap"), 0 };
 
       fhicl::Atom<bool> printElements {Name("printElements"), Comment("Print elements from constructMaterials()")};
