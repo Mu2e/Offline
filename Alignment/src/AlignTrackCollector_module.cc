@@ -69,8 +69,8 @@
 #include "fhiclcpp/types/Table.h"                      // for Table::me...
 #include "fhiclcpp/types/detail/validationException.h" // for validatio...
 
-#include "Alignment/inc/Mille.h"               // for Mille
 #include "Alignment/inc/AlignmentDerivatives.hh" // for CosmicTra...
+#include "Alignment/inc/Mille.h"                 // for Mille
 
 namespace art {
 class Run;
@@ -115,9 +115,11 @@ private:
   Int_t planes_trav;
 
 public:
-  const size_t _dof_per_plane = 6; // dx, dy, dz, a, b, g (translation, rotation)
-  const size_t _dof_per_panel = 6; // dx, dy, dz, a, b, g (translation, rotation)
-  const size_t _ndof = StrawId::_nplanes * _dof_per_plane + StrawId::_nupanels * _dof_per_panel;
+  size_t _dof_per_plane = 6; // dx, dy, dz, a, b, g (translation, rotation)
+  size_t _dof_per_panel = 6; // dx, dy, dz, a, b, g (translation, rotation)
+  size_t _ndof = StrawId::_nplanes * _dof_per_plane + StrawId::_nupanels * _dof_per_panel;
+
+  size_t _expected_dofs = _dof_per_panel + _dof_per_plane;
 
   struct Config {
     using Name = fhicl::Name;
@@ -171,6 +173,11 @@ public:
         Comment("Write the alignment data in the time domain. i.e. measurement = Time "
                 "Residual, sigma = driftTimeError."),
         true};
+
+    fhicl::Atom<bool> nopaneldofs{Name("NoPanelDOFs"), Comment("remove panel DOFs"), true};
+
+    fhicl::Atom<bool> noplanerotations{Name("NoPlaneRotations"),
+                                       Comment("Remove Plane rotation DOFs"), true};
   };
   typedef art::EDAnalyzer::Table<Config> Parameters;
 
@@ -191,7 +198,19 @@ public:
       track_type(conf().tracktype()), min_plane_traverse(conf().minplanetraverse()),
       min_panel_traverse_per_plane(conf().minpaneltraverse()), max_pvalue(conf().maxpvalue()),
       min_doca(conf().mindoca()), max_timeres(conf().maxtimeres()),
-      min_track_hits(conf().mintrackhits()), use_timeresid(conf().usetimeresid()) {
+      min_track_hits(conf().mintrackhits()), use_timeresid(conf().usetimeresid()),
+      no_panel_dofs(conf().nopaneldofs()), no_plane_rotations(conf().noplanerotations()) {
+
+    if (no_panel_dofs) {
+      _dof_per_panel = 0;
+    }
+
+    if (no_plane_rotations) {
+      _dof_per_plane = 3;
+    }
+    _ndof = StrawId::_nplanes * _dof_per_plane + StrawId::_nupanels * _dof_per_panel;
+    _expected_dofs = _dof_per_panel + _dof_per_plane;
+
     if (_diag > 0) {
       std::cout << "AlignTrackCollector: Total number of plane degrees of freedom = "
                 << StrawId::_nplanes * _dof_per_plane << std::endl;
@@ -218,6 +237,8 @@ public:
   double max_timeres;
   int min_track_hits;
   bool use_timeresid;
+  bool no_panel_dofs;
+  bool no_plane_rotations;
 
   std::unique_ptr<Mille> millepede;
   const CosmicTrackSeedCollection* _coscol;
@@ -274,16 +295,16 @@ std::vector<int> AlignTrackCollector::generateDOFLabels(StrawId const& strw) {
   for (size_t dof_n = 0; dof_n < _dof_per_plane; dof_n++) {
     labels.push_back(getLabel(1, strw.getPlane(), dof_n));
   }
-  for (size_t dof_n = 0; dof_n < _dof_per_panel; dof_n++) {
-    labels.push_back(getLabel(2, strw.getPanel(), dof_n));
-  }
 
+  if (!no_panel_dofs) {
+    for (size_t dof_n = 0; dof_n < _dof_per_panel; dof_n++) {
+      labels.push_back(getLabel(2, strw.getPanel(), dof_n));
+    }
+  }
   return labels; // should 'move' the vector, not copy it
 }
 
-void AlignTrackCollector::beginRun(art::Run const& run) {
-  return;
-}
+void AlignTrackCollector::beginRun(art::Run const& run) { return; }
 
 void AlignTrackCollector::endJob() {
   // ensure the binary Mille file is explicitly closed in endJob,
@@ -364,11 +385,10 @@ bool AlignTrackCollector::filter_CosmicTrackSeedCollection(
       auto const& wire_dir = straw.getDirection().unit();
 
       // now calculate the derivatives.
-      auto derivativesLocal =
-          CosmicTrack_DCA_LocalDeriv(A0, B0, A1, B1, T0, straw_mp.x(), straw_mp.y(), straw_mp.z(),
-                                     wire_dir.x(), wire_dir.y(), wire_dir.z(),
-                                     plane_origin.x(), plane_origin.y(), plane_origin.z(),
-                                     panel_origin.x(), panel_origin.y(), panel_origin.z());
+      auto derivativesLocal = CosmicTrack_DCA_LocalDeriv(
+          A0, B0, A1, B1, T0, straw_mp.x(), straw_mp.y(), straw_mp.z(), wire_dir.x(), wire_dir.y(),
+          wire_dir.z(), plane_origin.x(), plane_origin.y(), plane_origin.z(), panel_origin.x(),
+          panel_origin.y(), panel_origin.z());
 
       auto derivativesGlobal =
           CosmicTrack_DCA_GlobalDeriv(A0, B0, A1, B1, T0, straw_mp.x(), straw_mp.y(), straw_mp.z(),
@@ -432,8 +452,11 @@ bool AlignTrackCollector::filter_CosmicTrackSeedCollection(
       // a, b, g This is reflected also in the generated DOCA derivatives.
       std::vector<int> global_dof_labels = generateDOFLabels(straw_id);
 
-      if (_diag > 0 && global_dof_labels.size() != 12) {
-        throw cet::exception("RECO") << "Did not see 12 DOF labels ... Something is wrong!";
+      if (_diag > 0 && global_dof_labels.size() != _expected_dofs &&
+          derivativesGlobal.size() > _expected_dofs) {
+        throw cet::exception("RECO") << "Did not see " << _expected_dofs << " DOF labels"
+                                     << " or N of global derivatives was greater than "
+                                     << _expected_dofs << " ... Something is wrong!";
       }
 
       if (derivativesLocal.size() != 5 && use_timeresid) {
@@ -445,11 +468,11 @@ bool AlignTrackCollector::filter_CosmicTrackSeedCollection(
       // write the hit to the track buffer
       if (!use_timeresid) {
         // doca resid, doca resid error
-        millepede->mille(derivativesLocal.size(), derivativesLocal.data(), derivativesGlobal.size(),
+        millepede->mille(derivativesLocal.size(), derivativesLocal.data(), _expected_dofs,
                          derivativesGlobal.data(), global_dof_labels.data(), (float)resid_tmp,
                          (float)resid_err_tmp);
       } else {
-        millepede->mille(derivativesLocal.size(), derivativesLocal.data(), derivativesGlobal.size(),
+        millepede->mille(derivativesLocal.size(), derivativesLocal.data(), _expected_dofs,
                          derivativesGlobal.data(), global_dof_labels.data(), (float)time_resid,
                          (float)drift_res);
       }
