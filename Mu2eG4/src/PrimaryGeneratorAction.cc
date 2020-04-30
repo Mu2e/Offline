@@ -54,7 +54,6 @@ namespace mu2e {
   PrimaryGeneratorAction::PrimaryGeneratorAction(const Mu2eG4Config::Debug& debug,
                                                  Mu2eG4PerThreadStorage* tls)
     : verbosityLevel_(debug.diagLevel())
-    , preCreateIsomers_(debug.preCreateIsomers())
     , pdgIdToGenerate_(static_cast<PDGCode::type>(debug.pdgIdToGenerate()))
     , perThreadObjects_(tls)
   {
@@ -171,16 +170,6 @@ namespace mu2e {
     if ( verbosityLevel_ > 1) {
       cout << __func__ << " pdgId   : " <<pdgId << endl;
     }
-
-    //     static bool firstTime = true;
-    //     if (firstTime && preCreateIsomers_ ) { // use with caution
-    //#if G4VERSION<4099
-    //         G4ParticleTable::GetParticleTable()->GetIonTable()->CreateAllIon();
-    //#else
-    //         G4IonTable::GetIonTable()->GetIonTable()->CreateAllIon();
-    //#endif
-    //         firstTime = false;
-    //       }
 
     if (pdgId>PDGCode::G4Threshold) {
 
