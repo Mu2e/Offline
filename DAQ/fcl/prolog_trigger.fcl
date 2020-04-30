@@ -14,11 +14,13 @@ DAQ : {
 	 module_type     : ArtBinaryPacketsFromDigis
 	 strawDigiCollection : "makeSD"
 	 caloDigiCollection  : "CaloDigiFromShower"
+	 crvDigiCollection   : "CrvDigi"
 	 diagLevel       : 0
 	 maxFullPrint    : 0
 
 	 includeTracker : 1
 	 includeCalorimeter : 1
+	 includeCrv : 1
 	 includeDMAHeaders: 1
 
 	 generateTimestampTable : 0
@@ -26,9 +28,10 @@ DAQ : {
 	 timestampOffset        : 0
 
 	 generateBinaryFile : 1
+	 generateTextFile   : 0
 	 outputFile      : "DTC_packets.bin"
-	 maxDMABlockSize : 32000
-	 bufferSize      : 1000
+#	 maxDMABlockSize : 32000
+#	 bufferSize      : 1000
       }
       
       makeSD:
