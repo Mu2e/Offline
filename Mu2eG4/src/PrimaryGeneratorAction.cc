@@ -4,10 +4,6 @@
 // 1) testTrack - a trivial 1 track generator for debugging geometries.
 // 2) fromEvent - copies generated tracks from the event.
 //
-// $Id: PrimaryGeneratorAction.cc,v 1.51 2013/10/05 05:04:48 gandr Exp $
-// $Author: gandr $
-// $Date: 2013/10/05 05:04:48 $
-//
 // Original author Rob Kutschke
 //
 
@@ -34,6 +30,8 @@
 #include "Randomize.hh"
 #include "globals.hh"
 #include "G4Threading.hh"
+#include "G4IsotopeProperty.hh"
+#include "G4NuclideTable.hh"
 
 // Mu2e includes
 #include "ConfigTools/inc/SimpleConfig.hh"
@@ -51,14 +49,13 @@
 
 using namespace std;
 
-using CLHEP::Hep3Vector;
-using CLHEP::HepLorentzVector;
-
 namespace mu2e {
 
   PrimaryGeneratorAction::PrimaryGeneratorAction(const Mu2eG4Config::Debug& debug,
                                                  Mu2eG4PerThreadStorage* tls)
     : verbosityLevel_(debug.diagLevel())
+    , preCreateIsomers_(debug.preCreateIsomers())
+    , pdgIdToGenerate_(static_cast<PDGCode::type>(debug.pdgIdToGenerate()))
     , perThreadObjects_(tls)
   {
     if ( verbosityLevel_ > 0 ) {
@@ -122,39 +119,44 @@ namespace mu2e {
       }
     }
 
+    if ( pdgIdToGenerate_ != -1111111111 ) {
+      cout << __func__ << " *TESTING*: Adding *ONLY*  : " << pdgIdToGenerate_ << endl;
 
-    // a test
-    // int ovl = verbosityLevel_;
-    // verbosityLevel_ = 2;
-    // addG4Particle(event,
-    //               static_cast<PDGCode::type>(1000010048),
-    //               // Transform into G4 world coordinate system
-    //               G4ThreeVector()+mu2eOrigin,
-    //               0.0,
-    //               0.0,
-    //               G4ThreeVector());
-    // verbosityLevel_ = ovl;
+      // a test
+      int ovl = verbosityLevel_;
+      int govl = G4ParticleTable::GetParticleTable()->GetVerboseLevel();
+      verbosityLevel_ = 2;
+      G4ParticleTable::GetParticleTable()->SetVerboseLevel(verbosityLevel_);
+      addG4Particle(event,
+                    pdgIdToGenerate_,
+                    // Transform into G4 world coordinate system
+                    G4ThreeVector()+mu2eOrigin,
+                    0.0,
+                    0.0,
+                    G4ThreeVector());
+      verbosityLevel_ = ovl;
+      G4ParticleTable::GetParticleTable()->SetVerboseLevel(govl);
 
+    } else {
+      // Also create particles from the input hits
+      for(const auto& hitcoll : *hitInputs_) {
 
-    // Also create particles from the input hits
-    for(const auto& hitcoll : *hitInputs_) {
+        for(const auto& hit : *hitcoll) {
+          addG4Particle(event,
+                        hit.simParticle()->pdgId(),
+                        // Transform into G4 world coordinate system
+                        hit.position() + mu2eOrigin,
+                        hit.time(),
+                        hit.properTime(),
+                        hit.momentum());
 
-      for(const auto& hit : *hitcoll) {
-        addG4Particle(event,
-                      hit.simParticle()->pdgId(),
-                      // Transform into G4 world coordinate system
-                      hit.position() + mu2eOrigin,
-                      hit.time(),
-                      hit.properTime(),
-                      hit.momentum());
+          parentMapping_->addEntryFromStepPointMC(hit.simParticle()->id());
 
-        parentMapping_->addEntryFromStepPointMC(hit.simParticle()->id());
-
+        }
       }
+
     }
-
   }
-
 
   void PrimaryGeneratorAction::addG4Particle(G4Event *event,
                                              PDGCode::type pdgId,
@@ -170,8 +172,8 @@ namespace mu2e {
       cout << __func__ << " pdgId   : " <<pdgId << endl;
     }
 
-    //       static bool firstTime = true; // uncomment generate all nuclei ground states
-    //       if (firstTime) {
+    //     static bool firstTime = true;
+    //     if (firstTime && preCreateIsomers_ ) { // use with caution
     //#if G4VERSION<4099
     //         G4ParticleTable::GetParticleTable()->GetIonTable()->CreateAllIon();
     //#else
@@ -182,48 +184,63 @@ namespace mu2e {
 
     if (pdgId>PDGCode::G4Threshold) {
 
-      G4int ZZ,AA,LL,JJ;
+      G4int ZZ,AA,JJ;
       G4double EE;
 
       int exc = pdgId%10;
 
       // subtract exc to get Z,A,...
 
-      bool retCode = G4IonTable::GetNucleusByEncoding(pdgId-exc,ZZ,AA,LL,EE,JJ);
+      bool retCode = G4IonTable::GetNucleusByEncoding(pdgId-exc,ZZ,AA,EE,JJ);
 
       // if g4 complains about no GenericIon we need to abort and add it in the physics list...
 
       if ( verbosityLevel_ > 1) {
-        cout << __func__ << " will set up nucleus pdgId,Z,A,L,E,J, exc: "
+        cout << __func__ << " will set up nucleus pdgId,Z,A,E,J, exc: "
              << pdgId
-             << ", " << ZZ << ", " << AA << ", " << LL << ", " << EE << ", " << JJ
+             << ", " << ZZ << ", " << AA << ", " << EE << ", " << JJ
              << ", " << exc << ", " << retCode
              << endl;
       }
 
-      G4ParticleDefinition const * pDef;
-
-      G4double excEnergy = 0.001;
-      // for an excited state; we will fudge it by adding 1keV regardles of the isomer level
+      G4ParticleDefinition const * pDef = nullptr;
 
       if (exc==0) {
 
         // a ground state
 
 #if G4VERSION<4099
-        pDef = G4ParticleTable::GetParticleTable()->GetIon(ZZ,AA,LL,0.0);
+        pDef = G4ParticleTable::GetParticleTable()->GetIon(ZZ,AA,0.0);
 #else
-        pDef = G4IonTable::GetIonTable()->GetIon(ZZ,AA,LL,0.0);
+        pDef = G4IonTable::GetIonTable()->GetIon(ZZ,AA,0.0);
 #endif
         // looks like spin is ignored and should never be non zero...
 
       } else {
 
-#if G4VERSION<4099
-        pDef = G4ParticleTable::GetParticleTable()->GetIon(ZZ,AA,LL,excEnergy);
-#else
-        pDef = G4IonTable::GetIonTable()->GetIon(ZZ,AA,LL,excEnergy);
-#endif
+        G4NuclideTable* pNuclideTable = G4NuclideTable::GetNuclideTable();
+        // for some reason G4NuclideTable::GetIsotopeByIsoLvl does not return non 0 levels
+        // hopefully will not need to do it often or till the far end of the loop
+        for ( size_t i = 0 ; i != pNuclideTable->entries() ; ++i ) {
+          const G4IsotopeProperty*  pProperty = pNuclideTable->GetIsotopeByIndex( i );
+          if ( ZZ != pProperty->GetAtomicNumber() ) continue;
+          if ( AA != pProperty->GetAtomicMass()   ) continue;
+          G4double eExc  = pProperty->GetEnergy();
+          if (eExc <= 0.0) continue;
+          pDef = G4IonTable::GetIonTable()->GetIon(ZZ,AA,eExc);
+          // hopefully we'll find the right one
+          if ( pdgId != pDef->GetPDGEncoding() ) continue;
+          break;
+        }
+
+      }
+
+      // the ids should be the same
+      if ( !pDef || pdgId != pDef->GetPDGEncoding() ) {
+        if (pDef) {cout << __func__ << " got " << pDef->GetPDGEncoding() << " expected " << pdgId << endl;}
+        throw cet::exception("GENE")
+          << "Problem creating " << pdgId << "\n";
+
       }
 
       if ( verbosityLevel_ > 1) {
@@ -231,12 +248,6 @@ namespace mu2e {
              << pDef->GetParticleName()
              << " with id: " << pDef->GetPDGEncoding()
              << endl;
-      }
-      // the ids should be the same
-      if ( pdgId != pDef->GetPDGEncoding() ) {
-
-        throw cet::exception("GENE")
-          << "Problem creating " << pdgId << "\n";
       }
 
     }
