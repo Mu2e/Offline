@@ -118,7 +118,6 @@ mu2eg4DefaultDebug: {
     steppingVerbosityLevel : 0
     navigatorVerbosityLevel : 0
     navigatorCheckMode : false
-    preCreateIsomers : false
     pdgIdToGenerate : -1111111111 // change from  -1111111111 to activate for testing
     checkFieldMap : 0
     writeGDML : false
