@@ -100,9 +100,9 @@ namespace mu2e{
 	virtual void beginJob() override;
 	virtual void beginRun(art::Run& run) override;
 	virtual void produce(art::Event& event ) override;
-    
+
     private:
-    
+
 	Config _conf;
 
 	int 				_debug;
@@ -124,12 +124,12 @@ namespace mu2e{
 
 	CosmicTrackFit     _tfit;
 
-	ProditionsHandle<StrawResponse> _strawResponse_h; 
+	ProditionsHandle<StrawResponse> _strawResponse_h;
 
 	ProditionsHandle<Tracker> _alignedTracker_h;
         void     OrderHitsY(ComboHitCollection const&chcol, std::vector<StrawHitIndex> const&inputIdx, std::vector<StrawHitIndex> &outputIdxs);
 	int      goodHitsTimeCluster(const TimeCluster TCluster, ComboHitCollection chcol);
-   
+
 };
 
 
@@ -153,13 +153,13 @@ namespace mu2e{
 		consumes<TimeClusterCollection>(_tcToken);
                 mayConsume<CosmicTrackSeedCollection>(_lfToken);
 		produces<CosmicTrackSeedCollection>();
-	    
+
  	}
 
     CosmicTrackFinder::~CosmicTrackFinder(){}
 
     void CosmicTrackFinder::beginJob() {
-   
+
 	art::ServiceHandle<art::TFileService> tfs;
     }
 
@@ -177,7 +177,7 @@ namespace mu2e{
       int _iev=event.id().event();
       if (_debug > 0){
         std::cout<<"ST Finder Event #"<<_iev<<std::endl;
-      } 
+      }
 
       auto const& chH = event.getValidHandle<ComboHitCollection>(_chToken);
       const ComboHitCollection& chcol(*chH);
@@ -195,7 +195,7 @@ namespace mu2e{
         }
 
         std::vector<StrawHitIndex> panelHitIdxs;
-        OrderHitsY(chcol,tclust.hits(),panelHitIdxs); 
+        OrderHitsY(chcol,tclust.hits(),panelHitIdxs);
 
         int nFiltComboHits = 0;
         int nFiltStrawHits = 0;
@@ -212,7 +212,7 @@ namespace mu2e{
         if (nFiltComboHits < _minnch ) 	continue;
         if (nFiltStrawHits < _minnsh)          continue;
 
-       
+
         ostringstream title;
         title << "Run: " << event.id().run()
           << "  Subrun: " << event.id().subRun()
@@ -223,13 +223,13 @@ namespace mu2e{
           auto const& lfH = event.getValidHandle<CosmicTrackSeedCollection>(_lfToken);
           const CosmicTrackSeedCollection& lfcol(*lfH);
           if (lfcol.size() == 0) continue;
-          
+
           tseed = lfcol[0];
           double _interror = 40;
           double _direrror = 2.5;
           double _t0error = 1;
 
-          tseed._track.FitParams.Covarience.sigA0 = _interror; 
+          tseed._track.FitParams.Covarience.sigA0 = _interror;
 	  tseed._track.FitParams.Covarience.sigA1 = _direrror;
 	  tseed._track.FitParams.Covarience.sigB0 = _interror;
 	  tseed._track.FitParams.Covarience.sigB1 = _direrror;
@@ -252,7 +252,7 @@ namespace mu2e{
           }
         }
 
-        if (tseed._status.hasAnyProperty(TrkFitFlag::helixOK) && tseed._status.hasAnyProperty(TrkFitFlag::helixConverged) && tseed._track.converged == true ) { 
+        if (tseed._status.hasAnyProperty(TrkFitFlag::helixOK) && tseed._status.hasAnyProperty(TrkFitFlag::helixConverged) && tseed._track.converged == true ) {
 
           if (tseed.status().hasAnyProperty(_saveflag)){
 
@@ -272,19 +272,19 @@ namespace mu2e{
                   tmpHits.push_back(chit);
                 }
               }
-              tseed._straw_chits = tmpHits;
-              if (tseed._straw_chits.size() == 0)
+              //tseed._straw_chits = tmpHits;
+              if (tmpHits.size() == 0)
                 continue;
             }
 
             CosmicTrackSeedCollection* col = seed_col.get();
 
-            col->push_back(tseed);  
+            col->push_back(tseed);
           }
         }
       }
 
-      event.put(std::move(seed_col));    
+      event.put(std::move(seed_col));
     }
 
   void CosmicTrackFinder::OrderHitsY(ComboHitCollection const& chcol, std::vector<StrawHitIndex> const& inputIdxs, std::vector<StrawHitIndex> &outputIdxs){
@@ -304,21 +304,21 @@ namespace mu2e{
       outputIdxs.push_back(std::distance(chcol.begin(),thisiter));
     }
   }
-  
+
     int  CosmicTrackFinder::goodHitsTimeCluster(const TimeCluster TCluster, ComboHitCollection chcol){
 	int   nhits         = TCluster.nhits();
 	int   ngoodhits(0);
 	double     minT(500.), maxT(2000.);
 	for (int i=0; i<nhits; ++i){
 		int          index   = TCluster.hits().at(i);
-		ComboHit     sh      = chcol.at(index); 
+		ComboHit     sh      = chcol.at(index);
 		if ( (sh.time() < minT) || (sh.time() > maxT) )  continue;
 
 		ngoodhits += sh.nStrawHits();
 	}
 
 	return ngoodhits;
-  } 
+  }
 
 }
 using mu2e::CosmicTrackFinder;
