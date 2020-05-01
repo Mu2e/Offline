@@ -153,7 +153,7 @@ def main():
 
         plots = {}
         planeresid = None
-        df = events.pandas.df("*", namedecode="utf-8")
+        df = events.pandas.df("*", namedecode="utf-8", flatten=True)
 
         df['chisq_doca'] = df['chisq_doca'] / df['ndof']
 
