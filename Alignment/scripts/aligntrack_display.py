@@ -148,24 +148,21 @@ def main():
         allvars = {**variables_eventlevel, **variables_hitlevel}
 
         cuts = {
-           #"doca_cut": lambda df_ev,df_hit: (df_ev, df_hit[df_hit['doca'] > 0.15])
-           #"pval_cut": lambda df_ev,df_hit: (df_ev[df_ev['pvalue'] < 0.1], df_hit[df_hit['pvalue'] < 0.1])
+           #"doca_cut": lambda df: df[df['doca'] > 0.15]
         }
 
         plots = {}
         planeresid = None
-        df_evt_only = events.pandas.df("*", namedecode="utf-8", flatten=None)
-        df_hitlevel = events.pandas.df("*", namedecode="utf-8", flatten=True)
+        df = events.pandas.df("*", namedecode="utf-8")
 
-        df_evt_only['chisq_doca'] = df_evt_only['chisq_doca'] / df_evt_only['ndof']
+        df['chisq_doca'] = df['chisq_doca'] / df['ndof']
 
         for _, cut_fn in cuts.items():
-            df_evt_only, df_hitlevel = cut_fn(df_evt_only, df_hitlevel)
+            df = cut_fn(df)
 
         # N.B. residuals here are converted to microns
-        counts, edges = np.histogram(df_hitlevel["plane"], weights=(df_hitlevel["doca_resid"] * 1000.0), bins=36, range=(-0.5,35.5))
-        counts = np.divide(counts, np.histogram(df_hitlevel["plane"], bins=36, range=(-0.5,35.5))[0])
-
+        counts, edges = np.histogram(df["plane"], weights=(df["doca_resid"] * 1000.0), bins=36, range=(-0.5,35.5))
+        counts = np.divide(counts, np.histogram(df["plane"], bins=36, range=(-0.5,35.5))[0])
 
         if planeresid is None:
             planeresid = counts,edges
@@ -175,9 +172,9 @@ def main():
 
         for name, (bins, xmin, xmax,fitgauss) in allvars.items():
             if name in variables_hitlevel:
-                v = df_hitlevel[name]
+                v = df[name]
             else:
-                v = df_evt_only[name]
+                v = df[name][:,0] # one row per track
 
             counts, edges = np.histogram(v, bins=bins, range=(xmin,xmax))
 
