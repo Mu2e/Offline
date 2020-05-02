@@ -53,13 +53,13 @@ TNTClusterer : {
 }
 
 ScanClusterer: {
-    Pbin             : 0.1
+    Pbin             : 0.08
     Tbin             : 20
     Rbin             : 50 
     Rmin             : 350
     Rmax             : 650
-    MinPeakHit       : 2
-    MinSeedHit       : 3
+    MinPeakHit       : 3
+    MinSeedHit       : 2
     MinRadHit        : 50
     FilterAlgo       : 1
     TestFlag         : true

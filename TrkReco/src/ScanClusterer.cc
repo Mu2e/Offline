@@ -33,20 +33,30 @@ namespace mu2e
    void ScanClusterer::findClusters(BkgClusterCollection& preFilterClusters, BkgClusterCollection& postFilterClusters,
                                       const ComboHitCollection& chcol, float mbtime, int iev)
    {             
-        if (filterAlgo_==1) fastFilter1(preFilterClusters,chcol,mbtime);
-        if (filterAlgo_==2) fastFilter2(preFilterClusters,chcol,mbtime);
+       switch ( filterAlgo_ )
+       {
+         case 1:
+            fastFilter1(preFilterClusters,chcol,mbtime);
+            break;
+         case 2:
+            fastFilter2(preFilterClusters,chcol,mbtime);
+            break;
+        default:
+            throw cet::exception("RECO")<< "[ScanClusterer] Unknown filter option " << filterAlgo_<< std::endl;
+       }
    }
-   
    
    //----------------------------------------------------------------------------------------------------------------------
    void ScanClusterer::fastFilter1(BkgClusterCollection& clusters, const ComboHitCollection& chcol, const float mbtime)
    {                            
-       const unsigned nTimeBins = unsigned(mbtime/tbin_)+2;
-       const unsigned nPhiBins  = unsigned(2*M_PI/pbin_+1e-5)+1;
-       const unsigned nTotBins  = nTimeBins*nPhiBins;
-
-       std::vector<unsigned> timePhiHist(nTotBins,0), blindIdx(nTotBins,0);
-       std::vector<float>    radHist(nTotBins,0);      
+       const unsigned nTimeBins = unsigned(mbtime/tbin_)+1;
+       const unsigned nPhiBins  = unsigned(2*M_PI/pbin_)+1;
+       const unsigned nRadBins  = unsigned((rmax_-rmin_)/rbin_)+1;
+       const unsigned nRTBins   = nTimeBins*nRadBins;
+       const unsigned nTotBins  = nTimeBins*nRadBins*nPhiBins;
+    
+    
+       std::vector<short unsigned> timePhiHist(nTotBins,0);
        for (unsigned ich=0; ich<chcol.size();++ich)
        {
            const ComboHit& hit = chcol[ich];          
@@ -54,42 +64,31 @@ namespace mu2e
 
            unsigned pOffset = unsigned( (hit.phi()+M_PI)/pbin_);
            unsigned tOffset = unsigned( hit.time()/tbin_);
-           unsigned idx     =  tOffset + pOffset*nTimeBins;
-           timePhiHist[idx] += 1;  //we could make it nStrawHits here instead
-           radHist[idx] += sqrtf(hit.pos().perp2());
+           unsigned rOffset = unsigned( (sqrtf(hit.pos().perp2())-rmin_)/rbin_);
+           unsigned idx     = tOffset + rOffset*nTimeBins + pOffset*nRTBins;
+           timePhiHist[idx] += 1;
+       }
+ 
+
+       std::vector<short unsigned> blindIdx(nTotBins,0);
+       for (unsigned i=1;i<nTotBins-1;++i)
+       {
+           if (timePhiHist[i]<minPeakHit_) continue;
+                  
+           blindIdx[i]=1;
+
+           unsigned tidx = i%nTimeBins;
+           if (tidx>0)           blindIdx[i+1]=1;
+           if (tidx+1<nTimeBins) blindIdx[i-1]=1;
+
+           unsigned ridx = (i%nRTBins)/nTimeBins;
+           if (ridx>0)          blindIdx[i-nTimeBins]=1;
+           if (ridx+1<nRadBins) blindIdx[i+nTimeBins]=1;
+
+           blindIdx[(i+nRTBins+nTotBins)%nTotBins]=1;
+           blindIdx[(i-nRTBins+nTotBins)%nTotBins]=1;
        }
 
-       unsigned numCluster(1);
-       std::vector<float> radii{0};
-       for (unsigned idx=0;idx<nTotBins-1;++idx)
-       {          
-           if (timePhiHist[idx]<minSeedHit_) continue;
-
-           std::queue<unsigned> toProcess;
-           toProcess.emplace(idx);
-
-           float sumRad(0),sumNorm(0);
-           while (!toProcess.empty())
-           {             
-              unsigned j = toProcess.front();                          
-              if (timePhiHist[j] >= minPeakHit_)
-              {
-                  blindIdx[j] = numCluster;
-                  sumRad  += radHist[j];
-                  sumNorm += timePhiHist[j];    
-
-                  if (j%nTimeBins>0)           toProcess.emplace(j-1);
-                  if (j%nTimeBins+1<nTimeBins) toProcess.emplace(j+1);
-                  toProcess.emplace((j+nTimeBins+nTotBins)%nTotBins);
-                  toProcess.emplace((j-nTimeBins+nTotBins)%nTotBins);
-              } 
-
-              timePhiHist[j]=0;                     
-              toProcess.pop();
-           }
-           radii.push_back(sumRad/sumNorm);                    
-           ++numCluster;           
-       }
 
        //collect all preFiltered hits in a single cluster
        clusters.emplace_back(BkgCluster(XYZVec(0,0,0), 0));
@@ -98,24 +97,21 @@ namespace mu2e
            const ComboHit& hit = chcol[ich];          
            unsigned pOffset = unsigned( (hit.phi()+M_PI)/pbin_);
            unsigned tOffset = unsigned( hit.time()/tbin_);
-           unsigned idx     =  tOffset + pOffset*nTimeBins;
+           unsigned rOffset = unsigned( (sqrtf(hit.pos().perp2())-rmin_)/rbin_);
+           unsigned idx     = tOffset + rOffset*nTimeBins + pOffset*nRTBins;
            
-           if (blindIdx[idx]==0) continue;
-           
-           float dr = std::abs(sqrtf(hit.pos().perp2())-radii[blindIdx[idx]]);
-           
-           if (dr < minRadHit_) clusters.back().addHit(ich);      
+//           if (timePhiHist[idx]>minPeakHit_) clusters.back().addHit(ich);
+           if (blindIdx[idx]>0) clusters.back().addHit(ich);
        }        
    }
-
 
 
    //----------------------------------------------------------------------------------------------------------------------
    void ScanClusterer::fastFilter2(BkgClusterCollection& clusters, const ComboHitCollection& chcol, const float mbtime)
    {                            
        const unsigned nTimeBins = unsigned(mbtime/tbin_)+1;
-       const unsigned nPhiBins  = unsigned(2*M_PI/pbin_+1e-5)+1;
-       const unsigned nRadBins  = unsigned((rmax_-rmin_)/rbin_);
+       const unsigned nPhiBins  = unsigned(2*M_PI/pbin_)+1;
+       const unsigned nRadBins  = unsigned((rmax_-rmin_)/rbin_)+1;
        const unsigned nRTBins   = nTimeBins*nRadBins;
        const unsigned nTotBins  = nTimeBins*nRadBins*nPhiBins;
     
@@ -134,18 +130,18 @@ namespace mu2e
        }
  
        int numCluster(1);
-       for (unsigned idx=0;idx<nTotBins-1;++idx){
-
+       for (unsigned idx=0;idx<nTotBins-1;++idx)
+       {
            if (timePhiHist[idx]<minSeedHit_) continue;
 
            std::queue<unsigned> toProcess;
            toProcess.emplace(idx);
 
-           while (!toProcess.empty()){          
-
+           while (!toProcess.empty())
+           {          
               unsigned j = toProcess.front();                          
-              if (timePhiHist[j] >= minPeakHit_) {
-
+              if (timePhiHist[j] >= minPeakHit_)
+              {
                   blindIdx[j] = numCluster;
 
                   //look at neighboring time cells
@@ -182,6 +178,7 @@ namespace mu2e
            if (blindIdx[idx]>0) clusters.back().addHit(ich);
        }        
    }
+
 
 }
 
