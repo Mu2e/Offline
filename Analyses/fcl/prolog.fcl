@@ -32,12 +32,14 @@ CaloClusterCompareOld : {
         CaloClusterCollection : CaloClusterFast
 }
 
-RPCAnalyser : {
+RPCAnalyzer : {
   module_type : RPCAna
   GenParticleCollection : "generate"  
-  StepPointMCCollection : "stopFilter"
-  SimParticleCollection : "g4run"
-
+  StepPointMCCollection : "stopFilter:virtualdetector"
+  SimParticleCollection : "stopFilter"
+  hitCollections: [ "stopFilter:vacuuas1", "stopFilter:vacuuas2" ]
+  writeProperTime: true
+  decayOffPDGCodes: [ -211, 211 ]
  }
   RPCAna : {
     analyzers : {
