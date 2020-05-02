@@ -32,6 +32,8 @@
 #include "GlobalConstantsService/inc/PhysicsParams.hh"
 
 #include "TTree.h"
+#include "TH2F.h"
+#include "TH1F.h"
 
 #include <algorithm>
 #include <iterator>
@@ -41,25 +43,37 @@ namespace mu2e {
   namespace {
 
     typedef std::vector<StepPointMCCollection> VspMC;
-
+  
     // This should be minimal info, we'll want to load this
     // in memory in consumer jobs.  This is NOT an analysis ntuple!
     struct StopInfo {
       float x;
       float y;
       float z;
+      float px;
+      float py;
+      float pz;
+      float pt;
       float t;
       float tau; // proper time, for stopped pion weights
-
-      StopInfo() : x(), y(), z(), t(), tau() {}
+      ProcessCode code;
+      PDGCode::type id;
+      StopInfo() : x(), y(), z(), px(), py(), pz(), pt(), t(), tau(), code(), id() {}
 
       StopInfo(const art::Ptr<SimParticle>& p, const VspMC& spMCcolls, float tt)
         : x(p->endPosition().x())
         , y(p->endPosition().y())
         , z(p->endPosition().z())
+        , px(p->startMomentum().x())
+        , py(p->startMomentum().y())
+        , pz(p->startMomentum().z())
+        , pt(sqrt(p->startMomentum().x()*p->startMomentum().x()+p->startMomentum().y()*p->startMomentum().y()+p->startMomentum().z()*p->startMomentum().z()))
         , t(p->endGlobalTime())
         , tau(tt)
+        , code(p->stoppingCode())
+        , id(p->pdgId())
       {
+       
         if(!p->endDefined()) {
           throw cet::exception("BADINPUTS")
             <<"StoppedParticlesDumper: input SimParticle does not have end defined!\n";
@@ -132,7 +146,10 @@ namespace mu2e {
 
     TTree *nt_;
     StopInfo data_;
-
+    TH2F *pvz;
+    TH2F *tvz;
+    TH1F *weightedP;
+    TH1F *weightedZ;
     bool is_leave(const SimParticle& p);
     void process(const art::Ptr<SimParticle>& p, const VspMC& spMCcolls);
   };
@@ -157,12 +174,16 @@ namespace mu2e {
   //================================================================
   void StoppedParticlesDumper::beginJob() {
     art::ServiceHandle<art::TFileService> tfs;
-    std::string branchDesc("x/F:y/F:z/F:time/F");
+    std::string branchDesc("x/F:y/F:z/F:px/F:py/F:pz/F:pt/F:time/F:code/I:id/I");
     if(writeProperTime_) {
       branchDesc += ":tauNormalized/F";
     }
-    nt_ = tfs->make<TTree>( "stops", "Stopped particles ntuple");
-    nt_->Branch("stops", &data_, branchDesc.c_str());
+    nt_ = tfs->make<TTree>( "StoppedPions", "Stopped particles ntuple");
+    nt_->Branch("StoppedPions", &data_, branchDesc.c_str());
+    pvz = tfs->make<TH2F>("Total Mom v z [mm] ", "Total Mom v Z[mm]", 40, 5400, 6300, 100, 0, 100);
+    tvz = tfs->make<TH2F>("Global Time v Z [mm] ", "Global Time v Z[mm]", 40, 5400,6300, 100, 100, 700);
+		weightedZ =  tfs->make<TH1F>("Weighted Z", "Weighted MomZ", 40, 5400, 6300);
+    weightedP =  tfs->make<TH1F>("Weighted Mom", "Weighted Mom", 100, 0, 100);
   }
 
   //================================================================
@@ -197,8 +218,14 @@ namespace mu2e {
   //================================================================
   void StoppedParticlesDumper::process(const art::Ptr<SimParticle>& p, const VspMC& spMCColls) {
     const float tau = writeProperTime_ ? SimParticleGetTau::calculate(p,spMCColls,decayOffCodes_) : -1;
-    data_ = StopInfo(p, spMCColls, tau);
+     data_ = StopInfo(p, spMCColls, tau);
+     double weight = exp(-1*p->endProperTime()/tau);
+     pvz->Fill(p->endPosition().z(), (sqrt(p->startMomentum().x()*p->startMomentum().x()+p->startMomentum().y()*p->startMomentum().y()+p->startMomentum().z()*p->startMomentum().z())));
+    tvz->Fill(p->endPosition().z(),p->endGlobalTime());
+    weightedP->Fill((sqrt(p->startMomentum().x()*p->startMomentum().x()+p->startMomentum().y()*p->startMomentum().y()+p->startMomentum().z()*p->startMomentum().z())));
+    weightedZ->Fill(p->endPosition().z(),weight);
     nt_->Fill();
+    
   }
 
   //================================================================
