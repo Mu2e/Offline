@@ -535,7 +535,7 @@ bool AlignTrackCollector::filter_CosmicTrackSeedCollection(
 
         continue;
       }
-      
+
       TMatrixD trp_resid_local_derivs_temp(resid_local_derivs);
       trp_resid_local_derivs_temp.T(); // H^T
 
@@ -543,6 +543,16 @@ bool AlignTrackCollector::filter_CosmicTrackSeedCollection(
       TMatrixD HC(nHits, 5); HC.Mult(resid_local_derivs, track_cov);
 
       TMatrixD HCH(nHits, nHits); HCH.Mult(HC, trp_resid_local_derivs_temp);
+
+
+      if (_diag > 0) {
+        meas_cov.Print();
+
+        std::cout << "Track Covariance:" << std::endl;
+
+        track_cov.Print();
+      }
+
       meas_cov -= HCH;                    // V - H C H^T - now holding residual cov
 
       if (_diag > 0) {
