@@ -505,30 +505,6 @@ bool AlignTrackCollector::filter_CosmicTrackSeedCollection(
       ++nHits;
     }
 
-    TMatrixD trp_resid_local_derivs_temp(resid_local_derivs);
-    trp_resid_local_derivs_temp.T(); // H^T
-    std::cout << "H dims are " << resid_local_derivs.GetNrows() << " x "
-          << resid_local_derivs.GetNcols() << std::endl;
-
-    std::cout << "H^T dims are " << trp_resid_local_derivs_temp.GetNrows() << " x "
-              << trp_resid_local_derivs_temp.GetNcols() << std::endl;
-
-    resid_local_derivs *= track_cov; // H C
-    std::cout << "H * C was OK" << std::endl;
-    std::cout << "HC dim is " << resid_local_derivs.GetNrows() << " x "
-          << resid_local_derivs.GetNcols() << std::endl;
-    resid_local_derivs *= trp_resid_local_derivs_temp; // H C H^T
-    meas_cov -= resid_local_derivs;                    // V - H C H^T - now holding residual cov
-
-    if (_diag > 0) {
-      meas_cov.Print(); // now holding residual cov
-    }
-    for (size_t i = 0; i < (size_t)nHits; ++i) {
-      millepede->mille(local_derivs_temp[i].size(), local_derivs_temp[i].data(), _expected_dofs,
-                       global_derivs_temp[i].data(), labels_temp[i].data(), residuals[i],
-                       (float)sqrt(meas_cov(i, i)));
-    }
-
     if (wrote_hits) {
       // number of hits - 5 track parameters
       ndof = sts._straw_chits.size() - 5;
@@ -561,8 +537,36 @@ bool AlignTrackCollector::filter_CosmicTrackSeedCollection(
 
         continue;
       }
+      TMatrixD trp_resid_local_derivs_temp(resid_local_derivs);
+      trp_resid_local_derivs_temp.T(); // H^T
+      std::cout << "H dims are " << resid_local_derivs.GetNrows() << " x "
+            << resid_local_derivs.GetNcols() << std::endl;
 
-      // Write the track buffer to file if we wrote a track
+      std::cout << "H^T dims are " << trp_resid_local_derivs_temp.GetNrows() << " x "
+                << trp_resid_local_derivs_temp.GetNcols() << std::endl;
+
+      resid_local_derivs *= track_cov; // H C
+      std::cout << "H * C was OK" << std::endl;
+      std::cout << "HC dim is " << resid_local_derivs.GetNrows() << " x "
+            << resid_local_derivs.GetNcols() << std::endl;
+      resid_local_derivs *= trp_resid_local_derivs_temp; // H C H^T
+      std::cout << "H * C * H^T was OK" << std::endl;
+
+
+      meas_cov -= resid_local_derivs;                    // V - H C H^T - now holding residual cov
+
+      if (_diag > 0) {
+        meas_cov.Print(); // now holding residual cov
+      }
+
+      // write hits to buffer
+      for (size_t i = 0; i < (size_t)nHits; ++i) {
+        millepede->mille(local_derivs_temp[i].size(), local_derivs_temp[i].data(), _expected_dofs,
+                        global_derivs_temp[i].data(), labels_temp[i].data(), residuals[i],
+                        (float)sqrt(meas_cov(i, i)));
+      }
+
+      // Write the track buffer to file
       millepede->end();
 
       if (_diag > 0) {
