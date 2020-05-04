@@ -515,7 +515,7 @@ bool AlignTrackCollector::filter_CosmicTrackSeedCollection(
     if (_diag > 0) {
       residual_cov.Print();
     }
-    for (size_t i = 0; i < nHits; ++i) {
+    for (size_t i = 0; i < (size_t)nHits; ++i) {
       millepede->mille(local_derivs_temp[i].size(), local_derivs_temp[i].data(), _expected_dofs,
                        global_derivs_temp[i].data(), labels_temp[i].data(), residuals[i],
                        (float)sqrt(residual_cov(i, i)));
