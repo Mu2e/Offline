@@ -366,6 +366,27 @@ bool AlignTrackCollector::filter_CosmicTrackSeedCollection(
     bool wrote_hits = false; // did we write any hits for the track?
     bool bad_track = false;
 
+    // V = cov( measurements )
+    TMatrixT<double> meas_cov(sts._straw_chits.size(), sts._straw_chits.size());
+    meas_cov.Zero();
+
+    // H = partial d (residuals)/ d (track params)
+    TMatrixT<double> resid_local_derivs(5, sts._straw_chits.size());
+    resid_local_derivs.Zero();
+
+    // C = cov ( track parameters )
+    TMatrixT<double> track_cov(5, 5, sts._track.MinuitParams.cov.data());
+
+    // R = cov( R ) = V - H C H^T
+    // = meas_cov -
+
+    std::vector<float> residuals;
+    TMatrixT<double> residual_cov;
+
+    std::vector<std::vector<float>> global_derivs_temp;
+    std::vector<std::vector<float>> local_derivs_temp;
+    std::vector<std::vector<int>> labels_temp;
+
     // get residuals and their derivatives with respect
     // to all local and global parameters
     // get also plane id hit by straw hits
@@ -467,19 +488,39 @@ bool AlignTrackCollector::filter_CosmicTrackSeedCollection(
 
       // write the hit to the track buffer
       if (!use_timeresid) {
-        // doca resid, doca resid error
-        millepede->mille(derivativesLocal.size(), derivativesLocal.data(), _expected_dofs,
-                         derivativesGlobal.data(), global_dof_labels.data(), (float)resid_tmp,
-                         (float)resid_err_tmp);
+        residuals.emplace_back(resid_tmp);
+        meas_cov(nHits, nHits) = pow(drift_res / 0.0625, 2);
       } else {
-        millepede->mille(derivativesLocal.size(), derivativesLocal.data(), _expected_dofs,
-                         derivativesGlobal.data(), global_dof_labels.data(), (float)time_resid,
-                         (float)drift_res);
+        residuals.emplace_back(time_resid);
+        meas_cov(nHits, nHits) = drift_res * drift_res;
       }
+
+      for (size_t col = 0; col < 5; ++col) { // FIXME!
+        resid_local_derivs(nHits, col) = derivativesLocal[col];
+      }
+
+      global_derivs_temp.push_back(derivativesGlobal);
+      local_derivs_temp.push_back(derivativesLocal);
+      labels_temp.push_back(global_dof_labels);
 
       wrote_hits = true;
       ++nHits;
     }
+
+    TMatrixT<double> trp_resid_local_derivs_temp;
+    trp_resid_local_derivs_temp.Transpose(resid_local_derivs);
+
+    residual_cov = meas_cov - resid_local_derivs * track_cov * trp_resid_local_derivs_temp;
+
+    if (_diag > 0) {
+      residual_cov.Print();
+    }
+    for (size_t i = 0; i < nHits; ++i) {
+      millepede->mille(local_derivs_temp[i].size(), local_derivs_temp[i].data(), _expected_dofs,
+                       global_derivs_temp[i].data(), labels_temp[i].data(), residuals[i],
+                       (float)sqrt(residual_cov(i, i)));
+    }
+
     if (wrote_hits) {
       // number of hits - 5 track parameters
       ndof = sts._straw_chits.size() - 5;
