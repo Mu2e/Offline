@@ -367,21 +367,21 @@ bool AlignTrackCollector::filter_CosmicTrackSeedCollection(
     bool bad_track = false;
 
     // V = cov( measurements )
-    TMatrixT<double> meas_cov(sts._straw_chits.size(), sts._straw_chits.size());
+    TMatrixD meas_cov(sts._straw_chits.size(), sts._straw_chits.size());
     meas_cov.Zero();
 
     // H = partial d (residuals)/ d (track params)
-    TMatrixT<double> resid_local_derivs(sts._straw_chits.size(), 5);
+    TMatrixD resid_local_derivs(sts._straw_chits.size(), 5);
     resid_local_derivs.Zero();
 
     // C = cov ( track parameters )
-    TMatrixT<double> track_cov(5, 5, sts._track.MinuitParams.cov.data());
+    TMatrixD track_cov(5, 5, sts._track.MinuitParams.cov.data());
 
     // R = cov( R ) = V - H C H^T
     // = meas_cov -
 
     std::vector<float> residuals;
-    TMatrixT<double> residual_cov;
+    TMatrixD residual_cov;
 
     std::vector<std::vector<float>> global_derivs_temp;
     std::vector<std::vector<float>> local_derivs_temp;
@@ -507,9 +507,9 @@ bool AlignTrackCollector::filter_CosmicTrackSeedCollection(
       ++nHits;
     }
 
-    TMatrixT<double> trp_resid_local_derivs_temp;
-    trp_resid_local_derivs_temp.Transpose(resid_local_derivs);
-
+    TMatrixD trp_resid_local_derivs_temp(resid_local_derivs);
+    trp_resid_local_derivs_temp.T();
+    
     residual_cov = meas_cov - resid_local_derivs * track_cov * trp_resid_local_derivs_temp;
 
     if (_diag > 0) {
