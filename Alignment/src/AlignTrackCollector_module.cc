@@ -371,7 +371,7 @@ bool AlignTrackCollector::filter_CosmicTrackSeedCollection(
     meas_cov.Zero();
 
     // H = partial d (residuals)/ d (track params)
-    TMatrixT<double> resid_local_derivs(5, sts._straw_chits.size());
+    TMatrixT<double> resid_local_derivs(sts._straw_chits.size(), 5);
     resid_local_derivs.Zero();
 
     // C = cov ( track parameters )
@@ -575,7 +575,7 @@ bool AlignTrackCollector::filter_CosmicTrackSeedCollection(
 bool filter_CosmicKalSeedCollection(art::Event const& event, Tracker const& tracker,
                                     StrawResponse const& _srep,
                                     CosmicTrackSeedCollection const& coscol) {
-  // Futureproofing... Although I think it would make a lot more sense to move mp-II kalman
+  // Futureproofing... although it probably makes sense to move mp-II kalman
   // track collection to its own module
   return false;
 }
