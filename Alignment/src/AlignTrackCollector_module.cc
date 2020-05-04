@@ -92,6 +92,7 @@ private:
   Int_t nHits;
   Float_t doca_residual[MAX_NHITS];
   Float_t time_residual[MAX_NHITS];
+  Float_t residual_err[MAX_NHITS];
   Float_t doca_resid_err[MAX_NHITS];
   Float_t drift_reso[MAX_NHITS];
 
@@ -265,6 +266,8 @@ void AlignTrackCollector::beginJob() {
     diagtree->Branch("time_resid", &time_residual, "time_resid[nHits]/F");
     diagtree->Branch("doca_resid_err", &doca_resid_err, "doca_resid_err[nHits]/F");
     diagtree->Branch("drift_res", &drift_reso, "drift_res[nHits]/F");
+
+    diagtree->Branch("resid_err", &residual_err, "resid_err[nHits]/F");
 
     diagtree->Branch("pull_doca", &pull_doca, "pull_doca[nHits]/F");
     diagtree->Branch("pull_hittime", &pull_hittime, "pull_doca[nHits]/F");
@@ -571,9 +574,10 @@ bool AlignTrackCollector::filter_CosmicTrackSeedCollection(
 
       // write hits to buffer
       for (size_t i = 0; i < (size_t)nHits; ++i) {
+        residual_err[i] = sqrt(meas_cov(i, i));
         millepede->mille(local_derivs_temp[i].size(), local_derivs_temp[i].data(), _expected_dofs,
                         global_derivs_temp[i].data(), labels_temp[i].data(), residuals[i],
-                        (float)sqrt(meas_cov(i, i)));
+                        residual_err[i]);
       }
 
       // Write the track buffer to file
