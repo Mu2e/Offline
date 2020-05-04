@@ -260,6 +260,8 @@ namespace MinuitDriftFitter{
 
       if (min.HasValidCovariance()){
         tseed._track.MinuitParams.cov = min.UserCovariance().Data();
+		if (tseed._track.MinuitParams.cov.size() != 25)
+			std::cout << "Minuit Params covariance matrix does not have 25 elements..." << std::endl;
       }else{
         tseed._track.MinuitParams.cov = std::vector<double>(15,0);
       }
