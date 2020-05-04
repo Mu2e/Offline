@@ -380,10 +380,12 @@ bool AlignTrackCollector::filter_CosmicTrackSeedCollection(
     // C = cov ( track parameters )
     // FIXME! 
     ROOT::Minuit2::MnUserCovariance cov(sts._track.MinuitParams.cov, 5);
-    TMatrixDSym track_cov(5, 5);
+    TMatrixD track_cov(5, 5);
     for (size_t r = 0; r < 5; r++)
       for (size_t c = 0; c < 5; c++)
         track_cov(r,c) = cov(r,c);
+
+    std::cout << "Constructed track covariance...?" << std::endl;
 
     // R = cov( R ) = V - H C H^T
     // = meas_cov -
