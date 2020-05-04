@@ -161,8 +161,7 @@ namespace mu2e
         size_t nStepPoints=crvStepPointMCCollection->size();
         for(size_t i=0; i<nStepPoints; i++)
         {
-          if(crvStepPointMCCollection->at(i).simParticle()->id().asInt()==0 //only sim particles with ID 0
-             && crvStepPointMCCollection->at(i).position().y()>=2653) //only step points at the CRV top
+          if(crvStepPointMCCollection->at(i).simParticle()->id().asInt()==0) //only sim particles with ID 0
           {
             if(crvStepPointMCCollection->at(i).time()<earliestTime || isnan(earliestTime))
             {
@@ -182,35 +181,34 @@ namespace mu2e
               planeKineticEnergy=sqrt(momentum*momentum+105.7*105.7)-105.7;
 
               dataSource=1;
+              if(crvStepPointMCCollection->at(i).position().y()>=2637) dataSource=2;
             }
           }
         }
       }
-      if(dataSource==0)  //StepPoints not found for this event
+      if(dataSource==0 && mcTrajectoryCollection.isValid())  //StepPoints not found for this event
       {
-        if(mcTrajectoryCollection.isValid())
+        std::map<art::Ptr<mu2e::SimParticle>,mu2e::MCTrajectory>::const_iterator trajectoryIter;
+        for(trajectoryIter=mcTrajectoryCollection->begin(); trajectoryIter!=mcTrajectoryCollection->end(); trajectoryIter++)
         {
-          std::map<art::Ptr<mu2e::SimParticle>,mu2e::MCTrajectory>::const_iterator trajectoryIter;
-          for(trajectoryIter=mcTrajectoryCollection->begin(); trajectoryIter!=mcTrajectoryCollection->end(); trajectoryIter++)
+//          if(trajectoryIter->first->id().asInt()==0)  //sim particle with ID 0, but doesn't work, because it's the second stage
+          if(trajectoryIter->second.simid()==300001) //seems to point to the primary
           {
-            if(trajectoryIter->first->id().asInt()==0)  //sim particle with ID 0
+            const std::vector<MCTrajectoryPoint> &points = trajectoryIter->second.points();
+            if(points.size()>=2 && abs(trajectoryIter->first->pdgId())==13)
             {
-              const std::vector<MCTrajectoryPoint> &points = trajectoryIter->second.points();
-              if(points.size()>=2)
-              {
-                pdgId=trajectoryIter->first->pdgId();
-                primaryPos=trajectoryIter->first->startPosition();
-                primaryEnergy=trajectoryIter->first->startMomentum().e();
-                double fraction=(crvPlaneY-points[1].pos().y())/(points[0].pos().y()-points[1].pos().y());
-                planePos=fraction*(points[0].pos()-points[1].pos())+points[1].pos();
-                planeDir=(points[1].pos()-points[0].pos()).unit();
-                planeTime=fraction*(points[0].t()-points[1].t())+points[1].t();
-                planeKineticEnergy=points[0].kineticEnergy();  //use Ekin of first point
+              pdgId=trajectoryIter->first->pdgId();
+              primaryPos=trajectoryIter->first->startPosition();
+              primaryEnergy=trajectoryIter->first->startMomentum().e();
+              double fraction=(crvPlaneY-points[1].pos().y())/(points[0].pos().y()-points[1].pos().y());
+              planePos=fraction*(points[0].pos()-points[1].pos())+points[1].pos();
+              planeDir=(points[1].pos()-points[0].pos()).unit();
+              planeTime=fraction*(points[0].t()-points[1].t())+points[1].t();
+              planeKineticEnergy=points[0].kineticEnergy();  //use Ekin of first point
               
-                dataSource=2;
-              }
-              break;
+              dataSource=3;
             }
+            break;
           }
         }
       }
