@@ -23,8 +23,7 @@
 #include "GeneralUtilities/inc/BitMap.hh"
 #include "GeometryService/inc/GeomHandle.hh"
 #include "Mu2eUtilities/inc/TwoLinePCA.hh"
-#include "RtypesCore.h"
-#include "TTree.h"
+
 #include "boost/math/distributions/chi_squared.hpp"
 #include "boost/math/distributions/normal.hpp"
 
@@ -55,6 +54,9 @@
 
 #include "TAxis.h" // for TAxis
 #include "TH1F.h"  // for TH1F
+#include "RtypesCore.h"
+#include "TMatrixDSym.h"
+#include "TTree.h"
 
 #include "canvas/Utilities/Exception.h" // for Exception
 #include "canvas/Utilities/InputTag.h"  // for InputTag
@@ -375,7 +377,7 @@ bool AlignTrackCollector::filter_CosmicTrackSeedCollection(
     resid_local_derivs.Zero();
 
     // C = cov ( track parameters )
-    TMatrixD track_cov(5, 5, sts._track.MinuitParams.cov.data());
+    TMatrixDSym track_cov(5, 5, sts._track.MinuitParams.cov.data());
 
     // R = cov( R ) = V - H C H^T
     // = meas_cov -
