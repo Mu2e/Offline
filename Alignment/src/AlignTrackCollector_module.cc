@@ -22,6 +22,7 @@
 #include "CosmicReco/inc/PDFFit.hh"
 #include "GeneralUtilities/inc/BitMap.hh"
 #include "GeometryService/inc/GeomHandle.hh"
+#include "Minuit2/MnUserCovariance.h"
 #include "Mu2eUtilities/inc/TwoLinePCA.hh"
 
 #include "boost/math/distributions/chi_squared.hpp"
@@ -377,7 +378,12 @@ bool AlignTrackCollector::filter_CosmicTrackSeedCollection(
     resid_local_derivs.Zero();
 
     // C = cov ( track parameters )
-    TMatrixDSym track_cov(5, 5, sts._track.MinuitParams.cov.data());
+    // FIXME! 
+    ROOT::Minuit2::MnUserCovariance cov(sts._track.MinuitParams.cov, 5);
+    TMatrixDSym track_cov(5, 5);
+    for (size_t r = 0; r < 5; r++)
+      for (size_t c = 0; c < 5; c++)
+        track_cov(r,c) = cov(r,c);
 
     // R = cov( R ) = V - H C H^T
     // = meas_cov -
