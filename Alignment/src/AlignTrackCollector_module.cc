@@ -381,8 +381,6 @@ bool AlignTrackCollector::filter_CosmicTrackSeedCollection(
     // = meas_cov -
 
     std::vector<float> residuals;
-    TMatrixD residual_cov;
-
     std::vector<std::vector<float>> global_derivs_temp;
     std::vector<std::vector<float>> local_derivs_temp;
     std::vector<std::vector<int>> labels_temp;
@@ -508,17 +506,19 @@ bool AlignTrackCollector::filter_CosmicTrackSeedCollection(
     }
 
     TMatrixD trp_resid_local_derivs_temp(resid_local_derivs);
-    trp_resid_local_derivs_temp.T();
-    
-    residual_cov = meas_cov - resid_local_derivs * track_cov * trp_resid_local_derivs_temp;
+    trp_resid_local_derivs_temp.T(); // H^T
+
+    resid_local_derivs *= track_cov; // H C
+    resid_local_derivs *= trp_resid_local_derivs_temp; // H C H^T
+    meas_cov -= resid_local_derivs;// V - H C H^T - now holding residual cov
 
     if (_diag > 0) {
-      residual_cov.Print();
+      meas_cov.Print(); // now holding residual cov
     }
     for (size_t i = 0; i < (size_t)nHits; ++i) {
       millepede->mille(local_derivs_temp[i].size(), local_derivs_temp[i].data(), _expected_dofs,
                        global_derivs_temp[i].data(), labels_temp[i].data(), residuals[i],
-                       (float)sqrt(residual_cov(i, i)));
+                       (float)sqrt(meas_cov(i, i)));
     }
 
     if (wrote_hits) {
