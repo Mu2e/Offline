@@ -537,21 +537,27 @@ bool AlignTrackCollector::filter_CosmicTrackSeedCollection(
       }
       TMatrixD trp_resid_local_derivs_temp(resid_local_derivs);
       trp_resid_local_derivs_temp.T(); // H^T
+
       std::cout << "H dims are " << resid_local_derivs.GetNrows() << " x "
             << resid_local_derivs.GetNcols() << std::endl;
 
       std::cout << "H^T dims are " << trp_resid_local_derivs_temp.GetNrows() << " x "
                 << trp_resid_local_derivs_temp.GetNcols() << std::endl;
 
-      resid_local_derivs *= track_cov; // H C
+      // H C
+
+
+      // FIXME!
+      TMatrixD HC(nHits, 5); HC.Mult(resid_local_derivs, track_cov);
       std::cout << "H * C was OK" << std::endl;
-      std::cout << "HC dim is " << resid_local_derivs.GetNrows() << " x "
-            << resid_local_derivs.GetNcols() << std::endl;
+      std::cout << "HC dim is " << HC.GetNrows() << " x "
+            << HC.GetNcols() << std::endl;
       resid_local_derivs *= trp_resid_local_derivs_temp; // H C H^T
       std::cout << "H * C * H^T was OK" << std::endl;
 
+      TMatrixD HCH(nHits, nHits); HCH.Mult(HC, trp_resid_local_derivs_temp);
 
-      meas_cov -= resid_local_derivs;                    // V - H C H^T - now holding residual cov
+      meas_cov -= HCH;                    // V - H C H^T - now holding residual cov
 
       if (_diag > 0) {
         meas_cov.Print(); // now holding residual cov
