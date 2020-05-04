@@ -35,6 +35,8 @@ namespace mu2e
     {
       return simParticle.hasParent() ? *FindPrimaryParticle(simParticle.parent()) : simParticle;
     }
+
+    static const int _trajectorySimParticleId = 300001;  //only temporarily here for some tests
   };
 
 }

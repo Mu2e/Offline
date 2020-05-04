@@ -11,6 +11,9 @@
 #include "RecoDataProducts/inc/CrvRecoPulseCollection.hh"
 #include "art/Framework/Core/ModuleMacros.h"
 #include "art/Framework/Principal/Handle.h"
+#include "GlobalConstantsService/inc/GlobalConstantsHandle.hh"
+#include "GlobalConstantsService/inc/PhysicsParams.hh"
+#include "GlobalConstantsService/inc/ParticleDataTable.hh"
 
 namespace mu2e
 {
@@ -149,6 +152,10 @@ namespace mu2e
     }
 #else   //only a temporary section due to the missing trajectories at the CRV. needs to be deleted soon
     {
+      GlobalConstantsHandle<ParticleDataTable> pdt;
+      const HepPDT::ParticleData& mu_data = pdt->particle(PDGCode::mu_minus).ref();
+      const double _mMu = mu_data.mass().value();
+
       int pdgId=0;
       CLHEP::Hep3Vector primaryPos, planePos, planeDir;
       double primaryEnergy=NAN;
@@ -178,10 +185,10 @@ namespace mu2e
               earliestTime=planeTime;
 
               double momentum = crvStepPointMCCollection->at(i).momentum().mag();
-              planeKineticEnergy=sqrt(momentum*momentum+105.7*105.7)-105.7;
+              planeKineticEnergy=sqrt(momentum*momentum+_mMu*_mMu)-_mMu;
 
               dataSource=1;
-              if(crvStepPointMCCollection->at(i).position().y()>=2637) dataSource=2;
+              if(crvStepPointMCCollection->at(i).position().y()>=crvPlaneY) dataSource=2;
             }
           }
         }
@@ -192,7 +199,7 @@ namespace mu2e
         for(trajectoryIter=mcTrajectoryCollection->begin(); trajectoryIter!=mcTrajectoryCollection->end(); trajectoryIter++)
         {
 //          if(trajectoryIter->first->id().asInt()==0)  //sim particle with ID 0, but doesn't work, because it's the second stage
-          if(trajectoryIter->second.simid()==300001) //seems to point to the primary
+          if(trajectoryIter->second.simid()==_trajectorySimParticleId) //seems to point to the primary
           {
             const std::vector<MCTrajectoryPoint> &points = trajectoryIter->second.points();
             if(points.size()>=2 && abs(trajectoryIter->first->pdgId())==13)
