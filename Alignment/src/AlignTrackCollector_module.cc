@@ -529,8 +529,6 @@ bool AlignTrackCollector::filter_CosmicTrackSeedCollection(
           (pvalue > max_pvalue) || (max_time_res_track > max_timeres && max_timeres > 0) ||
           (nHits < min_track_hits) || bad_track) {
 
-        millepede->kill(); // delete track from buffer
-
         if (_diag > 0) {
           std::cout << "track failed quality cuts" << std::endl;
         }
