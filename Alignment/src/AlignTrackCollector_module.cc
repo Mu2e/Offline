@@ -431,7 +431,6 @@ bool AlignTrackCollector::filter_CosmicTrackSeedCollection(
 
       double resid_tmp = fit_object.DOCAresidual(straw_hit, sts);
       double time_resid = fit_object.TimeResidual(straw_hit, sts);
-      double resid_err_tmp = fit_object.DOCAresidualError(straw_hit, sts);
 
       // FIXME: crude! doesn't belong here!
       CLHEP::Hep3Vector intercept(A0, 0, B0);
@@ -441,6 +440,7 @@ bool AlignTrackCollector::filter_CosmicTrackSeedCollection(
 
       // FIXME! this is a time, not distance
       double drift_res = _srep.driftDistanceError(straw_hit.strawId(), 0, 0, pca.dca());
+      double resid_err_tmp = _srep.driftTimeToDistance(straw_hit.strawId(), drift_res, 0);//fit_object.DOCAresidualError(straw_hit, sts);
 
       // FIXME! use newly implemented chisq function in fit object
       chisq += pow(time_resid / drift_res, 2);
@@ -569,6 +569,7 @@ bool AlignTrackCollector::filter_CosmicTrackSeedCollection(
       meas_cov -= HCH;                    // V - H C H^T - now holding residual cov
 
       if (_diag > 0) {
+        std::cout << "Residual covariance:" << std::endl;
         meas_cov.Print(); // now holding residual cov
       }
 
@@ -578,6 +579,13 @@ bool AlignTrackCollector::filter_CosmicTrackSeedCollection(
         millepede->mille(local_derivs_temp[i].size(), local_derivs_temp[i].data(), _expected_dofs,
                         global_derivs_temp[i].data(), labels_temp[i].data(), residuals[i],
                         residual_err[i]);
+
+        if (isnan(residual_err[i]))
+        {
+          std::cout << "WARNING: sqrt of residual covariance matrix diagonal R_" << i <<","<< i << " was NaN! See matrix above." << std::endl;
+          std::cout << "track skipped" << std::endl;
+          continue;
+        }
       }
 
       // Write the track buffer to file
