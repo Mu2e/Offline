@@ -584,8 +584,15 @@ bool AlignTrackCollector::filter_CosmicTrackSeedCollection(
         {
           std::cout << "WARNING: sqrt of residual covariance matrix diagonal R_" << i <<","<< i << " was NaN! See matrix above." << std::endl;
           std::cout << "track skipped" << std::endl;
-          continue;
+          bad_track = true;
+          break;
         }
+      }
+
+      if (bad_track)
+      {
+        millepede->kill();
+        continue;
       }
 
       // Write the track buffer to file
