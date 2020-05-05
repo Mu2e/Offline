@@ -272,7 +272,7 @@ namespace mu2e{
                   tmpHits.push_back(chit);
                 }
               }
-              //tseed._straw_chits = tmpHits;
+              tseed._straw_chits = tmpHits;
               if (tmpHits.size() == 0)
                 continue;
             }
