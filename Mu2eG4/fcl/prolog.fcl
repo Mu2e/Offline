@@ -132,7 +132,7 @@ mu2eg4CutNeutrinos: {
 
 mu2eg4CutDeltaElectrons: {
    type: intersection
-   pars: [ { type: kineticEnergy cut: 1.0 }, { type: pdgId pars: [ 11 ] }]
+   pars: [ { type: kineticEnergy cut: 10.0 }, { type: pdgId pars: [ 11, -11 ] }]
 }
 
 #----------------------------------------------------------------

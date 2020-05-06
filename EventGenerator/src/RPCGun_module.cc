@@ -235,6 +235,8 @@ namespace mu2e {
       event.put(std::move(timemap));
 
       if(doHistograms_){
+        //CLHEP::HepLorentzVector mome, momp;
+        //pionCaptureSpectrum_.getElecPosiVectors(energy,mome,momp);
         _hElecMom ->Fill(mome.vect().mag());
         _hPosiMom ->Fill(momp.vect().mag());
 
