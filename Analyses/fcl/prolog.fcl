@@ -37,7 +37,7 @@ RPCAnalyzer : {
   GenParticleCollection : "generate"  
   StepPointMCCollection : "stopFilter:virtualdetector"
   SimParticleCollection : "stopFilter"
-  hitCollections: [ "stopFilter:vacuuas1", "stopFilter:vacuuas2" ]
+  hitCollections: [ "stopFilter:vacuuas1", "stopFilter:vacuuas2", "stopFilter:virtualdetector" ]
   writeProperTime: true
   decayOffPDGCodes: [ -211, 211 ]
  }
@@ -47,6 +47,17 @@ RPCAnalyzer : {
     }
   }
 
+GenAnalyzer : {
+ module_type : GenAna
+ GenParticleCollection : "generate"  
+}
+
+
+GenAna : {
+    analyzers : {
+      GenAnalyzer : @local::GenAnalyzer
+    }
+  }
 
 VirtualDetectorDefaults: {
 

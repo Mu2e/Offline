@@ -73,7 +73,9 @@ namespace mu2e{
         , scode(p->stoppingCode())
         , sid(p->pdgId())
       {
-       
+       if(sqrt(p->startMomentum().x()*p->startMomentum().x()+p->startMomentum().y()*p->startMomentum().y()+p->startMomentum().z()*p->startMomentum().z()) >60){
+          cout<<p->creationCode().name()<<endl;
+        }
         if(!p->endDefined()) {
           throw cet::exception("BADINPUTS")
             <<"StoppedParticlesDumper: input SimParticle does not have end defined!\n";
@@ -215,7 +217,7 @@ namespace mu2e{
       const StepPointMCCollection *_stepcol;
 
       typedef std::vector<StepPointMCCollection> VspMC;
-      VDHit hit1_, hit2_;
+      VDHit hit1_, hit2_, hit3_;
 
       TTree* _Ntup;
       Int_t _evt, _run, _nSim;
@@ -259,9 +261,11 @@ namespace mu2e{
 
     static const char spbranchDesc1[] = "x/F:y/F:z/F:time/F:px/F:py/F:pz/F:pmag/F:ek/F:charge/F:pdgId/I:particleId/i:volumeCopy/i";
     static const char spbranchDesc2[] = "x/F:y/F:z/F:time/F:px/F:py/F:pz/F:pmag/F:ek/F:charge/F:pdgId/I:particleId/i:volumeCopy/i";
+    static const char spbranchDesc3[] = "x/F:y/F:z/F:time/F:px/F:py/F:pz/F:pmag/F:ek/F:charge/F:pdgId/I:particleId/i:volumeCopy/i";
     _Ntup->Branch("simParticles", &data_, simbranchDesc.c_str());
     _Ntup->Branch("vacuuas1",  &hit1_, spbranchDesc1);
     _Ntup->Branch("vacuuas2",  &hit2_, spbranchDesc2);
+     _Ntup->Branch("virtualdetector",  &hit3_, spbranchDesc3);
      pvz = tfs->make<TH2F>("Total Mom v z [mm] ", "Total Mom v Z[mm]", 40, 5400, 6300, 100, 0, 100);
     tvz = tfs->make<TH2F>("Global Time v Z [mm] ", "Global Time v Z[mm]", 40, 5400,6300, 100, 100, 700);
 
@@ -277,7 +281,7 @@ void RPCAna::analyze(const art::Event& event) {
   throw cet::exception("RECO")<<"No data in  event"<< endl;
 
   ++_nProcess;
-  if (_nProcess%1000==0) std::cout<<"Processing event "<<_nProcess<<std::endl;
+  if (_nProcess%1000000==0) std::cout<<"Processing event "<<_nProcess<<std::endl;
 
   _nSim = _simcol->size();
 
@@ -298,6 +302,9 @@ void RPCAna::analyze(const art::Event& event) {
   }
   for (const auto& i : spMCColls[1]){
     hit2_ = VDHit(i);
+  }
+  for (const auto& i : spMCColls[2]){
+    hit3_ = VDHit(i);
   }
   _nSim = _simcol->size();
   _Ntup->Fill();
