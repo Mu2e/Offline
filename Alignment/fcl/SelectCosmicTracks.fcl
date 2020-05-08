@@ -72,7 +72,7 @@ services.scheduler.wantSummary: true
 
 physics.RecoPath : [ @sequence::TrkHitReco.PrepareHits, SimpleTimeCluster, LineFinder, CosmicTrackFinderTimeFit, AlignTrackSelector ]
 
-physics.outputs.CosTrackSelect.SelectEvents : [ RecoPath ]
+outputs.CosTrackSelect.SelectEvents : [ RecoPath ]
 
 physics.EndPath : [ CosmicTrackDiag, CosTrackSelect ]
 
