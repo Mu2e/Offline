@@ -43,7 +43,13 @@ physics :
 outputs : {
   Output :@local::Reconstruction.Output
 
-  
+  CosTrackSelect : {
+      module_type: RootOutput
+      fileName: "mcs.owner.AlignTrackSelector.version.sequencer.art"
+      SelectEvents: [ RecoPath ]
+
+      outputCommands :   [ "keep *_*_*_*" ]
+  }
 }
 
 
@@ -66,13 +72,7 @@ services.scheduler.wantSummary: true
 
 physics.RecoPath : [ @sequence::TrkHitReco.PrepareHits, SimpleTimeCluster, LineFinder, CosmicTrackFinderTimeFit, AlignTrackSelector ]
 
-physics.outputs.CosTrackSelect : {
-    module_type: RootOutput
-    fileName: "mcs.owner.AlignTrackSelector.version.sequencer.art"
-    SelectEvents: [ RecoPath ]
-
-    outputCommands :   [ "keep *_*_*_*" ]
-}
+physics.outputs.CosTrackSelect.SelectEvents : [ RecoPath ]
 
 physics.EndPath : [ CosmicTrackDiag, CosTrackSelect ]
 
