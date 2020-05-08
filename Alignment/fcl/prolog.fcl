@@ -5,7 +5,7 @@ BEGIN_PROLOG
     diagLevel : 1
 
     CosmicTrackSeedCollection : "CosmicTrackFinderTimeFit"
-    TrackDataOutputFile : "etc.owner.AlignTrackCollector.millepede-trackcollection-sequencer.root"
+    TrackDataOutputFile : "etc.owner.AlignTrackCollector.millepede-trackcollection-sequencer.bin"
     LabelsOutputFile : "labels.txt"
 
 
@@ -17,5 +17,22 @@ BEGIN_PROLOG
     MaxTimeRes : 10.0
     MinTrackSH: 10
 }
+
+
+ AlignTrackSelector : {
+    module_type		: AlignTrackSelector
+    diagLevel : 1
+
+    CosmicTrackSeedCollection : "CosmicTrackFinderTimeFit"
+
+    MinTraversedPlanes : 3
+    MaxPValue : 1
+    MinTraversedPanelsPerPlane : 0
+    MinDOCA : 0.0
+
+    MaxTimeRes : 10.0
+    MinTrackSH: 10
+}
+
 
 END_PROLOG
