@@ -8,6 +8,7 @@
 
  <class name="std::vector<std::pair<unsigned int, unsigned int> >"/>
 <!--  ********* cosmics  ********* -->
+ <class name="mu2e::CosmicTrack"/>
  <class name="mu2e::CosmicTrackSeed"/>
  <class name="mu2e::CosmicTrackSeedCollection"/>
  <class name="art::Ptr<mu2e::CosmicTrackSeed>"/>
