@@ -43,13 +43,7 @@ physics :
 outputs : {
   Output :@local::Reconstruction.Output
 
-  CosTrackSelect : {
-      module_type: RootOutput
-      fileName: "mcs.owner.AlignTrackSelector.version.sequencer.art"
-      SelectEvents: [ AlignTrackSelector ]
-
-      outputCommands :   [ "keep *_*_*_*" ]
-  }
+  
 }
 
 
@@ -69,8 +63,17 @@ physics.end_paths : [ EndPath ] # needed for generate_fcl
 
 services.scheduler.wantSummary: true
 
+
 physics.RecoPath : [ @sequence::TrkHitReco.PrepareHits, SimpleTimeCluster, LineFinder, CosmicTrackFinderTimeFit, AlignTrackSelector ]
 physics.EndPath : [ CosmicTrackDiag, CosTrackSelect ]
+
+physics.outputs.CosTrackSelect : {
+    module_type: RootOutput
+    fileName: "mcs.owner.AlignTrackSelector.version.sequencer.art"
+    SelectEvents: [ RecoPath ]
+
+    outputCommands :   [ "keep *_*_*_*" ]
+}
 
 physics.filters.AlignTrackSelector.CosmicTrackSeedCollection : "CosmicTrackFinderTimeFit"
 
