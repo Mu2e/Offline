@@ -70,7 +70,7 @@ physics.end_paths : [ EndPath ] # needed for generate_fcl
 services.scheduler.wantSummary: true
 
 physics.RecoPath : [ @sequence::TrkHitReco.PrepareHits, SimpleTimeCluster, LineFinder, CosmicTrackFinderTimeFit, AlignTrackSelector ]
-physics.EndPath : [ CosmicTrackDiag, outputFiles ]
+physics.EndPath : [ CosmicTrackDiag, CosTrackSelect ]
 
 physics.analyzers.CosmicTrackDiag.CosmicTrackSeedCollection : "CosmicTrackFinderTimeFit"
 physics.analyzers.CosmicTrackDiag.printLevel : 1
