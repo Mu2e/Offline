@@ -158,6 +158,8 @@ public:
       min_doca(conf().mindoca()), max_timeres(conf().maxtimeres()),
       min_track_hits(conf().mintrackhits()) {
 
+      consumes<CosmicTrackSeedCollection>(_costag);
+
   }
 
   virtual ~AlignTrackSelector() {}
