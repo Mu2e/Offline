@@ -52,10 +52,17 @@ GenAnalyzer : {
  GenParticleCollection : "generate"  
 }
 
+GenFilter : {
+ module_type : GenFilter
+ GenParticleCollection : "generate"  
+}
 
 GenAna : {
     analyzers : {
       GenAnalyzer : @local::GenAnalyzer
+    }
+    filters : {
+      GenFilter : @local::GenFilter
     }
   }
 
