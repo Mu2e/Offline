@@ -46,7 +46,7 @@ outputs : {
   CosTrackSelect : {
       module_type: RootOutput
       fileName: "mcs.owner.AlignTrackSelector.version.sequencer.art"
-      SelectEvents: [ RecoPath ]
+      SelectEvents: [ AlignTrackSelector ]
 
       outputCommands :   [ "keep *_*_*_*" ]
   }
@@ -71,6 +71,8 @@ services.scheduler.wantSummary: true
 
 physics.RecoPath : [ @sequence::TrkHitReco.PrepareHits, SimpleTimeCluster, LineFinder, CosmicTrackFinderTimeFit, AlignTrackSelector ]
 physics.EndPath : [ CosmicTrackDiag, CosTrackSelect ]
+
+physics.filters.AlignTrackSelector.CosmicTrackSeedCollection : "CosmicTrackFinderTimeFit"
 
 physics.analyzers.CosmicTrackDiag.CosmicTrackSeedCollection : "CosmicTrackFinderTimeFit"
 physics.analyzers.CosmicTrackDiag.printLevel : 1
