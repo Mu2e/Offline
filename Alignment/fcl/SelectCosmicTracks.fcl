@@ -10,7 +10,7 @@
 #include "Alignment/fcl/prolog.fcl"
 #include "Trigger/fcl/templates.fcl"
 
-process_name : recomcdigistrig
+process_name : CosmicAlignTrackSelector
 
 source : { module_type : RootInput }
 
