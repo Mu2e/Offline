@@ -65,7 +65,6 @@ services.scheduler.wantSummary: true
 
 
 physics.RecoPath : [ @sequence::TrkHitReco.PrepareHits, SimpleTimeCluster, LineFinder, CosmicTrackFinderTimeFit, AlignTrackSelector ]
-physics.EndPath : [ CosmicTrackDiag, CosTrackSelect ]
 
 physics.outputs.CosTrackSelect : {
     module_type: RootOutput
@@ -74,6 +73,9 @@ physics.outputs.CosTrackSelect : {
 
     outputCommands :   [ "keep *_*_*_*" ]
 }
+
+physics.EndPath : [ CosmicTrackDiag, CosTrackSelect ]
+
 
 physics.filters.AlignTrackSelector.CosmicTrackSeedCollection : "CosmicTrackFinderTimeFit"
 
