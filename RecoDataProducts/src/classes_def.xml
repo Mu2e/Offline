@@ -9,6 +9,12 @@
  <class name="std::vector<std::pair<unsigned int, unsigned int> >"/>
 <!--  ********* cosmics  ********* -->
  <class name="mu2e::CosmicTrack"/>
+ <class name="mu2e::TrackParams"/>
+ <class name="mu2e::TrackCov"/>
+ <class name="mu2e::TrackAxes"/>
+ <class name="mu2e::TrackEquation"/>
+ <class name="mu2e::TrackSeedDiag"/>
+
  <class name="mu2e::CosmicTrackSeed"/>
  <class name="mu2e::CosmicTrackSeedCollection"/>
  <class name="art::Ptr<mu2e::CosmicTrackSeed>"/>
