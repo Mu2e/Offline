@@ -106,7 +106,8 @@ produce( Event & event )
   size_t numTrkFrags(0), numCalFrags(0);
   if (parseTRK_){
     event.getByLabel(trkFragmentsTag_ , trkFragments);
-    if (!trkFragments.isValid()){            
+    if (!trkFragments.isValid()){       
+      std::cout << "[StrawAndCaloDigisFromFragments::produce] found no Tracker fragments!" << std::endl;
       event.put(std::move(straw_digis));
       return;
     }
@@ -115,6 +116,7 @@ produce( Event & event )
   if (parseCAL_){
     event.getByLabel(caloFragmentsTag_, calFragments);
     if (!calFragments.isValid()){
+      std::cout << "[StrawAndCaloDigisFromFragments::produce] found no Calorimeter fragments!" << std::endl;
       event.put(std::move(calo_digis));
       return;
     }
