@@ -308,9 +308,9 @@ double GaussianDriftFit::operator() (const std::vector<double> &x) const
     llike += pow(longdist-this->shs[i].wireDist(),2)/pow(longres,2);
 
     double drift_time = srep.driftDistanceToTime(this->shs[i].strawId(), pca.dca(), 0);
-    drift_time += srep.driftDistanceOffset(this->shs[i].strawId(), 0, 0, pca.dca());
+    drift_time += srep.driftTimeOffset(this->shs[i].strawId(), 0, 0, pca.dca());
 
-    double drift_res = srep.driftDistanceError(this->shs[i].strawId(), 0, 0, pca.dca());
+    double drift_res = srep.driftTimeError(this->shs[i].strawId(), 0, 0, pca.dca());
 
     double traj_time = ((pca.point2() - intercept).dot(dir))/299.9;
     double hit_t0 = this->shs[i].time() - this->shs[i].propTime() - traj_time - drift_time;
@@ -336,7 +336,7 @@ double GaussianDriftFit::DOCAresidual(ComboHit const& sh, const std::vector<doub
   Straw const& straw = tracker->getStraw(sh.strawId());
   TwoLinePCA pca(straw.getMidPoint(), straw.getDirection(), intercept, dir);
   double traj_time = ((pca.point2() - intercept).dot(dir))/299.9;
-  double hit_t0 = sh.propTime() + traj_time + t0 + srep.driftDistanceOffset(sh.strawId(), 0, 0, pca.dca());
+  double hit_t0 = sh.propTime() + traj_time + t0 + srep.driftTimeOffset(sh.strawId(), 0, 0, pca.dca());
 
   double predictedDistance = pca.dca();
   double measuredDistance = srep.driftTimeToDistance(sh.strawId(), sh.time()-hit_t0, 0);

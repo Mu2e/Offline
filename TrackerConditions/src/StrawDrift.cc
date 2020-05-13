@@ -83,6 +83,7 @@ namespace mu2e {
         index = i;
         break;
       }
+      index = i;
     }
 
     double lowerDist = _distances[index] + (time - _times[index*_phiBins+lowerPhiIndex])/(_times[(index+1)*_phiBins+lowerPhiIndex]-_times[index*_phiBins+lowerPhiIndex]) * _deltaD;

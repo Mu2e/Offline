@@ -75,7 +75,7 @@ class GaussianDriftFit : public ROOT::Minuit2::FCNBase {
 
     GaussianDriftFit(ComboHitCollection _shs, StrawResponse const& _srep, const Tracker* _tracker) : shs(_shs), srep(_srep), tracker(_tracker){}; 
 
-    double Up() const { return 0.5;};
+    double Up() const { return 1.0;};
     double operator() (const std::vector<double> &x) const;
 
     double DOCAresidual(ComboHit const& sh, CosmicTrackSeed const& tseed) const {
