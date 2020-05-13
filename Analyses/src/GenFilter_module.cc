@@ -90,7 +90,9 @@ namespace mu2e {
   for (unsigned int i=0; i <_gencol->size(); ++i)
   {
     GenParticle const& gen = (*_gencol)[i];
-    
+    CLHEP::Hep3Vector const&  p(gen.momentum().vect());
+    CLHEP::HepLorentzVector const& p4(gen.momentum());
+    double KE = ( p4.e() - p4.m() );
     
     if (!isfinite(KE)){ 
       _genPdgId   = gen.pdgId();
