@@ -14,8 +14,8 @@ namespace mu2e
    struct BkgCluster 
    {
        //Default hit count chosen for compuational efficiency
-       BkgCluster()                              : _pos(0.0,0.0,0.0), _time(0.0),  _hits(), _flag(BkgClusterFlag::update)  {_hits.reserve(16);}   
-       BkgCluster(XYZVec const& pos, float time) : _pos(pos),         _time(time), _hits(), _flag(BkgClusterFlag::update)  {_hits.reserve(16);}
+       BkgCluster()                              : _pos(),    _time(0.0),  _hits(), _flag(BkgClusterFlag::update)  {_hits.reserve(16);}   
+       BkgCluster(XYZVec const& pos, float time) : _pos(pos), _time(time), _hits(), _flag(BkgClusterFlag::update)  {_hits.reserve(16);}
 
        BkgClusterFlag const&        flag() const {return _flag; }
        XYZVec const&                pos()  const {return _pos;  }
