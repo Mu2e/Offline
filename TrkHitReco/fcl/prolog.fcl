@@ -52,6 +52,7 @@ TNTClusterer : {
     SignalMask       : ["TimeSelection", "EnergySelection","RadiusSelection"]
 }
 
+#FilterAlgo: 1 for next neighbor version, 2 for clustering version
 ScanClusterer: {
     Pbin             : 0.08
     Tbin             : 20
@@ -61,7 +62,7 @@ ScanClusterer: {
     MinPeakHit       : 3
     MinSeedHit       : 2
     MinRadHit        : 50
-    FilterAlgo       : 1
+    FilterAlgo       : 1   
     TestFlag         : true
     BackgroundMask   : []
     SignalMask       : ["TimeSelection", "EnergySelection","RadiusSelection"]
