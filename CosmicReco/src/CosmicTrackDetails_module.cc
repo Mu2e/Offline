@@ -309,12 +309,12 @@ namespace mu2e
 		_MinuitA0=(st.MinuitParams.A0);
 		_MinuitA1=(st.MinuitParams.A1);
 		_MinuitB1=(st.MinuitParams.B1);
-		_MinuitB0=(st.MinuitParams.B1);
+		_MinuitB0=(st.MinuitParams.B0);
 
 		_ErrorA0=(st.MinuitParams.deltaA0);
 		_ErrorA1=(st.MinuitParams.deltaA1);
 		_ErrorB1=(st.MinuitParams.deltaB1);
-		_ErrorB0=(st.MinuitParams.deltaB1);
+		_ErrorB0=(st.MinuitParams.deltaB0);
 
 		_FitCovA0  = st.MinuitParams.Covarience.sigA0;
 		_FitCovA1 = st.MinuitParams.Covarience.sigA1;
@@ -369,9 +369,9 @@ namespace mu2e
 					_RecoAmbig[_nused] = recoambig;
 					_FitDOCAs[_nused] = recoambig*fitdoca;
 					_RecoResiduals[_nused] = res ; 
-					_FitTOCAs[_nused] = fitdoca * 0.0625;
+					_FitTOCAs[_nused] = fitdoca / 0.0625;
 					_TrueDOCAs[_nused] = trueambig*truedoca;
-					_TrueTimeResiduals[_nused] = truedoca * 0.0625;
+					_TrueTimeResiduals[_nused] = truedoca / 0.0625;
 					_TrueAmbig[_nused] = trueambig;
 					_TrueResiduals[_nused] = trueres ; 
 					_MomentumSIM = trueinfo.TrueMomentum;

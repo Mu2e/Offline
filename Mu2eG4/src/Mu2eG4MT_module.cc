@@ -17,16 +17,15 @@
 #include "GeometryService/inc/WorldG4.hh"
 #include "Mu2eG4/inc/PhysicalVolumeHelper.hh"
 #include "ConfigTools/inc/ConfigFileLookupPolicy.hh"
-#include "SeedService/inc/SeedService.hh"
 #include "Mu2eG4/inc/Mu2eG4ResourceLimits.hh"
 #include "Mu2eG4/inc/Mu2eG4MultiStageParameters.hh"
 #include "Mu2eG4/inc/checkConfigRelics.hh"
-#include "Mu2eG4/inc/Mu2eG4MTRunManager.hh"
 #include "Mu2eG4/inc/Mu2eG4WorkerRunManager.hh"
 #include "Mu2eG4/inc/MTMasterThread.hh"
 #include "Mu2eG4/inc/SimParticleHelper.hh"
 #include "Mu2eG4/inc/SimParticlePrimaryHelper.hh"
 #include "Mu2eG4/inc/Mu2eG4Config.hh"
+#include "Mu2eG4/inc/Mu2eG4MTRunManager.hh"
 
 // Data products that will be produced by this module.
 #include "MCDataProducts/inc/GenParticleCollection.hh"
@@ -48,6 +47,7 @@
 
 // Geant4 includes
 #include "G4Run.hh"
+#include "G4VUserPhysicsList.hh"
 
 // C++ includes.
 #include <cstdlib>
@@ -124,7 +124,7 @@ namespace mu2e {
     std::unique_ptr<IMu2eG4Cut> commonCuts_;
 
     int _rmvlevel;
-    bool _mtDebugOutput;
+    int _mtDebugOutput;
 
     art::InputTag _generatorModuleLabel;
 
@@ -150,13 +150,11 @@ namespace mu2e {
     // pass the filtering in Mu2eG4EventAction
     int numExcludedEvents = 0;
 
-    CLHEP::HepJamesRandom _engine;
-
     int const num_schedules{art::Globals::instance()->nschedules()};
     int const num_threads{art::Globals::instance()->nthreads()};
 
     typedef tbb::concurrent_hash_map< std::thread::id, std::unique_ptr<Mu2eG4WorkerRunManager> > WorkerRMMap;
-    WorkerRMMap myworkerRunManagerMap;
+    WorkerRMMap myworkerRunManagerMap;    
   }; // end G4 header
 
 
@@ -187,10 +185,7 @@ namespace mu2e {
     timeVD_enabled_(pars().SDConfig().TimeVD().enabled()),
     physVolHelper_(),
     sensitiveDetectorHelper_(pars().SDConfig()),
-    standardMu2eDetector_((art::ServiceHandle<GeometryService>())->isStandardMu2eDetector()),
-
-    //NEED TO FIGURE OUT HOW TO CONNECT THIS ENGINE TO THE G4 ENGINE
-    _engine{art::ServiceHandle<SeedService>{}->getSeed()}
+    standardMu2eDetector_((art::ServiceHandle<GeometryService>())->isStandardMu2eDetector())
     {
       if((_generatorModuleLabel == art::InputTag()) && multiStagePars_.genInputHits().empty()) {
         throw cet::exception("CONFIG")
@@ -248,10 +243,6 @@ namespace mu2e {
       for (auto const& tag : multiStagePars_.genInputHits()) {
         consumes<StepPointMCCollection>(tag);
       }
-
-      // The string "G4Engine" is magic; see the docs for RandomNumberGenerator.
-      // This does not work in a Shared Module
-      //createEngine( art::ServiceHandle<SeedService>()->getSeed(), "G4Engine");
 
       G4cout << "WE WILL RUN " << num_schedules << " SCHEDULES" <<  G4endl;
     } // end Mu2eG4MT constructor
@@ -331,7 +322,7 @@ namespace mu2e {
 
   // Create one G4 event and copy its output to the art::event.
   void Mu2eG4MT::produce(art::Event& event, art::ProcessingFrame const& procFrame) {
-
+    
     art::Handle<GenParticleCollection> gensHandle;
     if(!(_generatorModuleLabel == art::InputTag())) {
       event.getByLabel(_generatorModuleLabel, gensHandle);
@@ -355,13 +346,10 @@ namespace mu2e {
     WorkerRMMap::accessor access_workerMap;
 
     if (!myworkerRunManagerMap.find(access_workerMap, tid)){
-      if (_mtDebugOutput){
+      if (_mtDebugOutput > 0){
         G4cout << "FOR TID: " << tid << ", NO WORKER.  We are making one.\n";
       }
       myworkerRunManagerMap.insert(access_workerMap, tid);
-      //std::ostringstream oss;
-      //oss << tid;
-      //std::string workerID = oss.str();
       access_workerMap->second = std::make_unique<Mu2eG4WorkerRunManager>(conf_, tid);
     }
 
@@ -373,7 +361,7 @@ namespace mu2e {
     Mu2eG4WorkerRunManager* scheduleWorkerRM = (access_workerMap->second).get();
     access_workerMap.release();
 
-    if (_mtDebugOutput){
+    if (_mtDebugOutput > 0){
       G4cout << "FOR SchedID: " << schedID << ", TID=" << tid << ", workerRunManagers[schedID].get() is:" << scheduleWorkerRM << "\n";
     }
 
@@ -387,7 +375,7 @@ namespace mu2e {
     perThreadStore->initializeEventInfo(&event, &spHelper, &parentHelper, &genInputHits, _generatorModuleLabel);
     scheduleWorkerRM->processEvent(&event);
 
-    if (_mtDebugOutput){
+    if (_mtDebugOutput > 0){
       G4cout << "Current Event in RM is: " << scheduleWorkerRM->GetCurrentEvent()->GetEventID() << "\n";
     }
 
@@ -421,45 +409,68 @@ namespace mu2e {
     }
 
     perThreadStore->clearData();
+    
     scheduleWorkerRM->TerminateOneEvent();
-
+    
   }//end Mu2eG4MT::produce
 
 
   // Tell G4 that this run is over.
   void Mu2eG4MT::endRun(art::Run & run, art::ProcessingFrame const& procFrame) {
-
-    G4cout << "At endRun, we have " << myworkerRunManagerMap.size() << " members in the map\n";
-    // KJK - should move this to endJob
-
-    std::atomic<int> threads_left = myworkerRunManagerMap.size();//num_threads;
-
-
+    
+    if (_mtDebugOutput > 1){
+      G4cout << "At endRun pt1, we have " << myworkerRunManagerMap.size() << " members in the map "
+             << "and are running " << num_threads << " threads.\n" ;
+    }
+    else if (num_threads < static_cast <int> (myworkerRunManagerMap.size()) && _mtDebugOutput > 0){
+      G4cout << "At endRun pt1, we have " << myworkerRunManagerMap.size() << " members in the map "
+             << "and are running " << num_threads << " threads.\n" ;
+    }
+    
+    
+    if (storePhysicsTablesDir_!="") {
+      if ( _rmvlevel > 0 ) {
+        G4cout << __func__ << " Will write out physics tables to "
+        << storePhysicsTablesDir_
+        << G4endl;
+      }
+      masterThread->masterRunManagerPtr()->getMasterPhysicsList()->StorePhysicsTable(storePhysicsTablesDir_);
+    }
+  
+    std::atomic<int> threads_left = num_threads;
     tbb::task_group g;
-    for (int i = 0; i < static_cast<int>(myworkerRunManagerMap.size()); ++i) {
-
-      auto destroy_worker = [&threads_left, this] {
+    for (int i = 0; i < num_threads; ++i) {
+        
+      auto destroy_worker = [&threads_left, i, this] {
         WorkerRMMap::accessor access_workerMap;
         std::thread::id this_tid = std::this_thread::get_id();
+          
         if (myworkerRunManagerMap.find(access_workerMap, this_tid)) {
           access_workerMap->second.reset();
+          myworkerRunManagerMap.erase(access_workerMap);
         }
+          
         access_workerMap.release();
         --threads_left;
         while (threads_left != 0) {}
         return;
       };
       g.run(destroy_worker);
-    }
+    }//for
     g.wait();
+    
+    if (_mtDebugOutput > 0){
+      G4cout << "At endRun pt2, we have " << myworkerRunManagerMap.size() << " members in the map.\n";
+    }
 
-    if (storePhysicsTablesDir_!="") {
-      if ( _rmvlevel > 0 ) {
-        G4cout << __func__ << " Will write out physics tables to "
-               << storePhysicsTablesDir_
-               << G4endl;
+    //This cleans up the worker run managers that are in threads no longer being used, i.e. 'transient threads'
+    WorkerRMMap::iterator it = myworkerRunManagerMap.begin();
+    while (it != myworkerRunManagerMap.end()) {
+      if (_mtDebugOutput > 0){
+        std::cout << "releasing RM for thread ID" << it->first << std::endl;
       }
-      //NEED TO ADD THIS BACK IN  physicsList_->StorePhysicsTable(storePhysicsTablesDir_);
+      it->second.release();
+      ++it;
     }
 
     G4cout << "at endRun: numExcludedEvents = " << numExcludedEvents << G4endl;

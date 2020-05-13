@@ -1,10 +1,7 @@
 //
 // Construct materials requested by the run-time configuration system.
 //
-// $Id: ConstructMaterials.cc,v 1.48 2014/09/04 14:22:45 knoepfel Exp $
-// $Author: knoepfel $
-// $Date: 2014/09/04 14:22:45 $
-//
+
 // Original author Rob Kutschke
 //
 // Notes:
@@ -29,6 +26,7 @@
 // Mu2e includes
 #include "Mu2eG4/inc/ConstructMaterials.hh"
 #include "Mu2eG4/inc/findMaterialOrThrow.hh"
+#include "Mu2eG4/inc/setBirksConstant.hh"
 #include "DetectorSolenoidGeom/inc/DetectorSolenoid.hh"
 #include "ProductionSolenoidGeom/inc/PSVacuum.hh"
 #include "GeometryService/inc/GeometryService.hh"
@@ -58,9 +56,10 @@ using namespace std;
 
 namespace mu2e {
 
-  ConstructMaterials::ConstructMaterials(const Mu2eG4Config::Debug& debug)
-    : printElements_(debug.printElements())
-    , printMaterials_(debug.printMaterials())
+  ConstructMaterials::ConstructMaterials(const Mu2eG4Config::Top& config)
+    : config_(config)
+    , printElements_(config.debug().printElements())
+    , printMaterials_(config.debug().printMaterials())
   {
     art::ServiceHandle<GeometryService> geom;
     mu2eStandardDetector_ = geom->isStandardMu2eDetector();
@@ -1525,8 +1524,8 @@ namespace mu2e {
     {
 
      G4Material* ProductionTargetTungstenLa2_O3 = new G4Material(mat.name
-								  ,18.75*CLHEP::g/CLHEP::cm3
-								  ,2);
+                                                                 ,18.75*CLHEP::g/CLHEP::cm3
+                                                                 ,2);
      constexpr double wPercentage = 99.;
 
      // first define lanthanum oxide
@@ -1540,6 +1539,8 @@ namespace mu2e {
      ProductionTargetTungstenLa2_O3->AddMaterial(La2_O3,(100. - wPercentage)*CLHEP::perCent);
      ProductionTargetTungstenLa2_O3->AddElement(getElementOrThrow("W"),wPercentage*CLHEP::perCent);
     }
+
+    setBirksConstant(config_);
 
   }
 

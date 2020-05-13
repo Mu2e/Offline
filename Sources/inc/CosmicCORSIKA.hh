@@ -21,6 +21,7 @@
 #include "GeometryService/inc/WorldG4.hh"
 #include "GeometryService/inc/DetectorSystem.hh"
 #include "GeometryService/inc/Mu2eEnvelope.hh"
+#include "SeedService/inc/SeedService.hh"
 #include "MCDataProducts/inc/GenParticle.hh"
 #include "MCDataProducts/inc/GenParticleCollection.hh"
 #include "CalorimeterGeom/inc/Calorimeter.hh"
@@ -47,17 +48,12 @@ struct Config
   using Name = fhicl::Name;
   using Comment = fhicl::Comment;
   fhicl::Sequence<std::string> showerInputFiles{Name("fileNames"),Comment("List of CORSIKA binary output paths")};
-  fhicl::Atom<int> firstEventNumber{Name("firstEventNumber"), Comment("First event number"), 0};
-  fhicl::Atom<int> firstSubRunNumber{Name("firstSubRunNumber"), Comment("First subrun number"), 0};
-  fhicl::Atom<int> maxEvents{Name("maxEvents"), Comment("Max number of events"), 0};
   fhicl::Atom<unsigned int> runNumber{Name("runNumber"), Comment("First run number"), 0};
   fhicl::Atom<std::string> module_label{Name("module_label"), Comment("Art module label"), ""};
   fhicl::Atom<std::string> module_type{Name("module_type"), Comment("Art module type"), ""};
   fhicl::Atom<bool> projectToTargetBox{Name("projectToTargetBox"), Comment("Store only events that cross the target box"), false};
   fhicl::Atom<float> showerAreaExtension{Name("showerAreaExtension"), Comment("Extension of the generation box on the xz plane")};
   fhicl::Atom<float> tOffset{Name("tOffset"), Comment("Time offset"), 0};
-  fhicl::Atom<float> lowE{Name("lowE"), Comment("lowE"), 1.3};
-  fhicl::Atom<float> highE{Name("highE"), Comment("highE"), 1e6};
   fhicl::Atom<float> fluxConstant{Name("fluxConstant"), Comment("Primary cosmic nucleon flux constant")};
   fhicl::Atom<float> targetBoxXmin{Name("targetBoxXmin"), Comment("Target box x min")};
   fhicl::Atom<float> targetBoxXmax{Name("targetBoxXmax"), Comment("Target box x max")};
@@ -65,22 +61,29 @@ struct Config
   fhicl::Atom<float> targetBoxYmax{Name("targetBoxYmax"), Comment("Target box y max")};
   fhicl::Atom<float> targetBoxZmin{Name("targetBoxZmin"), Comment("Target box z min")};
   fhicl::Atom<float> targetBoxZmax{Name("targetBoxZmax"), Comment("Target box z max")};
-  fhicl::Atom<int> seed{Name("seed"), Comment("Seed for particle random offset")};
-  fhicl::Atom<bool> resample{Name("resample"), Comment("Resampling flag")};
-  fhicl::Atom<bool> compact{Name("compact"), Comment("CORSIKA compact output flag")};
 };
+
 typedef fhicl::WrappedTable<Config> Parameters;
 
 class GenParticleCollection;
 
 namespace mu2e {
 
+  enum class Format { UNDEFINED, NORMAL, COMPACT };
+
   class CosmicCORSIKA {
 
     public:
-      CosmicCORSIKA(const Config& conf);
+      CosmicCORSIKA(const Config& conf, SeedService::seed_t seed);
       // CosmicCORSIKA(art::Run &run, CLHEP::HepRandomEngine &engine);
       ~CosmicCORSIKA();
+
+      enum Format
+      {
+        UNDEFINED,
+        NORMAL,
+        COMPACT
+      };
 
       const std::map<unsigned int, int> corsikaToPdgId = {
           {1, 22},     // gamma
@@ -216,11 +219,10 @@ namespace mu2e {
       };
 
       virtual bool generate(GenParticleCollection &, unsigned int &);
-      void openFile(FILE *f);
+      void openFile(ifstream *f, unsigned &run, float &lowE, float &highE);
 
     private:
       bool genEvent(std::map<std::pair<int,int>, GenParticleCollection> &particles_map);
-      bool genEventCompact(std::map<std::pair<int,int>, GenParticleCollection> &particles_map);
       float wrapvarBoxNo(const float var, const float low, const float high, int &boxno);
 
       std::vector<CLHEP::Hep3Vector> _targetBoxIntersections;
@@ -232,15 +234,15 @@ namespace mu2e {
       static constexpr float _GeV2MeV = CLHEP::GeV / CLHEP::MeV;
       static constexpr float _cm2mm = CLHEP::cm / CLHEP::mm;
       static constexpr float _ns2s = CLHEP::ns / CLHEP::s;
+      static constexpr unsigned _fbsize_words = 5733 + 2; ///< CORSIKA fixed block size plus possible g77 padding per footnote 105
+                                                          ///< in the User Guide https://web.ikp.kit.edu/corsika/usersguide/usersguide.pdf
 
       CLHEP::Hep3Vector _cosmicReferencePointInMu2e;
-      float _fluxConstant = 1.8e4;
+      float _fluxConstant = 1.8e4; ///< Primary nucleon intensity for cosmic rays, as quoted in the PDG. Used for cosmic live-time calculation
       float _tOffset = 0; ///< Time offset of sample, defaults to zero (no offset) [s]
       bool _projectToTargetBox = false;
       float _showerAreaExtension = 0; ///< Extend distribution of corsika particles in x,z by this much (e.g. 1000 will extend 10 m in -x, +x, -z, and +z) [mm]
 
-      std::string _refPointChoice;
-      bool _geomInfoObtained = false;
       float _targetBoxXmin = 0;
       float _targetBoxXmax = 0;
       float _targetBoxYmin = 0;
@@ -248,14 +250,20 @@ namespace mu2e {
       float _targetBoxZmin = 0;
       float _targetBoxZmax = 0;
 
-      FILE *in = nullptr;
-      int _loops = 0; // number of loops, necessary to skip the garbage data between blocks
-      float _garbage;
+      std::ifstream *input;
 
+      unsigned _current_event_number = -1;
+      unsigned _event_count = 0;
+      unsigned _run_number = -1;
       unsigned int _primaries = 0;
 
-      bool _resample = false;
-      bool _compact = true;
+      Format _infmt{Format::UNDEFINED};
+
+      union {
+        float fl[_fbsize_words];
+        unsigned in[_fbsize_words];
+        char ch[sizeof(fl[0])*_fbsize_words];
+      } _buf;
 
       CLHEP::HepJamesRandom _engine;
       CLHEP::RandFlat _randFlatX;

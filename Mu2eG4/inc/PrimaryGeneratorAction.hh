@@ -73,6 +73,8 @@ namespace mu2e {
 
     int verbosityLevel_;
 
+    PDGCode::type pdgIdToGenerate_;
+
     Mu2eG4PerThreadStorage* perThreadObjects_;
 
   };

@@ -60,14 +60,13 @@ NewCaloClusterFast :
 CaloClusterTrigger :
 {
    producers : {
-       CaloClusterFast  : @local::CaloClusterFast
-       CaloTrigger      : @local::CaloTrigger
        NewCaloClusterFast  : @local::NewCaloClusterFast
+       CaloTrigger         : @local::CaloTrigger
+       CaloClusterFast     : @local::CaloClusterFast
    }
 
-   Reco : [ CaloClusterFast ]
-   NewReco : [ NewCaloClusterFast ]
-   CrystalReco : [FastCaloRecoDigiFromDigi, FastCaloCrystalHitFromHit]
+   OldReco : [ OldCaloClusterFast ]
+   Reco    : [ CaloClusterFast ]
 }
 
 

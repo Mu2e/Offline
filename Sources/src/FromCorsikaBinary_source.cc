@@ -20,7 +20,6 @@
 #include "art/Framework/Principal/SubRunPrincipal.h"
 #include "art/Framework/Principal/EventPrincipal.h"
 #include "art/Framework/IO/Sources/put_product_in_principal.h"
-#include "art/Utilities/Globals.h" // FIXME-KJK: should not be necessary to use this
 #include "canvas/Persistency/Provenance/Timestamp.h"
 #include "canvas/Persistency/Provenance/RunID.h"
 #include "canvas/Persistency/Provenance/SubRunID.h"
@@ -54,7 +53,7 @@ namespace mu2e {
       std::set<art::SubRunID> seenSRIDs_;
 
       std::string currentFileName_;
-      FILE *currentFile_ = nullptr;
+      std::ifstream *currentFile_ = nullptr;
       float garbage;
 
       unsigned currentSubRunNumber_; // from file
@@ -66,7 +65,6 @@ namespace mu2e {
                               art::RunPrincipal*&    outR,
                               art::SubRunPrincipal*& outSR,
                               art::EventPrincipal*&  outE);
-      unsigned getSubRunNumber(const std::string& filename) const;
 
       unsigned currentEventNumber_;
 
@@ -107,10 +105,8 @@ namespace mu2e {
       , runNumber_(conf().runNumber())
       , currentSubRunNumber_(-1U)
       , currentEventNumber_(0)
-      , _lowE(conf().lowE())
-      , _highE(conf().highE())
       , _fluxConstant(conf().fluxConstant())
-      , _corsikaGen(conf())
+      , _corsikaGen(conf(), art::ServiceHandle<SeedService>{}->getInputSourceSeed())
     {
       if(!art::RunID(runNumber_).isValid()) {
         throw cet::exception("BADCONFIG", " FromCorsikaBinary: ")
@@ -121,37 +117,29 @@ namespace mu2e {
       rh.reconstitutes<mu2e::CosmicLivetime,art::InEvent>(myModuleLabel_);
       _area = (conf().targetBoxXmax() + 2 * conf().showerAreaExtension() - conf().targetBoxXmin())
             * (conf().targetBoxZmax() + 2 * conf().showerAreaExtension() - conf().targetBoxZmin()) * _mm22m2; // m^2
-
     }
 
     //----------------------------------------------------------------
     void CorsikaBinaryDetail::readFile(const std::string& filename, art::FileBlock*& fb) {
 
       currentFileName_ = filename;
-      currentSubRunNumber_ = getSubRunNumber(filename);
       currentEventNumber_ = 0;
 
-      currentFile_ = fopen(filename.c_str(), "r");
-      _corsikaGen.openFile(currentFile_);
-      fb = new art::FileBlock(art::FileFormatVersion(1, "CorsikaBinaryInput"), currentFileName_);
-    }
+      currentFile_ = new ifstream(currentFileName_);
 
-    //----------------------------------------------------------------
-    unsigned CorsikaBinaryDetail::getSubRunNumber(const std::string& filename) const {
-      const std::string::size_type islash = filename.find("DAT") ;
-      const std::string basename = (islash == std::string::npos) ? filename : filename.substr(islash + 3);
-      unsigned sr(-1);
-      std::istringstream is(basename);
-      if(!(is>>sr)) {
-        throw cet::exception("BADINPUTS")<<"Expect an unsigned integer at the beginning of input file name, got "<<basename<<"\n";
-      }
-      return sr;
+      unsigned subrun = 0;
+      float lowE, highE;
+      _corsikaGen.openFile(currentFile_, subrun, lowE, highE);
+      currentSubRunNumber_ = subrun;
+      _lowE = lowE;
+      _highE = highE;
+      fb = new art::FileBlock(art::FileFormatVersion(1, "CorsikaBinaryInput"), currentFileName_);
     }
 
     //----------------------------------------------------------------
     void CorsikaBinaryDetail::closeCurrentFile() {
       currentFileName_ = "";
-      fclose(currentFile_);
+      currentFile_->close();
     }
 
     //----------------------------------------------------------------
@@ -164,6 +152,7 @@ namespace mu2e {
       std::unique_ptr<GenParticleCollection> particles(new GenParticleCollection());
       unsigned int primaries;
       bool still_data = _corsikaGen.generate(*particles, primaries);
+
       if (!still_data) {
         return false;
       }

@@ -25,7 +25,7 @@ namespace mu2e {
     CLHEP::Hep3Vector const& getLocal() const { return _origin; }
     std::string material() const { return _material; }
     int         version()  const { return _version; }
-
+    std::string wedgeMaterial() const { return _wedgeMaterial; }
     // The following are primarily for version 1 and 2
     double rOut()   const  { return _rOut; }
     double getY0()  const  { return _y0 ; };
@@ -54,6 +54,7 @@ namespace mu2e {
 
     std::string _shape;
     std::string _material;
+    std::string _wedgeMaterial;
 
     double _rOut;
     double _halfZ;

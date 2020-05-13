@@ -34,6 +34,7 @@ namespace mu2e {
   class Panel{
 
     friend class TrackerMaker;
+    friend class AlignedTrackerMaker;
     friend class Tracker; // needed for deep copy
 
   public:
@@ -87,6 +88,8 @@ namespace mu2e {
     // ***        need not lie on any actaul straw       ***
     CLHEP::Hep3Vector straw0MidPoint()  const { return _straw0MidPoint;  }
     CLHEP::Hep3Vector straw0Direction() const { return _straw0Direction; }
+
+    CLHEP::Hep3Vector const& origin() const { return _origin; }
 
     // Formatted string embedding the id of the panel.
     std::string name( std::string const& base ) const;
@@ -145,6 +148,9 @@ namespace mu2e {
     //         declarations can go away.
     mutable CLHEP::Hep3Vector _straw0MidPoint;
     mutable CLHEP::Hep3Vector _straw0Direction;
+
+    // panel origin
+    mutable CLHEP::Hep3Vector _origin;
 
     // electronic boards; they are placed wrt to the panel, but in a
     // different mother volume one per panel

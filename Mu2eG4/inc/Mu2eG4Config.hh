@@ -37,7 +37,9 @@ namespace mu2e {
       fhicl::Atom<bool> navigatorCheckMode {Name("navigatorCheckMode"), false};
       fhicl::Atom<int> navigatorVerbosityLevel {Name("navigatorVerbosityLevel"), 0};
       fhicl::Atom<int> PiENuPolicyVerbosity {Name("PiENuPolicyVerbosity"), 0};
-      fhicl::Atom<bool> mtDebugOutput {Name("mtDebugOutput"), false};
+      fhicl::Atom<int> mtDebugOutput {Name("mtDebugOutput"), 0};
+
+      fhicl::Atom<int> pdgIdToGenerate {Name("pdgIdToGenerate"), -1111111111};
 
       fhicl::Atom<int> checkFieldMap {Name("checkFieldMap"), 0 };
 
@@ -200,9 +202,6 @@ namespace mu2e {
       fhicl::Atom<std::string> generatorModuleLabel {Name("generatorModuleLabel"), ""};
 
       fhicl::Atom<bool> G4InteralFiltering {Name("G4InteralFiltering"), false};
-      fhicl::Atom<int>  maxEventsToSeed {Name("maxEventsToSeed"),
-          Comment("Only used by Mu2eG4MT module."),
-          10000 };
     };
   }
 }
