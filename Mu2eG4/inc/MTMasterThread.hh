@@ -44,7 +44,7 @@ namespace mu2e {
 
   private:
 
-    bool m_mtDebugOutput;
+    int m_mtDebugOutput;
 
     enum class ThreadState { NotExist = 0, BeginRun = 1, EndRun = 2, Destruct = 3 };
 

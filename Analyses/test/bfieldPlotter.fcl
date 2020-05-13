@@ -13,11 +13,11 @@ physics.analyzers.bfieldplotter : {
     module_type : BFieldPlotter
     plane       :  "x"
     planeValue  :  -10000.
-    axisOneMin  : -8050.  # -8050. #-10500.
+    axisOneMin  : -8050.  # -8050. #-10500. #The map edge will be the bin center of the histogram edge
     axisOneMax  :  8050.  #  8050. # 10500.
     axisTwoMin  : -25000. # -8050. # -25000.
     axisTwoMax  :  45000. #  8050. #  45000.
-    mapBinSize  :  10.
+    mapBinSize  :  10. #Must be a divisor of both axes length to have an exact integer bin number
 }
 
 physics.e1             : [bfieldplotter]
