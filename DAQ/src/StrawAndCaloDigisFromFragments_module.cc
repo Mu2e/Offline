@@ -80,7 +80,6 @@ StrawAndCaloDigisFromFragments::StrawAndCaloDigisFromFragments(const art::EDProd
   parseTRK_        (config().parseTRK()),
   trkFragmentsTag_ (config().trkTag()),
   caloFragmentsTag_(config().caloTag()){
-    // produces<EventNumber_t>(); 
     if (parseTRK_){
       produces<mu2e::StrawDigiCollection>();
     }
@@ -458,8 +457,6 @@ produce( Event & event )
 
   }
 
-  //  event.put(std::unique_ptr<EventNumber_t>(new EventNumber_t( eventNumber )));
-  
   // Store the straw digis and calo digis in the event
   if (parseTRK_){
     event.put(std::move(straw_digis));
