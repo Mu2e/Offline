@@ -299,6 +299,7 @@ namespace mu2e {
     const CaloCrystalHit* crystalHit(0);
     const CaloCluster::CaloCrystalHitPtrVector* caloClusterHits(0);
     
+    size_t trig_ind(0);
     //for loop over the clusters in the calorimeter
     for(auto icl = caloClusters->begin();icl != caloClusters->end(); ++icl){
       auto const& cluster = *icl;
@@ -428,13 +429,15 @@ namespace mu2e {
         // associate to the caloCluster which triggers.  Note there may be other caloClusters which also pass the filter
         // but filtering is by event!
         size_t index = std::distance(caloClusters->begin(), icl);
-        triginfo->_caloCluster = art::Ptr<CaloCluster>(clH, index);
-        
+	if (trig_ind < TriggerInfo::MaxNObj){        
+	  triginfo->_caloClusters[trig_ind] = art::Ptr<CaloCluster>(clH, index);
+          ++trig_ind;
+	}else{
+	  printf("[CaloLikelihood::filter] reached the maximum number of CaloCluster that can be stored!");
+	}
 	if(_diagLevel > 1){
           cout << moduleDescription().moduleLabel() << " passed event " << event.id() << endl;
         }
-	
-        break;
       }
       
       

@@ -76,7 +76,7 @@ namespace mu2e
     // find the collection
     auto clH = evt.getValidHandle<CaloClusterCollection>(_clTag);
     const CaloClusterCollection* clcol = clH.product();
-
+    size_t trig_ind(0);
     // loop over the collection: if any pass the selection, pass this event
     for(auto icl = clcol->begin();icl != clcol->end(); ++icl) {
       auto const& cl = *icl;
@@ -99,11 +99,15 @@ namespace mu2e
         // associate to the caloCluster which triggers.  Note there may be other caloClusters which also pass the filter
         // but filtering is by event!
         size_t index = std::distance(clcol->begin(),icl);
-        triginfo->_caloCluster = art::Ptr<CaloCluster>(clH,index);
+	if (trig_ind < TriggerInfo::MaxNObj){
+	  triginfo->_caloClusters[trig_ind] = art::Ptr<CaloCluster>(clH,index);
+	  ++trig_ind;
+	}else{
+	  printf("[CaloCosmicCalib::filter] reached the maximum number of CaloClusters that can be stored!");
+	}
         if(_debug > 1){
           cout << moduleDescription().moduleLabel() << " passed event " << evt.id() << endl;
         }
-        break;
       }
     }
     evt.put(std::move(triginfo));

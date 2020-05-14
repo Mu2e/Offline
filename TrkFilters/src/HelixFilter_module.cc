@@ -131,6 +131,7 @@ namespace mu2e
     auto hsH = evt.getValidHandle<HelixSeedCollection>(_hsTag);
     const HelixSeedCollection* hscol = hsH.product();
     float mm2MeV = 3./10.*_bz0;
+    size_t trig_ind(0);
     // loop over the collection: if any pass the selection, pass this event
     for(auto ihs = hscol->begin();ihs != hscol->end(); ++ihs) {
       auto const& hs = *ihs;
@@ -183,11 +184,15 @@ namespace mu2e
         // associate to the helix which triggers.  Note there may be other helices which also pass the filter
         // but filtering is by event!
         size_t index = std::distance(hscol->begin(),ihs);
-        triginfo->_helix = art::Ptr<HelixSeed>(hsH,index);
-        if(_debug > 1){
+	if (trig_ind < TriggerInfo::MaxNObj){
+	  triginfo->_helixes[trig_ind] = art::Ptr<HelixSeed>(hsH,index);
+	  ++trig_ind;
+	}else{
+	  printf("[HelixFilter::filter] reached the maximum number of tracks that can be stored!");
+	}
+	if(_debug > 1){
           cout << moduleDescription().moduleLabel() << " passed event " << evt.id() << endl;
         }
-        break;
       }
     }
     evt.put(std::move(triginfo));

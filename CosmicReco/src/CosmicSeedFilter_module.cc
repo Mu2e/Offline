@@ -64,7 +64,7 @@ namespace mu2e
     // find the collection
     auto cosH = evt.getValidHandle<CosmicTrackSeedCollection>(_cosmicTag);
     const CosmicTrackSeedCollection* coscol = cosH.product();
-
+    size_t trig_ind(0);
     for(auto icos = coscol->begin(); icos != coscol->end(); ++icos) {
       auto const& cosmic = *icos;
      
@@ -76,7 +76,12 @@ namespace mu2e
         triginfo->_triggerPath = _trigPath;
     
         size_t index = std::distance(coscol->begin(),icos);
-        triginfo->_cosmic = art::Ptr<CosmicTrackSeed>(cosH,index);
+	if (trig_ind < TriggerInfo::MaxNObj){
+	  triginfo->_cosmics[trig_ind] = art::Ptr<CosmicTrackSeed>(cosH,index);
+	  ++trig_ind;
+	}else{
+	  printf("[CosmicSeedFilter::filter] reached the maximum number of CosmicTrackSeeds that can be stored!");
+	}
         if(_debug > 1){
           cout << moduleDescription().moduleLabel() << " passed event " << evt.id() << endl;
         }

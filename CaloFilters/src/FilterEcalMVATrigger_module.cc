@@ -168,14 +168,20 @@ namespace mu2e {
    
     //Handle to the calorimeter
     art::ServiceHandle<GeometryService> geom;
-    if( ! geom->hasElement<Calorimeter>() ) return false;
+    if( ! geom->hasElement<Calorimeter>() ) {
+      event.put(std::move(triginfo));
+      return false;
+    }
     Calorimeter const & cal = *(GeomHandle<Calorimeter>());
     // ------------------------- Unpack Calo Trig Seeds -------------------------------
     art::Handle<CaloTrigSeedCollection> caloTrigSeedsHandle;
     event.getByLabel(_caloTrigSeedModuleLabel, caloTrigSeedsHandle);
     CaloTrigSeedCollection const& caloTrigSeeds(*caloTrigSeedsHandle);
-    if (_step==4) return false;
-
+    if (_step==4) {
+      event.put(std::move(triginfo));      
+      return false;    
+    }
+    size_t trig_ind(0);
     for (CaloTrigSeedCollection::const_iterator seedIt = caloTrigSeeds.begin(); seedIt != caloTrigSeeds.end(); ++seedIt){
       disk= cal.crystal((int)seedIt->crystalid()).diskId();
       _fdiskpeak   = (float) disk;
@@ -205,8 +211,8 @@ namespace mu2e {
 	    triginfo->_triggerBits.merge(TriggerFlag::caloTrigSeed);
 	    triginfo->_triggerPath = _trigPath;
 	    size_t index = std::distance(caloTrigSeeds.begin(),seedIt);
-	    triginfo->_caloTrigSeed = art::Ptr<CaloTrigSeed>(caloTrigSeedsHandle,index);
-	    break;
+	    triginfo->_caloTrigSeeds[trig_ind] = art::Ptr<CaloTrigSeed>(caloTrigSeedsHandle,index);
+	    ++trig_ind;
 	  }
 	}
 	else{
@@ -216,8 +222,8 @@ namespace mu2e {
 	    triginfo->_triggerBits.merge(TriggerFlag::caloTrigSeed);
 	    triginfo->_triggerPath = _trigPath;
 	    size_t index = std::distance(caloTrigSeeds.begin(),seedIt);
-	    triginfo->_caloTrigSeed = art::Ptr<CaloTrigSeed>(caloTrigSeedsHandle,index);
-	    break;
+	    triginfo->_caloTrigSeeds[trig_ind] = art::Ptr<CaloTrigSeed>(caloTrigSeedsHandle,index);
+	    ++trig_ind;
 	  }
 	}
       }
