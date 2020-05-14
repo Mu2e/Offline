@@ -23,19 +23,74 @@ namespace mu2e {
         _targetBoxYmax(conf.targetBoxYmax()),  // mm
         _targetBoxZmin(conf.targetBoxZmin()), // mm
         _targetBoxZmax(conf.targetBoxZmax()),  // mm
-        _resample(conf.resample()),
-        _compact(conf.compact()),
         _engine(seed),
         _randFlatX(_engine, -(_targetBoxXmax-_targetBoxXmin+_showerAreaExtension)/2, +(_targetBoxXmax-_targetBoxXmin+_showerAreaExtension)/2),
         _randFlatZ(_engine, -(_targetBoxZmax-_targetBoxZmin+_showerAreaExtension)/2, +(_targetBoxZmax-_targetBoxZmin+_showerAreaExtension)/2)
   {
   }
 
-  void CosmicCORSIKA::openFile(FILE *f) {
-    in = f;
-    fread(&_garbage, 4, 1, in);
-  }
+  void CosmicCORSIKA::openFile(ifstream *f, unsigned &runNumber, float &lowE, float &highE)
+  {
+    input = f;
+    _current_event_number = -1;
+    _event_count = 0;
+    _run_number = -1;
+    _infmt = Format::UNDEFINED;
 
+    while( input->read(_buf.ch, 4)) {
+      unsigned reclen = _buf.in[0];
+      // CORSIKA records are in units of 4 bytes
+      if(reclen % 4) {
+        throw std::runtime_error("Error: record size not a multiple of 4");
+      }
+
+      // We will be looking at at least 8 bytes to determine the
+      // input file format, and all real CORSIKA records are longer
+      // than that.
+      if(reclen < 2*4) {
+        throw std::runtime_error("Error: reclen too small");
+      }
+
+      // Read the full record
+      if(!input->read(_buf.ch, reclen)) {
+        break;
+      }
+
+      // Determine the format and and store the decision for future blocks.
+      // We are starting file read, so should see the RUNH marker
+      // In COMPACT format each block is preceded by 4 bytes
+      // giving the size of the block in words.
+
+      if(!strncmp(_buf.ch+0, "RUNH", 4)) {
+        std::cout<<"Reading NORMAL format"<<std::endl;
+        _infmt = Format::NORMAL;
+      }
+      else if(!strncmp(_buf.ch+4, "RUNH", 4)) {
+        std::cout<<"Reading COMPACT format"<<std::endl;
+        _infmt = Format::COMPACT;
+      }
+      else {
+        throw std::runtime_error("Error: did not find the RUNH record to determine COMPACT flag");
+      }
+
+      unsigned iword = 0;
+      if(_infmt == Format::COMPACT) {
+        // Move to the beginning of the actual block
+        ++iword;
+      }
+
+      if(!strncmp(_buf.ch+4*iword, "RUNH", 4)) {
+        runNumber = lrint(_buf.fl[1+iword]);
+        lowE = float(_buf.fl[16+iword]);
+        highE = float(_buf.fl[17+iword]);
+      }
+
+      break;
+
+    }
+    input->clear();
+    input->seekg(0, ios::beg);
+  }
 
   CosmicCORSIKA::~CosmicCORSIKA(){
   }
@@ -48,301 +103,156 @@ namespace mu2e {
     return (var - (high - low) * floor(var / (high - low))) + low;
   }
 
-  bool CosmicCORSIKA::genEventCompact(std::map<std::pair<int,int>, GenParticleCollection> &particles_map) {
-    bool running = true;
-    int particleDataSubBlockCounter = 0;
-    const float xOffset = _randFlatX.fire();
-    const float zOffset = _randFlatZ.fire();
-    char word[5];
-
-    if (feof(in))
-      return false;
-
-    while (running)
-    {
-
-      fread(word, sizeof(char)*4, 1, in);
-			word[4] = '\0';
-
-			// Compact event blocks start with the EVHW word
-      if (strcmp(word, "EVHW") == 0) {
-        // The size of the event block is 12 4-byte words, EVHW + 11 floats
-				float eventBlock[11];
-				fread(eventBlock, sizeof(eventBlock), 1, in);
-        _primaries++;
-        if (particleDataSubBlockCounter > 0)
-        {
-          running = false;
-        }
-        particleDataSubBlockCounter = 0;
-      }
-      else
-			{
-        // We didn't find EVHW, so go back by 4 chars in the file
-        fseek(in, -sizeof(char)*4, SEEK_CUR);
-
-        // The first number in the block is the size of the block
-        int blockSize;
-        fread(&blockSize, sizeof(blockSize), 1, in);
-
-        // The blocks have multiple of 7 size
-        // see https://web.ikp.kit.edu/corsika/physics_description/corsika_phys.pdf
-        if (blockSize % 7 == 0 && blockSize > 0 && blockSize / 7 <= 39) {
-					unsigned int n_particles = blockSize / 7;
-
-          // Maximum size of the block is 7*39=273
-					float block[273];
-					fread(block, sizeof(float)*blockSize, 1, in);
-          fread(&_garbage, 4, 1, in);
-
-					char blockName[5];
-					memcpy(blockName, block, 4);
-					blockName[4] = '\0';
-
-					// End of run
-					if (strcmp(blockName, "RUNE") == 0)
-					{
-            // If resampling is on, we go back to the beginning of the file
-            if (_resample) {
-              std::cout << "Resampling file..." << std::endl;
-              fseek(in, 0, SEEK_SET);
-              fread(&_garbage, 4, 1, in);
-              continue;
-            } else {
-              _primaries = 0;
-              return false;
-            }
-					}
-          // Run header, we don't use it
-					else if (strcmp(blockName, "RUNH") == 0)
-					{
-						continue;
-					}
-          // Only the first event has a full size block
-					else if (strcmp(blockName, "EVTH") == 0)
-					{
-            _primaries++;
-          }
-          else
-					{
-            // We are inside a particle data block
-            particleDataSubBlockCounter++;
-            for (unsigned int i = 0; i < n_particles; i++)
-						{
-              unsigned int k = i * 7;
-              if (block[k] != 0)
-              {
-                const int id = (int)(block[k] / 1000);
-                const int pdgId = corsikaToPdgId.at(id);
-                const float P_x = block[k + 2] * _GeV2MeV;
-                const float P_y = -block[k + 3] * _GeV2MeV;
-                const float P_z = block[k + 1] * _GeV2MeV;
-
-                int boxnox = 0, boxnoz = 0;
-
-                const float x = wrapvarBoxNo(block[k + 5] * _cm2mm + xOffset, _targetBoxXmin - _showerAreaExtension, _targetBoxXmax + _showerAreaExtension, boxnox);
-                const float z = wrapvarBoxNo(-block[k + 4] * _cm2mm + zOffset, _targetBoxZmin - _showerAreaExtension, _targetBoxZmax + _showerAreaExtension, boxnoz);
-                std::pair xz(boxnox, boxnoz);
-                const float m = pdt->particle(pdgId).ref().mass(); // to MeV
-
-                const float energy = safeSqrt(P_x * P_x + P_y * P_y + P_z * P_z + m * m);
-
-                const Hep3Vector position(x, _targetBoxYmax, z);
-                const HepLorentzVector mom4(P_x, P_y, P_z, energy);
-
-                const float particleTime = block[k + 6] * _ns2s;
-
-                GenParticle part(static_cast<PDGCode::type>(pdgId),
-                                  GenId::cosmicCORSIKA, position, mom4,
-                                  particleTime);
-
-                if (particles_map.count(xz) == 0)
-                {
-                  GenParticleCollection parts;
-                  parts.push_back(part);
-                  particles_map.insert({xz, parts});
-                }
-                else
-                {
-                  particles_map[xz].push_back(part);
-                }
-              }
-						}
-					}
-				}
-
-			}
-
-		}
-
-    return true;
-  }
-
   bool CosmicCORSIKA::genEvent(std::map<std::pair<int,int>, GenParticleCollection> &particles_map) {
-    float block[273]; // all data blocks have this size
-    // static TDatabasePDG *pdgt = TDatabasePDG::Instance();
 
-    bool running = true; // end run condition
-    bool validParticleSubBlock = true;
-    int particleDataSubBlockCounter = 0;
+      const float xOffset = _randFlatX.fire();
+      const float zOffset = _randFlatZ.fire();
 
-    if (feof(in))
-      return false;
+      // FORTRAN sequential records are prefixed with their length
+      // in a 4-byte word
+      while( input->read(_buf.ch, 4)) {
 
-    // Particle offset, must be the same for every particle in one event
-    const float xOffset = _randFlatX.fire();
-    const float zOffset = _randFlatZ.fire();
-
-    while (running)
-    {
-      std::vector<GenParticle> showerParticles;
-      fread(block, sizeof(block), 1, in); // blocks have 273 informations
-      char blockName[5];
-      memcpy(blockName, block, 4);
-      blockName[4] = '\0';
-      _loops++;
-
-      if (_loops % 21 == 0)
-      { // 2 _garbage data floats between every 21 blocks
-
-        fread(&_garbage, 4, 1, in);
-        fread(&_garbage, 4, 1, in);
-      }
-
-      // std::cout << blockName << " " << sizeof(block) << " " << (int)block[0] << std::endl;
-
-      //__________RUN HEADER
-
-      if (strcmp(blockName, "RUNH") == 0)
-      {
-        continue;
-      }
-
-      //__________EVENT HEADER
-      else if (strcmp(blockName, "EVTH") == 0)
-      {
-        _primaries++;
-        validParticleSubBlock = true;
-      }
-      //__________EVENT END
-
-      else if (strcmp(blockName, "EVTE") == 0)
-      {
-        if (particleDataSubBlockCounter > 0)
-        {
-          running = false;
+        unsigned reclen = _buf.in[0];
+        // CORSIKA records are in units of 4 bytes
+        if(reclen % 4) {
+          throw std::runtime_error("Error: record size not a multiple of 4");
         }
-        particleDataSubBlockCounter = 0;
-      }
-      //__________END OF RUN
-      else if (strcmp(blockName, "RUNE") == 0)
-      {
-        _loops = 0;
-        if (_resample) {
-          std::cout << "Resampling file..." << std::endl;
-          fseek(in, 0, SEEK_SET);
-          fread(&_garbage, 4, 1, in);
-          continue;
-        } else {
-          std::cout << "End of run " << std::endl;
-          _primaries = 0;
-          return false;
+
+        // We will be looking at at least 8 bytes to determine the
+        // input file format, and all real CORSIKA records are longer
+        // than that.
+        if(reclen < 2*4) {
+          throw std::runtime_error("Error: reclen too small");
         }
-        // end run condition
-      }
-      else if (strcmp(blockName, "LONG")==0)
-      {
-        continue;
-      }
-      //__________PARTICLE DATA SUB-BLOCKS
 
-      else
-      {
+        if(reclen > 4*_fbsize_words) {
+          throw std::runtime_error("Error: reclen too big");
+        }
 
-        if (validParticleSubBlock == true)
-        {
-          for (int l = 1; l < 40; l++)
-          { // each sub-block has up to 39 particles. If a sub-block is not fulfilled, trailing zeros are added
+        // Read the full record
+        if(!input->read(_buf.ch, reclen)) {
+          break;
+        }
 
-            int k = 7 * (l - 1);
-            float id = block[k];
-            //cout << "	" << k << " " << block[k] << " " << block[k+1] << " " << block[k+2] << " " << block[k+3] << " " << block[k+4] << " " << block[k+5] << " " << block[k+6] << endl;	// for verification purposes only
+        unsigned n_part = 0;
+        //================================================================
+        // Go over blocks in the record
+        for(unsigned iword = 0; iword < reclen/4; ) {
 
-            if ((int)(id / 1000) != 0)
-            {
-              if (id < 75000)
-              {
+          unsigned block_words = (_infmt == Format::COMPACT) ?
+            _buf.in[iword] : 273;
 
-                if (block[k + 1] != 0)
-                {
-                  id = (int)(id / 1000);
-                  const int pdgId = corsikaToPdgId.at(id);
-                  const float P_x = block[k + 2] * _GeV2MeV;
-                  const float P_y = -block[k + 3] * _GeV2MeV;
-                  const float P_z = block[k + 1] * _GeV2MeV;
+          if(!block_words) {
+            throw std::runtime_error("Got block_words = 0\n");
+          }
 
-                  int boxnox = 0, boxnoz = 0;
+          if(_infmt == Format::COMPACT) {
+            // Move to the beginning of the actual block
+            ++iword;
+          }
 
-                  const float x = wrapvarBoxNo(block[k + 5] * _cm2mm + xOffset, _targetBoxXmin - _showerAreaExtension, _targetBoxXmax + _showerAreaExtension, boxnox);
-                  const float z = wrapvarBoxNo(-block[k + 4] * _cm2mm + zOffset, _targetBoxZmin - _showerAreaExtension, _targetBoxZmax + _showerAreaExtension, boxnoz);
-                  std::pair xz(boxnox, boxnoz);
-                  const float m = pdt->particle(pdgId).ref().mass(); // to MeV
+          std::string event_marker =
+            (_infmt == Format::NORMAL || !_event_count) ? "EVTH" : "EVHW";
 
-                  const float energy = safeSqrt(P_x * P_x + P_y * P_y + P_z * P_z + m * m);
-
-                  const Hep3Vector position(x, _targetBoxYmax, z);
-                  const HepLorentzVector mom4(P_x, P_y, P_z, energy);
-
-                  const float particleTime = block[k + 6] * _ns2s;
-
-                  GenParticle part(static_cast<PDGCode::type>(pdgId),
-                                   GenId::cosmicCORSIKA, position, mom4,
-                                   particleTime);
-
-                  if (particles_map.count(xz) == 0) {
-                    GenParticleCollection parts;
-                    parts.push_back(part);
-                    particles_map.insert({xz, parts});
-                  } else {
-                    particles_map[xz].push_back(part);
-                  }
-
-                  particleDataSubBlockCounter++;
-                }
-              }
+          // Determine the type of the data block
+          if(!strncmp(_buf.ch+4*iword, "RUNH", 4)) {
+            _run_number = lrint(_buf.fl[1+iword]);
+          }
+          else if(!strncmp(_buf.ch+4*iword, "RUNE", 4)) {
+            unsigned end_run_number = lrint(_buf.fl[1+iword]);
+            unsigned end_event_count = lrint(_buf.fl[2+iword]);
+            if(end_run_number != _run_number) {
+              throw std::runtime_error("Error: run number mismatch in end of run record\n");
             }
-            else
-            {
-              validParticleSubBlock = false;
+            if(_event_count != end_event_count) {
+              std::cerr<<"RUNE: _event_count = "<<_event_count<<" end record = "<<end_event_count<<std::endl;
+              throw std::runtime_error("Error: event count mismatch in end of run record\n");
+            }
+            // Exit the read loop at the end of run
+            _primaries = 0;
+            return false;
+          }
+          else if(!strncmp(_buf.ch+4*iword, event_marker.data(), 4)) {
+            ++_event_count;
+            _current_event_number = lrint(_buf.fl[1+iword]);
+            ++_primaries;
+          }
+          else if(!strncmp(_buf.ch+4*iword, "EVTE", 4)) {
+            unsigned end_event_number = lrint(_buf.fl[1+iword]);
+            if(end_event_number != _current_event_number) {
+              throw std::runtime_error("Error: event number mismatch in end of event record\n");
             }
           }
+          else {
+            for (unsigned i_part = 0; i_part < block_words; i_part+=7) {
+              unsigned id = _buf.fl[iword + i_part] / 1000;
+              if (id == 0)
+                continue;
+              n_part++;
+              const int pdgId = corsikaToPdgId.at(id);
+              const float P_x = _buf.fl[iword + i_part + 2] * _GeV2MeV;
+              const float P_y = -_buf.fl[iword + i_part + 3] * _GeV2MeV;
+              const float P_z = _buf.fl[iword + i_part + 1] * _GeV2MeV;
+
+              int boxnox = 0, boxnoz = 0;
+
+              const float x = wrapvarBoxNo(_buf.fl[iword + i_part + 5] * _cm2mm + xOffset, _targetBoxXmin - _showerAreaExtension, _targetBoxXmax + _showerAreaExtension, boxnox);
+              const float z = wrapvarBoxNo(-_buf.fl[iword + i_part + 4] * _cm2mm + zOffset, _targetBoxZmin - _showerAreaExtension, _targetBoxZmax + _showerAreaExtension, boxnoz);
+              std::pair xz(boxnox, boxnoz);
+              const float m = pdt->particle(pdgId).ref().mass(); // to MeV
+
+              const float energy = safeSqrt(P_x * P_x + P_y * P_y + P_z * P_z + m * m);
+
+              const Hep3Vector position(x, _targetBoxYmax, z);
+              const HepLorentzVector mom4(P_x, P_y, P_z, energy);
+
+              const float particleTime = _buf.fl[iword + i_part + 6] * _ns2s;
+              GenParticle part(static_cast<PDGCode::type>(pdgId),
+                    GenId::cosmicCORSIKA, position, mom4,
+                    particleTime);
+
+              if (particles_map.count(xz) == 0) {
+                GenParticleCollection parts;
+                parts.push_back(part);
+                particles_map.insert({xz, parts});
+              } else {
+                particles_map[xz].push_back(part);
+              }
+            }
+
+          }
+
+          // Move to the next block
+          iword += block_words;
+
+        } // loop over blocks in a record
+
+        // Here we expect the FORTRAN end of record padding,
+        // read and verify its value.
+        if(!input->read(_buf.ch, 4)) {
+          break;
         }
-      }
-    }
+        if(_buf.in[0] != reclen) {
+          throw std::runtime_error("Error: unexpected FORTRAN record end padding");
+        }
 
-    return true;
+        if (n_part > 0) {
+          return true;
+        }
+
+      } // loop over records
+      return true;
   }
-
 
   bool CosmicCORSIKA::generate( GenParticleCollection& genParts, unsigned int &primaries)
   {
-
     // loop over particles in the truth object
     bool passed = false;
     while (!passed) {
-
       if (_particles_map.size() == 0)
       {
-        if (_compact) {
-          if (!genEventCompact(_particles_map))
-          {
-            return false;
-          }
-        } else {
-          if (!genEvent(_particles_map))
-          {
-            return false;
-          }
+        if (!genEvent(_particles_map)) {
+          return false;
         }
       }
 
@@ -354,7 +264,6 @@ namespace mu2e {
 
       for (unsigned int i = 0; i < particles.size(); i++) {
         GenParticle particle = particles[i];
-
 
         _targetBoxIntersections.clear();
         VectorVolume particleTarget(particle.position(), particle.momentum().vect(),
@@ -373,7 +282,6 @@ namespace mu2e {
 
       for (unsigned int i = 0; i < crossingParticles.size(); i++) {
           GenParticle part = crossingParticles[i];
-          // std::cout << "Time offset " << timeOffset << std::endl;
           genParts.push_back(GenParticle(part.pdgId(), part.generatorId(), part.position(), part.momentum(), part.time()+_tOffset-timeOffset));
       }
       _particles_map.erase(_particles_map.begin()->first);
