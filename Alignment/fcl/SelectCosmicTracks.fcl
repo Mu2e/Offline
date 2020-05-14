@@ -50,7 +50,7 @@ outputs : {
 
   CosTrackSelect : {
       module_type: RootOutput
-      fileName: "dig.owner.CosmicAlignTrackSelector.GoodRecstrtbl-cutspass.version.sequencer.art"
+      fileName: "dig.owner.CosmicAlignTrackSelector.description.version.sequencer.art"
       SelectEvents: [ RecoPath ]
 
       outputCommands :  ["keep *_*_*_*", "drop *_*_*_CosmicAlignTrackSelector"]
@@ -66,8 +66,8 @@ outputs : {
 outputs.Output.SelectEvents : [ "RecoPath" ]
 #
 # the following need to be overwritten for the specific channel
-services.TFileService.fileName: "nts.owner.CosmicAlignTrackSelector.version.sequencer.root"
-outputs.Output.fileName: "dig.owner.CosmicAlignTrackSelector.GoodRecstrtbl-cutspass.version.sequencer.art"
+services.TFileService.fileName: "nts.owner.CosmicAlignTrackSelector.description.version.sequencer.root"
+outputs.Output.fileName: "dig.owner.CosmicAlignTrackSelector.description.version.sequencer.art"
 outputs.Output.outputCommands : ["keep *_*_*_*", "drop *_*_*_CosmicAlignTrackSelector"]
 
 
