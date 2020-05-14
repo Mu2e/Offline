@@ -84,6 +84,7 @@ namespace mu2e
     // find the collection
     auto ksH = evt.getValidHandle<KalSeedCollection>(_ksTag);
     const KalSeedCollection* kscol = ksH.product();
+    size_t trig_ind(0);
     // loop over the collection: if any pass the selection, pass this event
     for(auto iks = kscol->begin(); iks != kscol->end(); ++iks) {
       auto const& ks = *iks;
@@ -116,11 +117,15 @@ namespace mu2e
         // associate to the helix which triggers.  Note there may be other helices which also pass the filter
         // but filtering is by event!
         size_t index = std::distance(kscol->begin(),iks);
-        triginfo->_track = art::Ptr<KalSeed>(ksH,index);
+	if (trig_ind < TriggerInfo::MaxNObj){
+	  triginfo->_tracks[trig_ind] = art::Ptr<KalSeed>(ksH,index);
+	  ++trig_ind;
+	}else{
+	  printf("[SeedFilter::filter] reached the maximum number of tracks that can be stored!");
+	}
         if(_debug > 1){
           cout << moduleDescription().moduleLabel() << " passed event " << evt.id() << endl;
         }
-        break;
       }
     }
     evt.put(std::move(triginfo));

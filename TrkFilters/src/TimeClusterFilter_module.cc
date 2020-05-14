@@ -60,6 +60,7 @@ namespace mu2e
     // find the collection
     auto tcH = evt.getValidHandle<TimeClusterCollection>(_tcTag);
     const TimeClusterCollection* tccol = tcH.product();
+    size_t trig_ind(0);
     // loop over the collection: if any pass the selection, pass this event
     for(auto itc = tccol->begin();itc != tccol->end(); ++itc) {
       auto const& tc = *itc;
@@ -77,11 +78,15 @@ namespace mu2e
         // associate to the hit cluster which triggers.  Note there may be other hit clusters which also pass the filter
         // but filtering is by event!
         size_t index = std::distance(tccol->begin(),itc);
-        triginfo->_hitCluster = art::Ptr<TimeCluster>(tcH,index);
+	if (trig_ind < TriggerInfo::MaxNObj){
+	  triginfo->_hitClusters[trig_ind] = art::Ptr<TimeCluster>(tcH,index);
+	  ++trig_ind;
+	}else{
+	  printf("[TimeClusterFilter::filter] reached the maximum number of TimeClusters that can be stored!");
+	}
         if(_debug > 1){
           cout << moduleDescription().moduleLabel() << " passed event " << evt.id() << endl;
         }
-        break;
       }
     }
     evt.put(std::move(triginfo));
