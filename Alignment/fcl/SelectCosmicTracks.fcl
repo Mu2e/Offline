@@ -1,7 +1,12 @@
+# Ryunosuke O'Neil
+# roneil@fnal.gov
+# https://github.com/ryuwd
 #
-# Reconstruct from MC digis, including trigger simulation
-# David Brown (LBNL) 1 Feb 2019
+# Reconstruct Cosmic Track (Straight, no magnetic field)
+# Check Cuts Pass (see Alignment/fcl/prolog.fcl)
+# Write Event to file if Event yields a track and passes cuts, not keeping any Data Products from reco
 #
+# #
 #include "fcl/minimalMessageService.fcl"
 #include "fcl/standardProducers.fcl"
 #include "fcl/standardServices.fcl"
@@ -45,10 +50,10 @@ outputs : {
 
   CosTrackSelect : {
       module_type: RootOutput
-      fileName: "mcs.owner.AlignTrackSelector.version.sequencer.art"
+      fileName: "dig.owner.CosmicAlignTrackSelector.GoodRecstrtbl-cutspass.version.sequencer.art"
       SelectEvents: [ RecoPath ]
 
-      outputCommands :   [ "keep *_*_*_*" ]
+      outputCommands :  ["keep *_*_*_*", "drop *_*_*_CosmicAlignTrackSelector"]
   }
 }
 
@@ -61,30 +66,21 @@ outputs : {
 outputs.Output.SelectEvents : [ "RecoPath" ]
 #
 # the following need to be overwritten for the specific channel
-services.TFileService.fileName: "nts.owner.RecoMCTrig.version.sequencer.root"
-outputs.Output.fileName: "mcs.owner.RecoMCTrig.version.sequencer.art"
-outputs.Output.outputCommands : ["keep *_*_*_*"]
-physics.end_paths : [ EndPath ] # needed for generate_fcl
+services.TFileService.fileName: "nts.owner.CosmicAlignTrackSelector.version.sequencer.root"
+outputs.Output.fileName: "dig.owner.CosmicAlignTrackSelector.GoodRecstrtbl-cutspass.version.sequencer.art"
+outputs.Output.outputCommands : ["keep *_*_*_*", "drop *_*_*_CosmicAlignTrackSelector"]
 
 
 services.scheduler.wantSummary: true
 
 
 physics.RecoPath : [ @sequence::TrkHitReco.PrepareHits, SimpleTimeCluster, LineFinder, CosmicTrackFinderTimeFit, AlignTrackSelector ]
-
 outputs.CosTrackSelect.SelectEvents : [ RecoPath ]
-
-physics.EndPath : [ CosmicTrackDiag, CosTrackSelect ]
-
+physics.EndPath : [ CosTrackSelect ]
+physics.end_paths : [ EndPath ] # needed for generate_fcl
 
 physics.filters.AlignTrackSelector.CosmicTrackSeedCollection : "CosmicTrackFinderTimeFit"
 
-physics.analyzers.CosmicTrackDiag.CosmicTrackSeedCollection : "CosmicTrackFinderTimeFit"
-physics.analyzers.CosmicTrackDiag.printLevel : 1
-
-physics.analyzers.CosmicAnalysis.TimeClusterCollection : SimpleTimeCluster
-physics.analyzers.CosmicAnalysis.diagLevel : 2
-physics.analyzers.CosmicAnalysis.CosmicTrackSeedCollection : CosmicTrackFinderTimeFit
 
 # these lines are needed to improve performance
 services.ProditionsService.strawResponse.useParameterizedDriftErrors : true
