@@ -179,8 +179,10 @@ namespace mu2e
         retval = true;
         ++_npass;
         // Fill the trigger info object
-        triginfo->_triggerBits.merge(TriggerFlag::helix);
-	triginfo->_triggerPath = _trigPath;
+        if (trig_ind == 0){
+	  triginfo->_triggerBits.merge(TriggerFlag::helix);
+	  triginfo->_triggerPath = _trigPath;
+	}
         // associate to the helix which triggers.  Note there may be other helices which also pass the filter
         // but filtering is by event!
         size_t index = std::distance(hscol->begin(),ihs);

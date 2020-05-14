@@ -73,8 +73,10 @@ namespace mu2e
         retval = true;
         ++_npass;
         // Fill the trigger info object
-        triginfo->_triggerBits.merge(TriggerFlag::hitCluster);
-	triginfo->_triggerPath = _trigPath;
+        if (trig_ind == 0){
+	  triginfo->_triggerBits.merge(TriggerFlag::hitCluster);
+	  triginfo->_triggerPath = _trigPath;
+	}
         // associate to the hit cluster which triggers.  Note there may be other hit clusters which also pass the filter
         // but filtering is by event!
         size_t index = std::distance(tccol->begin(),itc);
