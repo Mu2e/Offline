@@ -50,7 +50,7 @@ outputs : {
 
   CosTrackSelect : {
       module_type: RootOutput
-      fileName: "dig.owner.CosmicAlignTrackSelector.description.version.sequencer.art"
+      fileName: "dig.owner.CosmicAlignTrackSelector-description.version.sequencer.art"
       SelectEvents: [ RecoPath ]
 
       outputCommands :  ["keep *_*_*_*", "drop *_*_*_CosmicAlignTrackSelector"]
