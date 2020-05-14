@@ -70,11 +70,11 @@ namespace mu2e
      
       if( cosmic.status().hasAllProperties(_goodcosmic) && cosmic.status().hasAllProperties(_convergedcosmic) && cosmic.hits().size()>_minnch && cosmic.trkstrawhits().size() > _minnsh ){ 
        
-        ++_npass;
-        
-        triginfo->_triggerBits.merge(TriggerFlag::track); 
-        triginfo->_triggerPath = _trigPath;
-    
+        ++_npass;        
+	if (trig_ind == 0){
+	  triginfo->_triggerBits.merge(TriggerFlag::track); 
+	  triginfo->_triggerPath = _trigPath;
+	}
         size_t index = std::distance(coscol->begin(),icos);
 	if (trig_ind < TriggerInfo::MaxNObj){
 	  triginfo->_cosmics[trig_ind] = art::Ptr<CosmicTrackSeed>(cosH,index);

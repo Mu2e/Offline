@@ -208,8 +208,10 @@ namespace mu2e {
 	if (_rpeak>_MVArpivot[disk]){
 	  if (_MVA>_MVAlowcut[disk]) {
 	    retval = true;
-	    triginfo->_triggerBits.merge(TriggerFlag::caloTrigSeed);
-	    triginfo->_triggerPath = _trigPath;
+	    if (trig_ind == 0){
+	      triginfo->_triggerBits.merge(TriggerFlag::caloTrigSeed);
+	      triginfo->_triggerPath = _trigPath;
+	    }
 	    size_t index = std::distance(caloTrigSeeds.begin(),seedIt);
 	    triginfo->_caloTrigSeeds[trig_ind] = art::Ptr<CaloTrigSeed>(caloTrigSeedsHandle,index);
 	    ++trig_ind;
@@ -219,8 +221,10 @@ namespace mu2e {
 	  MVAcut=_MVAcutA[disk]+_MVAcutB[disk]*_rpeak;
 	  if (_MVA>MVAcut) {
 	    retval = true;
-	    triginfo->_triggerBits.merge(TriggerFlag::caloTrigSeed);
-	    triginfo->_triggerPath = _trigPath;
+	    if (trig_ind == 0){
+	      triginfo->_triggerBits.merge(TriggerFlag::caloTrigSeed);
+	      triginfo->_triggerPath = _trigPath;
+	    }
 	    size_t index = std::distance(caloTrigSeeds.begin(),seedIt);
 	    triginfo->_caloTrigSeeds[trig_ind] = art::Ptr<CaloTrigSeed>(caloTrigSeedsHandle,index);
 	    ++trig_ind;

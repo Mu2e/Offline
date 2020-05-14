@@ -424,8 +424,10 @@ namespace mu2e {
 	retval = true;
 	++_nPass;
         // Fill the trigger info object
-        triginfo->_triggerBits.merge(TriggerFlag::caloCluster);
-	triginfo->_triggerPath = _trigPath;
+        if (trig_ind == 0){
+	  triginfo->_triggerBits.merge(TriggerFlag::caloCluster);
+	  triginfo->_triggerPath = _trigPath;
+	}
         // associate to the caloCluster which triggers.  Note there may be other caloClusters which also pass the filter
         // but filtering is by event!
         size_t index = std::distance(caloClusters->begin(), icl);
