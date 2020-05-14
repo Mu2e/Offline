@@ -234,20 +234,11 @@ produce( Event & event )
 
       eventNumber = hdr->GetTimestamp();
       
-      // if(hdr->SubsystemID==0) {
-      // 	mode_ = "TRK";
-      // } else if(hdr->SubsystemID==1) {
-      // 	mode_ = "CAL";
-      // }
-
       if(idx < numTrkFrags){
 	mode_ = mu2e::FragmentType::TRK;//"TRK";
       }else {
 	mode_ = mu2e::FragmentType::CAL;//"CAL";
       }
-      // if(idx>=numTrkFrags && mode_ == "TRK") {
-      // 	printf("[StrawAndCaloDigisFromFragments::produce] wrong mode assigned!\n");
-      // }
 
       // Parse phyiscs information from TRK packets
       if(mode_ == mu2e::FragmentType::TRK && hdr->PacketCount>0 && parseTRK_>0) {
@@ -451,8 +442,6 @@ produce( Event & event )
     } // End loop over DataBlocks within fragment 
       
   } // Close loop over fragments
-
-  //  }  // Close loop over the TRK and CAL collections
 
   if( diagLevel_ > 0 ) {
     std::cout << "mu2e::StrawAndCaloDigisFromFragments::produce exiting eventNumber=" << (int)(event.event()) << " / timestamp=" << (int)eventNumber <<std::endl;
