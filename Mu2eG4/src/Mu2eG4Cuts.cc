@@ -465,9 +465,15 @@ namespace mu2e {
     }
 
     bool VolumeCut::cut_impl(const G4Track* trk) {
-      KillerVolumesCache::const_iterator p = killerVolumes_.find(trk->GetVolume());
-      bool result = ( p != killerVolumes_.end() );
-      if(negate_) result = !result;
+      bool result = false;
+      const auto vol = trk->GetVolume();
+      // Volume is not defined when we are called from the stacking action.
+      // This protection is important for the negated case.
+      if(vol) {
+        KillerVolumesCache::const_iterator p = killerVolumes_.find(vol);
+        result = ( p != killerVolumes_.end() );
+        if(negate_) result = !result;
+      }
       return result;
     }
 
