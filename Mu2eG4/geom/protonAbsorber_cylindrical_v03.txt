@@ -1,0 +1,16 @@
+//
+// Minor updates to proton absorber parameters
+#include "Mu2eG4/geom/protonAbsorber_cylindrical_v02.txt"
+
+string protonabsorber.materialName = "Polyethylene090";
+double protonabsorber.OutRadius1   =  300.5; //design is 300 mm inner radius, so add thickness to outer here
+double protonabsorber.OutRadius0   =  300.5;
+double protonabsorber.thickness    =    0.5;
+
+double protonabsorber.distFromTargetEnd = 625.; //mu2e z positions are 6901-7901 mm
+double protonabsorber.halfLength   = 500.0;
+
+// This tells emacs to view this file in c++ mode.
+// Local Variables:
+// mode:c++
+// End:

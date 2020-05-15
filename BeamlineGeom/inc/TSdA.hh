@@ -24,6 +24,8 @@ namespace mu2e {
 
     std::string material4() const { return _mat4; }
 
+    int version() const { return _version; }
+
     //----------------------------------------------------------------
   private:
     friend class TSdAMaker;
@@ -38,6 +40,8 @@ namespace mu2e {
     std::string _mat4;
 
     CLHEP::Hep3Vector _position;
+
+    int _version;
 
     // Needed for persistency
     //    template<class T> friend class art::Wrapper;

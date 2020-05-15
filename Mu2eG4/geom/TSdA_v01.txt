@@ -6,6 +6,8 @@
 // This is a workaround for Virtual Detector, which reads directly from
 // this (outdated) parameter.
 
+// Version 1 FROZEN: M. MacKenzie, May 2020
+
 double TSdA.rFactorForVDs        = 650.; // Just for virtual detector build
 
 double tsda.r4		 = 525; // outer radius, inner radius is TS5

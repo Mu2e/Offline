@@ -1,0 +1,13 @@
+// Update to the stopping target foil thickness
+// M. MacKenzie, May 2020
+
+#include "Mu2eG4/geom/stoppingTargetHoles_DOE_review_2017.txt"
+
+// last thickness given will be repeated up to number radii.size()
+vector<double> stoppingTarget.halfThicknesses  =
+  { 0.0528 }; //0.1056 mm full thickness (docdb-31396 slide 24)
+
+// This tells emacs to view this file in c++ mode.
+// Local Variables:
+// mode:c++
+// End:
