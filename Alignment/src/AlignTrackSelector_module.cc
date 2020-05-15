@@ -86,7 +86,7 @@ private:
   static constexpr int MAX_NHITS = 100;
 
   Int_t nHits;
-  
+
   Double_t A0;
   Double_t A1;
   Double_t B0;
@@ -157,8 +157,7 @@ public:
       min_doca(conf().mindoca()), max_timeres(conf().maxtimeres()),
       min_track_hits(conf().mintrackhits()) {
 
-      consumes<CosmicTrackSeedCollection>(_costag);
-
+    consumes<CosmicTrackSeedCollection>(_costag);
   }
 
   virtual ~AlignTrackSelector() {}
@@ -184,16 +183,13 @@ public:
   ProditionsHandle<StrawResponse> srep_h;
 };
 
-void AlignTrackSelector::beginJob() {
+void AlignTrackSelector::beginJob() {}
 
-}
-
-bool AlignTrackSelector::beginRun(art::Run & run) { return true; }
+bool AlignTrackSelector::beginRun(art::Run& run) { return true; }
 
 void AlignTrackSelector::endJob() {
   if (_diag > 0) {
-    std::cout << "AlignTrackSelector: selected " << tracks_written << " tracks "
-              << std::endl;
+    std::cout << "AlignTrackSelector: selected " << tracks_written << " tracks " << std::endl;
   }
 }
 
@@ -285,7 +281,6 @@ bool AlignTrackSelector::filter_CosmicTrackSeedCollection(art::Event const& even
         continue;
       }
 
-
       planes_traversed.insert(plane_id);
       panels_traversed.insert(panel_uuid);
 
@@ -294,8 +289,11 @@ bool AlignTrackSelector::filter_CosmicTrackSeedCollection(art::Event const& even
                   << resid_err_tmp << std::endl;
       }
 
-      if (abs(time_resid) > max_time_res_track) {
-        max_time_res_track = abs(time_resid);
+      // avoid outlier hits when applying this cut
+      if (!straw_hit._flag.hasAnyProperty(StrawHitFlag::outlier)) {
+        if (abs(time_resid) > max_time_res_track) {
+          max_time_res_track = abs(time_resid);
+        }
       }
 
       wrote_hits = true;
@@ -327,8 +325,8 @@ bool AlignTrackSelector::filter_CosmicTrackSeedCollection(art::Event const& even
 
           (pvalue > max_pvalue) || (max_time_res_track > max_timeres && max_timeres > 0) ||
 
-          (nHits < min_track_hits) || 
-          
+          (nHits < min_track_hits) ||
+
           bad_track) {
 
         if (_diag > 0) {
@@ -349,8 +347,7 @@ bool AlignTrackSelector::filter_CosmicTrackSeedCollection(art::Event const& even
   return wrote_track;
 }
 
-
-bool AlignTrackSelector::filter(art::Event & event) {
+bool AlignTrackSelector::filter(art::Event& event) {
   StrawResponse const& _srep = srep_h.get(event.id());
   Tracker const& tracker = _proditionsTracker_h.get(event.id());
 

@@ -475,10 +475,12 @@ bool AlignTrackCollector::filter_CosmicTrackSeedCollection(
                   << resid_err_tmp << std::endl;
       }
 
-      if (abs(time_resid) > max_time_res_track) {
-        max_time_res_track = abs(time_resid);
+      // avoid outlier hits when applying this cut
+      if (!straw_hit._flag.hasAnyProperty(StrawHitFlag::outlier)) {
+        if (abs(time_resid) > max_time_res_track) {
+          max_time_res_track = abs(time_resid);
+        }
       }
-
       // Convention note:
       // The DoF order is : (planes) dx, dy, dz, a, b, g, followed by (panel) dx, dy, dz, dz,
       // a, b, g This is reflected also in the generated DOCA derivatives.

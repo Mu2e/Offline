@@ -265,16 +265,17 @@ namespace mu2e{
               if( tseed._track.minuit_converged == false)
                 continue;
 
-              // remove all outliers from ComboHitCollection
-              ComboHitCollection tmpHits;
-              for(auto const &chit : tseed._straw_chits){
-                if(!chit._flag.hasAnyProperty(StrawHitFlag::outlier)){
-                  tmpHits.push_back(chit);
-                }
-              }
-              tseed._straw_chits = tmpHits;
-              if (tmpHits.size() == 0)
-                continue;
+              // TODO: do we keep or remove this?
+              // // remove all outliers from ComboHitCollection
+              // ComboHitCollection tmpHits;
+              // for(auto const &chit : tseed._straw_chits){
+              //   if(!chit._flag.hasAnyProperty(StrawHitFlag::outlier)){
+              //     tmpHits.push_back(chit);
+              //   }
+              // }
+              // tseed._straw_chits = tmpHits;
+              // if (tmpHits.size() == 0)
+              //   continue;
             }
 
             CosmicTrackSeedCollection* col = seed_col.get();
