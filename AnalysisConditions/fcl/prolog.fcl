@@ -10,9 +10,8 @@ BEGIN_PROLOG
  }
  TrkQualPosConfig : { trainName : "TrkQualPos"
  	       	      xmlFileName : "AnalysisConditions/weights/TrkQualPos.weights.xml"
-		      calibrated : false
+		      calibrated : true
  }
-
 
   TrkQualCatalog : {
    verbose : 1
