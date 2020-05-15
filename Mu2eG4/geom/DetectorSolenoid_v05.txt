@@ -1,0 +1,11 @@
+// Correcting the TS-DS interconnect
+// M. MacKenzie, May 2020
+#include "Mu2eG4/geom/DetectorSolenoid_v04.txt"
+
+double ds.interconnect.halfLength = 82.;
+double ds.interconnect.rIn = 963.;
+double ds.interconnect.rOut = 972.5;
+// This tells emacs to view this file in c++ mode.
+// Local Variables:
+// mode:c++
+// End:

@@ -173,7 +173,7 @@ namespace mu2e {
 
       // The proton absorber starts at the target end.
       // we add space for the virtual detector here
-      double pabsStartInMu2eZ = target->centerInMu2e().z() + 0.5*target->cylinderLength() + 2.*vdHL;;
+      double pabsStartInMu2eZ = target->centerInMu2e().z() + 0.5*target->cylinderLength() + 2.*vdHL;
 
       // Need to split it at the DS2/DS3 boundary
       double pabs1EndInMu2eZ = ds->vac_zLocDs23Split();
