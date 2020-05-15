@@ -2,8 +2,7 @@
 // roneil@fnal.gov
 // ryunoneil@gmail.com
 
-// A module to collect Cosmic NoField tracks and write out 'Mille' data files used as input to a
-// Millepede-II alignment fit.
+// A module to SELECT Cosmic NoField events that yield a track and pass some cuts.
 
 // Consult README.md for more information
 
