@@ -125,7 +125,7 @@ int maketree(istream& inp) {
     } else if (i==0) { // skip the root of the tree
     } else if (i==2) { // top level dir
       string pkgName = line.substr(4,line.size()-4);
-      bool skip = currPkg=="bin" || currPkg=="tmp" || 
+      bool skip = currPkg=="bin" || currPkg=="tmp" || currPkg=="gen" || 
 	currPkg=="lib" || currPkg=="SConstruct";
       if(!pkg.name.empty() && !skip) {
 	packages.push_back(pkg);
