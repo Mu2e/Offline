@@ -30,12 +30,27 @@ physics : {
 	 generateTimestampTable : 1
       }
    }
+   analyzers : {
+      readSD : 
+      {
+	  module_type : ReadStrawDigiReco
+	  digisTag    : makeSD
+      }
 
+      readCD : 
+      {
+	  module_type : CaloDigiAna
+	 digisTag     : CaloDigiFromShower
+      }
+
+   }
 
    t1 : [ binaryOutput ] 
-   e1 : [  ]
+   e1 : [ readSD, readCD ]
 
    trigger_paths  : [t1]
    end_paths      : [e1]
 
 }
+
+services.TFileService.fileName : "generateBinaryFromDigi_test.root" 

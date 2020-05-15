@@ -7,7 +7,7 @@
 #include "fcl/minimalMessageService.fcl"
 #include "fcl/standardServices.fcl"
 #include "DAQ/fcl/prolog_trigger.fcl"
-process_name : FragmentToDigi
+process_name : inspectTDAQFile
 
 source : {
    module_type : RootInput
@@ -15,27 +15,29 @@ source : {
 
    # firstEvent  : 500
    maxEvents   : -1
-#   inputCommands: ["keep *", 
-#                   "drop *Mu2eEventHeader*_*_*_*"]
 }
 
 services : @local::Services.Reco
 
 physics : {
 
-   producers : {
-      makeSD:
-      {
-	 @table::DAQ.producers.makeSD
-      }
-
-      CaloDigiFromShower:		
-      {	 
-	 @table::DAQ.producers.CaloDigiFromShower
-      }
-   }
+   producers : {}
 
    analyzers  : {
+
+      readSD : 
+      {
+	 module_type : ReadStrawDigiReco
+	 digisTag    : makeSD
+      }
+
+      readCD : 
+      {
+	 module_type : CaloDigiAna
+	 digisTag     : CaloDigiFromShower
+      }
+
+
       readFragments : {
 	 module_type : FragmentAna
 	 diagLevel   : 0
@@ -47,8 +49,8 @@ physics : {
    }
 
    #  t1 : [ makeSD ] 
-   t1 : [ makeSD, CaloDigiFromShower ] 
-   e1 : [ readFragments, outfile ]
+   t1 : [  ] 
+   e1 : [ readFragments, readCD, readSD ]
 
    trigger_paths  : [t1]
    end_paths      : [e1]
@@ -56,16 +58,4 @@ physics : {
 
 }
 
-outputs:  {
-   outfile :  {
-      module_type   :   RootOutput
-      fileName      :   "digis_from_frags_debug.art"
-      
-      outputCommands: [ 
-	 "drop *_*_*_*",
-	 "keep *_*_*_*"
-      ]
-   }
-}
-
-services.TFileService.fileName : "generateDigiFromFragment_test.root" 
+services.TFileService.fileName : "inspectdTDAQFile_test.root" 

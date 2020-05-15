@@ -8,8 +8,13 @@
 
  <class name="std::vector<std::pair<unsigned int, unsigned int> >"/>
 <!--  ********* cosmics  ********* -->
- <class name="mu2e::CosmicTrackSeed"/>
- <class name="mu2e::CosmicTrackSeedCollection"/>
+ <class name="TrackParams"/>
+ <class name="TrackCov"/>
+ <class name="TrackAxes"/>
+ <class name="TrackEquation"/>
+ <class name="TrackSeedDiag"/>
+ 
+ <class name="mu2e::CosmicTrack"/>
  <class name="art::Ptr<mu2e::CosmicTrackSeed>"/>
  <class name="art::Wrapper<mu2e::CosmicTrackSeedCollection>"/>
 
@@ -135,12 +140,6 @@
 
 
 <!--  ********* tracking output  ********* -->
-
- <class name="mu2e::TrackSeed"/>
- <class name="mu2e::TrackSeedCollection" />
- <class name="art::Ptr<mu2e::TrackSeed>"/>
- <class name="art::Wrapper<mu2e::TrackSeedCollection>"/>
- <class name="std::vector<art::Ptr<mu2e::TrackSeed> >"/>
 
  <class name="mu2e::TrkFitFlag"/>
  <class name="mu2e::TrkFitFlagDetail"/>
