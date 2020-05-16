@@ -33,6 +33,11 @@ double particleGun.pmax = 8000.;
 // p  2212
 
 int particleGun.id = 2212;
+//int particleGun.id = 1000591349;
+
+// excitation energy & floatLevelBaseIndex of an ion/isomer
+// double particleGun.excitationEnergy = 0.1631;
+// int    particleGun.floatLevelBaseIndex = 1;
 
 // Mean particle number
 double particleGun.mean =  -1; // -n exactly n
@@ -47,4 +52,3 @@ bool particleGun.verbose = false;
 // Local Variables:
 // mode:c++
 // End:
-

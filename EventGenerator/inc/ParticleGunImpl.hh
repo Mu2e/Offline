@@ -40,6 +40,8 @@ namespace mu2e {
     ParticleGunImpl(CLHEP::HepRandomEngine& engine,
         double meanMultiplicity,
         PDGCode::type pdgId,
+        double excitationEnergy,
+        int floatLevelBaseIndex,
         double pmin,
         double pmax,
         const std::string&    momentumModeString,
@@ -66,6 +68,8 @@ namespace mu2e {
     ParticleGunImpl(CLHEP::HepRandomEngine& engine,
                     double meanMultiplicity,
         PDGCode::type pdgId,
+        double excitationEnergy,
+        int floatLevelBaseIndex,
         double pmin,
         double pmax,
         const RandomUnitSphereParams& angles,
@@ -110,6 +114,10 @@ namespace mu2e {
 
     // PDG particle id code of the particle to be generated.
     PDGCode::type _pdgId;
+
+    // excitation energy and floatLevelBaseIndex of an ion/isomer
+    double _excitationEnergy;
+    int _floatLevelBaseIndex;
 
     // Momentum range of the particle.  Units are MeV.
     double _pmin;

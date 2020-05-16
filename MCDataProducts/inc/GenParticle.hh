@@ -44,13 +44,17 @@ namespace mu2e {
                  CLHEP::Hep3Vector const&       position,
                  CLHEP::HepLorentzVector const& momentum,
                  double time,
-                 double properTime = 0.):
+                 double properTime = 0.,
+                 double excitationEnergy = 0.,
+                 int floatLevelBaseIndex = 0):
       _pdgId(pdgId),
       _generatorId(generatorId),
       _position(position),
       _momentum(momentum),
       _time(time),
-      _properTime(properTime)
+      _properTime(properTime),
+      _excitationEnergy(excitationEnergy),
+      _floatLevelBaseIndex(floatLevelBaseIndex)
     {}
 
     // Differs only in the type of second argument.
@@ -59,13 +63,17 @@ namespace mu2e {
                  CLHEP::Hep3Vector const&       position,
                  CLHEP::HepLorentzVector const& momentum,
                  double time,
-                 double properTime = 0.):
+                 double properTime = 0.,
+                 double excitationEnergy = 0.,
+                 int floatLevelBaseIndex = 0):
       _pdgId(pdgId),
       _generatorId(GenId(generatorId)),
       _position(position),
       _momentum(momentum),
       _time(time),
-      _properTime(properTime)
+      _properTime(properTime),
+      _excitationEnergy(excitationEnergy),
+      _floatLevelBaseIndex(floatLevelBaseIndex)
     {}
 
     // Accept compiler written versions of d'tor, copy c'tor and assignment operator.
@@ -79,6 +87,9 @@ namespace mu2e {
     // particle recorded in a previous job that already had non-zero
     // proper time.
     double        properTime()  const { return _properTime;}
+    // for excited ions
+    double        excitationEnergy()      const { return _excitationEnergy;}
+    int           floatLevelBaseIndex()   const { return _floatLevelBaseIndex;}
 
     CLHEP::Hep3Vector const&       position() const { return _position;}
     CLHEP::HepLorentzVector const& momentum() const { return _momentum;}
@@ -96,6 +107,9 @@ namespace mu2e {
     CLHEP::HepLorentzVector _momentum;
     double _time;
     double _properTime;
+    // Excited ion properties
+    double _excitationEnergy;
+    short int _floatLevelBaseIndex;
   };
 
   inline std::ostream& operator<<(std::ostream& ost,
@@ -107,6 +121,8 @@ namespace mu2e {
         << genp.properTime() << " "
         << genp.position() << " "
         << genp.momentum() << " "
+        << genp.excitationEnergy() << " "
+        << genp.floatLevelBaseIndex()
         << " )";
     return ost;
   }
