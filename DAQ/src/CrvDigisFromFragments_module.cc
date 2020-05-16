@@ -77,8 +77,9 @@ CrvDigisFromFragments::CrvDigisFromFragments(const art::EDProducer::Table<Config
 
 // ----------------------------------------------------------------------
 
-int CrvDigisFromFragments::decompressCrvDigi(uint8_t adc)  //TODO: temporary implementation
+int CrvDigisFromFragments::decompressCrvDigi(uint8_t adc)
 {
+  //TODO: Temporary implementation until we have the real compression used at the FEBs
   int toReturn=adc;
   if(adc>=50 && adc<75) toReturn=(adc-50)*2+50;
   if(adc>=75 && adc<100) toReturn=(adc-75)*4+100;
@@ -189,10 +190,10 @@ CrvDigisFromFragments::produce( Event & event )
         size_t nHits = (crvRocHdr->ControllerEventWordCount - sizeof(mu2e::ArtFragmentReader::CRVROCStatusPacket)) / sizeof(mu2e::ArtFragmentReader::CRVHitReadoutPacket);
 
 	bool err = false;
-//	for(size_t i=0; i<cc.GetCRVHitCount(curBlockIdx); i++) {
+//	for(size_t i=0; i<cc.GetCRVHitCount(curBlockIdx); i++) {   //TODO: change required in ArtFragmentReader.hh
 	for(size_t i=0; i<nHits; i++) {
 
-//	  auto crvHit = cc.GetCRVHitReadoutPacket(curBlockIdx, i);
+//	  auto crvHit = cc.GetCRVHitReadoutPacket(curBlockIdx, i);  //TODO: change required in ArtFragmentReader.hh
 	  auto crvHit = reinterpret_cast<const mu2e::ArtFragmentReader::CRVHitReadoutPacket *>(crvRocHdr + 1) + i;
 	  if(crvHit == nullptr) {
 	    std::cerr << "Error retrieving CRV Hit at index " << i << " from DataBlock " << curBlockIdx << "! Aborting processing of this block!";
