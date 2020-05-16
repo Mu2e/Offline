@@ -1151,8 +1151,9 @@ namespace mu2e {
   //--------------------------------------------------------------------------------
   // crate a crvPacket from the digi
   //--------------------------------------------------------------------------------
-  uint8_t ArtBinaryPacketsFromDigis::compressCrvDigi(int adc) //TODO: Temporary implementation
+  uint8_t ArtBinaryPacketsFromDigis::compressCrvDigi(int adc)
   {
+    //TODO: Temporary implementation until we have the real compression used at the FEBs
     adc-=95;
     if(adc<0) adc=0;
     uint8_t toReturn=adc;
@@ -1174,9 +1175,10 @@ namespace mu2e {
     //Only a toy model is used here. The real implementation will follow.
     int channel = (crvBarIndex.asUint()*4 + crvSiPMNumber) % 64;  //channel within an FEB
     int FEB     = (crvBarIndex.asUint()*4 + crvSiPMNumber) / 64;  //globale FEBId
+    uint16_t SiPMID = (FEB<<7) | channel;
     globalRocID = FEB / 24; //global ROCId
 
-    hit.SiPMID = (FEB<<7) | channel;  //TODO: This is only a temporary implementation
+    hit.SiPMID = SiPMID;
     hit.HitTime = digi.GetStartTDC();
     hit.NumSamples = 8;
     hit.WaveformSample0 = compressCrvDigi(digi.GetADCs().at(0));  //TODO: There should be a better way of filling the waveform
