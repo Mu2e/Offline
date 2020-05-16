@@ -24,8 +24,8 @@ int mu2e::ValCaloShowerStep::fill(const mu2e::CaloShowerStepCollection & coll,
 
   _hN->Fill(coll.size()); 
   for(auto ss : coll) {
-    _ht->Fill(ss.timeStepMC());
-    _hE->Fill(ss.energyMC());
+    _ht->Fill(ss.time());
+    _hE->Fill(ss.energyDepG4());
     _hposx->Fill(ss.position().x());
     _hposy->Fill(ss.position().y());
     _hposz->Fill(ss.position().z());

@@ -19,7 +19,7 @@
 #include "DataProducts/inc/EventWindowMarker.hh"
 #include "MCDataProducts/inc/PrimaryParticle.hh"
 #include "MCDataProducts/inc/StrawDigiMC.hh"
-#include "MCDataProducts/inc/CaloShowerSim.hh"
+#include "MCDataProducts/inc/CaloShowerSimCollection.hh"
 #include "MCDataProducts/inc/CrvDigiMC.hh"
 #include "MCDataProducts/inc/KalSeedMC.hh"
 #include "MCDataProducts/inc/CaloClusterMC.hh"
@@ -368,11 +368,11 @@ namespace mu2e {
       // to CaloDigis is missing FIXME!
       // Must truncate tiny energy deposts as the CaloShowerSim compression sometimes fails!
       for(auto const& css : cssc) {
-	if(css.energyMC() > _csme && css.crystalId() == cchptr->id()){
+	if(css.energyDep() > _csme && css.crystalId() == cchptr->id()){
 	  // compare times
 	  double csstime = css.time();
 	  if(_debug > 2) std::cout << "Matching CaloShowerSim crystal id " << css.crystalId()
-	    << " MCenergy " << css.energyMC() << " time " << csstime 
+	    << " MCenergy " << css.energyDep() << " time " << csstime 
 	      << " calohit time " << cchptr->time() << std::endl;
 	  if(fabs(csstime-cchptr->time()) < _ccmcdt) {
 	    // match: see if an entry for this SimParticle already exists
@@ -380,8 +380,8 @@ namespace mu2e {
 	    for(auto& edep : edeps) {
 	      if(css.sim() == edep.sim()){
 		// add in the energy; average the time
-		float te = edep.energyDeposit()*edep.time() + csstime*css.energyMC();
-		edep._edep += css.energyMC();
+		float te = edep.energyDeposit()*edep.time() + csstime*css.energyDep();
+		edep._edep += css.energyDep();
 		edep._time = te/edep.energyDeposit();
 		found = true;
 		break;
@@ -391,7 +391,7 @@ namespace mu2e {
 	      // add a new element
 	      CaloMCEDep edep;
 	      edep._simp = css.sim();
-	      edep._edep = css.energyMC();
+	      edep._edep = css.energyDep();
 	      edep._time = csstime;
 	      // try all primary particle SimParticles, and keep the one with the best
 	      // relationship

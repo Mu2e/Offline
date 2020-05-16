@@ -19,50 +19,50 @@ CaloShowerStepFromStepPt  :
     module_type             : CaloShowerStepFromStepPt
     numZSlices              : 20
     deltaTime               : 0.2
-    calorimeterStepPoints   : calorimeter
-    calorimeterROStepPoints : calorimeterRO
+    caloStepPointCollection : calorimeter
     usePhysVolInfo          : false
-    physVolInfoInput        : "compressPVDetector"
+    #physVolInfoInput       : "compressPVDetector"
+    physVolInfoInput        : "g4run"
     caloMaterial            : ["G4_CESIUM_IODIDE", "Polyethylene092"]
-    compressMuons           : false 
-    diagLevel               : 0
+    compressAll             : false 
+    diagLevel               : 2
 }
 
 
 CaloShowerStepROFromShowerStep : 
 {
-    module_type                 : CaloShowerStepROFromShowerStep
-    caloCrystalShowerInputs     : [ "CaloShowerStepFromStepPt:calorimeter" ]
-    TimeOffsets                 : { inputs : [ @sequence::CommonMC.TimeMaps ] }
-    blindTime                   : @local::HitMakerBlindTime
-    caloLRUCorrection           : true
-    caloBirksCorrection         : true
-    caloPEStatCorrection        : true
-    addTravelTime               : true	    
-    diagLevel                   : 0
+    module_type              : CaloShowerStepROFromShowerStep
+    caloShowerStepCollection : [ "CaloShowerStepFromStepPt" ]
+    TimeOffsets              : { inputs : [ @sequence::CommonMC.TimeMaps ] }
+    blindTime                : @local::HitMakerBlindTime
+    LRUCorrection            : true
+    BirksCorrection          : true
+    PEStatCorrection         : true
+    addTravelTime            : true	    
+    diagLevel                : 0
 }
 
 
 CaloDigiFromShower : 
 {
-    module_type           : CaloDigiFromShower
-    caloShowerModuleLabel : CaloShowerStepROFromShowerStep
+    module_type             : CaloDigiFromShower
+    caloShowerROCollection  : CaloShowerStepROFromShowerStep
 
-    blindTime             : @local::HitMakerBlindTime
-    addNoise              : true
-    noise                 : 2       # mV equivalent to 150 keV of Noise               
+    blindTime               : @local::HitMakerBlindTime
+    addNoise                : true
+    noise                   : 2.3  # mV equivalent to 150 keV of Noise               
 
-    thresholdVoltage      : 5.0  
-    thresholdAmplitude    : 10 
-    energyScale           : 60 
-    digiSampling          : @local::HitMakerDigiSampling
-    nBits                 : 12
-    dynamicRange          : 2000 
-    endTimeBuffer         : 80
-    bufferDigi            : 5  
-    pulseIntegralSteps    : 50
-    nBinsPeak		  : 3 #needs optimizing/checking
-    diagLevel             : 0
+    thresholdVoltage        : 5.0  
+    thresholdAmplitude      : 10 
+
+    digiSampling            : @local::HitMakerDigiSampling
+    nBits                   : 12
+    dynamicRange            : 2000 
+    endTimeBuffer           : 80
+    bufferDigi              : 5  
+    pulseIntegralSteps      : 50
+    nBinsPeak		    : 3 #needs optimizing/checking
+    diagLevel               : 5
 }
 
 

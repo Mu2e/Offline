@@ -40,7 +40,7 @@ namespace mu2e {
 	       caloShowerSimSeen.insert(caloShowerSimPtr.get());		
 
                double pIn  = caloShowerSimPtr->momentumIn();
-               double eDep = caloShowerSimPtr->energy();
+               double eDep = caloShowerSimPtr->energyDep();
 	       double time = caloShowerSimPtr->time();
 
 	       eDepTot_ += eDep;

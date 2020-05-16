@@ -492,7 +492,7 @@ namespace mu2e {
     n=n2=nn=na=ni=0;
     for(auto const& s: coll) { // loop over the collection
       n++;
-      for(int i=0; i<s.nParticles(); i++) {
+      for(unsigned i=0; i<s.nParticles(); i++) {
 	n2++;
 	auto const& p = s.simParticle(i);
 	if(p.isNonnull()) {

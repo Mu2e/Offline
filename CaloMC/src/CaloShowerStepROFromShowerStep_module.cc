@@ -1,21 +1,15 @@
-// Transform the deposited energy into scintillator light seen by the crystal readouts
 //
-// The scintillation light produced by the deposited energy is a random process. It is calculated with a
-// fixed conversion factor fluctuated, and transformed back to energy for convenience.
+// Transform the energy deposited in the scintillator into photo-electrons (PE) seen by the photosensor. 
+// Includes corrections from Birks law, longitudinal response uniformity and photo-statistcs fluctuations.
+// The PE are generated individually and corrected for transit time.
 //
-// The corrections include longitudinal response uniformity, Birke's law (crystal level) and
-// photo-statistics fluctuations (readout level)
-
 // Original author Bertrand Echenard
 //
-
-#include "canvas/Utilities/InputTag.h"
-
+//
 #include "art/Framework/Core/EDProducer.h"
 #include "art/Framework/Core/ModuleMacros.h"
 #include "art/Framework/Principal/Event.h"
-#include "art_root_io/TFileService.h"
-#include "art_root_io/TFileDirectory.h"
+#include "canvas/Utilities/InputTag.h"
 
 #include "CalorimeterGeom/inc/Calorimeter.hh"
 #include "ConditionsService/inc/ConditionsHandle.hh"
@@ -34,9 +28,6 @@
 #include "CLHEP/Random/RandPoissonQ.h"
 #include "CLHEP/Random/RandExponential.h"
 
-#include "TH2D.h"
-#include "TH1D.h"
-
 #include <iostream>
 #include <string>
 #include <cmath>
@@ -45,349 +36,264 @@
 #include <utility>
 
 
-// Anonymous namespace to hold some helper classes.
 namespace {
 
-
-  class SimParticleEntry
+  struct StepEntry
   {
-  public:
+      StepEntry(const art::Ptr<mu2e::CaloShowerStep>& step, float edepCorr, float time) :
+        step_(step), edepCorr_(edepCorr), time_(time) {}
 
-    SimParticleEntry(const art::Ptr<mu2e::SimParticle>& sim, const art::Ptr<mu2e::CaloShowerStep>& step, double edepCorr, double time) :
-      sim_(sim),step_(step), edepInit_(step->energyMC()), edepCorr_(edepCorr), time_(time)
-    {}
-
-    art::Ptr<mu2e::SimParticle> sim_;
-    art::Ptr<mu2e::CaloShowerStep> step_;
-    double edepInit_;
-    double edepCorr_;
-    double time_;
+      art::Ptr<mu2e::CaloShowerStep> step_;
+      float edepCorr_;
+      float time_;
   };
 
-
-
-
-  class SimParticleSummary
+  struct SimParticleSummary
   {
-  public:
+      SimParticleSummary(const art::Ptr<mu2e::CaloShowerStep>& step, float edepCorr, float time) :
+        steps_(), edepCorr_(edepCorr), time_(time) {steps_.push_back(step);}
 
-    typedef art::Ptr<mu2e::CaloShowerStep> CaloShowerStepPtr;
+      void add(const art::Ptr<mu2e::CaloShowerStep>& step, float edepCorr, float time)
+      {
+         steps_.push_back(step);
+         edepCorr_ += edepCorr;
+         time_ = std::min(time_,time);
+      }
 
-    SimParticleSummary(const CaloShowerStepPtr& step, double edepInit, double edepCorr, double time) :
-      steps_(), edepInit_(edepInit), edepCorr_(edepCorr), time_(time), pIn_(step->momentumIn())
-    {
-      steps_.push_back(step);
-    }
-
-    void add(const CaloShowerStepPtr& step, double edepInit, double edepCorr, double time)
-    {
-      steps_.push_back(step);
-      edepInit_ += edepInit;
-      edepCorr_ += edepCorr;
-      time_ = std::min(time_,time);
-      pIn_ = std::max(pIn_,step->momentumIn());
-    }
-
-    std::vector<CaloShowerStepPtr> steps_;
-    double edepInit_;
-    double edepCorr_;
-    double time_;
-    double pIn_;
+      std::vector<art::Ptr<mu2e::CaloShowerStep>> steps_;
+      float edepCorr_;
+      float time_;
   };
 }
 
 
+
+
 namespace mu2e {
 
-  //------------------------------------------------------------
-  class CaloShowerStepROFromShowerStep : public art::EDProducer {
-  public:
+  class CaloShowerStepROFromShowerStep : public art::EDProducer 
+  {
+      public:
+         struct Config 
+         {
+             using Name    = fhicl::Name;
+             using Comment = fhicl::Comment;
+             using SPTO    = SimParticleTimeOffset::Config;
 
-    using Name=fhicl::Name;
-    using Comment=fhicl::Comment;
+             fhicl::Sequence<art::InputTag>  caloShowerStepCollection { Name("caloShowerStepCollection"), Comment("Compressed shower inputs for calo crystals") };
+             fhicl::Table<SPTO>              timeOffsets              { Name("TimeOffsets"),             Comment("Time maps to apply to sim particles before digitization.") };
+             fhicl::Atom<float>              blindTime                { Name("blindTime"),               Comment("Minimum time of hit to be digitized") };
+             fhicl::Atom<bool>               LRUCorrection            { Name("LRUCorrection"),           Comment("Include LRU corrections") };
+             fhicl::Atom<bool>               BirksCorrection          { Name("BirksCorrection"),         Comment("Include Birks corrections") };
+             fhicl::Atom<bool>               PEStatCorrection         { Name("PEStatCorrection"),        Comment("Include PE Poisson fluctuations") };
+             fhicl::Atom<bool>               addTravelTime            { Name("addTravelTime"),           Comment("Include light propagation time") };
+             fhicl::Atom<int>                diagLevel                { Name("diagLevel"),               Comment("Diag Level"),0 };
+         };
 
-    struct Config {
-      fhicl::Sequence<art::InputTag> caloCrystalShowerInputs{ Name("caloCrystalShowerInputs"), Comment("Compressed shower inputs for calo crystals") };
+         explicit CaloShowerStepROFromShowerStep(const art::EDProducer::Table<Config>& config) :
+            EDProducer{config},
+            toff_             (config().timeOffsets()),
+            blindTime_        (config().blindTime()),
+            LRUCorrection_    (config().LRUCorrection()),
+            BirksCorrection_  (config().BirksCorrection()),
+            PEStatCorrection_ (config().PEStatCorrection()),
+            addTravelTime_    (config().addTravelTime()),
+            diagLevel_        (config().diagLevel()),
+            engine_           (createEngine(art::ServiceHandle<SeedService>()->getSeed())),
+            randPoisson_      (engine_),
+            randGauss_        (engine_),
+            randExpo_         (engine_)
+         {
+             // the following consumes statements are necessary because SimParticleTimeOffset::updateMap calls getValidHandle.
+             for (auto const& tag : config().caloShowerStepCollection()) crystalShowerTokens_.push_back(consumes<CaloShowerStepCollection>(tag));
+             for (auto const& tag : config().timeOffsets().inputs()) consumes<SimParticleTimeMap>(tag);
+             produces<CaloShowerStepROCollection>();
+             produces<CaloShowerSimCollection>();
+         }
 
-      fhicl::Table<SimParticleTimeOffset::Config> timeOffsets{ Name("TimeOffsets"), Comment("Time maps to apply to sim particles before digitization.") };
+         void beginJob() override;
+         void produce(art::Event& e) override;
 
-      fhicl::Atom<double> blindTime{ Name("blindTime"), Comment("Time cut on digis? Or something related to that.") };
-      fhicl::Atom<bool>   caloLRUCorrection{ Name("caloLRUCorrection") };
-      fhicl::Atom<bool>   caloBirksCorrection{ Name("caloBirksCorrection") };
-      fhicl::Atom<bool>   caloPEStatCorrection{ Name("caloPEStatCorrection") };
-      fhicl::Atom<bool>   addTravelTime{ Name("addTravelTime") };
-      fhicl::Atom<int>    diagLevel{ Name("diagLevel") };
-    };
 
-    using Parameters = art::EDProducer::Table<Config>;
+      private:
+         using StepHandles = std::vector<art::ValidHandle<CaloShowerStepCollection>>;
 
-    explicit CaloShowerStepROFromShowerStep(const Parameters& config) :
-      EDProducer{config},
-      toff_                       (config().timeOffsets()),
-      blindTime_                  (config().blindTime()),
-      caloLRUCorrection_          (config().caloLRUCorrection()),
-      caloBirksCorrection_        (config().caloBirksCorrection()),
-      caloPEStatCorrection_       (config().caloPEStatCorrection()),
-      addTravelTime_              (config().addTravelTime()),
-      diagLevel_                  (config().diagLevel()),
-      messageCategory_            ("CaloShowerStepROFromShowerStep"),
-      engine_                     ( createEngine(art::ServiceHandle<SeedService>()->getSeed()) ),
-      randPoisson_                (engine_),
-      randGauss_                  (engine_),
-      randExpo_                   (engine_)
-    {
-      for (auto const& tag : config().caloCrystalShowerInputs()) {
-        caloCrystalShowerTokens_.push_back(consumes<CaloShowerStepCollection>(tag));
-      }
-      // The following consumes statements are necessary because
-      // SimParticleTimeOffset::updateMap calls getValidHandle.
-      for (auto const& tag : config().timeOffsets().inputs()) {
-        consumes<SimParticleTimeMap>(tag);
-      }
+         void  makeReadoutHits  (const StepHandles&, CaloShowerStepROCollection&, CaloShowerSimCollection&);
+         float LRUCorrection    (int crystalID, float normalizedPosZ, float edepInit, const ConditionsHandle<CalorimeterCalibrations>&);
+         float PECorrection     (int crystalID, float edepInit, float NpePerMeV);
+         void  dumpCaloShowerSim(const CaloShowerSimCollection& caloShowerSims);
 
-      produces<CaloShowerStepROCollection>();
-      produces<CaloShowerSimCollection>();
-    }
+         std::vector<art::ProductToken<CaloShowerStepCollection>> crystalShowerTokens_;
+         SimParticleTimeOffset   toff_;
+         float                   blindTime_;
+         float                   mbtime_;
+         bool                    LRUCorrection_;
+         bool                    BirksCorrection_;
+         bool                    PEStatCorrection_;
+         bool                    addTravelTime_;
+         int                     diagLevel_;
+         CLHEP::HepRandomEngine& engine_;
+         CLHEP::RandPoissonQ     randPoisson_;
+         CLHEP::RandGaussQ       randGauss_;
+         CLHEP::RandExponential  randExpo_;
 
-    void beginJob() override;
-    void produce(art::Event& e) override;
-
-  private:
-
-    using StepHandles = std::vector<art::ValidHandle<CaloShowerStepCollection>>;
-
-    std::vector<art::ProductToken<CaloShowerStepCollection>> caloCrystalShowerTokens_;
-
-    SimParticleTimeOffset   toff_;
-    double                  blindTime_;
-    double                  mbtime_;
-
-    bool                    caloLRUCorrection_;
-    bool                    caloBirksCorrection_;
-    bool                    caloPEStatCorrection_;
-    bool                    addTravelTime_;
-
-    int                     diagLevel_;
-    const std::string       messageCategory_;
-
-    CLHEP::HepRandomEngine& engine_;
-    CLHEP::RandPoissonQ     randPoisson_;
-    CLHEP::RandGaussQ       randGauss_;
-    CLHEP::RandExponential  randExpo_;
-
-    TH1F*                   hEner_;
-    TH2F*                   hLRUCorr_;
-    TH1F*                   hBiCorr_;
-    TH2F*                   hPECorr_;
-    TH1F*                   hPECorr2_;
-
-    void   makeReadoutHits(const StepHandles&, CaloShowerStepROCollection&, CaloShowerSimCollection&);
-    double LRUCorrection(int crystalID, double normalizedPosZ, double edepInit, const ConditionsHandle<CalorimeterCalibrations>&);
-    double BirksCorrection(int particleCode, double edepInit, const ConditionsHandle<CalorimeterCalibrations>&);
-    double photoStatisticsCorrection(int crystalID, double edepInit, double NpePerMeV);
   };
 
 
-  //----------------------------------------
+  //-----------------------------------------------
   void CaloShowerStepROFromShowerStep::beginJob()
-  {
-    if (diagLevel_ > 2)
-      {
-        art::ServiceHandle<art::TFileService> tfs;
-        hEner_      = tfs->make<TH1F>("hEner",   "energy deposited / hit",   200,    0,  20);
-        hLRUCorr_   = tfs->make<TH2F>("hLRUCorr","LRU correction",           100,    0,   1, 100, -0.5, 0.5);
-        hBiCorr_    = tfs->make<TH1F>("hBiCorr", "Birkes stat correction",   100,    0,   1);
-        hPECorr_    = tfs->make<TH2F>("hPECorr", "PE stat correction",       100,    0., 50, 100,    0,  50);
-        hPECorr2_   = tfs->make<TH1F>("hPECorr2","PE stat correction",       100,  -0.5,    0.5);
-      }
-  }
+  {}
 
+
+  //---------------------------------------------------------------
   void CaloShowerStepROFromShowerStep::produce(art::Event& event)
   {
-    if (diagLevel_ > 0) std::cout << "[CaloShowerStepROFromShowerStep::produce] begin" << std::endl;
+      if (diagLevel_ > 0) std::cout << "[CaloShowerStepROFromShowerStep::produce] begin" << std::endl;
 
-    //update condition cache
-    ConditionsHandle<AcceleratorParams> accPar("ignored");
-    mbtime_ = accPar->deBuncherPeriod;
-    toff_.updateMap(event);
+      //update condition cache
+      ConditionsHandle<AcceleratorParams> accPar("ignored");
+      mbtime_ = accPar->deBuncherPeriod;
+      toff_.updateMap(event);
 
-    // Containers to hold the output hits.
-    auto caloShowerStepROs = std::make_unique<CaloShowerStepROCollection>();
-    auto caloShowerSims = std::make_unique<CaloShowerSimCollection>();
+      // Containers to hold the output hits.
+      auto caloShowerStepROs = std::make_unique<CaloShowerStepROCollection>();
+      auto caloShowerSims    = std::make_unique<CaloShowerSimCollection>();
 
-    StepHandles hh;
-    cet::transform_all(caloCrystalShowerTokens_,
-                       back_inserter(hh),
-                       [&event](auto const& token) { return event.getValidHandle(token); });
-    makeReadoutHits(hh, *caloShowerStepROs, *caloShowerSims);
+      StepHandles newCrystalShowerTokens;
+      std::transform(std::begin(crystalShowerTokens_), std::end(crystalShowerTokens_),  back_inserter(newCrystalShowerTokens), 
+                     [&event](const auto& token) {return event.getValidHandle(token);});
+      
+      makeReadoutHits(newCrystalShowerTokens, *caloShowerStepROs, *caloShowerSims);
 
-    // Add the output hit collection to the event
-    event.put(std::move(caloShowerStepROs));
-    event.put(std::move(caloShowerSims));
+      // Add the output hit collection to the event
+      event.put(std::move(caloShowerStepROs));
+      event.put(std::move(caloShowerSims));
 
-    if (diagLevel_ > 0) std::cout << "[CaloShowerStepROFromShowerStep::produce] end" << std::endl;
+      if (diagLevel_ > 0) std::cout << "[CaloShowerStepROFromShowerStep::produce] end" << std::endl;
   }
 
 
 
-  //-------------------------------------------------------------------------------------------------------------------------------------
+  //-----------------------------------------------------------------------------------------------------
   void CaloShowerStepROFromShowerStep::makeReadoutHits(const StepHandles& crystalShowerHandles,
-                                                       CaloShowerStepROCollection& caloShowerStepROs, CaloShowerSimCollection& caloShowerSims)
+                                                       CaloShowerStepROCollection& caloShowerStepROs, 
+                                                       CaloShowerSimCollection& caloShowerSims)
   {
 
-    GlobalConstantsHandle<ParticleDataTable>  pdt;
-    ConditionsHandle<CalorimeterCalibrations> calorimeterCalibrations("ignored");
+      GlobalConstantsHandle<ParticleDataTable>  pdt;
+      ConditionsHandle<CalorimeterCalibrations> calorimeterCalibrations("ignored");
 
-    const Calorimeter& cal  = *(GeomHandle<Calorimeter>());
-    int    nROs             = cal.caloInfo().nROPerCrystal();
-    double cryhalflength    = cal.caloInfo().getDouble("crystalZLength")/2.0;
-    double refractiveIndex  = cal.caloInfo().getDouble("refractiveIndex");
-    double lightSpeed       = 300; // mm/ns
+      const Calorimeter& cal       = *(GeomHandle<Calorimeter>());
+      const int   nROs             = cal.caloInfo().nROPerCrystal();
+      const float cryhalflength    = cal.caloInfo().getDouble("crystalZLength")/2.0;
+      const float refractiveIndex  = cal.caloInfo().getDouble("refractiveIndex");
+      const float lightSpeed       = 300; // mm/ns
+      //const float crystalDecayTime = cal.caloInfo().crystalDecayTime();
 
-    std::map<int, std::vector<SimParticleEntry> > simEntriesMap;
-
-
-    //-----------------------------------------------------------------------
-    //store corrected energy deposits for each redouts
-
-    double totalEdep(0.0),totalEdepCorr(0.0);
-    int    totalSteps(0),totalHit(0);
-
-    for(const auto& showerHandle: crystalShowerHandles) {
-
-      const CaloShowerStepCollection& caloShowerSteps(*showerHandle);
-
-      for (auto istep = caloShowerSteps.begin(); istep !=caloShowerSteps.end(); ++istep)
-        {
-          const CaloShowerStep& step = *istep;
-
-          // time folding and filtering, see docdb-3425 for a stunning explanation
-          double hitTimeUnfolded = toff_.totalTimeOffset(istep->simParticle())+istep->timeStepMC();
-          double hitTime         = fmod(hitTimeUnfolded,mbtime_);
-
-          if (hitTime < blindTime_ || hitTime > mbtime_ ) continue;
-
-          size_t idx = std::distance(caloShowerSteps.begin(), istep);
-          art::Ptr<CaloShowerStep> stepPtr = art::Ptr<CaloShowerStep>(showerHandle,idx);
-
-          int    crystalID = step.volumeId();
-          int    ROIDBase  = cal.caloInfo().ROBaseByCrystal(crystalID);
-          int    pdgId     = step.simParticle()->pdgId();
-          double edep_corr = step.energyMC();
-          double posZ      = step.position().z();
-          double timeToRO  = (2.0*cryhalflength-posZ)*refractiveIndex/lightSpeed;
-
-          const  art::Ptr<SimParticle> sim = step.simParticle();
+      std::map<int,std::vector<StepEntry>> simEntriesMap;
+      std::map<int,float> totCrystalEnerMap;
 
 
-          // apply travel time to readout correction
-          if (addTravelTime_) hitTime += timeToRO;
+      //-----------------------------------------------------------------------
+      //store corrected energy deposits for each redouts
 
+      int   totalSteps(0),totalNPE(0);
+      float totalEdep(0.0),totalEdepCorr(0.0), totalEdepNPE(0.0);
 
-          // apply corrections on energy deposition -> scintillation light in the crystal, see Note
-          if (caloLRUCorrection_)
-            edep_corr = LRUCorrection(crystalID, posZ/cryhalflength, edep_corr, calorimeterCalibrations);
-
-
-          if (caloBirksCorrection_)
-            edep_corr = BirksCorrection(pdgId,edep_corr, calorimeterCalibrations);
-
-
-          // energy equivalent deposited in each readout
-          for (int i=0; i<nROs; ++i)
-            {
-              int ROID = ROIDBase + i;
-
-              //apply photo-statistics correction
-              double NpePerMeV = calorimeterCalibrations->peMeV(ROID);
-
-              double edep_corr_RO(edep_corr);
-              if (caloPEStatCorrection_) edep_corr_RO = photoStatisticsCorrection(ROID, edep_corr_RO, NpePerMeV);
-              if (edep_corr_RO < 1e-4) continue;
-              if (diagLevel_ > 3) std::cout<<"[CaloShowerStepROFromShowerStep::insert into vector] = "<< edep_corr_RO<<std::endl;
-
-              //finally, add a caloShowerStepRO entry here
-              caloShowerStepROs.push_back(CaloShowerStepRO(ROID,stepPtr,hitTime,edep_corr_RO));
-            }
-
-          simEntriesMap[crystalID].push_back(SimParticleEntry(sim,stepPtr,edep_corr,hitTime));
-
-
-          if (diagLevel_ > 0)
-            {
-              totalEdep += step.energyMC();
-              totalEdepCorr += edep_corr;
-              totalSteps += step.nCompress();
-              ++totalHit;
-
-              if (diagLevel_ > 2) hEner_->Fill(edep_corr);
-              if (diagLevel_ > 3) std::cout<<"[CaloShowerStepROFromShowerStep::produce] "<<crystalID<<" "<<step.simParticle()<<" "<<stepPtr<<" "<<hitTime<<" "<<edep_corr<<std::endl;
-              if (diagLevel_ > 3) std::cout<<"   "<<step.simParticle()->startPosition()<<" "<<step.simParticle()->endPosition()<<" "<<  step.simParticle()->pdgId()<<std::endl;
-            }
-        } //for(istep)
-    } //for(showerColl)
-
-    if (diagLevel_ > 2)
+      for (const auto& showerHandle: crystalShowerHandles)
       {
-        std::cout<<"[CaloShowerStepROFromShowerStep::produce] caloShowerStepROs summary"<<std::endl;
-        for (const auto cst: caloShowerStepROs) std::cout<<cst.ROID()<<" "<<cst.energy()<<" "<<cst.time()<<std::endl;
+          const CaloShowerStepCollection& caloShowerSteps(*showerHandle);
+          for (auto istep = caloShowerSteps.begin(); istep !=caloShowerSteps.end(); ++istep)
+          {
+              const CaloShowerStep& step = *istep;
+
+              // time folding and filtering, see docdb-3425 for a stunning explanation
+              float hitTimeUnfolded = toff_.totalTimeOffset(istep->simParticle())+istep->time();
+              float hitTime         = fmod(hitTimeUnfolded,mbtime_);
+
+              if (hitTime < blindTime_ || hitTime > mbtime_ ) continue;
+
+              size_t idx = std::distance(caloShowerSteps.begin(), istep);
+              art::Ptr<CaloShowerStep> stepPtr = art::Ptr<CaloShowerStep>(showerHandle,idx);            
+              
+              int   crystalID = step.volumeId();
+              int   ROIDBase  = cal.caloInfo().ROBaseByCrystal(crystalID);              
+              float posZ      = step.position().z();
+              
+              float edep_corr(step.energyDepG4());
+              if (BirksCorrection_) edep_corr = step.energyDepBirks();
+              if (LRUCorrection_)   edep_corr = LRUCorrection(crystalID, posZ/cryhalflength, edep_corr, calorimeterCalibrations);
+
+              // Generate individual PEs and their arrival times
+              for (int i=0; i<nROs; ++i)
+              {
+                  int ROID = ROIDBase + i;
+
+                  int NPE = randPoisson_.fire(edep_corr*calorimeterCalibrations->peMeV(ROID));
+                  if (diagLevel_ > 3) std::cout<<"[CaloShowerStepROFromShowerStep::generatePE] energy / NPE = "<<edep_corr<<"  /  "<<NPE<<"  "<<edep_corr*calorimeterCalibrations->peMeV(ROID)<<std::endl;
+                  if (NPE==0) continue;
+                  
+                  std::vector<float> PETime(NPE,hitTime);
+                  for (auto& time : PETime) time += (2.0*cryhalflength-posZ)*refractiveIndex/lightSpeed;
+                  
+                  caloShowerStepROs.push_back(CaloShowerStepRO(ROID,stepPtr,PETime));                  
+                  
+                  if (diagLevel_ > 3) {std::cout<<"Time hit "<<std::endl; for (auto time : PETime) std::cout<<time<<" "; std::cout<<std::endl;}
+                  totalNPE += NPE;
+                  totalEdepNPE +=NPE/calorimeterCalibrations->peMeV(ROID);
+             }
+
+
+              //Produce an object that include the step and additional information for each original Step
+              simEntriesMap[crystalID].push_back(StepEntry(stepPtr,edep_corr,hitTime));
+
+              if (diagLevel_ > 0)
+              {
+                  totCrystalEnerMap[crystalID] += edep_corr;
+                  totalEdep     += step.energyDepG4();
+                  totalEdepCorr += edep_corr;
+                  totalSteps    += step.nCompress();
+              }
+          } 
+      } 
+
+
+      if (diagLevel_ > 1)
+      {
+          std::cout<<"[CaloShowerStepROFromShowerStep::produce] Crystal summary "<<std::endl;
+          for (auto& kv : totCrystalEnerMap) std::cout<<"roId ="<< kv.first*2<<" "<<kv.second<<std::endl;
+          if (diagLevel_ > 2) std::cout<<"[CaloShowerStepROFromShowerStep::produce] caloShowerStepROs summary"<<std::endl;
+          if (diagLevel_ > 2) for (const auto& cst: caloShowerStepROs) std::cout<<cst.ROID()<<" "<<cst.NPE()<<std::endl;
       }
 
 
 
-
-    //-----------------------------------------------------------------------
-    // Produce the CaloShowerSim from the simEntriesMap
-    if (diagLevel_ > 2) std::cout<<"[CaloShowerStepROFromShowerStep::produce] CaloShowerSim summary"<<std::endl;
-
-    for (auto& kv : simEntriesMap)
+      //--------------------------------------------------
+      // Produce the final MC truth info collecting energy deposits for each SimParticle in each crystal
+      for (auto& kv : simEntriesMap)
       {
-        int crystalID = kv.first;
-        std::vector<SimParticleEntry> entries = kv.second;
+          std::vector<StepEntry> newSteps = kv.second;
 
-        // fill the summary map for each simPtr for a given crystalID
-        std::map< art::Ptr<SimParticle>, SimParticleSummary> simSumMap;
-        for (auto& entry : entries)
+          // fill the summary map for each simPtr for a given crystalID
+          std::map<art::Ptr<SimParticle>,SimParticleSummary> summaryMap;
+          for (auto& newStep : newSteps)
           {
-            auto mfind = simSumMap.find(entry.sim_);
-            if (mfind==simSumMap.end())
-              simSumMap.insert( std::make_pair(entry.sim_,SimParticleSummary(entry.step_,entry.edepInit_,entry.edepCorr_,entry.time_)) );
-            else
-              mfind->second.add(entry.step_,entry.edepInit_,entry.edepCorr_,entry.time_);
+              const art::Ptr<SimParticle>& sim = newStep.step_->simParticle();
+              auto mfind = summaryMap.find(sim);
+              if (mfind==summaryMap.end())
+                 summaryMap.insert(std::make_pair(sim,SimParticleSummary(newStep.step_,newStep.edepCorr_,newStep.time_)));
+              else
+                 mfind->second.add(newStep.step_,newStep.edepCorr_,newStep.time_);
           }
 
-        // create the CaloShowerSim entries
-        for (auto& kv2 : simSumMap)
-          {
-            auto simPtr  = kv2.first;
-            auto summary = kv2.second;
-            caloShowerSims.push_back(CaloShowerSim(crystalID,simPtr,summary.steps_, summary.time_,summary.edepCorr_,summary.edepInit_, summary.pIn_));
-            if (diagLevel_ > 2) std::cout<<crystalID<<" "<<summary.edepInit_<<std::endl;
-          }
-
+          // create the CaloShowerSim (MC truth) objects for a given crystalID
+          for (auto& kvsumm : summaryMap) caloShowerSims.push_back(CaloShowerSim(kvsumm.second.steps_, kvsumm.second.time_,kvsumm.second.edepCorr_));
       }
 
 
-
-    //-----------------------------------------------------------------------
-    // diagnosis
-
-    if (diagLevel_ > 0) std::cout<<"[CaloShowerStepROFromShowerStep::produce] found energy (energy corr) / nStepsMC / nCORHit "
-                                 <<totalEdep<<" ("<<totalEdepCorr<<") / "<<totalSteps<<" / "<<totalHit<<std::endl;
-
-    if (diagLevel_ > 3)
-      {
-        std::cout<<"Checking Sims"<<std::endl;
-        double csmEtot(0);
-        for (auto& csm :  caloShowerSims)
-          {
-            csmEtot +=csm.energyMC();
-            std::cout<<csm.crystalId()<<" "<<csm.sim()<<" "<<csm.time()<<" "<<csm.energy()<<" "<<csm.energyMC()<<std::endl;
-            for (auto& st : csm.caloShowerSteps()) std::cout<<"  "<<st<<std::endl;
-          }
-
-        std::cout<<"CSM Etot "<<csmEtot<<std::endl;
-      }
+      if (diagLevel_ > 3) dumpCaloShowerSim(caloShowerSims);
+      if (diagLevel_ > 0) std::cout<<"[CaloShowerStepROFromShowerStep::produce] found energy (energy corr) (edep_npe) / nStepsMC / nPE "
+                                   <<totalEdep<<" ("<<totalEdepCorr<<") / ("<<totalEdepNPE<<") / "<<totalSteps<<" / "<<totalNPE<<std::endl;
 
   }
 
@@ -395,44 +301,30 @@ namespace mu2e {
   //----------------------------------------------------------------------------------------------------------------------------------
   // apply a correction of type Energy = ((1-s)*Z/HL+s)*energy where Z position along the crystal, HL is the crystal half-length
   // and s is the intercept at Z=0 (i.e. non-uniformity factor, e.g. 5% -> s = 1.05)
-
-  double CaloShowerStepROFromShowerStep::LRUCorrection(int crystalID, double normalizedPosZ, double edepInit, const ConditionsHandle<CalorimeterCalibrations>& calorimeterCalibrations)
+  float CaloShowerStepROFromShowerStep::LRUCorrection(int crystalID, float normalizedPosZ, float edepInit, 
+                                                      const ConditionsHandle<CalorimeterCalibrations>& calorimeterCalibrations)
   {
-    double edep(edepInit);
+      float alpha  = calorimeterCalibrations->LRUpar0(crystalID);
+      float factor = (1.0-alpha)*normalizedPosZ +alpha;
+      float edep   = edepInit*factor;
 
-    double alpha  = calorimeterCalibrations->LRUpar0(crystalID);
-    double factor =  (1.0-alpha)*normalizedPosZ +alpha;
-    edep *= factor;
-
-    if (diagLevel_ > 2) hLRUCorr_->Fill(normalizedPosZ,edep/edepInit-1);
-    if (diagLevel_ > 3) std::cout<<"[CaloShowerStepROFromShowerStep::LRUCorrection] before / after LRU -> edep_corr = "<< edep<<"  /  "<<edepInit<<"  at position Z="<<normalizedPosZ<<std::endl;
-    return edep;
-  }
-
-  //-----------------------------------------------------------------------------
-  double CaloShowerStepROFromShowerStep::BirksCorrection(int particleCode, double edepInit,const ConditionsHandle<CalorimeterCalibrations>& calorimeterCalibrations)
-  {
-    double edep(edepInit);
-
-    if (particleCode==2212 || particleCode == 2112) edep /= calorimeterCalibrations->BirkCorrHadron();
-
-    if (diagLevel_ > 2) hBiCorr_->Fill(edep/edepInit);
-    return edep;
+      if (diagLevel_ > 3) std::cout<<"[CaloShowerStepROFromShowerStep::LRUCorrection] before / after LRU -> edep_corr = "<< edepInit<<"  /  "<<edep<<"  at position Z="<<normalizedPosZ<<std::endl;
+      return edep;
   }
 
   //-------------------------------------------------------------------------------------------------------------------------------------------------------
-  double CaloShowerStepROFromShowerStep::photoStatisticsCorrection(int crystalID, double edepInit, double NpePerMeV)
+  void CaloShowerStepROFromShowerStep::dumpCaloShowerSim(const CaloShowerSimCollection& caloShowerSims)
   {
-    double lightYield = randPoisson_.fire(edepInit*NpePerMeV);
-    double edep       = lightYield/NpePerMeV;
-
-    if (diagLevel_ > 2) hPECorr_->Fill(edep,edepInit);
-    if (diagLevel_ > 2 && lightYield>10) hPECorr2_->Fill((edep-edepInit)/sqrt(edepInit));
-    if (diagLevel_ > 3) std::cout<<"[CaloShowerStepROFromShowerStep::photoStatCorrection] before / after peStat -> edep_corr = "<< edep<<"  /  "<<edepInit<<std::endl;
-
-    return edep;
+       std::cout<<"Checking Sims"<<std::endl;
+       float csmEtot(0);
+       for (auto& csm :  caloShowerSims)
+       {
+           csmEtot += csm.energyDep();
+           std::cout<<csm.crystalId()<<" "<<csm.sim()<<" "<<csm.time()<<" "<<csm.energyDep()<<" "<<csm.energyDepG4()<<std::endl;
+           for (auto& st : csm.caloShowerSteps()) std::cout<<"  "<<st<<std::endl;
+       }
+       std::cout<<"CSM Etot "<<csmEtot<<std::endl;
   }
-
 
 }
 
@@ -445,12 +337,8 @@ DEFINE_ART_MODULE(CaloShowerStepROFromShowerStep);
 /*
 //little snipper I kept in case it will be needed...
 
-double crystalDecayTime = cal.caloInfo().crystalDecayTime();
+float crystalDecayTime = cal.caloInfo().crystalDecayTime();
 
-////generate each photon hitting the readout, correcting time for scintillator decay time - get crackin'
-//int nPhot            = std::max(int(edep_corr_RO*NpePerMeV),1);
-//double energyPerPhot = edep_corr_RO/float(nPhot);
-
-//std::vector<double> photonTime(nPhot);
+//std::vector<float> photonTime(nPhot);
 //std::generate(photonTime.begin(),photonTime.end(),[&](){return hitTime+randExpo_.fire(crystalDecayTime);});
 */

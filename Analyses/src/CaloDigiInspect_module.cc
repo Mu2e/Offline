@@ -162,15 +162,15 @@ namespace mu2e {
 	     showerSimSet.insert(caloShowerSimPtr.get());
              
 	     _hDeltaT->Fill(caloShowerSimPtr->time()-crystalHitPtr->time());
-	     _hDeltaTE->Fill(caloShowerSimPtr->time()-crystalHitPtr->time(),caloShowerSimPtr->energy());
+	     _hDeltaTE->Fill(caloShowerSimPtr->time()-crystalHitPtr->time(),caloShowerSimPtr->energyDep());
 	     
-	     if (caloShowerSimPtr->time()-crystalHitPtr->time()>10) _hEpileUp->Fill(caloShowerSimPtr->energy());
+	     if (caloShowerSimPtr->time()-crystalHitPtr->time()>10) _hEpileUp->Fill(caloShowerSimPtr->energyDep());
 	     
-	     if (caloShowerSimPtr->energy() > 1 && caloShowerSimPtr->time()-crystalHitPtr->time()<5)
+	     if (caloShowerSimPtr->energyDep() > 1 && caloShowerSimPtr->time()-crystalHitPtr->time()<5)
 	     {
-	        _hresolE->Fill(1.0-crystalHitPtr->energyDep()/caloShowerSimPtr->energy());
+	        _hresolE->Fill(1.0-crystalHitPtr->energyDep()/caloShowerSimPtr->energyDep());
 	        _hresolT->Fill(caloShowerSimPtr->time()-crystalHitPtr->time());
-	        if (caloShowerSimPtr->energy() > 10) _hresolT2->Fill(caloShowerSimPtr->time()-crystalHitPtr->time());
+	        if (caloShowerSimPtr->energyDep() > 10) _hresolT2->Fill(caloShowerSimPtr->time()-crystalHitPtr->time());
 		
 	     }
        }
@@ -186,13 +186,13 @@ namespace mu2e {
 	    
 	    if (showerSimSet.find(&caloShowerSim) != showerSimSet.end())
 	    {
-	        _hShowerE->Fill(caloShowerSim.energy());
+	        _hShowerE->Fill(caloShowerSim.energyDep());
 	        _hShowerT->Fill(caloShowerSim.time());
 		nShowerReco[caloShowerSim.crystalId()] +=1;
 	    }
 	    else
 	    {
-	        _hShowerNoE->Fill(caloShowerSim.energy());
+	        _hShowerNoE->Fill(caloShowerSim.energyDep());
 	        _hShowerNoT->Fill(caloShowerSim.time());
 	    }
 	    

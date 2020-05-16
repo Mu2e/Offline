@@ -1,7 +1,9 @@
 #include "CaloMC/inc/ShowerStepUtil.hh"
+#include "cetlib_except/exception.h"
 
 #include "CLHEP/Vector/ThreeVector.h"
 #include "CLHEP/Matrix/SymMatrix.h"
+
 #include <vector>
 #include <iostream>
 #include <algorithm>
@@ -9,82 +11,54 @@
 
 namespace mu2e {
     
-    
-    void ShowerStepUtil::init(int i, double time, double momentum, const CLHEP::Hep3Vector& posIn)
-    { 
-        t0_.at(i) = time; 
-        pIn_.at(i) = momentum; 
-        posIn_.at(i) = posIn;
-    }
-
-
-    void ShowerStepUtil::add(int i, double edep, double time, double momentum, CLHEP::Hep3Vector& pos)
+    void ShowerStepUtil::add(unsigned i, double eDepG4, double eDepVis, double time, double momentum, CLHEP::Hep3Vector& pos)
     {               
-        double weight = (type_ == weight_type::energy)  ? edep : 1.0;
+        if (i > imax_) throw cet::exception("Rethrow")<< "[CaloMC/ShowerStepUtil] Index out of bound " << i << std::endl;
 
-        n_.at(i)    += 1;
-        edep_.at(i) += edep;
-        pIn_.at(i)  = std::max(pIn_.at(i),momentum);
-
-        time_.at(i) += time*weight;             
-        x_.at(i)    += pos.x()*weight;             
-        y_.at(i)    += pos.y()*weight;             
-        z_.at(i)    += pos.z()*weight;             
-
-        x2_.at(i)   += pos.x()*pos.x()*weight;             
-        y2_.at(i)   += pos.y()*pos.y()*weight;             
-        z2_.at(i)   += pos.z()*pos.z()*weight;             
-
-        xy_.at(i)   += pos.x()*pos.y()*weight;             
-        xz_.at(i)   += pos.x()*pos.z()*weight;             
-        yz_.at(i)   += pos.y()*pos.z()*weight;             
-
-        w_.at(i)    += weight;             
-        w2_.at(i)   += weight*weight;             
+        //init buffer if needed
+        if (n_[i]==0) {pIn_[i] = momentum; t0_[i] = time;} 
+        
+        double weight = (type_ == weight_type::energy)  ? eDepG4 : 1.0;
+        
+        n_[i]      += 1;
+        eDepG4_[i] += eDepG4;
+        eDepVis_[i]+= eDepVis;
+        pIn_[i]     = std::max(pIn_[i],momentum);
+        time_[i]   += time*weight;             
+        x_[i]      += pos.x()*weight;             
+        y_[i]      += pos.y()*weight;             
+        z_[i]      += pos.z()*weight;             
+        w_[i]      += weight;             
     }
 
 
-    void ShowerStepUtil::reset(int i)
+    void ShowerStepUtil::reset(unsigned i)
     {
-        n_[i]     = 0;
-        edep_[i]  = 0;
-        time_[i]  = 0;
-        pIn_[i]   = 0;
-        x_[i]  = y_[i]  = z_[i]  = 0;
-        x2_[i] = y2_[i] = z2_[i] = 0;
-        xy_[i] = yz_[i] = xz_[i] = 0;
-        w_[i]  = w2_[i] = 0;        
+        if (i > imax_) throw cet::exception("Rethrow")<< "[CaloMC/ShowerStepUtil] Index out of bound " << i << std::endl;      
+        n_[i]       = 0;
+        eDepG4_[i]  = 0;
+        eDepVis_[i] = 0;
+        pIn_[i]     = 0;
+        time_[i]    = x_[i] = y_[i] = z_[i] = w_[i] = 0;
     }
 
     
-    CLHEP::Hep3Vector& ShowerStepUtil::pos(int i)
+    CLHEP::Hep3Vector& ShowerStepUtil::pos(unsigned i)
     {        
+        if (i > imax_) throw cet::exception("Rethrow")<< "[CaloMC/ShowerStepUtil] Index out of bound " << i << std::endl;
+        
         pos_[0] = x_[i]/w_[i];
         pos_[1] = y_[i]/w_[i];
         pos_[2] = z_[i]/w_[i];
-      
         return pos_;
     }
 
-    CLHEP::HepSymMatrix& ShowerStepUtil::covPos(int i)
-    {        
-        double norm = w_[i]/(w_[i]*w_[i]-w2_[i]);
-      
-        cov_[0][0] = norm*(x2_[i] - x_[i]*x_[i]/w_[i]);
-        cov_[1][1] = norm*(y2_[i] - y_[i]*y_[i]/w_[i]);
-        cov_[2][2] = norm*(z2_[i] - z_[i]*z_[i]/w_[i]);
-        cov_[0][1] = norm*(xy_[i] - x_[i]*y_[i]/w_[i]);
-        cov_[0][2] = norm*(xz_[i] - x_[i]*z_[i]/w_[i]);
-        cov_[1][2] = norm*(yz_[i] - y_[i]*z_[i]/w_[i]);
 
-        return cov_;
-    }
-
-
-    void ShowerStepUtil::printBucket(int i)
+    void ShowerStepUtil::printBucket(unsigned i)
     {
-        std::cout<<"Entries= "<<n_[i]<<" Energy = "<<edep_[i]<<" Time = "<<time_[i]/w_[i]<<" pos=("<<x_[i]/w_[i]<<","<<y_[i]/w_[i]<<","<<z_[i]/w_[i]
-                 <<")  momentum="<<pIn_[i]<<std::endl;
+        if (i > imax_) throw cet::exception("Rethrow")<< "[CaloMC/ShowerStepUtil] Index out of bound " << i << std::endl;        
+        std::cout<<"Entries= "<<n_[i]<<" Energy = "<<eDepG4_[i]<<" Time = "<<time_[i]/w_[i]
+                 <<" pos=("<<x_[i]/w_[i]<<","<<y_[i]/w_[i]<<","<<z_[i]/w_[i]<<")  momentum="<<pIn_[i]<<std::endl;
     }
 
 }

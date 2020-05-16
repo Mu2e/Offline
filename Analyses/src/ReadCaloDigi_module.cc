@@ -193,8 +193,7 @@ namespace mu2e {
 
     float                      _cryPosX[16384],_cryPosY[16384],_cryPosZ[16384], _cryPosR[16384];
 
-    float                      _cluEnergy[2048], _cluCrysE[2048], _cluMeanTime[2048],
-      _cluTime[2048], _cluMCTime[2048], _cluMCMeanTime[2048];
+    float                      _cluEnergy[2048], _cluCrysE[2048], _cluMeanTime[2048],_cluTime[2048], _cluMCTime[2048], _cluMCMeanTime[2048];
     float                      _cluCogX[2048],_cluCogY[2048],_cluCogZ[2048], _cluCogR[2048];
 
     int                        _cluConv[2048];
@@ -821,8 +820,8 @@ namespace mu2e {
           // }
         }//end loop on the particles inside the crystalHit
 
-        _cryMCTime    [_nHits] = caloDigiMC->timeFirst();
-        _cryMCEdep    [_nHits] = caloDigiMC->totalEDep();
+        _cryMCTime    [_nHits] = caloDigiMC->time(0);
+        _cryMCEdep    [_nHits] = caloDigiMC->totalEnergyDep();
       } else {
         _cryMCTime    [_nHits] = 0;
         _cryMCEdep    [_nHits] = 0;
@@ -872,8 +871,8 @@ namespace mu2e {
 
 	    if (nCaloDigiMC > 0) {
 	      caloDigiMC        = &caloDigiMCCol->at(indexMC);
-	      clusterMCMeanTime = caloDigiMC->meanTime();
-	      clusterMCTime     = caloDigiMC->timeFirst();
+	      clusterMCMeanTime = caloDigiMC->time(0);
+	      clusterMCTime     = caloDigiMC->time(0);
 	    }
   	  }
       	}

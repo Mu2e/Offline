@@ -46,6 +46,8 @@
 #include "CaloMC/inc/ClusterContentMC.hh"
 #include "CaloMC/inc/CrystalContentMC.hh"
 
+#include "MCDataProducts/inc/CaloShowerStepROCollection.hh"
+
 #include "Mu2eUtilities/inc/CaloHitMCNavigator.hh"
 #include "Mu2eUtilities/inc/SimParticleTimeOffset.hh"
 
@@ -159,7 +161,7 @@ namespace mu2e {
        float _clusimMom[16384],_clusimMom2[16384],_clusimPosX[16384],_clusimPosY[16384],_clusimPosZ[16384],_clusimStartX[16384],
              _clusimStartY[16384],_clusimStartZ[16384],_clusimTime[16384],_clusimEdep[16384];
 
-       int   _nVd,_vdId[16384],_vdPdgId[16384],_vdenIdx[16384];
+       int   _nVd,_vdId[16384],_vdPdgId[16384],_vdGenId[16384],_vdenIdx[16384];
        float _vdTime[16384],_vdPosX[16384],_vdPosY[16384],_vdPosZ[16384],_vdMom[16384],_vdMomX[16384],_vdMomY[16384],_vdMomZ[16384];
 
        int   _nTrk,_trkstat[8192],_trknHit[8192];
@@ -200,8 +202,6 @@ namespace mu2e {
        art::ServiceHandle<art::TFileService> tfs;
 
        _Ntup  = tfs->make<TTree>("Calo", "Calo");
-
-
 
        _Ntup->Branch("evt",          &_evt ,        "evt/I");
        _Ntup->Branch("run",          &_run ,        "run/I");
@@ -246,7 +246,6 @@ namespace mu2e {
        _Ntup->Branch("simEdep",      &_motEdep ,     "simEdep[nSim]/F");
        _Ntup->Branch("simGenIdx",    &_motGenIdx ,   "simGenIdx[nSim]/I");
 
-
        _Ntup->Branch("nCluster",     &_nCluster ,    "nCluster/I");
        _Ntup->Branch("cluEnergy",    &_cluEnergy ,   "cluEnergy[nCluster]/F");
        _Ntup->Branch("cluTime",      &_cluTime ,     "cluTime[nCluster]/F");
@@ -284,6 +283,7 @@ namespace mu2e {
        _Ntup->Branch("nVd",      &_nVd ,     "nVd/I");
        _Ntup->Branch("vdId",     &_vdId ,    "vdId[nVd]/I");
        _Ntup->Branch("vdPdgId",  &_vdPdgId , "vdPdgId[nVd]/I");
+       _Ntup->Branch("vdGenId",  &_vdGenId , "vdGenId[nVd]/I");
        _Ntup->Branch("vdMom",    &_vdMom ,   "vdMom[nVd]/F");
        _Ntup->Branch("vdMomX",   &_vdMomX ,  "vdMomX[nVd]/F");
        _Ntup->Branch("vdMomY",   &_vdMomY ,  "vdMomY[nVd]/F");
@@ -315,16 +315,15 @@ namespace mu2e {
        _hcryX     = tfs->make<TH1F>("cryX",     "X coord of crystal hit",     100,  300., 700.  );
        _hcryY     = tfs->make<TH1F>("cryY",     "Y coord of crystal hit",     100,  300., 700.  );
        _hcryZ     = tfs->make<TH1F>("cryZ",     "Z coord of crystal hit",     100,11000., 13000.);
-       _hcluE     = tfs->make<TH1F>("cluEdep",  "Energy deposited / clustal", 150,    0., 150.  );
-       _hcluEF    = tfs->make<TH1F>("cluEdepF", "Energy deposited / clustal", 150,    0., 150.  );
+       _hcluE     = tfs->make<TH1F>("cluEdep",  "Energy deposited / cluster", 150,    0., 150.  );
        _hcluT     = tfs->make<TH1F>("cluTime",  "Time of clustal hit",        100,    0., 2000. );
-       _hcluX     = tfs->make<TH1F>("cluX",     "X coord of clustal hit",     100,  300., 700.  );
-       _hcluY     = tfs->make<TH1F>("cluY",     "Y coord of clustal hit",     100,  300., 700.  );
-       _hcluZ     = tfs->make<TH1F>("cluZ",     "Z coord of clustal hit",     100,11000., 13000.);
+       _hcluX     = tfs->make<TH1F>("cluX",     "X coord of cluster hit",     100,  300., 700.  );
+       _hcluY     = tfs->make<TH1F>("cluY",     "Y coord of cluster hit",     100,  300., 700.  );
+       _hcluZ     = tfs->make<TH1F>("cluZ",     "Z coord of cluster hit",     100,11000., 13000.);
        _hcluE1Et  = tfs->make<TH1F>("cluE1Et",  "E1/Etot",                    100,    0., 1.1   );
        _hcluE1E9  = tfs->make<TH1F>("cluE1E9",  "E1/E9",                      100,    0., 1.1   );
        _hcluE1E25 = tfs->make<TH1F>("cluE1E25", "E1/E25",                     100,    0., 1.1   );
-       _hxy       = tfs->make<TH2F>("cryxy", "cryxy",                     350,-700,700,350,-700,700  );
+       _hxy       = tfs->make<TH2F>("cryxy",    "cryxy",                      350,-700,700,350,-700,700  );
 
   }
 
@@ -345,10 +344,9 @@ namespace mu2e {
       double _mbtime = accPar->deBuncherPeriod;
       _toff.updateMap(event);
 
-
       //Handle to the calorimeter
       art::ServiceHandle<GeometryService> geom;
-      if( ! geom->hasElement<Calorimeter>() ) return;
+      if (!geom->hasElement<Calorimeter>() ) return;
       Calorimeter const & cal = *(GeomHandle<Calorimeter>());
 
       //Calorimeter crystal hits (average from readouts)
@@ -379,6 +377,17 @@ namespace mu2e {
 //      event.getByLabel(_trkPatRecModuleLabel, trksHandle);
 //      const KalRepPtrCollection& trks = *trksHandle;
 
+/*
+      std::string cname("compressDigiMCs");
+      art::Handle<CaloShowerStepROCollection> caloStepROHandle;
+      event.getByLabel(cname, caloStepROHandle);
+      CaloShowerStepROCollection const& ROColl(*caloStepROHandle);
+      
+      for (auto& ro : ROColl) if (ro.ROID()==116) std::cout<<ro.ROID()<<" "<<ro.energy()<<" "<<ro.time()<<std::endl;
+*/ 
+
+
+
 
       const double CrDensity = 4.9*(CLHEP::g/CLHEP::cm3);
       const double CrMass    = CrDensity*cal.caloInfo().crystalVolume();
@@ -400,8 +409,6 @@ namespace mu2e {
 
 
        //--------------------------  Do generated particles --------------------------------
-
-
        _evt = event.id().event();
        _run = event.run();
 
@@ -455,8 +462,8 @@ namespace mu2e {
            _cryId[_nHits]        = hit.id();
            _crySectionId[_nHits] = diskId;
 
-           _crySimIdx[_nCluster] = _nCluSim;
-           _crySimLen[_nCluster] = contentMC.simContentMap().size();
+           _crySimIdx[_nHits] = _nSim;
+           _crySimLen[_nHits] = contentMC.simContentMap().size();
 
            for (const auto& contentMap : contentMC.simContentMap() )
 	   {	       
@@ -496,8 +503,7 @@ namespace mu2e {
        _nCluster = _nCluSim = 0;
        _cluList.clear();
        for (CaloClusterCollection::const_iterator clusterIt = caloClusters.begin(); clusterIt != caloClusters.end(); ++clusterIt)
-       {
-       
+       {       
            ClusterContentMC contentMC(cal, caloClusterTruth, *clusterIt);
 
            std::vector<int> _list;
@@ -596,10 +602,12 @@ namespace mu2e {
 
                _vdId[_nVd]    = hit.volumeId();
                _vdPdgId[_nVd] = hit.simParticle()->pdgId();
+               _vdGenId[_nVd] = (hit.simParticle()->genParticle()) ? hit.simParticle()->genParticle()->generatorId().id() : -1; 
                _vdTime[_nVd]  = hitTime;
                _vdPosX[_nVd]  = VDPos.x(); //tracker frame
                _vdPosY[_nVd]  = VDPos.y();
                _vdPosZ[_nVd]  = VDPos.z();
+               _vdMom[_nVd]   = hit.momentum().rho();
                _vdMomX[_nVd]  = hit.momentum().x();
                _vdMomY[_nVd]  = hit.momentum().y();
                _vdMomZ[_nVd]  = hit.momentum().z();
@@ -657,14 +665,7 @@ namespace mu2e {
 
         }
 */        
-
-
- 
         _Ntup->Fill();
-
-
-
-
 
   }
 
