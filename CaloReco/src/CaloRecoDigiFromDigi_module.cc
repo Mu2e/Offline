@@ -18,7 +18,9 @@
 
 #include <iostream>
 #include <string>
+#include <sstream>
 
+#include "TH2F.h"
 
 namespace mu2e {
 
@@ -76,6 +78,7 @@ namespace mu2e {
         }
     }
 
+    void beginJob() override;
     void beginRun(art::Run& aRun) override;
     void produce(art::Event& e) override;
 
@@ -93,8 +96,17 @@ namespace mu2e {
     void extractRecoDigi(art::ValidHandle<CaloDigiCollection> const& caloDigis,
                          CaloRecoDigiCollection& recoCaloHits);
 
+    TH1F *hChi1_,*hChi2_;
+ 
+ 
   };
 
+  void CaloRecoDigiFromDigi::beginJob()
+  {
+        art::ServiceHandle<art::TFileService> tfs;
+        hChi1_     = tfs->make<TH1F>("hChi1",    "Gen Id",               100,    0,  50);
+        hChi2_     = tfs->make<TH1F>("hChi2",    "Gen Id",               100,    0,  50);
+  }
 
   //-------------------------------------------------------
   void CaloRecoDigiFromDigi::produce(art::Event& event)
@@ -140,7 +152,8 @@ namespace mu2e {
     auto const& caloDigis = *caloDigisHandle;
     CaloDigi const* base = &caloDigis.front(); // What if caloDigis is empty?
 
-
+    static int nplot(0);
+    
     for (const auto& caloDigi : caloDigis)
       {
         int    roId     = caloDigi.roId();
@@ -158,7 +171,7 @@ namespace mu2e {
             x.push_back(t0 + (i+0.5)*digiSampling_); // add 0.5 to be in middle of bin
             y.push_back(waveform.at(i));
           }
-
+if (diagLevel_ > 1) std::cout<<"[CaloRecoDigiFromDigi::extractRecoDigi] extract amplitude from this set of hits for RoId="<<roId<<" a time "<<t0<<std::endl;
         if (diagLevel_ > 3)
           {
             std::cout<<"[CaloRecoDigiFromDigi::extractRecoDigi] extract amplitude from this set of hits for RoId="<<roId<<" a time "<<t0<<std::endl;
@@ -167,6 +180,16 @@ namespace mu2e {
 
         waveformProcessor_->reset();
         waveformProcessor_->extract(x,y);
+
+if (nplot<20 && waveformProcessor_->nPeaks()==1 && waveformProcessor_->chi2()>10)
+{
+std::cout<<"roId "<<roId<<"  t0 "<<t0<<std::endl;
+std::stringstream ss;
+ss<<"plot_"<<nplot<<".pdf";
+ waveformProcessor_->plot(ss.str());
+++nplot;
+}
+
 
         for (int i=0;i<waveformProcessor_->nPeaks();++i)
           {
@@ -182,11 +205,16 @@ namespace mu2e {
               {
                 std::cout<<"[CaloRecoDigiFromDigi::extractAmplitude] extract "<<roId<<"   i="<<i<<"  eDep="<<eDep<<" time="<<time<<"  chi2="<<chi2<<std::endl;
               }
+            
+            if  (waveformProcessor_->nPeaks()==1) hChi1_->Fill(chi2);
+            else                                  hChi2_->Fill(chi2);
 
             if (chi2/ndf > maxChi2Cut_) continue;
 
             recoCaloHits.emplace_back(CaloRecoDigi(roId, caloDigiPtr, eDep,eDepErr,time,timeErr,chi2,ndf,isPileUp));
           }
+          
+          
 
       }
 

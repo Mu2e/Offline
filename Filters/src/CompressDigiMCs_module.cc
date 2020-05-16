@@ -564,11 +564,12 @@ void mu2e::CompressDigiMCs::produce(art::Event & event)
       i_caloShowerStep.setSimParticle(newSimPtr);
     }
 
-    // Update the CaloShowerSims
-    for (auto& i_caloShowerSim : *_newCaloShowerSims) {
-      art::Ptr<SimParticle> newSimPtr = remap.at(i_caloShowerSim.sim());
-      i_caloShowerSim.setSimParticle(newSimPtr);
-    }
+//CBE
+//    // Update the CaloShowerSims
+//    for (auto& i_caloShowerSim : *_newCaloShowerSims) {
+//      art::Ptr<SimParticle> newSimPtr = remap.at(i_caloShowerSim.sim());
+//      i_caloShowerSim.setSimParticle(newSimPtr);
+//    }
   }
   else if (_caloClusterMCTag != "") {
     for (auto& i_caloClusterMC : *_newCaloClusterMCs) {

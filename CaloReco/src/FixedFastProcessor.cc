@@ -5,7 +5,7 @@
 // method can oscillate around the minimum, an additional logarithmic scaling is used to make sure 
 // the minimum is found  
 
-// If there are more than one peak, we use a generic gradient descent methos, namely minuit.
+// If there are more than one peak, we use a generic gradient descent methods, namely minuit.
 
 
 #include "CaloReco/inc/FixedFastProcessor.hh"
@@ -217,11 +217,13 @@ namespace mu2e {
    //----------------------------------------------------------------------------------------------------------------------
    void FixedFastProcessor::findPeak(double* parInit)
    {
+        
+        if (diagLevel_ > 2) for (unsigned i=0;i<xvec_.size();++i) std::cout<<xvec_[i]<<" "<<yvec_[i]<<std::endl;
 
-        std::vector<unsigned int> peakLocationInit,peakLocationRes,peakLocation;
+        std::vector<unsigned> peakLocationInit,peakLocationRes,peakLocation;
         	
         //find location of potential peaks: max element in the range i-window; i+window
-        for (unsigned int i=windowPeak_;i<xvec_.size()-windowPeak_;++i)
+        for (unsigned i=windowPeak_;i<xvec_.size()-windowPeak_;++i)
         {
              if (std::max_element(&yvec_[i-windowPeak_],&yvec_[i+windowPeak_+1]) != &yvec_[i]) continue;
 	     int imin = std::min(std::min(yvec_[i-1],yvec_[i+1]),yvec_[i]);
@@ -240,13 +242,12 @@ namespace mu2e {
 
              parInit[nparTot_++] = pulseCache_.factor()*(yvec_[ipeak] - currentAmplitudeX); 
              parInit[nparTot_++] = loc; 
+             if (diagLevel_ > 2)  std::cout<< "[FixedFastProcessor] peak "<<ipeak<<"  loc="<<loc<<"  amplitude="<<pulseCache_.factor()*(yvec_[ipeak]- currentAmplitudeX)<<std::endl;        
         }
 
         
-
-
 	if (diagLevel_ > 1) std::cout<<"[FixedFastProcessor] Peaks init found : "<<peakLocationInit.size()<<std::endl;        
-	if (peakLocationInit.empty()) return; 
+        if (peakLocationInit.empty()) return; 
                 
 
 
@@ -280,13 +281,20 @@ namespace mu2e {
 
              parInit[nparTot_++] = pulseCache_.factor()*(yvec_[ipeak] - currentAMplitudeAtx); 
              parInit[nparTot_++] = xvec_[ipeak]; 
+             if (diagLevel_ > 2)  std::cout<< "[FixedFastProcessor] sec peak "<<ipeak<<"  loc="<<xvec_[ipeak]<<"  amplitude="<<pulseCache_.factor()*(yvec_[ipeak] - currentAMplitudeAtx)<<std::endl;   
         }
 	
 	
 	
 	// build vectors with x bins used in fit, more flexible than simple start / end range, can omit intermediate pts
 	buildXRange(peakLocation);
-	
+        
+        if (diagLevel_ > 2) {
+           std::cout<<"Xindices"<<std::endl;
+           for (auto h : xindices_) std::cout<<h<<" ";
+           std::cout<<std::endl;
+	}
+        
         return;           
    }
    

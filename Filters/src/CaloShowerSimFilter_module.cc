@@ -67,7 +67,7 @@ namespace mu2e {
     double etot(0.0);
     for(auto const& css : *csscol) {
       art::Ptr<SimParticle> const& sp = css.sim();
-      double energy = css.energy();
+      double energy = css.energyDep();
       etot += energy;
       if(debug_ > 0)std::cout <<"SimParticle PDG = " << sp->pdgId() 
       << " Crystal " << css.crystalId()

@@ -434,12 +434,12 @@ namespace mu2e {
      map<int,int> showerMap2;
      for (const auto& showerSim : caloShowerSims)
      {
-         showerMap[showerSim.crystalId()] += showerSim.energy();
+         showerMap[showerSim.crystalId()] += showerSim.energyDep();
          for (const auto& step : showerSim.caloShowerSteps()) showerMap2[showerSim.crystalId()] += step->nCompress();
          _hCaTime->Fill(showerSim.time());
 
          if ( _diagLevel > 1 && _nAnalyzed < _maxFullPrint )
-	   std::cout<<"Readback: caloshower in crystal "<< showerSim.crystalId()<<" eDep = "<<showerSim.energy()
+	   std::cout<<"Readback: caloshower in crystal "<< showerSim.crystalId()<<" eDep = "<<showerSim.energyDep()
 	            <<" time = "<<showerSim.time()<<std::endl;
      }
 

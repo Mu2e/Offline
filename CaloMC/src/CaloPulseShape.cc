@@ -1,7 +1,3 @@
-//
-// Utility class to hold Calorimeter readout pulse shape
-//
-
 #include "CaloMC/inc/CaloPulseShape.hh"
 #include "ConditionsService/inc/CalorimeterCalibrations.hh"
 #include "ConditionsService/inc/ConditionsHandle.hh"
@@ -13,21 +9,18 @@
 
 #include "TFile.h"
 #include "TH2F.h"
+#include "TSpline.h"
 
 
 namespace mu2e {
 
-
    CaloPulseShape::CaloPulseShape(double digiSampling, int pulseIntegralSteps) :
-     digiSampling_(digiSampling), pulseIntegralSteps_(pulseIntegralSteps),pulseDigitized_()
-   {
-   }
-
+     digiSampling_(digiSampling), pulseIntegralSteps_(pulseIntegralSteps), nBinShape_(0), integralVal_(), digitizedPulse_()
+   {}
 
    //----------------------------------------------------------------------------------------------------------------------
    void CaloPulseShape::buildShapes()
    {
-       pulseDigitized_.clear();
        ConditionsHandle<CalorimeterCalibrations> calorimeterCalibrations("ignored");
        std::string fileName = calorimeterCalibrations->pulseFileName();
        std::string histName = calorimeterCalibrations->pulseHistName();
@@ -36,52 +29,65 @@ namespace mu2e {
        TFile pulseFile(fileName.c_str());
        if (pulseFile.IsOpen()) pshape = (TH1F*) pulseFile.Get(histName.c_str());
 
-         if (!pshape) throw cet::exception("CATEGORY")<<"CaloPulseShape:: Hitsogram "<<histName.c_str()
-	                                              <<" from file "<<fileName.c_str()<<" does not exist";
+       if (!pshape) throw cet::exception("CATEGORY")<<"CaloPulseShape:: Hitsogram "<<histName.c_str()
+	                                            <<" from file "<<fileName.c_str()<<" does not exist";
 
-          double  pulseBinWidth = pshape->GetBinWidth(2);
-          int     nBinTimeStamp = digiSampling_ / pulseBinWidth;
-          int     integralStep  = digiSampling_ / pulseBinWidth / pulseIntegralSteps_;
+       // smooth the histogram, normalize and resmaple with the desired binning
+       int nbins = int((pshape->GetXaxis()->GetXmax()-pshape->GetXaxis()->GetXmin())/digiSampling_*pulseIntegralSteps_);
+       TH1F pulseShape("ps_temp","ps_temp", nbins, pshape->GetXaxis()->GetXmin(), pshape->GetXaxis()->GetXmax());
+       
+       TSpline3 spline(pshape);
+       for (int i=1;i<pulseShape.GetNbinsX();++i) pulseShape.SetBinContent(i,spline.Eval(pulseShape.GetBinCenter(i)));
+       pulseShape.Scale(1.0/pulseShape.Integral());
 
-          int ifirst(1),ilast(pshape->GetNbinsX()); //set bins prior to T0 to zero.
-          for (; ifirst<pshape->GetNbinsX();++ifirst) {if (pshape->GetBinContent(ifirst) > 1e-3) break; pshape->SetBinContent(ifirst,0);}
-          for (; ilast > 0                 ; --ilast) {if (pshape->GetBinContent(ilast)  > 1e-3) break; pshape->SetBinContent(ilast,0);}
 
-          int  nTimeStamps = int((ilast-ifirst)*pulseBinWidth/digiSampling_) + 1;
+       // find the start / end of the waveform
+       double  pulseAmplitudeMax = pulseShape.GetBinContent(pulseShape.GetMaximumBin());
+       int ifirst(pulseIntegralSteps_),ilast(nbins-pulseIntegralSteps_-1); 
+       for (;ifirst<nbins;++ifirst) if (pulseShape.GetBinContent(ifirst)> pulseAmplitudeMax/1000) break;
+       for (;ilast >0    ; --ilast) if (pulseShape.GetBinContent(ilast) > pulseAmplitudeMax/1000) break;
+       
+       if (ifirst==pulseIntegralSteps_) 
+          std::cout<<"[CaloPulseShape] Warning, pulse histogram starts too early and will be clipped "<<std::endl;
 
-          for (int i=0; i<pulseIntegralSteps_; ++i)
-          {
-               double sum(0);
-               std::vector<double> pulseDigi;
-
-               int binInit = ifirst - i*integralStep; //shift start time backward
-               for (int j=0; j<nTimeStamps; ++j)
-               {
-                  int binMin = binInit+j*nBinTimeStamp;
-                  double pulseIntegral = pshape->Integral(binMin, binMin+nBinTimeStamp-1);
-                  sum += pulseIntegral;
-                  pulseDigi.push_back(pulseIntegral);
-               }
-               for (auto &pulse : pulseDigi) pulse /= sum;
-               pulseDigitized_.push_back(pulseDigi);
-          }
-
-	pulseFile.Close();
-   }
-
-   //----------------------------------------------------------------------------------------------------------------------
-   const void CaloPulseShape::printShape() const
-   {
-       int ip(0);
-       std::cout<<"[CaloPulseShape] Pulse "<<std::endl;
-       for (const auto& pulseDigi : pulseDigitized_)
+       // calculate the integral over the sampling period for each start time
+       integralVal_.clear();
+       for (int j=0;j<ilast-ifirst+pulseIntegralSteps_;++j)
        {
-	  std::cout<<"Pulse "<<ip<<std::endl;
-          for (const auto& pulse : pulseDigi) {std::cout<<pulse<<" ";} std::cout<<std::endl;
-          ++ip;
+	  int binStart = ifirst-pulseIntegralSteps_+j;
+	  int binEnd   = binStart+pulseIntegralSteps_-1; 
+	  integralVal_.push_back(pulseShape.Integral(binStart, binEnd));
        }
+       
+       nBinShape_      = (ilast-ifirst)/pulseIntegralSteps_+2;
+       digitizedPulse_ = std::vector<double>(nBinShape_,0);
+
+       pulseFile.Close();
    }
+   
 
+   //----------------------------------------------------------------------------
+   // forward shift in waveform = backward shift in time origin 
+   const std::vector<double>& CaloPulseShape::digitizedPulse(double hitTime) const
+   {
+       int shiftBin = pulseIntegralSteps_ - int(hitTime*pulseIntegralSteps_/digiSampling_)%pulseIntegralSteps_;
+       for (int i=0;i<nBinShape_;++i) digitizedPulse_[i] = integralVal_[shiftBin+i*pulseIntegralSteps_];       
+       return digitizedPulse_;
+   }
+   
 
+   //--------------------------------
+   void CaloPulseShape::diag() const
+   {
+       std::cout<<"Integral val "<<std::endl;
+       for (auto& h : integralVal_) std::cout<<h<<" ";
+       std::cout<<std::endl;
+       
+       std::cout<<"Number of digi bins "<<nBinShape_<<std::endl;
+       
+       std::cout<<"Cache content "<<std::endl;
+       for (auto& h : digitizedPulse_) std::cout<<h<<" ";
+       std::cout<<std::endl;
+   }
 
 }
