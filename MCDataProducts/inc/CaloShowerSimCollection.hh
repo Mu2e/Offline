@@ -3,4 +3,10 @@
 //
 // Original author Bertrand Echenard
 //
+#include <vector>
 #include "MCDataProducts/inc/CaloShowerSim.hh"
+
+namespace mu2e {
+   typedef std::vector<mu2e::CaloShowerSim> CaloShowerSimCollection;
+}
+

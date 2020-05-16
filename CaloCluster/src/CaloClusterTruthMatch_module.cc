@@ -146,7 +146,7 @@ namespace mu2e {
 	    caloClusterTruth.addSingle(clusterPtr, sim, CaloShowerSimPtr);
 
             
-	    if (diagLevel_ > 2) std::cout<<"[CaloClusterTruthMatch]  matched crystal  id/time/Edep= "<<CaloShowerSimPtr->crystalId()<<" / "<<CaloShowerSimPtr->time()<<" / "<<CaloShowerSimPtr->energy()
+	    if (diagLevel_ > 2) std::cout<<"[CaloClusterTruthMatch]  matched crystal  id/time/Edep= "<<CaloShowerSimPtr->crystalId()<<" / "<<CaloShowerSimPtr->time()<<" / "<<CaloShowerSimPtr->energyDep()
 		                          <<"\t    hit in cluster id/time/Edep= "<<i->first->id()<<" / "<<i->first->time()<<" / "<<i->first->energyDep()<<std::endl;
        }
        

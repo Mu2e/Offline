@@ -1,46 +1,35 @@
 #ifndef MCDataProducts_CaloShowerROStep_hh
 #define MCDataProducts_CaloShowerROStep_hh
-
 //
-// Propagation of each CaloShowerStep to each readout
+// PE generated in the photo-sensors from energy deposit in the crystal
 //
 // Original author Bertrand Echenard
 //
-
 #include "MCDataProducts/inc/CaloShowerStep.hh"
-#include <iostream>
-
-
+#include <vector>
 
 namespace mu2e {
 
    class CaloShowerStepRO 
    {
        public:
-	  
-	  typedef art::Ptr<CaloShowerStep> caloStepPtr;
-	  
-	  CaloShowerStepRO(): ROID_(-1),step_(),time_(0), energy_(0) {}
-	  
-	  CaloShowerStepRO(int ROID, const caloStepPtr& step, double time, double energy) : 
-	    ROID_(ROID),step_(step),time_(time),energy_(energy)
-	  {}
+	 	  
+	  CaloShowerStepRO(): ROID_(-1),step_() {}	  
+	  CaloShowerStepRO(int ROID, const art::Ptr<CaloShowerStep>& step, const std::vector<float> PETime) : 
+	    ROID_(ROID),step_(step),PETime_(PETime) {}
 
-
-	  int                        ROID()            const {return ROID_;}
-	  const caloStepPtr&         caloShowerStep()  const {return step_;}
-	  double                     time()            const {return time_;}
-	  double                     energy()          const {return energy_;}
-
-          void setCaloShowerStep(const caloStepPtr& step) {step_ = step;}
-       private:
-	    
-	    int                 ROID_;      
-	    caloStepPtr         step_;
-	    double              time_;          
-	    double              energy_;
+	  int                               ROID()            const {return ROID_;}
+	  const art::Ptr<CaloShowerStep>&   caloShowerStep()  const {return step_;}
+	  const std::vector<float>          PETime()          const {return PETime_;}
+          unsigned                          NPE()             const {return PETime_.size();}
+          
+          void setCaloShowerStep(const art::Ptr<CaloShowerStep>& step) {step_ = step;}
+       
+       private:	    
+	    int                       ROID_;      
+	    art::Ptr<CaloShowerStep>  step_;
+	    std::vector<float>        PETime_;          
    };
-
 } 
 
 #endif

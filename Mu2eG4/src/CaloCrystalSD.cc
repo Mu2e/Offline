@@ -29,16 +29,16 @@ namespace mu2e {
 
   G4bool CaloCrystalSD::ProcessHits(G4Step* aStep,G4TouchableHistory*)
   {
-    G4double edep = aStep->GetTotalEnergyDeposit();
-    if (edep < 1e-6) return false;
+      G4double edep = aStep->GetTotalEnergyDeposit();
+      if (edep < 1e-6) return false;
 
 
-    _currentSize += 1;
-    if( _sizeLimit>0 && _currentSize>_sizeLimit && (_currentSize - _sizeLimit)==1)
+      _currentSize += 1;
+      if( _sizeLimit>0 && _currentSize>_sizeLimit && (_currentSize - _sizeLimit)==1)
       {
-        mf::LogWarning("G4") << "Maximum number of steps reached in "
-                             << SensitiveDetectorName<< ": "<< _currentSize <<std::endl;
-        return false;
+          mf::LogWarning("G4") << "Maximum number of steps reached in "
+                               << SensitiveDetectorName<< ": "<< _currentSize <<std::endl;
+          return false;
       }
 
 
@@ -47,18 +47,16 @@ namespace mu2e {
     const G4TouchableHandle & touchableHandle = aStep->GetPreStepPoint()->GetTouchableHandle();
 
     G4int copyNo = touchableHandle->GetCopyNumber(1);  // Make sure to get the right copy number level here
-
-    G4ThreeVector posWorld           = aStep->GetPreStepPoint()->GetPosition();
+    G4ThreeVector posWorld = aStep->GetPreStepPoint()->GetPosition();
 
     // G4AffineTransform const& toLocal = touchableHandle->GetHistory()->GetTopTransform();
     // G4ThreeVector posLocal           = toLocal.TransformPoint(posWorld);
-
     // diagnosis purposes only when playing with the geometry, uncomment next two line
     //for (int i=0;i<=touchableHandle->GetHistoryDepth();++i) std::cout<<"Cry Transform level "<<i<<"   "<<touchableHandle->GetCopyNumber(i)
     //<<"   "<<touchableHandle->GetHistory()->GetTransform(touchableHandle->GetHistoryDepth()-i).TransformPoint(posWorld)
     //<<"  "<<touchableHandle->GetSolid(i)->GetName()<<"   "<<touchableHandle->GetVolume(i)->GetName()<<std::endl;
 
-    // VisibleEnergyDeposition suggested by Ralf E
+    // VisibleEnergyDeposition following Birks law
 
     _collection->push_back(StepPointMC(_spHelper->particlePtr(aStep->GetTrack()),
                                        copyNo,
@@ -80,7 +78,6 @@ namespace mu2e {
                                        ));
 
     return true;
-
   }
 
 }
