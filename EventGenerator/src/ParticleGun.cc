@@ -1,10 +1,6 @@
 //
 // Shoots a single particle gun and puts its output into a generated event.
 //
-// $Id: ParticleGun.cc,v 1.21 2012/08/20 21:23:24 mjlee Exp $
-// $Author: mjlee $
-// $Date: 2012/08/20 21:23:24 $
-//
 // Original author Rob Kutschke
 // Modified by MyeongJae Lee. See docdb-2049
 //
@@ -29,6 +25,10 @@ namespace mu2e {
     : m_gun(engine,
             config.getDouble("particleGun.mean",-1.),
             static_cast<PDGCode::type>(config.getInt("particleGun.id",  PDGCode::mu_minus)),
+
+            // excitation energy and floatLevelBaseIndex of an ion/isomer
+            config.getDouble("particleGun.excitationEnergy", 0.0),
+            config.getInt("particleGun.floatLevelBaseIndex", 0),
 
             config.getDouble("particleGun.pmin", pEndPoint),
             config.getDouble("particleGun.pmax", pEndPoint),

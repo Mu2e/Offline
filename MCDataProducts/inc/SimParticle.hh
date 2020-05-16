@@ -4,10 +4,6 @@
 //
 // Information about particles created by Geant4.
 //
-// $Id: SimParticle.hh,v 1.12 2013/09/27 16:03:41 gandr Exp $
-// $Author: gandr $
-// $Date: 2013/09/27 16:03:41 $
-//
 // Original author Rob Kutschke
 //
 // Notes:
@@ -52,6 +48,8 @@ namespace mu2e {
       _genParticle(),
       _startPosition(),
       _startMomentum(),
+      _startExcitationEnergy(0.),
+      _startFloatLevelBaseIndex(0),
       _startGlobalTime(0.),
       _startProperTime(0.),
       _startVolumeIndex(0),
@@ -79,6 +77,8 @@ namespace mu2e {
                  art::Ptr<GenParticle> const&   agenParticle,
                  const CLHEP::Hep3Vector&       aposition,
                  const CLHEP::HepLorentzVector& amomentum,
+                 double                         astartExcitationEnergy,
+                 int                            astartFloatLevelBaseIndex,
                  double                         astartGlobalTime,
                  double                         astartProperTime,
                  unsigned                       astartVolumeIndex,
@@ -91,6 +91,8 @@ namespace mu2e {
       _genParticle(agenParticle),
       _startPosition(aposition),
       _startMomentum(amomentum),
+      _startExcitationEnergy(astartExcitationEnergy),
+      _startFloatLevelBaseIndex(astartFloatLevelBaseIndex),
       _startGlobalTime(astartGlobalTime),
       _startProperTime(astartProperTime),
       _startVolumeIndex(astartVolumeIndex),
@@ -98,9 +100,9 @@ namespace mu2e {
       _creationCode(acreationCode),
       _endPosition(),
       _endMomentum(),
-      _endGlobalTime(),
-      _endProperTime(),
-      _endVolumeIndex(),
+      _endGlobalTime(0.),
+      _endProperTime(0.),
+      _endVolumeIndex(0),
       _endG4Status(),
       _stoppingCode(),
       _preLastStepKE(-1),
@@ -122,7 +124,7 @@ namespace mu2e {
                      ProcessCode             astoppingCode,
                      float                   endKE,
                      int                     nSteps,
-		     double                  trackLength){
+                     double                  trackLength){
       _endDefined      = true;
       _endPosition     = aendPosition;
       _endMomentum     = aendMomentum;
@@ -131,7 +133,7 @@ namespace mu2e {
       _endVolumeIndex  = aendVolumeIndex;
       _endG4Status     = aendG4Status;
       _stoppingCode    = astoppingCode;
-      _preLastStepKE   = -1.0;      
+      _preLastStepKE   = -1.0;
       _endKE           = endKE;
       _nSteps          = nSteps;
       _trackLength     = trackLength;
@@ -183,6 +185,9 @@ namespace mu2e {
     // Information at the start of the track.
     CLHEP::Hep3Vector const& startPosition()       const { return _startPosition;}
     CLHEP::HepLorentzVector const& startMomentum() const { return _startMomentum;}
+    // the next two are for excited ions
+    double      startExcitationEnergy()    const { return _startExcitationEnergy;}
+    int         startFloatLevelBaseIndex() const { return _startFloatLevelBaseIndex;};
     double      startGlobalTime()  const { return _startGlobalTime;}
     double      startProperTime()  const { return _startProperTime;}
     unsigned    startVolumeIndex() const { return _startVolumeIndex;}
@@ -253,6 +258,9 @@ namespace mu2e {
     // Information at the start of the track.
     CLHEP::Hep3Vector       _startPosition;
     CLHEP::HepLorentzVector _startMomentum;
+    // the next two are for excited ions
+    double                  _startExcitationEnergy;
+    short int               _startFloatLevelBaseIndex;
     double                  _startGlobalTime;
     double                  _startProperTime;
     unsigned                _startVolumeIndex;
