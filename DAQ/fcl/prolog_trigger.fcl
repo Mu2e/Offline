@@ -18,9 +18,9 @@ DAQ : {
 	 diagLevel       : 0
 	 maxFullPrint    : 0
 
-	 includeTracker : 1
-	 includeCalorimeter : 1
-	 includeCrv : 1
+	 includeTracker : 0
+	 includeCalorimeter : 0
+	 includeCrv : 0
 	 includeDMAHeaders: 1
 
 	 generateTimestampTable : 0
@@ -29,7 +29,7 @@ DAQ : {
 
 	 generateBinaryFile : 1
 	 generateTextFile   : 0
-	 outputFile      : "DTC_packets.bin"
+#	 outputFile      : "DTC_packets.bin"
 #	 maxDMABlockSize : 32000
 #	 bufferSize      : 1000
       }

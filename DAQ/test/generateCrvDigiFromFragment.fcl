@@ -15,8 +15,8 @@ source : {
 
   # firstEvent  : 500
   maxEvents   : -1
-  inputCommands: ["keep *", 
-                  "drop *Mu2eEventHeader*_*_*_*"]
+#  inputCommands: ["keep *", 
+#                  "drop *Mu2eEventHeader*_*_*_*"]
 
 }
 
