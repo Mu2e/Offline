@@ -44,8 +44,7 @@ namespace mu2e {
     MVAToolDb(std::string mva, std::string dbname):DbTable(mva.c_str(),dbname.c_str(),"idx,mvaname,xmlfilename,calibrated") { }
 
     const Row& rowAt(const std::size_t index) const { return _rows.at(index);}
-    const Row& row(const int idx) const { 
-                return _rows.at(_chanIndex.at(idx)); }
+    const Row& row(const int idx) const { return _rows.at(idx); }
     std::vector<Row> const& rows() const {return _rows;}
     std::size_t nrow() const { return _rows.size(); };
     //this table should always be 3 rows
