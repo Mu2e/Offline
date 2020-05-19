@@ -16,8 +16,6 @@
 #include <iostream>
 #include <memory>
 
-using namespace std;
-
 namespace mu2e
 {
   class TimeClusterFilter : public art::EDFilter
@@ -54,7 +52,7 @@ namespace mu2e
 
   bool TimeClusterFilter::filter(art::Event& evt){
     // create output
-    unique_ptr<TriggerInfo> triginfo(new TriggerInfo);
+    std::unique_ptr<TriggerInfo> triginfo(new TriggerInfo);
     ++_nevt;
     bool retval(false); // preset to fail
     // find the collection
@@ -65,7 +63,7 @@ namespace mu2e
     for(auto itc = tccol->begin();itc != tccol->end(); ++itc) {
       auto const& tc = *itc;
       if(_debug > 2){
-        cout << moduleDescription().moduleLabel() << " nhits = " << tc.hits().size() << " t0 = " << tc.t0().t0() << endl;
+        std::cout << moduleDescription().moduleLabel() << " nhits = " << tc.hits().size() << " t0 = " << tc.t0().t0() << std::endl;
       }
       if( (!_hascc || tc.caloCluster().isNonnull()) &&
           tc.hits().size() >= _minnhits &&
@@ -84,10 +82,10 @@ namespace mu2e
 	  triginfo->_hitClusters[trig_ind] = art::Ptr<TimeCluster>(tcH,index);
 	  ++trig_ind;
 	}else{
-	  printf("[TimeClusterFilter::filter] reached the maximum number of TimeClusters that can be stored!");
+	  std::cout <<"[TimeClusterFilter::filter] reached the maximum number of TimeClusters that can be stored!" << std::endl;
 	}
         if(_debug > 1){
-          cout << moduleDescription().moduleLabel() << " passed event " << evt.id() << endl;
+          std::cout << moduleDescription().moduleLabel() << " passed event " << evt.id() << std::endl;
         }
       }
     }
@@ -97,7 +95,7 @@ namespace mu2e
 
   bool TimeClusterFilter::endRun( art::Run& run ) {
     if(_debug > 0 && _nevt > 0){
-      cout << moduleDescription().moduleLabel() << " passed " << _npass << " events out of " << _nevt << " for a ratio of " << float(_npass)/float(_nevt) << endl;
+      std::cout << moduleDescription().moduleLabel() << " passed " << _npass << " events out of " << _nevt << " for a ratio of " << float(_npass)/float(_nevt) << std::endl;
     }
     return true;
   }
