@@ -2,17 +2,17 @@
 #define AnalysisConditions_TrkQualCatalogCache_hh
 
 //
-// TrkQualCatalogCache is the ProditionsCache for TrkQualDb
+// TrkQualCatalogCache is the ProditionsCache for AnaTrkQualDb
 //
 
 // Mu2e includes
 #include "AnalysisConditions/inc/MVACatalogCache.hh"
 #include "RecoDataProducts/inc/TrkQual.hh"
-#include "DbTables/inc/TrkQualDb.hh"
+#include "DbTables/inc/AnaTrkQualDb.hh"
 
 namespace mu2e {
 
-  typedef MVACatalogCache<TrkQual, TrkQualDb> TrkQualCatalogCache;
+  typedef MVACatalogCache<TrkQual, AnaTrkQualDb> TrkQualCatalogCache;
 }
 
 #endif
