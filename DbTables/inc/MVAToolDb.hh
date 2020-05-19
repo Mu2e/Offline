@@ -69,9 +69,6 @@ namespace mu2e {
 			 columns[1],
 			 columns[2],
 			 calibrated);
-      // add this idx to the map index - optional
-      _chanIndex[_rows.back().idx()] = _rows.size()-1;
-
       // // calibrate if we can
       // if (calibrated == 1) {
       // 	_rows.back().setCalib();
@@ -94,11 +91,10 @@ namespace mu2e {
     //   return row(idx).effCalib();
     // }
 
-    virtual void clear() { _csv.clear(); _rows.clear(); _chanIndex.clear();}
+    virtual void clear() { _csv.clear(); _rows.clear();}
 
   private:
     std::vector<Row> _rows;
-    std::map<int,std::size_t> _chanIndex;
   };
 };
 #endif
