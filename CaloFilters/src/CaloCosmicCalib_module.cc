@@ -70,7 +70,7 @@ namespace mu2e
 
   bool CaloCosmicCalib::filter(art::Event& evt){
     // create output
-    unique_ptr<TriggerInfo> triginfo(new TriggerInfo);
+    std::unique_ptr<TriggerInfo> triginfo(new TriggerInfo);
     ++_nevt;
     bool retval(false); // preset to fail
     // find the collection
@@ -86,7 +86,7 @@ namespace mu2e
       int   clsize     = cl.size();
       
       if(_debug > 2){
-        cout << moduleDescription().moduleLabel() << " nhits = " << cl.size() << " energy = " << energy << endl;
+        std::cout << moduleDescription().moduleLabel() << " nhits = " << cl.size() << " energy = " << energy << std::endl;
       }
       if( (energy >= _minenergy) && 
 	  (energy <= _maxenergy) && 
@@ -105,10 +105,10 @@ namespace mu2e
 	  triginfo->_caloClusters[trig_ind] = art::Ptr<CaloCluster>(clH,index);
 	  ++trig_ind;
 	}else{
-	  printf("[CaloCosmicCalib::filter] reached the maximum number of CaloClusters that can be stored!");
+	  std::cout << "[CaloCosmicCalib::filter] reached the maximum number of CaloClusters that can be stored!" << std::endl;
 	}
         if(_debug > 1){
-          cout << moduleDescription().moduleLabel() << " passed event " << evt.id() << endl;
+          std::cout << moduleDescription().moduleLabel() << " passed event " << evt.id() << std::endl;
         }
       }
     }
@@ -118,7 +118,7 @@ namespace mu2e
 
   bool CaloCosmicCalib::endRun( art::Run& run ) {
     if(_debug > 0 && _nevt > 0){
-      cout << moduleDescription().moduleLabel() << " passed " <<  _npass << " events out of " << _nevt << " for a ratio of " << float(_npass)/float(_nevt) << endl;
+      std::cout << moduleDescription().moduleLabel() << " passed " <<  _npass << " events out of " << _nevt << " for a ratio of " << float(_npass)/float(_nevt) << std::endl;
     }
     return true;
   }

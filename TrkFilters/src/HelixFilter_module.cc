@@ -31,8 +31,6 @@ using namespace CLHEP;
 #include <iostream>
 #include <memory>
 
-using namespace std;
-
 namespace mu2e
 {
   class HelixFilter : public art::EDFilter
@@ -91,7 +89,7 @@ namespace mu2e
     _minlambda         (pset.get<double>("minAbsLambda",150.)),
     _maxnloops         (pset.get<double>("maxNLoops",30.)),
     _minnloops         (pset.get<double>("minNLoops",0.)),
-    _goodh             (pset.get<vector<string> >("helixFitFlag",vector<string>{"HelixOK"})),
+    _goodh             (pset.get<std::vector<std::string> >("helixFitFlag",std::vector<std::string>{"HelixOK"})),
     _trigPath          (pset.get<std::string>("triggerPath")),
     _prescaleUsingD0Phi(pset.get<bool>  ("prescaleUsingD0Phi",false)),
     _debug             (pset.get<int>   ("debugLevel",0)),
@@ -124,7 +122,7 @@ namespace mu2e
 
   bool HelixFilter::filter(art::Event& evt){
     // create output
-    unique_ptr<TriggerInfo> triginfo(new TriggerInfo);
+    std::unique_ptr<TriggerInfo> triginfo(new TriggerInfo);
     ++_nevt;
     bool retval(false); // preset to fail
     // find the collection
@@ -152,7 +150,7 @@ namespace mu2e
       float hRatio     = helTool.hitRatio();
 
       if(_debug > 2){
-        cout << moduleDescription().moduleLabel() << "status = " << hs.status() << " nhits = " << hs.hits().size() << " mom = " << hmom << endl;
+	std::cout << moduleDescription().moduleLabel() << "status = " << hs.status() << " nhits = " << hs.hits().size() << " mom = " << hmom << std::endl;
       }
       if( hs.status().hasAllProperties(_goodh) &&
           (!_hascc || hs.caloCluster().isNonnull()) &&
@@ -190,10 +188,10 @@ namespace mu2e
 	  triginfo->_helixes[trig_ind] = art::Ptr<HelixSeed>(hsH,index);
 	  ++trig_ind;
 	}else{
-	  printf("[HelixFilter::filter] reached the maximum number of tracks that can be stored!");
+	  std::cout << "[HelixFilter::filter] reached the maximum number of tracks that can be stored!" << std::endl;
 	}
 	if(_debug > 1){
-          cout << moduleDescription().moduleLabel() << " passed event " << evt.id() << endl;
+	  std::cout << moduleDescription().moduleLabel() << " passed event " << evt.id() << std::endl;
         }
       }
     }
@@ -203,7 +201,7 @@ namespace mu2e
 
   bool HelixFilter::endRun( art::Run& run ) {
     if(_debug > 0 && _nevt > 0){
-      cout << moduleDescription().moduleLabel() << " paassed " <<  _npass << " events out of " << _nevt << " for a ratio of " << float(_npass)/float(_nevt) << endl;
+      std::cout << moduleDescription().moduleLabel() << " paassed " <<  _npass << " events out of " << _nevt << " for a ratio of " << float(_npass)/float(_nevt) << std::endl;
     }
     return true;
   }
