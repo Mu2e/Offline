@@ -83,7 +83,8 @@ namespace mu2e {
       Row const& r = _rows.at(irow);
       sstream << r.idx()<<",";
       sstream << r.mvaname()<<",";
-      sstream << r.xmlfilename();
+      sstream << r.xmlfilename()<<",";
+      sstream << r.calibrated();
     }
 
 
