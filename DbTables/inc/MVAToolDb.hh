@@ -41,7 +41,7 @@ namespace mu2e {
       throw cet::exception("MVAToolDb") << "Shouldn't be creating a bare MVAToolDb table" << std::endl;
     }
 
-    MVAToolDb(std::string mva):DbTable(mva.c_str(),mva.c_str(),"idx,mvaname,xmlfilename,calibrated") { }
+    MVAToolDb(std::string mva, std::string dbname):DbTable(mva.c_str(),dbname.c_str(),"idx,mvaname,xmlfilename,calibrated") { }
 
     const Row& rowAt(const std::size_t index) const { return _rows.at(index);}
     const Row& row(const int idx) const { 
