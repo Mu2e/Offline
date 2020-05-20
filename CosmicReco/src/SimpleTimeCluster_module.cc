@@ -36,8 +36,20 @@ namespace {
 namespace mu2e {
   class SimpleTimeCluster : public art::EDProducer {
     public:
-      enum Mode{flag=0,filter};
-      explicit SimpleTimeCluster(fhicl::ParameterSet const& pset);
+      struct Config{
+        using Name=fhicl::Name;
+        using Comment=fhicl::Comment;
+        fhicl::Atom<int> debug{Name("debugLevel"), Comment("set to 1 for debug prints"),0};
+        fhicl::Atom<int> minnsh {Name("minNStrawHits"), Comment("minimum number of straw hits "),5};
+        fhicl::Atom<double> timewindow {Name("TimeWindow"), Comment("Width of time window in ns"),100};
+        fhicl::Atom<bool> testflag {Name("TestFlag"),Comment("Test StrawHitFlags")};
+        fhicl::Atom<art::InputTag> chToken{Name("ComboHitCollection"),Comment("tag for combo hit collection")};
+        fhicl::Atom<art::InputTag> shfToken{Name("StrawHitFlagCollection"),Comment("tag for StrawHitFlag collection")};
+        fhicl::Sequence<std::string> hsel{Name("HitSelectionBits"),Comment("Required flags if TestFlag is set"),vector<string>{"EnergySelection","TimeSelection"}};
+        fhicl::Sequence<std::string> hbkg{Name("HitBackgroundBits"),Comment("Excluded flags if TestFlag is set"),vector<string>{}};
+      };
+      typedef art::EDProducer::Table<Config> Parameters;
+      explicit SimpleTimeCluster(const Parameters& conf);
 
       void produce(art::Event& e) override;
 
@@ -47,8 +59,8 @@ namespace mu2e {
       int               _minnsh;
       double            _timeWindow;
       bool		_testflag;
-      art::ProductToken<ComboHitCollection> const _chToken;
-      art::ProductToken<StrawHitFlagCollection> const _shfToken;
+      art::InputTag  _chToken;
+      art::InputTag _shfToken;
       const StrawHitFlagCollection *_shfcol;
       const ComboHitCollection *_chcol;
       StrawHitFlag      _hsel, _hbkg;
@@ -58,30 +70,30 @@ namespace mu2e {
       bool goodHit(const StrawHitFlag& flag) const;
   };
 
-  SimpleTimeCluster::SimpleTimeCluster(fhicl::ParameterSet const& pset) :
-    art::EDProducer{pset},
-    _debug             (pset.get<int>("debugLevel",0)),
-    _minnsh            (pset.get<int>("MinNumStrawHits",5)),
-    _timeWindow        (pset.get<double>("TimeWindow",100)),
-    _testflag(pset.get<bool>("TestFlag")),
-    _chToken{consumes<ComboHitCollection>(pset.get<art::InputTag>("ComboHitCollection"))},
-    _shfToken{mayConsume<StrawHitFlagCollection>(pset.get<art::InputTag>("StrawHitFlagCollection"))},
-    _hsel              (pset.get<std::vector<std::string> >("HitSelectionBits",vector<string>{"EnergySelection","TimeSelection"})),
-    _hbkg              (pset.get<vector<string> >("HitBackgroundBits",vector<string>{}))
-    {
-      produces<TimeClusterCollection>();
-    }
+  SimpleTimeCluster::SimpleTimeCluster(const Parameters& conf) :
+    art::EDProducer(conf),
+    _debug (conf().debug()),
+    _minnsh (conf().minnsh()),
+    _timeWindow (conf().timewindow()),
+    _testflag (conf().testflag()),
+    _chToken (conf().chToken()),
+    _shfToken (conf().shfToken()),
+    _hsel (conf().hsel()),
+    _hbkg (conf().hbkg())
+  {
+    produces<TimeClusterCollection>();
+  }
 
 
   //--------------------------------------------------------------------------------------------------------------
   void SimpleTimeCluster::produce(art::Event & event ){
     _iev = event.id().event();
 
-    auto const& chH = event.getValidHandle(_chToken);
+    auto const& chH = event.getValidHandle<ComboHitCollection>(_chToken);
     _chcol = chH.product();
 
     if(_testflag){
-      auto shfH = event.getValidHandle(_shfToken);
+      auto shfH = event.getValidHandle<StrawHitFlagCollection>(_shfToken);
       _shfcol = shfH.product();
       if(_shfcol->size() != _chcol->size())
         throw cet::exception("RECO")<<"SimpleTimeCluster: inconsistent flag collection length " << endl;
