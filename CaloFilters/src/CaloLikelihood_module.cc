@@ -429,12 +429,8 @@ namespace mu2e {
         // associate to the caloCluster which triggers.  Note there may be other caloClusters which also pass the filter
         // but filtering is by event!
         size_t index = std::distance(caloClusters->begin(), icl);
-	if (trig_ind < TriggerInfo::MaxNObj){        
-	  triginfo->_caloClusters[trig_ind] = art::Ptr<CaloCluster>(clH, index);
-          ++trig_ind;
-	}else{
-	  std::cout << "[CaloLikelihood::filter] reached the maximum number of CaloCluster that can be stored!" << std::endl;
-	}
+	triginfo->_caloClusters.push_back(art::Ptr<CaloCluster>(clH, index));
+	++trig_ind;
 	if(_diagLevel > 1){
           std::cout << moduleDescription().moduleLabel() << " passed event " << event.id() << std::endl;
         }

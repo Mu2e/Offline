@@ -117,12 +117,8 @@ namespace mu2e
         // associate to the helix which triggers.  Note there may be other helices which also pass the filter
         // but filtering is by event!
         size_t index = std::distance(kscol->begin(),iks);
-	if (trig_ind < TriggerInfo::MaxNObj){
-	  triginfo->_tracks[trig_ind] = art::Ptr<KalSeed>(ksH,index);
-	  ++trig_ind;
-	}else{
-	  std::cout << "[SeedFilter::filter] reached the maximum number of tracks that can be stored!" << std::endl;
-	}
+	triginfo->_tracks.push_back(art::Ptr<KalSeed>(ksH,index));
+	++trig_ind;
         if(_debug > 1){
           std::cout << moduleDescription().moduleLabel() << " passed event " << evt.id() << std::endl;
         }

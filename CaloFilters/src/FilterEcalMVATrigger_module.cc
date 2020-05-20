@@ -213,7 +213,7 @@ namespace mu2e {
 	      triginfo->_triggerPath = _trigPath;
 	    }
 	    size_t index = std::distance(caloTrigSeeds.begin(),seedIt);
-	    triginfo->_caloTrigSeeds[trig_ind] = art::Ptr<CaloTrigSeed>(caloTrigSeedsHandle,index);
+	    triginfo->_caloTrigSeeds.push_back(art::Ptr<CaloTrigSeed>(caloTrigSeedsHandle,index));
 	    ++trig_ind;
 	  }
 	}
@@ -226,7 +226,7 @@ namespace mu2e {
 	      triginfo->_triggerPath = _trigPath;
 	    }
 	    size_t index = std::distance(caloTrigSeeds.begin(),seedIt);
-	    triginfo->_caloTrigSeeds[trig_ind] = art::Ptr<CaloTrigSeed>(caloTrigSeedsHandle,index);
+	    triginfo->_caloTrigSeeds.push_back(art::Ptr<CaloTrigSeed>(caloTrigSeedsHandle,index));
 	    ++trig_ind;
 	  }
 	}

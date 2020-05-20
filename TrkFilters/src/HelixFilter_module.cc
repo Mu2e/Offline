@@ -184,12 +184,8 @@ namespace mu2e
         // associate to the helix which triggers.  Note there may be other helices which also pass the filter
         // but filtering is by event!
         size_t index = std::distance(hscol->begin(),ihs);
-	if (trig_ind < TriggerInfo::MaxNObj){
-	  triginfo->_helixes[trig_ind] = art::Ptr<HelixSeed>(hsH,index);
-	  ++trig_ind;
-	}else{
-	  std::cout << "[HelixFilter::filter] reached the maximum number of tracks that can be stored!" << std::endl;
-	}
+	triginfo->_helixes.push_back(art::Ptr<HelixSeed>(hsH,index));
+	++trig_ind;
 	if(_debug > 1){
 	  std::cout << moduleDescription().moduleLabel() << " passed event " << evt.id() << std::endl;
         }
