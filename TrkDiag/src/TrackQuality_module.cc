@@ -13,7 +13,9 @@
 #include "art_root_io/TFileService.h"
 #include "art/Utilities/make_tool.h"
 // utilities
+#include "ProditionsService/inc/ProditionsHandle.hh"
 #include "Mu2eUtilities/inc/MVATools.hh"
+#include "AnalysisConditions/inc/TrkQualCatalog.hh"
 #include "TrkDiag/inc/InfoStructHelper.hh"
 #include "TrkDiag/inc/TrkInfo.hh"
 // data
@@ -37,44 +39,39 @@ namespace mu2e
   class TrackQuality : public art::EDProducer
   {
   public:
-    TrackQuality(fhicl::ParameterSet const&);
+    struct Config {
+      using Name=fhicl::Name;
+      using Comment=fhicl::Comment;
+
+      fhicl::Atom<art::InputTag> kalSeedTag{Name("KalSeedCollection"), Comment("Input tag for KalSeedCollection")};
+      fhicl::Atom<std::string> trainName{Name("TrainingName"), Comment("Name of the training (e.g. TrkQual)")};
+      fhicl::Atom<bool> printMVA{Name("PrintMVA"), Comment("Print the MVA used"), false};
+    };
+
+    using Parameters = art::EDProducer::Table<Config>;
+    TrackQuality(const Parameters& conf);
 
   private:
     void produce(art::Event& event) override;
+    void initializeMVA(std::string xmlfilename);
 
     art::InputTag _kalSeedTag;
+    std::string _trainName;
+    bool _printMVA;
 
-    MVATools* _trkqualmva;
-    MVAMask _mvamask;
+    mu2e::ProditionsHandle<mu2e::TrkQualCatalog> _trkQualCatalogH;
 
     InfoStructHelper _infoStructHelper;
   };
 
-  TrackQuality::TrackQuality(fhicl::ParameterSet const& pset) :
-    art::EDProducer{pset},
-    _kalSeedTag(pset.get<art::InputTag>("KalSeedCollection", "")),
-    _trkqualmva(new MVATools(pset.get<fhicl::ParameterSet>("TrkQualMVA", fhicl::ParameterSet())))
-
+  TrackQuality::TrackQuality(const Parameters& conf) :
+    art::EDProducer{conf},
+    _kalSeedTag(conf().kalSeedTag()), 
+    _trainName(conf().trainName()),
+    _printMVA(conf().printMVA())
   {
     produces<TrkQualCollection>();
     produces<RecoQualCollection>();
-    
-    _trkqualmva->initMVA();
-
-    // create the MVA mask in case we have removed variables
-    const auto& labels = _trkqualmva->labels();
-    _mvamask = 0;
-    for (int i_var = 0; i_var < TrkQual::n_vars; ++i_var) {
-      for (const auto& i_label : labels) {
-	std::string i_varName = TrkQual::varName(static_cast<TrkQual::MVA_varindex>(i_var));
-	if (i_label.find(i_varName) != std::string::npos) {
-	  _mvamask ^= (1 << i_var);
-	  break;
-	}
-      }
-    }
-    if(pset.get<bool>("PrintMVA",false))
-      _trkqualmva->showMVA();
   }
 
   void TrackQuality::produce(art::Event& event ) {
@@ -87,6 +84,14 @@ namespace mu2e
     event.getByLabel(_kalSeedTag, kalSeedHandle);
     const auto& kalSeeds = *kalSeedHandle;
 
+    TrkQualCatalog const& trkQualCatalog = _trkQualCatalogH.get(event.id());
+    TrkQualEntry const& trkQualEntry = trkQualCatalog.find(_trainName);
+
+    if(_printMVA) {
+      trkQualEntry._mvaTool->showMVA();
+    }
+
+    // Go through the tracks and calculate their track qualities
     for (const auto& i_kalSeed : kalSeeds) {
       TrkQual trkqual;
 
@@ -135,7 +140,7 @@ namespace mu2e
 	  trkqual[TrkQual::rmax] = -1*charge*(bestkseg->helix().d0() + 2.0/bestkseg->helix().omega());
 	  
 	  trkqual.setMVAStatus(MVAStatus::calculated);
-	  trkqual.setMVAValue(_trkqualmva->evalMVA(trkqual.values(), _mvamask));
+	  trkqual.setMVAValue(trkQualEntry._mvaTool->evalMVA(trkqual.values(), trkQualEntry._mvaMask));
 
 	}
 	else {
@@ -143,17 +148,34 @@ namespace mu2e
 	}
       }
       tqcol->push_back(trkqual);
-      rqcol->push_back(RecoQual(trkqual.status(),trkqual.MVAValue()));
+
+      // Get the efficiency cut that this track passes
+      Float_t passCalib = 0.0; // everything will pass a 100% efficient cut
+      if (trkQualEntry._calibrated) {
+	//	std::cout << _trainName << " = " << trkqual.MVAValue() << std::endl;
+	for (const auto& i_pair : trkQualEntry._effCalib) {
+	  //	  std::cout << i_pair.first << ", " << i_pair.second << ": ";
+	  if (trkqual.MVAValue() >= i_pair.second) {
+	    //	    std::cout << "PASSES" << std::endl;
+	    passCalib = i_pair.first;
+	  }
+	  else {
+	    //	    std::cout << "FAILS" << std::endl;
+	    break;
+	  }
+	}
+      }
+      rqcol->push_back(RecoQual(trkqual.status(),trkqual.MVAValue(), passCalib));
     }
 
     if ( (tqcol->size() != rqcol->size()) || (tqcol->size() != kalSeeds.size()) ) {
-	throw cet::exception("TrackQuality") << "KalSeed, TrkQual and RecoQual sizes are inconsistent (" << kalSeeds.size() << ", " << tqcol->size() << ", " << rqcol->size() << " respectively)";
-      }
+      throw cet::exception("TrackQuality") << "KalSeed, TrkQual and RecoQual sizes are inconsistent (" << kalSeeds.size() << ", " << tqcol->size() << ", " << rqcol->size() << " respectively)";
+    }
 
     // put the output products into the event
     event.put(move(tqcol));
     event.put(move(rqcol));
-  }  
+  }
 }// mu2e
 
 DEFINE_ART_MODULE(mu2e::TrackQuality);

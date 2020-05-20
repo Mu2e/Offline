@@ -80,13 +80,21 @@ BEGIN_PROLOG
   }
 
   # Track quality module
+  # Example of how to add a new training through fcl
+  # -- trainName is the name of the training
+  # -- xmlFileName is the name of the XML file
+  #  YourNewTrkQualConfig : { trainName : "YourNewTrkQual"
+  #    		       	      xmlFileName : "path/to/YourNewTrkQual.weights.xml"
+  #		     	    }
+  #  TrkQualCatalog.mvaConfigs : [ @sequence::TrkQualCatalog.mvaConfigs, @local::YourNewTrkQualConfig  ] 
+
   TrkQual : {
   	  module_type : TrackQuality
   }
   TrkQualNeg : @local::TrkQual
-  TrkQualNeg.TrkQualMVA.MVAWeights : "TrkDiag/test/TrkQual.weights.xml"
+  TrkQualNeg.TrainingName : "TrkQualNeg"
   TrkQualPos : @local::TrkQual
-  TrkQualPos.TrkQualMVA.MVAWeights : "TrkDiag/test/TrkQualPos.weights.xml"
+  TrkQualPos.TrainingName : "TrkQualPos"
 
   TrkQualDeM		       : @local::TrkQualNeg
   TrkQualDeM.KalSeedCollection : "KFFDeM"
