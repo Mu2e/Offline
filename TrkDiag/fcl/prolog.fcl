@@ -216,6 +216,11 @@ BEGIN_PROLOG
     PBIWeightTag : "PBIWeight"
     CrvCoincidenceModuleLabel : "SelectRecoMC"
     CrvCoincidenceMCModuleLabel : "compressRecoMCs"
+    CrvRecoPulseLabel : "SelectRecoMC"
+    CrvStepPointMCLabel : "compressRecoMCs"
+    SimParticleLabel : "compressRecoMCs"
+    MCTrajectoryLabel : "compressRecoMCs"
+    CrvPlaneY : 2653
     FillMCInfo : true
     FillTrkQualInfo : true
     FillTrkPIDInfo : true
