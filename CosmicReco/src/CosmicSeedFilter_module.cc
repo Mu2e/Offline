@@ -75,12 +75,8 @@ namespace mu2e
 	  triginfo->_triggerPath = _trigPath;
 	}
         size_t index = std::distance(coscol->begin(),icos);
-	if (trig_ind < TriggerInfo::MaxNObj){
-	  triginfo->_cosmics[trig_ind] = art::Ptr<CosmicTrackSeed>(cosH,index);
-	  ++trig_ind;
-	}else{
-	  std::cout << "[CosmicSeedFilter::filter] reached the maximum number of CosmicTrackSeeds that can be stored!" << std::endl;
-	}
+	triginfo->_cosmics.push_back(art::Ptr<CosmicTrackSeed>(cosH,index));
+	++trig_ind;
         if(_debug > 1){
           std::cout << moduleDescription().moduleLabel() << " passed event " << evt.id() << std::endl;
         }

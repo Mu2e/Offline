@@ -78,12 +78,8 @@ namespace mu2e
         // associate to the hit cluster which triggers.  Note there may be other hit clusters which also pass the filter
         // but filtering is by event!
         size_t index = std::distance(tccol->begin(),itc);
-	if (trig_ind < TriggerInfo::MaxNObj){
-	  triginfo->_hitClusters[trig_ind] = art::Ptr<TimeCluster>(tcH,index);
-	  ++trig_ind;
-	}else{
-	  std::cout <<"[TimeClusterFilter::filter] reached the maximum number of TimeClusters that can be stored!" << std::endl;
-	}
+	triginfo->_hitClusters.push_back(art::Ptr<TimeCluster>(tcH,index));
+	++trig_ind;
         if(_debug > 1){
           std::cout << moduleDescription().moduleLabel() << " passed event " << evt.id() << std::endl;
         }

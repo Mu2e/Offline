@@ -101,12 +101,8 @@ namespace mu2e
         // associate to the caloCluster which triggers.  Note there may be other caloClusters which also pass the filter
         // but filtering is by event!
         size_t index = std::distance(clcol->begin(),icl);
-	if (trig_ind < TriggerInfo::MaxNObj){
-	  triginfo->_caloClusters[trig_ind] = art::Ptr<CaloCluster>(clH,index);
-	  ++trig_ind;
-	}else{
-	  std::cout << "[CaloCosmicCalib::filter] reached the maximum number of CaloClusters that can be stored!" << std::endl;
-	}
+	triginfo->_caloClusters.push_back(art::Ptr<CaloCluster>(clH,index));
+	++trig_ind;
         if(_debug > 1){
           std::cout << moduleDescription().moduleLabel() << " passed event " << evt.id() << std::endl;
         }
