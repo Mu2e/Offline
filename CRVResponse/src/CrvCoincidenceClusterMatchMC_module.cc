@@ -103,10 +103,9 @@ namespace mu2e
       CLHEP::Hep3Vector     earliestHitPos;        //MC
 
       //loop through all reco pulses and try to find the MC information
-      std::vector<CrvCoincidenceClusterMC::PulseInfo> pulses; //collection all pulses (sim particles, energy dep.)
-      std::map<art::Ptr<SimParticle>, int> simParticleMap;  //counting all simParticles
-      std::set<art::Ptr<StepPointMC> > stepsAllPulses;  //collecting all step points for total energy calculation
-                                            //use a set to avoid double counts, e.g. for two pulses coming from same digi
+      std::vector<CrvCoincidenceClusterMC::PulseInfo> pulses; //collection of all pulses (sim particle, energy dep.)
+      std::set<art::Ptr<StepPointMC> > steps;  //collection of all step points for total energy calculation
+                                               //use a set to avoid double counts, e.g. for two pulses coming from same digi
       const std::vector<art::Ptr<CrvRecoPulse> > &crvRecoPulses = iter->GetCrvRecoPulses();
       for(size_t i=0; i<crvRecoPulses.size(); i++)
       {
@@ -120,22 +119,24 @@ namespace mu2e
         //get MC information, if available
         if(hasMCInfo)
         {
-          //for all reco pulses
-          CrvHelper::GetStepPointsFromCrvRecoPulse(crvRecoPulse, crvDigiMCCollection, stepsAllPulses);
+          //get the step points of this reco pulse and add it to the collection of all step points
+          CrvHelper::GetStepPointsFromCrvRecoPulse(crvRecoPulse, crvDigiMCCollection, steps);
 
-          //for this reco pulse
+          //get the sim particle and deposited energy of this reco pulse
           CrvHelper::GetInfoFromCrvRecoPulse(crvRecoPulse, crvDigiMCCollection, _timeOffsets, 
                                              totalEnergyDepositedThisPulse, ionizingEnergyDepositedThisPulse, 
                                              earliestHitTimeThisPulse, earliestHitPosThisPulse, simParticleThisPulse);
         }
 
-        pulses.emplace_back(simParticle,totalEnergyDepositedThisPulse);
+        //add the MC information (sim particle, dep. energy) of this reco pulse to the collection of pulses
+        pulses.emplace_back(simParticleThisPulse,totalEnergyDepositedThisPulse);
       }//loop over reco pulses
 
-      CrvHelper::GetInfoFromStepPoints(stepsAllPulses, _timeOffsets, 
+      //based on all step points, get the most likely sim particle, total energy, etc.
+      CrvHelper::GetInfoFromStepPoints(steps, _timeOffsets, 
                                        totalEnergyDeposited, ionizingEnergyDeposited, earliestHitTime, earliestHitPos, simParticle);
 
-      //insert the cluster information into the vector of the crv coincidence clusters
+      //insert the cluster information into the vector of the crv coincidence clusters (collection of pulses, most likely sim particle, etc.)
       crvCoincidenceClusterMCCollection->emplace_back(hasMCInfo, pulses, simParticle, totalEnergyDeposited, earliestHitTime, earliestHitPos);
     }//loop over all clusters
 
