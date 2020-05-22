@@ -16,8 +16,6 @@
 #include <iostream>
 #include <memory>
 
-using namespace std;
-
 namespace mu2e
 {
   class TimeClusterFilter : public art::EDFilter
@@ -54,17 +52,18 @@ namespace mu2e
 
   bool TimeClusterFilter::filter(art::Event& evt){
     // create output
-    unique_ptr<TriggerInfo> triginfo(new TriggerInfo);
+    std::unique_ptr<TriggerInfo> triginfo(new TriggerInfo);
     ++_nevt;
     bool retval(false); // preset to fail
     // find the collection
     auto tcH = evt.getValidHandle<TimeClusterCollection>(_tcTag);
     const TimeClusterCollection* tccol = tcH.product();
+    size_t trig_ind(0);
     // loop over the collection: if any pass the selection, pass this event
     for(auto itc = tccol->begin();itc != tccol->end(); ++itc) {
       auto const& tc = *itc;
       if(_debug > 2){
-        cout << moduleDescription().moduleLabel() << " nhits = " << tc.hits().size() << " t0 = " << tc.t0().t0() << endl;
+        std::cout << moduleDescription().moduleLabel() << " nhits = " << tc.hits().size() << " t0 = " << tc.t0().t0() << std::endl;
       }
       if( (!_hascc || tc.caloCluster().isNonnull()) &&
           tc.hits().size() >= _minnhits &&
@@ -72,16 +71,18 @@ namespace mu2e
         retval = true;
         ++_npass;
         // Fill the trigger info object
-        triginfo->_triggerBits.merge(TriggerFlag::hitCluster);
-	triginfo->_triggerPath = _trigPath;
+        if (trig_ind == 0){
+	  triginfo->_triggerBits.merge(TriggerFlag::hitCluster);
+	  triginfo->_triggerPath = _trigPath;
+	}
         // associate to the hit cluster which triggers.  Note there may be other hit clusters which also pass the filter
         // but filtering is by event!
         size_t index = std::distance(tccol->begin(),itc);
-        triginfo->_hitCluster = art::Ptr<TimeCluster>(tcH,index);
+	triginfo->_hitClusters.push_back(art::Ptr<TimeCluster>(tcH,index));
+	++trig_ind;
         if(_debug > 1){
-          cout << moduleDescription().moduleLabel() << " passed event " << evt.id() << endl;
+          std::cout << moduleDescription().moduleLabel() << " passed event " << evt.id() << std::endl;
         }
-        break;
       }
     }
     evt.put(std::move(triginfo));
@@ -90,7 +91,7 @@ namespace mu2e
 
   bool TimeClusterFilter::endRun( art::Run& run ) {
     if(_debug > 0 && _nevt > 0){
-      cout << moduleDescription().moduleLabel() << " passed " << _npass << " events out of " << _nevt << " for a ratio of " << float(_npass)/float(_nevt) << endl;
+      std::cout << moduleDescription().moduleLabel() << " passed " << _npass << " events out of " << _nevt << " for a ratio of " << float(_npass)/float(_nevt) << std::endl;
     }
     return true;
   }
