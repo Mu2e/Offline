@@ -584,6 +584,67 @@ bool AlignTrackCollector::filter_CosmicTrackSeedCollection(
 
         diff = (diff_a - diff_b) / linvel / (2.0 * h);
         std::cout << "numerical dr/d(A0) = " << diff << std::endl;
+
+        // PARTIAL DOCA DERIVATIVE: B0
+
+        diff_a = CosmicTrack_DCA(
+            A0, B0+h, A1, B1, T0, rowpl.dx(), rowpl.dy(), rowpl.dz(), rowpl.rx(), rowpl.ry(),
+            rowpl.rz(), rowpa.dx(), rowpa.dy(), rowpa.dz(), rowpa.rx(), rowpa.ry(), rowpa.rz(),
+
+            straw_mp.x(), straw_mp.y(), straw_mp.z(), wire_dir.x(), wire_dir.y(), wire_dir.z(),
+            plane_origin.x(), plane_origin.y(), plane_origin.z(), panel_origin.x(),
+            panel_origin.y(), panel_origin.z());
+
+        diff_b = CosmicTrack_DCA(
+            A0, B0-h, A1, B1, T0, rowpl.dx(), rowpl.dy(), rowpl.dz(), rowpl.rx(), rowpl.ry(),
+            rowpl.rz(), rowpa.dx(), rowpa.dy(), rowpa.dz(), rowpa.rx(), rowpa.ry(), rowpa.rz(),
+
+            straw_mp.x(), straw_mp.y(), straw_mp.z(), wire_dir.x(), wire_dir.y(), wire_dir.z(),
+            plane_origin.x(), plane_origin.y(), plane_origin.z(), panel_origin.x(),
+            panel_origin.y(), panel_origin.z());
+
+        diff = (diff_a - diff_b) / linvel / (2.0 * h);
+        std::cout << "numerical dr/d(B0) = " << diff << std::endl;
+
+        // PARTIAL DOCA DERIVATIVE: A1
+
+        diff_a = CosmicTrack_DCA(
+            A0, B0, A1+h, B1, T0, rowpl.dx(), rowpl.dy(), rowpl.dz(), rowpl.rx(), rowpl.ry(),
+            rowpl.rz(), rowpa.dx(), rowpa.dy(), rowpa.dz(), rowpa.rx(), rowpa.ry(), rowpa.rz(),
+
+            straw_mp.x(), straw_mp.y(), straw_mp.z(), wire_dir.x(), wire_dir.y(), wire_dir.z(),
+            plane_origin.x(), plane_origin.y(), plane_origin.z(), panel_origin.x(),
+            panel_origin.y(), panel_origin.z());
+
+        diff_b = CosmicTrack_DCA(
+            A0, B0, A1-h, B1, T0, rowpl.dx(), rowpl.dy(), rowpl.dz(), rowpl.rx(), rowpl.ry(),
+            rowpl.rz(), rowpa.dx(), rowpa.dy(), rowpa.dz(), rowpa.rx(), rowpa.ry(), rowpa.rz(),
+
+            straw_mp.x(), straw_mp.y(), straw_mp.z(), wire_dir.x(), wire_dir.y(), wire_dir.z(),
+            plane_origin.x(), plane_origin.y(), plane_origin.z(), panel_origin.x(),
+            panel_origin.y(), panel_origin.z());
+
+        diff = (diff_a - diff_b) / linvel / (2.0 * h);
+        std::cout << "numerical dr/d(A1) = " << diff << std::endl;
+
+        // PARTIAL DOCA DERIVATIVE: B1
+
+        diff_a = CosmicTrack_DCA(
+            A0, B0, A1, B1+h, T0, rowpl.dx(), rowpl.dy(), rowpl.dz(), rowpl.rx(), rowpl.ry(),
+            rowpl.rz(), rowpa.dx(), rowpa.dy(), rowpa.dz(), rowpa.rx(), rowpa.ry(), rowpa.rz(),
+            straw_mp.x(), straw_mp.y(), straw_mp.z(), wire_dir.x(), wire_dir.y(), wire_dir.z(),
+            plane_origin.x(), plane_origin.y(), plane_origin.z(), panel_origin.x(),
+            panel_origin.y(), panel_origin.z());
+
+        diff_b = CosmicTrack_DCA(
+            A0, B0, A1, B1-h, T0, rowpl.dx(), rowpl.dy(), rowpl.dz(), rowpl.rx(), rowpl.ry(),
+            rowpl.rz(), rowpa.dx(), rowpa.dy(), rowpa.dz(), rowpa.rx(), rowpa.ry(), rowpa.rz(),
+            straw_mp.x(), straw_mp.y(), straw_mp.z(), wire_dir.x(), wire_dir.y(), wire_dir.z(),
+            plane_origin.x(), plane_origin.y(), plane_origin.z(), panel_origin.x(),
+            panel_origin.y(), panel_origin.z());
+
+        diff = (diff_a - diff_b) / linvel / (2.0 * h);
+        std::cout << "numerical dr/d(B1) = " << diff << std::endl;
       }
 
       // avoid outlier hits when applying this cut
