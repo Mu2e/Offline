@@ -454,7 +454,7 @@ bool AlignTrackCollector::filter_CosmicTrackSeedCollection(
       double drift_res = _srep.driftDistanceError(straw_hit.strawId(), 0, 0, pca.dca());
       double resid_err_tmp = _srep.driftTimeToDistance(
           straw_hit.strawId(), drift_res, 0); // fit_object.DOCAresidualError(straw_hit, sts);
-      
+
       double signdca = (pca.s2() > 0 ? pca.dca() : -pca.dca());
 
       // FIXME! use newly implemented chisq function in fit object
@@ -488,57 +488,53 @@ bool AlignTrackCollector::filter_CosmicTrackSeedCollection(
       if (_diag > 4) {
         // FIXME!
         // move to another place
-        double generated_doca = CosmicTrack_DCA(A0, B0, A1, B1, T0, 
-                                      straw_mp.x(), straw_mp.y(), straw_mp.z(),
-                                      wire_dir.x(), wire_dir.y(), wire_dir.z(),
-                                      plane_origin.x(), plane_origin.y(), plane_origin.z(),
-                                      panel_origin.x(), panel_origin.y(), panel_origin.z(),
-                                      0,0,0,0,0,0,
-                                      0,0,0,0,0,0);
-                        
-        double diff = std::abs(signdca - generated_doca);
-        std::cout << "doca: " <<  signdca
-                  << ", gendoca: " << generated_doca 
-                  << ", diff: " << diff 
-                  << ", s1: " << pca.s1()
-                  << ", s2: " << pca.s2() 
-                  << std::endl;
+        double generated_doca =
+            CosmicTrack_DCA(A0, B0, A1, B1, T0, straw_mp.x(), straw_mp.y(), straw_mp.z(),
+                            wire_dir.x(), wire_dir.y(), wire_dir.z(), plane_origin.x(),
+                            plane_origin.y(), plane_origin.z(), panel_origin.x(), panel_origin.y(),
+                            panel_origin.z(), 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0);
 
-        if (diff > 1e-10)
-        {
-          throw cet::exception("ALIGNMENT") << "Output of generated functions (AlignmentDerivatives) are not consistent!";
+        double diff = std::abs(signdca - generated_doca);
+        std::cout << "doca: " << signdca << ", gendoca: " << generated_doca << ", diff: " << diff
+                  << ", s1: " << pca.s1() << ", s2: " << pca.s2() << std::endl;
+
+        if (diff > 1e-10) {
+          std::cout << "----------------------------------" << std::endl;
+          std::cout
+              << "WARNING! Output of generated DOCA function (after alignment) not consistent!"
+              << std::endl;
+          std::cout << "----------------------------------" << std::endl;
+
+          // throw cet::exception("ALIGNMENT") << "Output of generated functions
+          // (AlignmentDerivatives) are not consistent!";
         }
-        
+
         // quick and dirty numerical derivative estimation
-        // This is only performed using CosmicTrack_DCA once confirmed to be consistent with TwoLinePCA
+        // This is only performed using CosmicTrack_DCA once confirmed to be consistent with
+        // TwoLinePCA
         // TODO: move to a utility class?
         // TODO: avoid DRY problems
 
-        double h =  1e-7;
+        double h = 1e-7;
 
         double linvel = 0.0625;
 
         // PARTIAL DOCA DERIVATIVE: A0
-        
-        double diff_a = CosmicTrack_DCA(A0+h, B0, A1, B1, T0, 
-                                      straw_mp.x(), straw_mp.y(), straw_mp.z(),
-                                      wire_dir.x(), wire_dir.y(), wire_dir.z(),
-                                      plane_origin.x(), plane_origin.y(), plane_origin.z(),
-                                      panel_origin.x(), panel_origin.y(), panel_origin.z(),
-                                      0,0,0,0,0,0,
-                                      0,0,0,0,0,0);
 
-        double diff_b = CosmicTrack_DCA(A0-h, B0, A1, B1, T0, 
-                                      straw_mp.x(), straw_mp.y(), straw_mp.z(),
-                                      wire_dir.x(), wire_dir.y(), wire_dir.z(),
-                                      plane_origin.x(), plane_origin.y(), plane_origin.z(),
-                                      panel_origin.x(), panel_origin.y(), panel_origin.z(),
-                                      0,0,0,0,0,0,
-                                      0,0,0,0,0,0);
+        double diff_a =
+            CosmicTrack_DCA(A0 + h, B0, A1, B1, T0, straw_mp.x(), straw_mp.y(), straw_mp.z(),
+                            wire_dir.x(), wire_dir.y(), wire_dir.z(), plane_origin.x(),
+                            plane_origin.y(), plane_origin.z(), panel_origin.x(), panel_origin.y(),
+                            panel_origin.z(), 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0);
 
-        diff = (diff_a - diff_b) / linvel / 2.0*h;
+        double diff_b =
+            CosmicTrack_DCA(A0 - h, B0, A1, B1, T0, straw_mp.x(), straw_mp.y(), straw_mp.z(),
+                            wire_dir.x(), wire_dir.y(), wire_dir.z(), plane_origin.x(),
+                            plane_origin.y(), plane_origin.z(), panel_origin.x(), panel_origin.y(),
+                            panel_origin.z(), 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0);
+
+        diff = (diff_a - diff_b) / linvel / 2.0 * h;
         std::cout << "numerical dr/d(A0) = " << diff << std::endl;
-
       }
 
       // avoid outlier hits when applying this cut
@@ -579,7 +575,8 @@ bool AlignTrackCollector::filter_CosmicTrackSeedCollection(
         resid_local_derivs(nHits, col) = derivativesLocal[col];
       }
 
-      global_derivs_temp.push_back(std::vector<float>(derivativesGlobal.begin(), derivativesGlobal.end()));
+      global_derivs_temp.push_back(
+          std::vector<float>(derivativesGlobal.begin(), derivativesGlobal.end()));
 
       // FIXME!
       local_derivs_temp.push_back(
