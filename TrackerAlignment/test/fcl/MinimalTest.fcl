@@ -9,9 +9,9 @@ services.ProditionsService.mu2eDetector.useDb: true
 services.ProditionsService.mu2eDetector.verbose: 2
 physics.analyzers.TrkAnaNeg.diagLevel: 2
 
-services.DbService.textFile: ["misalignments/PlaneTranslationOnly.txt"]
+services.DbService.textFile: ["misalignments/minimaltest.txt"]
 
-physics.analyzers.AlignTrackCollector.TrackDataOutputFile : "etc.owner.AlignTrackCollector-MISALIGN-MinimalTest.millepede-trackcollection.sequencer.bin"
+physics.analyzers.AlignTrackCollector.TrackDataOutputFile : "etc.owner.AlignTrackCollector-MISALIGN-MinimalTest.mille-data.sequencer.bin"
 physics.analyzers.AlignTrackCollector.LabelsOutputFile : "labels-allplanesi-trlonly.txt" # set to "none" if you don't want to write these.
 
 # diagnostics and plots, usually
