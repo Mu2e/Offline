@@ -522,9 +522,57 @@ bool AlignTrackCollector::filter_CosmicTrackSeedCollection(
                         straw_mp.x(), straw_mp.y(), straw_mp.z(), 
                         wire_dir.x(), wire_dir.y(), wire_dir.z());
 
-        diff = (diff_a - diff_b) / 2*h;
+        diff = (diff_a - diff_b) / 2.0*h;
 
         std::cout << "numerical dr/d(A0) = " << diff << std::endl;
+
+        // PARTIAL DOCA DERIVATIVE: B0
+        diff_a = CosmicTrack_DCA(A0, B0+h, A1, B1, T0,
+                        straw_mp.x(), straw_mp.y(), straw_mp.z(), 
+                        wire_dir.x(), wire_dir.y(), wire_dir.z());
+
+        diff_b = CosmicTrack_DCA(A0, B0-h, A1, B1, T0,
+                        straw_mp.x(), straw_mp.y(), straw_mp.z(), 
+                        wire_dir.x(), wire_dir.y(), wire_dir.z());
+
+        diff = (diff_a - diff_b) / 2.0*h;
+        std::cout << "numerical dr/d(B0) = " << diff << std::endl;
+
+        // PARTIAL DOCA DERIVATIVE: A1
+        diff_a = CosmicTrack_DCA(A0, B0, A1+h, B1, T0,
+                        straw_mp.x(), straw_mp.y(), straw_mp.z(), 
+                        wire_dir.x(), wire_dir.y(), wire_dir.z());
+
+        diff_b = CosmicTrack_DCA(A0, B0, A1-h, B1, T0,
+                        straw_mp.x(), straw_mp.y(), straw_mp.z(), 
+                        wire_dir.x(), wire_dir.y(), wire_dir.z());
+
+        diff = (diff_a - diff_b) / 2.0*h;
+        std::cout << "numerical dr/d(A1) = " << diff << std::endl;
+
+        // PARTIAL DOCA DERIVATIVE: B1
+        diff_a = CosmicTrack_DCA(A0, B0, A1, B1+h, T0,
+                        straw_mp.x(), straw_mp.y(), straw_mp.z(), 
+                        wire_dir.x(), wire_dir.y(), wire_dir.z());
+
+        diff_b = CosmicTrack_DCA(A0, B0, A1, B1-h, T0,
+                        straw_mp.x(), straw_mp.y(), straw_mp.z(), 
+                        wire_dir.x(), wire_dir.y(), wire_dir.z());
+
+        diff = (diff_a - diff_b) / 2.0*h;
+        std::cout << "numerical dr/d(B1) = " << diff << std::endl;
+
+        // PARTIAL DOCA DERIVATIVE: T0
+        diff_a = CosmicTrack_DCA(A0, B0, A1, B1, T0+h,
+                        straw_mp.x(), straw_mp.y(), straw_mp.z(), 
+                        wire_dir.x(), wire_dir.y(), wire_dir.z());
+
+        diff_b = CosmicTrack_DCA(A0, B0, A1, B1, T0-h,
+                        straw_mp.x(), straw_mp.y(), straw_mp.z(), 
+                        wire_dir.x(), wire_dir.y(), wire_dir.z());
+
+        diff = (diff_a - diff_b) / 2.0*h;
+        std::cout << "numerical dr/d(T0) = " << diff << std::endl;
 
       }
 
