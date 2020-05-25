@@ -235,7 +235,7 @@ def generate_expressions(approximate=False, remove_globalparam_dependence=True, 
 
     # this is the residual expression (excluding terms with no dependence on local
     # and global parameters )
-    aligned_doca = DOCA(track_pos, track_dir, aligned_wpos, aligned_wdir)
+    aligned_doca = DOCA(aligned_wpos, aligned_wdir, track_pos, track_dir)
 
     if time_domain:
         # we convert the DOCA to a TOCA and add T0 (since it is a local param)
