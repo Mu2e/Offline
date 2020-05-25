@@ -20,6 +20,8 @@
 #include <vector>        // for vector<>:...
 
 #include "CosmicReco/inc/PDFFit.hh"
+#include "DbTables/inc/TrkAlignPanel.hh"
+#include "DbTables/inc/TrkAlignPlane.hh"
 #include "GeneralUtilities/inc/BitMap.hh"
 #include "GeometryService/inc/GeomHandle.hh"
 #include "Minuit2/MnUserCovariance.h"
@@ -42,11 +44,13 @@
 #include "TrackerGeom/inc/Straw.hh"               // for Straw
 #include "TrackerGeom/inc/Tracker.hh"             // for Tracker
 
+#include "DbService/inc/DbHandle.hh"
 #include "ProditionsService/inc/ProditionsHandle.hh" // for Prodition...
-#include "RecoDataProducts/inc/ComboHit.hh"          // for ComboHit
-#include "RecoDataProducts/inc/CosmicTrack.hh"       // for CosmicTrack
-#include "RecoDataProducts/inc/CosmicTrackSeed.hh"   // for CosmicTra...
-#include "RecoDataProducts/inc/TrkFitFlag.hh"        // for TrkFitFlag
+
+#include "RecoDataProducts/inc/ComboHit.hh"        // for ComboHit
+#include "RecoDataProducts/inc/CosmicTrack.hh"     // for CosmicTrack
+#include "RecoDataProducts/inc/CosmicTrackSeed.hh" // for CosmicTra...
+#include "RecoDataProducts/inc/TrkFitFlag.hh"      // for TrkFitFlag
 
 #include "DataProducts/inc/StrawId.hh" // for StrawId
 #include "DataProducts/inc/XYZVec.hh"  // for toXYZVec
@@ -261,10 +265,15 @@ public:
 
   ProditionsHandle<Tracker> _proditionsTracker_h;
   ProditionsHandle<StrawResponse> srep_h;
+
+  std::unique_ptr<DbHandle<TrkAlignPlane>> _trkAlignPlane_h;
+  std::unique_ptr<DbHandle<TrkAlignPanel>> _trkAlignPanel_h;
 };
 
 void AlignTrackCollector::beginJob() {
   millepede = std::make_unique<Mille>(_output_filename.c_str());
+  _trkAlignPlane_h = std::make_unique<DbHandle<TrkAlignPlane>>();
+  _trkAlignPanel_h = std::make_unique<DbHandle<TrkAlignPanel>>();
 
   if (_diag > 0) {
     art::ServiceHandle<art::TFileService> tfs;
@@ -336,6 +345,12 @@ void AlignTrackCollector::endJob() {
 bool AlignTrackCollector::filter_CosmicTrackSeedCollection(
     art::Event const& event, Tracker const& tracker, StrawResponse const& _srep,
     CosmicTrackSeedCollection const& coscol) {
+
+  // get alignment parameters for this event
+  // N.B. alignment parameters MUST be unchanged for the entire job...
+  // FIXME! check and enforce above
+  auto alignConsts_planes = _trkAlignPlane_h->get(event.id());
+  auto alignConsts_panels = _trkAlignPanel_h->get(event.id());
 
   bool wrote_track = false; // did we write any tracks at all?
 
@@ -427,19 +442,28 @@ bool AlignTrackCollector::filter_CosmicTrackSeedCollection(
       auto const& panel_origin = tracker.getPanel(panel_id).straw0MidPoint();
       auto const& straw_mp = straw.getMidPoint();
       auto const& wire_dir = straw.getDirection();
+      auto const& rowpl = alignConsts_planes.rowAt(plane_id);
+      auto const& rowpa = alignConsts_panels.rowAt(panel_uuid);
 
       // now calculate the derivatives.
       auto derivativesLocal = CosmicTrack_DCA_LocalDeriv(
-          A0, B0, A1, B1, T0, straw_mp.x(), straw_mp.y(), straw_mp.z(), wire_dir.x(), wire_dir.y(),
-          wire_dir.z(), plane_origin.x(), plane_origin.y(), plane_origin.z(), panel_origin.x(),
-          panel_origin.y(), panel_origin.z());
+          A0, B0, A1, B1, T0, 
+          rowpl.dx(), rowpl.dy(), rowpl.dz(), rowpl.rx(), rowpl.ry(), rowpl.rz(), 
+          rowpa.dx(), rowpa.dy(), rowpa.dz(), rowpa.rx(), rowpa.ry(), rowpa.rz(),
 
-      auto derivativesGlobal =
-          CosmicTrack_DCA_GlobalDeriv(A0, B0, A1, B1, T0, straw_mp.x(), straw_mp.y(), straw_mp.z(),
-                                      wire_dir.x(), wire_dir.y(), wire_dir.z(),
+          straw_mp.x(), straw_mp.y(), straw_mp.z(), wire_dir.x(), wire_dir.y(), wire_dir.z(),
+          plane_origin.x(), plane_origin.y(), plane_origin.z(), panel_origin.x(), panel_origin.y(),
+          panel_origin.z());
 
-                                      plane_origin.x(), plane_origin.y(), plane_origin.z(),
-                                      panel_origin.x(), panel_origin.y(), panel_origin.z());
+      auto derivativesGlobal = CosmicTrack_DCA_GlobalDeriv(
+          A0, B0, A1, B1, T0, 
+          rowpl.dx(), rowpl.dy(), rowpl.dz(), rowpl.rx(), rowpl.ry(), rowpl.rz(), 
+          rowpa.dx(), rowpa.dy(), rowpa.dz(), rowpa.rx(), rowpa.ry(), rowpa.rz(),
+
+          straw_mp.x(), straw_mp.y(), straw_mp.z(), wire_dir.x(), wire_dir.y(), wire_dir.z(),
+
+          plane_origin.x(), plane_origin.y(), plane_origin.z(), panel_origin.x(), panel_origin.y(),
+          panel_origin.z());
 
       double resid_tmp = fit_object.DOCAresidual(straw_hit, sts);
       double time_resid = fit_object.TimeResidual(straw_hit, sts);
@@ -521,17 +545,21 @@ bool AlignTrackCollector::filter_CosmicTrackSeedCollection(
 
         // PARTIAL DOCA DERIVATIVE: A0
 
-        double diff_a =
-            CosmicTrack_DCA(A0 + h, B0, A1, B1, T0, straw_mp.x(), straw_mp.y(), straw_mp.z(),
-                            wire_dir.x(), wire_dir.y(), wire_dir.z(), plane_origin.x(),
-                            plane_origin.y(), plane_origin.z(), panel_origin.x(), panel_origin.y(),
-                            panel_origin.z(), 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0);
+        double diff_a = CosmicTrack_DCA(
+            A0 + h, B0, A1, B1, T0, rowpl.dx(), rowpl.dy(), rowpl.dz(), rowpl.rx(), rowpl.ry(),
+            rowpl.rz(), rowpa.dx(), rowpa.dy(), rowpa.dz(), rowpa.rx(), rowpa.ry(), rowpa.rz(),
 
-        double diff_b =
-            CosmicTrack_DCA(A0 - h, B0, A1, B1, T0, straw_mp.x(), straw_mp.y(), straw_mp.z(),
-                            wire_dir.x(), wire_dir.y(), wire_dir.z(), plane_origin.x(),
-                            plane_origin.y(), plane_origin.z(), panel_origin.x(), panel_origin.y(),
-                            panel_origin.z(), 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0);
+            straw_mp.x(), straw_mp.y(), straw_mp.z(), wire_dir.x(), wire_dir.y(), wire_dir.z(),
+            plane_origin.x(), plane_origin.y(), plane_origin.z(), panel_origin.x(),
+            panel_origin.y(), panel_origin.z());
+
+        double diff_b = CosmicTrack_DCA(
+            A0 - h, B0, A1, B1, T0, rowpl.dx(), rowpl.dy(), rowpl.dz(), rowpl.rx(), rowpl.ry(),
+            rowpl.rz(), rowpa.dx(), rowpa.dy(), rowpa.dz(), rowpa.rx(), rowpa.ry(), rowpa.rz(),
+
+            straw_mp.x(), straw_mp.y(), straw_mp.z(), wire_dir.x(), wire_dir.y(), wire_dir.z(),
+            plane_origin.x(), plane_origin.y(), plane_origin.z(), panel_origin.x(),
+            panel_origin.y(), panel_origin.z());
 
         diff = (diff_a - diff_b) / linvel / 2.0 * h;
         std::cout << "numerical dr/d(A0) = " << diff << std::endl;
