@@ -495,7 +495,8 @@ bool AlignTrackCollector::filter_CosmicTrackSeedCollection(
 
         std::cout << "doca: " <<  signdca
                   << ", gendoca: " << generated_doca 
-                  << ", diff: " << std::abs(signdca - generated_doca) << std::endl;
+                  << ", diff: " << std::abs(signdca - generated_doca) 
+                  << ", s2: " << pca.s2() << std::endl;
       }
 
       // avoid outlier hits when applying this cut
