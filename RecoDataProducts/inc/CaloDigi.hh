@@ -1,6 +1,3 @@
-// Original author B. Echenard, editted by S Middleton
-//Date: Nov 2019
-//Purpose: New Digi product
 #ifndef RecoDataProducts_CaloDigi_hh
 #define RecoDataProducts_CaloDigi_hh
 
@@ -13,36 +10,31 @@ namespace mu2e
 
       public:
   
-	  CaloDigi(): _roId(-1), _t0(0.), _waveform(0), _peakpos(0.){}
-      
-	 CaloDigi(int ROId, int t0, std::vector<int>& waveform, size_t peakpos):
-	    _roId(ROId),
-	    _t0(t0),
-	    _waveform(waveform),
-	    _peakpos(peakpos){}
+	  CaloDigi() : 
+            roId_(-1), t0_(0.), waveform_(0), peakpos_(0) 
+          {}
 
-          //For schema evolution:
-          CaloDigi(int ROId, int t0, std::vector<int>& waveform):
-	    _roId(ROId),
-	    _t0(t0),
-	    _waveform(waveform)
+	  CaloDigi(int ROId, int t0, const std::vector<int>& waveform, size_t peakpos):
+	     roId_(ROId),t0_(t0), waveform_(waveform), peakpos_(peakpos)
 	  {}
 
-	  int                     roId()      const { return _roId;}    
-	  int                     t0()        const { return _t0;}
-	  const std::vector<int>& waveform()  const { return _waveform; }
-	  size_t 	  peakpos()   const { return _peakpos;	}
+          CaloDigi(int ROId, int t0, const std::vector<int>& waveform):
+	    roId_(ROId),t0_(t0),waveform_(waveform), peakpos_(0)
+	  {}
+
+	  int                     roId()      const { return roId_;}    
+	  int                     t0()        const { return t0_;}
+	  const std::vector<int>& waveform()  const { return waveform_; }
+	  int                     peakpos()   const { return peakpos_;	}
 	 
-
 	private:
-
-	  int               _roId;      
-	  int               _t0;        //time of the first digitezd bin of the signal
-	  std::vector<int>  _waveform;  //array of the samples associated with the digitezed signal
-	  size_t     _peakpos;	//peak position	for fast estimate of total charge and hit time
+	  int               roId_;      
+	  int               t0_;        
+	  std::vector<int>  waveform_;  
+	  int               peakpos_;	
   };
 
-   typedef std::vector<mu2e::CaloDigi> CaloDigiCollection;
+  typedef std::vector<mu2e::CaloDigi> CaloDigiCollection;
 
 }
 

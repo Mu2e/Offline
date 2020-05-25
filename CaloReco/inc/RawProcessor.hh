@@ -3,7 +3,8 @@
 
 
 #include "CaloReco/inc/WaveformProcessor.hh"
-#include "fhiclcpp/ParameterSet.h"
+#include "fhiclcpp/types/Atom.h"
+#include "fhiclcpp/types/Sequence.h"
 #include <vector>
 
 
@@ -14,13 +15,25 @@ namespace mu2e {
      
 
      public:
-     
-                    RawProcessor(fhicl::ParameterSet const& param);
-        virtual    ~RawProcessor() {};
-	
+
+        struct Config
+        {
+           using Name = fhicl::Name;
+           using Comment = fhicl::Comment;        
+           fhicl::Atom<int>    windowPeak{       Name("windowPeak"),       Comment("Number of bins around central vlue to inspect")};
+           fhicl::Atom<double> minPeakAmplitude{ Name("minPeakAmplitude"), Comment("Minimum peak amplitude")};
+           fhicl::Atom<double> shiftTime{        Name("shiftTime"),        Comment("Time bwtween beginning and maximum value of pusle")};
+           fhicl::Atom<double> scaleFactor{      Name("scaleFactor"),      Comment("Factor to convert bin height to signal amplitude")};
+           fhicl::Atom<int>    diagLevel{        Name("diagLevel"),        Comment("Diagnosis level")};
+        };
+
+
+                    RawProcessor(const Config& config);
+        virtual    ~RawProcessor() {};	
+
         virtual void   initialize();
 	virtual void   reset();
-        virtual void   extract(std::vector<double> &xInput, std::vector<double> &yInput);
+        virtual void   extract(const std::vector<double> &xInput, const std::vector<double> &yInput);
         virtual void   plot(std::string pname);
 
         virtual int    nPeaks()                     const {return nPeaks_;}
@@ -31,10 +44,7 @@ namespace mu2e {
         virtual double time(unsigned int i)         const {return resTime_.at(i);}
         virtual double timeErr(unsigned int i)      const {return resTimeErr_.at(i);}  
         virtual bool   isPileUp(unsigned int i)     const {return nPeaks_ > 1;}
-
 	
-
-
     private:
        
        int                 windowPeak_;

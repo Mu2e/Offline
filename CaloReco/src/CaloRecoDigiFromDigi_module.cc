@@ -3,11 +3,9 @@
 #include "art/Framework/Core/ModuleMacros.h"
 #include "art_root_io/TFileService.h"
 #include "art_root_io/TFileDirectory.h"
-
-#include "CaloReco/inc/WaveformProcessor.hh"
-#include "CaloReco/inc/LogNormalProcessor.hh"
-#include "CaloReco/inc/FixedFastProcessor.hh"
-#include "CaloReco/inc/RawProcessor.hh"
+#include "canvas/Utilities/InputTag.h"
+#include "fhiclcpp/types/Atom.h"
+#include "fhiclcpp/types/Sequence.h"
 
 #include "ConditionsService/inc/ConditionsHandle.hh"
 #include "ConditionsService/inc/CalorimeterCalibrations.hh"
@@ -15,210 +13,171 @@
 #include "RecoDataProducts/inc/CaloDigiCollection.hh"
 #include "RecoDataProducts/inc/CaloRecoDigi.hh"
 #include "RecoDataProducts/inc/CaloRecoDigiCollection.hh"
+#include "CaloReco/inc/WaveformProcessor.hh"
+#include "CaloReco/inc/LogNormalProcessor.hh"
+#include "CaloReco/inc/FixedFastProcessor.hh"
+#include "CaloReco/inc/RawProcessor.hh"
 
 #include <iostream>
 #include <string>
-#include <sstream>
 
-#include "TH2F.h"
 
 namespace mu2e {
 
+  class CaloRecoDigiFromDigi : public art::EDProducer 
+  {
+     public:
+        enum processorStrategy {NoChoice, RawExtract, LogNormalFit, FixedFast};
 
-
-  class CaloRecoDigiFromDigi : public art::EDProducer {
-
-  public:
-
-    enum processorStrategy {NoChoice, RawExtract, LogNormalFit, FixedFast};
-
-    explicit CaloRecoDigiFromDigi(fhicl::ParameterSet const& pset) :
-      art::EDProducer{pset},
-      caloDigisToken_{consumes<CaloDigiCollection>(pset.get<std::string>("caloDigiModuleLabel"))},
-      processorStrategy_   (pset.get<std::string>("processorStrategy")),
-      digiSampling_        (pset.get<double>     ("digiSampling")),
-      maxChi2Cut_          (pset.get<double>     ("maxChi2Cut")),
-      diagLevel_           (pset.get<int>        ("diagLevel",0)),
-      nplot_(0)
-    {
-      produces<CaloRecoDigiCollection>();
-
-      std::map<std::string, processorStrategy> spmap;
-      spmap["RawExtract"]   = RawExtract;
-      spmap["LogNormalFit"] = LogNormalFit;
-      spmap["FixedFast"]    = FixedFast;
-
-      switch (spmap[processorStrategy_])
+        struct Config 
         {
-        case RawExtract:
-          {
-            auto const& param = pset.get<fhicl::ParameterSet>("RawProcessor", {});
-            waveformProcessor_ = std::make_unique<RawProcessor>(param);
-            break;
-          }
+           using Name    = fhicl::Name;
+           using Comment = fhicl::Comment;        
 
-        case LogNormalFit:
-          {
-            auto const& param = pset.get<fhicl::ParameterSet>("LogNormalProcessor", {});
-            waveformProcessor_ = std::make_unique<LogNormalProcessor>(param);
-            break;
-          }
+           fhicl::Table<mu2e::RawProcessor::Config>       proc_raw_conf  { Name("RawProcessor"),        Comment("Raw processor config") };
+           fhicl::Table<mu2e::LogNormalProcessor::Config> proc_log_conf  { Name("LogNormalProcessor"),  Comment("Fixed fast processor config") };
+           fhicl::Table<mu2e::FixedFastProcessor::Config> proc_fixed_conf{ Name("FixedFastProcessor"),  Comment("Log normal fit processor config") };                    
+           fhicl::Atom<std::string> caloDigiModuleLabel                  { Name("caloDigiModuleLabel"), Comment("Calo Digi module label") };
+           fhicl::Atom<std::string> processorStrategy                    { Name("processorStrategy"),   Comment("Digi reco processor name") };
+           fhicl::Atom<double>      digiSampling                         { Name("digiSampling"),        Comment("Calo ADC sampling time (ns)") };
+           fhicl::Atom<double>      maxChi2Cut                           { Name("maxChi2Cut"),          Comment("Chi2 cut for keeping reco digi") };
+           fhicl::Atom<int>         diagLevel                            { Name("diagLevel"),           Comment("Diagnosis level") };
+        };
 
-        case FixedFast:
-          {
-            auto const& param = pset.get<fhicl::ParameterSet>("FixedFastProcessor", {});
-            waveformProcessor_ = std::make_unique<FixedFastProcessor>(param);
-            break;
-          }
+        explicit CaloRecoDigiFromDigi(const art::EDProducer::Table<Config>& config) :
+           EDProducer{config},
+           caloDigisToken_    {consumes<CaloDigiCollection>(config().caloDigiModuleLabel())},
+           processorStrategy_ (config().processorStrategy()),
+           digiSampling_      (config().digiSampling()),
+           maxChi2Cut_        (config().maxChi2Cut()),
+           diagLevel_         (config().diagLevel())
+        {
+            produces<CaloRecoDigiCollection>();
 
-        default:
-          {
-            throw cet::exception("CATEGORY")<< "Unrecognized processor in CaloHitsFromDigis module";
-          }
+            std::map<std::string, processorStrategy> spmap;
+            spmap["RawExtract"]   = RawExtract;
+            spmap["LogNormalFit"] = LogNormalFit;
+            spmap["FixedFast"]    = FixedFast;
+
+            switch (spmap[processorStrategy_])
+            {
+                case RawExtract:
+                {
+                    waveformProcessor_ = std::make_unique<RawProcessor>(config().proc_raw_conf());
+                    break;
+                }
+                case LogNormalFit:
+                {
+                    waveformProcessor_ = std::make_unique<LogNormalProcessor>(config().proc_log_conf());
+                    break;
+                }
+                case FixedFast:
+                {
+                    waveformProcessor_ = std::make_unique<FixedFastProcessor>(config().proc_fixed_conf());
+                    break;
+                }
+                default:
+                {
+                    throw cet::exception("CATEGORY")<< "Unrecognized processor in CaloHitsFromDigis module";
+                }
+            }
         }
-    }
 
-    void beginJob() override;
-    void beginRun(art::Run& aRun) override;
-    void produce(art::Event& e) override;
+        void beginRun(art::Run& aRun) override;
+        void produce(art::Event& e) override;
 
-  private:
+     private:
+        void extractRecoDigi(const art::ValidHandle<CaloDigiCollection>& caloDigis, CaloRecoDigiCollection& recoCaloHits);
 
-    art::ProductToken<CaloDigiCollection> const caloDigisToken_;
-    std::string const processorStrategy_;
-    double const digiSampling_;
-    double       maxChi2Cut_;
-    int          diagLevel_;
-    int          nplot_;
 
-    std::unique_ptr<WaveformProcessor> waveformProcessor_;
+        const  art::ProductToken<CaloDigiCollection> caloDigisToken_;
+        const  std::string processorStrategy_;
+        double digiSampling_;
+        double maxChi2Cut_;
+        int    diagLevel_;
 
-    void extractRecoDigi(art::ValidHandle<CaloDigiCollection> const& caloDigis,
-                         CaloRecoDigiCollection& recoCaloHits);
-
-    TH1F *hChi1_,*hChi2_;
- 
- 
+        std::unique_ptr<WaveformProcessor> waveformProcessor_;
   };
 
-  void CaloRecoDigiFromDigi::beginJob()
-  {
-        art::ServiceHandle<art::TFileService> tfs;
-        hChi1_     = tfs->make<TH1F>("hChi1",    "Gen Id",               100,    0,  50);
-        hChi2_     = tfs->make<TH1F>("hChi2",    "Gen Id",               100,    0,  50);
-  }
 
   //-------------------------------------------------------
   void CaloRecoDigiFromDigi::produce(art::Event& event)
   {
+      if (diagLevel_ > 0) std::cout<<"[CaloRecoDigiFromDigi::produce] begin"<<std::endl;
 
-    if (diagLevel_ > 0) std::cout<<"[CaloRecoDigiFromDigi::produce] begin"<<std::endl;
+      const auto& caloDigisH = event.getValidHandle(caloDigisToken_);
+      auto recoCaloDigiColl  = std::make_unique<CaloRecoDigiCollection>();
 
-    //Get the calorimeter Digis
-    auto const& caloDigisH = event.getValidHandle(caloDigisToken_);
+      extractRecoDigi(caloDigisH, *recoCaloDigiColl);
 
-    auto recoCaloDigiColl = std::make_unique<CaloRecoDigiCollection>();
-    extractRecoDigi(caloDigisH, *recoCaloDigiColl);
+      event.put(std::move(recoCaloDigiColl));
 
-    if ( diagLevel_ > 3 )
-      {
-        printf("[CaloRecoDigiFromDigi::produce] produced RecoCrystalHits ");
-        printf(", recoCaloDigiColl size  = %i \n", int(recoCaloDigiColl->size()));
-      }
-
-    event.put(std::move(recoCaloDigiColl));
-
-    if (diagLevel_ > 0) std::cout<<"[CaloRecoDigiFromDigi::produce] end"<<std::endl;
-
-    return;
+      if (diagLevel_ > 0) std::cout<<"[CaloRecoDigiFromDigi::produce] end"<<std::endl;
+      return;
   }
+
 
   //-----------------------------------------------------------------------------
   void CaloRecoDigiFromDigi::beginRun(art::Run& aRun)
   {
-    waveformProcessor_->initialize();
+      waveformProcessor_->initialize();
   }
 
 
   //--------------------------------------------------------------------------------------
-  void CaloRecoDigiFromDigi::extractRecoDigi(art::ValidHandle<CaloDigiCollection> const& caloDigisHandle,
+  void CaloRecoDigiFromDigi::extractRecoDigi(const art::ValidHandle<CaloDigiCollection>& caloDigisHandle,
                                              CaloRecoDigiCollection &recoCaloHits)
   {
+      const auto& caloDigis = *caloDigisHandle;
+      ConditionsHandle<CalorimeterCalibrations> calorimeterCalibrations("ignored");
 
-    std::vector<double> x,y;
-
-    ConditionsHandle<CalorimeterCalibrations> calorimeterCalibrations("ignored");
-
-    auto const& caloDigis = *caloDigisHandle;
-    CaloDigi const* base = &caloDigis.front(); // What if caloDigis is empty?
-
-    static int nplot(0);
-    
-    for (const auto& caloDigi : caloDigis)
+      std::vector<double> x,y;
+      for (const auto& caloDigi : caloDigis)
       {
-        int    roId     = caloDigi.roId();
-        double t0       = caloDigi.t0();
-        double adc2MeV  = calorimeterCalibrations->ADC2MeV(roId);
-        const std::vector<int>& waveform = caloDigi.waveform();
+          int    roId     = caloDigi.roId();
+          double t0       = caloDigi.t0();
+          double adc2MeV  = calorimeterCalibrations->ADC2MeV(roId);
+          const std::vector<int>& waveform = caloDigi.waveform();
 
-        size_t index = &caloDigi - base;
-        art::Ptr<CaloDigi> caloDigiPtr(caloDigisHandle, index);
+          size_t index = &caloDigi - &caloDigis.front();
+          art::Ptr<CaloDigi> caloDigiPtr(caloDigisHandle, index);
 
-        x.clear();
-        y.clear();
-        for (unsigned int i=0;i<waveform.size();++i)
+          x.clear();y.clear();
+          for (unsigned int i=0;i<waveform.size();++i)
           {
-            x.push_back(t0 + (i+0.5)*digiSampling_); // add 0.5 to be in middle of bin
-            y.push_back(waveform.at(i));
-          }
-if (diagLevel_ > 1) std::cout<<"[CaloRecoDigiFromDigi::extractRecoDigi] extract amplitude from this set of hits for RoId="<<roId<<" a time "<<t0<<std::endl;
-        if (diagLevel_ > 3)
-          {
-            std::cout<<"[CaloRecoDigiFromDigi::extractRecoDigi] extract amplitude from this set of hits for RoId="<<roId<<" a time "<<t0<<std::endl;
-            for (auto const& val : waveform) {std::cout<< val<<" ";} std::cout<<std::endl;
+              x.push_back(t0 + (i+0.5)*digiSampling_); // add 0.5 to be in middle of bin
+              y.push_back(waveform.at(i));
           }
 
-        waveformProcessor_->reset();
-        waveformProcessor_->extract(x,y);
-
-if (nplot<20 && waveformProcessor_->nPeaks()==1 && waveformProcessor_->chi2()>10)
-{
-std::cout<<"roId "<<roId<<"  t0 "<<t0<<std::endl;
-std::stringstream ss;
-ss<<"plot_"<<nplot<<".pdf";
- waveformProcessor_->plot(ss.str());
-++nplot;
-}
-
-
-        for (int i=0;i<waveformProcessor_->nPeaks();++i)
+          if (diagLevel_ > 3)
           {
-            double eDep      = waveformProcessor_->amplitude(i)*adc2MeV;
-            double eDepErr   = waveformProcessor_->amplitudeErr(i)*adc2MeV;
-            double time      = waveformProcessor_->time(i);
-            double timeErr   = waveformProcessor_->timeErr(i);
-            bool   isPileUp  = waveformProcessor_->isPileUp(i);
-            double chi2      = waveformProcessor_->chi2();
-            int    ndf       = waveformProcessor_->ndf();
-
-            if (diagLevel_ > 1)
-              {
-                std::cout<<"[CaloRecoDigiFromDigi::extractAmplitude] extract "<<roId<<"   i="<<i<<"  eDep="<<eDep<<" time="<<time<<"  chi2="<<chi2<<std::endl;
-              }
-            
-            if  (waveformProcessor_->nPeaks()==1) hChi1_->Fill(chi2);
-            else                                  hChi2_->Fill(chi2);
-
-            if (chi2/ndf > maxChi2Cut_) continue;
-
-            recoCaloHits.emplace_back(CaloRecoDigi(roId, caloDigiPtr, eDep,eDepErr,time,timeErr,chi2,ndf,isPileUp));
+              std::cout<<"[CaloRecoDigiFromDigi::extractRecoDigi] extract amplitude from this set of hits for RoId="<<roId<<" a time "<<t0<<std::endl;
+              for (const auto& val : waveform) {std::cout<< val<<" ";} std::cout<<std::endl;
           }
-          
-          
 
-      }
+          waveformProcessor_->reset();
+          waveformProcessor_->extract(x,y);
 
+          for (int i=0;i<waveformProcessor_->nPeaks();++i)
+          {
+              double eDep      = waveformProcessor_->amplitude(i)*adc2MeV;
+              double eDepErr   = waveformProcessor_->amplitudeErr(i)*adc2MeV;
+              double time      = waveformProcessor_->time(i);
+              double timeErr   = waveformProcessor_->timeErr(i);
+              bool   isPileUp  = waveformProcessor_->isPileUp(i);
+              double chi2      = waveformProcessor_->chi2();
+              int    ndf       = waveformProcessor_->ndf();
+
+              if (diagLevel_ > 1) std::cout<<"[CaloRecoDigiFromDigi::extractAmplitude] extract "<<roId<<"   i="<<i<<"  eDep="<<eDep
+                                           <<" time="<<time<<"  chi2="<<chi2<<std::endl;
+
+              if (chi2/ndf > maxChi2Cut_) continue;
+              recoCaloHits.emplace_back(CaloRecoDigi(roId, caloDigiPtr, eDep, eDepErr, time, timeErr, chi2, ndf, isPileUp));
+          }
+      }     
   }
+
+
 
 }
 

@@ -14,8 +14,9 @@
 
 namespace mu2e {
 
-   CaloPulseShape::CaloPulseShape(double digiSampling, int pulseIntegralSteps) :
-     digiSampling_(digiSampling), pulseIntegralSteps_(pulseIntegralSteps), nBinShape_(0), integralVal_(), digitizedPulse_()
+   CaloPulseShape::CaloPulseShape(double digiSampling, int pulseIntegralSteps, bool doIntegral) :
+     digiSampling_(digiSampling), pulseIntegralSteps_(pulseIntegralSteps), doIntegral_(doIntegral), 
+     nBinShape_(0), integralVal_(), digitizedPulse_()
    {}
 
    //----------------------------------------------------------------------------------------------------------------------
@@ -35,29 +36,36 @@ namespace mu2e {
        // smooth the histogram, normalize and resmaple with the desired binning
        int nbins = int((pshape->GetXaxis()->GetXmax()-pshape->GetXaxis()->GetXmin())/digiSampling_*pulseIntegralSteps_);
        TH1F pulseShape("ps_temp","ps_temp", nbins, pshape->GetXaxis()->GetXmin(), pshape->GetXaxis()->GetXmax());
-       
        TSpline3 spline(pshape);
        for (int i=1;i<pulseShape.GetNbinsX();++i) pulseShape.SetBinContent(i,spline.Eval(pulseShape.GetBinCenter(i)));
-       pulseShape.Scale(1.0/pulseShape.Integral());
-
-
-       // find the start / end of the waveform
-       double  pulseAmplitudeMax = pulseShape.GetBinContent(pulseShape.GetMaximumBin());
-       int ifirst(pulseIntegralSteps_),ilast(nbins-pulseIntegralSteps_-1); 
-       for (;ifirst<nbins;++ifirst) if (pulseShape.GetBinContent(ifirst)> pulseAmplitudeMax/1000) break;
-       for (;ilast >0    ; --ilast) if (pulseShape.GetBinContent(ilast) > pulseAmplitudeMax/1000) break;
-       
-       if (ifirst==pulseIntegralSteps_) 
-          std::cout<<"[CaloPulseShape] Warning, pulse histogram starts too early and will be clipped "<<std::endl;
-
-       // calculate the integral over the sampling period for each start time
-       integralVal_.clear();
-       for (int j=0;j<ilast-ifirst+pulseIntegralSteps_;++j)
+      
+       // Integrated waveform over digitization period for each starting point if required
+       if (doIntegral_) 
        {
-	  int binStart = ifirst-pulseIntegralSteps_+j;
-	  int binEnd   = binStart+pulseIntegralSteps_-1; 
-	  integralVal_.push_back(pulseShape.Integral(binStart, binEnd));
+	   TH1F pulseShapeIntegral(pulseShape);
+	   for (int i=1;i<pulseShapeIntegral.GetNbinsX();++i) 
+	      pulseShapeIntegral.SetBinContent(i,pulseShape.Integral(i, std::min(i+pulseIntegralSteps_-1,nbins-1)));
+	   pulseShape = pulseShapeIntegral;
        }
+
+       // Find the start of the waveform - this is arbitrary but we want to avoid taking too many empty bins before the waveform
+       int ifirst(0),ilast(nbins-1); 
+       double pulseAmplitudeMin = pulseShape.GetMaximum()/1000;
+       for (;ifirst<nbins;++ifirst) if (pulseShape.GetBinContent(ifirst)> pulseAmplitudeMin) break;
+       for (;ilast >0    ; --ilast) if (pulseShape.GetBinContent(ilast) > pulseAmplitudeMin) break;       
+
+       // Tabulate the integrated values - need padding if waveform starts before histogram t0 + digitization
+       nbins = ilast-ifirst+pulseIntegralSteps_;
+       std::vector<double> integralVal(nbins,0.0);
+       for (int j=0;j<nbins;++j)
+       {
+	  int ibin = ifirst-pulseIntegralSteps_+j;
+	  integralVal_.push_back((ibin>0) ? pulseShape.GetBinContent(ibin) : 0.0);
+       }
+
+       // Normalize waveform such that the max vector is at 1
+       double integralValMax = *max_element(integralVal_.begin(),integralVal_.end());
+       for (auto& v : integralVal_) v/=integralValMax;
        
        nBinShape_      = (ilast-ifirst)/pulseIntegralSteps_+2;
        digitizedPulse_ = std::vector<double>(nBinShape_,0);

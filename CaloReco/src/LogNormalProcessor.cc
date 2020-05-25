@@ -1,9 +1,8 @@
 
 #include "CaloReco/inc/LogNormalProcessor.hh"
-#include "art_root_io/TFileDirectory.h" 
-#include "art_root_io/TFileService.h"
 #include "ConditionsService/inc/ConditionsHandle.hh"
-
+#include "art_root_io/TFileService.h"
+#include "art_root_io/TFileDirectory.h"
 
 #include "TMinuit.h"
 #include "TH1.h"
@@ -71,20 +70,18 @@ namespace {
 
 namespace mu2e {
 
-  //-----------------------------------------------------------------------------
-   LogNormalProcessor::LogNormalProcessor(fhicl::ParameterSet const& PSet) :
-
-      WaveformProcessor(PSet),
-      windowPeak_        (PSet.get<int>   ("windowPeak")),
-      minPeakAmplitude_  (PSet.get<double>("minPeakAmplitude")),
-      fixShapeSig_       (PSet.get<bool>  ("fixShapeSig")),
-      psdThreshold_      (PSet.get<double>("psdThreshold")),
-      pulseHighBuffer_   (PSet.get<int>   ("pulseHighBuffer")),
-      timeFraction_      (PSet.get<double>("timeFraction")),
-      shiftTime_         (PSet.get<double>("shiftTime")),
-      printLevel_        (PSet.get<int>   ("fitPrintLevel",-1)),
-      fitStrategy_       (PSet.get<int>   ("fitStrategy",1)),
-      diagLevel_         (PSet.get<int>   ("diagLevel",0)),
+   LogNormalProcessor::LogNormalProcessor(const Config& config) :
+      WaveformProcessor(),
+      windowPeak_      (config.windowPeak()),
+      minPeakAmplitude_(config.minPeakAmplitude()),
+      fixShapeSig_     (config.fixShapeSig()),
+      psdThreshold_    (config.psdThreshold()),
+      pulseHighBuffer_ (config.pulseHighBuffer()),
+      timeFraction_    (config.timeFraction()),
+      shiftTime_       (config.shiftTime()),
+      fitPrintLevel_   (config.fitPrintLevel()),
+      fitStrategy_     (config.fitStrategy()),
+      diagLevel_       (config.diagLevel()),
       nPeaks_(0),
       chi2_(999),
       res_(),
@@ -142,7 +139,7 @@ namespace mu2e {
 
 
    //------------------------------------------------------------------------------------------
-   void LogNormalProcessor::extract(std::vector<double> &xInput, std::vector<double> &yInput)
+   void LogNormalProcessor::extract(const std::vector<double> &xInput, const std::vector<double> &yInput)
    {
 
        reset();
@@ -287,7 +284,7 @@ namespace mu2e {
 	TMinuit minuit(nparTot_); 
 	minuit.SetFCN(myfcn);
 
-	arglist[0] = printLevel_;
+	arglist[0] = fitPrintLevel_;
 	minuit.mnexcm("SET PRI", arglist ,1,ierr);  
 	arglist[0] = 1;
 	minuit.mnexcm("SET NOW", arglist, 1, ierr);
@@ -347,7 +344,7 @@ namespace mu2e {
 	if (nPeak > 1 && refit)
 	{  
 	    minuit.mnexcm("MIGRAD", arglist ,2,ierr);  
-	   if (!minuit.fCstatu.Contains("CONVERGED")) minuit.mnexcm("MIGRAD", arglist ,2,ierr);   
+	    if (!minuit.fCstatu.Contains("CONVERGED")) minuit.mnexcm("MIGRAD", arglist ,2,ierr);   
 	}    
 
 

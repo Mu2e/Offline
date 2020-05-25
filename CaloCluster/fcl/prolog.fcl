@@ -86,8 +86,8 @@ CaloClusterFromProtoCluster :
 CaloClusterTruthMatch:
 {
     module_type               : CaloClusterTruthMatch
-    caloClusterModuleLabel    : CaloClusterFromProtoCluster
-    caloHitTruthModuleLabel   : CaloHitTruthMatch
+    caloClusterCollection     : CaloClusterFromProtoCluster
+    caloDigiMCTruthAssn       : CaloHitTruthMatch
     diagLevel                 : 0
 }
 

@@ -23,7 +23,7 @@ namespace mu2e {
     class CaloPulseShape
     {
         public:
-           CaloPulseShape(double digiSampling, int pulseIntegralSteps);
+           CaloPulseShape(double digiSampling, int pulseIntegralSteps, bool doIntegral=false);
            ~CaloPulseShape(){};
 
            void buildShapes();
@@ -34,6 +34,7 @@ namespace mu2e {
        private:      
 	  double                      digiSampling_;
 	  int                         pulseIntegralSteps_;	 
+	  bool                        doIntegral_;	 
 	  int                         nBinShape_;
 	  std::vector<double>         integralVal_;
 	  mutable std::vector<double> digitizedPulse_;
