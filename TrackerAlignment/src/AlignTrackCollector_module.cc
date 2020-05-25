@@ -492,13 +492,40 @@ bool AlignTrackCollector::filter_CosmicTrackSeedCollection(
                         straw_mp.x(), straw_mp.y(), straw_mp.z(), 
                         wire_dir.x(), wire_dir.y(), wire_dir.z()
         );
-
+        double diff = std::abs(signdca - generated_doca);
         std::cout << "doca: " <<  signdca
                   << ", gendoca: " << generated_doca 
-                  << ", diff: " << std::abs(signdca - generated_doca) 
+                  << ", diff: " << diff 
                   << ", s1: " << pca.s1()
                   << ", s2: " << pca.s2() 
                   << std::endl;
+
+        if (diff > 1e-10)
+        {
+          throw cet::exception("ALIGNMENT") << "Output of generated functions (AlignmentDerivatives) are not consistent!";
+        }
+        
+        // quick and dirty numerical derivative estimation
+        // This is only performed using CosmicTrack_DCA once confirmed to be consistent with TwoLinePCA
+        // TODO: move to a utility class?
+        // TODO: avoid DRY problems
+
+        double h =  1e-7;
+
+        // PARTIAL DOCA DERIVATIVE: A0
+        
+        double diff_a = CosmicTrack_DCA(A0+h, B0, A1, B1, T0,
+                        straw_mp.x(), straw_mp.y(), straw_mp.z(), 
+                        wire_dir.x(), wire_dir.y(), wire_dir.z());
+
+        double diff_b = CosmicTrack_DCA(A0-h, B0, A1, B1, T0,
+                        straw_mp.x(), straw_mp.y(), straw_mp.z(), 
+                        wire_dir.x(), wire_dir.y(), wire_dir.z());
+
+        double diff = (diff_a - diff_b) / 2*h;
+
+        std::cout << "numerical dr/d(A0) = " << diff << std::endl;
+
       }
 
       // avoid outlier hits when applying this cut
