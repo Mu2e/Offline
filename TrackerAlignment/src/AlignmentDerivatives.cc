@@ -1085,6 +1085,7 @@ std::vector<float> CosmicTrack_DCA_GlobalDeriv(double a0, double b0, double a1, 
 (float)CosmicTrack_DCA_Deriv_panel_g(a0,b0,a1,b1,t0,wire_x,wire_y,wire_z,wdir_x,wdir_y,wdir_z,plane_x,plane_y,plane_z,panel_straw0x,panel_straw0y,panel_straw0z)};
 return result;
 }
+
 std::vector<double> CosmicTrack_DCA_LocalDeriv_double(double a0, double b0, double a1, double b1, double t0, double wire_x, double wire_y, double wire_z, double wdir_x, double wdir_y, double wdir_z, double plane_x, double plane_y, double plane_z, double panel_straw0x, double panel_straw0y, double panel_straw0z)
 {
         std::vector<double> result = {CosmicTrack_DCA_Deriv_a0(a0,b0,a1,b1,t0,wire_x,wire_y,wire_z,wdir_x,wdir_y,wdir_z,plane_x,plane_y,plane_z,panel_straw0x,panel_straw0y,panel_straw0z),
@@ -1094,5 +1095,3 @@ CosmicTrack_DCA_Deriv_b1(a0,b0,a1,b1,t0,wire_x,wire_y,wire_z,wdir_x,wdir_y,wdir_
 CosmicTrack_DCA_Deriv_t0(a0,b0,a1,b1,t0,wire_x,wire_y,wire_z,wdir_x,wdir_y,wdir_z,plane_x,plane_y,plane_z,panel_straw0x,panel_straw0y,panel_straw0z)};
 return result;
 }
-
-

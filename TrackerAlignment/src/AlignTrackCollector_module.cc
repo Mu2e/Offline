@@ -488,10 +488,12 @@ bool AlignTrackCollector::filter_CosmicTrackSeedCollection(
       if (_diag > 4) {
         // FIXME!
         // move to another place
-        double generated_doca = CosmicTrack_DCA(A0, B0, A1, B1, T0,
-                        straw_mp.x(), straw_mp.y(), straw_mp.z(), 
-                        wire_dir.x(), wire_dir.y(), wire_dir.z()
-        );
+        double generated_doca = CosmicTrack_DCA(A0, B0, A1, B1, T0, 
+                                      straw_mp.x(), straw_mp.y(), straw_mp.z(),
+                                      wire_dir.x(), wire_dir.y(), wire_dir.z(),
+                                      plane_origin.x(), plane_origin.y(), plane_origin.z(),
+                                      panel_origin.x(), panel_origin.y(), panel_origin.z());
+                        
         double diff = std::abs(signdca - generated_doca);
         std::cout << "doca: " <<  signdca
                   << ", gendoca: " << generated_doca 
@@ -516,53 +518,20 @@ bool AlignTrackCollector::filter_CosmicTrackSeedCollection(
 
         // PARTIAL DOCA DERIVATIVE: A0
         
-        double diff_a = CosmicTrack_DCA(A0+h, B0, A1, B1, T0,
-                        straw_mp.x(), straw_mp.y(), straw_mp.z(), 
-                        wire_dir.x(), wire_dir.y(), wire_dir.z());
+        double diff_a = CosmicTrack_DCA(A0+h, B0, A1, B1, T0, 
+                                      straw_mp.x(), straw_mp.y(), straw_mp.z(),
+                                      wire_dir.x(), wire_dir.y(), wire_dir.z(),
+                                      plane_origin.x(), plane_origin.y(), plane_origin.z(),
+                                      panel_origin.x(), panel_origin.y(), panel_origin.z());
 
-        double diff_b = CosmicTrack_DCA(A0-h, B0, A1, B1, T0,
-                        straw_mp.x(), straw_mp.y(), straw_mp.z(), 
-                        wire_dir.x(), wire_dir.y(), wire_dir.z());
+        double diff_b = CosmicTrack_DCA(A0-h, B0, A1, B1, T0, 
+                                      straw_mp.x(), straw_mp.y(), straw_mp.z(),
+                                      wire_dir.x(), wire_dir.y(), wire_dir.z(),
+                                      plane_origin.x(), plane_origin.y(), plane_origin.z(),
+                                      panel_origin.x(), panel_origin.y(), panel_origin.z());
 
         diff = (diff_a - diff_b) / linvel / 2.0*h;
-
         std::cout << "numerical dr/d(A0) = " << diff << std::endl;
-
-        // PARTIAL DOCA DERIVATIVE: B0
-        diff_a = CosmicTrack_DCA(A0, B0+h, A1, B1, T0,
-                        straw_mp.x(), straw_mp.y(), straw_mp.z(), 
-                        wire_dir.x(), wire_dir.y(), wire_dir.z());
-
-        diff_b = CosmicTrack_DCA(A0, B0-h, A1, B1, T0,
-                        straw_mp.x(), straw_mp.y(), straw_mp.z(), 
-                        wire_dir.x(), wire_dir.y(), wire_dir.z());
-
-        diff = (diff_a - diff_b) / linvel/ 2.0*h;
-        std::cout << "numerical dr/d(B0) = " << diff << std::endl;
-
-        // PARTIAL DOCA DERIVATIVE: A1
-        diff_a = CosmicTrack_DCA(A0, B0, A1+h, B1, T0,
-                        straw_mp.x(), straw_mp.y(), straw_mp.z(), 
-                        wire_dir.x(), wire_dir.y(), wire_dir.z());
-
-        diff_b = CosmicTrack_DCA(A0, B0, A1-h, B1, T0,
-                        straw_mp.x(), straw_mp.y(), straw_mp.z(), 
-                        wire_dir.x(), wire_dir.y(), wire_dir.z());
-
-        diff = (diff_a - diff_b) / linvel/ 2.0*h;
-        std::cout << "numerical dr/d(A1) = " << diff << std::endl;
-
-        // PARTIAL DOCA DERIVATIVE: B1
-        diff_a = CosmicTrack_DCA(A0, B0, A1, B1+h, T0,
-                        straw_mp.x(), straw_mp.y(), straw_mp.z(), 
-                        wire_dir.x(), wire_dir.y(), wire_dir.z());
-
-        diff_b = CosmicTrack_DCA(A0, B0, A1, B1-h, T0,
-                        straw_mp.x(), straw_mp.y(), straw_mp.z(), 
-                        wire_dir.x(), wire_dir.y(), wire_dir.z());
-
-        diff = (diff_a - diff_b) / linvel/ 2.0*h;
-        std::cout << "numerical dr/d(B1) = " << diff << std::endl;
 
       }
 
