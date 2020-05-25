@@ -12,7 +12,6 @@ BEGIN_PROLOG
     MinTraversedPlanes : 3
     MaxPValue : 1
     MinTraversedPanelsPerPlane : 0
-    MinDOCA : 0.0
 
     MaxTimeRes : 10.0
     MinTrackSH: 10
