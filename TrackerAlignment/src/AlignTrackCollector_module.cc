@@ -454,6 +454,8 @@ bool AlignTrackCollector::filter_CosmicTrackSeedCollection(
       double drift_res = _srep.driftDistanceError(straw_hit.strawId(), 0, 0, pca.dca());
       double resid_err_tmp = _srep.driftTimeToDistance(
           straw_hit.strawId(), drift_res, 0); // fit_object.DOCAresidualError(straw_hit, sts);
+      
+      double signdca = (pca.s2() > 0 ? 1 : -1) * pca.dca();
 
       // FIXME! use newly implemented chisq function in fit object
       chisq += pow(time_resid / drift_res, 2);
@@ -491,9 +493,9 @@ bool AlignTrackCollector::filter_CosmicTrackSeedCollection(
                         wire_dir.x(), wire_dir.y(), wire_dir.z()
         );
 
-        std::cout << "doca: " << (pca.s2() > 0 ? 1 : -1) * pca.dca() 
+        std::cout << "doca: " <<  signdca
                   << ", gendoca: " << generated_doca 
-                  << ", diff: " << std::abs(pca.dca() - generated_doca) << std::endl;
+                  << ", diff: " << std::abs(signdca - generated_doca) << std::endl;
       }
 
       // avoid outlier hits when applying this cut
