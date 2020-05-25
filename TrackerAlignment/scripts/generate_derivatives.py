@@ -235,12 +235,12 @@ def generate_expressions(approximate=False, remove_globalparam_dependence=True, 
 
     # this is the residual expression (excluding terms with no dependence on local
     # and global parameters )
-    aligned_doca = DOCA(aligned_wpos, aligned_wdir, track_pos, track_dir)
+    aligned_doca = aligned_doca_to_diff = DOCA(aligned_wpos, aligned_wdir, track_pos, track_dir)
 
     if time_domain:
         # we convert the DOCA to a TOCA and add T0 (since it is a local param)
         # the hit time has no explicit track parameter dependence
-        aligned_doca = DOCAToTOCA(aligned_doca) + t0
+        aligned_doca_to_diff = DOCAToTOCA(aligned_doca) + t0
 
     # now generate optimised C code to calculate each deriv
     if remove_globalparam_dependence:
@@ -250,7 +250,7 @@ def generate_expressions(approximate=False, remove_globalparam_dependence=True, 
     expressions = []
     for parameter in local_params + global_params:
         # calculate derivative symbolically for each local and global parameter then generate code for the function
-        pdev = diff(aligned_doca, parameter)
+        pdev = diff(aligned_doca_to_diff, parameter)
 
         if remove_globalparam_dependence:
             # since these derivatives are evaluated with alignment dofs kept to zero
@@ -427,15 +427,15 @@ def main():
     # generate code to build arrays of calculated derivatives
 
     def generate_dcaderiv_arraybuilder_fn(params_type):
-        code = "std::vector<float> result = {"
-        code += ',\n'.join(['(float){fn}({args})'.format(
+        code = "std::vector<double> result = {"
+        code += ',\n'.join(['{fn}({args})'.format(
                 fn=function_prefix + '_Deriv_' + symb.name,
                 args=','.join([p.name for p in params['all']])
         ) for symb in params[params_type]
         ])
         code += '};\nreturn result;'
         return [build_ccode_function(
-            'std::vector<float>', '{}_{}Deriv'.format(function_prefix, params_type.capitalize()), params['all'], code)]
+            'std::vector<double>', '{}_{}Deriv'.format(function_prefix, params_type.capitalize()), params['all'], code)]
 
     generated_code += generate_dcaderiv_arraybuilder_fn('local')
     generated_code += generate_dcaderiv_arraybuilder_fn('global')
