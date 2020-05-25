@@ -3,7 +3,8 @@
 
 
 #include "CaloReco/inc/WaveformProcessor.hh"
-#include "fhiclcpp/ParameterSet.h"
+#include "fhiclcpp/types/Atom.h"
+#include "fhiclcpp/types/Sequence.h"
 #include <vector>
 #include "TH1.h"
 
@@ -18,13 +19,28 @@ namespace mu2e {
      
         enum shapeFixMode {All=0, None=1, Close=2};
 
-                    LogNormalProcessor(fhicl::ParameterSet const& param);
-        virtual    ~LogNormalProcessor() {};
-	
+        struct Config {
+          using Name    = fhicl::Name;
+          using Comment = fhicl::Comment;        
+          fhicl::Atom<int>    windowPeak{       Name("windowPeak"),       Comment("Number of bins around central vlue to inspect")};
+          fhicl::Atom<double> minPeakAmplitude{ Name("minPeakAmplitude"), Comment("Minimum peak amplitude")};
+          fhicl::Atom<bool>   fixShapeSig{      Name("fixShapeSig"),      Comment("Fix pulse shape to template")};
+          fhicl::Atom<double> psdThreshold{     Name("psdThreshold"),     Comment("Pulse Shape discrimination threshold")};          
+          fhicl::Atom<int>    pulseHighBuffer{  Name("pulseHighBuffer"),  Comment("Buffer after last bin of waveform")};
+          fhicl::Atom<double> timeFraction{     Name("timeFraction"),     Comment("CFD for timing measurement")};
+          fhicl::Atom<double> shiftTime{        Name("shiftTime"),        Comment("Time bwtween beginning and maximum value of pusle")};
+          fhicl::Atom<int>    fitPrintLevel{    Name("fitPrintLevel"),    Comment("minuit fit print level")};
+          fhicl::Atom<int>    fitStrategy{      Name("fitStrategy"),      Comment("Minuit fit strategy")};
+          fhicl::Atom<int>    diagLevel{        Name("diagLevel"),        Comment("Diagnosis level")};
+        };
+
+
+                    LogNormalProcessor(const Config& config);
+        virtual    ~LogNormalProcessor() {};	       
 
         virtual void   initialize();
 	virtual void   reset();
-        virtual void   extract(std::vector<double> &xInput, std::vector<double> &yInput);
+        virtual void   extract(const std::vector<double> &xInput, const std::vector<double> &yInput);
 
         virtual int    nPeaks()                     const {return nPeaks_;}
         virtual double chi2()                       const {return chi2_;}
@@ -49,7 +65,7 @@ namespace mu2e {
        int                 pulseHighBuffer_;
        double              timeFraction_;
        double              shiftTime_;
-       int                 printLevel_;
+       int                 fitPrintLevel_;
        int                 fitStrategy_;
        int                 diagLevel_;
        

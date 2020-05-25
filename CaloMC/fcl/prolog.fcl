@@ -13,7 +13,6 @@ END_PROLOG
 
 BEGIN_PROLOG
 
-
 CaloShowerStepFromStepPt  : 
 {
     module_type             : CaloShowerStepFromStepPt
@@ -25,21 +24,21 @@ CaloShowerStepFromStepPt  :
     physVolInfoInput        : "g4run"
     caloMaterial            : ["G4_CESIUM_IODIDE", "Polyethylene092"]
     compressAll             : false 
-    diagLevel               : 2
+    diagLevel               : 0
 }
 
 
 CaloShowerStepROFromShowerStep : 
 {
     module_type              : CaloShowerStepROFromShowerStep
-    caloShowerStepCollection : [ "CaloShowerStepFromStepPt" ]
+    caloShowerStepCollection : ["CaloShowerStepFromStepPt"]
     TimeOffsets              : { inputs : [ @sequence::CommonMC.TimeMaps ] }
     blindTime                : @local::HitMakerBlindTime
     LRUCorrection            : true
     BirksCorrection          : true
     PEStatCorrection         : true
     addTravelTime            : true	    
-    diagLevel                : 0
+    diagLevel                : 1
 }
 
 
@@ -47,41 +46,40 @@ CaloDigiFromShower :
 {
     module_type             : CaloDigiFromShower
     caloShowerROCollection  : CaloShowerStepROFromShowerStep
-
     blindTime               : @local::HitMakerBlindTime
-    addNoise                : true
-    noise                   : 2.3  # mV equivalent to 150 keV of Noise               
-
-    thresholdVoltage        : 5.0  
-    thresholdAmplitude      : 10 
-
+    addNoise                : false
+#    addNoise                : true
+    noise                   : 2.3     # mV equivalent to 150 keV of Noise               
+    MeVToADC                : 16
     digiSampling            : @local::HitMakerDigiSampling
     nBits                   : 12
-    dynamicRange            : 2000 
-    endTimeBuffer           : 80
-    bufferDigi              : 5  
-    pulseIntegralSteps      : 50
+    minPeakADC              : 16
     nBinsPeak		    : 3 #needs optimizing/checking
-    diagLevel               : 5
+    endTimeBuffer           : 80
+    bufferDigi              : 16 
+    pulseIntegralSteps      : 100
+    diagLevel               : 1
 }
 
 
 CaloHitTruthMatch:
 {
     module_type               : CaloHitTruthMatch
-    caloShowerSimModuleLabel  : CaloShowerStepROFromShowerStep
-    caloCrystalHitModuleLabel : CaloCrystalHitFromHit
+    caloShowerSimCollection   : CaloShowerStepROFromShowerStep
+    caloCrystalHitCollection  : CaloCrystalHitFromHit
     deltaTimeMinus            : 4.0    #ns
-    deltaTimePlus             : 150.0  #ns
-    diagLevel                 : 0
+    deltaTimePlus             : 250.0  #ns
+    fillDetailedMC            : false
+    diagLevel                 : 3
 }
+
 
 CaloDigiMC : 
 {
    producers : {
      CaloShowerStepFromStepPt       : @local::CaloShowerStepFromStepPt
      CaloShowerStepROFromShowerStep : @local::CaloShowerStepROFromShowerStep
-     CaloDigiFromShower            : @local::CaloDigiFromShower
+     CaloDigiFromShower             : @local::CaloDigiFromShower
    }
    producersMC : {
      CaloHitTruthMatch : @local::CaloHitTruthMatch

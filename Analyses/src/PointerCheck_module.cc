@@ -494,7 +494,7 @@ namespace mu2e {
       n++;
       for(unsigned i=0; i<s.nParticles(); i++) {
 	n2++;
-	auto const& p = s.simParticle(i);
+	auto const& p = s.energyDeposit(i).sim();
 	if(p.isNonnull()) {
 	  nn++;
 	  if(p.isAvailable()) {
