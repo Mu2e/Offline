@@ -268,7 +268,7 @@ def generate_expressions(approximate=False, remove_globalparam_dependence=True, 
             })
         expressions.append(pdev)
 
-    nominal_doca = DOCA(track_pos, track_dir, wire_pos, wire_dir)
+    nominal_doca = DOCA(wire_pos, wire_dir, track_pos, track_dir)
 
     if VALIDATE:
 

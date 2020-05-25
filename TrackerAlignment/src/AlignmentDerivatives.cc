@@ -3,7 +3,6 @@
 # include "TrackerAlignment/inc/AlignmentDerivatives.hh"
 # include <math.h>
 # include <vector>
-# include <iostream>
 
 double CosmicTrack_DCA(double a0, double b0, double a1, double b1, double t0, double wire_x, double wire_y, double wire_z, double wdir_x, double wdir_y, double wdir_z)
 {
@@ -16,17 +15,16 @@ double CosmicTrack_DCA(double a0, double b0, double a1, double b1, double t0, do
     double R6 = R0*b1;
     double R7 = -R0*R2 + R3*R4 + R5*R6;
     double R8 = 1.0/(1.0 - pow(R7, 2));
-    double R9 = R0*wire_y;
-    double R10 = a0 - wire_x;
-    double R11 = R10*R4;
-    double R12 = b0 - wire_z;
-    double R13 = R12*R6;
-    double R14 = R10*R3 + R12*R5 - R2*wire_y;
-    double R15 = R8*(-R11 - R13 + R14*R7 - R9);
-    double R16 = R8*(R14 - R7*(R11 + R13 + R9));
-    double R17 = sqrt(pow(R10 + R15*R4 - R16*R3, 2) + pow(R12 + R15*R6 - R16*R5, 2) + pow(-R0*R15 - R16*R2 - wire_y, 2));
-    std::cout << "s2 : " << R16 <<std::endl;
-    double result = ((R16 > 0) ? (
+    double R9 = R2*wire_y;
+    double R10 = -a0 + wire_x;
+    double R11 = R10*R3;
+    double R12 = -b0 + wire_z;
+    double R13 = R12*R5;
+    double R14 = -R0*wire_y + R10*R4 + R12*R6;
+    double R15 = R8*(R14 - R7*(R11 + R13 + R9));
+    double R16 = R8*(-R11 - R13 + R14*R7 - R9);
+    double R17 = sqrt(pow(R10 - R15*R4 + R16*R3, 2) + pow(R12 - R15*R6 + R16*R5, 2) + pow(R0*R15 + R16*R2 + wire_y, 2));
+    double result = ((R15 > 0) ? (
    R17
 )
 : (
@@ -1090,5 +1088,4 @@ CosmicTrack_DCA_Deriv_b1(a0,b0,a1,b1,t0,wire_x,wire_y,wire_z,wdir_x,wdir_y,wdir_
 CosmicTrack_DCA_Deriv_t0(a0,b0,a1,b1,t0,wire_x,wire_y,wire_z,wdir_x,wdir_y,wdir_z,plane_x,plane_y,plane_z,panel_straw0x,panel_straw0y,panel_straw0z)};
 return result;
 }
-
 
