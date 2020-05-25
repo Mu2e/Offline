@@ -519,10 +519,13 @@ bool AlignTrackCollector::filter_CosmicTrackSeedCollection(
         // FIXME!
         // move to another place
         double generated_doca =
-            CosmicTrack_DCA(A0, B0, A1, B1, T0, straw_mp.x(), straw_mp.y(), straw_mp.z(),
+            CosmicTrack_DCA(A0, B0, A1, B1, T0, rowpl.dx(), rowpl.dy(), rowpl.dz(), rowpl.rx(), rowpl.ry(),
+            rowpl.rz(), rowpa.dx(), rowpa.dy(), rowpa.dz(), rowpa.rx(), rowpa.ry(), rowpa.rz(),
+            
+            straw_mp.x(), straw_mp.y(), straw_mp.z(),
                             wire_dir.x(), wire_dir.y(), wire_dir.z(), plane_origin.x(),
                             plane_origin.y(), plane_origin.z(), panel_origin.x(), panel_origin.y(),
-                            panel_origin.z(), 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0);
+                            panel_origin.z());
 
         double diff = std::abs(signdca - generated_doca);
         std::cout << "doca: " << signdca << ", gendoca: " << generated_doca << ", diff: " << diff
