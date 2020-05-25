@@ -318,7 +318,7 @@ VALIDATE = False
 
 c_template = """
 
-# include "Alignment/inc/AlignmentDerivatives.hh"
+# include "TrackerAlignment/inc/AlignmentDerivatives.hh"
 # include <math.h>
 # include <vector>
 

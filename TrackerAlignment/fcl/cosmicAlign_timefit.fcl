@@ -7,7 +7,7 @@
 #include "fcl/standardServices.fcl"
 #include "JobConfig/reco/prolog.fcl"
 #include "CosmicReco/fcl/prolog.fcl"
-#include "Alignment/fcl/prolog.fcl"
+#include "TrackerAlignment/fcl/prolog.fcl"
 #include "Trigger/fcl/templates.fcl"
 
 process_name : CosmicTimeFit
