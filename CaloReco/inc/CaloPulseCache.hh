@@ -19,12 +19,11 @@ namespace mu2e {
 	  void   initialize();
           double evaluate(double x);
 
-          const std::vector<double>&   cache()      {return cache_;}
-          double                       cache(int i) {return cache_.at(i);}
-          double                       cacheSize()  {return cacheSize_;}
-          double                       deltaT()     {return deltaT_;}
-          double                       factor()     {return factor_;}
-          double                       step()       {return step_;}
+          const std::vector<double>&   cache()      const {return cache_;}
+          double                       cache(int i) const {return cache_.at(i);}
+          double                       cacheSize()  const {return cacheSize_;}
+          double                       deltaT()     const {return deltaT_;}
+          double                       step()       const {return step_;}
 
 
       private:
@@ -32,7 +31,6 @@ namespace mu2e {
 	 std::vector<double> cache_;
 	 double              cacheSize_;
 	 double              deltaT_;
-	 double              factor_;
 	 double              step_;
    };
 

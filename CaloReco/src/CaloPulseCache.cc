@@ -18,11 +18,8 @@
 
 namespace mu2e {
 
-
-   CaloPulseCache::CaloPulseCache() : cache_(), cacheSize_(0), deltaT_(0), factor_(0), step_(0)
-   {
-   }       
-
+   CaloPulseCache::CaloPulseCache() : cache_(), cacheSize_(0), deltaT_(0), step_(0)
+   {}       
 
    //----------------------------------------------------------------------------------------------------------------------
    void CaloPulseCache::initialize()
@@ -40,36 +37,33 @@ namespace mu2e {
        
          if (!pshape) throw cet::exception("CATEGORY")<<"CaloPulseCache:: Hitsogram "<<histName.c_str()
 	                                              <<" from file "<<fileName.c_str()<<" does not exist";        
-        
-         
-	 double sumNorm(0), contentMax(0), posMax(0), posMin(0);
+                 
+	 double contentMax(0), posMax(0), posMin(0);
          for (int i=0; i<pshape->GetNbinsX();++i)
          {
             double content = pshape->GetBinContent(i);
             if (content < 1e-5) continue;
             
             cache_.push_back(content);
-            sumNorm += content*pshape->GetBinWidth(i);
 
             if (content > contentMax) {contentMax=content; posMax = pshape->GetBinCenter(i);}
             if (posMin < 1e-5) posMin =  pshape->GetBinCenter(i);
-         }
+         }         
                
-         for (auto& val : cache_) val /= sumNorm;   
          double funcMax = *std::max_element(cache_.begin(),cache_.end());
+         for (auto& val : cache_) val /= funcMax;   
 
          cacheSize_      = cache_.size();
          deltaT_         = posMax - posMin; 
          step_           = pshape->GetBinWidth(1);
-         factor_         = 1.0/funcMax;
-          
+         
        pulseFile.Close();   
 
    }
    
    double CaloPulseCache::evaluate(double x)
    {
-       int idx = int( (x+deltaT_)/step_ );
+       int idx = int( (x+deltaT_)/step_ );       
        if (idx < 0 || idx > cacheSize_-2) return 0;     
        return (cache_[idx+1]-cache_[idx])/step_*(x+deltaT_ - idx*step_) + cache_[idx];        
    }

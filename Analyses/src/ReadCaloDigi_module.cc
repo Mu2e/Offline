@@ -802,8 +802,8 @@ namespace mu2e {
       if (nCaloDigiMC > 0) {
         caloDigiMC       = &caloDigiMCCol->at(indexMC);
 
-        for (int k=0; k<int(caloDigiMC->nParticles()); ++k){
-          sim =   caloDigiMC->simParticle(k).operator ->();
+        for (unsigned k=0; k<caloDigiMC->nParticles(); ++k){
+          sim =   caloDigiMC->energyDeposit(k).sim().operator ->();
           //    if ( sim->fromGenerator() ){
           const CLHEP::Hep3Vector genPos = sim->startPosition();
 
@@ -820,7 +820,7 @@ namespace mu2e {
           // }
         }//end loop on the particles inside the crystalHit
 
-        _cryMCTime    [_nHits] = caloDigiMC->time(0);
+        _cryMCTime    [_nHits] = caloDigiMC->time();
         _cryMCEdep    [_nHits] = caloDigiMC->totalEnergyDep();
       } else {
         _cryMCTime    [_nHits] = 0;
@@ -871,16 +871,16 @@ namespace mu2e {
 
 	    if (nCaloDigiMC > 0) {
 	      caloDigiMC        = &caloDigiMCCol->at(indexMC);
-	      clusterMCMeanTime = caloDigiMC->time(0);
-	      clusterMCTime     = caloDigiMC->time(0);
+	      clusterMCMeanTime = caloDigiMC->time();
+	      clusterMCTime     = caloDigiMC->time();
 	    }
   	  }
       	}
 
 	if (nCaloDigiMC > 0) {
 
-	  for (int k=0; k<int(caloDigiMC->nParticles()); ++k){
-	    sim =   caloDigiMC->simParticle(k).operator ->();
+	  for (unsigned k=0; k<caloDigiMC->nParticles(); ++k){
+	    sim =   caloDigiMC->energyDeposit(k).sim().operator ->();
 	    int        pdgId       = sim->pdgId();
 	    double     ceEnergy    = 104.9;
 	    double     startEnergy = sim->startMomentum().e();

@@ -2,8 +2,8 @@
 // refit the rising peak
 
 #include "CaloReco/inc/RawProcessor.hh"
-#include "art_root_io/TFileDirectory.h" 
 #include "art_root_io/TFileService.h"
+#include "art_root_io/TFileDirectory.h"
 
 #include "TH1.h"
 #include "TCanvas.h"
@@ -16,33 +16,29 @@
 
 
 namespace mu2e {
-
+        
   //-----------------------------------------------------------------------------
-   RawProcessor::RawProcessor(fhicl::ParameterSet const& PSet) :
-
-      WaveformProcessor(PSet),
-      windowPeak_         (PSet.get<int>    ("windowPeak")),
-      minPeakAmplitude_   (PSet.get<double> ("minPeakAmplitude")),
-      shiftTime_          (PSet.get<double> ("shiftTime")),
-      scaleFactor_        (PSet.get<double> ("scaleFactor")),
-      diagLevel_          (PSet.get<int>    ("diagLevel",0)),
-      nPeaks_(0),
-      chi2_(999),
-      res_(),
-      resAmp_(),
-      resAmpErr_(),
-      resTime_(),
-      resTimeErr_(),
-      xvec_(),
-      yvec_()
-   {
-   }       
+  RawProcessor::RawProcessor(const Config& config) :
+     WaveformProcessor(),
+     windowPeak_      (config.windowPeak()),
+     minPeakAmplitude_(config.minPeakAmplitude()),
+     shiftTime_       (config.shiftTime()),
+     scaleFactor_     (config.scaleFactor()),
+     diagLevel_       (config.diagLevel()),           
+     nPeaks_(0),
+     chi2_(999),
+     res_(),
+     resAmp_(),
+     resAmpErr_(),
+     resTime_(),
+     resTimeErr_(),
+     xvec_(),
+     yvec_()
+   {}       
 
 
    //---------------------------
-   void RawProcessor::initialize()
-   {
-   }
+   void RawProcessor::initialize() {}
 
 
    //---------------------------
@@ -64,7 +60,7 @@ namespace mu2e {
 
 
    //------------------------------------------------------------------------------------------
-   void RawProcessor::extract(std::vector<double> &xInput, std::vector<double> &yInput)
+   void RawProcessor::extract(const std::vector<double> &xInput, const std::vector<double> &yInput)
    {
 
       reset();
@@ -74,7 +70,7 @@ namespace mu2e {
 
 
       //find location of potential peaks
-      std::vector<int> peakLocation; 
+      std::vector<int> peakLocation;
 
       for (unsigned int iu=windowPeak_;iu<xvec_.size()-windowPeak_;++iu)
       {
@@ -99,14 +95,10 @@ namespace mu2e {
 
    }
 
-
-
-
-
+   
    //---------------------------------------
    void RawProcessor::plot(std::string pname)
    {
-
       TH1F h("test","Amplitude vs time",xvec_.size(),xvec_.front()-2.5,xvec_.back()+2.5);
       h.GetXaxis()->SetTitle("Time (ns)");
       h.GetYaxis()->SetTitle("Amplitude");
@@ -116,6 +108,4 @@ namespace mu2e {
       h.Draw();
       c1.SaveAs(pname.c_str());
    }
-
-
 }

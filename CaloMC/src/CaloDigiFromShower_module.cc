@@ -1,8 +1,6 @@
 //
-// An EDProducer Module that reads Caloshower and produces CaloDigiPacked
-//
-// Fill the readout response from the deosited energy. Photo-statistic fluctuations are calculated independently
-// for each sensor and must be done at this stage.
+// An EDProducer Module that reads CaloshowerStepROs and produces the readout waveform.
+// Photo-statistic fluctuations are calculated independently for each sensor.
 //
 // The output is split between the different digitization boards
 //
@@ -31,7 +29,7 @@
 #include <cmath>
 #include <map>
 #include <vector>
-#include <utility>
+#include <numeric>
 
 
 namespace mu2e {
@@ -40,7 +38,6 @@ namespace mu2e {
   class CaloDigiFromShower : public art::EDProducer 
   {
      public:
-         
          struct Config 
          {
              using Name    = fhicl::Name;
@@ -49,57 +46,52 @@ namespace mu2e {
              fhicl::Atom<art::InputTag> caloShowerCollection { Name("caloShowerROCollection"), Comment("CaloShowerRO collection name") }; 
              fhicl::Atom<double>        blindTime            { Name("blindTime"),              Comment("Microbunch blind time") }; 
              fhicl::Atom<bool>          addNoise             { Name("addNoise"),               Comment("Add noise to waveform") }; 
-             fhicl::Atom<double>        noise                { Name("noise"),                  Comment("Noise level - ADC equivalent") }; 
-             fhicl::Atom<double>        thresholdVoltage     { Name("thresholdVoltage"),       Comment("Threshold voltage for sigitizing") }; 
-             fhicl::Atom<int>           thresholdAmplitude   { Name("thresholdAmplitude"),     Comment("Threshold amplitude for keeping hit") }; 
+             fhicl::Atom<double>        noise                { Name("noise"),                  Comment("Noise level - PE equivalent") }; 
              fhicl::Atom<double>        digiSampling         { Name("digiSampling"),           Comment("Digitization time sampling") }; 
              fhicl::Atom<int>           nBits                { Name("nBits"),                  Comment("ADC Number of bits") }; 
-             fhicl::Atom<double>        dynamicRange         { Name("dynamicRange"),           Comment("ADC dynamic range") }; 
+             fhicl::Atom<int>           nBinsPeak            { Name("nBinsPeak"),              Comment("Window size for finding local maximum to digitize wf") }; 
+             fhicl::Atom<double>        MeVToADC             { Name("MeVToADC"),               Comment("MeV to ADC conversion factor") }; 
+             fhicl::Atom<int>           minPeakADC           { Name("minPeakADC"),             Comment("Minimum ADC hits of local peak to digitize") }; 
              fhicl::Atom<double>        endTimeBuffer        { Name("endTimeBuffer"),          Comment("Number of extra timestamps after end of pulse") }; 
              fhicl::Atom<int>           bufferDigi           { Name("bufferDigi"),             Comment("Number of timeStamps for the buffer digi") }; 
              fhicl::Atom<int>           pulseIntegralSteps   { Name("pulseIntegralSteps"),     Comment("Numer of time sub-division for CaloPulseChape") }; 
-             fhicl::Atom<int>           nBinsPeak            { Name("nBinsPeak"),              Comment("XXXXXXXXX") }; 
              fhicl::Atom<int>           diagLevel            { Name("diagLevel"),              Comment("Diag Level"),0 };
          };
          
-
          explicit CaloDigiFromShower(const art::EDProducer::Table<Config>& config) :
             EDProducer{config},
             caloShowerToken_{consumes<CaloShowerStepROCollection>(config().caloShowerCollection())},
             blindTime_         (config().blindTime()),
             addNoise_          (config().addNoise()),
             noise_             (config().noise()),
-            thresholdVoltage_  (config().thresholdVoltage()),
-            thresholdAmplitude_(config().thresholdAmplitude()),
             digiSampling_      (config().digiSampling()),
-            maxADCCounts_      (1 << config().nBits()),
-            dynamicRange_      (config().dynamicRange()),
-            endTimeBuffer_     (config().endTimeBuffer()),
             bufferDigi_        (config().bufferDigi()),
-            pulseIntegralSteps_(config().pulseIntegralSteps()),
             nBinsPeak_         (config().nBinsPeak()),
+            minPeakADC_        (config().minPeakADC()),
+            MeVToADC_          (config().MeVToADC()),
+            maxADCCounts_      (1 << config().nBits()),
+            endTimeBuffer_     (config().endTimeBuffer()),
+            pulseIntegralSteps_(config().pulseIntegralSteps()),
             diagLevel_         (config().diagLevel()),
             engine_            (createEngine(art::ServiceHandle<SeedService>()->getSeed())),
             randPoisson_       (engine_),
-            pulseShape_        (CaloPulseShape(digiSampling_,pulseIntegralSteps_))
+            pulseShape_        (CaloPulseShape(digiSampling_,pulseIntegralSteps_,false))
          {
              produces<CaloDigiCollection>();
-
-             //NEEDS TO BE REFINED
-             ADCTomV_      = dynamicRange_/float(maxADCCounts_);
          }
 
     private:
-       void produce(art::Event& e) override;
+       void produce(art::Event& e)   override;
        void beginRun(art::Run& aRun) override;
        
-       void generateNoise(std::vector<std::vector<double>>& waveforms);
+       void generateNoise(std::vector<std::vector<double>>& waveforms, const ConditionsHandle<CalorimeterCalibrations>& calorimeterCalibrations);
        void makeDigitization(const CaloShowerStepROCollection& caloShowerStepROs, CaloDigiCollection&);
        void fillWaveforms(std::vector<std::vector<double>>& waveforms, const CaloShowerStepROCollection& caloShowerStepROs,
                           const ConditionsHandle<CalorimeterCalibrations>& calorimeterCalibrations);
        void buildOutputDigi(std::vector<std::vector<double>>& waveforms, CaloDigiCollection& caloDigiColl);
-       void diag0(int iRO,std::vector<double>& itWave );
-       void diag1(int iRO, double time, std::vector<int>& wf );
+       void diag0(int iRO, const std::vector<double>& wf);
+       void diag1(int iRO, double time, size_t peakP, const std::vector<int>& wf);
+       void diag2(const CaloDigiCollection& caloDigiColl);
 
        
        const art::ProductToken<CaloShowerStepROCollection> caloShowerToken_;
@@ -107,22 +99,18 @@ namespace mu2e {
        double                  mbtime_;
        bool                    addNoise_;
        double                  noise_;
-       double                  thresholdVoltage_;
-       int                     thresholdAmplitude_;
        double                  digiSampling_;
-       int                     maxADCCounts_;
-       double                  dynamicRange_;
-       double                  endTimeBuffer_;
        int                     bufferDigi_;
+       int  		       nBinsPeak_;
+       int  		       minPeakADC_;
+       double                  MeVToADC_;
+       int                     maxADCCounts_;
+       double                  endTimeBuffer_;
        int                     pulseIntegralSteps_;
-       size_t  		       nBinsPeak_;
        int                     diagLevel_;
        CLHEP::HepRandomEngine& engine_;
        CLHEP::RandPoissonQ     randPoisson_;
        CaloPulseShape          pulseShape_;
-
-       double                  MeVToADC_;
-       double                  ADCTomV_;
        const Calorimeter*      calorimeter_;
   };
 
@@ -131,7 +119,6 @@ namespace mu2e {
   void CaloDigiFromShower::beginRun(art::Run& aRun)
   {
       pulseShape_.buildShapes();
-      //if ( diagLevel_ > 3) pulseShape_.printShape();
   }
 
 
@@ -169,18 +156,24 @@ namespace mu2e {
       unsigned waveformSize = (mbtime_ - blindTime_ + endTimeBuffer_) / digiSampling_;     
       std::vector<std::vector<double>> waveforms(nWaveforms,std::vector<double>(waveformSize,0.0));
       
-      if (addNoise_) generateNoise(waveforms);
+      if (addNoise_) generateNoise(waveforms,calorimeterCalibrations);
       fillWaveforms(waveforms, caloShowerStepROs,calorimeterCalibrations);
       buildOutputDigi(waveforms, caloDigiColl);
+      
+      if (diagLevel_ > 1) diag2(caloDigiColl);
   }
 
 
   //-------------------------------------------------
-  void CaloDigiFromShower::generateNoise(std::vector<std::vector<double>>& waveforms)
+  void CaloDigiFromShower::generateNoise(std::vector<std::vector<double>>& waveforms, const ConditionsHandle<CalorimeterCalibrations>& calorimeterCalibrations)
   {
-     for (auto& waveform : waveforms)
+     for (unsigned i=0; i<waveforms.size(); ++i)
      {
-        std::generate(waveform.begin(),waveform.end(),[this]{return std::max(randPoisson_.fire(noise_)-noise_,0.0);});
+        auto& waveform = waveforms[i];
+        double scaleFactor  = MeVToADC_/calorimeterCalibrations->peMeV(i);
+        auto noiseGenerator = [this,scaleFactor]{return std::max( (randPoisson_.fire(noise_)-noise_),0.0)*scaleFactor;};
+        
+        std::generate(waveform.begin(),waveform.end(),noiseGenerator);
      }
   }
 
@@ -203,113 +196,104 @@ namespace mu2e {
               int         stopSample     = std::min(startSample+pulse.size(), waveform.size());
 
               for (int timeSample = startSample; timeSample < stopSample; ++timeSample) 
-                 waveform.at(timeSample) += pulse.at(timeSample - startSample)*calorimeterCalibrations->peMeV(ROID)*MeVToADC_;
+              {
+                 waveform.at(timeSample) += pulse.at(timeSample - startSample)/calorimeterCalibrations->peMeV(ROID)*MeVToADC_;
+              }
           }
           totalPE += caloShowerStepRO.NPE();
       }
-      
-      //for (auto& waveform : waveforms)
-      //   std::transform(waveform.begin(),waveform.end(),waveform.begin(),[this](double val){return std::min(val,double(maxADCCounts_));});
-      
+            
       if (diagLevel_ > 1) std::cout<<"[CaloDigiFromShower::fillWaveforms] total PE processed "<<totalPE<<std::endl;
   }
-
 
 
 
   //----------------------------------------------------------------------------
   void CaloDigiFromShower::buildOutputDigi(std::vector<std::vector<double>>& waveforms, CaloDigiCollection& caloDigiColl)
   {
-
+    float totEdepEq(0);
     for (unsigned int iRO=0; iRO<waveforms.size(); ++iRO)
-      {
+    {
+         const auto& wf = waveforms[iRO];
+         int wfSize = wf.size();
 
-        if (diagLevel_ > 5) std::cout<<"wfContent content (timesample: waveContent, funcValue)"<<std::endl;
-        if (diagLevel_ > 4) diag0(iRO,waveforms.at(iRO));
+         if (diagLevel_ > 2) diag0(iRO,wf);
 
+         int timeSample(nBinsPeak_);
+         while (timeSample < wfSize)
+         {
+              // find the local maximum over a window of size peakWindow_ and above threshold value
+              if (wf[timeSample] < minPeakADC_) {++timeSample; continue;}
+              if (std::max_element(&wf[timeSample]-nBinsPeak_,&wf[timeSample]+nBinsPeak_) != &wf[timeSample]) {++timeSample; continue;}
 
-        std::vector<double>& itWave = waveforms.at(iRO);
+              // find the starting / stopping point of the peak
+              // the stopping point is the first value below the threshold
 
-        int waveSize = itWave.size();
-        int timeSample(0);
-        while (timeSample < waveSize)
-          {
-            double waveContent = itWave.at(timeSample);
-            double funcValue   = waveContent*ADCTomV_;
+              int sampleStart = std::max(timeSample - bufferDigi_,0);
+              int sampleStop  = timeSample;
+              while (sampleStop < wfSize)
+              {
+                  if (wf[sampleStop]<minPeakADC_) break;
+                  ++sampleStop;
+              }
 
-            if (diagLevel_ > 5 && waveContent > 0) printf("wfContent (%4i:  %4i, %9.3f) \n", timeSample, int(waveContent), funcValue);
-            if (funcValue < thresholdVoltage_) {++timeSample; continue;}
+              timeSample = sampleStop+1; //forward the scanning time                       
+              if (diagLevel_ > 2) std::cout<<"[CaloDigiFromShower] found peak with startSample="<<sampleStart<<"  stopSample="<<sampleStop<<std::endl;
+   
+              //build the digi, find t0, PeakPosition, wf with saturation
+              int t0 = int(sampleStart*digiSampling_+ blindTime_);
 
+	      double wfsumMax(0);
+	      size_t peakP(0);
+	      for (int i=sampleStart; i<sampleStop-nBinsPeak_; ++i)
+              {
+                  float sum = std::accumulate(&wf[i],&wf[i+nBinsPeak_],0.0);
+                  if (sum>wfsumMax){wfsumMax=sum; peakP = i-sampleStart+nBinsPeak_/2;}
+	      }
+              
+              std::vector<int> wfsample;
+              for (int i=sampleStart; i<=sampleStop; ++i) wfsample.push_back(std::min(int(wf[i]),maxADCCounts_));
 
-            // find the starting / stopping point of the peak
-            // the stopping point is the first value below the threshold _and_ the buffer is also below the threshold
+              // make the CaloDigi
+              caloDigiColl.emplace_back(CaloDigi(iRO,t0,wfsample,peakP) );
 
-            int sampleStart = std::max(timeSample - bufferDigi_,0);
-            int sampleStop  = timeSample;
-            for (; sampleStop < waveSize; ++sampleStop)
-            {
-                int sampleCheck = std::min(sampleStop+bufferDigi_+1,waveSize-1);
-                double waveOverBuffer = *std::max_element(&itWave.at(sampleStop),&itWave.at(sampleCheck));
-                if (waveOverBuffer*ADCTomV_ < thresholdVoltage_) break;
-            }
-            
-            sampleStop = std::min(sampleStop + bufferDigi_, waveSize-1);
-
-            timeSample = sampleStop+1;  //forward the scanning time
-
-
-            if (sampleStop == sampleStart) continue;  //check if peak is acceptable and digitize
-
-		
-		float wfInt(0);
-		size_t peakP(0);
-		for(size_t i =sampleStart; i<sampleStop-nBinsPeak_;++i){
-
-			float sum(0);
-			for(size_t j=0; j< nBinsPeak_;++j){
-				sum+=itWave.at(i+j);
-			}
-			if(sum>wfInt){
-				wfInt = sum;
-				peakP = i+nBinsPeak_/2;
-			}
-
-
-		}
-			
-		double sampleMax = itWave.at(peakP);
-		peakP = peakP - sampleStart;
-            	if (sampleMax*ADCTomV_ < thresholdAmplitude_) continue;
-
-
-            int t0 = int(sampleStart*digiSampling_+ blindTime_);
-            std::vector<int> wf;
-            for (int i=sampleStart; i<=sampleStop; ++i) wf.push_back(int(itWave.at(i)));
-
-            caloDigiColl.emplace_back( CaloDigi(iRO,t0,wf, peakP) );
-
-            if (diagLevel_ > 4) diag1(iRO,t0,wf);
+              if (diagLevel_ > 2) diag1(iRO,t0, peakP, wfsample);
+              if (iRO%2==0) totEdepEq += float(wfsample[peakP])/MeVToADC_;
           }
       }
+      if (diagLevel_ >0) std::cout<<"[CaloDigiFromShower] Total energy equivalent digitized "<<totEdepEq<<std::endl;
   }
 
 
 
 
-  void CaloDigiFromShower::diag0(int iRO,std::vector<double>& itWave )
+  void CaloDigiFromShower::diag0(int iRO, const std::vector<double>& wf )
   {
-     if (*std::max_element(itWave.begin(),itWave.end())<1) return;
+     if (*std::max_element(wf.begin(),wf.end())<1) return;
      std::cout<<"CaloDigiFromShower::fillOutoutRO] Waveform content for readout "<<iRO<<std::endl;
-     for (const auto  &v : itWave) std::cout<<v<<" ";
+     for (unsigned i=0;i<wf.size();++i) {if (i%10==0 && i>0) std::cout<<"- "; std::cout<<int(wf[i])<<" ";}
      std::cout<<std::endl;
   }
 
-  void CaloDigiFromShower::diag1(int iRO, double time, std::vector<int>& wf )
+  void CaloDigiFromShower::diag1(int iRO, double time, size_t peakP, const std::vector<int>& wf)
   {
-     std::cout<<"Created caloDigi with roID = "<<iRO<<"  time="<<time<<" and content ";
+     std::cout<<"Created caloDigi with roID = "<<iRO<<"  time="<<time<<" peak="<<peakP<<"  and content ";
      for (const auto  &v : wf) std::cout<<v<<" ";
      std::cout<<std::endl;
   }
+
+  void CaloDigiFromShower::diag2(const CaloDigiCollection& caloDigiColl)
+  {      
+     std::map<int,double> enerMap;
+     for (const auto& digi : caloDigiColl) enerMap[digi.roId()] += digi.waveform().at(digi.peakpos())/MeVToADC_;
+     std::cout<<"[CaloDigiFromShower] energy equivalent per RoID"<<std::endl;
+     for (auto& kv : enerMap) std::cout<<" roID: "<<kv.first<<"   Ener: "<<kv.second<<std::endl;
+  }
+
+
+
+
+
 
 }
 

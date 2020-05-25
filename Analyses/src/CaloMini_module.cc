@@ -7,51 +7,6 @@
 //
 // Original author Bertrand Echenard
 //
-
-#include "CLHEP/Units/SystemOfUnits.h"
-
-#include "GlobalConstantsService/inc/GlobalConstantsHandle.hh"
-#include "GlobalConstantsService/inc/ParticleDataTable.hh"
-#include "GlobalConstantsService/inc/unknownPDGIdName.hh"
-#include "ConditionsService/inc/AcceleratorParams.hh"
-#include "ConditionsService/inc/ConditionsHandle.hh"
-
-#include "CalorimeterGeom/inc/Calorimeter.hh"
-#include "CalorimeterGeom/inc/DiskCalorimeter.hh"
-
-#include "GeometryService/inc/GeomHandle.hh"
-#include "GeometryService/inc/GeometryService.hh"
-#include "GeometryService/inc/VirtualDetector.hh"
-
-#include "RecoDataProducts/inc/KalRepCollection.hh"
-#include "RecoDataProducts/inc/TrkFitDirection.hh"
-#include "BTrk/KalmanTrack/KalRep.hh"
-#include "BTrk/TrkBase/TrkParticle.hh"
-#include "BTrk/ProbTools/ChisqConsistency.hh"
-#include "BTrk/BbrGeom/BbrVectorErr.hh"
-#include "BTrk/TrkBase/HelixTraj.hh"
-#include "BTrk/BbrGeom/BbrVectorErr.hh"
-#include "BTrk/ProbTools/ChisqConsistency.hh"
-
-#include "RecoDataProducts/inc/TrkFitDirection.hh"
-#include "RecoDataProducts/inc/KalRepPtrCollection.hh"
-
-#include "MCDataProducts/inc/GenParticleCollection.hh"
-#include "MCDataProducts/inc/SimParticleCollection.hh"
-#include "MCDataProducts/inc/GenId.hh"
-#include "DataProducts/inc/VirtualDetectorId.hh"
-#include "MCDataProducts/inc/StepPointMCCollection.hh"
-#include "MCDataProducts/inc/CaloClusterMCTruthAssn.hh"
-#include "MCDataProducts/inc/CaloHitMCTruthAssn.hh"
-#include "CaloMC/inc/ClusterContentMC.hh"
-#include "CaloMC/inc/CrystalContentMC.hh"
-
-#include "Mu2eUtilities/inc/CaloHitMCNavigator.hh"
-#include "Mu2eUtilities/inc/SimParticleTimeOffset.hh"
-
-#include "RecoDataProducts/inc/CaloCrystalHitCollection.hh"
-#include "RecoDataProducts/inc/CaloClusterCollection.hh"
-
 #include "art/Framework/Core/EDAnalyzer.h"
 #include "art/Framework/Core/ModuleMacros.h"
 #include "art/Framework/Principal/Event.h"
@@ -65,6 +20,17 @@
 #include "messagefacility/MessageLogger/MessageLogger.h"
 #include "canvas/Utilities/InputTag.h"
 
+#include "GlobalConstantsService/inc/GlobalConstantsHandle.hh"
+#include "GlobalConstantsService/inc/ParticleDataTable.hh"
+#include "GlobalConstantsService/inc/unknownPDGIdName.hh"
+
+#include "CalorimeterGeom/inc/Calorimeter.hh"
+#include "CalorimeterGeom/inc/DiskCalorimeter.hh"
+#include "GeometryService/inc/GeomHandle.hh"
+#include "GeometryService/inc/GeometryService.hh"
+
+#include "RecoDataProducts/inc/CaloCrystalHitCollection.hh"
+#include "RecoDataProducts/inc/CaloClusterCollection.hh"
 
 #include "TDirectory.h"
 #include "TNtuple.h"
@@ -86,13 +52,6 @@ namespace mu2e {
   class CaloMini : public art::EDAnalyzer {
 
      public:
-
-       typedef art::Ptr<StepPointMC> StepPtr;
-       typedef std::vector<StepPtr>  StepPtrs;
-       typedef std::map<int,StepPtrs > HitMap;
-
-
-
        explicit CaloMini(fhicl::ParameterSet const& pset);
        virtual ~CaloMini() { }
 
@@ -149,7 +108,6 @@ namespace mu2e {
 
        _Ntup  = tfs->make<TTree>("Calo", "Calo");
 
-
        _Ntup->Branch("evt",          &_evt ,        "evt/I");
        _Ntup->Branch("run",          &_run ,        "run/I");
        _Ntup->Branch("cryEtot",      &_cryEtot ,    "cryEtot/F");
@@ -177,8 +135,6 @@ namespace mu2e {
        _Ntup->Branch("cluSecMom",    &_cluSecMom ,   "cluSecMom[nCluster]/F");
        _Ntup->Branch("cluSplit",     &_cluSplit ,    "cluSplit[nCluster]/I");
        _Ntup->Branch("cluList",      &_cluList);
-
-
   }
 
 

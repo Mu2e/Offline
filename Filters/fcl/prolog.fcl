@@ -17,7 +17,7 @@ CompressPhysicalVolumes : {
 
 FilterStepPointMomentum : {
     module_type    : FilterStepPointMomentum
-    inputs         : [ "g4run:tracker", "g4run:calorimeter", "g4run:calorimeterRO"]
+    inputs         : [ "g4run:tracker", "g4run:calorimeter"]
     cutMomentumMin : 10. # MeV/c
 }
 
@@ -43,7 +43,7 @@ DigiCompressionTags : {
     commonCrvDigiMCTag : "CrvWaveforms"
 
     primarySimParticleTag : "g4run"
-    primaryCaloShowerStepTags : [ "CaloShowerStepFromStepPt:calorimeter", "CaloShowerStepFromStepPt:calorimeterRO" ]
+    primaryCaloShowerStepTags : [ "CaloShowerStepFromStepPt"]
 }
 
 DigiCompression : {

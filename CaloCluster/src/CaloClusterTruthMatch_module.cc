@@ -12,13 +12,12 @@
 #include "art_root_io/TFileService.h"
 #include "art_root_io/TFileDirectory.h"
 
-#include "RecoDataProducts/inc/CaloClusterCollection.hh"
-#include "MCDataProducts/inc/CaloShowerStepCollection.hh"
-#include "MCDataProducts/inc/CaloShowerSimCollection.hh"
-#include "MCDataProducts/inc/CaloClusterMCTruthAssn.hh"
+#include "MCDataProducts/inc/CaloEDepMC.hh"
 #include "MCDataProducts/inc/SimParticle.hh"
-#include "MCDataProducts/inc/CaloHitMCTruthAssn.hh"
-
+#include "MCDataProducts/inc/CaloMCTruthAssns.hh"
+#include "MCDataProducts/inc/CaloDigiMCCollection.hh"
+#include "MCDataProducts/inc/CaloClusterMCCollection.hh"
+#include "RecoDataProducts/inc/CaloClusterCollection.hh"
 
 #include "TH2F.h"
 #include "TFile.h"
@@ -36,17 +35,25 @@ namespace mu2e {
   class CaloClusterTruthMatch : public art::EDProducer {
   
      public:
+         struct Config 
+         {
+             using Name    = fhicl::Name;
+             using Comment = fhicl::Comment;
 
-	explicit CaloClusterTruthMatch(fhicl::ParameterSet const& pset) :
-          art::EDProducer{pset},	
-	  caloClusterModuleLabel_  (pset.get<std::string>("caloClusterModuleLabel")), 
-          caloHitTruthModuleLabel_ (pset.get<std::string>("caloHitTruthModuleLabel")),
-	  diagLevel_               (pset.get<int>        ("diagLevel",0))		  
-	{  
+             fhicl::Atom<art::InputTag>  caloClusterCollection { Name("caloClusterCollection"), Comment("Name of calo cluster Collection") };
+             fhicl::Atom<art::InputTag>  caloDigiMCTruthAssn   { Name("caloDigiMCTruthAssn"),   Comment("Name of caloHit - caloDigiMC Assn") };
+             fhicl::Atom<int>            diagLevel             { Name("diagLevel"),             Comment("Diag Level"),0 };
+         };
 
-	  produces<CaloClusterMCTruthAssns>();    
-
-	}
+        explicit CaloClusterTruthMatch(const art::EDProducer::Table<Config>& config) :
+           EDProducer{config},
+           caloClusterToken_    {consumes<CaloClusterCollection> (config().caloClusterCollection())},
+           caloDigiMCTruthToken_{consumes<CaloDigiMCTruthAssn>   (config().caloDigiMCTruthAssn())},
+           diagLevel_           (config().diagLevel())
+        {
+           produces<CaloClusterNewMCCollection>();    
+           produces<CaloClusterNewMCTruthAssn>();    
+        }
 
 	virtual ~CaloClusterTruthMatch() {}
 
@@ -57,23 +64,16 @@ namespace mu2e {
 
 
      private:
-        
-	typedef art::Ptr<SimParticle>    SimParticlePtr;
-	typedef art::Ptr<CaloCrystalHit> CaloCrystalHitPtr;
-	typedef art::Ptr<CaloCluster>    CaloClusterPtr;
-
-	std::string  caloClusterModuleLabel_;   
-        std::string  caloHitTruthModuleLabel_;
-	int          diagLevel_;
+        const art::ProductToken<CaloClusterCollection>  caloClusterToken_;
+        const art::ProductToken<CaloDigiMCTruthAssn>    caloDigiMCTruthToken_;
+	int                                             diagLevel_;
 
         TH1F*  hGenId_;
         TH1F*  hEner0_;
         TH1F*  hEner_;
 	
 	
-	void makeTruthMatch(CaloClusterMCTruthAssns &caloClusterTruthMatch, 
-                            const CaloHitMCTruthAssns& caloHitTruth, 
-			    const art::Handle<CaloClusterCollection> &CaloClusterHandle);
+	void makeTruthMatch(art::Event& event, CaloClusterNewMCCollection& CaloClusterNewMCs,CaloClusterNewMCTruthAssn& caloClusterTruthMatch);
 
   };
 
@@ -82,13 +82,13 @@ namespace mu2e {
   //--------------------------------------------------------------------
   void CaloClusterTruthMatch::beginJob()
   {
-     if (diagLevel_ > 2)
-     {
-        art::ServiceHandle<art::TFileService> tfs;
-        hGenId_    = tfs->make<TH1F>("hSimId",    "Sim gen Id",            150,    -10,  140);
-        hEner0_    = tfs->make<TH1F>("hEner0",    "Signal cluster energy", 150,      0,  150);
-        hEner_     = tfs->make<TH1F>("hEner",     "Signal cluster energy", 150,      0,  150);
-     }
+      if (diagLevel_ > 2)
+      {
+          art::ServiceHandle<art::TFileService> tfs;
+          hGenId_    = tfs->make<TH1F>("hSimId",    "Sim gen Id",            150,    -10,  140);
+          hEner0_    = tfs->make<TH1F>("hEner0",    "Signal cluster energy", 150,      0,  150);
+          hEner_     = tfs->make<TH1F>("hEner",     "Signal cluster energy", 150,      0,  150);
+      }
   }
 
 
@@ -97,75 +97,82 @@ namespace mu2e {
   //--------------------------------------------------------------------
   void CaloClusterTruthMatch::produce(art::Event& event)
   {
+      std::unique_ptr<CaloClusterNewMCCollection> CaloClusterNewMCs(new CaloClusterNewMCCollection);
+      std::unique_ptr<CaloClusterNewMCTruthAssn>  CaloClusterNewMCTruth(new CaloClusterNewMCTruthAssn);
    
-      art::Handle<CaloClusterCollection> caloClusterHandle;
-      event.getByLabel(caloClusterModuleLabel_, caloClusterHandle);
- 
-      art::Handle<CaloHitMCTruthAssns> caloHitTruthHandle;
-      event.getByLabel(caloHitTruthModuleLabel_, caloHitTruthHandle);
-      const CaloHitMCTruthAssns& caloHitTruth(*caloHitTruthHandle);
+      makeTruthMatch(event, *CaloClusterNewMCs, *CaloClusterNewMCTruth);
 
-      std::unique_ptr<CaloClusterMCTruthAssns> caloClusterTruth(new CaloClusterMCTruthAssns);
- 
- 
-      makeTruthMatch(*caloClusterTruth, caloHitTruth, caloClusterHandle);
-
-
-      event.put(std::move(caloClusterTruth));
+      event.put(std::move(CaloClusterNewMCTruth));
+      event.put(std::move(CaloClusterNewMCs));
   } 
 
   
-  
   //--------------------------------------------------------------------
-  void CaloClusterTruthMatch::makeTruthMatch(CaloClusterMCTruthAssns& caloClusterTruth, 
-                                                const CaloHitMCTruthAssns& caloHitTruth, 
-						const art::Handle<CaloClusterCollection>& CaloClusterHandle)
+  void CaloClusterTruthMatch::makeTruthMatch(art::Event& event, CaloClusterNewMCCollection& CaloClusterNewMCs, 
+                                             CaloClusterNewMCTruthAssn& caloClusterTruthMatch)
   {
         
-       const CaloClusterCollection& caloClusters(*CaloClusterHandle);
-       const CaloCluster*           caloClusterBase = &caloClusters.front();
+      art::ProductID clusterMCProductID(event.getProductID<CaloClusterNewMCCollection>());
+      const art::EDProductGetter* clusterMCProductGetter = event.productGetter(clusterMCProductID);
+
+      const auto  caloClusterHandle = event.getValidHandle(caloClusterToken_);
+      const auto& caloClusters(*caloClusterHandle);
+      const auto* caloClusterBase = &caloClusters.front();
+
+      const auto  caloDigiMCHandle = event.getValidHandle(caloDigiMCTruthToken_);
+      const auto& caloHitTruth(*caloDigiMCHandle);
 
 
-       std::map<CaloCrystalHitPtr, const CaloCluster*> hitToCluster;
+      for (const auto& cluster : caloClusters)
+      {
+   	   const CaloCluster* thisCaloCluster = &cluster;
+	   size_t idx = (thisCaloCluster - caloClusterBase);
+	   art::Ptr<CaloCluster> clusterPtr = art::Ptr<CaloCluster>(caloClusterHandle,idx);           
+           const auto& hits = cluster.caloCrystalHitsPtrVector();
+           
+           std::vector<CaloEDepMC> edeps;  
+                     
+           for (auto i=caloHitTruth.begin(), ie = caloHitTruth.end(); i !=ie; ++i)
+           {	       
+	        if (std::find(hits.begin(),hits.end(),i->first) == hits.end()) continue;
+                const auto& digiMC = i->second;
 
-       for (const auto& caloCluster : caloClusters)
-	   for (const auto& caloCrystalHit : caloCluster.caloCrystalHitsPtrVector()) hitToCluster[caloCrystalHit] = &caloCluster;
+                for (const auto& digiEdep : digiMC->energyDeposits())
+                {
+                    auto it = edeps.begin();
+                    while (it != edeps.end()) {if (it->sim() == digiEdep.sim()) break;  ++it;}
 
+                    if (it!= edeps.end()) 
+                      it->set(it->eDep()+digiEdep.eDep(), it->eDepG4()+digiEdep.eDepG4(),
+                              std::min(it->time(),digiEdep.time()), std::max(digiEdep.momentumIn(),it->momentumIn())); 
+                    else 
+                      edeps.emplace_back(CaloEDepMC(digiEdep.sim(),digiEdep.eDep(),digiEdep.eDepG4(),digiEdep.time(),digiEdep.momentumIn()));
+                } 
 
-       for (auto i=caloHitTruth.begin(), ie = caloHitTruth.end(); i !=ie; ++i)
-       {	       
-	    auto hitToClusterIt = hitToCluster.find(i->first);
-	    if (hitToClusterIt == hitToCluster.end()) continue;
+                
+           } 
+           std::sort(edeps.begin(),edeps.end(),[](const auto& a, const auto& b){return a.eDep() > b.eDep();});
 
-   	    const CaloCluster* thisCaloCluster = hitToClusterIt->second;
-	    size_t idx = (thisCaloCluster - caloClusterBase);
-	    art::Ptr<CaloCluster> clusterPtr = art::Ptr<CaloCluster>(CaloClusterHandle,idx);
+           CaloClusterNewMCs.emplace_back(CaloClusterNewMC(std::move(edeps)));
 
-	    const auto& sim = i->second;
-	    const auto& CaloShowerSimPtr = caloHitTruth.data(i);
-	    caloClusterTruth.addSingle(clusterPtr, sim, CaloShowerSimPtr);
+           art::Ptr<CaloClusterNewMC> clusterMCPtr = art::Ptr<CaloClusterNewMC>(clusterMCProductID, CaloClusterNewMCs.size(), clusterMCProductGetter);             
+           caloClusterTruthMatch.addSingle(clusterPtr,clusterMCPtr);
 
-            
-	    if (diagLevel_ > 2) std::cout<<"[CaloClusterTruthMatch]  matched crystal  id/time/Edep= "<<CaloShowerSimPtr->crystalId()<<" / "<<CaloShowerSimPtr->time()<<" / "<<CaloShowerSimPtr->energyDep()
-		                          <<"\t    hit in cluster id/time/Edep= "<<i->first->id()<<" / "<<i->first->time()<<" / "<<i->first->energyDep()<<std::endl;
-       }
-       
-       
-       if (diagLevel_ > 0)
+      }
+
+       /*
+       if (diagLevel_ > 2)
        {
-           for (auto i=caloClusterTruth.begin(), ie = caloClusterTruth.end(); i !=ie; ++i)
+           for (auto i=caloClusterTruthMatch.begin(), ie = caloClusterTruthMatch.end(); i !=ie; ++i)
 	   {
-	         const auto& cluster = i->first;
-		 const auto& sim = i->second;
-		 
-	         if (diagLevel_ > 2)
-		 {
-		    hEner0_->Fill(cluster->energyDep());
-	            if (sim->genParticle()) hGenId_->Fill(sim->genParticle()->generatorId().id());
-	            if (sim->genParticle() && sim->genParticle()->generatorId().id()==2) hEner_->Fill(cluster->energyDep());
-	         }
+	       const auto& cluster       = i->first;
+	       const auto& clusterDigiMC = i->second;
+	       hEner0_->Fill(clusterDigiMC->energyDepTot());
+	       //if (sim->genParticle()) hGenId_->Fill(clusterDigiMC->sim()->genParticle()->generatorId().id());
+	       //if (sim->genParticle() && sim->genParticle()->generatorId().id()==2) hEner_->Fill(cluster->energyDep());
 	   }
        }
+       */
                       
             	
   } 
