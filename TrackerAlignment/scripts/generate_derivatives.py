@@ -140,7 +140,7 @@ def nested_transform_alignment(wire_pos, wire_dir,
     return wire_pos_a, wire_dir_a
 
 
-def generate_expressions(approximate=False, remove_globalparam_dependence=True, time_domain=True):
+def generate_expressions(approximate=False, remove_globalparam_dependence=False, time_domain=True):
     # define symbols for alignment and track parameters
 
     # plane alignment
@@ -403,7 +403,7 @@ def main():
 
     # generate code for DOCA calculation ( no global parameter dependence )
     generated_code.append(generate_code_function(
-        function_prefix, 'double', aligned_doca, params['all'] + params['global']))
+        function_prefix, 'double', aligned_doca, params['all']))
 
     # generate code for alignment function
     generated_code.append(generate_code_function(
