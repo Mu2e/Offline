@@ -1,4 +1,4 @@
-#include "Alignment/fcl/cosmicAlign_timefit.fcl"
+#include "TrackerAlignment/fcl/cosmicAlign_timefit.fcl"
 
 services.ProditionsService.alignedTracker.useDb: true
 services.ProditionsService.alignedTracker.verbose: 2
