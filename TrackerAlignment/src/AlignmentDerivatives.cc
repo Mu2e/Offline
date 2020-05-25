@@ -3,6 +3,7 @@
 # include "TrackerAlignment/inc/AlignmentDerivatives.hh"
 # include <math.h>
 # include <vector>
+# include <iostream>
 
 double CosmicTrack_DCA(double a0, double b0, double a1, double b1, double t0, double wire_x, double wire_y, double wire_z, double wdir_x, double wdir_y, double wdir_z)
 {
@@ -24,6 +25,7 @@ double CosmicTrack_DCA(double a0, double b0, double a1, double b1, double t0, do
     double R15 = R8*(-R11 - R13 + R14*R7 - R9);
     double R16 = R8*(R14 - R7*(R11 + R13 + R9));
     double R17 = sqrt(pow(R10 + R15*R4 - R16*R3, 2) + pow(R12 + R15*R6 - R16*R5, 2) + pow(-R0*R15 - R16*R2 - wire_y, 2));
+    std::cout << "s2 : " << R16 <<std::endl;
     double result = ((R16 > 0) ? (
    R17
 )
