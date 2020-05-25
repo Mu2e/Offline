@@ -455,7 +455,7 @@ bool AlignTrackCollector::filter_CosmicTrackSeedCollection(
       double resid_err_tmp = _srep.driftTimeToDistance(
           straw_hit.strawId(), drift_res, 0); // fit_object.DOCAresidualError(straw_hit, sts);
       
-      double signdca = (pca.s2() > 0 ? 1 : -1) * pca.dca();
+      double signdca = (pca.s2() > 0 ? pca.dca() : -pca.dca());
 
       // FIXME! use newly implemented chisq function in fit object
       chisq += pow(time_resid / drift_res, 2);

@@ -32,6 +32,7 @@ def DOCAToTOCA(dca):
 
 def DOCA(p1, t1, p2, t2):
     t1 = unit_vector(t1)
+    t2 = unit_vector(t2)
     # t2 should already be a unit vector
 
     c = t2.dot(t1)
@@ -52,11 +53,6 @@ def DOCA(p1, t1, p2, t2):
     dca = sqrt(___diff.dot(___diff))
 
     return sympy.Piecewise((dca, _s2 > 0), (-dca, True))
-
-
-def distance_to_time(self, dist):
-    linvel = 0
-    return dist / linvel
 
 
 def colvec_perp(matrix):
