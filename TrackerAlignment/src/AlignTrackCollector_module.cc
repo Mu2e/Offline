@@ -483,6 +483,19 @@ bool AlignTrackCollector::filter_CosmicTrackSeedCollection(
                   << resid_err_tmp << std::endl;
       }
 
+      if (_diag > 4) {
+        // FIXME!
+        // move to another place
+        double generated_doca = CosmicTrack_DCA(A0, B0, A1, B1, T0,
+                        straw_mp.x(), straw_mp.y(), straw_mp.z(), 
+                        wire_dir.x(), wire_dir.y(), wire_dir.z()
+        );
+
+        std::cout << "doca: " << pca.dca() 
+                  << ", gendoca: " << generated_doca 
+                  << ", diff: " << std::abs(pca.dca() - generated_doca) << std::endl;
+      }
+
       // avoid outlier hits when applying this cut
       if (!straw_hit._flag.hasAnyProperty(StrawHitFlag::outlier)) {
         if (abs(time_resid) > max_time_res_track) {
