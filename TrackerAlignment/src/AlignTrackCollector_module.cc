@@ -518,14 +518,13 @@ bool AlignTrackCollector::filter_CosmicTrackSeedCollection(
       if (_diag > 4) {
         // FIXME!
         // move to another place
-        double generated_doca =
-            CosmicTrack_DCA(A0, B0, A1, B1, T0, rowpl.dx(), rowpl.dy(), rowpl.dz(), rowpl.rx(), rowpl.ry(),
+        double generated_doca = CosmicTrack_DCA(
+            A0, B0, A1, B1, T0, rowpl.dx(), rowpl.dy(), rowpl.dz(), rowpl.rx(), rowpl.ry(),
             rowpl.rz(), rowpa.dx(), rowpa.dy(), rowpa.dz(), rowpa.rx(), rowpa.ry(), rowpa.rz(),
-            
-            straw_mp.x(), straw_mp.y(), straw_mp.z(),
-                            wire_dir.x(), wire_dir.y(), wire_dir.z(), plane_origin.x(),
-                            plane_origin.y(), plane_origin.z(), panel_origin.x(), panel_origin.y(),
-                            panel_origin.z());
+
+            straw_mp.x(), straw_mp.y(), straw_mp.z(), wire_dir.x(), wire_dir.y(), wire_dir.z(),
+            plane_origin.x(), plane_origin.y(), plane_origin.z(), panel_origin.x(),
+            panel_origin.y(), panel_origin.z());
 
         double diff = std::abs(signdca - generated_doca);
         std::cout << "doca: " << signdca << ", gendoca: " << generated_doca << ", diff: " << diff
@@ -541,6 +540,19 @@ bool AlignTrackCollector::filter_CosmicTrackSeedCollection(
           // throw cet::exception("ALIGNMENT") << "Output of generated functions
           // (AlignmentDerivatives) are not consistent!";
         }
+
+          std::cout << "dr/d([A0,B0,A1,B1,T0]): [" << derivativesLocal[0] // A0
+                    << ", " << derivativesLocal[1]                        // B0
+                    << ", " << derivativesLocal[2]                        // A1
+                    << ", " << derivativesLocal[3]                        // B1
+                    << ", " << derivativesLocal[4];                       // T0
+          std::cout << "]" << std::endl;
+
+          std::cout << "dr/d(plane" << plane_id << "[x, y, z]): ["
+                    << derivativesGlobal[0]          // x
+                    << ", " << derivativesGlobal[1]  // y
+                    << ", " << derivativesGlobal[2]; // z
+          std::cout << "]" << std::endl;
 
         // quick and dirty numerical derivative estimation
         // This is only performed using CosmicTrack_DCA once confirmed to be consistent with
@@ -687,23 +699,10 @@ bool AlignTrackCollector::filter_CosmicTrackSeedCollection(
       // write hits to buffer
       for (size_t i = 0; i < (size_t)nHits; ++i) {
         residual_err[i] = sqrt(meas_cov(i, i));
-
         if (_diag > 1) {
-          std::cout << "resid: " << residuals[i] << ", err: " << residual_err[i] << std::endl;
-          std::cout << "dr/d([A0,B0,A1,B1,T0]): [" << local_derivs_temp[i][0] // A0
-                    << ", " << local_derivs_temp[i][1]                        // B0
-                    << ", " << local_derivs_temp[i][2]                        // A1
-                    << ", " << local_derivs_temp[i][3]                        // B1
-                    << ", " << local_derivs_temp[i][4];                       // T0
-          std::cout << "]" << std::endl;
-
-          std::cout << "dr/d(plane" << plane_uid[i] << "[x, y, z]): ["
-                    << global_derivs_temp[i][0]          // x
-                    << ", " << global_derivs_temp[i][1]  // y
-                    << ", " << global_derivs_temp[i][2]; // z
-          std::cout << "]" << std::endl;
+          std::cout << "resid: " << residuals[i] << ", combined err: " << residual_err[i]
+                    << std::endl;
         }
-
         if (use_plane_filter && std::find(plane_filter_list.begin(), plane_filter_list.end(),
                                           plane_uid[i]) == plane_filter_list.end()) {
           // we're not interested in this measurement!
