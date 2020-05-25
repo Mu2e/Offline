@@ -14,7 +14,7 @@ double CosmicTrack_DCA(double a0, double b0, double a1, double b1, double t0, do
     double R5 = R1*wdir_z;
     double R6 = R0*b1;
     double R7 = -R0*R2 + R3*R4 + R5*R6;
-    double R8 = 1.0/(1 - pow(R7, 2));
+    double R8 = 1.0/(1.0 - pow(R7, 2));
     double R9 = R0*wire_y;
     double R10 = a0 - wire_x;
     double R11 = R10*R4;
@@ -28,7 +28,7 @@ double CosmicTrack_DCA(double a0, double b0, double a1, double b1, double t0, do
    R17
 )
 : (
-   -R17
+   -1.0*R17
 ));
     return result;
 }
@@ -198,7 +198,7 @@ double CosmicTrack_DCA_Deriv_a0(double a0, double b0, double a1, double b1, doub
     double R11 = R0*a1;
     double R12 = R9*panel_straw0y;
     double R13 = -R0*R10 - R11*R12;
-    double R14 = 1.0/(1 - pow(R13, 2));
+    double R14 = 1.0/(1.0 - pow(R13, 2));
     double R15 = b0 - wire_z;
     double R16 = R1*R15;
     double R17 = R6*(-R5 + sqrt(pow(wire_x, 2) + pow(wire_y, 2)));
@@ -220,7 +220,7 @@ double CosmicTrack_DCA_Deriv_a0(double a0, double b0, double a1, double b1, doub
    R31
 )
 : (
-   -R31
+   -1.0*R31
 ));
     return result;
 }
@@ -244,7 +244,7 @@ double CosmicTrack_DCA_Deriv_b0(double a0, double b0, double a1, double b1, doub
     double R13 = R2*a1;
     double R14 = R11*panel_straw0y;
     double R15 = -R12*R2 - R13*R14;
-    double R16 = 1.0/(1 - pow(R15, 2));
+    double R16 = 1.0/(1.0 - pow(R15, 2));
     double R17 = b0 - wire_z;
     double R18 = R17*R3;
     double R19 = R8*(-R7 + sqrt(pow(wire_x, 2) + pow(wire_y, 2)));
@@ -266,7 +266,7 @@ double CosmicTrack_DCA_Deriv_b0(double a0, double b0, double a1, double b1, doub
    R33
 )
 : (
-   -R33
+   -1.0*R33
 ));
     return result;
 }
@@ -290,7 +290,7 @@ double CosmicTrack_DCA_Deriv_a1(double a0, double b0, double a1, double b1, doub
     double R13 = R11*panel_straw0y;
     double R14 = R13*R2;
     double R15 = -R12*R2 - R14*a1;
-    double R16 = 1 - pow(R15, 2);
+    double R16 = 1.0 - pow(R15, 2);
     double R17 = 1.0/R16;
     double R18 = R8*(-R7 + sqrt(pow(wire_x, 2) + pow(wire_y, 2)));
     double R19 = -R18*panel_straw0y - panel_straw0y;
@@ -334,7 +334,7 @@ double CosmicTrack_DCA_Deriv_a1(double a0, double b0, double a1, double b1, doub
    R55
 )
 : (
-   -R55
+   -1.0*R55
 ));
     return result;
 }
@@ -357,7 +357,7 @@ double CosmicTrack_DCA_Deriv_b1(double a0, double b0, double a1, double b1, doub
     double R12 = R2*a1;
     double R13 = R10*panel_straw0y;
     double R14 = -R11*R2 - R12*R13;
-    double R15 = 1 - pow(R14, 2);
+    double R15 = 1.0 - pow(R14, 2);
     double R16 = 1.0/R15;
     double R17 = R7*(-R6 + sqrt(pow(wire_x, 2) + pow(wire_y, 2)));
     double R18 = -R17*panel_straw0y - panel_straw0y;
@@ -401,7 +401,7 @@ double CosmicTrack_DCA_Deriv_b1(double a0, double b0, double a1, double b1, doub
    R54
 )
 : (
-   -R54
+   -1.0*R54
 ));
     return result;
 }
@@ -430,7 +430,7 @@ double CosmicTrack_DCA_Deriv_plane_dx(double a0, double b0, double a1, double b1
     double R11 = R0*a1;
     double R12 = R9*panel_straw0y;
     double R13 = -R0*R10 - R11*R12;
-    double R14 = 1.0/(1 - pow(R13, 2));
+    double R14 = 1.0/(1.0 - pow(R13, 2));
     double R15 = b0 - wire_z;
     double R16 = R1*R15;
     double R17 = R6*(-R5 + sqrt(pow(wire_x, 2) + pow(wire_y, 2)));
@@ -452,7 +452,7 @@ double CosmicTrack_DCA_Deriv_plane_dx(double a0, double b0, double a1, double b1
    R31
 )
 : (
-   -R31
+   -1.0*R31
 ));
     return result;
 }
@@ -474,7 +474,7 @@ double CosmicTrack_DCA_Deriv_plane_dy(double a0, double b0, double a1, double b1
     double R11 = R0*a1;
     double R12 = R9*panel_straw0y;
     double R13 = -R0*R10 - R11*R12;
-    double R14 = 1.0/(1 - pow(R13, 2));
+    double R14 = 1.0/(1.0 - pow(R13, 2));
     double R15 = b0 - wire_z;
     double R16 = R1*R15;
     double R17 = R6*(-R5 + sqrt(pow(wire_x, 2) + pow(wire_y, 2)));
@@ -496,7 +496,7 @@ double CosmicTrack_DCA_Deriv_plane_dy(double a0, double b0, double a1, double b1
    R31
 )
 : (
-   -R31
+   -1.0*R31
 ));
     return result;
 }
@@ -520,7 +520,7 @@ double CosmicTrack_DCA_Deriv_plane_dz(double a0, double b0, double a1, double b1
     double R13 = R2*a1;
     double R14 = R11*panel_straw0y;
     double R15 = -R12*R2 - R13*R14;
-    double R16 = 1.0/(1 - pow(R15, 2));
+    double R16 = 1.0/(1.0 - pow(R15, 2));
     double R17 = b0 - wire_z;
     double R18 = R17*R3;
     double R19 = R8*(-R7 + sqrt(pow(wire_x, 2) + pow(wire_y, 2)));
@@ -542,7 +542,7 @@ double CosmicTrack_DCA_Deriv_plane_dz(double a0, double b0, double a1, double b1
    R33
 )
 : (
-   -R33
+   -1.0*R33
 ));
     return result;
 }
@@ -568,7 +568,7 @@ double CosmicTrack_DCA_Deriv_plane_a(double a0, double b0, double a1, double b1,
     double R15 = R2*a1;
     double R16 = R13*panel_straw0y;
     double R17 = -R14*R2 - R15*R16;
-    double R18 = 1 - pow(R17, 2);
+    double R18 = 1.0 - pow(R17, 2);
     double R19 = 1.0/R18;
     double R20 = -panel_straw0y;
     double R21 = sqrt(pow(wire_x, 2) + pow(wire_y, 2));
@@ -608,7 +608,7 @@ double CosmicTrack_DCA_Deriv_plane_a(double a0, double b0, double a1, double b1,
    R53
 )
 : (
-   -R53
+   -1.0*R53
 ));
     return result;
 }
@@ -634,7 +634,7 @@ double CosmicTrack_DCA_Deriv_plane_b(double a0, double b0, double a1, double b1,
     double R15 = R2*a1;
     double R16 = R13*panel_straw0y;
     double R17 = -R14*R2 - R15*R16;
-    double R18 = 1 - pow(R17, 2);
+    double R18 = 1.0 - pow(R17, 2);
     double R19 = 1.0/R18;
     double R20 = sqrt(pow(wire_x, 2) + pow(wire_y, 2));
     double R21 = R8*(R20 - R7);
@@ -674,7 +674,7 @@ double CosmicTrack_DCA_Deriv_plane_b(double a0, double b0, double a1, double b1,
    R53
 )
 : (
-   -R53
+   -1.0*R53
 ));
     return result;
 }
@@ -696,7 +696,7 @@ double CosmicTrack_DCA_Deriv_plane_g(double a0, double b0, double a1, double b1,
     double R11 = R0*a1;
     double R12 = R9*panel_straw0y;
     double R13 = -R0*R10 - R11*R12;
-    double R14 = 1 - pow(R13, 2);
+    double R14 = 1.0 - pow(R13, 2);
     double R15 = 1.0/R14;
     double R16 = sqrt(pow(wire_x, 2) + pow(wire_y, 2));
     double R17 = R6*(R16 - R5);
@@ -740,7 +740,7 @@ double CosmicTrack_DCA_Deriv_plane_g(double a0, double b0, double a1, double b1,
    R53
 )
 : (
-   -R53
+   -1.0*R53
 ));
     return result;
 }
@@ -763,7 +763,7 @@ double CosmicTrack_DCA_Deriv_panel_dx(double a0, double b0, double a1, double b1
     double R12 = R6*panel_straw0y;
     double R13 = R10*R12;
     double R14 = -R10*R7*panel_straw0x - R11*R13;
-    double R15 = 1.0/(1 - pow(R14, 2));
+    double R15 = 1.0/(1.0 - pow(R14, 2));
     double R16 = b0 - wire_z;
     double R17 = R1*R16;
     double R18 = R6*(-R5 + sqrt(pow(wire_x, 2) + pow(wire_y, 2)));
@@ -788,7 +788,7 @@ double CosmicTrack_DCA_Deriv_panel_dx(double a0, double b0, double a1, double b1
    R35
 )
 : (
-   -R35
+   -1.0*R35
 ));
     return result;
 }
@@ -814,7 +814,7 @@ double CosmicTrack_DCA_Deriv_panel_dy(double a0, double b0, double a1, double b1
     double R15 = R6*panel_straw0y;
     double R16 = R14*R15;
     double R17 = -R13*R16 - R13*R8;
-    double R18 = 1.0/(1 - pow(R17, 2));
+    double R18 = 1.0/(1.0 - pow(R17, 2));
     double R19 = b0 - wire_z;
     double R20 = R1*R19;
     double R21 = R6*(-R5 + sqrt(pow(wire_x, 2) + pow(wire_y, 2)));
@@ -840,7 +840,7 @@ double CosmicTrack_DCA_Deriv_panel_dy(double a0, double b0, double a1, double b1
    R39
 )
 : (
-   -R39
+   -1.0*R39
 ));
     return result;
 }
@@ -864,7 +864,7 @@ double CosmicTrack_DCA_Deriv_panel_dz(double a0, double b0, double a1, double b1
     double R13 = R2*a1;
     double R14 = R11*panel_straw0y;
     double R15 = -R12*R2 - R13*R14;
-    double R16 = 1.0/(1 - pow(R15, 2));
+    double R16 = 1.0/(1.0 - pow(R15, 2));
     double R17 = b0 - wire_z;
     double R18 = R17*R3;
     double R19 = R8*(-R7 + sqrt(pow(wire_x, 2) + pow(wire_y, 2)));
@@ -886,7 +886,7 @@ double CosmicTrack_DCA_Deriv_panel_dz(double a0, double b0, double a1, double b1
    R33
 )
 : (
-   -R33
+   -1.0*R33
 ));
     return result;
 }
@@ -914,7 +914,7 @@ double CosmicTrack_DCA_Deriv_panel_a(double a0, double b0, double a1, double b1,
     double R17 = R2*a1;
     double R18 = R15*panel_straw0y;
     double R19 = -R16*R2 - R17*R18;
-    double R20 = 1 - pow(R19, 2);
+    double R20 = 1.0 - pow(R19, 2);
     double R21 = 1.0/R20;
     double R22 = R8*(-R7 + sqrt(pow(wire_x, 2) + pow(wire_y, 2)));
     double R23 = -R22*panel_straw0y - panel_straw0y;
@@ -955,7 +955,7 @@ double CosmicTrack_DCA_Deriv_panel_a(double a0, double b0, double a1, double b1,
    R56
 )
 : (
-   -R56
+   -1.0*R56
 ));
     return result;
 }
@@ -977,7 +977,7 @@ double CosmicTrack_DCA_Deriv_panel_b(double a0, double b0, double a1, double b1,
     double R11 = R0*a1;
     double R12 = R9*panel_straw0y;
     double R13 = -R0*R10 - R11*R12;
-    double R14 = 1.0/(1 - pow(R13, 2));
+    double R14 = 1.0/(1.0 - pow(R13, 2));
     double R15 = -wire_z;
     double R16 = R15 + b0;
     double R17 = R1*R16;
@@ -1005,7 +1005,7 @@ double CosmicTrack_DCA_Deriv_panel_b(double a0, double b0, double a1, double b1,
    R37
 )
 : (
-   -R37
+   -1.0*R37
 ));
     return result;
 }
@@ -1030,7 +1030,7 @@ double CosmicTrack_DCA_Deriv_panel_g(double a0, double b0, double a1, double b1,
     double R14 = R0*a1;
     double R15 = R12*panel_straw0y;
     double R16 = -R0*R13 - R14*R15;
-    double R17 = 1 - pow(R16, 2);
+    double R17 = 1.0 - pow(R16, 2);
     double R18 = 1.0/R17;
     double R19 = sqrt(pow(wire_x, 2) + pow(wire_y, 2));
     double R20 = R6*(R19 - R5);
@@ -1073,7 +1073,7 @@ double CosmicTrack_DCA_Deriv_panel_g(double a0, double b0, double a1, double b1,
    R55
 )
 : (
-   -R55
+   -1.0*R55
 ));
     return result;
 }
@@ -1105,6 +1105,7 @@ std::vector<float> CosmicTrack_DCA_GlobalDeriv(double a0, double b0, double a1, 
 (float)CosmicTrack_DCA_Deriv_panel_g(a0,b0,a1,b1,t0,wire_x,wire_y,wire_z,wdir_x,wdir_y,wdir_z,plane_x,plane_y,plane_z,panel_straw0x,panel_straw0y,panel_straw0z)};
 return result;
 }
+
 std::vector<double> CosmicTrack_DCA_LocalDeriv_double(double a0, double b0, double a1, double b1, double t0, double wire_x, double wire_y, double wire_z, double wdir_x, double wdir_y, double wdir_z, double plane_x, double plane_y, double plane_z, double panel_straw0x, double panel_straw0y, double panel_straw0z)
 {
         std::vector<double> result = {CosmicTrack_DCA_Deriv_a0(a0,b0,a1,b1,t0,wire_x,wire_y,wire_z,wdir_x,wdir_y,wdir_z,plane_x,plane_y,plane_z,panel_straw0x,panel_straw0y,panel_straw0z),
