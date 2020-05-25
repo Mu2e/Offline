@@ -240,7 +240,7 @@ def generate_expressions(approximate=False, remove_globalparam_dependence=True, 
     if time_domain:
         # we convert the DOCA to a TOCA and add T0 (since it is a local param)
         # the hit time has no explicit track parameter dependence
-        aligned_doca_to_diff = DOCAToTOCA(aligned_doca) + t0
+        aligned_doca_to_diff = DOCAToTOCA(aligned_doca) - t0
 
     # now generate optimised C code to calculate each deriv
     if remove_globalparam_dependence:
