@@ -268,6 +268,18 @@ def generate_expressions(approximate=False, remove_globalparam_dependence=True, 
             })
         expressions.append(pdev)
 
+    if remove_globalparam_dependence:
+        aligned_doca = aligned_doca.subs({
+                dx: 0, dy: 0, dz: 0,
+                a: 0, b: 0, g: 0,
+                panel_dx: 0,
+                panel_dy: 0,
+                panel_dz: 0,
+                panel_a: 0,
+                panel_b: 0,
+                panel_g: 0
+            })
+
     nominal_doca = DOCA(wire_pos, wire_dir, track_pos, track_dir)
 
     if VALIDATE:
@@ -307,7 +319,7 @@ def generate_expressions(approximate=False, remove_globalparam_dependence=True, 
 
         print('should be (368.555,96.4085,-1487.1)')
 
-    return expressions, param_dict, nominal_doca, aligned_wpos, aligned_wdir
+    return expressions, param_dict, aligned_doca, aligned_wpos, aligned_wdir
 
 
 VALIDATE = False
@@ -380,7 +392,7 @@ def generate_code_function(name, return_type, expr, symbols):
 def main():
     function_prefix = "CosmicTrack_DCA"
 
-    exprs, params, nominal_doca, aligned_wpos, aligned_wdir = generate_expressions()
+    exprs, params, aligned_doca, aligned_wpos, aligned_wdir = generate_expressions()
 
     if VALIDATE:
         return
@@ -391,7 +403,7 @@ def main():
 
     # generate code for DOCA calculation ( no global parameter dependence )
     generated_code.append(generate_code_function(
-        function_prefix, 'double', nominal_doca, params['local'] + params['wire']))
+        function_prefix, 'double', aligned_doca, params['all']))
 
     # generate code for alignment function
     generated_code.append(generate_code_function(
