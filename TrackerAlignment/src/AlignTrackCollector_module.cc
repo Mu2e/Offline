@@ -178,6 +178,15 @@ public:
 
     fhicl::Atom<bool> noplanerotations{Name("NoPlaneRotations"),
                                        Comment("Remove Plane rotation DOFs"), true};
+
+    fhicl::Atom<bool> useplanefilter{
+        Name("PlaneFilter"),
+        Comment("Only write hit measurements made in specified planes (PlaneFilterList)"), false};
+
+    fhicl::Sequence<int> planefilterlist{
+        Name("PlaneFilterList"),
+        Comment("Only write measurements made in these planes (int list [0,35])"),
+    };
   };
   typedef art::EDAnalyzer::Table<Config> Parameters;
 
@@ -199,7 +208,8 @@ public:
       min_panel_traverse_per_plane(conf().minpaneltraverse()), max_pvalue(conf().maxpvalue()),
       max_timeres(conf().maxtimeres()), min_track_hits(conf().mintrackhits()),
       use_timeresid(conf().usetimeresid()), no_panel_dofs(conf().nopaneldofs()),
-      no_plane_rotations(conf().noplanerotations()) {
+      no_plane_rotations(conf().noplanerotations()), use_plane_filter(conf().useplanefilter()),
+      plane_filter_list(conf().planefilterlist()) {
 
     if (no_panel_dofs) {
       _dof_per_panel = 0;
@@ -239,6 +249,9 @@ public:
   bool use_timeresid;
   bool no_panel_dofs;
   bool no_plane_rotations;
+
+  bool use_plane_filter;
+  std::vector<int> plane_filter_list;
 
   std::unique_ptr<Mille> millepede;
   const CosmicTrackSeedCollection* _coscol;
@@ -582,9 +595,31 @@ bool AlignTrackCollector::filter_CosmicTrackSeedCollection(
       // write hits to buffer
       for (size_t i = 0; i < (size_t)nHits; ++i) {
         residual_err[i] = sqrt(meas_cov(i, i));
-        millepede->mille(local_derivs_temp[i].size(), local_derivs_temp[i].data(), _expected_dofs,
-                         global_derivs_temp[i].data(), labels_temp[i].data(), residuals[i],
-                         residual_err[i]);
+
+        if (_diag > 1) {
+          std::cout << "resid: " << residuals[i] << ", err: " << residual_err[i] << std::endl;
+          std::cout << "dr/d([A0,B0,A1,B1,T0]): [" << local_derivs_temp[i][0] // A0
+                    << ", " << local_derivs_temp[i][1]                        // B0
+                    << ", " << local_derivs_temp[i][2]                        // A1
+                    << ", " << local_derivs_temp[i][3]                        // B1
+                    << ", " << local_derivs_temp[i][4];                       // T0
+          std::cout << "]" << std::endl;
+
+          std::cout << "dr/d(plane" << plane_uid[i] << "[x, y, z]): ["
+                    << global_derivs_temp[i][0]          // x
+                    << ", " << global_derivs_temp[i][1]  // y
+                    << ", " << global_derivs_temp[i][2]; // z
+          std::cout << "]" << std::endl;
+        }
+
+        if (use_plane_filter && std::find(plane_filter_list.begin(), plane_filter_list.end(),
+                                          plane_uid[i]) == plane_filter_list.end()) {
+          // we're not interested in this measurement!
+        } else {
+          millepede->mille(local_derivs_temp[i].size(), local_derivs_temp[i].data(), _expected_dofs,
+                           global_derivs_temp[i].data(), labels_temp[i].data(), residuals[i],
+                           residual_err[i]);
+        }
 
         if (isnan(residual_err[i])) {
           std::cout << "WARNING: sqrt of residual covariance matrix diagonal R_" << i << "," << i
