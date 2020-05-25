@@ -522,7 +522,7 @@ bool AlignTrackCollector::filter_CosmicTrackSeedCollection(
                         straw_mp.x(), straw_mp.y(), straw_mp.z(), 
                         wire_dir.x(), wire_dir.y(), wire_dir.z());
 
-        double diff = (diff_a - diff_b) / 2*h;
+        diff = (diff_a - diff_b) / 2*h;
 
         std::cout << "numerical dr/d(A0) = " << diff << std::endl;
 
