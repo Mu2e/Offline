@@ -53,9 +53,9 @@
 
 #include "Mu2eUtilities/inc/TwoLinePCA_XYZ.hh" // for TwoLinePC...
 
+#include "RtypesCore.h"
 #include "TAxis.h" // for TAxis
 #include "TH1F.h"  // for TH1F
-#include "RtypesCore.h"
 #include "TMatrixDSym.h"
 #include "TTree.h"
 
@@ -158,9 +158,6 @@ public:
     fhicl::Atom<double> maxpvalue{Name("MaxPValue"),
                                   Comment("Require that the track p-value < MaxPValue"), 1};
 
-    fhicl::Atom<double> mindoca{Name("MinDOCA"),
-                                Comment("Require that the drift distance > MinDOCA"), 0.0};
-
     fhicl::Atom<double> maxtimeres{Name("MaxTimeRes"),
                                    Comment("Require that the maximum ABSOLUTE time residual over "
                                            "all track hits < MaxTimeRes. Setting a "
@@ -171,7 +168,6 @@ public:
         Name("MinTrackSH"), Comment("Require that the minimum straw hits in a track > MinTrackSH."),
         0};
 
-    // FIXME! generate separate headers and sets of functions for UseTimeDomain: true and false
     fhicl::Atom<bool> usetimeresid{
         Name("UseTimeDomain"),
         Comment("Write the alignment data in the time domain. i.e. measurement = Time "
@@ -201,9 +197,9 @@ public:
       _output_filename(conf().millefile()), _labels_filename(conf().labelsfile()),
       track_type(conf().tracktype()), min_plane_traverse(conf().minplanetraverse()),
       min_panel_traverse_per_plane(conf().minpaneltraverse()), max_pvalue(conf().maxpvalue()),
-      min_doca(conf().mindoca()), max_timeres(conf().maxtimeres()),
-      min_track_hits(conf().mintrackhits()), use_timeresid(conf().usetimeresid()),
-      no_panel_dofs(conf().nopaneldofs()), no_plane_rotations(conf().noplanerotations()) {
+      max_timeres(conf().maxtimeres()), min_track_hits(conf().mintrackhits()),
+      use_timeresid(conf().usetimeresid()), no_panel_dofs(conf().nopaneldofs()),
+      no_plane_rotations(conf().noplanerotations()) {
 
     if (no_panel_dofs) {
       _dof_per_panel = 0;
@@ -212,6 +208,7 @@ public:
     if (no_plane_rotations) {
       _dof_per_plane = 3;
     }
+
     _ndof = StrawId::_nplanes * _dof_per_plane + StrawId::_nupanels * _dof_per_panel;
     _expected_dofs = _dof_per_panel + _dof_per_plane;
 
@@ -237,7 +234,6 @@ public:
   int min_plane_traverse;
   int min_panel_traverse_per_plane;
   double max_pvalue;
-  double min_doca;
   double max_timeres;
   int min_track_hits;
   bool use_timeresid;
@@ -314,8 +310,8 @@ void AlignTrackCollector::beginRun(art::Run const& run) { return; }
 
 void AlignTrackCollector::endJob() {
   // ensure the binary Mille file is explicitly closed in endJob,
-  // not just when this module goes out of scope
-  // (handled in Mille destructor)
+  // not just when this module goes out of scope.
+  // File close is handled in Mille destructor
   millepede->~Mille();
 
   if (_diag > 0) {
@@ -327,6 +323,7 @@ void AlignTrackCollector::endJob() {
 bool AlignTrackCollector::filter_CosmicTrackSeedCollection(
     art::Event const& event, Tracker const& tracker, StrawResponse const& _srep,
     CosmicTrackSeedCollection const& coscol) {
+
   bool wrote_track = false; // did we write any tracks at all?
 
   // dedicated to CosmicTrackSeedCollection
@@ -352,13 +349,13 @@ bool AlignTrackCollector::filter_CosmicTrackSeedCollection(
     XYZVec track_pos(st.MinuitParams.A0, 0, st.MinuitParams.B0);
     XYZVec track_dir(st.MinuitParams.A1, -1, st.MinuitParams.B1);
 
+    GaussianDriftFit fit_object(sts._straw_chits, _srep, &tracker);
+
     A0 = st.MinuitParams.A0;
     A1 = st.MinuitParams.A1;
     B0 = st.MinuitParams.B0;
     B1 = st.MinuitParams.B1;
     T0 = st.MinuitParams.T0;
-
-    GaussianDriftFit fit_object(sts._straw_chits, _srep, &tracker);
 
     chisq = 0;
     chisq_doca = 0;
@@ -381,17 +378,19 @@ bool AlignTrackCollector::filter_CosmicTrackSeedCollection(
     resid_local_derivs.Zero();
 
     // C = cov ( track parameters )
-    // FIXME! 
+    // FIXME! Minuit has its own conventions for storing
+    // covariance matrices..!
     ROOT::Minuit2::MnUserCovariance cov(sts._track.MinuitParams.cov, 5);
     TMatrixD track_cov(5, 5);
-    for (size_t r = 0; r < 5; r++)
-      for (size_t c = 0; c < 5; c++)
-        track_cov(r,c) = cov(r,c);
+    for (size_t r = 0; r < 5; r++) {
+      for (size_t c = 0; c < 5; c++) {
+        track_cov(r, c) = cov(r, c);
+      }
+    }
+
+    // TODO: Check positive semi-definiteness
 
     std::cout << "Constructed track covariance...?" << std::endl;
-
-    // R = cov( R ) = V - H C H^T
-    // = meas_cov -
 
     std::vector<float> residuals;
     std::vector<std::vector<float>> global_derivs_temp;
@@ -440,7 +439,8 @@ bool AlignTrackCollector::filter_CosmicTrackSeedCollection(
 
       // FIXME! this is a time, not distance
       double drift_res = _srep.driftDistanceError(straw_hit.strawId(), 0, 0, pca.dca());
-      double resid_err_tmp = _srep.driftTimeToDistance(straw_hit.strawId(), drift_res, 0);//fit_object.DOCAresidualError(straw_hit, sts);
+      double resid_err_tmp = _srep.driftTimeToDistance(
+          straw_hit.strawId(), drift_res, 0); // fit_object.DOCAresidualError(straw_hit, sts);
 
       // FIXME! use newly implemented chisq function in fit object
       chisq += pow(time_resid / drift_res, 2);
@@ -449,11 +449,6 @@ bool AlignTrackCollector::filter_CosmicTrackSeedCollection(
       if (isnan(resid_tmp) || isnan(time_resid) || isnan(drift_res)) {
         bad_track = true;
         continue;
-      }
-
-      // FIXME perhaps should get rid of this
-      if (pca.dca() < min_doca) {
-        continue; // remove hit!
       }
 
       planes_traversed.insert(plane_id);
@@ -481,6 +476,7 @@ bool AlignTrackCollector::filter_CosmicTrackSeedCollection(
           max_time_res_track = abs(time_resid);
         }
       }
+
       // Convention note:
       // The DoF order is : (planes) dx, dy, dz, a, b, g, followed by (panel) dx, dy, dz, dz,
       // a, b, g This is reflected also in the generated DOCA derivatives.
@@ -514,8 +510,9 @@ bool AlignTrackCollector::filter_CosmicTrackSeedCollection(
 
       global_derivs_temp.push_back(derivativesGlobal);
 
-      //FIXME!
-      local_derivs_temp.push_back(std::vector<float>(derivativesLocal.begin(), derivativesLocal.end()));
+      // FIXME!
+      local_derivs_temp.push_back(
+          std::vector<float>(derivativesLocal.begin(), derivativesLocal.end()));
       labels_temp.push_back(global_dof_labels);
 
       wrote_hits = true;
@@ -541,10 +538,17 @@ bool AlignTrackCollector::filter_CosmicTrackSeedCollection(
 
       // track acceptance cuts
       if ((min_plane_traverse != 0 && planes_trav < min_plane_traverse) ||
+
           (min_panel_traverse_per_plane != 0 &&
            (panels_trav / planes_trav) < min_panel_traverse_per_plane) ||
-          (pvalue > max_pvalue) || (max_time_res_track > max_timeres && max_timeres > 0) ||
-          (nHits < min_track_hits) || bad_track) {
+
+          (pvalue > max_pvalue) ||
+
+          (max_time_res_track > max_timeres && max_timeres > 0) ||
+
+          (nHits < min_track_hits) ||
+
+          bad_track) {
 
         if (_diag > 0) {
           std::cout << "track failed quality cuts" << std::endl;
@@ -553,24 +557,22 @@ bool AlignTrackCollector::filter_CosmicTrackSeedCollection(
         continue;
       }
 
-      TMatrixD trp_resid_local_derivs_temp(resid_local_derivs);
-      trp_resid_local_derivs_temp.T(); // H^T
+      // FIXME! Something feels wrong.
+      TMatrixD HC(nHits, 5);
+      HC.Mult(resid_local_derivs, track_cov);
 
-      // FIXME!
-      TMatrixD HC(nHits, 5); HC.Mult(resid_local_derivs, track_cov);
-
-      TMatrixD HCH(nHits, nHits); HCH.Mult(HC, trp_resid_local_derivs_temp);
-
+      // Using MultT so HCH^T = HC * H^T with H = resid_local_derivs
+      TMatrixD HCH(nHits, nHits);
+      HCH.MultT(HC, resid_local_derivs);
 
       if (_diag > 0) {
         meas_cov.Print();
 
         std::cout << "Track Covariance:" << std::endl;
-
         track_cov.Print();
       }
 
-      meas_cov -= HCH;                    // V - H C H^T - now holding residual cov
+      meas_cov -= HCH; // V - H C H^T - now holding residual cov
 
       if (_diag > 0) {
         std::cout << "Residual covariance:" << std::endl;
@@ -581,20 +583,19 @@ bool AlignTrackCollector::filter_CosmicTrackSeedCollection(
       for (size_t i = 0; i < (size_t)nHits; ++i) {
         residual_err[i] = sqrt(meas_cov(i, i));
         millepede->mille(local_derivs_temp[i].size(), local_derivs_temp[i].data(), _expected_dofs,
-                        global_derivs_temp[i].data(), labels_temp[i].data(), residuals[i],
-                        residual_err[i]);
+                         global_derivs_temp[i].data(), labels_temp[i].data(), residuals[i],
+                         residual_err[i]);
 
-        if (isnan(residual_err[i]))
-        {
-          std::cout << "WARNING: sqrt of residual covariance matrix diagonal R_" << i <<","<< i << " was NaN! See matrix above." << std::endl;
+        if (isnan(residual_err[i])) {
+          std::cout << "WARNING: sqrt of residual covariance matrix diagonal R_" << i << "," << i
+                    << " was NaN! See matrix above." << std::endl;
           std::cout << "track skipped" << std::endl;
           bad_track = true;
           break;
         }
       }
 
-      if (bad_track)
-      {
+      if (bad_track) {
         millepede->kill();
         continue;
       }
