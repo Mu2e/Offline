@@ -259,7 +259,7 @@ public:
 
   std::unique_ptr<Mille> millepede;
   const CosmicTrackSeedCollection* _coscol;
-  GeomHandle<Tracker> _tracker;
+  const Tracker* _tracker;
 
   size_t tracks_written = 0;
 
@@ -328,7 +328,11 @@ std::vector<int> AlignTrackCollector::generateDOFLabels(StrawId const& strw) {
   return labels; // should 'move' the vector, not copy it
 }
 
-void AlignTrackCollector::beginRun(art::Run const& run) { return; }
+void AlignTrackCollector::beginRun(art::Run const& run) {
+  GeomHandle<Tracker> track;
+  _tracker = track.get();
+  return;
+}
 
 void AlignTrackCollector::endJob() {
   // ensure the binary Mille file is explicitly closed in endJob,
