@@ -426,7 +426,7 @@ bool AlignTrackCollector::filter_CosmicTrackSeedCollection(
       auto const& plane_origin = tracker.getPlane(plane_id).origin();
       auto const& panel_origin = tracker.getPanel(panel_id).straw0MidPoint();
       auto const& straw_mp = straw.getMidPoint();
-      auto const& wire_dir = straw.getDirection().unit();
+      auto const& wire_dir = straw.getDirection();
 
       // now calculate the derivatives.
       auto derivativesLocal = CosmicTrack_DCA_LocalDeriv_double(
