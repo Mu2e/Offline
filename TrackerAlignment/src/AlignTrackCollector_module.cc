@@ -491,7 +491,7 @@ bool AlignTrackCollector::filter_CosmicTrackSeedCollection(
                         wire_dir.x(), wire_dir.y(), wire_dir.z()
         );
 
-        std::cout << "doca: " << pca.dca() 
+        std::cout << "doca: " << (pca.s2() > 0 ? 1 : -1) * pca.dca() 
                   << ", gendoca: " << generated_doca 
                   << ", diff: " << std::abs(pca.dca() - generated_doca) << std::endl;
       }
