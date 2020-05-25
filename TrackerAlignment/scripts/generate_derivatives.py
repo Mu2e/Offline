@@ -35,7 +35,7 @@ def DOCA(p1, t1, p2, t2):
     t2 = unit_vector(t2)
     # t2 should already be a unit vector
 
-    c = t2.dot(t1)
+    c = t1.dot(t2)
 
     sinsq = 1 - c*c
     _delta = p1 - p2
