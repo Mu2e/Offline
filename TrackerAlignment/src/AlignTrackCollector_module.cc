@@ -429,7 +429,7 @@ bool AlignTrackCollector::filter_CosmicTrackSeedCollection(
       auto const& wire_dir = straw.getDirection();
 
       // now calculate the derivatives.
-      auto derivativesLocal = CosmicTrack_DCA_LocalDeriv_double(
+      auto derivativesLocal = CosmicTrack_DCA_LocalDeriv(
           A0, B0, A1, B1, T0, straw_mp.x(), straw_mp.y(), straw_mp.z(), wire_dir.x(), wire_dir.y(),
           wire_dir.z(), plane_origin.x(), plane_origin.y(), plane_origin.z(), panel_origin.x(),
           panel_origin.y(), panel_origin.z());
@@ -573,7 +573,7 @@ bool AlignTrackCollector::filter_CosmicTrackSeedCollection(
         resid_local_derivs(nHits, col) = derivativesLocal[col];
       }
 
-      global_derivs_temp.push_back(derivativesGlobal);
+      global_derivs_temp.push_back(std::vector<float>(derivativesGlobal.begin(), derivativesGlobal.end()));
 
       // FIXME!
       local_derivs_temp.push_back(
