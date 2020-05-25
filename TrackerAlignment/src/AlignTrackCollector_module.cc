@@ -570,7 +570,7 @@ bool AlignTrackCollector::filter_CosmicTrackSeedCollection(
             plane_origin.x(), plane_origin.y(), plane_origin.z(), panel_origin.x(),
             panel_origin.y(), panel_origin.z());
 
-        diff = (diff_a - diff_b) / linvel / 2.0 * h;
+        diff = (diff_a - diff_b) / linvel / (2.0 * h);
         std::cout << "numerical dr/d(A0) = " << diff << std::endl;
       }
 
