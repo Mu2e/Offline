@@ -199,7 +199,7 @@ public:
   void beginRun(art::Run const&);
   void analyze(art::Event const&);
   bool filter_CosmicTrackSeedCollection(art::Event const& event, Tracker const& tracker,
-                                        StrawResponse const& _srep,
+                                        Tracker const& nominalTracker, StrawResponse const& _srep,
                                         CosmicTrackSeedCollection const& _coscol);
 
   int getLabel(int const&, int const&, int const&);
@@ -259,7 +259,7 @@ public:
 
   std::unique_ptr<Mille> millepede;
   const CosmicTrackSeedCollection* _coscol;
-  const Tracker* _tracker;
+  GeomHandle<Tracker> _tracker;
 
   size_t tracks_written = 0;
 
@@ -343,8 +343,8 @@ void AlignTrackCollector::endJob() {
 }
 
 bool AlignTrackCollector::filter_CosmicTrackSeedCollection(
-    art::Event const& event, Tracker const& tracker, StrawResponse const& _srep,
-    CosmicTrackSeedCollection const& coscol) {
+    art::Event const& event, Tracker const& tracker, Tracker const& nominalTracker,
+    StrawResponse const& _srep, CosmicTrackSeedCollection const& coscol) {
 
   // get alignment parameters for this event
   // N.B. alignment parameters MUST be unchanged for the entire job...
@@ -432,33 +432,32 @@ bool AlignTrackCollector::filter_CosmicTrackSeedCollection(
       // straw and plane info
       StrawId const& straw_id = straw_hit.strawId();
       Straw const& straw = tracker.getStraw(straw_id);
+      Straw const& nominalStraw = nominalTracker.getStraw(straw_id);
 
       auto plane_id = straw_id.getPlane();
       auto panel_uuid = straw_id.uniquePanel();
       auto panel_id = straw_id.getPanelId();
 
-      // geometry info
-      auto const& plane_origin = tracker.getPlane(plane_id).origin();
-      auto const& panel_origin = tracker.getPanel(panel_id).straw0MidPoint();
-      auto const& straw_mp = straw.getMidPoint();
-      auto const& wire_dir = straw.getDirection();
+      // geometry info for derivatives
+      auto const& plane_origin = nominalTracker.getPlane(plane_id).origin();
+      auto const& panel_origin = nominalTracker.getPanel(panel_id).straw0MidPoint();
+      auto const& straw_mp = nominalStraw.getMidPoint();
+      auto const& wire_dir = nominalStraw.getDirection();
       auto const& rowpl = alignConsts_planes.rowAt(plane_id);
       auto const& rowpa = alignConsts_panels.rowAt(panel_uuid);
 
       // now calculate the derivatives.
       auto derivativesLocal = CosmicTrack_DCA_LocalDeriv(
-          A0, B0, A1, B1, T0, 
-          rowpl.dx(), rowpl.dy(), rowpl.dz(), rowpl.rx(), rowpl.ry(), rowpl.rz(), 
-          rowpa.dx(), rowpa.dy(), rowpa.dz(), rowpa.rx(), rowpa.ry(), rowpa.rz(),
+          A0, B0, A1, B1, T0, rowpl.dx(), rowpl.dy(), rowpl.dz(), rowpl.rx(), rowpl.ry(),
+          rowpl.rz(), rowpa.dx(), rowpa.dy(), rowpa.dz(), rowpa.rx(), rowpa.ry(), rowpa.rz(),
 
           straw_mp.x(), straw_mp.y(), straw_mp.z(), wire_dir.x(), wire_dir.y(), wire_dir.z(),
           plane_origin.x(), plane_origin.y(), plane_origin.z(), panel_origin.x(), panel_origin.y(),
           panel_origin.z());
 
       auto derivativesGlobal = CosmicTrack_DCA_GlobalDeriv(
-          A0, B0, A1, B1, T0, 
-          rowpl.dx(), rowpl.dy(), rowpl.dz(), rowpl.rx(), rowpl.ry(), rowpl.rz(), 
-          rowpa.dx(), rowpa.dy(), rowpa.dz(), rowpa.rx(), rowpa.ry(), rowpa.rz(),
+          A0, B0, A1, B1, T0, rowpl.dx(), rowpl.dy(), rowpl.dz(), rowpl.rx(), rowpl.ry(),
+          rowpl.rz(), rowpa.dx(), rowpa.dy(), rowpa.dz(), rowpa.rx(), rowpa.ry(), rowpa.rz(),
 
           straw_mp.x(), straw_mp.y(), straw_mp.z(), wire_dir.x(), wire_dir.y(), wire_dir.z(),
 
@@ -467,6 +466,9 @@ bool AlignTrackCollector::filter_CosmicTrackSeedCollection(
 
       double resid_tmp = fit_object.DOCAresidual(straw_hit, sts);
       double time_resid = fit_object.TimeResidual(straw_hit, sts);
+
+      // The following are based on reco performed using current alignment parameters
+      // FIXME: very confusing!
 
       // FIXME: crude! doesn't belong here!
       CLHEP::Hep3Vector intercept(A0, 0, B0);
@@ -765,7 +767,7 @@ void AlignTrackCollector::analyze(art::Event const& event) {
   }
 
   CosmicTrackSeedCollection const& coscol = *stH.product();
-  filter_CosmicTrackSeedCollection(event, tracker, _srep, coscol);
+  filter_CosmicTrackSeedCollection(event, tracker, *_tracker, _srep, coscol);
 }
 
 }; // namespace mu2e
