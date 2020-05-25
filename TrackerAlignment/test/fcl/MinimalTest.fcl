@@ -11,6 +11,11 @@ physics.analyzers.TrkAnaNeg.diagLevel: 2
 
 services.DbService.textFile: ["misalignments/minimaltest.txt"]
 
+physics.analyzers.AlignTrackCollector.diagLevel : 5
+
+physics.analyzers.AlignTrackCollector.PlaneFilter : true
+physics.analyzers.AlignTrackCollector.PlaneFilterList : [ 13, 14, 15, 16, 17, 18 ]
+
 physics.analyzers.AlignTrackCollector.TrackDataOutputFile : "etc.owner.AlignTrackCollector-MISALIGN-MinimalTest.mille-data.sequencer.bin"
 physics.analyzers.AlignTrackCollector.LabelsOutputFile : "labels-allplanesi-trlonly.txt" # set to "none" if you don't want to write these.
 
