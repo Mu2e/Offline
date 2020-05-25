@@ -4,37 +4,86 @@
 # include <math.h>
 # include <vector>
 
-double CosmicTrack_DCA(double a0, double b0, double a1, double b1, double t0, double wire_x, double wire_y, double wire_z, double wdir_x, double wdir_y, double wdir_z, double plane_x, double plane_y, double plane_z, double panel_straw0x, double panel_straw0y, double panel_straw0z)
+double CosmicTrack_DCA(double a0, double b0, double a1, double b1, double t0, double wire_x, double wire_y, double wire_z, double wdir_x, double wdir_y, double wdir_z, double plane_x, double plane_y, double plane_z, double panel_straw0x, double panel_straw0y, double panel_straw0z, double plane_dx, double plane_dy, double plane_dz, double plane_a, double plane_b, double plane_g, double panel_dx, double panel_dy, double panel_dz, double panel_a, double panel_b, double panel_g)
 {
-    double R0 = pow(pow(a1, 2) + pow(b1, 2) + 1, -1.0/2.0);
-    double R1 = pow(panel_straw0x, 2);
-    double R2 = pow(panel_straw0y, 2);
-    double R3 = R1 + R2;
-    double R4 = sqrt(R3);
-    double R5 = 1.0/R4;
-    double R6 = 1.0/R3;
-    double R7 = 1.0*R5/sqrt(R1*R6 + R2*R6);
-    double R8 = R7*panel_straw0x;
-    double R9 = R0*a1;
-    double R10 = R7*panel_straw0y;
-    double R11 = -R0*R8 - R10*R9;
-    double R12 = 1.0/(1.0 - pow(R11, 2));
-    double R13 = R5*(-R4 + sqrt(pow(wire_x, 2) + pow(wire_y, 2)));
-    double R14 = R13*panel_straw0y + panel_straw0y;
-    double R15 = R14*R8;
-    double R16 = R13*panel_straw0x - a0 + panel_straw0x;
-    double R17 = R10*R16;
-    double R18 = -b0 + wire_z;
-    double R19 = R0*b1;
-    double R20 = -R0*R14 + R16*R9 + R18*R19;
-    double R21 = R12*(-R11*(R15 - R17) + R20);
-    double R22 = R12*(R11*R20 - R15 + R17);
-    double R23 = sqrt(pow(R18 - R19*R21, 2) + pow(R0*R21 + R14 + R22*R8, 2) + pow(-R10*R22 + R16 - R21*R9, 2));
-    double result = ((R21 > 0) ? (
-   R23
+    double R0 = cos(plane_a);
+    double R1 = cos(plane_b);
+    double R2 = R0*R1;
+    double R3 = sin(panel_a);
+    double R4 = cos(panel_b);
+    double R5 = 1.0*R3*R4;
+    double R6 = sin(plane_b);
+    double R7 = sin(panel_g);
+    double R8 = cos(panel_a);
+    double R9 = R7*R8;
+    double R10 = sin(panel_b);
+    double R11 = cos(panel_g);
+    double R12 = R11*R3;
+    double R13 = R10*R12 - R9;
+    double R14 = sqrt(pow(panel_straw0x, 2) + pow(panel_straw0y, 2));
+    double R15 = 1.0/R14;
+    double R16 = R15*panel_straw0x;
+    double R17 = R11*R8;
+    double R18 = R3*R7;
+    double R19 = R10*R18 + R17;
+    double R20 = R15*panel_straw0y;
+    double R21 = 1.0*R13*R16 - 1.0*R19*R20;
+    double R22 = 1.0*R13*R20 + 1.0*R16*R19;
+    double R23 = sin(plane_a);
+    double R24 = R1*R23;
+    double R25 = R2*R5 - R21*R6 + R22*R24;
+    double R26 = sin(plane_g);
+    double R27 = R23*R26;
+    double R28 = cos(plane_g);
+    double R29 = R0*R28;
+    double R30 = R27 + R29*R6;
+    double R31 = R1*R28;
+    double R32 = R0*R26;
+    double R33 = R23*R28;
+    double R34 = -R32 + R33*R6;
+    double R35 = R21*R31 + R22*R34 + R30*R5;
+    double R36 = R32*R6 - R33;
+    double R37 = R1*R26;
+    double R38 = R27*R6 + R29;
+    double R39 = R21*R37 + R22*R38 + R36*R5;
+    double R40 = pow(pow(R25, 2) + pow(R35, 2) + pow(R39, 2), -1.0/2.0);
+    double R41 = R25*R40;
+    double R42 = pow(pow(a1, 2) + pow(b1, 2) + 1, -1.0/2.0);
+    double R43 = R42*b1;
+    double R44 = R39*R40;
+    double R45 = R35*R40;
+    double R46 = R42*a1;
+    double R47 = R41*R43 - R42*R44 + R45*R46;
+    double R48 = 1.0/(1.0 - pow(R47, 2));
+    double R49 = panel_dz + panel_straw0z - plane_z;
+    double R50 = R16*panel_dx - R20*panel_dy + panel_straw0x;
+    double R51 = R16*panel_dy + R20*panel_dx + panel_straw0y;
+    double R52 = -R14 + sqrt(pow(wire_x, 2) + pow(wire_y, 2));
+    double R53 = R16*R4;
+    double R54 = R20*R4;
+    double R55 = R11*R53 - R54*R7;
+    double R56 = R11*R54 + R53*R7;
+    double R57 = -panel_straw0z + wire_z;
+    double R58 = R4*R8;
+    double R59 = R10*R17 + R18;
+    double R60 = R10*R9 - R12;
+    double R61 = R16*R59 - R20*R60;
+    double R62 = R16*R60 + R20*R59;
+    double R63 = R2*R49 + R24*R51 - R50*R6 + R52*(-R10*R2 + R24*R56 - R55*R6) + R57*(R2*R58 + R24*R62 - R6*R61) - b0 + plane_dz + plane_z;
+    double R64 = R41*R63;
+    double R65 = R36*R49 + R37*R50 + R38*R51 + R52*(-R10*R36 + R37*R55 + R38*R56) + R57*(R36*R58 + R37*R61 + R38*R62) + plane_dy;
+    double R66 = R44*R65;
+    double R67 = R30*R49 + R31*R50 + R34*R51 + R52*(-R10*R30 + R31*R55 + R34*R56) + R57*(R30*R58 + R31*R61 + R34*R62) - a0 + plane_dx;
+    double R68 = R45*R67;
+    double R69 = -R42*R65 + R43*R63 + R46*R67;
+    double R70 = R48*(R47*R69 - R64 - R66 - R68);
+    double R71 = R48*(-R47*(R64 + R66 + R68) + R69);
+    double R72 = sqrt(pow(R41*R70 - R43*R71 + R63, 2) + pow(R42*R71 + R44*R70 + R65, 2) + pow(R45*R70 - R46*R71 + R67, 2));
+    double result = ((R71 > 0) ? (
+   R72
 )
 : (
-   -1.0*R23
+   -1.0*R72
 ));
     return result;
 }

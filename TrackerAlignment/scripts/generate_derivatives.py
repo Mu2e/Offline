@@ -268,17 +268,17 @@ def generate_expressions(approximate=False, remove_globalparam_dependence=True, 
             })
         expressions.append(pdev)
 
-    if remove_globalparam_dependence:
-        aligned_doca = aligned_doca.subs({
-                dx: 0, dy: 0, dz: 0,
-                a: 0, b: 0, g: 0,
-                panel_dx: 0,
-                panel_dy: 0,
-                panel_dz: 0,
-                panel_a: 0,
-                panel_b: 0,
-                panel_g: 0
-            })
+    # if remove_globalparam_dependence:
+    #     aligned_doca = aligned_doca.subs({
+    #             dx: 0, dy: 0, dz: 0,
+    #             a: 0, b: 0, g: 0,
+    #             panel_dx: 0,
+    #             panel_dy: 0,
+    #             panel_dz: 0,
+    #             panel_a: 0,
+    #             panel_b: 0,
+    #             panel_g: 0
+    #         })
 
     nominal_doca = DOCA(wire_pos, wire_dir, track_pos, track_dir)
 
@@ -403,7 +403,7 @@ def main():
 
     # generate code for DOCA calculation ( no global parameter dependence )
     generated_code.append(generate_code_function(
-        function_prefix, 'double', aligned_doca, params['all']))
+        function_prefix, 'double', aligned_doca, params['all'] + params['global']))
 
     # generate code for alignment function
     generated_code.append(generate_code_function(

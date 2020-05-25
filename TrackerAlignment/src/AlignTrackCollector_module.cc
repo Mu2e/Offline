@@ -492,7 +492,9 @@ bool AlignTrackCollector::filter_CosmicTrackSeedCollection(
                                       straw_mp.x(), straw_mp.y(), straw_mp.z(),
                                       wire_dir.x(), wire_dir.y(), wire_dir.z(),
                                       plane_origin.x(), plane_origin.y(), plane_origin.z(),
-                                      panel_origin.x(), panel_origin.y(), panel_origin.z());
+                                      panel_origin.x(), panel_origin.y(), panel_origin.z(),
+                                      0,0,0,0,0,0,
+                                      0,0,0,0,0,0);
                         
         double diff = std::abs(signdca - generated_doca);
         std::cout << "doca: " <<  signdca
