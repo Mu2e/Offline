@@ -460,7 +460,7 @@ double CosmicTrack_DCA_Deriv_b1(double a0, double b0, double a1, double b1, doub
 
 double CosmicTrack_DCA_Deriv_t0(double a0, double b0, double a1, double b1, double t0, double wire_x, double wire_y, double wire_z, double wdir_x, double wdir_y, double wdir_z, double plane_x, double plane_y, double plane_z, double panel_straw0x, double panel_straw0y, double panel_straw0z)
 {
-    double result = 1;
+    double result = -1;
     return result;
 }
 
