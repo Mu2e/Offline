@@ -1,0 +1,18 @@
+#include "Alignment/fcl/cosmicAlign_timefit.fcl"
+
+#include "JobConfig/reco/misalign_epilog.fcl"
+services.ProditionsService.alignedTracker.useDb: true
+services.ProditionsService.alignedTracker.verbose: 2
+
+services.ProditionsService.mu2eDetector.useDb: true
+services.ProditionsService.mu2eDetector.verbose: 2
+physics.analyzers.TrkAnaNeg.diagLevel: 2
+
+services.DbService.textFile: ["misalignments/PlaneTranslationOnly.txt"]
+
+physics.analyzers.AlignTrackCollector.TrackDataOutputFile : "etc.owner.AlignTrackCollector-MISALIGN-ALLPLANES-TRLONLY.millepede-trackcollection-sequencer.bin"
+physics.analyzers.AlignTrackCollector.LabelsOutputFile : "labels-allplanesi-trlonly.txt" # set to "none" if you don't want to write these.
+
+# diagnostics and plots, usually
+services.TFileService.fileName: "rec.owner.AlignTrackCollector-MISALIGN-ALLPLANES-TRLONLY.trackdiag-sequencer.root"
+
