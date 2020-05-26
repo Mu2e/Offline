@@ -582,8 +582,10 @@ bool AlignTrackCollector::filter_CosmicTrackSeedCollection(
       plane_uid[nHits] = plane_id;
 
       if (_diag > 1) {
-        std::cout << "pl" << plane_id << " pa" << panel_uuid << ": resid " << resid_tmp << " +- "
+        std::cout << "pl" << plane_id << " pa" << panel_uuid << ": dcaresid " << resid_tmp << " +- "
                   << resid_err_tmp << std::endl;
+        std::cout << ": timeresid " << time_resid << " +- "
+                  << drift_res << std::endl;
       }
 
       // diagnostics!
