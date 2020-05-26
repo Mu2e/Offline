@@ -1,0 +1,61 @@
+# Run StrawAndCaloDigisFromFragments module to convert artdaq::Fragment collections
+# into TRK and CAL digi collections.
+# Usage: mu2e -c DAQ/test/generateDigiFromFragment.fcl -s <input art files> -n '-1'
+#
+#
+# Contact person G. Pezzullo
+#include "fcl/minimalMessageService.fcl"
+#include "fcl/standardServices.fcl"
+#include "DAQ/fcl/prolog_trigger.fcl"
+process_name : inspectTDAQFile
+
+source : {
+   module_type : RootInput
+   fileNames   : @nil
+
+   # firstEvent  : 500
+   maxEvents   : -1
+}
+
+services : @local::Services.Reco
+
+physics : {
+
+   producers : {}
+
+   analyzers  : {
+
+      readSD : 
+      {
+	 module_type : ReadStrawDigiReco
+	 digisTag    : makeSD
+      }
+
+      readCD : 
+      {
+	 module_type : CaloDigiAna
+	 digisTag     : CaloDigiFromShower
+      }
+
+
+      readFragments : {
+	 module_type : FragmentAna
+	 diagLevel   : 0
+	 parseCAL    : 1
+	 parseTRK    : 1
+	 caloTag     : "daq:calo"
+	 trkTag      : "daq:trk"
+      }
+   }
+
+   #  t1 : [ makeSD ] 
+   t1 : [  ] 
+   e1 : [ readFragments, readCD, readSD ]
+
+   trigger_paths  : [t1]
+   end_paths      : [e1]
+   #  end_paths      : []
+
+}
+
+services.TFileService.fileName : "inspectdTDAQFile_test.root" 

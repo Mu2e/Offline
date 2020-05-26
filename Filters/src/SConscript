@@ -37,6 +37,7 @@ helper.make_plugins( [
     'mu2e_Mu2eInterfaces',
     'mu2e_DataProducts',
     'mu2e_GeneralUtilities',
+    'mu2e_DbService',
     babarlibs,
     'art_Framework_Core',
     'art_Framework_Principal',
@@ -58,6 +59,8 @@ helper.make_plugins( [
     'boost_filesystem',
     'boost_system',
     'hep_concurrency',
+    'xerces-c',
+    'pthread'
     ] )
 
 #helper.make_dict_and_map( [

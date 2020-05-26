@@ -54,7 +54,7 @@ enum bkgweight{linear=0,exponential=1,polynomial=2};
 enum tch{hastch=0,notch,donttest};
 
 int
-TrainTrkQual(TTree* mytree,int bkgw=exponential,int tch=donttest)
+TrainTrkQual(TTree* mytree, std::string train_name="TrkQual", int bkgw=exponential,int tch=donttest)
 {
 
   // The explicit loading of the shared libTMVA is done in TMVAlogon.C, defined in .rootrc
@@ -145,8 +145,8 @@ TrainTrkQual(TTree* mytree,int bkgw=exponential,int tch=donttest)
   // --- Here the preparation phase begins
 
   // Create a ROOT output file where TMVA will store ntuples, histograms, etc.
-  TString tname("TrkQual");
-  switch(tch) {
+  TString tname = train_name;
+  /*  switch(tch) {
     case hastch:
       tname = "TrkQualTCH";
       break;
@@ -156,6 +156,7 @@ TrainTrkQual(TTree* mytree,int bkgw=exponential,int tch=donttest)
     case donttest : default :
       break;
   }
+  */
   TString outfilename(tname);
   outfilename += ".root";
   TFile* outputFile = TFile::Open( outfilename, "RECREATE" );
@@ -219,9 +220,9 @@ TrainTrkQual(TTree* mytree,int bkgw=exponential,int tch=donttest)
   dataloader->AddVariable("detrkqual.Log10FitCon","LogFitCon","Probability",'F');
   dataloader->AddVariable("detrkqual.MomError","FitMomErr","MeV/c",'F');
   dataloader->AddVariable("detrkqual.T0Error","T0Err","nsec",'F');
-  dataloader->AddVariable("detrkqual.d0","D0","mm",'F');
-  dataloader->AddVariable("detrkqual.MaxRadius","MaxRadius","mm",'F');
-  dataloader->AddVariable("detrkqual.DoubleHitFraction","DoubleHitFraction","Fraction",'F');
+  //dataloader->AddVariable("detrkqual.d0","D0","mm",'F');
+  //dataloader->AddVariable("detrkqual.MaxRadius","MaxRadius","mm",'F');
+  //dataloader->AddVariable("detrkqual.DoubleHitFraction","DoubleHitFraction","Fraction",'F');
   dataloader->AddVariable("detrkqual.NullAmbigHitFraction","NullHitFraction","Fraction",'F');
   dataloader->AddVariable("detrkqual.StrawHitFraction","MatFraction","Fraction",'F');
 //  dataloader->AddVariable("lastflt-firstflt","FltLen","mm",'F');

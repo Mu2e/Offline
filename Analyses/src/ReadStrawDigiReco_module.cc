@@ -82,7 +82,7 @@ void mu2e::ReadStrawDigiReco::beginJob(){
 
   art::ServiceHandle<art::TFileService> tfs;
 
-  _hStrawId         = tfs->make<TH1F>( "StrawId",    "StrawId",                          180,   0.,   36000. );
+  _hStrawId         = tfs->make<TH1F>( "StrawId",    "StrawId",                          270,   0.,   54000. );
   _hDigiTime0       = tfs->make<TH1F>( "DigiTime0",      "Digi TDC end 0",               264,   0.,  264000. );
   _hDigiTime1       = tfs->make<TH1F>( "DigiTime1",      "Digi TDC end 1",               264,   0.,  264000. );
   _hDigiDeltaTime   = tfs->make<TH1F>( "DigiDeltaTime",   "Digi Delta Time (ns)",         264, -264000., 264000. );

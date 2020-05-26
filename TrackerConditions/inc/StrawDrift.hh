@@ -32,8 +32,11 @@ namespace mu2e {
     typedef std::shared_ptr<const StrawDrift> cptr_t;
 
     StrawDrift():_name("StrawDrift") {}
-    StrawDrift( int phiBins, double deltaD, std::vector<double> distances, std::vector<double> instantSpeed, std::vector<double> times) : _name("StrawDrift"),
-      _phiBins(phiBins), _deltaD(deltaD), _distances(distances), _instantSpeed(instantSpeed), _times(times) {}
+    StrawDrift( int phiBins, double deltaD, std::vector<double> distances_dbins, std::vector<double> instantSpeed_dbins, std::vector<double> times_dbins,
+        double deltaT, std::vector<double> distances_tbins, std::vector<double> times_tbins) : _name("StrawDrift"),
+      _phiBins(phiBins), _deltaD(deltaD), _distances_dbins(distances_dbins),
+      _instantSpeed_dbins(instantSpeed_dbins), _times_dbins(times_dbins),
+      _deltaT(deltaT), _distances_tbins(distances_tbins), _times_tbins(times_tbins) {}
 
     virtual ~StrawDrift() {}
 
@@ -56,9 +59,13 @@ namespace mu2e {
     size_t _phiBins;
 
     double _deltaD; 
-    std::vector<double> _distances; // distances between points in the model
-    std::vector<double> _instantSpeed; // the instantaneous "nominal" speed, 1D vs distance
-    std::vector<double> _times; // 2d array vs distance and phi 
+    std::vector<double> _distances_dbins; // distances between points in the model
+    std::vector<double> _instantSpeed_dbins; // the instantaneous "nominal" speed, 1D vs distance
+    std::vector<double> _times_dbins; // 2d array vs distance and phi 
+
+    double _deltaT;
+    std::vector<double> _distances_tbins; // 2d array vs time and phi
+    std::vector<double> _times_tbins; // times between points for T2D
 
     
   };

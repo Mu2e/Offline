@@ -303,7 +303,7 @@ namespace mu2e
 		if(st.converged == false or st.minuit_converged  == false) { continue; }
 
 		std::vector<int> panels, planes, stations;
-
+                    
 		_reco_phi_angle=acos(st.FitEquation.Dir.x()/st.FitEquation.Dir.Mag2());
 		_reco_theta_angle=acos(st.FitEquation.Dir.y()/sqrt(st.FitEquation.Dir.Mag2()));
 		_MinuitA0=(st.MinuitParams.A0);

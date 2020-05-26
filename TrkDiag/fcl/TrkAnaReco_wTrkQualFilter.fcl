@@ -1,0 +1,63 @@
+#include "fcl/minimalMessageService.fcl"
+#include "fcl/standardProducers.fcl"
+#include "fcl/standardServices.fcl"
+#include "TrkDiag/fcl/prolog.fcl"
+
+process_name : TrkAnaReco
+
+source : { module_type : RootInput }
+
+services : @local::Services.Reco
+
+physics :
+{
+  producers : { @table::TrkAnaReco.producers }
+  analyzers : { @table::TrkAnaReco.analyzers }
+  filters : { 
+    trkQualFilter : { module_type : TrkQualFilter
+    		      trainName : "TrkQual"
+		      trkHypo : "DeM"
+		      effRequest : 0.505
+		    }
+    trkQualNegFilter : { module_type : TrkQualFilter
+       		       	 trainName : "TrkQualNeg"
+		      	 trkHypo : "DeM"
+		      	 effRequest : 0.5
+		       }
+  }
+}
+
+physics.producers.TrkQualNegDeM : @local::TrkQualDeM
+physics.producers.TrkQualNegDeM.TrainingName : "TrkQualNeg"
+
+physics.TrkAnaTrigPath : [ @sequence::TrkAnaReco.TrigSequence, trkQualFilter ]
+physics.TrkAnaNegTrigPath : [ @sequence::TrkAnaReco.TrigSequence, TrkQualNegDeM, trkQualNegFilter ]
+#physics.TrkAnaBothTrigPath : [ @sequence::physics.TrkAnaTrigPath, @sequence::physics.TrkAnaNegTrigPath ]
+
+physics.TrkAnaEndPath : [ @sequence::TrkAnaReco.EndSequence ]
+
+# Take events that pass one filter
+physics.analyzers.TrkAnaNeg.SelectEvents : [ TrkAnaTrigPath ]
+
+# Take events that pass either filter
+#physics.analyzers.TrkAnaNeg.SelectEvents : [ TrkAnaTrigPath, TrkAnaNegTrigPath ]
+
+# Take events that pass both filters
+#physics.analyzers.TrkAnaNeg.SelectEvents : [ TrkAnaBothTrigPath ]
+
+
+# Include more information (MC, full TrkQual and TrkPID branches)
+physics.analyzers.TrkAnaNeg.candidate.options : @local::AllOpt
+physics.analyzers.TrkAnaPos.candidate.options : @local::AllOpt
+
+# for hit level diagnostics, set diagLevel to 2
+physics.analyzers.TrkAnaNeg.diagLevel : 1
+physics.analyzers.TrkAnaNeg.FillMCInfo : true
+physics.analyzers.TrkAnaNeg.AnalyzeCRV : true
+physics.analyzers.TrkAnaNeg.FillTriggerInfo : true
+physics.analyzers.TrkAnaPos.diagLevel : 1
+physics.analyzers.TrkAnaPos.FillMCInfo : true
+physics.analyzers.TrkAnaPos.AnalyzeCRV : true
+physics.analyzers.TrkAnaPos.FillTriggerInfo : true
+
+services.TFileService.fileName: "nts.owner.trkana-reco.version.sequencer.root"
