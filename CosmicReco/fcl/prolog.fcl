@@ -117,12 +117,12 @@ CosmicTrackFinderTight : {
 CosmicFitDisplay : {
 	module_type : CosmicFitDisplay
 	ComboHitCollection : "makePH"
-        _chtag : "makePH"
-        _tctag : TimeClusterFinderCosmics
-        _sttag : CosmicTrackFinder
+#        _chtag : "makePH"
+#        _tctag : SimpleTimeCluster
+#        _sttag : CosmicTrackFinderLoose
         doDisplay            : true
-	TimeClusterCollection : TimeClusterFinderCosmicsr
-        CosmicTrackSeedCollection : CosmicTrackFinder
+	TimeClusterCollection : SimpleTimeCluster
+        CosmicTrackSeedCollection : CosmicTrackFinderLoose
         
   }
 
