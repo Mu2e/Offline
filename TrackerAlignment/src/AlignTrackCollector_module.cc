@@ -901,7 +901,7 @@ bool AlignTrackCollector::filter_CosmicTrackSeedCollection(
       /*
       Residual Covariance calculation starts here
 
-      FIXME! Still some issues to be ironed out here - the errors seem much too large currently.
+      FIXME! Still some issues to be ironed out here - the errors from residual cov seem much too large currently.
       */
 
       if (_diag > 2) {
@@ -930,7 +930,9 @@ bool AlignTrackCollector::filter_CosmicTrackSeedCollection(
       for (size_t i = 0; i < (size_t)nHits; ++i) {
         residual_err[i] = drift_reso[i];//sqrt(meas_cov(i, i));
         if (_diag > 2) {
-          std::cout << "resid: " << residuals[i] << ", drift res (time): " << residual_err[i]
+          std::cout << "resid: " << residuals[i] 
+                    << ", drift res (time): " << residual_err[i]
+                    << ", resid cov sqrt(diag): " << sqrt(meas_cov(i, i)
                     << std::endl;
         }
         if (use_plane_filter && std::find(plane_filter_list.begin(), plane_filter_list.end(),
