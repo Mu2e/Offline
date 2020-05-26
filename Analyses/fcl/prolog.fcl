@@ -41,9 +41,14 @@ RPCAnalyzer : {
   writeProperTime: true
   decayOffPDGCodes: [ -211, 211 ]
  }
+
+RPCRecoAnalyzer : {
+  module_type : RPCRecoAna
+}
   RPCAna : {
     analyzers : {
       RPCAnalyzer : @local::RPCAnalyzer
+      RPCRecoAnalyzer : @local::RPCRecoAnalyzer
     }
   }
 
