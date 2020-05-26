@@ -1,5 +1,5 @@
 #ifndef _COSMIC_RECO_MINUITDRIFTFITTER_HH
-#define _COSMIC_RECO_MINUITDDRIFTFITTER_HH
+#define _COSMIC_RECO_MINUITDRIFTFITTER_HH
 
 #include "TrackerConditions/inc/StrawDrift.hh"
 #include "RecoDataProducts/inc/ComboHit.hh"
