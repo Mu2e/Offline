@@ -638,27 +638,28 @@ bool AlignTrackCollector::filter_CosmicTrackSeedCollection(
 
         double h = 1e-7;
 
-        double linvel = 0.0625;
+        //double linvel = 0.0625;
+
 
         // PARTIAL DOCA DERIVATIVE: A0
 
-        double diff_a = CosmicTrack_DCA(
+        double diff_a = _srep.driftDistanceToTime(straw_id, CosmicTrack_DCA(
             A0 + h, B0, A1, B1, T0, rowpl.dx(), rowpl.dy(), rowpl.dz(), rowpl.rx(), rowpl.ry(),
             rowpl.rz(), rowpa.dx(), rowpa.dy(), rowpa.dz(), rowpa.rx(), rowpa.ry(), rowpa.rz(),
 
             straw_mp.x(), straw_mp.y(), straw_mp.z(), wire_dir.x(), wire_dir.y(), wire_dir.z(),
             plane_origin.x(), plane_origin.y(), plane_origin.z(), panel_origin.x(),
-            panel_origin.y(), panel_origin.z());
+            panel_origin.y(), panel_origin.z()), 0);
 
-        double diff_b = CosmicTrack_DCA(
+        double diff_b = _srep.driftDistanceToTime(straw_id,CosmicTrack_DCA(
             A0 - h, B0, A1, B1, T0, rowpl.dx(), rowpl.dy(), rowpl.dz(), rowpl.rx(), rowpl.ry(),
             rowpl.rz(), rowpa.dx(), rowpa.dy(), rowpa.dz(), rowpa.rx(), rowpa.ry(), rowpa.rz(),
 
             straw_mp.x(), straw_mp.y(), straw_mp.z(), wire_dir.x(), wire_dir.y(), wire_dir.z(),
             plane_origin.x(), plane_origin.y(), plane_origin.z(), panel_origin.x(),
-            panel_origin.y(), panel_origin.z());
+            panel_origin.y(), panel_origin.z()),0);
 
-        diff = (diff_a - diff_b) / linvel / (2.0 * h);
+        diff = (diff_a - diff_b) / (2.0 * h);
         std::cout << "numerical dr/d(A0) = " << diff << std::endl;
 
         // PARTIAL DOCA DERIVATIVE: B0
@@ -679,7 +680,7 @@ bool AlignTrackCollector::filter_CosmicTrackSeedCollection(
             plane_origin.x(), plane_origin.y(), plane_origin.z(), panel_origin.x(),
             panel_origin.y(), panel_origin.z());
 
-        diff = (diff_a - diff_b) / linvel / (2.0 * h);
+        diff = _srep.driftDistanceToTime(straw_id,(diff_a - diff_b), 0) / (2.0 * h);
         std::cout << "numerical dr/d(B0) = " << diff << std::endl;
 
         // PARTIAL DOCA DERIVATIVE: A1
@@ -700,7 +701,7 @@ bool AlignTrackCollector::filter_CosmicTrackSeedCollection(
             plane_origin.x(), plane_origin.y(), plane_origin.z(), panel_origin.x(),
             panel_origin.y(), panel_origin.z());
 
-        diff = (diff_a - diff_b) / linvel / (2.0 * h);
+        diff = _srep.driftDistanceToTime(straw_id, (diff_a - diff_b), 0) / (2.0 * h);
         std::cout << "numerical dr/d(A1) = " << diff << std::endl;
 
         // PARTIAL DOCA DERIVATIVE: B1
@@ -719,7 +720,7 @@ bool AlignTrackCollector::filter_CosmicTrackSeedCollection(
                                  wire_dir.z(), plane_origin.x(), plane_origin.y(), plane_origin.z(),
                                  panel_origin.x(), panel_origin.y(), panel_origin.z());
 
-        diff = (diff_a - diff_b) / linvel / (2.0 * h);
+        diff = _srep.driftDistanceToTime(straw_id,(diff_a - diff_b),0) / (2.0 * h);
         std::cout << "numerical dr/d(B1) = " << diff << std::endl;
 
         // PARTIAL DOCA DERIVATIVE: PLANE X SHIFT
@@ -746,7 +747,7 @@ bool AlignTrackCollector::filter_CosmicTrackSeedCollection(
                             wire_dir.z(), plane_origin.x(), plane_origin.y(), plane_origin.z(),
                             panel_origin.x(), panel_origin.y(), panel_origin.z());
 
-        diff = (diff_a - diff_b) / linvel / (2.0 * h);
+        diff = _srep.driftDistanceToTime(straw_id,(diff_a - diff_b),0) / (2.0 * h);
         std::cout << "numerical dr/d([plane " << plane_id << "]DX) = " << diff << std::endl;
 
         // PARTIAL DOCA DERIVATIVE: PLANE Y SHIFT
@@ -765,7 +766,7 @@ bool AlignTrackCollector::filter_CosmicTrackSeedCollection(
                                  wire_dir.z(), plane_origin.x(), plane_origin.y(), plane_origin.z(),
                                  panel_origin.x(), panel_origin.y(), panel_origin.z());
 
-        diff = (diff_a - diff_b) / linvel / (2.0 * h);
+        diff = _srep.driftDistanceToTime(straw_id,(diff_a - diff_b),0) / (2.0 * h);
         std::cout << "numerical dr/d([plane " << plane_id << "]DY) = " << diff << std::endl;
 
         // PARTIAL DOCA DERIVATIVE: PLANE Z SHIFT
@@ -784,7 +785,7 @@ bool AlignTrackCollector::filter_CosmicTrackSeedCollection(
                                  wire_dir.z(), plane_origin.x(), plane_origin.y(), plane_origin.z(),
                                  panel_origin.x(), panel_origin.y(), panel_origin.z());
 
-        diff = (diff_a - diff_b) / linvel / (2.0 * h);
+        diff = _srep.driftDistanceToTime(straw_id,(diff_a - diff_b),0) / (2.0 * h);
         std::cout << "numerical dr/d([plane " << plane_id << "]DZ) = " << diff << std::endl;
       }
       // end of diagnostics!
