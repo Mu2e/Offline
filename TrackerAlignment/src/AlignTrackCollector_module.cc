@@ -128,7 +128,6 @@ public:
   size_t _dof_per_plane = 6; // dx, dy, dz, a, b, g (translation, rotation)
   size_t _dof_per_panel = 6; // dx, dy, dz, a, b, g (translation, rotation)
   size_t _ndof = StrawId::_nplanes * _dof_per_plane + StrawId::_nupanels * _dof_per_panel;
-
   size_t _expected_dofs = _dof_per_panel + _dof_per_plane;
 
   struct Config {
@@ -194,6 +193,7 @@ public:
         Comment("Only write measurements made in these planes (int list [0,35])"),
     };
   };
+
   typedef art::EDAnalyzer::Table<Config> Parameters;
 
   void beginJob();
@@ -207,6 +207,8 @@ public:
   int getLabel(int const&, int const&, int const&);
   std::vector<int> generateDOFLabels(uint16_t plane, uint16_t panel);
   std::vector<int> generateDOFLabels(StrawId const& strw);
+  void writeMillepedeParams(TrkAlignPlane const& alignConstPlanes,
+                            TrkAlignPanel const& alignConstPanels);
 
   AlignTrackCollector(const Parameters& conf) :
       art::EDAnalyzer(conf), _diag(conf().diaglvl()), _costag(conf().costag()),
@@ -216,7 +218,9 @@ public:
       max_timeres(conf().maxtimeres()), min_track_hits(conf().mintrackhits()),
       use_timeresid(conf().usetimeresid()), no_panel_dofs(conf().nopaneldofs()),
       no_plane_rotations(conf().noplanerotations()), use_plane_filter(conf().useplanefilter()),
-      plane_filter_list(conf().planefilterlist()) {
+      plane_filter_list(conf().planefilterlist()),
+      
+      wroteMillepedeParams(false) {
 
     if (no_panel_dofs) {
       _dof_per_panel = 0;
@@ -259,6 +263,10 @@ public:
 
   bool use_plane_filter;
   std::vector<int> plane_filter_list;
+
+  bool use_db;
+
+  bool wroteMillepedeParams;
 
   std::unique_ptr<Mille> millepede;
   const CosmicTrackSeedCollection* _coscol;
@@ -322,6 +330,8 @@ void AlignTrackCollector::writeMillepedeParams(TrkAlignPlane const& alignConstPl
 
   std::ofstream output_file("mp_params.txt"); // FIXME: fcl param
 
+  output_file << "Parameter" << std::endl;
+
   for (uint16_t p = 0; p < StrawId::_nplanes; ++p) {
     auto const& rowpl = alignConstPlanes.rowAt(p);
 
@@ -332,15 +342,34 @@ void AlignTrackCollector::writeMillepedeParams(TrkAlignPlane const& alignConstPl
     }
 
     std::vector<float> pl_consts{rowpl.dx(), rowpl.dy(), rowpl.dz(),
-                              rowpl.rx(), rowpl.ry(), rowpl.rz()};
+                                 rowpl.rx(), rowpl.ry(), rowpl.rz()};
 
     for (size_t dof_n = 0; dof_n < _dof_per_plane; dof_n++) {
       // label(int)   initial value (float)   presigma (-ve: fixed, 0: variable)
       output_file << getLabel(1, p, dof_n) << "  " << pl_consts[dof_n] << "  0" << std::endl;
     }
   }
+  output_file << "Parameter" << std::endl;
 
-  // FIXME: panels
+  for (uint16_t p = 0; p < StrawId::_nupanels; ++p) {
+    auto const& rowpa = alignConstPanels.rowAt(p);
+    int plane = p % 6;
+
+    if (use_plane_filter && std::find(plane_filter_list.begin(), plane_filter_list.end(), plane) ==
+                                plane_filter_list.end()) {
+      continue;
+    }
+
+    std::vector<float> pa_consts{rowpa.dx(), rowpa.dy(), rowpa.dz(),
+                                 rowpa.rx(), rowpa.ry(), rowpa.rz()};
+
+    for (size_t dof_n = 0; dof_n < _dof_per_panel; dof_n++) {
+      // label(int)   initial value (float)   presigma (-ve: fixed, 0: variable)
+      output_file << getLabel(2, p, dof_n) << "  " << pa_consts[dof_n] << "  0" << std::endl;
+    }
+  }
+
+  output_file.close();
 }
 
 std::vector<int> AlignTrackCollector::generateDOFLabels(StrawId const& strw) {
@@ -366,6 +395,7 @@ std::vector<int> AlignTrackCollector::generateDOFLabels(uint16_t plane, uint16_t
 void AlignTrackCollector::beginRun(art::Run const& run) {
   GeomHandle<Tracker> track;
   _tracker = track.get();
+
   return;
 }
 
@@ -390,6 +420,12 @@ bool AlignTrackCollector::filter_CosmicTrackSeedCollection(
   // FIXME! check and enforce above
   auto alignConsts_planes = _trkAlignPlane_h->get(event.id());
   auto alignConsts_panels = _trkAlignPanel_h->get(event.id());
+
+  if (!wroteMillepedeParams)
+  {
+    writeMillepedeParams(alignConsts_planes, alignConsts_panels);
+    wroteMillepedeParams = true;
+  }
 
   bool wrote_track = false; // did we write any tracks at all?
 
@@ -550,6 +586,13 @@ bool AlignTrackCollector::filter_CosmicTrackSeedCollection(
                   << resid_err_tmp << std::endl;
       }
 
+      // diagnostics!
+      // diagnostics!
+      // diagnostics!
+      // diagnostics!
+      // diagnostics!
+      // diagnostics!
+
       if (_diag > 4) {
         // FIXME!
         // move to another place
@@ -679,7 +722,78 @@ bool AlignTrackCollector::filter_CosmicTrackSeedCollection(
 
         diff = (diff_a - diff_b) / linvel / (2.0 * h);
         std::cout << "numerical dr/d(B1) = " << diff << std::endl;
+
+        // PARTIAL DOCA DERIVATIVE: PLANE X SHIFT
+
+        diff_a =
+            CosmicTrack_DCA(A0, B0, A1, B1, T0,
+
+                            rowpl.dx() + h,
+
+                            rowpl.dy(), rowpl.dz(), rowpl.rx(), rowpl.ry(), rowpl.rz(), rowpa.dx(),
+                            rowpa.dy(), rowpa.dz(), rowpa.rx(), rowpa.ry(), rowpa.rz(),
+                            straw_mp.x(), straw_mp.y(), straw_mp.z(), wire_dir.x(), wire_dir.y(),
+                            wire_dir.z(), plane_origin.x(), plane_origin.y(), plane_origin.z(),
+                            panel_origin.x(), panel_origin.y(), panel_origin.z());
+
+        diff_b =
+            CosmicTrack_DCA(A0, B0, A1, B1, T0,
+
+                            rowpl.dx() - h,
+
+                            rowpl.dy(), rowpl.dz(), rowpl.rx(), rowpl.ry(), rowpl.rz(), rowpa.dx(),
+                            rowpa.dy(), rowpa.dz(), rowpa.rx(), rowpa.ry(), rowpa.rz(),
+                            straw_mp.x(), straw_mp.y(), straw_mp.z(), wire_dir.x(), wire_dir.y(),
+                            wire_dir.z(), plane_origin.x(), plane_origin.y(), plane_origin.z(),
+                            panel_origin.x(), panel_origin.y(), panel_origin.z());
+
+        diff = (diff_a - diff_b) / linvel / (2.0 * h);
+        std::cout << "numerical dr/d([plane " << plane_id << "]DX) = " << diff << std::endl;
+
+        // PARTIAL DOCA DERIVATIVE: PLANE Y SHIFT
+
+        diff_a = CosmicTrack_DCA(A0, B0, A1, B1, T0, rowpl.dx(), rowpl.dy() + h, rowpl.dz(),
+                                 rowpl.rx(), rowpl.ry(), rowpl.rz(), rowpa.dx(), rowpa.dy(),
+                                 rowpa.dz(), rowpa.rx(), rowpa.ry(), rowpa.rz(), straw_mp.x(),
+                                 straw_mp.y(), straw_mp.z(), wire_dir.x(), wire_dir.y(),
+                                 wire_dir.z(), plane_origin.x(), plane_origin.y(), plane_origin.z(),
+                                 panel_origin.x(), panel_origin.y(), panel_origin.z());
+
+        diff_b = CosmicTrack_DCA(A0, B0, A1, B1, T0, rowpl.dx(), rowpl.dy() - h, rowpl.dz(),
+                                 rowpl.rx(), rowpl.ry(), rowpl.rz(), rowpa.dx(), rowpa.dy(),
+                                 rowpa.dz(), rowpa.rx(), rowpa.ry(), rowpa.rz(), straw_mp.x(),
+                                 straw_mp.y(), straw_mp.z(), wire_dir.x(), wire_dir.y(),
+                                 wire_dir.z(), plane_origin.x(), plane_origin.y(), plane_origin.z(),
+                                 panel_origin.x(), panel_origin.y(), panel_origin.z());
+
+        diff = (diff_a - diff_b) / linvel / (2.0 * h);
+        std::cout << "numerical dr/d([plane " << plane_id << "]DY) = " << diff << std::endl;
+
+        // PARTIAL DOCA DERIVATIVE: PLANE Z SHIFT
+
+        diff_a = CosmicTrack_DCA(A0, B0, A1, B1, T0, rowpl.dx(), rowpl.dy(), rowpl.dz() + h,
+                                 rowpl.rx(), rowpl.ry(), rowpl.rz(), rowpa.dx(), rowpa.dy(),
+                                 rowpa.dz(), rowpa.rx(), rowpa.ry(), rowpa.rz(), straw_mp.x(),
+                                 straw_mp.y(), straw_mp.z(), wire_dir.x(), wire_dir.y(),
+                                 wire_dir.z(), plane_origin.x(), plane_origin.y(), plane_origin.z(),
+                                 panel_origin.x(), panel_origin.y(), panel_origin.z());
+
+        diff_b = CosmicTrack_DCA(A0, B0, A1, B1, T0, rowpl.dx(), rowpl.dy(), rowpl.dz() - h,
+                                 rowpl.rx(), rowpl.ry(), rowpl.rz(), rowpa.dx(), rowpa.dy(),
+                                 rowpa.dz(), rowpa.rx(), rowpa.ry(), rowpa.rz(), straw_mp.x(),
+                                 straw_mp.y(), straw_mp.z(), wire_dir.x(), wire_dir.y(),
+                                 wire_dir.z(), plane_origin.x(), plane_origin.y(), plane_origin.z(),
+                                 panel_origin.x(), panel_origin.y(), panel_origin.z());
+
+        diff = (diff_a - diff_b) / linvel / (2.0 * h);
+        std::cout << "numerical dr/d([plane " << plane_id << "]DZ) = " << diff << std::endl;
       }
+      // end of diagnostics!
+      // end of diagnostics!
+      // end of diagnostics!
+      // end of diagnostics!
+      // end of diagnostics!
+      // end of diagnostics!
 
       // avoid outlier hits when applying this cut
       if (!straw_hit._flag.hasAnyProperty(StrawHitFlag::outlier)) {
@@ -768,8 +882,20 @@ bool AlignTrackCollector::filter_CosmicTrackSeedCollection(
 
         continue;
       }
+      /*
+      Residual Covariance calculation starts here
 
-      // FIXME! Something feels wrong.
+      FIXME! Still some issues to be ironed out here - the errors seem much too large currently.
+      */
+
+      if (_diag > 2) {
+        std::cout << "Measurement Covariance:" << std::endl;
+        meas_cov.Print();
+
+        std::cout << "Track Covariance:" << std::endl;
+        track_cov.Print();
+      }
+
       TMatrixD HC(nHits, 5);
       HC.Mult(resid_local_derivs, track_cov);
 
@@ -777,16 +903,9 @@ bool AlignTrackCollector::filter_CosmicTrackSeedCollection(
       TMatrixD HCH(nHits, nHits);
       HCH.MultT(HC, resid_local_derivs);
 
-      if (_diag > 0) {
-        meas_cov.Print();
-
-        std::cout << "Track Covariance:" << std::endl;
-        track_cov.Print();
-      }
-
       meas_cov -= HCH; // V - H C H^T - now holding residual cov
 
-      if (_diag > 0) {
+      if (_diag > 2) {
         std::cout << "Residual covariance:" << std::endl;
         meas_cov.Print(); // now holding residual cov
       }
@@ -794,7 +913,7 @@ bool AlignTrackCollector::filter_CosmicTrackSeedCollection(
       // write hits to buffer
       for (size_t i = 0; i < (size_t)nHits; ++i) {
         residual_err[i] = sqrt(meas_cov(i, i));
-        if (_diag > 1) {
+        if (_diag > 2) {
           std::cout << "resid: " << residuals[i] << ", combined err: " << residual_err[i]
                     << std::endl;
         }
