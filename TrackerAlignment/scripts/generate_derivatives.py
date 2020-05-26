@@ -26,8 +26,8 @@ def unit_vector(v):
     return v/sqrt(tot2)
 
 
-def DOCAToTOCA(dca):
-    return dca / 0.0625
+def DOCAToTOCA(dca, driftvel):
+    return dca / driftvel
 
 
 def DOCA(p1, t1, p2, t2):
@@ -203,6 +203,9 @@ def generate_expressions(approximate=False, remove_globalparam_dependence=False,
     panel_z = Symbol('panel_straw0z', real=True)
     panel_straw0mp = Matrix([panel_x, panel_y, panel_z])
 
+
+    driftvel = Symbol('driftvel', real=True)
+
     local_params = [a0, b0, a1, b1, t0]
     global_params = [dx, dy, dz, a, b, g]
     global_params += [panel_dx, panel_dy, panel_dz, panel_a, panel_b, panel_g]
@@ -212,7 +215,7 @@ def generate_expressions(approximate=False, remove_globalparam_dependence=False,
     panel_position = [panel_x, panel_y, panel_z]
 
     all_params = local_params + global_params + \
-        wire_params + plane_position + panel_position
+        wire_params + plane_position + panel_position + [driftvel]
 
     param_dict = {
         'all': all_params,
@@ -240,7 +243,7 @@ def generate_expressions(approximate=False, remove_globalparam_dependence=False,
     if time_domain:
         # we convert the DOCA to a TOCA and add T0 (since it is a local param)
         # the hit time has no explicit track parameter dependence
-        aligned_doca_to_diff = DOCAToTOCA(aligned_doca) - t0
+        aligned_doca_to_diff = DOCAToTOCA(aligned_doca, driftvel) - t0
 
     # now generate optimised C code to calculate each deriv
     if remove_globalparam_dependence:
