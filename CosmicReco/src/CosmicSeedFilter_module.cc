@@ -26,7 +26,18 @@ namespace mu2e
   class CosmicSeedFilter : public art::EDFilter
   {
   public:
-    explicit CosmicSeedFilter(fhicl::ParameterSet const& pset);
+    struct Config{
+      using Name=fhicl::Name;
+      using Comment=fhicl::Comment;
+      fhicl::Atom<art::InputTag> cosmictag{Name("CosmicTrackSeedCollection"),Comment("track collection"),"KSFDeM"};
+      fhicl::Sequence<std::string> goodcosmic{Name("cosmicseedFitFlag"),Comment("Required flags"),vector<string>{"HelixOK","HelixConverged"}};
+      fhicl::Atom<int> minnsh {Name("minnsh"), Comment("minimum number of straw hits "),8};
+      fhicl::Atom<std::string> trigpath {Name("triggerPath"), Comment("Trigger path")};
+      fhicl::Atom<int> debug{Name("debugLevel"), Comment("set to 1 for debug prints"),0};
+    };
+    typedef art::EDFilter::Table<Config> Parameters;
+    explicit CosmicSeedFilter(const Parameters& conf);
+
     virtual bool filter(art::Event& event) override;
     virtual bool endRun( art::Run& run ) override;
 
@@ -34,24 +45,19 @@ namespace mu2e
 
     art::InputTag   _cosmicTag;
     TrkFitFlag      _goodcosmic; 
-    TrkFitFlag      _convergedcosmic;
     unsigned int _minnsh;
-    unsigned int _minnch;    
-    unsigned int _minNHitsTimeCluster;
     std::string     _trigPath;
     int             _debug;
     unsigned        _nevt, _npass;
   };
 
-  CosmicSeedFilter::CosmicSeedFilter(fhicl::ParameterSet const& pset) :
-    art::EDFilter{pset},
-    _cosmicTag     (pset.get<art::InputTag>("CosmicTrackSeedCollection","KSFDeM")),
-    _goodcosmic(pset.get<vector<string> >("comsicseedFitFlag",vector<string>{"HelixOK"})),
-    _convergedcosmic(pset.get<vector<string> > ("comsicseedFitFlag", vector<string>{"HelixConverged"})),
-    _minnsh (pset.get<unsigned int>   ("minnsh",8)),
-    _minnch (pset.get<unsigned int>   ("minnch",8)),
-    _trigPath  (pset.get<std::string>("triggerPath")),
-    _debug     (pset.get<int>   ("debugLevel",0)),
+  CosmicSeedFilter::CosmicSeedFilter(const Parameters& conf) :
+    art::EDFilter(conf),
+    _cosmicTag (conf().cosmictag()),
+    _goodcosmic (conf().goodcosmic()),
+    _minnsh (conf().minnsh()),
+    _trigPath (conf().trigpath()),
+    _debug (conf().debug()),
     _nevt(0), _npass(0)
   {
     produces<TriggerInfo>();
@@ -68,7 +74,7 @@ namespace mu2e
     for(auto icos = coscol->begin(); icos != coscol->end(); ++icos) {
       auto const& cosmic = *icos;
      
-      if( cosmic.status().hasAllProperties(_goodcosmic) && cosmic.status().hasAllProperties(_convergedcosmic) && cosmic.hits().size()>_minnch && cosmic.trkstrawhits().size() > _minnsh ){ 
+      if( cosmic.status().hasAllProperties(_goodcosmic) && cosmic.trkstrawhits().size() > _minnsh ){
        
         ++_npass;
         
