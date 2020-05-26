@@ -554,7 +554,7 @@ bool AlignTrackCollector::filter_CosmicTrackSeedCollection(
       // FIXME: very confusing!
 
       // FIXME! this is a time, not distance
-      double drift_res = _srep.driftDistanceError(straw_hit.strawId(), 0, 0, pca.dca());
+      double drift_res = _srep.driftTimeError(straw_hit.strawId(), 0, 0, pca.dca());
       double resid_err_tmp = _srep.driftTimeToDistance(
           straw_hit.strawId(), drift_res, 0); // fit_object.DOCAresidualError(straw_hit, sts);
 
