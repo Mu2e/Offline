@@ -900,6 +900,26 @@ bool AlignTrackCollector::filter_CosmicTrackSeedCollection(
           std::cout << "track failed quality cuts" << std::endl;
         }
 
+        if (_diag > 2)
+        {
+          std::cout << "reason: ";
+
+          if (min_plane_traverse != 0 && planes_trav < min_plane_traverse)
+            std::cout << "not enough planes traversed" << std::endl;
+
+          if (pvalue > max_pvalue)
+            std::cout << "pvalue" << std::endl;
+
+          if (max_time_res_track > max_timeres && max_timeres > 0)
+            std::cout << "max time residual" << std::endl;
+
+          if (nHits < min_track_hits)
+            std::cout << "hits" << std::endl;
+
+          if (bad_track)
+            std::cout << "bad track" << std::endl;
+        }
+
         continue;
       }
       /*
@@ -929,6 +949,7 @@ bool AlignTrackCollector::filter_CosmicTrackSeedCollection(
         std::cout << "Residual covariance:" << std::endl;
         meas_cov.Print(); // now holding residual cov
       }
+      wrote_hits =false;
 
       // write hits to buffer
       for (size_t i = 0; i < (size_t)nHits; ++i) {
@@ -946,6 +967,7 @@ bool AlignTrackCollector::filter_CosmicTrackSeedCollection(
           millepede->mille(local_derivs_temp[i].size(), local_derivs_temp[i].data(), _expected_dofs,
                            global_derivs_temp[i].data(), labels_temp[i].data(), residuals[i],
                            residual_err[i]);
+          wrote_hits = true;
         }
 
         if (isnan(residual_err[i])) {
@@ -959,7 +981,7 @@ bool AlignTrackCollector::filter_CosmicTrackSeedCollection(
         }
       }
 
-      if (bad_track) {
+      if (bad_track || !wrote_hits) {
         millepede->kill();
         continue;
       }
