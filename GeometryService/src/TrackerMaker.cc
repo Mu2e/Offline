@@ -778,7 +778,7 @@ namespace mu2e {
     double rz = dv.phi();
 
     HepTransform panel_to_plane(dv.x(), dv.y(), dv.z(),0.0,0.0,rz);
-    panel._origin = plane_to_tracker * (panel_to_plane * CLHEP::Hep3Vector(0,0,0));
+    panel._origin = (plane_to_tracker * panel_to_plane) * CLHEP::Hep3Vector(0,0,0);
 
   }  // end makePanel
 
