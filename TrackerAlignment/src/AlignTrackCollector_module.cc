@@ -1039,14 +1039,6 @@ bool AlignTrackCollector::filter_CosmicTrackSeedCollection(
   return wrote_track;
 }
 
-bool filter_CosmicKalSeedCollection(art::Event const& event, Tracker const& tracker,
-                                    StrawResponse const& _srep,
-                                    CosmicTrackSeedCollection const& coscol) {
-  // Futureproofing... although it probably makes sense to move mp-II kalman
-  // track collection to its own module
-  return false;
-}
-
 int AlignTrackCollector::getLabel(int const& object_cls, int const& obj_uid, int const& dof_id) {
   // object class: 0 - 9 - i.e. 1 for planes, 2 for panels
   // object unique id: 0 - 999 supports up to 999 unique objects which is fine for this level of
