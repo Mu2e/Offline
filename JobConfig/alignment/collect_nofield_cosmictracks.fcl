@@ -4,7 +4,7 @@
 #
 # Reconstruct Cosmic Track (Straight, no magnetic field)
 # Check Cuts Pass (see Alignment/fcl/prolog.fcl)
-# Write Event to file if Event yields a track and passes cuts, not keeping any Data Products from reco
+# Write alignment (mille) data to file. This file can be fed then to Millepede.
 #
 # #
 #include "fcl/minimalMessageService.fcl"
