@@ -910,7 +910,7 @@ bool AlignTrackCollector::filter_CosmicTrackSeedCollection(
             std::cout << "pvalue" << std::endl;
 
           if (max_time_res_track > max_timeres && max_timeres > 0)
-            std::cout << "max time residual reached (" >> max_time_res_track >> " > " >> max_timeres>> ")" << std::endl;
+            std::cout << "max time residual reached (" << max_time_res_track << " > " <<max_timeres<<")" << std::endl;
 
           if (nHits < min_track_hits)
             std::cout << "hits" << std::endl;
