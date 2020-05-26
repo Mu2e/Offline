@@ -8,7 +8,6 @@
 // Consult README.md for more information
 
 #include <algorithm> // for max, all_of
-#include <bits/stdint-uintn.h>
 #include <cmath>   // for isnan
 #include <cstddef> // for size_t
 #include <exception>
