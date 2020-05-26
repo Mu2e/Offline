@@ -260,8 +260,7 @@ bool AlignTrackSelector::filter_CosmicTrackSeedCollection(art::Event const& even
 
       double resid_tmp = fit_object.DOCAresidual(straw_hit, sts);
       double time_resid = fit_object.TimeResidual(straw_hit, sts);
-
-      // FIXME: crude! doesn't belong here!
+      
       CLHEP::Hep3Vector intercept(A0, 0, B0);
       CLHEP::Hep3Vector dir(A1, -1, B1);
       dir = dir.unit();
