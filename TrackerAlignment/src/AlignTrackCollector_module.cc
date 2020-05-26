@@ -736,6 +736,10 @@ bool AlignTrackCollector::filter_CosmicTrackSeedCollection(
         std::cout << "numerical dr/d(B1) = " << diff << std::endl;
         derivativesLocal.push_back(diff);
 
+        // T0
+        derivativesLocal.push_back(-1);
+
+
         // PARTIAL DOCA DERIVATIVE: PLANE X SHIFT
 
         diff_a =
