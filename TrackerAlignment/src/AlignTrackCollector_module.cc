@@ -932,7 +932,7 @@ bool AlignTrackCollector::filter_CosmicTrackSeedCollection(
         if (_diag > 2) {
           std::cout << "resid: " << residuals[i] 
                     << ", drift res (time): " << residual_err[i]
-                    << ", resid cov sqrt(diag): " << sqrt(meas_cov(i, i)
+                    << ", resid cov sqrt(diag): " << sqrt(meas_cov(i, i))
                     << std::endl;
         }
         if (use_plane_filter && std::find(plane_filter_list.begin(), plane_filter_list.end(),
