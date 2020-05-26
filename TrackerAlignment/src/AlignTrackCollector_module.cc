@@ -8,12 +8,12 @@
 // Consult README.md for more information
 
 #include <algorithm> // for max, all_of
-#include <cmath>   // for isnan
-#include <cstddef> // for size_t
+#include <cmath>     // for isnan
+#include <cstddef>   // for size_t
 #include <exception>
 #include <fstream>
-#include <iostream>      // for operator<<
-#include <memory>        // for unique_ptr
+#include <iostream> // for operator<<
+#include <memory>   // for unique_ptr
 #include <ostream>
 #include <stdint.h>      // for uint16_t
 #include <string>        // for string
@@ -219,7 +219,7 @@ public:
       use_timeresid(conf().usetimeresid()), no_panel_dofs(conf().nopaneldofs()),
       no_plane_rotations(conf().noplanerotations()), use_plane_filter(conf().useplanefilter()),
       plane_filter_list(conf().planefilterlist()),
-      
+
       wroteMillepedeParams(false) {
 
     if (no_panel_dofs) {
@@ -350,8 +350,7 @@ void AlignTrackCollector::writeMillepedeParams(TrkAlignPlane const& alignConstPl
     }
   }
 
-  output_file << std::endl
-              << "! Panel DOFs follow:" << std::endl;
+  output_file << std::endl << "! Panel DOFs follow:" << std::endl;
 
   for (uint16_t p = 0; p < StrawId::_nupanels; ++p) {
     auto const& rowpa = alignConstPanels.rowAt(p);
@@ -423,8 +422,7 @@ bool AlignTrackCollector::filter_CosmicTrackSeedCollection(
   auto alignConsts_planes = _trkAlignPlane_h->get(event.id());
   auto alignConsts_panels = _trkAlignPanel_h->get(event.id());
 
-  if (!wroteMillepedeParams)
-  {
+  if (!wroteMillepedeParams) {
     writeMillepedeParams(alignConsts_planes, alignConsts_panels);
     wroteMillepedeParams = true;
   }
@@ -621,8 +619,6 @@ bool AlignTrackCollector::filter_CosmicTrackSeedCollection(
           // (AlignmentDerivatives) are not consistent!";
         }
 
-
-
         std::cout << "dr/d([A0,B0,A1,B1,T0]): [" << derivativesLocal[0] // A0
                   << ", " << derivativesLocal[1]                        // B0
                   << ", " << derivativesLocal[2]                        // A1
@@ -646,26 +642,31 @@ bool AlignTrackCollector::filter_CosmicTrackSeedCollection(
 
         double h = 1e-7;
 
-        //double linvel = 0.0625;
-
+        // double linvel = 0.0625;
 
         // PARTIAL DOCA DERIVATIVE: A0
 
-        double diff_a = _srep.driftDistanceToTime(straw_id, CosmicTrack_DCA(
-            A0 + h, B0, A1, B1, T0, rowpl.dx(), rowpl.dy(), rowpl.dz(), rowpl.rx(), rowpl.ry(),
-            rowpl.rz(), rowpa.dx(), rowpa.dy(), rowpa.dz(), rowpa.rx(), rowpa.ry(), rowpa.rz(),
+        double diff_a = _srep.driftDistanceToTime(
+            straw_id,
+            CosmicTrack_DCA(A0 + h, B0, A1, B1, T0, rowpl.dx(), rowpl.dy(), rowpl.dz(), rowpl.rx(),
+                            rowpl.ry(), rowpl.rz(), rowpa.dx(), rowpa.dy(), rowpa.dz(), rowpa.rx(),
+                            rowpa.ry(), rowpa.rz(),
 
-            straw_mp.x(), straw_mp.y(), straw_mp.z(), wire_dir.x(), wire_dir.y(), wire_dir.z(),
-            plane_origin.x(), plane_origin.y(), plane_origin.z(), panel_origin.x(),
-            panel_origin.y(), panel_origin.z()), 0);
+                            straw_mp.x(), straw_mp.y(), straw_mp.z(), wire_dir.x(), wire_dir.y(),
+                            wire_dir.z(), plane_origin.x(), plane_origin.y(), plane_origin.z(),
+                            panel_origin.x(), panel_origin.y(), panel_origin.z()),
+            0);
 
-        double diff_b = _srep.driftDistanceToTime(straw_id,CosmicTrack_DCA(
-            A0 - h, B0, A1, B1, T0, rowpl.dx(), rowpl.dy(), rowpl.dz(), rowpl.rx(), rowpl.ry(),
-            rowpl.rz(), rowpa.dx(), rowpa.dy(), rowpa.dz(), rowpa.rx(), rowpa.ry(), rowpa.rz(),
+        double diff_b = _srep.driftDistanceToTime(
+            straw_id,
+            CosmicTrack_DCA(A0 - h, B0, A1, B1, T0, rowpl.dx(), rowpl.dy(), rowpl.dz(), rowpl.rx(),
+                            rowpl.ry(), rowpl.rz(), rowpa.dx(), rowpa.dy(), rowpa.dz(), rowpa.rx(),
+                            rowpa.ry(), rowpa.rz(),
 
-            straw_mp.x(), straw_mp.y(), straw_mp.z(), wire_dir.x(), wire_dir.y(), wire_dir.z(),
-            plane_origin.x(), plane_origin.y(), plane_origin.z(), panel_origin.x(),
-            panel_origin.y(), panel_origin.z()),0);
+                            straw_mp.x(), straw_mp.y(), straw_mp.z(), wire_dir.x(), wire_dir.y(),
+                            wire_dir.z(), plane_origin.x(), plane_origin.y(), plane_origin.z(),
+                            panel_origin.x(), panel_origin.y(), panel_origin.z()),
+            0);
 
         diff = (diff_a - diff_b) / (2.0 * h);
         std::cout << "numerical dr/d(A0) = " << diff << std::endl;
@@ -690,7 +691,7 @@ bool AlignTrackCollector::filter_CosmicTrackSeedCollection(
             plane_origin.x(), plane_origin.y(), plane_origin.z(), panel_origin.x(),
             panel_origin.y(), panel_origin.z());
 
-        diff = _srep.driftDistanceToTime(straw_id,(diff_a - diff_b), 0) / (2.0 * h);
+        diff = _srep.driftDistanceToTime(straw_id, (diff_a - diff_b), 0) / (2.0 * h);
         std::cout << "numerical dr/d(B0) = " << diff << std::endl;
         derivativesLocal.push_back(diff);
 
@@ -732,13 +733,12 @@ bool AlignTrackCollector::filter_CosmicTrackSeedCollection(
                                  wire_dir.z(), plane_origin.x(), plane_origin.y(), plane_origin.z(),
                                  panel_origin.x(), panel_origin.y(), panel_origin.z());
 
-        diff = _srep.driftDistanceToTime(straw_id,(diff_a - diff_b),0) / (2.0 * h);
+        diff = _srep.driftDistanceToTime(straw_id, (diff_a - diff_b), 0) / (2.0 * h);
         std::cout << "numerical dr/d(B1) = " << diff << std::endl;
         derivativesLocal.push_back(diff);
 
         // T0
         derivativesLocal.push_back(-1);
-
 
         // PARTIAL DOCA DERIVATIVE: PLANE X SHIFT
 
@@ -764,7 +764,7 @@ bool AlignTrackCollector::filter_CosmicTrackSeedCollection(
                             wire_dir.z(), plane_origin.x(), plane_origin.y(), plane_origin.z(),
                             panel_origin.x(), panel_origin.y(), panel_origin.z());
 
-        diff = _srep.driftDistanceToTime(straw_id,(diff_a - diff_b),0) / (2.0 * h);
+        diff = _srep.driftDistanceToTime(straw_id, (diff_a - diff_b), 0) / (2.0 * h);
         std::cout << "numerical dr/d([plane " << plane_id << "]DX) = " << diff << std::endl;
         derivativesGlobal.push_back(diff);
 
@@ -784,7 +784,7 @@ bool AlignTrackCollector::filter_CosmicTrackSeedCollection(
                                  wire_dir.z(), plane_origin.x(), plane_origin.y(), plane_origin.z(),
                                  panel_origin.x(), panel_origin.y(), panel_origin.z());
 
-        diff = _srep.driftDistanceToTime(straw_id,(diff_a - diff_b),0) / (2.0 * h);
+        diff = _srep.driftDistanceToTime(straw_id, (diff_a - diff_b), 0) / (2.0 * h);
         std::cout << "numerical dr/d([plane " << plane_id << "]DY) = " << diff << std::endl;
         derivativesGlobal.push_back(diff);
 
@@ -804,7 +804,7 @@ bool AlignTrackCollector::filter_CosmicTrackSeedCollection(
                                  wire_dir.z(), plane_origin.x(), plane_origin.y(), plane_origin.z(),
                                  panel_origin.x(), panel_origin.y(), panel_origin.z());
 
-        diff = _srep.driftDistanceToTime(straw_id,(diff_a - diff_b),0) / (2.0 * h);
+        diff = _srep.driftDistanceToTime(straw_id, (diff_a - diff_b), 0) / (2.0 * h);
         std::cout << "numerical dr/d([plane " << plane_id << "]DZ) = " << diff << std::endl;
         derivativesGlobal.push_back(diff);
       }
@@ -841,12 +841,12 @@ bool AlignTrackCollector::filter_CosmicTrackSeedCollection(
       }
 
       // write the hit to the track buffer
-      if (!use_timeresid) {
-        residuals.emplace_back(resid_tmp);
-        meas_cov(nHits, nHits) = pow(drift_res / 0.0625, 2);
-      } else {
+      if (use_timeresid) {
         residuals.emplace_back(time_resid);
         meas_cov(nHits, nHits) = drift_res * drift_res;
+      } else {
+        residuals.emplace_back(resid_tmp);
+        meas_cov(nHits, nHits) = pow(drift_res / 0.0625, 2);
       }
 
       for (size_t col = 0; col < 5; ++col) { // FIXME!
@@ -900,8 +900,7 @@ bool AlignTrackCollector::filter_CosmicTrackSeedCollection(
           std::cout << "track failed quality cuts" << std::endl;
         }
 
-        if (_diag > 2)
-        {
+        if (_diag > 2) {
           std::cout << "reason: ";
 
           if (min_plane_traverse != 0 && planes_trav < min_plane_traverse)
@@ -911,7 +910,7 @@ bool AlignTrackCollector::filter_CosmicTrackSeedCollection(
             std::cout << "pvalue" << std::endl;
 
           if (max_time_res_track > max_timeres && max_timeres > 0)
-            std::cout << "max time residual" << std::endl;
+            std::cout << "max time residual reached (" >> max_time_res_track >> " > " >> max_timeres>> ")" << std::endl;
 
           if (nHits < min_track_hits)
             std::cout << "hits" << std::endl;
@@ -925,7 +924,8 @@ bool AlignTrackCollector::filter_CosmicTrackSeedCollection(
       /*
       Residual Covariance calculation starts here
 
-      FIXME! Still some issues to be ironed out here - the errors from residual cov seem much too large currently.
+      FIXME! Still some issues to be ironed out here - the errors from residual cov seem much too
+      large currently.
       */
 
       if (_diag > 2) {
@@ -949,16 +949,14 @@ bool AlignTrackCollector::filter_CosmicTrackSeedCollection(
         std::cout << "Residual covariance:" << std::endl;
         meas_cov.Print(); // now holding residual cov
       }
-      wrote_hits =false;
+      wrote_hits = false;
 
       // write hits to buffer
       for (size_t i = 0; i < (size_t)nHits; ++i) {
-        residual_err[i] = drift_reso[i];//sqrt(meas_cov(i, i));
+        residual_err[i] = drift_reso[i]; // sqrt(meas_cov(i, i));
         if (_diag > 2) {
-          std::cout << "resid: " << residuals[i] 
-                    << ", drift res (time): " << residual_err[i]
-                    << ", resid cov sqrt(diag): " << sqrt(meas_cov(i, i))
-                    << std::endl;
+          std::cout << "resid: " << residuals[i] << ", drift res (time): " << residual_err[i]
+                    << ", resid cov sqrt(diag): " << sqrt(meas_cov(i, i)) << std::endl;
         }
         if (use_plane_filter && std::find(plane_filter_list.begin(), plane_filter_list.end(),
                                           plane_uid[i]) == plane_filter_list.end()) {
@@ -972,12 +970,11 @@ bool AlignTrackCollector::filter_CosmicTrackSeedCollection(
 
         if (isnan(residual_err[i])) {
           std::cout << "WARNING: sqrt of residual covariance matrix diagonal R_" << i << "," << i
-                    << " was NaN! See matrix above. " 
-                    << "N.B. not using residual covariance."
-                    << std::endl;
-          //std::cout << "track skipped" << std::endl;
-          //bad_track = true;
-          //break;
+                    << " was NaN! See matrix above. "
+                    << "N.B. not using residual covariance." << std::endl;
+          // std::cout << "track skipped" << std::endl;
+          // bad_track = true;
+          // break;
         }
       }
 
