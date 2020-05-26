@@ -922,14 +922,8 @@ bool AlignTrackCollector::filter_CosmicTrackSeedCollection(
 
           (min_panel_traverse_per_plane != 0 &&
            (panels_trav / planes_trav) < min_panel_traverse_per_plane) ||
-
-          (pvalue > max_pvalue) ||
-
-          (max_time_res_track > max_timeres && max_timeres > 0) ||
-
-          (nHits < min_track_hits) ||
-
-          bad_track) {
+          (pvalue > max_pvalue) || (max_time_res_track > max_timeres && max_timeres > 0) ||
+          (nHits < min_track_hits) || bad_track) {
 
         if (_diag > 0) {
           std::cout << "track failed quality cuts" << std::endl;
@@ -938,21 +932,26 @@ bool AlignTrackCollector::filter_CosmicTrackSeedCollection(
         if (_diag > 2) {
           std::cout << "reason: ";
 
-          if (min_plane_traverse != 0 && planes_trav < min_plane_traverse)
+          if (min_plane_traverse != 0 && planes_trav < min_plane_traverse) {
             std::cout << "not enough planes traversed" << std::endl;
+          }
 
-          if (pvalue > max_pvalue)
+          if (pvalue > max_pvalue) {
             std::cout << "pvalue" << std::endl;
+          }
 
-          if (max_time_res_track > max_timeres && max_timeres > 0)
+          if (max_time_res_track > max_timeres && max_timeres > 0) {
             std::cout << "max time residual reached (" << max_time_res_track << " > " << max_timeres
                       << ")" << std::endl;
+          }
 
-          if (nHits < min_track_hits)
+          if (nHits < min_track_hits) {
             std::cout << "hits" << std::endl;
+          }
 
-          if (bad_track)
+          if (bad_track) {
             std::cout << "bad track" << std::endl;
+          }
         }
 
         continue;
