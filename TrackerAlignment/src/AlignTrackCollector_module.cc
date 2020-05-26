@@ -7,19 +7,19 @@
 
 // Consult README.md for more information
 
-#include <algorithm> // for max, all_of
-#include <cmath>     // for isnan
-#include <cstddef>   // for size_t
+#include <algorithm> 
+#include <cmath>     
+#include <cstddef>
 #include <exception>
 #include <fstream>
-#include <iostream> // for operator<<
-#include <memory>   // for unique_ptr
+#include <iostream> 
+#include <memory>   
 #include <ostream>
-#include <stdint.h>      // for uint16_t
-#include <string>        // for string
-#include <unordered_map> // for unordered...
-#include <utility>       // for move
-#include <vector>        // for vector<>:...
+#include <stdint.h>      
+#include <string>        
+#include <unordered_map> 
+#include <utility>       
+#include <vector>     
 
 #include "CosmicReco/inc/PDFFit.hh"
 #include "DbTables/inc/TrkAlignPanel.hh"
@@ -32,54 +32,51 @@
 #include "boost/math/distributions/chi_squared.hpp"
 #include "boost/math/distributions/normal.hpp"
 
-#include "art/Framework/Core/EDAnalyzer.h"                 // for EDAnalyzer
-#include "art/Framework/Core/ModuleMacros.h"               // for DEFINE_AR...
-#include "art/Framework/Core/ProducerTable.h"              // for ProducerT...
-#include "art/Framework/Principal/Event.h"                 // for Event
-#include "art/Framework/Principal/Handle.h"                // for ValidHandle
-#include "art/Framework/Services/Registry/ServiceHandle.h" // for ServiceHa...
-#include "art_root_io/TFileService.h"                      // for TFileService
+#include "art/Framework/Core/EDAnalyzer.h"                 
+#include "art/Framework/Core/ModuleMacros.h"       
+#include "art/Framework/Core/ProducerTable.h"              .
+#include "art/Framework/Principal/Event.h"                 
+#include "art/Framework/Principal/Handle.h"                
+#include "art/Framework/Services/Registry/ServiceHandle.h" 
+#include "art_root_io/TFileService.h"                      
 
-#include "TrackerConditions/inc/StrawResponse.hh" // for StrawResp...
-#include "TrackerGeom/inc/Panel.hh"               // for Panel
-#include "TrackerGeom/inc/Plane.hh"               // for Plane
-#include "TrackerGeom/inc/Straw.hh"               // for Straw
-#include "TrackerGeom/inc/Tracker.hh"             // for Tracker
+#include "TrackerConditions/inc/StrawResponse.hh"
+#include "TrackerGeom/inc/Panel.hh"               
+#include "TrackerGeom/inc/Plane.hh"               
+#include "TrackerGeom/inc/Straw.hh"             
+#include "TrackerGeom/inc/Tracker.hh"
 
 #include "DbService/inc/DbHandle.hh"
-#include "ProditionsService/inc/ProditionsHandle.hh" // for Prodition...
+#include "ProditionsService/inc/ProditionsHandle.hh"
 
-#include "RecoDataProducts/inc/ComboHit.hh"        // for ComboHit
-#include "RecoDataProducts/inc/CosmicTrack.hh"     // for CosmicTrack
-#include "RecoDataProducts/inc/CosmicTrackSeed.hh" // for CosmicTra...
-#include "RecoDataProducts/inc/TrkFitFlag.hh"      // for TrkFitFlag
+#include "RecoDataProducts/inc/ComboHit.hh"       
+#include "RecoDataProducts/inc/CosmicTrack.hh"    
+#include "RecoDataProducts/inc/CosmicTrackSeed.hh" 
+#include "RecoDataProducts/inc/TrkFitFlag.hh"      
 
-#include "DataProducts/inc/StrawId.hh" // for StrawId
-#include "DataProducts/inc/XYZVec.hh"  // for toXYZVec
+#include "DataProducts/inc/StrawId.hh" 
+#include "DataProducts/inc/XYZVec.hh"  
 
-#include "Mu2eUtilities/inc/TwoLinePCA_XYZ.hh" // for TwoLinePC...
-
-#include "RtypesCore.h"
-#include "TAxis.h" // for TAxis
-#include "TH1F.h"  // for TH1F
+#include "TAxis.h"
+#include "TH1F.h" 
 #include "TMatrixDSym.h"
 #include "TTree.h"
 
-#include "canvas/Utilities/Exception.h" // for Exception
-#include "canvas/Utilities/InputTag.h"  // for InputTag
+#include "canvas/Utilities/Exception.h"
+#include "canvas/Utilities/InputTag.h"  
 
-#include "CLHEP/Vector/ThreeVector.h" // for Hep3Vector
+#include "CLHEP/Vector/ThreeVector.h" 
 
-#include "cetlib_except/exception.h" // for exception
+#include "cetlib_except/exception.h" 
 
-#include "fhiclcpp/types/Atom.h"                       // for Atom
-#include "fhiclcpp/types/Comment.h"                    // for Comment
-#include "fhiclcpp/types/Name.h"                       // for Name
-#include "fhiclcpp/types/Table.h"                      // for Table::me...
-#include "fhiclcpp/types/detail/validationException.h" // for validatio...
+#include "fhiclcpp/types/Atom.h"                  
+#include "fhiclcpp/types/Comment.h"                  
+#include "fhiclcpp/types/Name.h"                      
+#include "fhiclcpp/types/Table.h"                    
+#include "fhiclcpp/types/detail/validationException.h" 
 
-#include "TrackerAlignment/inc/AlignmentDerivatives.hh" // for CosmicTra...
-#include "TrackerAlignment/inc/Mille.h"                 // for Mille
+#include "TrackerAlignment/inc/AlignmentDerivatives.hh" 
+#include "TrackerAlignment/inc/Mille.h"                 
 
 namespace art {
 class Run;
