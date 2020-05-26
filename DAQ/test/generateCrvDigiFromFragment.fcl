@@ -3,7 +3,7 @@
 # Usage: mu2e -c DAQ/test/CrvDigisFromFragmentsTest.fcl -s <input root files> -n '-1'
 #
 #
-# Contact person G. Pezzullo
+# Contact person G. Pezzullo, R. Ehrlich
 
 #include "DAQ/fcl/prolog_trigger.fcl"
 
@@ -15,6 +15,9 @@ source : {
 
   # firstEvent  : 500
   maxEvents   : -1
+#  inputCommands: ["keep *", 
+#                  "drop *Mu2eEventHeader*_*_*_*"]
+
 }
 
 physics : {
@@ -23,8 +26,7 @@ physics : {
     CrvDigi:
       {
 	 @table::DAQ.producers.CrvDigi
-	 diagLevel: 3
-	 parseCRV: 1	 
+	 diagLevel: 0
 	 crvTag: "daq:crv"
       }
   }

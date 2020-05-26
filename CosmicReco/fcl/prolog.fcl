@@ -35,7 +35,6 @@ SimpleTimeCluster : {
 	module_type : SimpleTimeCluster
 	ComboHitCollection : "makePH"
 	StrawHitFlagCollection : "FlagBkgHits:ComboHits"
-	T0Calculator : { CaloT0Offset : @local::TrackCaloMatching.DtOffset }
 	TestFlag : false
 }
 

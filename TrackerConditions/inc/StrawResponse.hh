@@ -86,6 +86,9 @@ namespace mu2e {
     double driftDistanceError(StrawId strawId, double ddist, double phi, double DOCA) const;
     double driftDistanceOffset(StrawId strawId, double ddist, double phi, double DOCA) const;
 
+    double driftTimeError(StrawId strawId, double ddist, double phi, double DOCA) const;
+    double driftTimeOffset(StrawId strawId, double ddist, double phi, double DOCA) const;
+
     double peakMinusPedestalEnergyScale() const { return _pmpEnergyScaleAvg; }
     double peakMinusPedestalEnergyScale(StrawId sid) const { return _pmpEnergyScale[sid.getStraw()]; }
     double analogNoise(StrawElectronics::Path ipath) const { return _analognoise[ipath]; }  // incoherent noise

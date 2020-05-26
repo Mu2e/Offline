@@ -69,19 +69,20 @@ namespace mu2e {
     float CC = Bz*logRadius/wirevoltage; 
 
     double deltaD = _config.deltaDistance();
-    std::vector<double> distances;
-    std::vector<double> instantSpeed;
-    std::vector<double> times;
+    std::vector<double> distances_dbins;
+    std::vector<double> instantSpeed_dbins;
+    std::vector<double> times_dbins;
 
     double deltaPhi = TMath::Pi()/2.0/double(phiBins-1);
     
     size_t index = dataDistances.size()-2;
     double tempD = 0;
     double tempT = 0;
+    double max_time = 0;
     for (size_t p=0;p<phiBins;p++)
-      times.push_back(tempT);
-    distances.push_back(tempD);
-    instantSpeed.push_back(0);
+      times_dbins.push_back(tempT);
+    distances_dbins.push_back(tempD);
+    instantSpeed_dbins.push_back(0);
     tempD += deltaD;
     while (tempD < strawradius){
       while (dataDistances[index] < tempD){
@@ -94,8 +95,8 @@ namespace mu2e {
       double speed0 = dataVInst[index+1];
       double speed1 = dataVInst[index];
       double speed = speed0 + (speed1-speed0) * (tempD - dist0)/(dist1-dist0);
-      distances.push_back(tempD);
-      instantSpeed.push_back(speed);
+      distances_dbins.push_back(tempD);
+      instantSpeed_dbins.push_back(speed);
       tempT += deltaD/speed;
 
       double vavg = tempD/tempT;
@@ -106,13 +107,40 @@ namespace mu2e {
         double tempPhi = deltaPhi * p;
         double zetta = C*tempD*0.001;//convert mm to m
         double tempGamma = (1 + pow(zetta,2)/3.)/(1 + pow(zetta*cos(tempPhi),2)/3.);
-        times.push_back(tempT*tempGamma);
+        times_dbins.push_back(tempT*tempGamma);
+        if (tempT*tempGamma > max_time)
+          max_time = tempT*tempGamma;
       }
       tempD += deltaD;
     }
-    instantSpeed[0] = instantSpeed[1];
+    instantSpeed_dbins[0] = instantSpeed_dbins[1];
 
-    auto ptr = std::make_shared<StrawDrift>(phiBins, deltaD, distances, instantSpeed, times);
+    double deltaT = _config.deltaTime();
+    size_t timeBins = (size_t) ceil(max_time/deltaT);
+    std::vector<double> times_tbins(timeBins,0);
+    std::vector<double> distances_tbins(timeBins*phiBins,0);
+
+    for (size_t tbin=0;tbin<timeBins;tbin++)
+      times_tbins[tbin] = deltaT*tbin;
+
+    for (size_t pbin=0;pbin<phiBins;pbin++){
+      index = 0;
+      for (size_t tbin=1;tbin<timeBins;tbin++){
+        tempT = times_tbins[tbin];
+
+       //step through and find time larger than what is specified
+       while (index < distances_dbins.size()-2){
+         int fullIndex = index*phiBins + pbin; //map from a 2D index to a 1D index (at phi=0)
+         if (tempT < times_dbins[fullIndex]){
+           break;
+         }
+         index++;
+       }
+       distances_tbins[tbin*phiBins + pbin] = distances_dbins[index] + (tempT - times_dbins[index*phiBins+pbin])/(times_dbins[(index+1)*phiBins+pbin]-times_dbins[index*phiBins+pbin]) * deltaD;
+      }
+    }
+
+    auto ptr = std::make_shared<StrawDrift>(phiBins, deltaD, distances_dbins, instantSpeed_dbins, times_dbins, deltaT, distances_tbins, times_tbins);
     
     return ptr;
 

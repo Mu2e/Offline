@@ -16,6 +16,7 @@ babarlibs = env['BABARLIBS']
 extrarootlibs = [ 'Geom' ]
 
 mainlib = helper.make_mainlib ( [ 'CLHEP',
+                                  'HepPDT',
                                   rootlibs,
                                   extrarootlibs,
                                   'mu2e_Mu2eUtilities',

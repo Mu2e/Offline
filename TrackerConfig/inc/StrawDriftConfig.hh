@@ -21,7 +21,9 @@ namespace mu2e {
     fhicl::Atom<int> phiBins{
       Name("phiBins"), Comment("number of bins in phi for drift model")};
     fhicl::Atom<double> deltaDistance{
-      Name("deltaDistance"), Comment("Size of bins in distance for drift model")};
+      Name("deltaDistance"), Comment("Size of bins in distance for drift D2T model")};
+    fhicl::Atom<double> deltaTime{
+      Name("deltaTime"), Comment("Size of bins in time for drift T2D model")};
     fhicl::Atom<int> driftIntegrationBins{
       Name("driftIntegrationBins"), 
 	Comment("number of integrations steps for drift model")};

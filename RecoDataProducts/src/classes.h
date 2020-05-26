@@ -39,7 +39,6 @@
 
 // tracking output
 #include "RecoDataProducts/inc/TrkFitFlag.hh"
-#include "RecoDataProducts/inc/TrackSeedCollection.hh"
 #include "RecoDataProducts/inc/TrkExtTrajCollection.hh"
 #include "RecoDataProducts/inc/KalRepPtrCollection.hh"
 #include "RecoDataProducts/inc/TrackSummaryRecoMap.hh"

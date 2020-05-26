@@ -14,14 +14,15 @@ namespace mu2e
    struct BkgCluster 
    {
        //Default hit count chosen for compuational efficiency
-       BkgCluster() : _time(0.0), _flag(BkgClusterFlag::update)  {_hits.reserve(16);}   
-       BkgCluster(XYZVec const& pos, float time) : _pos(pos), _time(time),_flag(BkgClusterFlag::update) {_hits.reserve(16);}
+       BkgCluster()                              : _pos(),    _time(0.0),  _hits(), _flag(BkgClusterFlag::update)  {_hits.reserve(16);}   
+       BkgCluster(XYZVec const& pos, float time) : _pos(pos), _time(time), _hits(), _flag(BkgClusterFlag::update)  {_hits.reserve(16);}
 
        BkgClusterFlag const&        flag() const {return _flag; }
-       XYZVec const&                pos()  const {return _pos; }
+       XYZVec const&                pos()  const {return _pos;  }
        float                        time() const {return _time; }
        std::vector<unsigned> const& hits() const {return _hits; }
        std::vector<unsigned>&       hits()       {return _hits; }
+       
        void pos(XYZVec const& pos)               {_pos = pos;}
        void time(float time)                     {_time = time;}
        void addHit(unsigned val)                 {_hits.emplace_back(val);}
