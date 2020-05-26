@@ -519,7 +519,6 @@ bool AlignTrackCollector::filter_CosmicTrackSeedCollection(
       auto const& rowpl = alignConsts_planes.rowAt(plane_id);
       auto const& rowpa = alignConsts_panels.rowAt(panel_uuid);
 
-      // FIXME: crude! doesn't belong here!
       TwoLinePCA pca(straw.getMidPoint(), straw.getDirection(), intercept, dir);
 
       double driftvel = _srep.driftInstantSpeed(straw_id, pca.dca(), 0);
@@ -546,7 +545,7 @@ bool AlignTrackCollector::filter_CosmicTrackSeedCollection(
       double time_resid = fit_object.TimeResidual(straw_hit, sts);
 
       // The following are based on reco performed using current alignment parameters
-      // FIXME: very confusing!
+      // FIXME: confusing
 
       // FIXME! this is a time, not distance
       double drift_res = _srep.driftTimeError(straw_hit.strawId(), 0, 0, pca.dca());
@@ -840,12 +839,13 @@ bool AlignTrackCollector::filter_CosmicTrackSeedCollection(
         std::cout << "numerical dr/d([plane " << plane_id << "]DZ) = " << diff << std::endl;
         derivativesGlobal.push_back(diff);
       }
-      // end of diagnostics!
-      // end of diagnostics!
-      // end of diagnostics!
-      // end of diagnostics!
-      // end of diagnostics!
-      // end of diagnostics!
+      // end of derivative diagnostics!
+      // end of derivative diagnostics!
+      // end of derivative diagnostics!
+      // end of derivative diagnostics!
+      // end of derivative diagnostics!
+      // end of derivative diagnostics!
+
 
       // avoid outlier hits when applying this cut
       if (!straw_hit._flag.hasAnyProperty(StrawHitFlag::outlier)) {
@@ -956,8 +956,7 @@ bool AlignTrackCollector::filter_CosmicTrackSeedCollection(
       /*
       Residual Covariance calculation starts here
 
-      FIXME! Still some issues to be ironed out here - the errors from residual cov seem much too
-      large currently.
+      FIXME! Still some issues to be ironed out here
       */
 
       if (_diag > 2) {
