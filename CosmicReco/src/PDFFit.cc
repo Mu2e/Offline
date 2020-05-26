@@ -385,7 +385,7 @@ double GaussianDriftFit::TimeResidual(ComboHit const& sh, const std::vector<doub
   TwoLinePCA pca(straw.getMidPoint(), straw.getDirection(), intercept, dir);
   double traj_time = ((pca.point2() - intercept).dot(dir))/299.9;
 
-  double signdca = (pca.s2() > 0 ? pca.dca() : -pca.dca());
+  double signdca = (pca.s1() > 0 ? pca.dca() : -pca.dca());
 
   double predictedTime = srep.driftDistanceToTime(sh.strawId(), signdca, 0);
   double hit_t0 = sh.propTime() + traj_time + t0 + srep.driftDistanceOffset(sh.strawId(), 0, 0, pca.dca());
