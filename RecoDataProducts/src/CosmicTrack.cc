@@ -44,7 +44,6 @@ TrackSeedDiag::TrackSeedDiag(){
 namespace mu2e{
 
 	CosmicTrack::CosmicTrack() {
-          	_Nhits = 0;
     		
     		InitParams.A0 = 0;
           	InitParams.A1 = 0;
@@ -52,11 +51,6 @@ namespace mu2e{
           	InitParams.B1 = 0;
           	InitParams.T0 = 0;
           	
-    		//Pos.SetXYZ(0,0,0);
-	        Direction.SetXYZ(0,0,0);
-    		
-   		
-   			
 	 }
     
 
@@ -64,22 +58,6 @@ namespace mu2e{
 	// Destructor
 	CosmicTrack::~CosmicTrack() {}
 
-	void CosmicTrack::clear_parameters() {
-          FitParams.A0 = 0;
-          FitParams.A1 = 0;
-          FitParams.B0 = 0;
-          FitParams.B1 = 0;
-          FitParams.T0 = 0;
-	}
-	
-	
-	void CosmicTrack::clear_cov() {  
-	 
-	  FitParams.Covarience.sigA0 = 0.;
-	  FitParams.Covarience.sigA1 = 0.;
-	  FitParams.Covarience.sigB0 = 0.;
-	  FitParams.Covarience.sigB1 = 0.;		  
-	}
 	
 	
 	

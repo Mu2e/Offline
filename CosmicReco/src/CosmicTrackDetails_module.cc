@@ -9,7 +9,6 @@
 
 // Cosmic Tracks:
 #include "CosmicReco/inc/CosmicTrackFit.hh"
-#include "CosmicReco/inc/CosmicTrackFinderData.hh"
 #include "RecoDataProducts/inc/CosmicTrack.hh"
 #include "RecoDataProducts/inc/CosmicTrackSeed.hh"
 #include "CosmicReco/inc/CosmicTrackMCInfo.hh"
@@ -32,6 +31,7 @@
 #include "CosmicReco/inc/DriftFitUtils.hh"
 #include "Mu2eUtilities/inc/ParametricFit.hh"
 #include "TrackerConditions/inc/StrawResponse.hh"
+#include "Mu2eUtilities/inc/BuildLinearFitMatrixSums.hh"
 
 // Mu2e diagnostics
 #include "TrkDiag/inc/ComboHitInfo.hh"
@@ -303,25 +303,25 @@ namespace mu2e
 		if(st.converged == false or st.minuit_converged  == false) { continue; }
 		
 		std::vector<int> panels, planes, stations;
+                    
+		_reco_phi_angle=acos(st.FitEquation.Dir.x()/st.FitEquation.Dir.Mag2());
+		_reco_theta_angle=acos(st.FitEquation.Dir.y()/sqrt(st.FitEquation.Dir.Mag2()));
+		_MinuitA0=(st.MinuitParams.A0);
+		_MinuitA1=(st.MinuitParams.A1);
+		_MinuitB1=(st.MinuitParams.B1);
+		_MinuitB0=(st.MinuitParams.B0);
 
-		_reco_phi_angle=(st.get_fit_phi()); 
-		_reco_theta_angle=(st.get_fit_theta()); 
-		_MinuitA0=(st.MinuitFitParams.A0);
-		_MinuitA1=(st.MinuitFitParams.A1);
-		_MinuitB1=(st.MinuitFitParams.B1);
-		_MinuitB0=(st.MinuitFitParams.B0);
+		_ErrorA0=(st.MinuitParams.deltaA0);
+		_ErrorA1=(st.MinuitParams.deltaA1);
+		_ErrorB1=(st.MinuitParams.deltaB1);
+		_ErrorB0=(st.MinuitParams.deltaB0);
 
-		_ErrorA0=(st.MinuitFitParams.deltaA0);
-		_ErrorA1=(st.MinuitFitParams.deltaA1);
-		_ErrorB1=(st.MinuitFitParams.deltaB1);
-		_ErrorB0=(st.MinuitFitParams.deltaB0);
-
-		_FitCovA0  = st.MinuitFitParams.Covarience.sigA0;
-		_FitCovA1 = st.MinuitFitParams.Covarience.sigA1;
-		_FitCovB0 = st.MinuitFitParams.Covarience.sigB0;
-		_FitCovB1 = st.MinuitFitParams.Covarience.sigB1;
-		_FitCovA0A1 = st.MinuitFitParams.Covarience.sigA0A1;
-		_FitCovB0B1 = st.MinuitFitParams.Covarience.sigB0B1;
+		_FitCovA0  = st.MinuitParams.Covarience.sigA0;
+		_FitCovA1 = st.MinuitParams.Covarience.sigA1;
+		_FitCovB0 = st.MinuitParams.Covarience.sigB0;
+		_FitCovB1 = st.MinuitParams.Covarience.sigB1;
+		_FitCovA0A1 = st.MinuitParams.Covarience.sigA0A1;
+		_FitCovB0B1 = st.MinuitParams.Covarience.sigB0B1;
 
 	       if(_mcdiag){
 			
@@ -351,11 +351,11 @@ namespace mu2e
 				trueinfo = FillDriftMC(chit, _RecoAmbig[_nused], trueinfo, t0, tracker);
 		    		double truedoca = DriftFitUtils::GetTestDOCA(chit, trueinfo.TrueFitEquation.Pos.X(), trueinfo.TrueFitEquation.Dir.X(), trueinfo.TrueFitEquation.Pos.Y(),trueinfo.TrueFitEquation.Dir.Y(),  tracker);
 				
-				double fitdoca = DriftFitUtils::GetTestDOCA(chit, st.MinuitFitParams.A0,st.MinuitFitParams.A1, st.MinuitFitParams.B0, st.MinuitFitParams.B1,  tracker);
+				double fitdoca = DriftFitUtils::GetTestDOCA(chit, st.MinuitParams.A0,st.MinuitParams.A1, st.MinuitParams.B0, st.MinuitParams.B1,  tracker);
 
-				double recoambig = DriftFitUtils::GetAmbig(chit, st.MinuitFitParams.A0,st.MinuitFitParams.A1, st.MinuitFitParams.B0, st.MinuitFitParams.B1, tracker);
+				double recoambig = DriftFitUtils::GetAmbig(chit, st.MinuitParams.A0,st.MinuitParams.A1, st.MinuitParams.B0, st.MinuitParams.B1, tracker);
 
-				double res = DriftFitUtils::GetRPerp(srep, chit, st.MinuitFitParams.A0,st.MinuitFitParams.A1, st.MinuitFitParams.B0, st.MinuitFitParams.B1, tracker);
+				double res = DriftFitUtils::GetRPerp(srep, chit, st.MinuitParams.A0,st.MinuitParams.A1, st.MinuitParams.B0, st.MinuitParams.B1, tracker);
 
 				double trueambig = DriftFitUtils::GetAmbig(chit, trueinfo.TrueFitEquation.Pos.X(), trueinfo.TrueFitEquation.Dir.X(), trueinfo.TrueFitEquation.Pos.Y(),trueinfo.TrueFitEquation.Dir.Y(), tracker);
 				
@@ -363,7 +363,7 @@ namespace mu2e
 
 				double truedriftdistance = DriftFitUtils::GetDriftDistance(srep,chit, trueinfo.TrueFitEquation.Pos.X(), trueinfo.TrueFitEquation.Dir.X(), trueinfo.TrueFitEquation.Pos.Y(),trueinfo.TrueFitEquation.Dir.Y(),  tracker);
 
-				double driftdistance = DriftFitUtils::GetDriftDistance(srep, chit, st.MinuitFitParams.A0,st.MinuitFitParams.A1, st.MinuitFitParams.B0, st.MinuitFitParams.B1, tracker);
+				double driftdistance = DriftFitUtils::GetDriftDistance(srep, chit, st.MinuitParams.A0,st.MinuitParams.A1, st.MinuitParams.B0, st.MinuitParams.B1, tracker);
 
 				if(fitdoca < 2.5 and truedoca < 2.5 and abs(trueinfo.TrueFitEquation.Pos.X() ) < 5000 and abs(trueinfo.TrueFitEquation.Pos.Y()) < 5000 and abs(trueinfo.TrueFitEquation.Dir.X())< 5 and abs(trueinfo.TrueFitEquation.Dir.Y())< 5){
 					_RecoAmbig[_nused] = recoambig;

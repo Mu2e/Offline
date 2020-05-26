@@ -32,22 +32,17 @@ namespace mu2e {
     typedef std::shared_ptr<const StrawDrift> cptr_t;
 
     StrawDrift():_name("StrawDrift") {}
-    StrawDrift( std::vector<D2Tinfo> D2Tinfos, std::vector<float> distances,
-                std::vector<float> instantSpeeds, std::vector<float> averageSpeeds,
-		int phiBins ) : _name("StrawDrift"),
-      _D2Tinfos(D2Tinfos),  _distances(distances), 
-      _instantSpeeds(instantSpeeds), _averageSpeeds(averageSpeeds),
-      _phiBins(phiBins) {}
+    StrawDrift( int phiBins, double deltaD, std::vector<double> distances_dbins, std::vector<double> instantSpeed_dbins, std::vector<double> times_dbins,
+        double deltaT, std::vector<double> distances_tbins, std::vector<double> times_tbins) : _name("StrawDrift"),
+      _phiBins(phiBins), _deltaD(deltaD), _distances_dbins(distances_dbins),
+      _instantSpeed_dbins(instantSpeed_dbins), _times_dbins(times_dbins),
+      _deltaT(deltaT), _distances_tbins(distances_tbins), _times_tbins(times_tbins) {}
 
     virtual ~StrawDrift() {}
 
     double GetAverageSpeed(double dist) const; // avg nom. drift speed (phi = 0)
     double GetInstantSpeedFromT(double time) const; // (at phi = 0)
     double GetInstantSpeedFromD(double dist) const; // (at phi = 0)
-    double GetGammaFromT(double time, double phi) const;
-    double GetGammaFromD(double dist, double phi) const;
-    // the lorentz corrected radial component of avg speed
-    double GetEffectiveSpeed(double dist, double phi) const; 
     double D2T(double dist, double phi) const;
     double T2D(double time, double phi) const;
 
@@ -60,18 +55,18 @@ namespace mu2e {
     // fold into first quadrant assuming the function
     // has x-z and y-z plane symmetry
     double ConstrainAngle(double phi) const;
-    // find distance bin
-    size_t lowerDistanceBin(double dist) const;
 
-    // 2-D array in distance and phi 
-    std::vector<D2Tinfo> _D2Tinfos;
-    
-    // 1-D array of speed with distance
-    std::vector<float> _distances; // distances between points in the model
-    std::vector<float> _instantSpeeds; // the instantaneous "nominal" speed
-    std::vector<float> _averageSpeeds; // the average "nominal" speed
-    
     size_t _phiBins;
+
+    double _deltaD; 
+    std::vector<double> _distances_dbins; // distances between points in the model
+    std::vector<double> _instantSpeed_dbins; // the instantaneous "nominal" speed, 1D vs distance
+    std::vector<double> _times_dbins; // 2d array vs distance and phi 
+
+    double _deltaT;
+    std::vector<double> _distances_tbins; // 2d array vs time and phi
+    std::vector<double> _times_tbins; // times between points for T2D
+
     
   };
 }
