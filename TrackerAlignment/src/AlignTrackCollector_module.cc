@@ -521,14 +521,22 @@ bool AlignTrackCollector::filter_CosmicTrackSeedCollection(
       auto const& rowpl = alignConsts_planes.rowAt(plane_id);
       auto const& rowpa = alignConsts_panels.rowAt(panel_uuid);
 
-      // now calculate the derivatives.
+      // FIXME: crude! doesn't belong here!
+      CLHEP::Hep3Vector intercept(A0, 0, B0);
+      CLHEP::Hep3Vector dir(A1, -1, B1);
+      dir = dir.unit();
+      TwoLinePCA pca(straw.getMidPoint(), straw.getDirection(), intercept, dir);
+
+      double driftvel = _srep.driftInstantSpeed(straw_id, pca.dca(), 0);
+
+      // now calculate the derivatives
       auto derivativesLocal = CosmicTrack_DCA_LocalDeriv(
           A0, B0, A1, B1, T0, rowpl.dx(), rowpl.dy(), rowpl.dz(), rowpl.rx(), rowpl.ry(),
           rowpl.rz(), rowpa.dx(), rowpa.dy(), rowpa.dz(), rowpa.rx(), rowpa.ry(), rowpa.rz(),
 
           straw_mp.x(), straw_mp.y(), straw_mp.z(), wire_dir.x(), wire_dir.y(), wire_dir.z(),
           plane_origin.x(), plane_origin.y(), plane_origin.z(), panel_origin.x(), panel_origin.y(),
-          panel_origin.z());
+          panel_origin.z(), driftvel);
 
       auto derivativesGlobal = CosmicTrack_DCA_GlobalDeriv(
           A0, B0, A1, B1, T0, rowpl.dx(), rowpl.dy(), rowpl.dz(), rowpl.rx(), rowpl.ry(),
@@ -537,7 +545,7 @@ bool AlignTrackCollector::filter_CosmicTrackSeedCollection(
           straw_mp.x(), straw_mp.y(), straw_mp.z(), wire_dir.x(), wire_dir.y(), wire_dir.z(),
 
           plane_origin.x(), plane_origin.y(), plane_origin.z(), panel_origin.x(), panel_origin.y(),
-          panel_origin.z());
+          panel_origin.z(), driftvel);
 
       double resid_tmp = fit_object.DOCAresidual(straw_hit, sts);
       double time_resid = fit_object.TimeResidual(straw_hit, sts);
@@ -545,11 +553,6 @@ bool AlignTrackCollector::filter_CosmicTrackSeedCollection(
       // The following are based on reco performed using current alignment parameters
       // FIXME: very confusing!
 
-      // FIXME: crude! doesn't belong here!
-      CLHEP::Hep3Vector intercept(A0, 0, B0);
-      CLHEP::Hep3Vector dir(A1, -1, B1);
-      dir = dir.unit();
-      TwoLinePCA pca(straw.getMidPoint(), straw.getDirection(), intercept, dir);
 
       // FIXME! this is a time, not distance
       double drift_res = _srep.driftDistanceError(straw_hit.strawId(), 0, 0, pca.dca());
@@ -604,7 +607,7 @@ bool AlignTrackCollector::filter_CosmicTrackSeedCollection(
 
             straw_mp.x(), straw_mp.y(), straw_mp.z(), wire_dir.x(), wire_dir.y(), wire_dir.z(),
             plane_origin.x(), plane_origin.y(), plane_origin.z(), panel_origin.x(),
-            panel_origin.y(), panel_origin.z());
+            panel_origin.y(), panel_origin.z(), driftvel);
 
         double diff = std::abs(signdca - generated_doca);
         std::cout << "doca: " << signdca << ", gendoca: " << generated_doca << ", diff: " << diff
@@ -656,7 +659,7 @@ bool AlignTrackCollector::filter_CosmicTrackSeedCollection(
 
                             straw_mp.x(), straw_mp.y(), straw_mp.z(), wire_dir.x(), wire_dir.y(),
                             wire_dir.z(), plane_origin.x(), plane_origin.y(), plane_origin.z(),
-                            panel_origin.x(), panel_origin.y(), panel_origin.z()),
+                            panel_origin.x(), panel_origin.y(), panel_origin.z(), driftvel),
             0);
 
         double diff_b = _srep.driftDistanceToTime(
@@ -667,7 +670,7 @@ bool AlignTrackCollector::filter_CosmicTrackSeedCollection(
 
                             straw_mp.x(), straw_mp.y(), straw_mp.z(), wire_dir.x(), wire_dir.y(),
                             wire_dir.z(), plane_origin.x(), plane_origin.y(), plane_origin.z(),
-                            panel_origin.x(), panel_origin.y(), panel_origin.z()),
+                            panel_origin.x(), panel_origin.y(), panel_origin.z(), driftvel),
             0);
 
         diff = (diff_a - diff_b) / (2.0 * h);
@@ -683,7 +686,7 @@ bool AlignTrackCollector::filter_CosmicTrackSeedCollection(
 
             straw_mp.x(), straw_mp.y(), straw_mp.z(), wire_dir.x(), wire_dir.y(), wire_dir.z(),
             plane_origin.x(), plane_origin.y(), plane_origin.z(), panel_origin.x(),
-            panel_origin.y(), panel_origin.z());
+            panel_origin.y(), panel_origin.z(), driftvel);
 
         diff_b = CosmicTrack_DCA(
             A0, B0 - h, A1, B1, T0, rowpl.dx(), rowpl.dy(), rowpl.dz(), rowpl.rx(), rowpl.ry(),
@@ -691,7 +694,7 @@ bool AlignTrackCollector::filter_CosmicTrackSeedCollection(
 
             straw_mp.x(), straw_mp.y(), straw_mp.z(), wire_dir.x(), wire_dir.y(), wire_dir.z(),
             plane_origin.x(), plane_origin.y(), plane_origin.z(), panel_origin.x(),
-            panel_origin.y(), panel_origin.z());
+            panel_origin.y(), panel_origin.z(), driftvel);
 
         diff = _srep.driftDistanceToTime(straw_id, (diff_a - diff_b), 0) / (2.0 * h);
         std::cout << "numerical dr/d(B0) = " << diff << std::endl;
@@ -705,7 +708,7 @@ bool AlignTrackCollector::filter_CosmicTrackSeedCollection(
 
             straw_mp.x(), straw_mp.y(), straw_mp.z(), wire_dir.x(), wire_dir.y(), wire_dir.z(),
             plane_origin.x(), plane_origin.y(), plane_origin.z(), panel_origin.x(),
-            panel_origin.y(), panel_origin.z());
+            panel_origin.y(), panel_origin.z(), driftvel);
 
         diff_b = CosmicTrack_DCA(
             A0, B0, A1 - h, B1, T0, rowpl.dx(), rowpl.dy(), rowpl.dz(), rowpl.rx(), rowpl.ry(),
@@ -713,7 +716,7 @@ bool AlignTrackCollector::filter_CosmicTrackSeedCollection(
 
             straw_mp.x(), straw_mp.y(), straw_mp.z(), wire_dir.x(), wire_dir.y(), wire_dir.z(),
             plane_origin.x(), plane_origin.y(), plane_origin.z(), panel_origin.x(),
-            panel_origin.y(), panel_origin.z());
+            panel_origin.y(), panel_origin.z(), driftvel);
 
         diff = _srep.driftDistanceToTime(straw_id, (diff_a - diff_b), 0) / (2.0 * h);
         std::cout << "numerical dr/d(A1) = " << diff << std::endl;
@@ -726,14 +729,14 @@ bool AlignTrackCollector::filter_CosmicTrackSeedCollection(
                                  rowpa.dz(), rowpa.rx(), rowpa.ry(), rowpa.rz(), straw_mp.x(),
                                  straw_mp.y(), straw_mp.z(), wire_dir.x(), wire_dir.y(),
                                  wire_dir.z(), plane_origin.x(), plane_origin.y(), plane_origin.z(),
-                                 panel_origin.x(), panel_origin.y(), panel_origin.z());
+                                 panel_origin.x(), panel_origin.y(), panel_origin.z(), driftvel);
 
         diff_b = CosmicTrack_DCA(A0, B0, A1, B1 - h, T0, rowpl.dx(), rowpl.dy(), rowpl.dz(),
                                  rowpl.rx(), rowpl.ry(), rowpl.rz(), rowpa.dx(), rowpa.dy(),
                                  rowpa.dz(), rowpa.rx(), rowpa.ry(), rowpa.rz(), straw_mp.x(),
                                  straw_mp.y(), straw_mp.z(), wire_dir.x(), wire_dir.y(),
                                  wire_dir.z(), plane_origin.x(), plane_origin.y(), plane_origin.z(),
-                                 panel_origin.x(), panel_origin.y(), panel_origin.z());
+                                 panel_origin.x(), panel_origin.y(), panel_origin.z(), driftvel);
 
         diff = _srep.driftDistanceToTime(straw_id, (diff_a - diff_b), 0) / (2.0 * h);
         std::cout << "numerical dr/d(B1) = " << diff << std::endl;
@@ -753,7 +756,7 @@ bool AlignTrackCollector::filter_CosmicTrackSeedCollection(
                             rowpa.dy(), rowpa.dz(), rowpa.rx(), rowpa.ry(), rowpa.rz(),
                             straw_mp.x(), straw_mp.y(), straw_mp.z(), wire_dir.x(), wire_dir.y(),
                             wire_dir.z(), plane_origin.x(), plane_origin.y(), plane_origin.z(),
-                            panel_origin.x(), panel_origin.y(), panel_origin.z());
+                            panel_origin.x(), panel_origin.y(), panel_origin.z(), driftvel);
 
         diff_b =
             CosmicTrack_DCA(A0, B0, A1, B1, T0,
@@ -764,7 +767,7 @@ bool AlignTrackCollector::filter_CosmicTrackSeedCollection(
                             rowpa.dy(), rowpa.dz(), rowpa.rx(), rowpa.ry(), rowpa.rz(),
                             straw_mp.x(), straw_mp.y(), straw_mp.z(), wire_dir.x(), wire_dir.y(),
                             wire_dir.z(), plane_origin.x(), plane_origin.y(), plane_origin.z(),
-                            panel_origin.x(), panel_origin.y(), panel_origin.z());
+                            panel_origin.x(), panel_origin.y(), panel_origin.z(), driftvel);
 
         diff = _srep.driftDistanceToTime(straw_id, (diff_a - diff_b), 0) / (2.0 * h);
         std::cout << "numerical dr/d([plane " << plane_id << "]DX) = " << diff << std::endl;
@@ -777,14 +780,14 @@ bool AlignTrackCollector::filter_CosmicTrackSeedCollection(
                                  rowpa.dz(), rowpa.rx(), rowpa.ry(), rowpa.rz(), straw_mp.x(),
                                  straw_mp.y(), straw_mp.z(), wire_dir.x(), wire_dir.y(),
                                  wire_dir.z(), plane_origin.x(), plane_origin.y(), plane_origin.z(),
-                                 panel_origin.x(), panel_origin.y(), panel_origin.z());
+                                 panel_origin.x(), panel_origin.y(), panel_origin.z(), driftvel);
 
         diff_b = CosmicTrack_DCA(A0, B0, A1, B1, T0, rowpl.dx(), rowpl.dy() - h, rowpl.dz(),
                                  rowpl.rx(), rowpl.ry(), rowpl.rz(), rowpa.dx(), rowpa.dy(),
                                  rowpa.dz(), rowpa.rx(), rowpa.ry(), rowpa.rz(), straw_mp.x(),
                                  straw_mp.y(), straw_mp.z(), wire_dir.x(), wire_dir.y(),
                                  wire_dir.z(), plane_origin.x(), plane_origin.y(), plane_origin.z(),
-                                 panel_origin.x(), panel_origin.y(), panel_origin.z());
+                                 panel_origin.x(), panel_origin.y(), panel_origin.z(), driftvel);
 
         diff = _srep.driftDistanceToTime(straw_id, (diff_a - diff_b), 0) / (2.0 * h);
         std::cout << "numerical dr/d([plane " << plane_id << "]DY) = " << diff << std::endl;
@@ -797,14 +800,14 @@ bool AlignTrackCollector::filter_CosmicTrackSeedCollection(
                                  rowpa.dz(), rowpa.rx(), rowpa.ry(), rowpa.rz(), straw_mp.x(),
                                  straw_mp.y(), straw_mp.z(), wire_dir.x(), wire_dir.y(),
                                  wire_dir.z(), plane_origin.x(), plane_origin.y(), plane_origin.z(),
-                                 panel_origin.x(), panel_origin.y(), panel_origin.z());
+                                 panel_origin.x(), panel_origin.y(), panel_origin.z(), driftvel);
 
         diff_b = CosmicTrack_DCA(A0, B0, A1, B1, T0, rowpl.dx(), rowpl.dy(), rowpl.dz() - h,
                                  rowpl.rx(), rowpl.ry(), rowpl.rz(), rowpa.dx(), rowpa.dy(),
                                  rowpa.dz(), rowpa.rx(), rowpa.ry(), rowpa.rz(), straw_mp.x(),
                                  straw_mp.y(), straw_mp.z(), wire_dir.x(), wire_dir.y(),
                                  wire_dir.z(), plane_origin.x(), plane_origin.y(), plane_origin.z(),
-                                 panel_origin.x(), panel_origin.y(), panel_origin.z());
+                                 panel_origin.x(), panel_origin.y(), panel_origin.z(), driftvel);
 
         diff = _srep.driftDistanceToTime(straw_id, (diff_a - diff_b), 0) / (2.0 * h);
         std::cout << "numerical dr/d([plane " << plane_id << "]DZ) = " << diff << std::endl;
