@@ -341,7 +341,7 @@ double GaussianDriftFit::DOCAresidual(ComboHit const& sh, const std::vector<doub
   double hit_t0 = sh.propTime() + traj_time + t0 + srep.driftTimeOffset(sh.strawId(), 0, 0, pca.dca());
   double measuredDistance = srep.driftTimeToDistance(sh.strawId(), sh.time()-hit_t0, 0);
 
-  return (pca.s2() > 0 ? predictedDistance: -predictedDistance) - measuredDistance;
+  return (pca.s1() > 0 ? predictedDistance: -predictedDistance) - measuredDistance;
 }
 
 double GaussianDriftFit::reduced_chisq(const std::vector<double> &x)
