@@ -540,17 +540,14 @@ bool AlignTrackCollector::filter_CosmicTrackSeedCollection(
 
           plane_origin.x(), plane_origin.y(), plane_origin.z(), panel_origin.x(), panel_origin.y(),
           panel_origin.z(), driftvel);
-
+      
+      // The following are based on reco performed using current alignment parameters
       double dca_resid = fit_object.DOCAresidual(straw_hit, sts);
       double drift_res_dca = _srep.driftDistanceError(straw_hit.strawId(), 0, 0, pca.dca());
       double signdca = (pca.s2() > 0 ? pca.dca() : -pca.dca());
 
       double time_resid = fit_object.TimeResidual(straw_hit, sts);
       double drift_res = _srep.driftTimeError(straw_hit.strawId(), 0, 0, pca.dca());
-
-      // The following are based on reco performed using current alignment parameters
-      // FIXME: confusing
-
 
 
       // FIXME! use newly implemented chisq function in fit object
@@ -565,6 +562,7 @@ bool AlignTrackCollector::filter_CosmicTrackSeedCollection(
       planes_traversed.insert(plane_id);
       panels_traversed.insert(panel_uuid);
 
+      // fill tree info
       doca_residual[nHits] = dca_resid;
       time_residual[nHits] = time_resid;
       doca_resid_err[nHits] = drift_res_dca;
@@ -577,9 +575,11 @@ bool AlignTrackCollector::filter_CosmicTrackSeedCollection(
       plane_uid[nHits] = plane_id;
 
       if (_diag > 1) {
-        std::cout << "pl" << plane_id << " pa" << panel_uuid << ": dcaresid " << dca_resid << " +- "
+        std::cout << "pl" << plane_id << " pa" << panel_uuid 
+                  << ": dcaresid " << dca_resid << " +- "
                   << drift_res_dca << std::endl;
-        std::cout << ": timeresid " << time_resid << " +- " << drift_res << std::endl;
+        std::cout << ": timeresid " << time_resid << " +- " 
+                  << drift_res << std::endl;
       }
 
       // diagnostics!
@@ -612,7 +612,7 @@ bool AlignTrackCollector::filter_CosmicTrackSeedCollection(
           std::cout << "----------------------------------" << std::endl;
 
           // throw cet::exception("ALIGNMENT") << "Output of generated functions
-          // (AlignmentDerivatives) are not consistent!";
+          // (AlignmentDerivatives) are not consistent within expected tolerance!";
         }
 
         std::cout << "dr/d([A0,B0,A1,B1,T0]): [" << derivativesLocal[0] // A0
