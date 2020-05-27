@@ -219,14 +219,15 @@ bool AlignTrackSelector::filter_CosmicTrackSeedCollection(art::Event const& even
     std::set<uint16_t> planes_traversed;
     std::set<uint16_t> panels_traversed;
 
-    XYZVec track_pos(st.MinuitParams.A0, 0, st.MinuitParams.B0);
-    XYZVec track_dir(st.MinuitParams.A1, -1, st.MinuitParams.B1);
-
     A0 = st.MinuitParams.A0;
     A1 = st.MinuitParams.A1;
     B0 = st.MinuitParams.B0;
     B1 = st.MinuitParams.B1;
     T0 = st.MinuitParams.T0;
+    
+    CLHEP::Hep3Vector intercept(A0, 0, B0);
+    CLHEP::Hep3Vector dir(A1, -1, B1);
+    dir = dir.unit();
 
     GaussianDriftFit fit_object(sts._straw_chits, _srep, &tracker);
 
@@ -258,23 +259,19 @@ bool AlignTrackSelector::filter_CosmicTrackSeedCollection(art::Event const& even
       auto plane_id = straw_id.getPlane();
       auto panel_uuid = straw_id.uniquePanel();
 
-      double resid_tmp = fit_object.DOCAresidual(straw_hit, sts);
+      double doca_resid = fit_object.DOCAresidual(straw_hit, sts);
       double time_resid = fit_object.TimeResidual(straw_hit, sts);
-      
-      CLHEP::Hep3Vector intercept(A0, 0, B0);
-      CLHEP::Hep3Vector dir(A1, -1, B1);
-      dir = dir.unit();
+
       TwoLinePCA pca(straw.getMidPoint(), straw.getDirection(), intercept, dir);
 
-      double drift_res = _srep.driftTimeError(straw_hit.strawId(), 0, 0, pca.dca());
-      double resid_err_tmp = _srep.driftTimeToDistance(
-          straw_hit.strawId(), drift_res, 0); // fit_object.DOCAresidualError(straw_hit, sts);
+      double drift_res_time = _srep.driftTimeError(straw_hit.strawId(), 0, 0, pca.dca());
+      double drift_res_dist = _srep.driftDistanceError(straw_hit.strawId(), 0, 0, pca.dca());
 
       // FIXME! use newly implemented chisq function in fit object
-      chisq += pow(time_resid / drift_res, 2);
-      chisq_doca += pow(resid_tmp / resid_err_tmp, 2);
+      chisq += pow(time_resid / drift_res_time, 2);
+      chisq_doca += pow(doca_resid / drift_res_dist, 2);
 
-      if (isnan(resid_tmp) || isnan(time_resid) || isnan(drift_res)) {
+      if (isnan(doca_resid) || isnan(time_resid) || isnan(drift_res_time)) {
         bad_track = true;
         continue;
       }
@@ -283,8 +280,8 @@ bool AlignTrackSelector::filter_CosmicTrackSeedCollection(art::Event const& even
       panels_traversed.insert(panel_uuid);
 
       if (_diag > 2) {
-        std::cout << "pl" << plane_id << " pa" << panel_uuid << ": resid " << resid_tmp << " +- "
-                  << resid_err_tmp << std::endl;
+        std::cout << "pl" << plane_id << " pa" << panel_uuid << ": dcaresid " << doca_resid
+                  << " +- " << drift_res_dist << std::endl;
       }
 
       // avoid outlier hits when applying this cut
@@ -317,15 +314,10 @@ bool AlignTrackSelector::filter_CosmicTrackSeedCollection(art::Event const& even
 
       // track acceptance cuts
       if ((min_plane_traverse != 0 && planes_trav < min_plane_traverse) ||
-
           (min_panel_traverse_per_plane != 0 &&
            (panels_trav / planes_trav) < min_panel_traverse_per_plane) ||
-
           (pvalue > max_pvalue) || (max_time_res_track > max_timeres && max_timeres > 0) ||
-
-          (nHits < min_track_hits) ||
-
-          bad_track) {
+          (nHits < min_track_hits) || bad_track) {
 
         if (_diag > 0) {
           std::cout << "track failed quality cuts" << std::endl;
