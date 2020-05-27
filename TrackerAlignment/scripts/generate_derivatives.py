@@ -464,7 +464,7 @@ def main():
     c_header = h_template % '\n\n'.join(functions)
 
     source_filename = os.path.join(base_path, 'src/AlignmentDerivatives.cc')
-    header_filename = os.path.join(base_path, 'src/AlignmentDerivatives.cc')
+    header_filename = os.path.join(base_path, 'inc/AlignmentDerivatives.hh')
 
     with open(source_filename, 'w') as f:
         print ("writing %s.." % source_filename)
