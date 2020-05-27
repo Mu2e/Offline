@@ -157,9 +157,10 @@ def BaBarLibs():
 # Walk the directory tree to locate all SConscript files.
 def sconscriptList(mu2eOpts):
     ss=[]
+    ss_append = ss.append
     for root,dirs,files in os.walk('.'):
         for file in files:
-            if file == 'SConscript': ss.append('%s/%s'%(root[2:],file))
+            if file == 'SConscript': ss_append(os.path.join(root[2:],file))
 
     # If we are making a build for the trigger, do not build everything.
     if mu2eOpts["trigger"] == 'on':
