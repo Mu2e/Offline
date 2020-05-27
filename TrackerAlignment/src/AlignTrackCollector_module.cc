@@ -540,7 +540,7 @@ bool AlignTrackCollector::filter_CosmicTrackSeedCollection(
 
           plane_origin.x(), plane_origin.y(), plane_origin.z(), panel_origin.x(), panel_origin.y(),
           panel_origin.z(), driftvel);
-      
+
       // The following are based on reco performed using current alignment parameters
       double dca_resid = fit_object.DOCAresidual(straw_hit, sts);
       double drift_res_dca = _srep.driftDistanceError(straw_hit.strawId(), 0, 0, pca.dca());
@@ -548,7 +548,6 @@ bool AlignTrackCollector::filter_CosmicTrackSeedCollection(
 
       double time_resid = fit_object.TimeResidual(straw_hit, sts);
       double drift_res = _srep.driftTimeError(straw_hit.strawId(), 0, 0, pca.dca());
-
 
       // FIXME! use newly implemented chisq function in fit object
       chisq += pow(time_resid / drift_res, 2);
@@ -575,11 +574,9 @@ bool AlignTrackCollector::filter_CosmicTrackSeedCollection(
       plane_uid[nHits] = plane_id;
 
       if (_diag > 1) {
-        std::cout << "pl" << plane_id << " pa" << panel_uuid 
-                  << ": dcaresid " << dca_resid << " +- "
+        std::cout << "pl" << plane_id << " pa" << panel_uuid << ": dcaresid " << dca_resid << " +- "
                   << drift_res_dca << std::endl;
-        std::cout << ": timeresid " << time_resid << " +- " 
-                  << drift_res << std::endl;
+        std::cout << ": timeresid " << time_resid << " +- " << drift_res << std::endl;
       }
 
       // diagnostics!
@@ -615,6 +612,13 @@ bool AlignTrackCollector::filter_CosmicTrackSeedCollection(
           // (AlignmentDerivatives) are not consistent within expected tolerance!";
         }
 
+        std::cout << "[A0,B0,A1,B1,T0]: [" << A0 // A0
+                  << ", " << B0                  // B0
+                  << ", " << A1                  // A1
+                  << ", " << B1                  // B1
+                  << ", " << T0;                 // T0
+        std::cout << "]" << std::endl;
+
         std::cout << "dr/d([A0,B0,A1,B1,T0]): [" << derivativesLocal[0] // A0
                   << ", " << derivativesLocal[1]                        // B0
                   << ", " << derivativesLocal[2]                        // A1
@@ -637,8 +641,6 @@ bool AlignTrackCollector::filter_CosmicTrackSeedCollection(
         derivativesGlobal.clear();
 
         double h = 1e-7;
-
-        // double linvel = 0.0625;
 
         // PARTIAL DOCA DERIVATIVE: A0
 
@@ -844,7 +846,6 @@ bool AlignTrackCollector::filter_CosmicTrackSeedCollection(
       // end of derivative diagnostics!
       // end of derivative diagnostics!
       // end of derivative diagnostics!
-
 
       // avoid outlier hits when applying this cut
       if (!straw_hit._flag.hasAnyProperty(StrawHitFlag::outlier)) {
