@@ -3,6 +3,9 @@
 #
 import os, re, string, sys
 
+import SCons 
+
+SCons.Defaults.DefaultEnvironment(tools = []) 
 # Functions that do small tasks and build lists
 import sconstruct_helper as sch
 # handles how the input files are collected and the output files are named
@@ -68,6 +71,7 @@ env = Environment( CPPPATH = sch.cppPath(mu2eOpts),   # $ART_INC ...
 
 # Make the Compilation DB generator available in the environment
 env.Tool('compilation_db')
+env.Decider('MD5-timestamp')
 
 # Define and register the rule for building dictionaries.
 # sources are classes.h, classes_def.xml,
