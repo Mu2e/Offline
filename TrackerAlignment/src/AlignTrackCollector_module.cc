@@ -446,17 +446,17 @@ bool AlignTrackCollector::filter_CosmicTrackSeedCollection(
     std::set<uint16_t> planes_traversed;
     std::set<uint16_t> panels_traversed;
 
-    CLHEP::Hep3Vector intercept(A0, 0, B0);
-    CLHEP::Hep3Vector dir(A1, -1, B1);
-    dir = dir.unit();
-
-    GaussianDriftFit fit_object(sts._straw_chits, _srep, &tracker);
-
     A0 = st.MinuitParams.A0;
     A1 = st.MinuitParams.A1;
     B0 = st.MinuitParams.B0;
     B1 = st.MinuitParams.B1;
     T0 = st.MinuitParams.T0;
+
+    CLHEP::Hep3Vector intercept(A0, 0, B0);
+    CLHEP::Hep3Vector dir(A1, -1, B1);
+    dir = dir.unit();
+
+    GaussianDriftFit fit_object(sts._straw_chits, _srep, &tracker);
 
     chisq = 0;
     chisq_doca = 0;
