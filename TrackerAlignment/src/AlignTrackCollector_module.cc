@@ -511,7 +511,7 @@ bool AlignTrackCollector::filter_CosmicTrackSeedCollection(
       auto panel_uuid = straw_id.uniquePanel();
       auto panel_id = straw_id.getPanelId();
 
-      // geometry info for derivatives
+      // nominal geometry info for derivatives
       auto const& plane_origin = nominalTracker.getPlane(plane_id).origin();
       auto const& panel_origin = nominalTracker.getPanel(panel_id).straw0MidPoint();
       auto const& nominalStraw_mp = nominalStraw.getMidPoint();
