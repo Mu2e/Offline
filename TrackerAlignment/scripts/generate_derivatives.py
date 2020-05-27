@@ -6,6 +6,8 @@
 # TODO: unit testing
 # TODO: DOCAtoTOCA should be a replica of D2T which properly accounts for nonlinear drift effects
 
+import os
+
 import sympy
 from sympy import Symbol, Matrix, diff, sqrt, atan2, cos, sin
 from sympy.physics.vector import ReferenceFrame
@@ -393,16 +395,29 @@ def generate_code_function(name, return_type, expr, symbols):
 
 
 def main():
-    function_prefix = "CosmicTrack_DCA"
+    if 'MU2E_BASE_RELEASE' not in os.environ:
+        print ("Please source setup.sh for the Offline build you want to generate the code for.")
+        return
+    
+    base_path = os.environ['MU2E_BASE_RELEASE']
+    package_name = 'TrackerAlignment'
 
+    print ("MU2E_BASE_RELEASE: %s" % base_path)
+    print ("Package: %s" % package_name)
+
+    base_path = os.path.join(base_path, package_name)
+
+    print ("algebra...")
     exprs, params, aligned_doca, aligned_wpos, aligned_wdir = generate_expressions()
 
     if VALIDATE:
         return
 
-    lgparams = params['local'] + params['global']
+    print ("code generation...")
 
     generated_code = []
+    function_prefix = "CosmicTrack_DCA"
+    lgparams = params['local'] + params['global']
 
     # generate code for DOCA calculation ( no global parameter dependence )
     generated_code.append(generate_code_function(
@@ -448,12 +463,18 @@ def main():
     c_code = c_template % ('\n\n'.join(code))
     c_header = h_template % '\n\n'.join(functions)
 
-    with open('src/AlignmentDerivatives.cc', 'w') as f:
+    source_filename = os.path.join(base_path, 'src/AlignmentDerivatives.cc')
+    header_filename = os.path.join(base_path, 'src/AlignmentDerivatives.cc')
+
+    with open(source_filename, 'w') as f:
+        print ("writing %s.." % source_filename)
         f.write(c_code)
 
-    with open('inc/AlignmentDerivatives.hh', 'w') as f:
+    with open(header_filename, 'w') as f:
+        print ("writing %s.." % header_filename)
         f.write(c_header)
 
+    print ("Wrote %d generated functions successfully. Please validate before using in production." % len(functions))
 
 if __name__ == "__main__":
     main()

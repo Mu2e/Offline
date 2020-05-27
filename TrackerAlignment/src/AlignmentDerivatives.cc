@@ -79,11 +79,11 @@ double CosmicTrack_DCA(double a0, double b0, double a1, double b1, double t0, do
     double R70 = R48*(R47*R69 - R64 - R66 - R68);
     double R71 = R48*(-R47*(R64 + R66 + R68) + R69);
     double R72 = sqrt(pow(R41*R70 - R43*R71 + R63, 2) + pow(R42*R71 + R44*R70 + R65, 2) + pow(R45*R70 - R46*R71 + R67, 2));
-    double result = ((R71 > 0) ? (
+    double result = ((R70 > 0) ? (
    R72
 )
 : (
-   -1.0*R72
+   -R72
 ));
     return result;
 }
@@ -318,11 +318,11 @@ double CosmicTrack_DCA_Deriv_a0(double a0, double b0, double a1, double b1, doub
     double R76 = R75*(-R45 + R46*R47);
     double R77 = R75*(-R45*R47 + R46);
     double R78 = ((1.0/2.0)*R72*(R41*R77 - R43*R76) + (1.0/2.0)*R73*(R42*R76 + R44*R77) + (1.0/2.0)*R74*(-R45*R76 + R46*R77 - 2))/sqrt(pow(R72, 2) + pow(R73, 2) + pow(R74, 2));
-    double result = ((R71 > 0) ? (
+    double result = ((R70 > 0) ? (
    R78
 )
 : (
-   -1.0*R78
+   -R78
 ))/driftvel;
     return result;
 }
@@ -409,11 +409,11 @@ double CosmicTrack_DCA_Deriv_b0(double a0, double b0, double a1, double b1, doub
     double R76 = R75*(R41*R47 - R43);
     double R77 = R75*(R41 - R43*R47);
     double R78 = ((1.0/2.0)*R72*(R41*R77 - R43*R76 - 2) + (1.0/2.0)*R73*(R42*R76 + R44*R77) + (1.0/2.0)*R74*(R45*R77 - R46*R76))/sqrt(pow(R72, 2) + pow(R73, 2) + pow(R74, 2));
-    double result = ((R71 > 0) ? (
+    double result = ((R70 > 0) ? (
    R78
 )
 : (
-   -1.0*R78
+   -R78
 ))/driftvel;
     return result;
 }
@@ -523,11 +523,11 @@ double CosmicTrack_DCA_Deriv_a1(double a0, double b0, double a1, double b1, doub
     double R99 = R44*R94;
     double R100 = R44*R97;
     double R101 = ((1.0/2.0)*R79*(R41*R95 + R41*R98 - R45*R94 - R45*R97 + R85*R86) + (1.0/2.0)*R81*(R100 + R46*R95 + R46*R98 - R84*R86 + R99) + (1.0/2.0)*R82*(-R100*a1 + R47*R95 + R47*R98 - 2*R80 + R86*R89 - R99*a1))/sqrt(pow(R79, 2) + pow(R81, 2) + pow(R82, 2));
-    double result = ((R78 > 0) ? (
+    double result = ((R76 > 0) ? (
    R101
 )
 : (
-   -1.0*R101
+   -R101
 ))/driftvel;
     return result;
 }
@@ -535,78 +535,78 @@ double CosmicTrack_DCA_Deriv_a1(double a0, double b0, double a1, double b1, doub
 
 double CosmicTrack_DCA_Deriv_b1(double a0, double b0, double a1, double b1, double t0, double plane_dx, double plane_dy, double plane_dz, double plane_a, double plane_b, double plane_g, double panel_dx, double panel_dy, double panel_dz, double panel_a, double panel_b, double panel_g, double wire_x, double wire_y, double wire_z, double wdir_x, double wdir_y, double wdir_z, double plane_x, double plane_y, double plane_z, double panel_straw0x, double panel_straw0y, double panel_straw0z, double driftvel)
 {
-    double R0 = cos(plane_a);
-    double R1 = cos(plane_b);
-    double R2 = R0*R1;
-    double R3 = sin(panel_a);
-    double R4 = cos(panel_b);
-    double R5 = 1.0*R3*R4;
-    double R6 = sin(plane_b);
-    double R7 = sin(panel_g);
-    double R8 = cos(panel_a);
-    double R9 = R7*R8;
-    double R10 = sin(panel_b);
-    double R11 = cos(panel_g);
-    double R12 = R11*R3;
-    double R13 = R10*R12 - R9;
-    double R14 = sqrt(pow(panel_straw0x, 2) + pow(panel_straw0y, 2));
-    double R15 = 1.0/R14;
-    double R16 = R15*panel_straw0x;
-    double R17 = R11*R8;
-    double R18 = R3*R7;
-    double R19 = R10*R18 + R17;
-    double R20 = R15*panel_straw0y;
-    double R21 = 1.0*R13*R16 - 1.0*R19*R20;
-    double R22 = 1.0*R13*R20 + 1.0*R16*R19;
-    double R23 = sin(plane_a);
-    double R24 = R1*R23;
-    double R25 = R2*R5 - R21*R6 + R22*R24;
-    double R26 = sin(plane_g);
-    double R27 = R23*R26;
-    double R28 = cos(plane_g);
-    double R29 = R0*R28;
-    double R30 = R27 + R29*R6;
-    double R31 = R1*R28;
-    double R32 = R0*R26;
-    double R33 = R23*R28;
-    double R34 = -R32 + R33*R6;
-    double R35 = R21*R31 + R22*R34 + R30*R5;
-    double R36 = R32*R6 - R33;
-    double R37 = R1*R26;
-    double R38 = R27*R6 + R29;
-    double R39 = R21*R37 + R22*R38 + R36*R5;
-    double R40 = pow(pow(R25, 2) + pow(R35, 2) + pow(R39, 2), -1.0/2.0);
-    double R41 = R25*R40;
-    double R42 = pow(b1, 2);
-    double R43 = R42 + pow(a1, 2) + 1;
-    double R44 = pow(R43, -1.0/2.0);
-    double R45 = R41*R44;
-    double R46 = R39*R40;
-    double R47 = R35*R40;
-    double R48 = R44*a1;
-    double R49 = -R44*R46 + R45*b1 + R47*R48;
+    double R0 = pow(b1, 2);
+    double R1 = R0 + pow(a1, 2) + 1;
+    double R2 = pow(R1, -1.0/2.0);
+    double R3 = cos(plane_a);
+    double R4 = cos(plane_b);
+    double R5 = R3*R4;
+    double R6 = sin(panel_a);
+    double R7 = cos(panel_b);
+    double R8 = 1.0*R6*R7;
+    double R9 = sin(plane_b);
+    double R10 = sin(panel_g);
+    double R11 = cos(panel_a);
+    double R12 = R10*R11;
+    double R13 = sin(panel_b);
+    double R14 = cos(panel_g);
+    double R15 = R14*R6;
+    double R16 = -R12 + R13*R15;
+    double R17 = sqrt(pow(panel_straw0x, 2) + pow(panel_straw0y, 2));
+    double R18 = 1.0/R17;
+    double R19 = R18*panel_straw0x;
+    double R20 = R11*R14;
+    double R21 = R10*R6;
+    double R22 = R13*R21 + R20;
+    double R23 = R18*panel_straw0y;
+    double R24 = 1.0*R16*R19 - 1.0*R22*R23;
+    double R25 = 1.0*R16*R23 + 1.0*R19*R22;
+    double R26 = sin(plane_a);
+    double R27 = R26*R4;
+    double R28 = -R24*R9 + R25*R27 + R5*R8;
+    double R29 = sin(plane_g);
+    double R30 = R26*R29;
+    double R31 = cos(plane_g);
+    double R32 = R3*R31;
+    double R33 = R30 + R32*R9;
+    double R34 = R31*R4;
+    double R35 = R29*R3;
+    double R36 = R26*R31;
+    double R37 = -R35 + R36*R9;
+    double R38 = R24*R34 + R25*R37 + R33*R8;
+    double R39 = R35*R9 - R36;
+    double R40 = R29*R4;
+    double R41 = R30*R9 + R32;
+    double R42 = R24*R40 + R25*R41 + R39*R8;
+    double R43 = pow(pow(R28, 2) + pow(R38, 2) + pow(R42, 2), -1.0/2.0);
+    double R44 = R28*R43;
+    double R45 = R2*R44;
+    double R46 = R42*R43;
+    double R47 = R38*R43;
+    double R48 = R2*a1;
+    double R49 = -R2*R46 + R45*b1 + R47*R48;
     double R50 = 1.0 - pow(R49, 2);
     double R51 = 1.0/R50;
     double R52 = panel_dz + panel_straw0z - plane_z;
-    double R53 = R16*panel_dx - R20*panel_dy + panel_straw0x;
-    double R54 = R16*panel_dy + R20*panel_dx + panel_straw0y;
-    double R55 = -R14 + sqrt(pow(wire_x, 2) + pow(wire_y, 2));
-    double R56 = R16*R4;
-    double R57 = R20*R4;
-    double R58 = R11*R56 - R57*R7;
-    double R59 = R11*R57 + R56*R7;
+    double R53 = R19*panel_dx - R23*panel_dy + panel_straw0x;
+    double R54 = R19*panel_dy + R23*panel_dx + panel_straw0y;
+    double R55 = -R17 + sqrt(pow(wire_x, 2) + pow(wire_y, 2));
+    double R56 = R19*R7;
+    double R57 = R23*R7;
+    double R58 = -R10*R57 + R14*R56;
+    double R59 = R10*R56 + R14*R57;
     double R60 = -panel_straw0z + wire_z;
-    double R61 = R4*R8;
-    double R62 = R10*R17 + R18;
-    double R63 = R10*R9 - R12;
-    double R64 = R16*R62 - R20*R63;
-    double R65 = R16*R63 + R20*R62;
-    double R66 = R2*R52 + R24*R54 - R53*R6 + R55*(-R10*R2 + R24*R59 - R58*R6) + R60*(R2*R61 + R24*R65 - R6*R64) - b0 + plane_dz + plane_z;
-    double R67 = R44*R66;
-    double R68 = R36*R52 + R37*R53 + R38*R54 + R55*(-R10*R36 + R37*R58 + R38*R59) + R60*(R36*R61 + R37*R64 + R38*R65) + plane_dy;
-    double R69 = R30*R52 + R31*R53 + R34*R54 + R55*(-R10*R30 + R31*R58 + R34*R59) + R60*(R30*R61 + R31*R64 + R34*R65) - a0 + plane_dx;
-    double R70 = -R44*R68 + R48*R69 + R67*b1;
-    double R71 = R41*R66;
+    double R61 = R11*R7;
+    double R62 = R13*R20 + R21;
+    double R63 = R12*R13 - R15;
+    double R64 = R19*R62 - R23*R63;
+    double R65 = R19*R63 + R23*R62;
+    double R66 = R27*R54 + R5*R52 - R53*R9 + R55*(-R13*R5 + R27*R59 - R58*R9) + R60*(R27*R65 + R5*R61 - R64*R9) - b0 + plane_dz + plane_z;
+    double R67 = R2*R66;
+    double R68 = R39*R52 + R40*R53 + R41*R54 + R55*(-R13*R39 + R40*R58 + R41*R59) + R60*(R39*R61 + R40*R64 + R41*R65) + plane_dy;
+    double R69 = R33*R52 + R34*R53 + R37*R54 + R55*(-R13*R33 + R34*R58 + R37*R59) + R60*(R33*R61 + R34*R64 + R37*R65) - a0 + plane_dx;
+    double R70 = -R2*R68 + R48*R69 + R67*b1;
+    double R71 = R44*R66;
     double R72 = R46*R68;
     double R73 = R47*R69;
     double R74 = -R71 - R72 - R73;
@@ -614,15 +614,15 @@ double CosmicTrack_DCA_Deriv_b1(double a0, double b0, double a1, double b1, doub
     double R76 = R51*R75;
     double R77 = -R49*(R71 + R72 + R73) + R70;
     double R78 = R51*R77;
-    double R79 = R44*R78;
-    double R80 = R41*R76 + R66 - R79*b1;
+    double R79 = R2*R78;
+    double R80 = R44*R76 + R66 - R79*b1;
     double R81 = R46*R76 + R68 + R79;
     double R82 = R47*R76 - R48*R78 + R69;
-    double R83 = pow(R43, -3.0/2.0);
+    double R83 = pow(R1, -3.0/2.0);
     double R84 = R83*b1;
     double R85 = 2*R78;
-    double R86 = R42*R83;
-    double R87 = R41*R86;
+    double R86 = R0*R83;
+    double R87 = R44*R86;
     double R88 = R46*R84;
     double R89 = R84*a1;
     double R90 = R47*R89;
@@ -630,18 +630,18 @@ double CosmicTrack_DCA_Deriv_b1(double a0, double b0, double a1, double b1, doub
     double R92 = -R66*R86 + R67 + R68*R84 - R69*R89;
     double R93 = 2*R51;
     double R94 = R93*(R74*R91 + R92);
-    double R95 = R44*R94;
+    double R95 = R2*R94;
     double R96 = R93*(R49*R92 + R70*R91);
     double R97 = 2*R49*(2*R45 - 2*R87 + 2*R88 - 2*R90)/pow(R50, 2);
     double R98 = R77*R97;
-    double R99 = R44*R98;
+    double R99 = R2*R98;
     double R100 = R75*R97;
-    double R101 = ((1.0/2.0)*R80*(R100*R41 + R41*R96 - 2*R79 + R85*R86 - R95*b1 - R99*b1) + (1.0/2.0)*R81*(R100*R46 + R46*R96 - R84*R85 + R95 + R99) + (1.0/2.0)*R82*(R100*R47 + R47*R96 - R48*R94 - R48*R98 + R85*R89))/sqrt(pow(R80, 2) + pow(R81, 2) + pow(R82, 2));
-    double result = ((R78 > 0) ? (
+    double R101 = ((1.0/2.0)*R80*(R100*R44 + R44*R96 - 2*R79 + R85*R86 - R95*b1 - R99*b1) + (1.0/2.0)*R81*(R100*R46 + R46*R96 - R84*R85 + R95 + R99) + (1.0/2.0)*R82*(R100*R47 + R47*R96 - R48*R94 - R48*R98 + R85*R89))/sqrt(pow(R80, 2) + pow(R81, 2) + pow(R82, 2));
+    double result = ((R76 > 0) ? (
    R101
 )
 : (
-   -1.0*R101
+   -R101
 ))/driftvel;
     return result;
 }
@@ -735,11 +735,11 @@ double CosmicTrack_DCA_Deriv_plane_dx(double a0, double b0, double a1, double b1
     double R76 = R75*(R45 - R46*R47);
     double R77 = R75*(R45*R47 - R46);
     double R78 = ((1.0/2.0)*R72*(R41*R77 - R43*R76) + (1.0/2.0)*R73*(R42*R76 + R44*R77) + (1.0/2.0)*R74*(-R45*R76 + R46*R77 + 2))/sqrt(pow(R72, 2) + pow(R73, 2) + pow(R74, 2));
-    double result = ((R71 > 0) ? (
+    double result = ((R70 > 0) ? (
    R78
 )
 : (
-   -1.0*R78
+   -R78
 ))/driftvel;
     return result;
 }
@@ -826,11 +826,11 @@ double CosmicTrack_DCA_Deriv_plane_dy(double a0, double b0, double a1, double b1
     double R76 = R75*(-R42 - R44*R47);
     double R77 = R75*(-R42*R47 - R44);
     double R78 = ((1.0/2.0)*R72*(R41*R77 - R43*R76) + (1.0/2.0)*R73*(R42*R76 + R44*R77 + 2) + (1.0/2.0)*R74*(R45*R77 - R46*R76))/sqrt(pow(R72, 2) + pow(R73, 2) + pow(R74, 2));
-    double result = ((R71 > 0) ? (
+    double result = ((R70 > 0) ? (
    R78
 )
 : (
-   -1.0*R78
+   -R78
 ))/driftvel;
     return result;
 }
@@ -917,11 +917,11 @@ double CosmicTrack_DCA_Deriv_plane_dz(double a0, double b0, double a1, double b1
     double R76 = R75*(-R41*R47 + R43);
     double R77 = R75*(-R41 + R43*R47);
     double R78 = ((1.0/2.0)*R72*(R41*R77 - R43*R76 + 2) + (1.0/2.0)*R73*(R42*R76 + R44*R77) + (1.0/2.0)*R74*(R45*R77 - R46*R76))/sqrt(pow(R72, 2) + pow(R73, 2) + pow(R74, 2));
-    double result = ((R71 > 0) ? (
+    double result = ((R70 > 0) ? (
    R78
 )
 : (
-   -1.0*R78
+   -R78
 ))/driftvel;
     return result;
 }
@@ -929,149 +929,149 @@ double CosmicTrack_DCA_Deriv_plane_dz(double a0, double b0, double a1, double b1
 
 double CosmicTrack_DCA_Deriv_plane_a(double a0, double b0, double a1, double b1, double t0, double plane_dx, double plane_dy, double plane_dz, double plane_a, double plane_b, double plane_g, double panel_dx, double panel_dy, double panel_dz, double panel_a, double panel_b, double panel_g, double wire_x, double wire_y, double wire_z, double wdir_x, double wdir_y, double wdir_z, double plane_x, double plane_y, double plane_z, double panel_straw0x, double panel_straw0y, double panel_straw0z, double driftvel)
 {
-    double R0 = cos(plane_a);
-    double R1 = cos(plane_b);
-    double R2 = R0*R1;
-    double R3 = sin(panel_a);
-    double R4 = cos(panel_b);
-    double R5 = R3*R4;
-    double R6 = 1.0*R5;
-    double R7 = sin(plane_b);
-    double R8 = sin(panel_g);
-    double R9 = cos(panel_a);
-    double R10 = R8*R9;
-    double R11 = sin(panel_b);
-    double R12 = cos(panel_g);
-    double R13 = R12*R3;
-    double R14 = -R10 + R11*R13;
-    double R15 = sqrt(pow(panel_straw0x, 2) + pow(panel_straw0y, 2));
-    double R16 = 1.0/R15;
-    double R17 = R16*panel_straw0x;
-    double R18 = R12*R9;
-    double R19 = R3*R8;
-    double R20 = R11*R19 + R18;
-    double R21 = R16*panel_straw0y;
-    double R22 = 1.0*R14*R17 - 1.0*R20*R21;
-    double R23 = R17*R20;
-    double R24 = R14*R21;
-    double R25 = R23 + R24;
-    double R26 = 1.0*R25;
-    double R27 = sin(plane_a);
-    double R28 = R1*R27;
-    double R29 = R2*R6 - R22*R7 + R26*R28;
-    double R30 = sin(plane_g);
-    double R31 = R27*R30;
-    double R32 = cos(plane_g);
-    double R33 = R0*R32;
-    double R34 = R33*R7;
-    double R35 = R31 + R34;
-    double R36 = R1*R32;
-    double R37 = R0*R30;
-    double R38 = R27*R32;
-    double R39 = R38*R7;
-    double R40 = -R37 + R39;
-    double R41 = R22*R36 + R26*R40 + R35*R6;
-    double R42 = R37*R7;
-    double R43 = -R38 + R42;
-    double R44 = R1*R30;
-    double R45 = R31*R7;
-    double R46 = R33 + R45;
-    double R47 = R22*R44 + R26*R46 + R43*R6;
-    double R48 = pow(R29, 2) + pow(R41, 2) + pow(R47, 2);
-    double R49 = pow(R48, -1.0/2.0);
-    double R50 = R29*R49;
-    double R51 = pow(pow(a1, 2) + pow(b1, 2) + 1, -1.0/2.0);
-    double R52 = R51*b1;
-    double R53 = R47*R49;
-    double R54 = R51*a1;
-    double R55 = R41*R49;
-    double R56 = R50*R52 - R51*R53 + R54*R55;
+    double R0 = pow(pow(a1, 2) + pow(b1, 2) + 1, -1.0/2.0);
+    double R1 = R0*b1;
+    double R2 = cos(plane_a);
+    double R3 = cos(plane_b);
+    double R4 = R2*R3;
+    double R5 = sin(panel_a);
+    double R6 = cos(panel_b);
+    double R7 = R5*R6;
+    double R8 = 1.0*R7;
+    double R9 = sin(plane_b);
+    double R10 = sin(panel_g);
+    double R11 = cos(panel_a);
+    double R12 = R10*R11;
+    double R13 = sin(panel_b);
+    double R14 = cos(panel_g);
+    double R15 = R14*R5;
+    double R16 = -R12 + R13*R15;
+    double R17 = sqrt(pow(panel_straw0x, 2) + pow(panel_straw0y, 2));
+    double R18 = 1.0/R17;
+    double R19 = R18*panel_straw0x;
+    double R20 = R11*R14;
+    double R21 = R10*R5;
+    double R22 = R13*R21 + R20;
+    double R23 = R18*panel_straw0y;
+    double R24 = 1.0*R16*R19 - 1.0*R22*R23;
+    double R25 = R19*R22;
+    double R26 = R16*R23;
+    double R27 = R25 + R26;
+    double R28 = 1.0*R27;
+    double R29 = sin(plane_a);
+    double R30 = R29*R3;
+    double R31 = -R24*R9 + R28*R30 + R4*R8;
+    double R32 = sin(plane_g);
+    double R33 = R29*R32;
+    double R34 = cos(plane_g);
+    double R35 = R2*R34;
+    double R36 = R35*R9;
+    double R37 = R33 + R36;
+    double R38 = R3*R34;
+    double R39 = R2*R32;
+    double R40 = R29*R34;
+    double R41 = R40*R9;
+    double R42 = -R39 + R41;
+    double R43 = R24*R38 + R28*R42 + R37*R8;
+    double R44 = R39*R9;
+    double R45 = -R40 + R44;
+    double R46 = R3*R32;
+    double R47 = R33*R9;
+    double R48 = R35 + R47;
+    double R49 = R24*R46 + R28*R48 + R45*R8;
+    double R50 = pow(R31, 2) + pow(R43, 2) + pow(R49, 2);
+    double R51 = pow(R50, -1.0/2.0);
+    double R52 = R31*R51;
+    double R53 = R49*R51;
+    double R54 = R0*a1;
+    double R55 = R43*R51;
+    double R56 = -R0*R53 + R1*R52 + R54*R55;
     double R57 = 1.0 - pow(R56, 2);
     double R58 = 1.0/R57;
     double R59 = panel_dz + panel_straw0z - plane_z;
-    double R60 = R17*panel_dx - R21*panel_dy + panel_straw0x;
-    double R61 = R17*panel_dy + R21*panel_dx + panel_straw0y;
-    double R62 = -R15 + sqrt(pow(wire_x, 2) + pow(wire_y, 2));
-    double R63 = R17*R4;
-    double R64 = R21*R4;
-    double R65 = R12*R63 - R64*R8;
-    double R66 = R12*R64 + R63*R8;
+    double R60 = R19*panel_dx - R23*panel_dy + panel_straw0x;
+    double R61 = R19*panel_dy + R23*panel_dx + panel_straw0y;
+    double R62 = -R17 + sqrt(pow(wire_x, 2) + pow(wire_y, 2));
+    double R63 = R19*R6;
+    double R64 = R23*R6;
+    double R65 = -R10*R64 + R14*R63;
+    double R66 = R10*R63 + R14*R64;
     double R67 = -panel_straw0z + wire_z;
-    double R68 = R4*R9;
-    double R69 = R11*R18 + R19;
-    double R70 = R10*R11 - R13;
-    double R71 = R17*R69 - R21*R70;
-    double R72 = R17*R70 + R21*R69;
-    double R73 = R2*R59 + R28*R61 - R60*R7 + R62*(-R11*R2 + R28*R66 - R65*R7) + R67*(R2*R68 + R28*R72 - R7*R71) - b0 + plane_dz + plane_z;
-    double R74 = R43*R59 + R44*R60 + R46*R61 + R62*(-R11*R43 + R44*R65 + R46*R66) + R67*(R43*R68 + R44*R71 + R46*R72) + plane_dy;
-    double R75 = R35*R59 + R36*R60 + R40*R61 + R62*(-R11*R35 + R36*R65 + R40*R66) + R67*(R35*R68 + R36*R71 + R40*R72) - a0 + plane_dx;
-    double R76 = -R51*R74 + R52*R73 + R54*R75;
-    double R77 = R49*R73;
-    double R78 = R29*R77;
+    double R68 = R11*R6;
+    double R69 = R13*R20 + R21;
+    double R70 = R12*R13 - R15;
+    double R71 = R19*R69 - R23*R70;
+    double R72 = R19*R70 + R23*R69;
+    double R73 = R30*R61 + R4*R59 - R60*R9 + R62*(-R13*R4 + R30*R66 - R65*R9) + R67*(R30*R72 + R4*R68 - R71*R9) - b0 + plane_dz + plane_z;
+    double R74 = R45*R59 + R46*R60 + R48*R61 + R62*(-R13*R45 + R46*R65 + R48*R66) + R67*(R45*R68 + R46*R71 + R48*R72) + plane_dy;
+    double R75 = R37*R59 + R38*R60 + R42*R61 + R62*(-R13*R37 + R38*R65 + R42*R66) + R67*(R37*R68 + R38*R71 + R42*R72) - a0 + plane_dx;
+    double R76 = -R0*R74 + R1*R73 + R54*R75;
+    double R77 = R51*R73;
+    double R78 = R31*R77;
     double R79 = R53*R74;
-    double R80 = R49*R75;
-    double R81 = R41*R80;
+    double R80 = R51*R75;
+    double R81 = R43*R80;
     double R82 = -R78 - R79 - R81;
     double R83 = R56*R76 + R82;
     double R84 = R58*R83;
     double R85 = -R56*(R78 + R79 + R81) + R76;
     double R86 = R58*R85;
-    double R87 = R50*R84 - R52*R86 + R73;
-    double R88 = R51*R86 + R53*R84 + R74;
+    double R87 = -R1*R86 + R52*R84 + R73;
+    double R88 = R0*R86 + R53*R84 + R74;
     double R89 = -R54*R86 + R55*R84 + R75;
-    double R90 = R28*R59;
-    double R91 = R2*R61;
-    double R92 = R62*(R11*R28 + R2*R66);
-    double R93 = R67*(R2*R72 - R28*R68);
-    double R94 = R2*(1.0*R23 + 1.0*R24);
-    double R95 = -R28*R6 + R94;
-    double R96 = R49*R95;
+    double R90 = R30*R59;
+    double R91 = R4*R61;
+    double R92 = R62*(R13*R30 + R4*R66);
+    double R93 = R67*(-R30*R68 + R4*R72);
+    double R94 = R4*(1.0*R25 + 1.0*R26);
+    double R95 = -R30*R8 + R94;
+    double R96 = R51*R95;
     double R97 = 2*R84;
-    double R98 = R5*(1.0*R37 - 1.0*R39);
-    double R99 = R25*(1.0*R31 + 1.0*R34);
-    double R100 = R5*(-1.0*R33 - 1.0*R45);
-    double R101 = R25*(-1.0*R38 + 1.0*R42);
-    double R102 = (-1.0/2.0*R29*(-2.0*R28*R5 + 2*R94) - 1.0/2.0*R41*(2*R98 + 2*R99) - 1.0/2.0*R47*(2*R100 + 2*R101))/pow(R48, 3.0/2.0);
-    double R103 = R102*R29;
-    double R104 = R52*R96;
-    double R105 = R49*(R100 + R101);
-    double R106 = R105*R51;
+    double R98 = R7*(1.0*R39 - 1.0*R41);
+    double R99 = R27*(1.0*R33 + 1.0*R36);
+    double R100 = R7*(-1.0*R35 - 1.0*R47);
+    double R101 = R27*(-1.0*R40 + 1.0*R44);
+    double R102 = (-1.0/2.0*R31*(-2.0*R30*R7 + 2*R94) - 1.0/2.0*R43*(2*R98 + 2*R99) - 1.0/2.0*R49*(2*R100 + 2*R101))/pow(R50, 3.0/2.0);
+    double R103 = R102*R31;
+    double R104 = R1*R96;
+    double R105 = R51*(R100 + R101);
+    double R106 = R0*R105;
     double R107 = R98 + R99;
-    double R108 = R107*R49;
+    double R108 = R107*R51;
     double R109 = R108*R54;
-    double R110 = R103*R52;
-    double R111 = R102*R47;
-    double R112 = R111*R51;
-    double R113 = R102*R41;
+    double R110 = R1*R103;
+    double R111 = R102*R49;
+    double R112 = R0*R111;
+    double R113 = R102*R43;
     double R114 = R113*R54;
     double R115 = 2*R56*(2*R104 - 2*R106 + 2*R109 + 2*R110 - 2*R112 + 2*R114)/pow(R57, 2);
     double R116 = R115*R85;
     double R117 = R115*R83;
     double R118 = -R90 + R91 + R92 + R93;
-    double R119 = R37 - R39;
+    double R119 = R39 - R41;
     double R120 = R119*R59;
-    double R121 = R35*R61;
-    double R122 = R62*(R11*R40 + R35*R66);
-    double R123 = R67*(R119*R68 + R35*R72);
+    double R121 = R37*R61;
+    double R122 = R62*(R13*R42 + R37*R66);
+    double R123 = R67*(R119*R68 + R37*R72);
     double R124 = R120 + R121 + R122 + R123;
-    double R125 = -R33 - R45;
+    double R125 = -R35 - R47;
     double R126 = R125*R59;
-    double R127 = R43*R61;
-    double R128 = R62*(R11*R46 + R43*R66);
-    double R129 = R67*(R125*R68 + R43*R72);
+    double R127 = R45*R61;
+    double R128 = R62*(R13*R48 + R45*R66);
+    double R129 = R67*(R125*R68 + R45*R72);
     double R130 = R126 + R127 + R128 + R129;
-    double R131 = R118*R52 + R124*R54 - R130*R51;
+    double R131 = -R0*R130 + R1*R118 + R124*R54;
     double R132 = R104 - R106 + R109 + R110 - R112 + R114;
-    double R133 = -R103*R73 - R105*R74 - R107*R80 - R111*R74 - R113*R75 - R118*R50 - R124*R55 - R130*R53 - R77*R95;
+    double R133 = -R103*R73 - R105*R74 - R107*R80 - R111*R74 - R113*R75 - R118*R52 - R124*R55 - R130*R53 - R77*R95;
     double R134 = 2*R58;
     double R135 = R134*(R131*R56 + R132*R76 + R133);
     double R136 = R134*(R131 + R132*R82 + R133*R56);
-    double R137 = ((1.0/2.0)*R87*(R103*R97 - R116*R52 + R117*R50 + R135*R50 - R136*R52 - 2*R90 + 2*R91 + 2*R92 + 2*R93 + R96*R97) + (1.0/2.0)*R88*(R105*R97 + R111*R97 + R116*R51 + R117*R53 + 2*R126 + 2*R127 + 2*R128 + 2*R129 + R135*R53 + R136*R51) + (1.0/2.0)*R89*(R108*R97 + R113*R97 - R116*R54 + R117*R55 + 2*R120 + 2*R121 + 2*R122 + 2*R123 + R135*R55 - R136*R54))/sqrt(pow(R87, 2) + pow(R88, 2) + pow(R89, 2));
-    double result = ((R86 > 0) ? (
+    double R137 = ((1.0/2.0)*R87*(-R1*R116 - R1*R136 + R103*R97 + R117*R52 + R135*R52 - 2*R90 + 2*R91 + 2*R92 + 2*R93 + R96*R97) + (1.0/2.0)*R88*(R0*R116 + R0*R136 + R105*R97 + R111*R97 + R117*R53 + 2*R126 + 2*R127 + 2*R128 + 2*R129 + R135*R53) + (1.0/2.0)*R89*(R108*R97 + R113*R97 - R116*R54 + R117*R55 + 2*R120 + 2*R121 + 2*R122 + 2*R123 + R135*R55 - R136*R54))/sqrt(pow(R87, 2) + pow(R88, 2) + pow(R89, 2));
+    double result = ((R84 > 0) ? (
    R137
 )
 : (
-   -1.0*R137
+   -R137
 ))/driftvel;
     return result;
 }
@@ -1079,92 +1079,92 @@ double CosmicTrack_DCA_Deriv_plane_a(double a0, double b0, double a1, double b1,
 
 double CosmicTrack_DCA_Deriv_plane_b(double a0, double b0, double a1, double b1, double t0, double plane_dx, double plane_dy, double plane_dz, double plane_a, double plane_b, double plane_g, double panel_dx, double panel_dy, double panel_dz, double panel_a, double panel_b, double panel_g, double wire_x, double wire_y, double wire_z, double wdir_x, double wdir_y, double wdir_z, double plane_x, double plane_y, double plane_z, double panel_straw0x, double panel_straw0y, double panel_straw0z, double driftvel)
 {
-    double R0 = cos(plane_a);
-    double R1 = cos(plane_b);
-    double R2 = R0*R1;
-    double R3 = sin(panel_a);
-    double R4 = cos(panel_b);
-    double R5 = R3*R4;
-    double R6 = 1.0*R5;
-    double R7 = sin(plane_b);
-    double R8 = sin(panel_g);
-    double R9 = cos(panel_a);
-    double R10 = R8*R9;
-    double R11 = sin(panel_b);
-    double R12 = cos(panel_g);
-    double R13 = R12*R3;
-    double R14 = -R10 + R11*R13;
-    double R15 = sqrt(pow(panel_straw0x, 2) + pow(panel_straw0y, 2));
-    double R16 = 1.0/R15;
-    double R17 = R16*panel_straw0x;
-    double R18 = R14*R17;
-    double R19 = R12*R9;
-    double R20 = R3*R8;
-    double R21 = R11*R20 + R19;
-    double R22 = R16*panel_straw0y;
-    double R23 = R21*R22;
-    double R24 = 1.0*R18 - 1.0*R23;
-    double R25 = R17*R21;
-    double R26 = R14*R22;
-    double R27 = R25 + R26;
-    double R28 = 1.0*R27;
-    double R29 = sin(plane_a);
-    double R30 = R1*R29;
-    double R31 = R2*R6 - R24*R7 + R28*R30;
-    double R32 = sin(plane_g);
-    double R33 = R29*R32;
-    double R34 = cos(plane_g);
-    double R35 = R0*R34;
-    double R36 = R33 + R35*R7;
-    double R37 = R1*R34;
-    double R38 = R0*R32;
-    double R39 = R29*R34;
-    double R40 = -R38 + R39*R7;
-    double R41 = R24*R37 + R28*R40 + R36*R6;
-    double R42 = R38*R7 - R39;
-    double R43 = R1*R32;
-    double R44 = R33*R7 + R35;
-    double R45 = R24*R43 + R28*R44 + R42*R6;
-    double R46 = pow(R31, 2) + pow(R41, 2) + pow(R45, 2);
-    double R47 = pow(R46, -1.0/2.0);
-    double R48 = R31*R47;
-    double R49 = pow(pow(a1, 2) + pow(b1, 2) + 1, -1.0/2.0);
-    double R50 = R49*b1;
-    double R51 = R45*R47;
-    double R52 = R41*R47;
-    double R53 = R49*a1;
-    double R54 = R48*R50 - R49*R51 + R52*R53;
+    double R0 = pow(pow(a1, 2) + pow(b1, 2) + 1, -1.0/2.0);
+    double R1 = R0*b1;
+    double R2 = cos(plane_a);
+    double R3 = cos(plane_b);
+    double R4 = R2*R3;
+    double R5 = sin(panel_a);
+    double R6 = cos(panel_b);
+    double R7 = R5*R6;
+    double R8 = 1.0*R7;
+    double R9 = sin(plane_b);
+    double R10 = sin(panel_g);
+    double R11 = cos(panel_a);
+    double R12 = R10*R11;
+    double R13 = sin(panel_b);
+    double R14 = cos(panel_g);
+    double R15 = R14*R5;
+    double R16 = -R12 + R13*R15;
+    double R17 = sqrt(pow(panel_straw0x, 2) + pow(panel_straw0y, 2));
+    double R18 = 1.0/R17;
+    double R19 = R18*panel_straw0x;
+    double R20 = R16*R19;
+    double R21 = R11*R14;
+    double R22 = R10*R5;
+    double R23 = R13*R22 + R21;
+    double R24 = R18*panel_straw0y;
+    double R25 = R23*R24;
+    double R26 = 1.0*R20 - 1.0*R25;
+    double R27 = R19*R23;
+    double R28 = R16*R24;
+    double R29 = R27 + R28;
+    double R30 = 1.0*R29;
+    double R31 = sin(plane_a);
+    double R32 = R3*R31;
+    double R33 = -R26*R9 + R30*R32 + R4*R8;
+    double R34 = sin(plane_g);
+    double R35 = R31*R34;
+    double R36 = cos(plane_g);
+    double R37 = R2*R36;
+    double R38 = R35 + R37*R9;
+    double R39 = R3*R36;
+    double R40 = R2*R34;
+    double R41 = R31*R36;
+    double R42 = -R40 + R41*R9;
+    double R43 = R26*R39 + R30*R42 + R38*R8;
+    double R44 = R40*R9 - R41;
+    double R45 = R3*R34;
+    double R46 = R35*R9 + R37;
+    double R47 = R26*R45 + R30*R46 + R44*R8;
+    double R48 = pow(R33, 2) + pow(R43, 2) + pow(R47, 2);
+    double R49 = pow(R48, -1.0/2.0);
+    double R50 = R33*R49;
+    double R51 = R47*R49;
+    double R52 = R43*R49;
+    double R53 = R0*a1;
+    double R54 = -R0*R51 + R1*R50 + R52*R53;
     double R55 = 1.0 - pow(R54, 2);
     double R56 = 1.0/R55;
     double R57 = panel_dz + panel_straw0z - plane_z;
-    double R58 = R17*panel_dx;
-    double R59 = R22*panel_dy;
+    double R58 = R19*panel_dx;
+    double R59 = R24*panel_dy;
     double R60 = R58 - R59 + panel_straw0x;
-    double R61 = R60*R7;
-    double R62 = R17*panel_dy + R22*panel_dx + panel_straw0y;
-    double R63 = -R15 + sqrt(pow(wire_x, 2) + pow(wire_y, 2));
-    double R64 = R17*R4;
-    double R65 = R12*R64;
-    double R66 = R22*R4;
-    double R67 = R66*R8;
+    double R61 = R60*R9;
+    double R62 = R19*panel_dy + R24*panel_dx + panel_straw0y;
+    double R63 = -R17 + sqrt(pow(wire_x, 2) + pow(wire_y, 2));
+    double R64 = R19*R6;
+    double R65 = R14*R64;
+    double R66 = R24*R6;
+    double R67 = R10*R66;
     double R68 = R65 - R67;
-    double R69 = R68*R7;
-    double R70 = R12*R66 + R64*R8;
+    double R69 = R68*R9;
+    double R70 = R10*R64 + R14*R66;
     double R71 = -panel_straw0z + wire_z;
-    double R72 = R4*R9;
-    double R73 = R11*R19 + R20;
-    double R74 = R17*R73;
-    double R75 = R10*R11 - R13;
-    double R76 = R22*R75;
+    double R72 = R11*R6;
+    double R73 = R13*R21 + R22;
+    double R74 = R19*R73;
+    double R75 = R12*R13 - R15;
+    double R76 = R24*R75;
     double R77 = R74 - R76;
-    double R78 = R7*R77;
-    double R79 = R17*R75 + R22*R73;
-    double R80 = R2*R57 + R30*R62 - R61 + R63*(-R11*R2 + R30*R70 - R69) + R71*(R2*R72 + R30*R79 - R78) - b0 + plane_dz + plane_z;
-    double R81 = R42*R57 + R43*R60 + R44*R62 + R63*(-R11*R42 + R43*R68 + R44*R70) + R71*(R42*R72 + R43*R77 + R44*R79) + plane_dy;
-    double R82 = R36*R57 + R37*R60 + R40*R62 + R63*(-R11*R36 + R37*R68 + R40*R70) + R71*(R36*R72 + R37*R77 + R40*R79) - a0 + plane_dx;
-    double R83 = -R49*R81 + R50*R80 + R53*R82;
-    double R84 = R47*R80;
-    double R85 = R31*R84;
+    double R78 = R77*R9;
+    double R79 = R19*R75 + R24*R73;
+    double R80 = R32*R62 + R4*R57 - R61 + R63*(-R13*R4 + R32*R70 - R69) + R71*(R32*R79 + R4*R72 - R78) - b0 + plane_dz + plane_z;
+    double R81 = R44*R57 + R45*R60 + R46*R62 + R63*(-R13*R44 + R45*R68 + R46*R70) + R71*(R44*R72 + R45*R77 + R46*R79) + plane_dy;
+    double R82 = R38*R57 + R39*R60 + R42*R62 + R63*(-R13*R38 + R39*R68 + R42*R70) + R71*(R38*R72 + R39*R77 + R42*R79) - a0 + plane_dx;
+    double R83 = -R0*R81 + R1*R80 + R53*R82;
+    double R84 = R49*R80;
+    double R85 = R33*R84;
     double R86 = R51*R81;
     double R87 = R52*R82;
     double R88 = -R85 - R86 - R87;
@@ -1172,72 +1172,72 @@ double CosmicTrack_DCA_Deriv_plane_b(double a0, double b0, double a1, double b1,
     double R90 = R56*R89;
     double R91 = -R54*(R85 + R86 + R87) + R83;
     double R92 = R56*R91;
-    double R93 = R48*R90 - R50*R92 + R80;
-    double R94 = R49*R92 + R51*R90 + R81;
+    double R93 = -R1*R92 + R50*R90 + R80;
+    double R94 = R0*R92 + R51*R90 + R81;
     double R95 = R52*R90 - R53*R92 + R82;
-    double R96 = R0*R7;
+    double R96 = R2*R9;
     double R97 = R57*R96;
-    double R98 = R29*R7;
+    double R98 = R31*R9;
     double R99 = R62*R98;
-    double R100 = R1*(-R58 + R59 - panel_straw0x);
-    double R101 = R63*(R1*(-R65 + R67) + R11*R96 - R70*R98);
-    double R102 = R71*(R1*(-R74 + R76) - R72*R96 - R79*R98);
-    double R103 = 1.0*R23;
-    double R104 = 1.0*R18;
-    double R105 = R1*(R103 - R104);
-    double R106 = R98*(1.0*R25 + 1.0*R26);
-    double R107 = R105 - R106 - R6*R96;
-    double R108 = R107*R47;
+    double R100 = R3*(-R58 + R59 - panel_straw0x);
+    double R101 = R63*(R13*R96 + R3*(-R65 + R67) - R70*R98);
+    double R102 = R71*(R3*(-R74 + R76) - R72*R96 - R79*R98);
+    double R103 = 1.0*R25;
+    double R104 = 1.0*R20;
+    double R105 = R3*(R103 - R104);
+    double R106 = R98*(1.0*R27 + 1.0*R28);
+    double R107 = R105 - R106 - R8*R96;
+    double R108 = R107*R49;
     double R109 = 2*R90;
-    double R110 = 2.0*R5;
-    double R111 = R1*R35;
-    double R112 = R7*(-R103 + R104);
-    double R113 = R112*R34;
-    double R114 = R1*R39;
-    double R115 = 2.0*R27;
-    double R116 = R1*R38;
-    double R117 = R112*R32;
-    double R118 = R1*R33;
-    double R119 = (-1.0/2.0*R31*(2*R105 - 2*R106 - R110*R96) - 1.0/2.0*R41*(R110*R111 - 2*R113 + R114*R115) - 1.0/2.0*R45*(R110*R116 + R115*R118 - 2*R117))/pow(R46, 3.0/2.0);
-    double R120 = R119*R31;
-    double R121 = R108*R50;
-    double R122 = R47*(R116*R6 - R117 + R118*R28);
-    double R123 = R122*R49;
-    double R124 = R47*(R111*R6 - R113 + R114*R28);
+    double R110 = 2.0*R7;
+    double R111 = R3*R37;
+    double R112 = R9*(-R103 + R104);
+    double R113 = R112*R36;
+    double R114 = R3*R41;
+    double R115 = 2.0*R29;
+    double R116 = R3*R40;
+    double R117 = R112*R34;
+    double R118 = R3*R35;
+    double R119 = (-1.0/2.0*R33*(2*R105 - 2*R106 - R110*R96) - 1.0/2.0*R43*(R110*R111 - 2*R113 + R114*R115) - 1.0/2.0*R47*(R110*R116 + R115*R118 - 2*R117))/pow(R48, 3.0/2.0);
+    double R120 = R119*R33;
+    double R121 = R1*R108;
+    double R122 = R49*(R116*R8 - R117 + R118*R30);
+    double R123 = R0*R122;
+    double R124 = R49*(R111*R8 - R113 + R114*R30);
     double R125 = R124*R53;
-    double R126 = R120*R50;
-    double R127 = R119*R45;
-    double R128 = R127*R49;
-    double R129 = R119*R41;
+    double R126 = R1*R120;
+    double R127 = R119*R47;
+    double R128 = R0*R127;
+    double R129 = R119*R43;
     double R130 = R129*R53;
     double R131 = 2*R54*(2*R121 - 2*R123 + 2*R125 + 2*R126 - 2*R128 + 2*R130)/pow(R55, 2);
     double R132 = R131*R91;
     double R133 = R131*R89;
     double R134 = R100 + R101 + R102 - R97 - R99;
     double R135 = R116*R57;
-    double R136 = R32*R61;
+    double R136 = R34*R61;
     double R137 = R118*R62;
-    double R138 = R63*(-R11*R116 + R118*R70 - R32*R69);
-    double R139 = R71*(R116*R72 + R118*R79 - R32*R78);
+    double R138 = R63*(-R116*R13 + R118*R70 - R34*R69);
+    double R139 = R71*(R116*R72 + R118*R79 - R34*R78);
     double R140 = R135 - R136 + R137 + R138 + R139;
     double R141 = R111*R57;
-    double R142 = R34*R61;
+    double R142 = R36*R61;
     double R143 = R114*R62;
-    double R144 = R63*(-R11*R111 + R114*R70 - R34*R69);
-    double R145 = R71*(R111*R72 + R114*R79 - R34*R78);
+    double R144 = R63*(-R111*R13 + R114*R70 - R36*R69);
+    double R145 = R71*(R111*R72 + R114*R79 - R36*R78);
     double R146 = R141 - R142 + R143 + R144 + R145;
-    double R147 = R134*R50 - R140*R49 + R146*R53;
+    double R147 = -R0*R140 + R1*R134 + R146*R53;
     double R148 = R121 - R123 + R125 + R126 - R128 + R130;
-    double R149 = -R107*R84 - R120*R80 - R122*R81 - R124*R82 - R127*R81 - R129*R82 - R134*R48 - R140*R51 - R146*R52;
+    double R149 = -R107*R84 - R120*R80 - R122*R81 - R124*R82 - R127*R81 - R129*R82 - R134*R50 - R140*R51 - R146*R52;
     double R150 = 2*R56;
     double R151 = R150*(R147*R54 + R148*R83 + R149);
     double R152 = R150*(R147 + R148*R88 + R149*R54);
-    double R153 = ((1.0/2.0)*R93*(2*R100 + 2*R101 + 2*R102 + R108*R109 + R109*R120 - R132*R50 + R133*R48 + R151*R48 - R152*R50 - 2*R97 - 2*R99) + (1.0/2.0)*R94*(R109*R122 + R109*R127 + R132*R49 + R133*R51 + 2*R135 - 2*R136 + 2*R137 + 2*R138 + 2*R139 + R151*R51 + R152*R49) + (1.0/2.0)*R95*(R109*R124 + R109*R129 - R132*R53 + R133*R52 + 2*R141 - 2*R142 + 2*R143 + 2*R144 + 2*R145 + R151*R52 - R152*R53))/sqrt(pow(R93, 2) + pow(R94, 2) + pow(R95, 2));
-    double result = ((R92 > 0) ? (
+    double R153 = ((1.0/2.0)*R93*(-R1*R132 - R1*R152 + 2*R100 + 2*R101 + 2*R102 + R108*R109 + R109*R120 + R133*R50 + R151*R50 - 2*R97 - 2*R99) + (1.0/2.0)*R94*(R0*R132 + R0*R152 + R109*R122 + R109*R127 + R133*R51 + 2*R135 - 2*R136 + 2*R137 + 2*R138 + 2*R139 + R151*R51) + (1.0/2.0)*R95*(R109*R124 + R109*R129 - R132*R53 + R133*R52 + 2*R141 - 2*R142 + 2*R143 + 2*R144 + 2*R145 + R151*R52 - R152*R53))/sqrt(pow(R93, 2) + pow(R94, 2) + pow(R95, 2));
+    double result = ((R90 > 0) ? (
    R153
 )
 : (
-   -1.0*R153
+   -R153
 ))/driftvel;
     return result;
 }
@@ -1383,11 +1383,11 @@ double CosmicTrack_DCA_Deriv_plane_g(double a0, double b0, double a1, double b1,
     double R135 = R134*(R131*R56 + R132*R86 + R133);
     double R136 = R134*(R131 + R132*R91 + R133*R56);
     double R137 = ((1.0/2.0)*R96*(R107*R108 - R120*R52 + R121*R50 + R135*R50 - R136*R52) + (1.0/2.0)*R97*(R108*R109 + R108*R115 + R120*R51 + R121*R53 + 2*R122 + R135*R53 + R136*R51 + 2*R80 + 2*R81 + 2*R82 + 2*R83) + (1.0/2.0)*R98*(R108*R112 + R108*R117 - R120*R54 + R121*R55 + 2*R125 + 2*R127 + 2*R128 + 2*R129 + R135*R55 - R136*R54 - 2*R74))/sqrt(pow(R96, 2) + pow(R97, 2) + pow(R98, 2));
-    double result = ((R95 > 0) ? (
+    double result = ((R93 > 0) ? (
    R137
 )
 : (
-   -1.0*R137
+   -R137
 ))/driftvel;
     return result;
 }
@@ -1485,11 +1485,11 @@ double CosmicTrack_DCA_Deriv_panel_dx(double a0, double b0, double a1, double b1
     double R87 = R86*(R47*R84 + R85);
     double R88 = R86*(R47*R85 + R84);
     double R89 = ((1.0/2.0)*R72*(R41*R88 - R43*R87 - 2*R75 + 2*R76) + (1.0/2.0)*R73*(R42*R87 + R44*R88 + 2*R78 + 2*R79) + (1.0/2.0)*R74*(R45*R88 - R46*R87 + 2*R81 + 2*R82))/sqrt(pow(R72, 2) + pow(R73, 2) + pow(R74, 2));
-    double result = ((R71 > 0) ? (
+    double result = ((R70 > 0) ? (
    R89
 )
 : (
-   -1.0*R89
+   -R89
 ))/driftvel;
     return result;
 }
@@ -1587,11 +1587,11 @@ double CosmicTrack_DCA_Deriv_panel_dy(double a0, double b0, double a1, double b1
     double R87 = R86*(R47*R84 + R85);
     double R88 = R86*(R47*R85 + R84);
     double R89 = ((1.0/2.0)*R72*(R41*R88 - R43*R87 + 2*R75 + 2*R76) + (1.0/2.0)*R73*(R42*R87 + R44*R88 - 2*R78 + 2*R79) + (1.0/2.0)*R74*(R45*R88 - R46*R87 - 2*R81 + 2*R82))/sqrt(pow(R72, 2) + pow(R73, 2) + pow(R74, 2));
-    double result = ((R71 > 0) ? (
+    double result = ((R70 > 0) ? (
    R89
 )
 : (
-   -1.0*R89
+   -R89
 ))/driftvel;
     return result;
 }
@@ -1682,11 +1682,11 @@ double CosmicTrack_DCA_Deriv_panel_dz(double a0, double b0, double a1, double b1
     double R80 = R79*(R49*R77 + R78);
     double R81 = R79*(R49*R78 + R77);
     double R82 = ((1.0/2.0)*R74*(2*R2 + R43*R81 - R45*R80) + (1.0/2.0)*R75*(-2*R34 + 2*R37 + R44*R80 + R46*R81) + (1.0/2.0)*R76*(2*R27 + 2*R30 + R47*R81 - R48*R80))/sqrt(pow(R74, 2) + pow(R75, 2) + pow(R76, 2));
-    double result = ((R73 > 0) ? (
+    double result = ((R72 > 0) ? (
    R82
 )
 : (
-   -1.0*R82
+   -R82
 ))/driftvel;
     return result;
 }
@@ -1694,135 +1694,135 @@ double CosmicTrack_DCA_Deriv_panel_dz(double a0, double b0, double a1, double b1
 
 double CosmicTrack_DCA_Deriv_panel_a(double a0, double b0, double a1, double b1, double t0, double plane_dx, double plane_dy, double plane_dz, double plane_a, double plane_b, double plane_g, double panel_dx, double panel_dy, double panel_dz, double panel_a, double panel_b, double panel_g, double wire_x, double wire_y, double wire_z, double wdir_x, double wdir_y, double wdir_z, double plane_x, double plane_y, double plane_z, double panel_straw0x, double panel_straw0y, double panel_straw0z, double driftvel)
 {
-    double R0 = cos(plane_a);
-    double R1 = cos(plane_b);
-    double R2 = R0*R1;
-    double R3 = sin(panel_a);
-    double R4 = cos(panel_b);
-    double R5 = R3*R4;
-    double R6 = R2*R5;
-    double R7 = sin(plane_b);
-    double R8 = sin(panel_g);
-    double R9 = cos(panel_a);
-    double R10 = R8*R9;
-    double R11 = sin(panel_b);
-    double R12 = cos(panel_g);
-    double R13 = R12*R3;
-    double R14 = R11*R13;
-    double R15 = -R10 + R14;
-    double R16 = sqrt(pow(panel_straw0x, 2) + pow(panel_straw0y, 2));
-    double R17 = 1.0/R16;
-    double R18 = R17*panel_straw0x;
-    double R19 = R12*R9;
-    double R20 = R3*R8;
-    double R21 = R11*R20;
-    double R22 = R19 + R21;
-    double R23 = R17*panel_straw0y;
-    double R24 = 1.0*R15*R18 - 1.0*R22*R23;
-    double R25 = 1.0*R15*R23 + 1.0*R18*R22;
-    double R26 = sin(plane_a);
-    double R27 = R1*R26;
-    double R28 = -R24*R7 + R25*R27 + 1.0*R6;
-    double R29 = sin(plane_g);
-    double R30 = R26*R29;
-    double R31 = cos(plane_g);
-    double R32 = R0*R31;
-    double R33 = R32*R7;
-    double R34 = R30 + R33;
-    double R35 = R34*R5;
-    double R36 = R1*R31;
-    double R37 = R0*R29;
-    double R38 = R26*R31;
-    double R39 = R38*R7;
-    double R40 = -R37 + R39;
-    double R41 = R24*R36 + R25*R40 + 1.0*R35;
-    double R42 = R37*R7;
-    double R43 = -R38 + R42;
-    double R44 = R43*R5;
-    double R45 = R1*R29;
-    double R46 = R30*R7;
-    double R47 = R32 + R46;
-    double R48 = R24*R45 + R25*R47 + 1.0*R44;
-    double R49 = pow(R28, 2) + pow(R41, 2) + pow(R48, 2);
-    double R50 = pow(R49, -1.0/2.0);
-    double R51 = R28*R50;
-    double R52 = pow(pow(a1, 2) + pow(b1, 2) + 1, -1.0/2.0);
-    double R53 = R52*b1;
-    double R54 = R48*R50;
-    double R55 = R52*a1;
-    double R56 = R41*R50;
-    double R57 = R51*R53 - R52*R54 + R55*R56;
+    double R0 = pow(pow(a1, 2) + pow(b1, 2) + 1, -1.0/2.0);
+    double R1 = R0*b1;
+    double R2 = cos(plane_a);
+    double R3 = cos(plane_b);
+    double R4 = R2*R3;
+    double R5 = sin(panel_a);
+    double R6 = cos(panel_b);
+    double R7 = R5*R6;
+    double R8 = R4*R7;
+    double R9 = sin(plane_b);
+    double R10 = sin(panel_g);
+    double R11 = cos(panel_a);
+    double R12 = R10*R11;
+    double R13 = sin(panel_b);
+    double R14 = cos(panel_g);
+    double R15 = R14*R5;
+    double R16 = R13*R15;
+    double R17 = -R12 + R16;
+    double R18 = sqrt(pow(panel_straw0x, 2) + pow(panel_straw0y, 2));
+    double R19 = 1.0/R18;
+    double R20 = R19*panel_straw0x;
+    double R21 = R11*R14;
+    double R22 = R10*R5;
+    double R23 = R13*R22;
+    double R24 = R21 + R23;
+    double R25 = R19*panel_straw0y;
+    double R26 = 1.0*R17*R20 - 1.0*R24*R25;
+    double R27 = 1.0*R17*R25 + 1.0*R20*R24;
+    double R28 = sin(plane_a);
+    double R29 = R28*R3;
+    double R30 = -R26*R9 + R27*R29 + 1.0*R8;
+    double R31 = sin(plane_g);
+    double R32 = R28*R31;
+    double R33 = cos(plane_g);
+    double R34 = R2*R33;
+    double R35 = R34*R9;
+    double R36 = R32 + R35;
+    double R37 = R36*R7;
+    double R38 = R3*R33;
+    double R39 = R2*R31;
+    double R40 = R28*R33;
+    double R41 = R40*R9;
+    double R42 = -R39 + R41;
+    double R43 = R26*R38 + R27*R42 + 1.0*R37;
+    double R44 = R39*R9;
+    double R45 = -R40 + R44;
+    double R46 = R45*R7;
+    double R47 = R3*R31;
+    double R48 = R32*R9;
+    double R49 = R34 + R48;
+    double R50 = R26*R47 + R27*R49 + 1.0*R46;
+    double R51 = pow(R30, 2) + pow(R43, 2) + pow(R50, 2);
+    double R52 = pow(R51, -1.0/2.0);
+    double R53 = R30*R52;
+    double R54 = R50*R52;
+    double R55 = R0*a1;
+    double R56 = R43*R52;
+    double R57 = -R0*R54 + R1*R53 + R55*R56;
     double R58 = 1.0 - pow(R57, 2);
     double R59 = 1.0/R58;
     double R60 = panel_dz + panel_straw0z - plane_z;
-    double R61 = R18*panel_dx - R23*panel_dy + panel_straw0x;
-    double R62 = R18*panel_dy + R23*panel_dx + panel_straw0y;
-    double R63 = -R16 + sqrt(pow(wire_x, 2) + pow(wire_y, 2));
-    double R64 = R18*R4;
-    double R65 = R23*R4;
-    double R66 = R12*R64 - R65*R8;
-    double R67 = R12*R65 + R64*R8;
+    double R61 = R20*panel_dx - R25*panel_dy + panel_straw0x;
+    double R62 = R20*panel_dy + R25*panel_dx + panel_straw0y;
+    double R63 = -R18 + sqrt(pow(wire_x, 2) + pow(wire_y, 2));
+    double R64 = R20*R6;
+    double R65 = R25*R6;
+    double R66 = -R10*R65 + R14*R64;
+    double R67 = R10*R64 + R14*R65;
     double R68 = -panel_straw0z + wire_z;
-    double R69 = R4*R9;
-    double R70 = R2*R69;
-    double R71 = R11*R19 + R20;
-    double R72 = R18*R71;
-    double R73 = R10*R11 - R13;
-    double R74 = R23*R73;
+    double R69 = R11*R6;
+    double R70 = R4*R69;
+    double R71 = R13*R21 + R22;
+    double R72 = R20*R71;
+    double R73 = R12*R13 - R15;
+    double R74 = R25*R73;
     double R75 = R72 - R74;
-    double R76 = R23*R71;
-    double R77 = R18*R73;
+    double R76 = R25*R71;
+    double R77 = R20*R73;
     double R78 = R76 + R77;
-    double R79 = R2*R60 + R27*R62 - R61*R7 + R63*(-R11*R2 + R27*R67 - R66*R7) + R68*(R27*R78 - R7*R75 + R70) - b0 + plane_dz + plane_z;
-    double R80 = R43*R60 + R45*R61 + R47*R62 + R63*(-R11*R43 + R45*R66 + R47*R67) + R68*(R43*R69 + R45*R75 + R47*R78) + plane_dy;
-    double R81 = R34*R60 + R36*R61 + R40*R62 + R63*(-R11*R34 + R36*R66 + R40*R67) + R68*(R34*R69 + R36*R75 + R40*R78) - a0 + plane_dx;
-    double R82 = -R52*R80 + R53*R79 + R55*R81;
-    double R83 = R50*R79;
-    double R84 = R28*R83;
+    double R79 = R29*R62 + R4*R60 - R61*R9 + R63*(-R13*R4 + R29*R67 - R66*R9) + R68*(R29*R78 + R70 - R75*R9) - b0 + plane_dz + plane_z;
+    double R80 = R45*R60 + R47*R61 + R49*R62 + R63*(-R13*R45 + R47*R66 + R49*R67) + R68*(R45*R69 + R47*R75 + R49*R78) + plane_dy;
+    double R81 = R36*R60 + R38*R61 + R42*R62 + R63*(-R13*R36 + R38*R66 + R42*R67) + R68*(R36*R69 + R38*R75 + R42*R78) - a0 + plane_dx;
+    double R82 = -R0*R80 + R1*R79 + R55*R81;
+    double R83 = R52*R79;
+    double R84 = R30*R83;
     double R85 = R54*R80;
-    double R86 = R50*R81;
-    double R87 = R41*R86;
+    double R86 = R52*R81;
+    double R87 = R43*R86;
     double R88 = -R84 - R85 - R87;
     double R89 = R57*R82 + R88;
     double R90 = R59*R89;
     double R91 = -R57*(R84 + R85 + R87) + R82;
     double R92 = R59*R91;
-    double R93 = R51*R90 - R53*R92 + R79;
-    double R94 = R52*R92 + R54*R90 + R80;
+    double R93 = -R1*R92 + R53*R90 + R79;
+    double R94 = R0*R92 + R54*R90 + R80;
     double R95 = -R55*R92 + R56*R90 + R81;
-    double R96 = R10 - R14;
-    double R97 = R18*R96;
-    double R98 = -R19 - R21;
-    double R99 = R23*R98;
-    double R100 = R18*R98 + R23*R96;
-    double R101 = R100*R27 - R6 + R7*(-R97 + R99);
+    double R96 = R12 - R16;
+    double R97 = R20*R96;
+    double R98 = -R21 - R23;
+    double R99 = R25*R98;
+    double R100 = R20*R98 + R25*R96;
+    double R101 = R100*R29 - R8 + R9*(-R97 + R99);
     double R102 = 2*R68;
     double R103 = 1.0*R72;
     double R104 = 1.0*R74;
-    double R105 = R7*(-R103 + R104);
-    double R106 = R27*(1.0*R76 + 1.0*R77);
+    double R105 = R9*(-R103 + R104);
+    double R106 = R29*(1.0*R76 + 1.0*R77);
     double R107 = R105 + R106 + 1.0*R70;
-    double R108 = R107*R50;
+    double R108 = R107*R52;
     double R109 = 2*R90;
-    double R110 = R69*(1.0*R30 + 1.0*R33);
+    double R110 = R69*(1.0*R32 + 1.0*R35);
     double R111 = R103 - R104;
-    double R112 = R111*R36;
-    double R113 = R78*(-1.0*R37 + 1.0*R39);
-    double R114 = R69*(-1.0*R38 + 1.0*R42);
-    double R115 = R111*R45;
-    double R116 = R78*(1.0*R32 + 1.0*R46);
-    double R117 = (-1.0/2.0*R28*(2*R105 + 2*R106 + 2.0*R70) - 1.0/2.0*R41*(2*R110 + 2*R112 + 2*R113) - 1.0/2.0*R48*(2*R114 + 2*R115 + 2*R116))/pow(R49, 3.0/2.0);
-    double R118 = R117*R28;
-    double R119 = R108*R53;
-    double R120 = R50*(R114 + R115 + R116);
-    double R121 = R120*R52;
+    double R112 = R111*R38;
+    double R113 = R78*(-1.0*R39 + 1.0*R41);
+    double R114 = R69*(-1.0*R40 + 1.0*R44);
+    double R115 = R111*R47;
+    double R116 = R78*(1.0*R34 + 1.0*R48);
+    double R117 = (-1.0/2.0*R30*(2*R105 + 2*R106 + 2.0*R70) - 1.0/2.0*R43*(2*R110 + 2*R112 + 2*R113) - 1.0/2.0*R50*(2*R114 + 2*R115 + 2*R116))/pow(R51, 3.0/2.0);
+    double R118 = R117*R30;
+    double R119 = R1*R108;
+    double R120 = R52*(R114 + R115 + R116);
+    double R121 = R0*R120;
     double R122 = R110 + R112 + R113;
-    double R123 = R122*R50;
+    double R123 = R122*R52;
     double R124 = R123*R55;
-    double R125 = R118*R53;
-    double R126 = R117*R48;
-    double R127 = R126*R52;
-    double R128 = R117*R41;
+    double R125 = R1*R118;
+    double R126 = R117*R50;
+    double R127 = R0*R126;
+    double R128 = R117*R43;
     double R129 = R128*R55;
     double R130 = 2*R57*(2*R119 - 2*R121 + 2*R124 + 2*R125 - 2*R127 + 2*R129)/pow(R58, 2);
     double R131 = R130*R91;
@@ -1830,20 +1830,20 @@ double CosmicTrack_DCA_Deriv_panel_a(double a0, double b0, double a1, double b1,
     double R133 = R119 - R121 + R124 + R125 - R127 + R129;
     double R134 = R101*R68;
     double R135 = R97 - R99;
-    double R136 = R68*(R100*R47 + R135*R45 - R44);
-    double R137 = R100*R40 + R135*R36 - R35;
+    double R136 = R68*(R100*R49 + R135*R47 - R46);
+    double R137 = R100*R42 + R135*R38 - R37;
     double R138 = R137*R68;
-    double R139 = R134*R53 - R136*R52 + R138*R55;
-    double R140 = -R107*R83 - R118*R79 - R120*R80 - R122*R86 - R126*R80 - R128*R81 - R134*R51 - R136*R54 - R138*R56;
+    double R139 = -R0*R136 + R1*R134 + R138*R55;
+    double R140 = -R107*R83 - R118*R79 - R120*R80 - R122*R86 - R126*R80 - R128*R81 - R134*R53 - R136*R54 - R138*R56;
     double R141 = 2*R59;
     double R142 = R141*(R133*R82 + R139*R57 + R140);
     double R143 = R141*(R133*R88 + R139 + R140*R57);
-    double R144 = ((1.0/2.0)*R93*(R101*R102 + R108*R109 + R109*R118 - R131*R53 + R132*R51 + R142*R51 - R143*R53) + (1.0/2.0)*R94*(R109*R120 + R109*R126 + R131*R52 + R132*R54 + 2*R136 + R142*R54 + R143*R52) + (1.0/2.0)*R95*(R102*R137 + R109*R123 + R109*R128 - R131*R55 + R132*R56 + R142*R56 - R143*R55))/sqrt(pow(R93, 2) + pow(R94, 2) + pow(R95, 2));
-    double result = ((R92 > 0) ? (
+    double R144 = ((1.0/2.0)*R93*(-R1*R131 - R1*R143 + R101*R102 + R108*R109 + R109*R118 + R132*R53 + R142*R53) + (1.0/2.0)*R94*(R0*R131 + R0*R143 + R109*R120 + R109*R126 + R132*R54 + 2*R136 + R142*R54) + (1.0/2.0)*R95*(R102*R137 + R109*R123 + R109*R128 - R131*R55 + R132*R56 + R142*R56 - R143*R55))/sqrt(pow(R93, 2) + pow(R94, 2) + pow(R95, 2));
+    double result = ((R90 > 0) ? (
    R144
 )
 : (
-   -1.0*R144
+   -R144
 ))/driftvel;
     return result;
 }
@@ -1998,11 +1998,11 @@ double CosmicTrack_DCA_Deriv_panel_b(double a0, double b0, double a1, double b1,
     double R144 = R143*(R140*R54 + R141*R77 + R142);
     double R145 = R143*(R140 + R141*R81 + R142*R54);
     double R146 = ((1.0/2.0)*R86*(R105*R106 + R106*R117 - R129*R50 + R130*R48 + R144*R48 - R145*R50 + 2*R92 + 2*R98) + (1.0/2.0)*R87*(R106*R119 + R106*R124 + R129*R49 + R130*R51 + 2*R133 + 2*R135 + R144*R51 + R145*R49) + (1.0/2.0)*R88*(R106*R121 + R106*R126 - R129*R53 + R130*R52 + 2*R137 + 2*R138 + R144*R52 - R145*R53))/sqrt(pow(R86, 2) + pow(R87, 2) + pow(R88, 2));
-    double result = ((R85 > 0) ? (
+    double result = ((R83 > 0) ? (
    R146
 )
 : (
-   -1.0*R146
+   -R146
 ))/driftvel;
     return result;
 }
@@ -2150,11 +2150,11 @@ double CosmicTrack_DCA_Deriv_panel_g(double a0, double b0, double a1, double b1,
     double R137 = R136*(R133*R53 + R134*R78 + R135);
     double R138 = R136*(R133 + R134*R82 + R135*R53);
     double R139 = ((1.0/2.0)*R87*(R101*R102 + R102*R110 - R122*R49 + R123*R47 + R137*R47 - R138*R49 + 2*R90 + 2*R94) + (1.0/2.0)*R88*(R102*R112 + R102*R117 + R122*R48 + R123*R50 + 2*R126 + 2*R128 + R137*R50 + R138*R48) + (1.0/2.0)*R89*(R102*R114 + R102*R119 - R122*R52 + R123*R51 + 2*R130 + 2*R131 + R137*R51 - R138*R52))/sqrt(pow(R87, 2) + pow(R88, 2) + pow(R89, 2));
-    double result = ((R86 > 0) ? (
+    double result = ((R84 > 0) ? (
    R139
 )
 : (
-   -1.0*R139
+   -R139
 ))/driftvel;
     return result;
 }
