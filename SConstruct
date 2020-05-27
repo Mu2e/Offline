@@ -14,6 +14,10 @@ from mu2e_helper import mu2e_helper
 # this will contain global config info about the build
 mu2eOpts = {}
 
+# Intelligent caching of implicit dependencies
+SetOption('implicit_cache', 1)
+
+
 # add a mu2e debug print option like "--mu2ePrint=5"
 AddOption('--mu2ePrint', dest='mu2ePrint',
           type='int',nargs=1,default=1,
