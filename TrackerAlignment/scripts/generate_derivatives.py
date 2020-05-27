@@ -52,7 +52,7 @@ def DOCA(p1, t1, p2, t2):
 
     dca = sqrt(___diff.dot(___diff))
 
-    return sympy.Piecewise((dca, _s2 > 0), (-1.0*dca, True))
+    return sympy.Piecewise((dca, _s1 > 0), (-dca, True))
 
 
 def colvec_perp(matrix):
