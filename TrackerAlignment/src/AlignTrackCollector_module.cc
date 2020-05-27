@@ -541,24 +541,23 @@ bool AlignTrackCollector::filter_CosmicTrackSeedCollection(
           plane_origin.x(), plane_origin.y(), plane_origin.z(), panel_origin.x(), panel_origin.y(),
           panel_origin.z(), driftvel);
 
-      double resid_tmp = fit_object.DOCAresidual(straw_hit, sts);
+      double dca_resid = fit_object.DOCAresidual(straw_hit, sts);
+      double drift_res_dca = _srep.driftDistanceError(straw_hit.strawId(), 0, 0, pca.dca());
+
       double time_resid = fit_object.TimeResidual(straw_hit, sts);
+      double drift_res = _srep.driftTimeError(straw_hit.strawId(), 0, 0, pca.dca());
+      double signdca = (pca.s2() > 0 ? pca.dca() : -pca.dca());
 
       // The following are based on reco performed using current alignment parameters
       // FIXME: confusing
 
-      // FIXME! this is a time, not distance
-      double drift_res = _srep.driftTimeError(straw_hit.strawId(), 0, 0, pca.dca());
-      double resid_err_tmp = _srep.driftTimeToDistance(
-          straw_hit.strawId(), drift_res, 0); // fit_object.DOCAresidualError(straw_hit, sts);
 
-      double signdca = (pca.s2() > 0 ? pca.dca() : -pca.dca());
 
       // FIXME! use newly implemented chisq function in fit object
       chisq += pow(time_resid / drift_res, 2);
-      chisq_doca += pow(resid_tmp / resid_err_tmp, 2);
+      chisq_doca += pow(dca_resid / drift_res_dca, 2);
 
-      if (isnan(resid_tmp) || isnan(time_resid) || isnan(drift_res)) {
+      if (isnan(dca_resid) || isnan(time_resid) || isnan(drift_res)) {
         bad_track = true;
         continue;
       }
@@ -566,10 +565,10 @@ bool AlignTrackCollector::filter_CosmicTrackSeedCollection(
       planes_traversed.insert(plane_id);
       panels_traversed.insert(panel_uuid);
 
-      doca_residual[nHits] = resid_tmp;
+      doca_residual[nHits] = dca_resid;
       time_residual[nHits] = time_resid;
-      doca_resid_err[nHits] = resid_err_tmp;
-      pull_doca[nHits] = resid_tmp / resid_err_tmp;
+      doca_resid_err[nHits] = drift_res_dca;
+      pull_doca[nHits] = dca_resid / drift_res_dca;
       pull_hittime[nHits] = time_resid / drift_res;
       drift_reso[nHits] = drift_res;
       doca[nHits] = pca.dca();
@@ -578,8 +577,8 @@ bool AlignTrackCollector::filter_CosmicTrackSeedCollection(
       plane_uid[nHits] = plane_id;
 
       if (_diag > 1) {
-        std::cout << "pl" << plane_id << " pa" << panel_uuid << ": dcaresid " << resid_tmp << " +- "
-                  << resid_err_tmp << std::endl;
+        std::cout << "pl" << plane_id << " pa" << panel_uuid << ": dcaresid " << dca_resid << " +- "
+                  << drift_res_dca << std::endl;
         std::cout << ": timeresid " << time_resid << " +- " << drift_res << std::endl;
       }
 
@@ -877,8 +876,8 @@ bool AlignTrackCollector::filter_CosmicTrackSeedCollection(
         residuals.emplace_back(time_resid);
         meas_cov(nHits, nHits) = drift_res * drift_res;
       } else {
-        residuals.emplace_back(resid_tmp);
-        meas_cov(nHits, nHits) = pow(drift_res / driftvel, 2);
+        residuals.emplace_back(dca_resid);
+        meas_cov(nHits, nHits) = drift_res_dca * drift_res_dca;
       }
 
       for (size_t col = 0; col < 5; ++col) { // FIXME!
