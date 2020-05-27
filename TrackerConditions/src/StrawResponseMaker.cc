@@ -58,8 +58,8 @@ namespace mu2e {
     double sigma = _config.parameterizedDriftSigma();
     double tau = _config.parameterizedDriftTau();
     int parameterizedDriftBins = _config.parameterizedDriftBins();
+    
     TH1D h("","",10000,-20,80);
-
     for (int i=0;i<parameterizedDriftBins;i++){
       double doca = i*2.5/parameterizedDriftBins;
       double hypotenuse = sqrt(pow(doca,2) + pow(tau*_config.linearDriftVelocity(),2));
@@ -70,9 +70,11 @@ namespace mu2e {
         h.SetBinContent(it+1,exp(sigma*sigma/(2*tau_eff*tau_eff)-tresid/tau_eff)*(1-TMath::Erf((sigma*sigma-tau_eff*tresid)/(sqrt(2)*sigma*tau_eff))));
       }
       h.Scale(1.0/h.Integral());
+
       _parDriftDocas.push_back(doca);
       _parDriftOffsets.push_back(h.GetMean());
       _parDriftRes.push_back(h.GetRMS());
+      h.Reset();
     }
     
     auto ptr = std::make_shared<StrawResponse>(
