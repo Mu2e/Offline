@@ -545,7 +545,7 @@ bool AlignTrackCollector::filter_CosmicTrackSeedCollection(
       // The following are based on reco performed using current alignment parameters
       double dca_resid = fit_object.DOCAresidual(straw_hit, sts);
       double drift_res_dca = _srep.driftDistanceError(straw_hit.strawId(), 0, 0, pca.dca());
-      double signdca = (pca.s2() > 0 ? pca.dca() : -pca.dca());
+      double signdca = (pca.s1() > 0 ? pca.dca() : -pca.dca());
 
       double time_resid = fit_object.TimeResidual(straw_hit, sts);
       double drift_res = _srep.driftTimeError(straw_hit.strawId(), 0, 0, pca.dca());
