@@ -328,6 +328,7 @@ void AlignTrackCollector::writeMillepedeParams(TrkAlignPlane const& alignConstPl
   std::ofstream output_file("mp_params.txt"); // FIXME: fcl param
 
   output_file << "Parameter" << std::endl;
+  output_file << "! Plane DOFs:" << std::endl;
 
   for (uint16_t p = 0; p < StrawId::_nplanes; ++p) {
     auto const& rowpl = alignConstPlanes.rowAt(p);
@@ -346,8 +347,9 @@ void AlignTrackCollector::writeMillepedeParams(TrkAlignPlane const& alignConstPl
       output_file << getLabel(1, p, dof_n) << "  " << pl_consts[dof_n] << "  0" << std::endl;
     }
   }
+  output_file << std::endl << "! end plane DOFs" << std::endl;
 
-  output_file << std::endl << "! Panel DOFs follow:" << std::endl;
+  output_file << std::endl << "! Panel DOFs:" << std::endl;
 
   for (uint16_t p = 0; p < StrawId::_nupanels; ++p) {
     auto const& rowpa = alignConstPanels.rowAt(p);
@@ -366,6 +368,7 @@ void AlignTrackCollector::writeMillepedeParams(TrkAlignPlane const& alignConstPl
       output_file << getLabel(2, p, dof_n) << "  " << pa_consts[dof_n] << "  0" << std::endl;
     }
   }
+  output_file << std::endl << "! end panel DOFs" << std::endl;
 
   output_file.close();
 }
@@ -467,7 +470,7 @@ bool AlignTrackCollector::filter_CosmicTrackSeedCollection(
     // for the max timeresidual track quality cut
     double max_time_res_track = -1;
 
-    bool wrote_hits = false; // did we write any hits for the track?
+    bool wrote_hits = false;
     bool bad_track = false;
 
     // V = cov( measurements )
@@ -490,8 +493,6 @@ bool AlignTrackCollector::filter_CosmicTrackSeedCollection(
     }
 
     // TODO: Check positive semi-definiteness
-
-    std::cout << "Constructed track covariance...?" << std::endl;
 
     std::vector<float> residuals;
     std::vector<std::vector<float>> global_derivs_temp;
@@ -796,22 +797,22 @@ bool AlignTrackCollector::filter_CosmicTrackSeedCollection(
 
         diff_a = _srep.driftDistanceToTime(
             straw_id,
-            CosmicTrack_DCA(A0, B0, A1, B1, T0, rowpl.dx(), rowpl.dy() + h, rowpl.dz(), rowpl.rx(),
-                            rowpl.ry(), rowpl.rz(), rowpa.dx(), rowpa.dy(), rowpa.dz(), rowpa.rx(),
-                            rowpa.ry(), rowpa.rz(), nominalStraw_mp.x(), nominalStraw_mp.y(), nominalStraw_mp.z(),
-                            nominalStraw_dir.x(), nominalStraw_dir.y(), nominalStraw_dir.z(), plane_origin.x(),
-                            plane_origin.y(), plane_origin.z(), panel_origin.x(), panel_origin.y(),
-                            panel_origin.z(), driftvel),
+            CosmicTrack_DCA(
+                A0, B0, A1, B1, T0, rowpl.dx(), rowpl.dy() + h, rowpl.dz(), rowpl.rx(), rowpl.ry(),
+                rowpl.rz(), rowpa.dx(), rowpa.dy(), rowpa.dz(), rowpa.rx(), rowpa.ry(), rowpa.rz(),
+                nominalStraw_mp.x(), nominalStraw_mp.y(), nominalStraw_mp.z(), nominalStraw_dir.x(),
+                nominalStraw_dir.y(), nominalStraw_dir.z(), plane_origin.x(), plane_origin.y(),
+                plane_origin.z(), panel_origin.x(), panel_origin.y(), panel_origin.z(), driftvel),
             0);
 
         diff_b = _srep.driftDistanceToTime(
             straw_id,
-            CosmicTrack_DCA(A0, B0, A1, B1, T0, rowpl.dx(), rowpl.dy() - h, rowpl.dz(), rowpl.rx(),
-                            rowpl.ry(), rowpl.rz(), rowpa.dx(), rowpa.dy(), rowpa.dz(), rowpa.rx(),
-                            rowpa.ry(), rowpa.rz(), nominalStraw_mp.x(), nominalStraw_mp.y(), nominalStraw_mp.z(),
-                            nominalStraw_dir.x(), nominalStraw_dir.y(), nominalStraw_dir.z(), plane_origin.x(),
-                            plane_origin.y(), plane_origin.z(), panel_origin.x(), panel_origin.y(),
-                            panel_origin.z(), driftvel),
+            CosmicTrack_DCA(
+                A0, B0, A1, B1, T0, rowpl.dx(), rowpl.dy() - h, rowpl.dz(), rowpl.rx(), rowpl.ry(),
+                rowpl.rz(), rowpa.dx(), rowpa.dy(), rowpa.dz(), rowpa.rx(), rowpa.ry(), rowpa.rz(),
+                nominalStraw_mp.x(), nominalStraw_mp.y(), nominalStraw_mp.z(), nominalStraw_dir.x(),
+                nominalStraw_dir.y(), nominalStraw_dir.z(), plane_origin.x(), plane_origin.y(),
+                plane_origin.z(), panel_origin.x(), panel_origin.y(), panel_origin.z(), driftvel),
             0);
 
         diff = (diff_a - diff_b) / (2.0 * h);
@@ -822,22 +823,22 @@ bool AlignTrackCollector::filter_CosmicTrackSeedCollection(
 
         diff_a = _srep.driftDistanceToTime(
             straw_id,
-            CosmicTrack_DCA(A0, B0, A1, B1, T0, rowpl.dx(), rowpl.dy(), rowpl.dz() + h, rowpl.rx(),
-                            rowpl.ry(), rowpl.rz(), rowpa.dx(), rowpa.dy(), rowpa.dz(), rowpa.rx(),
-                            rowpa.ry(), rowpa.rz(), nominalStraw_mp.x(), nominalStraw_mp.y(), nominalStraw_mp.z(),
-                            nominalStraw_dir.x(), nominalStraw_dir.y(), nominalStraw_dir.z(), plane_origin.x(),
-                            plane_origin.y(), plane_origin.z(), panel_origin.x(), panel_origin.y(),
-                            panel_origin.z(), driftvel),
+            CosmicTrack_DCA(
+                A0, B0, A1, B1, T0, rowpl.dx(), rowpl.dy(), rowpl.dz() + h, rowpl.rx(), rowpl.ry(),
+                rowpl.rz(), rowpa.dx(), rowpa.dy(), rowpa.dz(), rowpa.rx(), rowpa.ry(), rowpa.rz(),
+                nominalStraw_mp.x(), nominalStraw_mp.y(), nominalStraw_mp.z(), nominalStraw_dir.x(),
+                nominalStraw_dir.y(), nominalStraw_dir.z(), plane_origin.x(), plane_origin.y(),
+                plane_origin.z(), panel_origin.x(), panel_origin.y(), panel_origin.z(), driftvel),
             0);
 
         diff_b = _srep.driftDistanceToTime(
             straw_id,
-            CosmicTrack_DCA(A0, B0, A1, B1, T0, rowpl.dx(), rowpl.dy(), rowpl.dz() - h, rowpl.rx(),
-                            rowpl.ry(), rowpl.rz(), rowpa.dx(), rowpa.dy(), rowpa.dz(), rowpa.rx(),
-                            rowpa.ry(), rowpa.rz(), nominalStraw_mp.x(), nominalStraw_mp.y(), nominalStraw_mp.z(),
-                            nominalStraw_dir.x(), nominalStraw_dir.y(), nominalStraw_dir.z(), plane_origin.x(),
-                            plane_origin.y(), plane_origin.z(), panel_origin.x(), panel_origin.y(),
-                            panel_origin.z(), driftvel),
+            CosmicTrack_DCA(
+                A0, B0, A1, B1, T0, rowpl.dx(), rowpl.dy(), rowpl.dz() - h, rowpl.rx(), rowpl.ry(),
+                rowpl.rz(), rowpa.dx(), rowpa.dy(), rowpa.dz(), rowpa.rx(), rowpa.ry(), rowpa.rz(),
+                nominalStraw_mp.x(), nominalStraw_mp.y(), nominalStraw_mp.z(), nominalStraw_dir.x(),
+                nominalStraw_dir.y(), nominalStraw_dir.z(), plane_origin.x(), plane_origin.y(),
+                plane_origin.z(), panel_origin.x(), panel_origin.y(), panel_origin.z(), driftvel),
             0);
 
         diff = (diff_a - diff_b) / (2.0 * h);
@@ -954,7 +955,7 @@ bool AlignTrackCollector::filter_CosmicTrackSeedCollection(
             std::cout << "bad track" << std::endl;
           }
         }
-
+        std::cout << std::endl;
         continue;
       }
       /*
@@ -984,7 +985,7 @@ bool AlignTrackCollector::filter_CosmicTrackSeedCollection(
         std::cout << "Residual covariance:" << std::endl;
         meas_cov.Print(); // now holding residual cov
       }
-      wrote_hits = false;
+      bool wrote_relevant_hits = false;
 
       // write hits to buffer
       for (size_t i = 0; i < (size_t)nHits; ++i) {
@@ -1000,7 +1001,7 @@ bool AlignTrackCollector::filter_CosmicTrackSeedCollection(
           millepede->mille(local_derivs_temp[i].size(), local_derivs_temp[i].data(), _expected_dofs,
                            global_derivs_temp[i].data(), labels_temp[i].data(), residuals[i],
                            residual_err[i]);
-          wrote_hits = true;
+          wrote_relevant_hits = true;
         }
 
         if (isnan(residual_err[i])) {
@@ -1013,7 +1014,12 @@ bool AlignTrackCollector::filter_CosmicTrackSeedCollection(
         }
       }
 
-      if (bad_track || !wrote_hits) {
+      if (bad_track || !wrote_hits || !wrote_relevant_hits) {
+        if (_diag > 0) {
+          std::cout << "killed track " << std::endl;
+          std::cout << std::endl;
+        }
+
         millepede->kill();
         continue;
       }
@@ -1030,6 +1036,7 @@ bool AlignTrackCollector::filter_CosmicTrackSeedCollection(
 
       if (_diag > 0) {
         std::cout << "wrote track " << tracks_written << std::endl;
+        std::cout << std::endl;
       }
     }
   }
