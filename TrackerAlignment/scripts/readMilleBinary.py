@@ -95,7 +95,7 @@ try:
 
         length = array.array(intfmt)
         length.fromfile(f, 1)
-        nr = abs(length[0] / 2)
+        nr = int(abs(length[0] / 2))
         nrec += 1
 
         if length[0] > 0:
