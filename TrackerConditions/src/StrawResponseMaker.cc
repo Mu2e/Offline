@@ -3,7 +3,7 @@
 // data products
 #include <cmath>
 #include <algorithm>
-#include <TH1F.h>
+#include <TH1D.h>
 #include <TMath.h>
 #include "DataProducts/inc/StrawId.hh"
 #include "TrackerConditions/inc/StrawDrift.hh"
@@ -63,7 +63,7 @@ namespace mu2e {
       double hypotenuse = sqrt(pow(doca,2) + pow(tau*_config.linearDriftVelocity(),2));
       double tau_eff = hypotenuse/_config.linearDriftVelocity() - doca/_config.linearDriftVelocity();
 
-      TH1F *h = new TH1F("","",10000,-20,80);
+      TH1D h = new TH1D("","",10000,-20,80);
       for (int it=0;it<h->GetNbinsX();it++){
         double tresid = h->GetBinCenter(it+1);
         h->SetBinContent(it+1,exp(sigma*sigma/(2*tau_eff*tau_eff)-tresid/tau_eff)*(1-TMath::Erf((sigma*sigma-tau_eff*tresid)/(sqrt(2)*sigma*tau_eff))));
