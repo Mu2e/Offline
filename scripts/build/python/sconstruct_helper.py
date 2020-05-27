@@ -158,9 +158,9 @@ def BaBarLibs():
 def sconscriptList(mu2eOpts):
     ss=[]
     ss_append = ss.append
-    for root,dirs,files in os.walk('.'):
-        for file in files:
-            if file == 'SConscript': ss_append(os.path.join(root[2:],file))
+    for root, _, files in os.walk('.'):
+        if 'SConscript' in files:
+            ss_append(os.path.join(root[2:], 'SConscript'))
 
     # If we are making a build for the trigger, do not build everything.
     if mu2eOpts["trigger"] == 'on':
@@ -175,9 +175,8 @@ def sconscriptList(mu2eOpts):
 
 # Make sure the build directories are created
 def makeSubDirs(mu2eOpts):
-    for dir in ['libdir','bindir','tmpdir', 'gendir'] :
-        cmd = "mkdir -p "+mu2eOpts[dir]
-        subprocess.call(cmd, shell=True)
+    for mdir in [mu2eOpts[d] for d in ['libdir','bindir','tmpdir', 'gendir']]:
+        os.makedirs(mdir, exist_ok=True)
 
 #
 # a method for creating build-on-demand targets
