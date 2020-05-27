@@ -58,6 +58,10 @@ namespace mu2e {
     double sigma = _config.parameterizedDriftSigma();
     double tau = _config.parameterizedDriftTau();
     int parameterizedDriftBins = _config.parameterizedDriftBins();
+
+    _parDriftDocas.reserve(parameterizedDriftBins);
+    _parDriftOffsets.reserve(parameterizedDriftBins);
+    _parDriftRes.reserve(parameterizedDriftBins);
     
     TH1D h("","",10000,-20,80);
     for (int i=0;i<parameterizedDriftBins;i++){
