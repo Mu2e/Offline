@@ -648,14 +648,12 @@ bool AlignTrackCollector::filter_CosmicTrackSeedCollection(
 
         double diff_a = _srep.driftDistanceToTime(
             straw_id,
-            CosmicTrack_DCA(A0 + h, B0, A1, B1, T0, rowpl.dx(), rowpl.dy(), rowpl.dz(), rowpl.rx(),
-                            rowpl.ry(), rowpl.rz(), rowpa.dx(), rowpa.dy(), rowpa.dz(), rowpa.rx(),
-                            rowpa.ry(), rowpa.rz(),
-
-                            nominalStraw_mp.x(), nominalStraw_mp.y(), nominalStraw_mp.z(),
-                            nominalStraw_mp.x(), nominalStraw_mp.y(), nominalStraw_dir.z(),
-                            nominalStraw_dir.x(), nominalStraw_dir.y(), nominalStraw_dir.z(),
-                            panel_origin.x(), panel_origin.y(), panel_origin.z(), driftvel),
+            CosmicTrack_DCA(
+                A0 + h, B0, A1, B1, T0, rowpl.dx(), rowpl.dy(), rowpl.dz(), rowpl.rx(), rowpl.ry(),
+                rowpl.rz(), rowpa.dx(), rowpa.dy(), rowpa.dz(), rowpa.rx(), rowpa.ry(), rowpa.rz(),
+                nominalStraw_mp.x(), nominalStraw_mp.y(), nominalStraw_mp.z(), nominalStraw_dir.x(),
+                nominalStraw_dir.y(), nominalStraw_dir.z(), plane_origin.x(), plane_origin.y(),
+                plane_origin.z(), panel_origin.x(), panel_origin.y(), panel_origin.z(), driftvel),
             0);
 
         double diff_b = _srep.driftDistanceToTime(
@@ -663,7 +661,6 @@ bool AlignTrackCollector::filter_CosmicTrackSeedCollection(
             CosmicTrack_DCA(
                 A0 - h, B0, A1, B1, T0, rowpl.dx(), rowpl.dy(), rowpl.dz(), rowpl.rx(), rowpl.ry(),
                 rowpl.rz(), rowpa.dx(), rowpa.dy(), rowpa.dz(), rowpa.rx(), rowpa.ry(), rowpa.rz(),
-
                 nominalStraw_mp.x(), nominalStraw_mp.y(), nominalStraw_mp.z(), nominalStraw_dir.x(),
                 nominalStraw_dir.y(), nominalStraw_dir.z(), plane_origin.x(), plane_origin.y(),
                 plane_origin.z(), panel_origin.x(), panel_origin.y(), panel_origin.z(), driftvel),
@@ -764,9 +761,7 @@ bool AlignTrackCollector::filter_CosmicTrackSeedCollection(
         diff_a = _srep.driftDistanceToTime(
             straw_id,
             CosmicTrack_DCA(A0, B0, A1, B1, T0,
-
                             rowpl.dx() + h,
-
                             rowpl.dy(), rowpl.dz(), rowpl.rx(), rowpl.ry(), rowpl.rz(), rowpa.dx(),
                             rowpa.dy(), rowpa.dz(), rowpa.rx(), rowpa.ry(), rowpa.rz(),
                             nominalStraw_mp.x(), nominalStraw_mp.y(), nominalStraw_mp.z(),
@@ -778,9 +773,7 @@ bool AlignTrackCollector::filter_CosmicTrackSeedCollection(
         diff_b = _srep.driftDistanceToTime(
             straw_id,
             CosmicTrack_DCA(A0, B0, A1, B1, T0,
-
                             rowpl.dx() - h,
-
                             rowpl.dy(), rowpl.dz(), rowpl.rx(), rowpl.ry(), rowpl.rz(), rowpa.dx(),
                             rowpa.dy(), rowpa.dz(), rowpa.rx(), rowpa.ry(), rowpa.rz(),
                             nominalStraw_mp.x(), nominalStraw_mp.y(), nominalStraw_mp.z(),
