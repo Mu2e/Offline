@@ -203,6 +203,11 @@ public:
     fhicl::Atom<std::string> constrfile{Name("ConstrFile"),
                                         Comment("Output filename for Millepede constraints file"),
                                         "constr.txt"};
+
+    fhicl::Atom<bool> usenumerical{Name("UseNumericalDiffn"),
+                                    Comment("Whether or not to use numerical derivatives. Default is false."),
+                                    false};
+
   };
 
   typedef art::EDAnalyzer::Table<Config> Parameters;
@@ -246,6 +251,8 @@ public:
       steer_filename(conf().steerfile()), 
       param_filename(conf().paramfile()),
       constr_filename(conf().constrfile()),
+
+      use_numeric_derivs(conf().usenumerical()),
 
       wroteMillepedeParams(false),
       mille_file(mille_filename, gzip_compress) {
@@ -301,6 +308,7 @@ public:
   std::string param_filename;
   std::string constr_filename;
 
+  bool use_numeric_derivs;
   bool wroteMillepedeParams;
 
   MilleDataWriter<double> mille_file;
@@ -716,9 +724,13 @@ bool AlignTrackCollector::filter_CosmicTrackSeedCollection(
         // TODO: move to a utility class?
         // TODO: avoid DRY problems
 
-        derivativesLocal.clear();
-        derivativesGlobal.clear();
+        if (use_numeric_derivs){
+          derivativesLocal.clear();
+          derivativesGlobal.clear();
+        }
 
+        std::vector<double> numericLocal;
+        std::vector<double> numericGlobal;
         double h = 1e-7;
 
         // PARTIAL DOCA DERIVATIVE: A0
@@ -746,7 +758,7 @@ bool AlignTrackCollector::filter_CosmicTrackSeedCollection(
         diff = (diff_a - diff_b) / (2.0 * h);
         std::cout << "numerical dr/d(A0) = " << diff << std::endl;
 
-        derivativesLocal.push_back(diff);
+        numericLocal.push_back(diff);
 
         // PARTIAL DOCA DERIVATIVE: B0
 
@@ -774,7 +786,7 @@ bool AlignTrackCollector::filter_CosmicTrackSeedCollection(
 
         diff = (diff_a - diff_b) / (2.0 * h);
         std::cout << "numerical dr/d(B0) = " << diff << std::endl;
-        derivativesLocal.push_back(diff);
+        numericLocal.push_back(diff);
 
         // PARTIAL DOCA DERIVATIVE: A1
 
@@ -802,7 +814,7 @@ bool AlignTrackCollector::filter_CosmicTrackSeedCollection(
 
         diff = (diff_a - diff_b) / (2.0 * h);
         std::cout << "numerical dr/d(A1) = " << diff << std::endl;
-        derivativesLocal.push_back(diff);
+        numericLocal.push_back(diff);
 
         // PARTIAL DOCA DERIVATIVE: B1
 
@@ -828,10 +840,10 @@ bool AlignTrackCollector::filter_CosmicTrackSeedCollection(
 
         diff = (diff_a - diff_b) / (2.0 * h);
         std::cout << "numerical dr/d(B1) = " << diff << std::endl;
-        derivativesLocal.push_back(diff);
+        numericLocal.push_back(diff);
 
         // T0
-        derivativesLocal.push_back(-1);
+        numericLocal.push_back(-1);
 
         // PARTIAL DOCA DERIVATIVE: PLANE X SHIFT
 
@@ -857,7 +869,7 @@ bool AlignTrackCollector::filter_CosmicTrackSeedCollection(
 
         diff = (diff_a - diff_b) / (2.0 * h);
         std::cout << "numerical dr/d([plane " << plane_id << "]DX) = " << diff << std::endl;
-        derivativesGlobal.push_back(diff);
+        numericGlobal.push_back(diff);
 
         // PARTIAL DOCA DERIVATIVE: PLANE Y SHIFT
 
@@ -883,7 +895,7 @@ bool AlignTrackCollector::filter_CosmicTrackSeedCollection(
 
         diff = (diff_a - diff_b) / (2.0 * h);
         std::cout << "numerical dr/d([plane " << plane_id << "]DY) = " << diff << std::endl;
-        derivativesGlobal.push_back(diff);
+        numericGlobal.push_back(diff);
 
         // PARTIAL DOCA DERIVATIVE: PLANE Z SHIFT
 
@@ -909,7 +921,12 @@ bool AlignTrackCollector::filter_CosmicTrackSeedCollection(
 
         diff = (diff_a - diff_b) / (2.0 * h);
         std::cout << "numerical dr/d([plane " << plane_id << "]DZ) = " << diff << std::endl;
-        derivativesGlobal.push_back(diff);
+        numericGlobal.push_back(diff);
+
+        if (use_numeric_derivs) {
+          derivativesGlobal = numericGlobal;
+          derivativesLocal = numericLocal;
+        }
       }
       // end of derivative diagnostics!
       // end of derivative diagnostics!
