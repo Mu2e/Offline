@@ -58,7 +58,7 @@ public:
       return;
     }
     push(measurement, 0);
-    push(local_derivatives, boost::irange(1, local_derivatives.size()));
+    push(local_derivatives, boost::irange(1, (int)local_derivatives.size()));
     push(meas_error, 0);
     push(global_derivatives, global_labels);
   }
