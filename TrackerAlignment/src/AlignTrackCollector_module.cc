@@ -76,7 +76,7 @@
 #include "fhiclcpp/types/detail/validationException.h"
 
 #include "TrackerAlignment/inc/AlignmentDerivatives.hh"
-#include "TrackerAlignment/inc/Mille.h"
+#include "TrackerAlignment/inc/MilleDataWriter.hh"
 
 namespace art {
 class Run;
@@ -247,7 +247,8 @@ public:
       param_filename(conf().paramfile()),
       constr_filename(conf().constrfile()),
 
-      wroteMillepedeParams(false) {
+      wroteMillepedeParams(false),
+      mille_file(mille_filename, gzip_compress) {
 
     if (no_panel_dofs) {
       _dof_per_panel = 0;
@@ -266,6 +267,9 @@ public:
 
       std::cout << "AlignTrackCollector: Total number of panel degrees of freedom = "
                 << StrawId::_nupanels * _dof_per_panel << std::endl;
+
+      std::cout << "AlignTrackCollector: compression is " << (gzip_compress ? "enabled" : "disabled") << std::endl;
+
     }
   }
 
@@ -299,7 +303,7 @@ public:
 
   bool wroteMillepedeParams;
 
-  std::unique_ptr<Mille> millepede;
+  MilleDataWriter<double> mille_file;
   const CosmicTrackSeedCollection* _coscol;
   const Tracker* _tracker;
 
@@ -313,7 +317,6 @@ public:
 };
 
 void AlignTrackCollector::beginJob() {
-  millepede = std::make_unique<Mille>(mille_filename.c_str());
   _trkAlignPlane_h = std::make_unique<DbHandle<TrkAlignPlane>>();
   _trkAlignPanel_h = std::make_unique<DbHandle<TrkAlignPanel>>();
 
@@ -477,10 +480,6 @@ void AlignTrackCollector::beginRun(art::Run const& run) {
 }
 
 void AlignTrackCollector::endJob() {
-  // ensure the binary Mille file is explicitly closed in endJob,
-  // not just when this module goes out of scope.
-  // File close is handled in Mille destructor
-  millepede->~Mille();
 
   if (_diag > 0) {
     std::cout << "AlignTrackCollector: wrote " << tracks_written << " tracks to "
@@ -572,9 +571,9 @@ bool AlignTrackCollector::filter_CosmicTrackSeedCollection(
 
     // TODO: Check positive semi-definiteness
 
-    std::vector<float> residuals;
-    std::vector<std::vector<float>> global_derivs_temp;
-    std::vector<std::vector<float>> local_derivs_temp;
+    std::vector<double> residuals;
+    std::vector<std::vector<double>> global_derivs_temp;
+    std::vector<std::vector<double>> local_derivs_temp;
     std::vector<std::vector<int>> labels_temp;
 
     // get residuals and their derivatives with respect
@@ -957,12 +956,8 @@ bool AlignTrackCollector::filter_CosmicTrackSeedCollection(
         resid_local_derivs(nHits, col) = derivativesLocal[col];
       }
 
-      global_derivs_temp.push_back(
-          std::vector<float>(derivativesGlobal.begin(), derivativesGlobal.end()));
-
-      // FIXME!
-      local_derivs_temp.push_back(
-          std::vector<float>(derivativesLocal.begin(), derivativesLocal.end()));
+      global_derivs_temp.emplace_back(derivativesGlobal);
+      local_derivs_temp.emplace_back(derivativesLocal);
       labels_temp.push_back(global_dof_labels);
 
       wrote_hits = true;
@@ -1065,9 +1060,8 @@ bool AlignTrackCollector::filter_CosmicTrackSeedCollection(
                                           plane_uid[i]) == plane_filter_list.end()) {
           // we're not interested in this measurement!
         } else {
-          millepede->mille(local_derivs_temp[i].size(), local_derivs_temp[i].data(), _expected_dofs,
-                           global_derivs_temp[i].data(), labels_temp[i].data(), residuals[i],
-                           residual_err[i]);
+          mille_file.pushHit(local_derivs_temp[i], 
+          global_derivs_temp[i], labels_temp[i], residuals[i], residual_err[i]);
           wrote_relevant_hits = true;
         }
 
@@ -1086,13 +1080,12 @@ bool AlignTrackCollector::filter_CosmicTrackSeedCollection(
           std::cout << "killed track " << std::endl;
           std::cout << std::endl;
         }
-
-        millepede->kill();
+        mille_file.clear();
         continue;
       }
 
       // Write the track buffer to file
-      millepede->end();
+      mille_file.flushTrack();
 
       if (_diag > 0) {
         diagtree->Fill();
