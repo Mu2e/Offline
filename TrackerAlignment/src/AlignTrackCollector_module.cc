@@ -136,10 +136,6 @@ public:
     fhicl::Atom<art::InputTag> costag{Name("CosmicTrackSeedCollection"),
                                       Comment("tag for cosmic track seed collection")};
 
-    fhicl::Atom<std::string> labelsfile{
-        Name("LabelsOutputFile"), Comment("Output filename for Millepede label ID's (debug only)"),
-        "none"};
-
     fhicl::Atom<std::string> tracktype{
         Name("TrackType"),
         Comment("The type of track to collect. Default: CosmicTrackSeedCollection"),
@@ -233,7 +229,6 @@ public:
   AlignTrackCollector(const Parameters& conf) :
       art::EDAnalyzer(conf), _diag(conf().diaglvl()), 
       _costag(conf().costag()),
-      _labels_filename(conf().labelsfile()), 
       track_type(conf().tracktype()),
       min_plane_traverse(conf().minplanetraverse()),
       min_panel_traverse_per_plane(conf().minpaneltraverse()), 
