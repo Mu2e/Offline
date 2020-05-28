@@ -369,7 +369,7 @@ def cseexpr_to_ccode(symname, symfunc, symbolslist):
 
 
 def build_ccode_function(return_type, fn_name, symbolslist, fn_body):
-    args = 'double ' + ', double '.join([symb.name for symb in symbolslist])
+    args = 'double const& ' + ', double const& '.join([symb.name for symb in symbolslist])
     code = """{return_type} {fn_name}({arg_list})
 {{
         {body}
