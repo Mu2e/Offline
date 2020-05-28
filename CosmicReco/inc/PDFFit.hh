@@ -93,6 +93,7 @@ class GaussianDriftFit : public ROOT::Minuit2::FCNBase {
 
 	double reduced_chisq(const std::vector<double> &x);
 
+	int HitAmbiguity(ComboHit const& sh, const std::vector<double> &x) const;
 
     double DOCAresidual(ComboHit const& sh, const std::vector<double> &x) const;
 

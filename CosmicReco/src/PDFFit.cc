@@ -4,6 +4,7 @@
 
 //ROOT:
 #include "Math/VectorUtil.h"
+#include "RecoDataProducts/inc/ComboHit.hh"
 #include "TMath.h"
 #include "Math/Math.h"
 #include <TSystem.h>
@@ -371,6 +372,26 @@ double GaussianDriftFit::reduced_chisq(const std::vector<double> &x)
 	return chi_sq / ndof;
 }
 
+int GaussianDriftFit::HitAmbiguity(ComboHit const& sh, const std::vector<double> &x) const
+{
+  double const& a0 = x[0];
+  double const& b0 = x[1];
+  double const& a1 = x[2];
+  double const& b1 = x[3];
+
+  CLHEP::Hep3Vector intercept(a0, 0, b0);
+  CLHEP::Hep3Vector dir(a1, -1, b1);
+  dir = dir.unit();
+
+  Straw const& straw = tracker->getStraw(sh.strawId());
+
+  Hep3Vector sep = intercept - straw.getMidPoint();
+  Hep3Vector perp = (dir.cross(straw.getDirection())).unit();
+  double dperp = perp.dot(sep);
+
+  return (dperp > 0 ? -1 : 1);
+}
+
 double GaussianDriftFit::TimeResidual(ComboHit const& sh, const std::vector<double> &x) const
 {
   double const& a0 = x[0];
@@ -395,7 +416,7 @@ double GaussianDriftFit::TimeResidual(ComboHit const& sh, const std::vector<doub
 
   double resid = predictedTime - measuredTime;
 
-  return (pca.s2() > 0 ? resid : -resid);
+  return (pca.s2() > 0 ? resid : -resid);//HitAmbiguity(sh, x) * resid; 
 }
 
 double GaussianDriftFit::DOCAresidualError(ComboHit const& sh, const std::vector<double> &x, const std::vector<double> &cov) const
