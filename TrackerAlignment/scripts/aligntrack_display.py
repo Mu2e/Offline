@@ -31,20 +31,20 @@ def hist_meanresid(ax, hist, label=''):
         bin_centers,
         y,
         yerr = y*0,#**0.5,
-        marker = 'x',
+        marker = '.',
         fmt='x-',
         linewidth=0.5,
         drawstyle = 'steps-mid',
         label=label
     )
-    ax.set_xlim(bin_edges[0], bin_edges[-1]);
-    ax.set_ylim(-50, 50)
-    ax.hlines(0, 0,36,linestyles='dashed')
-    ax.set_title('Mean residuals per plane')
+    ax.set_xlim(bin_edges[0], bin_edges[-1])
+    ax.set_ylim(-1, 1)
+    #ax.hlines(0, 0,216, linestyles='dashed')
+    ax.set_title('Mean time residual per panel')
 
     ax.set_xlabel('Plane ID', fontsize=9)
-    ax.set_ylabel('Mean residuals over plane ($\\mu m$)', fontsize=9)
-    ax.xaxis.set_ticks(np.arange(0, 36.2, 1))
+    ax.set_ylabel('Mean residuals over panel (ns)', fontsize=9)
+    #ax.xaxis.set_ticks(np.arange(0, 216.2, 1))
     ax.tick_params(which='major', direction='in')
     ax.xaxis.grid(which='major', linestyle='--')
 
@@ -59,7 +59,7 @@ def hist_poiserr(ax, hist, label='', fitgauss=False):
     if fitgauss:
         try:
             (A,mu,sigma), pcov = curve_fit(gauss, bin_centers, y, )
-            lab = '$\\mu = %.2f, \\sigma = %.2f$' % (mu,sigma)
+            lab = '$\\mu = %.2f, \\sigma = %.2f$' % (mu,abs(sigma))
 
             ax.plot(bin_centers, gauss(bin_centers, A,mu,sigma),  'r-.', lw=0.5)
         except:
@@ -79,7 +79,7 @@ def hist_poiserr(ax, hist, label='', fitgauss=False):
 
     ax.hlines(0, np.min(bin_edges), np.max(bin_edges), linestyles='dashed')
 
-    ax.set_xlim(bin_edges[0], bin_edges[-1]);
+    ax.set_xlim(bin_edges[0], bin_edges[-1])
     ax.set_ylabel('Entries / %.2f' % (abs(bin_edges[0] - bin_edges[-1])/(len(bin_edges)-1)))
 
     ymin, ymax = ax.get_ylim()
@@ -129,7 +129,7 @@ def main():
 
         variables_hitlevel = {
 
-            "doca_resid": (50, -1.5, 1.5, True),
+            "doca_resid": (50, -1, 1, True),
             "time_resid": (50, -15,15, True),
             "doca_resid_err": (50, 0, 0.3, False),
             "doca": (50, 0, 3, False),
@@ -160,16 +160,15 @@ def main():
         for _, cut_fn in cuts.items():
             df = cut_fn(df)
 
-        # N.B. residuals here are converted to microns
-        counts, edges = np.histogram(df["plane"], weights=(df["doca_resid"] * 1000.0), bins=36, range=(-0.5,35.5))
-        counts = np.divide(counts, np.histogram(df["plane"], bins=36, range=(-0.5,35.5))[0])
+        # N.B. residuals here are in ns
+        counts, edges = np.histogram(df["panel"], weights=(df["time_resid"]), bins=216, range=(-0.5,216))
+        counts = np.divide(counts, np.histogram(df["panel"], bins=216, range=(-0.5,216))[0])
 
         if planeresid is None:
             planeresid = counts,edges
         else:
             planeresid = planeresid[0] + counts, edges
-
-
+            
         for name, (bins, xmin, xmax,fitgauss) in allvars.items():
             if name in variables_hitlevel:
                 v = df[name]
