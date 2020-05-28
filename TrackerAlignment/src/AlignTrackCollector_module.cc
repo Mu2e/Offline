@@ -208,13 +208,21 @@ public:
                             TrkAlignPanel const& alignConstPanels);
 
   AlignTrackCollector(const Parameters& conf) :
-      art::EDAnalyzer(conf), _diag(conf().diaglvl()), _costag(conf().costag()),
-      _output_filename(conf().millefile()), _labels_filename(conf().labelsfile()),
-      track_type(conf().tracktype()), min_plane_traverse(conf().minplanetraverse()),
-      min_panel_traverse_per_plane(conf().minpaneltraverse()), max_pvalue(conf().maxpvalue()),
-      max_timeres(conf().maxtimeres()), min_track_hits(conf().mintrackhits()),
-      use_timeresid(conf().usetimeresid()), no_panel_dofs(conf().nopaneldofs()),
-      no_plane_rotations(conf().noplanerotations()), use_plane_filter(conf().useplanefilter()),
+      art::EDAnalyzer(conf), 
+      _diag(conf().diaglvl()), 
+      _costag(conf().costag()),
+      _output_filename(conf().millefile()), 
+      _labels_filename(conf().labelsfile()),
+      track_type(conf().tracktype()), 
+      min_plane_traverse(conf().minplanetraverse()),
+      min_panel_traverse_per_plane(conf().minpaneltraverse()), 
+      max_pvalue(conf().maxpvalue()),
+      max_timeres(conf().maxtimeres()), 
+      min_track_hits(conf().mintrackhits()),
+      use_timeresid(conf().usetimeresid()), 
+      no_panel_dofs(conf().nopaneldofs()),
+      no_plane_rotations(conf().noplanerotations()), 
+      use_plane_filter(conf().useplanefilter()),
       plane_filter_list(conf().planefilterlist()),
 
       wroteMillepedeParams(false) {
