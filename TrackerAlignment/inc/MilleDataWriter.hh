@@ -7,13 +7,13 @@
 
 #include <fstream>
 #include <iostream>
+#include <numeric>
 #include <vector>
 
 #include <boost/iostreams/categories.hpp>
 #include <boost/iostreams/copy.hpp>
 #include <boost/iostreams/filter/gzip.hpp>
 #include <boost/iostreams/filtering_stream.hpp>
-#include <boost/range/irange.hpp>
 
 using namespace boost::iostreams;
 
@@ -58,7 +58,11 @@ public:
       return;
     }
     push(measurement, 0);
-    push(local_derivatives, boost::irange(1, (int)local_derivatives.size()));
+
+    std::vector<int> local_labels(local_derivatives.size());
+    std::iota(local_labels.begin(), local_labels.end(), 1);
+    push(local_derivatives, local_labels);
+    
     push(meas_error, 0);
     push(global_derivatives, global_labels);
   }
