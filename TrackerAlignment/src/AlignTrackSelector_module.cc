@@ -72,7 +72,6 @@
 #include "fhiclcpp/types/detail/validationException.h" // for validatio...
 
 #include "TrackerAlignment/inc/AlignmentDerivatives.hh" // for CosmicTra...
-#include "TrackerAlignment/inc/Mille.h"                 // for Mille
 
 namespace art {
 class Run;
