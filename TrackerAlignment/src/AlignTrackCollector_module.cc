@@ -520,7 +520,7 @@ bool AlignTrackCollector::filter_CosmicTrackSeedCollection(
       auto const& rowpl = alignConsts_planes.rowAt(plane_id);
       auto const& rowpa = alignConsts_panels.rowAt(panel_uuid);
 
-      TwoLinePCA pca(straw.getMidPoint(), straw.getDirection(), intercept, dir);
+      TwoLinePCA pca(intercept, dir, straw.getMidPoint(), straw.getDirection());
 
       double driftvel = _srep.driftInstantSpeed(straw_id, pca.dca(), 0);
 
@@ -546,7 +546,7 @@ bool AlignTrackCollector::filter_CosmicTrackSeedCollection(
       // The following are based on reco performed using current alignment parameters
       double dca_resid = fit_object.DOCAresidual(straw_hit, sts);
       double drift_res_dca = _srep.driftDistanceError(straw_hit.strawId(), 0, 0, pca.dca());
-      double signdca = (pca.s1() > 0 ? pca.dca() : -pca.dca());
+      double signdca = (pca.s2() > 0 ? pca.dca() : -pca.dca());
 
       double time_resid = fit_object.TimeResidual(straw_hit, sts);
       double drift_res = _srep.driftTimeError(straw_hit.strawId(), 0, 0, pca.dca());
