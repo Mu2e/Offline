@@ -4,7 +4,7 @@
 # include <math.h>
 # include <vector>
 
-double CosmicTrack_DCA(double a0, double b0, double a1, double b1, double t0, double plane_dx, double plane_dy, double plane_dz, double plane_a, double plane_b, double plane_g, double panel_dx, double panel_dy, double panel_dz, double panel_a, double panel_b, double panel_g, double wire_x, double wire_y, double wire_z, double wdir_x, double wdir_y, double wdir_z, double plane_x, double plane_y, double plane_z, double panel_straw0x, double panel_straw0y, double panel_straw0z, double driftvel)
+double CosmicTrack_DCA(double const& a0, double const& b0, double const& a1, double const& b1, double const& t0, double const& plane_dx, double const& plane_dy, double const& plane_dz, double const& plane_a, double const& plane_b, double const& plane_g, double const& panel_dx, double const& panel_dy, double const& panel_dz, double const& panel_a, double const& panel_b, double const& panel_g, double const& wire_x, double const& wire_y, double const& wire_z, double const& wdir_x, double const& wdir_y, double const& wdir_z, double const& plane_x, double const& plane_y, double const& plane_z, double const& panel_straw0x, double const& panel_straw0y, double const& panel_straw0z, double const& driftvel)
 {
     double R0 = cos(plane_a);
     double R1 = cos(plane_b);
@@ -89,7 +89,7 @@ double CosmicTrack_DCA(double a0, double b0, double a1, double b1, double t0, do
 }
 
 
-double CosmicTrack_DCAalignpos_x(double plane_dx, double plane_dy, double plane_dz, double plane_a, double plane_b, double plane_g, double panel_dx, double panel_dy, double panel_dz, double panel_a, double panel_b, double panel_g, double plane_x, double plane_y, double plane_z, double panel_straw0x, double panel_straw0y, double panel_straw0z, double wire_x, double wire_y, double wire_z, double wdir_x, double wdir_y, double wdir_z)
+double CosmicTrack_DCAalignpos_x(double const& plane_dx, double const& plane_dy, double const& plane_dz, double const& plane_a, double const& plane_b, double const& plane_g, double const& panel_dx, double const& panel_dy, double const& panel_dz, double const& panel_a, double const& panel_b, double const& panel_g, double const& plane_x, double const& plane_y, double const& plane_z, double const& panel_straw0x, double const& panel_straw0y, double const& panel_straw0z, double const& wire_x, double const& wire_y, double const& wire_z, double const& wdir_x, double const& wdir_y, double const& wdir_z)
 {
     double R0 = sin(plane_a);
     double R1 = sin(plane_g);
@@ -119,7 +119,7 @@ double CosmicTrack_DCAalignpos_x(double plane_dx, double plane_dy, double plane_
 }
 
 
-double CosmicTrack_DCAalignpos_y(double plane_dx, double plane_dy, double plane_dz, double plane_a, double plane_b, double plane_g, double panel_dx, double panel_dy, double panel_dz, double panel_a, double panel_b, double panel_g, double plane_x, double plane_y, double plane_z, double panel_straw0x, double panel_straw0y, double panel_straw0z, double wire_x, double wire_y, double wire_z, double wdir_x, double wdir_y, double wdir_z)
+double CosmicTrack_DCAalignpos_y(double const& plane_dx, double const& plane_dy, double const& plane_dz, double const& plane_a, double const& plane_b, double const& plane_g, double const& panel_dx, double const& panel_dy, double const& panel_dz, double const& panel_a, double const& panel_b, double const& panel_g, double const& plane_x, double const& plane_y, double const& plane_z, double const& panel_straw0x, double const& panel_straw0y, double const& panel_straw0z, double const& wire_x, double const& wire_y, double const& wire_z, double const& wdir_x, double const& wdir_y, double const& wdir_z)
 {
     double R0 = sin(plane_a);
     double R1 = cos(plane_g);
@@ -149,7 +149,7 @@ double CosmicTrack_DCAalignpos_y(double plane_dx, double plane_dy, double plane_
 }
 
 
-double CosmicTrack_DCAalignpos_z(double plane_dx, double plane_dy, double plane_dz, double plane_a, double plane_b, double plane_g, double panel_dx, double panel_dy, double panel_dz, double panel_a, double panel_b, double panel_g, double plane_x, double plane_y, double plane_z, double panel_straw0x, double panel_straw0y, double panel_straw0z, double wire_x, double wire_y, double wire_z, double wdir_x, double wdir_y, double wdir_z)
+double CosmicTrack_DCAalignpos_z(double const& plane_dx, double const& plane_dy, double const& plane_dz, double const& plane_a, double const& plane_b, double const& plane_g, double const& panel_dx, double const& panel_dy, double const& panel_dz, double const& panel_a, double const& panel_b, double const& panel_g, double const& plane_x, double const& plane_y, double const& plane_z, double const& panel_straw0x, double const& panel_straw0y, double const& panel_straw0z, double const& wire_x, double const& wire_y, double const& wire_z, double const& wdir_x, double const& wdir_y, double const& wdir_z)
 {
     double R0 = cos(plane_b);
     double R1 = R0*cos(plane_a);
@@ -175,7 +175,7 @@ double CosmicTrack_DCAalignpos_z(double plane_dx, double plane_dy, double plane_
 }
 
 
-double CosmicTrack_DCAaligndir_x(double plane_dx, double plane_dy, double plane_dz, double plane_a, double plane_b, double plane_g, double panel_dx, double panel_dy, double panel_dz, double panel_a, double panel_b, double panel_g, double plane_x, double plane_y, double plane_z, double panel_straw0x, double panel_straw0y, double panel_straw0z, double wire_x, double wire_y, double wire_z, double wdir_x, double wdir_y, double wdir_z)
+double CosmicTrack_DCAaligndir_x(double const& plane_dx, double const& plane_dy, double const& plane_dz, double const& plane_a, double const& plane_b, double const& plane_g, double const& panel_dx, double const& panel_dy, double const& panel_dz, double const& panel_a, double const& panel_b, double const& panel_g, double const& plane_x, double const& plane_y, double const& plane_z, double const& panel_straw0x, double const& panel_straw0y, double const& panel_straw0z, double const& wire_x, double const& wire_y, double const& wire_z, double const& wdir_x, double const& wdir_y, double const& wdir_z)
 {
     double R0 = sin(panel_a);
     double R1 = sin(plane_a);
@@ -197,7 +197,7 @@ double CosmicTrack_DCAaligndir_x(double plane_dx, double plane_dy, double plane_
 }
 
 
-double CosmicTrack_DCAaligndir_y(double plane_dx, double plane_dy, double plane_dz, double plane_a, double plane_b, double plane_g, double panel_dx, double panel_dy, double panel_dz, double panel_a, double panel_b, double panel_g, double plane_x, double plane_y, double plane_z, double panel_straw0x, double panel_straw0y, double panel_straw0z, double wire_x, double wire_y, double wire_z, double wdir_x, double wdir_y, double wdir_z)
+double CosmicTrack_DCAaligndir_y(double const& plane_dx, double const& plane_dy, double const& plane_dz, double const& plane_a, double const& plane_b, double const& plane_g, double const& panel_dx, double const& panel_dy, double const& panel_dz, double const& panel_a, double const& panel_b, double const& panel_g, double const& plane_x, double const& plane_y, double const& plane_z, double const& panel_straw0x, double const& panel_straw0y, double const& panel_straw0z, double const& wire_x, double const& wire_y, double const& wire_z, double const& wdir_x, double const& wdir_y, double const& wdir_z)
 {
     double R0 = sin(panel_a);
     double R1 = sin(plane_a);
@@ -219,7 +219,7 @@ double CosmicTrack_DCAaligndir_y(double plane_dx, double plane_dy, double plane_
 }
 
 
-double CosmicTrack_DCAaligndir_z(double plane_dx, double plane_dy, double plane_dz, double plane_a, double plane_b, double plane_g, double panel_dx, double panel_dy, double panel_dz, double panel_a, double panel_b, double panel_g, double plane_x, double plane_y, double plane_z, double panel_straw0x, double panel_straw0y, double panel_straw0z, double wire_x, double wire_y, double wire_z, double wdir_x, double wdir_y, double wdir_z)
+double CosmicTrack_DCAaligndir_z(double const& plane_dx, double const& plane_dy, double const& plane_dz, double const& plane_a, double const& plane_b, double const& plane_g, double const& panel_dx, double const& panel_dy, double const& panel_dz, double const& panel_a, double const& panel_b, double const& panel_g, double const& plane_x, double const& plane_y, double const& plane_z, double const& panel_straw0x, double const& panel_straw0y, double const& panel_straw0z, double const& wire_x, double const& wire_y, double const& wire_z, double const& wdir_x, double const& wdir_y, double const& wdir_z)
 {
     double R0 = sin(panel_a);
     double R1 = 1.0*cos(plane_b);
@@ -237,7 +237,7 @@ double CosmicTrack_DCAaligndir_z(double plane_dx, double plane_dy, double plane_
 }
 
 
-double CosmicTrack_DCA_Deriv_a0(double a0, double b0, double a1, double b1, double t0, double plane_dx, double plane_dy, double plane_dz, double plane_a, double plane_b, double plane_g, double panel_dx, double panel_dy, double panel_dz, double panel_a, double panel_b, double panel_g, double wire_x, double wire_y, double wire_z, double wdir_x, double wdir_y, double wdir_z, double plane_x, double plane_y, double plane_z, double panel_straw0x, double panel_straw0y, double panel_straw0z, double driftvel)
+double CosmicTrack_DCA_Deriv_a0(double const& a0, double const& b0, double const& a1, double const& b1, double const& t0, double const& plane_dx, double const& plane_dy, double const& plane_dz, double const& plane_a, double const& plane_b, double const& plane_g, double const& panel_dx, double const& panel_dy, double const& panel_dz, double const& panel_a, double const& panel_b, double const& panel_g, double const& wire_x, double const& wire_y, double const& wire_z, double const& wdir_x, double const& wdir_y, double const& wdir_z, double const& plane_x, double const& plane_y, double const& plane_z, double const& panel_straw0x, double const& panel_straw0y, double const& panel_straw0z, double const& driftvel)
 {
     double R0 = cos(plane_a);
     double R1 = cos(plane_b);
@@ -328,7 +328,7 @@ double CosmicTrack_DCA_Deriv_a0(double a0, double b0, double a1, double b1, doub
 }
 
 
-double CosmicTrack_DCA_Deriv_b0(double a0, double b0, double a1, double b1, double t0, double plane_dx, double plane_dy, double plane_dz, double plane_a, double plane_b, double plane_g, double panel_dx, double panel_dy, double panel_dz, double panel_a, double panel_b, double panel_g, double wire_x, double wire_y, double wire_z, double wdir_x, double wdir_y, double wdir_z, double plane_x, double plane_y, double plane_z, double panel_straw0x, double panel_straw0y, double panel_straw0z, double driftvel)
+double CosmicTrack_DCA_Deriv_b0(double const& a0, double const& b0, double const& a1, double const& b1, double const& t0, double const& plane_dx, double const& plane_dy, double const& plane_dz, double const& plane_a, double const& plane_b, double const& plane_g, double const& panel_dx, double const& panel_dy, double const& panel_dz, double const& panel_a, double const& panel_b, double const& panel_g, double const& wire_x, double const& wire_y, double const& wire_z, double const& wdir_x, double const& wdir_y, double const& wdir_z, double const& plane_x, double const& plane_y, double const& plane_z, double const& panel_straw0x, double const& panel_straw0y, double const& panel_straw0z, double const& driftvel)
 {
     double R0 = cos(plane_a);
     double R1 = cos(plane_b);
@@ -419,7 +419,7 @@ double CosmicTrack_DCA_Deriv_b0(double a0, double b0, double a1, double b1, doub
 }
 
 
-double CosmicTrack_DCA_Deriv_a1(double a0, double b0, double a1, double b1, double t0, double plane_dx, double plane_dy, double plane_dz, double plane_a, double plane_b, double plane_g, double panel_dx, double panel_dy, double panel_dz, double panel_a, double panel_b, double panel_g, double wire_x, double wire_y, double wire_z, double wdir_x, double wdir_y, double wdir_z, double plane_x, double plane_y, double plane_z, double panel_straw0x, double panel_straw0y, double panel_straw0z, double driftvel)
+double CosmicTrack_DCA_Deriv_a1(double const& a0, double const& b0, double const& a1, double const& b1, double const& t0, double const& plane_dx, double const& plane_dy, double const& plane_dz, double const& plane_a, double const& plane_b, double const& plane_g, double const& panel_dx, double const& panel_dy, double const& panel_dz, double const& panel_a, double const& panel_b, double const& panel_g, double const& wire_x, double const& wire_y, double const& wire_z, double const& wdir_x, double const& wdir_y, double const& wdir_z, double const& plane_x, double const& plane_y, double const& plane_z, double const& panel_straw0x, double const& panel_straw0y, double const& panel_straw0z, double const& driftvel)
 {
     double R0 = cos(plane_a);
     double R1 = cos(plane_b);
@@ -533,7 +533,7 @@ double CosmicTrack_DCA_Deriv_a1(double a0, double b0, double a1, double b1, doub
 }
 
 
-double CosmicTrack_DCA_Deriv_b1(double a0, double b0, double a1, double b1, double t0, double plane_dx, double plane_dy, double plane_dz, double plane_a, double plane_b, double plane_g, double panel_dx, double panel_dy, double panel_dz, double panel_a, double panel_b, double panel_g, double wire_x, double wire_y, double wire_z, double wdir_x, double wdir_y, double wdir_z, double plane_x, double plane_y, double plane_z, double panel_straw0x, double panel_straw0y, double panel_straw0z, double driftvel)
+double CosmicTrack_DCA_Deriv_b1(double const& a0, double const& b0, double const& a1, double const& b1, double const& t0, double const& plane_dx, double const& plane_dy, double const& plane_dz, double const& plane_a, double const& plane_b, double const& plane_g, double const& panel_dx, double const& panel_dy, double const& panel_dz, double const& panel_a, double const& panel_b, double const& panel_g, double const& wire_x, double const& wire_y, double const& wire_z, double const& wdir_x, double const& wdir_y, double const& wdir_z, double const& plane_x, double const& plane_y, double const& plane_z, double const& panel_straw0x, double const& panel_straw0y, double const& panel_straw0z, double const& driftvel)
 {
     double R0 = pow(b1, 2);
     double R1 = R0 + pow(a1, 2) + 1;
@@ -647,14 +647,14 @@ double CosmicTrack_DCA_Deriv_b1(double a0, double b0, double a1, double b1, doub
 }
 
 
-double CosmicTrack_DCA_Deriv_t0(double a0, double b0, double a1, double b1, double t0, double plane_dx, double plane_dy, double plane_dz, double plane_a, double plane_b, double plane_g, double panel_dx, double panel_dy, double panel_dz, double panel_a, double panel_b, double panel_g, double wire_x, double wire_y, double wire_z, double wdir_x, double wdir_y, double wdir_z, double plane_x, double plane_y, double plane_z, double panel_straw0x, double panel_straw0y, double panel_straw0z, double driftvel)
+double CosmicTrack_DCA_Deriv_t0(double const& a0, double const& b0, double const& a1, double const& b1, double const& t0, double const& plane_dx, double const& plane_dy, double const& plane_dz, double const& plane_a, double const& plane_b, double const& plane_g, double const& panel_dx, double const& panel_dy, double const& panel_dz, double const& panel_a, double const& panel_b, double const& panel_g, double const& wire_x, double const& wire_y, double const& wire_z, double const& wdir_x, double const& wdir_y, double const& wdir_z, double const& plane_x, double const& plane_y, double const& plane_z, double const& panel_straw0x, double const& panel_straw0y, double const& panel_straw0z, double const& driftvel)
 {
     double result = -1;
     return result;
 }
 
 
-double CosmicTrack_DCA_Deriv_plane_dx(double a0, double b0, double a1, double b1, double t0, double plane_dx, double plane_dy, double plane_dz, double plane_a, double plane_b, double plane_g, double panel_dx, double panel_dy, double panel_dz, double panel_a, double panel_b, double panel_g, double wire_x, double wire_y, double wire_z, double wdir_x, double wdir_y, double wdir_z, double plane_x, double plane_y, double plane_z, double panel_straw0x, double panel_straw0y, double panel_straw0z, double driftvel)
+double CosmicTrack_DCA_Deriv_plane_dx(double const& a0, double const& b0, double const& a1, double const& b1, double const& t0, double const& plane_dx, double const& plane_dy, double const& plane_dz, double const& plane_a, double const& plane_b, double const& plane_g, double const& panel_dx, double const& panel_dy, double const& panel_dz, double const& panel_a, double const& panel_b, double const& panel_g, double const& wire_x, double const& wire_y, double const& wire_z, double const& wdir_x, double const& wdir_y, double const& wdir_z, double const& plane_x, double const& plane_y, double const& plane_z, double const& panel_straw0x, double const& panel_straw0y, double const& panel_straw0z, double const& driftvel)
 {
     double R0 = cos(plane_a);
     double R1 = cos(plane_b);
@@ -745,7 +745,7 @@ double CosmicTrack_DCA_Deriv_plane_dx(double a0, double b0, double a1, double b1
 }
 
 
-double CosmicTrack_DCA_Deriv_plane_dy(double a0, double b0, double a1, double b1, double t0, double plane_dx, double plane_dy, double plane_dz, double plane_a, double plane_b, double plane_g, double panel_dx, double panel_dy, double panel_dz, double panel_a, double panel_b, double panel_g, double wire_x, double wire_y, double wire_z, double wdir_x, double wdir_y, double wdir_z, double plane_x, double plane_y, double plane_z, double panel_straw0x, double panel_straw0y, double panel_straw0z, double driftvel)
+double CosmicTrack_DCA_Deriv_plane_dy(double const& a0, double const& b0, double const& a1, double const& b1, double const& t0, double const& plane_dx, double const& plane_dy, double const& plane_dz, double const& plane_a, double const& plane_b, double const& plane_g, double const& panel_dx, double const& panel_dy, double const& panel_dz, double const& panel_a, double const& panel_b, double const& panel_g, double const& wire_x, double const& wire_y, double const& wire_z, double const& wdir_x, double const& wdir_y, double const& wdir_z, double const& plane_x, double const& plane_y, double const& plane_z, double const& panel_straw0x, double const& panel_straw0y, double const& panel_straw0z, double const& driftvel)
 {
     double R0 = cos(plane_a);
     double R1 = cos(plane_b);
@@ -836,7 +836,7 @@ double CosmicTrack_DCA_Deriv_plane_dy(double a0, double b0, double a1, double b1
 }
 
 
-double CosmicTrack_DCA_Deriv_plane_dz(double a0, double b0, double a1, double b1, double t0, double plane_dx, double plane_dy, double plane_dz, double plane_a, double plane_b, double plane_g, double panel_dx, double panel_dy, double panel_dz, double panel_a, double panel_b, double panel_g, double wire_x, double wire_y, double wire_z, double wdir_x, double wdir_y, double wdir_z, double plane_x, double plane_y, double plane_z, double panel_straw0x, double panel_straw0y, double panel_straw0z, double driftvel)
+double CosmicTrack_DCA_Deriv_plane_dz(double const& a0, double const& b0, double const& a1, double const& b1, double const& t0, double const& plane_dx, double const& plane_dy, double const& plane_dz, double const& plane_a, double const& plane_b, double const& plane_g, double const& panel_dx, double const& panel_dy, double const& panel_dz, double const& panel_a, double const& panel_b, double const& panel_g, double const& wire_x, double const& wire_y, double const& wire_z, double const& wdir_x, double const& wdir_y, double const& wdir_z, double const& plane_x, double const& plane_y, double const& plane_z, double const& panel_straw0x, double const& panel_straw0y, double const& panel_straw0z, double const& driftvel)
 {
     double R0 = cos(plane_a);
     double R1 = cos(plane_b);
@@ -927,7 +927,7 @@ double CosmicTrack_DCA_Deriv_plane_dz(double a0, double b0, double a1, double b1
 }
 
 
-double CosmicTrack_DCA_Deriv_plane_a(double a0, double b0, double a1, double b1, double t0, double plane_dx, double plane_dy, double plane_dz, double plane_a, double plane_b, double plane_g, double panel_dx, double panel_dy, double panel_dz, double panel_a, double panel_b, double panel_g, double wire_x, double wire_y, double wire_z, double wdir_x, double wdir_y, double wdir_z, double plane_x, double plane_y, double plane_z, double panel_straw0x, double panel_straw0y, double panel_straw0z, double driftvel)
+double CosmicTrack_DCA_Deriv_plane_a(double const& a0, double const& b0, double const& a1, double const& b1, double const& t0, double const& plane_dx, double const& plane_dy, double const& plane_dz, double const& plane_a, double const& plane_b, double const& plane_g, double const& panel_dx, double const& panel_dy, double const& panel_dz, double const& panel_a, double const& panel_b, double const& panel_g, double const& wire_x, double const& wire_y, double const& wire_z, double const& wdir_x, double const& wdir_y, double const& wdir_z, double const& plane_x, double const& plane_y, double const& plane_z, double const& panel_straw0x, double const& panel_straw0y, double const& panel_straw0z, double const& driftvel)
 {
     double R0 = pow(pow(a1, 2) + pow(b1, 2) + 1, -1.0/2.0);
     double R1 = R0*b1;
@@ -1077,7 +1077,7 @@ double CosmicTrack_DCA_Deriv_plane_a(double a0, double b0, double a1, double b1,
 }
 
 
-double CosmicTrack_DCA_Deriv_plane_b(double a0, double b0, double a1, double b1, double t0, double plane_dx, double plane_dy, double plane_dz, double plane_a, double plane_b, double plane_g, double panel_dx, double panel_dy, double panel_dz, double panel_a, double panel_b, double panel_g, double wire_x, double wire_y, double wire_z, double wdir_x, double wdir_y, double wdir_z, double plane_x, double plane_y, double plane_z, double panel_straw0x, double panel_straw0y, double panel_straw0z, double driftvel)
+double CosmicTrack_DCA_Deriv_plane_b(double const& a0, double const& b0, double const& a1, double const& b1, double const& t0, double const& plane_dx, double const& plane_dy, double const& plane_dz, double const& plane_a, double const& plane_b, double const& plane_g, double const& panel_dx, double const& panel_dy, double const& panel_dz, double const& panel_a, double const& panel_b, double const& panel_g, double const& wire_x, double const& wire_y, double const& wire_z, double const& wdir_x, double const& wdir_y, double const& wdir_z, double const& plane_x, double const& plane_y, double const& plane_z, double const& panel_straw0x, double const& panel_straw0y, double const& panel_straw0z, double const& driftvel)
 {
     double R0 = pow(pow(a1, 2) + pow(b1, 2) + 1, -1.0/2.0);
     double R1 = R0*b1;
@@ -1243,7 +1243,7 @@ double CosmicTrack_DCA_Deriv_plane_b(double a0, double b0, double a1, double b1,
 }
 
 
-double CosmicTrack_DCA_Deriv_plane_g(double a0, double b0, double a1, double b1, double t0, double plane_dx, double plane_dy, double plane_dz, double plane_a, double plane_b, double plane_g, double panel_dx, double panel_dy, double panel_dz, double panel_a, double panel_b, double panel_g, double wire_x, double wire_y, double wire_z, double wdir_x, double wdir_y, double wdir_z, double plane_x, double plane_y, double plane_z, double panel_straw0x, double panel_straw0y, double panel_straw0z, double driftvel)
+double CosmicTrack_DCA_Deriv_plane_g(double const& a0, double const& b0, double const& a1, double const& b1, double const& t0, double const& plane_dx, double const& plane_dy, double const& plane_dz, double const& plane_a, double const& plane_b, double const& plane_g, double const& panel_dx, double const& panel_dy, double const& panel_dz, double const& panel_a, double const& panel_b, double const& panel_g, double const& wire_x, double const& wire_y, double const& wire_z, double const& wdir_x, double const& wdir_y, double const& wdir_z, double const& plane_x, double const& plane_y, double const& plane_z, double const& panel_straw0x, double const& panel_straw0y, double const& panel_straw0z, double const& driftvel)
 {
     double R0 = cos(plane_a);
     double R1 = cos(plane_b);
@@ -1393,7 +1393,7 @@ double CosmicTrack_DCA_Deriv_plane_g(double a0, double b0, double a1, double b1,
 }
 
 
-double CosmicTrack_DCA_Deriv_panel_dx(double a0, double b0, double a1, double b1, double t0, double plane_dx, double plane_dy, double plane_dz, double plane_a, double plane_b, double plane_g, double panel_dx, double panel_dy, double panel_dz, double panel_a, double panel_b, double panel_g, double wire_x, double wire_y, double wire_z, double wdir_x, double wdir_y, double wdir_z, double plane_x, double plane_y, double plane_z, double panel_straw0x, double panel_straw0y, double panel_straw0z, double driftvel)
+double CosmicTrack_DCA_Deriv_panel_dx(double const& a0, double const& b0, double const& a1, double const& b1, double const& t0, double const& plane_dx, double const& plane_dy, double const& plane_dz, double const& plane_a, double const& plane_b, double const& plane_g, double const& panel_dx, double const& panel_dy, double const& panel_dz, double const& panel_a, double const& panel_b, double const& panel_g, double const& wire_x, double const& wire_y, double const& wire_z, double const& wdir_x, double const& wdir_y, double const& wdir_z, double const& plane_x, double const& plane_y, double const& plane_z, double const& panel_straw0x, double const& panel_straw0y, double const& panel_straw0z, double const& driftvel)
 {
     double R0 = cos(plane_a);
     double R1 = cos(plane_b);
@@ -1495,7 +1495,7 @@ double CosmicTrack_DCA_Deriv_panel_dx(double a0, double b0, double a1, double b1
 }
 
 
-double CosmicTrack_DCA_Deriv_panel_dy(double a0, double b0, double a1, double b1, double t0, double plane_dx, double plane_dy, double plane_dz, double plane_a, double plane_b, double plane_g, double panel_dx, double panel_dy, double panel_dz, double panel_a, double panel_b, double panel_g, double wire_x, double wire_y, double wire_z, double wdir_x, double wdir_y, double wdir_z, double plane_x, double plane_y, double plane_z, double panel_straw0x, double panel_straw0y, double panel_straw0z, double driftvel)
+double CosmicTrack_DCA_Deriv_panel_dy(double const& a0, double const& b0, double const& a1, double const& b1, double const& t0, double const& plane_dx, double const& plane_dy, double const& plane_dz, double const& plane_a, double const& plane_b, double const& plane_g, double const& panel_dx, double const& panel_dy, double const& panel_dz, double const& panel_a, double const& panel_b, double const& panel_g, double const& wire_x, double const& wire_y, double const& wire_z, double const& wdir_x, double const& wdir_y, double const& wdir_z, double const& plane_x, double const& plane_y, double const& plane_z, double const& panel_straw0x, double const& panel_straw0y, double const& panel_straw0z, double const& driftvel)
 {
     double R0 = cos(plane_a);
     double R1 = cos(plane_b);
@@ -1597,7 +1597,7 @@ double CosmicTrack_DCA_Deriv_panel_dy(double a0, double b0, double a1, double b1
 }
 
 
-double CosmicTrack_DCA_Deriv_panel_dz(double a0, double b0, double a1, double b1, double t0, double plane_dx, double plane_dy, double plane_dz, double plane_a, double plane_b, double plane_g, double panel_dx, double panel_dy, double panel_dz, double panel_a, double panel_b, double panel_g, double wire_x, double wire_y, double wire_z, double wdir_x, double wdir_y, double wdir_z, double plane_x, double plane_y, double plane_z, double panel_straw0x, double panel_straw0y, double panel_straw0z, double driftvel)
+double CosmicTrack_DCA_Deriv_panel_dz(double const& a0, double const& b0, double const& a1, double const& b1, double const& t0, double const& plane_dx, double const& plane_dy, double const& plane_dz, double const& plane_a, double const& plane_b, double const& plane_g, double const& panel_dx, double const& panel_dy, double const& panel_dz, double const& panel_a, double const& panel_b, double const& panel_g, double const& wire_x, double const& wire_y, double const& wire_z, double const& wdir_x, double const& wdir_y, double const& wdir_z, double const& plane_x, double const& plane_y, double const& plane_z, double const& panel_straw0x, double const& panel_straw0y, double const& panel_straw0z, double const& driftvel)
 {
     double R0 = cos(plane_a);
     double R1 = cos(plane_b);
@@ -1692,7 +1692,7 @@ double CosmicTrack_DCA_Deriv_panel_dz(double a0, double b0, double a1, double b1
 }
 
 
-double CosmicTrack_DCA_Deriv_panel_a(double a0, double b0, double a1, double b1, double t0, double plane_dx, double plane_dy, double plane_dz, double plane_a, double plane_b, double plane_g, double panel_dx, double panel_dy, double panel_dz, double panel_a, double panel_b, double panel_g, double wire_x, double wire_y, double wire_z, double wdir_x, double wdir_y, double wdir_z, double plane_x, double plane_y, double plane_z, double panel_straw0x, double panel_straw0y, double panel_straw0z, double driftvel)
+double CosmicTrack_DCA_Deriv_panel_a(double const& a0, double const& b0, double const& a1, double const& b1, double const& t0, double const& plane_dx, double const& plane_dy, double const& plane_dz, double const& plane_a, double const& plane_b, double const& plane_g, double const& panel_dx, double const& panel_dy, double const& panel_dz, double const& panel_a, double const& panel_b, double const& panel_g, double const& wire_x, double const& wire_y, double const& wire_z, double const& wdir_x, double const& wdir_y, double const& wdir_z, double const& plane_x, double const& plane_y, double const& plane_z, double const& panel_straw0x, double const& panel_straw0y, double const& panel_straw0z, double const& driftvel)
 {
     double R0 = pow(pow(a1, 2) + pow(b1, 2) + 1, -1.0/2.0);
     double R1 = R0*b1;
@@ -1849,7 +1849,7 @@ double CosmicTrack_DCA_Deriv_panel_a(double a0, double b0, double a1, double b1,
 }
 
 
-double CosmicTrack_DCA_Deriv_panel_b(double a0, double b0, double a1, double b1, double t0, double plane_dx, double plane_dy, double plane_dz, double plane_a, double plane_b, double plane_g, double panel_dx, double panel_dy, double panel_dz, double panel_a, double panel_b, double panel_g, double wire_x, double wire_y, double wire_z, double wdir_x, double wdir_y, double wdir_z, double plane_x, double plane_y, double plane_z, double panel_straw0x, double panel_straw0y, double panel_straw0z, double driftvel)
+double CosmicTrack_DCA_Deriv_panel_b(double const& a0, double const& b0, double const& a1, double const& b1, double const& t0, double const& plane_dx, double const& plane_dy, double const& plane_dz, double const& plane_a, double const& plane_b, double const& plane_g, double const& panel_dx, double const& panel_dy, double const& panel_dz, double const& panel_a, double const& panel_b, double const& panel_g, double const& wire_x, double const& wire_y, double const& wire_z, double const& wdir_x, double const& wdir_y, double const& wdir_z, double const& plane_x, double const& plane_y, double const& plane_z, double const& panel_straw0x, double const& panel_straw0y, double const& panel_straw0z, double const& driftvel)
 {
     double R0 = cos(panel_b);
     double R1 = cos(plane_a);
@@ -2008,7 +2008,7 @@ double CosmicTrack_DCA_Deriv_panel_b(double a0, double b0, double a1, double b1,
 }
 
 
-double CosmicTrack_DCA_Deriv_panel_g(double a0, double b0, double a1, double b1, double t0, double plane_dx, double plane_dy, double plane_dz, double plane_a, double plane_b, double plane_g, double panel_dx, double panel_dy, double panel_dz, double panel_a, double panel_b, double panel_g, double wire_x, double wire_y, double wire_z, double wdir_x, double wdir_y, double wdir_z, double plane_x, double plane_y, double plane_z, double panel_straw0x, double panel_straw0y, double panel_straw0z, double driftvel)
+double CosmicTrack_DCA_Deriv_panel_g(double const& a0, double const& b0, double const& a1, double const& b1, double const& t0, double const& plane_dx, double const& plane_dy, double const& plane_dz, double const& plane_a, double const& plane_b, double const& plane_g, double const& panel_dx, double const& panel_dy, double const& panel_dz, double const& panel_a, double const& panel_b, double const& panel_g, double const& wire_x, double const& wire_y, double const& wire_z, double const& wdir_x, double const& wdir_y, double const& wdir_z, double const& plane_x, double const& plane_y, double const& plane_z, double const& panel_straw0x, double const& panel_straw0y, double const& panel_straw0z, double const& driftvel)
 {
     double R0 = cos(plane_a);
     double R1 = cos(plane_b);

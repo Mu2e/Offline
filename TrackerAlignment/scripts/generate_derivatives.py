@@ -357,7 +357,7 @@ def cseexpr_to_ccode(symname, symfunc, symbolslist):
     symbols, simple = cse(symfunc, symbols=tmpsyms)
 
     code = "double %s(%s)\n" % (str(symname), ", ".join(
-        "double %s" % x for x in symbolslist))
+        "double const& %s" % x for x in symbolslist))
     code += "{\n"
     for s in symbols:
         code += "    double %s = %s;\n" % (ccode(s[0]), ccode(s[1]))
@@ -386,7 +386,7 @@ def build_ccode_function(return_type, fn_name, symbolslist, fn_body):
 
 
 def generate_code_function(name, return_type, expr, symbols):
-    args = 'double %s' % (', double '.join([p.name for p in symbols]))
+    args = 'double const& %s' % (', double const& '.join([p.name for p in symbols]))
 
     function_header_code = fn_template % (return_type, name, args)
     function_code = cseexpr_to_ccode(name, expr, symbols)
