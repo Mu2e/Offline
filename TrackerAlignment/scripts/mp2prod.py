@@ -23,7 +23,7 @@ class AlignmentConstants:
             self.plane_constants[plane_id]=[0.0] * 6
 
         for panel_id in range(0,216):
-            self.plane_constants[panel_id]=[0.0] * 6
+            self.panel_constants[panel_id]=[0.0] * 6
 
     def read_db_file(self, input_file):
         section_lines = []
