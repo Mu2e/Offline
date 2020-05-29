@@ -70,8 +70,14 @@ public:
   void flushTrack() {
     const int words = n_words();
     gz_fstream.write(reinterpret_cast<const char*>(&words), sizeof(words));
-    std::copy(track_buf.begin(), track_buf.end(), std::ostream_iterator<char>(gz_fstream));
-    std::copy(label_buf.begin(), label_buf.end(), std::ostream_iterator<char>(gz_fstream));
+    
+    for (const WORDTYPE& word : track_buf) {
+      gz_fstream.write(reinterpret_cast<const char*>(&word), sizeof(word));
+    }
+
+    for (const int& word : label_buf) {
+      gz_fstream.write(reinterpret_cast<const char*>(&word), sizeof(word));
+    }
 
     clear();
   }
@@ -83,6 +89,10 @@ public:
 
 private:
   void push(std::vector<WORDTYPE> const& data, std::vector<int> const& labels) {
+    if (data.size() != labels.size()) {
+      std::cerr << "MilleDataWriter: size mismatch between data and labels" << std::endl;
+      return;
+    }
     label_buf.insert(label_buf.end(), labels.begin(), labels.end());
     track_buf.insert(track_buf.end(), data.begin(), data.end());
   }
@@ -92,7 +102,7 @@ private:
     track_buf.emplace_back(data);
   }
 
-  int n_words() { 
+  int n_words() {
     int result = label_buf.size() + track_buf.size();
 
     // if we are storing doubles, we pass a negative word number
@@ -101,6 +111,6 @@ private:
       result = -result;
     }
 
-    return result; 
+    return result;
   }
 };
