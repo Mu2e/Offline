@@ -203,6 +203,46 @@ public:
 
   typedef art::EDAnalyzer::Table<Config> Parameters;
 
+  Config _conf;
+
+  int _diag;
+  art::InputTag _costag;
+  std::string _labels_filename;
+
+  int min_plane_traverse;
+  int min_panel_traverse_per_plane;
+  double max_pvalue;
+  double max_timeres;
+  int min_track_hits;
+  bool use_timeresid;
+  bool no_panel_dofs;
+  bool no_plane_rotations;
+
+  bool use_plane_filter;
+  std::vector<int> plane_filter_list;
+  bool use_db;
+
+  bool gzip_compress;
+  std::string mille_filename;
+  std::string steer_filename;
+  std::string param_filename;
+  std::string constr_filename;
+
+  bool use_numeric_derivs;
+  bool wroteMillepedeParams;
+
+  MilleDataWriter<double> mille_file;
+  const CosmicTrackSeedCollection* _coscol;
+  const Tracker* _tracker;
+
+  size_t tracks_written = 0;
+
+  ProditionsHandle<Tracker> _proditionsTracker_h;
+  ProditionsHandle<StrawResponse> srep_h;
+
+  std::unique_ptr<DbHandle<TrkAlignPlane>> _trkAlignPlane_h;
+  std::unique_ptr<DbHandle<TrkAlignPanel>> _trkAlignPanel_h;
+
   void beginJob();
   void endJob();
   void beginRun(art::Run const&);
@@ -220,6 +260,7 @@ public:
   void writeMillepedeParams(TrkAlignPlane const& alignConstPlanes,
                             TrkAlignPanel const& alignConstPanels);
   bool isDOFenabled(int object_class, int object_id, int dof_n);
+  virtual ~AlignTrackCollector() {}
 
   AlignTrackCollector(const Parameters& conf) :
       art::EDAnalyzer(conf), _diag(conf().diaglvl()), 
@@ -268,48 +309,6 @@ public:
 
     }
   }
-
-  virtual ~AlignTrackCollector() {}
-
-  Config _conf;
-
-  int _diag;
-  art::InputTag _costag;
-  std::string _labels_filename;
-
-  int min_plane_traverse;
-  int min_panel_traverse_per_plane;
-  double max_pvalue;
-  double max_timeres;
-  int min_track_hits;
-  bool use_timeresid;
-  bool no_panel_dofs;
-  bool no_plane_rotations;
-
-  bool use_plane_filter;
-  std::vector<int> plane_filter_list;
-  bool use_db;
-
-  bool gzip_compress;
-  std::string mille_filename;
-  std::string steer_filename;
-  std::string param_filename;
-  std::string constr_filename;
-
-  bool use_numeric_derivs;
-  bool wroteMillepedeParams;
-
-  MilleDataWriter<double> mille_file;
-  const CosmicTrackSeedCollection* _coscol;
-  const Tracker* _tracker;
-
-  size_t tracks_written = 0;
-
-  ProditionsHandle<Tracker> _proditionsTracker_h;
-  ProditionsHandle<StrawResponse> srep_h;
-
-  std::unique_ptr<DbHandle<TrkAlignPlane>> _trkAlignPlane_h;
-  std::unique_ptr<DbHandle<TrkAlignPanel>> _trkAlignPanel_h;
 };
 
 void AlignTrackCollector::beginJob() {
