@@ -262,21 +262,30 @@ public:
   virtual ~AlignTrackCollector() {}
 
   AlignTrackCollector(const Parameters& conf) :
-      art::EDAnalyzer(conf), _diag(conf().diaglvl()), _costag(conf().costag()),
+      art::EDAnalyzer(conf), 
+      _diag(conf().diaglvl()),
+      _costag(conf().costag()),
       min_plane_traverse(conf().minplanetraverse()),
-      min_panel_traverse_per_plane(conf().minpaneltraverse()), max_pvalue(conf().maxpvalue()),
-      max_timeres(conf().maxtimeres()), min_track_hits(conf().mintrackhits()),
-      use_timeresid(conf().usetimeresid()), no_panel_dofs(conf().nopaneldofs()),
-      no_plane_rotations(conf().noplanerotations()), use_plane_filter(conf().useplanefilter()),
+      min_panel_traverse_per_plane(conf().minpaneltraverse()), 
+      max_pvalue(conf().maxpvalue()),
+      max_timeres(conf().maxtimeres()), 
+      min_track_hits(conf().mintrackhits()),
+      use_timeresid(conf().usetimeresid()), 
+      no_panel_dofs(conf().nopaneldofs()),
+      no_plane_rotations(conf().noplanerotations()), 
+      use_plane_filter(conf().useplanefilter()),
       plane_filter_list(conf().planefilterlist()),
 
-      gzip_compress(conf().millefilegzip()), mille_filename(conf().millefile()),
-      steer_filename(conf().steerfile()), param_filename(conf().paramfile()),
+      gzip_compress(conf().millefilegzip()), 
+      mille_filename(conf().millefile()),
+      steer_filename(conf().steerfile()), 
+      param_filename(conf().paramfile()),
       constr_filename(conf().constrfile()),
 
       use_numeric_derivs(conf().usenumerical()),
 
-      wroteMillepedeParams(false), mille_file(mille_filename, gzip_compress) {
+      wroteMillepedeParams(false), 
+      mille_file(mille_filename, gzip_compress) {
 
     if (no_panel_dofs) {
       _dof_per_panel = 0;
