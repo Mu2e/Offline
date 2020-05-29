@@ -968,6 +968,7 @@ bool AlignTrackCollector::filter_CosmicTrackSeedCollection(
         resid_local_derivs(nHits, col) = derivativesLocal[col];
       }
 
+      derivativesGlobal.resize(_dof_per_plane + _dof_per_panel);
       global_derivs_temp.emplace_back(derivativesGlobal);
       local_derivs_temp.emplace_back(derivativesLocal);
       labels_temp.push_back(global_dof_labels);
