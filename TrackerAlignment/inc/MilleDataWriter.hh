@@ -58,7 +58,7 @@ public:
       return;
     }
 
-    if (track_buf.size() == label_buf.size() && trackbuf.size() == 0) {
+    if (track_buf.size() == label_buf.size() && track_buf.size() == 0) {
       push(0.0, 0);
     }
     push(measurement, 0);
