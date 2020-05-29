@@ -129,4 +129,4 @@ if __name__ == '__main__':
     input_file = 'millepede.res'
     consts = AlignmentConstants()
     consts.read_mp_file(input_file)
-    consts.export_table()
+    print (consts.export_table())
