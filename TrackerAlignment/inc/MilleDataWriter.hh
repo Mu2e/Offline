@@ -62,7 +62,7 @@ public:
     std::vector<int> local_labels(local_derivatives.size());
     std::iota(local_labels.begin(), local_labels.end(), 1);
     push(local_derivatives, local_labels);
-    
+
     push(meas_error, 0);
     push(global_derivatives, global_labels);
   }
@@ -92,5 +92,15 @@ private:
     track_buf.emplace_back(data);
   }
 
-  size_t n_words() { return label_buf.size() + track_buf.size(); }
+  int n_words() { 
+    int result = label_buf.size() + track_buf.size();
+
+    // if we are storing doubles, we pass a negative word number
+    // to indicate to readC(..) (readc.c) it should read doubles, not floats.
+    if (std::is_same<WORDTYPE, double>::value) {
+      result = -result;
+    }
+
+    return result; 
+  }
 };
