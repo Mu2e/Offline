@@ -16,6 +16,7 @@
  
  <class name="mu2e::CosmicTrack"/>
  <class name="art::Ptr<mu2e::CosmicTrackSeed>"/>
+ <class name="std::vector<art::Ptr<mu2e::CosmicTrackSeed> >"/>
  <class name="art::Wrapper<mu2e::CosmicTrackSeedCollection>"/>
 
 <!--  ********* calorimeter  ********* -->
@@ -121,6 +122,7 @@
  <class name="mu2e::HelixSeed"/>
  <class name="mu2e::HelixSeedCollection" /> 
  <class name="art::Ptr<mu2e::HelixSeed>"/>
+ <class name="std::vector<art::Ptr<mu2e::HelixSeed> >"/>
  <class name="art::Wrapper<mu2e::HelixSeedCollection>"/>
 
  <class name="mu2e::BkgQual"/>
@@ -178,8 +180,9 @@
 
  <class name="mu2e::KalSeed"/>
  <class name="mu2e::KalSeedCollection"/>
- <class name="art::Wrapper<mu2e::KalSeedCollection>"/>
  <class name="art::Ptr<mu2e::KalSeed>"/>
+ <class name="std::vector<art::Ptr<mu2e::KalSeed> >"/>
+ <class name="art::Wrapper<mu2e::KalSeedCollection>"/>
 
  <class name="mu2e::MVAStatus"/>
  <class name="mu2e::TrkQual"/>
