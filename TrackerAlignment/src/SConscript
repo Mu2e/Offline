@@ -50,6 +50,7 @@ mainlib = helper.make_mainlib ( [
     'xerces-c',
     'boost_system',
     'boost_math_c99',
+    'boost_iostreams',
     extrarootlibs,
     ] )
 
@@ -98,6 +99,7 @@ helper.make_plugins( [
    'boost_filesystem',
    'boost_system',
    'boost_math_c99',
+   'boost_iostreams',
    'pthread',
    extrarootlibs
 
@@ -116,6 +118,7 @@ helper.make_dict_and_map( [
         'Core',
         'boost_system',
         'boost_math_c99',
+        'boost_iostreams'
     ] )
 
 
