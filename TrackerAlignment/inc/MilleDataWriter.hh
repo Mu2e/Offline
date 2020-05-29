@@ -45,7 +45,7 @@ public:
                std::vector<int> const& global_labels, WORDTYPE const& measurement,
                WORDTYPE const& meas_error) {
 
-    if (global_labels.size() != global_labels.size()) {
+    if (global_labels.size() != global_derivatives.size()) {
       std::cerr << "MilleDataWriter: size mismatch between number of global labels and global "
                    "derivatives for this hit"
                 << std::endl;
@@ -59,7 +59,7 @@ public:
     }
     push(measurement, 0);
 
-    std::vector<int> local_labels(local_derivatives.size()-1);
+    std::vector<int> local_labels(local_derivatives.size() - 1);
     std::iota(local_labels.begin(), local_labels.end(), 1);
     push(local_derivatives, local_labels);
 
@@ -90,7 +90,8 @@ public:
 private:
   void push(std::vector<WORDTYPE> const& data, std::vector<int> const& labels) {
     if (data.size() != labels.size()) {
-      std::cerr << "MilleDataWriter: size mismatch between data and labels" << std::endl;
+      std::cerr << "MilleDataWriter: size mismatch between data (" << data.size()
+                << ") and labels (" << labels.size() << ")" << std::endl;
       return;
     }
     label_buf.insert(label_buf.end(), labels.begin(), labels.end());
