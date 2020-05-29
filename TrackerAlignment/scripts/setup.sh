@@ -96,6 +96,15 @@ function mu2ealign() {
         # for DbService
 
         echo "Good to go!"
+
+    elif [[ $COMMAND == "pede" ]]; then
+        pede mp-steer.txt
+
+        if [ -f "millepede.res" ]; then 
+            python ${TRKALIGN_SCRIPTS_DIR}/mp2prod.py > alignconstants_out.txt
+
+            echo "Generated new alignment constants in alignconstants_out.txt."
+        fi
     fi
 }
 
