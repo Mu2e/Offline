@@ -136,11 +136,6 @@ public:
     fhicl::Atom<art::InputTag> costag{Name("CosmicTrackSeedCollection"),
                                       Comment("tag for cosmic track seed collection")};
 
-    fhicl::Atom<std::string> tracktype{
-        Name("TrackType"),
-        Comment("The type of track to collect. Default: CosmicTrackSeedCollection"),
-        "CosmicTrackSeedCollection"};
-
     fhicl::Atom<int> minplanetraverse{Name("MinTraversedPlanes"),
                                       Comment("How many planes must be traversed for a track "
                                               "to be accepted. 0: does not apply the cut."),
@@ -229,7 +224,6 @@ public:
   AlignTrackCollector(const Parameters& conf) :
       art::EDAnalyzer(conf), _diag(conf().diaglvl()), 
       _costag(conf().costag()),
-      track_type(conf().tracktype()),
       min_plane_traverse(conf().minplanetraverse()),
       min_panel_traverse_per_plane(conf().minpaneltraverse()), 
       max_pvalue(conf().maxpvalue()),
@@ -282,7 +276,6 @@ public:
   int _diag;
   art::InputTag _costag;
   std::string _labels_filename;
-  std::string track_type;
 
   int min_plane_traverse;
   int min_panel_traverse_per_plane;
