@@ -367,6 +367,7 @@ void AlignTrackCollector::writeMillepedeSteering() {
               << "Cfiles" << std::endl
               << param_filename << std::endl
               << constr_filename << std::endl
+              << mille_filename << std::endl
               << std::endl
               << "method inversion 10 0.001" << std::endl
               << "end" << std::endl;
