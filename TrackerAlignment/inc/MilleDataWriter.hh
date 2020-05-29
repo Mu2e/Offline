@@ -7,13 +7,11 @@
 
 #include <fstream>
 #include <iostream>
+#include <numeric>
 #include <vector>
 
-#include <boost/iostreams/categories.hpp>
-#include <boost/iostreams/copy.hpp>
 #include <boost/iostreams/filter/gzip.hpp>
 #include <boost/iostreams/filtering_stream.hpp>
-#include <boost/range/irange.hpp>
 
 using namespace boost::iostreams;
 
@@ -45,7 +43,7 @@ public:
                std::vector<int> const& global_labels, WORDTYPE const& measurement,
                WORDTYPE const& meas_error) {
 
-    if (global_labels.size() != global_labels.size()) {
+    if (global_labels.size() != global_derivatives.size()) {
       std::cerr << "MilleDataWriter: size mismatch between number of global labels and global "
                    "derivatives for this hit"
                 << std::endl;
@@ -57,18 +55,25 @@ public:
                 << "Bad measurement" << std::endl;
       return;
     }
+
+    if (track_buf.size() == label_buf.size() && track_buf.size() == 0) {
+      push(0.0, 0);
+    }
     push(measurement, 0);
-    push(local_derivatives, boost::irange(1, local_derivatives.size()));
+
+    std::vector<int> local_labels(local_derivatives.size());
+    std::iota(local_labels.begin(), local_labels.end(), 1);
+    push(local_derivatives, local_labels);
+
     push(meas_error, 0);
     push(global_derivatives, global_labels);
   }
 
   void flushTrack() {
-    const int words = n_words();
-    gz_fstream.write(reinterpret_cast<const char*>(&words), sizeof(words));
-    std::copy(track_buf.begin(), track_buf.end(), std::ostream_iterator<char>(gz_fstream));
-    std::copy(label_buf.begin(), label_buf.end(), std::ostream_iterator<char>(gz_fstream));
-
+    int words = n_words();
+    gz_fstream.write(reinterpret_cast<char*>(&words), sizeof(int));
+    gz_fstream.write(reinterpret_cast<char*>(track_buf.data()), track_buf.size() * sizeof(WORDTYPE));
+    gz_fstream.write(reinterpret_cast<char*>(label_buf.data()), label_buf.size() * sizeof(int));
     clear();
   }
 
@@ -79,6 +84,11 @@ public:
 
 private:
   void push(std::vector<WORDTYPE> const& data, std::vector<int> const& labels) {
+    if (data.size() != labels.size()) {
+      std::cerr << "MilleDataWriter: size mismatch between data (" << data.size()
+                << ") and labels (" << labels.size() << ")" << std::endl;
+      return;
+    }
     label_buf.insert(label_buf.end(), labels.begin(), labels.end());
     track_buf.insert(track_buf.end(), data.begin(), data.end());
   }
@@ -88,5 +98,15 @@ private:
     track_buf.emplace_back(data);
   }
 
-  size_t n_words() { return label_buf.size() + track_buf.size(); }
+  int n_words() {
+    int result = label_buf.size() + track_buf.size();
+
+    // if we are storing doubles, we pass a negative word number
+    // to indicate to readC(..) (readc.c) it should read doubles, not floats.
+    if (std::is_same<WORDTYPE, double>::value) {
+      result = -result;
+    }
+
+    return result;
+  }
 };
