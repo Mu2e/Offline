@@ -21,7 +21,7 @@ python -m pip install --user -r ${TRKALIGN_SCRIPTS_DIR}/requirements.txt
 alias aligntrack_display='python ${TRKALIGN_SCRIPTS_DIR}/aligntrack_display.py ' 
 
 function mu2ealign_genjobfcl() {
-    cat job.fcl << EOF
+    cat << EOF > job.fcl
 #include "TrackerAlignment/fcl/cosmicAlign_timefit.fcl"
 #include "JobConfig/reco/misalign_epilog.fcl"
 
