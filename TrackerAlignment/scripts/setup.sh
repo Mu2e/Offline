@@ -57,7 +57,7 @@ EOF
 function mu2ealign() {
     COMMAND=$1
 
-    if [[ $COMMAND == 'new']]; then
+    if [[ $COMMAND == "new" ]]; then
         if [ "$(ls -A $PWD)" ]; then
             echo "Please re-run this command inside an empty directory."
 
