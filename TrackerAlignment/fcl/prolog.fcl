@@ -28,6 +28,10 @@ BEGIN_PROLOG
     SteerFile : "steer.txt"
     ParamFile : "params.txt"
     ConstrFile : "constr.txt"
+
+    SteeringOpts : [ ]
+
+    ErrorScale : 1.0
 }
 
 
