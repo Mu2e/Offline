@@ -97,7 +97,15 @@ function mu2ealign() {
         fi
 
         cp ${ALIGN_CONST_FILE} alignconstants_in.txt
-        mu2ealign_genjobfcl
+
+        JOB_FCL_FILE=$(dirname ${ALIGN_CONST_FILE})/job.fcl
+
+        if [ -f ${JOB_FCL_FILE} ]; then 
+            # copy old job fcl over
+            cp ${JOB_FCL_FILE} job.fcl
+        else
+            mu2ealign_genjobfcl
+        fi
 
         # produces a job.fcl to run and a seed alignment constant file
         # for DbService
