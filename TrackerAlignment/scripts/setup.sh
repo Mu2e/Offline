@@ -7,7 +7,7 @@ fi
 
 if [ -z ${MU2E_BASE_RELEASE} ]; then
     echo "You must first set up a release."
-    exit 1
+    return 1
 fi
 
 export TRKALIGN_SCRIPTS_DIR="${MU2E_BASE_RELEASE}/TrackerAlignment/scripts"
@@ -64,11 +64,13 @@ function mu2ealign() {
             echo "i.e."
             echo "$ mkdir align_iter0 && cd align_iter0"
             echo "$ mu2ealign new <path to alignment constants file>"
+            return 1
         fi
 
         if [ -z "$2" ]; then 
             echo "usage: "
             echo "$ mu2ealign new <alignment constants file>"
+            return 1
         fi
 
         # generate a working directory in CWD
@@ -83,7 +85,7 @@ function mu2ealign() {
                 echo "using: ${ALIGN_CONST_FILE}"
             else
                 echo "$ALIGN_CONST_FILE does not exist."
-                exit 1;
+                return 1
             fi
         fi
 
