@@ -98,7 +98,7 @@ function mu2ealign() {
         echo "Good to go!"
 
     elif [[ $COMMAND == "pede" ]]; then
-        pede mp-steer.txt
+        pede mp-steer.txt || return 1
 
         if [ -f "millepede.res" ]; then 
             python ${TRKALIGN_SCRIPTS_DIR}/mp2prod.py > alignconstants_out.txt
