@@ -28,8 +28,12 @@ source ${MU2E_BASE_RELEASE}/TrackerAlignment/scripts/setup.sh
 cd /mu2e/data/users/$USER/
 mkdir alignment-test
 cd alignment-test
-# (uses the corresp. DbService text file in ${MU2E_BASE_RELEASE}/TrackerAlignment/test/misalignments/)
+
 mu2ealign new PlaneTranslationOnly 
+
+# generates job.fcl and alignconstants_in.txt - the Tracker is misaligned according to the 'PlaneTranslationOnly' configuration.
+# (the corresp. DbService text file in ${MU2E_BASE_RELEASE}/TrackerAlignment/test/misalignments/ is copied)
+
 ```
 
 3. Run Track Collection
@@ -37,7 +41,7 @@ mu2ealign new PlaneTranslationOnly
 mu2e -c job.fcl -S ${DS_COSMIC_NOFIELD_ALIGNSELECT} -n 25000
 
 # examine track diagnostics if needed
-aligntrack_display TrackDiag.root
+aligntrack_display TrackDiag.root < other trackdiag.root files to compare against >
 ```
 
 4. Run PEDE step (alignment fit)
@@ -49,8 +53,10 @@ mu2ealign pede
 
 ```
 
-5. Start again from step 2, using the generated alignment constants to create a new job config
+5. Use the generated alignment constants to create a new job config
 ```bash
 mkdir iter1 && cd iter1
 mu2ealign new ../alignconstants_out.txt
+# creates a new job.fcl and alignconstants_in.txt to the iter1 working directory
 ```
+6. Return to step 3
