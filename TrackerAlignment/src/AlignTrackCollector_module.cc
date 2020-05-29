@@ -76,7 +76,7 @@
 #include "fhiclcpp/types/detail/validationException.h"
 
 #include "TrackerAlignment/inc/AlignmentDerivatives.hh"
-#include "TrackerAlignment/inc/Mille.h"
+#include "TrackerAlignment/inc/MilleDataWriter.hh"
 
 namespace art {
 class Run;
@@ -136,18 +136,6 @@ public:
     fhicl::Atom<art::InputTag> costag{Name("CosmicTrackSeedCollection"),
                                       Comment("tag for cosmic track seed collection")};
 
-    fhicl::Atom<std::string> millefile{Name("TrackDataOutputFile"),
-                                       Comment("Output filename for Millepede track data file")};
-
-    fhicl::Atom<std::string> labelsfile{
-        Name("LabelsOutputFile"), Comment("Output filename for Millepede label ID's (debug only)"),
-        "none"};
-
-    fhicl::Atom<std::string> tracktype{
-        Name("TrackType"),
-        Comment("The type of track to collect. Default: CosmicTrackSeedCollection"),
-        "CosmicTrackSeedCollection"};
-
     fhicl::Atom<int> minplanetraverse{Name("MinTraversedPlanes"),
                                       Comment("How many planes must be traversed for a track "
                                               "to be accepted. 0: does not apply the cut."),
@@ -189,9 +177,70 @@ public:
         Name("PlaneFilterList"),
         Comment("Only write measurements made in these planes (int list [0,35])"),
     };
+
+    fhicl::Atom<std::string> millefile{Name("MilleFile"),
+                                       Comment("Output filename for Millepede track data file")};
+
+    fhicl::Atom<bool> millefilegzip{Name("GzipCompression"),
+                                    Comment("Enable gzip compression for millepede output file"),
+                                    false};
+
+    fhicl::Atom<std::string> steerfile{
+        Name("SteerFile"), Comment("Output filename for Millepede steering file"), "steer.txt"};
+
+    fhicl::Atom<std::string> paramfile{
+        Name("ParamFile"), Comment("Output filename for Millepede parameters file"), "params.txt"};
+
+    fhicl::Atom<std::string> constrfile{Name("ConstrFile"),
+                                        Comment("Output filename for Millepede constraints file"),
+                                        "constr.txt"};
+
+    fhicl::Atom<bool> usenumerical{
+        Name("UseNumericalDiffn"),
+        Comment("Whether or not to use numerical derivatives. Default is false."), false};
   };
 
   typedef art::EDAnalyzer::Table<Config> Parameters;
+
+  Config _conf;
+
+  int _diag;
+  art::InputTag _costag;
+  std::string _labels_filename;
+
+  int min_plane_traverse;
+  int min_panel_traverse_per_plane;
+  double max_pvalue;
+  double max_timeres;
+  int min_track_hits;
+  bool use_timeresid;
+  bool no_panel_dofs;
+  bool no_plane_rotations;
+
+  bool use_plane_filter;
+  std::vector<int> plane_filter_list;
+  bool use_db;
+
+  bool gzip_compress;
+  std::string mille_filename;
+  std::string steer_filename;
+  std::string param_filename;
+  std::string constr_filename;
+
+  bool use_numeric_derivs;
+  bool wroteMillepedeParams;
+
+  MilleDataWriter<double> mille_file;
+  const CosmicTrackSeedCollection* _coscol;
+  const Tracker* _tracker;
+
+  size_t tracks_written = 0;
+
+  ProditionsHandle<Tracker> _proditionsTracker_h;
+  ProditionsHandle<StrawResponse> srep_h;
+
+  std::unique_ptr<DbHandle<TrkAlignPlane>> _trkAlignPlane_h;
+  std::unique_ptr<DbHandle<TrkAlignPanel>> _trkAlignPanel_h;
 
   void beginJob();
   void endJob();
@@ -204,16 +253,18 @@ public:
   int getLabel(int const&, int const&, int const&);
   std::vector<int> generateDOFLabels(uint16_t plane, uint16_t panel);
   std::vector<int> generateDOFLabels(StrawId const& strw);
+
+  void writeMillepedeSteering();
+  void writeMillepedeConstraints();
   void writeMillepedeParams(TrkAlignPlane const& alignConstPlanes,
                             TrkAlignPanel const& alignConstPanels);
+  bool isDOFenabled(int object_class, int object_id, int dof_n);
+  virtual ~AlignTrackCollector() {}
 
   AlignTrackCollector(const Parameters& conf) :
       art::EDAnalyzer(conf), 
-      _diag(conf().diaglvl()), 
+      _diag(conf().diaglvl()),
       _costag(conf().costag()),
-      _output_filename(conf().millefile()), 
-      _labels_filename(conf().labelsfile()),
-      track_type(conf().tracktype()), 
       min_plane_traverse(conf().minplanetraverse()),
       min_panel_traverse_per_plane(conf().minpaneltraverse()), 
       max_pvalue(conf().maxpvalue()),
@@ -225,7 +276,16 @@ public:
       use_plane_filter(conf().useplanefilter()),
       plane_filter_list(conf().planefilterlist()),
 
-      wroteMillepedeParams(false) {
+      gzip_compress(conf().millefilegzip()), 
+      mille_filename(conf().millefile()),
+      steer_filename(conf().steerfile()), 
+      param_filename(conf().paramfile()),
+      constr_filename(conf().constrfile()),
+
+      use_numeric_derivs(conf().usenumerical()),
+
+      wroteMillepedeParams(false), 
+      mille_file(mille_filename, gzip_compress) {
 
     if (no_panel_dofs) {
       _dof_per_panel = 0;
@@ -244,50 +304,14 @@ public:
 
       std::cout << "AlignTrackCollector: Total number of panel degrees of freedom = "
                 << StrawId::_nupanels * _dof_per_panel << std::endl;
+
+      std::cout << "AlignTrackCollector: compression is "
+                << (gzip_compress ? "enabled" : "disabled") << std::endl;
     }
   }
-
-  virtual ~AlignTrackCollector() {}
-
-  Config _conf;
-
-  int _diag;
-  art::InputTag _costag;
-  std::string _output_filename;
-  std::string _labels_filename;
-  std::string track_type;
-
-  int min_plane_traverse;
-  int min_panel_traverse_per_plane;
-  double max_pvalue;
-  double max_timeres;
-  int min_track_hits;
-  bool use_timeresid;
-  bool no_panel_dofs;
-  bool no_plane_rotations;
-
-  bool use_plane_filter;
-  std::vector<int> plane_filter_list;
-
-  bool use_db;
-
-  bool wroteMillepedeParams;
-
-  std::unique_ptr<Mille> millepede;
-  const CosmicTrackSeedCollection* _coscol;
-  const Tracker* _tracker;
-
-  size_t tracks_written = 0;
-
-  ProditionsHandle<Tracker> _proditionsTracker_h;
-  ProditionsHandle<StrawResponse> srep_h;
-
-  std::unique_ptr<DbHandle<TrkAlignPlane>> _trkAlignPlane_h;
-  std::unique_ptr<DbHandle<TrkAlignPanel>> _trkAlignPanel_h;
 };
 
 void AlignTrackCollector::beginJob() {
-  millepede = std::make_unique<Mille>(_output_filename.c_str());
   _trkAlignPlane_h = std::make_unique<DbHandle<TrkAlignPlane>>();
   _trkAlignPanel_h = std::make_unique<DbHandle<TrkAlignPanel>>();
 
@@ -328,12 +352,92 @@ void AlignTrackCollector::beginJob() {
   }
 }
 
+void AlignTrackCollector::writeMillepedeSteering() {
+  std::ofstream output_file(steer_filename);
+
+  output_file << "! Steering file generated by AlignTrackCollector" << std::endl
+              << "Cfiles" << std::endl
+              << param_filename << std::endl
+              << constr_filename << std::endl
+              << mille_filename << std::endl
+              << std::endl
+              << "method inversion 10 0.001" << std::endl
+              << "end" << std::endl;
+
+  output_file.close();
+}
+
+bool AlignTrackCollector::isDOFenabled(int object_class, int object_id, int dof_n) {
+  if (object_class == 2 && no_panel_dofs) {
+    return false;
+  }
+
+  if (object_class == 1 && no_plane_rotations && dof_n > 2) {
+    return false;
+  }
+
+  int plane = object_id;
+  if (object_class == 2) {
+    plane = object_id % 6;
+  }
+
+  if (use_plane_filter && object_class == 1 &&
+      std::find(plane_filter_list.begin(), plane_filter_list.end(), plane) ==
+          plane_filter_list.end()) {
+    return false;
+  }
+
+  return true;
+}
+
+void AlignTrackCollector::writeMillepedeConstraints() {
+  std::ofstream output_file(constr_filename);
+  output_file << "! Constraints generated by AlignTrackCollector" 
+              << std::endl << std::endl;
+  output_file << "! plane constraints:" << std::endl;
+
+  // plane translations, rotations
+  for (size_t dof_n = 0; dof_n < _dof_per_plane; dof_n++) {
+    output_file << "Constraint    0" << std::endl;
+
+    for (uint16_t p = 0; p < StrawId::_nplanes; ++p) {
+
+      if (!isDOFenabled(1, p, dof_n)) {
+        continue;
+      }
+
+      // label(int)   coefficient of DOF corresp. to label in the sum
+      output_file << getLabel(1, p, dof_n) << "    " << "  1" << std::endl;
+    }
+  }
+
+  output_file << "! panels follow" << std::endl;
+
+  // panel translations, rotations
+  for (size_t dof_n = 0; dof_n < _dof_per_panel; dof_n++) {
+    output_file << "Constraint    0" << std::endl;
+
+    for (uint16_t p = 0; p < StrawId::_nupanels; ++p) {
+      if (!isDOFenabled(1, p, dof_n)) {
+        continue;
+      }
+
+      // label(int)   coefficient of DOF corresp. to label in the sum
+      output_file << getLabel(2, p, dof_n) << "    " << "  1" << std::endl;
+
+    }
+    output_file << std::endl;
+  }
+
+
+}
+
 void AlignTrackCollector::writeMillepedeParams(TrkAlignPlane const& alignConstPlanes,
                                                TrkAlignPanel const& alignConstPanels) {
   // write a params.txt telling millepede what the alignment constants
   // were for this track collection iteration
 
-  std::ofstream output_file("mp_params.txt"); // FIXME: fcl param
+  std::ofstream output_file(param_filename);
 
   output_file << "Parameter" << std::endl;
   output_file << "! Plane DOFs:" << std::endl;
@@ -341,16 +445,14 @@ void AlignTrackCollector::writeMillepedeParams(TrkAlignPlane const& alignConstPl
   for (uint16_t p = 0; p < StrawId::_nplanes; ++p) {
     auto const& rowpl = alignConstPlanes.rowAt(p);
 
-    if (use_plane_filter && std::find(plane_filter_list.begin(), plane_filter_list.end(), p) ==
-                                plane_filter_list.end()) {
-      // we're not interested in this plane!
-      continue;
-    }
-
     std::vector<float> pl_consts{rowpl.dx(), rowpl.dy(), rowpl.dz(),
                                  rowpl.rx(), rowpl.ry(), rowpl.rz()};
 
     for (size_t dof_n = 0; dof_n < _dof_per_plane; dof_n++) {
+      if (!isDOFenabled(1, p, dof_n)) {
+        continue;
+      }
+
       // label(int)   initial value (float)   presigma (-ve: fixed, 0: variable)
       output_file << getLabel(1, p, dof_n) << "  " << pl_consts[dof_n] << "  0" << std::endl;
     }
@@ -361,17 +463,15 @@ void AlignTrackCollector::writeMillepedeParams(TrkAlignPlane const& alignConstPl
 
   for (uint16_t p = 0; p < StrawId::_nupanels; ++p) {
     auto const& rowpa = alignConstPanels.rowAt(p);
-    int plane = p % 6;
-
-    if (use_plane_filter && std::find(plane_filter_list.begin(), plane_filter_list.end(), plane) ==
-                                plane_filter_list.end()) {
-      continue;
-    }
 
     std::vector<float> pa_consts{rowpa.dx(), rowpa.dy(), rowpa.dz(),
                                  rowpa.rx(), rowpa.ry(), rowpa.rz()};
 
     for (size_t dof_n = 0; dof_n < _dof_per_panel; dof_n++) {
+      if (!isDOFenabled(2, p, dof_n)) {
+        continue;
+      }
+
       // label(int)   initial value (float)   presigma (-ve: fixed, 0: variable)
       output_file << getLabel(2, p, dof_n) << "  " << pa_consts[dof_n] << "  0" << std::endl;
     }
@@ -390,11 +490,17 @@ std::vector<int> AlignTrackCollector::generateDOFLabels(uint16_t plane, uint16_t
   labels.reserve(_dof_per_plane + _dof_per_panel);
 
   for (size_t dof_n = 0; dof_n < _dof_per_plane; dof_n++) {
+    if (!isDOFenabled(1, plane, dof_n)) {
+      continue;
+    }
     labels.push_back(getLabel(1, plane, dof_n));
   }
 
   if (!no_panel_dofs) {
     for (size_t dof_n = 0; dof_n < _dof_per_panel; dof_n++) {
+      if (!isDOFenabled(2, panel, dof_n)) {
+        continue;
+      }
       labels.push_back(getLabel(2, panel, dof_n));
     }
   }
@@ -409,15 +515,13 @@ void AlignTrackCollector::beginRun(art::Run const& run) {
 }
 
 void AlignTrackCollector::endJob() {
-  // ensure the binary Mille file is explicitly closed in endJob,
-  // not just when this module goes out of scope.
-  // File close is handled in Mille destructor
-  millepede->~Mille();
 
   if (_diag > 0) {
-    std::cout << "AlignTrackCollector: wrote " << tracks_written << " tracks to "
-              << _output_filename << std::endl;
+    std::cout << "AlignTrackCollector: wrote " << tracks_written << " tracks to " << mille_filename
+              << std::endl;
   }
+  writeMillepedeConstraints();
+  writeMillepedeSteering();
 }
 
 bool AlignTrackCollector::filter_CosmicTrackSeedCollection(
@@ -502,9 +606,9 @@ bool AlignTrackCollector::filter_CosmicTrackSeedCollection(
 
     // TODO: Check positive semi-definiteness
 
-    std::vector<float> residuals;
-    std::vector<std::vector<float>> global_derivs_temp;
-    std::vector<std::vector<float>> local_derivs_temp;
+    std::vector<double> residuals;
+    std::vector<std::vector<double>> global_derivs_temp;
+    std::vector<std::vector<double>> local_derivs_temp;
     std::vector<std::vector<int>> labels_temp;
 
     // get residuals and their derivatives with respect
@@ -647,9 +751,13 @@ bool AlignTrackCollector::filter_CosmicTrackSeedCollection(
         // TODO: move to a utility class?
         // TODO: avoid DRY problems
 
-        derivativesLocal.clear();
-        derivativesGlobal.clear();
+        if (use_numeric_derivs) {
+          derivativesLocal.clear();
+          derivativesGlobal.clear();
+        }
 
+        std::vector<double> numericLocal;
+        std::vector<double> numericGlobal;
         double h = 1e-7;
 
         // PARTIAL DOCA DERIVATIVE: A0
@@ -677,7 +785,7 @@ bool AlignTrackCollector::filter_CosmicTrackSeedCollection(
         diff = (diff_a - diff_b) / (2.0 * h);
         std::cout << "numerical dr/d(A0) = " << diff << std::endl;
 
-        derivativesLocal.push_back(diff);
+        numericLocal.push_back(diff);
 
         // PARTIAL DOCA DERIVATIVE: B0
 
@@ -705,7 +813,7 @@ bool AlignTrackCollector::filter_CosmicTrackSeedCollection(
 
         diff = (diff_a - diff_b) / (2.0 * h);
         std::cout << "numerical dr/d(B0) = " << diff << std::endl;
-        derivativesLocal.push_back(diff);
+        numericLocal.push_back(diff);
 
         // PARTIAL DOCA DERIVATIVE: A1
 
@@ -733,7 +841,7 @@ bool AlignTrackCollector::filter_CosmicTrackSeedCollection(
 
         diff = (diff_a - diff_b) / (2.0 * h);
         std::cout << "numerical dr/d(A1) = " << diff << std::endl;
-        derivativesLocal.push_back(diff);
+        numericLocal.push_back(diff);
 
         // PARTIAL DOCA DERIVATIVE: B1
 
@@ -759,40 +867,36 @@ bool AlignTrackCollector::filter_CosmicTrackSeedCollection(
 
         diff = (diff_a - diff_b) / (2.0 * h);
         std::cout << "numerical dr/d(B1) = " << diff << std::endl;
-        derivativesLocal.push_back(diff);
+        numericLocal.push_back(diff);
 
         // T0
-        derivativesLocal.push_back(-1);
+        numericLocal.push_back(-1);
 
         // PARTIAL DOCA DERIVATIVE: PLANE X SHIFT
 
         diff_a = _srep.driftDistanceToTime(
             straw_id,
-            CosmicTrack_DCA(A0, B0, A1, B1, T0,
-                            rowpl.dx() + h,
-                            rowpl.dy(), rowpl.dz(), rowpl.rx(), rowpl.ry(), rowpl.rz(), rowpa.dx(),
-                            rowpa.dy(), rowpa.dz(), rowpa.rx(), rowpa.ry(), rowpa.rz(),
-                            nominalStraw_mp.x(), nominalStraw_mp.y(), nominalStraw_mp.z(),
-                            nominalStraw_dir.x(), nominalStraw_dir.y(), nominalStraw_dir.z(),
-                            plane_origin.x(), plane_origin.y(), plane_origin.z(), panel_origin.x(),
-                            panel_origin.y(), panel_origin.z(), driftvel),
+            CosmicTrack_DCA(
+                A0, B0, A1, B1, T0, rowpl.dx() + h, rowpl.dy(), rowpl.dz(), rowpl.rx(), rowpl.ry(),
+                rowpl.rz(), rowpa.dx(), rowpa.dy(), rowpa.dz(), rowpa.rx(), rowpa.ry(), rowpa.rz(),
+                nominalStraw_mp.x(), nominalStraw_mp.y(), nominalStraw_mp.z(), nominalStraw_dir.x(),
+                nominalStraw_dir.y(), nominalStraw_dir.z(), plane_origin.x(), plane_origin.y(),
+                plane_origin.z(), panel_origin.x(), panel_origin.y(), panel_origin.z(), driftvel),
             0);
 
         diff_b = _srep.driftDistanceToTime(
             straw_id,
-            CosmicTrack_DCA(A0, B0, A1, B1, T0,
-                            rowpl.dx() - h,
-                            rowpl.dy(), rowpl.dz(), rowpl.rx(), rowpl.ry(), rowpl.rz(), rowpa.dx(),
-                            rowpa.dy(), rowpa.dz(), rowpa.rx(), rowpa.ry(), rowpa.rz(),
-                            nominalStraw_mp.x(), nominalStraw_mp.y(), nominalStraw_mp.z(),
-                            nominalStraw_dir.x(), nominalStraw_dir.y(), nominalStraw_dir.z(),
-                            plane_origin.x(), plane_origin.y(), plane_origin.z(), panel_origin.x(),
-                            panel_origin.y(), panel_origin.z(), driftvel),
+            CosmicTrack_DCA(
+                A0, B0, A1, B1, T0, rowpl.dx() - h, rowpl.dy(), rowpl.dz(), rowpl.rx(), rowpl.ry(),
+                rowpl.rz(), rowpa.dx(), rowpa.dy(), rowpa.dz(), rowpa.rx(), rowpa.ry(), rowpa.rz(),
+                nominalStraw_mp.x(), nominalStraw_mp.y(), nominalStraw_mp.z(), nominalStraw_dir.x(),
+                nominalStraw_dir.y(), nominalStraw_dir.z(), plane_origin.x(), plane_origin.y(),
+                plane_origin.z(), panel_origin.x(), panel_origin.y(), panel_origin.z(), driftvel),
             0);
 
         diff = (diff_a - diff_b) / (2.0 * h);
         std::cout << "numerical dr/d([plane " << plane_id << "]DX) = " << diff << std::endl;
-        derivativesGlobal.push_back(diff);
+        numericGlobal.push_back(diff);
 
         // PARTIAL DOCA DERIVATIVE: PLANE Y SHIFT
 
@@ -818,7 +922,7 @@ bool AlignTrackCollector::filter_CosmicTrackSeedCollection(
 
         diff = (diff_a - diff_b) / (2.0 * h);
         std::cout << "numerical dr/d([plane " << plane_id << "]DY) = " << diff << std::endl;
-        derivativesGlobal.push_back(diff);
+        numericGlobal.push_back(diff);
 
         // PARTIAL DOCA DERIVATIVE: PLANE Z SHIFT
 
@@ -844,7 +948,12 @@ bool AlignTrackCollector::filter_CosmicTrackSeedCollection(
 
         diff = (diff_a - diff_b) / (2.0 * h);
         std::cout << "numerical dr/d([plane " << plane_id << "]DZ) = " << diff << std::endl;
-        derivativesGlobal.push_back(diff);
+        numericGlobal.push_back(diff);
+
+        if (use_numeric_derivs) {
+          derivativesGlobal = numericGlobal;
+          derivativesLocal = numericLocal;
+        }
       }
       // end of derivative diagnostics!
       // end of derivative diagnostics!
@@ -891,12 +1000,9 @@ bool AlignTrackCollector::filter_CosmicTrackSeedCollection(
         resid_local_derivs(nHits, col) = derivativesLocal[col];
       }
 
-      global_derivs_temp.push_back(
-          std::vector<float>(derivativesGlobal.begin(), derivativesGlobal.end()));
-
-      // FIXME!
-      local_derivs_temp.push_back(
-          std::vector<float>(derivativesLocal.begin(), derivativesLocal.end()));
+      derivativesGlobal.resize(_dof_per_plane + _dof_per_panel);
+      global_derivs_temp.emplace_back(derivativesGlobal);
+      local_derivs_temp.emplace_back(derivativesLocal);
       labels_temp.push_back(global_dof_labels);
 
       wrote_hits = true;
@@ -999,9 +1105,8 @@ bool AlignTrackCollector::filter_CosmicTrackSeedCollection(
                                           plane_uid[i]) == plane_filter_list.end()) {
           // we're not interested in this measurement!
         } else {
-          millepede->mille(local_derivs_temp[i].size(), local_derivs_temp[i].data(), _expected_dofs,
-                           global_derivs_temp[i].data(), labels_temp[i].data(), residuals[i],
-                           residual_err[i]);
+          mille_file.pushHit(local_derivs_temp[i], global_derivs_temp[i], labels_temp[i],
+                             residuals[i], residual_err[i]);
           wrote_relevant_hits = true;
         }
 
@@ -1020,13 +1125,12 @@ bool AlignTrackCollector::filter_CosmicTrackSeedCollection(
           std::cout << "killed track " << std::endl;
           std::cout << std::endl;
         }
-
-        millepede->kill();
+        mille_file.clear();
         continue;
       }
 
       // Write the track buffer to file
-      millepede->end();
+      mille_file.flushTrack();
 
       if (_diag > 0) {
         diagtree->Fill();

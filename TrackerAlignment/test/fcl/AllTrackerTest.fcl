@@ -16,9 +16,13 @@ physics.analyzers.AlignTrackCollector.diagLevel : 5
 physics.analyzers.AlignTrackCollector.PlaneFilter : false
 physics.analyzers.AlignTrackCollector.PlaneFilterList : [  ]
 
-physics.analyzers.AlignTrackCollector.TrackDataOutputFile : "etc.owner.AlignTrackCollector-MISALIGN-AllTracker.mille-data.sequencer.bin"
-physics.analyzers.AlignTrackCollector.LabelsOutputFile : "labels-allplanesi-trlonly.txt" # set to "none" if you don't want to write these.
+physics.analyzers.AlignTrackCollector.MilleFile : "mcs.owner.AlignTrackCollector-MISALIGN-AllTracker.mp-trackdata.sequencer.bin.gz"
+physics.analyzers.AlignTrackCollector.GzipCompression : true 
+
+physics.analyzers.AlignTrackCollector.SteerFile : "cnf.owner.AlignTrackCollector-MISALIGN-AllTracker.mp-steer.sequencer.txt"
+physics.analyzers.AlignTrackCollector.ParamFile : "cnf.owner.AlignTrackCollector-MISALIGN-AllTracker.mp-params.sequencer.txt"
+physics.analyzers.AlignTrackCollector.ConstrFile : "cnf.owner.AlignTrackCollector-MISALIGN-AllTracker.mp-constr.sequencer.txt"
 
 # diagnostics and plots, usually
-services.TFileService.fileName: "rec.owner.AlignTrackCollector-MISALIGN-AllTracker.trackdiag.sequencer.root"
+services.TFileService.fileName: "nts.owner.AlignTrackCollector-MISALIGN-AllTracker.trackdiag.sequencer.root"
 
