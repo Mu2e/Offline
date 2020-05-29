@@ -57,6 +57,10 @@ public:
                 << "Bad measurement" << std::endl;
       return;
     }
+
+    if (track_buf.size() == label_buf.size() == 0) {
+      push(0.0, 0);
+    }
     push(measurement, 0);
 
     std::vector<int> local_labels(local_derivatives.size());
