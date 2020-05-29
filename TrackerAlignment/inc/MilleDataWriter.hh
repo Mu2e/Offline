@@ -10,8 +10,6 @@
 #include <numeric>
 #include <vector>
 
-#include <boost/iostreams/categories.hpp>
-#include <boost/iostreams/copy.hpp>
 #include <boost/iostreams/filter/gzip.hpp>
 #include <boost/iostreams/filtering_stream.hpp>
 
