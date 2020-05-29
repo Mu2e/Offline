@@ -59,7 +59,7 @@ public:
     }
     push(measurement, 0);
 
-    std::vector<int> local_labels(local_derivatives.size() - 1);
+    std::vector<int> local_labels(local_derivatives.size());
     std::iota(local_labels.begin(), local_labels.end(), 1);
     push(local_derivatives, local_labels);
 
