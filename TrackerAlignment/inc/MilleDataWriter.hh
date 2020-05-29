@@ -101,7 +101,7 @@ private:
   }
 
   int n_words() {
-    int result = label_buf.size() + track_buf.size() + 2;
+    int result = label_buf.size() + track_buf.size();
 
     // if we are storing doubles, we pass a negative word number
     // to indicate to readC(..) (readc.c) it should read doubles, not floats.
