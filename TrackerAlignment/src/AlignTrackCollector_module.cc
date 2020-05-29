@@ -198,6 +198,16 @@ public:
     fhicl::Atom<bool> usenumerical{
         Name("UseNumericalDiffn"),
         Comment("Whether or not to use numerical derivatives. Default is false."), false};
+
+    fhicl::Sequence<std::string> mpsteers{
+        Name("SteeringOpts"),
+        Comment("Additional configuration options to add to generated steering file."),
+    };
+
+    fhicl::Atom<double> errorscale{
+        Name("ErrorScale"),
+        Comment("Scale all hit measurement errors by ErrorScale."), 1.0
+    };
   };
 
   typedef art::EDAnalyzer::Table<Config> Parameters;
@@ -229,8 +239,12 @@ public:
 
   bool use_numeric_derivs;
   bool wroteMillepedeParams;
-
   MilleDataWriter<double> mille_file;
+  std::vector<std::string> steer_lines;
+
+  double error_scale;
+
+
   const CosmicTrackSeedCollection* _coscol;
   const Tracker* _tracker;
 
@@ -285,7 +299,9 @@ public:
       use_numeric_derivs(conf().usenumerical()),
 
       wroteMillepedeParams(false), 
-      mille_file(mille_filename, gzip_compress) {
+      mille_file(mille_filename, gzip_compress),
+      steer_lines(conf().mpsteers()),
+      error_scale(conf().errorscale()) {
 
     if (no_panel_dofs) {
       _dof_per_panel = 0;
@@ -360,11 +376,16 @@ void AlignTrackCollector::writeMillepedeSteering() {
               << param_filename << std::endl
               << constr_filename << std::endl
               << mille_filename << std::endl
-              << std::endl
+              << std::endl;
+
+  for (std::string const& line : steer_lines) {
+    output_file << line << std::endl;
+  }
+  
+  output_file << std::endl
               << "method inversion 10 0.001" << std::endl
               << "end" << std::endl;
 
-  output_file.close();
 }
 
 bool AlignTrackCollector::isDOFenabled(int object_class, int object_id, int dof_n) {
@@ -657,11 +678,11 @@ bool AlignTrackCollector::filter_CosmicTrackSeedCollection(
 
       // The following are based on reco performed using current alignment parameters
       double dca_resid = fit_object.DOCAresidual(straw_hit, sts);
-      double drift_res_dca = _srep.driftDistanceError(straw_hit.strawId(), 0, 0, pca.dca());
+      double drift_res_dca = error_scale * _srep.driftDistanceError(straw_hit.strawId(), 0, 0, pca.dca());
       double signdca = (pca.s2() > 0 ? pca.dca() : -pca.dca());
 
       double time_resid = fit_object.TimeResidual(straw_hit, sts);
-      double drift_res = _srep.driftTimeError(straw_hit.strawId(), 0, 0, pca.dca());
+      double drift_res = error_scale * _srep.driftTimeError(straw_hit.strawId(), 0, 0, pca.dca());
 
       // FIXME! use newly implemented chisq function in fit object
       chisq += pow(time_resid / drift_res, 2);
