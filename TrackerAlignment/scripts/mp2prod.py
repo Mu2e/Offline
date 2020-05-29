@@ -110,11 +110,11 @@ TABLE TrkAlignTracker
 
                 if obj_type == 1:
                     if not id in self.plane_constants:
-                        self.plane_constants[id]=[]
+                        self.plane_constants[id]=[0.0] * 6
                     self.plane_constants[id][dof] = dp
                 elif obj_type == 2:
                     if not id in self.panel_constants:
-                        self.panel_constants[id]=[]
+                        self.panel_constants[id]=[0.0] * 6
                     self.panel_constants[id][dof] = dp
 
     def export_table(self):
