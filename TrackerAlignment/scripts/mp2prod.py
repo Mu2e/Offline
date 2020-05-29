@@ -1,5 +1,6 @@
 import io
 
+
 class AlignmentConstants:
     # interface to alignment constants conditions
     # and millepede results
@@ -13,11 +14,16 @@ class AlignmentConstants:
 
     def __init__(self):
         self.section_handlers = {
-            'TrkAlignTracker':(lambda x: None, self.write_tracker_constants),
+            'TrkAlignTracker': (lambda x: None, self.write_tracker_constants),
             'TrkAlignPlane': (self.parse_plane_constants, self.write_plane_constants),
             'TrkAlignPanel': (self.parse_panel_constants, self.write_panel_constants),
         }
 
+        for plane_id in range(0,36):
+            self.plane_constants[plane_id]=[0.0] * 6
+
+        for panel_id in range(0,216):
+            self.plane_constants[panel_id]=[0.0] * 6
 
     def read_db_file(self, input_file):
         section_lines = []
@@ -109,12 +115,8 @@ TABLE TrkAlignTracker
                 obj_type, id, dof =  self.parse_label(label)
 
                 if obj_type == 1:
-                    if not id in self.plane_constants:
-                        self.plane_constants[id]=[0.0] * 6
                     self.plane_constants[id][dof] = dp
                 elif obj_type == 2:
-                    if not id in self.panel_constants:
-                        self.panel_constants[id]=[0.0] * 6
                     self.panel_constants[id][dof] = dp
 
     def export_table(self):
