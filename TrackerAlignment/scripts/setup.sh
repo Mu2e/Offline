@@ -36,8 +36,15 @@ services.DbService.textFile: ["alignconstants_in.txt"]
 
 physics.analyzers.AlignTrackCollector.diagLevel : 5
 
+physics.analyzers.AlignTrackCollector.MinTraversedPlanes : 3
+physics.analyzers.AlignTrackCollector.MaxTimeRes : 10.0
+physics.analyzers.AlignTrackCollector.MinTrackSH: 10
+
 physics.analyzers.AlignTrackCollector.PlaneFilter : false
 physics.analyzers.AlignTrackCollector.PlaneFilterList : [  ]
+physics.analyzers.AlignTrackCollector.SteeringOpts : [ ]
+
+physics.analyzers.AlignTrackCollector.ErrorScale : 1.0
 
 physics.analyzers.AlignTrackCollector.MilleFile : "MilleData.bin.gz"
 physics.analyzers.AlignTrackCollector.GzipCompression : true 
