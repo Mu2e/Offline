@@ -69,16 +69,9 @@ public:
 
   void flushTrack() {
     const int words = n_words();
-    gz_fstream.write(reinterpret_cast<const char*>(&words), sizeof(words));
-
-    for (const WORDTYPE& word : track_buf) {
-      gz_fstream.write(reinterpret_cast<const char*>(&word), sizeof(word));
-    }
-
-    for (const int& word : label_buf) {
-      gz_fstream.write(reinterpret_cast<const char*>(&word), sizeof(word));
-    }
-
+    gz_fstream.write(reinterpret_cast<const char*>(&words), sizeof(int));
+    gz_fstream.write(reinterpret_cast<char*>(track_buf.data()), track_buf.size() * sizeof(WORDTYPE));
+    gz_fstream.write(reinterpret_cast<char*>(label_buf.data()), label_buf.size() * sizeof(int));
     clear();
   }
 
