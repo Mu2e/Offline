@@ -81,14 +81,3 @@ physics.producers.makePH.TestRadius : false
 physics.producers.makePH.TestFlag : false
 
 
-
-
-
-# alignment
-#
-physics.analyzers.AlignTrackCollector.TrackDataOutputFile : "etc.owner.bootstrap-alignment.millepede-trackcollection-sequencer.bin"
-physics.analyzers.AlignTrackCollector.LabelsOutputFile : "labels.txt" # set to "none" if you don't want to write these.
-
-# diagnostics and plots, usually
-services.TFileService.fileName: "rec.owner.bootstrap-alignment.trackdiag-sequencer.root"
-
