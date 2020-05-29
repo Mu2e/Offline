@@ -59,7 +59,7 @@ public:
     }
     push(measurement, 0);
 
-    std::vector<int> local_labels(local_derivatives.size());
+    std::vector<int> local_labels(local_derivatives.size()-1);
     std::iota(local_labels.begin(), local_labels.end(), 1);
     push(local_derivatives, local_labels);
 
@@ -70,7 +70,7 @@ public:
   void flushTrack() {
     const int words = n_words();
     gz_fstream.write(reinterpret_cast<const char*>(&words), sizeof(words));
-    
+
     for (const WORDTYPE& word : track_buf) {
       gz_fstream.write(reinterpret_cast<const char*>(&word), sizeof(word));
     }
