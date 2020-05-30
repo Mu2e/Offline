@@ -52,18 +52,6 @@ namespace mu2e {
           2212 // proton
           };
 
-      fhicl::Atom<double> excitationEnergy {
-        Name("excitationEnergy"),
-          Comment("Excitation energy of the produced ion, if any"),
-          0.0 // ground state
-          };
-
-      fhicl::Atom<double> floatLevelBaseIndex {
-        Name("floatLevelBaseIndex"),
-          Comment("floatLevelBaseIndex of the produced ion, if any"),
-          0 // no float
-          };
-
       fhicl::OptionalAtom<double> pmin {
         Name("pmin"),
           Comment("Override generated particle min momentum.  The default is the nominal ExtMon signal momentum.")

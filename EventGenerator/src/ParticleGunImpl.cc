@@ -36,8 +36,6 @@ namespace mu2e {
       CLHEP::HepRandomEngine& engine,
       double meanMultiplicity,
       PDGCode::type pdgId,
-      double excitationEnergy,
-      int floatLevelBaseIndex,
       double pmin,
       double pmax,
       const std::string& momentumModeString,
@@ -61,8 +59,6 @@ namespace mu2e {
       int verbosityLevel)
     : _mean(meanMultiplicity)
     , _pdgId(pdgId)
-    , _excitationEnergy(excitationEnergy)
-    , _floatLevelBaseIndex(floatLevelBaseIndex)
 
     , _pmin(pmin)
     , _pmax(pmax)
@@ -111,9 +107,6 @@ namespace mu2e {
       CLHEP::HepRandomEngine& engine,
       double meanMultiplicity,
       PDGCode::type pdgId,
-      double excitationEnergy,
-      int floatLevelBaseIndex,
-
       double pmin,
       double pmax,
 
@@ -129,8 +122,7 @@ namespace mu2e {
       int verbosityLevel)
     : _mean(meanMultiplicity)
     , _pdgId(pdgId)
-    , _excitationEnergy(excitationEnergy)
-    , _floatLevelBaseIndex(floatLevelBaseIndex)
+
     , _pmin(pmin)
     , _pmax(pmax)
 
@@ -503,7 +495,7 @@ namespace mu2e {
         pos += _origin;
       }
 
-      genParts.push_back( GenParticle( _pdgId, GenId::particleGun, pos, p4, time, 0.0, _excitationEnergy, _floatLevelBaseIndex));
+      genParts.push_back( GenParticle( _pdgId, GenId::particleGun, pos, p4, time));
 
       if(_verbosityLevel >= 3) {
         cout  << "Generated position: "<< pos << " "

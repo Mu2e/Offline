@@ -19,8 +19,6 @@ namespace mu2e {
     : m_gun(engine,
             conf.multiplicity(),
             PDGCode::type(conf.pdgId()),
-            conf.excitationEnergy(),
-            conf.floatLevelBaseIndex(),
 
             //pset.get<double>("pmax", GeomHandle<ExtMonFNALBuilding>()->filterMagnet().nominalMomentum()),
             getpmin(conf, *GeomHandle<ExtMonFNALBuilding>()),
