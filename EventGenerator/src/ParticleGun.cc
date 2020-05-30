@@ -26,10 +26,6 @@ namespace mu2e {
             config.getDouble("particleGun.mean",-1.),
             static_cast<PDGCode::type>(config.getInt("particleGun.id",  PDGCode::mu_minus)),
 
-            // excitation energy and floatLevelBaseIndex of an ion/isomer
-            config.getDouble("particleGun.excitationEnergy", 0.0),
-            config.getInt("particleGun.floatLevelBaseIndex", 0),
-
             config.getDouble("particleGun.pmin", pEndPoint),
             config.getDouble("particleGun.pmax", pEndPoint),
             config.getString("particleGun.momentumMode", "flat"),

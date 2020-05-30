@@ -104,8 +104,8 @@ namespace mu2e {
         const GenParticle& genpart = (*genParticles_)[i];
         addG4Particle(event,
                       genpart.pdgId(),
-                      genpart.excitationEnergy(),
-                      genpart.floatLevelBaseIndex(),
+                      0.0, // Mu2e GenParticles are not excited ions
+                      0,
                       // Transform into G4 world coordinate system
                       genpart.position() + mu2eOrigin,
                       genpart.time(),
