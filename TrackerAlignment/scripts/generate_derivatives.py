@@ -208,7 +208,7 @@ def generate_expressions(approximate=False, remove_globalparam_dependence=False,
 
     driftvel = Symbol('driftvel', real=True)
 
-    local_params = [a0, b0, a1, b1, t0]
+    local_params = [a0, a1, b0, b1, t0]
     global_params = [dx, dy, dz, a, b, g]
     global_params += [panel_dx, panel_dy, panel_dz, panel_a, panel_b, panel_g]
 
