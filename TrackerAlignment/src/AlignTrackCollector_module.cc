@@ -755,8 +755,8 @@ bool AlignTrackCollector::filter_CosmicTrackSeedCollection(
         std::cout << "]" << std::endl;
 
         std::cout << "dr/d([A0,A1,B0,B1,T0]): [" << derivativesLocal[0] // A0
-                  << ", " << derivativesLocal[2]                        // A1
-                  << ", " << derivativesLocal[1]                        // B0
+                  << ", " << derivativesLocal[1]                        // A1
+                  << ", " << derivativesLocal[2]                        // B0
                   << ", " << derivativesLocal[3]                        // B1
                   << ", " << derivativesLocal[4];                       // T0
         std::cout << "]" << std::endl;
@@ -808,34 +808,6 @@ bool AlignTrackCollector::filter_CosmicTrackSeedCollection(
 
         numericLocal.push_back(diff);
 
-        // PARTIAL DOCA DERIVATIVE: B0
-
-        diff_a = _srep.driftDistanceToTime(
-            straw_id,
-            CosmicTrack_DCA(
-                A0, A1, B0 + h, B1, T0, rowpl.dx(), rowpl.dy(), rowpl.dz(), rowpl.rx(), rowpl.ry(),
-                rowpl.rz(), rowpa.dx(), rowpa.dy(), rowpa.dz(), rowpa.rx(), rowpa.ry(), rowpa.rz(),
-
-                nominalStraw_mp.x(), nominalStraw_mp.y(), nominalStraw_mp.z(), nominalStraw_dir.x(),
-                nominalStraw_dir.y(), nominalStraw_dir.z(), plane_origin.x(), plane_origin.y(),
-                plane_origin.z(), panel_origin.x(), panel_origin.y(), panel_origin.z(), driftvel),
-            0);
-
-        diff_b = _srep.driftDistanceToTime(
-            straw_id,
-            CosmicTrack_DCA(
-                A0, A1, B0 - h, B1, T0, rowpl.dx(), rowpl.dy(), rowpl.dz(), rowpl.rx(), rowpl.ry(),
-                rowpl.rz(), rowpa.dx(), rowpa.dy(), rowpa.dz(), rowpa.rx(), rowpa.ry(), rowpa.rz(),
-
-                nominalStraw_mp.x(), nominalStraw_mp.y(), nominalStraw_mp.z(), nominalStraw_dir.x(),
-                nominalStraw_dir.y(), nominalStraw_dir.z(), plane_origin.x(), plane_origin.y(),
-                plane_origin.z(), panel_origin.x(), panel_origin.y(), panel_origin.z(), driftvel),
-            0);
-
-        diff = (diff_a - diff_b) / (2.0 * h);
-        std::cout << "numerical dr/d(B0) = " << diff << std::endl;
-        numericLocal.push_back(diff);
-
         // PARTIAL DOCA DERIVATIVE: A1
 
         diff_a = _srep.driftDistanceToTime(
@@ -862,6 +834,35 @@ bool AlignTrackCollector::filter_CosmicTrackSeedCollection(
 
         diff = (diff_a - diff_b) / (2.0 * h);
         std::cout << "numerical dr/d(A1) = " << diff << std::endl;
+        numericLocal.push_back(diff);
+
+
+        // PARTIAL DOCA DERIVATIVE: B0
+
+        diff_a = _srep.driftDistanceToTime(
+            straw_id,
+            CosmicTrack_DCA(
+                A0, A1, B0 + h, B1, T0, rowpl.dx(), rowpl.dy(), rowpl.dz(), rowpl.rx(), rowpl.ry(),
+                rowpl.rz(), rowpa.dx(), rowpa.dy(), rowpa.dz(), rowpa.rx(), rowpa.ry(), rowpa.rz(),
+
+                nominalStraw_mp.x(), nominalStraw_mp.y(), nominalStraw_mp.z(), nominalStraw_dir.x(),
+                nominalStraw_dir.y(), nominalStraw_dir.z(), plane_origin.x(), plane_origin.y(),
+                plane_origin.z(), panel_origin.x(), panel_origin.y(), panel_origin.z(), driftvel),
+            0);
+
+        diff_b = _srep.driftDistanceToTime(
+            straw_id,
+            CosmicTrack_DCA(
+                A0, A1, B0 - h, B1, T0, rowpl.dx(), rowpl.dy(), rowpl.dz(), rowpl.rx(), rowpl.ry(),
+                rowpl.rz(), rowpa.dx(), rowpa.dy(), rowpa.dz(), rowpa.rx(), rowpa.ry(), rowpa.rz(),
+
+                nominalStraw_mp.x(), nominalStraw_mp.y(), nominalStraw_mp.z(), nominalStraw_dir.x(),
+                nominalStraw_dir.y(), nominalStraw_dir.z(), plane_origin.x(), plane_origin.y(),
+                plane_origin.z(), panel_origin.x(), panel_origin.y(), panel_origin.z(), driftvel),
+            0);
+
+        diff = (diff_a - diff_b) / (2.0 * h);
+        std::cout << "numerical dr/d(B0) = " << diff << std::endl;
         numericLocal.push_back(diff);
 
         // PARTIAL DOCA DERIVATIVE: B1
@@ -1098,6 +1099,9 @@ bool AlignTrackCollector::filter_CosmicTrackSeedCollection(
 
         std::cout << "Track Covariance:" << std::endl;
         track_cov.Print();
+
+        std::cout << "Residual derivatives:" << std::endl;
+        resid_local_derivs.Print();
       }
 
       TMatrixD HC(nHits, 5);
