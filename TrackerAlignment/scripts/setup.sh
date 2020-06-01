@@ -152,6 +152,11 @@ function mu2ealign_runNaligniters() {
 
         mu2ealign new ${MU2E_BASE_RELEASE}/TrackerAlignment/test/misalignments/nominal.txt
 
+        rm *.fcl 
+        rm sources*.txt 
+        cp ../*.fcl .
+        cp ../sources_*.txt .
+
         echo "Alignment track collection: NOMINAL geom"
             
         mu2ealign run 

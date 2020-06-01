@@ -66,37 +66,36 @@ using CLHEP::Hep3Vector;
 using CLHEP::HepVector;
 
 namespace{
-
     struct ycomp_iter : public std::binary_function<std::vector<ComboHit>::const_iterator, std::vector<ComboHit>::const_iterator, bool> {
       bool operator()(std::vector<ComboHit>::const_iterator p1, std::vector<ComboHit>::const_iterator p2) { return p1->_pos.y() > p2->_pos.y(); }
     };
-
 }
 
-namespace mu2e{
-
-    class CosmicTrackFinder : public art::EDProducer {
-    public:
-	struct Config{
-	      using Name=fhicl::Name;
-	      using Comment=fhicl::Comment;
-	      fhicl::Atom<int> debug{Name("debugLevel"), Comment("set to 1 for debug prints"),1};
-	      fhicl::Atom<int> minnsh {Name("minNStrawHits"), Comment("minimum number of straw hits "),2};
-	      fhicl::Atom<int> minnch {Name("minNComboHits"), Comment("number of combohits allowed"),8};
-	      fhicl::Atom<TrkFitFlag> saveflag {Name("SaveTrackFlag"),Comment("if set to OK then save the track"), TrkFitFlag::helixOK};
-	      fhicl::Atom<int> minNHitsTimeCluster{Name("minNHitsTimeCluster"),Comment("minium allowed time cluster"), 1 };
-	      fhicl::Atom<art::InputTag> chToken{Name("ComboHitCollection"),Comment("tag for combo hit collection")};
-	      fhicl::Atom<art::InputTag> tcToken{Name("TimeClusterCollection"),Comment("tag for time cluster collection")};
-              fhicl::Atom<bool> UseLineFinder{Name("UseLineFinder"),Comment("use line finder for seeding drift fit")};
-              fhicl::Atom<bool> UseChiFit{Name("UseChiFit"),Comment("use chi fit to improve seed"),true};
-              fhicl::Atom<art::InputTag> lfToken{Name("LineFinderTag"),Comment("tag for line finder seed"),"LineFinder"};
-	      fhicl::Atom<bool> DoDrift{Name("DoDrift"),Comment("turn on for drift fit")};
-	      fhicl::Atom<bool> UseTime{Name("UseTime"),Comment("use time for drift fit")};
-	      fhicl::Table<CosmicTrackFit::Config> tfit{Name("CosmicTrackFit"), Comment("fit")};
+namespace mu2e {
+class CosmicTrackFinder : public art::EDProducer {
+public:
+	struct Config {
+    using Name=fhicl::Name;
+    using Comment=fhicl::Comment;
+    fhicl::Atom<int> debug{Name("debugLevel"), Comment("set to 1 for debug prints"),1};
+    fhicl::Atom<int> minnsh {Name("minNStrawHits"), Comment("minimum number of straw hits "),2};
+    fhicl::Atom<int> minnch {Name("minNComboHits"), Comment("number of combohits allowed"),8};
+    fhicl::Atom<TrkFitFlag> saveflag {Name("SaveTrackFlag"),Comment("if set to OK then save the track"), TrkFitFlag::helixOK};
+    fhicl::Atom<int> minNHitsTimeCluster{Name("minNHitsTimeCluster"),Comment("minium allowed time cluster"), 1 };
+    fhicl::Atom<art::InputTag> chToken{Name("ComboHitCollection"),Comment("tag for combo hit collection")};
+    fhicl::Atom<art::InputTag> tcToken{Name("TimeClusterCollection"),Comment("tag for time cluster collection")};
+    fhicl::Atom<bool> UseLineFinder{Name("UseLineFinder"),Comment("use line finder for seeding drift fit")};
+    fhicl::Atom<bool> UseChiFit{Name("UseChiFit"),Comment("use chi fit to improve seed"),true};
+    fhicl::Atom<art::InputTag> lfToken{Name("LineFinderTag"),Comment("tag for line finder seed"),"LineFinder"};
+    fhicl::Atom<bool> DoDrift{Name("DoDrift"),Comment("turn on for drift fit")};
+    fhicl::Atom<bool> UseTime{Name("UseTime"),Comment("use time for drift fit")};
+    fhicl::Table<CosmicTrackFit::Config> tfit{Name("CosmicTrackFit"), Comment("fit")};
 	};
 	typedef art::EDProducer::Table<Config> Parameters;
+
 	explicit CosmicTrackFinder(const Parameters& conf);
 	virtual ~CosmicTrackFinder();
+
 	virtual void beginJob() override;
 	virtual void beginRun(art::Run& run) override;
 	virtual void produce(art::Event& event ) override;
@@ -108,59 +107,56 @@ namespace mu2e{
 	int 				_debug;
 	int 				_minnsh; // minimum # of strawHits in CH
 	int 				_minnch; // minimum # of ComboHits for viable fit
-	TrkFitFlag				_saveflag;//write tracks that satisfy these flags
+	TrkFitFlag	_saveflag;//write tracks that satisfy these flags
 	int 				_minNHitsTimeCluster; //min number of hits in a time cluster
-	float				_max_seed_chi2; ///maximum chi2 allowed for seed
+	//float				_max_seed_chi2; ///maximum chi2 allowed for seed
 
 	art::InputTag  _chToken;
 	art::InputTag  _tcToken;
 
-        bool _UseLineFinder;
-        bool _UseChiFit;
-        art::InputTag _lfToken;
+  bool _UseLineFinder;
+  bool _UseChiFit;
+  art::InputTag _lfToken;
 
 	bool 	   _DoDrift;
-        bool       _UseTime;
+  bool       _UseTime;
 
 	CosmicTrackFit     _tfit;
 
 	ProditionsHandle<StrawResponse> _strawResponse_h;
-
 	ProditionsHandle<Tracker> _alignedTracker_h;
-        void     OrderHitsY(ComboHitCollection const&chcol, std::vector<StrawHitIndex> const&inputIdx, std::vector<StrawHitIndex> &outputIdxs);
-	int      goodHitsTimeCluster(const TimeCluster TCluster, ComboHitCollection chcol);
+
+  void     OrderHitsY(ComboHitCollection const&chcol, std::vector<StrawHitIndex> const&inputIdx, std::vector<StrawHitIndex> &outputIdxs);
+  int      goodHitsTimeCluster(const TimeCluster &TCluster, ComboHitCollection const& chcol);
 
 };
-
-
     CosmicTrackFinder::CosmicTrackFinder(const Parameters& conf) :
-	art::EDProducer(conf),
-	_debug  (conf().debug()),
-	_minnsh   (conf().minnsh()),
-	_minnch  (conf().minnch()),
-	_saveflag  (conf().saveflag()),
-	_minNHitsTimeCluster(conf().minNHitsTimeCluster()),
-	_chToken (conf().chToken()),
-	_tcToken (conf().tcToken()),
-        _UseLineFinder (conf().UseLineFinder()),
-        _UseChiFit (conf().UseChiFit()),
-        _lfToken (conf().lfToken()),
-	_DoDrift (conf().DoDrift()),
-	_UseTime (conf().UseTime()),
-	_tfit (conf().tfit())
-	{
-		consumes<ComboHitCollection>(_chToken);
-		consumes<TimeClusterCollection>(_tcToken);
-                mayConsume<CosmicTrackSeedCollection>(_lfToken);
-		produces<CosmicTrackSeedCollection>();
+      art::EDProducer(conf),
+      _debug  (conf().debug()),
+      _minnsh   (conf().minnsh()),
+      _minnch  (conf().minnch()),
+      _saveflag  (conf().saveflag()),
+      _minNHitsTimeCluster(conf().minNHitsTimeCluster()),
+      _chToken (conf().chToken()),
+      _tcToken (conf().tcToken()),
+      _UseLineFinder (conf().UseLineFinder()),
+      _UseChiFit (conf().UseChiFit()),
+      _lfToken (conf().lfToken()),
+      _DoDrift (conf().DoDrift()),
+      _UseTime (conf().UseTime()),
+      _tfit (conf().tfit())
+    {
+      consumes<ComboHitCollection>(_chToken);
+      consumes<TimeClusterCollection>(_tcToken);
+      mayConsume<CosmicTrackSeedCollection>(_lfToken);
+      produces<CosmicTrackSeedCollection>();
 
- 	}
+    }
 
     CosmicTrackFinder::~CosmicTrackFinder(){}
 
     void CosmicTrackFinder::beginJob() {
-
-	art::ServiceHandle<art::TFileService> tfs;
+	    art::ServiceHandle<art::TFileService> tfs;
     }
 
     void CosmicTrackFinder::beginRun(art::Run& run) {
@@ -171,12 +167,16 @@ namespace mu2e{
       _tfit.setTracker(&tracker);
       StrawResponse const& srep = _strawResponse_h.get(event.id());
 
-      if (_debug != 0) std::cout<<"Producing Cosmic Track in  Finder..."<<std::endl;
-      unique_ptr<CosmicTrackSeedCollection> seed_col(new CosmicTrackSeedCollection());
+      if (_debug != 0) {
+        std::cout << "CosmicTrackFinder: Producing Cosmic Track ..."<<std::endl;
+      }
 
-      int _iev=event.id().event();
+      unique_ptr<CosmicTrackSeedCollection> seed_col = make_unique<CosmicTrackSeedCollection>();
+
+      int _iev = event.id().event();
+
       if (_debug > 0){
-        std::cout<<"ST Finder Event #"<<_iev<<std::endl;
+        std::cout << "CosmicTrackFinder: ST Finder Event #" << _iev << std::endl;
       }
 
       auto const& chH = event.getValidHandle<ComboHitCollection>(_chToken);
@@ -189,9 +189,9 @@ namespace mu2e{
         const auto& tclust = tccol[index];
         nGoodTClusterHits     = goodHitsTimeCluster(tclust,chcol);
 
-        if ( nGoodTClusterHits < _minNHitsTimeCluster)         continue;
+        if ( nGoodTClusterHits < _minNHitsTimeCluster) {  continue; }
         if (_debug > 0){
-          std::cout<<"time clusters "<<_iev<<std::endl;
+          std::cout<<"CosmicTrackFinder: time clusters " << _iev << std::endl;
         }
 
         std::vector<StrawHitIndex> panelHitIdxs;
@@ -205,12 +205,12 @@ namespace mu2e{
           nFiltStrawHits += ch.nStrawHits();
         }
 
-
         if (_debug != 0){
-          std::cout<<"#filtered SHits"<<nFiltStrawHits<<" #filter CHits "<<nFiltComboHits<<std::endl;
+          std::cout<<"CosmicTrackFinder: #filtered SHits"<<nFiltStrawHits<<" #filter CHits "<<nFiltComboHits<<std::endl;
         }
-        if (nFiltComboHits < _minnch ) 	continue;
-        if (nFiltStrawHits < _minnsh)          continue;
+
+        if (nFiltComboHits < _minnch ) {	continue; }
+        if (nFiltStrawHits < _minnsh) { continue; }
 
 
         ostringstream title;
@@ -219,10 +219,12 @@ namespace mu2e{
           << "  Event: " << event.id().event()<<".root";
 
         CosmicTrackSeed tseed ;
-        if (_UseLineFinder){
+        if (_UseLineFinder) {
           auto const& lfH = event.getValidHandle<CosmicTrackSeedCollection>(_lfToken);
           const CosmicTrackSeedCollection& lfcol(*lfH);
-          if (lfcol.size() == 0) continue;
+          if (lfcol.size() == 0) {
+            continue;
+          }
 
           tseed = lfcol[0];
           double _interror = 40;
@@ -230,13 +232,12 @@ namespace mu2e{
           double _t0error = 1;
 
           tseed._track.FitParams.Covarience.sigA0 = _interror;
-	  tseed._track.FitParams.Covarience.sigA1 = _direrror;
-	  tseed._track.FitParams.Covarience.sigB0 = _interror;
-	  tseed._track.FitParams.Covarience.sigB1 = _direrror;
-	  tseed._t0._t0err = _t0error;
+          tseed._track.FitParams.Covarience.sigA1 = _direrror;
+          tseed._track.FitParams.Covarience.sigB0 = _interror;
+          tseed._track.FitParams.Covarience.sigB1 = _direrror;
+          tseed._t0._t0err = _t0error;
 
-
-        }else{
+        } else{
           tseed._t0          = tclust._t0;
           tseed._timeCluster = art::Ptr<TimeCluster>(tcH,index);
           tseed._status.merge(TrkFitFlag::Straight);
@@ -244,7 +245,7 @@ namespace mu2e{
         }
 
         if (_UseChiFit){
-          _tfit.BeginFit(title.str().c_str(), tseed, event, chcol,panelHitIdxs);
+          _tfit.BeginFit(title.str().c_str(), tseed, event, chcol, panelHitIdxs);
 
           if( _tfit.goodTrack(tseed._track) == false){
             tseed._status.clear(TrkFitFlag::helixConverged);
@@ -256,15 +257,16 @@ namespace mu2e{
 
           if (tseed.status().hasAnyProperty(_saveflag)){
 
-            if(_DoDrift){
-              if (_UseTime){
+            if(_DoDrift) {
+              if (_UseTime) {
                 MinuitDriftFitter::DoDriftTimeFit(_debug,tseed, srep, &tracker );
-              }else{
+              } else {
                 _tfit.DriftFit(tseed, srep);
               }
-              if( tseed._track.minuit_converged == false)
-                continue;
 
+              if( !tseed._track.minuit_converged ){
+                continue;
+              }
               // TODO: do we keep or remove this?
               // // remove all outliers from ComboHitCollection
               // ComboHitCollection tmpHits;
@@ -279,8 +281,7 @@ namespace mu2e{
             }
 
             CosmicTrackSeedCollection* col = seed_col.get();
-
-            col->push_back(tseed);
+            col->emplace_back(tseed);
           }
         }
       }
@@ -292,7 +293,7 @@ namespace mu2e{
     if (_debug != 0){
       std::cout<<"Ordering Hits..."<<std::endl;
     }
-
+    
     std::vector<std::vector<ComboHit>::const_iterator> ordChColIters;
     for (size_t i=0;i<inputIdxs.size();i++){
       std::vector<ComboHit>::const_iterator tempiter = chcol.begin() + inputIdxs[i];
@@ -306,19 +307,20 @@ namespace mu2e{
     }
   }
 
-    int  CosmicTrackFinder::goodHitsTimeCluster(const TimeCluster TCluster, ComboHitCollection chcol){
-	int   nhits         = TCluster.nhits();
-	int   ngoodhits(0);
-	double     minT(500.), maxT(2000.);
-	for (int i=0; i<nhits; ++i){
-		int          index   = TCluster.hits().at(i);
-		ComboHit     sh      = chcol.at(index);
-		if ( (sh.time() < minT) || (sh.time() > maxT) )  continue;
+  int  CosmicTrackFinder::goodHitsTimeCluster(TimeCluster const& TCluster, ComboHitCollection const& chcol){
+    int nhits = TCluster.nhits();
+    int ngoodhits(0);
+    double minT(500.), maxT(2000.);
 
-		ngoodhits += sh.nStrawHits();
-	}
+    for (int i=0; i<nhits; ++i) {
+      int          index   = TCluster.hits().at(i);
+      ComboHit     sh      = chcol.at(index);
+      if ( (sh.time() < minT) || (sh.time() > maxT) )  { continue; }
 
-	return ngoodhits;
+      ngoodhits += sh.nStrawHits();
+    }
+
+    return ngoodhits;
   }
 
 }
