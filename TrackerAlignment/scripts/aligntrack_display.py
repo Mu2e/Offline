@@ -13,10 +13,10 @@ from matplotlib import rc
 import matplotlib.backends.backend_pdf
 
 mpl.use('Agg')
-mpl.rcParams['text.usetex'] = True
-mpl.rcParams['text.latex.preamble'] = [r'\usepackage[cm]{sfmath}']
-mpl.rcParams['font.family'] = 'sans-serif'
-mpl.rcParams['font.sans-serif'] = 'cm'
+# mpl.rcParams['text.usetex'] = True
+# mpl.rcParams['text.latex.preamble'] = [r'\usepackage[cm]{sfmath}']
+# mpl.rcParams['font.family'] = 'sans-serif'
+# mpl.rcParams['font.sans-serif'] = 'cm'
 
 
 def gauss(x, a, mean, sigma):
@@ -56,14 +56,13 @@ def hist_poiserr(ax, hist, label='', fitgauss=False):
     bin_centers = 0.5*(bin_edges[1:] + bin_edges[:-1])
     lab = 'no fit'
 
-    if fitgauss:
-        try:
-            (A,mu,sigma), pcov = curve_fit(gauss, bin_centers, y, )
-            lab = '$\\mu = %.2f, \\sigma = %.2f$' % (mu,abs(sigma))
+    maxmag = abs(max(bin_centers))*1.5
 
-            ax.plot(bin_centers, gauss(bin_centers, A,mu,sigma),  'r-.', lw=0.5)
-        except:
-            pass
+    if fitgauss:
+        (A,mu,sigma), pcov = curve_fit(gauss, bin_centers, y, bounds=((-np.inf, -np.inf, -np.inf), (np.inf, np.inf, np.inf)))
+        lab = '(mu, sig) = (%.2f, %.2f)' % (mu,abs(sigma))
+
+        ax.plot(bin_centers, gauss(bin_centers, A,mu,sigma),  'r-.', lw=0.5)
 
 
     line = ax.errorbar(
@@ -97,7 +96,8 @@ def hist_poiserr(ax, hist, label='', fitgauss=False):
     ax.tick_params(which='minor', direction='in')
     ax.grid(which='major')
 
-    ax.legend(fontsize="xx-small")
+    if fitgauss:
+        ax.legend(fontsize="xx-small")
 
     return line[0]
 
@@ -131,7 +131,7 @@ def main():
 
             "doca_resid": (50, -1, 1, True),
             "time_resid": (50, -15,15, True),
-            "doca_resid_err": (50, 0, 0.3, False),
+            #"doca_resid_err": (50, 0, 0.3, False),
             "doca": (50, 0, 3, False),
             "time": (50, 0, 2000, False),
 

@@ -64,7 +64,7 @@ services.scheduler.wantSummary: true
 
 physics.RecoPath : [ @sequence::TrkHitReco.PrepareHits, SimpleTimeCluster, LineFinder, CosmicTrackFinderTimeFit ]
 
-physics.EndPath : [ AlignTrackCollector, CosmicTrackDiag, CosmicAnalysis ]
+physics.EndPath : [ AlignTrackCollector, CosmicTrackDiag ]
 
 physics.analyzers.CosmicTrackDiag.CosmicTrackSeedCollection : "CosmicTrackFinderTimeFit"
 physics.analyzers.CosmicTrackDiag.printLevel : 1
