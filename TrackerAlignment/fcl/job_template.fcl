@@ -1,0 +1,33 @@
+#include "TrackerAlignment/fcl/cosmicAlign_timefit.fcl"
+#include "JobConfig/reco/misalign_epilog.fcl"
+
+services.ProditionsService.alignedTracker.useDb: true
+services.ProditionsService.alignedTracker.verbose: 2
+
+services.ProditionsService.mu2eDetector.useDb: true
+services.ProditionsService.mu2eDetector.verbose: 2
+physics.analyzers.TrkAnaNeg.diagLevel: 2
+
+services.DbService.textFile: ["alignconstants_in.txt"]
+
+physics.analyzers.AlignTrackCollector.diagLevel : 5
+
+physics.analyzers.AlignTrackCollector.MinTraversedPlanes : 3
+physics.analyzers.AlignTrackCollector.MaxTimeRes : 10.0
+physics.analyzers.AlignTrackCollector.MinTrackSH: 10
+
+physics.analyzers.AlignTrackCollector.PlaneFilter : false
+physics.analyzers.AlignTrackCollector.PlaneFilterList : [  ]
+physics.analyzers.AlignTrackCollector.SteeringOpts : [ ]
+
+physics.analyzers.AlignTrackCollector.ErrorScale : 1.0
+
+physics.analyzers.AlignTrackCollector.MilleFile : "MilleData.bin.gz"
+physics.analyzers.AlignTrackCollector.GzipCompression : true 
+
+physics.analyzers.AlignTrackCollector.SteerFile : "mp-steer.txt"
+physics.analyzers.AlignTrackCollector.ParamFile : "mp-params.txt"
+physics.analyzers.AlignTrackCollector.ConstrFile : "mp-constr.txt"
+
+# diagnostics and plots, usually
+services.TFileService.fileName: "TrackDiag.root"
