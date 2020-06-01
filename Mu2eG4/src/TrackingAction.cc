@@ -433,13 +433,13 @@ namespace mu2e {
                                                          genPtr,
                                                          trk->GetPosition()-_mu2eOrigin,
                                                          p4,
-                                                         excitationEnergy,
-                                                         floatLevelBaseIndex,
                                                          trk->GetGlobalTime(),
                                                          trk->GetProperTime(),
                                                          _physVolHelper->index(trk),
                                                          trk->GetTrackStatus(),
-                                                         creationCode)));
+                                                         creationCode,
+                                                         excitationEnergy,
+                                                         floatLevelBaseIndex)));
 
     // If this track has a parent, tell the parent about this track.
     if ( parentPtr.isNonnull() ){

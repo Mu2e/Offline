@@ -48,13 +48,13 @@ namespace mu2e {
       _genParticle(),
       _startPosition(),
       _startMomentum(),
-      _startExcitationEnergy(0.),
-      _startFloatLevelBaseIndex(0),
       _startGlobalTime(0.),
       _startProperTime(0.),
       _startVolumeIndex(0),
       _startG4Status(),
       _creationCode(),
+      _startExcitationEnergy(0.),
+      _startFloatLevelBaseIndex(0),
       _endPosition(),
       _endMomentum(),
       _endGlobalTime(0.),
@@ -77,13 +77,14 @@ namespace mu2e {
                  art::Ptr<GenParticle> const&   agenParticle,
                  const CLHEP::Hep3Vector&       aposition,
                  const CLHEP::HepLorentzVector& amomentum,
-                 double                         astartExcitationEnergy,
-                 int                            astartFloatLevelBaseIndex,
                  double                         astartGlobalTime,
                  double                         astartProperTime,
                  unsigned                       astartVolumeIndex,
                  unsigned                       astartG4Status,
-                 ProcessCode                    acreationCode):
+                 ProcessCode                    acreationCode,
+                 double                         astartExcitationEnergy = 0.0,
+                 int                            astartFloatLevelBaseIndex = 0
+                 ):
       _id(aid),
       _stageOffset(stageOffset),
       _parentSim(aparentSim),
@@ -91,13 +92,13 @@ namespace mu2e {
       _genParticle(agenParticle),
       _startPosition(aposition),
       _startMomentum(amomentum),
-      _startExcitationEnergy(astartExcitationEnergy),
-      _startFloatLevelBaseIndex(astartFloatLevelBaseIndex),
       _startGlobalTime(astartGlobalTime),
       _startProperTime(astartProperTime),
       _startVolumeIndex(astartVolumeIndex),
       _startG4Status(astartG4Status),
       _creationCode(acreationCode),
+      _startExcitationEnergy(astartExcitationEnergy),
+      _startFloatLevelBaseIndex(astartFloatLevelBaseIndex),
       _endPosition(),
       _endMomentum(),
       _endGlobalTime(0.),
@@ -258,14 +259,14 @@ namespace mu2e {
     // Information at the start of the track.
     CLHEP::Hep3Vector       _startPosition;
     CLHEP::HepLorentzVector _startMomentum;
-    // the next two are for excited ions
-    double                  _startExcitationEnergy;
-    short int               _startFloatLevelBaseIndex;
     double                  _startGlobalTime;
     double                  _startProperTime;
     unsigned                _startVolumeIndex;
     unsigned                _startG4Status;
     ProcessCode             _creationCode;
+    // the next two are for excited ions
+    double                  _startExcitationEnergy;
+    short int               _startFloatLevelBaseIndex;
 
     // Information at the end of the track.
     CLHEP::Hep3Vector       _endPosition;

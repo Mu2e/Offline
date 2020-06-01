@@ -493,8 +493,6 @@ namespace mu2e {
                         ,art::Ptr<GenParticle>()           // since this comes from a SimParticle the ptr to a GenParticle should be null
                         ,oldParent.endPosition()           // born where parent stopped
                         ,momPbar                           // momentum created here
-                        ,0.                                // excitation energy has to be 0
-                        ,0                                 // floatLevelBaseIndex is 0
                         ,oldParent.endGlobalTime()         // pbar created at same time as parent interacted
                         ,0.                                // proper time is zero for this new particle
                         ,oldParent.endVolumeIndex()        // starts where parent ends
