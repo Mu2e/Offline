@@ -24,8 +24,6 @@ using namespace CLHEP;
 #include <iostream>
 #include <memory>
 
-using namespace std;
-
 namespace mu2e
 {
   class SeedFilter : public art::EDFilter
@@ -69,7 +67,7 @@ namespace mu2e
     _minD0     (pset.get<double>("minD0",-200.)),
     _maxD0     (pset.get<double>("maxD0", 200.)),
     _minT0     (pset.get<double>("minT0", 0.)),
-    _goods     (pset.get<vector<string> >("seedFitFlag",vector<string>{"SeedOK"})),
+    _goods     (pset.get<std::vector<std::string> >("seedFitFlag",std::vector<std::string>{"SeedOK"})),
     _trigPath  (pset.get<std::string>("triggerPath")),
     _debug     (pset.get<int>   ("debugLevel",0)),
     _nevt(0), _npass(0)
@@ -78,12 +76,13 @@ namespace mu2e
   }
 
   bool SeedFilter::filter(art::Event& evt){
-    unique_ptr<TriggerInfo> triginfo(new TriggerInfo);
+    std::unique_ptr<TriggerInfo> triginfo(new TriggerInfo);
     ++_nevt;
     bool retval(false); // preset to fail
     // find the collection
     auto ksH = evt.getValidHandle<KalSeedCollection>(_ksTag);
     const KalSeedCollection* kscol = ksH.product();
+    size_t trig_ind(0);
     // loop over the collection: if any pass the selection, pass this event
     for(auto iks = kscol->begin(); iks != kscol->end(); ++iks) {
       auto const& ks = *iks;
@@ -94,11 +93,11 @@ namespace mu2e
       unsigned nactive(0);
       for(auto const& ish : ks.hits())
         if(ish.flag().hasAllProperties(StrawHitFlag::active))++nactive;
-      float ndof = max(1.0,nactive - 5.0);
+      float ndof = std::max(1.0,nactive - 5.0);
       // get the first segment
       KalSegment const& fseg = ks.segments().front();
       if(_debug > 2){
-        cout << moduleDescription().moduleLabel() << "status = " << ks.status() << " nactive = " << nactive << " mom = " << fseg.mom() << " chisq/dof = " << ks.chisquared()/ndof << endl;
+        std::cout << moduleDescription().moduleLabel() << "status = " << ks.status() << " nactive = " << nactive << " mom = " << fseg.mom() << " chisq/dof = " << ks.chisquared()/ndof << std::endl;
       }
       if( ks.status().hasAllProperties(_goods) &&
           (!_hascc || ks.caloCluster().isNonnull()) &&
@@ -111,16 +110,18 @@ namespace mu2e
         retval = true;
         ++_npass;
         // Fill the trigger info object
-        triginfo->_triggerBits.merge(TriggerFlag::track);
-        triginfo->_triggerPath = _trigPath;
+        if (trig_ind == 0){
+	  triginfo->_triggerBits.merge(TriggerFlag::track);
+	  triginfo->_triggerPath = _trigPath;
+	}
         // associate to the helix which triggers.  Note there may be other helices which also pass the filter
         // but filtering is by event!
         size_t index = std::distance(kscol->begin(),iks);
-        triginfo->_track = art::Ptr<KalSeed>(ksH,index);
+	triginfo->_tracks.push_back(art::Ptr<KalSeed>(ksH,index));
+	++trig_ind;
         if(_debug > 1){
-          cout << moduleDescription().moduleLabel() << " passed event " << evt.id() << endl;
+          std::cout << moduleDescription().moduleLabel() << " passed event " << evt.id() << std::endl;
         }
-        break;
       }
     }
     evt.put(std::move(triginfo));
@@ -129,7 +130,7 @@ namespace mu2e
 
   bool SeedFilter::endRun( art::Run& run ) {
     if(_debug > 0 && _nevt > 0){
-      cout << moduleDescription().moduleLabel() << " passed " <<  _npass << " events out of " << _nevt << " for a ratio of " << float(_npass)/float(_nevt) << endl;
+      std::cout << moduleDescription().moduleLabel() << " passed " <<  _npass << " events out of " << _nevt << " for a ratio of " << float(_npass)/float(_nevt) << std::endl;
     }
     return true;
   }
