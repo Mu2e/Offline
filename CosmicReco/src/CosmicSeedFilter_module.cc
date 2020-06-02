@@ -18,7 +18,6 @@
 #include <iostream>
 #include <memory>
 
-using namespace std;
 using namespace CLHEP;
 
 namespace mu2e
@@ -64,27 +63,28 @@ namespace mu2e
   }
 
   bool CosmicSeedFilter::filter(art::Event& evt){
-    unique_ptr<TriggerInfo> triginfo(new TriggerInfo);
+    std::unique_ptr<TriggerInfo> triginfo(new TriggerInfo);
     ++_nevt;
     bool   retval(false);
     // find the collection
     auto cosH = evt.getValidHandle<CosmicTrackSeedCollection>(_cosmicTag);
     const CosmicTrackSeedCollection* coscol = cosH.product();
-
+    size_t trig_ind(0);
     for(auto icos = coscol->begin(); icos != coscol->end(); ++icos) {
       auto const& cosmic = *icos;
      
       if( cosmic.status().hasAllProperties(_goodcosmic) && cosmic.trkstrawhits().size() > _minnsh ){
        
-        ++_npass;
-        
-        triginfo->_triggerBits.merge(TriggerFlag::track); 
-        triginfo->_triggerPath = _trigPath;
-    
+        ++_npass;        
+	if (trig_ind == 0){
+	  triginfo->_triggerBits.merge(TriggerFlag::track); 
+	  triginfo->_triggerPath = _trigPath;
+	}
         size_t index = std::distance(coscol->begin(),icos);
-        triginfo->_cosmic = art::Ptr<CosmicTrackSeed>(cosH,index);
+	triginfo->_cosmics.push_back(art::Ptr<CosmicTrackSeed>(cosH,index));
+	++trig_ind;
         if(_debug > 1){
-          cout << moduleDescription().moduleLabel() << " passed event " << evt.id() << endl;
+          std::cout << moduleDescription().moduleLabel() << " passed event " << evt.id() << std::endl;
         }
         break;
       }
@@ -95,7 +95,7 @@ namespace mu2e
 
   bool CosmicSeedFilter::endRun( art::Run& run ) {
     if(_debug > 0 && _nevt > 0){
-      cout << moduleDescription().moduleLabel() << " passed " <<  _npass << " events out of " << _nevt << " for a ratio of " << float(_npass)/float(_nevt) << endl;
+      std::cout << moduleDescription().moduleLabel() << " passed " <<  _npass << " events out of " << _nevt << " for a ratio of " << float(_npass)/float(_nevt) << std::endl;
     }
     return true;
   }
