@@ -35,9 +35,24 @@ SimpleTimeCluster : {
 	module_type : SimpleTimeCluster
 	ComboHitCollection : "makePH"
 	StrawHitFlagCollection : "FlagBkgHits:ComboHits"
-	T0Calculator : { CaloT0Offset : @local::TrackCaloMatching.DtOffset }
 	TestFlag : false
 }
+
+LineFinder : {
+        module_type : LineFinder
+        ComboHitCollection : "makePH"
+        TimeClusterCollection : "SimpleTimeCluster"
+}
+
+CosmicDriftFit : {
+        module_type : CosmicDriftFit
+        ComboHitCollection : "makeSH"
+        LineSeedCollection : "LineFinder"
+}
+
+
+
+
 
 CHD : {
 	module_type : ComboHitDiag
@@ -52,7 +67,7 @@ CosmicTrackFinder : { #split into Loose and tight below for efficieny studies
 	module_type		: CosmicTrackFinder
 	ComboHitCollection     : "makePH"
 	TimeClusterCollection  : "SimpleTimeCluster"
-	StrawDigiMCCollection : "compressDigiMCs"
+        UseLineFinder : false
    
 }
 
@@ -61,8 +76,9 @@ CosmicTrackFinderLoose : {
 	ComboHitCollection     : "makePH"
 	TimeClusterCollection  : "SimpleTimeCluster"
 	# TimeClusterCollection  : "TimeClusterFinderCosmics"
-	StrawDigiMCCollection : "compressDigiMCs"
 	DoDrift : true
+        UseTime : false
+        UseLineFinder : false
 	CosmicTrackFit :{
 		minNComboHits : 4
 		MaxSeedChi2DOF : 10
@@ -80,8 +96,9 @@ CosmicTrackFinderTight : {
 	module_type		: CosmicTrackFinder
 	ComboHitCollection     : "makePH"
 	TimeClusterCollection  : "SimpleTimeCluster"
-	StrawDigiMCCollection : "compressDigiMCs"
 	DoDrift : true
+        UseTime : false
+        UseLineFinder : false
 	CosmicTrackFit :{
 		minNComboHits : 8
 		MaxSeedChi2DOF : 2.5
@@ -93,6 +110,21 @@ CosmicTrackFinderTight : {
 		MaxTimeResidual : 40
 	}
 }
+
+CosmicTrackFinderTimeFit : {
+	module_type		: CosmicTrackFinder
+	ComboHitCollection     : "makePH"
+	TimeClusterCollection  : "SimpleTimeCluster"
+	DoDrift : true
+        UseTime : true
+        UseLineFinder : true
+        UseChiFit : false
+        minNStrawHits : 4
+        minNComboHits : 0
+        debugLevel : 0
+}
+
+
 
  CosmicTrackDetails : {
 	module_type : CosmicTrackDetails
@@ -128,11 +160,10 @@ CosmicFitDisplay : {
 
 CosmicTrackDiag : {
 	module_type : CosmicTrackDiag
-	ComboHitCollection : "makePH"
+	StrawHitCollection : "makeSH"
 	TimeClusterCollection : SimpleTimeCluster
-	CosmicTrackSeedCollection : CosmicTrackFinder
 	StrawDigiMCCollection : "compressDigiMCs"
-	TimeOffsets : {inputs : [ @sequence::DigiCompression.NoCosmicTimeMaps ]}
+        CosmicTrackSeedCollection : "CosmicTrackFinder"
   }
 
 CosmicMuonInfo : {
@@ -159,6 +190,9 @@ CosmicTracking : {
 		CosmicTrackFinder  : @local::CosmicTrackFinder
 		CosmicTrackFinderLoose  : @local::CosmicTrackFinderLoose
 		CosmicTrackFinderTight  : @local::CosmicTrackFinderTight
+		CosmicTrackFinderTimeFit  : @local::CosmicTrackFinderTimeFit
+                LineFinder : @local::LineFinder
+                CosmicDriftFit : @local::CosmicDriftFit
 	}
 	analyzers : {
 

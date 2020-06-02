@@ -3,6 +3,7 @@
 
 #include "RecoDataProducts/inc/ComboHit.hh"
 #include "RecoDataProducts/inc/CosmicTrack.hh"
+#include "RecoDataProducts/inc/CosmicTrackSeed.hh"
 #include "DataProducts/inc/XYZVec.hh"
 
 //Tracker Details:
@@ -64,6 +65,30 @@ using namespace mu2e;
 		double *pdf;
 		int k;
 		double operator() (const std::vector<double> &x) const;
+};
+
+class GaussianDriftFit : public ROOT::Minuit2::FCNBase {
+  public:
+    ComboHitCollection shs;
+    StrawResponse const& srep;
+    const Tracker* tracker;
+
+    GaussianDriftFit(ComboHitCollection _shs, StrawResponse const& _srep, const Tracker* _tracker) : shs(_shs), srep(_srep), tracker(_tracker){}; 
+
+    double Up() const { return 1.0;}; // this tells Minuit to scale variances as if operator() returns a chi2 instead of a log likelihood
+    double operator() (const std::vector<double> &x) const;
+
+    double DOCAresidual(ComboHit const& sh, CosmicTrackSeed const& tseed) const {
+      std::vector<double> x = {tseed._track.MinuitParams.A0,tseed._track.MinuitParams.B0,tseed._track.MinuitParams.A1,tseed._track.MinuitParams.B1,tseed._track.MinuitParams.T0};
+      return DOCAresidual(sh, x);
+    }
+    double DOCAresidualError(ComboHit const& sh, CosmicTrackSeed const& tseed) const {
+      std::vector<double> x = {tseed._track.MinuitParams.A0,tseed._track.MinuitParams.B0,tseed._track.MinuitParams.A1,tseed._track.MinuitParams.B1,tseed._track.MinuitParams.T0};
+      return DOCAresidualError(sh, x, tseed._track.MinuitParams.cov);
+    }
+
+    double DOCAresidual(ComboHit const& sh, const std::vector<double> &x) const;
+    double DOCAresidualError(ComboHit const& sh, const std::vector<double> &x, const std::vector<double> &cov) const;
 };
 
 #endif

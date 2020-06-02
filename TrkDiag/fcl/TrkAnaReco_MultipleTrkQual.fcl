@@ -1,0 +1,40 @@
+#include "fcl/minimalMessageService.fcl"
+#include "fcl/standardProducers.fcl"
+#include "fcl/standardServices.fcl"
+#include "TrkDiag/fcl/prolog.fcl"
+
+process_name : TrkAnaReco
+
+source : { module_type : RootInput }
+
+services : @local::Services.Reco
+
+physics :
+{
+  producers : { @table::TrkAnaReco.producers }
+  analyzers : { @table::TrkAnaReco.analyzers }
+}
+
+# Add another TrkQual module with a different training
+# (NB to be read out by TrkAna it must have the same suffix)
+physics.producers.TrkQualNewDeP : @local::TrkQualDeP
+physics.producers.TrkQualNewDeP.TrainingName : "TrkQualPosNew"
+
+physics.TrkAnaTrigPath : [ @sequence::TrkAnaReco.TrigSequence, TrkQualNewDeP ]
+physics.TrkAnaEndPath : [ @sequence::TrkAnaReco.EndSequence ]
+
+# Include more information (MC, full TrkQual and TrkPID branches)
+physics.analyzers.TrkAnaNeg.candidate.options : @local::AllOpt
+physics.analyzers.TrkAnaPos.candidate.options : @local::AllOpt
+
+# for hit level diagnostics, set diagLevel to 2
+physics.analyzers.TrkAnaNeg.diagLevel : 1
+physics.analyzers.TrkAnaNeg.FillMCInfo : true
+physics.analyzers.TrkAnaNeg.AnalyzeCRV : true
+physics.analyzers.TrkAnaNeg.FillTriggerInfo : true
+physics.analyzers.TrkAnaPos.diagLevel : 1
+physics.analyzers.TrkAnaPos.FillMCInfo : true
+physics.analyzers.TrkAnaPos.AnalyzeCRV : true
+physics.analyzers.TrkAnaPos.FillTriggerInfo : true
+
+services.TFileService.fileName: "nts.owner.trkana-reco.version.sequencer.root"

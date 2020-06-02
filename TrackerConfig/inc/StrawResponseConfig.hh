@@ -33,6 +33,14 @@ namespace mu2e {
       Name("useDriftErrorCalibration"), Comment(" useDriftErrorCalibration ")};
     fhicl::Sequence<double> driftErrorParameters {
       Name("driftErrorParameters"), Comment(" driftErrorParameters ")};
+    fhicl::Atom<bool>  useParameterizedDriftErrors {
+      Name("useParameterizedDriftErrors"), Comment(" use errors calculated from formula instead of numbers from fcl ")};
+    fhicl::Atom<int> parameterizedDriftBins {
+      Name("parameterizedDriftBins"), Comment(" number of bins for calculating error and drift offset ")};
+    fhicl::Atom<double> parameterizedDriftSigma {
+      Name("parameterizedDriftSigma"), Comment(" sigma for calculating drift error and offset ")};
+    fhicl::Atom<double> parameterizedDriftTau {
+      Name("parameterizedDriftTau"), Comment(" tau for calculating drift error and offset ")};
 
     fhicl::Atom<double> wireLengthBuffer {
       Name("wireLengthBuffer"), Comment(" wireLengthBuffer ")};

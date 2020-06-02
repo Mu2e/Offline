@@ -31,6 +31,7 @@
 #include "TrackerConfig/inc/Mu2eMaterialConfig.hh"
 #include "TrackerConfig/inc/Mu2eDetectorConfig.hh"
 
+#include "AnalysisConfig/inc/MVACatalogConfig.hh"
 
 namespace mu2e {
 
@@ -70,7 +71,9 @@ namespace mu2e {
       fhicl::Table<Mu2eDetectorConfig> mu2eDetector{
 	  Name("mu2eDetector"), 
 	  Comment("Mu2e detector model for BTrk") };
-
+      fhicl::Table<MVACatalogConfig> trkQualCatalog{
+	  Name("trkQualCatalog"), 
+	  Comment("Catalog of TrkQual trainings") };
     };
 
     // this line is required by art to allow the command line help print
