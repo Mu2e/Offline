@@ -29,9 +29,10 @@
 
 #include "MCDataProducts/inc/StrawDigiMCCollection.hh"
 #include "MCDataProducts/inc/CrvDigiMCCollection.hh"
-#include "MCDataProducts/inc/CaloShowerStepCollection.hh"
-#include "MCDataProducts/inc/CaloShowerSimCollection.hh"
-#include "MCDataProducts/inc/CaloShowerStepROCollection.hh"
+#include "MCDataProducts/inc/CaloShowerStep.hh"
+#include "MCDataProducts/inc/CaloShowerSim.hh"
+#include "MCDataProducts/inc/CaloShowerStepRO.hh"
+#include "MCDataProducts/inc/CaloClusterMC.hh"
 
 #include "MCDataProducts/inc/StepPointMCCollection.hh"
 #include "MCDataProducts/inc/StrawGasStep.hh"
@@ -41,7 +42,6 @@
 #include "MCDataProducts/inc/SimParticleTimeMap.hh"
 #include "MCDataProducts/inc/SimParticleRemapping.hh"
 #include "DataProducts/inc/IndexMap.hh"
-#include "MCDataProducts/inc/CaloClusterMC.hh"
 #include "MCDataProducts/inc/CrvCoincidenceClusterMCCollection.hh"
 #include "MCDataProducts/inc/PrimaryParticle.hh"
 #include "MCDataProducts/inc/MCTrajectoryCollection.hh"
@@ -573,9 +573,8 @@ void mu2e::CompressDigiMCs::produce(art::Event & event)
   }
   else if (_caloClusterMCTag != "") {
     for (auto& i_caloClusterMC : *_newCaloClusterMCs) {
-      for (auto& i_caloMCEDep : i_caloClusterMC._edeps) {
-        art::Ptr<SimParticle> newSimPtr = remap.at(i_caloMCEDep.sim());
-        i_caloMCEDep._simp = newSimPtr;
+      for (auto& i_caloMCEDep : i_caloClusterMC.energyDeposits()) {
+        i_caloMCEDep.resetSim(remap.at(i_caloMCEDep.sim()));
       }
     }
   }
@@ -765,8 +764,8 @@ void mu2e::CompressDigiMCs::copyCaloShowerStepRO(const mu2e::CaloShowerStepRO& o
 
 void mu2e::CompressDigiMCs::copyCaloClusterMC(const mu2e::CaloClusterMC& old_calo_cluster_mc) {
 
-  for (const auto& i_caloMCEDep : old_calo_cluster_mc.energyDeposits()) {
-    keepSimParticle(i_caloMCEDep.sim());
+  for (const auto& i_caloEDepMC : old_calo_cluster_mc.energyDeposits()) {
+    keepSimParticle(i_caloEDepMC.sim());
   }
   CaloClusterMC new_calo_cluster_mc(old_calo_cluster_mc);
   _newCaloClusterMCs->push_back(new_calo_cluster_mc);

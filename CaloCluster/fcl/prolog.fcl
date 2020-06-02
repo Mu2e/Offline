@@ -57,48 +57,50 @@ CaloProtoClusterFromCrystalHit :
 {
   module_type            : CaloProtoClusterFromCrystalHit
   caloCrystalModuleLabel : CaloCrystalHitFromHit
-  mainClusterCollName    : mainCluster
-  splitClusterCollName   : splitCluster
-  minClusterEnergy	 : 0
+  mainTag                : mainCluster
+  splitTag               : splitCluster
   EminSeed               : 10
   ExpandCut              : 1.0
   EnoiseCut              : 1.0
   timeCut                : 500
   deltaTime              : 2
-  diagLevel              : 0
+  diagLevel              : 2
 }  
 
-
+  
 
 CaloClusterFromProtoCluster :
 {
   module_type            : CaloClusterFromProtoCluster
   caloClusterModuleLabel : CaloProtoClusterFromCrystalHit
-  mainClusterCollName    : mainCluster
-  splitClusterCollName   : splitCluster
+  mainTag                : mainCluster
+  splitTag               : splitCluster
   deltaTime              : 2
   maxDistSplit           : 150
   maxDistMain            : 150
   cogTypeName            : Linear
-  diagLevel              : 0
+  strategy               : 0
+  diagLevel              : 2
 }  
 
 CaloClusterTruthMatch:
 {
-    module_type               : CaloClusterTruthMatch
-    caloClusterCollection     : CaloClusterFromProtoCluster
-    caloDigiMCTruthAssn       : CaloHitTruthMatch
-    diagLevel                 : 0
+    module_type           : CaloClusterTruthMatch
+    caloClusterCollection : CaloClusterFromProtoCluster
+    caloDigiMCTruthAssn   : CaloHitTruthMatch
+    diagLevel             : 3
 }
+
+
 
 CaloCluster : 
 {
    producers : {
-     CaloProtoClusterFromCrystalHit  : @local::CaloProtoClusterFromCrystalHit
-     CaloClusterFromProtoCluster : @local::CaloClusterFromProtoCluster
+      CaloProtoClusterFromCrystalHit  : @local::CaloProtoClusterFromCrystalHit
+      CaloClusterFromProtoCluster     : @local::CaloClusterFromProtoCluster
    }
    producersMC : {
-     CaloClusterTruthMatch : @local::CaloClusterTruthMatch
+      CaloClusterTruthMatch : @local::CaloClusterTruthMatch
    }
    Reco       : [ CaloProtoClusterFromCrystalHit, CaloClusterFromProtoCluster ]
    TruthMatch : [ CaloClusterTruthMatch ]

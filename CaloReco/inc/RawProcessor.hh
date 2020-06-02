@@ -22,28 +22,27 @@ namespace mu2e {
            using Comment = fhicl::Comment;        
            fhicl::Atom<int>    windowPeak{       Name("windowPeak"),       Comment("Number of bins around central vlue to inspect")};
            fhicl::Atom<double> minPeakAmplitude{ Name("minPeakAmplitude"), Comment("Minimum peak amplitude")};
-           fhicl::Atom<double> shiftTime{        Name("shiftTime"),        Comment("Time bwtween beginning and maximum value of pusle")};
+           fhicl::Atom<double> shiftTime{        Name("shiftTime"),        Comment("Time between beginning and maximum value of pusle")};
            fhicl::Atom<double> scaleFactor{      Name("scaleFactor"),      Comment("Factor to convert bin height to signal amplitude")};
            fhicl::Atom<int>    diagLevel{        Name("diagLevel"),        Comment("Diagnosis level")};
         };
 
 
-                    RawProcessor(const Config& config);
-        virtual    ~RawProcessor() {};	
+        RawProcessor(const Config& config);
 
-        virtual void   initialize();
-	virtual void   reset();
-        virtual void   extract(const std::vector<double> &xInput, const std::vector<double> &yInput);
-        virtual void   plot(std::string pname);
+        virtual void   initialize() override;
+	virtual void   reset() override;
+        virtual void   extract(const std::vector<double> &xInput, const std::vector<double> &yInput) override;
+        virtual void   plot(std::string pname) const override;
 
-        virtual int    nPeaks()                     const {return nPeaks_;}
-        virtual double chi2()                       const {return chi2_;}
-        virtual int    ndf()                        const {return ndf_;}
-        virtual double amplitude(unsigned int i)    const {return resAmp_.at(i);}
-        virtual double amplitudeErr(unsigned int i) const {return resAmpErr_.at(i);}
-        virtual double time(unsigned int i)         const {return resTime_.at(i);}
-        virtual double timeErr(unsigned int i)      const {return resTimeErr_.at(i);}  
-        virtual bool   isPileUp(unsigned int i)     const {return nPeaks_ > 1;}
+        virtual int    nPeaks()                     const override {return nPeaks_;}
+        virtual double chi2()                       const override {return chi2_;}
+        virtual int    ndf()                        const override {return ndf_;}
+        virtual double amplitude(unsigned int i)    const override {return resAmp_.at(i);}
+        virtual double amplitudeErr(unsigned int i) const override {return resAmpErr_.at(i);}
+        virtual double time(unsigned int i)         const override {return resTime_.at(i);}
+        virtual double timeErr(unsigned int i)      const override {return resTimeErr_.at(i);}  
+        virtual bool   isPileUp(unsigned int i)     const override {return nPeaks_ > 1;}
 	
     private:
        

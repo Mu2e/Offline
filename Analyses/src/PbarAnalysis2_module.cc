@@ -53,7 +53,6 @@
 #include "MCDataProducts/inc/CaloMCTruthAssns.hh"
 
 
-#include "Mu2eUtilities/inc/CaloHitMCNavigator.hh"
 #include "Mu2eUtilities/inc/SimParticleTimeOffset.hh"
 #include "RecoDataProducts/inc/TrkCaloMatchCollection.hh"
 // data
@@ -479,9 +478,9 @@ namespace mu2e {
       const CaloDigiMCTruthAssn& caloDigiTruth(*caloDigiTruthHandle);
 
        //Calo cluster truth assignment
-      art::Handle<CaloClusterNewMCTruthAssn> caloClusterTruthHandle;
+      art::Handle<CaloClusterMCTruthAssn> caloClusterTruthHandle;
       event.getByLabel(_caloClusterTruthModuleLabel, caloClusterTruthHandle);
-      const CaloClusterNewMCTruthAssn& caloClusterTruth(*caloClusterTruthHandle);
+      const CaloClusterMCTruthAssn& caloClusterTruth(*caloClusterTruthHandle);
 
      // Get tracks
       art::Handle<KalRepPtrCollection> trksHandle;
@@ -726,7 +725,7 @@ namespace mu2e {
                _motmom[_nSim]     = eDepMC.momentumIn();
                _motcrCode[_nSim]  = eDepMC.sim()->creationCode();
        	       _motTime[_nSim]    = eDepMC.time();
-               _motEdep[_nSim]    = eDepMC.eDep();
+               _motEdep[_nSim]    = eDepMC.energyDep();
 
 	       _motStartX[_nSim]  = parent->startPosition().x();
 	       _motStartY[_nSim]  = parent->startPosition().y();
@@ -877,7 +876,7 @@ namespace mu2e {
 	       _clusimGenPdg[_nCluSim] = genPdg;
                _clusimCrCode[_nCluSim] = sim->creationCode();
                _clusimTime[_nCluSim]   = eDepMC.time();
-               _clusimEdep[_nCluSim]   = eDepMC.eDep();
+               _clusimEdep[_nCluSim]   = eDepMC.energyDep();
                _clusimMom[_nCluSim]    = eDepMC.momentumIn();
                _clusimMom2[_nCluSim]   = simMom;
                _clusimPosX[_nCluSim]   = simPos.x(); // in disk FF frame

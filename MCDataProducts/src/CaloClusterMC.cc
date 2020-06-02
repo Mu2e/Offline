@@ -1,9 +1,9 @@
-#include "MCDataProducts/inc/CaloClusterNewMC.hh"
+#include "MCDataProducts/inc/CaloClusterMC.hh"
 #include <numeric>
 
 namespace mu2e {
 
-   bool CaloClusterNewMC::isConversion() const 
+   bool CaloClusterMC::isConversion() const 
    {
       for (auto& edep : edeps_)
       {
@@ -15,7 +15,7 @@ namespace mu2e {
    }
 
 
-   bool CaloClusterNewMC::isOnlyConversion() const 
+   bool CaloClusterMC::isOnlyConversion() const 
    {
       for (auto& edep : edeps_)
       {
@@ -27,16 +27,16 @@ namespace mu2e {
    }
 
 
-   float CaloClusterNewMC::totalEnergyDep() const 
+   float CaloClusterMC::totalEnergyDep() const 
    {
-      auto sumEdep = [](float sum, const CaloEDepMC& edep){return sum +=edep.eDep();};
+      auto sumEdep = [](float sum, const CaloEDepMC& edep){return sum +=edep.energyDep();};
       return std::accumulate(edeps_.begin(),edeps_.end(),0.0f,sumEdep);
    }
 
 
-   float CaloClusterNewMC::totalEnergyDepG4() const 
+   float CaloClusterMC::totalEnergyDepG4() const 
    {
-      auto sumEdepG4 = [](float sum, const CaloEDepMC& edep){return sum +=edep.eDepG4();};
+      auto sumEdepG4 = [](float sum, const CaloEDepMC& edep){return sum +=edep.energyDepG4();};
       return std::accumulate(edeps_.begin(),edeps_.end(),0.0f,sumEdepG4);
    }
 

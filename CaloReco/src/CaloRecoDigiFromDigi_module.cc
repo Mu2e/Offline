@@ -9,17 +9,15 @@
 
 #include "ConditionsService/inc/ConditionsHandle.hh"
 #include "ConditionsService/inc/CalorimeterCalibrations.hh"
-#include "RecoDataProducts/inc/CaloDigi.hh"
 #include "RecoDataProducts/inc/CaloDigiCollection.hh"
-#include "RecoDataProducts/inc/CaloRecoDigi.hh"
 #include "RecoDataProducts/inc/CaloRecoDigiCollection.hh"
 #include "CaloReco/inc/WaveformProcessor.hh"
-#include "CaloReco/inc/LogNormalProcessor.hh"
-#include "CaloReco/inc/FixedFastProcessor.hh"
+#include "CaloReco/inc/TemplateProcessor.hh"
 #include "CaloReco/inc/RawProcessor.hh"
 
 #include <iostream>
 #include <string>
+#include <sstream>
 
 
 namespace mu2e {
@@ -27,21 +25,20 @@ namespace mu2e {
   class CaloRecoDigiFromDigi : public art::EDProducer 
   {
      public:
-        enum processorStrategy {NoChoice, RawExtract, LogNormalFit, FixedFast};
+        enum processorStrategy {NoChoice, RawExtract, Template};
 
         struct Config 
         {
            using Name    = fhicl::Name;
            using Comment = fhicl::Comment;        
-
-           fhicl::Table<mu2e::RawProcessor::Config>       proc_raw_conf  { Name("RawProcessor"),        Comment("Raw processor config") };
-           fhicl::Table<mu2e::LogNormalProcessor::Config> proc_log_conf  { Name("LogNormalProcessor"),  Comment("Fixed fast processor config") };
-           fhicl::Table<mu2e::FixedFastProcessor::Config> proc_fixed_conf{ Name("FixedFastProcessor"),  Comment("Log normal fit processor config") };                    
-           fhicl::Atom<std::string> caloDigiModuleLabel                  { Name("caloDigiModuleLabel"), Comment("Calo Digi module label") };
-           fhicl::Atom<std::string> processorStrategy                    { Name("processorStrategy"),   Comment("Digi reco processor name") };
-           fhicl::Atom<double>      digiSampling                         { Name("digiSampling"),        Comment("Calo ADC sampling time (ns)") };
-           fhicl::Atom<double>      maxChi2Cut                           { Name("maxChi2Cut"),          Comment("Chi2 cut for keeping reco digi") };
-           fhicl::Atom<int>         diagLevel                            { Name("diagLevel"),           Comment("Diagnosis level") };
+           fhicl::Table<mu2e::RawProcessor::Config>      proc_raw_conf       { Name("RawProcessor"),        Comment("Raw processor config") };
+           fhicl::Table<mu2e::TemplateProcessor::Config> proc_templ_conf     { Name("TemplateProcessor"),   Comment("Log normal fit processor config") };                    
+           fhicl::Atom<std::string>                      caloDigiModuleLabel { Name("caloDigiModuleLabel"), Comment("Calo Digi module label") };
+           fhicl::Atom<std::string>                      processorStrategy   { Name("processorStrategy"),   Comment("Digi reco processor name") };
+           fhicl::Atom<double>                           digiSampling        { Name("digiSampling"),        Comment("Calo ADC sampling time (ns)") };
+           fhicl::Atom<double>                           maxChi2Cut          { Name("maxChi2Cut"),          Comment("Chi2 cut for keeping reco digi") };
+           fhicl::Atom<int>                              maxPlots            { Name("maxPlots"),            Comment("Maximum number of waveform plots") };
+           fhicl::Atom<int>                              diagLevel           { Name("diagLevel"),           Comment("Diagnosis level") };
         };
 
         explicit CaloRecoDigiFromDigi(const art::EDProducer::Table<Config>& config) :
@@ -50,15 +47,15 @@ namespace mu2e {
            processorStrategy_ (config().processorStrategy()),
            digiSampling_      (config().digiSampling()),
            maxChi2Cut_        (config().maxChi2Cut()),
+           maxPlots_          (config().maxPlots()),
            diagLevel_         (config().diagLevel())
         {
             produces<CaloRecoDigiCollection>();
 
             std::map<std::string, processorStrategy> spmap;
-            spmap["RawExtract"]   = RawExtract;
-            spmap["LogNormalFit"] = LogNormalFit;
-            spmap["FixedFast"]    = FixedFast;
-
+            spmap["RawExtract"]  = RawExtract;
+            spmap["TemplateFit"] = Template;
+            
             switch (spmap[processorStrategy_])
             {
                 case RawExtract:
@@ -66,14 +63,9 @@ namespace mu2e {
                     waveformProcessor_ = std::make_unique<RawProcessor>(config().proc_raw_conf());
                     break;
                 }
-                case LogNormalFit:
+                case Template:
                 {
-                    waveformProcessor_ = std::make_unique<LogNormalProcessor>(config().proc_log_conf());
-                    break;
-                }
-                case FixedFast:
-                {
-                    waveformProcessor_ = std::make_unique<FixedFastProcessor>(config().proc_fixed_conf());
+                    waveformProcessor_ = std::make_unique<TemplateProcessor>(config().proc_templ_conf());
                     break;
                 }
                 default:
@@ -87,16 +79,15 @@ namespace mu2e {
         void produce(art::Event& e) override;
 
      private:
-        void extractRecoDigi(const art::ValidHandle<CaloDigiCollection>& caloDigis, CaloRecoDigiCollection& recoCaloHits);
-
+        void extractRecoDigi(const art::ValidHandle<CaloDigiCollection>&, CaloRecoDigiCollection&);
 
         const  art::ProductToken<CaloDigiCollection> caloDigisToken_;
-        const  std::string processorStrategy_;
-        double digiSampling_;
-        double maxChi2Cut_;
-        int    diagLevel_;
-
-        std::unique_ptr<WaveformProcessor> waveformProcessor_;
+        const  std::string                           processorStrategy_;
+        double                                       digiSampling_;
+        double                                       maxChi2Cut_;
+        int                                          maxPlots_;
+        int                                          diagLevel_;
+        std::unique_ptr<WaveformProcessor>           waveformProcessor_;
   };
 
 
@@ -113,24 +104,25 @@ namespace mu2e {
       event.put(std::move(recoCaloDigiColl));
 
       if (diagLevel_ > 0) std::cout<<"[CaloRecoDigiFromDigi::produce] end"<<std::endl;
-      return;
   }
 
 
-  //-----------------------------------------------------------------------------
+  //--------------------------------------------------
   void CaloRecoDigiFromDigi::beginRun(art::Run& aRun)
   {
       waveformProcessor_->initialize();
   }
 
 
-  //--------------------------------------------------------------------------------------
+  //------------------------------------------------------------------------------------------------------------
   void CaloRecoDigiFromDigi::extractRecoDigi(const art::ValidHandle<CaloDigiCollection>& caloDigisHandle,
                                              CaloRecoDigiCollection &recoCaloHits)
   {
       const auto& caloDigis = *caloDigisHandle;
       ConditionsHandle<CalorimeterCalibrations> calorimeterCalibrations("ignored");
 
+      int nPlots(0);
+      double totEnergyReco(0);
       std::vector<double> x,y;
       for (const auto& caloDigi : caloDigis)
       {
@@ -149,7 +141,7 @@ namespace mu2e {
               y.push_back(waveform.at(i));
           }
 
-          if (diagLevel_ > 3)
+          if (diagLevel_ > 2)
           {
               std::cout<<"[CaloRecoDigiFromDigi::extractRecoDigi] extract amplitude from this set of hits for RoId="<<roId<<" a time "<<t0<<std::endl;
               for (const auto& val : waveform) {std::cout<< val<<" ";} std::cout<<std::endl;
@@ -168,15 +160,26 @@ namespace mu2e {
               double chi2      = waveformProcessor_->chi2();
               int    ndf       = waveformProcessor_->ndf();
 
-              if (diagLevel_ > 1) std::cout<<"[CaloRecoDigiFromDigi::extractAmplitude] extract "<<roId<<"   i="<<i<<"  eDep="<<eDep
-                                           <<" time="<<time<<"  chi2="<<chi2<<std::endl;
+              if (diagLevel_ > 1)
+              {
+                 std::cout<<"[CaloRecoDigiFromDigi::extractAmplitude] extract "<<roId<<"   i="<<i<<"  eDep="<<eDep
+                          <<" time="<<time<<"  chi2="<<chi2<<std::endl;
+                 std::stringstream ss;
+                 ss<<"wffit_"; ss<<nPlots;ss<<".pdf";
+                 if (nPlots<maxPlots_) waveformProcessor_->plot(ss.str());
+                 ++nPlots;
+              }
 
+              
               if (chi2/ndf > maxChi2Cut_) continue;
-              recoCaloHits.emplace_back(CaloRecoDigi(roId, caloDigiPtr, eDep, eDepErr, time, timeErr, chi2, ndf, isPileUp));
+              
+              if (roId%2==0) totEnergyReco += eDep;
+              recoCaloHits.emplace_back(CaloRecoDigi(caloDigiPtr, eDep, eDepErr, time, timeErr, chi2, ndf, isPileUp));
           }
       }     
-  }
 
+      if (diagLevel_ > 1) std::cout<<"[CaloRecoDigiFromDigi] Total energy reco "<<totEnergyReco <<std::endl;
+  }
 
 
 }
