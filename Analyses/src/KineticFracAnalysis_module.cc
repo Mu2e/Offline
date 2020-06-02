@@ -36,7 +36,6 @@
 #include "BTrk/ProbTools/ChisqConsistency.hh"
 
 #include "MCDataProducts/inc/CaloMCTruthAssns.hh"
-#include "MCDataProducts/inc/CaloHitMCTruthCollection.hh"
 #include "MCDataProducts/inc/GenParticleCollection.hh"
 #include "MCDataProducts/inc/SimParticleCollection.hh"
 #include "MCDataProducts/inc/StepPointMCCollection.hh"
@@ -143,7 +142,6 @@ namespace mu2e {
     art::InputTag _simParticleTag;
     std::string _caloReadoutModuleLabel;
     std::string _caloCrystalModuleLabel;
-    std::string _caloHitMCCrystalPtrLabel;
     std::string _caloClusterModuleLabel;
     std::string _caloDigiTruthModuleLabel;
     std::string _caloClusterTruthModuleLabel;
@@ -380,7 +378,6 @@ namespace mu2e {
     _simParticleTag(pset.get<string>("simParticleTag")),
     _caloReadoutModuleLabel(pset.get<string>("caloReadoutModuleLabel")),
     _caloCrystalModuleLabel(pset.get<string>("caloCrystalModuleLabel")),
-    _caloHitMCCrystalPtrLabel(pset.get<string>("calorimeterHitMCCrystalPtr")),
     _caloClusterModuleLabel(pset.get<std::string>("caloClusterModuleLabel")),
     _caloDigiTruthModuleLabel(pset.get<std::string>("caloHitTruthModuleLabel")),
     _caloClusterTruthModuleLabel(pset.get<std::string>("caloClusterTruthModuleLabel")),
@@ -762,9 +759,9 @@ namespace mu2e {
     const CaloDigiMCTruthAssn& caloDigiTruth(*caloDigiTruthHandle);
 
      //Calo cluster truth assignment
-    art::Handle<CaloClusterNewMCTruthAssn> caloClusterTruthHandle;
+    art::Handle<CaloClusterMCTruthAssn> caloClusterTruthHandle;
     event.getByLabel(_caloClusterTruthModuleLabel, caloClusterTruthHandle);
-    const CaloClusterNewMCTruthAssn& caloClusterTruth(*caloClusterTruthHandle);
+    const CaloClusterMCTruthAssn& caloClusterTruth(*caloClusterTruthHandle);
 
 
     //Get virtual detector hits
@@ -836,7 +833,7 @@ namespace mu2e {
             _motmom[_nSim]     = eDepMC.momentumIn();
             _motcrCode[_nSim]  = eDepMC.sim()->creationCode();
        	    _motTime[_nSim]    = eDepMC.time();
-            _motEdep[_nSim]    = eDepMC.eDep();	       
+            _motEdep[_nSim]    = eDepMC.energyDep();	       
             ++_nSim;
          }
         ++_nHits;
@@ -882,7 +879,7 @@ namespace mu2e {
             _clusimPdgId[_nCluSim]  = sim->pdgId();
             _clusimGenIdx[_nCluSim] = genIdx;
             _clusimTime[_nCluSim]   = eDepMC.time();
-            _clusimEdep[_nCluSim]   = eDepMC.eDep();
+            _clusimEdep[_nCluSim]   = eDepMC.energyDep();
             _clusimMom[_nCluSim]    = eDepMC.momentumIn();
             ++_nCluSim;
          }

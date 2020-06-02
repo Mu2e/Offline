@@ -22,7 +22,7 @@
 
 #include <memory>
 
-#include "MCDataProducts/inc/CaloShowerStepCollection.hh"
+#include "MCDataProducts/inc/CaloShowerStep.hh"
 #include "GeometryService/inc/GeomHandle.hh"
 #include "CalorimeterGeom/inc/Calorimeter.hh"
 

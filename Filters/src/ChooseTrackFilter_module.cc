@@ -22,16 +22,12 @@
 #include "BTrk/KalmanTrack/KalRep.hh"
 #include "BTrk/TrkBase/HelixTraj.hh"
 
-#include "MCDataProducts/inc/CaloHitMCTruthCollection.hh"
 #include "MCDataProducts/inc/GenParticleCollection.hh"
 #include "MCDataProducts/inc/SimParticleCollection.hh"
 #include "MCDataProducts/inc/StepPointMCCollection.hh"
 #include "MCDataProducts/inc/PtrStepPointMCVectorCollection.hh"
 #include "MCDataProducts/inc/GenId.hh"
-#include "MCDataProducts/inc/CaloHitSimPartMCCollection.hh"
 #include "DataProducts/inc/VirtualDetectorId.hh"
-
-#include "Mu2eUtilities/inc/CaloHitMCNavigator.hh"
 
 #include "RecoDataProducts/inc/CaloCrystalHitCollection.hh"
 #include "RecoDataProducts/inc/CaloHitCollection.hh"
