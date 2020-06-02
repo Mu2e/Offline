@@ -15,10 +15,10 @@
 #include "GeometryService/inc/GeometryService.hh"
 
 #include "MCDataProducts/inc/SimParticleCollection.hh"
-#include "MCDataProducts/inc/CaloShowerSimCollection.hh"
+#include "MCDataProducts/inc/CaloShowerSim.hh"
 #include "RecoDataProducts/inc/CaloCrystalHitCollection.hh"
 #include "RecoDataProducts/inc/CaloRecoDigiCollection.hh"
-#include "MCDataProducts/inc/CaloHitMCTruthAssn.hh"
+#include "MCDataProducts/inc/CaloMCTruthAssns.hh"
 //#include "RecoDataProducts/inc/CaloRecoDigi.hh"
 //#include "MCDataProducts/inc/CaloShower.hh"
 
@@ -134,9 +134,9 @@ namespace mu2e {
        const CaloCrystalHitCollection& CaloCrystalHits(*CaloCrystalHitHandle);
 
 
-       art::Handle<CaloHitMCTruthAssns> caloHitTruthHandle;
+       art::Handle<CaloShowerMCTruthAssn> caloHitTruthHandle;
        event.getByLabel(_caloHitTruthModuleLabel, caloHitTruthHandle);
-       const CaloHitMCTruthAssns& caloHitTruth(*caloHitTruthHandle);
+       const CaloShowerMCTruthAssn& caloHitTruth(*caloHitTruthHandle);
 
 
 

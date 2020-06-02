@@ -97,7 +97,7 @@ namespace mu2e {
 
    
    //---------------------------------------
-   void RawProcessor::plot(std::string pname)
+   void RawProcessor::plot(std::string pname) const
    {
       TH1F h("test","Amplitude vs time",xvec_.size(),xvec_.front()-2.5,xvec_.back()+2.5);
       h.GetXaxis()->SetTitle("Time (ns)");

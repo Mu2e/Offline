@@ -38,7 +38,7 @@ double ROphotostatistic = 30.0;//p.e / MeV
 
 //conversion factor from ADC counts to MeV
 //double ADC2MeVConversionFactor =  1.6e-03;
-double ADC2MeVConversionFactor =  0.8e-03;
+double ADC2MeVConversionFactor =  0.0625;
 
 
 //conversion factor from ADC counts to MeV

@@ -31,7 +31,7 @@
 #include "Mu2eUtilities/inc/SimParticleTimeOffset.hh"
 #include "MCDataProducts/inc/StepPointMCCollection.hh"
 #include "MCDataProducts/inc/SimParticlePtrCollection.hh"
-#include "MCDataProducts/inc/CaloShowerStepCollection.hh"
+#include "MCDataProducts/inc/CaloShowerStep.hh"
 
 #include "art/Framework/Core/EDAnalyzer.h"
 #include "art/Framework/Core/ModuleMacros.h"

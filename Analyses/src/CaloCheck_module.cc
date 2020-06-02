@@ -25,16 +25,12 @@
 #include "BTrk/KalmanTrack/KalRep.hh"
 #include "BTrk/TrkBase/HelixTraj.hh"
 
-#include "MCDataProducts/inc/CaloHitMCTruthCollection.hh"
 #include "MCDataProducts/inc/GenParticleCollection.hh"
 #include "MCDataProducts/inc/SimParticleCollection.hh"
 #include "MCDataProducts/inc/StepPointMCCollection.hh"
 #include "MCDataProducts/inc/PtrStepPointMCVectorCollection.hh"
 #include "MCDataProducts/inc/GenId.hh"
-#include "MCDataProducts/inc/CaloHitSimPartMCCollection.hh"
 #include "DataProducts/inc/VirtualDetectorId.hh"
-
-#include "Mu2eUtilities/inc/CaloHitMCNavigator.hh"
 
 #include "RecoDataProducts/inc/CaloCrystalHitCollection.hh"
 #include "RecoDataProducts/inc/CaloHitCollection.hh"
@@ -119,7 +115,6 @@ namespace mu2e {
 
        std::string _caloReadoutModuleLabel;
        std::string _caloCrystalModuleLabel;
-       std::string _caloHitMCCrystalPtrLabel;
        std::string _caloClusterModuleLabel;
        std::string _caloClusterAlgorithm;
        std::string _caloClusterSeeding;
@@ -150,7 +145,6 @@ namespace mu2e {
     _simParticleTag(pset.get<string>("simParticleTag")),
     _caloReadoutModuleLabel(pset.get<string>("caloReadoutModuleLabel")),
     _caloCrystalModuleLabel(pset.get<string>("caloCrystalModuleLabel")),
-    _caloHitMCCrystalPtrLabel(pset.get<string>("calorimeterHitMCCrystalPtr")),
     _caloClusterModuleLabel(pset.get<std::string>("caloClusterModuleLabel")),
     _virtualDetectorLabel(pset.get<string>("virtualDetectorName")),
     _stepPointMCLabel(pset.get<string>("stepPointMCLabel")),

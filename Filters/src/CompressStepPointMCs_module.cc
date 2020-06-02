@@ -29,7 +29,7 @@
 #include "TTree.h"
 
 #include "MCDataProducts/inc/StepPointMCCollection.hh"
-#include "MCDataProducts/inc/CaloShowerStepCollection.hh"
+#include "MCDataProducts/inc/CaloShowerStep.hh"
 #include "MCDataProducts/inc/SimParticleCollection.hh"
 #include "Mu2eUtilities/inc/compressSimParticleCollection.hh"
 #include "MCDataProducts/inc/GenParticleCollection.hh"

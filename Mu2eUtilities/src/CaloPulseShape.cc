@@ -1,4 +1,4 @@
-#include "CaloMC/inc/CaloPulseShape.hh"
+#include "Mu2eUtilities/inc/CaloPulseShape.hh"
 #include "ConditionsService/inc/CalorimeterCalibrations.hh"
 #include "ConditionsService/inc/ConditionsHandle.hh"
 
@@ -49,17 +49,10 @@ namespace mu2e {
 	   pulseShape = pulseShapeIntegral;
        }
 
-       // Find the start of the waveform - arbitrary but avoid taking too many empty bins at the start
-       int ifirst(0),ilast(nbins-1); 
-       double pulseAmplitudeMin = pulseShape.GetMaximum()/1000;
-       for (;ifirst<nbins;++ifirst) if (pulseShape.GetBinContent(ifirst)> pulseAmplitudeMin) break;
-       for (;ilast >0    ; --ilast) if (pulseShape.GetBinContent(ilast) > pulseAmplitudeMin) break;
-       
-       // Tabulate the integrated values (see end note)
-       nbins = ilast-ifirst+pulseIntegralSteps_;
-       for (int j=0;j<nbins;++j)
+       // Copy histogram into vector, including time padding      
+       for (int j=1;j<=nbins;++j)
        {
-	  int ibin = ifirst-pulseIntegralSteps_+j;
+	  int ibin = j-pulseIntegralSteps_;
 	  integralVal_.push_back((ibin>0) ? pulseShape.GetBinContent(ibin) : 0.0);
        }
 
@@ -68,7 +61,7 @@ namespace mu2e {
        for (auto& v : integralVal_) v/=integralValMax;
        
        //calculate the number of bins for the digitized waveform
-       nBinShape_      = int((ilast-ifirst)/pulseIntegralSteps_)+1;
+       nBinShape_      = int(nbins/pulseIntegralSteps_);
        digitizedPulse_ = std::vector<double>(nBinShape_,0);
               
        // find difference between peak time and t0 for digitized waveform, so that we can shift the result of 

@@ -14,7 +14,7 @@
 #include "Mu2eUtilities/inc/SimParticleTimeOffset.hh"
 #include "DataProducts/inc/IndexMap.hh"
 #include "MCDataProducts/inc/CrvDigiMC.hh"
-#include "MCDataProducts/inc/CaloShowerSimCollection.hh"
+#include "MCDataProducts/inc/CaloShowerSim.hh"
 
 using namespace std;
 

@@ -276,9 +276,9 @@ namespace mu2e {
         CaloCrystalHitCollection const& caloCrystalHits(*caloCrystalHitsHandle);
 
         //Calo cluster truth assignment
-        art::Handle<CaloClusterNewMCTruthAssn> caloClusterTruthHandle;
+        art::Handle<CaloClusterMCTruthAssn> caloClusterTruthHandle;
         event.getByLabel(_caloClusterTruthModuleLabel, caloClusterTruthHandle);
-        const CaloClusterNewMCTruthAssn& caloClusterTruth(*caloClusterTruthHandle);
+        const CaloClusterMCTruthAssn& caloClusterTruth(*caloClusterTruthHandle);
 
         //Get virtual detector hits
         art::Handle<StepPointMCCollection> vdhits;
@@ -420,7 +420,7 @@ namespace mu2e {
         	   _clusimGenIdx[_nCluSim] = genIdx;
         	   _clusimCrCode[_nCluSim] = sim->creationCode();
         	   _clusimTime[_nCluSim]   = eDepMC.time();
-        	   _clusimEdep[_nCluSim]   = eDepMC.eDep();
+        	   _clusimEdep[_nCluSim]   = eDepMC.energyDep();
         	   _clusimMom[_nCluSim]    = eDepMC.momentumIn();
         	   _clusimPosX[_nCluSim]   = simPos.x(); // in disk FF frame
         	   _clusimPosY[_nCluSim]   = simPos.y();

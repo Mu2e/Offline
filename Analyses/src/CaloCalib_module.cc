@@ -20,17 +20,13 @@
 #include "GeometryService/inc/GeometryService.hh"
 #include "GeometryService/inc/VirtualDetector.hh"
 
-#include "MCDataProducts/inc/CaloHitMCTruthCollection.hh"
 #include "MCDataProducts/inc/GenParticleCollection.hh"
 #include "MCDataProducts/inc/SimParticleCollection.hh"
 //#include "MCDataProducts/inc/StatusG4.hh"
 #include "MCDataProducts/inc/StepPointMCCollection.hh"
 #include "MCDataProducts/inc/PtrStepPointMCVectorCollection.hh"
 #include "MCDataProducts/inc/GenId.hh"
-#include "MCDataProducts/inc/CaloHitSimPartMCCollection.hh"
 #include "DataProducts/inc/VirtualDetectorId.hh"
-
-#include "Mu2eUtilities/inc/CaloHitMCNavigator.hh"
 
 #include "RecoDataProducts/inc/CaloCrystalHitCollection.hh"
 #include "RecoDataProducts/inc/CaloHitCollection.hh"
@@ -264,31 +260,14 @@ namespace mu2e {
       GenParticleCollection const& genParticles(*gensHandle);
 
       //Get calorimeter readout hits (2 readout / crystal as of today)
-      art::Handle<CaloHitCollection> caloHitsHandle;
-      event.getByLabel(_caloReadoutModuleLabel, caloHitsHandle);
-      CaloHitCollection const& caloHits(*caloHitsHandle);
-      
-      //Get calorimeter readout hits MC level - energy/time/type
-      art::Handle<CaloHitMCTruthCollection> caloHitMCTruthHandle;
-      event.getByLabel(_caloReadoutModuleLabel, caloHitMCTruthHandle);
-      CaloHitMCTruthCollection const& caloHitsMCTruth(*caloHitMCTruthHandle);
-      
-      
-      //Get simParticles and stepPointMC summary for crystal readout hits
-      art::Handle<CaloHitSimPartMCCollection> caloHitSimMCHandle;
-      event.getByLabel(_caloReadoutModuleLabel, caloHitSimMCHandle);
-      CaloHitSimPartMCCollection const& caloHitSimPartMC(*caloHitSimMCHandle);
-            
+      //art::Handle<CaloHitCollection> caloHitsHandle;
+      //event.getByLabel(_caloReadoutModuleLabel, caloHitsHandle);
+      //CaloHitCollection const& caloHits(*caloHitsHandle);
+                  
       //Get calo crystal hits (average from readouts)
       //art::Handle<CaloCrystalHitCollection> caloCrystalHitsHandle;
       //event.getByLabel(_caloCrystalModuleLabel, caloCrystalHitsHandle);
-      //CaloCrystalHitCollection const& caloCrystalHits(*caloCrystalHitsHandle);
-
-   
-      //Utility to match  cloHits with MCtruth, simParticles and StepPoints
-      CaloHitMCNavigator caloHitNavigator(caloHits, caloHitsMCTruth, caloHitSimPartMC);
-
-   
+      //CaloCrystalHitCollection const& caloCrystalHits(*caloCrystalHitsHandle);   
 
       //const double CrDensity = 4.9e-6;  // in kg/mm3 to be consistent with volume units!
       //const double CrMass    = CrDensity*cal.caloInfo().crystalVolume();
@@ -371,7 +350,7 @@ namespace mu2e {
              _motPosY[_nSim]    = hitSimPos.y();
              _motPosZ[_nSim]    = hitSimPos.z();
 	     _motTime[_nSim]    = hitSim.time().at(ip);
-	     _motEdep[_nSim]    = hitSim.eDep().at(ip);
+	     _motEdep[_nSim]    = hitSim.energyDep().at(ip);
 
 	     _motGenIdx[_nSim]  = -1;	     
 	     if (generated) _motGenIdx[_nSim] = generated - &(genParticles.at(0));

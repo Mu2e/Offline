@@ -1,63 +1,40 @@
-//
-// Original author B.Echenard
-//
-
 #ifndef CaloCluster_ClusterFinder_HH_
 #define CaloCluster_ClusterFinder_HH_
-
-
-// Mu2e includes
+//
+// Class to find cluster of simply connected crystals
+// 
 #include "RecoDataProducts/inc/CaloCrystalHit.hh"
 #include "CalorimeterGeom/inc/Calorimeter.hh"
 
-
-// C++ includes
 #include <vector>
 #include <queue>
 #include <list>
 
-
-
 namespace mu2e {
 
 
-    class ClusterFinder {
-
-
+    class ClusterFinder 
+    {
          public:
-             
-             typedef std::list<CaloCrystalHit const*>    CaloCrystalList;
-             typedef std::vector<CaloCrystalHit const*>  CaloCrystalVec;
+             typedef std::list<const CaloCrystalHit*>    CaloCrystalList;
+             typedef std::vector<const CaloCrystalHit*>  CaloCrystalVec;
 
-
-             ClusterFinder(Calorimeter const& cal, CaloCrystalHit const* crystalSeed, double deltaTime, double ExpandCut);              
-        
+             ClusterFinder(const Calorimeter&, const CaloCrystalHit*, double, double, bool isOnline = false);  
              
-             ClusterFinder(Calorimeter const& cal, CaloCrystalHit const* crystalSeed, double deltaTime, double ExpandCut, bool isOnline);  
-
-	     ~ClusterFinder(){};            
-             
-             CaloCrystalList const& clusterList()  const {return clusterList_;}
-             
-             void formCluster(std::vector<CaloCrystalList>& idHitVec);
-
+             void                   formCluster(std::vector<CaloCrystalList>&);
+             const CaloCrystalList& clusterList() const {return clusterList_;}             
 
 
          private:
-             
-             Calorimeter const*     cal_;
-             CaloCrystalHit const*  crystalSeed_;
+             const Calorimeter*     cal_;
+             const CaloCrystalHit*  crystalSeed_;
              double                 seedTime_;
-
              CaloCrystalList        clusterList_;
              std::queue<int>        crystalToVisit_;
              std::vector<bool>      isVisited_; 
-
              double                 deltaTime_; 
              double                 ExpandCut_;
-
  	     bool 		    isOnline_;
-
     };
 
 

@@ -7,14 +7,13 @@
 #include "MCDataProducts/inc/CaloShowerSim.hh"
 #include "MCDataProducts/inc/SimParticle.hh"
 #include "MCDataProducts/inc/CaloDigiMC.hh"
-#include "MCDataProducts/inc/CaloClusterNewMC.hh"
-
+#include "MCDataProducts/inc/CaloClusterMC.hh"
 
 namespace mu2e
 {
     typedef art::Assns<CaloCrystalHit, SimParticle, art::Ptr<CaloShowerSim>> CaloShowerMCTruthAssn;
     typedef art::Assns<CaloCrystalHit, CaloDigiMC>                           CaloDigiMCTruthAssn;
-    typedef art::Assns<CaloCluster, CaloClusterNewMC>                        CaloClusterNewMCTruthAssn;
+    typedef art::Assns<CaloCluster,    CaloClusterMC>                        CaloClusterMCTruthAssn;
 }
 
 #endif 

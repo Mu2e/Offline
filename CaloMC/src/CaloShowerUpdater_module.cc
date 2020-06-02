@@ -1,18 +1,16 @@
 // Re-write an existing CaloShowerStepCollection updating SimParticle pointers.
 // Need to run this if the original SimParticleCollection is filtered.
 //
-// A. Gaponenko, 2018
-//
-#include <iostream>
-#include <string>
-
 #include "canvas/Persistency/Common/Ptr.h"
 #include "art/Framework/Core/EDProducer.h"
 #include "art/Framework/Principal/Event.h"
 #include "art/Framework/Core/ModuleMacros.h"
 
-#include "MCDataProducts/inc/CaloShowerStepCollection.hh"
+#include "MCDataProducts/inc/CaloShowerStep.hh"
 #include "MCDataProducts/inc/SimParticleCollection.hh"
+
+#include <iostream>
+#include <string>
 
 namespace mu2e {
 
@@ -21,8 +19,8 @@ namespace mu2e {
      public:
         struct Config 
         {
-           fhicl::Atom<std::string> showerInput{ fhicl::Name("showerInput") };
-           fhicl::Atom<std::string> newSimParticles{ fhicl::Name("newSimParticles") };
+           fhicl::Atom<std::string> showerInput     { fhicl::Name("showerInput")     };
+           fhicl::Atom<std::string> newSimParticles { fhicl::Name("newSimParticles") };
         };
 
         explicit CaloShowerUpdater(const art::EDProducer::Table<Config>& config) :

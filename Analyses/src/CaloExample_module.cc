@@ -284,9 +284,9 @@ namespace mu2e {
       const CaloDigiMCTruthAssn& caloDigiTruth(*caloDigiTruthHandle);
       
       //Calo cluster truth assignment
-      art::Handle<CaloClusterNewMCTruthAssn> caloClusterTruthHandle;
+      art::Handle<CaloClusterMCTruthAssn> caloClusterTruthHandle;
       event.getByLabel(caloClusterTruthModuleLabel_, caloClusterTruthHandle);
-      const CaloClusterNewMCTruthAssn& caloClusterTruth(*caloClusterTruthHandle);
+      const CaloClusterMCTruthAssn& caloClusterTruth(*caloClusterTruthHandle);
 
 
 
@@ -352,11 +352,7 @@ namespace mu2e {
            auto itMC = caloDigiTruth.begin();
            while (itMC != caloDigiTruth.end()) {if (itMC->first.get() == &hit) break; ++itMC;}
            unsigned nCrySims = (itMC != caloDigiTruth.end()) ? itMC->second->nParticles() : 0;
-           
-           std::cout<<caloCrystalHits.size()<<std::endl;
-           
-           if (nCrySims>0) std::cout<<"Found cry"<<std::endl;
-           
+                      
            cryId_[nHits_]        = hit.id();
            crySectionId_[nHits_] = diskId;
            cryEdep_[nHits_]      = hit.energyDep();
@@ -365,8 +361,7 @@ namespace mu2e {
            cryPosY_[nHits_]      = crystalPos.y();
            cryPosZ_[nHits_]      = crystalPos.z();
            cryEtot_             += hit.energyDep();
-
-           
+          
            crySimIdx_[nHits_]    = nSimHit_;
            crySimLen_[nHits_]    = nCrySims;
            
@@ -381,7 +376,7 @@ namespace mu2e {
                crySimPdgId_[nSimHit_]   = eDepMC.sim()->pdgId();
                crySimCrCode_[nSimHit_]  = eDepMC.sim()->creationCode();
        	       crySimTime_[nSimHit_]    = eDepMC.time();
-               crySimEdep_[nSimHit_]    = eDepMC.eDep();	                      
+               crySimEdep_[nSimHit_]    = eDepMC.energyDep();	                      
                crySimMom_[nSimHit_]     = eDepMC.momentumIn();	       
 	       crySimStartX_[nSimHit_]  = parent->startPosition().x();
 	       crySimStartY_[nSimHit_]  = parent->startPosition().y();
@@ -461,7 +456,7 @@ namespace mu2e {
               cluSimGenId_[nCluSim_]  = genId;
 	      cluSimGenPdg_[nCluSim_] = genPdg;
               cluSimTime_[nCluSim_]   = eDepMC.time();
-              cluSimEdep_[nCluSim_]   = eDepMC.eDep();
+              cluSimEdep_[nCluSim_]   = eDepMC.energyDep();
               cluSimMom_[nCluSim_]    = eDepMC.momentumIn();
               cluSimMom2_[nCluSim_]   = simMom;
               cluSimPosX_[nCluSim_]   = simPos.x(); // in disk FF frame
@@ -527,44 +522,3 @@ namespace mu2e {
 }  
 
 DEFINE_ART_MODULE(mu2e::CaloExample);
-
-
-/*
-	   if (!contentMC.hasConversion() && clusterIt->energyDep() > 70)
-	   {
-	         std::cout<<"Cluster content "<<std::endl;
-
-        	 for (const auto& contentMap : contentMC.simContentMap() )
-		 {	       
-		   art::Ptr<SimParticle> sim = contentMap.first;
-        	   CaloContentSim       data = contentMap.second;
-		   
-		   std::cout<<sim->id().asInt()<<" "<<sim->startPosition()<<" "<<sim->endPosition()<<"   "<<data.time()<<" "<<data.edep()<<std::endl;
-		 }		 
-		 
-		 art::Handle<GenParticleCollection> gensHandle;
-		 event.getByLabel("generate", gensHandle);
-		 GenParticleCollection const& genParticles(*gensHandle);
-
-		 //art::Handle<SimParticleCollection> simsHandle;
-		 //event.getByLabel("g4run", simsHandle);
-		 //SimParticleCollection const& simParticles2(*simsHandle);
-		 
-		 std::cout<<"Generated"<<std::endl;
-		 for (const auto& gen : genParticles) std::cout<<gen.generatorId().name()<<" "<<gen.pdgId()<<" "<<gen.momentum().rho()<<"   "<<gen.position()<<std::endl;
-
-
-		 //std::cout<<"Simulated"<<std::endl;
-		 //for (const auto& sim2 : simParticles2)
-		 //{
-		 //  const SimParticle& simm(sim2.second);
-		 //  std::cout<<simm.id().asInt()<<" "<<simm.pdgId()<<" "<<simm.creationCode()<<"   "<<simm.startMomentum().mag()<<" "<<simm.startPosition()<<" / "<<simm.endPosition()<<"   ";
-                 //  if (simm.hasParent()) std::cout<<"p="<<simm.parent()->id().asInt()<<"   ";
-		 //  if (simm.genParticle()) std::cout<<"g="<<simm.genParticle()->generatorId().id();
-		   
-		 //  std::cout<<std::endl;
-		 //}    
-	   
-	   }
-
-*/

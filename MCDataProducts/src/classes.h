@@ -52,15 +52,13 @@
 #include "MCDataProducts/inc/SimParticleMARSAssns.hh"
 
 // calorimeter
-#include "MCDataProducts/inc/CaloHitMCTruthAssn.hh"
-#include "MCDataProducts/inc/CaloClusterMCTruthAssn.hh"
-#include "MCDataProducts/inc/CaloShowerStepROCollection.hh"
-#include "MCDataProducts/inc/CaloShowerStepCollection.hh"
-#include "MCDataProducts/inc/CaloShowerSimCollection.hh"
-#include "MCDataProducts/inc/CaloHitMCTruthCollection.hh"
-#include "MCDataProducts/inc/CaloDigiMCCollection.hh"
-#include "MCDataProducts/inc/CaloHitSimPartMCCollection.hh"
+#include "MCDataProducts/inc/CaloMCTruthAssns.hh"
+#include "MCDataProducts/inc/CaloShowerStepRO.hh"
+#include "MCDataProducts/inc/CaloShowerStep.hh"
+#include "MCDataProducts/inc/CaloShowerSim.hh"
+#include "MCDataProducts/inc/CaloDigiMC.hh"
 #include "MCDataProducts/inc/CaloClusterMC.hh"
+#include "MCDataProducts/inc/CaloEDepMC.hh"
 // straws
 #include "MCDataProducts/inc/StrawDigiMC.hh"
 #include "MCDataProducts/inc/StrawGasStep.hh"

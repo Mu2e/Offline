@@ -18,7 +18,7 @@ CaloShowerStepFromStepPt  :
     module_type             : CaloShowerStepFromStepPt
     numZSlices              : 20
     deltaTime               : 0.2
-    caloStepPointCollection : calorimeter
+    caloStepPointCollection : ["calorimeter"]
     usePhysVolInfo          : false
     #physVolInfoInput       : "compressPVDetector"
     physVolInfoInput        : "g4run"
@@ -38,7 +38,7 @@ CaloShowerStepROFromShowerStep :
     BirksCorrection          : true
     PEStatCorrection         : true
     addTravelTime            : true	    
-    diagLevel                : 1
+    diagLevel                : 0
 }
 
 
@@ -58,7 +58,7 @@ CaloDigiFromShower :
     endTimeBuffer           : 80
     bufferDigi              : 16 
     pulseIntegralSteps      : 100
-    diagLevel               : 1
+    diagLevel               : 0
 }
 
 

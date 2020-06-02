@@ -1,8 +1,8 @@
 //
-// An EDProducer Module that reads CaloshowerStepROs and produces the readout waveform.
-// Photo-statistic fluctuations are calculated independently for each sensor.
+// Simulate the readout waveform for each sensors from CaloshowerStepROs.
+// Individual photo-electrons are generated for each readout, including photo-statistic fluctuations
+// Simulate digitization procedure and produce CaloDigis. 
 //
-// The output is split between the different digitization boards
 //
 #include "art/Framework/Core/EDProducer.h"
 #include "art/Framework/Core/ModuleMacros.h"
@@ -11,13 +11,13 @@
 #include "fhiclcpp/types/Atom.h"
 #include "fhiclcpp/types/Sequence.h"
 
-#include "CaloMC/inc/CaloPulseShape.hh"
+#include "Mu2eUtilities/inc/CaloPulseShape.hh"
 #include "CalorimeterGeom/inc/Calorimeter.hh"
 #include "ConditionsService/inc/ConditionsHandle.hh"
 #include "ConditionsService/inc/CalorimeterCalibrations.hh"
 #include "ConditionsService/inc/AcceleratorParams.hh"
 #include "GeometryService/inc/GeomHandle.hh"
-#include "MCDataProducts/inc/CaloShowerStepROCollection.hh"
+#include "MCDataProducts/inc/CaloShowerStepRO.hh"
 #include "RecoDataProducts/inc/CaloDigiCollection.hh"
 #include "SeedService/inc/SeedService.hh"
 
@@ -79,19 +79,19 @@ namespace mu2e {
          {
              produces<CaloDigiCollection>();
          }
+         
+         void produce(art::Event& e)   override;
+         void beginRun(art::Run& aRun) override;
 
-    private:
-       void produce(art::Event& e)   override;
-       void beginRun(art::Run& aRun) override;
-       
-       void generateNoise(std::vector<std::vector<double>>& waveforms, const ConditionsHandle<CalorimeterCalibrations>& calorimeterCalibrations);
-       void makeDigitization(const CaloShowerStepROCollection& caloShowerStepROs, CaloDigiCollection&);
-       void fillWaveforms(std::vector<std::vector<double>>& waveforms, const CaloShowerStepROCollection& caloShowerStepROs,
-                          const ConditionsHandle<CalorimeterCalibrations>& calorimeterCalibrations);
-       void buildOutputDigi(std::vector<std::vector<double>>& waveforms, CaloDigiCollection& caloDigiColl);
-       void diag0(int iRO, const std::vector<double>& wf);
-       void diag1(int iRO, double time, size_t peakP, const std::vector<int>& wf);
-       void diag2(const CaloDigiCollection& caloDigiColl);
+
+    private:       
+       void generateNoise    (std::vector<std::vector<double>>&, const ConditionsHandle<CalorimeterCalibrations>&);
+       void makeDigitization (const CaloShowerStepROCollection&, CaloDigiCollection&);
+       void fillWaveforms    (std::vector<std::vector<double>>&, const CaloShowerStepROCollection&, const ConditionsHandle<CalorimeterCalibrations>&);
+       void buildOutputDigi  (std::vector<std::vector<double>>&, CaloDigiCollection&);
+       void diag0            (int, const std::vector<double>&);
+       void diag1            (int, double, size_t, const std::vector<int>&);
+       void diag2            (const CaloDigiCollection&);
 
        
        const art::ProductToken<CaloShowerStepROCollection> caloShowerToken_;
@@ -164,7 +164,7 @@ namespace mu2e {
   }
 
 
-  //-------------------------------------------------
+  //------------------------------------------------------------------------------------------------------------------------------------------------------------
   void CaloDigiFromShower::generateNoise(std::vector<std::vector<double>>& waveforms, const ConditionsHandle<CalorimeterCalibrations>& calorimeterCalibrations)
   {
      for (unsigned i=0; i<waveforms.size(); ++i)
@@ -237,13 +237,12 @@ namespace mu2e {
                   ++sampleStop;
               }
 
-              timeSample = sampleStop+1; //forward the scanning time                       
-              if (diagLevel_ > 2) std::cout<<"[CaloDigiFromShower] found peak with startSample="<<sampleStart<<"  stopSample="<<sampleStop<<std::endl;
+              if (diagLevel_ > 2) std::cout<<"[CaloDigiFromShower] found peak with startSample="<<sampleStart<<"  stopSample="<<sampleStop<<"  timePeak="<<timeSample<<std::endl;
    
               //build the digi, find t0, PeakPosition, wf with saturation
               int t0 = int(sampleStart*digiSampling_+ blindTime_);
 
-	      double wfsumMax(0);
+	      float wfsumMax(0);
 	      size_t peakP(0);
 	      for (int i=sampleStart; i<sampleStop-nBinsPeak_; ++i)
               {
@@ -256,8 +255,11 @@ namespace mu2e {
 
               // make the CaloDigi
               caloDigiColl.emplace_back(CaloDigi(iRO,t0,wfsample,peakP) );
+              
+              //fast forward to end of waveform to search for next one 
+              timeSample = sampleStop+1; //forward the scanning time     
 
-              if (diagLevel_ > 2) diag1(iRO,t0, peakP, wfsample);
+              if (diagLevel_ > 2) diag1(iRO, t0, peakP, wfsample);
               if (iRO%2==0) totEdepEq += float(wfsample[peakP])/MeVToADC_;
           }
       }
@@ -277,7 +279,7 @@ namespace mu2e {
 
   void CaloDigiFromShower::diag1(int iRO, double time, size_t peakP, const std::vector<int>& wf)
   {
-     std::cout<<"Created caloDigi with roID = "<<iRO<<"  time="<<time<<" peak="<<peakP<<"  and content ";
+     std::cout<<"Created caloDigi with roID = "<<iRO<<"  t0="<<time<<" peak="<<peakP<<" and content ";
      for (const auto  &v : wf) std::cout<<v<<" ";
      std::cout<<std::endl;
   }

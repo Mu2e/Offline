@@ -1,7 +1,5 @@
 //
-// An EDProducer Module that creates a compressed representation of Calorimeter StepPointMCs
-//
-// Original author Bertrand Echenard
+// Create a compressed representation of Calorimeter StepPointMCs
 //
 // Basic idea: We recollect all StepPointMCS attached to a SimParticle ancestor. If the SimParticle is compressible, all StepPointsMC 
 // are collapsed into CaloShowerStep objects. If not, we create a CaloShowerStep object for each SimParticle created by the "ancestor"
@@ -34,7 +32,7 @@
 #include "MCDataProducts/inc/PtrStepPointMCVectorCollection.hh"
 #include "MCDataProducts/inc/StepPointMCCollection.hh"
 #include "MCDataProducts/inc/SimParticlePtrCollection.hh"
-#include "MCDataProducts/inc/CaloShowerStepCollection.hh"
+#include "MCDataProducts/inc/CaloShowerStep.hh"
 #include "MCDataProducts/inc/PhysicalVolumeInfoMultiCollection.hh"
 #include "Mu2eUtilities/inc/PhysicalVolumeMultiHelper.hh"
 
@@ -99,7 +97,7 @@ namespace mu2e {
          {
              using Name    = fhicl::Name;
              using Comment = fhicl::Comment;
-             fhicl::Atom<std::string>      caloStepPointCollection { Name("caloStepPointCollection"), Comment("Calo crystal stepPointMC collection name") };
+             fhicl::Sequence<std::string>  caloStepPointCollection { Name("caloStepPointCollection"), Comment("Calo crystal stepPointMC collection name") };
              fhicl::Atom<art::InputTag>    physVolInfoInput        { Name("physVolInfoInput"),        Comment("Physics volume token names") };
              fhicl::Atom<unsigned>         numZSlices              { Name("numZSlices"),              Comment("Number of crystal longitudinal slices ") };
              fhicl::Atom<float>            deltaTime               { Name("deltaTime"),               Comment("Max time difference to be inside a ShowerStep") };
@@ -119,42 +117,41 @@ namespace mu2e {
       private:
          using HandleVector = std::vector<art::Handle<StepPointMCCollection>>;
          using SimPtr       = art::Ptr<SimParticle>;
+         using SimStepMap   = std::map<SimPtr,std::vector<const StepPointMC*>>;
          
-         void makeCompressedHits      (const HandleVector&, CaloShowerStepCollection&, SimParticlePtrCollection&);
-         void collectStepBySimAncestor(const Calorimeter&, const PhysicalVolumeMultiHelper&, 
-                                       const HandleVector&,std::map<SimPtr,CaloCompressUtil>&);
-         void collectStepBySim        (const HandleVector&, std::map<SimPtr,std::vector<const StepPointMC*> >&);
-         bool isInsideCalorimeter     (const Calorimeter& cal, const PhysicalVolumeMultiHelper&, const art::Ptr<SimParticle>&);
-         bool isCompressible          (int, const std::set<int>&);
-         void compressSteps           (const Calorimeter&, CaloShowerStepCollection&, int, const SimPtr&, std::vector<const StepPointMC*>&);
-         void fillHisto1              (const Calorimeter&, const art::Ptr<SimParticle>&, const std::set<art::Ptr<SimParticle>>&);
-         void fillHisto2              (int, float, const SimPtr&);
-         void dumpAllInfo             (const HandleVector&, const Calorimeter&);
-
+         void makeCompressedHits       (const HandleVector&, CaloShowerStepCollection&, SimParticlePtrCollection&);
+         void collectStepBySimAncestor (const Calorimeter&, const PhysicalVolumeMultiHelper&, const HandleVector&, std::map<SimPtr,CaloCompressUtil>&);
+         void collectStepBySim         (const HandleVector&, SimStepMap&);
+         bool isInsideCalorimeter      (const Calorimeter& cal, const PhysicalVolumeMultiHelper&, const SimPtr&);
+         bool isCompressible           (int, const std::set<int>&);
+         void compressSteps            (const Calorimeter&, CaloShowerStepCollection&, int, const SimPtr&, std::vector<const StepPointMC*>&);
+         void fillHisto1               (const Calorimeter&, const SimPtr&, const std::set<SimPtr>&);
+         void fillHisto2               (int, float, const SimPtr&);
+         void dumpAllInfo              (const HandleVector&, const Calorimeter&);
 
          
-         std::string                                    calorimeterStepPoints_;
-         art::InputTag                                  physVolInfoInput_;
-         std::set<const PhysicalVolumeInfo*>  mapPhysVol_;
-         bool                                           usePhysVol_;
-         std::vector<std::string>                       caloMaterial_;
-         int                                            numZSlices_;
-         double                                         deltaTime_;
-         bool                                           compressAll_;
-         int                                            diagLevel_;
-         std::map<int,std::set<int>>                    procCodes_;
-         const PhysicalVolumeInfoMultiCollection*       vols_;
-         double                                         zSliceSize_;
+         std::vector<std::string>                 calorimeterStepPoints_;
+         art::InputTag                            physVolInfoInput_;
+         std::set<const PhysicalVolumeInfo*>      mapPhysVol_;
+         bool                                     usePhysVol_;
+         std::vector<std::string>                 caloMaterial_;
+         int                                      numZSlices_;
+         double                                   deltaTime_;
+         bool                                     compressAll_;
+         int                                      diagLevel_;
+         std::map<int,std::set<int>>              procCodes_;
+         const PhysicalVolumeInfoMultiCollection* vols_;
+         double                                   zSliceSize_;
 
-         diagSummary                                    diagSummary_;
-         TH2F*                                          hStartPos_;
-         TH2F*                                          hStopPos_;
-         TH1F*                                          hStopPos2_;
-         TH1F*                                          hStartPos2_;
-         TH1F*                                          hZpos_;
-         TH1F*                                          hEtot_;
-         TH2F*                                          hZpos2_;
-         TH1F*                                          hGenId_;
+         diagSummary                              diagSummary_;
+         TH2F*                                    hStartPos_;
+         TH2F*                                    hStopPos_;
+         TH1F*                                    hStopPos2_;
+         TH1F*                                    hStartPos2_;
+         TH1F*                                    hZpos_;
+         TH1F*                                    hEtot_;
+         TH2F*                                    hZpos2_;
+         TH1F*                                    hGenId_;
   };
 
   
@@ -242,9 +239,19 @@ namespace mu2e {
       auto simsToKeep        = std::make_unique<SimParticlePtrCollection>();
 
       // Get the StepPointMCs from the event.
-      art::ProductInstanceNameSelector getCrystalSteps(calorimeterStepPoints_);
-      HandleVector crystalStepsHandles, readoutStepsHandles;
+      HandleVector crystalStepsHandles;
+      
+      art::ProductInstanceNameSelector getCrystalSteps(calorimeterStepPoints_[0]);
       event.getMany(getCrystalSteps, crystalStepsHandles);
+
+      /*
+      for (const auto& stepPts : calorimeterStepPoints_)
+      {
+          art::Handle<StepPointMCCollection> hc;
+          event.getByLabel(art::InputTag(stepPts), hc);
+          crystalStepsHandles.push_back(hc);
+      }
+      */
 
       makeCompressedHits(crystalStepsHandles,*caloShowerStepMCs,*simsToKeep);
 

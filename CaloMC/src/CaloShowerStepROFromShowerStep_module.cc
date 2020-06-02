@@ -3,9 +3,6 @@
 // Includes corrections from Birks law, longitudinal response uniformity and photo-statistcs fluctuations.
 // The PE are generated individually and corrected for transit time.
 //
-// Original author Bertrand Echenard
-//
-//
 #include "art/Framework/Core/EDProducer.h"
 #include "art/Framework/Core/ModuleMacros.h"
 #include "art/Framework/Principal/Event.h"
@@ -18,9 +15,9 @@
 #include "GeometryService/inc/GeomHandle.hh"
 #include "GlobalConstantsService/inc/GlobalConstantsHandle.hh"
 #include "GlobalConstantsService/inc/ParticleDataTable.hh"
-#include "MCDataProducts/inc/CaloShowerStepCollection.hh"
-#include "MCDataProducts/inc/CaloShowerStepROCollection.hh"
-#include "MCDataProducts/inc/CaloShowerSimCollection.hh"
+#include "MCDataProducts/inc/CaloShowerStep.hh"
+#include "MCDataProducts/inc/CaloShowerStepRO.hh"
+#include "MCDataProducts/inc/CaloShowerSim.hh"
 #include "Mu2eUtilities/inc/SimParticleTimeOffset.hh"
 #include "SeedService/inc/SeedService.hh"
 
@@ -40,28 +37,29 @@ namespace {
 
   struct StepEntry
   {
-      StepEntry(const art::Ptr<mu2e::CaloShowerStep>& step, float edepCorr) : 
-        step_(step), edepCorr_(edepCorr)
+      StepEntry(const art::Ptr<mu2e::CaloShowerStep>& step, float edepCorr, float timeCorr) : 
+        step_(step),edepCorr_(edepCorr),timeCorr_(timeCorr)
       {}
 
       art::Ptr<mu2e::CaloShowerStep> step_;
-      float edepCorr_;
+      float edepCorr_,timeCorr_;
   };
 
   struct SimParticleSummary
   {
-      SimParticleSummary(const art::Ptr<mu2e::CaloShowerStep>& step, float edepCorr) :
-        steps_{step}, edepCorr_(edepCorr) 
+      SimParticleSummary(const art::Ptr<mu2e::CaloShowerStep>& step, float edepCorr, float timeCorr) :
+        steps_{step},edepCorr_(edepCorr),timeCorr_(timeCorr) 
       {}
 
-      void add(const art::Ptr<mu2e::CaloShowerStep>& step, float edepCorr)
+      void add(const art::Ptr<mu2e::CaloShowerStep>& step, float edepCorr, float timeCorr)
       {
          steps_.push_back(step);
          edepCorr_ += edepCorr;
+         timeCorr_ = std::min(timeCorr,timeCorr_);
       }
 
       std::vector<art::Ptr<mu2e::CaloShowerStep>> steps_;
-      float edepCorr_;
+      float edepCorr_,timeCorr_;
   };
   
   struct diagSummary
@@ -124,10 +122,10 @@ namespace mu2e {
       private:
          using StepHandles = std::vector<art::ValidHandle<CaloShowerStepCollection>>;
 
-         void  makeReadoutHits  (const StepHandles&, CaloShowerStepROCollection&, CaloShowerSimCollection&);
-         float LRUCorrection    (int crystalID, float normalizedPosZ, float edepInit, const ConditionsHandle<CalorimeterCalibrations>&);
-         float PECorrection     (int crystalID, float edepInit, float NpePerMeV);
-         void  dumpCaloShowerSim(const CaloShowerSimCollection& caloShowerSims);
+         void  makeReadoutHits   (const StepHandles&, CaloShowerStepROCollection&, CaloShowerSimCollection&);
+         float LRUCorrection     (int, float, float, const ConditionsHandle<CalorimeterCalibrations>&);
+         float PECorrection      (int, float, float);
+         void  dumpCaloShowerSim (const CaloShowerSimCollection& caloShowerSims);
 
          std::vector<art::ProductToken<CaloShowerStepCollection>> crystalShowerTokens_;
          SimParticleTimeOffset   toff_;
@@ -251,7 +249,7 @@ namespace mu2e {
 
 
               //Produce an MC object that include the step and additional information for each original step
-              simEntriesMap[crystalID].push_back(StepEntry(stepPtr,edep_corr));
+              simEntriesMap[crystalID].push_back(StepEntry(stepPtr,edep_corr,hitTime));
           } 
       } 
 
@@ -269,13 +267,13 @@ namespace mu2e {
               const art::Ptr<SimParticle>& sim = newStep.step_->simParticle();
               auto mfind = summaryMap.find(sim);
               if (mfind==summaryMap.end())
-                 summaryMap.insert(std::make_pair(sim,SimParticleSummary(newStep.step_,newStep.edepCorr_)));
+                 summaryMap.insert(std::make_pair(sim,SimParticleSummary(newStep.step_,newStep.edepCorr_,newStep.timeCorr_)));
               else
-                 mfind->second.add(newStep.step_,newStep.edepCorr_);
+                 mfind->second.add(newStep.step_,newStep.edepCorr_,newStep.timeCorr_);
           }
 
           // create the CaloShowerSim (MC truth) objects for a given crystalID
-          for (auto& kvsumm : summaryMap) caloShowerSims.push_back(CaloShowerSim(kvsumm.second.steps_, kvsumm.second.edepCorr_));
+          for (auto& kvsumm : summaryMap) caloShowerSims.push_back(CaloShowerSim(kvsumm.second.steps_, kvsumm.second.edepCorr_, kvsumm.second.timeCorr_));
       }
        
 

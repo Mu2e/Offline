@@ -17,6 +17,7 @@
 #include "MCDataProducts/inc/EventWeight.hh"
 #include "MCDataProducts/inc/KalSeedMC.hh"
 #include "MCDataProducts/inc/CaloClusterMC.hh"
+#include "MCDataProducts/inc/CaloMCTruthAssns.hh"
 #include "RecoDataProducts/inc/CaloCrystalHit.hh"
 #include "RecoDataProducts/inc/TrkCaloHitPID.hh"
 #include "TrkReco/inc/TrkUtilities.hh"
@@ -134,7 +135,7 @@ namespace mu2e {
       fhicl::Atom<int> debug{Name("debugLevel"),0};
       fhicl::Atom<art::InputTag> primaryParticleTag{Name("PrimaryParticleTag"), Comment("Tag for PrimaryParticle"), art::InputTag()};
       fhicl::Atom<art::InputTag> kalSeedMCTag{Name("KalSeedMCAssns"), Comment("Tag for KalSeedMCAssn"), art::InputTag()};
-      fhicl::Atom<art::InputTag> caloClusterMCTag{Name("CaloClusterMCAssns"), Comment("Tag for CaloClusterMCAssns"), art::InputTag()};
+      fhicl::Atom<art::InputTag> caloClusterMCTag{Name("CaloClusterMCTruthAssn"), Comment("Tag for CaloClusterMCTruthAssn"), art::InputTag()};
       fhicl::Table<InfoMCStructHelper::Config> infoMCStructHelper{Name("InfoMCStructHelper"), Comment("Configuration for the InfoMCStructHelper")};
       fhicl::Atom<bool> fillmcxtra{Name("FillExtraMCSteps"),false};
       fhicl::OptionalSequence<art::InputTag> mcxtratags{Name("ExtraMCStepCollectionTags"), Comment("Input tags for any other StepPointMCCollections you want written out")};
@@ -189,7 +190,7 @@ namespace mu2e {
     // MC truth branches (inputs)
     art::Handle<PrimaryParticle> _pph;
     art::Handle<KalSeedMCAssns> _ksmcah;
-    art::Handle<CaloClusterMCAssns> _ccmcah;
+    art::Handle<CaloClusterMCTruthAssn> _ccmcah;
     art::Handle<CaloCrystalHitRemapping> _cchmH;
     art::InputTag _primaryParticleTag;
     art::InputTag _kalSeedMCTag, _caloClusterMCTag;
