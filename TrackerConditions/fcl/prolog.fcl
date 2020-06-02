@@ -51,6 +51,8 @@ StrawDrift : {
    useDb : false
    wireVoltage : 1400
    phiBins : 20
+   deltaDistance : 0.001
+   deltaTime : 0.05
    driftIntegrationBins : 50
    # KV/cm
    kVcm : [ 0.420,0.490,0.559,0.629,0.699,0.769,0.839,0.909,0.979,1.049,1.119,1.189,1.259,1.329,1.399,1.573,1.748,1.923,2.098,2.448,2.797,3.147,3.497,3.846,4.196,4.545,4.895,5.245,5.735, 500 ]
@@ -235,6 +237,12 @@ StrawResponse : {
       0.185959, 0.181423, 0.17848, 0.171357, 0.171519, 0.168422, 0.161338, 
       0.156641, 0.151196, 0.146546, 0.144069, 0.139858, 0.135838, 0.13319, 
       0.132159, 0.130062, 0.123545, 0.120212 ]
+
+   useParameterizedDriftErrors : false
+   parameterizedDriftBins : 25000
+   parameterizedDriftSigma : 1.39
+   parameterizedDriftTau : 11.22
+
 
    wireLengthBuffer : 2.0
    strawLengthFactor : 0.9

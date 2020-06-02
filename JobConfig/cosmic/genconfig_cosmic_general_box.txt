@@ -1,0 +1,26 @@
+//
+// Configuration for CosmicDYB
+// (general simulation)
+//
+// Ralf Ehrlich, 2015
+
+bool conversionGun.do = false;
+bool cosmicDYB.do = true;
+bool picapture.do = false;
+bool ejectedProtonGun.do = false;
+bool decayinorbitGun.do = false;
+bool piEplusNuGun.do = false;
+
+double cosmicDYB.mean =  -1.1; 
+double cosmicDYB.muEMin = 0.5e3;
+double cosmicDYB.muEMax = 5000e3;
+double cosmicDYB.dx     = 5000;
+double cosmicDYB.dy     = 3000;
+double cosmicDYB.dz     = 15000;
+vector<double> cosmicDYB.productionCenterInMu2e = {-3904,0,10200};
+
+//
+// This tells emacs to view this file in c++ mode.
+// Local Variables:
+// mode:c++
+// End:

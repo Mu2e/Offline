@@ -6,7 +6,6 @@
 #include "DataProducts/inc/XYZVec.hh"
 #include "TrackerGeom/inc/Tracker.hh"
 #include "RecoDataProducts/inc/CosmicTrackSeed.hh"
-#include "CosmicReco/inc/CosmicTrackFinderData.hh"
 
 //For Drift:
 #include "BTrk/BaBar/BaBar.hh"
@@ -52,7 +51,8 @@ using namespace mu2e;
 	};
 
     namespace MinuitDriftFitter {
-	FitResult DoFit(int diag, CosmicTrackFinderData& trackdata, StrawResponse const& srep, const Tracker* tracker, double doca_cut, unsigned int MinNCh_cut, int LogLcut, double _gaussTres, double _maxTres);
+	FitResult DoFit(int diag, CosmicTrackSeed& tseed, StrawResponse const& srep, const Tracker* tracker, double doca_cut, unsigned int MinNCh_cut, int LogLcut, double _gaussTres, double _maxTres);
+        void DoDriftTimeFit(int diag, CosmicTrackSeed& tseed, StrawResponse const& srep, const Tracker* tracker );
 
     }
 

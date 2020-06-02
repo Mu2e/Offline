@@ -244,4 +244,127 @@
       </Layer>
     </Layout>
   </Weights>
+  <Calibration>
+    <Calib Index="0" CalibVal="1" Val="0.999987"/>
+    <Calib Index="1" CalibVal="0.99" Val="0.999933"/>
+    <Calib Index="2" CalibVal="0.98" Val="0.999911"/>
+    <Calib Index="3" CalibVal="0.97" Val="0.999887"/>
+    <Calib Index="4" CalibVal="0.96" Val="0.999863"/>
+    <Calib Index="5" CalibVal="0.95" Val="0.999839"/>
+    <Calib Index="6" CalibVal="0.94" Val="0.999819"/>
+    <Calib Index="7" CalibVal="0.93" Val="0.999789"/>
+    <Calib Index="8" CalibVal="0.92" Val="0.999761"/>
+    <Calib Index="9" CalibVal="0.91" Val="0.999735"/>
+    <Calib Index="10" CalibVal="0.9" Val="0.999705"/>
+    <Calib Index="11" CalibVal="0.89" Val="0.999673"/>
+    <Calib Index="12" CalibVal="0.88" Val="0.999637"/>
+    <Calib Index="13" CalibVal="0.87" Val="0.999605"/>
+    <Calib Index="14" CalibVal="0.86" Val="0.999565"/>
+    <Calib Index="15" CalibVal="0.85" Val="0.999523"/>
+    <Calib Index="16" CalibVal="0.84" Val="0.999483"/>
+    <Calib Index="17" CalibVal="0.83" Val="0.999437"/>
+    <Calib Index="18" CalibVal="0.82" Val="0.999383"/>
+    <Calib Index="19" CalibVal="0.81" Val="0.999337"/>
+    <Calib Index="20" CalibVal="0.8" Val="0.999285"/>
+    <Calib Index="21" CalibVal="0.79" Val="0.999225"/>
+    <Calib Index="22" CalibVal="0.78" Val="0.999163"/>
+    <Calib Index="23" CalibVal="0.77" Val="0.999101"/>
+    <Calib Index="24" CalibVal="0.76" Val="0.999029"/>
+    <Calib Index="25" CalibVal="0.75" Val="0.998955"/>
+    <Calib Index="26" CalibVal="0.74" Val="0.998875"/>
+    <Calib Index="27" CalibVal="0.73" Val="0.998791"/>
+    <Calib Index="28" CalibVal="0.72" Val="0.998705"/>
+    <Calib Index="29" CalibVal="0.71" Val="0.998613"/>
+    <Calib Index="30" CalibVal="0.7" Val="0.998509"/>
+    <Calib Index="31" CalibVal="0.69" Val="0.998401"/>
+    <Calib Index="32" CalibVal="0.68" Val="0.998285"/>
+    <Calib Index="33" CalibVal="0.67" Val="0.998163"/>
+    <Calib Index="34" CalibVal="0.66" Val="0.998033"/>
+    <Calib Index="35" CalibVal="0.65" Val="0.997889"/>
+    <Calib Index="36" CalibVal="0.64" Val="0.997745"/>
+    <Calib Index="37" CalibVal="0.63" Val="0.997585"/>
+    <Calib Index="38" CalibVal="0.62" Val="0.997415"/>
+    <Calib Index="39" CalibVal="0.61" Val="0.997229"/>
+    <Calib Index="40" CalibVal="0.6" Val="0.997029"/>
+    <Calib Index="41" CalibVal="0.59" Val="0.996821"/>
+    <Calib Index="42" CalibVal="0.58" Val="0.996601"/>
+    <Calib Index="43" CalibVal="0.57" Val="0.996357"/>
+    <Calib Index="44" CalibVal="0.56" Val="0.996099"/>
+    <Calib Index="45" CalibVal="0.55" Val="0.995813"/>
+    <Calib Index="46" CalibVal="0.54" Val="0.995517"/>
+    <Calib Index="47" CalibVal="0.53" Val="0.995197"/>
+    <Calib Index="48" CalibVal="0.52" Val="0.994847"/>
+    <Calib Index="49" CalibVal="0.51" Val="0.994469"/>
+    <Calib Index="50" CalibVal="0.5" Val="0.994055"/>
+    <Calib Index="51" CalibVal="0.49" Val="0.993603"/>
+    <Calib Index="52" CalibVal="0.48" Val="0.993127"/>
+    <Calib Index="53" CalibVal="0.47" Val="0.992619"/>
+    <Calib Index="54" CalibVal="0.46" Val="0.992057"/>
+    <Calib Index="55" CalibVal="0.45" Val="0.991467"/>
+    <Calib Index="56" CalibVal="0.44" Val="0.990807"/>
+    <Calib Index="57" CalibVal="0.43" Val="0.990099"/>
+    <Calib Index="58" CalibVal="0.42" Val="0.989323"/>
+    <Calib Index="59" CalibVal="0.41" Val="0.988447"/>
+    <Calib Index="60" CalibVal="0.4" Val="0.987497"/>
+    <Calib Index="61" CalibVal="0.39" Val="0.986443"/>
+    <Calib Index="62" CalibVal="0.38" Val="0.985295"/>
+    <Calib Index="63" CalibVal="0.37" Val="0.984015"/>
+    <Calib Index="64" CalibVal="0.36" Val="0.982587"/>
+    <Calib Index="65" CalibVal="0.35" Val="0.981039"/>
+    <Calib Index="66" CalibVal="0.34" Val="0.979315"/>
+    <Calib Index="67" CalibVal="0.33" Val="0.977397"/>
+    <Calib Index="68" CalibVal="0.32" Val="0.975261"/>
+    <Calib Index="69" CalibVal="0.31" Val="0.972895"/>
+    <Calib Index="70" CalibVal="0.3" Val="0.970197"/>
+    <Calib Index="71" CalibVal="0.29" Val="0.967241"/>
+    <Calib Index="72" CalibVal="0.28" Val="0.963921"/>
+    <Calib Index="73" CalibVal="0.27" Val="0.960139"/>
+    <Calib Index="74" CalibVal="0.26" Val="0.955677"/>
+    <Calib Index="75" CalibVal="0.25" Val="0.950801"/>
+    <Calib Index="76" CalibVal="0.24" Val="0.945135"/>
+    <Calib Index="77" CalibVal="0.23" Val="0.938687"/>
+    <Calib Index="78" CalibVal="0.22" Val="0.931147"/>
+    <Calib Index="79" CalibVal="0.21" Val="0.922603"/>
+    <Calib Index="80" CalibVal="0.2" Val="0.912695"/>
+    <Calib Index="81" CalibVal="0.19" Val="0.901353"/>
+    <Calib Index="82" CalibVal="0.18" Val="0.888409"/>
+    <Calib Index="83" CalibVal="0.17" Val="0.873141"/>
+    <Calib Index="84" CalibVal="0.16" Val="0.854925"/>
+    <Calib Index="85" CalibVal="0.15" Val="0.833057"/>
+    <Calib Index="86" CalibVal="0.14" Val="0.807565"/>
+    <Calib Index="87" CalibVal="0.13" Val="0.777629"/>
+    <Calib Index="88" CalibVal="0.12" Val="0.741755"/>
+    <Calib Index="89" CalibVal="0.11" Val="0.699713"/>
+    <Calib Index="90" CalibVal="0.1" Val="0.651537"/>
+    <Calib Index="91" CalibVal="0.09" Val="0.593675"/>
+    <Calib Index="92" CalibVal="0.08" Val="0.526085"/>
+    <Calib Index="93" CalibVal="0.07" Val="0.451437"/>
+    <Calib Index="94" CalibVal="0.06" Val="0.368983"/>
+    <Calib Index="95" CalibVal="0.05" Val="0.280109"/>
+    <Calib Index="96" CalibVal="0.04" Val="0.196493"/>
+    <Calib Index="97" CalibVal="0.03" Val="0.115733"/>
+    <Calib Index="98" CalibVal="0.02" Val="0.051205"/>
+    <Calib Index="99" CalibVal="0.01" Val="0.010807"/>
+    <Calib Index="100" CalibVal="0" Val="0.0"/>
+  </Calibration>
 </MethodSetup>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

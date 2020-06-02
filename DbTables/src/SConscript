@@ -10,7 +10,8 @@ helper=mu2e_helper(env)
 mainlib = helper.make_mainlib ( [ 'mu2e_GeneralUtilities',
                                   'CLHEP',
                                   'cetlib',
-                                  'cetlib_except'] )
+                                  'cetlib_except'
+                              ] )
 
 # this tells emacs to view this file in python mode.
 # Local Variables:

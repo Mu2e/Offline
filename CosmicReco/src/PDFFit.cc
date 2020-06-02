@@ -29,6 +29,7 @@
 //Utilities:
 #include "CosmicReco/inc/PDFFit.hh"
 #include "CosmicReco/inc/DriftFitUtils.hh"
+#include "Mu2eUtilities/inc/TwoLinePCA.hh"
 
 //Minuit
 #include <Minuit2/FCNBase.h>
@@ -285,3 +286,110 @@ FullDriftFit::FullDriftFit(ComboHitCollection _chits, StrawResponse const& _srep
  	return llike;
 }
 
+double GaussianDriftFit::operator() (const std::vector<double> &x) const
+{
+  double a0 = x[0];
+  double b0 = x[1];
+  double a1 = x[2];
+  double b1 = x[3];
+  double t0 = x[4]; 
+  long double llike = 0;
+
+  CLHEP::Hep3Vector intercept(a0,0,b0);
+  CLHEP::Hep3Vector dir(a1,-1,b1);
+  dir = dir.unit();
+
+  for (size_t i=0;i<this->shs.size();i++){
+    Straw const& straw = tracker->getStraw(this->shs[i].strawId());
+    TwoLinePCA pca(straw.getMidPoint(), straw.getDirection(), intercept, dir);
+    double longdist = (pca.point1()-straw.getMidPoint()).dot(straw.getDirection());
+    double longres = srep.wpRes(this->shs[i].energyDep()*1000., fabs(longdist));
+
+    llike += pow(longdist-this->shs[i].wireDist(),2)/pow(longres,2);
+
+    double drift_time = srep.driftDistanceToTime(this->shs[i].strawId(), pca.dca(), 0);
+    drift_time += srep.driftTimeOffset(this->shs[i].strawId(), 0, 0, pca.dca());
+
+    double drift_res = srep.driftTimeError(this->shs[i].strawId(), 0, 0, pca.dca());
+
+    double traj_time = ((pca.point2() - intercept).dot(dir))/299.9;
+    double hit_t0 = this->shs[i].time() - this->shs[i].propTime() - traj_time - drift_time;
+    llike += pow(hit_t0-t0,2)/pow(drift_res,2);
+  }
+//  std::cout << x[0] << " " << x[1] << " " << x[2] << " " << x[3] << " " << x[4] << "  =>  " << llike << std::endl;
+  
+  return llike;
+}
+
+double GaussianDriftFit::DOCAresidual(ComboHit const& sh, const std::vector<double> &x) const
+{
+  double a0 = x[0];
+  double b0 = x[1];
+  double a1 = x[2];
+  double b1 = x[3];
+  double t0 = x[4]; 
+
+  CLHEP::Hep3Vector intercept(a0,0,b0);
+  CLHEP::Hep3Vector dir(a1,-1,b1);
+  dir = dir.unit();
+
+  Straw const& straw = tracker->getStraw(sh.strawId());
+  TwoLinePCA pca(straw.getMidPoint(), straw.getDirection(), intercept, dir);
+  double traj_time = ((pca.point2() - intercept).dot(dir))/299.9;
+  double hit_t0 = sh.propTime() + traj_time + t0 + srep.driftTimeOffset(sh.strawId(), 0, 0, pca.dca());
+
+  double predictedDistance = pca.dca();
+  double measuredDistance = srep.driftTimeToDistance(sh.strawId(), sh.time()-hit_t0, 0);
+
+  return predictedDistance-measuredDistance;
+}
+
+double GaussianDriftFit::DOCAresidualError(ComboHit const& sh, const std::vector<double> &x, const std::vector<double> &cov) const
+{
+  double a0 = x[0];
+  double b0 = x[1];
+  double a1 = x[2];
+  double b1 = x[3];
+//  double t0 = x[4];
+
+  CLHEP::Hep3Vector intercept(a0,0,b0);
+  CLHEP::Hep3Vector dir(a1,-1,b1);
+  dir = dir.unit();
+
+  Straw const& straw = tracker->getStraw(sh.strawId());
+  TwoLinePCA pca(straw.getMidPoint(), straw.getDirection(), intercept, dir);
+
+  auto s0 = straw.getMidPoint();
+  auto s1 = straw.getDirection();
+  double x0 = s0.x();
+  double y0 = s0.y();
+  double z0 = s0.z();
+  double x1= s1.x();
+  double y1= s1.y();
+  double z1 = s1.z();
+
+  double da0 = (-(b1*y1) + z1)/sqrt(pow(x1+a1*y1,2)+pow(-b1*y1-z1,2)+pow(b1*x1-a1*z1,2));
+  double db0 = (a1*y1+x1)/sqrt(pow(x1+a1*y1,2)+pow(-b1*y1-z1,2)+pow(b1*x1-a1*z1,2));
+  double da1 = -(((x1 + a1*y1)*(b0 - z0) + (a0 - x0)*(-(b1*y1) + z1) - y0*(b1*x1 - a1*z1))*(2*y1*(x1 + a1*y1) - 2*z1*(b1*x1 - a1*z1)))/(2*pow(pow(x1 + a1*y1,2) + pow(-(b1*y1) - z1,2) + pow(b1*x1 - a1*z1,2),3/2.)) + (y1*(b0 - z0) + y0*z1)/sqrt(pow(x1 + a1*y1,2) + pow(-(b1*y1) - z1,2) + pow(b1*x1 - a1*z1,2));
+  double db1 = -((-2*y1*(-(b1*y1) - z1) + 2*x1*(b1*x1 - a1*z1))*((x1 + a1*y1)*(b0 - z0) + (a0 - x0)*(-(b1*y1) + z1) - y0*(b1*x1 - a1*z1)))/(2*pow(pow(x1 + a1*y1,2) + pow(-(b1*y1) - z1,2) + pow(b1*x1 - a1*z1,2),3/2.)) + (-(x1*y0) - (a0 - x0)*y1)/sqrt(pow(x1 + a1*y1,2) + pow(-(b1*y1) - z1,2) + pow(b1*x1 - a1*z1,2));
+  double dt0 = srep.driftInstantSpeed(sh.strawId(),pca.dca(),0);
+
+  std::vector<double> dx = {da0,db0,da1,db1,dt0};
+  std::vector<double> temp(5,0);
+  for (size_t i=0;i<5;i++){
+    for (size_t j=0;j<5;j++){
+      double thiscov = cov[i+j*(j+1)/2];
+      if (j < i)
+        thiscov = cov[j+i*(i+1)/2];
+
+      temp[i] += dx[j]*thiscov;
+    }
+  }
+
+  double residerror = 0;
+  for (size_t i=0;i<5;i++){
+    residerror += temp[i]*dx[i];
+  }
+
+  return sqrt(residerror);
+}

@@ -1,4 +1,5 @@
 #include "fcl/minimalMessageService.fcl"
+#include "fcl/standardProducers.fcl"
 #include "fcl/standardServices.fcl"
 #include "CRVResponse/fcl/prolog.fcl"
 
@@ -46,5 +47,7 @@ outputs:
   }
 }
 
+physics.producers.CrvCoincidenceClusterMatchMC.timeOffsets  : { inputs : [ @sequence::DigiCompression.TimeMaps ] }
+services.GeometryService.simulatedDetector.tool_type : "Mu2e"
 services.SeedService.baseSeed         :  773651
 services.SeedService.maxUniqueEngines :  20
