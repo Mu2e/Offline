@@ -418,12 +418,11 @@ namespace mu2e {
     }
 
     // extracting info specific to ions
-    double excitationEnergy = 0.;
-    int floatLevelBaseIndex = 0;
+    SimParticle::IonDetail ion;
     if ( ppdgId>PDGCode::G4Threshold ) {
       const G4ParticleDefinition* pDef = trk->GetDefinition();
-      excitationEnergy = dynamic_cast<const G4Ions*>(pDef)->GetExcitationEnergy();
-      floatLevelBaseIndex = dynamic_cast<const G4Ions*>(pDef)->GetFloatLevelBaseIndex();
+      ion.excitationEnergy = dynamic_cast<const G4Ions*>(pDef)->GetExcitationEnergy();
+      ion.floatLevelBaseIndex = dynamic_cast<const G4Ions*>(pDef)->GetFloatLevelBaseIndex();
     }
 
     _transientMap.insert(std::make_pair(kid,SimParticle( kid,
@@ -438,8 +437,7 @@ namespace mu2e {
                                                          _physVolHelper->index(trk),
                                                          trk->GetTrackStatus(),
                                                          creationCode,
-                                                         excitationEnergy,
-                                                         floatLevelBaseIndex)));
+                                                         ion)));
 
     // If this track has a parent, tell the parent about this track.
     if ( parentPtr.isNonnull() ){
