@@ -1,0 +1,51 @@
+#include "fcl/minimalMessageService.fcl"
+#include "fcl/standardProducers.fcl"
+#include "fcl/standardServices.fcl"
+
+process_name : iontest
+
+source : { module_type : EmptyEvent maxEvents : 1 }
+services : @local::Services.Sim
+
+physics : {
+   producers:  {
+      generate: {
+         module_type: IonProducer
+         pdgId: 1000591349
+         excitationEnergy: 0.163100
+         floatLevel: 1
+         position: [0,0,0]
+         momentum: [0,0,0]
+      }
+
+      g4run :  @local::g4run
+   }
+
+   p1 : [generate, g4run]
+   trigger_paths  : [p1]
+
+   e1: [full]
+   end_paths: [e1]
+
+}
+
+outputs: { full: { module_type : RootOutput } }
+
+services.GeometryService.inputFile:  "Mu2eG4/test/g4study_Tube_geom.txt"
+services.GeometryService.simulatedDetector.tool_type: "ConstructEnvTube"
+physics.producers.g4run.SDConfig.enableSD: []
+physics.producers.g4run.TrajectoryControl.perVolumeMinDistance: {}
+
+physics.producers.g4run.generatorModuleLabel: ""
+physics.producers.g4run.MultiStageParameters: {
+   simParticleNumberOffset: 100000
+   genInputHits: [ "generate" ]
+   inputSimParticles: "generate"
+   inputMCTrajectories: ""
+   inputPhysVolumeMultiInfo: ""
+}
+
+services.SeedService.baseSeed         :  8
+services.SeedService.maxUniqueEngines :  20
+
+outputs.full.fileName: "sim.owner.iontest.version.sequencer.art"

@@ -39,6 +39,15 @@ namespace mu2e {
 
     typedef cet::map_vector_key key_type;
 
+    // Parameters used by GEANT4 to describe excited ions
+    struct IonDetail {
+      double excitationEnergy;
+      short int floatLevelBaseIndex;
+      IonDetail(double e, short int i) : excitationEnergy{e}, floatLevelBaseIndex{i} {}
+      IonDetail(): excitationEnergy{0.}, floatLevelBaseIndex{0} {}
+    };
+
+
     // A default c'tor is required for ROOT.
     SimParticle():
       _id(),
@@ -53,8 +62,7 @@ namespace mu2e {
       _startVolumeIndex(0),
       _startG4Status(),
       _creationCode(),
-      _startExcitationEnergy(0.),
-      _startFloatLevelBaseIndex(0),
+      _ion(),
       _endPosition(),
       _endMomentum(),
       _endGlobalTime(0.),
@@ -82,8 +90,7 @@ namespace mu2e {
                  unsigned                       astartVolumeIndex,
                  unsigned                       astartG4Status,
                  ProcessCode                    acreationCode,
-                 double                         astartExcitationEnergy = 0.0,
-                 int                            astartFloatLevelBaseIndex = 0
+                 IonDetail             const&   ion = IonDetail()
                  ):
       _id(aid),
       _stageOffset(stageOffset),
@@ -97,8 +104,7 @@ namespace mu2e {
       _startVolumeIndex(astartVolumeIndex),
       _startG4Status(astartG4Status),
       _creationCode(acreationCode),
-      _startExcitationEnergy(astartExcitationEnergy),
-      _startFloatLevelBaseIndex(astartFloatLevelBaseIndex),
+      _ion(ion),
       _endPosition(),
       _endMomentum(),
       _endGlobalTime(0.),
@@ -186,14 +192,16 @@ namespace mu2e {
     // Information at the start of the track.
     CLHEP::Hep3Vector const& startPosition()       const { return _startPosition;}
     CLHEP::HepLorentzVector const& startMomentum() const { return _startMomentum;}
-    // the next two are for excited ions
-    double      startExcitationEnergy()    const { return _startExcitationEnergy;}
-    int         startFloatLevelBaseIndex() const { return _startFloatLevelBaseIndex;};
     double      startGlobalTime()  const { return _startGlobalTime;}
     double      startProperTime()  const { return _startProperTime;}
     unsigned    startVolumeIndex() const { return _startVolumeIndex;}
     unsigned    startG4Status()    const { return _startG4Status;}
     ProcessCode creationCode()     const { return _creationCode;   }
+
+    // the following is for excited ions
+    IonDetail const& ion()                      const { return _ion; }
+    double           startExcitationEnergy()    const { return _ion.excitationEnergy;}
+    int              startFloatLevelBaseIndex() const { return _ion.floatLevelBaseIndex;};
 
     // Information at the end of the track.
     CLHEP::Hep3Vector const& endPosition() const { return _endPosition;}
@@ -264,9 +272,7 @@ namespace mu2e {
     unsigned                _startVolumeIndex;
     unsigned                _startG4Status;
     ProcessCode             _creationCode;
-    // the next two are for excited ions
-    double                  _startExcitationEnergy;
-    short int               _startFloatLevelBaseIndex;
+    IonDetail               _ion;
 
     // Information at the end of the track.
     CLHEP::Hep3Vector       _endPosition;
