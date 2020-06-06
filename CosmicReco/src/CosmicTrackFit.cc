@@ -4,7 +4,6 @@
 
 // Mu2e Cosmics:
 #include "CosmicReco/inc/CosmicTrackFit.hh"
-#include "CosmicReco/inc/CosmicTrackFinderData.hh"
 #include "RecoDataProducts/inc/CosmicTrack.hh"
 
 // art
@@ -83,16 +82,17 @@ namespace mu2e
 	_gaussTres (conf.gaussTres()),
 	_maxTres (conf.maxTres()),
 	_maxd (conf.maxd()),
-	_maxpull (conf.maxpull())
+	_maxpull (conf.maxpull()),
+        _useTSeedDirection (conf.UseTSeedDirection())
 	{}
 	 
     /* ---------------Initialize Fit----------------//
     //----------------------------------------------*/
-    bool CosmicTrackFit::initCosmicTrack(const char* title, CosmicTrackFinderData& TrackData) {
+    bool CosmicTrackFit::initCosmicTrack(const char* title, CosmicTrackSeed& tseed, ComboHitCollection &combohits) {
     
 	bool is_ok(false);
-	RunFitChi2(title, TrackData);
-	is_ok = TrackData._tseed._status.hasAllProperties(TrkFitFlag::helixOK);
+	RunFitChi2(title, tseed, combohits);
+	is_ok = tseed._status.hasAllProperties(TrkFitFlag::helixOK);
 	return is_ok;
   }
 
@@ -133,51 +133,84 @@ namespace mu2e
 
     }
 
-  void CosmicTrackFit::BeginFit(const char* title, CosmicTrackFinderData& TrackData){ 
-	TrackData._tseed._status.clear(TrkFitFlag::helixOK); 
-	bool init(false);
-	if (!TrackData._tseed._status.hasAllProperties(TrkFitFlag::circleInit)) {
-		init = true;
-		if (initCosmicTrack( title, TrackData)){
-			TrackData._tseed._status.merge(TrkFitFlag::circleInit);
-		}
-		else { 
-			return;
-		}
-	} 
-	if (!init)RunFitChi2(title, TrackData);
+    void CosmicTrackFit::BeginFit(const char* title, CosmicTrackSeed &tseed, art::Event const& event, ComboHitCollection const& chcol, std::vector<StrawHitIndex> &panelHitIdxs){ 
+      ComboHitCollection combohits;
+      combohits.setParent(chcol.parent());
+      for (size_t i=0;i<panelHitIdxs.size();i++){
+        combohits.push_back(chcol[panelHitIdxs[i]]);
+      }
+      tseed._status.clear(TrkFitFlag::helixOK); 
+      bool init(false);
+      if (!tseed._status.hasAllProperties(TrkFitFlag::circleInit)) {
+        init = true;
+        if (initCosmicTrack( title, tseed, combohits)){
+          tseed._status.merge(TrkFitFlag::circleInit);
+        }
+        else { 
+          FillTrackHitCollections(tseed, event, chcol, panelHitIdxs);
+          return;
+        }
+      } 
+      if (!init)RunFitChi2(title, tseed, combohits);
+
+      FillTrackHitCollections(tseed, event, chcol, panelHitIdxs);
+
+      return;
     }
 
-   void CosmicTrackFit::RunFitChi2(const char* title, CosmicTrackFinderData& TrackData) {   
-	CosmicTrack* track = &TrackData._tseed._track; 
-	TrackData._tseed._status.merge(TrkFitFlag::helixOK);  
-	TrackData._tseed._status.merge(TrkFitFlag::helixConverged);
-	FitAll(title, TrackData, track); 
+    void CosmicTrackFit::FillTrackHitCollections(CosmicTrackSeed &tseed, art::Event const& event, ComboHitCollection const& chcol, std::vector<StrawHitIndex> &panelHitIdxs){
+      std::vector<ComboHitCollection::const_iterator> chids;  
+      chcol.fillComboHits(event, panelHitIdxs, chids); 
+      for (auto const& it : chids){
+        tseed._straw_chits.push_back(it[0]);
+      }
+      for(size_t ich= 0; ich<tseed._straw_chits.size(); ich++){  
+        std::vector<StrawHitIndex> shitids;          	          		
+        tseed._straw_chits.fillStrawHitIndices(event, ich, shitids);  
+
+        for(auto const& ids : shitids){ 
+          size_t    istraw   = (ids);
+          TrkStrawHitSeed tshs;
+          tshs._index  = istraw;
+          tshs._t0 = tseed._t0;
+          tseed._trkstrawhits.push_back(tshs); 
+        }  
+      }
+
+    }
+
+   void CosmicTrackFit::RunFitChi2(const char* title, CosmicTrackSeed& tseed, ComboHitCollection &combohits) {   
+	CosmicTrack* track = &tseed._track; 
+	tseed._status.merge(TrkFitFlag::helixOK);  
+	tseed._status.merge(TrkFitFlag::helixConverged);
+	FitAll(title, tseed, combohits, track); 
    
     }
 
 
 
-    void CosmicTrackFit::FitAll(const char* title, CosmicTrackFinderData& trackData,  CosmicTrack* cosmictrack){
+    void CosmicTrackFit::FitAll(const char* title, CosmicTrackSeed &tseed, ComboHitCollection &combohits, CosmicTrack* cosmictrack){
  
      ::BuildLinearFitMatrixSums S;
      ComboHit   *hitP1(0), *hitP2(0); 
-     size_t nHits (trackData._chHitsToProcess.size());   
+     size_t nHits (combohits.size());   
      int DOF = (nHits);// - (_Npara);
-     const ComboHit* ch0 = &trackData._chHitsToProcess[0]; 
-     const ComboHit* chN = &trackData._chHitsToProcess[trackData._chHitsToProcess.size()-1]; 
-     cosmictrack->SetFirstHitVec(ch0->pos().x(), ch0->pos().y(), ch0->pos().z());
-     cosmictrack->SetLastHitVec(chN->pos().x(), chN->pos().y(), chN->pos().z());
-     cosmictrack->Set_N(nHits);
+     const ComboHit* ch0 = &combohits[0]; 
+     const ComboHit* chN = &combohits[combohits.size()-1]; 
 
      //Step 1: Get Initial Estimate of track direction
-     XYZVec ZPrime = InitLineDirection(ch0, chN);  
+     XYZVec ZPrime;
+     if (_useTSeedDirection){
+       ZPrime = tseed._track.FitEquation.Dir;
+     }else{
+       ZPrime = InitLineDirection(ch0, chN);
+     }
      std::vector<XYZVec> AxesList = ParametricFit::GetAxes(ZPrime);
      TrackAxes InitAxes = ParametricFit::GetTrackAxes(ZPrime);
     
     //Step 2: Loop over hits and get track parameters based on above estimated track direction
     for (size_t f1=0; f1<nHits; ++f1){  
-      hitP1 = &trackData._chHitsToProcess[f1];  
+      hitP1 = &combohits[f1];  
       if (!use_hit(*hitP1) && hitP1->nStrawHits() < _minnsh)  continue;  
       XYZVec point(hitP1->pos().x(),hitP1->pos().y(),hitP1->pos().z());
       std::vector<double> ErrorsXY = ParametricFit::GetErrors(hitP1, InitAxes._XDoublePrime, InitAxes._YDoublePrime); 
@@ -198,9 +231,8 @@ namespace mu2e
       TrackParams InitParams(a0,a1,b0,b1);
       
       cosmictrack->SetInitParams(InitParams);
-      cosmictrack->SetTrackDirection(UpdatedTrackDirection);
-      cosmictrack->SetInitTrackCoordSystem(Axes);
-      cosmictrack->SetFitTrackCoOrdSystem(Axes);
+      cosmictrack->SetInitCoordSystem(Axes);
+      cosmictrack->SetFitCoordSystem(Axes);
       //Step 5: Loop for initial diagnostics
       if(_debug>0){
 	cosmictrack->set_initchisq_dofY(S.GetChi2Y()/abs(DOF));
@@ -228,11 +260,11 @@ namespace mu2e
       	}
      	//Step 8: Remove previous sums and use previously stored axes from updated last iteration:
      	S_niteration.clear(); 
-     	Axes = ParametricFit::GetTrackAxes(cosmictrack->GetTrackDirection());
+     	Axes = ParametricFit::GetTrackAxes(cosmictrack->FitParams.Direction());
      	cosmictrack->set_niter(niter );
      	for (size_t f4=0; f4 < nHits; ++f4){ 
      	      
-     	      hitP2 = &trackData._chHitsToProcess[f4];
+     	      hitP2 = &combohits[f4];
       	      if (((!use_hit(*hitP2) ) && (hitP2->nStrawHits() < _minnsh) )) continue;   
 	      XYZVec point(hitP2->pos().x(),hitP2->pos().y(),hitP2->pos().z());	    	  
 	      std::vector<double> ErrorsXY = ParametricFit::GetErrors(hitP2, Axes._XDoublePrime, Axes._YDoublePrime);	 
@@ -245,13 +277,12 @@ namespace mu2e
 	  b1 = S_niteration.GetAlphaY()[1][0];
 	 
     	  //Step 9: Get new direction:
-	   XYZVec DirectionSecond(a1,b1,1);
-	   XYZVec UpdatedTrackDirectionSecond = DirectionSecond.Unit();
+	   //XYZVec DirectionSecond(a1,b1,1);
+	   //XYZVec UpdatedTrackDirectionSecond = DirectionSecond.Unit();
 	   
  	   //Step 10 - Get New Axes:
  	   //Axes = ParametricFit::GetTrackAxes(UpdatedTrackDirectionSecond);
-	   cosmictrack->SetTrackDirection(UpdatedTrackDirectionSecond); 
-	   cosmictrack->SetFitTrackCoOrdSystem(Axes);
+	   cosmictrack->SetFitCoordSystem(Axes);
 	   //Step 11: Update Parameters:
 	   TrackParams FitParams(a0,a1,b0,b1);
 	   cosmictrack->SetFitParams(FitParams);
@@ -274,12 +305,11 @@ namespace mu2e
 		//BestTrack->clear_diag();
 		TrackParams FitParams(a0,a1,b0,b1);
 	   	BestTrack->SetFitParams(FitParams);
-	        BestTrack->SetFitTrackCoOrdSystem(Axes);
-	        BestTrack->SetTrackDirection(cosmictrack->GetTrackDirection());
+	        BestTrack->SetFitCoordSystem(Axes);
 	        
       		XYZVec EndTrackPosition(BestTrack->FitParams.A0,BestTrack->FitParams.B0,0);
-      		TrackEquation EndTrack(EndTrackPosition, BestTrack->TrackCoordSystem._ZPrime);
-      		BestTrack->SetTrackEquation(EndTrack);
+      		TrackEquation EndTrack(EndTrackPosition, BestTrack->FitCoordSystem._ZPrime);
+      		BestTrack->SetFitEquation(EndTrack);
       		
    		//Step 14: Save this Chi2:
                 if(_debug > 0){
@@ -298,8 +328,8 @@ namespace mu2e
  	      }
  	  
            if(niter == _maxniter && converged ==false ){
- 		    trackData._tseed._status.clear(TrkFitFlag::helixOK);
- 		    trackData._tseed._status.clear(TrkFitFlag::helixConverged);
+ 		    tseed._status.clear(TrkFitFlag::helixOK);
+ 		    tseed._status.clear(TrkFitFlag::helixConverged);
  		    continue;
 		 }
 		 
@@ -307,12 +337,12 @@ namespace mu2e
    cosmictrack=BestTrack;
    if(cosmictrack->converged and  _diag > 0){
 	 for (size_t f5=0; f5<nHits; ++f5){
-     		hitP2 = &trackData._chHitsToProcess[f5];
+     		hitP2 = &combohits[f5];
                 if (((!use_hit(*hitP2) ) && (hitP2->nStrawHits() < _minnsh) )) continue;
 		XYZVec point(hitP2->pos().x(),hitP2->pos().y(),hitP2->pos().z());
-		XYZVec point_prime(point.Dot(BestTrack->TrackCoordSystem._XDoublePrime), point.Dot(BestTrack->TrackCoordSystem._YDoublePrime), point.Dot(BestTrack->TrackCoordSystem._ZPrime));
+		XYZVec point_prime(point.Dot(BestTrack->FitCoordSystem._XDoublePrime), point.Dot(BestTrack->FitCoordSystem._YDoublePrime), point.Dot(BestTrack->FitCoordSystem._ZPrime));
 		
-		std::vector<double> ErrorsXY = ParametricFit::GetErrors(hitP1, BestTrack->TrackCoordSystem._XDoublePrime, BestTrack->TrackCoordSystem._YDoublePrime);  
+		std::vector<double> ErrorsXY = ParametricFit::GetErrors(hitP1, BestTrack->FitCoordSystem._XDoublePrime, BestTrack->FitCoordSystem._YDoublePrime);  
 		
 	      	float newRx = ParametricFit::GetResidualX(BestTrack->FitParams.A0, BestTrack->FitParams.A1, point_prime);
 		float newRy = ParametricFit::GetResidualY(BestTrack->FitParams.B0, BestTrack->FitParams.B1, point_prime);
@@ -329,7 +359,7 @@ namespace mu2e
      
      if(cosmictrack->converged == true){
 	  
-          ConvertFitToDetectorFrame(trackData, cosmictrack->TrackCoordSystem, cosmictrack->GetTrackPosition(), cosmictrack->GetTrackDirection(), cosmictrack, true, false);
+          ConvertFitToDetectorFrame(cosmictrack->FitCoordSystem, cosmictrack->FitParams.Position(), cosmictrack->FitParams.Direction(), cosmictrack, true, false);
 	 
      } 
     
@@ -338,7 +368,7 @@ namespace mu2e
 /*------------Translate fit back into XYZ and/or the detector frame------//
 Using matrices to ctransform from local to global coordinates
 //-----------------------------------------------------------------------*/
-void CosmicTrackFit::ConvertFitToDetectorFrame(CosmicTrackFinderData& trackData, TrackAxes axes, XYZVec Position, XYZVec Direction, CosmicTrack* cosmictrack, bool seed, bool det){
+void CosmicTrackFit::ConvertFitToDetectorFrame(TrackAxes axes, XYZVec Position, XYZVec Direction, CosmicTrack* cosmictrack, bool seed, bool det){
 	TMatrixD A(3,3);
 	A[0][0] = axes._XDoublePrime.X();
 	A[0][1] = axes._YDoublePrime.X();
@@ -413,21 +443,17 @@ void CosmicTrackFit::ConvertFitToDetectorFrame(CosmicTrackFinderData& trackData,
 		if (det == true){ // is this detector frame?
 			XYZVec PosInDet = ConvertPointToDetFrame(Pos);
 			TrackEquation XYZTrack(PosInDet, Dir);
-			cosmictrack->SetTrackEquationXYZ(XYZTrack);
-			cosmictrack->sigmaPos.SetXYZ(sigmaPosXYZ[0][0], sigmaPosXYZ[1][0], sigmaPosXYZ[2][0]);
-			cosmictrack->sigmaDir.SetXYZ(sigmaDirXYZ[0][0], sigmaDirXYZ[1][0], sigmaDirXYZ[2][0]);
+			cosmictrack->SetFitEquation(XYZTrack);
 			
 		
 		} else {
 			TrackEquation XYZTrack(Pos, Dir);
-			cosmictrack->SetTrackEquationXYZ(XYZTrack);
+			cosmictrack->SetFitEquation(XYZTrack);
 			
 		}}
 	else{
 		TrackEquation XYZTrack(Pos, Dir);
-		cosmictrack->SetMinuitTrackEquation(XYZTrack);
-		cosmictrack->set_fit_phi(acos(Dir.x()/Dir.Mag2()));
-		cosmictrack->set_fit_theta(acos(Dir.y()/sqrt(Dir.Mag2())));
+		cosmictrack->SetMinuitEquation(XYZTrack);
 	}
 
     }
@@ -449,50 +475,52 @@ void CosmicTrackFit::ConvertFitToDetectorFrame(CosmicTrackFinderData& trackData,
 	return (track_length > _maxd) ? false : true ;
     }
 
-    void CosmicTrackFit::DriftFit(CosmicTrackFinderData& trackData, StrawResponse const& _srep ){
-	 
-	FitResult endresult = MinuitDriftFitter::DoFit(_diag, trackData, _srep, _tracker, _maxHitDOCA, _minnch, _maxLogL, _gaussTres, _maxTres);
+    void CosmicTrackFit::DriftFit(CosmicTrackSeed& tseed, StrawResponse const& _srep ){
 
+      FitResult endresult = MinuitDriftFitter::DoFit(_diag, tseed, _srep, _tracker, _maxHitDOCA, _minnch, _maxLogL, _gaussTres, _maxTres);
 
-	trackData._tseed._track.MinuitFitParams.A0 =  endresult.bestfit[0];//a0
-	trackData._tseed._track.MinuitFitParams.A1 =  endresult.bestfit[1];//a1
-	trackData._tseed._track.MinuitFitParams.B0 =  endresult.bestfit[2];//b0
-	trackData._tseed._track.MinuitFitParams.B1 =  endresult.bestfit[3];//b1
-	trackData._tseed._track.MinuitFitParams.T0 =  endresult.bestfit[4];//t0
+      tseed._track.MinuitParams.A0 =  endresult.bestfit[0];//a0
+      tseed._track.MinuitParams.A1 =  endresult.bestfit[1];//a1
+      tseed._track.MinuitParams.B0 =  endresult.bestfit[2];//b0
+      tseed._track.MinuitParams.B1 =  endresult.bestfit[3];//b1
+      tseed._track.MinuitParams.T0 =  endresult.bestfit[4];//t0
 
-	trackData._tseed._track.MinuitFitParams.deltaA0 =  endresult.bestfiterrors[0];//erra0
-	trackData._tseed._track.MinuitFitParams.deltaA1 =  endresult.bestfiterrors[1];//erra1
-	trackData._tseed._track.MinuitFitParams.deltaB0 =  endresult.bestfiterrors[2];//errb0
-	trackData._tseed._track.MinuitFitParams.deltaB1 =  endresult.bestfiterrors[3];//errb1
-	trackData._tseed._track.MinuitFitParams.deltaT0 =  endresult.bestfiterrors[4];//errt0
+      tseed._track.MinuitParams.deltaA0 =  endresult.bestfiterrors[0];//erra0
+      tseed._track.MinuitParams.deltaA1 =  endresult.bestfiterrors[1];//erra1
+      tseed._track.MinuitParams.deltaB0 =  endresult.bestfiterrors[2];//errb0
+      tseed._track.MinuitParams.deltaB1 =  endresult.bestfiterrors[3];//errb1
+      tseed._track.MinuitParams.deltaT0 =  endresult.bestfiterrors[4];//errt0
 
-	if(endresult.bestfitcov.size() !=0 ){
-		 TrackCov Cov(endresult.bestfitcov[0], 0., 0., endresult.bestfitcov[1], endresult.bestfitcov[2],0.,0., endresult.bestfitcov[3]);
-		 trackData._tseed._track.MinuitFitParams.Covarience = Cov;
-         }
-         if(endresult.NLL !=0){ trackData._tseed._track.minuit_converged = true; }
-	
-	 XYZVec X(1,0,0);
-	 XYZVec Y(0,1,0);
-	 XYZVec Z(0,0,1);
+      if(endresult.bestfitcov.size() !=0 ){
+        TrackCov Cov(endresult.bestfitcov[0], 0., 0., endresult.bestfitcov[1], endresult.bestfitcov[2],0.,0., endresult.bestfitcov[3]);
+        tseed._track.MinuitParams.Covarience = Cov;
+      }
+      if(endresult.NLL !=0){ tseed._track.minuit_converged = true; }
 
-	 TrackAxes XYZ(X,Y,Z);
-	 trackData._tseed._track.MinuitCoordSystem = XYZ; 
-         
-	if(endresult.FullFitEndTimeResiduals.size() >0){
-		for(unsigned i = 0; i< endresult.FullFitEndTimeResiduals.size()-1; i++){
-			if( endresult.FullFitEndTimeResiduals[i] > _maxTres or isnan(endresult.FullFitEndTimeResiduals[i])==true){ 
-				trackData._tseed._track.n_outliers +=1;
-				trackData._tseed._straw_chits[i]._flag.merge(StrawHitFlag::outlier); 
-				
-		}
-		}
-		
-	}
-        if( trackData._tseed._track.n_outliers  > _n_outliers) {
-		trackData._tseed._track.minuit_converged = false;
-	  }
-  
-}
+      XYZVec X(1,0,0);
+      XYZVec Y(0,1,0);
+      XYZVec Z(0,0,1);
+
+      TrackAxes XYZ(X,Y,Z);
+      tseed._track.MinuitCoordSystem = XYZ; 
+      tseed._track.MinuitEquation.Pos = XYZVec(tseed._track.MinuitParams.A0,tseed._track.MinuitParams.B0,0);
+      tseed._track.MinuitEquation.Dir = XYZVec(tseed._track.MinuitParams.A1,tseed._track.MinuitParams.B1,1);
+
+      unsigned int n_outliers = 0;
+      if(endresult.FullFitEndTimeResiduals.size() >0){
+        for(unsigned i = 0; i< endresult.FullFitEndTimeResiduals.size()-1; i++){
+          if( endresult.FullFitEndTimeResiduals[i] > _maxTres or isnan(endresult.FullFitEndTimeResiduals[i])==true){ 
+            n_outliers +=1;
+            tseed._straw_chits[i]._flag.merge(StrawHitFlag::outlier); 
+
+          }
+        }
+
+      }
+      if( n_outliers  > _n_outliers) {
+        tseed._track.minuit_converged = false;
+      }
+
+    }
 
 }//end namespace
