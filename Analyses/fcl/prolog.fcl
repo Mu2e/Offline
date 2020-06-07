@@ -32,6 +32,37 @@ CaloClusterCompareOld : {
         CaloClusterCollection : CaloClusterFast
 }
 
+
+CaloClusterAna: {
+	module_type : CaloClusterAna
+  CaloCrystalHitCollection : "CaloCrystalHitFromHit"
+  CaloClusterCollection : "CaloClusterFromProtoCluster"
+	GenParticleCollection : "compressDigiMCs"   
+	
+}
+
+CaloAna: {
+	module_type : CaloAna
+  KalRepPtrCollection :  "KFFDeM"
+  TrackClusterMatchCollection : NULL #"TrackCaloMatching"
+
+	
+}
+
+TrkCombine: {
+	module_type : TrkCombine
+  KalRepPtrCollection :  ["KFFDeM","KFFDeP"]
+}
+
+TrkPos: {
+	module_type : TrkPos
+  KalRepPtrCollection :  ["KFFDeP"]
+}
+TrkNeg: {
+	module_type : TrkNeg
+  KalRepPtrCollection :  ["KFFDeM"]
+}
+
 RPCAnalyzer : {
   module_type : RPCAna
   GenParticleCollection : "generate"  
@@ -45,10 +76,25 @@ RPCAnalyzer : {
 RPCRecoAnalyzer : {
   module_type : RPCRecoAna
 }
+
+CaloEventDisplays: {
+	module_type : CaloEventDisplays
+	CaloCrystalHitCollection : "CaloCrystalHitFromHit"
+  CaloClusterCollection : "CaloClusterFromProtoCluster"
+  doDisplay            : true
+	
+}
+
   RPCAna : {
     analyzers : {
       RPCAnalyzer : @local::RPCAnalyzer
+      TrkCombine : @local::TrkCombine
+      TrkPos : @local::TrkPos
+      TrkNeg : @local::TrkNeg
       RPCRecoAnalyzer : @local::RPCRecoAnalyzer
+      CaloAna : @local::CaloAna
+      CaloClusterAna : @local::CaloClusterAna
+      CaloEventDisplays : @local::CaloEventDisplays
     }
   }
 
@@ -61,6 +107,7 @@ GenFilter : {
  module_type : GenFilter
  GenParticleCollection : "generate"  
 }
+
 
 GenAna : {
     analyzers : {
