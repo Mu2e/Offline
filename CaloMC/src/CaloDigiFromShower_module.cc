@@ -18,11 +18,12 @@
 #include "ConditionsService/inc/AcceleratorParams.hh"
 #include "GeometryService/inc/GeomHandle.hh"
 #include "MCDataProducts/inc/CaloShowerStepRO.hh"
-#include "RecoDataProducts/inc/CaloDigiCollection.hh"
+#include "RecoDataProducts/inc/CaloDigi.hh"
 #include "SeedService/inc/SeedService.hh"
 
 #include "CLHEP/Vector/ThreeVector.h"
 #include "CLHEP/Random/RandPoissonQ.h"
+#include "CLHEP/Random/RandGaussQ.h"
 
 #include <iostream>
 #include <string>
@@ -46,7 +47,7 @@ namespace mu2e {
              fhicl::Atom<art::InputTag> caloShowerCollection { Name("caloShowerROCollection"), Comment("CaloShowerRO collection name") }; 
              fhicl::Atom<double>        blindTime            { Name("blindTime"),              Comment("Microbunch blind time") }; 
              fhicl::Atom<bool>          addNoise             { Name("addNoise"),               Comment("Add noise to waveform") }; 
-             fhicl::Atom<double>        noise                { Name("noise"),                  Comment("Noise level - PE equivalent") }; 
+             fhicl::Atom<double>        noise                { Name("noiseADC"),               Comment("Noise level - ADC equivalent") }; 
              fhicl::Atom<double>        digiSampling         { Name("digiSampling"),           Comment("Digitization time sampling") }; 
              fhicl::Atom<int>           nBits                { Name("nBits"),                  Comment("ADC Number of bits") }; 
              fhicl::Atom<int>           nBinsPeak            { Name("nBinsPeak"),              Comment("Window size for finding local maximum to digitize wf") }; 
@@ -75,6 +76,7 @@ namespace mu2e {
             diagLevel_         (config().diagLevel()),
             engine_            (createEngine(art::ServiceHandle<SeedService>()->getSeed())),
             randPoisson_       (engine_),
+            randGauss_         (engine_),
             pulseShape_        (CaloPulseShape(digiSampling_,pulseIntegralSteps_,false))
          {
              produces<CaloDigiCollection>();
@@ -110,6 +112,7 @@ namespace mu2e {
        int                     diagLevel_;
        CLHEP::HepRandomEngine& engine_;
        CLHEP::RandPoissonQ     randPoisson_;
+       CLHEP::RandGaussQ       randGauss_;
        CaloPulseShape          pulseShape_;
        const Calorimeter*      calorimeter_;
   };
@@ -170,8 +173,13 @@ namespace mu2e {
      for (unsigned i=0; i<waveforms.size(); ++i)
      {
         auto& waveform = waveforms[i];
-        double scaleFactor  = MeVToADC_/calorimeterCalibrations->peMeV(i);
-        auto noiseGenerator = [this,scaleFactor]{return std::max( (randPoisson_.fire(noise_)-noise_),0.0)*scaleFactor;};
+        
+        // Noise generated in p.e
+        //double scaleFactor  = MeVToADC_/calorimeterCalibrations->peMeV(i);
+        //auto noiseGenerator = [this,scaleFactor]{return std::max( (randPoisson_.fire(noise_)-noise_),0.0)*scaleFactor;};
+        
+        //Use Gaussian approximation of Poisson distribution and subtract baseline. Negative values are set to zero.
+        auto noiseGenerator = [this]{return std::max( (randGauss_.fire(0.0,noise_)),0.0);};
         
         std::generate(waveform.begin(),waveform.end(),noiseGenerator);
      }
@@ -237,6 +245,9 @@ namespace mu2e {
                   ++sampleStop;
               }
 
+              //I believe the sample must be greter than 1 to be recorded but I'm not cure - check
+              if (sampleStop < timeSample+2) {timeSample = sampleStop+2; continue;}
+               
               if (diagLevel_ > 2) std::cout<<"[CaloDigiFromShower] found peak with startSample="<<sampleStart<<"  stopSample="<<sampleStop<<"  timePeak="<<timeSample<<std::endl;
    
               //build the digi, find t0, PeakPosition, wf with saturation

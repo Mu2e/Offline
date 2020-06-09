@@ -16,7 +16,7 @@
 #include "MCDataProducts/inc/PrimaryParticle.hh"
 #include "MCDataProducts/inc/SimParticle.hh"
 #include "MCDataProducts/inc/MCRelationship.hh"
-#include "RecoDataProducts/inc/CaloCrystalHitCollection.hh"
+#include "RecoDataProducts/inc/CaloCrystalHit.hh"
 
 #include "TH2F.h"
 #include "TFile.h"
@@ -39,7 +39,7 @@ namespace mu2e {
              using Comment = fhicl::Comment;
              fhicl::Atom<art::InputTag>  caloShowerSimCollection  { Name("caloShowerSimCollection"),  Comment("Name of caloShowerSim Collection") };
              fhicl::Atom<art::InputTag>  caloCrystalHitCollection { Name("caloCrystalHitCollection"), Comment("Name of caloCrystalHit collection") };
-             fhicl::Atom<art::InputTag>  primaryParticle          { Name("PrimaryParticle"),	      Comment("PrimaryParticle producer")};
+             fhicl::Atom<art::InputTag>  primaryParticle          { Name("primaryParticle"),	      Comment("PrimaryParticle producer")};
              fhicl::Atom<double>         deltaTimeMinus           { Name("deltaTimeMinus"),           Comment("Maximum time before hit to include MC hit") };
              fhicl::Atom<double>         deltaTimePlus            { Name("deltaTimePlus"),            Comment("Maximum time after hit to include MC hit") };
              fhicl::Atom<bool>           fillDetailedMC           { Name("fillDetailedMC"),           Comment("Fill SimParticle - SimShower Assn map")};
@@ -149,8 +149,8 @@ namespace mu2e {
       const auto& caloCrystalHits(*caloCrystalHitHandle);
       const auto caloShowerSimHandle = event.getValidHandle(caloShowerSimToken_);
       const auto& caloShowerSims(*caloShowerSimHandle);
-      const auto primaryParticleHandle = event.getValidHandle<PrimaryParticle>(ppToken_);
-      const auto& primaryParticle = *primaryParticleHandle;
+      //const auto primaryParticleHandle = event.getValidHandle<PrimaryParticle>(ppToken_);
+      //const auto& primaryParticle = *primaryParticleHandle;
      
       
       std::map<int, std::vector<const CaloCrystalHit*>> caloHitMap;
@@ -232,11 +232,11 @@ namespace mu2e {
                  else 
                  {                                     
                     MCRelationship mcrel;
-                    for (const auto& spp : primaryParticle.primarySimParticles())
-                    {
-                        MCRelationship mcr(spp,sim);
-                        if (mcr > mcrel) mcrel = mcr;
-                    }
+                    //for (const auto& spp : primaryParticle.primarySimParticles())
+                    //{
+                    //    MCRelationship mcr(spp,sim);
+                    //    if (mcr > mcrel) mcrel = mcr;
+                    //}
                     edeps.emplace_back(CaloEDepMC(sim,edep,edepG4,time,pIn,mcrel));
                  }
                  
