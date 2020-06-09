@@ -38,7 +38,7 @@
 #include "dtcInterfaceLib/DTC.h"
 
 // Mu2e includes.
-#include "RecoDataProducts/inc/CaloDigiCollection.hh"
+#include "RecoDataProducts/inc/CaloDigi.hh"
 #include "RecoDataProducts/inc/CrvDigiCollection.hh"
 #include "RecoDataProducts/inc/StrawDigiCollection.hh"
 #include "RecoDataProducts/inc/StrawHitCollection.hh"

@@ -15,7 +15,7 @@
 //#include "GeometryService/inc/DetectorSystem.hh"
 // data
 #include "RecoDataProducts/inc/CaloCluster.hh"
-#include "RecoDataProducts/inc/CaloClusterCollection.hh"
+#include "RecoDataProducts/inc/CaloCluster.hh"
 
 using namespace CLHEP;
 // c++

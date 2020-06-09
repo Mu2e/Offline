@@ -23,7 +23,7 @@
 #include "GeometryService/inc/GeomHandle.hh"
 #include "GeometryService/inc/GeometryService.hh"
 
-#include "RecoDataProducts/inc/CaloTrigSeedCollection.hh"
+#include "RecoDataProducts/inc/CaloTrigSeed.hh"
 #include "RecoDataProducts/inc/TriggerInfo.hh"
 
 #include "ConfigTools/inc/ConfigFileLookupPolicy.hh"

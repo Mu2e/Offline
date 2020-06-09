@@ -21,9 +21,9 @@
 #include "GeometryService/inc/GeomHandle.hh"
 #include "GeometryService/inc/GeometryService.hh"
 #include "GlobalConstantsService/inc/GlobalConstantsHandle.hh"
-#include "RecoDataProducts/inc/CaloHitCollection.hh"
-#include "RecoDataProducts/inc/CaloDigiCollection.hh"
-#include "RecoDataProducts/inc/CaloRecoDigiCollection.hh"
+#include "RecoDataProducts/inc/CaloHit.hh"
+#include "RecoDataProducts/inc/CaloDigi.hh"
+#include "RecoDataProducts/inc/CaloRecoDigi.hh"
 #include "MCDataProducts/inc/CaloShowerSim.hh"
 
 #include "TH2F.h"

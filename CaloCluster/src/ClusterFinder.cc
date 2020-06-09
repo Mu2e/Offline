@@ -1,7 +1,7 @@
 #include "CaloCluster/inc/ClusterFinder.hh"
 #include "CalorimeterGeom/inc/Calorimeter.hh"
 #include "GeometryService/inc/GeomHandle.hh"
-#include "RecoDataProducts/inc/CaloCrystalHitCollection.hh"
+#include "RecoDataProducts/inc/CaloCrystalHit.hh"
 
 #include <iostream>
 #include <vector>

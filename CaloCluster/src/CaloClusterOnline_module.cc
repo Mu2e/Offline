@@ -12,8 +12,8 @@
 #include "CalorimeterGeom/inc/Calorimeter.hh"
 #include "GeometryService/inc/GeomHandle.hh"
 #include "GeometryService/inc/GeometryService.hh"
-#include "RecoDataProducts/inc/CaloCrystalHitCollection.hh"
-#include "RecoDataProducts/inc/CaloClusterCollection.hh"
+#include "RecoDataProducts/inc/CaloCrystalHit.hh"
+#include "RecoDataProducts/inc/CaloCluster.hh"
 
 // Other includes.
 #include <iostream>

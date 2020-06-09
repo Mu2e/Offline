@@ -67,7 +67,13 @@ namespace mu2e {
    void TemplateProcessor::extract(const std::vector<double>& xInput, const std::vector<double>& yInput)
    {       
        reset();
-
+/*
+std::cout<<"Xvec yvec"<<std::endl;
+for (auto val : xInput) std::cout<<val<<" ";
+std::cout<<std::endl;
+for (auto val : yInput) std::cout<<val<<" ";
+std::cout<<std::endl;
+*/
        std::vector<double> parInit;
        std::vector<unsigned> xindices;
        findPeak(xInput, yInput, parInit, xindices);      
@@ -76,20 +82,26 @@ namespace mu2e {
                    
        std::vector<double> xfit, yfit;
        for (auto i : xindices) {xfit.push_back(xInput[i]); yfit.push_back(yInput[i]);}
+/*
+std::cout<<"Xfit"<<std::endl;
+for (auto val : xfit) std::cout<<val<<" ";
+std::cout<<std::endl;
+for (auto val : yfit) std::cout<<val<<" ";
+std::cout<<std::endl;
+*/
+
+
        fmutil_.setXYVector(xfit,yfit);
        fmutil_.setPar(parInit);
-       unsigned nParFcn(fmutil_.nParFcn());
-        
-       if (parInit.size()==nParFcn) fmutil_.fitNewton();
-       else                         fmutil_.fitMinuit();      
-              
+       fmutil_.fit();
        if (refitLeadingEdge_) refitLeadingEdge(xInput, yInput);
 
+
+       unsigned nParFcn(fmutil_.nParFcn());
        std::vector<double> parFinal    = fmutil_.par();
        std::vector<double> parFinalErr = fmutil_.parErr();
-
-       chi2_   = fmutil_.chi2();
-       ndf_    = xindices.size() - parFinal.size();
+       chi2_                           = fmutil_.chi2();
+       ndf_                            = xindices.size() - parFinal.size();
      
        for (unsigned i=0;i<parFinal.size();++i)
        {            
@@ -132,40 +144,61 @@ namespace mu2e {
 	std::vector<unsigned> peakLocation;
         for (auto i=windowPeak_;i<xvec.size()-windowPeak_;++i)
         {
+             //make sure bin i is the max element and that the adjacent bins are close or above to nose cut to remove noise
              if (std::max_element(&ywork[i-windowPeak_],&ywork[i+windowPeak_+1]) != &ywork[i]) continue;
-             if (ywork[i-1] < minPeakAmplitude_ || ywork[i] < minPeakAmplitude_ || ywork[i+1] < minPeakAmplitude_) continue;
+             if (ywork[i-1] < minPeakAmplitude_-2 || ywork[i] < minPeakAmplitude_ || ywork[i+1] < minPeakAmplitude_-2) continue;
 
+             // Note: we could also try a weighted average or anything that provides a good initial start
+
+//need to have better estimate if we want to subtract properly
+             
              double xmaxEstimate = meanParabol(xvec[i],xvec[i-1],xvec[i+1],ywork[i],ywork[i-1],ywork[i+1]);
             
+             if (diagLevel_ > 2) std::cout<<"TemplateProcessor found peak at "<<xvec[i]<<" "<<ywork[i]<<std::endl;
              parInit.push_back(ywork[i]); 
              parInit.push_back(xmaxEstimate);	     
 	     peakLocation.push_back(i);
 	     
 	     fmutil_.setPar(parInit);
 	     for (unsigned j=0;j<xvec.size();++j) ywork[j] -= fmutil_.eval_logn(xvec[j],parInit.size()-fmutil_.nParFcn());	
-	     
-	     i += minDeltaPeakBin_; // make sure we won;t find any other peak too close to this one.
+for (unsigned j=0;j<xvec.size();++j) std::cout<<fmutil_.eval_logn(xvec[j],parInit.size()-fmutil_.nParFcn())<<" ";
+std::cout<<std::endl;	     
+	     i += minDeltaPeakBin_; // make sure we won't find any other peak too close to this one.
         }
 	
+        for (auto h : ywork) std::cout<<h<<" ";
+        std::cout<<std::endl;
+        
+        
 	//second pass on the residuals to catch secondary peaks
         for (auto i=windowPeak_;i<xvec.size()-windowPeak_;++i)
         {
              if (std::max_element(&ywork[i-windowPeak_],&ywork[i+windowPeak_+1]) != &ywork[i]) continue;
              if (ywork[i-1] < minPeakAmplitude_ || ywork[i] < minPeakAmplitude_ || ywork[i+1] < minPeakAmplitude_) continue;
              
+             unsigned diff(100);
+             for (const auto& ip : peakLocation) diff = std::min(diff,(i>ip)?  i-ip : ip-i);
+             if (diff < 5) continue;
+             
+             std::cout<<"diff "<<diff<<"  "<<i<<" "<<peakLocation[0]<<std::endl;
+             
 	     double psd = (yvec[i] > 1e-3) ? ywork[i]/yvec[i] : 0;	     
              if (psd < 0.2) continue;
 
+//need to make sure we're far away from primary peaks too
+             
+             
              double xmaxEstimate = meanParabol(xvec[i],xvec[i-1],xvec[i+1],ywork[i],ywork[i-1],ywork[i+1]);
             
              parInit.push_back(ywork[i]); 
              parInit.push_back(xmaxEstimate);	     
 	     peakLocation.push_back(i);
 	     
+             if (diagLevel_ > 2) std::cout<<"TemplateProcessor found secondary peak at "<<xvec[i]<<" "<<ywork[i]<<std::endl;
 	     fmutil_.setPar(parInit);
 	     for (unsigned j=0;j<xvec.size();++j) ywork[j] -= fmutil_.eval_logn(xvec[j],parInit.size()-fmutil_.nParFcn());	
 	     
-	     i += minDeltaPeakBin_; // make sure we won;t find any other peak too close to this one.
+	     i += minDeltaPeakBin_;
         }
 	
         buildXRange(peakLocation, xvec, xindices);        
@@ -175,7 +208,7 @@ namespace mu2e {
 
    //------------------------------------------------------------
    double TemplateProcessor::meanParabol(double x1, double x2, double x3, double y1, double y2, double y3)
-   {
+   {              
        double a = ((y1-y2)/(x1-x2)-(y1-y3)/(x1-x3))/(x2-x3);
        double b = (y1-y2)/(x1-x2) - a*(x1+x2);
        if (std::abs(a) < 1e-6) return (x1+x2+x3)/3.0;       
@@ -186,7 +219,10 @@ namespace mu2e {
    //-------------------------------------------------------------
    void TemplateProcessor::buildXRange(const std::vector<unsigned>& peakLoc, const std::vector<double>& xvec, std::vector<unsigned>& xindices)
    {      
-	std::set<unsigned> tempX;
+	
+        //Look at his before peak and remove low content from vector (baseline content)
+        
+        std::set<unsigned> tempX;
 	for (unsigned ipeak : peakLoc)
 	{             
              unsigned is = (ipeak > pulseLowBuffer_) ? ipeak-pulseLowBuffer_ : 0u;
@@ -213,7 +249,8 @@ namespace mu2e {
 	std::vector<double> xfit, yfit;
         for (int i = ibLow; i <= ibUp; ++i) {xfit.push_back(xvec[i]); yfit.push_back(yvec[i]);}
         fmutil_.setXYVector(xfit,yfit);
-	fmutil_.refineMin(0.01);
+	        
+        fmutil_.refitMin();
         fmutil_.setXYVector(xvec,yvec); //reset original vectors
    }
       

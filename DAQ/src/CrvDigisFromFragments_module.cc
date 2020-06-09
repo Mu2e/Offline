@@ -12,8 +12,7 @@
 
 #include "art/Framework/Principal/Handle.h"
 #include "mu2e-artdaq-core/Overlays/CRVFragment.hh"
-
-#include "RecoDataProducts/inc/CaloDigiCollection.hh"
+#include "RecoDataProducts/inc/CaloDigi.hh"
 #include "RecoDataProducts/inc/CrvDigiCollection.hh"
 #include "RecoDataProducts/inc/StrawDigiCollection.hh"
 #include <artdaq-core/Data/Fragment.hh>
