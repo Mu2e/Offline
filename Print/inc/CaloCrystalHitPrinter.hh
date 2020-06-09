@@ -8,7 +8,7 @@
 #include <iostream>
 
 #include "Print/inc/ProductPrinter.hh"
-#include "RecoDataProducts/inc/CaloCrystalHitCollection.hh"
+#include "RecoDataProducts/inc/CaloCrystalHit.hh"
 #include "art/Framework/Principal/Handle.h"
 #include "canvas/Persistency/Common/Ptr.h"
 

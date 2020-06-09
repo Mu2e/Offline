@@ -26,10 +26,10 @@
 //#include "MCDataProducts/inc/GenParticleCollection.hh"
 //#include "DataProducts/inc/VirtualDetectorId.hh"
 
-#include "RecoDataProducts/inc/CaloTrigSeedCollection.hh"
+#include "RecoDataProducts/inc/CaloTrigSeed.hh"
 
 #include "RecoDataProducts/inc/CaloDigi.hh"
-#include "RecoDataProducts/inc/CaloDigiCollection.hh"
+#include "RecoDataProducts/inc/CaloDigi.hh"
 
 #include "RecoDataProducts/inc/ComboHit.hh"
 #include "RecoDataProducts/inc/StrawHitCollection.hh"

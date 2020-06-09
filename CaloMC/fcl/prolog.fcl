@@ -38,7 +38,7 @@ CaloShowerStepROFromShowerStep :
     BirksCorrection          : true
     PEStatCorrection         : true
     addTravelTime            : true	    
-    diagLevel                : 0
+    diagLevel                : 2
 }
 
 
@@ -47,18 +47,17 @@ CaloDigiFromShower :
     module_type             : CaloDigiFromShower
     caloShowerROCollection  : CaloShowerStepROFromShowerStep
     blindTime               : @local::HitMakerBlindTime
-    addNoise                : false
-#    addNoise                : true
-    noise                   : 2.3     # mV equivalent to 150 keV of Noise               
+    addNoise                : true
+    noiseADC                : 6.6     
     MeVToADC                : 16
     digiSampling            : @local::HitMakerDigiSampling
     nBits                   : 12
     minPeakADC              : 16
-    nBinsPeak		    : 3 #needs optimizing/checking
+    nBinsPeak		    : 2 
     endTimeBuffer           : 80
     bufferDigi              : 16 
     pulseIntegralSteps      : 100
-    diagLevel               : 0
+    diagLevel               : 3
 }
 
 
@@ -67,8 +66,9 @@ CaloHitTruthMatch:
     module_type               : CaloHitTruthMatch
     caloShowerSimCollection   : CaloShowerStepROFromShowerStep
     caloCrystalHitCollection  : CaloCrystalHitFromHit
-    deltaTimeMinus            : 4.0    #ns
-    deltaTimePlus             : 250.0  #ns
+    primaryParticle           : compressRecoMCs
+    deltaTimeMinus            : 4.0    
+    deltaTimePlus             : 250.0  
     fillDetailedMC            : false
     diagLevel                 : 3
 }

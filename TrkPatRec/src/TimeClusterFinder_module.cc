@@ -22,7 +22,7 @@
 #include "RecoDataProducts/inc/ComboHit.hh"
 #include "RecoDataProducts/inc/StrawHitFlag.hh"
 #include "RecoDataProducts/inc/TimeCluster.hh"
-#include "RecoDataProducts/inc/CaloClusterCollection.hh"
+#include "RecoDataProducts/inc/CaloCluster.hh"
 // tracking
 #include "TrkReco/inc/TrkUtilities.hh"
 #include "TrkReco/inc/TrkTimeCalculator.hh"

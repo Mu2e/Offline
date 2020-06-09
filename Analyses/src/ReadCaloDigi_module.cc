@@ -39,17 +39,17 @@
 #include "ConditionsService/inc/AcceleratorParams.hh"
 #include "GeometryService/inc/GeometryService.hh"
 #include "GeometryService/inc/GeomHandle.hh"
-#include "RecoDataProducts/inc/CaloHitCollection.hh"
-#include "RecoDataProducts/inc/CaloCrystalHitCollection.hh"
+#include "RecoDataProducts/inc/CaloHit.hh"
+#include "RecoDataProducts/inc/CaloCrystalHit.hh"
 #include "SeedService/inc/SeedService.hh"
 #include "Mu2eUtilities/inc/SimParticleTimeOffset.hh"
 
 
-#include "RecoDataProducts/inc/CaloHitCollection.hh"
+#include "RecoDataProducts/inc/CaloHit.hh"
 #include "RecoDataProducts/inc/CaloRecoDigi.hh"
-#include "RecoDataProducts/inc/CaloRecoDigiCollection.hh"
+#include "RecoDataProducts/inc/CaloRecoDigi.hh"
 #include "RecoDataProducts/inc/CaloCluster.hh"
-#include "RecoDataProducts/inc/CaloClusterCollection.hh"
+#include "RecoDataProducts/inc/CaloCluster.hh"
 #include "RecoDataProducts/inc/KalRepCollection.hh"
 
 #include "MCDataProducts/inc/GenParticleCollection.hh"

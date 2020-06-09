@@ -55,7 +55,7 @@
      Initial version of CaloCrystalHit maker:
         HitMakers/src/MakeCaloCrystalHits_plugin.cc
         ToyDP/inc/CaloCrystalHit.hh
-        ToyDP/inc/CaloCrystalHitCollection.hh
+        ToyDP/inc/CaloCrystalHit.hh
         ToyDP/inc/CaloCrystalHitMCTruth.hh
         ToyDP/inc/CaloCrystalHitMCTruthCollection.hh
         ToyDP/src/CaloCrystalHit.cc

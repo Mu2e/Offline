@@ -1,6 +1,6 @@
 #include "CaloCluster/inc/ClusterMoments.hh"
 #include "CalorimeterGeom/inc/Calorimeter.hh"
-#include "RecoDataProducts/inc/CaloCrystalHitCollection.hh"
+#include "RecoDataProducts/inc/CaloCrystalHit.hh"
 #include "RecoDataProducts/inc/CaloCluster.hh"
 
 #include <iostream>

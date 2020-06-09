@@ -30,7 +30,7 @@
 #include "RecoDataProducts/inc/TrkCaloIntersectCollection.hh"
 #include "RecoDataProducts/inc/TrackClusterMatch.hh"
 
-#include "RecoDataProducts/inc/CaloClusterCollection.hh"
+#include "RecoDataProducts/inc/CaloCluster.hh"
 
 #include "CalorimeterGeom/inc/Calorimeter.hh"
 

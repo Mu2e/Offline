@@ -32,7 +32,7 @@ Original author Giovanni Onorato
 #include "CalorimeterGeom/inc/DiskCalorimeter.hh"
 #include "GeometryService/inc/GeomHandle.hh"
 #include "GeometryService/inc/GeometryService.hh"
-#include "RecoDataProducts/inc/CaloHitCollection.hh"
+#include "RecoDataProducts/inc/CaloHit.hh"
 #include "MCDataProducts/inc/GenParticleCollection.hh"
 #include "RecoDataProducts/inc/StrawHitCollection.hh"
 

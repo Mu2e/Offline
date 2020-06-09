@@ -1,62 +1,44 @@
 #ifndef DataProducts_CaloHit_hh
 #define DataProducts_CaloHit_hh
 
-// $Id: CaloHit.hh,v 1.1 2011/05/24 17:16:43 kutschke Exp $
-// $Author: kutschke $
-// $Date: 2011/05/24 17:16:43 $
-//
-// Original author Ivan Logashenko
-
-// C++ includes
 #include <iostream>
 #include <vector>
 
-// Mu2e includes
-
 namespace mu2e {
 
-  struct CaloHit{
+  class CaloHit
+  {
+     public:
 
-  public:
+       CaloHit():
+          _roId(-1), _time(0.), _energyDep(0.) 
+       {}
 
-    CaloHit():
-      _roId(-1),
-      _time(0.),
-      _energyDep(0.) {
-    }
+       CaloHit( int roId, float time, float energyDep ):
+         _roId(roId), _time(time),_energyDep(energyDep)
+       {}
 
-    CaloHit( int   roId,
-             float time,
-             float energyDep  ):
-      _roId(roId),
-      _time(time),
-      _energyDep(energyDep) {
-    }
+       int        id()         const { return _roId; }
+       float      time()       const { return _time;}
+       float      energyDep()  const { return _energyDep; }
 
-    // Accessors
-    int        id()         const { return _roId; }
-    float      time()       const { return _time;}
-    float      energyDep()  const { return _energyDep; }
+       void print( std::ostream& ost = std::cout, bool doEndl = true ) const;
 
-    // Accept compiler generated versions of d'tor, copy c'tor, assignment operator.
-
-    // Print contents of the object.
-    void print( std::ostream& ost = std::cout, bool doEndl = true ) const;
-
-  private:
-
-    int       _roId;
-    float     _time;             // (ns)
-    float     _energyDep;        // (MeV)
-
+     private:
+        int       _roId;
+        float     _time;     
+        float     _energyDep;
   };
 
-  inline std::ostream& operator<<( std::ostream& ost,
-                                   CaloHit const& hit){
-    hit.print(ost,false);
-    return ost;
+  
+  inline std::ostream& operator<<(std::ostream& ost, CaloHit const& hit)
+  {
+      hit.print(ost,false);
+      return ost;
   }
-
-} // namespace mu2e
+  
+  
+  typedef std::vector<mu2e::CaloHit> CaloHitCollection;
+} 
 
 #endif /* DataProducts_CaloHit_hh */

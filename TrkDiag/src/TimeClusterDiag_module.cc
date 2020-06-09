@@ -29,7 +29,7 @@
 #include "RecoDataProducts/inc/ComboHit.hh"
 #include "RecoDataProducts/inc/StrawHitFlag.hh"
 #include "RecoDataProducts/inc/TimeCluster.hh"
-#include "RecoDataProducts/inc/CaloClusterCollection.hh"
+#include "RecoDataProducts/inc/CaloCluster.hh"
 #include "MCDataProducts/inc/StrawDigiMC.hh"
 #include "MCDataProducts/inc/StepPointMCCollection.hh"
 // root

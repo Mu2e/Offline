@@ -41,7 +41,7 @@
 #include "RecoDataProducts/inc/StrawDigi.hh"
 #include "RecoDataProducts/inc/StrawDigiCollection.hh"
 #include "RecoDataProducts/inc/CaloDigi.hh"
-#include "RecoDataProducts/inc/CaloDigiCollection.hh"
+#include "RecoDataProducts/inc/CaloDigi.hh"
 #include "DataProducts/inc/XYZVec.hh"
 
 //MC dataproducts

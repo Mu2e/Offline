@@ -25,8 +25,8 @@
 // Mu2e includes.
 #include "CalorimeterGeom/inc/DiskCalorimeter.hh"
 #include "GeometryService/inc/GeomHandle.hh"
-#include "RecoDataProducts/inc/CaloCrystalHitCollection.hh"
-#include "RecoDataProducts/inc/CaloHitCollection.hh"
+#include "RecoDataProducts/inc/CaloCrystalHit.hh"
+#include "RecoDataProducts/inc/CaloHit.hh"
 #include "MCDataProducts/inc/PtrStepPointMCVectorCollection.hh"
 
 // Root includes.

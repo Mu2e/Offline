@@ -16,8 +16,8 @@
 
 #include "MCDataProducts/inc/SimParticleCollection.hh"
 #include "MCDataProducts/inc/CaloShowerSim.hh"
-#include "RecoDataProducts/inc/CaloCrystalHitCollection.hh"
-#include "RecoDataProducts/inc/CaloRecoDigiCollection.hh"
+#include "RecoDataProducts/inc/CaloCrystalHit.hh"
+#include "RecoDataProducts/inc/CaloRecoDigi.hh"
 #include "MCDataProducts/inc/CaloMCTruthAssns.hh"
 //#include "RecoDataProducts/inc/CaloRecoDigi.hh"
 //#include "MCDataProducts/inc/CaloShower.hh"

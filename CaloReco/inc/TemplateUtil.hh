@@ -17,9 +17,8 @@ namespace mu2e {
 	void                        setXYVector   (const std::vector<double>& xvec, const std::vector<double>& yvec);
 	void                        setPar        (const std::vector<double>& par);
         
-        void                        fitMinuit     ();
-        void                        fitNewton     ();
-        void                        refineMin     (double stepInit);        
+        void                        fit           ();
+        void                        refitMin      ();        
         double                      eval_fcn      (double x); 
         double                      eval_logn     (double x, int ioffset);  
         void                        plotFit       (const std::string& pname) const;
@@ -29,17 +28,21 @@ namespace mu2e {
 	void                        setFitStartegy(int val) {fitStrategy_ = val;}
 	void                        setDiagLevel  (int val) {diagLevel_   = val;}
         
+        unsigned                    status        ()                const {return status_;}
         double                      chi2          ()                const {return chi2_;}
         const std::vector<double>&  par           ()                const {return param_;}
         const std::vector<double>&  parErr        ()                const {return paramErr_;}
-	unsigned                    nParTot       ()                const {return nParTot_;}
 	unsigned                    nParFcn       ()                const {return nParFcn_;}
-	unsigned                    nPeaks        ()                const {return nParTot_/nParFcn_;}
+	unsigned                    nPeaks        ()                const {return param_.size()/nParFcn_;}
 	double                      fromPeakToT0  (double timePeak) const {return pulseCache_.fromPeakToT0(timePeak);} 
 
      private:              
-	double calcAlpha(double testTime);
-	double calcChi2 (double testTime, double alpha=0.0);
+        void   fitMinuit      ();
+        void   fitNewton      ();
+	double calcAlpha      (double testTime);
+	double calcChi2       (double testTime, double alpha=0.0);
+        double refineMin      (double tinit, double stepInit); 
+        bool   selectComponent(const std::vector<double>& tempPar, unsigned ip);       
 
 	CaloPulseShape      pulseCache_;
 	double              minPeakAmplitude_;
@@ -51,6 +54,7 @@ namespace mu2e {
 	unsigned            nParTot_;
 	unsigned            nParFcn_;
 	double              chi2_;
+	unsigned            status_;
   };
   
 }

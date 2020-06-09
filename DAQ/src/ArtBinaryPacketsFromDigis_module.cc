@@ -39,7 +39,7 @@
 // Mu2e includes.
 #include "RecoDataProducts/inc/StrawHitCollection.hh"
 #include "RecoDataProducts/inc/StrawDigiCollection.hh"
-#include "RecoDataProducts/inc/CaloDigiCollection.hh"
+#include "RecoDataProducts/inc/CaloDigi.hh"
 //#include "DAQDataProducts/inc/DataBlockCollection.hh"
 
 #include "SeedService/inc/SeedService.hh"

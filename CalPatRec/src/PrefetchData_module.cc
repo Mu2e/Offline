@@ -19,7 +19,7 @@
 #include "TVector2.h"
 // data
 #include "RecoDataProducts/inc/CaloDigi.hh"
-#include "RecoDataProducts/inc/CaloDigiCollection.hh"
+#include "RecoDataProducts/inc/CaloDigi.hh"
 #include "RecoDataProducts/inc/StrawHit.hh"
 #include "RecoDataProducts/inc/StrawDigi.hh"
 #include "RecoDataProducts/inc/StrawHitPositionCollection.hh"

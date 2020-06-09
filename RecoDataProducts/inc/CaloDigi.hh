@@ -5,11 +5,9 @@
 
 namespace mu2e
 {
-
-  class CaloDigi {
-
+  class CaloDigi 
+  {
       public:
-  
 	  CaloDigi() : 
             roId_(-1), t0_(0.), waveform_(0), peakpos_(0) 
           {}
@@ -22,11 +20,12 @@ namespace mu2e
 	    roId_(ROId),t0_(t0),waveform_(waveform), peakpos_(0)
 	  {}
 
-	  int                     roId()      const { return roId_;}    
-	  int                     t0()        const { return t0_;}
-	  const std::vector<int>& waveform()  const { return waveform_; }
-	  int                     peakpos()   const { return peakpos_;	}
+	        int               roId()     const { return roId_;}    
+	        int               t0()       const { return t0_;}
+	        int               peakpos()  const { return peakpos_;	}
+	  const std::vector<int>& waveform() const { return waveform_; }
 	 
+         
 	private:
 	  int               roId_;      
 	  int               t0_;        
@@ -34,8 +33,8 @@ namespace mu2e
 	  int               peakpos_;	
   };
 
-  typedef std::vector<mu2e::CaloDigi> CaloDigiCollection;
 
+  typedef std::vector<mu2e::CaloDigi> CaloDigiCollection;
 }
 
 #endif

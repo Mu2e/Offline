@@ -17,9 +17,9 @@ RawProcessor :
 TemplateProcessor : 
 {
     windowPeak         : 3
-    minPeakAmplitude   : 5
-    pulseLowBuffer     : 100
-    pulseHighBuffer    : 100 
+    minPeakAmplitude   : 16
+    pulseLowBuffer     : 10
+    pulseHighBuffer    : 20 
     minDeltaPeakBin    : 3
     refitLeadingEdge   : false
     timeCorr           : 0    
@@ -27,7 +27,7 @@ TemplateProcessor :
     pulseIntegralSteps : 100
     fitPrintLevel      : -1
     fitStrategy        : 1
-    diagLevel          : 2
+    diagLevel          : 3
 }
 
 
@@ -40,8 +40,8 @@ CaloRecoDigiFromDigi :
     processorStrategy   : "TemplateFit"     
     digiSampling        : @local::HitMakerDigiSampling
     maxChi2Cut          : 10
-    maxPlots            : 0
-    diagLevel           : 2
+    maxPlots            : 100
+    diagLevel           : 3
 }
 
 

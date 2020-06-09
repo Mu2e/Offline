@@ -9,7 +9,7 @@
 
 #include "CalorimeterGeom/inc/Calorimeter.hh"
 #include "RecoDataProducts/inc/CaloCrystalHit.hh"
-#include "RecoDataProducts/inc/CaloProtoClusterCollection.hh"
+#include "RecoDataProducts/inc/CaloProtoCluster.hh"
 
 #include <unordered_map>
 #include <map>

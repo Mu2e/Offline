@@ -35,8 +35,8 @@
 #include "MCDataProducts/inc/GenId.hh"
 #include "MCDataProducts/inc/StepPointMCCollection.hh"
 #include "MCDataProducts/inc/CaloMCTruthAssns.hh"
-#include "RecoDataProducts/inc/CaloCrystalHitCollection.hh"
-#include "RecoDataProducts/inc/CaloClusterCollection.hh"
+#include "RecoDataProducts/inc/CaloCrystalHit.hh"
+#include "RecoDataProducts/inc/CaloCluster.hh"
 
 #include "TDirectory.h"
 #include "TNtuple.h"

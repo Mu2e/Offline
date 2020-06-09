@@ -4,7 +4,7 @@
 //	"valCompare -w validationCalo/ce.html reference.root new_file.root"
 
 //DataProducts:
-#include "RecoDataProducts/inc/CaloClusterCollection.hh"
+#include "RecoDataProducts/inc/CaloCluster.hh"
 // Framework includes.
 #include "art/Framework/Core/EDAnalyzer.h"
 #include "art/Framework/Principal/Event.h"

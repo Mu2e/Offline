@@ -1,6 +1,6 @@
 #include "CaloCluster/inc/ClusterAssociator.hh"
-#include "RecoDataProducts/inc/CaloCrystalHitCollection.hh"
-#include "RecoDataProducts/inc/CaloProtoClusterCollection.hh"
+#include "RecoDataProducts/inc/CaloCrystalHit.hh"
+#include "RecoDataProducts/inc/CaloProtoCluster.hh"
 
 #include <iostream>
 

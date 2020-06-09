@@ -17,7 +17,7 @@
 #include <artdaq-core/Data/Fragment.hh>
 #include "DataProducts/inc/TrkTypes.hh"
 #include "RecoDataProducts/inc/StrawDigiCollection.hh"
-#include "RecoDataProducts/inc/CaloDigiCollection.hh"
+#include "RecoDataProducts/inc/CaloDigi.hh"
 
 #include <iostream>
 

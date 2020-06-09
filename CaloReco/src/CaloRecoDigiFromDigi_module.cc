@@ -9,8 +9,8 @@
 
 #include "ConditionsService/inc/ConditionsHandle.hh"
 #include "ConditionsService/inc/CalorimeterCalibrations.hh"
-#include "RecoDataProducts/inc/CaloDigiCollection.hh"
-#include "RecoDataProducts/inc/CaloRecoDigiCollection.hh"
+#include "RecoDataProducts/inc/CaloDigi.hh"
+#include "RecoDataProducts/inc/CaloRecoDigi.hh"
 #include "CaloReco/inc/WaveformProcessor.hh"
 #include "CaloReco/inc/TemplateProcessor.hh"
 #include "CaloReco/inc/RawProcessor.hh"
@@ -121,7 +121,7 @@ namespace mu2e {
       const auto& caloDigis = *caloDigisHandle;
       ConditionsHandle<CalorimeterCalibrations> calorimeterCalibrations("ignored");
 
-      int nPlots(0);
+      static int nPlots(0);
       double totEnergyReco(0);
       std::vector<double> x,y;
       for (const auto& caloDigi : caloDigis)

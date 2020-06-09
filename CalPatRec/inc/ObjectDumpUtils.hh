@@ -22,7 +22,7 @@ class KalRep;
 #include "MCDataProducts/inc/StrawDigiMCCollection.hh"
 #include "Mu2eUtilities/inc/SimParticleTimeOffset.hh"
 #include "RecoDataProducts/inc/KalRepPtrCollection.hh"
-#include "RecoDataProducts/inc/CaloProtoClusterCollection.hh"
+#include "RecoDataProducts/inc/CaloProtoCluster.hh"
 
 namespace mu2e {
   class StrawHit;

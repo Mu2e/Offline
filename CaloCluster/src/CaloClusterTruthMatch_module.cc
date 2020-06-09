@@ -11,7 +11,7 @@
 #include "MCDataProducts/inc/CaloMCTruthAssns.hh"
 #include "MCDataProducts/inc/CaloDigiMC.hh"
 #include "MCDataProducts/inc/CaloClusterMC.hh"
-#include "RecoDataProducts/inc/CaloClusterCollection.hh"
+#include "RecoDataProducts/inc/CaloCluster.hh"
 
 #include <iostream>
 #include <string>

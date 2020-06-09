@@ -29,7 +29,7 @@
 #include "BTrk/BaBar/Constants.hh"
 #include "RecoDataProducts/inc/KalRepPtrCollection.hh"
 #include "RecoDataProducts/inc/TrkFitDirection.hh"
-#include "RecoDataProducts/inc/CaloClusterCollection.hh"
+#include "RecoDataProducts/inc/CaloCluster.hh"
 #include "RecoDataProducts/inc/TrkCaloIntersectCollection.hh"
 #include "RecoDataProducts/inc/TrkCaloMatchCollection.hh"
 #include "MCDataProducts/inc/StepPointMCCollection.hh"
@@ -38,11 +38,11 @@
 #include "MCDataProducts/inc/CaloMCTruthAssns.hh"
 
 #include "Mu2eUtilities/inc/SimParticleTimeOffset.hh"
-#include "RecoDataProducts/inc/CaloCrystalHitCollection.hh"
-#include "RecoDataProducts/inc/CaloHitCollection.hh"
+#include "RecoDataProducts/inc/CaloCrystalHit.hh"
+#include "RecoDataProducts/inc/CaloHit.hh"
 #include "RecoDataProducts/inc/CaloHit.hh"
 #include "RecoDataProducts/inc/CaloCluster.hh"
-#include "RecoDataProducts/inc/CaloClusterCollection.hh"
+#include "RecoDataProducts/inc/CaloCluster.hh"
 
 #include "BTrk/TrkBase/HelixParams.hh"
 #include "BTrk/TrkBase/TrkRep.hh"
