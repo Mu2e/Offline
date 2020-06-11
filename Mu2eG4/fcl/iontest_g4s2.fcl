@@ -1,0 +1,178 @@
+// Andrei Gaponenko, 2013
+// Jake Colston & Joseph Brock, 2015 (edit for cd3)
+// KLG 2020 to test ion store/restore
+
+// Note that this test is not meant to be used for a real production job, but only to test if ions can be restored properly
+// Use it with iontest_g4s1.fcl
+
+
+#include "fcl/minimalMessageService.fcl"
+#include "fcl/standardProducers.fcl"
+#include "fcl/standardServices.fcl"
+
+BEGIN_PROLOG
+
+// Energy cuts on electron, positron, photon, and neutron.
+CutEPPhN : {
+    type : intersection
+    pars : [ { type: kineticEnergy cut: 100.0 },
+             { type: pdgId pars: [ 11, -11, 22, 2112 ] } ]
+}
+
+END_PROLOG
+
+# Give this job a name.
+process_name : iontestg4s2
+
+source : {
+    module_type : RootInput
+}
+
+services : {
+    message                : @local::default_message
+    TFileService           : { fileName : "nts.owner.iontest-g4s2.version.sequencer.root" }
+    RandomNumberGenerator  : {defaultEngineKind: "MixMaxRng"}
+    GeometryService        : { inputFile      : "JobConfig/common/geom_baseline.txt"    }
+    ConditionsService      : { conditionsfile : "Mu2eG4/test/conditions_01.txt"      }
+    GlobalConstantsService : { inputFile      : "Mu2eG4/test/globalConstants_01.txt" }
+    G4Helper               : {}
+    SeedService            : @local::automaticSeeds
+}
+
+physics : {
+
+    producers : {
+
+        g4run : {
+
+            module_type       : Mu2eG4
+            physics           : @local::mu2eg4DefaultPhysics
+            ResourceLimits    : @local::mu2eg4DefaultResourceLimits
+            TrajectoryControl : @local::mu2eg4NoTrajectories
+            debug             : @local::mu2eg4DefaultDebug
+            visualization     : @local::mu2eg4NoVisualization
+
+            MultiStageParameters : {
+                simParticleNumberOffset  : 100000 // safe b/c of g4.particlesSizeLimit in stage1
+                genInputHits             : [ "g4run:someions" ]
+                inputSimParticles        : "g4run"
+                inputMCTrajectories      : ""
+                inputPhysVolumeMultiInfo : "compressPV"
+            }
+
+//            doWriteLegacyPhysVolumeInfo : false
+
+            SDConfig : {
+                enableSD         : [ virtualdetector ] // activate just the explicitly listed SDs
+                preSimulatedHits : ["g4run:virtualdetector"]
+                TimeVD           : { times : [] }
+            }
+
+            // Mu2eG4 cuts are evaluated in the listed order.
+            // The first match wins.  For the "intersection"
+            // type, the first false stops the evaluation.
+            // For the "union" type the first true stops the evaluation.
+            Mu2eG4StackingOnlyCut : @local::mu2eg4CutNeutrinos
+            Mu2eG4SteppingOnlyCut : @local::mu2eg4NoCut
+            Mu2eG4CommonCut : {
+                type : union
+                pars : [
+                    @local::CutEPPhN,
+                    { type: inVolume pars: [ HallAir ] },
+                    {
+                        type  : inVolume
+                        pars  : [ DS1Vacuum, DS2Vacuum, DS3Vacuum ]
+                        write : vacuuas2
+                    }
+                ]
+            }
+
+            SimParticlePrinter : {
+                enabled       : false
+                primariesOnly : false
+                prefix        : "SimParticle : "
+            }
+        } // g4run
+
+        someions: {
+            module_type: StepPointMCCollectionUpdater
+            remapping: g4run
+            inputs: [ "g4run:someions:iontestg4s1" ]
+            outInstanceName: "someions"
+        }
+
+        vacuuas1: {
+            module_type: StepPointMCCollectionUpdater
+            remapping: g4run
+            inputs: [ "g4filter:vacuuas1:iontestg4s1" ]
+            outInstanceName: "vacuuas1"
+        }
+
+        compressPV : {
+            module_type    : CompressPhysicalVolumes
+            volumesInput   : "g4run"
+            hitInputs      : []
+            particleInputs : [ "g4run" ]
+        }
+    } // producers
+
+    analyzers : {
+        genCountLogger : {
+            module_type : GenEventCountReader
+        }
+    } // analyzers
+
+    filters : {
+        g4filter : {
+            module_type               : FilterG4Out
+            mainHitInputs             : [ "g4run:someions" ]
+            extraHitInputs            : [ "g4run:virtualdetector" ]
+            vetoDaughters             : []
+        }
+    } // filters
+
+
+//    trigFilter    : [ g4run, vacuuas1, g4filter, compressPV ]
+    trigFilter    : [ g4run, someions, compressPV ]
+    trigger_paths : [ trigFilter ]
+
+    e1        : [ filteredOutput, genCountLogger ]
+//    e1        : [ fullOutput, genCountLogger ]
+    end_paths : [ e1 ]
+} // physics
+
+outputs : {
+    fullOutput: { module_type: RootOutput }
+    filteredOutput : {
+        module_type    : RootOutput
+        SelectEvents   : ["trigFilter"]
+        outputCommands : [ "drop *_*_*_*",
+                           "keep mu2e::GenParticles_*_*_*",
+                           "keep mu2e::GenEventCount_*_*_*",
+                           "keep mu2e::StatusG4_*_*_*",
+         // no filtering assumed
+                           "keep *_g4run_virtualdetector_iontestg4s2",
+                           "keep *_g4run_vacuuas2_iontestg4s2",
+                           "keep mu2e::SimParticlemv_*_*_iontestg4s2",
+                           "keep *_compressPV_*_iontestg4s2" ]
+        fileName       : "sim.owner.iontest-g4s2.version.sequencer.art"
+    }
+}
+
+outputs.fullOutput.fileName:    "sim.owner.iontest-g4s2.version.sequencer.art"
+services.TFileService.fileName: "nts.owner.iontest-g4s2.version.sequencer.root"
+physics.producers.g4run.physics.minRangeCut : 1.0 // mm
+physics.producers.g4run.physics.noDecay     : [ 211, -211 ]
+
+// Limit the rate of "Begin processing the ... record" messages
+services.message.destinations.log.categories.ArtReport.reportEvery : 1
+services.message.destinations.log.categories.ArtReport.limit : 1
+services.message.destinations.log.categories.ArtReport.timespan : 300
+
+// Initialze seeding of random engines: do not put these lines in base .fcl files for grid jobs.
+services.SeedService.baseSeed          : 8
+services.SeedService.maxUniqueEngines  : 20
+services.GeometryService.simulatedDetector.tool_type : "Mu2e"
+#physics.producers.g4run.physics.physicsListName : "QGSP_BERT"
+#physics.producers.g4run.debug.diagLevel : 1
+#physics.producers.g4run.debug.trackingVerbosityLevel : 1
