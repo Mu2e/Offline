@@ -477,7 +477,7 @@ namespace mu2e {
 	double wire_angle = wire_rotation_from_vertical;
 	if(_IPAVersion > 2) {
 	  wire_angle *= CLHEP::degree; //fix bug in newer versions
-	  wireLength -= 1. + 2.*wireRadius*tan(wire_angle); //add buffer + wire radius effect
+	  wireLength -= (0.1 + 2.*abs(wireRadius*tan(wire_angle))); //add buffer + wire radius effect
 	}
 	if (zPosition < ipazstart+pabs1halflen) {
 	  // if we're closer to the target
