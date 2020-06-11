@@ -41,6 +41,7 @@
  <class name="std::vector<mu2e::StatusG4>"/>
  <class name="art::Wrapper<mu2e::StatusG4>"/>
 
+ <class name="mu2e::SimParticle::IonDetail"/>
  <class name="mu2e::SimParticle"/>
  <class name="art::Ptr<mu2e::SimParticle>"/>
  <class name="std::pair<cet::map_vector_key,mu2e::SimParticle>"/>
