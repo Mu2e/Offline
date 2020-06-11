@@ -1,0 +1,85 @@
+//
+// Conical proton absorber geometry file.
+// Now the default is 1m inner part and 2.2m outer part.
+// See doc-3186, 3155, 3006, and 2259
+//
+// $Id: protonAbsorber_cylindrical_v2.txt,v 1.1 2014/08/29 16:37:09 knoepfel Exp $
+// $Author: knoepfel $
+// $Date: 2014/08/29 16:37:09 $
+//
+// This version introduces an OPA version number and  implements the OPA as 
+// 24 slats in a "barrel" shape instead
+// of as a conical frustrum.  Slots are cut in the barrel to allow support
+// wires to penetrate.
+// It also adds the support rods for the Stopping Target and the notches in 
+// the OPA support ring for those support rods.
+//
+
+int protonabsorber.version = 2;
+
+string protonabsorber.materialName = "Polyethylene096";
+double protonabsorber.OutRadius1   =  300.0;
+double protonabsorber.OutRadius0   =  300.0;
+double protonabsorber.thickness    =    0.5;
+int    protonabsorber.verbosityLevel = 0;
+bool   protonabsorber.visible      = true;
+bool   protonabsorber.solid        = false;
+
+// To make inner part shorter than MECO design
+bool   protonabsorber.isShorterCone = true;
+double protonabsorber.distFromTargetEnd = 630.;
+double protonabsorber.halfLength   = 500.0;
+
+// Here, Supports for the IPA refers just to the wires used to hang it.
+bool   protonabsorber.ipa.buildSupports = true;
+int    protonabsorber.ipa.nSets         = 2;
+int    protonabsorber.ipa.nWiresPerSet  = 6;
+//double protonabsorber.ipa.wireRadius    = 0.0762; // assume 6-mil diameter
+double protonabsorber.ipa.wireRadius    = 0.0381; // assume 3-mil diameter
+string protonabsorber.ipa.wireMaterial  = "G4_W";
+double protonabsorber.ipa.wireRotationToVertical = 45; // degrees
+
+int    protonabsorber.ipa.nEndRings = 2;
+double protonabsorber.ipa.endRingHalfLength = 6.35; // 1/4" long in the z-direction
+double protonabsorber.ipa.endRingRadialLength = 9.525; // 3/4" long in the r-direction
+string protonabsorber.ipa.endRingMaterial = "CorrugatedPolypropylene";
+
+
+// Outer part
+int    protonabsorber.outerPAversion            = 2;
+bool   protonabsorber.isShorterCone             = true;
+bool   protonabsorber.outerPA                   = true;
+double protonabsorber.outerPAInnerRadius0       = 454.0; // was 452.4;
+double protonabsorber.outerPAInnerRadius1       = 728.4;
+double protonabsorber.outerPAHalfLength         = 2125.0; // was 2137.5;
+double protonabsorber.outerPAThickness          = 20.0;
+double protonabsorber.outerPAZCenter            = 6405.0; // was 6392.5;
+string protonabsorber.outerPAMaterialName       = "Polyethylene096";
+int    protonabsorber.outerPAnSides             = 24;
+double protonabsorber.outerPAslotWidth          = 1.0; //mm 
+double protonabsorber.outerPAslotLength         = 840.0; // mm
+double protonabsorber.outerPAslotOffset         = -410.0; // mm - relative
+
+// oPA Supports are rings that support and "hold together" the
+// OPA.  Support rings and bars for the IPA are also included here
+string protonabsorber.oPASupportMaterialName = "StainlessSteel316";
+int    protonabsorber.oPASupportNSupportRing = 6;
+// The original model expected the third support ring to hold the target supports and the second ring to need notches to accommodate the support arms.
+// We have added a new ring, so I put it at the end, even though in x it comes
+// between original rings 2 and 3.
+vector<double> protonabsorber.oPASupportInnerRadii = {505,564,603,662,721,583};
+vector<double> protonabsorber.oPASupportOuterRadii = {606.3,662.0,623,728.0,797.2,602.9};
+vector<double> protonabsorber.oPASupportHalflength = { 12.7,12.7,6.35,12.7, 12.7,6.35};
+vector<double> protonabsorber.oPASupportZMidpoints = {4683,5583,6183,7083,7983,5883};
+vector<double> protonabsorber.oPASupportHasExtra = { 1.0, 1.0,-1.0,-1.0,-1.0,-1.0};
+vector<double> protonabsorber.oPASupportExtraRad = { 180.0,50.0,0.,0.0,0.0,0.0};
+vector<double> protonabsorber.oPASupportExtraDPhi = {80.,80.,0.,0.,0,0 };
+double  protonabsorber.oPASupportSlatHeight = 20.0; // mm
+double  protonabsorber.oPASupportSlatWidth  = 50.0; // mm
+double  protonabsorber.oPASupportSlatLength = 840.0; // mm - Same as ST
+
+
+// This tells emacs to view this file in c++ mode.
+// Local Variables:
+// mode:c++
+// End:

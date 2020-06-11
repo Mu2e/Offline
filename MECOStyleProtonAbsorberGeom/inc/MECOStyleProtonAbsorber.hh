@@ -115,7 +115,7 @@ namespace mu2e {
     bool buildSupports() const { return _buildSupports; }
     const InnerProtonAbsSupport* getIPAsupport() const { return _ipaSupport.get(); }
 
-    // Degrader
+    // Pion Degrader
     bool        degraderBuild()    const { return _degraderBuild; }
     double      degraderRotation() const { return _degraderRot; }
     double      degraderZ0()       const { return _degraderZ0; }
@@ -123,11 +123,14 @@ namespace mu2e {
     std::string degraderFrameMaterial()  const { return _degraderFramMaterial;}
     std::string degraderCountwtMaterial() const {return _degraderCowtMaterial;}
     std::string degraderRodMaterial() const { return  _degraderRodMaterial; }
+    std::string degraderSupportMaterial() const {return _degraderSuptMaterial;}
     std::vector<double> degraderFrameDims() const {return  _degraderFrameDims;}
     std::vector<double> degraderFilterDims() const {return  _degraderFilterDims;}
     std::vector<double> degraderCounterwtDims() const { return  _degraderCounterDims; }
     std::vector<double> degraderRodDims() const { return _degraderRodDims;}
-
+    std::vector<double> degraderPivotPos() const { return _degraderPivotPos;}
+    std::vector<double> degraderSupportArmDims() const { return _degraderSupportArmDims;}
+    std::vector<double> degraderSupportPlateDims() const { return _degraderSupportPlateDims;}
 
   protected:
 
@@ -167,7 +170,7 @@ namespace mu2e {
     bool _buildSupports;
     std::unique_ptr<InnerProtonAbsSupport> _ipaSupport;
 
-    // Info for degrader
+    // Info for Pion degrader
     bool                 _degraderBuild;
     double               _degraderRot;
     double               _degraderZ0;
@@ -175,10 +178,14 @@ namespace mu2e {
     std::string          _degraderFramMaterial;
     std::string          _degraderCowtMaterial;
     std::string          _degraderRodMaterial;
+    std::string          _degraderSuptMaterial;
     std::vector<double>  _degraderFrameDims;
     std::vector<double>  _degraderFilterDims;
     std::vector<double>  _degraderCounterDims;
     std::vector<double>  _degraderRodDims;
+    std::vector<double>  _degraderPivotPos;
+    std::vector<double>  _degraderSupportArmDims;
+    std::vector<double>  _degraderSupportPlateDims;
   };
 }
 #endif 
