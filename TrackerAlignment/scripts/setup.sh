@@ -80,10 +80,10 @@ function mu2ealign_checkcomplete() {
             tail -n 5 job_part$i.log
             echo "-------------------------------------------"
             rc=1
-        else
-            echo "Job $i complete!"
-            grep "TimeReport" job_part$i.log
-            echo ""
+        #else
+        #    echo "Job $i complete!"
+        #    grep "TimeReport" job_part$i.log
+        #    echo ""
         fi
     done
 
@@ -98,10 +98,14 @@ function mu2ealign_mergeoutput() {
 
     if [ ! -f "mp-steer.txt" ]; then
         python ${MU2E_BASE_RELEASE}/TrackerAlignment/scripts/mergesteer.py mp-steer.txt.* > mp-steer.txt
+    else
+        echo "mp-steer.txt already exists - skip"
     fi
 
     if [ ! -f "TrackDiag.root" ]; then
         hadd -f TrackDiag.root TrackDiag.root.*
+    else
+        echo "TrackDiag.root already exists - skip"
     fi
 }
 
@@ -120,27 +124,35 @@ function mu2ealign_runNaligniters() {
         echo "Alignment track collection: iteration 0"
 
         # run first alignment iteration
-        mu2ealign run
-        wait;
-
-        mu2ealign pede
-        lastconsts=$(pwd)/alignconstants_out.txt
-
-        for ((alignjobn=1;alignjobn<=END-1;alignjobn++)); do
-            mkdir iter$alignjobn || return 1
-            cd iter$alignjobn || return 1
-
-            echo "Working directory: $(pwd)"
-
-            mu2ealign new $lastconsts
-
-            echo "Alignment track collection: iteration $alignjobn"
-            
-            mu2ealign run 
-
-            wait 
+        if [ ! -f "alignconstants_out.txt" ]; then
+            mu2ealign run
+            wait;
 
             mu2ealign pede
+            lastconsts=$(pwd)/alignconstants_out.txt
+        else
+            echo "Already complete - skip"
+        fi
+
+        for ((alignjobn=1;alignjobn<=END-1;alignjobn++)); do
+
+            mkdir -p iter$alignjobn || return 1
+            cd iter$alignjobn || return 1
+            if [ ! -f "alignconstants_out.txt" ]; then
+                echo "Working directory: $(pwd)"
+
+                mu2ealign new $lastconsts
+
+                echo "Alignment track collection: iteration $alignjobn"
+                
+                mu2ealign run 
+
+                wait 
+
+                mu2ealign pede
+            else
+                echo "Already complete - skip"
+            fi
             lastconsts=$(pwd)/alignconstants_out.txt
             cd ..
         done
@@ -222,7 +234,7 @@ function mu2ealign() {
         if [ ! -f "sources_job_part1.txt" ]; then
             echo "If you want to configure for multiple jobs, run mu2ealign parallel <NJOBS>"
         fi
-        echo "Run 'mu2ealign run' to start."
+        echo "Run 'mu2ealign run' to start. To run multiple alignment iterations, run mu2ealign autorun <NITERS>."
 
     elif [[ $COMMAND == "parallel" ]]; then 
         mu2ealign_genparallel $2 4

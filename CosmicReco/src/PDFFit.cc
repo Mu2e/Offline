@@ -355,7 +355,7 @@ double GaussianDriftFit::DOCAresidual(ComboHit const& sh, const std::vector<doub
 
   double resid = predictedDistance - measuredDistance;
 
-  return (pca.s2() > 0 ? resid : -resid);
+  return HitAmbiguity(sh, x) * resid;//(pca.s2() > 0 ? resid : -resid);
 }
 
 double GaussianDriftFit::reduced_chisq(const std::vector<double>& x) {
@@ -425,7 +425,7 @@ double GaussianDriftFit::TimeResidual(ComboHit const& sh, const std::vector<doub
 
   double resid = predictedTime - measuredTime;
 
-  return (pca.s2() > 0 ? resid : -resid); // HitAmbiguity(sh, x) * resid;
+  return HitAmbiguity(sh, x) * resid;//(pca.s2() > 0 ? resid : -resid); // 
 }
 
 double GaussianDriftFit::DOCAresidualError(ComboHit const& sh, const std::vector<double>& x,
