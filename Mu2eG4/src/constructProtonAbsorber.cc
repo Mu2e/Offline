@@ -1039,6 +1039,7 @@ namespace mu2e {
           const double zstartOfIPA = pabs->part(0).center().z()-pabs->part(0).halfLength();
 
           int iW(0);
+	  double wire_angle_offset = ipaSup->wireAngleOffset()*CLHEP::degree; //control rotating wires around IPA together
           for ( std::size_t iWire(0); iWire < ipaSup->nWiresPerSet() ; iWire++ ) {
 
             Tube supportWire = ipaSup->getWire( iSet, iWire );
@@ -1047,8 +1048,10 @@ namespace mu2e {
 
             const double rStartOfWire = pabs1rOut0+(supportWire.originInMu2e().z()-zstartOfIPA)/pabs1len*(pabs1rOut1-pabs1rOut0);
 
-            CLHEP::Hep3Vector additionalOffset ( (supportWire.halfLength()+0.005+rStartOfWire) * std::cos(iWire * 360.*CLHEP::deg / ipaSup->nWiresPerSet() ),
-                                                 (supportWire.halfLength()+0.005+rStartOfWire) * std::sin(iWire * 360.*CLHEP::deg / ipaSup->nWiresPerSet() ), 
+            CLHEP::Hep3Vector additionalOffset ( (supportWire.halfLength()+0.005+rStartOfWire) *
+						 std::cos(iWire * 360.*CLHEP::deg / ipaSup->nWiresPerSet() + wire_angle_offset ),
+                                                 (supportWire.halfLength()+0.005+rStartOfWire) *
+						 std::sin(iWire * 360.*CLHEP::deg / ipaSup->nWiresPerSet() + wire_angle_offset ), 
                                                  0 );
 
             // Now get appropriate rotation angles
@@ -1056,16 +1059,16 @@ namespace mu2e {
 
 	    if (ipa_version == 1) {
 	      supportRot->rotateY(-M_PI/2.);
-	      supportRot->rotateZ(-iW*360.*CLHEP::deg / ipaSup->nWiresPerSet() );
+	      supportRot->rotateZ(-iW*360.*CLHEP::deg / ipaSup->nWiresPerSet() - wire_angle_offset );
 	    }
-	    else if (ipa_version == 2) {
+	    else if (ipa_version >= 2) {
 	      CLHEP::Hep3Vector rotationAxis(0, 1, 0); // start off with rotating around the y-axis
-	      rotationAxis.rotateZ((iW-1)*360.*CLHEP::deg / ipaSup->nWiresPerSet()); // each wire wants to be rotated arounf a slightly different axis
+	      rotationAxis.rotateZ((iW-1)*360.*CLHEP::deg / ipaSup->nWiresPerSet() + wire_angle_offset); // each wire wants to be rotated arounf a slightly different axis
 	      supportRot->rotate(wireRotation*CLHEP::deg, rotationAxis);
 	    
 	      CLHEP::Hep3Vector extraZOffset(0, 0, supportWire.halfLength() * std::cos(wireRotation*CLHEP::deg)); // because of the rotation from the vertical
-	      CLHEP::Hep3Vector extraROffset(std::cos(iWire * 360.*CLHEP::deg / ipaSup->nWiresPerSet()) * supportWire.halfLength()*(std::cos((90-wireRotation*CLHEP::deg)))*std::tan(wireRotation*CLHEP::deg), 
-					   std::sin(iWire * 360.*CLHEP::deg / ipaSup->nWiresPerSet()) * supportWire.halfLength()*(std::cos((90-wireRotation*CLHEP::deg)))*std::tan(wireRotation*CLHEP::deg), 
+	      CLHEP::Hep3Vector extraROffset(std::cos(iWire * 360.*CLHEP::deg / ipaSup->nWiresPerSet() + wire_angle_offset ) * supportWire.halfLength()*(std::cos((90-wireRotation*CLHEP::deg)))*std::tan(wireRotation*CLHEP::deg), 
+					   std::sin(iWire * 360.*CLHEP::deg / ipaSup->nWiresPerSet() + wire_angle_offset) * supportWire.halfLength()*(std::cos((90-wireRotation*CLHEP::deg)))*std::tan(wireRotation*CLHEP::deg), 
 					   0);
 	      additionalOffset -= 0.90*extraROffset; 
 

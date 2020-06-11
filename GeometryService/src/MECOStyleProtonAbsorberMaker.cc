@@ -305,20 +305,21 @@ namespace mu2e {
     // Support Structure for IPA
     ////////////////////////
 
-    const std::size_t supportSets   = _config.getInt   ("protonabsorber.ipa.nSets"        ,0 );
-    const std::size_t wiresPerSet   = _config.getInt   ("protonabsorber.ipa.nWiresPerSet" ,0 );
-    const double      wireRadius    = _config.getDouble( "protonabsorber.ipa.wireRadius"  ,0.);
-    const string      wireMaterial  = _config.getString( "protonabsorber.ipa.wireMaterial"   );
+    const std::size_t supportSets     = _config.getInt   ("protonabsorber.ipa.nSets"          ,0 );
+    const std::size_t wiresPerSet     = _config.getInt   ("protonabsorber.ipa.nWiresPerSet"   ,0 );
+    const double      wireRadius      = _config.getDouble("protonabsorber.ipa.wireRadius"     ,0.);
+    const string      wireMaterial    = _config.getString("protonabsorber.ipa.wireMaterial"      );
+    const double      wireAngleOffset = _config.getDouble("protonabsorber.ipa.wireAngleOffset",0.);
 
     _pabs->_buildSupports = _config.getBool("protonabsorber.ipa.buildSupports"   );
     _pabs->_ipaSupport.reset( new InnerProtonAbsSupport( supportSets, wiresPerSet ) );
-
+    _pabs->_ipaSupport->setWireAngleOffset(wireAngleOffset);
     // Calculate zPosition spacing
     double zSpacing = 0;
     if (_IPAVersion == 1) {
       zSpacing = 2*pabs1halflen/(supportSets+1); 
     }
-    else if (_IPAVersion == 2) {
+    else if (_IPAVersion >= 2) {
       zSpacing = 2*pabs1halflen; // want one set at each end of the IPA so the spacing between the sets for v2
     }
 
@@ -383,7 +384,7 @@ namespace mu2e {
     const double endRingHalfLength = _config.getDouble("protonabsorber.ipa.endRingHalfLength", 0);
     const double endRingRadialLength = _config.getDouble("protonabsorber.ipa.endRingRadialLength", 0);
     const string endRingMaterial = _config.getString("protonabsorber.ipa.endRingMaterial", "DSVacuum");
-
+    
     for (std::size_t iRing(0); iRing < _pabs->_ipaSupport->nEndRings(); iRing++) {
       const double zPosition = ipazstart + zSpacing*(iRing); // same z spacing as for the wire sets
       
@@ -412,7 +413,7 @@ namespace mu2e {
       if (_IPAVersion == 1) {
 	zPosition = ipazstart + zSpacing*(iS+1);
       }
-      else if (_IPAVersion == 2) {
+      else if (_IPAVersion >= 2) {
 	zPosition = ipazstart + zSpacing*(iS); 
       }
 
@@ -420,18 +421,26 @@ namespace mu2e {
       const double wireInnerRadius = pabs1rOut0 + ( zPosition-ipazstart )*(pabs1rOut1-pabs1rOut0)/(2*pabs1halflen);
       double wireLength      = wireOuterRadius - wireInnerRadius;
 
-      if (_IPAVersion == 2) { // for v2, we want the wire to be angled from the vertical in order to provide longitudinal tension
+      if (_IPAVersion >= 2) { // for v2, we want the wire to be angled from the vertical in order to provide longitudinal tension
 	//	wireLength = wireLength / cos(wire_rotation_from_vertical);
 	// However, because the OPA is conical the wires at one end need to be longer than the wires at the other
 	double theta_opa = atan2(oPAin1 - oPAin0, 2*_pabs->_oPAhalflength);
+	//if OPA entirely covers the region of the wires (as it should) -->
+	//tan(angle of OPA descent) = delta r / delta z
+	//r at OPA where wire connects = r at OPA at IPA edge / cos(wire angle from horizontal) / (tan(wire angle from horizontal) + tan(OPA angle))
 
+	double wire_angle = wire_rotation_from_vertical;
+	if(_IPAVersion > 2) {
+	  wire_angle *= CLHEP::degree; //fix bug in newer versions
+	  wireLength -= 1. + 2.*wireRadius*tan(wire_angle); //add buffer + wire radius effect
+	}
 	if (zPosition < ipazstart+pabs1halflen) {
 	  // if we're closer to the target
-	  wireLength = (wireLength * sin(CLHEP::pi - 2*wire_rotation_from_vertical - theta_opa)) / sin(wire_rotation_from_vertical + theta_opa);
+	    wireLength = (wireLength * sin(CLHEP::pi - 2*wire_angle - theta_opa)) / sin(wire_angle + theta_opa);
 	}
 	else {
 	  // we're further from the target so the wire needs to be longer
-	  wireLength = (wireLength * sin(CLHEP::pi -2*wire_rotation_from_vertical - theta_opa)) / sin(wire_rotation_from_vertical - theta_opa);
+	    wireLength = (wireLength * sin(CLHEP::pi -2*wire_angle - theta_opa)) / sin(wire_angle - theta_opa);
 	}
       }
 

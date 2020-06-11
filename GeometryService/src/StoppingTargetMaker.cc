@@ -120,6 +120,23 @@ namespace mu2e {
     _foilTarget_supportStructure_angleOffset = c.getDouble("stoppingTarget.foilTarget_supportStructure_angleOffset");// angle of first support wire wrt vertical
     _foilTarget_supportStructure_fillMaterial = c.getString("stoppingTarget.foilTarget_supportStructure_fillMaterial");
 
+    if(c.getBool("stoppingTarget.foilTarget_supportStructure_endAtOPA", false)) { //if reaching OPA, get OPA parameters
+      double opaR1 = c.getDouble("protonabsorber.outerPAInnerRadius0", 436.0);
+      double opaR2 = c.getDouble("protonabsorber.outerPAInnerRadius1", 720.0);
+      double opaZCenter = c.getDouble("protonabsorber.outerPAZCenter", 6250.0);
+      double opaHL = c.getDouble("protonabsorber.outerPAHalfLength", 2250.0);
+      unsigned nfoils = _rOut.size();
+      double length = (nfoils-1)*_deltaZ; //length of stopping target
+      int side = (opaR1 <= opaR2) ? 1 : -1; //to check if cone widens in Z or not, to find point of closest approach
+      double zclosest = _z0InMu2e - side*length/2.;
+      if(zclosest < opaZCenter - opaHL) zclosest = opaZCenter - opaHL; //if goes past the opa
+      if(zclosest > opaZCenter + opaHL) zclosest = opaZCenter + opaHL; //if goes past the opa
+      double rclosest = opaR1 + (opaR2-opaR1)*((zclosest - side*_foilTarget_supportStructure_radius)
+					       - (opaZCenter - opaHL))/(2.*opaHL); //linear radial increase from z = opa_z - opa_hl to opa_z + opa_hl (plus radius of the wire)
+      _foilTarget_supportStructure_rOut = rclosest - 0.01; //add small buffer 
+    } else
+       _foilTarget_supportStructure_rOut = 250.; //default value used previously of 500 mm diameter OPA
+
     // debugging print...
     if ( verbosity > 0 ) PrintConfig();
 
@@ -134,9 +151,6 @@ namespace mu2e {
     // Root, G4, or any other scheme.
 
     _targ = unique_ptr<StoppingTarget>(new StoppingTarget());
-
-    // diameter for target volume at z=5461 assigned by geometry group
-    double ProtonAbsorberOuter_diameter=500;
 
     // create the TargetFoils
 
@@ -191,8 +205,8 @@ namespace mu2e {
                       // calculate support structure length
                       double temp_foilTarget_supportStructure_length=0;
 
-                      if ( ((ProtonAbsorberOuter_diameter - 2*_rOut[i])/2.) > 0 ) {
-                              temp_foilTarget_supportStructure_length = ((ProtonAbsorberOuter_diameter - 2*_rOut[i])/2.);
+                      if ( ((_foilTarget_supportStructure_rOut - _rOut[i])) > 0 ) {
+                              temp_foilTarget_supportStructure_length = ((_foilTarget_supportStructure_rOut - _rOut[i]));
                               temp_foilTarget_supportStructure_length -= 1; // remove 1mm to avoid overlap problems with mother volume
                       } else {
                               temp_foilTarget_supportStructure_length=0;
@@ -228,7 +242,7 @@ namespace mu2e {
     radius+=1;
     */
     // fix it to the diameter of the outer proton absorber
-    radius=ProtonAbsorberOuter_diameter/2.;
+    radius=_foilTarget_supportStructure_rOut - 0.001;
 
     // give it to the Target
     _targ->_radius=radius;
