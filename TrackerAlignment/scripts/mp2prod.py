@@ -106,11 +106,9 @@ TABLE TrkAlignTracker
                 line = line.strip()
                 if 'Parameter' in line:
                     continue
-                label, p, _, dp, error = line.split()
+                label, p, _ = line.split()[:3]
 
                 p = float(p)
-                dp = float(dp)
-                error = float(error)
 
                 obj_type, id, dof =  self.parse_label(label)
 

@@ -1,37 +1,35 @@
 #!/usr/bin/env python
-#
-# Original author Rob Kutschke.
-#
 
-import os, re
 Import('env')
-
 Import('mu2e_helper')
 
-helper=mu2e_helper(env)
+root_libs  = env['ROOTLIBS']
+babar_libs = env['BABARLIBS']
 
-rootlibs  = env['ROOTLIBS']
-babarlibs = env['BABARLIBS']
-extrarootlibs = ['Spectrum', 'TMVA' , 'Minuit' , 'XMLIO', 'Minuit2', 'Geom', 'Geom', 'GeomPainter', 'Ged']
-mainlib = helper.make_mainlib ( [
-    'mu2e_BTrkData',
-    'mu2e_Mu2eBTrk',
-    'mu2e_Mu2eUtilities',
-    'mu2e_ConditionsService',
+
+# Mu2e shared libraries we need
+mu2e_libs = [
     'mu2e_GeometryService',
-    'mu2e_CalorimeterGeom',
-    'mu2e_BFieldGeom',
-    'mu2e_TrackerGeom',
-    'mu2e_TrackerConditions',
-    'mu2e_MCDataProducts',
-    'mu2e_RecoDataProducts',
-    'mu2e_GlobalConstantsService',
-    'mu2e_Mu2eInterfaces',
     'mu2e_DataProducts',
+    'mu2e_RecoDataProducts',
+    'mu2e_TrackerGeom',
     'mu2e_GeneralUtilities',
-    'mu2e_CosmicReco',
+    'mu2e_Mu2eUtilities',
+    'mu2e_Mu2eInterfaces',
+    'mu2e_TrackerConditions',
+    'mu2e_DbTables',
     'mu2e_DbService',
-    babarlibs,
+    'mu2e_CosmicReco',
+    'mu2e_GeomPrimitives',
+]
+
+# extra ROOT libraries
+root_libs += [
+    'Minuit', 
+    'Minuit2', 
+]
+
+art_libs = [
     'art_Framework_Core',
     'art_Framework_Principal',
     'art_Framework_Services_Registry',
@@ -40,86 +38,42 @@ mainlib = helper.make_mainlib ( [
     'art_Persistency_Provenance',
     'art_Persistency_Common',
     'art_Utilities',
+]
+
+other_libs = [
     'canvas',
     'fhiclcpp',
     'cetlib',
     'cetlib_except',
-    rootlibs,
     'CLHEP',
     'HepPDT',
     'xerces-c',
+
+    'pthread',
+
     'boost_system',
-    'boost_math_c99',
+    'boost_filesystem',
     'boost_iostreams',
-    extrarootlibs,
-    ] )
+    'boost_math_c99'
+]
 
-# Fixme: split into link lists for each module.
-helper.make_plugins( [
-   mainlib,
-   'mu2e_Mu2eUtilities',
-   'mu2e_SeedService_SeedService_service',
-   'mu2e_ConditionsService',
-   'mu2e_GeometryService',
-   'mu2e_CalorimeterGeom',
-   'mu2e_BFieldGeom',
-   'mu2e_Mu2eHallGeom',
-   'mu2e_TrackerGeom',
-   'mu2e_TrackerConditions',
-   'mu2e_MCDataProducts',
-   'mu2e_RecoDataProducts',
-   'mu2e_GlobalConstantsService',
-   'mu2e_Mu2eInterfaces',
-   'mu2e_DataProducts',
-   'mu2e_GeneralUtilities',
-   'mu2e_TrkReco',
-   'mu2e_GeomPrimitives',
-   'mu2e_CosmicReco',
-   'mu2e_DbService',
-   
-    babarlibs,
-   'art_Framework_Core',
-   'art_Framework_Principal',
-   'art_Framework_Services_Registry',
-   'art_root_io_tfile_support',
-   'art_root_io_TFileService_service',
-   'art_Framework_Services_Optional_RandomNumberGenerator_service',
-   'art_Persistency_Common',
-   'art_Persistency_Provenance',
-   'art_Utilities',
-   'canvas',
-   'MF_MessageLogger',
-   'fhiclcpp',
-   'cetlib',
-   'cetlib_except',
-   'CLHEP',
-   'HepPDT',
-   rootlibs,
-   'xerces-c',
-   'boost_filesystem',
-   'boost_system',
-   'boost_math_c99',
-   'boost_iostreams',
-   'pthread',
-   extrarootlibs
+dict_libs = [
+    'art_Persistency_Common',
+    'art_Utilities',
+]
 
-    ] )
+all_libs = [
+    mu2e_libs,
+    art_libs,
+    root_libs,
+    other_libs
+]
 
-# Fixme: do I need all of babarlibs below?
-helper.make_dict_and_map( [
-        mainlib,
-        babarlibs,
-        'art_Persistency_Common',
-        'art_Utilities',
-        'canvas',
-        'cetlib',
-        'cetlib_except',
-        'CLHEP',
-        'Core',
-        'boost_system',
-        'boost_math_c99',
-        'boost_iostreams'
-    ] )
+
+helper = mu2e_helper(env)
+mainlib = helper.make_mainlib ( all_libs )
+helper.make_plugins( [ mainlib ] + all_libs )
+helper.make_dict_and_map( [mainlib] + dict_libs )
 
 
 # This tells emacs to view this file in python mode.

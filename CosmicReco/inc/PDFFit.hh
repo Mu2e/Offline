@@ -111,6 +111,13 @@ public:
     return DOCAresidualError(sh, x, tseed._track.MinuitParams.cov);
   }
 
+  int HitAmbiguity(ComboHit const& sh, CosmicTrackSeed const& tseed) const {
+    std::vector<double> x {tseed._track.MinuitParams.A0, tseed._track.MinuitParams.B0,
+                             tseed._track.MinuitParams.A1, tseed._track.MinuitParams.B1,
+                             tseed._track.MinuitParams.T0};
+    return HitAmbiguity(sh, x);
+  }
+
   double reduced_chisq(const std::vector<double>& x);
 
   int HitAmbiguity(ComboHit const& sh, const std::vector<double>& x) const;

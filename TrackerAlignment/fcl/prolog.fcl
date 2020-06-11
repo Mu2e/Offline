@@ -16,6 +16,9 @@ BEGIN_PROLOG
     PlaneFilter : false
     PlaneFilterList : [ ]
 
+    ConstrainStrategy : "Fix"
+    FixPlane : [ 5, 30 ]
+
     UseTimeDomain : true
 
     NoPanelDOFs : true 
