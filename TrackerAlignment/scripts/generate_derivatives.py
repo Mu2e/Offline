@@ -27,6 +27,20 @@ def unit_vector(v):
     tot2 = v.dot(v)
     return v/sqrt(tot2)
 
+def crossprod(a,b):
+    return Matrix([
+        a[1]*b[2] - a[2]*b[1],
+        a[2]*b[0] - a[0]*b[2],
+        a[0]*b[1] - a[1]*b[0]
+    ])
+
+def dotprod(a,b):
+    return Matrix([
+        a[0]*b[0],
+        a[1]*b[1],
+        a[2]*b[2]
+    ])
+
 
 def DOCAToTOCA(dca, driftvel):
     return dca / driftvel
@@ -55,6 +69,46 @@ def DOCA(p1, t1, p2, t2):
     dca = sqrt(___diff.dot(___diff))
 
     return sympy.Piecewise((dca, _s1 > 0), (-dca, True))
+
+
+def HitAmbiguity(straw_mp, straw_dir, intercept, tdir):
+#   Hep3Vector sep = intercept - straw.getMidPoint();
+#   Hep3Vector perp = (dir.cross(straw.getDirection())).unit();
+#   double dperp = perp.dot(sep);
+#   return (dperp > 0 ? -1 : 1);
+    sep = intercept - straw_mp
+    perp = unit_vector(crossprod(tdir, straw_dir))
+
+    dperp = dotprod(perp, sep)
+
+    return dperp
+    # to get the right sign: dperp > 0 ? -1 : 1
+
+
+def DOCA_UseHitAmbiguity(p1, t1, p2, t2):
+    t1 = unit_vector(t1)
+    t2 = unit_vector(t2)
+    # t2 should already be a unit vector
+
+    c = t1.dot(t2)
+
+    sinsq = 1.0 - c*c
+    _delta = p1 - p2
+    ddotT1 = _delta.dot(t1)
+    ddotT2 = _delta.dot(t2)
+
+    _s1 = (ddotT2*c-ddotT1)/sinsq
+    _s2 = -(ddotT1*c-ddotT2)/sinsq
+
+    _pca1 = p1 + t1 * _s1
+    _pca2 = p2 + t2 * _s2
+
+    ___diff = _pca1 - _pca2
+
+    dca = sqrt(___diff.dot(___diff))
+
+    return sympy.Piecewise((-dca, HitAmbiguity(p1,t1,p2,t2) > 0), (dca, True))
+
 
 
 def colvec_perp(matrix):
