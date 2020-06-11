@@ -445,6 +445,44 @@ namespace mu2e {
 		       thermalShieldMLIMaterial, thermalShieldMidMaterial, ts3WallThickness);
     }
 
+    //Add TSu-TSd interconnect
+    if(config.getBool("ts.tsudinterconnect.build", false)) {
+      //strsec = TS3 section 
+      std::string tsudinterconnect_material = config.getString("ts.tsudinterconnect.material");
+      double tsudinterconnect_xoffset = config.getDouble("ts.tsudinterconnect.xoffset");
+      double tsudinterconnect_rin = config.getDouble("ts.tsudinterconnect.rIn");
+      double tsudinterconnect_rout = config.getDouble("ts.tsudinterconnect.rOut");
+      double tsudinterconnect_halflength = config.getDouble("ts.tsudinterconnect.halfLength");
+      G4Material* tsud_mat = findMaterialOrThrow(tsudinterconnect_material);
+      
+      nestTubs( "TSudInterconnectu",
+		TubsParams( tsudinterconnect_rin,
+			    tsudinterconnect_rout,
+			    tsudinterconnect_halflength),
+		tsud_mat,
+		strsec->getRotation(),
+		strsec->getGlobal()-_hallOriginInMu2e 
+		+ CLHEP::Hep3Vector(tsudinterconnect_xoffset+tsudinterconnect_halflength, 0., 0.),
+		parent,
+		0,
+		G4Color::Red(),
+		"TSCryo"
+		);
+      nestTubs( "TSudInterconnectd",
+		TubsParams( tsudinterconnect_rin,
+			    tsudinterconnect_rout,
+			    tsudinterconnect_halflength),
+		tsud_mat,
+		strsec->getRotation(),
+		strsec->getGlobal()-_hallOriginInMu2e 
+		- CLHEP::Hep3Vector(tsudinterconnect_xoffset+tsudinterconnect_halflength, 0., 0.),
+		parent,
+		0,
+		G4Color::Red(),
+		"TSCryo"
+		);
+    }
+
     // Build TS4
     torsec = ts->getTSVacuum<TorusSection>(TransportSolenoid::TSRegion::TS4);
     nestTorus("TS4Vacuum",

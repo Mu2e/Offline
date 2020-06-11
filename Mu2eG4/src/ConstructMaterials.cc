@@ -1535,6 +1535,13 @@ namespace mu2e {
       mli->AddMaterial(findMaterialOrThrow("G4_MYLAR"), 1.0);
     }
 
+    mat = uniqueMaterialOrThrow( "ST_Wires"); // assuming 6% gold 94% tungsten, from docdb-31260 5-7% gold plating expected
+    {
+      G4Material* wires = new G4Material( mat.name, 19.25*CLHEP::g/CLHEP::cm3, 2); //
+      wires->AddMaterial(findMaterialOrThrow("G4_W"), 0.94);
+      wires->AddMaterial(findMaterialOrThrow("G4_Au"), 0.06);
+    }
+
     // Completed constructMu2eMaterials2(), second function for
     // building all Mu2e materials.
 
