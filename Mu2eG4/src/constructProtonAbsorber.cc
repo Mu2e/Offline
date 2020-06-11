@@ -1157,11 +1157,11 @@ namespace mu2e {
             ostringstream wirename ; wirename << "IPAsupport_set" << iS << "_wire" << ++iW ;
 
             const double rStartOfWire = pabs1rOut0+(supportWire.originInMu2e().z()-zstartOfIPA)/pabs1len*(pabs1rOut1-pabs1rOut0);
-
+	    const double wirePhi = iWire * 360.*CLHEP::deg / ipaSup->nWiresPerSet() + wire_angle_offset ; 
             CLHEP::Hep3Vector additionalOffset ( (supportWire.halfLength()+0.005+rStartOfWire) *
-						 std::cos(iWire * 360.*CLHEP::deg / ipaSup->nWiresPerSet() + wire_angle_offset ),
+						 std::cos(wirePhi),
                                                  (supportWire.halfLength()+0.005+rStartOfWire) *
-						 std::sin(iWire * 360.*CLHEP::deg / ipaSup->nWiresPerSet() + wire_angle_offset ), 
+						 std::sin(wirePhi ), 
                                                  0 );
 
             // Now get appropriate rotation angles
@@ -1169,18 +1169,32 @@ namespace mu2e {
 
 	    if (ipa_version == 1) {
 	      supportRot->rotateY(-M_PI/2.);
-	      supportRot->rotateZ(-iW*360.*CLHEP::deg / ipaSup->nWiresPerSet() - wire_angle_offset );
+	      supportRot->rotateZ(-wirePhi );
 	    }
 	    else if (ipa_version >= 2) {
 	      CLHEP::Hep3Vector rotationAxis(0, 1, 0); // start off with rotating around the y-axis
-	      rotationAxis.rotateZ((iW-1)*360.*CLHEP::deg / ipaSup->nWiresPerSet() + wire_angle_offset); // each wire wants to be rotated arounf a slightly different axis
+	      rotationAxis.rotateZ(wirePhi); // each wire wants to be rotated arounf a slightly different axis
 	      supportRot->rotate(wireRotation*CLHEP::deg, rotationAxis);
 	    
 	      CLHEP::Hep3Vector extraZOffset(0, 0, supportWire.halfLength() * std::cos(wireRotation*CLHEP::deg)); // because of the rotation from the vertical
-	      CLHEP::Hep3Vector extraROffset(std::cos(iWire * 360.*CLHEP::deg / ipaSup->nWiresPerSet() + wire_angle_offset ) * supportWire.halfLength()*(std::cos((90-wireRotation*CLHEP::deg)))*std::tan(wireRotation*CLHEP::deg), 
-					   std::sin(iWire * 360.*CLHEP::deg / ipaSup->nWiresPerSet() + wire_angle_offset) * supportWire.halfLength()*(std::cos((90-wireRotation*CLHEP::deg)))*std::tan(wireRotation*CLHEP::deg), 
+	      CLHEP::Hep3Vector extraROffset(std::cos(wirePhi) 
+					     * supportWire.halfLength()*(std::cos((90-wireRotation*CLHEP::deg)))*std::tan(wireRotation*CLHEP::deg), 
+					   std::sin(wirePhi) 
+					     * supportWire.halfLength()*(std::cos((90-wireRotation*CLHEP::deg)))*std::tan(wireRotation*CLHEP::deg), 
 					   0);
-	      additionalOffset -= 0.90*extraROffset; 
+	      if (ipa_version > 2) {
+		//correct z offset bug that cos should be sin, since angle from verticle, theta = 0 --> 0 offset (angles are 45 degrees so not noticed)
+		extraZOffset.setZ(supportWire.halfLength() * std::sin(wireRotation*CLHEP::deg));
+		//correct using 90 instead of 90*CLHEP::deg
+		extraROffset.setX(std::cos(wirePhi) 
+				  * supportWire.halfLength()*(std::cos((90.-wireRotation)*CLHEP::deg))*std::tan(wireRotation*CLHEP::deg));
+		extraROffset.setY(std::sin(wirePhi) 
+				  * supportWire.halfLength()*(std::cos((90.-wireRotation)*CLHEP::deg))*std::tan(wireRotation*CLHEP::deg));
+	      }
+	      if (ipa_version == 2)
+		additionalOffset -= 0.90*extraROffset; 
+	      else
+		additionalOffset -= 0.99*extraROffset; 
 
 	      if (supportWire.originInMu2e().z() > pabs->part(0).center().z()) { // if the wires are further away from the target...
 		// ...we need to rotate them again
