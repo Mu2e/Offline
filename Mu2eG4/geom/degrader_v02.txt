@@ -12,9 +12,9 @@ bool   degrader.build = true;
 
 // Choose one of the following.
 // If the degrader is IN the beamline, uncomment the next line
-double degrader.rotation = 60.0;
+// double degrader.rotation = 60.0;
 // If the degrader is OUT of the beamline, uncomment the next line
-// double degrader.rotation = 120.0; // (degrees)
+double degrader.rotation = 120.0; // (degrees)
 
 double degrader.upstreamEdge.z             = 4235.0;
 
