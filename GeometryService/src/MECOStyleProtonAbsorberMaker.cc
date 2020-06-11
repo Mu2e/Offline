@@ -331,7 +331,7 @@ namespace mu2e {
     const double wire_rotation_from_vertical = wireRotation*CLHEP::rad;
 
     //******************
-    // Degrader
+    // Pion Degrader
     //******************
 
     (_pabs->_degraderBuild) = _config.getBool("degrader.build",false);
@@ -346,6 +346,9 @@ namespace mu2e {
 	_config.getString("degrader.counterweight.materialName");
       _pabs->_degraderRodMaterial =
 	_config.getString("degrader.rod.materialName");
+      _pabs->_degraderSuptMaterial =
+	_config.getString("degrader.support.materialName","G4_Al");
+
       double rin = _config.getDouble("degrader.frame.rIn");
       _pabs->_degraderFrameDims.push_back(rin);
       double rout = _config.getDouble("degrader.frame.rOut");
@@ -354,6 +357,18 @@ namespace mu2e {
       _pabs->_degraderFrameDims.push_back(hl);
       double coffs = _config.getDouble("degrader.frame.centerOffFromPivot");
       _pabs->_degraderFrameDims.push_back(coffs);
+      // Based on doc-32335, frame may not form complete circle, so allow
+      // for arc angle.
+      double arcAngle = _config.getDouble("degrader.frame.arcAngle",360.0);
+      _pabs->_degraderFrameDims.push_back(arcAngle);
+
+      // Pivot point on mount, in x and y
+      double xPivot = _config.getDouble("degrader.pivot.x",-3576.5);
+      _pabs->_degraderPivotPos.push_back(xPivot);
+      double yPivot = _config.getDouble("degrader.pivot.y",-567.25);
+      _pabs->_degraderPivotPos.push_back(yPivot);
+
+      // parameters for filter itself
       rin = _config.getDouble("degrader.filter.rIn");
       _pabs->_degraderFilterDims.push_back(rin);
       rout = _config.getDouble("degrader.filter.rOut");
@@ -361,6 +376,7 @@ namespace mu2e {
       hl  = _config.getDouble("degrader.filter.halfLength");
       _pabs->_degraderFilterDims.push_back(hl);
       _pabs->_degraderFilterDims.push_back(coffs);
+
       rin = _config.getDouble("degrader.counterweight.rIn");
       _pabs->_degraderCounterDims.push_back(rin);
       rout = _config.getDouble("degrader.counterweight.rOut");
@@ -373,7 +389,36 @@ namespace mu2e {
       _pabs->_degraderRodDims.push_back(width);
       double depth = _config.getDouble("degrader.rod.depth");
       _pabs->_degraderRodDims.push_back(depth);
-    }
+
+      // Allow for a support structure for stepper motor and axle for 
+      // pion degrader.  There will be four "arms" sticking out from the 
+      // OPA support upstream side and a plate mounted on them.  First
+      // configure the arms.
+      // First get the half-length dimensions of the arms
+      double hlx = _config.getDouble("degrader.supportArm.dx",0.0);
+      _pabs->_degraderSupportArmDims.push_back(hlx);
+      double hly = _config.getDouble("degrader.supportArm.dy",0.0);
+      _pabs->_degraderSupportArmDims.push_back(hly);
+      double hlz = _config.getDouble("degrader.supportArm.dz",0.0);
+      _pabs->_degraderSupportArmDims.push_back(hlz);
+      // Now get the offsets from the pivot point (in x&y) and 
+      // from the z0 of the filter above in z.
+      double osx = _config.getDouble("degrader.supportArm.offsetx",0.0);
+      _pabs->_degraderSupportArmDims.push_back(osx);
+      double osy = _config.getDouble("degrader.supportArm.offsety",0.0);
+      _pabs->_degraderSupportArmDims.push_back(osy);
+      double osz = _config.getDouble("degrader.supportArm.offsetz",0.0);
+      _pabs->_degraderSupportArmDims.push_back(osz);
+      // The plate will be at the end of the arms.  Give its dimension
+      // in x, y, and z
+      double hlpx = _config.getDouble("degrader.supportPlate.dx",0.0);
+      _pabs->_degraderSupportPlateDims.push_back(hlpx);
+      double hlpy = _config.getDouble("degrader.supportPlate.dy",0.0);
+      _pabs->_degraderSupportPlateDims.push_back(hlpy);
+      double hlpz = _config.getDouble("degrader.supportPlate.dz",0.0);
+      _pabs->_degraderSupportPlateDims.push_back(hlpz);
+
+    } // end of the if for Pion Degrader building
 
 
     ////////////////////
