@@ -128,14 +128,14 @@ int ds.nPtRail = 19;
 vector<double> ds.outlineU = {470,    470, 500,   530, 530, 527, 527, 518, 518, 527, 527, 523, 477, 473, 473, 482, 482, 473, 473};
 vector<double> ds.outlineV = {-750,-825.4,-807.4,-788,-750,-750,-738,-730,-722,-714,-710,-706,-706,-710,-714,-722,-730,-738,-750};
 double ds.lengthRail2       = 4160;
-double ds.lengthRail3       = 8200;
+double ds.lengthRail3       = 5500;
 string ds.RailMaterialType = "StainlessSteel";
 // The following center points are each relative to the center of the 
 // corresponding dsVacuum area (DS2Vacuum, DS3Vacuum) n= north, s=south
 vector<double> ds.n2RailCenter = { 0, 0, 0 };
 vector<double> ds.s2RailCenter = { 0, 0, 0 };
-vector<double> ds.n3RailCenter = { 0, 0, 12440 };
-vector<double> ds.s3RailCenter = { 0, 0, 12440 };
+vector<double> ds.n3RailCenter = { 0, 0, 11090 };
+vector<double> ds.s3RailCenter = { 0, 0, 11090 };
 // Bearing blocks riding the rails.  Added Jan 2016
 int ds.nPtBBlock = 16;
 vector<double> ds.outlineBBlockU = {25, 28, 28, 20, 45, 45, 60, 45, -45, -60, -45, -45, -20, -28, -28, -25};
@@ -269,12 +269,12 @@ double    ds.CableRunIFB.ZC        = 17370.;
 bool      ds.hasServicePipes       = true;
 double    ds.servicePipeRIn        = 19.05; // 3/4 in
 double    ds.servicePipeROut       = 25.4; // 1 in
-double    ds.servicePipeHL         = 4100.0; // halflength in mm - guess val
+double    ds.servicePipeHL         = 2100.0; // halflength in mm - guess val
 string    ds.servicePipeMat        = "G4_Al";
 string    ds.servicePipeFillMat    = "G4_WATER";
-double    ds.servicePipeZC         = 12440.0; // Z-coord of pipe cent - a guess
-double    ds.servicePipeYC         = -875.0; // Y-coord guess
-vector<double> ds.servicePipeXCs   = {250,180.0,100.0,-100.0,-180.0,-250};// relative to
+double    ds.servicePipeZC         = 14000.0; // Z-coord of pipe cent - a guess
+double    ds.servicePipeYC         = -820.0; // Y-coord guess
+vector<double> ds.servicePipeXCs   = {300,200.0,140.0,-140.0,-200.0,-300};// relative to
                                                                  // axis of DS
 
 // Vacuum volumes inside DS
