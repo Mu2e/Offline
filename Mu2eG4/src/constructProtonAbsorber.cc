@@ -15,6 +15,7 @@
 #include <string>
 #include <sstream>
 #include <vector>
+#include <cmath>
 
 // Framework includes
 #include "messagefacility/MessageLogger/MessageLogger.h"
@@ -701,8 +702,8 @@ namespace mu2e {
 					  rin, rou, hl,
 					  0.0, 360.0*CLHEP::degree);
 
-	    G4Box* notch = new G4Box("notch", 35.0*CLHEP::mm,
-				      25.0*CLHEP::mm, hl*1.1 );
+	    G4Box* notch = new G4Box("notch", 36.0*CLHEP::mm,
+				      40.0*CLHEP::mm, hl*1.1 );
 
 	    CLHEP::HepRotation* notch1Rotat = new CLHEP::HepRotation(CLHEP::HepRotation::IDENTITY);
 	    
@@ -888,7 +889,7 @@ namespace mu2e {
 
 
       //***************************
-      // Now build the Degrader if requested
+      // Now build the Pion Degrader if requested
       //***************************
 
       if ( pabs->degraderBuild() ) {
@@ -900,20 +901,36 @@ namespace mu2e {
 	std::vector<double> filterDims = pabs->degraderFilterDims();
 	std::vector<double> counterDims = pabs->degraderCounterwtDims();
 	std::vector<double> rodDims = pabs->degraderRodDims();
-	CLHEP::Hep3Vector locationInMu2e (-3904.0-frameDims.at(3), 0.0, 
+	std::vector<double> pivotPos = pabs->degraderPivotPos();
+	std::vector<double> armDims = pabs->degraderSupportArmDims();
+	std::vector<double> plateDims = pabs->degraderSupportPlateDims();
+
+	// Calculate the location in x and y for the mother box location
+	// This is the mother box containing frame, filter, and rod.
+	// Counterweight has to be put in its own mother box
+	double lengthPDMoBox = frameDims.at(1) + frameDims.at(3)
+	  + counterDims.at(3);
+	double dptoc = frameDims.at(3) + frameDims.at(1) - lengthPDMoBox/2.0;
+	double xLocMoBox = pivotPos.at(0) - dptoc*cos(pabs->degraderRotation()
+						      *CLHEP::degree);
+	double yLocMoBox = pivotPos.at(1) + dptoc*sin(pabs->degraderRotation()
+						      *CLHEP::degree);
+	CLHEP::Hep3Vector locationInMu2e (xLocMoBox, yLocMoBox, 
 					  pabs->degraderZ0() 
-					  + counterDims.at(2) );
+					  + 2.0*filterDims.at(2)
+					  + frameDims.at(2) );
 
 	// Make mother volume for degrader
 	std::string motherName("Degrader");
 	VolumeInfo degraderMother ( motherName,
-				    locationInMu2e - parent1Info.centerInMu2e(), parent1Info.centerInWorld);
+		        	    locationInMu2e - parent1Info.centerInMu2e(), parent1Info.centerInWorld);
 
 	// Make box for degrader mother volume.
 	G4Box* motherBox = new G4Box ( "degraderOutline", 
-	 			       frameDims.at(1)+frameDims.at(3),
+	 			       lengthPDMoBox/2.0, 
 	 			       frameDims.at(1),
-	 			       counterDims.at(2) );
+	 			       2.0*filterDims.at(2) + frameDims.at(2)
+				       + 1 );
 	degraderMother.solid = motherBox;
 
 	// Now put degraderMother in DS2Vacuum
@@ -927,10 +944,12 @@ namespace mu2e {
 			doSurfaceCheck );
 
 	// Start cobbling pieces together by putting frame in mother
-	CLHEP::Hep3Vector trans1(frameDims.at(3),0,frameDims.at(2) -
-	 			 counterDims.at(2));
+	CLHEP::Hep3Vector trans1( frameDims.at(1) - lengthPDMoBox/2.0,
+				 0,0);
 	nestTubs("degraderFrame",
-	 	 TubsParams(frameDims.at(0),frameDims.at(1),frameDims.at(2)),
+	 	 TubsParams(frameDims.at(0),frameDims.at(1),frameDims.at(2),
+			    -frameDims.at(4)/2 * CLHEP::degree, 
+			    frameDims.at(4)*CLHEP::degree ),
 		 findMaterialOrThrow(pabs->degraderFrameMaterial()),
 	 	 0, trans1, degraderMother,
 	 	 0, pabsIsVisible, G4Color::Red(),
@@ -938,14 +957,11 @@ namespace mu2e {
 	 	 forceAuxEdgeVisible,
 		 placePV,
 	 	 doSurfaceCheck );
-	// G4Tubs * frame = new G4Tubs( "degraderFrameTubs",
-	// 			     frameDims.at(0),
-	// 			     frameDims.at(1),
-	// 			     frameDims.at(2) );
+
 
 	// Now put filter in mother
-	CLHEP::Hep3Vector trans1b(frameDims.at(3),0,2.0 * frameDims.at(2) +
-	 			  filterDims.at(2) - counterDims.at(2));
+	CLHEP::Hep3Vector trans1b(frameDims.at(1) - lengthPDMoBox/2.0,0,
+	 			  -(frameDims.at(2) + filterDims.at(2)));
 	nestTubs("degraderFilter",
 	 	 TubsParams(filterDims.at(0),filterDims.at(1),filterDims.at(2)),
 	 	 findMaterialOrThrow(pabs->degraderFilterMaterial()),
@@ -955,45 +971,139 @@ namespace mu2e {
 		 forceAuxEdgeVisible,
 		 placePV,
 		 doSurfaceCheck );
-	// G4Tubs * filter = new G4Tubs( "degraderFilterTubs",
-	// 			      filterDims.at(0),
-	// 			      filterDims.at(1),
-	// 			      filterDims.at(2) );
+
+	 // Create rod rep
+	 double lenRod = frameDims.at(3) + counterDims.at(3) - frameDims.at(1) 
+	   - 0.1;
+	 std::vector<double> lwhs = {lenRod/2.0,rodDims.at(0)/2.0,rodDims.at(1)/2.0};
+	 // Now put rod in mother volume
+	 CLHEP::Hep3Vector trans3(frameDims.at(1), 
+	 			  0.0, 0.0);
+
+	 nestBox ("degraderRod",
+	 	 lwhs,
+	 	 findMaterialOrThrow(pabs->degraderRodMaterial()),
+	 	 0, trans3, degraderMother,
+	 	 0, pabsIsVisible, G4Color::Red(),
+	 	 pabsIsSolid,
+	 	 forceAuxEdgeVisible,
+	 	 placePV,
+	 	 doSurfaceCheck );
+
+	 // Now put Counterweight directly into DS2Vacuum.
+	 // Has to be separate from the rod, frame, and filter because its
+	 // size would cause overlaps otherwise.
+	double xLocMoBox2 = pivotPos.at(0) + 
+	  (counterDims.at(3)+counterDims.at(2)) * cos(pabs->degraderRotation()
+						      *CLHEP::degree);
+	double yLocMoBox2 = pivotPos.at(1) - 
+	  (counterDims.at(3) + counterDims.at(2))*sin(pabs->degraderRotation()
+						      *CLHEP::degree);
+
+	CLHEP::Hep3Vector location2InMu2e (xLocMoBox2, yLocMoBox2, 
+					  pabs->degraderZ0() 
+					  + 2.0*filterDims.at(2)
+					  + frameDims.at(2) );
 
 
-	// Now put counterweight in mother
-	CLHEP::Hep3Vector trans2( -counterDims.at(3), 0.0, 0.0);
+	// Now put counterweight in DS2Vacuum
+	CLHEP::HepRotation* cwtRot = new CLHEP::HepRotation(CLHEP::HepRotation::IDENTITY);
+	cwtRot->rotateY(90.0*CLHEP::degree);
+	cwtRot->rotateX(pabs->degraderRotation()*CLHEP::degree);
+
+
 	nestTubs("degraderCounterweight",
 		 TubsParams(counterDims.at(0),counterDims.at(1),counterDims.at(2)),
 		 findMaterialOrThrow(pabs->degraderCountwtMaterial()),
-		 0, trans2, degraderMother,
+		 cwtRot, location2InMu2e-parent1Info.centerInMu2e(),
+		 parent1Info,
 		 0, pabsIsVisible, G4Color::Red(),
 		 pabsIsSolid,
 		 forceAuxEdgeVisible,
 		 placePV,
 		 doSurfaceCheck );
 
-	// Creat rod rep
-	double lenRod = frameDims.at(3) + counterDims.at(3) - frameDims.at(1) 
-	  - counterDims.at(1) - 0.1;
-	std::vector<double> lwhs = {lenRod/2.0,rodDims.at(0)/2.0,rodDims.at(1)/2.0};
-	// Now put rod in mother volume
-	CLHEP::Hep3Vector trans3( (frameDims.at(3)-counterDims.at(3)
-				   + counterDims.at(1) - frameDims.at(1))/2.0, 
-				  0.0, rodDims.at(1)/2.0 - counterDims.at(2));
-	nestBox ("degraderRod",
-		 lwhs,
-		 findMaterialOrThrow(pabs->degraderRodMaterial()),
-		 0, trans3, degraderMother,
-		 0, pabsIsVisible, G4Color::Red(),
-		 pabsIsSolid,
-		 forceAuxEdgeVisible,
-		 placePV,
-		 doSurfaceCheck );
+	// Now put in bracket rods (four of them)
+	if ( armDims.at(0) > 0 && armDims.at(3) > 0) {
+	  std::vector<double> lwhs2 = {armDims.at(0),armDims.at(1),armDims.at(2)};
+	  // Get locations
+	  CLHEP::Hep3Vector transa0(pivotPos.at(0) + armDims.at(3), 
+				    pivotPos.at(1) + armDims.at(4), 
+				    pabs->degraderZ0() + armDims.at(5));
 
+	  nestBox ("degraderSupportArm0",
+		   lwhs2,
+		   findMaterialOrThrow(pabs->degraderSupportMaterial()),
+		   0, transa0 -parent1Info.centerInMu2e(), parent1Info,
+		   0, pabsIsVisible, G4Color::Red(),
+		   pabsIsSolid,
+		   forceAuxEdgeVisible,
+		   placePV,
+		   doSurfaceCheck );
 
+	  CLHEP::Hep3Vector transa1(pivotPos.at(0) + armDims.at(3), 
+				    pivotPos.at(1) - armDims.at(4), 
+				    pabs->degraderZ0() + armDims.at(5));
 
-      }// end if degraderBuild
+	  nestBox ("degraderSupportArm1",
+		   lwhs2,
+		   findMaterialOrThrow(pabs->degraderSupportMaterial()),
+		   0, transa1 -parent1Info.centerInMu2e(), parent1Info,
+		   0, pabsIsVisible, G4Color::Red(),
+		   pabsIsSolid,
+		   forceAuxEdgeVisible,
+		   placePV,
+		   doSurfaceCheck );
+
+	  CLHEP::Hep3Vector transa2(pivotPos.at(0) - armDims.at(3), 
+				    pivotPos.at(1) - armDims.at(4), 
+				    pabs->degraderZ0() + armDims.at(5));
+
+	  nestBox ("degraderSupportArm2",
+		   lwhs2,
+		   findMaterialOrThrow(pabs->degraderSupportMaterial()),
+		   0, transa2 -parent1Info.centerInMu2e(), parent1Info,
+		   0, pabsIsVisible, G4Color::Red(),
+		   pabsIsSolid,
+		   forceAuxEdgeVisible,
+		   placePV,
+		   doSurfaceCheck );
+
+	  CLHEP::Hep3Vector transa3(pivotPos.at(0) - armDims.at(3), 
+				    pivotPos.at(1) + armDims.at(4), 
+				    pabs->degraderZ0() + armDims.at(5));
+
+	  nestBox ("degraderSupportArm3",
+		   lwhs2,
+		   findMaterialOrThrow(pabs->degraderSupportMaterial()),
+		   0, transa3 -parent1Info.centerInMu2e(), parent1Info,
+		   0, pabsIsVisible, G4Color::Red(),
+		   pabsIsSolid,
+		   forceAuxEdgeVisible,
+		   placePV,
+		   doSurfaceCheck );
+
+	  std::vector<double> lwhs3 = {plateDims.at(0), plateDims.at(1),
+				     plateDims.at(2)};
+
+	  CLHEP::Hep3Vector transp1(pivotPos.at(0), 
+				    pivotPos.at(1), 
+				    pabs->degraderZ0() + armDims.at(5)
+				    - armDims.at(2)-plateDims.at(2) -0.1);
+
+	  nestBox ("degraderSupportPlate",
+		   lwhs3,
+		   findMaterialOrThrow(pabs->degraderSupportMaterial()),
+		   0, transp1 - parent1Info.centerInMu2e(), parent1Info,
+		   0, pabsIsVisible, G4Color::Red(),
+		   pabsIsSolid,
+		   forceAuxEdgeVisible,
+		   placePV,
+		   doSurfaceCheck );
+
+	} //end of if on non-zero support bracket arm dims
+
+      }// end of if degraderBuild
 
       
       if ( pabs->buildSupports() ) {
