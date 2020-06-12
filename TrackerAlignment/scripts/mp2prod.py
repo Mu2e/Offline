@@ -9,8 +9,10 @@ class AlignmentConstants:
     sections = []
 
     plane_constants = {}
+    plane_constants_errors = {}
 
     panel_constants = {}
+    panel_constants_errors = {}
 
     def __init__(self):
         self.section_handlers = {
@@ -21,9 +23,11 @@ class AlignmentConstants:
 
         for plane_id in range(0,36):
             self.plane_constants[plane_id]=[0.0] * 6
+            self.plane_constants_errors[plane_id] = [0.0] * 6
 
         for panel_id in range(0,216):
             self.panel_constants[panel_id]=[0.0] * 6
+            self.panel_constants_errors[plane_id] = [0.0] * 6
 
     def read_db_file(self, input_file):
         section_lines = []
@@ -83,6 +87,11 @@ class AlignmentConstants:
             fi.write('%d,%s\n' % (id,dofrow))
         fi.write('\n')
 
+    def get_plane_const(self, plane, dof):
+        return self.plane_constants[plane][dof], self.plane_constants_errors[plane][dof]
+        
+    def get_panel_const(self, panel, dof):
+        return self.panel_constants[panel][dof], self.panel_constants_errors[panel][dof]
 
     def write_tracker_constants(self,fi):
         fi.write("""
@@ -106,16 +115,23 @@ TABLE TrkAlignTracker
                 line = line.strip()
                 if 'Parameter' in line:
                     continue
-                label, p, _ = line.split()[:3]
-
+                cols = line.split()
+                
+                label, p, _ = cols[:3]
                 p = float(p)
+                perr = 0.0
+
+                if len(cols) > 3:
+                    perr = cols[-1]
 
                 obj_type, id, dof =  self.parse_label(label)
 
                 if obj_type == 1:
                     self.plane_constants[id][dof] = p
+                    self.plane_constants_errors[id][dof] = perr
                 elif obj_type == 2:
                     self.panel_constants[id][dof] = p
+                    self.panel_constants_errors[id][dof] = perr
 
     def export_table(self):
         with io.StringIO() as f:

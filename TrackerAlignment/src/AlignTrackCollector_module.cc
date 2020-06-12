@@ -612,6 +612,8 @@ double AlignTrackCollector::CosmicTrack_RealDCA(
   StrawResponse const& _srep,
   int ambiguity)
 {
+  // FIXME! this will soon disappear into AlignTrackDiagnostics
+
   Tracker const& nominalTracker = *_tracker;
 
   Plane const& nominal_plane = nominalTracker.getPlane(strawId);
@@ -628,8 +630,11 @@ double AlignTrackCollector::CosmicTrack_RealDCA(
   dir = dir.unit();
   TwoLinePCA pca(intercept, dir, aligned_result.first, aligned_result.second);
 
-  double result = ambiguity * pca.dca();//(pca.s2() > 0 ? pca.dca() : -pca.dca());
-  return result;
+  Hep3Vector sep = intercept - aligned_result.first;
+  Hep3Vector perp = (dir.cross(aligned_result.second)).unit();
+  double dperp = perp.dot(sep);
+  
+  return (dperp > 0 ? -pca.dca() : pca.dca());
 }
 
 bool AlignTrackCollector::filter_CosmicTrackSeedCollection(
