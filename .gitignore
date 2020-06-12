@@ -38,3 +38,5 @@ EMFCAnalysis
 .tup
 .buildopts
 tags
+.clangd/*
+compile_commands.json

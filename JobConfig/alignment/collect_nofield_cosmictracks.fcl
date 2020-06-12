@@ -1,0 +1,71 @@
+# Ryunosuke O'Neil
+# roneil@fnal.gov
+# https://github.com/ryuwd
+#
+# Reconstruct Cosmic Track (Straight, no magnetic field)
+# Check Cuts Pass (see Alignment/fcl/prolog.fcl)
+# Write alignment (mille) data to file. This file can be fed then to Millepede.
+#
+# #
+#include "fcl/minimalMessageService.fcl"
+#include "fcl/standardProducers.fcl"
+#include "fcl/standardServices.fcl"
+#include "JobConfig/reco/prolog.fcl"
+#include "CosmicReco/fcl/prolog.fcl"
+#include "Alignment/fcl/prolog.fcl"
+#include "Trigger/fcl/templates.fcl"
+
+process_name : CosmicAlignTrackCollector
+
+source : { module_type : RootInput }
+
+services : @local::Services.Reco
+
+physics :
+{
+  producers : {
+    @table::Reconstruction.producers
+    @table::Trigger.producers
+    @table::CommonMC.producers
+    @table::CosmicTracking.producers
+  }
+  filters :  {
+    @table::Reconstruction.filters
+    @table::Trigger.filters
+    @table::CosmicTracking.filters
+
+  }
+  analyzers: {
+    @table::Reconstruction.analyzers
+    @table::Trigger.analyzers
+    @table::CosmicTracking.analyzers
+    
+    AlignTrackCollector: { @table::AlignTrackCollector }
+  }
+  RecoPath : [ @sequence::Reconstruction.RecoMCPath ]
+  EndPath : [ Output, RecoCheck ]
+}
+
+
+# My epilog
+#include "JobConfig/reco/epilog.fcl"
+#include "JobConfig/reco/NoCosmicTimeMap_epilog.fcl"
+# trigger epilog
+#include "gen/fcl/Trigger/offline/allTrig/allPaths.fcl"
+#
+# the following need to be overwritten for the specific channel
+services.TFileService.fileName: "nts.owner.CosmicAlignTrackSelector-description.version.sequencer.root"
+outputs.Output.fileName: "dig.owner.CosmicAlignTrackSelector-description.version.sequencer.art"
+
+services.scheduler.wantSummary: true
+
+physics.RecoPath : [ @sequence::TrkHitReco.PrepareHits, SimpleTimeCluster, LineFinder, CosmicTrackFinderTimeFit ]
+physics.EndPath : [ AlignTrackCollector ]
+physics.end_paths : [ EndPath ] # needed for generate_fcl
+
+physics.analyzers.AlignTrackCollector.CosmicTrackSeedCollection : "CosmicTrackFinderTimeFit"
+
+# these lines are needed to improve performance
+services.ProditionsService.strawResponse.useParameterizedDriftErrors : true
+physics.producers.makePH.TestRadius : false
+physics.producers.makePH.TestFlag : false
