@@ -27,12 +27,48 @@ def unit_vector(v):
     tot2 = v.dot(v)
     return v/sqrt(tot2)
 
-
 def DOCAToTOCA(dca, driftvel):
     return dca / driftvel
 
 
 def DOCA(p1, t1, p2, t2):
+    t1 = unit_vector(t1)
+    t2 = unit_vector(t2)
+
+    c = t1.dot(t2)
+
+    sinsq = 1.0 - c*c
+    _delta = p1 - p2
+    ddotT1 = _delta.dot(t1)
+    ddotT2 = _delta.dot(t2)
+
+    _s1 = (ddotT2*c-ddotT1)/sinsq
+    _s2 = -(ddotT1*c-ddotT2)/sinsq
+
+    _pca1 = p1 + t1 * _s1
+    _pca2 = p2 + t2 * _s2
+
+    ___diff = _pca1 - _pca2
+
+    dca = sqrt(___diff.dot(___diff))
+
+    return sympy.Piecewise((dca, _s1 > 0), (-dca, True))
+
+
+def HitAmbiguity(straw_mp, straw_dir, intercept, tdir):
+#   Hep3Vector sep = intercept - straw.getMidPoint();
+#   Hep3Vector perp = (dir.cross(straw.getDirection())).unit();
+#   double dperp = perp.dot(sep);
+#   return (dperp > 0 ? -1 : 1);
+    sep = intercept - straw_mp
+    perp = unit_vector(tdir.cross(straw_dir))
+    dperp = perp.dot(sep)
+
+    return dperp
+    # to get the right sign: dperp > 0 ? -1 : 1
+
+
+def DOCA_UseHitAmbiguity(p1, t1, p2, t2):
     t1 = unit_vector(t1)
     t2 = unit_vector(t2)
     # t2 should already be a unit vector
@@ -54,7 +90,8 @@ def DOCA(p1, t1, p2, t2):
 
     dca = sqrt(___diff.dot(___diff))
 
-    return sympy.Piecewise((dca, _s1 > 0), (-dca, True))
+    return sympy.Piecewise((-dca, HitAmbiguity(p1,t1,p2,t2) > 0), (dca, True))
+
 
 
 def colvec_perp(matrix):
@@ -240,7 +277,7 @@ def generate_expressions(approximate=False, remove_globalparam_dependence=False,
 
     # this is the residual expression (excluding terms with no dependence on local
     # and global parameters )
-    aligned_doca = aligned_doca_to_diff = DOCA(aligned_wpos, aligned_wdir, track_pos, track_dir)
+    aligned_doca = aligned_doca_to_diff = DOCA_UseHitAmbiguity(aligned_wpos, aligned_wdir, track_pos, track_dir)
 
     if time_domain:
         # we convert the DOCA to a TOCA and add T0 (since it is a local param)
@@ -285,7 +322,7 @@ def generate_expressions(approximate=False, remove_globalparam_dependence=False,
     #             panel_g: 0
     #         })
 
-    nominal_doca = DOCA(wire_pos, wire_dir, track_pos, track_dir)
+    nominal_doca = DOCA_UseHitAmbiguity(wire_pos, wire_dir, track_pos, track_dir)
 
     if VALIDATE:
 
