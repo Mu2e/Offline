@@ -77,7 +77,7 @@ namespace mu2e {
             engine_            (createEngine(art::ServiceHandle<SeedService>()->getSeed())),
             randPoisson_       (engine_),
             randGauss_         (engine_),
-            pulseShape_        (CaloPulseShape(digiSampling_,pulseIntegralSteps_,false))
+            pulseShape_        (CaloPulseShape(config().digiSampling()))
          {
              produces<CaloDigiCollection>();
          }
@@ -202,7 +202,7 @@ namespace mu2e {
               int         startSample    = time/digiSampling_;
               const auto& pulse          = pulseShape_.digitizedPulse(time);
               int         stopSample     = std::min(startSample+pulse.size(), waveform.size());
-
+              
               for (int timeSample = startSample; timeSample < stopSample; ++timeSample) 
               {
                  waveform.at(timeSample) += pulse.at(timeSample - startSample)/calorimeterCalibrations->peMeV(ROID)*MeVToADC_;

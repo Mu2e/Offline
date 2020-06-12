@@ -4,7 +4,8 @@
 
 #include "TFile.h"
 #include "TH2F.h"
-#include "TSpline.h"
+#include "TF1.h"
+//#include "TSpline.h"
 
 #include <string>
 #include <vector>
@@ -15,89 +16,86 @@
 namespace mu2e {
 
 
-   CaloPulseShape::CaloPulseShape(double digiSampling, int pulseIntegralSteps, bool doIntegral) :
-     digiSampling_(digiSampling), pulseIntegralSteps_(pulseIntegralSteps), doIntegral_(doIntegral), 
-     nBinShape_(0.), integralVal_(), deltaT_(0.), digiStep_(digiSampling/pulseIntegralSteps), digitizedPulse_()
+   CaloPulseShape::CaloPulseShape(double digiSampling) :
+      nSteps_(100), digiStep_(digiSampling/double(nSteps_)),nBinShape_(0), pulseVec_(), deltaT_(0.), digitizedPulse_()
    {}
 
    //----------------------------------------------------------------------------------------------------------------------
    void CaloPulseShape::buildShapes()
    {
+       // Get the pulse shape histogram
        ConditionsHandle<CalorimeterCalibrations> calorimeterCalibrations("ignored");
        std::string fileName = calorimeterCalibrations->pulseFileName();
        std::string histName = calorimeterCalibrations->pulseHistName();
 
        TH1F *pshape(0);
        TFile pulseFile(fileName.c_str());
-       if (pulseFile.IsOpen()) pshape = (TH1F*) pulseFile.Get(histName.c_str());
-
-       if (!pshape) throw cet::exception("CATEGORY")<<"CaloPulseShape:: Hitsogram "<<histName.c_str()
-                                                   <<" from file "<<fileName.c_str()<<" does not exist";
-
-       // smooth the histogram, normalize and resmaple with the desired binning
-       int nbins = int((pshape->GetXaxis()->GetXmax()-pshape->GetXaxis()->GetXmin())/digiSampling_*pulseIntegralSteps_);
-       TH1F pulseShape("ps_temp","ps_temp", nbins, pshape->GetXaxis()->GetXmin(), pshape->GetXaxis()->GetXmax());       
-       TSpline3 spline(pshape);
-       for (int i=1;i<pulseShape.GetNbinsX();++i) pulseShape.SetBinContent(i,spline.Eval(pulseShape.GetBinCenter(i)));
-
-       // Integrated waveform over digitization period for each starting point if required
-       if (doIntegral_) 
-       {
-	   TH1F pulseShapeIntegral(pulseShape);
-	   for (int i=1;i<pulseShapeIntegral.GetNbinsX();++i) 
-	      pulseShapeIntegral.SetBinContent(i,pulseShape.Integral(i, std::min(i+pulseIntegralSteps_-1,nbins-1)));
-	   pulseShape = pulseShapeIntegral;
-       }
-
-       // Copy histogram into vector, including time padding      
-       for (int j=1;j<=nbins;++j)
-       {
-	  int ibin = j-pulseIntegralSteps_;
-	  integralVal_.push_back((ibin>0) ? pulseShape.GetBinContent(ibin) : 0.0);
-       }
-
-       // Normalize waveform such that the max vector is at 1
-       double integralValMax = *max_element(integralVal_.begin(),integralVal_.end());
-       for (auto& v : integralVal_) v/=integralValMax;
-       
-       //calculate the number of bins for the digitized waveform
-       nBinShape_      = int(nbins/pulseIntegralSteps_);
-       digitizedPulse_ = std::vector<double>(nBinShape_,0);
-              
-       // find difference between peak time and t0 for digitized waveform, so that we can shift the result of 
-       // the fitted waveform back to t0. 
-       int imax(1);
-       for (;imax<nBinShape_;++imax) if (integralVal_[(imax+1)*pulseIntegralSteps_] < integralVal_[imax*pulseIntegralSteps_]) break;
-       deltaT_ = ((imax-1)*pulseIntegralSteps_)*digiStep_;
-
+         if (pulseFile.IsOpen()) pshape = (TH1F*) pulseFile.Get(histName.c_str());
+         if (!pshape) throw cet::exception("CATEGORY")<<"CaloPulseShape:: Hitsogram "<<histName.c_str()
+                                                     <<" from file "<<fileName.c_str()<<" does not exist";
+	 pshape->SetDirectory(0);
        pulseFile.Close();
+
+
+       // Adjust binning to match digitizer sampling period, shift to zero and normalize
+       int nbins = int((pshape->GetXaxis()->GetXmax()-pshape->GetXaxis()->GetXmin())/digiStep_);
+       TH1F pulseShape("ps","ps", nbins, 0.0, pshape->GetXaxis()->GetXmax()-pshape->GetXaxis()->GetXmin());
+       for (int i=1;i<nbins;++i) pulseShape.SetBinContent(i,pshape->Interpolate(pulseShape.GetBinCenter(i)+pshape->GetXaxis()->GetXmin()));
+       pulseShape.Scale(1.0/pulseShape.GetMaximum(),"nosw2");
+
+       // Fit the top of the pulse shape to smooth small wiggles -> speed up fit convergence (wiggles = local minima = huge pain)
+       // adjust the fitted bounds to get a smooth transition between shape and fit
+       double maxBin = pulseShape.GetMaximumBin();
+       pulseShape.Fit("pol6","q0","O0",pulseShape.GetBinCenter(maxBin)-20, pulseShape.GetBinCenter(maxBin)+40);
+       TF1 *funPeak = pulseShape.GetFunction("pol6");
+       int istart = maxBin-int(20/digiStep_);
+       int iend   = maxBin+int(40/digiStep_);
+       while (istart < iend) {if (fabs(pulseShape.GetBinContent(istart)-funPeak->Eval(pulseShape.GetBinCenter(istart))) < 0.001) break; ++istart;}
+       while (iend > istart) {if (fabs(pulseShape.GetBinContent(iend)-funPeak->Eval(pulseShape.GetBinCenter(iend))) < 0.001) break; --iend;}
+       for (int i=istart; i<iend;++i) pulseShape.SetBinContent(i,funPeak->Eval(pulseShape.GetBinCenter(i)));
+
+       // Cache histogram content into vector and shift waveform (see note), 
+       // calculate the number of bins for the digitized waveform
+       for (int j=1;j<nbins-1;++j)pulseVec_.push_back((j>nSteps_) ? pulseShape.GetBinContent(j-nSteps_) : 0.0);
+       nBinShape_      = int(nbins/nSteps_);
+       digitizedPulse_ = std::vector<double>(nBinShape_,0);
+
+       // find difference between peak time and t0 for digitized waveform. 
+       for (int i=1;i<nBinShape_;++i) {if (pulseVec_[(i+1)*nSteps_] < pulseVec_[i*nSteps_]) break; deltaT_ +=nSteps_*digiStep_;}
+     
+       // create a final spline - a continuous function with continuous derivatives will help the waveform fit
+       //spl_ = TSpline3(&pulseShape);
+       
    }
 
    //----------------------------------------------------------------------------
    // forward shift in waveform = backward shift in time origin 
    const std::vector<double>& CaloPulseShape::digitizedPulse(double hitTime) const
    {
-       int shiftBin = pulseIntegralSteps_ - int(hitTime/digiStep_)%pulseIntegralSteps_;
-       for (int i=0;i<nBinShape_;++i) digitizedPulse_[i] = integralVal_[shiftBin+i*pulseIntegralSteps_];      
+       int shiftBin = nSteps_ - int(hitTime/digiStep_)%nSteps_;
+       for (int i=0;i<nBinShape_;++i) digitizedPulse_[i] = pulseVec_[shiftBin+i*nSteps_];      
        return digitizedPulse_;
    }
 
    //----------------------------------------------------------------------------
-   double CaloPulseShape::evaluateFromPeak(double tDifference) const
+   double CaloPulseShape::evaluate(double tDifference) const
    {
-       double t = tDifference+deltaT_;          
-       int ibin = pulseIntegralSteps_ + int(t*pulseIntegralSteps_/digiSampling_);
+       ///double t = tDifference+deltaT_+0.5*digiStep_;  
+       ///if (t<spl_.GetXmin() || t > spl_.GetXmax()) return 0.0;       
+       ///return spl_.Eval(t);
 
-       if (ibin < 0 || ibin >= int(integralVal_.size()-1)) return 0.0;
-       
-       double t0bin = (ibin-pulseIntegralSteps_)*digiStep_; //t0 is located at pulseIntegralSteps_            
-       return (integralVal_[ibin+1]-integralVal_[ibin])/digiStep_*(t-t0bin)+integralVal_[ibin];                  
+       double t = tDifference+deltaT_;          
+       int ibin = nSteps_ + int(t*nSteps_/digiStep_/nSteps_);
+
+       if (ibin < 0 || ibin >= int(pulseVec_.size()-1)) return 0.0;
+       double t0bin = (ibin-nSteps_)*digiStep_; //t0 is located at nSteps_            
+       return (pulseVec_[ibin+1]-pulseVec_[ibin])/digiStep_*(t-t0bin)+pulseVec_[ibin];                  
    }
-   
+  
    //----------------------------------------------------------------------------
    double CaloPulseShape::fromPeakToT0(double timePeak) const
    {
-       return timePeak-deltaT_-0.5*digiSampling_;
+       return timePeak-deltaT_-0.5*digiStep_*nSteps_;
    }
 
    //--------------------------------
@@ -112,25 +110,10 @@ namespace mu2e {
        if (!fullDiag) return;
        
        std::cout<<"Integral val "<<std::endl;
-       for (auto& h : integralVal_) std::cout<<h<<" ";
+       for (auto& h : pulseVec_) std::cout<<h<<" ";
        std::cout<<std::endl;
    }
+
+
 }
-
-
-//
-// Additional notes to avoid scractching your head too long
-//
-// Detailed explanation of waveform construction and offsets
-//
-// Shifting the waveform forward by a time dt is equivalent to shifting the time origin backward by dt
-// with original waveform: 
-//  - value at pulseIntegralSteps_-nbin correspond to waveform shifted by time pulseIntegralSteps_+nbin, 
-//    and we need pulseIntegralSteps_ bins to store the different values. 
-//  - t0 value is located at bin pulseIntegralSteps_
-//  - if the waveform "start" is located at a time smaller than digiSampling_, we extend the waveform 
-//    with zeroes on the left side (equivalently, pad the integralVal_ vector)
-//
-// The t0 value correspond to the content of the digitized bin whose LOW EDGE is at time t0
-//
 

@@ -38,7 +38,7 @@ CaloShowerStepROFromShowerStep :
     BirksCorrection          : true
     PEStatCorrection         : true
     addTravelTime            : true	    
-    diagLevel                : 2
+    diagLevel                : 0
 }
 
 
@@ -57,7 +57,7 @@ CaloDigiFromShower :
     endTimeBuffer           : 80
     bufferDigi              : 16 
     pulseIntegralSteps      : 100
-    diagLevel               : 3
+    diagLevel               : 0
 }
 
 
@@ -70,7 +70,7 @@ CaloHitTruthMatch:
     deltaTimeMinus            : 4.0    
     deltaTimePlus             : 250.0  
     fillDetailedMC            : false
-    diagLevel                 : 3
+    diagLevel                 : 0
 }
 
 

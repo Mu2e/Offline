@@ -64,7 +64,7 @@ CaloProtoClusterFromCrystalHit :
   EnoiseCut              : 1.0
   timeCut                : 500
   deltaTime              : 2
-  diagLevel              : 2
+  diagLevel              : 0
 }  
 
   
@@ -80,7 +80,7 @@ CaloClusterFromProtoCluster :
   maxDistMain            : 150
   cogTypeName            : Linear
   strategy               : 0
-  diagLevel              : 2
+  diagLevel              : 0
 }  
 
 CaloClusterTruthMatch:
@@ -88,7 +88,7 @@ CaloClusterTruthMatch:
     module_type           : CaloClusterTruthMatch
     caloClusterCollection : CaloClusterFromProtoCluster
     caloDigiMCTruthAssn   : CaloHitTruthMatch
-    diagLevel             : 3
+    diagLevel             : 0
 }
 
 
