@@ -301,9 +301,6 @@ namespace mu2e {
 	 }
       }
 
- std::cout<<"Start "<<caloCrystalHits.size()<<std::endl;
-
-
 
        //--------------------------  Do generated particles --------------------------------
        _evt = event.id().event();
@@ -352,6 +349,7 @@ namespace mu2e {
            auto itMC = caloDigiTruth.begin();
            while (itMC != caloDigiTruth.end()) {if (itMC->first.get() == &hit) break; ++itMC;}
            unsigned nCrySims = (itMC != caloDigiTruth.end()) ? itMC->second->nParticles() : 0;
+
                       
            cryId_[nHits_]        = hit.id();
            crySectionId_[nHits_] = diskId;
@@ -399,16 +397,15 @@ namespace mu2e {
        //--------------------------  Do clusters --------------------------------
        nCluster_ = nCluSim_ = 0;
        cluList_.clear();
-       for (auto cluster : caloClusters)
-       {       
+       for (unsigned int ic=0; ic<caloClusters.size();++ic)
+       {
+          const CaloCluster& cluster = caloClusters.at(ic);
           std::vector<int> cryList;
           for (auto cryPtr : cluster.caloCrystalHitsPtrVector()) cryList.push_back(int(cryPtr.get()- &caloCrystalHits.at(0)));
 
-          //Find the caloDigiMC in the truth map          
           auto itMC = caloClusterTruth.begin();
           while (itMC != caloClusterTruth.end()) {if (itMC->first.get() == &cluster) break; ++itMC;}
           unsigned nCluSims   = (itMC != caloClusterTruth.end()) ? itMC->second->nParticles() : 0;
-          if (nCluSims>0) std::cout<<"Found clu"<<std::endl;
 
           cluEnergy_[nCluster_] = cluster.energyDep();
           cluTime_[nCluster_]   = cluster.time();

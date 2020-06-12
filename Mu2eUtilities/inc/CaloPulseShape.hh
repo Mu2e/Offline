@@ -2,19 +2,21 @@
 #define CaloPulseShape_HH
 
 // Calculate the values of the digitized pulse shape as a function of the hit time.
-// The algorithm is as follow:
-//
-//   - Import the originl pulse shape, normalize and rebin with the required precision. 
-//   - Determine the "start" time of the pulse shape (t0), defined as position where 
-//     amplitude = peak amplitude / 1000. Similar for "end" of pulse
-//   - for each time bin, calculate the integral of the waveform over the digitized bin width 
-//   - extract the digitized pulse from the cached integral values given a start time t0.
+// The value stored are the integral of the waveform over the digitization bin width.
 //  
-// Note 1: Shifting the waveform forward by a time t1 is equivalent to shifting the time 
-//         origin backward by a time t1 and leaving the waveform untouched. 
+// The waveform "starting point" corresponds to the time the PE hit the readout. 
+// The definition is arbitrary, but it must be internally consistent!
 //
-// Note 2: We need to build shape after the calibration conditions have been initialized
+// Shifting the waveform forward by a time dt is equivalent to shifting the time origin backward by dt
+//  - value at nbin-i correspond to waveform shifted by time nbin+i, 
+//  - t0 value is located at bin nSteps_
+//  - the t0 value correspond to the content of the digitized bin whose LOW EDGE is at time t0
 //
+// 1) digitizedPulse(hitTime) returns a waveform with hitTime corresponding to low edge of first bin 
+// 2) evaluate(deltaTime) return value of digitized bin at a given time difference with peak time value
+//
+//  NOTE: uncomment the pline creation if the discontinuities in the second order derivative arising from the
+//        linear piecewise approxmiation are problematic for the minimization
 
 #include <vector>
 
@@ -23,23 +25,23 @@ namespace mu2e {
     class CaloPulseShape
     {
         public:
-           CaloPulseShape(double digiSampling, int pulseIntegralSteps, bool doIntegral=false);
+          CaloPulseShape(double digiSampling);
+          ~CaloPulseShape() {};
 
-           void                       buildShapes();
-           const std::vector<double>& digitizedPulse  (double hitTime)        const;
-           double                     evaluateFromPeak(double timeDifference) const;
-           double                     fromPeakToT0    (double timePeak)       const;
-           void                       diag            (bool fullDiag=false)   const;
+          void buildShapes();
 
-       private:      
-          double                      digiSampling_;
-          int                         pulseIntegralSteps_;	 
-          bool                        doIntegral_;	 
-          int                         nBinShape_;
-          std::vector<double>         integralVal_;
-          double                      deltaT_;
-          double                      digiStep_;
-          mutable std::vector<double> digitizedPulse_; 
+          const std::vector<double>& digitizedPulse  (double hitTime)        const;
+          double                     evaluate        (double timeDifference) const;
+          double                     fromPeakToT0    (double timePeak)       const;
+          void                       diag            (bool fullDiag=false)   const;
+
+      private:      
+         int                         nSteps_;	 
+         double                      digiStep_;
+         int                         nBinShape_;
+         std::vector<double>         pulseVec_;
+         double                      deltaT_;
+         mutable std::vector<double> digitizedPulse_; 
     };
 
 }

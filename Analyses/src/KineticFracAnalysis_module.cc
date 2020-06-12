@@ -843,8 +843,9 @@ namespace mu2e {
 
     _nCluster = _nCluSim = 0;
     _cluList.clear();
-    for (auto cluster : caloClusters)
+    for (unsigned int ic=0; ic<caloClusters.size();++ic)
     {
+       const CaloCluster& cluster = caloClusters.at(ic);
 
         auto itMC = caloClusterTruth.begin();
         while (itMC != caloClusterTruth.end()) {if (itMC->first.get() == &cluster) break; ++itMC;}

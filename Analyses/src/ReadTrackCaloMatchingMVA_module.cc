@@ -371,8 +371,9 @@ namespace mu2e {
            //--------------------------  Dump cluster info --------------------------------
            _nCluster = _nCluSim = 0;
            _cluList.clear();
-           for (auto cluster : caloClusters)
-           {       
+           for (unsigned int ic=0; ic<caloClusters.size();++ic)
+           {
+               const CaloCluster& cluster = caloClusters.at(ic);
                std::vector<int> cryList;
                for (auto cryPtr : cluster.caloCrystalHitsPtrVector()) cryList.push_back(int(cryPtr.get()- &caloCrystalHits.at(0)));
 

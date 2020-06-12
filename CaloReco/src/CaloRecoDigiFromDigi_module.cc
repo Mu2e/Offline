@@ -160,7 +160,7 @@ namespace mu2e {
               double chi2      = waveformProcessor_->chi2();
               int    ndf       = waveformProcessor_->ndf();
 
-              if (diagLevel_ > 1)
+              if (diagLevel_ > 1 && chi2/float(ndf) > 1.5)
               {
                  std::cout<<"[CaloRecoDigiFromDigi::extractAmplitude] extract "<<roId<<"   i="<<i<<"  eDep="<<eDep
                           <<" time="<<time<<"  chi2="<<chi2<<std::endl;
@@ -170,8 +170,7 @@ namespace mu2e {
                  ++nPlots;
               }
 
-              
-              if (chi2/ndf > maxChi2Cut_) continue;
+              if (chi2/float(ndf) > maxChi2Cut_) continue;
               
               if (roId%2==0) totEnergyReco += eDep;
               recoCaloHits.emplace_back(CaloRecoDigi(caloDigiPtr, eDep, eDepErr, time, timeErr, chi2, ndf, isPileUp));
