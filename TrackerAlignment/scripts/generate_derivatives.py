@@ -27,21 +27,6 @@ def unit_vector(v):
     tot2 = v.dot(v)
     return v/sqrt(tot2)
 
-def crossprod(a,b):
-    return Matrix([
-        a[1]*b[2] - a[2]*b[1],
-        a[2]*b[0] - a[0]*b[2],
-        a[0]*b[1] - a[1]*b[0]
-    ])
-
-def dotprod(a,b):
-    return Matrix([
-        a[0]*b[0],
-        a[1]*b[1],
-        a[2]*b[2]
-    ])
-
-
 def DOCAToTOCA(dca, driftvel):
     return dca / driftvel
 
@@ -49,7 +34,6 @@ def DOCAToTOCA(dca, driftvel):
 def DOCA(p1, t1, p2, t2):
     t1 = unit_vector(t1)
     t2 = unit_vector(t2)
-    # t2 should already be a unit vector
 
     c = t1.dot(t2)
 
@@ -77,9 +61,8 @@ def HitAmbiguity(straw_mp, straw_dir, intercept, tdir):
 #   double dperp = perp.dot(sep);
 #   return (dperp > 0 ? -1 : 1);
     sep = intercept - straw_mp
-    perp = unit_vector(crossprod(tdir, straw_dir))
-
-    dperp = dotprod(perp, sep)
+    perp = unit_vector(tdir.cross(straw_dir))
+    dperp = perp.dot(sep)
 
     return dperp
     # to get the right sign: dperp > 0 ? -1 : 1
@@ -294,7 +277,7 @@ def generate_expressions(approximate=False, remove_globalparam_dependence=False,
 
     # this is the residual expression (excluding terms with no dependence on local
     # and global parameters )
-    aligned_doca = aligned_doca_to_diff = DOCA(aligned_wpos, aligned_wdir, track_pos, track_dir)
+    aligned_doca = aligned_doca_to_diff = DOCA_UseHitAmbiguity(aligned_wpos, aligned_wdir, track_pos, track_dir)
 
     if time_domain:
         # we convert the DOCA to a TOCA and add T0 (since it is a local param)
@@ -339,7 +322,7 @@ def generate_expressions(approximate=False, remove_globalparam_dependence=False,
     #             panel_g: 0
     #         })
 
-    nominal_doca = DOCA(wire_pos, wire_dir, track_pos, track_dir)
+    nominal_doca = DOCA_UseHitAmbiguity(wire_pos, wire_dir, track_pos, track_dir)
 
     if VALIDATE:
 
