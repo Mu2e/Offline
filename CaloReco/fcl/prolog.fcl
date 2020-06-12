@@ -19,15 +19,15 @@ TemplateProcessor :
     windowPeak         : 3
     minPeakAmplitude   : 16
     pulseLowBuffer     : 10
-    pulseHighBuffer    : 20 
+    pulseHighBuffer    : 50 
     minDeltaPeakBin    : 3
-    refitLeadingEdge   : false
+    doSecondaryPeak    : true
+    refitLeadingEdge   : true
     timeCorr           : 0    
     digiSampling       : @local::HitMakerDigiSampling
-    pulseIntegralSteps : 100
     fitPrintLevel      : -1
     fitStrategy        : 1
-    diagLevel          : 3
+    diagLevel          : 0
 }
 
 
@@ -40,8 +40,8 @@ CaloRecoDigiFromDigi :
     processorStrategy   : "TemplateFit"     
     digiSampling        : @local::HitMakerDigiSampling
     maxChi2Cut          : 10
-    maxPlots            : 100
-    diagLevel           : 3
+    maxPlots            : 10
+    diagLevel           : 0
 }
 
 
@@ -50,7 +50,7 @@ CaloCrystalHitFromHit:
     module_type          : CaloCrystalHitFromHit
     caloDigisModuleLabel : CaloRecoDigiFromDigi	    	    
     time4Merge           : 4.0   #ns
-    diagLevel            : 3
+    diagLevel            : 0
 }
 
 

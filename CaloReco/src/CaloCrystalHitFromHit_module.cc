@@ -191,6 +191,9 @@ namespace mu2e {
   void CaloCrystalHitFromHit::fillBuffer(int crystalId,int nRoid,double time,double timeErr,double eDep,double eDepErr,
                                          std::vector<CaloRecoDigiPtr>& buffer, CaloCrystalHitCollection& caloHits)
   {
+      //TODO: get conditions to check if a sensor is noisy or dead. Until then, consider hit with a single sensor to be bkg.
+      if (nRoid<2) return;
+      
       caloHits.emplace_back(CaloCrystalHit(crystalId, nRoid, time, timeErr, eDep, eDepErr, buffer));
 
       if (diagLevel_ > 2) std::cout<<"[CaloCrystalHitFromHit] created hit in crystal id="<<crystalId<<"\t with time="

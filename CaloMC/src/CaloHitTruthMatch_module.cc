@@ -252,9 +252,8 @@ namespace mu2e {
              
              //sort CaloEDepMC by decreasing energy
              std::sort(edeps.begin(),edeps.end(),[](const auto& a, const auto& b){return a.energyDep() > b.energyDep();});
-
              caloDigiMCs.emplace_back(CaloDigiMC(std::move(edeps)));
-             
+
              art::Ptr<CaloDigiMC> digiMCPtr = art::Ptr<CaloDigiMC>(digiMCProductID, caloDigiMCs.size()-1, digiMCProductGetter);             
              caloDigiTruthMatch.addSingle(hitPtr,digiMCPtr);
                           

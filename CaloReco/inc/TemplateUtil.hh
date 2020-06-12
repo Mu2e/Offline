@@ -11,17 +11,19 @@ namespace mu2e {
   class TemplateUtil  {
      
      public:     
-        TemplateUtil(double minPeakAmplitude, double digiSampling, int pulseIntegralSteps);
+        TemplateUtil(double minPeakAmplitude, double digiSampling);
         
         void                        initialize    (); 
 	void                        setXYVector   (const std::vector<double>& xvec, const std::vector<double>& yvec);
 	void                        setPar        (const std::vector<double>& par);
+	void                        reset         ();
         
         void                        fit           ();
         void                        refitMin      ();        
+        void                        plotFit       (const std::string& pname) const;
         double                      eval_fcn      (double x); 
         double                      eval_logn     (double x, int ioffset);  
-        void                        plotFit       (const std::string& pname) const;
+        void                        calcTimeCorr  (std::vector<double>& par);
  
 	void                        setStrategy   (int val) {fitStrategy_ = val;}
 	void                        setPrintLevel (int val) {printLevel_  = val;}
@@ -41,7 +43,7 @@ namespace mu2e {
         void   fitNewton      ();
 	double calcAlpha      (double testTime);
 	double calcChi2       (double testTime, double alpha=0.0);
-        double refineMin      (double tinit, double stepInit); 
+        double refineMin      (double tinit,    double stepInit); 
         bool   selectComponent(const std::vector<double>& tempPar, unsigned ip);       
 
 	CaloPulseShape      pulseCache_;
@@ -55,6 +57,7 @@ namespace mu2e {
 	unsigned            nParFcn_;
 	double              chi2_;
 	unsigned            status_;
+
   };
   
 }

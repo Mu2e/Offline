@@ -18,9 +18,8 @@ namespace
    unsigned              npTot_,npFcn_;
    std::vector<double>   xvec_,yvec_;
    mu2e::CaloPulseShape* pulseCachePtr_;
-   
-   
-   double logn(double x, double *par) {return par[0]*pulseCachePtr_->evaluateFromPeak(x-par[1]); }
+      
+   double logn(double x, double *par) {return par[0]*pulseCachePtr_->evaluate(x-par[1]); }
 
    double fitfunction(double x, double *par)
    {   
@@ -51,8 +50,8 @@ namespace
 namespace mu2e {
         
    
-   TemplateUtil::TemplateUtil(double minPeakAmplitude, double digiSampling, int pulseIntegralSteps) : 
-      pulseCache_(CaloPulseShape(digiSampling,pulseIntegralSteps,false)),
+   TemplateUtil::TemplateUtil(double minPeakAmplitude, double digiSampling) : 
+      pulseCache_(CaloPulseShape(digiSampling)),
       minPeakAmplitude_(minPeakAmplitude),
       fitStrategy_(1),
       diagLevel_(0),
@@ -71,13 +70,16 @@ namespace mu2e {
 
    void   TemplateUtil::initialize  ()                                                                 {pulseCache_.buildShapes();}
    void   TemplateUtil::setXYVector (const std::vector<double>& xvec, const std::vector<double>& yvec) {xvec_ = xvec; yvec_ = yvec;}
-   void   TemplateUtil::setPar      (const std::vector<double>& par)                                   {param_ = par; nParTot_= par.size(); npTot_ = nParTot_;}
+   void   TemplateUtil::setPar      (const std::vector<double>& par)                                   {param_ = par; nParTot_= par.size(); npTot_ = par.size();}
+   void   TemplateUtil::reset       ()                                                                 {param_.clear(); paramErr_.clear(); nParTot_=0; npTot_ = 0;}
 
    
    //-----------------------------------------------------------------------------------------------------
    void TemplateUtil::fit() 
    {
-       if (param_.size()==nParFcn_) fitNewton();
+       if (param_.empty() || param_.size()>49) return;
+       
+       if (param_.size()==nParFcn_)  fitNewton();
        else                          fitMinuit();             
    }
    
@@ -119,7 +121,6 @@ namespace mu2e {
        }
 
        // Perform first fit with initial model
-       //
        arglist[0] = 2000;
        arglist[1] = 0.1;
        minuit.mnexcm("MIGRAD", arglist ,2,ierr);  
@@ -127,7 +128,6 @@ namespace mu2e {
 
        
        // Remove small or "close" components and redo the fit with simplified model
-       //
        std::vector<double> tempPar(nParTot_,0),tempErr(nParTot_,1);
        for (unsigned i=0;i<nParTot_;++i) minuit.GetParameter(i,tempPar[i],tempErr[i]);    
        
@@ -146,7 +146,6 @@ namespace mu2e {
 
        
        // Save the final results - exclude low components
-       //
        minuit.mnstat(chi2_,edm,errdef,nvpar,nparx,istat);        
        
        param_.clear();
@@ -198,22 +197,20 @@ namespace mu2e {
        status_=1;
        if (xvec_.empty() || nParTot_ != nParFcn_) return;
 
-       int nTryMax(20);
-       double EDM(0.01), step(0.01); 
+       int nTryMax(40);
+       double EDM(1e-3), step(0.0001); 
 
        int nTry(0);
-       double tmin(param_[1]),delta(0);
+       double delta(0),tmin(param_[1]);
        while (nTry<=nTryMax)
        {
-	   double c1 = calcChi2(tmin+step);
-	   double c2 = calcChi2(tmin);
-	   double c3 = calcChi2(tmin-step);           
-	   double p1 = (c1-c3)/2.0/step;
-	   double p2 = (c3-2.0*c2+c1)/step/step;                      
+	   double c2 = calcChi2(tmin+step);
+	   double c1 = calcChi2(tmin);
+	   double p1 = (c2-c1)/step;
+           	   
+	   if (fabs(p1) < 1e-5) {status_=0; break;}
 
-	   if (fabs(p2) < 1e-5) {status_=2; break;}  
-
-	   delta = p1/p2;
+	   delta = c1/p1;
 	   tmin -= delta;
 
 	   ++nTry;          	    
@@ -221,9 +218,9 @@ namespace mu2e {
            if (fabs(delta) > 100)  {status_=2; break;}  
        }
 
-       //might be oscillations around the minimum, try to converge
-       if (status_==1 &&  nTry>nTryMax) tmin = refineMin(tmin, 1.0); 
-
+       //try binary search if we oscillate around the minimum
+       if (nTry>nTryMax) tmin = refineMin(tmin, 0.1); 
+       if (status_==2)   tmin = refineMin(param_[1], 0.1); 
 
        param_.clear();
        paramErr_.clear();
@@ -244,9 +241,6 @@ namespace mu2e {
           chi2_ = calcChi2(tmin,alpha);
        }
    }  
-
-
-
 
    //------------------------------------------------------------
    double TemplateUtil::refineMin(double tmin, double stepInit)
@@ -281,7 +275,7 @@ namespace mu2e {
        double ytot(0),x2tot(0);
        for (unsigned i=0;i<xvec_.size();++i)
        {
-	   double y = pulseCachePtr_->evaluateFromPeak(xvec_[i]-testTime);
+	   double y = pulseCachePtr_->evaluate(xvec_[i]-testTime);
 	   if (yvec_[i]> 0) {ytot += y*yvec_[i]; x2tot += y*y;}       
        }
        return (x2tot > 1e-5) ? ytot/x2tot : 0.0;
@@ -297,8 +291,8 @@ namespace mu2e {
        double difference(0);
        for (unsigned i=0;i<xvec_.size();++i)
        {
-           double y = alpha*pulseCachePtr_->evaluateFromPeak(xvec_[i]-testTime);
-           //float y = floor(alpha*pulseCachePtr_->evaluateFromPeak(xvec_[i],testTime));
+           double y = alpha*pulseCachePtr_->evaluate(xvec_[i]-testTime);
+           //float y = floor(alpha*pulseCachePtr_->evaluate(xvec_[i],testTime));
            if (yvec_[i] > 1e-5 ) difference += (yvec_[i]-y)*(yvec_[i]-y)/yvec_[i];     
        }
        return difference;
@@ -317,10 +311,37 @@ namespace mu2e {
        return logn(x,&param_[ioffset]);       
    }
 
+   //------------------------------------------------------------
+   void TemplateUtil::calcTimeCorr(std::vector<double>& par)
+   {	
+	int Npt(0);
+	double sx(0),sy(0),sxy(0),sx2(0);
+	for (double toffset=0;toffset<4.99;toffset += 0.25)
+	{
+	    std::vector<double> t1 = pulseCachePtr_->digitizedPulse(toffset);
+	    std::vector<double> wf(t1.size(),0);
+	    for (unsigned i=0;i<t1.size();++i) wf[i] += (100*t1[i]);
+
+	    unsigned imax = std::distance(wf.begin(),std::max_element(wf.begin(),wf.end()));
+	    double tmin   = 1.5-(0.5*wf[imax-1]+1.5*wf[imax]+2.5*wf[imax+1])/(wf[imax-1]+wf[imax]+wf[imax+1]);
+
+	    sx  += wf[imax+1]/wf[imax];
+	    sx2 += wf[imax+1]*wf[imax+1]/wf[imax]/wf[imax];
+	    sy  += tmin;
+	    sxy += tmin*wf[imax+1]/wf[imax];    
+	    ++Npt;
+	}
+        double m = (Npt*sxy-sx*sy)/(Npt*sx2-sx*sx);	
+	par.push_back((sy-m*sx)/Npt);
+	par.push_back(m);
+   }
+
+
+
+
    //---------------------------------------------------------------------------
    void TemplateUtil::plotFit(const std::string& pname) const
    {
-       std::cout<<"plot start  " <<xvec_.size()<<std::endl;
        if (xvec_.empty()) return;
        double dx = xvec_[1]-xvec_[0];
 
@@ -333,9 +354,9 @@ namespace mu2e {
        TF1 f("f",fitfunctionPlot,xvec_.front(),xvec_.back(),param_.size());
        for (unsigned i=0;i<param_.size();++i) f.SetParameter(i,param_[i]);
 
-       TCanvas c1("c1","c1");
+       TCanvas c1("TemplateUtil::Fit","TemplateUtil::Fit");
        h.Draw();
-       f.Draw("same");
+       if (!param_.empty()) f.Draw("same");
        std::cout<<"Save file as "<<pname<<std::endl;
        c1.SaveAs(pname.c_str());
 
