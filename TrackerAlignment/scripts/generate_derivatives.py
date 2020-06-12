@@ -55,7 +55,7 @@ def DOCA(p1, t1, p2, t2):
     return sympy.Piecewise((dca, _s1 > 0), (-dca, True))
 
 
-def HitAmbiguity(straw_mp, straw_dir, intercept, tdir):
+def HitAmbiguity(intercept, tdir, straw_mp, straw_dir):
 #   Hep3Vector sep = intercept - straw.getMidPoint();
 #   Hep3Vector perp = (dir.cross(straw.getDirection())).unit();
 #   double dperp = perp.dot(sep);
@@ -277,7 +277,7 @@ def generate_expressions(approximate=False, remove_globalparam_dependence=False,
 
     # this is the residual expression (excluding terms with no dependence on local
     # and global parameters )
-    aligned_doca = aligned_doca_to_diff = DOCA_UseHitAmbiguity(aligned_wpos, aligned_wdir, track_pos, track_dir)
+    aligned_doca = aligned_doca_to_diff = DOCA_UseHitAmbiguity(track_pos, track_dir, aligned_wpos, aligned_wdir)
 
     if time_domain:
         # we convert the DOCA to a TOCA and add T0 (since it is a local param)
@@ -322,7 +322,7 @@ def generate_expressions(approximate=False, remove_globalparam_dependence=False,
     #             panel_g: 0
     #         })
 
-    nominal_doca = DOCA_UseHitAmbiguity(wire_pos, wire_dir, track_pos, track_dir)
+    nominal_doca = DOCA_UseHitAmbiguity(track_pos, track_dir, aligned_wpos, aligned_wdir)
 
     if VALIDATE:
 
