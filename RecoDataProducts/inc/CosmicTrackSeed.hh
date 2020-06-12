@@ -14,7 +14,7 @@
 
 namespace mu2e {
   
-  class TimeCluster;
+  struct TimeCluster;
 
   struct CosmicTrackSeed {
 
