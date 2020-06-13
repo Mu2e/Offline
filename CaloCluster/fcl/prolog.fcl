@@ -67,7 +67,6 @@ CaloProtoClusterFromCrystalHit :
   diagLevel              : 0
 }  
 
-  
 
 CaloClusterFromProtoCluster :
 {
@@ -83,15 +82,6 @@ CaloClusterFromProtoCluster :
   diagLevel              : 0
 }  
 
-CaloClusterTruthMatch:
-{
-    module_type           : CaloClusterTruthMatch
-    caloClusterCollection : CaloClusterFromProtoCluster
-    caloDigiMCTruthAssn   : CaloHitTruthMatch
-    diagLevel             : 0
-}
-
-
 
 CaloCluster : 
 {
@@ -99,11 +89,8 @@ CaloCluster :
       CaloProtoClusterFromCrystalHit  : @local::CaloProtoClusterFromCrystalHit
       CaloClusterFromProtoCluster     : @local::CaloClusterFromProtoCluster
    }
-   producersMC : {
-      CaloClusterTruthMatch : @local::CaloClusterTruthMatch
-   }
-   Reco       : [ CaloProtoClusterFromCrystalHit, CaloClusterFromProtoCluster ]
-   TruthMatch : [ CaloClusterTruthMatch ]
+   
+   Reco : [ CaloProtoClusterFromCrystalHit, CaloClusterFromProtoCluster ]
 }
 
 
@@ -113,6 +100,7 @@ CaloClusterFast :
        CaloClusterFast  : @local::CaloClusterFast
        CaloTrigger      : @local::CaloTrigger
    }
+   
    Reco : [ CaloClusterFast ]
 }
 

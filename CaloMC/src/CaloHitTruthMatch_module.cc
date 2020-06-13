@@ -17,6 +17,7 @@
 #include "MCDataProducts/inc/SimParticle.hh"
 #include "MCDataProducts/inc/MCRelationship.hh"
 #include "RecoDataProducts/inc/CaloCrystalHit.hh"
+#include "Mu2eUtilities/inc/CaloPulseShape.hh"
 
 #include "TH2F.h"
 #include "TFile.h"
@@ -40,8 +41,9 @@ namespace mu2e {
              fhicl::Atom<art::InputTag>  caloShowerSimCollection  { Name("caloShowerSimCollection"),  Comment("Name of caloShowerSim Collection") };
              fhicl::Atom<art::InputTag>  caloCrystalHitCollection { Name("caloCrystalHitCollection"), Comment("Name of caloCrystalHit collection") };
              fhicl::Atom<art::InputTag>  primaryParticle          { Name("primaryParticle"),	      Comment("PrimaryParticle producer")};
-             fhicl::Atom<double>         deltaTimeMinus           { Name("deltaTimeMinus"),           Comment("Maximum time before hit to include MC hit") };
-             fhicl::Atom<double>         deltaTimePlus            { Name("deltaTimePlus"),            Comment("Maximum time after hit to include MC hit") };
+             fhicl::Atom<double>         MeVToADC                 { Name("MeVToADC"),                 Comment("MeV to ADC conversion factor") }; 
+             fhicl::Atom<double>         digiSampling             { Name("digiSampling"),             Comment("Digitization time sampling") }; 
+             fhicl::Atom<double>         minAmplitude             { Name("minAmplitude"),             Comment("Minimum amplitude of waveform to define hit length") }; 
              fhicl::Atom<bool>           fillDetailedMC           { Name("fillDetailedMC"),           Comment("Fill SimParticle - SimShower Assn map")};
              fhicl::Atom<int>            diagLevel                { Name("diagLevel"),                Comment("Diag Level"),0 };
          };
@@ -52,8 +54,9 @@ namespace mu2e {
            caloShowerSimToken_ {consumes<CaloShowerSimCollection> (config().caloShowerSimCollection())},
            caloCrystalHitToken_{consumes<CaloCrystalHitCollection>(config().caloCrystalHitCollection())},
            ppToken_            {consumes<PrimaryParticle>(config().primaryParticle())},
-           deltaTimeMinus_     (config().deltaTimeMinus()),
-           deltaTimePlus_      (config().deltaTimePlus()),
+           MeVToADC_           (config().MeVToADC()),
+           digiSampling_       (config().digiSampling()),
+           minAmplitude_       (config().minAmplitude()),
            fillDetailedMC_     (config().fillDetailedMC()),
            diagLevel_          (config().diagLevel())
         {
@@ -64,6 +67,7 @@ namespace mu2e {
 
         void beginJob() override;
         void produce(art::Event& e) override;
+        void beginRun(art::Run& aRun) override;
 
 
       private:
@@ -76,10 +80,13 @@ namespace mu2e {
          const art::ProductToken<CaloShowerSimCollection>  caloShowerSimToken_;
          const art::ProductToken<CaloCrystalHitCollection> caloCrystalHitToken_;
          const art::ProductToken<PrimaryParticle>          ppToken_;
-         double  deltaTimeMinus_;
-         double  deltaTimePlus_;
-         bool    fillDetailedMC_;
-         int     diagLevel_;
+         double               deltaTimeMinus_;
+         double               MeVToADC_;
+         double               digiSampling_;
+         double               minAmplitude_;
+         bool                 fillDetailedMC_;
+         std::vector<double>  wf_;
+         int                  diagLevel_;
 
          //some diagnostic histograms
          TH1F*  hTime_;
@@ -113,6 +120,15 @@ namespace mu2e {
       }
   }
 
+  //-----------------------------------------------------------------------------
+  void CaloHitTruthMatch::beginRun(art::Run& aRun)
+  {
+      CaloPulseShape cps(digiSampling_);
+      cps.buildShapes();
+      
+      wf_ = cps.digitizedPulse(0);
+      for (auto& v : wf_) v *= MeVToADC_;
+  }
 
 
   //--------------------------------------------------------------------
@@ -160,7 +176,8 @@ namespace mu2e {
       
       
       int nMatched(0);
-      double totalEnergyMatched(0); 
+      double totalEnergyMatched(0);
+      int wfBinMax = std::distance(wf_.begin(),std::max_element(wf_.begin(),wf_.end())); 
       for (auto &kv : caloHitMap)
       {
           int crystalId = kv.first;
@@ -192,21 +209,32 @@ namespace mu2e {
              size_t idxHit(0); 
              while (idxHit < caloCrystalHits.size()) {if (&caloCrystalHits[idxHit]==hit) break; ++idxHit;}
              auto hitPtr = art::Ptr<CaloCrystalHit>(caloCrystalHitHandle,idxHit);               
+             
+             //calculate the length of the pulse
+             unsigned nbin(wfBinMax);
+             while (nbin < wf_.size()) {if (wf_[nbin]*hit->energyDep()<minAmplitude_) break; ++nbin;} 
+             double deltaTimePlus(nbin*digiSampling_);
 
-             if (diagLevel_ > 2) std::cout<<"[CaloHitTruthMatch]  inspect hit id/time/energy "<<hit->id()<<" / "<<hit->time()<<" / "<<hit->energyDep()<<std::endl;
+
+             if (diagLevel_ > 2) std::cout<<"[CaloHitTruthMatch]  inspect hit id/time/energy/length "<<hit->id()<<" / "<<hit->time()<<" / "<<hit->energyDep()<<" "<<nbin*digiSampling_<<std::endl;
                                       
              //forward until we reach the recoHit time;
-             while (showerIt != showerItEnd && ( (*showerIt)->time() < (*hitIt)->time() - deltaTimeMinus_) ) ++showerIt; 
+             while (showerIt != showerItEnd && ( (*showerIt)->time() < (*hitIt)->time() - digiSampling_) ) ++showerIt; 
                           
              //loop as long as the shower time is witthin the recoTime window
-             while(showerIt != showerItEnd && ( (*showerIt)->time() < (*hitIt)->time() + deltaTimePlus_) )
+             while (showerIt != showerItEnd && ( (*showerIt)->time() < (*hitIt)->time() + deltaTimePlus) )
              {
                  //check if we're already inside the next hit time window
-                 if (hitNextIt != hitItEnd && ( (*showerIt)->time() > (*hitNextIt)->time() - deltaTimeMinus_) ) break;
+                 if (hitNextIt != hitItEnd && ( (*showerIt)->time() > (*hitNextIt)->time() - digiSampling_) ) break;
+                 
+                 //calculate the ratio between the hit energy and MC hit energy
+                 //double dt  = std::max(0.0,(*hitIt)->time() - (*showerIt)->time());
+                 //int    idx = int(dt/digiSampling_)+wfBinMax; 
+                 //double AmplitudeAtNextMax = (idx < int(wf_.size())) ? (*hitIt)->energyDep()*wf_[idx] : 0;
+                 //if (dt > 3*digiSampling_ && AmplitudeAtNextMax/(*showerIt)->energyDep()>0.5) {++showerIt; continue;}
+                 
                  hitIsMatched = true;
-                 
-                 //Maybe out a check on energy to include the CaloShowerSim in the hit                 
-                 
+                                  
                  size_t idxShower(0); 
                  while (idxShower < caloShowerSims.size()) {if (&caloShowerSims[idxShower]==*showerIt) break; ++idxShower;}
                  auto  ShowerSimPtr = art::Ptr<CaloShowerSim>(caloShowerSimHandle,idxShower);

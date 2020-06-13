@@ -46,7 +46,7 @@ source       : {
 
 producers: { 
     @table::CaloCluster.producers
-    @table::CaloCluster.producersMC
+    @table::CaloClusterMC.producersMC
     @table::Tracking.producers
     @table::CalPatRec.producers
 }
@@ -113,7 +113,7 @@ physics: {
     p3: [               CalTimePeakFinder, DeltaFinder ]
     p4: [ PrefetchData, CalTimePeakFinder, DeltaFinder ]
     p5: [ PrefetchData, CalTimePeakFinder, DeltaFinder, DeltaFinderAna ]
-    p6: [ PrefetchData, @sequence::CaloCluster.Reco, @sequence::CaloCluster.TruthMatch, CalTimePeakFinder, DeltaFinder, DeltaFinderAna ]
+    p6: [ PrefetchData, @sequence::CaloCluster.Reco, @sequence::CaloClusterMC.TruthMatch, CalTimePeakFinder, DeltaFinder, DeltaFinderAna ]
 
     trigger_paths : [ p6 ]
     out           : []
