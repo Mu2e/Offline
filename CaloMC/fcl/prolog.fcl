@@ -7,6 +7,8 @@
 BEGIN_PROLOG
   HitMakerBlindTime      : 500. # ns
   HitMakerDigiSampling   : 5    # ns
+  HitMakerMeVToADC       : 16    # ns
+  HitMakerMinPeakADC     :  16
 END_PROLOG
 
 
@@ -49,10 +51,10 @@ CaloDigiFromShower :
     blindTime               : @local::HitMakerBlindTime
     addNoise                : true
     noiseADC                : 6.6     
-    MeVToADC                : 16
+    MeVToADC                : @local::HitMakerMeVToADC
     digiSampling            : @local::HitMakerDigiSampling
     nBits                   : 12
-    minPeakADC              : 16
+    minPeakADC              : @local::HitMakerMinPeakADC
     nBinsPeak		    : 2 
     endTimeBuffer           : 80
     bufferDigi              : 16 
@@ -67,10 +69,18 @@ CaloHitTruthMatch:
     caloShowerSimCollection   : CaloShowerStepROFromShowerStep
     caloCrystalHitCollection  : CaloCrystalHitFromHit
     primaryParticle           : compressRecoMCs
-    deltaTimeMinus            : 4.0    
-    deltaTimePlus             : 250.0  
+    MeVToADC                  : @local::HitMakerMeVToADC
+    digiSampling              : @local::HitMakerDigiSampling
+    minAmplitude              : @local::HitMakerMinPeakADC
     fillDetailedMC            : false
     diagLevel                 : 0
+}
+CaloClusterTruthMatch:
+{
+    module_type           : CaloClusterTruthMatch
+    caloClusterCollection : CaloClusterFromProtoCluster
+    caloDigiMCTruthAssn   : CaloHitTruthMatch
+    diagLevel             : 0
 }
 
 
@@ -81,11 +91,18 @@ CaloDigiMC :
      CaloShowerStepROFromShowerStep : @local::CaloShowerStepROFromShowerStep
      CaloDigiFromShower             : @local::CaloDigiFromShower
    }
-   producersMC : {
-     CaloHitTruthMatch : @local::CaloHitTruthMatch
-   }
-   DigiSim    : [ CaloShowerStepFromStepPt, CaloShowerStepROFromShowerStep, CaloDigiFromShower]
-   TruthMatch : [ CaloHitTruthMatch ]
+   producersMC : { CaloHitTruthMatch : @local::CaloHitTruthMatch }
+   
+   DigiSim     : [ CaloShowerStepFromStepPt, CaloShowerStepROFromShowerStep, CaloDigiFromShower]
+   TruthMatch  : [ CaloHitTruthMatch ]
 }
+
+CaloClusterMC : 
+{
+   producersMC : { CaloClusterTruthMatch : @local::CaloClusterTruthMatch }
+   
+   TruthMatch  : [ CaloClusterTruthMatch ]
+}
+
 
 END_PROLOG

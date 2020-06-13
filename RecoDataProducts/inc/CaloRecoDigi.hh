@@ -12,35 +12,35 @@ namespace mu2e
   {
      public:
        CaloRecoDigi(): 
-          _caloDigi(),_eDep(0),_eDepErr(0),_time(0),_timeErr(0),_chi2(-1),_ndf(0),_pileUp(false)
+          caloDigi_(),eDep_(0),eDepErr_(0),time_(0),timeErr_(0),chi2_(-1),ndf_(0),pileUp_(false)
        {} 
 
        CaloRecoDigi(art::Ptr<CaloDigi> caloDigi, double eDep, double eDepErr, double time, 
                        double timeErr, double chi2, int ndf, bool pileUp) :
-	  _caloDigi(caloDigi),_eDep(eDep),_eDepErr(eDepErr),_time(time),_timeErr(timeErr),
-	  _chi2(chi2),_ndf(ndf),_pileUp(pileUp)
+	  caloDigi_(caloDigi),eDep_(eDep),eDepErr_(eDepErr),time_(time),timeErr_(timeErr),
+	  chi2_(chi2),ndf_(ndf),pileUp_(pileUp)
        {}
 
-       const art::Ptr<CaloDigi>&  caloDigiPtr()   const {return _caloDigi;}
-             int                  ROid()          const {return _caloDigi->roId();} 
-             double               energyDep()     const {return _eDep;} 
-             double               energyDepErr()  const {return _eDepErr;} 
-             double               time()          const {return _time;} 
-             double               timeErr()       const {return _timeErr;} 
-             double               chi2()          const {return _chi2;}   
-             int                  ndf()           const {return _ndf;}   
-             bool                 pileUp()        const {return _pileUp;}  
+       const art::Ptr<CaloDigi>&  caloDigiPtr()   const {return caloDigi_;}
+             int                  ROid()          const {return caloDigi_->roId();} 
+             double               energyDep()     const {return eDep_;} 
+             double               energyDepErr()  const {return eDepErr_;} 
+             double               time()          const {return time_;} 
+             double               timeErr()       const {return timeErr_;} 
+             double               chi2()          const {return chi2_;}   
+             int                  ndf()           const {return ndf_;}   
+             bool                 pileUp()        const {return pileUp_;}  
 
 
      private:
-       art::Ptr<CaloDigi>  _caloDigi;   
-       double              _eDep; 
-       double              _eDepErr; 
-       double              _time; 
-       double              _timeErr; 
-       double              _chi2; 
-       int                 _ndf; 
-       bool                _pileUp;
+       art::Ptr<CaloDigi>  caloDigi_;   
+       double              eDep_; 
+       double              eDepErr_; 
+       double              time_; 
+       double              timeErr_; 
+       double              chi2_; 
+       int                 ndf_; 
+       bool                pileUp_;
   };
 
 
