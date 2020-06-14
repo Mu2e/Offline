@@ -269,6 +269,7 @@ namespace mu2e {
         _TrackChi2DOFNeg= TrackKrep->chisq()/TrackKrep->nActive();
         _TrackNHitsNeg = TrackKrep->nActive();
         _ChargeNeg = _Charge;
+        std::cout<<"Event "<<_evt<<" Run "<<_run<<" Track "<<_nTracks<<" Charge "<<_Charge<<" Neg D0 "<<_TrackBackD0Neg<<" phi0 "<<_TrackBackPhi0Neg<<" Chi2 dof "<<_TrackChi2DOFNeg<<" Mom "<<_TrackMomNeg<<" T0 "<<_TrackT0Neg<<std::endl;
       }
       
       if(_Charge == 1){
@@ -284,9 +285,10 @@ namespace mu2e {
         _TrackChi2DOFPos= TrackKrep->chisq()/TrackKrep->nActive();
         _TrackNHitsPos = TrackKrep->nActive();
         _ChargePos = _Charge;
+        std::cout<<"Event "<<_evt<<" Run "<<_run<<" Track "<<_nTracks<<" Charge "<<_Charge<<" Neg D0 "<<_TrackBackD0Pos<<" phi0 "<<_TrackBackPhi0Pos<<" Chi2 dof "<<_TrackChi2DOFPos<<" Mom "<<_TrackMomPos<<" T0 "<<_TrackT0Pos<<std::endl;
       }
 
-      std::cout<<"Event "<<_evt<<" Run "<<_run<<" Track "<<_nTracks<<" Neg "<<_nNeg<<" Pos "<<_nPos<<std::endl;
+     
       _nTracks ++;
    
       }
