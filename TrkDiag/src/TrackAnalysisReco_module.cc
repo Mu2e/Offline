@@ -150,7 +150,7 @@ namespace mu2e {
     void analyze(const art::Event& e);
 
   private:
-
+    std::ofstream EventInfoFile, FitInfoFile;
     Config _conf;
     std::vector<BranchConfig> _allBranches; // candidates + supplements
     size_t _candidateIndex; // location in above vector that contains the candidate
@@ -288,12 +288,14 @@ namespace mu2e {
   }
 
   void TrackAnalysisReco::beginJob( ){
+    EventInfoFile.open("TrkAnaEvents.csv");
     art::ServiceHandle<art::TFileService> tfs;
 // create TTree
     _trkana=tfs->make<TTree>("trkana","track analysis");
     _tht=tfs->make<TProfile>("tht","Track Hit Time Profile",RecoCount::_nshtbins,-25.0,1725.0);
 // add event info branch
     _trkana->Branch("evtinfo.",&_einfo,EventInfo::leafnames().c_str());
+   
 // hit counting branch
     _trkana->Branch("hcnt.",&_hcnt,HitCount::leafnames().c_str());
 // track counting branch
@@ -511,6 +513,11 @@ namespace mu2e {
 	}
       }
       // fill this row in the TTree
+      EventInfoFile<<"======================================"<<std::endl;
+      EventInfoFile<<_einfo._eventid<<","<<_einfo._subrunid<<","<<_einfo._runid<<std::endl;
+      EventInfoFile<<"Global : t0 "<<_allTIs.at(_candidateIndex)._t0<<" chisq/ndof: "<<_allTIs.at(_candidateIndex)._chisq/_allTIs.at(_candidateIndex)._ndof<<std::endl;
+      EventInfoFile<<"Local : d0 "<<_allEntTIs.at(_candidateIndex)._fitpar._d0<<" phi0 : "<<_allEntTIs.at(_candidateIndex)._fitpar._p0<<" mom "<<_allEntTIs.at(_candidateIndex)._fitmom<<std::endl;
+//     std::cout<<" de qual: "<<_allTQCHs.at(_candidateIndex)._TrkQual<<std::endl;
       _trkana->Fill();
     }
 
@@ -543,7 +550,7 @@ namespace mu2e {
     _einfo._eventid = event.event();
     _einfo._runid = event.run();
     _einfo._subrunid = event.subRun();
-
+ //    EventInfoFile<<_einfo._eventid<<","<<_einfo._subrunid<<","<<_einfo._runid<<std::endl;
     // get event weight products
     std::vector<Float_t> weights;
     for (const auto& i_weightHandle : _wtHandles) {
