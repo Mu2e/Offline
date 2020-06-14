@@ -174,7 +174,10 @@ function mu2ealign_runNaligniters() {
         mu2ealign run 
 
         wait 
-        
+        mu2ealign_checkcomplete || return 1
+        mu2ealign_mergeoutput
+
+
         echo "Complete! Final alignment constants are in $lastconsts"
     )
 }
