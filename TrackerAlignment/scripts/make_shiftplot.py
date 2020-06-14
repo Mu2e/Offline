@@ -69,9 +69,30 @@ for param_col in [0,1,2]:
 
     plane_id = np.arange(0,35.5,1)
 
+    # pulls for x-shifts, y-shifts, z-shifts
+    with plt.style.context(['science', 'grid','no-latex']):
+        plt.figure(param_col)
+        for filename, shifts, shifts_errors in to_plot:
+            plt.hist(shifts/shifts_errors, 
+                bins=np.arange(-20,20,4), 
+                range=(-20,20), 
+                align='left', 
+                histtype='step', 
+                linewidth=1.2, 
+                label=filename) 
 
-    with plt.style.context('bmh'):
-        _, axs = plt.subplots(2, gridspec_kw={'height_ratios': [10, 5]})
+        plt.xlim(-20,20)
+        plt.ylim(0, 20)
+        plt.yticks(np.arange(0,20,2))
+        plt.xlabel('%s / error (all planes)' % col_str)
+        plt.ylabel('count / 4.0')
+
+        plt.title('%s pull histogram (all planes) after alignment fit' % col_str)
+        plt.legend(fontsize='small')
+
+
+    # shifts per plane and pulls underneath
+        _, axs = plt.subplots(2, num=param_col+3, gridspec_kw={'height_ratios': [10, 5]})
         for filename, shifts, shifts_errors in to_plot:
             #plt.scatter(plane_id, shifts, label=filename)
             axs[0].errorbar(plane_id, shifts, yerr=shifts_errors,label=filename,
@@ -79,12 +100,12 @@ for param_col in [0,1,2]:
                         fmt='x-',
                         linewidth=0.5,
                         drawstyle = 'steps-mid')
-
-        #plt.ylim(-1000,1000)
+        maxmag = np.max(np.abs(shifts))*1.2
+        axs[0].set_ylim(-maxmag,maxmag)
         axs[0].axhline(0,0,36, color='k',label='Nominal')
         axs[0].set_ylabel('%s (um)' % col_str)
         axs[0].set_title('%s after alignment fit' % col_str)
-        axs[0].legend(fontsize='xx-small')
+        axs[0].legend(fontsize='small')
 
         for filename, shifts, shifts_errors in to_plot:
             #plt.scatter(plane_id, shifts, label=filename)
@@ -96,9 +117,13 @@ for param_col in [0,1,2]:
             #             fmt='x-',
             #             linewidth=0.5,
             #             drawstyle = 'steps-mid')
+        maxmag = np.max(np.abs(pulls[~np.isnan(pulls)]))*1.05
         axs[1].set_xlabel('Plane ID')
         axs[1].set_ylabel('%s / error' % col_str)
-        axs[1].set_ylim(-5,5)
+        axs[1].set_ylim(-maxmag,maxmag)
+
+        axs[1].set_xticks(np.arange(0,36,2))
+        axs[0].set_xticks(np.arange(0,36,2))
 
 plt.show()
 
