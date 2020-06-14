@@ -1073,10 +1073,10 @@ bool AlignTrackCollector::filter_CosmicTrackSeedCollection(
       // a, b, g This is reflected also in the generated DOCA derivatives.
       std::vector<int> global_dof_labels = generateDOFLabels(straw_id);
 
-      if (_diag > 0 && global_dof_labels.size() != _expected_dofs &&
-          derivativesGlobal.size() > _expected_dofs) {
-        throw cet::exception("RECO") << "Did not see " << _expected_dofs << " DOF labels"
-                                     << " or N of global derivatives was greater than "
+      if (_diag > 0 && global_dof_labels.size() != derivativesGlobal.size() &&
+          derivativesGlobal.size() < _expected_dofs) {
+        throw cet::exception("RECO") << "N global derivatives != N labels"
+                                     << " or N of global derivatives was less than "
                                      << _expected_dofs << " ... Something is wrong!";
       }
 
@@ -1252,6 +1252,14 @@ int AlignTrackCollector::getLabel(int const& object_cls, int const& obj_uid, int
   // object unique id: 0 - 999 supports up to 999 unique objects which is fine for this level of
   // alignment
   // object dof id: 0 - 9
+
+  // a straw label might be:
+  // id  plane panel straw dof
+  // 3   00    0     00    0
+  // min
+  // 3 00 0 00 0
+  // max
+  // 3,356,959
 
   // 1 000 0
   return object_cls * 10000 + obj_uid * 10 + dof_id;
