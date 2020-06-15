@@ -125,7 +125,7 @@ function mu2ealign_progress() {
         if [ "$tcount" = "" ]; then 
           tcount=0
         fi
-        tracks=$((tracks + tcount))
+        tracks=$(expr $tracks + $tcount)
     done
     echo -en "\r... $tracks tracks ..."
 }
