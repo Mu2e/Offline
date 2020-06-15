@@ -528,6 +528,26 @@ void AlignTrackCollector::writeMillepedeParams(TrkAlignPlane const& alignConstPl
   output_file.close();
 }
 
+int AlignTrackCollector::getLabel(int const& object_cls, int const& obj_uid, int const& dof_id) {
+  // object class: 0 - 9 - i.e. 1 for planes, 2 for panels
+  // object unique id: 0 - 999 supports up to 999 unique objects which is fine for this level of
+  // alignment
+  // object dof id: 0 - 9
+
+  // (future) a straw label might be:
+  // id  plane panel straw dof
+  // 3   00    0     00    0
+  // min
+  // 3 00 0 00 0
+  // max
+  // 3,356,959
+
+  // 1 000 0
+
+  return object_cls * 10000 + obj_uid * 10 + dof_id;
+}
+
+
 std::vector<int> AlignTrackCollector::generateDOFLabels(StrawId const& strw) {
   return generateDOFLabels(strw.getPlane(), strw.uniquePanel());
 }
@@ -882,24 +902,6 @@ bool AlignTrackCollector::filter_CosmicTrackSeedCollection(
   return wrote_track;
 }
 
-int AlignTrackCollector::getLabel(int const& object_cls, int const& obj_uid, int const& dof_id) {
-  // object class: 0 - 9 - i.e. 1 for planes, 2 for panels
-  // object unique id: 0 - 999 supports up to 999 unique objects which is fine for this level of
-  // alignment
-  // object dof id: 0 - 9
-
-  // (future) a straw label might be:
-  // id  plane panel straw dof
-  // 3   00    0     00    0
-  // min
-  // 3 00 0 00 0
-  // max
-  // 3,356,959
-
-  // 1 000 0
-
-  return object_cls * 10000 + obj_uid * 10 + dof_id;
-}
 
 void AlignTrackCollector::analyze(art::Event const& event) {
   StrawResponse const& _srep = srep_h.get(event.id());
