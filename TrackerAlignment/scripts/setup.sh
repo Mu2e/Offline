@@ -140,7 +140,7 @@ function mu2ealign_runNaligniters() {
         if [ ! -f "alignconstants_out.txt" ]; then
             mu2ealign run
             lastm2epid=$!
-            while [ ! -d "/proc/$lastm2epid" ]; do
+            while [ -d "/proc/$lastm2epid" ]; do
                 mu2ealign_progress
                 sleep 2
             done
@@ -169,7 +169,7 @@ function mu2ealign_runNaligniters() {
                 mu2ealign run 
 
                 lastm2epid=$!
-                while [ ! -d "/proc/$lastm2epid" ]; do
+                while [ -d "/proc/$lastm2epid" ]; do
                     mu2ealign_progress
                     sleep 2
                 done
