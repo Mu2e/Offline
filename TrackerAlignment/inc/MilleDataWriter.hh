@@ -1,3 +1,6 @@
+#ifndef TRACKERALIGNMENT_MILLEDATAWRITER_HH
+#define TRACKERALIGNMENT_MILLEDATAWRITER_HH
+
 // Ryunosuke O'Neil
 // roneil@fnal.gov
 // ryunoneil@gmail.com
@@ -110,3 +113,5 @@ private:
     return result;
   }
 };
+
+#endif
