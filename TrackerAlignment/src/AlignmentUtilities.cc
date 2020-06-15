@@ -80,6 +80,7 @@ bool testDerivatives(
   // compare local derivatives
 
   if (numDerivatives.first.size() != anaDerivatives.first.size()) {
+    std::cerr << "size mismatch  (local)" << std::endl;
     return false;
   }
   
@@ -94,6 +95,7 @@ bool testDerivatives(
 
   // compare global derivatives
   if (numDerivatives.second.size() != anaDerivatives.second.size()) {
+    std::cerr << "size mismatch  (global)" << std::endl;
     return false;
   }
   for (size_t i = 0; i < numDerivatives.second.size(); ++i) {
