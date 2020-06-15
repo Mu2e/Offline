@@ -117,6 +117,16 @@ function mu2ealign_genjobfcl() {
     head -n 4 ${DS_COSMIC_NOFIELD_ALIGNSELECT} > sources.txt
 }
 
+function mu2ealign_progress() {
+
+    tracks=0
+    for f in job_part*.log; do
+        tcount=$(tac $f | grep "wrote track" | awk 'NF>1{print $NF}')
+        tracks=$((tracks + tcount))
+    done
+    echo -en "\r... $tracks tracks ..."
+}
+
 function mu2ealign_runNaligniters() {
     END=$1
     (
@@ -147,6 +157,14 @@ function mu2ealign_runNaligniters() {
                 
                 mu2ealign run 
 
+                lastpid=$!
+
+                while [ ! -d $lastpid ]; do
+                    mu2ealign_progress
+                    sleep 2
+                done
+                echo ""
+                echo "... nearly done ..."
                 wait 
 
                 mu2ealign pede
