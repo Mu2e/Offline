@@ -58,7 +58,7 @@ struct CosmicTimeTrack {
     return result.unit();
   }
 
-  size_t npars() const { return 4; }
+  size_t npars() const { return 5; }
 
   void setParams(std::vector<double> const& pars) {
     params[a0] = pars[a0];
