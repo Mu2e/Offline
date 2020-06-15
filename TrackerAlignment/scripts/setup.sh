@@ -122,6 +122,9 @@ function mu2ealign_progress() {
     tracks=0
     for f in job_part*.log; do
         tcount=$(tac $f | grep "wrote track" | awk 'NF>1{print $NF}')
+        if [ $tcount == "" ]; then 
+          tcount=0
+        fi
         tracks=$((tracks + tcount))
     done
     echo -en "\r... $tracks tracks ..."
@@ -136,6 +139,15 @@ function mu2ealign_runNaligniters() {
         # run first alignment iteration
         if [ ! -f "alignconstants_out.txt" ]; then
             mu2ealign run
+            lastpid=$!
+
+            while [ ! -d $lastpid ]; do
+                mu2ealign_progress
+                sleep 2
+            done
+            echo ""
+            echo "... nearly done ..."
+
             wait;
 
             mu2ealign pede
