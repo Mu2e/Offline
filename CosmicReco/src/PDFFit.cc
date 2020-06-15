@@ -311,7 +311,7 @@ double GaussianDriftFit::operator()(const std::vector<double>& x) const {
   dir = dir.unit();
 
   for (size_t i = 0; i < this->shs.size(); i++) {
-    if (excludeHit == i){
+    if (excludeHit == (int)i){
       continue;
     }
     Straw const& straw = tracker->getStraw(this->shs[i].strawId());
