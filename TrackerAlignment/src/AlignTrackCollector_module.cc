@@ -419,16 +419,9 @@ bool AlignTrackCollector::isDOFenabled(int object_class, int object_id, int dof_
   if (object_class == 2 && no_panel_dofs) {
     return false;
   }
-
   if (object_class == 1 && no_plane_rotations && dof_n > 2) {
     return false;
   }
-
-  int plane = object_id;
-  if (object_class == 2) {
-    plane = object_id % 6;
-  }
-
   return true;
 }
 
@@ -644,7 +637,7 @@ bool AlignTrackCollector::filter_CosmicTrackSeedCollection(
     std::vector<std::vector<int>> labels_temp;
 
     bool use_unbiased_res = false;
-    
+
     // get residuals and their derivatives with respect
     // to all local and global parameters
 
