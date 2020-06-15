@@ -2,36 +2,28 @@
 // roneil@fnal.gov
 // ryunoneil@gmail.com
 
-// ROOT
+#include <cstdint>
+#include <iostream>
+#include <iterator>
+#include <vector>
+#include "RtypesCore.h"
+
+#include "art/Framework/Services/Registry/ServiceHandle.h"
+#include "art_root_io/TFileService.h"
+
 #include "CLHEP/Vector/ThreeVector.h"
 #include "DbTables/inc/TrkAlignPlane.hh"
 #include "GeneralUtilities/inc/HepTransform.hh"
 #include "Minuit2/MnUserCovariance.h"
 #include "Mu2eUtilities/inc/TwoLinePCA.hh"
-#include "RtypesCore.h"
 #include "TTree.h"
-
-// art
-#include "TrackerConditions/inc/StrawResponse.hh"
-#include "art/Framework/Services/Registry/ServiceHandle.h"
-#include "art_root_io/TFileService.h"
-
-// Offline
-
 #include "DbTables/inc/TrkAlignPanel.hh"
-
 #include "DataProducts/inc/StrawId.hh"
-
 #include "RecoDataProducts/inc/ComboHit.hh"
 #include "RecoDataProducts/inc/CosmicTrackSeed.hh"
-
+#include "TrackerConditions/inc/StrawResponse.hh"
 #include "TrackerAlignment/inc/AlignmentDerivatives.hh"
 #include "TrackerAlignment/inc/MilleDataWriter.hh"
-#include <cstdint>
-#include <iostream>
-#include <iterator>
-#include <vector>
-
 #include "TrackerAlignment/inc/AlignmentUtilities.hh"
 
 using namespace mu2e;
