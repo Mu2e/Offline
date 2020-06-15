@@ -325,7 +325,8 @@ double docaGlobalDep(CosmicTimeTrack const& track, StrawId const& strawId,
   Panel const& nominal_panel = nominalTracker.getPanel(strawId);
 
   HepTransform align_tracker{0, 0, 0, 0, 0, 0};
-  HepTransform align_plane{globals[0], globals[1], globals[2], globals[3], globals[4], globals[5]};
+  HepTransform align_plane{globals[0], globals[1], globals[2], 
+                           globals[3], globals[4], globals[5]};
 
   HepTransform align_panel{globals[6], globals[7],  globals[8],
                            globals[9], globals[10], globals[11]};
@@ -371,7 +372,7 @@ double _numericalDerivative(StrawId const& straw, CosmicTimeTrack& track,
   // pdiff -= strawRes.driftDistanceToTime(
   //     straw, docaGlobalDep(track, straw, globals, nominalTracker), 0);
   double doca2 = docaGlobalDep(track, straw, globals, nominalTracker);
-  driftvel = strawRes.driftInstantSpeed(straw, std::abs(pdiff), 0);
+  driftvel = strawRes.driftInstantSpeed(straw, std::abs(doca2), 0);
   pdiff -= doca2 / driftvel;
 
   pdiff /= (2.0 * step_size);

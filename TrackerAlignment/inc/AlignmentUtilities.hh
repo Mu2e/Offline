@@ -65,6 +65,7 @@ struct CosmicTimeTrack {
     params[a1] = pars[a1];
     params[b0] = pars[b0];
     params[b1] = pars[b1];
+    params[t0] = pars[t0];
   }
 };
 
