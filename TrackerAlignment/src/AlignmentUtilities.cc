@@ -370,7 +370,9 @@ double _numericalDerivative(StrawId const& straw, CosmicTimeTrack& track,
 
   // pdiff -= strawRes.driftDistanceToTime(
   //     straw, docaGlobalDep(track, straw, globals, nominalTracker), 0);
-  pdiff -= docaGlobalDep(track, straw, globals, nominalTracker) / driftvel;
+  double doca2 = docaGlobalDep(track, straw, globals, nominalTracker);
+  driftvel = strawRes.driftInstantSpeed(straw, pdiff, 0);
+  pdiff -= doca2 / driftvel;
 
   pdiff /= (2.0 * step_size);
 
