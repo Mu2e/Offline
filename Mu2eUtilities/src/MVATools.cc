@@ -76,7 +76,11 @@ namespace mu2e
     title_(), 
     label_(),
     activationTypeString_("none"),
-    mvaWgtsFile_(xmlfilename) { }
+    mvaWgtsFile_() { 
+
+    ConfigFileLookupPolicy configFile;
+    mvaWgtsFile_ = configFile(xmlfilename);
+  }
 
 
   MVATools::~MVATools() {
