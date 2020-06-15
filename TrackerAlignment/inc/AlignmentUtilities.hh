@@ -68,13 +68,17 @@ struct CosmicTimeTrack {
   }
 };
 
-bool testDerivatives(TwoLinePCA const& expected_dca,
-  CosmicTimeTrack const& track,
+bool testDerivatives(
+    TwoLinePCA const& expected_pca,
+    Tracker const& alignedTracker,
+
+    CosmicTimeTrack const& track,
     StrawId const& strawId,
-    TrkAlignPlane::Row const& rowpl,
-    TrkAlignPanel::Row const& rowpa,
+    TrkAlignPlane::Row const&rowpl,
+    TrkAlignPanel::Row const&rowpa,
     Tracker const& nominalTracker,
-    double const& driftvel);
+    StrawResponse const& strawRes);
+
 
 std::pair<std::vector<double>, std::vector<double>> 
   analyticalDerivatives(CosmicTimeTrack const& track,
