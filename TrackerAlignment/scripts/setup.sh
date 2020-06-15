@@ -121,11 +121,11 @@ function mu2ealign_progress() {
 
     tracks=0
     for f in job_part*.log; do
-        tcount=$(tac $f | grep "wrote track" | awk 'NF>1{print $NF}')
+        tcount=$(tac $f | grep "wrote track" | awk 'NF>1{print $NF}' | tr -d '\n')
         if [ "$tcount" = "" ]; then 
-          tcount=0
+          tcount=0bash 
         fi
-        tracks=$(expr $tracks + $tcount)
+        tracks=$(expr "$tracks + $tcount")
     done
     echo -en "\r... $tracks tracks ..."
 }
