@@ -356,8 +356,11 @@ double _numericalDerivative(StrawId const& straw, CosmicTimeTrack& track,
     track.params[paramIdx] -= step_size;
   }
 
-  double pdiff = strawRes.driftDistanceToTime(
-      straw, docaGlobalDep(track, straw, globals, nominalTracker), 0);
+  // double pdiff = strawRes.driftDistanceToTime(
+  //     straw, docaGlobalDep(track, straw, globals, nominalTracker), 0);
+  double pdiff = docaGlobalDep(track, straw, globals, nominalTracker);
+  double driftvel = strawRes.driftInstantSpeed(straw, pdiff, 0);
+  pdiff /= driftvel;
 
   if (isGlobalParam) {
     globals[paramIdx] += 2.0 * step_size;
@@ -365,8 +368,9 @@ double _numericalDerivative(StrawId const& straw, CosmicTimeTrack& track,
     track.params[paramIdx] += 2.0 * step_size;
   }
 
-  pdiff -= strawRes.driftDistanceToTime(
-      straw, docaGlobalDep(track, straw, globals, nominalTracker), 0);
+  // pdiff -= strawRes.driftDistanceToTime(
+  //     straw, docaGlobalDep(track, straw, globals, nominalTracker), 0);
+  pdiff -= docaGlobalDep(track, straw, globals, nominalTracker) / driftvel;
 
   pdiff /= (2.0 * step_size);
 
