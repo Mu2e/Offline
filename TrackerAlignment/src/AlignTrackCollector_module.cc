@@ -765,8 +765,8 @@ bool AlignTrackCollector::filter_CosmicTrackSeedCollection(
             << std::endl;
         std::cout << "----------------------------------" << std::endl;
 
-        throw cet::exception("ALIGNMENT") << "Output of generated functions"
-          << "(AlignmentDerivatives) are not consistent within expected tolerance! Please validate.";
+        // throw cet::exception("ALIGNMENT") << "Output of generated functions"
+        //   << "(AlignmentDerivatives) are not consistent within expected tolerance! Please validate.";
       }
 
       if (use_numeric_derivs) {
