@@ -311,6 +311,9 @@ double GaussianDriftFit::operator()(const std::vector<double>& x) const {
   dir = dir.unit();
 
   for (size_t i = 0; i < this->shs.size(); i++) {
+    if (excludeHit == i){
+      continue;
+    }
     Straw const& straw = tracker->getStraw(this->shs[i].strawId());
     TwoLinePCA pca(intercept, dir, straw.getMidPoint(), straw.getDirection());
     double longdist = (pca.point2() - straw.getMidPoint()).dot(straw.getDirection());
