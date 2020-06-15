@@ -571,7 +571,7 @@ void AlignTrackCollector::endJob() {
 }
 
 bool AlignTrackCollector::filter_CosmicTrackSeedCollection(
-    art::Event const& event, Tracker const& tracker, Tracker const& nominalTracker,
+    art::Event const& event, Tracker const& alignedTracker, Tracker const& nominalTracker,
     StrawResponse const& _srep, CosmicTrackSeedCollection const& coscol) {
 
   // get alignment parameters for this event
@@ -617,7 +617,7 @@ bool AlignTrackCollector::filter_CosmicTrackSeedCollection(
     // used/re-used for unbiased residual fits
     AlignmentUtilities::CosmicTimeTrack track { A0, B0, A1, B1, T0 };
 
-    GaussianDriftFit fit_object(sts._straw_chits, _srep, &tracker);
+    GaussianDriftFit fit_object(sts._straw_chits, _srep, &alignedTracker);
 
     chisq = 0;
     chisq_doca = 0;
@@ -644,7 +644,7 @@ bool AlignTrackCollector::filter_CosmicTrackSeedCollection(
     for (ComboHit const& straw_hit : sts._straw_chits) {
       // straw and plane info
       StrawId const& straw_id = straw_hit.strawId();
-      Straw const& alignedStraw = tracker.getStraw(straw_id);
+      Straw const& alignedStraw = alignedTracker.getStraw(straw_id);
 
       auto plane_id = straw_id.getPlane();
       auto panel_id = straw_id.uniquePanel();
@@ -733,10 +733,12 @@ bool AlignTrackCollector::filter_CosmicTrackSeedCollection(
       }
 
       if (_diag > 4) {
-        AlignmentUtilities::diagPrintHit(track, time_resid, drift_res, derivativesLocal, derivativesGlobal, straw_id);
+        AlignmentUtilities::diagPrintHit(
+          track, time_resid, drift_res, derivativesLocal, derivativesGlobal, straw_id);
       }
 
-      if (!AlignmentUtilities::testDerivatives(pca, track, straw_id, rowpl, rowpa, nominalTracker, driftvel)) {
+      if (!AlignmentUtilities::testDerivatives(
+            pca, alignedTracker, track, straw_id, rowpl, rowpa, nominalTracker, _srep)) {
         std::cout << "----------------------------------" << std::endl;
         std::cout
             << "WARNING! AlignmentDerivatives are inconsistent! Please validate."
