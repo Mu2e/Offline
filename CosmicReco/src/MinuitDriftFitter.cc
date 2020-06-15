@@ -311,8 +311,8 @@ void DoDriftTimeFit(int const& diag, CosmicTrackSeed& tseed, StrawResponse const
   tseed._track.MinuitParams.T0 = results.Params()[4];
 
   tseed._track.MinuitParams.deltaA0 = results.Errors()[0];
-  tseed._track.MinuitParams.deltaA1 = results.Errors()[2];
   tseed._track.MinuitParams.deltaB0 = results.Errors()[1];
+  tseed._track.MinuitParams.deltaA1 = results.Errors()[2];
   tseed._track.MinuitParams.deltaB1 = results.Errors()[3];
   tseed._track.MinuitParams.deltaT0 = results.Errors()[4];
 
