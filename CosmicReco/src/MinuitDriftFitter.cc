@@ -10,6 +10,7 @@
 #include "Math/VectorUtil.h"
 #include "Mu2eUtilities/inc/ParametricFit.hh"
 #include "Mu2eUtilities/inc/TwoLinePCA.hh"
+#include "RecoDataProducts/inc/ComboHit.hh"
 #include "TMath.h"
 #include "TrackerGeom/inc/Tracker.hh"
 
@@ -210,6 +211,49 @@ FitResult DoFit(int const& _diag, CosmicTrackSeed& tseed, StrawResponse const& s
     fulldriftfit.DeleteArrays();
   }
   return FitResult;
+}
+
+void DoDriftTimeFit(
+    std::vector<double> & pars, 
+    std::vector<double> & errors,
+    std::vector<double> & cov_out,
+    bool & minuit_converged,
+    GaussianDriftFit const& fit) {
+  
+  // Initiate Minuit Fit:
+  ROOT::Minuit2::MnStrategy mnStrategy(2);
+  ROOT::Minuit2::MnUserParameters params(pars, errors);
+  ROOT::Minuit2::MnMigrad migrad(fit, params, mnStrategy);
+
+  // Define Minimization method as "MIGRAD" (see minuit documentation)
+  ROOT::Minuit2::FunctionMinimum min = migrad(0, 0.1);
+
+  // diagnostic level
+  ROOT::Minuit2::MnPrint::SetLevel(0);
+  
+  // Will be the results of the fit routine:
+  ROOT::Minuit2::MnUserParameters const& results = min.UserParameters();
+  //      double minval = min.Fval();
+
+  minuit_converged = min.IsValid();
+
+  pars[0] = results.Params()[0];
+  pars[1] = results.Params()[1];
+  pars[2] = results.Params()[2];
+  pars[3] = results.Params()[3];
+  pars[4] = results.Params()[4];
+
+  errors[0] = results.Errors()[0];
+  errors[1] = results.Errors()[1];
+  errors[2] = results.Errors()[2];
+  errors[3] = results.Errors()[3];
+  errors[4] = results.Errors()[4];
+
+  if (min.HasValidCovariance()) {
+    cov_out = min.UserCovariance().Data();
+  } else {
+    cov_out = std::vector<double>(15, 0);
+  }
 }
 
 void DoDriftTimeFit(int const& diag, CosmicTrackSeed& tseed, StrawResponse const& srep,

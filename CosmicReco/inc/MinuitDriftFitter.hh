@@ -1,6 +1,7 @@
 #ifndef _COSMIC_RECO_MINUITDRIFTFITTER_HH
 #define _COSMIC_RECO_MINUITDRIFTFITTER_HH
 
+#include "CosmicReco/inc/PDFFit.hh"
 #include "DataProducts/inc/XYZVec.hh"
 #include "RecoDataProducts/inc/ComboHit.hh"
 #include "RecoDataProducts/inc/CosmicTrackSeed.hh"
@@ -52,6 +53,14 @@ namespace MinuitDriftFitter {
 FitResult DoFit(int const& _diag, CosmicTrackSeed& tseed, StrawResponse const& srep,
                 const Tracker* tracker, double const& max_doca, unsigned int const& minChits,
                 int const& MaxLogL, double const& _gaussTres, double const& maxTres);
+
+
+void DoDriftTimeFit(
+    std::vector<double> & pars, 
+    std::vector<double> & errors,
+    std::vector<double> & cov_out,
+    bool & minuit_converged,
+    GaussianDriftFit const& fit);
 
 void DoDriftTimeFit(int const& diag, CosmicTrackSeed& tseed, StrawResponse const& srep,
                     const Tracker* tracker);
