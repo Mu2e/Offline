@@ -32,6 +32,8 @@ BEGIN_PROLOG
     SteeringOpts : [ ]
 
     ErrorScale : 1.0
+
+    EnableLOOCVFitting : false
 }
 
 

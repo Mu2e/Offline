@@ -211,6 +211,11 @@ public:
         Name("ErrorScale"),
         Comment("Scale all hit measurement errors by ErrorScale."), 1.0
     };
+
+    fhicl::Atom<bool> enableCV{
+        Name("EnableLOOCVFitting"),
+        Comment("Whether to enable LOOCV track fitting to obtain 'unbiased' residuals. Default is true."), true};
+
   };
 
   typedef art::EDAnalyzer::Table<Config> Parameters;
@@ -243,6 +248,7 @@ public:
   std::vector<std::string> steer_lines;
 
   double error_scale;
+  bool use_unbiased_res;
 
 
   std::string constrain_strat;
@@ -322,6 +328,7 @@ double CosmicTrack_RealDCA(
       mille_file(mille_filename, gzip_compress),
       steer_lines(conf().mpsteers()),
       error_scale(conf().errorscale()),
+      use_unbiased_res(conf().enableCV()),
       constrain_strat(conf().constrainstrategy()),
       fixed_planes(conf().fixplane()) {
 
@@ -656,7 +663,6 @@ bool AlignTrackCollector::filter_CosmicTrackSeedCollection(
     std::vector<std::vector<double>> local_derivs_temp;
     std::vector<std::vector<int>> labels_temp;
 
-    bool use_unbiased_res = false;
 
     // get residuals and their derivatives with respect
     // to all local and global parameters
@@ -689,7 +695,12 @@ bool AlignTrackCollector::filter_CosmicTrackSeedCollection(
           pars, errors, cov, converged, fit_object);
 
         // update track variable
-        track.setParams(pars);
+        if (converged) {
+          track.setParams(pars);
+        } else {
+          std::cerr << "WARNING: unconverged track for this hit. Using original track ..." << std::endl;
+          track.setParams(original_track);
+        }
       }
 
       // hit DOCA, DOCA/TOCA residuals, errors
@@ -755,18 +766,18 @@ bool AlignTrackCollector::filter_CosmicTrackSeedCollection(
       if (_diag > 4) {
         AlignmentUtilities::diagPrintHit(
           track, time_resid, drift_res, derivativesLocal, derivativesGlobal, straw_id);
-      }
 
-      if (!AlignmentUtilities::testDerivatives(
-            pca, alignedTracker, track, straw_id, rowpl, rowpa, nominalTracker, _srep)) {
-        std::cout << "----------------------------------" << std::endl;
-        std::cout
-            << "WARNING! AlignmentDerivatives are inconsistent! Please validate."
-            << std::endl;
-        std::cout << "----------------------------------" << std::endl;
+        if (!AlignmentUtilities::testDerivatives( /// FIXME!
+              pca, alignedTracker, track, straw_id, rowpl, rowpa, nominalTracker, _srep)) {
+          std::cout << "----------------------------------" << std::endl;
+          std::cout
+              << "WARNING! AlignmentDerivatives are inconsistent! Please validate."
+              << std::endl;
+          std::cout << "----------------------------------" << std::endl;
 
-        // throw cet::exception("ALIGNMENT") << "Output of generated functions"
-        //   << "(AlignmentDerivatives) are not consistent within expected tolerance! Please validate.";
+          // throw cet::exception("ALIGNMENT") << "Output of generated functions"
+          //   << "(AlignmentDerivatives) are not consistent within expected tolerance! Please validate.";
+        }
       }
 
       if (use_numeric_derivs) {

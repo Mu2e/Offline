@@ -67,6 +67,13 @@ struct CosmicTimeTrack {
     params[b1] = pars[b1];
     params[t0] = pars[t0];
   }
+  void setParams(CosmicTimeTrack const& pars) {
+    params[a0] = pars.params[a0];
+    params[a1] = pars.params[a1];
+    params[b0] = pars.params[b0];
+    params[b1] = pars.params[b1];
+    params[t0] = pars.params[t0];
+  }
 };
 
 bool testDerivatives(
