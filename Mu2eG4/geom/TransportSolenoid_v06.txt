@@ -33,7 +33,7 @@ double ts.ts3out.rIn       = 793.45;
 double ts.ts4out.rIn       = 793.45; 
 double ts.ts5out.rIn       = 793.45; 
 
-double ts.ts1out.rOut      = 725.0; 
+double ts.ts1out.rOut      = 724.05; 
 double ts.ts2out.rOut      = 812.5; 
 double ts.ts3out.rOut      = 812.5; 
 double ts.ts4out.rOut      = 812.5; 

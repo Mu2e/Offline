@@ -686,7 +686,9 @@ namespace mu2e {
 	    dPhiX = pabs->oPAsupportDPhiX().at(iSup);
 	  }
 
-	  CLHEP::Hep3Vector location(-3904.0,0.0,zm);
+	  CLHEP::Hep3Vector location(parent1Info.centerInMu2e()); //inherit x and y position from DS
+	  location.setZ(zm);
+
 	  ostringstream myName;
 	  myName << "OPAsupport_" << iSup+1;
 	  ostringstream myName2;
