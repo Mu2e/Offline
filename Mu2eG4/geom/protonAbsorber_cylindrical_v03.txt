@@ -29,7 +29,7 @@ int    protonabsorber.oPASupportNSupportRing = 6;
 // The original model expected the third support ring to hold the target supports and the second ring to need notches to accommodate the support arms.
 // We have added a new ring, so I put it at the end, even though in x it comes
 // between original rings 2 and 3.
-vector<double> protonabsorber.oPASupportInnerRadii = {505,564,603,662,721,583};
+vector<double> protonabsorber.oPASupportInnerRadii = {505.5,564,603,662,721,583};
 vector<double> protonabsorber.oPASupportOuterRadii = {606.3,662.0,623,728.0,797.2,602.9};
 vector<double> protonabsorber.oPASupportHalflength = { 12.7,12.7,6.35,12.7, 12.7,6.35};
 vector<double> protonabsorber.oPASupportZMidpoints = {4683,5583,6183,7083,7983,5883};
