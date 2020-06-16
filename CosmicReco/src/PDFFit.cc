@@ -299,11 +299,11 @@ double FullDriftFit::operator()(const std::vector<double>& x) const {
 }
 
 double GaussianDriftFit::operator()(const std::vector<double>& x) const {
-  double a0 = x[0];
-  double b0 = x[1];
-  double a1 = x[2];
-  double b1 = x[3];
-  double t0 = x[4];
+  double const&a0 = x[0];
+  double const&b0 = x[1];
+  double const&a1 = x[2];
+  double const&b1 = x[3];
+  double const&t0 = x[4];
   long double llike = 0;
 
   CLHEP::Hep3Vector intercept(a0, 0, b0);
