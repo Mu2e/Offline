@@ -120,7 +120,7 @@ function mu2ealign_genjobfcl() {
 function mu2ealign_progress() {
     tracks=0
     for f in job_part*.log; do
-        tcount=$(tac $f | grep "wrote track" | awk 'NF>1{print $NF}' | tr -d '\n' | tr -d '\r')
+        tcount=$(tac $f | grep -m1 "wrote track" | awk 'NF>1{print $NF}' | tr -d '\n' | tr -d '\r')
         if [ "$tcount" = "" ]; then 
           tcount=0
         fi
