@@ -32,34 +32,43 @@ cd /mu2e/data/users/$USER/
 mkdir alignment-test
 cd alignment-test
 
-mu2ealign new PlaneTranslationOnly 
+mu2ealign new MT_MDC2018_PlaneTranslationOnly 
 
-# generates job.fcl and alignconstants_in.txt - the Tracker is misaligned according to the 'PlaneTranslationOnly' configuration.
+# generates job.fcl and alignconstants_in.txt - the Tracker is misaligned according to the 'MT_MDC2018_PlaneTranslationOnly' configuration.
 # (the corresp. DbService text file in ${MU2E_BASE_RELEASE}/TrackerAlignment/test/misalignments/ is copied)
 
 ```
 
-3. Run Track Collection
+It's important at this stage to choose which planes to fix in the alignment, in order to suppress weak modes. 
+Fixing planes 5, 30 to zero in all DOFs, for example. This means changing the values in alignconstants_in.txt for Plane 5 + 30, and ensuring that these parameters are set in job.fcl:
+```
+physics.analyzers.AlignTrackCollector.ConstrainStrategy : "Fix"
+physics.analyzers.AlignTrackCollector.FixPlane : [ 5, 30 ]
+
+```
+
+
+3. Run Track Collection + PEDE
 ```bash
-mu2e -c job.fcl -S ${DS_COSMIC_NOFIELD_ALIGNSELECT} -n 25000
+# running one job only
+mu2ealign run
+
+# running multiple jobs e.g. 4 jobs processing 8 input files, 
+# or 8 / 4 = 2 input art files per job
+mu2ealign_genparallel 4 8
+mu2ealign run
+
+# once the jobs finish, you can run
+mu2ealign pede
+
+# OR, you can run many iterations automatically:
+mu2ealign autorun 5 # for 5 alignment iterations
+```
+
+4. Examine output
+```
 
 # examine track diagnostics if needed
 aligntrack_display TrackDiag.root < other trackdiag.root files to compare against >
-```
-
-4. Run PEDE step (alignment fit)
-```bash
-# adjust steering file if needed ...
-
-mu2ealign pede
-
 
 ```
-
-5. Use the generated alignment constants to create a new job config
-```bash
-mkdir iter1 && cd iter1
-mu2ealign new ../alignconstants_out.txt
-# creates a new job.fcl and alignconstants_in.txt to the iter1 working directory
-```
-6. Return to step 3
