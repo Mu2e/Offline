@@ -720,7 +720,15 @@ bool AlignTrackCollector::filter_CosmicTrackSeedCollection(
 
       // now calculate the derivatives
       std::vector<double> derivativesLocal, derivativesGlobal;
-      std::tie(derivativesLocal, derivativesLocal) = AlignmentUtilities::analyticalDerivatives(track, straw_id, rowpl, rowpa, nominalTracker, driftvel);
+
+      if (use_numeric_derivs) {
+        std::tie(derivativesLocal, derivativesGlobal) = AlignmentUtilities::numericalDerivatives(
+          track, straw_id, rowpl, rowpa, nominalTracker, _srep);
+      }
+      else {
+        std::tie(derivativesLocal, derivativesGlobal) = AlignmentUtilities::analyticalDerivatives(
+          track, straw_id, rowpl, rowpa, nominalTracker, driftvel);
+      }
 
       chisq += pow(time_resid / drift_res, 2);
       chisq_doca += pow(dca_resid / drift_res_dca, 2);
@@ -777,14 +785,6 @@ bool AlignTrackCollector::filter_CosmicTrackSeedCollection(
           //   << "(AlignmentDerivatives) are not consistent within expected tolerance! Please validate.";
         }
       }
-
-      if (use_numeric_derivs) {
-        derivativesLocal.clear();
-        derivativesGlobal.clear();
-
-        std::tie(derivativesLocal, derivativesGlobal) = AlignmentUtilities::numericalDerivatives(
-          track, straw_id, rowpl, rowpa, nominalTracker, _srep);
-      }
       
       std::vector<int> labels = generateDOFLabels(straw_id);
 
@@ -825,9 +825,6 @@ bool AlignTrackCollector::filter_CosmicTrackSeedCollection(
         pvalue = boost::math::cdf(boost::math::chi_squared(ndof), chisq);
         chisq /= ndof;
       } else {
-        chisq = -1;
-        pvalue = -1;
-        ndof = -1;
         bad_track = true;
       }
 
