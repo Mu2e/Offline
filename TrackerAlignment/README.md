@@ -11,8 +11,8 @@ A Tracker Alignment utility for performing Track-based alignment with the [Mille
 - Track Reco uses Richie's Time Fit ( [Mu2e-doc-33162](https://mu2e-docdb.fnal.gov/cgi-bin/sso/ShowDocument?docid=33162) )
 - 'MILLE' means to write input files for the 'PEDE' executable. This is implemented in `MilleDataWriter`.
 - 'Align Tracker' refers to the stage carried out by `AlignedTrackerMaker` (TrackerConditions). It uses alignment constants provided to the Proditions interface to change tracker straw positions accordingly.
-- 'Track Collection' is where the `AlignTrackCollector` module selects tracks, calculates the needed quantities for alignment, and writes the data to file using `Mille`.
-- 'PEDE' refers to the millepede executable that performs the alignment fit given the output file(s) produced by the `Mille` class during the `AlignTrackCollector` job(s).
+- 'Track Collection' is where the `AlignTrackCollector` module selects tracks, calculates the needed quantities for alignment, and writes the data to file using `MilleDataWriter`.
+- 'PEDE' refers to the millepede executable that performs the alignment fit given the output file(s) produced by the `MilleDataWriter` class during the `AlignTrackCollector` job(s).
 
 
 ### MC Alignment test
@@ -49,26 +49,43 @@ physics.analyzers.AlignTrackCollector.FixPlane : [ 5, 30 ]
 
 
 3. Run Track Collection + PEDE
+You can run one process to collect the track data like this:
 ```bash
 # running one job only
 mu2ealign run
+```
 
+Or, you may run multiple processes:
+```bash
 # running multiple jobs e.g. 4 jobs processing 8 input files, 
 # or 8 / 4 = 2 input art files per job
 mu2ealign_genparallel 4 8
 mu2ealign run
+```
 
-# once the jobs finish, you can run
+Once the jobs finish, you can run:
+```bash
 mu2ealign pede
+```
+Now you should make a new directory, and import the produced alignment constants:
+```bash
+mkdir iter1 && cd iter1
+mu2ealign new ../alignconstants_out.txt
+```
+Then return to the beginning of this step.
 
-# OR, you can run many iterations automatically:
+Or, you can run multiple iterations automatically (easier, recommended)
+```bash
+# 
 mu2ealign autorun 5 # for 5 alignment iterations
 ```
 
 4. Examine output
 ```
-
 # examine track diagnostics if needed
 aligntrack_display TrackDiag.root < other trackdiag.root files to compare against >
 
+
+# plot and show shifts and pulls
+python ${MU2E_BASE_RELEASE}/TrackerAlignment/scripts/make_shiftplot.py alignconstants_out.txt iter*/alignconstants_out.txt
 ```
