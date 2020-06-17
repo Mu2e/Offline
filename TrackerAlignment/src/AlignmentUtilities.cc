@@ -408,11 +408,10 @@ numericalDerivatives(CosmicTimeTrack const& _track, StrawId const& straw,
                               alignPanel.rx(), alignPanel.ry(), alignPanel.rz()};
 
   // locals first
-  for (size_t paramIdx = 0; paramIdx < track.npars() - 1; ++paramIdx) {
+  for (size_t paramIdx = 0; paramIdx < track.npars(); ++paramIdx) {
     result_locals.emplace_back(_numericalDerivative(straw, track, globals, nominalTracker, strawRes,
                                                    false, paramIdx, 1e-7));
   }
-  result_locals.emplace_back(-1); // for T0
 
   for (size_t paramIdx = 0; paramIdx < globals.size(); ++paramIdx) {
     result_globals.emplace_back(
