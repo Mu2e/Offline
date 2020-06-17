@@ -316,8 +316,8 @@ std::pair<Hep3Vector, Hep3Vector> alignStraw(Tracker const& tracker, Plane const
 
 namespace {
 
-double docaGlobalDep(CosmicTimeTrack const& track, StrawId const& strawId,
-                              std::vector<double> const& globals, Tracker const& nominalTracker) {
+double tocaGlobalDep(CosmicTimeTrack const& track, StrawId const& strawId,
+                              std::vector<double> const& globals, Tracker const& nominalTracker, StrawResponse const& strawRes) {
 
   Plane const& nominal_plane = nominalTracker.getPlane(strawId);
   Panel const& nominal_panel = nominalTracker.getPanel(strawId);
@@ -337,7 +337,7 @@ double docaGlobalDep(CosmicTimeTrack const& track, StrawId const& strawId,
   TwoLinePCA pca(track.intercept(), track.direction(), straw_pos, straw_dir);
 
   int ambig = hitAmbiguity(track, straw_pos, straw_dir);
-  double result = ambig * pca.dca();
+  double result = ambig * strawRes.driftDistanceToTime(strawId, pca.dca(), 0);
 
   return result;
 }
@@ -360,8 +360,7 @@ double _numericalDerivative(StrawId const& straw, CosmicTimeTrack& track,
     track.params[paramIdx] += step_size;
   }
 
-  double pdiff = strawRes.driftDistanceToTime(
-      straw, docaGlobalDep(track, straw, globals, nominalTracker), 0);
+  double pdiff = tocaGlobalDep(track, straw, globals, nominalTracker, strawRes);
   // double pdiff = docaGlobalDep(track, straw, globals, nominalTracker);
   // double driftvel = strawRes.driftInstantSpeed(straw, std::abs(pdiff), 0);
   // pdiff /= driftvel;
@@ -372,8 +371,7 @@ double _numericalDerivative(StrawId const& straw, CosmicTimeTrack& track,
     track.params[paramIdx] = x - step_size;
   }
 
-  pdiff -= strawRes.driftDistanceToTime(
-      straw, docaGlobalDep(track, straw, globals, nominalTracker), 0);
+  pdiff -= tocaGlobalDep(track, straw, globals, nominalTracker, strawRes);
   // double doca2 = docaGlobalDep(track, straw, globals, nominalTracker);
   // driftvel = strawRes.driftInstantSpeed(straw, std::abs(doca2), 0);
   // pdiff -= doca2 / driftvel;
