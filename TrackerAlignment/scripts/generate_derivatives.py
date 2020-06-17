@@ -31,30 +31,6 @@ def DOCAToTOCA(dca, driftvel):
     return dca / driftvel
 
 
-def DOCA(p1, t1, p2, t2):
-    t1 = unit_vector(t1)
-    t2 = unit_vector(t2)
-
-    c = t1.dot(t2)
-
-    sinsq = 1.0 - c*c
-    _delta = p1 - p2
-    ddotT1 = _delta.dot(t1)
-    ddotT2 = _delta.dot(t2)
-
-    _s1 = (ddotT2*c-ddotT1)/sinsq
-    _s2 = -(ddotT1*c-ddotT2)/sinsq
-
-    _pca1 = p1 + t1 * _s1
-    _pca2 = p2 + t2 * _s2
-
-    ___diff = _pca1 - _pca2
-
-    dca = sqrt(___diff.dot(___diff))
-
-    return sympy.Piecewise((dca, _s1 > 0), (-dca, True))
-
-
 def HitAmbiguity(intercept, tdir, straw_mp, straw_dir):
 #   Hep3Vector sep = intercept - straw.getMidPoint();
 #   Hep3Vector perp = (dir.cross(straw.getDirection())).unit();
@@ -68,7 +44,7 @@ def HitAmbiguity(intercept, tdir, straw_mp, straw_dir):
     # to get the right sign: dperp > 0 ? -1 : 1
 
 
-def DOCA_UseHitAmbiguity(p1, t1, p2, t2):
+def DOCA(p1, t1, p2, t2):
     t1 = unit_vector(t1)
     t2 = unit_vector(t2)
     # t2 should already be a unit vector
@@ -90,7 +66,7 @@ def DOCA_UseHitAmbiguity(p1, t1, p2, t2):
 
     dca = sqrt(___diff.dot(___diff))
 
-    return sympy.Piecewise((-dca, HitAmbiguity(p1,t1,p2,t2) > 0), (dca, True))
+    return dca
 
 
 
@@ -275,14 +251,15 @@ def generate_expressions(approximate=False, remove_globalparam_dependence=False,
         plane_trl, plane_rot,
         panel_trl, panel_rot)
 
-    # this is the residual expression (excluding terms with no dependence on local
-    # and global parameters )
-    aligned_doca = aligned_doca_to_diff = DOCA_UseHitAmbiguity(track_pos, track_dir, aligned_wpos, aligned_wdir)
+    # this is the predicted function expression 'f'
+    dca = DOCA(track_pos, track_dir, aligned_wpos, aligned_wdir)
+    ambig = HitAmbiguity(track_pos,track_dir,aligned_wpos,aligned_wdir)
+    aligned_doca = aligned_doca_to_diff = sympy.Piecewise((-dca, ambig > 0), (dca, True)) 
 
     if time_domain:
-        # we convert the DOCA to a TOCA and add T0 (since it is a local param)
-        # the hit time has no explicit track parameter dependence
-        aligned_doca_to_diff = DOCAToTOCA(aligned_doca, driftvel) - t0
+        # we convert the DOCA to a TOCA
+        # the measured time has no explicit track parameter dependence other than T0 - for now this is left out
+        aligned_doca_to_diff = DOCAToTOCA(aligned_doca, driftvel) 
 
     # now generate optimised C code to calculate each deriv
     if remove_globalparam_dependence:
@@ -322,7 +299,7 @@ def generate_expressions(approximate=False, remove_globalparam_dependence=False,
     #             panel_g: 0
     #         })
 
-    nominal_doca = DOCA_UseHitAmbiguity(track_pos, track_dir, aligned_wpos, aligned_wdir)
+    #nominal_doca = DOCA(track_pos, track_dir, aligned_wpos, aligned_wdir)
 
     if VALIDATE:
 
