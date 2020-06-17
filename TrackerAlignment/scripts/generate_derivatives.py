@@ -191,7 +191,7 @@ def generate_expressions(approximate=False, remove_globalparam_dependence=False,
 
     a1 = Symbol('a1', real=True)
     b1 = Symbol('b1', real=True)
-    track_dir = Matrix([a1, -1, b1])
+    track_dir = unit_vector(Matrix([a1, -1, b1]))
 
     t0 = Symbol('t0')
 
