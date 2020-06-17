@@ -8,6 +8,7 @@
 #include <vector>
 #include "RtypesCore.h"
 
+#include "TrkReco/inc/RobustHelixFinderData.hh"
 #include "art/Framework/Services/Registry/ServiceHandle.h"
 #include "art_root_io/TFileService.h"
 
@@ -88,7 +89,7 @@ bool testDerivatives(
   
   for (size_t i = 0; i < numLocal.size(); ++i) {
      if (std::abs(anaLocal[i] - numLocal[i]) > tolerance) {
-      std::cerr << "local derivative mismatch: diff = " 
+      std::cerr << "local derivative mismatch(idx " << i << "): diff = " 
                 << std::abs(anaLocal[i] - numLocal[i]) 
                 << std::endl;
        return false;
@@ -349,40 +350,40 @@ double _numericalDerivative(StrawId const& straw, CosmicTimeTrack& track,
   // calculate numerical partial derivative wrt param at paramIdx in either
   // local, or global param array
 
-  double old;
+  double x;
 
   if (isGlobalParam) {
-    old = globals[paramIdx];
-    globals[paramIdx] -= step_size;
+    x = globals[paramIdx];
+    globals[paramIdx] += step_size;
   } else {
-    old = track.params[paramIdx];
-    track.params[paramIdx] -= step_size;
+    x = track.params[paramIdx];
+    track.params[paramIdx] += step_size;
   }
 
-  // double pdiff = strawRes.driftDistanceToTime(
-  //     straw, docaGlobalDep(track, straw, globals, nominalTracker), 0);
-  double pdiff = docaGlobalDep(track, straw, globals, nominalTracker);
-  double driftvel = strawRes.driftInstantSpeed(straw, std::abs(pdiff), 0);
-  pdiff /= driftvel;
+  double pdiff = strawRes.driftDistanceToTime(
+      straw, docaGlobalDep(track, straw, globals, nominalTracker), 0);
+  // double pdiff = docaGlobalDep(track, straw, globals, nominalTracker);
+  // double driftvel = strawRes.driftInstantSpeed(straw, std::abs(pdiff), 0);
+  // pdiff /= driftvel;
 
   if (isGlobalParam) {
-    globals[paramIdx] += 2.0 * step_size;
+    globals[paramIdx] = x - step_size;
   } else {
-    track.params[paramIdx] += 2.0 * step_size;
+    track.params[paramIdx] = x - step_size;
   }
 
-  // pdiff -= strawRes.driftDistanceToTime(
-  //     straw, docaGlobalDep(track, straw, globals, nominalTracker), 0);
-  double doca2 = docaGlobalDep(track, straw, globals, nominalTracker);
-  driftvel = strawRes.driftInstantSpeed(straw, std::abs(doca2), 0);
-  pdiff -= doca2 / driftvel;
+  pdiff -= strawRes.driftDistanceToTime(
+      straw, docaGlobalDep(track, straw, globals, nominalTracker), 0);
+  // double doca2 = docaGlobalDep(track, straw, globals, nominalTracker);
+  // driftvel = strawRes.driftInstantSpeed(straw, std::abs(doca2), 0);
+  // pdiff -= doca2 / driftvel;
 
   pdiff /= (2.0 * step_size);
 
   if (isGlobalParam) {
-    globals[paramIdx] = old;
+    globals[paramIdx] = x;
   } else {
-    track.params[paramIdx] = old;
+    track.params[paramIdx] = x;
   }
 
   return pdiff;
@@ -410,10 +411,11 @@ numericalDerivatives(CosmicTimeTrack const& _track, StrawId const& straw,
                               alignPanel.rx(), alignPanel.ry(), alignPanel.rz()};
 
   // locals first
-  for (size_t paramIdx = 0; paramIdx < track.npars(); ++paramIdx) {
+  for (size_t paramIdx = 0; paramIdx < track.npars() - 1; ++paramIdx) {
     result_locals.emplace_back(_numericalDerivative(straw, track, globals, nominalTracker, strawRes,
                                                    false, paramIdx, 1e-7));
   }
+  result_locals.emplace_back(-1); // for T0
 
   for (size_t paramIdx = 0; paramIdx < globals.size(); ++paramIdx) {
     result_globals.emplace_back(
