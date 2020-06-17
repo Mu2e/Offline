@@ -729,7 +729,6 @@ bool AlignTrackCollector::filter_CosmicTrackSeedCollection(
         std::tie(derivativesLocal, derivativesGlobal) = AlignmentUtilities::analyticalDerivatives(
           track, straw_id, rowpl, rowpa, nominalTracker, driftvel);
       }
-      derivativesLocal.pop_back(); // FIXME temporarily remove t0
 
       chisq += pow(time_resid / drift_res, 2);
       chisq_doca += pow(dca_resid / drift_res_dca, 2);
@@ -796,9 +795,9 @@ bool AlignTrackCollector::filter_CosmicTrackSeedCollection(
                                      << _expected_dofs << " ... Something is wrong!";
       }
 
-      if (derivativesLocal.size() != 4 && use_timeresid) {
+      if (derivativesLocal.size() != 5 && use_timeresid) {
         throw cet::exception("RECO")
-            << "Did not see 4 local derivatives (corrsp. to 5-1 fit "
+            << "Did not see 5 local derivatives (corrsp. to 5 fit "
             << "parameters) ... This is weird! (N.B. UseTimeDomain is TRUE)";
       }
 
