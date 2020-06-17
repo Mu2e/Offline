@@ -361,9 +361,6 @@ double _numericalDerivative(StrawId const& straw, CosmicTimeTrack& track,
   }
 
   double pdiff = tocaGlobalDep(track, straw, globals, nominalTracker, strawRes);
-  // double pdiff = docaGlobalDep(track, straw, globals, nominalTracker);
-  // double driftvel = strawRes.driftInstantSpeed(straw, std::abs(pdiff), 0);
-  // pdiff /= driftvel;
 
   if (isGlobalParam) {
     globals[paramIdx] = x - step_size;
@@ -372,9 +369,6 @@ double _numericalDerivative(StrawId const& straw, CosmicTimeTrack& track,
   }
 
   pdiff -= tocaGlobalDep(track, straw, globals, nominalTracker, strawRes);
-  // double doca2 = docaGlobalDep(track, straw, globals, nominalTracker);
-  // driftvel = strawRes.driftInstantSpeed(straw, std::abs(doca2), 0);
-  // pdiff -= doca2 / driftvel;
 
   pdiff /= (2.0 * step_size);
 
