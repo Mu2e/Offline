@@ -41,7 +41,7 @@ bool testDerivatives(
     TrkAlignPanel::Row const&rowpa,
     Tracker const& nominalTracker,
     StrawResponse const& strawRes) {
-  double tolerance = 1e-7;
+  double tolerance = 1e-4;
 
   // first compare DOCA
   Straw const& alignedStraw = alignedTracker.getStraw(strawId);
