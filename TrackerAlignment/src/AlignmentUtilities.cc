@@ -336,7 +336,7 @@ double tocaGlobalDep(CosmicTimeTrack const& track, StrawId const& strawId,
 
   TwoLinePCA pca(track.intercept(), track.direction(), straw_pos, straw_dir);
 
-  int ambig = hitAmbiguity(track, straw_pos, straw_dir);
+  //int ambig = hitAmbiguity(track, straw_pos, straw_dir);
 
   double traj_time = (pca.point1() - track.intercept()).dot(track.direction()) / 299.9;
   double d2t_doca = strawRes.driftDistanceToTime(strawId, pca.dca(), 0);
@@ -344,7 +344,7 @@ double tocaGlobalDep(CosmicTimeTrack const& track, StrawId const& strawId,
 
   double predictedTime = traj_time + d2t_doca + t_offset + track.params[CosmicTimeTrack::t0];
 
-  return ambig * predictedTime;
+  return predictedTime;
 }
 
 // not meant to be called from outside of this namespace
