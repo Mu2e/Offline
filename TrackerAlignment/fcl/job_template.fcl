@@ -25,6 +25,8 @@ physics.analyzers.AlignTrackCollector.NoPlaneRotations : true
 physics.analyzers.AlignTrackCollector.ErrorScale : 1.0
 
 physics.analyzers.AlignTrackCollector.EnableLOOCVFitting : false
+physics.analyzers.AlignTrackCollector.ConstrainStrategy : "Fix"
+physics.analyzers.AlignTrackCollector.FixPlane : [ 5, 30 ]
 
 physics.analyzers.AlignTrackCollector.MilleFile : "MilleData.bin.gz"
 physics.analyzers.AlignTrackCollector.GzipCompression : true 
