@@ -102,7 +102,7 @@ bool testDerivatives(
     return false;
   }
   for (size_t i = 0; i < numGlobal.size(); ++i) {
-     if (std::abs(anaGlobal[i] - numGlobal[i]) < tolerance) {
+     if (std::abs(anaGlobal[i] - numGlobal[i]) > tolerance) {
        std::cerr << "global derivative mismatch: diff = " 
                 << std::abs(anaGlobal[i] - numGlobal[i]) 
                 << std::endl;
