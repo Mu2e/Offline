@@ -719,10 +719,8 @@ bool AlignTrackCollector::filter_CosmicTrackSeedCollection(
       auto const& rowpa = alignConsts_panels.rowAt(panel_id);
 
       // now calculate the derivatives
-      auto derivatives = AlignmentUtilities::analyticalDerivatives(track, straw_id, rowpl, rowpa, nominalTracker, driftvel);
-      auto derivativesLocal = derivatives.first;
-      auto derivativesGlobal = derivatives.second;
-
+      std::vector<double> derivativesLocal, derivativesGlobal;
+      std::tie(derivativesLocal, derivativesLocal) = AlignmentUtilities::analyticalDerivatives(track, straw_id, rowpl, rowpa, nominalTracker, driftvel);
 
       chisq += pow(time_resid / drift_res, 2);
       chisq_doca += pow(dca_resid / drift_res_dca, 2);
@@ -784,10 +782,8 @@ bool AlignTrackCollector::filter_CosmicTrackSeedCollection(
         derivativesLocal.clear();
         derivativesGlobal.clear();
 
-        auto numeric = AlignmentUtilities::numericalDerivatives(
+        std::tie(derivativesLocal, derivativesGlobal) = AlignmentUtilities::numericalDerivatives(
           track, straw_id, rowpl, rowpa, nominalTracker, _srep);
-        derivativesLocal = numeric.first;
-        derivativesGlobal = numeric.second;
       }
       
       std::vector<int> labels = generateDOFLabels(straw_id);

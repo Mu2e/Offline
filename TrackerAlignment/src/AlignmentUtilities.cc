@@ -74,34 +74,36 @@ bool testDerivatives(
   }
 
   double driftvel = strawRes.driftInstantSpeed(strawId, doca, 0);
-  auto anaDerivatives = analyticalDerivatives(track, strawId, rowpl, rowpa, nominalTracker, driftvel);
-  auto numDerivatives = numericalDerivatives(track, strawId, rowpl, rowpa, nominalTracker, strawRes);
+
+  std::vector<double> numLocal, numGlobal, anaLocal, anaGlobal;
+  std::tie(anaLocal, anaGlobal) = analyticalDerivatives(track, strawId, rowpl, rowpa, nominalTracker, driftvel);
+  std::tie(numLocal, numGlobal) = numericalDerivatives(track, strawId, rowpl, rowpa, nominalTracker, strawRes);
 
   // compare local derivatives
 
-  if (numDerivatives.first.size() != anaDerivatives.first.size()) {
+  if (numLocal.size() != anaLocal.size()) {
     std::cerr << "size mismatch  (local)" << std::endl;
     return false;
   }
   
-  for (size_t i = 0; i < numDerivatives.first.size(); ++i) {
-     if (std::abs(anaDerivatives.first[i] - numDerivatives.first[i]) > tolerance) {
+  for (size_t i = 0; i < numLocal.size(); ++i) {
+     if (std::abs(anaLocal[i] - numLocal[i]) > tolerance) {
       std::cerr << "local derivative mismatch: diff = " 
-                << std::abs(anaDerivatives.first[i] - numDerivatives.first[i]) 
+                << std::abs(anaLocal[i] - numLocal[i]) 
                 << std::endl;
        return false;
      }
   }
 
   // compare global derivatives
-  if (numDerivatives.second.size() != anaDerivatives.second.size()) {
+  if (numGlobal.size() != anaGlobal.size()) {
     std::cerr << "size mismatch  (global)" << std::endl;
     return false;
   }
-  for (size_t i = 0; i < numDerivatives.second.size(); ++i) {
-     if (std::abs(anaDerivatives.second[i] - numDerivatives.second[i]) < tolerance) {
+  for (size_t i = 0; i < numGlobal.size(); ++i) {
+     if (std::abs(anaGlobal[i] - numGlobal[i]) < tolerance) {
        std::cerr << "global derivative mismatch: diff = " 
-                << std::abs(anaDerivatives.second[i] - numDerivatives.second[i]) 
+                << std::abs(anaGlobal[i] - numGlobal[i]) 
                 << std::endl;
        return false;
      }
@@ -267,9 +269,7 @@ std::pair<Hep3Vector, Hep3Vector> alignStraw(Tracker const& tracker, Plane const
                                              Panel const& panel, StrawId const& strawId,
                                              HepTransform const& align_tracker,
                                              HepTransform const& align_plane,
-                                             HepTransform const& align_panel) {
-  std::pair<Hep3Vector, Hep3Vector> result;
-  
+                                             HepTransform const& align_panel) {  
   // the whole tracker has nominal center on 0,0,0
   // how to place the plane in the tracker
   HepTransform plane_to_tracker(0.0, 0.0, plane.origin().z(), 0.0, 0.0, 0.0);
@@ -303,10 +303,7 @@ std::pair<Hep3Vector, Hep3Vector> alignStraw(Tracker const& tracker, Plane const
   Hep3Vector pdif = aligned_straw - straw.getMidPoint();
   Hep3Vector ddif = aligned_straw_dir - straw.getDirection();
 
-  result.first = aligned_straw;
-  result.second = aligned_straw_dir;
-
-  return result;
+  return {aligned_straw, aligned_straw_dir};
 }
 
 
@@ -332,12 +329,13 @@ double docaGlobalDep(CosmicTimeTrack const& track, StrawId const& strawId,
                            globals[9], globals[10], globals[11]};
 
   // returns pair of vectors { straw_pos, straw_dir }
-  auto aligned_result = alignStraw(nominalTracker, nominal_plane, nominal_panel,
+  Hep3Vector straw_pos, straw_dir;
+  std::tie(straw_pos, straw_dir) = alignStraw(nominalTracker, nominal_plane, nominal_panel,
                                                strawId, align_tracker, align_plane, align_panel);
 
-  TwoLinePCA pca(track.intercept(), track.direction(), aligned_result.first, aligned_result.second);
+  TwoLinePCA pca(track.intercept(), track.direction(), straw_pos, straw_dir);
 
-  int ambig = hitAmbiguity(track, aligned_result.first, aligned_result.second);
+  int ambig = hitAmbiguity(track, straw_pos, straw_dir);
   double result = ambig * pca.dca();
 
   return result;
@@ -422,9 +420,8 @@ numericalDerivatives(CosmicTimeTrack const& _track, StrawId const& straw,
         _numericalDerivative(straw, track, globals, nominalTracker, strawRes, true, paramIdx, 1e-7));
   }
 
-  std::pair<std::vector<double>, std::vector<double>> result{result_locals, result_globals};
 
-  return result;
+  return {result_locals, result_globals};
 }
 
 } // namespace AlignmentUtilities
