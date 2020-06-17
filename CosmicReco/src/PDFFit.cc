@@ -356,7 +356,7 @@ double GaussianDriftFit::DOCAresidual(ComboHit const& sh, const std::vector<doub
       sh.propTime() + traj_time + t0 + srep.driftTimeOffset(sh.strawId(), 0, 0, pca.dca());
   double measuredDistance = srep.driftTimeToDistance(sh.strawId(), sh.time() - hit_t0, 0);
 
-  double resid = predictedDistance - measuredDistance;
+  double resid = measuredDistance - predictedDistance;
 
   return HitAmbiguity(sh, x) * resid;//(pca.s2() > 0 ? resid : -resid);
 }
@@ -426,7 +426,7 @@ double GaussianDriftFit::TimeResidual(ComboHit const& sh, const std::vector<doub
       sh.propTime() + traj_time + t0 + srep.driftTimeOffset(sh.strawId(), 0, 0, pca.dca());
   double measuredTime = sh.time() - hit_t0;
 
-  double resid = predictedTime - measuredTime;
+  double resid = measuredTime - predictedTime;
 
   return HitAmbiguity(sh, x) * resid;//(pca.s2() > 0 ? resid : -resid); // 
 }
