@@ -251,7 +251,7 @@ void diagPrintHit(CosmicTimeTrack const& track,
             << ", " << derivativesLocal[1]                    
             << ", " << derivativesLocal[2]                     
             << ", " << derivativesLocal[3]                 
-            << ", n/a" ;//<< derivativesLocal[4];               
+            << ", " << derivativesLocal[4];               
   std::cout << "]" << std::endl;
 
   std::cout << "dr/d(plane" 

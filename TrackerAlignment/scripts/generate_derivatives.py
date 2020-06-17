@@ -257,9 +257,10 @@ def generate_expressions(approximate=False, remove_globalparam_dependence=False,
     aligned_doca = aligned_doca_to_diff = sympy.Piecewise((-dca, ambig > 0), (dca, True)) 
 
     if time_domain:
+        # traj_time = (pca.point1() - track_pos).dot(track_dir) FIXME! need to add this.
         # we convert the DOCA to a TOCA
         # the measured time has no explicit track parameter dependence other than T0 - for now this is left out
-        aligned_doca_to_diff = DOCAToTOCA(aligned_doca, driftvel) 
+        aligned_doca_to_diff = DOCAToTOCA(aligned_doca, driftvel) + t0
 
     # now generate optimised C code to calculate each deriv
     if remove_globalparam_dependence:
