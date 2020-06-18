@@ -333,18 +333,18 @@ double tocaGlobalDep(CosmicTimeTrack const& track, StrawId const& strawId,
   Hep3Vector straw_pos, straw_dir;
   std::tie(straw_pos, straw_dir) = alignStraw(nominalTracker, nominal_plane, nominal_panel,
                                                strawId, align_tracker, align_plane, align_panel);
-
+  straw_dir = straw_dir.unit();
   TwoLinePCA pca(track.intercept(), track.direction(), straw_pos, straw_dir);
 
   //int ambig = hitAmbiguity(track, straw_pos, straw_dir);
 
   double traj_time = (pca.point1() - track.intercept()).dot(track.direction()) / 299.9;
   double d2t_doca = strawRes.driftDistanceToTime(strawId, pca.dca(), 0);
-  double t_offset = strawRes.driftTimeOffset(strawId, 0, 0, d2t_doca);
+  double t_offset = strawRes.driftTimeOffset(strawId, 0, 0, pca.dca());
 
   double predictedTime = traj_time + d2t_doca + t_offset + track.params[CosmicTimeTrack::t0];
 
-  return predictedTime;
+  return /*hitAmbiguity(track, straw_pos, straw_dir) * */predictedTime;
 }
 
 // not meant to be called from outside of this namespace
