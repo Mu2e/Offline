@@ -166,7 +166,7 @@ int hitAmbiguity(CosmicTimeTrack const& track, Hep3Vector const& straw_mp,
   Hep3Vector perp = (track.direction().cross(straw_dir)).unit();
   double dperp = perp.dot(sep);
 
-  return (dperp > 0 ? 1 : -1);
+  return (dperp > 0 ? -1 : 1);
 }
 
 // cov(r) = V - HCH
@@ -299,11 +299,6 @@ std::pair<Hep3Vector, Hep3Vector> alignStraw(Tracker const& tracker, Plane const
   Hep3Vector aligned_straw = panel_temp * straw_to_panel;
   Hep3Vector aligned_straw_dir = panel_temp.rotation() * straw_dir;
 
-  // aligned straw position inserted in the Tracker object
-
-  Hep3Vector pdif = aligned_straw - straw.getMidPoint();
-  Hep3Vector ddif = aligned_straw_dir - straw.getDirection();
-
   return {aligned_straw, aligned_straw_dir};
 }
 
@@ -344,7 +339,7 @@ double tocaGlobalDep(CosmicTimeTrack const& track, StrawId const& strawId,
 
   double predictedTime = traj_time + d2t_doca + t_offset + track.params[CosmicTimeTrack::t0];
 
-  return hitAmbiguity(track, straw_pos, straw_dir) * -predictedTime;
+  return hitAmbiguity(track, straw_pos, straw_dir.unit()) * predictedTime;
 }
 
 // not meant to be called from outside of this namespace
@@ -359,10 +354,10 @@ double _numericalDerivative(StrawId const& straw, CosmicTimeTrack& track,
 
   if (isGlobalParam) {
     x = globals[paramIdx];
-    globals[paramIdx] += step_size;
+    globals[paramIdx] = x + step_size;
   } else {
     x = track.params[paramIdx];
-    track.params[paramIdx] += step_size;
+    track.params[paramIdx] = x + step_size;
   }
 
   double pdiff = tocaGlobalDep(track, straw, globals, nominalTracker, strawRes);
