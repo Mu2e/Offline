@@ -401,9 +401,9 @@ int GaussianDriftFit::HitAmbiguity(ComboHit const& sh, const std::vector<double>
   Hep3Vector perp = (dir.cross(straw.getDirection())).unit();
   double dperp = perp.dot(sep);
 
-  return (dperp > 0 ? -1 : 1);
+  return (dperp > 0 ? 1 : -1);
 }
-
+ 
 double GaussianDriftFit::TimeResidual(ComboHit const& sh, const std::vector<double>& x) const {
   double const& a0 = x[0];
   double const& b0 = x[1];
