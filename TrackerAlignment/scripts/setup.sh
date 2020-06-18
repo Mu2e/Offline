@@ -244,6 +244,8 @@ function mu2ealign() {
             fi
         fi
 
+        git -C ${MU2E_BASE_RELEASE} log -1 | tee revision.txt
+
         cp ${ALIGN_CONST_FILE} alignconstants_in.txt
 
         JOB_FCL_FILE=$(dirname ${ALIGN_CONST_FILE})/job.fcl
@@ -257,6 +259,7 @@ function mu2ealign() {
         else
             mu2ealign_genjobfcl
         fi
+
 
         # produces a job.fcl to run and a seed alignment constant file
         # for DbService
