@@ -333,7 +333,7 @@ double tocaGlobalDep(CosmicTimeTrack const& track, StrawId const& strawId,
   Hep3Vector straw_pos, straw_dir;
   std::tie(straw_pos, straw_dir) = alignStraw(nominalTracker, nominal_plane, nominal_panel,
                                                strawId, align_tracker, align_plane, align_panel);
-  straw_dir = straw_dir.unit();
+
   TwoLinePCA pca(track.intercept(), track.direction(), straw_pos, straw_dir);
 
   //int ambig = hitAmbiguity(track, straw_pos, straw_dir);
