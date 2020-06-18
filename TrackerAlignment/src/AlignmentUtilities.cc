@@ -166,7 +166,7 @@ int hitAmbiguity(CosmicTimeTrack const& track, Hep3Vector const& straw_mp,
   Hep3Vector perp = (track.direction().cross(straw_dir)).unit();
   double dperp = perp.dot(sep);
 
-  return (dperp > 0 ? -1 : 1);
+  return (dperp > 0 ? 1 : -1);
 }
 
 // cov(r) = V - HCH
@@ -344,7 +344,7 @@ double tocaGlobalDep(CosmicTimeTrack const& track, StrawId const& strawId,
 
   double predictedTime = traj_time + d2t_doca + t_offset + track.params[CosmicTimeTrack::t0];
 
-  return -hitAmbiguity(track, straw_pos, straw_dir) * predictedTime;
+  return hitAmbiguity(track, straw_pos, straw_dir) * -predictedTime;
 }
 
 // not meant to be called from outside of this namespace
