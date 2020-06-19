@@ -730,7 +730,7 @@ bool AlignTrackCollector::filter_CosmicTrackSeedCollection(
           track, straw_id, rowpl, rowpa, nominalTracker, driftvel);
       }
 
-      chisq += pow(time_resid / drift_res, 2);
+      //chisq += pow(time_resid / drift_res, 2);
       chisq_doca += pow(dca_resid / drift_res_dca, 2);
 
       if (isnan(dca_resid) || isnan(time_resid) || isnan(drift_res)) {
@@ -822,6 +822,7 @@ bool AlignTrackCollector::filter_CosmicTrackSeedCollection(
       ndof = sts._straw_chits.size() - 5;
 
       if (ndof > 0) {
+        chisq = fit_object(track.as_vector());
         pvalue = boost::math::cdf(boost::math::chi_squared(ndof), chisq);
         chisq /= ndof;
       } else {
