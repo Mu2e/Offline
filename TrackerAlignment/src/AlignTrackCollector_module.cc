@@ -178,7 +178,7 @@ public:
     
     fhicl::Sequence<int> fixplane{
         Name("FixPlane"),
-        Comment("Planes to fix. The parameters are set to the proditions value."),
+        Comment("Planes to fix. The parameters are fixed to the proditions value."),
     };
 
     fhicl::Atom<std::string> millefile{Name("MilleFile"),
