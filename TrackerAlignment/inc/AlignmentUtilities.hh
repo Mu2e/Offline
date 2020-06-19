@@ -131,6 +131,7 @@ numericalDerivatives(CosmicTimeTrack const& _track, StrawId const& straw,
                          TrkAlignPlane::Row const& alignPlane,
                          TrkAlignPanel::Row const& alignPanel,
                          Tracker const& nominalTracker, 
-                         StrawResponse const& strawRes);
+                         StrawResponse const& strawRes, 
+                         bool useTimeDomain = true);
 
 } // namespace AlignmentUtilities
