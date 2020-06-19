@@ -323,8 +323,8 @@ double GaussianDriftFit::operator()(const std::vector<double>& x) const {
 
     llike += pow(longdist - this->shs[i].wireDist(), 2) / pow(longres, 2);
 
-    double drift_time = ambig * (srep.driftDistanceToTime(this->shs[i].strawId(), pca.dca(), 0) + 
-              srep.driftTimeOffset(this->shs[i].strawId(), 0, 0, pca.dca()));
+    double drift_time = ambig * srep.driftDistanceToTime(this->shs[i].strawId(), pca.dca(), 0) + 
+              srep.driftTimeOffset(this->shs[i].strawId(), 0, 0, pca.dca());
 
     double drift_res = srep.driftTimeError(this->shs[i].strawId(), 0, 0, pca.dca());
 
@@ -424,7 +424,7 @@ double GaussianDriftFit::TimeResidual(ComboHit const& sh, const std::vector<doub
   int ambig = HitAmbiguity(sh, x);
   double traj_time = ((pca.point1() - intercept).dot(dir)) / 299.9;
 
-  double hit_t0 = t0 + traj_time + ambig * srep.driftTimeOffset(sh.strawId(), 0, 0, pca.dca());
+  double hit_t0 = t0 + traj_time + srep.driftTimeOffset(sh.strawId(), 0, 0, pca.dca());
 
   double predictedTime = ambig * srep.driftDistanceToTime(sh.strawId(), pca.dca(), 0) + sh.propTime() + hit_t0;
   double measuredTime = sh.time();
