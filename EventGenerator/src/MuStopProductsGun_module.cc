@@ -22,6 +22,8 @@
 #include "art/Framework/Principal/Handle.h"
 #include "art/Framework/Services/Registry/ServiceHandle.h"
 
+#include "fhiclcpp/types/OptionalAtom.h"
+
 #include "ConfigTools/inc/ConfigFileLookupPolicy.hh"
 #include "SeedService/inc/SeedService.hh"
 #include "GlobalConstantsService/inc/GlobalConstantsHandle.hh"
@@ -39,6 +41,7 @@
 #include "Mu2eUtilities/inc/Table.hh"
 #include "Mu2eUtilities/inc/RootTreeSampler.hh"
 #include "GeneralUtilities/inc/RSNTIO.hh"
+#include "Mu2eUtilities/inc/GenPhysConfig.hh"
 
 #include "TH1.h"
 
@@ -46,7 +49,23 @@ namespace mu2e {
 
   //================================================================
   class MuStopProductsGun : public art::EDProducer {
-    fhicl::ParameterSet psphys_;
+
+    typedef RootTreeSampler<IO::StoppedParticleF> RTS;
+
+  public:
+    struct Config {
+      using Name=fhicl::Name;
+      using Comment=fhicl::Comment;
+
+      fhicl::Table<GenPhysConfig> physics{Name("physics"), Comment("Physics parameter fhicl table")};
+      fhicl::Atom<int> verbosityLevel{Name("verbosityLevel"), Comment("Verbosity Level (default = 0)"), 0};
+      fhicl::Table<RTS::Config> stops{Name("stops"), Comment("Stops ntuple config")};
+      fhicl::Atom<bool> doHistograms{Name("doHistograms"), Comment("True/false to produce histograms"), true};
+    };
+    typedef art::EDProducer::Table<Config> Parameters;
+
+  private:
+    Config conf_;
 
     PDGCode::type       pdgId_;
     double              mass_;
@@ -62,7 +81,7 @@ namespace mu2e {
     CLHEP::RandGeneral randSpectrum_;
     RandomUnitSphere   randomUnitSphere_;
 
-    RootTreeSampler<IO::StoppedParticleF> stops_;
+    RTS stops_;
 //-----------------------------------------------------------------------------
 // histogramming
 //-----------------------------------------------------------------------------
@@ -78,32 +97,32 @@ namespace mu2e {
     double                generateEnergy();
     
   public:
-    explicit MuStopProductsGun(const fhicl::ParameterSet& pset);
+    explicit MuStopProductsGun(const Parameters& conf);
 
     virtual void produce(art::Event& event);
   };
 
   //================================================================
-  MuStopProductsGun::MuStopProductsGun(const fhicl::ParameterSet& pset)
-    : EDProducer{pset}
-    , psphys_(pset.get<fhicl::ParameterSet>("physics"))
-    , pdgId_(PDGCode::type(psphys_.get<int>("pdgId")))
+  MuStopProductsGun::MuStopProductsGun(const Parameters& conf)
+    : EDProducer(conf)
+    , conf_(conf())
+    , pdgId_(PDGCode::type(conf_.physics().pdgId()))
     , mass_(GlobalConstantsHandle<ParticleDataTable>()->particle(pdgId_).ref().mass().value())
-    , spectrumVariable_(parseSpectrumVar(psphys_.get<std::string>("spectrumVariable")))
-    , spectrum_(BinnedSpectrum(psphys_))
-    , genId_(GenId::findByName(psphys_.get<std::string>("genId")))
-    , verbosityLevel_(pset.get<int>("verbosityLevel", 0))
+    , spectrumVariable_(parseSpectrumVar(conf_.physics().spectrumVariable()))
+    , spectrum_(BinnedSpectrum(conf_.physics()))
+    , genId_(GenId::findByName(conf_.physics().genId()))
+    , verbosityLevel_(conf_.verbosityLevel())
     , eng_(createEngine(art::ServiceHandle<SeedService>()->getSeed()))
     , randSpectrum_(eng_, spectrum_.getPDF(), spectrum_.getNbins())
     , randomUnitSphere_(eng_)
-    , stops_(eng_, pset.get<fhicl::ParameterSet>("muonStops"))
-    , doHistograms_       (pset.get<bool>("doHistograms",true ) )
+    , stops_(eng_, conf_.stops())
+    , doHistograms_(conf_.doHistograms())
   {
     produces<mu2e::GenParticleCollection>();
 
     if(genId_ == GenId::enum_type::unknown) {
       throw cet::exception("BADCONFIG")<<"MuStopProductsGun: unknown genId "
-                                       <<psphys_.get<std::string>("genId", "MuStopProductsGun")
+                                       << conf_.physics().genId()
                                        <<"\n";
     }
 
@@ -118,11 +137,15 @@ namespace mu2e {
       std::cout<<"MuStopProductsGun: producing particle "<< pdgId_ << ", mass = "<< mass_ << std::endl;
 
       std::cout <<"MuStopProductsGun: spectrum shape = "
-		<<psphys_.get<std::string>("spectrumShape") << std::endl;
-      if (psphys_.get<std::string>("spectrumShape")  == "tabulated")
-	std::cout << " Spectrum file = "
-		  << psphys_.get<std::string>("spectrumFileName")
-		  << std::endl;
+		<< conf_.physics().spectrumShape() << std::endl;
+      if (conf_.physics().spectrumShape()  == "tabulated") {
+	std::string spectrumFileName;
+	if (conf_.physics().spectrumFileName(spectrumFileName)) {
+	  std::cout << " Spectrum file = "
+		    << spectrumFileName
+		    << std::endl;
+	}
+      }
     }
     if (verbosityLevel_ > 1){
       std::cout <<"MuStopProductsGun: spectrum: " << std::endl;

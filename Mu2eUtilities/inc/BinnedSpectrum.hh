@@ -22,6 +22,7 @@
 #include "cetlib_except/exception.h"
 
 #include "Mu2eUtilities/inc/Table.hh"
+#include "Mu2eUtilities/inc/GenPhysConfig.hh"
 #include "fhiclcpp/ParameterSet.h"
 
 namespace mu2e {
@@ -30,6 +31,7 @@ namespace mu2e {
 
   public:
 
+    BinnedSpectrum(const mu2e::GenPhysConfig& conf);
     BinnedSpectrum(const fhicl::ParameterSet& psphys);
     BinnedSpectrum() : _fixMax(false), _finalBin(false), _binWidth(0.), _nBins(0) {}
 
