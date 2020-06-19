@@ -822,7 +822,7 @@ bool AlignTrackCollector::filter_CosmicTrackSeedCollection(
       ndof = sts._straw_chits.size() - 5;
 
       if (ndof > 0) {
-        pvalue = boost::math::cdf(boost::math::chi_squared(ndof), chisq);
+        pvalue = 1.0-boost::math::cdf(boost::math::chi_squared(ndof), chisq);
         chisq /= ndof;
       } else {
         bad_track = true;
