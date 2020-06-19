@@ -351,14 +351,16 @@ double GaussianDriftFit::DOCAresidual(ComboHit const& sh, const std::vector<doub
   TwoLinePCA pca(intercept, dir, straw.getMidPoint(), straw.getDirection());
   double traj_time = ((pca.point1() - intercept).dot(dir)) / 299.9;
 
-  double predictedDistance = pca.dca();
+  double predictedDistance = HitAmbiguity(sh, x) * pca.dca();
   double hit_t0 =
       sh.propTime() + traj_time + t0 + srep.driftTimeOffset(sh.strawId(), 0, 0, pca.dca());
   double measuredDistance = srep.driftTimeToDistance(sh.strawId(), sh.time() - hit_t0, 0);
 
+  
+
   double resid = predictedDistance - measuredDistance;
 
-  return HitAmbiguity(sh, x) * resid;//(pca.s2() > 0 ? resid : -resid);
+  return resid;//(pca.s2() > 0 ? resid : -resid);
 }
 
 double GaussianDriftFit::reduced_chisq(const std::vector<double>& x) {
@@ -422,8 +424,8 @@ double GaussianDriftFit::TimeResidual(ComboHit const& sh, const std::vector<doub
 
   double hit_t0 = traj_time + t0 + srep.driftTimeOffset(sh.strawId(), 0, 0, pca.dca());
 
-  double predictedTime = HitAmbiguity(sh, x) * srep.driftDistanceToTime(sh.strawId(), pca.dca(), 0) + hit_t0;
-  double measuredTime = sh.time() - sh.propTime();
+  double predictedTime = -HitAmbiguity(sh, x) * srep.driftDistanceToTime(sh.strawId(), pca.dca(), 0) + sh.propTime() + hit_t0;
+  double measuredTime = sh.time();
 
   double resid = predictedTime - measuredTime;
 
