@@ -316,13 +316,15 @@ double GaussianDriftFit::operator()(const std::vector<double>& x) const {
     }
     Straw const& straw = tracker->getStraw(this->shs[i].strawId());
     TwoLinePCA pca(intercept, dir, straw.getMidPoint(), straw.getDirection());
+    int ambig = HitAmbiguity(shs[i], x);
+
     double longdist = (pca.point2() - straw.getMidPoint()).dot(straw.getDirection());
     double longres = srep.wpRes(this->shs[i].energyDep() * 1000., fabs(longdist));
 
     llike += pow(longdist - this->shs[i].wireDist(), 2) / pow(longres, 2);
 
-    double drift_time = srep.driftDistanceToTime(this->shs[i].strawId(), pca.dca(), 0);
-    drift_time += srep.driftTimeOffset(this->shs[i].strawId(), 0, 0, pca.dca());
+    double drift_time = ambig * (srep.driftDistanceToTime(this->shs[i].strawId(), pca.dca(), 0) + 
+              srep.driftTimeOffset(this->shs[i].strawId(), 0, 0, pca.dca()));
 
     double drift_res = srep.driftTimeError(this->shs[i].strawId(), 0, 0, pca.dca());
 
@@ -419,12 +421,12 @@ double GaussianDriftFit::TimeResidual(ComboHit const& sh, const std::vector<doub
 
   Straw const& straw = tracker->getStraw(sh.strawId());
   TwoLinePCA pca(intercept, dir, straw.getMidPoint(), straw.getDirection());
-
+  int ambig = HitAmbiguity(sh, x);
   double traj_time = ((pca.point1() - intercept).dot(dir)) / 299.9;
 
-  double hit_t0 = traj_time + t0 + srep.driftTimeOffset(sh.strawId(), 0, 0, pca.dca());
+  double hit_t0 = t0 + traj_time + ambig * srep.driftTimeOffset(sh.strawId(), 0, 0, pca.dca());
 
-  double predictedTime = -HitAmbiguity(sh, x) * srep.driftDistanceToTime(sh.strawId(), pca.dca(), 0) + sh.propTime() + hit_t0;
+  double predictedTime = ambig * srep.driftDistanceToTime(sh.strawId(), pca.dca(), 0) + sh.propTime() + hit_t0;
   double measuredTime = sh.time();
 
   double resid = predictedTime - measuredTime;
