@@ -36,7 +36,7 @@ physics.producers.generate: {
    module_type: MuStopProductsGun
    verbosityLevel : 1
    stops : @local::mu2e.tgtMuonStops
-   physics : [ @local::genPhys_cap_proton ]
+   physics : [ @local::genPhys_cap_proton, @local::genPhys_dio ]
 }
 
 services.TFileService.fileName: "out/nts.owner.mustop.version.sequencer.root"

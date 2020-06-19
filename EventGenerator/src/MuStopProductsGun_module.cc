@@ -66,20 +66,31 @@ namespace mu2e {
 
   private:
     Config conf_;
-    GenPhysConfig phys_;
-
-    PDGCode::type       pdgId_;
-    double              mass_;
 
     enum SpectrumVar  { TOTAL_ENERGY, KINETIC_ENERY, MOMENTUM };
-    SpectrumVar       spectrumVariable_;
 
-    BinnedSpectrum    spectrum_;
-    GenId             genId_;
+    struct GenPhys {
+      GenPhys(GenPhysConfig conf, art::RandomNumberGenerator::base_engine_t& eng) : 
+	pdgId(PDGCode::type(conf.pdgId())),
+	mass(GlobalConstantsHandle<ParticleDataTable>()->particle(pdgId).ref().mass().value()),
+	spectrumVariable(parseSpectrumVar(conf.spectrumVariable())),
+	spectrum(BinnedSpectrum(conf)),
+	genId(GenId::findByName(conf.genId())),
+	randSpectrum(eng, spectrum.getPDF(), spectrum.getNbins())
+      {}
+
+      PDGCode::type       pdgId;
+      double              mass;
+      SpectrumVar       spectrumVariable;
+      BinnedSpectrum    spectrum;
+      GenId             genId;
+      CLHEP::RandGeneral randSpectrum;
+    };
+    std::vector<GenPhys> allGenPhys_;
+
     int               verbosityLevel_;
 
     art::RandomNumberGenerator::base_engine_t& eng_;
-    CLHEP::RandGeneral randSpectrum_;
     RandomUnitSphere   randomUnitSphere_;
 
     RTS stops_;
@@ -95,7 +106,7 @@ namespace mu2e {
   
   private:
     static SpectrumVar    parseSpectrumVar(const std::string& name);
-    double                generateEnergy();
+    double                generateEnergy(GenPhys& genPhys);
     
   public:
     explicit MuStopProductsGun(const Parameters& conf);
@@ -107,25 +118,45 @@ namespace mu2e {
   MuStopProductsGun::MuStopProductsGun(const Parameters& conf)
     : EDProducer(conf)
     , conf_(conf())
-    , phys_(conf_.physics().at(0))
-    , pdgId_(PDGCode::type(phys_.pdgId()))
-    , mass_(GlobalConstantsHandle<ParticleDataTable>()->particle(pdgId_).ref().mass().value())
-    , spectrumVariable_(parseSpectrumVar(phys_.spectrumVariable()))
-    , spectrum_(BinnedSpectrum(phys_))
-    , genId_(GenId::findByName(phys_.genId()))
     , verbosityLevel_(conf_.verbosityLevel())
     , eng_(createEngine(art::ServiceHandle<SeedService>()->getSeed()))
-    , randSpectrum_(eng_, spectrum_.getPDF(), spectrum_.getNbins())
     , randomUnitSphere_(eng_)
     , stops_(eng_, conf_.stops())
     , doHistograms_(conf_.doHistograms())
   {
     produces<mu2e::GenParticleCollection>();
 
-    if(genId_ == GenId::enum_type::unknown) {
-      throw cet::exception("BADCONFIG")<<"MuStopProductsGun: unknown genId "
-                                       << phys_.genId()
-                                       <<"\n";
+    for (const auto& i_genPhysConfig : conf_.physics()) {
+      GenPhys i_genPhys(i_genPhysConfig, eng_);
+
+      if(i_genPhys.genId == GenId::enum_type::unknown) {
+	throw cet::exception("BADCONFIG")<<"MuStopProductsGun: unknown genId "
+					 << i_genPhysConfig.genId()
+					 <<"\n";
+      }
+
+      if (verbosityLevel_ > 0) {
+	std::cout<<"MuStopProductsGun: using GenId = " << i_genPhys.genId << std::endl;
+
+	std::cout<<"MuStopProductsGun: producing particle "<< i_genPhys.pdgId << ", mass = "<< i_genPhys.mass << std::endl;
+
+	std::cout <<"MuStopProductsGun: spectrum shape = "
+		  << i_genPhysConfig.spectrumShape() << std::endl;
+	if (i_genPhysConfig.spectrumShape()  == "tabulated") {
+	  std::string spectrumFileName;
+	  if (i_genPhysConfig.spectrumFileName(spectrumFileName)) {
+	    std::cout << " Spectrum file = "
+		      << spectrumFileName
+		      << std::endl;
+	  }
+	}
+      }
+      if (verbosityLevel_ > 1){
+	std::cout <<"MuStopProductsGun: spectrum: " << std::endl;
+	i_genPhys.spectrum.print();
+      }
+
+      allGenPhys_.push_back(i_genPhys);
     }
 
     if (verbosityLevel_ > 0) {
@@ -133,25 +164,6 @@ namespace mu2e {
                <<stops_.numRecords()
                <<" stopped particles"
                <<std::endl;
-
-      std::cout<<"MuStopProductsGun: using GenId = " << genId_ << std::endl;
-
-      std::cout<<"MuStopProductsGun: producing particle "<< pdgId_ << ", mass = "<< mass_ << std::endl;
-
-      std::cout <<"MuStopProductsGun: spectrum shape = "
-		<< phys_.spectrumShape() << std::endl;
-      if (phys_.spectrumShape()  == "tabulated") {
-	std::string spectrumFileName;
-	if (phys_.spectrumFileName(spectrumFileName)) {
-	  std::cout << " Spectrum file = "
-		    << spectrumFileName
-		    << std::endl;
-	}
-      }
-    }
-    if (verbosityLevel_ > 1){
-      std::cout <<"MuStopProductsGun: spectrum: " << std::endl;
-      spectrum_.print();
     }
 
     if ( doHistograms_ ) {
@@ -185,28 +197,31 @@ namespace mu2e {
 
     const CLHEP::Hep3Vector pos(stop.x, stop.y, stop.z);
 
-    const double energy = generateEnergy();
-    const double p = energy * sqrt(1 - std::pow(mass_/energy,2));
+    for (auto& i_genPhys : allGenPhys_) {
+      const double energy = generateEnergy(i_genPhys);
+      const double p = energy * sqrt(1 - std::pow(i_genPhys.mass/energy,2));
 
-    CLHEP::Hep3Vector p3 = randomUnitSphere_.fire(p);
-    CLHEP::HepLorentzVector fourmom(p3, energy);
-    output->emplace_back(pdgId_,
-                         genId_,
-                         pos,
-                         fourmom,
-                         stop.t);
+      CLHEP::Hep3Vector p3 = randomUnitSphere_.fire(p);
+      CLHEP::HepLorentzVector fourmom(p3, energy);
+      output->emplace_back(i_genPhys.pdgId,
+			   i_genPhys.genId,
+			   pos,
+			   fourmom,
+			   stop.t);
 
-    event.put(std::move(output));
-//-----------------------------------------------------------------------------
-// if requested, fill histograms. Currently, the only one
-//-----------------------------------------------------------------------------
-    if (doHistograms_) {
-      _hGenId->Fill(genId_.id());
-      _hPdgId->Fill(pdgId_);
-      _hEnergy->Fill(energy);
-      _hTime->Fill(stop.t);
-      _hZ->Fill(pos.z());
+      //-----------------------------------------------------------------------------
+      // if requested, fill histograms. Currently, the only one
+      //-----------------------------------------------------------------------------
+      if (doHistograms_) {
+	_hGenId->Fill(i_genPhys.genId.id());
+	_hPdgId->Fill(i_genPhys.pdgId);
+	_hEnergy->Fill(energy);
+	_hTime->Fill(stop.t);
+	_hZ->Fill(pos.z());
+      }
+
     }
+    event.put(std::move(output));
   }
 
 //-----------------------------------------------------------------------------
@@ -214,17 +229,17 @@ namespace mu2e {
 // the spectrum itself doesn't know whether is stored momentum, kinetic or full 
 // energy
 //-----------------------------------------------------------------------------
-  double MuStopProductsGun::generateEnergy() {
-    double res = spectrum_.sample(randSpectrum_.fire());
+  double MuStopProductsGun::generateEnergy(GenPhys& genPhys) {
+    double res = genPhys.spectrum.sample(genPhys.randSpectrum.fire());
 
     if (res < 0.0) {
       throw cet::exception("BADE")<<"MuStopProductsGun: negative energy "<< res <<"\n";
     }
 
-    switch(spectrumVariable_) {
+    switch(genPhys.spectrumVariable) {
     case TOTAL_ENERGY  : break;
-    case KINETIC_ENERY : res += mass_; break;
-    case MOMENTUM      : res = sqrt(res*res+mass_*mass_); break;
+    case KINETIC_ENERY : res += genPhys.mass; break;
+    case MOMENTUM      : res = sqrt(res*res+genPhys.mass*genPhys.mass); break;
     }
     return res;
   }
