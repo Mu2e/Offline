@@ -1,0 +1,47 @@
+// Generate all muon stop emission products
+//
+// Andy Edmonds, 2020
+
+#include "JobConfig/beam/prolog.fcl"
+
+BEGIN_PROLOG
+
+genPhys_dio : {     
+    pdgId : 11
+    genId : StoppedParticleReactionGun
+    spectrumShape: Czarnecki
+    spectrumVariable: totalEnergy
+    elow: 1.  // MeV
+    spectrumResolution: 0.1 // MeV
+}
+
+genPhys_cap_proton : {
+    pdgId : 2212
+    genId : "StoppedParticleReactionGun"
+    spectrumShape: ejectedProtons
+    spectrumVariable: kineticEnergy
+    nbins: 1000
+}
+
+END_PROLOG
+
+process_name: mustop
+
+source: { module_type : EmptyEvent }
+services: { @table::mu2e.services.simServices }
+physics: { @table::mu2e.physics.g4s4Muons }
+outputs: { @table::mu2e.outputs.g4s4Defs }
+
+physics.producers.generate: {
+   module_type: MuStopProductsGun
+   verbosityLevel : 1
+   stops : @local::mu2e.tgtMuonStops
+   physics : [ @local::genPhys_cap_proton ]
+}
+
+services.TFileService.fileName: "out/nts.owner.mustop.version.sequencer.root"
+outputs.detectorOutput.fileName: "out/sim.owner.mustop-TrkCal.version.sequencer.art"
+outputs.crvOutput.fileName: "out/sim.owner.mustop-CRV.version.sequencer.art"
+outputs.truncatedEvtsOutput.fileName: "out/sim.owner.mustop-truncated.version.sequencer.art"
+
+physics.producers.generate.stops.inputFiles : [ "mergedMuonStops/nts.mu2e.DS-TGTstops.MDC2018a.001002_00000000.root" ]

@@ -57,7 +57,7 @@ namespace mu2e {
       using Name=fhicl::Name;
       using Comment=fhicl::Comment;
 
-      fhicl::Table<GenPhysConfig> physics{Name("physics"), Comment("Physics parameter fhicl table")};
+      fhicl::Sequence< fhicl::Table<GenPhysConfig> > physics{Name("physics"), Comment("Physics parameter fhicl table")};
       fhicl::Atom<int> verbosityLevel{Name("verbosityLevel"), Comment("Verbosity Level (default = 0)"), 0};
       fhicl::Table<RTS::Config> stops{Name("stops"), Comment("Stops ntuple config")};
       fhicl::Atom<bool> doHistograms{Name("doHistograms"), Comment("True/false to produce histograms"), true};
@@ -66,6 +66,7 @@ namespace mu2e {
 
   private:
     Config conf_;
+    GenPhysConfig phys_;
 
     PDGCode::type       pdgId_;
     double              mass_;
@@ -106,11 +107,12 @@ namespace mu2e {
   MuStopProductsGun::MuStopProductsGun(const Parameters& conf)
     : EDProducer(conf)
     , conf_(conf())
-    , pdgId_(PDGCode::type(conf_.physics().pdgId()))
+    , phys_(conf_.physics().at(0))
+    , pdgId_(PDGCode::type(phys_.pdgId()))
     , mass_(GlobalConstantsHandle<ParticleDataTable>()->particle(pdgId_).ref().mass().value())
-    , spectrumVariable_(parseSpectrumVar(conf_.physics().spectrumVariable()))
-    , spectrum_(BinnedSpectrum(conf_.physics()))
-    , genId_(GenId::findByName(conf_.physics().genId()))
+    , spectrumVariable_(parseSpectrumVar(phys_.spectrumVariable()))
+    , spectrum_(BinnedSpectrum(phys_))
+    , genId_(GenId::findByName(phys_.genId()))
     , verbosityLevel_(conf_.verbosityLevel())
     , eng_(createEngine(art::ServiceHandle<SeedService>()->getSeed()))
     , randSpectrum_(eng_, spectrum_.getPDF(), spectrum_.getNbins())
@@ -122,7 +124,7 @@ namespace mu2e {
 
     if(genId_ == GenId::enum_type::unknown) {
       throw cet::exception("BADCONFIG")<<"MuStopProductsGun: unknown genId "
-                                       << conf_.physics().genId()
+                                       << phys_.genId()
                                        <<"\n";
     }
 
@@ -137,10 +139,10 @@ namespace mu2e {
       std::cout<<"MuStopProductsGun: producing particle "<< pdgId_ << ", mass = "<< mass_ << std::endl;
 
       std::cout <<"MuStopProductsGun: spectrum shape = "
-		<< conf_.physics().spectrumShape() << std::endl;
-      if (conf_.physics().spectrumShape()  == "tabulated") {
+		<< phys_.spectrumShape() << std::endl;
+      if (phys_.spectrumShape()  == "tabulated") {
 	std::string spectrumFileName;
-	if (conf_.physics().spectrumFileName(spectrumFileName)) {
+	if (phys_.spectrumFileName(spectrumFileName)) {
 	  std::cout << " Spectrum file = "
 		    << spectrumFileName
 		    << std::endl;
