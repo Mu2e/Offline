@@ -203,20 +203,27 @@ bool AlignTrackSelector::filter_CosmicTrackSeedCollection(art::Event const& even
     CosmicTrack const& st = sts._track;
     TrkFitFlag const& status = sts._status;
 
-    if (!status.hasAllProperties(TrkFitFlag::helixOK)) {
-      continue;
-    }
-
-    if (!st.converged || !st.minuit_converged) {
-      continue;
-    }
-
-    if (isnan(st.MinuitParams.A0)) {
+    if (!status.hasAllProperties(TrkFitFlag::helixOK) || 
+        !st.converged || !st.minuit_converged || 
+        isnan(st.MinuitParams.A0)) {
       continue;
     }
 
     std::set<uint16_t> planes_traversed;
     std::set<uint16_t> panels_traversed;
+
+    // for the max timeresidual track quality cut
+    double max_time_res_track = -1;
+
+    bool good_hits = false; // did we write any hits for the track?
+    bool bad_track = false;
+
+    chisq = 0;
+    chisq_doca = 0;
+    pvalue = 0;
+    nHits = 0;
+
+    ndof = sts._straw_chits.size() - 5;
 
     A0 = st.MinuitParams.A0;
     A1 = st.MinuitParams.A1;
@@ -230,26 +237,7 @@ bool AlignTrackSelector::filter_CosmicTrackSeedCollection(art::Event const& even
 
     GaussianDriftFit fit_object(sts._straw_chits, _srep, &tracker);
 
-    chisq = 0;
-    chisq_doca = 0;
-    ndof = 0;
-    pvalue = 0;
-    nHits = 0;
 
-    // for the max timeresidual track quality cut
-    double max_time_res_track = -1;
-
-    bool wrote_hits = false; // did we write any hits for the track?
-    bool bad_track = false;
-
-    std::vector<float> residuals;
-    std::vector<std::vector<float>> global_derivs_temp;
-    std::vector<std::vector<float>> local_derivs_temp;
-    std::vector<std::vector<int>> labels_temp;
-
-    // get residuals and their derivatives with respect
-    // to all local and global parameters
-    // get also plane id hit by straw hits
     for (ComboHit const& straw_hit : sts._straw_chits) {
       // straw and plane info
       StrawId const& straw_id = straw_hit.strawId();
@@ -266,7 +254,6 @@ bool AlignTrackSelector::filter_CosmicTrackSeedCollection(art::Event const& even
       double drift_res_time = _srep.driftTimeError(straw_hit.strawId(), 0, 0, pca.dca());
       double drift_res_dist = _srep.driftDistanceError(straw_hit.strawId(), 0, 0, pca.dca());
 
-      // FIXME! use newly implemented chisq function in fit object
       chisq += pow(time_resid / drift_res_time, 2);
       chisq_doca += pow(doca_resid / drift_res_dist, 2);
 
@@ -290,21 +277,15 @@ bool AlignTrackSelector::filter_CosmicTrackSeedCollection(art::Event const& even
         }
       }
 
-      wrote_hits = true;
+      good_hits = true;
       ++nHits;
     }
 
-    if (wrote_hits) {
-      // number of hits - 5 track parameters
-      ndof = sts._straw_chits.size() - 5;
-
+    if (good_hits) {
       if (ndof > 0) {
         pvalue = boost::math::cdf(boost::math::chi_squared(ndof), chisq);
         chisq /= ndof;
       } else {
-        chisq = -1;
-        pvalue = -1;
-        ndof = -1;
         bad_track = true;
       }
 
