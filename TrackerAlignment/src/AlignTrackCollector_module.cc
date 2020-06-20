@@ -281,21 +281,6 @@ public:
   bool isDOFenabled(int object_class, int object_id, int dof_n);
   bool isDOFfixed(int object_class, int object_id, int dof_n);
   
-double CosmicTrack_RealDCA(
-  StrawId const& strawId,
-
-  double const& a0, double const& b0, 
-  double const& a1, double const& b1, 
-  double const& t0, 
-
-  double const& plane_dx, double const& plane_dy, double const& plane_dz, 
-  double const& plane_a, double const& plane_b, double const& plane_g, 
-
-  double const& panel_dx, double const& panel_dy, double const& panel_dz, 
-  double const& panel_a, double const& panel_b, double const& panel_g, 
-
-  StrawResponse const& _srep, int ambiguity);
-
 
   virtual ~AlignTrackCollector() {}
 
