@@ -41,8 +41,8 @@ class AlignmentTable:
 
     def to_proditions_table(self):
         lines = []
-        for constants in self.constants:
-            lines.append(','.join([str(i) for i in constants]))
+        for i, constants in enumerate(self.constants):
+            lines.append('%d,' % i + ','.join([str(i) for i in constants]))
         return """TABLE {name}
 {csv}
 
