@@ -33,7 +33,6 @@ class AlignmentTable:
         return 10000 * self.classid + 10 * id + dof
     
     def setConstant(self, id, dof, value):
-        print (id, dof)
         self.constants[id][dof] = float(value)
     
     def setError(self, id, dof, error):
