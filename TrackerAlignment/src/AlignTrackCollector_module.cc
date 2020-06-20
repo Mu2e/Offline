@@ -148,9 +148,6 @@ public:
         Name("MinTraversedPanelsPerPlane"),
         Comment("How many panels must be traversed PER PLANE. 0: does not apply the cut."), 0};
 
-    fhicl::Atom<double> maxpvalue{Name("MaxPValue"),
-                                  Comment("Require that the track p-value < MaxPValue"), 1};
-
     fhicl::Atom<double> maxtimeres{Name("MaxTimeRes"),
                                    Comment("Require that the maximum ABSOLUTE time residual over "
                                            "all track hits < MaxTimeRes. Setting a "
@@ -228,7 +225,6 @@ public:
 
   int min_plane_traverse;
   int min_panel_traverse_per_plane;
-  double max_pvalue;
   double max_timeres;
   int min_track_hits;
   bool use_timeresid;
@@ -309,7 +305,6 @@ double CosmicTrack_RealDCA(
       _costag(conf().costag()),
       min_plane_traverse(conf().minplanetraverse()),
       min_panel_traverse_per_plane(conf().minpaneltraverse()), 
-      max_pvalue(conf().maxpvalue()),
       max_timeres(conf().maxtimeres()), 
       min_track_hits(conf().mintrackhits()),
       use_timeresid(conf().usetimeresid()), 
@@ -836,7 +831,7 @@ bool AlignTrackCollector::filter_CosmicTrackSeedCollection(
             planes_trav < min_plane_traverse) ||
           (min_panel_traverse_per_plane != 0 &&
             (panels_trav / planes_trav) < min_panel_traverse_per_plane) ||
-          (pvalue > max_pvalue) || (max_time_res_track > max_timeres && max_timeres > 0) ||
+          (max_time_res_track > max_timeres && max_timeres > 0) ||
           (nHits < min_track_hits) || bad_track) {
 
         if (_diag > 0) {
@@ -850,9 +845,6 @@ bool AlignTrackCollector::filter_CosmicTrackSeedCollection(
             std::cout << "not enough planes traversed" << std::endl;
           }
 
-          if (pvalue > max_pvalue) {
-            std::cout << "pvalue" << std::endl;
-          }
 
           if (max_time_res_track > max_timeres && max_timeres > 0) {
             std::cout << "max time residual reached (" << max_time_res_track << " > " << max_timeres
