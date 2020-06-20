@@ -186,14 +186,14 @@ public:
                                     false};
 
     fhicl::Atom<std::string> steerfile{
-        Name("SteerFile"), Comment("Output filename for Millepede steering file"), "steer.txt"};
+        Name("SteerFile"), Comment("Output filename for Millepede steering file"), "mp-steer.txt"};
 
     fhicl::Atom<std::string> paramfile{
-        Name("ParamFile"), Comment("Output filename for Millepede parameters file"), "params.txt"};
+        Name("ParamFile"), Comment("Output filename for Millepede parameters file"), "mp-params.txt"};
 
     fhicl::Atom<std::string> constrfile{Name("ConstrFile"),
                                         Comment("Output filename for Millepede constraints file"),
-                                        "constr.txt"};
+                                        "mp-constr.txt"};
 
     fhicl::Atom<bool> usenumerical{
         Name("UseNumericalDiffn"),
