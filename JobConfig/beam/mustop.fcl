@@ -23,6 +23,19 @@ genPhys_cap_proton : {
     nbins: 1000
 }
 
+genProc_capture : { 
+    name : "capture"
+    probability : 0.61
+    products : [ @local::genPhys_cap_proton ]
+}
+
+genProc_decay : { 
+    name : "decay"
+    probability : 0.39
+    products : [ @local::genPhys_dio ]
+}
+
+
 END_PROLOG
 
 process_name: mustop
@@ -36,7 +49,7 @@ physics.producers.generate: {
    module_type: MuStopProductsGun
    verbosityLevel : 1
    stops : @local::mu2e.tgtMuonStops
-   physics : [ @local::genPhys_cap_proton, @local::genPhys_dio ]
+   processes : [ @local::genProc_capture, @local::genProc_decay ]
 }
 
 services.TFileService.fileName: "out/nts.owner.mustop.version.sequencer.root"

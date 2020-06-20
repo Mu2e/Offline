@@ -53,11 +53,19 @@ namespace mu2e {
     typedef RootTreeSampler<IO::StoppedParticleF> RTS;
 
   public:
+    struct GenProcConfig {
+      using Name=fhicl::Name;
+      using Comment=fhicl::Comment;
+      fhicl::Atom<std::string> name {Name("name"), Comment("name")};
+      fhicl::Atom<double> probability {Name("probability"), Comment("Chance of process occurring")};
+      fhicl::Sequence< fhicl::Table<GenPhysConfig> > products{Name("products"), Comment("Physics parameter fhicl table")};
+    };
+
     struct Config {
       using Name=fhicl::Name;
       using Comment=fhicl::Comment;
 
-      fhicl::Sequence< fhicl::Table<GenPhysConfig> > physics{Name("physics"), Comment("Physics parameter fhicl table")};
+      fhicl::Sequence< fhicl::Table<GenProcConfig> > processes{Name("processes"), Comment("Processes")};
       fhicl::Atom<int> verbosityLevel{Name("verbosityLevel"), Comment("Verbosity Level (default = 0)"), 0};
       fhicl::Table<RTS::Config> stops{Name("stops"), Comment("Stops ntuple config")};
       fhicl::Atom<bool> doHistograms{Name("doHistograms"), Comment("True/false to produce histograms"), true};
@@ -86,12 +94,54 @@ namespace mu2e {
       GenId             genId;
       CLHEP::RandGeneral randSpectrum;
     };
-    std::vector<GenPhys> allGenPhys_;
+
+    struct GenProc {
+      GenProc(GenProcConfig conf, art::RandomNumberGenerator::base_engine_t& eng) : 
+	name(conf.name()), probability(conf.probability()) { 
+
+	for (auto& i_genPhysConfig : conf.products()) {
+	  GenPhys i_genPhys(i_genPhysConfig, eng);
+	  if(i_genPhys.genId == GenId::enum_type::unknown) {
+	    throw cet::exception("BADCONFIG")<<"MuStopProductsGun: unknown genId "
+					     << i_genPhysConfig.genId()
+					     <<"\n";
+	  }
+
+	  // if (verbosityLevel_ > 0) {
+	  //   std::cout<<"MuStopProductsGun: using GenId = " << i_genPhys.genId << std::endl;
+
+	  //   std::cout<<"MuStopProductsGun: producing particle "<< i_genPhys.pdgId << ", mass = "<< i_genPhys.mass << std::endl;
+
+	  //   std::cout <<"MuStopProductsGun: spectrum shape = "
+	  // 	      << i_genPhysConfig.spectrumShape() << std::endl;
+	  //   if (i_genPhysConfig.spectrumShape()  == "tabulated") {
+	  //     std::string spectrumFileName;
+	  //     if (i_genPhysConfig.spectrumFileName(spectrumFileName)) {
+	  // 	std::cout << " Spectrum file = "
+	  // 		  << spectrumFileName
+	  // 		  << std::endl;
+	  //     }
+	  //   }
+	  // }
+	  // if (verbosityLevel_ > 1){
+	  //   std::cout <<"MuStopProductsGun: spectrum: " << std::endl;
+	  //   i_genPhys.spectrum.print();
+	  // }
+	  allGenPhys.push_back(i_genPhys);
+	}
+      }
+
+      std::string name;
+      double probability;
+      std::vector<GenPhys> allGenPhys;
+    };
 
     int               verbosityLevel_;
+    std::vector<GenProc> allGenProc_;
 
     art::RandomNumberGenerator::base_engine_t& eng_;
     RandomUnitSphere   randomUnitSphere_;
+    CLHEP::RandFlat randomFlat_;
 
     RTS stops_;
 //-----------------------------------------------------------------------------
@@ -121,42 +171,15 @@ namespace mu2e {
     , verbosityLevel_(conf_.verbosityLevel())
     , eng_(createEngine(art::ServiceHandle<SeedService>()->getSeed()))
     , randomUnitSphere_(eng_)
+    , randomFlat_(eng_)
     , stops_(eng_, conf_.stops())
     , doHistograms_(conf_.doHistograms())
   {
     produces<mu2e::GenParticleCollection>();
 
-    for (const auto& i_genPhysConfig : conf_.physics()) {
-      GenPhys i_genPhys(i_genPhysConfig, eng_);
-
-      if(i_genPhys.genId == GenId::enum_type::unknown) {
-	throw cet::exception("BADCONFIG")<<"MuStopProductsGun: unknown genId "
-					 << i_genPhysConfig.genId()
-					 <<"\n";
-      }
-
-      if (verbosityLevel_ > 0) {
-	std::cout<<"MuStopProductsGun: using GenId = " << i_genPhys.genId << std::endl;
-
-	std::cout<<"MuStopProductsGun: producing particle "<< i_genPhys.pdgId << ", mass = "<< i_genPhys.mass << std::endl;
-
-	std::cout <<"MuStopProductsGun: spectrum shape = "
-		  << i_genPhysConfig.spectrumShape() << std::endl;
-	if (i_genPhysConfig.spectrumShape()  == "tabulated") {
-	  std::string spectrumFileName;
-	  if (i_genPhysConfig.spectrumFileName(spectrumFileName)) {
-	    std::cout << " Spectrum file = "
-		      << spectrumFileName
-		      << std::endl;
-	  }
-	}
-      }
-      if (verbosityLevel_ > 1){
-	std::cout <<"MuStopProductsGun: spectrum: " << std::endl;
-	i_genPhys.spectrum.print();
-      }
-
-      allGenPhys_.push_back(i_genPhys);
+    for (const auto& i_genProcConfig : conf_.processes()) {
+      GenProc i_genProc(i_genProcConfig, eng_);
+      allGenProc_.push_back(i_genProc);
     }
 
     if (verbosityLevel_ > 0) {
@@ -197,29 +220,38 @@ namespace mu2e {
 
     const CLHEP::Hep3Vector pos(stop.x, stop.y, stop.z);
 
-    for (auto& i_genPhys : allGenPhys_) {
-      const double energy = generateEnergy(i_genPhys);
-      const double p = energy * sqrt(1 - std::pow(i_genPhys.mass/energy,2));
+    double rand = randomFlat_.fire();
+    double current_limit = 0;
+    for (auto& i_process : allGenProc_) {
+      current_limit += i_process.probability;
+      if (rand <= current_limit) {
+	std::cout << "AE: " << i_process.name << ", prob = " << i_process.probability << std::endl;
 
-      CLHEP::Hep3Vector p3 = randomUnitSphere_.fire(p);
-      CLHEP::HepLorentzVector fourmom(p3, energy);
-      output->emplace_back(i_genPhys.pdgId,
-			   i_genPhys.genId,
-			   pos,
-			   fourmom,
-			   stop.t);
+	for (auto& i_genPhys : i_process.allGenPhys) {
+	  const double energy = generateEnergy(i_genPhys);
+	  const double p = energy * sqrt(1 - std::pow(i_genPhys.mass/energy,2));
 
-      //-----------------------------------------------------------------------------
-      // if requested, fill histograms. Currently, the only one
-      //-----------------------------------------------------------------------------
-      if (doHistograms_) {
-	_hGenId->Fill(i_genPhys.genId.id());
-	_hPdgId->Fill(i_genPhys.pdgId);
-	_hEnergy->Fill(energy);
-	_hTime->Fill(stop.t);
-	_hZ->Fill(pos.z());
+	  CLHEP::Hep3Vector p3 = randomUnitSphere_.fire(p);
+	  CLHEP::HepLorentzVector fourmom(p3, energy);
+	  output->emplace_back(i_genPhys.pdgId,
+			       i_genPhys.genId,
+			       pos,
+			       fourmom,
+			       stop.t);
+
+	  //-----------------------------------------------------------------------------
+	  // if requested, fill histograms. Currently, the only one
+	  //-----------------------------------------------------------------------------
+	  if (doHistograms_) {
+	    _hGenId->Fill(i_genPhys.genId.id());
+	    _hPdgId->Fill(i_genPhys.pdgId);
+	    _hEnergy->Fill(energy);
+	    _hTime->Fill(stop.t);
+	    _hZ->Fill(pos.z());
+	  }
+	}
+	break;
       }
-
     }
     event.put(std::move(output));
   }
