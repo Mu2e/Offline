@@ -65,7 +65,7 @@ env = Environment( CPPPATH = sch.cppPath(mu2eOpts),   # $ART_INC ...
                    LINKCOMSTR = linkcomstr,
                    SHLINKCOMSTR= linkcomstr,
                    # so we can find compilation_db from a satellite build
-                   toolpath=[os.path.join(os.environ('MU2E_BASE_RELEASE'),'site_scons/site_tools')]
+                   toolpath=[os.path.join(os.environ['MU2E_BASE_RELEASE'],'site_scons/site_tools')]
 )
 
 # Make the Compilation DB generator available in the environment
