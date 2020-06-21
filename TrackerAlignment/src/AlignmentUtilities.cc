@@ -6,9 +6,8 @@
 #include <iostream>
 #include <iterator>
 #include <vector>
-#include "RtypesCore.h"
 
-#include "TrkReco/inc/RobustHelixFinderData.hh"
+#include "DataProducts/inc/PlaneId.hh"
 #include "art/Framework/Services/Registry/ServiceHandle.h"
 #include "art_root_io/TFileService.h"
 
@@ -17,11 +16,9 @@
 #include "GeneralUtilities/inc/HepTransform.hh"
 #include "Minuit2/MnUserCovariance.h"
 #include "Mu2eUtilities/inc/TwoLinePCA.hh"
-#include "TTree.h"
 #include "DbTables/inc/TrkAlignPanel.hh"
 #include "DataProducts/inc/StrawId.hh"
 #include "RecoDataProducts/inc/ComboHit.hh"
-#include "RecoDataProducts/inc/CosmicTrackSeed.hh"
 #include "TrackerConditions/inc/StrawResponse.hh"
 #include "TrackerAlignment/inc/AlignmentDerivatives.hh"
 #include "TrackerAlignment/inc/MilleDataWriter.hh"
@@ -310,115 +307,111 @@ std::pair<Hep3Vector, Hep3Vector> alignStraw(Tracker const& tracker, Plane const
 
 
 namespace {
+  double tocaGlobalDep(CosmicTimeTrack const& track, StrawId const& strawId,
+                                std::vector<double> const& globals, Tracker const& nominalTracker, StrawResponse const& strawRes) {
 
-double tocaGlobalDep(CosmicTimeTrack const& track, StrawId const& strawId,
-                              std::vector<double> const& globals, Tracker const& nominalTracker, StrawResponse const& strawRes) {
+    Plane const& nominal_plane = nominalTracker.getPlane(strawId);
+    Panel const& nominal_panel = nominalTracker.getPanel(strawId);
 
-  Plane const& nominal_plane = nominalTracker.getPlane(strawId);
-  Panel const& nominal_panel = nominalTracker.getPanel(strawId);
+    HepTransform align_tracker{0, 0, 0, 0, 0, 0};
+    HepTransform align_plane{globals[0], globals[1], globals[2], 
+                            globals[3], globals[4], globals[5]};
 
-  HepTransform align_tracker{0, 0, 0, 0, 0, 0};
-  HepTransform align_plane{globals[0], globals[1], globals[2], 
-                           globals[3], globals[4], globals[5]};
+    HepTransform align_panel{globals[6], globals[7],  globals[8],
+                            globals[9], globals[10], globals[11]};
 
-  HepTransform align_panel{globals[6], globals[7],  globals[8],
-                           globals[9], globals[10], globals[11]};
+    // returns pair of vectors { straw_pos, straw_dir }
+    Hep3Vector straw_pos, straw_dir;
+    std::tie(straw_pos, straw_dir) = alignStraw(nominalTracker, nominal_plane, nominal_panel,
+                                                strawId, align_tracker, align_plane, align_panel);
 
-  // returns pair of vectors { straw_pos, straw_dir }
-  Hep3Vector straw_pos, straw_dir;
-  std::tie(straw_pos, straw_dir) = alignStraw(nominalTracker, nominal_plane, nominal_panel,
-                                               strawId, align_tracker, align_plane, align_panel);
+    TwoLinePCA pca(track.intercept(), track.direction(), straw_pos, straw_dir);
 
-  TwoLinePCA pca(track.intercept(), track.direction(), straw_pos, straw_dir);
+    double traj_time = (pca.point1() - track.intercept()).dot(track.direction()) / 299.9;
+    double d2t_doca = strawRes.driftDistanceToTime(strawId, pca.dca(), 0);
+    double t_offset = strawRes.driftTimeOffset(strawId, 0, 0, pca.dca());
 
-  //int ambig = hitAmbiguity(track, straw_pos, straw_dir);
-  //double dca = ambig * pca.dca();
+    double predictedTime = traj_time + t_offset + track.params[CosmicTimeTrack::t0] + d2t_doca;
 
-  double traj_time = (pca.point1() - track.intercept()).dot(track.direction()) / 299.9;
-  double d2t_doca = strawRes.driftDistanceToTime(strawId, pca.dca(), 0);
-  double t_offset = strawRes.driftTimeOffset(strawId, 0, 0, pca.dca());
-
-  double predictedTime = traj_time + t_offset + track.params[CosmicTimeTrack::t0] + d2t_doca;
-
-  return predictedTime;
-}
-
-double docaGlobalDep(CosmicTimeTrack const& track, StrawId const& strawId,
-                              std::vector<double> const& globals, Tracker const& nominalTracker, StrawResponse const& strawRes) {
-
-  Plane const& nominal_plane = nominalTracker.getPlane(strawId);
-  Panel const& nominal_panel = nominalTracker.getPanel(strawId);
-
-  HepTransform align_tracker{0, 0, 0, 0, 0, 0};
-  HepTransform align_plane{globals[0], globals[1], globals[2], 
-                           globals[3], globals[4], globals[5]};
-  HepTransform align_panel{globals[6], globals[7],  globals[8],
-                           globals[9], globals[10], globals[11]};
-
-  // returns pair of vectors { straw_pos, straw_dir }
-  Hep3Vector straw_pos, straw_dir;
-  std::tie(straw_pos, straw_dir) = alignStraw(nominalTracker, nominal_plane, nominal_panel,
-                                               strawId, align_tracker, align_plane, align_panel);
-
-  TwoLinePCA pca(track.intercept(), track.direction(), straw_pos, straw_dir);
-
-  int ambig = hitAmbiguity(track, straw_pos, straw_dir);
-  double doca = ambig * pca.dca();
-
-  return doca;
-}
-
-
-// not meant to be called from outside of this namespace
-double _numericalDerivative(StrawId const& straw, CosmicTimeTrack& track,
-                           std::vector<double>& globals, Tracker const& nominalTracker,
-                           StrawResponse const& strawRes, bool isGlobalParam,
-                           size_t const& paramIdx, double step_size, bool useTimeDomain) {
-  // calculate numerical partial derivative wrt param at paramIdx in either
-  // local, or global param array
-
-  double x;
-
-  if (isGlobalParam) {
-    x = globals[paramIdx];
-    globals[paramIdx] = x + step_size;
-  } else {
-    x = track.params[paramIdx];
-    track.params[paramIdx] = x + step_size;
+    return predictedTime;
   }
 
-  double pdiff;
-  
-  if (useTimeDomain) {
-    pdiff = tocaGlobalDep(track, straw, globals, nominalTracker, strawRes);
-  }
-  else {
-    pdiff = docaGlobalDep(track, straw, globals, nominalTracker, strawRes);
+  double docaGlobalDep(CosmicTimeTrack const& track, StrawId const& strawId,
+                                std::vector<double> const& globals, Tracker const& nominalTracker, StrawResponse const& strawRes) {
+
+    Plane const& nominal_plane = nominalTracker.getPlane(strawId);
+    Panel const& nominal_panel = nominalTracker.getPanel(strawId);
+
+    HepTransform align_tracker{0, 0, 0, 0, 0, 0};
+    HepTransform align_plane{globals[0], globals[1], globals[2], 
+                            globals[3], globals[4], globals[5]};
+    HepTransform align_panel{globals[6], globals[7],  globals[8],
+                            globals[9], globals[10], globals[11]};
+
+    // returns pair of vectors { straw_pos, straw_dir }
+    Hep3Vector straw_pos, straw_dir;
+    std::tie(straw_pos, straw_dir) = alignStraw(nominalTracker, nominal_plane, nominal_panel,
+                                                strawId, align_tracker, align_plane, align_panel);
+
+    TwoLinePCA pca(track.intercept(), track.direction(), straw_pos, straw_dir);
+
+    int ambig = hitAmbiguity(track, straw_pos, straw_dir);
+    double doca = ambig * pca.dca();
+
+    return doca;
   }
 
-  if (isGlobalParam) {
-    globals[paramIdx] = x - step_size;
-  } else {
-    track.params[paramIdx] = x - step_size;
-  }
 
-  if (useTimeDomain) {
-    pdiff -= tocaGlobalDep(track, straw, globals, nominalTracker, strawRes);
-  }
-  else {
-    pdiff -= docaGlobalDep(track, straw, globals, nominalTracker, strawRes);
-  }
+  // not meant to be called from outside of this namespace
+  double _numericalDerivative(StrawId const& straw, CosmicTimeTrack& track,
+                            std::vector<double>& globals, Tracker const& nominalTracker,
+                            StrawResponse const& strawRes, bool isGlobalParam,
+                            size_t const& paramIdx, double step_size, bool useTimeDomain) {
+    // calculate numerical partial derivative wrt param at paramIdx in either
+    // local, or global param array
 
-  pdiff /= (2.0 * step_size);
+    double x;
 
-  if (isGlobalParam) {
-    globals[paramIdx] = x;
-  } else {
-    track.params[paramIdx] = x;
+    if (isGlobalParam) {
+      x = globals[paramIdx];
+      globals[paramIdx] = x + step_size;
+    } else {
+      x = track.params[paramIdx];
+      track.params[paramIdx] = x + step_size;
+    }
+
+    double pdiff;
+    
+    if (useTimeDomain) {
+      pdiff = tocaGlobalDep(track, straw, globals, nominalTracker, strawRes);
+    }
+    else {
+      pdiff = docaGlobalDep(track, straw, globals, nominalTracker, strawRes);
+    }
+
+    if (isGlobalParam) {
+      globals[paramIdx] = x - step_size;
+    } else {
+      track.params[paramIdx] = x - step_size;
+    }
+
+    if (useTimeDomain) {
+      pdiff -= tocaGlobalDep(track, straw, globals, nominalTracker, strawRes);
+    }
+    else {
+      pdiff -= docaGlobalDep(track, straw, globals, nominalTracker, strawRes);
+    }
+
+    pdiff /= (2.0 * step_size);
+
+    if (isGlobalParam) {
+      globals[paramIdx] = x;
+    } else {
+      track.params[paramIdx] = x;
+    }
+
+    return pdiff;
   }
-
-  return pdiff;
-}
 }
 
 std::pair<std::vector<double>, std::vector<double>>
