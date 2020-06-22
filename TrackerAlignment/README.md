@@ -100,7 +100,7 @@ python ${MU2E_BASE_RELEASE}/TrackerAlignment/scripts/make_shiftplot.py "First Ru
 
 ## Terms
 ### Global degrees of freedom
-These are alignment parameters that currently describe a translation or rotation in x, y, z applied to one Plane, and (later) Panel. These are 'global' because their definition is common across all input tracks.
+These are alignment parameters that currently describe a translation or rotation in x, y, z applied to one Plane, and (later) Panel. These are 'global' because their values are common across all input tracks.
 
 ### Local degrees of freedom
 These are the track fit parameters for one track. One set of local parameters describes one track.
