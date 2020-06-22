@@ -43,7 +43,7 @@ This command generates job.fcl, alignconstants_in.txt, revision.txt, and sources
 The Tracker is misaligned according to the 'MT_MDC2018_PlaneTRL' configuration. The corresponding DbService text file in `${MU2E_BASE_RELEASE}/TrackerAlignment/test/misalignments/` is copied.
 
 It's important to choose which planes to fix in the alignment, in order to suppress weak modes, such as a stretch or squeeze in z.
-Fixing planes 5, 30 to zero in all DOFs, for example. This means changing the values accordingly in alignconstants_in.txt for Plane 5 + 30, and ensuring that these parameters are set in `job.fcl`:
+Fixing planes 5, 30 to zero in all DOFs, for example. This means changing the values accordingly in `alignconstants_in.txt` for Plane 5 + 30, and ensuring that these parameters are set in `job.fcl`:
 ```
 physics.analyzers.AlignTrackCollector.ConstrainStrategy : "Fix"
 physics.analyzers.AlignTrackCollector.FixPlane : [ 5, 30 ]
@@ -69,7 +69,7 @@ mu2ealign_genparallel 4 8
 mu2ealign run
 ```
 
-Once the jobs finish, you can run:
+Once the jobs finish, you can run the first alignment fit:
 ```bash
 mu2ealign pede
 ```
@@ -87,23 +87,23 @@ mu2ealign autorun 3 # for 3 alignment iterations and one nominal run
 ```
 
 4. Examine output
-```
+```bash
 # examine cosmic track diagnostics if needed
 aligntrack_display TrackDiag.root < other trackdiag.root files to compare against >
 
 
 # plot and show shifts and pulls
-python ${MU2E_BASE_RELEASE}/TrackerAlignment/scripts/make_shiftplot.py "Label" alignconstants_out.txt "First Iteration" iter1/alignconstants_out.txt
+python ${MU2E_BASE_RELEASE}/TrackerAlignment/scripts/make_shiftplot.py "First Run" alignconstants_out.txt "Second Run" iter1/alignconstants_out.txt
 ```
 
 # Alignment Derivatives
 
 ## Terms
 ### Global degrees of freedom
-These are alignment parameters that currently describe a translation or rotation in x, y, z applied to one Plane, and (later) Panel. These are `global` because their definition is common across all input tracks.
+These are alignment parameters that currently describe a translation or rotation in x, y, z applied to one Plane, and (later) Panel. These are 'global' because their definition is common across all input tracks.
 
 ### Local degrees of freedom
-These are the track fit parameters for one track. One set of local degrees of freedom describes one track.
+These are the track fit parameters for one track. One set of local parameters describes one track.
 
 ## Derivatives?
 
