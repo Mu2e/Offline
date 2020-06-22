@@ -112,9 +112,9 @@ function mu2ealign_mergeoutput() {
 function mu2ealign_genjobfcl() {
     cp ${MU2E_BASE_RELEASE}/TrackerAlignment/fcl/job_template.fcl job.fcl
     echo "Generated new job.fcl!"
-    echo "Using DS_COSMIC_NOFIELD_ALIGNSELECT as dataset. ( 4 files )"
+    echo "Using DS_COSMIC_NOFIELD_ALIGNSELECT as dataset. ( 8 files )"
     echo "Please change sources.txt if you want to use something else."
-    head -n 4 ${DS_COSMIC_NOFIELD_ALIGNSELECT} > sources.txt
+    head -n 8 ${DS_COSMIC_NOFIELD_ALIGNSELECT} > sources.txt
 }
 
 function mu2ealign_progress() {
