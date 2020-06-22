@@ -1,4 +1,4 @@
-#include "TrackerAlignment/fcl/cosmicAlign_timefit.fcl"
+#include "JobConfig/alignment/collect_nofield_cosmictracks.fcl"
 #include "JobConfig/reco/misalign_epilog.fcl"
 
 services.ProditionsService.alignedTracker.useDb: true
@@ -13,18 +13,17 @@ services.DbService.textFile: ["alignconstants_in.txt"]
 physics.analyzers.AlignTrackCollector.diagLevel : 5
 
 physics.analyzers.AlignTrackCollector.MinTraversedPlanes : 3
-physics.analyzers.AlignTrackCollector.MaxTimeRes : 10.0
+physics.analyzers.AlignTrackCollector.MaxTimeRes : 20.0
 physics.analyzers.AlignTrackCollector.MinTrackSH: 10
 
-physics.analyzers.AlignTrackCollector.PlaneFilter : false
-physics.analyzers.AlignTrackCollector.PlaneFilterList : [  ]
 physics.analyzers.AlignTrackCollector.SteeringOpts : [ ]
 
-physics.analyzers.AlignTrackCollector.NoPlaneRotations : true 
+physics.analyzers.AlignTrackCollector.NoPlaneRotations : false
 
 physics.analyzers.AlignTrackCollector.ErrorScale : 1.0
-
 physics.analyzers.AlignTrackCollector.EnableLOOCVFitting : false
+
+# Fixes the following Plane IDs ([0,35] inclusive) to their Proditions values
 physics.analyzers.AlignTrackCollector.ConstrainStrategy : "Fix"
 physics.analyzers.AlignTrackCollector.FixPlane : [ 5, 30 ]
 
