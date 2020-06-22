@@ -54,6 +54,7 @@ You should also study the other defaults in `job.fcl` and tune the parameters ac
 
 
 3. Run Track Collection + PEDE interactively
+
 You can run one process to collect the track data like this:
 ```bash
 # running one job only
@@ -94,3 +95,25 @@ aligntrack_display TrackDiag.root < other trackdiag.root files to compare agains
 # plot and show shifts and pulls
 python ${MU2E_BASE_RELEASE}/TrackerAlignment/scripts/make_shiftplot.py "Label" alignconstants_out.txt "First Iteration" iter1/alignconstants_out.txt
 ```
+
+# Alignment Derivatives
+
+## Terms
+### Global degrees of freedom
+These are alignment parameters that currently describe a translation or rotation in x, y, z applied to one Plane, and (later) Panel. These are `global` because their definition is common across all input tracks.
+
+### Local degrees of freedom
+These are the track fit parameters for one track. One set of local degrees of freedom describes one track.
+
+## Derivatives?
+
+For each global and local degree of freedom, Millepede requires a partial derivative of the track residual with respect to that degree of freedom.
+
+There can be as many as 100 or 1000 global degrees of freedom, however of those Millepede only needs to know what the non-zero derivatives are. In this case, only those DOFs corresponding to the Plane and Panel holding a crossed (or hit) Straw will be nonzero. This sparse storage scheme saves a lot of space.
+
+For the cosmic track time fit, there is a numerical differentiation utility to calculate these quantities. 
+There is also a python utility that constructs the algebraic form of the derivatives. Once calculated, the utility will generate a C++ header and source file (AlignmentDerivatives.hh/AlignmentDerivatives.cc). This is included and implemented in the `AlignmentUtilities` namespace to provide the required non-zero derivatives given a cosmic track hit for 3 translation and 3 rotational degrees of freedom for Planes, and Panels.
+
+Simply run the `generate_derivatives.py` script to regenerate these files for the currently sourced Mu2e Offline release, if needed. 
+
+Please note: The algebraic derivatives are *not working* in this version. The time offset term still needs to be added to the residual expression.
