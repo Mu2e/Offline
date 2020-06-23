@@ -419,17 +419,19 @@ double GaussianDriftFit::TimeResidual(ComboHit const& sh, const std::vector<doub
 
   Straw const& straw = tracker->getStraw(sh.strawId());
   TwoLinePCA pca(intercept, dir, straw.getMidPoint(), straw.getDirection());
-  //int ambig = HitAmbiguity(sh, x);
 
   double traj_time = ((pca.point1() - intercept).dot(dir)) / 299.9;
   double hit_t0 = t0 + traj_time + srep.driftTimeOffset(sh.strawId(), 0, 0, pca.dca());
   
+  // We don't need to sign DOCA here because D2T(DOCA) = D2T(-DOCA) and
+  // the drift time is the same whether or not the track passed on the left or right
+  // of the wire.
   double predictedTime = srep.driftDistanceToTime(sh.strawId(), pca.dca(), 0) + sh.propTime() + hit_t0;
   double measuredTime = sh.time();
 
   double resid = predictedTime - measuredTime;
 
-  return  resid;//(pca.s2() > 0 ? resid : -resid); // 
+  return resid;
 }
 
 double GaussianDriftFit::DOCAresidualError(ComboHit const& sh, const std::vector<double>& x,
