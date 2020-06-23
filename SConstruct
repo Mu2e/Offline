@@ -4,8 +4,8 @@
 import os, re, string, sys
 
 import SCons 
-
 SCons.Defaults.DefaultEnvironment(tools = []) 
+
 # Functions that do small tasks and build lists
 import sconstruct_helper as sch
 # handles how the input files are collected and the output files are named
@@ -13,10 +13,6 @@ from mu2e_helper import mu2e_helper
 
 # this will contain global config info about the build
 mu2eOpts = {}
-
-# Intelligent caching of implicit dependencies
-SetOption('implicit_cache', 1)
-
 
 # add a mu2e debug print option like "--mu2ePrint=5"
 AddOption('--mu2ePrint', dest='mu2ePrint',
