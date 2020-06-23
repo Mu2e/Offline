@@ -89,6 +89,8 @@ public:
     fhicl::Atom<art::InputTag> lfToken{Name("LineFinderTag"),Comment("tag for line finder seed"),"LineFinder"};
     fhicl::Atom<bool> DoDrift{Name("DoDrift"),Comment("turn on for drift fit")};
     fhicl::Atom<bool> UseTime{Name("UseTime"),Comment("use time for drift fit")};
+    fhicl::Atom<double> mnTolerance{Name("MinuitTolerance"),Comment("Tolerance for minuit convergence"),0.1};
+    fhicl::Atom<double> mnPrecision{Name("MinuitPrecision"),Comment("Effective precision for likelihood function"),-1};
     fhicl::Table<CosmicTrackFit::Config> tfit{Name("CosmicTrackFit"), Comment("fit")};
 	};
 	typedef art::EDProducer::Table<Config> Parameters;
@@ -119,7 +121,9 @@ public:
   art::InputTag _lfToken;
 
 	bool 	   _DoDrift;
-  bool       _UseTime;
+        bool       _UseTime;
+        double _mnTolerance;
+        double _mnPrecision;
 
 	CosmicTrackFit     _tfit;
 
@@ -144,6 +148,8 @@ public:
       _lfToken (conf().lfToken()),
       _DoDrift (conf().DoDrift()),
       _UseTime (conf().UseTime()),
+      _mnTolerance (conf().mnTolerance()),
+      _mnPrecision (conf().mnPrecision()),
       _tfit (conf().tfit())
     {
       consumes<ComboHitCollection>(_chToken);
@@ -259,7 +265,7 @@ public:
 
             if(_DoDrift) {
               if (_UseTime) {
-                MinuitDriftFitter::DoDriftTimeFit(_debug,tseed, srep, &tracker );
+                MinuitDriftFitter::DoDriftTimeFit(_debug,tseed, srep, &tracker, _mnTolerance, _mnPrecision );
               } else {
                 _tfit.DriftFit(tseed, srep);
               }
