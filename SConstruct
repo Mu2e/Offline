@@ -70,7 +70,7 @@ env = Environment( CPPPATH = sch.cppPath(mu2eOpts),   # $ART_INC ...
 )
 
 # Make the Compilation DB generator available in the environment
-env.Tool('compilation_db', COMPILATIONDB_COMSTR="@")
+env.Tool('compilation_db', COMPILATIONDB_COMSTR=None)
 
 # Only re-compute an MD5 hash for a build target if the timestamp changed.
 env.Decider('MD5-timestamp')
