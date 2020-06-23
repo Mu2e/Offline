@@ -34,6 +34,8 @@ using namespace mu2e;
 
 namespace AlignmentUtilities {
 
+
+// KinKal-inspired track description
 struct CosmicTimeTrack {
   double params[5];
 
