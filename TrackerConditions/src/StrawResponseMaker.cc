@@ -3,7 +3,6 @@
 // data products
 #include <cmath>
 #include <algorithm>
-#include <TH1D.h>
 #include <TMath.h>
 #include "DataProducts/inc/StrawId.hh"
 #include "TrackerConditions/inc/StrawDrift.hh"
@@ -63,22 +62,28 @@ namespace mu2e {
     _parDriftOffsets.reserve(parameterizedDriftBins);
     _parDriftRes.reserve(parameterizedDriftBins);
     
-    TH1D h("","",10000,-20,80);
     for (int i=0;i<parameterizedDriftBins;i++){
       double doca = i*2.5/parameterizedDriftBins;
       double hypotenuse = sqrt(pow(doca,2) + pow(tau*_config.linearDriftVelocity(),2));
       double tau_eff = hypotenuse/_config.linearDriftVelocity() - doca/_config.linearDriftVelocity();
 
-      for (int it=0;it<h.GetNbinsX();it++){
-        double tresid = h.GetBinCenter(it+1);
-        h.SetBinContent(it+1,exp(sigma*sigma/(2*tau_eff*tau_eff)-tresid/tau_eff)*(1-TMath::Erf((sigma*sigma-tau_eff*tresid)/(sqrt(2)*sigma*tau_eff))));
+      double sumw = 0;
+      double sumwx = 0;
+      double sumwx2 = 0;
+      double tresid = -20.005;
+      for (int it=0;it<10000;it++){
+        double weight = exp(sigma*sigma/(2*tau_eff*tau_eff)-tresid/tau_eff)*(1-TMath::Erf((sigma*sigma-tau_eff*tresid)/(sqrt(2)*sigma*tau_eff)));
+        sumw += weight;
+        sumwx += weight*tresid;
+        sumwx2 += weight*tresid*tresid;
+        tresid += 0.01;
       }
-      h.Scale(1.0/h.Integral());
+      double mean = sumwx/sumw;
+      double stddev = sqrt(sumwx2/sumw-mean*mean);
 
       _parDriftDocas.push_back(doca);
-      _parDriftOffsets.push_back(h.GetMean());
-      _parDriftRes.push_back(h.GetRMS());
-      h.Reset();
+      _parDriftOffsets.push_back(mean);
+      _parDriftRes.push_back(stddev);
     }
     
     auto ptr = std::make_shared<StrawResponse>(

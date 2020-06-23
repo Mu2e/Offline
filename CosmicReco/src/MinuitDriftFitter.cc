@@ -218,22 +218,29 @@ void DoDriftTimeFit(
     std::vector<double> & errors,
     std::vector<double> & cov_out,
     bool & minuit_converged,
-    GaussianDriftFit const& fit) {
+    GaussianDriftFit const& fit,
+    int diag, double mntolerance, double mnprecision) {
   
   // Initiate Minuit Fit:
   ROOT::Minuit2::MnStrategy mnStrategy(2);
   ROOT::Minuit2::MnUserParameters params(pars, errors);
   ROOT::Minuit2::MnMigrad migrad(fit, params, mnStrategy);
 
-  // Define Minimization method as "MIGRAD" (see minuit documentation)
-  ROOT::Minuit2::FunctionMinimum min = migrad(0, 0.1);
+  if (mnprecision > 0) {
+    migrad.SetPrecision(mnprecision);
+  }
 
-  // diagnostic level FIXME! should be able to set this
-  ROOT::Minuit2::MnPrint::SetLevel(0);
-  
+  // Define Minimization method as "MIGRAD" (see minuit documentation)
+  ROOT::Minuit2::FunctionMinimum min = migrad(0, mntolerance);
+  if (diag > 1) {
+    ROOT::Minuit2::MnPrint::SetLevel(3);
+    ROOT::Minuit2::operator<<(cout, min);
+  } else {
+    ROOT::Minuit2::MnPrint::SetLevel(0);
+  }
+
   // Will be the results of the fit routine:
   ROOT::Minuit2::MnUserParameters const& results = min.UserParameters();
-  //      double minval = min.Fval();
 
   minuit_converged = min.IsValid();
   pars = results.Params();
@@ -247,7 +254,7 @@ void DoDriftTimeFit(
 }
 
 void DoDriftTimeFit(int const& diag, CosmicTrackSeed& tseed, StrawResponse const& srep,
-                    const Tracker* tracker) {
+                    const Tracker* tracker, double mntolerance, double mnprecision) {
 
   auto dir = tseed._track.FitEquation.Dir;
   auto intercept = tseed._track.FitEquation.Pos;
@@ -271,7 +278,9 @@ void DoDriftTimeFit(int const& diag, CosmicTrackSeed& tseed, StrawResponse const
 
   // Define the PDF used by Minuit:
   GaussianDriftFit fit(tseed._straw_chits, srep, tracker);
-  DoDriftTimeFit(pars, errors, tseed._track.MinuitParams.cov, tseed._track.minuit_converged, fit);
+  DoDriftTimeFit(pars, errors, tseed._track.MinuitParams.cov, 
+    tseed._track.minuit_converged, fit, 
+    diag, mntolerance, mnprecision);
 
   tseed._track.MinuitParams.A0 = pars[0];
   tseed._track.MinuitParams.B0 = pars[1];
