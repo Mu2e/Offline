@@ -61,7 +61,7 @@ void DoDriftTimeFit(
     std::vector<double> & cov_out,
     bool & minuit_converged,
     GaussianDriftFit const& fit, 
-    int diag, double mntolerance=0.1, double mnprecision=-1);
+    int diag=0, double mntolerance=0.1, double mnprecision=-1);
 
 void DoDriftTimeFit(int const& diag, CosmicTrackSeed& tseed, StrawResponse const& srep,
                     const Tracker* tracker, double mntolerance=0.1, double mnprecision=-1);
