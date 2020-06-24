@@ -13,9 +13,6 @@ BEGIN_PROLOG
     MaxTimeRes : 10.0
     MinTrackSH: 10
 
-    PlaneFilter : false
-    PlaneFilterList : [ ]
-
     ConstrainStrategy : "Fix"
     FixPlane : [ 5, 30 ]
 
@@ -35,6 +32,8 @@ BEGIN_PROLOG
     SteeringOpts : [ ]
 
     ErrorScale : 1.0
+
+    EnableLOOCVFitting : false
 }
 
 
