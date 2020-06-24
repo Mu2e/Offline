@@ -112,9 +112,21 @@ function mu2ealign_mergeoutput() {
 function mu2ealign_genjobfcl() {
     cp ${MU2E_BASE_RELEASE}/TrackerAlignment/fcl/job_template.fcl job.fcl
     echo "Generated new job.fcl!"
-    echo "Using DS_COSMIC_NOFIELD_ALIGNSELECT as dataset. ( 4 files )"
+    echo "Using DS_COSMIC_NOFIELD_ALIGNSELECT as dataset. ( 8 files )"
     echo "Please change sources.txt if you want to use something else."
-    head -n 4 ${DS_COSMIC_NOFIELD_ALIGNSELECT} > sources.txt
+    head -n 8 ${DS_COSMIC_NOFIELD_ALIGNSELECT} > sources.txt
+}
+
+function mu2ealign_progress() {
+    tracks=0
+    for f in job_part*.log; do
+        tcount=$(tac $f | grep -m1 "wrote track" | awk 'NF>1{print $NF}' | tr -d '\n' | tr -d '\r')
+        if [ "$tcount" = "" ]; then 
+          tcount=0
+        fi
+        tracks=$((tracks + tcount))
+    done
+    echo -en "\r... $tracks tracks ..."
 }
 
 function mu2ealign_runNaligniters() {
@@ -126,6 +138,14 @@ function mu2ealign_runNaligniters() {
         # run first alignment iteration
         if [ ! -f "alignconstants_out.txt" ]; then
             mu2ealign run
+            lastm2epid=$!
+            while [ -d "/proc/$lastm2epid" ]; do
+                mu2ealign_progress
+                sleep 2
+            done
+            echo ""
+            echo "... nearly done ..."
+
             wait;
 
             mu2ealign pede
@@ -147,6 +167,13 @@ function mu2ealign_runNaligniters() {
                 
                 mu2ealign run 
 
+                lastm2epid=$!
+                while [ -d "/proc/$lastm2epid" ]; do
+                    mu2ealign_progress
+                    sleep 2
+                done
+                echo ""
+                echo "... nearly done ..."
                 wait 
 
                 mu2ealign pede
@@ -174,7 +201,10 @@ function mu2ealign_runNaligniters() {
         mu2ealign run 
 
         wait 
-        
+        mu2ealign_checkcomplete || return 1
+        mu2ealign_mergeoutput
+
+
         echo "Complete! Final alignment constants are in $lastconsts"
     )
 }
@@ -214,6 +244,8 @@ function mu2ealign() {
             fi
         fi
 
+        git -C ${MU2E_BASE_RELEASE} log -1 | tee revision.txt
+
         cp ${ALIGN_CONST_FILE} alignconstants_in.txt
 
         JOB_FCL_FILE=$(dirname ${ALIGN_CONST_FILE})/job.fcl
@@ -227,6 +259,7 @@ function mu2ealign() {
         else
             mu2ealign_genjobfcl
         fi
+
 
         # produces a job.fcl to run and a seed alignment constant file
         # for DbService

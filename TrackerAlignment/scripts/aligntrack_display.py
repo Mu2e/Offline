@@ -38,7 +38,7 @@ def hist_meanresid(ax, hist, label=''):
         label=label
     )
     ax.set_xlim(bin_edges[0], bin_edges[-1])
-    ax.set_ylim(-1, 1)
+    ax.set_ylim(-2.5, 2.5)
     #ax.hlines(0, 0,216, linestyles='dashed')
     ax.set_title('Mean time residual per panel')
 
@@ -59,10 +59,13 @@ def hist_poiserr(ax, hist, label='', fitgauss=False):
     maxmag = abs(max(bin_centers))*1.5
 
     if fitgauss:
-        (A,mu,sigma), pcov = curve_fit(gauss, bin_centers, y, bounds=((-np.inf, -np.inf, -np.inf), (np.inf, np.inf, np.inf)))
-        lab = '(mu, sig) = (%.2f, %.2f)' % (mu,abs(sigma))
+        try:
+            (A,mu,sigma), pcov = curve_fit(gauss, bin_centers, y, bounds=((-np.inf, -np.inf, -np.inf), (np.inf, np.inf, np.inf)))
+            lab = '(mu, sig) = (%.2f, %.2f)' % (mu,abs(sigma))
 
-        ax.plot(bin_centers, gauss(bin_centers, A,mu,sigma),  'r-.', lw=0.5)
+            ax.plot(bin_centers, gauss(bin_centers, A,mu,sigma),  'r-.', lw=0.5)
+        except:
+            print ('did not converge...')
 
 
     line = ax.errorbar(
