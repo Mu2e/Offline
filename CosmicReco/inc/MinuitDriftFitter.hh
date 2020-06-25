@@ -60,10 +60,11 @@ void DoDriftTimeFit(
     std::vector<double> & errors,
     std::vector<double> & cov_out,
     bool & minuit_converged,
-    GaussianDriftFit const& fit);
+    GaussianDriftFit const& fit, 
+    int diag=0, double mntolerance=0.1, double mnprecision=-1);
 
 void DoDriftTimeFit(int const& diag, CosmicTrackSeed& tseed, StrawResponse const& srep,
-                    const Tracker* tracker);
+                    const Tracker* tracker, double mntolerance=0.1, double mnprecision=-1);
 
 } // namespace MinuitDriftFitter
 
