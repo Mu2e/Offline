@@ -227,7 +227,9 @@ namespace mu2e {
     std::string _targetFinMaterial;
     std::string _targetVacuumMaterial;
     std::string _supportRingMaterial;
+  public:
     std::string _spokeMaterial;
+  private:
     int _numberOfTargetSections;
     std::vector<double> _startingSectionThickness;
     std::vector<int> _numberOfSegmentsPerSection;
@@ -243,8 +245,38 @@ namespace mu2e {
     double _supportRingOuterRadius;
     double _supportRingCutoutThickness;
     double _supportRingCutoutLength;
-		     
+    
+  public:
+    //parameters for the support wheel
+    bool                _supportsBuild; //whether or not to build the supports
+    double              _supportWheelRIn;
+    double              _supportWheelROut;
+    double              _supportWheelHL; //half thickness in z
+    std::string         _supportWheelMaterial;
+    
+    //parameters for the non-wheel features near the support rods that are on the wheel
+    std::vector<double> _supportWheelFeatureAngles;
+    std::vector<double> _supportWheelFeatureArcs;
+    std::vector<double> _supportWheelFeatureRIns;
 
+    //parameters for rods in the support wheel
+    std::vector<double> _supportWheelRodHL; //includes length through the wheel
+    std::vector<double> _supportWheelRodOffset; //z offset with respect to the wheel
+    std::vector<double> _supportWheelRodRadius; //radius of the rod
+    std::vector<double> _supportWheelRodRadialOffset; //radius from the wheel center the rod is centered at
+    std::vector<double> _supportWheelRodWireOffsetD; //z offset from the end of the rod the wire connects (downstream)
+    std::vector<double> _supportWheelRodWireOffsetU; //z offset from the end of the rod the wire connects (upstream)
+    std::vector<double> _supportWheelRodAngles; //angle about the wheel the rod is 
+    std::vector<double> _supportWheelRodTilts; //angle the downstream end is tilted towards the center
+
+    //parameters for the wires (spokes) connecting the support wheel and the target
+    // std::string         _spokeMaterial; (defined above)
+    int                 _nSpokesPerSide; //also constrains the number of rods in the support wheel
+    std::vector<double> _spokeTargetAnglesD; //angle about the target the wire connects to (downstream)
+    std::vector<double> _spokeTargetAnglesU; //angle about the target the wire connects to (upstream)
+    double              _spokeRadius; //radius of the wire
+    
+  private:
     // Needed for persistency
     template<class T> friend class art::Wrapper;
     ProductionTarget():_pHubsRgtParams(NULL), _pHubsLftParams(NULL) {}

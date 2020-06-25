@@ -1057,11 +1057,145 @@ namespace mu2e {
 			,"ProductionTarget"
 			,verbosityLevel>1);
 	  
-	}
-      }
-    }
-  }
-}
+	} //end if(ithSection == (numberOfSections -1) )
+      } //end for(int ithSection...)
+
+      //Add support structures for the production target
+      if(tgt->_supportsBuild) {
+	G4Material* suppWheelMaterial = findMaterialOrThrow(tgt->_supportWheelMaterial);
+	G4ThreeVector localWheelCenter(0.0,0.0,0.0); //no offset
+	TubsParams suppWheelParams( tgt->_supportWheelRIn, tgt->_supportWheelROut, tgt->_supportWheelHL);
+	VolumeInfo suppWheelInfo   = nestTubs( "ProductionTargetSupportWheel",
+					       suppWheelParams,
+					       suppWheelMaterial,
+					       0,
+					       localWheelCenter,
+					       prodTargetMotherInfo,
+					       0,
+					       G4Colour::Gray()
+					       );
+
+	// add spokes //
+
+	//spoke info
+	int nspokesperside = tgt->_nSpokesPerSide;
+	G4Material* spokeMaterial = findMaterialOrThrow(tgt->_spokeMaterial);
+	//target info
+	double rTarget = tgt->supportRingOuterRadius(); //radius of the support ring to attach to
+	double zTarget = tgt->halfHaymanLength(); //where along the target to attach
+	double smallGap = 0.001; //for adding small offsets to avoid overlaps due to precision
+	for(int istream = 0; istream < 2; ++istream) {
+	  for(int ispoke = 0; ispoke < nspokesperside; ++ispoke) {
+	    if(istream == 0) { //only do once
+	      //add the features near the support rods in the bicycle wheel
+	      const double featureAngle = tgt->_supportWheelFeatureAngles[ispoke]*CLHEP::degree; //angle of feature center
+	      const double featureArc   = tgt->_supportWheelFeatureArcs[ispoke]*CLHEP::degree; //width in angle
+	      const double featureRIn   = tgt->_supportWheelFeatureRIns[ispoke]; //inner radius of feature
+	      double featureROut = tgt->_supportWheelRIn - smallGap;
+	      // double featureR = (featureRIn + featureROut)/2.; //radius of feature center
+	      // CLHEP::Hep3Vector featureCenter(featureR*cos(featureAngle), featureR*sin(featureAngle), 0.);
+	      CLHEP::Hep3Vector featureCenter(localWheelCenter); //center is wheel center
+	      TubsParams featureParams(featureRIn, featureROut, tgt->_supportWheelHL, featureAngle - featureArc/2. /*phi0*/, featureArc /*dphi*/);
+	      std::stringstream featureName;
+	      featureName << "ProductionTargetSupportWheelFeature_" << ispoke;
+	      VolumeInfo featureInfo = nestTubs(featureName.str(),
+						featureParams,
+						suppWheelMaterial,
+						0,
+						featureCenter,
+						prodTargetMotherInfo,
+						0,
+						G4Colour::Gray()
+						);
+	    }
+	    //get angle of the support rod on the wheel and the angle on the target the wire connects to
+	    const double wheelAngle =  tgt->_supportWheelRodAngles[ispoke]*CLHEP::degree;
+	    const double targetAngle = (istream == 0) ? tgt->_spokeTargetAnglesD[ispoke]*CLHEP::degree 
+	      : tgt->_spokeTargetAnglesU[ispoke]*CLHEP::degree;
+	    //get the angle the rod makes from the z axis (here called tilt)
+	    const double rodTilt = tgt->_supportWheelRodTilts[ispoke]*CLHEP::degree;
+	    int side = (1-2*istream); //+1 or -1
+	    //info about wire connection
+	    double rodLength = tgt->_supportWheelRodHL[ispoke]; //half length of the rod, length of this side if no angle or wheel
+	    rodLength += side*tgt->_supportWheelRodOffset[ispoke]; //add to downstream subtract from upstream offset, imagine as just adding/subtracting from both
+	    double rWheel = tgt->_supportWheelRodRadialOffset[ispoke]; // radius of the wheel to attach to
+	    rodLength -= tgt->_supportWheelHL/cos(rodTilt) + smallGap; //remove overlap with bicycle
+	    rodLength -= tgt->_supportWheelRodRadius[ispoke]*abs(tan(rodTilt)); //remove length overlapping with wheel due to angle
+	    //length from center of wheel to center of rod along the rod
+	    double lRodCenter = rodLength/2. + (tgt->_supportWheelHL +tgt->_supportWheelRodRadius[ispoke]*abs(tan(rodTilt)))/cos(rodTilt);
+	    rWheel += sin(side*rodTilt)*(lRodCenter);
+
+	    TubsParams rodParams(0., tgt->_supportWheelRodRadius[ispoke], rodLength/2.);
+	    CLHEP::Hep3Vector rodCenter(rWheel*cos(wheelAngle), rWheel*sin(wheelAngle), 
+					side*(lRodCenter*cos(rodTilt)));
+	    
+	    std::stringstream rodName;
+	    rodName << "ProductionTargetSupportRod_";
+	    if(istream == 0)
+	      rodName << "Downstream_";
+	    else
+	      rodName << "Upstream_";
+	    rodName << ispoke;
+	    CLHEP::Hep3Vector zax(0.,0.,1.);
+	    CLHEP::Hep3Vector rodAxis(cos(wheelAngle)*sin(rodTilt), sin(wheelAngle)*sin(rodTilt), cos(rodTilt));
+	    CLHEP::HepRotation *rodRot = new CLHEP::HepRotation(rodAxis.cross(zax), rodAxis.angle(zax));
+	    VolumeInfo suppWheelRodInfo   = nestTubs( rodName.str(),
+						      rodParams,
+						      suppWheelMaterial,
+						      rodRot,
+						      rodCenter,
+						      prodTargetMotherInfo,
+						      0,
+						      G4Colour::Gray()
+						      );
+	    //now consider attaching the wire to the rod
+	    double rWireRod = tgt->_supportWheelRodRadialOffset[ispoke] + sin(side*rodTilt)*(lRodCenter+rodLength/2.);
+	    rWireRod -= tgt->_supportWheelRodRadius[ispoke]*cos(rodTilt); //translate to bottom of rod
+	    double zWireRodOffset = (istream == 0) ? tgt->_supportWheelRodWireOffsetD[ispoke] : tgt->_supportWheelRodWireOffsetU[ispoke];
+	    rWireRod -= zWireRodOffset*sin(side*rodTilt); //translate due to moving along rod
+	    double zWireRod = side*((rodLength/2-zWireRodOffset)*cos(rodTilt)+tgt->_spokeRadius) + rodCenter.z();
+	    zWireRod += tgt->_supportWheelRodRadius[ispoke]*sin(rodTilt); //account for z shift of bottom due to tilt, side independent
+	    //get position at target
+	    double rTargetWire = rTarget;
+	    rTargetWire += tgt->_spokeRadius; //add buffer in case of overlap, should use angle of wire, rod, and target end ring
+	    rWireRod -= tgt->_spokeRadius;
+	    CLHEP::Hep3Vector wheelPos(rWireRod*cos(wheelAngle), rWireRod*sin(wheelAngle), zWireRod); //assume no angle of the support
+	    CLHEP::Hep3Vector targetPos(rTargetWire*cos(targetAngle), rTargetWire*sin(targetAngle), side*zTarget);
+	    targetPos = tgt->productionTargetRotation().inverse()*targetPos; //rotate from target frame to mother frame
+	    CLHEP::Hep3Vector spokeCenter((wheelPos+targetPos)/2.);
+	    double spokeLength = abs((wheelPos-targetPos).mag());
+	    TubsParams spokeParams(0., tgt->_spokeRadius, 0.5*spokeLength);
+	    CLHEP::Hep3Vector spokeAxis((wheelPos-targetPos).unit());
+	    CLHEP::HepRotation* spokeRot = new CLHEP::HepRotation(spokeAxis.cross(zax), spokeAxis.angle(zax));
+	    std::stringstream spokeName;
+	    spokeName << "ProductionTargetSpokeWire_" ;
+	    if(istream == 0)
+	      spokeName << "Downstream_";
+	    else
+	      spokeName << "Upstream_";
+	    spokeName << ispoke;
+
+	    VolumeInfo spokeInfo   = nestTubs( spokeName.str(),
+					       spokeParams,
+					       spokeMaterial,
+					       spokeRot,
+					       spokeCenter,
+					       prodTargetMotherInfo,
+					       0,
+					       prodTargetVisible,
+					       G4Colour::Gray(),
+					       prodTargetSolid,
+					       forceAuxEdgeVisible,
+					       placePV,
+					       doSurfaceCheck
+					       );
+	  
+	  } //end spokes loop
+	} //end stream loop
+      } //end adding support structures
+    } //end ProductionTargetMaker::hayman_v_2_0
+  } //end constructTargetPS
+} //end namespace mu2e
 
  // end Mu2eWorld::constructPS
 

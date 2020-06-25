@@ -170,7 +170,7 @@ namespace mu2e {
 	  << file
 	  << endl;
       }
-      cout << "GeometryService: printing top level geometry file:\n";
+      std::cout << "GeometryService: printing top level geometry file:\n";
       std::string line;
       while ( in ){
 	std::getline(in,line);
@@ -180,7 +180,7 @@ namespace mu2e {
 
 	std::cout << line.c_str() << std::endl;
       }
-      cout << "GeometryService: finished printing top level geometry file.\n";
+      std::cout << "GeometryService: finished printing top level geometry file.\n";
     }
     // Print final state of file after all substitutions.
     if ( _printConfig      ){ _config->print(cout, "Geom: ");       }
