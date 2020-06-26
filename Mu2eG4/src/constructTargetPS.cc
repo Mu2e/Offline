@@ -121,11 +121,13 @@ namespace mu2e {
 						    G4Colour::Blue(),
 						    "PS"
 						    );
-      G4cout << "inside clause 1 of " << __func__ << G4endl;
-     G4cout << "target position and hall origin = " << tgt->position() << "\n" << _hallOriginInMu2e << " " <<
-	parent.centerInMu2e() << G4endl;
-      G4cout << "supWheel and envHalfLength = " << _clamp_supWheel_rOut  << "\n" <<
-	envHalfLength << G4endl;
+      if(verbosityLevel > 0) {
+	G4cout << "inside clause 1 of " << __func__ << G4endl;
+	G4cout << "target position and hall origin = " << tgt->position() << "\n" << _hallOriginInMu2e << " " <<
+	  parent.centerInMu2e() << G4endl;
+	G4cout << "supWheel and envHalfLength = " << _clamp_supWheel_rOut  << "\n" <<
+	  envHalfLength << G4endl;
+      }
 
       double const _supWheel_trgtPS_rIn         = _config.getDouble("supWheel_trgtPS_rIn");
       double const _supWheel_trgtPS_rOut        = _config.getDouble("supWheel_trgtPS_rOut");
@@ -192,7 +194,8 @@ namespace mu2e {
 					      0,
 					      G4Colour::Magenta()
 					      );
-      G4cout << "_loclCenter for Tier 1 target = " << _loclCenter << G4endl;
+      if(verbosityLevel > 0)
+	G4cout << "_loclCenter for Tier 1 target = " << _loclCenter << G4endl;
       // Now add fins for version 2
       if ( tgt->version() > 1 ) {
 	// Length of fins must be calculated:
@@ -452,7 +455,7 @@ namespace mu2e {
       G4ThreeVector _loclCenter(0.0,0.0,0.0);
       G4ThreeVector zeroTranslation(0.,0.,0.);
       G4RotationMatrix* targetRotation = reg.add(G4RotationMatrix(tgt->productionTargetRotation().inverse()));
-      if (verbosityLevel > 2){G4cout << "target rotation  = " << *targetRotation << G4endl;}
+      if (verbosityLevel > 2){G4cout << __PRETTY_FUNCTION__ << "target rotation  = " << *targetRotation << G4endl;}
       VolumeInfo prodTargetMotherInfo   = nestTubs( "ProductionTargetMother",
 						    prodTargetMotherParams,
 						    parent.logical->GetMaterial(),
@@ -470,7 +473,7 @@ namespace mu2e {
 	  _hallOriginInMu2e << " " << parent.centerInMu2e() << G4endl;
       }
       if (verbosityLevel > 2){
-	G4cout << __func__ << "created prodTargetMotherInfo " 
+	G4cout << __PRETTY_FUNCTION__ << "created prodTargetMotherInfo " 
 		  << tgt->productionTargetMotherOuterRadius() 
 		  << " " <<tgt->productionTargetMotherHalfLength() << G4endl;
       }
@@ -488,7 +491,7 @@ namespace mu2e {
       // start at most negative end (technically could start at center but this is simpler since target is not symmetric about its center
       // this variable gets incremented every time we add anything
       double _currentZ = _loclCenter.z() - tgt->halfHaymanLength();
-      if (verbosityLevel > 2){G4cout << __func__ << " current Z starts at " << _currentZ << G4endl;}
+      if (verbosityLevel > 2){G4cout << __PRETTY_FUNCTION__ << " current Z starts at " << _currentZ << G4endl;}
       //
       // running z locations for placing elements
       CLHEP::Hep3Vector _segmentCenter(0.,0.,0.);
@@ -550,7 +553,7 @@ namespace mu2e {
 	//set currentZ to be in the center of the starting section
 	_currentZ += tgt->startingSectionThickness().at(ithSection)/2.;
 	if (verbosityLevel > 3){
-	  G4cout << __func__ << " ithSection , startingSegmentCenter at " << ithSection << " " <<_currentZ << G4endl;
+	  G4cout << __PRETTY_FUNCTION__ << " ithSection , startingSegmentCenter at " << ithSection << " " <<_currentZ << G4endl;
 	  G4cout << "    and copy number for starting segment is now " << coreCopyNumber << G4endl;
 	}
  	_startingSegmentCenter.setZ(_currentZ);
@@ -682,10 +685,19 @@ namespace mu2e {
 					   0.,
 					   2.*M_PI);
 
+	  if (verbosityLevel > 0){
+	    G4cout << __PRETTY_FUNCTION__ << ": \n " << name.c_str() << ":\n  (rin, rout, half length) = (" 
+		   << tgt->supportRingInnerRadius() << ", " << tgt->supportRingOuterRadius() 
+		   << ", " << tgt->supportRingLength()/2. << ")" << G4endl;
+	  }
 	  // move ring to end of target and then back by cutout size (signs for negative side)
 	  G4ThreeVector ringTranslation = currentStartingSegmentCenter 
 	    - tgt->productionTargetRotation().inverse()*CLHEP::Hep3Vector(0.,0.,tgt->supportRingLength()/2.);
 
+	  if (verbosityLevel > 0){
+	    G4cout << "  center = (0., 0., -" << (currentStartingSegmentCenter.mag() + tgt->supportRingLength()/2.) << ")" << G4endl;
+	    G4cout << "  center (wrt target mother) = " << ringTranslation << G4endl;
+	  }
 	  // the way we handle the cutout is a little different; the tubs is centered on zero, not offset from the z axis
 	  // build one cutout box for each fin.  This ignores the extra cutouts (easy enough to put in later) and the mounting mechanisms,
 	  // which won't matter for muon yield, heat deposition, etc -- just looks like tungsten for those purposes
@@ -732,6 +744,12 @@ namespace mu2e {
 	  }
 	
 	  
+	  if (verbosityLevel > 0){
+	    G4cout << "  center (at end) = (0., 0., " << ringTranslation.mag() << ")" <<G4endl;
+	    G4cout << "  center (wrt target mother at end) = " << ringTranslation << G4endl;
+	    
+	    G4cout << "  rotation = " << rotRing << G4endl;
+	  }
 
 	  VolumeInfo ringWithCutoutNegative(name,ringTranslation,prodTargetMotherInfo.centerInWorld);
           ringWithCutoutNegative.solid = ringWithCutoutSolid.at(tgt->nHaymanFins() - 1);  
@@ -754,7 +772,7 @@ namespace mu2e {
 	//
 	// set current z to be at the end of this starting segment before beginning loop on sections
 	_currentZ += tgt->startingSectionThickness().at(ithSection)/2.;
-	if (verbosityLevel > 0){G4cout << __func__ << " ithSection , startingSegment Z ends at " << ithSection << " " <<_currentZ << G4endl;}
+	if (verbosityLevel > 0){G4cout << __PRETTY_FUNCTION__ << " ithSection , startingSegment Z ends at " << ithSection << " " <<_currentZ << G4endl;}
 	double currentGap = tgt->thicknessOfGapPerSection().at(ithSection);
 	double currentHalfSegment = tgt->thicknessOfSegmentPerSection().at(ithSection)/2.;
 
@@ -762,13 +780,13 @@ namespace mu2e {
 	  std::string name = "ProductionTargetCoreSection_" + std::to_string(ithSection+1) 
 	    + "_Segment_" + std::to_string(ithSegment);
 	  if (verbosityLevel > 0) {
-	    G4cout << __func__ << "name = " << name << " and core copy number = " << coreCopyNumber << G4endl;
-	    G4cout << __func__ << "gap, and segment half = " << currentGap << " " << currentHalfSegment << G4endl;
+	    G4cout << __PRETTY_FUNCTION__ << "name = " << name << " and core copy number = " << coreCopyNumber << G4endl;
+	    G4cout << __PRETTY_FUNCTION__ << "gap, and segment half = " << currentGap << " " << currentHalfSegment << G4endl;
 	  }
 	  TubsParams segmentParams(0.,targetRadius,currentHalfSegment);
 	  _currentZ += currentHalfSegment + currentGap;
 	  if (verbosityLevel > 0){
-	    G4cout << __func__ << " ithSection , current Z for segment center is at " << ithSection << " " 
+	    G4cout << __PRETTY_FUNCTION__ << " ithSection , current Z for segment center is at " << ithSection << " " 
 		      << ithSegment << " "  <<_currentZ << G4endl;
 	  }
  	  _segmentCenter.setZ(_currentZ);
@@ -906,7 +924,7 @@ namespace mu2e {
 	    _currentZ += currentGap;
 	    if (verbosityLevel > 0){G4cout << " z after = " << _currentZ << G4endl;}
 	  }
-	  if (verbosityLevel > 0){G4cout << __func__ << " ending at z=" << _currentZ << G4endl;}
+	  if (verbosityLevel > 0){G4cout << __PRETTY_FUNCTION__ << " ending at z=" << _currentZ << G4endl;}
 	}
 	  ++coreCopyNumber;
 	//
@@ -918,7 +936,7 @@ namespace mu2e {
 	  //	
 	  //set currentZ to be in the center of the starting section
 	  _currentZ += tgt->startingSectionThickness().at(ithSection)/2.;
-	  if (verbosityLevel > 0){G4cout << __func__ << " ithSection+1 , startingSegmentCenter at " << ithSection+1 << " " <<_currentZ << G4endl;}
+	  if (verbosityLevel > 0){G4cout << __PRETTY_FUNCTION__ << " ithSection+1 , startingSegmentCenter at " << ithSection+1 << " " <<_currentZ << G4endl;}
 	  _startingSegmentCenter.setZ(_currentZ);
 	  CLHEP::Hep3Vector currentStartingSegmentCenter = tgt->productionTargetRotation().inverse()*_startingSegmentCenter;
 	  double currentHalfStartingSegment = tgt->startingSectionThickness().at(ithSection)/2.;
@@ -1000,7 +1018,7 @@ namespace mu2e {
 	  // set current z to be at the end of this starting segment as a final check
 	  _currentZ += tgt->startingSectionThickness().at(ithSection)/2.;
 	  if (verbosityLevel > 0){
-	    G4cout << __func__ << " ithSection+1 , startingSegment Z ends at " << ithSection+1 << " " <<_currentZ << G4endl;
+	    G4cout << __PRETTY_FUNCTION__ << " ithSection+1 , startingSegment Z ends at " << ithSection+1 << " " <<_currentZ << G4endl;
 	    G4cout << "             with copy number for last segment  = " << ithSection+1 << G4endl;
 	  }
 	  /***********and now the final end ring  ***********/
@@ -1011,11 +1029,19 @@ namespace mu2e {
 					   tgt->supportRingLength()/2.,
 					   0.,
 					   2.*M_PI);
-
+	  if (verbosityLevel > 0){
+	    G4cout << __PRETTY_FUNCTION__ << ": \n " << name.c_str() << ":\n  (rin, rout, half length) = (" 
+		   << tgt->supportRingInnerRadius() << ", " << tgt->supportRingOuterRadius() 
+		   << ", " << tgt->supportRingLength()/2. << ")" << G4endl;
+	  }
 	  // move ring to end of target and then back by cutout size (signs for positive side)
 	  G4ThreeVector ringTranslation = currentStartingSegmentCenter 
 	    + tgt->productionTargetRotation().inverse()*CLHEP::Hep3Vector(0.,0.,tgt->supportRingLength()/2.);
 
+	  if (verbosityLevel > 0){
+	    G4cout << "  center = (0., 0., " << (currentStartingSegmentCenter.mag() + tgt->supportRingLength()/2.) << ")" << G4endl;
+	    G4cout << "  center (wrt target mother) = " << ringTranslation << G4endl;
+	  }
 	  std::vector<G4SubtractionSolid*> ringWithCutoutSolid;
 	  std::string nameRing = "ProductionTargetPositiveRingCutout";
 
@@ -1045,6 +1071,12 @@ namespace mu2e {
 	  }
 
 	  
+	  if (verbosityLevel > 0){
+	    G4cout << "  center (at end) = (0., 0., " << ringTranslation.mag() << ")" <<G4endl;
+	    G4cout << "  center (wrt target mother at end) = " << ringTranslation << G4endl;
+	    
+	    G4cout << "  rotation = " << rotRing << G4endl;
+	  }
 	  VolumeInfo ringWithCutoutPositive(name,ringTranslation,prodTargetMotherInfo.centerInWorld);
           ringWithCutoutPositive.solid = ringWithCutoutSolid.at(tgt->nHaymanFins() - 1); // what does this =  mean?  
 	  finishNesting(ringWithCutoutPositive
@@ -1061,10 +1093,10 @@ namespace mu2e {
       } //end for(int ithSection...)
 
       //Add support structures for the production target
-      if(tgt->_supportsBuild) {
-	G4Material* suppWheelMaterial = findMaterialOrThrow(tgt->_supportWheelMaterial);
+      if(tgt->supportsBuild()) {
+	G4Material* suppWheelMaterial = findMaterialOrThrow(tgt->supportWheelMaterial());
 	G4ThreeVector localWheelCenter(0.0,0.0,0.0); //no offset
-	TubsParams suppWheelParams( tgt->_supportWheelRIn, tgt->_supportWheelROut, tgt->_supportWheelHL);
+	TubsParams suppWheelParams( tgt->supportWheelRIn(), tgt->supportWheelROut(), tgt->supportWheelHL());
 	VolumeInfo suppWheelInfo   = nestTubs( "ProductionTargetSupportWheel",
 					       suppWheelParams,
 					       suppWheelMaterial,
@@ -1078,24 +1110,42 @@ namespace mu2e {
 	// add spokes //
 
 	//spoke info
-	int nspokesperside = tgt->_nSpokesPerSide;
-	G4Material* spokeMaterial = findMaterialOrThrow(tgt->_spokeMaterial);
+	const int nspokesperside = tgt->nSpokesPerSide();
+	G4Material* spokeMaterial = findMaterialOrThrow(tgt->spokeMaterial());
 	//target info
 	double rTarget = tgt->supportRingOuterRadius(); //radius of the support ring to attach to
 	double zTarget = tgt->halfHaymanLength(); //where along the target to attach
 	double smallGap = 0.001; //for adding small offsets to avoid overlaps due to precision
+	//initialize parameter vectors
+	//features on wheel
+	const vector<double> supportWheelFeatureAngles = tgt->supportWheelFeatureAngles();
+	const vector<double> supportWheelFeatureArcs   = tgt->supportWheelFeatureArcs  ();
+	const vector<double> supportWheelFeatureRIns   = tgt->supportWheelFeatureRIns  ();
+	//support rods in wheel
+	const vector<double> supportWheelRodHL           = tgt->supportWheelRodHL          ();
+	const vector<double> supportWheelRodOffset       = tgt->supportWheelRodOffset      ();
+	const vector<double> supportWheelRodRadius       = tgt->supportWheelRodRadius      ();
+	const vector<double> supportWheelRodRadialOffset = tgt->supportWheelRodRadialOffset();
+	const vector<double> supportWheelRodWireOffsetD  = tgt->supportWheelRodWireOffsetD ();
+	const vector<double> supportWheelRodWireOffsetU  = tgt->supportWheelRodWireOffsetU ();
+	const vector<double> supportWheelRodAngles       = tgt->supportWheelRodAngles      ();
+	const vector<double> supportWheelRodTilts        = tgt->supportWheelRodTilts       ();
+	//spoke (support wire) angles
+	const vector<double> spokeTargetAnglesD = tgt->spokeTargetAnglesD();
+	const vector<double> spokeTargetAnglesU = tgt->spokeTargetAnglesU();
+
 	for(int istream = 0; istream < 2; ++istream) {
 	  for(int ispoke = 0; ispoke < nspokesperside; ++ispoke) {
 	    if(istream == 0) { //only do once
 	      //add the features near the support rods in the bicycle wheel
-	      const double featureAngle = tgt->_supportWheelFeatureAngles[ispoke]*CLHEP::degree; //angle of feature center
-	      const double featureArc   = tgt->_supportWheelFeatureArcs[ispoke]*CLHEP::degree; //width in angle
-	      const double featureRIn   = tgt->_supportWheelFeatureRIns[ispoke]; //inner radius of feature
-	      double featureROut = tgt->_supportWheelRIn - smallGap;
+	      const double featureAngle = supportWheelFeatureAngles[ispoke]*CLHEP::degree; //angle of feature center
+	      const double featureArc   = supportWheelFeatureArcs[ispoke]*CLHEP::degree; //width in angle
+	      const double featureRIn   = supportWheelFeatureRIns[ispoke]; //inner radius of feature
+	      double featureROut = tgt->supportWheelRIn() - smallGap;
 	      // double featureR = (featureRIn + featureROut)/2.; //radius of feature center
 	      // CLHEP::Hep3Vector featureCenter(featureR*cos(featureAngle), featureR*sin(featureAngle), 0.);
 	      CLHEP::Hep3Vector featureCenter(localWheelCenter); //center is wheel center
-	      TubsParams featureParams(featureRIn, featureROut, tgt->_supportWheelHL, featureAngle - featureArc/2. /*phi0*/, featureArc /*dphi*/);
+	      TubsParams featureParams(featureRIn, featureROut, tgt->supportWheelHL(), featureAngle - featureArc/2. /*phi0*/, featureArc /*dphi*/);
 	      std::stringstream featureName;
 	      featureName << "ProductionTargetSupportWheelFeature_" << ispoke;
 	      VolumeInfo featureInfo = nestTubs(featureName.str(),
@@ -1109,23 +1159,23 @@ namespace mu2e {
 						);
 	    }
 	    //get angle of the support rod on the wheel and the angle on the target the wire connects to
-	    const double wheelAngle =  tgt->_supportWheelRodAngles[ispoke]*CLHEP::degree;
-	    const double targetAngle = (istream == 0) ? tgt->_spokeTargetAnglesD[ispoke]*CLHEP::degree 
-	      : tgt->_spokeTargetAnglesU[ispoke]*CLHEP::degree;
+	    const double wheelAngle =  supportWheelRodAngles[ispoke]*CLHEP::degree;
+	    const double targetAngle = (istream == 0) ? spokeTargetAnglesD[ispoke]*CLHEP::degree 
+	      : spokeTargetAnglesU[ispoke]*CLHEP::degree;
 	    //get the angle the rod makes from the z axis (here called tilt)
-	    const double rodTilt = tgt->_supportWheelRodTilts[ispoke]*CLHEP::degree;
+	    const double rodTilt = supportWheelRodTilts[ispoke]*CLHEP::degree;
 	    int side = (1-2*istream); //+1 or -1
 	    //info about wire connection
-	    double rodLength = tgt->_supportWheelRodHL[ispoke]; //half length of the rod, length of this side if no angle or wheel
-	    rodLength += side*tgt->_supportWheelRodOffset[ispoke]; //add to downstream subtract from upstream offset, imagine as just adding/subtracting from both
-	    double rWheel = tgt->_supportWheelRodRadialOffset[ispoke]; // radius of the wheel to attach to
-	    rodLength -= tgt->_supportWheelHL/cos(rodTilt) + smallGap; //remove overlap with bicycle
-	    rodLength -= tgt->_supportWheelRodRadius[ispoke]*abs(tan(rodTilt)); //remove length overlapping with wheel due to angle
+	    double rodLength = supportWheelRodHL[ispoke]; //half length of the rod, length of this side if no angle or wheel
+	    rodLength += side*supportWheelRodOffset[ispoke]; //add to downstream subtract from upstream offset, imagine as just adding/subtracting from both
+	    double rWheel = supportWheelRodRadialOffset[ispoke]; // radius of the wheel to attach to
+	    rodLength -= tgt->supportWheelHL()/cos(rodTilt) + smallGap; //remove overlap with bicycle
+	    rodLength -= supportWheelRodRadius[ispoke]*abs(tan(rodTilt)); //remove length overlapping with wheel due to angle
 	    //length from center of wheel to center of rod along the rod
-	    double lRodCenter = rodLength/2. + (tgt->_supportWheelHL +tgt->_supportWheelRodRadius[ispoke]*abs(tan(rodTilt)))/cos(rodTilt);
+	    double lRodCenter = rodLength/2. + (tgt->supportWheelHL() + supportWheelRodRadius[ispoke]*abs(tan(rodTilt)))/cos(rodTilt);
 	    rWheel += sin(side*rodTilt)*(lRodCenter);
 
-	    TubsParams rodParams(0., tgt->_supportWheelRodRadius[ispoke], rodLength/2.);
+	    TubsParams rodParams(0., supportWheelRodRadius[ispoke], rodLength/2.);
 	    CLHEP::Hep3Vector rodCenter(rWheel*cos(wheelAngle), rWheel*sin(wheelAngle), 
 					side*(lRodCenter*cos(rodTilt)));
 	    
@@ -1149,22 +1199,22 @@ namespace mu2e {
 						      G4Colour::Gray()
 						      );
 	    //now consider attaching the wire to the rod
-	    double rWireRod = tgt->_supportWheelRodRadialOffset[ispoke] + sin(side*rodTilt)*(lRodCenter+rodLength/2.);
-	    rWireRod -= tgt->_supportWheelRodRadius[ispoke]*cos(rodTilt); //translate to bottom of rod
-	    double zWireRodOffset = (istream == 0) ? tgt->_supportWheelRodWireOffsetD[ispoke] : tgt->_supportWheelRodWireOffsetU[ispoke];
+	    double rWireRod = supportWheelRodRadialOffset[ispoke] + sin(side*rodTilt)*(lRodCenter+rodLength/2.);
+	    rWireRod -= supportWheelRodRadius[ispoke]*cos(rodTilt); //translate to bottom of rod
+	    double zWireRodOffset = (istream == 0) ? supportWheelRodWireOffsetD[ispoke] : supportWheelRodWireOffsetU[ispoke];
 	    rWireRod -= zWireRodOffset*sin(side*rodTilt); //translate due to moving along rod
-	    double zWireRod = side*((rodLength/2-zWireRodOffset)*cos(rodTilt)+tgt->_spokeRadius) + rodCenter.z();
-	    zWireRod += tgt->_supportWheelRodRadius[ispoke]*sin(rodTilt); //account for z shift of bottom due to tilt, side independent
+	    double zWireRod = side*((rodLength/2-zWireRodOffset)*cos(rodTilt)+tgt->spokeRadius()) + rodCenter.z();
+	    zWireRod += supportWheelRodRadius[ispoke]*sin(rodTilt); //account for z shift of bottom due to tilt, side independent
 	    //get position at target
 	    double rTargetWire = rTarget;
-	    rTargetWire += tgt->_spokeRadius; //add buffer in case of overlap, should use angle of wire, rod, and target end ring
-	    rWireRod -= tgt->_spokeRadius;
+	    rTargetWire += tgt->spokeRadius(); //add buffer in case of overlap, should use angle of wire, rod, and target end ring
+	    rWireRod -= tgt->spokeRadius();
 	    CLHEP::Hep3Vector wheelPos(rWireRod*cos(wheelAngle), rWireRod*sin(wheelAngle), zWireRod); //assume no angle of the support
 	    CLHEP::Hep3Vector targetPos(rTargetWire*cos(targetAngle), rTargetWire*sin(targetAngle), side*zTarget);
 	    targetPos = tgt->productionTargetRotation().inverse()*targetPos; //rotate from target frame to mother frame
 	    CLHEP::Hep3Vector spokeCenter((wheelPos+targetPos)/2.);
 	    double spokeLength = abs((wheelPos-targetPos).mag());
-	    TubsParams spokeParams(0., tgt->_spokeRadius, 0.5*spokeLength);
+	    TubsParams spokeParams(0., tgt->spokeRadius(), 0.5*spokeLength);
 	    CLHEP::Hep3Vector spokeAxis((wheelPos-targetPos).unit());
 	    CLHEP::HepRotation* spokeRot = new CLHEP::HepRotation(spokeAxis.cross(zax), spokeAxis.angle(zax));
 	    std::stringstream spokeName;
