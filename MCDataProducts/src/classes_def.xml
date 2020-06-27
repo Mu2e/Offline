@@ -105,6 +105,8 @@
 
  <class name="mu2e::ProtonBunchIntensity" />
  <class name="art::Wrapper<mu2e::ProtonBunchIntensity>"/>
+ <class name="mu2e::ProtonBunchIntensitySummary" />
+ <class name="art::Wrapper<mu2e::ProtonBunchIntensitySummary>"/>
 
  <class name="mu2e::StepFilterMode"/> 
 
