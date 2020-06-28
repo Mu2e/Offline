@@ -125,10 +125,13 @@ namespace mu2e {
       nprotAcc_ = {};
       float protons;
       unsigned nprotons;
-      while ( currentFile_->good()) {
+      while(true) {
 	*currentFile_ >> protons;
-	nprotons = (unsigned)rint(protons);
-	nprotAcc_(float(nprotons));
+	if ( currentFile_->good()) {
+	  nprotons = (unsigned)rint(protons);
+	  nprotAcc_(float(nprotons));
+	} else
+	break;
       }
       std::cout << "Read " << extract_result<tag::count>(nprotAcc_) << " events with " << extract_result<tag::mean>(nprotAcc_) << " <protons> " << extract_result<tag::variance>(nprotAcc_) << " variance from file " << currentFileName_ << std::endl;
       // rewind the file
@@ -154,10 +157,8 @@ namespace mu2e {
     {
       float protons;
       unsigned nprotons;
-      if (!currentFile_->good()) {
-        return false;
-      } 
       (*currentFile_) >>  protons;
+      if (!currentFile_->good()) return false;
       nprotons = (unsigned)rint(protons);
       managePrincipals(runNumber_, subRunNumber_, ++currentEventNumber_, outR, outSR, outE);
       std::unique_ptr<ProtonBunchIntensity> pbi(new ProtonBunchIntensity(nprotons));
