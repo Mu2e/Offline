@@ -7,33 +7,52 @@ BEGIN_PROLOG
 
 # time clustering is the 1st stage of track finding 
 TimeClusterFinder : {
-  module_type  : TimeClusterFinder
-  ClusterMVA : { MVAWeights : "TrkPatRec/test/TimeCluster.weights.xml" }
-  ClusterCaloMVA : { MVAWeights : "TrkPatRec/test/TimeClusterCalo.weights.xml" }
-  ComboHitCollection : "makePH"
-  StrawHitFlagCollection : "FlagBkgHits:ComboHits"
-  CaloClusterCollection : "CaloClusterFromProtoCluster"
-  T0Calculator : { CaloT0Offset : @local::TrackCaloMatching.DtOffset }
-
-  # enable calorimeter cluster info in time clustering
-  UseCaloCluster : true
-  UseCaloClusterPosition : true
-  #CaloClusterWeight : 10.0
-  TestFlag : true
+	module_type  : TimeClusterFinder
+	ClusterMVA : { MVAWeights : "TrkPatRec/test/TimeCluster.weights.xml" }
+	ClusterCaloMVA : { MVAWeights : "TrkPatRec/test/TimeClusterCalo.weights.xml" }
+	ComboHitCollection : "makePH"
+	StrawHitFlagCollection : "FlagBkgHits:ComboHits"
+	CaloClusterCollection : "CaloClusterFromProtoCluster"
+	T0Calculator : { CaloT0Offset : @local::TrackCaloMatching.DtOffset }
+	UseCaloCluster : true
+	UseCaloClusterPosition : true
+	TestFlag : true
 }
 
 #cosmics:
 TimeClusterFinderCosmics : {
-  @table::TimeClusterFinder
-  ComboHitCollection : "makePH"
-  #CaloClusterCollection : "CaloClusterFromProtoCluster"
-  T0Calculator : { CaloT0Offset : @local::TrackCaloMatching.DtOffset }
-  maxdPhi : 10.0
-  RefineClusters : false
-  PrefilterCluster : false
-  UseCaloCluster : false
-  UseCaloClusterPosition : false
+	@table::TimeClusterFinder
+	ComboHitCollection : "makePH"
+	T0Calculator : { CaloT0Offset : @local::TrackCaloMatching.DtOffset }
+	maxdPhi : 10.0
+	RefineClusters : false
+	PrefilterCluster : false
+	UseCaloCluster : false
+	UseCaloClusterPosition : false
 }
+
+SimpleTimeCluster : {
+	module_type : SimpleTimeCluster
+	ComboHitCollection : "makePH"
+	StrawHitFlagCollection : "FlagBkgHits:ComboHits"
+	TestFlag : false
+}
+
+LineFinder : {
+        module_type : LineFinder
+        ComboHitCollection : "makePH"
+        TimeClusterCollection : "SimpleTimeCluster"
+}
+
+CosmicDriftFit : {
+        module_type : CosmicDriftFit
+        ComboHitCollection : "makeSH"
+        LineSeedCollection : "LineFinder"
+}
+
+
+
+
 
 CHD : {
 	module_type : ComboHitDiag
@@ -43,27 +62,86 @@ CHD : {
 	StrawHitFlagCollection : "FlagBkgHits:ComboHits"
 	TimeOffsets : {inputs : [ @sequence::DigiCompression.NoCosmicTimeMaps ]}
 }
-CosmicTrackFinder : {
-    module_type		: CosmicTrackFinder
-    ComboHitCollection     : "makePH"
-    TimeClusterCollection  : "TimeClusterFinderCosmics"
-    StrawDigiMCCollection : "compressDigiMCs"
-    DoDrift : true
+
+CosmicTrackFinder : { #split into Loose and tight below for efficieny studies
+	module_type		: CosmicTrackFinder
+	ComboHitCollection     : "makePH"
+	TimeClusterCollection  : "SimpleTimeCluster"
+        UseLineFinder : false
+   
 }
 
- CosmicAnalysis : {
-	module_type : CosmicAnalyzer
+CosmicTrackFinderLoose : {
+	module_type		: CosmicTrackFinder
+	ComboHitCollection     : "makePH"
+	TimeClusterCollection  : "SimpleTimeCluster"
+	# TimeClusterCollection  : "TimeClusterFinderCosmics"
+	DoDrift : true
+        UseTime : false
+        UseLineFinder : false
+	CosmicTrackFit :{
+		minNComboHits : 4
+		MaxSeedChi2DOF : 10
+		MaxDeltaChi2 : 0.5
+		MaxPosDev : 20000
+		MaxHitPullForSeed : 1000
+		Noutliers : 2
+		GaussianSeedTimeResolution : 24
+		MaxTimeResidual : 40
+	}
+   
+}
+
+CosmicTrackFinderTight : {
+	module_type		: CosmicTrackFinder
+	ComboHitCollection     : "makePH"
+	TimeClusterCollection  : "SimpleTimeCluster"
+	DoDrift : true
+        UseTime : false
+        UseLineFinder : false
+	CosmicTrackFit :{
+		minNComboHits : 8
+		MaxSeedChi2DOF : 2.5
+		MaxDeltaChi2 : 0.001
+		MaxPosDev : 200
+		MaxHitPullForSeed : 100
+		Noutliers : 2
+		GaussianSeedTimeResolution : 24
+		MaxTimeResidual : 40
+	}
+}
+
+CosmicTrackFinderTimeFit : {
+	module_type		: CosmicTrackFinder
+	ComboHitCollection     : "makePH"
+	TimeClusterCollection  : "SimpleTimeCluster"
+	DoDrift : true
+        UseTime : true
+        UseLineFinder : true
+        UseChiFit : false
+        minNStrawHits : 4
+        minNComboHits : 0
+        debugLevel : 0
+        MinuitTolerance : 0.5
+}
+
+
+
+ CosmicTrackDetails : {
+	module_type : CosmicTrackDetails
 	ComboHitCollection : "makePH"
-	TimeClusterCollection : TimeClusterFinderCosmics
+	TimeClusterCollection : SimpleTimeCluster
+        #TimeClusterCollection : TimeClusterFinderCosmics
         CosmicTrackSeedCollection : CosmicTrackFinder
 	StrawDigiMCCollection : "compressDigiMCs"
 	TimeOffsets : {inputs : [ @sequence::DigiCompression.NoCosmicTimeMaps ]}
   }
 
- CosmicTrackDetails : {
-	module_type : CosmicTrackDetails
+ CosmicAnalysis : {
+	module_type : CosmicAnalyzer
 	ComboHitCollection : "makePH"
-	TimeClusterCollection : TimeClusterFinderCosmics
+	TimeClusterCollection : SimpleTimeCluster
+        #TimeClusterCollection : TimeClusterFinderCosmics
         CosmicTrackSeedCollection : CosmicTrackFinder
 	StrawDigiMCCollection : "compressDigiMCs"
 	TimeOffsets : {inputs : [ @sequence::DigiCompression.NoCosmicTimeMaps ]}
@@ -76,9 +154,17 @@ CosmicFitDisplay : {
         _tctag : TimeClusterFinderCosmics
         _sttag : CosmicTrackFinder
         doDisplay            : true
-	TimeClusterCollection : TimeClusterFinderCosmics
+	TimeClusterCollection : TimeClusterFinderCosmicsr
         CosmicTrackSeedCollection : CosmicTrackFinder
         
+  }
+
+CosmicTrackDiag : {
+	module_type : CosmicTrackDiag
+	StrawHitCollection : "makeSH"
+	TimeClusterCollection : SimpleTimeCluster
+	StrawDigiMCCollection : "compressDigiMCs"
+        CosmicTrackSeedCollection : "CosmicTrackFinder"
   }
 
 CosmicMuonInfo : {
@@ -99,19 +185,26 @@ CosmicMuonInfo : {
 	  }
 }
 CosmicTracking : {
-  producers :{
-    TimeClusterFinderCosmics  : @local::TimeClusterFinderCosmics
-    CosmicTrackFinder  : @local::CosmicTrackFinder
- }
-  analyzers : {
-      
-      CosmicAnalysis : @local::CosmicAnalysis
-      CosmicFitDisplay : @local::CosmicFitDisplay
-      CosmicTrackDetails : @local::CosmicTrackDetails
-   }
-  filters : {
-	CosmicMuonInfo: @local::CosmicMuonInfo
-   }
+	producers :{
+		SimpleTimeCluster  : @local::SimpleTimeCluster
+		TimeClusterFinderCosmics : @local::TimeClusterFinderCosmics
+		CosmicTrackFinder  : @local::CosmicTrackFinder
+		CosmicTrackFinderLoose  : @local::CosmicTrackFinderLoose
+		CosmicTrackFinderTight  : @local::CosmicTrackFinderTight
+		CosmicTrackFinderTimeFit  : @local::CosmicTrackFinderTimeFit
+                LineFinder : @local::LineFinder
+                CosmicDriftFit : @local::CosmicDriftFit
+	}
+	analyzers : {
+
+		CosmicAnalysis : @local::CosmicAnalysis
+		CosmicFitDisplay : @local::CosmicFitDisplay
+		CosmicTrackDetails : @local::CosmicTrackDetails
+		CosmicTrackDiag : @local::CosmicTrackDiag
+	}
+	filters : {
+		CosmicMuonInfo: @local::CosmicMuonInfo
+	}
 }
 # 
 # define standard outputs 
@@ -133,6 +226,8 @@ CosmicTracking : {
   }
 
 #production sequence to find straight track
-CosmicTracking.FindCosmics : [  TimeClusterFinderCosmics, CosmicTrackFinder ]
+CosmicTracking.FindCosmics : [  SimpleTimeCluster, CosmicTrackFinder ]
+CosmicTracking.FindCosmicsLoose : [  SimpleTimeCluster, CosmicTrackFinderLoose ]
+CosmicTracking.FindCosmicsTight : [  SimpleTimeCluster, CosmicTrackFinderTight ]
 
 END_PROLOG

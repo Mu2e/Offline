@@ -62,41 +62,43 @@ namespace mu2e
      mvaWgtsFile_ = configFile(weights);
   }
 
-  MVATools::~MVATools() {}
+  MVATools::MVATools(const std::string& xmlfilename) :
+    x_(),
+    y_(),
+    fv_(),
+    wgts_(), 
+    maxNeurons_(0), 
+    activeType_(aType::null),
+    oldMVA_(false),
+    isNorm_(false),
+    voffset_(), 
+    vscale_(), 
+    title_(), 
+    label_(),
+    activationTypeString_("none"),
+    mvaWgtsFile_() { 
+
+    ConfigFileLookupPolicy configFile;
+    mvaWgtsFile_ = configFile(xmlfilename);
+  }
 
 
+  MVATools::~MVATools() {
+    XMLPlatformUtils::Terminate();
+  }
 
   void MVATools::initMVA()
   {
-      if (wgts_.size()>0) throw cet::exception("RECO")<<"mu2e::MVATools: already initialized" << std::endl;
+    if (wgts_.size()>0) throw cet::exception("RECO")<<"mu2e::MVATools: already initialized" << std::endl;
 
-      try
-      {
-         XMLPlatformUtils::Initialize();
-      } 
-      catch (XMLException& e)
-      {
-         char* message = XMLString::transcode( e.getMessage() ) ;
-         throw cet::exception("RECO")<<"mu2e::MVATools: XML initialization error: " <<  message << std::endl;
-         XMLString::release( &message ) ;
-      }
+    xercesc::DOMDocument* xmlDoc = getXmlDoc();
 
-      XercesDOMParser* parser = new XercesDOMParser();
-      parser->setValidationScheme(XercesDOMParser::Val_Never);
-      parser->setDoNamespaces(false);
-      parser->setDoSchema(false);
-      parser->setLoadExternalDTD( false );
+    getGen(xmlDoc);
+    getOpts(xmlDoc);
+    getNorm(xmlDoc);
+    getWgts(xmlDoc);
 
-      XMLCh *xmlFile = XMLString::transcode(mvaWgtsFile_.c_str());
-      parser->parse(xmlFile);
-      XMLString::release( &xmlFile ) ;
-
-      xercesc::DOMDocument* xmlDoc = parser->getDocument() ;
-
-      getGen(xmlDoc);
-      getOpts(xmlDoc);
-      getNorm(xmlDoc);
-      getWgts(xmlDoc);
+    xmlDoc->release();
   }
 
   void MVATools::getGen(xercesc::DOMDocument* xmlDoc)
@@ -246,6 +248,39 @@ namespace mu2e
   }
 
 
+  xercesc::DOMDocument* MVATools::getXmlDoc() {
+
+    try
+      {
+	XMLPlatformUtils::Initialize();
+      } 
+    catch (XMLException& e)
+      {
+	char* message = XMLString::transcode( e.getMessage() ) ;
+	throw cet::exception("RECO")<<"mu2e::MVATools: XML initialization error: " <<  message << std::endl;
+	XMLString::release( &message ) ;
+      }
+  
+    XercesDOMParser* parser = new XercesDOMParser();
+    parser->setValidationScheme(XercesDOMParser::Val_Never);
+    parser->setDoNamespaces(false);
+    parser->setDoSchema(false);
+    parser->setLoadExternalDTD( false );
+  
+    XMLCh *xmlFile = XMLString::transcode(mvaWgtsFile_.c_str());
+    parser->parse(xmlFile);
+    XMLString::release( &xmlFile ) ;
+  
+    xercesc::DOMDocument* xmlDoc = parser->adoptDocument() ; // adopt the document so that the parser no longer owns it...
+    delete parser; // ...can then delete the parser and solve a memory leak
+
+    if (!xmlDoc) {
+      throw cet::exception("RECO") << "mu2e::MVATools could not create xmlDoc with filename " << mvaWgtsFile_.c_str() << std::endl;
+    }
+
+    return xmlDoc;
+  }
+
 
   void MVATools::getWgts(xercesc::DOMDocument* xmlDoc)
   {
@@ -263,7 +298,6 @@ namespace mu2e
       xpathRes = xmlDoc->evaluate(xpathStr,xmlDoc->getDocumentElement(), NULL,
                                   DOMXPathResult::ORDERED_NODE_SNAPSHOT_TYPE, NULL);
       XMLString::release(&xpathStr);
-
 
       int iCurrentLayer(-1);
       unsigned nNeurons(0);
@@ -328,8 +362,52 @@ namespace mu2e
       XMLString::release(&ATT_INDEX);
       XMLString::release(&ATT_NSYNAPSES);    
   }
+  
+  void MVATools::getCalib(std::map<float, float>& effCalib) {
 
+    xercesc::DOMDocument* xmlDoc = getXmlDoc();
 
+    XMLCh* TAG_CALIBRATION = XMLString::transcode("Calib");
+    XMLCh* ATT_INDEX = XMLString::transcode("Index");
+    XMLCh* ATT_EFF = XMLString::transcode("CalibVal");
+    XMLCh* ATT_CUT = XMLString::transcode("Val");
+    
+    XMLCh *xpathStr = XMLString::transcode("/MethodSetup/Calibration");
+    DOMXPathResult* xpathRes = xmlDoc->evaluate(xpathStr,xmlDoc->getDocumentElement(),NULL,
+						DOMXPathResult::ORDERED_NODE_SNAPSHOT_TYPE, NULL);
+    XMLString::release(&xpathStr);
+    DOMElement* varElem = dynamic_cast<DOMElement* >(xpathRes->getNodeValue()) ;
+    if (!varElem) {
+      throw cet::exception("MVATools") << "No calibration for this MVA (" << mvaWgtsFile_ << ")" << std::endl;
+    }
+    xpathRes->release();
+    
+    DOMNodeList* children = varElem->getElementsByTagName(TAG_CALIBRATION);
+    for( XMLSize_t ix = 0 ; ix < children->getLength() ; ++ix ) {       
+      float eff(0.0);
+      float cut(0.0);
+      
+      DOMNode* childNode = children->item( ix ) ;
+      DOMNamedNodeMap* attrs = childNode->getAttributes();
+      for( XMLSize_t ia = 0 ; ia < attrs->getLength() ; ++ia ) {
+	DOMNode* attr = attrs->item(ia);
+	char* attValue = XMLString::transcode(attr->getNodeValue());
+	
+	if (XMLString::equals(ATT_EFF,attr->getNodeName()) )      eff = strtof(attValue,NULL);
+	if (XMLString::equals(ATT_CUT,attr->getNodeName()) )      cut = strtof(attValue,NULL);
+	
+	XMLString::release( &attValue ) ;
+      }
+
+      effCalib.insert(std::pair<float, float>(eff, cut));      
+    }
+  
+    XMLString::release(&TAG_CALIBRATION);
+    XMLString::release(&ATT_INDEX);
+    XMLString::release(&ATT_EFF);
+    XMLString::release(&ATT_CUT);
+    xmlDoc->release();
+  }
 
 
   float MVATools::evalMVA(const std::vector<double >& v, const MVAMask& mask) const 
@@ -343,7 +421,7 @@ namespace mu2e
 
       // Normalize the input data and add the bias node, skip masked values
       size_t ival(0);
-      for (size_t ivar=0; ivar < voffset_.size(); ivar++)
+      for (size_t ivar=0; ivar < v.size(); ivar++)
       {
          if ( mask & (1<<ivar) )
          {
@@ -354,7 +432,7 @@ namespace mu2e
       x_[ival] = 1.0;
 
       if (ival != links_[0]-1)
-          throw cet::exception("RECO")<<"mu2e::MVATools: mismatch input dimension and network architecture" << std::endl;
+	throw cet::exception("RECO")<<"mu2e::MVATools: mismatch input dimension (ival = " << ival << ") and network architecture (links_[0]-1 = " << links_[0]-1 << ")" << std::endl;
 
 
       //perform feed forward calculation up to the last hidden layer

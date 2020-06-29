@@ -1,0 +1,135 @@
+// Andrei Gaponenko, 2013
+// Jake Colston & Joseph Brock, 2015 (edit for cd3)
+// KLG 2020 to test ion store/restore
+
+// Note that this test is not meant to be used for a real production job, but only to test if ions can be restored properly
+// Use it with iontest_g4s2.fcl
+
+#include "fcl/minimalMessageService.fcl"
+#include "fcl/standardProducers.fcl"
+#include "fcl/standardServices.fcl"
+
+BEGIN_PROLOG
+
+CutSomeIons : {
+   type: pdgId
+#   pars: [ 1000661549, 1000260589, 1000260569, 1000260579, 1000270579, 1000751829, 1000591349, 1000731739, 1000661529]
+   pars: [ 1000731780, 1000751829, 1000220489 ]
+   write : someions
+}
+
+END_PROLOG
+
+# Give this job a name.
+process_name : iontestg4s1
+
+source: { module_type: EmptyEvent maxEvents: @nil }
+
+services: @local::Services.Sim
+
+physics : {
+
+    producers : {
+
+        generate: @local::PrimaryProtonGun
+
+        genCounter : { module_type : GenEventCounter }
+
+        g4run : {
+
+            module_type       : Mu2eG4
+            physics           : @local::mu2eg4DefaultPhysics
+            ResourceLimits    : @local::mu2eg4DefaultResourceLimits
+            TrajectoryControl : @local::mu2eg4NoTrajectories
+            debug             : @local::mu2eg4DefaultDebug
+            visualization     : @local::mu2eg4NoVisualization
+
+            generatorModuleLabel : generate
+
+            SDConfig : {
+                enableSD : [ virtualdetector ] // activate just the explicitly listed SDs
+                TimeVD   : { times : [] }
+            }
+
+            // Mu2eG4 cuts are evaluated in the listed order.
+            // The first match wins.  For the "intersection"
+            // type, the first false stops the evaluation.
+            // For the "union" type the first true stops the evaluation.
+            Mu2eG4StackingOnlyCut: @local::mu2eg4CutNeutrinos
+            Mu2eG4SteppingOnlyCut: @local::CutSomeIons
+            Mu2eG4CommonCut: @local::mu2eg4NoCut
+        } // g4run
+
+        compressPV : {
+            module_type    : CompressPhysicalVolumes
+            volumesInput   : "g4run"
+         // hitInputs      : [ "g4run:someions" ]
+            hitInputs      : []
+            particleInputs : [ "g4run" ]
+        }
+
+    } // producers
+
+    analyzers : {
+        genCountLogger : { module_type : GenEventCountReader }
+
+        collectionSizes : {
+            module_type              : CollectionSizeAnalyzer
+            userModuleLabel          : true
+            useInstanceName          : true
+            useProcessName           : false
+        }
+    } // analyzers
+
+    filters : {
+        g4filter : {
+            module_type               : FilterG4Out
+            mainHitInputs             : [ "g4run:someions" ]
+            extraHitInputs            : [ "g4run:virtualdetector" ]
+            vetoDaughters             : []
+        }
+    } // filters
+
+//    trigFilter    : [ generate, genCounter, g4run, g4filter, compressPV ]
+//    trigFilter    : [ generate, genCounter, g4run, compressPV ]
+    trigFilter    : [ generate, genCounter, g4run, compressPV ]
+    trigger_paths : [ trigFilter ]
+
+//    e1        : [ fullOutput ]
+    e1        : [ filteredOutput ]
+    end_paths : [ e1 ]
+} // physics
+
+#outputs: { fullOutput: { module_type: RootOutput } }
+outputs : {
+    fullOutput: {
+      module_type : RootOutput
+      fileName    : "sim.owner.iontest-g4s1.version.sequencer.art"
+    }
+    filteredOutput : {
+        module_type    : RootOutput
+        SelectEvents   : ["trigFilter"]
+        outputCommands : [ "drop *_*_*_*",
+                           "keep mu2e::GenParticles_*_*_*",
+                           "keep mu2e::GenEventCount_*_*_*",
+                           "keep mu2e::StatusG4_*_*_*",
+//                           "keep *_g4run_*_iontestg4s1",
+                           "keep *_g4run_virtualdetector_*",
+                           "keep *_g4run_someions_*",
+                           "keep mu2e::SimParticlemv_*_*_*",
+                           "keep *_compressPV_*_iontestg4s1" ]
+        fileName       : "sim.owner.iontest-g4s1.version.sequencer.art"
+    }
+}
+
+outputs.fullOutput.fileName:    "sim.owner.iontest-g4s1.version.sequencer.art"
+services.TFileService.fileName: "nts.owner.iontest-g4s1.version.sequencer.root"
+
+physics.producers.g4run.physics.minRangeCut : 1.0 // mm
+
+// Initialze seeding of random engines: do not put these lines in base .fcl files for grid jobs.
+services.SeedService.baseSeed          : 8
+services.SeedService.maxUniqueEngines  : 20
+services.GeometryService.simulatedDetector.tool_type : "Mu2e"
+#physics.producers.g4run.debug.diagLevel : 1
+#physics.producers.g4run.debug.trackingVerbosityLevel : 1

@@ -3,6 +3,9 @@
 #
 import os, re, string, sys
 
+import SCons 
+SCons.Defaults.DefaultEnvironment(tools = []) 
+
 # Functions that do small tasks and build lists
 import sconstruct_helper as sch
 # handles how the input files are collected and the output files are named
@@ -12,21 +15,21 @@ from mu2e_helper import mu2e_helper
 mu2eOpts = {}
 
 # add a mu2e debug print option like "--mu2ePrint=5"
-AddOption('--mu2ePrint', dest='mu2ePrint', 
+AddOption('--mu2ePrint', dest='mu2ePrint',
           type='int',nargs=1,default=1,
           help='mu2e print level (0-10) default=1')
 mu2ePrint = GetOption("mu2ePrint")
 mu2eOpts["mu2ePrint"] = mu2ePrint
 
 # add an option to print only short lines for each target
-AddOption('--mu2eCompactPrint', dest='mu2eCompactPrint', 
+AddOption('--mu2eCompactPrint', dest='mu2eCompactPrint',
           action="store_true",default=False,
           help='print only a short text line for each target')
 mu2eCompactPrint = GetOption("mu2eCompactPrint")
 
 mu2eOpts["mu2eCompactPrint"] = mu2eCompactPrint
 
-# Check that some important environment variables have been set; 
+# Check that some important environment variables have been set;
 # result is a dictionary of the options
 moreOpts = sch.mu2eEnvironment()
 mu2eOpts.update(moreOpts)
@@ -64,13 +67,18 @@ env = Environment( CPPPATH = sch.cppPath(mu2eOpts),   # $ART_INC ...
                    SHCXXCOMSTR = cccomstr,
                    LINKCOMSTR = linkcomstr,
                    SHLINKCOMSTR= linkcomstr,
+                   # so we can find compilation_db from a satellite build
+                   toolpath=[os.path.join(os.environ['MU2E_BASE_RELEASE'],'site_scons/site_tools')]
 )
 
 # Make the Compilation DB generator available in the environment
-env.Tool('compilation_db')
+env.Tool('compilation_db', COMPILATIONDB_COMSTR=None)
+
+# Only re-compute an MD5 hash for a build target if the timestamp changed.
+env.Decider('MD5-timestamp')
 
 # Define and register the rule for building dictionaries.
-# sources are classes.h, classes_def.xml, 
+# sources are classes.h, classes_def.xml,
 # targets are dict.cpp, .rootmap and .pcm
 # LIBTEXT is the library for the dict - not a target, only text for names
 genreflex = Builder(action=Action("export HOME="+os.environ["HOME"]+"; "+"genreflex ${SOURCES[0]} -s ${SOURCES[1]} $_CPPINCFLAGS -l $LIBTEXT -o ${TARGETS[0]} --fail_on_warnings --rootmap-lib=$LIBTEXT  --rootmap=${TARGETS[1]} $DEBUG_FLAG",genreflexcomstr))
@@ -109,12 +117,12 @@ ss = sch.sconscriptList(mu2eOpts)
 # make sure lib, bin and tmp are there
 sch.makeSubDirs(mu2eOpts)
 
-# Allow a compile_commands.json to be generated if requested (scons -Q compiledb).
-compileCommands = env.CompilationDatabase('compile_commands.json')
+# Generate a compile_commands.json
+compileCommands = env.CompilationDatabase('gen/compile_commands.json')
 compileDb = env.Alias("compiledb", compileCommands)
 
 # operate on the SConscript files
-# regular python commands like os.path() are executed immediately as they are encontered, 
+# regular python commands like os.path() are executed immediately as they are encontered,
 # scons builder commands like env.SharedLibrary are examined for dependences and scheduled
 # to be executed in parallel, as possible
 env.SConscript(ss)

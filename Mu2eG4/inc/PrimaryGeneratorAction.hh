@@ -3,10 +3,6 @@
 //
 // Give generated tracks to G4 by copying information from a GenParticleCollection.
 //
-// $Id: PrimaryGeneratorAction.hh,v 1.12 2013/09/20 23:31:10 gandr Exp $
-// $Author: gandr $
-// $Date: 2013/09/20 23:31:10 $
-//
 // Original author Rob Kutschke
 //
 
@@ -28,7 +24,6 @@
 #include "Mu2eG4/inc/Mu2eG4Config.hh"
 
 class G4ParticleDefinition;
-class G4ParticleGun;
 class G4Event;
 
 namespace art { class ProductID; }
@@ -58,6 +53,8 @@ namespace mu2e {
 
     void addG4Particle(G4Event *event,
                        PDGCode::type pdgId,
+                       double excitationEnergy,
+                       int floatLevelBaseIndex,
                        const G4ThreeVector& pos,
                        double time,
                        double properTime,
@@ -72,6 +69,10 @@ namespace mu2e {
     SimParticlePrimaryHelper* parentMapping_;
 
     int verbosityLevel_;
+    // a tuple for ion tests
+    std::tuple<int,double,int> testIonToGenerate_;
+    // a flag used to enable the above testing
+    const bool testPDGIdToGenerate_;
 
     Mu2eG4PerThreadStorage* perThreadObjects_;
 

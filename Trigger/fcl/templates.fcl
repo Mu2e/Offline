@@ -6,6 +6,7 @@
 #include "CalPatRec/fcl/prolog.fcl"
 #include "TrkPatRec/fcl/prolog_trigger.fcl"
 #include "CalPatRec/fcl/prolog_trigger.fcl"
+#include "CaloReco/fcl/prolog_trigger.fcl"
 #include "CaloCluster/fcl/prolog_trigger.fcl"
 #include "TrkHitReco/fcl/prolog_trigger.fcl"
 #include "TrkReco/fcl/prolog_trigger.fcl"
@@ -15,6 +16,7 @@
 Trigger : {
     producers : {
 	@table::CaloFilters.producers
+	@table::CaloHitRecoTrigger.producers
 	@table::CaloClusterTrigger.producers
 	@table::TrkHitRecoTrigger.producers
 	@table::TrkHitReco.producers

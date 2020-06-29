@@ -1,0 +1,67 @@
+# -*- mode: tcl -*-
+#
+# Define sequences for track based triggers.  The sequences for hit preparation
+# and the tracking modules configuration must preceede these and are defined elsewhere
+# original author: Dave Brown (LBNL) Mar. 7 2017
+#
+BEGIN_PROLOG
+# define the filter modules used for track-based trigger
+# filter to require a minimum # of hits in a time slot
+DAQ : {
+   producers : {
+      binaryOutput: {
+	 #      module_type     : BinaryPacketsFromDataBlocks
+	 module_type     : ArtBinaryPacketsFromDigis
+	 strawDigiCollection : "makeSD"
+	 caloDigiCollection  : "CaloDigiFromShower"
+	 crvDigiCollection   : "CrvDigi"
+	 diagLevel       : 0
+	 maxFullPrint    : 0
+
+	 includeTracker : 0
+	 includeCalorimeter : 0
+	 includeCrv : 0
+	 includeDMAHeaders: 1
+
+	 generateTimestampTable : 0
+	 tableFile              : "tsTable.bin"
+	 timestampOffset        : 0
+
+	 generateBinaryFile : 1
+	 generateTextFile   : 0
+#	 outputFile      : "DTC_packets.bin"
+#	 maxDMABlockSize : 32000
+#	 bufferSize      : 1000
+      }
+      
+      makeSD:
+      {
+	 module_type: StrawAndCaloDigisFromFragments
+	 diagLevel: 0
+	 parseCAL: 0
+	 parseTRK: 1
+	 
+	 trkTag  : "daq:trk"
+	 caloTag : "daq:calo"
+      }
+
+      CaloDigiFromShower:		
+      {
+	 module_type: StrawAndCaloDigisFromFragments
+	 diagLevel: 0
+	 parseCAL: 1
+	 parseTRK: 0
+	 
+	 trkTag  : "daq:trk"
+	 caloTag : "daq:calo"
+      }
+
+      CrvDigi:
+      {
+	 module_type: CrvDigisFromFragments
+	 diagLevel: 0
+	 crvTag   : "daq:crv"
+      }
+   }
+}
+END_PROLOG

@@ -36,6 +36,8 @@ namespace DriftFitUtils{
   	TrackEquation ConvertFitToDetectorFrame(TrackAxes axes, XYZVec Position, XYZVec Direction);
 	double GetTestDOCA(ComboHit const& chit,XYZVec const& pos, XYZVec const& dir,  const Tracker* tracker);
 	double GetTestDOCA(ComboHit const& chit,double a0, double a1, double b0, double b1, const Tracker* tracker);
+	double GetRPerp(StrawResponse const& srep, ComboHit const& chit, double a0, double a1, double b0, double b1, const Tracker* tracker);
+	double GetDriftDistance(StrawResponse const& srep, ComboHit const& chit, double a0, double a1, double b0, double b1, const Tracker* tracker);
         int GetAmbig(ComboHit const& chit, XYZVec const& pos, XYZVec const& dir,  const Tracker* tracker);
         int GetAmbig(ComboHit const& chit, double a0, double a1, double b0, double b1,  const Tracker* tracker);
   	double GetPropVelocity(StrawResponse const& srep, ComboHit const& chit); 

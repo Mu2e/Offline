@@ -33,6 +33,7 @@ def mu2eEnvironment():
     mu2eOpts['libdir'] = base+'/lib'
     mu2eOpts['bindir'] = base+'/bin'
     mu2eOpts['tmpdir'] = base+'/tmp'
+    mu2eOpts['gendir'] = base+'/gen'
 
     envopts = os.environ['MU2E_SETUP_BUILDOPTS'].strip()
     fsopts  = subprocess.check_output(primaryBase+"/buildopts",shell=True).strip().decode() # decode to convert byte string to text
@@ -156,9 +157,10 @@ def BaBarLibs():
 # Walk the directory tree to locate all SConscript files.
 def sconscriptList(mu2eOpts):
     ss=[]
-    for root,dirs,files in os.walk('.'):
-        for file in files:
-            if file == 'SConscript': ss.append('%s/%s'%(root[2:],file))
+    ss_append = ss.append
+    for root, _, files in os.walk('.'):
+        if 'SConscript' in files:
+            ss_append(os.path.join(root[2:], 'SConscript'))
 
     # If we are making a build for the trigger, do not build everything.
     if mu2eOpts["trigger"] == 'on':
@@ -173,9 +175,8 @@ def sconscriptList(mu2eOpts):
 
 # Make sure the build directories are created
 def makeSubDirs(mu2eOpts):
-    for dir in ['libdir','bindir','tmpdir'] :
-        cmd = "mkdir -p "+mu2eOpts[dir]
-        subprocess.call(cmd, shell=True)
+    for mdir in [mu2eOpts[d] for d in ['libdir','bindir','tmpdir', 'gendir']]:
+        os.makedirs(mdir, exist_ok=True)
 
 #
 # a method for creating build-on-demand targets

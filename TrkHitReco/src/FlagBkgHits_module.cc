@@ -21,6 +21,7 @@
 
 #include "Mu2eUtilities/inc/MVATools.hh"
 #include "TrkReco/inc/TNTClusterer.hh"
+#include "TrkReco/inc/ScanClusterer.hh"
 
 #include <string>
 #include <vector>
@@ -37,26 +38,27 @@ namespace mu2e
          {
              using Name = fhicl::Name;
              using Comment = fhicl::Comment;
-             fhicl::Atom<art::InputTag>         comboHitCollection{   Name("ComboHitCollection"),   Comment("ComboHit collection name") };
-             fhicl::Atom<art::InputTag>         strawHitCollection{   Name("StrawHitCollection"),   Comment("StrawHit collection name") };
-             fhicl::Atom<unsigned>              minActiveHits{        Name("MinActiveHits"),        Comment("Minumim number of active hits in a cluster") };
-             fhicl::Atom<unsigned>              minNPlanes{           Name("MinNPlanes"),           Comment("Minumim number of planes in a cluster") };
-             fhicl::Atom<float>                 clusterPositionError{ Name("ClusterPositionError"), Comment("Cluster poisiton error") };
-             fhicl::Atom<int>                   clusterAlgorithm{     Name("ClusterAlgorithm"),     Comment("Clusterer algorithm") };
-             fhicl::Atom<bool>                  filterOutput{         Name("FilterOutput"),         Comment("Produce filtered ComboHit collection")  };
-             fhicl::Atom<bool>                  flagComboHits{        Name("FlagComboHits"),        Comment("Produce filtered flag comboHit collection") };
-             fhicl::Atom<bool>                  flagStrawHits {       Name("FlagStrawHits"),        Comment("Produce filtered flag strawHit collection") };
-             fhicl::Sequence<std::string>       backgroundMask{       Name("BackgroundMask"),       Comment("Bkg hit selection mask") };
-             fhicl::Sequence<std::string>       stereoSelection{      Name("StereoSelection"),      Comment("Stereo hit selection mask") };
-             fhicl::Atom<float>                 bkgMVAcut{            Name("BkgMVACut"),            Comment("Bkg MVA cut") };
-             fhicl::Table<MVATools::Config>     bkgMVA{               Name("BkgMVA"),               Comment("MVA Configuration") };
-             fhicl::Atom<bool>                  saveBkgClusters{      Name("SaveBkgClusters"),      Comment("Save bkg clusters"),false };
-             fhicl::Atom<int>                   debugLevel{           Name("DebugLevel"),           Comment("Debug"),0 };
-             fhicl::Atom<int>                   printFrequency{       Name("PrintFrequency"),       Comment("Print frequency"),100 };
-             fhicl::Table<TNTClusterer::Config> TNTClustering{        Name("TNTClustering"),        Comment("TNT Clusterer config") };
+             fhicl::Atom<art::InputTag>            comboHitCollection{   Name("ComboHitCollection"),   Comment("ComboHit collection name") };
+             fhicl::Atom<art::InputTag>            strawHitCollection{   Name("StrawHitCollection"),   Comment("StrawHit collection name") };
+             fhicl::Atom<unsigned>                 minActiveHits{        Name("MinActiveHits"),        Comment("Minumim number of active hits in a cluster") };
+             fhicl::Atom<unsigned>                 minNPlanes{           Name("MinNPlanes"),           Comment("Minumim number of planes in a cluster") };
+             fhicl::Atom<float>                    clusterPositionError{ Name("ClusterPositionError"), Comment("Cluster poisiton error") };
+             fhicl::Atom<int>                      clusterAlgorithm{     Name("ClusterAlgorithm"),     Comment("Clusterer algorithm") };
+             fhicl::Atom<bool>                     filterOutput{         Name("FilterOutput"),         Comment("Produce filtered ComboHit collection")  };
+             fhicl::Atom<bool>                     flagComboHits{        Name("FlagComboHits"),        Comment("Produce filtered flag comboHit collection") };
+             fhicl::Atom<bool>                     flagStrawHits {       Name("FlagStrawHits"),        Comment("Produce filtered flag strawHit collection") };
+             fhicl::Sequence<std::string>          backgroundMask{       Name("BackgroundMask"),       Comment("Bkg hit selection mask") };
+             fhicl::Sequence<std::string>          stereoSelection{      Name("StereoSelection"),      Comment("Stereo hit selection mask") };
+             fhicl::Atom<float>                    bkgMVAcut{            Name("BkgMVACut"),            Comment("Bkg MVA cut") };
+             fhicl::Table<MVATools::Config>        bkgMVA{               Name("BkgMVA"),               Comment("MVA Configuration") };
+             fhicl::Atom<bool>                     saveBkgClusters{      Name("SaveBkgClusters"),      Comment("Save bkg clusters"),false };
+             fhicl::Atom<int>                      debugLevel{           Name("DebugLevel"),           Comment("Debug"),0 };
+             fhicl::Atom<int>                      printFrequency{       Name("PrintFrequency"),       Comment("Print frequency"),100 };
+             fhicl::Table<TNTClusterer::Config>    TNTClustering{        Name("TNTClustering"),        Comment("TNT Clusterer config") };
+             fhicl::Table<ScanClusterer::Config>   ScanClustering{       Name("ScanClustering"),       Comment("Scan Clusterer config") };
          };
 
-         enum clusterer {TwoNiveauThreshold=1};
+         enum clusterer {TwoNiveauThreshold=1, ComptonKiller=2};
          explicit FlagBkgHits(const art::EDProducer::Table<Config>& config);
          void beginJob() override;
          void produce(art::Event& event) override;        
@@ -77,7 +79,7 @@ namespace mu2e
          int const                                   printfreq_;
          int                                         iev_;
 
-         void classifyCluster(BkgClusterCollection& bkgccol, BkgQualCollection& bkgqcol, 
+         void classifyCluster(BkgClusterCollection& bkgccolFast, BkgClusterCollection& bkgccol, BkgQualCollection& bkgqcol, 
                               StrawHitFlagCollection& chfcol, const ComboHitCollection& chcol) const;
          void fillBkgQual(    const BkgCluster& cluster, BkgQual& cqual, const ComboHitCollection& chcol) const;
          void fillMVA(        BkgQual& cqual) const;
@@ -117,7 +119,6 @@ namespace mu2e
           produces<BkgClusterCollection>();
           produces<BkgQualCollection>();
       }
-
       float cperr = config().clusterPositionError();
       cperr2_ = cperr*cperr;
 
@@ -126,6 +127,9 @@ namespace mu2e
       {
         case TwoNiveauThreshold:
            clusterer_ = new TNTClusterer(config().TNTClustering());
+           break;
+        case ComptonKiller:
+           clusterer_ = new ScanClusterer(config().ScanClustering());
            break;
        default:
            throw cet::exception("RECO")<< "Unknown clusterer" << ctype << std::endl;
@@ -157,21 +161,22 @@ namespace mu2e
 
       // the primary output is either a deep copy of selected inputs or a flag collection on those
       // intermediate results: keep these on the heap unless requested for diagnostics later
-      BkgClusterCollection bkgccol;
+      BkgClusterCollection bkgccol,bkgccolFast;
       BkgQualCollection bkgqcol;
       BkgClusterHitCollection bkghitcol;
       bkgccol.reserve(nch/2);
       if (savebkg_) bkgqcol.reserve(bkgccol.size());
       if (savebkg_) bkghitcol.reserve(nch);
 
-      // find clusters, sort is needed for recovery algorithm
-      clusterer_->findClusters(bkgccol,chcol, mbtime, iev_);
+
+      // find clusters, sort is needed for recovery algorithm. bkgccolFast has hits that are autmoatically marked as bkg.
+      clusterer_->findClusters(bkgccolFast,bkgccol,chcol, mbtime, iev_);
       sort(bkgccol.begin(),bkgccol.end(),[](const BkgCluster& c1,const BkgCluster& c2) {return c1.time() < c2.time();});
 
 
       // classify clusters                  
       StrawHitFlagCollection chfcol(nch);
-      classifyCluster(bkgccol, bkgqcol, chfcol,chcol);
+      classifyCluster(bkgccolFast, bkgccol, bkgqcol, chfcol,chcol);
 
 
       //produce BkgClusterHit info collection
@@ -247,9 +252,17 @@ namespace mu2e
  
  
   //------------------------------------------------------------------------------------------
-  void FlagBkgHits::classifyCluster(BkgClusterCollection& bkgccol, BkgQualCollection& bkgqcol, 
+  void FlagBkgHits::classifyCluster(BkgClusterCollection& bkgccolFast, BkgClusterCollection& bkgccol, BkgQualCollection& bkgqcol, 
                                     StrawHitFlagCollection& chfcol, const ComboHitCollection& chcol) const
   {   
+      
+      for (auto& cluster : bkgccolFast)
+      {
+         StrawHitFlag flag(StrawHitFlag::bkgclust);
+         flag.merge(StrawHitFlag::bkg); 
+         for (const auto& chit : cluster.hits()) chfcol[chit] = flag;
+      }      
+      
       for (auto& cluster : bkgccol)
       {                
            BkgQual cqual;
@@ -265,7 +278,6 @@ namespace mu2e
 
            for (const auto& chit : cluster.hits()) chfcol[chit] = flag;
            if (savebkg_) bkgqcol.push_back(std::move(cqual));
-
       }
   }   
   
@@ -358,6 +370,7 @@ namespace mu2e
         cqual[BkgQual::npfrac] = static_cast<float>(np)/static_cast<float>(npexp);
         cqual[BkgQual::nphits] = static_cast<float>(nphits)/static_cast<float>(np);
    }
+
 
    //----------------------------------------------------------------------------------------------------------------------------------
    void FlagBkgHits::countHits(const BkgCluster& cluster, unsigned& nactive, unsigned& nstereo, const ComboHitCollection& chcol) const 
