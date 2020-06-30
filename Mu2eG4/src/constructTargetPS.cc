@@ -1104,7 +1104,8 @@ namespace mu2e {
 					       localWheelCenter,
 					       prodTargetMotherInfo,
 					       0,
-					       G4Colour::Gray()
+					       G4Colour::Gray(),
+					       "PS"
 					       );
 
 	// add spokes //
@@ -1157,7 +1158,8 @@ namespace mu2e {
 						featureCenter,
 						prodTargetMotherInfo,
 						0,
-						G4Colour::Gray()
+						G4Colour::Gray(),
+						"PS"
 						);
 	    }
 	    //get angle of the support rod on the wheel and the angle on the target the wire connects to
@@ -1198,7 +1200,8 @@ namespace mu2e {
 						      rodCenter,
 						      prodTargetMotherInfo,
 						      0,
-						      G4Colour::Gray()
+						      G4Colour::Gray(),
+						      "PS"
 						      );
 	    //now consider attaching the wire to the rod
 	    double rWireRod = supportWheelRodRadialOffset[ispoke] + sin(side*rodTilt)*(lRodCenter+rodLength/2.);
@@ -1266,12 +1269,8 @@ namespace mu2e {
 					       spokeCenter,
 					       prodTargetMotherInfo,
 					       0,
-					       prodTargetVisible,
 					       G4Colour::Gray(),
-					       prodTargetSolid,
-					       forceAuxEdgeVisible,
-					       placePV,
-					       doSurfaceCheck
+					       "PS"
 					       );
 	  
 	  } //end spokes loop
