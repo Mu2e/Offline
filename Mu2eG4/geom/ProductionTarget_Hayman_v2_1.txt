@@ -29,8 +29,8 @@ vector<double> targetPS.supports.rods.halfLength   = {70., 70., 70.}; //mm
 vector<double> targetPS.supports.rods.offset       = {-40., 10., 40.}; //mm
 vector<double> targetPS.supports.rods.radius       = {9., 9., 9.}; //mm
 vector<double> targetPS.supports.rods.radialOffset = {177.8, 177.8, 177.8}; //mm
-vector<double> targetPS.supports.rods.wireOffset.downstream = {10., 0., 5.}; //mm
-vector<double> targetPS.supports.rods.wireOffset.upstream   = {10., 0., 5.}; //mm
+vector<double> targetPS.supports.rods.wireOffset.downstream = {10., 10., 10.}; //mm
+vector<double> targetPS.supports.rods.wireOffset.upstream   = {10., 10., 10.}; //mm
 //spokes connecting the target to the wheel rods
 vector<double> targetPS.supports.spokes.targetAngles.downstream = {-22.5, 97.5, 217.5}; //degrees
 vector<double> targetPS.supports.spokes.targetAngles.upstream   = {-22.5, 97.5, 217.5}; //degrees
