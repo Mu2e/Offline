@@ -11,7 +11,7 @@ fi
 
 #================================================================
 # known keywords
-kkw=(build g4vis g4mt trigger)
+kkw=(build g4vis g4mt g4vg trigger)
 # a list of allowed values, the first one is the default
 opts_build() {
     echo prof debug
@@ -23,6 +23,10 @@ opts_g4vis() {
 # a list of allowed values, the first one is the default
 opts_g4mt() {
     echo on off
+}
+# a list of allowed values, the first one is the default
+opts_g4vg() {
+    echo off on
 }
 # a list of allowed values, the first one is the default
 opts_trigger(){
