@@ -94,6 +94,7 @@ namespace mu2e {
       using Name=fhicl::Name;
       using Comment=fhicl::Comment;
       fhicl::Atom<bool> fillmc{Name("fillMC"), Comment("Switch to turn on filling of MC information for this set of tracks"), false};
+      fhicl::Atom<bool> fillhits{Name("fillHits"), Comment("Switch to turn on filling of hit-level information for this set of tracks"), false};
       fhicl::OptionalAtom<std::string> trkqual{Name("trkqual"), Comment("TrkQualCollection input tag to be written out (use prefix if fcl parameter suffix is defined)")};
       fhicl::Atom<bool> filltrkqual{Name("fillTrkQual"), Comment("Switch to turn on filling of the full TrkQualInfo for this set of tracks"), false};
       fhicl::OptionalAtom<std::string> trkpid{Name("trkpid"), Comment("TrkCaloHitPIDCollection input tag to be written out (use prefix if fcl parameter suffix is defined)")};
@@ -127,7 +128,7 @@ namespace mu2e {
       fhicl::Atom<std::string> simParticleLabel{Name("SimParticleLabel"), Comment("SimParticleLabel")};
       fhicl::Atom<std::string> mcTrajectoryLabel{Name("MCTrajectoryLabel"), Comment("MCTrajectoryLabel")};
       fhicl::Atom<double> crvPlaneY{Name("CrvPlaneY"),2751.485};  //y of center of the top layer of the CRV-T counters
-      fhicl::Atom<bool> fillmc{Name("FillMCInfo"),true};
+      fhicl::Atom<bool> fillmc{Name("FillMCInfo"),Comment("Global switch to turn on/off MC info"),true};
       fhicl::Atom<bool> pempty{Name("ProcessEmptyEvents"),false};
       fhicl::Atom<bool> crv{Name("AnalyzeCRV"),false};
       fhicl::Atom<bool> helices{Name("FillHelixInfo"),false};
@@ -136,6 +137,7 @@ namespace mu2e {
       fhicl::Atom<bool> filltrig{Name("FillTriggerInfo"),false};
       fhicl::Atom<std::string> trigpathsuffix{Name("TriggerPathSuffix"), "_trigger"}; // all trigger paths have this in the name
       fhicl::Atom<int> diag{Name("diagLevel"),1};
+      fhicl::Atom<bool> fillhits{Name("FillHitInfo"),Comment("Global switch to turn on/off hit-level info"), false};
       fhicl::Atom<int> debug{Name("debugLevel"),0};
       fhicl::Atom<art::InputTag> primaryParticleTag{Name("PrimaryParticleTag"), Comment("Tag for PrimaryParticle"), art::InputTag()};
       fhicl::Atom<art::InputTag> kalSeedMCTag{Name("KalSeedMCAssns"), Comment("Tag for KalSeedMCAssn"), art::InputTag()};
@@ -205,10 +207,10 @@ namespace mu2e {
     std::vector<TrkInfoMCStep> _allMCEntTIs, _allMCMidTIs, _allMCXitTIs;
     std::vector<CaloClusterInfoMC> _allMCTCHIs;
 
-    // hit level info branches (only for candidate at the moment)
-    std::vector<TrkStrawHitInfo> _detsh;
-    std::vector<TrkStrawMatInfo> _detsm;
-    std::vector<TrkStrawHitInfoMC> _detshmc;
+    // hit level info branches 
+    std::vector<std::vector<TrkStrawHitInfo>> _allTSHIs;
+    std::vector<std::vector<TrkStrawMatInfo>> _allTSMIs;
+    std::vector<std::vector<TrkStrawHitInfoMC>> _allTSHIMCs;
 
     // event weights
     std::vector<art::Handle<EventWeight> > _wtHandles;
@@ -292,6 +294,13 @@ namespace mu2e {
       _allTQIs.push_back(tqi);
       TrkPIDInfo tpi;
       _allTPIs.push_back(tpi);
+
+      std::vector<TrkStrawHitInfo> tshi;
+      _allTSHIs.push_back(tshi);
+      std::vector<TrkStrawMatInfo> tsmi;
+      _allTSMIs.push_back(tsmi);
+      std::vector<TrkStrawHitInfoMC> tshimc;
+      _allTSHIMCs.push_back(tshimc);
     }
   }
 
@@ -326,10 +335,11 @@ namespace mu2e {
       if (_conf.filltrkpid() && i_branchConfig.options().filltrkpid()) {
 	_trkana->Branch((branch+"trkpid").c_str(), &_allTPIs.at(i_branch), TrkPIDInfo::leafnames().c_str());
       }
-      // optionally add detailed branches (for now just for the candidate branch, we can think about adding these for supplement branches in the future)
-      if(_conf.diag() > 1 && i_branch==_candidateIndex){ 
-	_trkana->Branch((branch+"tsh").c_str(),&_detsh);
-	_trkana->Branch((branch+"tsm").c_str(),&_detsm);
+      // optionally add hit-level branches
+      // (for the time being diagLevel : 2 will still work, but I propose removing this at some point)
+      if(_conf.diag() > 1 || (_conf.fillhits() && i_branchConfig.options().fillhits())){ 
+	_trkana->Branch((branch+"tsh").c_str(),&_allTSHIs.at(i_branch));
+	_trkana->Branch((branch+"tsm").c_str(),&_allTSMIs.at(i_branch));
       }
       // optionall add MC branches
       if(_conf.fillmc() && i_branchConfig.options().fillmc()){
@@ -340,8 +350,10 @@ namespace mu2e {
 	_trkana->Branch((branch+"mcmid").c_str(),&_allMCMidTIs.at(i_branch),TrkInfoMCStep::leafnames().c_str());
 	_trkana->Branch((branch+"mcxit").c_str(),&_allMCXitTIs.at(i_branch),TrkInfoMCStep::leafnames().c_str());
 	_trkana->Branch((branch+"tchmc").c_str(),&_allMCTCHIs.at(i_branch),CaloClusterInfoMC::leafnames().c_str());
-	if(_conf.diag() > 1 && i_branch==_candidateIndex) { // just for the candidate branch
-	  _trkana->Branch((branch+"tshmc").c_str(),&_detshmc);
+	// at hit-level MC information
+	// (for the time being diagLevel will still work, but I propose removing this at some point)
+	if(_conf.diag() > 1 || (_conf.fillhits() && i_branchConfig.options().fillhits())){ 
+	  _trkana->Branch((branch+"tshmc").c_str(),&_allTSHIMCs.at(i_branch));
 	}
       }
     }
@@ -644,9 +656,9 @@ namespace mu2e {
     _infoStructHelper.fillTrkFitInfo(kseed,_allXitTIs.at(i_branch),xitpos);
     //      _tcnt._overlaps[0] = _tcomp.nOverlap(kseed, kseed);
 
-    if(_conf.diag() > 1 && i_branch==_candidateIndex){ // want hit level info
-      _infoStructHelper.fillHitInfo(kseed, _detsh);
-      _infoStructHelper.fillMatInfo(kseed, _detsm);
+    if(_conf.diag() > 1 || (_conf.fillhits() && branchConfig.options().fillhits())){ // want hit level info
+      _infoStructHelper.fillHitInfo(kseed, _allTSHIs.at(i_branch));
+      _infoStructHelper.fillMatInfo(kseed, _allTSMIs.at(i_branch));
     }
     if(_conf.helices()){
       _infoStructHelper.fillHelixInfo(kseed, _hinfo);
@@ -725,8 +737,8 @@ namespace mu2e {
 	  _infoMCStructHelper.fillTrkInfoMCStep(kseedmc, _allMCXitTIs.at(i_branch), _xitvids, t0);
 	  _infoMCStructHelper.fillGenAndPriInfo(kseedmc, primary, _allMCPriTIs.at(i_branch), _allMCGenTIs.at(i_branch));
 	    
-	  if (_conf.diag()>1 && i_branch == _candidateIndex) {
-	    _infoMCStructHelper.fillHitInfoMCs(kseedmc, _detshmc);
+	  if(_conf.diag() > 1 || (_conf.fillhits() && branchConfig.options().fillhits())){ 
+	    _infoMCStructHelper.fillHitInfoMCs(kseedmc, _allTSHIMCs.at(i_branch));
 	  }
 	  break;
 	}
@@ -801,11 +813,13 @@ namespace mu2e {
       _allRQIs.at(i_branch).reset();
       _allTQIs.at(i_branch).reset();
       _allTPIs.at(i_branch).reset();
+
+      // clear vectors
+      _allTSHIs.at(i_branch).clear();
+      _allTSMIs.at(i_branch).clear();
+      _allTSHIMCs.at(i_branch).clear();
     }
 // clear vectors
-    _detsh.clear();
-    _detsm.clear();
-    _detshmc.clear();
     _crvinfo.clear();
     _crvinfomc.clear();
     _crvinfomcplane.clear();
