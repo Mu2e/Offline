@@ -7,7 +7,6 @@ BEGIN_PROLOG
     CosmicTrackSeedCollection : "CosmicTrackFinderTimeFit"
 
     MinTraversedPlanes : 3
-    MaxPValue : 1
     MinTraversedPanelsPerPlane : 0
 
     MaxTimeRes : 10.0
