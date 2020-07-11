@@ -11,6 +11,7 @@ namespace mu2e {
     public:
       explicit ProtonBunchIntensitySummary() : _nev(0), _iave(0.0), _ivar(0.0) {}
       explicit ProtonBunchIntensitySummary(unsigned nevents, float intensity, float ivar) : _nev(nevents), _iave(intensity), _ivar(ivar) {}
+      unsigned count() const { return _nev; }
       float averageIntensity() const { return _iave; }
       float intensityVariance() const { return _ivar; }
       float intensityRMS() const { return sqrt(_ivar); }
