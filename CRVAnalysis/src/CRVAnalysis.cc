@@ -109,7 +109,7 @@ namespace mu2e
       MCSummary._nHitCounters=counters.size();
     }
 
-#if 0
+#if 1
     //locate points where the cosmic MC trajectories cross the xz plane of CRV-T
     if(mcTrajectoryCollection.isValid())
     {
