@@ -1,0 +1,55 @@
+BEGIN_PROLOG
+
+ AlignTrackCollector : {
+    module_type		: AlignTrackCollector
+    diagLevel : 1
+
+    CosmicTrackSeedCollection : "CosmicTrackFinderTimeFit"
+
+    MinTraversedPlanes : 3
+    MinTraversedPanelsPerPlane : 0
+
+    MaxTimeRes : 10.0
+    MinTrackSH: 10
+
+    ConstrainStrategy : "Fix"
+    FixPlane : [ 5, 30 ]
+
+    UseTimeDomain : true
+
+    NoPanelDOFs : true 
+    NoPlaneRotations : true 
+    UseNumericalDiffn : false
+
+    MilleFile : "TrackData.bin.gz"
+    GzipCompression : true 
+
+    SteerFile : "steer.txt"
+    ParamFile : "params.txt"
+    ConstrFile : "constr.txt"
+
+    SteeringOpts : [ ]
+
+    ErrorScale : 1.0
+
+    EnableLOOCVFitting : false
+}
+
+
+ AlignTrackSelector : {
+    module_type		: AlignTrackSelector
+    diagLevel : 1
+
+    CosmicTrackSeedCollection : "CosmicTrackFinderTimeFit"
+
+    MinTraversedPlanes : 3
+    MaxPValue : 1
+    MinTraversedPanelsPerPlane : 0
+    MinDOCA : 0.0
+
+    MaxTimeRes : 10.0
+    MinTrackSH: 10
+}
+
+
+END_PROLOG
