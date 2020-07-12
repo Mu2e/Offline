@@ -5,10 +5,6 @@
 // If Mu2e needs many different user tracking actions, they
 // should be called from this class.
 //
-// $Id: TrackingAction.hh,v 1.30 2014/08/25 20:01:30 genser Exp $
-// $Author: genser $
-// $Date: 2014/08/25 20:01:30 $
-//
 // Original author Rob Kutschke
 //
 
@@ -25,6 +21,7 @@
 #include "Mu2eG4/inc/PhysicalVolumeHelper.hh"
 #include "Mu2eG4/inc/PhysicsProcessInfo.hh"
 #include "Mu2eG4/inc/Mu2eG4Config.hh"
+#include "DataProducts/inc/PDGCode.hh"
 
 #include "art/Framework/Principal/Event.h"
 #include "art/Framework/Principal/Handle.h"

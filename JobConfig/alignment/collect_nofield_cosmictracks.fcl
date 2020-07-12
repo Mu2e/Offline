@@ -1,0 +1,127 @@
+# Ryunosuke O'Neil
+# roneil@fnal.gov
+# https://github.com/ryuwd
+#
+# Reconstruct Cosmic Track (Straight, no magnetic field)
+# Check Cuts Pass (see Alignment/fcl/prolog.fcl)
+# Write alignment (mille) data to file. This file can be fed then to Millepede.
+
+
+#include "fcl/minimalMessageService.fcl"
+#include "fcl/standardProducers.fcl"
+#include "fcl/standardServices.fcl"
+#include "JobConfig/reco/prolog.fcl"
+#include "CosmicReco/fcl/prolog.fcl"
+#include "TrackerAlignment/fcl/prolog.fcl"
+#include "Trigger/fcl/templates.fcl"
+
+process_name : CosmicTimeFit
+
+source : { module_type : RootInput }
+
+services : @local::Services.Reco
+
+physics :
+{
+  producers : {
+    @table::Reconstruction.producers
+    @table::Trigger.producers
+    @table::CommonMC.producers
+    @table::CosmicTracking.producers
+  }
+  filters :  {
+    @table::Reconstruction.filters
+    @table::Trigger.filters
+    @table::CosmicTracking.filters
+  }
+  analyzers: {
+    @table::Reconstruction.analyzers
+    @table::Trigger.analyzers
+    @table::CosmicTracking.analyzers
+
+    AlignTrackCollector: { @table::AlignTrackCollector }
+
+  }
+  RecoPath : [ @sequence::Reconstruction.RecoMCPath ]
+  EndPath : [ Output, RecoCheck  ]
+}
+
+outputs : {
+  Output :@local::Reconstruction.Output
+}
+
+
+# My epilog
+#include "JobConfig/reco/epilog.fcl"
+#include "JobConfig/reco/NoCosmicTimeMap_epilog.fcl"
+# trigger epilog
+#include "gen/fcl/Trigger/offline/allTrig/allPaths.fcl"
+outputs.Output.SelectEvents : [ "RecoPath" ]
+#
+# the following need to be overwritten for the specific channel
+services.TFileService.fileName: "nts.owner.RecoMCTrig.version.sequencer.root"
+outputs.Output.fileName: "mcs.owner.RecoMCTrig.version.sequencer.art"
+outputs.Output.outputCommands : ["keep *_*_*_*"]
+physics.end_paths : [ EndPath ] # needed for generate_fcl
+
+services.scheduler.wantSummary: true
+
+physics.RecoPath : [ @sequence::TrkHitReco.PrepareHits, SimpleTimeCluster, LineFinder, CosmicTrackFinderTimeFit ]
+physics.EndPath : [ AlignTrackCollector, CosmicTrackDiag ]
+
+physics.analyzers.CosmicTrackDiag.CosmicTrackSeedCollection : "CosmicTrackFinderTimeFit"
+physics.analyzers.CosmicTrackDiag.printLevel : 1
+
+# these lines are needed to improve performance
+services.ProditionsService.strawResponse.useParameterizedDriftErrors : true
+physics.producers.makePH.TestRadius : false
+physics.producers.makePH.TestFlag : false
+
+
+# Ensure the job applies our in-going alignment constants.
+#include "JobConfig/reco/misalign_epilog.fcl"
+
+services.ProditionsService.alignedTracker.useDb: true
+services.ProditionsService.alignedTracker.verbose: 2
+
+services.ProditionsService.mu2eDetector.useDb: true
+services.ProditionsService.mu2eDetector.verbose: 2
+physics.analyzers.TrkAnaNeg.diagLevel: 2
+
+services.DbService.textFile: ["alignconstants_in.txt"]
+
+
+# Alignment defaults
+
+# Input cosmics
+physics.analyzers.AlignTrackCollector.CosmicTrackSeedCollection : CosmicTrackFinderTimeFit
+physics.analyzers.AlignTrackCollector.diagLevel : 5
+
+# Track selection criteria
+physics.analyzers.AlignTrackCollector.MinTraversedPlanes : 3
+physics.analyzers.AlignTrackCollector.MaxTimeRes : 20.0
+physics.analyzers.AlignTrackCollector.MinTrackSH: 10
+
+# Enable plane rotations?
+physics.analyzers.AlignTrackCollector.NoPlaneRotations : false
+
+physics.analyzers.AlignTrackCollector.ErrorScale : 1.0
+physics.analyzers.AlignTrackCollector.EnableLOOCVFitting : false
+
+# Fixes the following Plane IDs ([0,35] inclusive) to their Proditions values
+physics.analyzers.AlignTrackCollector.ConstrainStrategy : "Fix"
+physics.analyzers.AlignTrackCollector.FixPlane : [ 5, 30 ]
+
+# Each list element is added as a line to the steering file
+physics.analyzers.AlignTrackCollector.SteeringOpts : [ ]
+
+# Where to write the alignment data and PEDE config files
+physics.analyzers.AlignTrackCollector.MilleFile : "MilleData.bin.gz"
+physics.analyzers.AlignTrackCollector.GzipCompression : true 
+
+physics.analyzers.AlignTrackCollector.SteerFile : "mp-steer.txt"
+physics.analyzers.AlignTrackCollector.ParamFile : "mp-params.txt"
+physics.analyzers.AlignTrackCollector.ConstrFile : "mp-constr.txt"
+
+# diagnostics and plots, usually
+services.TFileService.fileName: "nts.owner.AlignTrackDiag.version.sequencer.root"

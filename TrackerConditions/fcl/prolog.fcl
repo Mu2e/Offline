@@ -239,7 +239,7 @@ StrawResponse : {
       0.132159, 0.130062, 0.123545, 0.120212 ]
 
    useParameterizedDriftErrors : false
-   parameterizedDriftBins : 25000
+   parameterizedDriftBins : 5000
    parameterizedDriftSigma : 1.39
    parameterizedDriftTau : 11.22
 

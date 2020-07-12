@@ -31,6 +31,7 @@
 #include "G4GenericTrap.hh"
 #include "G4RotationMatrix.hh"
 #include "G4Orb.hh"
+#include "G4Box.hh"
 #include "G4SubtractionSolid.hh"
 #include "G4TwoVector.hh"
 #include "CLHEP/Vector/Rotation.h"
