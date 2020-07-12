@@ -17,6 +17,7 @@
 #include <TAxis.h>
 #include <TH1F.h>
 #include <TGraphErrors.h>
+#include <TMultiGraph.h>
 #include <iostream>
 #include <sstream>
 #include <vector>
@@ -133,7 +134,9 @@ namespace mu2e_eventdisplay
       if(i<_hist.size())
       {
         gStyle->SetOptTitle(0);
-        TGraph *g = dynamic_cast<TGraph*>(_hist[i].get());
+        TGraph      *g = dynamic_cast<TGraph*>(_hist[i].get());
+        TMultiGraph *m = dynamic_cast<TMultiGraph*>(_hist[i].get());
+        TH1         *h = dynamic_cast<TH1*>(_hist[i].get());
         if(g)
         {
           g->GetXaxis()->SetLabelSize(0.05);
@@ -144,21 +147,32 @@ namespace mu2e_eventdisplay
           g->GetYaxis()->SetTitleOffset(0.8);
           g->Draw("ap");
         }
-        else
-        {
-          TH1 *h = dynamic_cast<TH1*>(_hist[i].get());
-          if(h)
-          {                                    //TODO may need other settings
-            h->GetXaxis()->SetLabelSize(0.05);
-            h->GetXaxis()->SetTitleSize(0.05);
-            h->GetXaxis()->SetTitleOffset(0.8);
-            h->GetYaxis()->SetLabelSize(0.05);
-            h->GetYaxis()->SetTitleSize(0.05);
-            h->GetYaxis()->SetTitleOffset(0.8);
-            h->Draw("ap");
-          }
-          else _hist[i]->Draw();
+        else if(h)
+        {                                    //TODO may need other settings
+          h->GetXaxis()->SetLabelSize(0.05);
+          h->GetXaxis()->SetTitleSize(0.05);
+          h->GetXaxis()->SetTitleOffset(0.8);
+          h->GetYaxis()->SetLabelSize(0.05);
+          h->GetYaxis()->SetTitleSize(0.05);
+          h->GetYaxis()->SetTitleOffset(0.8);
+          h->Draw("ap");
         }
+        else if(m)
+        {
+          m->GetXaxis()->SetLabelSize(0.05);
+          m->GetXaxis()->SetTitleSize(0.05);
+          m->GetXaxis()->SetTitleOffset(0.8);
+          m->GetYaxis()->SetLabelSize(0.05);
+          m->GetYaxis()->SetTitleSize(0.05);
+          m->GetYaxis()->SetTitleOffset(0.8);
+          m->Draw("a");
+/*
+          std::string title = Form("%s %s",_name->c_str(),m->GetName());
+          TText *t = new TText(.05,.05,title.c_str());
+          t->Draw("same");
+*/
+        }
+        else _hist[i]->Draw();
       }
     }
 #endif
