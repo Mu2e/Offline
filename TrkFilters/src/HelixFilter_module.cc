@@ -76,7 +76,7 @@ namespace mu2e
     art::EDFilter{pset},
     _hsTag             (pset.get<art::InputTag>("helixSeedCollection","PosHelixFinder")),
     _hascc             (pset.get<bool>  ("requireCaloCluster",false)),
-    _doHelicityCheck   (pset.get<bool>   ("doHelicityCheck",true)),
+    _doHelicityCheck   (pset.get<bool>  ("doHelicityCheck",true)),
     _hel               (pset.get<int>   ("helicity")),
     _minnstrawhits     (pset.get<int>   ("minNStrawHits",15)),
     _minHitRatio       (pset.get<double>("minHitRatio",0.)),
