@@ -159,6 +159,8 @@ namespace mu2e_eventdisplay
         }
         else if(m)
         {
+          m->GetXaxis()->SetTitle("t [ns]");
+          m->GetYaxis()->SetTitle("ADC");
           m->GetXaxis()->SetLabelSize(0.05);
           m->GetXaxis()->SetTitleSize(0.05);
           m->GetXaxis()->SetTitleOffset(0.8);
@@ -166,11 +168,24 @@ namespace mu2e_eventdisplay
           m->GetYaxis()->SetTitleSize(0.05);
           m->GetYaxis()->SetTitleOffset(0.8);
           m->Draw("a");
-/*
-          std::string title = Form("%s %s",_name->c_str(),m->GetName());
-          TText *t = new TText(.05,.05,title.c_str());
-          t->Draw("same");
-*/
+
+          const string multigraphName = m->GetName();
+          if(multigraphName.compare(0,8,"Waveform")==0)
+          {
+            TText *t[3];
+            t[0] = new TText(.12,.95,_name->c_str());
+            t[1] = new TText(.12,.90,multigraphName.c_str());
+            int sipm=atoi(&multigraphName.back())+3;
+            const string s = _text[sipm]->GetTitle();
+            t[2] = new TText(.12,.85,Form("Reco pulse(s) %s",s.substr(17).c_str()));
+            for(int j=0; j<3; j++)
+            {
+              t[j]->SetNDC();
+              t[j]->SetTextSize(0.05);
+              t[j]->SetTextColor(1);
+              t[j]->Draw();
+            }
+          }
         }
         else _hist[i]->Draw();
       }

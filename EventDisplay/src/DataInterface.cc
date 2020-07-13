@@ -1125,8 +1125,6 @@ void DataInterface::fillEvent(boost::shared_ptr<ContentSelector> const &contentS
         if(newMultigraph)
         {
           boost::shared_ptr<TMultiGraph> waveform(new TMultiGraph(multigraphName.c_str(),multigraphName.c_str()));
-          waveform->GetXaxis()->SetTitle("t [ns]");
-          waveform->GetYaxis()->SetTitle("ADC");
           v.push_back(boost::dynamic_pointer_cast<TObject>(waveform));
           multigraphIndex=v.size()-1;
         }
@@ -1171,7 +1169,7 @@ void DataInterface::fillEvent(boost::shared_ptr<ContentSelector> const &contentS
           crvbar->second->getComponentInfo()->setText(5,"Reco pulse SiPM2 PEs/time: ");
           crvbar->second->getComponentInfo()->setText(6,"Reco pulse SiPM3 PEs/time: ");
         }
-        crvbar->second->getComponentInfo()->expandLine(sipm+3,Form("%i/%gns",PEs,time/CLHEP::ns));
+        crvbar->second->getComponentInfo()->expandLine(sipm+3,Form("%iPEs/%.1fns",PEs,time/CLHEP::ns));
 
         //each digi collection and each SiPM gets its own multigraph
         std::vector<boost::shared_ptr<TObject> > &v=crvbar->second->getComponentInfo()->getHistVector();
