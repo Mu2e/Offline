@@ -9,6 +9,8 @@ source: {
   module_type :  PBISequence 
   fileNames: ["/pnfs/mu2e/persistent/users/brownd/SS_2020-05-23.dat"]
   runNumber : 1
+  integratedSummary : true
+  verbosity : 1
 }
 
 Output : {
