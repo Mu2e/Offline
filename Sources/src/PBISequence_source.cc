@@ -91,8 +91,8 @@ namespace mu2e {
     unsigned currentEventNumber_;
     unsigned verbosity_;
     art::SubRunID lastSubRunID_;
-    accumulator_set<float, stats< tag::mean, tag::variance>> nprotAcc_; // accumulator for proton statistics for one input file (subrun).
-    accumulator_set<float, stats< tag::mean, tag::variance>> runNprotAcc_; // accumulator for proton statistics over the full input file set (run).
+    accumulator_set<double, stats< tag::mean, tag::variance>> nprotAcc_; // accumulator for proton statistics for one input file (subrun).
+    accumulator_set<double, stats< tag::mean, tag::variance>> runNprotAcc_; // accumulator for proton statistics over the full input file set (run).
 
     std::string currentFileName_;
     std::ifstream *currentFile_ = nullptr;
@@ -162,13 +162,13 @@ namespace mu2e {
       currentEventNumber_ = 0;
       // compute statistics on protons in this file
       nprotAcc_ = {};
-      float protons;
+      double protons;
       unsigned nprotons;
       while(true) {
 	*currentFile_ >> protons;
 	if ( currentFile_->good()) {
 	  nprotons = (unsigned)rint(protons);
-	  nprotAcc_(float(nprotons));
+	  nprotAcc_(double(nprotons));
 	} else
 	break;
       }
@@ -196,7 +196,7 @@ namespace mu2e {
                                        art::SubRunPrincipal*& outSR,
                                        art::EventPrincipal*& outE)
     {
-      float protons;
+      double protons;
       unsigned nprotons;
       (*currentFile_) >>  protons;
       if (!currentFile_->good()) return false;
@@ -256,13 +256,13 @@ namespace mu2e {
   void PBISequenceDetail::computeRunDataProducts( std::vector<std::string> const& inputFiles ){
     for ( auto const& file : inputFiles){
       std::ifstream in(file,std::ifstream::in);
-      float protons;
+      double protons;
       int nprotons;
       while (in){
 	in >> protons;
 	if ( in.good()) {
 	  nprotons = (unsigned)rint(protons);
-	  runNprotAcc_(float(nprotons));
+	  runNprotAcc_(double(nprotons));
 	} else {
           break;
         }
