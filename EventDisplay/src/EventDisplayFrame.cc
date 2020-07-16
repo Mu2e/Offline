@@ -594,7 +594,6 @@ void EventDisplayFrame::fillGeometry()
 
 void EventDisplayFrame::setEvent(const art::Event& event, bool firstLoop)
 {
-  _dataInterface->setEvent(&event);
   _timeOffsets.updateMap(event);
 
   _eventNumber=event.id().event();
