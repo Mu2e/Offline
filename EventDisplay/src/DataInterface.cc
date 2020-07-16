@@ -1098,8 +1098,9 @@ void DataInterface::fillEvent(boost::shared_ptr<ContentSelector> const &contentS
   double digitizationPeriod = crvPar->digitizationPeriod;
   double recoPulsePedestal  = crvPar->pedestal;
 
-  std::vector<art::Handle<mu2e::CrvDigiCollection> > crvDigisVector;
-  _event->getManyByType(crvDigisVector);
+//  std::vector<art::Handle<mu2e::CrvDigiCollection> > crvDigisVector;
+//  _event->getManyByType(crvDigisVector);
+  const std::vector<art::Handle<mu2e::CrvDigiCollection> > &crvDigisVector = contentSelector->getSelectedCrvDigiCollection();
   for(size_t i=0; i<crvDigisVector.size(); i++)
   {
     const art::Handle<mu2e::CrvDigiCollection> &crvDigis = crvDigisVector[i];

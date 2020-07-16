@@ -97,8 +97,6 @@ class DataInterface
 
   std::unique_ptr<mu2e::ParticleInfo> _particleInfo;
 
-  art::Event *_event;
-
   void createGeometryManager();
   void removeAllComponents();
   void removeNonGeometryComponents();
@@ -125,7 +123,6 @@ class DataInterface
   void startComponents();
   void updateComponents(double time, boost::shared_ptr<ContentSelector> contentSelector);
   void fillGeometry();
-  void setEvent(const art::Event *event) {_event=const_cast<art::Event*>(event);}
   void fillEvent(boost::shared_ptr<ContentSelector> const &contentSelector, const mu2e::SimParticleTimeOffset &timeOffsets);
   void makeSupportStructuresVisible(bool visible);
   void makeOtherStructuresVisible(bool visible);
