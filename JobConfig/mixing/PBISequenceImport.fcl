@@ -20,7 +20,7 @@ services: {
 source: {
   module_type              :  PBISequence
   fileNames                : @nil
-  runNumber                : 1000
+  runNumber                : @nil
   reconstitutedModuleLabel : "protonBunchIntensity"      # to match NoPrimaryPBI.fcl
   deprecatedInstanceName   : "MeanIntensity"             # To match MDC2018 conventions
   integratedSummary        : true
@@ -38,7 +38,7 @@ outputs : {
     outputCommands:   [ "drop *_*_*_*",
       "keep mu2e::ProtonBunchIntensity_*_*_*",
       "keep mu2e::ProtonBunchIntensitySummary_*_*_*" ]
-    fileName       : "out/test/sim.mu2e.NoPrimary-pbiseq.v09_07_00.%6r_%8s_%#.art"
+    fileName       : @nil # Use as a model: "sim.mu2e.NoPrimary-pbiseq.version.%6r_%8s_%#.art"
     fileProperties : {
       maxSubRuns  : 1
       granularity : "Event"
