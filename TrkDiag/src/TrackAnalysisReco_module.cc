@@ -73,6 +73,8 @@
 #include "TrkDiag/inc/RecoQualInfo.hh"
 // CRV info
 #include "CRVAnalysis/inc/CRVAnalysis.hh"
+#include "Mu2eUtilities/inc/SimParticleTimeOffset.hh"
+#include "MCDataProducts/inc/SimParticleTimeMap.hh"
 
 // C++ includes.
 #include <iostream>
@@ -127,6 +129,9 @@ namespace mu2e {
       fhicl::Atom<std::string> simParticleLabel{Name("SimParticleLabel"), Comment("SimParticleLabel")};
       fhicl::Atom<std::string> mcTrajectoryLabel{Name("MCTrajectoryLabel"), Comment("MCTrajectoryLabel")};
       fhicl::Atom<double> crvPlaneY{Name("CrvPlaneY"),2751.485};  //y of center of the top layer of the CRV-T counters
+      fhicl::Table<SimParticleTimeOffset::Config> timeOffsets{ Name("TimeOffsets"), Comment("Time maps") };
+      fhicl::Atom<std::string> crvWaveformsModuleLabel{ Name("CrvWaveformsModuleLabel"), Comment("CrvWaveformsModuleLabel")};
+      fhicl::Atom<std::string> crvDigiModuleLabel{ Name("CrvDigiModuleLabel"), Comment("CrvDigiModuleLabel")};
       fhicl::Atom<bool> fillmc{Name("FillMCInfo"),true};
       fhicl::Atom<bool> pempty{Name("ProcessEmptyEvents"),false};
       fhicl::Atom<bool> crv{Name("AnalyzeCRV"),false};
@@ -220,11 +225,17 @@ namespace mu2e {
     CrvSummaryReco _crvsummary;
     CrvSummaryMC   _crvsummarymc;
     std::vector<CrvPlaneInfoMC> _crvinfomcplane;
+    //    std::vector<CrvPulseInfoReco> _crvpulseinfo;
+    std::map<int, CrvPulseInfoReco> _crvpulseinfo;  //this is the reco vector which will be stored in the main TTree
+    //    std::vector<std::pair<int, CrvPulseInfoReco>> _crvpulseinfo;  //this is the reco vector which will be stored in the main TTree
+    std::vector<CrvWaveformInfo> _crvwaveforminfo;
+    std::vector<CrvHitInfoMC> _crvpulseinfomc;
     // helices
     HelixInfo _hinfo;
     // struct helpers
     InfoStructHelper _infoStructHelper;
     InfoMCStructHelper _infoMCStructHelper;
+    SimParticleTimeOffset _toff;
 
     // helper functions
     void fillEventInfo(const art::Event& event);
@@ -243,7 +254,8 @@ namespace mu2e {
     art::EDAnalyzer(conf),
     _conf(conf()),
     _trigbitsh(0),
-    _infoMCStructHelper(conf().infoMCStructHelper())
+    _infoMCStructHelper(conf().infoMCStructHelper()),
+    _toff(conf().timeOffsets())
   {
     _midvids.push_back(VirtualDetectorId::TT_Mid);
     _midvids.push_back(VirtualDetectorId::TT_MidInner);
@@ -355,12 +367,15 @@ namespace mu2e {
       _trkana->Branch("crvinfo",&_crvinfo);
       _trkana->Branch("crvsummary",&_crvsummary);
       _trkana->Branch("bestcrv",&_bestcrv,"bestcrv/I");
+      _trkana->Branch("crvpulseinfo",&_crvpulseinfo);
+      _trkana->Branch("crvwaveforminfo",&_crvwaveforminfo);
       if(_conf.fillmc()){
 	if(_conf.crv()) 
         {
           _trkana->Branch("crvinfomc",&_crvinfomc);
           _trkana->Branch("crvsummarymc",&_crvsummarymc);
           _trkana->Branch("crvinfomcplane",&_crvinfomcplane);
+          _trkana->Branch("crvpulseinfomc",&_crvpulseinfomc);
         }
       }
     }
@@ -513,6 +528,9 @@ namespace mu2e {
 	CRVAnalysis::FillCrvHitInfoCollections(_conf.crvCoincidenceModuleLabel(), _conf.crvCoincidenceMCModuleLabel(), 
                                                _conf.crvRecoPulseLabel(), _conf.crvStepPointMCLabel(), _conf.simParticleLabel(), _conf.mcTrajectoryLabel(), event, 
                                                _crvinfo, _crvinfomc, _crvsummary, _crvsummarymc, _crvinfomcplane, _conf.crvPlaneY());
+        CRVAnalysis::FillCrvPulseInfoCollections(_conf.crvRecoPulseLabel(), _conf.crvWaveformsModuleLabel(), _conf.crvDigiModuleLabel(),
+                                                 _toff, event, _crvpulseinfo, _crvpulseinfomc, _crvwaveforminfo);
+
 //	find the best CRV match (closest in time)
 	_bestcrv=-1;
 	float mindt=1.0e9;
@@ -809,6 +827,9 @@ namespace mu2e {
     _crvinfo.clear();
     _crvinfomc.clear();
     _crvinfomcplane.clear();
+    _crvpulseinfo.clear();
+    _crvwaveforminfo.clear();
+    _crvpulseinfomc.clear();
   }
 }  // end namespace mu2e
 
