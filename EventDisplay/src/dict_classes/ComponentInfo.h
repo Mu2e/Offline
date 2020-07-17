@@ -17,6 +17,7 @@
 #include <TAxis.h>
 #include <TH1F.h>
 #include <TGraphErrors.h>
+#include <TMultiGraph.h>
 #include <iostream>
 #include <sstream>
 #include <vector>
@@ -133,7 +134,9 @@ namespace mu2e_eventdisplay
       if(i<_hist.size())
       {
         gStyle->SetOptTitle(0);
-        TGraph *g = dynamic_cast<TGraph*>(_hist[i].get());
+        TGraph      *g = dynamic_cast<TGraph*>(_hist[i].get());
+        TMultiGraph *m = dynamic_cast<TMultiGraph*>(_hist[i].get());
+        TH1         *h = dynamic_cast<TH1*>(_hist[i].get());
         if(g)
         {
           g->GetXaxis()->SetLabelSize(0.05);
@@ -144,21 +147,47 @@ namespace mu2e_eventdisplay
           g->GetYaxis()->SetTitleOffset(0.8);
           g->Draw("ap");
         }
-        else
-        {
-          TH1 *h = dynamic_cast<TH1*>(_hist[i].get());
-          if(h)
-          {                                    //TODO may need other settings
-            h->GetXaxis()->SetLabelSize(0.05);
-            h->GetXaxis()->SetTitleSize(0.05);
-            h->GetXaxis()->SetTitleOffset(0.8);
-            h->GetYaxis()->SetLabelSize(0.05);
-            h->GetYaxis()->SetTitleSize(0.05);
-            h->GetYaxis()->SetTitleOffset(0.8);
-            h->Draw("ap");
-          }
-          else _hist[i]->Draw();
+        else if(h)
+        {                                    //TODO may need other settings
+          h->GetXaxis()->SetLabelSize(0.05);
+          h->GetXaxis()->SetTitleSize(0.05);
+          h->GetXaxis()->SetTitleOffset(0.8);
+          h->GetYaxis()->SetLabelSize(0.05);
+          h->GetYaxis()->SetTitleSize(0.05);
+          h->GetYaxis()->SetTitleOffset(0.8);
+          h->Draw("ap");
         }
+        else if(m)
+        {
+          m->GetXaxis()->SetTitle("t [ns]");
+          m->GetYaxis()->SetTitle("ADC");
+          m->GetXaxis()->SetLabelSize(0.05);
+          m->GetXaxis()->SetTitleSize(0.05);
+          m->GetXaxis()->SetTitleOffset(0.8);
+          m->GetYaxis()->SetLabelSize(0.05);
+          m->GetYaxis()->SetTitleSize(0.05);
+          m->GetYaxis()->SetTitleOffset(0.8);
+          m->Draw("a");
+
+          const string multigraphName = m->GetName();
+          if(multigraphName.compare(0,8,"Waveform")==0)
+          {
+            TText *t[3];
+            t[0] = new TText(.12,.95,_name->c_str());
+            t[1] = new TText(.12,.90,multigraphName.c_str());
+            int sipm=atoi(&multigraphName.back())+3;
+            const string s = _text[sipm]->GetTitle();
+            t[2] = new TText(.12,.85,Form("Reco pulse(s) %s",s.substr(17).c_str()));
+            for(int j=0; j<3; j++)
+            {
+              t[j]->SetNDC();
+              t[j]->SetTextSize(0.05);
+              t[j]->SetTextColor(1);
+              t[j]->Draw();
+            }
+          }
+        }
+        else _hist[i]->Draw();
       }
     }
 #endif
