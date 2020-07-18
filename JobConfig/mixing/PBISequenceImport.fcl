@@ -1,0 +1,48 @@
+# Given a set of input files containing a model of the proton bunch intensity,
+# read the files and write one output file per subrun.  There is a new subrun
+# for each input file.
+#
+# FIXME:
+#  1) run number requires hand maintenance every time you run it.
+#  2) %# on output file name template will not be needed starting with art v3_06_00
+#
+# Original author Rob Kutschke
+#
+
+#include "fcl/minimalMessageService.fcl"
+
+process_name: PBISequence
+
+services: {
+  message : @local::default_message
+}
+
+source: {
+  module_type              :  PBISequence
+  fileNames                : @nil
+  runNumber                : @nil
+  reconstitutedModuleLabel : "protonBunchIntensity"      # to match NoPrimaryPBI.fcl
+  deprecatedInstanceName   : "MeanIntensity"             # To match MDC2018 conventions
+  integratedSummary        : true
+  verbosity                : 1
+}
+
+physics : {
+  EndPath : [ splitOutput ]
+}
+
+outputs : {
+
+  splitOutput : {
+    module_type : RootOutput
+    outputCommands:   [ "drop *_*_*_*",
+      "keep mu2e::ProtonBunchIntensity_*_*_*",
+      "keep mu2e::ProtonBunchIntensitySummary_*_*_*" ]
+    fileName       : @nil # Use as a model: "sim.mu2e.NoPrimary-pbiseq.version.%6r_%8s_%#.art"
+    fileProperties : {
+      maxSubRuns  : 1
+      granularity : "Event"
+    }
+  }
+
+}
