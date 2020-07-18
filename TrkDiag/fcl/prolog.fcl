@@ -217,15 +217,19 @@ BEGIN_PROLOG
     CrvCoincidenceModuleLabel : "SelectRecoMC"
     CrvCoincidenceMCModuleLabel : "compressRecoMCs"
     CrvRecoPulseLabel : "SelectRecoMC"
+//    CrvStepPointMCLabel : "detectorFilter"
     CrvStepPointMCLabel : "compressRecoMCs"
     SimParticleLabel : "compressRecoMCs"
     MCTrajectoryLabel : "compressRecoMCs"
+    CrvWaveformsModuleLabel : "CrvWaveforms"
+    CrvDigiModuleLabel : "CrvDigi"
     CrvPlaneY : 2653
     FillMCInfo : true
     FillTrkQualInfo : true
     FillTrkPIDInfo : true
     ProcessEmptyEvents : false
     AnalyzeCRV : true
+    AnalyzeCRVpulses : false
     PrimaryParticleTag : "compressRecoMCs"
     KalSeedMCAssns : "SelectRecoMC"
     CaloClusterMCAssns : "SelectRecoMC"
