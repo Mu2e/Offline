@@ -33,12 +33,18 @@ physics : {
   		compressDigiMCs]
   EndPath : @local::Primary.EndPath
 }
+#Let's keep all (uncompressed) CRV data products for inefficiency studies. 
 outputs : { 
   Output : {
      module_type : RootOutput
      SelectEvents : [ TriggerPath ]
      # drop StepPoints from calorimeter
-     outputCommands : @local::DigiCompression.OutputCommands
+     outputCommands : ["drop *_*_*_*",
+                       "keep *_compressDigiMCs_*_*",
+                       "keep *_*_CRV_*",
+                       "keep *_*Crv*_*_*",
+		       "keep mu2e::SimParticlemv_detectorFilter_*_*",
+		       @sequence::DigiCompression.Mixing.keptProducts]
   }
 }
 #
@@ -62,6 +68,6 @@ physics.end_paths : [ EndPath ] # needed for generate_fcl
 
 services.TFileService.fileName        : "nts.owner.CRY-cosmic-general.version.sequencer.root"
 outputs.Output.fileName     	      : "dig.owner.CRY-cosmic-general.version.sequencer.art"
-
-
-
+physics.producers.CrvPhotons.scintillationYield                 : 11588     //20 PE - beam on light yield in 2025
+#physics.producers.CrvPhotons.scintillationYield                  : 7532    //13 PE - beam on light yield in 2030
+#physics.producers.CrvWaveforms.minVoltage: 0.0075

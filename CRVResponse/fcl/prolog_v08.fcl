@@ -98,7 +98,7 @@ BEGIN_PROLOG
     {
       module_type               : CrvRecoPulsesFinder
       crvDigiModuleLabel        : "CrvDigi"
-      minPEs                    : 6        //6 PEs
+      minPEs                    : 0        //6 PEs
       darkNoise                 : false    //reduced initial pulse width for the reco pulse fit for dark noise (12.6ns instead of 19.0ns)
     }
     CrvCoincidence:

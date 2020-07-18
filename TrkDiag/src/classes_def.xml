@@ -33,16 +33,8 @@
  <class name="std::vector<mu2e::CrvHitInfoReco>" />
  <class name="mu2e::CrvSummaryReco" />
  <class name="mu2e::CrvSummaryMC" />
-
- <class name="mu2e::CrvPulseInfoReco::myrecodigis" />
- <class name="std::vector<mu2e::CrvPulseInfoReco::myrecodigis>" />
-
- <class name="mu2e::CrvPulseInfoReco::myrecopulse" />
- <class name="std::vector<mu2e::CrvPulseInfoReco::myrecopulse>" />
-
  <class name="mu2e::CrvPulseInfoReco" />
- <class name="std::pair<int, mu2e::CrvPulseInfoReco>" />
- <class name="std::map<int, mu2e::CrvPulseInfoReco>" />
+ <class name="std::vector<mu2e::CrvPulseInfoReco>" />
  <class name="mu2e::CrvWaveformInfo" />
  <class name="std::vector<mu2e::CrvWaveformInfo>" />
  <class name="mu2e::BkgHitInfo" />
