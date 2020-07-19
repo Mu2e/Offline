@@ -8,6 +8,7 @@
 #include <cassert>
 #include <set>
 
+#include "fhiclcpp/types/Name.h"
 #include "art/Framework/IO/Sources/Source.h"
 #include "art/Framework/Core/InputSourceMacros.h"
 #include "art/Framework/IO/Sources/SourceHelper.h"
