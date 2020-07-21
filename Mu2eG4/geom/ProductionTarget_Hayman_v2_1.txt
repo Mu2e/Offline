@@ -9,6 +9,7 @@ vector<int>    targetPS_numberOfSegmentsPerSection       = {13    ,9     ,12    
 vector<double> targetPS_thicknessOfSegmentPerSection     = {5.    ,5.    ,2.5   }; //mm
 vector<double> targetPS_heightOfRectangularGapPerSection = {12.640,12.135,12.135}; //mm
 vector<double> targetPS_thicknessOfGapPerSection         = {1.0   ,2.0   ,2.0   }; //mm
+double         targetPS_supportRingLength                = 8.0; // full length in mm
 
 //bicycle wheel parameters
 bool   targetPS.supports.build            = true;
@@ -24,7 +25,6 @@ vector<double> targetPS.supports.features.arcs   = { 28.,  28.,  28.}; //degrees
 vector<double> targetPS.supports.features.rIns   = {158.75, 158.75, 158.75}; //mm
 //support rods in the wheel that the wires connect to
 vector<double> targetPS.supports.rods.angles       = {-23, 97, 217}; //degrees
-vector<double> targetPS.supports.rods.tilts        = {10.,-5.,-10.}; //degrees
 vector<double> targetPS.supports.rods.halfLength   = {70., 70., 70.}; //mm
 vector<double> targetPS.supports.rods.offset       = {-40., 10., 40.}; //mm
 vector<double> targetPS.supports.rods.radius       = {9., 9., 9.}; //mm
@@ -37,6 +37,7 @@ vector<double> targetPS.supports.spokes.targetAngles.upstream   = {-22.5, 97.5, 
 double targetPS.supports.spokes.diameter = 2.;
 string targetPS.supports.spokes.material = "ProductionTargetTungstenLa2_O3";
 
+double targetPS_productionTargetMotherOuterRadius = 200.; //mm
 
 // This tells emacs to view this file in c++ mode.
 // Local Variables:

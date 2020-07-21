@@ -124,7 +124,6 @@ namespace mu2e {
     const std::vector<double>& supportWheelRodWireOffsetD () const {return _supportWheelRodWireOffsetD ;}
     const std::vector<double>& supportWheelRodWireOffsetU () const {return _supportWheelRodWireOffsetU ;}
     const std::vector<double>& supportWheelRodAngles      () const {return _supportWheelRodAngles      ;}
-    const std::vector<double>& supportWheelRodTilts       () const {return _supportWheelRodTilts       ;}
 
     //spoke parameters
     const std::vector<double>& spokeTargetAnglesD() const {return _spokeTargetAnglesD;}
@@ -290,7 +289,6 @@ namespace mu2e {
     std::vector<double> _supportWheelRodWireOffsetD ; //z offset from the end of the rod the wire connects (downstream)
     std::vector<double> _supportWheelRodWireOffsetU ; //z offset from the end of the rod the wire connects (upstream)
     std::vector<double> _supportWheelRodAngles      ; //angle about the wheel the rod is 
-    std::vector<double> _supportWheelRodTilts       ; //angle the downstream end is tilted towards the center
 
     //parameters for the wires (spokes) connecting the support wheel and the target
     // std::string         _spokeMaterial; (defined above)
