@@ -217,12 +217,11 @@ BEGIN_PROLOG
     CrvCoincidenceModuleLabel : "SelectRecoMC"
     CrvCoincidenceMCModuleLabel : "compressRecoMCs"
     CrvRecoPulseLabel : "SelectRecoMC"
-//    CrvStepPointMCLabel : "detectorFilter"
     CrvStepPointMCLabel : "compressRecoMCs"
     SimParticleLabel : "compressRecoMCs"
     MCTrajectoryLabel : "compressRecoMCs"
-    CrvWaveformsModuleLabel : "CrvWaveforms"
-    CrvDigiModuleLabel : "CrvDigi"
+    CrvWaveformsModuleLabel : "compressRecoMCs"
+    CrvDigiModuleLabel : "SelectRecoMC"
     CrvPlaneY : 2653
     FillMCInfo : true
     FillTrkQualInfo : true

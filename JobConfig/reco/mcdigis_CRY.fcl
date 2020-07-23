@@ -8,14 +8,6 @@ physics.producers.compressRecoMCs.mcTrajectoryTag : "compressDigiMCs"
 physics.producers.CrvCoincidence.PEthresholds                    : [  8  ,     8 ,     8 ,     8 ,     8 ,     8 ,     8 ,    8 ,    8 ,    8  ,    8  ,    8 ,    8 ,    8 ,    8  ,    8  ,     8 ,    8  ,     8 ,     8 ,     8 ,     8 ]
 physics.producers.CrvCoincidence.useFourLayers                   : [false,  false,  false,  false,  false,  false,  false,  true,  false,  false,  false,  true,  true,  true,   true,   true,   true,   true,  false,  false,  false,  false]
 physics.producers.CrvCoincidence.adjacentPulseTimeDifferences    : [  10 ,    10 ,    10 ,    10 ,    10 ,    10 ,    10 ,   10 ,   10 ,    10 ,    10 ,   10 ,   10 ,   10 ,    10 ,    10 ,    10 ,    10 ,    10 ,    10 ,    10 ,    10 ] //ns
-#Let's keep all (uncompressed) CRV data products for inefficiency studies.
-outputs.Output.outputCommands : [
-  "drop *_*_*_*",
-  @sequence::Reconstruction.HighReco,
-  @sequence::Reconstruction.LowReco,
-  @sequence::Reconstruction.LowRecoAll,
-  @sequence::Reconstruction.RecoMC,
-  "keep *_*_CRV_*",
-  "keep *_*Crv*_*_*",
-  "keep mu2e::SimParticlemv_detectorFilter_*_*"
- ]
+#Skip compression for CRV
+physics.producers.compressRecoMCs.crvDigiMCIndexMapTag : ""
+physics.analyzers.RecoCheck.crvDigiMCIndexMapTag : ""
