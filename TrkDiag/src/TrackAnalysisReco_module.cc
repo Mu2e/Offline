@@ -134,7 +134,7 @@ namespace mu2e {
       fhicl::Atom<bool> fillmc{Name("FillMCInfo"),true};
       fhicl::Atom<bool> pempty{Name("ProcessEmptyEvents"),false};
       fhicl::Atom<bool> crv{Name("AnalyzeCRV"),false};
-      fhicl::Atom<bool> crvpulses{Name("AnalyzeCRVpulses"),false};
+      fhicl::Atom<bool> crvpulses{Name("AnalyzeCRVPulses"),false};
       fhicl::Atom<bool> helices{Name("FillHelixInfo"),false};
       fhicl::Atom<bool> filltrkqual{Name("FillTrkQualInfo"),false};
       fhicl::Atom<bool> filltrkpid{Name("FillTrkPIDInfo"),false};
