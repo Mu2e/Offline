@@ -228,7 +228,7 @@ BEGIN_PROLOG
     FillTrkPIDInfo : true
     ProcessEmptyEvents : false
     AnalyzeCRV : true
-    AnalyzeCRVpulses : false
+    AnalyzeCRVPulses : false
     PrimaryParticleTag : "compressRecoMCs"
     KalSeedMCAssns : "SelectRecoMC"
     CaloClusterMCAssns : "SelectRecoMC"
