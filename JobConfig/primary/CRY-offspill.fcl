@@ -33,6 +33,15 @@ physics : {
   		compressDigiMCs]
   EndPath : @local::Primary.EndPath
 }
+outputs : { 
+  Output : {
+     module_type : RootOutput
+     SelectEvents : [ TriggerPath ]
+     # drop StepPoints from calorimeter
+     outputCommands : @local::DigiCompression.OutputCommands
+  }
+}
+#
 # final configuration
 #
 #include "JobConfig/primary/epilog.fcl"
