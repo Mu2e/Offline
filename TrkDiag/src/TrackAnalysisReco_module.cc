@@ -73,7 +73,6 @@
 #include "TrkDiag/inc/RecoQualInfo.hh"
 // CRV info
 #include "CRVAnalysis/inc/CRVAnalysis.hh"
-#include "Mu2eUtilities/inc/SimParticleTimeOffset.hh"
 #include "MCDataProducts/inc/SimParticleTimeMap.hh"
 
 // C++ includes.
@@ -234,7 +233,6 @@ namespace mu2e {
     // struct helpers
     InfoStructHelper _infoStructHelper;
     InfoMCStructHelper _infoMCStructHelper;
-    SimParticleTimeOffset _toff;
 
     // helper functions
     void fillEventInfo(const art::Event& event);
@@ -253,8 +251,7 @@ namespace mu2e {
     art::EDAnalyzer(conf),
     _conf(conf()),
     _trigbitsh(0),
-    _infoMCStructHelper(conf().infoMCStructHelper()),
-    _toff(conf().timeOffsets())
+    _infoMCStructHelper(conf().infoMCStructHelper())
   {
     _midvids.push_back(VirtualDetectorId::TT_Mid);
     _midvids.push_back(VirtualDetectorId::TT_MidInner);
@@ -532,7 +529,7 @@ namespace mu2e {
                                                _crvinfo, _crvinfomc, _crvsummary, _crvsummarymc, _crvinfomcplane, _conf.crvPlaneY());
         if(_conf.crvpulses())
           CRVAnalysis::FillCrvPulseInfoCollections(_conf.crvRecoPulseLabel(), _conf.crvWaveformsModuleLabel(), _conf.crvDigiModuleLabel(),
-                                                   _toff, event, _crvpulseinfo, _crvpulseinfomc, _crvwaveforminfo);
+                                                   _infoMCStructHelper.getTimeMaps(), event, _crvpulseinfo, _crvpulseinfomc, _crvwaveforminfo);
 
 //	find the best CRV match (closest in time)
 	_bestcrv=-1;
