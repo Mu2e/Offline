@@ -33,6 +33,10 @@
  <class name="std::vector<mu2e::CrvHitInfoReco>" />
  <class name="mu2e::CrvSummaryReco" />
  <class name="mu2e::CrvSummaryMC" />
+ <class name="mu2e::CrvPulseInfoReco" />
+ <class name="std::vector<mu2e::CrvPulseInfoReco>" />
+ <class name="mu2e::CrvWaveformInfo" />
+ <class name="std::vector<mu2e::CrvWaveformInfo>" />
  <class name="mu2e::BkgHitInfo" />
  <class name="std::vector<mu2e::BkgHitInfo>" />
  <class name="mu2e::ComboHitInfo" />

@@ -220,12 +220,15 @@ BEGIN_PROLOG
     CrvStepPointMCLabel : "compressRecoMCs"
     SimParticleLabel : "compressRecoMCs"
     MCTrajectoryLabel : "compressRecoMCs"
+    CrvWaveformsModuleLabel : "compressRecoMCs"
+    CrvDigiModuleLabel : "SelectRecoMC"
     CrvPlaneY : 2653
     FillMCInfo : true
     FillTrkQualInfo : true
     FillTrkPIDInfo : true
     ProcessEmptyEvents : false
     AnalyzeCRV : true
+    AnalyzeCRVPulses : false
     PrimaryParticleTag : "compressRecoMCs"
     KalSeedMCAssns : "SelectRecoMC"
     CaloClusterMCAssns : "SelectRecoMC"
