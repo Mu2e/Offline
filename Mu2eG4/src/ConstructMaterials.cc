@@ -491,6 +491,14 @@ namespace mu2e {
       BrassC360->AddMaterial(findMaterialOrThrow("G4_Pb"),0.031);
     }
 
+    // C64200 from https://alloys.copper.org/alloy/C64200
+    mat = uniqueMaterialOrThrow( "BronzeC642" );
+    {
+      G4Material* BronzeC642 = new G4Material( mat.name, 7.70*CLHEP::g/CLHEP::cm3, 3);
+      BronzeC642->AddMaterial(findMaterialOrThrow("G4_Cu"),0.922);
+      BronzeC642->AddMaterial(findMaterialOrThrow("G4_Al"),0.063);
+      BronzeC642->AddMaterial(findMaterialOrThrow("G4_Si"),0.015);
+    }
 
     // A mix made to represent the MBS spherical support
     mat = uniqueMaterialOrThrow( "MBSSupportMix" );

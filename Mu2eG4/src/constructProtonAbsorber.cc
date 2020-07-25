@@ -53,6 +53,7 @@
 #include "G4Cons.hh"
 #include "G4Tubs.hh"
 #include "G4BooleanSolid.hh"
+#include "G4UnionSolid.hh"
 #include "G4VPhysicalVolume.hh"
 #include "G4SubtractionSolid.hh"
 #include "G4SDManager.hh"
@@ -142,6 +143,7 @@ namespace mu2e {
 
     //**** MECO-Style proton absorber ****//
     else if (! _config.getBool("protonabsorber.isShorterCone", false) ) {
+
       
       if ( verbosityLevel > 0) cout << __func__ << " : Proton Absorber is MECO-style Conical type" << endl;
       
@@ -667,13 +669,16 @@ namespace mu2e {
       //***************************
       // Now build the support rings for the OPA
       //***************************
+      
 
       if ( pabs->oPAnSupports() > 0 ) {
-	G4Material* oPAsupportMaterial = 
-	  findMaterialOrThrow( pabs->oPAsupportMaterial() );
 	double pabs1EndInMu2eZ = ds->vac_zLocDs23Split();
+	int opaVersion = pabs->outerPAVersion();
+	// Get stopping target parameters for stopping target support slat parameters
+	GeomHandle<StoppingTarget> target;
        
 	for (int iSup = 0; iSup < pabs->oPAnSupports(); iSup++ ) {
+	  G4Material* oPAsupportMaterial = findMaterialOrThrow( pabs->oPAsupportMaterials().at(iSup) );
 	  double zm = pabs->oPAsupportZMidpoint().at(iSup);
 	  double rin= pabs->oPAsupportInnerRadii().at(iSup);
 	  double rou= pabs->oPAsupportOuterRadii().at(iSup);
@@ -703,13 +708,18 @@ namespace mu2e {
 	    G4Tubs* aRingTub = new G4Tubs("TheRing",
 					  rin, rou, hl,
 					  0.0, 360.0*CLHEP::degree);
-
-	    G4Box* notch = new G4Box("notch", 36.0*CLHEP::mm,
-				      40.0*CLHEP::mm, hl*1.1 );
+	    const double notchWidth  = _config.getDouble("protonabsorber.oPASupportNotchWidth", 2.*36.);
+	    const double notchHeight = _config.getDouble("protonabsorber.oPASupportNotchHeight", 2.*40.);
+	    //extend the box so that it notches through at either end, not just the center
+	    const double notchExtension = (opaVersion > 2) ? (rin - sqrt(rin*rin-notchWidth*notchWidth)) : 0.; 
+	    G4Box* notch = new G4Box("notch", notchWidth/2.*CLHEP::mm,
+				     (notchHeight+notchExtension)/2.*CLHEP::mm, hl*1.1 );
 
 	    CLHEP::HepRotation* notch1Rotat = new CLHEP::HepRotation(CLHEP::HepRotation::IDENTITY);
-	    
-	    CLHEP::Hep3Vector notch1Locat(0,rin+22.0*CLHEP::mm,0);
+	    double notchOffset = notchHeight/2.;
+	    notchOffset -= notchExtension/2.; //so the extension is only on the bottom
+	    if(opaVersion < 3) notchOffset = 22.; //adding for backwards compatibility
+	    CLHEP::Hep3Vector notch1Locat(0,(rin+notchOffset)*CLHEP::mm,0);
 
 	    G4SubtractionSolid* aSolid = new G4SubtractionSolid("firstTry",
 								aRingTub,
@@ -720,8 +730,8 @@ namespace mu2e {
 	    CLHEP::HepRotation* notch2Rotat = new CLHEP::HepRotation(CLHEP::HepRotation::IDENTITY);
 	    notch2Rotat->rotateZ(120.0*CLHEP::degree);
 
-	    CLHEP::Hep3Vector notch2Locat((rin+22.0)*CLHEP::mm*sin(120.0*CLHEP::degree),
-					  (rin+22.0)*CLHEP::mm*cos(120.0*CLHEP::degree),
+	    CLHEP::Hep3Vector notch2Locat((rin+notchOffset)*CLHEP::mm*sin(120.0*CLHEP::degree),
+					  (rin+notchOffset)*CLHEP::mm*cos(120.0*CLHEP::degree),
 					  0.0 );
 
 	    G4SubtractionSolid* bSolid = new G4SubtractionSolid("secondTry",
@@ -733,8 +743,8 @@ namespace mu2e {
 	    CLHEP::HepRotation* notch3Rotat = new CLHEP::HepRotation(CLHEP::HepRotation::IDENTITY);
 	    notch3Rotat->rotateZ(240.0*CLHEP::degree);
 
-	    CLHEP::Hep3Vector notch3Locat((rin+22.0)*CLHEP::mm*sin(240.0*CLHEP::degree),
-					  (rin+22.0)*CLHEP::mm*cos(240.0*CLHEP::degree),
+	    CLHEP::Hep3Vector notch3Locat((rin+notchOffset)*CLHEP::mm*sin(240.0*CLHEP::degree),
+					  (rin+notchOffset)*CLHEP::mm*cos(240.0*CLHEP::degree),
 					  0.0 );
 
 	    G4SubtractionSolid* cSolid = new G4SubtractionSolid(ring2Info.name,
@@ -805,71 +815,330 @@ namespace mu2e {
 			  doSurfaceCheck );	      
 	      } // end of adding extra for ds2Vac area support ring
 	      if ( iSup == 2 ) {
+		if(verbosityLevel > 0)
+		  cout << "Constructing stopping target supports at the OPA:" << endl;
 		// Add slats to support ST
-		double sHigh = pabs->slatHeight();
-		double sWide = pabs->slatWidth();
-		double sLong = pabs->slatLength();  // full length, not half...
-		if ( sHigh > 1e-02 && sWide > 1e-02 && sLong > 1e-02 ) {
-		  double boxPars[3] = {sWide/2.0,sHigh/2.0,sLong/2.0};
-		  CLHEP::Hep3Vector slat1Loc(-3904.0,rin+sHigh/2.0,zm-hl-sLong/2.0);
-		  nestBox ( "STsupportSlat1",
-			    boxPars,
-			    oPAsupportMaterial,
-			    0,
-			    slat1Loc - parent1Info.centerInMu2e(),
-			    parent1Info,
-			    0,
-			    pabsIsVisible,
-			    G4Colour::Blue(),
-			    pabsIsSolid,
-			    forceAuxEdgeVisible,
-			    placePV,
-			    doSurfaceCheck);
+		for(int iSlat = 0; iSlat < pabs->nOPASupportSlats(); ++iSlat) {
+		  if(verbosityLevel > 0)
+		    cout << "iSlat = " << iSlat << endl;
+		  const double slatAngle = pabs->slatAngles().at(iSlat)*CLHEP::degree; //taken in as degrees
 
-		  CLHEP::HepRotation* slat2Rotat = new CLHEP::HepRotation(CLHEP::HepRotation::IDENTITY);
-		  slat2Rotat->rotateZ(120.0*CLHEP::degree);
-
-		  CLHEP::Hep3Vector slat2Loc(-3904.0 + (rin+sHigh/2.0)*sin(120.0*CLHEP::degree),
-					     (rin+sHigh/2.0)*cos(120.0*CLHEP::degree),
-					     zm - hl - sLong/2.0 );
-		  nestBox ( "STsupportSlat2",
-			    boxPars,
-			    oPAsupportMaterial,
-			    slat2Rotat,
-			    slat2Loc - parent1Info.centerInMu2e(),
-			    parent1Info,
-			    0,
-			    pabsIsVisible,
-			    G4Colour::Blue(),
-			    pabsIsSolid,
-			    forceAuxEdgeVisible,
-			    placePV,
-			    doSurfaceCheck);
-
-		  CLHEP::HepRotation* slat3Rotat = new CLHEP::HepRotation(CLHEP::HepRotation::IDENTITY);
-		  slat3Rotat->rotateZ(240.0*CLHEP::degree);
-
-		  CLHEP::Hep3Vector slat3Loc(-3904.0 + (rin+sHigh/2.0)*sin(240.0*CLHEP::degree),
-					     (rin+sHigh/2.0)*cos(240.0*CLHEP::degree),
-					     zm - hl - sLong/2.0 );
-		  nestBox ( "STsupportSlat3",
-			    boxPars,
-			    oPAsupportMaterial,
-			    slat3Rotat,
-			    slat3Loc - parent1Info.centerInMu2e(),
-			    parent1Info,
-			    0,
-			    pabsIsVisible,
-			    G4Colour::Blue(),
-			    pabsIsSolid,
-			    forceAuxEdgeVisible,
-			    placePV,
-			    doSurfaceCheck);
-
-		} // end if dimensions > 0 
-
+		  CLHEP::HepRotation* slatRotat = new CLHEP::HepRotation(CLHEP::HepRotation::IDENTITY);
+		  slatRotat->rotateZ(slatAngle);
+		  const int slatIndex = pabs->slatTypes().at(iSlat); //get the type of slat
+		  const double sHigh = pabs->slatHeights().at(slatIndex);
+		  const double sWide = pabs->slatWidths().at(slatIndex);
+		  const double sLong = pabs->slatLengths().at(slatIndex);
+		  const double boxPars[3] = {sWide/2.0,sHigh/2.0,sLong/2.0};
+		  double rCenter = rin - sHigh/2.; //radial distance from center axis to box center
+		  //remove overlap
+		  rCenter -= rin - sqrt(rin*rin - sWide/2.*sWide/2.) + 1.;
+		  CLHEP::Hep3Vector slatLoc(rCenter*sin(slatAngle),
+					    rCenter*cos(slatAngle),
+					    0.);
+	  
+		  if(opaVersion > 2) {
+		    location.setZ(target->centerInMu2e().z()); //newer versions set center at target center
+		    slatLoc += location; //add z offset
+		    G4Material* slatMaterial = findMaterialOrThrow( pabs->slatMaterials().at(slatIndex) );
+		    //create mother volume box
+		    VolumeInfo slatMotherInfo = nestBox ( "STsupportSlatMother"+std::to_string(iSlat+1),
+							  boxPars,
+							  parent1Info.logical->GetMaterial(),
+							  slatRotat,
+							  slatLoc - parent1Info.centerInMu2e(),
+							  parent1Info,
+							  0,
+							  pabsIsVisible,
+							  G4Colour::Blue(),
+							  pabsIsSolid,
+							  forceAuxEdgeVisible,
+							  placePV,
+							  doSurfaceCheck);
+		    const double sideThickness = pabs->slatSideThicknesses().at(slatIndex);
+		    const double topThickness = pabs->slatTopThicknesses().at(slatIndex);
+		    if(slatIndex == 0) {
+		      //add bottom and sides of the slat
+		      const double botPars[3] = {sWide/2-sideThickness-0.001, topThickness/2., sLong/2.};
+		      nestBox ( "STsupportSlatBottom"+std::to_string(iSlat+1),
+				botPars,
+				slatMaterial,
+				0,
+				CLHEP::Hep3Vector(0., topThickness/2.0 - sHigh/2.0, 0.),
+				slatMotherInfo,
+				0,
+				pabsIsVisible,
+				G4Colour::Blue(),
+				pabsIsSolid,
+				forceAuxEdgeVisible,
+				placePV,
+				doSurfaceCheck);
+		      const double sidePars[3] = {sideThickness/2., sHigh/2., sLong/2.};
+		      nestBox ( "STsupportSlatLeft"+std::to_string(iSlat+1),
+				sidePars,
+				slatMaterial,
+				0,
+				CLHEP::Hep3Vector(sideThickness/2.0 - sWide/2.0, 0., 0.),
+				slatMotherInfo,
+				0,
+				pabsIsVisible,
+				G4Colour::Blue(),
+				pabsIsSolid,
+				forceAuxEdgeVisible,
+				placePV,
+				doSurfaceCheck);
+		      nestBox ( "STsupportSlatRight"+std::to_string(iSlat+1),
+				sidePars,
+				slatMaterial,
+				0,
+				CLHEP::Hep3Vector(-sideThickness/2.0 + sWide/2.0, 0., 0.),
+				slatMotherInfo,
+				0,
+				pabsIsVisible,
+				G4Colour::Blue(),
+				pabsIsSolid,
+				forceAuxEdgeVisible,
+				placePV,
+				doSurfaceCheck);
+		      const double fillH      = pabs->slatFillParameter1().at(slatIndex);
+		      const double fillW      = pabs->slatFillParameter2().at(slatIndex);
+		      const double fillL      = pabs->slatFillParameter3().at(slatIndex);
+		      const double fillOffset = pabs->slatFillParameter4().at(slatIndex);
+		      const double fillPars[] = {fillW/2., fillH/2., fillL/2.};
+		      G4Material* slatFillMaterial = findMaterialOrThrow( pabs->slatFillMaterials().at(slatIndex) );
+		      CLHEP::Hep3Vector fillLoc(fillOffset, -sHigh/2.+fillH/2.+topThickness + 0.001, 0.);
+		      nestBox ( "STsupportSlatFill"+std::to_string(iSlat+1),
+				fillPars,
+				slatFillMaterial,
+				0,
+				fillLoc,
+				slatMotherInfo,
+				0,
+				pabsIsVisible,
+				G4Colour::Blue(),
+				pabsIsSolid,
+				forceAuxEdgeVisible,
+				placePV,
+				doSurfaceCheck);
+		      
+		    } else if (slatIndex == 1) {
+		      const double sidePars[3] = {sideThickness/2., sHigh/4., sLong/2.};
+		      nestBox ( "STsupportSlatLeft"+std::to_string(iSlat+1),
+				sidePars,
+				slatMaterial,
+				0,
+				CLHEP::Hep3Vector(+sideThickness/2.0 - sWide/2.0, 0., 0.),
+				slatMotherInfo,
+				0,
+				pabsIsVisible,
+				G4Colour::Blue(),
+				pabsIsSolid,
+				forceAuxEdgeVisible,
+				placePV,
+				doSurfaceCheck);
+		      const double fillR       = pabs->slatFillParameter1().at(slatIndex);
+		      const double fillL       = pabs->slatFillParameter2().at(slatIndex);
+		      const double fillOffset1 = pabs->slatFillParameter3().at(slatIndex);
+		      const double fillOffset2 = pabs->slatFillParameter4().at(slatIndex);
+		      TubsParams fillPars(0., fillR, fillL/2.);
+		      G4Material* slatFillMaterial = findMaterialOrThrow( pabs->slatFillMaterials().at(slatIndex) );
+		      CLHEP::Hep3Vector fillLoc1(-sWide/2.+fillR + sideThickness+ 0.001, fillOffset1, 0.);
+		      nestTubs ( "STsupportSlatFill1_"+std::to_string(iSlat+1),
+				 fillPars,
+				 slatFillMaterial,
+				 0,
+				 fillLoc1,
+				 slatMotherInfo,
+				 0,
+				 pabsIsVisible,
+				 G4Colour::Blue(),
+				 pabsIsSolid,
+				 forceAuxEdgeVisible,
+				 placePV,
+				 doSurfaceCheck);
+		      CLHEP::Hep3Vector fillLoc2(sWide/2.-fillR-0.001, fillOffset2, 0.);
+		      nestTubs ( "STsupportSlatFill2_"+std::to_string(iSlat+1),
+				 fillPars,
+				 slatFillMaterial,
+				 0,
+				 fillLoc2,
+				 slatMotherInfo,
+				 0,
+				 pabsIsVisible,
+				 G4Colour::Blue(),
+				 pabsIsSolid,
+				 forceAuxEdgeVisible,
+				 placePV,
+				 doSurfaceCheck);
+		      const double weightBoxH   = _config.getDouble("protonabsorber.oPASTWeightBox.height");
+		      const double weightBoxW   = _config.getDouble("protonabsorber.oPASTWeightBox.width");
+		      const double weightBoxL   = _config.getDouble("protonabsorber.oPASTWeightBox.length");
+		      const double weightBoxR   = _config.getDouble("protonabsorber.oPASTWeightBox.radius");
+		      const double weightBoxPhi = _config.getDouble("protonabsorber.oPASTWeightBox.angle")*CLHEP::degree;
+		      const double weightW      = _config.getDouble("protonabsorber.oPASTWeight.width");
+		      const double weightH      = _config.getDouble("protonabsorber.oPASTWeight.height");
+		      G4Material* weightMaterial = findMaterialOrThrow(_config.getString("protonabsorber.oPASTWeight.material"));
+		      CLHEP::Hep3Vector weightBoxLoc(weightBoxR*cos(weightBoxPhi), weightBoxR*sin(weightBoxPhi), 0.);
+		      weightBoxLoc += location;
+		      //intersects OPA support 1, 5, and 2, so have to break up the box into z regions
+		      vector<int> suppIndices = {1, 5, 2};
+		      vector<double> suppZStart;
+		      vector<double> suppZEnd;
+		      if(verbosityLevel > 0) 
+			cout << "Weight box z range = {" << weightBoxLoc.z() - weightBoxL/2. << ","
+			     << weightBoxLoc.z() + weightBoxL/2. << "}" <<  endl;
+		      unsigned count = 0;
+		      for(int index : suppIndices) {
+			suppZStart.push_back(pabs->oPAsupportZMidpoint().at(index) - pabs->oPAsupportHalflength().at(index));
+			suppZEnd  .push_back(pabs->oPAsupportZMidpoint().at(index) + pabs->oPAsupportHalflength().at(index));
+			if(verbosityLevel > 0)
+			  cout << "supp index = " << index << " z start = " << suppZStart[count]
+			       << " z end = " << suppZEnd[count] << endl;
+			++count;
+		      }
+		      //add a fake support at the end
+		      suppZStart.push_back(weightBoxLoc.z()+weightBoxL/2.);
+		      suppZEnd.push_back(weightBoxLoc.z()+weightBoxL/2.);
+		      double currentZ = weightBoxLoc.z() - weightBoxL/2.;
+		      for(unsigned step = 0; step < suppZStart.size(); ++step) {
+			double currL = suppZStart[step] - currentZ;
+			CLHEP::Hep3Vector weightMotherLoc(weightBoxLoc);
+			weightMotherLoc.setZ(suppZStart[step]-currL/2.);
+			const double weightMotherParams[] = {weightBoxW/2., weightBoxH/2., currL/2.-0.0005};
+			if(verbosityLevel > 0)
+			  cout << "step: " << step << " Current Weight box z range = {" << weightMotherLoc.z() - currL/2. << ","
+			       << weightMotherLoc.z() + currL/2. << "} total length = " << currL << endl
+			       << "Weight box mother params: {" << weightMotherParams[0] << ", "
+			       << weightMotherParams[1] << ", " << weightMotherParams[2] << "}\n";
+			VolumeInfo weightMotherInfo = nestBox ( "STsupportWeightMother"+std::to_string(step), 
+							      weightMotherParams,
+							      parent1Info.logical->GetMaterial(),
+							      0,
+							      weightMotherLoc - parent1Info.centerInMu2e(),
+							      parent1Info,
+							      0,
+							      pabsIsVisible,
+							      G4Colour::Blue(),
+							      pabsIsSolid,
+							      forceAuxEdgeVisible,
+							      placePV,
+							      doSurfaceCheck);
+			double zCenter = 0.;
+			if(step == 0 || step == suppZStart.size() - 1) {//add front panel
+			  const double frontPars[3] = {weightBoxW/2., weightBoxH/2., sideThickness/2.-0.001};
+			  int side = (2*(step==0) - 1);
+			  nestBox ( "STsupportSlatWeightBox"+std::string((step == 0) ? "Front" : "Back"),
+				    frontPars,
+				    slatMaterial,
+				    0,
+				    CLHEP::Hep3Vector(0., 0., side*(sideThickness/2.0 - currL/2.0)),
+				    weightMotherInfo,
+				    0,
+				    pabsIsVisible,
+				    G4Colour::Blue(),
+				    pabsIsSolid,
+				    forceAuxEdgeVisible,
+				    placePV,
+				    doSurfaceCheck);
+			  zCenter += side*sideThickness/2.;
+			  currL   -= sideThickness;
+			  if(verbosityLevel > 0)
+			    cout << "Extra panel params: {" << frontPars[0] << ", "
+				 << frontPars[1] << ", " << frontPars[2] << "} loc = "
+				 << "{0, 0, " << side*(sideThickness/2.0 - currL/2.0) << "}\n";
+			}
+			//add bottom and sides of the slat
+			const double botPars[3] = {weightBoxW/2-sideThickness, topThickness/2., currL/2.-0.001};
+			CLHEP::Hep3Vector botLoc(0., topThickness/2.0 - weightBoxH/2.0, zCenter);
+			nestBox ( "STsupportWeightBoxBottom"+std::to_string(step)+"_"+std::to_string(iSlat+1),
+				  botPars,
+				  slatMaterial,
+				  0,
+				  botLoc,
+				  weightMotherInfo,
+				  0,
+				  pabsIsVisible,
+				  G4Colour::Blue(),
+				  pabsIsSolid,
+				  forceAuxEdgeVisible,
+				  placePV,
+				  doSurfaceCheck);
+			if(verbosityLevel > 0)
+			  cout << "Bottom panel params: {" << botPars[0] << ", "
+			       << botPars[1] << ", " << botPars[2] << "} loc = "
+			       << botLoc << endl;
+			const double weightPars[3] = {weightW/2, weightH/2., currL/2.-0.001};
+			nestBox ( "STsupportWeight"+std::to_string(step)+"_"+std::to_string(iSlat+1),
+				  weightPars,
+				  weightMaterial,
+				  0,
+				  CLHEP::Hep3Vector(0., topThickness - weightBoxH/2.0+weightH/2., zCenter),
+				  weightMotherInfo,
+				  0,
+				  pabsIsVisible,
+				  G4Colour::Blue(),
+				  pabsIsSolid,
+				  forceAuxEdgeVisible,
+				  placePV,
+				  doSurfaceCheck);
+			const double sidePars[3] = {sideThickness/2., weightBoxH/2., currL/2.-0.001};
+			nestBox ( "STsupportWeightBoxLeft"+std::to_string(step),
+				  sidePars,
+				  slatMaterial,
+				  0,
+				  CLHEP::Hep3Vector(sideThickness/2.0 - weightBoxW/2.0, 0., zCenter),
+				  weightMotherInfo,
+				  0,
+				  pabsIsVisible,
+				  G4Colour::Blue(),
+				  pabsIsSolid,
+				  forceAuxEdgeVisible,
+				  placePV,
+				  doSurfaceCheck);
+			nestBox ( "STsupportWeightBoxRight"+std::to_string(step),
+				  sidePars,
+				  slatMaterial,
+				  0,
+				  CLHEP::Hep3Vector(-sideThickness/2.0 + weightBoxW/2.0, 0., zCenter),
+				  weightMotherInfo,
+				  0,
+				  pabsIsVisible,
+				  G4Colour::Blue(),
+				  pabsIsSolid,
+				  forceAuxEdgeVisible,
+				  placePV,
+				  doSurfaceCheck);
+			currentZ = suppZEnd[step];
+			
+		      }
+		    } else {
+		      mf::LogError("GEOM") << "Undefined stopping target slat type = " << slatIndex
+					   << " in " << __PRETTY_FUNCTION__;
+		    }
+		  } else { //end if(opaVersion > 2)
+		    // full lengths, not half lengths
+		    slatLoc.setZ(slatLoc.z() - (hl+sLong/2.0) );
+		    slatLoc += location; //add z offset
+		    ostringstream slatName;
+		    slatName << "STsupportSlat" << iSlat+1;
+	  
+		    nestBox ( slatName.str(),
+			      boxPars,
+			      oPAsupportMaterial,
+			      slatRotat,
+			      slatLoc - parent1Info.centerInMu2e(),
+			      parent1Info,
+			      0,
+			      pabsIsVisible,
+			      G4Colour::Blue(),
+			      pabsIsSolid,
+			      forceAuxEdgeVisible,
+			      placePV,
+			      doSurfaceCheck);
+		  }
+		}
 	      } // end if iSub == 2  (adding slats for ST support)
-	    } else {
+	    } else { 
 	      nestTubs( myName.str(),
 			TubsParams( rin, rou, hl ),
 			oPAsupportMaterial,
@@ -886,9 +1155,163 @@ namespace mu2e {
 	    } // end of if for placing in DS2Vac or DS3Vac
 	  } // end of if else for support 2 (iSup == 1)
 	}// end for loop over OPA supports
+	
+	// in opa version 3 and above, add cross supports between support rings
+	if(opaVersion > 2) {
+	  G4Material* crossSupMat = findMaterialOrThrow( pabs->crossSupportMaterial() );
+	  for(int iCross = 0; iCross < pabs->nCrossSupports(); ++iCross) {
+	    const double barThickness = pabs->crossSupportThicknesses().at(iCross);
+	    const double barWidth     = pabs->crossSupportWidth      ().at(iCross);
+	    const int oneIndex        = pabs->crossSupportOneIndex   ().at(iCross);
+	    const int twoIndex        = pabs->crossSupportTwoIndex   ().at(iCross); 
+	    const double phi          = pabs->crossSupportPhis       ().at(iCross);
+	    const double height       = pabs->crossSupportHeights    ().at(iCross); 
+	    const double radius       = pabs->crossSupportRadii      ().at(iCross); 
+	    //get the width using the opa support ring positions
+	    const double z1  = pabs->oPAsupportZMidpoint().at(oneIndex);
+	    const double z2  = pabs->oPAsupportZMidpoint().at(twoIndex);
+	    const double hl1 = pabs->oPAsupportHalflength().at(oneIndex);
+	    const double hl2 = pabs->oPAsupportHalflength().at(twoIndex);
 
+	    const double smallGap = 1.e-3; //1 um buffers
+	    const double width = abs(z1-z2)-hl1-hl2-2.*smallGap; //offset by thickness of each so distance between edges
+	    const double motherBoxParams[] = {height/2., barWidth/2., width/2.};
+
+	    const double zMother = (z1>z2) ? (z1-hl1+z2+hl2)/2. : (z1+hl1+z2-hl2)/2.;
+	    const double xMother = radius*sin(phi*CLHEP::degree) + parent1Info.centerInMu2e().x();
+	    const double yMother = radius*cos(phi*CLHEP::degree) + parent1Info.centerInMu2e().y();
+	    CLHEP::Hep3Vector motherBoxLoc(xMother,yMother,zMother);
+	    CLHEP::HepRotation* motherBoxRot = new CLHEP::HepRotation(CLHEP::HepRotation::IDENTITY);
+	    motherBoxRot->rotateZ(phi*CLHEP::degree);
+	    ostringstream motherBoxName;
+	    motherBoxName << "OPA_CrossSupportMother_" << iCross+1;
+	    VolumeInfo motherBoxInfo = nestBox( motherBoxName.str(),
+						motherBoxParams,
+						parent1Info.logical->GetMaterial(),
+						motherBoxRot,
+						motherBoxLoc-parent1Info.centerInMu2e(),
+						parent1Info,
+						0,
+						pabsIsVisible,
+						G4Colour::Blue(),
+						pabsIsSolid,
+						forceAuxEdgeVisible,
+						placePV,
+						doSurfaceCheck);
+
+	    /* build the individual bars in the cross support */
+	    
+	    //top and bottom bars are identical, cross entire structure
+	    const double topBarParams[] = {barThickness/2., barWidth/2., width/2.};
+	    CLHEP::Hep3Vector topBarLoc(height/2.-barThickness/2., 0., 0.);
+	    ostringstream topBarName;
+	    topBarName << "OPA_CrossSupport_" << iCross+1 << "_top";
+	    nestBox( topBarName.str(),
+		     topBarParams,
+		     crossSupMat,
+		     0,
+		     topBarLoc,
+		     motherBoxInfo,
+		     0,
+		     pabsIsVisible,
+		     G4Colour::Blue(),
+		     pabsIsSolid,
+		     forceAuxEdgeVisible,
+		     placePV,
+		     doSurfaceCheck);
+	    CLHEP::Hep3Vector botBarLoc(-height/2.+barThickness/2., 0., 0.);
+	    ostringstream botBarName;
+	    botBarName << "OPA_CrossSupport_" << iCross+1 << "_bottom";
+	    nestBox( botBarName.str(),
+		     topBarParams, //same parameters as top
+		     crossSupMat,
+		     0,
+		     botBarLoc,
+		     motherBoxInfo,
+		     0,
+		     pabsIsVisible,
+		     G4Colour::Blue(),
+		     pabsIsSolid,
+		     forceAuxEdgeVisible,
+		     placePV,
+		     doSurfaceCheck);
+	    //left and right bars are identical, cross until top/bottom bars
+	    const double leftBarParams[] = {height/2.-barThickness-smallGap, barWidth/2., barThickness/2.};
+	    CLHEP::Hep3Vector leftBarLoc(0., 0., -width/2.+barThickness/2.);
+	    ostringstream leftBarName;
+	    leftBarName << "OPA_CrossSupport_" << iCross+1 << "_left";
+	    nestBox( leftBarName.str(),
+		     leftBarParams,
+		     crossSupMat,
+		     0,
+		     leftBarLoc,
+		     motherBoxInfo,
+		     0,
+		     pabsIsVisible,
+		     G4Colour::Blue(),
+		     pabsIsSolid,
+		     forceAuxEdgeVisible,
+		     placePV,
+		     doSurfaceCheck);
+	    CLHEP::Hep3Vector rightBarLoc(0., 0., width/2.-barThickness/2.);
+	    ostringstream rightBarName;
+	    rightBarName << "OPA_CrossSupport_" << iCross+1 << "_right";
+	    nestBox( rightBarName.str(),
+		     leftBarParams,
+		     crossSupMat,
+		     0,
+		     rightBarLoc,
+		     motherBoxInfo,
+		     0,
+		     pabsIsVisible,
+		     G4Colour::Blue(),
+		     pabsIsSolid,
+		     forceAuxEdgeVisible,
+		     placePV,
+		     doSurfaceCheck);
+	    //first cross bar
+	    const double crossBarAngle = atan(height/width);
+	    double crossBarLength = sqrt((height-barThickness*2.)*(height-barThickness*2.) +
+					 (width-barThickness*2.)*(width-barThickness*2.));
+	    //avoid overlap
+	    crossBarLength -= (height > width) ? height/width*barThickness : width/height*barThickness;
+	    crossBarLength -= 2.*smallGap;
+	    CLHEP::Hep3Vector crossBar1Loc(0., 0., 0.);
+	    CLHEP::Hep3Vector crossBar2Loc(0., 0., 0.); //wrt bar 1
+	    CLHEP::HepRotation* crossBar1Rot = new CLHEP::HepRotation(CLHEP::HepRotation::IDENTITY);
+	    crossBar1Rot->rotateY(crossBarAngle);
+	    CLHEP::HepRotation* crossBar2Rot = new CLHEP::HepRotation(CLHEP::HepRotation::IDENTITY);
+	    crossBar2Rot->rotateY(-2.*crossBarAngle); //double to account for rotation wrt bar 1
+	    ostringstream crossBarName;
+	    crossBarName << "OPA_CrossSupport_" << iCross+1 << "_CrossBar";
+	    ostringstream crossBar1Name;
+	    crossBar1Name << "OPA_CrossSupport_" << iCross+1 << "_CrossBar_1";
+	    ostringstream crossBar2Name;
+	    crossBar2Name << "OPA_CrossSupport_" << iCross+1 << "_CrossBar_2";
+	    G4Box* crossBar1Box= new G4Box(crossBar1Name.str(), barThickness/2., barWidth/2., crossBarLength/2.);
+	    G4Box* crossBar2Box= new G4Box(crossBar2Name.str(), barThickness/2., barWidth/2., crossBarLength/2.);
+	    VolumeInfo crossBarInfo(crossBarName.str(), crossBar1Loc, parent1Info.centerInMu2e());
+	    crossBarInfo.solid = new G4UnionSolid(crossBar1Name.str()
+						  , crossBar1Box, crossBar2Box, crossBar2Rot , crossBar2Loc);
+	    finishNesting( crossBarInfo,
+			   crossSupMat,
+			   crossBar1Rot,
+			   crossBar1Loc,
+			   motherBoxInfo.logical,
+			   0,
+			   pabsIsVisible,
+			   G4Colour::Blue(),
+			   pabsIsSolid,
+			   forceAuxEdgeVisible,
+			   placePV,
+			   doSurfaceCheck);
+
+	    
+						
+	  } //end loop of cross supports
+	} //end opa version check for cross support
+	
       } // end if nSupports > 0 for OPA
-
 
       //***************************
       // Now build the Pion Degrader if requested

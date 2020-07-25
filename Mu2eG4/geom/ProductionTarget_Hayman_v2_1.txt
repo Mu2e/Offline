@@ -9,7 +9,8 @@ vector<int>    targetPS_numberOfSegmentsPerSection       = {13    ,9     ,12    
 vector<double> targetPS_thicknessOfSegmentPerSection     = {5.    ,5.    ,2.5   }; //mm
 vector<double> targetPS_heightOfRectangularGapPerSection = {12.640,12.135,12.135}; //mm
 vector<double> targetPS_thicknessOfGapPerSection         = {1.0   ,2.0   ,2.0   }; //mm
-double         targetPS_supportRingLength                = 8.0; // full length in mm
+double         targetPS_supportRingLength                = 8.1; // full length in mm
+double         targetPS_supportRingCutoutLength          = 4.05; //taken to be whole length of ring (so divide by 2 in G4). Needs to be check in code, see code
 
 //bicycle wheel parameters
 bool   targetPS.supports.build            = true;
@@ -32,8 +33,8 @@ vector<double> targetPS.supports.rods.radialOffset = {177.8, 177.8, 177.8}; //mm
 vector<double> targetPS.supports.rods.wireOffset.downstream = {10., 10., 10.}; //mm
 vector<double> targetPS.supports.rods.wireOffset.upstream   = {10., 10., 10.}; //mm
 //spokes connecting the target to the wheel rods
-vector<double> targetPS.supports.spokes.targetAngles.downstream = {-22.5, 97.5, 217.5}; //degrees
-vector<double> targetPS.supports.spokes.targetAngles.upstream   = {-22.5, 97.5, 217.5}; //degrees
+vector<double> targetPS.supports.spokes.targetAngles.downstream = {-23, 97, 217}; //degrees
+vector<double> targetPS.supports.spokes.targetAngles.upstream   = {-23, 97, 217}; //degrees
 double targetPS.supports.spokes.diameter = 2.;
 string targetPS.supports.spokes.material = "ProductionTargetTungstenLa2_O3";
 
