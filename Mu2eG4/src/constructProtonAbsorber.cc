@@ -708,10 +708,15 @@ namespace mu2e {
 	    G4Tubs* aRingTub = new G4Tubs("TheRing",
 					  rin, rou, hl,
 					  0.0, 360.0*CLHEP::degree);
-	    const double notchWidth  = _config.getDouble("protonabsorber.oPASupportNotchWidth", 2.*36.);
-	    const double notchHeight = _config.getDouble("protonabsorber.oPASupportNotchHeight", 2.*40.);
+	    const double notchWidth  = _config.getDouble("protonabsorber.oPASupportNotchWidth",
+							 2.*35.);
+	    const double notchHeight = _config.getDouble("protonabsorber.oPASupportNotchHeight",
+							 2.*25.);
+
 	    //extend the box so that it notches through at either end, not just the center
-	    const double notchExtension = (opaVersion > 2) ? (rin - sqrt(rin*rin-notchWidth*notchWidth)) : 0.; 
+	    const double notchExtension = (opaVersion > 2) ? 
+	      (rin - sqrt(rin*rin-notchWidth*notchWidth)) : 0.; 
+
 	    G4Box* notch = new G4Box("notch", notchWidth/2.*CLHEP::mm,
 				     (notchHeight+notchExtension)/2.*CLHEP::mm, hl*1.1 );
 
@@ -832,7 +837,10 @@ namespace mu2e {
 		  const double boxPars[3] = {sWide/2.0,sHigh/2.0,sLong/2.0};
 		  double rCenter = rin - sHigh/2.; //radial distance from center axis to box center
 		  //remove overlap
-		  rCenter -= rin - sqrt(rin*rin - sWide/2.*sWide/2.) + 1.;
+		  if(opaVersion > 2)
+		    rCenter -= rin - sqrt(rin*rin - sWide/2.*sWide/2.) + 1.;
+		  else
+		    rCenter = rin + sHigh/2.0;
 		  CLHEP::Hep3Vector slatLoc(rCenter*sin(slatAngle),
 					    rCenter*cos(slatAngle),
 					    0.);
