@@ -245,12 +245,54 @@ namespace mu2e {
     /////////
 
     _pabs = unique_ptr<MECOStyleProtonAbsorber>(new MECOStyleProtonAbsorber());
+    _pabs->_oPAVersion = oPAversion;
+    _pabs->_nOPASupportSlats = 3; //default for versions before version 3
+    _pabs->_nOPASupportSlatTypes = 1; //default for versions before version 3
+    if(oPAversion > 2) {
+      _pabs->_nOPASupportSlats     = _config.getInt("protonabsorber.nOPASupportSlats");
+      _config.getVectorDouble("protonabsorber.oPASupportSlatAngles",_pabs->_oPASlatAngles,_pabs->_nOPASupportSlats);
+      _config.getVectorInt   ("protonabsorber.oPASupportSlatTypes",_pabs->_oPASlatTypes,_pabs->_nOPASupportSlats);
+      _pabs->_nOPASupportSlatTypes = _config.getInt("protonabsorber.nOPASupportSlatTypes");
+      _config.getVectorString("protonabsorber.oPASupportSlatMaterials",_pabs->_oPASlatMaterials,_pabs->_nOPASupportSlatTypes);
+      _config.getVectorDouble("protonabsorber.oPASupportSlatHeights",_pabs->_oPASlatHeights,_pabs->_nOPASupportSlatTypes);
+      _config.getVectorDouble("protonabsorber.oPASupportSlatWidths",_pabs->_oPASlatWidths,_pabs->_nOPASupportSlatTypes);
+      _config.getVectorDouble("protonabsorber.oPASupportSlatLengths",_pabs->_oPASlatLengths,_pabs->_nOPASupportSlatTypes);
+      _config.getVectorDouble("protonabsorber.oPASupportSlatSideThicknesses",_pabs->_oPASlatSideThicknesses,_pabs->_nOPASupportSlatTypes);
+      _config.getVectorDouble("protonabsorber.oPASupportSlatTopThicknesses",_pabs->_oPASlatTopThicknesses,_pabs->_nOPASupportSlatTypes);
+      _config.getVectorDouble("protonabsorber.oPASupportSlatFillParameter1",_pabs->_oPASlatFillParameter1,_pabs->_nOPASupportSlatTypes);
+      _config.getVectorDouble("protonabsorber.oPASupportSlatFillParameter2",_pabs->_oPASlatFillParameter2,_pabs->_nOPASupportSlatTypes);
+      _config.getVectorDouble("protonabsorber.oPASupportSlatFillParameter3",_pabs->_oPASlatFillParameter3,_pabs->_nOPASupportSlatTypes);
+      _config.getVectorDouble("protonabsorber.oPASupportSlatFillParameter4",_pabs->_oPASlatFillParameter4,_pabs->_nOPASupportSlatTypes);
+      _config.getVectorString("protonabsorber.oPASupportSlatFillMaterials",_pabs->_oPASlatFillMaterials,_pabs->_nOPASupportSlatTypes);
+      //cross supports
+      _pabs->_nCrossSupports       = _config.getInt   ("protonabsorber.nCrossSupports");
+      _pabs->_crossSupportMaterial = _config.getString("protonabsorber.crossSupportMaterial");
+      _config.getVectorDouble("protonabsorber.crossSupportThicknesses",_pabs->_crossSupportThicknesses,_pabs->_nCrossSupports);
+      _config.getVectorDouble("protonabsorber.crossSupportWidth"      ,_pabs->_crossSupportWidth      ,_pabs->_nCrossSupports);
+      _config.getVectorInt   ("protonabsorber.crossSupportOneIndex"   ,_pabs->_crossSupportOneIndex   ,_pabs->_nCrossSupports);
+      _config.getVectorInt   ("protonabsorber.crossSupportTwoIndex"   ,_pabs->_crossSupportTwoIndex   ,_pabs->_nCrossSupports);
+      _config.getVectorDouble("protonabsorber.crossSupportPhis"       ,_pabs->_crossSupportPhis       ,_pabs->_nCrossSupports);
+      _config.getVectorDouble("protonabsorber.crossSupportHeights"    ,_pabs->_crossSupportHeights    ,_pabs->_nCrossSupports);
+      _config.getVectorDouble("protonabsorber.crossSupportRadii"      ,_pabs->_crossSupportRadii      ,_pabs->_nCrossSupports);
+
+    } else {
+      std::string opaSupportMaterial = _config.getString("protonabsorber.oPASupportMaterialName");
+      for(int iSlat = 0; iSlat < _pabs->_nOPASupportSlatTypes; ++iSlat) {
+	_pabs->_oPASlatMaterials.push_back(opaSupportMaterial);
+	_pabs->_oPASlatHeights  .push_back(oPASlatHeight);
+	_pabs->_oPASlatWidths   .push_back(oPASlatWidth);
+	_pabs->_oPASlatLengths  .push_back(oPASlatLength);
+      }
+      _pabs->_oPASlatAngles.push_back(0.);
+      _pabs->_oPASlatAngles.push_back(120.);
+      _pabs->_oPASlatAngles.push_back(240.);
+      _pabs->_oPASlatTypes.push_back(0);
+      _pabs->_oPASlatTypes.push_back(0);
+      _pabs->_oPASlatTypes.push_back(0);
+    }
     _pabs->_oPAslotWidth  = oPAslotWidth;
     _pabs->_oPAslotLength = oPAslotLength;
     _pabs->_oPAslotOffset = oPAslotOffset;
-    _pabs->_oPASlatHeight = oPASlatHeight;
-    _pabs->_oPASlatWidth  = oPASlatWidth;
-    _pabs->_oPASlatLength = oPASlatLength;
     CLHEP::Hep3Vector pabs1Offset(-1.*solenoidOffset, 0.0, pabs1ZOffset);
     CLHEP::Hep3Vector pabs2Offset(-1.*solenoidOffset, 0.0, pabs2ZOffset);
     CLHEP::Hep3Vector pabs3Offset(-1.*solenoidOffset, 0.0, pabs3ZOffset);
@@ -288,9 +330,14 @@ namespace mu2e {
     ////////////////////////
     // Support Structure for OPA
     ////////////////////////
-    (_pabs->_oPASupportMaterialName) = _config.getString("protonabsorber.oPASupportMaterialName");
     (_pabs->_oPAnSupports) = _config.getInt("protonabsorber.oPASupportNSupportRing",0);
     if ( _pabs->_oPAnSupports > 0 ) {
+      if(oPAversion > 2) //each support can have individual materials
+	_config.getVectorString("protonabsorber.oPASupportMaterials",_pabs->_oPASupportMaterials,_pabs->_oPAnSupports);
+      else {//assume one material for all supports
+	std::string opaSupportMaterial = _config.getString("protonabsorber.oPASupportMaterialName");
+	for(int iSup = 0; iSup < _pabs->_oPAnSupports; ++iSup) _pabs->_oPASupportMaterials.push_back(opaSupportMaterial);
+      }
       _config.getVectorDouble("protonabsorber.oPASupportInnerRadii",_pabs->_oPASupportIR,(_pabs->_oPAnSupports));
       _config.getVectorDouble("protonabsorber.oPASupportOuterRadii",_pabs->_oPASupportOR,(_pabs->_oPAnSupports));
       _config.getVectorDouble("protonabsorber.oPASupportHalflength",_pabs->_oPASupportHL,(_pabs->_oPAnSupports));
@@ -299,7 +346,6 @@ namespace mu2e {
       _config.getVectorDouble("protonabsorber.oPASupportExtraRad",_pabs->_oPASupportXR,(_pabs->_oPAnSupports));
       _config.getVectorDouble("protonabsorber.oPASupportExtraDPhi",_pabs->_oPASupportPH,(_pabs->_oPAnSupports));
     }
-
 
     ////////////////////////
     // Support Structure for IPA
