@@ -1278,12 +1278,12 @@ namespace mu2e {
 		     placePV,
 		     doSurfaceCheck);
 	    //first cross bar
-	    const double crossBarAngle = atan(height/width);
+	    const double crossBarAngle = atan((height-barThickness*2.)/(width-barThickness*2.));
 	    double crossBarLength = sqrt((height-barThickness*2.)*(height-barThickness*2.) +
 					 (width-barThickness*2.)*(width-barThickness*2.));
 	    //avoid overlap
 	    crossBarLength -= (height > width) ? height/width*barThickness : width/height*barThickness;
-	    crossBarLength -= 2.*smallGap;
+	    crossBarLength -= 1.; //remove mm to ensure no overlaps of corners
 	    CLHEP::Hep3Vector crossBar1Loc(0., 0., 0.);
 	    CLHEP::Hep3Vector crossBar2Loc(0., 0., 0.); //wrt bar 1
 	    CLHEP::HepRotation* crossBar1Rot = new CLHEP::HepRotation(CLHEP::HepRotation::IDENTITY);
