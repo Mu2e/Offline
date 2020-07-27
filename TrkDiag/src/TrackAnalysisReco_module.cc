@@ -480,6 +480,8 @@ namespace mu2e {
     _tcnt.reset();
     _hinfo.reset();
     _wtinfo.reset();
+    // reset
+    resetBranches();
     // fill track counts
     for (size_t i_branch = 0; i_branch < _allBranches.size(); ++i_branch) {
       _tcnt._counts[i_branch] = (_allKSCHs.at(i_branch))->size();
@@ -493,8 +495,6 @@ namespace mu2e {
     const auto& candidateKSCH = _allKSCHs.at(_candidateIndex);
     const auto& candidateKSC = *candidateKSCH;
     for (size_t i_kseed = 0; i_kseed < candidateKSC.size(); ++i_kseed) {
-    // reset
-      resetBranches();
 
       auto const& candidateKS = candidateKSC.at(i_kseed);
       fillAllInfos(candidateKSCH, _candidateIndex, i_kseed); // fill the info structs for the candidate
@@ -542,7 +542,7 @@ namespace mu2e {
       _trkana->Fill();
     }
 
-    if(_conf.pempty()) { // if we want to process empty events
+    if(_conf.pempty() && candidateKSC.size()==0) { // if we want to process empty events
       _trkana->Fill();
     }
   }
