@@ -99,6 +99,7 @@ namespace mu2e {
       fhicl::Atom<bool> filltrkqual{Name("fillTrkQual"), Comment("Switch to turn on filling of the full TrkQualInfo for this set of tracks"), false};
       fhicl::OptionalAtom<std::string> trkpid{Name("trkpid"), Comment("TrkCaloHitPIDCollection input tag to be written out (use prefix if fcl parameter suffix is defined)")};
       fhicl::Atom<bool> filltrkpid{Name("fillTrkPID"), Comment("Switch to turn on filling of the full TrkPIDInfo for this set of tracks"), false};
+      fhicl::Atom<bool> required{Name("required"), Comment("True/false if you require this type of track in the event"), false};
     };
 
     struct BranchConfig {
@@ -496,6 +497,8 @@ namespace mu2e {
     const auto& candidateKSC = *candidateKSCH;
     for (size_t i_kseed = 0; i_kseed < candidateKSC.size(); ++i_kseed) {
 
+      bool skip_kseed = false; // there may be a reason we don't want to write this KalSeed out
+
       auto const& candidateKS = candidateKSC.at(i_kseed);
       fillAllInfos(candidateKSCH, _candidateIndex, i_kseed); // fill the info structs for the candidate
 
@@ -512,11 +515,21 @@ namespace mu2e {
 	}
 	const auto& i_supplementKSCH = _allKSCHs.at(i_branch);
 	const auto& i_supplementKSC = *i_supplementKSCH;
+
+	// If we require a supplement track of this type, and there are none...
+	if (i_supplementKSC.size()==0 && _allBranches.at(i_branch).options().required()) {
+	  skip_kseed = true; // ...skip this KalSeed
+	}	  
+
 	// find the supplement track closest in time
 	auto i_supplementKS = findSupplementTrack(i_supplementKSC,candidateKS,sameColl);
 	if(i_supplementKS < i_supplementKSC.size()) { 
 	  fillAllInfos(_allKSCHs.at(i_branch), i_branch, i_supplementKS);
 	}
+      }
+    
+      if (skip_kseed) {
+	continue;
       }
 
       // TODO we want MC information when we don't have a track

@@ -1,0 +1,67 @@
+// TrkAnaReco_BothCharges.fcl
+// -- a couple of examples of how to write both positive and negative tracks to the same trkana tree
+//
+// Example 1: TrkAnaNegBoth
+// -- This configuration is the same as TrkAnaNeg except we have added DeP as a supplement
+//    so if there is a DeP track in the same event as a DeM track, it will be written to the TTree
+//
+// Examaple 2: TrkAnaBothOnly
+// -- This configuration only writes to the TTree if there is both 
+//    a positive and a negative track in the same event
+//
+// NB for both examples we need to rename trkana branches 
+// since DeM and DeP both have branch names of "de" by default
+
+#include "fcl/minimalMessageService.fcl"
+#include "fcl/standardProducers.fcl"
+#include "fcl/standardServices.fcl"
+#include "TrkDiag/fcl/prolog.fcl"
+
+process_name : TrkAnaReco
+
+source : { module_type : RootInput }
+
+services : @local::Services.Reco
+
+physics :
+{
+  producers : { @table::TrkAnaReco.producers }
+  analyzers : { @table::TrkAnaReco.analyzers }
+}
+
+physics.TrkAnaTrigPath : [ @sequence::TrkAnaReco.TrigSequence ]
+physics.TrkAnaEndPath : [ @sequence::TrkAnaReco.EndSequence, TrkAnaNegBoth, TrkAnaBothOnly ]
+
+# Include more information (MC, full TrkQual and TrkPID branches)
+physics.analyzers.TrkAnaNeg.candidate.options : @local::AllOpt
+physics.analyzers.TrkAnaPos.candidate.options : @local::AllOpt
+
+# for hit level diagnostics, set diagLevel to 2
+physics.analyzers.TrkAnaNeg.diagLevel : 1
+physics.analyzers.TrkAnaNeg.FillMCInfo : true
+physics.analyzers.TrkAnaNeg.AnalyzeCRV : true
+physics.analyzers.TrkAnaNeg.FillTriggerInfo : true
+
+physics.analyzers.TrkAnaPos.diagLevel : 1
+physics.analyzers.TrkAnaPos.FillMCInfo : true
+physics.analyzers.TrkAnaPos.AnalyzeCRV : true
+physics.analyzers.TrkAnaPos.FillTriggerInfo : true
+
+# Example 1: TrkAnaNegBoth
+physics.analyzers.TrkAnaNegBoth : @local::physics.analyzers.TrkAnaNeg
+physics.analyzers.TrkAnaNegBoth.supplements : [ @local::DeP, @local::UeM, @local::DmuM ] 
+physics.analyzers.TrkAnaNegBoth.candidate.branch : "dem"
+physics.analyzers.TrkAnaNegBoth.supplements[0].branch : "dep"
+physics.analyzers.TrkAnaNegBoth.supplements[0].options.fillMC : true
+physics.analyzers.TrkAnaNegBoth.supplements[1].branch : "uem"
+physics.analyzers.TrkAnaNegBoth.supplements[2].branch : "dmm"
+
+# Example 2: TrkAnaBothOnly
+physics.analyzers.TrkAnaBothOnly : @local::physics.analyzers.TrkAnaNeg
+physics.analyzers.TrkAnaBothOnly.supplements : [ @local::DeP ] 
+physics.analyzers.TrkAnaBothOnly.candidate.branch : "dem"
+physics.analyzers.TrkAnaBothOnly.supplements[0].branch : "dep"
+physics.analyzers.TrkAnaBothOnly.supplements[0].options.fillMC : true
+physics.analyzers.TrkAnaBothOnly.supplements[0].options.required : true
+
+services.TFileService.fileName: "nts.owner.trkana-reco.version.sequencer.root"
