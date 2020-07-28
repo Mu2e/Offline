@@ -9,14 +9,8 @@ source: {
   module_type :  PBISequence 
   fileNames: ["/pnfs/mu2e/persistent/users/brownd/SS_2020-05-23.dat"]
   runNumber : 1
-}
-
-Output : {
-  module_type : RootOutput
-  outputCommands:   [ "drop *_*_*_*",
-    "keep mu2e::ProtonBunchIntensity_*_*_*",
-    "keep mu2e::ProtonBunchIntensitySummary_*_*_*" ]
-  fileName : "SS_2020-05-23.art"
+  integratedSummary : true
+  verbosity : 1
 }
 
 physics : {
@@ -27,4 +21,12 @@ physics : {
   EndPath : [ Output ]
 }
 
-outputs : { Output : @local::Output}
+outputs : {
+  Output : {
+    module_type : RootOutput
+    outputCommands:   [ "drop *_*_*_*",
+      "keep mu2e::ProtonBunchIntensity_*_*_*",
+      "keep mu2e::ProtonBunchIntensitySummary_*_*_*" ]
+    fileName : "SS_2020-05-23.art"
+  }
+}

@@ -101,6 +101,7 @@ env.Append( MU2EBASE = mu2eOpts["base"] )
 env.Append( BINDIR = mu2eOpts['bindir'] )
 env.Append( BUILD = mu2eOpts["build"] )
 env.Append( G4VIS = mu2eOpts["g4vis"] )
+env.Append( G4VG = mu2eOpts["g4vg"] )
 env.Append( G4MT = mu2eOpts["g4mt"] )
 
 # make the scons environment visible to all SConscript files (Import('env'))
