@@ -1,5 +1,5 @@
-#ifndef RecoDataProducts_StrawStatus_hh
-#define RecoDataProducts_StrawStatus_hh
+#ifndef TrackerConditions_StrawStatus_hh
+#define TrackerConditions_StrawStatus_hh
 //
 // Class to describe flag bits used for defining straw (or panel or plane) status
 // 
