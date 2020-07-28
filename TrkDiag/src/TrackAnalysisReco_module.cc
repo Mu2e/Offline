@@ -784,7 +784,14 @@ namespace mu2e {
 	size_t pos;
 	if (selection != "") { // if we want to add a selection
 	  pos = moduleLabel.find(selection);
-	  if (pos == std::string::npos) { // check to see if this appears
+
+	  // make sure that the selection (e.g. "DeM") appears at the end of the module label
+	  if (pos == std::string::npos) {
+	    //      std::cout << "Selection not found" << std::endl;
+	    continue;
+	  }
+	  else if (pos+selection.length() != moduleLabel.size()) {
+	    //      std::cout << "Selection wasn't at end of moduleLabel" << std::endl;
 	    continue;
 	  }
 	  moduleLabel = moduleLabel.erase(pos, selection.length());
