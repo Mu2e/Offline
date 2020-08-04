@@ -41,6 +41,7 @@
 #include <boost/accumulators/statistics/mean.hpp>
 #include <boost/accumulators/statistics/variance.hpp>
 
+#include "fhiclcpp/types/Name.h"
 #include "art/Framework/IO/Sources/Source.h"
 #include "art/Framework/Core/InputSourceMacros.h"
 #include "art/Framework/IO/Sources/SourceHelper.h"
@@ -177,7 +178,7 @@ namespace mu2e {
       }
       // rewind the file
       currentFile_->clear(ios::eofbit);
-      currentFile_->seekg (0, ios::beg); 
+      currentFile_->seekg (0, ios::beg);
       fb = new art::FileBlock(art::FileFormatVersion(1, "PBISequenceTextInput"), currentFileName_);
     }
 
