@@ -53,7 +53,7 @@ def mu2eEnvironment():
 # the list of root libraries
 # This comes from: root-config --cflags --glibs
 def rootLibs():
-    return [ 'GenVector', 'Core', 'RIO', 'Net', 'Hist', 'Spectrum', 'MLP', 'Graf', 'Graf3d', 'Gpad', 'Tree',
+    return [ 'GenVector', 'Core', 'RIO', 'Net', 'Hist', 'MLP', 'Graf', 'Graf3d', 'Gpad', 'Tree',
              'Rint', 'Postscript', 'Matrix', 'Physics', 'MathCore', 'Thread', 'Gui', 'm', 'dl' ]
 
 
@@ -130,7 +130,7 @@ def mergeFlags(mu2eOpts):
     build = mu2eOpts['build']
     flags = ['-std=c++17','-Wall','-Wno-unused-local-typedefs','-g',
              '-Werror','-Wl,--no-undefined','-gdwarf-2', '-Wl,--as-needed',
-             '-Werror=return-type','-Winit-self','-Woverloaded-virtual']
+             '-Werror=return-type','-Winit-self','-Woverloaded-virtual', '-DBOOST_BIND_GLOBAL_PLACEHOLDERS' ]
     if build == 'prof':
         flags = flags + [ '-O3', '-fno-omit-frame-pointer', '-DNDEBUG' ]
     elif build == 'debug':

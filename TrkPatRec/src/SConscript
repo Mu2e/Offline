@@ -9,7 +9,7 @@ import os
 Import('env')
 Import('mu2e_helper')
 
-extrarootlibs = ['Spectrum', 'TMVA', 'Minuit', 'XMLIO']
+extrarootlibs = [ 'TMVA', 'Minuit', 'XMLIO']
 
 babarlibs = env['BABARLIBS']
 rootlibs = env['ROOTLIBS']
