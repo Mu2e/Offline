@@ -143,7 +143,7 @@ setup -B heppdt   v03_04_02 -q${MU2E_UPS_QUALIFIERS}
 setup -B BTrk   v1_02_25  -q${MU2E_UPS_QUALIFIERS}:p383b
 setup -B cry   v1_7n  -q${MU2E_UPS_QUALIFIERS}
 setup -B gsl v2_6a
-setup curl v7_67_0
+setup curl v7_64_1
 
 # The build system.
 setup -B scons v3_1_2  -q +p383b
