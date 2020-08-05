@@ -92,7 +92,10 @@ namespace mu2e {
       helper.declareMixOp
         (e.inTag, e.resolvedInstanceName(), &Mu2eProductMixer::mixEventIDs, *this);
     }
-
+    for(const auto& e: conf.simStageEfficiencyMixer().mixingMap()) {
+      helper.declareMixOp<art::InRun>
+        (e.inTag, e.resolvedInstanceName(), &Mu2eProductMixer::mixSimStageEfficiency, *this);
+    }
   }
 
   //----------------------------------------------------------------
@@ -281,6 +284,16 @@ namespace mu2e {
                                      art::PtrRemapper const&)
   {
     art::flattenCollections(in, out);
+    return true;
+  }
+
+  //----------------------------------------------------------------
+  bool Mu2eProductMixer::mixSimStageEfficiency(std::vector<mu2e::SimStageEfficiency const*> const &in,
+					mu2e::SimStageEfficiency& out,
+					art::PtrRemapper const&)
+  {
+    //    std::cout << "eff = " << in.at(0)->numerator() << " / " << in.at(0)->denominator() << " = " << in.at(0)->efficiency() << std::endl;
+    out = *in.at(0);
     return true;
   }
 

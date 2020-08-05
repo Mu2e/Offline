@@ -34,6 +34,7 @@
 #include "MCDataProducts/inc/ExtMonFNALSimHitCollection.hh"
 #include "MCDataProducts/inc/ProtonBunchIntensity.hh"
 #include "MCDataProducts/inc/SimParticleTimeMap.hh"
+#include "MCDataProducts/inc/SimStageEfficiency.hh"
 
 //================================================================
 namespace mu2e {
@@ -74,6 +75,7 @@ namespace mu2e {
       fhicl::Table<CollectionMixerConfig> protonBunchIntensityMixer { fhicl::Name("protonBunchIntensityMixer") };
       fhicl::Table<CollectionMixerConfig> protonTimeMapMixer { fhicl::Name("protonTimeMapMixer") };
       fhicl::Table<CollectionMixerConfig> eventIDMixer { fhicl::Name("eventIDMixer") };
+      fhicl::Table<CollectionMixerConfig> simStageEfficiencyMixer { fhicl::Name("simStageEfficiencyMixer") };
     };
 
     Mu2eProductMixer(const Config& conf, art::MixHelper& helper);
@@ -119,6 +121,10 @@ namespace mu2e {
     bool mixEventIDs(std::vector<art::EventIDSequence const*> const &in,
                      art::EventIDSequence& out,
                      art::PtrRemapper const& remap);
+
+    bool mixSimStageEfficiency(std::vector<mu2e::SimStageEfficiency const*> const &in,
+			mu2e::SimStageEfficiency& out,
+			art::PtrRemapper const& remap);
 
     //----------------
     // If elements of a collection can be pointed to by other

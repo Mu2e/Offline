@@ -41,6 +41,7 @@
 #include "MCDataProducts/inc/ProtonBunchIntensity.hh"
 #include "MCDataProducts/inc/ProtonBunchIntensitySummary.hh"
 #include "MCDataProducts/inc/EventWeight.hh"
+#include "MCDataProducts/inc/SimStageEfficiency.hh"
 
 // G4
 #include "MCDataProducts/inc/G4BeamlineInfo.hh"

@@ -110,6 +110,9 @@
 
  <class name="mu2e::StepFilterMode"/> 
 
+ <class name="mu2e::SimStageEfficiency"/>
+ <class name="art::Wrapper<mu2e::SimStageEfficiency>"/>
+
 <!--  ********* G4  ********* -->
  <class name="mu2e::G4BeamlineInfo"/>
  <class name="art::Wrapper<mu2e::G4BeamlineInfo>"/>
