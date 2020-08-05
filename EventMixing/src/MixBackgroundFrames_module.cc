@@ -50,6 +50,9 @@ namespace mu2e {
     bool writeEventIDs_;
     art::EventIDSequence idseq_;
 
+    std::vector<art::InputTag> simStageEfficiencyTags_;
+    std::vector<double> meanEventsPerPOTFactors_;
+    double eff_;
   public:
 
     struct Mu2eConfig {
@@ -92,6 +95,16 @@ namespace mu2e {
           Comment("Write out IDs of events on the secondary input stream."),
           false
           };
+
+      fhicl::Sequence<art::InputTag> simStageEfficiencyTags{ Name("simStageEfficiencyTags"),
+	  Comment("Sequence of art::InputTags for all the previous simulation stage efficiencies"),
+	  std::vector<art::InputTag>()
+	  };
+
+      fhicl::Sequence<double> meanEventsPerPOTFactors{ Name("meanEventsPerPOTFactors"),
+	  Comment("Sequence of double for extra numerical factors that goes into the mean events per POT"),
+	  std::vector<double>()
+	  };
     };
 
     // The ".mu2e" in FHICL parameters like
@@ -128,6 +141,8 @@ namespace mu2e {
     , totalBkgCount_(0)
     , skipFactor_{ pars().mu2e().skipFactor() }
     , writeEventIDs_{ pars().mu2e().writeEventIDs() }
+    , simStageEfficiencyTags_{ pars().mu2e().simStageEfficiencyTags() }
+    , meanEventsPerPOTFactors_{ pars().mu2e().meanEventsPerPOTFactors() }
   {
     if(writeEventIDs_) {
       helper.produces<art::EventIDSequence>();
@@ -138,11 +153,28 @@ namespace mu2e {
   void MixBackgroundFramesDetail::startEvent(const art::Event& event) {
     pbi_ = *event.getValidHandle<ProtonBunchIntensity>(pbiTag_);
     if(debugLevel_ > 0)std::cout << " Starting event mixing, Intensity = " << pbi_.intensity() << std::endl;
+
+    eff_ = 1;
+    for (const auto& i_simStageEff : simStageEfficiencyTags_) {
+      const auto& effBeam = *event.getValidHandle<SimStageEfficiency>(i_simStageEff);
+      eff_ *= effBeam.efficiency();
+      if (debugLevel_ > 1) {
+	std::cout << " Sim Stage Efficiency (" << i_simStageEff.label() << ") = " << effBeam.efficiency() << std::endl;
+	std::cout << " Cumulative Total Eff = " << eff_ << std::endl;
+      }
+    }
+    for (const auto& i_extraFactor : meanEventsPerPOTFactors_) {
+      eff_ *= i_extraFactor;
+      if (debugLevel_ > 1) {
+	std::cout << " Extra meanEventsPerPOT Factor = " << i_extraFactor << std::endl;
+	std::cout << " Cumulative Total Eff = " << eff_ << std::endl;
+      }
+    }
   }
 
   //================================================================
   size_t MixBackgroundFramesDetail::nSecondaries() {
-    double mean = meanEventsPerProton_ * pbi_.intensity();
+    double mean = meanEventsPerProton_ * eff_ * pbi_.intensity();
     std::poisson_distribution<size_t> poisson(mean);
     auto res = poisson(urbg_);
     if(debugLevel_ > 0)std::cout << " Mixing " << res  << " Secondaries " << std::endl;
@@ -152,7 +184,7 @@ namespace mu2e {
   //================================================================
   size_t MixBackgroundFramesDetail::eventsToSkip() {
     //FIXME: Ideally, we would know the number of events in the secondary input file
-    std::uniform_int_distribution<size_t> uniform(0, skipFactor_*meanEventsPerProton_*pbi_.intensity());
+    std::uniform_int_distribution<size_t> uniform(0, skipFactor_*meanEventsPerProton_*eff_*pbi_.intensity());
     size_t result = uniform(urbg_);
     if(debugLevel_ > 0) {
       std::cout << " Skipping " << result << " Secondaries " << std::endl;
