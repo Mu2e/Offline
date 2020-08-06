@@ -357,7 +357,36 @@ namespace mu2e {
                             c.getDouble("targetPS_supportRingCutoutThickness"),
                             c.getDouble("targetPS_supportRingCutoutLength")
 			    ));
-
+    //check if we should configure supports
+    //switch to using '.' instead of '_' to differentiate levels
+    tgtPS->_supportsBuild = c.getBool("targetPS.supports.build", false);
+    if(tgtPS->_supportsBuild) {
+      //support wheel parameters
+      tgtPS->_supportWheelRIn      = c.getDouble("targetPS.supports.wheel.rIn");
+      tgtPS->_supportWheelROut     = c.getDouble("targetPS.supports.wheel.rOut");
+      tgtPS->_supportWheelHL       = c.getDouble("targetPS.supports.wheel.halfLength");
+      tgtPS->_supportWheelMaterial = c.getString("targetPS.supports.wheel.material");
+      //number of support rods and wires
+      tgtPS->_nSpokesPerSide = c.getInt("targetPS.supports.nSpokes");
+      //features on the wheel near each support rod
+      c.getVectorDouble("targetPS.supports.features.angles", tgtPS->_supportWheelFeatureAngles, tgtPS->_nSpokesPerSide); 
+      c.getVectorDouble("targetPS.supports.features.arcs"  , tgtPS->_supportWheelFeatureArcs  , tgtPS->_nSpokesPerSide); 
+      c.getVectorDouble("targetPS.supports.features.rIns"  , tgtPS->_supportWheelFeatureRIns  , tgtPS->_nSpokesPerSide); 
+      //support wheel rods parameters
+      c.getVectorDouble("targetPS.supports.rods.halfLength", tgtPS->_supportWheelRodHL, tgtPS->_nSpokesPerSide);
+      c.getVectorDouble("targetPS.supports.rods.offset", tgtPS->_supportWheelRodOffset, tgtPS->_nSpokesPerSide);
+      c.getVectorDouble("targetPS.supports.rods.radius", tgtPS->_supportWheelRodRadius, tgtPS->_nSpokesPerSide);
+      c.getVectorDouble("targetPS.supports.rods.radialOffset", tgtPS->_supportWheelRodRadialOffset, tgtPS->_nSpokesPerSide);
+      c.getVectorDouble("targetPS.supports.rods.wireOffset.downstream", tgtPS->_supportWheelRodWireOffsetD, tgtPS->_nSpokesPerSide);
+      c.getVectorDouble("targetPS.supports.rods.wireOffset.upstream", tgtPS->_supportWheelRodWireOffsetU, tgtPS->_nSpokesPerSide);
+      c.getVectorDouble("targetPS.supports.rods.angles", tgtPS->_supportWheelRodAngles, tgtPS->_nSpokesPerSide);
+      //support wire (spokes) parameters
+      c.getVectorDouble("targetPS.supports.spokes.targetAngles.downstream", tgtPS->_spokeTargetAnglesD, tgtPS->_nSpokesPerSide);
+      c.getVectorDouble("targetPS.supports.spokes.targetAngles.upstream", tgtPS->_spokeTargetAnglesU, tgtPS->_nSpokesPerSide);
+      tgtPS->_spokeRadius = 0.5*c.getDouble("targetPS.supports.spokes.diameter");
+      //override old format of the material if new syntax is found
+      tgtPS->_spokeMaterial = c.getString("targetPS.supports.spokes.material", tgtPS->_spokeMaterial);
+    }
     return std::move(tgtPS);
   }
  

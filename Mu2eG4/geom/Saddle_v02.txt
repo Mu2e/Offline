@@ -3,6 +3,8 @@
 // See Mu2e docdb #4678 for more details on parameters
 // Updated by Dustin Cox & A. Hill June 2017
 
+// Version 2 FROZEN: M. MacKenzie, May 2020
+
 // Sort boxes into "types"
 int Saddle.version    = 2;
 int Saddle.numberOfBoxTypes = 9;

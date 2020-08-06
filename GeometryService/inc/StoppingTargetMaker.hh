@@ -67,7 +67,7 @@ private:
   double _foilTarget_supportStructure_radius; // radius of the support wires
 //  double _foilTarget_supportStructure_length; // length of the support wires
   std::string _foilTarget_supportStructure_fillMaterial;
-
+  double _foilTarget_supportStructure_rOut; //radius the structure goes out to
 };
 
 }  //namespace mu2e
