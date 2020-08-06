@@ -263,11 +263,25 @@ namespace mu2e {
       Polyethylene096->AddMaterial( findMaterialOrThrow("G4_C"), 0.86);
     }
 
+    mat = uniqueMaterialOrThrow( "Polyethylene094");
+    {
+      G4Material* Polyethylene094 = new G4Material( mat.name, 0.94*CLHEP::g/CLHEP::cm3, 2);
+      Polyethylene094->AddMaterial( findMaterialOrThrow("G4_H"), 0.14);
+      Polyethylene094->AddMaterial( findMaterialOrThrow("G4_C"), 0.86);
+    }
+
     mat = uniqueMaterialOrThrow( "Polyethylene0935");
     {
-      G4Material* Polyethylene096 = new G4Material( mat.name, 0.935*CLHEP::g/CLHEP::cm3, 2);
-      Polyethylene096->AddMaterial( findMaterialOrThrow("G4_H"), 0.14);
-      Polyethylene096->AddMaterial( findMaterialOrThrow("G4_C"), 0.86);
+      G4Material* Polyethylene0935 = new G4Material( mat.name, 0.935*CLHEP::g/CLHEP::cm3, 2);
+      Polyethylene0935->AddMaterial( findMaterialOrThrow("G4_H"), 0.14);
+      Polyethylene0935->AddMaterial( findMaterialOrThrow("G4_C"), 0.86);
+    }
+
+    mat = uniqueMaterialOrThrow( "Polyethylene090");
+    {
+      G4Material* Polyethylene090 = new G4Material( mat.name, 0.90*CLHEP::g/CLHEP::cm3, 2);
+      Polyethylene090->AddMaterial( findMaterialOrThrow("G4_H"), 0.14);
+      Polyethylene090->AddMaterial( findMaterialOrThrow("G4_C"), 0.86);
     }
 
     // Not real, very thin Polyethylene
@@ -477,6 +491,14 @@ namespace mu2e {
       BrassC360->AddMaterial(findMaterialOrThrow("G4_Pb"),0.031);
     }
 
+    // C64200 from https://alloys.copper.org/alloy/C64200
+    mat = uniqueMaterialOrThrow( "BronzeC642" );
+    {
+      G4Material* BronzeC642 = new G4Material( mat.name, 7.70*CLHEP::g/CLHEP::cm3, 3);
+      BronzeC642->AddMaterial(findMaterialOrThrow("G4_Cu"),0.922);
+      BronzeC642->AddMaterial(findMaterialOrThrow("G4_Al"),0.063);
+      BronzeC642->AddMaterial(findMaterialOrThrow("G4_Si"),0.015);
+    }
 
     // A mix made to represent the MBS spherical support
     mat = uniqueMaterialOrThrow( "MBSSupportMix" );
@@ -1513,6 +1535,19 @@ namespace mu2e {
       TrkCableRunFiber->AddElement( eH,   5.676*CLHEP::perCent);
       TrkCableRunFiber->AddElement( eSi,  3.172*CLHEP::perCent);
       TrkCableRunFiber->AddElement( eF,   0.216*CLHEP::perCent);
+    }
+
+    mat = uniqueMaterialOrThrow( "MLI"); // assuming 15 ~1.4g/cm^3 mylar layers with ~13 um thickness each becomes ~5 mm thick blanket
+    {
+      G4Material* mli = new G4Material( mat.name, 0.055*CLHEP::g/CLHEP::cm3, 1);
+      mli->AddMaterial(findMaterialOrThrow("G4_MYLAR"), 1.0);
+    }
+
+    mat = uniqueMaterialOrThrow( "ST_Wires"); // assuming 6% gold 94% tungsten, from docdb-31260 5-7% gold plating expected
+    {
+      G4Material* wires = new G4Material( mat.name, 19.25*CLHEP::g/CLHEP::cm3, 2); //
+      wires->AddMaterial(findMaterialOrThrow("G4_W"), 0.94);
+      wires->AddMaterial(findMaterialOrThrow("G4_Au"), 0.06);
     }
 
     // Completed constructMu2eMaterials2(), second function for
