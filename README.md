@@ -5,7 +5,7 @@ Offline software for the Mu2e experiment
 
 This branch was created for the Mu2e-II Sensitivity and Simulations Group for the Mu2e-II Snowmass 2021 White Paper.
 
-The code is written on top of Mu2e Offline. Although we maintain a connection to Mu2e Offlie, this branch will mostly be maintained by the **co-Convenors** of the Mu2e-II Snowmass 2021 Sensitivity Estimate working group:
+The code is written on top of Mu2e Offline. Although we maintain a connection to Mu2e Offline, this branch will mostly be maintained by the **co-Convenors** of the Mu2e-II Snowmass 2021 Sensitivity Estimate working group:
 
 **Lisa Goodenough, Sophie Middleton and Yuri Oksukian**.
 
@@ -19,7 +19,7 @@ Any Mu2e-II specific code should be placed in this branch.
 
 # Pull Requests (IMPORTANT)
 
-When you are ready tp put in a pull request (PR) you should follow this protocol:
+When you are ready to put in a pull request (PR) you should follow this protocol:
 
 * Put in the PR as usual, **BUT** clearly label it as for the Mu2e-II branch by using this phase as the first in your description: ```MU2EII_SM21:```
  
