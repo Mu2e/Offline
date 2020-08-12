@@ -156,10 +156,10 @@ namespace mu2e {
 
     eff_ = 1;
     for (const auto& i_simStageEff : simStageEfficiencyTags_) {
-      const auto& effBeam = *event.getValidHandle<SimStageEfficiency>(i_simStageEff);
-      eff_ *= effBeam.efficiency();
+      const auto& simStageEff = *event.getValidHandle<SimStageEfficiency>(i_simStageEff);
+      eff_ *= simStageEff.efficiency();
       if (debugLevel_ > 1) {
-	std::cout << " Sim Stage Efficiency (" << i_simStageEff.label() << ") = " << effBeam.efficiency() << std::endl;
+	std::cout << " Sim Stage Efficiency (" << i_simStageEff.label() << ") = " << simStageEff.numerator() << " / " << simStageEff.denominator() << " = " << simStageEff.efficiency() << std::endl;
 	std::cout << " Cumulative Total Eff = " << eff_ << std::endl;
       }
     }
