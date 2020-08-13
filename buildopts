@@ -7,8 +7,6 @@ if [[ $(basename $0) != buildopts ]]; then
     echo "ERROR: The buildopts script should be executed, not sourced" >&2
     return 1
 fi
-
-
 #================================================================
 # known keywords
 kkw=(build g4vis g4mt g4vg trigger)
