@@ -19,6 +19,7 @@
 #include <string>
 #include <sstream>
 
+#include "MCDataProducts/inc/CaloShowerSim.hh"
 
 namespace mu2e {
 
@@ -79,7 +80,7 @@ namespace mu2e {
         void produce(art::Event& e) override;
 
      private:
-        void extractRecoDigi(const art::ValidHandle<CaloDigiCollection>&, CaloRecoDigiCollection&);
+        void extractRecoDigi(const art::ValidHandle<CaloDigiCollection>&, CaloRecoDigiCollection& );
 
         const  art::ProductToken<CaloDigiCollection> caloDigisToken_;
         const  std::string                           processorStrategy_;
@@ -98,7 +99,7 @@ namespace mu2e {
 
       const auto& caloDigisH = event.getValidHandle(caloDigisToken_);
       auto recoCaloDigiColl  = std::make_unique<CaloRecoDigiCollection>();
-
+ 
       extractRecoDigi(caloDigisH, *recoCaloDigiColl);
 
       event.put(std::move(recoCaloDigiColl));
@@ -126,9 +127,9 @@ namespace mu2e {
       std::vector<double> x,y;
       for (const auto& caloDigi : caloDigis)
       {
-          int    roId     = caloDigi.roId();
+          int    roID     = caloDigi.roId();
           double t0       = caloDigi.t0();
-          double adc2MeV  = calorimeterCalibrations->ADC2MeV(roId);
+          double adc2MeV  = calorimeterCalibrations->ADC2MeV(roID);
           const std::vector<int>& waveform = caloDigi.waveform();
 
           size_t index = &caloDigi - &caloDigis.front();
@@ -139,12 +140,6 @@ namespace mu2e {
           {
               x.push_back(t0 + (i+0.5)*digiSampling_); // add 0.5 to be in middle of bin
               y.push_back(waveform.at(i));
-          }
-
-          if (diagLevel_ > 2)
-          {
-              std::cout<<"[CaloRecoDigiFromDigi::extractRecoDigi] extract amplitude from this set of hits for RoId="<<roId<<" a time "<<t0<<std::endl;
-              for (const auto& val : waveform) {std::cout<< val<<" ";} std::cout<<std::endl;
           }
 
           waveformProcessor_->reset();
@@ -159,22 +154,24 @@ namespace mu2e {
               bool   isPileUp  = waveformProcessor_->isPileUp(i);
               double chi2      = waveformProcessor_->chi2();
               int    ndf       = waveformProcessor_->ndf();
-
-              if (diagLevel_ > 1 && chi2/float(ndf) > 1.5)
+              
+              if (diagLevel_>1)
               {
-                 std::cout<<"[CaloRecoDigiFromDigi::extractAmplitude] extract "<<roId<<"   i="<<i<<"  eDep="<<eDep
+                 std::cout<<"[CaloRecoDigiFromDigi::extractAmplitude] extract "<<roID<<"   i="<<i<<"  eDep="<<eDep
                           <<" time="<<time<<"  chi2="<<chi2<<std::endl;
                  std::stringstream ss;
                  ss<<"wffit_"; ss<<nPlots;ss<<".pdf";
                  if (nPlots<maxPlots_) waveformProcessor_->plot(ss.str());
                  ++nPlots;
               }
+              
 
               if (chi2/float(ndf) > maxChi2Cut_) continue;
               
-              if (roId%2==0) totEnergyReco += eDep;
+              if (roID%2==0) totEnergyReco += eDep;
               recoCaloHits.emplace_back(CaloRecoDigi(caloDigiPtr, eDep, eDepErr, time, timeErr, chi2, ndf, isPileUp));
           }
+          
       }     
 
       if (diagLevel_ > 1) std::cout<<"[CaloRecoDigiFromDigi] Total energy reco "<<totEnergyReco <<std::endl;

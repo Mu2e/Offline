@@ -7,7 +7,10 @@
 #include "art/Framework/Core/ModuleMacros.h"
 #include "art/Framework/Principal/Event.h"
 #include "canvas/Utilities/InputTag.h"
+#include "art_root_io/TFileService.h"
+#include "art_root_io/TFileDirectory.h"
 
+#include "CaloMC/inc/CaloPhotonPropagation.hh"
 #include "CalorimeterGeom/inc/Calorimeter.hh"
 #include "ConditionsService/inc/ConditionsHandle.hh"
 #include "ConditionsService/inc/CalorimeterCalibrations.hh"
@@ -20,10 +23,8 @@
 #include "MCDataProducts/inc/CaloShowerSim.hh"
 #include "Mu2eUtilities/inc/SimParticleTimeOffset.hh"
 #include "SeedService/inc/SeedService.hh"
-
-#include "CLHEP/Random/RandGaussQ.h"
 #include "CLHEP/Random/RandPoissonQ.h"
-#include "CLHEP/Random/RandExponential.h"
+#include "CLHEP/Random/RandFlat.h"
 
 #include <iostream>
 #include <string>
@@ -32,6 +33,8 @@
 #include <vector>
 #include <utility>
 
+#include "TFile.h"
+#include "TH2.h"
 
 namespace {
 
@@ -105,8 +108,7 @@ namespace mu2e {
             diagLevel_        (config().diagLevel()),
             engine_           (createEngine(art::ServiceHandle<SeedService>()->getSeed())),
             randPoisson_      (engine_),
-            randGauss_        (engine_),
-            randExpo_         (engine_)
+            photonProp_       (engine_)
          {
              // the following consumes statements are necessary because SimParticleTimeOffset::updateMap calls getValidHandle.
              for (auto const& tag : config().caloShowerStepCollection()) crystalShowerTokens_.push_back(consumes<CaloShowerStepCollection>(tag));
@@ -116,6 +118,7 @@ namespace mu2e {
          }
 
          void beginJob() override;
+         void beginRun(art::Run& aRun) override;
          void produce(art::Event& e) override;
 
 
@@ -138,15 +141,27 @@ namespace mu2e {
          int                     diagLevel_;
          CLHEP::HepRandomEngine& engine_;
          CLHEP::RandPoissonQ     randPoisson_;
-         CLHEP::RandGaussQ       randGauss_;
-         CLHEP::RandExponential  randExpo_;
+         CaloPhotonPropagation   photonProp_;
+         TH2F*                   hTime_;
 
   };
 
 
   //-----------------------------------------------
   void CaloShowerStepROFromShowerStep::beginJob()
-  {}
+  {      
+      if (diagLevel_ > 1)
+      {
+          art::ServiceHandle<art::TFileService> tfs;
+          hTime_  = tfs->make<TH2F>("hTIme", "Photon prop time", 40,0,200,50,0,20);
+      }
+  }
+  
+  //-----------------------------------------------
+  void CaloShowerStepROFromShowerStep::beginRun(art::Run& aRun)
+  {      
+       photonProp_.buildTable();
+  }
 
 
   //---------------------------------------------------------------
@@ -190,9 +205,6 @@ namespace mu2e {
       const Calorimeter& cal       = *(GeomHandle<Calorimeter>());
       const int   nROs             = cal.caloInfo().nROPerCrystal();
       const float cryhalflength    = cal.caloInfo().getDouble("crystalZLength")/2.0;
-      const float refractiveIndex  = cal.caloInfo().getDouble("refractiveIndex");
-      const float lightSpeed       = 300; // mm/ns
-      //const float crystalDecayTime = cal.caloInfo().crystalDecayTime();
 
       std::map<int,std::vector<StepEntry>> simEntriesMap;
 
@@ -230,16 +242,19 @@ namespace mu2e {
               {
                   int ROID = ROIDBase + i;
                   float peMeV = calorimeterCalibrations->peMeV(ROID);
-                  int NPE  = randPoisson_.fire(edep_corr*peMeV);                  
+                  int NPE     = randPoisson_.fire(edep_corr*peMeV);                  
                   if (NPE==0) continue;
                   
-                  std::vector<float> PETime(NPE,hitTime);
-                  for (auto& time : PETime) time += (2.0*cryhalflength-posZ)*refractiveIndex/lightSpeed;                  
+                  std::vector<float> PETime(NPE,hitTime);                  
+                  for (auto& time : PETime) time += photonProp_.propTimeSimu(2.0*cryhalflength-posZ);
                   caloShowerStepROs.push_back(CaloShowerStepRO(ROID,stepPtr,PETime));                  
                   
                   
                   if (diagLevel_ > 2) std::cout<<"[CaloShowerStepROFromShowerStep::generatePE] ROID:"<<ROID<<"  energy / NPE = "<<edep_corr<<"  /  "<<NPE<<std::endl;
                   if (diagLevel_ > 2) {std::cout<<"Time hit "<<std::endl; for (auto time : PETime) std::cout<<time<<" "; std::cout<<std::endl;}
+                  if (diagLevel_>1) for (const auto& time : PETime) hTime_->Fill(2.0*cryhalflength-posZ,time-hitTime);
+                  
+                  
                   diagSum.totNPE     += NPE;
                   diagSum.totEdepNPE += double(NPE)/peMeV/2.0; //average between the two RO
               }

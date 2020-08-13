@@ -185,11 +185,11 @@ namespace mu2e {
       //
       // --- These are hardcoded to make sure changes are intended and carefully considered ---
       //
-      procCodes_[11].insert(   {2,12,13,16,17,21,23,29,40,49,58} );    // electron
-      procCodes_[-11].insert(  {2,12,13,16,17,21,23,29,40,49,58} );    // positron
-      procCodes_[22].insert(   {2,12,13,16,17,21,23,29,40,49,58} ); // photon
-      procCodes_[2112].insert( {2,12,13,16,17,21,23,29,40,49,58,74} ); // neutron
-      procCodes_[2212].insert( {16,17,21,23,29,40,45,49,58} );   // proton
+      procCodes_[11].insert(   {2,12,13,16,17,21,23,29,40,49,58,59,74} );  // electron
+      procCodes_[-11].insert(  {2,12,13,16,17,21,23,29,40,49,58,59,74} );  // positron
+      procCodes_[22].insert(   {2,12,13,16,17,21,23,29,40,49,58} );        // photon
+      procCodes_[2112].insert( {2,12,13,16,17,21,23,29,40,49,58,74} );     // neutron
+      procCodes_[2212].insert( {16,17,21,23,29,40,45,49,58} );             // proton
       procCodes_[13].insert(   {2,12,13,16,17,21,23,29,30,31,34,40,49,58,59} ); // mu-
       procCodes_[-13].insert(  {2,12,13,16,17,21,23,29,30,31,34,40,49,58,59} ); // mu-
 
@@ -326,7 +326,6 @@ namespace mu2e {
       //dump the unique set of SimParticles to keep into final vector
       simsToKeep.assign(SimsToKeepUnique.begin(),SimsToKeepUnique.end());
 
-      
       //---------------------------------------------------------------------------------------------------------------
       // Final diag info      
       if (diagLevel_ > 1) 
@@ -407,7 +406,7 @@ namespace mu2e {
   //-----------------------------------------------------------------------------------------------------------------------------------------------
   void CaloShowerStepFromStepPt::collectStepBySim(const HandleVector& stepsHandles, std::map<SimPtr,std::vector<const StepPointMC*>>& simStepMap)
   {
-      for ( HandleVector::const_iterator i=stepsHandles.begin(), e=stepsHandles.end(); i != e; ++i)
+      for (HandleVector::const_iterator i=stepsHandles.begin(), e=stepsHandles.end(); i != e; ++i)
       {
           const art::Handle<StepPointMCCollection>& handle(*i);
           const StepPointMCCollection& steps(*handle);

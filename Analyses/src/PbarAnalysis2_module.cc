@@ -829,6 +829,17 @@ namespace mu2e {
           auto itMC = caloClusterTruth.begin();
           while (itMC != caloClusterTruth.end()) {if (itMC->first.get() == &cluster) break; ++itMC;}
           unsigned nCluSims   = (itMC != caloClusterTruth.end()) ? itMC->second->nParticles() : 0;
+          
+          bool isConversion(false);
+          if (nCluSims>0) 
+          {
+             for (auto& edep : itMC->second->energyDeposits())
+             {
+                auto parent(edep.sim());
+                while (parent->hasParent()) parent = parent->parent();                     
+	        if (parent->genParticle() && parent->genParticle()->generatorId().isConversion() ) isConversion=true;
+             }    		          
+          }
 
            _cluEnergy[_nCluster] = cluster.energyDep();
            _cluTime[_nCluster]   = cluster.time();
@@ -843,7 +854,7 @@ namespace mu2e {
            _cluE25[_nCluster]    = cluster.e25();
            _cluSecMom[_nCluster] = cluster.secondMoment();
            _cluSplit[_nCluster]  = cluster.isSplit();
-           _cluConv[_nCluster]   = (nCluSims>0) ? itMC->second->isConversion() : 0;
+           _cluConv[_nCluster]   = isConversion;
            _cluList.push_back(cryList);
 
            _cluSimIdx[_nCluster] = _nCluSim;
