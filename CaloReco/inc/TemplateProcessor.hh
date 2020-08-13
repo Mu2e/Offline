@@ -33,18 +33,19 @@ namespace mu2e {
         {
             using Name    = fhicl::Name;
             using Comment = fhicl::Comment;        
-            fhicl::Atom<unsigned>     windowPeak        { Name("windowPeak"),        Comment("Number of bins around central value to inspect") };
-            fhicl::Atom<double>       minPeakAmplitude  { Name("minPeakAmplitude"),  Comment("Minimum peak amplitude") };
-            fhicl::Atom<unsigned int> pulseLowBuffer    { Name("pulseLowBuffer"),    Comment("Buffer before first bin of waveform") };
-            fhicl::Atom<unsigned int> pulseHighBuffer   { Name("pulseHighBuffer"),   Comment("Buffer after last bin of waveform") };
-            fhicl::Atom<unsigned int> minDeltaPeakBin   { Name("minDeltaPeakBin"),   Comment("Minimum number of waveform bins between two consecutive peaks") };
-            fhicl::Atom<bool>         doSecondaryPeak   { Name("doSecondaryPeak"),   Comment("Extract secondary peaks") }; 
-            fhicl::Atom<bool>         refitLeadingEdge  { Name("refitLeadingEdge"),  Comment("Refit the leading edge to extract peak time") };
-            fhicl::Atom<double>       timeCorr          { Name("timeCorr"),          Comment("Time between beginning and maximum value of pusle") };
-            fhicl::Atom<double>       digiSampling      { Name("digiSampling"),      Comment("Digitization time sampling") }; 
-            fhicl::Atom<int>          fitPrintLevel     { Name("fitPrintLevel"),     Comment("minuit fit print level") };
-            fhicl::Atom<int>          fitStrategy       { Name("fitStrategy"),       Comment("Minuit fit strategy") };
-            fhicl::Atom<int>          diagLevel         { Name("diagLevel"),         Comment("Diagnosis level") };
+            fhicl::Atom<unsigned> windowPeak        { Name("windowPeak"),       Comment("Number of bins around central value to inspect") };
+            fhicl::Atom<double>   minPeakAmplitude  { Name("minPeakAmplitude"), Comment("Minimum peak amplitude") };
+            fhicl::Atom<double>   minDTPeaks        { Name("minDTPeaks"),       Comment("Minimum time difference between consecutive peaks") };
+            fhicl::Atom<unsigned> numNoiseBins      { Name("numNoiseBins"),     Comment("Number of bins to estimate noise") };
+            fhicl::Atom<unsigned> minDeltaPeakBin   { Name("minDeltaPeakBin"),  Comment("Minimum number of waveform bins between two consecutive peaks") };
+            fhicl::Atom<bool>     doSecondaryPeak   { Name("doSecondaryPeak"),  Comment("Extract secondary peaks") }; 
+            fhicl::Atom<double>   psdThreshold      { Name("psdThreshold"),     Comment("Pulse shape discrimination threshold for secondary peaks") }; 
+            fhicl::Atom<bool>     refitLeadingEdge  { Name("refitLeadingEdge"), Comment("Refit the leading edge to extract peak time") };
+            fhicl::Atom<double>   timeCorr          { Name("timeCorr"),         Comment("Time between beginning and maximum value of pusle") };
+            fhicl::Atom<double>   digiSampling      { Name("digiSampling"),     Comment("Digitization time sampling") }; 
+            fhicl::Atom<int>      fitPrintLevel     { Name("fitPrintLevel"),    Comment("minuit fit print level") };
+            fhicl::Atom<int>      fitStrategy       { Name("fitStrategy"),      Comment("Minuit fit strategy") };
+            fhicl::Atom<int>      diagLevel         { Name("diagLevel"),        Comment("Diagnosis level") };
         };
 
      
@@ -53,33 +54,30 @@ namespace mu2e {
         virtual void   initialize() ;
         virtual void   reset() ;
         virtual void   extract(const std::vector<double>& xInput, const std::vector<double>& yInput) ;
-        virtual void   plot(std::string pname) const ;
+        virtual void   plot   (const std::string& pname) const ;
 
-        virtual int    nPeaks()                     const  {return fmutil_.nPeaks();}
-        virtual double chi2()                       const  {return chi2_;}
-        virtual int    ndf()                        const  {return ndf_;}
-        virtual double amplitude(unsigned int i)    const  {return resAmp_.at(i);}
-        virtual double amplitudeErr(unsigned int i) const  {return resAmpErr_.at(i);}
-        virtual double time(unsigned int i)         const  {return resTime_.at(i);}
-        virtual double timeErr(unsigned int i)      const  {return resTimeErr_.at(i);}  
-        virtual bool   isPileUp(unsigned int i)     const  {return i > 1;}   // fmutil_.nPeaks() > 1 as alternative?
+        virtual int      nPeaks()                     const  {return resAmp_.size();}
+        virtual double   chi2()                       const  {return chi2_;}
+        virtual int      ndf()                        const  {return ndf_;}
+        virtual double   amplitude(unsigned int i)    const  {return resAmp_.at(i);}
+        virtual double   amplitudeErr(unsigned int i) const  {return resAmpErr_.at(i);}
+        virtual double   time(unsigned int i)         const  {return resTime_.at(i);}
+        virtual double   timeErr(unsigned int i)      const  {return resTimeErr_.at(i);}  
+        virtual bool     isPileUp(unsigned int i)     const  {return i > 1;}   // resAmp_.size() > 1 as alternative?
 
     private:
        void   setPrimaryPeakPar  (const std::vector<double>& xvec, const std::vector<double>& yvec, std::vector<unsigned>& peakLocation);
        void   setSecondaryPeakPar(const std::vector<double>& xvec, const std::vector<double>& yvec, std::vector<unsigned>& peakLocation);
-       void   setPeakPar         (const std::vector<double>& xvec, const std::vector<double>& yvec, std::vector<unsigned>& peakLocation);
        double estimatePeakTime   (double x1, double x2, double x3, double y1, double y2, double y3);
-       void   refitLeadingEdge   (const std::vector<double>& xvec, const std::vector<double>& yvec);
-       void   buildXRange        (const std::vector<unsigned>& peakLoc, const std::vector<double>& xvec, const std::vector<double>& yvec, 
-                                  std::vector<double>& xfit,std::vector<double>& yfit);
        bool   checkPeakDist      (unsigned i, const std::vector<unsigned>& pealLocation);		              
+       void   dump               (const std::string& name, const std::vector<double>& val) const; 
 
        unsigned            windowPeak_ ;
        double              minPeakAmplitude_;
-       unsigned            pulseLowBuffer_;
-       unsigned            pulseHighBuffer_;
+       unsigned            numNoiseBins_;
        unsigned            minDeltaPeakBin_;
        bool                doSecondaryPeak_;
+       double              psdThreshold_;
        bool                refitLeadingEdge_;
        double              timeCorr_;
        int                 diagLevel_;       

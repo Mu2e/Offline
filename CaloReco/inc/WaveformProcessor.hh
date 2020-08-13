@@ -14,7 +14,7 @@ namespace mu2e {
         virtual void   initialize() = 0;
         virtual void   reset() = 0;
         virtual void   extract(const std::vector<double>& xInput, const std::vector<double>& yInput) = 0;
-        virtual void   plot(std::string pname) const = 0;
+        virtual void   plot   (const std::string& pname) const = 0;
 
         virtual int    nPeaks()                     const = 0;
         virtual double chi2()                       const = 0;

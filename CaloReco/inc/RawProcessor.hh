@@ -33,7 +33,7 @@ namespace mu2e {
         virtual void   initialize() override;
 	virtual void   reset() override;
         virtual void   extract(const std::vector<double> &xInput, const std::vector<double> &yInput) override;
-        virtual void   plot(std::string pname) const override;
+        virtual void   plot   (const std::string& pname) const override;
 
         virtual int    nPeaks()                     const override {return nPeaks_;}
         virtual double chi2()                       const override {return chi2_;}
