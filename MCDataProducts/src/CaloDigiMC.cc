@@ -3,6 +3,7 @@
 
 namespace mu2e {
 
+   /*
    bool CaloDigiMC::isConversion() const 
    {
       for (auto& edep : edeps_)
@@ -13,19 +14,7 @@ namespace mu2e {
       }    		
       return false;
    }
-
-
-   bool CaloDigiMC::isOnlyConversion() const 
-   {
-      for (auto& edep : edeps_)
-      {
-         auto parent(edep.sim());
-         while (parent->hasParent()) parent = parent->parent();                     
-         if ( !(parent->genParticle() && parent->genParticle()->generatorId().isConversion()) ) return false;
-      }    		
-      return false;
-   }
-
+   */
 
    float CaloDigiMC::totalEnergyDep() const 
    {

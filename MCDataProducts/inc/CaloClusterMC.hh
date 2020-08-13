@@ -21,8 +21,6 @@ namespace mu2e
                 float                      time            ()           const {return edeps_.at(0).time();}
                 float                      totalEnergyDep  ()           const;
                 float                      totalEnergyDepG4()           const;
-                bool                       isConversion    ()           const;
-                bool                       isOnlyConversion()           const;
 
        private:
           std::vector<CaloEDepMC> edeps_; 

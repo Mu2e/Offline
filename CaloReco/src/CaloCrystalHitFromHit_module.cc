@@ -125,7 +125,7 @@ namespace mu2e {
     for (unsigned crystalId=0;crystalId<hitMap.size();++crystalId)
     {
         std::vector<const CaloRecoDigi*> &hits = hitMap[crystalId];
-        if (hits.empty()) continue;
+        if (hits.size()<2) continue;
 
         std::sort(hits.begin(),hits.end(),[](const auto& a, const auto& b){return a->time() < b->time();});
 
@@ -139,6 +139,7 @@ namespace mu2e {
         while (endHit != hits.end())
         {
             double deltaTime = (*endHit)->time()-(*startHit)->time();
+            
             if (diagLevel_ > 2) hDelta_->Fill(deltaTime);
 
             if (deltaTime > time4Merge_)
@@ -158,7 +159,7 @@ namespace mu2e {
                 startHit   = endHit;
              } 
              else
-             {
+             {                
                 double wt  = 1.0/(*endHit)->timeErr()/(*endHit)->timeErr();
                 timeWtot   += wt;
                 timeW      += wt*(*endHit)->time();

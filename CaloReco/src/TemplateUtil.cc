@@ -15,32 +15,33 @@
 //An anonymous namespace to use Minuit
 namespace 
 {
-   unsigned              npTot_,npFcn_;
-   std::vector<double>   xvec_,yvec_;
-   mu2e::CaloPulseShape* pulseCachePtr_;
+    unsigned              npTot_,npFcn_,npBkg_,x0_,x1_;
+    std::vector<double>   xvec_,yvec_;
+    mu2e::CaloPulseShape* pulseCachePtr_;
       
-   double logn(double x, double *par) {return par[0]*pulseCachePtr_->evaluate(x-par[1]); }
+    double logn(double x, double *par) {return par[0]*pulseCachePtr_->evaluate(x-par[1]); }
 
-   double fitfunction(double x, double *par)
-   {   
-       double result(0);
-       for (unsigned i=0;i<npTot_;i+=npFcn_) result += logn(x,&par[i]);
-       return result;
-   }      
-   double fitfunctionPlot(double* x, double *par) {return fitfunction(x[0],par);}
-   
-   void myfcn(int& npar, double* , double &f, double *par, int)
-   {   
-       f=0;       
-       for (unsigned i=0;i<xvec_.size();++i)
-       {    
-           double x = xvec_[i];
-           double y = yvec_[i];
-           double val = fitfunction(x, par);
-           if (y>1e-5) f += (y-val)*(y-val)/y;
-       }
-   }      
+    double fitfunction(double x, double *par)
+    {   
+	double result(par[0]);
+	for (unsigned i=npBkg_; i<npTot_; i+=npFcn_) result += logn(x,&par[i]);
+	return result;
+    }      
+    double fitfunctionPlot(double* x, double *par) {return fitfunction(x[0],par);}
+
+    void myfcn(int& npar, double* , double &f, double *par, int)
+    {   
+	f=0;       
+	for (unsigned i=x0_;i<x1_;++i)
+	{    
+            double x = xvec_[i];
+            double y = yvec_[i];
+            double val = fitfunction(x, par);
+            if (y>1e-5) f += (y-val)*(y-val)/y;
+	}
+    }      
 }
+
 
 
 
@@ -50,55 +51,39 @@ namespace
 namespace mu2e {
         
    
-   TemplateUtil::TemplateUtil(double minPeakAmplitude, double digiSampling) : 
+   TemplateUtil::TemplateUtil(double minPeakAmplitude, double digiSampling, double minDTPeaks, int printLevel) : 
       pulseCache_(CaloPulseShape(digiSampling)),
       minPeakAmplitude_(minPeakAmplitude),
+      minDTPeaks_(minDTPeaks),
       fitStrategy_(1),
       diagLevel_(0),
-      printLevel_(-1),
+      printLevel_(printLevel),
       param_(),
       paramErr_(),
-      nParTot_(2),
+      nParTot_(3),
       nParFcn_(2),
+      nParBkg_(1),
       chi2_(999.0)
    {
       pulseCachePtr_ = &pulseCache_;
       npTot_ = nParTot_;
       npFcn_ = nParFcn_;
+      npBkg_ = nParBkg_;
    }       
    
 
-   void   TemplateUtil::initialize  ()                                                                 {pulseCache_.buildShapes();}
-   void   TemplateUtil::setXYVector (const std::vector<double>& xvec, const std::vector<double>& yvec) {xvec_ = xvec; yvec_ = yvec;}
-   void   TemplateUtil::setPar      (const std::vector<double>& par)                                   {param_ = par; nParTot_= par.size(); npTot_ = par.size();}
-   void   TemplateUtil::reset       ()                                                                 {param_.clear(); paramErr_.clear(); nParTot_=0; npTot_ = 0;}
-
-   
+   //-----------------------------------------------------------------------------------------------------
+   void   TemplateUtil::initialize ()                                                                 {pulseCache_.buildShapes();}
+   void   TemplateUtil::reset      ()                                                                 {param_.clear(); paramErr_.clear(); nParTot_=0; npTot_ = 0;}
+   void   TemplateUtil::setXYVector(const std::vector<double>& xvec, const std::vector<double>& yvec) {xvec_ = xvec; yvec_ = yvec; x0_=0; x1_ = xvec_.size();}
+   void   TemplateUtil::setPar     (const std::vector<double>& par)                                   {param_ = par; nParTot_ = npTot_ = par.size();}
+  
    //-----------------------------------------------------------------------------------------------------
    void TemplateUtil::fit() 
    {
-       if (param_.empty() || param_.size()>49) return;
-       
-       if (param_.size()==nParFcn_)  fitNewton();
-       else                          fitMinuit();             
-   }
-   
-   
-   //-----------------------------------------------------------------------------------------------------
-   void TemplateUtil::refitMin()
-   {
-       if (status_!=0) return;
-       
-       double tmin = refineMin(param_[1],0.1);
-       if (status_==0) param_[1] = tmin;
-   }
-
-  
-   //-----------------------------------------------------------------------------------------------------
-   void TemplateUtil::fitMinuit()
-   {      
-       status_ = 1;
-       if (xvec_.empty() || nParTot_ > 99) return;
+       status_ = 0;
+       if (param_.empty() || param_.size()>49 || xvec_.empty()) return;       
+       if (nParTot_ < nParBkg_  || (nParTot_-nParBkg_)%nParFcn_ !=0) return;
 
        int ierr(0),nvpar(999), nparx(999), istat(999);
        double arglist[2]={0,0}, edm(999), errdef(999);
@@ -117,186 +102,140 @@ namespace mu2e {
        {
  	    std::stringstream sss; 
 	    sss<<"par "<<ip;
-            minuit.mnparm(ip, sss.str().c_str(),  param_[ip],  0.001,  0,  1e6, ierr);
-       }
+            if (ip==0) minuit.mnparm(ip, sss.str().c_str(),  param_[ip],  0.001,     0,  1e6, ierr);
+            else       minuit.mnparm(ip, sss.str().c_str(),  param_[ip],  0.001,  -100,  1e6, ierr);
+       }      
 
        // Perform first fit with initial model
+       //
        arglist[0] = 2000;
        arglist[1] = 0.1;
        minuit.mnexcm("MIGRAD", arglist ,2,ierr);  
        //if (!minuit.fCstatu.Contains("CONVERGED")) minuit.mnexcm("MIGRAD", arglist ,2,ierr);          
 
        
-       // Remove small or "close" components and redo the fit with simplified model
-       std::vector<double> tempPar(nParTot_,0),tempErr(nParTot_,1);
-       for (unsigned i=0;i<nParTot_;++i) minuit.GetParameter(i,tempPar[i],tempErr[i]);    
-       
-       bool refit(false);
-       for (unsigned ip=0; ip<nParTot_/nParFcn_; ++ip)
-       {    
-           if (selectComponent(tempPar,ip)) continue;           
-	   minuit.mnparm(nParFcn_*ip,   "fixed par", 0, 0.01, -1e6, 1e6, ierr);
-	   minuit.mnparm(nParFcn_*ip+1, "fixed par", 0, 0.01, 0, 1e6, ierr);
-           minuit.FixParameter(nParFcn_*ip);
-           minuit.FixParameter(nParFcn_*ip+1);
-           refit = true;
+       // Remove small or "duplicate" components and redo the fit with simplified model if there is more than one peak
+       // A duplicate peak is defined as a peak shortly after a previous peak with a smaller amplitude 
+       //
+       if (nParTot_ > nParFcn_+nParBkg_)
+       {        
+           bool refit(false);
+           std::vector<double> tempPar(nParTot_,0),tempErr(nParTot_,1);
+           for (unsigned i=0;i<nParTot_;++i) minuit.GetParameter(i,tempPar[i],tempErr[i]);    
+
+           for (unsigned ip=nParBkg_; ip<nParTot_; ip += nParFcn_)
+           {    
+               if (selectComponent(tempPar,ip)) continue;                      
+               minuit.mnparm(ip,   "fixed par", 0, 0.01, -1e6, 1e6, ierr);
+	       minuit.mnparm(ip+1, "fixed par", 0, 0.01, -1e6, 1e6, ierr);
+               minuit.FixParameter(ip);
+               minuit.FixParameter(ip+1);
+               refit = true;
+           }
+
+           if (refit) minuit.mnexcm("MIGRAD", arglist ,2, ierr);  
        }
 
-       if (refit) minuit.mnexcm("MIGRAD", arglist ,2, ierr);  
-
        
-       // Save the final results - exclude low components
-       minuit.mnstat(chi2_,edm,errdef,nvpar,nparx,istat);        
-       
+       // Save the results - exclude low components
+       //
        param_.clear();
        paramErr_.clear();
-
-       double val(0),err(0);
-       for (unsigned i=0;i<nParTot_; i+=nParFcn_)
+                            
+       unsigned i(0);
+       while (i<nParTot_)
        {
+           double val(0),err(0);
            minuit.GetParameter(i,val,err);
-           if (val<1e-3) continue;
-           param_.push_back(val);
+           	   
+	   //if the amplitude is too small, jump to the next peak
+	   if (val<1 && i >=nParBkg_ && (i-nParBkg_)%nParFcn_==0) {i+=nParFcn_;continue;}
+           
+	   param_.push_back(val);
            paramErr_.push_back(err);
-	     
-           for (unsigned j=1;j<nParFcn_;++j)
-           {
-               minuit.GetParameter(i+j,val,err);
-               param_.push_back(val);
-               paramErr_.push_back(err);
-	   } 
+	   ++i;
        }
+
+       minuit.mnstat(chi2_,edm,errdef,nvpar,nparx,istat);        
        
+       //recalculate the chi2 removing the baseline to better reject the noise ?      
+       //chi2_=0;
+       //for (unsigned i=x0_;i<x1_;++i)
+       //{    
+       //    double val = fitfunction(xvec_[i], &param_[0]);
+       //    if (yvec_[i]>1e-5) chi2_ += (yvec_[i]-val)*(yvec_[i]-val)/(yvec_[i]-param_[0]);
+       //}
+          
        nParTot_ = param_.size();
        npTot_   = nParTot_;
-       status_  = 0;
+       status_  = istat;
+   }
+   
+
+
+   //-----------------------------------------------------------------------------------------------------
+   void TemplateUtil::refitEdge() 
+   {
+       status_ = 0;
+       if (param_.size()<nParBkg_+nParFcn_ || xvec_.empty()) return;       
+
+       unsigned imax(0),ilow(0);
+       while (xvec_[imax]<param_[2]) ++imax;
+       for (unsigned i=imax;i>0;--i) if ((yvec_[i]-param_[0])/(yvec_[imax]-param_[0])>0.1) ilow = i;
+       if (imax < ilow+4) return; //need at least 4 points to fit
+       x0_ = 0; 
+       //x0_ = ilow; 
+       x1_ = imax;
+        
+       int ierr(0),nvpar(999), nparx(999), istat(999);
+       double arglist[2]={0,0}, edm(999), errdef(999),chi(9999),val(0),err(0);
+
+       TMinuit minuit(nParBkg_+nParFcn_); 
+       minuit.SetFCN(myfcn);
+
+       arglist[0] = printLevel_;
+       minuit.mnexcm("SET PRI", arglist ,1,ierr);  
+       arglist[0] = 1;
+       minuit.mnexcm("SET NOW", arglist, 1, ierr);
+       arglist[0] = fitStrategy_;
+       minuit.mnexcm("SET STR", arglist ,1,ierr);  
+
+       for (unsigned ip=0;ip<nParBkg_+nParFcn_;++ip) minuit.mnparm(ip, "par",  param_[ip],  0.001,  -100,  1e6, ierr);
+
+       arglist[0] = 2000;
+       arglist[1] = 0.1;
+       minuit.mnexcm("MIGRAD", arglist ,2,ierr);  
+
+       minuit.GetParameter(nParBkg_+1,val,err);
+       minuit.mnstat(chi,edm,errdef,nvpar,nparx,istat);        
+
+       param_[nParBkg_+1]    = val;
+       paramErr_[nParBkg_+1] = err;
+       status_               = istat;
+       
+       x0_     = 0; 
+       x1_     = xvec_.size();
    }
    
    //----------------------------------------------------------------------------------
    bool TemplateUtil::selectComponent(const std::vector<double>& tempPar, unsigned ip)
    {
-        // first check if component is too small
-       if (tempPar[nParFcn_*ip] < minPeakAmplitude_) return false;
+       // first check if component is too small
+       if (tempPar[ip] < minPeakAmplitude_) return false;
 
        //remove peaks close in time with smaller amplitude
-       for (unsigned ip2=0; ip2<nParTot_/nParFcn_; ++ip2)
+       for (unsigned ip2=nParBkg_; ip2<npTot_; ip2 += nParFcn_)
        {
           if (ip==ip2) continue;
-          double dt = std::abs(tempPar[nParFcn_*ip2+1]-tempPar[nParFcn_*ip+1]);
-          if (dt <20 && tempPar[nParFcn_*ip2]<tempPar[nParFcn_*ip]) return false;
+          double dt = std::abs(tempPar[ip2+1]-tempPar[ip+1]);
+	  if (dt <minDTPeaks_ && tempPar[ip]<tempPar[ip2]) return false;
        }
        
        return true;
    }
 
 
-   //-----------------------------------------------------------------------------------------------------
-   //Newtonian method to find the minimum - for a single peak only
-   void TemplateUtil::fitNewton()
-   {    
-       status_=1;
-       if (xvec_.empty() || nParTot_ != nParFcn_) return;
 
-       int nTryMax(40);
-       double EDM(1e-3), step(0.0001); 
-
-       int nTry(0);
-       double delta(0),tmin(param_[1]);
-       while (nTry<=nTryMax)
-       {
-	   double c2 = calcChi2(tmin+step);
-	   double c1 = calcChi2(tmin);
-	   double p1 = (c2-c1)/step;
-           	   
-	   if (fabs(p1) < 1e-5) {status_=0; break;}
-
-	   delta = c1/p1;
-	   tmin -= delta;
-
-	   ++nTry;          	    
-           if (fabs(delta) < EDM ) {status_=0; break;}
-           if (fabs(delta) > 100)  {status_=2; break;}  
-       }
-
-       //try binary search if we oscillate around the minimum
-       if (nTry>nTryMax) tmin = refineMin(tmin, 0.1); 
-       if (status_==2)   tmin = refineMin(param_[1], 0.1); 
-
-       param_.clear();
-       paramErr_.clear();
-       if (status_==0) 
-       {  
-          double alpha = calcAlpha(tmin);
-          double v11   = 0.5*(calcChi2(tmin+step,alpha)-2*calcChi2(tmin,alpha)+calcChi2(tmin-step,alpha))/step/step;
-          double v22   = 0.5*(calcChi2(tmin,alpha+step)-2*calcChi2(tmin,alpha)+calcChi2(tmin,alpha-step))/step/step;
-          double v12   = 0.5*(calcChi2(tmin+step,alpha+step)-calcChi2(tmin,alpha+step)-calcChi2(tmin+step,alpha)+calcChi2(tmin,alpha))/step/step;
-          double det   = v11*v22-v12*v12;
-	  double ealpha = (det > 1e-5) ? sqrt(v11/det) : 1000;
-	  double etmin  = (det > 1e-5) ? sqrt(v22/det) : 1000;
-
-          param_.push_back(alpha);
-          param_.push_back(tmin);
-          paramErr_.push_back(ealpha);
-          paramErr_.push_back(etmin);
-          chi2_ = calcChi2(tmin,alpha);
-       }
-   }  
-
-   //------------------------------------------------------------
-   double TemplateUtil::refineMin(double tmin, double stepInit)
-   {        
-       double t0(tmin), step(stepInit);
-       unsigned nSteps(0);
-
-       status_=1;
-       while (step > 1e-3)
-       {
-          if (nSteps > 100) break;
-          double current  = calcChi2(t0);
-          double left     = calcChi2(t0-step);              
-          double right    = calcChi2(t0+step);
-
-          if      (left  < current) {t0-= step;}
-          else if (right < current) {t0+= step;}
-          else                      {step /= 2;}
-          ++nSteps;
-       }
-       if (diagLevel_ > 2) std::cout<<"TemplateUtil::refineMin  NSteps="<<nSteps<<" time "<<param_[1]<<" -> "<<t0<<std::endl;   
-
-       if (nSteps>100) status_=2;
-       else            status_=0; 
-
-       return t0;
-   }
-
-   //--------------------------------------------
-   double TemplateUtil::calcAlpha(double testTime)
-   {       
-       double ytot(0),x2tot(0);
-       for (unsigned i=0;i<xvec_.size();++i)
-       {
-	   double y = pulseCachePtr_->evaluate(xvec_[i]-testTime);
-	   if (yvec_[i]> 0) {ytot += y*yvec_[i]; x2tot += y*y;}       
-       }
-       return (x2tot > 1e-5) ? ytot/x2tot : 0.0;
-   }
-
-   //----------------------------------------------------------
-   // NOTE: SHOULD WE USE THE FLOORED VALUE OR NOT?
-   double TemplateUtil::calcChi2(double testTime, double alpha)
-   {       
-       //use pre-cached alpha if available
-       if (alpha < 1e-5) alpha = calcAlpha(testTime);  
-
-       double difference(0);
-       for (unsigned i=0;i<xvec_.size();++i)
-       {
-           double y = alpha*pulseCachePtr_->evaluate(xvec_[i]-testTime);
-           //float y = floor(alpha*pulseCachePtr_->evaluate(xvec_[i],testTime));
-           if (yvec_[i] > 1e-5 ) difference += (yvec_[i]-y)*(yvec_[i]-y)/yvec_[i];     
-       }
-       return difference;
-   }
 
    //----------------------------------------------------------------------
    double TemplateUtil::eval_fcn(double x)
@@ -345,25 +284,38 @@ namespace mu2e {
        if (xvec_.empty()) return;
        double dx = xvec_[1]-xvec_[0];
 
-       TH1F h("test","Amplitude vs time",xvec_.size(),xvec_.front()-0.5*dx,xvec_.back()+0.5*dx);
-       for (unsigned int i=0;i<xvec_.size();++i)h.SetBinContent(i+1,yvec_[i]);
+       TH1F h("test","Amplitude vs time",x1_-x0_,xvec_[x0_]-0.5*dx,xvec_[x1_-1]+0.5*dx);
+       for (unsigned int i=x0_;i<x1_;++i) h.SetBinContent(i+1-x0_,yvec_[i]);
        h.GetXaxis()->SetTitle("Time (ns)");
        h.GetYaxis()->SetTitle("Amplitude"); 
        h.SetStats(0);
 
-       TF1 f("f",fitfunctionPlot,xvec_.front(),xvec_.back(),param_.size());
-       for (unsigned i=0;i<param_.size();++i) f.SetParameter(i,param_[i]);
-
-       TCanvas c1("TemplateUtil::Fit","TemplateUtil::Fit");
-       h.Draw();
-       if (!param_.empty()) f.Draw("same");
-       std::cout<<"Save file as "<<pname<<std::endl;
+       TF1 f("f",fitfunctionPlot,xvec_[x0_],xvec_[x1_-1],param_.size());
+       for (unsigned i=0;i<param_.size();++i) f.SetParameter(i,param_[i]);       
+       
+       TF1 *f2[nParTot_];
+       int nPeaks(0);
+       for (unsigned i=nParBkg_;i<nParTot_;i+=nParFcn_)
+       {
+          f2[nPeaks] = new TF1("f2",fitfunctionPlot,xvec_[x0_],xvec_[x1_-1],param_.size());
+          for (unsigned j=0;j<nParTot_;++j) f2[nPeaks]->SetParameter(i,0);
+	  f2[nPeaks]->SetParameter(i,param_[i]);
+	  f2[nPeaks]->SetParameter(i+1,param_[i+1]);
+	  f2[nPeaks]->SetLineStyle(2);
+	  f2[nPeaks]->SetLineColor(92);
+	  ++nPeaks;
+       }
+       
+       TCanvas c1("cc1","cc1");
+         h.Draw("");
+         if (!param_.empty()) f.Draw("same");
+         for (int i=0; i<nPeaks;++i) f2[i]->Draw("same");	 
+	 std::cout<<"Save file as "<<pname<<std::endl;
        c1.SaveAs(pname.c_str());
+ 
+       for (int i=0;i<nPeaks;++i) delete f2[i];
 
        return;       
    }
-
-
-
 
 }

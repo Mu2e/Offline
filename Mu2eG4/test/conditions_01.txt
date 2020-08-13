@@ -58,6 +58,8 @@ double calorimeter.densityCsI           = 4.51; // gm/cc
 //string calorimeter.pulseFileName = "ConditionsService/data/CsI-waveform-2016-07-12.root";
 string calorimeter.pulseFileName = "ConditionsService/data/CsI-waveform-2020-02-12.root";
 string calorimeter.pulseHistName = "h_waveform";
+string calorimeter.propagFileName = "ConditionsService/data/CsI-propag-2020-07-29.root";
+string calorimeter.propagHistName = "h_zposTime";
 
 
 //CRV digi parameters

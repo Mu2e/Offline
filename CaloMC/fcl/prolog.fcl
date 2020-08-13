@@ -7,8 +7,8 @@
 BEGIN_PROLOG
   HitMakerBlindTime      : 500. # ns
   HitMakerDigiSampling   : 5    # ns
-  HitMakerMeVToADC       : 16    # ns
-  HitMakerMinPeakADC     :  16
+  HitMakerMeVToADC       : 16   # ns
+  HitMakerMinPeakADC     : 16
 END_PROLOG
 
 
@@ -24,7 +24,7 @@ CaloShowerStepFromStepPt  :
     usePhysVolInfo          : false
     #physVolInfoInput       : "compressPVDetector"
     physVolInfoInput        : "g4run"
-    caloMaterial            : ["G4_CESIUM_IODIDE", "Polyethylene092"]
+    caloMaterial            : ["G4_CESIUM_IODIDE", "Polyethylene092","CarbonFiber"]
     compressAll             : false 
     diagLevel               : 0
 }
@@ -50,7 +50,9 @@ CaloDigiFromShower :
     caloShowerROCollection  : CaloShowerStepROFromShowerStep
     blindTime               : @local::HitMakerBlindTime
     addNoise                : true
-    noiseADC                : 6.6     
+    noiseElecADC            : 2.2
+    rinBufferTime           : 300
+    nPhotPerDigi            : 4.5
     MeVToADC                : @local::HitMakerMeVToADC
     digiSampling            : @local::HitMakerDigiSampling
     nBits                   : 12

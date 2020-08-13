@@ -21,8 +21,10 @@ namespace mu2e {
      {
         ConfigFileLookupPolicy configFile;
 	
-	_pulseFileName = configFile(config.getString("calorimeter.pulseFileName"));
-        _pulseHistName = config.getString("calorimeter.pulseHistName");
+	_pulseFileName  = configFile(config.getString("calorimeter.pulseFileName"));
+        _pulseHistName  = config.getString("calorimeter.pulseHistName");
+	_propagFileName = configFile(config.getString("calorimeter.propagFileName"));
+        _propagHistName = config.getString("calorimeter.propagHistName");
 
         // Here we should eventually interface to some database
         _LRUpar0 = config.getDouble("CrystalNonUniformity_0");

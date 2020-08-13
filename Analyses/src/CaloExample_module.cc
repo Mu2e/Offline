@@ -334,6 +334,7 @@ namespace mu2e {
        } 
 
 
+
        //--------------------------  Do calorimeter hits --------------------------------
 
        nHits_ = nSimHit_ = 0;
@@ -407,6 +408,18 @@ namespace mu2e {
           while (itMC != caloClusterTruth.end()) {if (itMC->first.get() == &cluster) break; ++itMC;}
           unsigned nCluSims   = (itMC != caloClusterTruth.end()) ? itMC->second->nParticles() : 0;
 
+          bool isConversion(false);
+          if (nCluSims>0) 
+          {
+             for (auto& edep : itMC->second->energyDeposits())
+             {
+                auto parent(edep.sim());
+                while (parent->hasParent()) parent = parent->parent();                     
+	        if (parent->genParticle() && parent->genParticle()->generatorId().isConversion() ) isConversion=true;
+             }    		          
+          }
+          
+          
           cluEnergy_[nCluster_] = cluster.energyDep();
           cluTime_[nCluster_]   = cluster.time();
           cluNcrys_[nCluster_]  = cluster.size();
@@ -418,7 +431,7 @@ namespace mu2e {
           cluE25_[nCluster_]    = cluster.e25();
           cluSecMom_[nCluster_] = cluster.secondMoment();
           cluSplit_[nCluster_]  = cluster.isSplit();
-          cluConv_[nCluster_]   = (nCluSims>0) ? itMC->second->isConversion() : 0;
+          cluConv_[nCluster_]   = isConversion;
           cluList_.push_back(cryList);
 
 

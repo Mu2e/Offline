@@ -24,8 +24,10 @@ namespace mu2e
     explicit CalorimeterCalibrations ( SimpleConfig const& config );
     ~CalorimeterCalibrations(){};
     
-    const std::string& pulseFileName() const {return _pulseFileName;}
-    const std::string& pulseHistName() const {return _pulseHistName;}
+    const std::string& pulseFileName()  const {return _pulseFileName;}
+    const std::string& pulseHistName()  const {return _pulseHistName;}
+    const std::string& propagFileName() const {return _propagFileName;}
+    const std::string& propagHistName() const {return _propagHistName;}
     
     double BirkCorrHadron()            const {return _BirkCorrHadron;}
     double LRUpar0(int crystalId)      const {return _LRUpar0;}
@@ -38,6 +40,8 @@ namespace mu2e
 
     std::string  _pulseFileName;
     std::string  _pulseHistName;
+    std::string  _propagFileName;
+    std::string  _propagHistName;
     
     double       _LRUpar0;
     double       _BirkCorrHadron;
