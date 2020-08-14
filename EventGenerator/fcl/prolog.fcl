@@ -171,6 +171,18 @@ EventGenerator : { @table::EventGenerator
 	    }
 	    doHistograms              : true
 	}
+	
+	#--------------Attempt of mu-->e+X-------------#
+	#----------------------------------------------#
+	mueX : { 
+    @table::StoppedParticleReactionGun # Mu-->e+X
+    physics : { @table::StoppedParticleReactionGun.physics
+    pdgId            :  11
+    spectrumVariable : "totalEnergy"
+    spectrumShape    : "tabulated"
+    spectrumFileName : "ConditionsService/data/mu2eX.tbl"
+	    }
+	}
 
 	CePEndpoint              : {   module_type: StoppedParticleReactionGun
 	    physics: { @table::StoppedParticleReactionGun.physics
