@@ -2,6 +2,7 @@
 #define MakeCrvRecoPulses_h
 
 #include <vector>
+#include <TF1.h>
 
 namespace mu2eCrv
 {
@@ -29,11 +30,14 @@ class MakeCrvRecoPulses
   int          GetPeakBin(int pulse);
 
   private:
+  TF1                 _f;
   std::vector<int>    _PEs, _PEsPulseHeight;
   std::vector<double> _pulseTimes, _pulseHeights, _pulseBetas, _pulseFitChi2s;
   std::vector<double> _fitParams0, _fitParams1, _fitParams2, _t1s, _t2s;
   std::vector<double> _LEtimes, _LEfitChi2s;
   std::vector<int>    _peakBins;
+
+  static double Gumbel(double* xs, double* par);
 };
 
 }

@@ -1,15 +1,21 @@
 #include "CRVResponse/inc/MakeCrvRecoPulses.hh"
 #include <TFitResult.h>
 #include <TFitResultPtr.h>
-#include <TF1.h>
 #include <TGraph.h>
 #include <TMath.h>
 
 namespace mu2eCrv
 {
 
-MakeCrvRecoPulses::MakeCrvRecoPulses()  
+//MakeCrvRecoPulses::MakeCrvRecoPulses() : _f("peakfitter","[0]*(TMath::Exp(-(x-[1])/[2]-TMath::Exp(-(x-[1])/[2])))")
+MakeCrvRecoPulses::MakeCrvRecoPulses() : _f("peakfitter",Gumbel,0,0,3)
 {}
+
+double MakeCrvRecoPulses::Gumbel(double* xs, double* par)
+{
+  double const x = xs[0];
+  return par[0]*(TMath::Exp(-(x-par[1])/par[2]-TMath::Exp(-(x-par[1])/par[2])));
+}
 
 void MakeCrvRecoPulses::SetWaveform(const std::vector<unsigned int> &waveform, unsigned int startTDC, double digitizationPeriod, 
                                     double pedestal, double calibrationFactor, double calibrationFactorPulseHeight, bool darkNoise)
@@ -30,11 +36,28 @@ void MakeCrvRecoPulses::SetWaveform(const std::vector<unsigned int> &waveform, u
 
   //find the maxima
   int nBins = static_cast<int>(waveform.size());
-  std::vector<std::pair<int,bool> > peaks;
+  std::vector<std::pair<int,int> > peaks;
+  int peakStartBin=0;
+  int peakEndBin=0;
   for(int bin=2; bin<nBins-2; bin++) 
   {
-    if(waveform[bin-1]<waveform[bin] && waveform[bin]>waveform[bin+1]) peaks.emplace_back(bin,false);
-    if(waveform[bin-1]<waveform[bin] && waveform[bin]==waveform[bin+1] && waveform[bin+1]>waveform[bin+2]) peaks.emplace_back(bin,true);
+    if(waveform[bin-1]<waveform[bin]) //rising edge
+    {
+      peakStartBin=bin;
+      peakEndBin=bin;
+    }
+    if(waveform[bin-1]==waveform[bin]) //potentially a peak where consecutive ADC values are equal
+    {
+      peakEndBin=bin;
+    }
+    if(waveform[bin-1]>waveform[bin]) //falling edge
+    {
+      if(peakStartBin>0)  //found a peak
+      {
+        peaks.emplace_back(peakStartBin,peakEndBin);
+        peakStartBin=0;  //so that the loop as to wait for the next rising edge
+      }
+    }
   }
 
   for(size_t i=0; i<peaks.size(); i++)
@@ -42,63 +65,77 @@ void MakeCrvRecoPulses::SetWaveform(const std::vector<unsigned int> &waveform, u
   //select a range of up to 4 points before and after the maximum point
   //-find up to 5 points before and after the maximum point for which the waveform is stricly decreasing
   //-remove 1 point on each side. this removes potentially "bad points" belonging to a second pulse (i.e. in double pulses)
-    int maxBin = peaks[i].first;
-    if(waveform[maxBin]-pedestal<5) continue; //FIXME: need a better way to identify these fake pulse which are caused by electronic noise
+    peakStartBin=peaks[i].first;
+    peakEndBin=peaks[i].second;
+    if(waveform[peakStartBin]-pedestal<5) continue; //FIXME: need a better way to identify these fake pulse which are caused by electronic noise
 
-    int startBin=maxBin;
-    int endBin=maxBin;
-    for(int bin=maxBin-1; bin>=0 && bin>=maxBin-5; bin--)
+    int startBin=peakStartBin;
+    int endBin=peakEndBin;
+    for(int bin=peakStartBin-1; bin>=0 && bin>=peakStartBin-5; bin--)
     {
       if(waveform[bin]<=waveform[bin+1]) startBin=bin;
       else break;
     }
-    for(int bin=maxBin+1; bin<nBins && bin<=maxBin+5; bin++)
+    for(int bin=peakEndBin+1; bin<nBins && bin<=peakEndBin+5; bin++)
     {
       if(waveform[bin]<=waveform[bin-1]) endBin=bin;
       else break;
     }
-    if(maxBin-startBin>1) startBin++;
-    if(endBin-maxBin>1) endBin--;
+    if(peakStartBin-startBin>1) startBin++;
+    if(endBin-peakEndBin>1) endBin--;
 
     double t1=(startTDC+startBin)*digitizationPeriod;
     double t2=(startTDC+endBin)*digitizationPeriod;
+    double peakTime=(startTDC+0.5*(peakStartBin+peakEndBin))*digitizationPeriod;
 
     //fill the graph
-    TGraph g;
+    std::vector<double> t,v;
     for(int bin=startBin; bin<=endBin; bin++) 
     {
-      double t=(startTDC+bin)*digitizationPeriod;
-      double v=waveform[bin]-pedestal;
-      g.SetPoint(g.GetN(), t, v);
+      t.emplace_back((startTDC+bin)*digitizationPeriod);
+      v.emplace_back(waveform[bin]-pedestal);
     }
+    TGraph g(t.size(), t.data(), v.data());
 
     //set the fit function
-    TF1 f("peakfitter","[0]*(TMath::Exp(-(x-[1])/[2]-TMath::Exp(-(x-[1])/[2])))");
-    f.SetParameter(0, (waveform[maxBin]-pedestal)*TMath::E());
-    f.SetParameter(1, (startTDC+maxBin)*digitizationPeriod);
-    f.SetParameter(2, darkNoise?12.6:19.0);
-    if(peaks[i].second) f.SetParameter(1, (startTDC+maxBin+0.5)*digitizationPeriod);
+    _f.SetParameter(0, (waveform[peakStartBin]-pedestal)*TMath::E());
+    _f.SetParameter(1, peakTime);
+    _f.SetParameter(2, darkNoise?12.6:19.0);
 
     //do the fit
-    TFitResultPtr fr = g.Fit(&f,"NQS");
-    if(!fr->IsValid()) continue;
+    TFitResultPtr fr = g.Fit(&_f,"NQS");
+
+    bool invalidFit=false;
+    if(!fr->IsValid()) invalidFit=true;;
 
     double fitParam0 = fr->Parameter(0);
     double fitParam1 = fr->Parameter(1);
     double fitParam2 = fr->Parameter(2);
-    if(fitParam0<=0 || fitParam2<=0) continue;
-    if(fitParam2>50) continue; //FIXME: need a better way to identify these fake pulse which are caused by electronic noise
-    if(fabs(fitParam1-(startTDC+maxBin)*digitizationPeriod)>30) continue; //FIXME
-    if(fitParam0/((waveform[maxBin]-pedestal)*TMath::E())>2.0) continue; //FIXME
+    //FIXME: need a better way to identify these fake pulse which are caused by electronic noise
+    if(fitParam0<=0) invalidFit=true;
+    if(fitParam2<5 || fitParam2>50) invalidFit=true;
+    if(fabs(fitParam1-peakTime)>20) invalidFit=true;
+    if(fitParam0/((waveform[peakStartBin]-pedestal)*TMath::E())>1.5) invalidFit=true;
+    if(fitParam0/((waveform[peakStartBin]-pedestal)*TMath::E())<0.7) invalidFit=true;
 
     int    PEs          = lrint(fitParam0*fitParam2 / calibrationFactor);
     double pulseTime    = fitParam1;
     double pulseHeight  = fitParam0/TMath::E();
     double pulseBeta    = fitParam2;
     double pulseFitChi2 = fr->Chi2();
+    double LEtime       = 0;
+    if(invalidFit)
+    {
+      PEs          = lrint((waveform[peakStartBin]-pedestal)*TMath::E() * 19.0 / calibrationFactor);
+      pulseTime    = peakTime;
+      pulseHeight  = waveform[peakStartBin]-pedestal;
+      pulseBeta    = NAN;
+      pulseFitChi2 = NAN;
+      LEtime       = 0.5*(t1+peakTime);  //FIXME
+    }
+    else LEtime    = _f.GetX(0.5*pulseHeight,pulseTime-50,pulseTime);   //i.e. at 50% of pulse height
 
-    double LEtime=f.GetX(0.5*pulseHeight,pulseTime-50,pulseTime);   //i.e. at 50% of pulse height
-    int    PEsPulseHeight = lrint(pulseHeight / calibrationFactorPulseHeight);
+    int  PEsPulseHeight = lrint(pulseHeight / calibrationFactorPulseHeight);
 
     _pulseTimes.push_back(pulseTime);
     _pulseHeights.push_back(pulseHeight);
@@ -112,7 +149,7 @@ void MakeCrvRecoPulses::SetWaveform(const std::vector<unsigned int> &waveform, u
     _PEs.push_back(PEs);
     _PEsPulseHeight.push_back(PEsPulseHeight);
     _LEtimes.push_back(LEtime);
-    _peakBins.push_back(maxBin);
+    _peakBins.push_back(peakStartBin);
   }
 }
 
