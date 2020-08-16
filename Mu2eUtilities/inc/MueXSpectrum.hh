@@ -18,9 +18,16 @@ namespace mu2e {
     struct Params_t {
       double eMax;
       double me;
+      double mN;
+      double a0;
+      double a1;
+      double a2;
+      double a3;
+      double a4;
+      double a5;
     } _par;
     
-    MueXSpectrum(double maxEnergy, double bin);
+    MueXSpectrum(double minEnergy, double maxEnergy);
     
     ~MueXSpectrum(){}
  
@@ -28,18 +35,14 @@ namespace mu2e {
     double getCorrectedMueXSpectrum(double e) const ;
     double evalIntegral                  (double de);
     static double  f                  (double E, void *p);
-
     void   setSpectrum   (int SpectrumType) { _spectrumType = SpectrumType; }
   
   private:
 
-    double             _bin;
-    int                _spectrumType;   
+    double             _nbins;
     double             _eMax;           
     double             _me;		// electron mass
-
-    int                _nbins;
-    double             _integral;      // over n-1 bins...
+    double             _integral;     // over n-1 bins...
   };
 
 } // end of namespace mu2e

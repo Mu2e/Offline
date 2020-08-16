@@ -12,7 +12,7 @@
 #include "Mu2eUtilities/inc/MuonCaptureSpectrum.hh"
 #include "Mu2eUtilities/inc/PionCaptureSpectrum.hh"
 #include "DataProducts/inc/PDGCode.hh"
-
+#include "Mu2eUtilities/inc/MueXSpectrum.hh"
 namespace mu2e {
 
   BinnedSpectrum::BinnedSpectrum(const fhicl::ParameterSet& psphys) :
@@ -55,6 +55,13 @@ namespace mu2e {
 
       _finalBin = true;
       this->initialize<ConversionSpectrum>(elow,ehi,bin,ehi,bin);
+    }else if (spectrumShape == "mueX"){
+      double elow = psphys.get<double>("elow",100);
+      double ehi  = psphys.get<double>("ehi",105 );
+      double bin = (ehi - elow)/psphys.get<unsigned>("nbins");
+      double nbins = psphys.get<unsigned>("nbins");
+      this->initialize<MueXSpectrum>(elow,ehi, nbins, bin);
+
     }else if (spectrumShape == "ejectedProtons") {
       // should be kinetic energy
       double elow = 0.;
