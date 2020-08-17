@@ -4,21 +4,32 @@
 #include <TGraph.h>
 #include <TMath.h>
 
+namespace
+{
+  double Gumbel(double* xs, double* par)
+  {
+    double const x = xs[0];
+    return par[0]*(TMath::Exp(-(x-par[1])/par[2]-TMath::Exp(-(x-par[1])/par[2])));
+  }
+}
+
 namespace mu2eCrv
 {
 
-//MakeCrvRecoPulses::MakeCrvRecoPulses() : _f("peakfitter","[0]*(TMath::Exp(-(x-[1])/[2]-TMath::Exp(-(x-[1])/[2])))")
-MakeCrvRecoPulses::MakeCrvRecoPulses() : _f("peakfitter",Gumbel,0,0,3)
+MakeCrvRecoPulses::MakeCrvRecoPulses(double minADCdifference, double defaultBeta, double minBeta, double maxBeta,
+                                     double maxTimeDifference, double minPulseHeightRatio, double maxPulseHeightRatio,
+                                     double LEtimeFactor) :
+                                     _f("peakfitter",Gumbel,0,0,3), _minADCdifference(minADCdifference), 
+                                     _defaultBeta(defaultBeta), _minBeta(minBeta), _maxBeta(maxBeta), 
+                                     _maxTimeDifference(maxTimeDifference),
+                                     _minPulseHeightRatio(minPulseHeightRatio),
+                                     _maxPulseHeightRatio(maxPulseHeightRatio),
+                                     _LEtimeFactor(LEtimeFactor)
 {}
 
-double MakeCrvRecoPulses::Gumbel(double* xs, double* par)
-{
-  double const x = xs[0];
-  return par[0]*(TMath::Exp(-(x-par[1])/par[2]-TMath::Exp(-(x-par[1])/par[2])));
-}
-
-void MakeCrvRecoPulses::SetWaveform(const std::vector<unsigned int> &waveform, unsigned int startTDC, double digitizationPeriod, 
-                                    double pedestal, double calibrationFactor, double calibrationFactorPulseHeight, bool darkNoise)
+void MakeCrvRecoPulses::SetWaveform(const std::vector<unsigned int> &waveform, 
+                                    unsigned int startTDC, double digitizationPeriod, double pedestal, 
+                                    double calibrationFactor, double calibrationFactorPulseHeight)
 {
   _pulseTimes.clear();
   _pulseHeights.clear();
@@ -67,7 +78,8 @@ void MakeCrvRecoPulses::SetWaveform(const std::vector<unsigned int> &waveform, u
   //-remove 1 point on each side. this removes potentially "bad points" belonging to a second pulse (i.e. in double pulses)
     peakStartBin=peaks[i].first;
     peakEndBin=peaks[i].second;
-    if(waveform[peakStartBin]-pedestal<5) continue; //FIXME: need a better way to identify these fake pulse which are caused by electronic noise
+    if(waveform[peakStartBin]-pedestal<_minADCdifference) continue;  //ignore peaks which are too small
+                                                                     //(even smaller than 1PE dark counts)
 
     int startBin=peakStartBin;
     int endBin=peakEndBin;
@@ -100,7 +112,7 @@ void MakeCrvRecoPulses::SetWaveform(const std::vector<unsigned int> &waveform, u
     //set the fit function
     _f.SetParameter(0, (waveform[peakStartBin]-pedestal)*TMath::E());
     _f.SetParameter(1, peakTime);
-    _f.SetParameter(2, darkNoise?12.6:19.0);
+    _f.SetParameter(2, _defaultBeta);
 
     //do the fit
     TFitResultPtr fr = g.Fit(&_f,"NQS");
@@ -111,12 +123,13 @@ void MakeCrvRecoPulses::SetWaveform(const std::vector<unsigned int> &waveform, u
     double fitParam0 = fr->Parameter(0);
     double fitParam1 = fr->Parameter(1);
     double fitParam2 = fr->Parameter(2);
-    //FIXME: need a better way to identify these fake pulse which are caused by electronic noise
+
+    //trying to identify fake pulse
     if(fitParam0<=0) invalidFit=true;
-    if(fitParam2<5 || fitParam2>50) invalidFit=true;
-    if(fabs(fitParam1-peakTime)>20) invalidFit=true;
-    if(fitParam0/((waveform[peakStartBin]-pedestal)*TMath::E())>1.5) invalidFit=true;
-    if(fitParam0/((waveform[peakStartBin]-pedestal)*TMath::E())<0.7) invalidFit=true;
+    if(fitParam2<_minBeta || fitParam2>_maxBeta) invalidFit=true;
+    if(fabs(fitParam1-peakTime)>_maxTimeDifference) invalidFit=true;
+    if(fitParam0/((waveform[peakStartBin]-pedestal)*TMath::E())>_maxPulseHeightRatio) invalidFit=true;
+    if(fitParam0/((waveform[peakStartBin]-pedestal)*TMath::E())<_minPulseHeightRatio) invalidFit=true;
 
     int    PEs          = lrint(fitParam0*fitParam2 / calibrationFactor);
     double pulseTime    = fitParam1;
@@ -126,14 +139,14 @@ void MakeCrvRecoPulses::SetWaveform(const std::vector<unsigned int> &waveform, u
     double LEtime       = 0;
     if(invalidFit)
     {
-      PEs          = lrint((waveform[peakStartBin]-pedestal)*TMath::E() * 19.0 / calibrationFactor);
+      PEs          = lrint((waveform[peakStartBin]-pedestal)*TMath::E() * _defaultBeta / calibrationFactor);
       pulseTime    = peakTime;
       pulseHeight  = waveform[peakStartBin]-pedestal;
       pulseBeta    = NAN;
       pulseFitChi2 = NAN;
-      LEtime       = 0.5*(t1+peakTime);  //FIXME
+      LEtime       = peakTime-_LEtimeFactor*_defaultBeta;  //50% pulse height is reached at -0.985*beta before the peak
     }
-    else LEtime    = _f.GetX(0.5*pulseHeight,pulseTime-50,pulseTime);   //i.e. at 50% of pulse height
+    else LEtime    = pulseTime-_LEtimeFactor*pulseBeta;  //50% pulse height is reached at -0.985*beta before the peak
 
     int  PEsPulseHeight = lrint(pulseHeight / calibrationFactorPulseHeight);
 
