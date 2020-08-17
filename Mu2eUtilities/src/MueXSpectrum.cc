@@ -23,8 +23,9 @@ using namespace std;
   
 namespace mu2e {
  
-  MueXSpectrum::MueXSpectrum(double maxEnergy, double minEnegy, double nbins, double bin) :
-    _bin (bin)
+  MueXSpectrum::MueXSpectrum(double maxEnergy, double bin, int RadCorrected) :
+    _bin (bin),
+    _spectrumType (RadCorrected) 
   {
     GlobalConstantsHandle<ParticleDataTable> pdt;
     _par.me    = pdt->particle(PDGCode::e_minus ).ref().mass().value();
@@ -40,15 +41,18 @@ namespace mu2e {
     _par.a3 = 1.438e-3;
     _par.a4 = 2.419e-3;
     _par.a5 = 1.215e-1;
-    _nbins  = nbins;
-    double de = maxEnergy-minEnergy/nbins;
-    
-     _integral = evalIntegral(de); 
+    _nbins     = maxEnergy/_bin;
+    double de = _bin;
+    if (_nbins*_bin < maxEnergy){
+      _nbins += 1;
+      de = _par.eMax-_bin*(_nbins-1);
+    }
+    _integral = evalIntegral(de); 
 
   }
     
   double MueXSpectrum::f(double E, void *p) { //For E>100MeV Only 
-    double eMax  = ((MueXSpectrum::Params_t*) p)->eMax;
+    //double eMax  = ((MueXSpectrum::Params_t*) p)->eMax;
     double mmu   = ((MueXSpectrum::Params_t*) p)->mmu;
     double Emu   = ((MueXSpectrum::Params_t*) p)->Emu;
     double mN    = ((MueXSpectrum::Params_t*) p)->mN;
@@ -65,7 +69,7 @@ namespace mu2e {
   }
 
   double MueXSpectrum::getCorrectedMueXSpectrum(double e) const {
-    return MueXSpectrum::_f(e,(void*) &_par);
+    return MueXSpectrum::f(e,(void*) &_par);
   }
 
   double MueXSpectrum::getWeight(double E) const {
@@ -85,7 +89,7 @@ namespace mu2e {
 //TODO  
   double MueXSpectrum::evalIntegral(double de){
        gsl_function F;
-    F.function = &_f;
+    F.function = &f;
     F.params   = &_par;
 
     size_t limit  = 1000;

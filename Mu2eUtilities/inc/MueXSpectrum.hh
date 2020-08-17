@@ -17,6 +17,8 @@ namespace mu2e {
     
     struct Params_t {
       double eMax;
+      double mmu;
+      double Emu;
       double me;
       double mN;
       double a0;
@@ -27,7 +29,7 @@ namespace mu2e {
       double a5;
     } _par;
     
-    MueXSpectrum(double minEnergy, double maxEnergy);
+    MueXSpectrum(double maxEnergy, double bin, int RadCorrected = 0);
     
     ~MueXSpectrum(){}
  
@@ -40,6 +42,8 @@ namespace mu2e {
   private:
 
     double             _nbins;
+    double             _bin;
+    int                _spectrumType;   // 0:delta function ; 1: rad corrected
     double             _eMax;           
     double             _me;		// electron mass
     double             _integral;     // over n-1 bins...

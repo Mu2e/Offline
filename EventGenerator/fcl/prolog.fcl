@@ -174,7 +174,7 @@ EventGenerator : { @table::EventGenerator
 	
 	#--------------Attempt of mu-->e+X-------------#
 	#----------------------------------------------#
-	mueX : { 
+	mueXTable : { 
     @table::StoppedParticleReactionGun # Mu-->e+X
     physics : { @table::StoppedParticleReactionGun.physics
     pdgId            :  11
@@ -184,6 +184,22 @@ EventGenerator : { @table::EventGenerator
 	    }
 	}
 
+  muXSpectrum : {
+  module_type: StoppedParticleReactionGun
+	    physics: { @table::StoppedParticleReactionGun.physics
+		genId                 : Mu2eX 
+		pdgId                 : 11
+		spectrumShape         : "mueX"     # could also be "flat" or "CeEndpoint"
+		spectrumVariable      : "totalEnergy"      # could be  "kineticEnergy" or "momentum" or "totalEnergy"
+		spectrumResolution    : 0.1                # MeV
+		ehi                   : 104.97
+		elow                  : 100.
+	    } 
+	    muonStops            : { @table::mu2e.tgtMuonStops
+		inputFiles       : @local::mergedMuon_tgtStops_mdc2018_1
+	    }
+	    doHistograms              : true
+	}
 	CePEndpoint              : {   module_type: StoppedParticleReactionGun
 	    physics: { @table::StoppedParticleReactionGun.physics
 		genId                 : CeEndpoint 

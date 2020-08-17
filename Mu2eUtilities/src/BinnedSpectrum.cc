@@ -58,10 +58,9 @@ namespace mu2e {
     }else if (spectrumShape == "mueX"){
       double elow = psphys.get<double>("elow",100);
       double ehi  = psphys.get<double>("ehi",105 );
-      double bin = (ehi - elow)/psphys.get<unsigned>("nbins");
-      double nbins = psphys.get<unsigned>("nbins");
-      this->initialize<MueXSpectrum>(elow,ehi, nbins, bin);
-
+      double bin = psphys.get<double>("spectrumResolution");
+   
+      this->initialize<MueXSpectrum>(elow,ehi,bin,ehi,bin);
     }else if (spectrumShape == "ejectedProtons") {
       // should be kinetic energy
       double elow = 0.;
