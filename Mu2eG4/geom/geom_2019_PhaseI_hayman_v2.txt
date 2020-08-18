@@ -120,7 +120,8 @@ vector<string> bfield.outerMaps = {
   "BFieldMaps/Mau9/ExtMonUCIInternal1AreaMap.header",
   "BFieldMaps/Mau9/ExtMonUCIInternal2AreaMap.header",
   "BFieldMaps/Mau9/ExtMonUCIAreaMap.header",
-  "BFieldMaps/Mau9/PSAreaMap.header"
+  "BFieldMaps/Mau13/PSAreaMap.header",
+  "BFieldMaps/Mau13/WorldMap.header"
 };
 
 // This scale factor is of limited use.
