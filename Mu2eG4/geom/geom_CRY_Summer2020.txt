@@ -1,0 +1,18 @@
+// Updated to be used in the 2019/2020 CRY simulation campaign, based off Mu2eG4/geom/geom_MARS_2019.txt
+// updates muon beam line internals + shielding, DS internals, 
+// and the production target + supports
+
+#include "Mu2eG4/geom/geom_2019_PhaseI_hayman_v2.txt"
+
+//
+//
+// End notes:
+//
+// 1) Sources of information:
+//
+//
+//
+// This tells emacs to view this file in c++ mode.
+// Local Variables:
+// mode:c++
+// End:
