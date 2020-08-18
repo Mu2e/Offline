@@ -31,10 +31,6 @@ double vd.DSNeutronShieldExit.r     =  110.0;//Must be the same as the following
 //double ExtShieldDownstream.holeRadiusType11Box4Hole1 =  110.0;
 //double ExtShieldDownstream.detecHoleRadius           =  110.0;
 
-//DEPRECATED: Absorber in the MBS endplug hole. This causes too much brem photons for the STM (too high rate)
-//bool   mbs.CLV2.absorber.build          = true;
-//string mbs.CLV2.absorber.MaterialName   = "Polyethylene096";  
-//double mbs.CLV2.absorber.halfLength     = 15.0;//mm
 
 //Build STM within z = 34 inches (863.6 mm) of downstream hall wall
 double stm.z.allowed = 863.6;
