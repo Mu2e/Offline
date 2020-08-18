@@ -1,5 +1,7 @@
 // Muon Beam Dump/Stop
 
+#include "Mu2eG4/geom/muonBeamStop_v07.txt"
+
 //turn on absorber for STM
 bool   mbs.CLV2.absorber.build          = true;
 string mbs.CLV2.absorber.MaterialName   = "Polyethylene0935";
