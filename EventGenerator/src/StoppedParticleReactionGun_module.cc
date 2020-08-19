@@ -71,7 +71,9 @@ namespace mu2e {
     TH1F*   _hGenId;
     TH1F*   _hTime;
     TH1F*   _hZ;
-  
+    TTree* _Ntup;
+    Float_t _TreeMom;
+    Int_t _nEv=0;
   private:
     static SpectrumVar    parseSpectrumVar(const std::string& name);
     double                generateEnergy();
@@ -136,7 +138,9 @@ namespace mu2e {
       _hPdgId  = tfs->make<TH1F>("hPdgId" , "PDG ID"      ,  500,  -250, 250);
       _hTime   = tfs->make<TH1F>("hTime"  , "Time"        ,  400,   0.0, 2000.);
       _hZ      = tfs->make<TH1F>("hZ"     , "Z"           ,  500,  5400, 6400);
-
+	    _Ntup  = tfs->make<TTree>("GenTree", "GenTree");
+	    _Ntup->Branch("nEv", &_nEv , "_nEv/I");	    
+	    _Ntup->Branch("TreeMom", &_TreeMom , "TreeMom/F");
     }
   }
 
@@ -161,7 +165,7 @@ namespace mu2e {
 
     const double energy = generateEnergy();
     const double p = energy * sqrt(1 - std::pow(mass_/energy,2));
-
+    
     CLHEP::Hep3Vector p3 = randomUnitSphere_.fire(p);
     CLHEP::HepLorentzVector fourmom(p3, energy);
     output->emplace_back(pdgId_,
@@ -180,7 +184,10 @@ namespace mu2e {
       _hEnergy->Fill(energy);
       _hTime->Fill(stop.t);
       _hZ->Fill(pos.z());
+      _TreeMom = p;
     }
+    _Ntup->Fill();
+	  _nEv++;
   }
 
 //-----------------------------------------------------------------------------

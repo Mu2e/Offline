@@ -19,6 +19,8 @@ namespace mu2e {
       double eMax;
       double mmu;
       double Emu;
+      double BR;
+      double Gamma;
       double me;
       double mN;
       double a0;

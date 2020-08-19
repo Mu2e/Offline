@@ -180,7 +180,7 @@ EventGenerator : { @table::EventGenerator
     pdgId            :  11
     spectrumVariable : "totalEnergy"
     spectrumShape    : "tabulated"
-    spectrumFileName : "ConditionsService/data/mu2eX.tbl"
+    spectrumFileName : "ConditionsService/data/mueX.tbl"
 	    }
 	}
 
