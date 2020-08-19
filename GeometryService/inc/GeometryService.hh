@@ -86,6 +86,7 @@ private:
 
     // Print final config file after all replacements.
     bool _printConfig;
+    bool _printTopLevel;
 
     // The object that parses run-time configuration file.
     std::unique_ptr<SimpleConfig> _config;

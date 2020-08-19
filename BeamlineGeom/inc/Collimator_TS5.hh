@@ -24,6 +24,7 @@ namespace mu2e {
  
     double rIn()        const { return _rIn;        }
     double rOut()       const { return _rOut;       }
+    int    version()    const { return _version;    }
 
     std::string material()    const { return _material;    }
 
@@ -31,6 +32,7 @@ namespace mu2e {
     
     double _rIn;
     double _rOut;
+    int    _version;
 
     std::string _material;
 
