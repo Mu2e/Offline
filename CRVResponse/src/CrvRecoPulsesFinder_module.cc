@@ -32,7 +32,8 @@
 #include "art/Framework/Principal/Handle.h"
 #include "art/Framework/Core/EDAnalyzer.h"
 #include "art/Framework/Core/ModuleMacros.h"
-#include "fhiclcpp/ParameterSet.h"
+#include "fhiclcpp/types/Atom.h"
+#include "fhiclcpp/types/Table.h"
 #include "CLHEP/Units/GlobalSystemOfUnits.h"
 
 #include <string>
@@ -45,7 +46,25 @@ namespace mu2e
   {
 
     public:
-    explicit CrvRecoPulsesFinder(fhicl::ParameterSet const& pset);
+    struct Config
+    {
+      using Name=fhicl::Name;
+      using Comment=fhicl::Comment;
+      fhicl::Atom<std::string> crvDigiModuleLabel{Name("crvDigiModuleLabel"), Comment("module label for CrvDigis")};
+      fhicl::Atom<double> minADCdifference{Name("minADCdifference"), Comment("minimum ADC difference above pedestal to be considered for reconstruction")};  //5.0
+      fhicl::Atom<double> defaultBeta{Name("defaultBeta"), Comment("initialization value for fit and default value for invalid fits (regular pulses: 19.0ns, dark counts for calibration: 12.0ns)")};
+      fhicl::Atom<double> minBeta{Name("minBeta"), Comment("smallest accepted beta for valid fit [ns]")};  //5.0ns
+      fhicl::Atom<double> maxBeta{Name("maxBeta"), Comment("largest accepted beta for valid fit [ns]")}; //50.0ns
+      fhicl::Atom<double> maxTimeDifference{Name("maxTimeDifference"), Comment("largest accepted difference between time of largest ADC value and fitted peak [ns]")}; //20.0ns
+      fhicl::Atom<double> minPulseHeightRatio{Name("minPulseHeightRatio"), Comment("smallest accepted ratio between largest ADC value and fitted peak")}; //0.7
+      fhicl::Atom<double> maxPulseHeightRatio{Name("maxPulseHeightRatio"), Comment("largest accepted ratio between largest ADC value and fitted peak")}; //1.5
+      fhicl::Atom<double> LEtimeFactor{Name("LEtimeFactor"), Comment("time of leading edge is peakTime-LEtimeFactor*beta (0.985,1.385,1.587 for a leading edge of 0.5,0.2,0.1 pulse height")};
+      fhicl::Atom<int> minPEs{Name("minPEs"), Comment("minimum number of PEs")}; //0
+    };
+
+    typedef art::EDProducer::Table<Config> Parameters;
+
+    explicit CrvRecoPulsesFinder(const Parameters& config);
     void produce(art::Event& e);
     void beginJob();
     void beginRun(art::Run &run);
@@ -54,55 +73,30 @@ namespace mu2e
     private:
     boost::shared_ptr<mu2eCrv::MakeCrvRecoPulses> _makeCrvRecoPulses;
 
-    double      _digitizationPeriod;
     std::string _crvDigiModuleLabel;
+    int         _minPEs;
+    double      _digitizationPeriod;
     double      _pedestal;           //100 ADC
     double      _calibrationFactor;  //394.6 ADC*ns/PE
     double      _calibrationFactorPulseHeight;  //11.4 ADC/PE
-    double      _minADCdifference;
-    double      _defaultBeta;
-    double      _minBeta;
-    double      _maxBeta;
-    double      _maxTimeDifference;
-    double      _minPulseHeightRatio;
-    double      _maxPulseHeightRatio;
-    double      _LEtimeFactor;
-    int         _minPEs;
     double      _microBunchPeriod;
   };
 
-  CrvRecoPulsesFinder::CrvRecoPulsesFinder(fhicl::ParameterSet const& pset) :
-    art::EDProducer{pset},
-    _crvDigiModuleLabel(pset.get<std::string>("crvDigiModuleLabel")),
-    _minADCdifference(pset.get<double>("minADCdifference",5)),//minimum ADC difference above pedestal
-                                                              //to be considered for reconstruction
-    _defaultBeta(pset.get<double>("defaultBeta",19.0)), //19.0ns for regular pulses
-                                                        //12.6ns for dark noise pulses used for calibration
-                                                        //used for initialization of fit function
-                                                        //and as default value for invalid fits
-    _minBeta(pset.get<double>("minBeta",5.0)),          //5.0ns smallest accepted beta for valid fit
-    _maxBeta(pset.get<double>("maxBeta",50.0)),         //50.0ns largest accepted beta for valid fit
-    _maxTimeDifference(pset.get<double>("maxTimeDifference",20.0)), //20.0ns largest accepted differences between
-                                                                    //time of largest ADC value and fitted peak
-    _minPulseHeightRatio(pset.get<double>("minPulseHeightRatio",0.7)), //smallest accepted ratio between
-                                                                       //largest ADC value and fitted peak
-    _maxPulseHeightRatio(pset.get<double>("maxPulseHeightRatio",1.5)), //largest accepted ratio between
-                                                                       //largest ADC value and fitted peak
-    _LEtimeFactor(pset.get<double>("LEtimeFactor",0.985)), //time of leading edge is peakTime-LEtimeFactor*beta
-                                                           //e.g. 0.985 for a leading edge at 50% pulse height
-                                                           //e.g. 1.385 for a leading edge at 20% pulse height
-                                                           //e.g. 1.587 for a leading edge at 10% pulse height
-    _minPEs(pset.get<int>("minPEs",0))                  //0 PEs
+
+  CrvRecoPulsesFinder::CrvRecoPulsesFinder(const Parameters& conf) :
+    art::EDProducer(conf),
+    _crvDigiModuleLabel(conf().crvDigiModuleLabel()),
+    _minPEs(conf().minPEs())
   {
     produces<CrvRecoPulseCollection>();
-    _makeCrvRecoPulses=boost::shared_ptr<mu2eCrv::MakeCrvRecoPulses>(new mu2eCrv::MakeCrvRecoPulses(_minADCdifference,
-                                                                                                    _defaultBeta,
-                                                                                                    _minBeta,
-                                                                                                    _maxBeta,
-                                                                                                    _maxTimeDifference,
-                                                                                                    _minPulseHeightRatio,
-                                                                                                    _maxPulseHeightRatio,
-                                                                                                    _LEtimeFactor));
+    _makeCrvRecoPulses=boost::shared_ptr<mu2eCrv::MakeCrvRecoPulses>(new mu2eCrv::MakeCrvRecoPulses(conf().minADCdifference(),
+                                                                                                    conf().defaultBeta(),
+                                                                                                    conf().minBeta(),
+                                                                                                    conf().maxBeta(),
+                                                                                                    conf().maxTimeDifference(),
+                                                                                                    conf().minPulseHeightRatio(),
+                                                                                                    conf().maxPulseHeightRatio(),
+                                                                                                    conf().LEtimeFactor()));
   }
 
   void CrvRecoPulsesFinder::beginJob()
