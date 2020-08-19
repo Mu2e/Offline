@@ -1,7 +1,32 @@
-// 
+//
 // This source reads a text-formated sequence of #s of protons at the production target
 // and translate them into a set of events containing the corresponding PBI number.
 // Original author: David Bown (LBNL), 2020
+//
+// The SubRun product of type ProtonBunchIntensity has been deprecated; it is retained
+// for compatibilty with the existing MDC2020DEV files and will be removed at a convenient
+// time.  It's successor is the Subrun product ProtonBunchIntensitySummary.
+//
+// If the parameter fileNames has more than one file then
+//   - a new subrun will be started for each file
+//   - the subrun number will be incremented by 1 for each file
+//   - the code is configurable so that the subrun data products can be computed
+//     separately for each subrun or integrated over all subruns.
+//
+// There is an option, integratedSummary that will
+//   - read all input files at the start of the job and compute the
+//     subrun summary information using all input files.
+//   - this will be added to the subrun scope data products and will
+//     be the same in all subruns.
+//
+// Fixme:
+//   Are we treating the RunPrincipal correctly?
+//     - Suppose we create a run product at the start of the first subrun.
+//     - When we start a new subrun in the same run, I think that the run
+//       product disappears because we made a new RunPrincipal.
+//   So long as we do not write any run products this is moot.
+//   So long as we do not write multiple subruns to same output file it is also moot.
+//
 
 #include <iostream>
 #include <fstream>
@@ -10,11 +35,13 @@
 #include <set>
 #include <string>
 #include <cstdio>
+#include <vector>
 #include <boost/accumulators/accumulators.hpp>
 #include <boost/accumulators/statistics/stats.hpp>
 #include <boost/accumulators/statistics/mean.hpp>
 #include <boost/accumulators/statistics/variance.hpp>
 
+#include "fhiclcpp/types/Name.h"
 #include "art/Framework/IO/Sources/Source.h"
 #include "art/Framework/Core/InputSourceMacros.h"
 #include "art/Framework/IO/Sources/SourceHelper.h"
@@ -33,7 +60,6 @@
 #include "fhiclcpp/ParameterSet.h"
 #include "MCDataProducts/inc/ProtonBunchIntensity.hh"
 #include "MCDataProducts/inc/ProtonBunchIntensitySummary.hh"
-
 using namespace std;
 
 namespace mu2e {
@@ -44,24 +70,35 @@ namespace mu2e {
     using Name = fhicl::Name;
     using Comment = fhicl::Comment;
     fhicl::Sequence<std::string> inputFiles{Name("fileNames"),Comment("List of text-formated PBI sequence files")};
-    fhicl::Atom<unsigned int> runNumber{Name("runNumber"), Comment("First run number"), 0};
+    fhicl::Atom<std::string> moduleLabel{Name("reconstitutedModuleLabel"),Comment("Module label for the reconstituted data products"),"PBISequence"};
+    fhicl::Atom<std::string> instance{Name("deprecatedInstanceName"),Comment("Instance name for deprecated subrun data product ProtonBunchIntensity"),""};
+    fhicl::Atom<unsigned int> runNumber{Name("runNumber"), Comment("First run number")};
+    fhicl::Atom<bool>  integratedSummary{Name("integratedSummary"), Comment("If true, then PBI summary is summed over all input files; else per input file.")};
+    fhicl::Atom<unsigned int> verbosity{Name("verbosity"), Comment("Verbosity level; larger means more printout"), 0};
+
+    // These are used by art and are required.
     fhicl::Atom<std::string> module_label{Name("module_label"), Comment("Art module label"), ""};
     fhicl::Atom<std::string> module_type{Name("module_type"), Comment("Art module type"), ""};
   };
   typedef fhicl::WrappedTable<Config> Parameters;
 
-  //================================================================
+ //================================================================
   class PBISequenceDetail : private boost::noncopyable {
     std::string myModuleLabel_;
+    std::string deprecatedInstanceName_;
     art::SourceHelper const& pm_;
     unsigned runNumber_;
     unsigned subRunNumber_;
     unsigned currentEventNumber_;
+    unsigned verbosity_;
     art::SubRunID lastSubRunID_;
-    accumulator_set<float, stats< tag::mean, tag::variance>> nprotAcc_; // accumulator for proton statistics
+    accumulator_set<double, stats< tag::mean, tag::variance>> nprotAcc_; // accumulator for proton statistics for one input file (subrun).
+    accumulator_set<double, stats< tag::mean, tag::variance>> runNprotAcc_; // accumulator for proton statistics over the full input file set (run).
 
     std::string currentFileName_;
     std::ifstream *currentFile_ = nullptr;
+
+    bool  integratedSummary_;
 
     // A helper function used to manage the principals.
     // This is boilerplate that does not change if you change the data products.
@@ -72,6 +109,7 @@ namespace mu2e {
 	art::SubRunPrincipal*& outSR,
 	art::EventPrincipal*&  outE);
 
+    void computeRunDataProducts( std::vector<std::string> const& inputFiles );
 
     public:
     PBISequenceDetail(const Parameters &conf,
@@ -94,23 +132,25 @@ namespace mu2e {
     PBISequenceDetail::PBISequenceDetail(const Parameters& conf,
                                              art::ProductRegistryHelper& rh,
                                              const art::SourceHelper& pm)
-      : myModuleLabel_("PBISequence")
+      : myModuleLabel_(conf().moduleLabel())
+      , deprecatedInstanceName_(conf().instance())
       , pm_(pm)
       , runNumber_(conf().runNumber())
       , subRunNumber_(-1U)
       , currentEventNumber_(0)
+      , verbosity_(conf().verbosity())
+      , integratedSummary_(conf().integratedSummary())
     {
       if(!art::RunID(runNumber_).isValid()) {
         throw cet::exception("BADCONFIG", " PBISequence: ")
           << " fhicl::ParameterSet specifies an invalid runNumber = "<<runNumber_<<"\n";
       }
-// DNB
-// I don't understand why 'reconstitutes' is needed instead of 'produces', but it's
-// an emperical fact that this module fails in a cryptic way using 'produces'
-//
+//    For a source module, "produces" is spelled "reconstitutes"
       rh.reconstitutes<mu2e::ProtonBunchIntensity,art::InEvent>(myModuleLabel_);
-      rh.reconstitutes<mu2e::ProtonBunchIntensity,art::InSubRun>(myModuleLabel_);
+      rh.reconstitutes<mu2e::ProtonBunchIntensity,art::InSubRun>(myModuleLabel_,deprecatedInstanceName_);
       rh.reconstitutes<mu2e::ProtonBunchIntensitySummary,art::InSubRun>(myModuleLabel_);
+
+      computeRunDataProducts( conf().inputFiles() );
     }
 
     //----------------------------------------------------------------
@@ -123,20 +163,22 @@ namespace mu2e {
       currentEventNumber_ = 0;
       // compute statistics on protons in this file
       nprotAcc_ = {};
-      float protons;
+      double protons;
       unsigned nprotons;
       while(true) {
 	*currentFile_ >> protons;
 	if ( currentFile_->good()) {
 	  nprotons = (unsigned)rint(protons);
-	  nprotAcc_(float(nprotons));
+	  nprotAcc_(double(nprotons));
 	} else
 	break;
       }
-      std::cout << "Read " << extract_result<tag::count>(nprotAcc_) << " events with " << extract_result<tag::mean>(nprotAcc_) << " <protons> " << extract_result<tag::variance>(nprotAcc_) << " variance from file " << currentFileName_ << std::endl;
+      if ( verbosity_ > 0 ){
+        std::cout << "Read " << extract_result<tag::count>(nprotAcc_) << " events with " << extract_result<tag::mean>(nprotAcc_) << " <protons> " << extract_result<tag::variance>(nprotAcc_) << " variance from file " << currentFileName_ << std::endl;
+      }
       // rewind the file
       currentFile_->clear(ios::eofbit);
-      currentFile_->seekg (0, ios::beg); 
+      currentFile_->seekg (0, ios::beg);
       fb = new art::FileBlock(art::FileFormatVersion(1, "PBISequenceTextInput"), currentFileName_);
     }
 
@@ -155,7 +197,7 @@ namespace mu2e {
                                        art::SubRunPrincipal*& outSR,
                                        art::EventPrincipal*& outE)
     {
-      float protons;
+      double protons;
       unsigned nprotons;
       (*currentFile_) >>  protons;
       if (!currentFile_->good()) return false;
@@ -182,18 +224,25 @@ namespace mu2e {
     art::SubRunID newID(runNumber, subRunNumber);
 
     if(newID != lastSubRunID_) {
-      // art takes ownership of the object pointed to by outSR and will delete it at the appropriate time.
       outR = pm_.makeRunPrincipal(runNumber, ts);
+      // art takes ownership of the object pointed to by outSR and will delete it at the appropriate time.
       outSR = pm_.makeSubRunPrincipal(runNumber,
                                       subRunNumber,
                                       ts);
       // create the PBI subrun summary object
-      std::unique_ptr<ProtonBunchIntensitySummary> pbis(new ProtonBunchIntensitySummary(extract_result<tag::count>(nprotAcc_),extract_result<tag::mean>(nprotAcc_), extract_result<tag::variance>(nprotAcc_)));
-      std::cout << "SubRun " << subRunNumber << " PBI has SDF = " << pbis->spillDutyFactor() << std::endl;
+      std::unique_ptr<ProtonBunchIntensitySummary> pbis = ( integratedSummary_ ) ?
+        std::make_unique<ProtonBunchIntensitySummary>( extract_result<tag::count>(runNprotAcc_),extract_result<tag::mean>(runNprotAcc_), extract_result<tag::variance>(runNprotAcc_)) :
+        std::make_unique<ProtonBunchIntensitySummary>( extract_result<tag::count>(nprotAcc_),extract_result<tag::mean>(nprotAcc_), extract_result<tag::variance>(nprotAcc_));
+
+      if ( verbosity_ > 0 ) {
+        std::cout << "SubRun " << subRunNumber << " PBI has SDF = " << pbis->spillDutyFactor() << std::endl;
+      }
       art::put_product_in_principal(std::move(pbis), *outSR, myModuleLabel_);
       // for backwards-compatibility
-      std::unique_ptr<ProtonBunchIntensity> pbi(new ProtonBunchIntensity((unsigned)rint(extract_result<tag::mean>(nprotAcc_))));
-      art::put_product_in_principal(std::move(pbi), *outSR, myModuleLabel_);
+      std::unique_ptr<ProtonBunchIntensity> pbi = ( integratedSummary_ ) ?
+        std::make_unique<ProtonBunchIntensity>((unsigned)rint(extract_result<tag::mean>(runNprotAcc_))):
+        std::make_unique<ProtonBunchIntensity>((unsigned)rint(extract_result<tag::mean>(nprotAcc_)));
+      art::put_product_in_principal(std::move(pbi), *outSR, myModuleLabel_, deprecatedInstanceName_);
 
     }
     lastSubRunID_ = newID;
@@ -202,9 +251,26 @@ namespace mu2e {
     outE = pm_.makeEventPrincipal(runNumber, subRunNumber, eventNumber, ts, false);
 
   } // managePrincipals()
-    //----------------------------------------------------------------
+
+
+  //----------------------------------------------------------------
+  void PBISequenceDetail::computeRunDataProducts( std::vector<std::string> const& inputFiles ){
+    for ( auto const& file : inputFiles){
+      std::ifstream in(file,std::ifstream::in);
+      double protons;
+      int nprotons;
+      while (in){
+	in >> protons;
+	if ( in.good()) {
+	  nprotons = (unsigned)rint(protons);
+	  runNprotAcc_(double(nprotons));
+	} else {
+          break;
+        }
+      }
+    }
+  } // end computeRunDataProducts
 
 } // namespace mu2e
 
-typedef art::Source<mu2e::PBISequenceDetail> PBISequence;
-DEFINE_ART_INPUT_SOURCE(PBISequence);
+DEFINE_ART_INPUT_SOURCE(art::Source<mu2e::PBISequenceDetail>)

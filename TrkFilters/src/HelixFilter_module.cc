@@ -44,6 +44,7 @@ namespace mu2e
   private:
     art::InputTag _hsTag;
     bool          _hascc; // Calo Cluster
+    bool          _doHelicityCheck;
     int           _hel;
     int           _minnstrawhits;
     double        _minHitRatio;
@@ -75,6 +76,7 @@ namespace mu2e
     art::EDFilter{pset},
     _hsTag             (pset.get<art::InputTag>("helixSeedCollection","PosHelixFinder")),
     _hascc             (pset.get<bool>  ("requireCaloCluster",false)),
+    _doHelicityCheck   (pset.get<bool>  ("doHelicityCheck",true)),
     _hel               (pset.get<int>   ("helicity")),
     _minnstrawhits     (pset.get<int>   ("minNStrawHits",15)),
     _minHitRatio       (pset.get<double>("minHitRatio",0.)),
@@ -135,7 +137,7 @@ namespace mu2e
       auto const& hs = *ihs;
       
       //check the helicity
-      if (!(hs.helix().helicity() == Helicity(_hel)))        continue;
+      if (_doHelicityCheck && !(hs.helix().helicity() == Helicity(_hel)))        continue;
 
       HelixTool helTool(&hs, _tracker);
       // compute the helix momentum.  Note this is in units of mm!!!

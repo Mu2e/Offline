@@ -54,6 +54,7 @@ namespace mu2e {
       _toff.updateMap(event);
     }
 
+    const SimParticleTimeOffset& getTimeMaps() const { return _toff; }
     void fillTrkInfoMC(const KalSeedMC& kseedmc, TrkInfoMC& trkinfomc);
     void fillTrkInfoMCDigis(const KalSeedMC& kseedmc, TrkInfoMC& trkinfomc);
     void fillHitInfoMC(const KalSeedMC& kseedmc, TrkStrawHitInfoMC& tshinfomc, const TrkStrawHitMC& tshmc);
