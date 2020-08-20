@@ -43,18 +43,14 @@ genPhys_stop_2p1s: {
     pdgId : 22
     genId : StoppedParticleReactionGun
     spectrumVariable : kineticEnergy
-    spectrumShape : monoenergetic
-    elow : 0.347
-    ehi : 0.347
+    spectrumShape : XRay2p1s
 }    
 
 genPhys_cap_gamma: {
     pdgId : 22
     genId : StoppedParticleReactionGun
     spectrumVariable : kineticEnergy
-    spectrumShape : monoenergetic
-    elow : 1.809
-    ehi : 1.809
+    spectrumShape : CaptureGamma
 }    
 
 END_PROLOG
