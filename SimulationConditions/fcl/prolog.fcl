@@ -1,0 +1,10 @@
+BEGIN_PROLOG
+
+Bookkeeper : {
+  verbose : 1
+  useDb : false
+  muBeamPerPOT : 0.180513
+  flashPerMuBeam : 0.00801518
+}
+
+END_PROLOG

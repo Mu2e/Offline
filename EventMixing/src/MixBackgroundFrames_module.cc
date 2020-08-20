@@ -29,7 +29,8 @@
 #include "Mu2eUtilities/inc/artURBG.hh"
 #include "SeedService/inc/SeedService.hh"
 #include "MCDataProducts/inc/ProtonBunchIntensity.hh"
-
+#include "ProditionsService/inc/ProditionsHandle.hh"
+#include "SimulationConditions/inc/Bookkeeper.hh"
 //================================================================
 namespace mu2e {
 
@@ -50,9 +51,11 @@ namespace mu2e {
     bool writeEventIDs_;
     art::EventIDSequence idseq_;
 
-    std::vector<art::InputTag> simStageEfficiencyTags_;
+    std::vector<std::string> simStageEfficiencyTags_;
     std::vector<double> meanEventsPerPOTFactors_;
     double eff_;
+
+    mu2e::ProditionsHandle<mu2e::Bookkeeper> _bookkeeperH;
   public:
 
     struct Mu2eConfig {
@@ -96,9 +99,9 @@ namespace mu2e {
           false
           };
 
-      fhicl::Sequence<art::InputTag> simStageEfficiencyTags{ Name("simStageEfficiencyTags"),
+      fhicl::Sequence<std::string> simStageEfficiencyTags{ Name("simStageEfficiencyTags"),
 	  Comment("Sequence of art::InputTags for all the previous simulation stage efficiencies"),
-	  std::vector<art::InputTag>()
+	  std::vector<std::string>()
 	  };
 
       fhicl::Sequence<double> meanEventsPerPOTFactors{ Name("meanEventsPerPOTFactors"),
@@ -154,12 +157,14 @@ namespace mu2e {
     pbi_ = *event.getValidHandle<ProtonBunchIntensity>(pbiTag_);
     if(debugLevel_ > 0)std::cout << " Starting event mixing, Intensity = " << pbi_.intensity() << std::endl;
 
+    Bookkeeper const& bookkeeper = _bookkeeperH.get(event.id());
     eff_ = 1;
     for (const auto& i_simStageEff : simStageEfficiencyTags_) {
-      const auto& simStageEff = *event.getValidHandle<SimStageEfficiency>(i_simStageEff);
-      eff_ *= simStageEff.efficiency();
+      //      const auto& simStageEff = *event.getValidHandle<SimStageEfficiency>(i_simStageEff);
+      double this_eff = bookkeeper.getEff(i_simStageEff);
+      eff_ *= this_eff;//simStageEff.efficiency();
       if (debugLevel_ > 1) {
-	std::cout << " Sim Stage Efficiency (" << i_simStageEff.label() << ") = " << simStageEff.numerator() << " / " << simStageEff.denominator() << " = " << simStageEff.efficiency() << std::endl;
+	std::cout << " Sim Stage Efficiency (" << i_simStageEff << ") = " << this_eff << std::endl;//simStageEff.numerator() << " / " << simStageEff.denominator() << " = " << simStageEff.efficiency() << std::endl;
 	std::cout << " Cumulative Total Eff = " << eff_ << std::endl;
       }
     }

@@ -19,6 +19,8 @@
 
 #include "AnalysisConditions/inc/TrkQualCatalogCache.hh"
 
+#include "SimulationConditions/inc/BookkeeperCache.hh"
+
 using namespace std;
 
 namespace mu2e {
@@ -52,6 +54,8 @@ namespace mu2e {
     _caches[mdc->name()] = mdc;
     auto tqc = std::make_shared<mu2e::TrkQualCatalogCache>("TrkQualCatalog",_config.trkQualCatalog());
     _caches[tqc->name()] = tqc;
+    auto bkc = std::make_shared<mu2e::BookkeeperCache>(_config.bookkeeper());
+    _caches[bkc->name()] = bkc;
 
     if( _config.verbose()>0) {
       cout << "Proditions built caches:" << endl;
