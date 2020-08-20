@@ -187,7 +187,7 @@ namespace mu2e {
       bool is_poisson_rate = false;
       double prob = 1;
       if (i_genPhysConfig.pdgId() == 22) {
-	prob = 0.79;//rate = GlobalConstantsHandle<PhysicsParams>()->getCaptureProtonRate();
+	prob = GlobalConstantsHandle<PhysicsParams>()->getStopXRay2p1sIntensity();
       }
 
       GenPhysStruct i_genPhys(i_genPhysConfig, eng_, is_poisson_rate, rate, prob);
