@@ -217,8 +217,14 @@ namespace mu2e {
 	rate = GlobalConstantsHandle<PhysicsParams>()->getCaptureNeutronRate();
       }
       else if (i_genPhysConfig.pdgId() == 22) {
-	rate = 1;
-	prob = GlobalConstantsHandle<PhysicsParams>()->getCaptureGammaIntensity();
+	if (i_genPhysConfig.spectrumShape() == "CaptureGamma") {
+	  rate = 1;
+	  prob = GlobalConstantsHandle<PhysicsParams>()->getCaptureGammaIntensity();
+	}
+	else { // this is our photon background frame
+	  is_poisson_rate = true;
+	  rate = 2;
+	}
       }
       else {
 	throw cet::exception("MUSTOPPRODUCTSGUN") << "Capture product with PdgId " << i_genPhysConfig.pdgId() << " is not implemented" << std::endl;
