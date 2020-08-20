@@ -113,6 +113,10 @@ namespace mu2e
       const std::string allowedMaterial = checkMaterial( material );
       return _captureProtonRate.find(allowedMaterial)->second;
     }
+    double   getCaptureDeuteronRate     (targetMat material = "") const {
+      const std::string allowedMaterial = checkMaterial( material );
+      return _captureDeuteronRate.find(allowedMaterial)->second;
+    }
     double   getCaptureNeutronRate     (targetMat material = "") const {
       const std::string allowedMaterial = checkMaterial( material );
       return _captureNeutronRate.find(allowedMaterial)->second;
@@ -156,6 +160,7 @@ namespace mu2e
     std::vector<double> _shankerFcoefficients;
 
     std::map<targetMat, double> _captureProtonRate;
+    std::map<targetMat, double> _captureDeuteronRate;
     std::map<targetMat, double> _captureNeutronRate;
 
     inline targetMat checkMaterial( const targetMat& material ) const {

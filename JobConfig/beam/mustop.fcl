@@ -23,6 +23,14 @@ genPhys_cap_proton : {
     nbins: 1000
 }
 
+genPhys_cap_deuteron: {
+    pdgId : 1000010020 # deuteron
+    genId : "StoppedParticleReactionGun"
+    spectrumShape: ejectedProtons # same spectrum for protons and deuterons, as in the MECO note
+    spectrumVariable: kineticEnergy
+    nbins: 1000
+}
+
 genPhys_cap_neutron: {
     pdgId : 2112
     genId : StoppedParticleReactionGun
@@ -54,7 +62,10 @@ physics.producers.generate: {
    verbosityLevel : 1
    stops : @local::mu2e.tgtMuonStops
    stopProducts : [ @local::genPhys_stop_2p1s ] # e.g. X-rays
-   captureProducts : [ @local::genPhys_cap_proton, @local::genPhys_cap_neutron ]
+   captureProducts : [ @local::genPhys_cap_proton, 
+   		       @local::genPhys_cap_deuteron, 
+		       @local::genPhys_cap_neutron 
+		     ]
    decayProducts : [ @local::genPhys_dio ]
    doTree : true
 }
