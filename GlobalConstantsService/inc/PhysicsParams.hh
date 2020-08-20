@@ -109,6 +109,11 @@ namespace mu2e
     const std::vector<double>& getShankerEcoefficients() const { return _shankerEcoefficients; }
     const std::vector<double>& getShankerFcoefficients() const { return _shankerFcoefficients; }
 
+    double   getCaptureProtonRate     (targetMat material = "") const {
+      const std::string allowedMaterial = checkMaterial( material );
+      return _captureProtonRate.find(allowedMaterial)->second;
+    }
+
     PhysicsParams( SimpleConfig const& config );
 
     // Accept compiler generated:
@@ -145,6 +150,8 @@ namespace mu2e
     std::vector<double> _shankerDcoefficients;
     std::vector<double> _shankerEcoefficients;
     std::vector<double> _shankerFcoefficients;
+
+    std::map<targetMat, double> _captureProtonRate;
 
     inline targetMat checkMaterial( const targetMat& material ) const {
       if ( material.empty() ) return _chosenStoppingTargetMaterial;

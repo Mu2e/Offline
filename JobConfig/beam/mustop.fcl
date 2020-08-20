@@ -23,25 +23,20 @@ genPhys_cap_proton : {
     nbins: 1000
 }
 
-genProc_capture : { 
-    name : "capture"
-    probability : 0.61
-    products : [ @local::genPhys_cap_proton ]
+genPhys_cap_neutron: {
+    pdgId : 2112
+    genId : StoppedParticleReactionGun
+    spectrumShape: tabulated
+    spectrumFileName: "ConditionsService/data/neutronSpectrum.txt"
+    spectrumVariable: kineticEnergy
 }
-
-genProc_decay : { 
-    name : "decay"
-    probability : 0.39
-    products : [ @local::genPhys_dio ]
-}
-
 
 END_PROLOG
 
 process_name: mustop
 
 source: { module_type : EmptyEvent }
-services: { @table::mu2e.services.simServices }
+services: { @table::Services.Sim }
 physics: { @table::mu2e.physics.g4s4Muons }
 outputs: { @table::mu2e.outputs.g4s4Defs }
 
@@ -49,7 +44,9 @@ physics.producers.generate: {
    module_type: MuStopProductsGun
    verbosityLevel : 1
    stops : @local::mu2e.tgtMuonStops
-   processes : [ @local::genProc_capture, @local::genProc_decay ]
+   stopProducts : [ ] # e.g. X-rays
+   captureProducts : [ @local::genPhys_cap_proton ] #, @local::genPhys_cap_neutron ]
+   decayProducts : [ @local::genPhys_dio ]
 }
 
 services.TFileService.fileName: "out/nts.owner.mustop.version.sequencer.root"
@@ -58,3 +55,7 @@ outputs.crvOutput.fileName: "out/sim.owner.mustop-CRV.version.sequencer.art"
 outputs.truncatedEvtsOutput.fileName: "out/sim.owner.mustop-truncated.version.sequencer.art"
 
 physics.producers.generate.stops.inputFiles : [ "mergedMuonStops/nts.mu2e.DS-TGTstops.MDC2018a.001002_00000000.root" ]
+
+# test values; these get overwritten by generate_fcl
+services.SeedService.baseSeed         :  773651
+services.SeedService.maxUniqueEngines :  20
