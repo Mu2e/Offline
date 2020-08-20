@@ -127,6 +127,11 @@ namespace mu2e
       return _stopXRay2p1sIntensity.find(allowedMaterial)->second;
     }
 
+    double   getCaptureGammaIntensity     (targetMat material = "") const {
+      const std::string allowedMaterial = checkMaterial( material );
+      return _captureGammaIntensity.find(allowedMaterial)->second;
+    }
+
     PhysicsParams( SimpleConfig const& config );
 
     // Accept compiler generated:
@@ -169,6 +174,7 @@ namespace mu2e
     std::map<targetMat, double> _captureNeutronRate;
 
     std::map<targetMat, double> _stopXRay2p1sIntensity;
+    std::map<targetMat, double> _captureGammaIntensity;
 
     inline targetMat checkMaterial( const targetMat& material ) const {
       if ( material.empty() ) return _chosenStoppingTargetMaterial;

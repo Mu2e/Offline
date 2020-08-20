@@ -106,6 +106,9 @@ namespace mu2e {
 
     // Load X-ray intensities
     _stopXRay2p1sIntensity[material] = config.getDouble("physicsParams."+material+".stop.xRay2p1s.intensity", 0);
+
+    // Load capture gamma ray intensities
+    _captureGammaIntensity[material] = config.getDouble("physicsParams."+material+".capture.gRay.intensity", 0);
     }
 
     // Load Shanker constants

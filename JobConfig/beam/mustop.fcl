@@ -48,6 +48,15 @@ genPhys_stop_2p1s: {
     ehi : 0.347
 }    
 
+genPhys_cap_gamma: {
+    pdgId : 22
+    genId : StoppedParticleReactionGun
+    spectrumVariable : kineticEnergy
+    spectrumShape : monoenergetic
+    elow : 1.809
+    ehi : 1.809
+}    
+
 END_PROLOG
 
 process_name: mustop
@@ -64,7 +73,8 @@ physics.producers.generate: {
    stopProducts : [ @local::genPhys_stop_2p1s ] # e.g. X-rays
    captureProducts : [ @local::genPhys_cap_proton, 
    		       @local::genPhys_cap_deuteron, 
-		       @local::genPhys_cap_neutron 
+		       @local::genPhys_cap_neutron,
+		       @local::genPhys_cap_gamma 
 		     ]
    decayProducts : [ @local::genPhys_dio ]
    doTree : true
