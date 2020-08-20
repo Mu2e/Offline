@@ -53,6 +53,15 @@ genPhys_cap_gamma: {
     spectrumShape : CaptureGamma
 }    
 
+genPhys_cap_photon : {
+    pdgId : 22
+    genId : StoppedParticleReactionGun
+    spectrumShape: flat
+    spectrumVariable: totalEnergy
+    elow: 0.0 // MeV
+    ehi: 7.0  // MeV
+}
+
 END_PROLOG
 
 process_name: mustop
@@ -70,7 +79,8 @@ physics.producers.generate: {
    captureProducts : [ @local::genPhys_cap_proton, 
    		       @local::genPhys_cap_deuteron, 
 		       @local::genPhys_cap_neutron,
-		       @local::genPhys_cap_gamma 
+		       @local::genPhys_cap_gamma,
+		       @local::genPhys_cap_photon
 		     ]
    decayProducts : [ @local::genPhys_dio ]
    doTree : true
