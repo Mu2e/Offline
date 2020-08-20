@@ -203,11 +203,14 @@ namespace mu2e {
       if (i_genPhysConfig.pdgId() == 2212) {
 	rate = GlobalConstantsHandle<PhysicsParams>()->getCaptureProtonRate();
       }
+      else if (i_genPhysConfig.pdgId() == 1000010020) {
+	rate = GlobalConstantsHandle<PhysicsParams>()->getCaptureDeuteronRate();
+      }
       else if (i_genPhysConfig.pdgId() == 2112) {
 	rate = GlobalConstantsHandle<PhysicsParams>()->getCaptureNeutronRate();
       }
       else {
-	throw cet::exception("MUSTOPPRODUCTSGUN") << "Emission rate for capture product with PdgId " << i_genPhysConfig.pdgId() << " is not implemented" << std::endl;
+	throw cet::exception("MUSTOPPRODUCTSGUN") << "Capture product with PdgId " << i_genPhysConfig.pdgId() << " is not implemented" << std::endl;
       }
 
       GenPhysStruct i_genPhys(i_genPhysConfig, eng_, is_poisson_rate, rate, prob);

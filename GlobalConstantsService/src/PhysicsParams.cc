@@ -101,6 +101,7 @@ namespace mu2e {
 
     // Load capture product rates
     _captureProtonRate[material] = config.getDouble("physicsParams."+material+".capture.protonRate", 0);
+    _captureDeuteronRate[material] = config.getDouble("physicsParams."+material+".capture.deuteronRate", 0);
     _captureNeutronRate[material] = config.getDouble("physicsParams."+material+".capture.neutronRate", 0);
     }
 
