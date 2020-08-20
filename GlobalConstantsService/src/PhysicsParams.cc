@@ -99,6 +99,8 @@ namespace mu2e {
     _czarneckiCoefficient[material] = config.getDouble("physicsParams."+material+".czarneckiCoefficient" );
     config.getVectorDouble("physicsParams."+material+".czarneckiCoefficients",_czarneckiCoefficients[material],std::vector<double>());
 
+    // Load capture product rates
+    _captureProtonRate[material] = config.getDouble("physicsParams."+material+".capture.protonRate", 0);
     }
 
     // Load Shanker constants

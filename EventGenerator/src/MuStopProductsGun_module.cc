@@ -13,6 +13,7 @@
 #include "CLHEP/Vector/LorentzVector.h"
 #include "CLHEP/Random/RandomEngine.h"
 #include "CLHEP/Random/RandGeneral.h"
+#include "CLHEP/Random/RandPoissonQ.h"
 #include "CLHEP/Units/PhysicalConstants.h"
 
 #include "art/Framework/Core/EDProducer.h"
@@ -53,19 +54,13 @@ namespace mu2e {
     typedef RootTreeSampler<IO::StoppedParticleF> RTS;
 
   public:
-    struct GenProcConfig {
-      using Name=fhicl::Name;
-      using Comment=fhicl::Comment;
-      fhicl::Atom<std::string> name {Name("name"), Comment("name")};
-      fhicl::Atom<double> probability {Name("probability"), Comment("Chance of process occurring")};
-      fhicl::Sequence< fhicl::Table<GenPhysConfig> > products{Name("products"), Comment("Physics parameter fhicl table")};
-    };
-
     struct Config {
       using Name=fhicl::Name;
       using Comment=fhicl::Comment;
 
-      fhicl::Sequence< fhicl::Table<GenProcConfig> > processes{Name("processes"), Comment("Processes")};
+      fhicl::Sequence< fhicl::Table<GenPhysConfig> > stopProducts{Name("stopProducts"), Comment("Products coincident with stopped muon (i.e. generated every event)")};
+      fhicl::Sequence< fhicl::Table<GenPhysConfig> > captureProducts{Name("captureProducts"), Comment("Products coincident with captured muon)")};
+      fhicl::Sequence< fhicl::Table<GenPhysConfig> > decayProducts{Name("decayProducts"), Comment("Products coincident with decayd muon)")};
       fhicl::Atom<int> verbosityLevel{Name("verbosityLevel"), Comment("Verbosity Level (default = 0)"), 0};
       fhicl::Table<RTS::Config> stops{Name("stops"), Comment("Stops ntuple config")};
       fhicl::Atom<bool> doHistograms{Name("doHistograms"), Comment("True/false to produce histograms"), true};
@@ -77,15 +72,17 @@ namespace mu2e {
 
     enum SpectrumVar  { TOTAL_ENERGY, KINETIC_ENERY, MOMENTUM };
 
-    struct GenPhys {
-      GenPhys(GenPhysConfig conf, art::RandomNumberGenerator::base_engine_t& eng) : 
+    struct GenPhysStruct {
+      GenPhysStruct(GenPhysConfig conf, art::RandomNumberGenerator::base_engine_t& eng, double rate = 1) : 
 	pdgId(PDGCode::type(conf.pdgId())),
 	mass(GlobalConstantsHandle<ParticleDataTable>()->particle(pdgId).ref().mass().value()),
 	spectrumVariable(parseSpectrumVar(conf.spectrumVariable())),
 	spectrum(BinnedSpectrum(conf)),
 	genId(GenId::findByName(conf.genId())),
-	randSpectrum(eng, spectrum.getPDF(), spectrum.getNbins())
-      {}
+	randSpectrum(eng, spectrum.getPDF(), spectrum.getNbins()),
+	emissionRate(rate),
+	randomPoissonQ(eng,emissionRate)
+      {    }
 
       PDGCode::type       pdgId;
       double              mass;
@@ -93,51 +90,12 @@ namespace mu2e {
       BinnedSpectrum    spectrum;
       GenId             genId;
       CLHEP::RandGeneral randSpectrum;
+      double emissionRate;
+      CLHEP::RandPoissonQ randomPoissonQ;
     };
 
-    struct GenProc {
-      GenProc(GenProcConfig conf, art::RandomNumberGenerator::base_engine_t& eng) : 
-	name(conf.name()), probability(conf.probability()) { 
-
-	for (auto& i_genPhysConfig : conf.products()) {
-	  GenPhys i_genPhys(i_genPhysConfig, eng);
-	  if(i_genPhys.genId == GenId::enum_type::unknown) {
-	    throw cet::exception("BADCONFIG")<<"MuStopProductsGun: unknown genId "
-					     << i_genPhysConfig.genId()
-					     <<"\n";
-	  }
-
-	  // if (verbosityLevel_ > 0) {
-	  //   std::cout<<"MuStopProductsGun: using GenId = " << i_genPhys.genId << std::endl;
-
-	  //   std::cout<<"MuStopProductsGun: producing particle "<< i_genPhys.pdgId << ", mass = "<< i_genPhys.mass << std::endl;
-
-	  //   std::cout <<"MuStopProductsGun: spectrum shape = "
-	  // 	      << i_genPhysConfig.spectrumShape() << std::endl;
-	  //   if (i_genPhysConfig.spectrumShape()  == "tabulated") {
-	  //     std::string spectrumFileName;
-	  //     if (i_genPhysConfig.spectrumFileName(spectrumFileName)) {
-	  // 	std::cout << " Spectrum file = "
-	  // 		  << spectrumFileName
-	  // 		  << std::endl;
-	  //     }
-	  //   }
-	  // }
-	  // if (verbosityLevel_ > 1){
-	  //   std::cout <<"MuStopProductsGun: spectrum: " << std::endl;
-	  //   i_genPhys.spectrum.print();
-	  // }
-	  allGenPhys.push_back(i_genPhys);
-	}
-      }
-
-      std::string name;
-      double probability;
-      std::vector<GenPhys> allGenPhys;
-    };
 
     int               verbosityLevel_;
-    std::vector<GenProc> allGenProc_;
 
     art::RandomNumberGenerator::base_engine_t& eng_;
     RandomUnitSphere   randomUnitSphere_;
@@ -156,8 +114,13 @@ namespace mu2e {
   
   private:
     static SpectrumVar    parseSpectrumVar(const std::string& name);
-    double                generateEnergy(GenPhys& genPhys);
-    
+    double                generateEnergy(GenPhysStruct& genPhys);
+    double _decayFraction;
+    double _captureFraction;
+    std::vector<GenPhysStruct> _allStopProducts;
+    std::vector<GenPhysStruct> _allCaptureProducts;
+    std::vector<GenPhysStruct> _allDecayProducts;
+
   public:
     explicit MuStopProductsGun(const Parameters& conf);
 
@@ -174,19 +137,44 @@ namespace mu2e {
     , randomFlat_(eng_)
     , stops_(eng_, conf_.stops())
     , doHistograms_(conf_.doHistograms())
+    , _decayFraction(GlobalConstantsHandle<PhysicsParams>()->getDecayFraction())
+    , _captureFraction(1 - _decayFraction)
   {
     produces<mu2e::GenParticleCollection>();
-
-    for (const auto& i_genProcConfig : conf_.processes()) {
-      GenProc i_genProc(i_genProcConfig, eng_);
-      allGenProc_.push_back(i_genProc);
-    }
 
     if (verbosityLevel_ > 0) {
       std::cout<<"MuStopProductsGun: using = "
                <<stops_.numRecords()
                <<" stopped particles"
                <<std::endl;
+      std::cout << "MuStopProductsGun: decayFraction = " << _decayFraction << std::endl;
+      std::cout << "MuStopProductsGun: captureFraction = " << _captureFraction << std::endl;
+    }
+    for (const auto& i_genPhysConfig : conf_.stopProducts()) {
+      GenPhysStruct i_genPhys(i_genPhysConfig, eng_);
+      _allStopProducts.push_back(i_genPhys);
+      if (verbosityLevel_ > 0) {
+	std::cout << "MuStopProductsGun: Adding Stop Process: " << i_genPhys.pdgId << std::endl;
+      }
+    }
+    for (const auto& i_genPhysConfig : conf_.captureProducts()) {
+      double rate = 0;
+      if (i_genPhysConfig.pdgId() == 2212) {
+	rate = GlobalConstantsHandle<PhysicsParams>()->getCaptureProtonRate();
+      }
+
+      GenPhysStruct i_genPhys(i_genPhysConfig, eng_, rate);
+      _allCaptureProducts.push_back(i_genPhys);
+      if (verbosityLevel_ > 0) {
+	std::cout << "MuStopProductsGun: Adding Capture Process: " << i_genPhys.pdgId << std::endl;
+      }
+    }
+    for (const auto& i_genPhysConfig : conf_.decayProducts()) {
+      GenPhysStruct i_genPhys(i_genPhysConfig, eng_);
+      _allDecayProducts.push_back(i_genPhys);
+      if (verbosityLevel_ > 0) {
+	std::cout << "MuStopProductsGun: Adding Decay Process: " << i_genPhys.pdgId << std::endl;
+      }
     }
 
     if ( doHistograms_ ) {
@@ -220,39 +208,65 @@ namespace mu2e {
 
     const CLHEP::Hep3Vector pos(stop.x, stop.y, stop.z);
 
+    // Always generate stop products (e.g. stop X-rays)
+    for (auto& i_genPhys : _allStopProducts) {
+      const double energy = generateEnergy(i_genPhys);
+      const double p = energy * sqrt(1 - std::pow(i_genPhys.mass/energy,2));
+
+      CLHEP::Hep3Vector p3 = randomUnitSphere_.fire(p);
+      CLHEP::HepLorentzVector fourmom(p3, energy);
+      output->emplace_back(i_genPhys.pdgId,
+			   i_genPhys.genId,
+			   pos,
+			   fourmom,
+			   stop.t);
+    }
+
     double rand = randomFlat_.fire();
-    double current_limit = 0;
-    for (auto& i_process : allGenProc_) {
-      current_limit += i_process.probability;
-      if (rand <= current_limit) {
-	std::cout << "AE: " << i_process.name << ", prob = " << i_process.probability << std::endl;
+    if (rand < _decayFraction) {
+      std::cout << "Decay!" << std::endl;
+      for (auto& i_genPhys : _allDecayProducts) {
+	const double energy = generateEnergy(i_genPhys);
+	const double p = energy * sqrt(1 - std::pow(i_genPhys.mass/energy,2));
 
-	for (auto& i_genPhys : i_process.allGenPhys) {
-	  const double energy = generateEnergy(i_genPhys);
-	  const double p = energy * sqrt(1 - std::pow(i_genPhys.mass/energy,2));
-
-	  CLHEP::Hep3Vector p3 = randomUnitSphere_.fire(p);
-	  CLHEP::HepLorentzVector fourmom(p3, energy);
-	  output->emplace_back(i_genPhys.pdgId,
-			       i_genPhys.genId,
-			       pos,
-			       fourmom,
-			       stop.t);
-
-	  //-----------------------------------------------------------------------------
-	  // if requested, fill histograms. Currently, the only one
-	  //-----------------------------------------------------------------------------
-	  if (doHistograms_) {
-	    _hGenId->Fill(i_genPhys.genId.id());
-	    _hPdgId->Fill(i_genPhys.pdgId);
-	    _hEnergy->Fill(energy);
-	    _hTime->Fill(stop.t);
-	    _hZ->Fill(pos.z());
-	  }
-	}
-	break;
+	CLHEP::Hep3Vector p3 = randomUnitSphere_.fire(p);
+	CLHEP::HepLorentzVector fourmom(p3, energy);
+	output->emplace_back(i_genPhys.pdgId,
+			     i_genPhys.genId,
+			     pos,
+			     fourmom,
+			     stop.t);
       }
     }
+    else {
+      std::cout << "Capture!" << std::endl;
+      for (auto& i_genPhys : _allCaptureProducts) {
+	std::cout << "Rate = " << i_genPhys.emissionRate << std::endl;
+	std::cout << "Fire N = " << i_genPhys.randomPoissonQ.fire() << std::endl;
+
+	const double energy = generateEnergy(i_genPhys);
+	const double p = energy * sqrt(1 - std::pow(i_genPhys.mass/energy,2));
+
+	CLHEP::Hep3Vector p3 = randomUnitSphere_.fire(p);
+	CLHEP::HepLorentzVector fourmom(p3, energy);
+	output->emplace_back(i_genPhys.pdgId,
+			     i_genPhys.genId,
+			     pos,
+			     fourmom,
+			     stop.t);
+      }
+    }
+    //-----------------------------------------------------------------------------
+    // if requested, fill histograms. Currently, the only one
+    //-----------------------------------------------------------------------------
+    // if (doHistograms_) {
+    //   _hGenId->Fill(i_genPhys.genId.id());
+    //   _hPdgId->Fill(i_genPhys.pdgId);
+    //   _hEnergy->Fill(energy);
+    //   _hTime->Fill(stop.t);
+    //   _hZ->Fill(pos.z());
+    // }
+
     event.put(std::move(output));
   }
 
@@ -261,7 +275,7 @@ namespace mu2e {
 // the spectrum itself doesn't know whether is stored momentum, kinetic or full 
 // energy
 //-----------------------------------------------------------------------------
-  double MuStopProductsGun::generateEnergy(GenPhys& genPhys) {
+  double MuStopProductsGun::generateEnergy(GenPhysStruct& genPhys) {
     double res = genPhys.spectrum.sample(genPhys.randSpectrum.fire());
 
     if (res < 0.0) {
