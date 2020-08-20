@@ -183,11 +183,15 @@ namespace mu2e {
       std::cout << "MuStopProductsGun: captureFraction = " << _captureFraction << std::endl;
     }
     for (const auto& i_genPhysConfig : conf_.stopProducts()) {
-      double rate = 1;
+      double rate = 0;
       bool is_poisson_rate = false;
       double prob = 1;
       if (i_genPhysConfig.pdgId() == 22) {
+	rate = 1;
 	prob = GlobalConstantsHandle<PhysicsParams>()->getStopXRay2p1sIntensity();
+      }
+      else {
+	throw cet::exception("MUSTOPPRODUCTSGUN") << "Stop product with PdgId " << i_genPhysConfig.pdgId() << " is not implemented" << std::endl;
       }
 
       GenPhysStruct i_genPhys(i_genPhysConfig, eng_, is_poisson_rate, rate, prob);
@@ -198,16 +202,23 @@ namespace mu2e {
     }
     for (const auto& i_genPhysConfig : conf_.captureProducts()) {
       double rate = 0;
-      bool is_poisson_rate = true;
+      bool is_poisson_rate = false;
       double prob = 1;
       if (i_genPhysConfig.pdgId() == 2212) {
+	is_poisson_rate = true;
 	rate = GlobalConstantsHandle<PhysicsParams>()->getCaptureProtonRate();
       }
       else if (i_genPhysConfig.pdgId() == 1000010020) {
+	is_poisson_rate = true;
 	rate = GlobalConstantsHandle<PhysicsParams>()->getCaptureDeuteronRate();
       }
       else if (i_genPhysConfig.pdgId() == 2112) {
+	is_poisson_rate = true;
 	rate = GlobalConstantsHandle<PhysicsParams>()->getCaptureNeutronRate();
+      }
+      else if (i_genPhysConfig.pdgId() == 22) {
+	rate = 1;
+	prob = GlobalConstantsHandle<PhysicsParams>()->getCaptureGammaIntensity();
       }
       else {
 	throw cet::exception("MUSTOPPRODUCTSGUN") << "Capture product with PdgId " << i_genPhysConfig.pdgId() << " is not implemented" << std::endl;
@@ -227,7 +238,7 @@ namespace mu2e {
 	rate = 1;
       }
       else {
-	throw cet::exception("MUSTOPPRODUCTSGUN") << "Emission rate/Probability for decay product with PdgId " << i_genPhysConfig.pdgId() << " is not implemented" << std::endl;
+	throw cet::exception("MUSTOPPRODUCTSGUN") << "Decay product with PdgId " << i_genPhysConfig.pdgId() << " is not implemented" << std::endl;
       }
 
       GenPhysStruct i_genPhys(i_genPhysConfig, eng_, is_poisson_rate, rate, prob);
