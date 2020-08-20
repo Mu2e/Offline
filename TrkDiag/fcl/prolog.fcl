@@ -172,6 +172,7 @@ BEGIN_PROLOG
 	     fillTrkQual : true 
 	     trkpid : "TrkPID"
 	     fillTrkPID : true
+	     fillHits : true
   }
 
   DeM : { input : "KFF" 
@@ -226,6 +227,7 @@ BEGIN_PROLOG
     FillMCInfo : true
     FillTrkQualInfo : true
     FillTrkPIDInfo : true
+    FillHitInfo : false
     ProcessEmptyEvents : false
     AnalyzeCRV : true
     AnalyzeCRVPulses : false
