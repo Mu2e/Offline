@@ -43,6 +43,7 @@
 #include "Print/inc/KalSeedPrinter.hh"
 #include "Print/inc/PhysicalVolumePrinter.hh"
 #include "Print/inc/TriggerResultsPrinter.hh"
+#include "Print/inc/SimStageEfficiencyPrinter.hh"
 
 using namespace std;
 
@@ -119,7 +120,8 @@ namespace mu2e {
 	fhicl::Name("physicalVolumePrinter") }; 
       fhicl::Table<ProductPrinter::Config> triggerResultsPrinter { 
 	fhicl::Name("triggerResultsPrinter") }; 
-
+      fhicl::Table<SimStageEfficiencyPrinter::Config> simStageEfficiencyPrinter { 
+	fhicl::Name("simStageEfficiencyPrinter") }; 
     };
 
     // this line is required by art to allow the command line help print
@@ -128,6 +130,7 @@ namespace mu2e {
     explicit PrintModule(const Parameters& conf);
     void analyze  ( art::Event const&  event  ) override;
     void beginSubRun( art::SubRun const& subrun) override;
+    void beginRun( art::Run const& run) override;
 
   private:
 
@@ -177,6 +180,7 @@ mu2e::PrintModule::PrintModule(const Parameters& conf):
   _printers.push_back( make_unique<KalSeedPrinter>( conf().kalSeedPrinter() ) );
   _printers.push_back( make_unique<PhysicalVolumePrinter>( conf().physicalVolumePrinter() ) );
   _printers.push_back( make_unique<TriggerResultsPrinter>( conf().triggerResultsPrinter() ) );
+  _printers.push_back( make_unique<SimStageEfficiencyPrinter>( conf().simStageEfficiencyPrinter() ) );
 }
 
 
@@ -204,6 +208,19 @@ void mu2e::PrintModule::beginSubRun(art::SubRun const& subrun) {
     << endl;
 
   for(auto& prod_printer: _printers) prod_printer->PrintSubRun(subrun);
+
+  cout << endl;
+
+}
+
+void mu2e::PrintModule::beginRun(art::Run const& run) {
+  cout 
+    << "\n"
+    << " ###############  PrintModule Run " 
+    << setw(9) << run.run()
+    << endl;
+
+  for(auto& prod_printer: _printers) prod_printer->PrintRun(run);
 
   cout << endl;
 

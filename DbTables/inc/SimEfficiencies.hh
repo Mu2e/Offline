@@ -18,21 +18,19 @@ namespace mu2e {
 
     class Row {
     public:
-      Row(int idx, std::string effname, double eff):
-	_idx(idx),_effname(effname),_eff(eff) {}
-      int    idx() const { return _idx; }
+      Row(std::string effname, double eff):
+	_effname(effname),_eff(eff) {}
       
       std::string  effname() const { return _effname;}
       double  eff() const { return _eff; }
 
     private:
-      int _idx;
       std::string _effname;
       double _eff;
     };
 
 
-    SimEfficiencies():DbTable("SimEfficiencies","sim.efficiencies","idx,effname,eff") { }
+    SimEfficiencies():DbTable("SimEfficiencies","sim.efficiencies","effname,eff") { }
 
     const Row& rowAt(const std::size_t index) const { return _rows.at(index);}
     const Row& row(const int idx) const { return _rows.at(idx); }
@@ -44,22 +42,13 @@ namespace mu2e {
 	+ nrow()*nrow()/2 + nrow()*sizeof(Row); };
 
     void addRow(const std::vector<std::string>& columns) {
-      int idx = std::stoi(columns[0]);
-      // enforce a strict sequential order - optional
-      if(idx!=int(_rows.size())) {
-	throw cet::exception("SIMEFFICIENCIES_BAD_INDEX") 
-	  << "SimEfficiencies::addRow found index out of order: " 
-	  <<idx << " != " << _rows.back().idx()+1 <<"\n";
-      }
-
-      _rows.emplace_back(idx,
-			 columns[1],
-			 std::stof(columns[2]));
+      //      int idx = std::stoi(columns[0]);
+      _rows.emplace_back(columns[0],
+			 std::stof(columns[1]));
     }
 
     void rowToCsv(std::ostringstream& sstream, std::size_t irow) const {
       Row const& r = _rows.at(irow);
-      sstream << r.idx()<<",";
       sstream << r.effname()<<",";
       sstream << r.eff();
     }
@@ -68,6 +57,7 @@ namespace mu2e {
       for (const auto& i_row : _rows) {
 	if (i_row.effname() == name) {
 	  eff =  i_row.eff();
+	  return;
 	}
       }
       throw cet::exception("SIMEFFICIENCIES_BAD_EFFNAME") << "Efficiency with name " << name << " not found in database" << std::endl;

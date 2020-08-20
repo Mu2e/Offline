@@ -28,9 +28,9 @@ namespace mu2e {
       // now overwrite with values from database
       double eff;
       effDb->findEff("muBeamPerPOT", eff);
-      ptr->addEff("muBeamPerPOT", eff);
+      ptr->setEffVal("muBeamPerPOT", eff);
       effDb->findEff("flashPerMuBeam", eff);
-      ptr->addEff("flashPerMuBeam", eff);
+      ptr->setEffVal("flashPerMuBeam", eff);
       return ptr;
     }
 
