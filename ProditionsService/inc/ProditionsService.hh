@@ -33,6 +33,8 @@
 
 #include "AnalysisConfig/inc/MVACatalogConfig.hh"
 
+#include "SimulationConfig/inc/BookkeeperConfig.hh"
+
 namespace mu2e {
 
   class ProditionsService {
@@ -74,6 +76,9 @@ namespace mu2e {
       fhicl::Table<MVACatalogConfig> trkQualCatalog{
 	  Name("trkQualCatalog"), 
 	  Comment("Catalog of TrkQual trainings") };
+      fhicl::Table<BookkeeperConfig> bookkeeper{
+	  Name("bookkeeper"),
+	  Comment("simulation bookkeeping") };
     };
 
     // this line is required by art to allow the command line help print

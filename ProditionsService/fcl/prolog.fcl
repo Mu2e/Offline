@@ -1,5 +1,6 @@
 #include "TrackerConditions/fcl/prolog.fcl"
 #include "AnalysisConditions/fcl/prolog.fcl"
+#include "SimulationConditions/fcl/prolog.fcl"
 
 BEGIN_PROLOG
 
@@ -13,7 +14,10 @@ Proditions : {
    alignedTracker : @local::AlignedTracker
    mu2eMaterial : @local::Mu2eMaterial
    mu2eDetector : @local::Mu2eDetector
+
    trkQualCatalog : @local::TrkQualCatalog
+
+   bookkeeper : @local::Bookkeeper
    verbose : 0
 }
 
