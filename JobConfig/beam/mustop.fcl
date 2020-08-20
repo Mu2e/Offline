@@ -31,6 +31,15 @@ genPhys_cap_neutron: {
     spectrumVariable: kineticEnergy
 }
 
+genPhys_stop_2p1s: {
+    pdgId : 22
+    genId : StoppedParticleReactionGun
+    spectrumVariable : kineticEnergy
+    spectrumShape : monoenergetic
+    elow : 0.347
+    ehi : 0.347
+}    
+
 END_PROLOG
 
 process_name: mustop
@@ -44,9 +53,10 @@ physics.producers.generate: {
    module_type: MuStopProductsGun
    verbosityLevel : 1
    stops : @local::mu2e.tgtMuonStops
-   stopProducts : [ ] # e.g. X-rays
-   captureProducts : [ @local::genPhys_cap_proton ] #, @local::genPhys_cap_neutron ]
+   stopProducts : [ @local::genPhys_stop_2p1s ] # e.g. X-rays
+   captureProducts : [ @local::genPhys_cap_proton, @local::genPhys_cap_neutron ]
    decayProducts : [ @local::genPhys_dio ]
+   doTree : true
 }
 
 services.TFileService.fileName: "out/nts.owner.mustop.version.sequencer.root"
