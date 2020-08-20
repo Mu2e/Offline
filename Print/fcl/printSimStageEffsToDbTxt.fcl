@@ -1,0 +1,30 @@
+#
+# print sim stage efficiencies files
+#
+
+#include "fcl/minimalMessageService.fcl"
+
+process_name : PrintSimStageEffs
+
+services : {
+#  message : @local::default_message
+#  message : @local::mf_production
+  message : @local::mf_errorsOnly
+}
+
+physics :{
+  analyzers: {
+    res : {
+      module_type : PrintSimParticleEfficiencies #PrintModule
+      simStageEfficiencyPrinter : {
+        verbose : 1
+	forDb : true
+      }
+      outFileName : "testDb.txt"
+    }
+  }
+
+  e1        : [ res ]
+  end_paths : [ e1 ]
+
+}
