@@ -20,7 +20,7 @@ physics :{
         verbose : 1
 	forDb : true
       }
-      outFileName : "testDb.txt"
+      outFileName : "simStageEffsDb.txt"
     }
   }
 
