@@ -5,9 +5,6 @@
 //
 
 //
-// $Id: CRSScintillatorModule.hh,v 1.8 2014/02/10 14:23:03 ehrlich Exp $
-// $Author: ehrlich $
-// $Date: 2014/02/10 14:23:03 $
 //
 // Original author KLG somewhat based on Rob Kutschke' Sector
 //

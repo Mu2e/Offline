@@ -2,9 +2,6 @@
 #  - 100 events default, no visualization
 #  - creates a root file in the home directory
 #
-# $Id: ConversionEnergyLoss.fcl,v 1.5 2012/03/02 17:16:22 gandr Exp $
-# $Author: gandr $
-# $Date: 2012/03/02 17:16:22 $
 #
 # Original author Rob Kutschke
 

@@ -2,9 +2,6 @@
 // An enum-matched-to-names class for generator Id's.
 //
 //
-// $Id: GenId.cc,v 1.2 2012/04/18 22:57:19 onoratog Exp $
-// $Author: onoratog $
-// $Date: 2012/04/18 22:57:19 $
 //
 // Original author Rob Kutschke
 #include <iomanip>

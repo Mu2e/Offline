@@ -1,9 +1,6 @@
 //
 // Root c++ function to compare plots based on steps, hits, track fits
 // 
-// $Id: sthktfO.C,v 1.3 2014/04/03 22:26:32 genser Exp $
-// $Author: genser $
-// $Date: 2014/04/03 22:26:32 $
 // 
 // Original author KLG somewat based on Rob Kutschke's example
 //

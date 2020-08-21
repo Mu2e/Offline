@@ -1,8 +1,6 @@
 //
 // Construct VirtualDetectors
 //
-// $Id: VirtualDetectorMaker.cc,v 1.35 2014/09/16 21:57:43 jrquirk Exp $
-// $Author: jrquirk $
 //
 
 #include <iostream>

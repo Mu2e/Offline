@@ -1,9 +1,6 @@
 //
 // Use the TrackerProduct to check the behaviour of a ranged for.
 //
-// $Id: RangedFor_module.cc,v 1.1 2014/06/03 01:08:08 kutschke Exp $
-// $Author: kutschke $
-// $Date: 2014/06/03 01:08:08 $
 //
 // Original author Rob Kutschke
 //

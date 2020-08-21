@@ -3,9 +3,6 @@
 
 
 //
-// $Id: ProductionSolenoid.hh,v 1.5 2013/03/15 15:52:05 kutschke Exp $
-// $Author: kutschke $
-// $Date: 2013/03/15 15:52:05 $
 //
 // Original author KLG
 //

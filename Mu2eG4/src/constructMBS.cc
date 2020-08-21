@@ -1,9 +1,6 @@
 //
 // Free function to create Muon Beam Stop and some elements of the Cryostat in G4
 //
-// $Id: constructMBS.cc,v 1.18 2013/08/21 17:35:17 knoepfel Exp $
-// $Author: knoepfel $
-// $Date: 2013/08/21 17:35:17 $
 //
 // Original author KLG
 //

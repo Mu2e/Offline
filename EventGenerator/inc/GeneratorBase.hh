@@ -5,9 +5,6 @@
 // Also provides access to the random number engine associated with the
 // EventGenerator module.
 //
-// $Id: GeneratorBase.hh,v 1.9 2014/01/15 17:07:30 tassiell Exp $
-// $Author: tassiell $
-// $Date: 2014/01/15 17:07:30 $
 //
 // Original author Rob Kutschke
 //

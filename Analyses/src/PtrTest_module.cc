@@ -2,9 +2,6 @@
 // Example of how to read a KalRepCollection and create a matching KalRepPtrCollection.
 // This can be used as a model for writing a module that merges two KalRepCollections.
 //
-// $Id: PtrTest_module.cc,v 1.2 2014/04/18 20:17:03 kutschke Exp $
-// $Author: kutschke $
-// $Date: 2014/04/18 20:17:03 $
 //
 // Original author Rob Kutschke
 //

@@ -3,9 +3,6 @@
 //
 // Free function to create  Transport Solenoid
 //
-// $Id: constructTS.hh,v 1.5 2013/06/28 19:26:33 knoepfel Exp $
-// $Author: knoepfel $
-// $Date: 2013/06/28 19:26:33 $
 //
 // Original author KLG
 //

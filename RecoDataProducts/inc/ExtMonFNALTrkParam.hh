@@ -1,6 +1,3 @@
-// $Id: ExtMonFNALTrkParam.hh,v 1.1 2012/09/19 03:54:19 gandr Exp $
-// $Author: gandr $
-// $Date: 2012/09/19 03:54:19 $
 //
 // Original author Andrei Gaponenko
 //

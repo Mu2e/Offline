@@ -4,9 +4,6 @@
 //
 // Class to represent the system of MECO Style Proton Absorber
 //
-// $Id: MECOStyleProtonAbsorber.hh,v 1.6 2014/02/28 21:11:19 knoepfel Exp $
-// $Author: knoepfel $
-// $Date: 2014/02/28 21:11:19 $
 //
 // Original author MyeongJae Lee
 //

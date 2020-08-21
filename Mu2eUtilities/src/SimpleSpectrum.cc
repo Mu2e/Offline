@@ -1,8 +1,5 @@
 // Simple approximations available for DIO spectrum.
 //
-// $Id: SimpleSpectrum.cc,v 1.6 2014/02/25 17:14:10 knoepfel Exp $
-// $Author: knoepfel $
-// $Date: 2014/02/25 17:14:10 $
 //
 
 #include <cstddef>

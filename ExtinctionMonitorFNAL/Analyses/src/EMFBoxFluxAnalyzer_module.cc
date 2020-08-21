@@ -1,9 +1,6 @@
 // Read in a set of particles hitting ExtMonFNAL VD box (from g4s1 room jobs)
 // compute randomization parameters, and write out as an ntuple.
 //
-// $Id: EMFBoxFluxAnalyzer_module.cc,v 1.13 2013/10/21 20:34:14 gandr Exp $
-// $Author: gandr $
-// $Date: 2013/10/21 20:34:14 $
 //
 // Original author Andrei Gaponenko, 2012
 

@@ -1,8 +1,5 @@
 # Run the SimParticleCheck00 module
 #
-# $Id: simParticleCheck00.fcl,v 1.2 2012/12/17 21:20:26 genser Exp $
-# $Author: genser $
-# $Date: 2012/12/17 21:20:26 $
 
 #include "fcl/minimalMessageService.fcl"
 #include "fcl/standardProducers.fcl"

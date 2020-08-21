@@ -1,6 +1,3 @@
-// $Id: EMFPixelSimFilter_module.cc,v 1.4 2013/07/30 18:45:00 wieschie Exp $
-// $Author: wieschie $
-// $Date: 2013/07/30 18:45:00 $
 //
 // Andrei Gaponenko, 2012
 

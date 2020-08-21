@@ -1,7 +1,4 @@
 //
-// $Id: DataInterface.cc,v 1.77 2014/09/10 07:40:38 ehrlich Exp $
-// $Author: ehrlich $
-// $Date: 2014/09/10 07:40:38 $
 //
 using namespace std;
 #include "EventDisplay/src/DataInterface.h"

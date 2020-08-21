@@ -3,9 +3,6 @@
 //
 // A collection of Geant4 user helper functions
 // initially extracted from the TrackingAction
-// $Id: Mu2eG4UserHelpers.hh,v 1.6 2014/08/25 20:01:30 genser Exp $
-// $Author: genser $
-// $Date: 2014/08/25 20:01:30 $
 //
 // Original author KLG based on Rob's TrackingAction
 //
