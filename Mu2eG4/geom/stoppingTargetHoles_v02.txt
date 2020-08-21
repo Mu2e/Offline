@@ -1,0 +1,21 @@
+// Update to the stopping target foil thickness and stopping target wires
+// M. MacKenzie, May 2020
+
+#include "Mu2eG4/geom/stoppingTargetHoles_DOE_review_2017.txt"
+
+// last thickness given will be repeated up to number radii.size()
+vector<double> stoppingTarget.halfThicknesses  =
+  { 0.0528 }; //0.1056 mm full thickness (docdb-31396 slide 24)
+
+//double the amount of material (so sqrt(2) radius) to approximate twisted return of wire
+double stoppingTarget.foilTarget_supportStructure_radius = 0.05388; // radius of the support wires, 38.1micrometer radius corresponds to 3mil diameter
+
+//use the OPA dimensions to fix the target support wire end points
+bool stoppingTarget.foilTarget_supportStructure_endAtOPA = true;
+
+string stoppingTarget.foilTarget_supportStructure_fillMaterial = "ST_Wires";
+
+// This tells emacs to view this file in c++ mode.
+// Local Variables:
+// mode:c++
+// End:

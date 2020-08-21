@@ -98,8 +98,22 @@ BEGIN_PROLOG
     {
       module_type               : CrvRecoPulsesFinder
       crvDigiModuleLabel        : "CrvDigi"
-      minPEs                    : 0        //6 PEs
-      darkNoise                 : false    //reduced initial pulse width for the reco pulse fit for dark noise (12.6ns instead of 19.0ns)
+      minADCdifference          : 5     //minimum ADC difference above pedestal to be considered for reconstruction
+      defaultBeta               : 19.0  //19.0ns for regular pulses
+                                        //12.6ns for dark noise pulses used for calibration
+                                        //used for initialization of fit function
+                                        //and as default value for invalid fits
+      minBeta                   : 5.0   //5.0ns smallest accepted beta for valid fit
+      maxBeta                   : 50.0  //50.0ns largest accepted beta for valid fit
+      maxTimeDifference         : 20.0  //20.0ns largest accepted differences between
+                                        //time of largest ADC value and fitted peak
+      minPulseHeightRatio       : 0.7   //smallest accepted ratio between largest ADC value and fitted peak
+      maxPulseHeightRatio       : 1.5   //largest accepted ratio between largest ADC value and fitted peak
+      LEtimeFactor              : 0.985 //time of leading edge is peakTime-LEtimeFactor*beta
+                                        //e.g. 0.985 for a leading edge at 50% pulse height
+                                        //e.g. 1.385 for a leading edge at 20% pulse height
+                                        //e.g. 1.587 for a leading edge at 10% pulse height
+      minPEs                    : 0     //0 PEs
     }
     CrvCoincidence:
     {

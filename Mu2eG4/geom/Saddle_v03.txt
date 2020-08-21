@@ -1,0 +1,10 @@
+// Update to the TS saddle hole radius to match updated support collar radius
+// M. MacKenzie, May 2020
+#include "Mu2eG4/geom/Saddle_v02.txt"
+
+double Saddle.holeRadiusType4Hole1   = 1101.0;
+
+// This tells emacs to view this file in c++ mode.
+// Local Variables:
+// mode:c++
+// End:

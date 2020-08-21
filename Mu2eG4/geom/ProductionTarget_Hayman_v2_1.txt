@@ -1,0 +1,46 @@
+
+#include "Mu2eG4/geom/ProductionTarget_Hayman_v2_0.txt"
+int PSHayman.verbosityLevel = 0;
+
+//update the target's segmentation
+int            targetPS_numberOfTargetSections           = 3; //builds segments starting from proton downstream, ~West and away from TS
+vector<double> targetPS_startingSectionThickness         = {5.    ,5.    ,5.    }; //mm
+vector<int>    targetPS_numberOfSegmentsPerSection       = {13    ,9     ,12    };
+vector<double> targetPS_thicknessOfSegmentPerSection     = {5.    ,5.    ,2.5   }; //mm
+vector<double> targetPS_heightOfRectangularGapPerSection = {12.640,12.135,12.135}; //mm
+vector<double> targetPS_thicknessOfGapPerSection         = {1.0   ,2.0   ,2.0   }; //mm
+double         targetPS_supportRingLength                = 8.1; // full length in mm
+double         targetPS_supportRingCutoutLength          = 4.05; //taken to be whole length of ring (so divide by 2 in G4). Needs to be check in code, see code
+
+//bicycle wheel parameters
+bool   targetPS.supports.build            = true;
+double targetPS.supports.wheel.halfLength = 9.525;
+double targetPS.supports.wheel.rOut       = 196.85;
+double targetPS.supports.wheel.rIn        = 177.8;
+string targetPS.supports.wheel.material   =  "G4_Al";
+
+int  targetPS.supports.nSpokes = 3;
+//features on the wheel
+vector<double> targetPS.supports.features.angles = {-30.,  90., 210.}; //degrees
+vector<double> targetPS.supports.features.arcs   = { 28.,  28.,  28.}; //degrees
+vector<double> targetPS.supports.features.rIns   = {158.75, 158.75, 158.75}; //mm
+//support rods in the wheel that the wires connect to
+vector<double> targetPS.supports.rods.angles       = {-23, 97, 217}; //degrees
+vector<double> targetPS.supports.rods.halfLength   = {70., 70., 70.}; //mm
+vector<double> targetPS.supports.rods.offset       = {-40., 10., 40.}; //mm
+vector<double> targetPS.supports.rods.radius       = {9., 9., 9.}; //mm
+vector<double> targetPS.supports.rods.radialOffset = {177.8, 177.8, 177.8}; //mm
+vector<double> targetPS.supports.rods.wireOffset.downstream = {10., 10., 10.}; //mm
+vector<double> targetPS.supports.rods.wireOffset.upstream   = {10., 10., 10.}; //mm
+//spokes connecting the target to the wheel rods
+vector<double> targetPS.supports.spokes.targetAngles.downstream = {-23, 97, 217}; //degrees
+vector<double> targetPS.supports.spokes.targetAngles.upstream   = {-23, 97, 217}; //degrees
+double targetPS.supports.spokes.diameter = 2.;
+string targetPS.supports.spokes.material = "ProductionTargetTungstenLa2_O3";
+
+double targetPS_productionTargetMotherOuterRadius = 200.; //mm
+
+// This tells emacs to view this file in c++ mode.
+// Local Variables:
+// mode:c++
+// End:
