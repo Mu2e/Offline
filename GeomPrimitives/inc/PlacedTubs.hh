@@ -6,9 +6,6 @@
 //   - Placement information: position and rotation
 //   - Material name
 //
-//  $Id: PlacedTubs.hh,v 1.1 2013/01/07 03:55:10 kutschke Exp $
-//  $Author: kutschke $
-//  $Date: 2013/01/07 03:55:10 $
 //
 //  Original author Rob Kutschke
 //

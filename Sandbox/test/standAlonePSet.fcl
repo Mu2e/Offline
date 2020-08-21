@@ -1,8 +1,5 @@
 # Example of how to read a standalone .fcl file
 #
-# $Id: standAlonePSet.fcl,v 1.1 2014/01/17 19:41:51 kutschke Exp $
-# $Author: kutschke $
-# $Id: standAlonePSet.fcl,v 1.1 2014/01/17 19:41:51 kutschke Exp $
 #
 
 #include "fcl/minimalMessageService.fcl"

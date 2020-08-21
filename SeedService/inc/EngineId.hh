@@ -4,9 +4,6 @@
 // An identifier for random engines.  An identifier may consist
 // of simply a module label or a module label plus an instance name.
 //
-// $Id: EngineId.hh,v 1.1 2012/02/04 00:12:48 kutschke Exp $
-// $Author: kutschke $
-// $Date: 2012/02/04 00:12:48 $
 //
 // Contact person Rob Kutschke
 //

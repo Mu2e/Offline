@@ -2,9 +2,6 @@
 #
 # Read back the output of g4test_03.py; make a few histograms.
 #
-# $Id: readback0.fcl,v 1.3 2012/03/02 17:16:22 gandr Exp $
-# $Author: gandr $
-# $Date: 2012/03/02 17:16:22 $
 
 #include "fcl/minimalMessageService.fcl"
 #include "fcl/standardProducers.fcl"

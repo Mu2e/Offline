@@ -3,9 +3,6 @@
 // Define names of Sensitive Detectors; revised to forward the names of the
 // StepInstanceName names.
 //
-// $Id: SensitiveDetectorName.hh,v 1.17 2014/06/05 21:06:34 genser Exp $
-// $Author: genser $
-// $Date: 2014/06/05 21:06:34 $
 //
 // Original author KLG
 

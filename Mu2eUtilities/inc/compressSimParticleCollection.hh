@@ -4,9 +4,6 @@
 //
 // Compress a SimParticleCollection.
 //
-// $Id: compressSimParticleCollection.hh,v 1.2 2013/08/28 05:58:37 gandr Exp $
-// $Author: gandr $
-// $Date: 2013/08/28 05:58:37 $
 //
 // Contact person Rob Kutschke
 //

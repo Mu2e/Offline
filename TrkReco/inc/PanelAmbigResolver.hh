@@ -4,9 +4,6 @@
 //
 // Original author: David Brown (LBNL), 2012
 //
-// $Id: PanelAmbigResolver.hh,v 1.5 2014/08/01 18:56:10 gandr Exp $
-// $Author: gandr $ 
-// $Date: 2014/08/01 18:56:10 $
 //
 #ifndef mu2e_PanelAmbig_PanelAmbigResolver_HH
 #define mu2e_PanelAmbig_PanelAmbigResolver_HH

@@ -4,9 +4,6 @@
 // Read Watanabe data about DIO spectrum from a table and merge it
 // with the spectrum coming from the Shanker formula
 
-// $Id: ShankerWatanabeSpectrum.hh,v 1.3 2013/08/01 12:42:46 knoepfel Exp $
-// $Author: knoepfel $
-// $Date: 2013/08/01 12:42:46 $
 //
 //
 

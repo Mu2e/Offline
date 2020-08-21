@@ -5,9 +5,6 @@
 // Each object has a "value" as a mock up of its data package plus
 // a unique serial number.
 //
-// $Id: TracerProduct.hh,v 1.6 2013/04/10 14:38:02 kutschke Exp $
-// $Author: kutschke $
-// $Date: 2013/04/10 14:38:02 $
 //
 // Original author Rob Kutschke
 //

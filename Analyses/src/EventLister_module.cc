@@ -1,9 +1,6 @@
 //
 // Write the event ids of all events.
 //
-// $Id: EventLister_module.cc,v 1.3 2014/06/26 03:40:05 murat Exp $
-// $Author: murat $
-// $Date: 2014/06/26 03:40:05 $
 //
 // Original author Rob Kutschke
 //

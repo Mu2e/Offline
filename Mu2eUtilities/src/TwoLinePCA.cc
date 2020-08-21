@@ -3,9 +3,6 @@
 // approach between the two lines.  The lines are
 // specified in point-slope form.
 //
-// $Id: TwoLinePCA.cc,v 1.4 2011/05/18 02:27:19 wb Exp $
-// $Author: wb $
-// $Date: 2011/05/18 02:27:19 $
 //
 // Original author Rob Kutschke
 //

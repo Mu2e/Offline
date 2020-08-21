@@ -4,9 +4,6 @@
 // Sequential number of a silicon module in Mu2e ExtMonFNAL detector.
 // Zero based.
 //
-// $Id: ExtMonFNALModuleDenseId.hh,v 1.1 2013/07/30 18:45:00 wieschie Exp $
-// $Author: wieschie $
-// $Date: 2013/07/30 18:45:00 $
 //
 // Original author Andrei Gaponenko
 

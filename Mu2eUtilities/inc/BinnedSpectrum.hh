@@ -5,9 +5,6 @@
 // Base class to allow generic access to all the classes that define
 // a momentum spectrum.
 //
-// $Id: BinnedSpectrum.hh,v 1.4 2014/04/25 17:26:42 knoepfel Exp $
-// $Author: knoepfel $
-// $Date: 2014/04/25 17:26:42 $
 //
 // Original author Kyle Knoepfel 
 //                 

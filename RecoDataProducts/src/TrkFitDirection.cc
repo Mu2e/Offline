@@ -1,9 +1,6 @@
 //
 // Track direction convention 
 //
-// $Id: TrkFitDirection.cc,v 1.1 2012/07/25 20:56:57 brownd Exp $
-// $Author: brownd $ 
-// $Date: 2012/07/25 20:56:57 $
 //
 // Original author David Brown, LBNL
 //

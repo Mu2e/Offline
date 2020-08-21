@@ -1,7 +1,4 @@
 //
-// $Id: ExtMonFNALPatRecTruthAssns.hh,v 1.2 2012/11/01 23:38:49 gandr Exp $
-// $Author: gandr $
-// $Date: 2012/11/01 23:38:49 $
 //
 // Original author Andrei Gaponenko
 //

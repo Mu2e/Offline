@@ -3,9 +3,6 @@
 // Now the default is 1m inner part and 2.2m outer part.
 // See doc-3186, 3155, 3006, and 2259
 //
-// $Id: protonAbsorber_conical_v2.txt,v 1.1 2014/08/29 16:37:09 knoepfel Exp $
-// $Author: knoepfel $
-// $Date: 2014/08/29 16:37:09 $
 //
 
 int protonabsorber.version = 2; // version 1 is the TDR version support wires, version 2 is CD3 support wires

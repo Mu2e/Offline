@@ -1,8 +1,5 @@
 # List run/subrun/event numbers found in a file
 #
-# $Id: eventLister.fcl,v 1.1 2013/01/22 00:05:10 kutschke Exp $
-# $Author: kutschke $
-# $Date: 2013/01/22 00:05:10 $
 
 #include "fcl/minimalMessageService.fcl"
 

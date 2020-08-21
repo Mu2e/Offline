@@ -3,9 +3,6 @@
 //
 //  Free functions to convert between  HepPoint and CLHEP::Hep3Vector.
 //
-// $Id: toHepPoint.hh,v 1.4 2011/05/18 02:27:18 wb Exp $
-// $Author: wb $
-// $Date: 2011/05/18 02:27:18 $
 //
 // Original author Rob Kutschke
 //

@@ -1,9 +1,6 @@
 //
 // Class which displays histograms and graphs. The reason why this class is necessary, is because there will be a variable number of histograms, which all need the same function to display them (e.g. the ShowHistogram function). However, TClassMenuItem can be associated only with a function with one parameter. The parameter needs to be clicked object (e.g. the polyline, etc.) which contains the ContentInfo, which holds ALL histograms. Since one cannot pass a parameter to this function to tell it which of the histograms it needs to drawn, one has to use a more complex approach: The functions (showHistogram) which are used for TClassMenuItems belong to special object of the class HistDraw. Each of these objects has a unique number (_index) which tell this function which of the histogram it needs to draw. These objects are given to the TClassMenuItem. The number of such objects depends on the number of histograms. The objects are stored in a vector which is owned by the EventDisplayFrame object.
 //
-// $Id: HistDraw.h,v 1.2 2012/09/14 17:17:34 ehrlich Exp $
-// $Author: ehrlich $
-// $Date: 2012/09/14 17:17:34 $
 //
 // Original author Ralf Ehrlich
 //

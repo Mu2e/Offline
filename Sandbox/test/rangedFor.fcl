@@ -1,9 +1,6 @@
 #
 # Use the TracerProduct to study ranged for loops.
 #
-# $Id: rangedFor.fcl,v 1.1 2014/06/03 01:08:08 kutschke Exp $
-# $Author: kutschke $
-# $Date: 2014/06/03 01:08:08 $
 #
 # Leave message service unconfigured so that messages to
 # log verbatim are not limited.

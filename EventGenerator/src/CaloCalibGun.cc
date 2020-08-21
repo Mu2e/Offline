@@ -2,9 +2,6 @@
 //
 // Simulate the photons coming from the pipe calibration source
 // //
-// $Id: CaloCalibGun.cc,v 1.16 2014/01/27 22:20:17 knoepfel Exp $
-// $Author: knoepfel $
-// $Date: 2014/01/27 22:20:17 $
 //
 // Original author Bertrand Echenard
 //

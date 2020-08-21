@@ -4,9 +4,6 @@
 //
 // Define a type for a collection of AlgorithmID objects.
 //
-// $Id: 
-// $Author: 
-// $Date: 
 //
 // Original author Vadim Rusu
 //

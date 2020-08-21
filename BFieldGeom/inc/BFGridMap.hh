@@ -5,9 +5,6 @@
 // All field maps are given in the standard Mu2e coordinate system.
 // Units are: space point in mm, field values in tesla.
 //
-// $Id: BFGridMap.hh,v 1.21 2013/08/30 22:25:22 kutschke Exp $
-// $Author: kutschke $
-// $Date: 2013/08/30 22:25:22 $
 //
 // Original Rob Kutschke, based on work by Julie Managan and Bob Bernstein.
 // Rewritten in part by Krzysztof Genser to save execution time

@@ -1,7 +1,5 @@
 //
 // Diagnostics for track-calo matching
-// $Author: brownd $ 
-// $Date: 2014/09/20 14:34:22 $
 //
 #ifndef TrkCaloDiag_HH
 #define TrkCaloDiag_HH

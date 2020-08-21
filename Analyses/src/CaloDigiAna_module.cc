@@ -1,9 +1,6 @@
 //
 // An EDAnalyzer module that reads back the hits created by the Calorimeter Digitization chain
 //
-// $Id: $
-// $Author: $
-// $Date: $
 //
 // Original author
 

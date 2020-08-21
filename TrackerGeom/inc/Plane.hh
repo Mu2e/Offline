@@ -3,9 +3,6 @@
 //
 // Hold information about one plane in a tracker.
 //
-// $Id: Plane.hh,v 1.10 2014/04/11 04:39:13 genser Exp $
-// $Author: genser $
-// $Date: 2014/04/11 04:39:13 $
 //
 // Original author Rob Kutschke
 //

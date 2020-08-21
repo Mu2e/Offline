@@ -1,9 +1,6 @@
 //
 // Check self consistency of all SimParticleCollections in the event.
 //
-// $Id: SimParticleCheck00_module.cc,v 1.3 2013/10/21 20:44:04 genser Exp $
-// $Author: genser $
-// $Date: 2013/10/21 20:44:04 $
 //
 // Original author Rob Kutschke
 //

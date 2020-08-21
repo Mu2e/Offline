@@ -1,9 +1,6 @@
 //
 // Class which manages the "Save As" dialog boxes by providing the right file types, and checking the extension of the returned file name.
 //
-// $Id: SaveDialogManager.h,v 1.4 2012/02/17 21:43:05 ehrlich Exp $
-// $Author: ehrlich $
-// $Date: 2012/02/17 21:43:05 $
 //
 // Original author Ralf Ehrlich
 //

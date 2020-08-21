@@ -4,9 +4,6 @@
 // Read Czarnecki DIO spectrum from a table and merge it
 // with the spectrum coming from the endopoint region formula
 
-// $Id: CzarneckiSpectrum.hh,v 1.7 2013/08/01 12:42:46 knoepfel Exp $
-// $Author: knoepfel $
-// $Date: 2013/08/01 12:42:46 $
 //
 // Original Author: Kyle Knoepfel
 //

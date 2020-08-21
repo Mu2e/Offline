@@ -2,9 +2,6 @@
 // Instantiate CLHEP::Hep3Vectors using polar coordinates.
 // (Not provided in the the native class).
 //
-// $Id: polar3Vector.cc,v 1.5 2012/07/26 19:01:01 kutschke Exp $
-// $Author: kutschke $
-// $Date: 2012/07/26 19:01:01 $
 //
 // Original author Rob Kutschke
 //
