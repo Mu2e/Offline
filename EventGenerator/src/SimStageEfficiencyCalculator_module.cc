@@ -35,7 +35,8 @@ namespace mu2e {
       fhicl::Atom<art::InputTag> trigResultsTag{Name("trigResultsTag"), Comment("Input tag for art::TriggerResults")};
       fhicl::Atom<std::string> trigPath{Name("trigPath"), Comment("Specific trigger path we want to calculate the efficiency for")};
       fhicl::Atom<art::InputTag> genCountTag{Name("genCountTag"), Comment("Input tag for mu2e::GenEventCount")};
-      fhicl::Atom<bool> printTriggers{Name("printTriggers"), Comment("Switch to turn on the printing of all the trigger names"), false};
+      fhicl::Atom<bool> printTriggers{Name("printTriggers"), Comment("Switch to turn on the printing of all the trigger names")};
+      fhicl::Atom<int> diagLevel{Name("diagLevel"), Comment("Set diagnostics level")};
     };
     using Parameters = art::EDProducer::Table<Config>;
     explicit SimStageEfficiencyCalculator(const Parameters& conf);
@@ -92,9 +93,11 @@ namespace mu2e {
   void SimStageEfficiencyCalculator::endRun(art::Run& run) {
 
     double efficiency = (double) _passedEvents / _generatedEvents;
-    std::cout << "Generated Events = " << _generatedEvents << std::endl;
-    std::cout << "Passed Events = " << _passedEvents << std::endl;
-    std::cout << "Efficiency = " << efficiency << std::endl;
+    if (_conf.diagLevel() > 0) {
+      std::cout << "Generated Events = " << _generatedEvents << std::endl;
+      std::cout << "Passed Events = " << _passedEvents << std::endl;
+      std::cout << "Efficiency = " << efficiency << std::endl;
+    }
     
     run.put(std::unique_ptr<SimStageEfficiency>(new SimStageEfficiency(_passedEvents, _generatedEvents)));
 
