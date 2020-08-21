@@ -1,0 +1,19 @@
+#
+# Fcl file to calculate SimStageEfficiency for this stage
+#
+
+#include "fcl/standardServices.fcl"
+#include "JobConfig/beam/prolog_eff.fcl"
+
+process_name : DSResamplerTrkCalCRVEff
+
+physics : {
+  producers : { flashPerMuBeam : @local::effCalc  }
+  p1 : [ flashPerMuBeam ]
+  e1 : [ Output ]
+  trigger_paths : [ p1 ]
+  end_paths : [ e1 ]
+}
+
+physics.producers.flashPerMuBeam.trigPath : "detPath"
+outputs.Output.fileName : "sim.owner.DS-resampler-TrkCalCRV-eff.version.sequencer.art"
