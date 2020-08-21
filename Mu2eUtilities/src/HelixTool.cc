@@ -1,6 +1,7 @@
 #include "Mu2eUtilities/inc/HelixTool.hh"
 
 
+
 namespace mu2e {
 
   HelixTool::HelixTool(const HelixSeed *Helix, const mu2e::Tracker*MyTracker) :
