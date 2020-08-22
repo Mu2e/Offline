@@ -8,12 +8,16 @@
 #ifndef Mu2eUtilities_inc_particleEnteringG4Volume_hh
 #define Mu2eUtilities_inc_particleEnteringG4Volume_hh
 
-#include "canvas/Persistency/Common/Ptr.h"
 #include "MCDataProducts/inc/SimParticle.hh"
 #include "MCDataProducts/inc/StepPointMC.hh"
 #include "MCDataProducts/inc/StrawGasStep.hh"
+#include "canvas/Persistency/Common/Ptr.h"
 
 namespace mu2e{
+class StepPointMC;
+class StrawGasStep;
+struct SimParticle;
+
   art::Ptr<mu2e::SimParticle> particleEnteringG4Volume(const StepPointMC& step);
   art::Ptr<mu2e::SimParticle> particleEnteringG4Volume(const StrawGasStep& step);
 }
