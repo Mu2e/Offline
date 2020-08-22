@@ -37,15 +37,17 @@
 
 #include <map>
 
-#include "canvas/Persistency/Common/Ptr.h"
-
 #include "MCDataProducts/inc/GenParticle.hh"
 #include "MCDataProducts/inc/SimParticle.hh"
 #include "MCDataProducts/inc/StepPointMC.hh"
+#include "canvas/Persistency/Common/Ptr.h"
 
 namespace art { class Event; }
 
 namespace mu2e {
+class GenParticle;
+class StepPointMC;
+struct SimParticle;
 
   class SimParticleParentGetter {
     const art::Event *evt_;

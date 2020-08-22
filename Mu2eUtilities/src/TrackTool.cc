@@ -11,9 +11,11 @@
 #include <cmath>
 #include <iostream>
 
-#include "Mu2eUtilities/inc/TrackTool.hh"
-
 #include "CLHEP/Units/PhysicalConstants.h"
+#include "CLHEP/Vector/ThreeVector.h"
+
+
+#include "Mu2eUtilities/inc/TrackTool.hh"
 
 using namespace std;
 //using CLHEP::Hep3Vector;

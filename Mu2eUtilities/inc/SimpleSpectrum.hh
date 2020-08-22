@@ -21,13 +21,14 @@
 
 // C++ includes
 #include <map>
+#include <string>
 #include <utility>
 #include <vector>
 
+#include "GeneralUtilities/inc/EnumToStringSparse.hh"
 // Mu2e includes
 #include "GlobalConstantsService/inc/GlobalConstantsHandle.hh"
 #include "GlobalConstantsService/inc/PhysicsParams.hh"
-#include "GeneralUtilities/inc/EnumToStringSparse.hh"
 
 namespace mu2e {
 
