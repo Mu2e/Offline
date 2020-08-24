@@ -59,6 +59,7 @@ mu2e::PrintSimParticleEfficiencies::PrintSimParticleEfficiencies(const Parameter
 {
   //cout << "start main pset\n"<< pset.to_string() << "\n end main pset"<< endl;
   _outfile << "TABLE SimEfficiencies" << std::endl;
+  _outfile << "# tag,numerator,denominator,efficiency" << std::endl;
 
   _printers.push_back( make_unique<SimStageEfficiencyPrinter>( conf().simStageEfficiencyPrinter() ) );
 }

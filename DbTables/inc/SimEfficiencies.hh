@@ -18,19 +18,23 @@ namespace mu2e {
 
     class Row {
     public:
-      Row(std::string effname, double eff):
-	_effname(effname),_eff(eff) {}
+      Row(std::string tag, unsigned long numerator, unsigned long denominator, double eff):
+	_tag(tag),_numerator(numerator),_denominator(denominator),_eff(eff) {}
       
-      std::string  effname() const { return _effname;}
+      std::string  tag() const { return _tag;}
+      unsigned long numerator() const { return _numerator; }
+      unsigned long denominator() const { return _denominator; }
       double  eff() const { return _eff; }
 
     private:
-      std::string _effname;
+      std::string _tag;
+      unsigned long _numerator;
+      unsigned long _denominator;
       double _eff;
     };
 
 
-    SimEfficiencies():DbTable("SimEfficiencies","sim.efficiencies","effname,eff") { }
+    SimEfficiencies():DbTable("SimEfficiencies","sim.efficiencies","tag,numerator,denominator,eff") { }
 
     const Row& rowAt(const std::size_t index) const { return _rows.at(index);}
     const Row& row(const int idx) const { return _rows.at(idx); }
@@ -44,23 +48,27 @@ namespace mu2e {
     void addRow(const std::vector<std::string>& columns) {
       //      int idx = std::stoi(columns[0]);
       _rows.emplace_back(columns[0],
-			 std::stof(columns[1]));
+			 std::stoi(columns[1]),
+			 std::stoi(columns[2]),
+			 std::stof(columns[3]));
     }
 
     void rowToCsv(std::ostringstream& sstream, std::size_t irow) const {
       Row const& r = _rows.at(irow);
-      sstream << r.effname()<<",";
+      sstream << r.tag()<<",";
+      sstream << r.numerator()<<",";
+      sstream << r.denominator()<<",";
       sstream << r.eff();
     }
 
     void findEff(std::string name, double& eff) const { 
       for (const auto& i_row : _rows) {
-	if (i_row.effname() == name) {
+	if (i_row.tag() == name) {
 	  eff =  i_row.eff();
 	  return;
 	}
       }
-      throw cet::exception("SIMEFFICIENCIES_BAD_EFFNAME") << "Efficiency with name " << name << " not found in database" << std::endl;
+      throw cet::exception("SIMEFFICIENCIES_BAD_TAG") << "Efficiency with tag " << name << " not found in database" << std::endl;
     }
     
     virtual void clear() { _csv.clear(); _rows.clear();}
