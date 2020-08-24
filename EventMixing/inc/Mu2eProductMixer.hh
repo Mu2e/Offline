@@ -74,7 +74,6 @@ namespace mu2e {
       fhicl::Table<CollectionMixerConfig> protonBunchIntensityMixer { fhicl::Name("protonBunchIntensityMixer") };
       fhicl::Table<CollectionMixerConfig> protonTimeMapMixer { fhicl::Name("protonTimeMapMixer") };
       fhicl::Table<CollectionMixerConfig> eventIDMixer { fhicl::Name("eventIDMixer") };
-      fhicl::Table<CollectionMixerConfig> simStageEfficiencyMixer { fhicl::Name("simStageEfficiencyMixer") };
     };
 
     Mu2eProductMixer(const Config& conf, art::MixHelper& helper);
