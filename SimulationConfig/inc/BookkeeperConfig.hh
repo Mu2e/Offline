@@ -10,6 +10,16 @@
 #include "fhiclcpp/types/Sequence.h"
 
 namespace mu2e {
+
+  struct SimStageEffConfig {
+    using Name=fhicl::Name;
+    using Comment=fhicl::Comment;
+    fhicl::Atom<std::string> tag{
+      Name("tag"), Comment("Identifying tag for this efficiency")};
+    fhicl::Atom<double> eff{
+      Name("eff"), Comment("EFficiency value")};
+  };
+
   struct BookkeeperConfig {
     using Name=fhicl::Name;
     using Comment=fhicl::Comment;
@@ -17,10 +27,8 @@ namespace mu2e {
       Name("verbose"), Comment("verbosity: 0 or 1")}; 
     fhicl::Atom<bool> useDb{
       Name("useDb"), Comment("use database or fcl")}; 
-    fhicl::Atom<double> muBeamPerPOT{
-      Name("muBeamPerPOT"), Comment("muBeamPerPOT")};
-    fhicl::Atom<double> flashPerMuBeam{
-      Name("flashPerMuBeam"), Comment("flashPerMuBeam")};
+    fhicl::Sequence< fhicl::Table<mu2e::SimStageEffConfig>> simStageEfficiencies{
+      Name("simStageEfficiencies"), Comment("Sequence of SimStageEfficiency configurations")};
   };
 }
 

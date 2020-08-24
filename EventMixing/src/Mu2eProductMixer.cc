@@ -92,6 +92,7 @@ namespace mu2e {
       helper.declareMixOp
         (e.inTag, e.resolvedInstanceName(), &Mu2eProductMixer::mixEventIDs, *this);
     }
+
   }
 
   //----------------------------------------------------------------
