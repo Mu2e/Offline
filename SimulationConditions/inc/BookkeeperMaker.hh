@@ -17,8 +17,9 @@ namespace mu2e {
 
     typename Bookkeeper::ptr_t fromFcl() {
       auto ptr = std::make_shared<Bookkeeper>();
-      ptr->addEff("muBeamPerPOT", _config.muBeamPerPOT());
-      ptr->addEff("flashPerMuBeam", _config.flashPerMuBeam());
+      for (const auto& i_effConf : _config.simStageEfficiencies()) {
+	ptr->addEff(i_effConf.tag(), i_effConf.eff());
+      }
       return ptr;
     }
 
@@ -26,11 +27,9 @@ namespace mu2e {
       // fill the Bookkeeper with initial values
       auto ptr = fromFcl();
       // now overwrite with values from database
-      double eff;
-      effDb->findEff("muBeamPerPOT", eff);
-      ptr->setEffVal("muBeamPerPOT", eff);
-      effDb->findEff("flashPerMuBeam", eff);
-      ptr->setEffVal("flashPerMuBeam", eff);
+      for (const auto& i_row : effDb->rows()) {
+	ptr->addEff(i_row.tag(), i_row.eff());
+      }
       return ptr;
     }
 
