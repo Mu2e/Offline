@@ -58,8 +58,11 @@ mu2e::SimStageEfficiencyPrinter::Print(
   if(verbose()<1) return;
   if (!_forDb) {
     os << "SimStageEfficiency\n";
+    os << "Passed Events = " << obj.numerator() << ", All Events = " << obj.denominator() << ", Efficiency = " << obj.efficiency() << std::endl;
   }
-  os << obj.efficiency() << std::endl;
+  else {
+    os << obj.numerator() << "," << obj.denominator() << "," << obj.efficiency() << std::endl;
+  }
   //  int i = 0;
   //  for(const auto& obj: coll) Print(obj, i++, os);
 }
