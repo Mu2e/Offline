@@ -34,7 +34,6 @@
 #include "MCDataProducts/inc/ExtMonFNALSimHitCollection.hh"
 #include "MCDataProducts/inc/ProtonBunchIntensity.hh"
 #include "MCDataProducts/inc/SimParticleTimeMap.hh"
-#include "MCDataProducts/inc/SimStageEfficiency.hh"
 
 //================================================================
 namespace mu2e {
@@ -121,10 +120,6 @@ namespace mu2e {
     bool mixEventIDs(std::vector<art::EventIDSequence const*> const &in,
                      art::EventIDSequence& out,
                      art::PtrRemapper const& remap);
-
-    bool mixSimStageEfficiency(std::vector<mu2e::SimStageEfficiency const*> const &in,
-			mu2e::SimStageEfficiency& out,
-			art::PtrRemapper const& remap);
 
     //----------------
     // If elements of a collection can be pointed to by other

@@ -100,7 +100,7 @@ namespace mu2e {
           };
 
       fhicl::Sequence<std::string> simStageEfficiencyTags{ Name("simStageEfficiencyTags"),
-	  Comment("Sequence of art::InputTags for all the previous simulation stage efficiencies"),
+	  Comment("Sequence of strings for all the previous simulation stage efficiencies that need to be included"),
 	  std::vector<std::string>()
 	  };
 
@@ -160,9 +160,9 @@ namespace mu2e {
     Bookkeeper const& bookkeeper = _bookkeeperH.get(event.id());
     eff_ = 1;
     for (const auto& i_simStageEff : simStageEfficiencyTags_) {
-      //      const auto& simStageEff = *event.getValidHandle<SimStageEfficiency>(i_simStageEff);
       double this_eff = bookkeeper.getEff(i_simStageEff);
-      eff_ *= this_eff;//simStageEff.efficiency();
+      eff_ *= this_eff;
+
       if (debugLevel_ > 1) {
 	std::cout << " Sim Stage Efficiency (" << i_simStageEff << ") = " << this_eff << std::endl;//simStageEff.numerator() << " / " << simStageEff.denominator() << " = " << simStageEff.efficiency() << std::endl;
 	std::cout << " Cumulative Total Eff = " << eff_ << std::endl;
