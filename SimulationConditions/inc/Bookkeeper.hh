@@ -30,9 +30,6 @@ namespace mu2e {
     void addEff(std::string name, double new_val) {
       _effs[name] = new_val;
     }
-    void setEffVal(std::string name, double new_val) {
-      _effs.at(name) = new_val;
-    }
 
     const std::string print() const {
       std::stringstream out;
