@@ -39,13 +39,12 @@ namespace mu2e {
     const Row& rowAt(const std::size_t index) const { return _rows.at(index);}
     const Row& row(const int idx) const { return _rows.at(idx); }
     std::vector<Row> const& rows() const {return _rows;}
-    std::size_t nrow() const { return _rows.size(); };
-    //this table should always be 3 rows
+    std::size_t nrow() const override { return _rows.size(); };
     //    virtual std::size_t nrowFix() const { return 3; };
-    size_t size() const { return _csv.capacity() +
+    size_t size() const override { return _csv.capacity() +
         + nrow()*nrow()/2 + nrow()*sizeof(Row); };
 
-    void addRow(const std::vector<std::string>& columns) {
+    void addRow(const std::vector<std::string>& columns) override {
       //      int idx = std::stoi(columns[0]);
       _rows.emplace_back(columns[0],
                          std::stoi(columns[1]),
@@ -53,7 +52,7 @@ namespace mu2e {
                          std::stof(columns[3]));
     }
 
-    void rowToCsv(std::ostringstream& sstream, std::size_t irow) const {
+    void rowToCsv(std::ostringstream& sstream, std::size_t irow) const  override {
       Row const& r = _rows.at(irow);
       sstream << r.tag()<<",";
       sstream << r.numerator()<<",";
@@ -71,7 +70,7 @@ namespace mu2e {
       throw cet::exception("SIMEFFICIENCIES_BAD_TAG") << "Efficiency with tag " << name << " not found in database" << std::endl;
     }
 
-    virtual void clear() { _csv.clear(); _rows.clear();}
+    virtual void clear() override { _csv.clear(); _rows.clear();}
 
   private:
     std::vector<Row> _rows;
