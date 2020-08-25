@@ -1,0 +1,27 @@
+#
+# Common fcl configuration for all SimStageEfficiency calculation stages
+#
+
+BEGIN_PROLOG
+effCalc : {
+  module_type : SimStageEfficiencyCalculator
+  trigResultsTag : "TriggerResults"
+  trigPath : @nil
+  printTriggers : false # for debugging
+  diagLevel : 1
+}
+END_PROLOG
+
+source: { module_type : RootInput }
+services : { @table::Services.Core }
+
+outputs : { 
+  Output : {
+    module_type : RootOutput
+    SelectEvents : [ p1 ]
+    outputCommands : [ "drop *_*_*_*",
+    		       "keep mu2e::SimStageEfficiency_*_*_*" 
+  		     ]
+    fileName : @nil
+  }
+}

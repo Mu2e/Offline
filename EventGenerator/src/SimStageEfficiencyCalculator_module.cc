@@ -34,7 +34,6 @@ namespace mu2e {
 
       fhicl::Atom<art::InputTag> trigResultsTag{Name("trigResultsTag"), Comment("Input tag for art::TriggerResults")};
       fhicl::Atom<std::string> trigPath{Name("trigPath"), Comment("Specific trigger path we want to calculate the efficiency for")};
-      fhicl::Atom<art::InputTag> genCountTag{Name("genCountTag"), Comment("Input tag for mu2e::GenEventCount")};
       fhicl::Atom<bool> printTriggers{Name("printTriggers"), Comment("Switch to turn on the printing of all the trigger names")};
       fhicl::Atom<int> diagLevel{Name("diagLevel"), Comment("Set diagnostics level")};
     };
@@ -82,8 +81,28 @@ namespace mu2e {
   //================================================================
   void SimStageEfficiencyCalculator::endSubRun(art::SubRun& subrun) {
 
-    auto genCountH = subrun.getValidHandle<mu2e::GenEventCount>(_conf.genCountTag());
-    const auto genCount = *genCountH;
+    // We expect exactly one object of type GenEventCount per SubRun.
+    std::vector<art::Handle<GenEventCount> > hh;
+    subrun.getManyByType(hh);
+    if(hh.size() > 1) {
+      std::ostringstream os;
+      os<<"GenEventCountReader: multiple GenEventCount objects found in "
+        <<subrun.id()<<":\n";
+      for(const auto& h : hh) {
+        os<<"    moduleLabel = "<<h.provenance()->moduleLabel()
+          <<", instance = "<<h.provenance()->productInstanceName()
+          <<", process = "<<h.provenance()->processName()
+          <<"\n";
+      }
+      os<<"\n";
+      throw cet::exception("BADCONFIG")<<os.str();
+    }
+    else if(hh.empty()) {
+      throw cet::exception("BADCONFIG")
+        <<"GenEventCountReader: no GenEventCount record in "<<subrun.id()<<"\n";
+    }
+
+    const auto genCount = *hh.front();
     auto genEvents = genCount.count();
     _generatedEvents += genEvents;
   }
