@@ -15,7 +15,7 @@ services : {
 physics :{
   analyzers: {
     res : {
-      module_type : PrintSimParticleEfficiencies #PrintModule
+      module_type : PrintSimStageEfficiencies #PrintModule
       simStageEfficiencyPrinter : {
         verbose : 1
 	forDb : true

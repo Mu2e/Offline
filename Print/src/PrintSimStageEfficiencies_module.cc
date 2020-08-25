@@ -1,5 +1,5 @@
 //
-//  A module to print SimParticleEfficiencies
+//  A module to print SimStageEfficiencies
 //  -- we want to be able to print to a file and not print extraneous information
 //
 
@@ -18,7 +18,7 @@ using namespace std;
 
 namespace mu2e {
 
-  class PrintSimParticleEfficiencies : public art::EDAnalyzer {
+  class PrintSimStageEfficiencies : public art::EDAnalyzer {
 
   public:
 
@@ -32,7 +32,7 @@ namespace mu2e {
     // this line is required by art to allow the command line help print
     typedef art::EDAnalyzer::Table<Config> Parameters;
 
-    explicit PrintSimParticleEfficiencies(const Parameters& conf);
+    explicit PrintSimStageEfficiencies(const Parameters& conf);
     void analyze  ( art::Event const&  event  ) override;
     void beginSubRun( art::SubRun const& subrun) override;
     void beginRun( art::Run const& run) override;
@@ -52,7 +52,7 @@ namespace mu2e {
 }
 
 
-mu2e::PrintSimParticleEfficiencies::PrintSimParticleEfficiencies(const Parameters& conf):
+mu2e::PrintSimStageEfficiencies::PrintSimStageEfficiencies(const Parameters& conf):
   art::EDAnalyzer(conf),
   _outfilename(conf().outFileName()),
   _outfile(_outfilename.c_str())
@@ -65,20 +65,20 @@ mu2e::PrintSimParticleEfficiencies::PrintSimParticleEfficiencies(const Parameter
 }
 
 
-void mu2e::PrintSimParticleEfficiencies::analyze(art::Event const& event) {
+void mu2e::PrintSimStageEfficiencies::analyze(art::Event const& event) {
   for(auto& prod_printer: _printers) prod_printer->Print(event, _outfile);
 }
 
-void mu2e::PrintSimParticleEfficiencies::beginSubRun(art::SubRun const& subrun) {
+void mu2e::PrintSimStageEfficiencies::beginSubRun(art::SubRun const& subrun) {
   for(auto& prod_printer: _printers) prod_printer->PrintSubRun(subrun, _outfile);
 }
 
-void mu2e::PrintSimParticleEfficiencies::beginRun(art::Run const& run) {
+void mu2e::PrintSimStageEfficiencies::beginRun(art::Run const& run) {
   for(auto& prod_printer: _printers) prod_printer->PrintRun(run, _outfile);
 }
 
-void mu2e::PrintSimParticleEfficiencies::endRun(art::Run const& run) {
-*\=}
+void mu2e::PrintSimStageEfficiencies::endRun(art::Run const& run) {
+}
 
 
-DEFINE_ART_MODULE(mu2e::PrintSimParticleEfficiencies)
+DEFINE_ART_MODULE(mu2e::PrintSimStageEfficiencies)
