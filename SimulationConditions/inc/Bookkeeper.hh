@@ -2,7 +2,7 @@
 #define SimulationConditions_Bookkeeper_hh
 
 //
-// Bookkeeper is the ProditionsEntry for 
+// Bookkeeper is the ProditionsEntry for
 //
 
 // Mu2e includes
@@ -19,9 +19,9 @@ namespace mu2e {
     std::string const& name() const { return _name; }
     double const getEff(const std::string& name) const {
       for (const auto& i_eff : _effs) {
-	if (i_eff.first == name) {
-	  return i_eff.second;
-	}
+        if (i_eff.first == name) {
+          return i_eff.second;
+        }
       }
       return -1;
     }
@@ -40,7 +40,7 @@ namespace mu2e {
     void print(std::ostream& os) const {
       os << "Efficiencies in " << _name << ":" << std::endl;
       for (const auto& i_eff : _effs) {
-	os << i_eff.first << " = " << i_eff.second << std::endl;
+        os << i_eff.first << " = " << i_eff.second << std::endl;
       }
       os << std::endl;
     }

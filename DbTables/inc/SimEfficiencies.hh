@@ -10,7 +10,7 @@
 #include "DbTables/inc/DbTable.hh"
 
 namespace mu2e {
-  
+
   class SimEfficiencies : public DbTable {
   public:
     typedef std::shared_ptr<SimEfficiencies> ptr_t;
@@ -19,8 +19,8 @@ namespace mu2e {
     class Row {
     public:
       Row(std::string tag, unsigned long numerator, unsigned long denominator, double eff):
-	_tag(tag),_numerator(numerator),_denominator(denominator),_eff(eff) {}
-      
+        _tag(tag),_numerator(numerator),_denominator(denominator),_eff(eff) {}
+
       std::string  tag() const { return _tag;}
       unsigned long numerator() const { return _numerator; }
       unsigned long denominator() const { return _denominator; }
@@ -41,16 +41,16 @@ namespace mu2e {
     std::vector<Row> const& rows() const {return _rows;}
     std::size_t nrow() const { return _rows.size(); };
     //this table should always be 3 rows
-    //    virtual std::size_t nrowFix() const { return 3; }; 
-    size_t size() const { return _csv.capacity() + 
-	+ nrow()*nrow()/2 + nrow()*sizeof(Row); };
+    //    virtual std::size_t nrowFix() const { return 3; };
+    size_t size() const { return _csv.capacity() +
+        + nrow()*nrow()/2 + nrow()*sizeof(Row); };
 
     void addRow(const std::vector<std::string>& columns) {
       //      int idx = std::stoi(columns[0]);
       _rows.emplace_back(columns[0],
-			 std::stoi(columns[1]),
-			 std::stoi(columns[2]),
-			 std::stof(columns[3]));
+                         std::stoi(columns[1]),
+                         std::stoi(columns[2]),
+                         std::stof(columns[3]));
     }
 
     void rowToCsv(std::ostringstream& sstream, std::size_t irow) const {
@@ -61,18 +61,18 @@ namespace mu2e {
       sstream << r.eff();
     }
 
-    void findEff(std::string name, double& eff) const { 
+    void findEff(std::string name, double& eff) const {
       for (const auto& i_row : _rows) {
-	if (i_row.tag() == name) {
-	  eff =  i_row.eff();
-	  return;
-	}
+        if (i_row.tag() == name) {
+          eff =  i_row.eff();
+          return;
+        }
       }
       throw cet::exception("SIMEFFICIENCIES_BAD_TAG") << "Efficiency with tag " << name << " not found in database" << std::endl;
     }
-    
+
     virtual void clear() { _csv.clear(); _rows.clear();}
-    
+
   private:
     std::vector<Row> _rows;
   };

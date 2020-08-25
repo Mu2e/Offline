@@ -23,10 +23,10 @@ namespace mu2e {
   public:
 
     struct Config {
-      fhicl::Table<SimStageEfficiencyPrinter::Config> simStageEfficiencyPrinter { 
-	fhicl::Name("simStageEfficiencyPrinter") }; 
+      fhicl::Table<SimStageEfficiencyPrinter::Config> simStageEfficiencyPrinter {
+        fhicl::Name("simStageEfficiencyPrinter") };
       fhicl::Atom<std::string> outFileName {
-	fhicl::Name("outFileName")};
+        fhicl::Name("outFileName")};
     };
 
     // this line is required by art to allow the command line help print
@@ -78,7 +78,7 @@ void mu2e::PrintSimParticleEfficiencies::beginRun(art::Run const& run) {
 }
 
 void mu2e::PrintSimParticleEfficiencies::endRun(art::Run const& run) {
-}
+*\=}
 
 
 DEFINE_ART_MODULE(mu2e::PrintSimParticleEfficiencies)
