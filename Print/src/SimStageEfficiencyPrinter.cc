@@ -4,9 +4,9 @@
 #include <string>
 #include <iomanip>
 
-void 
+void
 mu2e::SimStageEfficiencyPrinter::PrintRun(art::Run const& run,
-				std::ostream& os) {
+                                std::ostream& os) {
   if(verbose()<1) return;
   if(tags().empty()) {
     // if a list of instances not specified, print all instances
@@ -22,10 +22,10 @@ mu2e::SimStageEfficiencyPrinter::PrintRun(art::Run const& run,
   }
 }
 
-void 
+void
 mu2e::SimStageEfficiencyPrinter::Print(
-	     const art::Handle<SimStageEfficiency>& handle,
-	     std::ostream& os) {
+             const art::Handle<SimStageEfficiency>& handle,
+             std::ostream& os) {
   if(verbose()<1) return;
   // the product tags with all four fields, with underscores
   std::string tag = handle.provenance()->productDescription().branchName();
@@ -37,10 +37,10 @@ mu2e::SimStageEfficiencyPrinter::Print(
   Print(*handle, os);
 }
 
-void 
+void
 mu2e::SimStageEfficiencyPrinter::Print(
              const art::ValidHandle<SimStageEfficiency>& handle,
-	     std::ostream& os) {
+             std::ostream& os) {
   if(verbose()<1) return;
   // the product tags with all four fields, with underscores
   std::string tag = handle.provenance()->productDescription().branchName();
@@ -52,7 +52,7 @@ mu2e::SimStageEfficiencyPrinter::Print(
   Print(*handle,os);
 }
 
-void 
+void
 mu2e::SimStageEfficiencyPrinter::Print(
   const SimStageEfficiency& obj, std::ostream& os) {
   if(verbose()<1) return;
@@ -67,7 +67,7 @@ mu2e::SimStageEfficiencyPrinter::Print(
   //  for(const auto& obj: coll) Print(obj, i++, os);
 }
 
-void 
+void
 mu2e::SimStageEfficiencyPrinter::PrintHeader(const std::string& tag, std::ostream& os) {
   if(verbose()<1) return;
   if(verbose()==1) {

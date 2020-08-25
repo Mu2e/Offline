@@ -100,14 +100,14 @@ namespace mu2e {
           };
 
       fhicl::Sequence<std::string> simStageEfficiencyTags{ Name("simStageEfficiencyTags"),
-	  Comment("Sequence of strings for all the previous simulation stage efficiencies that need to be included"),
-	  std::vector<std::string>()
-	  };
+          Comment("Sequence of strings for all the previous simulation stage efficiencies that need to be included"),
+          std::vector<std::string>()
+          };
 
       fhicl::Sequence<double> meanEventsPerPOTFactors{ Name("meanEventsPerPOTFactors"),
-	  Comment("Sequence of double for extra numerical factors that goes into the mean events per POT"),
-	  std::vector<double>()
-	  };
+          Comment("Sequence of double for extra numerical factors that goes into the mean events per POT"),
+          std::vector<double>()
+          };
     };
 
     // The ".mu2e" in FHICL parameters like
@@ -164,15 +164,15 @@ namespace mu2e {
       eff_ *= this_eff;
 
       if (debugLevel_ > 1) {
-	std::cout << " Sim Stage Efficiency (" << i_simStageEff << ") = " << this_eff << std::endl;//simStageEff.numerator() << " / " << simStageEff.denominator() << " = " << simStageEff.efficiency() << std::endl;
-	std::cout << " Cumulative Total Eff = " << eff_ << std::endl;
+        std::cout << " Sim Stage Efficiency (" << i_simStageEff << ") = " << this_eff << std::endl;//simStageEff.numerator() << " / " << simStageEff.denominator() << " = " << simStageEff.efficiency() << std::endl;
+        std::cout << " Cumulative Total Eff = " << eff_ << std::endl;
       }
     }
     for (const auto& i_extraFactor : meanEventsPerPOTFactors_) {
       eff_ *= i_extraFactor;
       if (debugLevel_ > 1) {
-	std::cout << " Extra meanEventsPerPOT Factor = " << i_extraFactor << std::endl;
-	std::cout << " Cumulative Total Eff = " << eff_ << std::endl;
+        std::cout << " Extra meanEventsPerPOT Factor = " << i_extraFactor << std::endl;
+        std::cout << " Cumulative Total Eff = " << eff_ << std::endl;
       }
     }
   }

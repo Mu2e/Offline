@@ -18,7 +18,7 @@ namespace mu2e {
     typename Bookkeeper::ptr_t fromFcl() {
       auto ptr = std::make_shared<Bookkeeper>();
       for (const auto& i_effConf : _config.simStageEfficiencies()) {
-	ptr->addEff(i_effConf.tag(), i_effConf.eff());
+        ptr->addEff(i_effConf.tag(), i_effConf.eff());
       }
       return ptr;
     }
@@ -28,13 +28,13 @@ namespace mu2e {
       auto ptr = fromFcl();
       // now overwrite with values from database
       for (const auto& i_row : effDb->rows()) {
-	ptr->addEff(i_row.tag(), i_row.eff());
+        ptr->addEff(i_row.tag(), i_row.eff());
       }
       return ptr;
     }
 
   private:
-    // this object needs to be thread safe, 
+    // this object needs to be thread safe,
     // _config should only be initialized once
     const BookkeeperConfig _config;
   };

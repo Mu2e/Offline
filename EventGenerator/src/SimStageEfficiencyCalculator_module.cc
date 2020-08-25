@@ -46,7 +46,7 @@ namespace mu2e {
 
   private:
     Config _conf;
-    
+
     GenEventCount::count_t _passedEvents;
     GenEventCount::count_t _generatedEvents;
   };
@@ -63,19 +63,18 @@ namespace mu2e {
 
   //================================================================
   void SimStageEfficiencyCalculator::produce(art::Event& event) {
-    
+
     auto trigResultsH = event.getValidHandle<art::TriggerResults>(_conf.trigResultsTag());
     const art::TriggerResults* trigResults = trigResultsH.product();
     TriggerResultsNavigator tnav(trigResults);
     for (const auto& i_trigPath : tnav.getTrigPaths()) {
       if (_conf.printTriggers()) {
-	std::cout << i_trigPath << std::endl;
+        std::cout << i_trigPath << std::endl;
       }
       if (i_trigPath == _conf.trigPath()) {
-	if (tnav.accepted(i_trigPath)) {
-	  ++_passedEvents;
-	}
-	//	std::cout << i_trigPath << ": wasrun = " << tnav.wasrun(i_trigPath) << " accepted = " << tnav.accepted(i_trigPath) << std::endl;
+        if (tnav.accepted(i_trigPath)) {
+          ++_passedEvents;
+        }
       }
     }
   }
@@ -98,7 +97,6 @@ namespace mu2e {
       std::cout << "Passed Events = " << _passedEvents << std::endl;
       std::cout << "Efficiency = " << efficiency << std::endl;
     }
-    
     run.put(std::unique_ptr<SimStageEfficiency>(new SimStageEfficiency(_passedEvents, _generatedEvents)));
 
     _passedEvents = 0;
