@@ -8,7 +8,13 @@ BEGIN_PROLOG
 CommonMC: {
   producers: {
 # time maps
-    protonTimeMap: { module_type : GenerateProtonTimes }
+    protonTimeMap: { module_type : GenerateProtonTimes 
+      randPDFparameters : {
+        pulseType : oot
+        tmin : 125
+	tmax : 1570
+      }
+    }
     muonTimeMap:   { module_type : GenerateMuonLife }
     cosmicTimeMap: 
     { 
@@ -18,7 +24,14 @@ CommonMC: {
 	tmax : 1705
     }
 # time maps for primaries in inline mixing jobs
-    protonTimeMapPrimary: { module_type : GenerateProtonTimes }
+    protonTimeMapPrimary: { 
+      module_type : GenerateProtonTimes 
+      randPDFparameters : {
+        pulseType : OOT
+        tmin : 125
+	      tmax : 1570
+      }
+    }
     muonTimeMapPrimary:   { module_type : GenerateMuonLife }
     cosmicTimeMapPrimary: 
     { 
