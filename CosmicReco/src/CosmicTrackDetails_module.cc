@@ -9,7 +9,6 @@
 
 // Cosmic Tracks:
 #include "CosmicReco/inc/CosmicTrackFit.hh"
-#include "CosmicReco/inc/CosmicTrackFinderData.hh"
 #include "RecoDataProducts/inc/CosmicTrack.hh"
 #include "RecoDataProducts/inc/CosmicTrackSeed.hh"
 #include "CosmicReco/inc/CosmicTrackMCInfo.hh"
@@ -32,6 +31,7 @@
 #include "CosmicReco/inc/DriftFitUtils.hh"
 #include "Mu2eUtilities/inc/ParametricFit.hh"
 #include "TrackerConditions/inc/StrawResponse.hh"
+#include "Mu2eUtilities/inc/BuildLinearFitMatrixSums.hh"
 
 // Mu2e diagnostics
 #include "TrkDiag/inc/ComboHitInfo.hh"
@@ -62,9 +62,9 @@
 #include "TrackerGeom/inc/Tracker.hh"
 #include "TrackerGeom/inc/Straw.hh"
 
-using namespace std; 
+using namespace std;
 
-namespace mu2e 
+namespace mu2e
 {
 	class CosmicTrackDetails : public art::EDAnalyzer {
 	public:
@@ -87,8 +87,8 @@ namespace mu2e
 	virtual void beginRun(const art::Run& r) override;
 	virtual void analyze(const art::Event& e) override;
 	virtual void endJob() override;
-    private: 
-      
+    private:
+
 	Config _conf;
 
 	int  _diag;
@@ -107,7 +107,7 @@ namespace mu2e
 	CosmicTrackMCInfo trueinfo;
 
 	TTree* _cosmic_tree;
-	
+
 	Float_t _mc_phi_angle;
 	Float_t _reco_phi_angle;
 	Float_t _mc_theta_angle;
@@ -156,7 +156,7 @@ namespace mu2e
         float _DriftDistance[8129];
 	float _TrueDriftDistance[8129];
 
-	Int_t _evt; 
+	Int_t _evt;
 
 	Int_t _nsh, _nch; // # associated straw hits / event
 	Int_t _ntc; // # clusters/event
@@ -169,10 +169,10 @@ namespace mu2e
 	Float_t _cluster_time;
 
 	ProditionsHandle<Tracker> _alignedTracker_h;
-	ProditionsHandle<StrawResponse> _strawResponse_h; 
+	ProditionsHandle<StrawResponse> _strawResponse_h;
 
 	Bool_t _StraightTrackInit, _StraightTrackConverged, _StraightTrackOK, _hitsOK;
-	Int_t _strawid; 
+	Int_t _strawid;
 	vector<ComboHitInfoMC> _chinfomc;
 
 	CosmicTrackMCInfo FitMC(const StrawDigiMCCollection*& _mcdigis);
@@ -201,19 +201,19 @@ namespace mu2e
     CosmicTrackDetails::~CosmicTrackDetails(){}
 
     void CosmicTrackDetails::beginJob() {
-    
+
 	if(_diag > 0){
 		art::ServiceHandle<art::TFileService> tfs;
 		_cosmic_tree=tfs->make<TTree>("cosmic_tree"," Diagnostics for Cosmic Track Fitting");
 		_cosmic_tree->Branch("nused",  &_nused ,   "nused/I");
-		_cosmic_tree->Branch("evt",&_evt,"evt/I");  
+		_cosmic_tree->Branch("evt",&_evt,"evt/I");
 		_cosmic_tree->Branch("nhits",&_nhits,"nhits[nused]/I");
 		_cosmic_tree->Branch("StrawHitsInEvent", &_nsh, "StrawHitsInEvent/I");
 		_cosmic_tree->Branch("ComboHitsInEvent", &_nch, "ComboHitsInEvent/I");
 		_cosmic_tree->Branch("PanelsCrossedInEvent", &_n_panels, "PanelsCrossedInEvent/I");
 		_cosmic_tree->Branch("PlanesCrossedInEvent", &_n_planes, "PlanesCrossedInEvent/I");
 		_cosmic_tree->Branch("StatonsCrossedInEvent", &_n_stations, "StationsCrossedInEvent/I");
-		_cosmic_tree->Branch("TimeClustersInEvent", &_ntc, "TimeClusterInEvent/I"); 
+		_cosmic_tree->Branch("TimeClustersInEvent", &_ntc, "TimeClusterInEvent/I");
 		_cosmic_tree->Branch("hit_time", &_hit_time, "hit_time[nused]/F");
 		_cosmic_tree->Branch("hit_drit_time", &_hit_drift_time, "hit_drift_time[nused]/F");
 		_cosmic_tree->Branch("hitsOK",&_hitsOK,"hitsOK/B");
@@ -248,7 +248,7 @@ namespace mu2e
 		_cosmic_tree->Branch("PullsX",&_PullsX,"PullsX[nused]/F");
 		_cosmic_tree->Branch("PullsY",&_PullsY,"PullsY[nused]/F");
 		_cosmic_tree->Branch("RecoResiduals",&_RecoResiduals,"RecoResiduals[nused]/F");
-		
+
 		_cosmic_tree->Branch("DriftDistance",&_DriftDistance,"DriftDistance[nused]/F");
 
 		if(_mcdiag ){
@@ -278,10 +278,10 @@ namespace mu2e
 	const Tracker *tracker = _alignedTracker_h.getPtr(event.id()).get();
 	StrawResponse const& srep = _strawResponse_h.get(event.id());
 
-	_evt = event.id().event();  
+	_evt = event.id().event();
 
-	if(!findData(event)) 
-		throw cet::exception("RECO")<<"No Time Clusters in event"<< endl; 
+	if(!findData(event))
+		throw cet::exception("RECO")<<"No Time Clusters in event"<< endl;
 
 	_ntc = _tccol->size();
 	_nch = _chcol->size();
@@ -289,7 +289,7 @@ namespace mu2e
 	for(size_t itc=0; itc<_tccol->size();++itc){
 		TimeCluster tc = (*_tccol)[itc];
 		_cluster_time =  tc._t0._t0;
-		
+
 	}
 
         for(size_t ist = 0;ist < _coscol->size(); ++ist){
@@ -301,34 +301,34 @@ namespace mu2e
 
 		if (!status.hasAllProperties(TrkFitFlag::helixOK) ){ continue; }
 		if(st.converged == false or st.minuit_converged  == false) { continue; }
-		
+
 		std::vector<int> panels, planes, stations;
+                    
+		_reco_phi_angle=acos(st.FitEquation.Dir.x()/st.FitEquation.Dir.Mag2());
+		_reco_theta_angle=acos(st.FitEquation.Dir.y()/sqrt(st.FitEquation.Dir.Mag2()));
+		_MinuitA0=(st.MinuitParams.A0);
+		_MinuitA1=(st.MinuitParams.A1);
+		_MinuitB1=(st.MinuitParams.B1);
+		_MinuitB0=(st.MinuitParams.B0);
 
-		_reco_phi_angle=(st.get_fit_phi()); 
-		_reco_theta_angle=(st.get_fit_theta()); 
-		_MinuitA0=(st.MinuitFitParams.A0);
-		_MinuitA1=(st.MinuitFitParams.A1);
-		_MinuitB1=(st.MinuitFitParams.B1);
-		_MinuitB0=(st.MinuitFitParams.B1);
+		_ErrorA0=(st.MinuitParams.deltaA0);
+		_ErrorA1=(st.MinuitParams.deltaA1);
+		_ErrorB1=(st.MinuitParams.deltaB1);
+		_ErrorB0=(st.MinuitParams.deltaB0);
 
-		_ErrorA0=(st.MinuitFitParams.deltaA0);
-		_ErrorA1=(st.MinuitFitParams.deltaA1);
-		_ErrorB1=(st.MinuitFitParams.deltaB1);
-		_ErrorB0=(st.MinuitFitParams.deltaB1);
-
-		_FitCovA0  = st.MinuitFitParams.Covarience.sigA0;
-		_FitCovA1 = st.MinuitFitParams.Covarience.sigA1;
-		_FitCovB0 = st.MinuitFitParams.Covarience.sigB0;
-		_FitCovB1 = st.MinuitFitParams.Covarience.sigB1;
-		_FitCovA0A1 = st.MinuitFitParams.Covarience.sigA0A1;
-		_FitCovB0B1 = st.MinuitFitParams.Covarience.sigB0B1;
+		_FitCovA0  = st.MinuitParams.Covarience.sigA0;
+		_FitCovA1 = st.MinuitParams.Covarience.sigA1;
+		_FitCovB0 = st.MinuitParams.Covarience.sigB0;
+		_FitCovB1 = st.MinuitParams.Covarience.sigB1;
+		_FitCovA0A1 = st.MinuitParams.Covarience.sigA0A1;
+		_FitCovB0B1 = st.MinuitParams.Covarience.sigB0B1;
 
 	       if(_mcdiag){
-			
+
 			trueinfo = FitMC(_mcdigis);
 
 			_mc_phi_angle=(trueinfo.TruePhi);
-			_mc_theta_angle=(trueinfo.TrueTheta);                  
+			_mc_theta_angle=(trueinfo.TrueTheta);
 
 			_TrueA1=(trueinfo.TrueFitEquation.Dir.X());
 			_TrueB1=(trueinfo.TrueFitEquation.Dir.Y());
@@ -345,35 +345,35 @@ namespace mu2e
 			stations.push_back(chit.strawId().station());
 			_hit_time[_nused] = chit.time();
 			_hit_drift_time[_nused] = chit.driftTime();
-    
+
 			if(_mcdiag){
 				trueinfo = FitMC(_mcdigis);
 				trueinfo = FillDriftMC(chit, _RecoAmbig[_nused], trueinfo, t0, tracker);
 		    		double truedoca = DriftFitUtils::GetTestDOCA(chit, trueinfo.TrueFitEquation.Pos.X(), trueinfo.TrueFitEquation.Dir.X(), trueinfo.TrueFitEquation.Pos.Y(),trueinfo.TrueFitEquation.Dir.Y(),  tracker);
-				
-				double fitdoca = DriftFitUtils::GetTestDOCA(chit, st.MinuitFitParams.A0,st.MinuitFitParams.A1, st.MinuitFitParams.B0, st.MinuitFitParams.B1,  tracker);
 
-				double recoambig = DriftFitUtils::GetAmbig(chit, st.MinuitFitParams.A0,st.MinuitFitParams.A1, st.MinuitFitParams.B0, st.MinuitFitParams.B1, tracker);
+				double fitdoca = DriftFitUtils::GetTestDOCA(chit, st.MinuitParams.A0,st.MinuitParams.A1, st.MinuitParams.B0, st.MinuitParams.B1,  tracker);
 
-				double res = DriftFitUtils::GetRPerp(srep, chit, st.MinuitFitParams.A0,st.MinuitFitParams.A1, st.MinuitFitParams.B0, st.MinuitFitParams.B1, tracker);
+				double recoambig = DriftFitUtils::GetAmbig(chit, st.MinuitParams.A0,st.MinuitParams.A1, st.MinuitParams.B0, st.MinuitParams.B1, tracker);
+
+				double res = DriftFitUtils::GetRPerp(srep, chit, st.MinuitParams.A0,st.MinuitParams.A1, st.MinuitParams.B0, st.MinuitParams.B1, tracker);
 
 				double trueambig = DriftFitUtils::GetAmbig(chit, trueinfo.TrueFitEquation.Pos.X(), trueinfo.TrueFitEquation.Dir.X(), trueinfo.TrueFitEquation.Pos.Y(),trueinfo.TrueFitEquation.Dir.Y(), tracker);
-				
+
 				double trueres = DriftFitUtils::GetRPerp(srep,chit, trueinfo.TrueFitEquation.Pos.X(), trueinfo.TrueFitEquation.Dir.X(), trueinfo.TrueFitEquation.Pos.Y(),trueinfo.TrueFitEquation.Dir.Y(),  tracker);
 
 				double truedriftdistance = DriftFitUtils::GetDriftDistance(srep,chit, trueinfo.TrueFitEquation.Pos.X(), trueinfo.TrueFitEquation.Dir.X(), trueinfo.TrueFitEquation.Pos.Y(),trueinfo.TrueFitEquation.Dir.Y(),  tracker);
 
-				double driftdistance = DriftFitUtils::GetDriftDistance(srep, chit, st.MinuitFitParams.A0,st.MinuitFitParams.A1, st.MinuitFitParams.B0, st.MinuitFitParams.B1, tracker);
+				double driftdistance = DriftFitUtils::GetDriftDistance(srep, chit, st.MinuitParams.A0,st.MinuitParams.A1, st.MinuitParams.B0, st.MinuitParams.B1, tracker);
 
 				if(fitdoca < 2.5 and truedoca < 2.5 and abs(trueinfo.TrueFitEquation.Pos.X() ) < 5000 and abs(trueinfo.TrueFitEquation.Pos.Y()) < 5000 and abs(trueinfo.TrueFitEquation.Dir.X())< 5 and abs(trueinfo.TrueFitEquation.Dir.Y())< 5){
 					_RecoAmbig[_nused] = recoambig;
 					_FitDOCAs[_nused] = recoambig*fitdoca;
-					_RecoResiduals[_nused] = res ; 
-					_FitTOCAs[_nused] = fitdoca * 0.0625;
+					_RecoResiduals[_nused] = res ;
+					_FitTOCAs[_nused] = fitdoca / 0.0625;
 					_TrueDOCAs[_nused] = trueambig*truedoca;
-					_TrueTimeResiduals[_nused] = truedoca * 0.0625;
+					_TrueTimeResiduals[_nused] = truedoca / 0.0625;
 					_TrueAmbig[_nused] = trueambig;
-					_TrueResiduals[_nused] = trueres ; 
+					_TrueResiduals[_nused] = trueres ;
 					_MomentumSIM = trueinfo.TrueMomentum;
 					_AmbigRatio[_nused] = trueambig/recoambig;
 					_TrueDriftDistance[_nused] = truedriftdistance;
@@ -395,43 +395,43 @@ namespace mu2e
 	 		_cosmic_tree->Fill();
 	       }
 	}
-      
+
 }
 
 
     void CosmicTrackDetails::endJob() {}
 
-    CosmicTrackMCInfo CosmicTrackDetails::FitMC(const StrawDigiMCCollection*& _mcdigis){	
-	
-	::BuildLinearFitMatrixSums S; 
+    CosmicTrackMCInfo CosmicTrackDetails::FitMC(const StrawDigiMCCollection*& _mcdigis){
+
+	::BuildLinearFitMatrixSums S;
 	CosmicTrackMCInfo TrackTrueInfo;
 
-	StrawDigiMC hitP1; 
+	StrawDigiMC hitP1;
 	StrawDigiMC first = (*_mcdigis)[0];
 
 	auto const& spmcp0= first.earlyStrawGasStep();
 	XYZVec pos0(spmcp0->position().x(), spmcp0->position().y(), spmcp0->position().z());
 	XYZVec dir0(spmcp0->momentum().x(), spmcp0->momentum().y(), spmcp0->momentum().z());
-	
+
         for(size_t ich = 0;ich < _mcdigis->size(); ++ich){
             hitP1 = (*_mcdigis)[ich];
-	    
+
 	    auto const& spmcp= hitP1.earlyStrawGasStep();
             XYZVec posN(spmcp->position().x(), spmcp->position().y(), spmcp->position().z());
-            
+
             XYZVec ZPrime = (spmcp->momentum().Unit());
-            
+
             TrackAxes TrueAxes = ParametricFit::GetTrackAxes(ZPrime);
             TrackTrueInfo.TrueTrackCoordSystem = (TrueAxes);
-	    
+
             XYZVec point(posN.x(), posN.y(), posN.z());
             XYZVec X(1,0,0);
             XYZVec Y(0,1,0);
             XYZVec Z(0,0,1);
             S.addPoint( point, X,Y,Z, 1,1);
-            
-        }   
-    
+
+        }
+
 	TrackParams RawTrueParams(S.GetAlphaX()[0][0], S.GetAlphaX()[1][0], S.GetAlphaY()[0][0], S.GetAlphaY()[1][0]);
 
 	XYZVec TruePos(S.GetAlphaX()[0][0], S.GetAlphaY()[0][0], 0);
@@ -458,7 +458,7 @@ namespace mu2e
 		auto const& sim_cal = digimc.strawGasStep(mu2e::StrawEnd::cal)->simParticle();
 		auto const& sim_hv  = digimc.strawGasStep(mu2e::StrawEnd::cal)->simParticle();
 		if ( sim_cal == sim_hv ){
-		  
+
 		  if (n == 0){
 			TrackTrueInfo.TrueMomentum = sqrt(digimc.strawGasStep(mu2e::StrawEnd::cal)->momentum().mag2());;
 		    	TrackTrueInfo.TrueThetaSIM = acos(digimc.strawGasStep(mu2e::StrawEnd::cal)->momentum().z()/TrackTrueInfo.TrueMomentum );
@@ -467,7 +467,7 @@ namespace mu2e
 		 n++;
       }
     }
-     
+
     return TrackTrueInfo;
    }
 
@@ -481,9 +481,9 @@ namespace mu2e
     }
 
     bool CosmicTrackDetails::findData(const art::Event& evt){
-	_chcol = 0; 
+	_chcol = 0;
 	_tccol = 0;
-	_coscol = 0; 
+	_coscol = 0;
 	auto chH = evt.getValidHandle<ComboHitCollection>(_chtag);
 	_chcol = chH.product();
 	auto tcH = evt.getValidHandle<TimeClusterCollection>(_tctag);

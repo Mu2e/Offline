@@ -9,11 +9,12 @@
 // Original author Rob Kutschke
 //
 
+
+
 #include "Mu2eUtilities/inc/RandomUnitSphere.hh"
 #include "Mu2eUtilities/inc/ThreeVectorUtil.hh"
 
-#include "art/Framework/Services/Registry/ServiceHandle.h"
-#include "art/Framework/Services/Optional/RandomNumberGenerator.h"
+namespace CLHEP { class HepRandomEngine; }
 
 using CLHEP::Hep3Vector;
 using CLHEP::RandFlat;

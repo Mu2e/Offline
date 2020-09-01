@@ -1,0 +1,78 @@
+# Sophie Middleton test fcl @sequence::TrkAna.EndSequence
+#include "fcl/minimalMessageService.fcl"
+#include "fcl/standardProducers.fcl"
+#include "fcl/standardServices.fcl"
+#include "TrkDiag/fcl/prolog.fcl"
+#include "TrkPatRec/fcl/prolog.fcl"
+#include "TrackerConditions/fcl/prolog.fcl"
+#include "TrkHitReco/fcl/prolog.fcl"
+#include "CosmicReco/fcl/prolog.fcl"
+#include "TEveEventDisplay/fcl/prolog.fcl"
+#include "JobConfig/reco/mcdigis_nocosmic.fcl"
+
+source : { module_type : RootInput
+maxEvents : 100
+}
+
+StrawPhysics.useNonLinearDrift: false
+StrawDrift.phiBins: 20
+StrawResponse.linearDriftVelocity: 0.0625
+
+services : {
+   
+    message               : @local::default_message
+    TFileService          : { fileName : "nts.MU2EGRIDDSOWNER.cd3-beam-cosmictracking.MU2EGRIDDSCONF.sequencer.root" }//Name of root file output at end.
+    RandomNumberGenerator : { }
+    #   Timing                : { }
+
+    GeometryService	    : { inputFile      : "Mu2eG4/geom/geom_common.txt" 
+	simulatedDetector   : { tool_type: "Mu2e" }
+    }
+    ConditionsService      : { conditionsfile : "Mu2eG4/test/conditions_01.txt"        }
+    GlobalConstantsService : { inputFile      : "Mu2eG4/test/globalConstants_01.txt"   }
+    G4Helper               : { }
+    
+    SeedService            : { @table::automaticSeeds
+	baseSeed         :  0
+	maxUniqueEngines :  20
+    }
+   DbService : @local::DbEmpty
+   ProditionsService: @local::Proditions
+}
+
+process_name : CosmicRecoFitter
+
+source : { module_type : RootInput }
+
+physics :
+{
+  
+  producers : { @table::CosmicTracking.producers
+		@table::TrkHitReco.producers
+		TimeClusterFinderCosmics : @local::TimeClusterFinderCosmics
+		CosmicTrackFinder : @local::CosmicTrackFinder} 
+  analyzers : { @table::CosmicTracking.analyzers
+		@table::TEveDis.analyzers
+	      }
+  filters :   { @table::CosmicTracking.filters}
+}
+# for MDC2018g and earlier, correct the time maps.  Comment these out for MDC2018h and beyond
+
+physics.RecoPath : [ @sequence::TrkHitReco.PrepareHits, @sequence::CosmicTracking.FindCosmics] 
+physics.producers.TimeClusterFinderCosmics.UseCaloCluster : false
+physics.producers.TimeClusterFinderCosmics.UseCaloClusterPosition : false
+
+physics.producers.CosmicTrackFinder.ComboHitCollection : "makePH"
+physics.analyzers.CosmicAnalysis.TimeClusterCollection : TimeClusterFinderCosmics
+physics.producers.CosmicTrackFinder.DoDrift : false
+physics.producers.CosmicTrackFinder.UseTime :false
+outputs : { 
+  artout : {
+	    module_type: RootOutput
+	    fileName: "cosmics.art"
+            SelectEvents : [RecoPath]
+	    outputCommands: ["keep *_*_*_*"  ]
+	}
+}
+
+physics.EndPath : [ artout] 

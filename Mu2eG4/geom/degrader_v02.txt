@@ -1,0 +1,63 @@
+//
+// Description file for the degrader, just upstream of the OPA.
+// See doc-6654 and doc-32335
+//
+//
+// Author: dnbrow01
+// Date: 2017/03/22 
+//
+
+// Include the degrader or not
+bool   degrader.build = true;
+
+// Choose one of the following.
+// If the degrader is IN the beamline, uncomment the next line
+// double degrader.rotation = 60.0;
+// If the degrader is OUT of the beamline, uncomment the next line
+double degrader.rotation = 120.0; // (degrees)
+
+double degrader.upstreamEdge.z             = 4235.0;
+
+string degrader.filter.materialName        = "G4_Ti";
+string degrader.frame.materialName         = "G4_Al";
+string degrader.counterweight.materialName = "BronzeC938";
+string degrader.rod.materialName           = "G4_Al";
+string degrader.support.materialName         = "StainlessSteel";
+ 
+double degrader.pivot.x                    = -3582.5;
+double degrader.pivot.y                    = -556.8;
+
+double degrader.frame.rIn                  = 137.5;
+double degrader.frame.rOut                 = 150.0;
+double degrader.frame.halfLength           = 6.35;
+double degrader.frame.centerOffFromPivot   = 643.0;  // dist from pivot of
+       // degrader arm to center of the frame (and filter)
+double degrader.frame.arcAngle             = 90.0; // degrees of arc
+
+double degrader.filter.rIn		   = 0.0;
+double degrader.filter.rOut                = 150.0;
+double degrader.filter.halfLength          = 1.00;
+
+double degrader.counterweight.rIn	   = 0.0;
+double degrader.counterweight.rOut	   = 42.0;
+double degrader.counterweight.halfLength   = 44.0;
+double degrader.counterweight.centerOffFromPivot = 99.0;
+
+double degrader.rod.width                  = 12.7;
+double degrader.rod.depth                  = 12.7;
+
+double degrader.supportArm.dx              = 5.0; // half-lengths
+double degrader.supportArm.dy              = 7.0;
+double degrader.supportArm.dz              = 196.0; 
+double degrader.supportArm.offsetx         = 85.0; // Full Offsets
+double degrader.supportArm.offsety         = 30.0;
+double degrader.supportArm.offsetz         = 235.0;
+double degrader.supportPlate.dx            = 100.0;
+double degrader.supportPlate.dy            = 40.0;
+double degrader.supportPlate.dz            = 6.25;
+
+
+// This tells emacs to view this file in c++ mode.
+// Local Variables:
+// mode:c++
+// End:

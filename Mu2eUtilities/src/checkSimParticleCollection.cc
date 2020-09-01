@@ -7,15 +7,17 @@
 //
 // Contact person Rob Kutschke
 
-// Mu2e includes
-#include "Mu2eUtilities/inc/checkSimParticleCollection.hh"
-#include "MCDataProducts/inc/SimParticleCollection.hh"
+#include <cstddef>
+#include <utility>
+#include <vector>
 
+#include "cetlib/map_vector.h"
+#include "cetlib_except/exception.h"
 // art includes
 #include "messagefacility/MessageLogger/MessageLogger.h"
-#include "cetlib_except/exception.h"
 
-#include <vector>
+// Mu2e includes
+#include "Mu2eUtilities/inc/checkSimParticleCollection.hh"
 
 using namespace std;
 

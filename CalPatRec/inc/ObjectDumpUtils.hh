@@ -33,7 +33,6 @@ namespace mu2e {
   class GenParticle;
   class SimParticle;
   //  class CalTimePeak;
-  class TrackSeed;
   class TrkStrawHit;
 
 

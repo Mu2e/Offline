@@ -3,27 +3,6 @@ BEGIN_PROLOG
 # flags to keep track of which hits to use
 # Reconstruct hits: this produces StrawHits and ComboHits
 
-# flag hits from low-energy electrons (Compton electrons, delta rays, ...)
-# First, configure the clusters
-TNTClusterer : { 
-    HitDistance      : 5.0
-    SeedDistance     : 20.0
-    ClusterDiameter  : 5.0
-    ClusterTime      : 20.0
-    MaxHitTimeDiff   : 30.0
-    MaxSumDistance   : 100.0
-    MaxCluIterations : 10
-    MaxDistance      : 100.0
-    MinHitError      : 5.0
-    TimeRMS          : 2.0
-    DeltaTimeBinMin  : 10
-    MedianCentroid   : false
-    ComboInit        : true
-    TestFlag         : true
-    BackgroundMask   : []
-    SignalMask       : ["TimeSelection", "EnergySelection","RadiusSelection"]
-}
-
 # now trigger-specific versions; these make deep copies
 TTmakeSH : {
     module_type             : StrawHitReco
@@ -64,23 +43,12 @@ TTmakeSTH : {
     ComboHitCollection : "TTSmakePH"
 }
 TTflagBkgHits : {
-
-  module_type          : FlagBkgHits
+  @table::FlagBkgHits
   ComboHitCollection   : "TTmakePH"
   StrawHitCollection   : "TTmakeSH"
-  ClusterAlgorithm     : 1
-  TNTClustering        : { @table::TNTClusterer }
-  MinActiveHits        : 3
-  MinNPlanes           : 2
-  #MaxIsolated          : 0  
-  ClusterPositionError : 10
-  BkgMVA               : { MVAWeights : "TrkHitReco/data/BkgMVAPanel.weights.xml" }
-  BkgMVACut            : 0.5
   FilterOutput         : true
   FlagComboHits        : true
   FlagStrawHits        : false
-  BackgroundMask       : ["Background"]
-  StereoSelection      : ["Stereo","PanelCombo"]
 }
 
 # stereo versions

@@ -1,10 +1,6 @@
 //
 // Shoots a single particle gun and puts its output into a generated event.
 //
-// $Id: ParticleGun.cc,v 1.21 2012/08/20 21:23:24 mjlee Exp $
-// $Author: mjlee $
-// $Date: 2012/08/20 21:23:24 $
-//
 // Original author Rob Kutschke
 // Modified by MyeongJae Lee. See docdb-2049
 //

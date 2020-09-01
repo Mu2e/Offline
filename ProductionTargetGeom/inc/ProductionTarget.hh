@@ -105,6 +105,31 @@ namespace mu2e {
     double supportRingCutoutThickness()     const {return _supportRingCutoutThickness;}
     double supportRingCutoutLength()        const {return _supportRingCutoutLength;}
     
+    //define the supports for the Hayman_v2
+    bool                       supportsBuild       () const {return _supportsBuild       ;}
+    double                     supportWheelRIn     () const {return _supportWheelRIn     ;}
+    double                     supportWheelROut    () const {return _supportWheelROut    ;}
+    double                     supportWheelHL      () const {return _supportWheelHL      ;}
+    std::string                supportWheelMaterial() const {return _supportWheelMaterial;}
+    int                        nSpokesPerSide      () const {return _nSpokesPerSide      ;}
+    //features on the bicycle wheel
+    const std::vector<double>& supportWheelFeatureAngles() const {return _supportWheelFeatureAngles;}
+    const std::vector<double>& supportWheelFeatureArcs  () const {return _supportWheelFeatureArcs  ;}
+    const std::vector<double>& supportWheelFeatureRIns  () const {return _supportWheelFeatureRIns  ;}
+    //rods in the support wheel
+    const std::vector<double>& supportWheelRodHL          () const {return _supportWheelRodHL          ;}
+    const std::vector<double>& supportWheelRodOffset      () const {return _supportWheelRodOffset      ;}
+    const std::vector<double>& supportWheelRodRadius      () const {return _supportWheelRodRadius      ;}
+    const std::vector<double>& supportWheelRodRadialOffset() const {return _supportWheelRodRadialOffset;}
+    const std::vector<double>& supportWheelRodWireOffsetD () const {return _supportWheelRodWireOffsetD ;}
+    const std::vector<double>& supportWheelRodWireOffsetU () const {return _supportWheelRodWireOffsetU ;}
+    const std::vector<double>& supportWheelRodAngles      () const {return _supportWheelRodAngles      ;}
+
+    //spoke parameters
+    const std::vector<double>& spokeTargetAnglesD() const {return _spokeTargetAnglesD;}
+    const std::vector<double>& spokeTargetAnglesU() const {return _spokeTargetAnglesU;}
+    double                     spokeRadius       () const {return _spokeRadius       ;}
+
     double productionTargetMotherOuterRadius() const {return _productionTargetMotherOuterRadius;}
     double productionTargetMotherHalfLength()  const {return _productionTargetMotherHalfLength;}
 
@@ -243,8 +268,35 @@ namespace mu2e {
     double _supportRingOuterRadius;
     double _supportRingCutoutThickness;
     double _supportRingCutoutLength;
-		     
+    
+    //parameters for the support wheel
+    bool                _supportsBuild       ; //whether or not to build the supports
+    double              _supportWheelRIn     ;
+    double              _supportWheelROut    ;
+    double              _supportWheelHL      ; //half thickness in z
+    std::string         _supportWheelMaterial;
+    
+    //parameters for the non-wheel features near the support rods that are on the wheel
+    std::vector<double> _supportWheelFeatureAngles;
+    std::vector<double> _supportWheelFeatureArcs  ;
+    std::vector<double> _supportWheelFeatureRIns  ;
 
+    //parameters for rods in the support wheel
+    std::vector<double> _supportWheelRodHL          ; //includes length through the wheel
+    std::vector<double> _supportWheelRodOffset      ; //z offset with respect to the wheel
+    std::vector<double> _supportWheelRodRadius      ; //radius of the rod
+    std::vector<double> _supportWheelRodRadialOffset; //radius from the wheel center the rod is centered at
+    std::vector<double> _supportWheelRodWireOffsetD ; //z offset from the end of the rod the wire connects (downstream)
+    std::vector<double> _supportWheelRodWireOffsetU ; //z offset from the end of the rod the wire connects (upstream)
+    std::vector<double> _supportWheelRodAngles      ; //angle about the wheel the rod is 
+
+    //parameters for the wires (spokes) connecting the support wheel and the target
+    // std::string         _spokeMaterial; (defined above)
+    int                 _nSpokesPerSide    ; //also constrains the number of rods in the support wheel
+    std::vector<double> _spokeTargetAnglesD; //angle about the target the wire connects to (downstream)
+    std::vector<double> _spokeTargetAnglesU; //angle about the target the wire connects to (upstream)
+    double              _spokeRadius       ; //radius of the wire
+    
     // Needed for persistency
     template<class T> friend class art::Wrapper;
     ProductionTarget():_pHubsRgtParams(NULL), _pHubsLftParams(NULL) {}

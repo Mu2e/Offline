@@ -41,7 +41,28 @@ TNTClusterer : {
     TimeRMS          : 2.0
     DeltaTimeBinMin  : 10
     MedianCentroid   : false
+    preFilter        : false
+    pfTimeBin        : 20
+    pfPhiBin         : 0.1
+    pfMinHit         : 10
+    pfMinSumHit      : 20
     ComboInit        : true
+    TestFlag         : true
+    BackgroundMask   : []
+    SignalMask       : ["TimeSelection", "EnergySelection","RadiusSelection"]
+}
+
+#FilterAlgo: 1 for next neighbor version, 2 for clustering version
+ScanClusterer: {
+    Pbin             : 0.08
+    Tbin             : 20
+    Rbin             : 50 
+    Rmin             : 350
+    Rmax             : 650
+    MinPeakHit       : 3
+    MinSeedHit       : 2
+    MinRadHit        : 50
+    FilterAlgo       : 1   
     TestFlag         : true
     BackgroundMask   : []
     SignalMask       : ["TimeSelection", "EnergySelection","RadiusSelection"]
@@ -54,9 +75,9 @@ FlagBkgHits : {
   StrawHitCollection   : "makeSH"
   ClusterAlgorithm     : 1
   TNTClustering        : { @table::TNTClusterer }
+  ScanClustering       : { @table::ScanClusterer }
   MinActiveHits        : 3
   MinNPlanes           : 2
-  #MaxIsolated          : 0  
   ClusterPositionError : 10
   BkgMVA               : { MVAWeights : "TrkHitReco/data/BkgMVAPanel.weights.xml" }
   BkgMVACut            : 0.5
@@ -65,10 +86,8 @@ FlagBkgHits : {
   FlagStrawHits        : true
   BackgroundMask       : ["Background"]
   StereoSelection      : ["Stereo","PanelCombo"]
-  
-  
-
 }
+
 
 SflagBkgHits : {
   @table::FlagBkgHits

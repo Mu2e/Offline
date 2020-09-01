@@ -13,6 +13,7 @@
 #include "fhiclcpp/types/Sequence.h"
 #include "fhiclcpp/types/OptionalSequence.h"
 #include "fhiclcpp/types/Table.h"
+#include "fhiclcpp/types/OptionalTuple.h"
 #include "fhiclcpp/types/OptionalTable.h"
 #include "fhiclcpp/types/DelegatedParameter.h"
 #include "fhiclcpp/types/OptionalDelegatedParameter.h"
@@ -38,6 +39,9 @@ namespace mu2e {
       fhicl::Atom<int> navigatorVerbosityLevel {Name("navigatorVerbosityLevel"), 0};
       fhicl::Atom<int> PiENuPolicyVerbosity {Name("PiENuPolicyVerbosity"), 0};
       fhicl::Atom<int> mtDebugOutput {Name("mtDebugOutput"), 0};
+
+      // fhicl::OptionalTuple<int,double,int> ionToGenerate { Name("ionToGenerate"), std::tuple<int,double>{1000591349, 0.163100 , 1} }; // particle code, excitation energy float level base index; experts only
+      fhicl::OptionalTuple<int,double,int> ionToGenerate { Name("ionToGenerate") };
 
       fhicl::Atom<int> checkFieldMap {Name("checkFieldMap"), 0 };
 

@@ -3,10 +3,6 @@
 // If Mu2e needs many different user tracking actions, they
 // should be called from this class.
 //
-// $Id: TrackingAction.cc,v 1.46 2014/08/29 22:37:41 genser Exp $
-// $Author: genser $
-// $Date: 2014/08/29 22:37:41 $
-//
 // Original author Rob Kutschke
 //
 // Notes:
@@ -50,6 +46,7 @@
 #include "globals.hh"
 #include "G4Event.hh"
 #include "G4Ions.hh"
+#include "G4IonTable.hh"
 #include "G4RunManager.hh"
 #include "G4EventManager.hh"
 #include "G4SteppingManager.hh"
@@ -203,6 +200,7 @@ namespace mu2e {
 
     _timer.reset();
     _timer.start();
+
 
   }
 
@@ -393,25 +391,38 @@ namespace mu2e {
 
     PDGCode::type ppdgId = static_cast<PDGCode::type>(trk->GetDefinition()->GetPDGEncoding());
 
-    // here we inspect unusual excited ions
+    // printing ions
+    if ( trackingVerbosityLevel > 0 && ppdgId>PDGCode::G4Threshold ) {
+      G4cout << __func__ << " Ion pdgid:          "
+             << ppdgId
+             << G4endl;
+      const G4ParticleDefinition* pDef = trk->GetDefinition();
+      pDef->DumpTable();
+      // print data specific to ions
+      // Get excitation energy of nucleus
+      // Charge
+      // Get Isomer level (=0 for ground state)
+      const G4Ions* pG4Ion = dynamic_cast<const G4Ions*>(pDef);
+      G4int flbi = pG4Ion->GetFloatLevelBaseIndex();
+      G4cout << __func__ << " Ion specific data:  "
+             << pG4Ion->GetExcitationEnergy()
+             << ", " << pG4Ion->GetPDGCharge()
+             << ", " << pG4Ion->GetIsomerLevel()
+             << ", " << flbi
+        //   << ", " << static_cast<G4int>(pG4Ion->GetFloatLevelBase())
+             << ", " << G4String(G4Ions::FloatLevelBaseChar(G4Ions::FloatLevelBase(flbi)))
+        //   << ", " << G4String(G4Ions::FloatLevelBaseChar(pG4Ion->GetFloatLevelBase()))
+             << G4endl;
+      Mu2eG4UserHelpers::printTrackInfo( trk, " Ion:          ", _transientMap,
+                                         _timer, _mu2eOrigin);
+    }
 
-    if (ppdgId>PDGCode::G4Threshold) {
-
-      int excLevel = ppdgId%10;
-
-      if ( (excLevel > 1) && (trackingVerbosityLevel > 0) ) {
-
-        const G4ParticleDefinition* pDef = trk->GetDefinition();
-
-        G4cout << __func__
-               << " Warning: Unusual excited ion: " << ppdgId;
-        pDef->DumpTable();
-        G4cout << " Excitation energy: "
-               << dynamic_cast<const G4Ions*>(pDef)->GetExcitationEnergy() << G4endl
-               << " produced by " << creationCode
-               << G4endl;
-      }
-
+    // extracting info specific to ions
+    SimParticle::IonDetail ion;
+    if ( ppdgId>PDGCode::G4Threshold ) {
+      const G4ParticleDefinition* pDef = trk->GetDefinition();
+      ion.excitationEnergy = dynamic_cast<const G4Ions*>(pDef)->GetExcitationEnergy();
+      ion.floatLevelBaseIndex = dynamic_cast<const G4Ions*>(pDef)->GetFloatLevelBaseIndex();
     }
 
     _transientMap.insert(std::make_pair(kid,SimParticle( kid,
@@ -425,18 +436,46 @@ namespace mu2e {
                                                          trk->GetProperTime(),
                                                          _physVolHelper->index(trk),
                                                          trk->GetTrackStatus(),
-                                                         creationCode)));
+                                                         creationCode,
+                                                         ion)));
 
     // If this track has a parent, tell the parent about this track.
     if ( parentPtr.isNonnull() ){
       map_type::iterator i(_transientMap.find(SimParticleCollection::key_type(parentPtr.key())));
       if ( i == _transientMap.end() ){
         throw cet::exception("RANGE")
-          << "Could not find parent SimParticle in PreUserTrackingAction.  id: "
+          << "Could not find parent SimParticle in " << __func__ << ".  id: "
           << parentPtr.key()
           << "\n";
       }
       i->second.addDaughter(_spHelper->particlePtr(trk));
+
+      // // print parent of an ion
+      //
+      // int parPDGId = i->second.pdgId();
+      // if ( ppdgId >PDGCode::G4Threshold ) {
+      //   G4String pName = "";
+      //   if ( parPDGId >PDGCode::G4Threshold ) {
+      //     G4cout << __func__ << " Parent base ion pdgid: " << parPDGId-parPDGId%10 << G4endl;
+      //     G4ParticleDefinition* ion = G4IonTable::GetIonTable()->GetIon(parPDGId-parPDGId%10);
+      //     pName = (ion) ? ion->GetParticleName() : "Unknown";
+      //   } else {
+      //     pName = G4ParticleTable::GetParticleTable()->FindParticle(parPDGId)->GetParticleName();
+      //   }
+      //   G4cout << __func__ << " Ion parent with approximate name : "
+      //          << i->second.id()
+      //          << ", " << parPDGId
+      //          << ", " << pName
+      //          << ", created by " << i->second.creationCode().name()
+      //          << ", stopped by " << i->second.stoppingCode().name()
+      //          << G4endl;
+      // }
+      // // print if parent is an ion
+      // if ( parPDGId)) {
+      //   G4cout << __func__ << " Ion daughter pdgid: " << ppdgId << G4endl;
+      //   Mu2eG4UserHelpers::printTrackInfo( trk, "ion daughter: ", _transientMap,
+      //                                      _timer, _mu2eOrigin);
+      // }
     }
   }//saveSimParticleStart
 
@@ -520,13 +559,36 @@ namespace mu2e {
                           trk->GetTrackLength()
                           );
 
-    if (trackingVerbosityLevel > 0) {
+    // the following is to establish for debugging if the parent pdgid to see if it is an ion
+    // const int parentId = trk->GetParentID();
+    // art::Ptr<SimParticle> parentPtr;
+    // int parPDGId = 0;
+    // if(parentId == 0) { // primary
+    //   parentPtr = _primaryHelper->simParticlePrimaryPtr(trk->GetTrackID());
+    // }
+    // else { // not a primary
+    //   parentPtr = _spHelper->particlePtrFromG4TrackID(parentId);
+    // }
+    // if ( parentPtr.isNonnull() ){
+    //   map_type::iterator i(_transientMap.find(SimParticleCollection::key_type(parentPtr.key())));
+    //   if ( i == _transientMap.end() ){
+    //     throw cet::exception("RANGE")
+    //       << "Could not find parent SimParticle in " << __func__ << ".  id: "
+    //       << parentPtr.key()
+    //       << "\n";
+    //   }
+    //   parPDGId = i->second.pdgId();
+    // }
+
+    if ( trackingVerbosityLevel > 0
+         // || trk->GetDefinition()->GetPDGEncoding()>PDGCode::G4Threshold
+        ) {
       G4int prec = G4cout.precision(15);
       G4cout << __func__
              << " particle "
              << i->second.pdgId() << ", "
              << trk->GetParticleDefinition()->GetParticleName()
-             << " stopped by " << stoppingCode << ", " << pname
+             << " stopped by " << stoppingCode // << ", " << pname
              << " totE deposit " << fixed << trk->GetStep()->GetTotalEnergyDeposit()
              << " NonIonE deposit " << fixed << trk->GetStep()->GetNonIonizingEnergyDeposit()
              << " in " << trk->GetVolume()->GetName()
@@ -543,7 +605,20 @@ namespace mu2e {
       G4cout << __func__
              << " step length " << trk->GetStepLength()
              << ", track length " << trk->GetTrackLength()
+             << ", step number " << trk->GetCurrentStepNumber()
+             << ", created by " << Mu2eG4UserHelpers::findCreationCode(trk)
              << G4endl;
+      if ( trk->GetDefinition()->GetPDGEncoding()>PDGCode::G4Threshold ) {
+        const G4Ions* pG4Ion = dynamic_cast<const G4Ions*>(trk->GetDefinition());
+        G4int flbi = pG4Ion->GetFloatLevelBaseIndex();
+        G4cout << __func__ << " Ion "
+               << pG4Ion->GetParticleName()
+               << " with excitaion energy: "
+               << pG4Ion->GetExcitationEnergy()
+               << " with float level base: "
+               << G4String(G4Ions::FloatLevelBaseChar(G4Ions::FloatLevelBase(flbi))) << " " << flbi
+               << G4endl;
+      }
       G4cout.precision(prec);
     }
   }//saveSimParticleEnd

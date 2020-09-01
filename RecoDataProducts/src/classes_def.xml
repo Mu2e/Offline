@@ -8,9 +8,17 @@
 
  <class name="std::vector<std::pair<unsigned int, unsigned int> >"/>
 <!--  ********* cosmics  ********* -->
+ <class name="TrackParams"/>
+ <class name="TrackCov"/>
+ <class name="TrackAxes"/>
+ <class name="TrackEquation"/>
+ <class name="TrackSeedDiag"/>
+ 
+ <class name="mu2e::CosmicTrack"/>
  <class name="mu2e::CosmicTrackSeed"/>
  <class name="mu2e::CosmicTrackSeedCollection"/>
  <class name="art::Ptr<mu2e::CosmicTrackSeed>"/>
+ <class name="std::vector<art::Ptr<mu2e::CosmicTrackSeed> >"/>
  <class name="art::Wrapper<mu2e::CosmicTrackSeedCollection>"/>
 
 <!--  ********* calorimeter  ********* -->
@@ -116,6 +124,7 @@
  <class name="mu2e::HelixSeed"/>
  <class name="mu2e::HelixSeedCollection" /> 
  <class name="art::Ptr<mu2e::HelixSeed>"/>
+ <class name="std::vector<art::Ptr<mu2e::HelixSeed> >"/>
  <class name="art::Wrapper<mu2e::HelixSeedCollection>"/>
 
  <class name="mu2e::BkgQual"/>
@@ -135,12 +144,6 @@
 
 
 <!--  ********* tracking output  ********* -->
-
- <class name="mu2e::TrackSeed"/>
- <class name="mu2e::TrackSeedCollection" />
- <class name="art::Ptr<mu2e::TrackSeed>"/>
- <class name="art::Wrapper<mu2e::TrackSeedCollection>"/>
- <class name="std::vector<art::Ptr<mu2e::TrackSeed> >"/>
 
  <class name="mu2e::TrkFitFlag"/>
  <class name="mu2e::TrkFitFlagDetail"/>
@@ -179,8 +182,9 @@
 
  <class name="mu2e::KalSeed"/>
  <class name="mu2e::KalSeedCollection"/>
- <class name="art::Wrapper<mu2e::KalSeedCollection>"/>
  <class name="art::Ptr<mu2e::KalSeed>"/>
+ <class name="std::vector<art::Ptr<mu2e::KalSeed> >"/>
+ <class name="art::Wrapper<mu2e::KalSeedCollection>"/>
 
  <class name="mu2e::MVAStatus"/>
  <class name="mu2e::TrkQual"/>

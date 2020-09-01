@@ -115,28 +115,48 @@ namespace mu2e {
 
     // Cryo-stat dimensions
     double torusRadius() const { return _rTorus; }
-    double innerRadius() const { return _rVac; }
+    double innerRadius() const { return _rVac; } //approximation that all sections are the same
+    //by section radii
+    double ts1InnerRadius() const { return _ts1RVac; }
+    double ts2InnerRadius() const { return _ts2RVac; }
+    double ts3InnerRadius() const { return _ts3RVac; }
+    double ts4InnerRadius() const { return _ts4RVac; }
+    double ts5InnerRadius() const { return _ts5RVac; }
+
+    bool   build_endWallD2() const { return _build_endWallD2;}
 
     double endWallU1_rIn() const { return _rIn_endWallU1; }
     double endWallU2_rIn() const { return _rIn_endWallU2; }
-    double endWallD_rIn() const  { return _rIn_endWallD;  }
+    double endWallD_rIn()  const { return _rIn_endWallD;  }
+    const std::vector<double>& endWallD2_rIn() const { return _rIn_endWallD2; }
 
     double endWallU1_rOut() const { return _rOut_endWallU1; }
     double endWallU2_rOut() const { return _rOut_endWallU2; }
-    double endWallD_rOut() const  { return _rOut_endWallD;  }
+    double endWallD_rOut()  const { return _rOut_endWallD;  }
+    const std::vector<double>& endWallD2_rOut() const { return _rOut_endWallD2; }
+
+    const std::vector<double>& endWallD2_z() const { return _z_endWallD2; }
 
     double endWallU1_halfLength() const { return _halfLength_endWallU1; }
     double endWallU2_halfLength() const { return _halfLength_endWallU2; }
-    double endWallD_halfLength() const  { return _halfLength_endWallD;  }
+    double endWallD_halfLength()  const { return _halfLength_endWallD;  }
+    double endWallD2_halfLength() const { return _halfLength_endWallD2; }
 
     std::string material()       const { return _material; }
 
     std::string downstreamVacuumMaterial() const { return _downstreamVacuumMaterial; }
     std::string upstreamVacuumMaterial()   const { return _upstreamVacuumMaterial; }
+    std::string thermalShieldMLIMaterial() const { return _thermalShieldMLIMaterial; }
+    std::string thermalShieldMidMaterial() const { return _thermalShieldMidMaterial; }
 
     template <class T = TSSection>
     T* getTSCryo(TSRegion::enum_type i,TSRadialPart::enum_type j) const {
       return static_cast<T*>( _cryoMap.find(i)->second.find(j)->second.get() );        
+    }
+
+    template <class T = TSSection>
+    T* getTSThermalShield(TSRegion::enum_type i,TSRadialPart::enum_type j) const {
+      return static_cast<T*>( _thermalShieldMap.find(i)->second.find(j)->second.get() );
     }
 
     // The coils assemblies are approximated by a torus and cones for now
@@ -201,27 +221,43 @@ namespace mu2e {
 
     // Cryostat
     double _rTorus;
-    double _rVac;
+    double _rVac; //approximation for all sections share the same radius
+    //by section values
+    double _ts1RVac;
+    double _ts2RVac;
+    double _ts3RVac;
+    double _ts4RVac;
+    double _ts5RVac;
+
+    bool _build_endWallD2; //whether or not to build second component of endWallD
 
     double _rIn_endWallU1; 
     double _rIn_endWallU2; 
     double _rIn_endWallD;  
+    std::vector<double> _rIn_endWallD2;
 
     double _rOut_endWallU1; 
     double _rOut_endWallU2; 
     double _rOut_endWallD;  
+    std::vector<double> _rOut_endWallD2;
 
-    double _halfLength_endWallU1; 
-    double _halfLength_endWallU2; 
-    double _halfLength_endWallD;  
+    std::vector<double> _z_endWallD2;
+
+    double _halfLength_endWallU1;
+    double _halfLength_endWallU2;
+    double _halfLength_endWallD; 
+    double _halfLength_endWallD2;
 
     std::string _material;
     std::string _downstreamVacuumMaterial;
     std::string _upstreamVacuumMaterial;
+    std::string _thermalShieldMLIMaterial;
+    std::string _thermalShieldMidMaterial;
 
     // cryostat map
     typedef std::map<TSRadialPart::enum_type,std::unique_ptr<TSSection>> map_unique_ptrs_TSSection;
     std::map<TSRegion::enum_type,map_unique_ptrs_TSSection> _cryoMap;
+    std::map<TSRegion::enum_type,map_unique_ptrs_TSSection> _thermalShieldMap;
 
     // Rings 
     double _rInRingSide, _rOutRingSide, _thickRingSide;

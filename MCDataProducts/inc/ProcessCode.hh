@@ -43,39 +43,39 @@ namespace mu2e {
     // Add new elements just before lastEnum; do not insert new elements
     // prior to this - it will break backwards compatibility.
     enum enum_type {
-      unknown,                AlphaInelastic,          annihil,             AntiLambdaInelastic,
-      AntiNeutronInelastic,   AntiOmegaMinusInelastic, AntiProtonInelastic, AntiSigmaMinusInelastic,
-      AntiSigmaPlusInelastic, AntiXiMinusInelastic,    AntiXiZeroInelastic, CHIPSNuclearCaptureAtRest,
-      compt,                  conv,                    Decay,               DeuteronInelastic,
-      eBrem,                  eIoni,                   ElectroNuclear,      hBrems,
-      hElastic,               hIoni,                   hPairProd,           ionIoni,
-      KaonMinusInelastic,     KaonPlusInelastic,       KaonZeroLInelastic,  KaonZeroSInelastic,
-      LambdaInelastic,        msc,                     muBrems,             muIoni,
-      muMinusCaptureAtRest,   muMsc,                   muPairProd,          nCapture,
-      NeutronInelastic,       nFission,                nKiller,             OmegaMinusInelastic,
-      phot,                   PhotonInelastic,         PionMinusInelastic,  PionPlusInelastic,
-      PositronNuclear,        ProtonInelastic,         SigmaMinusInelastic, SigmaPlusInelastic,
-      StepLimiter,            Transportation,          TritonInelastic,     XiMinusInelastic,
-      XiZeroInelastic,        mu2eLowEKine,            mu2eKillerVolume,    mu2eMaxSteps,
-      mu2ePrimary,            muMinusConversionAtRest, hadElastic,          CoulombScat,
-      nuclearStopping,        mu2eMaxGlobalTime,       TNuclearCapture,     muMinusAtomicCapture,
-      MuAtomDecay,            Rayl,                    ionInelastic,        He3Inelastic,
-      alphaInelastic,         AntiHe3InelasticProcess, AntiAlphaInelasticProcess, AntiDeuteronInelastic,
-      dInelastic,             tInelastic,              RadioactiveDecay,    CHIPS_Inelastic,
-      NotSpecified,           hFritiofCaptureAtRest,   hBertiniCaptureAtRest, AntiTritonInelasticProcess,
-      anti_He3Inelastic,      anti_alphaInelastic,     anti_deuteronInelastic, anti_lambdaInelastic,
-      anti_neutronInelastic,  anti_omega_MinusInelastic, anti_protonInelastic, anti_sigma_PlusInelastic,
-      anti_sigma_MinusInelastic, anti_tritonInelastic, anti_xi_MinusInelastic, anti_xi0Inelastic,
-      kaon_PlusInelastic,     kaon_MinusInelastic,     kaon0LInelastic,     kaon0SInelastic,
-      lambdaInelastic,        neutronInelastic,        omega_MinusInelastic, pi_PlusInelastic,
-      pi_MinusInelastic,      protonInelastic,         sigma_PlusInelastic, sigma_MinusInelastic,
-      sigma0Inelastic,        xi_MinusInelastic,       xi0Inelastic,        positronNuclear,
-      electronNuclear,        photonNuclear,           antilambdaInelastic, DecayWithSpin,
-      ionElastic,             EMCascade,               DIO,                 NuclearCapture,
-      muonNuclear,            GammaToMuPair,           AnnihiToMuPair,      ee2hadr,
-      G4MinEkineCuts,         G4MaxTimeCuts,           OpAbsorption,        OpBoundary,
-      Scintillation,          inelastic,               G4ErrorEnergyLoss,   G4ErrorStepLengthLimit,
-      G4ErrorMagFieldLimit,   ePairProd,               FieldPropagator,     Mu2eRecorderProcess,
+      unknown,                AlphaInelastic,          annihil,             AntiLambdaInelastic, // 3
+      AntiNeutronInelastic,   AntiOmegaMinusInelastic, AntiProtonInelastic, AntiSigmaMinusInelastic, // 7
+      AntiSigmaPlusInelastic, AntiXiMinusInelastic,    AntiXiZeroInelastic, CHIPSNuclearCaptureAtRest, // 11
+      compt,                  conv,                    Decay,               DeuteronInelastic, // 15
+      eBrem,                  eIoni,                   ElectroNuclear,      hBrems, // 19
+      hElastic,               hIoni,                   hPairProd,           ionIoni,  // 23
+      KaonMinusInelastic,     KaonPlusInelastic,       KaonZeroLInelastic,  KaonZeroSInelastic, // 27
+      LambdaInelastic,        msc,                     muBrems,             muIoni,  // 31
+      muMinusCaptureAtRest,   muMsc,                   muPairProd,          nCapture,  // 35
+      NeutronInelastic,       nFission,                nKiller,             OmegaMinusInelastic, // 39
+      phot,                   PhotonInelastic,         PionMinusInelastic,  PionPlusInelastic, // 43
+      PositronNuclear,        ProtonInelastic,         SigmaMinusInelastic, SigmaPlusInelastic, // 47
+      StepLimiter,            Transportation,          TritonInelastic,     XiMinusInelastic, // 51
+      XiZeroInelastic,        mu2eLowEKine,            mu2eKillerVolume,    mu2eMaxSteps,  // 55
+      mu2ePrimary,            muMinusConversionAtRest, hadElastic,          CoulombScat, // 59
+      nuclearStopping,        mu2eMaxGlobalTime,       TNuclearCapture,     muMinusAtomicCapture, // 63
+      MuAtomDecay,            Rayl,                    ionInelastic,        He3Inelastic, // 67
+      alphaInelastic,         AntiHe3InelasticProcess, AntiAlphaInelasticProcess, AntiDeuteronInelastic, // 71
+      dInelastic,             tInelastic,              RadioactiveDecay,    CHIPS_Inelastic, // 75
+      NotSpecified,           hFritiofCaptureAtRest,   hBertiniCaptureAtRest, AntiTritonInelasticProcess, // 79
+      anti_He3Inelastic,      anti_alphaInelastic,     anti_deuteronInelastic, anti_lambdaInelastic, // 83
+      anti_neutronInelastic,  anti_omega_MinusInelastic, anti_protonInelastic, anti_sigma_PlusInelastic,  // 87
+      anti_sigma_MinusInelastic, anti_tritonInelastic, anti_xi_MinusInelastic, anti_xi0Inelastic,  // 91
+      kaon_PlusInelastic,     kaon_MinusInelastic,     kaon0LInelastic,     kaon0SInelastic, // 95
+      lambdaInelastic,        neutronInelastic,        omega_MinusInelastic, pi_PlusInelastic,  // 99
+      pi_MinusInelastic,      protonInelastic,         sigma_PlusInelastic, sigma_MinusInelastic, // 103
+      sigma0Inelastic,        xi_MinusInelastic,       xi0Inelastic,        positronNuclear, // 107
+      electronNuclear,        photonNuclear,           antilambdaInelastic, DecayWithSpin, // 111
+      ionElastic,             EMCascade,               DIO,                 NuclearCapture, // 115
+      muonNuclear,            GammaToMuPair,           AnnihiToMuPair,      ee2hadr, // 119
+      G4MinEkineCuts,         G4MaxTimeCuts,           OpAbsorption,        OpBoundary, // 123
+      Scintillation,          inelastic,               G4ErrorEnergyLoss,   G4ErrorStepLengthLimit, // 127
+      G4ErrorMagFieldLimit,   ePairProd,               FieldPropagator,     Mu2eRecorderProcess,  // 131
       mu2eProtonInelastic,    RadioactiveDecayBase,
       lastEnum,
       // An alias for backward compatibility

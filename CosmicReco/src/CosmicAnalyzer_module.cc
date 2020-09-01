@@ -9,7 +9,6 @@
 
 // Cosmic Tracks:
 #include "CosmicReco/inc/CosmicTrackFit.hh"
-#include "CosmicReco/inc/CosmicTrackFinderData.hh"
 #include "RecoDataProducts/inc/CosmicTrack.hh"
 #include "RecoDataProducts/inc/CosmicTrackSeed.hh"
 #include "CosmicReco/inc/CosmicTrackMCInfo.hh"
@@ -31,6 +30,7 @@
 #include "TrkDiag/inc/TrkMCTools.hh"
 #include "CosmicReco/inc/DriftFitUtils.hh"
 #include "Mu2eUtilities/inc/ParametricFit.hh"
+#include "Mu2eUtilities/inc/BuildLinearFitMatrixSums.hh"
 
 // Mu2e diagnostics
 #include "TrkDiag/inc/ComboHitInfo.hh"
@@ -664,7 +664,7 @@ namespace mu2e
 		if(st.converged == false or st.minuit_converged  == false) { continue;} 
 		std::vector<int> panels, planes, stations;
 
-		_reco_phi_angle->Fill(st.get_fit_phi()); 
+		_reco_phi_angle->Fill(acos(st.FitEquation.Dir.x()/st.FitEquation.Dir.Mag2()));
 		_niters->Fill(st.get_iter()); 
 
 		_seed_a1->Fill(st.FitParams.A1);
@@ -672,10 +672,10 @@ namespace mu2e
 		_seed_a0->Fill(st.FitParams.A0);
 		_seed_b0->Fill(st.FitParams.B0);
 
-		_seed_a1XYZ->Fill(st.FitEquationXYZ.Dir.X());
-		_seed_b1XYZ->Fill(st.FitEquationXYZ.Dir.Y());
-		_seed_a0XYZ->Fill(st.FitEquationXYZ.Pos.X());
-		_seed_b0XYZ->Fill(st.FitEquationXYZ.Pos.Y());
+		_seed_a1XYZ->Fill(st.FitEquation.Dir.X());
+		_seed_b1XYZ->Fill(st.FitEquation.Dir.Y());
+		_seed_a0XYZ->Fill(st.FitEquation.Pos.X());
+		_seed_b0XYZ->Fill(st.FitEquation.Pos.Y());
 
 		_Seed_Cov_A0->Fill(st.FitParams.Covarience.sigA0);
 		_Seed_Cov_A1->Fill(st.FitParams.Covarience.sigA1);
@@ -690,15 +690,15 @@ namespace mu2e
 		_seedA0_v_seedB0->Fill(st.FitParams.A0,st.FitParams.B0);
 		_seedB1_v_seedA1->Fill(st.FitParams.B1,st.FitParams.A1);
 
-		_A0MinuitFitDiff->Fill(st.MinuitFitParams.A0-st.FitEquationXYZ.Pos.X());
-		_A1MinuitFitDiff->Fill(st.MinuitFitParams.A1-st.FitEquationXYZ.Dir.X());
-		_B0MinuitFitDiff->Fill(st.MinuitFitParams.B0- st.FitEquationXYZ.Pos.Y());
-		_B1MinuitFitDiff->Fill(st.MinuitFitParams.B1-st.FitEquationXYZ.Dir.Y());
+		_A0MinuitFitDiff->Fill(st.MinuitParams.A0-st.FitEquation.Pos.X());
+		_A1MinuitFitDiff->Fill(st.MinuitParams.A1-st.FitEquation.Dir.X());
+		_B0MinuitFitDiff->Fill(st.MinuitParams.B0- st.FitEquation.Pos.Y());
+		_B1MinuitFitDiff->Fill(st.MinuitParams.B1-st.FitEquation.Dir.Y());
 
-		_A0Minuit->Fill(st.MinuitFitParams.A0);
-		_A1Minuit->Fill(st.MinuitFitParams.A1);
-		_B0Minuit->Fill(st.MinuitFitParams.B0);
-		_B1Minuit->Fill(st.MinuitFitParams.B1);
+		_A0Minuit->Fill(st.MinuitParams.A0);
+		_A1Minuit->Fill(st.MinuitParams.A1);
+		_B0Minuit->Fill(st.MinuitParams.B0);
+		_B1Minuit->Fill(st.MinuitParams.B1);
 
 	       if(_mcdiag){
 			
@@ -712,25 +712,25 @@ namespace mu2e
 		        _truea0XYZ->Fill(trueinfo.TrueFitEquation.Pos.X());
 		        _trueb0XYZ->Fill(trueinfo.TrueFitEquation.Pos.Y());
 
-			if(st.MinuitFitParams.Covarience.sigA0 !=0){
-				_A0MinuitMCDiff->Fill((trueinfo.TrueFitEquation.Pos.X()- st.MinuitFitParams.A0));
-			}if(st.MinuitFitParams.Covarience.sigA1 !=0){
-				_A1MinuitMCDiff->Fill((trueinfo.TrueFitEquation.Dir.X() - st.MinuitFitParams.A1));
-				_B0MinuitMCDiff->Fill((trueinfo.TrueFitEquation.Pos.Y()- st.MinuitFitParams.B0));
+			if(st.MinuitParams.Covarience.sigA0 !=0){
+				_A0MinuitMCDiff->Fill((trueinfo.TrueFitEquation.Pos.X()- st.MinuitParams.A0));
+			}if(st.MinuitParams.Covarience.sigA1 !=0){
+				_A1MinuitMCDiff->Fill((trueinfo.TrueFitEquation.Dir.X() - st.MinuitParams.A1));
+				_B0MinuitMCDiff->Fill((trueinfo.TrueFitEquation.Pos.Y()- st.MinuitParams.B0));
 				
-			}if(st.MinuitFitParams.Covarience.sigB1 !=0){
-				_B1MinuitMCDiff->Fill((trueinfo.TrueFitEquation.Dir.Y() - st.MinuitFitParams.B1));
+			}if(st.MinuitParams.Covarience.sigB1 !=0){
+				_B1MinuitMCDiff->Fill((trueinfo.TrueFitEquation.Dir.Y() - st.MinuitParams.B1));
 		       }
 
-		      	_A0SeedMCDiff->Fill(trueinfo.TrueFitEquation.Pos.X()- st.FitEquationXYZ.Pos.X());
-		      	_A1SeedMCDiff->Fill(trueinfo.TrueFitEquation.Dir.X() -st.FitEquationXYZ.Dir.X());
-	       	     	_B0SeedMCDiff->Fill(trueinfo.TrueFitEquation.Pos.Y() - st.FitEquationXYZ.Pos.Y());
-		     	_B1SeedMCDiff->Fill(trueinfo.TrueFitEquation.Dir.Y()  - st.FitEquationXYZ.Dir.Y());
+		      	_A0SeedMCDiff->Fill(trueinfo.TrueFitEquation.Pos.X()- st.FitEquation.Pos.X());
+		      	_A1SeedMCDiff->Fill(trueinfo.TrueFitEquation.Dir.X() -st.FitEquation.Dir.X());
+	       	     	_B0SeedMCDiff->Fill(trueinfo.TrueFitEquation.Pos.Y() - st.FitEquation.Pos.Y());
+		     	_B1SeedMCDiff->Fill(trueinfo.TrueFitEquation.Dir.Y()  - st.FitEquation.Dir.Y());
 		      
-			_seedDeltaA0_v_minuitA0->Fill(trueinfo.TrueFitEquation.Pos.X()- st.FitEquationXYZ.Pos.X(), st.MinuitFitParams.A0);
-			_seedDeltaB0_v_minuitB0->Fill(trueinfo.TrueFitEquation.Pos.Y()- st.FitEquationXYZ.Pos.Y(), st.MinuitFitParams.B0);
-		        _seedDeltaA1_v_minuitA1->Fill(trueinfo.TrueFitEquation.Dir.X()- st.FitEquationXYZ.Dir.X(), st.MinuitFitParams.A1);
-			_seedDeltaB1_v_minuitB1->Fill(trueinfo.TrueFitEquation.Dir.Y()- st.FitEquationXYZ.Dir.Y(), st.MinuitFitParams.B1);
+			_seedDeltaA0_v_minuitA0->Fill(trueinfo.TrueFitEquation.Pos.X()- st.FitEquation.Pos.X(), st.MinuitParams.A0);
+			_seedDeltaB0_v_minuitB0->Fill(trueinfo.TrueFitEquation.Pos.Y()- st.FitEquation.Pos.Y(), st.MinuitParams.B0);
+		        _seedDeltaA1_v_minuitA1->Fill(trueinfo.TrueFitEquation.Dir.X()- st.FitEquation.Dir.X(), st.MinuitParams.A1);
+			_seedDeltaB1_v_minuitB1->Fill(trueinfo.TrueFitEquation.Dir.Y()- st.FitEquation.Dir.Y(), st.MinuitParams.B1);
 	  		
 			
 	    }
@@ -754,9 +754,9 @@ namespace mu2e
 			    double StartDOCA = DriftFitUtils::GetTestDOCA(chit, st.FitParams.A0,st.FitParams.A1, st.FitParams.B0, st.FitParams.B1,tracker);
 			    
 			   
-			    double DOCA = DriftFitUtils::GetTestDOCA(chit, st.MinuitFitParams.A0,st.MinuitFitParams.A1, st.MinuitFitParams.B0, st.MinuitFitParams.B1,  tracker);
+			    double DOCA = DriftFitUtils::GetTestDOCA(chit, st.MinuitParams.A0,st.MinuitParams.A1, st.MinuitParams.B0, st.MinuitParams.B1,  tracker);
 			    
-			   int RecoAmbig = DriftFitUtils::GetAmbig(chit, st.MinuitFitParams.A0,st.MinuitFitParams.A1, st.MinuitFitParams.B0, st.MinuitFitParams.B1, tracker);
+			   int RecoAmbig = DriftFitUtils::GetAmbig(chit, st.MinuitParams.A0,st.MinuitParams.A1, st.MinuitParams.B0, st.MinuitParams.B1, tracker);
 
 			    _FullFitEndDOCAs->Fill(DOCA);
 			    _StartDOCAs->Fill(StartDOCA);
@@ -765,8 +765,8 @@ namespace mu2e
 				trueinfo = FillDriftMC(chit, RecoAmbig, trueinfo, tracker);
 		                if(DriftFitUtils::GetTestDOCA(chit, trueinfo.TrueFitEquation.Pos.X(), trueinfo.TrueFitEquation.Dir.X(), trueinfo.TrueFitEquation.Pos.Y(),trueinfo.TrueFitEquation.Dir.Y(), tracker)<2.5 and DOCA<2.5 and abs(trueinfo.TrueFitEquation.Pos.X() ) < 5000 and abs(trueinfo.TrueFitEquation.Pos.Y())<5000 and abs(trueinfo.TrueFitEquation.Dir.X())<5 and abs(trueinfo.TrueFitEquation.Dir.Y())<5){
 
-					outputfile<<DriftFitUtils::GetTestDOCA(chit, trueinfo.TrueFitEquation.Pos.X(), trueinfo.TrueFitEquation.Dir.X(), trueinfo.TrueFitEquation.Pos.Y(),trueinfo.TrueFitEquation.Dir.Y(), tracker)<<","<<DOCA<<","<<RecoAmbig/DriftFitUtils::GetAmbig(chit, trueinfo.TrueFitEquation.Pos.X(), trueinfo.TrueFitEquation.Dir.X(), trueinfo.TrueFitEquation.Pos.Y(),trueinfo.TrueFitEquation.Dir.Y(),  tracker)<<","<<trueinfo.TrueTheta<<","<<st.MinuitFitParams.A0<<","<<st.MinuitFitParams.A1
-<<","<<st.MinuitFitParams.B0<<","<<st.MinuitFitParams.B1<<","<<trueinfo.TrueFitEquation.Pos.X()<<","<<trueinfo.TrueFitEquation.Dir.X()
+					outputfile<<DriftFitUtils::GetTestDOCA(chit, trueinfo.TrueFitEquation.Pos.X(), trueinfo.TrueFitEquation.Dir.X(), trueinfo.TrueFitEquation.Pos.Y(),trueinfo.TrueFitEquation.Dir.Y(), tracker)<<","<<DOCA<<","<<RecoAmbig/DriftFitUtils::GetAmbig(chit, trueinfo.TrueFitEquation.Pos.X(), trueinfo.TrueFitEquation.Dir.X(), trueinfo.TrueFitEquation.Pos.Y(),trueinfo.TrueFitEquation.Dir.Y(),  tracker)<<","<<trueinfo.TrueTheta<<","<<st.MinuitParams.A0<<","<<st.MinuitParams.A1
+<<","<<st.MinuitParams.B0<<","<<st.MinuitParams.B1<<","<<trueinfo.TrueFitEquation.Pos.X()<<","<<trueinfo.TrueFitEquation.Dir.X()
 <<","<<trueinfo.TrueFitEquation.Pos.Y()<<","<<trueinfo.TrueFitEquation.Dir.Y()<<endl;
 			}      
 			}

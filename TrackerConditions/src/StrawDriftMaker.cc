@@ -56,60 +56,6 @@ namespace mu2e {
       dataDistances.push_back(wirevoltage/((dataEField[i])*logRadius)); //in mm
     }
 
-    // quantities to be saved:
-    std::vector<float> distances; // 
-    std::vector<float> instantSpeeds; // the instantaneous "nominal" speed
-    std::vector<float> averageSpeeds; // the average "nominal" speed
-    std::vector<StrawDrift::D2Tinfo> D2Tinfos; // 2-D array in distance and phi
-
-    // interpolate to get driftIntegrationBins more points 
-    // for distances and instantSpeeds
-    float fNslices = _config.driftIntegrationBins(); //for calculations
-    float thisDist = 0;
-    float nextDist = 0;
-    float thisSpeed = 0;
-    float nextSpeed = 0;
-    float distanceTemp = 0;
-    float speedTemp = 0;
-    //cant interpolate beyond the last point (ie avoid i=size+1)
-    for (size_t i=0; i < (dataDistances.size() - 1); i++) { 
-      thisDist = dataDistances[i];
-      nextDist = dataDistances[i+1];
-      thisSpeed = dataVInst[i];
-      nextSpeed = dataVInst[i+1];
-      //the linear interpolation
-      for (int s=0; s<fNslices; s++) {
-        distanceTemp = ((fNslices - s)*thisDist + (1.0 + s)*nextDist)/(fNslices + 1.0);
-        speedTemp = ((fNslices - s)*thisSpeed + (1.0 + s)*nextSpeed)/(fNslices + 1.0);
-        distances.push_back(distanceTemp);
-        instantSpeeds.push_back(speedTemp);
-      }
-    }
-    
-    //numerically integrate distances and instantSpeeds
-    float sliceTime = 0;
-    float totalTime = 0;
-    float sliceLength = 0;
-    float totalLength = 0;
-    //loop backwards, starting near the wire
-    for (int k = (int) distances.size() - 1; k >= 0; k--){   
-      if (k == (int) distances.size() -1) { 
-	//just get the distance to the wire for the closest slice
-        sliceLength = distances[k];
-      } else {
-	//get the width of the slices
-        sliceLength = distances[k] - distances[k+1];
-      }
-      sliceTime = sliceLength/instantSpeeds[k];
-      totalLength += sliceLength;
-      totalTime += sliceTime;
-      
-      averageSpeeds.push_back(totalLength/totalTime);
-    }
-    //Finally, reverse the average speeds vector so that it 
-    // corresponds with distances; Largest distances first.
-    std::reverse(averageSpeeds.begin(), averageSpeeds.end());
-
     size_t phiBins = _config.phiBins();
 
     // populate vectors of gamma based on the conditions value of B, 
@@ -121,32 +67,80 @@ namespace mu2e {
     float Bz = bfmgr->getBField(vpoint_mu2e).z();
 
     float CC = Bz*logRadius/wirevoltage; 
-    //multiply this by the average drift velocity to get "C" as defined in doc-5829
-    float C = 0;
-    float vavg = 0;
-    float zetta = 0;
-    float dd=0;
-    float gammaTemp = 0;
-    float vinst = 0;
-    float phiTemp = 0;
-    for (size_t k=0; k < (distances.size() - 1); k++) {
-      dd = distances[k];
-      C = CC*vavg*1000000.0;//convert mm/ns to m/s
-      vavg = averageSpeeds[k];
-      zetta = C*dd*0.001;//convert mm to m
-      vinst = instantSpeeds[k];
-      for (size_t p=0; p < phiBins; p++) { //this includes both end points (0 and pi/2)
-        phiTemp = (float(p)/float(phiBins - 1.0))*(TMath::Pi()/2.0);
-        gammaTemp = (1 + pow(zetta,2)/3)/(1 + pow(zetta*cos(phiTemp),2)/3);
-        //fill gamma, effectiveSpeed, time, phi, distance, instantaneousSpeed
-	StrawDrift::D2Tinfo myD2Tinfo = {gammaTemp, vavg/gammaTemp,
-			     dd/(vavg/gammaTemp), phiTemp, dd, vinst};
-	D2Tinfos.push_back(myD2Tinfo);        
+
+    double deltaD = _config.deltaDistance();
+    std::vector<double> distances_dbins;
+    std::vector<double> instantSpeed_dbins;
+    std::vector<double> times_dbins;
+
+    double deltaPhi = TMath::Pi()/2.0/double(phiBins-1);
+    
+    size_t index = dataDistances.size()-2;
+    double tempD = 0;
+    double tempT = 0;
+    double max_time = 0;
+    for (size_t p=0;p<phiBins;p++)
+      times_dbins.push_back(tempT);
+    distances_dbins.push_back(tempD);
+    instantSpeed_dbins.push_back(0);
+    tempD += deltaD;
+    while (tempD < strawradius){
+      while (dataDistances[index] < tempD){
+        if (index == 0)
+          break;
+        index -= 1;
+      }
+      double dist0 = dataDistances[index+1];
+      double dist1 = dataDistances[index];
+      double speed0 = dataVInst[index+1];
+      double speed1 = dataVInst[index];
+      double speed = speed0 + (speed1-speed0) * (tempD - dist0)/(dist1-dist0);
+      distances_dbins.push_back(tempD);
+      instantSpeed_dbins.push_back(speed);
+      tempT += deltaD/speed;
+
+      double vavg = tempD/tempT;
+      
+      double C = CC*vavg*1000000.0;//convert mm/ns to m/s
+
+      for (size_t p=0;p<phiBins;p++){
+        double tempPhi = deltaPhi * p;
+        double zetta = C*tempD*0.001;//convert mm to m
+        double tempGamma = (1 + pow(zetta,2)/3.)/(1 + pow(zetta*cos(tempPhi),2)/3.);
+        times_dbins.push_back(tempT*tempGamma);
+        if (tempT*tempGamma > max_time)
+          max_time = tempT*tempGamma;
+      }
+      tempD += deltaD;
+    }
+    instantSpeed_dbins[0] = instantSpeed_dbins[1];
+
+    double deltaT = _config.deltaTime();
+    size_t timeBins = (size_t) ceil(max_time/deltaT);
+    std::vector<double> times_tbins(timeBins,0);
+    std::vector<double> distances_tbins(timeBins*phiBins,0);
+
+    for (size_t tbin=0;tbin<timeBins;tbin++)
+      times_tbins[tbin] = deltaT*tbin;
+
+    for (size_t pbin=0;pbin<phiBins;pbin++){
+      index = 0;
+      for (size_t tbin=1;tbin<timeBins;tbin++){
+        tempT = times_tbins[tbin];
+
+       //step through and find time larger than what is specified
+       while (index < distances_dbins.size()-2){
+         int fullIndex = index*phiBins + pbin; //map from a 2D index to a 1D index (at phi=0)
+         if (tempT < times_dbins[fullIndex]){
+           break;
+         }
+         index++;
+       }
+       distances_tbins[tbin*phiBins + pbin] = distances_dbins[index] + (tempT - times_dbins[index*phiBins+pbin])/(times_dbins[(index+1)*phiBins+pbin]-times_dbins[index*phiBins+pbin]) * deltaD;
       }
     }
 
-    auto ptr = std::make_shared<StrawDrift>(D2Tinfos,distances,
-					    instantSpeeds,averageSpeeds,phiBins);
+    auto ptr = std::make_shared<StrawDrift>(phiBins, deltaD, distances_dbins, instantSpeed_dbins, times_dbins, deltaT, distances_tbins, times_tbins);
     
     return ptr;
 

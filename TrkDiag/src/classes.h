@@ -14,8 +14,15 @@
 #include "TrkDiag/inc/ComboHitInfo.hh"
 #include "CRVAnalysis/inc/CrvHitInfoReco.hh"
 #include "CRVAnalysis/inc/CrvHitInfoMC.hh"
+#include "CRVAnalysis/inc/CrvPlaneInfoMC.hh"
+#include "CRVAnalysis/inc/CrvSummaryReco.hh"
+#include "CRVAnalysis/inc/CrvSummaryMC.hh"
+#include "CRVAnalysis/inc/CrvPulseInfoReco.hh"
+#include "CRVAnalysis/inc/CrvWaveformInfo.hh"
 #include "TrkDiag/inc/TrkInfo.hh"
 #include "TrkDiag/inc/TrkCaloHitInfo.hh"
 #include "TrkDiag/inc/TrkQualInfo.hh"
 #include "TrkDiag/inc/EventWeightInfo.hh"
 #include "TrkDiag/inc/RecoQualInfo.hh"
+#include <map>
+#include <vector>

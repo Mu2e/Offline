@@ -1,7 +1,6 @@
 //Author: R Bonventre 
 //Date: Feb 2020
 //Purpose: To improve TimeClustering for Cosmics
-
 #include "art/Framework/Principal/Event.h"
 #include "fhiclcpp/ParameterSet.h"
 #include "art/Framework/Principal/Handle.h"
@@ -25,81 +24,83 @@
 #include <utility>
 using namespace std;
 
+namespace {
+  // comparison functor for sorting by t
+  struct tcomp : public std::binary_function<mu2e::ComboHit,mu2e::ComboHit,bool> {
+    bool operator()(mu2e::ComboHit const& p1, mu2e::ComboHit const& p2) { return p1.time() < p2.time(); }
+  };
+}
+
+
+
 namespace mu2e {
   class SimpleTimeCluster : public art::EDProducer {
     public:
-      enum Mode{flag=0,filter};
-      explicit SimpleTimeCluster(fhicl::ParameterSet const& pset);
+      struct Config{
+        using Name=fhicl::Name;
+        using Comment=fhicl::Comment;
+        fhicl::Atom<int> debug{Name("debugLevel"), Comment("set to 1 for debug prints"),0};
+        fhicl::Atom<int> minnsh {Name("minNStrawHits"), Comment("minimum number of straw hits "),5};
+        fhicl::Atom<double> timewindow {Name("TimeWindow"), Comment("Width of time window in ns"),100};
+        fhicl::Atom<bool> testflag {Name("TestFlag"),Comment("Test StrawHitFlags")};
+        fhicl::Atom<art::InputTag> chToken{Name("ComboHitCollection"),Comment("tag for combo hit collection")};
+        fhicl::Atom<art::InputTag> shfToken{Name("StrawHitFlagCollection"),Comment("tag for StrawHitFlag collection")};
+        fhicl::Sequence<std::string> hsel{Name("HitSelectionBits"),Comment("Required flags if TestFlag is set"),vector<string>{"EnergySelection","TimeSelection"}};
+        fhicl::Sequence<std::string> hbkg{Name("HitBackgroundBits"),Comment("Excluded flags if TestFlag is set"),vector<string>{}};
+      };
+      typedef art::EDProducer::Table<Config> Parameters;
+      explicit SimpleTimeCluster(const Parameters& conf);
 
       void produce(art::Event& e) override;
 
     private:
       int               _iev;
       int               _debug;
-      int               _printfreq;
+      int               _minnsh;
+      double            _timeWindow;
       bool		_testflag;
-      art::ProductToken<ComboHitCollection> const _chToken;
-      art::ProductToken<StrawHitFlagCollection> const _shfToken;
+      art::InputTag  _chToken;
+      art::InputTag _shfToken;
       const StrawHitFlagCollection *_shfcol;
       const ComboHitCollection *_chcol;
       StrawHitFlag      _hsel, _hbkg;
 
 
+      void findClusters(TimeClusterCollection& tccol);
       bool goodHit(const StrawHitFlag& flag) const;
   };
 
-  SimpleTimeCluster::SimpleTimeCluster(fhicl::ParameterSet const& pset) :
-    art::EDProducer{pset},
-    _debug             (pset.get<int>("debugLevel",0)),
-    _printfreq         (pset.get<int>("printFrequency",101)),
-    _testflag(pset.get<bool>("TestFlag")),
-    _chToken{consumes<ComboHitCollection>(pset.get<art::InputTag>("ComboHitCollection"))},
-    _shfToken{mayConsume<StrawHitFlagCollection>(pset.get<art::InputTag>("StrawHitFlagCollection"))},
-    _hsel              (pset.get<std::vector<std::string> >("HitSelectionBits",vector<string>{"EnergySelection","TimeSelection"})),
-    _hbkg              (pset.get<vector<string> >("HitBackgroundBits",vector<string>{}))
-    {
-      produces<TimeClusterCollection>();
-    }
+  SimpleTimeCluster::SimpleTimeCluster(const Parameters& conf) :
+    art::EDProducer(conf),
+    _debug (conf().debug()),
+    _minnsh (conf().minnsh()),
+    _timeWindow (conf().timewindow()),
+    _testflag (conf().testflag()),
+    _chToken (conf().chToken()),
+    _shfToken (conf().shfToken()),
+    _hsel (conf().hsel()),
+    _hbkg (conf().hbkg())
+  {
+    produces<TimeClusterCollection>();
+  }
 
 
   //--------------------------------------------------------------------------------------------------------------
   void SimpleTimeCluster::produce(art::Event & event ){
     _iev = event.id().event();
 
-    if (_debug > 0 && (_iev%_printfreq)==0) std::cout<<"SimpleTimeCluster: event="<<_iev<<std::endl;
-
-    auto const& chH = event.getValidHandle(_chToken);
+    auto const& chH = event.getValidHandle<ComboHitCollection>(_chToken);
     _chcol = chH.product();
 
     if(_testflag){
-      auto shfH = event.getValidHandle(_shfToken);
+      auto shfH = event.getValidHandle<StrawHitFlagCollection>(_shfToken);
       _shfcol = shfH.product();
       if(_shfcol->size() != _chcol->size())
         throw cet::exception("RECO")<<"SimpleTimeCluster: inconsistent flag collection length " << endl;
     }
 
     std::unique_ptr<TimeClusterCollection> tccol(new TimeClusterCollection);
-
-    TimeCluster tclust;
-    tclust._nsh = 0;
-    double min = 9e9;
-    double max = -9e9;
-    double avg = 0;
-    for (size_t j=0;j<_chcol->size();j++){
-      if (_testflag && !goodHit((*_shfcol)[j]))
-        continue;
-      if (_chcol->at(j).time() < min)
-        min = _chcol->at(j).time();
-      if (_chcol->at(j).time() > max)
-        max = _chcol->at(j).time();
-      avg += _chcol->at(j).time();
-
-      tclust._strawHitIdxs.push_back(j);
-      tclust._nsh += _chcol->at(j).nStrawHits();
-    }
-    tclust._t0 = TrkT0(avg/tclust._strawHitIdxs.size(),(max-min)/2.);
-    (*tccol).push_back(tclust);
-
+    findClusters(*tccol);
 
     if (_debug > 0) std::cout << "Found " << tccol->size() << " Time Clusters " << std::endl;
 
@@ -117,6 +118,63 @@ namespace mu2e {
     event.put(std::move(tccol));
   }
 
+  void SimpleTimeCluster::findClusters(TimeClusterCollection& tccol) {
+    //sort the hits by time
+    ComboHitCollection ordChCol;
+    ordChCol.reserve(_chcol->size());
+    
+    for (size_t i=0; i<_chcol->size(); ++i) {
+      const ComboHit& ch  = _chcol->at(i);
+      if (_testflag && !goodHit((*_shfcol)[i]))
+        continue;
+      ordChCol.push_back(ComboHit(ch));
+    }
+    if (ordChCol.size() == 0) return;
+
+    std::sort(ordChCol.begin(), ordChCol.end(),tcomp());
+
+    size_t maxStart = 0;
+    size_t maxEnd = 0;
+    int maxCount = 1;
+
+    size_t endIndex = 1;
+    int count = ordChCol[0].nStrawHits();
+    for (size_t startIndex = 0;startIndex < ordChCol.size();startIndex++){
+      double startTime = ordChCol[startIndex].time();
+      while (true){
+        if (endIndex >= ordChCol.size())
+          break;
+        if (ordChCol[endIndex].time()-startTime > _timeWindow)
+          break;
+        count += ordChCol[endIndex].nStrawHits();
+        if (count > maxCount){
+          maxCount = count;
+          maxStart = startIndex;
+          maxEnd = endIndex;
+        }
+        endIndex++;
+      }
+      count -= ordChCol[startIndex].nStrawHits();
+    }
+
+    if (maxCount < _minnsh) return;
+
+    TimeCluster tclust;
+    tclust._nsh = 0;
+    double avg = 0;
+    for (size_t i=0;i<_chcol->size();i++){
+      if (_testflag && !goodHit((*_shfcol)[i]))
+        continue;
+      if (_chcol->at(i).time() < ordChCol[maxStart].time() || _chcol->at(i).time() > ordChCol[maxEnd].time())
+        continue;
+      avg += _chcol->at(i).time();
+      tclust._strawHitIdxs.push_back(i);
+      tclust._nsh += _chcol->at(i).nStrawHits();
+    }
+    tclust._t0 = TrkT0(avg/tclust._strawHitIdxs.size(),(ordChCol[maxEnd].time()-ordChCol[maxStart].time())/2.);
+    tccol.push_back(tclust);
+  }
+
   bool SimpleTimeCluster::goodHit(const StrawHitFlag& flag) const
   {
     return flag.hasAllProperties(_hsel) && !flag.hasAnyProperty(_hbkg);
@@ -126,4 +184,3 @@ namespace mu2e {
 
 using mu2e::SimpleTimeCluster;
 DEFINE_ART_MODULE(SimpleTimeCluster);
-

@@ -11,6 +11,10 @@
 //
 
 #include <iostream>
+
+#include "CLHEP/Vector/ThreeVector.h"
+
+
 #include "Mu2eUtilities/inc/TwoLinePCA.hh"
 
 using namespace std;

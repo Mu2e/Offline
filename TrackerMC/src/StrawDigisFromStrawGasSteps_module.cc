@@ -297,7 +297,7 @@ namespace mu2e {
       _toff(config().SPTO())
       {
         if (config().spmodule() != ""){
-          _selector = _selector && art::ModuleLabelSelector(config().spmodule());
+          _selector = art::Selector(_selector && art::ModuleLabelSelector(config().spmodule()));
         }
 	// Tell the framework what we consume.
 	consumesMany<StrawGasStepCollection>();

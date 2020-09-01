@@ -7,10 +7,11 @@
 #define Mu2eUtilities_PhysicalVolumeMultiHelper_hh
 
 #include "MCDataProducts/inc/PhysicalVolumeInfoMultiCollection.hh"
-#include "MCDataProducts/inc/SimParticleCollection.hh"
 #include "MCDataProducts/inc/SimParticle.hh"
+#include "MCDataProducts/inc/SimParticleCollection.hh"
 
 namespace mu2e {
+struct PhysicalVolumeInfo;
 
   class PhysicalVolumeMultiHelper {
   public:

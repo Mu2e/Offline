@@ -47,7 +47,8 @@ mainlib = helper.make_mainlib ( [ 'mu2e_ConditionsService_ConditionsService_serv
                                   'cetlib_except',
                                   'hep_concurrency',
                                   rootlibs,
-                                  babarlibs 
+                                  babarlibs,
+                                  'gslcblas'
                                   ] )
 
 # This tells emacs to view this file in python mode.

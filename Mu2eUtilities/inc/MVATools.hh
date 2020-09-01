@@ -25,8 +25,10 @@ namespace mu2e
        
        explicit MVATools(fhicl::ParameterSet const&);
        explicit MVATools(const Config& conf);
+       explicit MVATools(const std::string& xmlfilename);
 
        virtual ~MVATools();
+       xercesc::DOMDocument* getXmlDoc();
        void     initMVA();
        float    evalMVA(const std::vector<float>&,  const MVAMask& vmask=0xffffffff) const;
        float    evalMVA(const std::vector<double>&, const MVAMask& vmask=0xffffffff) const;
@@ -47,7 +49,7 @@ namespace mu2e
 
        mutable std::vector<float> x_;
        mutable std::vector<float> y_;
-       mutable std::vector<float> fv_;       
+       mutable std::vector<float> fv_;      
        std::vector<float>         wgts_;
        std::vector<unsigned>      links_;
        unsigned                   maxNeurons_;
@@ -60,6 +62,9 @@ namespace mu2e
        std::vector<std::string>   label_;
        std::string                activationTypeString_;
        std::string                mvaWgtsFile_;
+
+  public:
+       void   getCalib(std::map<float, float>& effCalib);
   };
 }
 #endif

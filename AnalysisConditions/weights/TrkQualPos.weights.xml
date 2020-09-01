@@ -1,0 +1,307 @@
+<?xml version="1.0"?>
+<MethodSetup Method="MLP::MLP">
+  <GeneralInfo>
+    <Info name="TMVA Release" value="4.2.1 [262657]"/>
+    <Info name="ROOT Release" value="6.18/04 [397828]"/>
+    <Info name="Creator" value="edmonds"/>
+    <Info name="Date" value="Fri May 15 12:14:45 2020"/>
+    <Info name="Host" value="Linux buildservice007.fnal.gov 3.10.0-1062.1.2.el7.x86_64 #1 SMP Fri Sep 20 08:24:10 CDT 2019 x86_64 x86_64 x86_64 GNU/Linux"/>
+    <Info name="Dir" value="/mu2e/app/users/edmonds/GitHub/trkqual-dev"/>
+    <Info name="Training events" value="128301"/>
+    <Info name="TrainingTime" value="4.02566172e+02"/>
+    <Info name="AnalysisType" value="Classification"/>
+  </GeneralInfo>
+  <Options>
+    <Option name="NCycles" modified="No">500</Option>
+    <Option name="HiddenLayers" modified="No">N,N-1</Option>
+    <Option name="NeuronType" modified="No">sigmoid</Option>
+    <Option name="RandomSeed" modified="No">1</Option>
+    <Option name="EstimatorType" modified="No">CE</Option>
+    <Option name="NeuronInputType" modified="No">sum</Option>
+    <Option name="V" modified="Yes">False</Option>
+    <Option name="VerbosityLevel" modified="No">Default</Option>
+    <Option name="VarTransform" modified="Yes">N</Option>
+    <Option name="H" modified="Yes">False</Option>
+    <Option name="CreateMVAPdfs" modified="No">False</Option>
+    <Option name="IgnoreNegWeightsInTraining" modified="No">False</Option>
+    <Option name="TrainingMethod" modified="No">BP</Option>
+    <Option name="LearningRate" modified="No">2.000000e-02</Option>
+    <Option name="DecayRate" modified="No">1.000000e-02</Option>
+    <Option name="TestRate" modified="No">10</Option>
+    <Option name="EpochMonitoring" modified="No">False</Option>
+    <Option name="Sampling" modified="No">1.000000e+00</Option>
+    <Option name="SamplingEpoch" modified="No">1.000000e+00</Option>
+    <Option name="SamplingImportance" modified="No">1.000000e+00</Option>
+    <Option name="SamplingTraining" modified="No">True</Option>
+    <Option name="SamplingTesting" modified="No">False</Option>
+    <Option name="ResetStep" modified="No">50</Option>
+    <Option name="Tau" modified="No">3.000000e+00</Option>
+    <Option name="BPMode" modified="No">sequential</Option>
+    <Option name="BatchSize" modified="No">-1</Option>
+    <Option name="ConvergenceImprove" modified="No">1.000000e-30</Option>
+    <Option name="ConvergenceTests" modified="No">-1</Option>
+    <Option name="UseRegulator" modified="No">False</Option>
+    <Option name="UpdateLimit" modified="No">10000</Option>
+    <Option name="CalculateErrors" modified="No">False</Option>
+    <Option name="WeightRange" modified="No">1.000000e+00</Option>
+  </Options>
+  <Variables NVar="7">
+    <Variable VarIndex="0" Expression="detrkqual.NActiveHits" Label="detrkqual.NActiveHits" Title="NActive" Unit="Count" Internal="detrkqual.NActiveHits" Type="I" Min="1.40000000e+01" Max="7.20000000e+01"/>
+    <Variable VarIndex="1" Expression="detrkqual.ActiveHitFraction" Label="detrkqual.ActiveHitFraction" Title="FActive" Unit="Fraction" Internal="detrkqual.ActiveHitFraction" Type="F" Min="4.61538464e-01" Max="1.00000000e+00"/>
+    <Variable VarIndex="2" Expression="detrkqual.Log10FitCon" Label="detrkqual.Log10FitCon" Title="LogFitCon" Unit="Probability" Internal="detrkqual.Log10FitCon" Type="F" Min="-5.00000000e+01" Max="0.00000000e+00"/>
+    <Variable VarIndex="3" Expression="detrkqual.MomError" Label="detrkqual.MomError" Title="FitMomErr" Unit="MeV/c" Internal="detrkqual.MomError" Type="F" Min="6.25867620e-02" Max="2.89541674e+00"/>
+    <Variable VarIndex="4" Expression="detrkqual.T0Error" Label="detrkqual.T0Error" Title="T0Err" Unit="nsec" Internal="detrkqual.T0Error" Type="F" Min="8.88387188e-02" Max="5.64804029e+00"/>
+    <Variable VarIndex="5" Expression="detrkqual.NullAmbigHitFraction" Label="detrkqual.NullAmbigHitFraction" Title="NullHitFraction" Unit="Fraction" Internal="detrkqual.NullAmbigHitFraction" Type="F" Min="0.00000000e+00" Max="5.55555582e-01"/>
+    <Variable VarIndex="6" Expression="detrkqual.StrawHitFraction" Label="detrkqual.StrawHitFraction" Title="MatFraction" Unit="Fraction" Internal="detrkqual.StrawHitFraction" Type="F" Min="9.42857146e-01" Max="3.25000000e+00"/>
+  </Variables>
+  <Spectators NSpec="0"/>
+  <Classes NClass="2">
+    <Class Name="Background" Index="0"/>
+    <Class Name="Signal" Index="1"/>
+  </Classes>
+  <Transformations NTransformations="1">
+    <Transform Name="Normalize">
+      <Selection>
+        <Input NInputs="7">
+          <Input Type="Variable" Label="detrkqual.NActiveHits" Expression="detrkqual.NActiveHits"/>
+          <Input Type="Variable" Label="detrkqual.ActiveHitFraction" Expression="detrkqual.ActiveHitFraction"/>
+          <Input Type="Variable" Label="detrkqual.Log10FitCon" Expression="detrkqual.Log10FitCon"/>
+          <Input Type="Variable" Label="detrkqual.MomError" Expression="detrkqual.MomError"/>
+          <Input Type="Variable" Label="detrkqual.T0Error" Expression="detrkqual.T0Error"/>
+          <Input Type="Variable" Label="detrkqual.NullAmbigHitFraction" Expression="detrkqual.NullAmbigHitFraction"/>
+          <Input Type="Variable" Label="detrkqual.StrawHitFraction" Expression="detrkqual.StrawHitFraction"/>
+        </Input>
+        <Output NOutputs="7">
+          <Output Type="Variable" Label="detrkqual.NActiveHits" Expression="detrkqual.NActiveHits"/>
+          <Output Type="Variable" Label="detrkqual.ActiveHitFraction" Expression="detrkqual.ActiveHitFraction"/>
+          <Output Type="Variable" Label="detrkqual.Log10FitCon" Expression="detrkqual.Log10FitCon"/>
+          <Output Type="Variable" Label="detrkqual.MomError" Expression="detrkqual.MomError"/>
+          <Output Type="Variable" Label="detrkqual.T0Error" Expression="detrkqual.T0Error"/>
+          <Output Type="Variable" Label="detrkqual.NullAmbigHitFraction" Expression="detrkqual.NullAmbigHitFraction"/>
+          <Output Type="Variable" Label="detrkqual.StrawHitFraction" Expression="detrkqual.StrawHitFraction"/>
+        </Output>
+      </Selection>
+      <Class ClassIndex="0">
+        <Ranges>
+          <Range Index="0" Min="1.4000000000000000e+01" Max="6.2000000000000000e+01"/>
+          <Range Index="1" Min="4.6153846383094788e-01" Max="1.0000000000000000e+00"/>
+          <Range Index="2" Min="-5.0000000000000000e+01" Max="-1.5790469660714734e-06"/>
+          <Range Index="3" Min="7.7732391655445099e-02" Max="2.8954167366027832e+00"/>
+          <Range Index="4" Min="1.1132393032312393e-01" Max="5.6480402946472168e+00"/>
+          <Range Index="5" Min="0.0000000000000000e+00" Max="5.5555558204650879e-01"/>
+          <Range Index="6" Min="9.4285714626312256e-01" Max="3.2500000000000000e+00"/>
+        </Ranges>
+      </Class>
+      <Class ClassIndex="1">
+        <Ranges>
+          <Range Index="0" Min="1.4000000000000000e+01" Max="7.2000000000000000e+01"/>
+          <Range Index="1" Min="6.2857145071029663e-01" Max="1.0000000000000000e+00"/>
+          <Range Index="2" Min="-5.0000000000000000e+01" Max="0.0000000000000000e+00"/>
+          <Range Index="3" Min="6.2586762011051178e-02" Max="1.2155036926269531e+00"/>
+          <Range Index="4" Min="8.8838718831539154e-02" Max="4.1055173873901367e+00"/>
+          <Range Index="5" Min="0.0000000000000000e+00" Max="5.0000000000000000e-01"/>
+          <Range Index="6" Min="9.4736844301223755e-01" Max="3.0625000000000000e+00"/>
+        </Ranges>
+      </Class>
+      <Class ClassIndex="2">
+        <Ranges>
+          <Range Index="0" Min="1.4000000000000000e+01" Max="7.2000000000000000e+01"/>
+          <Range Index="1" Min="4.6153846383094788e-01" Max="1.0000000000000000e+00"/>
+          <Range Index="2" Min="-5.0000000000000000e+01" Max="0.0000000000000000e+00"/>
+          <Range Index="3" Min="6.2586762011051178e-02" Max="2.8954167366027832e+00"/>
+          <Range Index="4" Min="8.8838718831539154e-02" Max="5.6480402946472168e+00"/>
+          <Range Index="5" Min="0.0000000000000000e+00" Max="5.5555558204650879e-01"/>
+          <Range Index="6" Min="9.4285714626312256e-01" Max="3.2500000000000000e+00"/>
+        </Ranges>
+      </Class>
+    </Transform>
+  </Transformations>
+  <MVAPdfs/>
+  <Weights>
+    <Layout NLayers="4">
+      <Layer Index="0" NNeurons="8">
+        <Neuron NSynapses="7">
+          -1.5771341271617487e-01 1.8294066251397147e+00 4.9773578694065246e-01 5.7517499352980439e-01 -9.9441925239264140e-01 -8.4974129916099483e-01 -1.9772420983128489e+00 
+        </Neuron>
+        <Neuron NSynapses="7">
+          9.1339287059107133e-01 -1.0031053144764888e+00 -2.4185923392985062e-01 -1.7012338828144671e-01 -4.5189859337171551e-01 -1.1987695722064040e+00 -1.7707508202149309e+00 
+        </Neuron>
+        <Neuron NSynapses="7">
+          -1.3948592348874038e+00 5.9081512841637851e-01 7.8441113330972989e-01 4.5637420829001289e+00 1.5261140663825731e-01 -1.2587586667028250e-01 -1.2633937570021991e+00 
+        </Neuron>
+        <Neuron NSynapses="7">
+          -1.3172340747617556e-01 6.1275028152650561e+00 2.2493986312256733e+00 -4.5426892269178163e+00 1.2801786488221147e+01 4.1446439719269534e+00 3.9600616405749833e+00 
+        </Neuron>
+        <Neuron NSynapses="7">
+          -2.0048655433374445e+00 -8.5947013378443293e-02 2.8689560557325273e+00 -1.6376276131339667e+00 3.3591496565066797e-01 6.3090059544088462e-01 1.0054597599185153e+00 
+        </Neuron>
+        <Neuron NSynapses="7">
+          -8.2748470105440419e-01 1.1906271254137928e+00 1.6756216783285374e+00 -1.0829152814046374e+00 -4.3672050761299824e-01 5.4849033706947825e-01 -5.0197090435363168e-01 
+        </Neuron>
+        <Neuron NSynapses="7">
+          3.7888239674037107e+00 7.6813484556859413e-01 -1.1380896266855360e+00 -5.3577134733315672e+00 -4.2892448901903013e-01 1.7708702588668607e-01 5.9059667226378398e-01 
+        </Neuron>
+        <Neuron NSynapses="7">
+          1.4259887540088008e+00 6.7984690016502070e+00 4.4148437536581140e+00 -1.5540419850393763e+01 1.1935110214617964e+01 2.0597824540527001e+00 4.0053361903960338e+00 
+        </Neuron>
+      </Layer>
+      <Layer Index="1" NNeurons="8">
+        <Neuron NSynapses="6">
+          -2.9187749147493931e+00 -8.0683487865380943e-01 9.1496946087117359e-01 4.5817302863076154e-01 -2.5404838147302535e+00 1.1857055928114479e-01 
+        </Neuron>
+        <Neuron NSynapses="6">
+          1.8199734260735272e+00 -1.1232445886803899e-01 3.2236253422725420e+00 -2.1270219331055606e-01 -9.9869660785281555e-01 -2.6456876396501099e+00 
+        </Neuron>
+        <Neuron NSynapses="6">
+          2.3916443309492577e+00 -2.9597022859168640e+00 -5.2195688880988189e-01 -1.3280129781527998e+00 1.6200715585816610e+00 8.0534487087599571e-01 
+        </Neuron>
+        <Neuron NSynapses="6">
+          3.1980075951269710e-01 4.1862510729021478e+00 -3.6356435033790717e+00 -2.0748378967074328e+00 3.4569909220098580e+00 2.7447425671647481e+00 
+        </Neuron>
+        <Neuron NSynapses="6">
+          4.5433890112017101e+00 -1.4346763032731138e+00 2.2477514497815116e+00 -4.8836960935490986e-01 -2.4513277826213353e+00 -2.0534866637853542e+00 
+        </Neuron>
+        <Neuron NSynapses="6">
+          2.8507998977417959e+00 -2.5194091788774657e+00 -5.0652608578487202e-01 -1.4921846993349275e+00 -1.0537956515429820e+00 -1.2366687325054753e+00 
+        </Neuron>
+        <Neuron NSynapses="6">
+          2.7449549043681007e+00 -2.9996492525779170e+00 -2.5227484025932924e-02 1.7746364723477832e+00 -1.6903423914948446e+00 -2.1779064344239343e+00 
+        </Neuron>
+        <Neuron NSynapses="6">
+          -2.2532540603193949e+00 5.8219723194543804e-01 -3.0314048363905912e+00 -1.8575482125339151e+00 8.2654113015351949e-01 2.3615031133779958e+00 
+        </Neuron>
+      </Layer>
+      <Layer Index="2" NNeurons="7">
+        <Neuron NSynapses="1">
+          -5.1471312973670571e+00 
+        </Neuron>
+        <Neuron NSynapses="1">
+          5.1898979683477151e+00 
+        </Neuron>
+        <Neuron NSynapses="1">
+          -3.4925294150662816e+00 
+        </Neuron>
+        <Neuron NSynapses="1">
+          -4.6255407754552907e-01 
+        </Neuron>
+        <Neuron NSynapses="1">
+          4.2313527480538600e+00 
+        </Neuron>
+        <Neuron NSynapses="1">
+          4.7626707020635051e+00 
+        </Neuron>
+        <Neuron NSynapses="1">
+          2.0190393722779451e-01 
+        </Neuron>
+      </Layer>
+      <Layer Index="3" NNeurons="1">
+        <Neuron NSynapses="0"/>
+      </Layer>
+    </Layout>
+  </Weights>
+  <Calibration>
+    <Calib Index="0" CalibVal="1" Val="0.999987"/>
+    <Calib Index="1" CalibVal="0.99" Val="0.999863"/>
+    <Calib Index="2" CalibVal="0.98" Val="0.999797"/>
+    <Calib Index="3" CalibVal="0.97" Val="0.999743"/>
+    <Calib Index="4" CalibVal="0.96" Val="0.999687"/>
+    <Calib Index="5" CalibVal="0.95" Val="0.999627"/>
+    <Calib Index="6" CalibVal="0.94" Val="0.999561"/>
+    <Calib Index="7" CalibVal="0.93" Val="0.999497"/>
+    <Calib Index="8" CalibVal="0.92" Val="0.999425"/>
+    <Calib Index="9" CalibVal="0.91" Val="0.999351"/>
+    <Calib Index="10" CalibVal="0.9" Val="0.999271"/>
+    <Calib Index="11" CalibVal="0.89" Val="0.999187"/>
+    <Calib Index="12" CalibVal="0.88" Val="0.999095"/>
+    <Calib Index="13" CalibVal="0.87" Val="0.999001"/>
+    <Calib Index="14" CalibVal="0.86" Val="0.998905"/>
+    <Calib Index="15" CalibVal="0.85" Val="0.998791"/>
+    <Calib Index="16" CalibVal="0.84" Val="0.998675"/>
+    <Calib Index="17" CalibVal="0.83" Val="0.998545"/>
+    <Calib Index="18" CalibVal="0.82" Val="0.998405"/>
+    <Calib Index="19" CalibVal="0.81" Val="0.998255"/>
+    <Calib Index="20" CalibVal="0.8" Val="0.998097"/>
+    <Calib Index="21" CalibVal="0.79" Val="0.997929"/>
+    <Calib Index="22" CalibVal="0.78" Val="0.997747"/>
+    <Calib Index="23" CalibVal="0.77" Val="0.997551"/>
+    <Calib Index="24" CalibVal="0.76" Val="0.997339"/>
+    <Calib Index="25" CalibVal="0.75" Val="0.997111"/>
+    <Calib Index="26" CalibVal="0.74" Val="0.996869"/>
+    <Calib Index="27" CalibVal="0.73" Val="0.996609"/>
+    <Calib Index="28" CalibVal="0.72" Val="0.996331"/>
+    <Calib Index="29" CalibVal="0.71" Val="0.996013"/>
+    <Calib Index="30" CalibVal="0.7" Val="0.995685"/>
+    <Calib Index="31" CalibVal="0.69" Val="0.995311"/>
+    <Calib Index="32" CalibVal="0.68" Val="0.994939"/>
+    <Calib Index="33" CalibVal="0.67" Val="0.994525"/>
+    <Calib Index="34" CalibVal="0.66" Val="0.994097"/>
+    <Calib Index="35" CalibVal="0.65" Val="0.993625"/>
+    <Calib Index="36" CalibVal="0.64" Val="0.993107"/>
+    <Calib Index="37" CalibVal="0.63" Val="0.992541"/>
+    <Calib Index="38" CalibVal="0.62" Val="0.991923"/>
+    <Calib Index="39" CalibVal="0.61" Val="0.991261"/>
+    <Calib Index="40" CalibVal="0.6" Val="0.990545"/>
+    <Calib Index="41" CalibVal="0.59" Val="0.989803"/>
+    <Calib Index="42" CalibVal="0.58" Val="0.988993"/>
+    <Calib Index="43" CalibVal="0.57" Val="0.988123"/>
+    <Calib Index="44" CalibVal="0.56" Val="0.987139"/>
+    <Calib Index="45" CalibVal="0.55" Val="0.986077"/>
+    <Calib Index="46" CalibVal="0.54" Val="0.984967"/>
+    <Calib Index="47" CalibVal="0.53" Val="0.983723"/>
+    <Calib Index="48" CalibVal="0.52" Val="0.982435"/>
+    <Calib Index="49" CalibVal="0.51" Val="0.980985"/>
+    <Calib Index="50" CalibVal="0.5" Val="0.979397"/>
+    <Calib Index="51" CalibVal="0.49" Val="0.977675"/>
+    <Calib Index="52" CalibVal="0.48" Val="0.975817"/>
+    <Calib Index="53" CalibVal="0.47" Val="0.973737"/>
+    <Calib Index="54" CalibVal="0.46" Val="0.971477"/>
+    <Calib Index="55" CalibVal="0.45" Val="0.969091"/>
+    <Calib Index="56" CalibVal="0.44" Val="0.966557"/>
+    <Calib Index="57" CalibVal="0.43" Val="0.963707"/>
+    <Calib Index="58" CalibVal="0.42" Val="0.960557"/>
+    <Calib Index="59" CalibVal="0.41" Val="0.957221"/>
+    <Calib Index="60" CalibVal="0.4" Val="0.953657"/>
+    <Calib Index="61" CalibVal="0.39" Val="0.949735"/>
+    <Calib Index="62" CalibVal="0.38" Val="0.945335"/>
+    <Calib Index="63" CalibVal="0.37" Val="0.940515"/>
+    <Calib Index="64" CalibVal="0.36" Val="0.935185"/>
+    <Calib Index="65" CalibVal="0.35" Val="0.929253"/>
+    <Calib Index="66" CalibVal="0.34" Val="0.922955"/>
+    <Calib Index="67" CalibVal="0.33" Val="0.916163"/>
+    <Calib Index="68" CalibVal="0.32" Val="0.908513"/>
+    <Calib Index="69" CalibVal="0.31" Val="0.900311"/>
+    <Calib Index="70" CalibVal="0.3" Val="0.891257"/>
+    <Calib Index="71" CalibVal="0.29" Val="0.881695"/>
+    <Calib Index="72" CalibVal="0.28" Val="0.870905"/>
+    <Calib Index="73" CalibVal="0.27" Val="0.859173"/>
+    <Calib Index="74" CalibVal="0.26" Val="0.845791"/>
+    <Calib Index="75" CalibVal="0.25" Val="0.831407"/>
+    <Calib Index="76" CalibVal="0.24" Val="0.815351"/>
+    <Calib Index="77" CalibVal="0.23" Val="0.797801"/>
+    <Calib Index="78" CalibVal="0.22" Val="0.778203"/>
+    <Calib Index="79" CalibVal="0.21" Val="0.756909"/>
+    <Calib Index="80" CalibVal="0.2" Val="0.734125"/>
+    <Calib Index="81" CalibVal="0.19" Val="0.708699"/>
+    <Calib Index="82" CalibVal="0.18" Val="0.681417"/>
+    <Calib Index="83" CalibVal="0.17" Val="0.651157"/>
+    <Calib Index="84" CalibVal="0.16" Val="0.618747"/>
+    <Calib Index="85" CalibVal="0.15" Val="0.583217"/>
+    <Calib Index="86" CalibVal="0.14" Val="0.546087"/>
+    <Calib Index="87" CalibVal="0.13" Val="0.505457"/>
+    <Calib Index="88" CalibVal="0.12" Val="0.462987"/>
+    <Calib Index="89" CalibVal="0.11" Val="0.418019"/>
+    <Calib Index="90" CalibVal="0.1" Val="0.371417"/>
+    <Calib Index="91" CalibVal="0.09" Val="0.324183"/>
+    <Calib Index="92" CalibVal="0.08" Val="0.276955"/>
+    <Calib Index="93" CalibVal="0.07" Val="0.229773"/>
+    <Calib Index="94" CalibVal="0.06" Val="0.183061"/>
+    <Calib Index="95" CalibVal="0.05" Val="0.137501"/>
+    <Calib Index="96" CalibVal="0.04" Val="0.096533"/>
+    <Calib Index="97" CalibVal="0.03" Val="0.059757"/>
+    <Calib Index="98" CalibVal="0.02" Val="0.030703"/>
+    <Calib Index="99" CalibVal="0.01" Val="0.009485"/>
+    <Calib Index="100" CalibVal="0" Val="0.0"/>
+  </Calibration>
+</MethodSetup>
+
+

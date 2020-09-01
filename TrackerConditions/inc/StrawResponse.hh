@@ -34,6 +34,8 @@ namespace mu2e {
 	double central, std::vector<double> centres, 
 	std::vector<double> resslope, std::vector<double> totdtime, 
 	bool usederr, std::vector<double> derr, 
+        bool usepderr, std::vector<double> parDriftDocas,
+        std::vector<double> parDriftOffsets, std::vector<double> parDriftRes,
         double wbuf, double slfac, double errfac, bool usenonlindrift, 
         double lindriftvel, double rres_min, double rres_max, 
         double rres_rad, double mint0doca, double t0shift, 
@@ -51,7 +53,9 @@ namespace mu2e {
       _strawPhysics(strawPhysics),
       _edep(edep), _halfvp(halfvp), _central(central), _centres(centres), 
       _resslope(resslope), _totdtime(totdtime), _usederr(usederr), 
-      _derr(derr), _wbuf(wbuf), _slfac(slfac), _errfac(errfac), 
+      _derr(derr), _usepderr(usepderr), _parDriftDocas(parDriftDocas),
+      _parDriftOffsets(parDriftOffsets), _parDriftRes(parDriftRes),
+      _wbuf(wbuf), _slfac(slfac), _errfac(errfac), 
       _usenonlindrift(usenonlindrift), _lindriftvel(lindriftvel), 
       _rres_min(rres_min), _rres_max(rres_max), _rres_rad(rres_rad), 
       _mint0doca(mint0doca), _t0shift(t0shift), 
@@ -68,6 +72,7 @@ namespace mu2e {
     bool wireDistance(Straw const& straw, double edep, double dt, 
 		    double& wdist, double& wderr, double& halfpv) const;
     bool useDriftError() const { return _usederr; } 
+    bool useParameterizedDriftError() const { return _usepderr; }
     bool useNonLinearDrift() const { return _usenonlindrift; }
     double Mint0doca() const { return _mint0doca;}
     double strawGain() const { return _strawPhysics->strawGain();}
@@ -80,6 +85,9 @@ namespace mu2e {
     double driftConstantSpeed() const {return _lindriftvel;} // constant value used for annealing errors, should be close to average velocity
     double driftDistanceError(StrawId strawId, double ddist, double phi, double DOCA) const;
     double driftDistanceOffset(StrawId strawId, double ddist, double phi, double DOCA) const;
+
+    double driftTimeError(StrawId strawId, double ddist, double phi, double DOCA) const;
+    double driftTimeOffset(StrawId strawId, double ddist, double phi, double DOCA) const;
 
     double peakMinusPedestalEnergyScale() const { return _pmpEnergyScaleAvg; }
     double peakMinusPedestalEnergyScale(StrawId sid) const { return _pmpEnergyScale[sid.getStraw()]; }
@@ -112,12 +120,12 @@ namespace mu2e {
     inline double ionizationEnergy(double q) const { return _strawPhysics->ionizationEnergy(q); }
     
     const std::string& name() const { return _name; }
+    double wpRes(double kedep, double wdist) const;
   private:
 
     std::string _name;
 
     // helper functions
-    double wpRes(double kedep, double wdist) const;
     static double PieceLine(std::vector<double> const& xvals, 
 			    std::vector<double> const& yvals, double xval);
 
@@ -137,6 +145,10 @@ namespace mu2e {
     std::vector<double> _totdtime;
     bool _usederr; // flag to use the doca-dependent calibration of the drift error
     std::vector<double> _derr; // parameters describing the drift error function
+    bool _usepderr; // flag to use calculated version of drift error calculation
+    std::vector<double> _parDriftDocas;
+    std::vector<double> _parDriftOffsets;
+    std::vector<double> _parDriftRes;
     double _wbuf; // buffer at the edge of the straws, in terms of sigma
     double _slfac; // factor of straw length to set 'missing cluster' hits
     double _errfac; // error inflation for 'missing cluster' hits

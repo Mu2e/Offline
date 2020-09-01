@@ -25,19 +25,19 @@ crvOuterBox:
    pars: 
    [
       // Upstream plane
-      { type: plane normal: [  0, 0, -1 ] point : [ 0, 0, -3000 ] },
+      { type: plane normal: [  0, 0, -1 ] point : [ 0, 0, -3400 ] },
 
       // Downstream plane
-      { type: plane normal: [  0, 0, 1 ] point : [ 0, 0, 19000 ] },
+      { type: plane normal: [  0, 0, 1 ] point : [ 0, 0, 19800 ] },
 
       // +x plane
-      { type: plane normal: [  1, 0, 0 ] point : [ 800, 0, 0 ] },
+      { type: plane normal: [  1, 0, 0 ] point : [ 1500, 0, 0 ] },
 
       // -x plane (outside of cryo box)
-      { type: plane normal: [  -1, 0, 0 ] point : [ -7400, 0, 0 ] },
+      { type: plane normal: [  -1, 0, 0 ] point : [ -8200, 0, 0 ] },
 
       // +y plane
-      { type: plane normal: [  0, 1, 0 ] point : [ 0, 2760, 0 ] },
+      { type: plane normal: [  0, 1, 0 ] point : [ 0, 4000, 0 ] },
 
       // -y plane
       { type: plane normal: [  0, -1, 0 ] point : [ 0, -2100, 0 ] }
@@ -50,19 +50,19 @@ crvInnerBox:
    pars: 
    [
       // Upstream plane
-      { type: plane normal: [  0, 0, 1 ] point : [ 0, 0, -2240 ] },
+      { type: plane normal: [  0, 0, 1 ] point : [ 0, 0, -2200 ] },
 
       // Downstream plane
-      { type: plane normal: [  0, 0, -1 ] point : [ 0, 0, 18720 ] },
+      { type: plane normal: [  0, 0, -1 ] point : [ 0, 0, 18500 ] },
 
       // +x plane
-      { type: plane normal: [  -1, 0, 0 ] point : [ -1430, 0, 0 ] },
+      { type: plane normal: [  -1, 0, 0 ] point : [ -1500, 0, 0 ] },
 
       // -x plane
-      { type: plane normal: [  1, 0, 0 ] point : [ -6370, 0, 0 ] },
+      { type: plane normal: [  1, 0, 0 ] point : [ -6300, 0, 0 ] },
 
       // +y plane
-      { type: plane normal: [  0, -1, 0 ] point : [ 0, 2470, 0 ] },
+      { type: plane normal: [  0, -1, 0 ] point : [ 0, 2500, 0 ] },
 
       // -y plane
       { type: plane normal: [  0, 1, 0 ] point : [ 0, -2100, 0 ] }
@@ -115,7 +115,7 @@ services :
    TFileService          : { }
    RandomNumberGenerator : {defaultEngineKind: "MixMaxRng" }
 
-   GeometryService        : { inputFile      : "JobConfig/cosmic/geom_cosmic.txt" }
+   GeometryService        : { inputFile      : "JobConfig/cosmic/geom_cosmic_PhaseI.txt" }
    ConditionsService      : { conditionsfile : "Mu2eG4/test/conditions_01.txt"      }
    GlobalConstantsService : { inputFile      : "Mu2eG4/test/globalConstants_01.txt" }
    G4Helper               : { }
@@ -302,9 +302,6 @@ services.message.destinations.log.categories.ArtReport.timespan : 300
 // Initialze seeding of random engines: do not put these lines in base .fcl files for grid jobs.
 services.SeedService.baseSeed         :  8
 services.SeedService.maxUniqueEngines :  20
-
-physics.producers.generate.inputFile    : "EventGenerator/defaultConfigs/defaultCRYconfig.txt"
-physics.producers.generate.module_type  : CRYEventGenerator
 
 physics.producers.g4run.G4InteralFiltering  : false
 physics.producers.g4run.errorOnFailureToPut : false
