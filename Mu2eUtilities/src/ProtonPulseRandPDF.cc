@@ -13,7 +13,8 @@
 
 // C++ includes
 #include <algorithm>
-
+#include<TH1F.h>
+#include<TCanvas.h>
 // The following defines the proton pulse shape parameters (pdf width,
 // pdf step and differential distribution).  Please note that it is
 // preferred to assume a delta function distribution for the proton
@@ -55,8 +56,7 @@
 //       but is unlikely to result in any noticeable effect.
 
 namespace mu2e{
-
-  ProtonPulseRandPDF::ProtonPulseRandPDF(art::RandomNumberGenerator::base_engine_t& engine,
+ ProtonPulseRandPDF::ProtonPulseRandPDF(art::RandomNumberGenerator::base_engine_t& engine,
                                          const Config& conf)
     : accPar_      ( &*ConditionsHandle<AcceleratorParams>( "ignored" ) )
     , pulseEnum_   ( conf.pulseType() )
@@ -128,7 +128,7 @@ namespace mu2e{
 
   //============================================================================================================
   TableVec<2> ProtonPulseRandPDF::setPotPulseShape( const std::string& shapeTxtFile ) {
-
+    std::cout<<accPar_->limitingHalfWidth<<std::endl;
     Table<2> pulseShape = loadTable<2>( shapeTxtFile );
 
     // For convenience, normalize potShape so that portion within limiting halfwidth
@@ -149,7 +149,7 @@ namespace mu2e{
     unsigned bins(0);
     std::for_each( newshapevec.begin(), newshapevec.end(), [&](const TableRow<2>& pt) { if (std::abs(pt.first) >= accPar_->limitingHalfWidth ) ++bins;                            } );
     std::for_each( newshapevec.begin(), newshapevec.end(), [&](      TableRow<2>& pt) { if (std::abs(pt.first) >= accPar_->limitingHalfWidth ) pt.second.at(0) = extFactor_/bins; } );
-
+    
     return newshapevec;
 
   }
@@ -165,9 +165,9 @@ namespace mu2e{
     }
     else {
 
-      for ( const auto& t : times_ )
+      for ( const auto& t : times_ ){
         spectrum.push_back( pulseShape_.getValueAtKey(t).at(0)*acdipole_.getValueAtKey(t).at(0) );
-
+    }
     }
     return spectrum;
   }
@@ -184,7 +184,6 @@ namespace mu2e{
                      if ( std::abs(pt.first) >= accPar_->limitingHalfWidth ) { num += pt.second.at(0);}
                      else denom += pt.second.at(0);
                    } );
-
     return num/denom;
   }
 

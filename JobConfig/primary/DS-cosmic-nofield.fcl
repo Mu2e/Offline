@@ -27,6 +27,7 @@ physics : {
     compressDigiMCs ]
    EndPath : [ genCountLogger, digiCompressionCheck, TrkOutput, CaloOutput ]
 }
+physics.producers.g4run.TrajectoryControl: @local::mu2eg4DefaultTrajectories
 outputs : {
 # separate for trk, calo: combine?
   TrkOutput :@local::Primary.Output

@@ -46,6 +46,7 @@ Primary: {
     CaloFilter : {
       module_type : CaloShowerSimFilter
     }
+    FilterStepPointMomentum : { @table::FilterStepPointMomentum}
   }
   analyzers: {
     genCountLogger: { module_type: GenEventCountReader makeHistograms: false }
