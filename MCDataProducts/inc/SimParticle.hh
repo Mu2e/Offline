@@ -4,10 +4,6 @@
 //
 // Information about particles created by Geant4.
 //
-// $Id: SimParticle.hh,v 1.12 2013/09/27 16:03:41 gandr Exp $
-// $Author: gandr $
-// $Date: 2013/09/27 16:03:41 $
-//
 // Original author Rob Kutschke
 //
 // Notes:
@@ -43,6 +39,15 @@ namespace mu2e {
 
     typedef cet::map_vector_key key_type;
 
+    // Parameters used by GEANT4 to describe excited ions
+    struct IonDetail {
+      double excitationEnergy;
+      short int floatLevelBaseIndex;
+      IonDetail(double e, short int i) : excitationEnergy{e}, floatLevelBaseIndex{i} {}
+      IonDetail(): excitationEnergy{0.}, floatLevelBaseIndex{0} {}
+    };
+
+
     // A default c'tor is required for ROOT.
     SimParticle():
       _id(),
@@ -57,6 +62,7 @@ namespace mu2e {
       _startVolumeIndex(0),
       _startG4Status(),
       _creationCode(),
+      _ion(),
       _endPosition(),
       _endMomentum(),
       _endGlobalTime(0.),
@@ -83,7 +89,9 @@ namespace mu2e {
                  double                         astartProperTime,
                  unsigned                       astartVolumeIndex,
                  unsigned                       astartG4Status,
-                 ProcessCode                    acreationCode):
+                 ProcessCode                    acreationCode,
+                 IonDetail             const&   ion = IonDetail()
+                 ):
       _id(aid),
       _stageOffset(stageOffset),
       _parentSim(aparentSim),
@@ -96,11 +104,12 @@ namespace mu2e {
       _startVolumeIndex(astartVolumeIndex),
       _startG4Status(astartG4Status),
       _creationCode(acreationCode),
+      _ion(ion),
       _endPosition(),
       _endMomentum(),
-      _endGlobalTime(),
-      _endProperTime(),
-      _endVolumeIndex(),
+      _endGlobalTime(0.),
+      _endProperTime(0.),
+      _endVolumeIndex(0),
       _endG4Status(),
       _stoppingCode(),
       _preLastStepKE(-1),
@@ -122,7 +131,7 @@ namespace mu2e {
                      ProcessCode             astoppingCode,
                      float                   endKE,
                      int                     nSteps,
-		     double                  trackLength){
+                     double                  trackLength){
       _endDefined      = true;
       _endPosition     = aendPosition;
       _endMomentum     = aendMomentum;
@@ -131,7 +140,7 @@ namespace mu2e {
       _endVolumeIndex  = aendVolumeIndex;
       _endG4Status     = aendG4Status;
       _stoppingCode    = astoppingCode;
-      _preLastStepKE   = -1.0;      
+      _preLastStepKE   = -1.0;
       _endKE           = endKE;
       _nSteps          = nSteps;
       _trackLength     = trackLength;
@@ -188,6 +197,11 @@ namespace mu2e {
     unsigned    startVolumeIndex() const { return _startVolumeIndex;}
     unsigned    startG4Status()    const { return _startG4Status;}
     ProcessCode creationCode()     const { return _creationCode;   }
+
+    // the following is for excited ions
+    IonDetail const& ion()                      const { return _ion; }
+    double           startExcitationEnergy()    const { return _ion.excitationEnergy;}
+    int              startFloatLevelBaseIndex() const { return _ion.floatLevelBaseIndex;};
 
     // Information at the end of the track.
     CLHEP::Hep3Vector const& endPosition() const { return _endPosition;}
@@ -258,6 +272,7 @@ namespace mu2e {
     unsigned                _startVolumeIndex;
     unsigned                _startG4Status;
     ProcessCode             _creationCode;
+    IonDetail               _ion;
 
     // Information at the end of the track.
     CLHEP::Hep3Vector       _endPosition;

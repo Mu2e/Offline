@@ -70,13 +70,13 @@ namespace mu2e
 
   bool CaloCosmicCalib::filter(art::Event& evt){
     // create output
-    unique_ptr<TriggerInfo> triginfo(new TriggerInfo);
+    std::unique_ptr<TriggerInfo> triginfo(new TriggerInfo);
     ++_nevt;
     bool retval(false); // preset to fail
     // find the collection
     auto clH = evt.getValidHandle<CaloClusterCollection>(_clTag);
     const CaloClusterCollection* clcol = clH.product();
-
+    size_t trig_ind(0);
     // loop over the collection: if any pass the selection, pass this event
     for(auto icl = clcol->begin();icl != clcol->end(); ++icl) {
       auto const& cl = *icl;
@@ -86,7 +86,7 @@ namespace mu2e
       int   clsize     = cl.size();
       
       if(_debug > 2){
-        cout << moduleDescription().moduleLabel() << " nhits = " << cl.size() << " energy = " << energy << endl;
+        std::cout << moduleDescription().moduleLabel() << " nhits = " << cl.size() << " energy = " << energy << std::endl;
       }
       if( (energy >= _minenergy) && 
 	  (energy <= _maxenergy) && 
@@ -94,16 +94,18 @@ namespace mu2e
         retval = true;
         ++_npass;
         // Fill the trigger info object
-        triginfo->_triggerBits.merge(TriggerFlag::caloCalib);
-	triginfo->_triggerPath = _trigPath;
+        if (trig_ind == 0){
+	  triginfo->_triggerBits.merge(TriggerFlag::caloCalib);
+	  triginfo->_triggerPath = _trigPath;
+	}
         // associate to the caloCluster which triggers.  Note there may be other caloClusters which also pass the filter
         // but filtering is by event!
         size_t index = std::distance(clcol->begin(),icl);
-        triginfo->_caloCluster = art::Ptr<CaloCluster>(clH,index);
+	triginfo->_caloClusters.push_back(art::Ptr<CaloCluster>(clH,index));
+	++trig_ind;
         if(_debug > 1){
-          cout << moduleDescription().moduleLabel() << " passed event " << evt.id() << endl;
+          std::cout << moduleDescription().moduleLabel() << " passed event " << evt.id() << std::endl;
         }
-        break;
       }
     }
     evt.put(std::move(triginfo));
@@ -112,7 +114,7 @@ namespace mu2e
 
   bool CaloCosmicCalib::endRun( art::Run& run ) {
     if(_debug > 0 && _nevt > 0){
-      cout << moduleDescription().moduleLabel() << " passed " <<  _npass << " events out of " << _nevt << " for a ratio of " << float(_npass)/float(_nevt) << endl;
+      std::cout << moduleDescription().moduleLabel() << " passed " <<  _npass << " events out of " << _nevt << " for a ratio of " << float(_npass)/float(_nevt) << std::endl;
     }
     return true;
   }

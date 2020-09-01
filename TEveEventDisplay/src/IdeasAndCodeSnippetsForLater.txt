@@ -1,0 +1,492 @@
+
+/*
+
+  TEveGeoShape *tr = new TEveGeoShape();
+            tr->SetShape(new TGeoTube(39, 40, 0));
+            
+            calo2Dproj->fXYMgr->ImportElements(tr, calo2Dproj->fDetXYScene);
+void TEveMu2eMainWindow::AddHelixEveTracks(bool firstloop, const KalSeedCollection *seedcol){
+      std::cout<<"Adding Helix using TEveTracks"<<std::endl;
+      if(seedcol!=0){
+        if (tList == 0) {
+          tList = new TEveTrackList("Tracks");
+          tList->SetLineWidth(4);
+        } else{
+          tList->DestroyElements();
+        }
+        GeomHandle<mu2e::BFieldManager> bf;
+        TEveMu2eBField *field = new TEveMu2eBField();
+        for(size_t k = 0; k < seedcol->size(); k++){
+            KalSeed kseed = (*seedcol)[k];
+
+            const std::vector<KalSegment> &segments = kseed.segments();
+            size_t nSeg = segments.size();
+            const KalSegment &Firstseg = kseed.segments().front();
+            const KalSegment &Lastseg = kseed.segments().back();
+            double fltlen_1 = Firstseg.fmin();
+            double fltlen_N = Lastseg.fmax();
+            XYZVec mom1, mom2;
+            Firstseg.mom(fltlen_1, mom1);
+            Lastseg.mom(fltlen_N, mom2);
+            double mommag1 = sqrt(mom1.Mag2());
+            double mommag2 = sqrt(mom2.Mag2());
+           // double t = kseed.t0().t0();
+           // double flt0 = kseed.flt0()
+            //double velocity = kseed.particle().beta((p1+p2)/2)*CLHEP::c_light;
+
+            TEveRecTrack t;
+            //TEveTrackPropagator *propagator = tList->GetPropagator();
+            TEveTrackPropagator* trkProp = tList->GetPropagator();
+          
+		        CLHEP::Hep3Vector field = bf.getBField(0,0,0);
+	
+		        //trkProp->SetMagField(field);
+            t.fBeta = kseed.particle().beta((mommag1+mommag2)/2);
+            t.fSign = kseed.particle().charge();
+            TEveTrack *trk = new TEveTrack(&t);
+            
+            for(size_t i=0; i<nSeg; i++){
+              const KalSegment &seg = segments.at(i);
+              fltlen_1 = seg.fmin();    
+              fltlen_N = seg.fmax();
+              if(i!=0){
+                double fltMaxPrev = segments.at(i-1).fmax();
+                fltlen_1 = (fltlen_1+fltMaxPrev)/2;
+              }
+              if(i+1<nSeg){
+                double fltMaxNext = segments.at(i+1).fmin();
+                fltlen_N = (fltlen_N+fltMaxNext)/2;
+              }
+              XYZVec pos1, pos2;
+              seg.helix().position(fltlen_1,pos1);
+              seg.helix().position(fltlen_N,pos2);
+              
+              CLHEP::Hep3Vector Pos1(pos1.x(), pos1.y(), pos1.z());
+		          CLHEP::Hep3Vector P1InMu2e = mu2e_geom->PointToTracker(Pos1);
+              TEveVector evepos1(P1InMu2e.x()/10, P1InMu2e.y()/10, P1InMu2e.z()/10);
+
+              CLHEP::Hep3Vector Pos2(pos2.x(), pos2.y(), pos2.z());
+		          CLHEP::Hep3Vector P2InMu2e = mu2e_geom->PointToTracker(Pos2);
+              TEveVector evepos2(P2InMu2e.x()/10, P2InMu2e.y()/10, P1InMu2e.z()/10);
+
+              TEveVector evemom(mom1.x(),mom1.y(),mom1.z());
+              trk->AddPathMark(TEvePathMark(TEvePathMark::kReference, evepos1, evemom));
+              trk->AddPathMark(TEvePathMark(TEvePathMark::kReference, evepos2, evemom));
+              trk->SetMainColor(kCyan);
+		          tList->AddElement(trk);
+            }
+     
+              tList->MakeTracks();
+	            tList->SetLineColor(kGreen);
+		          gEve->AddElement(tList);
+              gEve->Redraw3D(kTRUE);
+
+        }
+      }
+   }
+*/
+
+
+
+
+
+ TEveRecTrack t;
+        TEvePropagator *propagator;
+        t.fBeta = 1;
+        t.fSign = -1;
+        XYZVec Position(0,0,0);
+        XYZVec Direction;
+        XYZVec origin(0,0,0);
+        kseed.helix()->helix().position(Position);
+        kseed.helix()->helix().direction(0, Direction);
+        double momentum = kseed.helix()->helix().momentum()
+        
+        t.fV = TEveVector(Position.x(),Positon.y(),Position.z());
+        t.fP = TEveVector(momentum*Direction.x(),momentum*Direction.y(),momentum*Direction.z());
+        TEveTrack *track = new TEveTrack(&t, propagator);
+
+
+void TEveEventDisplay::AddHelicalTrack(const art::Event& event, mu2e::BFieldManager const& bf){
+	//auto genH = event.getValidHandle<GenParticleCollection>(gensTag_);
+	//_gencol = genH.product();
+	if (fTrackList == 0) {
+		fTrackList = new TEveTrackList("Tracks");
+		fTrackList->SetLineWidth(4);
+		fTrackList->IncDenyDestroy(); 
+	}
+	else {
+		fTrackList->DestroyElements();         
+	}
+
+	int mcindex=-1;
+	for ( auto const& gen: *_gencol){
+		TEveTrackPropagator* trkProp = fTrackList->GetPropagator();
+		CLHEP::Hep3Vector field = bf.getBField(gen.position());
+	
+		trkProp->SetMagField(...);
+		trkProp->SetMaxR(trkMaxR_);
+		trkProp->SetMaxZ(trkMaxZ_);
+		trkProp->SetMaxStep(trkMaxStepSize_);
+		mcindex++;
+		//if ( gen.hasChildren() ) continue;
+		TParticle mcpart;
+		mcpart.SetMomentum(gen.momentum().px(),
+		gen.momentum().py(),	
+	  gen.momentum().pz(),
+	  gen.momentum().e());
+		mcpart.SetProductionVertex(gen.position().x(), 		
+	  gen.position().y(), gen.position().z(),0.);
+    mcpart.SetPdgCode(gen.pdgId());
+    TEveTrack* track = new TEveTrack(&mcpart,mcindex,trkProp);
+    track->SetIndex(0);
+    track->SetStdTitle();
+    track->SetAttLineAttMarker(fTrackList);
+
+    if ( abs(gen.pdgId()) == 11 ){
+      track->SetMainColor(kRed);
+    }  if (abs(gen.pdgId()) == 13 ){
+      track->SetMainColor(kGreen);
+    } else {
+      track->SetMainColor(kBlue);
+    }
+		 fTrackList->AddElement(track);
+		}
+		fTrackList->MakeTracks();
+	  fTrackList->SetLineWidth(10);
+		gEve->AddElement(fTrackList);
+		gEve->Redraw3D(kTRUE);
+}
+
+
+void TEveEventDisplay::AddCosmicTrack(const art::Event& event){
+        
+		TEveStraightLineSet *CosmicTrackList = new TEveStraightLineSet();
+		for(size_t ist = 0; ist < _cosmiccol->size(); ++ist){
+			CosmicTrackSeed sts =(*_cosmiccol)[ist];
+			CosmicTrack st = sts._track;
+			
+			CosmicTrackList->SetLineColor(kGreen);
+			Float_t tz1 = -150;
+			Float_t tz2 = 150;
+			Float_t tx1 = st.InitParams.A0  + st.InitParams.A1*tz1;
+			Float_t tx2 = st.InitParams.A0  + st.InitParams.A1*tz2;
+			Float_t ty1 = st.InitParams.B0  + st.InitParams.B1*tz1;
+			Float_t ty2 = st.InitParams.B0  + st.InitParams.B1*tz2; 	
+			CosmicTrackList->AddLine(tx1, ty1, tz1, tx2, ty2, tz2);
+		
+			cout<<st.InitParams.A0<<"track "<<st.InitParams.A1<<st.InitParams.B1<<st.InitParams.B0<<endl;
+			gEve->AddElement(CosmicTrackList);
+		    gEve->Redraw3D(kTRUE);
+		
+	}
+}
+
+
+This code allows use of content selector in the frame:
+
+const mu2e::ComboHitCollection *hits = Data->getSelectedHitCollection<mu2e::ComboHitCollection>();
+if(hits!=nullptr){
+std::vector<mu2e::ComboHit>::const_iterator iter;
+        unsigned int i = 0;
+        for(iter=hits->begin(); iter!=hits->end();iter++,i++){
+          TEveMu2eHit *teve_hit = new TEveMu2eHit();
+	        const ComboHit& hit = *iter;
+          CLHEP::Hep3Vector HitPos(hit.pos().x(), hit.pos().y(), hit.pos().z());
+
+		      CLHEP::Hep3Vector pointInMu2e = gdml_geom->PointToTracker(HitPos);
+
+          teve_hit->DrawHit("ComboHits",  1, pointInMu2e);
+          fHitsList->AddElement(teve_hit->HitList);  
+          gEve->AddElement(fHitsList);
+          gEve->Redraw3D(kTRUE);  
+  
+//Thinking about custom tracks:
+   void TEveMu2eMainWindow::AddHelix(bool firstloop, const KalSeedCollection *seedcol){
+      std::cout<<"Adding Helix"<<std::endl;
+      //THelix *example_helix = new THelix(-398.923, 49.0273, 865.809);
+      //TPolyLine3D *line = new TPolyLine3D;
+      TEveElementList *List = new TEveElementList("Hits");
+      for(i=0;i< 10;i++){
+        TEveMu2eCustomTrack *line = new TEveMu2eHelixTrack();
+        line->SetPostionAndDirectionFromKalRep();
+        
+        double x = 1;
+        double y = 1;
+        double z = 1;
+        if(i =0){
+           line->SetPoint(0,x,y,z);
+        }
+        else{
+          line->SetNextPoint(i,x,y,z);
+        } 
+        line->SetLineColor(kGreen);
+        line->SetLineWidth(5);
+        List->AddElement(line);
+      }
+      gEve->AddElement(List);
+      gEve->Redraw3D(kTRUE);
+   }
+
+  
+    bool Collection_Filler::HasCluster(const art::Event& evt){
+	    _clustercol = 0; 
+      auto chH = evt.getValidHandle<mu2e::CaloClusterCollection>(cluTag_);
+	    _clustercol = chH.product();
+	    return _clustercol != 0;
+    }
+
+    bool Collection_Filler::HasTrack(const art::Event& evt){
+	    _cosmiccol = 0; 
+      auto chH = evt.getValidHandle<mu2e::CosmicTrackSeedCollection>(cosmicTag_);
+	    _cosmiccol = chH.product();
+	    return _cosmiccol != 0;
+    }
+
+    bool Collection_Filler::HasComboHits(const art::Event& evt){
+	    _chcol = 0; 
+        auto chH = evt.getValidHandle<mu2e::ComboHitCollection>(chTag_);
+	    _chcol = chH.product();
+	    return _chcol != 0;
+    }
+void Collection_Filler::FindData(const art::Event& evt){
+    if(addClusters_){
+         _clustercol = 0; 
+         auto chH = evt.getValidHandle<mu2e::CaloClusterCollection>(cluTag_);
+	       _clustercol = chH.product();
+      }
+     if(addHits_){
+        _chcol = 0; 
+        auto chH = evt.getValidHandle<mu2e::ComboHitCollection>(chTag_);
+	      _chcol = chH.product();
+     }
+    }
+
+
+  void TEveMu2eMainWindow::AddHelixBySegments(bool firstloop, const KalSeedCollection *seedcol){
+      std::cout<<"Adding Segment Based Helix"<<std::endl;
+       if(seedcol!=0){
+       
+	     if (fTrackList == 0) {
+		      fTrackList = new TEveElementList("Hits");
+		      fTrackList->IncDenyDestroy();     
+	      }
+	      else {
+		       fTrackList->DestroyElements();  
+	      }
+
+       
+        for(size_t k = 0; k < seedcol->size(); k++){
+          KalSeed kseed = (*seedcol)[k];
+          TEveMu2eCustomHelix *line = new TEveMu2eCustomHelix();
+
+          const std::vector<KalSegment> &segments = kseed.segments();
+          size_t nSeg = segments.size();
+          const KalSegment &Firstseg = kseed.segments().front();
+          const KalSegment &Lastseg = kseed.segments().back();
+          double fltlen_1 = Firstseg.fmin();
+          double fltlen_N = Lastseg.fmax();
+          XYZVec mom1, mom2;
+          Firstseg.mom(fltlen_1, mom1);
+          Lastseg.mom(fltlen_N, mom2);
+
+          
+          for(size_t i=0; i<nSeg; i++){
+            const KalSegment &seg = segments.at(i);
+            fltlen_1 = seg.fmin();    
+            fltlen_N = seg.fmax();
+            if(i!=0){
+              double fltMaxPrev = segments.at(i-1).fmax();
+              fltlen_1 = (fltlen_1+fltMaxPrev)/2;
+            }
+            if(i+1<nSeg){
+              double fltMaxNext = segments.at(i+1).fmin();
+              fltlen_N = (fltlen_N+fltMaxNext)/2;
+            }
+            XYZVec pos1, pos2;
+            seg.helix().position(fltlen_1,pos1);
+            seg.helix().position(fltlen_N,pos2);
+
+            if(i==0) {
+              CLHEP::Hep3Vector Pos(pos1.x(), pos1.y(), pos1.z());
+		          CLHEP::Hep3Vector InMu2e = mu2e_geom->PointToTracker(Pos);
+              line->SetPoint(i,InMu2e.x()/10, InMu2e.y()/10, InMu2e.z()/10);
+              std::cout<<"adding point "<<InMu2e.x()/10<<","<<InMu2e.y()/10<<","<<InMu2e.z()/10<<std::endl;
+            } else {
+              CLHEP::Hep3Vector Pos(pos2.x(), pos2.y(), pos2.z());
+		          CLHEP::Hep3Vector InMu2e = mu2e_geom->PointToTracker(Pos);
+              line->SetNextPoint(InMu2e.x()/10,InMu2e.y()/10, InMu2e.z()/10);
+              std::cout<<InMu2e.x()/10
+                    <<","<<InMu2e.y()/10
+                    <<","<<InMu2e.z()/10<<std::endl;
+            }
+            
+          }
+            line->SetLineColor(kGreen);
+            line->SetLineWidth(3);
+            fTrackList->AddElement(line);
+            gEve->AddElement(fTrackList);
+            gEve->Redraw3D(kTRUE);
+      }
+    }
+   }
+
+void TEveMu2eMainWindow::AddHelixEveTracks(bool firstloop, const KalSeedCollection *seedcol){
+      std::cout<<"Adding Helix using TEveTracks"<<std::endl;
+       if(seedcol!=0){
+       if (tList == 0) {
+          tList = new TEveTrackList("Tracks");
+		      tList->SetLineWidth(4);
+       } else{
+          tList->DestroyElements();
+       }
+
+        for(size_t k = 0; k < seedcol->size(); k++){
+          KalSeed kseed = (*seedcol)[k];
+
+          const std::vector<KalSegment> &segments = kseed.segments();
+          size_t nSeg = segments.size();
+          const KalSegment &Firstseg = kseed.segments().front();
+          const KalSegment &Lastseg = kseed.segments().back();
+          double fltlen_1 = Firstseg.fmin();
+          double fltlen_N = Lastseg.fmax();
+          XYZVec mom1, mom2;
+          Firstseg.mom(fltlen_1, mom1);
+          Lastseg.mom(fltlen_N, mom2);
+          double mommag1 = sqrt(mom1.Mag2());
+          double mommag2 = sqrt(mom2.Mag2());
+         // double t = kseed.t0().t0();
+         // double flt0 = kseed.flt0()
+          //double velocity = kseed.particle().beta((p1+p2)/2)*CLHEP::c_light;
+
+          TEveRecTrack t;
+          //TEveTrackPropagator *propagator = tList->GetPropagator();
+          t.fBeta = kseed.particle().beta((mommag1+mommag2)/2);
+          t.fSign = kseed.particle().charge();
+          TEveTrack *trk = new TEveTrack(&t);
+          
+          for(size_t i=0; i<nSeg; i++){
+            const KalSegment &seg = segments.at(i);
+            fltlen_1 = seg.fmin();    
+            fltlen_N = seg.fmax();
+            if(i!=0){
+              double fltMaxPrev = segments.at(i-1).fmax();
+              fltlen_1 = (fltlen_1+fltMaxPrev)/2;
+            }
+            if(i+1<nSeg){
+              double fltMaxNext = segments.at(i+1).fmin();
+              fltlen_N = (fltlen_N+fltMaxNext)/2;
+            }
+            XYZVec pos1, pos2;
+            seg.helix().position(fltlen_1,pos1);
+            seg.helix().position(fltlen_N,pos2);
+            
+            CLHEP::Hep3Vector Pos1(pos1.x(), pos1.y(), pos1.z());
+		        CLHEP::Hep3Vector P1InMu2e = mu2e_geom->PointToTracker(Pos1);
+            TEveVector evepos1(P1InMu2e.x()/10, P1InMu2e.y()/10, P1InMu2e.z()/10);
+
+            CLHEP::Hep3Vector Pos2(pos2.x(), pos2.y(), pos2.z());
+		        CLHEP::Hep3Vector P2InMu2e = mu2e_geom->PointToTracker(Pos2);
+            TEveVector evepos2(P2InMu2e.x()/10, P2InMu2e.y()/10, P1InMu2e.z()/10);
+
+            TEveVector evemom(mom1.x(),mom1.y(),mom1.z());
+            trk->AddPathMark(TEvePathMark(TEvePathMark::kReference, evepos1, evemom));
+            trk->AddPathMark(TEvePathMark(TEvePathMark::kReference, evepos2, evemom));
+            trk->SetMainColor(kCyan);
+		        tList->AddElement(trk);
+          }
+   
+            tList->MakeTracks();
+	          tList->SetLineWidth(5);
+		        gEve->AddElement(tList);
+            gEve->Redraw3D(kTRUE);
+
+      }
+    }
+   }
+
+
+// Mu2e B Field Map
+
+  void TEveMu2eDataInterface::AddBFieldMap(bool firstloop, Geom_Interface *mu2e_geom){
+	gSystem->IgnoreSignal(kSigSegmentationViolation, true);
+	if (tList == 0){
+    		tList = new TEveTrackList();
+	}
+	GeomHandle<StoppingTarget> target;
+	GeomHandle<BFieldManager> bfmgr;
+
+	trkProp = tList->GetPropagator();
+        trkProp->SetFitDaughters(kFALSE);
+
+	trkProp->SetStepper(TEveTrackPropagator::kRungeKutta);
+	TEveTrack *track = 0;
+
+        CLHEP::Hep3Vector startST(target->centerInMu2e());
+
+	trkProp->SetRnrReferences(kTRUE);
+	trkProp->SetRnrDaughters(kTRUE);
+	trkProp->SetRnrDecay(kTRUE);
+        trkProp->RefPMAtt().SetMarkerStyle(4);
+
+
+        std::cout<<startST<<std::endl;
+	CLHEP::Hep3Vector pt1(0.027667,  0.007919, 350);
+	CLHEP::Hep3Vector pt2(0.027667,  0.007919, 480);
+	CLHEP::Hep3Vector pt3(0.027667,  0.007919, 580);
+
+
+	for (unsigned int i = 0; i < 50; i++){
+		CLHEP::Hep3Vector pt(0,  0, 310 + i*20);
+		auto t = new TEveRecTrackD();
+		t->fV.Set(pt.x(), pt.y(), pt.z());
+		CLHEP::Hep3Vector field = bfmgr->getBField(pt);
+		trkProp->SetMagField(field.x(), field.y(), field.z());
+		//t->fP.Set(field.x(), field.y(), field.z());
+		TEveTrack *track = new TEveTrack(t, trkProp);
+		track->SetMarkerColor(kRed);
+	    	track->SetPickable(kTRUE);
+	    	track->SetLineColor(tList->GetLineColor());
+	   	const std::string title = "TEST TRACK" + to_string(i);
+	   	track->SetTitle(Form(title.c_str()));
+		tList->AddElement(track);
+	}
+
+	for (unsigned int j = 0; j < 100; j++){
+	//CLHEP::Hep3Vector pt(0,  0, 310);
+		auto t = new TEveRecTrackD();
+		CLHEP::Hep3Vector pt(0,  0, 310 + j * 10);
+		t->fV.Set(0, 0, pt.z());
+		CLHEP::Hep3Vector field = bfmgr->getBField(pt);
+		TEveMu2eBField *mf = new TEveMu2eBField();
+		trkProp->SetMagFieldObj(mf);
+		t->fP.Set(field.x(), field.y(), field.z());
+		t->fSign= 1;
+		track = new TEveTrack(t, trkProp);
+		for (unsigned int i = 0; i < 100; i++){
+			CLHEP::Hep3Vector field = bfmgr->getBField(pt);
+			trkProp->SetMagField(field.x(), field.y(), field.z());
+			TEvePathMarkD* pm1 = new TEvePathMarkD(TEvePathMarkD::kReference, TEveVectorD(pt.x(), pt.y(), pt.z()), TEveVectorD(field.x(), field.y(), field.z()));
+			pt = CLHEP::Hep3Vector ((double)(pt.x() + field.x()), (double)(pt.y() + field.y()), (double)(pt.z() + field.z()));
+			track->AddPathMark(*pm1);
+			}
+	track->SetMarkerColorAlpha(kYellow, 0.9);
+	track->SetPickable(kTRUE);
+	track->SetLineColor(tList->GetLineColor());
+	//track->SetAttLineAttMarker(tList);
+	const std::string title = "TEST TRACK";
+	track->SetTitle(Form(title.c_str()));
+	tList->AddElement(track);
+	}
+
+	track->SetRnrPoints(kTRUE);
+	track->SetMarkerStyle(6);
+        tList->SetLineColor(kMagenta);
+
+	gEve->AddElement(tList);
+	tList->MakeTracks();
+
+    	gEve->Redraw3D(kTRUE);
+	//gSystem->ProcessEvents();
+
+}
+

@@ -107,8 +107,8 @@ namespace mu2e
       _chdiag=tfs->make<TTree>("chdiag","combo hit diagnostics");
       _chdiag->Branch("evt",&_evt,"evt/I");  // add event id
       _chdiag->Branch("wdist",&_wdist,"wdist/F");
-      _chdiag->Branch("pos",&_pos);
-      _chdiag->Branch("wdir",&_wdir);
+      _chdiag->Branch("pos.",&_pos);
+      _chdiag->Branch("wdir.",&_wdir);
       _chdiag->Branch("wdist",&_wdist,"wdist/F");
       _chdiag->Branch("wres",&_wres,"wres/F");
       _chdiag->Branch("tres",&_tres,"tres/F");
@@ -136,7 +136,7 @@ namespace mu2e
       if(_diag > 1)
 	_chdiag->Branch("chinfo",&_chinfo);
       if(_mcdiag){
-	_chdiag->Branch("mcpos",&_mcpos);
+	_chdiag->Branch("mcpos.",&_mcpos);
 	_chdiag->Branch("mctime",&_mctime,"mctime/F");
 	_chdiag->Branch("mcdist",&_mcdist,"mcdist/F");
 	_chdiag->Branch("mcpdg",&_mcpdg,"mcpdg/I");

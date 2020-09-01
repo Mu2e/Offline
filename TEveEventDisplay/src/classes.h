@@ -1,0 +1,22 @@
+//Dictionary Classes:
+#include "TEveEventDisplay/src/dict_classes/Geom_Interface.h"
+#include "TEveEventDisplay/src/dict_classes/Collection_Filler.h"
+#include "TEveEventDisplay/src/dict_classes/Data_Collections.h"
+//TEveMu2e Base Classes:
+#include "TEveEventDisplay/src/TEveMu2e_base_classes/TEveMu2eMainWindow.h"
+#include "TEveEventDisplay/src/TEveMu2e_base_classes/TEveMu2eDataInterface.h"
+#include "TEveEventDisplay/src/TEveMu2e_base_classes/TEveMu2eMCInterface.h"
+#include "TEveEventDisplay/src/TEveMu2e_base_classes/TEveMu2eHit.h"
+#include "TEveEventDisplay/src/TEveMu2e_base_classes/TEveMu2eCluster.h"
+#include "TEveEventDisplay/src/TEveMu2e_base_classes/TEveMu2eStraightTrack.h"
+#include "TEveEventDisplay/src/TEveMu2e_base_classes/TEveMu2eBField.h"
+#include "TEveEventDisplay/src/TEveMu2e_base_classes/TEveMu2e2DProjection.h"
+#include "TEveEventDisplay/src/TEveMu2e_base_classes/TEveMu2eCustomHelix.h"
+#include "TEveEventDisplay/src/TEveMu2e_base_classes/TEveMu2eCRVEvent.h"
+#include "TEveEventDisplay/src/TEveMu2e_base_classes/TEveMu2eMCTraj.h"
+#include "TEveEventDisplay/src/TEveMu2e_base_classes/TEveMu2eCaloSimParticle.h"
+//#include "TEveEventDisplay/src/TEveMu2e_base_classes/TEveMu2eDataLists.h"
+//TEveMu2e Detectors:
+#include "TEveEventDisplay/src/shape_classes/TEveMu2eTracker.h"
+#include "TEveEventDisplay/src/shape_classes/TEveMu2eCalorimeter.h"
+#include "TEveEventDisplay/src/shape_classes/TEveMu2eCRV.h"

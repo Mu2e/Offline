@@ -22,8 +22,6 @@
 #include "RecoDataProducts/inc/StrawHitCollection.hh"
 #include "RecoDataProducts/inc/StrawHitPositionCollection.hh"
 #include "RecoDataProducts/inc/StrawHitFlagCollection.hh"
-#include "RecoDataProducts/inc/TrackSeed.hh"
-#include "RecoDataProducts/inc/TrackSeedCollection.hh"
 
 #include "MCDataProducts/inc/GenParticle.hh"
 #include "MCDataProducts/inc/GenParticleCollection.hh"

@@ -1,7 +1,7 @@
 // Change with respect to v03 is moving the TS3 collimators
 // and creating a gap between the graphite layer and the bronze
 // in the TS1 collimator
-
+// Version 5 FROZEN: M. MacKenzie, May 2020
 
 // A geometric rendering of the TS, cyrostats+coils, vacuum
 double ts.rVac           =  250.; //

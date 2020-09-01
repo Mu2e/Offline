@@ -18,7 +18,6 @@
 #include <iostream>
 #include <memory>
 
-using namespace std;
 using namespace CLHEP;
 
 namespace mu2e
@@ -26,7 +25,18 @@ namespace mu2e
   class CosmicSeedFilter : public art::EDFilter
   {
   public:
-    explicit CosmicSeedFilter(fhicl::ParameterSet const& pset);
+    struct Config{
+      using Name=fhicl::Name;
+      using Comment=fhicl::Comment;
+      fhicl::Atom<art::InputTag> cosmictag{Name("CosmicTrackSeedCollection"),Comment("track collection"),"KSFDeM"};
+      fhicl::Sequence<std::string> goodcosmic{Name("cosmicseedFitFlag"),Comment("Required flags"),vector<string>{"HelixOK","HelixConverged"}};
+      fhicl::Atom<int> minnsh {Name("minnsh"), Comment("minimum number of straw hits "),8};
+      fhicl::Atom<std::string> trigpath {Name("triggerPath"), Comment("Trigger path")};
+      fhicl::Atom<int> debug{Name("debugLevel"), Comment("set to 1 for debug prints"),0};
+    };
+    typedef art::EDFilter::Table<Config> Parameters;
+    explicit CosmicSeedFilter(const Parameters& conf);
+
     virtual bool filter(art::Event& event) override;
     virtual bool endRun( art::Run& run ) override;
 
@@ -34,51 +44,47 @@ namespace mu2e
 
     art::InputTag   _cosmicTag;
     TrkFitFlag      _goodcosmic; 
-    TrkFitFlag      _convergedcosmic;
     unsigned int _minnsh;
-    unsigned int _minnch;    
-    unsigned int _minNHitsTimeCluster;
     std::string     _trigPath;
     int             _debug;
     unsigned        _nevt, _npass;
   };
 
-  CosmicSeedFilter::CosmicSeedFilter(fhicl::ParameterSet const& pset) :
-    art::EDFilter{pset},
-    _cosmicTag     (pset.get<art::InputTag>("CosmicTrackSeedCollection","KSFDeM")),
-    _goodcosmic(pset.get<vector<string> >("comsicseedFitFlag",vector<string>{"HelixOK"})),
-    _convergedcosmic(pset.get<vector<string> > ("comsicseedFitFlag", vector<string>{"HelixConverged"})),
-    _minnsh (pset.get<unsigned int>   ("minnsh",8)),
-    _minnch (pset.get<unsigned int>   ("minnch",8)),
-    _trigPath  (pset.get<std::string>("triggerPath")),
-    _debug     (pset.get<int>   ("debugLevel",0)),
+  CosmicSeedFilter::CosmicSeedFilter(const Parameters& conf) :
+    art::EDFilter(conf),
+    _cosmicTag (conf().cosmictag()),
+    _goodcosmic (conf().goodcosmic()),
+    _minnsh (conf().minnsh()),
+    _trigPath (conf().trigpath()),
+    _debug (conf().debug()),
     _nevt(0), _npass(0)
   {
     produces<TriggerInfo>();
   }
 
   bool CosmicSeedFilter::filter(art::Event& evt){
-    unique_ptr<TriggerInfo> triginfo(new TriggerInfo);
+    std::unique_ptr<TriggerInfo> triginfo(new TriggerInfo);
     ++_nevt;
     bool   retval(false);
     // find the collection
     auto cosH = evt.getValidHandle<CosmicTrackSeedCollection>(_cosmicTag);
     const CosmicTrackSeedCollection* coscol = cosH.product();
-
+    size_t trig_ind(0);
     for(auto icos = coscol->begin(); icos != coscol->end(); ++icos) {
       auto const& cosmic = *icos;
      
-      if( cosmic.status().hasAllProperties(_goodcosmic) && cosmic.status().hasAllProperties(_convergedcosmic) && cosmic.hits().size()>_minnch && cosmic.trkstrawhits().size() > _minnsh ){ 
+      if( cosmic.status().hasAllProperties(_goodcosmic) && cosmic.trkstrawhits().size() > _minnsh ){
        
-        ++_npass;
-        
-        triginfo->_triggerBits.merge(TriggerFlag::track); 
-        triginfo->_triggerPath = _trigPath;
-    
+        ++_npass;        
+	if (trig_ind == 0){
+	  triginfo->_triggerBits.merge(TriggerFlag::track); 
+	  triginfo->_triggerPath = _trigPath;
+	}
         size_t index = std::distance(coscol->begin(),icos);
-        triginfo->_cosmic = art::Ptr<CosmicTrackSeed>(cosH,index);
+	triginfo->_cosmics.push_back(art::Ptr<CosmicTrackSeed>(cosH,index));
+	++trig_ind;
         if(_debug > 1){
-          cout << moduleDescription().moduleLabel() << " passed event " << evt.id() << endl;
+          std::cout << moduleDescription().moduleLabel() << " passed event " << evt.id() << std::endl;
         }
         break;
       }
@@ -89,7 +95,7 @@ namespace mu2e
 
   bool CosmicSeedFilter::endRun( art::Run& run ) {
     if(_debug > 0 && _nevt > 0){
-      cout << moduleDescription().moduleLabel() << " passed " <<  _npass << " events out of " << _nevt << " for a ratio of " << float(_npass)/float(_nevt) << endl;
+      std::cout << moduleDescription().moduleLabel() << " passed " <<  _npass << " events out of " << _nevt << " for a ratio of " << float(_npass)/float(_nevt) << std::endl;
     }
     return true;
   }

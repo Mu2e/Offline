@@ -1,0 +1,19 @@
+// TS downstream (neutron) Absorber 
+// based on what was originally called Internal Neutron Absorber 
+// Updated by M. MacKenzie, May 2020
+
+#include "Mu2eG4/geom/TSdA_v01.txt"
+
+double tsda.r4		 = 525; // outer radius, inner radius is TS5 if not provided
+double tsda.rin          = 235.0; 
+double tsda.halfLength4  = 25.4;
+double tsda.z0           = 4204.6; // z coordinate of center in Mu2e
+string tsda.materialName = "Polyethylene094";
+
+int    tsda.version        = 2; //increment version to no longer override z0 position
+
+
+// This tells emacs to view this file in c++ mode.
+// Local Variables:
+// mode:c++
+// End:

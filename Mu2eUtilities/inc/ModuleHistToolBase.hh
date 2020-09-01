@@ -3,6 +3,8 @@
 
 #include "art/Framework/Services/Registry/ServiceHandle.h"
 #include "art_root_io/TFileService.h"
+
+namespace art { class TFileService; }
 // #include "art/Framework/Principal/Handle.h"
 
 // #include "art/Framework/Principal/Event.h"

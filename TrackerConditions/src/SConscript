@@ -38,7 +38,8 @@ mainlib = helper.make_mainlib ( [
                                   'cetlib_except',
                                   'CLHEP',
                                   'MathCore',
-                                  'boost_system'
+                                  'boost_system',
+                                  rootlibs
                                 ] )
 
 

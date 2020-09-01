@@ -1,0 +1,46 @@
+# Run ArtBinaryPacketsFromDigis module to combine DataBlocks from
+# specified input root files
+# Usage: mu2e -c DAQ/test/generateBinaryFromDigi.fcl -s <input root files> -n '-1'
+#
+#
+# Contact person G. Pezzullo
+
+#include "fcl/minimalMessageService.fcl"
+#include "fcl/standardServices.fcl"
+#include "DAQ/fcl/prolog_trigger.fcl"
+
+process_name : BinaryFromDigi
+
+
+services : @local::Services.Reco
+
+source : {
+  module_type : RootInput
+    fileNames   : @nil
+
+    # firstEvent  : 500
+    maxEvents   : -1
+}
+
+physics : {
+
+   producers : {
+      binaryOutput: {
+	 @table::DAQ.producers.binaryOutput
+	 generateTimestampTable : 1
+      }
+   }
+   analyzers : {
+   }
+
+   t1 : [ binaryOutput ] 
+   e1 : [ ]
+
+   trigger_paths  : [t1]
+   end_paths      : [e1]
+
+}
+
+physics.producers.binaryOutput.includeCrv : 1
+physics.producers.binaryOutput.outputFile : "DTC_packets_Crv.bin"
+services.TFileService.fileName : "generateBinaryFromCrvDigi_test.root" 

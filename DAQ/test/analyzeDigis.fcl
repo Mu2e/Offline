@@ -1,0 +1,61 @@
+# Run StrawAndCaloDigisFromFragments module to convert artdaq::Fragment collections
+# into TRK  collection and analzye it
+# Usage: mu2e -c DAQ/test/analyzeTrkFragments.fcl -s <input root files> -n '-1'
+#
+#
+# Contact person Gianantonio Pezzullo
+
+#include "fcl/minimalMessageService.fcl"
+#include "fcl/standardServices.fcl"
+#include "DAQ/fcl/prolog_trigger.fcl"
+
+services : @local::Services.Reco
+
+# timing information
+services.TimeTracker : {
+    dbOutput : {
+	filename : ""
+	overwrite : true
+    }
+}
+
+services.scheduler.wantSummary: true
+
+process_name : analyzeDigis
+
+source : {
+  module_type : RootInput
+  fileNames   : @nil
+
+  # firstEvent  : 500
+  maxEvents   : -1
+}
+
+physics : {
+
+  producers : {
+      makeSD:
+      {
+	 @table::DAQ.producers.makeSD
+      }
+  }
+  
+  analyzers : {
+      
+      readSD : 
+      {
+	  module_type : ReadStrawDigiReco
+	  digisTag    : makeSD
+      }
+  }
+
+  t1 : [ makeSD  ] 
+  e1 : [ readSD  ]
+
+  trigger_paths  : [t1]
+  end_paths      : [e1]
+#  end_paths      : []
+
+}
+
+services.TFileService.fileName : "analyzeTrkFragments_test.root" 

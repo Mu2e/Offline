@@ -182,7 +182,7 @@ def generate(env, **kwargs):
     )
 
     env["BUILDERS"]["__COMPILATIONDB_Database"] = SCons.Builder.Builder(
-        action=SCons.Action.Action(WriteCompilationDb, "$COMPILATIONDB_COMSTR"),
+        action=SCons.Action.Action(WriteCompilationDb,None),#"$COMPILATIONDB_COMSTR"),
         target_scanner=SCons.Scanner.Scanner(
             function=ScanCompilationDb, node_class=None
         ),

@@ -70,6 +70,7 @@ namespace mu2e {
     // Fetch TSdA geometry
     GeomHandle<TSdA> atsd;
 
+    int version = atsd->version();
     if ( tmpRin < 1.0e-06 ) {  // just a check for zero
       // TS5 outer radius 
       GeomHandle<Beamline> beamg;
@@ -110,9 +111,10 @@ namespace mu2e {
     if ( verbosityLevel > 0) {
       cout << __func__ << " DS2VacuumInfo.centerInMu2e()  : " << ds2VacuumInfo.centerInMu2e() << endl;
       cout << __func__ << " DS3VacuumInfo.centerInMu2e()  : " << ds3VacuumInfo.centerInMu2e() << endl;
-      cout << __func__ << " TSdA Offset                     : "  << ATSDOffset  << endl;
-      cout << __func__ << " TSdA Offset2			  : "  << ATSD4Offset  << endl;
-      cout << __func__ << " TSdA center in Mu2e		  : "  << (ds2VacuumInfo.centerInMu2e() + ATSD4Offset).z()  << endl;
+      cout << __func__ << " TSdA Offset                   : "  << ATSDOffset  << endl;
+      cout << __func__ << " TSdA Offset2	     	  : "  << ATSD4Offset  << endl;
+      cout << __func__ << " TSdA center  in Mu2e          : "  << (ds2VacuumInfo.centerInMu2e() + ATSDOffset ).z()  << endl;
+      cout << __func__ << " TSdA center2 in Mu2e          : "  << (ds2VacuumInfo.centerInMu2e() + ATSD4Offset).z()  << endl;
     }
 
     TubsParams ATSD4Params( tmpRin, atsd->r4(), atsd->halfLength4() );
@@ -123,7 +125,7 @@ namespace mu2e {
              ATSD4Params,
              ATSD4Material,
              0,
-             ATSD4Offset,
+             (version <= 1) ? ATSD4Offset : ATSDOffset, //in old versions, continue overriding position
              ds2VacuumInfo,
              0,
              NAVisible,

@@ -1,0 +1,125 @@
+#IPA reco
+#include "fcl/standardProducers.fcl"
+#include "TrkDiag/fcl/prolog.fcl"
+#include "TrkReco/fcl/prolog.fcl"
+#include "CaloReco/fcl/prolog.fcl"
+#include "CaloCluster/fcl/prolog.fcl"
+#include "CaloMC/fcl/prolog.fcl"
+#include "TrackCaloMatching/fcl/prolog.fcl"
+#include "JobConfig/primary/prolog.fcl"
+#include "JobConfig/reco/mcdigis_primary.fcl"
+
+source : { module_type : RootInput
+maxEvents : 1000000000
+}
+process_name : IPAReco
+
+physics.producers: {
+  @table::physics.producers
+  @table::CommonMC.producers  
+  @table::TrkAnaReco.producers
+  @table::CaloReco.producers
+  @table::CaloCluster.producers
+  @table::TrackCaloMatching.producers
+ 
+}
+physics.analyzers: {
+  @table::physics.analyzers
+  @table::TrkAnaReco.analyzers
+
+}
+
+outputs : {
+  Output : @local::Primary.Output
+  rootout : {
+    module_type: RootOutput
+    fileName : "IPAReco.art"
+    SelectEvents: [RecoPath]
+    outputCommands : ["keep *_*_*_*"]
+  }
+}
+
+
+physics.producers.compressRecoMCs.extraStepPointMCTags : [] # don't look for VD and PA hits 
+
+# for MDC2018g and earlier, correct the time maps.  Comment these out for MDC2018h and beyond
+physics.analyzers.TrkAnaNeg.InfoMCStructHelper.TimeMaps : [ @sequence::RecoCompression.NoCosmicTimeMaps ]
+physics.analyzers.TrkAnaPos.InfoMCStructHelper.TimeMaps : [ @sequence::RecoCompression.NoCosmicTimeMaps ]
+
+physics.analyzers.TrkAnaNeg.FillMCInfo : true
+physics.analyzers.TrkAnaPos.FillMCInfo : true
+
+physics.producers.TrackCaloMatching.fitterModuleLabel : KFFDeM
+physics.producers.TrackCaloIntersection.fitterModuleLabel : KFFDeM
+
+physics.TriggerPath : [ FindMCPrimary]
+physics.EndPath : [ @sequence::TrkAnaReco.EndSequence,rootout]
+
+CommonMC.PrimaryDigiSim : [ @sequence::CommonMC.TimeMapsPrimary, EWMProducer ]
+
+
+# uncomment the following for hit level diagnostics
+physics.analyzers.TrkAnaNeg.diagLevel : 1
+physics.analyzers.TrkAnaPos.diagLevel : 1
+
+physics.analyzers.TrkAnaNeg.SelectEvents : [RecoPath]
+physics.analyzers.TrkAnaPos.SelectEvents : [RecoPath]
+physics.analyzers.IPACaloMatch.SelectEvents : [ RecoPath ]
+physics.analyzers.IPACaloCluster.SelectEvents : [ RecoPath ]
+physics.analyzers.IPACaloCrystalHits.SelectEvents : [ RecoPath ]
+
+services.TFileService.fileName: "nts.owner.RecoIPAMichel.version.sequencer.root"
+
+
+physics.producers.KSFDeM.MaxDoca : 80
+physics.producers.KSFDeM.FilterOutliers : true
+physics.producers.KSFDeM.KalFit.maxPull : 10
+physics.producers.KSFDeM.KalFit.maxhitchi : 10
+physics.producers.KSFDeM.KalFit.maxAddChi : 10
+physics.producers.KSFDeM.KalFit.rescueHits : true
+physics.producers.KSFDeM.ParameterErrors : [20.0, 0.1, 0.01, 20.0, 0.1]
+# find low-momentum helices 
+physics.producers.HelixFinderDe.targetconsistent_init : false
+physics.producers.HelixFinderDe.targetconsistent : false
+physics.producers.HelixFinderDe.RobustHelixFit.minCenterR : 300
+physics.producers.HelixFinderDe.RobustHelixFit.maxCenterR : 500
+physics.producers.HelixFinderDe.RobustHelixFit.minR : 100
+physics.producers.HelixFinderDe.RobustHelixFit.maxR : 200
+physics.producers.HelixFinderDe.RobustHelixFit.minAbsLambda : 50
+physics.producers.HelixFinderDe.RobustHelixFit.maxAbsLambda : 150
+physics.producers.HelixFinderDe.RobustHelixFit.minzsep : 40
+physics.producers.HelixFinderDe.RobustHelixFit.maxzsep : 200
+physics.producers.HelixFinderDe.RobustHelixFit.mindist : 50
+physics.producers.HelixFinderDe.RobustHelixFit.maxdist : 250
+physics.producers.HelixFinderDe.RobustHelixFit.minArea : 800
+##physics.producers.HelixFinderDe.minNHit : 40
+physics.producers.TimeClusterFinderDe.UseCaloCluster : true
+physics.producers.TimeClusterFinderDe.CaloClusterMinE : 10
+physics.producers.TimeClusterFinderDe.AveragePitch : 0.5
+# turn off the rest
+physics.producers.TimeClusterFinderDmu.ymin : 1e7
+physics.producers.TimeClusterFinderUe.ymin : 1e7
+physics.producers.TimeClusterFinderUmu.ymin : 1e7
+# primary finding
+physics.producers.FindMCPrimary.SinglePrimary : true
+# TPR downstream electrons only for now
+physics.producers.MHDeM.HelixFinders : ["HelixFinderDe:Positive"]
+physics.producers.MHDeP.HelixFinders : []
+physics.producers.MHDmuM.HelixFinders : []
+physics.producers.MHDmuP.HelixFinders : []
+# output filter update
+physics.filters.RecoFilter.TrkTags : [ "KFFDeM" ]
+physics.filters.RecoFilter.MomentumCutoff : [40.0] //40
+
+
+physics.producers.FindMCPrimary.TimeOffsets : [ @sequence::DigiCompression.NoCosmicTimeMaps ]
+physics.producers.SelectRecoMC.TimeOffsets : [ @sequence::DigiCompression.NoCosmicTimeMaps ]
+physics.producers.compressRecoMCs.timeMapTags : [ @sequence::DigiCompression.NoCosmicTimeMaps, "cosmicTimeMap"]
+physics.producers.CrvCoincidenceClusterMatchMC.timeOffsets.inputs : [ @sequence::DigiCompression.NoCosmicTimeMaps ] 
+physics.analyzers.RecoCheck.OldTimeOffsets.inputs :[  @sequence::DigiCompression.NoCosmicTimeMaps ]
+physics.analyzers.RecoCheck.NewTimeOffsets.inputs :[  @sequence::RecoCompression.NoCosmicTimeMaps ]
+
+
+physics.RecoPath : [cosmicTimeMap, protonBunchIntensity, @sequence::Reconstruction.RecoMCPath, @sequence::TrkAnaReco.TrigSequence,KFFDeM, @sequence::CaloReco.Reco, @sequence::CaloCluster.Reco, @sequence::TrackCaloMatching.matching]
+
+

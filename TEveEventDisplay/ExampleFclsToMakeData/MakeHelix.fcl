@@ -1,0 +1,78 @@
+# Sophie Middleton test fcl @sequence::TrkAna.EndSequence
+#include "fcl/minimalMessageService.fcl"
+#include "fcl/standardProducers.fcl"
+#include "fcl/standardServices.fcl"
+#include "TrkDiag/fcl/prolog.fcl"
+#include "TrkPatRec/fcl/prolog.fcl"
+#include "TrackerConditions/fcl/prolog.fcl"
+#include "TrkHitReco/fcl/prolog.fcl"
+#include "CaloReco/fcl/prolog.fcl"
+#include "CaloCluster/fcl/prolog.fcl"
+#include "TEveEventDisplay/fcl/prolog.fcl"
+#include "JobConfig/primary/prolog.fcl"
+#include "JobConfig/reco/mcdigis_nocosmic.fcl"
+
+source : { module_type : RootInput
+maxEvents : 100
+}
+
+services : {
+   
+    message               : @local::default_message
+    TFileService          : { fileName : "nts.MU2EGRIDDSOWNER.cd3-beam-cosmictracking.MU2EGRIDDSCONF.sequencer.root" }//Name of root file output at end.
+    RandomNumberGenerator : { }
+    #   Timing                : { }
+
+    GeometryService	    : { inputFile      : "Mu2eG4/geom/geom_common.txt" 
+	simulatedDetector   : { tool_type: "Mu2e" }
+    }
+    ConditionsService      : { conditionsfile : "Mu2eG4/test/conditions_01.txt"        }
+    GlobalConstantsService : { inputFile      : "Mu2eG4/test/globalConstants_01.txt"   }
+    G4Helper               : { }
+    
+    SeedService            : { @table::automaticSeeds
+	baseSeed         :  0
+	maxUniqueEngines :  20
+    }
+   DbService : @local::DbEmpty
+   ProditionsService: @local::Proditions
+}
+
+
+process_name: CeEndpointRecoHelix
+
+source: { module_type : RootInput }
+
+services: @local::Services.Sim
+physics : { 
+  producers : {
+    @table::Primary.producers
+    @table::TrkHitReco.producers
+    TimeClusterFinder : @local::TimeClusterFinder
+    @table::TrkReco.producers
+    @table::Tracking.producers
+    @table::CaloReco.producers
+    @table::CaloCluster.producers
+  }
+ 
+
+}
+
+physics.RecoPath : [@sequence::TrkHitReco.PrepareHits,@sequence::CaloReco.Reco, @sequence::CaloCluster.Reco, TimeClusterFinder, @sequence::Tracking.TPRDeM] 
+
+
+outputs : { 
+
+  rootout : {
+	    module_type: RootOutput
+	    fileName: "CeTrkHitsv2.art"
+      SelectEvents : [RecoPath]
+	    outputCommands: ["keep mu2e::*_*_*_*" ]
+	}
+
+}
+
+#include "JobConfig/primary/epilog.fcl"
+
+physics.EndPath : [  rootout ]
+services.scheduler.wantSummary: true

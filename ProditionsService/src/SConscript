@@ -33,6 +33,8 @@ helper.make_plugins( [ mainlib,
                        'mu2e_DbTables',
                        'mu2e_Mu2eInterfaces',
                        'mu2e_GeneralUtilities',
+                       'mu2e_Mu2eUtilities',
+                       'mu2e_TrkDiag',
                        'BTrk_DetectorModel',
                        'BTrk_MatEnv',
                        'CLHEP',
@@ -52,7 +54,8 @@ helper.make_plugins( [ mainlib,
                        'cetlib_except',
                        'boost_filesystem',
                        'boost_system',
-                       'pthread'
+                       'pthread',
+                       'xerces-c'
                        ] )
 
 #BINLIBS   = [ mainlib, 'mu2e_DbExample' , 'cetlib', 'cetlib_except', "pq" ]

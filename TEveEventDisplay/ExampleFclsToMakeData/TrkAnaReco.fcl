@@ -1,0 +1,46 @@
+#include "fcl/minimalMessageService.fcl"
+#include "fcl/standardProducers.fcl"
+#include "fcl/standardServices.fcl"
+#include "TrkDiag/fcl/prolog.fcl"
+
+process_name : TrkAnaReco
+
+source : { module_type : RootInput }
+
+services : @local::Services.Reco
+
+physics :
+{
+  producers : { @table::TrkAnaReco.producers }
+ 	
+  analyzers : { @table::TrkAnaReco.analyzers }
+}
+
+physics.TrkAnaTrigPath : [ @sequence::TrkAnaReco.TrigSequence ]
+physics.TrkAnaEndPath : [ @sequence::TrkAnaReco.EndSequence ]
+
+# for hit level diagnostics, set diagLevel to 2
+physics.analyzers.TrkAnaNeg.diagLevel : 1
+physics.analyzers.TrkAnaNeg.FillMCInfo : true
+physics.analyzers.TrkAnaNeg.AnalyzeCRV : true
+physics.analyzers.TrkAnaNeg.FillTriggerInfo : true
+physics.analyzers.TrkAnaPos.diagLevel : 1
+physics.analyzers.TrkAnaPos.FillMCInfo : true
+physics.analyzers.TrkAnaPos.AnalyzeCRV : true
+physics.analyzers.TrkAnaPos.FillTriggerInfo : true
+
+outputs : { 
+
+  rootout : {
+	    module_type: RootOutput
+	    fileName: "HelixExample.art"
+            SelectEvents : [RecoPath]
+	    outputCommands: ["keep mu2e::*_*_*_*" ]
+	}
+
+}
+
+physics.EndPath : [rootout]
+
+
+services.TFileService.fileName: "nts.owner.trkana-reco.version.sequencer.root"

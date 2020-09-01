@@ -55,8 +55,6 @@
 #include <vector>
 
 
-using namespace std;
-
 namespace mu2e {
 
 
@@ -95,7 +93,7 @@ namespace mu2e {
     std::string             _bkgTemplates;
     double                  _minClEnergy, _clEStep;
     double                  _minRDist   , _rDistStep;
-    vector<double>          _minLH;
+    std::vector<double>          _minLH;
     std::string             _trigPath;
 
   //Histograms need to load the templates for the signal and background hypothesis
@@ -123,14 +121,14 @@ namespace mu2e {
     _nPass                       (0),
     _cogType                     (ClusterMoments::Linear),                
     _clTag                       (pset.get<art::InputTag> ("CaloClusterModuleLabel")),
-    _signalTemplateFile          (pset.get<string>        ("SignalTemplates")),
-    _bkgTemplateFile             (pset.get<string>        ("BackgroundTemplates")),
+    _signalTemplateFile          (pset.get<std::string>   ("SignalTemplates")),
+    _bkgTemplateFile             (pset.get<std::string>   ("BackgroundTemplates")),
     _dropSecondDisk              (pset.get<bool>          ("DropSecondDisk"       , false)),
     _minClEnergy                 (pset.get<double>        ("MinClusterEnergy"     ,   50.)),   // MeV
     _clEStep                     (pset.get<double>        ("ClusterEnergyStep"    ,   10.)),   // MeV
     _minRDist                    (pset.get<double>        ("MinClusterRadialDist" ,  350.)),   // mm
     _rDistStep                   (pset.get<double>        ("ClusterRadialDistStep",   50.)),   // mm
-    _minLH                       (pset.get<vector<double>>("MinLikelihoodCut"     , vector<double>{1.,1.})),   // likelihood threshold
+    _minLH                       (pset.get<std::vector<double>>("MinLikelihoodCut"     , std::vector<double>{1.,1.})),   // likelihood threshold
     _trigPath                    (pset.get<std::string>("triggerPath")){
 
     produces<TriggerInfo>();
@@ -271,7 +269,7 @@ namespace mu2e {
 
   bool CaloLikelihood::endRun( art::Run& run ) {
     if(_diagLevel > 0 && _nProcess > 0){
-      cout << moduleDescription().moduleLabel() << " passed " <<  _nPass << " events out of " << _nProcess << " for a ratio of " << float(_nPass)/float(_nProcess) << endl;
+      std::cout << moduleDescription().moduleLabel() << " passed " <<  _nPass << " events out of " << _nProcess << " for a ratio of " << float(_nPass)/float(_nProcess) << std::endl;
     }
     return true;
   }
@@ -284,7 +282,7 @@ namespace mu2e {
     ++_nProcess;
     if (_nProcess%10==0 && _diagLevel > 0) std::cout<<"Processing event from CaloLikelihood =  "<<_nProcess  <<std::endl;
    
-    unique_ptr<TriggerInfo> triginfo(new TriggerInfo);
+    std::unique_ptr<TriggerInfo> triginfo(new TriggerInfo);
     bool   retval(false);
 
     //Get handle to the calorimeter
@@ -299,6 +297,7 @@ namespace mu2e {
     const CaloCrystalHit* crystalHit(0);
     const CaloCluster::CaloCrystalHitPtrVector* caloClusterHits(0);
     
+    size_t trig_ind(0);
     //for loop over the clusters in the calorimeter
     for(auto icl = caloClusters->begin();icl != caloClusters->end(); ++icl){
       auto const& cluster = *icl;
@@ -423,18 +422,18 @@ namespace mu2e {
 	retval = true;
 	++_nPass;
         // Fill the trigger info object
-        triginfo->_triggerBits.merge(TriggerFlag::caloCluster);
-	triginfo->_triggerPath = _trigPath;
+        if (trig_ind == 0){
+	  triginfo->_triggerBits.merge(TriggerFlag::caloCluster);
+	  triginfo->_triggerPath = _trigPath;
+	}
         // associate to the caloCluster which triggers.  Note there may be other caloClusters which also pass the filter
         // but filtering is by event!
         size_t index = std::distance(caloClusters->begin(), icl);
-        triginfo->_caloCluster = art::Ptr<CaloCluster>(clH, index);
-        
+	triginfo->_caloClusters.push_back(art::Ptr<CaloCluster>(clH, index));
+	++trig_ind;
 	if(_diagLevel > 1){
-          cout << moduleDescription().moduleLabel() << " passed event " << event.id() << endl;
+          std::cout << moduleDescription().moduleLabel() << " passed event " << event.id() << std::endl;
         }
-	
-        break;
       }
       
       

@@ -31,8 +31,6 @@ using namespace CLHEP;
 #include <iostream>
 #include <memory>
 
-using namespace std;
-
 namespace mu2e
 {
   class HelixFilter : public art::EDFilter
@@ -46,6 +44,7 @@ namespace mu2e
   private:
     art::InputTag _hsTag;
     bool          _hascc; // Calo Cluster
+    bool          _doHelicityCheck;
     int           _hel;
     int           _minnstrawhits;
     double        _minHitRatio;
@@ -77,6 +76,7 @@ namespace mu2e
     art::EDFilter{pset},
     _hsTag             (pset.get<art::InputTag>("helixSeedCollection","PosHelixFinder")),
     _hascc             (pset.get<bool>  ("requireCaloCluster",false)),
+    _doHelicityCheck   (pset.get<bool>  ("doHelicityCheck",true)),
     _hel               (pset.get<int>   ("helicity")),
     _minnstrawhits     (pset.get<int>   ("minNStrawHits",15)),
     _minHitRatio       (pset.get<double>("minHitRatio",0.)),
@@ -91,7 +91,7 @@ namespace mu2e
     _minlambda         (pset.get<double>("minAbsLambda",150.)),
     _maxnloops         (pset.get<double>("maxNLoops",30.)),
     _minnloops         (pset.get<double>("minNLoops",0.)),
-    _goodh             (pset.get<vector<string> >("helixFitFlag",vector<string>{"HelixOK"})),
+    _goodh             (pset.get<std::vector<std::string> >("helixFitFlag",std::vector<std::string>{"HelixOK"})),
     _trigPath          (pset.get<std::string>("triggerPath")),
     _prescaleUsingD0Phi(pset.get<bool>  ("prescaleUsingD0Phi",false)),
     _debug             (pset.get<int>   ("debugLevel",0)),
@@ -124,19 +124,20 @@ namespace mu2e
 
   bool HelixFilter::filter(art::Event& evt){
     // create output
-    unique_ptr<TriggerInfo> triginfo(new TriggerInfo);
+    std::unique_ptr<TriggerInfo> triginfo(new TriggerInfo);
     ++_nevt;
     bool retval(false); // preset to fail
     // find the collection
     auto hsH = evt.getValidHandle<HelixSeedCollection>(_hsTag);
     const HelixSeedCollection* hscol = hsH.product();
     float mm2MeV = 3./10.*_bz0;
+    size_t trig_ind(0);
     // loop over the collection: if any pass the selection, pass this event
     for(auto ihs = hscol->begin();ihs != hscol->end(); ++ihs) {
       auto const& hs = *ihs;
       
       //check the helicity
-      if (!(hs.helix().helicity() == Helicity(_hel)))        continue;
+      if (_doHelicityCheck && !(hs.helix().helicity() == Helicity(_hel)))        continue;
 
       HelixTool helTool(&hs, _tracker);
       // compute the helix momentum.  Note this is in units of mm!!!
@@ -151,7 +152,7 @@ namespace mu2e
       float hRatio     = helTool.hitRatio();
 
       if(_debug > 2){
-        cout << moduleDescription().moduleLabel() << "status = " << hs.status() << " nhits = " << hs.hits().size() << " mom = " << hmom << endl;
+	std::cout << moduleDescription().moduleLabel() << "status = " << hs.status() << " nhits = " << hs.hits().size() << " mom = " << hmom << std::endl;
       }
       if( hs.status().hasAllProperties(_goodh) &&
           (!_hascc || hs.caloCluster().isNonnull()) &&
@@ -178,16 +179,18 @@ namespace mu2e
         retval = true;
         ++_npass;
         // Fill the trigger info object
-        triginfo->_triggerBits.merge(TriggerFlag::helix);
-	triginfo->_triggerPath = _trigPath;
+        if (trig_ind == 0){
+	  triginfo->_triggerBits.merge(TriggerFlag::helix);
+	  triginfo->_triggerPath = _trigPath;
+	}
         // associate to the helix which triggers.  Note there may be other helices which also pass the filter
         // but filtering is by event!
         size_t index = std::distance(hscol->begin(),ihs);
-        triginfo->_helix = art::Ptr<HelixSeed>(hsH,index);
-        if(_debug > 1){
-          cout << moduleDescription().moduleLabel() << " passed event " << evt.id() << endl;
+	triginfo->_helixes.push_back(art::Ptr<HelixSeed>(hsH,index));
+	++trig_ind;
+	if(_debug > 1){
+	  std::cout << moduleDescription().moduleLabel() << " passed event " << evt.id() << std::endl;
         }
-        break;
       }
     }
     evt.put(std::move(triginfo));
@@ -196,7 +199,7 @@ namespace mu2e
 
   bool HelixFilter::endRun( art::Run& run ) {
     if(_debug > 0 && _nevt > 0){
-      cout << moduleDescription().moduleLabel() << " paassed " <<  _npass << " events out of " << _nevt << " for a ratio of " << float(_npass)/float(_nevt) << endl;
+      std::cout << moduleDescription().moduleLabel() << " paassed " <<  _npass << " events out of " << _nevt << " for a ratio of " << float(_npass)/float(_nevt) << std::endl;
     }
     return true;
   }

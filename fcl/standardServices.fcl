@@ -2,6 +2,7 @@
 # This file defines some standard configurations for services
 #
 
+#include "fcl/minimalMessageService.fcl"
 #include "DbService/fcl/prolog.fcl"
 #include "ProditionsService/fcl/prolog.fcl"
 

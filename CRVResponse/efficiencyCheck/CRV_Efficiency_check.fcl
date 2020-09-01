@@ -421,6 +421,7 @@ physics :
        visualization: @local::mu2eg4NoVisualization
 
        generatorModuleLabel: generate
+#       MultiStageParameters: {} // this is the first stage
 
        SDConfig: 
        {
@@ -689,6 +690,7 @@ physics.producers.CrvPhotons.processNames   : ["*"]
 physics.producers.CrvPhotons.lookupTableFileNames : ["CRVConditions/v6_0/LookupTable_6000_0"]  //REPLACE
 physics.producers.CrvPhotons.reflectors           : [ 0 ] //REPLACE
 physics.producers.CrvPhotons.CRVSectors           : ["Test"]
+services.GeometryService.simulatedDetector.tool_type : "Mu2e"
 
 physics.producers.CrvCoincidencePE6T5.PEthresholds                    : [6]
 physics.producers.CrvCoincidencePE6T5.maxTimeDifferences              : [5]

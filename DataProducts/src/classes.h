@@ -46,5 +46,3 @@
 #include "CLHEP/Matrix/Vector.h"
 #include "CLHEP/Matrix/Matrix.h"
 #include "CLHEP/Matrix/SymMatrix.h"
-
-template class art::Wrapper<mu2e::IndexMap>;

@@ -9,6 +9,7 @@
 
 #include "CosmicRayShieldGeom/inc/CosmicRayShield.hh"
 #include "DataProducts/inc/CRSScintillatorBarIndex.hh"
+#include "CRVResponse/inc/CrvHelper.hh"
 
 #include "ConditionsService/inc/AcceleratorParams.hh"
 #include "ConditionsService/inc/ConditionsHandle.hh"
@@ -216,13 +217,9 @@ namespace mu2e
       const art::Ptr<CrvRecoPulse> crvRecoPulse(crvRecoPulseCollection, recoPulseIndex);
 
       //get information about the counter
-      const CRSScintillatorBarIndex &barIndex = crvRecoPulse->GetScintillatorBarIndex();
-      const CRSScintillatorBar &CRSbar = CRS->getBar(barIndex);
-      const CRSScintillatorBarId &barId = CRSbar.id();
-      int sectorNumber=barId.getShieldNumber();
-      int moduleNumber=barId.getModuleNumber();
-      int layerNumber=barId.getLayerNumber();
-      int barNumber=barId.getBarNumber();   //counter number within this sector, module, and layer
+      const CRSScintillatorBarIndex &crvBarIndex = crvRecoPulse->GetScintillatorBarIndex();
+      int sectorNumber, moduleNumber, layerNumber, barNumber;
+      CrvHelper::GetCrvCounterInfo(CRS, crvBarIndex, sectorNumber, moduleNumber, layerNumber, barNumber);
 
       //need to find the counter number within the entire sector type (like CRV-T, CRV-R, ...)
       std::map<int,sectorCoincidenceProperties>::const_iterator sIter = _sectorMap.find(sectorNumber);
@@ -231,8 +228,10 @@ namespace mu2e
 
       int counterNumber = sector.precedingCounters + sector.nCountersPerModule*moduleNumber + barNumber;
 
-      double x=CRSbar.getPosition()[sector.widthDirection];
-      double y=CRSbar.getPosition()[sector.thicknessDirection];
+      CLHEP::Hep3Vector crvCounterPos=CrvHelper::GetCrvCounterPos(CRS, crvBarIndex);
+//      CLHEP::Hep3Vector crvCounterPos;
+      double x=crvCounterPos[sector.widthDirection];
+      double y=crvCounterPos[sector.thicknessDirection];
 
       //get the reco pulses information
       int SiPM = crvRecoPulse->GetSiPMNumber();

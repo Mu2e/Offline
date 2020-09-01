@@ -59,7 +59,6 @@ class DataInterface
   };
 
   private:
-  art::Event    *_event;
   TGeoManager   *_geometrymanager; //bare pointer needed since ROOT manages this object
   TGeoVolume    *_topvolume;       //bare pointer needed since ROOT manages this object
   EventDisplayFrame  *_mainframe;  //points to the EventDisplayFrame object

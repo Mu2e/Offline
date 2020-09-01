@@ -17,21 +17,82 @@ TimeCalculator : {
   CaloTimeErr : 0.5
 }
 
-# time clustering is the 1st stage of track finding 
+
 TimeClusterFinder : {
-  module_type  : TimeClusterFinder
-  ClusterMVA : { MVAWeights : "TrkPatRec/test/TimeCluster.weights.xml" }
-  ClusterCaloMVA : { MVAWeights : "TrkPatRec/test/TimeClusterCalo.weights.xml" }
-  ComboHitCollection : "makePH"
+  module_type            : TimeClusterFinder
+  
+  ComboHitCollection     : "makePH"
   StrawHitFlagCollection : "FlagBkgHits:ComboHits"
-  CaloClusterCollection : "CaloClusterFromProtoCluster"
-  # enable calorimeter cluster info in time clustering
-  CaloClusterCollection : "CaloClusterFromProtoCluster"
-  UseCaloCluster : true
+  CaloClusterCollection  : "CaloClusterFromProtoCluster"
+  ClusterMVA             : { MVAWeights : "TrkPatRec/test/TimeCluster.weights.xml" }
+  ClusterCaloMVA         : { MVAWeights : "TrkPatRec/test/TimeClusterCalo.weights.xml" }
+  HitSelectionBits       : ["EnergySelection","TimeSelection","RadiusSelection"]
+  HitBackgroundBits      : ["Background"]
+  UseCaloCluster         : true
   UseCaloClusterPosition : true
-  CaloClusterWeight : 10.0
-  TestFlag : true
+  CaloClusterWeight      : 10.0
+  TestFlag               : true
+  CaloClusterMinE        : 50.0
+  CaloClusterWeight      : 10.0
+  T0Calculator           : {}
+  DtMax                  : 25
+  MinNHits               : 10
+  MinKeepHitMVA          : 0.2
+  MinAddHitMVA           : 0.2
+  MaxdPhi                : 1.5
+  Tmin                   : 450.0
+  Tmax                   : 1700.0
+  Tbin                   : 15.0
+  AveragePitch           : 0.6
+  Ymin                   : 5.0
+  RefineClusters         : true
+  PrefilterCluster       : true
+  RecoverHits            : true
+  PeakWidth              : 1
 }
+
+
+
+
+# time clustering is the 1st stage of track finding 
+TimeClusterFinderNew : {
+  module_type            : TimeAndPhiClusterFinder
+  ComboHitCollection     : "makePH"
+  StrawHitFlagCollection : "FlagBkgHits:ComboHits"
+  CaloClusterCollection  : "CaloClusterFromProtoCluster"
+  TimeClusterMVA         : { MVAWeights : "TrkPatRec/test/TimeCluster3.weights.xml" }
+  HitSelectionBits       : ["EnergySelection","TimeSelection","RadiusSelection"]
+  HitBackgroundBits      : ["Background"]
+  TestFlag               : true
+  Tmin                   : 450.0
+  Tmax                   : 1750.0
+  Tbin                   : 15.0
+  Pbin                   : 0.2
+  MinNSHits              : 7
+  UseCaloCluster         : false
+  CaloClusterMinE        : 50.0
+  CaloClusterWeight      : 10.0
+  T0Calculator           : { }
+  AveragePitch           : 0.6
+  TimeStrategy           : 1
+  WindowTime             : 1
+  MinTimeYbin            : 5
+  MaxTimeDT              : 30.0
+  MaxTimeDTCal           : 30.0
+  MinHitSplit            : 30
+  MVAScoreCut            : 0.75
+  Recover                : true
+  DphiMaxReco            : 1.2
+
+  DiagPlugin : { 
+    tool_type             : "TimeAndPhiClusterFinderDiag"
+    MCDiag                : false
+    StrawDigiMCCollection : "compressDigiMCs"
+  }
+}
+
+
+
 # specific time cluster finders for different particle hypotheses.  The redundant Calo time offset should come from conditions FIXME!
 # note these are helicity-independent
 TimeClusterFinderDe : {
