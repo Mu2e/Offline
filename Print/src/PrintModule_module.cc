@@ -119,6 +119,7 @@ namespace mu2e {
 	fhicl::Name("physicalVolumePrinter") }; 
       fhicl::Table<ProductPrinter::Config> triggerResultsPrinter { 
 	fhicl::Name("triggerResultsPrinter") }; 
+
     };
 
     // this line is required by art to allow the command line help print
@@ -207,7 +208,6 @@ void mu2e::PrintModule::beginSubRun(art::SubRun const& subrun) {
   cout << endl;
 
 }
-
 
 
 DEFINE_ART_MODULE(mu2e::PrintModule)
