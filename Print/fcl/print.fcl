@@ -119,9 +119,6 @@ physics :{
         verbose: 1
       }
 
-      simStageEfficiencyPrinter : {
-        verbose : 1
-      }
     } # printModule
 
 
