@@ -60,14 +60,6 @@ physics :
        @table::TEveDis.filters
   }
 }
-# for MDC2018g and earlier, correct the time maps.  Comment these out for MDC2018h and beyond
-
-physics.RecoPath : [EventFilter, @sequence::TrkHitReco.PrepareHits]// @sequence::CosmicTracking.FindCosmics] 
-physics.producers.TimeClusterFinderCosmics.UseCaloCluster : false
-physics.producers.TimeClusterFinderCosmics.UseCaloClusterPosition : false
 
 physics.EndPath : [  @sequence::TEveDis.seqCosmics] 
-physics.producers.CosmicTrackFinder.ComboHitCollection : "makePH"
-physics.analyzers.CosmicAnalysis.TimeClusterCollection : TimeClusterFinderCosmics
-
 

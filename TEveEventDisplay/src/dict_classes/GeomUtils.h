@@ -65,7 +65,7 @@ namespace mu2e{
 
     inline CLHEP::Hep3Vector PointToTracker(CLHEP::Hep3Vector point){
       CLHEP::Hep3Vector Mu2eTrackerOrigin = GetTrackerCenter();
-      CLHEP::Hep3Vector PointToTracker(point.x() + Mu2eTrackerOrigin.x(), point.y()+Mu2eTrackerOrigin.y(), point.z() +Mu2eTrackerOrigin.z());
+      CLHEP::Hep3Vector PointToTracker(point.x() + Mu2eTrackerOrigin.x(), point.y() + Mu2eTrackerOrigin.y(), point.z() + Mu2eTrackerOrigin.z());
       return PointToTracker;
     }
 
@@ -76,11 +76,18 @@ namespace mu2e{
     }
     
     inline double TrackerLength(){
-	    return 300.8;
+      //std::string filename("Mu2eG4/geom/trackerv5.txt");
+      //SimpleConfig TrackerConfig(filename);
+      //double length  = 2*TrackerConfig.getDouble("tracker.mother.halfLength")/10;
+	    return 300.8; //length
     }
 
     inline double CaloLength(){
-	    return 320;
+      //std::string filename("Mu2eG4/geom/calorimeter_CsI.txt");
+      //SimpleConfig CaloConfig(filename);
+      //std::vector<double> shift = CaloConfig.getVectorDouble(calorimeter.diskZ0MotherShift); ==700
+      //double length  = CaloConfig.getDouble(calorimeter.caloMotherZ1)- CaloConfig.getDouble(calorimeter.caloMotherZ0) - CaloConfig.getDouble(calorimeter.diskCaseZLength); == 1172  
+	    return 320;//(shift[1] + length + 1288)/2
     }
 }
 #endif 

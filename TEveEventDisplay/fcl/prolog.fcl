@@ -47,15 +47,15 @@ TEveEventDisplayCosmics : {
       CrvRecoPulseCollection		  : "CrvRecoPulses"
       CaloClusterCollection		    : NULL
       CaloCrystalHitCollection    : NULL
-      MCTrajectoryCollection      :  "compressDigiMCs"
+      MCTrajectoryCollection      : "compressDigiMCs"
       HelixSeedCollection         : NULL
       KalSeedCollection           : NULL
       TrkExtTrajCollection        : NULL
       addHits 			              : true
       addTracks 			            : false
       addCrvHits			            : false
-      addCosmicSeedFit	          : true
-      addMCTraj				            : false
+      addCosmicSeedFit	          : false
+      addMCTraj				            : true
    }
   }   
 
