@@ -11,7 +11,7 @@
 // art includes
 #include "art/Framework/Core/EDAnalyzer.h"
 #include "art/Framework/Principal/Event.h"
-#include "art/Framework/Principal/Handle.h"      
+#include "art/Framework/Principal/Handle.h"
 #include "art/Framework/Core/ModuleMacros.h"
 #include "art_root_io/TFileService.h"
 
@@ -64,7 +64,7 @@ namespace mu2e {
     double      _mapBinSize; // histogram bin size (mm)
 
     std::map<std::string,TH2F*> _hMap; //histogram of the map
-    
+
   };
 
   BFieldPlotter::BFieldPlotter(const Parameters& pset) :
@@ -87,7 +87,7 @@ namespace mu2e {
     }
 
     if(!(_plane == "x" || _plane == "y" || _plane == "z")) {
-      throw cet::exception("BADCONFIG") << "BField map plane not recognized! Options are x, y, or z but given " 
+      throw cet::exception("BADCONFIG") << "BField map plane not recognized! Options are x, y, or z but given "
 					<< _plane.c_str();
     }
 
@@ -99,16 +99,16 @@ namespace mu2e {
     GeomHandle<BFieldManager> bf;
     const BFieldManager::MapContainerType& innerMaps = bf->getInnerMaps();
     const BFieldManager::MapContainerType& outerMaps = bf->getOuterMaps();
- 
+
     //plot inner maps
-    for(std::shared_ptr<BFMap> const & map : innerMaps) { 
+    for(std::shared_ptr<BFMap> const & map : innerMaps) {
       fillHistogram(map.get(), tfs);
-    } 
-    
+    }
+
     //plot outer maps
-    for(std::shared_ptr<BFMap> const & map : outerMaps) { 
+    for(std::shared_ptr<BFMap> const & map : outerMaps) {
       fillHistogram(map.get(), tfs);
-    } 
+    }
 
     //plot the default field returned from the manager
     fillHistogram(NULL, tfs);
@@ -125,7 +125,7 @@ namespace mu2e {
       throw cet::exception("BADCONFIG") << "BField mapping axis values not steppable with step size given: "
 					<< _axisOneMin << " < axisOneValues < " << _axisOneMax << ", "
 					<< "step size = " << _mapBinSize;
-	
+
     if(std::abs(_axisTwoMin + (nbinsTwo-1)*_mapBinSize - _axisTwoMax > (_axisTwoMax-_axisTwoMin)/(100.*(nbinsTwo-1))))
       throw cet::exception("BADCONFIG") << "BField mapping axis values not steppable with step size given: "
 					<< _axisTwoMin << " < axisTwoValues < " << _axisTwoMax << ", "
@@ -140,11 +140,11 @@ namespace mu2e {
     art::TFileDirectory tfdir = tfs->mkdir( ("BFieldMapper_"+name).c_str() );
 
     //define a histogram
-    _hMap[name] = tfdir.make<TH2F>(("hMap"+name).c_str()  , (name + " Magnetic field map").c_str(), 
+    _hMap[name] = tfdir.make<TH2F>(("hMap"+name).c_str()  , (name + " Magnetic field map").c_str(),
 				   // add offsets so all values are bin centers and fit edge into the map
 				   nbinsOne, _axisOneMin - _mapBinSize/2.,_axisOneMax + _mapBinSize/2.,
 				   nbinsTwo, _axisTwoMin - _mapBinSize/2.,_axisTwoMax + _mapBinSize/2.);
-    
+
     GeomHandle<BFieldManager> bf; //only needed in null map case
     //Loop through the points in the magnetic field
     double axisOne, axisTwo;
@@ -158,11 +158,11 @@ namespace mu2e {
 	  axisTwo += (binTwo) ? -_mapBinSize/100. : _mapBinSize/100.;
 	CLHEP::Hep3Vector point;
 	CLHEP::Hep3Vector field;
-	if(_plane == "x") 
+	if(_plane == "x")
 	  point = CLHEP::Hep3Vector(_planeValue, axisOne, axisTwo);
-	else if(_plane == "y") 
+	else if(_plane == "y")
 	  point = CLHEP::Hep3Vector(axisOne, _planeValue, axisTwo);
-	else if(_plane == "z") 
+	else if(_plane == "z")
 	  point = CLHEP::Hep3Vector(axisOne, axisTwo, _planeValue);
 	if(map)
 	  map->getBFieldWithStatus(point,field);
