@@ -34,8 +34,8 @@ namespace mu2e {
   class BFieldPlotter : public art::EDAnalyzer {
   public:
 struct Config {
-	using Name=fhicl::Name;
-	using Comment=fhicl::Comment;
+    using Name=fhicl::Name;
+    using Comment=fhicl::Comment;
       fhicl::Atom<std::string> plane     {Name("plane"     ), Comment("Axis plane is defined by (x, y, or z)")};
       fhicl::Atom<double>      planeValue{Name("planeValue"), Comment("Value on the axis the plane intersects (mm)")};
       fhicl::Atom<double>      axisOneMin{Name("axisOneMin"), Comment("Axis one lower edge (bin centered) for plotting (mm) (plane = x/y/z --> axis one = y/x/x)")};
@@ -79,8 +79,8 @@ struct Config {
   {
     if(_axisOneMin >= _axisOneMax || _axisTwoMin >= _axisTwoMax) {
       throw cet::exception("BADCONFIG") << "BField mapping plane ill defined: "
-					<< _axisOneMin << " < axisOneValues < " << _axisOneMax << ", "
-					<< _axisTwoMin << " < axisTwoValues < " << _axisTwoMax;
+                    << _axisOneMin << " < axisOneValues < " << _axisOneMax << ", "
+                    << _axisTwoMin << " < axisTwoValues < " << _axisTwoMax;
     }
     if(_mapBinSize <= 0.) {
       throw cet::exception("BADCONFIG") << "BField map binning should be >= 0 but given as " << _mapBinSize;
@@ -88,7 +88,7 @@ struct Config {
 
     if(!(_plane == "x" || _plane == "y" || _plane == "z")) {
       throw cet::exception("BADCONFIG") << "BField map plane not recognized! Options are x, y, or z but given "
-					<< _plane.c_str();
+                    << _plane.c_str();
     }
 
   } //end constructor
@@ -123,13 +123,13 @@ struct Config {
     //check that the map bin step size works with the edges given
     if(std::abs(_axisOneMin + (nbinsOne-1)*_mapBinSize - _axisOneMax > (_axisOneMax-_axisOneMin)/(100.*(nbinsOne-1))))
       throw cet::exception("BADCONFIG") << "BField mapping axis values not steppable with step size given: "
-					<< _axisOneMin << " < axisOneValues < " << _axisOneMax << ", "
-					<< "step size = " << _mapBinSize;
+                    << _axisOneMin << " < axisOneValues < " << _axisOneMax << ", "
+                    << "step size = " << _mapBinSize;
 
     if(std::abs(_axisTwoMin + (nbinsTwo-1)*_mapBinSize - _axisTwoMax > (_axisTwoMax-_axisTwoMin)/(100.*(nbinsTwo-1))))
       throw cet::exception("BADCONFIG") << "BField mapping axis values not steppable with step size given: "
-					<< _axisTwoMin << " < axisTwoValues < " << _axisTwoMax << ", "
-					<< "step size = " << _mapBinSize;
+                    << _axisTwoMin << " < axisTwoValues < " << _axisTwoMax << ", "
+                    << "step size = " << _mapBinSize;
 
     //if a null map, plot the default field from the manager
     const std::string name = (map) ? map->getKey() : "default";
@@ -141,9 +141,9 @@ struct Config {
 
     //define a histogram
     _hMap[name] = tfdir.make<TH2F>(("hMap"+name).c_str()  , (name + " Magnetic field map").c_str(),
-				   // add offsets so all values are bin centers and fit edge into the map
-				   nbinsOne, _axisOneMin - _mapBinSize/2.,_axisOneMax + _mapBinSize/2.,
-				   nbinsTwo, _axisTwoMin - _mapBinSize/2.,_axisTwoMax + _mapBinSize/2.);
+                   // add offsets so all values are bin centers and fit edge into the map
+                   nbinsOne, _axisOneMin - _mapBinSize/2.,_axisOneMax + _mapBinSize/2.,
+                   nbinsTwo, _axisTwoMin - _mapBinSize/2.,_axisTwoMax + _mapBinSize/2.);
 
     GeomHandle<BFieldManager> bf; //only needed in null map case
     //Loop through the points in the magnetic field
@@ -151,25 +151,25 @@ struct Config {
     for(int binOne = 0; binOne < nbinsOne; ++binOne) {
       axisOne = _axisOneMin + binOne*_mapBinSize;
       if(binOne == 0 || binOne == nbinsOne-1) //if first or last bin, at slight step into map to avoid edge issues
-	axisOne += (binOne) ? -_mapBinSize/100. : _mapBinSize/100.;
+    axisOne += (binOne) ? -_mapBinSize/100. : _mapBinSize/100.;
       for(int binTwo = 0; binTwo < nbinsTwo; ++binTwo) {
-	axisTwo = _axisTwoMin + binTwo*_mapBinSize;
-	if(binTwo == 0 || binTwo == nbinsTwo-1) //if first or last bin, at slight step into map to avoid edge issues
-	  axisTwo += (binTwo) ? -_mapBinSize/100. : _mapBinSize/100.;
-	CLHEP::Hep3Vector point;
-	CLHEP::Hep3Vector field;
-	if(_plane == "x")
-	  point = CLHEP::Hep3Vector(_planeValue, axisOne, axisTwo);
-	else if(_plane == "y")
-	  point = CLHEP::Hep3Vector(axisOne, _planeValue, axisTwo);
-	else if(_plane == "z")
-	  point = CLHEP::Hep3Vector(axisOne, axisTwo, _planeValue);
-	if(map)
-	  map->getBFieldWithStatus(point,field);
-	else //if null, get the manager and plot the field returned by it
-	  bf->getBFieldWithStatus(point,field);
+    axisTwo = _axisTwoMin + binTwo*_mapBinSize;
+    if(binTwo == 0 || binTwo == nbinsTwo-1) //if first or last bin, at slight step into map to avoid edge issues
+      axisTwo += (binTwo) ? -_mapBinSize/100. : _mapBinSize/100.;
+    CLHEP::Hep3Vector point;
+    CLHEP::Hep3Vector field;
+    if(_plane == "x")
+      point = CLHEP::Hep3Vector(_planeValue, axisOne, axisTwo);
+    else if(_plane == "y")
+      point = CLHEP::Hep3Vector(axisOne, _planeValue, axisTwo);
+    else if(_plane == "z")
+      point = CLHEP::Hep3Vector(axisOne, axisTwo, _planeValue);
+    if(map)
+      map->getBFieldWithStatus(point,field);
+    else //if null, get the manager and plot the field returned by it
+      bf->getBFieldWithStatus(point,field);
 
-	_hMap[name]->Fill(axisOne, axisTwo, field.mag()); //fill with weight of the field magnitude
+    _hMap[name]->Fill(axisOne, axisTwo, field.mag()); //fill with weight of the field magnitude
       } //end axis two loop
     } //end axis one loop
   } //end fillHistorgram
