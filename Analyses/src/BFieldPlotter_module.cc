@@ -33,9 +33,9 @@ namespace mu2e {
 
   class BFieldPlotter : public art::EDAnalyzer {
   public:
-    struct Config {
-      using Name=fhicl::Name;
-      using Comment=fhicl::Comment;
+struct Config {
+	using Name=fhicl::Name;
+	using Comment=fhicl::Comment;
       fhicl::Atom<std::string> plane     {Name("plane"     ), Comment("Axis plane is defined by (x, y, or z)")};
       fhicl::Atom<double>      planeValue{Name("planeValue"), Comment("Value on the axis the plane intersects (mm)")};
       fhicl::Atom<double>      axisOneMin{Name("axisOneMin"), Comment("Axis one lower edge (bin centered) for plotting (mm) (plane = x/y/z --> axis one = y/x/x)")};
