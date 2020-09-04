@@ -77,18 +77,16 @@ namespace mu2e{
           string pdgId= to_string(trajectoryIter->first->pdgId());
           //primaryPos=trajectoryIter->first->startPosition();
           //primaryEnergy=trajectoryIter->first->startMomentum().e();
-          CLHEP::Hep3Vector StartHitPos, EndHitPos;
-          for(unsigned int i=0; i<points.size();i++){
-            TEveMu2eMCTraj *teve_hit3D = new TEveMu2eMCTraj();
 
-            if(i==0) CLHEP::Hep3Vector StartHitPos(points[i].x(), points[i].y(), points[i].z());
-            if(i==points.size()-1){ 
-              CLHEP::Hep3Vector EndHitPos(points[i].x(), points[i].y(), points[i].z());
-              //CLHEP::Hep3Vector StartInMu2e = PointToTracker(StartHitPos);
-              //CLHEP::Hep3Vector EndInMu2e = PointToTracker(EndHitPos);
-              string energy = to_string(points[i].kineticEnergy());
-              //string mom = "(" + to_string((double)pointInMu2e.x()) + ", " + to_string((double)pointInMu2e.y()) + ", " + to_string((double)pointInMu2e.z()) + ")";
-              teve_hit3D->DrawLine3D("MCTraj PDG " + pdgId + "Energy = " + energy  + ", ",  StartHitPos, EndHitPos, HitList3D);
+          CLHEP::Hep3Vector StartHitPos(points[0].x(), points[0].y(), points[0].z());
+          CLHEP::Hep3Vector EndHitPos(points[points.size()-1].x(), points[points.size()-1].y(), points[points.size()-1].z());
+          TEveMu2eMCTraj *teve_hit3D = new TEveMu2eMCTraj();
+          string energy = to_string(points[0].kineticEnergy());
+           teve_hit3D->DrawLine3D("MCTraj PDG " + pdgId + "Energy = " + energy  + ", ",  StartHitPos, EndHitPos, HitList3D);
+          for(unsigned int i=0; i<points.size();i++){
+            
+            std::cout<<i<<" "<<points[i].x()<<" "<<points[i].y()<<" "<<points[i].z()<<std::endl;
+          
             }
             fTrackList3D->AddElement(HitList3D); 
 
@@ -98,5 +96,5 @@ namespace mu2e{
             gEve->Redraw3D(kTRUE);
     }
 
-  }
+ 
 }

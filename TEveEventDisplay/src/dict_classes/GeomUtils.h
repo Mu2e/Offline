@@ -65,6 +65,7 @@ namespace mu2e{
 
     inline CLHEP::Hep3Vector PointToTracker(CLHEP::Hep3Vector point){
       CLHEP::Hep3Vector Mu2eTrackerOrigin = GetTrackerCenter();
+      std::cout<<"Tracker Origin"<<Mu2eTrackerOrigin.x()<<" "<<Mu2eTrackerOrigin.y()<<" "<<Mu2eTrackerOrigin.z()<<std::endl;
       CLHEP::Hep3Vector PointToTracker(point.x() + Mu2eTrackerOrigin.x(), point.y() + Mu2eTrackerOrigin.y(), point.z() + Mu2eTrackerOrigin.z());
       return PointToTracker;
     }

@@ -1,5 +1,8 @@
 #include "TEveEventDisplay/src/TEveMu2e_base_classes/TEveMu2eMCTraj.h"
 #include "TEveEventDisplay/src/dict_classes/GeomUtils.h"
+#include "ConfigTools/inc/SimpleConfig.hh"
+#include "GeometryService/inc/GeomHandle.hh"
+#include "GeometryService/inc/DetectorSystem.hh"
 using namespace mu2e;
 namespace mu2e{
 
@@ -16,17 +19,21 @@ namespace mu2e{
 
  void TEveMu2eMCTraj::DrawLine3D(const std::string &pstr,  CLHEP::Hep3Vector Start, CLHEP::Hep3Vector End, TEveElementList *HitList)
   {
+    
+    //CLHEP::Hep3Vector _detSysOrigin = mu2e::GeomHandle<mu2e::DetectorSystem>()->getOrigin();
+    //hep3vectorTocm(_detSysOrigin);
     this->SetTitle((DataTitle(pstr, -1)).c_str());
-    //hep3vectorTocm(Start);
-    std::cout<<" Start "<<Start.x()<<" "<<Start.y()<<" "<<Start.z()<<std::endl;
-    //hep3vectorTocm(End);
-    std::cout<<" End "<<End.x()<<" "<<End.y()<<" "<<End.z()<<std::endl;
+   
+    hep3vectorTocm(Start);
+    hep3vectorTocm(End);
     TEveLine *line = new TEveLine();
-    line->SetPoint(0, Start.x()/10-390.4, Start.y()/10, Start.z()/10+1017.5-TrackerLength()/2); //y+231.2
-    line->SetNextPoint(End.x()/10-390.4, End.y()/10, End.z()/10+1017.5-TrackerLength()/2); //1017.5 - halflength
+ 
+    line->SetPoint(0, Start.x(), Start.y(), Start.z()); 
+    line->SetNextPoint(End.x(), End.y(), End.z()); 
+    
     line->SetLineColor(kYellow);
-    this->SetMarkerColor(kBlue);
-    this->SetMarkerSize(2);
+    this->SetMarkerColor(kYellow);
+    this->SetMarkerSize(5);
     this->SetPickable(kTRUE);
     HitList->AddElement(line);
     HitList->AddElement(this);
