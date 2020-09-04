@@ -436,7 +436,7 @@ std::vector<double> TEveMu2eDataInterface::AddCaloClusters(bool firstloop, const
         Float_t tx2 = st.FitParams.A0  + st.FitParams.A1*ty2;
         Float_t tz1 = st.FitParams.B0  + st.FitParams.B1*ty1;
         Float_t tz2 = st.FitParams.B0  + st.FitParams.B1*ty2; 	
-        line->AddLine(tx1/10+390.4, ty1/10, tz1+1288, tx2/10+390.4, ty2/10, tz2+1288);
+        line->AddLine(tx1/10, ty1/10, tz1, tx2/10, ty2/10, tz2);
 
         cout<<tx1<<" "<<ty1<<" "<<tz1<<" "<<tx2<<" "<<ty2<<" "<<tz2<<endl;
         if(show2D){
@@ -453,7 +453,9 @@ std::vector<double> TEveMu2eDataInterface::AddCaloClusters(bool firstloop, const
           tracker2Dproj->fXYMgr->ImportElements(fTrackList2D, tracker2Dproj->fDetXYScene);
           tracker2Dproj->fRZMgr->ImportElements(fTrackList2D, tracker2Dproj->fDetRZScene);
         }
+        std::cout<<"Here "<<std::endl;
         gEve->AddElement(fTrackList3D);
+        std::cout<<"Here 2"<<std::endl;
         gEve->Redraw3D(kTRUE);
     }
   }

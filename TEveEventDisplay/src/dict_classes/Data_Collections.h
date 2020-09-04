@@ -16,7 +16,7 @@
 //CRV:
 #include "RecoDataProducts/inc/CrvRecoPulseCollection.hh"
 #include "RecoDataProducts/inc/CrvCoincidenceClusterCollection.hh"
-//Art:
+//Art/FCL:
 #include "art/Framework/Principal/Event.h"
 #include "art/Framework/Principal/Run.h"
 #include "fhiclcpp/types/Atom.h"
@@ -50,9 +50,9 @@ namespace mu2e{
     const HelixSeedCollection* hseedcol = 0;
     const KalSeedCollection* kalseedcol = 0;
     const TrkExtTrajCollection* trkextcol = 0;
+    
     //MCDataProducts:
     const MCTrajectoryCollection *mctrajcol = 0;
-
 
     virtual ~Data_Collections(){};
     #endif

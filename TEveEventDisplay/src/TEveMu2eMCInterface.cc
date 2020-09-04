@@ -8,37 +8,38 @@
 #include "TEveEventDisplay/src/dict_classes/GeomUtils.h"
 using namespace mu2e;
 namespace mu2e{
+
   template <typename T, typename U> void DataLists(T data, bool Redraw, bool show2D, TEveElementList **List3D, TEveElementList **List2D = 0, U projection = 0){	
-		      if(data == 0 && Redraw){
-		        if (*List3D != 0){
-		          (*List3D)->DestroyElements();
-		        }
-		        if(show2D){
-		        if (*List2D != 0){
-		          (*List2D)->DestroyElements();
-		        }
-		        projection->fXYMgr->ImportElements(*List2D, projection->fDetXYScene); 
-		        projection->fRZMgr->ImportElements(*List2D, projection->fDetRZScene);
-		        }
-		        gEve->AddElement(*List3D);
-		        gEve->Redraw3D(kTRUE); 
-		      } 
-		      if(data!=0){
-		        if (*List3D== 0) {
-		          *List3D = new TEveElementList("3D Data");
-		          (*List3D)->IncDenyDestroy();     
-		        }
-		        else {
-		          (*List3D)->DestroyElements();  
-		        }
-		        if (*List2D== 0) {
-		          *List2D = new TEveElementList("2D Data");
-		          (*List2D)->IncDenyDestroy();     
-		        }
-		        else {
-		          (*List2D)->DestroyElements();  
-		        }
-	    }
+    if(data == 0 && Redraw){
+    if (*List3D != 0){
+    (*List3D)->DestroyElements();
+    }
+    if(show2D){
+    if (*List2D != 0){
+    (*List2D)->DestroyElements();
+    }
+    projection->fXYMgr->ImportElements(*List2D, projection->fDetXYScene); 
+    projection->fRZMgr->ImportElements(*List2D, projection->fDetRZScene);
+    }
+    gEve->AddElement(*List3D);
+    gEve->Redraw3D(kTRUE); 
+    } 
+    if(data!=0){
+    if (*List3D== 0) {
+    *List3D = new TEveElementList("3D Data");
+    (*List3D)->IncDenyDestroy();     
+    }
+    else {
+    (*List3D)->DestroyElements();  
+    }
+    if (*List2D== 0) {
+    *List2D = new TEveElementList("2D Data");
+    (*List2D)->IncDenyDestroy();     
+    }
+    else {
+    (*List2D)->DestroyElements();  
+    }
+    }
     }
 
  template <typename L> std::vector<double> Energies(L data, int *energylevels[]){
@@ -66,35 +67,29 @@ namespace mu2e{
 
 
   void TEveMu2eMCInterface::AddMCTrajectory(bool firstloop, const MCTrajectoryCollection *trajcol, TEveMu2e2DProjection *tracker2Dproj, bool Redraw, bool show2D){
-	DataLists<const MCTrajectoryCollection*, TEveMu2e2DProjection*>(trajcol, Redraw, show2D, &fTrackList3D, &fTrackList2D, tracker2Dproj);
+    DataLists<const MCTrajectoryCollection*, TEveMu2e2DProjection*>(trajcol, Redraw, show2D, &fTrackList3D, &fTrackList2D, tracker2Dproj);
     if(trajcol!=0){
       TEveElementList *HitList3D = new TEveElementList("MCtraj3D");
       std::map<art::Ptr<mu2e::SimParticle>,mu2e::MCTrajectory>::const_iterator trajectoryIter;
       for(trajectoryIter=trajcol->begin(); trajectoryIter!=trajcol->end(); trajectoryIter++)
         {
           const std::vector<MCTrajectoryPoint> &points = trajectoryIter->second.points();
-          std::cout<<"Trajectory has "<<points.size()<<" points"<<std::endl;
           string pdgId= to_string(trajectoryIter->first->pdgId());
-          //primaryPos=trajectoryIter->first->startPosition();
-          //primaryEnergy=trajectoryIter->first->startMomentum().e();
-
           CLHEP::Hep3Vector StartHitPos(points[0].x(), points[0].y(), points[0].z());
           CLHEP::Hep3Vector EndHitPos(points[points.size()-1].x(), points[points.size()-1].y(), points[points.size()-1].z());
           TEveMu2eMCTraj *teve_hit3D = new TEveMu2eMCTraj();
           string energy = to_string(points[0].kineticEnergy());
            teve_hit3D->DrawLine3D("MCTraj PDG " + pdgId + "Energy = " + energy  + ", ",  StartHitPos, EndHitPos, HitList3D);
-          for(unsigned int i=0; i<points.size();i++){
-            
-            std::cout<<i<<" "<<points[i].x()<<" "<<points[i].y()<<" "<<points[i].z()<<std::endl;
-          
-            }
+          ///for(unsigned int i=0; i<points.size();i++){
+           // std::cout<<i<<" "<<points[i].x()<<" "<<points[i].y()<<" "<<points[i].z()<<std::endl;
+         // }
             fTrackList3D->AddElement(HitList3D); 
 
         }
+      
+        gEve->AddElement(fTrackList3D);
+        gEve->Redraw3D(kTRUE);
       }
-            gEve->AddElement(fTrackList3D);
-            gEve->Redraw3D(kTRUE);
     }
-
  
 }
