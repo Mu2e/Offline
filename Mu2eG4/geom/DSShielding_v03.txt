@@ -1,0 +1,11 @@
+// VPSP and IFB shielding, downstream of the DS
+
+#include "Mu2eG4/geom/DSShielding_v02.txt"
+
+//update the titanium window in the IFB thickness
+double ifb.endwindow.halfLength = 0.0762; // mm
+
+// This tells emacs to view this file in c++ mode.
+// Local Variables:
+// mode:c++
+// End:

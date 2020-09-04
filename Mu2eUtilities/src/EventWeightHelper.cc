@@ -1,14 +1,19 @@
 // Andrei Gaponenko, 2016
 
-#include "Mu2eUtilities/inc/EventWeightHelper.hh"
-
-#include "fhiclcpp/ParameterSet.h"
-#include "art/Framework/Principal/Event.h"
-#include "art_root_io/TFileDirectory.h"
+#include <exception>
+#include <memory>
+#include <typeinfo>
 
 #include "MCDataProducts/inc/EventWeight.hh"
-
 #include "TH1.h"
+#include "art/Framework/Principal/Event.h"
+#include "art/Framework/Principal/Handle.h"
+#include "art_root_io/TFileDirectory.h"
+#include "fhiclcpp/ParameterSet.h"
+#include "fhiclcpp/coding.h"
+#include "fhiclcpp/exception.h"
+
+#include "Mu2eUtilities/inc/EventWeightHelper.hh"
 
 namespace mu2e {
 

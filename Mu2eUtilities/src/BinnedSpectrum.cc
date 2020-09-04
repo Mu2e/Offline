@@ -1,17 +1,24 @@
-#include "Mu2eUtilities/inc/BinnedSpectrum.hh"
+#include <exception>
+#include <string>
 
+#include "ConfigTools/inc/ConfigFileLookupPolicy.hh"
+#include "DataProducts/inc/PDGCode.hh"
 #include "GlobalConstantsService/inc/GlobalConstantsHandle.hh"
 #include "GlobalConstantsService/inc/ParticleDataTable.hh"
 #include "GlobalConstantsService/inc/PhysicsParams.hh"
-#include "ConfigTools/inc/ConfigFileLookupPolicy.hh"
+#include "HepPDT/Measurement.hh"
 
-#include "Mu2eUtilities/inc/CzarneckiSpectrum.hh"
-#include "Mu2eUtilities/inc/SimpleSpectrum.hh"
+#include "HepPDT/ParticleData.hh"
+#include "fhiclcpp/ParameterSet.h"
+#include "fhiclcpp/exception.h"
+
+#include "Mu2eUtilities/inc/BinnedSpectrum.hh"
 #include "Mu2eUtilities/inc/ConversionSpectrum.hh"
+#include "Mu2eUtilities/inc/CzarneckiSpectrum.hh"
 #include "Mu2eUtilities/inc/EjectedProtonSpectrum.hh"
 #include "Mu2eUtilities/inc/MuonCaptureSpectrum.hh"
 #include "Mu2eUtilities/inc/PionCaptureSpectrum.hh"
-#include "DataProducts/inc/PDGCode.hh"
+#include "Mu2eUtilities/inc/SimpleSpectrum.hh"
 
 namespace mu2e {
 
@@ -48,7 +55,7 @@ namespace mu2e {
       // should be total energy
       double elow = psphys.get<double>("elow",0);
       double ehi  = psphys.get<double>("ehi" );
-                                        // for radiatively corrected spectrum, elow and ehi are derivatives 
+                                        // for radiatively corrected spectrum, elow and ehi are derivatives
       double bin   = psphys.get<double>("spectrumResolution");
       // int    ratio = *ehi/bin;
       // *ehi         = (ratio+1.)*bin;
@@ -87,7 +94,7 @@ namespace mu2e {
       double elow = psphys.get<double>("elow",0);
       double ehi = psphys.get<double>("ehi",0);
       this->initialize(loadTable<2>( ConfigFileLookupPolicy()( psphys.get<std::string>("spectrumFileName"))),psphys.get<bool>("BinCenter", false),elow,ehi);
-    
+
       if(_xmin < 0.0) throw cet::exception("BADCONFIG")
         << "BinnedSpectrum: negative energy endpoint "<< _xmin  <<"\n";
     }

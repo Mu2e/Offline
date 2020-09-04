@@ -1,5 +1,12 @@
 // Andrei Gaponenko, 2013
 
+#include <utility>
+
+#include "CLHEP/Vector/LorentzVector.h"
+#include "CLHEP/Vector/ThreeVector.h"
+#include "MCDataProducts/inc/ProcessCode.hh"
+#include "cetlib/map_vector.h"
+
 #include "Mu2eUtilities/inc/SimParticleCollectionPrinter.hh"
 
 namespace mu2e {

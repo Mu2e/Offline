@@ -10,14 +10,17 @@
 #ifndef Mu2eUtilities_inc_EventWeightHelper_hh
 #define Mu2eUtilities_inc_EventWeightHelper_hh
 
+#include <algorithm>
 #include <string>
+#include <vector>
 
-#include "canvas/Utilities/InputTag.h"
 #include "art_root_io/TFileDirectory.h"
+#include "canvas/Utilities/InputTag.h"
 
-namespace fhicl { class ParameterSet; }
-namespace art { class Event; }
 class TH1;
+namespace art { class Event; }
+namespace art { class TFileDirectory; }
+namespace fhicl { class ParameterSet; }
 
 namespace mu2e {
 
