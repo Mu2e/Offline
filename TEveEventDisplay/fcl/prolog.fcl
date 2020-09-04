@@ -54,8 +54,8 @@ TEveEventDisplayCosmics : {
       addHits 			              : true
       addTracks 			            : false
       addCrvHits			            : false
-      addCosmicSeedFit	          : false
-      addMCTraj				            : true
+      addCosmicSeedFit	          : true
+      addMCTraj				            : false
    }
   }   
 

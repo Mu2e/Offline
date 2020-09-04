@@ -645,16 +645,16 @@ namespace mu2e{
       std::vector<double> times = pass_data->getTimeRange(firstLoop, data.chcol, data.crvcoincol, data.clustercol);
       fTHSlid->SetRange(times.at(0), times.at(1));
     }
-    pass_data->AddCRVInfo(firstLoop, data.crvcoincol, time, false, show2D);
+    if(_data.crvcoincol!=0) pass_data->AddCRVInfo(firstLoop, data.crvcoincol, time, false, show2D);
     hitenergy = new vector<double>(2);
-    *hitenergy = pass_data->AddComboHits(firstLoop, data.chcol, tracker2Dproj, time, false, show2D, fhitmin, fhitmax);
+    if(_data.chcol!=0) *hitenergy = pass_data->AddComboHits(firstLoop, data.chcol, tracker2Dproj, time, false, show2D, fhitmin, fhitmax);
 
     clusterenergy = new vector<double>(2);
-    *clusterenergy = pass_data->AddCaloClusters(firstLoop, data.clustercol, calo2Dproj, time, false, show2D, fclustmin, fclustmax);
+    if(_data.clustercol!=0) *clusterenergy = pass_data->AddCaloClusters(firstLoop, data.clustercol, calo2Dproj, time, false, show2D, fclustmin, fclustmax);
     
-    pass_data->AddHelixPieceWise(firstLoop, data.kalseedcol, tracker2Dproj, time, false, show2D);
-    pass_data->AddCosmicTrack(firstLoop, data.cosmiccol, tracker2Dproj, time, false, show2D);
-    pass_mc->AddMCTrajectory(firstLoop, data.mctrajcol, tracker2Dproj, false, show2D);
+    if(_data.kalseedcol!=0) pass_data->AddHelixPieceWise(firstLoop, data.kalseedcol, tracker2Dproj, time, false, show2D);
+    if(_data.cosmiccol!=0) pass_data->AddCosmicTrack(firstLoop, data.cosmiccol, tracker2Dproj, time, false, show2D);
+    if(_data.mctrajcol!=0) pass_mc->AddMCTrajectory(firstLoop, data.mctrajcol, tracker2Dproj, false, show2D);
     
     gSystem->ProcessEvents();
     gSystem->IgnoreInterrupt();
