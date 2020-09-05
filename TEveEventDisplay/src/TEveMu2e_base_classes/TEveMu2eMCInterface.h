@@ -20,7 +20,7 @@ namespace mu2e{
       TEveMu2eMCInterface(const TEveMu2eMCInterface &);
       TEveMu2eMCInterface& operator=(const TEveMu2eMCInterface &);
       virtual ~TEveMu2eMCInterface(){};
-      void AddMCTrajectory(bool firstloop, const MCTrajectoryCollection *trajcol, TEveMu2e2DProjection *tracker2Dproj, bool Redraw, bool show2D);
+      void AddMCTrajectory(bool firstloop, const MCTrajectoryCollection *trajcol, TEveMu2e2DProjection *tracker2Dproj, bool Redraw, bool show2D, bool accumulate);
       #endif
       TEveElementList *fTrackList2D;
       TEveElementList *fTrackList3D;

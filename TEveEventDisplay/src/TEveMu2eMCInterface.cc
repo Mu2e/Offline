@@ -9,37 +9,37 @@
 using namespace mu2e;
 namespace mu2e{
 
-  template <typename T, typename U> void DataLists(T data, bool Redraw, bool show2D, TEveElementList **List3D, TEveElementList **List2D = 0, U projection = 0){	
+  template <typename T, typename U> void DataLists(T data, bool Redraw, bool show2D, bool accumulate, TEveElementList **List3D, TEveElementList **List2D = 0, U projection = 0){	
     if(data == 0 && Redraw){
-    if (*List3D != 0){
-    (*List3D)->DestroyElements();
-    }
-    if(show2D){
-    if (*List2D != 0){
-    (*List2D)->DestroyElements();
-    }
-    projection->fXYMgr->ImportElements(*List2D, projection->fDetXYScene); 
-    projection->fRZMgr->ImportElements(*List2D, projection->fDetRZScene);
-    }
-    gEve->AddElement(*List3D);
-    gEve->Redraw3D(kTRUE); 
-    } 
-    if(data!=0){
-    if (*List3D== 0) {
-    *List3D = new TEveElementList("3D Data");
-    (*List3D)->IncDenyDestroy();     
-    }
-    else {
-    (*List3D)->DestroyElements();  
-    }
-    if (*List2D== 0) {
-    *List2D = new TEveElementList("2D Data");
-    (*List2D)->IncDenyDestroy();     
-    }
-    else {
-    (*List2D)->DestroyElements();  
-    }
-    }
+      if (*List3D != 0){
+        (*List3D)->DestroyElements();
+      }
+      if(show2D){
+        if (*List2D != 0){
+          (*List2D)->DestroyElements();
+        }
+        projection->fXYMgr->ImportElements(*List2D, projection->fDetXYScene); 
+        projection->fRZMgr->ImportElements(*List2D, projection->fDetRZScene);
+      }
+        gEve->AddElement(*List3D);
+        gEve->Redraw3D(kTRUE); 
+      } 
+      if(data!=0){
+        if (*List3D== 0) {
+          *List3D = new TEveElementList("3D Data");
+          if(!accumulate){(*List3D)->DestroyElements();} if(!accumulate){(*List3D)->DestroyElements();}     
+        }
+        else {
+          (*List3D)->DestroyElements();  
+        }
+        if (*List2D== 0) {
+          *List2D = new TEveElementList("2D Data");
+          (*List2D)->IncDenyDestroy();     
+        }
+        else {
+          if (!accumulate){(*List2D)->DestroyElements();}    
+        }
+      }
     }
 
  template <typename L> std::vector<double> Energies(L data, int *energylevels[]){
@@ -66,8 +66,8 @@ namespace mu2e{
 
 
 
-  void TEveMu2eMCInterface::AddMCTrajectory(bool firstloop, const MCTrajectoryCollection *trajcol, TEveMu2e2DProjection *tracker2Dproj, bool Redraw, bool show2D){
-    DataLists<const MCTrajectoryCollection*, TEveMu2e2DProjection*>(trajcol, Redraw, show2D, &fTrackList3D, &fTrackList2D, tracker2Dproj);
+  void TEveMu2eMCInterface::AddMCTrajectory(bool firstloop, const MCTrajectoryCollection *trajcol, TEveMu2e2DProjection *tracker2Dproj, bool Redraw, bool show2D, bool accumulate){
+	DataLists<const MCTrajectoryCollection*, TEveMu2e2DProjection*>(trajcol, Redraw, show2D, accumulate, &fTrackList3D, &fTrackList2D, tracker2Dproj);
     if(trajcol!=0){
       TEveElementList *HitList3D = new TEveElementList("MCtraj3D");
       std::map<art::Ptr<mu2e::SimParticle>,mu2e::MCTrajectory>::const_iterator trajectoryIter;
@@ -86,7 +86,6 @@ namespace mu2e{
             fTrackList3D->AddElement(HitList3D); 
 
         }
-      
         gEve->AddElement(fTrackList3D);
         gEve->Redraw3D(kTRUE);
       }

@@ -22,7 +22,11 @@ for var in "$@"
 	    sed -i 's/showDSOnly :.*/showDSOnly : true/' TEveEventDisplay/fcl/prolog.fcl
 	    sed -i 's/showCRV :.*/showCRV : false/' TEveEventDisplay/fcl/prolog.fcl
 	fi
-  
+	
+  if [ "$var" == '-accumulate' ]; then
+	    sed -i 's/accumulate.*/accumulate : true/' TEveEventDisplay/fcl/prolog.fcl
+	fi
+	
 	if [ "$var" == '-CRVOnly' ]; then
 	    sed -i 's/showDSOnly :.*/showDSOnly : false/' TEveEventDisplay/fcl/prolog.fcl
 	    sed -i 's/showCRV :.*/showCRV : true/' TEveEventDisplay/fcl/prolog.fcl
