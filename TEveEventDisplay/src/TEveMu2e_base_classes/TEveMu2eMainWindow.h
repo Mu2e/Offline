@@ -6,9 +6,6 @@
 #include <TText.h>
 #include <TGScrollBar.h>
 #include <TGSlider.h>
-//#include <TGDoubleSlider.h>
-//#include <TSlider.h>
-//#include <TSliderBox.h>
 #include <TCanvas.h>
 #include <TQObject.h>
 //libGeom
@@ -66,7 +63,7 @@ namespace mu2e{
       void RedrawDataProducts(std::string type);
       void RedrawGeometry();
       Bool_t ProcessMessage(Long_t msg, Long_t param1, Long_t param2);
-      void  setEvent(const art::Event& event, bool firstLoop, Data_Collections &data, double time, bool show2D);
+      void  setEvent(const art::Event& event, bool firstLoop, Data_Collections &data, double time, bool show2D, bool accumulate);
       void  fillEvent(bool firstLoop=false);
       bool  isClosed() const;
       int   getEventToFind(bool &findEvent) const;
@@ -101,6 +98,7 @@ namespace mu2e{
       bool _findEvent = true;
       bool _firstLoop = true;
       bool _show2D = true;
+      bool _accumulate = false;
       TEveMu2e2DProjection *tracker2Dproj = new TEveMu2e2DProjection();
       TEveMu2e2DProjection *calo2Dproj = new TEveMu2e2DProjection();
       TEveMu2e2DProjection *CRV2Dproj = new TEveMu2e2DProjection();

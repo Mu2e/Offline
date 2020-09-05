@@ -6,16 +6,6 @@
 // ... libRIO
 #include <TFile.h>
 // ... libGui
-#include <TGString.h>
-#include <TGLabel.h>
-#include <TGButton.h>
-#include <TGButtonGroup.h>
-#include <TGTextEntry.h>
-#include <TGTextView.h>
-#include <TGLayout.h>
-#include <TGTab.h>
-#include <TG3DLine.h>
-#include<TGLViewer.h>
 #include <TGMsgBox.h>
 // ... libGeom
 #include <TGeoManager.h>
