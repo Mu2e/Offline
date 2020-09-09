@@ -9,6 +9,10 @@ if [[ $(basename $0) != buildopts ]]; then
 fi
 
 
+
+h
+
+
 #================================================================
 # known keywords
 kkw=(build g4vis g4mt g4vg trigger)
