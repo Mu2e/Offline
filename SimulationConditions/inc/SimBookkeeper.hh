@@ -1,8 +1,8 @@
-#ifndef SimulationConditions_Bookkeeper_hh
-#define SimulationConditions_Bookkeeper_hh
+#ifndef SimulationConditions_SimBookkeeper_hh
+#define SimulationConditions_SimBookkeeper_hh
 
 //
-// Bookkeeper is the ProditionsEntry for
+// SimBookkeeper is the ProditionsEntry for
 //
 
 // Mu2e includes
@@ -11,10 +11,10 @@
 
 namespace mu2e {
 
-  class Bookkeeper : virtual public ProditionsEntity {
+  class SimBookkeeper : virtual public ProditionsEntity {
 
   public:
-    Bookkeeper() : _name("Bookkeeper") {}
+    SimBookkeeper() : _name("SimBookkeeper") {}
     // accessors
     std::string const& name() const { return _name; }
     double const getEff(const std::string& name) const {
@@ -46,8 +46,8 @@ namespace mu2e {
     }
 
     // typedefs
-    typedef std::shared_ptr<Bookkeeper> ptr_t;
-    typedef std::shared_ptr<const Bookkeeper> cptr_t;
+    typedef std::shared_ptr<SimBookkeeper> ptr_t;
+    typedef std::shared_ptr<const SimBookkeeper> cptr_t;
 
   private:
     // data

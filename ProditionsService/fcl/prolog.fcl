@@ -17,7 +17,7 @@ Proditions : {
 
    trkQualCatalog : @local::TrkQualCatalog
 
-   bookkeeper : @local::Bookkeeper
+   simbookkeeper : @local::SimBookkeeper
    verbose : 0
 }
 

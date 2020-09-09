@@ -33,7 +33,7 @@
 
 #include "AnalysisConfig/inc/MVACatalogConfig.hh"
 
-#include "SimulationConfig/inc/BookkeeperConfig.hh"
+#include "SimulationConfig/inc/SimBookkeeperConfig.hh"
 
 namespace mu2e {
 
@@ -76,8 +76,8 @@ namespace mu2e {
       fhicl::Table<MVACatalogConfig> trkQualCatalog{
 	  Name("trkQualCatalog"), 
 	  Comment("Catalog of TrkQual trainings") };
-      fhicl::Table<BookkeeperConfig> bookkeeper{
-	  Name("bookkeeper"),
+      fhicl::Table<SimBookkeeperConfig> simbookkeeper{
+	  Name("simbookkeeper"),
 	  Comment("simulation bookkeeping") };
     };
 
