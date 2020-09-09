@@ -2,9 +2,6 @@
 // Return CLHEP::Hep3Vector objects that are unit vectors uniformly
 // distributed over the unit sphere.
 //
-// $Id: RandomUnitSphere.cc,v 1.9 2012/02/03 05:02:43 gandr Exp $
-// $Author: gandr $
-// $Date: 2012/02/03 05:02:43 $
 //
 // Original author Rob Kutschke
 //

@@ -4,9 +4,6 @@
 //
 // Define a type for a collection of MCTrajectory objects.
 //
-// $Id: MCTrajectoryCollection.hh,v 1.1 2014/01/18 03:08:28 kutschke Exp $
-// $Author: kutschke $
-// $Date: 2014/01/18 03:08:28 $
 //
 // Contact person Rob Kutschke
 //

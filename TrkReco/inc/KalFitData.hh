@@ -1,9 +1,6 @@
 //
 // Simple accessor to Kalman fit
 //
-// $Id: $
-// $Author: $ 
-// $Date:  $
 //
 #ifndef KalFitData_HH
 #define KalFitData_HH

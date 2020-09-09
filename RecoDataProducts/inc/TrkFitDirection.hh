@@ -2,9 +2,6 @@
 // physically travels WRT time, and the pitch sign.  Together with the BField and the particle charge,
 // this also defines the angular velocity sign.
 //
-// $Id: TrkFitDirection.hh,v 1.2 2012/08/04 00:38:06 brownd Exp $
-// $Author: brownd $ 
-// $Date: 2012/08/04 00:38:06 $
 #ifndef TrkFitDirection_HH
 #define TrkFitDirection_HH
 #include <string>

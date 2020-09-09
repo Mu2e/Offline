@@ -1,9 +1,6 @@
 //
 // Simple class to filter hits based on residual, 
 //
-// $Id: TrkHitFilter.hh,v 1.3 2014/05/05 22:25:56 brownd Exp $
-// $Author: brownd $ 
-// $Date: 2014/05/05 22:25:56 $
 //
 // struct for outlier search tuple
 #ifndef TrkHitFilter_hh

@@ -2,9 +2,6 @@
 // Geometry description of the Aseet version of the Tracker.
 // See:  Mu2e-doc-888
 //
-// $Id: tracker_v0.txt,v 1.1 2014/08/29 16:53:32 knoepfel Exp $
-// $Author: knoepfel $
-// $Date: 2014/08/29 16:53:32 $
 //
 // Original author Rob Kutschke
 //

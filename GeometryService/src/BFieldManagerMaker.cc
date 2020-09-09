@@ -1,9 +1,6 @@
 //
 // Build a BFieldManager.
 //
-// $Id: BFieldManagerMaker.cc,v 1.35 2013/08/30 22:25:58 kutschke Exp $
-// $Author: kutschke $
-// $Date: 2013/08/30 22:25:58 $
 //
 
 // Includes from C++

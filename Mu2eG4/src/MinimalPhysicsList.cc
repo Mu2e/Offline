@@ -2,9 +2,6 @@
 // Define a minimal physics list.
 // Just transportation; used for debugging geometry.
 //
-// $Id: MinimalPhysicsList.cc,v 1.6 2013/10/25 18:47:09 genser Exp $
-// $Author: genser $
-// $Date: 2013/10/25 18:47:09 $
 //
 // Original author Rob Kutschke
 //

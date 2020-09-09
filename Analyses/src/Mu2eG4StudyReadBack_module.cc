@@ -1,9 +1,6 @@
 //
 // Plugin to read/analyze g4study output
 //
-//  $Id: Mu2eG4StudyReadBack_module.cc,v 1.10 2013/10/21 20:44:04 genser Exp $
-//  $Author: genser $
-//  $Date: 2013/10/21 20:44:04 $
 //
 // Original author KLG somewhat based on vd read back
 //

@@ -1,9 +1,6 @@
 //
 // 
 //
-// $Id: particleGun.txt,v 1.3 2012/02/17 03:23:30 tassiell Exp $
-// $Author: tassiell $
-// $Date: 2012/02/17 03:23:30 $
 //
 // Original author Rob Kutschke
 // added ParticleGun process

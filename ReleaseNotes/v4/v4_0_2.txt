@@ -1,6 +1,3 @@
-  $Id: v4_0_2.txt,v 1.4 2013/10/09 18:37:51 gandr Exp $
-  $Author: gandr $
-  $Date: 2013/10/09 18:37:51 $
 
            Release notes for Mu2e Offline software, v4_0_2
 

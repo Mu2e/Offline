@@ -1,9 +1,6 @@
 //
 // Free function to create Transport Solenoid
 //
-// $Id: constructTS.cc,v 1.33 2014/09/19 19:15:10 knoepfel Exp $
-// $Author: knoepfel $
-// $Date: 2014/09/19 19:15:10 $
 //
 // Original author KLG based on Mu2eWorld constructTS
 //

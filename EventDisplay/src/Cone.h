@@ -1,9 +1,6 @@
 //
 // Class for all static (i.e. time-independent) cone structures. Now only used for MecoStyleProtonAbsorber. The structure is displayed via EventDisplayGeoVolumeCone (inherited from TGeoVolume) which holds a TGeoCone. 
 //
-// $Id: Cone.h,v 1.3 2014/02/22 01:52:18 ehrlich Exp $
-// $Author: ehrlich $
-// $Date: 2014/02/22 01:52:18 $
 //
 // Original author MyeongJae Lee, based on Ralf Ehrlich's Tube.h.
 //

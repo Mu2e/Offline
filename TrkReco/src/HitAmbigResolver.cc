@@ -2,9 +2,6 @@
 // class to resolve hit ambiguities one hit at a time, assuming a reasonable track
 // fit as input
 //
-// $Id: HitAmbigResolver.cc,v 1.3 2012/08/31 22:39:00 brownd Exp $
-// $Author: brownd $ 
-// $Date: 2012/08/31 22:39:00 $
 //
 #include "TrkReco/inc/HitAmbigResolver.hh"
 #include "BTrkData/inc/TrkStrawHit.hh"

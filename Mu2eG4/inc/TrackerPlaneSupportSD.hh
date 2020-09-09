@@ -3,9 +3,6 @@
 //
 // Defines a sensitive detector for TrackerPlaneSupport
 //
-// $Id: TrackerPlaneSupportSD.hh,v 1.3 2012/05/29 22:57:44 genser Exp $
-// $Author: genser $
-// $Date: 2012/05/29 22:57:44 $
 //
 // Original author KLG
 //

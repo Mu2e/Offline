@@ -1,9 +1,6 @@
 //
 // Free function to create TSdA Neutron Absorber in G4
 //
-// $Id: constructTSdA.cc,v 1.6 2013/10/12 00:19:47 brownd Exp $
-// $Author: brownd $
-// $Date: 2013/10/12 00:19:47 $
 //
 // Original author KLG
 //

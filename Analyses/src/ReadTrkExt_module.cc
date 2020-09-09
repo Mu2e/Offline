@@ -1,9 +1,6 @@
 //
 // Read the tracks added to the event by KalFitTest_module.
 //
-// $Id: ReadTrkExt_module.cc,v 1.10 2014/09/18 08:43:11 brownd Exp $
-// $Author: brownd $
-// $Date: 2014/09/18 08:43:11 $
 //
 // Original author MyeongJae Lee
 //

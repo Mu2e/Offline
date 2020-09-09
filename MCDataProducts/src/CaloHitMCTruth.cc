@@ -1,9 +1,6 @@
 //
 // This is a place to put additional information produced by HitMaker,
 //
-// $Id: CaloHitMCTruth.cc,v 1.1 2011/05/24 17:16:44 kutschke Exp $
-// $Author: kutschke $
-// $Date: 2011/05/24 17:16:44 $
 //
 // Original author Ivan Logashenko
 //

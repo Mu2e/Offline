@@ -2,9 +2,6 @@
 // Full geometry with selected features made invisible
 // so that the scene renders faster.
 //
-// $Id: geom_01_LowDetailGraphics.txt,v 1.3 2013/06/12 19:52:05 knoepfel Exp $
-// $Author: knoepfel $
-// $Date: 2013/06/12 19:52:05 $
 //
 
 #include "Mu2eG4/test/geom_01.txt"

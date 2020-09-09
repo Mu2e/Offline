@@ -4,9 +4,6 @@
 // Remove leading and trailing whitespace from a string.
 // It modifies the input string.
 //
-// $Id: trimInPlace.hh,v 1.1 2012/07/15 22:00:36 kutschke Exp $
-// $Author: kutschke $
-// $Date: 2012/07/15 22:00:36 $
 //
 // Contact person Rob Kutschke
 //

@@ -3,9 +3,6 @@
 // merge the spectrum with the corrected Shanker analytic expression
 // after the data endpoint.
 //
-// $Id: ShankerWatanabeSpectrum.cc,v 1.6 2014/05/01 18:12:26 knoepfel Exp $
-// $Author: knoepfel $
-// $Date: 2014/05/01 18:12:26 $
 //
 
 #include <stddef.h>

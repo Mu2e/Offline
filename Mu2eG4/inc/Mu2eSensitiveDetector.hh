@@ -3,9 +3,6 @@
 //
 // Defines a generic Mu2e sensitive detector
 //
-// $Id: Mu2eSensitiveDetector.hh,v 1.2 2013/08/28 05:58:17 gandr Exp $
-// $Author: gandr $
-// $Date: 2013/08/28 05:58:17 $
 //
 // Original author KLG
 //

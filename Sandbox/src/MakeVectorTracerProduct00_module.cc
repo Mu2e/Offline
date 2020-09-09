@@ -1,9 +1,6 @@
 //
 // Add a std::vector<TracerProduct> to the event and watch what happens.
 //
-// $Id: MakeVectorTracerProduct00_module.cc,v 1.5 2013/03/14 19:47:46 kutschke Exp $
-// $Author: kutschke $
-// $Date: 2013/03/14 19:47:46 $
 //
 // Original author Rob Kutschke
 //

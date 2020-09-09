@@ -1,6 +1,3 @@
-  $Id: v2_1_1.txt,v 1.5 2013/01/21 23:58:37 kutschke Exp $
-  $Author: kutschke $
-  $Date: 2013/01/21 23:58:37 $
 
            Release notes for Mu2e Offline software, v2_1_1
 

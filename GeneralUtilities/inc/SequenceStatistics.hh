@@ -5,9 +5,6 @@
 // Compute min/max and mean/RMS about a sequence of numbers.
 // In the future, this should be extended to include general moments.
 //
-// $Id: SequenceStatistics.hh,v 1.1 2011/12/16 23:13:14 kutschke Exp $
-// $Author: kutschke $
-// $Date: 2011/12/16 23:13:14 $
 //
 // Contact person Rob Kutschke
 //

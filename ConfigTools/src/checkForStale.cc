@@ -3,9 +3,6 @@
 // many of the keys have a value of true. Throw if more than
 // one is true.  Optionally, throw if none are true.
 //
-// $Id: checkForStale.cc,v 1.1 2013/06/14 16:15:04 knoepfel Exp $
-// $Author: knoepfel $
-// $Date: 2013/06/14 16:15:04 $
 //
 // Original author Rob Kutschke
 //

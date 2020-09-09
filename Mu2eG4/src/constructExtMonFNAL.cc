@@ -1,6 +1,3 @@
-// $Id: constructExtMonFNAL.cc,v 1.29 2013/08/30 16:57:32 genser Exp $
-// $Author: genser $
-// $Date: 2013/08/30 16:57:32 $
 //
 //
 // Andrei Gaponenko, 2011

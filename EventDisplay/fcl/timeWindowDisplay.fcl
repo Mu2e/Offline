@@ -3,9 +3,6 @@
 # that are in time with the convesion electron.  Create new data products
 # to hold these. Then run the event display.
 #
-# $Id: timeWindowDisplay.fcl,v 1.1 2012/05/21 19:31:23 kutschke Exp $
-# $Author: kutschke $
-# $Date: 2012/05/21 19:31:23 $
 #
 
 #include "fcl/minimalMessageService.fcl"

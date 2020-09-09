@@ -1,8 +1,5 @@
 // Reco clusters grouped by plane.
 //
-// $Id: ExtMonFNALRecoClusterCollection.hh,v 1.3 2012/11/01 23:44:32 gandr Exp $
-// $Author: gandr $
-// $Date: 2012/11/01 23:44:32 $
 //
 // Original author Andrei Gaponenko
 //

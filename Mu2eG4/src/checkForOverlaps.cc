@@ -1,9 +1,6 @@
 //
 // Free function to do Geant4 overlap check
 //
-// $Id: checkForOverlaps.cc,v 1.1 2013/08/30 15:52:33 genser Exp $
-// $Author: genser $
-// $Date: 2013/08/30 15:52:33 $
 //
 // Original author KLG
 //

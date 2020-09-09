@@ -1,9 +1,6 @@
 //
 // Within a SimParticleColleciton, check that all mother/daughter pointers are self-consistent.
 //
-// $Id: checkSimParticleCollection.cc,v 1.1 2011/12/16 23:13:50 kutschke Exp $
-// $Author: kutschke $
-// $Date: 2011/12/16 23:13:50 $
 //
 // Contact person Rob Kutschke
 

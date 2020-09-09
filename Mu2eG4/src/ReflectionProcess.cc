@@ -4,9 +4,6 @@
 // A discrete process that reverses particle momentum and charge.
 // It is used for debugging/tuning code for propagation in magnetic fields.
 //
-//   $Id: ReflectionProcess.cc,v 1.2 2012/07/26 19:01:01 kutschke Exp $
-//   $Author: kutschke $
-//   $Date: 2012/07/26 19:01:01 $
 //
 // Original author R. Bernstein
 //

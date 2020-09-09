@@ -1,9 +1,6 @@
 //
 // Geometry file for study of muon capture, do NOT use unless you know the details
 //
-// $Id: geom_mucapture.txt,v 1.2 2012/03/22 20:23:14 genser Exp $
-// $Author: genser $
-// $Date: 2012/03/22 20:23:14 $
 //
 // Original author KLG
 //

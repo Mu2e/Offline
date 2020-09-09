@@ -3,9 +3,6 @@
 //
 // Read particles from a file in G4beamline input format.
 //
-// $Id: FromG4BLFile.hh,v 1.14 2012/01/24 23:01:40 kutschke Exp $
-// $Author: kutschke $
-// $Date: 2012/01/24 23:01:40 $
 //
 // Original author Rob Kutschke
 //

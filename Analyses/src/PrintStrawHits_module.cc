@@ -1,8 +1,5 @@
 // Prints out all StrawHits in a collection.
 //
-// $Id: PrintStrawHits_module.cc,v 1.1 2014/06/27 15:57:03 murat Exp $
-// $Author: murat $
-// $Date: 2014/06/27 15:57:03 $
 //
 // Original author Pavel Murat
 //

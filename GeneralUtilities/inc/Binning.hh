@@ -3,9 +3,6 @@
 //
 // A definition of the binning of a histogram.
 //
-// $Id: Binning.hh,v 1.4 2011/05/20 20:18:23 wb Exp $
-// $Author: wb $
-// $Date: 2011/05/20 20:18:23 $
 //
 // Original author Rob Kutschke
 //

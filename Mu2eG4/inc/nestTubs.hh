@@ -3,9 +3,6 @@
 //
 // Free function to create and place a new G4Tubs, place inside a logical volume.
 //
-// $Id: nestTubs.hh,v 1.14 2014/09/19 19:14:57 knoepfel Exp $
-// $Author: knoepfel $
-// $Date: 2014/09/19 19:14:57 $
 //
 // Original author Rob Kutschke
 //

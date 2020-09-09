@@ -1,9 +1,6 @@
 ///////////////////////////////////////////////////////////////////////////////
 // Helix fit to straw hits
 //
-// $Id: CalHelixFinderAlg.cc,v 1.13 2014/06/06 21:35:08 murat Exp $
-// $Author: murat $
-// $Date: 2014/06/06 21:35:08 $
 //
 //  use of HackData:
 //  ----------------
