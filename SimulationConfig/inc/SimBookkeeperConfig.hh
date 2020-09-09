@@ -1,5 +1,5 @@
-#ifndef SimulationConfig_BookkeeperConfig_hh
-#define SimulationConfig_BookkeeperConfig_hh
+#ifndef SimulationConfig_SimBookkeeperConfig_hh
+#define SimulationConfig_SimBookkeeperConfig_hh
 
 //
 // Configuration for the MVACatalog ProditionsEntitiy
@@ -20,7 +20,7 @@ namespace mu2e {
       Name("eff"), Comment("EFficiency value")};
   };
 
-  struct BookkeeperConfig {
+  struct SimBookkeeperConfig {
     using Name=fhicl::Name;
     using Comment=fhicl::Comment;
     fhicl::Atom<int> verbose{

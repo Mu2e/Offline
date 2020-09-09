@@ -30,7 +30,7 @@
 #include "SeedService/inc/SeedService.hh"
 #include "MCDataProducts/inc/ProtonBunchIntensity.hh"
 #include "ProditionsService/inc/ProditionsHandle.hh"
-#include "SimulationConditions/inc/Bookkeeper.hh"
+#include "SimulationConditions/inc/SimBookkeeper.hh"
 //================================================================
 namespace mu2e {
 
@@ -55,7 +55,7 @@ namespace mu2e {
     std::vector<double> meanEventsPerPOTFactors_;
     double eff_;
 
-    mu2e::ProditionsHandle<mu2e::Bookkeeper> _bookkeeperH;
+    mu2e::ProditionsHandle<mu2e::SimBookkeeper> _simbookkeeperH;
     bool mixingMeanOverride_;
   public:
 
@@ -160,10 +160,10 @@ namespace mu2e {
     pbi_ = *event.getValidHandle<ProtonBunchIntensity>(pbiTag_);
     if(debugLevel_ > 0)std::cout << " Starting event mixing, Intensity = " << pbi_.intensity() << std::endl;
 
-    Bookkeeper const& bookkeeper = _bookkeeperH.get(event.id());
+    SimBookkeeper const& simbookkeeper = _simbookkeeperH.get(event.id());
     eff_ = 1;
     for (const auto& i_simStageEff : simStageEfficiencyTags_) {
-      double this_eff = bookkeeper.getEff(i_simStageEff);
+      double this_eff = simbookkeeper.getEff(i_simStageEff);
       eff_ *= this_eff;
 
       if (debugLevel_ > 1 && !mixingMeanOverride_) {

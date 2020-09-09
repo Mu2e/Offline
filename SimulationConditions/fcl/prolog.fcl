@@ -1,6 +1,6 @@
 BEGIN_PROLOG
 
-Bookkeeper : {
+SimBookkeeper : {
   verbose : 1
   useDb : false
   # some default values from small-scale tests

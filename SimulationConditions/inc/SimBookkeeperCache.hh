@@ -1,22 +1,22 @@
-#ifndef SimulationConditions_BookkeeperCache_hh
-#define SimulationConditions_BookkeeperCache_hh
+#ifndef SimulationConditions_SimBookkeeperCache_hh
+#define SimulationConditions_SimBookkeeperCache_hh
 
 //
-// BookkeeperCache for ProditionsCache
+// SimBookkeeperCache for ProditionsCache
 //
 
 #include "Mu2eInterfaces/inc/ProditionsCache.hh"
 #include "DbTables/inc/DbIoV.hh"
 #include "DbService/inc/DbHandle.hh"
 #include "DbTables/inc/SimEfficiencies.hh"
-#include "SimulationConditions/inc/BookkeeperMaker.hh"
+#include "SimulationConditions/inc/SimBookkeeperMaker.hh"
 
 namespace mu2e {
 
-  class BookkeeperCache : public ProditionsCache {
+  class SimBookkeeperCache : public ProditionsCache {
   public:
-    BookkeeperCache(BookkeeperConfig const& config):
-      ProditionsCache("Bookkeeper", config.verbose()),
+    SimBookkeeperCache(SimBookkeeperConfig const& config):
+      ProditionsCache("SimBookkeeper", config.verbose()),
       _useDb(config.useDb()),_maker(config) {}
 
     void initialize() {
@@ -58,7 +58,7 @@ namespace mu2e {
 
   private:
     bool _useDb;
-    BookkeeperMaker _maker;
+    SimBookkeeperMaker _maker;
 
     // these handles are not default constructed
     // so the db can be completely turned off
