@@ -1,9 +1,6 @@
 //
 // Container class for component info objects.
 //
-// $Id: ComponentInfoContainer.h,v 1.2 2012/09/14 17:17:34 ehrlich Exp $
-// $Author: ehrlich $
-// $Date: 2012/09/14 17:17:34 $
 //
 // Original author Ralf Ehrlich
 //

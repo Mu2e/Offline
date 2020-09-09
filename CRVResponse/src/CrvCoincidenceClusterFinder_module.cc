@@ -1,9 +1,6 @@
 //
 // A module to find clusters of coincidences of CRV pulses
 //
-// $Id: $
-// $Author: ehrlich $
-// $Date: 2014/08/07 01:33:40 $
 // 
 // Original Author: Ralf Ehrlich
 

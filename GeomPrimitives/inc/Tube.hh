@@ -3,9 +3,6 @@
 //
 // "Typical" Tube object
 //
-// $Id: Tube.hh,v 1.7 2013/08/21 17:35:17 knoepfel Exp $
-// $Author: knoepfel $
-// $Date: 2013/08/21 17:35:17 $
 //
 // Original author KLG
 //

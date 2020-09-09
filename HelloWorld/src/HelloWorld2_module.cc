@@ -1,9 +1,6 @@
 //
 //  A second hello world plugin, with a little more detail.
 //
-//  $Id: HelloWorld2_module.cc,v 1.5 2013/10/21 21:01:22 kutschke Exp $
-//  $Author: kutschke $
-//  $Date: 2013/10/21 21:01:22 $
 //
 //  Original author Rob Kutschke
 //

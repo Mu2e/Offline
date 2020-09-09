@@ -1,9 +1,6 @@
 //
 // Run-time config info for the event generators.
 //
-// $Id: genconfig_mucapture.txt,v 1.3 2012/07/27 19:45:48 kutschke Exp $
-// $Author: kutschke $
-// $Date: 2012/07/27 19:45:48 $
 //
 // Original author KLG somewhat based on conversionGun
 

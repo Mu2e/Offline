@@ -4,9 +4,6 @@
 //
 // The parameters of a Polycone
 //
-// $Id: PolyconsParams.hh,v 1.1 2013/04/30 14:56:57 knoepfel Exp $
-// $Author: knoepfel $
-// $Date: 2013/04/30 14:56:57 $
 //
 // Original author KLG
 //

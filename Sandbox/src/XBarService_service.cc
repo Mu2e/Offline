@@ -3,9 +3,6 @@
 // The XBarSerivce depends on the FooService.  The XBarService is just
 // a copy of the BarService but it comes after Foo in an alphabetic sort.
 //
-// $Id: XBarService_service.cc,v 1.4 2013/03/15 15:59:59 kutschke Exp $
-// $Author: kutschke $
-// $Date: 2013/03/15 15:59:59 $
 //
 // Contact person Rob Kutschke
 //

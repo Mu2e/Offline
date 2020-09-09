@@ -1,8 +1,5 @@
 //
 // Struct to describe straw materials on the Kalman fit
-// $Id: TrkStrawMatInfo.hh,v 1.2 2014/09/22 12:13:17 brownd Exp $
-// $Author: brownd $ 
-// $Date: 2014/09/22 12:13:17 $
 //
 #ifndef TrkStrawMatInfo_HH
 #define TrkStrawMatInfo_HH

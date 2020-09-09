@@ -1,8 +1,5 @@
            Release notes for Mu2e Offline software, v0_0_5
 
-  $Id: v0_0_5.txt,v 1.1 2011/05/25 14:54:20 kutschke Exp $
-  $Author: kutschke $
-  $Date: 2011/05/25 14:54:20 $
 
 Item 11 will cause previously written files of event data to become unreadable.
 

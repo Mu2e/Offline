@@ -1,9 +1,6 @@
 //
 // Assist in the distribution of guaranteed unique seeds to all engines within a job.
 //
-// $Id: SeedService_service.cc,v 1.14 2013/08/21 22:19:08 kutschke Exp $
-// $Author: kutschke $
-// $Date: 2013/08/21 22:19:08 $
 //
 // Contact person Rob Kutschke
 //

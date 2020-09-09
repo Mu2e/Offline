@@ -2,9 +2,6 @@
 #
 # Read back the output of g4test_03.py; make a few histograms.
 #
-# $Id: ptrTeset0.fcl,v 1.1 2011/06/01 22:09:15 kutschke Exp $
-# $Author: kutschke $
-# $Date: 2011/06/01 22:09:15 $
 
 #include "fcl/minimalMessageService.fcl"
 #include "fcl/standardProducers.fcl"

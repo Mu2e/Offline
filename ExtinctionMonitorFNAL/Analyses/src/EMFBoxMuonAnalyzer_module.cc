@@ -1,6 +1,3 @@
-// $Id: EMFBoxMuonAnalyzer_module.cc,v 1.11 2013/10/21 20:34:14 gandr Exp $
-// $Author: gandr $
-// $Date: 2013/10/21 20:34:14 $
 //
 // Original author Andrei Gaponenko, 2012
 

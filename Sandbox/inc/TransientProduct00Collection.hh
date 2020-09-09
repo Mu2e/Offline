@@ -5,9 +5,6 @@
 // Define a type for a collection of TransientProduct objects.
 // Used for tests of making transient-only data products.
 //
-// $Id: TransientProduct00Collection.hh,v 1.1 2011/06/04 18:00:36 kutschke Exp $
-// $Author: kutschke $
-// $Date: 2011/06/04 18:00:36 $
 //
 // Original author Rob Kutschke
 //

@@ -2,9 +2,6 @@
 // A utility class to do indexolgy related to persistence of
 // physical volume information.
 //
-// $Id: PhysicalVolumeHelper.cc,v 1.9 2013/10/02 05:23:32 gandr Exp $
-// $Author: gandr $
-// $Date: 2013/10/02 05:23:32 $
 //
 // Original author Rob Kutschke
 //

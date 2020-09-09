@@ -4,9 +4,6 @@
 //
 // Template used to instantiate the bit map classes.
 //
-//   $Id: BitMap.hh,v 1.8 2013/03/15 21:15:35 kutschke Exp $
-//   $Author: kutschke $
-//   $Date: 2013/03/15 21:15:35 $
 //
 // The user must supply a detail class with the following requirements:
 //

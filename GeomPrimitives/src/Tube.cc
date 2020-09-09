@@ -1,9 +1,6 @@
 //
 // "Typical" Tube object
 //
-// $Id: Tube.cc,v 1.4 2013/08/07 20:20:10 knoepfel Exp $
-// $Author: knoepfel $
-// $Date: 2013/08/07 20:20:10 $
 //
 // Original author KLG
 //

@@ -1,9 +1,6 @@
 #
 # Macro file for setting up the graphics scene and the verbosity level: yz view.
 #
-# $Id: beamline_xz.mac,v 1.2 2010/09/29 22:03:39 kutschke Exp $
-# $Author: kutschke $
-# $Date: 2010/09/29 22:03:39 $
 #
 # Original author Rob Kutschke
 

@@ -1,7 +1,4 @@
 ///////////////////////////////////////////////////////////////////////////////
-// $Id: TrackCaloMatching_module.cc,v 1.14 2014/08/15 15:01:55 murat Exp $
-// $Author: murat $
-// $Date: 2014/08/15 15:01:55 $
 //
 // Original author G. Pezzullo
 //

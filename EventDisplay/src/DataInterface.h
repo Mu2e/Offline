@@ -1,9 +1,6 @@
 //
 // Class which extracts informayion from the framework event objects to build the event display shapes (e.g. tracks, straws, support structures).
 //
-// $Id: DataInterface.h,v 1.33 2014/02/22 01:52:18 ehrlich Exp $
-// $Author: ehrlich $
-// $Date: 2014/02/22 01:52:18 $
 //
 // Original author Ralf Ehrlich
 //

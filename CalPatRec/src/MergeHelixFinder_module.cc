@@ -1,7 +1,4 @@
 ///////////////////////////////////////////////////////////////////////////////
-// $Id: $
-// $Author: $ 
-// $Date: $
 // takes inputs from two helix finding algorithms, produces one helix collection 
 // on output to be used for the track seed-fit
 //
