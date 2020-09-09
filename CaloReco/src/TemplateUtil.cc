@@ -102,8 +102,7 @@ namespace mu2e {
        {
  	    std::stringstream sss; 
 	    sss<<"par "<<ip;
-            if (ip==0) minuit.mnparm(ip, sss.str().c_str(),  param_[ip],  0.001,     0,  1e6, ierr);
-            else       minuit.mnparm(ip, sss.str().c_str(),  param_[ip],  0.001,  -100,  1e6, ierr);
+            minuit.mnparm(ip, sss.str().c_str(),  param_[ip],  0.001,  0,  1e6, ierr);
        }      
 
        // Perform first fit with initial model
@@ -125,8 +124,8 @@ namespace mu2e {
 
            for (unsigned ip=nParBkg_; ip<nParTot_; ip += nParFcn_)
            {    
-               if (selectComponent(tempPar,ip)) continue;                      
-               minuit.mnparm(ip,   "fixed par", 0, 0.01, -1e6, 1e6, ierr);
+	       if (selectComponent(tempPar,ip)) continue;           
+	       minuit.mnparm(ip,   "fixed par", 0, 0.01, -1e6, 1e6, ierr);
 	       minuit.mnparm(ip+1, "fixed par", 0, 0.01, -1e6, 1e6, ierr);
                minuit.FixParameter(ip);
                minuit.FixParameter(ip+1);
@@ -226,9 +225,9 @@ namespace mu2e {
        //remove peaks close in time with smaller amplitude
        for (unsigned ip2=nParBkg_; ip2<npTot_; ip2 += nParFcn_)
        {
-          if (ip==ip2) continue;
-          double dt = std::abs(tempPar[ip2+1]-tempPar[ip+1]);
-	  if (dt <minDTPeaks_ && tempPar[ip]<tempPar[ip2]) return false;
+           if (ip==ip2) continue;
+           double dt = std::abs(tempPar[ip2+1]-tempPar[ip+1]);          	  
+	   if (dt <minDTPeaks_ && tempPar[ip2]>tempPar[ip]) return false;
        }
        
        return true;
@@ -249,33 +248,13 @@ namespace mu2e {
        if (param_.size() < ioffset+nParFcn_) return 0.0;
        return logn(x,&param_[ioffset]);       
    }
-
    //------------------------------------------------------------
-   void TemplateUtil::calcTimeCorr(std::vector<double>& par)
-   {	
-	int Npt(0);
-	double sx(0),sy(0),sxy(0),sx2(0);
-	for (double toffset=0;toffset<4.99;toffset += 0.25)
-	{
-	    std::vector<double> t1 = pulseCachePtr_->digitizedPulse(toffset);
-	    std::vector<double> wf(t1.size(),0);
-	    for (unsigned i=0;i<t1.size();++i) wf[i] += (100*t1[i]);
-
-	    unsigned imax = std::distance(wf.begin(),std::max_element(wf.begin(),wf.end()));
-	    double tmin   = 1.5-(0.5*wf[imax-1]+1.5*wf[imax]+2.5*wf[imax+1])/(wf[imax-1]+wf[imax]+wf[imax+1]);
-
-	    sx  += wf[imax+1]/wf[imax];
-	    sx2 += wf[imax+1]*wf[imax+1]/wf[imax]/wf[imax];
-	    sy  += tmin;
-	    sxy += tmin*wf[imax+1]/wf[imax];    
-	    ++Npt;
-	}
-        double m = (Npt*sxy-sx*sy)/(Npt*sx2-sx*sx);	
-	par.push_back((sy-m*sx)/Npt);
-	par.push_back(m);
+   double TemplateUtil::maxAmplitude()
+   {
+       double maxAmplitudeFound(0.0);
+       for (unsigned i=nParBkg_; i<param_.size(); i += nParFcn_) maxAmplitudeFound = std::max(maxAmplitudeFound,param_[i]);
+       return maxAmplitudeFound;
    }
-
-
 
 
    //---------------------------------------------------------------------------

@@ -22,7 +22,7 @@ namespace mu2e {
         void                        refitEdge     (); 
         double                      eval_fcn      (double x); 
         double                      eval_logn     (double x, int ioffset);  
-        void                        calcTimeCorr  (std::vector<double>& par);
+        double                      maxAmplitude  ();
         void                        plotFit       (const std::string& pname) const;
  
 	void                        setStrategy   (int val) {fitStrategy_ = val;}
@@ -36,6 +36,8 @@ namespace mu2e {
         const std::vector<double>&  parErr        ()                const {return paramErr_;}
 	unsigned                    nParFcn       ()                const {return nParFcn_;}
 	unsigned                    nParBkg       ()                const {return nParBkg_;}
+	unsigned                    nPeaks        ()                const {return param_.size() > nParBkg_ ? (param_.size()-nParBkg_)/nParFcn_ : 0;}
+	unsigned                    peakIdx       (unsigned i)      const {return nParBkg_+i*nParFcn_;}
 	double                      fromPeakToT0  (double timePeak) const {return pulseCache_.fromPeakToT0(timePeak);} 
 
 
@@ -55,7 +57,6 @@ namespace mu2e {
 	unsigned            nParBkg_;
 	double              chi2_;
 	unsigned            status_;
-
   };
   
 }

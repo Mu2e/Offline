@@ -216,6 +216,7 @@ namespace mu2e {
       for (const auto& showerHandle: crystalShowerHandles)
       {
           const CaloShowerStepCollection& caloShowerSteps(*showerHandle);
+std::cout<<"CSTC "<<caloShowerSteps.size()<<std::endl;
           for (auto istep = caloShowerSteps.begin(); istep !=caloShowerSteps.end(); ++istep)
           {
               const CaloShowerStep& step = *istep;
