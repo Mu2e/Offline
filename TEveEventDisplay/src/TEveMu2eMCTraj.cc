@@ -17,11 +17,9 @@ namespace mu2e{
     HitList->AddElement(this);
   }
 
- void TEveMu2eMCTraj::DrawLine3D(const std::string &pstr,  CLHEP::Hep3Vector Start, CLHEP::Hep3Vector End, TEveElementList *HitList)
+ void TEveMu2eMCTraj::DrawLine(const std::string &pstr,  CLHEP::Hep3Vector Start, CLHEP::Hep3Vector End, TEveElementList *HitList)
   {
     
-    //CLHEP::Hep3Vector _detSysOrigin = mu2e::GeomHandle<mu2e::DetectorSystem>()->getOrigin();
-    //hep3vectorTocm(_detSysOrigin);
     this->SetTitle((DataTitle(pstr, -1)).c_str());
    
     hep3vectorTocm(Start);

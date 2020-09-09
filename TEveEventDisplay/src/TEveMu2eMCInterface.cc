@@ -9,7 +9,7 @@
 using namespace mu2e;
 namespace mu2e{
 
-  template <typename T, typename U> void DataLists(T data, bool Redraw, bool show2D, bool accumulate, TEveElementList **List3D, TEveElementList **List2D = 0, U projection = 0){	
+  template <typename T, typename U> void DataLists(T data, bool Redraw, bool show2D, bool accumulate, string title, TEveElementList **List3D, TEveElementList **List2D = 0, U projection = 0){	
     if(data == 0 && Redraw){
       if (*List3D != 0){
         (*List3D)->DestroyElements();
@@ -26,14 +26,14 @@ namespace mu2e{
       } 
       if(data!=0){
         if (*List3D== 0) {
-          *List3D = new TEveElementList("3D Data");
+          *List3D = new TEveElementList((title + "3D").c_str());
           if(!accumulate){(*List3D)->DestroyElements();} if(!accumulate){(*List3D)->DestroyElements();}     
         }
         else {
           (*List3D)->DestroyElements();  
         }
         if (*List2D== 0) {
-          *List2D = new TEveElementList("2D Data");
+          *List2D = new TEveElementList((title + "2D").c_str());
           (*List2D)->IncDenyDestroy();     
         }
         else {
@@ -43,33 +43,34 @@ namespace mu2e{
     }
 
  template <typename L> std::vector<double> Energies(L data, int *energylevels[]){
-		  std::vector<double> energies = {0, 0};
-		  double Max_Energy = 0;
-		  double Min_Energy = 1000;
-		  for(unsigned int i=0; i < data->size();i++){
-		        if (((*data)[i]).energyDep() > Max_Energy){Max_Energy = ((*data)[i]).energyDep();}
-        		      if (((*data)[i]).energyDep()< Min_Energy){Min_Energy = ((*data)[i]).energyDep();}
-		      }
-		  double interval = (Max_Energy - Min_Energy)/(9);
+  std::vector<double> energies = {0, 0};
+  double Max_Energy = 0;
+  double Min_Energy = 1000;
+  for(unsigned int i=0; i < data->size();i++){
+    if (((*data)[i]).energyDep() > Max_Energy){Max_Energy = ((*data)[i]).energyDep();}
+    if (((*data)[i]).energyDep()< Min_Energy){Min_Energy = ((*data)[i]).energyDep();}
+  }
+  double interval = (Max_Energy - Min_Energy)/(9);
 
 
-		  for(size_t i=0; i<data->size();i++){
-			  for(int n=0; n<9;n++){
-			       if(((*data)[i]).energyDep() >= Min_Energy + n * interval && ((*data)[i]).energyDep() <=Min_Energy + (n+1)*interval){
-				  (*energylevels)[i] = n;}
-			         }
-		      }
-		  energies.at(0) = Min_Energy;
-		  energies.at(1) = Max_Energy;
-		  return energies;
-	  }
+  for(size_t i=0; i<data->size();i++){
+  for(int n=0; n<9;n++){
+    if(((*data)[i]).energyDep() >= Min_Energy + n * interval && ((*data)[i]).energyDep() <=Min_Energy + (n+1)*interval){
+    (*energylevels)[i] = n;}
+  }
+  }
+  energies.at(0) = Min_Energy;
+  energies.at(1) = Max_Energy;
+  return energies;
+}
 
 
 
   void TEveMu2eMCInterface::AddMCTrajectory(bool firstloop, const MCTrajectoryCollection *trajcol, TEveMu2e2DProjection *tracker2Dproj, bool Redraw, bool show2D, bool accumulate){
-	DataLists<const MCTrajectoryCollection*, TEveMu2e2DProjection*>(trajcol, Redraw, show2D, accumulate, &fTrackList3D, &fTrackList2D, tracker2Dproj);
+	DataLists<const MCTrajectoryCollection*, TEveMu2e2DProjection*>(trajcol, Redraw, show2D, accumulate, "MC Trajectory", &fTrackList3D, &fTrackList2D, tracker2Dproj);
     if(trajcol!=0){
       TEveElementList *HitList3D = new TEveElementList("MCtraj3D");
+      TEveElementList *HitList2D = new TEveElementList("MCtraj2D");
       std::map<art::Ptr<mu2e::SimParticle>,mu2e::MCTrajectory>::const_iterator trajectoryIter;
       for(trajectoryIter=trajcol->begin(); trajectoryIter!=trajcol->end(); trajectoryIter++)
         {
@@ -79,13 +80,21 @@ namespace mu2e{
           CLHEP::Hep3Vector EndHitPos(points[points.size()-1].x(), points[points.size()-1].y(), points[points.size()-1].z());
           TEveMu2eMCTraj *teve_hit3D = new TEveMu2eMCTraj();
           string energy = to_string(points[0].kineticEnergy());
-           teve_hit3D->DrawLine3D("MCTraj PDG " + pdgId + "Energy = " + energy  + ", ",  StartHitPos, EndHitPos, HitList3D);
+           teve_hit3D->DrawLine("MCTraj PDG " + pdgId + "Energy = " + energy  + ", ",  StartHitPos, EndHitPos, HitList3D);
           ///for(unsigned int i=0; i<points.size();i++){
-           // std::cout<<i<<" "<<points[i].x()<<" "<<points[i].y()<<" "<<points[i].z()<<std::endl;
-         // }
-            fTrackList3D->AddElement(HitList3D); 
-
+          // std::cout<<i<<" "<<points[i].x()<<" "<<points[i].y()<<" "<<points[i].z()<<std::endl;
+          // }
+          fTrackList3D->AddElement(HitList3D);
+          if(show2D){
+            TEveMu2eMCTraj *teve_hit2D = new TEveMu2eMCTraj();
+            teve_hit2D->DrawLine("MCTraj PDG " + pdgId + "Energy = " + energy + ", ", PointToMu2e(StartHitPos), PointToMu2e(EndHitPos), HitList2D);
+            fTrackList2D->AddElement(HitList2D); 
+          }
         }
+        if(show2D){
+		      tracker2Dproj->fXYMgr->ImportElements(fTrackList2D, tracker2Dproj->fDetXYScene); 
+		      tracker2Dproj->fRZMgr->ImportElements(fTrackList2D, tracker2Dproj->fDetRZScene);
+		    }
         gEve->AddElement(fTrackList3D);
         gEve->Redraw3D(kTRUE);
       }

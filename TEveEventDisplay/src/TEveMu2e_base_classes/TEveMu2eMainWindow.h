@@ -82,7 +82,7 @@ namespace mu2e{
       TGHSlider       *fTHSlid;
       TGLabel         *fTlRun,*fTlEvt, *fTlTEvt, *fTlHSlid, *celabel, *helabel, *spacer, *spacer1;
       TGButtonGroup	*br;
-      TGCheckButton	*clusterscheck, *hitscheck, *trackscheck, *cosmicscheck;
+      TGCheckButton	*clusterscheck, *hitscheck, *trackscheck, *cosmicscheck, *cosmictrkscheck, *mctrajcheck;
       Double_t        hitMarkerSize_;
       Double_t        trkMaxR_;
       Double_t        trkMaxZ_;
