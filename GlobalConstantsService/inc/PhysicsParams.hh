@@ -122,15 +122,6 @@ namespace mu2e
       return _captureNeutronRate.find(allowedMaterial)->second;
     }
 
-    double   getStopXRay2p1sEnergy     (targetMat material = "") const {
-      const std::string allowedMaterial = checkMaterial( material );
-      return _stopXRay2p1sEnergy.find(allowedMaterial)->second;
-    }
-    double   getStopXRay2p1sIntensity     (targetMat material = "") const {
-      const std::string allowedMaterial = checkMaterial( material );
-      return _stopXRay2p1sIntensity.find(allowedMaterial)->second;
-    }
-
     double   getCaptureGammaEnergy     (targetMat material = "") const {
       const std::string allowedMaterial = checkMaterial( material );
       return _captureGammaEnergy.find(allowedMaterial)->second;
@@ -181,8 +172,6 @@ namespace mu2e
     std::map<targetMat, double> _captureDeuteronRate;
     std::map<targetMat, double> _captureNeutronRate;
 
-    std::map<targetMat, double> _stopXRay2p1sEnergy;
-    std::map<targetMat, double> _stopXRay2p1sIntensity;
     std::map<targetMat, double> _captureGammaEnergy;
     std::map<targetMat, double> _captureGammaIntensity;
 
