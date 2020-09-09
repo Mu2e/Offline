@@ -19,16 +19,14 @@ namespace mu2e {
       windowPeak_      (config.windowPeak()),
       minPeakAmplitude_(config.minPeakAmplitude()),
       numNoiseBins_    (config.numNoiseBins()),
-      minDeltaPeakBin_ (config.minDeltaPeakBin()),
+      minDTPeaks_      (config.minDTPeaks()),
       doSecondaryPeak_ (config.doSecondaryPeak()),
       psdThreshold_    (config.psdThreshold()),
       refitLeadingEdge_(config.refitLeadingEdge()),
-      timeCorr_        (config.timeCorr()),
       diagLevel_       (config.diagLevel()),
-      fmutil_          (minPeakAmplitude_,config.digiSampling(),config.minDTPeaks(), config.fitPrintLevel()),
+      fmutil_          (minPeakAmplitude_,config.digiSampling(),minDTPeaks_,config.fitPrintLevel()),
       chi2_            (999.),
       ndf_             (-1),
-      shiftPar_        (),
       resAmp_          (),
       resAmpErr_       (),
       resTime_         (),
@@ -54,43 +52,40 @@ namespace mu2e {
    void TemplateProcessor::initialize()
    {
        fmutil_.initialize();
-       fmutil_.calcTimeCorr(shiftPar_);
    }
 
 
    void TemplateProcessor::extract(const std::vector<double>& xInput, const std::vector<double>& yInput)
    {       
        if (diagLevel_>2) std::cout<<"TemplateProcessor start"<<std::endl;
+       
        reset();
        fmutil_.setXYVector(xInput, yInput);
        
-       std::vector<unsigned> peakLocation;
-       setPrimaryPeakPar(xInput, yInput, peakLocation);
-       auto nFirstPeaks = peakLocation.size();
-       if (nFirstPeaks==0) return;
-       if (diagLevel_>2) std::cout<<"Found "<<nFirstPeaks<<" peaks"<<std::endl;
-       fmutil_.setXYVector(xInput, yInput);
+       setPrimaryPeakPar(xInput, yInput);
+       if (fmutil_.nPeaks()==0) return;       
+       if (diagLevel_>2) std::cout<<"Found "<<fmutil_.nPeaks()<<" peaks"<<std::endl;
+       
        fmutil_.fit();
       
-       setSecondaryPeakPar(xInput, yInput, peakLocation);
-       if (doSecondaryPeak_ && peakLocation.size() > nFirstPeaks)
+       if (doSecondaryPeak_ && fmutil_.maxAmplitude() > 3*minPeakAmplitude_)
        {
-          if (diagLevel_>2) std::cout<<"Found "<<peakLocation.size()-nFirstPeaks<<" secondary peaks"<<std::endl;
-          fmutil_.setXYVector(xInput, yInput);
-          fmutil_.fit();
-       }
-
-       if (diagLevel_>2) std::cout<<"Fit done"<<std::endl;
+           auto nFirstPeaks = fmutil_.nPeaks(); 
+	   setSecondaryPeakPar(xInput, yInput);
+	   if (fmutil_.nPeaks() > nFirstPeaks) fmutil_.fit();
+       }       
        
        if (refitLeadingEdge_) fmutil_.refitEdge();
 
-       for (unsigned i=fmutil_.nParBkg(); i<fmutil_.par().size(); i += fmutil_.nParFcn())
+       for (unsigned i=0;i<fmutil_.nPeaks();++i)
        {            
-	   resAmp_.push_back(fmutil_.par()[i]);                          
-	   resAmpErr_.push_back(fmutil_.parErr()[i]);
-	   resTime_.push_back(fmutil_.fromPeakToT0(fmutil_.par()[i+1])); 
-	   resTimeErr_.push_back(fmutil_.parErr()[i+1]);
+	   unsigned ip = fmutil_.peakIdx(i);
+	   resAmp_.push_back(fmutil_.par()[ip]);                          
+	   resAmpErr_.push_back(fmutil_.parErr()[ip]);
+	   resTime_.push_back(fmutil_.fromPeakToT0(fmutil_.par()[ip+1])); 
+	   resTimeErr_.push_back(fmutil_.parErr()[ip+1]);
        }
+       
        chi2_ = fmutil_.chi2();
        ndf_  = yInput.size() - fmutil_.par().size();
               
@@ -105,6 +100,8 @@ namespace mu2e {
           for (auto val : resTime_)    _hTime->Fill(val);
           for (auto val : resTimeErr_) _hTimeErr->Fill(val);
        }          
+       
+       if (diagLevel_>2) std::cout<<"Fit done"<<std::endl;
    }
 
 
@@ -114,92 +111,122 @@ namespace mu2e {
 
    
    //---------------------------------------------------------------------------------------------------------------------------------------------
-   void TemplateProcessor::setPrimaryPeakPar(const std::vector<double>& xvec, const std::vector<double>& yvec, std::vector<unsigned>& peakLocation)
+   void TemplateProcessor::setPrimaryPeakPar(const std::vector<double>& xvec, const std::vector<double>& yvec)
    {        
-        if (windowPeak_ > xvec.size()) return;
-                
-        std::vector<double> parInit,ywork(yvec);
         
- 	//estimate noise, subtract baseline and get peaks
+	if (windowPeak_ > xvec.size()) return;
+        std::vector<double> parInit,ywork(yvec);
+               
+	//estimate the noise level with the first few bins 
 	float noise= std::accumulate(yvec.begin(),yvec.begin()+numNoiseBins_,0)/float(numNoiseBins_);
+        for (auto& val : ywork) val -= noise;   
         parInit.push_back(noise);
-        for (auto& val : ywork) val -= noise;        
-       
-	//first find "large" peaks, apply crude noise filtering (adjacent bins should be above mininum value) and remove small peaks
-        for (auto i=windowPeak_;i<int(xvec.size())-windowPeak_;++i)
-        {
-            if (std::max_element(&ywork[i-windowPeak_],&ywork[i+windowPeak_+1]) != &ywork[i]) continue;
-            if (ywork[i-1] < minPeakAmplitude_ || ywork[i] < minPeakAmplitude_ || ywork[i+1]< minPeakAmplitude_) continue;
-            if (checkPeakDist(i,peakLocation)) continue;
-            //if (!peakLocation.empty() && ywork[i] < 2*minPeakAmplitude_) continue;
+        
+	int nTry(0);
+	while (nTry <20)
+	{
+	    auto maxEl = std::max_element(ywork.begin(),ywork.end());
+	    int i = std::distance(ywork.begin(),maxEl);
+	    if (ywork[i] < minPeakAmplitude_ || ywork[i-1] < minPeakAmplitude_ || ywork[i-1] < minPeakAmplitude_) break;
 
             double xmaxEstimate = estimatePeakTime(xvec[i-1],xvec[i],xvec[i+1],ywork[i-1],ywork[i],ywork[i+1]);
-	    parInit.push_back(ywork[i]); 
-            parInit.push_back(xmaxEstimate);	     
-	    peakLocation.push_back(i);
+	    double ymaxEstimate = ywork[i];
+	
+	    std::vector<double> tempPar{noise};
+	    for (unsigned i=0;i<fmutil_.nPeaks();++i)  
+	    {	    
+		unsigned ip = fmutil_.peakIdx(i);		
+		if (parInit[ip+1] > xmaxEstimate)
+		{
+		    for (unsigned j=0;j<xvec.size();++j) ywork[j] += fmutil_.eval_logn(xvec[j],ip);	 
+		} 
+		else 
+		{
+		   tempPar.push_back(parInit[ip]);
+		   tempPar.push_back(parInit[ip+1]);
+		}
+	    }   
             
-            if (diagLevel_ > 2) std::cout<<"[TemplateProcessor] Found primary peak "<<xmaxEstimate<<std::endl;
-
+	    parInit = tempPar;
+	    parInit.push_back(ymaxEstimate);
+	    parInit.push_back(xmaxEstimate);
+	    
 	    fmutil_.setPar(parInit);
-	    for (unsigned j=0;j<xvec.size();++j) ywork[j] -= fmutil_.eval_logn(xvec[j],parInit.size()-fmutil_.nParFcn());		     
-        }        
-        
-        if (peakLocation.empty()) 
+            for (unsigned j=0;j<xvec.size();++j) ywork[j] -= fmutil_.eval_logn(xvec[j],parInit.size()-fmutil_.nParFcn());	   
+
+	    ++nTry;		
+        }
+
+        if (fmutil_.nPeaks()==0) 
         {
             unsigned ipeak(0);
             while (ipeak < ywork.size()) {if (ywork[ipeak] >= minPeakAmplitude_) break; ++ipeak;}
-            parInit.push_back(ywork[ipeak]); 
-            parInit.push_back(xvec[ipeak]);	     
-	    peakLocation.push_back(ipeak);
-            fmutil_.setPar(parInit);
+            if (ipeak < ywork.size())
+            { 
+                parInit.push_back(ywork[ipeak]); 
+                parInit.push_back(xvec[ipeak]);	     
+                fmutil_.setPar(parInit);
+            }
+        }                
+        
+        if (diagLevel_ > 2)
+        { 
+            for (unsigned i=0;i<fmutil_.nPeaks();++i)
+            {  
+               unsigned ip = fmutil_.peakIdx(i);
+               std::cout<<"found peak at t="<<fmutil_.par()[ip+1]<<std::endl; 
+            }
         }
-    }
+     }
 
 
     //--------------------------------------------------------------------------------------------------
-    void TemplateProcessor::setSecondaryPeakPar(const std::vector<double>& xvec, const std::vector<double>& yvec, std::vector<unsigned>& peakLocation)
+    void TemplateProcessor::setSecondaryPeakPar(const std::vector<double>& xvec, const std::vector<double>& yvec)
     {               
         if (windowPeak_ > xvec.size()) return;
 	
-	std::vector<double> parInit = fmutil_.par();
-
-	std::vector<double> ywork(yvec);
+        std::vector<double> ywork(yvec);
 	for (unsigned j=0;j<xvec.size();++j) ywork[j] -= fmutil_.eval_fcn(xvec[j]);	
 	
+	std::vector<double> parInit(fmutil_.par());
         for (auto i=windowPeak_;i<xvec.size()-windowPeak_;++i)
         {
-            if (std::max_element(&ywork[i-windowPeak_],&ywork[i+windowPeak_+1]) != &ywork[i]) continue;
-            if (ywork[i-1] < minPeakAmplitude_ || ywork[i] < minPeakAmplitude_ || ywork[i+1] < minPeakAmplitude_) continue;
-            if (checkPeakDist(i,peakLocation)) continue;            
-            if (yvec[i]>0 && ywork[i]/yvec[i] < psdThreshold_) continue;  // pulseShape Discrimintion  
+             if (std::max_element(&ywork[i-windowPeak_],&ywork[i+windowPeak_+1]) != &ywork[i]) continue;
+             if (ywork[i-1] < minPeakAmplitude_ || ywork[i] < minPeakAmplitude_ || ywork[i+1] < minPeakAmplitude_) continue;
+	     if (checkPeakDist(xvec[i])) continue;	     
+             if (yvec[i]>0 && ywork[i]/yvec[i] < psdThreshold_) continue;  
 
-            double xmaxEstimate = estimatePeakTime(xvec[i-1],xvec[i],xvec[i+1],ywork[i-1],ywork[i],ywork[i+1]);
-            parInit.push_back(ywork[i]); 
-            parInit.push_back(xmaxEstimate);	     
-	    peakLocation.push_back(i);
+             double xmaxEstimate = estimatePeakTime(xvec[i-1],xvec[i],xvec[i+1],ywork[i-1],ywork[i],ywork[i+1]);
+             parInit.push_back(ywork[i]); 
+             parInit.push_back(xmaxEstimate);	     
+	     
+	     fmutil_.setPar(parInit);
+	     for (unsigned j=0;j<xvec.size();++j) ywork[j] -= fmutil_.eval_logn(xvec[j],parInit.size()-fmutil_.nParFcn());	
 
-	    fmutil_.setPar(parInit);
-	    for (unsigned j=0;j<xvec.size();++j) ywork[j] -= fmutil_.eval_logn(xvec[j],parInit.size()-fmutil_.nParFcn());	
+	     if (diagLevel_>2)  std::cout<<"Secondary peak "<<xvec[i]<<" "<<xmaxEstimate<<std::endl;
         }
-   }
+    }
 
 
    //------------------------------------------------------------
    double TemplateProcessor::estimatePeakTime(double x1, double x2, double x3, double y1, double y2, double y3)
    {       
-       return (x1*y1+x2*y2+x3*y3)/(y1+y2+y3)+0*(shiftPar_[0]+shiftPar_[1]*y3/y2)*(x2-x1);
+       //Maybe revert 
+       return (x1*y1+x2*y2+x3*y3)/(y1+y2+y3);
+       //return (x1*y1+x2*y2+x3*y3)/(y1+y2+y3)+(shiftPar_[0]+shiftPar_[1]*y3/y2)*(x2-x1);
    }
 
    //------------------------------------------------------------------------------------------
-   bool TemplateProcessor::checkPeakDist(unsigned i, const std::vector<unsigned>& peakLocation)
-   {
-      for (auto pl : peakLocation) 
-	 if ( ((i>pl) ? i-pl : pl-i) < minDeltaPeakBin_) return true;
-      
-      return false;	 
+   bool TemplateProcessor::checkPeakDist(double x0)
+   {  
+       for (unsigned i=0;i<fmutil_.nPeaks();++i) 
+       {
+           unsigned ip = fmutil_.peakIdx(i);
+	   if (std::abs(fmutil_.par()[ip+1]-x0) < minDTPeaks_) return true;       
+       }       
+       return false;
    }
    
-
    //---------------------------------------------------------------------------------------------------------------------------------------
    void TemplateProcessor::plot(const std::string& name) const {fmutil_.plotFit(name);}
   
@@ -210,4 +237,5 @@ namespace mu2e {
       for (auto h : val) std::cout<<h<<" ";
       std::cout<<std::endl;     
    }
+
 }

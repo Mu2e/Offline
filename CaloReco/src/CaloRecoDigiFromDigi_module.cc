@@ -155,7 +155,8 @@ namespace mu2e {
               double chi2      = waveformProcessor_->chi2();
               int    ndf       = waveformProcessor_->ndf();
               
-              if (diagLevel_>1)
+//              if (diagLevel_>1 && waveformProcessor_->chi2()/waveformProcessor_->ndf()>1.0)
+              if (diagLevel_>1 && waveformProcessor_->nPeaks()>3)
               {
                  std::cout<<"[CaloRecoDigiFromDigi::extractAmplitude] extract "<<roID<<"   i="<<i<<"  eDep="<<eDep
                           <<" time="<<time<<"  chi2="<<chi2<<std::endl;
@@ -163,6 +164,10 @@ namespace mu2e {
                  ss<<"wffit_"; ss<<nPlots;ss<<".pdf";
                  if (nPlots<maxPlots_) waveformProcessor_->plot(ss.str());
                  ++nPlots;
+	  
+           std::cout<<"DUMP ";
+           for (const auto& v : y) std::cout<<v<<" ";
+           std::cout<<std::endl;
               }
               
 
