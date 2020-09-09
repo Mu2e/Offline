@@ -4,6 +4,7 @@
 #include "DataProducts/inc/XYZVec.hh"
 #include "ConfigTools/inc/SimpleConfig.hh"
 #include "GeometryService/inc/GeomHandle.hh"
+#include "CalorimeterGeom/inc/Calorimeter.hh"
 //C++
 #include <vector>
 using namespace CLHEP;
@@ -73,6 +74,15 @@ namespace mu2e{
       CLHEP::Hep3Vector Mu2eCaloOrigin = GetCaloCenter(nDisk);
       CLHEP::Hep3Vector PointToCalo(point.x() + Mu2eCaloOrigin.x(), point.y()+Mu2eCaloOrigin.y(), point.z() + Mu2eCaloOrigin.z());
       return  PointToCalo;
+    }
+    inline CLHEP::Hep3Vector PointToMu2e(CLHEP::Hep3Vector point){
+      CLHEP::Hep3Vector Mu2eTrackerOrigin = GetTrackerCenter();
+      CLHEP::Hep3Vector PointToTracker(point.x() - Mu2eTrackerOrigin.x(), point.y() - Mu2eTrackerOrigin.y(), point.z() - Mu2eTrackerOrigin.z());
+      return PointToTracker;
+    }
+    inline unsigned int CrystalsperDisk(){
+      Calorimeter const &cal = *(GeomHandle<Calorimeter>());
+      return (unsigned int)(cal.disk(0).nCrystals());
     }
     
     inline double TrackerLength(){

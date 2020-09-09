@@ -335,10 +335,9 @@ namespace mu2e
 			_TrueA0=(trueinfo.TrueFitEquation.Pos.X());
 			_TrueB0=(trueinfo.TrueFitEquation.Pos.Y());
 		}
-		for(size_t i=0; i<sts._straw_chits.size();i++){
+		for(size_t i=0; i< sts._straw_chits.size();i++){
 			ComboHit const& chit = sts._straw_chits[i];
 			_nused = i;
-
 			_nhits[_nused] = chit.nStrawHits();
 			panels.push_back(chit.strawId().panel());
 			planes.push_back(chit.strawId().plane());
