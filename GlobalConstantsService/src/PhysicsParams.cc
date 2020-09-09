@@ -104,10 +104,6 @@ namespace mu2e {
     _captureDeuteronRate[material] = config.getDouble("physicsParams."+material+".capture.deuteronRate", 0);
     _captureNeutronRate[material] = config.getDouble("physicsParams."+material+".capture.neutronRate", 0);
 
-    // Load X-rays
-    _stopXRay2p1sEnergy[material] = config.getDouble("physicsParams."+material+".stop.xRay2p1s.energy", 0);
-    _stopXRay2p1sIntensity[material] = config.getDouble("physicsParams."+material+".stop.xRay2p1s.intensity", 0);
-
     // Load capture gamma rays
     _captureGammaEnergy[material] = config.getDouble("physicsParams."+material+".capture.gRay.energy", 0);
     _captureGammaIntensity[material] = config.getDouble("physicsParams."+material+".capture.gRay.intensity", 0);

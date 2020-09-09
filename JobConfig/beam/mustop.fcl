@@ -39,13 +39,6 @@ genPhys_cap_neutron: {
     spectrumVariable: kineticEnergy
 }
 
-genPhys_stop_2p1s: {
-    pdgId : 22
-    genId : StoppedParticleReactionGun
-    spectrumVariable : kineticEnergy
-    spectrumShape : XRay2p1s
-}    
-
 genPhys_cap_gamma: {
     pdgId : 22
     genId : StoppedParticleReactionGun
@@ -75,7 +68,6 @@ physics.producers.generate: {
    module_type: MuStopProductsGun
    verbosityLevel : 1
    stops : @local::mu2e.tgtMuonStops
-   stopProducts : [ @local::genPhys_stop_2p1s ] # e.g. X-rays
    captureProducts : [ @local::genPhys_cap_proton, 
    		       @local::genPhys_cap_deuteron, 
 		       @local::genPhys_cap_neutron,

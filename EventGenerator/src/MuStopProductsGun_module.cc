@@ -17,7 +17,7 @@
 #include "CLHEP/Units/PhysicalConstants.h"
 
 #include "art/Framework/Core/EDProducer.h"
-#include "art/Framework/Core/ModuleMacros.h"  
+#include "art/Framework/Core/ModuleMacros.h"
 #include "art/Framework/Principal/Event.h"
 #include "art/Framework/Principal/Run.h"
 #include "art/Framework/Principal/Handle.h"
@@ -58,7 +58,7 @@ namespace mu2e {
       using Name=fhicl::Name;
       using Comment=fhicl::Comment;
 
-      fhicl::Sequence< fhicl::Table<GenPhysConfig> > stopProducts{Name("stopProducts"), Comment("Products coincident with stopped muon (i.e. generated every event)")};
+      //      fhicl::Sequence< fhicl::Table<GenPhysConfig> > stopProducts{Name("stopProducts"), Comment("Products coincident with stopped muon (i.e. generated every event)")};
       fhicl::Sequence< fhicl::Table<GenPhysConfig> > captureProducts{Name("captureProducts"), Comment("Products coincident with captured muon)")};
       fhicl::Sequence< fhicl::Table<GenPhysConfig> > decayProducts{Name("decayProducts"), Comment("Products coincident with decayd muon)")};
       fhicl::Atom<int> verbosityLevel{Name("verbosityLevel"), Comment("Verbosity Level (default = 0)"), 0};
@@ -74,18 +74,18 @@ namespace mu2e {
     enum SpectrumVar  { TOTAL_ENERGY, KINETIC_ENERY, MOMENTUM };
 
     struct GenPhysStruct {
-      GenPhysStruct(GenPhysConfig conf, art::RandomNumberGenerator::base_engine_t& eng, bool is_poisson_rate = false, double rate = 1, double prob = 1) : 
-	pdgId(PDGCode::type(conf.pdgId())),
-	mass(GlobalConstantsHandle<ParticleDataTable>()->particle(pdgId).ref().mass().value()),
-	spectrumVariable(parseSpectrumVar(conf.spectrumVariable())),
-	spectrum(BinnedSpectrum(conf)),
-	genId(GenId::findByName(conf.genId())),
-	randSpectrum(eng, spectrum.getPDF(), spectrum.getNbins()),
-	isPoissonRate(is_poisson_rate),
-	emissionRate(rate),
-	probability(prob),
-	randomFlat(eng),
-	randomPoissonQ(eng,rate)
+      GenPhysStruct(GenPhysConfig conf, art::RandomNumberGenerator::base_engine_t& eng, bool is_poisson_rate = false, double rate = 1, double prob = 1) :
+        pdgId(PDGCode::type(conf.pdgId())),
+        mass(GlobalConstantsHandle<ParticleDataTable>()->particle(pdgId).ref().mass().value()),
+        spectrumVariable(parseSpectrumVar(conf.spectrumVariable())),
+        spectrum(BinnedSpectrum(conf)),
+        genId(GenId::findByName(conf.genId())),
+        randSpectrum(eng, spectrum.getPDF(), spectrum.getNbins()),
+        isPoissonRate(is_poisson_rate),
+        emissionRate(rate),
+        probability(prob),
+        randomFlat(eng),
+        randomPoissonQ(eng,rate)
       {    }
 
       PDGCode::type       pdgId;
@@ -101,18 +101,18 @@ namespace mu2e {
       CLHEP::RandPoissonQ randomPoissonQ;
 
       int getNGenerated() {
-	double rand = randomFlat.fire();
-	if (rand < probability) {
-	  if (isPoissonRate) {
-	    return randomPoissonQ.fire();
-	  }
-	  else {
-	    return emissionRate;
-	  }
-	}
-	else {
-	  return 0;
-	}
+        double rand = randomFlat.fire();
+        if (rand < probability) {
+          if (isPoissonRate) {
+            return randomPoissonQ.fire();
+          }
+          else {
+            return emissionRate;
+          }
+        }
+        else {
+          return 0;
+        }
       };
     };
 
@@ -148,7 +148,7 @@ namespace mu2e {
     void                  generateGenParticles(GenPhysStruct& genPhys, std::unique_ptr<GenParticleCollection>& output);
     double _decayFraction;
     double _captureFraction;
-    std::vector<GenPhysStruct> _allStopProducts;
+    //    std::vector<GenPhysStruct> _allStopProducts;
     std::vector<GenPhysStruct> _allCaptureProducts;
     std::vector<GenPhysStruct> _allDecayProducts;
 
@@ -182,58 +182,43 @@ namespace mu2e {
       std::cout << "MuStopProductsGun: decayFraction = " << _decayFraction << std::endl;
       std::cout << "MuStopProductsGun: captureFraction = " << _captureFraction << std::endl;
     }
-    for (const auto& i_genPhysConfig : conf_.stopProducts()) {
-      double rate = 0;
-      bool is_poisson_rate = false;
-      double prob = 1;
-      if (i_genPhysConfig.pdgId() == 22) {
-	rate = 1;
-	prob = GlobalConstantsHandle<PhysicsParams>()->getStopXRay2p1sIntensity();
-      }
-      else {
-	throw cet::exception("MUSTOPPRODUCTSGUN") << "Stop product with PdgId " << i_genPhysConfig.pdgId() << " is not implemented" << std::endl;
-      }
-
-      GenPhysStruct i_genPhys(i_genPhysConfig, eng_, is_poisson_rate, rate, prob);
-      _allStopProducts.push_back(i_genPhys);
-      if (verbosityLevel_ > 0) {
-	std::cout << "MuStopProductsGun: Adding Stop Process: " << i_genPhys.pdgId << std::endl;
-      }
-    }
+    //    for (const auto& i_genPhysConfig : conf_.stopProducts()) {
+    // // Create stopped muon processes here in the future, if needs be
+    //    }
     for (const auto& i_genPhysConfig : conf_.captureProducts()) {
       double rate = 0;
       bool is_poisson_rate = false;
       double prob = 1;
       if (i_genPhysConfig.pdgId() == 2212) {
-	is_poisson_rate = true;
-	rate = GlobalConstantsHandle<PhysicsParams>()->getCaptureProtonRate();
+        is_poisson_rate = true;
+        rate = GlobalConstantsHandle<PhysicsParams>()->getCaptureProtonRate();
       }
       else if (i_genPhysConfig.pdgId() == 1000010020) {
-	is_poisson_rate = true;
-	rate = GlobalConstantsHandle<PhysicsParams>()->getCaptureDeuteronRate();
+        is_poisson_rate = true;
+        rate = GlobalConstantsHandle<PhysicsParams>()->getCaptureDeuteronRate();
       }
       else if (i_genPhysConfig.pdgId() == 2112) {
-	is_poisson_rate = true;
-	rate = GlobalConstantsHandle<PhysicsParams>()->getCaptureNeutronRate();
+        is_poisson_rate = true;
+        rate = GlobalConstantsHandle<PhysicsParams>()->getCaptureNeutronRate();
       }
       else if (i_genPhysConfig.pdgId() == 22) {
-	if (i_genPhysConfig.spectrumShape() == "CaptureGamma") {
-	  rate = 1;
-	  prob = GlobalConstantsHandle<PhysicsParams>()->getCaptureGammaIntensity();
-	}
-	else { // this is our photon background frame
-	  is_poisson_rate = true;
-	  rate = 2;
-	}
+        if (i_genPhysConfig.spectrumShape() == "CaptureGamma") {
+          rate = 1;
+          prob = GlobalConstantsHandle<PhysicsParams>()->getCaptureGammaIntensity();
+        }
+        else { // this is our photon background frame
+          is_poisson_rate = true;
+          rate = 2;
+        }
       }
       else {
-	throw cet::exception("MUSTOPPRODUCTSGUN") << "Capture product with PdgId " << i_genPhysConfig.pdgId() << " is not implemented" << std::endl;
+        throw cet::exception("MUSTOPPRODUCTSGUN") << "Capture product with PdgId " << i_genPhysConfig.pdgId() << " is not implemented" << std::endl;
       }
 
       GenPhysStruct i_genPhys(i_genPhysConfig, eng_, is_poisson_rate, rate, prob);
       _allCaptureProducts.push_back(i_genPhys);
       if (verbosityLevel_ > 0) {
-	std::cout << "MuStopProductsGun: Adding Capture Process: " << i_genPhys.pdgId << std::endl;
+        std::cout << "MuStopProductsGun: Adding Capture Process: " << i_genPhys.pdgId << std::endl;
       }
     }
     for (const auto& i_genPhysConfig : conf_.decayProducts()) {
@@ -241,16 +226,16 @@ namespace mu2e {
       bool is_poisson_rate = false;
       double prob = 1;
       if (i_genPhysConfig.pdgId() == 11) {
-	rate = 1;
+        rate = 1;
       }
       else {
-	throw cet::exception("MUSTOPPRODUCTSGUN") << "Decay product with PdgId " << i_genPhysConfig.pdgId() << " is not implemented" << std::endl;
+        throw cet::exception("MUSTOPPRODUCTSGUN") << "Decay product with PdgId " << i_genPhysConfig.pdgId() << " is not implemented" << std::endl;
       }
 
       GenPhysStruct i_genPhys(i_genPhysConfig, eng_, is_poisson_rate, rate, prob);
       _allDecayProducts.push_back(i_genPhys);
       if (verbosityLevel_ > 0) {
-	std::cout << "MuStopProductsGun: Adding Decay Process: " << i_genPhys.pdgId << std::endl;
+        std::cout << "MuStopProductsGun: Adding Decay Process: " << i_genPhys.pdgId << std::endl;
       }
     }
 
@@ -299,25 +284,26 @@ namespace mu2e {
     if (doHistograms_) {
       _hProcesses->Fill("stops", 1);
     }
-    for (auto& i_genPhys : _allStopProducts) {
-      generateGenParticles(i_genPhys, output);
-    }
+    // // Generate stopped-muon processes here in the future, if needs be
+    //    for (auto& i_genPhys : _allStopProducts) {
+    //      generateGenParticles(i_genPhys, output);
+    //    }
 
     double rand = randomFlat_.fire();
     if (rand < _decayFraction) {
       if (doHistograms_) {
-	_hProcesses->Fill("decays", 1);
+        _hProcesses->Fill("decays", 1);
       }
       for (auto& i_genPhys : _allDecayProducts) {
-	generateGenParticles(i_genPhys, output);
+        generateGenParticles(i_genPhys, output);
       }
     }
     else {
       if (doHistograms_) {
-	_hProcesses->Fill("captures", 1);
+        _hProcesses->Fill("captures", 1);
       }
       for (auto& i_genPhys : _allCaptureProducts) {
-	generateGenParticles(i_genPhys, output);
+        generateGenParticles(i_genPhys, output);
       }
     }
 
@@ -325,8 +311,8 @@ namespace mu2e {
   }
 
 //-----------------------------------------------------------------------------
-// generate (pseudo-)random particle energy 
-// the spectrum itself doesn't know whether is stored momentum, kinetic or full 
+// generate (pseudo-)random particle energy
+// the spectrum itself doesn't know whether is stored momentum, kinetic or full
 // energy
 //-----------------------------------------------------------------------------
   double MuStopProductsGun::generateEnergy(GenPhysStruct& genPhys) {
@@ -359,36 +345,36 @@ namespace mu2e {
       CLHEP::Hep3Vector p3 = randomUnitSphere_.fire(p);
       CLHEP::HepLorentzVector fourmom(p3, energy);
       output->emplace_back(genPhys.pdgId,
-			   genPhys.genId,
-			   pos,
-			   fourmom,
-			   stop.t);
+                           genPhys.genId,
+                           pos,
+                           fourmom,
+                           stop.t);
 
       //-----------------------------------------------------------------------------
       // if requested, fill histograms. Currently, the only one
       //-----------------------------------------------------------------------------
       if (doHistograms_) {
-	_hGenId->Fill(genPhys.genId.id());
-	_hPdgId->Fill(genPhys.pdgId);
-	_hEnergy->Fill(energy);
-	_hTime->Fill(stop.t);
-	_hZ->Fill(pos.z());
+        _hGenId->Fill(genPhys.genId.id());
+        _hPdgId->Fill(genPhys.pdgId);
+        _hEnergy->Fill(energy);
+        _hTime->Fill(stop.t);
+        _hZ->Fill(pos.z());
       }
       if (doTree_) {
-	_brEnergy = energy;
-	_brGenId = genPhys.genId.id();
-	_brPdgId = genPhys.pdgId;
-	_brTime = stop.t;
-	_brZ = pos.z();
+        _brEnergy = energy;
+        _brGenId = genPhys.genId.id();
+        _brPdgId = genPhys.pdgId;
+        _brTime = stop.t;
+        _brZ = pos.z();
 
-	_genTree->Fill();
-	
-	// Reset branches
-	_brEnergy = 0;
-	_brGenId = 0;
-	_brPdgId = 0;
-	_brTime = 0;
-	_brZ = 0;
+        _genTree->Fill();
+
+        // Reset branches
+        _brEnergy = 0;
+        _brGenId = 0;
+        _brPdgId = 0;
+        _brTime = 0;
+        _brZ = 0;
       }
     }
   }
