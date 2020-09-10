@@ -21,35 +21,35 @@ using namespace mu2e;
 namespace mu2e{
 
   template <typename T, typename U> void DataLists(T data, bool Redraw, bool show2D, bool accumulate, std::string title, TEveElementList **List3D, TEveElementList **List2D = 0, U projection = 0){	
-		      if(data == 0 && Redraw){
-		        if (*List3D != 0){
-		          (*List3D)->DestroyElements();
-		        }
-		        if(show2D){
-		        if (*List2D != 0){
-		          (*List2D)->DestroyElements();
-		        }
-		        projection->fXYMgr->ImportElements(*List2D, projection->fDetXYScene); 
-		        projection->fRZMgr->ImportElements(*List2D, projection->fDetRZScene);
-		        }
-		        gEve->AddElement(*List3D);
-		        gEve->Redraw3D(kTRUE); 
-		      } 
-		      if(data!=0){
-		        if (*List3D== 0) {
-		          *List3D = new TEveElementList((title + "3D").c_str());
-		          (*List3D)->IncDenyDestroy();     
-		        }
-		        else {
-		           if (!accumulate){(*List3D)->DestroyElements();}   
-		        }
-		        if (*List2D== 0) {
-		          *List2D = new TEveElementList((title + "2D").c_str());
-		          (*List2D)->IncDenyDestroy();     
-		        }
-		        else {
-		          if (!accumulate){(*List2D)->DestroyElements();}   
-		        }
+      if(data == 0 && Redraw){
+        if (*List3D != 0){
+          (*List3D)->DestroyElements();
+        }
+        if(show2D){
+        if (*List2D != 0){
+          (*List2D)->DestroyElements();
+        }
+        projection->fXYMgr->ImportElements(*List2D, projection->fDetXYScene); 
+        projection->fRZMgr->ImportElements(*List2D, projection->fDetRZScene);
+        }
+        gEve->AddElement(*List3D);
+        gEve->Redraw3D(kTRUE); 
+      } 
+      if(data!=0){
+        if (*List3D== 0) {
+          *List3D = new TEveElementList((title + "3D").c_str());
+          (*List3D)->IncDenyDestroy();     
+        }
+        else {
+           if (!accumulate){(*List3D)->DestroyElements();}   
+        }
+        if (*List2D== 0) {
+          *List2D = new TEveElementList((title + "2D").c_str());
+          (*List2D)->IncDenyDestroy();     
+        }
+        else {
+          if (!accumulate){(*List2D)->DestroyElements();}   
+        }
 	    }
     }
 
@@ -155,7 +155,7 @@ namespace mu2e{
         ComboHit hit = (*chcol)[i];
         TEveMu2eHit *teve_hit2D = new TEveMu2eHit(hit);
         TEveMu2eHit *teve_hit3D = new TEveMu2eHit(hit);
-
+        cout<<i<<" "<<(hit.pos().x()-3904)/10<<" , "<<hit.pos().y()/10<<" , "<<(hit.pos().z()+10171)/10<<endl;
         CLHEP::Hep3Vector HitPos(hit.pos().x(), hit.pos().y(), hit.pos().z());
         CLHEP::Hep3Vector pointInMu2e = PointToTracker(HitPos);
         string energy = to_string(teve_hit3D->GetEnergy());
@@ -308,24 +308,28 @@ namespace mu2e{
         CosmicTrack st = sts._track;
 
         line->SetLineColor(kGreen);
-        /*direction = sts._track.MinuitEquation.Pos; 
-        intercept = sts._track.MinuitEquation.Dir;*/
-        for(size_t i=0; i<sts._straw_chits.size();i++){
+        //XYZVec intercept = sts._track.MinuitEquation.Pos; 
+        //XYZVec direction = sts._track.MinuitEquation.Dir;
+        double endY = 0;
+        double startY = 0;
+        for(size_t i=0; i < sts._straw_chits.size();i++){
 			    ComboHit const& chit = sts._straw_chits[i];
+			    endY = sts._straw_chits[sts._straw_chits.size()-1].pos().y();
+			    startY = sts._straw_chits[0].pos().y();
 			    cout<<i<<" Point at: "<<(chit.pos().x()-3904)/10<<" "<<chit.pos().y()/10<<" "<<(chit.pos().z()+10171)/10<<endl;
 		    }
-        Float_t ty1 = 85.0; //TODO - this should come from tracker config file
-        Float_t ty2 = -85.0;
-        Float_t tx1 = st.FitParams.A0/10  - st.FitParams.A1*ty1;
-        Float_t tx2 = st.FitParams.A0/10  - st.FitParams.A1*ty2;
-        Float_t tz1 = st.FitParams.B0/10  - st.FitParams.B1*ty1;
-        Float_t tz2 = st.FitParams.B0/10  + st.FitParams.B1*ty2; 	
-        line->AddLine(tx1-390.4, -1*ty1, tz1+1017.1, tx2-390.4, -1*ty2, tz2+1017.1);
+        Float_t ty1 = startY;
+        Float_t ty2 = endY;
+        Float_t tx1 = st.MinuitParams.A0  - st.MinuitParams.A1*ty1;
+        Float_t tx2 = st.MinuitParams.A0  - st.MinuitParams.A1*ty2;
+        Float_t tz1 = st.MinuitParams.B0  - st.MinuitParams.B1*ty1;
+        Float_t tz2 = st.MinuitParams.B0  - st.MinuitParams.B1*ty2; 	
+        line->AddLine((tx1-3904)/10, ty1/10, (tz1+10171)/10, (tx2-3904)/10, ty2/10, (tz2+10171)/10);
 
-        cout<<"Start "<<tx1<<" "<<ty1<<" "<<tz1<<" End "<<tx2<<" "<<ty2<<" "<<tz2<<endl;
-        //cout<<"A0 "<<st.FitParams.A0/10<<" A1 "<<st.FitParams.A1<<" B0 "<<st.FitParams.B0/10<<" B1 "<<st.FitParams.B1<<endl;
+        cout<<"Start "<<tx1/10<<" "<<ty1/10<<" "<<tz1/10<<" End "<<tx2/10<<" "<<ty2/10<<" "<<tz2/10<<endl;
+        cout<<"A0 "<<st.MinuitParams.A0<<" A1 "<<st.MinuitParams.A1<<" B0 "<<st.MinuitParams.B0<<" B1 "<<st.MinuitParams.B1<<endl;
         if(show2D){
-          line2D->AddLine(tx1, ty1/10, tz1, tx2, ty2/10, tz2);	
+          line2D->AddLine(tx1, ty1, tz1, tx2, ty2, tz2);	
           line2D->SetPickable(kTRUE);
           line2D->SetLineColor(kBlue);
           line2D->SetLineWidth(3);
