@@ -146,8 +146,6 @@ namespace mu2e{
         timeFrame->AddFrame(fTHSlid, new TGLayoutHints(kLHintsExpandX));
         fTHSlid->Associate(this);
 
-
-
         TGHorizontalFrame *fHframe2 = new TGHorizontalFrame(evtidFrame);
         fTeh1 = new TGTextEntry(fHframe2, fTbh1 = new TGTextBuffer(5), 1700);
         fTeh1->SetToolTipText("Time (ns)");
@@ -166,7 +164,6 @@ namespace mu2e{
 
         celabel = new TGLabel(evtidFrame, "Cluster Energy");
 
-
         TGHorizontalFrame *centenergyframe = new TGHorizontalFrame(evtidFrame);
         cminenergy = new TGTextEntry(centenergyframe, _clustminenergy = new TGTextBuffer(5), 1701);
         _clustminenergy->AddText(0, "0.0");
@@ -178,9 +175,6 @@ namespace mu2e{
         _clustmaxenergy->AddText(0, "0.0");
         centenergyframe->AddFrame(cmaxenergy,new TGLayoutHints(kLHintsExpandX));
         cmaxenergy->Associate(this);
-
-
-
 
         std::string clusterenergy = "TEveEventDisplay/src/Icons/purplegradient.png";
         const TGPicture *ce = gClient->GetPicture(clusterenergy.c_str());
@@ -203,7 +197,6 @@ namespace mu2e{
         hentenergyframe->AddFrame(hmaxenergy,new TGLayoutHints(kLHintsExpandX));
         hmaxenergy->Associate(this);
 
-
         br = new TGButtonGroup(evtidFrame, "Data Products", kVerticalFrame);
         clusterscheck = new TGCheckButton(br, new TGHotString("Clusters"), 1200);
         clusterscheck->SetState(kButtonDown);
@@ -217,6 +210,7 @@ namespace mu2e{
         cosmictrkscheck->SetState(kButtonDown);
         mctrajcheck = new TGCheckButton(br, new TGHotString("MC Trajectories"), 1205);	
         mctrajcheck->SetState(kButtonDown);
+        
         // ... Add horizontal run & event number subframes to vertical evtidFrame
         evtidFrame->AddFrame(runoFrame,new TGLayoutHints(kLHintsExpandX));
         evtidFrame->AddFrame(evnoFrame,new TGLayoutHints(kLHintsExpandX));
@@ -231,12 +225,12 @@ namespace mu2e{
         evtidFrame->AddFrame(hentenergyframe, new TGLayoutHints(kLHintsLeft,3,0,3,0));
         evtidFrame->AddFrame(br, new TGLayoutHints(kLHintsExpandX));
 
-       
         clusterscheck->Associate(this);
         hitscheck->Associate(this);
         trackscheck->Associate(this);
         cosmictrkscheck->Associate(this);
         mctrajcheck->Associate(this);
+        
         // ... Add navFrame and evtidFrame to MainFrame
         frmMain->AddFrame(navFrame);
         TGHorizontal3DLine *separator = new TGHorizontal3DLine(frmMain);
@@ -249,7 +243,6 @@ namespace mu2e{
 
         browser->StopEmbedding();
         browser->SetTabTitle("Event Nav", 0);
-
       }
       gEve->AddEvent(new TEveEventManager("Event", "Empty Event"));
       TGLViewer *glv = gEve->GetDefaultGLViewer();
@@ -257,7 +250,6 @@ namespace mu2e{
       glv->CurrentCamera().RotateRad(camRotateCenterH_,camRotateCenterV_);
       glv->CurrentCamera().Dolly(camDollyDelta_,kFALSE,kFALSE);
     }
-
 
     void TEveMu2eMainWindow::StartCRVProjectionTab(){
       // Create detector and event scenes for ortho views
@@ -286,7 +278,6 @@ namespace mu2e{
       CRV2Dproj->fXYView->GetGLViewer()->SetCurrentCamera(TGLViewer::kCameraOrthoXOY);
       CRV2Dproj->fXYView->AddScene(CRV2Dproj->fDetXYScene);
       CRV2Dproj->fXYView->AddScene(CRV2Dproj->fEvtXYScene);
-
   }
 
   void TEveMu2eMainWindow::StartCaloProjectionTab(){
@@ -332,8 +323,7 @@ namespace mu2e{
     calo2Dproj->fRZView->AddScene(calo2Dproj->fEvtRZScene);
 
     gEve->GetBrowser()->GetTabRight()->SetTab(0);
-
-    }
+  }
 
   void TEveMu2eMainWindow::StartTrackerProjectionTab(){
     // Create detector and event scenes for ortho views
@@ -476,6 +466,7 @@ namespace mu2e{
     gGeoManager->SetTopVisible(kTRUE);
     int nn = gGeoManager->GetNNodes();
     printf("nodes in geom = %d\n",nn);
+    
     //Get Top Node:
     TGeoNode* topnode = gGeoManager->GetTopNode();
     TEveGeoTopNode* etopnode = new TEveGeoTopNode(gGeoManager, topnode);
@@ -520,7 +511,6 @@ namespace mu2e{
     gSystem->ProcessEvents();
     gClient->NeedRedraw(fTeRun);
     gApplication->Run(true);
-
 	}
 
   void TEveMu2eMainWindow::RedrawGeometry(){
@@ -537,9 +527,9 @@ namespace mu2e{
     //Add static detector geometry to global scene
     gEve->AddGlobalElement(etopnode);
     geom->Draw("ogl");
-
   }
-Bool_t TEveMu2eMainWindow::ProcessMessage(Long_t msg, Long_t param1, Long_t param2){
+  
+  Bool_t TEveMu2eMainWindow::ProcessMessage(Long_t msg, Long_t param1, Long_t param2){
     switch (GET_MSG(msg))
     {  
     case kC_HSLIDER:
@@ -556,7 +546,6 @@ Bool_t TEveMu2eMainWindow::ProcessMessage(Long_t msg, Long_t param1, Long_t para
         *hitenergy = pass_data->AddComboHits(_firstLoop, _data.chcol, tracker2Dproj, texttime, false, _show2D, fhitmin, fhitmax, _accumulate);
         *clusterenergy = pass_data->AddCaloClusters(_firstLoop, _data.clustercol, calo2Dproj, texttime, false, _show2D, fclustmin, fclustmax, _accumulate);
         pass_data->AddHelixPieceWise(_firstLoop, _data.kalseedcol,tracker2Dproj, texttime, false, _show2D, _accumulate);
-
 	    }
      break; 
     case kC_TEXTENTRY:
@@ -693,9 +682,7 @@ Bool_t TEveMu2eMainWindow::ProcessMessage(Long_t msg, Long_t param1, Long_t para
     gApplication->Run(true);
 
     gEve->Redraw3D(kTRUE);
-
-   }
-
+  }
 
   void TEveMu2eMainWindow::fillEvent(bool firstLoop)
    {
@@ -736,8 +723,7 @@ Bool_t TEveMu2eMainWindow::ProcessMessage(Long_t msg, Long_t param1, Long_t para
     }
     else _timeText->SetTitle(eventInfoText.c_str());
     this->Layout();
-
- }
+  }
 
   int TEveMu2eMainWindow::getEventToFind(bool &findEvent) const
   {
