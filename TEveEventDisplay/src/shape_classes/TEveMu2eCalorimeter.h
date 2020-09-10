@@ -36,7 +36,7 @@ namespace mu2e{
       void DrawCaloDetector(art::Run const& run, TGeoVolume* topvol , TEveElementList *orthodet0,TEveElementList *orthodet1);
       TEveMu2e2DProjection *calo2Dproj = new TEveMu2e2DProjection();
       #endif
-      ClassDef(TEveMu2eCalorimeter, 0);
+    ClassDef(TEveMu2eCalorimeter, 0);
   };
 }
 #endif

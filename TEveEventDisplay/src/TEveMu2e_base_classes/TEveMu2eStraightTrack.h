@@ -2,16 +2,13 @@
 #define TEveMu2eStraightTrack_h
 
 #include <TObject.h>
-//#pragma GCC diagnostic push
-//#pragma GCC diagnostic ignored "-Wtype-limits"
-//#include "RecoDataProducts/inc/CosmicTrackSeed.hh"
-//#pragma GCC diagnostic pop
+#include "RecoDataProducts/inc/CosmicTrackSeed.hh"
 
 #include <TEveStraightLineSet.h>
 
 namespace mu2e {
   class  TEveMu2eStraightTrack: public TEveStraightLineSet{
-      //CosmicTrackSeed* fCosmicTrackSeed;
+      CosmicTrackSeed* fCosmicTrackSeed;
     public:
       #ifndef __CINT__
       explicit TEveMu2eStraightTrack(){};

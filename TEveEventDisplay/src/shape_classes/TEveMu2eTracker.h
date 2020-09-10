@@ -21,7 +21,7 @@
 namespace mu2e {
 	
 class TEveMu2eTracker{
-	public:
+  public:
     #ifndef __CINT__
     explicit TEveMu2eTracker();
     TEveMu2eTracker(const TEveMu2eTracker &){};
@@ -30,7 +30,7 @@ class TEveMu2eTracker{
     TEveMu2e2DProjection *tracker2Dproj = new TEveMu2e2DProjection();
     void DrawTrackerDetector(art::Run const& run, TGeoVolume* topvol , TEveElementList *orthodet);
     #endif
-    ClassDef(TEveMu2eTracker, 0);
+  ClassDef(TEveMu2eTracker, 0);
   };
 }
 #endif
