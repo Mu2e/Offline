@@ -21,101 +21,96 @@ using namespace mu2e;
 namespace mu2e{
 
   template <typename T, typename U> void DataLists(T data, bool Redraw, bool show2D, bool accumulate, std::string title, TEveElementList **List3D, TEveElementList **List2D = 0, U projection = 0){	
-      if(data == 0 && Redraw){
-        if (*List3D != 0){
-          (*List3D)->DestroyElements();
-        }
-        if(show2D){
+    if(data == 0 && Redraw){
+      if (*List3D != 0){
+        (*List3D)->DestroyElements();
+      }
+      if(show2D){
         if (*List2D != 0){
           (*List2D)->DestroyElements();
         }
         projection->fXYMgr->ImportElements(*List2D, projection->fDetXYScene); 
         projection->fRZMgr->ImportElements(*List2D, projection->fDetRZScene);
-        }
-        gEve->AddElement(*List3D);
-        gEve->Redraw3D(kTRUE); 
-      } 
-      if(data!=0){
-        if (*List3D== 0) {
-          *List3D = new TEveElementList((title + "3D").c_str());
-          (*List3D)->IncDenyDestroy();     
-        }
-        else {
-           if (!accumulate){(*List3D)->DestroyElements();}   
-        }
-        if (*List2D== 0) {
-          *List2D = new TEveElementList((title + "2D").c_str());
-          (*List2D)->IncDenyDestroy();     
-        }
-        else {
-          if (!accumulate){(*List2D)->DestroyElements();}   
-        }
-	    }
+      }
+      gEve->AddElement(*List3D);
+      gEve->Redraw3D(kTRUE); 
+    } 
+    if(data!=0){
+      if (*List3D== 0) {
+        *List3D = new TEveElementList((title + "3D").c_str());
+        (*List3D)->IncDenyDestroy();     
+      }
+      else {
+        if (!accumulate){(*List3D)->DestroyElements();}   
+      }
+      if (*List2D== 0) {
+        *List2D = new TEveElementList((title + "2D").c_str());
+        (*List2D)->IncDenyDestroy();     
+      }
+      else {
+        if (!accumulate){(*List2D)->DestroyElements();}   
+      }
     }
+  }
 
- template <typename L> std::vector<double> Energies(L data, int *energylevels[]){
-		  std::vector<double> energies = {0, 0};
-		  double Max_Energy = 0;
-		  double Min_Energy = 1000;
-		  for(unsigned int i=0; i < data->size();i++){
-		        if (((*data)[i]).energyDep() > Max_Energy){Max_Energy = ((*data)[i]).energyDep();}
-        		      if (((*data)[i]).energyDep()< Min_Energy){Min_Energy = ((*data)[i]).energyDep();}
-		      }
-		  double interval = (Max_Energy - Min_Energy)/(9);
+  template <typename L> std::vector<double> Energies(L data, int *energylevels[]){
+    std::vector<double> energies = {0, 0};
+    double Max_Energy = 0;
+    double Min_Energy = 1000;
+    for(unsigned int i=0; i < data->size();i++){
+      if (((*data)[i]).energyDep() > Max_Energy){Max_Energy = ((*data)[i]).energyDep();}
+      if (((*data)[i]).energyDep()< Min_Energy){Min_Energy = ((*data)[i]).energyDep();}
+    }
+    double interval = (Max_Energy - Min_Energy)/(9);
 
+    for(size_t i=0; i<data->size();i++){
+      for(int n=0; n<9;n++){
+        if(((*data)[i]).energyDep() >= Min_Energy + n * interval && ((*data)[i]).energyDep() <=Min_Energy + (n+1)*interval){
+        (*energylevels)[i] = n;}
+      }
+    }
+    energies.at(0) = Min_Energy;
+    energies.at(1) = Max_Energy;
+    return energies;
+  }
 
-		  for(size_t i=0; i<data->size();i++){
-			  for(int n=0; n<9;n++){
-			       if(((*data)[i]).energyDep() >= Min_Energy + n * interval && ((*data)[i]).energyDep() <=Min_Energy + (n+1)*interval){
-				  (*energylevels)[i] = n;}
-			         }
-		      }
-		  energies.at(0) = Min_Energy;
-		  energies.at(1) = Max_Energy;
-		  return energies;
-	  }
-
-
-
- 
   std::vector<double> TEveMu2eDataInterface::getTimeRange(bool firstloop, const ComboHitCollection *chcol, const CrvRecoPulseCollection *crvcoincol, const CaloClusterCollection *clustercol, const CaloCrystalHitCollection *cryHitcol){
 	vector <double> time = {-1, -1};
 
-	if (crvcoincol != 0){
-		for(unsigned int i=0; i <crvcoincol->size(); i++){
-			const CrvRecoPulse &crvRecoPulse = crvcoincol->at(i);
-			if (crvRecoPulse.GetPulseTime() > time.at(1)){time.at(1) = crvRecoPulse.GetPulseTime();}
-			if (crvRecoPulse.GetPulseTime() < time.at(0)){time.at(0) = crvRecoPulse.GetPulseTime();}
-		}
-	}
-        if (chcol != 0){
-		for(size_t i=0; i<chcol->size();i++){
-	      		ComboHit hit = (*chcol)[i];
-			if (hit.time() > time.at(1)){time.at(1) = hit.time();}
-			if (hit.time() < time.at(0)){time.at(0) = hit.time();}
-		}
-	}
+    if (crvcoincol != 0){
+      for(unsigned int i=0; i <crvcoincol->size(); i++){
+        const CrvRecoPulse &crvRecoPulse = crvcoincol->at(i);
+        if (crvRecoPulse.GetPulseTime() > time.at(1)){time.at(1) = crvRecoPulse.GetPulseTime();}
+        if (crvRecoPulse.GetPulseTime() < time.at(0)){time.at(0) = crvRecoPulse.GetPulseTime();}
+      }
+    }
+    if (chcol != 0){
+      for(size_t i=0; i<chcol->size();i++){
+        ComboHit hit = (*chcol)[i];
+        if (hit.time() > time.at(1)){time.at(1) = hit.time();}
+        if (hit.time() < time.at(0)){time.at(0) = hit.time();}
+      }
+    }
 
-	if (clustercol != 0){
-	    	for(unsigned int i=0; i<clustercol->size();i++){
-          CaloCluster const  &cluster= (*clustercol)[i];
-          if (cluster.time() > time.at(1)){time.at(1) = cluster.time();}
-          if (cluster.time() < time.at(0)){time.at(0) = cluster.time();}
-		}
-	}
-	
-	if (cryHitcol != 0){
-	    	for(unsigned int i=0; i<cryHitcol->size();i++){
-          CaloCrystalHit const  &hit = (*cryHitcol)[i];
-          if (hit.time() > time.at(1)){time.at(1) = hit.time();}
-          if (hit.time() < time.at(0)){time.at(0) = hit.time();}
-		}
-	}
-	if (time.at(0) == -1){time.at(0) = 0;}
-  if (time.at(1) == -1){time.at(1) = 100;} 
-	return time;
+    if (clustercol != 0){
+      for(unsigned int i=0; i<clustercol->size();i++){
+        CaloCluster const  &cluster= (*clustercol)[i];
+        if (cluster.time() > time.at(1)){time.at(1) = cluster.time();}
+        if (cluster.time() < time.at(0)){time.at(0) = cluster.time();}
+      }
+    }
 
-}
+    if (cryHitcol != 0){
+    for(unsigned int i=0; i<cryHitcol->size();i++){
+      CaloCrystalHit const  &hit = (*cryHitcol)[i];
+        if (hit.time() > time.at(1)){time.at(1) = hit.time();}
+        if (hit.time() < time.at(0)){time.at(0) = hit.time();}
+      }
+    }
+    if (time.at(0) == -1){time.at(0) = 0;}
+    if (time.at(1) == -1){time.at(1) = 100;} 
+    return time;
+  }
 
    void TEveMu2eDataInterface::AddCRVInfo(bool firstloop, const CrvRecoPulseCollection *crvcoincol,  double time, bool Redraw, bool show2D, bool accumulate){
       DataLists<const CrvRecoPulseCollection*, TEveMu2e2DProjection*>(crvcoincol, Redraw, show2D, accumulate,  "CRVRecoPulse", &fCrvList3D, &fCrvList2D);
@@ -155,7 +150,7 @@ namespace mu2e{
         ComboHit hit = (*chcol)[i];
         TEveMu2eHit *teve_hit2D = new TEveMu2eHit(hit);
         TEveMu2eHit *teve_hit3D = new TEveMu2eHit(hit);
-        cout<<i<<" "<<(hit.pos().x()-3904)/10<<" , "<<hit.pos().y()/10<<" , "<<(hit.pos().z()+10171)/10<<endl;
+        
         CLHEP::Hep3Vector HitPos(hit.pos().x(), hit.pos().y(), hit.pos().z());
         CLHEP::Hep3Vector pointInMu2e = PointToTracker(HitPos);
         string energy = to_string(teve_hit3D->GetEnergy());
@@ -308,16 +303,13 @@ namespace mu2e{
         CosmicTrack st = sts._track;
 
         line->SetLineColor(kGreen);
-        //XYZVec intercept = sts._track.MinuitEquation.Pos; 
-        //XYZVec direction = sts._track.MinuitEquation.Dir;
+       
         double endY = 0;
         double startY = 0;
-        for(size_t i=0; i < sts._straw_chits.size();i++){
-			    ComboHit const& chit = sts._straw_chits[i];
-			    endY = sts._straw_chits[sts._straw_chits.size()-1].pos().y();
-			    startY = sts._straw_chits[0].pos().y();
-			    cout<<i<<" Point at: "<<(chit.pos().x()-3904)/10<<" "<<chit.pos().y()/10<<" "<<(chit.pos().z()+10171)/10<<endl;
-		    }
+
+        endY = sts._straw_chits[sts._straw_chits.size()-1].pos().y();
+        startY = sts._straw_chits[0].pos().y(); 
+
         Float_t ty1 = startY;
         Float_t ty2 = endY;
         Float_t tx1 = st.MinuitParams.A0  - st.MinuitParams.A1*ty1;
@@ -325,8 +317,6 @@ namespace mu2e{
         Float_t tz1 = st.MinuitParams.B0  - st.MinuitParams.B1*ty1;
         Float_t tz2 = st.MinuitParams.B0  - st.MinuitParams.B1*ty2; 	
         line->AddLine((tx1-3904)/10, ty1/10, (tz1+10171)/10, (tx2-3904)/10, ty2/10, (tz2+10171)/10);
-
-        cout<<"Start "<<tx1/10<<" "<<ty1/10<<" "<<tz1/10<<" End "<<tx2/10<<" "<<ty2/10<<" "<<tz2/10<<endl;
         cout<<"A0 "<<st.MinuitParams.A0<<" A1 "<<st.MinuitParams.A1<<" B0 "<<st.MinuitParams.B0<<" B1 "<<st.MinuitParams.B1<<endl;
         if(show2D){
           line2D->AddLine(tx1, ty1, tz1, tx2, ty2, tz2);	

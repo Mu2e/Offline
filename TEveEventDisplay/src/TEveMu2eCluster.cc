@@ -3,7 +3,7 @@
 using namespace mu2e;
 namespace mu2e{
 
-	TEveMu2eCluster::TEveMu2eCluster(){}
+  TEveMu2eCluster::TEveMu2eCluster(){}
 
   void TEveMu2eCluster::DrawCluster(const std::string &pstr,  CLHEP::Hep3Vector cog, int energylevel, TEveElementList *ClusterList)
   {

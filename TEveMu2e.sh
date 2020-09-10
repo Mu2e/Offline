@@ -23,7 +23,7 @@ for var in "$@"
 	    sed -i 's/showCRV :.*/showCRV : false/' TEveEventDisplay/fcl/prolog.fcl
 	fi
 	
-  if [ "$var" == '-accumulate' ]; then
+        if [ "$var" == '-accumulate' ]; then
 	    sed -i 's/accumulate.*/accumulate : true/' TEveEventDisplay/fcl/prolog.fcl
 	fi
 	
@@ -49,10 +49,17 @@ for var in "$@"
 	    sed -i 's/addTracks.*/addTracks : true/' TEveEventDisplay/fcl/prolog.fcl
 	fi
 
-	if [ "$var" == 'crvinfo' ]; then
+	if [ "$var" == 'crvhits' ]; then
 	    sed -i 's/addCrvHits.*/addCrvHits : true/' TEveEventDisplay/fcl/prolog.fcl
+	fi
+
+	if [ "$var" == 'cosmictracks' ]; then
+	    sed -i 's/addCosmicSeedFit.*/addCosmicSeedFit : true/' TEveEventDisplay/fcl/prolog.fcl
+	fi
+
+	if [ "$var" == 'mctraj' ]; then
+	    sed -i 's/addMCTraj.*/addMCTraj : true/' TEveEventDisplay/fcl/prolog.fcl
 	fi
 done
 
 mu2e -c ${fcl} ${art} --nevts ${numofevts}
-

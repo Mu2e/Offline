@@ -44,17 +44,17 @@ namespace mu2e {
 
 	
 	bool EventFilter::filter(art::Event& event) {
-	  if(_seq) return true;
-	  eventid = event.id().event();
-	  runid = event.run();
-	  std::cout<<"Enter Event Number Selection "<<std::endl;
-	  std::cin>>_event;
-	  std::cout<<"Enter Run Number Selection "<<std::endl;
-	  std::cin>>_run;
-	  if(eventid == _event and runid==_run) {
-	    return true;
-	  }
-	    return false;
+    if(_seq) return true;
+    eventid = event.id().event();
+    runid = event.run();
+    std::cout<<"Enter Event Number Selection "<<std::endl;
+    std::cin>>_event;
+    std::cout<<"Enter Run Number Selection "<<std::endl;
+    std::cin>>_run;
+    if(eventid == _event and runid==_run) {
+      return true;
+    }
+    return false;
   }
 }
 using mu2e::EventFilter;

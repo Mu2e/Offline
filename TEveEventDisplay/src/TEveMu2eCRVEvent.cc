@@ -6,7 +6,7 @@ namespace mu2e{
 	TEveMu2eCRVEvent::TEveMu2eCRVEvent(){}
   
   void TEveMu2eCRVEvent::DrawHit3D(const std::string &pstr, Int_t n, CLHEP::Hep3Vector pointInMu2e, TEveElementList *HitList)
-  	{
+	{
     this->SetTitle((DataTitle(pstr, n)).c_str());
     this->SetNextPoint(pointInMu2e.x(), pointInMu2e.y(), pointInMu2e.z()); 
     this->SetMarkerColor(mColor);
@@ -24,7 +24,6 @@ namespace mu2e{
     this->SetMarkerSize(mSize);
     this->SetPickable(kTRUE);
     HitList->AddElement(this);
-
   }
 }
 

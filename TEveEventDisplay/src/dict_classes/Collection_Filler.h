@@ -87,28 +87,21 @@ namespace mu2e{
     art::InputTag hseedTag_;
     art::InputTag kalseedTag_;
     art::InputTag trkexttrajTag_;
+    
     //MCDataProdutcs:
     art::InputTag mctrajTag_;
 
-    std::string g4ModuleLabel_;
-
     art::Event *_event;
     art::Run *_run;
-
     bool addHits_, addTracks_, addClusters_, addCrvHits_, addCosmicSeedFit_, isCosmic_, addTrkExtTrajs_, RecoOnly_,  FillAll_, addMCCaloDigis_, addMCTraj_, MCOnly_;
-
     void FillRecoCollections(const art::Event& evt, Data_Collections &data, RecoDataProductName code);
     void FillMCCollections(const art::Event& evt, Data_Collections &data, MCDataProductName code);
-
-    //template<class collection>
-    //void GetCollection(const art::Event& evt, collection &c, int code);
- 
     virtual ~Collection_Filler(){};
 
   private:
     Config _conf;
     #endif
-    ClassDef(Collection_Filler,0);
+  ClassDef(Collection_Filler,0);
 };
 
 }

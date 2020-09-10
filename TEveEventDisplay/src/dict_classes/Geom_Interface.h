@@ -39,15 +39,13 @@ namespace mu2e{
       virtual ~Geom_Interface(){};
       TGeoManager *_geom;
       TGeoManager* getGeom(TString filename) {
-      TGeoManager *geom;
-      geom = geom->TGeoManager::Import(filename);
-      return geom;
+        TGeoManager *geom;
+        geom = geom->TGeoManager::Import(filename);
+        return geom;
       }
-
       void CreateGeomManager();
       void RemoveComponents();
       void toForeground();
-
       void InsideDS( TGeoNode * node, bool inDSVac );
       void hideTop(TGeoNode* node, int _diagLevel);
       void hideNodesByName(TGeoNode* node, const std::string& str, bool onOff, int _diagLevel) ;
@@ -56,13 +54,12 @@ namespace mu2e{
       void hideNodesByMaterial(TGeoNode* node, const std::string& mat, bool onOff);
       void SolenoidsOnly(TGeoNode* node);
       void TrackerVolumeHeirarchy( TGeoNode * node, std::vector<CLHEP::Hep3Vector> &TransformList );
-
       CLHEP::Hep3Vector TrackerG4Origin;
       CLHEP::Hep3Vector CaloG4Origin;
       CLHEP::Hep3Vector TrackMu2eOrigin;
       CLHEP::Hep3Vector CaloMu2eOrigin;
       #endif
-      ClassDef(Geom_Interface,0);
+    ClassDef(Geom_Interface,0);
 
 	}; //end class def
 

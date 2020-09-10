@@ -33,7 +33,7 @@ namespace mu2e{
       void DrawCRVDetector(art::Run const& run, TGeoVolume* topvol , TEveElementList *orthodetlist[]);
       TEveMu2e2DProjection *CRV2Dproj = new TEveMu2e2DProjection();
       #endif
-      ClassDef(TEveMu2eCRV, 0);
+    ClassDef(TEveMu2eCRV, 0);
   };
 }
 #endif

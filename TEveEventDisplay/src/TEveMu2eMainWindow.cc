@@ -681,7 +681,10 @@ Bool_t TEveMu2eMainWindow::ProcessMessage(Long_t msg, Long_t param1, Long_t para
     gSystem->IgnoreSignal(kSigSegmentationViolation);
  
     gClient->NeedRedraw(fTeRun);
-
+    _clustminenergy->Clear();
+    _clustmaxenergy->Clear();
+    _hitminenergy->Clear();
+    _hitmaxenergy->Clear();
     _clustminenergy->AddText(0, (to_string(clusterenergy->at(0))).c_str());
     _clustmaxenergy->AddText(0, (to_string(clusterenergy->at(1))).c_str());
 

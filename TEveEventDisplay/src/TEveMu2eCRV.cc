@@ -8,7 +8,6 @@ namespace mu2e{
 	TEveMu2eCRV::TEveMu2eCRV(){};
 
   void TEveMu2eCRV::DrawCRVDetector(art::Run const& run, TGeoVolume* topvol, TEveElementList *orthodetlist[]){
-    //material TODO:Change this
     TGeoMaterial *matSi = new TGeoMaterial("Si", 28.085,14,2.33);
     TGeoMedium *Si = new TGeoMedium("Silicon",2, matSi);
     std::vector<double> halflen;
