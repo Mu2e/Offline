@@ -1,8 +1,5 @@
 // Simple approximations available for DIO spectrum.
 //
-// $Id: PionCaptureSpectrum.cc,v 1.1 2014/02/05 21:32:26 knoepfel Exp $
-// $Author: knoepfel $
-// $Date: 2014/02/05 21:32:26 $
 //
 
 #include <cmath>

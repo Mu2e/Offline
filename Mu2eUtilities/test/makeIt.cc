@@ -1,9 +1,6 @@
 //
 // Part of the test suite for the make_ref class template.
 //
-//  $Id: makeIt.cc,v 1.2 2011/03/10 00:00:58 kutschke Exp $
-//  $Author: kutschke $
-//  $Date: 2011/03/10 00:00:58 $
 //
 // Original author Rob Kutschke
 //

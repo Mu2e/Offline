@@ -5,9 +5,6 @@
 // A templated class to hold a collection of objects defined on a
 // 3D grid.
 //
-// $Id: Container3D.hh,v 1.10 2011/05/19 17:03:16 wb Exp $
-// $Author: wb $
-// $Date: 2011/05/19 17:03:16 $
 //
 
 #include <vector>

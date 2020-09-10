@@ -1,6 +1,3 @@
-// $Id: globalConstants_01.txt,v 1.6 2014/01/07 06:29:19 gandr Exp $
-// $Author: gandr $
-// $Date: 2014/01/07 06:29:19 $
 //
 
 int    physicsParams.verbosityLevel = 0;

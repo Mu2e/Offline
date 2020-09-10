@@ -2,9 +2,6 @@
 #
 # Readback the output of data_03.root; make histograms and printout.
 #
-# $Id: psVacuum_readback.fcl,v 1.1 2012/06/22 18:14:56 youzy Exp $
-# $Author: youzy $
-# $Date: 2012/06/22 18:14:56 $
 #
 # Original author Zhengyun You
 

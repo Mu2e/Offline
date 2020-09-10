@@ -1,7 +1,4 @@
 ##
-# $Id: runCosmicGraf.fcl,v 1.1 2014/08/29 16:16:17 knoepfel Exp $
-# $Author: knoepfel $
-# $Date: 2014/08/29 16:16:17 $
 
 #include "fcl/minimalMessageService.fcl"
 #include "fcl/standardProducers.fcl"

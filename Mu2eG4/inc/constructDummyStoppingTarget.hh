@@ -4,9 +4,6 @@
 // Free function to construct a placeholder for the stopping target.
 // Useful for some low detail graphics.
 //
-// $Id: constructDummyStoppingTarget.hh,v 1.4 2011/08/04 18:52:25 genser Exp $
-// $Author: genser $
-// $Date: 2011/08/04 18:52:25 $
 //
 // Original author Rob Kutschke
 //

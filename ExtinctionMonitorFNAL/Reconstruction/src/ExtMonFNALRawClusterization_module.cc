@@ -1,8 +1,5 @@
 // Pixel digitization: create ExtMonFNALRawClusters from raw hits.
 //
-// $Id: ExtMonFNALRawClusterization_module.cc,v 1.3 2013/03/15 15:52:04 kutschke Exp $
-// $Author: kutschke $
-// $Date: 2013/03/15 15:52:04 $
 //
 // Original author Andrei Gaponenko
 //

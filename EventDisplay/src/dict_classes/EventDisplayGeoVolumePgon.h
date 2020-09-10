@@ -1,9 +1,6 @@
 //
 // Class which displays GeoVolumes with a hexagon (used e.g. by the Hexagon class). It is inherited from ROOT's TGeoVolume and the ComponentInfo class which stores specific information for this support structure. The class' constructure creates a TGeoPgon, which is put into the TGeoVolume. The context menu is overwritten with a menu item allowing the user to display information for this vane.
 //
-// $Id: EventDisplayGeoVolumePgon.h,v 1.1 2014/02/22 01:52:18 ehrlich Exp $
-// $Author: ehrlich $
-// $Date: 2014/02/22 01:52:18 $
 //
 // Original author Ralf Ehrlich
 //

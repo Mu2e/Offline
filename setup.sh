@@ -103,7 +103,7 @@ build=$($MU2E_BASE_RELEASE/buildopts --build)
 # and is therefore different from the value shown in
 # SETUP_<productname> environment vars, or by the "ups active" command.
 export MU2E_UPS_QUALIFIERS=+e19:+${build}
-export MU2E_ART_SQUALIFIER=s100
+export MU2E_ART_SQUALIFIER=s101
 
 MU2E_G4_GRAPHICS_QUALIFIER=''
 if [[ $($MU2E_BASE_RELEASE/buildopts --g4vis) == qt ]]; then
@@ -123,8 +123,8 @@ fi
 export MU2E_G4_EXTRA_QUALIFIER=''
 
 # Setup the framework and its dependent products
-setup -B art v3_06_02 -q${MU2E_UPS_QUALIFIERS}
-setup -B art_root_io v1_04_02 -q${MU2E_UPS_QUALIFIERS}
+setup -B art v3_06_03 -q${MU2E_UPS_QUALIFIERS}
+setup -B art_root_io v1_04_03 -q${MU2E_UPS_QUALIFIERS}
 
 # Geant4 and its cross-section files.
 if [[ $($MU2E_BASE_RELEASE/buildopts --trigger) == "off" ]]; then
@@ -134,13 +134,13 @@ else
 fi
 
 # Get access to raw data formats.
-setup -B mu2e_artdaq_core v1_04_04 -q${MU2E_UPS_QUALIFIERS}:+${MU2E_ART_SQUALIFIER}:offline
+setup -B mu2e_artdaq_core v1_04_07 -q${MU2E_UPS_QUALIFIERS}:+${MU2E_ART_SQUALIFIER}:offline
 
 # Other libraries we need.
-setup -B pcie_linux_kernel_module v2_03_04 -q${MU2E_UPS_QUALIFIERS}:+${MU2E_ART_SQUALIFIER}
+setup -B pcie_linux_kernel_module v2_03_06 -q${MU2E_UPS_QUALIFIERS}:+${MU2E_ART_SQUALIFIER}
 
 setup -B heppdt   v03_04_02 -q${MU2E_UPS_QUALIFIERS}
-setup -B BTrk   v1_02_25  -q${MU2E_UPS_QUALIFIERS}:p383b
+setup -B BTrk   v1_02_27  -q${MU2E_UPS_QUALIFIERS}:p383b
 setup -B cry   v1_7n  -q${MU2E_UPS_QUALIFIERS}
 setup -B gsl v2_6a
 setup curl v7_64_1

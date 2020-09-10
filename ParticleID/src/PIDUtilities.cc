@@ -1,6 +1,3 @@
-// $Id: 
-// $Author: 
-// $Date: 
 
 // C++ includes.
 #include <iostream>

@@ -1,9 +1,6 @@
 //
 // Object to perform helix fit to straw hits
 //
-// $Id: $
-// $Author: $
-// $Date: $
 //
 #ifndef TrkReco_Chi2HelixFit_HH
 #define TrkReco_Chi2HelixFit_HH

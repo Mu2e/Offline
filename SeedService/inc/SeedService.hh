@@ -3,9 +3,6 @@
 //
 // An art service to assist in the distribution of guaranteed unique seeds to all engines within an art job.
 //
-// $Id: SeedService.hh,v 1.10 2013/03/14 19:54:49 kutschke Exp $
-// $Author: kutschke $
-// $Date: 2013/03/14 19:54:49 $
 //
 // Contact person Rob Kutschke
 //

@@ -4,9 +4,6 @@
 // Enum-matched-to-String class for defining which version of the Tracker
 // support structure is to be used.
 //
-//   $Id: SupportModel.hh,v 1.1 2013/01/07 03:54:28 kutschke Exp $
-//   $Author: kutschke $
-//   $Date: 2013/01/07 03:54:28 $
 //
 // Contact person, Rob Kutschke
 //

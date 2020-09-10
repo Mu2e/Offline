@@ -1,6 +1,3 @@
-// $Id: ExtMonFNALBoxGenerator_module.cc,v 1.12 2013/07/30 18:45:00 wieschie Exp $
-// $Author: wieschie $
-// $Date: 2013/07/30 18:45:00 $
 //
 // Create particle flux in the ExtMonFNAL box by randomizing
 // kinematic of input particles read from a file.

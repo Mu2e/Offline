@@ -5,9 +5,6 @@
 // arbitrary, and can be grid-like, parametric, or other.
 // Units are: space point in mm, field values in tesla.
 //
-// $Id: BFMap.hh,v 1.21 2013/08/30 22:25:22 kutschke Exp $
-// $Author: kutschke $
-// $Date: 2013/08/30 22:25:22 $
 //
 // Original Rob Kutschke, based on work by Julie Managan and Bob Bernstein.
 // Rewritten in part by Krzysztof Genser to save execution time

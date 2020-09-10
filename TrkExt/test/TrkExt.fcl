@@ -1,8 +1,5 @@
 # Configuration file for TrkPatRec01
 #
-# $Id: TrkExt.fcl,v 1.9 2014/05/28 21:16:30 gandr Exp $
-# $Author: gandr $
-# $Date: 2014/05/28 21:16:30 $
 
 #include "fcl/minimalMessageService.fcl"
 #include "fcl/standardProducers.fcl"

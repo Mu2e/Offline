@@ -1,9 +1,6 @@
 //
 // Free function to create the virtual detectors
 //
-// $Id: constructVirtualDetectors.cc,v 1.70 2014/07/29 16:24:44 genser Exp $
-// $Author: genser $
-// $Date: 2014/07/29 16:24:44 $
 //
 // Original author KLG based on Mu2eWorld constructVirtualDetectors
 

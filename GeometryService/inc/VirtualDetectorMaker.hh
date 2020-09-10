@@ -3,8 +3,6 @@
 //
 // Construct and return an VirtualDetector.
 //
-// $Id: VirtualDetectorMaker.hh,v 1.3 2013/03/15 15:52:04 kutschke Exp $
-// $Author: kutschke $
 //
 // Original author Peter Shanahan
 //

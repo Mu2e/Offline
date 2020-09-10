@@ -3,9 +3,6 @@
 //
 // Free function to construct Proton Absorber
 //
-// $Id: constructProtonAbsorber.hh,v 1.3 2012/11/19 23:03:24 genser Exp $
-// $Author: genser $
-// $Date: 2012/11/19 23:03:24 $
 //
 // Original author KLG
 //

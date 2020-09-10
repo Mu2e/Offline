@@ -2,9 +2,6 @@
 // Class to hold one magnetic field map. The map
 // is defined on a regular cartesian grid.
 //
-// $Id: BFGridMap.cc,v 1.21 2013/08/30 22:25:58 kutschke Exp $
-// $Author: kutschke $
-// $Date: 2013/08/30 22:25:58 $
 //
 // Original Rob Kutschke, based on work by Julie Managan and Bob Bernstein.
 // Rewritten in part by Krzysztof Genser to correct mistake pointed by RB and to save execution

@@ -5,9 +5,6 @@
 //  G4 uses G4World coordinate
 //  See the note at TrkExtTraj.hh for the meaning of point information, especially when volume changing. 
 //
-//  $Id: TrkExt_module.cc,v 1.10 2014/04/18 16:54:59 kutschke Exp $
-//  $Author: kutschke $
-//  $Date: 2014/04/18 16:54:59 $
 //
 //  Original author MyeongJae Lee
 //

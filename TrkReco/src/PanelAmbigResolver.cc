@@ -1,9 +1,6 @@
 // class to resolve hit ambiguities by panel, assuming a reasonable track
 // fit as input
 //
-// $Id: PanelAmbigResolver.cc,v 1.4 2012/08/31 22:39:00 brownd Exp $
-// $Author: brownd $ 
-// $Date: 2012/08/31 22:39:00 $
 //
 #include "TrkReco/inc/PanelAmbigResolver.hh"
 #include "TrkReco/inc/PanelStateIterator.hh"

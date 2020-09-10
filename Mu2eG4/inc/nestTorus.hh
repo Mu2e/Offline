@@ -3,9 +3,6 @@
 //
 // Free function to create and place a new G4Torus inside a logical volume.
 //
-// $Id: nestTorus.hh,v 1.10 2014/09/19 19:14:56 knoepfel Exp $
-// $Author: knoepfel $
-// $Date: 2010/03/15
 //
 
 #include <array>

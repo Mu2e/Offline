@@ -2,9 +2,6 @@
 // Geometry file for study of pi-> e nu at rest as a 
 // calibration tool.
 //
-// $Id: pi_e_nu_geom.txt,v 1.1 2011/05/03 05:06:38 kutschke Exp $
-// $Author: kutschke $
-// $Date: 2011/05/03 05:06:38 $
 //
 // Original author Rob Kutschke
 //

@@ -2,9 +2,6 @@
 // Virtual base class for all shapes.
 // Container class for the geometry object(s) with information on how they are to be displayed and updated for specific times.
 //
-// $Id: VirtualShape.h,v 1.13 2014/02/22 01:52:18 ehrlich Exp $
-// $Author: ehrlich $
-// $Date: 2014/02/22 01:52:18 $
 //
 // Original author Ralf Ehrlich
 //

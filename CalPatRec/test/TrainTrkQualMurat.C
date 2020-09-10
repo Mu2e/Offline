@@ -1,4 +1,3 @@
-// @(#)root/tmva $Id: TrainTrkQual.C,v 1.4 2014/05/31 14:27:49 brownd Exp $
 /**********************************************************************************
  * Project   : TMVA - a ROOT-integrated toolkit for multivariate data analysis    *
  * Package   : TMVA                                                               *

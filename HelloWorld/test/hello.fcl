@@ -1,8 +1,5 @@
 #
 #
-# $Id: hello.fcl,v 1.1 2011/05/18 21:08:02 kutschke Exp $
-# $Author: kutschke $
-# $Date: 2011/05/18 21:08:02 $
 
 #include "fcl/minimalMessageService.fcl"
 

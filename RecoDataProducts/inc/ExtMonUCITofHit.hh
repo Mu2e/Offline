@@ -1,9 +1,6 @@
 #ifndef RecoDataProducts_ExtMonUCITofHit_hh
 #define RecoDataProducts_ExtMonUCITofHit_hh
 
-// $Id: ExtMonUCITofHit.hh,v 1.1 2011/12/30 20:31:46 youzy Exp $
-// $Author: youzy $
-// $Date: 2011/12/30 20:31:46 $
 //
 
 // C++ includes

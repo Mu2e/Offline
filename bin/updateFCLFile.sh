@@ -1,8 +1,5 @@
 #! /bin/bash
 #
-# $Id: updateFCLFile.sh,v 1.3 2012/02/08 16:44:01 kutschke Exp $
-# $Author: kutschke $
-# $Date: 2012/02/08 16:44:01 $
 #
 # Run this script from within a grid job to append per job information to
 # the end of the .fcl file:

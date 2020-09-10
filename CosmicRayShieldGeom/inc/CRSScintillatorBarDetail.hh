@@ -4,9 +4,6 @@
 //
 // Representation of common properties of the Scintillator Bars etc...
 //
-// $Id: CRSScintillatorBarDetail.hh,v 1.6 2013/09/13 06:42:44 ehrlich Exp $
-// $Author: ehrlich $
-// $Date: 2013/09/13 06:42:44 $
 //
 // Original author KLG; somewhat based on Rob Kutschke's StrawDetail
 //

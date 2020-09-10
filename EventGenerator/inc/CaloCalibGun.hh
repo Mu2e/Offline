@@ -3,9 +3,6 @@
 //
 // Generate some number of DIO electrons.
 //
-// $Id: CaloCalibGun.hh,v 1.34 2013/07/22 18:57:42 knoepfel Exp $
-// $Author: knoepfel $
-// $Date: 2013/07/22 18:57:42 $
 //
 //
 // ====================================================================
