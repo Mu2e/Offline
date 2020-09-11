@@ -1,9 +1,6 @@
 //
 // An EDAnalyzer module that reads back the hits created by the Calorimeter Digitization chain
 //
-// $Id: $
-// $Author: $
-// $Date: $
 //
 // Original author
 
@@ -777,7 +774,7 @@ namespace mu2e {
 
 
       CaloCrystalHit const& hit    = caloCrystalHits->at(ic);
-      CLHEP::Hep3Vector crystalPos = crystalPos = _calorimeter->geomUtil().mu2eToDiskFF(diskId,_calorimeter->crystal(crystalId).position());
+      CLHEP::Hep3Vector crystalPos = _calorimeter->geomUtil().mu2eToDiskFF(diskId,_calorimeter->crystal(crystalId).position());
 
       _cryEtot             += hit.energyDep();
       _cryTime[_nHits]      = hit.time();
