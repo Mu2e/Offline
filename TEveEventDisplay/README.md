@@ -33,13 +33,17 @@ The TEve Browser will appear. The first event takes a little longer as the GUI m
 The TEve code can be used like any other Analyzer and added to your Reco/End path as such. There is no need to use the Callers they are just guides and examples.
 
 ## The TEve Event Display Infrastructure
-Currently there are a number of Interfaces defined in ``dict classes`` in the ``src`` directory:
+Current notable features of the code:
 
 ### gdml
 The GDML file used here can be regenerated using: ```mu2e -c mu2eG4/fcl/gdmldump.fcl```. It contains the entire Mu2e World. We use fix.gdml as a bug in the mu2e.gdml was found in the early stages of this development.
 
 ### Geom Interface
 Contains callers for access to Tracker and Calo geometry. This class also contains functions to set visability of different elements based on their names within the gdml.
+
+## GeomUtils
+
+Contains geometry transforms. The GDML was in cm so we convert all our coordinates to cm here.
 
 ### TEveMu2e basis
 Contains base classes which inherit from TEve objects. This is the interface between TEve objects and mu2e products. 
@@ -53,7 +57,11 @@ Any src directory in mu2e which wants to use classes needs to list them in a cla
 
 ### Main Window
 
-This class sets up the Gui and imports the geometry. Here the plotting data functions are currently called. you should base any work on AddComboHits.
+This class sets up the Gui and imports the geometry. 
+
+## Data and MC Interfaces
+
+These contain ```Add``` functions which add the specific data product to the event display. There is some templating but if you wish to add a new product you must do so explicitly by following the instructions in the following section (or contacting the developers).
 
 ### Adding Data Products
 
