@@ -1,9 +1,6 @@
 //
 // Object to perform helix fit to straw hits
 //
-// $Id: $
-// $Author: $
-// $Date: $
 //
 // mu2e
 #include "TrkReco/inc/Chi2HelixFit.hh"

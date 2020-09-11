@@ -1,9 +1,6 @@
 #
 # Illustrate a bug with Ptrs.
 #
-# $Id: ptrBug01.fcl,v 1.2 2011/11/04 18:55:55 kutschke Exp $
-# $Author: kutschke $
-# $Date: 2011/11/04 18:55:55 $
 #
 
 #include "fcl/minimalMessageService.fcl"

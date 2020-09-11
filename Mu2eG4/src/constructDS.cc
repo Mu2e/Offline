@@ -1,9 +1,6 @@
 //
 // Free function to create DS. (Detector Solenoid)
 //
-// $Id: constructDS.cc,v 1.22 2014/09/19 19:14:59 knoepfel Exp $
-// $Author: knoepfel $
-// $Date: 2014/09/19 19:14:59 $
 //
 // Original author KLG based on Mu2eWorld constructDS
 //

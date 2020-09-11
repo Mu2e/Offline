@@ -2,9 +2,6 @@
 // A test service that prints tracer ouptut. Used to study order of calls when
 // one service uses another service.
 //
-// $Id: BarService_service.cc,v 1.5 2013/03/15 15:59:58 kutschke Exp $
-// $Author: kutschke $
-// $Date: 2013/03/15 15:59:58 $
 //
 // Contact person Rob Kutschke
 //

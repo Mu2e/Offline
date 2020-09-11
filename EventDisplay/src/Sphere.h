@@ -1,9 +1,6 @@
 //
 // Class for all non-static (i.e. time-dependent) sphere structures, e.g. drift radii. The structure is displayed via EventDisplayPolyLine3D (inherited from ROOT's TPolyLine3D) lines which allows the user to right-click the structure and get a contect menu.
 //
-// $Id: Sphere.h,v 1.4 2014/02/22 01:52:18 ehrlich Exp $
-// $Author: ehrlich $
-// $Date: 2014/02/22 01:52:18 $
 //
 // Original author Ralf Ehrlich
 //

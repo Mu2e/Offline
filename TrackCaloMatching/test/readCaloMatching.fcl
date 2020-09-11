@@ -1,7 +1,4 @@
 #
-# $Id: readCaloMatching.fcl,v 1.3 2014/05/28 20:58:59 brownd Exp $
-# $Author: brownd $
-# $Date: 2014/05/28 20:58:59 $
 
 #include "fcl/minimalMessageService.fcl"
 #include "fcl/standardProducers.fcl"

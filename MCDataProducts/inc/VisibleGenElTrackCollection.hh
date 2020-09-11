@@ -2,9 +2,6 @@
 #define MCDataProducts_VisibleGenElTrackCollection_hh
 //
 //
-// $Id: VisibleGenElTrackCollection.hh,v 1.1 2011/10/11 17:27:52 tassiell Exp $
-// $Author: tassiell $
-// $Date: 2011/10/11 17:27:52 $
 //
 // Original author G. Tassielli
 //

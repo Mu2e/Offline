@@ -1,9 +1,6 @@
 //
 // Class which manages a root file which stores a TTree with one branch which hold TObjArrays. These TObjArrays hold all TPolyLines, TPolyLine3Ds, and TTexts of each event.
 //
-// $Id: RootFileManager.h,v 1.4 2013/03/15 16:20:00 kutschke Exp $
-// $Author: kutschke $
-// $Date: 2013/03/15 16:20:00 $
 //
 // Original author Ralf Ehrlich
 //

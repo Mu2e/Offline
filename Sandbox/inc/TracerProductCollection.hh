@@ -3,9 +3,6 @@
 //
 // Access to a bunch of TracerProdcuts created on the heap.
 // 
-// $Id: TracerProductCollection.hh,v 1.2 2011/06/11 02:27:32 kutschke Exp $
-// $Author: kutschke $
-// $Date: 2011/06/11 02:27:32 $
 //
 // Original author Rob Kutschke
 //

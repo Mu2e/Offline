@@ -1,9 +1,6 @@
 //
 // Utility class to select listed events within G4.
 //
-// $Id: EventNumberList.cc,v 1.5 2011/05/18 02:27:17 wb Exp $
-// $Author: wb $
-// $Date: 2011/05/18 02:27:17 $
 //
 // Original author Rob Kutschke
 //

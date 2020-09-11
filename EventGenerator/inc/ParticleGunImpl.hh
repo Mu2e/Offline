@@ -4,9 +4,6 @@
 // Shoots a single particle gun and puts its output into a generated event.
 // This class implements the common code for "particle gun-like" generators.
 //
-// $Id: ParticleGunImpl.hh,v 1.4 2013/03/22 21:45:18 gandr Exp $
-// $Author: gandr $
-// $Date: 2013/03/22 21:45:18 $
 //
 // Original author Rob Kutschke, re-factored for use in multiple generators by Andrei Gaponenko.
 // Introduced new features by mjlee. See docdb-2049

@@ -1,8 +1,5 @@
 // Muon Stoping Target Monitor 
 //
-// $Id: MSTM_v01.txt,v 1.2 2014/09/16 21:59:33 jrquirk Exp $
-// $Author: jrquirk $
-// $Date: 2014/09/16 21:59:33 $
 //
 // Original author: K. L. Genser
 // inspired by DSShielding and DS_PNNL_Shield

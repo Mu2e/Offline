@@ -1,8 +1,5 @@
 // Precompute particle randomization from MARS inputs for g4s1 ExtMonFNALRoom jobs.
 //
-// $Id: EMFRoomFluxAnalyzer_module.cc,v 1.6 2013/10/21 20:34:14 gandr Exp $
-// $Author: gandr $
-// $Date: 2013/10/21 20:34:14 $
 //
 // Original author Andrei Gaponenko, 2012
 

@@ -2,9 +2,6 @@
 // Dump information about all data products in the file, including
 // event, run and subrun data products.
 //
-// $Id: DataProductDump_module.cc,v 1.6 2012/08/10 04:55:25 kutschke Exp $
-// $Author: kutschke $
-// $Date: 2012/08/10 04:55:25 $
 //
 // Original author Rob Kutschke
 //

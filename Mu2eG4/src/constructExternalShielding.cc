@@ -1,6 +1,3 @@
-// $Id: constructExternalShielding.cc,v 1.6 2014/09/19 19:15:02 knoepfel Exp $
-// $Author: knoepfel $
-// $Date: 2014/09/19 19:15:02 $
 // David Norvil Brown, University of Louisville, November 2014
 //
 // 

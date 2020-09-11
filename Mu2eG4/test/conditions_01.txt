@@ -1,9 +1,6 @@
 //
 // Input file for the prototype conditions system.
 //
-// $Id: conditions_01.txt,v 1.24 2014/05/07 15:58:55 knoepfel Exp $
-// $Author: knoepfel $
-// $Date: 2014/05/07 15:58:55 $
 //
 
 // Times in ns

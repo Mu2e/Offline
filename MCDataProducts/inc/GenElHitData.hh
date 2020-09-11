@@ -3,9 +3,6 @@
 //
 // all the hits data of the Electrons tracks that came from the targets
 //
-// $Id: GenElHitData.hh,v 1.1 2011/10/11 17:27:52 tassiell Exp $
-// $Author: tassiell $
-// $Date: 2011/10/11 17:27:52 $
 //
 // Original author G. Tassielli
 //

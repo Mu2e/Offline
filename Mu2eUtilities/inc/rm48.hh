@@ -4,9 +4,6 @@
 //
 //  Adapter to make CLHEP::RandFlat look like the cernlib rn48.
 //
-//  $Id: rm48.hh,v 1.4 2011/05/18 02:27:18 wb Exp $
-//  $Author: wb $
-//  $Date: 2011/05/18 02:27:18 $
 //
 //  Original author Rob Kutschke.
 //

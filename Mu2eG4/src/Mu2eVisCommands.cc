@@ -23,9 +23,6 @@
 // * acceptance of all terms of the Geant4 Software license.          *
 // ********************************************************************
 //
-// $Id: Mu2eVisCommands.cc,v 1.1 2013/12/16 21:58:33 genser Exp $
-// $Author: genser $
-// $Date: 2013/12/16 21:58:33 $
 //
 // Original author KLG
 //

@@ -21,9 +21,6 @@
 // The other use mode is to specify a SimParticlePtrCollection of stuff to keep.
 // Intended to write out framework files of stopped muons.
 //
-// $Id: FilterG4Out_module.cc,v 1.12 2014/06/11 00:24:46 gandr Exp $
-// $Author: gandr $
-// $Date: 2014/06/11 00:24:46 $
 //
 // Andrei Gaponenko, 2013
 

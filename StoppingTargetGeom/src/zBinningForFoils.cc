@@ -5,9 +5,6 @@
 //
 // See additional details in the comments in the header file.
 //
-// $Id: zBinningForFoils.cc,v 1.1 2013/05/31 20:04:27 gandr Exp $
-// $Author: gandr $
-// $Date: 2013/05/31 20:04:27 $
 //
 // Original author Rob Kutschke
 //

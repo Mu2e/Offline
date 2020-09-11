@@ -1,9 +1,6 @@
 //
 // Cosmic ray muon generator using a TH2 as probability distribution
 //
-// $Id: CosmicDYB.cc,v 1.32 2014/03/22 21:40:44 ehrlich Exp $
-// $Author: ehrlich $
-// $Date: 2014/03/22 21:40:44 $
 //
 // Original author Ralf Ehrlich
 

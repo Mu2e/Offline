@@ -1,9 +1,6 @@
 #ifndef ExtinctionMonitorFNAL_Analyses_EMFSimHitHistograms_hh
 #define ExtinctionMonitorFNAL_Analyses_EMFSimHitHistograms_hh
 //
-// $Id: EMFSimHitHistograms.hh,v 1.4 2013/07/30 18:45:00 wieschie Exp $
-// $Author: wieschie $
-// $Date: 2013/07/30 18:45:00 $
 //
 // Andrei Gaponenko, following GeneratorSummaryHistograms by Rob Kutschke
 //

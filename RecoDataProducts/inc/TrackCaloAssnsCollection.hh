@@ -4,9 +4,6 @@
 //
 // Define a type for a collection of TrackCaloAssns objects.
 //
-// $Id: 
-// $Author: 
-// $Date: 
 //
 // Original author Vadim Rusu
 //

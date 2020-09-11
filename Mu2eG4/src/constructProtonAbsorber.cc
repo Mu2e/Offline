@@ -1,9 +1,6 @@
 //
 // Free function to create Proton Absorber
 //
-// $Id: constructProtonAbsorber.cc,v 1.28 2014/02/28 21:11:19 knoepfel Exp $
-// $Author: knoepfel $
-// $Date: 2014/02/28 21:11:19 $
 //
 // Original author KLG based on Mu2eWorld constructProtonAbs
 //
