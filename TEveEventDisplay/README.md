@@ -1,21 +1,36 @@
 # Mu2e TEve Event Display Development Branch
-This branch contains the prototype for the TEve based Mu2e Event Display.
-Please read the wiki tab for details.
-Here are just a few basic details.
+The directory contains all the code for the TEve based mu2e Event display. This code allows 2D and 3D rendering of several of the Mu2e Data Products. It is still being developed so if we are missing some thing you need contact us (see below for details).
+
+## The GDML
+
+Our 3D geometry comes from the GDML stored in the src directory.
 
 ## The Module
 TEveEventDisplay/src/TEveEventDisplay_module.cc is the Analyzer mdoule which currently controls the TEveEventDisplay. This is your main function. The BeginJob function sets up your Frame (a TEveMu2eMainwindow Object) and it opens an Application. This is needed for the browser to appear.
 The BeginRun function calls the Frame's (TEveMu2eMainWindow Object) SetRunGeometry. This is where the GDML is accessed and the Geom_Interface used to descend nodes and desiplay the DS.
-The Analyze function fills the DataCollections ( a list of Mu2e Data Products are called Collections). The Filler is a Collection_Filler object where the DataCollection is filled.
-The Analyze function calls the the Frame's SetEvent function. In that function the various AddProduct (e.g. AdComboHit) are called.
+The Analyze function fills the DataCollections (a list of Mu2e Data Products are called Collections). The Filler is a Collection_Filler object where the DataCollection is filled.
+The Analyze function calls the the Frame's SetEvent function. In that function the various AddProduct (e.g. AdComboHit) are called. These Add functions reside in the Data or MC Interfaces.
 
 ## The fcl file
-The prolog.fcl file resides in TEveEventDisplay/fcl and contains whats known as module instances for the TEveEventDisplay. Currently these are for : helix tracks, cosmic tracks or calo only events. We can add more.
+The prolog.fcl file resides in TEveEventDisplay/fcl and contains module instances for the TEveEventDisplay.
+
+## Command Line uses
+We are in the process of making this code more sophisicated. Currently you can use the TEveMu2e.sh script for command line input (to by-pass the need to continuously change the prolog):
+
+```./TEveMu2e [fcl] [art] [number of evts] - [options]```
+
+options are:
+
+* Changing the Geometry: -2DOnly, -2Dand3D, -DSOnly, -CRVOnly, -DSandCRV. Note that there are default settings of 2Dand3D, DSOnly - this is displayed unless altered.
+* Adding Data Products: -hits, -clusters, -tracks, -crvhits, -cosmictracks, -mctraj
+* Accumulate Products i.e. collect multiple events for calibration assessments (turned off by default as only for specialist runs): -accumulate
 
 ## Running the code
-You should access some of the Art examples in TEveEventDisplay/ArtExamples. You should access fcl files in TEveEventDisplay/CallerFcls
+We include some example CallerFcl files in: TEveEventDisplay/CallerFcls
 to run: ```$ mu2e -c PATH_TO_CALLER_FCL/File.fcl PATH_TO_ART/art.art --nevts 100 (for 100 events)```
 The TEve Browser will appear. The first event takes a little longer as the GUI must be created.
+
+The TEve code can be used like any other Analyzer and added to your Reco/End path as such. There is no need to use the Callers they are just guides and examples.
 
 ## The TEve Event Display Infrastructure
 Currently there are a number of Interfaces defined in ``dict classes`` in the ``src`` directory:
