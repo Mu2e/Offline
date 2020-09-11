@@ -87,12 +87,12 @@ namespace mu2e{
     
     inline double TrackerLength(){
       //From GDML:
-	    return 300.8;
+      return 300.8;
     }
 
     inline double CaloLength(){
       //From GDML:
-	    return 320;
+      return 320;
     }
 }
 #endif 
