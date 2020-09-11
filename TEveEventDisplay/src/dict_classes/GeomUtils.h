@@ -86,18 +86,13 @@ namespace mu2e{
     }
     
     inline double TrackerLength(){
-      //std::string filename("Mu2eG4/geom/trackerv5.txt");
-      //SimpleConfig TrackerConfig(filename);
-      //double length  = 2*TrackerConfig.getDouble("tracker.mother.halfLength")/10;
-	    return 300.8; //length
+      //From GDML:
+	    return 300.8;
     }
 
     inline double CaloLength(){
-      //std::string filename("Mu2eG4/geom/calorimeter_CsI.txt");
-      //SimpleConfig CaloConfig(filename);
-      //std::vector<double> shift = CaloConfig.getVectorDouble(calorimeter.diskZ0MotherShift); ==700
-      //double length  = CaloConfig.getDouble(calorimeter.caloMotherZ1)- CaloConfig.getDouble(calorimeter.caloMotherZ0) - CaloConfig.getDouble(calorimeter.diskCaseZLength); == 1172  
-	    return 320;//(shift[1] + length + 1288)/2
+      //From GDML:
+	    return 320;
     }
 }
 #endif 

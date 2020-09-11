@@ -75,7 +75,7 @@ In order to add Data Products to the Event Display you may need to add an additi
 
 4. Now add a condition to make sure your Data Product Collection is not empty.
 
-5. If you would like to add energies call the energies template. This currently works for hit and cluster type data products.
+5. If you would like to add energies call the energies template. This currently works for hit and cluster i.e. point like type data products.
 
 6. Then loop through your Data Product Collection and call the draw function to the corresponding data type. For example, DrawHit3D/2D, DrawCluster3D/2D
 
