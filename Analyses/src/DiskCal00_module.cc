@@ -1,9 +1,6 @@
 //
 // Check self consistency of hits in the Disk Calorimeter.
 //
-// $Id: DiskCal00_module.cc,v 1.8 2014/08/01 20:57:44 echenard Exp $
-// $Author: echenard $
-// $Date: 2014/08/01 20:57:44 $
 //
 // Original author Rob Kutschke
 //

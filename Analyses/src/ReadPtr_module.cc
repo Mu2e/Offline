@@ -1,9 +1,6 @@
 //
 // Example of accessing fitted tracks via a KalRepPtrCollection.
 //
-// $Id: ReadPtr_module.cc,v 1.2 2014/04/18 20:17:03 kutschke Exp $
-// $Author: kutschke $
-// $Date: 2014/04/18 20:17:03 $
 //
 // Original author Rob Kutschke
 //

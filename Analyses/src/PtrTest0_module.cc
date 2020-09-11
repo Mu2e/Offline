@@ -1,9 +1,6 @@
 //
 // Test of Ptr to GenParticles and SimParticles.
 //
-// $Id: PtrTest0_module.cc,v 1.8 2013/10/21 20:44:04 genser Exp $
-// $Author: genser $
-// $Date: 2013/10/21 20:44:04 $
 //
 // Original author Rob Kutschke
 //

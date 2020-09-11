@@ -2,9 +2,6 @@
 #
 # Readback the output of g4test_03.fcl; make histograms and printout.
 #
-# $Id: vd_readback.fcl,v 1.5 2012/06/22 18:09:22 youzy Exp $
-# $Author: youzy $
-# $Date: 2012/06/22 18:09:22 $
 
 #include "fcl/minimalMessageService.fcl"
 #include "fcl/standardProducers.fcl"

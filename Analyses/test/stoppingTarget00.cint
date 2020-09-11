@@ -1,9 +1,6 @@
 //
 // Make plots from the ntuple made by Analyses/src/stoppingTarget00_plugin.cc
 // 
-// $Id: stoppingTarget00.cint,v 1.1 2011/03/17 21:37:29 kutschke Exp $
-// $Author: kutschke $
-// $Date: 2011/03/17 21:37:29 $
 // 
 // Original author Rob Kutschke
 //
