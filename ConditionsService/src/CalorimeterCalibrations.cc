@@ -1,9 +1,6 @@
 //
 // Parameters for calorimeter calibrations.
 //
-// $Id: CalorimeterCalibrations.cc,v 1.1 2013/03/05 20:33:25 aluca Exp $
-// $Author: aluca $
-// $Date: 2013/03/05 20:33:25 $
 //
 
 // Mu2e include files

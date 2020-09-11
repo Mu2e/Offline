@@ -3,9 +3,6 @@
 //   All lengths are given in mm.
 //   All angles are given in degrees.
 //
-// $Id: tracker_v3.txt,v 1.2 2014/08/29 16:53:32 knoepfel Exp $
-// $Author: knoepfel $
-// $Date: 2014/08/29 16:53:32 $
 //
 // Most paramaters are from Mu2e-doc-888-v5
 // Parameters not found in that document are:

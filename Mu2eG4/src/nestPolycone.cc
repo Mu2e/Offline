@@ -1,9 +1,6 @@
 //
 // Free function to create and place a new G4Tubs, place inside a logical volume.
 //
-// $Id: nestPolycone.cc,v 1.2 2014/09/19 19:15:23 knoepfel Exp $
-// $Author: knoepfel $
-// $Date: 2014/09/19 19:15:23 $
 //
 // Original author Rob Kutschke
 //

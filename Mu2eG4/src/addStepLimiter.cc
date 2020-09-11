@@ -1,9 +1,6 @@
 //
 // Free functions to add step limiters to some particles.
 //
-// $Id: addStepLimiter.cc,v 1.5 2011/05/18 02:27:18 wb Exp $
-// $Author: wb $
-// $Date: 2011/05/18 02:27:18 $
 //
 // Original author Rob Kutschke
 //

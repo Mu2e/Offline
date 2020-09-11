@@ -3,9 +3,6 @@
 //
 // Some helper functions to manage repeated tasks related to sensitive detectors.
 //
-// $Id: SensitiveDetectorHelper.hh,v 1.5 2013/10/09 18:09:18 gandr Exp $
-// $Author: gandr $
-// $Date: 2013/10/09 18:09:18 $
 //
 // Original author Rob Kutschke
 //

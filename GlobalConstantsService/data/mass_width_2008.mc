@@ -1,9 +1,6 @@
 *
 * Particle data table with precise masses and widths taken from HepPDT version 3.04.1
 *
-*   $Id: mass_width_2008.mc,v 1.2 2010/03/25 18:31:25 kutschke Exp $
-*   $Author: kutschke $
-*   $Date: 2010/03/25 18:31:25 $
 *
 *  Original Mu2e author Rob Kutschke
 *

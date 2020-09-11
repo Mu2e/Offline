@@ -3,9 +3,6 @@
 //
 // Original author: David Brown (LBNL), 2012
 //
-// $Id: HitState.hh,v 1.2 2012/05/22 21:35:42 brownd Exp $
-// $Author: brownd $ 
-// $Date: 2012/05/22 21:35:42 $
 //
 #ifndef mu2e_PanelAmbig_PanelAmbigStructs_HH
 #define mu2e_PanelAmbig_PanelAmbigStructs_HH

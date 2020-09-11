@@ -1,5 +1,4 @@
 # -*- mode: tcl -*-
-# $Id: mergePatRec_display_read.fcl,v 1.4 2014/08/25 18:56:09 murat Exp $
 #------------------------------------------------------------------------------
 #  mergePatRec02: read input data, remake all hits, do not regenereate events
 #------------------------------------------------------------------------------

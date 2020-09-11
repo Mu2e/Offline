@@ -1,4 +1,3 @@
-// $Id: BaBarMu2eField.hh,v 1.1 2012/09/19 20:17:37 brownd Exp $
 // Description:	Class Header for |BaBarMu2eField|
 //              Provide an arbitary fixed field
 // Author List:A. Snyder, Copyright (C) 1998	SLAC

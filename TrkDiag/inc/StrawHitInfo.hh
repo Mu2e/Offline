@@ -1,7 +1,4 @@
 //
-// $Id: StrawHitInfo.hh,v 1.9 2014/08/22 21:09:04 brownd Exp $
-// $Author: brownd $ 
-// $Date: 2014/08/22 21:09:04 $
 //
 // struct for hit diagnostics
 #ifndef StrawHitInfo_hh

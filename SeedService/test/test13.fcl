@@ -2,9 +2,6 @@
 #  Check that stest01.a and stest02.a are properly distinguished.
 #
 #
-# $Id: test13.fcl,v 1.1 2012/02/10 16:28:12 gandr Exp $
-# $Author: gandr $
-# $Date: 2012/02/10 16:28:12 $
 
 #include "fcl/messageService.fcl"
 

@@ -1,8 +1,5 @@
 //
 // Filter events whit killed tracks.
-// $Id: KilledEventFilter_module.cc,v 1.1 2012/04/20 07:04:28 tassiell Exp $
-// $Author: tassiell $
-// $Date: 2012/04/20 07:04:28 $
 //
 // Contact person G. Tassielli.
 //

@@ -5,9 +5,6 @@
 // a filter that selects events based on the occupancy of StepPointMCs
 // in various detectors.
 //
-// $Id: StepFilterMode.hh,v 1.1 2012/06/12 23:14:56 kutschke Exp $
-// $Author: kutschke $
-// $Date: 2012/06/12 23:14:56 $
 //
 // Contact person Rob Kutschke
 //

@@ -3,9 +3,6 @@
 //
 // Free function to create the hall walls and hall interior inside the earthen overburden.
 //
-// $Id: constructHall.hh,v 1.4 2012/04/17 19:56:56 gandr Exp $
-// $Author: gandr $
-// $Date: 2012/04/17 19:56:56 $
 //
 // Original author: Kyle Knoepfel
 

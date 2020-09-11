@@ -1,9 +1,6 @@
 //
 // Plugin to readback the TracerProductCollection
 //
-// $Id: ReadTracerProductCollection_module.cc,v 1.6 2014/04/18 16:54:59 kutschke Exp $
-// $Author: kutschke $
-// $Date: 2014/04/18 16:54:59 $
 //
 // Original author Rob Kutschke.
 //

@@ -2,9 +2,6 @@
 // An enum-matched-to-names class for the legal operating modes of a filter that selects events
 // based on the occupancy of StepPointMCs in various detectors.
 //
-// $Id: StepFilterMode.cc,v 1.1 2012/06/12 23:14:56 kutschke Exp $
-// $Author: kutschke $
-// $Date: 2012/06/12 23:14:56 $
 //
 // Contact person Rob Kutschke
 //

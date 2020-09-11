@@ -1,9 +1,6 @@
 //
 // Geometry file for making binary field maps from text format.
 //
-// $Id: geom_makeBinaries.txt,v 1.1 2012/07/19 18:53:28 kutschke Exp $
-// $Author: kutschke $
-// $Date: 2012/07/19 18:53:28 $
 //
 
 #include "Mu2eG4/test/geom_01.txt"

@@ -1,9 +1,6 @@
 //
 // Free function to create a geant4 "calorimetric" test environment geometry
 //
-// $Id: constructStudyEnv_v003.cc,v 1.2 2013/04/09 23:18:45 genser Exp $
-// $Author: genser $
-// $Date: 2013/04/09 23:18:45 $
 //
 // Original author KLG 
 //

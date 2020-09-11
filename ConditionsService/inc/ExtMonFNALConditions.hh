@@ -1,9 +1,6 @@
 #ifndef ConditionsService_ExtMonFNALConditions_hh
 #define ConditionsService_ExtMonFNALConditions_hh
 //
-// $Id: ExtMonFNALConditions.hh,v 1.3 2012/11/01 23:42:52 gandr Exp $
-// $Author: gandr $
-// $Date: 2012/11/01 23:42:52 $
 //
 // Original author Andrei Gaponenko
 //

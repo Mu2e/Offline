@@ -1,6 +1,4 @@
 //
-// $Id: VirtualDetector.cc,v 1.1 2012/02/27 06:05:35 gandr Exp $
-// $Author: gandr $
 //
 
 #include "GeometryService/inc/VirtualDetector.hh"

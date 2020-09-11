@@ -5,9 +5,6 @@
 // many of the names have a value of true. Throw if more than
 // one is true.  
 //
-// $Id: checkForStale.hh,v 1.1 2013/06/14 16:15:04 knoepfel Exp $
-// $Author: knoepfel $
-// $Date: 2013/06/14 16:15:04 $
 //
 // Contact person Rob Kutschke
 //

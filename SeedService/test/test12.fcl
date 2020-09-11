@@ -1,9 +1,6 @@
 # Test the seeds service: test preDefinedSeed mode
 #
 #
-# $Id: test12.fcl,v 1.1 2012/02/10 16:28:12 gandr Exp $
-# $Author: gandr $
-# $Date: 2012/02/10 16:28:12 $
 
 #include "fcl/messageService.fcl"
 

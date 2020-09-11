@@ -9,9 +9,6 @@
 // muMinusConversionAtRest.do - turns on the at rest G4 process
 // MuonMinusConversionAtRest and turns off MuonMinusCaptureAtRest
 //
-// $Id: toggleProcesses.cc,v 1.9 2013/03/26 19:39:33 genser Exp $
-// $Author: genser $
-// $Date: 2013/03/26 19:39:33 $
 //
 //-----------------------------------------------------------------------------
 

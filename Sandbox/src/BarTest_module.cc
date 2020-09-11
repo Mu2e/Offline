@@ -1,9 +1,6 @@
 //
 // Test the BarService
 //
-// $Id: BarTest_module.cc,v 1.2 2013/10/21 21:01:23 kutschke Exp $
-// $Author: kutschke $
-// $Date: 2013/10/21 21:01:23 $
 //
 // Contact person Rob Kutschke
 //

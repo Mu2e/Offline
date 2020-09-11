@@ -1,8 +1,5 @@
 #ifndef Mu2eUtilities_SimpleSpectrum_hh
 #define Mu2eUtilities_SimpleSpectrum_hh
-// $Id: SimpleSpectrum.hh,v 1.5 2014/02/25 17:14:10 knoepfel Exp $
-// $Author: knoepfel $
-// $Date: 2014/02/25 17:14:10 $
 //
 // Original Author: Kyle Knoepfel
 //

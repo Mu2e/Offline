@@ -2,9 +2,6 @@
 // Free function to construct a placeholder for the stopping target.
 // Useful for some low detail graphics.
 //
-// $Id: constructDummyStoppingTarget.cc,v 1.8 2013/05/31 18:07:18 gandr Exp $
-// $Author: gandr $
-// $Date: 2013/05/31 18:07:18 $
 //
 // Original author Rob Kutschke
 //

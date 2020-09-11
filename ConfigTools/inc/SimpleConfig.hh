@@ -3,9 +3,6 @@
 //
 // Main class in a primitive runtime parameter utility.
 //
-// $Id: SimpleConfig.hh,v 1.2 2012/07/27 19:39:39 kutschke Exp $
-// $Author: kutschke $
-// $Date: 2012/07/27 19:39:39 $
 //
 // Contact person Rob Kutschke
 //

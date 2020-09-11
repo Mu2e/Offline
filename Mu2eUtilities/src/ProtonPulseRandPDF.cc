@@ -1,8 +1,5 @@
 // Constructor of a PDF to extract random times to describe the proton pulse
 //
-// $Id: ProtonPulseRandPDF.cc,v 1.20 2014/05/01 18:12:26 knoepfel Exp $
-// $Author: knoepfel $
-// $Date: 2014/05/01 18:12:26 $
 //
 // Original author: Kyle Knoepfel
 

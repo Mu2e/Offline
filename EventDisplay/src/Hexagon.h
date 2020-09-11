@@ -1,9 +1,6 @@
 //
 // Class for all hexagon structures, e.g. crystals in disk calorimeter. The structure is displayed via EventDisplayGeoVolumePgon (inherited from TGeoVolume) which holds a TGeoPgon. In order to allow the user to right-click the structure and get a contect menu, there are additional lines drawn via the EventDisplayPolyLine3D class (inherited from ROOT's TPolyLine3D class).
 //
-// $Id: Hexagon.h,v 1.1 2014/02/22 01:52:18 ehrlich Exp $
-// $Author: ehrlich $
-// $Date: 2014/02/22 01:52:18 $
 //
 // Original author Ralf Ehrlich
 //

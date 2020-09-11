@@ -1,8 +1,5 @@
 # Look at the provenance of a data product.
 #
-# $Id: viewProvenance.fcl,v 1.2 2013/03/31 14:48:46 kutschke Exp $
-# $Author: kutschke $
-# $Date: 2013/03/31 14:48:46 $
 
 #include "fcl/minimalMessageService.fcl"
 #include "fcl/standardProducers.fcl"

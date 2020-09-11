@@ -2,9 +2,6 @@
 // A trivial class instrumented with some printout.  To
 // be used in tests of other classes.
 //
-//  $Id: TestClass.cc,v 1.2 2011/05/18 02:27:19 wb Exp $
-//  $Author: wb $
-//  $Date: 2011/05/18 02:27:19 $
 //
 // Original author Rob Kutschke
 //

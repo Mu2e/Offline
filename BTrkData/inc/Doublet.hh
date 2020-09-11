@@ -2,9 +2,6 @@
 // utilities for the Module to perform BaBar Kalman fit
 // 2015 - 02 - 17 G. Pezzullo created class for housing the straw hits doublets
 //
-// $Id:  $
-// $Author:  $
-// $Date: $
 ///////////////////////////////////////////////////////////////////////////////
 #ifndef __CalPatRec_Doublet_hh__
 #define __CalPatRec_Doublet_hh__

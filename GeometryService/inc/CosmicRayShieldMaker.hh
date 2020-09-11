@@ -3,9 +3,6 @@
 //
 // Class to construct and return CosmicRayShield
 //
-// $Id: CosmicRayShieldMaker.hh,v 1.16 2014/02/14 04:10:50 ehrlich Exp $
-// $Author: ehrlich $
-// $Date: 2014/02/14 04:10:50 $
 //
 // Original author KLG
 //

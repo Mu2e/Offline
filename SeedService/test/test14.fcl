@@ -2,9 +2,6 @@
 #  - Colliding seeds are allowed in preDefinedSeed mode.
 #
 #
-# $Id: test14.fcl,v 1.1 2012/02/10 16:28:12 gandr Exp $
-# $Author: gandr $
-# $Date: 2012/02/10 16:28:12 $
 
 #include "fcl/messageService.fcl"
 

@@ -1,8 +1,5 @@
 //
 // Filter events whit killed tracks.
-// $Id: SelectEvents_module.cc,v 1.2 2013/03/11 23:18:11 brownd Exp $
-// $Author: brownd $
-// $Date: 2013/03/11 23:18:11 $
 //
 
 // Mu2e includes.
