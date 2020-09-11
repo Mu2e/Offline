@@ -26,9 +26,7 @@
 #include "SeedService/inc/SeedService.hh"
 #include "Mu2eUtilities/inc/ProtonPulseRandPDF.hh"
 #include "Mu2eUtilities/inc/SimParticleCollectionPrinter.hh"
-#include "art_root_io/TFileService.h"
-#include "TH1F.h"
-#include "TTree.h"
+
 namespace mu2e {
 
   class GenerateProtonTimes : public art::EDProducer {
@@ -78,11 +76,7 @@ namespace mu2e {
 
     virtual void beginRun(art::Run&   r) override;
     virtual void produce (art::Event& e) override;
-    
-    TTree* _tree;
-    float_t _time[2000];
-    Int_t _n;
-    TH1F* _hist;
+
   private:
     art::RandomNumberGenerator::base_engine_t& engine_;
     ProtonPulseRandPDF::Config protonPulseConf_;
@@ -107,14 +101,6 @@ namespace mu2e {
     , verbosityLevel_(conf().verbosityLevel())
     , fixedTime_(conf().FixedModule())
   {
-    art::ServiceHandle<art::TFileService> tfs;
-      //Tree for detailed diagnostics
-      _tree=tfs->make<TTree>("tree","time map");
-
-      //Create branches:
-      _tree->Branch("n",&_n,"n/I"); 
-      _tree->Branch("time",&_time,"time[n]/F");  
-      _hist= tfs->make<TH1F>("protonTimes", "protonTimes", 1000,-125, 1570);
     std::vector<art::InputTag> inmaps = conf().InputTimeMaps();
     for(auto const& tag : inmaps ){
       inmaps_.push_back(consumes<SimParticleTimeMap>(tag));
@@ -150,8 +136,8 @@ namespace mu2e {
         mf::LogInfo("Info")<<"pulseType = "<<protonPulse_->pulseType() <<", applying to genIds [ "<< listStream( applyToGenIds_ ) <<" ]\n";
       }
     }
-    _n=0;
-    //if ( verbosityLevel_ > 10 ) {
+
+    if ( verbosityLevel_ > 10 ) {
       std::ostringstream timeSpectrum;
       std::cout << " Size of proton pulse: " << protonPulse_->getTimes().size() << std::endl;
       for ( std::size_t i(0) ; i < protonPulse_->getTimes().size(); i++ ) {
@@ -159,13 +145,9 @@ namespace mu2e {
                      << protonPulse_->getTimes().at(i)
                      << "     "
                      << protonPulse_->getSpectrum().at(i) << "\n";
-         _hist->Fill(protonPulse_->getTimes().at(i));
-         _time[i] = protonPulse_->getTimes().at(i);
-        _n +=1;
       }
       mf::LogInfo("Info") << "Longitudinal POT time distribution\n" << timeSpectrum.str();
-    //}
-   _tree->Fill();  
+    }
   }
 
   //================================================================
