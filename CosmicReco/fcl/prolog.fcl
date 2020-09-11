@@ -150,12 +150,12 @@ CosmicTrackFinderTimeFit : {
 CosmicFitDisplay : {
 	module_type : CosmicFitDisplay
 	ComboHitCollection : "makePH"
-#        _chtag : "makePH"
-#        _tctag : SimpleTimeCluster
-#        _sttag : CosmicTrackFinderLoose
+        _chtag : "makePH"
+        _tctag : TimeClusterFinderCosmics
+        _sttag : CosmicTrackFinder
         doDisplay            : true
-	TimeClusterCollection : SimpleTimeCluster
-        CosmicTrackSeedCollection : CosmicTrackFinderLoose
+	TimeClusterCollection : TimeClusterFinderCosmicsr
+        CosmicTrackSeedCollection : CosmicTrackFinder
         
   }
 
