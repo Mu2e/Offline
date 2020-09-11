@@ -41,7 +41,7 @@ The GDML file used here can be regenerated using: ```mu2e -c mu2eG4/fcl/gdmldump
 ### Geom Interface
 Contains callers for access to Tracker and Calo geometry. This class also contains functions to set visability of different elements based on their names within the gdml.
 
-## GeomUtils
+### GeomUtils
 
 Contains geometry transforms. The GDML was in cm so we convert all our coordinates to cm here.
 
@@ -51,7 +51,7 @@ Contains base classes which inherit from TEve objects. This is the interface bet
 ### Collection Filler and Data Collections
 The DataCollection class has a list all the possible Mu2e data collections we might want to access. The full list is found in ```Offline/RecoDataProduct/inc```. The collections in DataCollections are set to 0 unless they are filled. The filling is done by a function ```FillRecoCollections``` in the Collection_Filler class. This is called in the module Analyze function.
 
-## classes.h and class_def
+### classes.h and class_def
 
 Any src directory in mu2e which wants to use classes needs to list them in a classes.h and class_def.xml file. If you make a new class you must add it here. To make a new class use an existing class as a template. That way you wont run into errors.
 
@@ -63,7 +63,7 @@ This class sets up the Gui and imports the geometry.
 
 These contain ```Add``` functions which add the specific data product to the event display. There is some templating but if you wish to add a new product you must do so explicitly by following the instructions in the following section (or contacting the developers).
 
-### Adding Data Products
+## Adding Data Products
 
 In order to add Data Products to the Event Display you may need to add an additional plotting function to the code. Here are the steps you should take to add the function.
 
