@@ -1,6 +1,9 @@
 //
 //  Look at all provenances stored in the registry
 //
+//  $Id: ViewAllProvenances_module.cc,v 1.2 2013/10/21 20:34:14 gandr Exp $
+//  $Author: gandr $
+//  $Date: 2013/10/21 20:34:14 $
 //
 //  Original author Rob Kutschke
 //
