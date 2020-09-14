@@ -3,7 +3,7 @@
 
 #include <TObject.h>
 #include "RecoDataProducts/inc/CosmicTrackSeed.hh"
-
+#include "DataProducts/inc/XYZVec.hh"
 #include <TEveStraightLineSet.h>
 
 namespace mu2e {
@@ -15,8 +15,8 @@ namespace mu2e {
       virtual ~TEveMu2eStraightTrack(){};
       #endif
       void DrawStraightTrack();
-      void GetPositon();
-      void GetDirection();
+      XYZVec GetPositon(){ return fCosmicTrackSeed->_track.MinuitEquation.Pos; } ;
+      XYZVec GetDirection(){ return fCosmicTrackSeed->_track.MinuitEquation.Dir; };
       ClassDef( TEveMu2eStraightTrack, 0);
   };
 }
