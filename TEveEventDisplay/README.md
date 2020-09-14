@@ -19,7 +19,11 @@ We are in the process of making this code more sophisicated. Currently you can u
 
 ```./TEveMu2e [fcl] [art] [number of evts] - [options]```
 
-options are:
+* ```[fcl``` the Caller fcl file which calls upon the TEveMu2e module
+* ```art``` the data you would like to see represented int he display
+* ```number of evts```` the nominal number of event loops that the module could reach (it works like any other). You can select a "starting" event using the EventFilter module.
+
+```options``` are:
 
 * Changing the Geometry: -2DOnly, -2Dand3D, -DSOnly, -CRVOnly, -DSandCRV. Note that there are default settings of 2Dand3D, DSOnly - this is displayed unless altered.
 * Adding Data Products: -hits, -clusters, -tracks, -crvhits, -cosmictracks, -mctraj
