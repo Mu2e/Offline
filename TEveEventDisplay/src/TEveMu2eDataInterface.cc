@@ -322,7 +322,7 @@ namespace mu2e{
         if(show2D){
           line2D->AddLine(tx1, ty1, tz1, tx2, ty2, tz2);	
           line2D->SetPickable(kTRUE);
-          line2D->SetLineColor(kBlue);
+          line2D->SetLineColor(kGreen);
           line2D->SetLineWidth(3);
           fTrackList2D->AddElement(line2D);
         }
