@@ -11,6 +11,10 @@ The BeginRun function calls the Frame's (TEveMu2eMainWindow Object) SetRunGeomet
 The Analyze function fills the DataCollections (a list of Mu2e Data Products are called Collections). The Filler is a Collection_Filler object where the DataCollection is filled.
 The Analyze function calls the the Frame's SetEvent function. In that function the various AddProduct (e.g. AdComboHit) are called. These Add functions reside in the Data or MC Interfaces.
 
+## Event Filter Module
+
+The EventFilter module allows the user to call a specific starting event. This can also be done using the text boxes on the GUI.
+
 ## The fcl file
 The prolog.fcl file resides in TEveEventDisplay/fcl and contains module instances for the TEveEventDisplay.
 
@@ -29,9 +33,9 @@ We are in the process of making this code more sophisicated. Currently you can u
 * Adding Data Products: -hits, -clusters, -tracks, -crvhits, -cosmictracks, -mctraj
 * Accumulate Products i.e. collect multiple events for calibration assessments (turned off by default as only for specialist runs): -accumulate
 
-## Running the code
+## The Standard way to run the code
 We include some example CallerFcl files in: TEveEventDisplay/CallerFcls
-to run: ```$ mu2e -c PATH_TO_CALLER_FCL/File.fcl PATH_TO_ART/art.art --nevts 100 (for 100 events)```
+to run like any other ART module: ```$ mu2e -c PATH_TO_CALLER_FCL/File.fcl PATH_TO_ART/art.art --nevts 100 (for 100 events)```
 The TEve Browser will appear. The first event takes a little longer as the GUI must be created.
 
 The TEve code can be used like any other Analyzer and added to your Reco/End path as such. There is no need to use the Callers they are just guides and examples.
@@ -61,7 +65,7 @@ Any src directory in mu2e which wants to use classes needs to list them in a cla
 
 ### Main Window
 
-This class sets up the Gui and imports the geometry. 
+This class sets up the GUI and imports the geometry. 
 
 ## Data and MC Interfaces
 
