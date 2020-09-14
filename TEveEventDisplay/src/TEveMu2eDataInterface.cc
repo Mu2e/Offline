@@ -316,8 +316,9 @@ namespace mu2e{
         Float_t tx2 = st.MinuitParams.A0  - st.MinuitParams.A1*ty2;
         Float_t tz1 = st.MinuitParams.B0  - st.MinuitParams.B1*ty1;
         Float_t tz2 = st.MinuitParams.B0  - st.MinuitParams.B1*ty2; 	
-        line->AddLine((tx1-3904)/10, ty1/10, (tz1+10171)/10, (tx2-3904)/10, ty2/10, (tz2+10171)/10);
-        cout<<"A0 "<<st.MinuitParams.A0<<" A1 "<<st.MinuitParams.A1<<" B0 "<<st.MinuitParams.B0<<" B1 "<<st.MinuitParams.B1<<endl;
+        line->AddLine(pointmmTocm(tx1-3904), pointmmTocm(ty1), pointmmTocm(tz1+10171), pointmmTocm(tx2-3904), pointmmTocm(ty2), pointmmTocm(tz2+10171));
+        const std::string title = "CosmicTrack #" + to_string(ist + 1) + ", Parameters: A0:" + to_string(st.MinuitParams.A0) + ", A1:" + to_string(st.MinuitParams.A1) + ", B0:" + to_string(st.MinuitParams.B0) + ", B1:" + to_string(st.MinuitParams.B1);
+        line->SetTitle(Form(title.c_str()));
         if(show2D){
           line2D->AddLine(tx1, ty1, tz1, tx2, ty2, tz2);	
           line2D->SetPickable(kTRUE);
