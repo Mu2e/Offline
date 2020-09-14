@@ -21,7 +21,7 @@ We are in the process of making this code more sophisicated. Currently you can u
 
 * ```[fcl``` the Caller fcl file which calls upon the TEveMu2e module
 * ```art``` the data you would like to see represented int he display
-* ```number of evts```` the nominal number of event loops that the module could reach (it works like any other). You can select a "starting" event using the EventFilter module.
+* ```number of evts``` the nominal number of event loops that the module could reach (it works like any other). You can select a "starting" event using the EventFilter module.
 
 ```options``` are:
 
