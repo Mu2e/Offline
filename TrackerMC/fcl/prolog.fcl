@@ -17,7 +17,9 @@ TrackerMC : {
 	makeSGS : {@table::makeSGS }
 	makeSD  : { @table::makeSD  }
     }
+    StepSim : [ makeSGS ]
     DigiSim : [ makeSD ]
+    StepAndDigiSim : [ makeSGS, makeSD ]
 }
 
 END_PROLOG
