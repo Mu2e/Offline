@@ -174,10 +174,12 @@ namespace mu2e {
       for (auto const& CaloCrystalHit: caloCrystalHits) caloHitMap[CaloCrystalHit.id()].push_back(&CaloCrystalHit);
       for (auto const& caloShowerSim: caloShowerSims)   caloShowerSimsMap[caloShowerSim.crystalId()].push_back(&caloShowerSim);
       
+      int wfBinMax = std::distance(wf_.begin(),std::max_element(wf_.begin(),wf_.end())); 
       
       int nMatched(0);
       double totalEnergyMatched(0);
-      int wfBinMax = std::distance(wf_.begin(),std::max_element(wf_.begin(),wf_.end())); 
+      
+      
       for (auto &kv : caloHitMap)
       {
           int crystalId = kv.first;
@@ -205,6 +207,7 @@ namespace mu2e {
              auto hitNextIt = std::next(hitIt);
              bool hitIsMatched(false);
              
+             // make art Ptr to CaloCrystalHit collection
              const CaloCrystalHit* hit = *hitIt;
              size_t idxHit(0); 
              while (idxHit < caloCrystalHits.size()) {if (&caloCrystalHits[idxHit]==hit) break; ++idxHit;}
