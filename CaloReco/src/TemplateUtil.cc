@@ -199,7 +199,7 @@ namespace mu2e {
        arglist[0] = fitStrategy_;
        minuit.mnexcm("SET STR", arglist ,1,ierr);  
 
-       for (unsigned ip=0;ip<nParBkg_+nParFcn_;++ip) minuit.mnparm(ip, "par",  param_[ip],  0.001,  -100,  1e6, ierr);
+       for (unsigned ip=0;ip<nParBkg_+nParFcn_;++ip) minuit.mnparm(ip, "par",  param_[ip],  0.001, 0,  1e6, ierr);
 
        arglist[0] = 2000;
        arglist[1] = 0.1;
@@ -254,6 +254,41 @@ namespace mu2e {
        double maxAmplitudeFound(0.0);
        for (unsigned i=nParBkg_; i<param_.size(); i += nParFcn_) maxAmplitudeFound = std::max(maxAmplitudeFound,param_[i]);
        return maxAmplitudeFound;
+   }
+
+   //------------------------------------------------------------
+   double TemplateUtil::peakNorm(const std::vector<double>& xvalues, const std::vector<double>& yvalues, double x0, unsigned i0, unsigned i1)
+   {       
+      double s1(0),s2(0);
+      for (unsigned i=i0;i<=i1;++i)
+      {
+	 double ff = pulseCachePtr_->evaluate(xvalues[i]-x0);
+
+	 s1 += ff*ff;
+	 s2 += yvalues[i]*ff;
+      }
+      if (std::abs(s1) < 1e-6) return 1e6;
+      return s2/s1;
+   }
+
+   //------------------------------------------------------------
+   double TemplateUtil::sumSquare(const std::vector<double>& xvalues, const std::vector<double>& yvalues, double x0, unsigned i0, unsigned i1)
+   {              
+      double A = peakNorm(xvalues, yvalues, x0, i0, i1);
+      double chi2(0);
+      for (unsigned i=i0;i<=i1;++i)
+      {
+	 double cc = A*pulseCachePtr_->evaluate(xvalues[i]-x0)-yvalues[i];      
+	 chi2 += cc*cc;
+      }
+      return chi2; 
+   }
+   
+   //------------------------------------------------------------
+   double TemplateUtil::peakToFunc(unsigned ip, double xmax, double ymax)
+   {       
+      if (ip+1 > param_.size()) return 1e6;
+      return ymax*pulseCache_.evaluate(param_[ip+1]-xmax)/param_[ip]; 
    }
 
 
