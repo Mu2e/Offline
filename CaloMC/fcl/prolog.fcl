@@ -73,7 +73,7 @@ CaloHitTruthMatch:
     primaryParticle           : compressRecoMCs
     MeVToADC                  : @local::HitMakerMeVToADC
     digiSampling              : @local::HitMakerDigiSampling
-    minAmplitude              : @local::HitMakerMinPeakADC
+    minAmplitude              : 32
     fillDetailedMC            : false
     diagLevel                 : 0
 }

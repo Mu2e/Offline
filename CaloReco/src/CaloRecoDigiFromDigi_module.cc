@@ -155,8 +155,8 @@ namespace mu2e {
               double chi2      = waveformProcessor_->chi2();
               int    ndf       = waveformProcessor_->ndf();
               
-//              if (diagLevel_>1 && waveformProcessor_->chi2()/waveformProcessor_->ndf()>1.0)
-              if (diagLevel_>1 && waveformProcessor_->nPeaks()>3)
+              if (i==0 && diagLevel_>1 && waveformProcessor_->chi2()/waveformProcessor_->ndf()>20.0)
+              //if (i==0 && diagLevel_>1 && waveformProcessor_->nPeaks()>1 && waveformProcessor_->chi2()/waveformProcessor_->ndf()<0.5)
               {
                  std::cout<<"[CaloRecoDigiFromDigi::extractAmplitude] extract "<<roID<<"   i="<<i<<"  eDep="<<eDep
                           <<" time="<<time<<"  chi2="<<chi2<<std::endl;
@@ -164,13 +164,13 @@ namespace mu2e {
                  ss<<"wffit_"; ss<<nPlots;ss<<".pdf";
                  if (nPlots<maxPlots_) waveformProcessor_->plot(ss.str());
                  ++nPlots;
-	  
-           std::cout<<"DUMP ";
-           for (const auto& v : y) std::cout<<v<<" ";
-           std::cout<<std::endl;
+                 
+                 std::cout<<"DUMP ";
+                 for (const auto& val : y) std::cout<<val<<",";
+                 std::cout<<std::endl;
+                 
               }
               
-
               if (chi2/float(ndf) > maxChi2Cut_) continue;
               
               if (roID%2==0) totEnergyReco += eDep;

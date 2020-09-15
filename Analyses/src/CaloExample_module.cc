@@ -84,7 +84,7 @@ namespace mu2e {
 
        TH1F *hcryE_,*hcryT_,*hcryX_,*hcryY_,*hcryZ_;
        TH1F *hcluE_,*hcluT_,*hcluX_,*hcluY_,*hcluZ_,*hcluE_1Et,*hcluE_1E9,*hcluE_1E25,*hcluE_F;       
-       TH2F *hxy_;
+       TH2F *hxy_,*hECE;
 
        TTree* Ntup_;
        int   _evt,_run;
@@ -92,12 +92,12 @@ namespace mu2e {
        int   nGen_,genPdgId_[16384],genCrCode_[16384];
        float genmomX_[16384],genmomY_[16384],genmomZ_[16384],genStartX_[16384],genStartY_[16384],genStartZ_[16384],genStartT_[16384];
 
-       int   nHits_,cryId_[163840],crySectionId_[163840],crySimIdx_[163840],crySimLen_[163840];
-       float cryEtot_,cryTime_[163840],cryEdep_[163840],cryPosX_[163840],cryPosY_[163840],cryPosZ_[163840],_cryLeak[163840];
+       int   nHits_,cryId_[16384],crySectionId_[16384],crySimIdx_[16384],crySimLen_[16384];
+       float cryEtot_,cryTime_[16384],cryEdep_[16384],cryPosX_[16384],cryPosY_[16384],cryPosZ_[16384],_cryLeak[16384];
 
-       int   nSimHit_,crySimId_[500000],crySimPdgId_[500000],crySimCrCode_[500000],_motGenIdx[500000];
-       float crySimMom_[500000],crySimStartX_[500000],crySimStartY_[500000],crySimStartZ_[500000],_motStartT[500000];
-       float crySimTime_[500000],crySimEdep_[16348],_motPosX[500000],_motPosY[500000],_motPosZ[500000];
+       int   nSimHit_,crySimId_[16384],crySimPdgId_[16384],crySimCrCode_[16384],crySimGenIdx_[16384],cryConv_[16384];
+       float crySimMom_[16384],crySimStartX_[16384],crySimStartY_[16384],crySimStartZ_[16384],crySimStartT_[16384];
+       float crySimTime_[16384],crySimEdep_[16348];
 
        int   nCluster_,nCluSim_,cluNcrys_[16384];
        float cluEnergy_[16384],cluTime_[16384],cluCogX_[16384],cluCogY_[16384],cluCogZ_[16384],cluE1_[16384],cluE9_[16384],cluE25_[16384],cluSecMom_[16384];
@@ -163,6 +163,7 @@ namespace mu2e {
        Ntup_->Branch("cryPosZ",      &cryPosZ_ ,     "cryPosZ[nCry]/F");
        Ntup_->Branch("cryEdep",      &cryEdep_ ,     "cryEdep[nCry]/F");
        Ntup_->Branch("cryTime",      &cryTime_ ,     "cryTime[nCry]/F");
+       Ntup_->Branch("cryConv",      &cryConv_ ,     "cryConv[nCry]/I");
 
        Ntup_->Branch("crySimIdx",    &crySimIdx_ ,   "crySimIdx[nCry]/I");
        Ntup_->Branch("crySimLen",    &crySimLen_ ,   "crySimLen[nCry]/I");
@@ -174,13 +175,10 @@ namespace mu2e {
        Ntup_->Branch("simStartX",    &crySimStartX_ ,"simStartX[nSim]/F");
        Ntup_->Branch("simStartY",    &crySimStartY_ ,"simStartY[nSim]/F");
        Ntup_->Branch("simStartZ",    &crySimStartZ_ ,"simStartZ[nSim]/F");
-       Ntup_->Branch("simStartT",    &_motStartT ,   "simStartT[nSim]/F");
-       Ntup_->Branch("simPosX",      &_motPosX ,     "simPosX[nSim]/F");
-       Ntup_->Branch("simPosY",      &_motPosY ,     "simPosY[nSim]/F");
-       Ntup_->Branch("simPosZ",      &_motPosZ ,     "simPosZ[nSim]/F");
+       Ntup_->Branch("simStartT",    &crySimStartT_ ,"simStartT[nSim]/F");
        Ntup_->Branch("simTime",      &crySimTime_ ,  "simTime[nSim]/F");
        Ntup_->Branch("simEdep",      &crySimEdep_ ,  "simEdep[nSim]/F");
-       Ntup_->Branch("simGenIdx",    &_motGenIdx ,   "simGenIdx[nSim]/I");
+       Ntup_->Branch("simGenIdx",    &crySimGenIdx_ ,"simGenIdx[nSim]/I");
 
        Ntup_->Branch("nCluster",     &nCluster_ ,    "nCluster/I");
        Ntup_->Branch("cluEnergy",    &cluEnergy_ ,   "cluEnergy[nCluster]/F");
@@ -340,6 +338,7 @@ namespace mu2e {
        nHits_ = nSimHit_ = 0;
        cryEtot_ = 0.0;
 
+       double sumECryConv(0);
        for (unsigned int ic=0; ic<caloCrystalHits.size();++ic)
        {
            const CaloCrystalHit& hit     = caloCrystalHits.at(ic);
@@ -350,8 +349,19 @@ namespace mu2e {
            auto itMC = caloDigiTruth.begin();
            while (itMC != caloDigiTruth.end()) {if (itMC->first.get() == &hit) break; ++itMC;}
            unsigned nCrySims = (itMC != caloDigiTruth.end()) ? itMC->second->nParticles() : 0;
-
-                      
+           
+           bool isConversion(false);
+           if (nCrySims>0) 
+           {
+              for (auto& edep : itMC->second->energyDeposits())
+              {
+                 auto parent(edep.sim());
+                 while (parent->hasParent()) parent = parent->parent();                     
+	         if (parent->genParticle() && parent->genParticle()->generatorId().isConversion() ) isConversion=true;
+              }    		          
+           }
+ 
+                       
            cryId_[nHits_]        = hit.id();
            crySectionId_[nHits_] = diskId;
            cryEdep_[nHits_]      = hit.energyDep();
@@ -359,6 +369,7 @@ namespace mu2e {
            cryPosX_[nHits_]      = crystalPos.x();
            cryPosY_[nHits_]      = crystalPos.y();
            cryPosZ_[nHits_]      = crystalPos.z();
+           cryConv_[nHits_]      = isConversion ? 1 : 0;
            cryEtot_             += hit.energyDep();
           
            crySimIdx_[nHits_]    = nSimHit_;
@@ -370,6 +381,8 @@ namespace mu2e {
                
                auto parent(eDepMC.sim());
                while (parent->hasParent()) parent = parent->parent();               
+               int genId=-1;
+               if (parent->genParticle()) genId = parent->genParticle()->generatorId().id();
                
 	       crySimId_[nSimHit_]      = eDepMC.sim()->id().asInt();
                crySimPdgId_[nSimHit_]   = eDepMC.sim()->pdgId();
@@ -380,7 +393,8 @@ namespace mu2e {
 	       crySimStartX_[nSimHit_]  = parent->startPosition().x();
 	       crySimStartY_[nSimHit_]  = parent->startPosition().y();
 	       crySimStartZ_[nSimHit_]  = parent->startPosition().z();
-
+	       crySimStartT_[nSimHit_]  = parent->startGlobalTime();
+	       crySimGenIdx_[nSimHit_]  = genId;
 	       ++nSimHit_;
            }
            ++nHits_;
@@ -391,9 +405,9 @@ namespace mu2e {
            hcryY_->Fill(crystalPos.y());
            hcryZ_->Fill(crystalPos.z());
 	   hxy_->Fill(crystalPos.x(),crystalPos.y(),hit.energyDep());
+           
+           if (isConversion) sumECryConv += hit.energyDep();
        }
-
-
 
        //--------------------------  Do clusters --------------------------------
        nCluster_ = nCluSim_ = 0;
@@ -419,7 +433,6 @@ namespace mu2e {
              }    		          
           }
           
-          
           cluEnergy_[nCluster_] = cluster.energyDep();
           cluTime_[nCluster_]   = cluster.time();
           cluNcrys_[nCluster_]  = cluster.size();
@@ -433,7 +446,6 @@ namespace mu2e {
           cluSplit_[nCluster_]  = cluster.isSplit();
           cluConv_[nCluster_]   = isConversion;
           cluList_.push_back(cryList);
-
 
           cluSimIdx_[nCluster_] = nCluSim_;
           cluSimLen_[nCluster_] = nCluSims;
@@ -488,7 +500,6 @@ namespace mu2e {
        }
 
 
-
        //--------------------------  Do virtual detectors --------------------------------
        //73/74/77/78 front back inner outer edges disk 0
        //75/76/79/80 front back inner outer edges disk 1
@@ -521,7 +532,6 @@ namespace mu2e {
                ++nVd_;
              }             
          }
-
 
         Ntup_->Fill();
 

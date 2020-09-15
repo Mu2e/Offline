@@ -23,6 +23,9 @@ namespace mu2e {
         double                      eval_fcn      (double x); 
         double                      eval_logn     (double x, int ioffset);  
         double                      maxAmplitude  ();
+        double                      sumSquare     (const std::vector<double>& xvalues, const std::vector<double>& yvalues, double x0, unsigned i0, unsigned i1);
+        double                      peakNorm      (const std::vector<double>& xvalues, const std::vector<double>& yvalues, double x0, unsigned i0, unsigned i1);
+	double                      peakToFunc    (unsigned ip, double xmax, double ymax);
         void                        plotFit       (const std::string& pname) const;
  
 	void                        setStrategy   (int val) {fitStrategy_ = val;}

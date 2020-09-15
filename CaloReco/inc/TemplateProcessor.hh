@@ -65,9 +65,11 @@ namespace mu2e {
 
 
     private:
-       void   setPrimaryPeakPar  (const std::vector<double>& xvec, const std::vector<double>& yvec);
+       void   setPrimaryPeakPar1 (const std::vector<double>& xvec, const std::vector<double>& yvec);
+       void   setPrimaryPeakPar2 (const std::vector<double>& xvec, const std::vector<double>& yvec);
+       void   findRisingPeak     (int ipeak, std::vector<double>& parInit, const std::vector<double>& xvec, const std::vector<double>& yvec, std::vector<double>& ywork);
        void   setSecondaryPeakPar(const std::vector<double>& xvec, const std::vector<double>& yvec);
-       double estimatePeakTime   (double x1, double x2, double x3, double y1, double y2, double y3);
+       double estimatePeakTime   (const std::vector<double>& xvec, const std::vector<double>& ywork, int ic);
        bool   checkPeakDist      (double x0);		                 
        void   dump               (const std::string& name, const std::vector<double>& val) const; 
 
@@ -95,6 +97,7 @@ namespace mu2e {
        TH1F* _hNpeak;
        TH1F* _hRescale;       
        TH2F* _hchi2Amp;
+       TH2F* _hchi2Peak;
   };
 
 }
