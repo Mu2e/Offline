@@ -19,9 +19,9 @@ The EventFilter module allows the user to call a specific starting event. This c
 The prolog.fcl file resides in TEveEventDisplay/fcl and contains module instances for the TEveEventDisplay.
 
 ## Command Line uses
-We are in the process of making this code more sophisicated. Currently you can use the TEveMu2e.sh script for command line input (to by-pass the need to continuously change the prolog):
+We are in the process of making this code more sophisicated. Currently you can use the ```binTEveMu2e.sh``` script for command line input (to by-pass the need to continuously change the prolog):
 
-```./TEveMu2e [fcl] [art] [number of evts] - [options]```
+```TEveMu2e [fcl] [art] [number of evts] - [options]```
 
 * ```[fcl``` the Caller fcl file which calls upon the TEveMu2e module
 * ```art``` the data you would like to see represented int he display
