@@ -3,9 +3,6 @@
 //
 // Free function to create calorimetric study environment geometry plus a helper function
 //
-// $Id: constructStudyEnv_v003.hh,v 1.2 2013/04/09 23:18:20 genser Exp $
-// $Author: genser $
-// $Date: 2013/04/09 23:18:20 $
 //
 // Original author KLG
 //

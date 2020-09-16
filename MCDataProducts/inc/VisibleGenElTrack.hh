@@ -3,9 +3,6 @@
 //
 // Data of the Electrons tracks that came from the targets
 //
-// $Id: VisibleGenElTrack.hh,v 1.4 2013/04/03 22:20:05 tassiell Exp $
-// $Author: tassiell $
-// $Date: 2013/04/03 22:20:05 $
 //
 // Original author G. Tassielli
 //

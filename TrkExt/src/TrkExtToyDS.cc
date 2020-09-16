@@ -1,7 +1,4 @@
 //
-//  $Id: TrkExtToyDS.cc,v 1.5 2013/06/07 17:43:30 knoepfel Exp $
-//  $Author: knoepfel $
-//  $Date: 2013/06/07 17:43:30 $
 //
 //  Original author MyeongJae Lee
 //

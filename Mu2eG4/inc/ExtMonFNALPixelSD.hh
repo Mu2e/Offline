@@ -1,9 +1,6 @@
 #ifndef Mu2eG4_ExtMonFNALPixelSD_hh
 #define Mu2eG4_ExtMonFNALPixelSD_hh
 //
-// $Id: ExtMonFNALPixelSD.hh,v 1.3 2013/08/28 05:58:17 gandr Exp $
-// $Author: gandr $
-// $Date: 2013/08/28 05:58:17 $
 //
 // Define a sensitive detector for the FNAL extinction monitor
 // Andrei Gaponenko, 2012

@@ -3,9 +3,6 @@
 //
 // Free function to create Production Target
 //
-// $Id: constructTargetPS.hh,v 1.1 2013/09/06 19:39:13 tassiell Exp $
-// $Author: tassiell $
-// $Date: 2013/09/06 19:39:13 $
 //
 // Original author Giovanni F. Tassielli
 //

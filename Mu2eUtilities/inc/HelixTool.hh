@@ -4,13 +4,17 @@
 // Original author G. Pezzullo
 //
 
-#include "RecoDataProducts/inc/HelixSeed.hh"
-#include "RecoDataProducts/inc/ComboHit.hh"
-#include "RecoDataProducts/inc/StrawHitFlagCollection.hh"
 #include "DataProducts/inc/StrawId.hh"
+#include "Math/GenVector/VectorUtil.h"
+#include "Math/VectorUtil.h"
+#include "RecoDataProducts/inc/ComboHit.hh"
+#include "RecoDataProducts/inc/HelixSeed.hh"
+#include "RecoDataProducts/inc/StrawHitFlagCollection.hh"
 #include "TrackerGeom/inc/Tracker.hh"
 
-#include "Math/VectorUtil.h"
+namespace mu2e { class Tracker; }
+namespace mu2e { struct HelixSeed; }
+
 using namespace ROOT::Math::VectorUtil;
 
 namespace mu2e {

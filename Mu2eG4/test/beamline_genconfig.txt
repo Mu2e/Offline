@@ -4,9 +4,6 @@
 //  - Single particle gun, configured to shoot muons out of the production target.
 //  - Particles from G4beamline format input file.
 //
-// $Id: beamline_genconfig.txt,v 1.10 2011/07/13 19:25:14 logash Exp $
-// $Author: logash $
-// $Date: 2011/07/13 19:25:14 $
 //
 // Original author Rob Kutschke
 

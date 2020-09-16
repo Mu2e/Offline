@@ -3,9 +3,6 @@
 // An enum-matched-to-names class for the names of the StepPointMC
 // collections produced inside G4_module.
 //
-// $Id: StepInstanceName.cc,v 1.2 2012/06/09 20:04:51 kutschke Exp $
-// $Author: kutschke $
-// $Date: 2012/06/09 20:04:51 $
 //
 // Contact person Rob Kutschke
 //

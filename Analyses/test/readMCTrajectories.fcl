@@ -1,9 +1,6 @@
 #
 # Look at the MCTrajectory Objects.
 #
-# $Id: readMCTrajectories.fcl,v 1.1 2014/01/18 03:26:41 kutschke Exp $
-# $Author: kutschke $
-# $Date: 2014/01/18 03:26:41 $
 
 #include "fcl/minimalMessageService.fcl"
 #include "fcl/standardProducers.fcl"

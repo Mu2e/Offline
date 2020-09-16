@@ -8,9 +8,6 @@ one of the detectors from the filter.
 1 skip only events with no hits in the tracker
 2 skip events with no hit in the calorimeter
 
-$Id: FilterEmptyEvents_module.cc,v 1.12 2013/03/26 23:28:23 kutschke Exp $
-$Author: kutschke $
-$Date: 2013/03/26 23:28:23 $
 
 Original author Giovanni Onorato
 

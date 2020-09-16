@@ -2,9 +2,6 @@
 #define ProductionSolenoidGeom_PSEnclosure_hh
 
 //
-// $Id: PSEnclosure.hh,v 1.4 2012/06/06 19:29:30 gandr Exp $
-// $Author: gandr $
-// $Date: 2012/06/06 19:29:30 $
 //
 // Original author Andrei Gaponenko
 //

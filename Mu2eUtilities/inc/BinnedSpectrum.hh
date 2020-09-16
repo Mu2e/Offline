@@ -5,24 +5,28 @@
 // Base class to allow generic access to all the classes that define
 // a momentum spectrum.
 //
-// $Id: BinnedSpectrum.hh,v 1.4 2014/04/25 17:26:42 knoepfel Exp $
-// $Author: knoepfel $
-// $Date: 2014/04/25 17:26:42 $
 //
 // Original author Kyle Knoepfel 
 //                 
 
 // C++ includes
 #include <assert.h>
+#include <stddef.h>
+#include <algorithm>
+#include <array>
 #include <iostream>
+#include <memory>
 #include <string>
+#include <type_traits>
 #include <utility>
 #include <vector>
 
 #include "cetlib_except/exception.h"
+#include "fhiclcpp/ParameterSet.h"
 
 #include "Mu2eUtilities/inc/Table.hh"
-#include "fhiclcpp/ParameterSet.h"
+
+namespace fhicl { class ParameterSet; }
 
 namespace mu2e {
 

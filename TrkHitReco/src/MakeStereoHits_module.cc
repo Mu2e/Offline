@@ -1,9 +1,6 @@
 //
 // A module to create simple stereo hits out of StrawHits. StrawHit selection is done by flagging in an upstream module
 //
-// $Id: MakeStereoHits_module.cc,v 1.23 2014/09/18 08:42:47 brownd Exp $
-// $Author: brownd $
-// $Date: 2014/09/18 08:42:47 $
 // 
 //  Original Author: David Brown, LBNL
 //  

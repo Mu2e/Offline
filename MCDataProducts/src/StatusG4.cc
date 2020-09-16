@@ -1,9 +1,6 @@
 //
 // Status information about running G4 for one event.
 //
-// $Id: StatusG4.cc,v 1.2 2011/10/12 20:06:33 kutschke Exp $
-// $Author: kutschke $
-// $Date: 2011/10/12 20:06:33 $
 //
 // Original author Rob Kutschke
 //

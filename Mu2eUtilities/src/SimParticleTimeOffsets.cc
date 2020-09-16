@@ -1,12 +1,27 @@
-#include "Mu2eUtilities/inc/SimParticleTimeOffset.hh"
+#include <exception>
+#include <algorithm>
+#include <map>
+#include <memory>
+#include <string>
+#include <typeinfo>
+#include <utility>
+#include <vector>
 
-#include "cetlib_except/exception.h"
-
-#include "fhiclcpp/ParameterSet.h"
-#include "art/Framework/Principal/Event.h"
-
+#include "MCDataProducts/inc/SimParticle.hh"
+#include "MCDataProducts/inc/SimParticleTimeMap.hh"
 #include "MCDataProducts/inc/StepPointMC.hh"
 #include "MCDataProducts/inc/StrawGasStep.hh"
+#include "art/Framework/Principal/Event.h"
+#include "art/Framework/Principal/Handle.h"
+#include "canvas/Persistency/Common/Ptr.h"
+#include "canvas/Utilities/InputTag.h"
+#include "cetlib_except/exception.h"
+#include "fhiclcpp/ParameterSet.h"
+#include "fhiclcpp/coding.h"
+#include "fhiclcpp/exception.h"
+#include "fhiclcpp/types/Sequence.h"
+
+#include "Mu2eUtilities/inc/SimParticleTimeOffset.hh"
 
 
 namespace mu2e {

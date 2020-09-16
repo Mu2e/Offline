@@ -2,7 +2,6 @@
 #
 # Readback the output of ????.py; make histograms and printout.
 #
-# $Id: readStoppedPis.fcl,v 1.2 2012/08/09 19:23:58 mf Exp $
 
 #include "fcl/minimalMessageService.fcl"
 #include "fcl/standardProducers.fcl"

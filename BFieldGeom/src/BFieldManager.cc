@@ -1,9 +1,6 @@
 //
 // Manage all of the magnetic field maps for Mu2e.
 //
-// $Id: BFieldManager.cc,v 1.17 2013/08/30 22:25:58 kutschke Exp $
-// $Author: kutschke $
-// $Date: 2013/08/30 22:25:58 $
 //
 // Modified by Brian Pollack to allow for polymorphic BField class.
 

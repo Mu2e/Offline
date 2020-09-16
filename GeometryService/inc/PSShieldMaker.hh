@@ -3,9 +3,6 @@
 //
 // Class to construct and return PSShield
 //
-// $Id: PSShieldMaker.hh,v 1.4 2013/03/15 15:52:05 kutschke Exp $
-// $Author: kutschke $
-// $Date: 2013/03/15 15:52:05 $
 //
 // Original author Andrei Gaponenko
 //

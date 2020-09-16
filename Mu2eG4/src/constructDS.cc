@@ -1,9 +1,6 @@
 //
 // Free function to create DS. (Detector Solenoid)
 //
-// $Id: constructDS.cc,v 1.22 2014/09/19 19:14:59 knoepfel Exp $
-// $Author: knoepfel $
-// $Date: 2014/09/19 19:14:59 $
 //
 // Original author KLG based on Mu2eWorld constructDS
 //
@@ -174,23 +171,41 @@ namespace mu2e {
 
     // - upstream face
     GeomHandle<Beamline> beamg;
-    const StraightSection * ts5out = beamg->getTS().getTSCryo<StraightSection>( TransportSolenoid::TSRegion::TS5,
+    auto ts(&beamg->getTS());
+    const StraightSection * ts5out = ts->getTSCryo<StraightSection>( TransportSolenoid::TSRegion::TS5,
                                                                                 TransportSolenoid::TSRadialPart::OUT );
 
+    double interconnectHL = _config.getDouble("ds.interconnect.halfLength", -1.);
     double dsFrontZ0 = dsP.z() - ds->halfLength() + ds->frontHalfLength();
-    TubsParams    dsFrontParams  ( ts5out->rOut(), dsInnerCryoParams.innerRadius(), ds->frontHalfLength() );
-    G4ThreeVector dsFrontPosition( dsP.x(), dsP.y(), dsFrontZ0);
+    double smallOffset = 1.e-3; //create small buffers to prevent overlaps on both ends of the interconnect
+    if(interconnectHL < 0.) {
+      TubsParams    dsFrontParams  ( ts5out->rOut(), dsInnerCryoParams.innerRadius(), ds->frontHalfLength() );
+      G4ThreeVector dsFrontPosition( dsP.x(), dsP.y(), dsFrontZ0);
 
-    nestTubs( "DSFront",
-              dsFrontParams,
-              dsCryoMaterial,
-              0,
-              dsFrontPosition-_hallOriginInMu2e,
-              parent,
-              0,
-              G4Color::Blue(),
-              "ds"
-              );
+      nestTubs( "DSFront",
+		dsFrontParams,
+		dsCryoMaterial,
+		0,
+		dsFrontPosition-_hallOriginInMu2e,
+		parent,
+		0,
+		G4Color::Blue(),
+		"ds"
+		);
+    } else {
+      double interconnectRIn  = _config.getDouble("ds.interconnect.rIn");
+      double interconnectROut = _config.getDouble("ds.interconnect.rOut");
+      nestTubs( "TSDSInterConnect",
+		TubsParams(interconnectRIn, interconnectROut, interconnectHL-smallOffset),
+		dsCryoMaterial,
+		0,
+		dsP-_hallOriginInMu2e-CLHEP::Hep3Vector(0.,0.,ds->halfLength()+interconnectHL+smallOffset),
+		parent,
+		0,
+		G4Color::Blue(),
+		"ds"
+		);
+    }
 
     // DS thermal shield
     G4Material*   dsThShieldMaterial = findMaterialOrThrow( ds->shield_material() );
@@ -380,13 +395,15 @@ namespace mu2e {
 
     // DS vacuum volumes
     G4Material* vacuumMaterial = findMaterialOrThrow( ds->vacuumMaterial() );
-    TubsParams ds1VacParams    ( ts5out->rOut(), ds->rIn1(), ds->vac_halfLengthDs1()   );
+    double extendDS1Vacuum = 0.;
+    if(interconnectHL >= 0.) extendDS1Vacuum = interconnectHL + ds->frontHalfLength() - smallOffset;
+    TubsParams ds1VacParams    ( ts5out->rOut(), ds->rIn1(), ds->vac_halfLengthDs1() + extendDS1Vacuum  );
     TubsParams ds2VacParams    ( 0.            , ds->rIn1(), ds->vac_halfLengthDs2()   );
 
     // Compute/set positions of vacuum volumes in Mu2e coordinates.
     // - DS position is fixed by TS torus radius, and half lengths of
     //   front face, DS1, and TS5
-    double ds1Z0     = dsFrontZ0 + ds->frontHalfLength() + ds->vac_halfLengthDs1();
+    double ds1Z0     = dsFrontZ0 + ds->frontHalfLength() + ds->vac_halfLengthDs1() - extendDS1Vacuum;
     double ds2Z0     = ds->vac_zLocDs23Split() - ds->vac_halfLengthDs2();
     //    double ds2HalfLength     = _config.getDouble("ds2.halfLength");
 

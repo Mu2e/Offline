@@ -2,9 +2,6 @@
 // Given a line and an external point, find the point on the line that is
 // closest to the external point.
 //
-// $Id: LinePointPCA.cc,v 1.5 2011/05/18 02:27:18 wb Exp $
-// $Author: wb $
-// $Date: 2011/05/18 02:27:18 $
 //
 // Original author Rob Kutschke
 //

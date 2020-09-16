@@ -3,9 +3,6 @@
 //
 // Mu2e specific information about one G4 track.
 //
-// $Id: UserTrackInformation.hh,v 1.6 2013/12/02 20:12:58 genser Exp $
-// $Author: genser $
-// $Date: 2013/12/02 20:12:58 $
 //
 // Original author Rob Kutschke
 //

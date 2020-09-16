@@ -1,9 +1,6 @@
 //
 // Free function to create a geant4 test environment geometry
 //
-// $Id: constructStudyEnv_v001.cc,v 1.3 2013/02/27 03:49:40 genser Exp $
-// $Author: genser $
-// $Date: 2013/02/27 03:49:40 $
 //
 // Original author KLG 
 //

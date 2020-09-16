@@ -1,9 +1,6 @@
 # Test the seeds service: must crash on bad policy input
 #
 #
-# $Id: test09.fcl,v 1.1 2012/02/11 01:49:47 gandr Exp $
-# $Author: gandr $
-# $Date: 2012/02/11 01:49:47 $
 
 #include "fcl/messageService.fcl"
 

@@ -3,9 +3,6 @@
 //
 // (Pure virtual) Umbrela for the the Mu2e G4 world classes
 //
-// $Id: Mu2eUniverse.hh,v 1.2 2012/11/19 23:03:24 genser Exp $
-// $Author: genser $
-// $Date: 2012/11/19 23:03:24 $
 //
 // Original author K. Genser to generalize Mu2eWorld
 //

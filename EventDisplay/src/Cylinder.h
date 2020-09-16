@@ -1,9 +1,6 @@
 //
 // Class for all static (i.e. time-independent) cylinder structures, e.g. Tracker, target. The structure is displayed via EventDisplayGeoVolumeTube (inherited from TGeoVolume) which holds a TGeoTube. In order to allow the user to right-click the structure and get a contect menu, there are additional lines drawn via the EventDisplayPolyLine3D class (inherited from ROOT's TPolyLine3D class).
 //
-// $Id: Cylinder.h,v 1.12 2014/02/22 01:52:18 ehrlich Exp $
-// $Author: ehrlich $
-// $Date: 2014/02/22 01:52:18 $
 //
 // Original author Ralf Ehrlich
 //

@@ -4,9 +4,6 @@
 //
 // Persistable information about a G4 Physical Volume.
 //
-// $Id: PhysicalVolumeInfo.hh,v 1.3 2013/08/09 22:53:12 gandr Exp $
-// $Author: gandr $
-// $Date: 2013/08/09 22:53:12 $
 //
 // Original author Rob Kutschke
 //

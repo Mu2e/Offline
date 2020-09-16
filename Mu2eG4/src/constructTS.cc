@@ -1,9 +1,6 @@
 //
 // Free function to create Transport Solenoid
 //
-// $Id: constructTS.cc,v 1.33 2014/09/19 19:15:10 knoepfel Exp $
-// $Author: knoepfel $
-// $Date: 2014/09/19 19:15:10 $
 //
 // Original author KLG based on Mu2eWorld constructTS
 //
@@ -27,7 +24,6 @@
 #include "cetlib_except/exception.h"
 
 // Mu2e includes.
-#include "BeamlineGeom/inc/Beamline.hh"
 #include "BeamlineGeom/inc/Collimator_TS1.hh"
 #include "BeamlineGeom/inc/PbarWindow.hh"
 #include "G4Helper/inc/VolumeInfo.hh"
@@ -50,7 +46,6 @@
 
 // G4 includes
 #include "G4ThreeVector.hh"
-#include "G4Material.hh"
 #include "G4Color.hh"
 #include "G4Box.hh"
 #include "G4Tubs.hh"
@@ -99,6 +94,7 @@ namespace mu2e {
     const int  verbosityLevel      = config.getInt ("ts.cryo.verbosityLevel", 0     );
     const bool polyLiningUp        = config.getBool("ts.polyliner.Up.build"   , false );
     const bool polyLiningDown      = config.getBool("ts.polyliner.Down.build" , false );
+    const bool tsThermalShield     = config.getBool("ts.thermalshield.build"  , false );
 
     G4GeometryOptions* geomOptions = art::ServiceHandle<GeometryService>()->geomOptions();
     geomOptions->loadEntry( config, "TSCryo", "ts.cryo"      );
@@ -108,7 +104,9 @@ namespace mu2e {
     // vacuum or average coils + cryostat material.
     G4Material* downstreamVacuumMaterial  = findMaterialOrThrow(ts->downstreamVacuumMaterial());
     G4Material* upstreamVacuumMaterial    = findMaterialOrThrow(ts->upstreamVacuumMaterial());
-    G4Material* cryoMaterial    = findMaterialOrThrow(ts->material());
+    G4Material* cryoMaterial              = findMaterialOrThrow(ts->material());
+    G4Material* thermalShieldMLIMaterial  = (tsThermalShield) ? findMaterialOrThrow(ts->thermalShieldMLIMaterial()) : 0;
+    G4Material* thermalShieldMidMaterial  = (tsThermalShield) ? findMaterialOrThrow(ts->thermalShieldMidMaterial()) : 0;
 
     G4ThreeVector _hallOriginInMu2e = parent.centerInMu2e();
 
@@ -259,6 +257,12 @@ namespace mu2e {
 	      "TSCryo"
               );
 
+    if(tsThermalShield) {
+      VolumeInfo useAsParent = _helper->locateVolInfo( "TS1CryoInsVac" );
+      addThermalShield(*ts, useAsParent, config, TransportSolenoid::TSRegion::TS1,
+		       thermalShieldMLIMaterial, thermalShieldMidMaterial, -1.);
+    }
+
     // Build TS2
     torsec = ts->getTSVacuum<TorusSection>(TransportSolenoid::TSRegion::TS2);
     nestTorus("TS2Vacuum",
@@ -347,11 +351,16 @@ namespace mu2e {
 	      "TSCryo"
               );
 
+    if(tsThermalShield) {
+      VolumeInfo useAsParent = _helper->locateVolInfo( "TS2CryoInsVac" );
+      addThermalShield(*ts, useAsParent, config, TransportSolenoid::TSRegion::TS2,
+		       thermalShieldMLIMaterial, thermalShieldMidMaterial, -1.);
+    }
 
     // Build TS3
     strsec = ts->getTSCryo<StraightSection>(TransportSolenoid::TSRegion::TS3,TransportSolenoid::TSRadialPart::IN );
     nestTubs( "TS3Vacuum",
-              TubsParams( 0., ts->innerRadius(), strsec->getHalfLength() ),
+              TubsParams( 0., ts->ts3InnerRadius(), strsec->getHalfLength() ),
               downstreamVacuumMaterial,
               strsec->getRotation(),
               strsec->getGlobal()-_hallOriginInMu2e,
@@ -425,6 +434,51 @@ namespace mu2e {
 	      "TSCryo"
               );
 
+    if(tsThermalShield) {
+      //split each volume into an upstream and downstream end
+      double ts3WallThickness = config.getDouble("pbar.support.midThickness")*CLHEP::mm;
+      VolumeInfo useAsParent = _helper->locateVolInfo( "TS3CryoInsVac" );
+      addThermalShield(*ts, useAsParent, config, TransportSolenoid::TSRegion::TS3,
+		       thermalShieldMLIMaterial, thermalShieldMidMaterial, ts3WallThickness);
+    }
+
+    //Add TSu-TSd interconnect
+    if(config.getBool("ts.tsudinterconnect.build", false)) {
+      //strsec = TS3 section 
+      std::string tsudinterconnect_material = config.getString("ts.tsudinterconnect.material");
+      double tsudinterconnect_xoffset = config.getDouble("ts.tsudinterconnect.xoffset");
+      double tsudinterconnect_rin = config.getDouble("ts.tsudinterconnect.rIn");
+      double tsudinterconnect_rout = config.getDouble("ts.tsudinterconnect.rOut");
+      double tsudinterconnect_halflength = config.getDouble("ts.tsudinterconnect.halfLength");
+      G4Material* tsud_mat = findMaterialOrThrow(tsudinterconnect_material);
+      
+      nestTubs( "TSudInterconnectu",
+		TubsParams( tsudinterconnect_rin,
+			    tsudinterconnect_rout,
+			    tsudinterconnect_halflength),
+		tsud_mat,
+		strsec->getRotation(),
+		strsec->getGlobal()-_hallOriginInMu2e 
+		+ CLHEP::Hep3Vector(tsudinterconnect_xoffset+tsudinterconnect_halflength, 0., 0.),
+		parent,
+		0,
+		G4Color::Red(),
+		"TSCryo"
+		);
+      nestTubs( "TSudInterconnectd",
+		TubsParams( tsudinterconnect_rin,
+			    tsudinterconnect_rout,
+			    tsudinterconnect_halflength),
+		tsud_mat,
+		strsec->getRotation(),
+		strsec->getGlobal()-_hallOriginInMu2e 
+		- CLHEP::Hep3Vector(tsudinterconnect_xoffset+tsudinterconnect_halflength, 0., 0.),
+		parent,
+		0,
+		G4Color::Red(),
+		"TSCryo"
+		);
+    }
 
     // Build TS4
     torsec = ts->getTSVacuum<TorusSection>(TransportSolenoid::TSRegion::TS4);
@@ -511,6 +565,11 @@ namespace mu2e {
               );
 
 
+    if(tsThermalShield) {
+      VolumeInfo useAsParent = _helper->locateVolInfo( "TS4CryoInsVac" );
+      addThermalShield(*ts, useAsParent, config, TransportSolenoid::TSRegion::TS4,
+		       thermalShieldMLIMaterial, thermalShieldMidMaterial, -1.);
+    }
 
 
     // Build TS5.
@@ -520,7 +579,7 @@ namespace mu2e {
                                                              strsec->getGlobal().z() );
 
     nestTubs( "TS5Vacuum",
-              TubsParams( 0., ts->innerRadius(), strsec->getHalfLength() ),
+              TubsParams( 0., ts->ts5InnerRadius(), strsec->getHalfLength() ),
               downstreamVacuumMaterial,
               strsec->getRotation(),
               globalVac5Position-_hallOriginInMu2e,
@@ -531,14 +590,23 @@ namespace mu2e {
               );
 
     double ts5InsVacRIn = strsec->rOut();
+    //account for possible overlap with coll53 (flange)
+    double coll53HL = ts->getColl53().halfLength();
+    double coll53RIn = ts->getColl53().rIn();
+    double ts5InnerCryoHL = strsec->getHalfLength();
+    double ts5InnerCryoOffset = 0.;
+    if(coll53RIn < strsec->rOut()) {
+      ts5InnerCryoHL -= coll53HL;
+      ts5InnerCryoOffset = coll53HL;
+    }
     tssName = "TS5InnerCryoShell";
     nestTubs( tssName,
               TubsParams( strsec->rIn(),
                           strsec->rOut(),
-                          strsec->getHalfLength() ),
+                          ts5InnerCryoHL ),
               cryoMaterial,
               strsec->getRotation(),
-              strsec->getGlobal()-_hallOriginInMu2e,
+              strsec->getGlobal()-_hallOriginInMu2e - CLHEP::Hep3Vector(0.,0.,ts5InnerCryoOffset),
               parent,
               0,
               G4Color::Red(),
@@ -598,7 +666,11 @@ namespace mu2e {
               );
 
 
-
+    if(tsThermalShield) {
+      VolumeInfo useAsParent = _helper->locateVolInfo( "TS5CryoInsVac" );
+      addThermalShield(*ts, useAsParent, config, TransportSolenoid::TSRegion::TS5,
+		       thermalShieldMLIMaterial, thermalShieldMidMaterial, -1.);
+    }
 
     // Build Rings (added April 1, 2015, David Norvil Brown)
     double rirs = ts->rInRingSide();
@@ -635,7 +707,7 @@ namespace mu2e {
 				       parent, 0, G4Color::Blue(),
 				       "TSCryo" );
       std::ostringstream leftName;
-      leftName << "leftSideRing" << iRing;
+      leftName << "TSleftSideRing" << iRing;
 
       double lx = 0.0;
       double ly = 0.0;
@@ -652,7 +724,7 @@ namespace mu2e {
 		);
 
       std::ostringstream centerName;
-      centerName << "centerRing" << iRing;
+      centerName << "TScenterRing" << iRing;
 
       nestTubs( centerName.str(),
 		TubsParams( rir, ror, lr/2.0 ),
@@ -667,7 +739,7 @@ namespace mu2e {
 
 
       std::ostringstream rightName;
-      rightName << "rightSideRing" << iRing;
+      rightName << "TSrightSideRing" << iRing;
 
       double rx = 0.0;
       double ry = 0.0;
@@ -696,9 +768,11 @@ namespace mu2e {
 	PabsSupOutName << "PabsTS3SupOut";
 	CLHEP::HepRotation* pasubRotat = new CLHEP::HepRotation(CLHEP::HepRotation::IDENTITY);
 	pasubRotat->rotateY(90.0*CLHEP::degree);
-
+	double rPabsTS3SupOut_in  = rirs;
+	double rPabsTS3SupOut_out = config.getDouble("pbar.support.outROut", rors);
+	double rPabsTS3SupOut_HL  = config.getDouble("pbar.support.outHalfLength", trs);
 	nestTubs( PabsSupOutName.str(),
-		  TubsParams( rirs, rors, trs ),
+		  TubsParams( rPabsTS3SupOut_in, rPabsTS3SupOut_out, rPabsTS3SupOut_HL ),
 		  ringMaterial,
 		  pasubRotat, 
 		  CLHEP::Hep3Vector(0,0,0)-_hallOriginInMu2e,
@@ -736,10 +810,11 @@ namespace mu2e {
 
 
     // Build downstream end wall of TS5
+    // place flush with end of TS5
     CLHEP::Hep3Vector pos3( strsec->getGlobal().x(), 
                             strsec->getGlobal().y(), 
                             strsec->getGlobal().z()+strsec->getHalfLength()-ts->endWallD_halfLength() );
-  
+
     tssName = "TS5DownstreamEndwall";
     nestTubs( tssName,
               TubsParams( ts->endWallD_rIn(),
@@ -753,6 +828,26 @@ namespace mu2e {
               G4Color::Red(),
 	      "TSCryo"
               );
+    //if defined a second component of the end wall
+    if(ts->build_endWallD2()) {
+      //place upstream of first component
+      CLHEP::Hep3Vector pos32(pos3.x(), pos3.y(), pos3.z()-ts->endWallD_halfLength()-2.*ts->endWallD2_halfLength());
+      VolumeInfo useAsParent = _helper->locateVolInfo( "TS5CryoInsVac" );
+      pos32 -= useAsParent.centerInMu2e();
+      tssName = "TS5DownstreamEndwall2";
+      nestPolycone( tssName,
+		    PolyconsParams(ts->endWallD2_z(),
+				   ts->endWallD2_rIn(),
+				   ts->endWallD2_rOut()),
+		    cryoMaterial,
+		    0,
+		    pos32,
+		    useAsParent,
+		    0,
+		    G4Color::Red(),
+		    "TSCryo"
+		    );
+    }
 
     verbosityLevel &&
       G4cout << __func__ << " " << tssName << " Mass in kg: " 
@@ -984,9 +1079,10 @@ namespace mu2e {
     // Get collimators
     TransportSolenoid const& ts = bl.getTS();
 
-    TSSection const * ts1in = ts.getTSCryo(TransportSolenoid::TSRegion::TS1, TransportSolenoid::TSRadialPart::IN);
-    TSSection const * ts3in = ts.getTSCryo(TransportSolenoid::TSRegion::TS3, TransportSolenoid::TSRadialPart::IN);
-    TSSection const * ts5in = ts.getTSCryo(TransportSolenoid::TSRegion::TS5, TransportSolenoid::TSRadialPart::IN);
+    TSSection       const * ts1in = ts.getTSCryo(TransportSolenoid::TSRegion::TS1, TransportSolenoid::TSRadialPart::IN);
+    TSSection       const * ts3in = ts.getTSCryo(TransportSolenoid::TSRegion::TS3, TransportSolenoid::TSRadialPart::IN);
+    TorusSection    const * ts4in = ts.getTSCryo<TorusSection>(TransportSolenoid::TSRegion::TS4, TransportSolenoid::TSRadialPart::IN);
+    StraightSection const * ts5in = ts.getTSCryo<StraightSection>(TransportSolenoid::TSRegion::TS5, TransportSolenoid::TSRadialPart::IN);
 
     CollimatorTS1 const& coll1   = ts.getColl1() ;
     CollimatorTS3 const& coll31  = ts.getColl31();
@@ -1115,7 +1211,7 @@ namespace mu2e {
       G4cout << __func__ << " Coll31 OffsetInMu2e  : " << coll31.getLocal() + parentPosM << G4endl;
       G4cout << __func__ << " Coll31 Extent        :[ " << coll31.getLocal().z() - coll31.halfLength() + parentPosM.z() <<","
            << coll31.getLocal().z() + coll31.halfLength()  + parentPosM.z() << "]" << G4endl;
-      G4cout << __func__ << " ts innerRadius      : " << ts.innerRadius() << G4endl;
+      G4cout << __func__ << " ts innerRadius      : " << ts.ts3InnerRadius() << G4endl;
       G4cout << __func__ << " coll31 outerRadius  : " << coll31.rOut()    << G4endl;
      }
 
@@ -1212,7 +1308,7 @@ namespace mu2e {
 
     // Now add a Recorder at the Coll31 exit and Coll32 entrance
     // (do not use VirtualDetector because of _ in its volume name)
-    TubsParams coll31OutRecordParam ( 0,  ts.innerRadius(), vdHalfLength );
+    TubsParams coll31OutRecordParam ( 0,  ts.ts3InnerRadius(), vdHalfLength );
     G4ThreeVector coll31OutRecordTrans( coll31.getLocal().x(),
                                         coll31.getLocal().y(),
                                         coll31.getLocal().z() + coll31.halfLength() + vdHalfLength );
@@ -1281,39 +1377,88 @@ namespace mu2e {
               );
 
 
-    TubsParams coll5Param2 ( coll52.rIn(),  coll52.rOut(), coll52.halfLength()-2.*vdHalfLength);
+    double coll52HL = coll52.halfLength()-2.*vdHalfLength;
+    double coll52HLInTS4 = -1.;
+    auto coll52Origin = coll52.getLocal();
+    if(coll52Origin.z() - coll52HL < -1.*ts5in->getHalfLength()) { //extends into TS4
+      coll52HLInTS4 = coll52HL;
+      double lengthOutTS5 = coll52HL - ts5in->getHalfLength() - coll52Origin.z(); //amount in TS4
+      coll52HL -= lengthOutTS5/2.; //fill to end of upstream end of TS5
+      coll52Origin.setZ(coll52Origin.z() + lengthOutTS5/2.); //offset the TS5 section to compensate
+      coll52HLInTS4 = lengthOutTS5/2.; //left over HL in TS4
+    }
+
+    TubsParams coll5Param2 ( coll52.rIn(),  coll52.rOut(), coll52HL);
+
     nestTubs( "Coll52",
               coll5Param2,
               findMaterialOrThrow( coll52.material() ),
               0,
-              coll52.getLocal(),
+              coll52Origin,
               _helper->locateVolInfo("TS5Vacuum"),
               0,
               G4Color::Blue(),
 	      "TSColl"
               );
+    if(coll52HLInTS4 > 0.) {
+      TubsParams coll5Param2_TS4 ( coll52.rIn(),  coll52.rOut(), coll52HLInTS4);
+      CLHEP::HepRotation* rotColl52 = new CLHEP::HepRotation(CLHEP::HepRotation::IDENTITY);
+      rotColl52->rotateX(90.*CLHEP::degree);
+      nestTubs( "Coll52InTS4",
+		coll5Param2_TS4,
+		findMaterialOrThrow( coll52.material() ),
+		rotColl52,
+		CLHEP::Hep3Vector(-ts4in->torusRadius(),coll52HLInTS4,0.), //downstream end of TS4
+		 _helper->locateVolInfo("TS4Vacuum"),
+		0,
+		G4Color::Blue(),
+		"TSColl"
+		);
+    }
     
+    int coll53version = coll53.version();
     TubsParams coll5Param3 ( coll53.rIn(),  coll53.rOut(), coll53.halfLength()-2.*vdHalfLength);
-    
-    // Build Coll53 flange outside the TS5Vacuum
-    VolumeInfo useAsParent = _helper->locateVolInfo("TS5CryoInsVac");
-    //    G4ThreeVector _hallOriginInMu2e = parent.centerInMu2e();
-    G4ThreeVector _useParentOriginInMu2e = useAsParent.centerInMu2e();
+    VolumeInfo useAsParent;
+    G4ThreeVector _useAsParentOriginInMu2e;
+    CLHEP::Hep3Vector offset(0.,0.,0.);
     StraightSection   const * strsec (nullptr);
     strsec = ts.getTSVacuum<StraightSection>(TransportSolenoid::TSRegion::TS5);
+    if(coll53version == 1) {
+      // Build Coll53 flange outside the TS5Vacuum
+      useAsParent = _helper->locateVolInfo("TS5CryoInsVac");
+      _useAsParentOriginInMu2e = useAsParent.centerInMu2e();
+    } else if(coll53version > 1) { //place in hall air, flush to TS end
+      //adjust origin from inside TS5 to end of it
+      offset.setZ(2.*(ts.endWallD_halfLength()));
+      if(ts.ts5InnerRadius() > coll53.rIn()) { //split between ts5 vacuum and hall air
+	useAsParent = _helper->locateVolInfo("TS5Vacuum");
+	_useAsParentOriginInMu2e = useAsParent.centerInMu2e();
+	coll5Param3  = TubsParams(coll53.rIn(), ts.ts5InnerRadius(), coll53.halfLength()-2.*vdHalfLength);
+	nestTubs( "Coll53InTS5",
+		  coll5Param3,
+		  findMaterialOrThrow( coll53.material() ),
+		  0,
+		  strsec->getGlobal()-_useAsParentOriginInMu2e+coll53.getLocal() + offset,
+		  useAsParent,
+		  0,
+		  G4Color::Blue(),
+		  "TSColl"
+		  );
+	coll5Param3  = TubsParams(ts.ts5InnerRadius(), coll53.rOut(), coll53.halfLength()-2.*vdHalfLength);
+      }
+      useAsParent = parent; //the rest of the flange is in hall air
+      _useAsParentOriginInMu2e = parent.centerInMu2e();
+    }
     nestTubs( "Coll53",
-              coll5Param3,
-              findMaterialOrThrow( coll53.material() ),
+	      coll5Param3,
+	      findMaterialOrThrow( coll53.material() ),
 	      0,
-              strsec->getGlobal()-_useParentOriginInMu2e+coll53.getLocal(),
-              useAsParent,
-              0,
-              G4Color::Blue(),
+	      strsec->getGlobal()-_useAsParentOriginInMu2e+coll53.getLocal() + offset,
+	      useAsParent,
+	      0,
+	      G4Color::Blue(),
 	      "TSColl"
-              );
-
-    
-    
+	      );
   }
   
   //__________________________________
@@ -1849,7 +1994,7 @@ namespace mu2e {
 	    stairOutline.push_back(G4TwoVector(xCoord,-stepLength[iStep]));
 	      
 	    if (pbarAbsTS3Version == 3){
-	    xCoord += stepThck;
+	      xCoord += stepThck;
 	    } else  if (pbarAbsTS3Version == 4) {
 	      xCoord += stepThickStrip[iStep];
 	    }
@@ -2292,5 +2437,280 @@ namespace mu2e {
 
   } // end Mu2eWorld::constructPbarWindow()
 
-}
+  //Helper function to add thermal shielding
+  void addThermalShield ( TransportSolenoid const& ts, VolumeInfo const& useAsParent,
+			  SimpleConfig const& config,
+			  TransportSolenoid::TSRegion::enum_type TSRegion,
+			  G4Material* thermalShieldMLIMaterial, G4Material* thermalShieldMidMaterial,
+			  double centerWallThickness /* > 0 if exists in middle of region (TS3) */) {
+    //for convenience
+    typedef TransportSolenoid::TSRegion tsr;
+    typedef TransportSolenoid::TSRadialPart tsrad;
 
+    std::string region = ""; //store the number of the TS region
+    bool straightSection = true; //torus or straight region
+    switch(TSRegion) {
+    case tsr::TS1 : region = "1"; break;
+    case tsr::TS2 : region = "2"; straightSection = false; break;
+    case tsr::TS3 : region = "3"; break;
+    case tsr::TS4 : region = "4"; straightSection = false; break;
+    case tsr::TS5 : region = "5"; break;
+    default : return;
+    }
+
+    double smallGap = 1.e-3; //small buffer to prevent overlaps
+    if(straightSection) {
+      auto strsec = ts.getTSThermalShield<StraightSection>(TSRegion, tsrad::IN);
+      //end plate for the thermal shielding
+      double  endPlateRIn        = 0.;
+      double  endPlateROut       = 0.;
+      double  endPlateHalfLength = 0.;
+      int side = (TSRegion == tsr::TS1) ? -1. : 1.; //which side of TS to add end plate to if adding it
+      if(TSRegion == tsr::TS1 || TSRegion == tsr::TS5) { //only the TS1 and TS5 currently have plates
+	endPlateRIn          = config.getDouble("ts.ts" + region + ".thermalshield.endplate.rIn");
+	endPlateROut         = config.getDouble("ts.ts" + region + ".thermalshield.endplate.rOut");
+	endPlateHalfLength   = config.getDouble("ts.ts" + region + ".thermalshield.endplate.halfLength");
+	double endPlateZMid1 = config.getDouble("ts.ts" + region + ".thermalshield.endplate.mid.z1");
+	double endPlateZMid2 = config.getDouble("ts.ts" + region + ".thermalshield.endplate.mid.z2");
+	//calculate thickness of each blanket from total thickness - metal layer thickness
+	if(endPlateZMid1 > endPlateZMid2 || endPlateZMid2 > 2.* endPlateHalfLength)
+	  throw cet::exception("GEOM")
+	    << ("TS thermal shielding end plate in TS" + region + " has inconsistent Z positions!").c_str()
+	    << " Should have 0 < z mid1 < z mid2 < 2*end plate half thickness."
+	    << G4endl;
+
+	double midHalfLength = (endPlateZMid2 - endPlateZMid1)/2.; //z1 - z2
+	double mli1HalfLength = endPlateZMid1/2.; //0 - z1
+	double mli2HalfLength = endPlateHalfLength - endPlateZMid2/2.; //z2 - end
+	double dzOriginToEdge = strsec->getHalfLength() - 2.*endPlateHalfLength; //center vacuum to edge of thermal shielding tube
+
+	CLHEP::Hep3Vector mli1Origin(strsec->getGlobal()-useAsParent.centerInMu2e()
+				     + CLHEP::Hep3Vector(0.,0.,
+							 side*(dzOriginToEdge + mli1HalfLength)));
+	CLHEP::Hep3Vector midOrigin(mli1Origin + CLHEP::Hep3Vector(0.,0.,side*(mli1HalfLength+midHalfLength)));
+	CLHEP::Hep3Vector mli2Origin(midOrigin + CLHEP::Hep3Vector(0.,0.,side*(mli2HalfLength+midHalfLength)));
+	nestTubs( "TS"+region+"ThermalShieldEndPlateMLI1",
+		  TubsParams( endPlateRIn ,
+			      endPlateROut,
+			      mli1HalfLength),
+		  thermalShieldMLIMaterial,
+		  0,
+		  mli1Origin,
+		  useAsParent,
+		  0,
+		  G4Color::Red(),
+		  "TSCryo"
+		  );
+	nestTubs( "TS"+region+"ThermalShieldEndPlateMLI2",
+		  TubsParams( endPlateRIn ,
+			      endPlateROut,
+			      mli2HalfLength),
+		  thermalShieldMLIMaterial,
+		  0,
+		  mli2Origin,
+		  useAsParent,
+		  0,
+		  G4Color::Red(),
+		  "TSCryo"
+		  );
+	nestTubs( "TS"+region+"ThermalShieldEndPlateMid",
+		  TubsParams( endPlateRIn ,
+			      endPlateROut,
+			      midHalfLength),
+		  thermalShieldMidMaterial,
+		  0,
+		  midOrigin,
+		  useAsParent,
+		  0,
+		  G4Color::Red(),
+		  "TSCryo"
+		  );
+      }
+      if(centerWallThickness < 0.) { //no wall in the center of the region (TS1 and TS5)
+	std::vector<double> innerInRadii = {strsec->rIn(),
+				       config.getDouble("ts.ts" + region + "in.thermalshield.mid.rIn")+smallGap,
+				       config.getDouble("ts.ts" + region + "in.thermalshield.mid.rOut")+smallGap};
+	std::vector<double> innerOutRadii = {innerInRadii[1]-smallGap,
+					     innerInRadii[2]-smallGap,
+					     strsec->rOut()};
+	CLHEP::Hep3Vector innerOrigin(strsec->getGlobal()-useAsParent.centerInMu2e()
+				      - CLHEP::Hep3Vector(0.,0.,side*endPlateHalfLength));
+	double innerHalfLength = strsec->getHalfLength() - endPlateHalfLength;
+	addThermalShieldStraightSection(useAsParent, innerInRadii, innerOutRadii, innerHalfLength,
+					thermalShieldMLIMaterial, thermalShieldMidMaterial,
+					innerOrigin, "TS"+region+"Inner");
+
+	strsec = ts.getTSThermalShield<StraightSection>(TSRegion,tsrad::OUT);
+	std::vector<double> outerInRadii = {strsec->rIn(),
+					   config.getDouble("ts.ts" + region + "out.thermalshield.mid.rIn")+smallGap,
+					   config.getDouble("ts.ts" + region + "out.thermalshield.mid.rOut")+smallGap};
+	std::vector<double> outerOutRadii = {outerInRadii[1]-smallGap,
+					     outerInRadii[2]-smallGap,
+					     strsec->rOut()};
+	CLHEP::Hep3Vector outerOrigin(strsec->getGlobal()-useAsParent.centerInMu2e()
+				      - CLHEP::Hep3Vector(0.,0.,side*endPlateHalfLength));
+	double outerHalfLength = strsec->getHalfLength() - endPlateHalfLength;
+	addThermalShieldStraightSection(useAsParent, outerInRadii, outerOutRadii, outerHalfLength,
+					thermalShieldMLIMaterial, thermalShieldMidMaterial,
+					outerOrigin, "TS"+region+"Outer");
+      } //end no center wall
+      else { //wall in the center of the region (TS3)
+	//split each volume into an upstream and downstream end
+	double tsrHalfLength = strsec->getHalfLength();
+	double tsrudHalfLength = tsrHalfLength/2. - centerWallThickness/4.; //half of region minus half of the wall half length
+	std::vector<double> innerInRadii = {strsec->rIn(),
+					    config.getDouble("ts.ts" + region + "in.thermalshield.mid.rIn")+smallGap,
+					    config.getDouble("ts.ts" + region + "in.thermalshield.mid.rOut")+smallGap};
+	std::vector<double> innerOutRadii = {innerInRadii[1]-smallGap,
+					     innerInRadii[2]-smallGap,
+					     strsec->rOut()};
+	CLHEP::Hep3Vector inneruOrigin(strsec->getGlobal()-useAsParent.centerInMu2e()
+				      - CLHEP::Hep3Vector(0.,0.,tsrHalfLength/2.+centerWallThickness/4.));
+	CLHEP::Hep3Vector innerdOrigin(strsec->getGlobal()-useAsParent.centerInMu2e()
+				      + CLHEP::Hep3Vector(0.,0.,tsrHalfLength/2.+centerWallThickness/4.));
+
+	addThermalShieldStraightSection(useAsParent, innerInRadii, innerOutRadii, tsrudHalfLength,
+					thermalShieldMLIMaterial, thermalShieldMidMaterial,
+					inneruOrigin, "TS"+region+"uInner");
+	addThermalShieldStraightSection(useAsParent, innerInRadii, innerOutRadii, tsrudHalfLength,
+					thermalShieldMLIMaterial, thermalShieldMidMaterial,
+					innerdOrigin, "TS"+region+"dInner");
+
+	strsec = ts.getTSThermalShield<StraightSection>(TSRegion,tsrad::OUT);
+	tsrHalfLength = strsec->getHalfLength();
+	tsrudHalfLength = tsrHalfLength/2. - centerWallThickness/4.; //half of region minus half of the wall half length
+	std::vector<double> outerInRadii = {strsec->rIn(),
+					    config.getDouble("ts.ts" + region + "out.thermalshield.mid.rIn")+smallGap,
+					    config.getDouble("ts.ts" + region + "out.thermalshield.mid.rOut")+smallGap};
+	std::vector<double> outerOutRadii = {outerInRadii[1]-smallGap,
+					     outerInRadii[2]-smallGap,
+					     strsec->rOut()};
+	CLHEP::Hep3Vector outeruOrigin(strsec->getGlobal()-useAsParent.centerInMu2e()
+				       - CLHEP::Hep3Vector(0.,0.,tsrHalfLength/2.+centerWallThickness/4.));
+	CLHEP::Hep3Vector outerdOrigin(strsec->getGlobal()-useAsParent.centerInMu2e()
+				       + CLHEP::Hep3Vector(0.,0.,tsrHalfLength/2.+centerWallThickness/4.));
+
+	addThermalShieldStraightSection(useAsParent, outerInRadii, outerOutRadii, tsrudHalfLength,
+					thermalShieldMLIMaterial, thermalShieldMidMaterial,
+					outeruOrigin, "TS"+region+"uOuter");
+	addThermalShieldStraightSection(useAsParent, outerInRadii, outerOutRadii, tsrudHalfLength,
+					thermalShieldMLIMaterial, thermalShieldMidMaterial,
+					outerdOrigin, "TS"+region+"dOuter");
+
+
+      }
+    } //end if straight section
+    else { //torus section
+      auto torsec = ts.getTSThermalShield<TorusSection>(TSRegion,tsrad::IN );
+      std::vector<double> torusInParams = {torsec->torusRadius(), torsec->phiStart(), torsec->deltaPhi()};
+      std::vector<double> innerInRadii = {torsec->rIn(),
+					  config.getDouble("ts.ts" + region + "in.thermalshield.mid.rIn"),
+					  config.getDouble("ts.ts" + region + "in.thermalshield.mid.rOut")};
+      std::vector<double> innerOutRadii = {innerInRadii[1],
+					   innerInRadii[2],
+					   torsec->rOut()};
+      addThermalShieldTorusSection(useAsParent, innerInRadii, innerOutRadii, torusInParams,
+				   thermalShieldMLIMaterial, thermalShieldMidMaterial,
+				   torsec->getGlobal()-useAsParent.centerInMu2e(), "TS"+region+"Inner");
+
+      torsec = ts.getTSThermalShield<TorusSection>(TSRegion,tsrad::OUT );
+      std::vector<double> torusOutParams = {torsec->torusRadius(), torsec->phiStart(), torsec->deltaPhi()};
+      std::vector<double> outerInRadii = {torsec->rIn(),
+					  config.getDouble("ts.ts" + region + "out.thermalshield.mid.rIn"),
+					  config.getDouble("ts.ts" + region + "out.thermalshield.mid.rOut")};
+      std::vector<double> outerOutRadii = {outerInRadii[1],
+					   outerInRadii[2],
+					   torsec->rOut()};
+      addThermalShieldTorusSection(useAsParent, outerInRadii, outerOutRadii, torusOutParams,
+				   thermalShieldMLIMaterial, thermalShieldMidMaterial,
+				   torsec->getGlobal()-useAsParent.centerInMu2e(), "TS"+region+"Outer");
+    }
+  } //end addThermalShield
+
+  //add an individual straight section of thermal shielding
+  void addThermalShieldStraightSection( VolumeInfo const& useAsParent, std::vector<double> innerRadii,
+					std::vector<double> outerRadii, double halfLength,
+					G4Material* thermalShieldMLIMaterial, G4Material* thermalShieldMidMaterial,
+					CLHEP::Hep3Vector const& origin, std::string name) {
+    unsigned nRadii = 3; //number expected
+    if(innerRadii.size() != nRadii || outerRadii.size() != nRadii)
+      throw cet::exception("GEOM")
+	<< "Incorrect amount of radii given for TS thermal shielding!"
+	<< G4endl;
+
+    std::vector<std::string> names = {"ThermalShieldMLI1", "ThermalShieldMid", "ThermalShieldMLI2"};
+    std::vector<G4Material*> materials = {thermalShieldMLIMaterial, thermalShieldMidMaterial, thermalShieldMLIMaterial};
+    if(names.size() != nRadii)
+      throw cet::exception("GEOM")
+	<< "Vector of shielding names not the correct size in constructTS::"
+	<< __func__ << "!"
+	<< G4endl;
+    if(materials.size() != nRadii)
+      throw cet::exception("GEOM")
+	<< "Vector of materials not the correct size in constructTS::"
+	<< __func__ << "!"
+	<< G4endl;
+    for(unsigned index = 0; index < nRadii; ++index) {
+      nestTubs( name+names[index],
+		TubsParams( innerRadii[index],
+			    outerRadii[index],
+			    halfLength ),
+		materials[index],
+		0,
+		origin,
+		useAsParent,
+		0,
+		G4Color::Red(),
+		"TSCryo"
+		);
+    }
+  } //end add thermal shield straight section
+
+  void addThermalShieldTorusSection( VolumeInfo const& useAsParent, std::vector<double> innerRadii,
+				     std::vector<double> outerRadii, std::vector<double> torusParams,
+				     G4Material* thermalShieldMLIMaterial, G4Material* thermalShieldMidMaterial,
+				     CLHEP::Hep3Vector const& origin, std::string name) {
+    unsigned nRadii = 3; //number expected
+    if(innerRadii.size() != nRadii || outerRadii.size() != nRadii)
+      throw cet::exception("GEOM")
+	<< "Incorrect amount of radii given for TS thermal shielding!"
+	<< G4endl;   
+    if(torusParams.size() != 3)
+      throw cet::exception("GEOM")
+	<< "Incorrect amount of torus parameters given for TS thermal shielding (expect {rTorus, phi0, delta phi})!"
+	<< G4endl;
+
+    std::vector<std::string> names = {"ThermalShieldMLI1", "ThermalShieldMid", "ThermalShieldMLI2"};
+    std::vector<G4Material*> materials = {thermalShieldMLIMaterial, thermalShieldMidMaterial, thermalShieldMLIMaterial};
+    if(names.size() != nRadii)
+      throw cet::exception("GEOM")
+	<< "Vector of shielding names not the correct size in constructTS::"
+	<< __func__ << "!"
+	<< G4endl;
+    if(materials.size() != nRadii)
+      throw cet::exception("GEOM")
+	<< "Vector of materials not the correct size in constructTS::"
+	<< __func__ << "!"
+	<< G4endl;
+
+    for(unsigned index = 0; index < nRadii; ++index) {
+      std::array<double,5> params {
+	{   innerRadii[index], outerRadii[index],
+	    torusParams[0], torusParams[1],
+	    torusParams[2] }
+      };
+      nestTorus(name+names[index],
+		params,
+		materials[index],
+		0,
+		origin,
+		useAsParent,
+		0,
+		G4Color::Red(),
+		"TSCryo"
+		);
+    }
+
+  }//end add thermal shield torus section
+
+} //end namespace mu2e

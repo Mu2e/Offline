@@ -4,9 +4,6 @@
 // A trivial class instrumented with some printout.  To
 // be used in tests of other classes.
 //
-//  $Id: TestClass.hh,v 1.2 2011/05/17 15:41:36 greenc Exp $
-//  $Author: greenc $
-//  $Date: 2011/05/17 15:41:36 $
 //
 // Original author Rob Kutschke
 //

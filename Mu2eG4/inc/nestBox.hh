@@ -3,9 +3,6 @@
 //
 // Free function to create a new G4 Box, placed inside a logical volume.
 //
-// $Id: nestBox.hh,v 1.11 2014/09/19 19:14:53 knoepfel Exp $
-// $Author: knoepfel $
-// $Date: 2014/09/19 19:14:53 $
 //
 // Original author Rob Kutschke
 //

@@ -1,9 +1,6 @@
 //
 // Run-time config info for the event generators.
 //
-// $Id: genconfig_Bkg.txt,v 1.17 2012/02/20 21:07:17 onoratog Exp $
-// $Author: onoratog $
-// $Date: 2012/02/20 21:07:17 $
 //
 // Original author Rob Kutschke
 // adapted by Gianni Onorato
