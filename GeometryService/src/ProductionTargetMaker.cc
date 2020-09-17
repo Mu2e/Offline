@@ -3,6 +3,7 @@
 #include "CLHEP/Units/SystemOfUnits.h"
 #include "ConfigTools/inc/SimpleConfig.hh"
 #include "ProductionTargetGeom/inc/ProductionTarget.hh"
+#include "ProductionTargetGeom/inc/ProductionTargetMu2eII.hh"
 #include <iostream>
 #include <algorithm>
 
@@ -10,18 +11,30 @@ namespace mu2e {
 
   std::unique_ptr<ProductionTarget> ProductionTargetMaker::make(const SimpleConfig& c, double solenoidOffset) {
 
-
-    if (c.getString("targetPS_model") == "MDC2018"){ 
-      //     std::cout << "making Tier1 in maker" << std::endl;
+    std::string model = c.getString("targetPS_model");
+    if ( model == "MDC2018")
       return std::move(makeTier1(c, solenoidOffset));
-	} else 
-      if (c.getString("targetPS_model") == "Hayman_v_2_0"){ 
-	//	std::cout << " making Hayman in Maker" << std::endl;
-	return std::move(makeHayman_v_2_0(c, solenoidOffset));
-	  } else 
-	{throw cet::exception("GEOM") << " illegal production target version specified = " << c.getInt("targetPS_version")  << std::endl;}
-    return 0;
+    else if (model == "Hayman_v_2_0")
+      return std::move(makeHayman_v_2_0(c, solenoidOffset));
+    
+    throw cet::exception("GEOM") << " illegal production target version specified = " 
+				 << model.c_str() << " version = " 
+				 << c.getInt("targetPS_version")  << std::endl;
+    return nullptr;
+  }
 
+  std::unique_ptr<ProductionTargetMu2eII> ProductionTargetMaker::makeMu2eII(const SimpleConfig& c, double solenoidOffset) {
+
+    std::string model = c.getString("targetPS_model");
+    if ( model == "Conveyor")
+      return std::move(makeMu2eIIConveyor(c, solenoidOffset));
+    else if (model == "Rotating")
+      return std::move(makeMu2eIIRotating(c, solenoidOffset));
+    
+    throw cet::exception("GEOM") << " illegal (Mu2eII) production target version specified = " 
+				 << model.c_str() << " version = " 
+				 << c.getInt("targetPS_version")  << std::endl;
+    return nullptr;
   }
 
   std::unique_ptr<ProductionTarget> ProductionTargetMaker::makeTier1(const SimpleConfig& c, double solenoidOffset){
@@ -390,5 +403,52 @@ namespace mu2e {
     return std::move(tgtPS);
   }
  
+  //make a Conveyor Mu2e-II type target
+  std::unique_ptr<ProductionTargetMu2eII> ProductionTargetMaker::makeMu2eIIConveyor(const SimpleConfig& c, double solenoidOffset){
+    std::string model = c.getString("targetPS_model");
+    int version = c.getInt("targetPS.Mu2eII.version", 0); //version of the model
+    std::unique_ptr<ProductionTargetMu2eII> target(new ProductionTargetMu2eII(model, version));
+
+    target->_isConveyor = true;
+    target->_conveyorBallRadius   = c.getDouble("targetPS.Mu2eII.conveyor.ball.radius");
+    target->_conveyorBallMaterial = c.getString("targetPS.Mu2eII.conveyor.ball.material");
+    target->_conveyorNBalls       = c.getInt   ("targetPS.Mu2eII.conveyor.nballs");
+    c.getVectorDouble("targetPS.Mu2eII.conveyor.ball.xs", target->_conveyorBallXs, target->_conveyorNBalls);
+    c.getVectorDouble("targetPS.Mu2eII.conveyor.ball.ys", target->_conveyorBallYs, target->_conveyorNBalls);
+    c.getVectorDouble("targetPS.Mu2eII.conveyor.ball.zs", target->_conveyorBallZs, target->_conveyorNBalls);
+
+    target->_beamRotX = c.getDouble("targetPS_rotX") * CLHEP::degree;
+    target->_beamRotY = c.getDouble("targetPS_rotY") * CLHEP::degree;
+    target->_beamRotZ = c.getDouble("targetPS_rotZ") * CLHEP::degree;
+    target->_protonBeamRotation.rotateX(target->_beamRotX).rotateY(target->_beamRotY).rotateZ(target->_beamRotZ);
+    target->_protonBeamInverseRotation = target->_protonBeamRotation.inverse();
+    target->_prodTargetPosition = CLHEP::Hep3Vector(solenoidOffset + c.getDouble("productionTarget.xNominal", 0.),
+						    c.getDouble("productionTarget.yNominal", 0.),
+						    c.getDouble("productionTarget.zNominal")
+						    );
+
+    return target;
+  }
+
+  //make a Rotating Mu2e-II type target
+  std::unique_ptr<ProductionTargetMu2eII> ProductionTargetMaker::makeMu2eIIRotating(const SimpleConfig& c, double solenoidOffset){
+    std::string model = c.getString("targetPS_model");
+    int version = c.getInt("targetPS.Mu2eII.version", 0); //version of the model
+    std::unique_ptr<ProductionTargetMu2eII> target(new ProductionTargetMu2eII(model, version));
+    target->_isRotating = true;
+    target->_rotatingNRods = c.getInt("targetPS.Mu2eII.rotating.nrods");
+    target->_beamRotX = c.getDouble("targetPS_rotX") * CLHEP::degree;
+    target->_beamRotY = c.getDouble("targetPS_rotY") * CLHEP::degree;
+    target->_beamRotZ = c.getDouble("targetPS_rotZ") * CLHEP::degree;
+    target->_protonBeamRotation.rotateX(target->_beamRotX).rotateY(target->_beamRotY).rotateZ(target->_beamRotZ);
+    target->_protonBeamInverseRotation = target->_protonBeamRotation.inverse();
+    target->_prodTargetPosition = CLHEP::Hep3Vector(solenoidOffset + c.getDouble("productionTarget.xNominal", 0.),
+						    c.getDouble("productionTarget.yNominal", 0.),
+						    c.getDouble("productionTarget.zNominal")
+						    );
+
+    std::cout << __PRETTY_FUNCTION__ << ": Target implementation not fully added yet!\n";
+    return nullptr;
+  }
  
 } // namespace mu2e
