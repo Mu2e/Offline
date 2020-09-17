@@ -110,8 +110,8 @@ namespace mu2e {
       if(ballZs[ball] < zmin) zmin = ballZs[ball];
       else if(ballZs[ball] > zmax) zmax = ballZs[ball];
     }
-    double motherLength = (zmax-zmin);
-    double motherRadius = sqrt((xmax-xmin)*(xmax-xmin) + (ymax-ymin)*(ymax-ymin));    
+    double motherLength = (zmax-zmin) + ballRadius*2.;
+    double motherRadius = sqrt((xmax-xmin)*(xmax-xmin) + (ymax-ymin)*(ymax-ymin)) + ballRadius*2.;
     CLHEP::Hep3Vector targetCenter((xmax+xmin)/2., (ymax+ymin)/2., (zmax+zmin)/2.);
     TubsParams prodTargetMotherParams( 0., motherRadius, motherLength/2.);
     if(verbosityLevel > 0)
