@@ -1,9 +1,6 @@
 //
 // Construct the Mu2e G4 world and serve information about that world.
 //
-// $Id: Mu2eStudyWorld.cc,v 1.8 2013/04/05 20:22:45 genser Exp $
-// $Author: genser $
-// $Date: 2013/04/05 20:22:45 $
 //
 // Original author K. Genser based on Mu2eWorld
 //

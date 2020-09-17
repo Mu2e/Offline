@@ -1,7 +1,4 @@
 //
-// $Id: TrkExtDiag.hh,v 1.3 2013/05/16 18:23:39 mjlee Exp $
-// $Author: mjlee $ 
-// $Date: 2013/05/16 18:23:39 $
 //
 // Class for reading TrkExt
 //

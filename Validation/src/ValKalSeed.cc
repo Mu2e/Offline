@@ -51,7 +51,7 @@ int mu2e::ValKalSeed::declare(art::TFileDirectory tfs) {
   _hCuts->GetXaxis()->SetBinLabel(ibin++,"Cosmic Rejection"); 
   _hCuts->GetXaxis()->SetBinLabel(ibin++,"Momentum window");  // 8
   _hCuts->SetMinimum(0.0);
-  _hPRes = tfs.make<TH1D>( "PRes", "R resolution", 200, -5.0, 3.0);
+  _hPRes = tfs.make<TH1D>( "PRes", "Momentum resolution", 200, -5.0, 3.0);
 
   return 0;
 }

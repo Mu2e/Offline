@@ -1,8 +1,5 @@
 //
 //
-// $Id: ReadMCTrajectories_module.cc,v 1.2 2014/01/18 04:04:50 kutschke Exp $
-// $Author: kutschke $
-// $Date: 2014/01/18 04:04:50 $
 //
 // Contact person Rob Kutschke
 //

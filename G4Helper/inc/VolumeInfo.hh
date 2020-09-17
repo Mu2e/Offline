@@ -6,9 +6,6 @@
 // and is useful only for the top few levels of the detector.
 //
 //
-// $Id: VolumeInfo.hh,v 1.6 2011/11/03 16:28:44 gandr Exp $
-// $Author: gandr $
-// $Date: 2011/11/03 16:28:44 $
 //
 // Original author Rob Kutschke
 //

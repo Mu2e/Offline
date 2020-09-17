@@ -1,7 +1,4 @@
 //
-//  $Id: TrkExtMaterial.cc,v 1.2 2013/02/07 02:09:47 mjlee Exp $
-//  $Author: mjlee $
-//  $Date: 2013/02/07 02:09:47 $
 //
 //  Original author MyeongJae Lee
 //

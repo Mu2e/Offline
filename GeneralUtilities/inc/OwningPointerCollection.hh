@@ -10,9 +10,6 @@
 //
 // The original use is for BaBar tracks.
 //
-// $Id: OwningPointerCollection.hh,v 1.9 2014/04/18 16:39:30 kutschke Exp $
-// $Author: kutschke $
-// $Date: 2014/04/18 16:39:30 $
 //
 // Original author Rob Kutschke
 //

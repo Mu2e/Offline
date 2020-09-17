@@ -1,9 +1,6 @@
 //
 // Module which starts the event display, and transmits the data of each event to the event display.
 //
-// $Id: EventDisplay_module.cc,v 1.24 2014/04/18 16:46:25 kutschke Exp $
-// $Author: kutschke $
-// $Date: 2014/04/18 16:46:25 $
 //
 
 #include <iostream>

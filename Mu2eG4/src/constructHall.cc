@@ -1,9 +1,6 @@
 //
 // Free function to create the hall walls and hall interior inside the earthen overburden.
 //
-// $Id: constructHall.cc,v 1.18 2013/09/27 17:19:39 knoepfel Exp $
-// $Author: knoepfel $
-// $Date: 2013/09/27 17:19:39 $
 //
 // Original author KLG based on Mu2eWorld constructHall
 //

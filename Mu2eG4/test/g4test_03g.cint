@@ -1,9 +1,6 @@
 //
 // Root script to display some of the plots made by ReadBack_module.cc & ReadStrawHit_module.cc
 // 
-// $Id: g4test_03g.cint,v 1.3 2013/02/07 22:44:01 genser Exp $
-// $Author: genser $
-// $Date: 2013/02/07 22:44:01 $
 // 
 // Original author Rob Kutschke, extednd by K. Genser for ReadStrawHit_module.cc
 //

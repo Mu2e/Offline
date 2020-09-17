@@ -1,7 +1,4 @@
 //
-// $Id: TrackClusterMatch.cc,v 1.4 2014/06/24 19:08:39 murat Exp $
-// $Author: murat $
-// $Date: 2014/06/24 19:08:39 $
 //
 // Original author Ivan Logashenko
 //

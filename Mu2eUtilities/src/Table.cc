@@ -3,14 +3,13 @@
 // keys that are already given as a std::vector<double> object, or can
 // be created based on a given key range and resolution.
 //
-// $Id: Table.cc,v 1.2 2014/04/25 17:44:13 knoepfel Exp $
-// $Author: knoepfel $
-// $Date: 2014/04/25 17:44:13 $
 //
 // Original author: Kyle Knoepfel
 
-#include "Mu2eUtilities/inc/Table.hh"
+#include <algorithm>
 #include <numeric>
+
+#include "Mu2eUtilities/inc/Table.hh"
 
 namespace mu2e {
 

@@ -3,9 +3,6 @@
 //
 // An enum-matched-to-names class for magnetic field types.
 //
-// $Id: BFMapType.hh,v 1.7 2012/02/21 22:26:23 gandr Exp $
-// $Author: gandr $
-// $Date: 2012/02/21 22:26:23 $
 //
 // Original author Rob Kutschke
 //

@@ -3,9 +3,6 @@
 
 // Muon Beam Stop Object
 //
-// $Id: MBS.hh,v 1.5 2014/09/05 14:42:20 knoepfel Exp $
-// $Author: knoepfel $
-// $Date: 2014/09/05 14:42:20 $
 //
 // Original author KLG
 //

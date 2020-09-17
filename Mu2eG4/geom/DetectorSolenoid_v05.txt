@@ -1,0 +1,22 @@
+// Correcting the TS-DS interconnect
+// M. MacKenzie, May 2020
+#include "Mu2eG4/geom/DetectorSolenoid_v04.txt"
+
+double ds.interconnect.halfLength = 82.;
+double ds.interconnect.rIn = 963.;
+double ds.interconnect.rOut = 972.5;
+
+//DS3 rail updates, extend to end
+double ds.lengthRail3       = 8200;
+vector<double> ds.n3RailCenter = { 0, 0, 12440 };
+vector<double> ds.s3RailCenter = { 0, 0, 12440 };
+
+double    ds.servicePipeHL         = 4100.0; // halflength in mm - guess val
+double    ds.servicePipeZC         = 12440.0; // Z-coord of pipe cent - a guess
+double    ds.servicePipeYC         = -875.0; // Y-coord guess
+vector<double> ds.servicePipeXCs   = {250,180.0,100.0,-100.0,-180.0,-250};// relative to
+
+// This tells emacs to view this file in c++ mode.
+// Local Variables:
+// mode:c++
+// End:

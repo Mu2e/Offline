@@ -1,7 +1,4 @@
 //
-//  $Id: TrkExtStoppingTarget.cc,v 1.3 2013/05/31 20:04:27 gandr Exp $
-//  $Author: gandr $
-//  $Date: 2013/05/31 20:04:27 $
 //
 //  Original author MyeongJae Lee
 //

@@ -1,9 +1,6 @@
 //
 // G4 interface to the Detector Solenoid full magnetic field.
 //
-// $Id: Mu2eGlobalField.cc,v 1.3 2013/10/25 18:49:44 genser Exp $
-// $Author: genser $
-// $Date: 2013/10/25 18:49:44 $
 //
 // Original author Julie Managan and Bob Bernstein
 // Major rewrite by Rob Kutschke at version 1.4

@@ -3,9 +3,6 @@
 // Original author Andrei Gaponenko
 //
 //
-// $Id: ExtMonFNALTrkFit.hh,v 1.2 2012/11/01 23:39:22 gandr Exp $
-// $Author: gandr $
-// $Date: 2012/11/01 23:39:22 $
 
 #ifndef RecoDataProducts_ExtMonFNALTrkFit_hh
 #define RecoDataProducts_ExtMonFNALTrkFit_hh

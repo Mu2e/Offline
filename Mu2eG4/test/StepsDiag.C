@@ -1,7 +1,4 @@
 //
-// $Id: StepsDiag.C,v 1.1 2014/04/03 22:11:04 genser Exp $
-// $Author: genser $
-// $Date: 2014/04/03 22:11:04 $
 //
 //
 // Original author KLG 

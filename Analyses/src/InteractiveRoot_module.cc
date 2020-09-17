@@ -1,9 +1,6 @@
 //
 // A plugin to show how to use interactive ROOT with the framework.
 //
-// $Id: InteractiveRoot_module.cc,v 1.9 2013/10/21 20:44:04 genser Exp $
-// $Author: genser $
-// $Date: 2013/10/21 20:44:04 $
 //
 // Original author Rob Kutschke
 //

@@ -2,9 +2,6 @@
 #define Mu2eUtilities_polyAtan2_hh
 //
 //
-// $Id: polyAtan2.hh,v 1.4 2011/05/18 02:27:18 wb Exp $
-// $Author: wb $
-// $Date: 2011/05/18 02:27:18 $
 //
 // Original author Giani Pezzullo
 //

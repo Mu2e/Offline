@@ -1,9 +1,6 @@
 //
 // Construct and return MBS
 //
-// $Id: MBSMaker.cc,v 1.6 2013/10/23 20:37:39 knoepfel Exp $
-// $Author: knoepfel $
-// $Date: 2013/10/23 20:37:39 $
 //
 // Original author KLG
 //

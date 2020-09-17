@@ -1,9 +1,6 @@
 //
 // Run-time config info for the event generators.
 //
-// $Id: rpcInternalTestConfig.txt,v 1.2 2012/01/28 23:02:19 ehrlich Exp $
-// $Author: ehrlich $
-// $Date: 2012/01/28 23:02:19 $
 //
 // Original author Rob Kutschke
 

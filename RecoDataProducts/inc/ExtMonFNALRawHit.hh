@@ -3,9 +3,6 @@
 //
 // Unpacked data from the ExtMonFNAL pixel detector.
 //
-// $Id: ExtMonFNALRawHit.hh,v 1.3 2012/09/19 04:59:00 gandr Exp $
-// $Author: gandr $
-// $Date: 2012/09/19 04:59:00 $
 //
 // Original author Andrei Gaponenko
 //

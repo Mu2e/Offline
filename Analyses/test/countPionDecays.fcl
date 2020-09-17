@@ -1,8 +1,5 @@
 # Example of running CountPionDecays
 #
-# $Id: countPionDecays.fcl,v 1.1 2012/07/10 21:31:01 kutschke Exp $
-# $Author: kutschke $
-# $Date: 2012/07/10 21:31:01 $
 
 #include "fcl/minimalMessageService.fcl"
 

@@ -1,7 +1,4 @@
 //
-// $Id: TrkFitDiag.C,v 1.5 2013/02/14 22:22:07 genser Exp $
-// $Author: genser $
-// $Date: 2013/02/14 22:22:07 $
 //
 //
 #include "TH1.h"

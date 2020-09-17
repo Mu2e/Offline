@@ -4,9 +4,6 @@
 // Read PionCapture DIO spectrum from a table and merge it
 // with the spectrum coming from the endopoint region formula
 
-// $Id: PionCaptureSpectrum.hh,v 1.1 2014/02/05 21:32:26 knoepfel Exp $
-// $Author: knoepfel $
-// $Date: 2014/02/05 21:32:26 $
 //
 // Original Author: Kyle Knoepfel
 //

@@ -3,9 +3,6 @@
 //
 // Free function to construct the stopping targets.
 //
-// $Id: constructStoppingTarget.hh,v 1.5 2011/08/04 18:52:25 genser Exp $
-// $Author: genser $
-// $Date: 2011/08/04 18:52:25 $
 //
 // Original author Peter Shanahan
 //

@@ -3,9 +3,6 @@
 //
 // Representation of one ScintillatorShield in CosmicRayShield.
 //
-// $Id: CRSScintillatorShield.hh,v 1.7 2014/02/10 14:23:03 ehrlich Exp $
-// $Author: ehrlich $
-// $Date: 2014/02/10 14:23:03 $
 //
 // Original author KLG based on Rob Kutschke's Device
 //

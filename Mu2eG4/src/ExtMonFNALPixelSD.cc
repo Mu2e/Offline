@@ -1,6 +1,3 @@
-// $Id: ExtMonFNALPixelSD.cc,v 1.3 2013/08/28 05:58:17 gandr Exp $
-// $Author: gandr $
-// $Date: 2013/08/28 05:58:17 $
 //
 // Original author Andrei Gaponenko
 

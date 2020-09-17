@@ -1,9 +1,6 @@
 //
 // Construct Mu2e building
 //
-// $Id: Mu2eHallMaker.cc,v 1.17 2013/09/27 17:19:39 knoepfel Exp $
-// $Author: knoepfel $
-// $Date: 2013/09/27 17:19:39 $
 //
 // Original author: Andrei Gaponenko
 

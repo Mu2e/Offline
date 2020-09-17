@@ -3,9 +3,6 @@
 //
 // Helical Proton Absorber main class
 //
-// $Id: HelicalProtonAbsorber.hh,v 1.1 2012/05/30 15:55:44 tassiell Exp $
-// $Author: tassiell $
-// $Date: 2012/05/30 15:55:44 $
 //
 // Original author Suerfu, implemented by G. Tassielli
 //

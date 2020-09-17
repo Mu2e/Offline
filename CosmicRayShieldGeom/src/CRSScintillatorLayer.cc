@@ -2,9 +2,6 @@
 // Representation of one Scintillator Layer in CosmicRayShield
 //
 //
-// $Id: CRSScintillatorLayer.cc,v 1.7 2014/02/10 14:23:03 ehrlich Exp $
-// $Author: ehrlich $
-// $Date: 2014/02/10 14:23:03 $
 //
 // Original author KLG based on Rob Kutschke's Layer
 //

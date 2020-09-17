@@ -1,0 +1,17 @@
+// Update to the TS saddle hole radius to match updated support collar radius
+// M. MacKenzie, May 2020
+#include "Mu2eG4/geom/Saddle_v02.txt"
+
+//increment version number
+int Saddle.version    = 3;
+
+double Saddle.holeRadiusType4Hole1   = 1101.0;
+
+//increase hole cutout in MBS area support to remove very thin (<1 um) residual strip
+vector<double> Saddle.holeCenterType9Hole1 = {0,1550.001,0};
+double Saddle.holeRadiusType9Hole1   = 971.001;
+
+// This tells emacs to view this file in c++ mode.
+// Local Variables:
+// mode:c++
+// End:

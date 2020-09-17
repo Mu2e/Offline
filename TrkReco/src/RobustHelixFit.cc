@@ -1,9 +1,6 @@
 //
 // Object to perform helix fit to straw hits
 //
-// $Id: HelixFit.cc,v 1.12 2014/07/10 14:47:26 brownd Exp $
-// $Author: brownd $
-// $Date: 2014/07/10 14:47:26 $
 //
 // mu2e
 #include "TrkReco/inc/RobustHelixFit.hh"

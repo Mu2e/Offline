@@ -1,31 +1,33 @@
 //
 // Make histograms summarizing the information in the event generator.
 //
-// $Id: GeneratorSummaryHistograms.cc,v 1.3 2013/09/08 01:30:05 kutschke Exp $
-// $Author: kutschke $
-// $Date: 2013/09/08 01:30:05 $
 //
 // Contact person Rob Kutschke
 //
 
-// Mu2e includes
-#include "Mu2eUtilities/inc/GeneratorSummaryHistograms.hh"
+#include <cmath>
+#include <vector>
+
+#include "CLHEP/Vector/LorentzVector.h"
+
+#include "CLHEP/Vector/ThreeVector.h"
+
+#include "GeneralUtilities/inc/Binning.hh"
 #include "GeometryService/inc/DetectorSystem.hh"
 #include "GeometryService/inc/GeomHandle.hh"
-#include "StoppingTargetGeom/inc/zBinningForFoils.hh"
+#include "MCDataProducts/inc/GenId.hh"
 #include "StoppingTargetGeom/inc/StoppingTarget.hh"
-
+#include "StoppingTargetGeom/inc/zBinningForFoils.hh"
+#include "TH1.h"
+#include "TH2.h"
+#include "art/Framework/Services/Registry/ServiceHandle.h"
+#include "art_root_io/TFileDirectory.h"
 // Framework includes
 #include "art_root_io/TFileService.h"
-#include "art/Framework/Services/Registry/ServiceHandle.h"
+#include "canvas/Utilities/Exception.h"
 
-// Root includes
-#include "TH1F.h"
-#include "TH2F.h"
-
-// C++ includes
-#include <iostream>
-#include <cmath>
+// Mu2e includes
+#include "Mu2eUtilities/inc/GeneratorSummaryHistograms.hh"
 
 namespace mu2e {
 

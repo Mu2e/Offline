@@ -1,9 +1,6 @@
 //
 // Free function to construct the stopping targets.
 //
-// $Id: constructStoppingTarget.cc,v 1.22 2013/10/25 21:37:29 genser Exp $
-// $Author: genser $
-// $Date: 2013/10/25 21:37:29 $
 //
 // Original author Peter Shanahan
 //
@@ -33,7 +30,9 @@
 #include "G4Helper/inc/G4Helper.hh"
 #include "GeomPrimitives/inc/TubsParams.hh"
 #include "Mu2eG4/inc/nestTubs.hh"
+#include "Mu2eG4/inc/nestCons.hh"
 #include "Mu2eG4/inc/checkForOverlaps.hh"
+#include "MECOStyleProtonAbsorberGeom/inc/MECOStyleProtonAbsorber.hh"
 
 // G4 includes
 #include "G4Material.hh"
@@ -71,22 +70,74 @@ namespace mu2e {
     G4Helper    & _helper = *(art::ServiceHandle<G4Helper>());
     AntiLeakRegistry & reg = _helper.antiLeakRegistry();
 
+    //get the proton absorber elements to prevent overlaps
+    GeomHandle<MECOStyleProtonAbsorber> pabs;
+    bool overlapPabs = false;
+    double cylinderRadius = target->cylinderRadius();
+    double rAtZClosest, opaZCenter, opaR1, opaR2, opaHL, stZCenter, zclosest;
+    if(pabs->isAvailable(2)) { //there is the OPA in DS2
+      opaR1 = pabs->part(2).innerRadiusAtStart();
+      opaR2 = pabs->part(2).innerRadiusAtEnd();
+      if(!(cylinderRadius < opaR1 && cylinderRadius < opaR2)) { //could overlap
+	if(cylinderRadius > opaR1 && cylinderRadius > opaR2) 
+	  throw cet::exception("GEOM") << "constructStoppingTarget::" << __func__
+				       << ": Stopping target mother overlaps with OPA!\n";
+
+	//could overlap, so check if it does in this z range
+	opaZCenter = CLHEP::mm * pabs->part(2).center().z();
+	opaHL = pabs->part(2).halfLength();
+	stZCenter = target->centerInMu2e().z();
+	int side = (opaR1 <= opaR2) ? 1 : -1; //check which way the cone opens
+	zclosest = stZCenter - side*target->cylinderLength()/2.;
+	//make sure closest point is within OPA region
+	if(zclosest > opaZCenter + opaHL) zclosest = opaZCenter+opaHL;
+	else if(zclosest < opaZCenter - opaHL) zclosest = opaZCenter-opaHL;
+	rAtZClosest = opaR1 + (opaR2-opaR1)*(zclosest - (opaZCenter-opaHL))/(2.*opaHL); //linear radius change in z
+	if(rAtZClosest < cylinderRadius + 0.001) overlapPabs = true; //require a small buffer
+      } //end possible radius overlap check
+    } //end OPA is available check
+    
     TubsParams targetMotherParams(0., target->cylinderRadius(), target->cylinderLength()/2.);
 
-    VolumeInfo targetInfo = nestTubs("StoppingTargetMother",
-                                     targetMotherParams,
-                                     findMaterialOrThrow(target->fillMaterial()),
-                                     0,
-                                     target->centerInMu2e() - parent.centerInMu2e(),
-                                     parent,
-                                     0,
-                                     false/*visible*/,
-                                     G4Colour::Black(),
-                                     false/*solid*/,
-                                     forceAuxEdgeVisible,
-                                     placePV,
-                                     doSurfaceCheck
-                                     );
+    VolumeInfo targetInfo;
+    std::string targetMotherName = "StoppingTargetMother";
+    if(!overlapPabs) {
+      targetInfo = nestTubs(targetMotherName,
+			    targetMotherParams,
+			    findMaterialOrThrow(target->fillMaterial()),
+			    0,
+			    target->centerInMu2e() - parent.centerInMu2e(),
+			    parent,
+			    0,
+			    false/*visible*/,
+			    G4Colour::Black(),
+			    false/*solid*/,
+			    forceAuxEdgeVisible,
+			    placePV,
+			    doSurfaceCheck
+			    );
+    } else { //if going to overlap, make a conic section mother volume
+      //simply follow the OPA with a small gap
+      double motherParams[7] = {0., rAtZClosest-0.001, 
+				0., rAtZClosest + abs(opaR2 - opaR1)/(2.*opaHL)*target->cylinderLength() - 0.001,
+				target->cylinderLength()/2.,
+				0.0, 360.0*CLHEP::degree}; 
+      targetInfo = nestCons(targetMotherName,
+			    motherParams,
+			    findMaterialOrThrow(target->fillMaterial()),
+			    0,
+			    target->centerInMu2e() - parent.centerInMu2e(),
+			    parent,
+			    0,
+			    false/*visible*/,
+			    G4Colour::Black(),
+			    false/*solid*/,
+			    forceAuxEdgeVisible,
+			    placePV,
+			    doSurfaceCheck
+			    );
+
+    }
 
     // now create the individual target foils
 

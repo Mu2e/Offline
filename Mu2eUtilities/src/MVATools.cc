@@ -1,61 +1,78 @@
-#include "ConfigTools/inc/ConfigFileLookupPolicy.hh"
-#include "Mu2eUtilities/inc/MVATools.hh"
+#include <exception>
 
+#include <cmath>
+#include <stdlib.h>
+#include <xercesc/parsers/XercesDOMParser.hpp>
+#include <xercesc/util/PlatformUtils.hpp>
+#include <algorithm>
+#include <iostream>
+#include <limits>
+#include <string>
+#include <utility>
+#include <vector>
+
+#include "ConfigTools/inc/ConfigFileLookupPolicy.hh"
+#include "DataProducts/inc/MVAMask.hh"
+#include "cetlib_except/exception.h"
 // From the art tool-chain
 #include "fhiclcpp/ParameterSet.h"
+#include "fhiclcpp/exception.h"
+#include "fhiclcpp/types/Atom.h"
+#include "xercesc/dom/DOMDocument.hpp"
+#include "xercesc/dom/DOMElement.hpp"
+#include "xercesc/dom/DOMNamedNodeMap.hpp"
+#include "xercesc/dom/DOMNode.hpp"
+#include "xercesc/dom/DOMNodeList.hpp"
+#include "xercesc/dom/DOMXPathResult.hpp"
+#include "xercesc/parsers/AbstractDOMParser.hpp"
+#include "xercesc/util/XMLException.hpp"
+#include "xercesc/util/XMLString.hpp"
+#include "xercesc/util/XercesDefs.hpp"
+#include "xercesc/util/Xerces_autoconf_config.hpp"
 
-#include <xercesc/util/PlatformUtils.hpp>
-#include <xercesc/parsers/XercesDOMParser.hpp>
-#include <xercesc/dom/DOM.hpp>
-#include <xercesc/sax/HandlerBase.hpp>
-#include <iostream>
-#include <iomanip>
-#include <string>
-#include <vector>
-#include <sstream>
-#include <limits>
+#include "Mu2eUtilities/inc/MVATools.hh"
 
 using namespace xercesc;
 
-namespace mu2e 
+namespace mu2e
 {
 
-  MVATools::MVATools(const Config& config) : 
+  MVATools::MVATools(const Config& config) :
     x_(),
     y_(),
     fv_(),
-    wgts_(), 
-    maxNeurons_(0), 
+    wgts_(),
+    maxNeurons_(0),
     activeType_(aType::null),
     oldMVA_(false),
     isNorm_(false),
-    voffset_(), 
-    vscale_(), 
-    title_(), 
+    voffset_(),
+    vscale_(),
+    title_(),
     label_(),
     activationTypeString_("none"),
-    mvaWgtsFile_() 
+    mvaWgtsFile_()
   {
      ConfigFileLookupPolicy configFile;
      std::string weights = config.weights();
      mvaWgtsFile_ = configFile(weights);
   }
 
-  MVATools::MVATools(fhicl::ParameterSet const& pset) : 
+  MVATools::MVATools(fhicl::ParameterSet const& pset) :
     x_(),
     y_(),
     fv_(),
-    wgts_(), 
-    maxNeurons_(0), 
+    wgts_(),
+    maxNeurons_(0),
     activeType_(aType::null),
     oldMVA_(false),
     isNorm_(false),
-    voffset_(), 
-    vscale_(), 
-    title_(), 
+    voffset_(),
+    vscale_(),
+    title_(),
     label_(),
     activationTypeString_("none"),
-    mvaWgtsFile_() 
+    mvaWgtsFile_()
   {
      ConfigFileLookupPolicy configFile;
      std::string weights = pset.get<std::string>("MVAWeights");
@@ -92,7 +109,6 @@ namespace mu2e
     if (wgts_.size()>0) throw cet::exception("RECO")<<"mu2e::MVATools: already initialized" << std::endl;
 
     xercesc::DOMDocument* xmlDoc = getXmlDoc();
-
     getGen(xmlDoc);
     getOpts(xmlDoc);
     getNorm(xmlDoc);
@@ -102,7 +118,7 @@ namespace mu2e
   }
 
   void MVATools::getGen(xercesc::DOMDocument* xmlDoc)
-  {       
+  {
       XMLCh* ATT_GENERAL = XMLString::transcode("GeneralInfo");
       XMLCh* ATT_INFO = XMLString::transcode("Info");
       XMLCh* TAG_NAME = XMLString::transcode("name");
@@ -112,7 +128,7 @@ namespace mu2e
       DOMXPathResult* xpathRes = xmlDoc->evaluate(xpathStr,xmlDoc->getDocumentElement(),NULL,
                                                   DOMXPathResult::ORDERED_NODE_SNAPSHOT_TYPE, NULL);
       XMLString::release(&xpathStr) ;
-      DOMElement* optElem = dynamic_cast<DOMElement* >(xpathRes->getNodeValue());    
+      DOMElement* optElem = dynamic_cast<DOMElement* >(xpathRes->getNodeValue());
       xpathRes->release();
 
 
@@ -127,8 +143,8 @@ namespace mu2e
           {
 	     DOMNode* attr = attrs->item(ia);
 	     char* attValue = XMLString::transcode(attr->getNodeValue());
-	     if (XMLString::equals(TAG_NAME,attr->getNodeName()) )     label = std::string(attValue);          
-	     if (XMLString::equals(TAG_VALUE,attr->getNodeName()) )    value = std::string(attValue);          
+	     if (XMLString::equals(TAG_NAME,attr->getNodeName()) )     label = std::string(attValue);
+	     if (XMLString::equals(TAG_VALUE,attr->getNodeName()) )    value = std::string(attValue);
              XMLString::release(&attValue);
           }
 	  if (label.find("TMVA Release") != std::string::npos)
@@ -136,8 +152,8 @@ namespace mu2e
  	     std::string code = value.substr(value.find("[")+1,value.find("]")-value.find("[")-1);
 	     int iversion = atoi(code.c_str());
              if (iversion < 262657) oldMVA_ = true;
-	  }      
-      }   
+	  }
+      }
 
       XMLString::release(&ATT_GENERAL);
       XMLString::release(&ATT_INFO);
@@ -146,7 +162,7 @@ namespace mu2e
   }
 
   void MVATools::getOpts(xercesc::DOMDocument* xmlDoc)
-  {       
+  {
       XMLCh* ATT_OPTION = XMLString::transcode("Option");
       XMLCh* TAG_NAME = XMLString::transcode("name");
       XMLCh* TAG_MODIFIED = XMLString::transcode("modified");
@@ -155,7 +171,7 @@ namespace mu2e
       DOMXPathResult* xpathRes = xmlDoc->evaluate(xpathStr,xmlDoc->getDocumentElement(),NULL,
                                                   DOMXPathResult::ORDERED_NODE_SNAPSHOT_TYPE, NULL);
       XMLString::release(&xpathStr) ;
-      DOMElement* optElem = dynamic_cast<DOMElement* >(xpathRes->getNodeValue());    
+      DOMElement* optElem = dynamic_cast<DOMElement* >(xpathRes->getNodeValue());
       xpathRes->release();
 
       DOMNodeList* children = optElem->getElementsByTagName(ATT_OPTION);
@@ -170,26 +186,26 @@ namespace mu2e
           {
 	     DOMNode* attr = attrs->item(ia);
 	     char* attValue = XMLString::transcode(attr->getNodeValue());
-	     if (XMLString::equals(TAG_NAME,attr->getNodeName()) ) label = std::string(attValue);          
-	     if (XMLString::equals(TAG_MODIFIED,attr->getNodeName()) ) modified = std::string(attValue);          
+	     if (XMLString::equals(TAG_NAME,attr->getNodeName()) ) label = std::string(attValue);
+	     if (XMLString::equals(TAG_MODIFIED,attr->getNodeName()) ) modified = std::string(attValue);
              XMLString::release(&attValue);
           }
           if (label.find("NeuronType") != std::string::npos)
 	  {
 	     std::string val(value);
-	     if (val.find("tanh") != std::string::npos)    activeType_ = aType::tanh;  
-	     if (val.find("sigmoid") != std::string::npos) activeType_ = aType::sigmoid;  
+	     if (val.find("tanh") != std::string::npos)    activeType_ = aType::tanh;
+	     if (val.find("sigmoid") != std::string::npos) activeType_ = aType::sigmoid;
 	     if (val.find("ReLU") != std::string::npos)    activeType_ = aType::relu;
-             activationTypeString_ = val;  	   
-	  }      
+             activationTypeString_ = val;
+	  }
           if (label.find("VarTransform") != std::string::npos)
 	  {
 	     std::string val(value);
 	     if (modified.find("Yes") != std::string::npos) isNorm_ = true;
-	     if (isNorm_ && val.find("N") == std::string::npos) 
+	     if (isNorm_ && val.find("N") == std::string::npos)
                throw cet::exception("RECO")<<"mu2e::MVATools: unknown normalization mode" << std::endl;
-	  }      
-      }   
+	  }
+      }
 
       if (activeType_ == aType::null) throw cet::exception("RECO")<<"mu2e::MVATools: unknown activation function" << std::endl;
 
@@ -215,7 +231,7 @@ namespace mu2e
 
       DOMNodeList* children = varElem->getElementsByTagName(TAG_VARIABLE);
       for( XMLSize_t ix = 0 ; ix < children->getLength() ; ++ix )
-      {       
+      {
          float vmin(std::numeric_limits<float>::max());
          float vmax(0.0);
          std::string label,title;
@@ -316,29 +332,29 @@ namespace mu2e
           char* nSynapses  = XMLString::transcode(neuronElement->getAttribute(ATT_NSYNAPSES));
           unsigned iSynapses  = atoi(nSynapses);
 
-          if (iLayer != iCurrentLayer) 
+          if (iLayer != iCurrentLayer)
 	  {
               if (iCurrentLayer > -1) links_.push_back(nNeurons);
 	      iCurrentLayer=iLayer;
               nNeurons=0;
-	  } 
+	  }
 
-	  if (nNeuron->getFirstChild()==NULL) continue; //output neuron has no children        
+	  if (nNeuron->getFirstChild()==NULL) continue; //output neuron has no children
 
-	  char* cw = XMLString::transcode(nNeuron->getFirstChild()->getNodeValue());        
+	  char* cw = XMLString::transcode(nNeuron->getFirstChild()->getNodeValue());
 	  std::string sw(cw),temp;
           std::stringstream ss(sw);
           std::vector<float> w;
-	  while(ss >> temp) w.push_back(strtof(temp.c_str(),NULL));        
+	  while(ss >> temp) w.push_back(strtof(temp.c_str(),NULL));
 	  if (w.size() != iSynapses) throw cet::exception("RECO")<<"mu2e::MVATools: internal error" << std::endl;
 	  wtemp.push_back(std::move(w));
 
 	  XMLString::release(&cw);
-	  ++nNeurons;      
+	  ++nNeurons;
       }
 
       // the weights are given in a back-propagation style, continuous weights are from a neuron of the previous layer to all neurons of the next layer
-      // for evaluation, forward-propagation style is better, contiguous weights from all neurons of the previous layer to a single neuron of the next layer 
+      // for evaluation, forward-propagation style is better, contiguous weights from all neurons of the previous layer to a single neuron of the next layer
       // we also need the number of synapses / layer, which is given by the number of neurons in the next layer -1 to remove bias neuron
       //
       std::vector<unsigned> layerToNeurons(1,0),synapsessPerLayer;
@@ -347,11 +363,11 @@ namespace mu2e
       synapsessPerLayer.push_back(1);
 
       for (unsigned iLayer=1;iLayer < layerToNeurons.size(); ++iLayer)
-      {    
+      {
 	  for (unsigned iOut=0;iOut<synapsessPerLayer[iLayer-1];++iOut)
-	  {        
+	  {
 	     std::vector<float> temp;
-	     for (unsigned iIn=layerToNeurons[iLayer-1];iIn<layerToNeurons[iLayer];++iIn) wgts_.push_back(wtemp[iIn][iOut]);                   
+	     for (unsigned iIn=layerToNeurons[iLayer-1];iIn<layerToNeurons[iLayer];++iIn) wgts_.push_back(wtemp[iIn][iOut]);
 	  }
       }
 
@@ -360,7 +376,7 @@ namespace mu2e
       y_ = std::vector<float>(maxNeurons_,0.0f);
 
       XMLString::release(&ATT_INDEX);
-      XMLString::release(&ATT_NSYNAPSES);    
+      XMLString::release(&ATT_NSYNAPSES);
   }
   
   void MVATools::getCalib(std::map<float, float>& effCalib) {
@@ -410,13 +426,13 @@ namespace mu2e
   }
 
 
-  float MVATools::evalMVA(const std::vector<double >& v, const MVAMask& mask) const 
+  float MVATools::evalMVA(const std::vector<double >& v, const MVAMask& mask) const
   {
-     for (size_t i=0;i<v.size();++i)  fv_[i] = static_cast<float>(v[i]);   
+     for (size_t i=0;i<v.size();++i)  fv_[i] = static_cast<float>(v[i]);
      return evalMVA(fv_,mask);
   }
 
-  float MVATools::evalMVA(const std::vector<float>& v, const MVAMask& mask) const 
+  float MVATools::evalMVA(const std::vector<float>& v, const MVAMask& mask) const
   {
 
       // Normalize the input data and add the bias node, skip masked values
@@ -438,7 +454,7 @@ namespace mu2e
       //perform feed forward calculation up to the last hidden layer
       unsigned idxWeight(0);
       for (unsigned k=0;k<links_.size()-1;++k)
-      {          
+      {
           //the number of synpases is given by the number of neurons in the next layer -1 (do not count bias neuron!)
           for (unsigned j=0;j<links_[k+1]-1;++j)
           {
@@ -446,10 +462,10 @@ namespace mu2e
 	     for (unsigned i=0;i<links_[k];++i) y_[j] += wgts_[i+idxWeight]*x_[i];
              y_[j] = activation(y_[j]);
              idxWeight += links_[k];
-          }      
-          x_.swap(y_); 
+          }
+          x_.swap(y_);
           x_[links_[k+1]-1] = 1.0f; //add bias neuron
-      }   
+      }
 
       //calculate output neuron value
       float yf(0.0);
@@ -481,7 +497,7 @@ namespace mu2e
   }
 
 
-  void MVATools::showMVA() const 
+  void MVATools::showMVA() const
   {
       std::cout << "MVA weights from file:" <<     mvaWgtsFile_ << std::endl;;
       std::cout << "MVA NLayers: " << links_.size()-1 << std::endl;;
@@ -507,16 +523,16 @@ namespace mu2e
 
       int idx(0);
       for (unsigned k=0;k<links_.size()-1;++k)
-      {          
+      {
         std::cout<<"Layer "<<k<<std::endl;
-        for (unsigned j=0;j<links_[k+1]-1;++j)  
+        for (unsigned j=0;j<links_[k+1]-1;++j)
         {
 	  std::cout<<"Synapses 1.."<<links_[k]<<" of current layer to synapse "<<j<<" of next layer"<<std::endl;
 	  for (unsigned i=idx;i<idx+links_[k];++i)std::cout<<wgts_[i]<<" ";
 	  std::cout<<std::endl;
           idx += links_[k];
-        }      
-      }   
+        }
+      }
 
       std::cout<<"Layer "<<links_.size()-1<<std::endl;
       std::cout<<"Synapses 1.."<<links_.back()<<" of current layer to synapse 0 of next layer"<<std::endl;
