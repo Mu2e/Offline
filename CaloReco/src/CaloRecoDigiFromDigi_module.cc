@@ -155,8 +155,8 @@ namespace mu2e {
               double chi2      = waveformProcessor_->chi2();
               int    ndf       = waveformProcessor_->ndf();
               
-              if (i==0 && diagLevel_>1 && waveformProcessor_->chi2()/waveformProcessor_->ndf()>20.0)
-              //if (i==0 && diagLevel_>1 && waveformProcessor_->nPeaks()>1 && waveformProcessor_->chi2()/waveformProcessor_->ndf()<0.5)
+              if (i==0 && diagLevel_>1 && waveformProcessor_->nPeaks()==1 && waveformProcessor_->chi2()/waveformProcessor_->ndf()>1.0)
+              //if (i==0 && diagLevel_>1 && waveformProcessor_->nPeaks()==0)
               {
                  std::cout<<"[CaloRecoDigiFromDigi::extractAmplitude] extract "<<roID<<"   i="<<i<<"  eDep="<<eDep
                           <<" time="<<time<<"  chi2="<<chi2<<std::endl;

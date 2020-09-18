@@ -100,7 +100,8 @@ namespace mu2e {
        float crySimTime_[16384],crySimEdep_[16348];
 
        int   nCluster_,nCluSim_,cluNcrys_[16384];
-       float cluEnergy_[16384],cluTime_[16384],cluCogX_[16384],cluCogY_[16384],cluCogZ_[16384],cluE1_[16384],cluE9_[16384],cluE25_[16384],cluSecMom_[16384];
+       float cluEnergy_[16384],cluEnergyErr_[16384],cluTime_[16384],cluTimeErr_[16384],cluCogX_[16384],cluCogY_[16384],
+             cluCogZ_[16384],cluE1_[16384],cluE9_[16384],cluE25_[16384],cluSecMom_[16384];
        int   cluSplit_[16384],cluConv_[16384],cluSimIdx_[16384],cluSimLen_[16384];
        std::vector<std::vector<int> > cluList_;
 
@@ -182,7 +183,9 @@ namespace mu2e {
 
        Ntup_->Branch("nCluster",     &nCluster_ ,    "nCluster/I");
        Ntup_->Branch("cluEnergy",    &cluEnergy_ ,   "cluEnergy[nCluster]/F");
+       Ntup_->Branch("cluEnergyErr", &cluEnergyErr_ ,"cluEnergyErr[nCluster]/F");
        Ntup_->Branch("cluTime",      &cluTime_ ,     "cluTime[nCluster]/F");
+       Ntup_->Branch("cluTimeErr",   &cluTimeErr_ ,  "cluTimeErr[nCluster]/F");
        Ntup_->Branch("cluCogX",      &cluCogX_ ,     "cluCogX[nCluster]/F");
        Ntup_->Branch("cluCogY",      &cluCogY_ ,     "cluCogY[nCluster]/F");
        Ntup_->Branch("cluCogZ",      &cluCogZ_ ,     "cluCogZ[nCluster]/F");
@@ -361,7 +364,6 @@ namespace mu2e {
               }    		          
            }
  
-                       
            cryId_[nHits_]        = hit.id();
            crySectionId_[nHits_] = diskId;
            cryEdep_[nHits_]      = hit.energyDep();
@@ -383,7 +385,7 @@ namespace mu2e {
                while (parent->hasParent()) parent = parent->parent();               
                int genId=-1;
                if (parent->genParticle()) genId = parent->genParticle()->generatorId().id();
-               
+              
 	       crySimId_[nSimHit_]      = eDepMC.sim()->id().asInt();
                crySimPdgId_[nSimHit_]   = eDepMC.sim()->pdgId();
                crySimCrCode_[nSimHit_]  = eDepMC.sim()->creationCode();
@@ -433,18 +435,20 @@ namespace mu2e {
              }    		          
           }
           
-          cluEnergy_[nCluster_] = cluster.energyDep();
-          cluTime_[nCluster_]   = cluster.time();
-          cluNcrys_[nCluster_]  = cluster.size();
-          cluCogX_[nCluster_]   = cluster.cog3Vector().x(); //in disk FF frame
-          cluCogY_[nCluster_]   = cluster.cog3Vector().y();
-          cluCogZ_[nCluster_]   = cluster.cog3Vector().z();
-          cluE1_[nCluster_]     = cluster.e1();
-          cluE9_[nCluster_]     = cluster.e9();
-          cluE25_[nCluster_]    = cluster.e25();
-          cluSecMom_[nCluster_] = cluster.secondMoment();
-          cluSplit_[nCluster_]  = cluster.isSplit();
-          cluConv_[nCluster_]   = isConversion;
+          cluEnergy_[nCluster_]    = cluster.energyDep();
+          cluEnergyErr_[nCluster_] = cluster.energyDepErr();
+          cluTime_[nCluster_]      = cluster.time();
+          cluTimeErr_[nCluster_]   = cluster.timeErr();
+          cluNcrys_[nCluster_]     = cluster.size();
+          cluCogX_[nCluster_]      = cluster.cog3Vector().x(); //in disk FF frame
+          cluCogY_[nCluster_]      = cluster.cog3Vector().y();
+          cluCogZ_[nCluster_]      = cluster.cog3Vector().z();
+          cluE1_[nCluster_]        = cluster.e1();
+          cluE9_[nCluster_]        = cluster.e9();
+          cluE25_[nCluster_]       = cluster.e25();
+          cluSecMom_[nCluster_]    = cluster.secondMoment();
+          cluSplit_[nCluster_]     = cluster.isSplit();
+          cluConv_[nCluster_]      = isConversion;
           cluList_.push_back(cryList);
 
           cluSimIdx_[nCluster_] = nCluSim_;
@@ -512,7 +516,7 @@ namespace mu2e {
                
                if (hit.volumeId()<VirtualDetectorId::EMC_Disk_0_SurfIn || hit.volumeId()>VirtualDetectorId::EMC_Disk_1_EdgeOut) continue;
 
-               double hitTimeUnfolded = toff_.timeWithOffsetsApplied(hit);
+               double hitTimeUnfolded = toff_.totalTimeOffset(hit.simParticle()) + hit.time();
    	       double hitTime         = fmod(hitTimeUnfolded,_mbtime);
 
                CLHEP::Hep3Vector VDPos = cal.geomUtil().mu2eToTracker(hit.position());

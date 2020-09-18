@@ -100,7 +100,7 @@ namespace mu2e {
 
     private:       
        void generateNoise       (std::vector<std::vector<double>>&, std::vector<int>&, const ConditionsHandle<CalorimeterCalibrations>&);
-       void generateNoiseApprox (std::vector<std::vector<double>>&, std::vector<int>&, const ConditionsHandle<CalorimeterCalibrations>&);
+       void generateNoiseFast (std::vector<std::vector<double>>&, std::vector<int>&, const ConditionsHandle<CalorimeterCalibrations>&);
        void makeDigitization    (const CaloShowerStepROCollection&, CaloDigiCollection&);
        void fillWaveforms       (std::vector<std::vector<double>>&, const CaloShowerStepROCollection&, const ConditionsHandle<CalorimeterCalibrations>&);
        void buildOutputDigi     (std::vector<std::vector<double>>&, std::vector<int>&, CaloDigiCollection&);
@@ -150,12 +150,12 @@ namespace mu2e {
   {
       if ( diagLevel_ > 0 ) std::cout<<"[CaloDigiFromShower::produce] begin" << std::endl;
 
-      //update condition cache
       ConditionsHandle<AcceleratorParams> accPar("ignored");
       mbtime_ = accPar->deBuncherPeriod;
       
       auto caloShowerStepHandle     = event.getValidHandle(caloShowerToken_);
       const auto& caloShowerStepROs = *caloShowerStepHandle;
+      
       auto caloDigiColl             = std::make_unique<CaloDigiCollection>();
      
       makeDigitization(caloShowerStepROs, *caloDigiColl);
@@ -230,8 +230,8 @@ namespace mu2e {
 
 
   //-------------------------------------------------------------------------------------------------------------------------
-  void CaloDigiFromShower::generateNoiseApprox(std::vector<std::vector<double>>& waveforms, std::vector<int>& pedestals, 
-                                               const ConditionsHandle<CalorimeterCalibrations>& calorimeterCalibrations)
+  void CaloDigiFromShower::generateNoiseFast(std::vector<std::vector<double>>& waveforms, std::vector<int>& pedestals, 
+                                             const ConditionsHandle<CalorimeterCalibrations>& calorimeterCalibrations)
   {
      
      int                 totalTime  = int((mbtime_ - blindTime_ + endTimeBuffer_ + rinBufferTime_)/digiSampling_);
@@ -353,17 +353,17 @@ namespace mu2e {
 
 	       // find the starting / stopping point of the peak
 	       // the stopping point is the first value below the threshold
-
 	       int sampleStart = std::max(timeSample - bufferDigi_, 0);
 	       int sampleStop  = timeSample;
 	       while (sampleStop < wfSize)
 	       {
-		      if (wf[sampleStop]< minPeakADC_) break;
-		      ++sampleStop;
+		   if (wf[sampleStop]< minPeakADC_) break;
+		   ++sampleStop;
 	       }
 
 	       //if (sampleStop-sampleStart<2) continue;
-               if (diagLevel_ > 2) std::cout<<"[CaloDigiFromShower] found peak with startSample="<<sampleStart<<"  stopSample="<<sampleStop<<"  timePeak="<<timeSample<<std::endl;
+               if (diagLevel_ > 2) std::cout<<"[CaloDigiFromShower] found peak with startSample="<<sampleStart<<"  stopSample="<<sampleStop
+                                            <<"  timePeak="<<timeSample<<std::endl;
 
 	       hitStarts.push_back(sampleStart);
 	       hitStops.push_back(sampleStop);
@@ -391,7 +391,7 @@ namespace mu2e {
 	        int sampleStop  = hitStops[ihit];
 	        int t0          = int(sampleStart*digiSampling_+ blindTime_);
 
-	        auto peakPosition = std::max_element(&wf[sampleStart],&wf[sampleStop+1])-&wf[sampleStart];
+	        auto peakPosition = std::max_element(&wf[sampleStart],&wf[sampleStop]+1) - &wf[sampleStart];
 	        if (diagLevel_ >2) std::cout<<"[CaloDigiFromShower] Start=" << sampleStart << " Stop=" << sampleStop << " peak in position " << peakPosition << std::endl; 
 
 	        std::vector<int> wfsample;
@@ -413,23 +413,23 @@ namespace mu2e {
   //-------------------------------------------------------------------------------------------------------------------
   void CaloDigiFromShower::diag0(int iRO, const std::vector<int>& wf)
   {
-     if (*std::max_element(wf.begin(),wf.end())<1) return;
-     std::cout<<"CaloDigiFromShower::fillOutoutRO] Waveform content for readout "<<iRO<<std::endl;
-     for (unsigned i=0;i<wf.size();++i) {if (i%10==0 && i>0) std::cout<<"- "; std::cout<<wf[i]<<" ";}
-     std::cout<<std::endl;
+      if (*std::max_element(wf.begin(),wf.end())<1) return;
+      std::cout<<"CaloDigiFromShower::fillOutoutRO] Waveform content for readout "<<iRO<<std::endl;
+      for (unsigned i=0;i<wf.size();++i) {if (i%10==0 && i>0) std::cout<<"- "; std::cout<<wf[i]<<" ";}
+      std::cout<<std::endl;
   }
   void CaloDigiFromShower::diag1(int iRO, double time, size_t peakP, const std::vector<int>& wf, int ped)
   {
-     std::cout<<"Created caloDigi with roID = "<<iRO<<"  t0="<<time<<" peak="<<peakP<<" and content ";
-     for (const auto  &v : wf) {if (v-ped >=minPeakADC_ ) std::cout<< "**"; std::cout<<v-ped<<" ";}
-     std::cout<<std::endl;
+      std::cout<<"Created caloDigi with roID = "<<iRO<<"  t0="<<time<<" peak="<<peakP<<" and content ";
+      for (const auto  &v : wf) {if (v-ped >=minPeakADC_ ) std::cout<< "**"; std::cout<<v-ped<<" ";}
+      std::cout<<std::endl;
   }
   void CaloDigiFromShower::diag2(const CaloDigiCollection& caloDigiColl)
   {      
-     std::map<int,double> enerMap;
-     for (const auto& digi : caloDigiColl) enerMap[digi.roId()] += digi.waveform().at(digi.peakpos())/MeVToADC_;
-     std::cout<<"[CaloDigiFromShower] energy equivalent per RoID"<<std::endl;
-     for (auto& kv : enerMap) std::cout<<" roID: "<<kv.first<<"   Ener: "<<kv.second<<std::endl;
+      std::map<int,double> enerMap;
+      for (const auto& digi : caloDigiColl) enerMap[digi.roId()] += digi.waveform().at(digi.peakpos())/MeVToADC_;
+      std::cout<<"[CaloDigiFromShower] energy equivalent per RoID"<<std::endl;
+      for (auto& kv : enerMap) std::cout<<" roID: "<<kv.first<<"   Ener: "<<kv.second<<std::endl;
   }
 
 
@@ -437,58 +437,59 @@ namespace mu2e {
   //-------------------------------------------------------------------------------------------------------------------
   void CaloDigiFromShower::plotNoise(const std::vector<std::vector<double>>& waveforms, const std::vector<int>& pedestals)
   {      
-      const unsigned nGr = waveforms.size();
-      TGraph gr[nGr];
-      
-      double maxe(0);
-      for (unsigned i=0;i<waveforms.size();++i)
-      {
-         const auto& wf = waveforms[i];
-         double xv[9999],yv[9999];
-         for (unsigned j=0;j<wf.size();++j) {xv[j]=j*digiSampling_+0.5*digiSampling_;yv[j]=wf[j]-pedestals[i]; maxe=std::max(maxe,std::abs(yv[j]));}
-         gr[i] = TGraph(wf.size(),xv,yv);
-         gr[i].SetLineColor(i%20+1);
-      }
-      
-      static int nplots(0);
-      std::stringstream ss;ss<<"noise_"; ss<<nplots;ss<<".pdf";
-      ++nplots;
+       const unsigned nMaxPlot(100u);
+       const unsigned nGr = waveforms.size();
+       TGraph gr[nGr];
 
-      gStyle->SetOptStat(0);
-      TCanvas c1("c1","c1");
-      TH1F empty("e","waveform",10,0,waveforms[0].size()*digiSampling_);
-      empty.GetYaxis()->SetRangeUser(-maxe,maxe);
-      empty.GetXaxis()->SetTitle("time [ns]");
-      empty.GetYaxis()->SetTitle("ADC");
-      empty.Draw();
-      for (unsigned i=0;i<std::min(100u,nGr);++i) gr[i].Draw("L");
-      c1.SaveAs(ss.str().c_str());   
+       double maxe(0);
+       for (unsigned i=0;i<waveforms.size();++i)
+       {
+          const auto& wf = waveforms[i];
+          double xv[9999],yv[9999];
+          for (unsigned j=0;j<wf.size();++j) {xv[j]=j*digiSampling_+0.5*digiSampling_;yv[j]=wf[j]-pedestals[i]; maxe=std::max(maxe,std::abs(yv[j]));}
+          gr[i] = TGraph(wf.size(),xv,yv);
+          gr[i].SetLineColor(i%20+1);
+       }
+
+       static int nplots(0);
+       std::stringstream ss;ss<<"noise_"; ss<<nplots;ss<<".pdf";
+       ++nplots;
+
+       gStyle->SetOptStat(0);
+       TCanvas c1("c1","c1");
+       TH1F empty("e","waveform",10,0,waveforms[0].size()*digiSampling_);
+       empty.GetYaxis()->SetRangeUser(-maxe,maxe);
+       empty.GetXaxis()->SetTitle("time [ns]");
+       empty.GetYaxis()->SetTitle("ADC");
+       empty.Draw();
+       for (unsigned i=0;i<std::min(nMaxPlot,nGr);++i) gr[i].Draw("L");
+       c1.SaveAs(ss.str().c_str());   
    }
 
 
   //-------------------------------------------------------------------------------------------------------------------
   void CaloDigiFromShower::plotWF(const std::vector<int>& waveform, const std::string& pname,int pedestal)
   {      
-     TH1F h("h","waaveform",waveform.size(),blindTime_,waveform.size()*digiSampling_+blindTime_);
-     for (unsigned i=0;i<waveform.size();++i) h.SetBinContent(i,waveform[i]);
-     TLine line;
-     line.SetLineStyle(2);
-     TLine line2;
-     line2.SetLineStyle(3);
-          
-     gStyle->SetOptStat(0);
-     TCanvas c1("c1","c1");
-     h.Draw();
-     line.DrawLine(blindTime_,pedestal,waveform.size()*digiSampling_+blindTime_,pedestal);
-     line2.DrawLine(blindTime_,pedestal+16,waveform.size()*digiSampling_+blindTime_,pedestal+16);
-     c1.SaveAs(pname.c_str());
+      TH1F h("h","waaveform",waveform.size(),blindTime_,waveform.size()*digiSampling_+blindTime_);
+      for (unsigned i=0;i<waveform.size();++i) h.SetBinContent(i,waveform[i]);
+      TLine line;
+      line.SetLineStyle(2);
+      TLine line2;
+      line2.SetLineStyle(3);
+
+      gStyle->SetOptStat(0);
+      TCanvas c1("c1","c1");
+      h.Draw();
+      line.DrawLine(blindTime_,pedestal,waveform.size()*digiSampling_+blindTime_,pedestal);
+      line2.DrawLine(blindTime_,pedestal+16,waveform.size()*digiSampling_+blindTime_,pedestal+16);
+      c1.SaveAs(pname.c_str());
   }
   
   void CaloDigiFromShower::plotWF(const std::vector<double>& waveform, const std::string& pname, int pedestal)
   {      
-     std::vector<int> v;
-     for (unsigned i=0;i<waveform.size();++i) v.push_back(int(waveform[i]));
-     plotWF(v,pname, pedestal);          
+      std::vector<int> v;
+      for (unsigned i=0;i<waveform.size();++i) v.push_back(int(waveform[i]));
+      plotWF(v,pname, pedestal);          
   }
 
 

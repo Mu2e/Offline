@@ -21,12 +21,12 @@ TemplateProcessor :
     numNoiseBins       : 5
     minDTPeaks         : 20
     psdThreshold       : 0.1
-    doSecondaryPeak    : true
-    refitLeadingEdge   : true
+    chiThreshold       : 1.0
+    refitLeadingEdge   : false
     digiSampling       : @local::HitMakerDigiSampling
     fitPrintLevel      : -1
     fitStrategy        : 1
-    diagLevel          : 2
+    diagLevel          : 0
 }
 
 
@@ -40,7 +40,7 @@ CaloRecoDigiFromDigi :
     digiSampling        : @local::HitMakerDigiSampling
     maxChi2Cut          : 2.0
     maxPlots            : 50
-    diagLevel           : 2
+    diagLevel           : 0
 }
 
 

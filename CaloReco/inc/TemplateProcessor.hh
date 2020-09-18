@@ -37,8 +37,8 @@ namespace mu2e {
             fhicl::Atom<double>   minPeakAmplitude  { Name("minPeakAmplitude"), Comment("Minimum peak amplitude") };
             fhicl::Atom<double>   minDTPeaks        { Name("minDTPeaks"),       Comment("Minimum time difference between consecutive peaks") };
             fhicl::Atom<unsigned> numNoiseBins      { Name("numNoiseBins"),     Comment("Number of bins to estimate noise") };
-            fhicl::Atom<bool>     doSecondaryPeak   { Name("doSecondaryPeak"),  Comment("Extract secondary peaks") }; 
             fhicl::Atom<double>   psdThreshold      { Name("psdThreshold"),     Comment("Pulse shape discrimination threshold for secondary peaks") }; 
+            fhicl::Atom<double>   chiThreshold      { Name("chiThreshold"),     Comment("Min chi2 for refit strategy") }; 
             fhicl::Atom<bool>     refitLeadingEdge  { Name("refitLeadingEdge"), Comment("Refit the leading edge to extract peak time") };
             fhicl::Atom<double>   digiSampling      { Name("digiSampling"),     Comment("Digitization time sampling") }; 
             fhicl::Atom<int>      fitPrintLevel     { Name("fitPrintLevel"),    Comment("minuit fit print level") };
@@ -77,8 +77,8 @@ namespace mu2e {
        double              minPeakAmplitude_;
        unsigned            numNoiseBins_;
        double              minDTPeaks_;
-       bool                doSecondaryPeak_;
        double              psdThreshold_;
+       double              chiThreshold_;
        bool                refitLeadingEdge_;
        int                 diagLevel_;       
        TemplateUtil        fmutil_;                           

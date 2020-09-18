@@ -73,7 +73,7 @@ namespace mu2e {
       private:
          using SimParticlePtr = art::Ptr<SimParticle>;
 
-         void makeTruthMatch (art::Event&, CaloDigiMCCollection&, CaloDigiMCTruthAssn&, CaloShowerMCTruthAssn&);
+         void makeTruthMatch (art::Event&, CaloDigiMCCollection&, CaloDigiMCTruthAssn&, CaloShowerMCTruthAssn&, const PrimaryParticle&);
          void diag           (const CaloShowerSim*, const CaloCrystalHit* );
 
 
@@ -134,11 +134,14 @@ namespace mu2e {
   //--------------------------------------------------------------------
   void CaloHitTruthMatch::produce(art::Event& event)
   {
+      auto pph = event.getValidHandle<PrimaryParticle>(ppToken_);
+      auto const& primaryParticles = *pph;
+      
       std::unique_ptr<CaloDigiMCCollection>  caloDigiMCs(new CaloDigiMCCollection);
       std::unique_ptr<CaloDigiMCTruthAssn>   caloDigiMCTruth(new CaloDigiMCTruthAssn);
       std::unique_ptr<CaloShowerMCTruthAssn> caloHitMCTruth(new CaloShowerMCTruthAssn);
 
-      makeTruthMatch(event, *caloDigiMCs, *caloDigiMCTruth, *caloHitMCTruth);
+      makeTruthMatch(event, *caloDigiMCs, *caloDigiMCTruth, *caloHitMCTruth, primaryParticles);
 
       event.put(std::move(caloDigiMCTruth));
       event.put(std::move(caloDigiMCs));
@@ -155,7 +158,8 @@ namespace mu2e {
   //
   //--------------------------------------------------------------------
   void CaloHitTruthMatch::makeTruthMatch(art::Event& event, CaloDigiMCCollection& caloDigiMCs,
-                                         CaloDigiMCTruthAssn& caloDigiTruthMatch, CaloShowerMCTruthAssn& caloShowerTruthMatch)
+                                         CaloDigiMCTruthAssn& caloDigiTruthMatch, CaloShowerMCTruthAssn& caloShowerTruthMatch, 
+                                         const PrimaryParticle& primaryParticle)
   {
         
       art::ProductID digiMCProductID(event.getProductID<CaloDigiMCCollection>());
@@ -165,8 +169,6 @@ namespace mu2e {
       const auto& caloCrystalHits(*caloCrystalHitHandle);
       const auto caloShowerSimHandle = event.getValidHandle(caloShowerSimToken_);
       const auto& caloShowerSims(*caloShowerSimHandle);
-      //const auto primaryParticleHandle = event.getValidHandle<PrimaryParticle>(ppToken_);
-      //const auto& primaryParticle = *primaryParticleHandle;
      
       
       std::map<int, std::vector<const CaloCrystalHit*>> caloHitMap;
@@ -255,20 +257,20 @@ namespace mu2e {
 
                  if (it!= edeps.end())
                  { 
-                    it->addEDep(edep);
-                    it->addEDepG4(edepG4);
-                    it->addTime(time);
-                    it->addMom(pIn);
+                     it->addEDep(edep);
+                     it->addEDepG4(edepG4);
+                     it->addTime(time);
+                     it->addMom(pIn);
                  }
                  else 
                  {                                     
-                    MCRelationship mcrel;
-                    //for (const auto& spp : primaryParticle.primarySimParticles())
-                    //{
-                    //    MCRelationship mcr(spp,sim);
-                    //    if (mcr > mcrel) mcrel = mcr;
-                    //}
-                    edeps.emplace_back(CaloEDepMC(sim,edep,edepG4,time,pIn,mcrel));
+                     MCRelationship mcrel;                     
+                     for (const auto& spp : primaryParticle.primarySimParticles())
+                     {
+                         MCRelationship mcr(spp,sim);
+                         if (mcr > mcrel) mcrel = mcr;
+                     }
+                     edeps.emplace_back(CaloEDepMC(sim,edep,edepG4,time,pIn,mcrel));
                  }
                  
                  // add shower to the detailed truthMatch
