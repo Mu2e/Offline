@@ -97,6 +97,7 @@ namespace mu2e {
          {
              using Name    = fhicl::Name;
              using Comment = fhicl::Comment;
+             
              fhicl::Sequence<std::string>  caloStepPointCollection { Name("caloStepPointCollection"), Comment("Calo crystal stepPointMC collection name") };
              fhicl::Atom<art::InputTag>    physVolInfoInput        { Name("physVolInfoInput"),        Comment("Physics volume token names") };
              fhicl::Atom<unsigned>         numZSlices              { Name("numZSlices"),              Comment("Number of crystal longitudinal slices ") };
@@ -182,14 +183,12 @@ namespace mu2e {
   {
       // procCodes are the process codes for the StepPointMC.
       // see MCDataProducts/inc/ProcessCode.hh for code numbering scheme
-      //
-      // --- These are hardcoded to make sure changes are intended and carefully considered ---
-      //
-      procCodes_[11].insert(   {2,12,13,16,17,21,23,29,40,49,58,59,74} );  // electron
-      procCodes_[-11].insert(  {2,12,13,16,17,21,23,29,40,49,58,59,74} );  // positron
-      procCodes_[22].insert(   {2,12,13,16,17,21,23,29,40,49,58} );        // photon
-      procCodes_[2112].insert( {2,12,13,16,17,21,23,29,40,49,58,74} );     // neutron
-      procCodes_[2212].insert( {16,17,21,23,29,40,45,49,58} );             // proton
+      // 
+      procCodes_[11].insert(   {2,12,13,16,17,21,23,29,40,49,58,59,74} );       // electron
+      procCodes_[-11].insert(  {2,12,13,16,17,21,23,29,40,49,58,59,74} );       // positron
+      procCodes_[22].insert(   {2,12,13,16,17,21,23,29,40,49,58} );             // photon
+      procCodes_[2112].insert( {2,12,13,16,17,21,23,29,40,49,58,74} );          // neutron
+      procCodes_[2212].insert( {16,17,21,23,29,40,45,49,58} );                  // proton
       procCodes_[13].insert(   {2,12,13,16,17,21,23,29,30,31,34,40,49,58,59} ); // mu-
       procCodes_[-13].insert(  {2,12,13,16,17,21,23,29,30,31,34,40,49,58,59} ); // mu-
 
@@ -234,28 +233,23 @@ namespace mu2e {
       diagSummary_.reset();
       if (diagLevel_ > 0) std::cout << "[CaloShowerStepFromStepPt::produce] begin" << std::endl;
 
-      //Create output collections
       auto caloShowerStepMCs = std::make_unique<CaloShowerStepCollection>();
       auto simsToKeep        = std::make_unique<SimParticlePtrCollection>();
 
-      // Get the StepPointMCs from the event.
       HandleVector crystalStepsHandles;
-      
-      art::ProductInstanceNameSelector getCrystalSteps(calorimeterStepPoints_[0]);
-      event.getMany(getCrystalSteps, crystalStepsHandles);
-
-      /*
       for (const auto& stepPts : calorimeterStepPoints_)
       {
           art::Handle<StepPointMCCollection> hc;
           event.getByLabel(art::InputTag(stepPts), hc);
           crystalStepsHandles.push_back(hc);
       }
-      */
+      //art::ProductInstanceNameSelector getCrystalSteps(calorimeterStepPoints_[0]);
+      //event.getMany(getCrystalSteps, crystalStepsHandles);      
+      
 
       makeCompressedHits(crystalStepsHandles,*caloShowerStepMCs,*simsToKeep);
 
-      // Add the output hit collection to the event
+
       event.put(std::move(caloShowerStepMCs));
       event.put(std::move(simsToKeep));
 
@@ -279,7 +273,6 @@ namespace mu2e {
       collectStepBySimAncestor(cal,vi,crystalStepsHandle,crystalAncestorsMap);
       
       if (diagLevel_ > 2) dumpAllInfo(crystalStepsHandle,cal);
-
 
 
       //---------------------------------------------------------------------------------------------------------------
@@ -316,7 +309,7 @@ namespace mu2e {
                   {
                       compressSteps(cal, caloShowerStepMCs, crid, iter.first, iter.second);
                       SimsToKeepUnique.insert(iter.first);
-                 }
+                  }
               }
           }
           ++diagSummary_.nCompressAll_;
@@ -339,7 +332,9 @@ namespace mu2e {
           for (auto volId: volIds)
           { 
              std::map<const art::Ptr<SimParticle>, double> simMap;
-             for (const auto& caloShowerStepMC : caloShowerStepMCs) if (caloShowerStepMC.volumeId()==volId) simMap[caloShowerStepMC.simParticle()] += caloShowerStepMC.energyDepG4();
+             for (const auto& caloShowerStepMC : caloShowerStepMCs) 
+                if (caloShowerStepMC.volumeId()==volId) simMap[caloShowerStepMC.simParticle()] += caloShowerStepMC.energyDepG4();
+             
              for (auto& kv : simMap) std::cout<<"Vol id: "<<volId<<"  Sim id: "<<kv.first.id()<<"   energy="<<kv.second<<std::endl;
           }
       }      
@@ -457,7 +452,7 @@ namespace mu2e {
   }
 
   //-------------------------------------------------------------------------------------------------------------
-  bool CaloShowerStepFromStepPt::isCompressible(const int simPdgId, const std::set<int>& processCodes)
+  bool CaloShowerStepFromStepPt::isCompressible(int simPdgId, const std::set<int>& processCodes)
   {
       if (compressAll_ || simPdgId > 1000000000)         return true;  //ions are always compressed
       if (procCodes_.find(simPdgId) == procCodes_.end()) return false;

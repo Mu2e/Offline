@@ -19,8 +19,8 @@ namespace mu2e {
      public:
         struct Config 
         {
-           fhicl::Atom<std::string> showerInput     { fhicl::Name("showerInput")     };
-           fhicl::Atom<std::string> newSimParticles { fhicl::Name("newSimParticles") };
+            fhicl::Atom<std::string> showerInput     { fhicl::Name("showerInput")     };
+            fhicl::Atom<std::string> newSimParticles { fhicl::Name("newSimParticles") };
         };
 
         explicit CaloShowerUpdater(const art::EDProducer::Table<Config>& config) :
@@ -33,10 +33,12 @@ namespace mu2e {
 
         virtual void produce( art::Event& e) override;
      
+     
      private:
         art::InputTag showerInput_;
         art::InputTag newSimParticles_;
   };
+
 
   //--------------------------------------------------------------------
   void  CaloShowerUpdater::produce(art::Event& event)

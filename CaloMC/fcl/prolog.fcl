@@ -20,7 +20,7 @@ CaloShowerStepFromStepPt  :
     module_type             : CaloShowerStepFromStepPt
     numZSlices              : 20
     deltaTime               : 0.2
-    caloStepPointCollection : ["calorimeter"]
+    caloStepPointCollection : ["g4run:calorimeter"]
     usePhysVolInfo          : false
     #physVolInfoInput       : "compressPVDetector"
     physVolInfoInput        : "g4run"
@@ -70,7 +70,7 @@ CaloHitTruthMatch:
     module_type               : CaloHitTruthMatch
     caloShowerSimCollection   : CaloShowerStepROFromShowerStep
     caloCrystalHitCollection  : CaloCrystalHitFromHit
-    primaryParticle           : compressRecoMCs
+    primaryParticle           : FindMCPrimary
     MeVToADC                  : @local::HitMakerMeVToADC
     digiSampling              : @local::HitMakerDigiSampling
     minAmplitude              : 32

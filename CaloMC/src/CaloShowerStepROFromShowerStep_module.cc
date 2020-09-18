@@ -246,22 +246,22 @@ namespace mu2e {
                   if (NPE==0) continue;
                   
                   std::vector<float> PETime(NPE,hitTime);                  
-                  for (auto& time : PETime) time += photonProp_.propTimeSimu(2.0*cryhalflength-posZ);
+                  if (addTravelTime_) 
+                  {
+                      for (auto& time : PETime) time += photonProp_.propTimeSimu(2.0*cryhalflength-posZ);
+                  }    
                   caloShowerStepROs.push_back(CaloShowerStepRO(ROID,stepPtr,PETime));                  
-                  
-                  
+                                    
                   if (diagLevel_ > 2) std::cout<<"[CaloShowerStepROFromShowerStep::generatePE] ROID:"<<ROID<<"  energy / NPE = "<<edep_corr<<"  /  "<<NPE<<std::endl;
                   if (diagLevel_ > 2) {std::cout<<"Time hit "<<std::endl; for (auto time : PETime) std::cout<<time<<" "; std::cout<<std::endl;}
-                  if (diagLevel_>1) for (const auto& time : PETime) hTime_->Fill(2.0*cryhalflength-posZ,time-hitTime);
-                  
-                  
+                  if (diagLevel_ > 1) for (const auto& time : PETime) hTime_->Fill(2.0*cryhalflength-posZ,time-hitTime);
+                                    
                   diagSum.totNPE     += NPE;
                   diagSum.totEdepNPE += double(NPE)/peMeV/2.0; //average between the two RO
               }
               diagSum.totEdep     += step.energyDepG4();
               diagSum.totEdepCorr += edep_corr;
               diagSum.totSteps    += step.nCompress();
-
 
               //Produce an MC object that include the step and additional information for each original step
               simEntriesMap[crystalID].push_back(StepEntry(stepPtr,edep_corr,hitTime));
@@ -327,7 +327,8 @@ namespace mu2e {
       float factor = (1.0-alpha)*normalizedPosZ +alpha;
       float edep   = edepInit*factor;
 
-      if (diagLevel_ > 2) std::cout<<"[CaloShowerStepROFromShowerStep::LRUCorrection] before / after LRU -> edep_corr = "<< edepInit<<"  /  "<<edep<<"  at position Z="<<normalizedPosZ<<std::endl;
+      if (diagLevel_ > 2) std::cout<<"[CaloShowerStepROFromShowerStep::LRUCorrection] before / after LRU -> edep_corr = "
+                                   << edepInit<<"  /  "<<edep<<"  at position Z="<<normalizedPosZ<<std::endl;
       return edep;
   }
 
