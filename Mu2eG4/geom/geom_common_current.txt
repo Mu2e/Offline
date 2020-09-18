@@ -3,7 +3,7 @@
 // and features that will eventually become default - 
 // the latest for testing..
 
-#include "Mu2eG4/geom/geom_2019_PhaseI_hayman_v2.txt"
+#include "Mu2eG4/geom/geom_Mu2eII_2020.txt"
 
 // This tells emacs to view this file in c++ mode.
 // Local Variables:

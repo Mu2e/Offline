@@ -30,6 +30,7 @@
 #include "GeometryService/src/DetectorSystemMaker.hh"
 #include "Mu2eHallGeom/inc/Mu2eHall.hh"
 #include "ProductionTargetGeom/inc/ProductionTarget.hh"
+#include "ProductionTargetGeom/inc/ProductionTargetMu2eII.hh"
 #include "GeometryService/inc/ProductionTargetMaker.hh"
 #include "ProductionSolenoidGeom/inc/ProductionSolenoid.hh"
 #include "GeometryService/inc/ProductionSolenoidMaker.hh"
@@ -210,9 +211,19 @@ namespace mu2e {
     const Beamline& beamline = *tmpBeamline.get();
     addDetector(std::move(tmpBeamline));
 
-    std::unique_ptr<ProductionTarget> tmpProdTgt(ProductionTargetMaker::make(*_config, beamline.solenoidOffset()));
-    const ProductionTarget& prodTarget = *tmpProdTgt.get();
-    addDetector(std::move(tmpProdTgt));
+    //for target, need to check the model and if it's a Mu2e-II model
+    bool Mu2eIITarget = _config->getBool("targetPS.Mu2eII.build", false);
+    const ProductionTarget* prodTarget = nullptr;
+    const ProductionTargetMu2eII* prodTargetMu2eII = nullptr;
+    if(!Mu2eIITarget) {
+      std::unique_ptr<ProductionTarget> tmpProdTgt(ProductionTargetMaker::make(*_config, beamline.solenoidOffset()));
+      prodTarget = tmpProdTgt.get();
+      addDetector(std::move(tmpProdTgt));
+    } else {
+      std::unique_ptr<ProductionTargetMu2eII> tmpProdTgt(ProductionTargetMaker::makeMu2eII(*_config, beamline.solenoidOffset()));
+      prodTargetMu2eII = tmpProdTgt.get();
+      addDetector(std::move(tmpProdTgt));
+    }
 
     std::unique_ptr<ProductionSolenoid>
       tmpProductionSolenoid(ProductionSolenoidMaker(*_config, beamline.solenoidOffset()).getProductionSolenoidPtr());
@@ -231,19 +242,19 @@ namespace mu2e {
 
     addDetector(PSVacuumMaker::make(*_config, ps, pse, vacPS_TS_z));
 
-    //addDetector(PSShieldMaker::make(*_config, ps.psEndRefPoint(), prodTarget.position()));
+    if(Mu2eIITarget) 
+      addDetector(PSShieldMaker::make(*_config, ps.psEndRefPoint(), prodTargetMu2eII->position()));
+    else if (_config->getString("targetPS_model") == "MDC2018"){ 
+      addDetector(PSShieldMaker::make(*_config, ps.psEndRefPoint(), prodTarget->position()));
+    } else if (_config->getString("targetPS_model") == "Hayman_v_2_0"){ 
+      addDetector(PSShieldMaker::make(*_config, ps.psEndRefPoint(), prodTarget->haymanProdTargetPosition()));
+    } else {
+      throw cet::exception("GEOM") << " " << __func__ 
+				   << " illegal production target version specified in GeometryService_service = "
+				   << _config->getString("targetPS_model")  << std::endl;
+    }
 
-   if (_config->getString("targetPS_model") == "MDC2018"){ 
-     //      std::cout << "adding Tier1 in GeometryService" << std::endl;
-      addDetector(PSShieldMaker::make(*_config, ps.psEndRefPoint(), prodTarget.position()));
-	} else 
-      if (_config->getString("targetPS_model") == "Hayman_v_2_0"){ 
-	//	std::cout << " adding Hayman in GeometryService" << std::endl;
-	addDetector(PSShieldMaker::make(*_config, ps.psEndRefPoint(), prodTarget.haymanProdTargetPosition()));
-	  } else 
-	{throw cet::exception("GEOM") << " " << __func__ << " illegal production target version specified in GeometryService_service = " << _config->getString("targetPS_model")  << std::endl;}
-
-
+    
 
 
 
