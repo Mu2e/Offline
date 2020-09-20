@@ -97,7 +97,7 @@ namespace mu2e {
 
        int   nSimHit_,crySimId_[16384],crySimPdgId_[16384],crySimCrCode_[16384],crySimGenIdx_[16384],cryConv_[16384];
        float crySimMom_[16384],crySimStartX_[16384],crySimStartY_[16384],crySimStartZ_[16384],crySimStartT_[16384];
-       float crySimTime_[16384],crySimEdep_[16348];
+       float crySimTime_[16384],crySimEdep_[16348],cryTimeErr_[16348], cryDT_[16384];
 
        int   nCluster_,nCluSim_,cluNcrys_[16384];
        float cluEnergy_[16384],cluEnergyErr_[16384],cluTime_[16384],cluTimeErr_[16384],cluCogX_[16384],cluCogY_[16384],
@@ -164,6 +164,8 @@ namespace mu2e {
        Ntup_->Branch("cryPosZ",      &cryPosZ_ ,     "cryPosZ[nCry]/F");
        Ntup_->Branch("cryEdep",      &cryEdep_ ,     "cryEdep[nCry]/F");
        Ntup_->Branch("cryTime",      &cryTime_ ,     "cryTime[nCry]/F");
+       Ntup_->Branch("cryTimeErr",   &cryTimeErr_ ,  "cryTimeErr[nCry]/F");
+       Ntup_->Branch("cryDT",        &cryDT_ ,       "cryDT[nCry]/F");
        Ntup_->Branch("cryConv",      &cryConv_ ,     "cryConv[nCry]/I");
 
        Ntup_->Branch("crySimIdx",    &crySimIdx_ ,   "crySimIdx[nCry]/I");
@@ -364,10 +366,15 @@ namespace mu2e {
               }    		          
            }
  
+           float cryDT(999);
+           if (hit.recoCaloDigis().size()==2) cryDT = std::abs(hit.recoCaloDigis().at(1)->time()- hit.recoCaloDigis().at(0)->time());
+ 
            cryId_[nHits_]        = hit.id();
            crySectionId_[nHits_] = diskId;
            cryEdep_[nHits_]      = hit.energyDep();
            cryTime_[nHits_]      = hit.time();
+           cryTimeErr_[nHits_]   = hit.timeErr();
+           cryDT_[nHits_]        = cryDT;
            cryPosX_[nHits_]      = crystalPos.x();
            cryPosY_[nHits_]      = crystalPos.y();
            cryPosZ_[nHits_]      = crystalPos.z();
