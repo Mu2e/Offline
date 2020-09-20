@@ -38,6 +38,8 @@ namespace mu2e {
     // in mu2e coordinates
     const CLHEP::Hep3Vector& position() const { return _prodTargetPosition; }
 
+    const CLHEP::Hep3Vector& front() const { return _prodTargetFrontPosition; }
+
     // this is used to transorm particle momentum and position from
     // the PrimaryProtonGun frame to the Mu2e frame
     const CLHEP::HepRotation& protonBeamRotation() const { return _protonBeamRotation; }
@@ -83,6 +85,7 @@ namespace mu2e {
 
 
     CLHEP::Hep3Vector _prodTargetPosition;
+    CLHEP::Hep3Vector _prodTargetFrontPosition;
 
     std::string _type;
     int    _version;

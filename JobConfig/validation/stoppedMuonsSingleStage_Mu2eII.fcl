@@ -1,0 +1,8 @@
+// This job starts with protons on target and writes stopped muons
+// into a framework format output file. Run 
+// JobConfig/beam/beam_nts3tgtstops.fcl on the output to get an ntuple.
+//
+#include "JobConfig/validation/stoppedMuonsSingleStage.fcl"
+physics.producers.generate.mu2eii : true
+services.GeometryService.inputFile : "JobConfig/common/geom_mu2eii.txt"
+services.GlobalConstantsService.inputFile : "Mu2eG4/test/globalConstants_mu2eii.txt"

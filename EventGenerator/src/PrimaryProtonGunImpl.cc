@@ -20,6 +20,7 @@
 #include "GlobalConstantsService/inc/ParticleDataTable.hh"
 #include "GeometryService/inc/GeomHandle.hh"
 #include "ProductionTargetGeom/inc/ProductionTarget.hh"
+#include "ProductionTargetGeom/inc/ProductionTargetMu2eII.hh"
 
 // CLHEP includes.
 #include "CLHEP/Vector/Rotation.h"
@@ -31,8 +32,9 @@ namespace mu2e {
 
     PrimaryProtonGunImpl::PrimaryProtonGunImpl(CLHEP::HepRandomEngine& engine, const PrimaryProtonGunConfig& config):
     
-    _gunRotation(GeomHandle<ProductionTarget>()->protonBeamRotation()),
-    _gunOrigin(GeomHandle<ProductionTarget>()->targetPositionByVersion()
+    _mu2eii(config.mu2eii()),
+    _gunRotation((_mu2eii) ? GeomHandle<ProductionTargetMu2eII>()->protonBeamRotation() : GeomHandle<ProductionTarget>()->protonBeamRotation()),
+    _gunOrigin((_mu2eii) ? GeomHandle<ProductionTargetMu2eII>()->front() : GeomHandle<ProductionTarget>()->targetPositionByVersion()
                + _gunRotation*CLHEP::Hep3Vector(0., 0., GeomHandle<ProductionTarget>()->targetHalfLengthByVersion())),
 
     _proton_mass(GlobalConstantsHandle<ParticleDataTable>()->particle(PDGCode::p_plus).ref().mass().value()),
@@ -48,7 +50,6 @@ namespace mu2e {
     _tmax(config.tmax()),
     _shape(config.shape()),
     _rmax(config.rmax()),
-    
     // For all distributions, use the engine managed by the RandomNumberGenerator.
     _randPoissonQ{engine, std::abs(config.mean())},
     _randFlat{engine},
