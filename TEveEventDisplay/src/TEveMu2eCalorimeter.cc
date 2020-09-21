@@ -24,8 +24,7 @@ namespace mu2e{
         Double_t origin[3];
         GeomHandle<DetectorSystem> det;
         crystalPos = det->toMu2e(crystalPos);
-        /*if(i < CrystalsperDisk) crystalPos = PointToCalo(crystalPos, 0);
-        else crystalPos = PointToCalo(crystalPos, 1);*/
+       
         hep3vectorTocm(crystalPos);
         origin [0] = crystalPos.x();
         origin [1] = crystalPos.y();

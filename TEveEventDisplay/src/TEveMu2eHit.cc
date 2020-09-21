@@ -31,7 +31,7 @@ namespace mu2e{
       Hep3Vector vec1(x1, y1, z1);
       Hep3Vector vec2(x2, y2, z2);
       Hep3Vector inDet1 = det->toMu2e(vec1);
-	    Hep3Vector inDet2 = det->toMu2e(vec2);
+      Hep3Vector inDet2 = det->toMu2e(vec2);
       error->SetPoint(0, pointmmTocm(inDet1.x()),pointmmTocm(inDet1.y()),pointmmTocm(inDet1.z()));
       error->SetNextPoint(pointmmTocm(inDet2.x()), pointmmTocm(inDet2.y()),pointmmTocm(inDet2.z()));
       error->SetLineColor(kRed);
