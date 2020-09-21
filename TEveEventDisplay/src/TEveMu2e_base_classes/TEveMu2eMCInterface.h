@@ -6,6 +6,9 @@
 //TEve
 #include <TEveManager.h>
 #include <TEveStraightLineSet.h>
+//Mu2e General:
+#include "GeometryService/inc/GeomHandle.hh"
+#include "GeometryService/inc/DetectorSystem.hh"
 //TEveMu2e
 #include "TEveEventDisplay/src/dict_classes/Collection_Filler.h"
 #include "TEveEventDisplay/src/TEveMu2e_base_classes/TEveMu2e2DProjection.h"

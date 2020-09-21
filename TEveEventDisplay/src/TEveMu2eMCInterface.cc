@@ -78,13 +78,14 @@ namespace mu2e{
         TEveMu2eMCTraj *teve_hit3D = new TEveMu2eMCTraj();
         string energy = to_string(points[0].kineticEnergy());
         teve_hit3D->DrawLine("MCTraj PDG " + pdgId + "Energy = " + energy  + ", ",  StartHitPos, EndHitPos, HitList3D);
-        ///for(unsigned int i=0; i<points.size();i++){
-        // std::cout<<i<<" "<<points[i].x()<<" "<<points[i].y()<<" "<<points[i].z()<<std::endl;
-        // }
+        
         fTrackList3D->AddElement(HitList3D);
         if(show2D){
+          GeomHandle<DetectorSystem> det;
+          StartHitPos = det->toMu2e(StartHitPos);
+          EndHitPos = det->toMu2e(EndHitPos);
           TEveMu2eMCTraj *teve_hit2D = new TEveMu2eMCTraj();
-          teve_hit2D->DrawLine("MCTraj PDG " + pdgId + "Energy = " + energy + ", ", PointToMu2e(StartHitPos), PointToMu2e(EndHitPos), HitList2D);
+          teve_hit2D->DrawLine("MCTraj PDG " + pdgId + "Energy = " + energy + ", ", StartHitPos, EndHitPos, HitList2D);
           fTrackList2D->AddElement(HitList2D); 
         }
       }
