@@ -152,7 +152,6 @@ namespace mu2e{
         TEveMu2eHit *teve_hit3D = new TEveMu2eHit(hit);
         
         CLHEP::Hep3Vector HitPos(hit.pos().x(), hit.pos().y(), hit.pos().z());
-        //CLHEP::Hep3Vector pointInMu2e = PointToTracker(HitPos);//TODO - use geom service
         GeomHandle<DetectorSystem> det;
         CLHEP::Hep3Vector pointInMu2e = det->toMu2e(HitPos);
         string energy = to_string(teve_hit3D->GetEnergy());
@@ -195,9 +194,8 @@ namespace mu2e{
         TEveMu2eCluster *teve_cluster2D = new TEveMu2eCluster(cluster);
 
         CLHEP::Hep3Vector COG(cluster.cog3Vector().x(),cluster.cog3Vector().y(), cluster.cog3Vector().z());
-        //CLHEP::Hep3Vector pointInMu2e = PointToCalo(COG,cluster.diskId());//TODO - Use Geom Service
-        GeomHandle<DetectorSystem> det;
-        CLHEP::Hep3Vector pointInMu2e = det->toMu2e(COG);
+        CLHEP::Hep3Vector pointInMu2e = PointToCalo(COG,cluster.diskId());
+       
         string pos3D = "(" + to_string((double)pointInMu2e.x()) + ", " + to_string((double)pointInMu2e.y()) + ", " + to_string((double)pointInMu2e.z()) + ")";
         string pos2D = "(" + to_string((double)COG.x()) + ", " + to_string((double)COG.y()) + ", " + to_string((double)COG.z()) + ")";
 
@@ -237,9 +235,7 @@ namespace mu2e{
         CaloCrystalHit const  &hit = (*cryHitcol)[i];
         int diskId = cal.crystal(hit.id()).diskId();
         CLHEP::Hep3Vector HitPos(cal.geomUtil().mu2eToDiskFF(diskId, cal.crystal(hit.id()).position()));
-        //CLHEP::Hep3Vector pointInMu2e = PointToCalo(HitPos,diskId);//TODO - use geom service
-        GeomHandle<DetectorSystem> det;
-        CLHEP::Hep3Vector pointInMu2e = det->toMu2e(HitPos);
+        CLHEP::Hep3Vector pointInMu2e = PointToCalo(HitPos,diskId);
         if ((time == -1 || (hit.time() <= time && time != -1))){
           teve_hit->DrawHit3D("CrystalHits",  1, pointInMu2e, energylevels[i], HitList);
           fCrystalHitList->AddElement(HitList);    
@@ -266,14 +262,14 @@ namespace mu2e{
           line->SetPostionAndDirectionFromKalRep(zpos);
           if(i==0) {
             CLHEP::Hep3Vector Pos(line->Position.x(), line->Position.y(), zpos+line->Position.z());
-            //CLHEP::Hep3Vector InMu2e = PointToTracker(Pos);//TODO - use geom service
+           
             GeomHandle<DetectorSystem> det;
             CLHEP::Hep3Vector InMu2e = det->toMu2e(Pos);
             line->SetPoint(i,pointmmTocm(InMu2e.x())+line->Direction.x()*pointmmTocm(line->Momentum),pointmmTocm(InMu2e.y())+line->Direction.y()*pointmmTocm(line->Momentum), pointmmTocm(InMu2e.z())-TrackerLength()/2);
             if(show2D){ line_twoD->SetPoint(i,pointmmTocm(Pos.x())+line->Direction.x()*pointmmTocm(line->Momentum),pointmmTocm(Pos.y())+line->Direction.y()*pointmmTocm(line->Momentum),pointmmTocm(Pos.z())-TrackerLength()/2);}
           } else {
             CLHEP::Hep3Vector Pos(line->Position.x(), line->Position.y(), zpos+line->Position.z());
-            //CLHEP::Hep3Vector InMu2e = PointToTracker(Pos);//TODO - use geom service
+           
             GeomHandle<DetectorSystem> det;
             CLHEP::Hep3Vector InMu2e = det->toMu2e(Pos);
             line->SetNextPoint(pointmmTocm(InMu2e.x())+line->Direction.x()*pointmmTocm(line->Momentum),pointmmTocm(InMu2e.y())+line->Direction.y()*pointmmTocm(line->Momentum), pointmmTocm(InMu2e.z())-TrackerLength()/2);

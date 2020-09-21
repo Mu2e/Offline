@@ -13,7 +13,7 @@ EventFilter : {
 
 
 TEveEventDisplayHelix : {
-    show2D : false
+    show2D : true
     module_type : TEveEventDisplay
     accumulate : false
     filler : {
@@ -30,7 +30,7 @@ TEveEventDisplayHelix : {
       addTracks 			          : true
       addCrvHits			          : false
       addCosmicSeedFit	        : false
-      addClusters			          : false
+      addClusters			          : true
       addTrkExtTrajs		        : false
       addMCTraj				          : false 
 
