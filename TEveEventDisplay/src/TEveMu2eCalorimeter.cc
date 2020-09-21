@@ -1,5 +1,6 @@
 #include "TEveEventDisplay/src/shape_classes/TEveMu2eCalorimeter.h"
 #include "TEveEventDisplay/src/dict_classes/GeomUtils.h"
+#include "GeometryService/inc/DetectorSystem.hh"
 #include <TBox.h>
 #include <TGeoBBox.h>
 using namespace mu2e;
@@ -12,8 +13,8 @@ namespace mu2e{
       TGeoMedium *CsI = new TGeoMedium("CsI",2, mat);
 
       Calorimeter const &cal = *(GeomHandle<Calorimeter>());
-  
-      for(unsigned int i = 0; i < CrystalsperDisk() * 2 ; i++){ 
+      unsigned int CrystalsperDisk = cal.disk(0).nCrystals();
+      for(unsigned int i = 0; i < CrystalsperDisk * 2 ; i++){ 
         Crystal const &crystal = cal.crystal(i);
         double crystalXLen = pointmmTocm(crystal.size().x());
         double crystalYLen = pointmmTocm(crystal.size().y());
@@ -21,8 +22,10 @@ namespace mu2e{
 
         CLHEP::Hep3Vector crystalPos   = cal.geomUtil().mu2eToDiskFF(0,crystal.position());
         Double_t origin[3];
-        if(i < CrystalsperDisk()) crystalPos = PointToCalo(crystalPos, 0);
-        else crystalPos = PointToCalo(crystalPos, 1);
+        GeomHandle<DetectorSystem> det;
+        crystalPos = det->toMu2e(crystalPos);
+        /*if(i < CrystalsperDisk) crystalPos = PointToCalo(crystalPos, 0);
+        else crystalPos = PointToCalo(crystalPos, 1);*/
         hep3vectorTocm(crystalPos);
         origin [0] = crystalPos.x();
         origin [1] = crystalPos.y();
@@ -30,7 +33,7 @@ namespace mu2e{
         TEveGeoShape *crystalShape   = new TEveGeoShape();
         crystalShape->SetMainTransparency(100);
         crystalShape->SetShape(new TGeoBBox("crystalD0", (crystalXLen/2), (crystalYLen/2), (crystalZLen/2)/10, origin));
-        if(i < CrystalsperDisk()){
+        if(i < CrystalsperDisk){
           orthodet0->AddElement(crystalShape);  
           TGeoShape *c = new TGeoBBox("crystalD0", (crystalXLen/2), (crystalYLen/2), (crystalZLen/2));
           TGeoVolume *cry= new TGeoVolume("cryD0",c, CsI);

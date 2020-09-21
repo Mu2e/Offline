@@ -7,7 +7,9 @@
 #include <TEvePointSet.h>
 #include <TEveLine.h>
 #include "RecoDataProducts/inc/ComboHit.hh"
-
+//Mu2e General:
+#include "GeometryService/inc/GeomHandle.hh"
+#include "GeometryService/inc/DetectorSystem.hh"
 namespace mu2e {
   class TEveMu2eHit : public TEvePointSet {
     public:

@@ -27,10 +27,13 @@ namespace mu2e{
       double y2 = (p.y()-s*w.y());
       std::string errorbar = "ErrorBar Length: %d, %d, %d"; 
       error->SetTitle(Form(errorbar.c_str(), (x1 - x2), (y1 - y2), (z1 - z2)));
-      CLHEP::Hep3Vector trackerCentrMu2e = GetTrackerCenter();
-      hep3vectorTocm(trackerCentrMu2e);
-      error->SetPoint(0, pointmmTocm(x1)+trackerCentrMu2e.x(),pointmmTocm(y1)+trackerCentrMu2e.y(),pointmmTocm(z1)+trackerCentrMu2e.z());
-      error->SetNextPoint(pointmmTocm(x2)+trackerCentrMu2e.x(), pointmmTocm(y2)+trackerCentrMu2e.y(),pointmmTocm(z2)+trackerCentrMu2e.z());
+      GeomHandle<DetectorSystem> det;
+      Hep3Vector vec1(x1, y1, z1);
+      Hep3Vector vec2(x2, y2, z2);
+      Hep3Vector inDet1 = det->toMu2e(vec1);
+	    Hep3Vector inDet2 = det->toMu2e(vec2);
+      error->SetPoint(0, pointmmTocm(inDet1.x()),pointmmTocm(inDet1.y()),pointmmTocm(inDet1.z()));
+      error->SetNextPoint(pointmmTocm(inDet2.x()), pointmmTocm(inDet2.y()),pointmmTocm(inDet2.z()));
       error->SetLineColor(kRed);
       error->SetPickable(kTRUE);
       HitList->AddElement(error);

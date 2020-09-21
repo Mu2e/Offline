@@ -36,14 +36,6 @@ namespace mu2e{
       return c;
     }
 
-    inline CLHEP::Hep3Vector GetGDMLTrackerOffsetFromMu2e(){ 
-      double xCenter = 0;
-      double yCenter  =  0;
-      double zCenter  = 1288;
-      CLHEP::Hep3Vector center(xCenter,yCenter,zCenter);
-      return center;
-    }
-
     inline CLHEP::Hep3Vector GetGDMLTrackerCenter() {
       std::string filename("Mu2eG4/geom/mu2eHall.txt");
       SimpleConfig HallConfig(filename);
@@ -54,17 +46,7 @@ namespace mu2e{
       return c;
     }
 
-    inline CLHEP::Hep3Vector GetGDMLCaloCenter() {
-      std::string filename("Mu2eG4/geom/mu2eHall.txt");
-      SimpleConfig HallConfig(filename);
-      double yCenter  = HallConfig.getDouble("yOfFloorSurface.below.mu2eOrigin");
-      double zCenter  = 1288; 
-      double xCenter  = 0;
-      CLHEP::Hep3Vector c(xCenter, yCenter, zCenter);
-      return c;
-    }
-
-    inline CLHEP::Hep3Vector PointToTracker(CLHEP::Hep3Vector point){
+  /*  inline CLHEP::Hep3Vector PointToTracker(CLHEP::Hep3Vector point){
       CLHEP::Hep3Vector Mu2eTrackerOrigin = GetTrackerCenter();
       CLHEP::Hep3Vector PointToTracker(point.x() + Mu2eTrackerOrigin.x(), point.y() + Mu2eTrackerOrigin.y(), point.z() + Mu2eTrackerOrigin.z());
       return PointToTracker;
@@ -79,11 +61,7 @@ namespace mu2e{
       CLHEP::Hep3Vector Mu2eTrackerOrigin = GetTrackerCenter();
       CLHEP::Hep3Vector PointToTracker(point.x() - Mu2eTrackerOrigin.x(), point.y() - Mu2eTrackerOrigin.y(), point.z() - Mu2eTrackerOrigin.z());
       return PointToTracker;
-    }
-    inline unsigned int CrystalsperDisk(){
-      Calorimeter const &cal = *(GeomHandle<Calorimeter>());
-      return (unsigned int)(cal.disk(0).nCrystals());
-    }
+    }*/
     
     inline double TrackerLength(){
       //From GDML:
