@@ -3,7 +3,7 @@
 #include "CLHEP/Random/RandPoissonQ.h"
 #include "CLHEP/Random/RandGeneral.h"
 
-#include "EventGenerator/inc/MuStopParticleGenerator.hh"
+#include "EventGenerator/inc/ParticleGeneratorTool.hh"
 
 #include "DataProducts/inc/PDGCode.hh"
 #include "MCDataProducts/inc/GenId.hh"
@@ -14,9 +14,9 @@
 #include "GlobalConstantsService/inc/PhysicsParams.hh"
 
 namespace mu2e {
-  class MuStopProtonGenerator : public MuStopParticleGenerator {
+  class MuCapProtonGenerator : public ParticleGeneratorTool {
   public:
-    explicit MuStopProtonGenerator(fhicl::ParameterSet const& pset) :
+    explicit MuCapProtonGenerator(fhicl::ParameterSet const& pset) :
       _pdgId(PDGCode::proton),
       _mass(GlobalConstantsHandle<ParticleDataTable>()->particle(_pdgId).ref().mass().value()),
       _genId(GenId::StoppedParticleReactionGun),
@@ -49,7 +49,7 @@ namespace mu2e {
     CLHEP::RandGeneral* _randSpectrum;
   };
 
-  void MuStopProtonGenerator::generate(std::unique_ptr<GenParticleCollection>& out, const IO::StoppedParticleF& stop) {
+  void MuCapProtonGenerator::generate(std::unique_ptr<GenParticleCollection>& out, const IO::StoppedParticleF& stop) {
     const CLHEP::Hep3Vector pos(stop.x, stop.y, stop.z);
 
     int n_gen = _randomPoissonQ->fire();
@@ -73,4 +73,4 @@ namespace mu2e {
     }
   }
 }
-DEFINE_ART_CLASS_TOOL(mu2e::MuStopProtonGenerator)
+DEFINE_ART_CLASS_TOOL(mu2e::MuCapProtonGenerator)

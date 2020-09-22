@@ -1,5 +1,5 @@
-#ifndef EventGenerator_MuStopParticleGenerator_hh
-#define EventGenerator_MuStopParticleGenerator_hh
+#ifndef EventGenerator_ParticleGeneratorTool_hh
+#define EventGenerator_ParticleGeneratorTool_hh
 
 #include <memory>
 
@@ -11,18 +11,18 @@
 
 namespace mu2e {
 
-  class MuStopParticleGenerator {
+  class ParticleGeneratorTool {
   public:
     virtual void setEngine(art::RandomNumberGenerator::base_engine_t& eng) = 0;
     virtual void generate(std::unique_ptr<GenParticleCollection>& out, const IO::StoppedParticleF& stop) = 0;
-    virtual ~MuStopParticleGenerator() noexcept = default;
+    virtual ~ParticleGeneratorTool() noexcept = default;
 
     enum SpectrumVar  { TOTAL_ENERGY, KINETIC_ENERY, MOMENTUM };
     static SpectrumVar    parseSpectrumVar(const std::string& name) {
       if (name == "totalEnergy"  )  return TOTAL_ENERGY;
       if (name == "kineticEnergy")  return KINETIC_ENERY;
       if (name == "momentum"     )  return MOMENTUM;
-      throw cet::exception("BADCONFIG")<<"MuStopParticleGenerator: unknown spectrum variable "<<name<<"\n";
+      throw cet::exception("BADCONFIG")<<"ParticleGeneratorTool: unknown spectrum variable "<<name<<"\n";
     }
 
     struct Config {

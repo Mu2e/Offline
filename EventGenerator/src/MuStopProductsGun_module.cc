@@ -46,7 +46,7 @@
 #include "Mu2eUtilities/inc/RootTreeSampler.hh"
 #include "GeneralUtilities/inc/RSNTIO.hh"
 #include "Mu2eUtilities/inc/GenPhysConfig.hh"
-#include "EventGenerator/inc/MuStopParticleGenerator.hh"
+#include "EventGenerator/inc/ParticleGeneratorTool.hh"
 
 #include "TH1.h"
 
@@ -137,7 +137,7 @@ namespace mu2e {
     std::vector<GenPhysStruct> _allCaptureProducts;
     std::vector<GenPhysStruct> _allDecayProducts;
 
-    std::unique_ptr<MuStopParticleGenerator> _protonGenerator;
+    std::unique_ptr<ParticleGeneratorTool> _protonGenerator;
 
   public:
     explicit MuStopProductsGun(const Parameters& conf);
@@ -206,9 +206,11 @@ namespace mu2e {
       //   std::cout << "MuStopProductsGun: Adding Capture Process: " << i_genPhys.pdgId << std::endl;
       // }
     //    }
-    const auto pset = conf_.captureProducts.get<fhicl::ParameterSet>();
-    _protonGenerator = art::make_tool<MuStopParticleGenerator>(pset);
-    _protonGenerator->setEngine(eng_);
+    const auto psets = conf_.captureProducts.get<std::vector<fhicl::ParameterSet>>();
+    for (const auto& i_pset : psets) {
+      _protonGenerator = art::make_tool<ParticleGeneratorTool>(i_pset);
+      _protonGenerator->setEngine(eng_);
+    }
 
     for (const auto& i_genPhysConfig : conf_.decayProducts()) {
       double rate = 0;
@@ -263,8 +265,6 @@ namespace mu2e {
       //        generateGenParticles(i_genPhys, output);
       //      }
       //    }
-      std::cout << "AE: " << output->size() << std::endl;
-      //      std::cout << "AE: " << output->back() << std::endl;
     event.put(std::move(output));
   }
 
