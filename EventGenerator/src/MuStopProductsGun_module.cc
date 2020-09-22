@@ -22,7 +22,10 @@
 #include "art/Framework/Principal/Run.h"
 #include "art/Framework/Principal/Handle.h"
 #include "art/Framework/Services/Registry/ServiceHandle.h"
+#include "art/Utilities/make_tool.h"
 
+#include "fhiclcpp/ParameterSet.h"
+#include "fhiclcpp/types/DelegatedParameter.h"
 #include "fhiclcpp/types/OptionalAtom.h"
 
 #include "ConfigTools/inc/ConfigFileLookupPolicy.hh"
@@ -43,6 +46,7 @@
 #include "Mu2eUtilities/inc/RootTreeSampler.hh"
 #include "GeneralUtilities/inc/RSNTIO.hh"
 #include "Mu2eUtilities/inc/GenPhysConfig.hh"
+#include "EventGenerator/inc/MuStopParticleGenerator.hh"
 
 #include "TH1.h"
 
@@ -59,12 +63,10 @@ namespace mu2e {
       using Comment=fhicl::Comment;
 
       //      fhicl::Sequence< fhicl::Table<GenPhysConfig> > stopProducts{Name("stopProducts"), Comment("Products coincident with stopped muon (i.e. generated every event)")};
-      fhicl::Sequence< fhicl::Table<GenPhysConfig> > captureProducts{Name("captureProducts"), Comment("Products coincident with captured muon)")};
+      fhicl::DelegatedParameter captureProducts{Name("captureProducts"), Comment("Products coincident with captured muon)")};
       fhicl::Sequence< fhicl::Table<GenPhysConfig> > decayProducts{Name("decayProducts"), Comment("Products coincident with decayd muon)")};
       fhicl::Atom<int> verbosityLevel{Name("verbosityLevel"), Comment("Verbosity Level (default = 0)"), 0};
       fhicl::Table<RTS::Config> stops{Name("stops"), Comment("Stops ntuple config")};
-      fhicl::Atom<bool> doHistograms{Name("doHistograms"), Comment("True/false to produce histograms"), true};
-      fhicl::Atom<bool> doTree{Name("doTree"), Comment("True/false to produce tree"), false};
     };
     typedef art::EDProducer::Table<Config> Parameters;
 
@@ -124,24 +126,7 @@ namespace mu2e {
     CLHEP::RandFlat randomFlat_;
 
     RTS stops_;
-//-----------------------------------------------------------------------------
-// histogramming
-//-----------------------------------------------------------------------------
-    bool    doHistograms_;
-    TH1F*   _hEnergy;
-    TH1F*   _hPdgId;
-    TH1F*   _hGenId;
-    TH1F*   _hTime;
-    TH1F*   _hZ;
-    TH1F*   _hProcesses;
 
-    bool    doTree_;
-    TTree*  _genTree;
-    Float_t _brEnergy;
-    Int_t   _brGenId;
-    Int_t   _brPdgId;
-    Float_t _brTime;
-    Float_t _brZ;
   private:
     static SpectrumVar    parseSpectrumVar(const std::string& name);
     double                generateEnergy(GenPhysStruct& genPhys);
@@ -151,6 +136,8 @@ namespace mu2e {
     //    std::vector<GenPhysStruct> _allStopProducts;
     std::vector<GenPhysStruct> _allCaptureProducts;
     std::vector<GenPhysStruct> _allDecayProducts;
+
+    std::unique_ptr<MuStopParticleGenerator> _protonGenerator;
 
   public:
     explicit MuStopProductsGun(const Parameters& conf);
@@ -167,10 +154,9 @@ namespace mu2e {
     , randomUnitSphere_(eng_)
     , randomFlat_(eng_)
     , stops_(eng_, conf_.stops())
-    , doHistograms_(conf_.doHistograms())
-    , doTree_(conf_.doTree())
     , _decayFraction(GlobalConstantsHandle<PhysicsParams>()->getDecayFraction())
     , _captureFraction(1 - _decayFraction)
+      //    ,_protonGenerator(eng_)
   {
     produces<mu2e::GenParticleCollection>();
 
@@ -185,42 +171,45 @@ namespace mu2e {
     //    for (const auto& i_genPhysConfig : conf_.stopProducts()) {
     // // Create stopped muon processes here in the future, if needs be
     //    }
-    for (const auto& i_genPhysConfig : conf_.captureProducts()) {
-      double rate = 0;
-      bool is_poisson_rate = false;
-      double prob = 1;
-      if (i_genPhysConfig.pdgId() == 2212) {
-        is_poisson_rate = true;
-        rate = GlobalConstantsHandle<PhysicsParams>()->getCaptureProtonRate();
-      }
-      else if (i_genPhysConfig.pdgId() == 1000010020) {
-        is_poisson_rate = true;
-        rate = GlobalConstantsHandle<PhysicsParams>()->getCaptureDeuteronRate();
-      }
-      else if (i_genPhysConfig.pdgId() == 2112) {
-        is_poisson_rate = true;
-        rate = GlobalConstantsHandle<PhysicsParams>()->getCaptureNeutronRate();
-      }
-      else if (i_genPhysConfig.pdgId() == 22) {
-        if (i_genPhysConfig.spectrumShape() == "CaptureGamma") {
-          rate = 1;
-          prob = GlobalConstantsHandle<PhysicsParams>()->getCaptureGammaIntensity();
-        }
-        else { // this is our photon background frame
-          is_poisson_rate = true;
-          rate = 2;
-        }
-      }
-      else {
-        throw cet::exception("MUSTOPPRODUCTSGUN") << "Capture product with PdgId " << i_genPhysConfig.pdgId() << " is not implemented" << std::endl;
-      }
+    //    for (const auto& i_genPhysConfig : conf_.captureProducts()) {
+      // double rate = 0;
+      // bool is_poisson_rate = false;
+      // double prob = 1;
+      // if (i_genPhysConfig.pdgId() == 2212) {
+      //   is_poisson_rate = true;
+      // }
+      // else if (i_genPhysConfig.pdgId() == 1000010020) {
+      //   is_poisson_rate = true;
+      //   rate = GlobalConstantsHandle<PhysicsParams>()->getCaptureDeuteronRate();
+      // }
+      // else if (i_genPhysConfig.pdgId() == 2112) {
+      //   is_poisson_rate = true;
+      //   rate = GlobalConstantsHandle<PhysicsParams>()->getCaptureNeutronRate();
+      // }
+      // else if (i_genPhysConfig.pdgId() == 22) {
+      //   if (i_genPhysConfig.spectrumShape() == "CaptureGamma") {
+      //     rate = 1;
+      //     prob = GlobalConstantsHandle<PhysicsParams>()->getCaptureGammaIntensity();
+      //   }
+      //   else { // this is our photon background frame
+      //     is_poisson_rate = true;
+      //     rate = 2;
+      //   }
+      // }
+      // else {
+      //   throw cet::exception("MUSTOPPRODUCTSGUN") << "Capture product with PdgId " << i_genPhysConfig.pdgId() << " is not implemented" << std::endl;
+      // }
 
-      GenPhysStruct i_genPhys(i_genPhysConfig, eng_, is_poisson_rate, rate, prob);
-      _allCaptureProducts.push_back(i_genPhys);
-      if (verbosityLevel_ > 0) {
-        std::cout << "MuStopProductsGun: Adding Capture Process: " << i_genPhys.pdgId << std::endl;
-      }
-    }
+      // GenPhysStruct i_genPhys(i_genPhysConfig, eng_, is_poisson_rate, rate, prob);
+      // _allCaptureProducts.push_back(i_genPhys);
+      // if (verbosityLevel_ > 0) {
+      //   std::cout << "MuStopProductsGun: Adding Capture Process: " << i_genPhys.pdgId << std::endl;
+      // }
+    //    }
+    const auto pset = conf_.captureProducts.get<fhicl::ParameterSet>();
+    _protonGenerator = art::make_tool<MuStopParticleGenerator>(pset);
+    _protonGenerator->setEngine(eng_);
+
     for (const auto& i_genPhysConfig : conf_.decayProducts()) {
       double rate = 0;
       bool is_poisson_rate = false;
@@ -237,31 +226,6 @@ namespace mu2e {
       if (verbosityLevel_ > 0) {
         std::cout << "MuStopProductsGun: Adding Decay Process: " << i_genPhys.pdgId << std::endl;
       }
-    }
-
-    if ( doHistograms_ ) {
-      art::ServiceHandle<art::TFileService> tfs;
-      //      art::TFileDirectory tfdir = tfs->mkdir( "MuStopProductsGun");
-      _hEnergy = tfs->make<TH1F>("hEnergy", "Energy"      , 2400,   0.0,  120);
-      _hGenId  = tfs->make<TH1F>("hGenId" , "Generator ID",  100,   0.0,  100);
-      _hPdgId  = tfs->make<TH1F>("hPdgId" , "PDG ID"      ,  500,  -250, 250);
-      _hTime   = tfs->make<TH1F>("hTime"  , "Time"        ,  400,   0.0, 2000.);
-      _hZ      = tfs->make<TH1F>("hZ"     , "Z"           ,  500,  5400, 6400);
-
-      _hProcesses = tfs->make<TH1F>("hProcesses", "Process Counts", 3,0,3);
-      _hProcesses->GetXaxis()->SetBinLabel(1, "stops");
-      _hProcesses->GetXaxis()->SetBinLabel(2, "decays");
-      _hProcesses->GetXaxis()->SetBinLabel(3, "captures");
-    }
-    if ( doTree_ ) {
-      art::ServiceHandle<art::TFileService> tfs;
-      //      art::TFileDirectory tfdir = tfs->mkdir( "MuStopProductsGun");
-      _genTree = tfs->make<TTree>("genTree", "tree of generated particles");
-      _genTree->Branch("energy", &_brEnergy);
-      _genTree->Branch("genId", &_brGenId);
-      _genTree->Branch("pdgId", &_brPdgId);
-      _genTree->Branch("time", &_brTime);
-      _genTree->Branch("z", &_brZ);
     }
   }
 
@@ -280,33 +244,27 @@ namespace mu2e {
 
     std::unique_ptr<GenParticleCollection> output(new GenParticleCollection);
 
-    // Always generate stop products (e.g. stop X-rays)
-    if (doHistograms_) {
-      _hProcesses->Fill("stops", 1);
-    }
     // // Generate stopped-muon processes here in the future, if needs be
     //    for (auto& i_genPhys : _allStopProducts) {
     //      generateGenParticles(i_genPhys, output);
     //    }
+    const auto& stop = stops_.fire();
 
-    double rand = randomFlat_.fire();
-    if (rand < _decayFraction) {
-      if (doHistograms_) {
-        _hProcesses->Fill("decays", 1);
-      }
-      for (auto& i_genPhys : _allDecayProducts) {
-        generateGenParticles(i_genPhys, output);
-      }
-    }
-    else {
-      if (doHistograms_) {
-        _hProcesses->Fill("captures", 1);
-      }
-      for (auto& i_genPhys : _allCaptureProducts) {
-        generateGenParticles(i_genPhys, output);
-      }
-    }
-
+    //    double rand = randomFlat_.fire();
+    // if (rand < _decayFraction) {
+    //   for (auto& i_genPhys : _allDecayProducts) {
+    //     generateGenParticles(i_genPhys, output);
+    //   }
+    // }
+    // else {
+    _protonGenerator->generate(output, stop);
+      //      _deuteronGenerator.generate(output, stop);
+      //      for (auto& i_genPhys : _allCaptureProducts) {
+      //        generateGenParticles(i_genPhys, output);
+      //      }
+      //    }
+      std::cout << "AE: " << output->size() << std::endl;
+      //      std::cout << "AE: " << output->back() << std::endl;
     event.put(std::move(output));
   }
 
@@ -350,32 +308,6 @@ namespace mu2e {
                            fourmom,
                            stop.t);
 
-      //-----------------------------------------------------------------------------
-      // if requested, fill histograms. Currently, the only one
-      //-----------------------------------------------------------------------------
-      if (doHistograms_) {
-        _hGenId->Fill(genPhys.genId.id());
-        _hPdgId->Fill(genPhys.pdgId);
-        _hEnergy->Fill(energy);
-        _hTime->Fill(stop.t);
-        _hZ->Fill(pos.z());
-      }
-      if (doTree_) {
-        _brEnergy = energy;
-        _brGenId = genPhys.genId.id();
-        _brPdgId = genPhys.pdgId;
-        _brTime = stop.t;
-        _brZ = pos.z();
-
-        _genTree->Fill();
-
-        // Reset branches
-        _brEnergy = 0;
-        _brGenId = 0;
-        _brPdgId = 0;
-        _brTime = 0;
-        _brZ = 0;
-      }
     }
   }
   //================================================================
