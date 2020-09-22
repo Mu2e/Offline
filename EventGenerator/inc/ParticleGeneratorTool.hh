@@ -8,6 +8,7 @@
 #include "SeedService/inc/SeedService.hh"
 #include "MCDataProducts/inc/GenParticle.hh"
 #include "GeneralUtilities/inc/RSNTIO.hh"
+#include "Mu2eUtilities/inc/GenPhysConfig.hh"
 
 namespace mu2e {
 
@@ -26,6 +27,9 @@ namespace mu2e {
     }
 
     struct Config {
+      using Name=fhicl::Name;
+      using Comment=fhicl::Comment;
+      fhicl::Table<GenPhysConfig> physics{Name("physics"), Comment("physics config")};
     };
     typedef art::ToolConfigTable<Config> Parameters;
   };

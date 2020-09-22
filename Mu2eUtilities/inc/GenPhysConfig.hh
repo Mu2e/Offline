@@ -4,15 +4,15 @@
 #include "fhiclcpp/types/Atom.h"
 #include "fhiclcpp/types/OptionalAtom.h"
 
-namespace mu2e { 
+namespace mu2e {
 
   struct GenPhysConfig {
     using Name=fhicl::Name;
     using Comment=fhicl::Comment;
 
-    fhicl::Atom<int> pdgId{Name("pdgId"), Comment("PDG ID number for this particle")};
+    fhicl::Atom<int> pdgId{Name("pdgId"), Comment("PDG ID number for this particle"), 0};
     fhicl::Atom<std::string> spectrumVariable{Name("spectrumVariable"), Comment("The variable the defined spectrum is of")};
-    fhicl::Atom<std::string> genId{Name("genId"), Comment("Generator ID string for this physics")};
+    fhicl::Atom<std::string> genId{Name("genId"), Comment("Generator ID string for this physics"), "unknown"};
     fhicl::Atom<std::string> spectrumShape{Name("spectrumShape"), Comment("Shape of the spectrum")};
     fhicl::OptionalAtom<std::string> spectrumFileName{Name("spectrumFileName"), Comment("File name to get spectrum from")};
 
