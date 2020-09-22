@@ -4,6 +4,7 @@
 # original author: Dave Brown, LBNL
 #
 #include "JobConfig/primary/prolog.fcl"
+
 process_name: CeEndpoint
 
 source: { module_type : EmptyEvent }
@@ -14,10 +15,12 @@ physics : {
     @table::Primary.producers
   }
   filters: { @table::Primary.filters }
-  analyzers: { @table::Primary.analyzers }
+  analyzers: { 
+      @table::Primary.analyzers 
+  }
   TriggerPath : @local::Primary.TriggerPath
   EndPath : @local::Primary.EndPath
-}
+  }
 outputs : { 
   Output :@local::Primary.Output
 }

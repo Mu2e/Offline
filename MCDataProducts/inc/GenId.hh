@@ -44,8 +44,8 @@ namespace mu2e {
       MARS, StoppedParticleReactionGun, bremElectronGun, muonicXRayGun, //30
       fromSimParticleStartPoint, fromSimParticleCompact, StoppedParticleG4Gun, //33
       CaloCalib, InFlightParticleSampler, muplusDecayGun, StoppedMuonXRayGammaRayGun, //37
-      cosmicCRY,  pbarFlat, fromAscii, ExternalRMC, InternalRMC, CeLeadingLog, cosmicCORSIKA, Mu2eX,//44
-      lastEnum //45
+      cosmicCRY,  pbarFlat, fromAscii, ExternalRMC, InternalRMC, CeLeadingLog, cosmicCORSIKA, Mu2eX,//45
+      lastEnum //46
     };
 
     // Keep this in sync with the enum. Used in GenId.cc

@@ -94,7 +94,10 @@ namespace mu2e {
     TH2F* _hMeeVsE;
     TH1F* _hMeeOverE;                   // M(ee)/E(gamma)
     TH1F* _hy;                          // splitting function
-
+    TTree*  _Ntup;
+    Float_t _TMome;
+    Float_t _TMomp;
+    Int_t   _nEv = 0;
   public:
     explicit RPCGun(const fhicl::ParameterSet& pset);
     virtual void beginRun(art::Run&   r) override;
@@ -151,6 +154,10 @@ namespace mu2e {
           _hMeeVsE   = tfdir.make<TH2F>("hMeeVsE"  , "M(e+e-) vs E"       , 200,0.,200.,200,0,200);
           _hMeeOverE = tfdir.make<TH1F>("hMeeOverE", "M(e+e-)/E "         , 200, 0.,1);
           _hy        = tfdir.make<TH1F>("hy"       , "y = (ee-ep)/|pe+pp|", 200,-1.,1.);
+          _Ntup  = tfs->make<TTree>("GenTree", "GenTree");
+          _Ntup->Branch("nEv", &_nEv , "_nEv/I");	    
+          _Ntup->Branch("TMome", &_TMome , "TMome/F");
+          _Ntup->Branch("TMomp", &_TMomp , "TMomp/F");
         }
       }
 
@@ -237,7 +244,8 @@ namespace mu2e {
       if(doHistograms_){
         _hElecMom ->Fill(mome.vect().mag());
         _hPosiMom ->Fill(momp.vect().mag());
-
+        _TMome = mome.vect().mag();
+        _TMomp = momp.vect().mag();
         double mee = (mome+momp).m();
         _hMee->Fill(mee);
         _hMeeVsE->Fill(energy,mee);
@@ -248,6 +256,8 @@ namespace mu2e {
 
         _hy->Fill(y);
       }
+      _Ntup->Fill();
+      _nEv++;
     }
 
     // Calculate survival probability
