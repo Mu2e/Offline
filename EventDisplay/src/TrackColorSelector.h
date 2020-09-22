@@ -1,9 +1,6 @@
 //
 // Class assigns colors to tracks, depending on the number of track groups selected.
 //
-// $Id: TrackColorSelector.h,v 1.3 2014/05/29 19:55:37 ehrlich Exp $
-// $Author: ehrlich $
-// $Date: 2014/05/29 19:55:37 $
 //
 // Original author Ralf Ehrlich
 //

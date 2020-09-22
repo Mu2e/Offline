@@ -1,9 +1,6 @@
 //
 // Free function to create Muon Beam Stop and some elements of the Cryostat in G4
 //
-// $Id: constructMBS.cc,v 1.18 2013/08/21 17:35:17 knoepfel Exp $
-// $Author: knoepfel $
-// $Date: 2013/08/21 17:35:17 $
 //
 // Original author KLG
 //
@@ -695,44 +692,37 @@ namespace mu2e {
         CLV2OffsetInMu2eZ - zhl << ", " << CLV2OffsetInMu2eZ + zhl << endl;
     }
     
-
-    if ( MBSversion == 3 || MBSversion == 5) {
-
-      // CLV2 Absorber :  Variable thickness plug in MBS axial hole
-      if (_config.getBool("mbs.CLV2.absorber.build",false)){
+    // CLV2 Absorber :  Variable thickness plug in MBS axial hole
+    if (_config.getBool("mbs.CLV2.absorber.build",false)){
       
-        CLHEP::Hep3Vector CLV2AbsOffsetInMu2e = pCLV2ABSParams.originInMu2e();
-        // now local offset in mother volume
-        CLHEP::Hep3Vector CLV2AbsOffset = CLV2AbsOffsetInMu2e - MBSMOffsetInMu2e;
+      CLHEP::Hep3Vector CLV2AbsOffsetInMu2e = pCLV2ABSParams.originInMu2e();
+      // now local offset in mother volume
+      CLHEP::Hep3Vector CLV2AbsOffset = CLV2AbsOffsetInMu2e - MBSMOffsetInMu2e;
         
-        VolumeInfo CLV2AbsorberInfo  = nestTubs("CLV2Absorber",
-                                        pCLV2ABSParams.getTubsParams(),
-                                        findMaterialOrThrow(pCLV2ABSParams.materialName()),
-                                        0,
-                                        CLV2AbsOffset,
-                                        //detSolDownstreamVacInfo,
-                                        MBSMotherInfo,
-                                        0,
-                                        MBSisVisible,
-                                        orange,
-                                        MBSisSolid,
-                                        forceAuxEdgeVisible,
-                                        placePV,
-                                        doSurfaceCheck
-                                        );
+      VolumeInfo CLV2AbsorberInfo  = nestTubs("CLV2Absorber",
+					      pCLV2ABSParams.getTubsParams(),
+					      findMaterialOrThrow(pCLV2ABSParams.materialName()),
+					      0,
+					      CLV2AbsOffset,
+					      //detSolDownstreamVacInfo,
+					      MBSMotherInfo,
+					      0,
+					      MBSisVisible,
+					      orange,
+					      MBSisSolid,
+					      forceAuxEdgeVisible,
+					      placePV,
+					      doSurfaceCheck
+					      );
         
-        if ( verbosityLevel > 0) {
-          cout << __func__ << " CLV2AbsOffsetInMu2e                 : " << CLV2AbsOffsetInMu2e << endl;
-          cout << __func__ << " CLV2AbsOffsetInMBS                  : " << CLV2AbsOffset << endl;       
-          double zhl         = static_cast<G4Tubs*>(CLV2AbsorberInfo.solid)->GetZHalfLength();
-          double CLV2AbsOffsetInMu2eZ = CLV2AbsOffsetInMu2e[CLHEP::Hep3Vector::Z];
-          cout << __func__ << " CLV2Absorber         Z extent in Mu2e    : " <<
+      if ( verbosityLevel > 0) {
+	cout << __func__ << " CLV2AbsOffsetInMu2e                 : " << CLV2AbsOffsetInMu2e << endl;
+	cout << __func__ << " CLV2AbsOffsetInMBS                  : " << CLV2AbsOffset << endl;       
+	double zhl         = static_cast<G4Tubs*>(CLV2AbsorberInfo.solid)->GetZHalfLength();
+	double CLV2AbsOffsetInMu2eZ = CLV2AbsOffsetInMu2e[CLHEP::Hep3Vector::Z];
+	cout << __func__ << " CLV2Absorber         Z extent in Mu2e    : " <<
           CLV2AbsOffsetInMu2eZ - zhl << ", " << CLV2AbsOffsetInMu2eZ + zhl << endl;
-        }        
-        
-        
-        
-      }
+      }        
     }
 
     //Adding a shield at the front of the MBS to protect the calorimeter

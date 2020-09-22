@@ -1,9 +1,6 @@
 //
 // Decide which physics list to use.
 //
-// $Id: physicsListDecider.cc,v 1.18 2014/03/04 04:26:36 genser Exp $
-// $Author: genser $
-// $Date: 2014/03/04 04:26:36 $
 //
 // Original author Rob Kutschke
 //

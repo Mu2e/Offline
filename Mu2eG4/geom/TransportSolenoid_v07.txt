@@ -7,7 +7,7 @@ double pbar.halfLength     = 0.0254; //thin
 string pbar.materialName   = "G4_Ti";
 string pbarwedge.wedgeMaterial   = "A1100";
 int    pbarwedge.nStrips              = 4;
-vector<double> pbarwedge.stripThicknesses = {0.0635,0.0635,0.0635,0.0635}; // mm
+vector<double> pbarwedge.stripThicknesses = {0.127,0.127,0.127,0.127}; // mm
 vector<double> pbarwedge.stripHeights = {48, 88, 128,168}; // mm
 
 // This tells emacs to view this file in c++ mode.

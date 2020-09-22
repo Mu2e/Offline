@@ -1,9 +1,6 @@
 #ifndef MCDataProducts_ExtMonFNALRecoClusterTruthAssn_hh
 #define MCDataProducts_ExtMonFNALRecoClusterTruthAssn_hh
 //
-// $Id: ExtMonFNALRecoClusterTruthAssn.hh,v 1.1 2012/09/19 03:36:13 gandr Exp $
-// $Author: gandr $
-// $Date: 2012/09/19 03:36:13 $
 //
 // Original author Andrei Gaponenko
 //

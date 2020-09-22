@@ -1,9 +1,6 @@
 //
 // Root c++ function to test MakeStrawHit_module
 // 
-// $Id: strawHits.C,v 1.4 2012/08/27 22:31:40 genser Exp $
-// $Author: genser $
-// $Date: 2012/08/27 22:31:40 $
 // 
 // Original author KLG somewat based on Rob Kutschke's example
 //

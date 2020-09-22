@@ -1,8 +1,5 @@
 //
 //
-//  $Id: TrkExtMCHits.cc,v 1.3 2013/05/16 18:23:39 mjlee Exp $
-//  $Author: mjlee $
-//  $Date: 2013/05/16 18:23:39 $
 //
 //  Original author MyeongJae Lee
 //

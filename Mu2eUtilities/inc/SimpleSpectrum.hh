@@ -1,8 +1,5 @@
 #ifndef Mu2eUtilities_SimpleSpectrum_hh
 #define Mu2eUtilities_SimpleSpectrum_hh
-// $Id: SimpleSpectrum.hh,v 1.5 2014/02/25 17:14:10 knoepfel Exp $
-// $Author: knoepfel $
-// $Date: 2014/02/25 17:14:10 $
 //
 // Original Author: Kyle Knoepfel
 //
@@ -21,13 +18,14 @@
 
 // C++ includes
 #include <map>
+#include <string>
 #include <utility>
 #include <vector>
 
+#include "GeneralUtilities/inc/EnumToStringSparse.hh"
 // Mu2e includes
 #include "GlobalConstantsService/inc/GlobalConstantsHandle.hh"
 #include "GlobalConstantsService/inc/PhysicsParams.hh"
-#include "GeneralUtilities/inc/EnumToStringSparse.hh"
 
 namespace mu2e {
 

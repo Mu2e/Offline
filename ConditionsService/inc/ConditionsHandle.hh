@@ -4,9 +4,6 @@
 //
 // A safe pointer to a ConditionsEntity.
 //
-// $Id: ConditionsHandle.hh,v 1.7 2014/01/18 17:31:59 brownd Exp $
-// $Author: brownd $
-// $Date: 2014/01/18 17:31:59 $
 //
 // Original author Rob Kutschke
 //

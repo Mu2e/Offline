@@ -8,9 +8,6 @@
 // the conversion from digital to physical units and the waveform frequency and
 // phase are stored in conditions objects.
 //
-// $Id: StrawDigi.hh,v 1.3 2013/12/12 19:07:56 brownd Exp $
-// $Author: brownd $
-// $Date: 2013/12/12 19:07:56 $
 //
 // Original author David Brown, LBNL
 //

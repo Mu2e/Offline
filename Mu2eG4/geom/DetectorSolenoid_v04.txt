@@ -14,6 +14,8 @@
 // rTorus of 2929 mm, and TS5 half-length of 500 mm, the start of the
 // DS is at 3239 mm, consistent with CDR.
 
+// Version 04 FROZEN: M. MacKenzie, May 2020
+
 double ds.rIn.in             =  950.;
 double ds.rIn.out            =  969.05; //970.;
 double ds.rOut.in            = 1303.;

@@ -1,9 +1,6 @@
 //
 // Class which displays GeoVolumes with a box (used e.g. by the Cube class). It is inherited from ROOT's TGeoVolume and the ComponentInfo class which stores specific information for this support structure. The class' constructure creates a TGeoBox, which is put into the TGeoVolume. The context menu is overwritten with a menu item allowing the user to display information for this vane.
 //
-// $Id: EventDisplayGeoVolumeBox.h,v 1.7 2013/03/15 16:20:00 kutschke Exp $
-// $Author: kutschke $
-// $Date: 2013/03/15 16:20:00 $
 //
 // Original author Ralf Ehrlich
 //

@@ -34,6 +34,8 @@ namespace mu2e {
   class Mu2eG4Study;
   class Mu2eHall;
   class G4GeometryOptions;
+  class ProductionTarget;
+  class ProductionTargetMu2eII;
 
   class GeometryService {
 public:
@@ -86,6 +88,7 @@ private:
 
     // Print final config file after all replacements.
     bool _printConfig;
+    bool _printTopLevel;
 
     // The object that parses run-time configuration file.
     std::unique_ptr<SimpleConfig> _config;

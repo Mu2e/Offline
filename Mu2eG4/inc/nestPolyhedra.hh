@@ -3,9 +3,6 @@
 //
 // Free function to create and place a new G4Polyhedra, place inside a logical volume.
 //
-// $Id: nestPolyhedra.hh,v 1.3 2014/09/19 19:14:55 knoepfel Exp $
-// $Author: knoepfel $
-// $Date: 2014/09/19 19:14:55 $
 //
 // Original author Rob Kutschke
 //

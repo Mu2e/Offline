@@ -4,9 +4,6 @@
 // Choose a suitable range for histogramming a random variate distributed
 // according to a mu2e::PoissonOrFixed distribution.
 //
-// $Id: PoissonHistogramBinning.hh,v 1.1 2012/02/14 17:09:54 kutschke Exp $
-// $Author: kutschke $
-// $Date: 2012/02/14 17:09:54 $
 //
 // Contact author Rob Kutschke
 //

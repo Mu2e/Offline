@@ -1,7 +1,4 @@
 //
-// $Id: TrackCaloIntersectionMVA_module.cc,v 1.20 2014/09/20 18:04:22 murat Exp $
-// $Author: murat $
-// $Date: 2014/09/20 18:04:22 $
 //
 // Original author B. Echenard
 //

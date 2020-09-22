@@ -1,9 +1,6 @@
 //
 // A model for the Tracker supports described in Mu2e-doc-888-v5 (current as of Dec, 2012).
 //
-//  $Id: SupportStructure.cc,v 1.3 2014/01/06 20:50:40 kutschke Exp $
-//  $Author: kutschke $
-//  $Date: 2014/01/06 20:50:40 $
 //
 //  Original author Rob Kutschke
 //

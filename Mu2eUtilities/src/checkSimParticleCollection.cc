@@ -1,21 +1,20 @@
 //
 // Within a SimParticleColleciton, check that all mother/daughter pointers are self-consistent.
 //
-// $Id: checkSimParticleCollection.cc,v 1.1 2011/12/16 23:13:50 kutschke Exp $
-// $Author: kutschke $
-// $Date: 2011/12/16 23:13:50 $
 //
 // Contact person Rob Kutschke
 
-// Mu2e includes
-#include "Mu2eUtilities/inc/checkSimParticleCollection.hh"
-#include "MCDataProducts/inc/SimParticleCollection.hh"
+#include <cstddef>
+#include <utility>
+#include <vector>
 
+#include "cetlib/map_vector.h"
+#include "cetlib_except/exception.h"
 // art includes
 #include "messagefacility/MessageLogger/MessageLogger.h"
-#include "cetlib_except/exception.h"
 
-#include <vector>
+// Mu2e includes
+#include "Mu2eUtilities/inc/checkSimParticleCollection.hh"
 
 using namespace std;
 

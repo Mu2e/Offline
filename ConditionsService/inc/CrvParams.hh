@@ -3,9 +3,6 @@
 //
 // Some parameters of the CRV.
 //
-// $Id: AcceleratorParams.hh,v 1.8 2014/04/14 18:12:55 knoepfel Exp $
-// $Author: knoepfel $
-// $Date: 2014/04/14 18:12:55 $
 //
 // Original author Rob Kutschke
 //

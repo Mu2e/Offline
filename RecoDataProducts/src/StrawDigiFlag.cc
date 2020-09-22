@@ -1,9 +1,6 @@
 //
 // Class to describe flag bits for StrawDigis
 //
-// $Id: StrawDigiFlag.cc,v 1.4 2013/04/04 01:08:20 brownd Exp $
-// $Author: brownd $
-// $Date: 2013/04/04 01:08:20 $
 //
 // Original author David Brown
 //

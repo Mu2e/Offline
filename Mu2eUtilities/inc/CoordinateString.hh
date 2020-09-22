@@ -1,9 +1,6 @@
 #ifndef Mu2eUtilities_CoordinateString_hh
 #define Mu2eUtilities_CoordinateString_hh
 //
-// $Id: CoordinateString.hh,v 1.2 2014/08/04 17:15:22 knoepfel Exp $
-// $Author: knoepfel $
-// $Date: 2014/08/04 17:15:22 $
 //
 // Original author: Kyle Knoepfel
 
@@ -44,6 +41,7 @@
 #include <fstream>
 #include <iostream>
 #include <iterator>
+#include <string>
 #include <utility>
 
 // Framework includes

@@ -4,9 +4,6 @@
 // Construct and return an MECOStyleProtonAbsorber.
 //
 //
-// $Id: MECOStyleProtonAbsorberMaker.hh,v 1.5 2013/05/31 20:04:27 gandr Exp $
-// $Author: gandr $
-// $Date: 2013/05/31 20:04:27 $
 //
 // Original author MyeongJae Lee
 //

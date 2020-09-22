@@ -2,9 +2,6 @@
 #define Mu2eUtilities_TrackTool_hh
 //
 //
-// $Id: TrackTool.hh,v 1.4 2011/05/20 20:18:23 wb Exp $
-// $Author: wb $
-// $Date: 2011/05/20 20:18:23 $
 //
 // Original author Rob Kutschke
 //

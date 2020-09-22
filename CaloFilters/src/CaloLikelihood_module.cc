@@ -1,9 +1,6 @@
 //
 // A Filter module aimed to select events using a Likelihood defined with calorimeter cluster info
 //
-// $Id: $
-// $Author: $
-// $Date: $
 //
 // Original author E. Castiglia, G. Pezzullo
 //

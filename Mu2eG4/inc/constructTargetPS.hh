@@ -3,9 +3,6 @@
 //
 // Free function to create Production Target
 //
-// $Id: constructTargetPS.hh,v 1.1 2013/09/06 19:39:13 tassiell Exp $
-// $Author: tassiell $
-// $Date: 2013/09/06 19:39:13 $
 //
 // Original author Giovanni F. Tassielli
 //
@@ -20,7 +17,8 @@ namespace mu2e {
   class SimpleConfig;
 
   void constructTargetPS(VolumeInfo const & parent, SimpleConfig const & _config);
-
+  void constructMu2eIIConveyor(VolumeInfo const & parent, SimpleConfig const & _config);
+  void constructMu2eIIRotating(VolumeInfo const & parent, SimpleConfig const & _config);
 }
 
 #endif /* Mu2eG4_constructTargetPS_hh */

@@ -1,7 +1,4 @@
 //
-// $Id: CaloCluster.cc,v 1.3 2012/09/06 19:58:26 kutschke Exp $
-// $Author: kutschke $
-// $Date: 2012/09/06 19:58:26 $
 //
 // Original author G. Pezzullo
 //

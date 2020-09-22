@@ -1,9 +1,6 @@
 //
 // Material description for TrkExt
 //
-//  $Id: TrkExtMaterial.hh,v 1.3 2013/03/15 19:57:44 russo Exp $
-//  $Author: russo $
-//  $Date: 2013/03/15 19:57:44 $
 //
 //  Original author MyeongJae Lee
 //

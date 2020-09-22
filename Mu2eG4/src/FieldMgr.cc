@@ -1,9 +1,6 @@
 //
 // Create a G4FieldManager object.
 //
-// $Id: FieldMgr.cc,v 1.4 2013/03/15 19:03:20 kutschke Exp $
-// $Author: kutschke $
-// $Date: 2013/03/15 19:03:20 $
 //
 // Original author Rob Kutschke
 //

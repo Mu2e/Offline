@@ -3,9 +3,6 @@
 //
 // Class to construct and return PSVacuum
 //
-// $Id: PSVacuumMaker.hh,v 1.2 2013/03/15 15:52:05 kutschke Exp $
-// $Author: kutschke $
-// $Date: 2013/03/15 15:52:05 $
 //
 // Original author Andrei Gaponenko
 //

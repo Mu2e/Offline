@@ -78,12 +78,12 @@ namespace mu2e {
     // OK, so in version 1, Saddles were just extruded boxes that,
     // when taken as a whole, looked like a bunch of saddles and
     // stands for (mainly) cryostats.
-    // In version 2, Saddles are logical structures, each of which looks
+    // In version 2,3, Saddles are logical structures, each of which looks
     // like an individual saddle or stand.  Each saddle contains
     // an extruded box with holes and/or notches.
     //================================================================    
 
-    if ( saddleSet->getVersion() <= 2 ) {
+    if ( saddleSet->getVersion() <= 3 ) {
       //----------------------------------------------------------------
       // Saddle Boxes <=====
       //----------------------------------------------------------------
@@ -314,7 +314,7 @@ namespace mu2e {
 	
 	} // end of for loop over saddles
     
-    } else { // end of version 1, 2.  At this time, other versions are not
+    } else { // end of version 1, 2, 3.  At this time, other versions are not
       // implemented.
       std::cout << "Requested Saddle version " << saddleSet->getVersion() << ".  Only versions 1 and 2 currently supported." << std::endl;
     }  

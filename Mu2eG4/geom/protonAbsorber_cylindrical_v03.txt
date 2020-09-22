@@ -1,0 +1,94 @@
+//
+// Minor updates to proton absorber parameters
+#include "Mu2eG4/geom/protonAbsorber_cylindrical_v02.txt"
+
+//Increment version number
+int protonabsorber.version = 3;
+int protonabsorber.verbosityLevel = 0;
+
+//IPA updates
+
+string protonabsorber.materialName = "Polyethylene090";
+double protonabsorber.OutRadius1   =  300.5; //design is 300 mm inner radius, so add thickness to outer here
+double protonabsorber.OutRadius0   =  300.5;
+double protonabsorber.thickness    =    0.5;
+
+double protonabsorber.distFromTargetEnd = 625.; //mu2e z positions are 6901-7901 mm
+double protonabsorber.halfLength   = 500.0;
+
+double protonabsorber.ipa.wireRadius    = 0.05388; // 3-mil diameter wire, but double area (sqrt(2) radius) for twisted return
+string protonabsorber.ipa.wireMaterial  = "ST_Wires"; //same W + Au plating wires as stopping target
+int    protonabsorber.ipa.nWiresPerSet  = 3; //only 3 wires per side
+double protonabsorber.ipa.wireAngleOffset = 30.;
+
+//OPA updates
+int protonabsorber.outerPAversion = 3;
+
+// oPA Supports are rings that support and "hold together" the
+// OPA.  Support rings and bars for the IPA are also included here
+string protonabsorber.oPASupportMaterialName = "StainlessSteel316";
+int    protonabsorber.oPASupportNSupportRing = 6;
+// The original model expected the third support ring to hold the target supports and the second ring to need notches to accommodate the support arms.
+// We have added a new ring, so I put it at the end, even though in x it comes
+// between original rings 2 and 3.
+vector<double> protonabsorber.oPASupportInnerRadii = {506.3, 564.4, 665.0, 661.4 , 720.  , 665.0}; //index 2 and 5 are 378.4 mm + 2*half lengths apart
+vector<double> protonabsorber.oPASupportOuterRadii = {606.3, 714.4, 685.0, 761.25, 819.35, 685.0};
+vector<double> protonabsorber.oPASupportHalflength = { 12.7,  12.7,  4.76,  12.7 ,  12.7 ,  4.76};
+//upstream opa to upstream ends: 415.772, 1315.772, 2815.772, 3715.772
+vector<double> protonabsorber.oPASupportZMidpoints = { 4683,  5583,  6183,  7083,  7983,  5883}; //OPA is from 4280-8530
+vector<double> protonabsorber.oPASupportHasExtra = { 1.0, 1.0,-1.0,-1.0,-1.0,-1.0};
+vector<double> protonabsorber.oPASupportExtraRad = { 180.0,50.0,0.,0.0,0.0,0.0};
+vector<double> protonabsorber.oPASupportExtraDPhi = {80.,80.,0.,0.,0,0 };
+double         protonabsorber.oPASupportNotchWidth = 130.;
+double         protonabsorber.oPASupportNotchHeight = 110.;
+
+vector<string> protonabsorber.oPASupportMaterials = { "StainlessSteel316"
+						     ,"StainlessSteel316"
+						     ,"StainlessSteel316"
+						     ,"StainlessSteel316"
+						     ,"StainlessSteel316"
+						     ,"StainlessSteel316"};
+//slats for the stopping target supports
+int            protonabsorber.nOPASupportSlats             = 3;
+vector<double> protonabsorber.oPASupportSlatAngles         = {0.,120.,240.}; // degrees
+vector<int>    protonabsorber.oPASupportSlatTypes          = {0 ,  1 ,  0 };
+int            protonabsorber.nOPASupportSlatTypes         = 2;
+vector<string> protonabsorber.oPASupportSlatMaterials      = { "StainlessSteel316", "StainlessSteel316"};
+vector<string> protonabsorber.oPASupportSlatFillMaterials  = { "BronzeC642"       , "G4_Al"            };
+vector<double> protonabsorber.oPASupportSlatHeights        = {  45. ,   40.  }; // mm
+vector<double> protonabsorber.oPASupportSlatWidths         = {  127.,   35.  }; // mm
+vector<double> protonabsorber.oPASupportSlatLengths        = {1106.7, 1110.  }; // mm
+vector<double> protonabsorber.oPASupportSlatSideThicknesses= {  19. ,    5.08}; // mm
+vector<double> protonabsorber.oPASupportSlatTopThicknesses = {  12.7,    3.3 }; // mm
+vector<double> protonabsorber.oPASupportSlatFillParameter1 = {  12.7,    6.35}; //type 0: height   type 1: rod radius
+vector<double> protonabsorber.oPASupportSlatFillParameter2 = {  15.9, 1106.7 }; //type 0: width    type 1: rod length
+vector<double> protonabsorber.oPASupportSlatFillParameter3 = {1000. ,    5.  }; //type 0: length   type 1: rod 1 y offset
+vector<double> protonabsorber.oPASupportSlatFillParameter4 = { -15. ,   -5.  }; //type 0: x offset type 1: rod 2 y offset
+//parameters for the weights tensioning the stopping target wires
+double         protonabsorber.oPASTWeightBox.height = 38.1;
+double         protonabsorber.oPASTWeightBox.width  = 76.2;
+double         protonabsorber.oPASTWeightBox.length = 1150.;
+double         protonabsorber.oPASTWeightBox.radius = 660.;
+double         protonabsorber.oPASTWeightBox.angle  = -34.;
+double         protonabsorber.oPASTWeight.height    = 19.05;
+double         protonabsorber.oPASTWeight.width     = 15.88;
+string         protonabsorber.oPASTWeight.material  = "BronzeC642";
+
+//cross supports for the OPA support rings/stopping target support rings
+//see F10094560 drawing
+int            protonabsorber.nCrossSupports          = 3;
+vector<double> protonabsorber.crossSupportThicknesses = {  9.95,  9.95,  9.95}; //bar thickness in phi/theta hat
+vector<double> protonabsorber.crossSupportWidth       = { 19.05, 19.05, 19.05}; //bar thickness in r hat
+vector<int>    protonabsorber.crossSupportOneIndex    = {  2   ,  2   ,  2   }; //index of OPA support ring
+vector<int>    protonabsorber.crossSupportTwoIndex    = {  5   ,  5   ,  5   }; //index of OPA support ring
+vector<double> protonabsorber.crossSupportPhis        = { -20.  ,100.  ,220.  }; //phi about ring
+vector<double> protonabsorber.crossSupportHeights     = {228.6 ,228.6 ,228.6 }; //height of box, width of box from ring separation
+vector<double> protonabsorber.crossSupportRadii       = {665.  ,665.  ,665.  }; //radius of the support center
+string         protonabsorber.crossSupportMaterial    = "StainlessSteel316";
+
+
+
+// This tells emacs to view this file in c++ mode.
+// Local Variables:
+// mode:c++
+// End:
