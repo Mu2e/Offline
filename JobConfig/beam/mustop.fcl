@@ -8,7 +8,7 @@ BEGIN_PROLOG
 
 genPhys_dio : {     
     pdgId : 11
-    genId : StoppedParticleReactionGun
+    genId : MuStopGeneratorDecay
     spectrumShape: Czarnecki
     spectrumVariable: totalEnergy
     elow: 1.  // MeV
@@ -17,15 +17,21 @@ genPhys_dio : {
 
 genPhys_cap_proton : {
     pdgId : 2212
-    genId : "StoppedParticleReactionGun"
+    genId : MuStopGeneratorCapture
     spectrumShape: ejectedProtons
     spectrumVariable: kineticEnergy
     nbins: 1000
 }
 
+proton_gen : { tool_type : MuStopProtonGenerator
+	       spectrumShape : ejectedProtons 
+	       spectrumVariable : kineticEnergy
+	       nbins: 1000
+}
+
 genPhys_cap_deuteron: {
     pdgId : 1000010020 # deuteron
-    genId : "StoppedParticleReactionGun"
+    genId : MuStopGeneratorCapture
     spectrumShape: ejectedProtons # same spectrum for protons and deuterons, as in the MECO note
     spectrumVariable: kineticEnergy
     nbins: 1000
@@ -33,7 +39,7 @@ genPhys_cap_deuteron: {
 
 genPhys_cap_neutron: {
     pdgId : 2112
-    genId : StoppedParticleReactionGun
+    genId : MuStopGeneratorCapture
     spectrumShape: tabulated
     spectrumFileName: "ConditionsService/data/neutronSpectrum.txt"
     spectrumVariable: kineticEnergy
@@ -41,14 +47,14 @@ genPhys_cap_neutron: {
 
 genPhys_cap_gamma: {
     pdgId : 22
-    genId : StoppedParticleReactionGun
+    genId : MuStopGeneratorCapture
     spectrumVariable : kineticEnergy
     spectrumShape : CaptureGamma
 }    
 
 genPhys_cap_photon : {
     pdgId : 22
-    genId : StoppedParticleReactionGun
+    genId : MuStopGeneratorCapture
     spectrumShape: flat
     spectrumVariable: totalEnergy
     elow: 0.0 // MeV
@@ -68,15 +74,21 @@ physics.producers.generate: {
    module_type: MuStopProductsGun
    verbosityLevel : 1
    stops : @local::mu2e.tgtMuonStops
-   captureProducts : [ @local::genPhys_cap_proton, 
-   		       @local::genPhys_cap_deuteron, 
-		       @local::genPhys_cap_neutron,
-		       @local::genPhys_cap_gamma,
-		       @local::genPhys_cap_photon
-		     ]
-   decayProducts : [ @local::genPhys_dio ]
-   doTree : true
+   captureProducts : @local::proton_gen #[ @local::proton_gen # @local::genPhys_cap_proton #, 
+#   		       @local::genPhys_cap_deuteron, 
+#		       @local::genPhys_cap_neutron,
+#		       @local::genPhys_cap_gamma,
+#		       @local::genPhys_cap_photon
+		     #]
+   decayProducts : [ ] #@local::genPhys_dio ]
 }
+
+physics.analyzers.genAnalyzer : { module_type : GenParticlesAnalyzer
+			      	  inputs : "generate"
+}
+
+physics.ana : [ genAnalyzer ]
+physics.end_paths : [ @sequence::physics.end_paths, ana ]
 
 services.TFileService.fileName: "out/nts.owner.mustop.version.sequencer.root"
 outputs.detectorOutput.fileName: "out/sim.owner.mustop-TrkCal.version.sequencer.art"
