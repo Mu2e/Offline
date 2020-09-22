@@ -10,23 +10,6 @@ CosmicFilter: {
     maxZ0                 : 1000.
 }
 
-TrkCombine: {
-	module_type : TrkCombine
-  KalRepPtrCollection :  ["KFFDeM","KFFDeP"]
-}
-
-GenAna : {
-   module_type : GenAna
-   GenParticleCollection : "generate" 
-}
-
-Ana : {
-    analyzers : {
-      TrkCombine : @local::TrkCombine
-      GenAna : @local::GenAna
-    }
-  }
-  
 PrintStrawHits : {
     module_type       : PrintStrawHits
     makeSHModuleLabel : "makeSH"

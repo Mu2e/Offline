@@ -2,9 +2,6 @@
 # Print some information about the Tracker.
 #
 #
-# $Id: printTrackerGeom.fcl,v 1.1 2013/12/20 20:05:53 kutschke Exp $
-# $Author: kutschke $
-# $Date: 2013/12/20 20:05:53 $
 
 #include "fcl/minimalMessageService.fcl"
 #include "fcl/standardProducers.fcl"
