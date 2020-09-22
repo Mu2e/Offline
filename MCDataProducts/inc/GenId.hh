@@ -45,7 +45,7 @@ namespace mu2e {
       fromSimParticleStartPoint, fromSimParticleCompact, StoppedParticleG4Gun, //33
       CaloCalib, InFlightParticleSampler, muplusDecayGun, StoppedMuonXRayGammaRayGun, //37
       cosmicCRY,  pbarFlat, fromAscii, ExternalRMC, InternalRMC, CeLeadingLog, cosmicCORSIKA, //44
-      MuCapProtonGenerator, MuCapDeuteronGenerator, // 46
+      MuCapProtonGenTool, MuCapDeuteronGenTool, DIOGenTool, // 47
       lastEnum //47
     };
 
@@ -61,7 +61,7 @@ namespace mu2e {
       "MARS", "StoppedParticleReactionGun","bremElectronGun", "muonicXRayGun", \
       "fromSimParticleStartPoint", "fromSimParticleCompact", "StoppedParticleG4Gun", \
       "CaloCalib", "InFlightParticleSampler","muplusDecayGun", "StoppedMuonXRayGammaRayGun", \
-      "CosmicCRY", "pbarFlat","fromAscii","ExternalRMC","InternalRMC","CeLeadingLog", "CosmicCORSIKA", "MuCapProtonGenerator", "MuCapDeuteronGenerator"
+      "CosmicCRY", "pbarFlat","fromAscii","ExternalRMC","InternalRMC","CeLeadingLog", "CosmicCORSIKA", "MuCapProtonGenTool", "MuCapDeuteronGenTool", "DIOGenTool"
 
   public:
 

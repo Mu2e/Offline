@@ -6,27 +6,33 @@
 
 BEGIN_PROLOG
 
-genPhys_dio : {     
-    pdgId : 11
-    genId : MuStopGeneratorDecay
-    spectrumShape: Czarnecki
-    spectrumVariable: totalEnergy
-    elow: 1.  // MeV
-    spectrumResolution: 0.1 // MeV
+dioGenTool : {
+  tool_type : DIOGenerator
+  physics : {
+    spectrumShape : Czarnecki
+    spectrumVariable : totalEnergy
+    pdgId : 11 # Czarnecki option in BinnedSpecturm needs pdgId here
+    elow : 1. //MeV
+    spectrumResolution : 0.1 //MeV
+  }
 }
 
 muonCaptureProtonGenTool : { 
   tool_type : MuCapProtonGenerator
-  spectrumShape : ejectedProtons 
-  spectrumVariable : kineticEnergy
-  nbins: 1000
+  physics : {
+    spectrumShape : ejectedProtons 
+    spectrumVariable : kineticEnergy
+    nbins: 1000
+  }
 }
 
 muonCaptureDeuteronGenTool : { 
   tool_type : MuCapDeuteronGenerator
-  spectrumShape : ejectedProtons 
-  spectrumVariable : kineticEnergy
-  nbins: 1000
+  physics : {
+    spectrumShape : ejectedProtons 
+    spectrumVariable : kineticEnergy
+    nbins: 1000
+  }
 }
 
 genPhys_cap_neutron: {
@@ -68,13 +74,8 @@ physics.producers.generate: {
    stops : @local::mu2e.tgtMuonStops
    captureProducts : [ @local::muonCaptureProtonGenTool,
    		       @local::muonCaptureDeuteronGenTool
-   		     ] #[ @local::proton_gen # @local::genPhys_cap_proton #, 
-#   		       @local::genPhys_cap_deuteron, 
-#		       @local::genPhys_cap_neutron,
-#		       @local::genPhys_cap_gamma,
-#		       @local::genPhys_cap_photon
-		     #]
-   decayProducts : [ ] #@local::genPhys_dio ]
+   		     ]
+   decayProducts : [ @local::dioGenTool ] 
 }
 
 physics.analyzers.genAnalyzer : { module_type : GenParticlesAnalyzer

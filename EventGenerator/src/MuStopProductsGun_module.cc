@@ -62,9 +62,8 @@ namespace mu2e {
       using Name=fhicl::Name;
       using Comment=fhicl::Comment;
 
-      //      fhicl::Sequence< fhicl::Table<GenPhysConfig> > stopProducts{Name("stopProducts"), Comment("Products coincident with stopped muon (i.e. generated every event)")};
       fhicl::DelegatedParameter captureProducts{Name("captureProducts"), Comment("Products coincident with captured muon)")};
-      fhicl::Sequence< fhicl::Table<GenPhysConfig> > decayProducts{Name("decayProducts"), Comment("Products coincident with decayd muon)")};
+      fhicl::DelegatedParameter decayProducts{Name("decayProducts"), Comment("Products coincident with decayed muon)")};
       fhicl::Atom<int> verbosityLevel{Name("verbosityLevel"), Comment("Verbosity Level (default = 0)"), 0};
       fhicl::Table<RTS::Config> stops{Name("stops"), Comment("Stops ntuple config")};
     };
@@ -133,10 +132,8 @@ namespace mu2e {
     void                  generateGenParticles(GenPhysStruct& genPhys, std::unique_ptr<GenParticleCollection>& output);
     double _decayFraction;
     double _captureFraction;
-    //    std::vector<GenPhysStruct> _allStopProducts;
-    std::vector<GenPhysStruct> _allCaptureProducts;
-    std::vector<GenPhysStruct> _allDecayProducts;
 
+    std::vector<std::unique_ptr<ParticleGeneratorTool>> _muonDecayGenerators;
     std::vector<std::unique_ptr<ParticleGeneratorTool>> _muonCaptureGenerators;
 
   public:
@@ -156,7 +153,6 @@ namespace mu2e {
     , stops_(eng_, conf_.stops())
     , _decayFraction(GlobalConstantsHandle<PhysicsParams>()->getDecayFraction())
     , _captureFraction(1 - _decayFraction)
-      //    ,_protonGenerator(eng_)
   {
     produces<mu2e::GenParticleCollection>();
 
@@ -168,66 +164,16 @@ namespace mu2e {
       std::cout << "MuStopProductsGun: decayFraction = " << _decayFraction << std::endl;
       std::cout << "MuStopProductsGun: captureFraction = " << _captureFraction << std::endl;
     }
-    //    for (const auto& i_genPhysConfig : conf_.stopProducts()) {
-    // // Create stopped muon processes here in the future, if needs be
-    //    }
-    //    for (const auto& i_genPhysConfig : conf_.captureProducts()) {
-      // double rate = 0;
-      // bool is_poisson_rate = false;
-      // double prob = 1;
-      // if (i_genPhysConfig.pdgId() == 2212) {
-      //   is_poisson_rate = true;
-      // }
-      // else if (i_genPhysConfig.pdgId() == 1000010020) {
-      //   is_poisson_rate = true;
-      //   rate = GlobalConstantsHandle<PhysicsParams>()->getCaptureDeuteronRate();
-      // }
-      // else if (i_genPhysConfig.pdgId() == 2112) {
-      //   is_poisson_rate = true;
-      //   rate = GlobalConstantsHandle<PhysicsParams>()->getCaptureNeutronRate();
-      // }
-      // else if (i_genPhysConfig.pdgId() == 22) {
-      //   if (i_genPhysConfig.spectrumShape() == "CaptureGamma") {
-      //     rate = 1;
-      //     prob = GlobalConstantsHandle<PhysicsParams>()->getCaptureGammaIntensity();
-      //   }
-      //   else { // this is our photon background frame
-      //     is_poisson_rate = true;
-      //     rate = 2;
-      //   }
-      // }
-      // else {
-      //   throw cet::exception("MUSTOPPRODUCTSGUN") << "Capture product with PdgId " << i_genPhysConfig.pdgId() << " is not implemented" << std::endl;
-      // }
 
-      // GenPhysStruct i_genPhys(i_genPhysConfig, eng_, is_poisson_rate, rate, prob);
-      // _allCaptureProducts.push_back(i_genPhys);
-      // if (verbosityLevel_ > 0) {
-      //   std::cout << "MuStopProductsGun: Adding Capture Process: " << i_genPhys.pdgId << std::endl;
-      // }
-    //    }
-    const auto psets = conf_.captureProducts.get<std::vector<fhicl::ParameterSet>>();
-    for (const auto& i_pset : psets) {
-      _muonCaptureGenerators.push_back(art::make_tool<ParticleGeneratorTool>(i_pset));
+    const auto cap_psets = conf_.captureProducts.get<std::vector<fhicl::ParameterSet>>();
+    for (const auto& i_cap_pset : cap_psets) {
+      _muonCaptureGenerators.push_back(art::make_tool<ParticleGeneratorTool>(i_cap_pset));
       _muonCaptureGenerators.back()->setEngine(eng_);
     }
-
-    for (const auto& i_genPhysConfig : conf_.decayProducts()) {
-      double rate = 0;
-      bool is_poisson_rate = false;
-      double prob = 1;
-      if (i_genPhysConfig.pdgId() == 11) {
-        rate = 1;
-      }
-      else {
-        throw cet::exception("MUSTOPPRODUCTSGUN") << "Decay product with PdgId " << i_genPhysConfig.pdgId() << " is not implemented" << std::endl;
-      }
-
-      GenPhysStruct i_genPhys(i_genPhysConfig, eng_, is_poisson_rate, rate, prob);
-      _allDecayProducts.push_back(i_genPhys);
-      if (verbosityLevel_ > 0) {
-        std::cout << "MuStopProductsGun: Adding Decay Process: " << i_genPhys.pdgId << std::endl;
-      }
+    const auto decay_psets = conf_.decayProducts.get<std::vector<fhicl::ParameterSet>>();
+    for (const auto& i_decay_pset : decay_psets) {
+      _muonDecayGenerators.push_back(art::make_tool<ParticleGeneratorTool>(i_decay_pset));
+      _muonDecayGenerators.back()->setEngine(eng_);
     }
   }
 
@@ -252,21 +198,18 @@ namespace mu2e {
     //    }
     const auto& stop = stops_.fire();
 
-    //    double rand = randomFlat_.fire();
-    // if (rand < _decayFraction) {
-    //   for (auto& i_genPhys : _allDecayProducts) {
-    //     generateGenParticles(i_genPhys, output);
-    //   }
-    // }
-    // else {
-    for (const auto& i_muonCaptureGenerator : _muonCaptureGenerators) {
-      i_muonCaptureGenerator->generate(output, stop);
+    double rand = randomFlat_.fire();
+    if (rand < _decayFraction) {
+      for (const auto& i_muonDecayGenerator : _muonDecayGenerators) {
+        i_muonDecayGenerator->generate(output, stop);
+      }
     }
-      //      _deuteronGenerator.generate(output, stop);
-      //      for (auto& i_genPhys : _allCaptureProducts) {
-      //        generateGenParticles(i_genPhys, output);
-      //      }
-      //    }
+    else {
+      for (const auto& i_muonCaptureGenerator : _muonCaptureGenerators) {
+        i_muonCaptureGenerator->generate(output, stop);
+      }
+    }
+
     event.put(std::move(output));
   }
 

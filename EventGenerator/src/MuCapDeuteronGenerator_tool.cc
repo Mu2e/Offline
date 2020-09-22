@@ -16,13 +16,13 @@
 namespace mu2e {
   class MuCapDeuteronGenerator : public ParticleGeneratorTool {
   public:
-    explicit MuCapDeuteronGenerator(fhicl::ParameterSet const& pset) :
+    explicit MuCapDeuteronGenerator(Parameters const& conf) :
       _pdgId(PDGCode::deuteron),
       _mass(GlobalConstantsHandle<ParticleDataTable>()->particle(_pdgId).ref().mass().value()),
-      _genId(GenId::MuCapDeuteronGenerator),
+      _genId(GenId::MuCapDeuteronGenTool),
       _rate(GlobalConstantsHandle<PhysicsParams>()->getCaptureDeuteronRate()),
-      _spectrumVariable(parseSpectrumVar(pset.get<std::string>("spectrumVariable"))),
-      _spectrum(BinnedSpectrum(pset))
+      _spectrumVariable(parseSpectrumVar(conf().physics().spectrumVariable())),
+      _spectrum(BinnedSpectrum(conf().physics()))
     {
 
     }
