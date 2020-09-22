@@ -14,13 +14,13 @@
 #include "GlobalConstantsService/inc/PhysicsParams.hh"
 
 namespace mu2e {
-  class MuCapProtonGenerator : public ParticleGeneratorTool {
+  class MuCapDeuteronGenerator : public ParticleGeneratorTool {
   public:
-    explicit MuCapProtonGenerator(fhicl::ParameterSet const& pset) :
-      _pdgId(PDGCode::proton),
+    explicit MuCapDeuteronGenerator(fhicl::ParameterSet const& pset) :
+      _pdgId(PDGCode::deuteron),
       _mass(GlobalConstantsHandle<ParticleDataTable>()->particle(_pdgId).ref().mass().value()),
-      _genId(GenId::MuCapProtonGenerator),
-      _rate(GlobalConstantsHandle<PhysicsParams>()->getCaptureProtonRate()),
+      _genId(GenId::MuCapDeuteronGenerator),
+      _rate(GlobalConstantsHandle<PhysicsParams>()->getCaptureDeuteronRate()),
       _spectrumVariable(parseSpectrumVar(pset.get<std::string>("spectrumVariable"))),
       _spectrum(BinnedSpectrum(pset))
     {
@@ -49,7 +49,7 @@ namespace mu2e {
     CLHEP::RandGeneral* _randSpectrum;
   };
 
-  void MuCapProtonGenerator::generate(std::unique_ptr<GenParticleCollection>& out, const IO::StoppedParticleF& stop) {
+  void MuCapDeuteronGenerator::generate(std::unique_ptr<GenParticleCollection>& out, const IO::StoppedParticleF& stop) {
     const CLHEP::Hep3Vector pos(stop.x, stop.y, stop.z);
 
     int n_gen = _randomPoissonQ->fire();
@@ -73,4 +73,4 @@ namespace mu2e {
     }
   }
 }
-DEFINE_ART_CLASS_TOOL(mu2e::MuCapProtonGenerator)
+DEFINE_ART_CLASS_TOOL(mu2e::MuCapDeuteronGenerator)
