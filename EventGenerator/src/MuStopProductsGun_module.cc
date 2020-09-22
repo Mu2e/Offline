@@ -137,7 +137,7 @@ namespace mu2e {
     std::vector<GenPhysStruct> _allCaptureProducts;
     std::vector<GenPhysStruct> _allDecayProducts;
 
-    std::unique_ptr<ParticleGeneratorTool> _protonGenerator;
+    std::vector<std::unique_ptr<ParticleGeneratorTool>> _muonCaptureGenerators;
 
   public:
     explicit MuStopProductsGun(const Parameters& conf);
@@ -208,8 +208,8 @@ namespace mu2e {
     //    }
     const auto psets = conf_.captureProducts.get<std::vector<fhicl::ParameterSet>>();
     for (const auto& i_pset : psets) {
-      _protonGenerator = art::make_tool<ParticleGeneratorTool>(i_pset);
-      _protonGenerator->setEngine(eng_);
+      _muonCaptureGenerators.push_back(art::make_tool<ParticleGeneratorTool>(i_pset));
+      _muonCaptureGenerators.back()->setEngine(eng_);
     }
 
     for (const auto& i_genPhysConfig : conf_.decayProducts()) {
@@ -259,7 +259,9 @@ namespace mu2e {
     //   }
     // }
     // else {
-    _protonGenerator->generate(output, stop);
+    for (const auto& i_muonCaptureGenerator : _muonCaptureGenerators) {
+      i_muonCaptureGenerator->generate(output, stop);
+    }
       //      _deuteronGenerator.generate(output, stop);
       //      for (auto& i_genPhys : _allCaptureProducts) {
       //        generateGenParticles(i_genPhys, output);

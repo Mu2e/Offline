@@ -15,26 +15,18 @@ genPhys_dio : {
     spectrumResolution: 0.1 // MeV
 }
 
-genPhys_cap_proton : {
-    pdgId : 2212
-    genId : MuStopGeneratorCapture
-    spectrumShape: ejectedProtons
-    spectrumVariable: kineticEnergy
-    nbins: 1000
+muonCaptureProtonGenTool : { 
+  tool_type : MuCapProtonGenerator
+  spectrumShape : ejectedProtons 
+  spectrumVariable : kineticEnergy
+  nbins: 1000
 }
 
-proton_gen : { tool_type : MuStopProtonGenerator
-	       spectrumShape : ejectedProtons 
-	       spectrumVariable : kineticEnergy
-	       nbins: 1000
-}
-
-genPhys_cap_deuteron: {
-    pdgId : 1000010020 # deuteron
-    genId : MuStopGeneratorCapture
-    spectrumShape: ejectedProtons # same spectrum for protons and deuterons, as in the MECO note
-    spectrumVariable: kineticEnergy
-    nbins: 1000
+muonCaptureDeuteronGenTool : { 
+  tool_type : MuCapDeuteronGenerator
+  spectrumShape : ejectedProtons 
+  spectrumVariable : kineticEnergy
+  nbins: 1000
 }
 
 genPhys_cap_neutron: {
@@ -74,7 +66,9 @@ physics.producers.generate: {
    module_type: MuStopProductsGun
    verbosityLevel : 1
    stops : @local::mu2e.tgtMuonStops
-   captureProducts : @local::proton_gen #[ @local::proton_gen # @local::genPhys_cap_proton #, 
+   captureProducts : [ @local::muonCaptureProtonGenTool,
+   		       @local::muonCaptureDeuteronGenTool
+   		     ] #[ @local::proton_gen # @local::genPhys_cap_proton #, 
 #   		       @local::genPhys_cap_deuteron, 
 #		       @local::genPhys_cap_neutron,
 #		       @local::genPhys_cap_gamma,
