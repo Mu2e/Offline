@@ -35,12 +35,13 @@ muonCaptureDeuteronGenTool : {
   }
 }
 
-genPhys_cap_neutron: {
-    pdgId : 2112
-    genId : MuStopGeneratorCapture
+muonCaptureNeutronGenTool : {
+  tool_type : MuCapNeutronGenerator
+  physics: {
     spectrumShape: tabulated
     spectrumFileName: "ConditionsService/data/neutronSpectrum.txt"
     spectrumVariable: kineticEnergy
+  }
 }
 
 genPhys_cap_gamma: {
@@ -73,7 +74,8 @@ physics.producers.generate: {
    verbosityLevel : 1
    stops : @local::mu2e.tgtMuonStops
    captureProducts : [ @local::muonCaptureProtonGenTool,
-   		       @local::muonCaptureDeuteronGenTool
+   		       @local::muonCaptureDeuteronGenTool,
+		       @local::muonCaptureNeutronGenTool
    		     ]
    decayProducts : [ @local::dioGenTool ] 
 }
