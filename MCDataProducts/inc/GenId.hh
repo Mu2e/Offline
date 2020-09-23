@@ -46,7 +46,8 @@ namespace mu2e {
       CaloCalib, InFlightParticleSampler, muplusDecayGun, StoppedMuonXRayGammaRayGun, //37
       cosmicCRY,  pbarFlat, fromAscii, ExternalRMC, InternalRMC, CeLeadingLog, cosmicCORSIKA, //44
       MuCapProtonGenTool, MuCapDeuteronGenTool, DIOGenTool, MuCapNeutronGenTool, // 48
-      lastEnum //49
+      MuCapPhotonGenTool, // 49
+      lastEnum //50
     };
 
     // Keep this in sync with the enum. Used in GenId.cc
@@ -61,7 +62,9 @@ namespace mu2e {
       "MARS", "StoppedParticleReactionGun","bremElectronGun", "muonicXRayGun", \
       "fromSimParticleStartPoint", "fromSimParticleCompact", "StoppedParticleG4Gun", \
       "CaloCalib", "InFlightParticleSampler","muplusDecayGun", "StoppedMuonXRayGammaRayGun", \
-      "CosmicCRY", "pbarFlat","fromAscii","ExternalRMC","InternalRMC","CeLeadingLog", "CosmicCORSIKA", "MuCapProtonGenTool", "MuCapDeuteronGenTool", "DIOGenTool", "MuCapNeutronGenTool"
+      "CosmicCRY", "pbarFlat","fromAscii","ExternalRMC","InternalRMC","CeLeadingLog", "CosmicCORSIKA", \
+    "MuCapProtonGenTool", "MuCapDeuteronGenTool", "DIOGenTool", "MuCapNeutronGenTool", \
+    "MuCapPhotonGenTool"
 
   public:
 

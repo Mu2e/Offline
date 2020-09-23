@@ -51,13 +51,14 @@ genPhys_cap_gamma: {
     spectrumShape : CaptureGamma
 }    
 
-genPhys_cap_photon : {
-    pdgId : 22
-    genId : MuStopGeneratorCapture
+muonCapturePhotonGenTool : {
+  tool_type : MuCapPhotonGenerator
+  physics : {
     spectrumShape: flat
     spectrumVariable: totalEnergy
     elow: 0.0 // MeV
     ehi: 7.0  // MeV
+  }
 }
 
 END_PROLOG
@@ -75,7 +76,8 @@ physics.producers.generate: {
    stops : @local::mu2e.tgtMuonStops
    captureProducts : [ @local::muonCaptureProtonGenTool,
    		       @local::muonCaptureDeuteronGenTool,
-		       @local::muonCaptureNeutronGenTool
+		       @local::muonCaptureNeutronGenTool,
+		       @local::muonCapturePhotonGenTool
    		     ]
    decayProducts : [ @local::dioGenTool ] 
 }
