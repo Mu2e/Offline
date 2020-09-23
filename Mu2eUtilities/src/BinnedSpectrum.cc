@@ -154,10 +154,6 @@ namespace mu2e {
       if(_xmin < 0.0) throw cet::exception("BADCONFIG")
 			<< "BinnedSpectrum: negative energy endpoint "<< _xmin  <<"\n";
     }
-    else if (spectrumShape == "CaptureGamma") {
-      double energy = GlobalConstantsHandle<PhysicsParams>()->getCaptureGammaEnergy();
-      this->initialize(energy);
-    }
     else {
       throw cet::exception("BADCONFIG")
         << "BinnedSpectrum: unknown spectrum shape "<<spectrumShape<<"\n";
@@ -239,10 +235,6 @@ namespace mu2e {
     
       if(_xmin < 0.0) throw cet::exception("BADCONFIG")
         << "BinnedSpectrum: negative energy endpoint "<< _xmin  <<"\n";
-    }
-    else if (spectrumShape == "CaptureGamma") {
-      double energy = GlobalConstantsHandle<PhysicsParams>()->getCaptureGammaEnergy();
-      this->initialize(energy);
     }
     else {
       throw cet::exception("BADCONFIG")

@@ -44,13 +44,6 @@ muonCaptureNeutronGenTool : {
   }
 }
 
-genPhys_cap_gamma: {
-    pdgId : 22
-    genId : MuStopGeneratorCapture
-    spectrumVariable : kineticEnergy
-    spectrumShape : CaptureGamma
-}    
-
 muonCapturePhotonGenTool : {
   tool_type : MuCapPhotonGenerator
   physics : {
@@ -60,6 +53,11 @@ muonCapturePhotonGenTool : {
     ehi: 7.0  // MeV
   }
 }
+
+# An example that isn't used in this fcl
+# muonCaptureGammaRayGenTool : {
+#  tool_type : MuCapGammaRayGenerator
+# }    
 
 END_PROLOG
 
