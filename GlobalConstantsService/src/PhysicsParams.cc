@@ -103,6 +103,7 @@ namespace mu2e {
     _captureProtonRate[material] = config.getDouble("physicsParams."+material+".capture.protonRate", 0);
     _captureDeuteronRate[material] = config.getDouble("physicsParams."+material+".capture.deuteronRate", 0);
     _captureNeutronRate[material] = config.getDouble("physicsParams."+material+".capture.neutronRate", 0);
+    _capturePhotonRate[material] = config.getDouble("physicsParams."+material+".capture.photonRate", 0);
 
     // Load capture gamma rays
     _captureGammaEnergy[material] = config.getDouble("physicsParams."+material+".capture.gRay.energy", 0);

@@ -106,6 +106,7 @@ vector<double> physicsParams.shankerFcoefficients =
 double physicsParams.Al.capture.protonRate = 0.05;
 double physicsParams.Al.capture.deuteronRate = 0.025;
 double physicsParams.Al.capture.neutronRate = 1.2;
+double physicsParams.Al.capture.photonRate = 2.0;
 double physicsParams.Al.capture.gRay.energy = 1.809;
 double physicsParams.Al.capture.gRay.intensity = 0.51;
 
