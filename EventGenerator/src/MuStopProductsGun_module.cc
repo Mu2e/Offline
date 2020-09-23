@@ -72,52 +72,6 @@ namespace mu2e {
   private:
     Config conf_;
 
-    enum SpectrumVar  { TOTAL_ENERGY, KINETIC_ENERY, MOMENTUM };
-
-    struct GenPhysStruct {
-      GenPhysStruct(GenPhysConfig conf, art::RandomNumberGenerator::base_engine_t& eng, bool is_poisson_rate = false, double rate = 1, double prob = 1) :
-        pdgId(PDGCode::type(conf.pdgId())),
-        mass(GlobalConstantsHandle<ParticleDataTable>()->particle(pdgId).ref().mass().value()),
-        spectrumVariable(parseSpectrumVar(conf.spectrumVariable())),
-        spectrum(BinnedSpectrum(conf)),
-        genId(GenId::findByName(conf.genId())),
-        randSpectrum(eng, spectrum.getPDF(), spectrum.getNbins()),
-        isPoissonRate(is_poisson_rate),
-        emissionRate(rate),
-        probability(prob),
-        randomFlat(eng),
-        randomPoissonQ(eng,rate)
-      {    }
-
-      PDGCode::type       pdgId;
-      double              mass;
-      SpectrumVar       spectrumVariable;
-      BinnedSpectrum    spectrum;
-      GenId             genId;
-      CLHEP::RandGeneral randSpectrum;
-      bool isPoissonRate;
-      double emissionRate;
-      double probability;
-      CLHEP::RandFlat randomFlat;
-      CLHEP::RandPoissonQ randomPoissonQ;
-
-      int getNGenerated() {
-        double rand = randomFlat.fire();
-        if (rand < probability) {
-          if (isPoissonRate) {
-            return randomPoissonQ.fire();
-          }
-          else {
-            return emissionRate;
-          }
-        }
-        else {
-          return 0;
-        }
-      };
-    };
-
-
     int               verbosityLevel_;
 
     art::RandomNumberGenerator::base_engine_t& eng_;
@@ -127,9 +81,6 @@ namespace mu2e {
     RTS stops_;
 
   private:
-    static SpectrumVar    parseSpectrumVar(const std::string& name);
-    double                generateEnergy(GenPhysStruct& genPhys);
-    void                  generateGenParticles(GenPhysStruct& genPhys, std::unique_ptr<GenParticleCollection>& output);
     double _decayFraction;
     double _captureFraction;
 
@@ -179,23 +130,10 @@ namespace mu2e {
 
 
   //================================================================
-  MuStopProductsGun::SpectrumVar MuStopProductsGun::parseSpectrumVar(const std::string& name) {
-    if (name == "totalEnergy"  )  return TOTAL_ENERGY;
-    if (name == "kineticEnergy")  return KINETIC_ENERY;
-    if (name == "momentum"     )  return MOMENTUM;
-    throw cet::exception("BADCONFIG")<<"MuStopProductsGun: unknown spectrum variable "<<name<<"\n";
-  }
-
-
-  //================================================================
   void MuStopProductsGun::produce(art::Event& event) {
 
     std::unique_ptr<GenParticleCollection> output(new GenParticleCollection);
 
-    // // Generate stopped-muon processes here in the future, if needs be
-    //    for (auto& i_genPhys : _allStopProducts) {
-    //      generateGenParticles(i_genPhys, output);
-    //    }
     const auto& stop = stops_.fire();
 
     double rand = randomFlat_.fire();
@@ -211,49 +149,6 @@ namespace mu2e {
     }
 
     event.put(std::move(output));
-  }
-
-//-----------------------------------------------------------------------------
-// generate (pseudo-)random particle energy
-// the spectrum itself doesn't know whether is stored momentum, kinetic or full
-// energy
-//-----------------------------------------------------------------------------
-  double MuStopProductsGun::generateEnergy(GenPhysStruct& genPhys) {
-    double res = genPhys.spectrum.sample(genPhys.randSpectrum.fire());
-
-    if (res < 0.0) {
-      throw cet::exception("BADE")<<"MuStopProductsGun: negative energy "<< res <<"\n";
-    }
-
-    switch(genPhys.spectrumVariable) {
-    case TOTAL_ENERGY  : break;
-    case KINETIC_ENERY : res += genPhys.mass; break;
-    case MOMENTUM      : res = sqrt(res*res+genPhys.mass*genPhys.mass); break;
-    }
-    return res;
-  }
-
-  // Generate the GenParticles and add them to the output
-  void MuStopProductsGun::generateGenParticles(GenPhysStruct& genPhys, std::unique_ptr<GenParticleCollection>& output) {
-
-    const auto& stop = stops_.fire();
-    const CLHEP::Hep3Vector pos(stop.x, stop.y, stop.z);
-
-    int n_gen = genPhys.getNGenerated();
-
-    for (int i_gen = 0; i_gen < n_gen; ++i_gen) {
-      const double energy = generateEnergy(genPhys);
-      const double p = energy * sqrt(1 - std::pow(genPhys.mass/energy,2));
-
-      CLHEP::Hep3Vector p3 = randomUnitSphere_.fire(p);
-      CLHEP::HepLorentzVector fourmom(p3, energy);
-      output->emplace_back(genPhys.pdgId,
-                           genPhys.genId,
-                           pos,
-                           fourmom,
-                           stop.t);
-
-    }
   }
   //================================================================
 } // namespace mu2e
