@@ -4,6 +4,12 @@ using namespace mu2e;
 namespace mu2e{
 
 	TEveMu2eCRVEvent::TEveMu2eCRVEvent(){}
+	
+	std::string TEveMu2eCRVEvent::DataTitle(const std::string &pstr, int n){
+        std::string dstr=" hit#" + std::to_string(n) + "\nLayer: ";
+        std::string strlab=pstr+dstr;
+        return (strlab);
+  }
   
   void TEveMu2eCRVEvent::DrawHit3D(const std::string &pstr, Int_t n, CLHEP::Hep3Vector pointInMu2e, TEveElementList *HitList)
 	{

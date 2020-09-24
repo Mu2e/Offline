@@ -4,6 +4,12 @@ using namespace mu2e;
 namespace mu2e{
 
   TEveMu2eCluster::TEveMu2eCluster(){}
+  
+  std::string TEveMu2eCluster::DataTitle(const std::string &pstr, double edep){
+        std::string dstr= "\nLayer: ";
+        std::string strlst=pstr+dstr+std::to_string(edep);
+        return(strlst);
+  }
 
   void TEveMu2eCluster::DrawCluster(const std::string &pstr,  CLHEP::Hep3Vector cog, int energylevel, TEveElementList *ClusterList)
   {
