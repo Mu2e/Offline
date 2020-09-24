@@ -42,27 +42,6 @@ namespace mu2e{
     }
   }
 
-  template <typename L> std::vector<double> Energies(L data, int *energylevels[]){
-    std::vector<double> energies = {0, 0};
-    double Max_Energy = 0;
-    double Min_Energy = 1000;
-    for(unsigned int i=0; i < data->size();i++){
-      if (((*data)[i]).energyDep() > Max_Energy){Max_Energy = ((*data)[i]).energyDep();}
-      if (((*data)[i]).energyDep()< Min_Energy){Min_Energy = ((*data)[i]).energyDep();}
-    }
-    double interval = (Max_Energy - Min_Energy)/(9);
-
-    for(size_t i=0; i<data->size();i++){
-      for(int n=0; n<9;n++){
-        if(((*data)[i]).energyDep() >= Min_Energy + n * interval && ((*data)[i]).energyDep() <=Min_Energy + (n+1)*interval){
-        (*energylevels)[i] = n;}
-      }
-    }
-    energies.at(0) = Min_Energy;
-    energies.at(1) = Max_Energy;
-    return energies;
-  }
-
   void TEveMu2eMCInterface::AddMCTrajectory(bool firstloop, const MCTrajectoryCollection *trajcol, TEveMu2e2DProjection *tracker2Dproj, bool Redraw, bool show2D, bool accumulate){
 	DataLists<const MCTrajectoryCollection*, TEveMu2e2DProjection*>(trajcol, Redraw, show2D, accumulate, "MC Trajectory", &fTrackList3D, &fTrackList2D, tracker2Dproj);
     if(trajcol!=0){
