@@ -558,11 +558,23 @@ namespace mu2e{
         fclustmin = atof(_clustminenergy->GetString());
         fclustmax = atof(_clustmaxenergy->GetString());
         if (fclustmin < fclustmax) {*clusterenergy = pass_data->AddCaloClusters(_firstLoop, _data.clustercol, calo2Dproj, texttime, false, _show2D, fclustmin, fclustmax, _accumulate);}
+        if (fclustmin > fclustmax){
+          std::cout<<"Cluster Minimum Energy is greater than Maximum Energy"<<std::endl;
+          char msg[300];
+          sprintf(msg, "Error #%i : Cluster minimum energy larger than maximum", true);
+          new TGMsgBox(gClient->GetRoot(), gClient->GetRoot(), "Event Not Found", msg, kMBIconExclamation,kMBOk);
+        }
       }
       if (param1 == 1702){
         fhitmin = atof(_hitminenergy->GetString());
         fhitmax = atof(_hitmaxenergy->GetString());
         if (fhitmin < fhitmax) {*hitenergy = pass_data->AddComboHits(_firstLoop, _data.chcol, tracker2Dproj, texttime, false, _show2D, fhitmin, fhitmax, _accumulate);}
+        if (fhitmin > fhitmax){
+          std::cout<<"Hit Minimum Energy is greater than Maximum Energy"<<std::endl;
+          char msg[300];
+          sprintf(msg, "Error #%i : Hit minimum energy larger than maximum", true);
+          new TGMsgBox(gClient->GetRoot(), gClient->GetRoot(), "Event Not Found", msg, kMBIconExclamation,kMBOk);
+        }
 	    }	
       break;
     }
