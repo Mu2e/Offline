@@ -28,11 +28,7 @@ namespace mu2e {
       bool AddErrorBar = true;
       void DrawHit2D(const std::string &pstr, Int_t b,CLHEP::Hep3Vector HitPos, TEveElementList *list); 
       void DrawHit3D(const std::string &pstr, Int_t b,CLHEP::Hep3Vector HitPos, TEveElementList *list); 
-      inline std::string DataTitle(const std::string &pstr, int n){
-        std::string dstr=" hit#" + std::to_string(n) + "\nLayer: ";
-        std::string strlab=pstr+dstr;
-        return (strlab);
-      }
+      std::string DataTitle(const std::string &pstr, int n);
       #endif
       ClassDef(TEveMu2eCRVEvent, 0);
   };
