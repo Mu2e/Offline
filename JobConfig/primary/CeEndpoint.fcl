@@ -14,10 +14,10 @@ physics : {
     @table::Primary.producers
   }
   filters: { @table::Primary.filters }
-  analyzers: { @table::Primary.analyzers}
+  analyzers: { @table::Primary.analyzers }
   TriggerPath : @local::Primary.TriggerPath
   EndPath : @local::Primary.EndPath
-  }
+ }
 outputs : { 
   Output :@local::Primary.Output
 }
