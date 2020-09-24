@@ -1,5 +1,5 @@
 #
-# Radiative Ce- spectrum, based on doc 7615 spectrum 
+# generates the Mu(-) --> e(-) + X where X is a light boson. Spectrum based on Spectrum based on arXiv: 1110.2874
 #
 #include "JobConfig/primary/prolog.fcl"
 process_name: Mu2eX
