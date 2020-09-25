@@ -3,7 +3,7 @@
 //
 //
 
-#include "Mu2eG4/geom/geom_common.txt"
+#include "Mu2eG4/geom/geom_common_current.txt"
 
 bool g4.doSurfaceCheck    = true;
 
