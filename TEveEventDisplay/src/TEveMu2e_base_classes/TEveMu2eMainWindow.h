@@ -34,6 +34,7 @@
 #include "TEveEventDisplay/src/shape_classes/TEveMu2eCRV.h"
 #include "TEveEventDisplay/src/TEveMu2e_base_classes/TEveMu2eDataInterface.h"
 #include "TEveEventDisplay/src/TEveMu2e_base_classes/TEveMu2eMCInterface.h"
+#include "TEveEventDisplay/src/TEveMu2e_base_classes/TEveMu2eProjectionInterface.h"
 class TBox;
 class TGTextEntry;
 class TPad;
@@ -52,13 +53,14 @@ namespace mu2e{
       TEveMu2eMainWindow(const TGWindow* p, UInt_t w, UInt_t h, fhicl::ParameterSet _pset);
       virtual ~TEveMu2eMainWindow(){};
       enum ETestComandIdentifiers{HId1, HId2, HId3};
+      void StartProjectionTabs();
       void StartTrackerProjectionTab();
       void PrepareTrackerProjectionTab(const art::Run& run);
-      void StartCaloProjectionTab();
+      //void StartCaloProjectionTab();
       void PrepareCaloProjectionTab(const art::Run& run);
-      void StartCRVProjectionTab();
+      //void StartCRVProjectionTab();
       void PrepareCRVProjectionTab(const art::Run& run);
-
+      void CreateGUI(TGMainFrame* frmMain, TEveBrowser *browser);
       void SetRunGeometry(const art::Run& run, int _diagLevel, bool _showBuilding, bool _showDSOnly, bool _showCRV);
       void RedrawDataProducts(std::string type);
       void RedrawGeometry();
@@ -76,6 +78,7 @@ namespace mu2e{
       Geom_Interface *mu2e_geom	=new Geom_Interface(); 
       TEveMu2eDataInterface *pass_data	=new TEveMu2eDataInterface(); 
       TEveMu2eMCInterface *pass_mc	=new TEveMu2eMCInterface(); 
+      TEveMu2eProjectionInterface *pass_proj = new TEveMu2eProjectionInterface();
       int eventToFind, runToFind;
 
       TGTextEntry     *fTeRun,*fTeEvt, *fTTEvt, *fTeh1, *fTeh2, *fTeh3, *cminenergy, *cmaxenergy, *hminenergy, *hmaxenergy;    
