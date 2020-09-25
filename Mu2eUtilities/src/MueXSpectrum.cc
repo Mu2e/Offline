@@ -91,7 +91,7 @@ namespace mu2e {
     return weight;
   }
 
-//TODO  
+//TODO  - for consistancy with other spectra
   double MueXSpectrum::evalIntegral(double de){
        gsl_function F;
     F.function = &f;
@@ -118,7 +118,6 @@ namespace mu2e {
 			 &abserr);
 
     gsl_integration_workspace_free(ws);
-    //    std::cout<<"il valore dell'integrale fino al penultimo bin e' "<< result<<std::endl;
     return result;
   }
 }
