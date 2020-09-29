@@ -9,7 +9,7 @@
 
 namespace mu2e {
 
-  double f(double E, void *p);
+  double f_mu2eX_gen(double E, void *p);
 
   class MueXSpectrum {
 
@@ -38,7 +38,7 @@ namespace mu2e {
       double getWeight(double E) const;
       double getCorrectedMueXSpectrum(double e) const ;
       double evalIntegral(double de);
-      static double  f(double E, void *p);
+      static double  f_mu2eX_gen(double E, void *p);
       void   setSpectrum   (int SpectrumType) { _spectrumType = SpectrumType; }
     
     private:

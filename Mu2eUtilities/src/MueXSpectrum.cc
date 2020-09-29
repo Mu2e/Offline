@@ -52,7 +52,7 @@ namespace mu2e {
     _integral = evalIntegral(de); 
   }
     
-  double MueXSpectrum::f(double E, void *p) { //For E>100MeV Only 
+  double MueXSpectrum::f_mu2eX_gen(double E, void *p) { //For E>100MeV Only 
     //double eMax  = ((MueXSpectrum::Params_t*) p)->eMax;
     double mmu   = ((MueXSpectrum::Params_t*) p)->mmu;
     double Emu   = ((MueXSpectrum::Params_t*) p)->Emu;
@@ -73,7 +73,7 @@ namespace mu2e {
   }
 
   double MueXSpectrum::getCorrectedMueXSpectrum(double e) const {
-    return MueXSpectrum::f(e,(void*) &_par);
+    return MueXSpectrum::f_mu2eX_gen(e,(void*) &_par);
   }
 
   /* For compatibility - perhaps we dont need this? */
@@ -94,7 +94,7 @@ namespace mu2e {
 //TODO  - for consistancy with other spectra
   double MueXSpectrum::evalIntegral(double de){
     gsl_function F;
-    F.function = &f;
+    F.function = &f_mu2eX_gen;
     F.params   = &_par;
 
     size_t limit  = 1000;
