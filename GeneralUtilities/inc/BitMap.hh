@@ -142,6 +142,11 @@ namespace mu2e {
       _value = static_cast<mask_type>( _value | arg._value);
     }
 
+    BitMap& operator | (BitMap const& other) {
+      merge(other);
+      return *this;
+    }
+
     void clear( bit_type bitNumber) {
       _value = static_cast<mask_type>(_value & ~DETAIL::bit_to_mask(bitNumber) );
     }

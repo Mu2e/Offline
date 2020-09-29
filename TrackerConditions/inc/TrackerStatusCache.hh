@@ -9,8 +9,8 @@ namespace mu2e {
   class TrackerStatusCache : public ProditionsCache {
   public: 
     TrackerStatusCache(TrackerStatusConfig const& config):
-      ProditionsCache("TrackerStatus",config.verbose()),
-      _useDb(config.useDb()),_maker(config) {}
+      ProditionsCache("TrackerStatus",config.settings().verbose()),
+      _useDb(config.settings().useDb()),_maker(config) {}
 
 
     void initialize() {

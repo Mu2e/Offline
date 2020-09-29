@@ -23,7 +23,7 @@
 #include "GeometryService/inc/GeomHandle.hh"
 #include "TrackerGeom/inc/Tracker.hh"
 #include "TrackerConditions/inc/StrawResponse.hh"
-#include "TrackerConditions/inc/DeadStraw.hh"
+#include "TrackerConditions/inc/TrackerStatus.hh"
 
 #include "TrkHitReco/inc/PeakFit.hh"
 #include "TrkHitReco/inc/PeakFitRoot.hh"
@@ -88,7 +88,7 @@ namespace mu2e {
        float peakMinusPedAvg(TrkTypes::ADCWaveform const& adcData) const;
        float peakMinusPed(StrawId id, TrkTypes::ADCWaveform const& adcData) const;
     ProditionsHandle<StrawResponse> _strawResponse_h;
-    ProditionsHandle<DeadStraw> _deadStraw_h;
+    ProditionsHandle<TrackerStatus> _trackerStatus_h;
     ProditionsHandle<Tracker> _alignedTracker_h;
 
 
@@ -192,13 +192,13 @@ namespace mu2e {
       largeHits.reserve(sdcol.size());
       largeHitPanels.reserve(sdcol.size());
 
-      DeadStraw const& deadStraw = _deadStraw_h.get(event.id());
+      TrackerStatus const& trackerStatus = _trackerStatus_h.get(event.id());
 
       for (size_t isd=0;isd<sdcol.size();++isd) {
 	const StrawDigi& digi = sdcol[isd];
-
+	// flag digis that shouldn't be here or we don't want
 	StrawHitFlag flag;
-	if (deadStraw.isDead(digi.strawId())) {
+	if (trackerStatus.noSignal(digi.strawId()) || trackerStatus.suppress(digi.strawId())) {
 	  flag.merge(StrawHitFlag::dead);
 	}
 
