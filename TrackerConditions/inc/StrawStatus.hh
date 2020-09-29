@@ -22,7 +22,7 @@ struct StrawStatusDetail {
       noHV=2, // wire(s) not attached to high voltage (blown fuse, ...)
       noLV=3, // no low voltage (ie no electronics gain or signal)
       nogas=4, // gas flow is turned off
-      lowgas=5, // gas flow is reduced or gas gain otherwise low
+      lowgasgain=5, // gas gain low
       noPreamp=6, // no signal into ADC or TDC
       noADC=7, // ADC not functioning
       noTDC=8, // TDC not functioning
