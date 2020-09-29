@@ -10,7 +10,6 @@
 #include <stdio.h>
 
 namespace mu2e {
-  unsigned StrawStatusDetail::_maxTrkId(7);
 
   std::string const& StrawStatusDetail::typeName() {
     static std::string type("StrawStatus");
@@ -25,7 +24,8 @@ namespace mu2e {
       bitnames[std::string("NoHV")]           = bit_to_mask(noHV);
       bitnames[std::string("NoLV")]           = bit_to_mask(noLV);
       bitnames[std::string("NoGas")]          = bit_to_mask(nogas);
-      bitnames[std::string("NoPreamp")]       = bit_to_mask(noPreamp);
+      bitnames[std::string("NoGas")]          = bit_to_mask(lowgas);
+      bitnames[std::string("LowPreamp")]       = bit_to_mask(noPreamp);
       bitnames[std::string("NoADC")]	      = bit_to_mask(noADC);
       bitnames[std::string("NoTDC")]          = bit_to_mask(noTDC);
       bitnames[std::string("Sparking")]       = bit_to_mask(sparking);

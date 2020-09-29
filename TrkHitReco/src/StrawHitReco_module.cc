@@ -111,6 +111,7 @@ namespace mu2e {
       _flagXT(pset.get<bool>(      "FlagCrossTalk",false)),
       _printLevel(pset.get<int>(     "printLevel",0)),
       _diagLevel(pset.get<int>(      "diagLevel",0)),
+      _mask("uniquestraw"),      // each hit is a unique straw
       _end{StrawEnd::cal,StrawEnd::hv}, // this should be in a general place, FIXME!
       _sdtoken{consumes<StrawDigiCollection>(pset.get<art::InputTag>("StrawDigiCollection","makeSD"))},
       _cctoken{mayConsume<CaloClusterCollection>(pset.get<art::InputTag>("caloClusterModuleLabel","CaloClusterFast"))},
@@ -120,10 +121,6 @@ namespace mu2e {
       consumes<EventWindowMarker>(_ewMarkerTag);
       produces<ComboHitCollection>();
       if(_writesh)produces<StrawHitCollection>();
-      // each hit is a unique straw
-      std::vector<StrawIdMask::field> fields{StrawIdMask::plane,StrawIdMask::panel,StrawIdMask::straw};
-      _mask = StrawIdMask(fields);
-
       if (_printLevel > 0) std::cout << "In StrawHitReco constructor " << std::endl;
   }
 
