@@ -93,19 +93,19 @@ namespace mu2e {
 
 //TODO  - for consistancy with other spectra
   double MueXSpectrum::evalIntegral(double de){
-       gsl_function F;
+    gsl_function F;
     F.function = &f;
     F.params   = &_par;
 
     size_t limit  = 1000;
     double epsabs = 0.001;
     double epsrel = 0.001;
-  
+
     gsl_integration_workspace * ws = gsl_integration_workspace_alloc(10000);
 
     double result, abserr;
 
-    double emin = 0.72;
+    double emin = 100; //eqn only valid for > 100 MeV
     double emax = _par.eMax-de;
 
     gsl_integration_qags(&F,
