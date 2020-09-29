@@ -24,12 +24,13 @@ namespace mu2e {
     }
     auto const& settings = config_.settings();
     if ( settings.verbose() > 0 ) {
-      cout << "TrackerStatusMaker created with " << estats.size() 
+      cout << "TrackerStatus created with " << estats.size() 
 	<< " elements " << endl;
       if(settings.verbose() > 1){
 	for(auto const& estat : estats) {
-	  std::cout << "Adding Tracker Element with Id " << estat.sid_
+	  std::cout << "Tracker Element Id " << estat.sid_
 	    << " level " << estat.mask_.levelName()  
+	    << " mask " << estat.mask_.mask()  
 	    << " status " << estat.status_ << std::endl;
 	}
       }

@@ -47,9 +47,9 @@ namespace mu2e {
       case straw :
 	return StrawId::_strawmsk;
       case uniquepanel :
-	return StrawId::_panelmsk || StrawId::_planemsk;
+	return StrawId::_panelmsk | StrawId::_planemsk;
       case uniquestraw :
-	return StrawId::_strawmsk || StrawId::_panelmsk || StrawId::_planemsk;
+	return StrawId::_strawmsk | StrawId::_panelmsk | StrawId::_planemsk;
       default:
 	return 0;
     }

@@ -22,12 +22,12 @@ namespace mu2e {
     using Name=fhicl::Name;
     using Comment=fhicl::Comment;
     using TSSTable = fhicl::Table<TrackerStatusSettings>;
-    using TSSequence = fhicl::Sequence<fhicl::Tuple<std::string,std::string,uint16_t>>;
+    using TSSequence = fhicl::Sequence<fhicl::Tuple<std::string,std::string,std::string>>;
     TSSTable settings { Name("Settings") };
-    TSSequence status { Name("TrackerStatus"),
+    TSSequence status { Name("Status"),
       Comment("Provide in order: StrawId contained by the element in'plane_panel_straw' format \n"
 	  "Level of the elemtn ('station', 'plane', 'panel', 'uniquepanel', 'straw', 'uniquestraw') \n"
-	  "Status of the element (see StrawStatus for details)") };
+	  "Colon-separated status bits to set for the element(see StrawStatus for details)") };
   };
 
 }

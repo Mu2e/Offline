@@ -117,7 +117,7 @@ namespace mu2e {
       // cache the BField direction at the tracker center
       Hep3Vector _bdir;
       float _bnom; // BField in units of (MeV/c)/mm
-      ProditionsHandle<TrackerStatus> _trackerStatus_h; // dead straw list
+      ProditionsHandle<TrackerStatus> _trackerStatus_h; // tracker element status
       // diagnostic histograms
       TH1F *_hendrad, *_hphi;
       TTree* _sgsdiag;
@@ -381,6 +381,8 @@ namespace mu2e {
 	  // if the key already exists, just add this Ptr to the vector
 	  if(!ssp.second)ssp.first->second.push_back(spmcptr);
 	}
+      } else if ( _debug>1 ) {
+	std::cout << "No Signal, StrawId " << sid << endl;
       }
     }
   }
@@ -467,7 +469,7 @@ namespace mu2e {
       auto momhat = last->momentum().unit();
       // test parabolic extrapolation first
       _brot = last->stepLength()*_bnom/last->momentum().mag(); // magnetic bending rotation angle
-      if(_debug > 1){
+      if(_debug > 2){
 	cout << "Step Length = " << last->stepLength() << " rotation angle " << _brot << endl;
       }
       auto rho = _bdir.cross(momhat);// points radially outwards for positive charge
