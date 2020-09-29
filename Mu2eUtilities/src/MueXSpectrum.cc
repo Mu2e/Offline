@@ -53,11 +53,9 @@ namespace mu2e {
   }
     
   double MueXSpectrum::f_mu2eX_gen(double E, void *p) { //For E>100MeV Only 
-    //double eMax  = ((MueXSpectrum::Params_t*) p)->eMax;
     double mmu   = ((MueXSpectrum::Params_t*) p)->mmu;
     double Emu   = ((MueXSpectrum::Params_t*) p)->Emu;
     double BR    = ((MueXSpectrum::Params_t*) p)->BR;
-    //double Gamma    = ((MueXSpectrum::Params_t*) p)->Gamma;
     double mN    = ((MueXSpectrum::Params_t*) p)->mN;
     double a0    = ((MueXSpectrum::Params_t*) p)->a0;
     double a1    = ((MueXSpectrum::Params_t*) p)->a1; 
@@ -91,7 +89,7 @@ namespace mu2e {
     return weight;
   }
 
-//TODO  - for consistancy with other spectra
+
   double MueXSpectrum::evalIntegral(double de){
     gsl_function F;
     F.function = &f_mu2eX_gen;
