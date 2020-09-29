@@ -1,7 +1,7 @@
 #ifndef TrackerConditions_TrackerStatus_hh
 #define TrackerConditions_TrackerStatus_hh
 //
-// Define status of the tracker
+// Define status of the tracker, as the agregate of tracker element status
 //
 
 // Mu2e includes
@@ -9,6 +9,7 @@
 #include "DataProducts/inc/StrawIdMask.hh"
 #include "TrackerConditions/inc/StrawStatus.hh"
 #include "Mu2eInterfaces/inc/ProditionsEntity.hh"
+#include "fhiclcpp/type_traits.h"
 
 // C++ includes
 #include <set>
@@ -16,79 +17,59 @@
 
 namespace mu2e {
 
-// struct to define a range of deadness in a straw.  This is assumed to be equidistant
-// from the straw center, to model radiation damage due to dose (which is concentrated
-// at the lowest radius = straw center)
-//
+  struct TrackerElementStatus {
+    StrawId sid_; // ID of this tracker element.  Only the fields covered by the mask are relevant
+    StrawIdMask mask_; // level of this element (straw, panel, or plane)
+    StrawStatus status_; // status of this tracker element
+    TrackerElementStatus(StrawId const& sid, StrawIdMask const& mask, StrawStatus const& status) : sid_(sid), mask_(mask), status_(status) {}
+    bool operator < (const TrackerElementStatus& other) const { return sid_ < other.sid_; } // needed for std::set
+  };
 
   class TrackerStatus : public ProditionsEntity {
   public:
-    Struct TrackerElementStatus {
-      StrawId sid_; // ID of this tracker element
-      StrawIdMask mask_; // level of this element (straw, panel, or plane)
-      StrawStatus status_; // status of this tracker element
-    };
 
     typedef std::shared_ptr<TrackerStatus> ptr_t;
     typedef std::shared_ptr<const TrackerStatus> cptr_t;
     typedef std::set<TrackerElementStatus> estat_t;
-    typedef std::set<StrawStatus> sstat_t;
     TrackerStatus(): _name("TrackerStatus") {}
-    TrackerStatus(set_t const& deadstraws):
-      _name("TrackerStatus"),_deadstraws(deadstraws) {}
+    TrackerStatus(estat_t const& estatus): _name("TrackerStatus"), _estatus(estatus) {}
 
     virtual ~TrackerStatus() {}
 
-    std::string const& name() const { return _name; }
-    void print( std::ostream& ) const;
+    std::string const& name() const override { return _name; }
+    void print( std::ostream& ) const override;
 
-    // find the status object(s) associated with a particular StrawId
-    findMatches(StrawId const& sid, sstat_t& sstat) const {
-      sstat.clear();
-      for(auto istat= status_.begin(); istat != status_.end(); ++istat){
-	if(istat->mask_.equal(sid,istat->sid_))sstat.append(istat->status_);
+    // Net status of an individual Straw.  If the straw is in a plane or panel with status, that will be aggregated
+    StrawStatus strawStatus(StrawId const& sid) const {
+      StrawStatus sstat;
+      for(auto const& stat : _estatus){
+	if(stat.mask_.equal(sid,stat.sid_))sstat.merge(stat.status_);
       }
+      return sstat;
+    }
+// same for panel, plane.  Note; these will return only status that applies to the ENTIRE PANEL (or plane)
+// It will NOT detect (say) a panel where every straw has had the same status individually set (that's not a good configuration)
+    StrawStatus panelStatus(StrawId const& sid) const {
+      StrawStatus sstat;
+      for(auto const& stat : _estatus){
+      // don't count status specific to a straw
+	if((stat.mask_.level() == StrawIdMask::panel || stat.mask_.level() == StrawIdMask::uniquepanel)
+	  && stat.mask_.equal(sid,stat.sid_))sstat.merge(stat.status_);
+      }
+      return sstat;
     }
 
-    // no signal expected from this straw
-    bool noSignal(StrawId const& sid) {
-      static StrawStatus::mask_type mask = StrawStatus::absent | StrawStatus::nowire | StrawStatus::noHV | StrawStatus::noLV | StrawStatus::nogas | StrawStatus::noPreamp;
-      sstat_t matches;
-      findMatches(sid,matches);
-      bool retval(false);
-      for(auto istat =matches.begin(); istat != matches.end(); istat++){
-	retval |= istat->hasAnyProperty(mask);
+    StrawStatus planeStatus(StrawId const& sid) const {
+      StrawStatus sstat;
+      for(auto const& stat : _estatus){
+      // don't count status specific to a straw or panel
+	if((stat.mask_.level() == StrawIdMask::plane) && stat.mask_.equal(sid,stat.sid_))sstat.merge(stat.status_);
       }
-      return retval;
+      return sstat;
     }
-
-    // whether to count in scattering calculation
-    bool noMaterial(StrawStatus const& sstat) {
-      static StrawStatus::mask_type mask = StrawStatus::absent;
-      sstat_t matches;
-      findMatches(sid,matches);
-      bool retval(false);
-      for(auto istat =matches.begin(); istat != matches.end(); istat++){
-	retval |= istat->hasAnyProperty(mask);
-      }
-      return retval;
-    }
-
-  // suppress this straw
-    bool suppress(StrawStatus const& sstat) {
-      static StrawStatus::mask_type mask = StrawStatus::sparking | StrawStatus::noise | StrawStatus::pickup | StrawStatus::noread | StrawStatus::suppress;
-      sstat_t matches;
-      findMatches(sid,matches);
-      bool retval(false);
-      for(auto istat =matches.begin(); istat != matches.end(); istat++){
-	retval |= istat->hasAnyProperty(mask);
-      }
-      return retval;
-    }
-
   private:
     std::string _name;
-    estat_t status_; // sparse list of tracker element status
+    estat_t _estatus; // sparse list of tracker element status
   };
 
 } // namespace mu2e
