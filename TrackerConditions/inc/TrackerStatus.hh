@@ -38,35 +38,17 @@ namespace mu2e {
 
     std::string const& name() const override { return _name; }
     void print( std::ostream& ) const override;
+    // convenience operators for some common situations
+    bool noSignal(StrawId const& sid) const;    // return 'true' if we expect no usable signal from this straw
+    bool suppress(StrawId const& sid) const;  // This straw may produce a signal, but it should be suppressed as it is inaccurate 
+    bool noMaterial(StrawId const& sid) const;  // starw doesn't contribut to scattering or energy loss
 
     // Net status of an individual Straw.  If the straw is in a plane or panel with status, that will be aggregated
-    StrawStatus strawStatus(StrawId const& sid) const {
-      StrawStatus sstat;
-      for(auto const& stat : _estatus){
-	if(stat.mask_.equal(sid,stat.sid_))sstat.merge(stat.status_);
-      }
-      return sstat;
-    }
-// same for panel, plane.  Note; these will return only status that applies to the ENTIRE PANEL (or plane)
-// It will NOT detect (say) a panel where every straw has had the same status individually set (that's not a good configuration)
-    StrawStatus panelStatus(StrawId const& sid) const {
-      StrawStatus sstat;
-      for(auto const& stat : _estatus){
-      // don't count status specific to a straw
-	if((stat.mask_.level() == StrawIdMask::panel || stat.mask_.level() == StrawIdMask::uniquepanel)
-	  && stat.mask_.equal(sid,stat.sid_))sstat.merge(stat.status_);
-      }
-      return sstat;
-    }
-
-    StrawStatus planeStatus(StrawId const& sid) const {
-      StrawStatus sstat;
-      for(auto const& stat : _estatus){
-      // don't count status specific to a straw or panel
-	if((stat.mask_.level() == StrawIdMask::plane) && stat.mask_.equal(sid,stat.sid_))sstat.merge(stat.status_);
-      }
-      return sstat;
-    }
+    StrawStatus strawStatus(StrawId const& sid) const;
+    // same for panel, plane.  Note; these will return only status that applies to the ENTIRE PANEL (or plane)
+    // It will NOT detect (say) a panel where every straw has had the same status individually set (that's not a good configuration)
+    StrawStatus panelStatus(StrawId const& sid) const;
+    StrawStatus planeStatus(StrawId const& sid) const;
   private:
     std::string _name;
     estat_t _estatus; // sparse list of tracker element status
