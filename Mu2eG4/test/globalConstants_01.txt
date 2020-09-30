@@ -99,6 +99,9 @@ vector<double> physicsParams.shankerFcoefficients =
     -6.7013, 1.9329, -0.165584, 5.41126e-3
   };
 
+//Mu2eII_SM21 Specific configuration
+//WARNING do not merge into master!
+#include "Mu2eG4/test/globalConstants_mu2eii.txt"
 // This tells emacs to view this file in c++ mode.
 // Local Variables:
 // mode:c++
