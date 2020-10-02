@@ -30,7 +30,7 @@
 #include "TrkHitReco/inc/PeakFitFunction.hh"
 #include "TrkHitReco/inc/ComboPeakFitRoot.hh"
 
-#include "DataProducts/inc/EventWindowMarker.hh"
+#include "RecoDataProducts/inc/ProtonBunchTime.hh"
 #include "DataProducts/inc/StrawEnd.hh"
 #include "RecoDataProducts/inc/CaloClusterCollection.hh"
 #include "RecoDataProducts/inc/StrawDigi.hh"
@@ -79,7 +79,7 @@ namespace mu2e {
 
        art::ProductToken<StrawDigiCollection> const _sdtoken;
        art::ProductToken<CaloClusterCollection> const _cctoken;
-       art::InputTag _ewMarkerTag; // name of the module that makes eventwindowmarkers
+       art::InputTag _pbtoTag; // name of the module that makes eventwindowmarkers
        fhicl::ParameterSet _peakfit;  // peak fit (charge reconstruction) parameters
        std::unique_ptr<TrkHitReco::PeakFit> _pfit; // peak fitting algorithm
        // diagnostic
@@ -115,10 +115,10 @@ namespace mu2e {
       _end{StrawEnd::cal,StrawEnd::hv}, // this should be in a general place, FIXME!
       _sdtoken{consumes<StrawDigiCollection>(pset.get<art::InputTag>("StrawDigiCollection","makeSD"))},
       _cctoken{mayConsume<CaloClusterCollection>(pset.get<art::InputTag>("caloClusterModuleLabel","CaloClusterFast"))},
-      _ewMarkerTag(pset.get<art::InputTag>("EventWindowMarkerLabel")),
+      _pbtoTag(pset.get<art::InputTag>("ProtonBunchTimeLabel")),
       _peakfit(pset.get<fhicl::ParameterSet>("PeakFitter", {}))
   {
-      consumes<EventWindowMarker>(_ewMarkerTag);
+      consumes<ProtonBunchTime>(_pbtoTag);
       produces<ComboHitCollection>();
       if(_writesh)produces<StrawHitCollection>();
       if (_printLevel > 0) std::cout << "In StrawHitReco constructor " << std::endl;
@@ -172,11 +172,11 @@ namespace mu2e {
         caloClusters = ccH.product();
       }
 
-      double ewmOffset = 0;
-      art::Handle<EventWindowMarker> ewMarkerHandle;
-      if (event.getByLabel(_ewMarkerTag, ewMarkerHandle)){
-        const EventWindowMarker& ewMarker(*ewMarkerHandle);
-        ewmOffset = ewMarker.timeOffset();
+      double pbtoOffset = 0;
+      art::Handle<ProtonBunchTime> pbtoHandle;
+      if (event.getByLabel(_pbtoTag, pbtoHandle)){
+        const ProtonBunchTime& pbto(*pbtoHandle);
+        pbtoOffset = pbto.pbtime_;
       }
 
       std::unique_ptr<StrawHitCollection> shCol;
@@ -210,7 +210,7 @@ namespace mu2e {
 	if(times[StrawEnd::hv] < times[StrawEnd::cal])
 	  eend = StrawEnd(StrawEnd::hv);
 	// take the earliest of the 2 end times
-	float time = times[eend.end()] + ewmOffset;
+	float time = times[eend.end()] - pbtoOffset;
 	if (time < _minT || time > _maxT ){
 	  if(_filter)continue;
 	} else
