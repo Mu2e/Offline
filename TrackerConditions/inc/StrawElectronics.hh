@@ -128,7 +128,6 @@ namespace mu2e {
     void uncalibrateTimes(TrkTypes::TDCTimes &times, const StrawId &id) const; // convert time from beam t0 to tracker channel t0
     bool combineEnds(double t1, double t2) const; // are times from 2 ends combined into a single digi?
     // interpretation of digital data
-    void tdcTimes(TrkTypes::TDCValues const& tdc, TrkTypes::TDCTimes& times) const;
     double adcVoltage(StrawId sid, uint16_t adcval) const; // mVolts
     double adcCurrent(StrawId sid, uint16_t adcval) const; // microAmps
     // accessors
