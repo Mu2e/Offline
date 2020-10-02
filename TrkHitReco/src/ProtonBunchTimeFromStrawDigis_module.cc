@@ -90,7 +90,7 @@ namespace mu2e {
     if(debug_ > 1 && event.id().event() < 1000) {
       art::ServiceHandle<art::TFileService> tfs;
       char hname[100];
-      snprintf(hname,100,"PBTO%i",event.id().event());
+      snprintf(hname,100,"PBT%i",event.id().event());
       timeplot = tfs->make<TH1F>(hname,"time spectrum;nsec",nbins_,0.0,maxtime_);
     }
 

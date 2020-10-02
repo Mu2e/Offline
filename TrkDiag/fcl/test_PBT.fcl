@@ -1,0 +1,29 @@
+#include "fcl/standardServices.fcl"
+process_name : TestPBTO
+# augment producers and analyzers
+#
+source : {
+  module_type : RootInput
+}
+services : @local::Services.Reco
+physics.producers: {
+  PBTFSD : {
+    module_type             : ProtonBunchTimeFromStrawDigis
+    debugLevel : 2
+    diagLevel : 0
+    printLevel : 0
+    nBins : 30
+  }
+}
+physics.analyzers : {
+  PBTD : {
+    module_type             : ProtonBunchTimeDiag
+    ProtonBunchTimeTag : PBTFSD
+    EventWindowMarkerTag : EWMProducer
+  }
+}
+
+physics.TriggerPath : [ PBTFSD ]
+physics.EndPath : [ PBTD ]
+
+
