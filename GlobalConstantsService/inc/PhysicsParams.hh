@@ -109,6 +109,32 @@ namespace mu2e
     const std::vector<double>& getShankerEcoefficients() const { return _shankerEcoefficients; }
     const std::vector<double>& getShankerFcoefficients() const { return _shankerFcoefficients; }
 
+    double   getCaptureProtonRate     (targetMat material = "") const {
+      const std::string allowedMaterial = checkMaterial( material );
+      return _captureProtonRate.find(allowedMaterial)->second;
+    }
+    double   getCaptureDeuteronRate     (targetMat material = "") const {
+      const std::string allowedMaterial = checkMaterial( material );
+      return _captureDeuteronRate.find(allowedMaterial)->second;
+    }
+    double   getCaptureNeutronRate     (targetMat material = "") const {
+      const std::string allowedMaterial = checkMaterial( material );
+      return _captureNeutronRate.find(allowedMaterial)->second;
+    }
+    double   getCapturePhotonRate     (targetMat material = "") const {
+      const std::string allowedMaterial = checkMaterial( material );
+      return _capturePhotonRate.find(allowedMaterial)->second;
+    }
+
+    double   getCaptureGammaEnergy     (targetMat material = "") const {
+      const std::string allowedMaterial = checkMaterial( material );
+      return _captureGammaEnergy.find(allowedMaterial)->second;
+    }
+    double   getCaptureGammaIntensity     (targetMat material = "") const {
+      const std::string allowedMaterial = checkMaterial( material );
+      return _captureGammaIntensity.find(allowedMaterial)->second;
+    }
+
     PhysicsParams( SimpleConfig const& config );
 
     // Accept compiler generated:
@@ -145,6 +171,14 @@ namespace mu2e
     std::vector<double> _shankerDcoefficients;
     std::vector<double> _shankerEcoefficients;
     std::vector<double> _shankerFcoefficients;
+
+    std::map<targetMat, double> _captureProtonRate;
+    std::map<targetMat, double> _captureDeuteronRate;
+    std::map<targetMat, double> _captureNeutronRate;
+    std::map<targetMat, double> _capturePhotonRate;
+
+    std::map<targetMat, double> _captureGammaEnergy;
+    std::map<targetMat, double> _captureGammaIntensity;
 
     inline targetMat checkMaterial( const targetMat& material ) const {
       if ( material.empty() ) return _chosenStoppingTargetMaterial;
