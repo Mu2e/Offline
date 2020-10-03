@@ -39,7 +39,7 @@ mu2e.tgtMuonStops: {
     averageNumRecordsToUse: 500000
     treeName              : "stoppedMuonDumper/stops"
     branchName            : "stops"
-    verbositylevel        : 0
+    verbosityLevel        : 0
 }
 mu2e.ootMuonStops: {
     inputFiles            : @nil

@@ -99,6 +99,14 @@ vector<double> physicsParams.shankerFcoefficients =
     -6.7013, 1.9329, -0.165584, 5.41126e-3
   };
 
+// Capture product emission rates
+double physicsParams.Al.capture.protonRate = 0.05;
+double physicsParams.Al.capture.deuteronRate = 0.025;
+double physicsParams.Al.capture.neutronRate = 1.2;
+double physicsParams.Al.capture.photonRate = 2.0;
+double physicsParams.Al.capture.gRay.energy = 1.809;
+double physicsParams.Al.capture.gRay.intensity = 0.51;
+
 // This tells emacs to view this file in c++ mode.
 // Local Variables:
 // mode:c++
