@@ -4,11 +4,17 @@ BEGIN_PROLOG
 # Reconstruct hits: this produces StrawHits and ComboHits
 
 # now trigger-specific versions; these make deep copies
+TTPBTFSD : {
+  module_type             : ProtonBunchTimeFromStrawDigis
+}
+
 TTmakeSH : {
     module_type             : StrawHitReco
     FilterHits              : true
     WriteStrawHitCollection : false
-    EventWindowMarkerLabel  : "EWMProducer"
+    ProtonBunchTimeTag      : "TTPBTFSD"
+    StrawDigiCollectionTag  : "makeSD"
+    CaloClusterCollectionTag  : "CaloClusterFast"
 }
 # combine hits in a panel
 TTmakePH : {
@@ -22,7 +28,9 @@ TTmakeSHUCC : {
     UseCalorimeter          : true
     FilterHits              : true
     WriteStrawHitCollection : false
-    EventWindowMarkerLabel  : "EWMProducer"
+    ProtonBunchTimeTag      : "TTPBTFSD"
+    StrawDigiCollectionTag  : "makeSD"
+    CaloClusterCollectionTag  : "CaloClusterFast"
 }
 # combine hits in a panel
 TTmakePHUCC : {
@@ -60,6 +68,7 @@ TTSflagBkgHits : {
 # combine together
 TrkHitRecoTrigger : { 
     producers : { 
+	TTPBTFSD            : { @table::TTPBTFSD             }
 	TTmakeSH            : { @table::TTmakeSH             }
 	TTmakePH            : { @table::TTmakePH             }
 	TTmakeSHUCC         : { @table::TTmakeSHUCC          }
@@ -74,10 +83,10 @@ TrkHitRecoTrigger : {
     # SEQUENCES
     # production sequence to prepare hits for tracking
     sequences: {
-	TTprepareHits     : [ TTmakeSH, TTmakePH,TTflagBkgHits ]
-	TTprepareHitsUCC  : [ TTmakeSHUCC, TTmakePHUCC, TTflagBkgHitsUCC ]
-	TTmakefastHits    : [ TTmakeSH, TTmakePH ]
-	TTSprepareHits    : [ TTmakeSH, TTSmakePH, TTmakeSTH ,TTSflagBkgHits ]
+	TTprepareHits     : [ TTPBTFSD, TTmakeSH, TTmakePH,TTflagBkgHits ]
+	TTprepareHitsUCC  : [ TTPBTFSD, TTmakeSHUCC, TTmakePHUCC, TTflagBkgHitsUCC ]
+	TTmakefastHits    : [ TTPBTFSD, TTmakeSH, TTmakePH ]
+	TTSprepareHits    : [ TTPBTFSD, TTmakeSH, TTSmakePH, TTmakeSTH ,TTSflagBkgHits ]
     }
 }
 

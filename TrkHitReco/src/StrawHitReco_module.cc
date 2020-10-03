@@ -6,7 +6,6 @@
 //
 // framework
 #include "art/Framework/Principal/Event.h"
-#include "fhiclcpp/ParameterSet.h"
 #include "art/Framework/Principal/Handle.h"
 #include "GeometryService/inc/GeomHandle.hh"
 #include "art/Framework/Core/EDProducer.h"
@@ -46,78 +45,96 @@
 namespace mu2e {
   using namespace TrkTypes;
 
-  class StrawHitReco : public art::EDProducer
-  {
-     public:
-       explicit StrawHitReco(fhicl::ParameterSet const& pset);
-       virtual void produce( art::Event& e);
-       virtual void beginRun( art::Run& run );
-       virtual void beginJob();
+  class StrawHitReco : public art::EDProducer {
+    public:
+      using Name=fhicl::Name;
+      using Comment=fhicl::Comment;
+      struct Config {
+	fhicl::Atom<int> diag{ Name("diagLevel"), Comment("Diag level"), 0};
+	fhicl::Atom<int> print{ Name("printLevel"), Comment("Print level"), 0};
+	fhicl::Atom<int> fittype { Name( "FitType"), Comment("Waveform Fit Type"), TrkHitReco::FitType::peakminuspedavg};
+	fhicl::Atom<bool> usecc{ Name("UseCalorimeter"), Comment("Use Calo cluster times to filter" ),false};
+	fhicl::Atom<float>clusterDt{ Name("clusterDt"), Comment("Calo cluster time 1/2 window"),100};
+	fhicl::Atom<float>minE{ Name("minimumEnergy"), Comment("Minimum straw energy deposit (MeV)"),0.0};
+	fhicl::Atom<float>maxE{ Name("maximumEnergy"), Comment("Maximum straw energy deposit (MeV)"),0.0035};
+	fhicl::Atom<float>ctE{ Name("crossTalkEnergy"), Comment("Energy to filter cross-talk in adajcent straws (MeV)"),0.007};
+	fhicl::Atom<float>ctMinT{ Name("crossTalkMinimumTime"), Comment("Earliest time for cross-talk filter (nsec)"),-1};
+	fhicl::Atom<float>ctMaxT{ Name("crossTalkMaximumTime"), Comment("Latest time for cross-talk filter (nsec)"),100};
+	fhicl::Atom<float>minT{ Name("minimumTime"), Comment("Earliest StrawDigi time to process (nsec)"),500};
+	fhicl::Atom<float>maxT{ Name("maximumTime"), Comment("Latest StrawDigi time to process (nsec)"),2000};
+	fhicl::Atom<bool>filter{ Name("FilterHits"), Comment("Filter hits (alternative is to just flag)") };
+	fhicl::Atom<bool>writesh{ Name("WriteStrawHitCollection"), Comment("Save StrawHitCollection")};
+	fhicl::Atom<bool>flagXT{ Name("FlagCrossTalk"), Comment("Search for cross-talk"),false};
+	fhicl::Atom<art::InputTag> sdcTag{ Name("StrawDigiCollectionTag"), Comment("StrawDigiCollection producer")};
+	fhicl::Atom<art::InputTag> cccTag{ Name("CaloClusterCollectionTag"), Comment("CaloClusterCollection producer")};
+	fhicl::Atom<art::InputTag> pbttoken{ Name("ProtonBunchTimeTag"), Comment("ProtonBunchTime producer")};
+      };
+
+      using Parameters = art::EDProducer::Table<Config>;
+      explicit StrawHitReco(Parameters const& config);
+      void produce( art::Event& e) override;
+      void beginRun( art::Run& run ) override;
+      void beginJob() override;
 
 
-     private:
-       TrkHitReco::FitType _fittype; // peak Fitter
-       bool   _usecc;                   // use calorimeter cluster filtering
-       float _clusterDt;               // maximum hit-calo lcuster time difference
-       float _minE;             // energy range (MeV)
-       float _maxE;             // energy range (MeV)
-       float _ctE;                     // minimum charge to flag neighbors as cross talk
-       float _ctMinT;                  // time relative to proton hit to flag cross talk (ns)
-       float _ctMaxT;                  // time relative to proton hit to flag cross talk (ns)
-       float _minT, _maxT;             // time range
-       bool   _filter;                // filter the output, or just flag
-       bool  _writesh;                // write straw hits or not
-       bool _flagXT; // flag cross-talk
-       int    _printLevel;
-       int    _diagLevel;
-       StrawIdMask _mask;
-       StrawEnd _end[2]; // helper
-       float _invnpre; // cache
-       float _invgainAvg; // cache
-       float _invgain[96]; // cache
-       unsigned _npre; //cache
+    private:
+      TrkHitReco::FitType _fittype; // peak Fitter
+      bool  _usecc;                   // use calorimeter cluster filtering
+      float _clusterDt;               // maximum hit-calo lcuster time difference
+      float _minE;             // energy range (MeV)
+      float _maxE;             // energy range (MeV)
+      float _ctE;                     // minimum charge to flag neighbors as cross talk
+      float _ctMinT;                  // time relative to proton hit to flag cross talk (ns)
+      float _ctMaxT;                  // time relative to proton hit to flag cross talk (ns)
+      float _minT, _maxT;             // time range
+      bool  _filter;                // filter the output, or just flag
+      bool  _writesh;                // write straw hits or not
+      bool  _flagXT; // flag cross-talk
+      int   _printLevel;
+      int   _diagLevel;
+      StrawIdMask _mask;
+      StrawEnd _end[2]; // helper
+      float _invnpre; // cache
+      float _invgainAvg; // cache
+      float _invgain[96]; // cache
+      unsigned _npre; //cache
 
-       art::ProductToken<StrawDigiCollection> const _sdtoken;
-       art::ProductToken<CaloClusterCollection> const _cctoken;
-       art::InputTag _pbtoTag; // name of the module that makes eventwindowmarkers
-       fhicl::ParameterSet _peakfit;  // peak fit (charge reconstruction) parameters
-       std::unique_ptr<TrkHitReco::PeakFit> _pfit; // peak fitting algorithm
-       // diagnostic
-       TH1F* _maxiter;
-       // helper function
-       float peakMinusPedAvg(TrkTypes::ADCWaveform const& adcData) const;
-       float peakMinusPed(StrawId id, TrkTypes::ADCWaveform const& adcData) const;
-    ProditionsHandle<StrawResponse> _strawResponse_h;
-    ProditionsHandle<DeadStraw> _deadStraw_h;
-    ProditionsHandle<Tracker> _alignedTracker_h;
+      art::ProductToken<StrawDigiCollection> const _sdctoken;
+      art::ProductToken<CaloClusterCollection> const _ccctoken;
+      art::ProductToken<ProtonBunchTime> const _pbttoken; // name of the module that makes eventwindowmarkers
+      std::unique_ptr<TrkHitReco::PeakFit> _pfit; // peak fitting algorithm
+      // diagnostic
+      TH1F* _maxiter;
+      // helper function
+      float peakMinusPedAvg(TrkTypes::ADCWaveform const& adcData) const;
+      float peakMinusPed(StrawId id, TrkTypes::ADCWaveform const& adcData) const;
+      ProditionsHandle<StrawResponse> _strawResponse_h;
+      ProditionsHandle<DeadStraw> _deadStraw_h;
+      ProditionsHandle<Tracker> _alignedTracker_h;
+  };
 
-
- };
-
-  StrawHitReco::StrawHitReco(fhicl::ParameterSet const& pset) :
-      art::EDProducer{pset},
-      _fittype((TrkHitReco::FitType) pset.get<unsigned>("FitType",TrkHitReco::FitType::peakminuspedavg)),
-      _usecc(pset.get<bool>(         "UseCalorimeter",false)),
-      _clusterDt(pset.get<float>(   "clusterDt",100)),
-      _minE(pset.get<float>(        "minimumEnergy",0.0)), // MeV
-      _maxE(pset.get<float>(        "maximumEnergy",0.0035)), // MeV
-      _ctE(pset.get<float>(         "crossTalkEnergy",0.007)), // MeV
-      _ctMinT(pset.get<float>(      "crossTalkMinimumTime",-1)), // nsec
-      _ctMaxT(pset.get<float>(      "crossTalkMaximumTime",100)), // nsec
-      _minT(pset.get<float>(        "minimumTime",500)), // nsec
-      _maxT(pset.get<float>(        "maximumTime",2000)), // nsec
-      _filter(pset.get<bool>(      "FilterHits")),
-      _writesh(pset.get<bool>(      "WriteStrawHitCollection")),
-      _flagXT(pset.get<bool>(      "FlagCrossTalk",false)),
-      _printLevel(pset.get<int>(     "printLevel",0)),
-      _diagLevel(pset.get<int>(      "diagLevel",0)),
-      _end{StrawEnd::cal,StrawEnd::hv}, // this should be in a general place, FIXME!
-      _sdtoken{consumes<StrawDigiCollection>(pset.get<art::InputTag>("StrawDigiCollection","makeSD"))},
-      _cctoken{mayConsume<CaloClusterCollection>(pset.get<art::InputTag>("caloClusterModuleLabel","CaloClusterFast"))},
-      _pbtoTag(pset.get<art::InputTag>("ProtonBunchTimeLabel")),
-      _peakfit(pset.get<fhicl::ParameterSet>("PeakFitter", {}))
-  {
-      consumes<ProtonBunchTime>(_pbtoTag);
+  StrawHitReco::StrawHitReco(Parameters const& config) :
+    art::EDProducer{config},
+    _fittype((TrkHitReco::FitType) config().fittype()),
+    _usecc(config().usecc()),
+    _clusterDt(config().clusterDt()),
+    _minE(config().minE()),
+    _maxE(config().maxE()),
+    _ctE(config().ctE()),
+    _ctMinT(config().ctMinT()),
+    _ctMaxT(config().ctMaxT()),
+    _minT(config().minT()),
+    _maxT(config().maxT()),
+    _filter(config().filter()),
+    _writesh(config().writesh()),
+    _flagXT(config().flagXT()),
+    _printLevel(config().print()),
+    _diagLevel(config().diag()),
+    _end{StrawEnd::cal,StrawEnd::hv}, // this should be in a general place, FIXME!
+    _sdctoken{consumes<StrawDigiCollection>(config().sdcTag())},
+    _ccctoken{mayConsume<CaloClusterCollection>(config().cccTag())},
+    _pbttoken{consumes<ProtonBunchTime>(config().pbttoken())}
+    {
       produces<ComboHitCollection>();
       if(_writesh)produces<StrawHitCollection>();
       // each hit is a unique straw
@@ -148,12 +165,9 @@ namespace mu2e {
         _invgain[i] = srep.adcLSB()*srep.peakMinusPedestalEnergyScale(dummyId)/srep.strawGain();
       }
 
-      // this must be done here because srep is not accessible at startup and pfit references it
-      if (_fittype == TrkHitReco::FitType::combopeakfit)
-         _pfit = std::unique_ptr<TrkHitReco::PeakFit>(new TrkHitReco::ComboPeakFitRoot(srep,_peakfit) );
-      else if (_fittype == TrkHitReco::FitType::peakfit)
-         _pfit = std::unique_ptr<TrkHitReco::PeakFit>(new TrkHitReco::PeakFitRoot(srep,_peakfit) );
-      if (_printLevel > 0) std::cout << "In StrawHitReco begin Run " << std::endl;
+      // Detailed histogram-based waveform fits are no longer supported TODO!
+      if (_fittype != TrkHitReco::FitType::peakminusped && _fittype != TrkHitReco::FitType::peakminuspedavg)
+	throw cet::exception("RECO")<<"TrkHitReco: Peak fit " << _fittype << " not implemented " <<  std::endl;
   }
 
   //------------------------------------------------------------------------------------------
@@ -166,21 +180,20 @@ namespace mu2e {
       size_t nplanes = tt.nPlanes();
       size_t npanels = tt.getPlane(0).nPanels();
       auto const& srep = _strawResponse_h.get(event.id());
-      auto sdH = event.getValidHandle(_sdtoken);
+      auto sdH = event.getValidHandle(_sdctoken);
       const StrawDigiCollection& sdcol(*sdH);
 
       const CaloClusterCollection* caloClusters(0);
       if(_usecc){
-        auto ccH = event.getValidHandle(_cctoken);
+        auto ccH = event.getValidHandle(_ccctoken);
         caloClusters = ccH.product();
       }
 
-      double pbtoOffset = 0;
-      art::Handle<ProtonBunchTime> pbtoHandle;
-      if (event.getByLabel(_pbtoTag, pbtoHandle)){
-        const ProtonBunchTime& pbto(*pbtoHandle);
-        pbtoOffset = pbto.pbtime_;
-      }
+      double pbtOffset = 0;
+      art::Handle<ProtonBunchTime> pbtHandle;
+      auto pbtH = event.getValidHandle(_pbttoken);
+      const ProtonBunchTime& pbt(*pbtH);
+      pbtOffset = pbt.pbtime_;
 
       std::unique_ptr<StrawHitCollection> shCol;
       if(_writesh){
@@ -213,7 +226,7 @@ namespace mu2e {
 	if(times[StrawEnd::hv] < times[StrawEnd::cal])
 	  eend = StrawEnd(StrawEnd::hv);
 	// take the earliest of the 2 end times
-	float time = times[eend.end()] - pbtoOffset;
+	float time = times[eend.end()] - pbtOffset;
 	if (time < _minT || time > _maxT ){
 	  if(_filter)continue;
 	} else
