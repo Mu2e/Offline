@@ -12,6 +12,7 @@ helper=mu2e_helper(env);
 mainlib = helper.make_mainlib ( [
     'mu2e_MCDataProducts',
     'mu2e_DataProducts',
+    'mu2e_DbService',
     'CLHEP',
     'art_Framework_Core',
     'art_Framework_Principal',
@@ -63,6 +64,7 @@ helper.make_plugins ( [ mainlib,
         'Core',
         'boost_filesystem',
         'boost_system',
+    'pthread'
  ] )
 
 
