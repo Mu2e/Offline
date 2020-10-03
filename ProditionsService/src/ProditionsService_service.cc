@@ -34,8 +34,8 @@ namespace mu2e {
 
     auto frc = std::make_shared<mu2e::FullReadoutStrawCache>(_config.fullReadoutStraw());
     _caches[frc->name()] = frc;
-    auto dsc = std::make_shared<mu2e::TrackerStatusCache>(_config.trackerStatus());
-    _caches[dsc->name()] = dsc;
+    auto tsc = std::make_shared<mu2e::TrackerStatusCache>(_config.trackerStatus());
+    _caches[tsc->name()] = tsc;
     auto sdc = std::make_shared<mu2e::StrawDriftCache>(_config.strawDrift());
     _caches[sdc->name()] = sdc;
     auto spc = std::make_shared<mu2e::StrawPhysicsCache>(_config.strawPhysics());
