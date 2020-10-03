@@ -32,7 +32,6 @@ mixerTemplateTrkCal.mu2e.products: {
    simParticleMixer: { mixingMap: [ [ "detectorFilter", "" ] ] }
    stepPointMCMixer: { mixingMap:
       [
-	 [ "detectorFilter:tracker", ":" ],
 	 [ "detectorFilter:virtualdetector", ":" ],
 	 [ "detectorFilter:protonabsorber", ":" ]
       ]
@@ -41,6 +40,11 @@ mixerTemplateTrkCal.mu2e.products: {
       [
 	 [ "CaloShowerCrystalSteps", "calorimeter" ],
 	 [ "CaloShowerROSteps", "calorimeterRO" ]
+      ]
+   }
+   strawGasStepMixer : { mixingMap: 
+      [
+        [ "makeSGS", "" ]
       ]
    }
 }

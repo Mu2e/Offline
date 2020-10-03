@@ -65,7 +65,7 @@ Primary: {
 # must define this outside the brackets due to internal dependence
 Primary.TriggerPath : [ @sequence::Primary.GenAndG4,
   @sequence::CommonMC.DigiSim,
-  @sequence::TrackerMC.DigiSim,
+  @sequence::TrackerMC.StepAndDigiSim,
   DigiFilter,
   @sequence::CaloDigiMC.DigiSim,
   @sequence::CrvDAQPackage.CrvResponseSequence,
