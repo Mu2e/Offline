@@ -9,7 +9,7 @@ services : @local::Services.Reco
 physics.producers: {
   PBTFSD : {
     module_type             : ProtonBunchTimeFromStrawDigis
-    debugLevel : 2
+    debugLevel : 0
     diagLevel : 0
     printLevel : 0
     nBins : 30

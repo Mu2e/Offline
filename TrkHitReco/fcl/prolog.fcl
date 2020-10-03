@@ -11,7 +11,9 @@ makeSH : {
   module_type             : StrawHitReco
   FilterHits              : false
   WriteStrawHitCollection : true
-  ProtonBunchTimeLabel  : "PBTFSD"
+  ProtonBunchTimeTag  : "PBTFSD"
+  StrawDigiCollectionTag  : "makeSD"
+  CaloClusterCollectionTag  : "CaloClusterFast"
 }
 
 # combine hits in a panel
@@ -102,7 +104,7 @@ SflagBkgHits : {
 TrkHitReco : {
     producers : { 
 	# normal reco
-	PBTOFSD       : { @table::PBTOFSD       }
+	PBTFSD       : { @table::PBTFSD       }
 	makeSH        : { @table::makeSH       }
 	makePH        : { @table::makePH       }
 	makeSTH       : { @table::makeSTH      }
@@ -112,8 +114,8 @@ TrkHitReco : {
 
     # SEQUENCES
     # production sequence to prepare hits for tracking
-    PrepareHits  : [ PBTOFSD, makeSH, makePH, FlagBkgHits ]
-    SPrepareHits : [ PBTOFSD, makeSH, makePH, makeSTH, SflagBkgHits ]
+    PrepareHits  : [ PBTFSD, makeSH, makePH, FlagBkgHits ]
+    SPrepareHits : [ PBTFSD, makeSH, makePH, makeSTH, SflagBkgHits ]
 }
 
 END_PROLOG
