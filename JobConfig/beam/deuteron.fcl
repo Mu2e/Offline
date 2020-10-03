@@ -16,6 +16,7 @@ outputs: { @table::mu2e.outputs.g4s4Defs }
 
 physics.producers.generate.physics: {
     pdgId : 1000010020 # deuteron
+    genId : StoppedParticleReactionGun
     spectrumShape: ejectedProtons # same spectrum for protons and deuterons, as in the MECO note
     spectrumVariable: kineticEnergy
     nbins: 1000

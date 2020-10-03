@@ -16,6 +16,7 @@ outputs: { @table::mu2e.outputs.g4s4Defs }
 
 physics.producers.generate.physics: {
     pdgId : 22
+    genId : StoppedParticleReactionGun
     spectrumShape: flat
     spectrumVariable: totalEnergy
     elow: 0.0 // MeV
