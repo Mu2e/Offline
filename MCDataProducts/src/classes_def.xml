@@ -103,6 +103,8 @@
  <class name="mu2e::EventWeight"/>
  <class name="art::Wrapper<mu2e::EventWeight>"/>
 
+ <class name="mu2e::ProtonBunchTimeMC" />
+ <class name="art::Wrapper<mu2e::ProtonBunchTimeMC>"/>
  <class name="mu2e::ProtonBunchIntensity" />
  <class name="art::Wrapper<mu2e::ProtonBunchIntensity>"/>
  <class name="mu2e::ProtonBunchIntensitySummary" />

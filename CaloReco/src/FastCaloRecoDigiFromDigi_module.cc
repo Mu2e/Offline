@@ -18,7 +18,6 @@
 #include "RecoDataProducts/inc/CaloDigiCollection.hh"
 #include "RecoDataProducts/inc/CaloRecoDigi.hh"
 #include "RecoDataProducts/inc/CaloRecoDigiCollection.hh"
-
 #include "RecoDataProducts/inc/ProtonBunchTime.hh"
 
 #include <iostream>

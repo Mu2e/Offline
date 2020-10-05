@@ -12,7 +12,7 @@ TTmakeSH : {
     module_type             : StrawHitReco
     FilterHits              : true
     WriteStrawHitCollection : false
-    ProtonBunchTimeTag      : "TTPBTFSD"
+    ProtonBunchTimeTag      : "EWMProducer"
     StrawDigiCollectionTag  : "makeSD"
     CaloClusterCollectionTag  : "CaloClusterFast"
 }
@@ -28,7 +28,7 @@ TTmakeSHUCC : {
     UseCalorimeter          : true
     FilterHits              : true
     WriteStrawHitCollection : false
-    ProtonBunchTimeTag      : "TTPBTFSD"
+    ProtonBunchTimeTag      : "EWMProducer"
     StrawDigiCollectionTag  : "makeSD"
     CaloClusterCollectionTag  : "CaloClusterFast"
 }

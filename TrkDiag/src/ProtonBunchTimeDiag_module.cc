@@ -11,6 +11,7 @@
 #include "art/Framework/Core/EDAnalyzer.h"
 #include "art/Framework/Core/ModuleMacros.h"
 #include "RecoDataProducts/inc/ProtonBunchTime.hh"
+#include "MCDataProducts/inc/ProtonBunchTimeMC.hh"
 #include "DataProducts/inc/EventWindowMarker.hh"
 #include "TTree.h"
 
@@ -24,6 +25,7 @@ namespace mu2e {
 
       struct Config {
 	fhicl::Atom<art::InputTag> ewMarkerTag{ Name("EventWindowMarkerTag"), Comment("EventWindowMarker producer"),"EWMProducer" };
+	fhicl::Atom<art::InputTag> pbtmcTag{ Name("ProtonBunchTimeMCTag"), Comment("ProtonBunchTimeMC producer"),"EWMProducer" };
 	fhicl::Atom<art::InputTag> pbtimeTag{ Name("ProtonBunchTimeTag"), Comment("ProtonBunchTime producer"),"PBTFSD" };
       };
       using Parameters = art::EDAnalyzer::Table<Config>;
@@ -32,19 +34,21 @@ namespace mu2e {
       void analyze( art::Event const & e) override;
       void beginJob ( ) override;
     private:
-      art::InputTag ewmtag_, pbttag_;
+      art::InputTag ewmtag_, pbtmctag_, pbttag_;
       TTree* pbttest_;
-      int iev_;
-      float tmean_, terr_, ewmoffset_;
+      int iev_, nhits_, ewlength_;
+      float tmean_, terr_, pbtimemc_;
   };
 
   ProtonBunchTimeDiag::ProtonBunchTimeDiag(Parameters const& config) :
     art::EDAnalyzer(config),
     ewmtag_(config().ewMarkerTag()),
+    pbtmctag_(config().pbtmcTag()),
     pbttag_(config().pbtimeTag()),
     pbttest_(0)
   {
     consumes<EventWindowMarker>(ewmtag_);
+    consumes<ProtonBunchTimeMC>(pbtmctag_);
     consumes<ProtonBunchTime>(pbttag_);
   }
 
@@ -56,19 +60,23 @@ namespace mu2e {
     pbttest_->Branch("iev",&iev_,"iev/I");
     pbttest_->Branch("tmean",&tmean_,"tmean/F");
     pbttest_->Branch("terr",&terr_,"terr/F");
-    pbttest_->Branch("ewmoffset",&ewmoffset_,"ewmoffset/F");
+    pbttest_->Branch("pbtimemc",&pbtimemc_,"pbtimemc/F");
+    pbttest_->Branch("ewlength",&ewlength_,"ewlength/I");
   }
 
   void ProtonBunchTimeDiag::analyze(art::Event const& event) {        
     auto pbtH = event.getValidHandle<ProtonBunchTime>(pbttag_);
     auto const& pbt(*pbtH);
+    auto pbtmcH = event.getValidHandle<ProtonBunchTimeMC>(pbtmctag_);
+    auto const& pbtmc(*pbtmcH);
     auto ewmH = event.getValidHandle<EventWindowMarker>(ewmtag_);
     auto const& ewm(*ewmH);
 
     iev_ = event.id().event();
     tmean_= pbt.pbtime_; 
     terr_ = pbt.pbterr_; 
-    ewmoffset_ = ewm._timeOffset;
+    pbtimemc_ = pbtmc.pbtime_;
+    ewlength_ = ewm.eventLength();
     pbttest_->Fill();
   }
 }

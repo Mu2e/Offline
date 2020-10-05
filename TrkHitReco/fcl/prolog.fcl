@@ -11,7 +11,7 @@ makeSH : {
   module_type             : StrawHitReco
   FilterHits              : false
   WriteStrawHitCollection : true
-  ProtonBunchTimeTag  : "PBTFSD"
+  ProtonBunchTimeTag  : "EWMProducer"
   StrawDigiCollectionTag  : "makeSD"
   StrawDigiADCWaveformCollectionTag : "makeSD"
   CaloClusterCollectionTag  : "CaloClusterFast"
