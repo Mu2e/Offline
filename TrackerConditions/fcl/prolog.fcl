@@ -93,7 +93,7 @@ StrawElectronics : {
    defaultAdcdVdI : 1.528e6
    adcdVdI : []
    deadTimeAnalog : 100.0
-   deadTimeDigital : 100.0
+   deadTimeDigital : 400.0
    saturationVoltage : 140.0
    defaultDiscriminatorThreshold : 12.0
    discriminatorThreshold : []
