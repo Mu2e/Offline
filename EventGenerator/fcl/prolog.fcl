@@ -109,7 +109,7 @@ PrimaryProtonGun: {
     shape	      : "gaus"
     rmax	      : 100.
     mean	      : -1.
-
+    mu2eii            : true
 }
 
 
