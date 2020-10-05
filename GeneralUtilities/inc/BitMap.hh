@@ -100,11 +100,6 @@ namespace mu2e {
     // Explicit or not? See note 1
     BitMap( bit_type value): _value(DETAIL::bit_to_mask(value)) {}
 
-    explicit BitMap( mask_type value): _value(value) {
-    // check that all the bits in the supplied mask are valid
-      isValidOrThrow(value);
-    }
-
     // Constructor from a vector of bit names; must match the names used in the detail class.
     explicit BitMap( std::vector<std::string> const& names ):_value(empty_value()){
 

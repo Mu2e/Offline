@@ -33,7 +33,7 @@ FullReadoutStraw : {
 
 TrackerStatus : {
   Settings : {
-    verbose : 2
+    verbose : 0
     useDb : false
   }
   Status : [
