@@ -51,7 +51,7 @@ namespace mu2e {
           Comment("The whitelist mode: assign time offsets just to particles made by one of the\n"
                   "listed generators. This setting is only active in the case ignoredGenIds is emtpy.\n"
                   ),
-          [this](){ return ignoredGenIds().empty(); }
+       [this](){ return ignoredGenIds().empty();}
       };
 
       fhicl::Sequence<art::InputTag> InputTimeMaps {
@@ -66,7 +66,7 @@ namespace mu2e {
           art::InputTag()
           };
 
-      fhicl::Atom<int> verbosityLevel{ Name("verbosityLevel"), Comment("Levels 0, 1, and 11 increase the number of printouts.."), 0 };
+      fhicl::Atom<int> verbosityLevel{ Name("verbosityLevel"), Comment("Levels 0, 1, 3, and 11 increase the number of printouts.."), 0 };
     };
 
     using Parameters = art::EDProducer::Table<Config>;
