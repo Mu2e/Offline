@@ -1,0 +1,29 @@
+#
+# generates the Mu(-) --> e(-) + X where X is a light boson. Spectrum based on Spectrum based on arXiv: 1110.2874
+#
+#include "JobConfig/primary/prolog.fcl"
+process_name: Mu2eX
+
+source: { module_type : EmptyEvent }
+services: @local::Services.Sim
+physics : { 
+  producers : {
+    generate : @local::EventGenerator.producers.muXSpectrum
+    @table::Primary.producers
+  }
+  filters: { @table::Primary.filters }
+  analyzers: { @table::Primary.analyzers }
+  TriggerPath : @local::Primary.TriggerPath
+  EndPath : @local::Primary.EndPath
+}
+outputs : { 
+  Output :@local::Primary.Output
+}
+#
+# final configuration
+#
+#include "JobConfig/primary/epilog.fcl"
+# customize the output
+services.TFileService.fileName: "nts.owner.muXSpectrum.version.sequencer.root"
+outputs.Output.fileName: "dig.owner.muXSpectrum.version.sequencer.art"
+physics.end_paths : [ EndPath ] # needed for generate_fcl

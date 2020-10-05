@@ -18,6 +18,8 @@
 #include "Mu2eUtilities/inc/EjectedProtonSpectrum.hh"
 #include "Mu2eUtilities/inc/MuonCaptureSpectrum.hh"
 #include "Mu2eUtilities/inc/PionCaptureSpectrum.hh"
+#include "DataProducts/inc/PDGCode.hh"
+#include "Mu2eUtilities/inc/MueXSpectrum.hh"
 #include "Mu2eUtilities/inc/SimpleSpectrum.hh"
 
 namespace mu2e {
@@ -62,6 +64,11 @@ namespace mu2e {
 
       _finalBin = true;
       this->initialize<ConversionSpectrum>(elow,ehi,bin,ehi,bin);
+    }else if (spectrumShape == "mueX"){
+      double elow = psphys.get<double>("elow",100);
+      double ehi  = psphys.get<double>("ehi",105 );
+      double bin = psphys.get<double>("spectrumResolution");
+      this->initialize<MueXSpectrum>(elow,ehi,bin,ehi,bin);
     }else if (spectrumShape == "ejectedProtons") {
       // should be kinetic energy
       double elow = 0.;
