@@ -21,6 +21,7 @@ physics.analyzers : {
   PBTD : {
     module_type             : ProtonBunchTimeDiag
     ProtonBunchTimeTag : PBTFSD
+    ProtonBunchTimeMCTag : EWMProducer
     EventWindowMarkerTag : EWMProducer
   }
 }

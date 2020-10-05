@@ -58,8 +58,8 @@ namespace mu2e {
 		      unsigned maxtsep, unsigned tCoince, 
 		      double TDCLSB, unsigned maxTDC, double TOTLSB, unsigned maxTOT, 
 		      double tdcResolution, double electronicsTimeDelay, 
-		      double ewMarkerROCJitter, double flashStart, 
-		      double flashEnd, double flashClockSpeed, 
+		      double ewMarkerROCJitter, 
+		      double flashEnd, 
 		      int responseBins, double sampleRate, int saturationSampleFactor, 
 		      std::vector<double> preampPoles, std::vector<double> preampZeros, 
 		      std::vector<double> adcPoles, std::vector<double> adcZeros, 
@@ -89,8 +89,7 @@ namespace mu2e {
       _TDCLSB(TDCLSB), _maxTDC(maxTDC), _TOTLSB(TOTLSB), _maxTOT(maxTOT), 
       _tdcResolution(tdcResolution), _electronicsTimeDelay(electronicsTimeDelay), 
       _ewMarkerROCJitter(ewMarkerROCJitter), 
-      _flashStart(flashStart), _flashEnd(flashEnd), 
-      _flashClockSpeed(flashClockSpeed),
+      _flashEnd(flashEnd), 
       _responseBins(responseBins), 
       _sampleRate(sampleRate), _saturationSampleFactor(saturationSampleFactor), 
       _preampPoles(preampPoles), _preampZeros(preampZeros), _adcPoles(adcPoles), 
@@ -123,8 +122,8 @@ namespace mu2e {
     TrkTypes::ADCValue adcResponse(StrawId id, double mvolts) const; // ADC response to analog inputs
     TrkTypes::TDCValue tdcResponse(double time) const; // TDC response to a signal input to electronics at a given time (in ns since eventWindowMarker)
     void digitizeWaveform(StrawId id, TrkTypes::ADCVoltages const& wf, TrkTypes::ADCWaveform& adc, TrkTypes::ADCValue &pmp) const; // digitize an array of voltages at the ADC
-    bool digitizeTimes(TrkTypes::TDCTimes const& times,TrkTypes::TDCValues& tdc) const; // times in ns since eventWindowMarker
-    bool digitizeAllTimes(TrkTypes::TDCTimes const& times,double mbtime, TrkTypes::TDCValues& tdcs) const; // for straws which are being read regardless of flash blanking
+    bool digitizeTimes(TrkTypes::TDCTimes const& times,TrkTypes::TDCValues& tdc,TrkTypes::TDCValue const& eventWindowEndTDC) const; // times in ns since eventWindowMarker
+    bool digitizeAllTimes(TrkTypes::TDCTimes const& times,double mbtime, TrkTypes::TDCValues& tdcs, TrkTypes::TDCValue const& eventWindowEndTDC) const; // for straws which are being read regardless of flash blanking
     void uncalibrateTimes(TrkTypes::TDCTimes &times, const StrawId &id) const; // convert time from beam t0 to tracker channel t0
     bool combineEnds(double t1, double t2) const; // are times from 2 ends combined into a single digi?
     // interpretation of digital data
@@ -143,7 +142,6 @@ namespace mu2e {
     size_t nADCPreSamples() const { return _nADCpre; }
     double adcPeriod() const { return _ADCPeriod; } // period of ADC clock in nsec
     double adcOffset() const { return _ADCOffset; } // offset WRT clock edge for digitization
-    double flashStart() const { return _flashStart; } // time flash blanking starts
     double flashEnd() const { return _flashEnd; } // time flash blanking ends
     void adcTimes(double time, TrkTypes::ADCTimes& adctimes) const; // given crossing time, fill sampling times of ADC CHECK THIS IS CORRECT IN DRAC FIXME!
     double saturationVoltage() const { return _vsat; }
@@ -180,8 +178,7 @@ namespace mu2e {
     void setAnalogNoise(std::array<double,npaths> analognoise) 
               { _analognoise = analognoise; }
     void setvthresh(std::vector<double> vthresh) { _vthresh = vthresh;}
-    void setFlashTDC( double flashStartTDC, double flashEndTDC) {
-      _flashStartTDC = flashStartTDC;
+    void setFlashTDC( double flashEndTDC) {
       _flashEndTDC = flashEndTDC;
     }
     void setADCPed( std::vector<uint16_t> ADCped) { _ADCped = ADCped; }
@@ -237,8 +234,8 @@ namespace mu2e {
     double _electronicsTimeDelay; // Absolute time delay in electronics due to firmware signal propagation etc (ns)
     double _ewMarkerROCJitter; // jitter of ewMarker per ROC (ns)
     // electronicsTimeDelay is the time offset between a hit arriving at the electronics and the time that is digitized
-    double _flashStart, _flashEnd, _flashClockSpeed; // flash blanking period (no digitizations during this time!!!) (ns from eventWindowMarker arrival, what will actually be set)
-    TrkTypes::TDCValue _flashStartTDC, _flashEndTDC; // TDC values corresponding to the above. Note ignores electronicsTimeDelay since this is not a digitized signal
+    double _flashEnd; // flash blanking period (no digitizations during this time!!!) (ns from eventWindowMarker arrival, what will actually be set)
+    TrkTypes::TDCValue _flashEndTDC; // TDC values corresponding to the above. Note ignores electronicsTimeDelay since this is not a digitized signal
     // but an actual TDC value that will be compared against
     // helper functions
     static inline double mypow(double,unsigned);

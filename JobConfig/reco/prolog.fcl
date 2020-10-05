@@ -111,6 +111,7 @@ Reconstruction : {
        StrawDigiMCCollection : "compressDigiMCs"
        CrvDigiMCCollection : "compressDigiMCs"
        EventWindowMarker : "EWMProducer"
+       ProtonBunchTimeMC : "EWMProducer"
        ProtonBunchIntensity : "protonBunchIntensity"
        KFFInstances  : ["KFFDeM", "KFFDeP", "KFFDmuM", "KFFDmuP",
 		     "KFFUeM", "KFFUeP", "KFFUmuM", "KFFUmuP" ]
@@ -256,6 +257,8 @@ Reconstruction : {
 	    "keep mu2e::PrimaryParticle_*_*_*",
 	    "keep mu2e::ProtonBunchIntensity_protonBunchIntensity_*_*",
 	    "keep mu2e::EventWindowMarker_EWMProducer_*_*",
+            "keep mu2e::ProtonBunchTimeMC_EWMProducer_*_*",
+            "keep mu2e::ProtonBunchTime_EWMProducer_*_*",
 	    "keep *_compressDigiMCs_*_*"
 	    ]
 }
