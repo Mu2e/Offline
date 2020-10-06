@@ -33,7 +33,7 @@ namespace mu2e {
   }
 
   void HelloWorld::analyze(const art::Event& event){
-    cerr << "Bonjour, le monde.  From analyze: "
+    cerr << "Guten Tag, Welt.  From analyze: "
          << event.id()
          << endl;
   }
