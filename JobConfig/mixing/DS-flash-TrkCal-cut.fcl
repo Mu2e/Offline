@@ -13,7 +13,7 @@ source : {
    readParameterSets: false
 }
 
-physics.producers.protonTimeMap : { module_type : GenerateProtonTimes }
+physics.producers.protonTimeMap : @local::CommonMC.producers.protonTimeMap
 
 services : @local::mu2e.services.simServices 
 # note we are implicitly dropping virtual detector and IPA StepPoints
