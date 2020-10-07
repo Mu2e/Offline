@@ -1,17 +1,16 @@
-#ifndef TrackerConditions_DeadStrawCache_hh
-#define TrackerConditions_DeadStrawCache_hh
+#ifndef TrackerConditions_TrackerStatusCache_hh
+#define TrackerConditions_TrackerStatusCache_hh
 
 #include "Mu2eInterfaces/inc/ProditionsCache.hh"
-//#include "DbService/inc/DbHandle.hh"
-#include "TrackerConditions/inc/DeadStrawMaker.hh"
+#include "TrackerConditions/inc/TrackerStatusMaker.hh"
 
 
 namespace mu2e {
-  class DeadStrawCache : public ProditionsCache {
+  class TrackerStatusCache : public ProditionsCache {
   public: 
-    DeadStrawCache(DeadStrawConfig const& config):
-      ProditionsCache("DeadStraw",config.verbose()),
-      _useDb(config.useDb()),_maker(config) {}
+    TrackerStatusCache(TrackerStatusConfig const& config):
+      ProditionsCache("TrackerStatus",config.settings().verbose()),
+      _useDb(config.settings().useDb()),_maker(config) {}
 
 
     void initialize() {
@@ -34,7 +33,7 @@ namespace mu2e {
 
   private:
     bool _useDb;
-    DeadStrawMaker _maker;
+    TrackerStatusMaker _maker;
 
   };
 };
