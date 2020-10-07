@@ -44,16 +44,14 @@ namespace mu2e {
           Comment("A non-empty list means: generate time offsets for all particles\n"
                   "except those produced by the listed generators.   If this list is emtpy,\n"
                   "the applyToGenIds parameter below is enabled."
-                  ),
-          std::vector<std::string>{"cosmicToy", "cosmicDYB", "cosmic"}
-      };
+                  ) };
 
       fhicl::Sequence<std::string> applyToGenIds {
         Name("applyToGenIds"),
           Comment("The whitelist mode: assign time offsets just to particles made by one of the\n"
                   "listed generators. This setting is only active in the case ignoredGenIds is emtpy.\n"
                   ),
-          [this](){ return ignoredGenIds().empty(); }
+       [this](){ return ignoredGenIds().empty();}
       };
 
       fhicl::Sequence<art::InputTag> InputTimeMaps {
@@ -68,7 +66,7 @@ namespace mu2e {
           art::InputTag()
           };
 
-      fhicl::Atom<int> verbosityLevel{ Name("verbosityLevel"), Comment("Levels 0, 1, and 11 increase the number of printouts.."), 0 };
+      fhicl::Atom<int> verbosityLevel{ Name("verbosityLevel"), Comment("Levels 0, 1, 3, and 11 increase the number of printouts.."), 0 };
     };
 
     using Parameters = art::EDProducer::Table<Config>;
@@ -101,6 +99,11 @@ namespace mu2e {
     , verbosityLevel_(conf().verbosityLevel())
     , fixedTime_(conf().FixedModule())
   {
+      // require either ignore or applyto be non-null
+
+    if(conf().ignoredGenIds().empty() && conf().applyToGenIds().empty() )
+      throw cet::exception("Simulation")<<"No inclusion or exclusion GenIds specified" << std::endl;
+
     std::vector<art::InputTag> inmaps = conf().InputTimeMaps();
     for(auto const& tag : inmaps ){
       inmaps_.push_back(consumes<SimParticleTimeMap>(tag));
@@ -179,7 +182,13 @@ namespace mu2e {
               (ignoredGenIds_.find(genId.id()) == ignoredGenIds_.end())
               // do just explicitly listed GenIds
               : (applyToGenIds_.find(genId.id()) != applyToGenIds_.end());
-
+	    if(verbosityLevel_ > 2){
+	      if(apply)
+		std::cout << "Applying proton time to genId " << genId << std::endl;
+	      else
+		std::cout << "Proton time NOT applied to genId " << genId << std::endl;
+	    }
+	      
             (*res)[part] = apply ? protonPulse_->fire() : 0.;
             if (!fixedTime_.empty()){
               (*res)[part] = apply ? ftmHandle->time() : 0;
