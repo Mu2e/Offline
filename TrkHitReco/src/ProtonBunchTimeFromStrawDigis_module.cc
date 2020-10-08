@@ -34,12 +34,12 @@ namespace mu2e {
       using Comment=fhicl::Comment;
 
       struct Config {
-	fhicl::Atom<int> debug{ Name("debugLevel"), Comment("Debug level"), 0};
-	fhicl::Atom<int> diag{ Name("diagLevel"), Comment("Diag level"), 0};
-	fhicl::Atom<int> print{ Name("printLevel"), Comment("Print level"), 0};
-	fhicl::Atom<unsigned> nbins{ Name("nBins"), Comment("Number of bins in time histogram"), 100};
-	fhicl::Atom<unsigned> minnhits{ Name("minNHits"), Comment("Minimum number of hits needed to use result"), 1};
-	fhicl::Atom<float> maxtime { Name("MaxDigiTime"), Comment("Maximum time to accept the digi as 'early' (nsec)"),300.0 };
+	fhicl::Atom<int> debug{ Name("DebugLevel"), Comment("Debug level"), 0};
+	fhicl::Atom<int> diag{ Name("DiagLevel"), Comment("Diag level"), 0};
+	fhicl::Atom<int> print{ Name("PrintLevel"), Comment("Print level"), 0};
+	fhicl::Atom<unsigned> nbins{ Name("NBins"), Comment("Number of bins in time histogram"), 30};
+	fhicl::Atom<unsigned> minnhits{ Name("MinNHits"), Comment("Minimum number of hits needed to use result"), 30};
+	fhicl::Atom<float> maxtime { Name("MaxDigiTime"), Comment("Maximum time to accept the digi as 'early' (nsec)"),200.0 };
 	fhicl::Atom<float> meantime { Name("MeanTimeOffset"), Comment("Mean time offset of 'early' hits (nsec)"),103.0}; // this should come from a database FIXME!
 	fhicl::Atom<art::InputTag> strawDigiTag{ Name("StrawDigiTag"), Comment("StrawDigi producer"),"makeSD" };
       };
