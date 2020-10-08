@@ -2,7 +2,7 @@
 //
 // This module looks for early tracker digis (before the flash blanking)
 // and uses them to estimate the proton bunch time of this event WRT
-// the DAQ clock
+// the DAQ clock.  This is used mainly as a diagnostic.
 //
 // Original author David Brown, 10/1/2020 LBNL
 //
@@ -17,7 +17,8 @@
 #include "TrackerConditions/inc/StrawResponse.hh"
 #include "TH1F.h"
 #include <boost/accumulators/accumulators.hpp>
-#include <boost/accumulators/statistics/variance.hpp>
+#include <boost/accumulators/statistics/error_of.hpp>
+#include <boost/accumulators/statistics/error_of_mean.hpp>
 #include <boost/accumulators/statistics/stats.hpp>
 #include <boost/accumulators/statistics/mean.hpp>
 
@@ -38,9 +39,10 @@ namespace mu2e {
 	fhicl::Atom<int> diag{ Name("DiagLevel"), Comment("Diag level"), 0};
 	fhicl::Atom<int> print{ Name("PrintLevel"), Comment("Print level"), 0};
 	fhicl::Atom<unsigned> nbins{ Name("NBins"), Comment("Number of bins in time histogram"), 30};
-	fhicl::Atom<unsigned> minnhits{ Name("MinNHits"), Comment("Minimum number of hits needed to use result"), 30};
+	fhicl::Atom<unsigned> minnhits{ Name("MinNHits"), Comment("Minimum number of hits needed to use result"), 100};
 	fhicl::Atom<float> maxtime { Name("MaxDigiTime"), Comment("Maximum time to accept the digi as 'early' (nsec)"),200.0 };
-	fhicl::Atom<float> meantime { Name("MeanTimeOffset"), Comment("Mean time offset of 'early' hits (nsec)"),103.0}; // this should come from a database FIXME!
+	fhicl::Atom<float> meantime { Name("MeanTimeOffset"), Comment("Mean time offset of 'early' hits (nsec)"),99.5}; // this should come from a database FIXME!
+	fhicl::Atom<float> phasewindow { Name("PhaseWindow"), Comment("Width of Event Marker Phase Window (nsec)"),25.0}; 
 	fhicl::Atom<art::InputTag> strawDigiTag{ Name("StrawDigiTag"), Comment("StrawDigi producer"),"makeSD" };
       };
       using Parameters = art::EDProducer::Table<Config>;
@@ -52,6 +54,7 @@ namespace mu2e {
       int debug_, diag_, print_;
       unsigned nbins_, minnhits_;
       float maxtime_, meantime_;
+      float phasemean_, phaseerr_;
       art::InputTag ewmtag_, sdtag_;
       ProditionsHandle<StrawResponse> _strawResponse_h;
   };
@@ -67,6 +70,9 @@ namespace mu2e {
     meantime_(config().meantime()),
     sdtag_(config().strawDigiTag())
   {
+    float phasewindow = config().phasewindow();
+    phasemean_ = phasewindow/2.0;
+    phaseerr_ = phasewindow/sqrt(12.0);
     consumes<StrawDigiCollection>(sdtag_);
     produces<ProtonBunchTime>();
   }
@@ -84,7 +90,7 @@ namespace mu2e {
     std::unique_ptr<ProtonBunchTime> pbto(new ProtonBunchTime());
 // statistics accumulators
 //
-    accumulator_set<float, stats<tag::mean, tag::variance >> meanacc;
+    accumulator_set<float, stats<tag::mean, tag::error_of<tag::mean> >> meanacc;
 
     TH1F* timeplot(0);
     if(debug_ > 1 && event.id().event() < 1000) {
@@ -111,13 +117,13 @@ namespace mu2e {
       }
     }
     // if there aren't enought hits, set to 0
-    pbto->nhits_ = extract_result<tag::count>(meanacc);
-    if(pbto->nhits_ < minnhits_){
-      pbto->pbtime_ = - meantime_;
-      pbto->variance_ = 0.0;
+    unsigned nhits = extract_result<tag::count>(meanacc);
+    if(nhits < minnhits_){
+      pbto->pbtime_ = phasemean_;
+      pbto->pbterr_ = phaseerr_;
     } else {
       pbto->pbtime_ = extract_result<tag::mean>(meanacc) - meantime_;
-      pbto->variance_ = extract_result<tag::variance>(meanacc);
+      pbto->pbterr_ = extract_result<tag::error_of<tag::mean>>(meanacc);
     }
     event.put(std::move(pbto));
   }

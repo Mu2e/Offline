@@ -23,7 +23,6 @@ namespace mu2e {
       using Comment=fhicl::Comment;
 
       struct Config {
-	fhicl::Atom<unsigned> minnhits{ Name("minNHits"), Comment("Minimum number of hits needed to use result"), 1};
 	fhicl::Atom<art::InputTag> ewMarkerTag{ Name("EventWindowMarkerTag"), Comment("EventWindowMarker producer"),"EWMProducer" };
 	fhicl::Atom<art::InputTag> pbtimeTag{ Name("ProtonBunchTimeTag"), Comment("ProtonBunchTime producer"),"PBTFSD" };
       };
@@ -35,8 +34,8 @@ namespace mu2e {
     private:
       art::InputTag ewmtag_, pbttag_;
       TTree* pbttest_;
-      int iev_, nhits_;
-      float tmean_, tvariance_, ewmoffset_;
+      int iev_;
+      float tmean_, terr_, ewmoffset_;
   };
 
   ProtonBunchTimeDiag::ProtonBunchTimeDiag(Parameters const& config) :
@@ -55,9 +54,8 @@ namespace mu2e {
     art::ServiceHandle<art::TFileService> tfs;
     pbttest_=tfs->make<TTree>("pbtdiag","proton bunch time diagnostics");
     pbttest_->Branch("iev",&iev_,"iev/I");
-    pbttest_->Branch("nhits",&nhits_,"nhits/I");
     pbttest_->Branch("tmean",&tmean_,"tmean/F");
-    pbttest_->Branch("tvariance",&tvariance_,"tvariance/F");
+    pbttest_->Branch("terr",&terr_,"terr/F");
     pbttest_->Branch("ewmoffset",&ewmoffset_,"ewmoffset/F");
   }
 
@@ -68,9 +66,8 @@ namespace mu2e {
     auto const& ewm(*ewmH);
 
     iev_ = event.id().event();
-    nhits_ = pbt.nhits_; 
     tmean_= pbt.pbtime_; 
-    tvariance_ = pbt.variance_; 
+    terr_ = pbt.pbterr_; 
     ewmoffset_ = ewm._timeOffset;
     pbttest_->Fill();
   }
