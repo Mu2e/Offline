@@ -8,9 +8,8 @@
 //
 namespace mu2e {
   struct ProtonBunchTime {
-    float pbtime_;  // estimate of the time the proton bunch reaches the target
-    float variance_; // variance on the estimate
-    unsigned nhits_; // number of hits used in this offset determination
+    float pbtime_;  // estimated mean time the proton bunch reaches the target
+    float pbterr_; // estimated error on the mean
   };
 
 }
