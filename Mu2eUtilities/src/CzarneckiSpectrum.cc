@@ -4,24 +4,21 @@
 // in the endpoint region taken from Czarnecki spectrum
 // Czarneckki et al 10.1103/PhysRevD.84.013006
 //
-// $Id: CzarneckiSpectrum.cc,v 1.14 2014/05/01 18:12:26 knoepfel Exp $
-// $Author: knoepfel $
-// $Date: 2014/05/01 18:12:26 $
 //
 
+#include <array>
+#include <string>
+#include <utility>
+
+#include "ConfigTools/inc/ConfigFileLookupPolicy.hh"
 // Mu2e includes
 #include "GlobalConstantsService/inc/GlobalConstantsHandle.hh"
 #include "GlobalConstantsService/inc/PhysicsParams.hh"
-#include "ConfigTools/inc/ConfigFileLookupPolicy.hh"
-#include "Mu2eUtilities/inc/CzarneckiSpectrum.hh"
-
 // Framework includes
 #include "cetlib/pow.h"
 
-// C++ includes
-#include <fstream>
-#include <iostream>
-#include <vector>
+#include "Mu2eUtilities/inc/CzarneckiSpectrum.hh"
+#include "Mu2eUtilities/inc/Table.hh"
 
 namespace mu2e {
 

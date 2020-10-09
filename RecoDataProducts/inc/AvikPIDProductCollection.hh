@@ -4,9 +4,6 @@
 //
 // Define a type for a collection of AvikPIDProduct objects.
 //
-// $Id: 
-// $Author: 
-// $Date: 
 //
 // Original author Avik Laha
 //

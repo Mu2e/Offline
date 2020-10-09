@@ -28,8 +28,8 @@ source : {
 services : {
   @table::Services.SimAndReco
   TFileService          : { fileName : "g4study.root" }
-  GeometryService        : { @table::Services.SimAndReco.GeometryService 
-    inputFile            : "Mu2eG4/test/g4study_Tube_geom.txt"  
+  GeometryService        : { @table::Services.SimAndReco.GeometryService
+    inputFile            : "Mu2eG4/test/g4study_Tube_geom.txt"
     simulatedDetector    : { tool_type   : "ConstructEnvTube" }
   }
 }
@@ -66,7 +66,7 @@ physics : {
       diagLevel              : 2
     }
 
-  } 
+  }
 
   p1 : [generate , g4run , randomsaver]
 #  e1 : [dumper, outfile]
@@ -119,4 +119,4 @@ physics.producers.g4run.SDConfig: {
 // The line below causes a StepPointMC being stored for each step; comment it out to disable it
 physics.producers.g4run.Mu2eG4SteppingOnlyCut : @local::stepperout
 physics.producers.g4run.Mu2eG4StackingOnlyCut : @local::mu2eg4NoCut
-
+#physics.producers.g4run.debug.trackingVerbosityLevel : 1

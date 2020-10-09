@@ -1,9 +1,6 @@
 //
 // G4Helper plugin.
 //
-// $Id: G4Helper_service.cc,v 1.4 2013/03/14 19:54:49 kutschke Exp $
-// $Author: kutschke $
-// $Date: 2013/03/14 19:54:49 $
 //
 // Original author Rob Kutschke
 //

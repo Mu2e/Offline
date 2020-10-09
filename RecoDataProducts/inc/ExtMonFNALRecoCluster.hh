@@ -2,9 +2,6 @@
 // corrections applied.  The coordinates of a cluster are given in the
 // respective SensorStack system.
 //
-// $Id: ExtMonFNALRecoCluster.hh,v 1.2 2012/11/01 23:37:21 gandr Exp $
-// $Author: gandr $
-// $Date: 2012/11/01 23:37:21 $
 //
 // Original author Andrei Gaponenko
 //

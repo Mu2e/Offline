@@ -3,9 +3,6 @@
 //
 // Describe the current state of art processing, as understood by the SeedService.
 //
-// $Id: ArtState.hh,v 1.1 2012/02/04 00:12:48 kutschke Exp $
-// $Author: kutschke $
-// $Date: 2012/02/04 00:12:48 $
 //
 // Contact person Rob Kutschke
 //

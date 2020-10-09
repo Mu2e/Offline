@@ -4,9 +4,6 @@
 // Manage lookup of G4Material from a name found in a geometry file.
 // Throws if operation cannot be successfully completed.
 //
-// $Id: MaterialFinder.hh,v 1.4 2011/05/18 02:27:17 wb Exp $
-// $Author: wb $
-// $Date: 2011/05/18 02:27:17 $
 //
 // Original author Rob Kutschke
 

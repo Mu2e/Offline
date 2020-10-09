@@ -2,9 +2,6 @@
 #
 # Readback the output of g4test_03.fcl; make histograms and printout.
 #
-# $Id: extmon_uci_readback.fcl,v 1.5 2012/05/16 01:02:53 youzy Exp $
-# $Author: youzy $
-# $Date: 2012/05/16 01:02:53 $
 
 #include "fcl/minimalMessageService.fcl"
 #include "fcl/standardProducers.fcl"

@@ -5,9 +5,6 @@
 // Return CLHEP::Hep3Vector objects that are unit vectors uniformly
 // distributed over the unit sphere.
 //
-// $Id: Random2Dpair.hh,v 1.1 2014/02/05 21:32:26 knoepfel Exp $
-// $Author: knoepfel $
-// $Date: 2014/02/05 21:32:26 $
 //
 // Original author Rob Kutschke
 //

@@ -4,9 +4,6 @@
 // An enum-matched-to-names class for generator Id's.
 //
 //
-// $Id: GenId.hh,v 1.22 2014/03/18 21:50:14 gandr Exp $
-// $Author: gandr $
-// $Date: 2014/03/18 21:50:14 $
 //
 // Original author Rob Kutschke
 //

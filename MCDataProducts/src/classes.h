@@ -39,6 +39,7 @@
 #include "MCDataProducts/inc/PhysicalVolumeInfoMultiCollection.hh"
 #include "MCDataProducts/inc/StepFilterMode.hh"
 #include "MCDataProducts/inc/ProtonBunchIntensity.hh"
+#include "MCDataProducts/inc/ProtonBunchIntensitySummary.hh"
 #include "MCDataProducts/inc/EventWeight.hh"
 
 // G4

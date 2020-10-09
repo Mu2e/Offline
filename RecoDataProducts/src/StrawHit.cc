@@ -1,9 +1,6 @@
 //
 // First version of a hit as described by Mu2e-doc-900.
 //
-// $Id: StrawHit.cc,v 1.1 2011/05/24 17:16:43 kutschke Exp $
-// $Author: kutschke $
-// $Date: 2011/05/24 17:16:43 $
 //
 // Original author Rob Kutschke
 //

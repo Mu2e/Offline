@@ -3,9 +3,6 @@
 //
 // Original author: David Brown (LBNL), 2012
 //
-// $Id: FixedAmbigResolver.hh,v 1.3 2014/08/01 18:56:10 gandr Exp $
-// $Author: gandr $ 
-// $Date: 2014/08/01 18:56:10 $
 //
 #ifndef FixedAmbigResolver_HH
 #define FixedAmbigResolver_HH

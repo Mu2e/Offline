@@ -1,8 +1,5 @@
 //
 // Struct to hold pointers to MC data in event.
-// $Id: MCEvtData.hh,v 1.1 2014/08/22 20:13:58 brownd Exp $
-// $Author: brownd $ 
-// $Date: 2014/08/22 20:13:58 $
 //
 #ifndef MCEvtData_HH
 #define MCEvtData_HH

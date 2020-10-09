@@ -2,17 +2,17 @@
 #define Mu2eUtilities_SortedStepPoints_hh
 //
 //
-// $Id: SortedStepPoints.hh,v 1.5 2011/05/24 20:03:31 wb Exp $
-// $Author: wb $
-// $Date: 2011/05/24 20:03:31 $
 //
 // Original author Rob Kutschke
 //
 
-#include "CLHEP/Vector/ThreeVector.h"
-#include "MCDataProducts/inc/SimParticleCollection.hh"
-#include "MCDataProducts/inc/StepPointMCCollection.hh"
 #include <vector>
+
+#include "CLHEP/Vector/ThreeVector.h"
+#include "MCDataProducts/inc/SimParticle.hh"
+#include "MCDataProducts/inc/SimParticleCollection.hh"
+#include "MCDataProducts/inc/StepPointMC.hh"
+#include "MCDataProducts/inc/StepPointMCCollection.hh"
 
 namespace mu2e {
 

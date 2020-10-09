@@ -2,9 +2,6 @@
 // Read particles from a file in G4beamline input format.
 // Position of the GenParticles is in the Mu2e coordinate system.
 //
-// $Id: FromG4BLFile.cc,v 1.30 2014/01/15 17:07:30 tassiell Exp $
-// $Author: tassiell $
-// $Date: 2014/01/15 17:07:30 $
 //
 // Original author Rob Kutschke
 //

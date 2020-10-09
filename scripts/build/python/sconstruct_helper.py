@@ -53,7 +53,7 @@ def mu2eEnvironment():
 # the list of root libraries
 # This comes from: root-config --cflags --glibs
 def rootLibs():
-    return [ 'GenVector', 'Core', 'RIO', 'Net', 'Hist', 'Spectrum', 'MLP', 'Graf', 'Graf3d', 'Gpad', 'Tree',
+    return [ 'GenVector', 'Core', 'RIO', 'Net', 'Hist', 'MLP', 'Graf', 'Graf3d', 'Gpad', 'Tree',
              'Rint', 'Postscript', 'Matrix', 'Physics', 'MathCore', 'Thread', 'Gui', 'm', 'dl' ]
 
 
@@ -130,7 +130,7 @@ def mergeFlags(mu2eOpts):
     build = mu2eOpts['build']
     flags = ['-std=c++17','-Wall','-Wno-unused-local-typedefs','-g',
              '-Werror','-Wl,--no-undefined','-gdwarf-2', '-Wl,--as-needed',
-             '-Werror=return-type','-Winit-self','-Woverloaded-virtual']
+             '-Werror=return-type','-Winit-self','-Woverloaded-virtual', '-DBOOST_BIND_GLOBAL_PLACEHOLDERS' ]
     if build == 'prof':
         flags = flags + [ '-O3', '-fno-omit-frame-pointer', '-DNDEBUG' ]
     elif build == 'debug':
@@ -157,9 +157,10 @@ def BaBarLibs():
 # Walk the directory tree to locate all SConscript files.
 def sconscriptList(mu2eOpts):
     ss=[]
-    for root,dirs,files in os.walk('.'):
-        for file in files:
-            if file == 'SConscript': ss.append('%s/%s'%(root[2:],file))
+    ss_append = ss.append
+    for root, _, files in os.walk('.'):
+        if 'SConscript' in files:
+            ss_append(os.path.join(root[2:], 'SConscript'))
 
     # If we are making a build for the trigger, do not build everything.
     if mu2eOpts["trigger"] == 'on':
@@ -174,9 +175,8 @@ def sconscriptList(mu2eOpts):
 
 # Make sure the build directories are created
 def makeSubDirs(mu2eOpts):
-    for dir in ['libdir','bindir','tmpdir', 'gendir'] :
-        cmd = "mkdir -p "+mu2eOpts[dir]
-        subprocess.call(cmd, shell=True)
+    for mdir in [mu2eOpts[d] for d in ['libdir','bindir','tmpdir', 'gendir']]:
+        os.makedirs(mdir, exist_ok=True)
 
 #
 # a method for creating build-on-demand targets

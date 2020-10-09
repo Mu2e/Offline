@@ -5,9 +5,6 @@
 // This struct represents one such record, including the framing fields,
 // as it appears on disk in the binary files.
 //
-// $Id: DiskRecord.hh,v 1.2 2011/05/17 15:41:35 greenc Exp $
-// $Author: greenc $
-// $Date: 2011/05/17 15:41:35 $
 //
 //
 // Definition of one record as it appears on the GMC input file.

@@ -1,15 +1,169 @@
-// Correct the pbar window used in TS5
+// Correct the pbar window used in TS_v05 and improve TS modeling, including initial thermal shielding implementation
 #include "Mu2eG4/geom/TransportSolenoid_v05.txt"
 
-// Pbar Absorber
-int    pbar.version        = 4;
-double pbar.halfLength     = 0.127; 
+//TS3 Pbar Absorber
+//Window
+int    pbar.version        = 4; 
+double pbar.halfLength     = 0.127;
 string pbar.materialName   = "A1100";
+//Support Structure
+double pbar.support.midRin = 269.1; //from inner bore
+double pbar.support.midRout = 793.4; //to outer cryostat
+double pbar.support.outROut = 1050.;
+double pbar.support.outHalfLength = 30.; //half thickness of disk
 
-int    pbarwedge.nStrips              = 3;
-double pbarwedge.stripThickness       = 0.127; // mm
-vector<double> pbarwedge.stripThicknesses = {0.0635,0.0635,0.0635}; // mm
+//Wedge
+int    pbarwedge.nStrips              = 3; //number of strips, must equal strip heigh and thickness vector lengths
+double pbarwedge.stripThickness       = 0.127; // mm (FULL THICKNESS, not half thickness)
+vector<double> pbarwedge.stripThicknesses = {0.127,0.127,0.127}; // mm (FULL THICKNESS, not half thickness)
 vector<double> pbarwedge.stripHeights = {23, 69, 115}; // mm
+
+//Inner cryo shell radii
+double ts.ts1in.rOut       = 269.;  
+double ts.ts2in.rOut       = 269.;  
+double ts.ts3in.rOut       = 269.;  
+double ts.ts4in.rOut       = 269.;  
+double ts.ts5in.rOut       = 267.;  
+double ts.ts5.rVac         = 248.; //slightly smaller measured  
+
+//Outer cryo shell radii
+double ts.ts1out.rIn       = 705.0; 
+double ts.ts2out.rIn       = 793.45; 
+double ts.ts3out.rIn       = 793.45; 
+double ts.ts4out.rIn       = 793.45; 
+double ts.ts5out.rIn       = 793.45; 
+
+double ts.ts1out.rOut      = 724.05; 
+double ts.ts2out.rOut      = 812.5; 
+double ts.ts3out.rOut      = 812.5; 
+double ts.ts4out.rOut      = 812.5; 
+double ts.ts5out.rOut      = 812.5; 
+
+double ts.tsUendWall1.halfLength = 15.;
+
+double ts.tsUendWall2.rIn   = 725.; 
+double ts.tsUendWall2.rOut  = 812.5.;
+double ts.tsUendWall2.halfLength = 15.;
+
+//TS Collimator 5
+double ts.coll52.halfLength   = 662.5; //half length of metal liner around COL5
+double ts.coll5.Radius1       = 128.0; //first layer inner radius
+double ts.coll5.Radius2       = 232.5; //first layer outer radius
+double ts.coll5.Radius3In     = 235.0; //second layer inner radius
+double ts.coll5.Radius3       = 243.0; //second layer outer radius
+string ts.coll5.material1Name = "G4_POLYETHYLENE";
+string ts.coll5.material2Name = "StainlessSteel316";
+double ts.coll.Flange.halfLength = 9.5;
+double ts.coll.Flange.Radius1 = 243.01;
+double ts.coll.Flange.Radius2 = 294.0;
+int    ts.coll.Flange.version = 2;
+
+double ts.ts1.caLengthDiff = 125.; //distance from the inside edge of the top part of the TS end wall to end of cold mass
+vector<double> ts1.cas.radii = 
+  {
+    449.78, 529.38,
+    485.00, 570.00
+  }; //TS1 CA is 1045 mm long, 125 mm reduction but maintain same angle --> 45 (40) mm  drop --> 39.6 (35.2) mm drop with respect to TS_v05
+double ts.ts5.caLengthDiff = 125.; //distance from the inside edge of the top part of the TS end wall to end of cold mass
+vector<double> ts5.cas.radii = 
+  {
+    485.00, 570.00,
+    435.50, 516.00
+  }; //TS5 is 1250 mm long, 125 mm reduction in cold mass but maintain same angle --> 60 (55) mm  drop --> 54 (49.5) mm drop with respect to TS_v05
+
+//end wall of the TS
+double ts.tsDendWall.rIn        = 296.35; 
+double ts.tsDendWall.halfLength = 9.5;
+bool   ts.tsDendWall2.build     = true; //lower radial portion of the plate
+vector<double> ts.tsDendWall2.rIn  = {270.01, 270.01, 270.01, 270.01};
+vector<double> ts.tsDendWall2.rOut = {321.7 , 375.0 , 375.0 , 375.0 };
+vector<double> ts.tsDendWall2.z    = {  0.0 ,  25.0 ,  27.5 ,  50.0 };
+int            ts.tsDendWall2.planes = 4; //size of the end wall radius and z vectors
+
+//Thermal shielding
+string ts.thermalshield.mli.material = "MLI";
+string ts.thermalshield.mid.material = "G4_Al"; //layer of metal between mylar
+bool   ts.thermalshield.build    = true;
+//plate of thermal shielding at the beginning of the TS
+double ts.ts1.thermalshield.endplate.rIn        = 314.15; //362 for drawing F10090981, but smaller plate then reaches to inner radius
+double ts.ts1.thermalshield.endplate.rOut       = 651.35; //set to be the same as the outer layer radius
+double ts.ts1.thermalshield.endplate.mid.z1     = 5.; //5 mm MLI blanket
+double ts.ts1.thermalshield.endplate.mid.z2     = 11.35; //1/4" aluminum
+double ts.ts1.thermalshield.endplate.halfLength = 10.68; //add 10 mm MLI (2 blankets)
+//TS1 thermal shield
+double ts.ts1in.thermalshield.rIn       = 314.15;
+double ts.ts1in.thermalshield.mid.rIn   = 324.15; //layer of metal between mylar layers
+double ts.ts1in.thermalshield.mid.rOut  = 330.50;
+double ts.ts1in.thermalshield.rOut      = 335.50;
+double ts.ts1out.thermalshield.rIn      = 630.; //Approximate radii due to current TS1 bore implementation
+double ts.ts1out.thermalshield.mid.rIn  = 635.; //layer of metal between aluminized mylar layers
+double ts.ts1out.thermalshield.mid.rOut = 641.35;
+double ts.ts1out.thermalshield.rOut     = 651.35;
+//TS2 thermal shield
+double ts.ts2in.thermalshield.rIn       = 314.15;
+double ts.ts2in.thermalshield.mid.rIn   = 324.15; //layer of metal between mylar layers
+double ts.ts2in.thermalshield.mid.rOut  = 330.50;
+double ts.ts2in.thermalshield.rOut      = 335.50;
+double ts.ts2out.thermalshield.rIn      = 732.1;
+double ts.ts2out.thermalshield.mid.rIn  = 737.1; //layer of metal between mylar layers
+double ts.ts2out.thermalshield.mid.rOut = 743.45;
+double ts.ts2out.thermalshield.rOut     = 753.45;
+//TS3 thermal shield
+double ts.ts3in.thermalshield.rIn       = 314.15;
+double ts.ts3in.thermalshield.mid.rIn   = 324.15; //layer of metal between mylar layers
+double ts.ts3in.thermalshield.mid.rOut  = 330.50;
+double ts.ts3in.thermalshield.rOut      = 335.50;
+double ts.ts3out.thermalshield.rIn      = 732.1;
+double ts.ts3out.thermalshield.mid.rIn  = 737.1; //layer of metal between mylar layers
+double ts.ts3out.thermalshield.mid.rOut = 743.45;
+double ts.ts3out.thermalshield.rOut     = 753.45;
+//TS4 thermal shield
+double ts.ts4in.thermalshield.rIn       = 314.15;
+double ts.ts4in.thermalshield.mid.rIn   = 324.15; //layer of metal between mylar layers
+double ts.ts4in.thermalshield.mid.rOut  = 330.50;
+double ts.ts4in.thermalshield.rOut      = 335.50;
+double ts.ts4out.thermalshield.rIn      = 732.1;
+double ts.ts4out.thermalshield.mid.rIn  = 737.1; //layer of metal between mylar layers
+double ts.ts4out.thermalshield.mid.rOut = 743.45;
+double ts.ts4out.thermalshield.rOut     = 753.45;
+//TS5 thermal shield
+double ts.ts5in.thermalshield.rIn       = 314.15;
+double ts.ts5in.thermalshield.mid.rIn   = 324.15; //layer of metal between mylar layers
+double ts.ts5in.thermalshield.mid.rOut  = 330.50;
+double ts.ts5in.thermalshield.rOut      = 335.50;
+double ts.ts5out.thermalshield.rIn      = 732.1;
+double ts.ts5out.thermalshield.mid.rIn  = 737.1; //layer of metal between mylar layers
+double ts.ts5out.thermalshield.mid.rOut = 743.45;
+double ts.ts5out.thermalshield.rOut     = 753.45;
+//plate of thermal shielding at the end of the TS
+double ts.ts5.thermalshield.endplate.rIn        = 314.15; //362 for drawing F10090981, but smaller plate then reaches to inner radius
+double ts.ts5.thermalshield.endplate.rOut       = 753.45;
+double ts.ts5.thermalshield.endplate.mid.z1     = 5.; //5 mm MLI blanket
+double ts.ts5.thermalshield.endplate.mid.z2     = 11.35; //1/4" aluminum
+double ts.ts5.thermalshield.endplate.halfLength = 10.68; //add 10 mm MLI (2 blankets)
+
+//support rings
+double ts.rInRingSide = 845.;
+double ts.rOutRingSide = 1100.;
+double ts.thickRingSide = 38.1;
+double ts.rInRing = 1080.95; //3/4" since TS cryostat continues under it --> total 1 1/2" as expected
+double ts.rOutRing = 1100;
+double ts.lengthRing = 423.8; //so total width is 500 mm
+string ts.RingMaterialType = "StainlessSteel316";
+int ts.nRing = 6;
+vector<double> ts.xRing = {3904, 3044.7, 704.1, -704.1, -3044.7, -3904};
+vector<double> ts.yRing = {0, 0, 0, 0, 0, 0};
+vector<double> ts.zRing = {-2934, -859.3, 0, 0, 859.3, 2825.};
+vector<double> ts.thetaRing = {0, 45, 90, 90, 45, 0}; // degrees yrot
+
+//TSu-TSd interconnect
+//parameters taken from docdb-8545 slide 8
+bool   ts.tsudinterconnect.build = true;
+double ts.tsudinterconnect.xoffset = 40.8;
+double ts.tsudinterconnect.rIn = 940.; //1880 mm inner diameter
+double ts.tsudinterconnect.rOut = 955.875; //15.875 mm thick
+double ts.tsudinterconnect.halfLength = 206.6; 
+string ts.tsudinterconnect.material = "StainlessSteel316";
 
 // This tells emacs to view this file in c++ mode.
 // Local Variables:

@@ -1,7 +1,4 @@
 //
-// $Id: ExtMonFNALRawClusterCollection.hh,v 1.1 2012/09/19 03:29:45 gandr Exp $
-// $Author: gandr $
-// $Date: 2012/09/19 03:29:45 $
 //
 // Original author Andrei Gaponenko
 //

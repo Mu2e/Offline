@@ -4,9 +4,6 @@
 // 
 // Original author: David Brown (LBNL), 2012
 //
-// $Id: HitAmbigResolver.hh,v 1.4 2014/08/01 18:56:10 gandr Exp $
-// $Author: gandr $ 
-// $Date: 2014/08/01 18:56:10 $
 //
 #ifndef HitAmbigResolver_HH
 #define HitAmbigResolver_HH

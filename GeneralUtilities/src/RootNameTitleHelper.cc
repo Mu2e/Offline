@@ -3,9 +3,6 @@
 // names and titles for root objects.  See the header
 // for details.
 //
-// $Id: RootNameTitleHelper.cc,v 1.3 2011/05/18 02:27:16 wb Exp $
-// $Author: wb $
-// $Date: 2011/05/18 02:27:16 $
 //
 
 #include <iostream>

@@ -1,9 +1,6 @@
 
            Release notes for Mu2e Offline software, v0_2_7
 
-  $Id: v0_2_7.txt,v 1.1 2011/05/25 14:54:21 kutschke Exp $
-  $Author: kutschke $
-  $Date: 2011/05/25 14:54:21 $
 
 11) Nov 2, 2010 kutschke
     The geometry service optionally loads the beamline and virtual

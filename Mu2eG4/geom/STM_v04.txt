@@ -1,0 +1,17 @@
+// (Muon) Stoping Target Monitor (STM)
+
+#include "Mu2eG4/geom/STM_v03.txt"
+
+//turn off FOV collimator absorber
+bool   stm.FOVcollimator.absorber.build         =   false; //
+double stm.FOVcollimator.absorber.halfLength    =   50.0; //
+
+//set magnet+shield material so it's effectively off
+string stm.magnet.material       = "G4_AIR";
+string stm.shield.materialLiner  = "G4_AIR";
+string stm.shield.material       = "G4_AIR";
+
+// This tells emacs to view this file in c++ mode.
+// Local Variables:
+// mode:c++
+// End:

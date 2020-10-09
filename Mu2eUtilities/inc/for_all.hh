@@ -9,9 +9,6 @@
 // A later version of C++ will allow a ... notation for an arbitrary
 // number of additional objects.
 //
-// $Id: for_all.hh,v 1.4 2011/05/18 02:27:18 wb Exp $
-// $Author: wb $
-// $Date: 2011/05/18 02:27:18 $
 //
 // Original author Rob Kutschke
 //

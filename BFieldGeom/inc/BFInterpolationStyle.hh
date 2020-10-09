@@ -4,9 +4,6 @@
 // Enum-matched-to-String class for defining how to do interpolation
 // within a magnetic field map.
 //
-//   $Id: BFInterpolationStyle.hh,v 1.1 2013/08/30 22:29:26 kutschke Exp $
-//   $Author: kutschke $
-//   $Date: 2013/08/30 22:29:26 $
 //
 // Contact person, Rob Kutschke
 //

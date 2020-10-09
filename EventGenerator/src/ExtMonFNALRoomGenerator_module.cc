@@ -1,6 +1,3 @@
-// $Id: ExtMonFNALRoomGenerator_module.cc,v 1.12 2013/03/15 15:52:03 kutschke Exp $
-// $Author: kutschke $
-// $Date: 2013/03/15 15:52:03 $
 //
 // Create particle flux in the ExtMonFNAL room by randomizing
 // kinematic of input particles read from a file.

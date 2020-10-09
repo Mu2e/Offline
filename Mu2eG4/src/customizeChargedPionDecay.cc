@@ -2,9 +2,6 @@
 // Add the decay pi+ -> e+ nu_e to the G4 decay table for pi+ and similarly
 // for pi-.
 //
-// $Id: customizeChargedPionDecay.cc,v 1.3 2012/07/20 00:26:53 kutschke Exp $
-// $Author: kutschke $
-// $Date: 2012/07/20 00:26:53 $
 //
 // In default configured G4, the only decy mode for pi+ is pi+ -> mu+ nu_mu.
 // Similarly for pi-.  This function looks at the config file parameter

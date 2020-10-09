@@ -2,9 +2,6 @@
 // Hold information about one Panel in a tracker.
 //
 //
-// $Id: Panel.cc,v 1.3 2011/08/03 18:31:25 mf Exp $
-// $Author: mf $
-// $Date: 2011/08/03 18:31:25 $
 //
 // Original author Rob Kutschke
 //

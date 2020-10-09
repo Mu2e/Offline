@@ -5,9 +5,6 @@
 // Describe the properites of a support for the Tracker.
 //
 //
-//  $Id: Support.hh,v 1.5 2012/03/30 15:13:35 gandr Exp $
-//  $Author: gandr $
-//  $Date: 2012/03/30 15:13:35 $
 //
 //  Original author Rob Kutschke
 //

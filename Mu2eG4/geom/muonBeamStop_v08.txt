@@ -1,0 +1,15 @@
+// Muon Beam Dump/Stop
+
+#include "Mu2eG4/geom/muonBeamStop_v07.txt"
+//increment version number
+int    mbs.Version            = 8;
+
+//turn on absorber for STM
+bool   mbs.CLV2.absorber.build          = true;
+string mbs.CLV2.absorber.MaterialName   = "Polyethylene0935";
+double mbs.CLV2.absorber.halflength     =  10.0;
+
+// This tells emacs to view this file in c++ mode.
+// Local Variables:
+// mode:c++
+// End:

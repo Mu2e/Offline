@@ -6,6 +6,12 @@
 //
 
 #include <iostream>
+#include <vector>
+
+#include "CLHEP/Vector/ThreeVector.h"
+
+#include "GeneralUtilities/inc/safeSqrt.hh"
+
 #include "Mu2eUtilities/inc/VectorVolume.hh"
 
 using namespace std;

@@ -3,9 +3,6 @@
 //
 // Free function to create the virtual detectors
 //
-// $Id: constructVirtualDetectors.hh,v 1.3 2012/06/05 16:19:24 genser Exp $
-// $Author: genser $
-// $Date: 2012/06/05 16:19:24 $
 //
 // Original author KLG
 //

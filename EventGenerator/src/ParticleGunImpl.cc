@@ -1,6 +1,3 @@
-// $Id: ParticleGunImpl.cc,v 1.6 2013/03/22 22:04:54 gandr Exp $
-// $Author: gandr $
-// $Date: 2013/03/22 22:04:54 $
 // Original author Robert Kutschke
 // Modified by mjlee. See docdb-2049
 

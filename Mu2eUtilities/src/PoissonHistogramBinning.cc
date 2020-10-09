@@ -2,9 +2,6 @@
 // Choose a suitable range for histogramming a random variate distributed
 // according to a mu2e::PoissonOrFixed distribution.
 //
-// $Id: PoissonHistogramBinning.cc,v 1.1 2012/02/14 17:09:54 kutschke Exp $
-// $Author: kutschke $
-// $Date: 2012/02/14 17:09:54 $
 //
 // Contact author Rob Kutschke
 //
@@ -29,10 +26,9 @@
 //     mean +/- width*sqrt(mean), rounded to integers with, at most, 100
 //     bins.
 //
-#include "Mu2eUtilities/inc/PoissonHistogramBinning.hh"
-
-#include <iostream>
 #include <cmath>
+
+#include "Mu2eUtilities/inc/PoissonHistogramBinning.hh"
 
 using namespace std;
 

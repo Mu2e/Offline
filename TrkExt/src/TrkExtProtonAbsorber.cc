@@ -1,7 +1,4 @@
 //
-//  $Id: TrkExtProtonAbsorber.cc,v 1.2 2012/08/18 22:27:56 mjlee Exp $
-//  $Author: mjlee $
-//  $Date: 2012/08/18 22:27:56 $
 //
 //  Original author MyeongJae Lee
 //

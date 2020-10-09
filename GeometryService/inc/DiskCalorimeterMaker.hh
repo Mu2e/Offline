@@ -1,9 +1,6 @@
 #ifndef CalorimeterGeom_DiskCalorimeterMaker_hh
 #define CalorimeterGeom_DiskCalorimeterMaker_hh
 //
-// $Id: DiskCalorimeterMaker.hh,v 1.4 2013/05/09 23:14:14 echenard Exp $
-// $Author: echenard $
-// $Date: 2013/05/09 23:14:14 $
 //
 // original authors B. Echenard
 

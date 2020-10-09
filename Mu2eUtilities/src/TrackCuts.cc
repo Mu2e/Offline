@@ -1,10 +1,16 @@
-#include "Mu2eUtilities/inc/TrackCuts.hh"
+#include <exception>
+#include <memory>
+#include <vector>
 
-#include "fhiclcpp/ParameterSet.h"
-
-#include "TH1.h"
+#include "CLHEP/Vector/ThreeVector.h"
 
 #include "RecoDataProducts/inc/TrackSummary.hh"
+#include "TH1.h"
+#include "cetlib_except/exception.h"
+#include "fhiclcpp/ParameterSet.h"
+#include "fhiclcpp/exception.h"
+
+#include "Mu2eUtilities/inc/TrackCuts.hh"
 
 namespace mu2e {
 
@@ -83,7 +89,7 @@ namespace mu2e {
       lastfailed = 5;
     }
 
-    const bool timeCutPassed = 
+    const bool timeCutPassed =
       (cutt0min_ < cutt0max_) ?  // check for time wrapping
       ((cutt0min_ < trk.t0()) && (trk.t0() < cutt0max_)) : // no wrapping
       ((trk.t0() < cutt0max_) || (cutt0min_ < trk.t0()));  // time wrapped, discontinuous acceptance region
