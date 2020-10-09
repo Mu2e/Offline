@@ -10,6 +10,8 @@
 #include "art/Framework/Services/Optional/RandomNumberGenerator.h"
 #include "fhiclcpp/types/Atom.h"
 #include "fhiclcpp/types/Sequence.h"
+#include "art_root_io/TFileService.h"
+#include "art_root_io/TFileDirectory.h"
 
 #include "Mu2eUtilities/inc/CaloPulseShape.hh"
 #include "CalorimeterGeom/inc/Calorimeter.hh"
@@ -55,9 +57,8 @@ namespace mu2e {
              fhicl::Atom<art::InputTag> caloShowerCollection { Name("caloShowerROCollection"), Comment("CaloShowerRO collection name") }; 
              fhicl::Atom<double>        blindTime            { Name("blindTime"),              Comment("Microbunch blind time") }; 
              fhicl::Atom<bool>          addNoise             { Name("addNoise"),               Comment("Add noise to waveform") }; 
-             fhicl::Atom<double>        noiseElecRMS         { Name("noiseElecADC"),           Comment("Electronics noise level - ADC equivalent") }; 
-             fhicl::Atom<double>        rinBufferTime        { Name("rinBufferTime"),          Comment("RIN buffer time to simulate noise") }; 
-             fhicl::Atom<double>        nPhotPerDigi         { Name("nPhotPerDigi"),           Comment("number of PE / digitized bin for RIN noise") }; 
+             fhicl::Atom<double>        noiseElecADC         { Name("noiseElecADC"),           Comment("Electronics noise level - ADC equivalent") }; 
+             fhicl::Atom<double>        rinNphotPerNs        { Name("rinNphotPerNs"),          Comment("RIN noise number of PE / ns ") }; 
              fhicl::Atom<double>        digiSampling         { Name("digiSampling"),           Comment("Digitization time sampling") }; 
              fhicl::Atom<int>           nBits                { Name("nBits"),                  Comment("ADC Number of bits") }; 
              fhicl::Atom<int>           nBinsPeak            { Name("nBinsPeak"),              Comment("Window size for finding local maximum to digitize wf") }; 
@@ -74,9 +75,8 @@ namespace mu2e {
             caloShowerToken_{consumes<CaloShowerStepROCollection>(config().caloShowerCollection())},
             blindTime_         (config().blindTime()),
             addNoise_          (config().addNoise()),
-            noiseElecRMS_      (config().noiseElecRMS()),
-            rinBufferTime_     (config().rinBufferTime()),
-            nPhotPerDigi_      (config().nPhotPerDigi()),
+            noiseElecADC_      (config().noiseElecADC()),
+            rinNphotPerNs_     (config().rinNphotPerNs()),
             digiSampling_      (config().digiSampling()),
             bufferDigi_        (config().bufferDigi()),
             nBinsPeak_         (config().nBinsPeak()),
@@ -96,29 +96,29 @@ namespace mu2e {
          }
          
          void produce(art::Event& e)   override;
+         void beginJob() override;
          void beginRun(art::Run& aRun) override;
 
     private:       
-       void generateNoise       (std::vector<std::vector<double>>&, std::vector<int>&, const ConditionsHandle<CalorimeterCalibrations>&);
+       void generateNoise     (std::vector<std::vector<double>>&, std::vector<int>&, const ConditionsHandle<CalorimeterCalibrations>&);
        void generateNoiseFast (std::vector<std::vector<double>>&, std::vector<int>&, const ConditionsHandle<CalorimeterCalibrations>&);
-       void makeDigitization    (const CaloShowerStepROCollection&, CaloDigiCollection&);
-       void fillWaveforms       (std::vector<std::vector<double>>&, const CaloShowerStepROCollection&, const ConditionsHandle<CalorimeterCalibrations>&);
-       void buildOutputDigi     (std::vector<std::vector<double>>&, std::vector<int>&, CaloDigiCollection&);
-       void diag0               (int, const std::vector<int>&);
-       void diag1               (int, double, size_t, const std::vector<int>&, int);
-       void diag2               (const CaloDigiCollection&);
-       void plotWF              (const std::vector<int>& waveform,    const std::string& pname, int pedestal);
-       void plotWF              (const std::vector<double>& waveform, const std::string& pname, int pedestal);
-       void plotNoise           (const std::vector<std::vector<double>>& waveforms, const std::vector<int>& pedestals);
+       void makeDigitization  (const CaloShowerStepROCollection&, CaloDigiCollection&);
+       void fillWaveforms     (std::vector<std::vector<double>>&, const CaloShowerStepROCollection&, const ConditionsHandle<CalorimeterCalibrations>&);
+       void buildOutputDigi   (std::vector<std::vector<double>>&, std::vector<int>&, CaloDigiCollection&);
+       void diag0             (int, const std::vector<int>&);
+       void diag1             (int, double, size_t, const std::vector<int>&, int);
+       void diag2             (const CaloDigiCollection&);
+       void plotWF            (const std::vector<int>& waveform,    const std::string& pname, int pedestal);
+       void plotWF            (const std::vector<double>& waveform, const std::string& pname, int pedestal);
+       void plotNoise         (const std::vector<std::vector<double>>& waveforms, const std::vector<int>& pedestals);
 
        
        const art::ProductToken<CaloShowerStepROCollection> caloShowerToken_;
        double                  blindTime_;
        double                  mbtime_;
        bool                    addNoise_;
-       double                  noiseElecRMS_;
-       double                  rinBufferTime_;
-       double                  nPhotPerDigi_;
+       double                  noiseElecADC_;
+       double                  rinNphotPerNs_;
        double                  digiSampling_;
        int                     bufferDigi_;
        int  		       nBinsPeak_;
@@ -134,8 +134,22 @@ namespace mu2e {
        CLHEP::RandFlat         randFlat_;
        CaloPulseShape          pulseShape_;
        const Calorimeter*      calorimeter_;
+       
+       TH1F*                   hEtot_;
+       TH1F*                   hPEtot_;
   };
 
+
+  //-----------------------------------------------
+  void CaloDigiFromShower::beginJob()
+  {      
+      if (diagLevel_ > 1)
+      {
+          art::ServiceHandle<art::TFileService> tfs;
+          hEtot_   = tfs->make<TH1F>("hEtot",      "Total E dep",   150,     0,   150);
+          hPEtot_  = tfs->make<TH1F>("hPEtot",     "Total E dep",   150,     0,   15000);
+      }
+  }
 
   //-----------------------------------------------------------------------------
   void CaloDigiFromShower::beginRun(art::Run& aRun)
@@ -148,6 +162,7 @@ namespace mu2e {
   //---------------------------------------------------------
   void CaloDigiFromShower::produce(art::Event& event)
   {
+
       if ( diagLevel_ > 0 ) std::cout<<"[CaloDigiFromShower::produce] begin" << std::endl;
 
       ConditionsHandle<AcceleratorParams> accPar("ignored");
@@ -163,6 +178,7 @@ namespace mu2e {
       event.put(std::move(caloDigiColl));
 
       if ( diagLevel_ > 0 ) std::cout<<"[CaloDigiFromShower::produce] end" << std::endl;
+        
   }
 
   
@@ -181,7 +197,7 @@ namespace mu2e {
       std::vector<int>                 pedestals(nWaveforms,0);
       
       
-      if (addNoise_) generateNoise(waveforms,pedestals,calorimeterCalibrations);
+      if (addNoise_) generateNoiseFast(waveforms,pedestals,calorimeterCalibrations);
       fillWaveforms(waveforms,caloShowerStepROs,calorimeterCalibrations);
       buildOutputDigi(waveforms, pedestals, caloDigiColl);
       
@@ -193,102 +209,92 @@ namespace mu2e {
   void CaloDigiFromShower::generateNoise(std::vector<std::vector<double>>& waveforms, std::vector<int>& pedestals, 
                                          const ConditionsHandle<CalorimeterCalibrations>& calorimeterCalibrations)
   {
-     double              totalTime   = mbtime_ - blindTime_ + endTimeBuffer_ + rinBufferTime_;
-     int                 nPh         = int(totalTime/digiSampling_*nPhotPerDigi_);
-     int                 ibuffer     = int(rinBufferTime_/digiSampling_);
-     int                 nbins       = waveforms[0].size();
-     std::vector<double> wf          = pulseShape_.digitizedPulse(0.0);
-     int                 pulseSize   = wf.size();
      
-     for (unsigned i=0; i<waveforms.size(); ++i)
-     {
-         auto& waveform      = waveforms[i];
-         double scaleFactor  = MeVToADC_/calorimeterCalibrations->peMeV(i);
+      std::vector<double> wf            = pulseShape_.digitizedPulse(0.0);
+      int                 pulseSize     = wf.size();     
+      double              rinBufferTime = 0.75*pulseSize*digiSampling_;
+      double              totalTime     = mbtime_ - blindTime_ + endTimeBuffer_ + rinBufferTime;
+      int                 nPhMean       = int(totalTime*rinNphotPerNs_);
+      int                 nbuffer       = int(rinBufferTime/digiSampling_);
+      int                 nbins         = waveforms[0].size();
 
-         //Generate the radiation induced noise (RIN)
-         for (int i=0;i<nPh;++i)
-         {
-	     double t0 = randFlat_.fire(0.0,totalTime);       
-	     wf = pulseShape_.digitizedPulse(t0);
+      for (unsigned i=0; i<waveforms.size(); ++i)
+      {
+          auto& waveform     = waveforms[i];
+          double scaleFactor = MeVToADC_/calorimeterCalibrations->peMeV(i);
 
-	     int i0 = int(t0/digiSampling_) - ibuffer;
-	     int l0 = (i0<0) ? -i0 : 0;      
-	     int l1 = std::min(pulseSize,nbins-i0);
-	     for (int l=l0;l<l1;++l) waveform[i0+l] += wf[l]*scaleFactor;
-         }
-         
-         //add electronics noise        
-         for (auto& val : waveform) val += randGauss_.fire(0.0,noiseElecRMS_);
-         
-         //estimate pedestal for this waveform - set it to theoretical value for the time being to allow fluctuations
-         //pedestals[i] = int(std::accumulate(waveform.begin(),waveform.end(),0.0)/waveform.size());
-         pedestals[i] = int(digiSampling_/totalTime*nPh*std::accumulate(wf.begin(),wf.end(),0.0))*scaleFactor;
-     }
-     
-     if (diagLevel_==99) plotNoise(waveforms,pedestals);
+          //Generate the radiation induced noise (RIN)
+          int nPh = randPoisson_(nPhMean);
+          for (int i=0;i<nPh;++i)
+          {
+	      double t0 = randFlat_.fire(0.0,totalTime);       
+	      wf = pulseShape_.digitizedPulse(t0);
+
+	      int i0 = int(t0/digiSampling_) - nbuffer;
+	      int l0 = (i0<0) ? -i0 : 0;      
+	      int l1 = std::min(pulseSize,nbins-i0);
+	      for (int l=l0;l<l1;++l) waveform[i0+l] += wf[l]*scaleFactor;
+          }
+          
+          //add electronics noise        
+          for (auto& val : waveform) val += randGauss_.fire(0.0,noiseElecADC_);
+
+          //estimate pedestal for this waveform - set it to theoretical value for the time
+          pedestals[i] = int(rinNphotPerNs_*digiSampling_*std::accumulate(wf.begin(),wf.end(),0.0)*scaleFactor);      
+      }
+
+      if (diagLevel_==99) plotNoise(waveforms,pedestals);
   }
 
 
   //-------------------------------------------------------------------------------------------------------------------------
+  // This approximation  divides the digitization period into 5 fixed intervals to generate each waveform.
   void CaloDigiFromShower::generateNoiseFast(std::vector<std::vector<double>>& waveforms, std::vector<int>& pedestals, 
                                              const ConditionsHandle<CalorimeterCalibrations>& calorimeterCalibrations)
   {
      
-     int                 totalTime  = int((mbtime_ - blindTime_ + endTimeBuffer_ + rinBufferTime_)/digiSampling_);
-     int                 nPh        = int(totalTime/digiSampling_*nPhotPerDigi_);
-     int                 ibuffer    = int(rinBufferTime_/digiSampling_);
-     int                 nbins      = waveforms[0].size();
-     std::vector<double> wf0        = pulseShape_.digitizedPulse(0.0);
-     std::vector<double> wf1        = pulseShape_.digitizedPulse(1.0);
-     std::vector<double> wf2        = pulseShape_.digitizedPulse(2.0);
-     std::vector<double> wf3        = pulseShape_.digitizedPulse(3.0);
-     std::vector<double> wf4        = pulseShape_.digitizedPulse(4.0);
-     int                 pulseSize  = wf0.size();
-     
+      std::vector<double> wf0 = pulseShape_.digitizedPulse(0.0);
+      std::vector<double> wf1 = pulseShape_.digitizedPulse(0.2*digiSampling_);
+      std::vector<double> wf2 = pulseShape_.digitizedPulse(0.4*digiSampling_);
+      std::vector<double> wf3 = pulseShape_.digitizedPulse(0.6*digiSampling_);
+      std::vector<double> wf4 = pulseShape_.digitizedPulse(0.8*digiSampling_);
 
-     for (unsigned i=0; i<waveforms.size(); ++i)
-     {
-         auto& waveform      = waveforms[i];
-         double scaleFactor  = MeVToADC_/calorimeterCalibrations->peMeV(i);
+      unsigned   pulseSize     = wf0.size();
+      double     rinBufferTime = 0.75*pulseSize*digiSampling_;
+      unsigned   nbuffer       = unsigned(rinBufferTime/digiSampling_);
+      unsigned   nbins         = waveforms[0].size();
 
-         //Generate approximation of the radiation induced noise (RIN)         
-         for (int i=0;i<nPh/5;++i)
-         {
-	     int i0 = int(randFlat_.fire(0.0,totalTime)) - ibuffer;
-	     int l0 = (i0<0) ? -i0 : 0;      
-	     int l1 = std::min(pulseSize,nbins-i0);
-	     for (int l=l0;l<l1;++l) waveform[i0+l] += wf0[l]*scaleFactor;
-	     
-             i0 = int(randFlat_.fire(0.0,totalTime)) - ibuffer;
-	     l0 = (i0<0) ? -i0 : 0;      
-	     l1 = std::min(pulseSize,nbins-i0);
-	     for (int l=l0;l<l1;++l) waveform[i0+l] += wf1[l]*scaleFactor;
-	     
-             i0 = int(randFlat_.fire(0.0,totalTime)) - ibuffer;
-	     l0 = (i0<0) ? -i0 : 0;      
-	     l1 = std::min(pulseSize,nbins-i0);
-	     for (int l=l0;l<l1;++l) waveform[i0+l] += wf2[l]*scaleFactor;
-	     
-             i0 = int(randFlat_.fire(0.0,totalTime)) - ibuffer;
-	     l0 = (i0<0) ? -i0 : 0;      
-	     l1 = std::min(pulseSize,nbins-i0);
-	     for (int l=l0;l<l1;++l) waveform[i0+l] += wf3[l]*scaleFactor;
-	     
-             i0 = int(randFlat_.fire(0.0,totalTime)) - ibuffer;
-	     l0 = (i0<0) ? -i0 : 0;      
-	     l1 = std::min(pulseSize,nbins-i0);
-	     for (int l=l0;l<l1;++l) waveform[i0+l] += wf4[l]*scaleFactor;
-         }
+      for (unsigned i=0; i<waveforms.size(); ++i)
+      {
+          auto& waveform     = waveforms[i];
+          double scaleFactor = MeVToADC_/calorimeterCalibrations->peMeV(i);
 
-         //add electronics noise        
-         for (auto& val : waveform) val += randGauss_.fire(0.0,noiseElecRMS_);
-         
-         //estimate pedestal for this waveform - set it to theoretical value for the time being to allow fluctuations
-         //pedestals[i] = int(std::accumulate(waveform.begin(),waveform.end(),0.0)/waveform.size());
-         pedestals[i] = int(digiSampling_/totalTime*nPh*std::accumulate(wf0.begin(),wf0.end(),0.0))*scaleFactor;
-     }
-     
-     if (diagLevel_==99) plotNoise(waveforms,pedestals);
+          //Generate approximation of the radiation induced noise (RIN)         
+          for (unsigned i=0;i<nbuffer+nbins; ++i)
+          {
+	      unsigned pulseStart = (i>nbuffer) ? 0 : nbuffer-i;
+	      unsigned pulseEnd   = std::min(pulseSize,nbins+nbuffer-i);
+
+	      int nP0 = randPoisson_(rinNphotPerNs_);
+	      int nP1 = randPoisson_(rinNphotPerNs_);
+	      int nP2 = randPoisson_(rinNphotPerNs_);
+	      int nP3 = randPoisson_(rinNphotPerNs_);
+	      int nP4 = randPoisson_(rinNphotPerNs_);
+
+	      for (unsigned l=pulseStart;l<pulseEnd;++l)
+              {
+                 waveform[i-nbuffer+l] += (nP0*wf0[l]+nP1*wf1[l]+nP2*wf2[l]+nP3*wf3[l]+nP4*wf4[l])*scaleFactor;
+	      }
+          }
+
+          //add electronics noise        
+          for (auto& val : waveform) val += randGauss_.fire(0.0,noiseElecADC_);
+
+          //estimate pedestal for this waveform - set it to theoretical value for the time being
+          pedestals[i] = int(rinNphotPerNs_*digiSampling_*std::accumulate(wf0.begin(),wf0.end(),0.0)*scaleFactor);
+      }
+
+      if (diagLevel_==99) plotNoise(waveforms,pedestals);
   }
 
 
@@ -323,7 +329,12 @@ namespace mu2e {
           totalPE += caloShowerStepRO.NPE();
       }
             
-      if (diagLevel_ > 1) std::cout<<"[CaloDigiFromShower::fillWaveforms] total PE processed "<<totalPE<<std::endl;
+      if (diagLevel_ > 1) 
+      {
+         hEtot_->Fill(totalPE/calorimeterCalibrations->peMeV(0)/2.0);
+         hPEtot_->Fill(totalPE);         
+         std::cout<<"[CaloDigiFromShower::fillWaveforms] total PE processed "<<totalPE<<std::endl;
+      }
   }
 
 
@@ -355,7 +366,7 @@ namespace mu2e {
 	       // the stopping point is the first value below the threshold
 	       int sampleStart = std::max(timeSample - bufferDigi_, 0);
 	       int sampleStop  = timeSample;
-	       while (sampleStop < wfSize)
+	       while (sampleStop < wfSize-1)
 	       {
 		   if (wf[sampleStop]< minPeakADC_) break;
 		   ++sampleStop;
@@ -489,7 +500,7 @@ namespace mu2e {
   {      
       std::vector<int> v;
       for (unsigned i=0;i<waveform.size();++i) v.push_back(int(waveform[i]));
-      plotWF(v,pname, pedestal);          
+      plotWF(v,pname, pedestal);  
   }
 
 
