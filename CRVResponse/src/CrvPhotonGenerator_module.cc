@@ -1,9 +1,6 @@
 //
 // A module to create CRV photons arriving at the SiPMs (using StepPointMCs)
 //
-// $Id: $
-// $Author: ehrlich $
-// $Date: 2014/08/07 01:33:40 $
 //
 // Original Author: Ralf Ehrlich
 

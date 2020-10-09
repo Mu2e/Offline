@@ -8,6 +8,9 @@
 // Contact person, Rob Kutschke
 //
 
+#include <type_traits>
+#include <utility>
+
 #include "Mu2eUtilities/inc/TrkSpecies.hh"
 
 namespace mu2e {

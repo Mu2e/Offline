@@ -5,9 +5,6 @@
 // A temporary class to hold generated particles.
 // It does not have a mother-daughter history.
 //
-// $Id: GenParticle.hh,v 1.4 2013/05/31 21:32:46 gandr Exp $
-// $Author: gandr $
-// $Date: 2013/05/31 21:32:46 $
 //
 // Original author Rob Kutschke
 //

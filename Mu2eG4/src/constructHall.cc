@@ -1,9 +1,6 @@
 //
 // Free function to create the hall walls and hall interior inside the earthen overburden.
 //
-// $Id: constructHall.cc,v 1.18 2013/09/27 17:19:39 knoepfel Exp $
-// $Author: knoepfel $
-// $Date: 2013/09/27 17:19:39 $
 //
 // Original author KLG based on Mu2eWorld constructHall
 //
@@ -31,6 +28,7 @@
 #include "G4GenericTrap.hh"
 #include "G4RotationMatrix.hh"
 #include "G4Orb.hh"
+#include "G4Box.hh"
 #include "G4SubtractionSolid.hh"
 #include "G4TwoVector.hh"
 #include "CLHEP/Vector/Rotation.h"

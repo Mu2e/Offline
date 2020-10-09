@@ -1,9 +1,6 @@
 //
 // Free function to create CRV aka Scintillator Shield in CosmicRayShield
 //
-// $Id: constructCRV.cc,v 1.20 2014/02/10 14:23:03 ehrlich Exp $
-// $Author: ehrlich $
-// $Date: 2014/02/10 14:23:03 $
 //
 // Original author KLG
 //

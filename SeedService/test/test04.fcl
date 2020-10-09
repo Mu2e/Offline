@@ -2,9 +2,6 @@
 #  - Colliding seeds in preDefinedOffset mode.
 #
 #
-# $Id: test04.fcl,v 1.4 2012/02/10 16:27:49 gandr Exp $
-# $Author: gandr $
-# $Date: 2012/02/10 16:27:49 $
 
 #include "fcl/messageService.fcl"
 

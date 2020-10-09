@@ -1,8 +1,5 @@
 // Read the tracks added to the event by KalFitTest_module.
 //
-// $Id: ReadKalFits_module.cc,v 1.29 2014/08/28 19:26:04 brownd Exp $
-// $Author: brownd $
-// $Date: 2014/08/28 19:26:04 $
 //
 // Original author Rob Kutschke
 //

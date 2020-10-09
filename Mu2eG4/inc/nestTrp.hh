@@ -3,9 +3,6 @@
 //
 // Free function to create a new G4 Trp, placed inside a logical volume.
 //
-// $Id: nestTrp.hh,v 1.7 2011/09/29 22:47:38 gandr Exp $
-// $Author: gandr $
-// $Date: 2011/09/29 22:47:38 $
 //
 // Original author Krzysztof Genser based on Rob Kutschke's nestBox
 //

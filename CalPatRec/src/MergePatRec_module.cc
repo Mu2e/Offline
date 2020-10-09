@@ -1,7 +1,4 @@
 ///////////////////////////////////////////////////////////////////////////////
-// $Id: MergePatRec_module.cc,v 1.8 2014/09/19 20:49:45 murat Exp $
-// $Author: murat $
-// $Date: 2014/09/19 20:49:45 $
 // takes inputs from two track finding algorithms, produces one track collection
 // on output to be used for analysis
 //

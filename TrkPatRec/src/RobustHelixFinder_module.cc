@@ -1,9 +1,6 @@
 //
 // Tracker Pattern Recognition based on Robust Helix Fit
 //
-// $Id: RobustHelixFinder_module.cc,v 1.2 2014/08/30 12:19:38 tassiell Exp $
-// $Author: tassiell $
-// $Date: 2014/08/30 12:19:38 $
 //
 // Original author D. Brown and G. Tassielli
 //

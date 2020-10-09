@@ -147,6 +147,9 @@ void ContentSelector::setAvailableCollections(const art::Event& event)
     _crvHitBox->GetListBox()->GetEntry(0)->SetBackgroundColor(0x00FF00);
   }
 
+//CRV Waveforms (not inside a menu)
+  event.getManyByType(_crvDigisVector);
+
 //Track Selection
   newEntries.clear();
   createNewEntries<mu2e::SimParticleCollection>(_simParticleVector, event, "SimParticle", newEntries, 1);
@@ -336,6 +339,10 @@ const CollectionType* ContentSelector::getSelectedCrvHitCollection() const
 }
 template const mu2e::CrvRecoPulseCollection* ContentSelector::getSelectedCrvHitCollection<mu2e::CrvRecoPulseCollection>() const;
 
+const std::vector<art::Handle<mu2e::CrvDigiCollection> > &ContentSelector::getSelectedCrvDigiCollection() const
+{
+  return _crvDigisVector;
+}
 
 template<typename CollectionType>
 std::vector<const CollectionType*> ContentSelector::getSelectedTrackCollection(std::vector<trackInfoStruct> &v) const

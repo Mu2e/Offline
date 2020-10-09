@@ -4,9 +4,6 @@
 // Create a G4FieldManager object. Provide accessors to the field manager
 // and to the parts from which it is made.
 //
-// $Id: FieldMgr.hh,v 1.10 2013/10/25 21:42:02 genser Exp $
-// $Author: genser $
-// $Date: 2013/10/25 21:42:02 $
 //
 // Original author Rob Kutschke
 //

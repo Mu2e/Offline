@@ -205,6 +205,8 @@ int mu2e::DbReader::openHandle() {
   curl_easy_setopt(_curl_handle, CURLOPT_USERAGENT, "libcurl-agent/1.0");
   // Enable redirection
   curl_easy_setopt(_curl_handle, CURLOPT_FOLLOWLOCATION, 1);
+  // do not require certificate verification
+  curl_easy_setopt(_curl_handle, CURLOPT_SSL_VERIFYPEER, 0);
 
   return 0;
 

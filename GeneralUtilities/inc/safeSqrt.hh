@@ -6,9 +6,6 @@
 //  roundoff error that can take the argument negative.
 //
 //
-// $Id: safeSqrt.hh,v 1.1 2012/07/26 18:59:07 kutschke Exp $
-// $Author: kutschke $
-// $Date: 2012/07/26 18:59:07 $
 //
 // Original author Rob Kutschke
 //

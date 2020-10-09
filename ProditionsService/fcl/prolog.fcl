@@ -5,7 +5,7 @@ BEGIN_PROLOG
 
 Proditions : {
    fullReadoutStraw : @local::FullReadoutStraw
-   deadStraw : @local::DeadStraw
+   trackerStatus : @local::TrackerStatus
    strawDrift : @local::StrawDrift
    strawPhysics : @local::StrawPhysics
    strawElectronics : @local::StrawElectronics

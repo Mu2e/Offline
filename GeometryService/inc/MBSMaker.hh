@@ -3,9 +3,6 @@
 //
 // Class to construct and return MBS
 //
-// $Id: MBSMaker.hh,v 1.3 2013/07/02 15:57:07 tassiell Exp $
-// $Author: tassiell $
-// $Date: 2013/07/02 15:57:07 $
 //
 // Original author KLG
 //

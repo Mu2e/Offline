@@ -1,9 +1,6 @@
 // Free function to create world mother volume and partly fill it with
 // dirt around the formal hall box.
 //
-// $Id: constructWorldVolume.cc,v 1.8 2014/09/19 19:15:15 knoepfel Exp $
-// $Author: knoepfel $
-// $Date: 2014/09/19 19:15:15 $
 //
 // Original author KLG based on Mu2eWorld constructDirt
 // Updated by Andrei Gaponenko.

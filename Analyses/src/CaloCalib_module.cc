@@ -1,9 +1,6 @@
  //
 // An EDAnalyzer module that reads back the hits created by G4 and makes histograms.
 //
-// $Id: CaloCalib_module.cc,v 1.19 2012/09/08 02:24:24 echenard Exp $
-// $Author: echenard $
-// $Date: 2012/09/08 02:24:24 $
 //
 // Original author Rob Kutschke
 //

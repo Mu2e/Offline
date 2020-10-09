@@ -4,9 +4,6 @@
 //
 // Compute mean, RMS and some other stats about a set of numbers.
 //
-// $Id: RMS.hh,v 1.2 2012/01/13 19:19:16 gandr Exp $
-// $Author: gandr $
-// $Date: 2012/01/13 19:19:16 $
 //
 // Contact person Rob Kutschke
 //

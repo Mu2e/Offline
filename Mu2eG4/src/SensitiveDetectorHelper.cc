@@ -1,9 +1,6 @@
 //
 // A helper class manage repeated tasks related to sensitive detectors.
 //
-// $Id: SensitiveDetectorHelper.cc,v 1.8 2013/10/09 18:09:19 gandr Exp $
-// $Author: gandr $
-// $Date: 2013/10/09 18:09:19 $
 //
 // Original author Rob Kutschke
 //

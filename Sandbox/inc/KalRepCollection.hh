@@ -5,9 +5,6 @@
 // access to them and manage their lifetimes.  This class is designed to be
 // a transient only data product.
 //
-// $Id: KalRepCollection.hh,v 1.4 2013/03/15 15:52:05 kutschke Exp $
-// $Author: kutschke $
-// $Date: 2013/03/15 15:52:05 $
 //
 // Original author Rob Kutschke
 //

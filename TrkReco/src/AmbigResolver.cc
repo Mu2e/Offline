@@ -1,9 +1,6 @@
 //
 // Base class to resolve hit ambiguities
 //
-// $Id: AmbigResolver.cc,v 1.1 2012/05/14 19:20:02 brownd Exp $
-// $Author: brownd $ 
-// $Date: 2012/05/14 19:20:02 $
 //
 #include "TrkReco/inc/AmbigResolver.hh"
 #include "BTrkData/inc/TrkStrawHit.hh"

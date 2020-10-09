@@ -1,9 +1,6 @@
 
            Release notes for Mu2e Offline software, v0_0_9
 
-  $Id: v0_0_9.txt,v 1.1 2011/05/25 14:54:21 kutschke Exp $
-  $Author: kutschke $
-  $Date: 2011/05/25 14:54:21 $
 
 1) Added the x tilt to the LTracker. 
    Also increase the inner radius a small amount to remove straw overlaps.

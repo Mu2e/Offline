@@ -1,9 +1,6 @@
 //
 // A plugin to test using root interactively.
 //
-// $Id: Histforpabs_module.cc,v 1.7 2013/10/21 20:44:04 genser Exp $
-// $Author: genser $
-// $Date: 2013/10/21 20:44:04 $
 //
 // Original author Rob Kutschke
 //

@@ -3,9 +3,6 @@
 //
 // Build a magnetic field manager.
 //
-// $Id: BFieldManagerMaker.hh,v 1.16 2013/08/30 22:25:22 kutschke Exp $
-// $Author: kutschke $
-// $Date: 2013/08/30 22:25:22 $
 //
 
 // Includes from C++

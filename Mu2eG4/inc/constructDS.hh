@@ -3,9 +3,6 @@
 //
 // Free function to create the Detector Solenoid
 //
-// $Id: constructDS.hh,v 1.4 2012/11/16 23:45:24 genser Exp $
-// $Author: genser $
-// $Date: 2012/11/16 23:45:24 $
 //
 // Original author KLG
 //

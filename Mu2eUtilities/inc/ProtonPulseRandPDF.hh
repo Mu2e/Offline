@@ -4,9 +4,6 @@
 //
 // Constructor of a PDF to extract random times to describe the proton pulse
 //
-// $Id: ProtonPulseRandPDF.hh,v 1.11 2014/04/25 17:26:42 knoepfel Exp $
-// $Author: knoepfel $
-// $Date: 2014/04/25 17:26:42 $
 //
 // Original author: Gianni Onorato
 //                  Kyle Knoepfel (significant updates)

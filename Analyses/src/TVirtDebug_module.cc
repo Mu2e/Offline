@@ -1,9 +1,6 @@
 //
 // Diagnostics on virtual detectors related to the Tracker.
 //
-//  $Id: TVirtDebug_module.cc,v 1.1 2013/12/20 20:05:12 kutschke Exp $
-//  $Author: kutschke $
-//  $Date: 2013/12/20 20:05:12 $
 //
 // Original author Ivan Logashenko
 //

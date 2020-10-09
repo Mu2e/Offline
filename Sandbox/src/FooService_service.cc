@@ -1,9 +1,6 @@
 //
 // A test service that prints tracer ouptut. Used to study order of calls.
 //
-// $Id: FooService_service.cc,v 1.3 2013/03/15 15:59:58 kutschke Exp $
-// $Author: kutschke $
-// $Date: 2013/03/15 15:59:58 $
 //
 // Contact person Rob Kutschke
 //

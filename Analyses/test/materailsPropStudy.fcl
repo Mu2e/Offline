@@ -1,8 +1,5 @@
 # Configuration file for KalFit01
 #
-# $Id: materailsPropStudy.fcl,v 1.1 2013/04/03 22:24:58 tassiell Exp $
-# $Author: tassiell $
-# $Date: 2013/04/03 22:24:58 $
 
 #include "fcl/minimalMessageService.fcl"
 #include "fcl/standardProducers.fcl"

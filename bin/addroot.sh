@@ -2,9 +2,6 @@
 #
 # Add many root files together.
 #
-#  $Id: addroot.sh,v 1.1 2012/07/15 16:12:11 kutschke Exp $
-#  $Author: kutschke $
-#  $Date: 2012/07/15 16:12:11 $
 #
 # Contact person Rob Kutschke
 #

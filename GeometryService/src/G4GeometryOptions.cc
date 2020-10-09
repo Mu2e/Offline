@@ -1,8 +1,5 @@
 // G4 geometry options look-up facility, to be used in conjunction with SimpleConfig.
 //
-// $Id: G4GeometryOptions.cc,v 1.3 2014/09/19 20:06:25 knoepfel Exp $
-// $Author: knoepfel $
-// $Date: 2014/09/19 20:06:25 $
 //
 // Original author: Kyle Knoepfel, modified by B. Echenard
 

@@ -1,9 +1,6 @@
 //
 // Main program of the test suite for the make_ref class template.
 //
-//  $Id: maybe_ref_test.cc,v 1.3 2011/05/18 21:14:30 wb Exp $
-//  $Author: wb $
-//  $Date: 2011/05/18 21:14:30 $
 //
 // Original author Rob Kutschke
 //

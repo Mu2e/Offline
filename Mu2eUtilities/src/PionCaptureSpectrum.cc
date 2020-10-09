@@ -1,27 +1,32 @@
 // Simple approximations available for DIO spectrum.
 //
-// $Id: PionCaptureSpectrum.cc,v 1.1 2014/02/05 21:32:26 knoepfel Exp $
-// $Author: knoepfel $
-// $Date: 2014/02/05 21:32:26 $
 //
 
-// Mu2e includes
-#include "GlobalConstantsService/inc/GlobalConstantsHandle.hh"
-#include "GlobalConstantsService/inc/PhysicsParams.hh"
-#include "GlobalConstantsService/inc/ParticleDataTable.hh"
-#include "Mu2eUtilities/inc/PionCaptureSpectrum.hh"
-#include "Mu2eUtilities/inc/RandomUnitSphere.hh"
-
-// Framework includes
-#include "art/Framework/Services/Optional/RandomNumberGenerator.h"
-#include "cetlib/pow.h"
+#include <cmath>
+#include <stdlib.h>
+// C++ includes
+#include <iostream>
+#include <memory>
 
 // CLHEP includes
 #include "CLHEP/Random/RandFlat.h"
+
 #include "CLHEP/Vector/LorentzVector.h"
 
-// C++ includes
-#include <iostream>
+#include "CLHEP/Vector/ThreeVector.h"
+
+#include "DataProducts/inc/PDGCode.hh"
+// Mu2e includes
+#include "GlobalConstantsService/inc/GlobalConstantsHandle.hh"
+#include "GlobalConstantsService/inc/ParticleDataTable.hh"
+#include "GlobalConstantsService/inc/PhysicsParams.hh"
+#include "HepPDT/Measurement.hh"
+
+#include "HepPDT/ParticleData.hh"
+#include "cetlib/pow.h"
+
+#include "Mu2eUtilities/inc/PionCaptureSpectrum.hh"
+#include "Mu2eUtilities/inc/RandomUnitSphere.hh"
 
 using namespace std;
 
@@ -30,8 +35,8 @@ using cet::square;
 
 namespace mu2e {
 
-  PionCaptureSpectrum::PionCaptureSpectrum(CLHEP::RandFlat* rnFlat, RandomUnitSphere* rnUnitSphere):  
-    _spectrum    (Bistirlich      ), 
+  PionCaptureSpectrum::PionCaptureSpectrum(CLHEP::RandFlat* rnFlat, RandomUnitSphere* rnUnitSphere):
+    _spectrum    (Bistirlich      ),
     _spectrum2D  (KrollWadaJoseph ),
     _kMaxUserSet (false           ),
     _kMaxUser    (0.              ),
@@ -47,11 +52,11 @@ namespace mu2e {
   }
 
   PionCaptureSpectrum::PionCaptureSpectrum(bool kMaxUserSet, double kMaxUser, double kMaxMax,
-					   CLHEP::RandFlat* rnFlat, RandomUnitSphere* rnUnitSphere): 
-    _spectrum    (Bistirlich      ), 
+					   CLHEP::RandFlat* rnFlat, RandomUnitSphere* rnUnitSphere):
+    _spectrum    (Bistirlich      ),
     _spectrum2D  (KrollWadaJoseph ),
-    _kMaxUserSet (kMaxUserSet     ), 
-    _kMaxUser    (kMaxUser        ), 
+    _kMaxUserSet (kMaxUserSet     ),
+    _kMaxUser    (kMaxUser        ),
     _kMaxMax     (kMaxMax         ),
     _rnFlat      (rnFlat          ),
     _rnUnitSphere(rnUnitSphere    )
@@ -94,10 +99,10 @@ namespace mu2e {
 // Analytic fit to the photon energy spectrum for Mg
 //  - J.A.Bistirlich, et al, Phys. Rev. C 5, 1867 (1972)
 //  - commented out: fit results given in I. Sarra, mu2e-docdb-665-v2
-//    Ivano fitted the distribution in fig 7b in the paper, whereas the one 
+//    Ivano fitted the distribution in fig 7b in the paper, whereas the one
 //    to fit is the one in fig 7a. The paper is not very clear on that,
 //    see mu2e-19366 for details
-//    new fit is the same parameterization of the spectrum in fig 7a, 
+//    new fit is the same parameterization of the spectrum in fig 7a,
 //    normalization the fit function: integral(f) = 1
 //=======================================================
   double PionCaptureSpectrum::getBistirlichSpectrum(double e) const {
@@ -136,7 +141,7 @@ namespace mu2e {
 
 
 //------------------------------------------------------------------------------
-// E - energy (k0) of the emitted virtual photon, x - mass of the e+e- pair 
+// E - energy (k0) of the emitted virtual photon, x - mass of the e+e- pair
 //-----------------------------------------------------------------------------
   double PionCaptureSpectrum::getKrollWadaJosephSpectrum(double E, double x, double y) const {
 

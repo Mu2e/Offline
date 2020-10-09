@@ -1,9 +1,13 @@
 BEGIN_PROLOG
 
 DbEmpty : {
-   purpose :  "TRK_TEST"
-   version :  "v2_0"
+   # connect to the actual database
+   #purpose :  "TRK_TEST"
+   #version :  "v2_0"
    dbName : "mu2e_conditions_prd"
+   # take all database tables from local text file
+   purpose :  "EMPTY"
+   version :  ""
    #textFile : ["table.txt"]
    verbose : 0
 }

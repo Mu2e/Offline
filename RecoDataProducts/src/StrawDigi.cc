@@ -1,8 +1,5 @@
 //
 // StrawDigi is the offline representation of the raw data readout from a straw
-// $Id: StrawDigi.cc,v 1.1 2013/12/07 19:50:42 brownd Exp $
-// $Author: brownd $
-// $Date: 2013/12/07 19:50:42 $
 //
 // Original author David Brown, LBNL
 //

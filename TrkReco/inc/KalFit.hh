@@ -2,9 +2,6 @@
 // Class to perform BaBar Kalman fit
 // Original author: Dave Brown LBNL 2012
 //
-// $Id: KalFit.hh,v 1.29 2014/08/01 18:56:10 gandr Exp $
-// $Author: gandr $ 
-// $Date: 2014/08/01 18:56:10 $
 //
 #ifndef TrkReco_KalFit_HH
 #define TrkReco_KalFit_HH
