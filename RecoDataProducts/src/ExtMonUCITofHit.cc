@@ -1,9 +1,6 @@
 //
 // Extinction Monitor UCI Tof hit info plus possible additional information produced by HitMaker
 //
-// $Id: ExtMonUCITofHit.cc,v 1.1 2011/12/30 20:31:46 youzy Exp $
-// $Author: youzy $
-// $Date: 2011/12/30 20:31:46 $
 //
 
 // Mu2e includes

@@ -1,9 +1,6 @@
 //
 // Object to perform helix fit to straw hits
 //
-// $Id: CalHelixFinderAlg.hh,v 1.8 2014/05/18 13:56:50 murat Exp $
-// $Author: murat $
-// $Date: 2014/05/18 13:56:50 $
 //
 #ifndef CalHelixFinderAlg_HH
 #define CalHelixFinderAlg_HH

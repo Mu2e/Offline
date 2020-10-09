@@ -4,9 +4,6 @@
 //
 // Representation of CosmicRayShield
 //
-// $Id: CosmicRayShield.hh,v 1.15 2013/09/13 06:42:44 ehrlich Exp $
-// $Author: ehrlich $
-// $Date: 2013/09/13 06:42:44 $
 //
 // Original author KLG
 //

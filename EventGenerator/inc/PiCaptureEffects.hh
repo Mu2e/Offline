@@ -3,9 +3,6 @@
 
 //
 //
-// $Id: PiCaptureEffects.hh,v 1.1 2012/07/17 19:59:46 kutschke Exp $
-// $Author: kutschke $
-// $Date: 2012/07/17 19:59:46 $
 //
 // Original author: Gianni Onorato
 //

@@ -6,9 +6,6 @@
 //
 // This is known to work for root 5.34.*
 //
-// $Id: $
-// $Author: $
-// $Date: $
 //
 
 #include "TBranch.h"

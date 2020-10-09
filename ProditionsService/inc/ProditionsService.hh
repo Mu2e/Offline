@@ -22,7 +22,7 @@
 #include "Mu2eInterfaces/inc/ProditionsCache.hh"
 
 #include "TrackerConfig/inc/FullReadoutStrawConfig.hh"
-#include "TrackerConfig/inc/DeadStrawConfig.hh"
+#include "TrackerConfig/inc/TrackerStatusConfig.hh"
 #include "TrackerConfig/inc/StrawDriftConfig.hh"
 #include "TrackerConfig/inc/StrawPhysicsConfig.hh"
 #include "TrackerConfig/inc/StrawElectronicsConfig.hh"
@@ -47,9 +47,9 @@ namespace mu2e {
       fhicl::Table<FullReadoutStrawConfig> fullReadoutStraw{
 	  Name("fullReadoutStraw"), 
 	  Comment("Straws with no time window in readout") };
-      fhicl::Table<DeadStrawConfig> deadStraw{
-	  Name("deadStraw"), 
-	  Comment("Dead Straw List by Plane, Panel and Straw") };
+      fhicl::Table<TrackerStatusConfig> trackerStatus{
+	  Name("trackerStatus"), 
+	  Comment("Status of tracker elements (straws, panels, planes, ...)") };
       fhicl::Table<StrawDriftConfig> strawDrift{
 	  Name("strawDrift"), 
 	  Comment("Straw drift model function and binning") };

@@ -3,9 +3,6 @@
 //
 // Parameters of the DAQ system.
 //
-// $Id: DAQParams.hh,v 1.6 2012/02/24 20:55:48 gandr Exp $
-// $Author: gandr $
-// $Date: 2012/02/24 20:55:48 $
 //
 // Original author Rob Kutschke
 //

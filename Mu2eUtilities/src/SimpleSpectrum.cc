@@ -1,15 +1,16 @@
 // Simple approximations available for DIO spectrum.
 //
-// $Id: SimpleSpectrum.cc,v 1.6 2014/02/25 17:14:10 knoepfel Exp $
-// $Author: knoepfel $
-// $Date: 2014/02/25 17:14:10 $
 //
 
-// Mu2e includes
-#include "Mu2eUtilities/inc/SimpleSpectrum.hh"
+#include <cstddef>
+#include <vector>
 
 // Framework includes
 #include "cetlib/pow.h"
+#include "cetlib_except/exception.h"
+
+// Mu2e includes
+#include "Mu2eUtilities/inc/SimpleSpectrum.hh"
 
 using namespace std;
 

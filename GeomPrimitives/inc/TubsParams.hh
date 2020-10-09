@@ -4,9 +4,6 @@
 //
 // The parameters of a TUBS
 //
-// $Id: TubsParams.hh,v 1.3 2013/01/07 03:57:40 kutschke Exp $
-// $Author: kutschke $
-// $Date: 2013/01/07 03:57:40 $
 //
 // Original author Rob Kutschke
 //

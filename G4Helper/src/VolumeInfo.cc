@@ -3,9 +3,6 @@
 // The center information is not fully general: it does not know about rotations
 // and is useful only for the top few levels of the detector.
 //
-// $Id: VolumeInfo.cc,v 1.4 2012/12/14 21:28:32 gandr Exp $
-// $Author: gandr $
-// $Date: 2012/12/14 21:28:32 $
 //
 // Original author Rob Kutschke
 //

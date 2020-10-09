@@ -21,13 +21,11 @@
 // The other use mode is to specify a SimParticlePtrCollection of stuff to keep.
 // Intended to write out framework files of stopped muons.
 //
-// $Id: FilterG4Out_module.cc,v 1.12 2014/06/11 00:24:46 gandr Exp $
-// $Author: gandr $
-// $Date: 2014/06/11 00:24:46 $
 //
 // Andrei Gaponenko, 2013
 
 #include <iostream>
+#include <sstream>
 #include <string>
 #include <vector>
 #include <algorithm>
@@ -92,14 +90,17 @@ namespace mu2e {
 
     //----------------
     class ProductIDSelector : public art::SelectorBase {
-      const art::Event *evt_;
       art::ProductID pid_;
       virtual bool doMatch(const art::BranchDescription& p) const override {
         return p.productID() == pid_;
       }
     public:
-      ProductIDSelector(const art::Event& evt, const art::ProductID& pid) : evt_(&evt), pid_(pid) {}
-      virtual ProductIDSelector* clone() const { return new ProductIDSelector(*this); }
+      ProductIDSelector( const art::ProductID& pid) : pid_(pid) {}
+      std::string doPrint(std::string const& indent) const override {
+        std::ostringstream os;
+        os << pid_;
+        return indent + "art::ProductID: " + os.str();
+      }
     };
 
     //----------------
@@ -445,7 +446,7 @@ namespace mu2e {
 
       // Is there anything to copy into this output?
       if(iss != toBeKept.end()) {
-        ProductIDSelector csel(event, iss->first);
+        ProductIDSelector csel(iss->first);
         art::Handle<SimParticleCollection> inputParticles;
         event.get(csel, inputParticles);
 

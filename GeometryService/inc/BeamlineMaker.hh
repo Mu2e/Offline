@@ -4,9 +4,6 @@
 // Construct and return an Beamline.
 //
 //
-// $Id: BeamlineMaker.hh,v 1.9 2013/08/22 14:31:33 knoepfel Exp $
-// $Author: knoepfel $
-// $Date: 2013/08/22 14:31:33 $
 //
 // Original author Peter Shanahan
 //

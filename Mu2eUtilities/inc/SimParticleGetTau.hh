@@ -12,14 +12,16 @@
 // C++ includes
 #include <vector>
 
-// Framework includes
-#include "canvas/Persistency/Common/Ptr.h"
-
 // Mu2e includes
 #include "GlobalConstantsService/inc/GlobalConstantsHandle.hh"
 #include "GlobalConstantsService/inc/PhysicsParams.hh"
 #include "MCDataProducts/inc/SimParticle.hh"
+#include "MCDataProducts/inc/StepPointMC.hh"
 #include "MCDataProducts/inc/StepPointMCCollection.hh"
+// Framework includes
+#include "canvas/Persistency/Common/Ptr.h"
+
+namespace art { template <typename T> class Ptr; }
 
 namespace mu2e {
 

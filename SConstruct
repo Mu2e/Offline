@@ -3,6 +3,9 @@
 #
 import os, re, string, sys
 
+import SCons 
+SCons.Defaults.DefaultEnvironment(tools = []) 
+
 # Functions that do small tasks and build lists
 import sconstruct_helper as sch
 # handles how the input files are collected and the output files are named
@@ -64,10 +67,15 @@ env = Environment( CPPPATH = sch.cppPath(mu2eOpts),   # $ART_INC ...
                    SHCXXCOMSTR = cccomstr,
                    LINKCOMSTR = linkcomstr,
                    SHLINKCOMSTR= linkcomstr,
+                   # so we can find compilation_db from a satellite build
+                   toolpath=[os.path.join(os.environ['MU2E_BASE_RELEASE'],'site_scons/site_tools')]
 )
 
 # Make the Compilation DB generator available in the environment
-env.Tool('compilation_db')
+env.Tool('compilation_db', COMPILATIONDB_COMSTR=None)
+
+# Only re-compute an MD5 hash for a build target if the timestamp changed.
+env.Decider('MD5-timestamp')
 
 # Define and register the rule for building dictionaries.
 # sources are classes.h, classes_def.xml,
@@ -93,6 +101,7 @@ env.Append( MU2EBASE = mu2eOpts["base"] )
 env.Append( BINDIR = mu2eOpts['bindir'] )
 env.Append( BUILD = mu2eOpts["build"] )
 env.Append( G4VIS = mu2eOpts["g4vis"] )
+env.Append( G4VG = mu2eOpts["g4vg"] )
 env.Append( G4MT = mu2eOpts["g4mt"] )
 
 # make the scons environment visible to all SConscript files (Import('env'))

@@ -1,9 +1,6 @@
 #ifndef ExtinctionMonitorFNAL_Analyses_EMFRawHitHistograms_hh
 #define ExtinctionMonitorFNAL_Analyses_EMFRawHitHistograms_hh
 //
-// $Id: EMFRawHitHistograms.hh,v 1.3 2012/11/01 23:39:34 gandr Exp $
-// $Author: gandr $
-// $Date: 2012/11/01 23:39:34 $
 //
 // Andrei Gaponenko, following GeneratorSummaryHistograms by Rob Kutschke
 //

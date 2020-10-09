@@ -1,0 +1,31 @@
+#
+# Special case of NoPrimary.fcl
+#
+# Read PBI value from source file; do not generate it internally.
+#
+# Used to process events when the PBI is taken from a model of PBI time
+# correlations within one spill.
+#
+# Original Author:  Rob Kutschke 2020
+
+#include "JobConfig/mixing/NoPrimary.fcl"
+
+
+# Read events from an input file rather than using EmptyEvent
+source : { module_type : RootInput }
+
+# Dummy out the code that internally generates the per event PBI.
+# Do it this way so that we do not need to hand-maintain a path that removes this module.
+# Consume 1 random seed to aid validation.
+physics.producers.protonBunchIntensity : {
+  module_type : NullProducer
+  nEngines    : 1
+}
+
+# Name output files with revised configuration field.
+services.TFileService.fileName: "nts.owner.NoPrimary-pbiseq-mix.version.sequencer.root"
+outputs.DetOutput.fileName: "dig.owner.NoPrimary-pbiseq-mix-det.version.sequencer.art"
+
+# Remove the full output
+outputs.FullOutput : @erase
+physics.EndPath    : [ digiCompressionCheck, DetOutput ]

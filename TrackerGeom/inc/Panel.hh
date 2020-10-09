@@ -5,9 +5,6 @@
 //
 
 //
-// $Id: Panel.hh,v 1.14 2013/03/26 23:28:23 kutschke Exp $
-// $Author: kutschke $
-// $Date: 2013/03/26 23:28:23 $
 //
 // Original author Rob Kutschke
 //

@@ -2,12 +2,16 @@
 //
 ///////////////////////////////////////////////////////////////////////////////
 
-#include "art/Framework/Principal/Event.h"
-#include "fhiclcpp/ParameterSet.h"
+#include <stddef.h>
 
 #include "Mu2eUtilities/inc/McUtilsToolBase.hh"
 
+namespace art { class Event; }
+
 namespace mu2e {
+class SimParticle;
+class TrkStrawHit;
+
 //-----------------------------------------------------------------------------
 // ID of the SimParticle corresponding to the straw hit 'Index' in the 
 // StrawHitCollection

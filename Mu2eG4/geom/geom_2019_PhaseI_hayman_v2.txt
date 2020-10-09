@@ -1,5 +1,6 @@
 // Updated to be used in the 2019/2020 CRY simulation campaign, based off Mu2eG4/geom/geom_MARS_2019.txt
-// add hayman2 proton target
+// updates muon beam line internals + shielding, DS internals, 
+// and the production target + supports
 
 string detector.name  = "g4geom_v00";
 
@@ -35,12 +36,12 @@ double mu2e.detectorSystemZ0 = 10171.;   // mm  G4BL: (17730-7292=9801 mm)
 #include "Mu2eG4/geom/mu2eWorld.txt"
 // mu2eHall.txt should be used with protonBeamDump_v02.txt, below
 //#include "Mu2eG4/geom/mu2eHall.txt"
-// whereas mu2eHall_v02.txt and _v03.txt should be used with protonBeamDump_v03.txt, below
-#include "Mu2eG4/geom/mu2eHall_v03.txt"
+// whereas mu2eHall_v*.txt should be used with protonBeamDump_v03.txt, below
+#include "Mu2eG4/geom/mu2eHall_v04.txt"
 
 // Solenoids
-#include "Mu2eG4/geom/DetectorSolenoid_v04.txt"
-#include "Mu2eG4/geom/DSShielding_v02.txt"
+#include "Mu2eG4/geom/DetectorSolenoid_v05.txt"
+#include "Mu2eG4/geom/DSShielding_v03.txt"
 #include "Mu2eG4/geom/ProductionSolenoid_v02.txt"
 #include "Mu2eG4/geom/psEnclosure_v04.txt"
 #include "Mu2eG4/geom/PSShield_v06.txt"
@@ -50,28 +51,24 @@ double mu2e.detectorSystemZ0 = 10171.;   // mm  G4BL: (17730-7292=9801 mm)
 // External Shielding
 #include "Mu2eG4/geom/ExtShieldUpstream_v06.txt"
 #include "Mu2eG4/geom/ExtShieldDownstream_v06.txt"
-#include "Mu2eG4/geom/Saddle_v02.txt"
+#include "Mu2eG4/geom/Saddle_v03.txt"
 #include "Mu2eG4/geom/Pipe_v04.txt"
 #include "Mu2eG4/geom/ElectronicRack_v01.txt"
 
-//#include "Mu2eG4/geom/stoppingTarget_TDR.txt" // 17 foil tapered muon stopping target used for the TDR simulations
-//#include "Mu2eG4/geom/stoppingTarget_CD3C_34foils.txt" // 34 foil muon stopping target to be used for the CDC3 simulations
-#include "Mu2eG4/geom/stoppingTargetHoles_DOE_review_2017.txt" // 37 foil muon stopping target with holes
+// #include "Mu2eG4/geom/stoppingTargetHoles_DOE_review_2017.txt" // 37 foil muon stopping target with holes
+#include "Mu2eG4/geom/stoppingTargetHoles_v02.txt" // 37 foil muon stopping target with holes and thicker foils (0.1 mm -> 0.1056 mm)
 
-#include "Mu2eG4/geom/TSdA_v01.txt"
-#include "Mu2eG4/geom/muonBeamStop_v07.txt"
+#include "Mu2eG4/geom/TSdA_v02.txt"
+#include "Mu2eG4/geom/muonBeamStop_v08.txt"
 
-//#include "Mu2eG4/geom/MSTM_v01.txt" // muon stopping target monitor (deprecated)
-//#include "Mu2eG4/geom/STM_v01.txt" // (muon) stopping target monitor
-//#include "Mu2eG4/geom/STM_v02.txt" // (muon) stopping target monitor
-#include "Mu2eG4/geom/STM_v03.txt" // (muon) stopping target monitor
+#include "Mu2eG4/geom/STM_v04.txt" // (muon) stopping target monitor
 
 // Proton Absorber
-#include "Mu2eG4/geom/protonAbsorber_cylindrical_v02.txt"
-#include "Mu2eG4/geom/degrader_v01.txt"
+#include "Mu2eG4/geom/protonAbsorber_cylindrical_v03.txt"
+#include "Mu2eG4/geom/degrader_v02.txt" // pion degrader.  Off by default
 
-#include "Mu2eG4/geom/ProductionTarget_Hayman_v2_0.txt"
-//#include "Mu2eG4/geom/protonBeamDump_v02.txt"
+// #include "Mu2eG4/geom/ProductionTarget_Hayman_v2_0.txt"
+#include "Mu2eG4/geom/ProductionTarget_Hayman_v2_1.txt"
 #include "Mu2eG4/geom/protonBeamDump_v03.txt"
 #include "Mu2eG4/geom/extmon_fnal_v02.txt"
 
@@ -123,7 +120,8 @@ vector<string> bfield.outerMaps = {
   "BFieldMaps/Mau9/ExtMonUCIInternal1AreaMap.header",
   "BFieldMaps/Mau9/ExtMonUCIInternal2AreaMap.header",
   "BFieldMaps/Mau9/ExtMonUCIAreaMap.header",
-  "BFieldMaps/Mau9/PSAreaMap.header"
+  "BFieldMaps/Mau13/PSAreaMap.header",
+  "BFieldMaps/Mau13/WorldMap.header"
 };
 
 // This scale factor is of limited use.

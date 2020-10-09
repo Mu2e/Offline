@@ -3,9 +3,6 @@
 //
 // Free function to create the Detector Solenoid
 //
-// $Id: constructMSTM.hh,v 1.1 2014/06/05 21:05:05 genser Exp $
-// $Author: genser $
-// $Date: 2014/06/05 21:05:05 $
 //
 // Original author KLG
 //

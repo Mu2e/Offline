@@ -9,13 +9,13 @@
 //  which looks for more information and is slower.
 //
 
+#include "RecoDataProducts/inc/KalRepPtrCollection.hh"
+#include "art/Framework/Principal/Event.h"
+#include "fhiclcpp/ParameterSet.h"
+
 #include "Mu2eUtilities/inc/TrackPatRecType.hh"
 
-#include "RecoDataProducts/inc/KalRepPtrCollection.hh"
-
-#include "art/Framework/Principal/Event.h"
-
-#include "fhiclcpp/ParameterSet.h"
+namespace art { class Event; }
 
 namespace mu2e {
 

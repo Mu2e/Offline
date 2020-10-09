@@ -1,9 +1,6 @@
 //
 // Add a TracerProduct to the event and watch what happens.
 //
-// $Id: MakeTracerProduct00_module.cc,v 1.6 2013/03/15 15:52:05 kutschke Exp $
-// $Author: kutschke $
-// $Date: 2013/03/15 15:52:05 $
 //
 // Original author Rob Kutschke
 //

@@ -3,9 +3,6 @@
 // incident on the upstream face of the production target.
 // See the header file for details.
 //
-// $Id: PrimaryProtonGunImpl.cc,v 1.24 2013/12/13 21:35:07 gandr Exp $
-// $Author: gandr $
-// $Date: 2013/12/13 21:35:07 $
 //
 // Original author Rob Kutschke
 //

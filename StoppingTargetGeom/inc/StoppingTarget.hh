@@ -5,9 +5,6 @@
 // Class to represent the system of target foils.
 // For now these are just disks perpendicular to the z axis.
 //
-// $Id: StoppingTarget.hh,v 1.2 2013/10/14 23:57:32 roehrken Exp $
-// $Author: roehrken $
-// $Date: 2013/10/14 23:57:32 $
 //
 // Original author Rob Kutschke
 //

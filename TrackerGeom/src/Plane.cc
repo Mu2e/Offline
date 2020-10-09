@@ -1,9 +1,6 @@
 //
 // Hold information about one Plane in a tracker.
 //
-// $Id: Plane.cc,v 1.3 2011/08/03 18:31:25 mf Exp $
-// $Author: mf $
-// $Date: 2011/08/03 18:31:25 $
 //
 // Original author Rob Kutschke
 //

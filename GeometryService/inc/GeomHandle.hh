@@ -5,9 +5,6 @@
 // A safe pointer to the geometry information for a
 // detector component.
 //
-// $Id: GeomHandle.hh,v 1.5 2012/04/10 23:08:34 kutschke Exp $
-// $Author: kutschke $
-// $Date: 2012/04/10 23:08:34 $
 //
 // Original author Rob Kutschke
 //

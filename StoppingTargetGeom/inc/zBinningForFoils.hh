@@ -14,9 +14,6 @@
 // The case of a target with one foil is handed differently.
 // This uses the DetectorSystem coordinates, not the Mu2e system.
 //
-// $Id: zBinningForFoils.hh,v 1.1 2013/05/31 20:04:27 gandr Exp $
-// $Author: gandr $
-// $Date: 2013/05/31 20:04:27 $
 //
 // Original author Rob Kutschke
 

@@ -4,9 +4,6 @@
 // Construct the Mu2e G4 world and serve information about that
 // world. Note that Mu2eStudyWorld inherits from Mu2eUniverse
 //
-// $Id: Mu2eStudyWorld.hh,v 1.1 2012/11/16 23:30:09 genser Exp $
-// $Author: genser $
-// $Date: 2012/11/16 23:30:09 $
 //
 // Original author KLG based on  Rob Kutschke Mu2eWorld
 //

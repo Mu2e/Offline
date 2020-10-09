@@ -3,9 +3,6 @@
 # functionalities is predefining a button to invoke Mu2e specific
 # /vis/sceneHandler/drawEvent (defined in Mu2eVisCommands)
 #
-# $Id: visqtGUI.mac,v 1.3 2014/06/05 21:09:39 genser Exp $
-# $Author: genser $
-# $Date: 2014/06/05 21:09:39 $
 #
 # Original author KLG
 

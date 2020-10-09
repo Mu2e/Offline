@@ -2,9 +2,6 @@
 // StrawElectronics collects the electronics response behavior of a Mu2e straw in
 // several functions.
 //
-// $Id: StrawElectronics.cc,v 1.17 2014/09/22 12:23:28 brownd Exp $
-// $Author: brownd $
-// $Date: 2014/09/22 12:23:28 $
 //
 // Original author David Brown, LBNL
 //

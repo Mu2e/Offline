@@ -2,9 +2,6 @@
 #define ProductionSolenoidGeom_PSShield_hh
 
 //
-// $Id: PSShield.hh,v 1.5 2013/08/09 05:13:09 gandr Exp $
-// $Author: gandr $
-// $Date: 2013/08/09 05:13:09 $
 //
 // Original author Andrei Gaponenko
 //

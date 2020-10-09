@@ -1,6 +1,3 @@
-// $Id: ExtMonFNALTrkClusterResiduals.hh,v 1.1 2012/11/01 23:38:21 gandr Exp $
-// $Author: gandr $
-// $Date: 2012/11/01 23:38:21 $
 //
 // Original author Andrei Gaponenko
 //

@@ -1,9 +1,6 @@
 //
 // A class to hold one record within the primitive SimpleConfig utility.
 //
-// $Id: SimpleConfigRecord.cc,v 1.3 2012/08/06 19:09:38 kutschke Exp $
-// $Author: kutschke $
-// $Date: 2012/08/06 19:09:38 $
 //
 // Contact person Rob Kutschke
 

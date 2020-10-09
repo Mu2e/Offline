@@ -1,9 +1,6 @@
 //
 // A module to extract leading edge times, pulse heights, integrals and number of photons from the CRV waveforms
 //
-// $Id: $
-// $Author: ehrlich $
-// $Date: 2014/08/07 01:33:40 $
 // 
 // Original Author: Ralf Ehrlich
 
@@ -24,7 +21,6 @@
 #include "art_root_io/TFileDirectory.h"
 #include "art_root_io/TFileService.h"
 #include "art/Framework/Services/Registry/ServiceHandle.h"
-#include <TH1D.h>
 
 #include "canvas/Persistency/Common/Ptr.h"
 #include "art/Framework/Core/EDProducer.h"
@@ -33,7 +29,8 @@
 #include "art/Framework/Principal/Handle.h"
 #include "art/Framework/Core/EDAnalyzer.h"
 #include "art/Framework/Core/ModuleMacros.h"
-#include "fhiclcpp/ParameterSet.h"
+#include "fhiclcpp/types/Atom.h"
+#include "fhiclcpp/types/Table.h"
 #include "CLHEP/Units/GlobalSystemOfUnits.h"
 
 #include <string>
@@ -46,7 +43,25 @@ namespace mu2e
   {
 
     public:
-    explicit CrvRecoPulsesFinder(fhicl::ParameterSet const& pset);
+    struct Config
+    {
+      using Name=fhicl::Name;
+      using Comment=fhicl::Comment;
+      fhicl::Atom<std::string> crvDigiModuleLabel{Name("crvDigiModuleLabel"), Comment("module label for CrvDigis")};
+      fhicl::Atom<double> minADCdifference{Name("minADCdifference"), Comment("minimum ADC difference above pedestal to be considered for reconstruction")};  //5.0
+      fhicl::Atom<double> defaultBeta{Name("defaultBeta"), Comment("initialization value for fit and default value for invalid fits (regular pulses: 19.0ns, dark counts for calibration: 12.0ns)")};
+      fhicl::Atom<double> minBeta{Name("minBeta"), Comment("smallest accepted beta for valid fit [ns]")};  //5.0ns
+      fhicl::Atom<double> maxBeta{Name("maxBeta"), Comment("largest accepted beta for valid fit [ns]")}; //50.0ns
+      fhicl::Atom<double> maxTimeDifference{Name("maxTimeDifference"), Comment("largest accepted difference between time of largest ADC value and fitted peak [ns]")}; //20.0ns
+      fhicl::Atom<double> minPulseHeightRatio{Name("minPulseHeightRatio"), Comment("smallest accepted ratio between largest ADC value and fitted peak")}; //0.7
+      fhicl::Atom<double> maxPulseHeightRatio{Name("maxPulseHeightRatio"), Comment("largest accepted ratio between largest ADC value and fitted peak")}; //1.5
+      fhicl::Atom<double> LEtimeFactor{Name("LEtimeFactor"), Comment("time of leading edge is peakTime-LEtimeFactor*beta (0.985,1.385,1.587 for a leading edge of 0.5,0.2,0.1 pulse height")};
+      fhicl::Atom<int> minPEs{Name("minPEs"), Comment("minimum number of PEs")}; //0
+    };
+
+    typedef art::EDProducer::Table<Config> Parameters;
+
+    explicit CrvRecoPulsesFinder(const Parameters& config);
     void produce(art::Event& e);
     void beginJob();
     void beginRun(art::Run &run);
@@ -55,26 +70,30 @@ namespace mu2e
     private:
     boost::shared_ptr<mu2eCrv::MakeCrvRecoPulses> _makeCrvRecoPulses;
 
-    double      _digitizationPeriod;
     std::string _crvDigiModuleLabel;
+    int         _minPEs;
+    double      _digitizationPeriod;
     double      _pedestal;           //100 ADC
     double      _calibrationFactor;  //394.6 ADC*ns/PE
     double      _calibrationFactorPulseHeight;  //11.4 ADC/PE
-    int         _minPEs;
     double      _microBunchPeriod;
-    bool        _darkNoise;
-
-//    TH1F        *_hRecoPulses;
   };
 
-  CrvRecoPulsesFinder::CrvRecoPulsesFinder(fhicl::ParameterSet const& pset) :
-    art::EDProducer{pset},
-    _crvDigiModuleLabel(pset.get<std::string>("crvDigiModuleLabel")),
-    _minPEs(pset.get<int>("minPEs")),          //6 PEs
-    _darkNoise(pset.get<bool>("darkNoise"))    //true for dark noise calibration
+
+  CrvRecoPulsesFinder::CrvRecoPulsesFinder(const Parameters& conf) :
+    art::EDProducer(conf),
+    _crvDigiModuleLabel(conf().crvDigiModuleLabel()),
+    _minPEs(conf().minPEs())
   {
     produces<CrvRecoPulseCollection>();
-    _makeCrvRecoPulses = boost::shared_ptr<mu2eCrv::MakeCrvRecoPulses>(new mu2eCrv::MakeCrvRecoPulses());
+    _makeCrvRecoPulses=boost::shared_ptr<mu2eCrv::MakeCrvRecoPulses>(new mu2eCrv::MakeCrvRecoPulses(conf().minADCdifference(),
+                                                                                                    conf().defaultBeta(),
+                                                                                                    conf().minBeta(),
+                                                                                                    conf().maxBeta(),
+                                                                                                    conf().maxTimeDifference(),
+                                                                                                    conf().minPulseHeightRatio(),
+                                                                                                    conf().maxPulseHeightRatio(),
+                                                                                                    conf().LEtimeFactor()));
   }
 
   void CrvRecoPulsesFinder::beginJob()
@@ -128,7 +147,7 @@ namespace mu2e
         waveformIndices.push_back(waveformIndex);
       }
 
-      _makeCrvRecoPulses->SetWaveform(ADCs, startTDC, _digitizationPeriod, _pedestal, _calibrationFactor, _calibrationFactorPulseHeight, _darkNoise);
+      _makeCrvRecoPulses->SetWaveform(ADCs, startTDC, _digitizationPeriod, _pedestal, _calibrationFactor, _calibrationFactorPulseHeight);
 
       unsigned int n = _makeCrvRecoPulses->GetNPulses();
       for(unsigned int j=0; j<n; j++)
