@@ -10,6 +10,7 @@
 
 <!--  ********* beam  ********* -->
  <class name="mu2e::ProtonBunchTime"/>
+ <class name="art::Wrapper<mu2e::ProtonBunchTime>"/>
 
 <!--  ********* cosmics  ********* -->
  <class name="TrackParams"/>
