@@ -129,10 +129,7 @@ else
 fi
 
 # Get access to raw data formats.
-setup -B mu2e_artdaq_core v1_04_01 -q${MU2E_UPS_QUALIFIERS}:+${MU2E_ART_SQUALIFIER}:offline
-
-# Other libraries we need.
-setup -B pcie_linux_kernel_module v2_03_01 -q${MU2E_UPS_QUALIFIERS}:+${MU2E_ART_SQUALIFIER}
+setup -B mu2e_artdaq_core v1_04_08_indev -q${MU2E_UPS_QUALIFIERS}:+${MU2E_ART_SQUALIFIER}:offline
 
 setup -B heppdt   v3_04_01j -q${MU2E_UPS_QUALIFIERS}
 setup -B BTrk   v1_02_22  -q${MU2E_UPS_QUALIFIERS}
