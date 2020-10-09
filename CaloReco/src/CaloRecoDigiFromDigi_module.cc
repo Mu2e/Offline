@@ -122,7 +122,6 @@ namespace mu2e {
       const auto& caloDigis = *caloDigisHandle;
       ConditionsHandle<CalorimeterCalibrations> calorimeterCalibrations("ignored");
 
-      static int nPlots(0);
       double totEnergyReco(0);
       std::vector<double> x,y;
       for (const auto& caloDigi : caloDigis)
@@ -142,6 +141,7 @@ namespace mu2e {
               y.push_back(waveform.at(i));
           }
 
+
           waveformProcessor_->reset();
           waveformProcessor_->extract(x,y);
 
@@ -155,28 +155,11 @@ namespace mu2e {
               double chi2      = waveformProcessor_->chi2();
               int    ndf       = waveformProcessor_->ndf();
               
-              if (i==0 && diagLevel_>1 && waveformProcessor_->nPeaks()==1 && waveformProcessor_->chi2()/waveformProcessor_->ndf()>1.0)
-              //if (i==0 && diagLevel_>1 && waveformProcessor_->nPeaks()==0)
-              {
-                 std::cout<<"[CaloRecoDigiFromDigi::extractAmplitude] extract "<<roID<<"   i="<<i<<"  eDep="<<eDep
-                          <<" time="<<time<<"  chi2="<<chi2<<std::endl;
-                 std::stringstream ss;
-                 ss<<"wffit_"; ss<<nPlots;ss<<".pdf";
-                 if (nPlots<maxPlots_) waveformProcessor_->plot(ss.str());
-                 ++nPlots;
-                 
-                 std::cout<<"DUMP ";
-                 for (const auto& val : y) std::cout<<val<<",";
-                 std::cout<<std::endl;
-                 
-              }
-              
               if (chi2/float(ndf) > maxChi2Cut_) continue;
               
               if (roID%2==0) totEnergyReco += eDep;
               recoCaloHits.emplace_back(CaloRecoDigi(caloDigiPtr, eDep, eDepErr, time, timeErr, chi2, ndf, isPileUp));
           }
-          
       }     
 
       if (diagLevel_ > 1) std::cout<<"[CaloRecoDigiFromDigi] Total energy reco "<<totEnergyReco <<std::endl;

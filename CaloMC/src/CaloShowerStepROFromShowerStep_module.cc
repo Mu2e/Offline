@@ -143,6 +143,9 @@ namespace mu2e {
          CLHEP::RandPoissonQ     randPoisson_;
          CaloPhotonPropagation   photonProp_;
          TH2F*                   hTime_;
+         TH1F*                   hEtot_;
+         TH1F*                   hECorrtot_;
+         TH1F*                   hStot_;
 
   };
 
@@ -153,7 +156,10 @@ namespace mu2e {
       if (diagLevel_ > 1)
       {
           art::ServiceHandle<art::TFileService> tfs;
-          hTime_  = tfs->make<TH2F>("hTIme", "Photon prop time", 40,0,200,50,0,20);
+          hTime_      = tfs->make<TH2F>("hTIme",     "Photon prop time",       40,0,200,50,0,20);
+          hEtot_      = tfs->make<TH1F>("hEtot",     "Total E dep",           150,     0,   150);
+          hECorrtot_  = tfs->make<TH1F>("hECorrtot", "Total E dep corr",      150,     0,   150);
+          hStot_      = tfs->make<TH1F>("hStot",     "Total Compress steps",  100,     0,   1000);
       }
   }
   
@@ -299,6 +305,10 @@ namespace mu2e {
 
       if (diagLevel_ > 1)
       {
+         hEtot_->Fill(diagSum.totEdep);
+         hECorrtot_->Fill(diagSum.totEdepCorr);
+         hStot_->Fill(diagSum.totSteps);
+         
          std::set<int> crIds;
          for (const auto& css : caloShowerSims) crIds.insert(css.crystalId());
 

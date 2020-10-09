@@ -151,6 +151,7 @@ namespace mu2e {
          TH1F*                                    hStartPos2_;
          TH1F*                                    hZpos_;
          TH1F*                                    hEtot_;
+         TH1F*                                    hStot_;
          TH2F*                                    hZpos2_;
          TH1F*                                    hGenId_;
   };
@@ -201,7 +202,8 @@ namespace mu2e {
           hStopPos2_  = tfs->make<TH1F>("hStopPos2", "Sim stop position",   1000, 10000, 13000);
           hZpos_      = tfs->make<TH1F>("hZpos",     "Step z pos",            20,     0,    20);
           hZpos2_     = tfs->make<TH2F>("hZpos2",    "Step z pos",            20,     0,    20, 100, 0, 5);
-          hEtot_      = tfs->make<TH1F>("hEtot",     "Sim stop position",    150,     0,   150);
+          hEtot_      = tfs->make<TH1F>("hEtot",     "Total E dep",          150,     0,   150);
+          hStot_      = tfs->make<TH1F>("hStot",     "Total numebr steps",   100,     0,   10000);
           hGenId_     = tfs->make<TH1F>("hSimId",    "Gen Id",               150,    -10,  140);
       }
   }
@@ -324,6 +326,7 @@ namespace mu2e {
       if (diagLevel_ > 1) 
       {
           hEtot_->Fill(diagSummary_.totalEdep_);
+          hStot_->Fill(diagSummary_.totalStep_);
           std::cout<<"CaloShowerStepFromStepPt summary"<<std::endl;
           
           std::set<int> volIds;
