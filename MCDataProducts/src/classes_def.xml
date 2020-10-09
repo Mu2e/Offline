@@ -41,6 +41,7 @@
  <class name="std::vector<mu2e::StatusG4>"/>
  <class name="art::Wrapper<mu2e::StatusG4>"/>
 
+ <class name="mu2e::SimParticle::IonDetail"/>
  <class name="mu2e::SimParticle"/>
  <class name="art::Ptr<mu2e::SimParticle>"/>
  <class name="std::pair<cet::map_vector_key,mu2e::SimParticle>"/>
@@ -104,6 +105,8 @@
 
  <class name="mu2e::ProtonBunchIntensity" />
  <class name="art::Wrapper<mu2e::ProtonBunchIntensity>"/>
+ <class name="mu2e::ProtonBunchIntensitySummary" />
+ <class name="art::Wrapper<mu2e::ProtonBunchIntensitySummary>"/>
 
  <class name="mu2e::StepFilterMode"/> 
 

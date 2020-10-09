@@ -1,5 +1,4 @@
 # -*- mode: tcl -*-
-# $Id: calPatRec_display_read.fcl,v 1.4 2014/08/26 19:44:55 murat Exp $
 #------------------------------------------------------------------------------
 # read data from the input file,
 # assume the file contains the digitized hits

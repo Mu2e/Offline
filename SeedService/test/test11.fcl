@@ -1,9 +1,6 @@
 # Test the seeds service: test of linearMapping mode
 #
 #
-# $Id: test11.fcl,v 1.1 2012/02/10 16:45:59 gandr Exp $
-# $Author: gandr $
-# $Date: 2012/02/10 16:45:59 $
 
 #include "fcl/messageService.fcl"
 

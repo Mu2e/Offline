@@ -4,9 +4,6 @@
 //
 //  Adapter to make CLHEP::RandFlat look like the cernlib rn48.
 //
-//  $Id: rm48.hh,v 1.4 2011/05/18 02:27:18 wb Exp $
-//  $Author: wb $
-//  $Date: 2011/05/18 02:27:18 $
 //
 //  Original author Rob Kutschke.
 //
@@ -23,6 +20,8 @@
 //  that each module gets its own random engine.
 
 #include "CLHEP/Random/RandFlat.h"
+
+namespace CLHEP { class RandFlat; }
 
 // Called by the Daya Bay comsic code.
 extern "C" {

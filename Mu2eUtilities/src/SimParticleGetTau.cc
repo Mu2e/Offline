@@ -1,15 +1,13 @@
-#include "Mu2eUtilities/inc/SimParticleGetTau.hh"
+#include <algorithm>
 
+#include "MCDataProducts/inc/ProcessCode.hh"
+#include "MCDataProducts/inc/SimParticle.hh"
 // Framework includes
 #include "canvas/Persistency/Common/Ptr.h"
-
-// CLHEP includes
-#include "CLHEP/Vector/LorentzVector.h"
-
 // cetlib includes
 #include "cetlib_except/exception.h"
 
-#include <iostream>
+#include "Mu2eUtilities/inc/SimParticleGetTau.hh"
 
 namespace mu2e {
   

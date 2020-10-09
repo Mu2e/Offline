@@ -3,17 +3,20 @@
 //
 // Helper class to navigate the MC Truth information associated with a CaloHit.
 //
-// $Id: CaloHitMCNavigator.hh,v 1.1 2013/03/08 01:22:32 echenard Exp $
-// $Author: echenard $
-// $Date: 2013/03/08 01:22:32 $
 //
 // Original author Rob Kutschke
 //
 
-#include "RecoDataProducts/inc/CaloHitCollection.hh"
+
+#include <stddef.h>
+
+#include "MCDataProducts/inc/CaloHitMCTruth.hh"
 #include "MCDataProducts/inc/CaloHitMCTruthCollection.hh"
-#include "MCDataProducts/inc/PtrStepPointMCVectorCollection.hh"
+#include "MCDataProducts/inc/CaloHitSimPartMC.hh"
 #include "MCDataProducts/inc/CaloHitSimPartMCCollection.hh"
+#include "MCDataProducts/inc/PtrStepPointMCVectorCollection.hh"
+#include "RecoDataProducts/inc/CaloHit.hh"
+#include "RecoDataProducts/inc/CaloHitCollection.hh"
 
 namespace mu2e {
 

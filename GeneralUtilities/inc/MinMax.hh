@@ -5,9 +5,6 @@
 // Find minimum, maximum and smallest in magnitude of a set of numbers
 // presented one at a time.
 //
-// $Id: MinMax.hh,v 1.6 2011/12/16 23:12:30 kutschke Exp $
-// $Author: kutschke $
-// $Date: 2011/12/16 23:12:30 $
 //
 // Original author Rob Kutschke
 

@@ -1,8 +1,5 @@
 #define g4studyCalo01Selector_cxx
 
-// $Id: g4studyCalo01Selector.C,v 1.3 2013/04/15 20:00:40 genser Exp $
-// $Author: genser $
-// $Date: 2013/04/15 20:00:40 $
 //
 // Original author K. Genser (of the content after TTree::MakeSelector() was used)
 //

@@ -1,18 +1,31 @@
 // Constructor of a PDF to extract random times to describe the proton pulse
 //
-// $Id: ProtonPulseRandPDF.cc,v 1.20 2014/05/01 18:12:26 knoepfel Exp $
-// $Author: knoepfel $
-// $Date: 2014/05/01 18:12:26 $
 //
 // Original author: Kyle Knoepfel
 
+#include <exception>
+#include <stdlib.h>
+// C++ includes
+#include <algorithm>
+#include <array>
+#include <string>
+#include <utility>
+#include <vector>
+
+#include "CLHEP/Random/RandGeneral.h"
+
+#include "ConditionsService/inc/AcceleratorParams.hh"
 // Mu2e includes
 #include "ConditionsService/inc/ConditionsHandle.hh"
 #include "ConfigTools/inc/ConfigFileLookupPolicy.hh"
-#include "Mu2eUtilities/inc/ProtonPulseRandPDF.hh"
+#include "art/Framework/Services/Optional/RandomNumberGenerator.h"
+#include "fhiclcpp/ParameterSet.h"
+#include "fhiclcpp/exception.h"
+#include "fhiclcpp/types/Atom.h"
+#include "fhiclcpp/types/OptionalAtom.h"
 
-// C++ includes
-#include <algorithm>
+#include "Mu2eUtilities/inc/ProtonPulseRandPDF.hh"
+#include "Mu2eUtilities/inc/Table.hh"
 
 // The following defines the proton pulse shape parameters (pdf width,
 // pdf step and differential distribution).  Please note that it is

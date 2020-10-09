@@ -6,9 +6,6 @@
 #  - Write event data to an output file
 #  - Save state of random numbers to the event-data output file
 #
-# $Id: NeutronCRV.fcl,v 1.5 2012/03/02 17:16:22 gandr Exp $
-# $Author: gandr $
-# $Date: 2012/03/02 17:16:22 $
 #
 # Original author Gianni Onorato.
 

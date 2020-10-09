@@ -3,9 +3,6 @@
 //
 // Free function for loading table two-column table
 //
-// $Id: Table.hh,v 1.5 2014/05/12 13:55:55 knoepfel Exp $
-// $Author: knoepfel $
-// $Date: 2014/05/12 13:55:55 $
 //
 // Original author: Kyle Knoepfel
 
@@ -15,6 +12,7 @@
 #include <fstream>
 #include <iostream>
 #include <iterator>
+#include <string>
 #include <utility>
 #include <vector>
 

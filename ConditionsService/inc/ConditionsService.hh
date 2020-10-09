@@ -5,9 +5,6 @@
 // Primitive conditions data service.
 // It does not yet do validty checking.
 //
-// $Id: ConditionsService.hh,v 1.20 2014/01/17 19:23:51 gandr Exp $
-// $Author: gandr $
-// $Date: 2014/01/17 19:23:51 $
 //
 // Original author Rob Kutschke
 //

@@ -1,9 +1,6 @@
 //
 // Class which extracts informayion from the framework event objects to build the event display shapes (e.g. tracks, straws, support structures).
 //
-// $Id: DataInterface.h,v 1.33 2014/02/22 01:52:18 ehrlich Exp $
-// $Author: ehrlich $
-// $Date: 2014/02/22 01:52:18 $
 //
 // Original author Ralf Ehrlich
 //
@@ -59,7 +56,6 @@ class DataInterface
   };
 
   private:
-  art::Event    *_event;
   TGeoManager   *_geometrymanager; //bare pointer needed since ROOT manages this object
   TGeoVolume    *_topvolume;       //bare pointer needed since ROOT manages this object
   EventDisplayFrame  *_mainframe;  //points to the EventDisplayFrame object

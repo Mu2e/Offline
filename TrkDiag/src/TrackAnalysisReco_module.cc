@@ -73,6 +73,7 @@
 #include "TrkDiag/inc/RecoQualInfo.hh"
 // CRV info
 #include "CRVAnalysis/inc/CRVAnalysis.hh"
+#include "MCDataProducts/inc/SimParticleTimeMap.hh"
 
 // C++ includes.
 #include <iostream>
@@ -94,10 +95,12 @@ namespace mu2e {
       using Name=fhicl::Name;
       using Comment=fhicl::Comment;
       fhicl::Atom<bool> fillmc{Name("fillMC"), Comment("Switch to turn on filling of MC information for this set of tracks"), false};
+      fhicl::Atom<bool> fillhits{Name("fillHits"), Comment("Switch to turn on filling of hit-level information for this set of tracks"), false};
       fhicl::OptionalAtom<std::string> trkqual{Name("trkqual"), Comment("TrkQualCollection input tag to be written out (use prefix if fcl parameter suffix is defined)")};
       fhicl::Atom<bool> filltrkqual{Name("fillTrkQual"), Comment("Switch to turn on filling of the full TrkQualInfo for this set of tracks"), false};
       fhicl::OptionalAtom<std::string> trkpid{Name("trkpid"), Comment("TrkCaloHitPIDCollection input tag to be written out (use prefix if fcl parameter suffix is defined)")};
       fhicl::Atom<bool> filltrkpid{Name("fillTrkPID"), Comment("Switch to turn on filling of the full TrkPIDInfo for this set of tracks"), false};
+      fhicl::Atom<bool> required{Name("required"), Comment("True/false if you require this type of track in the event"), false};
     };
 
     struct BranchConfig {
@@ -127,15 +130,20 @@ namespace mu2e {
       fhicl::Atom<std::string> simParticleLabel{Name("SimParticleLabel"), Comment("SimParticleLabel")};
       fhicl::Atom<std::string> mcTrajectoryLabel{Name("MCTrajectoryLabel"), Comment("MCTrajectoryLabel")};
       fhicl::Atom<double> crvPlaneY{Name("CrvPlaneY"),2751.485};  //y of center of the top layer of the CRV-T counters
-      fhicl::Atom<bool> fillmc{Name("FillMCInfo"),true};
+      fhicl::Table<SimParticleTimeOffset::Config> timeOffsets{ Name("TimeOffsets"), Comment("Time maps") };
+      fhicl::Atom<std::string> crvWaveformsModuleLabel{ Name("CrvWaveformsModuleLabel"), Comment("CrvWaveformsModuleLabel")};
+      fhicl::Atom<std::string> crvDigiModuleLabel{ Name("CrvDigiModuleLabel"), Comment("CrvDigiModuleLabel")};
+      fhicl::Atom<bool> fillmc{Name("FillMCInfo"),Comment("Global switch to turn on/off MC info"),true};
       fhicl::Atom<bool> pempty{Name("ProcessEmptyEvents"),false};
       fhicl::Atom<bool> crv{Name("AnalyzeCRV"),false};
+      fhicl::Atom<bool> crvpulses{Name("AnalyzeCRVPulses"),false};
       fhicl::Atom<bool> helices{Name("FillHelixInfo"),false};
       fhicl::Atom<bool> filltrkqual{Name("FillTrkQualInfo"),false};
       fhicl::Atom<bool> filltrkpid{Name("FillTrkPIDInfo"),false};
       fhicl::Atom<bool> filltrig{Name("FillTriggerInfo"),false};
       fhicl::Atom<std::string> trigpathsuffix{Name("TriggerPathSuffix"), "_trigger"}; // all trigger paths have this in the name
       fhicl::Atom<int> diag{Name("diagLevel"),1};
+      fhicl::Atom<bool> fillhits{Name("FillHitInfo"),Comment("Global switch to turn on/off hit-level info"), false};
       fhicl::Atom<int> debug{Name("debugLevel"),0};
       fhicl::Atom<art::InputTag> primaryParticleTag{Name("PrimaryParticleTag"), Comment("Tag for PrimaryParticle"), art::InputTag()};
       fhicl::Atom<art::InputTag> kalSeedMCTag{Name("KalSeedMCAssns"), Comment("Tag for KalSeedMCAssn"), art::InputTag()};
@@ -205,10 +213,10 @@ namespace mu2e {
     std::vector<TrkInfoMCStep> _allMCEntTIs, _allMCMidTIs, _allMCXitTIs;
     std::vector<CaloClusterInfoMC> _allMCTCHIs;
 
-    // hit level info branches (only for candidate at the moment)
-    std::vector<TrkStrawHitInfo> _detsh;
-    std::vector<TrkStrawMatInfo> _detsm;
-    std::vector<TrkStrawHitInfoMC> _detshmc;
+    // hit level info branches 
+    std::vector<std::vector<TrkStrawHitInfo>> _allTSHIs;
+    std::vector<std::vector<TrkStrawMatInfo>> _allTSMIs;
+    std::vector<std::vector<TrkStrawHitInfoMC>> _allTSHIMCs;
 
     // event weights
     std::vector<art::Handle<EventWeight> > _wtHandles;
@@ -220,6 +228,9 @@ namespace mu2e {
     CrvSummaryReco _crvsummary;
     CrvSummaryMC   _crvsummarymc;
     std::vector<CrvPlaneInfoMC> _crvinfomcplane;
+    std::vector<CrvPulseInfoReco> _crvpulseinfo;
+    std::vector<CrvWaveformInfo> _crvwaveforminfo;
+    std::vector<CrvHitInfoMC> _crvpulseinfomc;
     // helices
     HelixInfo _hinfo;
     // struct helpers
@@ -292,6 +303,13 @@ namespace mu2e {
       _allTQIs.push_back(tqi);
       TrkPIDInfo tpi;
       _allTPIs.push_back(tpi);
+
+      std::vector<TrkStrawHitInfo> tshi;
+      _allTSHIs.push_back(tshi);
+      std::vector<TrkStrawMatInfo> tsmi;
+      _allTSMIs.push_back(tsmi);
+      std::vector<TrkStrawHitInfoMC> tshimc;
+      _allTSHIMCs.push_back(tshimc);
     }
   }
 
@@ -326,10 +344,11 @@ namespace mu2e {
       if (_conf.filltrkpid() && i_branchConfig.options().filltrkpid()) {
 	_trkana->Branch((branch+"trkpid").c_str(), &_allTPIs.at(i_branch), TrkPIDInfo::leafnames().c_str());
       }
-      // optionally add detailed branches (for now just for the candidate branch, we can think about adding these for supplement branches in the future)
-      if(_conf.diag() > 1 && i_branch==_candidateIndex){ 
-	_trkana->Branch((branch+"tsh").c_str(),&_detsh);
-	_trkana->Branch((branch+"tsm").c_str(),&_detsm);
+      // optionally add hit-level branches
+      // (for the time being diagLevel : 2 will still work, but I propose removing this at some point)
+      if(_conf.diag() > 1 || (_conf.fillhits() && i_branchConfig.options().fillhits())){ 
+	_trkana->Branch((branch+"tsh").c_str(),&_allTSHIs.at(i_branch));
+	_trkana->Branch((branch+"tsm").c_str(),&_allTSMIs.at(i_branch));
       }
       // optionall add MC branches
       if(_conf.fillmc() && i_branchConfig.options().fillmc()){
@@ -340,8 +359,10 @@ namespace mu2e {
 	_trkana->Branch((branch+"mcmid").c_str(),&_allMCMidTIs.at(i_branch),TrkInfoMCStep::leafnames().c_str());
 	_trkana->Branch((branch+"mcxit").c_str(),&_allMCXitTIs.at(i_branch),TrkInfoMCStep::leafnames().c_str());
 	_trkana->Branch((branch+"tchmc").c_str(),&_allMCTCHIs.at(i_branch),CaloClusterInfoMC::leafnames().c_str());
-	if(_conf.diag() > 1 && i_branch==_candidateIndex) { // just for the candidate branch
-	  _trkana->Branch((branch+"tshmc").c_str(),&_detshmc);
+	// at hit-level MC information
+	// (for the time being diagLevel will still work, but I propose removing this at some point)
+	if(_conf.diag() > 1 || (_conf.fillhits() && i_branchConfig.options().fillhits())){ 
+	  _trkana->Branch((branch+"tshmc").c_str(),&_allTSHIMCs.at(i_branch));
 	}
       }
     }
@@ -351,16 +372,22 @@ namespace mu2e {
     }
 // calorimeter information for the downstream electron track
 // CRV info
-    if(_conf.crv()) { 
+    if(_conf.crv()) {
       _trkana->Branch("crvinfo",&_crvinfo);
       _trkana->Branch("crvsummary",&_crvsummary);
       _trkana->Branch("bestcrv",&_bestcrv,"bestcrv/I");
+      if(_conf.crvpulses()) {
+        _trkana->Branch("crvpulseinfo",&_crvpulseinfo);
+        _trkana->Branch("crvwaveforminfo",&_crvwaveforminfo);
+      }
       if(_conf.fillmc()){
-	if(_conf.crv()) 
+	if(_conf.crv())
         {
           _trkana->Branch("crvinfomc",&_crvinfomc);
           _trkana->Branch("crvsummarymc",&_crvsummarymc);
           _trkana->Branch("crvinfomcplane",&_crvinfomcplane);
+          if(_conf.crvpulses())
+            _trkana->Branch("crvpulseinfomc",&_crvpulseinfomc);
         }
       }
     }
@@ -468,6 +495,8 @@ namespace mu2e {
     _tcnt.reset();
     _hinfo.reset();
     _wtinfo.reset();
+    // reset
+    resetBranches();
     // fill track counts
     for (size_t i_branch = 0; i_branch < _allBranches.size(); ++i_branch) {
       _tcnt._counts[i_branch] = (_allKSCHs.at(i_branch))->size();
@@ -481,8 +510,8 @@ namespace mu2e {
     const auto& candidateKSCH = _allKSCHs.at(_candidateIndex);
     const auto& candidateKSC = *candidateKSCH;
     for (size_t i_kseed = 0; i_kseed < candidateKSC.size(); ++i_kseed) {
-    // reset
-      resetBranches();
+
+      bool skip_kseed = false; // there may be a reason we don't want to write this KalSeed out
 
       auto const& candidateKS = candidateKSC.at(i_kseed);
       fillAllInfos(candidateKSCH, _candidateIndex, i_kseed); // fill the info structs for the candidate
@@ -500,19 +529,33 @@ namespace mu2e {
 	}
 	const auto& i_supplementKSCH = _allKSCHs.at(i_branch);
 	const auto& i_supplementKSC = *i_supplementKSCH;
+
+	// If we require a supplement track of this type, and there are none...
+	if (i_supplementKSC.size()==0 && _allBranches.at(i_branch).options().required()) {
+	  skip_kseed = true; // ...skip this KalSeed
+	}	  
+
 	// find the supplement track closest in time
 	auto i_supplementKS = findSupplementTrack(i_supplementKSC,candidateKS,sameColl);
 	if(i_supplementKS < i_supplementKSC.size()) { 
 	  fillAllInfos(_allKSCHs.at(i_branch), i_branch, i_supplementKS);
 	}
       }
+    
+      if (skip_kseed) {
+	continue;
+      }
 
       // TODO we want MC information when we don't have a track
       // fill CRV info
       if(_conf.crv()){
-	CRVAnalysis::FillCrvHitInfoCollections(_conf.crvCoincidenceModuleLabel(), _conf.crvCoincidenceMCModuleLabel(), 
-                                               _conf.crvRecoPulseLabel(), _conf.crvStepPointMCLabel(), _conf.simParticleLabel(), _conf.mcTrajectoryLabel(), event, 
+	CRVAnalysis::FillCrvHitInfoCollections(_conf.crvCoincidenceModuleLabel(), _conf.crvCoincidenceMCModuleLabel(),
+                                               _conf.crvRecoPulseLabel(), _conf.crvStepPointMCLabel(), _conf.simParticleLabel(), _conf.mcTrajectoryLabel(), event,
                                                _crvinfo, _crvinfomc, _crvsummary, _crvsummarymc, _crvinfomcplane, _conf.crvPlaneY());
+        if(_conf.crvpulses())
+          CRVAnalysis::FillCrvPulseInfoCollections(_conf.crvRecoPulseLabel(), _conf.crvWaveformsModuleLabel(), _conf.crvDigiModuleLabel(),
+                                                   _infoMCStructHelper.getTimeMaps(), event, _crvpulseinfo, _crvpulseinfomc, _crvwaveforminfo);
+
 //	find the best CRV match (closest in time)
 	_bestcrv=-1;
 	float mindt=1.0e9;
@@ -530,7 +573,7 @@ namespace mu2e {
       _trkana->Fill();
     }
 
-    if(_conf.pempty()) { // if we want to process empty events
+    if(_conf.pempty() && candidateKSC.size()==0) { // if we want to process empty events
       _trkana->Fill();
     }
   }
@@ -644,9 +687,9 @@ namespace mu2e {
     _infoStructHelper.fillTrkFitInfo(kseed,_allXitTIs.at(i_branch),xitpos);
     //      _tcnt._overlaps[0] = _tcomp.nOverlap(kseed, kseed);
 
-    if(_conf.diag() > 1 && i_branch==_candidateIndex){ // want hit level info
-      _infoStructHelper.fillHitInfo(kseed, _detsh);
-      _infoStructHelper.fillMatInfo(kseed, _detsm);
+    if(_conf.diag() > 1 || (_conf.fillhits() && branchConfig.options().fillhits())){ // want hit level info
+      _infoStructHelper.fillHitInfo(kseed, _allTSHIs.at(i_branch));
+      _infoStructHelper.fillMatInfo(kseed, _allTSMIs.at(i_branch));
     }
     if(_conf.helices()){
       _infoStructHelper.fillHelixInfo(kseed, _hinfo);
@@ -725,8 +768,8 @@ namespace mu2e {
 	  _infoMCStructHelper.fillTrkInfoMCStep(kseedmc, _allMCXitTIs.at(i_branch), _xitvids, t0);
 	  _infoMCStructHelper.fillGenAndPriInfo(kseedmc, primary, _allMCPriTIs.at(i_branch), _allMCGenTIs.at(i_branch));
 	    
-	  if (_conf.diag()>1 && i_branch == _candidateIndex) {
-	    _infoMCStructHelper.fillHitInfoMCs(kseedmc, _detshmc);
+	  if(_conf.diag() > 1 || (_conf.fillhits() && branchConfig.options().fillhits())){ 
+	    _infoMCStructHelper.fillHitInfoMCs(kseedmc, _allTSHIMCs.at(i_branch));
 	  }
 	  break;
 	}
@@ -759,7 +802,14 @@ namespace mu2e {
 	size_t pos;
 	if (selection != "") { // if we want to add a selection
 	  pos = moduleLabel.find(selection);
-	  if (pos == std::string::npos) { // check to see if this appears
+
+	  // make sure that the selection (e.g. "DeM") appears at the end of the module label
+	  if (pos == std::string::npos) {
+	    //      std::cout << "Selection not found" << std::endl;
+	    continue;
+	  }
+	  else if (pos+selection.length() != moduleLabel.size()) {
+	    //      std::cout << "Selection wasn't at end of moduleLabel" << std::endl;
 	    continue;
 	  }
 	  moduleLabel = moduleLabel.erase(pos, selection.length());
@@ -801,14 +851,19 @@ namespace mu2e {
       _allRQIs.at(i_branch).reset();
       _allTQIs.at(i_branch).reset();
       _allTPIs.at(i_branch).reset();
+
+      // clear vectors
+      _allTSHIs.at(i_branch).clear();
+      _allTSMIs.at(i_branch).clear();
+      _allTSHIMCs.at(i_branch).clear();
     }
 // clear vectors
-    _detsh.clear();
-    _detsm.clear();
-    _detshmc.clear();
     _crvinfo.clear();
     _crvinfomc.clear();
     _crvinfomcplane.clear();
+    _crvpulseinfo.clear();
+    _crvwaveforminfo.clear();
+    _crvpulseinfomc.clear();
   }
 }  // end namespace mu2e
 

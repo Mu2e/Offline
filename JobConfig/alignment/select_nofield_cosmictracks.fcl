@@ -1,0 +1,88 @@
+# Ryunosuke O'Neil
+# roneil@fnal.gov
+# https://github.com/ryuwd
+#
+# Reconstruct Cosmic Track (Straight, no magnetic field)
+# Check Cuts Pass (see Alignment/fcl/prolog.fcl)
+# Write Event to file if Event yields a track and passes cuts, not keeping any Data Products from reco
+#
+# #
+#include "fcl/minimalMessageService.fcl"
+#include "fcl/standardProducers.fcl"
+#include "fcl/standardServices.fcl"
+#include "JobConfig/reco/prolog.fcl"
+#include "CosmicReco/fcl/prolog.fcl"
+#include "Alignment/fcl/prolog.fcl"
+#include "Trigger/fcl/templates.fcl"
+
+process_name : CosmicAlignTrackSelector
+
+source : { module_type : RootInput }
+
+services : @local::Services.Reco
+
+physics :
+{
+  producers : {
+    @table::Reconstruction.producers
+    @table::Trigger.producers
+    @table::CommonMC.producers
+    @table::CosmicTracking.producers
+  }
+  filters :  {
+    @table::Reconstruction.filters
+    @table::Trigger.filters
+    @table::CosmicTracking.filters
+
+    AlignTrackSelector: { @table::AlignTrackSelector }
+  }
+  analyzers: {
+    @table::Reconstruction.analyzers
+    @table::Trigger.analyzers
+    @table::CosmicTracking.analyzers
+  }
+  RecoPath : [ @sequence::Reconstruction.RecoMCPath ]
+  EndPath : [ Output, RecoCheck ]
+}
+
+outputs : {
+  Output :@local::Reconstruction.Output
+
+  CosTrackSelect : {
+      module_type: RootOutput
+      fileName: "dig.owner.CosmicAlignTrackSelector-description.version.sequencer.art"
+      SelectEvents: [ RecoPath ]
+
+      outputCommands :  ["keep *_*_*_*", "drop *_*_*_CosmicAlignTrackSelector"]
+  }
+}
+
+
+# My epilog
+#include "JobConfig/reco/epilog.fcl"
+#include "JobConfig/reco/NoCosmicTimeMap_epilog.fcl"
+# trigger epilog
+#include "gen/fcl/Trigger/offline/allTrig/allPaths.fcl"
+outputs.Output.SelectEvents : [ "RecoPath" ]
+#
+# the following need to be overwritten for the specific channel
+services.TFileService.fileName: "nts.owner.CosmicAlignTrackSelector-description.version.sequencer.root"
+outputs.Output.fileName: "dig.owner.CosmicAlignTrackSelector-description.version.sequencer.art"
+outputs.Output.outputCommands : ["keep *_*_*_*", "drop *_*_*_CosmicAlignTrackSelector"]
+
+
+services.scheduler.wantSummary: true
+
+
+physics.RecoPath : [ @sequence::TrkHitReco.PrepareHits, SimpleTimeCluster, LineFinder, CosmicTrackFinderTimeFit, AlignTrackSelector ]
+outputs.CosTrackSelect.SelectEvents : [ RecoPath ]
+physics.EndPath : [ CosTrackSelect ]
+physics.end_paths : [ EndPath ] # needed for generate_fcl
+
+physics.filters.AlignTrackSelector.CosmicTrackSeedCollection : "CosmicTrackFinderTimeFit"
+
+
+# these lines are needed to improve performance
+services.ProditionsService.strawResponse.useParameterizedDriftErrors : true
+physics.producers.makePH.TestRadius : false
+physics.producers.makePH.TestFlag : false

@@ -5,10 +5,16 @@
 
 BEGIN_PROLOG
 
+# define non-proton GenIDs
+nonProtonGenIds : ["unknown", "particleGun", "cosmicToy", "cosmicDYB", "cosmic", "CosmicCRY", "pbarFlat", "CosmicCORSIKA"]
 CommonMC: {
   producers: {
+#
 # time maps
-    protonTimeMap: { module_type : GenerateProtonTimes }
+    protonTimeMap: { module_type : GenerateProtonTimes 
+# Exclude particles not generated from primary protons
+      ignoredGenIds : [@sequence::nonProtonGenIds ]
+    }
     muonTimeMap:   { module_type : GenerateMuonLife }
     cosmicTimeMap: 
     { 
@@ -18,7 +24,12 @@ CommonMC: {
 	tmax : 1705
     }
 # time maps for primaries in inline mixing jobs
-    protonTimeMapPrimary: { module_type : GenerateProtonTimes }
+# These are historical and should be purged TODO!
+    protonTimeMapPrimary: { 
+      module_type : GenerateProtonTimes
+# Exclude particles not generated from primary protons
+      ignoredGenIds : [@sequence::nonProtonGenIds ]
+    }
     muonTimeMapPrimary:   { module_type : GenerateMuonLife }
     cosmicTimeMapPrimary: 
     { 
@@ -27,6 +38,7 @@ CommonMC: {
      	tmin : 450
 	tmax : 1705
     }
+    
 # Event window marker
     EWMProducer : { module_type : EventWindowMarkerProducer }
   }

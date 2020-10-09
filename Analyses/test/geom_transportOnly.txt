@@ -1,5 +1,3 @@
-// $Author: tassiell $
-// $Date: 2014/01/15 17:21:20 $
 //
 // Original author Rob Kutschke
 

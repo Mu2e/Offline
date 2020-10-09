@@ -1,9 +1,6 @@
 //
 // Plugin to read StepPoints in PS Vacuum and create ntuples
 //
-//  $Id: ReadAntiProtonSteps_module.cc,v 1.2 2013/10/21 20:44:04 genser Exp $
-//  $Author: genser $
-//  $Date: 2013/10/21 20:44:04 $
 //
 // Original author Robert Bernstein
 //

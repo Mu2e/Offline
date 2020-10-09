@@ -19,6 +19,7 @@ helper=mu2e_helper(env)
 
 g4inc    = os.environ['G4INCLUDE'] + '/Geant4'
 g4libdir = os.environ['G4LIB']
+g4LibInc = [ '-L'+g4libdir, '-I'+g4inc ]
 g4_version = os.environ['GEANT4_VERSION']
 g4_version=g4_version.replace('_','')
 if g4_version[2] == '9':
@@ -53,6 +54,25 @@ elif  g4vis == 'none':
     G4GS_CPPFLAGS = []
 else:
     G4GS_CPPFLAGS = [ '-DG4VIS_USE_OPENGLX',    '-DG4VIS_USE_OPENGL' ]
+
+# Compiler switches if we want to build G4 with VecGeom
+
+g4vg = env['G4VG'];
+
+if g4vg == 'on':
+    G4GV_CPPFLAGS = [ '-DG4GEOM_USE_USOLIDS="all"' ]
+    vecGeomLib = os.environ['VECGEOM_LIB']
+    vecCoreLib = os.environ['VECCORE_LIB']
+    vecGeomInc = os.environ['VECGEOM_INC']
+    vecCoreInc = os.environ['VECCORE_INC']
+    vgcLibInc = [ '-L'+vecGeomLib
+                  , '-I'+vecGeomInc
+                  , '-L'+vecCoreLib
+                  , '-I'+vecCoreInc ]
+else:
+    G4GV_CPPFLAGS = []
+    vgcLibInc = []
+
 
 # print("mu2eopts      ",  mu2eopts)
 # print("G4GS_CPPFLAGS ",  G4GS_CPPFLAGS)
@@ -160,6 +180,10 @@ if g4vis != 'none':
     G4GLOBALIBS.append('libG4OpenGL')
     G4GLOBALIBS.append('libG4gl2ps')
 
+if g4vg != 'off':
+    G4GLOBALIBS.append('libvecgeom')
+    G4GLOBALIBS.append('libVc')
+
 if g4_version < '4095':
     G4LIBS = G4GRANULARLIBS
 else:
@@ -232,8 +256,8 @@ mainlib = helper.make_mainlib ( [
         'tbb',
         'pthread',
     ],
-                                [  G4CPPFLAGS, G4GS_CPPFLAGS ],
-                                [ '-L'+g4libdir, '-I'+g4inc ]
+                                [  G4CPPFLAGS, G4GS_CPPFLAGS, G4GV_CPPFLAGS ],
+                                [ g4LibInc, vgcLibInc ]
                                 )
 
 helper.make_plugins( [
@@ -271,8 +295,8 @@ helper.make_plugins( [
     'pthread',
     ],
                      [],
-                     [ G4CPPFLAGS, G4GS_CPPFLAGS ],
-                     [ '-L'+g4libdir, '-I'+g4inc ]
+                     [ G4CPPFLAGS, G4GS_CPPFLAGS, G4GV_CPPFLAGS ],
+                     [ g4LibInc, vgcLibInc ]
                      )
 
 # This tells emacs to view this file in python mode.

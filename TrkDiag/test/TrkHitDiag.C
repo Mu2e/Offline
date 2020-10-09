@@ -1,7 +1,4 @@
 //
-// $Id: TrkHitDiag.C,v 1.3 2013/02/14 22:19:12 genser Exp $
-// $Author: genser $
-// $Date: 2013/02/14 22:19:12 $
 //
 //
 #include "TCanvas.h"

@@ -12,7 +12,7 @@ Import('mu2e_helper')
 
 babarlibs     = env['BABARLIBS']
 rootlibs      = env['ROOTLIBS']
-extrarootlibs = ['Spectrum', 'TMVA' , 'Minuit' , 'XMLIO' ]
+extrarootlibs = ['TMVA' , 'Minuit' , 'XMLIO' ]
 
 helper=mu2e_helper(env);
 # helper=calpatrec_helper();

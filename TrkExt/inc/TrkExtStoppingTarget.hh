@@ -1,9 +1,6 @@
 //
 // StoppingTarget description for TrkExt
 //
-//  $Id: TrkExtStoppingTarget.hh,v 1.1 2012/08/04 00:22:10 mjlee Exp $
-//  $Author: mjlee $
-//  $Date: 2012/08/04 00:22:10 $
 //
 //  Original author MyeongJae Lee
 //

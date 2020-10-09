@@ -1,9 +1,6 @@
 #ifndef MCDataProducts_ExtMonFNALHitTruthAssn_hh
 #define MCDataProducts_ExtMonFNALHitTruthAssn_hh
 //
-// $Id: ExtMonFNALHitTruthAssn.hh,v 1.2 2012/08/28 16:59:35 gandr Exp $
-// $Author: gandr $
-// $Date: 2012/08/28 16:59:35 $
 //
 // Original author Andrei Gaponenko
 //

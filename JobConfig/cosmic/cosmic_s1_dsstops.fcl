@@ -1,6 +1,6 @@
 // This configuration propogates cosmics from the surface towards DS.
 // Cosmics hitting crvStage1End volumes are stopped and saved for later resampling.
-// 
+//
 // Yuri Oksuzian, 2019
 
 #include "fcl/minimalMessageService.fcl"
@@ -12,17 +12,17 @@ BEGIN_PROLOG
 #----------------------------------------------------------------
 # Mu2eG4 cuts
 
-crvStage1End: 
+crvStage1End:
 {
    type: inVolume
    pars: [DSOuterCryoShell, DSInnerCryoShell, DSFront, DSUpEndWallShell, TS5OuterCryoShell, TS5CryoInsVac, TS5Vacuum, Coll51, DS1Vacuum, DS2Vacuum, DS3Vacuum]
    write: crvStage1
 }
 
-crvOuterBox: 
+crvOuterBox:
 {
    type: union
-   pars: 
+   pars:
    [
       // Upstream plane
       { type: plane normal: [  0, 0, -1 ] point : [ 0, 0, -3400 ] },
@@ -44,10 +44,10 @@ crvOuterBox:
    ]
 }
 
-crvInnerBox: 
+crvInnerBox:
 {
    type: intersection
-   pars: 
+   pars:
    [
       // Upstream plane
       { type: plane normal: [  0, 0, 1 ] point : [ 0, 0, -2200 ] },
@@ -69,27 +69,27 @@ crvInnerBox:
    ]
 }
 
-cosmicKineticEnergyCuts: 
+cosmicKineticEnergyCuts:
 {
    type: union
    pars:
    [
       {
         type: intersection
-        pars: 
-        [ 
+        pars:
+        [
           { type: union pars: [ @local::crvOuterBox, @local::crvInnerBox ] },
-          { type: kineticEnergy cut: 10.0 }, 
+          { type: kineticEnergy cut: 10.0 },
           { type: pdgId pars: [ 22, 2112 ] }
         ]
       },
       {
       // 5 MeV can only make a hit in 1 CRV layer
         type: intersection
-        pars: 
-        [ 
+        pars:
+        [
           { type: union pars: [ @local::crvOuterBox, @local::crvInnerBox ] },
-          { type: kineticEnergy cut: 5.0 }, 
+          { type: kineticEnergy cut: 5.0 },
           { type: pdgId pars: [ 2212, 11, -11 ] }
         ]
       }
@@ -102,13 +102,13 @@ END_PROLOG
 # Give this job a name.
 process_name :  cosmics1
 
-source : 
+source :
 {
    module_type : EmptyEvent
    maxEvents : @nil
 }
 
-services : 
+services :
 {
 
    message               : @local::default_message
@@ -122,51 +122,51 @@ services :
    SeedService            : @local::automaticSeeds
 }
 
-physics : 
+physics :
 {
-   analyzers: 
+   analyzers:
    {
-      genCountLogger: 
-      { 
-         module_type: GenEventCountReader 
+      genCountLogger:
+      {
+         module_type: GenEventCountReader
       }
 
-      collectionSizes: 
+      collectionSizes:
       {
 	 module_type: CollectionSizeAnalyzer
-         useModuleLabel: true 
-         useInstanceName: true 
+         useModuleLabel: true
+         useInstanceName: true
          useProcessName: false
       }
 
       statusG4: { module_type: StatusG4Analyzer input: g4run }
    }
 
-   producers: 
+   producers:
    {
-      generate: 
+      generate:
       {
          module_type          : EventGenerator
          # inputfile is defined in top level fcl files
       }
 
-      genCounter: 
+      genCounter:
       {
          module_type: GenEventCounter
       }
 
-      g4run : 
+      g4run :
       {
          module_type: Mu2eG4
          physics: @local::mu2eg4DefaultPhysics
          ResourceLimits: @local::mu2eg4DefaultResourceLimits
-	 TrajectoryControl: @local::mu2eg4DefaultTrajectories 
+	 TrajectoryControl: @local::mu2eg4DefaultTrajectories
          debug: @local::mu2eg4DefaultDebug
          visualization: @local::mu2eg4NoVisualization
 
          generatorModuleLabel: generate
 
-         SDConfig: 
+         SDConfig:
          {
             enableSD: [ CRV ]  // activate just the explicitly listed SDs  //for the StepPoints which will be stored
             TimeVD: { times: [] }
@@ -180,10 +180,10 @@ physics :
          // The first match wins.  For the "intersection"
          // type, the first false stops the evaluation.
          // For the "union" type the first true stops the evaluation.
-         Mu2eG4CommonCut: 
+         Mu2eG4CommonCut:
          {
             type: union
-            pars: 
+            pars:
             [
                @local::cosmicKineticEnergyCuts,
                @local::crvStage1End,
@@ -195,7 +195,7 @@ physics :
          }
       }
 
-      compressPV : 
+      compressPV :
       {
          module_type: CompressPhysicalVolumes
          volumesInput : "g4run"
@@ -203,7 +203,7 @@ physics :
          particleInputs : [ "cosmicFilter" ]
       }
 
-      compressPVFull : 
+      compressPVFull :
       {
          module_type: CompressPhysicalVolumes
          volumesInput : "g4run"
@@ -212,16 +212,16 @@ physics :
       }
    }
 
-   filters: 
+   filters:
    {
-      stepPointMomentumFilter: 
+      stepPointMomentumFilter:
       {
         module_type: FilterStepPointMomentum
         inputs : [ "g4run:crvStage1" ]
         cutMomentumMin: 0. // Filter all particles that hit DS region
       }
 
-      cosmicFilter: 
+      cosmicFilter:
       {
          module_type: FilterG4Out
          mainHitInputs : [ "g4run:crvStage1", "g4run:CRV" ]
@@ -230,7 +230,7 @@ physics :
          vetoDaughters: []
       }
 
-      g4status: 
+      g4status:
       {
          module_type: FilterStatusG4
          input: "g4run"
@@ -252,34 +252,36 @@ physics :
    end_paths: [outputs, an]
 }
 
-outputs: 
+outputs:
 {
 
-   filteredOutput : 
+   filteredOutput :
    {
       module_type : RootOutput
       SelectEvents: ["trigFilter"]
-      outputCommands:   
-      [ 
+      outputCommands:
+      [
          "drop *_*_*_*",
          "keep mu2e::GenParticles_*_*_*",
          "keep mu2e::GenEventCount_*_*_*",
          "keep mu2e::StatusG4_*_*_*",
+         "keep mu2e::CosmicLivetime_*_*_*",
          "keep *_cosmicFilter_*_*",
          "keep *_compressPV_*_*"
       ]
    }
 
-   truncatedEvtsOutput : 
+   truncatedEvtsOutput :
    {
       module_type : RootOutput
       SelectEvents: ["g4StatusFilter"]
-      outputCommands:   
-      [ 
+      outputCommands:
+      [
          "drop *_*_*_*",
          "keep mu2e::GenParticles_*_*_*",
          "keep mu2e::GenEventCount_*_*_*",
          "keep mu2e::StatusG4_*_*_*",
+         "keep mu2e::CosmicLivetime_*_*_*",
          "keep *_g4run_*_*",
          "drop uintmu2e::PhysicalVolumeInfomvstd::pairs_g4run_*_*",
          "keep *_compressPVFull_*_*"

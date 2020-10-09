@@ -172,6 +172,7 @@ BEGIN_PROLOG
 	     fillTrkQual : true 
 	     trkpid : "TrkPID"
 	     fillTrkPID : true
+	     fillHits : true
   }
 
   DeM : { input : "KFF" 
@@ -220,12 +221,16 @@ BEGIN_PROLOG
     CrvStepPointMCLabel : "compressRecoMCs"
     SimParticleLabel : "compressRecoMCs"
     MCTrajectoryLabel : "compressRecoMCs"
+    CrvWaveformsModuleLabel : "compressRecoMCs"
+    CrvDigiModuleLabel : "SelectRecoMC"
     CrvPlaneY : 2653
     FillMCInfo : true
     FillTrkQualInfo : true
     FillTrkPIDInfo : true
+    FillHitInfo : false
     ProcessEmptyEvents : false
     AnalyzeCRV : true
+    AnalyzeCRVPulses : false
     PrimaryParticleTag : "compressRecoMCs"
     KalSeedMCAssns : "SelectRecoMC"
     CaloClusterMCAssns : "SelectRecoMC"

@@ -1,9 +1,6 @@
 //
 // An EDAnalyzer module that reads back the hits created by the calorimeter and produces an ntuple
 //
-// $Id: CaloNeutron_module.cc,v 1.4 2014/08/01 20:57:44 echenard Exp $
-// $Author: echenard $
-// $Date: 2014/08/01 20:57:44 $
 //
 // Original author Bertrand Echenard
 //

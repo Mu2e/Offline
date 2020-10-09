@@ -1,9 +1,6 @@
 //
 // Read the pid
 //
-// $Id: 
-// $Author: 
-// $Date: 
 //
 // Original author Vadim Rusu
 //

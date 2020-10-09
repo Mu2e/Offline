@@ -3,9 +3,6 @@
 //
 // Free function to create and place a new G4Cons inside a logical volume.
 //
-// $Id: nestCons.hh,v 1.6 2014/09/19 19:14:54 knoepfel Exp $
-// $Author: knoepfel $
-// $Date: 2014/09/19 19:14:54 $
 //
 // Original author Rob Kutschke
 //

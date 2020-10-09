@@ -1,9 +1,6 @@
 # Read the output file from g4test_03.fcl and rewrite it,
 # keeping only the random number state.
 #
-# $Id: drop03.fcl,v 1.1 2014/08/29 16:16:17 knoepfel Exp $
-# $Author: knoepfel $
-# $Date: 2014/08/29 16:16:17 $
 
 #include "fcl/minimalMessageService.fcl"
 

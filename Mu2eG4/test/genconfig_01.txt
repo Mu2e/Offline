@@ -1,9 +1,6 @@
 //
 // Run-time config info for the event generators.
 //
-// $Id: genconfig_01.txt,v 1.7 2012/03/29 15:40:35 tassiell Exp $
-// $Author: tassiell $
-// $Date: 2012/03/29 15:40:35 $
 //
 // Original author Rob Kutschke
 

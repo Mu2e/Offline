@@ -2,9 +2,6 @@
 // Class to perform BaBar Kalman fit
 // Original author: Dave Brown LBNL 2012
 //
-// $Id: KalFit.cc,v 1.43 2014/08/22 16:10:41 tassiell Exp $
-// $Author: tassiell $
-// $Date: 2014/08/22 16:10:41 $
 //
 #include "TrkReco/inc/KalFit.hh"
 #include "TrkReco/inc/PanelAmbigResolver.hh"

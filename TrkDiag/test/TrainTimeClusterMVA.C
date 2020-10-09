@@ -1,4 +1,3 @@
-// @(#)root/tmva $Id: TrainTimeClusterMVA.C,v 1.1 2014/05/31 14:28:10 brownd Exp $
 /**********************************************************************************
  * Project   : TMVA - a ROOT-integrated toolkit for multivariate data analysis    *
  * Package   : TMVA                                                               *

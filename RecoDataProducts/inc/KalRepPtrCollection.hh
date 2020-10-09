@@ -4,9 +4,6 @@
 //
 // Define a type for a collection of art::Ptr's to KalRep  objects.
 //
-// $Id: KalRepPtrCollection.hh,v 1.1 2014/04/18 16:37:04 kutschke Exp $
-// $Author: kutschke $
-// $Date: 2014/04/18 16:37:04 $
 //
 // Original author Rob Kutschke
 //

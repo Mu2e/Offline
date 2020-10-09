@@ -1,9 +1,6 @@
 //
 // Count decays of charged pions to check that the pi e nu code is working properly.
 //
-// $Id: CountPionDecays_module.cc,v 1.2 2013/10/21 20:44:04 genser Exp $
-// $Author: genser $
-// $Date: 2013/10/21 20:44:04 $
 //
 // Original author Rob Kutschke
 //

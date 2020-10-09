@@ -1,9 +1,6 @@
 #ifndef MCDataProducts_CaloHitMCTruth_hh
 #define MCDataProducts_CaloHitMCTruth_hh
 
-// $Id: CaloHitMCTruth.hh,v 1.1 2011/05/24 17:16:43 kutschke Exp $
-// $Author: kutschke $
-// $Date: 2011/05/24 17:16:43 $
 //
 // Original author Ivan Logashenko
 

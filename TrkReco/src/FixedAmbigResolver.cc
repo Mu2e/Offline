@@ -2,9 +2,6 @@
 // class to resolve hit ambiguities one hit at a time, assuming a reasonable track
 // fit as input
 //
-// $Id: FixedAmbigResolver.cc,v 1.3 2012/08/31 22:39:00 brownd Exp $
-// $Author: brownd $ 
-// $Date: 2012/08/31 22:39:00 $
 //
 #include "TrkReco/inc/FixedAmbigResolver.hh"
 #include "BTrk/KalmanTrack/KalRep.hh"

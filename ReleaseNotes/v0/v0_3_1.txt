@@ -1,9 +1,6 @@
 
            Release notes for Mu2e Offline software, v0_3_1
 
-  $Id: v0_3_1.txt,v 1.1 2011/05/25 14:54:21 kutschke Exp $
-  $Author: kutschke $
-  $Date: 2011/05/25 14:54:21 $
 
 15) Feb 4, 2011 kutschke
     Bug fix.  

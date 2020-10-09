@@ -1,9 +1,6 @@
 //
 // 
 //
-// $Id: genconfig_example.txt,v 1.2 2012/02/17 02:52:46 tassiell Exp $
-// $Author: tassiell $
-// $Date: 2012/02/17 02:52:46 $
 //
 // Original author G.F. Tassielli
 

@@ -1,15 +1,16 @@
 //
 //
-// $Id: SortedStepPoints.cc,v 1.5 2013/02/28 20:26:13 murat Exp $
-// $Author: murat $
-// $Date: 2013/02/28 20:26:13 $
 //
 // Original author Rob Kutschke
 //
 
-#include "Mu2eUtilities/inc/SortedStepPoints.hh"
-
+#include <cmath>
 #include <iostream>
+
+#include "CLHEP/Vector/ThreeVector.h"
+
+
+#include "Mu2eUtilities/inc/SortedStepPoints.hh"
 //#include "MCDataProducts/inc/StepPointMCCollection.hh"
 
 using namespace std;

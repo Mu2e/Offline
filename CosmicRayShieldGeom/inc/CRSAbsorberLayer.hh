@@ -3,9 +3,6 @@
 //
 // Representation of one Absorber Layer in  CosmicRayShield
 //
-// $Id: CRSAbsorberLayer.hh,v 1.1 2014/02/10 14:23:03 ehrlich Exp $
-// $Author: ehrlich $
-// $Date: 2014/02/10 14:23:03 $
 //
 
 #include <vector>

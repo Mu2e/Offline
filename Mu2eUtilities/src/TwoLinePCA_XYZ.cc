@@ -3,14 +3,16 @@
 // approach between the two lines.  The lines are
 // specified in point-slope form.
 //
-// $Id: TwoLinePCA_XYZ.cc,v 1.4 2011/05/18 02:27:19 wb Exp $
-// $Author: wb $
-// $Date: 2011/05/18 02:27:19 $
 //
 // Original author Rob Kutschke
 //
 
 #include <iostream>
+
+#include "DataProducts/inc/XYZVec.hh"
+#include "Math/GenVector/Cartesian3D.h"
+#include "Math/GenVector/DisplacementVector3D.h"
+
 #include "Mu2eUtilities/inc/TwoLinePCA_XYZ.hh"
 
 using namespace std;

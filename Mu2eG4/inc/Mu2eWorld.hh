@@ -4,9 +4,6 @@
 // Construct the Mu2e G4 world and serve information about that world.
 // Note that the class inherits from Mu2eUniverse now
 //
-// $Id: Mu2eWorld.hh,v 1.46 2013/03/29 05:45:03 gandr Exp $
-// $Author: gandr $
-// $Date: 2013/03/29 05:45:03 $
 //
 // Original author Rob Kutschke
 //

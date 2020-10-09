@@ -1,7 +1,4 @@
 //
-// $Id: LineFinder_module.cc,v 1.2 2014/08/30 12:19:38 tassiell Exp $
-// $Author: tassiell $
-// $Date: 2014/08/30 12:19:38 $
 //
 // Original author D. Brown and G. Tassielli
 //
@@ -15,6 +12,8 @@
 #include "art_root_io/TFileService.h"
 #include "art/Utilities/make_tool.h"
 #include "canvas/Persistency/Common/Ptr.h"
+
+#include "ProditionsService/inc/ProditionsHandle.hh"
 
 #include "GeometryService/inc/GeomHandle.hh"
 #include "GeometryService/inc/DetectorSystem.hh"
@@ -76,6 +75,8 @@ namespace mu2e{
       art::InputTag  _chToken;
       art::InputTag  _tcToken;
 
+      ProditionsHandle<Tracker> _alignedTracker_h;
+
       int findLine(const ComboHitCollection& shC, art::Event const& event, CosmicTrackSeed &tseed);
   };
 
@@ -94,7 +95,7 @@ namespace mu2e{
   consumes<ComboHitCollection>(_chToken);
   consumes<TimeClusterCollection>(_tcToken);
   produces<CosmicTrackSeedCollection>();
-	    
+
  }
 
 void LineFinder::produce(art::Event& event ) {
@@ -112,10 +113,10 @@ void LineFinder::produce(art::Event& event ) {
     const auto& tclust = tccol[index];
 
     ComboHitCollection tchits;
-    
+
     int nhits = 0;
-    std::vector<ComboHitCollection::const_iterator> chids;  
-    chcol.fillComboHits(event, tclust.hits(), chids); 
+    std::vector<ComboHitCollection::const_iterator> chids;
+    chcol.fillComboHits(event, tclust.hits(), chids);
     for (auto const& it : chids){
       tchits.push_back(it[0]);
       nhits += it[0].nStrawHits();
@@ -138,19 +139,19 @@ void LineFinder::produce(art::Event& event ) {
     }
   }
 
-  event.put(std::move(seed_col));    
+  event.put(std::move(seed_col));
 }
 
 int LineFinder::findLine(const ComboHitCollection& shC, art::Event const& event, CosmicTrackSeed& tseed){
 
-  mu2e::GeomHandle<mu2e::Tracker> th;
-  auto tracker = th.get();
+  //mu2e::GeomHandle<mu2e::Tracker> th;
+  auto tracker = _alignedTracker_h.getPtr(event.id());//th.get();
   int bestcount = 0;
   double bestll = 0;
-  
+
   CLHEP::Hep3Vector seedDir(0,0,0);
   CLHEP::Hep3Vector seedInt(0,0,0);
- 
+
   // lets get the best pairwise vector
   for (size_t i=0;i<shC.size();i++){
     Straw const& strawi = tracker->getStraw(shC[i].strawId());
@@ -211,32 +212,32 @@ int LineFinder::findLine(const ComboHitCollection& shC, art::Event const& event,
     seedDir /= seedDir.z();
     seedInt -= seedDir*seedInt.z()/seedDir.z();
   }
-  
-  tseed._track.FitParams.A0 = seedInt.x(); 
-  tseed._track.FitParams.B0 = seedInt.y(); 
-  tseed._track.FitParams.A1 = seedDir.x(); 
-  tseed._track.FitParams.B1 = seedDir.y(); 
+
+  tseed._track.FitParams.A0 = seedInt.x();
+  tseed._track.FitParams.B0 = seedInt.y();
+  tseed._track.FitParams.A1 = seedDir.x();
+  tseed._track.FitParams.B1 = seedDir.y();
   XYZVec X(1,0,0);
   XYZVec Y(0,1,0);
   XYZVec Z(0,0,1);
   TrackAxes XYZ(X,Y,Z);
-  tseed._track.InitCoordSystem = XYZ; 
-  tseed._track.FitCoordSystem = XYZ; 
+  tseed._track.InitCoordSystem = XYZ;
+  tseed._track.FitCoordSystem = XYZ;
   TrackEquation XYZTrack(Geom::toXYZVec(seedInt), Geom::toXYZVec(seedDir));
   tseed._track.SetFitEquation(XYZTrack);
 
   // For compatibility FIXME
-  for(size_t ich= 0; ich<tseed._straw_chits.size(); ich++){  
-    std::vector<StrawHitIndex> shitids;          	          		
-    tseed._straw_chits.fillStrawHitIndices(event, ich, shitids);  
+  for(size_t ich= 0; ich<tseed._straw_chits.size(); ich++){
+    std::vector<StrawHitIndex> shitids;
+    tseed._straw_chits.fillStrawHitIndices(event, ich, shitids);
 
-    for(auto const& ids : shitids){ 
+    for(auto const& ids : shitids){
       size_t    istraw   = (ids);
       TrkStrawHitSeed tshs;
       tshs._index  = istraw;
       tshs._t0 = tseed._t0;
-      tseed._trkstrawhits.push_back(tshs); 
-    }  
+      tseed._trkstrawhits.push_back(tshs);
+    }
   }
 
   return good_hits;

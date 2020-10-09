@@ -31,7 +31,6 @@
 #include "TChain.h"
 #include "TCut.h"
 #include "TFile.h"
-// @(#)root/tmva $Id: CreateMVAFactory.h,v 1.2 2014/05/31 14:28:10 brownd Exp $
 /**********************************************************************************
  * Project   : TMVA - a ROOT-integrated toolkit for multivariate data analysis    *
  * Package   : TMVA                                                               *

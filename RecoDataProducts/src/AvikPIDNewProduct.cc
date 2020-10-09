@@ -1,7 +1,4 @@
 //
-//  $Id: 
-//  $Author: 
-//  $Date: 
 //
 //  cloned from RecoDataProducts/src/PIDProduct.cc by Vadim Rusu
 //

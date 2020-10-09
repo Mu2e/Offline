@@ -3,9 +3,6 @@
 //
 // Shoots a single particle gun and puts its output into a generated event.
 //
-// $Id: ParticleGun.hh,v 1.12 2012/02/17 18:31:40 mu2ecvs Exp $
-// $Author: mu2ecvs $
-// $Date: 2012/02/17 18:31:40 $
 //
 // Original author Rob Kutschke
 // Modified  by MyeongJae Lee. See docdb-2049
