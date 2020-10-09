@@ -303,6 +303,7 @@ namespace mu2e {
        h.GetXaxis()->SetTitle("Time (ns)");
        h.GetYaxis()->SetTitle("Amplitude"); 
        h.SetStats(0);
+       h.SetMinimum(0);
 
        TF1 f("f",fitfunctionPlot,xvec_[x0_],xvec_[x1_-1],param_.size());
        for (unsigned i=0;i<param_.size();++i) f.SetParameter(i,param_[i]);       

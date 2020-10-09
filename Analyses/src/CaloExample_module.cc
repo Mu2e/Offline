@@ -365,7 +365,12 @@ namespace mu2e {
            }
  
            float cryDT(999);
-           if (hit.recoCaloDigis().size()==2) cryDT = std::abs(hit.recoCaloDigis().at(1)->time()- hit.recoCaloDigis().at(0)->time());
+           if (hit.recoCaloDigis().size()==2)
+           {
+              if (hit.recoCaloDigis().at(0)->ROid()%2==0) cryDT = hit.recoCaloDigis().at(1)->time()- hit.recoCaloDigis().at(0)->time();
+              else                                     cryDT = hit.recoCaloDigis().at(0)->time()- hit.recoCaloDigis().at(1)->time();
+           } 
+ 
  
            cryId_[nHits_]        = hit.id();
            crySectionId_[nHits_] = diskId;
