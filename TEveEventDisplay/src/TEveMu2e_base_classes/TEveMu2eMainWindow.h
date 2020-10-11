@@ -42,6 +42,8 @@ class TGCanvas;
 class TRootEmbeddedCanvas;
 class TGTextButton;
 class TText;
+class TGSplitFrame;
+class TGLOverlayButton;
 namespace mu2e{
 	class TEveMu2eMainWindow : public TGMainFrame {
     public:
@@ -54,16 +56,16 @@ namespace mu2e{
       virtual ~TEveMu2eMainWindow(){};
       enum ETestComandIdentifiers{HId1, HId2, HId3};
       void StartProjectionTabs();
-      void StartTrackerProjectionTab();
+      void CreateMultiViews();
+
       void PrepareTrackerProjectionTab(const art::Run& run);
-      //void StartCaloProjectionTab();
+
       void PrepareCaloProjectionTab(const art::Run& run);
-      //void StartCRVProjectionTab();
+
       void PrepareCRVProjectionTab(const art::Run& run);
-      void CreateGUI(TGMainFrame* frmMain, TEveBrowser *browser);
+      void CreateGUI();
       void SetRunGeometry(const art::Run& run, int _diagLevel, bool _showBuilding, bool _showDSOnly, bool _showCRV);
       void RedrawDataProducts(std::string type);
-      void RedrawGeometry();
       Bool_t ProcessMessage(Long_t msg, Long_t param1, Long_t param2);
       void  setEvent(const art::Event& event, bool firstLoop, Data_Collections &data, double time, bool show2D, bool accumulate);
       void  fillEvent(bool firstLoop=false);
@@ -80,7 +82,35 @@ namespace mu2e{
       TEveMu2eMCInterface *pass_mc	=new TEveMu2eMCInterface(); 
       TEveMu2eProjectionInterface *pass_proj = new TEveMu2eProjectionInterface();
       int eventToFind, runToFind;
-
+	TEveViewer *v;
+	TEvePad *fPad;
+	TGSplitFrame *fSplitFrame;
+   TGSplitFrame *frm;
+	TGLEmbeddedViewer *fViewer0;
+	TGLEmbeddedViewer *fViewer1;
+	TGLEmbeddedViewer *fViewer2;
+	TGLEmbeddedViewer *fViewer3;
+	TGLEmbeddedViewer *fViewer4;
+	TGLEmbeddedViewer *fActViewer;
+	TGTab *tab;
+	Bool_t fIsEmbedded;
+	TGCompositeFrame *test;
+	TEveViewer *fViewer[5];
+	TEveProjectionManager *fRPhiMgr;
+	TEveProjectionManager *fRhoZMgr;
+	TEveProjectionManager *fXYMgr;
+TEveProjectionManager *gRPhiMgr = 0;
+TEveProjectionManager *gRhoZMgr = 0;
+TEveProjectionManager *TfXYMgr = 0;
+TEveProjectionManager *TfRZMgr = 0;
+TEveProjectionManager *CfXYMgr = 0;
+TEveProjectionManager *CfRZMgr = 0;
+TGMainFrame* frmMain;
+TEveBrowser* browser;
+   TEveScene *s = 0;
+   TEveScene *fdetXY = 0;
+   TEveScene *fevtXY = 0;
+   TGLOverlayButton *but1, *but2, *but3, *but4, *but5, *but6;
       TGTextEntry     *fTeRun,*fTeEvt, *fTTEvt, *fTeh1, *fTeh2, *fTeh3, *cminenergy, *cmaxenergy, *hminenergy, *hmaxenergy;    
       TGHSlider       *fTHSlid;
       TGLabel         *fTlRun,*fTlEvt, *fTlTEvt, *fTlHSlid, *celabel, *helabel, *spacer, *spacer1;

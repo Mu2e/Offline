@@ -32,6 +32,7 @@ namespace mu2e{
   }
 
 
+
   void TEveMu2eProjectionInterface::CreateCaloProjection(TEveMu2e2DProjection *calo2Dproj){
     // Create detector and event scenes for ortho views
     calo2Dproj->fDetXYScene = gEve->SpawnNewScene("Calo XY D0 Scene", "");
@@ -74,6 +75,7 @@ namespace mu2e{
     calo2Dproj->fRZView->AddScene(calo2Dproj->fDetRZScene);
     calo2Dproj->fRZView->AddScene(calo2Dproj->fEvtRZScene);
 
+    
    // gEve->GetBrowser()->GetTabRight()->SetTab(0);
   }
 

@@ -92,15 +92,16 @@ namespace mu2e
       application_ = new TApplication( "noapplication", &tmp_argc, tmp_argv );
     }
     _frame = new TEveMu2eMainWindow(gClient->GetRoot(), 1000,600, _pset);
-    if(_show2D) _frame->StartProjectionTabs();
+    _frame->StartProjectionTabs();
   
   }
 
 
   void TEveEventDisplay::beginRun(const art::Run& run){
     _frame->SetRunGeometry(run, _diagLevel, _showBuilding, _showDSOnly, _showCRV);
-    if(_show2D) _frame->PrepareTrackerProjectionTab(run);
-    if(_show2D) _frame->PrepareCaloProjectionTab(run);
+    _frame->PrepareTrackerProjectionTab(run);
+    //if(_show2D) 
+    _frame->PrepareCaloProjectionTab(run);
   }
 
 
