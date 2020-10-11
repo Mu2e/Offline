@@ -12,7 +12,7 @@ namespace mu2e{
 	public:
         #ifndef __CINT__	
 	void CreateCRVProjection(TEveMu2e2DProjection *CRV2Dproj);
-	void CreateCaloProjection(TEveMu2e2DProjection *calo2DProj);
+	void CreateCaloProjection(TEveMu2e2DProjection *calo2Dproj);
 	void CreateTrackerProjection(TEveMu2e2DProjection *tracker2DProj);
 	#endif
 	ClassDef(TEveMu2eProjectionInterface,0);
