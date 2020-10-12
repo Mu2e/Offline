@@ -83,10 +83,10 @@ TrkHitRecoTrigger : {
     # SEQUENCES
     # production sequence to prepare hits for tracking
     sequences: {
-	TTprepareHits     : [ TTPBTFSD, TTmakeSH, TTmakePH,TTflagBkgHits ]
-	TTprepareHitsUCC  : [ TTPBTFSD, TTmakeSHUCC, TTmakePHUCC, TTflagBkgHitsUCC ]
-	TTmakefastHits    : [ TTPBTFSD, TTmakeSH, TTmakePH ]
-	TTSprepareHits    : [ TTPBTFSD, TTmakeSH, TTSmakePH, TTmakeSTH ,TTSflagBkgHits ]
+	TTprepareHits     : [ TTmakeSH, TTmakePH,TTflagBkgHits ]
+	TTprepareHitsUCC  : [ TTmakeSHUCC, TTmakePHUCC, TTflagBkgHitsUCC ]
+	TTmakefastHits    : [ TTmakeSH, TTmakePH ]
+	TTSprepareHits    : [ TTmakeSH, TTSmakePH, TTmakeSTH ,TTSflagBkgHits ]
     }
 }
 

@@ -33,7 +33,7 @@ namespace mu2e {
       using Comment=fhicl::Comment;
       struct Config {
         fhicl::Atom<float> systemClockSpeed{ Name("SystemClockSpeed"), Comment("Detector clock speed in MHz"), 40.0};
-        fhicl::Atom<float> constantOffset{ Name("ConstantTimeOffset"), Comment("Constant time offset correction in ns"), 0.0};
+        fhicl::Atom<float> timeFromProtonsToDRMarker{ Name("TimeFromProtonsToDRMarker"), Comment("Time shift in ns of DR marker wrt to proton peak"), 0.0};
         fhicl::Atom<unsigned> spillType { Name( "SpillType"), Comment("Whether simulating on or off spill"), EventWindowMarker::SpillType::onspill};
         fhicl::Atom<unsigned> offSpillLength{ Name("OffSpillEventLength"), Comment("Length of off spill events in clock counts" ),4000};
         fhicl::Atom<int> onSpillBins{ Name("OnSpillBins"), Comment("Number of microbunches before proton bunch phase repeats"), 5};
@@ -51,7 +51,7 @@ namespace mu2e {
       void produce(art::Event& event) override;
 
       float _systemClockSpeed;
-      float _constantOffset;
+      float _timeFromProtonsToDRMarker;
       EventWindowMarker::SpillType _spillType;
       uint16_t _offSpillLength;
       int _onSpillBins;
@@ -68,7 +68,7 @@ namespace mu2e {
   EventWindowMarkerProducer::EventWindowMarkerProducer(Parameters const& config):
     art::EDProducer{config},
     _systemClockSpeed( config().systemClockSpeed()), // MHz
-    _constantOffset( config().constantOffset()), // ns (is a calibration value to get data/sim agreement)
+    _timeFromProtonsToDRMarker( config().timeFromProtonsToDRMarker()), // ns (is a calibration value to get data/sim agreement)
     _spillType(static_cast<EventWindowMarker::SpillType>( config().spillType())),
     _offSpillLength( config().offSpillLength()),
     _onSpillBins( config().onSpillBins()),
@@ -96,15 +96,15 @@ namespace mu2e {
       unique_ptr<EventWindowMarker> marker(new EventWindowMarker);
       unique_ptr<ProtonBunchTimeMC> pbtmc(new ProtonBunchTimeMC);
       unique_ptr<ProtonBunchTime> pbt(new ProtonBunchTime);
-      marker.get()->_spillType = _spillType;
+      marker->_spillType = _spillType;
 
-      double period = 1/_systemClockSpeed*1000;
+      double period = (1/_systemClockSpeed)*1000; // in ns
 
       if (_spillType == EventWindowMarker::SpillType::offspill){
-        pbtmc.get()->pbtime_ = 0;
-        pbt.get()->pbtime_ = 0;
-        pbt.get()->pbterr_ = 0;
-        marker.get()->_eventLength = _offSpillLength*period;
+        pbtmc->pbtime_ = 0;
+        pbt->pbtime_ = 0;
+        pbt->pbterr_ = 0;
+        marker->_eventLength = _offSpillLength*period;
       }else{
         // calculate which bin we are in from event number
         int bin = event.id().event() % _onSpillBins;
@@ -117,19 +117,21 @@ namespace mu2e {
         // when phase shift would be > than one clock period by next microbunch
         // the event window is one clock tick shorter
         if (phaseShift < -1*period - shiftPer)
-          marker.get()->_eventLength = (_onSpillMaxLength-1)*period;
+          marker->_eventLength = (_onSpillMaxLength-1)*period;
         else
-          marker.get()->_eventLength = _onSpillMaxLength*period;
+          marker->_eventLength = _onSpillMaxLength*period;
 
-        pbtmc.get()->pbtime_ = _constantOffset + phaseShift;
+        // we set pbtime to be the time of the proton bunch in terms of the DAQ clock
+        // t=0 (which is determined by the event window marker arrival time)
+        pbtmc->pbtime_ = _timeFromProtonsToDRMarker + phaseShift;
         if (_recoFromMCTruth){
-          pbt.get()->pbtime_ = pbtmc.get()->pbtime_;
+          pbt->pbtime_ = pbtmc.get()->pbtime_;
           if (_recoFromMCTruthErr > 0)
-            pbt.get()->pbtime_ += _randgauss.fire(0,_recoFromMCTruthErr); 
-          pbt.get()->pbterr_ = _recoFromMCTruthErr;
+            pbt->pbtime_ += _randgauss.fire(0,_recoFromMCTruthErr); 
+          pbt->pbterr_ = _recoFromMCTruthErr;
         }else{
-          pbt.get()->pbtime_ = -1*period/2.;
-          pbt.get()->pbterr_ = period/sqrt(12);
+          pbt->pbtime_ = -1*period/2.;
+          pbt->pbterr_ = period/sqrt(12);
         }
       }
 
