@@ -31,19 +31,8 @@ namespace mu2e {
       _effs[name] = new_val;
     }
 
-    const std::string print() const {
-      std::stringstream out;
-      print(out);
-      return out.str();
-    }
-
-    void print(std::ostream& os) const {
-      os << "Efficiencies in " << _name << ":" << std::endl;
-      for (const auto& i_eff : _effs) {
-        os << i_eff.first << " = " << i_eff.second << std::endl;
-      }
-      os << std::endl;
-    }
+    const std::string print() const;
+    void print(std::ostream& os) const;
 
     // typedefs
     typedef std::shared_ptr<SimBookkeeper> ptr_t;
