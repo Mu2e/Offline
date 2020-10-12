@@ -9,7 +9,15 @@ CommonMC: {
   producers: {
 # time maps
     protonTimeMap: { module_type : GenerateProtonTimes }
-    muonTimeMap:   { module_type : GenerateMuonLife }
+    muonTimeMap:   { 
+	module_type : GenerateMuonLife 
+	applyToGenIds : [ "StoppedParticleReactionGun", "dioTail", 
+			  "ExternalRMC", "InternalRMC", 
+			  "MuCapProtonGenTool", "MuCapDeuteronGenTool", "DIOGenTool", 
+			  "MuCapNeutronGenTool", "MuCapPhotonGenTool", 
+			  "MuCapGammaRayGenTool" 
+                         ]
+    }
     cosmicTimeMap: 
     { 
 	module_type : GenerateCosmicTimes
