@@ -223,95 +223,98 @@ void art::StrawAndCaloDigisFromFragments::analyze_tracker_(
     if (hdr.GetPacketCount() > 0 && parseTRK_ > 0) {
 
       // Create the StrawDigi data products
-      auto trkData = cc.GetTrackerData(curBlockIdx);
-      if (trkData == nullptr) {
+      auto trkDataVec = cc.GetTrackerData(curBlockIdx);
+      if (trkDataVec.empty()) {
         mf::LogError("StrawAndCaloDigisFromFragments")
             << "Error retrieving Tracker data from DataBlock " << curBlockIdx
             << "! Aborting processing of this block!";
         continue;
       }
 
-      mu2e::StrawId sid(trkData->StrawIndex);
-      mu2e::TrkTypes::TDCValues tdc = {trkData->TDC0(), trkData->TDC1()};
-      mu2e::TrkTypes::TOTValues tot = {trkData->TOT0, trkData->TOT1};
+      for (auto& trkDataPair : trkDataVec) {
 
-      //	///////////////////////////////////////////////////////////////////////////
-      //	// NOTE: Because the tracker code in offline has not been updated to
-      //	// use 15 samples, it is necessary to add an extra sample in order to
-      //	// initialize an ADCWaveform that can be passed to the StrawDigi
-      //	// constructor. This means that the digis produced by StrawAndCaloDigisFromFragments
-      //	// will differ from those processed in offline so the filter performance
-      //	// will be different. This is only temporary.
-      //	std::array<adc_t,15> const & shortWaveform = cc.DBT_Waveform(pos);
-      //	mu2e::TrkTypes::ADCWaveform wf;
-      //	for(size_t i=0; i<15; i++) {
-      //	  wf[i] = shortWaveform[i];
-      //	}
-      //	wf[15] = 0;
-      //	///////////////////////////////////////////////////////////////////////////
+        mu2e::StrawId sid(trkDataPair.first.StrawIndex);
+        mu2e::TrkTypes::TDCValues tdc = {trkDataPair.first.TDC0(), trkDataPair.first.TDC1()};
+        mu2e::TrkTypes::TOTValues tot = {trkDataPair.first.TOT0, trkDataPair.first.TOT1};
 
-      mu2e::TrkTypes::ADCWaveform wf = cc.GetWaveform(curBlockIdx);
-      
-      // Fill the StrawDigiCollection
-      straw_digis->emplace_back(sid, tdc, tot, wf);
+        //	///////////////////////////////////////////////////////////////////////////
+        //	// NOTE: Because the tracker code in offline has not been updated to
+        //	// use 15 samples, it is necessary to add an extra sample in order to
+        //	// initialize an ADCWaveform that can be passed to the StrawDigi
+        //	// constructor. This means that the digis produced by StrawAndCaloDigisFromFragments
+        //	// will differ from those processed in offline so the filter performance
+        //	// will be different. This is only temporary.
+        //	std::array<adc_t,15> const & shortWaveform = cc.DBT_Waveform(pos);
+        //	mu2e::TrkTypes::ADCWaveform wf;
+        //	for(size_t i=0; i<15; i++) {
+        //	  wf[i] = shortWaveform[i];
+        //	}
+        //	wf[15] = 0;
+        //	///////////////////////////////////////////////////////////////////////////
+               
 
-      if (diagLevel_ > 1) {
-        std::cout << "MAKEDIGI: " << sid.asUint16() << " " << tdc[0] << " " << tdc[1] << " "
-                  << tot[0] << " " << tot[1] << " ";
-        for (size_t i = 0; i < mu2e::TrkTypes::NADC; i++) {
-          std::cout << wf[i];
-          if (i < mu2e::TrkTypes::NADC - 1) {
-            std::cout << " ";
+        // Fill the StrawDigiCollection
+        straw_digis->emplace_back(sid, tdc, tot, trkDataPair.second);
+
+        if (diagLevel_ > 1) {
+          std::cout << "MAKEDIGI: " << sid.asUint16() << " " << tdc[0] << " " << tdc[1] << " "
+                    << tot[0] << " " << tot[1] << " ";
+          for (size_t i = 0; i < mu2e::TrkTypes::NADC; i++) {
+            std::cout << trkDataPair.second[i];
+            if (i < mu2e::TrkTypes::NADC - 1) {
+              std::cout << " ";
+            }
           }
-        }
-        std::cout << std::endl;
+          std::cout << std::endl;
 
-        std::cout << std::endl;
+          std::cout << std::endl;
 
-        std::cout << "strawIdx: " << sid.asUint16() << std::endl;
-        std::cout << "TDC0: " << tdc[0] << std::endl;
-        std::cout << "TDC1: " << tdc[1] << std::endl;
-        std::cout << "TOT0: " << tot[0] << std::endl;
-        std::cout << "TOT1: " << tot[1] << std::endl;
-        std::cout << "Waveform: {";
-        for (size_t i = 0; i < mu2e::TrkTypes::NADC; i++) {
-          std::cout << wf[i];
-          if (i < mu2e::TrkTypes::NADC - 1) {
-            std::cout << ",";
+          std::cout << "strawIdx: " << sid.asUint16() << std::endl;
+          std::cout << "TDC0: " << tdc[0] << std::endl;
+          std::cout << "TDC1: " << tdc[1] << std::endl;
+          std::cout << "TOT0: " << tot[0] << std::endl;
+          std::cout << "TOT1: " << tot[1] << std::endl;
+          std::cout << "Waveform: {";
+          for (size_t i = 0; i < mu2e::TrkTypes::NADC; i++) {
+            std::cout << trkDataPair.second[i];
+            if (i < mu2e::TrkTypes::NADC - 1) {
+              std::cout << ",";
+            }
           }
-        }
-        std::cout << "}" << std::endl;
+          std::cout << "}" << std::endl;
 
-        std::cout << "FPGA Flags: ";
-        for (size_t i = 8; i < 16; i++) {
-          if (((0x0001 << (15 - i)) & trkData->ErrorFlags) > 0) {
-            std::cout << "1";
-          } else {
-            std::cout << "0";
+          std::cout << "FPGA Flags: ";
+          for (size_t i = 8; i < 16; i++) {
+            if (((0x0001 << (15 - i)) & trkDataPair.first.ErrorFlags) > 0) {
+              std::cout << "1";
+            } else {
+              std::cout << "0";
+            }
           }
-        }
-        std::cout << std::endl;
+          std::cout << std::endl;
 
-        std::cout << "LOOP: " << hdr.GetTimestamp().GetTimestamp(true) << " " << curBlockIdx << std::endl;
+          std::cout << "LOOP: " << hdr.GetTimestamp().GetTimestamp(true) << " " << curBlockIdx
+                    << std::endl;
 
-        // Text format: timestamp strawidx tdc0 tdc1 nsamples sample0-11
-        // Example: 1 1113 36978 36829 12 1423 1390 1411 1354 2373 2392 2342 2254 1909 1611 1525
-        // 1438
-        std::cout << "GREPMETRK: " << hdr.GetTimestamp().GetTimestamp(true) << " ";
-        std::cout << sid.asUint16() << " ";
-        std::cout << tdc[0] << " ";
-        std::cout << tdc[1] << " ";
-        std::cout << tot[0] << " ";
-        std::cout << tot[1] << " ";
-        std::cout << wf.size() << " ";
-        for (size_t i = 0; i < mu2e::TrkTypes::NADC; i++) {
-          std::cout << wf[i];
-          if (i < mu2e::TrkTypes::NADC - 1) {
-            std::cout << " ";
+          // Text format: timestamp strawidx tdc0 tdc1 nsamples sample0-11
+          // Example: 1 1113 36978 36829 12 1423 1390 1411 1354 2373 2392 2342 2254 1909 1611 1525
+          // 1438
+          std::cout << "GREPMETRK: " << hdr.GetTimestamp().GetTimestamp(true) << " ";
+          std::cout << sid.asUint16() << " ";
+          std::cout << tdc[0] << " ";
+          std::cout << tdc[1] << " ";
+          std::cout << tot[0] << " ";
+          std::cout << tot[1] << " ";
+          std::cout << trkDataPair.second.size() << " ";
+          for (size_t i = 0; i < mu2e::TrkTypes::NADC; i++) {
+            std::cout << trkDataPair.second[i];
+            if (i < mu2e::TrkTypes::NADC - 1) {
+              std::cout << " ";
+            }
           }
-        }
-        std::cout << std::endl;
-      } // End debug output
+          std::cout << std::endl;
+        } // End debug output
+      }
     }
   }
 }
