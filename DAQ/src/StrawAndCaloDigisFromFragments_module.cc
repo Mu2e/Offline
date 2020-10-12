@@ -233,9 +233,9 @@ void art::StrawAndCaloDigisFromFragments::analyze_tracker_(
 
       for (auto& trkDataPair : trkDataVec) {
 
-        mu2e::StrawId sid(trkDataPair.first.StrawIndex);
-        mu2e::TrkTypes::TDCValues tdc = {trkDataPair.first.TDC0(), trkDataPair.first.TDC1()};
-        mu2e::TrkTypes::TOTValues tot = {trkDataPair.first.TOT0, trkDataPair.first.TOT1};
+        mu2e::StrawId sid(trkDataPair.first->StrawIndex);
+        mu2e::TrkTypes::TDCValues tdc = {trkDataPair.first->TDC0(), trkDataPair.first->TDC1()};
+        mu2e::TrkTypes::TOTValues tot = {trkDataPair.first->TOT0, trkDataPair.first->TOT1};
 
         //	///////////////////////////////////////////////////////////////////////////
         //	// NOTE: Because the tracker code in offline has not been updated to
@@ -285,7 +285,7 @@ void art::StrawAndCaloDigisFromFragments::analyze_tracker_(
 
           std::cout << "FPGA Flags: ";
           for (size_t i = 8; i < 16; i++) {
-            if (((0x0001 << (15 - i)) & trkDataPair.first.ErrorFlags) > 0) {
+            if (((0x0001 << (15 - i)) & trkDataPair.first->ErrorFlags) > 0) {
               std::cout << "1";
             } else {
               std::cout << "0";
@@ -317,6 +317,8 @@ void art::StrawAndCaloDigisFromFragments::analyze_tracker_(
       }
     }
   }
+
+  cc.ClearUpgradedPackets();
 }
 
 void art::StrawAndCaloDigisFromFragments::analyze_calorimeter_(
