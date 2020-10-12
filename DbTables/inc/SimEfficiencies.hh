@@ -41,8 +41,7 @@ namespace mu2e {
     std::vector<Row> const& rows() const {return _rows;}
     std::size_t nrow() const override { return _rows.size(); };
     //    virtual std::size_t nrowFix() const { return 3; };
-    size_t size() const override { return _csv.capacity() +
-        + nrow()*nrow()/2 + nrow()*sizeof(Row); };
+    size_t size() const override { return _csv.capacity(); };
 
     void addRow(const std::vector<std::string>& columns) override {
       //      int idx = std::stoi(columns[0]);
@@ -57,7 +56,7 @@ namespace mu2e {
       sstream << r.tag()<<",";
       sstream << r.numerator()<<",";
       sstream << r.denominator()<<",";
-      sstream << r.eff();
+      sstream << std::fixed << std::setprecision(6) << r.eff();
     }
 
     void findEff(std::string name, double& eff) const {

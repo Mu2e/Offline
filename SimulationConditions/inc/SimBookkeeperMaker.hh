@@ -15,7 +15,7 @@ namespace mu2e {
   public:
     SimBookkeeperMaker(SimBookkeeperConfig const& config):_config(config) {}
 
-    typename SimBookkeeper::ptr_t fromFcl() {
+    SimBookkeeper::ptr_t fromFcl() {
       auto ptr = std::make_shared<SimBookkeeper>();
       for (const auto& i_effConf : _config.simStageEfficiencies()) {
         ptr->addEff(i_effConf.tag(), i_effConf.eff());
@@ -23,7 +23,7 @@ namespace mu2e {
       return ptr;
     }
 
-    typename SimBookkeeper::ptr_t fromDb(typename SimEfficiencies::cptr_t effDb) {
+    SimBookkeeper::ptr_t fromDb(SimEfficiencies::cptr_t effDb) {
       // fill the SimBookkeeper with initial values
       auto ptr = fromFcl();
       // now overwrite with values from database

@@ -11,7 +11,7 @@
 
 namespace mu2e {
 
-  class SimBookkeeper : virtual public ProditionsEntity {
+  class SimBookkeeper : public ProditionsEntity {
 
   public:
     SimBookkeeper() : _name("SimBookkeeper") {}
