@@ -236,9 +236,9 @@ void FragmentAna::analyze_tracker_(const artdaq::Fragment& f) {
       }
 
       for (auto& trkDataPair : trkDataVec) {
-        mu2e::StrawId sid(trkDataPair.first.StrawIndex);
-        mu2e::TrkTypes::TDCValues tdc = {trkDataPair.first.TDC0(), trkDataPair.first.TDC1()};
-        mu2e::TrkTypes::TOTValues tot = {trkDataPair.first.TOT0, trkDataPair.first.TOT1};
+        mu2e::StrawId sid(trkDataPair.first->StrawIndex);
+        mu2e::TrkTypes::TDCValues tdc = {trkDataPair.first->TDC0(), trkDataPair.first->TDC1()};
+        mu2e::TrkTypes::TOTValues tot = {trkDataPair.first->TOT0, trkDataPair.first->TOT1};
         int sum{0};
         unsigned short maxadc{0};
         for (auto adc : trkDataPair.second) {
@@ -259,6 +259,8 @@ void FragmentAna::analyze_tracker_(const artdaq::Fragment& f) {
       }
     }
   }
+
+  cc.ClearUpgradedPackets();
 }
 
 void FragmentAna::analyze_calorimeter_(const artdaq::Fragment& f) {
