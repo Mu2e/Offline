@@ -228,34 +228,35 @@ void FragmentAna::analyze_tracker_(const artdaq::Fragment& f) {
     if (hdr.GetPacketCount() > 0 && parseTRK_ > 0) {
 
       // Create the StrawDigi data products
-      auto trkData = cc.GetTrackerData(curBlockIdx);
-      if (trkData == nullptr) {
+      auto trkDataVec = cc.GetTrackerData(curBlockIdx);
+      if (trkDataVec.empty()) {
         mf::LogError("FragmentAna") << "Error retrieving Tracker data from DataBlock "
                                     << curBlockIdx << "! Aborting processing of this block!";
         continue;
       }
 
-      mu2e::StrawId sid(trkData->StrawIndex);
-      mu2e::TrkTypes::TDCValues tdc = {trkData->TDC0(), trkData->TDC1()};
-      mu2e::TrkTypes::TOTValues tot = {trkData->TOT0, trkData->TOT1};
-      mu2e::TrkTypes::ADCWaveform adcs = cc.GetWaveform(curBlockIdx);
-      int sum{0};
-      unsigned short maxadc{0};
-      for (auto adc : adcs) {
-        sum += adc;
-        maxadc = std::max(maxadc, adc);
+      for (auto& trkDataPair : trkDataVec) {
+        mu2e::StrawId sid(trkDataPair.first.StrawIndex);
+        mu2e::TrkTypes::TDCValues tdc = {trkDataPair.first.TDC0(), trkDataPair.first.TDC1()};
+        mu2e::TrkTypes::TOTValues tot = {trkDataPair.first.TOT0, trkDataPair.first.TOT1};
+        int sum{0};
+        unsigned short maxadc{0};
+        for (auto adc : trkDataPair.second) {
+          sum += adc;
+          maxadc = std::max(maxadc, adc);
+        }
+        // Fill the StrawDigiCollection
+        _hTrkStrawId->Fill(sid.asUint16());
+        _hTrkTDC[0]->Fill(tdc[0]);
+        _hTrkTDC[1]->Fill(tdc[1]);
+        _hTrkTDC[2]->Fill((tdc[0] + tdc[1]) / 2.);
+        _hTrkTDC[3]->Fill(tdc[1] - tdc[0]);
+        _hTrkTOT->Fill((tot[0] + tot[1]) / 2.);
+        int mean = (trkDataPair.second.size() != 0) ? sum / trkDataPair.second.size() : -1.;
+        _hTrkMeanADC->Fill(mean);
+        _hTrkMaxADC->Fill(maxadc);
+        _hTrkWfSize->Fill(trkDataPair.second.size());
       }
-      // Fill the StrawDigiCollection
-      _hTrkStrawId->Fill(sid.asUint16());
-      _hTrkTDC[0]->Fill(tdc[0]);
-      _hTrkTDC[1]->Fill(tdc[1]);
-      _hTrkTDC[2]->Fill((tdc[0] + tdc[1]) / 2.);
-      _hTrkTDC[3]->Fill(tdc[1] - tdc[0]);
-      _hTrkTOT->Fill((tot[0] + tot[1]) / 2.);
-      int mean = (adcs.size() != 0) ? sum / adcs.size() : -1.;
-      _hTrkMeanADC->Fill(mean);
-      _hTrkMaxADC->Fill(maxadc);
-      _hTrkWfSize->Fill(adcs.size());
     }
   }
 }
