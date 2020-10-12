@@ -41,7 +41,7 @@ namespace mu2e {
     std::vector<Row> const& rows() const {return _rows;}
     std::size_t nrow() const override { return _rows.size(); };
     //    virtual std::size_t nrowFix() const { return 3; };
-    size_t size() const override { return _csv.capacity(); };
+    size_t size() const override { return _csv.capacity() + nrow()*sizeof(Row); };
 
     void addRow(const std::vector<std::string>& columns) override {
       //      int idx = std::stoi(columns[0]);
