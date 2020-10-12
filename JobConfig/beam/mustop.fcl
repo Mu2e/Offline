@@ -80,13 +80,6 @@ physics.producers.generate: {
    decayProducts : [ @local::dioGenTool ] 
 }
 
-physics.analyzers.genAnalyzer : { module_type : GenParticlesAnalyzer
-			      	  inputs : "generate"
-}
-
-physics.ana : [ genAnalyzer ]
-physics.end_paths : [ @sequence::physics.end_paths, ana ]
-
 services.TFileService.fileName: "nts.owner.mustop.version.sequencer.root"
 outputs.detectorOutput.fileName: "sim.owner.mustop-TrkCal.version.sequencer.art"
 outputs.crvOutput.fileName: "sim.owner.mustop-CRV.version.sequencer.art"
