@@ -68,6 +68,7 @@ private:
   TH1F* _hTrkStrawId;
   TH1F* _hTrkTDC[4];
   TH1F* _hTrkTOT;
+  TH1F* _hTrkPMP;
   TH1F* _hTrkMeanADC;
   TH1F* _hTrkMaxADC;
   TH1F* _hTrkWfSize;
@@ -107,6 +108,7 @@ void FragmentAna::beginJob() {
                                   -100., 10000.);
   _hTrkTOT =
       trkDir.make<TH1F>("hTrkTOT", "trk fragment average TOT; (TOT[0]+TOT[1])/2", 100, 0., 200.);
+  _hTrkPMP = trkDir.make<TH1F>("hTrkPOP", "trk fragment average PMP; PMP", 100, 0., 200.);
   _hTrkMeanADC = trkDir.make<TH1F>("hTrkMeanADC", "trk fragment Mean ADC; <ADC>", 250, 0., 2500.);
   _hTrkMaxADC = trkDir.make<TH1F>("hTrkMaxADC", "trk fragment Max ADC; Max_ADC", 250, 0., 2500.);
   _hTrkWfSize = trkDir.make<TH1F>("hTrkWfSize", "trk fragment waveform size; trkFragment_wf_size",
@@ -239,6 +241,7 @@ void FragmentAna::analyze_tracker_(const artdaq::Fragment& f) {
         mu2e::StrawId sid(trkDataPair.first->StrawIndex);
         mu2e::TrkTypes::TDCValues tdc = {trkDataPair.first->TDC0(), trkDataPair.first->TDC1()};
         mu2e::TrkTypes::TOTValues tot = {trkDataPair.first->TOT0, trkDataPair.first->TOT1};
+        mu2e::TrkTypes::ADCValue pmp = trkDataPair.first->PMP;
         int sum{0};
         unsigned short maxadc{0};
         for (auto adc : trkDataPair.second) {
@@ -252,6 +255,7 @@ void FragmentAna::analyze_tracker_(const artdaq::Fragment& f) {
         _hTrkTDC[2]->Fill((tdc[0] + tdc[1]) / 2.);
         _hTrkTDC[3]->Fill(tdc[1] - tdc[0]);
         _hTrkTOT->Fill((tot[0] + tot[1]) / 2.);
+        _hTrkPMP->Fill(pmp);
         int mean = (trkDataPair.second.size() != 0) ? sum / trkDataPair.second.size() : -1.;
         _hTrkMeanADC->Fill(mean);
         _hTrkMaxADC->Fill(maxadc);

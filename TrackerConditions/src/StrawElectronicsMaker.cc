@@ -20,7 +20,7 @@ namespace mu2e {
     // partially constructed, to complete the construction
     auto ptr = std::make_shared<StrawElectronics>(_config.deadTimeAnalog(), 
        _config.deadTimeDigital(), _config.saturationVoltage(), _config.strawNoise(), 
-       _config.ADCLSB(), _config.maxADC(), _config.nADCPresamples(),
+       _config.ADCLSB(), _config.maxADC(), _config.nADCPackets(), _config.nADCPresamples(),
        _config.ADCPeriod(), _config.ADCOffset(), 
        _config.maxThreshTimeSeparation(), _config.tCoince(),
        _config.TDCLSB(), _config.maxTDC(), _config.TOTLSB(), 

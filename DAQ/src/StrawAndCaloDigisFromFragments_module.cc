@@ -39,6 +39,7 @@ public:
     fhicl::Atom<int> diagLevel{fhicl::Name("diagLevel"), fhicl::Comment("diagnostic level")};
     fhicl::Atom<int> parseCAL{fhicl::Name("parseCAL"), fhicl::Comment("parseCAL")};
     fhicl::Atom<int> parseTRK{fhicl::Name("parseTRK"), fhicl::Comment("parseTRK")};
+    fhicl::Atom<int> useTrkADC{fhicl::Name("useTrkADC"), fhicl::Comment("parse tracker ADC waveforms")};
     fhicl::Atom<art::InputTag> caloTag{fhicl::Name("caloTag"), fhicl::Comment("caloTag")};
     fhicl::Atom<art::InputTag> trkTag{fhicl::Name("trkTag"), fhicl::Comment("trkTag")};
   };
@@ -52,7 +53,8 @@ public:
 
 private:
   void analyze_tracker_(const artdaq::Fragment& f,
-                        std::unique_ptr<mu2e::StrawDigiCollection> const& straw_digis);
+                        std::unique_ptr<mu2e::StrawDigiCollection> const& straw_digis,
+                        std::unique_ptr<mu2e::StrawDigiADCWaveformCollection> const& straw_digi_adcs);
   void analyze_calorimeter_(const artdaq::Fragment& f,
                             std::unique_ptr<mu2e::CaloDigiCollection> const& calo_digis);
 
@@ -60,6 +62,7 @@ private:
 
   int parseCAL_;
   int parseTRK_;
+  int useTrkADC_;
 
   art::InputTag trkFragmentsTag_;
   art::InputTag caloFragmentsTag_;
@@ -73,11 +76,17 @@ private:
 art::StrawAndCaloDigisFromFragments::StrawAndCaloDigisFromFragments(
     const art::EDProducer::Table<Config>& config) :
     art::EDProducer{config},
-    diagLevel_(config().diagLevel()), parseCAL_(config().parseCAL()),
-    parseTRK_(config().parseTRK()), trkFragmentsTag_(config().trkTag()),
+    diagLevel_(config().diagLevel()), 
+    parseCAL_(config().parseCAL()),
+    parseTRK_(config().parseTRK()),
+    useTrkADC_(config().useTrkADC()),
+    trkFragmentsTag_(config().trkTag()),
     caloFragmentsTag_(config().caloTag()) {
   if (parseTRK_) {
     produces<mu2e::StrawDigiCollection>();
+    if (useTrkADC_) {
+      produces<mu2e::StrawDigiADCWaveformCollection>();
+    }
   }
   if (parseCAL_) {
     produces<mu2e::CaloDigiCollection>();
@@ -91,6 +100,7 @@ void art::StrawAndCaloDigisFromFragments::produce(Event& event) {
 
   // Collection of StrawDigis for the event
   std::unique_ptr<mu2e::StrawDigiCollection> straw_digis(new mu2e::StrawDigiCollection);
+  std::unique_ptr<mu2e::StrawDigiADCWaveformCollection> straw_digi_adcs(new mu2e::StrawDigiADCWaveformCollection);
 
   // Collection of CaloDigis for the event
   std::unique_ptr<mu2e::CaloDigiCollection> calo_digis(new mu2e::CaloDigiCollection);
@@ -110,7 +120,7 @@ void art::StrawAndCaloDigisFromFragments::produce(Event& event) {
     for (size_t idx = 0; idx < numTrkFrags; ++idx) {
       auto size = ((*trkFragments)[idx]).sizeBytes(); // * sizeof(artdaq::RawDataType);
       totalSize += size;
-      analyze_tracker_((*trkFragments)[idx], straw_digis);
+      analyze_tracker_((*trkFragments)[idx], straw_digis, straw_digi_adcs);
       //      std::cout << "\tTRK Fragment " << idx << " has size " << size << std::endl;
     }
   }
@@ -148,6 +158,9 @@ void art::StrawAndCaloDigisFromFragments::produce(Event& event) {
   // Store the straw digis and calo digis in the event
   if (parseTRK_) {
     event.put(std::move(straw_digis));
+    if (useTrkADC_) {
+      event.put(std::move(straw_digi_adcs));
+    }
   }
   if (parseCAL_) {
     event.put(std::move(calo_digis));
@@ -156,7 +169,8 @@ void art::StrawAndCaloDigisFromFragments::produce(Event& event) {
 } // produce()
 
 void art::StrawAndCaloDigisFromFragments::analyze_tracker_(
-    const artdaq::Fragment& f, std::unique_ptr<mu2e::StrawDigiCollection> const& straw_digis) {
+    const artdaq::Fragment& f, std::unique_ptr<mu2e::StrawDigiCollection> const& straw_digis,
+    std::unique_ptr<mu2e::StrawDigiADCWaveformCollection> const& straw_digi_adcs) {
 
   mu2e::TrackerFragment cc(f);
 
@@ -236,32 +250,20 @@ void art::StrawAndCaloDigisFromFragments::analyze_tracker_(
         mu2e::StrawId sid(trkDataPair.first->StrawIndex);
         mu2e::TrkTypes::TDCValues tdc = {trkDataPair.first->TDC0(), trkDataPair.first->TDC1()};
         mu2e::TrkTypes::TOTValues tot = {trkDataPair.first->TOT0, trkDataPair.first->TOT1};
-
-        //	///////////////////////////////////////////////////////////////////////////
-        //	// NOTE: Because the tracker code in offline has not been updated to
-        //	// use 15 samples, it is necessary to add an extra sample in order to
-        //	// initialize an ADCWaveform that can be passed to the StrawDigi
-        //	// constructor. This means that the digis produced by StrawAndCaloDigisFromFragments
-        //	// will differ from those processed in offline so the filter performance
-        //	// will be different. This is only temporary.
-        //	std::array<adc_t,15> const & shortWaveform = cc.DBT_Waveform(pos);
-        //	mu2e::TrkTypes::ADCWaveform wf;
-        //	for(size_t i=0; i<15; i++) {
-        //	  wf[i] = shortWaveform[i];
-        //	}
-        //	wf[15] = 0;
-        //	///////////////////////////////////////////////////////////////////////////
-               
+        mu2e::TrkTypes::ADCValue pmp = trkDataPair.first->PMP;
 
         // Fill the StrawDigiCollection
-        straw_digis->emplace_back(sid, tdc, tot, trkDataPair.second);
+        straw_digis->emplace_back(sid, tdc, tot, pmp);
+        if (useTrkADC_){ 
+          straw_digi_adcs->emplace_back(trkDataPair.second);
+        }
 
         if (diagLevel_ > 1) {
           std::cout << "MAKEDIGI: " << sid.asUint16() << " " << tdc[0] << " " << tdc[1] << " "
                     << tot[0] << " " << tot[1] << " ";
-          for (size_t i = 0; i < mu2e::TrkTypes::NADC; i++) {
+          for (size_t i = 0; i < trkDataPair.second.size(); i++) {
             std::cout << trkDataPair.second[i];
-            if (i < mu2e::TrkTypes::NADC - 1) {
+            if (i < trkDataPair.second.size() - 1) {
               std::cout << " ";
             }
           }
@@ -274,10 +276,11 @@ void art::StrawAndCaloDigisFromFragments::analyze_tracker_(
           std::cout << "TDC1: " << tdc[1] << std::endl;
           std::cout << "TOT0: " << tot[0] << std::endl;
           std::cout << "TOT1: " << tot[1] << std::endl;
+          std::cout << "PMP:  " << pmp    << std::endl;
           std::cout << "Waveform: {";
-          for (size_t i = 0; i < mu2e::TrkTypes::NADC; i++) {
+          for (size_t i = 0; i < trkDataPair.second.size(); i++) {
             std::cout << trkDataPair.second[i];
-            if (i < mu2e::TrkTypes::NADC - 1) {
+            if (i < trkDataPair.second.size() - 1) {
               std::cout << ",";
             }
           }
@@ -305,10 +308,11 @@ void art::StrawAndCaloDigisFromFragments::analyze_tracker_(
           std::cout << tdc[1] << " ";
           std::cout << tot[0] << " ";
           std::cout << tot[1] << " ";
+          std::cout << pmp << " ";
           std::cout << trkDataPair.second.size() << " ";
-          for (size_t i = 0; i < mu2e::TrkTypes::NADC; i++) {
+          for (size_t i = 0; i < trkDataPair.second.size(); i++) {
             std::cout << trkDataPair.second[i];
-            if (i < mu2e::TrkTypes::NADC - 1) {
+            if (i < trkDataPair.second.size() - 1) {
               std::cout << " ";
             }
           }

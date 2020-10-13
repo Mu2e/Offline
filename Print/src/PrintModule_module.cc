@@ -28,6 +28,7 @@
 #include "Print/inc/CrvRecoPulsePrinter.hh"
 #include "Print/inc/CrvCoincidenceClusterPrinter.hh"
 #include "Print/inc/StrawDigiPrinter.hh"
+#include "Print/inc/StrawDigiADCWaveformPrinter.hh"
 #include "Print/inc/StrawDigiMCPrinter.hh"
 #include "Print/inc/StrawHitPrinter.hh"
 #include "Print/inc/StrawHitFlagPrinter.hh"
@@ -87,6 +88,8 @@ namespace mu2e {
 	fhicl::Name("crvCoincidenceClusterPrinter") }; 
       fhicl::Table<ProductPrinter::Config> strawDigiPrinter { 
       	fhicl::Name("strawDigiPrinter") }; 
+      fhicl::Table<ProductPrinter::Config> strawDigiADCWaveformPrinter { 
+      	fhicl::Name("strawDigiADCWaveformPrinter") }; 
       fhicl::Table<ProductPrinter::Config> strawDigiMCPrinter { 
       	fhicl::Name("strawDigiMCPrinter") }; 
       fhicl::Table<ProductPrinter::ConfigE> strawHitPrinter { 
@@ -161,6 +164,7 @@ mu2e::PrintModule::PrintModule(const Parameters& conf):
   _printers.push_back( make_unique<CrvRecoPulsePrinter>( conf().crvRecoPulsePrinter() ) );
   _printers.push_back( make_unique<CrvCoincidenceClusterPrinter>( conf().crvCoincidenceClusterPrinter() ) );
   _printers.push_back( make_unique<StrawDigiPrinter>( conf().strawDigiPrinter() ) );
+  _printers.push_back( make_unique<StrawDigiADCWaveformPrinter>( conf().strawDigiADCWaveformPrinter() ) );
   _printers.push_back( make_unique<StrawDigiMCPrinter>( conf().strawDigiMCPrinter() ) );
   _printers.push_back( make_unique<StrawHitPrinter>( conf().strawHitPrinter() ) );
   _printers.push_back( make_unique<StrawHitFlagPrinter>( conf().strawHitFlagPrinter() ) );

@@ -90,6 +90,7 @@ DigiCompression : {
 	caloShowerSimTag : @local::DigiCompressionTags.commonCaloShowerSimTag
 	caloShowerStepROTag : @local::DigiCompressionTags.commonCaloShowerStepROTag
 	keptProducts : [ "keep mu2e::StrawDigis_*_*_*",
+                       "keep mu2e::StrawDigiADCWaveforms_*_*_*",
 		       "keep mu2e::CaloDigis_*_*_*",
 		       "keep mu2e::CrvDigis_*_*_*",
 		       "keep mu2e::StatusG4_*_*_*",
