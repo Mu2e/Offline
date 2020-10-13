@@ -46,6 +46,8 @@ namespace mu2e {
       Name("ADCLSB"), Comment("mVolt")};
     fhicl::Atom<int> maxADC {
       Name("maxADC"), Comment("maxADC")};
+    fhicl::Atom<unsigned> nADCPackets {
+      Name("nADCPackets"), Comment("Number of adc packets (12 samples each)")};
     fhicl::Atom<unsigned> nADCPresamples {
       Name("nADCPresamples"), Comment("nADCPresamples")};
     fhicl::Atom<double> ADCPeriod {

@@ -104,6 +104,7 @@ StrawElectronics : {
    ADCLSB : 1.953125
    maxADC : 1024
    nADCPresamples : 5
+   nADCPackets : 1
    ADCPeriod : 20.0
    ADCOffset : 2.0
    maxThreshTimeSeparation : 2
