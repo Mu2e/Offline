@@ -69,6 +69,8 @@ helper.make_plugins( [ mainlib,
                        'boost_system',
                        'pthread',
                        'hep_concurrency',
+                       'DTCInterface',
+                       'mu2e-artdaq-core_Overlays'
                        ] )
 
 # this tells emacs to view this file in python mode.
