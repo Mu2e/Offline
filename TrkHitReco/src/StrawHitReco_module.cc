@@ -78,6 +78,7 @@ namespace mu2e {
        unsigned _npre; //cache
 
        art::ProductToken<StrawDigiCollection> const _sdtoken;
+       art::ProductToken<StrawDigiADCWaveformCollection> const _sdadctoken;
        art::ProductToken<CaloClusterCollection> const _cctoken;
        art::InputTag _ewMarkerTag; // name of the module that makes eventwindowmarkers
        fhicl::ParameterSet _peakfit;  // peak fit (charge reconstruction) parameters
@@ -87,6 +88,7 @@ namespace mu2e {
        // helper function
        float peakMinusPedAvg(TrkTypes::ADCWaveform const& adcData) const;
        float peakMinusPed(StrawId id, TrkTypes::ADCWaveform const& adcData) const;
+       float peakMinusPedFirmware(StrawId id, TrkTypes::ADCValue const& pmp) const;
     ProditionsHandle<StrawResponse> _strawResponse_h;
     ProditionsHandle<TrackerStatus> _trackerStatus_h;
     ProditionsHandle<Tracker> _alignedTracker_h;
@@ -114,6 +116,7 @@ namespace mu2e {
       _mask("uniquestraw"),      // each hit is a unique straw
       _end{StrawEnd::cal,StrawEnd::hv}, // this should be in a general place, FIXME!
       _sdtoken{consumes<StrawDigiCollection>(pset.get<art::InputTag>("StrawDigiCollection","makeSD"))},
+      _sdadctoken{mayConsume<StrawDigiADCWaveformCollection>(pset.get<art::InputTag>("StrawDigiADCWaveformCollection","makeSD"))},
       _cctoken{mayConsume<CaloClusterCollection>(pset.get<art::InputTag>("caloClusterModuleLabel","CaloClusterFast"))},
       _ewMarkerTag(pset.get<art::InputTag>("EventWindowMarkerLabel")),
       _peakfit(pset.get<fhicl::ParameterSet>("PeakFitter", {}))
@@ -165,6 +168,12 @@ namespace mu2e {
       auto const& srep = _strawResponse_h.get(event.id());
       auto sdH = event.getValidHandle(_sdtoken);
       const StrawDigiCollection& sdcol(*sdH);
+
+      const StrawDigiADCWaveformCollection *sdadccol(0);
+      if (_fittype != TrkHitReco::FitType::firmwarepmp) {
+        auto sdawH = event.getValidHandle(_sdadctoken);
+        sdadccol = sdawH.product();
+      }
 
       const CaloClusterCollection* caloClusters(0);
       if(_usecc){
@@ -230,14 +239,20 @@ namespace mu2e {
 	//extract energy from waveform
 	float energy(0.0);
 	if (_fittype == TrkHitReco::FitType::peakminuspedavg){
-	  float charge = peakMinusPedAvg(digi.adcWaveform());
+          auto adcwaveform = sdadccol->at(isd);
+	  float charge = peakMinusPedAvg(adcwaveform.samples());
 	  energy = srep.ionizationEnergy(charge);
 	} else if (_fittype == TrkHitReco::FitType::peakminusped){
-	  float charge = peakMinusPed(digi.strawId(),digi.adcWaveform());
+          auto adcwaveform = sdadccol->at(isd);
+	  float charge = peakMinusPed(digi.strawId(),adcwaveform.samples());
 	  energy = srep.ionizationEnergy(charge);
-	} else {
+	} else if (_fittype == TrkHitReco::FitType::firmwarepmp){
+          float charge = peakMinusPedFirmware(digi.strawId(), digi.PMP());
+          energy = srep.ionizationEnergy(charge);
+        } else {
+          auto adcwaveform = sdadccol->at(isd);
 	  TrkHitReco::PeakFitParams params;
-	  _pfit->process(digi.adcWaveform(),params);
+	  _pfit->process(adcwaveform.samples(),params);
 	  energy = srep.ionizationEnergy(params._charge/srep.strawGain());
 	  if (_printLevel > 1) std::cout << "Fit status = " << params._status << " NDF = " << params._ndf << " chisquared " << params._chi2
 	    << " Fit charge = " << params._charge << " Fit time = " << params._time << std::endl;
@@ -349,6 +364,10 @@ namespace mu2e {
     float peak = *maxIter;
     if(_diagLevel > 0)_maxiter->Fill(std::distance(wfstart,maxIter));
     return (peak-pedestal)*_invgain[id.getStraw()];
+  }
+
+  float StrawHitReco::peakMinusPedFirmware(StrawId id, TrkTypes::ADCValue const& pmp) const {
+    return pmp*_invgain[id.getStraw()];
   }
 
 

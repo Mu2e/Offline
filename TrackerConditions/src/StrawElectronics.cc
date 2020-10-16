@@ -163,15 +163,17 @@ namespace mu2e {
   }
 
   
-  void StrawElectronics::digitizeWaveform(StrawId sid, ADCVoltages const& wf, ADCWaveform& adc) const{
-    if(wf.size() != adc.size()){
-      throw cet::exception("SIM") 
-	<< "mu2e::StrawElectronics: wrong number of voltages to digitize" 
-	<< endl;
+  void StrawElectronics::digitizeWaveform(StrawId sid, ADCVoltages const& wf, ADCWaveform& adc, ADCValue& pmp) const{
+    adc.reserve(wf.size());
+    ADCValue peak = 0;
+    ADCValue pedestal = 0;
+    for(size_t iadc=0;iadc<wf.size();++iadc){
+      adc.push_back(adcResponse(sid, wf[iadc]));
+      if (iadc <_nADCpre)
+        pedestal += adc.at(iadc);
+      peak = max(adc.at(iadc),peak);
     }
-    for(size_t iadc=0;iadc<adc.size();++iadc){
-      adc.at(iadc) = adcResponse(sid, wf[iadc]);
-    }
+    pmp = peak - (pedestal/(int)_nADCpre);
   }
 
   bool StrawElectronics::digitizeAllTimes(TDCTimes const& times,double mbtime, TDCValues& tdcs) const {
@@ -200,10 +202,10 @@ namespace mu2e {
   void StrawElectronics::adcTimes(double time, ADCTimes& adctimes) const {
 // clock has a fixed phase; Assume we digitize with a fixed delay relative to the leading edge
     adctimes.clear();
-    adctimes.reserve(TrkTypes::NADC);
+    adctimes.reserve(nADCSamples());
 // find the phase immediately proceeding this time.  Subtract presamples
     size_t phase = std::max((int)0,int(ceil(time/_ADCPeriod))-(int)_nADCpre);
-    for(unsigned itime=0;itime<TrkTypes::NADC;++itime){
+    for(unsigned itime=0;itime<nADCSamples();++itime){
       adctimes.push_back((phase+itime)*_ADCPeriod+_ADCOffset);
     }
   }

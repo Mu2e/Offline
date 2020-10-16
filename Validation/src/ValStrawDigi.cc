@@ -26,8 +26,8 @@ int mu2e::ValStrawDigi::fill(const mu2e::StrawDigiCollection & coll,
     for (size_t ie=0; ie<StrawEnd::nends; ie++) {  // for the two straw ends
       _htdc->Fill(sd.TDC()[ie]);
     }
-    for(auto const& a : sd.adcWaveform()) _hadc->Fill(a); // ADC values (ints)
-    _hSI->Fill(sd.strawId().asUint16()); // <40960
+    //for(auto const& a : sd.adcWaveform()) _hadc->Fill(a); // ADC values (ints)
+    //_hSI->Fill(sd.strawId().asUint16()); // <40960
   }
   return 0;
 }

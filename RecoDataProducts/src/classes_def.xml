@@ -97,6 +97,11 @@
  <class name="mu2e::StrawDigiFlag"/>
  <class name="mu2e::StrawDigiFlagDetail"/>
 
+ <class name="mu2e::StrawDigiADCWaveform"/>
+ <class name="mu2e::StrawDigiADCWaveformCollection"/>
+ <class name="std::vector<art::Ptr<mu2e::StrawDigiADCWaveform> >"/>
+ <class name="art::Ptr<mu2e::StrawDigiADCWaveform>"/>
+ <class name="art::Wrapper<mu2e::StrawDigiADCWaveformCollection>"/>
  <class name="mu2e::StrawDigi"/>
  <class name="mu2e::StrawDigiCollection"/>
  <class name="std::vector<art::Ptr<mu2e::StrawDigi> >"/>
