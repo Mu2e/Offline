@@ -8,7 +8,7 @@ BEGIN_PROLOG
 # define non-proton GenIDs
 nonProtonGenIds : ["unknown", "particleGun", "cosmicToy", "cosmicDYB", "cosmic", "CosmicCRY", "pbarFlat", "CosmicCORSIKA"]
 muLifeGenIds : [ "StoppedParticleReactionGun", "dioTail", "ExternalRMC", "InternalRMC", 
-                 "MuCapProtonGenTool", "MuCapDeuteronGenTool", "DIOGenTool", "MuCapNeutronGenTool", "MuCapPhotonGenTool", "MuCapGammaRayGenTool" ]                        ]
+                 "MuCapProtonGenTool", "MuCapDeuteronGenTool", "DIOGenTool", "MuCapNeutronGenTool", "MuCapPhotonGenTool", "MuCapGammaRayGenTool" ]
 CommonMC: {
   producers: {
 #
