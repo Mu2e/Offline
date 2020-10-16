@@ -31,19 +31,20 @@ FullReadoutStraw : {
    # straws : ["16_2_1","10_0_23"]
 }
 
-
-DeadStraw : {
-   verbose : 0
-   useDb : false
-   deadPlanes : []
-   deadPanels : []
-   deadStraws : []
-   partlyDeadStraws : []
-   # examples:
-   # deadPlanes : [9]
-   # deadPanels : ["1_1","5_3"]
-   # deadStraws : ["16_2_1","10_0_23"]
-   # partlyDeadStraws : ["11_2_1 10.0","11_0_23 5.0"]
+TrackerStatus : {
+  Settings : {
+    verbose : 0
+    useDb : false
+  }
+  Status : [
+#    [ "20_2_0", "uniquepanel", "Absent" ], # single panel is physically absent
+#    [ "30_5_0", "uniquepanel", "NoHV" ], # single panel has HV problem
+#    [ "31_0_0", "uniquepanel", "NoGas" ], # single panel has gas problem
+#    [ "10_0_0", "plane", "Absent" ], # plane is physically absent
+#    [ "21_4_1", "uniquestraw", "Noise:Sparking" ], # noisy, sparking straw
+#    [ "0_0_95", "straw", "Suppress:Noise:Pickup" ], # suppress shortest straw on every panel (always noisy)
+#    [ "0_0_94", "straw", "Suppress:Noise:Pickup" ] # suppress shortest straw on every panel (always noisy)
+  ]
 }
 
 StrawDrift : {
@@ -93,7 +94,7 @@ StrawElectronics : {
    defaultAdcdVdI : 1.528e6
    adcdVdI : []
    deadTimeAnalog : 100.0
-   deadTimeDigital : 100.0
+   deadTimeDigital : 400.0
    saturationVoltage : 140.0
    defaultDiscriminatorThreshold : 12.0
    discriminatorThreshold : []
