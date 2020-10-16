@@ -241,7 +241,8 @@ namespace mu2e {
 	    Tracker const& tracker,
 	    WFXPList const& xings,SWFP const& swfp , StrawId sid,
 	    StrawDigiCollection* digis, StrawDigiMCCollection* mcdigis);
-	bool createDigi(StrawElectronics const& strawele,WFXP const& xpair, SWFP const& wf, StrawId sid, StrawDigiCollection* digis);
+	bool createDigi(StrawElectronics const& strawele,WFXP const& xpair, SWFP const& wf, StrawId sid, StrawDigiCollection* digis,
+            double &digitization_ready_time);
 	void findCrossTalkStraws(Straw const& straw,vector<XTalk>& xtalk);
 	void fillClusterNe(StrawPhysics const& strawphys,std::vector<unsigned>& me);
 	void fillClusterPositions(StrawGasStep const& step, Straw const& straw, std::vector<StrawPosition>& cpos);
@@ -437,12 +438,13 @@ namespace mu2e {
       unique_ptr<StrawDigiCollection> digis(new StrawDigiCollection);
       unique_ptr<StrawDigiMCCollection> mcdigis(new StrawDigiMCCollection);
       // create the StrawCluster map
+      // this is a map from straw ids to a list of all clusters on that straw from this event
       StrawClusterMap hmap;
       // fill this from the event
       fillClusterMap(strawphys,strawele,tracker,event,hmap);
       // add noise clusts
       if(_addNoise)addNoise(hmap);
-      // loop over the clust sequences
+      // loop over the clust sequences (i.e. loop over straws, and for each get their list of clusters)
       for(auto ihsp=hmap.begin();ihsp!= hmap.end();++ihsp){
 	StrawClusterSequencePair const& hsp = ihsp->second;
 	Straw const& straw = tracker.getStraw(hsp.strawId());
@@ -741,11 +743,12 @@ namespace mu2e {
 	StrawDigiCollection* digis, StrawDigiMCCollection* mcdigis ) {
 	//
       Straw const& straw = tracker.getStraw(sid);
+      double digitization_ready_time = -9e9; //FIXME no deadtime for first hit of a microbunch
       // loop over crossings
       for(auto xpair : xings) {
 	// create a digi from this pair.  This also performs a finial test
 	// on whether the pair should make a digi
-	if(createDigi(strawele,xpair,wf,sid,digis)){
+	if(createDigi(strawele,xpair,wf,sid,digis,digitization_ready_time)){
 	  // fill associated MC truth matching. Only count the same step once
 	  StrawDigiMC::SGSPA sgspa;
 	  StrawDigiMC::PA cpos;
@@ -780,7 +783,7 @@ namespace mu2e {
     }
 
     bool StrawDigisFromStrawGasSteps::createDigi(StrawElectronics const& strawele, WFXP const& xpair, SWFP const& waveform,
-	StrawId sid, StrawDigiCollection* digis){
+	StrawId sid, StrawDigiCollection* digis, double &digitization_ready_time){
       // initialize the float variables that we later digitize
       TDCTimes xtimes = {0.0,0.0};
       TrkTypes::TOTValues tot;
@@ -806,6 +809,10 @@ namespace mu2e {
 	// sample ADC
 	waveform[iend].sampleADCWaveform(strawele,adctimes,wf[iend]);
       }
+      double digitize_time = std::max(xtimes[0],xtimes[1]);
+      if (digitize_time < digitization_ready_time)
+        return false;
+      
       // uncalibrate
       strawele.uncalibrateTimes(xtimes,sid);
       // add ends and add noise
@@ -826,6 +833,8 @@ namespace mu2e {
 	strawele.digitizeWaveform(sid,wfsum,adc);
 	// create the digi from this
 	digis->push_back(StrawDigi(sid,tdcs,tot,adc));
+        // update digital deadtime for this channel
+        digitization_ready_time = digitize_time + strawele.deadTimeDigital();
       }
       return digitize;
     }

@@ -20,7 +20,7 @@
 #include "GlobalConstantsService/inc/ParticleDataTable.hh"
 #include "HepPDT/ParticleData.hh"
 #include "ProditionsService/inc/ProditionsHandle.hh"
-#include "TrackerConditions/inc/DeadStraw.hh"
+#include "TrackerConditions/inc/TrackerStatus.hh"
 #include "BFieldGeom/inc/BFieldManager.hh"
 #include "BTrk/BField/BField.hh"
 #include "Mu2eUtilities/inc/TwoLinePCA.hh"
@@ -93,7 +93,7 @@ namespace mu2e {
       typedef map< SSPair , SPMCPV > SPSMap; // steps by straw, SimParticle
       typedef art::Handle<StepPointMCCollection> SPMCCH;
       typedef vector< SPMCCH > SPMCCHV;
-      void fillMap(Tracker const& tracker,DeadStraw const& deadStraw, 
+      void fillMap(Tracker const& tracker,TrackerStatus const& trackerStatus, 
 	  SPMCCH const& spmcch, SPSMap& spsmap);
       void compressDeltas(SPSMap& spsmap);
       void setStepType(SPMCP const& spmcptr, ParticleData const* pdata, StrawGasStep::StepType& stype);
@@ -117,7 +117,7 @@ namespace mu2e {
       // cache the BField direction at the tracker center
       Hep3Vector _bdir;
       float _bnom; // BField in units of (MeV/c)/mm
-      ProditionsHandle<DeadStraw> _deadStraw_h; // dead straw list
+      ProditionsHandle<TrackerStatus> _trackerStatus_h; // tracker element status
       // diagnostic histograms
       TH1F *_hendrad, *_hphi;
       TTree* _sgsdiag;
@@ -204,7 +204,7 @@ namespace mu2e {
   // setup conditions, etc
     const Tracker& tracker = *GeomHandle<Tracker>();
     GlobalConstantsHandle<ParticleDataTable> pdt;
-    DeadStraw const& deadStraw = _deadStraw_h.get(event.id());
+    TrackerStatus const& trackerStatus = _trackerStatus_h.get(event.id());
     // create output
     unique_ptr<StrawGasStepCollection> sgsc(new StrawGasStepCollection);
     sgsc->reserve(_csize);
@@ -247,7 +247,7 @@ namespace mu2e {
       }
       // Loop over the StepPointMCs in this collection and sort them by straw and SimParticle
       SPSMap spsmap; // map of step points by straw,sim particle
-      fillMap(tracker,deadStraw,handle, spsmap);
+      fillMap(tracker,trackerStatus,handle, spsmap);
       // optionally combine delta-rays that never leave the straw with their parent particle
       if(dcomp)compressDeltas(spsmap);
       nspss += spsmap.size();
@@ -356,32 +356,33 @@ namespace mu2e {
 	start, end, momvec, first->simParticle());
   }
 
-  void MakeStrawGasSteps::fillMap(Tracker const& tracker,DeadStraw const& deadStraw, 
+  void MakeStrawGasSteps::fillMap(Tracker const& tracker,TrackerStatus const& trackerStatus, 
   SPMCCH const& spmcch, SPSMap& spsmap) {
     StepPointMCCollection const& steps(*spmcch);
     for (size_t ispmc =0; ispmc<steps.size();++ispmc) {
       const auto& step = steps[ispmc];
       StrawId const & sid = step.strawId();
-      Straw const& straw = tracker.getStraw(sid);
-      double wpos = fabs((step.position()-straw.getMidPoint()).dot(straw.getDirection()));
-      // Skip dead straws, and straws that don't exist
-      //  or steps that occur in the deadened region near the end of each wire,
-      // or in dead regions of the straw
-      if (tracker.strawExists(sid)
-	  && wpos <  straw.activeHalfLength() 
-	  && deadStraw.isAlive(sid,wpos)) {
-	cet::map_vector_key tid = step.simParticle().get()->id();
-	// create key
-	SSPair stpair(sid,tid);
-	// create ptr to this step
-	SPMCP  spmcptr(spmcch,ispmc);
-	vector<SPMCP > spmcptrv;
-	spmcptrv.reserve(_ssize);
-	spmcptrv.push_back(spmcptr);
-	// check if this key exists and add it if not
-	auto ssp = spsmap.emplace(stpair,spmcptrv);
-	// if the key already exists, just add this Ptr to the vector
-	if(!ssp.second)ssp.first->second.push_back(spmcptr);
+      // Skip straws that can't give signals,
+      if (!trackerStatus.noSignal(sid)) {
+	Straw const& straw = tracker.getStraw(sid);
+	double wpos = fabs((step.position()-straw.getMidPoint()).dot(straw.getDirection()));
+	//skip steps that occur in the deadened region near the end of each wire
+	if( wpos <  straw.activeHalfLength()){
+	  cet::map_vector_key tid = step.simParticle().get()->id();
+	  // create key
+	  SSPair stpair(sid,tid);
+	  // create ptr to this step
+	  SPMCP  spmcptr(spmcch,ispmc);
+	  vector<SPMCP > spmcptrv;
+	  spmcptrv.reserve(_ssize);
+	  spmcptrv.push_back(spmcptr);
+	  // check if this key exists and add it if not
+	  auto ssp = spsmap.emplace(stpair,spmcptrv);
+	  // if the key already exists, just add this Ptr to the vector
+	  if(!ssp.second)ssp.first->second.push_back(spmcptr);
+	}
+      } else if ( _debug>1 ) {
+	std::cout << "No Signal, StrawId " << sid << endl;
       }
     }
   }
@@ -468,7 +469,7 @@ namespace mu2e {
       auto momhat = last->momentum().unit();
       // test parabolic extrapolation first
       _brot = last->stepLength()*_bnom/last->momentum().mag(); // magnetic bending rotation angle
-      if(_debug > 1){
+      if(_debug > 2){
 	cout << "Step Length = " << last->stepLength() << " rotation angle " << _brot << endl;
       }
       auto rho = _bdir.cross(momhat);// points radially outwards for positive charge
