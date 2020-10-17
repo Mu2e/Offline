@@ -23,7 +23,7 @@ void ContentSelector::firstLoop()  //This is useful for now, but may be changed 
   if(entry==nullptr) entry=_hitBox->FindEntry("KalRep:TrkPatRec:DownstreameMinus");
   if(entry!=nullptr) _hitBox->Select(entry->EntryId());
 
-  entry=_caloHitBox->FindEntry("CaloCrystalHit:CaloCrystalHitsMaker:");
+  entry=_caloHitBox->FindEntry("CaloHit:CaloHitsMaker:");
   if(entry!=nullptr) _caloHitBox->Select(entry->EntryId());
 
   entry=_trackBox->FindEntry("TrkExtTraj:TrkExt:");
@@ -107,7 +107,6 @@ void ContentSelector::setAvailableCollections(const art::Event& event)
   newEntries.clear();
   newEntries.push_back(nothingSelected);
   createNewEntries<mu2e::StepPointMCCollection>(_caloStepPointMCVector, event, "StepPointMC", newEntries, 1);
-  createNewEntries<mu2e::CaloCrystalHitCollection>(_caloCrystalHitVector, event, "CaloCrystalHit", newEntries, 2);
   createNewEntries<mu2e::CaloHitCollection>(_caloHitVector, event, "CaloHit", newEntries, 3);
 
   if(newEntries!=_caloHitEntries)
@@ -296,17 +295,13 @@ const CollectionType* ContentSelector::getSelectedCaloHitCollection() const
     case 1 : if(typeid(CollectionType)!=typeid(mu2e::StepPointMCCollection)) return(nullptr);
              if(index>=static_cast<int>(_caloStepPointMCVector.size())) return(nullptr);
              return(reinterpret_cast<const CollectionType*>(_caloStepPointMCVector[index].product()));
-    case 2 : if(typeid(CollectionType)!=typeid(mu2e::CaloCrystalHitCollection)) return(nullptr);
-             if(index>=static_cast<int>(_caloCrystalHitVector.size())) return(nullptr);
-             return(reinterpret_cast<const CollectionType*>(_caloCrystalHitVector[index].product()));
-    case 3 : if(typeid(CollectionType)!=typeid(mu2e::CaloHitCollection)) return(nullptr);
+    case 2 : if(typeid(CollectionType)!=typeid(mu2e::CaloHitCollection)) return(nullptr);
              if(index>=static_cast<int>(_caloHitVector.size())) return(nullptr);
              return(reinterpret_cast<const CollectionType*>(_caloHitVector[index].product()));
   };
   return(nullptr);
 }
 template const mu2e::StepPointMCCollection* ContentSelector::getSelectedCaloHitCollection<mu2e::StepPointMCCollection>() const;
-template const mu2e::CaloCrystalHitCollection* ContentSelector::getSelectedCaloHitCollection<mu2e::CaloCrystalHitCollection>() const;
 template const mu2e::CaloHitCollection*    ContentSelector::getSelectedCaloHitCollection<mu2e::CaloHitCollection>() const;
 
 

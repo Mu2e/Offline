@@ -38,8 +38,6 @@
 #include "MCDataProducts/inc/CaloMCTruthAssns.hh"
 
 #include "Mu2eUtilities/inc/SimParticleTimeOffset.hh"
-#include "RecoDataProducts/inc/CaloCrystalHit.hh"
-#include "RecoDataProducts/inc/CaloHit.hh"
 #include "RecoDataProducts/inc/CaloHit.hh"
 #include "RecoDataProducts/inc/CaloCluster.hh"
 #include "RecoDataProducts/inc/CaloCluster.hh"
@@ -271,9 +269,9 @@ namespace mu2e {
         event.getByLabel(_trkIntersectModuleLabel, trjIntersectHandle);
         TrkCaloIntersectCollection const& trkIntersect(*trjIntersectHandle);
 
-        art::Handle<CaloCrystalHitCollection> caloCrystalHitsHandle;
-        event.getByLabel(_caloCrystalModuleLabel, caloCrystalHitsHandle);
-        CaloCrystalHitCollection const& caloCrystalHits(*caloCrystalHitsHandle);
+        art::Handle<CaloHitCollection> CaloHitsHandle;
+        event.getByLabel(_caloCrystalModuleLabel, CaloHitsHandle);
+        CaloHitCollection const& CaloHits(*CaloHitsHandle);
 
         //Calo cluster truth assignment
         art::Handle<CaloClusterMCTruthAssn> caloClusterTruthHandle;
@@ -375,7 +373,7 @@ namespace mu2e {
            {
                const CaloCluster& cluster = caloClusters.at(ic);
                std::vector<int> cryList;
-               for (auto cryPtr : cluster.caloCrystalHitsPtrVector()) cryList.push_back(int(cryPtr.get()- &caloCrystalHits.at(0)));
+               for (auto cryPtr : cluster.caloHitsPtrVector()) cryList.push_back(int(cryPtr.get()- &CaloHits.at(0)));
 
                
                //Find the caloDigiMC in the truth map          
@@ -446,9 +444,9 @@ namespace mu2e {
 
            //--------------------------  Dump crystal info --------------------------------
            _nHits=0;
-           for (unsigned int ic=0; ic<caloCrystalHits.size();++ic)
+           for (unsigned int ic=0; ic<CaloHits.size();++ic)
            {
-               CaloCrystalHit const& hit    = caloCrystalHits.at(ic);
+               CaloHit const& hit    = CaloHits.at(ic);
                CLHEP::Hep3Vector crystalPos = cal.geomUtil().mu2eToDiskFF(cal.crystal(hit.id()).diskId(), cal.crystal(hit.id()).position());
 
                _cryTime[_nHits]      = hit.time();

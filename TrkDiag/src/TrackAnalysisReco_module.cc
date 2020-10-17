@@ -18,7 +18,7 @@
 #include "MCDataProducts/inc/KalSeedMC.hh"
 #include "MCDataProducts/inc/CaloClusterMC.hh"
 #include "MCDataProducts/inc/CaloMCTruthAssns.hh"
-#include "RecoDataProducts/inc/CaloCrystalHit.hh"
+#include "RecoDataProducts/inc/CaloHit.hh"
 #include "RecoDataProducts/inc/TrkCaloHitPID.hh"
 #include "TrkReco/inc/TrkUtilities.hh"
 #include "CalorimeterGeom/inc/DiskCalorimeter.hh"
@@ -118,7 +118,7 @@ namespace mu2e {
       fhicl::Table<BranchConfig> candidate{Name("candidate"), Comment("Candidate physics track info")};
       fhicl::OptionalSequence< fhicl::Table<BranchConfig> > supplements{Name("supplements"), Comment("Supplemental physics track info (TrkAna will find closest in time to candidate)")};
       fhicl::Atom<art::InputTag> rctag{Name("RecoCountTag"), Comment("RecoCount"), art::InputTag()};
-      fhicl::Atom<art::InputTag> cchmtag{Name("CaloCrystalHitMapTag"), Comment("CaloCrystalHitMapTag"), art::InputTag()};
+      fhicl::Atom<art::InputTag> cchmtag{Name("CaloHitMapTag"), Comment("CaloHitMapTag"), art::InputTag()};
       fhicl::Atom<art::InputTag> meanPBItag{Name("MeanBeamIntensity"), Comment("Tag for MeanBeamIntensity"), art::InputTag()};
       fhicl::Atom<art::InputTag> PBIwtTag{Name("PBIWeightTag"), Comment("Tag for PBIWeight") ,art::InputTag()};
       fhicl::Atom<std::string> crvCoincidenceModuleLabel{Name("CrvCoincidenceModuleLabel"), Comment("CrvCoincidenceModuleLabel")};
@@ -191,7 +191,7 @@ namespace mu2e {
     art::Handle<PrimaryParticle> _pph;
     art::Handle<KalSeedMCAssns> _ksmcah;
     art::Handle<CaloClusterMCTruthAssn> _ccmcah;
-    art::Handle<CaloCrystalHitRemapping> _cchmH;
+    art::Handle<CaloHitRemapping> _cchmH;
     art::InputTag _primaryParticleTag;
     art::InputTag _kalSeedMCTag, _caloClusterMCTag;
     std::vector<int> _entvids, _midvids, _xitvids;
@@ -648,17 +648,17 @@ namespace mu2e {
 	std::cout << "CaloCluster has energy " << cc->energyDep()
 		  << " +- " << cc->energyDepErr() << std::endl;
 	auto const& cchmap = *_cchmH;
-	for( auto const& cchptr: cc->caloCrystalHitsPtrVector() ) { 
+	for( auto const& cchptr: cc->caloHitsPtrVector() ) { 
 	  // map the crystal ptr to the reduced collection
 	  auto ifnd = cchmap.find(cchptr);
 	  if(ifnd != cchmap.end()){
 	    auto const& scchptr = ifnd->second;
 	    if(scchptr.isNonnull())
-	      std::cout << "CaloCrystalHit has " << scchptr->energyDep() << " energy Dep" << std::endl;
+	      std::cout << "CaloHit has " << scchptr->energyDep() << " energy Dep" << std::endl;
 	    else
 	      std::cout <<"CalCrystalHitPtr is invalid! "<< std::endl;
 	  } else {
-	    std::cout << "CaloCrystaLhitPtr not in map!" << std::endl;
+	    std::cout << "CaloHitPtr not in map!" << std::endl;
 	  }
 	}
       }

@@ -32,8 +32,6 @@
 #include "MCDataProducts/inc/GenId.hh"
 #include "DataProducts/inc/VirtualDetectorId.hh"
 
-#include "RecoDataProducts/inc/CaloCrystalHit.hh"
-#include "RecoDataProducts/inc/CaloHit.hh"
 #include "RecoDataProducts/inc/CaloHit.hh"
 #include "RecoDataProducts/inc/CaloCluster.hh"
 #include "RecoDataProducts/inc/CaloCluster.hh"
@@ -101,7 +99,7 @@ namespace mu2e {
      private:
        
        typedef std::vector< art::Handle<StepPointMCCollection> > HandleVector;
-       typedef art::Ptr< CaloCrystalHit> CaloCrystalHitPtr;
+       typedef art::Ptr< CaloHit> CaloHitPtr;
        typedef art::Ptr<SimParticle> SimParticlePtr;
 
 
@@ -186,9 +184,9 @@ namespace mu2e {
       Calorimeter const & cal = *(GeomHandle<Calorimeter>());
   
       //Get calo crystal hits (average from readouts)
-      art::Handle<CaloCrystalHitCollection> caloCrystalHitsHandle;
-      event.getByLabel(_caloCrystalModuleLabel, caloCrystalHitsHandle);
-      CaloCrystalHitCollection const& caloCrystalHits(*caloCrystalHitsHandle);
+      art::Handle<CaloHitCollection> CaloHitsHandle;
+      event.getByLabel(_caloCrystalModuleLabel, CaloHitsHandle);
+      CaloHitCollection const& CaloHits(*CaloHitsHandle);
 
       //Get calo cluster
       art::Handle<CaloClusterCollection> caloClustersHandle;
@@ -198,9 +196,9 @@ namespace mu2e {
 
 
 
-      for (unsigned int ic=0; ic<caloCrystalHits.size();++ic) 
+      for (unsigned int ic=0; ic<CaloHits.size();++ic) 
       {	   
-	  CaloCrystalHit const& hit    = caloCrystalHits.at(ic);
+	  CaloHit const& hit    = CaloHits.at(ic);
 	  double time0                 = hit.time();
 	  CLHEP::Hep3Vector crystalPos = cal.crystal(hit.id()).position();
 	  if (hit.time() < 500) continue;
@@ -212,7 +210,7 @@ namespace mu2e {
 
 	  for (auto const& clusterIt : caloClusters) 
 	  {	      	      
-	       for (auto const& crystalIncluster : clusterIt.caloCrystalHitsPtrVector()) 
+	       for (auto const& crystalIncluster : clusterIt.caloHitsPtrVector()) 
 	       {
 		    if (cal.crystal(hit.id()).diskId() !=
                     cal.crystal(crystalIncluster->id()).diskId()) break;
@@ -242,7 +240,7 @@ namespace mu2e {
 	   {
 	     for (int j=i+1;j<clusterIt.size();++j)
 	     {
-	      double deltaTime = abs(clusterIt.caloCrystalHitsPtrVector().at(i)->time()- clusterIt.caloCrystalHitsPtrVector().at(j)->time());
+	      double deltaTime = abs(clusterIt.caloHitsPtrVector().at(i)->time()- clusterIt.caloHitsPtrVector().at(j)->time());
 	      if (deltaTime > dtime) dtime = deltaTime;
 	     }	   
 	   }

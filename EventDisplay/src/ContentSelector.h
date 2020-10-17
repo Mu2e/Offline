@@ -11,7 +11,6 @@
 #ifndef EventDisplay_src_ContentSelector_h
 #define EventDisplay_src_ContentSelector_h
 
-#include "RecoDataProducts/inc/CaloCrystalHit.hh"
 #include "RecoDataProducts/inc/CaloHit.hh"
 #include "RecoDataProducts/inc/CrvRecoPulseCollection.hh"
 #include "MCDataProducts/inc/PhysicalVolumeInfoMultiCollection.hh"
@@ -47,7 +46,6 @@ class ContentSelector
   std::vector<art::Handle<mu2e::StrawHitCollection> > _strawHitVector;
   std::vector<art::Handle<mu2e::StrawHitFlagCollection> > _strawHitFlagVector;
   std::vector<art::Handle<mu2e::StrawHitPositionCollection> > _strawHitPositionVector;
-  std::vector<art::Handle<mu2e::CaloCrystalHitCollection> > _caloCrystalHitVector;
   std::vector<art::Handle<mu2e::CaloHitCollection> > _caloHitVector;
   std::vector<art::Handle<mu2e::CrvRecoPulseCollection> > _crvRecoPulseVector;
   std::vector<art::Handle<mu2e::SimParticleCollection> > _simParticleVector;

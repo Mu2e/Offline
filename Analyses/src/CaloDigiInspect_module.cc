@@ -16,7 +16,7 @@
 
 #include "MCDataProducts/inc/SimParticleCollection.hh"
 #include "MCDataProducts/inc/CaloShowerSim.hh"
-#include "RecoDataProducts/inc/CaloCrystalHit.hh"
+#include "RecoDataProducts/inc/CaloHit.hh"
 #include "RecoDataProducts/inc/CaloRecoDigi.hh"
 #include "MCDataProducts/inc/CaloMCTruthAssns.hh"
 //#include "RecoDataProducts/inc/CaloRecoDigi.hh"
@@ -66,7 +66,7 @@ namespace mu2e {
 	 typedef  art::Ptr<CaloShowerSim> CaloShowerSimPtr;
 	  
          std::string _caloShowerSimModuleLabel;
-         std::string _caloCrystalHitModuleLabel;
+         std::string _caloHitModuleLabel;
          std::string _caloHitTruthModuleLabel;
          int _diagLevel;
 
@@ -82,7 +82,7 @@ namespace mu2e {
    CaloDigiInspect::CaloDigiInspect(fhicl::ParameterSet const& pset) :
       art::EDAnalyzer(pset),
       _caloShowerSimModuleLabel(pset.get<std::string>("caloShowerSimModuleLabel")),
-      _caloCrystalHitModuleLabel(pset.get<std::string>("caloCrystalHitModuleLabel")),
+      _caloHitModuleLabel(pset.get<std::string>("caloCrystalModuleLabel")),
       _caloHitTruthModuleLabel(pset.get<std::string>("caloHitTruthModuleLabel")),
       _diagLevel(pset.get<int>("diagLevel",0))
    {
@@ -129,9 +129,9 @@ namespace mu2e {
        event.getByLabel(_caloShowerSimModuleLabel, caloShowerSimHandle);
        const CaloShowerSimCollection& caloShowerSims(*caloShowerSimHandle);      
 
-       art::Handle<CaloCrystalHitCollection> CaloCrystalHitHandle;
-       event.getByLabel(_caloCrystalHitModuleLabel, CaloCrystalHitHandle);
-       const CaloCrystalHitCollection& CaloCrystalHits(*CaloCrystalHitHandle);
+       art::Handle<CaloHitCollection> CaloHitHandle;
+       event.getByLabel(_caloHitModuleLabel, CaloHitHandle);
+       const CaloHitCollection& CaloHits(*CaloHitHandle);
 
 
        art::Handle<CaloShowerMCTruthAssn> caloHitTruthHandle;
@@ -141,7 +141,7 @@ namespace mu2e {
 
 
 
-       std::set<const CaloCrystalHit*> hitSet;
+       std::set<const CaloHit*> hitSet;
        std::set<const CaloShowerSim*> showerSimSet;
        std::vector<int> nShower(cal.nCrystal(),0);
        std::vector<int> nShowerReco(cal.nCrystal(),0);
@@ -201,25 +201,25 @@ namespace mu2e {
 
 
        //analyze the reconstructed hits
-       for (const auto& CaloCrystalHit : CaloCrystalHits)
+       for (const auto& CaloHit : CaloHits)
        {             
 	    
 	    ++nHits;     
-	    nHit[CaloCrystalHit.id()] +=1;	
+	    nHit[CaloHit.id()] +=1;	
 	    
-	    if (hitSet.find(&CaloCrystalHit) != hitSet.end())
+	    if (hitSet.find(&CaloHit) != hitSet.end())
 	    {
-	        _hHitE->Fill(CaloCrystalHit.energyDep());
-	        _hHitT->Fill(CaloCrystalHit.time());
-	        nHitReco[CaloCrystalHit.id()] +=1;		
+	        _hHitE->Fill(CaloHit.energyDep());
+	        _hHitT->Fill(CaloHit.time());
+	        nHitReco[CaloHit.id()] +=1;		
 	    }
 	    else
 	    {
-	        _hHitNoE->Fill(CaloCrystalHit.energyDep());
-	        _hHitNoT->Fill(CaloCrystalHit.time());
+	        _hHitNoE->Fill(CaloHit.energyDep());
+	        _hHitNoT->Fill(CaloHit.time());
 		
-		std::cout<<"Unmatched Reco hit at event id="<<event.id()<<"  crystal id="<<CaloCrystalHit.id()
-		         <<"  eDep="<<CaloCrystalHit.energyDep()<<"  time="<<CaloCrystalHit.time()<<std::endl;
+		std::cout<<"Unmatched Reco hit at event id="<<event.id()<<"  crystal id="<<CaloHit.id()
+		         <<"  eDep="<<CaloHit.energyDep()<<"  time="<<CaloHit.time()<<std::endl;
 	    }
 
 	    

@@ -29,7 +29,7 @@
 #include "GeometryService/inc/GeomHandle.hh"
 #include "GeometryService/inc/GeometryService.hh"
 
-#include "RecoDataProducts/inc/CaloCrystalHit.hh"
+#include "RecoDataProducts/inc/CaloHit.hh"
 #include "RecoDataProducts/inc/CaloCluster.hh"
 
 #include "TDirectory.h"
@@ -157,9 +157,9 @@ namespace mu2e {
       Calorimeter const & cal = *(GeomHandle<Calorimeter>());
 
       //Calorimeter crystal hits (average from readouts)
-      art::Handle<CaloCrystalHitCollection> caloCrystalHitsHandle;
-      event.getByLabel(_caloCrystalModuleLabel, caloCrystalHitsHandle);
-      CaloCrystalHitCollection const& caloCrystalHits(*caloCrystalHitsHandle);
+      art::Handle<CaloHitCollection> CaloHitsHandle;
+      event.getByLabel(_caloCrystalModuleLabel, CaloHitsHandle);
+      CaloHitCollection const& CaloHits(*CaloHitsHandle);
 
       //Calorimeter clusters
       art::Handle<CaloClusterCollection> caloClustersHandle;
@@ -187,9 +187,9 @@ namespace mu2e {
        _nHits = 0;
        _cryEtot = 0.0;
 
-       for (unsigned int ic=0; ic<caloCrystalHits.size();++ic)
+       for (unsigned int ic=0; ic<CaloHits.size();++ic)
        {
-           const CaloCrystalHit &hit     = caloCrystalHits.at(ic);
+           const CaloHit &hit     = CaloHits.at(ic);
 	   int diskId                    = cal.crystal(hit.id()).diskId();
            CLHEP::Hep3Vector crystalPos  = cal.geomUtil().mu2eToDiskFF(diskId,cal.crystal(hit.id()).position());  //in disk FF frame
  
@@ -216,7 +216,7 @@ namespace mu2e {
            std::vector<int> _list;
            for (int i=0;i<clusterIt->size();++i)
            {
-               int idx = int(clusterIt->caloCrystalHitsPtrVector().at(i).get()- &caloCrystalHits.at(0));
+               int idx = int(clusterIt->caloHitsPtrVector().at(i).get()- &CaloHits.at(0));
                _list.push_back(idx);
            }
 

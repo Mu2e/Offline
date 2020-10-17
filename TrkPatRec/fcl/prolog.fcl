@@ -24,9 +24,9 @@ TimeClusterFinder : {
   ClusterCaloMVA : { MVAWeights : "TrkPatRec/test/TimeClusterCalo.weights.xml" }
   ComboHitCollection : "makePH"
   StrawHitFlagCollection : "FlagBkgHits:ComboHits"
-  CaloClusterCollection : "CaloClusterFromProtoCluster"
+  CaloClusterCollection : "CaloClusterMaker"
   # enable calorimeter cluster info in time clustering
-  CaloClusterCollection : "CaloClusterFromProtoCluster"
+  CaloClusterCollection : "CaloClusterMaker"
   UseCaloCluster : true
   UseCaloClusterPosition : true
   CaloClusterWeight : 10.0
@@ -244,7 +244,7 @@ KFF : {
   module_type                 : KalFinalFit
   ComboHitCollection	      : "makeSH"
   StrawHitFlagCollection      : "FlagBkgHits:StrawHits"
-  CaloClusterCollection       : "CaloClusterFromProtoCluster"
+  CaloClusterCollection       : "CaloClusterMaker"
   KalFit		      : @local::KFFinal
   GoodKallSeedFitBits	      : ["SeedOK"]
   AddHitSelectionBits	      : []

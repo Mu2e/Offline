@@ -1,6 +1,6 @@
 #include "CaloCluster/inc/ClusterMoments.hh"
 #include "CalorimeterGeom/inc/Calorimeter.hh"
-#include "RecoDataProducts/inc/CaloCrystalHit.hh"
+#include "RecoDataProducts/inc/CaloHit.hh"
 #include "RecoDataProducts/inc/CaloCluster.hh"
 
 #include <iostream>
@@ -13,7 +13,7 @@ namespace mu2e {
     {
         //calculate first and second moments in one pass
         double sxi(0),sxi2(0),syi(0),syi2(0),sxyi(0),szi(0),szi2(0),swi(0);
-        for (const auto& hit : caloCluster_.caloCrystalHitsPtrVector())
+        for (const auto& hit : caloCluster_.caloHitsPtrVector())
         {
             int    crId(hit->id());
             double energy(hit->energyDep());

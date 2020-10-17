@@ -1,7 +1,7 @@
 #include "CaloCluster/inc/ClusterFinder.hh"
 #include "CalorimeterGeom/inc/Calorimeter.hh"
 #include "GeometryService/inc/GeomHandle.hh"
-#include "RecoDataProducts/inc/CaloCrystalHit.hh"
+#include "RecoDataProducts/inc/CaloHit.hh"
 
 #include <iostream>
 #include <vector>
@@ -10,7 +10,7 @@
 
 namespace mu2e {
 
-	ClusterFinder::ClusterFinder(const Calorimeter& cal, const CaloCrystalHit* crystalSeed, double deltaTime, double ExpandCut, bool isOnline) : 
+	ClusterFinder::ClusterFinder(const Calorimeter& cal, const CaloHit* crystalSeed, double deltaTime, double ExpandCut, bool isOnline) : 
 	  cal_(&cal), crystalSeed_(crystalSeed), seedTime_(crystalSeed->time()), clusterList_(), crystalToVisit_(), isVisited_(cal.nCrystal()),
 	  deltaTime_(deltaTime), ExpandCut_(ExpandCut), isOnline_(isOnline)
 	{}
@@ -44,7 +44,7 @@ namespace mu2e {
                      auto it=list.begin();
 		     while(it != list.end())
 		     {
-			 CaloCrystalHit const* hit = *it;
+			 CaloHit const* hit = *it;
 			 if (std::abs(hit->time() - seedTime_) < deltaTime_)
 			 { 
 			     if (hit->energyDep() > ExpandCut_) crystalToVisit_.push(iId);
@@ -59,7 +59,7 @@ namespace mu2e {
             }
 
 	    // make sure to sort proto0cluster by energy
-	    clusterList_.sort([](const CaloCrystalHit* lhs, const CaloCrystalHit* rhs) {return lhs->energyDep() > rhs->energyDep();});
+	    clusterList_.sort([](const CaloHit* lhs, const CaloHit* rhs) {return lhs->energyDep() > rhs->energyDep();});
        } 
 
 }

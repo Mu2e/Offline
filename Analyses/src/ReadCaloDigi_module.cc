@@ -40,12 +40,10 @@
 #include "GeometryService/inc/GeometryService.hh"
 #include "GeometryService/inc/GeomHandle.hh"
 #include "RecoDataProducts/inc/CaloHit.hh"
-#include "RecoDataProducts/inc/CaloCrystalHit.hh"
 #include "SeedService/inc/SeedService.hh"
 #include "Mu2eUtilities/inc/SimParticleTimeOffset.hh"
 
 
-#include "RecoDataProducts/inc/CaloHit.hh"
 #include "RecoDataProducts/inc/CaloRecoDigi.hh"
 #include "RecoDataProducts/inc/CaloRecoDigi.hh"
 #include "RecoDataProducts/inc/CaloCluster.hh"
@@ -132,7 +130,7 @@ namespace mu2e {
   private:
 
     typedef std::vector< art::Handle<mu2e::StepPointMCCollection> > StepMCHandleVector;
-    typedef art::Ptr<mu2e::CaloCrystalHit>                          CaloCrystalHitPtr;
+    typedef art::Ptr<mu2e::CaloHit>                          CaloHitPtr;
 
     void             initVHits     ();
 
@@ -431,15 +429,15 @@ namespace mu2e {
 
 
     int         nCaloCrystals(0);
-    const     CaloCrystalHitCollection*  caloCrystalHits(0);
-    art::Handle<CaloCrystalHitCollection> caloCrystalHitsHandle;
-    event.getByLabel(_caloCrystalModuleLabel, caloCrystalHitsHandle);
-    if (!caloCrystalHitsHandle.isValid()){
-      //      printf("[ReadCaloDigi::analyze] no CaloCrystalHitCollection: BAILS OUT \n");
+    const     CaloHitCollection*  CaloHits(0);
+    art::Handle<CaloHitCollection> CaloHitsHandle;
+    event.getByLabel(_caloCrystalModuleLabel, CaloHitsHandle);
+    if (!CaloHitsHandle.isValid()){
+      //      printf("[ReadCaloDigi::analyze] no CaloHitCollection: BAILS OUT \n");
       nCaloCrystals = 0;
     }else {
-     caloCrystalHits = caloCrystalHitsHandle.product();
-     nCaloCrystals   = caloCrystalHits->size();
+     CaloHits = CaloHitsHandle.product();
+     nCaloCrystals   = CaloHits->size();
     }
 
 
@@ -626,8 +624,8 @@ namespace mu2e {
 
     //some helper variables
     const CaloCluster                       *cluster;
-    const std::vector<CaloCrystalHitPtr>    *crystals;
-    const CaloCrystalHit                    *crystalHit;
+    const std::vector<CaloHitPtr>    *crystals;
+    const CaloHit                    *crystalHit;
     const CaloRecoDigi                      *recoDigi;
     //    const CaloDigi                          *caloDigi;
     const CaloDigiMC                        *caloDigiMC(0);
@@ -774,7 +772,7 @@ namespace mu2e {
     for (int ic=0; ic<nCaloCrystals;++ic) {
 
 
-      CaloCrystalHit const& hit    = caloCrystalHits->at(ic);
+      CaloHit const& hit    = CaloHits->at(ic);
       CLHEP::Hep3Vector crystalPos = crystalPos = _calorimeter->geomUtil().mu2eToDiskFF(diskId,_calorimeter->crystal(crystalId).position());
 
       _cryEtot             += hit.energyDep();
@@ -838,7 +836,7 @@ namespace mu2e {
     for (int i=0; i<_nCluster; ++i){
       cluster  = &caloClusters->at(i);
 
-      crystals = &cluster->caloCrystalHitsPtrVector();
+      crystals = &cluster->caloHitsPtrVector();
 
       int    nCrystals = crystals->size();
       int    indexMC;

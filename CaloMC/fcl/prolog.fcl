@@ -68,7 +68,7 @@ CaloHitTruthMatch:
 {
     module_type               : CaloHitTruthMatch
     caloShowerSimCollection   : CaloShowerStepROFromShowerStep
-    caloCrystalHitCollection  : CaloCrystalHitFromHit
+    caloHitCollection         : CaloHitMaker
     primaryParticle           : FindMCPrimary
     MeVToADC                  : @local::HitMakerMeVToADC
     digiSampling              : @local::HitMakerDigiSampling
@@ -79,7 +79,7 @@ CaloHitTruthMatch:
 CaloClusterTruthMatch:
 {
     module_type           : CaloClusterTruthMatch
-    caloClusterCollection : CaloClusterFromProtoCluster
+    caloClusterCollection : CaloClusterMaker
     caloDigiMCTruthAssn   : CaloHitTruthMatch
     diagLevel             : 0
 }

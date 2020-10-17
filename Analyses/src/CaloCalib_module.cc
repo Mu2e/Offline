@@ -28,8 +28,6 @@
 #include "MCDataProducts/inc/GenId.hh"
 #include "DataProducts/inc/VirtualDetectorId.hh"
 
-#include "RecoDataProducts/inc/CaloCrystalHit.hh"
-#include "RecoDataProducts/inc/CaloHit.hh"
 #include "RecoDataProducts/inc/CaloHit.hh"
 #include "RecoDataProducts/inc/CaloCluster.hh"
 #include "RecoDataProducts/inc/CaloCluster.hh"
@@ -108,7 +106,7 @@ namespace mu2e {
      private:
        
        typedef std::vector< art::Handle<StepPointMCCollection> > HandleVector;
-       typedef art::Ptr< CaloCrystalHit> CaloCrystalHitPtr;
+       typedef art::Ptr< CaloHit> CaloHitPtr;
        typedef art::Ptr<SimParticle> SimParticlePtr;
 
 
@@ -164,7 +162,7 @@ namespace mu2e {
     _g4ModuleLabel(pset.get<string>("g4ModuleLabel","g4run")),
     _generatorModuleLabel(pset.get<string>("generatorModuleLabel","generate")),
     _caloReadoutModuleLabel(pset.get<string>("caloReadoutModuleLabel","CaloReadoutHitsMaker")),
-    _caloCrystalModuleLabel(pset.get<string>("caloCrystalModuleLabel","CaloCrystalHitsMaker")),
+    _caloCrystalModuleLabel(pset.get<string>("caloCrystalModuleLabel","CaloHitsMaker")),
     _caloHitMCCrystalPtrLabel(pset.get<string>("calorimeterHitMCCrystalPtr","CaloHitMCCrystalPtr")),
     _caloClusterModuleLabel(pset.get<std::string>("caloClusterModuleLabel","CaloClusterMakerNew")),
     _virtualDetectorLabel(pset.get<string>("virtualDetectorName","virtualdetector")),
@@ -265,9 +263,9 @@ namespace mu2e {
       //CaloHitCollection const& caloHits(*caloHitsHandle);
                   
       //Get calo crystal hits (average from readouts)
-      //art::Handle<CaloCrystalHitCollection> caloCrystalHitsHandle;
-      //event.getByLabel(_caloCrystalModuleLabel, caloCrystalHitsHandle);
-      //CaloCrystalHitCollection const& caloCrystalHits(*caloCrystalHitsHandle);   
+      //art::Handle<CaloHitCollection> CaloHitsHandle;
+      //event.getByLabel(_caloCrystalModuleLabel, CaloHitsHandle);
+      //CaloHitCollection const& CaloHits(*CaloHitsHandle);   
 
       //const double CrDensity = 4.9e-6;  // in kg/mm3 to be consistent with volume units!
       //const double CrMass    = CrDensity*cal.caloInfo().crystalVolume();
@@ -303,12 +301,12 @@ namespace mu2e {
        _nHits = _nSim = 0;
        
 /*
-       for (unsigned int ic=0; ic<caloCrystalHits.size();++ic) 
+       for (unsigned int ic=0; ic<CaloHits.size();++ic) 
        {	   
-	   CaloCrystalHit const& hit      = caloCrystalHits.at(ic);
-	   int diskId                     = cal.crystal(hit.id()).diskId();
-           CLHEP::Hep3Vector crystalPos   = cal.geomUtil().mu2eToDiskFF(diskId,cal.crystal(hit.id()).position());  //in disk FF frame
-           CaloHit const& caloHit         = *(hit.readouts().at(0));
+	   CaloHit const& hit            = CaloHits.at(ic);
+	   int diskId                    = cal.crystal(hit.id()).diskId();
+           CLHEP::Hep3Vector crystalPos  = cal.geomUtil().mu2eToDiskFF(diskId,cal.crystal(hit.id()).position());  //in disk FF frame
+           CaloHit const& caloHit        = *(hit.readouts().at(0));
 
 
 	   CaloHitSimPartMC const& hitSim = caloHitNavigator.sim(caloHit);

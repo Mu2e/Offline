@@ -12,7 +12,7 @@ TimeClusterFinder : {
 	ClusterCaloMVA : { MVAWeights : "TrkPatRec/test/TimeClusterCalo.weights.xml" }
 	ComboHitCollection : "makePH"
 	StrawHitFlagCollection : "FlagBkgHits:ComboHits"
-	CaloClusterCollection : "CaloClusterFromProtoCluster"
+	CaloClusterCollection : "CaloClusterMaker"
 	T0Calculator : { CaloT0Offset : @local::TrackCaloMatching.DtOffset }
 	UseCaloCluster : true
 	UseCaloClusterPosition : true

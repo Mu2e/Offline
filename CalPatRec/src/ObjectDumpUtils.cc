@@ -14,10 +14,7 @@
 #include "CalorimeterGeom/inc/Calorimeter.hh"
 
 #include "RecoDataProducts/inc/CaloCluster.hh"
-#include "RecoDataProducts/inc/CaloCluster.hh"
 #include "RecoDataProducts/inc/CaloProtoCluster.hh"
-#include "RecoDataProducts/inc/CaloCrystalHit.hh"
-#include "RecoDataProducts/inc/CaloCrystalHit.hh"
 #include "RecoDataProducts/inc/CaloHit.hh"
 #include "RecoDataProducts/inc/StrawHitCollection.hh"
 #include "RecoDataProducts/inc/StrawHitPositionCollection.hh"
@@ -112,7 +109,7 @@ void ObjectDumpUtils::printCaloProtoCluster(const mu2e::CaloProtoCluster* Cluste
     printf("-----------------------------------------------------------------------------------------------------\n");
   }
 
-  const mu2e::CaloProtoCluster::CaloCrystalHitPtrVector caloClusterHits = Cluster->caloCrystalHitsPtrVector();
+  const mu2e::CaloProtoCluster::CaloHitPtrVector caloClusterHits = Cluster->caloHitsPtrVector();
   int nh = caloClusterHits.size();
 
   if ((opt == "") || (opt.Index("data") >= 0)) {
@@ -132,7 +129,7 @@ void ObjectDumpUtils::printCaloProtoCluster(const mu2e::CaloProtoCluster* Cluste
 // print individual crystals in local disk coordinate system
 //-----------------------------------------------------------------------------
     for (int i=0; i<nh; i++) {
-      const mu2e::CaloCrystalHit* hit = &(*caloClusterHits.at(i));
+      const mu2e::CaloHit* hit = &(*caloClusterHits.at(i));
       int id = hit->id();
 
       //      pos = cg->crystalOriginInSection(id);

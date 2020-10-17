@@ -12,7 +12,7 @@ int mu2e::ValCaloCrystalHit::declare(art::TFileDirectory tfs) {
   return 0;
 }
 
-int mu2e::ValCaloCrystalHit::fill(const mu2e::CaloCrystalHitCollection & coll,
+int mu2e::ValCaloCrystalHit::fill(const mu2e::CaloHitCollection & coll,
 				art::Event const& event) {
 
   // increment this by 1 any time the defnitions of the histograms or the 

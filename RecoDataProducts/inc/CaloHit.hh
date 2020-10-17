@@ -1,44 +1,53 @@
-#ifndef DataProducts_CaloHit_hh
-#define DataProducts_CaloHit_hh
+#ifndef RecoDataProducts_CaloHit_hh
+#define RecoDataProducts_CaloHit_hh
 
-#include <iostream>
+#include "RecoDataProducts/inc/CaloRecoDigi.hh"
+#include "RecoDataProducts/inc/CaloRecoDigi.hh"
+#include "canvas/Persistency/Common/Ptr.h"
+
 #include <vector>
+#include <map>
 
 namespace mu2e {
 
   class CaloHit
   {
-     public:
+      public:
+	 CaloHit(): _crystalId(-1),_nROId(0),_time(0.),_timeErr(0.),_eDep(0.),_eDepErr(0.),_recoCaloDigis()
+	 {}
 
-       CaloHit():
-          _roId(-1), _time(0.), _energyDep(0.) 
-       {}
+	 CaloHit(int crystalId, int nRoid, double time, double timeErr, double eDep, double eDepErr,  
+	                std::vector<art::Ptr<CaloRecoDigi> > &CaloRecoDigi)  :
+                        _crystalId(crystalId),_nROId(nRoid),_time(time),_timeErr(timeErr),_eDep(eDep),_eDepErr(eDepErr),
+			_recoCaloDigis(CaloRecoDigi)
+         {}
 
-       CaloHit( int roId, float time, float energyDep ):
-         _roId(roId), _time(time),_energyDep(energyDep)
-       {}
 
-       int        id()         const { return _roId; }
-       float      time()       const { return _time;}
-       float      energyDep()  const { return _energyDep; }
+	       int                                    id             () const { return _crystalId; }
+	       int                                    nROId          () const { return _nROId;}
+	       double                                 time           () const { return _time;}
+	       double                                 timeErr        () const { return _timeErr;}
+               double                                 energyDep      () const { return _eDep;} 
+               double                                 energyDepErr   () const { return _eDepErr;} 
+	       double                                 energyDepTot   () const { return _eDep*_nROId;}
+	       double                                 energyDepTotErr() const { return _eDepErr*_nROId;}
+	 const std::vector<art::Ptr<CaloRecoDigi>>&   recoCaloDigis  () const { return _recoCaloDigis;}
 
-       void print( std::ostream& ost = std::cout, bool doEndl = true ) const;
 
-     private:
-        int       _roId;
-        float     _time;     
-        float     _energyDep;
+       private:
+	 int        _crystalId;
+	 int        _nROId;
+	 double     _time;             
+	 double     _timeErr;             
+	 double     _eDep;        
+	 double     _eDepErr;        
+	 std::vector<art::Ptr<CaloRecoDigi> > _recoCaloDigis;
+
   };
 
-  
-  inline std::ostream& operator<<(std::ostream& ost, CaloHit const& hit)
-  {
-      hit.print(ost,false);
-      return ost;
-  }
-  
-  
-  typedef std::vector<mu2e::CaloHit> CaloHitCollection;
-} 
 
-#endif /* DataProducts_CaloHit_hh */
+  typedef std::vector<mu2e::CaloHit> CaloHitCollection;
+  typedef std::map<art::Ptr<CaloHit>,art::Ptr<CaloHit>> CaloHitRemapping;
+}
+
+#endif

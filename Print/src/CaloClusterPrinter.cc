@@ -103,7 +103,7 @@ mu2e::CaloClusterPrinter::Print(const mu2e::CaloCluster& obj, int ind, std::ostr
        << "\n";
      os 
        << " CrystalHits:";
-       for(auto& ic: obj.caloCrystalHitsPtrVector()) {
+       for(auto& ic: obj.caloHitsPtrVector()) {
 	 os << " " << (*ic).id();
        }
       os << "\n";

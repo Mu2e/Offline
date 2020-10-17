@@ -3,7 +3,7 @@
 //
 // Class to find cluster of simply connected crystals
 // 
-#include "RecoDataProducts/inc/CaloCrystalHit.hh"
+#include "RecoDataProducts/inc/CaloHit.hh"
 #include "CalorimeterGeom/inc/Calorimeter.hh"
 
 #include <vector>
@@ -16,25 +16,25 @@ namespace mu2e {
     class ClusterFinder 
     {
          public:
-             typedef std::list<const CaloCrystalHit*>    CaloCrystalList;
-             typedef std::vector<const CaloCrystalHit*>  CaloCrystalVec;
+             typedef std::list<const CaloHit*>    CaloCrystalList;
+             typedef std::vector<const CaloHit*>  CaloCrystalVec;
 
-             ClusterFinder(const Calorimeter&, const CaloCrystalHit*, double, double, bool isOnline = false);  
+             ClusterFinder(const Calorimeter&, const CaloHit*, double, double, bool isOnline = false);  
              
              void                   formCluster(std::vector<CaloCrystalList>&);
              const CaloCrystalList& clusterList() const {return clusterList_;}             
 
 
          private:
-             const Calorimeter*     cal_;
-             const CaloCrystalHit*  crystalSeed_;
-             double                 seedTime_;
-             CaloCrystalList        clusterList_;
-             std::queue<int>        crystalToVisit_;
-             std::vector<bool>      isVisited_; 
-             double                 deltaTime_; 
-             double                 ExpandCut_;
- 	     bool 		    isOnline_;
+             const Calorimeter*   cal_;
+             const CaloHit*       crystalSeed_;
+             double               seedTime_;
+             CaloCrystalList      clusterList_;
+             std::queue<int>      crystalToVisit_;
+             std::vector<bool>    isVisited_; 
+             double               deltaTime_; 
+             double               ExpandCut_;
+ 	     bool 		  isOnline_;
     };
 
 

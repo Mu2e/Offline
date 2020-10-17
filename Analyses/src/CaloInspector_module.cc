@@ -16,7 +16,7 @@
 #include "messagefacility/MessageLogger/MessageLogger.h"
 #include "canvas/Utilities/InputTag.h"
 
-#include "RecoDataProducts/inc/CaloCrystalHit.hh"
+#include "RecoDataProducts/inc/CaloHit.hh"
 #include "MCDataProducts/inc/CaloShowerSim.hh"
 #include "MCDataProducts/inc/CaloMCTruthAssns.hh"
 
@@ -83,9 +83,9 @@ namespace mu2e {
   void CaloInspector::analyze(const art::Event& event) 
   {      
       //Calorimeter crystal hits (average from readouts)
-      art::Handle<CaloCrystalHitCollection> caloCrystalHitsHandle;
-      event.getByLabel(caloCrystalModuleLabel_, caloCrystalHitsHandle);
-      const CaloCrystalHitCollection& caloCrystalHits(*caloCrystalHitsHandle);
+      art::Handle<CaloHitCollection> CaloHitsHandle;
+      event.getByLabel(caloCrystalModuleLabel_, CaloHitsHandle);
+      const CaloHitCollection& CaloHits(*CaloHitsHandle);
 
       //Calorimeter shower sims
       art::Handle<CaloShowerSimCollection> caloShowerSimHandle;
@@ -98,9 +98,9 @@ namespace mu2e {
       const CaloDigiMCTruthAssn& caloDigiTruth(*caloDigiTruthHandle);
 
 
-      for (unsigned int ic=0; ic<caloCrystalHits.size();++ic)
+      for (unsigned int ic=0; ic<CaloHits.size();++ic)
       {
-          const CaloCrystalHit& hit = caloCrystalHits.at(ic);
+          const CaloHit& hit = CaloHits.at(ic);
 
           //Find the caloDigiMC in the truth map          
           auto itMC = caloDigiTruth.begin();

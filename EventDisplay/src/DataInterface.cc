@@ -31,7 +31,6 @@ using namespace std;
 #include "MCDataProducts/inc/StepPointMCCollection.hh"
 #include "Mu2eUtilities/inc/PhysicalVolumeMultiHelper.hh"
 #include "ConfigTools/inc/SimpleConfig.hh"
-#include "RecoDataProducts/inc/CaloCrystalHit.hh"
 #include "RecoDataProducts/inc/CaloHit.hh"
 #include "RecoDataProducts/inc/StrawHitCollection.hh"
 #include "RecoDataProducts/inc/StrawHitFlagCollection.hh"
@@ -1006,38 +1005,6 @@ void DataInterface::fillEvent(boost::shared_ptr<ContentSelector> const &contentS
           crystal->second->getComponentInfo()->expandLine(2,Form("%gns",time/CLHEP::ns));
           crystal->second->getComponentInfo()->expandLine(3,Form("%geV",energy/CLHEP::eV));
           crystal->second->getComponentInfo()->expandLine(4,Form("%i",trackid));
-        }
-      }
-    }
-  }
-
-  const mu2e::CaloCrystalHitCollection *calocrystalhits=contentSelector->getSelectedCaloHitCollection<mu2e::CaloCrystalHitCollection>();
-  if(calocrystalhits!=nullptr)
-  {
-    _numberCrystalHits=calocrystalhits->size();
-    std::vector<mu2e::CaloCrystalHit>::const_iterator iter;
-    for(iter=calocrystalhits->begin(); iter!=calocrystalhits->end(); iter++)
-    {
-      const mu2e::CaloCrystalHit& calohit = *iter;
-      int crystalid = calohit.id();
-      double time = calohit.time();
-      double energy = calohit.energyDep();
-      std::map<int,boost::shared_ptr<VirtualShape> >::iterator crystal=_crystals.find(crystalid);
-      if(crystal!=_crystals.end() && !std::isnan(time))
-      {
-        double previousStartTime=crystal->second->getStartTime();
-        if(std::isnan(previousStartTime))
-        {
-          findBoundaryT(_hitsTimeMinmax, time);  //is it Ok to exclude all following hits from the time window?
-          crystal->second->setStartTime(time);
-          crystal->second->getComponentInfo()->setText(2,Form("hit time(s): %gns",time/CLHEP::ns));
-          crystal->second->getComponentInfo()->setText(3,Form("deposited energy(s): %geV",energy/CLHEP::eV));
-          _crystalhits.push_back(crystal->second);
-        }
-        else
-        {
-          crystal->second->getComponentInfo()->expandLine(2,Form("%gns",time/CLHEP::ns));
-          crystal->second->getComponentInfo()->expandLine(3,Form("%geV",energy/CLHEP::eV));
         }
       }
     }

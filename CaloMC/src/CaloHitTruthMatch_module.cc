@@ -1,5 +1,5 @@
 //
-// An EDProducer Module to match caloCrystalHits to MC info
+// An EDProducer Module to match CaloHits to MC info
 //
 #include "art/Framework/Core/EDProducer.h"
 #include "art/Framework/Core/ModuleMacros.h"
@@ -16,7 +16,7 @@
 #include "MCDataProducts/inc/PrimaryParticle.hh"
 #include "MCDataProducts/inc/SimParticle.hh"
 #include "MCDataProducts/inc/MCRelationship.hh"
-#include "RecoDataProducts/inc/CaloCrystalHit.hh"
+#include "RecoDataProducts/inc/CaloHit.hh"
 #include "Mu2eUtilities/inc/CaloPulseShape.hh"
 
 #include "TH2F.h"
@@ -39,7 +39,7 @@ namespace mu2e {
              using Name    = fhicl::Name;
              using Comment = fhicl::Comment;
              fhicl::Atom<art::InputTag>  caloShowerSimCollection  { Name("caloShowerSimCollection"),  Comment("Name of caloShowerSim Collection") };
-             fhicl::Atom<art::InputTag>  caloCrystalHitCollection { Name("caloCrystalHitCollection"), Comment("Name of caloCrystalHit collection") };
+             fhicl::Atom<art::InputTag>  caloHitCollection        { Name("caloHitCollection"),        Comment("Name of CaloHit collection") };
              fhicl::Atom<art::InputTag>  primaryParticle          { Name("primaryParticle"),	      Comment("PrimaryParticle producer")};
              fhicl::Atom<double>         MeVToADC                 { Name("MeVToADC"),                 Comment("MeV to ADC conversion factor") }; 
              fhicl::Atom<double>         digiSampling             { Name("digiSampling"),             Comment("Digitization time sampling") }; 
@@ -52,7 +52,7 @@ namespace mu2e {
         explicit CaloHitTruthMatch(const art::EDProducer::Table<Config>& config) :
            EDProducer{config},
            caloShowerSimToken_ {consumes<CaloShowerSimCollection> (config().caloShowerSimCollection())},
-           caloCrystalHitToken_{consumes<CaloCrystalHitCollection>(config().caloCrystalHitCollection())},
+           CaloHitToken_       {consumes<CaloHitCollection>(config().caloHitCollection())},
            ppToken_            {consumes<PrimaryParticle>(config().primaryParticle())},
            MeVToADC_           (config().MeVToADC()),
            digiSampling_       (config().digiSampling()),
@@ -74,11 +74,11 @@ namespace mu2e {
          using SimParticlePtr = art::Ptr<SimParticle>;
 
          void makeTruthMatch (art::Event&, CaloDigiMCCollection&, CaloDigiMCTruthAssn&, CaloShowerMCTruthAssn&, const PrimaryParticle&);
-         void diag           (const CaloShowerSim*, const CaloCrystalHit* );
+         void diag           (const CaloShowerSim*, const CaloHit* );
 
 
          const art::ProductToken<CaloShowerSimCollection>  caloShowerSimToken_;
-         const art::ProductToken<CaloCrystalHitCollection> caloCrystalHitToken_;
+         const art::ProductToken<CaloHitCollection> CaloHitToken_;
          const art::ProductToken<PrimaryParticle>          ppToken_;
          double               deltaTimeMinus_;
          double               MeVToADC_;
@@ -165,15 +165,15 @@ namespace mu2e {
       art::ProductID digiMCProductID(event.getProductID<CaloDigiMCCollection>());
       const art::EDProductGetter* digiMCProductGetter = event.productGetter(digiMCProductID);
 
-      const auto caloCrystalHitHandle = event.getValidHandle(caloCrystalHitToken_);
-      const auto& caloCrystalHits(*caloCrystalHitHandle);
+      const auto CaloHitHandle = event.getValidHandle(CaloHitToken_);
+      const auto& CaloHits(*CaloHitHandle);
       const auto caloShowerSimHandle = event.getValidHandle(caloShowerSimToken_);
       const auto& caloShowerSims(*caloShowerSimHandle);
      
       
-      std::map<int, std::vector<const CaloCrystalHit*>> caloHitMap;
+      std::map<int, std::vector<const CaloHit*>> caloHitMap;
       std::map<int,std::vector<const CaloShowerSim*>>   caloShowerSimsMap;
-      for (auto const& CaloCrystalHit: caloCrystalHits) caloHitMap[CaloCrystalHit.id()].push_back(&CaloCrystalHit);
+      for (auto const& CaloHit: CaloHits) caloHitMap[CaloHit.id()].push_back(&CaloHit);
       for (auto const& caloShowerSim: caloShowerSims)   caloShowerSimsMap[caloShowerSim.crystalId()].push_back(&caloShowerSim);
       
       int wfBinMax = std::distance(wf_.begin(),std::max_element(wf_.begin(),wf_.end())); 
@@ -186,7 +186,7 @@ namespace mu2e {
       {
           int crystalId = kv.first;
 
-          std::vector<const CaloCrystalHit*> &caloHits = kv.second;          
+          std::vector<const CaloHit*> &caloHits = kv.second;          
           std::sort(caloHits.begin(),caloHits.end(), [](auto const a, auto const b){return a->time() < b->time();});
           
           std::vector<const CaloShowerSim*>& caloSims = caloShowerSimsMap[crystalId];
@@ -209,11 +209,11 @@ namespace mu2e {
              auto hitNextIt = std::next(hitIt);
              bool hitIsMatched(false);
              
-             // make art Ptr to CaloCrystalHit collection
-             const CaloCrystalHit* hit = *hitIt;
+             // make art Ptr to CaloHit collection
+             const CaloHit* hit = *hitIt;
              size_t idxHit(0); 
-             while (idxHit < caloCrystalHits.size()) {if (&caloCrystalHits[idxHit]==hit) break; ++idxHit;}
-             auto hitPtr = art::Ptr<CaloCrystalHit>(caloCrystalHitHandle,idxHit);               
+             while (idxHit < CaloHits.size()) {if (&CaloHits[idxHit]==hit) break; ++idxHit;}
+             auto hitPtr = art::Ptr<CaloHit>(CaloHitHandle,idxHit);               
              
              //calculate the length of the pulse
              unsigned nbin(wfBinMax);
@@ -299,7 +299,7 @@ namespace mu2e {
   } 
   
 
-  void CaloHitTruthMatch::diag(const CaloShowerSim* shower, const CaloCrystalHit* hit)
+  void CaloHitTruthMatch::diag(const CaloShowerSim* shower, const CaloHit* hit)
   {
       hTime_->Fill(shower->time()-hit->time());
       hEnerTime_->Fill(shower->energyDep(),shower->time()-hit->time());

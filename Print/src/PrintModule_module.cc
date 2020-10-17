@@ -21,7 +21,7 @@
 #include "Print/inc/CaloHitPrinter.hh"
 #include "Print/inc/CaloDigiPrinter.hh"
 #include "Print/inc/CaloRecoDigiPrinter.hh"
-#include "Print/inc/CaloCrystalHitPrinter.hh"
+#include "Print/inc/CaloHitPrinter.hh"
 #include "Print/inc/CaloClusterPrinter.hh"
 #include "Print/inc/CrvDigiPrinter.hh"
 #include "Print/inc/CrvDigiMCPrinter.hh"
@@ -73,8 +73,8 @@ namespace mu2e {
 	fhicl::Name("caloDigiPrinter") }; 
       fhicl::Table<ProductPrinter::ConfigE> caloRecoDigiPrinter { 
 	fhicl::Name("caloRecoDigiPrinter") }; 
-      fhicl::Table<ProductPrinter::ConfigE> caloCrystalHitPrinter { 
-	fhicl::Name("caloCrystalHitPrinter") }; 
+      fhicl::Table<ProductPrinter::ConfigE> CaloHitPrinter { 
+	fhicl::Name("CaloHitPrinter") }; 
       fhicl::Table<ProductPrinter::ConfigE> caloClusterPrinter { 
 	fhicl::Name("caloClusterPrinter") }; 
       fhicl::Table<ProductPrinter::Config> crvDigiPrinter { 
@@ -154,7 +154,7 @@ mu2e::PrintModule::PrintModule(const Parameters& conf):
   _printers.push_back( make_unique<CaloHitPrinter>( conf().caloHitPrinter() ) );
   _printers.push_back( make_unique<CaloDigiPrinter>( conf().caloDigiPrinter() ) );
   _printers.push_back( make_unique<CaloRecoDigiPrinter>( conf().caloRecoDigiPrinter() ) );
-  _printers.push_back( make_unique<CaloCrystalHitPrinter>( conf().caloCrystalHitPrinter() ) );
+  _printers.push_back( make_unique<CaloHitPrinter>( conf().CaloHitPrinter() ) );
   _printers.push_back( make_unique<CaloClusterPrinter>( conf().caloClusterPrinter() ) );
   _printers.push_back( make_unique<CrvDigiPrinter>( conf().crvDigiPrinter() ) );
   _printers.push_back( make_unique<CrvDigiMCPrinter>( conf().crvDigiMCPrinter() ) );
