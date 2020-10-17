@@ -26,7 +26,7 @@
 #include "CalorimeterGeom/inc/Calorimeter.hh"
 #include "GeometryService/inc/GeomHandle.hh"
 #include "GeometryService/inc/GeometryService.hh"
-#include "RecoDataProducts/inc/CaloCrystalHit.hh"
+#include "RecoDataProducts/inc/CaloHit.hh"
 #include "RecoDataProducts/inc/CaloProtoCluster.hh"
 
 #include <iostream>
@@ -38,11 +38,11 @@
 
 namespace mu2e {
 
-  class CaloProtoClusterFromCrystalHit : public art::EDProducer
+  class CaloProtoClusterMaker : public art::EDProducer
   {
      public:
-        typedef std::vector<const CaloCrystalHit*>  CaloCrystalVec;
-        typedef std::list<const CaloCrystalHit*>    CaloCrystalList;
+        typedef std::vector<const CaloHit*>  CaloCrystalVec;
+        typedef std::list<const CaloHit*>    CaloCrystalList;
         
         struct Config
         {
@@ -59,9 +59,9 @@ namespace mu2e {
             fhicl::Atom<int>          diagLevel             { Name("diagLevel"),              Comment("Diag level"),0 }; 
         };
 
-        explicit CaloProtoClusterFromCrystalHit(const art::EDProducer::Table<Config>& config) :
+        explicit CaloProtoClusterMaker(const art::EDProducer::Table<Config>& config) :
           EDProducer{config},
-          caloCrystalToken_{consumes<CaloCrystalHitCollection>(config().caloCrystalModuleLabel())},
+          caloCrystalToken_{consumes<CaloHitCollection>(config().caloCrystalModuleLabel())},
           mainTag_         (config().mainTag()),
           splitTag_        (config().splitTag()),
           EminSeed_        (config().EminSeed()),
@@ -78,7 +78,7 @@ namespace mu2e {
         void produce(art::Event& e) override;
 
      private:
-        art::ProductToken<CaloCrystalHitCollection> caloCrystalToken_;
+        art::ProductToken<CaloHitCollection> caloCrystalToken_;
         std::string       mainTag_;
         std::string       splitTag_;
         double            EminSeed_;
@@ -88,28 +88,28 @@ namespace mu2e {
         double            deltaTime_;
         int               diagLevel_;
 
-        void makeProtoClusters (CaloProtoClusterCollection&,CaloProtoClusterCollection&, const art::Handle<CaloCrystalHitCollection>&);
+        void makeProtoClusters (CaloProtoClusterCollection&,CaloProtoClusterCollection&, const art::Handle<CaloHitCollection>&);
         void filterByTime      (CaloCrystalList&, const std::vector<double>&);
-        void fillCluster       (CaloProtoClusterCollection&, const CaloCrystalList&,const art::Handle<CaloCrystalHitCollection>&);
-        void dump              (const std::string&, const std::vector<CaloCrystalList>&, std::set<const CaloCrystalHit*>);
+        void fillCluster       (CaloProtoClusterCollection&, const CaloCrystalList&,const art::Handle<CaloHitCollection>&);
+        void dump              (const std::string&, const std::vector<CaloCrystalList>&, std::set<const CaloHit*>);
   };
 
 
-  void CaloProtoClusterFromCrystalHit::produce(art::Event& event)
+  void CaloProtoClusterMaker::produce(art::Event& event)
   {
       // Check that calorimeter geometry description exists
       art::ServiceHandle<GeometryService> geom;
       if( !(geom->hasElement<Calorimeter>()) ) return;
 
       // Get handles to calorimeter crystal hits
-      art::Handle<CaloCrystalHitCollection> CaloCrystalHitsHandle;
-      bool const success = event.getByToken(caloCrystalToken_, CaloCrystalHitsHandle);
+      art::Handle<CaloHitCollection> CaloHitsHandle;
+      bool const success = event.getByToken(caloCrystalToken_, CaloHitsHandle);
       if (!success) return;
 
       // Create a new CaloCluster collection and fill it
       auto caloProtoClustersMain = std::make_unique<CaloProtoClusterCollection>();
       auto caloProtoClustersSplit = std::make_unique<CaloProtoClusterCollection>();
-      makeProtoClusters(*caloProtoClustersMain,*caloProtoClustersSplit,CaloCrystalHitsHandle);
+      makeProtoClusters(*caloProtoClustersMain,*caloProtoClustersSplit,CaloHitsHandle);
 
       event.put(std::move(caloProtoClustersMain),  mainTag_);
       event.put(std::move(caloProtoClustersSplit), splitTag_);
@@ -117,22 +117,22 @@ namespace mu2e {
 
 
   //----------------------------------------------------------------------------------------------------------
-  void CaloProtoClusterFromCrystalHit::makeProtoClusters(CaloProtoClusterCollection& caloProtoClustersMain,
-                                                         CaloProtoClusterCollection& caloProtoClustersSplit,
-                                                         const art::Handle<CaloCrystalHitCollection> & CaloCrystalHitsHandle)
+  void CaloProtoClusterMaker::makeProtoClusters(CaloProtoClusterCollection& caloProtoClustersMain,
+                                                CaloProtoClusterCollection& caloProtoClustersSplit,
+                                                const art::Handle<CaloHitCollection> & CaloHitsHandle)
   {
       const Calorimeter& cal = *(GeomHandle<Calorimeter>());
-      const CaloCrystalHitCollection& CaloCrystalHits(*CaloCrystalHitsHandle);
-      if (CaloCrystalHits.empty()) return;
+      const CaloHitCollection& CaloHits(*CaloHitsHandle);
+      if (CaloHits.empty()) return;
 
 
       //declare and fill the hash map crystal_id -> list of CaloHits
       std::vector<CaloCrystalList>    mainClusterList, splitClusterList, caloIdHitMap(cal.nCrystal());
-      std::set<const CaloCrystalHit*> seedList;
+      std::set<const CaloHit*> seedList;
       std::vector<double>             clusterTime;
 
       //fill data structures
-      for (const auto& hit : CaloCrystalHits)
+      for (const auto& hit : CaloHits)
       {
           if (hit.energyDep() < EnoiseCut_ || hit.time() < timeCut_) continue;
           caloIdHitMap[hit.id()].push_back(&hit);
@@ -146,7 +146,7 @@ namespace mu2e {
       //produce main clusters
       while( !seedList.empty() )
       {
-          const CaloCrystalHit* crystalSeed = *seedList.begin();
+          const CaloHit* crystalSeed = *seedList.begin();
           ClusterFinder finder(cal, crystalSeed, deltaTime_, ExpandCut_);
           finder.formCluster(caloIdHitMap);
 
@@ -168,7 +168,7 @@ namespace mu2e {
       //produce split-offs clusters
       while (!seedList.empty())
       {
-          const CaloCrystalHit* crystalSeed = *seedList.begin();
+          const CaloHit* crystalSeed = *seedList.begin();
           ClusterFinder finder(cal,crystalSeed,deltaTime_, ExpandCut_);
 
           finder.formCluster(caloIdHitMap);
@@ -178,17 +178,17 @@ namespace mu2e {
       }
 
       //save the main and split clusters
-      for (auto cluster : mainClusterList)  fillCluster(caloProtoClustersMain,cluster,CaloCrystalHitsHandle);
-      for (auto cluster : splitClusterList) fillCluster(caloProtoClustersSplit,cluster,CaloCrystalHitsHandle);
+      for (auto cluster : mainClusterList)  fillCluster(caloProtoClustersMain,cluster,CaloHitsHandle);
+      for (auto cluster : splitClusterList) fillCluster(caloProtoClustersSplit,cluster,CaloHitsHandle);
 
       //sort these guys
       std::sort(caloProtoClustersMain.begin(),  caloProtoClustersMain.end(), [](const CaloProtoCluster& a, const CaloProtoCluster& b) {return a.time() < b.time();});
       std::sort(caloProtoClustersSplit.begin(), caloProtoClustersSplit.end(),[](const CaloProtoCluster& a, const CaloProtoCluster& b) {return a.time() < b.time();});
 
       int totNcrys(0); double totEnergy(0.0);
-      for (const auto& clu : caloProtoClustersMain)  {totEnergy += clu.energyDep(); totNcrys +=clu.caloCrystalHitsPtrVector().size();}
-      for (const auto& clu : caloProtoClustersSplit) {totEnergy += clu.energyDep(); totNcrys +=clu.caloCrystalHitsPtrVector().size();}
-      if (diagLevel_ > 0) std::cout<<"[CaloProtoClusterFromCrystalHit] Total energy / Ncrys ="<<totEnergy<<" "<<totNcrys<<std::endl;
+      for (const auto& clu : caloProtoClustersMain)  {totEnergy += clu.energyDep(); totNcrys +=clu.caloHitsPtrVector().size();}
+      for (const auto& clu : caloProtoClustersSplit) {totEnergy += clu.energyDep(); totNcrys +=clu.caloHitsPtrVector().size();}
+      if (diagLevel_ > 0) std::cout<<"[CaloProtoClusterMaker] Total energy / Ncrys ="<<totEnergy<<" "<<totNcrys<<std::endl;
   }
 
 
@@ -196,14 +196,14 @@ namespace mu2e {
 
 
   //----------------------------------------------------------------------------------------------------------
-  void CaloProtoClusterFromCrystalHit::fillCluster(CaloProtoClusterCollection& caloProtoClustersColl, 
-                                                   const CaloCrystalList& clusterPtrList,
-                                                   const art::Handle<CaloCrystalHitCollection>& CaloCrystalHitsHandle)
+  void CaloProtoClusterMaker::fillCluster(CaloProtoClusterCollection& caloProtoClustersColl, 
+                                          const CaloCrystalList& clusterPtrList,
+                                          const art::Handle<CaloHitCollection>& CaloHitsHandle)
   {
-      const CaloCrystalHitCollection& CaloCrystalHits(*CaloCrystalHitsHandle);
-      const CaloCrystalHit* caloCrystalHitBase = &CaloCrystalHits.front();
+      const CaloHitCollection& CaloHits(*CaloHitsHandle);
+      const CaloHit* CaloHitBase = &CaloHits.front();
 
-      std::vector<art::Ptr<CaloCrystalHit>> caloCrystalHitsPtrVector;
+      std::vector<art::Ptr<CaloHit>> caloHitsPtrVector;
       double totalEnergy(0),totalEnergyErr(0);
       //double timeW(0),timeWtot(0);
 
@@ -216,8 +216,8 @@ namespace mu2e {
           totalEnergy    += clusterPrt->energyDep();
           totalEnergyErr += clusterPrt->energyDepErr()*clusterPrt->energyDepErr();
 
-          size_t idx = (clusterPrt - caloCrystalHitBase);
-          caloCrystalHitsPtrVector.push_back(art::Ptr<CaloCrystalHit>(CaloCrystalHitsHandle,idx));
+          size_t idx = (clusterPrt - CaloHitBase);
+          caloHitsPtrVector.push_back(art::Ptr<CaloHit>(CaloHitsHandle,idx));
       }
 
       totalEnergyErr = sqrt(totalEnergyErr);
@@ -226,7 +226,7 @@ namespace mu2e {
       //double time    = timeW/timeWtot;
       //double timeErr = 1.0/sqrt(timeWtot);
 
-      caloProtoClustersColl.emplace_back(CaloProtoCluster(time,timeErr,totalEnergy,totalEnergyErr,caloCrystalHitsPtrVector,false));
+      caloProtoClustersColl.emplace_back(CaloProtoCluster(time,timeErr,totalEnergy,totalEnergyErr,caloHitsPtrVector,false));
 
       if (diagLevel_ > 1)
       {
@@ -240,12 +240,12 @@ namespace mu2e {
 
 
   //----------------------------------------------------------------------------------------------------------
-  void CaloProtoClusterFromCrystalHit::filterByTime(CaloCrystalList& liste, const std::vector<double>& clusterTime)
+  void CaloProtoClusterMaker::filterByTime(CaloCrystalList& liste, const std::vector<double>& clusterTime)
   {
       auto it = liste.begin();
       while (it != liste.end())
       {
-          const CaloCrystalHit* hit = *it;
+          const CaloHit* hit = *it;
           
           auto itTime = clusterTime.begin();
           while (itTime != clusterTime.end()){if ( (*itTime - hit->time()) < deltaTime_) break; ++itTime;}
@@ -258,8 +258,8 @@ namespace mu2e {
 
 
   //----------------------------------------------------------------------------------------------------------
-  void CaloProtoClusterFromCrystalHit::dump(const std::string& title, const std::vector<CaloCrystalList>& caloIdHitMap, 
-                                            std::set<const CaloCrystalHit*> seedList)
+  void CaloProtoClusterMaker::dump(const std::string& title, const std::vector<CaloCrystalList>& caloIdHitMap, 
+                                            std::set<const CaloHit*> seedList)
   {
       std::cout<<title<<std::endl;
       std::cout<<"Cache content"<<std::endl;
@@ -281,4 +281,4 @@ namespace mu2e {
 
 }
 
-DEFINE_ART_MODULE(mu2e::CaloProtoClusterFromCrystalHit);
+DEFINE_ART_MODULE(mu2e::CaloProtoClusterMaker);

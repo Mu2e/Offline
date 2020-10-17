@@ -10,20 +10,20 @@ mu2e::CaloCrystalHitPrinter::Print(art::Event const& event,
   if(verbose()<1) return;
   if(tags().empty()) {
     // if a list of instances not specified, print all instances
-    std::vector< art::Handle<CaloCrystalHitCollection> > vah;
+    std::vector< art::Handle<CaloHitCollection> > vah;
     event.getManyByType(vah);
     for (auto const & ah : vah) Print(ah);
   } else {
     // print requested instances
     for(const auto& tag : tags() ) {
-      auto ih = event.getValidHandle<CaloCrystalHitCollection>(tag);
+      auto ih = event.getValidHandle<CaloHitCollection>(tag);
       Print(ih);
     }
   }
 }
 
 void 
-mu2e::CaloCrystalHitPrinter::Print(const art::Handle<CaloCrystalHitCollection>& handle,
+mu2e::CaloCrystalHitPrinter::Print(const art::Handle<CaloHitCollection>& handle,
 				std::ostream& os) {
   if(verbose()<1) return;
   // the product tags with all four fields, with underscores
@@ -34,7 +34,7 @@ mu2e::CaloCrystalHitPrinter::Print(const art::Handle<CaloCrystalHitCollection>& 
 }
 
 void 
-mu2e::CaloCrystalHitPrinter::Print(const art::ValidHandle<CaloCrystalHitCollection>& handle,
+mu2e::CaloCrystalHitPrinter::Print(const art::ValidHandle<CaloHitCollection>& handle,
 				std::ostream& os) {
   if(verbose()<1) return;
   // the product tags with all four fields, with underscores
@@ -45,22 +45,22 @@ mu2e::CaloCrystalHitPrinter::Print(const art::ValidHandle<CaloCrystalHitCollecti
 }
 
 void 
-mu2e::CaloCrystalHitPrinter::Print(const CaloCrystalHitCollection& coll, std::ostream& os) {
+mu2e::CaloCrystalHitPrinter::Print(const CaloHitCollection& coll, std::ostream& os) {
   if(verbose()<1) return;
-  os << "CaloCrystalHitCollection has " << coll.size() << " hits\n";
+  os << "CaloHitCollection has " << coll.size() << " hits\n";
   if(verbose()==1) PrintListHeader();
   int i = 0;
   for(const auto& obj: coll) Print(obj, i++);
 }
 
 void 
-mu2e::CaloCrystalHitPrinter::Print(const art::Ptr<CaloCrystalHit>& obj, int ind, std::ostream& os) {
+mu2e::CaloCrystalHitPrinter::Print(const art::Ptr<CaloHit>& obj, int ind, std::ostream& os) {
   if(verbose()<1) return;
   Print(*obj,ind);
 }
 
 void 
-mu2e::CaloCrystalHitPrinter::Print(const mu2e::CaloCrystalHit& obj, int ind, std::ostream& os) {
+mu2e::CaloCrystalHitPrinter::Print(const mu2e::CaloHit& obj, int ind, std::ostream& os) {
   if(verbose()<1) return;
 
   if( obj.energyDep() < _eCut ) return;

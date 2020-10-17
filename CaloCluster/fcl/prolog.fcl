@@ -53,10 +53,10 @@ CaloClusterFast :
 }
 
 
-CaloProtoClusterFromCrystalHit :
+CaloProtoClusterMaker :
 {
-  module_type            : CaloProtoClusterFromCrystalHit
-  caloCrystalModuleLabel : CaloCrystalHitFromHit
+  module_type            : CaloProtoClusterMaker
+  caloCrystalModuleLabel : CaloHitMaker
   mainTag                : mainCluster
   splitTag               : splitCluster
   EminSeed               : 10
@@ -68,10 +68,10 @@ CaloProtoClusterFromCrystalHit :
 }  
 
 
-CaloClusterFromProtoCluster :
+CaloClusterMaker :
 {
-  module_type            : CaloClusterFromProtoCluster
-  caloClusterModuleLabel : CaloProtoClusterFromCrystalHit
+  module_type            : CaloClusterMaker
+  caloClusterModuleLabel : CaloProtoClusterMaker
   mainTag                : mainCluster
   splitTag               : splitCluster
   deltaTime              : 2
@@ -86,11 +86,11 @@ CaloClusterFromProtoCluster :
 CaloCluster : 
 {
    producers : {
-      CaloProtoClusterFromCrystalHit  : @local::CaloProtoClusterFromCrystalHit
-      CaloClusterFromProtoCluster     : @local::CaloClusterFromProtoCluster
+      CaloProtoClusterMaker  : @local::CaloProtoClusterMaker
+      CaloClusterMaker       : @local::CaloClusterMaker
    }
    
-   Reco : [ CaloProtoClusterFromCrystalHit, CaloClusterFromProtoCluster ]
+   Reco : [ CaloProtoClusterMaker, CaloClusterMaker ]
 }
 
 

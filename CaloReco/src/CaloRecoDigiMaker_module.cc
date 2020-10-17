@@ -23,7 +23,7 @@
 
 namespace mu2e {
 
-  class CaloRecoDigiFromDigi : public art::EDProducer 
+  class CaloRecoDigiMaker : public art::EDProducer 
   {
      public:
         enum processorStrategy {NoChoice, RawExtract, Template};
@@ -42,7 +42,7 @@ namespace mu2e {
            fhicl::Atom<int>                              diagLevel           { Name("diagLevel"),           Comment("Diagnosis level") };
         };
 
-        explicit CaloRecoDigiFromDigi(const art::EDProducer::Table<Config>& config) :
+        explicit CaloRecoDigiMaker(const art::EDProducer::Table<Config>& config) :
            EDProducer{config},
            caloDigisToken_    {consumes<CaloDigiCollection>(config().caloDigiModuleLabel())},
            processorStrategy_ (config().processorStrategy()),
@@ -93,9 +93,9 @@ namespace mu2e {
 
 
   //-------------------------------------------------------
-  void CaloRecoDigiFromDigi::produce(art::Event& event)
+  void CaloRecoDigiMaker::produce(art::Event& event)
   {
-      if (diagLevel_ > 0) std::cout<<"[CaloRecoDigiFromDigi::produce] begin"<<std::endl;
+      if (diagLevel_ > 0) std::cout<<"[CaloRecoDigiMaker::produce] begin"<<std::endl;
 
       const auto& caloDigisH = event.getValidHandle(caloDigisToken_);
       auto recoCaloDigiColl  = std::make_unique<CaloRecoDigiCollection>();
@@ -104,20 +104,20 @@ namespace mu2e {
 
       event.put(std::move(recoCaloDigiColl));
 
-      if (diagLevel_ > 0) std::cout<<"[CaloRecoDigiFromDigi::produce] end"<<std::endl;
+      if (diagLevel_ > 0) std::cout<<"[CaloRecoDigiMaker::produce] end"<<std::endl;
   }
 
 
   //--------------------------------------------------
-  void CaloRecoDigiFromDigi::beginRun(art::Run& aRun)
+  void CaloRecoDigiMaker::beginRun(art::Run& aRun)
   {
       waveformProcessor_->initialize();
   }
 
 
   //------------------------------------------------------------------------------------------------------------
-  void CaloRecoDigiFromDigi::extractRecoDigi(const art::ValidHandle<CaloDigiCollection>& caloDigisHandle,
-                                             CaloRecoDigiCollection &recoCaloHits)
+  void CaloRecoDigiMaker::extractRecoDigi(const art::ValidHandle<CaloDigiCollection>& caloDigisHandle,
+                                          CaloRecoDigiCollection &recoCaloHits)
   {
       const auto& caloDigis = *caloDigisHandle;
       ConditionsHandle<CalorimeterCalibrations> calorimeterCalibrations("ignored");
@@ -162,10 +162,10 @@ namespace mu2e {
           }
       }     
 
-      if (diagLevel_ > 1) std::cout<<"[CaloRecoDigiFromDigi] Total energy reco "<<totEnergyReco <<std::endl;
+      if (diagLevel_ > 1) std::cout<<"[CaloRecoDigiMaker] Total energy reco "<<totEnergyReco <<std::endl;
   }
 
 
 }
 
-DEFINE_ART_MODULE(mu2e::CaloRecoDigiFromDigi);
+DEFINE_ART_MODULE(mu2e::CaloRecoDigiMaker);

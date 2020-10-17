@@ -22,7 +22,6 @@
 // Mu2e includes.
 #include "CalorimeterGeom/inc/DiskCalorimeter.hh"
 #include "GeometryService/inc/GeomHandle.hh"
-#include "RecoDataProducts/inc/CaloCrystalHit.hh"
 #include "RecoDataProducts/inc/CaloHit.hh"
 #include "MCDataProducts/inc/PtrStepPointMCVectorCollection.hh"
 
@@ -56,7 +55,6 @@ namespace mu2e {
     std::string _apdHitMakerModuleLabel;
     std::string _crystalHitMakerModuleLabel;
 
-    const CaloHitCollection*              apdHits;
     const PtrStepPointMCVectorCollection*   steps;
 
     int    maxId;
@@ -77,7 +75,7 @@ namespace mu2e {
     TH1F* _hDeltaTime;
 
     void printCalInfo();
-    void followHistory( const CaloCrystalHit& cryHit);
+    void followHistory( const CaloHit& cryHit);
     void simCheck(const art::Event& event);
 
   };
@@ -86,10 +84,9 @@ namespace mu2e {
     art::EDAnalyzer(pset),
 
     _apdHitMakerModuleLabel("CaloReadoutHitsMaker"),
-    _crystalHitMakerModuleLabel("CaloCrystalHitsMaker"),
+    _crystalHitMakerModuleLabel("CaloHitsMaker"),
 
     //
-    apdHits(0),
     steps(0),
 
     // Limit checks
@@ -148,13 +145,9 @@ namespace mu2e {
 
     simCheck(event);
 
-    art::Handle<CaloCrystalHitCollection> cryHitsHandle;
+    art::Handle<CaloHitCollection> cryHitsHandle;
     event.getByLabel(_crystalHitMakerModuleLabel,cryHitsHandle);
-    CaloCrystalHitCollection const& cryHits = *cryHitsHandle;
-
-    art::Handle<CaloHitCollection> apdHitsHandle;
-    event.getByLabel(_apdHitMakerModuleLabel, apdHitsHandle);
-    apdHits = apdHitsHandle.product();
+    CaloHitCollection const& cryHits = *cryHitsHandle;
 
     art::Handle<PtrStepPointMCVectorCollection> stepsHandle;
     event.getByLabel(_apdHitMakerModuleLabel, "CaloHitMCCrystalPtr", stepsHandle);
@@ -170,9 +163,9 @@ namespace mu2e {
 
     double minEnergy(0.001);
 
-    for ( CaloCrystalHitCollection::const_iterator i=cryHits.begin(), e=cryHits.end(); i != e; ++i ){
+    for ( CaloHitCollection::const_iterator i=cryHits.begin(), e=cryHits.end(); i != e; ++i ){
 
-      const CaloCrystalHit& cryHit(*i);
+      const CaloHit& cryHit(*i);
 
       totalEdep += cryHit.energyDep();
       _hEnergyDep ->Fill(cryHit.energyDep());
@@ -211,14 +204,13 @@ namespace mu2e {
            << crystalsOverPed.size() << " "
            << totalEdep << " "
            << highestId << " "
-           << apdHits->size() << " "
            << steps->size()
            << endl;
     }
 
   } // end analyze
 
-  void DiskCal00::followHistory( const CaloCrystalHit& cryHit){
+  void DiskCal00::followHistory( const CaloHit& cryHit){
 
     /*
     vector<art::Ptr<CaloHit> > const & readouts(cryHit.readouts());

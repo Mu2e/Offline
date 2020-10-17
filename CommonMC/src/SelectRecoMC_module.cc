@@ -160,8 +160,8 @@ namespace mu2e {
     produces <KalSeedMCAssns>();    
     produces <CaloClusterMCCollection>(); 
     produces <CaloClusterMCTruthAssn>();
-    produces <CaloCrystalHitCollection>();
-    produces <CaloCrystalHitRemapping>();
+    produces <CaloHitCollection>();
+    produces <CaloHitRemapping>();
     produces <CaloDigiCollection>();    
     produces <StrawDigiCollection>();
     produces <StrawHitFlagCollection>();
@@ -333,7 +333,7 @@ namespace mu2e {
     //  keep track of energy contributions
     std::vector<CaloEDepMC> edeps;
     
-    for(auto const& cchptr : cc.caloCrystalHitsPtrVector()){
+    for(auto const& cchptr : cc.caloHitsPtrVector()){
       for(auto const& css : cssc){
 	if (css.energyDep() < _csme || css.crystalId() != cchptr->id()) continue;
 	  double csstime = css.time();
@@ -579,14 +579,14 @@ namespace mu2e {
     
     auto CaloClusterMCCollectionPID     = event.getProductID<CaloClusterMCCollection>();
     auto CaloClusterMCCollectionGetter  = event.productGetter(CaloClusterMCCollectionPID);
-    auto CaloCrystalHitCollectionPID    = event.getProductID<CaloCrystalHitCollection>();
-    auto CaloCrystalHitCollectionGetter = event.productGetter(CaloCrystalHitCollectionPID);    
+    auto CaloHitCollectionPID    = event.getProductID<CaloHitCollection>();
+    auto CaloHitCollectionGetter = event.productGetter(CaloHitCollectionPID);    
     std::unique_ptr<CaloClusterMCCollection> ccmcc(new CaloClusterMCCollection);
     std::unique_ptr<CaloClusterMCTruthAssn> ccmca(new CaloClusterMCTruthAssn);
     std::unique_ptr<CaloDigiCollection> scdc(new CaloDigiCollection);
-    std::unique_ptr<CaloCrystalHitCollection> scchc(new CaloCrystalHitCollection);
+    std::unique_ptr<CaloHitCollection> scchc(new CaloHitCollection);
     std::unique_ptr<IndexMap> cdim(new IndexMap);
-    std::unique_ptr<CaloCrystalHitRemapping> cchr(new CaloCrystalHitRemapping);
+    std::unique_ptr<CaloHitRemapping> cchr(new CaloHitRemapping);
     // loop over all the CaloClusters and save the ones that are above energy.  We do this with Ptrs (ugh)
     for(unsigned icc=0;icc < ccc.size(); icc++){
       auto const& cc = ccc[icc];
@@ -602,11 +602,11 @@ namespace mu2e {
       auto ccmcp = art::Ptr<CaloClusterMC>(CaloClusterMCCollectionPID,ccmcc->size()-1,CaloClusterMCCollectionGetter);
       ccmca->addSingle(ccptr,ccmcp);
       // deep-copy CaloDigis used in clusters
-      for(auto const& cchptr : ccptr->caloCrystalHitsPtrVector()){
-      // deep-copy the CaloCrystalHits
+      for(auto const& cchptr : ccptr->caloHitsPtrVector()){
+      // deep-copy the CaloHits
 	scchc->push_back(*cchptr);
 	// create a Ptr for this, and fill the Ptr map
-	auto scchptr = art::Ptr<CaloCrystalHit>(CaloCrystalHitCollectionPID,scchc->size()-1,CaloCrystalHitCollectionGetter);
+	auto scchptr = art::Ptr<CaloHit>(CaloHitCollectionPID,scchc->size()-1,CaloHitCollectionGetter);
 	(*cchr)[cchptr] = scchptr;
 	for (auto const& rcdptr : cchptr->recoCaloDigis()){
           // deep-copy CaloDigis used in clusters

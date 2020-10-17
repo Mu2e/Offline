@@ -18,8 +18,6 @@
 
 #include "CaloCluster/inc/ClusterMoments.hh"
 
-#include "RecoDataProducts/inc/CaloCrystalHit.hh"
-#include "RecoDataProducts/inc/CaloHit.hh"
 #include "RecoDataProducts/inc/CaloHit.hh"
 #include "RecoDataProducts/inc/CaloCluster.hh"
 #include "RecoDataProducts/inc/CaloCluster.hh"
@@ -76,7 +74,7 @@ namespace mu2e {
 
   private:
        
-    typedef art::Ptr< CaloCrystalHit> CaloCrystalHitPtr;
+    typedef art::Ptr< CaloHit> CaloHitPtr;
 
     int                     _diagLevel;
     int                     _nProcess;
@@ -291,8 +289,8 @@ namespace mu2e {
     auto  clH = event.getValidHandle<CaloClusterCollection>(_clTag);
     const CaloClusterCollection*  caloClusters = clH.product();
 
-    const CaloCrystalHit* crystalHit(0);
-    const CaloCluster::CaloCrystalHitPtrVector* caloClusterHits(0);
+    const CaloHit* crystalHit(0);
+    const CaloCluster::CaloHitPtrVector* caloClusterHits(0);
     
     size_t trig_ind(0);
     //for loop over the clusters in the calorimeter
@@ -313,7 +311,7 @@ namespace mu2e {
       double                   ypos     = cog(1);
       double                   rDist    = sqrt(xpos*xpos+ypos*ypos);
 
-      caloClusterHits = &cluster.caloCrystalHitsPtrVector();
+      caloClusterHits = &cluster.caloHitsPtrVector();
 
       int       nCrystalHits = caloClusterHits->size();
       double    maxECrystal(0);

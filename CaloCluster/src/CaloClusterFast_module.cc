@@ -10,10 +10,8 @@
 #include "ConditionsService/inc/AcceleratorParams.hh"
 #include "ConditionsService/inc/CalorimeterCalibrations.hh"
 #include "RecoDataProducts/inc/CaloDigi.hh"
-#include "RecoDataProducts/inc/CaloDigi.hh"
 #include "RecoDataProducts/inc/CaloCluster.hh"
-#include "RecoDataProducts/inc/CaloCrystalHit.hh"
-#include "RecoDataProducts/inc/CaloCrystalHit.hh"
+#include "RecoDataProducts/inc/CaloHit.hh"
 
 #include <iostream>
 #include <string>
@@ -59,7 +57,7 @@ namespace mu2e {
       window_(2*windowPeak_+1),
       hitList_()
     {
-      produces<CaloCrystalHitCollection>();
+      produces<CaloHitCollection>();
       produces<CaloClusterCollection>();
       seeds_.reserve(100);
     }
@@ -96,7 +94,7 @@ namespace mu2e {
 
     void extractRecoDigi(const art::Handle<CaloDigiCollection>& caloDigisHandle,
                          CaloClusterCollection&                 recoClusters,
-                         CaloCrystalHitCollection&              recoCrystalHit);
+                         CaloHitCollection&              recoCrystalHit);
 
   };
 
@@ -115,13 +113,13 @@ namespace mu2e {
        art::Handle<CaloDigiCollection> caloDigisHandle;
        event.getByLabel(caloDigiModuleLabel_, caloDigisHandle);
 
-       auto crystalHitColl   = std::make_unique<CaloCrystalHitCollection>();
+       auto crystalHitColl   = std::make_unique<CaloHitCollection>();
        auto recoClustersColl = std::make_unique<CaloClusterCollection>();
-       // std::unique_ptr<CaloCrystalHitCollection> crystalHitColl  (new CaloCrystalHitCollection);
+       // std::unique_ptr<CaloHitCollection> crystalHitColl  (new CaloHitCollection);
        // std::unique_ptr<CaloClusterCollection>    recoClustersColl(new CaloClusterCollection);
        recoClustersColl->reserve(10);
 
-       _crystalHitsPtrID     = event.getProductID<CaloCrystalHitCollection>();
+       _crystalHitsPtrID     = event.getProductID<CaloHitCollection>();
        _crystalHitsPtrGetter = event.productGetter(_crystalHitsPtrID);
 
        extractRecoDigi( caloDigisHandle, *recoClustersColl, *crystalHitColl);
@@ -145,7 +143,7 @@ namespace mu2e {
   //--------------------------------------------------------------------------------------
 void CaloClusterFast::extractRecoDigi(const art::Handle<CaloDigiCollection>& caloDigisHandle,
                                         CaloClusterCollection&                 recoClusters,
-                                        CaloCrystalHitCollection&              recoCrystalHits)
+                                        CaloHitCollection&              recoCrystalHits)
  {
 
 	const CaloDigiCollection& caloDigis(*caloDigisHandle);
@@ -217,7 +215,7 @@ void CaloClusterFast::extractRecoDigi(const art::Handle<CaloDigiCollection>& cal
 	for (auto& seed : seeds_)
 	{
 		 if (seed->val_ < 1) continue;
-		 std::vector<art::Ptr<CaloCrystalHit>> hitsPtr;
+		 std::vector<art::Ptr<CaloHit>> hitsPtr;
 		 unsigned ncry(1);
 		 int      cluEnergy(seed->val_);
 		 double   xc = cal->crystal(seed->crId_).localPosition().x()*seed->val_;
@@ -229,7 +227,7 @@ void CaloClusterFast::extractRecoDigi(const art::Handle<CaloDigiCollection>& cal
 
 		 double     hitTime = (seed->index_+offsetT0_)*digiSampling_-timeCorrection_;
 		 if (includeCrystalHits_) {
-		   	recoCrystalHits.push_back(CaloCrystalHit(seed->crId_, 2, hitTime, 0, seed->val_*adcToEnergy_, 0., caloRecoDigi));
+		   	recoCrystalHits.push_back(CaloHit(seed->crId_, 2, hitTime, 0, seed->val_*adcToEnergy_, 0., caloRecoDigi));
 		 }
 		 seed->val_ = 0;
 
@@ -246,7 +244,7 @@ void CaloClusterFast::extractRecoDigi(const art::Handle<CaloDigiCollection>& cal
 				++ncry;
               			if (includeCrystalHits_)  {
                  			hitTime = (seed->index_+offsetT0_)*digiSampling_-timeCorrection_;
-                 			recoCrystalHits.push_back(CaloCrystalHit(hit.crId_, 2, hitTime, 0, hit.val_*adcToEnergy_, 0., caloRecoDigi));
+                 			recoCrystalHits.push_back(CaloHit(hit.crId_, 2, hitTime, 0, hit.val_*adcToEnergy_, 0., caloRecoDigi));
                			}
 			       hit.val_ = 0;
 			       for (const auto& neighbor : cal->neighbors(nid)) crystalToVisit.push(neighbor);
@@ -261,7 +259,7 @@ void CaloClusterFast::extractRecoDigi(const art::Handle<CaloDigiCollection>& cal
 			       ++ncry;
                			if (includeCrystalHits_) {
                  			hitTime = (seed->index_-1 + offsetT0_)*digiSampling_-timeCorrection_;
-                 recoCrystalHits.push_back(CaloCrystalHit(hit.crId_, 2, hitTime, 0, hit.val_*adcToEnergy_, 0., caloRecoDigi));
+                 recoCrystalHits.push_back(CaloHit(hit.crId_, 2, hitTime, 0, hit.val_*adcToEnergy_, 0., caloRecoDigi));
                			}
 			       hit.val_ = 0;
 			       for (const auto& neighbor : cal->neighbors(nid)) crystalToVisit.push(neighbor);
@@ -277,7 +275,7 @@ void CaloClusterFast::extractRecoDigi(const art::Handle<CaloDigiCollection>& cal
 				++ncry;
 				if (includeCrystalHits_) {
 				 hitTime = (seed->index_+1 + offsetT0_)*digiSampling_-timeCorrection_;
-				 recoCrystalHits.push_back(CaloCrystalHit(hit.crId_, 2, hitTime, 0, hit.val_*adcToEnergy_, 0., caloRecoDigi));
+				 recoCrystalHits.push_back(CaloHit(hit.crId_, 2, hitTime, 0, hit.val_*adcToEnergy_, 0., caloRecoDigi));
 				}
 			       hit.val_ = 0;
 			       for (const auto& neighbor : cal->neighbors(nid)) crystalToVisit.push(neighbor);
@@ -291,7 +289,7 @@ void CaloClusterFast::extractRecoDigi(const art::Handle<CaloDigiCollection>& cal
 			int   firstCrystal_index = recoCrystalHits.size() - ncry;
 			int   lastCrystal_index  = recoCrystalHits.size();
 			for (int k=firstCrystal_index; k<lastCrystal_index; ++k){
-			art::Ptr<CaloCrystalHit> aPtr = art::Ptr<CaloCrystalHit>(_crystalHitsPtrID, k, _crystalHitsPtrGetter);
+			art::Ptr<CaloHit> aPtr = art::Ptr<CaloHit>(_crystalHitsPtrID, k, _crystalHitsPtrGetter);
 			hitsPtr.push_back(aPtr);
 			}
 		 }

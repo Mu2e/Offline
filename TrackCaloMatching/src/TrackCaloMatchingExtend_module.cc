@@ -278,7 +278,7 @@ namespace mu2e {
     //---------------------------------------------------------------------------------------------------------
     CLHEP::Hep3Vector TrackCaloMatchingExtend::recalculateCog(const Calorimeter& cal, const CaloCluster& cluster)
     {
-         auto const& main = cluster.caloCrystalHitsPtrVector();
+         auto const& main = cluster.caloHitsPtrVector();
 
          double sxi(0),syi(0),swi(0);
          for (auto it = main.begin(); it !=main.end(); ++it)

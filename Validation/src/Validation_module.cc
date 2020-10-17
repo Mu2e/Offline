@@ -127,7 +127,7 @@ void mu2e::Validation::analyze(art::Event const& event){
   analyzeProduct<SimParticleCollection,ValSimParticle>        (_simp,event);
   analyzeProduct<SimParticleTimeMap,ValSimParticleTimeMap>    (_sptm,event);
   analyzeProduct<StepPointMCCollection,ValStepPointMC>        (_spmc,event);
-  analyzeProduct<CaloCrystalHitCollection,ValCaloCrystalHit>  (_calh,event);
+  analyzeProduct<CaloHitCollection,ValCaloCrystalHit>  (_calh,event);
   analyzeProduct<CaloShowerStepCollection,ValCaloShowerStep>  (_cals,event);
   analyzeProduct<CaloDigiCollection,ValCaloDigi>              (_cald,event);
   analyzeProduct<CaloRecoDigiCollection,ValCaloRecoDigi>      (_calr,event);

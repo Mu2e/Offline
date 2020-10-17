@@ -24,7 +24,6 @@
 #include "MCDataProducts/inc/CaloShowerStep.hh"
 #include "MCDataProducts/inc/CaloShowerSim.hh"
 #include "Mu2eUtilities/inc/TwoLinePCA.hh"
-#include "RecoDataProducts/inc/CaloCrystalHit.hh"
 #include "RecoDataProducts/inc/CaloHit.hh"
 #include "TDirectory.h"
 #include "TGraph.h"
@@ -92,7 +91,7 @@ namespace mu2e {
     // Module which made the MC CaloShowers
     std::string _caloShowerSimModuleLabel;
 
-    // Module which made the CaloCrystalHits
+    // Module which made the CaloHits
     std::string _caloCrystalModuleLabel;
 
     // Name of the stopping target StepPoint collection
@@ -189,7 +188,7 @@ namespace mu2e {
     _trackerStepPoints(pset.get<string>("trackerStepPoints","tracker")),
     _calorimeterStepPoints(pset.get<string>("calorimeterStepPoints","calorimeter")),
     _caloShowerSimModuleLabel(pset.get<string>("caloShowerSimModuleLabel","CaloShowerStepROFromShowerStep")),
-    _caloCrystalModuleLabel(pset.get<string>("caloCrystalModuleLabel","CaloCrystalHitFromHit")),
+    _caloCrystalModuleLabel(pset.get<string>("caloCrystalModuleLabel","CaloHitFromHit")),
     _targetStepPoints(pset.get<string>("targetStepPoints","stoppingtarget")),
     _crvStepPoints(pset.get<string>("CRVStepPoints","CRV")),
     _minimumEnergy(pset.get<double>("minimumEnergy")),
@@ -393,9 +392,9 @@ namespace mu2e {
      const CaloShowerSimCollection& caloShowerSims(*caloShowerSimHandle);
 
      //Crystal hits (average from readouts)
-     art::Handle<CaloCrystalHitCollection> caloCrystalHitsHandle;
-     event.getByLabel(_caloCrystalModuleLabel, caloCrystalHitsHandle);
-     CaloCrystalHitCollection const& caloCrystalHits(*caloCrystalHitsHandle);
+     art::Handle<CaloHitCollection> CaloHitsHandle;
+     event.getByLabel(_caloCrystalModuleLabel, CaloHitsHandle);
+     CaloHitCollection const& CaloHits(*CaloHitsHandle);
 
 
 
@@ -449,14 +448,14 @@ namespace mu2e {
 
 
      //look at reconstructed hits
-     if (!caloCrystalHitsHandle.isValid()) return;
+     if (!CaloHitsHandle.isValid()) return;
 
      double totalEdep = 0.0;
      set<int> hit_crystals;
 
-     for (unsigned int ic=0; ic<caloCrystalHits.size();++ic)
+     for (unsigned int ic=0; ic<CaloHits.size();++ic)
      {
-         const CaloCrystalHit &hit     = caloCrystalHits.at(ic);
+         const CaloHit &hit     = CaloHits.at(ic);
 
          totalEdep += hit.energyDep();
          hit_crystals.insert(hit.id());

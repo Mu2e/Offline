@@ -80,8 +80,6 @@ namespace mu2e {
 
   private:
        
-    typedef art::Ptr< CaloCrystalHit> CaloCrystalHitPtr;
-
     int                     _diagLevel;
     int                     _nProcess;
     int                     _nPass;

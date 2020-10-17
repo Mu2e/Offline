@@ -8,7 +8,7 @@
 
 #include "CalorimeterGeom/inc/Calorimeter.hh"
 #include "GeometryService/inc/GeomHandle.hh"
-#include "RecoDataProducts/inc/CaloCrystalHit.hh"
+#include "RecoDataProducts/inc/CaloHit.hh"
 #include "RecoDataProducts/inc/CaloRecoDigi.hh"
 
 #include "TH1F.h"
@@ -23,7 +23,7 @@
 namespace mu2e {
 
 
-  class CaloCrystalHitFromHit : public art::EDProducer 
+  class CaloHitMaker : public art::EDProducer 
   {
     public:
        struct Config 
@@ -35,13 +35,13 @@ namespace mu2e {
            fhicl::Atom<int>         diagLevel           { Name("diagLevel"),            Comment("Diagnosis level")};
        };
 
-       explicit CaloCrystalHitFromHit(const art::EDProducer::Table<Config>& config) :
+       explicit CaloHitMaker(const art::EDProducer::Table<Config>& config) :
          EDProducer{config},
          caloDigisToken_ {consumes<CaloRecoDigiCollection>(config().caloDigisModuleLabel())},
          time4Merge_     (config().time4Merge()),
          diagLevel_      (config().diagLevel())
        {
-           produces<CaloCrystalHitCollection>();
+           produces<CaloHitCollection>();
        }
 
        void beginJob() override;
@@ -51,8 +51,8 @@ namespace mu2e {
     private:
        typedef art::Ptr<CaloRecoDigi> CaloRecoDigiPtr;
 
-       void makeCaloHits(CaloCrystalHitCollection&,const art::ValidHandle<CaloRecoDigiCollection>&);
-       void fillBuffer  (int, int, double, double, double, double, std::vector<CaloRecoDigiPtr>&, CaloCrystalHitCollection&);
+       void makeCaloHits(CaloHitCollection&,const art::ValidHandle<CaloRecoDigiCollection>&);
+       void fillBuffer  (int, int, double, double, double, double, std::vector<CaloRecoDigiPtr>&, CaloHitCollection&);
 
        const art::ProductToken<CaloRecoDigiCollection> caloDigisToken_;      
        double                                          time4Merge_;
@@ -70,7 +70,7 @@ namespace mu2e {
 
 
   //--------------------------------------------
-  void CaloCrystalHitFromHit::beginJob()
+  void CaloHitMaker::beginJob()
   {
       if (diagLevel_ > 2) 
       {
@@ -88,23 +88,23 @@ namespace mu2e {
 
 
   //------------------------------------------------------------
-  void CaloCrystalHitFromHit::produce(art::Event& event)
+  void CaloHitMaker::produce(art::Event& event)
   {
-      if (diagLevel_ > 0) std::cout<<"[CaloCrystalHitFromHit::produce] end"<<std::endl;
+      if (diagLevel_ > 0) std::cout<<"[CaloHitMaker::produce] end"<<std::endl;
       
       const auto& recoCaloDigisHandle = event.getValidHandle(caloDigisToken_);
-      auto caloHits                   = std::make_unique<CaloCrystalHitCollection>();
+      auto caloHits                   = std::make_unique<CaloHitCollection>();
       
       makeCaloHits(*caloHits, recoCaloDigisHandle);
       
       event.put(std::move(caloHits));
       
-      if (diagLevel_ > 0) std::cout<<"[CaloCrystalHitFromHit::produce] end"<<std::endl;
+      if (diagLevel_ > 0) std::cout<<"[CaloHitMaker::produce] end"<<std::endl;
   }
 
 
   //--------------------------------------------------------------------------------------------------------------
-  void CaloCrystalHitFromHit::makeCaloHits(CaloCrystalHitCollection& caloHits, const art::ValidHandle<CaloRecoDigiCollection>& recoCaloDigisHandle)
+  void CaloHitMaker::makeCaloHits(CaloHitCollection& caloHits, const art::ValidHandle<CaloRecoDigiCollection>& recoCaloDigisHandle)
   {
     const Calorimeter& cal = *(GeomHandle<Calorimeter>());
     const auto& recoCaloDigis = *recoCaloDigisHandle;
@@ -184,20 +184,20 @@ namespace mu2e {
           totEnergyRec += eDepTot/float(nRoid);
       }
 
-      if ( diagLevel_ > 1 ) std::cout<<"[CaloCrystalHitFromHit::produce] produced RecoCrystalHits with caloHits.size() = "<<caloHits.size()<<std::endl;
-      if ( diagLevel_ > 1 ) std::cout<<"[CaloCrystalHitFromHit::produce] Total energy reconstructed = "<<totEnergyRec<<std::endl;
+      if ( diagLevel_ > 1 ) std::cout<<"[CaloHitMaker::produce] produced RecoCrystalHits with caloHits.size() = "<<caloHits.size()<<std::endl;
+      if ( diagLevel_ > 1 ) std::cout<<"[CaloHitMaker::produce] Total energy reconstructed = "<<totEnergyRec<<std::endl;
   }
 
   //--------------------------------------------------------------------------------------------------------------
-  void CaloCrystalHitFromHit::fillBuffer(int crystalId,int nRoid,double time,double timeErr,double eDep,double eDepErr,
-                                         std::vector<CaloRecoDigiPtr>& buffer, CaloCrystalHitCollection& caloHits)
+  void CaloHitMaker::fillBuffer(int crystalId,int nRoid,double time,double timeErr,double eDep,double eDepErr,
+                                         std::vector<CaloRecoDigiPtr>& buffer, CaloHitCollection& caloHits)
   {
       //TODO: get conditions to check if a sensor is noisy or dead. Until then, consider hit with a single sensor to be bkg.
       if (nRoid<2) return;
       
-      caloHits.emplace_back(CaloCrystalHit(crystalId, nRoid, time, timeErr, eDep, eDepErr, buffer));
+      caloHits.emplace_back(CaloHit(crystalId, nRoid, time, timeErr, eDep, eDepErr, buffer));
 
-      if (diagLevel_ > 2) std::cout<<"[CaloCrystalHitFromHit] created hit in crystal id="<<crystalId<<"\t with time="
+      if (diagLevel_ > 2) std::cout<<"[CaloHitMaker] created hit in crystal id="<<crystalId<<"\t with time="
                                    <<time<<"\t eDep="<<eDep<<"\t  from "<<nRoid<<" RO"<<std::endl;
                     
       if (diagLevel_ > 2)
@@ -217,4 +217,4 @@ namespace mu2e {
 
 }
 
-DEFINE_ART_MODULE(mu2e::CaloCrystalHitFromHit);
+DEFINE_ART_MODULE(mu2e::CaloHitMaker);

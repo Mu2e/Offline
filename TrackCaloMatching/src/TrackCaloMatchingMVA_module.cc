@@ -265,7 +265,7 @@ namespace mu2e {
                                             double trkTime, double cellsize)
    {
   
-        const auto& hit0 = cluster.caloCrystalHitsPtrVector().at(0);
+        const auto& hit0 = cluster.caloHitsPtrVector().at(0);
         CLHEP::Hep3Vector center = cal.geomUtil().mu2eToDiskFF(cal.crystal(hit0->id()).diskId(), cal.crystal(hit0->id()).position());
         
         std::vector<int> neighbors1 = cal.neighbors(hit0->id(),true);
@@ -281,7 +281,7 @@ namespace mu2e {
             if (in == -1){evec.push_back(-1);continue;}
 
             double eCell(0);
-            for (const auto& hit : cluster.caloCrystalHitsPtrVector() )                 
+            for (const auto& hit : cluster.caloHitsPtrVector() )                 
                 if (hit->id()==in) eCell=hit->energyDep();
 
             evec.push_back(eCell);
@@ -378,7 +378,7 @@ namespace mu2e {
    /*
 
         std::vector<double> matrixX,matrixY,matrixE;                
-        for (const auto& hit : cluster.caloCrystalHitsPtrVector() )
+        for (const auto& hit : cluster.caloHitsPtrVector() )
         {
            CLHEP::Hep3Vector crystalPos = cal.geomUtil().mu2eToDiskFF(cal.crystal(hit->id()).diskId(), cal.crystal(hit->id()).position());
            

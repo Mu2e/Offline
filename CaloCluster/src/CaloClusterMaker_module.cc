@@ -19,7 +19,7 @@
 #include "CaloCluster/inc/ClusterAssociator.hh"
 #include "CaloCluster/inc/ClusterMoments.hh"
 #include "GeometryService/inc/GeomHandle.hh"
-#include "RecoDataProducts/inc/CaloCrystalHit.hh"
+#include "RecoDataProducts/inc/CaloHit.hh"
 #include "RecoDataProducts/inc/CaloCluster.hh"
 #include "RecoDataProducts/inc/CaloProtoCluster.hh"
 
@@ -32,7 +32,7 @@
 
 namespace mu2e {
 
-  class CaloClusterFromProtoCluster : public art::EDProducer 
+  class CaloClusterMaker : public art::EDProducer 
   {
      public:
         struct Config
@@ -50,7 +50,7 @@ namespace mu2e {
             fhicl::Atom<int>          diagLevel              { Name("diagLevel"),              Comment("Diag level "),0 }; 
         };
         
-        explicit CaloClusterFromProtoCluster(const art::EDProducer::Table<Config>& config) :
+        explicit CaloClusterMaker(const art::EDProducer::Table<Config>& config) :
           EDProducer{config},
           mainTag_      {config().caloClusterModuleLabel(), config().mainTag()},
           splitTag_     {config().caloClusterModuleLabel(), config().splitTag()},
@@ -84,14 +84,14 @@ namespace mu2e {
         int                                            diagLevel_;
 
         void                 makeCaloClusters  (CaloClusterCollection&, const CaloProtoClusterCollection&, const CaloProtoClusterCollection&);
-        std::array<double,3> calcEnergyLayer   (const Calorimeter&,const std::vector<art::Ptr<CaloCrystalHit>>&);
-        std::array<double,4> clusterTimeEnergy (const std::vector<art::Ptr<CaloCrystalHit>>& hits);
+        std::array<double,3> calcEnergyLayer   (const Calorimeter&,const std::vector<art::Ptr<CaloHit>>&);
+        std::array<double,4> clusterTimeEnergy (const std::vector<art::Ptr<CaloHit>>& hits);
   };
 
 
 
   //---------------------------------------------------------------------------------------------------------------
-  void CaloClusterFromProtoCluster::beginJob()
+  void CaloClusterMaker::beginJob()
   {
       if (cogTypeName_.compare("Linear"))    cogType_ = ClusterMoments::Linear;
       if (cogTypeName_.compare("Logarithm")) cogType_ = ClusterMoments::Logarithm;
@@ -99,7 +99,7 @@ namespace mu2e {
 
   
   //---------------------------------------------------------------------------------------------------------------
-  void CaloClusterFromProtoCluster::produce(art::Event& event)
+  void CaloClusterMaker::produce(art::Event& event)
   {
       // Check that calorimeter geometry description exists
       art::ServiceHandle<GeometryService> geom;
@@ -117,9 +117,8 @@ namespace mu2e {
 
 
   //---------------------------------------------------------------------------------------------------------------
-  void CaloClusterFromProtoCluster::makeCaloClusters(CaloClusterCollection& caloClusters,
-                                                     const CaloProtoClusterCollection& caloClustersMain,
-                                                     const CaloProtoClusterCollection& caloClustersSplit)
+  void CaloClusterMaker::makeCaloClusters(CaloClusterCollection& caloClusters, const CaloProtoClusterCollection& caloClustersMain,
+                                          const CaloProtoClusterCollection& caloClustersSplit)
   {
       const Calorimeter& cal = *(GeomHandle<Calorimeter>());
 
@@ -135,7 +134,7 @@ namespace mu2e {
       {
 
           bool isSplit(false);
-          std::vector<art::Ptr<CaloCrystalHit>> caloCrystalHitsPtrVector = caloClustersMain.at(imain).caloCrystalHitsPtrVector();
+          std::vector<art::Ptr<CaloHit>> caloHitsPtrVector = caloClustersMain.at(imain).caloHitsPtrVector();
 
           //search split-offs and add their hits into the main cluster
           for (unsigned isplit=0;isplit<caloClustersSplit.size();++isplit)
@@ -143,15 +142,15 @@ namespace mu2e {
               if (associator.associatedSplitId(isplit) != imain) continue;
               isSplit = true;
 
-              caloCrystalHitsPtrVector.insert(caloCrystalHitsPtrVector.end(),
-                                              caloClustersSplit.at(isplit).caloCrystalHitsPtrVector().begin(),
-                                              caloClustersSplit.at(isplit).caloCrystalHitsPtrVector().end());
+              caloHitsPtrVector.insert(caloHitsPtrVector.end(),
+                                              caloClustersSplit.at(isplit).caloHitsPtrVector().begin(),
+                                              caloClustersSplit.at(isplit).caloHitsPtrVector().end());
 
               if (diagLevel_ > 1) std::cout<<"Associated main cluster "<<imain <<" with split cluster "<<isplit<<std::endl;
           }
 
-          auto timeEnergy = clusterTimeEnergy(caloCrystalHitsPtrVector);
-          caloProtoClustersTemp.emplace_back(CaloProtoCluster(timeEnergy[0],timeEnergy[1],timeEnergy[2],timeEnergy[3],caloCrystalHitsPtrVector,isSplit));
+          auto timeEnergy = clusterTimeEnergy(caloHitsPtrVector);
+          caloProtoClustersTemp.emplace_back(CaloProtoCluster(timeEnergy[0],timeEnergy[1],timeEnergy[2],timeEnergy[3],caloHitsPtrVector,isSplit));
       }
 
 
@@ -168,9 +167,9 @@ namespace mu2e {
       {
           if (flagProto[iproto]) continue;
 
-          auto        caloCrystalHitsPtrVector = caloProtoClustersTemp.at(iproto).caloCrystalHitsPtrVector();
+          auto        caloHitsPtrVector = caloProtoClustersTemp.at(iproto).caloHitsPtrVector();
           bool        isSplit                  = caloProtoClustersTemp.at(iproto).isSplit();
-          const auto& seed                     = **caloCrystalHitsPtrVector.begin();
+          const auto& seed                     = **caloHitsPtrVector.begin();
           int         diskId                   = cal.crystal(seed.id()).diskId();
 
           for (int iassoc : associator.associatedMainId(iproto))
@@ -178,23 +177,23 @@ namespace mu2e {
               flagProto[iassoc] = 1;
               isSplit           = true;
 
-              caloCrystalHitsPtrVector.insert(caloCrystalHitsPtrVector.end(),
-                                              caloProtoClustersTemp.at(iassoc).caloCrystalHitsPtrVector().begin(),
-                                              caloProtoClustersTemp.at(iassoc).caloCrystalHitsPtrVector().end());
+              caloHitsPtrVector.insert(caloHitsPtrVector.end(),
+                                              caloProtoClustersTemp.at(iassoc).caloHitsPtrVector().begin(),
+                                              caloProtoClustersTemp.at(iassoc).caloHitsPtrVector().end());
 
               if (diagLevel_ > 1) std::cout<<"Associated to main cluster id="<<iproto<<"   main split="<<iassoc<<std::endl;
           }
 
           //sort the crystal by energy
-          auto cmpEnergy = [](const art::Ptr<CaloCrystalHit>& lhs,const art::Ptr<CaloCrystalHit>& rhs) {return lhs->energyDep() > rhs->energyDep();};
-          std::sort(caloCrystalHitsPtrVector.begin(),caloCrystalHitsPtrVector.end(),cmpEnergy);
+          auto cmpEnergy = [](const art::Ptr<CaloHit>& lhs,const art::Ptr<CaloHit>& rhs) {return lhs->energyDep() > rhs->energyDep();};
+          std::sort(caloHitsPtrVector.begin(),caloHitsPtrVector.end(),cmpEnergy);
 
 
-          auto timeEnergy = clusterTimeEnergy(caloCrystalHitsPtrVector);
-          CaloCluster caloCluster(diskId,timeEnergy[0],timeEnergy[1],timeEnergy[2],timeEnergy[3],caloCrystalHitsPtrVector,caloCrystalHitsPtrVector.size(),isSplit);
+          auto timeEnergy = clusterTimeEnergy(caloHitsPtrVector);
+          CaloCluster caloCluster(diskId,timeEnergy[0],timeEnergy[1],timeEnergy[2],timeEnergy[3],caloHitsPtrVector,caloHitsPtrVector.size(),isSplit);
 
           //calculate a lot of fancy useful things
-          auto EnerLayer = calcEnergyLayer(cal,caloCrystalHitsPtrVector);
+          auto EnerLayer = calcEnergyLayer(cal,caloHitsPtrVector);
           ClusterMoments cogCalculator(cal,caloCluster,diskId);
           cogCalculator.calculate(cogType_);
           caloCluster.cog3Vector(cogCalculator.cog());
@@ -208,7 +207,7 @@ namespace mu2e {
           if (diagLevel_ > 2)
           {
               std::cout<<"Making a new cluster with id= ";
-              for (auto il = caloCrystalHitsPtrVector.begin(); il !=caloCrystalHitsPtrVector.end(); ++il) std::cout<<(*il)->id()<<" ";
+              for (auto il = caloHitsPtrVector.begin(); il !=caloHitsPtrVector.end(); ++il) std::cout<<(*il)->id()<<" ";
               std::cout<<std::endl;
           }
       }
@@ -222,15 +221,15 @@ namespace mu2e {
 
 
   //----------------------------------------------------------------------------------------------------
-  std::array<double,3> CaloClusterFromProtoCluster::calcEnergyLayer(const Calorimeter& cal, const std::vector<art::Ptr<CaloCrystalHit>>& caloCrystalHitsPtrVector)
+  std::array<double,3> CaloClusterMaker::calcEnergyLayer(const Calorimeter& cal, const std::vector<art::Ptr<CaloHit>>& caloHitsPtrVector)
   {
-      int seedId              = caloCrystalHitsPtrVector[0]->id();
-      double seedEnergy       = caloCrystalHitsPtrVector[0]->energyDep();
+      int seedId              = caloHitsPtrVector[0]->id();
+      double seedEnergy       = caloHitsPtrVector[0]->energyDep();
       const auto neighborsId  = cal.crystal(seedId).neighbors();
       const auto nneighborsId = cal.crystal(seedId).nextNeighbors();
 
       double e1(seedEnergy),e9(seedEnergy),e25(seedEnergy);
-      for (const auto& il : caloCrystalHitsPtrVector)
+      for (const auto& il : caloHitsPtrVector)
       {
           int crid = il->id();
           for (const auto& it : neighborsId)  if (it==crid) {e9 += il->energyDep(); e25 += il->energyDep(); break;}
@@ -243,7 +242,7 @@ namespace mu2e {
 
 
   //----------------------------------------------------------------------------------------------------
-  std::array<double,4> CaloClusterFromProtoCluster::clusterTimeEnergy(const std::vector<art::Ptr<CaloCrystalHit>>& hits)
+  std::array<double,4> CaloClusterMaker::clusterTimeEnergy(const std::vector<art::Ptr<CaloHit>>& hits)
   {
       double totalEnergy(0),totalEnergyErr(0);
 
@@ -264,7 +263,7 @@ namespace mu2e {
 
 }
 
-DEFINE_ART_MODULE(mu2e::CaloClusterFromProtoCluster);
+DEFINE_ART_MODULE(mu2e::CaloClusterMaker);
 
 
 
