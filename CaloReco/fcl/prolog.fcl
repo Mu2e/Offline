@@ -30,9 +30,9 @@ TemplateProcessor :
 }
 
 
-CaloRecoDigiFromDigi :
+CaloRecoDigiMaker :
 { 
-    module_type         : CaloRecoDigiFromDigi
+    module_type         : CaloRecoDigiMaker
     caloDigiModuleLabel : CaloDigiFromShower
     RawProcessor        : { @table::RawProcessor }
     TemplateProcessor   : { @table::TemplateProcessor }
@@ -44,10 +44,10 @@ CaloRecoDigiFromDigi :
 }
 
 
-CaloCrystalHitFromHit:
+CaloHitMaker:
 {
-    module_type          : CaloCrystalHitFromHit
-    caloDigisModuleLabel : CaloRecoDigiFromDigi	    	    
+    module_type          : CaloHitMaker
+    caloDigisModuleLabel : CaloRecoDigiMaker	    	    
     time4Merge           : 6.0   #ns
     diagLevel            : 0
 }
@@ -57,10 +57,10 @@ CaloCrystalHitFromHit:
 CaloReco : 
 {
    producers : {
-     CaloRecoDigiFromDigi    : @local::CaloRecoDigiFromDigi
-     CaloCrystalHitFromHit  : @local::CaloCrystalHitFromHit
+     CaloRecoDigiMaker  : @local::CaloRecoDigiMaker
+     CaloHitMaker       : @local::CaloHitMaker
    }
-   Reco : [ CaloRecoDigiFromDigi ,CaloCrystalHitFromHit ]
+   Reco : [ CaloRecoDigiMaker, CaloHitMaker ]
 }
 
 END_PROLOG

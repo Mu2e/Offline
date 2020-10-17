@@ -18,7 +18,6 @@
 #include "RecoDataProducts/inc/CaloDigi.hh"
 #include "RecoDataProducts/inc/CaloRecoDigi.hh"
 #include "RecoDataProducts/inc/CaloHit.hh"
-#include "RecoDataProducts/inc/CaloCrystalHit.hh"
 #include "RecoDataProducts/inc/CaloProtoCluster.hh"
 #include "RecoDataProducts/inc/CaloCluster.hh"
 #include "RecoDataProducts/inc/CaloTrigSeed.hh"

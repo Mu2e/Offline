@@ -8,7 +8,7 @@
 //    and B to C, then ABC are grouped together)
 
 #include "CalorimeterGeom/inc/Calorimeter.hh"
-#include "RecoDataProducts/inc/CaloCrystalHit.hh"
+#include "RecoDataProducts/inc/CaloHit.hh"
 #include "RecoDataProducts/inc/CaloProtoCluster.hh"
 
 #include <unordered_map>
@@ -22,15 +22,15 @@ namespace mu2e {
     class ClusterAssociator 
     {
         public:
-            typedef art::Ptr<CaloCrystalHit>        CaloCrystalHitPtr;                     
-            typedef std::vector<CaloCrystalHitPtr > CaloCrystalHitPtrVector;                     
+            typedef art::Ptr<CaloHit>        CaloHitPtr;                     
+            typedef std::vector<CaloHitPtr > CaloHitPtrVector;                     
 
             ClusterAssociator(const Calorimeter& cal): cal_(cal), associatedSplitId_(), associatedMainId_() {};              
 
             
             void      associateSplitOff(const CaloProtoClusterCollection&, const CaloProtoClusterCollection&,double,double);           
             void      associateMain    (const CaloProtoClusterCollection&, double, double, int);  
-            double    closestDistance  (const CaloCrystalHitPtrVector&, const CaloCrystalHitPtrVector&);
+            double    closestDistance  (const CaloHitPtrVector&, const CaloHitPtrVector&);
 
             const std::vector<unsigned>& associatedMainId (unsigned i) const {return associatedMainId_.find(i)->second;}
                    unsigned              associatedSplitId(unsigned i) const {return associatedSplitId_.find(i)->second;}

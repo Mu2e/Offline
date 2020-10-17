@@ -21,8 +21,6 @@
 #include "RecoDataProducts/inc/KalRepPtrCollection.hh"
 
 
-#include "RecoDataProducts/inc/CaloCrystalHit.hh"
-#include "RecoDataProducts/inc/CaloHit.hh"
 #include "RecoDataProducts/inc/CaloHit.hh"
 #include "RecoDataProducts/inc/CaloCluster.hh"
 #include "RecoDataProducts/inc/CaloCluster.hh"
@@ -208,9 +206,9 @@ namespace mu2e {
   
 
       // Get crystal hits
-      art::Handle<CaloCrystalHitCollection> caloCrystalHitsHandle;
-      event.getByLabel(_caloCrystalModuleLabel, caloCrystalHitsHandle);
-      CaloCrystalHitCollection const& caloCrystalHits(*caloCrystalHitsHandle);
+      art::Handle<CaloHitCollection> CaloHitsHandle;
+      event.getByLabel(_caloCrystalModuleLabel, CaloHitsHandle);
+      CaloHitCollection const& CaloHits(*CaloHitsHandle);
 
       // Get tracks
       art::Handle<KalRepPtrCollection> trksHandle;
@@ -246,9 +244,9 @@ namespace mu2e {
        //--------------------------  Do calorimeter hits --------------------------------
       
        _nHits = 0;
-       for (unsigned int ic=0; ic<caloCrystalHits.size();++ic) 
+       for (unsigned int ic=0; ic<CaloHits.size();++ic) 
        {	   
-	   CaloCrystalHit const& hit    = caloCrystalHits.at(ic);
+	   CaloHit const& hit    = CaloHits.at(ic);
 	   CLHEP::Hep3Vector crystalPos = cal.crystal(hit.id()).position();
 
 	   _cryTime[_nHits]      = hit.time();
@@ -268,7 +266,7 @@ namespace mu2e {
        {
 	  std::vector<int> _list;
 	  for (int i=0;i<clusterIt->size();++i) 
-	     _list.push_back( int(clusterIt->caloCrystalHitsPtrVector().at(i).get()- &caloCrystalHits.at(0)) );	    
+	     _list.push_back( int(clusterIt->caloHitsPtrVector().at(i).get()- &CaloHits.at(0)) );	    
 
 	  _cluEnergy[_nCluster] = clusterIt->energyDep();
 	  _cluTime[_nCluster]   = clusterIt->time();

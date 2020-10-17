@@ -2,7 +2,7 @@
 #define MCDataProducts_CaloMCTruthAssns_hh
 
 #include "canvas/Persistency/Common/Assns.h"
-#include "RecoDataProducts/inc/CaloCrystalHit.hh"
+#include "RecoDataProducts/inc/CaloHit.hh"
 #include "RecoDataProducts/inc/CaloCluster.hh"
 #include "MCDataProducts/inc/CaloShowerSim.hh"
 #include "MCDataProducts/inc/SimParticle.hh"
@@ -11,9 +11,9 @@
 
 namespace mu2e
 {
-    typedef art::Assns<CaloCrystalHit, SimParticle, art::Ptr<CaloShowerSim>> CaloShowerMCTruthAssn;
-    typedef art::Assns<CaloCrystalHit, CaloDigiMC>                           CaloDigiMCTruthAssn;
-    typedef art::Assns<CaloCluster,    CaloClusterMC>                        CaloClusterMCTruthAssn;
+    typedef art::Assns<CaloHit,    SimParticle, art::Ptr<CaloShowerSim>> CaloShowerMCTruthAssn;
+    typedef art::Assns<CaloHit,    CaloDigiMC>                           CaloDigiMCTruthAssn;
+    typedef art::Assns<CaloCluster,CaloClusterMC>                        CaloClusterMCTruthAssn;
 }
 
 #endif 

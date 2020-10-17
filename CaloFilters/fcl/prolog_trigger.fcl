@@ -10,7 +10,7 @@ CaloFilters : {
 	module_type            : EcalTriggerPreselect
 	trkPatRecModuleLabel   : MergePatRec
 	trkQualTag             : MergePatRec
-	caloClusterModuleLabel : CaloClusterFromProtoCluster
+	caloClusterModuleLabel : CaloClusterMaker
 	trackClusterMatchModuleLabel : TrackCaloMatching
 	fitparticle            : 11
 	fitdirection           : 0 

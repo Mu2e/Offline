@@ -96,7 +96,7 @@ namespace mu2e {
    	   const CaloCluster* thisCaloCluster = &cluster;
 	   size_t idx = (thisCaloCluster - caloClusterBase);
 	   art::Ptr<CaloCluster> clusterPtr = art::Ptr<CaloCluster>(caloClusterHandle,idx);           
-           const auto& hits = cluster.caloCrystalHitsPtrVector();
+           const auto& hits = cluster.caloHitsPtrVector();
            
            if (diagLevel_ > 1) std::cout<<"[CaloClusterTruthMatch] Inspect cluster diskId/energy/time "<<cluster.diskId()<<" "<<cluster.energyDep()<<" "<<cluster.time()<<std::endl;
            std::vector<CaloEDepMC> edeps;  

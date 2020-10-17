@@ -17,8 +17,6 @@ namespace art {
 #endif
 
 // data
-#include "RecoDataProducts/inc/CaloCrystalHit.hh"
-#include "RecoDataProducts/inc/CaloHit.hh"
 #include "RecoDataProducts/inc/CaloHit.hh"
 #include "RecoDataProducts/inc/CaloCluster.hh"
 #include "RecoDataProducts/inc/CaloCluster.hh"

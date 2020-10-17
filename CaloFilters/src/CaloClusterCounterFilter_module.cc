@@ -18,9 +18,6 @@
 
 #include "CaloCluster/inc/ClusterMoments.hh"
 
-#include "RecoDataProducts/inc/CaloCrystalHit.hh"
-#include "RecoDataProducts/inc/CaloHit.hh"
-#include "RecoDataProducts/inc/CaloHit.hh"
 #include "RecoDataProducts/inc/CaloCluster.hh"
 #include "RecoDataProducts/inc/CaloCluster.hh"
 #include "RecoDataProducts/inc/TrkFitFlag.hh"
@@ -88,8 +85,6 @@ namespace mu2e {
 
   private:
        
-    typedef art::Ptr< CaloCrystalHit> CaloCrystalHitPtr;
-
     int                     _diagLevel;
     int                     _nProcess;
     int                     _nPass;

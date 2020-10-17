@@ -9,7 +9,7 @@ END_PROLOG
 BEGIN_PROLOG
 
 
-FastCaloRecoDigiFromDigi :
+FastCaloRecoDigiMaker :
 { 
     module_type            : FastCaloRecoDigiFromDigi
     caloDigiModuleLabel    : CaloDigiFromShower
@@ -21,10 +21,10 @@ FastCaloRecoDigiFromDigi :
 }
 
 
-FastCaloCrystalHitFromHit:
+FastCaloHitMaker:
 {
-    module_type           : CaloCrystalHitFromHit
-    caloDigisModuleLabel  : FastCaloRecoDigiFromDigi	    	    
+    module_type           : CaloHitMaker
+    caloDigisModuleLabel  : FastCaloRecoDigiMaker	    	    
     time4Merge            : 5.01   #ns
     diagLevel             : 0
 }
@@ -32,11 +32,11 @@ FastCaloCrystalHitFromHit:
 CaloHitRecoTrigger : 
 {
    producers : {
-     FastCaloRecoDigiFromDigi    : @local::FastCaloRecoDigiFromDigi 
-     FastCaloCrystalHitFromHit  : @local::FastCaloCrystalHitFromHit
+     FastCaloRecoDigiMaker  : @local::FastCaloRecoDigiMaker
+     FastCaloHitMaker       : @local::FastCaloHitMaker
    }
 
-   Reco : [ FastCaloRecoDigiFromDigi , FastCaloCrystalHitFromHit ]
+   Reco : [ FastCaloRecoDigiMaker , FastCaloHitMaker ]
 }
 
 END_PROLOG
