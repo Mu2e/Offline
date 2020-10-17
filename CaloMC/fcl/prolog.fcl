@@ -51,7 +51,7 @@ CaloDigiFromShower :
     blindTime               : @local::HitMakerBlindTime
     addNoise                : true
     noiseElecADC            : 2.2
-    rinNphotPerNs           : 0.9
+    rinNphotPerNs           : 4.5
     MeVToADC                : @local::HitMakerMeVToADC
     digiSampling            : @local::HitMakerDigiSampling
     nBits                   : 12
