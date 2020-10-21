@@ -20,7 +20,6 @@ namespace mu2e {
       _pdgId(PDGCode::e_minus),
       _mass(GlobalConstantsHandle<ParticleDataTable>()->particle(_pdgId).ref().mass().value()),
       _genId(GenId::DIOGenTool),
-      _spectrumVariable(parseSpectrumVar(conf().physics().spectrumVariable())),
       _spectrum(BinnedSpectrum(conf().physics()))
     {
 
