@@ -17,7 +17,7 @@ RawProcessor :
 TemplateProcessor : 
 {
     windowPeak         : 3
-    minPeakAmplitude   : 16
+    minPeakAmplitude   : 24
     numNoiseBins       : 5
     minDTPeaks         : 20
     psdThreshold       : 0.1
