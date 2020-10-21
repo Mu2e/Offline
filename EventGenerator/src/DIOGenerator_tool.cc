@@ -37,7 +37,6 @@ namespace mu2e {
     double _mass;
     GenId _genId;
 
-    SpectrumVar       _spectrumVariable;
     BinnedSpectrum    _spectrum;
 
     RandomUnitSphere*   _randomUnitSphere;
@@ -48,12 +47,6 @@ namespace mu2e {
     const CLHEP::Hep3Vector pos(stop.x, stop.y, stop.z);
 
     double energy = _spectrum.sample(_randSpectrum->fire());
-
-    switch(_spectrumVariable) {
-    case TOTAL_ENERGY  : break;
-    case KINETIC_ENERY : energy += _mass; break;
-    case MOMENTUM      : energy = sqrt(energy*energy+_mass*_mass); break;
-    }
 
     const double p = energy * sqrt(1 - std::pow(_mass/energy,2));
     CLHEP::Hep3Vector p3 = _randomUnitSphere->fire(p);
