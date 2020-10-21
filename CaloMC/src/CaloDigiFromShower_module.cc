@@ -57,8 +57,9 @@ namespace mu2e {
              fhicl::Atom<art::InputTag> caloShowerCollection { Name("caloShowerROCollection"), Comment("CaloShowerRO collection name") }; 
              fhicl::Atom<double>        blindTime            { Name("blindTime"),              Comment("Microbunch blind time") }; 
              fhicl::Atom<bool>          addNoise             { Name("addNoise"),               Comment("Add noise to waveform") }; 
-             fhicl::Atom<double>        noiseElecADC         { Name("noiseElecADC"),           Comment("Electronics noise level - ADC equivalent") }; 
+             fhicl::Atom<double>        elecNphotPerNs       { Name("elecNphotPerNs"),         Comment("Electronics noise number of PE / ns ") }; 
              fhicl::Atom<double>        rinNphotPerNs        { Name("rinNphotPerNs"),          Comment("RIN noise number of PE / ns ") }; 
+             fhicl::Atom<double>        darkNphotPerNs       { Name("darkNphotPerNs"),         Comment("SiPM Dark noise number of PE / ns ") }; 
              fhicl::Atom<double>        digiSampling         { Name("digiSampling"),           Comment("Digitization time sampling") }; 
              fhicl::Atom<int>           nBits                { Name("nBits"),                  Comment("ADC Number of bits") }; 
              fhicl::Atom<int>           nBinsPeak            { Name("nBinsPeak"),              Comment("Window size for finding local maximum to digitize wf") }; 
@@ -75,8 +76,7 @@ namespace mu2e {
             caloShowerToken_{consumes<CaloShowerStepROCollection>(config().caloShowerCollection())},
             blindTime_         (config().blindTime()),
             addNoise_          (config().addNoise()),
-            noiseElecADC_      (config().noiseElecADC()),
-            rinNphotPerNs_     (config().rinNphotPerNs()),
+            noiseNphotPerNs_   (config().elecNphotPerNs() + config().rinNphotPerNs() + config().darkNphotPerNs()),
             digiSampling_      (config().digiSampling()),
             bufferDigi_        (config().bufferDigi()),
             nBinsPeak_         (config().nBinsPeak()),
@@ -117,8 +117,7 @@ namespace mu2e {
        double                  blindTime_;
        double                  mbtime_;
        bool                    addNoise_;
-       double                  noiseElecADC_;
-       double                  rinNphotPerNs_;
+       double                  noiseNphotPerNs_;
        double                  digiSampling_;
        int                     bufferDigi_;
        int  		       nBinsPeak_;
@@ -196,8 +195,12 @@ namespace mu2e {
       std::vector<std::vector<double>> waveforms(nWaveforms,std::vector<double>(waveformSize,0.0));
       std::vector<int>                 pedestals(nWaveforms,0);
       
-      
-      if (addNoise_) generateNoiseFast(waveforms,pedestals,calorimeterCalibrations);
+      if (addNoise_)
+      {
+          if (noiseNphotPerNs_<1.0) generateNoise(waveforms,pedestals,calorimeterCalibrations);
+          else                      generateNoiseFast(waveforms,pedestals,calorimeterCalibrations);
+      }
+
       fillWaveforms(waveforms,caloShowerStepROs,calorimeterCalibrations);
       buildOutputDigi(waveforms, pedestals, caloDigiColl);
       
@@ -214,7 +217,7 @@ namespace mu2e {
       int                 pulseSize     = wf.size();     
       double              rinBufferTime = 0.75*pulseSize*digiSampling_;
       double              totalTime     = mbtime_ - blindTime_ + endTimeBuffer_ + rinBufferTime;
-      int                 nPhMean       = int(totalTime*rinNphotPerNs_);
+      int                 nPhMean       = int(totalTime*noiseNphotPerNs_);
       int                 nbuffer       = int(rinBufferTime/digiSampling_);
       int                 nbins         = waveforms[0].size();
 
@@ -236,11 +239,8 @@ namespace mu2e {
 	      for (int l=l0;l<l1;++l) waveform[i0+l] += wf[l]*scaleFactor;
           }
           
-          //add electronics noise        
-          for (auto& val : waveform) val += randGauss_.fire(0.0,noiseElecADC_);
-
           //estimate pedestal for this waveform - set it to theoretical value for the time
-          pedestals[i] = int(rinNphotPerNs_*digiSampling_*std::accumulate(wf.begin(),wf.end(),0.0)*scaleFactor);      
+          pedestals[i] = int(noiseNphotPerNs_*digiSampling_*std::accumulate(wf.begin(),wf.end(),0.0)*scaleFactor);      
       }
 
       if (diagLevel_==99) plotNoise(waveforms,pedestals);
@@ -275,11 +275,11 @@ namespace mu2e {
 	      unsigned pulseStart = (i>nbuffer) ? 0 : nbuffer-i;
 	      unsigned pulseEnd   = std::min(pulseSize,nbins+nbuffer-i);
 
-	      int nP0 = randPoisson_(rinNphotPerNs_);
-	      int nP1 = randPoisson_(rinNphotPerNs_);
-	      int nP2 = randPoisson_(rinNphotPerNs_);
-	      int nP3 = randPoisson_(rinNphotPerNs_);
-	      int nP4 = randPoisson_(rinNphotPerNs_);
+	      int nP0 = randPoisson_(noiseNphotPerNs_);
+	      int nP1 = randPoisson_(noiseNphotPerNs_);
+	      int nP2 = randPoisson_(noiseNphotPerNs_);
+	      int nP3 = randPoisson_(noiseNphotPerNs_);
+	      int nP4 = randPoisson_(noiseNphotPerNs_);
 
 	      for (unsigned l=pulseStart;l<pulseEnd;++l)
               {
@@ -287,11 +287,8 @@ namespace mu2e {
 	      }
           }
 
-          //add electronics noise        
-          for (auto& val : waveform) val += randGauss_.fire(0.0,noiseElecADC_);
-
           //estimate pedestal for this waveform - set it to theoretical value for the time being
-          pedestals[i] = int(rinNphotPerNs_*digiSampling_*std::accumulate(wf0.begin(),wf0.end(),0.0)*scaleFactor);
+          pedestals[i] = int(noiseNphotPerNs_*digiSampling_*std::accumulate(wf0.begin(),wf0.end(),0.0)*scaleFactor);
       }
 
       if (diagLevel_==99) plotNoise(waveforms,pedestals);
