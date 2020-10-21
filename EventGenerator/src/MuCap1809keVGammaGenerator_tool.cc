@@ -13,9 +13,9 @@
 #include "GlobalConstantsService/inc/PhysicsParams.hh"
 
 namespace mu2e {
-  class MuCapGammaRayGenerator : public ParticleGeneratorTool {
+  class MuCap1809keVGammaGenerator : public ParticleGeneratorTool {
   public:
-    explicit MuCapGammaRayGenerator(Parameters const& conf) :
+    explicit MuCap1809keVGammaGenerator(Parameters const& conf) :
       _pdgId(PDGCode::gamma),
       _mass(GlobalConstantsHandle<ParticleDataTable>()->particle(_pdgId).ref().mass().value()),
       _genId(GenId::MuCapGammaRayGenTool),
@@ -38,14 +38,11 @@ namespace mu2e {
     double _energy;
     double _intensity;
 
-    SpectrumVar       _spectrumVariable;
-    BinnedSpectrum    _spectrum;
-
     RandomUnitSphere*   _randomUnitSphere;
     CLHEP::RandFlat* _randFlat;
   };
 
-  void MuCapGammaRayGenerator::generate(std::unique_ptr<GenParticleCollection>& out, const IO::StoppedParticleF& stop) {
+  void MuCap1809keVGammaGenerator::generate(std::unique_ptr<GenParticleCollection>& out, const IO::StoppedParticleF& stop) {
     const CLHEP::Hep3Vector pos(stop.x, stop.y, stop.z);
 
     double rand = _randFlat->fire();
@@ -62,4 +59,4 @@ namespace mu2e {
     }
   }
 }
-DEFINE_ART_CLASS_TOOL(mu2e::MuCapGammaRayGenerator)
+DEFINE_ART_CLASS_TOOL(mu2e::MuCap1809keVGammaGenerator)
