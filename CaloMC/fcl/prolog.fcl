@@ -50,8 +50,9 @@ CaloDigiFromShower :
     caloShowerROCollection  : CaloShowerStepROFromShowerStep
     blindTime               : @local::HitMakerBlindTime
     addNoise                : true
-    noiseElecADC            : 2.2
-    rinNphotPerNs           : 4.5
+    elecNphotPerNs          : 0.18
+    rinNphotPerNs           : 0.36
+    darkNphotPerNs          : 0.60
     MeVToADC                : @local::HitMakerMeVToADC
     digiSampling            : @local::HitMakerDigiSampling
     nBits                   : 12
