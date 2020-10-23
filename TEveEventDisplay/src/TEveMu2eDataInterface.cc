@@ -74,7 +74,7 @@ namespace mu2e{
     return energies;
   }
 
-  std::vector<double> TEveMu2eDataInterface::getTimeRange(bool firstloop, const ComboHitCollection *chcol, const CrvRecoPulseCollection *crvcoincol, const CaloClusterCollection *clustercol, const CaloCrystalHitCollection *cryHitcol){
+  std::vector<double> TEveMu2eDataInterface::getTimeRange(bool firstloop, const ComboHitCollection *chcol, const CrvRecoPulseCollection *crvcoincol, const CaloClusterCollection *clustercol, const CaloHitCollection *cryHitcol){
 	vector <double> time = {-1, -1};
 
     if (crvcoincol != 0){
@@ -102,7 +102,7 @@ namespace mu2e{
 
     if (cryHitcol != 0){
     for(unsigned int i=0; i<cryHitcol->size();i++){
-      CaloCrystalHit const  &hit = (*cryHitcol)[i];
+      CaloHit const  &hit = (*cryHitcol)[i];
         if (hit.time() > time.at(1)){time.at(1) = hit.time();}
         if (hit.time() < time.at(0)){time.at(0) = hit.time();}
       }
@@ -219,20 +219,20 @@ namespace mu2e{
   }
 
   
-  void TEveMu2eDataInterface::AddCrystalHits(bool firstloop, const CaloCrystalHitCollection *cryHitcol, TEveMu2e2DProjection *calo2Dproj, double time, bool Redraw, bool show2D, bool accumulate){
+  void TEveMu2eDataInterface::AddCrystalHits(bool firstloop, const CaloHitCollection *cryHitcol, TEveMu2e2DProjection *calo2Dproj, double time, bool Redraw, bool show2D, bool accumulate){
     vector <double> energies = {0, 0};
     Calorimeter const &cal = *(GeomHandle<Calorimeter>());
-    DataLists<const CaloCrystalHitCollection*, TEveMu2e2DProjection*>(cryHitcol, Redraw, show2D, accumulate, "CrystalHit", &fHitsList3D, &fHitsList2D, calo2Dproj);
+    DataLists<const CaloHitCollection*, TEveMu2e2DProjection*>(cryHitcol, Redraw, show2D, accumulate, "CrystalHit", &fHitsList3D, &fHitsList2D, calo2Dproj);
     if(cryHitcol!=0){
 
       TEveElementList *HitList = new TEveElementList("CrystalHits");
       int *energylevels = new int[cryHitcol->size()];
 
-      energies = Energies<const CaloCrystalHitCollection*>(cryHitcol, &energylevels);
+      energies = Energies<const CaloHitCollection*>(cryHitcol, &energylevels);
 
       for(unsigned int i=0; i<cryHitcol->size();i++){
         TEveMu2eHit *teve_hit = new TEveMu2eHit();
-        CaloCrystalHit const  &hit = (*cryHitcol)[i];
+        CaloHit const  &hit = (*cryHitcol)[i];
         int diskId = cal.crystal(hit.id()).diskId();
         CLHEP::Hep3Vector HitPos(cal.geomUtil().mu2eToDiskFF(diskId, cal.crystal(hit.id()).position()));
         CLHEP::Hep3Vector pointInMu2e = PointToCalo(HitPos,diskId);

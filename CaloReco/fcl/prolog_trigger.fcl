@@ -12,7 +12,7 @@ BEGIN_PROLOG
 FastCaloRecoDigiMaker :
 { 
     module_type            : FastCaloRecoDigiFromDigi
-    caloDigiModuleLabel    : CaloDigiFromShower
+    caloDigiModuleLabel    : CaloDigiMaker
     digiSampling           : @local::HitMakerDigiSampling
     diagLevel              : 0
     minDigiE 	  	   : 1 

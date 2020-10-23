@@ -29,7 +29,7 @@ process_name: dram
 @table::draTopLevelDefs
 
 // override a setting from CaloMC/fcl/prolog.fcl
-physics.producers.CaloShowerStepFromStepPt.physVolInfoInput: "compressPVDetector"
+physics.producers.CaloShowerStepMaker.physVolInfoInput: "compressPVDetector"
 
 // Limit the amount of "Begin processing the ... record" messages
 services.message.destinations.log.categories.ArtReport.reportEvery : 1

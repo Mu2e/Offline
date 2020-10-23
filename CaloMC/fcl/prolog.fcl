@@ -15,9 +15,9 @@ END_PROLOG
 
 BEGIN_PROLOG
 
-CaloShowerStepFromStepPt  : 
+CaloShowerStepMaker  : 
 {
-    module_type             : CaloShowerStepFromStepPt
+    module_type             : CaloShowerStepMaker
     numZSlices              : 20
     deltaTime               : 0.2
     caloStepPointCollection : ["g4run:calorimeter"]
@@ -30,10 +30,10 @@ CaloShowerStepFromStepPt  :
 }
 
 
-CaloShowerStepROFromShowerStep : 
+CaloShowerROMaker : 
 {
-    module_type              : CaloShowerStepROFromShowerStep
-    caloShowerStepCollection : ["CaloShowerStepFromStepPt"]
+    module_type              : CaloShowerROMaker
+    caloShowerStepCollection : ["CaloShowerStepMaker"]
     TimeOffsets              : { inputs : [ @sequence::CommonMC.TimeMaps ] }
     blindTime                : @local::HitMakerBlindTime
     LRUCorrection            : true
@@ -44,10 +44,10 @@ CaloShowerStepROFromShowerStep :
 }
 
 
-CaloDigiFromShower : 
+CaloDigiMaker : 
 {
-    module_type             : CaloDigiFromShower
-    caloShowerROCollection  : CaloShowerStepROFromShowerStep
+    module_type             : CaloDigiMaker
+    caloShowerROCollection  : CaloShowerROMaker
     blindTime               : @local::HitMakerBlindTime
     addNoise                : true
     elecNphotPerNs          : 0.18
@@ -68,7 +68,7 @@ CaloDigiFromShower :
 CaloHitTruthMatch:
 {
     module_type               : CaloHitTruthMatch
-    caloShowerSimCollection   : CaloShowerStepROFromShowerStep
+    caloShowerSimCollection   : CaloShowerROMaker
     caloHitCollection         : CaloHitMaker
     primaryParticle           : FindMCPrimary
     MeVToADC                  : @local::HitMakerMeVToADC
@@ -89,13 +89,13 @@ CaloClusterTruthMatch:
 CaloDigiMC : 
 {
    producers : {
-     CaloShowerStepFromStepPt       : @local::CaloShowerStepFromStepPt
-     CaloShowerStepROFromShowerStep : @local::CaloShowerStepROFromShowerStep
-     CaloDigiFromShower             : @local::CaloDigiFromShower
+     CaloShowerStepMaker  : @local::CaloShowerStepMaker
+     CaloShowerROMaker      : @local::CaloShowerROMaker
+     CaloDigiMaker        : @local::CaloDigiMaker
    }
    producersMC : { CaloHitTruthMatch : @local::CaloHitTruthMatch }
    
-   DigiSim     : [ CaloShowerStepFromStepPt, CaloShowerStepROFromShowerStep, CaloDigiFromShower]
+   DigiSim     : [ CaloShowerStepMaker, CaloShowerROMaker, CaloDigiMaker]
    TruthMatch  : [ CaloHitTruthMatch ]
 }
 

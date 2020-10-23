@@ -60,7 +60,7 @@ physics :{
       }
       caloDigiPrinter : {
         verbose: 1   # 0, 1
-	#inputTags : [ "CaloDigiFromShower" ] # select instances
+	#inputTags : [ "CaloDigiMaker" ] # select instances
       }
       caloRecoDigiPrinter : {
         verbose: 1   # 0, 1

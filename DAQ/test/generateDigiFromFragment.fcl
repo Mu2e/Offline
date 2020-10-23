@@ -29,9 +29,9 @@ physics : {
 	 @table::DAQ.producers.makeSD
       }
 
-      CaloDigiFromShower:		
+      CaloDigiMaker:		
       {	 
-	 @table::DAQ.producers.CaloDigiFromShower
+	 @table::DAQ.producers.CaloDigiMaker
       }
    }
 
@@ -47,7 +47,7 @@ physics : {
    }
 
    #  t1 : [ makeSD ] 
-   t1 : [ makeSD, CaloDigiFromShower ] 
+   t1 : [ makeSD, CaloDigiMaker ] 
    e1 : [ readFragments, outfile ]
 
    trigger_paths  : [t1]

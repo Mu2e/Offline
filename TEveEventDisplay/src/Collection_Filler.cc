@@ -34,8 +34,8 @@ namespace mu2e{
       auto chH = evt.getValidHandle<mu2e::ComboHitCollection>(chTag_);
       data.chcol = chH.product();
     }
-    if(FillAll_ or RecoOnly_ or CollectionName == CaloCrystalHits){
-      auto chH = evt.getValidHandle<mu2e::CaloCrystalHitCollection>(cryHitTag_);
+    if(FillAll_ or RecoOnly_ or CollectionName == CaloHits){
+      auto chH = evt.getValidHandle<mu2e::CaloHitCollection>(cryHitTag_);
       data.cryHitcol = chH.product();
     }
     if(FillAll_ or RecoOnly_ or (addClusters_ and CollectionName==CaloClusters)){

@@ -187,7 +187,7 @@ namespace mu2e {
     _generatorModuleLabel(pset.get<string>("generatorModuleLabel")),
     _trackerStepPoints(pset.get<string>("trackerStepPoints","tracker")),
     _calorimeterStepPoints(pset.get<string>("calorimeterStepPoints","calorimeter")),
-    _caloShowerSimModuleLabel(pset.get<string>("caloShowerSimModuleLabel","CaloShowerStepROFromShowerStep")),
+    _caloShowerSimModuleLabel(pset.get<string>("caloShowerSimModuleLabel","CaloShowerROMaker")),
     _caloCrystalModuleLabel(pset.get<string>("caloCrystalModuleLabel","CaloHitMaker")),
     _targetStepPoints(pset.get<string>("targetStepPoints","stoppingtarget")),
     _crvStepPoints(pset.get<string>("CRVStepPoints","CRV")),

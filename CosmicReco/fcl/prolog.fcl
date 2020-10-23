@@ -173,7 +173,7 @@ CosmicMuonInfo : {
 	strawHitsTag    : "makeSH"
 	panelHitsTag    : "makePH"
 	strawDigiMCsTag : "compressDigiMCs"
-	caloDigisTag    : "CaloDigiFromShower"
+	caloDigisTag    : "CaloDigiMaker"
 	diagLevel       : 0
 	filterCuts      : {
 	pmin          : 200. # MeV/c set low 
