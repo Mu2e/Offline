@@ -34,7 +34,6 @@ namespace mu2e {
 
 
    typedef std::vector<mu2e::CaloShowerRO> CaloShowerROCollection;
-
 } 
 
 #endif

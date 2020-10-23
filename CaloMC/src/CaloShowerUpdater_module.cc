@@ -16,27 +16,27 @@ namespace mu2e {
 
   class CaloShowerUpdater : public art::EDProducer 
   {
-     public:
-        struct Config 
-        {
-            fhicl::Atom<std::string> showerInput     { fhicl::Name("showerInput")     };
-            fhicl::Atom<std::string> newSimParticles { fhicl::Name("newSimParticles") };
-        };
+      public:
+         struct Config 
+         {
+             fhicl::Atom<std::string> showerInput     { fhicl::Name("showerInput")     };
+             fhicl::Atom<std::string> newSimParticles { fhicl::Name("newSimParticles") };
+         };
 
-        explicit CaloShowerUpdater(const art::EDProducer::Table<Config>& config) :
-           art::EDProducer{config},
-           showerInput_(config().showerInput()),
-           newSimParticles_(config().newSimParticles())
-        {
-           produces<CaloShowerStepCollection>();
-        }
+         explicit CaloShowerUpdater(const art::EDProducer::Table<Config>& config) :
+            art::EDProducer{config},
+            showerInput_(config().showerInput()),
+            newSimParticles_(config().newSimParticles())
+         {
+            produces<CaloShowerStepCollection>();
+         }
 
-        virtual void produce( art::Event& e) override;
-     
-     
-     private:
-        art::InputTag showerInput_;
-        art::InputTag newSimParticles_;
+         virtual void produce( art::Event& e) override;
+
+
+      private:
+         art::InputTag showerInput_;
+         art::InputTag newSimParticles_;
   };
 
 

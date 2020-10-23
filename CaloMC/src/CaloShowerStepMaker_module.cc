@@ -96,8 +96,7 @@ namespace mu2e {
          struct Config 
          {
              using Name    = fhicl::Name;
-             using Comment = fhicl::Comment;
-             
+             using Comment = fhicl::Comment;             
              fhicl::Sequence<std::string>  caloStepPointCollection { Name("caloStepPointCollection"), Comment("Calo crystal stepPointMC collection name") };
              fhicl::Atom<art::InputTag>    physVolInfoInput        { Name("physVolInfoInput"),        Comment("Physics volume token names") };
              fhicl::Atom<unsigned>         numZSlices              { Name("numZSlices"),              Comment("Number of crystal longitudinal slices ") };
@@ -245,12 +244,8 @@ namespace mu2e {
           event.getByLabel(art::InputTag(stepPts), hc);
           crystalStepsHandles.push_back(hc);
       }
-      //art::ProductInstanceNameSelector getCrystalSteps(calorimeterStepPoints_[0]);
-      //event.getMany(getCrystalSteps, crystalStepsHandles);      
       
-
       makeCompressedHits(crystalStepsHandles,*caloShowerStepMCs,*simsToKeep);
-
 
       event.put(std::move(caloShowerStepMCs));
       event.put(std::move(simsToKeep));
@@ -402,7 +397,8 @@ namespace mu2e {
 
 
   //-----------------------------------------------------------------------------------------------------------------------------------------------
-  void CaloShowerStepMaker::collectStepBySim(const HandleVector& stepsHandles, std::map<SimPtr,std::vector<const StepPointMC*>>& simStepMap)
+  void CaloShowerStepMaker::collectStepBySim(const HandleVector& stepsHandles, 
+                                             std::map<SimPtr,std::vector<const StepPointMC*>>& simStepMap)
   {
       for (HandleVector::const_iterator i=stepsHandles.begin(), e=stepsHandles.end(); i != e; ++i)
       {
@@ -417,7 +413,8 @@ namespace mu2e {
   void CaloShowerStepMaker::compressSteps(const Calorimeter& cal, CaloShowerStepCollection &caloShowerStepMCs,
                                           int volId, const SimPtr& sim, std::vector<const StepPointMC*>& steps)
   {
-     std::sort(steps.begin(), steps.end(), [](const StepPointMC* a, const StepPointMC* b) {return a->time() < b->time();});
+     auto sortFunctor = [](const StepPointMC* a, const StepPointMC* b) {return a->time() < b->time();};
+     std::sort(steps.begin(), steps.end(), sortFunctor);
 
      ShowerStepUtil buffer(numZSlices_, ShowerStepUtil::weight_type::energy );
 

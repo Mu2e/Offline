@@ -86,7 +86,6 @@ namespace mu2e {
              using Name    = fhicl::Name;
              using Comment = fhicl::Comment;
              using SPTO    = SimParticleTimeOffset::Config;
-
              fhicl::Sequence<art::InputTag>  caloShowerStepCollection { Name("caloShowerStepCollection"), Comment("Compressed shower inputs for calo crystals") };
              fhicl::Table<SPTO>              timeOffsets              { Name("TimeOffsets"),              Comment("Time maps to apply to sim particles before digitization.") };
              fhicl::Atom<float>              blindTime                { Name("blindTime"),                Comment("Minimum time of hit to be digitized") };
@@ -166,7 +165,7 @@ namespace mu2e {
   //-----------------------------------------------
   void CaloShowerROMaker::beginRun(art::Run& aRun)
   {      
-       photonProp_.buildTable();
+      photonProp_.buildTable();
   }
 
 
@@ -185,7 +184,8 @@ namespace mu2e {
       auto caloShowerSims = std::make_unique<CaloShowerSimCollection>();
 
       StepHandles newCrystalShowerTokens;
-      std::transform(std::begin(crystalShowerTokens_), std::end(crystalShowerTokens_),  back_inserter(newCrystalShowerTokens), 
+      std::transform(std::begin(crystalShowerTokens_), std::end(crystalShowerTokens_),  
+                     back_inserter(newCrystalShowerTokens), 
                      [&event](const auto& token) {return event.getValidHandle(token);});
       
       makeReadoutHits(newCrystalShowerTokens, *CaloShowerROs, *caloShowerSims);

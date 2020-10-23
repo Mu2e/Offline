@@ -22,7 +22,6 @@ namespace mu2e {
 			_recoCaloDigis(CaloRecoDigi)
          {}
 
-
 	       int                                    id             () const { return _crystalId; }
 	       int                                    nROId          () const { return _nROId;}
 	       double                                 time           () const { return _time;}

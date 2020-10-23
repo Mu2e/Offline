@@ -143,10 +143,6 @@ namespace mu2e {
       if (diagLevel_ > 0) std::cout<<"[CaloClusterTruthMatch]  total clusters / energy matched = "<<nMatched<<" / "<<totalEnergyMatched<<std::endl;
  } 
 
-
- 
-
-
 }
 
 using mu2e::CaloClusterTruthMatch;
