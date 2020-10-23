@@ -33,7 +33,7 @@ TemplateProcessor :
 CaloRecoDigiMaker :
 { 
     module_type         : CaloRecoDigiMaker
-    caloDigiModuleLabel : CaloDigiFromShower
+    caloDigiModuleLabel : CaloDigiMaker
     RawProcessor        : { @table::RawProcessor }
     TemplateProcessor   : { @table::TemplateProcessor }
     processorStrategy   : "TemplateFit"     

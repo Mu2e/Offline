@@ -18,7 +18,7 @@ BEGIN_PROLOG
 
 CaloTrigger : {    
     module_type           : CaloTrigger
-    caloDigiModuleLabel   : CaloDigiFromShower
+    caloDigiModuleLabel   : CaloDigiMaker
     digiSampling          : @local::HitMakerDigiSampling
     blindTime             : @local::HitMakerBlindTime   
     endTimeBuffer         : 80                          
@@ -37,7 +37,7 @@ CaloTrigger : {
 CaloClusterFast :
 { 
     module_type           : CaloClusterFast
-    caloDigiModuleLabel   : CaloDigiFromShower
+    caloDigiModuleLabel   : CaloDigiMaker
     digiSampling          : @local::HitMakerDigiSampling
     blindTime             : @local::HitMakerBlindTime
     endTimeBuffer         : 80

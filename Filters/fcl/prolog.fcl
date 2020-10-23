@@ -38,12 +38,12 @@ DigiCompressionTags : {
     
     commonStrawDigiMCTag : "makeSD"
     commonExtraStepPointMCTags : [ "g4run:virtualdetector", "g4run:protonabsorber" ]
-    commonCaloShowerSimTag : "CaloShowerStepROFromShowerStep"
-    commonCaloShowerStepROTag : "CaloShowerStepROFromShowerStep"
+    commonCaloShowerSimTag : "CaloShowerROMaker"
+    commonCaloShowerROTag : "CaloShowerROMaker"
     commonCrvDigiMCTag : "CrvWaveforms"
 
     primarySimParticleTag : "g4run"
-    primaryCaloShowerStepTags : [ "CaloShowerStepFromStepPt"]
+    primaryCaloShowerStepTags : [ "CaloShowerStepMaker"]
 }
 
 DigiCompression : {
@@ -72,7 +72,7 @@ DigiCompression : {
 	timeMapTags : [ @sequence::CommonMC.TimeMaps ]
 	caloShowerStepTags : @local::DigiCompressionTags.primaryCaloShowerStepTags
 	caloShowerSimTag : @local::DigiCompressionTags.commonCaloShowerSimTag
-	caloShowerStepROTag : @local::DigiCompressionTags.commonCaloShowerStepROTag
+	caloShowerROTag : @local::DigiCompressionTags.commonCaloShowerROTag
 	keptProducts : [ "keep *_compressDigiMCs_*_*" ]
 
     }
@@ -88,7 +88,7 @@ DigiCompression : {
 	timeMapTags : [ @sequence::CommonMC.TimeMaps ]
 	caloShowerStepTags : @nil
 	caloShowerSimTag : @local::DigiCompressionTags.commonCaloShowerSimTag
-	caloShowerStepROTag : @local::DigiCompressionTags.commonCaloShowerStepROTag
+	caloShowerROTag : @local::DigiCompressionTags.commonCaloShowerROTag
 	keptProducts : [ "keep mu2e::StrawDigis_*_*_*",
                        "keep mu2e::StrawDigiADCWaveforms_*_*_*",
 		       "keep mu2e::CaloDigis_*_*_*",
@@ -119,7 +119,7 @@ DigiCompression : {
 	module_type : FixCaloShowerStepPtrs
 	caloShowerStepTags : [ "" ]
 	caloShowerSimTag : ""
-	caloShowerStepROTag : ""
+	caloShowerROTag : ""
     }
 
     TrackerFix : {
@@ -137,7 +137,7 @@ DigiCompression : {
       timeMapTags : [ "" ]
       caloShowerStepTags : [ "" ]
       caloShowerSimTag : ""
-      caloShowerStepROTag : ""
+      caloShowerROTag : ""
       strawDigiMCIndexMapTag : ""
       crvDigiMCIndexMapTag : ""
     }

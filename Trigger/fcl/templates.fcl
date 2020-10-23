@@ -146,7 +146,7 @@ Trigger : {
 	largeCDCountFilter     : {
 	    module_type : DigiFilter
 	    strawDigiCollection : notUsed
-	    caloDigiCollection  : CaloDigiFromShower
+	    caloDigiCollection  : CaloDigiMaker
 	    useStrawDigi        : false
 	    useCaloDigi         : true
 	    triggerPath         : "largeCaloDigiCount"	    	    	    
@@ -162,7 +162,7 @@ Trigger : {
 	minimumbiasCDCountFilter          : {
 	    module_type : DigiFilter
 	    strawDigiCollection : notUsed
-	    caloDigiCollection  : CaloDigiFromShower
+	    caloDigiCollection  : CaloDigiMaker
 	    useStrawDigi        : false
 	    useCaloDigi         : true
 	    triggerPath          : "minBiasCaloDigiCount"	    	    	    

@@ -33,7 +33,7 @@ physics : {
     @sequence::CommonMC.TimeMaps,
     @sequence::TrackerMC.DigiSim,
     separateCaloShowerSteps,
-    CaloShowerStepROFromShowerStep, CaloDigiFromShower,
+    CaloShowerROMaker, CaloDigiMaker,
     @sequence::CrvDAQPackage.CrvResponseSequence,
     compressDigiMCs ]
  
@@ -60,7 +60,7 @@ physics.producers.muonTimeMap.InputTimeMaps : [ "compressDigiMCs:muonTimeMap" ]
 #
 # calo shower config
 #
-physics.producers.CaloShowerStepROFromShowerStep.caloCrystalShowerInputs     : [ "separateCaloShowerSteps:calorimeter", @sequence::Mixing.caloMixerTags ]
+physics.producers.CaloShowerROMaker.caloCrystalShowerInputs     : [ "separateCaloShowerSteps:calorimeter", @sequence::Mixing.caloMixerTags ]
 #
 # change output to only keep new compression output, not old
 #

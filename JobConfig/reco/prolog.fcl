@@ -104,7 +104,7 @@ Reconstruction : {
        StrawDigiCollection : "makeSD"
        StrawHitFlagCollection : "FlagBkgHits:StrawHits" 
        ComboHitCollection : "makeSH" 
-       CaloDigiCollection : "CaloDigiFromShower"
+       CaloDigiCollection : "CaloDigiMaker"
        CrvDigiCollection : "CrvDigi"
        CaloClusterCollection : "CaloClusterMaker"
        CrvCoincidenceClusterCollection : "CrvCoincidenceClusterFinder"
@@ -123,7 +123,7 @@ Reconstruction : {
     CaloMCFix : { @table::DigiCompression.CaloFix 
       	caloShowerStepTags : [ "compressDigiMCs" ]
 	caloShowerSimTag : "compressDigiMCs"
-	caloShowerStepROTag : "compressDigiMCs"
+	caloShowerROTag : "compressDigiMCs"
     }
     # Compresion
     compressRecoMCs : { @table::DigiCompression.Reco
@@ -238,7 +238,7 @@ Reconstruction : {
             "keep mu2e::StrawDigis_makeSD_*_*",
             "keep mu2e::StrawHitFlags_FlagBkgHits_StrawHits_*",
             "keep mu2e::ComboHitCollection_makeSH_*_*",
-	    "keep mu2e::CaloDigis_CaloDigiFromShower_*_*",
+	    "keep mu2e::CaloDigis_CaloDigiMaker_*_*",
 	    "keep mu2e::CaloHits_CaloHitMaker_*_*",
 	    "keep mu2e::CrvDigis_CrvDigi_*_*",
 	    "keep mu2e::CrvRecoPulses_CrvRecoPulses_*_*",

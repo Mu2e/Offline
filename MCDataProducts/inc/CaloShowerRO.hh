@@ -7,15 +7,15 @@
 namespace mu2e {
 
 
-   class CaloShowerStepRO 
+   class CaloShowerRO 
    {
        public:
 	 	  
-	  CaloShowerStepRO(): 
+	  CaloShowerRO(): 
              ROID_(-1),step_() 
           {}	  
 	  
-          CaloShowerStepRO(int ROID, const art::Ptr<CaloShowerStep>& step, const std::vector<float>& PETime) : 
+          CaloShowerRO(int ROID, const art::Ptr<CaloShowerStep>& step, const std::vector<float>& PETime) : 
 	     ROID_(ROID),step_(step),PETime_(PETime) 
           {}
 
@@ -33,7 +33,7 @@ namespace mu2e {
    };
 
 
-   typedef std::vector<mu2e::CaloShowerStepRO> CaloShowerStepROCollection;
+   typedef std::vector<mu2e::CaloShowerRO> CaloShowerROCollection;
 
 } 
 

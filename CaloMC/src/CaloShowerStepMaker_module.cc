@@ -90,7 +90,7 @@ namespace {
 
 namespace mu2e {
 
-  class CaloShowerStepFromStepPt : public art::EDProducer 
+  class CaloShowerStepMaker : public art::EDProducer 
   {
       public:      
          struct Config 
@@ -108,7 +108,7 @@ namespace mu2e {
              fhicl::Atom<int>              diagLevel               { Name("diagLevel"),               Comment("Debug"),0 };
          };
 
-         explicit CaloShowerStepFromStepPt(const art::EDProducer::Table<Config>& config);
+         explicit CaloShowerStepMaker(const art::EDProducer::Table<Config>& config);
 
          void beginJob() override;
          void beginSubRun(art::SubRun& sr) override;
@@ -158,7 +158,7 @@ namespace mu2e {
 
   
   
-  CaloShowerStepFromStepPt::CaloShowerStepFromStepPt(const art::EDProducer::Table<Config>& config) :
+  CaloShowerStepMaker::CaloShowerStepMaker(const art::EDProducer::Table<Config>& config) :
      art::EDProducer{config},     
      calorimeterStepPoints_(config().caloStepPointCollection()),
      physVolInfoInput_     (config().physVolInfoInput()),
@@ -180,7 +180,7 @@ namespace mu2e {
 
 
   //--------------------------------------------------------------------
-  void CaloShowerStepFromStepPt::beginJob()
+  void CaloShowerStepMaker::beginJob()
   {
       // procCodes are the process codes for the StepPointMC.
       // see MCDataProducts/inc/ProcessCode.hh for code numbering scheme
@@ -208,7 +208,7 @@ namespace mu2e {
       }
   }
 
-  void CaloShowerStepFromStepPt::beginSubRun(art::SubRun& sr)
+  void CaloShowerStepMaker::beginSubRun(art::SubRun& sr)
   {
       mapPhysVol_.clear();
 
@@ -230,10 +230,10 @@ namespace mu2e {
 
   //------------------------------------------------------------------------------------------------------------
   //
-  void CaloShowerStepFromStepPt::produce(art::Event& event)
+  void CaloShowerStepMaker::produce(art::Event& event)
   {
       diagSummary_.reset();
-      if (diagLevel_ > 0) std::cout << "[CaloShowerStepFromStepPt::produce] begin" << std::endl;
+      if (diagLevel_ > 0) std::cout << "[CaloShowerStepMaker::produce] begin" << std::endl;
 
       auto caloShowerStepMCs = std::make_unique<CaloShowerStepCollection>();
       auto simsToKeep        = std::make_unique<SimParticlePtrCollection>();
@@ -255,13 +255,13 @@ namespace mu2e {
       event.put(std::move(caloShowerStepMCs));
       event.put(std::move(simsToKeep));
 
-      if (diagLevel_ > 0) std::cout << "[CaloShowerStepFromStepPt::produce] end" << std::endl;
+      if (diagLevel_ > 0) std::cout << "[CaloShowerStepMaker::produce] end" << std::endl;
   }
 
 
   //------------------------------------------------------------------------------------------------------------------
-  void CaloShowerStepFromStepPt::makeCompressedHits(const HandleVector& crystalStepsHandle, 
-                                                    CaloShowerStepCollection& caloShowerStepMCs,SimParticlePtrCollection& simsToKeep)
+  void CaloShowerStepMaker::makeCompressedHits(const HandleVector& crystalStepsHandle, 
+                                               CaloShowerStepCollection& caloShowerStepMCs,SimParticlePtrCollection& simsToKeep)
   {
       PhysicalVolumeMultiHelper vi(*vols_);
 
@@ -327,7 +327,7 @@ namespace mu2e {
       {
           hEtot_->Fill(diagSummary_.totalEdep_);
           hStot_->Fill(diagSummary_.totalStep_);
-          std::cout<<"CaloShowerStepFromStepPt summary"<<std::endl;
+          std::cout<<"CaloShowerStepMaker summary"<<std::endl;
           
           std::set<int> volIds;
           for (auto caloShowerStepMC : caloShowerStepMCs) volIds.insert(caloShowerStepMC.volumeId());
@@ -343,18 +343,18 @@ namespace mu2e {
       }      
       
       if (diagLevel_ > 0) 
-        std::cout << "[CaloShowerStepFromStepPt::makeCompressedHits] compressed "<<diagSummary_.nCompress_<<" / "<<diagSummary_.nCompressAll_<<" incoming SimParticles"<<std::endl
-                  << "[CaloShowerStepFromStepPt::makeCompressedHits] keeping "<<simsToKeep.size()<<" SimParticles"<<std::endl
-                  << "[CaloShowerStepFromStepPt::makeCompressedHits] Total sims init: " <<diagSummary_.totalSim_<<std::endl
-                  << "[CaloShowerStepFromStepPt::makeCompressedHits] Total caloShower steps: " <<caloShowerStepMCs.size()<<std::endl
-                  << "[CaloShowerStepFromStepPt::makeCompressedHits] Total energy deposited / number of stepPointMC: " <<diagSummary_.totalEdep_<<" / "<<diagSummary_.totalStep_<<std::endl
-                  << "[CaloShowerStepFromStepPt::makeCompressedHits] Total stepPointMCs seen: " <<diagSummary_.totalChk_<<std::endl;
+        std::cout << "[CaloShowerStepMaker::makeCompressedHits] compressed "<<diagSummary_.nCompress_<<" / "<<diagSummary_.nCompressAll_<<" incoming SimParticles"<<std::endl
+                  << "[CaloShowerStepMaker::makeCompressedHits] keeping "<<simsToKeep.size()<<" SimParticles"<<std::endl
+                  << "[CaloShowerStepMaker::makeCompressedHits] Total sims init: " <<diagSummary_.totalSim_<<std::endl
+                  << "[CaloShowerStepMaker::makeCompressedHits] Total caloShower steps: " <<caloShowerStepMCs.size()<<std::endl
+                  << "[CaloShowerStepMaker::makeCompressedHits] Total energy deposited / number of stepPointMC: " <<diagSummary_.totalEdep_<<" / "<<diagSummary_.totalStep_<<std::endl
+                  << "[CaloShowerStepMaker::makeCompressedHits] Total stepPointMCs seen: " <<diagSummary_.totalChk_<<std::endl;
   }
 
 
   //------------------------------------------------------------------------------------------------------------------
-  void CaloShowerStepFromStepPt::collectStepBySimAncestor(const Calorimeter& cal, const PhysicalVolumeMultiHelper& vi,
-                                                          const HandleVector& stepsHandles, std::map<SimPtr,CaloCompressUtil>& ancestorsMap)
+  void CaloShowerStepMaker::collectStepBySimAncestor(const Calorimeter& cal, const PhysicalVolumeMultiHelper& vi,
+                                                     const HandleVector& stepsHandles, std::map<SimPtr,CaloCompressUtil>& ancestorsMap)
   {
      std::unordered_map<SimPtr,SimPtr> simToAncestorMap;
      for (HandleVector::const_iterator i=stepsHandles.begin(), e=stepsHandles.end(); i != e; ++i )
@@ -392,8 +392,8 @@ namespace mu2e {
 
 
   //-------------------------------------------------------------------------------------------------------------------------
-  bool CaloShowerStepFromStepPt::isInsideCalorimeter(const Calorimeter& cal, const PhysicalVolumeMultiHelper& vi, 
-                                                     const art::Ptr<SimParticle>& thisSimPtr)
+  bool CaloShowerStepMaker::isInsideCalorimeter(const Calorimeter& cal, const PhysicalVolumeMultiHelper& vi, 
+                                                const art::Ptr<SimParticle>& thisSimPtr)
   {
       if (usePhysVol_) return mapPhysVol_.find(&vi.startVolume(*thisSimPtr)) != mapPhysVol_.end();   
       return cal.geomUtil().isInsideCalorimeter(thisSimPtr->startPosition());
@@ -402,7 +402,7 @@ namespace mu2e {
 
 
   //-----------------------------------------------------------------------------------------------------------------------------------------------
-  void CaloShowerStepFromStepPt::collectStepBySim(const HandleVector& stepsHandles, std::map<SimPtr,std::vector<const StepPointMC*>>& simStepMap)
+  void CaloShowerStepMaker::collectStepBySim(const HandleVector& stepsHandles, std::map<SimPtr,std::vector<const StepPointMC*>>& simStepMap)
   {
       for (HandleVector::const_iterator i=stepsHandles.begin(), e=stepsHandles.end(); i != e; ++i)
       {
@@ -414,8 +414,8 @@ namespace mu2e {
 
 
   //-------------------------------------------------------------------------------------------------------------------------------
-  void CaloShowerStepFromStepPt::compressSteps(const Calorimeter& cal, CaloShowerStepCollection &caloShowerStepMCs,
-                                               int volId, const SimPtr& sim, std::vector<const StepPointMC*>& steps)
+  void CaloShowerStepMaker::compressSteps(const Calorimeter& cal, CaloShowerStepCollection &caloShowerStepMCs,
+                                          int volId, const SimPtr& sim, std::vector<const StepPointMC*>& steps)
   {
      std::sort(steps.begin(), steps.end(), [](const StepPointMC* a, const StepPointMC* b) {return a->time() < b->time();});
 
@@ -429,7 +429,7 @@ namespace mu2e {
          if (buffer.entries(idx)>0 && (step->time()-buffer.t0(idx) > deltaTime_) )
          {
              if (diagLevel_ > 1) {fillHisto2(idx,buffer.energyG4(idx),sim);}
-             if (diagLevel_ > 2) {std::cout<<"[CaloShowerStepFromStepPt::compressSteps] inserted  "; buffer.printBucket(idx);}
+             if (diagLevel_ > 2) {std::cout<<"[CaloShowerStepMaker::compressSteps] inserted  "; buffer.printBucket(idx);}
              diagSummary_.totalChk_ += buffer.entries(idx);
  
              caloShowerStepMCs.push_back(CaloShowerStep(volId, sim, buffer.entries(idx), buffer.time(idx), buffer.energyG4(idx), 
@@ -446,7 +446,7 @@ namespace mu2e {
          if (buffer.entries(i) == 0) continue;
 
          if (diagLevel_ > 1) {fillHisto2(i,buffer.energyG4(i),sim);}
-         if (diagLevel_ > 2) {std::cout<<"[CaloShowerStepFromStepPt::compressSteps] inserted ";  buffer.printBucket(i);}
+         if (diagLevel_ > 2) {std::cout<<"[CaloShowerStepMaker::compressSteps] inserted ";  buffer.printBucket(i);}
          diagSummary_.totalChk_ += buffer.entries(i);
 
          caloShowerStepMCs.push_back(CaloShowerStep(volId, sim,  buffer.entries(i), buffer.time(i), buffer.energyG4(i), 
@@ -455,7 +455,7 @@ namespace mu2e {
   }
 
   //-------------------------------------------------------------------------------------------------------------
-  bool CaloShowerStepFromStepPt::isCompressible(int simPdgId, const std::set<int>& processCodes)
+  bool CaloShowerStepMaker::isCompressible(int simPdgId, const std::set<int>& processCodes)
   {
       if (compressAll_ || simPdgId > 1000000000)         return true;  //ions are always compressed
       if (procCodes_.find(simPdgId) == procCodes_.end()) return false;
@@ -467,8 +467,7 @@ namespace mu2e {
   }
 
   //-------------------------------------------------------------------------------------------------------------
-  void CaloShowerStepFromStepPt::fillHisto1(const Calorimeter& cal, const art::Ptr<SimParticle>& sim,
-                                            const std::set<art::Ptr<SimParticle>>& infoSims)
+  void CaloShowerStepMaker::fillHisto1(const Calorimeter& cal, const art::Ptr<SimParticle>& sim, const std::set<art::Ptr<SimParticle>>& infoSims)
   {
       CLHEP::Hep3Vector startSection = cal.geomUtil().mu2eToDisk(0,sim->startPosition());
       CLHEP::Hep3Vector endSection   = cal.geomUtil().mu2eToDisk(0,sim->endPosition());
@@ -485,7 +484,7 @@ namespace mu2e {
   }
  
   //-------------------------------------------------------------------------------------------------------------
-  void CaloShowerStepFromStepPt::fillHisto2(int idx, float edep, const SimPtr& sim)
+  void CaloShowerStepMaker::fillHisto2(int idx, float edep, const SimPtr& sim)
   {
       hZpos_->Fill(idx);
       hZpos2_->Fill(idx,edep);
@@ -493,7 +492,7 @@ namespace mu2e {
   }
 
   //-------------------------------------------------------------------------------------------------------------
-  void CaloShowerStepFromStepPt::dumpAllInfo(const HandleVector& stepsHandles, const Calorimeter& cal)
+  void CaloShowerStepMaker::dumpAllInfo(const HandleVector& stepsHandles, const Calorimeter& cal)
   {
       std::cout<<"Dumping StepPointMCs  Mu2e / crystal / disk / diskFF frames"<<std::endl;
       for ( HandleVector::const_iterator i=stepsHandles.begin(), e=stepsHandles.end(); i != e; ++i )
@@ -512,5 +511,5 @@ namespace mu2e {
 
 }
 
-using mu2e::CaloShowerStepFromStepPt;
-DEFINE_ART_MODULE(CaloShowerStepFromStepPt);
+using mu2e::CaloShowerStepMaker;
+DEFINE_ART_MODULE(CaloShowerStepMaker);

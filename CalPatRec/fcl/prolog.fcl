@@ -460,7 +460,7 @@ CalPatRec : { @table::CalPatRec
 	    fetchStrawHitPositions        : 1
 	    fetchComboHits                : 1
 
-	    caloDigiCollectionTag         : CaloDigiFromShower
+	    caloDigiCollectionTag         : CaloDigiMaker
 	    strawDigiCollection           : makeSD
 	    strawHitCollectionTag         : makeSH
 	    strawHitPositionCollectionTag : makeSH

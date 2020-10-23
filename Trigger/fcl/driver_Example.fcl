@@ -77,7 +77,7 @@ physics:
 	    parseTRK: 1
 	}
 	
-	CaloDigiFromShower:
+	CaloDigiMaker:
 	{
 	    module_type: Mu2eProducer
 	    diagLevel: 0
@@ -104,7 +104,7 @@ physics:
     }
     
     
-#    prod_sequence : [ makeSD, CaloDigiFromShower ]
+#    prod_sequence : [ makeSD, CaloDigiMaker ]
     
     #unbiased trigger path
     unbiased_path                : [ @sequence::paths.unbiased                       ]
@@ -116,18 +116,18 @@ physics:
     largeSDCount_path            : [ @sequence::paths.largeSDCount                   ]
     
     #path for the calorimeter only trigger
-    caloMVACE_path               : [ CaloDigiFromShower, @sequence::paths.caloMVACE   ]
+    caloMVACE_path               : [ CaloDigiMaker, @sequence::paths.caloMVACE   ]
  
     #path for calorimeter cosmic muon calibration
-    caloCosmicMuon_path          : [ CaloDigiFromShower, @sequence::paths.caloCalibCosmic   ]
+    caloCosmicMuon_path          : [ CaloDigiMaker, @sequence::paths.caloCalibCosmic   ]
 
     #paths for TrkPatRec downstream e- and e+
     tprSeedDeM_path                 : [ makeSD,  @sequence::paths.tprSeedDeM                          ]
     tprSeedDeP_path                 : [ makeSD,  @sequence::paths.tprSeedDeP                          ]
 
     #paths for CalPatRec downstream e- and e+
-    cprSeedDeM_path                 : [ makeSD, CaloDigiFromShower, @sequence::paths.cprSeedDeM       ]
-    cprSeedDeP_path                 : [ makeSD, CaloDigiFromShower, @sequence::paths.cprSeedDeP       ]
+    cprSeedDeM_path                 : [ makeSD, CaloDigiMaker, @sequence::paths.cprSeedDeM       ]
+    cprSeedDeP_path                 : [ makeSD, CaloDigiMaker, @sequence::paths.cprSeedDeP       ]
     
     
 

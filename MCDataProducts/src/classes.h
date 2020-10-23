@@ -55,7 +55,7 @@
 
 // calorimeter
 #include "MCDataProducts/inc/CaloMCTruthAssns.hh"
-#include "MCDataProducts/inc/CaloShowerStepRO.hh"
+#include "MCDataProducts/inc/CaloShowerRO.hh"
 #include "MCDataProducts/inc/CaloShowerStep.hh"
 #include "MCDataProducts/inc/CaloShowerSim.hh"
 #include "MCDataProducts/inc/CaloDigiMC.hh"

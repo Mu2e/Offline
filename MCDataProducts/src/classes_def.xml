@@ -141,9 +141,9 @@
  <class name="mu2e::CaloShowerStepCollection"/>
  <class name="art::Wrapper<mu2e::CaloShowerStepCollection>"/>
 
- <class name="mu2e::CaloShowerStepRO"/>
- <class name="mu2e::CaloShowerStepROCollection"/>
- <class name="art::Wrapper<mu2e::CaloShowerStepROCollection>"/>
+ <class name="mu2e::CaloShowerRO"/>
+ <class name="mu2e::CaloShowerROCollection"/>
+ <class name="art::Wrapper<mu2e::CaloShowerROCollection>"/>
 
  <class name="mu2e::CaloShowerSim"/>
  <class name="mu2e::CaloShowerSimCollection"/>

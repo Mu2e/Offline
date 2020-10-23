@@ -49,7 +49,7 @@ namespace mu2e {
     minetot_(pset.get<double>("MinTotalEnergy")),
     diag_(pset.get<int>("diagLevel",0)),
     debug_(pset.get<int>("debugLevel",0)),
-    cssTag_(pset.get<art::InputTag>("CaloShowerSimCollection","CaloShowerStepROFromShowerStep"))
+    cssTag_(pset.get<art::InputTag>("CaloShowerSimCollection","CaloROStepMaker"))
   {
     produces<SimParticlePtrCollection>();
     auto pdgs = pset.get<std::vector<int>>("particleTypes");
