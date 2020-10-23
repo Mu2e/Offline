@@ -33,7 +33,6 @@ namespace mu2e {
 	         bool                isSplit()           const {return _isSplit;} 
 
 
-
         private:
 	   double            _time;       
 	   double            _timeErr;       
@@ -43,7 +42,6 @@ namespace mu2e {
 	   bool              _isSplit;    
 
    };
-   
    
    typedef std::vector<mu2e::CaloProtoCluster> CaloProtoClusterCollection;
 } 

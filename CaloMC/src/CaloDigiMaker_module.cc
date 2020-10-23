@@ -53,7 +53,6 @@ namespace mu2e {
          {
              using Name    = fhicl::Name;
              using Comment = fhicl::Comment;
-             
              fhicl::Atom<art::InputTag> caloShowerCollection { Name("caloShowerROCollection"), Comment("CaloShowerRO collection name") }; 
              fhicl::Atom<double>        blindTime            { Name("blindTime"),              Comment("Microbunch blind time") }; 
              fhicl::Atom<bool>          addNoise             { Name("addNoise"),               Comment("Add noise to waveform") }; 
@@ -178,8 +177,7 @@ namespace mu2e {
 
       event.put(std::move(caloDigiColl));
 
-      if ( diagLevel_ > 0 ) std::cout<<"[CaloDigiMaker::produce] end" << std::endl;
-        
+      if ( diagLevel_ > 0 ) std::cout<<"[CaloDigiMaker::produce] end" << std::endl;    
   }
 
   
@@ -200,7 +198,7 @@ namespace mu2e {
       if (addNoise_)
       {
           if (noiseRinDark_<1.0) generateNoise(waveforms,pedestals,calorimeterCalibrations);
-          else                      generateNoiseFast(waveforms,pedestals,calorimeterCalibrations);
+          else                   generateNoiseFast(waveforms,pedestals,calorimeterCalibrations);
       }
 
       fillWaveforms(waveforms,CaloShowerROs,calorimeterCalibrations);
@@ -302,13 +300,6 @@ namespace mu2e {
 
       if (diagLevel_==99) plotNoise(waveforms,pedestals);
   }
-
-
-
-
-
-
-
 
 
 
