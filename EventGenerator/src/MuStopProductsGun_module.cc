@@ -12,8 +12,7 @@
 #include "CLHEP/Vector/ThreeVector.h"
 #include "CLHEP/Vector/LorentzVector.h"
 #include "CLHEP/Random/RandomEngine.h"
-#include "CLHEP/Random/RandGeneral.h"
-#include "CLHEP/Random/RandPoissonQ.h"
+#include "CLHEP/Random/RandFlat.h"
 #include "CLHEP/Units/PhysicalConstants.h"
 
 #include "art/Framework/Core/EDProducer.h"
@@ -36,16 +35,8 @@
 #include "DataProducts/inc/PDGCode.hh"
 #include "MCDataProducts/inc/GenParticle.hh"
 #include "MCDataProducts/inc/GenParticleCollection.hh"
-#include "Mu2eUtilities/inc/RandomUnitSphere.hh"
-#include "Mu2eUtilities/inc/CzarneckiSpectrum.hh"
-#include "Mu2eUtilities/inc/ConversionSpectrum.hh"
-#include "Mu2eUtilities/inc/SimpleSpectrum.hh"
-#include "Mu2eUtilities/inc/EjectedProtonSpectrum.hh"
-#include "Mu2eUtilities/inc/BinnedSpectrum.hh"
-#include "Mu2eUtilities/inc/Table.hh"
 #include "Mu2eUtilities/inc/RootTreeSampler.hh"
 #include "GeneralUtilities/inc/RSNTIO.hh"
-#include "Mu2eUtilities/inc/GenPhysConfig.hh"
 #include "EventGenerator/inc/ParticleGeneratorTool.hh"
 
 #include "TH1.h"
@@ -75,7 +66,6 @@ namespace mu2e {
     int               verbosityLevel_;
 
     art::RandomNumberGenerator::base_engine_t& eng_;
-    RandomUnitSphere   randomUnitSphere_;
     CLHEP::RandFlat randomFlat_;
 
     RTS stops_;
@@ -99,7 +89,6 @@ namespace mu2e {
     , conf_(conf())
     , verbosityLevel_(conf_.verbosityLevel())
     , eng_(createEngine(art::ServiceHandle<SeedService>()->getSeed()))
-    , randomUnitSphere_(eng_)
     , randomFlat_(eng_)
     , stops_(eng_, conf_.stops())
     , _decayFraction(GlobalConstantsHandle<PhysicsParams>()->getDecayFraction())
