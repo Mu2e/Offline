@@ -13,11 +13,11 @@ namespace mu2e {
 
     if (c.getString("targetPS_model") == "MDC2018"){ 
       //     std::cout << "making Tier1 in maker" << std::endl;
-      return std::move(makeTier1(c, solenoidOffset));
+      return makeTier1(c, solenoidOffset);
 	} else 
       if (c.getString("targetPS_model") == "Hayman_v_2_0"){ 
 	//	std::cout << " making Hayman in Maker" << std::endl;
-	return std::move(makeHayman_v_2_0(c, solenoidOffset));
+	return makeHayman_v_2_0(c, solenoidOffset);
 	  } else 
 	{throw cet::exception("GEOM") << " illegal production target version specified = " << c.getInt("targetPS_version")  << std::endl;}
     return 0;
@@ -299,7 +299,7 @@ namespace mu2e {
                       c.getString("targetPS_Hub_materialName"));
 
 
-    return std::move(tgtPS);
+    return tgtPS;
   }
 
   std::unique_ptr<ProductionTarget> ProductionTargetMaker::makeHayman_v_2_0(const SimpleConfig& c, double solenoidOffset){
@@ -387,7 +387,7 @@ namespace mu2e {
       //override old format of the material if new syntax is found
       tgtPS->_spokeMaterial = c.getString("targetPS.supports.spokes.material", tgtPS->_spokeMaterial);
     }
-    return std::move(tgtPS);
+    return tgtPS;
   }
  
  
