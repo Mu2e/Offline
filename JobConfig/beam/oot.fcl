@@ -19,7 +19,6 @@ physics.producers.generate: {
     verbosityLevel : 1
     pdgId: 13 // mu-
     muonStops : { @table::mu2e.ootMuonStops
-   	       	  inputFiles : @local::mergedMuon_ootStops_mdc2018
     }
 }
 

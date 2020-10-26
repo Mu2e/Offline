@@ -219,7 +219,6 @@ mu2e.physics.g4s4Muons.producers.generate: {
    verbosityLevel : 1
    physics: @nil
    muonStops : { @table::mu2e.tgtMuonStops
-   	       	 inputFiles : @local::mergedMuon_tgtStops_mdc2018
    }
 }
 
