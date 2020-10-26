@@ -51,7 +51,6 @@ mainlib = helper.make_mainlib ( [
         'HepPDT',
         'HepPID',
         rootlibs,
-        'boost_filesystem',
         'boost_system',
         'gsl',
         ], [],['-I' + cryinc, '-L' + crylib]
