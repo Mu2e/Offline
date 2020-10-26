@@ -1,7 +1,3 @@
-//
-// SimBookkeeper is the ProditionsEntry for
-//
-
 // Mu2e includes
 #include "SimulationConditions/inc/SimBookkeeper.hh"
 
