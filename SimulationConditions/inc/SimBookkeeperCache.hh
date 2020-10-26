@@ -2,7 +2,7 @@
 #define SimulationConditions_SimBookkeeperCache_hh
 
 //
-// SimBookkeeperCache for ProditionsCache
+// Caches the SimBookeeper ProditionsEntity
 //
 #include <iostream>
 

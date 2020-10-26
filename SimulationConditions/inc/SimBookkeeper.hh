@@ -3,6 +3,11 @@
 
 //
 // SimBookkeeper is the ProditionsEntry for
+// simulation proditions
+//
+// As of Oct 2020 this includes:
+// 1) simulation stage efficiencies (DbTable: SimEfficiencies)
+// and nothing else
 //
 
 // Mu2e includes
