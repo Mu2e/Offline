@@ -18,10 +18,8 @@ namespace mu2e {
   public:
     explicit MuCapPhotonGenerator(Parameters const& conf) :// fhicl::ParameterSet const& pset)
       _pdgId(PDGCode::gamma),
-      _mass(GlobalConstantsHandle<ParticleDataTable>()->particle(_pdgId).ref().mass().value()),
       _genId(GenId::MuCapPhotonGenTool),
       _rate(GlobalConstantsHandle<PhysicsParams>()->getCapturePhotonRate()),
-      _spectrumVariable(parseSpectrumVar(conf().physics().spectrumVariable())),
       _spectrum(BinnedSpectrum(conf().physics()))
     {
 
@@ -36,11 +34,9 @@ namespace mu2e {
 
   private:
     PDGCode::type _pdgId;
-    double _mass;
     GenId _genId;
     double _rate;
 
-    SpectrumVar       _spectrumVariable;
     BinnedSpectrum    _spectrum;
 
 
@@ -56,13 +52,7 @@ namespace mu2e {
     for (int i_gen = 0; i_gen < n_gen; ++i_gen) {
       double energy = _spectrum.sample(_randSpectrum->fire());
 
-      switch(_spectrumVariable) {
-      case TOTAL_ENERGY  : break;
-      case KINETIC_ENERY : energy += _mass; break;
-      case MOMENTUM      : energy = sqrt(energy*energy+_mass*_mass); break;
-      }
-
-      const double p = energy * sqrt(1 - std::pow(_mass/energy,2));
+      const double p = energy;
       CLHEP::Hep3Vector p3 = _randomUnitSphere->fire(p);
       CLHEP::HepLorentzVector fourmom(p3, energy);
       out->emplace_back(_pdgId,
