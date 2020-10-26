@@ -152,6 +152,9 @@ namespace mu2e {
     }
     if (pars().mu2e().meanEventsPerProton(meanEventsPerProton_)) {
       mixingMeanOverride_ = true;
+      if (!simStageEfficiencyTags_.empty()) {
+        throw cet::exception("MixBackgroundFrames") << "You have specified a number of meanEventsPerProton *and* provided a sequence of simStageEfficiencyTags. Please supply on one or the other." << std::endl;
+      }
     }
   }
 
@@ -160,22 +163,25 @@ namespace mu2e {
     pbi_ = *event.getValidHandle<ProtonBunchIntensity>(pbiTag_);
     if(debugLevel_ > 0)std::cout << " Starting event mixing, Intensity = " << pbi_.intensity() << std::endl;
 
-    SimBookkeeper const& simbookkeeper = _simbookkeeperH.get(event.id());
     eff_ = 1;
-    for (const auto& i_simStageEff : simStageEfficiencyTags_) {
-      double this_eff = simbookkeeper.getEff(i_simStageEff);
-      eff_ *= this_eff;
 
-      if (debugLevel_ > 1 && !mixingMeanOverride_) {
-        std::cout << " Sim Stage Efficiency (" << i_simStageEff << ") = " << this_eff << std::endl;//simStageEff.numerator() << " / " << simStageEff.denominator() << " = " << simStageEff.efficiency() << std::endl;
-        std::cout << " Cumulative Total Eff = " << eff_ << std::endl;
+    if (!mixingMeanOverride_) {
+      SimBookkeeper const& simbookkeeper = _simbookkeeperH.get(event.id());
+      for (const auto& i_simStageEff : simStageEfficiencyTags_) {
+        double this_eff = simbookkeeper.getEff(i_simStageEff);
+        eff_ *= this_eff;
+
+        if (debugLevel_ > 1 && !mixingMeanOverride_) {
+          std::cout << " Sim Stage Efficiency (" << i_simStageEff << ") = " << this_eff << std::endl;
+          std::cout << " Cumulative Total Eff = " << eff_ << std::endl;
+        }
       }
-    }
-    for (const auto& i_extraFactor : meanEventsPerPOTFactors_) {
-      eff_ *= i_extraFactor;
-      if (debugLevel_ > 1 && !mixingMeanOverride_) {
-        std::cout << " Extra meanEventsPerPOT Factor = " << i_extraFactor << std::endl;
-        std::cout << " Cumulative Total Eff = " << eff_ << std::endl;
+      for (const auto& i_extraFactor : meanEventsPerPOTFactors_) {
+        eff_ *= i_extraFactor;
+        if (debugLevel_ > 1 && !mixingMeanOverride_) {
+          std::cout << " Extra meanEventsPerPOT Factor = " << i_extraFactor << std::endl;
+          std::cout << " Cumulative Total Eff = " << eff_ << std::endl;
+        }
       }
     }
   }
