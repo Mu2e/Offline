@@ -126,13 +126,13 @@ namespace mu2e
       return _capturePhotonRate.find(allowedMaterial)->second;
     }
 
-    double   getCaptureGammaEnergy     (targetMat material = "") const {
+    double   get1809keVGammaEnergy     (targetMat material = "") const {
       const std::string allowedMaterial = checkMaterial( material );
-      return _captureGammaEnergy.find(allowedMaterial)->second;
+      return _1809keVGammaEnergy.find(allowedMaterial)->second;
     }
-    double   getCaptureGammaIntensity     (targetMat material = "") const {
+    double   get1809keVGammaIntensity     (targetMat material = "") const {
       const std::string allowedMaterial = checkMaterial( material );
-      return _captureGammaIntensity.find(allowedMaterial)->second;
+      return _1809keVGammaIntensity.find(allowedMaterial)->second;
     }
 
     PhysicsParams( SimpleConfig const& config );
@@ -177,8 +177,8 @@ namespace mu2e
     std::map<targetMat, double> _captureNeutronRate;
     std::map<targetMat, double> _capturePhotonRate;
 
-    std::map<targetMat, double> _captureGammaEnergy;
-    std::map<targetMat, double> _captureGammaIntensity;
+    std::map<targetMat, double> _1809keVGammaEnergy;
+    std::map<targetMat, double> _1809keVGammaIntensity;
 
     inline targetMat checkMaterial( const targetMat& material ) const {
       if ( material.empty() ) return _chosenStoppingTargetMaterial;

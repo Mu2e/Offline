@@ -19,8 +19,8 @@ namespace mu2e {
       _pdgId(PDGCode::gamma),
       _mass(GlobalConstantsHandle<ParticleDataTable>()->particle(_pdgId).ref().mass().value()),
       _genId(GenId::MuCapGammaRayGenTool),
-      _energy(GlobalConstantsHandle<PhysicsParams>()->getCaptureGammaEnergy()),
-      _intensity(GlobalConstantsHandle<PhysicsParams>()->getCaptureGammaIntensity())
+      _energy(GlobalConstantsHandle<PhysicsParams>()->get1809keVGammaEnergy()),
+      _intensity(GlobalConstantsHandle<PhysicsParams>()->get1809keVGammaIntensity())
     {
 
     }
