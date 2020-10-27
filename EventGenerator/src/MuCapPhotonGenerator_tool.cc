@@ -13,14 +13,24 @@
 #include "GlobalConstantsService/inc/ParticleDataTable.hh"
 #include "GlobalConstantsService/inc/PhysicsParams.hh"
 
+#include "fhiclcpp/types/DelegatedParameter.h"
+
 namespace mu2e {
   class MuCapPhotonGenerator : public ParticleGeneratorTool {
   public:
-    explicit MuCapPhotonGenerator(Parameters const& conf) :// fhicl::ParameterSet const& pset)
+    struct PhysConfig {
+      using Name=fhicl::Name;
+      using Comment=fhicl::Comment;
+
+      fhicl::DelegatedParameter spectrum{Name("spectrum"), Comment("Parameters for BinnedSpectrum)")};
+    };
+    typedef art::ToolConfigTable<PhysConfig> Parameters;
+
+    explicit MuCapPhotonGenerator(Parameters const& conf) :
       _pdgId(PDGCode::gamma),
       _genId(GenId::MuCapPhotonGenTool),
       _rate(GlobalConstantsHandle<PhysicsParams>()->getCapturePhotonRate()),
-      _spectrum(BinnedSpectrum(conf().physics()))
+      _spectrum(BinnedSpectrum(conf().spectrum.get<fhicl::ParameterSet>()))
     {
 
     }

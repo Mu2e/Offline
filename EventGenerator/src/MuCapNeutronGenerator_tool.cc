@@ -13,16 +13,26 @@
 #include "GlobalConstantsService/inc/ParticleDataTable.hh"
 #include "GlobalConstantsService/inc/PhysicsParams.hh"
 
+#include "fhiclcpp/types/DelegatedParameter.h"
+
 namespace mu2e {
   class MuCapNeutronGenerator : public ParticleGeneratorTool {
   public:
-    explicit MuCapNeutronGenerator(Parameters const& conf) :// fhicl::ParameterSet const& pset)
+    struct PhysConfig {
+      using Name=fhicl::Name;
+      using Comment=fhicl::Comment;
+
+      fhicl::DelegatedParameter spectrum{Name("spectrum"), Comment("Parameters for BinnedSpectrum)")};
+    };
+    typedef art::ToolConfigTable<PhysConfig> Parameters;
+
+    explicit MuCapNeutronGenerator(Parameters const& conf) :
       _pdgId(PDGCode::n0),
       _mass(GlobalConstantsHandle<ParticleDataTable>()->particle(_pdgId).ref().mass().value()),
       _genId(GenId::MuCapNeutronGenTool),
       _rate(GlobalConstantsHandle<PhysicsParams>()->getCaptureNeutronRate()),
-      _spectrumVariable(parseSpectrumVar(conf().physics().spectrumVariable())),
-      _spectrum(BinnedSpectrum(conf().physics()))
+      _spectrum(BinnedSpectrum(conf().spectrum.get<fhicl::ParameterSet>())),
+      _spectrumVariable(parseSpectrumVar(_spectrum.spectrumVariable()))
     {
 
     }
@@ -40,9 +50,8 @@ namespace mu2e {
     GenId _genId;
     double _rate;
 
-    SpectrumVar       _spectrumVariable;
     BinnedSpectrum    _spectrum;
-
+    SpectrumVar       _spectrumVariable;
 
     CLHEP::RandPoissonQ* _randomPoissonQ;
     RandomUnitSphere*   _randomUnitSphere;
