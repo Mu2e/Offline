@@ -33,17 +33,17 @@ mixerTemplateTrkCal.mu2e.products: {
    simParticleMixer: { mixingMap: [ [ "detectorFilter", "" ] ] }
    stepPointMCMixer: { mixingMap:
       [
-	 [ "detectorFilter:virtualdetector", ":" ],
-	 [ "detectorFilter:protonabsorber", ":" ]
+         [ "detectorFilter:virtualdetector", ":" ],
+         [ "detectorFilter:protonabsorber", ":" ]
       ]
    }
    caloShowerStepMixer: { mixingMap:
       [
-	 [ "CaloShowerCrystalSteps", "calorimeter" ],
-	 [ "CaloShowerROSteps", "calorimeterRO" ]
+         [ "CaloShowerCrystalSteps", "calorimeter" ],
+         [ "CaloShowerROSteps", "calorimeterRO" ]
       ]
    }
-   strawGasStepMixer : { mixingMap: 
+   strawGasStepMixer : { mixingMap:
       [
         [ "makeSGS", "" ]
       ]
@@ -56,22 +56,22 @@ mixerTemplateCRV.mu2e.products: {
    simParticleMixer: { mixingMap: [ [ "crvFilter", "" ] ] }
    stepPointMCMixer: { mixingMap:
       [
-	 [ "crvFilter:CRV", ":" ]
+         [ "crvFilter:CRV", ":" ]
       ]
    }
 }
 # flash cut configuration
 CRVCut : { module_type : CompressStepPointMCs
-	 			    stepPointMCTags : [ "crvFilter:CRV" ]
-				    caloShowerStepTags : [ ]
-				    simParticleTag : "crvFilter"
-				    minTime : 350
-				    maxTime : 1695
-				    minEdep : 10.0e-6
-				    maxEdep : 1.0e6
-				    timeMapTags : [ "protonTimeMap" ]
-				    diagLevel : 0
-     				  }
+                                    stepPointMCTags : [ "crvFilter:CRV" ]
+                                    caloShowerStepTags : [ ]
+                                    simParticleTag : "crvFilter"
+                                    minTime : 350
+                                    maxTime : 1695
+                                    minEdep : 10.0e-6
+                                    maxEdep : 1.0e6
+                                    timeMapTags : [ "protonTimeMap" ]
+                                    diagLevel : 0
+                                  }
 
 # mixing configuration
 Mixing : {
@@ -91,7 +91,7 @@ Mixing : {
     makeSDPrimary : {
       @table::makeSD
       StrawGasStepModule : makeSGSPrimary
-      TimeOffsets :  [ @sequence::CommonMC.TimeMapsPrimary ] 
+      TimeOffsets :  [ @sequence::CommonMC.TimeMapsPrimary ]
     }
    # digi compression
     compressDigiMCs : @local::DigiCompression.Mixing
@@ -103,10 +103,10 @@ Mixing : {
     ootMixerTrkCal      : @local::mixerTemplateTrkCal
     mustopMixerTrkCal   : @local::mixerTemplateTrkCal
     # CRV mixing
-    PSMixerCRV	     : @local::mixerTemplateCRV 
-    TSMixerCRV	     : @local::mixerTemplateCRV 
-    DSMixerCRV	     : @local::mixerTemplateCRV
-    ootMixerCRV	     : @local::mixerTemplateCRV 
+    PSMixerCRV       : @local::mixerTemplateCRV
+    TSMixerCRV       : @local::mixerTemplateCRV
+    DSMixerCRV       : @local::mixerTemplateCRV
+    ootMixerCRV      : @local::mixerTemplateCRV
     mustopMixerCRV   : @local::mixerTemplateCRV
 # digi filtering for Primary selection.
     DigiFilter : {
@@ -123,8 +123,8 @@ Mixing : {
   cosmicTimeMaps : ["cosmicTimeMapPrimary"]
   # calo tags.  flashMixer is different because they are filtered
   caloMixerTags : ["ootMixerTrkCal:calorimeter",
-  		"mustopMixerTrKCal:calorimeter",
-		"flashMixerTrkCal:CaloShowerCrystalSteps" ]
+                "mustopMixerTrKCal:calorimeter",
+                "flashMixerTrkCal:CaloShowerCrystalSteps" ]
 
 # sequences
   TrkCalMixSequence : [ flashMixerTrkCal, ootMixerTrkCal, mustopMixerTrkCal ]
@@ -134,7 +134,7 @@ Mixing : {
     @sequence::CommonMC.PrimaryDigiSim,
     makeSGSPrimary, makeSDPrimary, DigiFilter ]
 # paths and output
-  EndPath : [ @sequence::Primary.EndPath ] 
+  EndPath : [ @sequence::Primary.EndPath ]
   Output : {
      module_type : RootOutput
      SelectEvents : [ TriggerPath ]
@@ -144,10 +144,10 @@ Mixing : {
 # drops for reading primaries as input to mixing.  TrkDigis are kept to allow filtering
   Input : {
     droppedProducts : ["drop mu2e::CaloDigis_*_*_*",
-		      "drop mu2e::CrvDigis_*_*_*",
-		      "drop mu2e::CrvDigiMCs_*_*_*",
-		      "drop mu2e::CaloShowerSims_*_*_*",
-		      "drop art::TriggerResults_*_*_*" ]
+                      "drop mu2e::CrvDigis_*_*_*",
+                      "drop mu2e::CrvDigiMCs_*_*_*",
+                      "drop mu2e::CaloShowerSims_*_*_*",
+                      "drop art::TriggerResults_*_*_*" ]
   }
 }
 
@@ -163,8 +163,8 @@ Mixing.MixSequence : [ protonBunchIntensity,
     @sequence::CrvDAQPackage.CrvResponseSequence ]
 
 Mixing.TriggerPath : [
-    @sequence::Mixing.CreatePrimarySequence, 
-    @sequence::Mixing.MixSequence, 
+    @sequence::Mixing.CreatePrimarySequence,
+    @sequence::Mixing.MixSequence,
     compressDigiMCs ]
 
 END_PROLOG

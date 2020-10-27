@@ -73,8 +73,8 @@ mu2e.outputs.g4s4Defs: {
          "keep *_CaloShowerCrystalSteps_*_*",
          "keep *_CaloShowerROSteps_*_*",
          "keep *_compressPVDetector_*_*",
-	 "drop mu2e::StepPointMCs_detectorFilter_tracker_*",
-	 "keep mu2e::StrawGasSteps_makeSGS_*_*"
+         "drop mu2e::StepPointMCs_detectorFilter_tracker_*",
+         "keep mu2e::StrawGasSteps_makeSGS_*_*"
       ]
       fileName: @nil
    }
@@ -115,75 +115,75 @@ mu2e.physics.g4s4CommonBase: {
       CaloShowerStepFromStepPt: @local::CaloShowerStepFromStepPt
 
       CaloShowerCrystalSteps: {
-	 module_type: CaloShowerUpdater
-	 showerInput: "CaloShowerStepFromStepPt:calorimeter"
-	 newSimParticles: "detectorFilter"
+         module_type: CaloShowerUpdater
+         showerInput: "CaloShowerStepFromStepPt:calorimeter"
+         newSimParticles: "detectorFilter"
       }
 
       CaloShowerROSteps: {
-	 module_type: CaloShowerUpdater
-	 showerInput: "CaloShowerStepFromStepPt:calorimeterRO"
-	 newSimParticles: "detectorFilter"
+         module_type: CaloShowerUpdater
+         showerInput: "CaloShowerStepFromStepPt:calorimeterRO"
+         newSimParticles: "detectorFilter"
       }
 
       makeSGS : { @table::TrackerMC.producers.makeSGS
-      	      	  SkipTheseStepPoints : "g4run" # this will run after detectorFilter so want to ignore steps from g4run
+                  SkipTheseStepPoints : "g4run" # this will run after detectorFilter so want to ignore steps from g4run
       }
 
       compressPVDetector: {
-	 module_type: CompressPhysicalVolumes
-	 volumesInput: "g4run"
-	 hitInputs: []
-	 particleInputs: [ "detectorFilter" ]
+         module_type: CompressPhysicalVolumes
+         volumesInput: "g4run"
+         hitInputs: []
+         particleInputs: [ "detectorFilter" ]
       }
       compressPVCRV: {
-	 module_type: CompressPhysicalVolumes
-	 volumesInput: "g4run"
-	 hitInputs: []
-	 particleInputs: [ "crvFilter" ]
+         module_type: CompressPhysicalVolumes
+         volumesInput: "g4run"
+         hitInputs: []
+         particleInputs: [ "crvFilter" ]
       }
       compressPVFull: {
-	 module_type: CompressPhysicalVolumes
-	 volumesInput: "g4run"
-	 hitInputs: []
-	 particleInputs: [ "g4run" ]
+         module_type: CompressPhysicalVolumes
+         volumesInput: "g4run"
+         hitInputs: []
+         particleInputs: [ "g4run" ]
       }
    }
 
    filters: {
       detectorFilter: {
-	 module_type: FilterG4Out
-	 mainHitInputs: [ "g4run:tracker" ]
-	 mainSPPtrInputs: [ "CaloShowerStepFromStepPt" ]
-	 extraHitInputs: [ "g4run:virtualdetector", "g4run:protonabsorber" ]
-	 vetoDaughters: []
+         module_type: FilterG4Out
+         mainHitInputs: [ "g4run:tracker" ]
+         mainSPPtrInputs: [ "CaloShowerStepFromStepPt" ]
+         extraHitInputs: [ "g4run:virtualdetector", "g4run:protonabsorber" ]
+         vetoDaughters: []
       }
 
       crvFilter: {
-	 module_type: FilterG4Out
-	 mainHitInputs: [ "g4run:CRV"]
-	 extraHitInputs: [ "g4run:virtualdetector" ]
-	 vetoDaughters: []
+         module_type: FilterG4Out
+         mainHitInputs: [ "g4run:CRV"]
+         extraHitInputs: [ "g4run:virtualdetector" ]
+         vetoDaughters: []
       }
 
       TrkStepFilter : {
-	module_type : MinimumHits
-	mode : "trackerOnly"
-	MinNStraws : 10
-	MinPartMom : 40.0  # MeV/c
-	PDGCodes : [11,-11, 13, -13] 
-	generatorModuleLabel : "generate"
-	g4ModuleLabel : "g4run"
+        module_type : MinimumHits
+        mode : "trackerOnly"
+        MinNStraws : 10
+        MinPartMom : 40.0  # MeV/c
+        PDGCodes : [11,-11, 13, -13]
+        generatorModuleLabel : "generate"
+        g4ModuleLabel : "g4run"
       }
 
       g4status: {
-	 module_type: FilterStatusG4
-	 input: "g4run"
+         module_type: FilterStatusG4
+         input: "g4run"
       }
       g4consistent: {
-	 module_type: FilterStatusG4
-	 input: "g4run"
-	 maxAcceptedStatus: 9  #  status 10 and above means StepPointMCCollection may have non-dereferencable pointers
+         module_type: FilterStatusG4
+         input: "g4run"
+         maxAcceptedStatus: 9  #  status 10 and above means StepPointMCCollection may have non-dereferencable pointers
       }
    }
 

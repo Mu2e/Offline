@@ -18,8 +18,7 @@ physics.producers.generate: {
     module_type: StoppedParticleG4Gun
     verbosityLevel : 1
     pdgId: 13 // mu-
-    muonStops : { @table::mu2e.ootMuonStops
-    }
+    muonStops : @local::mu2e.ootMuonStops
 }
 
 services.TFileService.fileName: "nts.owner.oot.version.sequencer.root"
