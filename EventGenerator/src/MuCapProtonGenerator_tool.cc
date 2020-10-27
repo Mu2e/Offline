@@ -23,6 +23,7 @@ namespace mu2e {
       using Comment=fhicl::Comment;
 
       fhicl::DelegatedParameter spectrum{Name("spectrum"), Comment("Parameters for BinnedSpectrum)")};
+      fhicl::Atom<std::string> spectrumVariable{Name("spectrumVariable"), Comment("Variable that spectrum is defined in (\"totalEnergy\", \"kineticEnergy\", or \"momentum\")")};
     };
     typedef art::ToolConfigTable<PhysConfig> Parameters;
 
@@ -32,7 +33,7 @@ namespace mu2e {
       _genId(GenId::MuCapProtonGenTool),
       _rate(GlobalConstantsHandle<PhysicsParams>()->getCaptureProtonRate()),
       _spectrum(BinnedSpectrum(conf().spectrum.get<fhicl::ParameterSet>())),
-      _spectrumVariable(parseSpectrumVar(_spectrum.spectrumVariable()))
+      _spectrumVariable(parseSpectrumVar(conf().spectrumVariable()))
     {
 
     }

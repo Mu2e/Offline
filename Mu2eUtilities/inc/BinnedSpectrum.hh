@@ -52,7 +52,6 @@ namespace mu2e {
     double         getXMaxUnbinned() const { return _xmax_unbinned;}
     double         getXMax() const { return _xmax;}
     double         getXMin() const { return _xmin;}
-    std::string    spectrumVariable() const { return _spectrumVariable;}
     double         sample(double rand) {
       double temp = _xmin + (_xmax - _xmin) * rand;
       if (_finalBin && temp > _xmax-_binWidth){
@@ -170,7 +169,6 @@ namespace mu2e {
     double _binWidth;                   // assumed to be constant
     size_t _nBins;
 
-    std::string _spectrumVariable;
   };
 
 } // end of namespace mu2e

@@ -102,8 +102,5 @@ namespace mu2e {
       throw cet::exception("BADCONFIG")
         << "BinnedSpectrum: unknown spectrum shape "<<spectrumShape<<"\n";
     }
-
-    // Store the spectrum variable here
-    _spectrumVariable = psphys.get<std::string>("spectrumVariable");
   }
 }

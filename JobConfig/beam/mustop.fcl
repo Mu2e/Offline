@@ -10,7 +10,6 @@ dioGenTool : {
   tool_type : DIOGenerator
   spectrum : {
     spectrumShape : Czarnecki
-    spectrumVariable : totalEnergy
     pdgId : 11 # Czarnecki option in BinnedSpecturm needs pdgId here
     elow : 1. //MeV
     spectrumResolution : 0.1 //MeV
@@ -19,28 +18,28 @@ dioGenTool : {
 
 muonCaptureProtonGenTool : {
   tool_type : MuCapProtonGenerator
+  spectrumVariable : kineticEnergy
   spectrum : {
     spectrumShape : ejectedProtons
-    spectrumVariable : kineticEnergy
     nbins: 1000
   }
 }
 
 muonCaptureDeuteronGenTool : {
   tool_type : MuCapDeuteronGenerator
+  spectrumVariable : kineticEnergy
   spectrum : {
     spectrumShape : ejectedProtons
-    spectrumVariable : kineticEnergy
     nbins: 1000
   }
 }
 
 muonCaptureNeutronGenTool : {
   tool_type : MuCapNeutronGenerator
+  spectrumVariable: kineticEnergy
   spectrum: {
     spectrumShape: tabulated
     spectrumFileName: "ConditionsService/data/neutronSpectrum.txt"
-    spectrumVariable: kineticEnergy
   }
 }
 
@@ -48,7 +47,6 @@ muonCapturePhotonGenTool : {
   tool_type : MuCapPhotonGenerator
   spectrum : {
     spectrumShape: flat
-    spectrumVariable: totalEnergy
     elow: 0.0 // MeV
     ehi: 7.0  // MeV
   }
