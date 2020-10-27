@@ -60,7 +60,7 @@ namespace mu2e {
     if( _config.verbose()>0) {
       cout << "Proditions built caches:" << endl;
       for( auto cc : _caches) {
-	cout << "  " << cc.first << endl;
+        cout << "  " << cc.first << endl;
       }
     }
 

@@ -103,7 +103,7 @@ namespace mu2e {
       return (_id == cosmicToy || _id == cosmicDYB || _id == cosmic);
     }
 
-    bool isConversion() const { 
+    bool isConversion() const {
       return _id == GenId::CeEndpoint || _id == GenId::CeLeadingLog;
     }
 
