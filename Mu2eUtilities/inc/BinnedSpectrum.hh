@@ -6,8 +6,8 @@
 // a momentum spectrum.
 //
 //
-// Original author Kyle Knoepfel 
-//                 
+// Original author Kyle Knoepfel
+//
 
 // C++ includes
 #include <assert.h>
@@ -26,7 +26,6 @@
 
 #include "Mu2eUtilities/inc/Table.hh"
 
-#include "Mu2eUtilities/inc/GenPhysConfig.hh"
 #include "fhiclcpp/ParameterSet.h"
 
 namespace fhicl { class ParameterSet; }
@@ -37,7 +36,6 @@ namespace mu2e {
 
   public:
 
-    BinnedSpectrum(const mu2e::GenPhysConfig& conf);
     BinnedSpectrum(const fhicl::ParameterSet& psphys);
     BinnedSpectrum() : _fixMax(false), _finalBin(false), _binWidth(0.), _nBins(0) {}
 
@@ -54,6 +52,7 @@ namespace mu2e {
     double         getXMaxUnbinned() const { return _xmax_unbinned;}
     double         getXMax() const { return _xmax;}
     double         getXMin() const { return _xmin;}
+    std::string    spectrumVariable() const { return _spectrumVariable;}
     double         sample(double rand) {
       double temp = _xmin + (_xmax - _xmin) * rand;
       if (_finalBin && temp > _xmax-_binWidth){
@@ -88,14 +87,14 @@ namespace mu2e {
       if (_fixMax){
         for (double step = XMax-_binWidth/2.; step >= XMin + _binWidth/2.; step += _binWidth){
           abscissa.push_back( step );
-          pdf     .push_back( s.getWeight(step) ); 
+          pdf     .push_back( s.getWeight(step) );
         }
         std::reverse(abscissa.begin(),abscissa.end());
         std::reverse(pdf.begin(),pdf.end());
       }else{
-        for ( double step = XMin+_binWidth/2. ; step <= XMax-_binWidth/2.; step += _binWidth ) {	 
+        for ( double step = XMin+_binWidth/2. ; step <= XMax-_binWidth/2.; step += _binWidth ) {
           abscissa.push_back( step );
-          pdf     .push_back( s.getWeight(step) ); 
+          pdf     .push_back( s.getWeight(step) );
         }
       }
       if (_finalBin && abscissa[abscissa.size()-1] + _binWidth/2. < XMax){
@@ -165,12 +164,13 @@ namespace mu2e {
     // x values for Binned Spectrum is saved as BIN CENTERS not as left edge
     std::pair<std::vector<double>,std::vector<double>> _spectrum;
 
-    double _xmin;			// low edge of bottom bin and high edge of top bin
+    double _xmin;                       // low edge of bottom bin and high edge of top bin
     double _xmax;
     double _xmax_unbinned;              // xmax before truncation to bin edges
-    double _binWidth;			// assumed to be constant
+    double _binWidth;                   // assumed to be constant
     size_t _nBins;
 
+    std::string _spectrumVariable;
   };
 
 } // end of namespace mu2e

@@ -15,6 +15,12 @@
 namespace mu2e {
   class MuCap1809keVGammaGenerator : public ParticleGeneratorTool {
   public:
+    struct PhysConfig {
+      using Name=fhicl::Name;
+      using Comment=fhicl::Comment;
+    };
+    typedef art::ToolConfigTable<PhysConfig> Parameters;
+
     explicit MuCap1809keVGammaGenerator(Parameters const& conf) :
       _pdgId(PDGCode::gamma),
       _mass(GlobalConstantsHandle<ParticleDataTable>()->particle(_pdgId).ref().mass().value()),

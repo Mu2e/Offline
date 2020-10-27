@@ -13,18 +13,29 @@
 #include "GlobalConstantsService/inc/ParticleDataTable.hh"
 #include "GlobalConstantsService/inc/PhysicsParams.hh"
 
+#include "fhiclcpp/types/DelegatedParameter.h"
+
 namespace mu2e {
   class DIOGenerator : public ParticleGeneratorTool {
   public:
+    struct PhysConfig {
+      using Name=fhicl::Name;
+      using Comment=fhicl::Comment;
+
+      fhicl::DelegatedParameter spectrum{Name("spectrum"), Comment("Parameters for BinnedSpectrum)")};
+    };
+    typedef art::ToolConfigTable<PhysConfig> Parameters;
+
     explicit DIOGenerator(Parameters const& conf) :
       _pdgId(PDGCode::e_minus),
       _mass(GlobalConstantsHandle<ParticleDataTable>()->particle(_pdgId).ref().mass().value()),
       _genId(GenId::DIOGenTool),
-      _spectrum(BinnedSpectrum(conf().physics()))
+      _spectrum(BinnedSpectrum(conf().spectrum.get<fhicl::ParameterSet>()))
     {
 
     }
-      void generate(std::unique_ptr<GenParticleCollection>& out, const IO::StoppedParticleF& stop) override;
+
+    void generate(std::unique_ptr<GenParticleCollection>& out, const IO::StoppedParticleF& stop) override;
 
     void setEngine(art::RandomNumberGenerator::base_engine_t& eng) {
       _randomUnitSphere = new RandomUnitSphere(eng);
