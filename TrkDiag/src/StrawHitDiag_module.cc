@@ -25,6 +25,8 @@
 #include "RecoDataProducts/inc/ComboHit.hh"
 #include "RecoDataProducts/inc/StrawHitFlag.hh"
 #include "MCDataProducts/inc/StrawDigiMC.hh"
+#include "RecoDataProducts/inc/ProtonBunchTime.hh"
+#include "MCDataProducts/inc/ProtonBunchTimeMC.hh"
 #include "DataProducts/inc/EventWindowMarker.hh"
 // Utilities
 #include "Mu2eUtilities/inc/SimParticleTimeOffset.hh"
@@ -50,7 +52,8 @@ namespace mu2e
       art::InputTag _shTag;
       art::InputTag _chTag;
       art::InputTag _shfTag;
-      art::InputTag _ewMarkerTag;
+      art::InputTag _pbtTag;
+      art::InputTag _pbtmcTag;
       art::InputTag _stTag;
       art::InputTag _mcdigisTag;
       // cache of event objects
@@ -87,7 +90,8 @@ namespace mu2e
       Int_t _sid, _plane, _panel, _layer, _straw;
       Float_t _shwres, _shtres;
       Bool_t _mcxtalk;
-      Float_t _ewMarkerOffset;
+      Float_t _pbt;
+      Float_t _pbtmc;
       // helper array
       StrawEnd _end[2];
   };
@@ -99,7 +103,8 @@ namespace mu2e
     _shTag(pset.get<string>("StrawHitCollection","makeSH")),
     _chTag(pset.get<string>("ComboHitCollection","makeSH")),
     _shfTag(pset.get<string>("StrawHitFlagCollection")),
-    _ewMarkerTag(pset.get<art::InputTag>("EventWindowMarkerLabel","EWMProducer")),
+    _pbtTag(pset.get<art::InputTag>("ProtonBunchTime","PBTFSD")),
+    _pbtmcTag(pset.get<art::InputTag>("ProtonBunchTimeMC","EWMProducer")),
     _mcdigisTag(pset.get<art::InputTag>("StrawDigiMCCollection","makeSD")),
     _toff(pset.get<fhicl::ParameterSet>("TimeOffsets")),
     _end{StrawEnd::cal,StrawEnd::hv}
@@ -137,7 +142,8 @@ namespace mu2e
     _chcol = 0;
     _shfcol = 0;
     _mcdigis = 0;
-    _ewMarkerOffset = 0;
+    _pbt = 0;
+    _pbtmc = 0;
     // nb: getValidHandle does the protection (exception) on handle validity so I don't have to
     auto shH = evt.getValidHandle<StrawHitCollection>(_shTag);
     _shcol = shH.product();
@@ -152,10 +158,11 @@ namespace mu2e
       _mcdigis = mcdH.product();
       // update time offsets
       _toff.updateMap(evt);
+      auto pbtmcHandle = evt.getValidHandle<ProtonBunchTimeMC>(_pbtmcTag);
+      _pbtmc = pbtmcHandle.product()->pbtime_;
     }
-    auto ewMarkerHandle = evt.getValidHandle<EventWindowMarker>(_ewMarkerTag);
-    auto ewMarker = ewMarkerHandle.product();
-    _ewMarkerOffset = ewMarker->timeOffset();
+    auto pbtHandle = evt.getValidHandle<ProtonBunchTime>(_pbtTag);
+    _pbt = pbtHandle.product()->pbtime_;
     return _shcol != 0 && _chcol != 0 && (_shfcol != 0 || !_useshfcol) && (_mcdigis != 0  || !_mcdiag);
   }
 
@@ -198,6 +205,7 @@ namespace mu2e
     _shdiag->Branch("pmom",&_pmom,"pmom/F");
     _shdiag->Branch("wres",&_shwres,"wres/F");
     _shdiag->Branch("tres",&_shtres,"tres/F");
+    _shdiag->Branch("pbtime",&_pbt,"pbt/F");
     if(_mcdiag){
       _shdiag->Branch("mcshpos.",&_mcshp);
       _shdiag->Branch("mcopos.",&_mcop);
@@ -327,7 +335,7 @@ namespace mu2e
         _mcgen = -1;
         if(osp.genParticle().isNonnull())
           _mcgen = osp.genParticle()->generatorId().id();
-        _mcsptime = _toff.timeWithOffsetsApplied(*spmcp) - _ewMarkerOffset;
+        _mcsptime = _toff.timeWithOffsetsApplied(*spmcp) + _pbtmc;
 	for(size_t iend=0;iend<2; ++iend){
 	  _mcwt[iend] = mcdigi.wireEndTime(_end[iend]);
 	  _mcct[iend] = mcdigi.clusterPosition(_end[iend]).t();

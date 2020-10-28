@@ -176,25 +176,24 @@ namespace mu2e {
     pmp = peak - (pedestal/(int)_nADCpre);
   }
 
-  bool StrawElectronics::digitizeAllTimes(TDCTimes const& times,double mbtime, TDCValues& tdcs) const {
+  bool StrawElectronics::digitizeAllTimes(TDCTimes const& times,double mbtime, TDCValues& tdcs, TDCValue const& eventWindowEndTDC) const {
     for(size_t itime=0;itime<2;++itime)
       tdcs[itime] = tdcResponse(times[itime]);
     // test these times against time wrapping.  This calculation should be done at construction or init,
     // FIXME!
     bool notwrap(true);
-    for(auto tdc : tdcs){
-      notwrap &= tdc > tdcResponse(_flashStart - mbtime) && tdc < _flashStartTDC;
-    }
+    for(size_t itime=0;itime<2;++itime)
+      notwrap &= times[itime]+_electronicsTimeDelay > 0 && tdcs[itime] < eventWindowEndTDC;
     return notwrap;
   }
 
-  bool StrawElectronics::digitizeTimes(TDCTimes const& times,TDCValues& tdcs) const {
+  bool StrawElectronics::digitizeTimes(TDCTimes const& times,TDCValues& tdcs, TDCValue const& eventWindowEndTDC) const {
     for(size_t itime=0;itime<2;++itime)
       tdcs[itime] = tdcResponse(times[itime]);
     // test bothe these times against the flash blanking. 
     bool notflash(true);
     for(auto tdc : tdcs){
-      notflash &= tdc > _flashEndTDC && tdc < _flashStartTDC;
+      notflash &= tdc > _flashEndTDC && tdc < eventWindowEndTDC;
     }
     return notflash;
   }
@@ -287,10 +286,7 @@ namespace mu2e {
     os << "tdcResolution = " << _tdcResolution << endl;
     os << "electronicsTimeDelay = " << _electronicsTimeDelay << endl;
     os << "ewMarkerROCJitter = " << _ewMarkerROCJitter << endl;
-    os << "flashStart = " << _flashStart << endl;
     os << "flashEnd = " << _flashEnd << endl;
-    os << "flashClockSpeed = " << _flashClockSpeed << endl;
-    os << "flashStartTDC = " << _flashStartTDC << endl;
     os << "flashEndTDC = " << _flashEndTDC << endl;
     os << "responseBins = " << _responseBins << endl;
     os << "sampleRate = " << _sampleRate << endl;

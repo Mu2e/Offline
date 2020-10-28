@@ -18,8 +18,7 @@
 #include "RecoDataProducts/inc/CaloDigiCollection.hh"
 #include "RecoDataProducts/inc/CaloRecoDigi.hh"
 #include "RecoDataProducts/inc/CaloRecoDigiCollection.hh"
-
-#include "DataProducts/inc/EventWindowMarker.hh"
+#include "RecoDataProducts/inc/ProtonBunchTime.hh"
 
 #include <iostream>
 #include <string>
@@ -39,9 +38,9 @@ namespace mu2e {
 		minDigiE_   	    (pset.get<double> ("minDigiE")),
 		shiftTime_          (pset.get<double> ("shiftTime")),
 		diagLevel_          (pset.get<int>    ("diagLevel",0)),
-		ewMarkerTag_(pset.get<art::InputTag>("EventWindowMarkerLabel"))
+		pbtTag_(pset.get<art::InputTag>("ProtonBunchTimeLabel"))
 	     	{
-			consumes<EventWindowMarker>(ewMarkerTag_);
+			consumes<ProtonBunchTime>(pbtTag_);
 	      		produces<CaloRecoDigiCollection>();
 		}
 
@@ -54,9 +53,9 @@ namespace mu2e {
 		double 	 minDigiE_ ;
 		double 	 shiftTime_ ;
 		int      diagLevel_;
-   		art::InputTag ewMarkerTag_;// name of the module that makes eventwindowmarkers
+   		art::InputTag pbtTag_;// name of the module that makes eventwindowmarkers
    
-		void extractRecoDigi(art::ValidHandle<CaloDigiCollection> const& caloDigis, CaloRecoDigiCollection& recoCaloHits, double const& ewOffset);
+		void extractRecoDigi(art::ValidHandle<CaloDigiCollection> const& caloDigis, CaloRecoDigiCollection& recoCaloHits, double const& pbtime);
 
 	};
 
@@ -68,14 +67,14 @@ namespace mu2e {
 		auto const& caloDigisH = event.getValidHandle(caloDigisToken_);
 		auto recoCaloDigiColl = std::make_unique<CaloRecoDigiCollection>();
 		
-		double ewmOffset = 0;
-		art::Handle<EventWindowMarker> ewMarkerHandle;
-		if (event.getByLabel(ewMarkerTag_, ewMarkerHandle)){
-			const EventWindowMarker& ewMarker(*ewMarkerHandle);
-			ewmOffset = ewMarker.timeOffset();
+		double pbtime = 0;
+		art::Handle<ProtonBunchTime> pbtHandle;
+		if (event.getByLabel(pbtTag_, pbtHandle)){
+			const ProtonBunchTime& pbt(*pbtHandle);
+			pbtime = pbt.pbtime_;
 		}
 
-		extractRecoDigi(caloDigisH, *recoCaloDigiColl, ewmOffset);
+		extractRecoDigi(caloDigisH, *recoCaloDigiColl, pbtime);
 
 		if ( diagLevel_ > 0 )std::cout<<"[FastCaloRecoDigiFromDigi::produce] extracted "<<recoCaloDigiColl->size()<<" RecoDigis"<<std::endl;
 		
@@ -87,7 +86,7 @@ namespace mu2e {
 		return;
 	}
 
-	void FastCaloRecoDigiFromDigi::extractRecoDigi(art::ValidHandle<CaloDigiCollection> const& caloDigisHandle, CaloRecoDigiCollection &recoCaloHits, double const& eventWindowOffset)
+	void FastCaloRecoDigiFromDigi::extractRecoDigi(art::ValidHandle<CaloDigiCollection> const& caloDigisHandle, CaloRecoDigiCollection &recoCaloHits, double const& protonBunchTime)
   	{
 		ConditionsHandle<CalorimeterCalibrations> calorimeterCalibrations("ignored");
 		auto const& caloDigis = *caloDigisHandle;
@@ -102,7 +101,7 @@ namespace mu2e {
 			size_t index = &caloDigi - base;
 			art::Ptr<CaloDigi> caloDigiPtr(caloDigisHandle, index);
 
-			double time = t0 + (caloDigi.peakpos()+0.5)*digiSampling_+ eventWindowOffset - shiftTime_; 
+			double time = t0 + (caloDigi.peakpos()+0.5)*digiSampling_ - protonBunchTime - shiftTime_; 
 			double eDep = (caloDigi.waveform().at(caloDigi.peakpos()))*adc2MeV; 
 			if(eDep <  minDigiE_) {continue;}
 			double eDepErr =  0*adc2MeV;

@@ -3,9 +3,14 @@
 
 namespace mu2e {
   struct EventWindowMarker {
-    float timeOffset() const { return _timeOffset;}
+    enum SpillType { offspill=0,onspill=1 }; 
+
+    SpillType spillType() const { return _spillType;}
+    double eventLength() const { return _eventLength;}
     //
-    float _timeOffset;
+    
+    SpillType _spillType; 
+    double _eventLength; // in ns, for on spill should be 1675 or 1700
   };
 }
 
