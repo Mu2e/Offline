@@ -11,6 +11,9 @@
 #include "RecoDataProducts/inc/CosmicTrack.hh" 
 #include "RecoDataProducts/inc/CosmicTrackSeed.hh"
 
+// beam
+#include "RecoDataProducts/inc/ProtonBunchTime.hh"
+
 // calorimeter
 #include "RecoDataProducts/inc/CaloDigi.hh"
 #include "RecoDataProducts/inc/CaloRecoDigiCollection.hh"

@@ -17,6 +17,7 @@
 #include "DataProducts/inc/VirtualDetectorId.hh"
 #include "DataProducts/inc/IndexMap.hh"
 #include "DataProducts/inc/EventWindowMarker.hh"
+#include "MCDataProducts/inc/ProtonBunchTimeMC.hh"
 #include "MCDataProducts/inc/PrimaryParticle.hh"
 #include "MCDataProducts/inc/StrawDigiMC.hh"
 #include "MCDataProducts/inc/CaloShowerSim.hh"
@@ -95,6 +96,8 @@ namespace mu2e {
 	Comment("CaloShowerSim collection")};
       fhicl::Atom<art::InputTag> EWM { Name("EventWindowMarker"),
 	Comment("EventWindowMarker")};
+      fhicl::Atom<art::InputTag> PBTMC { Name("ProtonBunchTimeMC"),
+	Comment("ProtonBunchTimeMC")};
       fhicl::Atom<art::InputTag> PBI { Name("ProtonBunchIntensity"),
 	Comment("ProtonBunchIntensity")};
       fhicl::Atom<double> CCMCDT { Name("CaloClusterMCDTime"),
@@ -129,7 +132,7 @@ namespace mu2e {
        PrimaryParticle const& pp, RecoCount& nrec);
    int _debug;
    bool _saveallenergy, _saveunused, _saveallunused;
-   art::InputTag _pp, _ccc, _crvccc, _sdc, _shfc, _chc, _cdc, _sdmcc, _crvdc, _crvdmcc, _vdspc, _cssc, _ewm, _pbi;
+   art::InputTag _pp, _ccc, _crvccc, _sdc, _shfc, _chc, _cdc, _sdmcc, _crvdc, _crvdmcc, _vdspc, _cssc, _ewm, _pbtmc, _pbi;
    std::vector<std::string> _kff, _mh;
    SimParticleTimeOffset _toff;
    double _ccmcdt, _csme, _ccme;
@@ -157,6 +160,7 @@ namespace mu2e {
     _vdspc(config().VDSPC()),
     _cssc(config().CSSC()),
     _ewm(config().EWM()),
+    _pbtmc(config().PBTMC()),
     _pbi(config().PBI()),
     _kff(config().KFFInstances()),
     _mh(config().MHInstances()),
@@ -177,6 +181,7 @@ namespace mu2e {
     consumes<StrawDigiMCCollection>(_sdmcc);
     consumes<CrvDigiMCCollection>(_crvdmcc);
     consumes<EventWindowMarker>(_ewm);
+    consumes<ProtonBunchTimeMC>(_pbtmc);
     consumes<ProtonBunchIntensity>(_pbi);
     produces <IndexMap>("StrawDigiMap"); 
     produces <IndexMap>("CrvDigiMap"); 
@@ -195,6 +200,7 @@ namespace mu2e {
     produces <CrvCoincidenceClusterCollection>();
     produces <RecoCount>();
     produces <EventWindowMarker>();
+    produces <ProtonBunchTimeMC>();
     produces <ProtonBunchIntensity>();
     if(_debug > 0){
       std::cout << "Using KalSeed collections from ";
@@ -216,6 +222,8 @@ namespace mu2e {
     auto const& pp = *pph;
     auto ewmh = event.getValidHandle<EventWindowMarker>(_ewm);
     auto const& ewm = *ewmh;
+    auto pbtmch = event.getValidHandle<ProtonBunchTimeMC>(_pbtmc);
+    auto const& pbtmc = *pbtmch;
     auto pbih = event.getValidHandle<ProtonBunchIntensity>(_pbi);
     auto const& pbi = *pbih;
     // reco count summary
@@ -231,6 +239,7 @@ namespace mu2e {
     // put output in event
     // rewerite MC values: these are standins for actual reconstruction values FIXME!
     event.put(std::move(std::unique_ptr<EventWindowMarker>(new EventWindowMarker(ewm))));
+    event.put(std::move(std::unique_ptr<ProtonBunchTimeMC>(new ProtonBunchTimeMC(pbtmc))));
     event.put(std::move(std::unique_ptr<ProtonBunchIntensity>(new ProtonBunchIntensity(pbi))));
     event.put(std::move(nrec));
   }

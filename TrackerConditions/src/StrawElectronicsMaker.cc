@@ -26,7 +26,7 @@ namespace mu2e {
        _config.TDCLSB(), _config.maxTDC(), _config.TOTLSB(), 
        _config.maxTOT(), _config.TDCResolution(), 
        _config.electronicsTimeDelay(), _config.eventWindowMarkerROCJitter(), 
-       _config.flashStart(), _config.flashEnd(), _config.flashClockSpeed(),
+       _config.flashEnd(),
        _config.responseBins(), 
        _config.sampleRate(), _config.saturationSampleFactor(), 
        _config.preampPoles(), _config.preampZeros(), 
@@ -69,8 +69,7 @@ namespace mu2e {
     ptr->setvthresh(vthresh);
 
     // here we start using the partially constructed StrawElectronics *ptr
-    ptr->setFlashTDC( ptr->tdcResponse( _config.flashStart() ),
-		      ptr->tdcResponse( _config.flashEnd()   ) );
+    ptr->setFlashTDC( ptr->tdcResponse( _config.flashEnd()   ) );
 
     std::vector<uint16_t> ADCped(96,0);
     for (int i=0;i<96;i++){

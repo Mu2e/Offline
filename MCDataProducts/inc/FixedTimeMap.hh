@@ -2,13 +2,8 @@
 // time instead of after Geant4 simulation. All sim particles from this
 // event will be given the same proton time
 
-#ifndef FixedProtonPulseTimeAssns_hh
-#define FixedProtonPulseTimeAssns_hh
-
-#include <map>
-
-#include "canvas/Persistency/Common/Ptr.h"
-
+#ifndef FixedTimeMap_hh
+#define FixedTimeMap_hh
 
 namespace mu2e {
   class FixedTimeMap {
@@ -26,4 +21,4 @@ namespace mu2e {
 
 }
 
-#endif/*FixedProtonPulseTimeAssns_hh*/
+#endif/*FixedTimeMap_hh*/
