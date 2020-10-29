@@ -17,18 +17,14 @@ namespace mu2e {
   template <class T>
   struct MVAEntry {
     MVAEntry(std::string trainName, std::string xmlFileName, bool calibrated = false) : 
-      _trainName(trainName), _xmlFileName(xmlFileName), _calibrated(calibrated)
+      _trainName(trainName), _xmlFileName(xmlFileName), _calibrated(calibrated), _mvaTool(_xmlFileName)
     { }
-    ~MVAEntry() {
-      delete _mvaTool;
-    }
 
     void initializeMVA() {
-      _mvaTool = new MVATools(_xmlFileName);
-      _mvaTool->initMVA();
+      _mvaTool.initMVA();
 
       // create the MVA mask in case we have removed variables
-      const auto& labels = _mvaTool->labels();
+      const auto& labels = _mvaTool.labels();
       _mvaMask = 0;
       for (int i_var = 0; i_var < T::n_vars; ++i_var) {
 	for (const auto& i_label : labels) {
@@ -41,7 +37,7 @@ namespace mu2e {
       }
 
       if (_calibrated) {
-	_mvaTool->getCalib(_effCalib);
+	_mvaTool.getCalib(_effCalib);
       }
     }
 
@@ -68,7 +64,7 @@ namespace mu2e {
     std::string _xmlFileName;
     bool _calibrated;
 
-    MVATools* _mvaTool;
+    MVATools _mvaTool;
     MVAMask _mvaMask;
     std::map<Float_t, Float_t> _effCalib;
   };
