@@ -58,6 +58,34 @@ double mu2e.detectorSystemZ0 = 10171.;   // mm  G4BL: (17730-7292=9801 mm)
 // #include "Mu2eG4/geom/stoppingTargetHoles_DOE_review_2017.txt" // 37 foil muon stopping target with holes
 #include "Mu2eG4/geom/stoppingTargetHoles_v02.txt" // 37 foil muon stopping target with holes and thicker foils (0.1 mm -> 0.1056 mm)
 
+//Alternative ST's by S. Middleton
+
+//42 Foils:
+//#include "Mu2eG4/geom/stoppingTargetHoles_42_foils.txt" // 42 foil muon stopping target with holes - first test of non-standard
+
+//Cyclinder Mesh:
+//#include "Mu2eG4/geom/stoppingTarget_cylindermesh.txt"
+
+//Cyclinder Default:
+//#include "Mu2eG4/geom/stoppingTarget_cyinderdefault.txt"
+
+//Screen Mesh:
+//#include "Mu2eG4/geom/stoppingTarget_screenmesh.txt"
+
+//Screen Hole:
+//#include "Mu2eG4/geom/stoppingTarget_screenhole.txt"
+
+//Hexagon:
+//#include "Mu2eG4/geom/stoppingTarget_hexagondefault.txt"
+
+//ScreenDefault
+//#include "Mu2eG4/geom/stoppingTarget_screendefault.txt"
+
+//ScreenHoleMesh:
+//#include "Mu2eG4/geom/stoppingTarget_screenholemesh.txt"
+
+
+
 #include "Mu2eG4/geom/TSdA_v02.txt"
 #include "Mu2eG4/geom/muonBeamStop_v08.txt"
 
