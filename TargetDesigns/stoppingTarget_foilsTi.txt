@@ -1,0 +1,92 @@
+// Describe dummy stopping target that is just one big G4TUBS.
+double dummyStoppingTarget.rIn        =     0.;
+double dummyStoppingTarget.rOut       =   100.;
+double dummyStoppingTarget.halfLength =   400.;
+double dummyStoppingTarget.z0         =  5900.;
+string dummyStoppingTarget.material   = "WAGVacuum";
+
+// int   stoppingTarget.verbosity = 2;
+
+//
+// Describe targets.
+//
+
+// material around the targets
+string         stoppingTarget.fillMaterial    = "DSVacuum";
+
+// All dimensions in mm
+double stoppingTarget.z0InMu2e       = 5871;    // 12000 - 6129
+double stoppingTarget.deltaZ         = 24.242424;
+bool   stoppingTarget.visible        = true;
+bool   stoppingTarget.solid          = false;
+int    stoppingTarget.verbosity      =     0;
+
+// all radii must be specified, i.e., nFoils is determined from the size
+// of the radii vector.
+vector<double> stoppingTarget.radii  =
+    { 75.00,  75.00,  75.00,  75.00,  75.00,
+      75.00,  75.00,  75.00,  75.00,  75.00,
+      75.00,  75.00,  75.00,  75.00,  75.00,
+      75.00,  75.00,  75.00,  75.00,  75.00,
+      75.00,  75.00,  75.00,  75.00,  75.00,
+      75.00,  75.00,  75.00,  75.00,  75.00,
+      75.00,  75.00,  75.00,  75.00 };
+
+// last material given will be repeated up to number radii.size()
+//  vector<string> stoppingTarget.materials = 
+//      { "G4_Ti"};
+
+// Variation of locations of foil centers
+// z: variations from equal spacings according to z0 and deltaZ
+// last will be repeated...
+vector<double> stoppingTarget.zVars  =
+    { 0., 0., 0., 0., 0.,
+      0., 0., 0., 0., 0.,
+      0., 0., 0., 0., 0.,
+      0., 0., 0., 0., 0.,
+      0., 0., 0., 0., 0.,
+      0., 0., 0., 0., 0.,
+      0., 0., 0., 0. };
+
+// x: relative to beam axis
+// last will be repeated...
+vector<double> stoppingTarget.xVars  =
+    { 0. };
+
+// y: relative to beam axis
+// last will be repeated...
+vector<double> stoppingTarget.yVars  =
+    { 0. };
+
+// last thickness given will be repeated up to number radii.size()
+vector<double> stoppingTarget.halfThicknesses  =
+    { 0.05 };
+
+// last x directional cosine given will be repeated up to number radii.size()
+vector<double> stoppingTarget.xCos  =
+    { 0. };
+
+// last y directional cosine given will be repeated up to number radii.size()
+vector<double> stoppingTarget.yCos  =
+    { 0. };
+
+// stopping foil target supporting structure
+bool   stoppingTarget.foilTarget_supportStructure = true;
+int    stoppingTarget.foilTarget_supportStructure_number = 3; // number of support wires per foil
+double stoppingTarget.foilTarget_supportStructure_angleOffset = 0; // angle of first support wire wrt vertical
+double stoppingTarget.foilTarget_supportStructure_radius = 0.0381; // radius of the support wires, 38.1micrometer radius corresponds to 3mil diameter
+string stoppingTarget.foilTarget_supportStructure_fillMaterial = "G4_W";
+
+
+//
+//
+// End notes:
+//
+// 1) Sources of information:
+//
+//
+//
+// This tells emacs to view this file in c++ mode.
+// Local Variables:
+// mode:c++
+// End:
