@@ -88,7 +88,7 @@ namespace mu2e
     TrkQualEntry const& trkQualEntry = trkQualCatalog.find(_trainName);
 
     if(_printMVA) {
-      trkQualEntry._mvaTool->showMVA();
+      trkQualEntry._mvaTool.showMVA();
     }
 
     // Go through the tracks and calculate their track qualities
@@ -140,7 +140,7 @@ namespace mu2e
 	  trkqual[TrkQual::rmax] = -1*charge*(bestkseg->helix().d0() + 2.0/bestkseg->helix().omega());
 	  
 	  trkqual.setMVAStatus(MVAStatus::calculated);
-	  trkqual.setMVAValue(trkQualEntry._mvaTool->evalMVA(trkqual.values(), trkQualEntry._mvaMask));
+	  trkqual.setMVAValue(trkQualEntry._mvaTool.evalMVA(trkqual.values(), trkQualEntry._mvaMask));
 
 	}
 	else {
