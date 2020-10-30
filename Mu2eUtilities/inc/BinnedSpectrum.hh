@@ -6,8 +6,8 @@
 // a momentum spectrum.
 //
 //
-// Original author Kyle Knoepfel 
-//                 
+// Original author Kyle Knoepfel
+//
 
 // C++ includes
 #include <assert.h>
@@ -25,6 +25,8 @@
 #include "fhiclcpp/ParameterSet.h"
 
 #include "Mu2eUtilities/inc/Table.hh"
+
+#include "fhiclcpp/ParameterSet.h"
 
 namespace fhicl { class ParameterSet; }
 
@@ -84,14 +86,14 @@ namespace mu2e {
       if (_fixMax){
         for (double step = XMax-_binWidth/2.; step >= XMin + _binWidth/2.; step += _binWidth){
           abscissa.push_back( step );
-          pdf     .push_back( s.getWeight(step) ); 
+          pdf     .push_back( s.getWeight(step) );
         }
         std::reverse(abscissa.begin(),abscissa.end());
         std::reverse(pdf.begin(),pdf.end());
       }else{
-        for ( double step = XMin+_binWidth/2. ; step <= XMax-_binWidth/2.; step += _binWidth ) {	 
+        for ( double step = XMin+_binWidth/2. ; step <= XMax-_binWidth/2.; step += _binWidth ) {
           abscissa.push_back( step );
-          pdf     .push_back( s.getWeight(step) ); 
+          pdf     .push_back( s.getWeight(step) );
         }
       }
       if (_finalBin && abscissa[abscissa.size()-1] + _binWidth/2. < XMax){
@@ -161,10 +163,10 @@ namespace mu2e {
     // x values for Binned Spectrum is saved as BIN CENTERS not as left edge
     std::pair<std::vector<double>,std::vector<double>> _spectrum;
 
-    double _xmin;			// low edge of bottom bin and high edge of top bin
+    double _xmin;                       // low edge of bottom bin and high edge of top bin
     double _xmax;
     double _xmax_unbinned;              // xmax before truncation to bin edges
-    double _binWidth;			// assumed to be constant
+    double _binWidth;                   // assumed to be constant
     size_t _nBins;
 
   };
