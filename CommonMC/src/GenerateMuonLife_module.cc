@@ -56,6 +56,12 @@ namespace mu2e {
           };
 
       fhicl::Atom<int> verbosityLevel{ Name("verbosityLevel"), Comment("Levels 0, 1, and 11 increase the number of printouts.."), 0 };
+
+      fhicl::Sequence<std::string> applyToGenIds {
+        Name("applyToGenIds"),
+          Comment("The whitelist mode: assign time offsets just to particles made by one of the\n"
+                  "listed generators.\n")
+          };
     };
 
     using Parameters = art::EDProducer::Table<Config>;
@@ -68,6 +74,9 @@ namespace mu2e {
     double mean_;
     int  verbosityLevel_;
     std::vector<art::ProductToken<SimParticleTimeMap> > inmaps_; // optional input maps
+
+    typedef std::set<GenId::enum_type> GenIdSet;
+    GenIdSet applyToGenIds_;
   };
 
   //================================================================
@@ -91,6 +100,10 @@ namespace mu2e {
       if(verbosityLevel_ > 0) {
         std::cout<<"GenerateMuonLife initialized with meanLife = "<<mean_<<std::endl;
       }
+
+      for(const auto i: conf().applyToGenIds()) {
+        applyToGenIds_.insert(GenId::findByName(i).id());
+      }
     }
 
   //================================================================
@@ -112,13 +125,14 @@ namespace mu2e {
           art::Ptr<SimParticle> part(ih, iter.first.asUint());
           // don't re-simulate if particle is already present.  This can happen if there is an input map
           if(res->find(part) == res->end()){
+            const auto genId = part->genParticle()->generatorId();
 
-            if(part->genParticle()->generatorId() == GenId::StoppedParticleReactionGun    ||
-               part->genParticle()->generatorId() == GenId::dioTail                       ||
-               part->genParticle()->generatorId().isConversion()  ||
-               part->genParticle()->generatorId() == GenId::ExternalRMC          ||
-               part->genParticle()->generatorId() == GenId::InternalRMC )
-
+            // do just explicitly listed GenIds
+            bool apply= applyToGenIds_.find(genId.id()) != applyToGenIds_.end();
+            if (!apply && genId.isConversion()) { // also want to anything that is isConversion
+              apply = true;
+            }
+            if (apply)
               {
                 (*res)[part] = rexp_.fire(mean_);
               }
