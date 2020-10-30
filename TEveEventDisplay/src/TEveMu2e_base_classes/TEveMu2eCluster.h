@@ -17,7 +17,8 @@ namespace mu2e {
       TEveMu2eCluster(CaloCluster cluster) : fCaloCluster(cluster){};
       virtual ~TEveMu2eCluster(){};
       #endif 
-      void DrawCluster(const std::string &pstr, CLHEP::Hep3Vector COG, int energylevel, TEveElementList *list); 
+      void DrawCluster(const std::string &pstr, CLHEP::Hep3Vector COG, int energylevel, TEveElementList *list);
+      void DrawCrystalHits(const std::string &pstr, CLHEP::Hep3Vector COG, int energylevel, TEveElementList *list);
       const  CLHEP::Hep3Vector GetPositon() { return fCaloCluster.cog3Vector() ;}
       double GetEnergy() { return fCaloCluster.energyDep();}
       std::string DataTitle(const std::string &pstr, double edep);
