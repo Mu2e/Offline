@@ -183,8 +183,11 @@ namespace mu2e{
   }
 
   std::vector<double> TEveMu2eDataInterface::AddCaloClusters(bool firstloop, const CaloClusterCollection *clustercol, TEveMu2e2DProjection *calo2Dproj, double time, bool Redraw, bool show2D, double min_energy, double max_energy, bool accumulate, TEveProjectionManager *CfXYMgr, TEveProjectionManager *CfRZMgr){
+  
+   
     vector <double> energies = {0, 0};
     DataLists<const CaloClusterCollection*, TEveMu2e2DProjection*>(clustercol, Redraw, show2D, accumulate, "CaloCluster", &fClusterList3D, &fClusterList2D, calo2Dproj);
+    
     if(clustercol!=0){ 
       TEveElementList *ClusterList3D = new TEveElementList("CaloClusters3D");
       TEveElementList *ClusterList2D = new TEveElementList("CaloClusters2D");
@@ -197,15 +200,22 @@ namespace mu2e{
 
         CLHEP::Hep3Vector COG(cluster.cog3Vector().x(),cluster.cog3Vector().y(), cluster.cog3Vector().z());
         CLHEP::Hep3Vector pointInMu2e = PointToCalo(COG,cluster.diskId());
-        
-        //Access crystal hits from cluster:
-        std::vector<art::Ptr<CaloCrystalHit>> *cryHitcol = 0;
-		    for(unsigned h =0 ; h < cluster.caloCrystalHitsPtrVector().size();h++){
-			    art::Ptr<CaloCrystalHit>  crystalhit = cluster.caloCrystalHitsPtrVector()[h] ;
-          cryHitcol->push_back(crystalhit);
-        }
-        //Pass crystal hit collection to the "add crystal hits"
-        //AddCrystalHits(firstloop, cryHitcol, calo2Dproj, time, Redraw, show2D, accumulate, CfXYMgr, CfRZMgr);
+        Calorimeter const &cal = *(GeomHandle<Calorimeter>());
+        if(cluster.caloCrystalHitsPtrVector().size()!=0){
+          std::cout<<"Cluster has "<<cluster.caloCrystalHitsPtrVector().size()<<" Crystal hits : "<<std::endl;
+          //Access crystal hits from cluster:
+           std::vector<art::Ptr< CaloCrystalHit>>cryHitcol;
+           for(unsigned h =0 ; h < cluster.caloCrystalHitsPtrVector().size();h++){
+               
+               art::Ptr<CaloCrystalHit>  crystalhit = cluster.caloCrystalHitsPtrVector()[h] ;
+               int diskId = cal.crystal(crystalhit->id()).diskId();
+               CLHEP::Hep3Vector HitPos(cal.geomUtil().mu2eToDiskFF(diskId, cal.crystal(crystalhit->id()).position()));
+               CLHEP::Hep3Vector pointInMu2e = PointToCalo(HitPos,diskId);
+               cryHitcol.push_back(crystalhit);
+               std::cout<<"Hit "<<h<<" at "<<pointInMu2e.x()<<std::endl;
+          }
+         }
+       
        
         string pos3D = "(" + to_string((double)pointInMu2e.x()) + ", " + to_string((double)pointInMu2e.y()) + ", " + to_string((double)pointInMu2e.z()) + ")";
         string pos2D = "(" + to_string((double)COG.x()) + ", " + to_string((double)COG.y()) + ", " + to_string((double)COG.z()) + ")";
@@ -296,7 +306,7 @@ namespace mu2e{
           line_twoD->SetLineWidth(3);
           fTrackList2D->AddElement(line_twoD);
 
-        }
+          }
         line->SetPickable(kTRUE);
         const std::string title = "Helix #" + to_string(k + 1) + ", Momentum = " + to_string(line->Momentum);
         line->SetTitle(Form(title.c_str()));
