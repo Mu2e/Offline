@@ -44,7 +44,7 @@ namespace mu2e {
       if(digi.strawId().asUint16() == 0xffff ||
 	digi.TDC()[0] == 0xffff ||
 	digi.TOT()[0] == 0xffff ||
-	digi.adcWaveform()[0] == 0xffff)
+        digi.PMP() == 0xffff)
 	std::cout << "error " << std::endl;
     }
   }

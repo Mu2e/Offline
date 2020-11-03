@@ -102,7 +102,7 @@ build=$($MU2E_BASE_RELEASE/buildopts --build)
 # products that need qualifiers.  Note it includes the '+' character
 # and is therefore different from the value shown in
 # SETUP_<productname> environment vars, or by the "ups active" command.
-export MU2E_UPS_QUALIFIERS=+e19:+${build}
+export MU2E_UPS_QUALIFIERS=+e20:+${build}
 export MU2E_ART_SQUALIFIER=s101
 
 MU2E_G4_GRAPHICS_QUALIFIER=''
@@ -134,13 +134,10 @@ else
 fi
 
 # Get access to raw data formats.
-setup -B mu2e_artdaq_core v1_04_07 -q${MU2E_UPS_QUALIFIERS}:+${MU2E_ART_SQUALIFIER}:offline
-
-# Other libraries we need.
-setup -B pcie_linux_kernel_module v2_03_06 -q${MU2E_UPS_QUALIFIERS}:+${MU2E_ART_SQUALIFIER}
+setup -B mu2e_artdaq_core v1_05_00 -q${MU2E_UPS_QUALIFIERS}:+${MU2E_ART_SQUALIFIER}:offline
 
 setup -B heppdt   v03_04_02 -q${MU2E_UPS_QUALIFIERS}
-setup -B BTrk   v1_02_27  -q${MU2E_UPS_QUALIFIERS}:p383b
+setup -B BTrk   v1_02_28  -q${MU2E_UPS_QUALIFIERS}:p383b
 setup -B cry   v1_7n  -q${MU2E_UPS_QUALIFIERS}
 setup -B gsl v2_6a
 setup curl v7_64_1
@@ -165,8 +162,3 @@ export PATH=`dropit -p $PATH -sf $MU2E_BASE_RELEASE/bin`
 # root6 needs a path to include files to prevent some runtime warnings
 export ROOT_INCLUDE_PATH=`dropit -p $ROOT_INCLUDE_PATH -sf $MU2E_BASE_RELEASE`
 
-# Environment variables used by the test build system.
-export PACKAGE_SOURCE=${MU2E_BASE_RELEASE}
-export BUILD_BASE=${MU2E_BASE_RELEASE}
-
-#

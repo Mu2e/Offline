@@ -16,6 +16,7 @@ outputs: { @table::mu2e.outputs.g4s4Defs }
 
 physics.producers.generate.physics: {
     pdgId : 2212
+    genId : StoppedParticleReactionGun
     spectrumShape: ejectedProtons
     spectrumVariable: kineticEnergy
     nbins: 1000

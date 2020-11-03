@@ -36,7 +36,7 @@ namespace mu2e {
     mgr->_manager     = std::unique_ptr<G4FieldManager>         (new G4FieldManager      ( mgr->field(),
                                                                                            mgr->chordFinder(),
                                                                                            true ));
-    return std::move(mgr);
+    return mgr;
   }
 
   // Factory method to construct a manager for a gradient magnetic field (in DS3).
@@ -61,7 +61,7 @@ namespace mu2e {
     mgr->_manager     = std::unique_ptr<G4FieldManager>         (new G4FieldManager      ( mgr->field(),
                                                                                            mgr->chordFinder(),
                                                                                            true ));
-    return std::move(mgr);
+    return mgr;
   }
 
   // Release all of the objects that this class owns.

@@ -17,7 +17,7 @@ FastCaloRecoDigiFromDigi :
     diagLevel              : 0
     minDigiE 	  	   : 1 
     shiftTime         	   : 19.90
-    EventWindowMarkerLabel : "EWMProducer"
+    ProtonBunchTimeLabel : "EWMProducer"
 }
 
 

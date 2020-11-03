@@ -13,6 +13,8 @@
 #include "DbTables/inc/TrkAlignPanel.hh"
 #include "DbTables/inc/AnaTrkQualDb.hh"
 
+#include "DbTables/inc/SimEfficiencies.hh"
+
 mu2e::DbTable::ptr_t mu2e::DbTableFactory::newTable(std::string const& name) {
   if (name=="TstCalib1") {
     return std::shared_ptr<mu2e::DbTable>(new mu2e::TstCalib1());
@@ -36,10 +38,11 @@ mu2e::DbTable::ptr_t mu2e::DbTableFactory::newTable(std::string const& name) {
     return std::shared_ptr<mu2e::DbTable>(new mu2e::TrkAlignPanel());
   } else if (name=="AnaTrkQualDb") {
     return std::shared_ptr<mu2e::DbTable>(new mu2e::AnaTrkQualDb());
+  } else if (name=="SimEfficiencies") {
+    return std::shared_ptr<mu2e::DbTable>(new mu2e::SimEfficiencies());
   } else {
-    throw cet::exception("DBFILE_BAD_TABLE_NAME") 
+    throw cet::exception("DBFILE_BAD_TABLE_NAME")
       << "DbTableFactory::newTable call with bad table name: "+name+"\n";
-    
+
   }
 }
-

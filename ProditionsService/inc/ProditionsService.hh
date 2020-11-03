@@ -2,7 +2,7 @@
 #define DbExample_ProditionsService_hh
 
 //
-// Service to hold and deliver time-dependent and 
+// Service to hold and deliver time-dependent and
 // database-backed conditions quantities
 //
 
@@ -22,7 +22,7 @@
 #include "Mu2eInterfaces/inc/ProditionsCache.hh"
 
 #include "TrackerConfig/inc/FullReadoutStrawConfig.hh"
-#include "TrackerConfig/inc/DeadStrawConfig.hh"
+#include "TrackerConfig/inc/TrackerStatusConfig.hh"
 #include "TrackerConfig/inc/StrawDriftConfig.hh"
 #include "TrackerConfig/inc/StrawPhysicsConfig.hh"
 #include "TrackerConfig/inc/StrawElectronicsConfig.hh"
@@ -32,6 +32,8 @@
 #include "TrackerConfig/inc/Mu2eDetectorConfig.hh"
 
 #include "AnalysisConfig/inc/MVACatalogConfig.hh"
+
+#include "SimulationConfig/inc/SimBookkeeperConfig.hh"
 
 namespace mu2e {
 
@@ -43,46 +45,49 @@ namespace mu2e {
       using Name=fhicl::Name;
       using Comment=fhicl::Comment;
       fhicl::Atom<int> verbose{Name("verbose"),
-	  Comment("verbosity 0 or 1"),0};
+          Comment("verbosity 0 or 1"),0};
       fhicl::Table<FullReadoutStrawConfig> fullReadoutStraw{
-	  Name("fullReadoutStraw"), 
-	  Comment("Straws with no time window in readout") };
-      fhicl::Table<DeadStrawConfig> deadStraw{
-	  Name("deadStraw"), 
-	  Comment("Dead Straw List by Plane, Panel and Straw") };
+          Name("fullReadoutStraw"),
+          Comment("Straws with no time window in readout") };
+      fhicl::Table<TrackerStatusConfig> trackerStatus{
+          Name("trackerStatus"),
+          Comment("Status of tracker elements (straws, panels, planes, ...)") };
       fhicl::Table<StrawDriftConfig> strawDrift{
-	  Name("strawDrift"), 
-	  Comment("Straw drift model function and binning") };
+          Name("strawDrift"),
+          Comment("Straw drift model function and binning") };
       fhicl::Table<StrawPhysicsConfig> strawPhysics{
-	  Name("strawPhysics"), 
-	  Comment("Straw physics model") };
+          Name("strawPhysics"),
+          Comment("Straw physics model") };
       fhicl::Table<StrawElectronicsConfig> strawElectronics{
-	  Name("strawElectronics"), 
-	  Comment("Straw electronics model") };
+          Name("strawElectronics"),
+          Comment("Straw electronics model") };
       fhicl::Table<StrawResponseConfig> strawResponse{
-	  Name("strawResponse"), 
-	  Comment("Straw response model") };
+          Name("strawResponse"),
+          Comment("Straw response model") };
       fhicl::Table<AlignedTrackerConfig> alignedTracker{
-	  Name("alignedTracker"), 
-	  Comment("Tracker alignment in reco code") };
+          Name("alignedTracker"),
+          Comment("Tracker alignment in reco code") };
       fhicl::Table<Mu2eMaterialConfig> mu2eMaterial{
-	  Name("mu2eMaterial"), 
-	  Comment("Mu2e material for BTrk") };
+          Name("mu2eMaterial"),
+          Comment("Mu2e material for BTrk") };
       fhicl::Table<Mu2eDetectorConfig> mu2eDetector{
-	  Name("mu2eDetector"), 
-	  Comment("Mu2e detector model for BTrk") };
+          Name("mu2eDetector"),
+          Comment("Mu2e detector model for BTrk") };
       fhicl::Table<MVACatalogConfig> trkQualCatalog{
-	  Name("trkQualCatalog"), 
-	  Comment("Catalog of TrkQual trainings") };
+          Name("trkQualCatalog"),
+          Comment("Catalog of TrkQual trainings") };
+      fhicl::Table<SimBookkeeperConfig> simbookkeeper{
+          Name("simbookkeeper"),
+          Comment("simulation bookkeeping") };
     };
 
     // this line is required by art to allow the command line help print
     typedef art::ServiceTable<Config> Parameters;
 
-    ProditionsService(Parameters const& config, 
-		       art::ActivityRegistry& iRegistry);
+    ProditionsService(Parameters const& config,
+                       art::ActivityRegistry& iRegistry);
 
-    ProditionsCache::ptr getCache(std::string name) { 
+    ProditionsCache::ptr getCache(std::string name) {
       return _caches[name];
     }
     //void postBeginJob();

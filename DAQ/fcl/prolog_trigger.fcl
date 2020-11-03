@@ -40,6 +40,7 @@ DAQ : {
 	 diagLevel: 0
 	 parseCAL: 0
 	 parseTRK: 1
+         useTrkADC : 1
 	 
 	 trkTag  : "daq:trk"
 	 caloTag : "daq:calo"
@@ -51,6 +52,7 @@ DAQ : {
 	 diagLevel: 0
 	 parseCAL: 1
 	 parseTRK: 0
+         useTrkADC : 0
 	 
 	 trkTag  : "daq:trk"
 	 caloTag : "daq:calo"

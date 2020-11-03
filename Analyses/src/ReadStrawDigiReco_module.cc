@@ -104,6 +104,7 @@ void mu2e::ReadStrawDigiReco::analyze(art::Event const& evt) {
   auto const& digis = *evt.getValidHandle<StrawDigiCollection>( _digisTag );
   _hNDigis->Fill(digis.size());
   _hNDigis1->Fill(digis.size());
+  auto const& digiadcs = *evt.getValidHandle<StrawDigiADCWaveformCollection>( _digisTag );
 
   if ( _diagLevel > 1 ) {
     cout << "ReadStrawDigiReco: Total number of straw digis = " << digis.size() << endl;
@@ -112,7 +113,9 @@ void mu2e::ReadStrawDigiReco::analyze(art::Event const& evt) {
   // Counter for number of digis on each wire.
   std::map<StrawId,int> nhperwire;
 
-  for ( StrawDigi const& digi : digis ) {
+  for (size_t idigi=0;idigi<digis.size();idigi++){
+    StrawDigi const& digi = digis.at(idigi);
+    StrawDigiADCWaveform const& digiadc = digiadcs.at(idigi);
     StrawId id = digi.strawId();
 
     _hStrawId->Fill(id.asUint16());
@@ -122,7 +125,7 @@ void mu2e::ReadStrawDigiReco::analyze(art::Event const& evt) {
 
     auto t0 = digi.TDC(StrawEnd::cal);
     auto t1 = digi.TDC(StrawEnd::hv);
-    auto const& adcs = digi.adcWaveform();
+    auto const& adcs = digiadc.samples();
 
     _hDigiTime0 ->Fill(t0);
     _hDigiTime1 ->Fill(t1);
