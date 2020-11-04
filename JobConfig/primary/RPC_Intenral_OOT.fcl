@@ -1,0 +1,71 @@
+#
+# internal RPC with a flat virtual photon energy spectrum
+#
+#include "JobConfig/primary/prolog.fcl"
+
+#include "fcl/minimalMessageService.fcl"
+#include "fcl/standardProducers.fcl"
+#include "fcl/standardServices.fcl"
+
+process_name: InternalRPCDigi
+
+source: { module_type : EmptyEvent }
+#services: @local::Services.Sim
+
+services : {
+    message                : @local::default_message
+    TFileService           : { fileName : "nts.owner.pions-g4s3.version.sequencer.root" }
+    RandomNumberGenerator  : {defaultEngineKind: "MixMaxRng"}
+    GeometryService        : { inputFile      : "JobConfig/common/geom_baseline.txt"    }
+    ConditionsService      : { conditionsfile : "Mu2eG4/test/conditions_01.txt"      }
+    GlobalConstantsService : { inputFile      : "Mu2eG4/test/globalConstants_01.txt" }
+    G4Helper               : {}
+    SeedService            : @local::automaticSeeds
+    ProditionsService: @local::Proditions
+        DbService : @local::DbEmpty
+}
+
+
+physics : { 
+  producers : {
+    generate : @local::EventGenerator.producers.RPCGun
+    @table::Primary.producers
+  }
+  filters: { @table::Primary.filters }
+  analyzers: { @table::Primary.analyzers }
+  TriggerPath : @local::Primary.TriggerPath
+  EndPath : @local::Primary.EndPath
+}
+outputs : {
+    Output :@local::Primary.Output
+    rootout : {
+        module_type  : RootOutput
+        SelectEvents : ["TriggerPath"]
+        fileName     : "sim.owner.pions-g4s4-RPCExternal.version.sequencer.art"
+        outputCommands: ["drop _*_*_*", "keep mu2e::*_*_*_*" ]
+        
+    }
+}
+
+#include "JobConfig/primary/epilog.fcl"
+physics.producers.generate.physics.generateIntConversion : 1
+physics.producers.generate.physics.spectrumShape : "Bistirlich"
+physics.producers.generate.physics.elow : 10.0
+physics.producers.generate.physics.ehi  : 140
+physics.producers.generate.doHistograms : true
+physics.producers.generate.randPDFparameters.pulseType : oot
+physics.producers.protonTimeMap.FixedModule : generate
+
+physics.filters.DigiFilter.MinParticleMom : 10.0
+#physics.filters.FilterStepPointMomentum.cutMomentumMin : 100.0
+physics.producers.generate.pionStops.inputFiles: ["pionStops/nts.owner.pions-nts3.version.sequencer.root"]
+physics.producers.generate.pionStops.averageNumRecordsToUse : 500000
+physics.producers.generate.pionStops.treeName : "stoppedPionDumper/stops"
+physics.producers.generate.pionStops.branchName : "stops"
+
+# customize the output
+services.TFileService.fileName: "nts.owner.externalRPC.version.sequencer.root"
+outputs.Output.fileName: "dig.owner.externalRPC.version.sequencer.art"
+physics.end_paths : [ EndPath] # needed for generate_fcl
+services.GeometryService.simulatedDetector.tool_type : "Mu2e"
+services.scheduler.wantSummary: true

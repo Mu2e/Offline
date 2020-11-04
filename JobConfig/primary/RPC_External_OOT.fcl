@@ -1,0 +1,49 @@
+#
+# internal RPC with a flat virtual photon energy spectrum
+#
+#include "JobConfig/primary/prolog.fcl"
+process_name: ExternalRPCDigi
+
+source: { module_type : EmptyEvent }
+services: @local::Services.Sim
+physics : { 
+  producers : {
+    generate : @local::EventGenerator.producers.RPCGun
+    @table::Primary.producers
+  }
+  filters: { @table::Primary.filters }
+  analyzers: { @table::Primary.analyzers }
+  TriggerPath : @local::Primary.TriggerPath
+  EndPath : @local::Primary.EndPath
+}
+outputs : {
+    Output :@local::Primary.Output
+    rootout : {
+        module_type  : RootOutput
+        SelectEvents : ["TriggerPath"]
+        fileName     : "sim.owner.pions-g4s4-RPCExternal.version.sequencer.art"
+        outputCommands: ["drop _*_*_*", "keep mu2e::*_*_*_*" ]
+        
+    }
+}
+
+#include "JobConfig/primary/epilog.fcl"
+physics.producers.generate.physics.generateIntConversion : 0
+physics.producers.generate.physics.spectrumShape : "Bistirlich"
+physics.producers.generate.physics.elow : 0.0
+physics.producers.generate.physics.ehi  : 140
+physics.producers.generate.physics.doHistograms : true
+physics.filters.DigiFilter.MinParticleMom : 10.0
+physics.producers.generate.randPDFparameters.pulseType : oot
+physics.producers.protonTimeMap.FixedModule : generate
+
+physics.producers.generate.pionStops.inputFiles: ["pionStops/nts.owner.pions-nts3.version.sequencer.root"]
+physics.producers.generate.pionStops.averageNumRecordsToUse : 500000
+physics.producers.generate.pionStops.treeName : "stoppedPionDumper/stops"
+physics.producers.generate.pionStops.branchName : "stops"
+
+# customize the output
+services.TFileService.fileName: "nts.owner.externalRPC.version.sequencer.root"
+outputs.Output.fileName: "dig.owner.externalRPC.version.sequencer.art"
+physics.end_paths : [ EndPath] # needed for generate_fcl
+services.scheduler.wantSummary: true
