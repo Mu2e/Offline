@@ -56,7 +56,7 @@ double mu2e.detectorSystemZ0 = 10171.;   // mm  G4BL: (17730-7292=9801 mm)
 #include "Mu2eG4/geom/ElectronicRack_v01.txt"
 
 // #include "Mu2eG4/geom/stoppingTargetHoles_DOE_review_2017.txt" // 37 foil muon stopping target with holes
-#include "Mu2eG4/geom/stoppingTargetHoles_v02.txt" // 37 foil muon stopping target with holes and thicker foils (0.1 mm -> 0.1056 mm)
+//#include "Mu2eG4/geom/stoppingTargetHoles_v02.txt" // 37 foil muon stopping target with holes and thicker foils (0.1 mm -> 0.1056 mm)
 
 //Alternative ST's by S. Middleton
 
@@ -70,7 +70,7 @@ double mu2e.detectorSystemZ0 = 10171.;   // mm  G4BL: (17730-7292=9801 mm)
 //#include "Mu2eG4/geom/stoppingTarget_cyinderdefault.txt"
 
 //Screen Mesh:
-//#include "Mu2eG4/geom/stoppingTarget_screenmesh.txt"
+#include "Mu2eG4/geom/stoppingTarget_screenmesh.txt"
 
 //Screen Hole:
 //#include "Mu2eG4/geom/stoppingTarget_screenhole.txt"
