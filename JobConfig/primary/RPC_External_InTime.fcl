@@ -1,5 +1,5 @@
 #
-# internal RPC with a flat virtual photon energy spectrum
+# External RPC, in time
 #
 #include "JobConfig/primary/prolog.fcl"
 process_name: ExternalRPCDigi
@@ -21,7 +21,7 @@ outputs : {
     rootout : {
         module_type  : RootOutput
         SelectEvents : ["TriggerPath"]
-        fileName     : "sim.owner.pions-g4s4-RPCExternal.version.sequencer.art"
+        fileName     : "sim.owner.pions-g4s4-RPCExternalInTime.version.sequencer.art"
         outputCommands: ["drop _*_*_*", "keep mu2e::*_*_*_*" ]
         
     }
@@ -37,11 +37,12 @@ physics.filters.DigiFilter.MinParticleMom : 10.0
 
 physics.producers.generate.pionStops.inputFiles: ["pionStops/nts.owner.pions-nts3.version.sequencer.root"]
 physics.producers.generate.pionStops.averageNumRecordsToUse : 500000
+// change these lines to talk to the output of Stage 4
 physics.producers.generate.pionStops.treeName : "stoppedPionDumper/stops"
 physics.producers.generate.pionStops.branchName : "stops"
 
 # customize the output
-services.TFileService.fileName: "nts.owner.externalRPC.version.sequencer.root"
-outputs.Output.fileName: "dig.owner.externalRPC.version.sequencer.art"
+services.TFileService.fileName: "nts.owner.externalRPCInTime.version.sequencer.root"
+outputs.Output.fileName: "dig.owner.externalRPCInTime.version.sequencer.art"
 physics.end_paths : [ EndPath] # needed for generate_fcl
 services.scheduler.wantSummary: true

@@ -1,8 +1,9 @@
 #
-# internal RPC with a flat virtual photon energy spectrum
+# internal RPC, in time
 #
 #include "JobConfig/primary/prolog.fcl"
 #include "Analyses/fcl/prolog.fcl"
+
 process_name: InternalRPCDigi
 
 source: { module_type : EmptyEvent }
@@ -33,7 +34,7 @@ outputs : {
     rootout : {
         module_type  : RootOutput
         SelectEvents : ["TriggerPath"]
-        fileName     : "sim.owner.pions-g4s4-RPCInternalDigi.version.sequencer.art"
+        fileName     : "sim.owner.pions-g4s4-RPCInternalInTime.version.sequencer.art"
         outputCommands: ["drop _*_*_*", "keep mu2e::*_*_*_*" ]
         
     }
@@ -47,13 +48,14 @@ physics.producers.generate.physics.ehi  : 140
 physics.producers.generate.physics.doHistograms : true
 physics.filters.DigiFilter.MinParticleMom : 10.0
 
+// change these lines to talk to the output of Stage 4
 physics.producers.generate.pionStops.inputFiles: ["pionStops/nts.owner.pions-nts3.version.sequencer.root"]
 physics.producers.generate.pionStops.averageNumRecordsToUse : 500000
 physics.producers.generate.pionStops.treeName : "stoppedPionDumper/stops"
 physics.producers.generate.pionStops.branchName : "stops"
 
 # customize the output
-services.TFileService.fileName: "nts.owner.internalRPC.version.sequencer.root"
-outputs.Output.fileName: "dig.owner.internalRPC.version.sequencer.art"
+services.TFileService.fileName: "nts.owner.internalRPCInTime.version.sequencer.root"
+outputs.Output.fileName: "dig.owner.internalRPCInTime.version.sequencer.art"
 physics.end_paths : [ EndPath] # needed for generate_fcl
 services.scheduler.wantSummary: true
