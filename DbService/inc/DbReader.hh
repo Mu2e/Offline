@@ -63,6 +63,7 @@ namespace mu2e {
     void setCacheLifetime(int clt=0) { _cacheLifetime = clt; }
     void setVerbose(int verbose) { _verbose = verbose; }
     void setTimeVerbose(int timeVerbose) { _timeVerbose = timeVerbose; }
+    void setSaveCsv(bool saveCsv) { _saveCsv = saveCsv; }
 
   private:
 
@@ -92,6 +93,7 @@ namespace mu2e {
     int _cacheLifetime;
     int _verbose;
     int _timeVerbose;
+    bool _saveCsv;
   };
 }
 #endif
