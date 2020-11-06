@@ -17,7 +17,7 @@ int mu2e::DbEngine::beginJob() {
   _reader.setDbId(_id);
   _reader.setVerbose(_verbose);
   _reader.setTimeVerbose(_verbose);
-
+  _reader.setSaveCsv(_saveCsv);
 
   // this is used to assign nominal tid's and cid's to tables that
   // are read in through a file, and are not declared in the database
