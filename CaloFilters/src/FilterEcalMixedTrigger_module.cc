@@ -352,7 +352,7 @@ namespace mu2e {
     _peaklist.clear();
 
     for (CaloTrigSeedCollection::const_iterator seedIt = caloTrigSeeds.begin(); seedIt != caloTrigSeeds.end(); ++seedIt){
-      disk= cal.crystal((int)seedIt->crystalid()).diskId();
+      disk= cal.crystal((int)seedIt->crystalid()).diskID();
       _fdiskpeak   = (float) disk;
       _Epeak   = seedIt->epeak();
       _tpeak   = seedIt->tpeak()+_TOFF;

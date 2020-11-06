@@ -21,7 +21,7 @@ int mu2e::ValCaloCrystalHit::fill(const mu2e::CaloHitCollection & coll,
 
    _hN->Fill(coll.size()); 
   for(auto sp : coll) {
-    _hI->Fill(sp.id());
+    _hI->Fill(sp.crystalID());
     _ht->Fill(sp.time());
     _hE->Fill(sp.energyDep());
   }

@@ -335,9 +335,9 @@ namespace mu2e {
     
     for(auto const& cchptr : cc.caloHitsPtrVector()){
       for(auto const& css : cssc){
-	if (css.energyDep() < _csme || css.crystalId() != cchptr->id()) continue;
+	if (css.energyDep() < _csme || css.crystalID() != cchptr->crystalID()) continue;
 	  double csstime = css.time();
-	  if(_debug > 2) std::cout << "Matching CaloShowerSim crystal id " << css.crystalId()
+	  if(_debug > 2) std::cout << "Matching CaloShowerSim crystal id " << css.crystalID()
                                    << " MCenergy " << css.energyDep() << " time " << csstime 
 	                           << " calohit time " << cchptr->time() << std::endl;
 	  if(fabs(csstime-cchptr->time()) < _ccmcdt) {

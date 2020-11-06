@@ -36,8 +36,6 @@
 
 #include "Mu2eUtilities/inc/SimParticleTimeOffset.hh"
 #include "RecoDataProducts/inc/CaloHit.hh"
-#include "RecoDataProducts/inc/CaloCluster.hh"
-#include "RecoDataProducts/inc/CaloCluster.hh"
 
 #include "BTrk/TrkBase/HelixParams.hh"
 #include "BTrk/TrkBase/TrkRep.hh"
@@ -87,8 +85,7 @@ namespace mu2e {
             _g4ModuleLabel(pset.get<std::string>("g4ModuleLabel")),
             _virtualDetectorLabel(pset.get<std::string>("virtualDetectorName")),
             _Ntup(0)
-          {
-          }
+          {}
 
           virtual ~ReadTrackCaloMatchingMVA() {}
           void beginJob();
@@ -102,7 +99,6 @@ namespace mu2e {
 
           int findBestCluster(TrkCaloMatchCollection const& trkCaloMatches, int trkId, double maxChi2);
           int findBestTrack(  TrkCaloMatchCollection const& trkCaloMatches, int cluId, double maxChi2);
-
 
           std::string      _caloCrystalModuleLabel;
 	  std::string      _caloReadoutModuleLabel;
@@ -370,7 +366,7 @@ namespace mu2e {
            {
                const CaloCluster& cluster = caloClusters.at(ic);
                std::vector<int> cryList;
-               for (auto cryPtr : cluster.caloHitsPtrVector()) cryList.push_back(int(cryPtr.get()- &CaloHits.at(0)));
+               for (auto cryPtr : cluster.caloHitsPtrVector()) cryList.push_back(std::distance(&CaloHits.at(0),cryPtr.get()));
 
                
                //Find the caloDigiMC in the truth map          
@@ -418,7 +414,7 @@ namespace mu2e {
 		   if (vdMapEntry != vdMap.end())
 		   {
 	              //simMom = vdMapEntry->second->momentum().mag();
-		      CLHEP::Hep3Vector simPos = cal.geomUtil().mu2eToDiskFF(cluster.diskId(), vdMapEntry->second->position());		  
+		      CLHEP::Hep3Vector simPos = cal.geomUtil().mu2eToDiskFF(cluster.diskID(), vdMapEntry->second->position());		  
 		   } 
 
         	   _clusimId[_nCluSim]     = sim->id().asInt();
@@ -444,7 +440,7 @@ namespace mu2e {
            for (unsigned int ic=0; ic<CaloHits.size();++ic)
            {
                CaloHit const& hit    = CaloHits.at(ic);
-               CLHEP::Hep3Vector crystalPos = cal.geomUtil().mu2eToDiskFF(cal.crystal(hit.id()).diskId(), cal.crystal(hit.id()).position());
+               CLHEP::Hep3Vector crystalPos = cal.geomUtil().mu2eToDiskFF(cal.crystal(hit.crystalID()).diskID(), cal.crystal(hit.crystalID()).position());
 
                _cryTime[_nHits]      = hit.time();
                _cryEdep[_nHits]      = hit.energyDep();
@@ -452,8 +448,8 @@ namespace mu2e {
                _cryPosX[_nHits]      = crystalPos.x();
                _cryPosY[_nHits]      = crystalPos.y();
                _cryPosZ[_nHits]      = crystalPos.z();
-               _cryId[_nHits]        = hit.id();
-               _crySecId[_nHits]     = cal.crystal(hit.id()).diskId();
+               _cryId[_nHits]        = hit.crystalID();
+               _crySecId[_nHits]     = cal.crystal(hit.crystalID()).diskID();
 
                ++_nHits;
            }

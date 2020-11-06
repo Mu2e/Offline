@@ -16,7 +16,7 @@ namespace mu2e {
                      float cluenergy, float clutime, float clucogx, float clucogy)  :
            _crystalId(crystalId),_epeak(epeak),_tpeak(tpeak),_rpeak(rpeak),_ring1max(ring1max),_ring1max2(ring1max2),_ring2max(ring2max),
            _cluenergy(cluenergy),_clutime(clutime),_clucogx(clucogx),_clucogy(clucogy)
-        {	 }
+        {         }
 
         void print(std::ostream& ost = std::cout) const;
 

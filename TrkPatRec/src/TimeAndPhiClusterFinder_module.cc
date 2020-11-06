@@ -23,7 +23,6 @@
 #include "RecoDataProducts/inc/StrawHitIndex.hh"
 #include "RecoDataProducts/inc/StrawHitFlag.hh"
 #include "RecoDataProducts/inc/TimeCluster.hh"
-#include "RecoDataProducts/inc/CaloCluster.hh"
 #include "TrkReco/inc/TrkUtilities.hh"
 #include "TrkReco/inc/TrkTimeCalculator.hh"
 #include "TrkPatRec/inc/TimeAndPhiClusterFinder_types.hh"

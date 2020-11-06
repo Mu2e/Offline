@@ -564,7 +564,7 @@ art::Ptr<SimParticle> const& primary, art::Event const& evt);
       tcinfo._tcalo = _ttcalc.caloClusterTime(*tc._caloCluster,_pitch);
       tcinfo._dtcalo = _ttcalc.caloClusterTime(*tc._caloCluster,_pitch) - tc._t0._t0;
       // calculate the cluster position.  Currently the Z is in disk coordinates and must be translated, FIXME!
-      XYZVec cog = Geom::toXYZVec(calo->geomUtil().mu2eToTracker(calo->geomUtil().diskFFToMu2e(tc._caloCluster->diskId(),tc._caloCluster->cog3Vector())));
+      XYZVec cog = Geom::toXYZVec(calo->geomUtil().mu2eToTracker(calo->geomUtil().diskFFToMu2e(tc._caloCluster->diskID(),tc._caloCluster->cog3Vector())));
       tcinfo._cog = cog;
     }
     // mc info

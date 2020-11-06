@@ -5,9 +5,9 @@
 #include "CommonMC/fcl/prolog.fcl"
 
 BEGIN_PROLOG
-  HitMakerBlindTime      : 500. # ns
-  HitMakerDigiSampling   : 5    # ns
-  HitMakerMeVToADC       : 16   # ns
+  HitMakerBlindTime      : 500. 
+  HitMakerDigiSampling   : 5    
+  HitMakerMeVToADC       : 16   
   HitMakerMinPeakADC     : 16
 END_PROLOG
 
@@ -25,7 +25,8 @@ CaloShowerStepMaker  :
     #physVolInfoInput       : "compressPVDetector"
     physVolInfoInput        : "g4run"
     caloMaterial            : ["G4_CESIUM_IODIDE", "Polyethylene092","CarbonFiber"]
-    compressAll             : false 
+    compressData            : true
+    eDepThreshold           : 0 
     diagLevel               : 0
 }
 
@@ -43,7 +44,7 @@ CaloShowerROMaker :
     diagLevel                : 0
 }
 
-
+#See doc-db 35519 for noise level discussion
 CaloDigiMaker : 
 {
     module_type             : CaloDigiMaker

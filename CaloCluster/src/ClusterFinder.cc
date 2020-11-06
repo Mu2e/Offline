@@ -20,9 +20,9 @@ namespace mu2e {
 	{ 
 	    clusterList_.clear();            
 	    clusterList_.push_front(crystalSeed_);
-	    crystalToVisit_.push(crystalSeed_->id());  
+	    crystalToVisit_.push(crystalSeed_->crystalID());  
 
-	    CaloCrystalList& liste = idHitVec[crystalSeed_->id()];	    
+	    CaloCrystalList& liste = idHitVec[crystalSeed_->crystalID()];	    
             liste.erase(std::find(liste.begin(), liste.end(), crystalSeed_));
 
 	    while (!crystalToVisit_.empty())

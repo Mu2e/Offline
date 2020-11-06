@@ -1019,13 +1019,13 @@ void DataInterface::fillEvent(boost::shared_ptr<ContentSelector> const &contentS
     for(iter=calohits->begin(); iter!=calohits->end(); iter++)
     {
       const mu2e::CaloHit& calohit = *iter;
-      int roid = calohit.id();
+      int roid = calohit.crystalID();
       int crystalid=0;
 
       if(geoservice->hasElement<mu2e::DiskCalorimeter>())
       {
         mu2e::GeomHandle<mu2e::DiskCalorimeter> diskCalo;
-        crystalid=diskCalo->caloInfo().crystalByRO(roid);
+        crystalid=diskCalo->caloIDMapper().crystalIDFromSiPMID(roid);
       }
       double time = calohit.time();
       double energy = calohit.energyDep();

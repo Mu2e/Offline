@@ -1,5 +1,5 @@
-#include "CaloReco/inc/TemplateProcessor.hh"
-#include "CaloReco/inc/TemplateUtil.hh"
+#include "CaloReco/inc/CaloTemplateWFProcessor.hh"
+#include "CaloReco/inc/CaloTemplateWFUtil.hh"
 #include "ConditionsService/inc/ConditionsHandle.hh"
 #include "art_root_io/TFileService.h"
 #include "art_root_io/TFileDirectory.h"
@@ -14,8 +14,8 @@
 
 namespace mu2e {
 
-   TemplateProcessor::TemplateProcessor(const Config& config) :
-      WaveformProcessor(),
+   CaloTemplateWFProcessor::CaloTemplateWFProcessor(const Config& config) :
+      CaloWaveformProcessor(),
       windowPeak_      (config.windowPeak()),
       minPeakAmplitude_(config.minPeakAmplitude()),
       numNoiseBins_    (config.numNoiseBins()),
@@ -32,33 +32,20 @@ namespace mu2e {
       resTime_         (),
       resTimeErr_      ()
    {	                 
-       if (diagLevel_ > 1)
-       {
-	  art::ServiceHandle<art::TFileService> tfs;
-	  art::TFileDirectory tfdir = tfs->mkdir("FastFixedDiag");
-	  _hTime     = tfdir.make<TH1F>("hTime",    "time;t (ns); Entries",                  100, 0., 2000);
-	  _hTimeErr  = tfdir.make<TH1F>("hTimeErr", "time error;dt (ns); Entries",           100, 0.,   10);
-	  _hEner     = tfdir.make<TH1F>("hAmp",     "Amplitude;A;Entries",                   200, 0.,  200);
-	  _hEnerErr  = tfdir.make<TH1F>("hAmpErr",  "Amplitude error;A_{err};Entries",       100, 0.,  100);
-	  _hNpeak    = tfdir.make<TH1F>("hNpeak",   "Number of peak fitted;N_{peak};Entries", 10, 0.,   10);
-	  _hChi2     = tfdir.make<TH1F>("hChi2",    "Chi2/ndf;#chi^{2}/ndf;Entries",         100, 0.,   20);
-	  _hchi2Amp  = tfdir.make<TH2F>("hchi2Amp", "Amp vs chi2/ndf",    50, 0.,   20, 100, 0, 2000);
-	  _hchi2Peak = tfdir.make<TH2F>("hchi2Peak", "Npeak vs chi2/ndf", 50, 0.,   20, 10, 0, 10);
-       }
+       if (diagLevel_ > 1) initHistos();
    }       
 
-
    
    
-   void TemplateProcessor::initialize()
+   void CaloTemplateWFProcessor::initialize()
    {
        fmutil_.initialize();
    }
 
 
-   void TemplateProcessor::extract(const std::vector<double>& xInput, const std::vector<double>& yInput)
+   void CaloTemplateWFProcessor::extract(const std::vector<double>& xInput, const std::vector<double>& yInput)
    {       
-       if (diagLevel_>2) std::cout<<"TemplateProcessor start"<<std::endl;
+       if (diagLevel_>2) std::cout<<"CaloTemplateWFProcessor start"<<std::endl;
        
        reset();
        fmutil_.setXYVector(xInput, yInput);
@@ -122,10 +109,10 @@ namespace mu2e {
 
       
    //----------------------------------------------------------------------------------------------------------------------------------
-   void TemplateProcessor::reset() {resAmp_.clear(); resAmpErr_.clear(); resTime_.clear(); resTimeErr_.clear();ndf_ = 0;chi2_ = 999; fmutil_.reset();}
+   void CaloTemplateWFProcessor::reset() {resAmp_.clear(); resAmpErr_.clear(); resTime_.clear(); resTimeErr_.clear();ndf_ = 0;chi2_ = 999; fmutil_.reset();}
 
    //---------------------------------------------------------------------------------------------------------------------------------------------
-   void TemplateProcessor::setPrimaryPeakPar1(const std::vector<double>& xvec, const std::vector<double>& yvecOrig)
+   void CaloTemplateWFProcessor::setPrimaryPeakPar1(const std::vector<double>& xvec, const std::vector<double>& yvecOrig)
    {        
         if (windowPeak_ > xvec.size()) return;
         std::vector<double> parInit,yvec(yvecOrig);
@@ -164,7 +151,7 @@ namespace mu2e {
   
 
    //---------------------------------------------------------------------------------------------------------------------------------------------
-   void TemplateProcessor::setPrimaryPeakPar2(const std::vector<double>& xvec, const std::vector<double>& yvecOrig)
+   void CaloTemplateWFProcessor::setPrimaryPeakPar2(const std::vector<double>& xvec, const std::vector<double>& yvecOrig)
    {        
         if (windowPeak_ > xvec.size()) return;
         std::vector<double> parInit,yvec(yvecOrig);
@@ -186,7 +173,7 @@ namespace mu2e {
 	    parInit.push_back(ymaxEstimate); 
             parInit.push_back(xmaxEstimate);	     
             	    
-	    if (diagLevel_ > 2) std::cout<<"[TemplateProcessor] Found primary peak "<<xmaxEstimate<<std::endl;
+	    if (diagLevel_ > 2) std::cout<<"[CaloTemplateWFProcessor] Found primary peak "<<xmaxEstimate<<std::endl;
 
 	    fmutil_.setPar(parInit);
 	    for (unsigned j=0;j<xvec.size();++j) ywork[j] -= fmutil_.eval_logn(xvec[j],parInit.size()-fmutil_.nParFcn());
@@ -208,8 +195,8 @@ namespace mu2e {
     }
 
     //--------------------------------------------------------------------------------------------------
-    void TemplateProcessor::findRisingPeak(int ipeak, std::vector<double>& parInit, const std::vector<double>& xvec, 
-                                           const std::vector<double>& yvec, std::vector<double>& ywork)
+    void CaloTemplateWFProcessor::findRisingPeak(int ipeak, std::vector<double>& parInit, const std::vector<double>& xvec, 
+                                                 const std::vector<double>& yvec, std::vector<double>& ywork)
     {
 	//find where the peak "starts" - check it is far away from previous peak
 	unsigned istartPeak(ipeak - windowPeak_);
@@ -252,7 +239,7 @@ namespace mu2e {
 
 
     //--------------------------------------------------------------------------------------------------
-    void TemplateProcessor::setSecondaryPeakPar(const std::vector<double>& xvec, const std::vector<double>& yvec)
+    void CaloTemplateWFProcessor::setSecondaryPeakPar(const std::vector<double>& xvec, const std::vector<double>& yvec)
     {               
         if (windowPeak_ > xvec.size()) return;
 	
@@ -282,7 +269,7 @@ namespace mu2e {
 
 
    //------------------------------------------------------------
-   double TemplateProcessor::estimatePeakTime(const std::vector<double>& xvec, const std::vector<double>& ywork, int ic)
+   double CaloTemplateWFProcessor::estimatePeakTime(const std::vector<double>& xvec, const std::vector<double>& ywork, int ic)
    {       
        double y1      = fmutil_.sumSquare(xvec, ywork, xvec[ic]  , ic-windowPeak_, ic+windowPeak_);
        double y2      = fmutil_.sumSquare(xvec, ywork, xvec[ic]-1, ic-windowPeak_, ic+windowPeak_);
@@ -296,7 +283,7 @@ namespace mu2e {
    }
 
    //------------------------------------------------------------------------------------------
-   bool TemplateProcessor::checkPeakDist(double x0)
+   bool CaloTemplateWFProcessor::checkPeakDist(double x0)
    {  
        for (unsigned i=0;i<fmutil_.nPeaks();++i) 
        {
@@ -307,14 +294,29 @@ namespace mu2e {
    }
    
    //---------------------------------------------------------------------------------------------------------------------------------------
-   void TemplateProcessor::plot(const std::string& name) const {fmutil_.plotFit(name);}
+   void CaloTemplateWFProcessor::plot(const std::string& name) const {fmutil_.plotFit(name);}
   
    //---------------------------------------------------------------------------------------------------------------------------------------
-   void TemplateProcessor::dump(const std::string& name, const std::vector<double>& val) const 
+   void CaloTemplateWFProcessor::dump(const std::string& name, const std::vector<double>& val) const 
    {
       std::cout<<name<<std::endl;
       for (auto h : val) std::cout<<h<<" ";
       std::cout<<std::endl;     
+   }
+
+   //---------------------------------------------------------------------------------------------------------------------------------------
+   void CaloTemplateWFProcessor::initHistos()
+   {
+       art::ServiceHandle<art::TFileService> tfs;
+       art::TFileDirectory tfdir = tfs->mkdir("FastFixedDiag");
+       _hTime     = tfdir.make<TH1F>("hTime",    "time;t (ns); Entries",                  100, 0., 2000);
+       _hTimeErr  = tfdir.make<TH1F>("hTimeErr", "time error;dt (ns); Entries",           100, 0.,   10);
+       _hEner     = tfdir.make<TH1F>("hAmp",     "Amplitude;A;Entries",                   200, 0.,  200);
+       _hEnerErr  = tfdir.make<TH1F>("hAmpErr",  "Amplitude error;A_{err};Entries",       100, 0.,  100);
+       _hNpeak    = tfdir.make<TH1F>("hNpeak",   "Number of peak fitted;N_{peak};Entries", 10, 0.,   10);
+       _hChi2     = tfdir.make<TH1F>("hChi2",    "Chi2/ndf;#chi^{2}/ndf;Entries",         100, 0.,   20);
+       _hchi2Amp  = tfdir.make<TH2F>("hchi2Amp", "Amp vs chi2/ndf",    50, 0.,   20, 100, 0, 2000);
+       _hchi2Peak = tfdir.make<TH2F>("hchi2Peak", "Npeak vs chi2/ndf", 50, 0.,   20, 10, 0, 10);
    }
 
 }
@@ -322,7 +324,7 @@ namespace mu2e {
 
 /*
    //alternative peak finding algorithm, performs slightly below the others but kept for the record
-   void TemplateProcessor::setPrimaryPeakPar1(const std::vector<double>& xvec, const std::vector<double>& yvec)
+   void CaloTemplateWFProcessor::setPrimaryPeakPar1(const std::vector<double>& xvec, const std::vector<double>& yvec)
    {        
        
 	if (2*windowPeak_ >= xvec.size()) return;

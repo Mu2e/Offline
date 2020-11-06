@@ -434,12 +434,12 @@ namespace mu2e {
      map<int,int> showerMap2;
      for (const auto& showerSim : caloShowerSims)
      {
-         showerMap[showerSim.crystalId()] += showerSim.energyDep();
-         for (const auto& step : showerSim.caloShowerSteps()) showerMap2[showerSim.crystalId()] += step->nCompress();
+         showerMap[showerSim.crystalID()] += showerSim.energyDep();
+         for (const auto& step : showerSim.caloShowerSteps()) showerMap2[showerSim.crystalID()] += step->nCompress();
          _hCaTime->Fill(showerSim.time());
 
          if ( _diagLevel > 1 && _nAnalyzed < _maxFullPrint )
-	   std::cout<<"Readback: caloshower in crystal "<< showerSim.crystalId()<<" eDep = "<<showerSim.energyDep()
+	   std::cout<<"Readback: caloshower in crystal "<< showerSim.crystalID()<<" eDep = "<<showerSim.energyDep()
 	            <<" time = "<<showerSim.time()<<std::endl;
      }
 
@@ -458,10 +458,10 @@ namespace mu2e {
          const CaloHit &hit     = CaloHits.at(ic);
 
          totalEdep += hit.energyDep();
-         hit_crystals.insert(hit.id());
+         hit_crystals.insert(hit.crystalID());
 
 	 if ( _diagLevel > 1 && _nAnalyzed < _maxFullPrint )
-	   cout<<"Readback: caloHit id = "<<hit.id()<<" "<<"energy = "<<hit.energyDep()<<" time= "<<hit.time()<<endl;
+	   cout<<"Readback: caloHit id = "<<hit.crystalID()<<" "<<"energy = "<<hit.energyDep()<<" time= "<<hit.time()<<endl;
      }
 
      _hCaEdep->Fill(totalEdep);

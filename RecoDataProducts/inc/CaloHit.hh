@@ -10,43 +10,44 @@
 
 namespace mu2e {
 
-  class CaloHit
-  {
-      public:
-	 CaloHit(): _crystalId(-1),_nROId(0),_time(0.),_timeErr(0.),_eDep(0.),_eDepErr(0.),_recoCaloDigis()
-	 {}
+   class CaloHit
+   {
+       public:
+         CaloHit(): crystalId_(-1),nSiPMs_(0),time_(0.),timeErr_(0.),eDep_(0.),eDepErr_(0.),recoCaloDigis_()
+          {}
 
-	 CaloHit(int crystalId, int nRoid, double time, double timeErr, double eDep, double eDepErr,  
-	                std::vector<art::Ptr<CaloRecoDigi> > &CaloRecoDigi)  :
-                        _crystalId(crystalId),_nROId(nRoid),_time(time),_timeErr(timeErr),_eDep(eDep),_eDepErr(eDepErr),
-			_recoCaloDigis(CaloRecoDigi)
-         {}
+          CaloHit(int crystalId, int nSiPMs, float time, float timeErr, float eDep, float eDepErr, 
+                  std::vector<art::Ptr<CaloRecoDigi>> &CaloRecoDigi)  :
+                    crystalId_(crystalId),nSiPMs_(nSiPMs),time_(time),timeErr_(timeErr),eDep_(eDep),
+                    eDepErr_(eDepErr),recoCaloDigis_(CaloRecoDigi)
+          {}
 
-	       int                                    id             () const { return _crystalId; }
-	       int                                    nROId          () const { return _nROId;}
-	       double                                 time           () const { return _time;}
-	       double                                 timeErr        () const { return _timeErr;}
-               double                                 energyDep      () const { return _eDep;} 
-               double                                 energyDepErr   () const { return _eDepErr;} 
-	       double                                 energyDepTot   () const { return _eDep*_nROId;}
-	       double                                 energyDepTotErr() const { return _eDepErr*_nROId;}
-	 const std::vector<art::Ptr<CaloRecoDigi>>&   recoCaloDigis  () const { return _recoCaloDigis;}
-
-
-       private:
-	 int        _crystalId;
-	 int        _nROId;
-	 double     _time;             
-	 double     _timeErr;             
-	 double     _eDep;        
-	 double     _eDepErr;        
-	 std::vector<art::Ptr<CaloRecoDigi> > _recoCaloDigis;
-
-  };
+          int                                          crystalID      () const { return crystalId_; }
+          int                                          nSiPMs         () const { return nSiPMs_;}
+          float                                        time           () const { return time_;}
+          float                                        timeErr        () const { return timeErr_;}
+          float                                        energyDep      () const { return eDep_;} 
+          float                                        energyDepErr   () const { return eDepErr_;} 
+          float                                        energyDepTot   () const { return eDep_*nSiPMs_;}
+          float                                        energyDepTotErr() const { return eDepErr_*nSiPMs_;}
+          const std::vector<art::Ptr<CaloRecoDigi>>&   recoCaloDigis  () const { return recoCaloDigis_;}
 
 
-  typedef std::vector<mu2e::CaloHit> CaloHitCollection;
-  typedef std::map<art::Ptr<CaloHit>,art::Ptr<CaloHit>> CaloHitRemapping;
+        private:
+          int    crystalId_;
+          int    nSiPMs_;
+          float  time_;             
+          float  timeErr_;             
+          float  eDep_;        
+          float  eDepErr_;        
+          std::vector<art::Ptr<CaloRecoDigi>> recoCaloDigis_;
+
+   };
+   
+   using CaloHitPtr        = art::Ptr<CaloHit>;
+   using CaloHitPtrVector  = std::vector<CaloHitPtr>;
+   using CaloHitCollection = std::vector<mu2e::CaloHit> ;
+   using CaloHitRemapping  = std::map<art::Ptr<CaloHit>,art::Ptr<CaloHit>>;
 }
 
 #endif

@@ -1,7 +1,7 @@
 // case checks: just one energy deposit, or two bins. 
 // refit the rising peak
 
-#include "CaloReco/inc/RawProcessor.hh"
+#include "CaloReco/inc/CaloRawWFProcessor.hh"
 #include "art_root_io/TFileService.h"
 #include "art_root_io/TFileDirectory.h"
 
@@ -18,8 +18,8 @@
 namespace mu2e {
         
   //-----------------------------------------------------------------------------
-  RawProcessor::RawProcessor(const Config& config) :
-     WaveformProcessor(),
+  CaloRawWFProcessor::CaloRawWFProcessor(const Config& config) :
+     CaloWaveformProcessor(),
      windowPeak_      (config.windowPeak()),
      minPeakAmplitude_(config.minPeakAmplitude()),
      shiftTime_       (config.shiftTime()),
@@ -38,11 +38,11 @@ namespace mu2e {
 
 
    //---------------------------
-   void RawProcessor::initialize() {}
+   void CaloRawWFProcessor::initialize() {}
 
 
    //---------------------------
-   void RawProcessor::reset()
+   void CaloRawWFProcessor::reset()
    {
       xvec_.clear();
       yvec_.clear();
@@ -60,7 +60,7 @@ namespace mu2e {
 
 
    //------------------------------------------------------------------------------------------
-   void RawProcessor::extract(const std::vector<double> &xInput, const std::vector<double> &yInput)
+   void CaloRawWFProcessor::extract(const std::vector<double> &xInput, const std::vector<double> &yInput)
    {
 
       reset();
@@ -79,7 +79,7 @@ namespace mu2e {
       }
       int nPeak = peakLocation.size();
 
-      if (diagLevel_ > 1) std::cout<<"[RawProcessor] Peaks found : "<<nPeak<<std::endl;
+      if (diagLevel_ > 1) std::cout<<"[CaloRawWFProcessor] Peaks found : "<<nPeak<<std::endl;
 
 
        nPeaks_ = nPeak;
@@ -97,7 +97,7 @@ namespace mu2e {
 
    
    //---------------------------------------
-   void RawProcessor::plot(const std::string& pname) const
+   void CaloRawWFProcessor::plot(const std::string& pname) const
    {
       TH1F h("test","Amplitude vs time",xvec_.size(),xvec_.front()-2.5,xvec_.back()+2.5);
       h.GetXaxis()->SetTitle("Time (ns)");

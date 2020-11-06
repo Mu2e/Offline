@@ -484,7 +484,7 @@ namespace mu2e {
     double   tandip        = hel->tanDip();
     double   mom           = helixRadius*mm2MeV/std::cos( std::atan(tandip));
     double   beta          = _tpart.beta(mom);
-    CLHEP::Hep3Vector        gpos = _hfinder._calorimeter->geomUtil().diskToMu2e(HfResult._timeClusterPtr->caloCluster()->diskId(),
+    CLHEP::Hep3Vector        gpos = _hfinder._calorimeter->geomUtil().diskToMu2e(HfResult._timeClusterPtr->caloCluster()->diskID(),
                                                                         HfResult._timeClusterPtr->caloCluster()->cog3Vector());
     CLHEP::Hep3Vector        tpos = _hfinder._calorimeter->geomUtil().mu2eToTracker(gpos);
     double   pitchAngle    = M_PI/2. - atan(tandip);

@@ -188,9 +188,9 @@ namespace mu2e {
       calorimeter_ = ch.get();
 
       ConditionsHandle<CalorimeterCalibrations> calorimeterCalibrations("ignored");
-      if (calorimeter_->nCrystal()<1 || calorimeter_->caloInfo().nROPerCrystal()<1) return;
+      if (calorimeter_->nCrystal()<1 || calorimeter_->caloInfo().getInt("nSiPMPerCrystal")<1) return;
       
-      unsigned nWaveforms   = calorimeter_->nCrystal()*calorimeter_->caloInfo().nROPerCrystal();
+      unsigned nWaveforms   = calorimeter_->nCrystal()*calorimeter_->caloInfo().getInt("nSiPMPerCrystal");
       unsigned waveformSize = (mbtime_ - blindTime_ + endTimeBuffer_) / digiSampling_;     
       std::vector<std::vector<double>> waveforms(nWaveforms,std::vector<double>(waveformSize,0.0));
       std::vector<int>                 pedestals(nWaveforms,0);
@@ -310,8 +310,8 @@ namespace mu2e {
       unsigned totalPE(0);
       for (const auto& CaloShowerRO : CaloShowerROs)
       {
-          int ROID = CaloShowerRO.ROID();
-          auto& waveform = waveforms.at(ROID);
+          int SiPMID = CaloShowerRO.SiPMID();
+          auto& waveform = waveforms.at(SiPMID);
           for (const float PEtime : CaloShowerRO.PETime())
           {        
               float       time           = PEtime - blindTime_;         
@@ -320,7 +320,7 @@ namespace mu2e {
               int         stopSample     = std::min(startSample+pulse.size(), waveform.size());
               
               for (int timeSample = startSample; timeSample < stopSample; ++timeSample) 
-                 waveform.at(timeSample) += pulse.at(timeSample - startSample)/calorimeterCalibrations->peMeV(ROID)*MeVToADC_;
+                 waveform.at(timeSample) += pulse.at(timeSample - startSample)/calorimeterCalibrations->peMeV(SiPMID)*MeVToADC_;
               
           }
           totalPE += CaloShowerRO.NPE();
@@ -419,25 +419,25 @@ namespace mu2e {
 
 
   //-------------------------------------------------------------------------------------------------------------------
-  void CaloDigiMaker::diag0(int iRO, const std::vector<int>& wf)
+  void CaloDigiMaker::diag0(int iSiPM, const std::vector<int>& wf)
   {
       if (*std::max_element(wf.begin(),wf.end())<1) return;
-      std::cout<<"CaloDigiMaker::fillOutoutRO] Waveform content for readout "<<iRO<<std::endl;
+      std::cout<<"CaloDigiMaker::fillOutoutRO] Waveform content for readout "<<iSiPM<<std::endl;
       for (unsigned i=0;i<wf.size();++i) {if (i%10==0 && i>0) std::cout<<"- "; std::cout<<wf[i]<<" ";}
       std::cout<<std::endl;
   }
-  void CaloDigiMaker::diag1(int iRO, double time, size_t peakP, const std::vector<int>& wf, int ped)
+  void CaloDigiMaker::diag1(int iSiPM, double time, size_t peakP, const std::vector<int>& wf, int ped)
   {
-      std::cout<<"Created caloDigi with roID = "<<iRO<<"  t0="<<time<<" peak="<<peakP<<" and content ";
+      std::cout<<"Created caloDigi with SiPM = "<<iSiPM<<"  t0="<<time<<" peak="<<peakP<<" and content ";
       for (const auto  &v : wf) {if (v-ped >=minPeakADC_ ) std::cout<< "**"; std::cout<<v-ped<<" ";}
       std::cout<<std::endl;
   }
   void CaloDigiMaker::diag2(const CaloDigiCollection& caloDigiColl)
   {      
       std::map<int,double> enerMap;
-      for (const auto& digi : caloDigiColl) enerMap[digi.roId()] += digi.waveform().at(digi.peakpos())/MeVToADC_;
-      std::cout<<"[CaloDigiMaker] energy equivalent per RoID"<<std::endl;
-      for (auto& kv : enerMap) std::cout<<" roID: "<<kv.first<<"   Ener: "<<kv.second<<std::endl;
+      for (const auto& digi : caloDigiColl) enerMap[digi.SiPMID()] += digi.waveform().at(digi.peakpos())/MeVToADC_;
+      std::cout<<"[CaloDigiMaker] energy equivalent per SiPMID"<<std::endl;
+      for (auto& kv : enerMap) std::cout<<" SiPMID: "<<kv.first<<"   Ener: "<<kv.second<<std::endl;
   }
 
 
@@ -453,9 +453,9 @@ namespace mu2e {
        for (unsigned i=0;i<waveforms.size();++i)
        {
           const auto& wf = waveforms[i];
-          double xv[9999],yv[9999];
-          for (unsigned j=0;j<wf.size();++j) {xv[j]=j*digiSampling_+0.5*digiSampling_;yv[j]=wf[j]-pedestals[i]; maxe=std::max(maxe,std::abs(yv[j]));}
-          gr[i] = TGraph(wf.size(),xv,yv);
+          std::vector<double> xv,yv;
+          for (unsigned j=0;j<wf.size();++j) {xv.push_back(j*digiSampling_+0.5*digiSampling_);yv.push_back(wf[j]-pedestals[i]); maxe=std::max(maxe,std::abs(yv[j]));}
+          gr[i] = TGraph(xv.size(),xv.data(),yv.data());
           gr[i].SetLineColor(i%20+1);
        }
 

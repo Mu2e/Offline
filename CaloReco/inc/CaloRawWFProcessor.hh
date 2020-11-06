@@ -1,8 +1,8 @@
-#ifndef RawProcessor_HH
-#define RawProcessor_HH
+#ifndef CaloRawWFProcessor_HH
+#define CaloRawWFProcessor_HH
 
 
-#include "CaloReco/inc/WaveformProcessor.hh"
+#include "CaloReco/inc/CaloWaveformProcessor.hh"
 #include "fhiclcpp/types/Atom.h"
 #include "fhiclcpp/types/Sequence.h"
 #include <vector>
@@ -11,7 +11,7 @@
 namespace mu2e {
 
 
-  class RawProcessor : public WaveformProcessor {
+  class CaloRawWFProcessor : public CaloWaveformProcessor {
      
 
      public:
@@ -28,10 +28,10 @@ namespace mu2e {
         };
 
 
-        RawProcessor(const Config& config);
+        CaloRawWFProcessor(const Config& config);
 
         virtual void   initialize() override;
-	virtual void   reset() override;
+        virtual void   reset() override;
         virtual void   extract(const std::vector<double> &xInput, const std::vector<double> &yInput) override;
         virtual void   plot   (const std::string& pname) const override;
 
@@ -43,7 +43,7 @@ namespace mu2e {
         virtual double time(unsigned int i)         const override {return resTime_.at(i);}
         virtual double timeErr(unsigned int i)      const override {return resTimeErr_.at(i);}  
         virtual bool   isPileUp(unsigned int i)     const override {return nPeaks_ > 1;}
-	
+        
     private:
        
        int                 windowPeak_;

@@ -150,7 +150,7 @@ void CaloClusterFast::extractRecoDigi(const art::Handle<CaloDigiCollection>& cal
 
 	mu2e::GeomHandle<mu2e::Calorimeter> ch;
 	const Calorimeter* cal = ch.get();
-	int nro = cal->caloInfo().nROPerCrystal();
+	int nro = cal->caloInfo().getInt("nSiPMPerCrystal");
 
 	unsigned offsetT0_ = unsigned(blindTime_/digiSampling_);
 	unsigned nBinTime  = unsigned (mbtime_ - blindTime_ + endTimeBuffer_) / digiSampling_;
@@ -164,11 +164,11 @@ void CaloClusterFast::extractRecoDigi(const art::Handle<CaloDigiCollection>& cal
 
 	for (const auto& caloDigi : caloDigis)
       	{
-           if (caloDigi.roId() % nro) continue;
+           if (caloDigi.SiPMID() % nro) continue;
 
            double t0    = caloDigi.t0();
-           int    roId  = caloDigi.roId();
-           int    crId  = roId / nro; //cal->crystalByRO(roId); use short form for efficiency
+           int    roId  = caloDigi.SiPMID();
+           int    crId  = roId / nro; //cal->caloIDMapper().crystalIDFromSiPMID(roId); use short form for efficiency
            //double adc2MeV  = calorimeterCalibrations->ADC2MeV(roId);
            const auto& waveform = caloDigi.waveform();
 
@@ -301,11 +301,9 @@ void CaloClusterFast::extractRecoDigi(const art::Handle<CaloDigiCollection>& cal
 			yc /= cluEnergy;
 
 			double time  = (seed->index_+offsetT0_)*digiSampling_-timeCorrection_;
-			int iSection = cal->crystal(seed->crId_).diskId();
+			int iSection = cal->crystal(seed->crId_).diskID();
 
-			CaloCluster cluster(iSection,time,0.0,eDep,0.0,hitsPtr,ncry,0.0);
-			cluster.cog3Vector(CLHEP::Hep3Vector(xc,yc,0));
-
+			CaloCluster cluster(iSection,time,0.0,eDep,0.0,CLHEP::Hep3Vector(xc,yc,0),hitsPtr,ncry,0.0);
 			recoClusters.emplace_back(std::move(cluster));
          	}
 

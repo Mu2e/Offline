@@ -202,7 +202,7 @@ namespace mu2e {
 
     int roId;
     for (const auto& caloDigi : caloDigis){
-      roId=caloDigi.roId();
+      roId=caloDigi.SiPMID();
       if (roId==0) continue;
     }
 

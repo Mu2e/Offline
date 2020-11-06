@@ -22,19 +22,17 @@ namespace mu2e {
     class ClusterAssociator 
     {
         public:
-            typedef art::Ptr<CaloHit>        CaloHitPtr;                     
-            typedef std::vector<CaloHitPtr > CaloHitPtrVector;                     
+            using CaloHitPtrVector = std::vector<art::Ptr<CaloHit>> ;                     
 
             ClusterAssociator(const Calorimeter& cal): cal_(cal), associatedSplitId_(), associatedMainId_() {};              
 
             
-            void      associateSplitOff(const CaloProtoClusterCollection&, const CaloProtoClusterCollection&,double,double);           
-            void      associateMain    (const CaloProtoClusterCollection&, double, double, int);  
-            double    closestDistance  (const CaloHitPtrVector&, const CaloHitPtrVector&);
+            void    associateSplitOff(const CaloProtoClusterCollection&, const CaloProtoClusterCollection&,double,double);           
+            void    associateMain    (const CaloProtoClusterCollection&, double, double, int);  
+            double  closestDistance  (const CaloHitPtrVector&, const CaloHitPtrVector&);
 
             const std::vector<unsigned>& associatedMainId (unsigned i) const {return associatedMainId_.find(i)->second;}
-                   unsigned              associatedSplitId(unsigned i) const {return associatedSplitId_.find(i)->second;}
-
+            unsigned                     associatedSplitId(unsigned i) const {return associatedSplitId_.find(i)->second;}
 
         private:
             const Calorimeter& cal_;

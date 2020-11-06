@@ -45,11 +45,13 @@ namespace mu2e {
 
        // Fit the top of the pulse shape to smooth small wiggles -> speed up fit convergence (wiggles = local minima = huge pain)
        // adjust the fitted bounds to get a smooth transition between shape and fit
-       double maxBin = pulseShape.GetMaximumBin();
-       pulseShape.Fit("pol6","q0","O0",pulseShape.GetBinCenter(maxBin)-20, pulseShape.GetBinCenter(maxBin)+40);
+       const float fitlevel(0.75);
+       int istart(pulseShape.GetMaximumBin()),iend(pulseShape.GetMaximumBin());
+       while(istart>0)                    {if (pulseShape.GetBinContent(istart)<fitlevel) break; --istart;}
+       while(iend<pulseShape.GetNbinsX()) {if (pulseShape.GetBinContent(iend)  <fitlevel) break; ++iend;}
+
+       pulseShape.Fit("pol6","q","",pulseShape.GetBinCenter(istart), pulseShape.GetBinCenter(iend));
        TF1 *funPeak = pulseShape.GetFunction("pol6");
-       int istart = maxBin-int(20/digiStep_);
-       int iend   = maxBin+int(40/digiStep_);
        while (istart < iend) {if (fabs(pulseShape.GetBinContent(istart)-funPeak->Eval(pulseShape.GetBinCenter(istart))) < 0.001) break; ++istart;}
        while (iend > istart) {if (fabs(pulseShape.GetBinContent(iend)-funPeak->Eval(pulseShape.GetBinCenter(iend))) < 0.001) break; --iend;}
        for (int i=istart; i<iend;++i) pulseShape.SetBinContent(i,funPeak->Eval(pulseShape.GetBinCenter(i)));

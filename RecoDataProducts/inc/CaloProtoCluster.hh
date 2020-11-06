@@ -11,39 +11,34 @@ namespace mu2e {
    class CaloProtoCluster {
        
        public:
-           typedef art::Ptr<CaloHit>       CaloHitPtr;
-           typedef std::vector<CaloHitPtr> CaloHitPtrVector;
+          CaloProtoCluster() : 
+             _time(0.),_timeErr(0.0),_energyDep(0.),_energyDepErr(0.0),_caloHitsPtrVector(),_isSplit(false)
+          {}
 
-	   CaloProtoCluster() : 
-	      _time(0.),_timeErr(0.0),_energyDep(0.),_energyDepErr(0.0),_caloHitsPtrVector(),_isSplit(false)
-	   {}
+          CaloProtoCluster(float time, float timeErr, float energy, float energyErr, 
+                           CaloHitPtrVector caloHit, bool isSplit) : 
+             _time(time),_timeErr(timeErr),_energyDep(energy),_energyDepErr(energyErr),
+             _caloHitsPtrVector(caloHit),_isSplit(isSplit)
+          {}
 
-	   CaloProtoCluster(double time, double timeErr, double energy, double energyErr, 
-	                    CaloHitPtrVector caloHit, bool isSplit) : 
-	      _time(time),_timeErr(timeErr),_energyDep(energy),_energyDepErr(energyErr),
-	      _caloHitsPtrVector(caloHit),_isSplit(isSplit)
-	   {}
-
-
-	         double              time()              const {return _time;}            
-	         double              timeErr()           const {return _timeErr;}            
-	         double              energyDep()         const {return _energyDep;}       
-	         double              energyDepErr()      const {return _energyDepErr;}       
-	   const CaloHitPtrVector&   caloHitsPtrVector() const {return _caloHitsPtrVector;}
-	         bool                isSplit()           const {return _isSplit;} 
-
+          float                    time()              const {return _time;}            
+          float                    timeErr()           const {return _timeErr;}            
+          float                    energyDep()         const {return _energyDep;}       
+          float                    energyDepErr()      const {return _energyDepErr;}       
+          const CaloHitPtrVector&  caloHitsPtrVector() const {return _caloHitsPtrVector;}
+          bool                     isSplit()           const {return _isSplit;} 
 
         private:
-	   double            _time;       
-	   double            _timeErr;       
-	   double            _energyDep;  
-	   double            _energyDepErr;  
-	   CaloHitPtrVector  _caloHitsPtrVector;
-	   bool              _isSplit;    
+          float             _time;       
+          float             _timeErr;       
+          float             _energyDep;  
+          float             _energyDepErr;  
+          CaloHitPtrVector  _caloHitsPtrVector;
+          bool              _isSplit;    
 
    };
    
-   typedef std::vector<mu2e::CaloProtoCluster> CaloProtoClusterCollection;
+   using CaloProtoClusterCollection = std::vector<mu2e::CaloProtoCluster>;
 } 
 
 #endif 

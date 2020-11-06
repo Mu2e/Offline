@@ -429,7 +429,7 @@ art::Ptr<mu2e::CaloShowerStep> mu2e::CompressStepPointMCs::copyCaloShowerStep(co
       ++_caloStepDiag._nSimGenerations;
     }
     
-    CaloShowerStep new_step(old_step.volumeId(), newSimPtr, old_step.nCompress(), old_step.time(), old_step.energyDepG4(), old_step.energyDepBirks(), old_step.momentumIn(), old_step.position());
+    CaloShowerStep new_step(old_step.volumeG4ID(), newSimPtr, old_step.nCompress(), old_step.time(), old_step.energyDepG4(), old_step.energyDepBirks(), old_step.momentumIn(), old_step.position());
     
     _newCaloShowerSteps.back()->push_back(new_step);
     

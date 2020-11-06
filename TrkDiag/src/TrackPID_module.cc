@@ -108,7 +108,7 @@ namespace mu2e {
 	  tchpid[TrkCaloHitPID::DeltaE] = cc->energyDep() - sqrt(trkmom.Mag2());
 	  tchpid[TrkCaloHitPID::ClusterLen] = tchs.hitLen();
 	  // move into detector coordinates.  Yikes!!
-	  XYZVec cpos = Geom::toXYZVec(calo->geomUtil().mu2eToTracker(calo->geomUtil().diskFFToMu2e( cc->diskId(), cc->cog3Vector())));
+	  XYZVec cpos = Geom::toXYZVec(calo->geomUtil().mu2eToTracker(calo->geomUtil().diskFFToMu2e( cc->diskID(), cc->cog3Vector())));
 	  tchpid[TrkCaloHitPID::RPOCA] = sqrt(cpos.Perp2());
 	  // compute transverse direction WRT position
 	  cpos.SetZ(0.0);

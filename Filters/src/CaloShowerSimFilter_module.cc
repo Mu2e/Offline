@@ -70,7 +70,7 @@ namespace mu2e {
       double energy = css.energyDep();
       etot += energy;
       if(debug_ > 0)std::cout <<"SimParticle PDG = " << sp->pdgId() 
-      << " Crystal " << css.crystalId()
+      << " Crystal " << css.crystalID()
       << " Shower Energy = " << energy << std::endl;
       auto pdgfnd = std::find(pdgs_.begin(),pdgs_.end(),sp->pdgId());
       if(pdgfnd != pdgs_.end() ){
