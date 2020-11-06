@@ -31,12 +31,12 @@
 namespace mu2e {
 
 
-  class CaloInspector : public art::EDAnalyzer {
+  class CaloMCInspector : public art::EDAnalyzer {
 
      public:
 
-       explicit CaloInspector(fhicl::ParameterSet const& pset);
-       virtual ~CaloInspector() { }
+       explicit CaloMCInspector(fhicl::ParameterSet const& pset);
+       virtual ~CaloMCInspector() { }
 
        virtual void beginJob();
        virtual void endJob() {};
@@ -56,7 +56,7 @@ namespace mu2e {
   };
 
 
-  CaloInspector::CaloInspector(fhicl::ParameterSet const& pset) :
+  CaloMCInspector::CaloMCInspector(fhicl::ParameterSet const& pset) :
     art::EDAnalyzer(pset),
     caloCrystalModuleLabel_     (pset.get<std::string>("caloCrystalModuleLabel")),
     caloShowerSimModuleLabel_   (pset.get<std::string>("caloShowerSimModuleLabel")),
@@ -64,7 +64,7 @@ namespace mu2e {
     diagLevel_                  (pset.get<int>("diagLevel",0))
   {}
 
-  void CaloInspector::beginJob(){
+  void CaloMCInspector::beginJob(){
 
        art::ServiceHandle<art::TFileService> tfs;
        
@@ -80,7 +80,7 @@ namespace mu2e {
 
 
 
-  void CaloInspector::analyze(const art::Event& event) 
+  void CaloMCInspector::analyze(const art::Event& event) 
   {      
       //Calorimeter crystal hits (average from readouts)
       art::Handle<CaloHitCollection> CaloHitsHandle;
@@ -98,28 +98,27 @@ namespace mu2e {
       const CaloDigiMCTruthAssn& caloDigiTruth(*caloDigiTruthHandle);
 
 
-      for (unsigned int ic=0; ic<CaloHits.size();++ic)
+      for (const auto& hit :CaloHits )
       {
-          const CaloHit& hit = CaloHits.at(ic);
-
           //Find the caloDigiMC in the truth map          
           auto itMC = caloDigiTruth.begin();
           while (itMC != caloDigiTruth.end()) {if (itMC->first.get() == &hit) break; ++itMC;}
           unsigned nCrySims = (itMC != caloDigiTruth.end()) ? itMC->second->nParticles() : 0;
           
           if (nCrySims>0) hcryMatchE_->Fill(hit.energyDep());
-          else            hcryNoMatchE_->Fill(hit.energyDep());
-          
-          if (diagLevel_ > 0) std::cout<<"Crystal "<<hit.id()<<" "<<hit.energyDep()<<" "<<hit.time()<<" "<<nCrySims<<std::endl;
+          else            hcryNoMatchE_->Fill(hit.energyDep());          
+          if (diagLevel_ > 0) std::cout<<"Crystal "<<hit.crystalID()<<" "<<hit.energyDep()<<" "<<hit.time()<<" "<<nCrySims<<std::endl;
+
 
           for (unsigned i=0;i< nCrySims;++i)
 	  {	                      
 	      const auto& eDepMC = itMC->second->energyDeposit(i);
+              double deltaT      = std::abs(eDepMC.time()-hit.time());
+              
               hsimMatchT_->Fill(eDepMC.time()-hit.time());
-              if (eDepMC.time()-hit.time() > 5 ) hsimMatchELT_->Fill(eDepMC.energyDep());
+              if (deltaT > 5 ) hsimMatchELT_->Fill(eDepMC.energyDep());
               if (diagLevel_ > 0) std::cout<<"Sim "<<eDepMC.sim()->id().asInt()<<" "<<eDepMC.sim()->pdgId()<<" "<<eDepMC.sim()->creationCode()
                                            <<" "<<eDepMC.time()<<" "<<eDepMC.energyDep()<<" "<<eDepMC.momentumIn()<<std::endl;
-
           }
           if (diagLevel_ > 0) std::cout<<std::endl;
       }
@@ -167,4 +166,4 @@ namespace mu2e {
 
 }  
 
-DEFINE_ART_MODULE(mu2e::CaloInspector);
+DEFINE_ART_MODULE(mu2e::CaloMCInspector);

@@ -104,7 +104,7 @@ namespace mu2e {
         for (const auto& hit : CaloHits)
         {
             if (hit.energyDep() <  EnoiseCut_) continue;
-            caloIdHitMap[hit.id()].push_back(&hit);
+            caloIdHitMap[hit.crystalID()].push_back(&hit);
             seedList.push_back(&hit);
         }
 
@@ -138,7 +138,7 @@ namespace mu2e {
 
     for (auto clusterPrt : clusterPtrList)
     {
-        int    crId = clusterPrt->id();
+        int    crId = clusterPrt->crystalID();
         totalEnergy    += clusterPrt->energyDep();
         totalEnergyErr += clusterPrt->energyDepErr()*clusterPrt->energyDepErr();
         xcl += cal.crystal(crId).localPosition().x()*clusterPrt->energyDep();
@@ -158,11 +158,10 @@ namespace mu2e {
     double time    = (*clusterPtrList.begin())->time();
     double timeErr = (*clusterPtrList.begin())->timeErr();
     const auto& seed  = **caloHitsPtrVector.begin();
-    int iSection = cal.crystal(seed.id()).diskId();
+    int iSection = cal.crystal(seed.crystalID()).diskID();
 
-    CaloCluster Endcluster(iSection,time,timeErr,totalEnergy,
-				totalEnergyErr,caloHitsPtrVector,ncry,0.0);
-    Endcluster.cog3Vector(CLHEP::Hep3Vector(xcl,ycl,0));
+    CaloCluster Endcluster(iSection,time,timeErr,totalEnergy,totalEnergyErr,
+                           CLHEP::Hep3Vector(xcl,ycl,0), caloHitsPtrVector,ncry,0.0);
     caloClustersColl.emplace_back(Endcluster);
   }
 }

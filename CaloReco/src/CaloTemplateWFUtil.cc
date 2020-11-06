@@ -1,4 +1,4 @@
-#include "CaloReco/inc/TemplateUtil.hh"
+#include "CaloReco/inc/CaloTemplateWFUtil.hh"
 #include "Mu2eUtilities/inc/CaloPulseShape.hh"
 
 #include "TMinuit.h"
@@ -51,7 +51,7 @@ namespace
 namespace mu2e {
         
    
-   TemplateUtil::TemplateUtil(double minPeakAmplitude, double digiSampling, double minDTPeaks, int printLevel) : 
+   CaloTemplateWFUtil::CaloTemplateWFUtil(double minPeakAmplitude, double digiSampling, double minDTPeaks, int printLevel) : 
       pulseCache_(CaloPulseShape(digiSampling)),
       minPeakAmplitude_(minPeakAmplitude),
       minDTPeaks_(minDTPeaks),
@@ -73,13 +73,13 @@ namespace mu2e {
    
 
    //-----------------------------------------------------------------------------------------------------
-   void   TemplateUtil::initialize ()                                                                 {pulseCache_.buildShapes();}
-   void   TemplateUtil::reset      ()                                                                 {param_.clear(); paramErr_.clear(); nParTot_=0; npTot_ = 0;}
-   void   TemplateUtil::setXYVector(const std::vector<double>& xvec, const std::vector<double>& yvec) {xvec_ = xvec; yvec_ = yvec; x0_=0; x1_ = xvec_.size();}
-   void   TemplateUtil::setPar     (const std::vector<double>& par)                                   {param_ = par; nParTot_ = npTot_ = par.size();}
+   void   CaloTemplateWFUtil::initialize ()                                                                 {pulseCache_.buildShapes();}
+   void   CaloTemplateWFUtil::reset      ()                                                                 {param_.clear(); paramErr_.clear(); nParTot_=0; npTot_ = 0;}
+   void   CaloTemplateWFUtil::setXYVector(const std::vector<double>& xvec, const std::vector<double>& yvec) {xvec_ = xvec; yvec_ = yvec; x0_=0; x1_ = xvec_.size();}
+   void   CaloTemplateWFUtil::setPar     (const std::vector<double>& par)                                   {param_ = par; nParTot_ = npTot_ = par.size();}
   
    //-----------------------------------------------------------------------------------------------------
-   void TemplateUtil::fit() 
+   void CaloTemplateWFUtil::fit() 
    {
        status_ = 0;
        if (param_.empty() || param_.size()>49 || xvec_.empty()) return;       
@@ -173,7 +173,7 @@ namespace mu2e {
 
 
    //-----------------------------------------------------------------------------------------------------
-   void TemplateUtil::refitEdge() 
+   void CaloTemplateWFUtil::refitEdge() 
    {
        status_ = 0;
        if (param_.size()<nParBkg_+nParFcn_ || xvec_.empty()) return;       
@@ -217,7 +217,7 @@ namespace mu2e {
    }
    
    //----------------------------------------------------------------------------------
-   bool TemplateUtil::selectComponent(const std::vector<double>& tempPar, unsigned ip)
+   bool CaloTemplateWFUtil::selectComponent(const std::vector<double>& tempPar, unsigned ip)
    {
        // first check if component is too small
        if (tempPar[ip] < minPeakAmplitude_) return false;
@@ -237,19 +237,19 @@ namespace mu2e {
 
 
    //----------------------------------------------------------------------
-   double TemplateUtil::eval_fcn(double x)
+   double CaloTemplateWFUtil::eval_fcn(double x)
    {       
        if (param_.size()<nParFcn_) return 0.0;
        return fitfunction(x,&param_[0]);       
    }
    //------------------------------------------------------------
-   double TemplateUtil::eval_logn(double x, int ioffset)
+   double CaloTemplateWFUtil::eval_logn(double x, int ioffset)
    {
        if (param_.size() < ioffset+nParFcn_) return 0.0;
        return logn(x,&param_[ioffset]);       
    }
    //------------------------------------------------------------
-   double TemplateUtil::maxAmplitude()
+   double CaloTemplateWFUtil::maxAmplitude()
    {
        double maxAmplitudeFound(0.0);
        for (unsigned i=nParBkg_; i<param_.size(); i += nParFcn_) maxAmplitudeFound = std::max(maxAmplitudeFound,param_[i]);
@@ -257,7 +257,7 @@ namespace mu2e {
    }
 
    //------------------------------------------------------------
-   double TemplateUtil::peakNorm(const std::vector<double>& xvalues, const std::vector<double>& yvalues, double x0, unsigned i0, unsigned i1)
+   double CaloTemplateWFUtil::peakNorm(const std::vector<double>& xvalues, const std::vector<double>& yvalues, double x0, unsigned i0, unsigned i1)
    {       
       double s1(0),s2(0);
       for (unsigned i=i0;i<=i1;++i)
@@ -272,7 +272,7 @@ namespace mu2e {
    }
 
    //------------------------------------------------------------
-   double TemplateUtil::sumSquare(const std::vector<double>& xvalues, const std::vector<double>& yvalues, double x0, unsigned i0, unsigned i1)
+   double CaloTemplateWFUtil::sumSquare(const std::vector<double>& xvalues, const std::vector<double>& yvalues, double x0, unsigned i0, unsigned i1)
    {              
       double A = peakNorm(xvalues, yvalues, x0, i0, i1);
       double chi2(0);
@@ -285,7 +285,7 @@ namespace mu2e {
    }
    
    //------------------------------------------------------------
-   double TemplateUtil::peakToFunc(unsigned ip, double xmax, double ymax)
+   double CaloTemplateWFUtil::peakToFunc(unsigned ip, double xmax, double ymax)
    {       
       if (ip+1 > param_.size()) return 1e6;
       return ymax*pulseCache_.evaluate(param_[ip+1]-xmax)/param_[ip]; 
@@ -293,7 +293,7 @@ namespace mu2e {
 
 
    //---------------------------------------------------------------------------
-   void TemplateUtil::plotFit(const std::string& pname) const
+   void CaloTemplateWFUtil::plotFit(const std::string& pname) const
    {
        if (xvec_.empty()) return;
        double dx = xvec_[1]-xvec_[0];

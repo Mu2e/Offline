@@ -42,8 +42,6 @@
 
 
 #include "RecoDataProducts/inc/CaloRecoDigi.hh"
-#include "RecoDataProducts/inc/CaloRecoDigi.hh"
-#include "RecoDataProducts/inc/CaloCluster.hh"
 #include "RecoDataProducts/inc/CaloCluster.hh"
 #include "RecoDataProducts/inc/KalRepCollection.hh"
 
@@ -54,7 +52,6 @@
 #include "MCDataProducts/inc/StepPointMCCollection.hh"
 #include "MCDataProducts/inc/PtrStepPointMCVectorCollection.hh"
 #include "MCDataProducts/inc/GenId.hh"
-#include "MCDataProducts/inc/CaloDigiMC.hh"
 #include "MCDataProducts/inc/CaloDigiMC.hh"
 #include "MCDataProducts/inc/PtrStepPointMCVectorCollection.hh"
 
@@ -631,7 +628,7 @@ namespace mu2e {
 
     //fill DAQ histograms
     double     amplitude(0);
-    int        roId(0), crystalId(0), diskId(0);
+    int        roId(0), crystalID(0), diskId(0);
 
     int        nThresholds(10), nWords(0);
     int        disk0NCaloDigi       [10] = {0};
@@ -675,11 +672,11 @@ namespace mu2e {
     for (int i=0; i< nCaloRecoDigi; ++i){
       recoDigi   = &recoCaloDigiCol->at(i);
       //amplitude  = recoDigi->amplitude()*ADC2mV;
-      roId       = recoDigi->ROid();
-      crystalId  = _calorimeter->caloInfo().crystalByRO(roId);
-      diskId     = _calorimeter->crystal(crystalId).diskId();
+      roId       = recoDigi->SiPMID();
+      crystalID  = _calorimeter->caloIDMapper().crystalIDFromSiPMID(roId);
+      diskId     = _calorimeter->crystal(crystalID).diskID();
 
-      crystalPos = _calorimeter->geomUtil().mu2eToDiskFF(diskId,_calorimeter->crystal(crystalId).position());
+      crystalPos = _calorimeter->geomUtil().mu2eToDiskFF(diskId,_calorimeter->crystal(crystalID).position());
       radius     = sqrt(crystalPos.x()*crystalPos.x() + crystalPos.y()*crystalPos.y());
 
       if (radius < _caloRmin)               continue;
@@ -711,7 +708,7 @@ namespace mu2e {
         }
       }
 
-      nWordsCrystals[crystalId] += nWords;
+      nWordsCrystals[crystalID] += nWords;
 
       for (int k=0; k<nThresholds; ++k){
         if (amplitude > thresholds[k]){
@@ -770,7 +767,7 @@ namespace mu2e {
 
 
       CaloHit const& hit    = CaloHits->at(ic);
-      CLHEP::Hep3Vector crystalPos = _calorimeter->geomUtil().mu2eToDiskFF(diskId,_calorimeter->crystal(crystalId).position());
+      CLHEP::Hep3Vector crystalPos = _calorimeter->geomUtil().mu2eToDiskFF(diskId,_calorimeter->crystal(crystalID).position());
 
       _cryEtot             += hit.energyDep();
       _cryTime[_nHits]      = hit.time();
@@ -781,8 +778,8 @@ namespace mu2e {
       _cryPosY[_nHits]      = crystalPos.y();
       _cryPosZ[_nHits]      = crystalPos.z();
       _cryPosR[_nHits]      = sqrt( _cryPosX[_nHits]*_cryPosX[_nHits] + crystalPos.y()*crystalPos.y() );
-      _cryId[_nHits]        = hit.id();
-      _crySectionId[_nHits] = _calorimeter->crystal(hit.id()).diskId();
+      _cryId[_nHits]        = hit.crystalID();
+      _crySectionId[_nHits] = _calorimeter->crystal(hit.crystalID()).diskID();
 
       int    indexMC, nParticles(0);
       int    isConversion(0);
@@ -905,7 +902,7 @@ namespace mu2e {
       _cluCogX      [i]     = cluster->cog3Vector().x();
       _cluCogY      [i]     = cluster->cog3Vector().y();
       _cluCogR      [i]     = sqrt(_cluCogX[i]*_cluCogX[i] + _cluCogY[i]*_cluCogY[i]);
-      _cluCogZ      [i]     = cluster->diskId();//cog3Vector().z();
+      _cluCogZ      [i]     = cluster->diskID();//cog3Vector().z();
       _cluConv      [i]     = isConversion;
 
     }//end filling calo clusters info

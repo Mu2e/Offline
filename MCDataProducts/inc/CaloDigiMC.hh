@@ -15,17 +15,16 @@ namespace mu2e
                 
           const std::vector<CaloEDepMC>& energyDeposits  ()           const {return edeps_;       }
           const CaloEDepMC&              energyDeposit   (unsigned i) const {return edeps_.at(i); } 
-                unsigned                 nParticles      ()           const {return edeps_.size();}
-                float                    time            ()           const {return edeps_.at(0).time();}
-                float                    totalEnergyDep  ()           const;
-                float                    totalEnergyDepG4()           const;
+          unsigned                       nParticles      ()           const {return edeps_.size();}
+          float                          time            ()           const {return edeps_.at(0).time();}
+          float                          totalEnergyDep  ()           const;
+          float                          totalEnergyDepG4()           const;
 
        private:
           std::vector<CaloEDepMC> edeps_; 
-   };
-  
+   };  
    
-   typedef std::vector<mu2e::CaloDigiMC> CaloDigiMCCollection;
+   using  CaloDigiMCCollection = std::vector<mu2e::CaloDigiMC>;
 
 } 
 

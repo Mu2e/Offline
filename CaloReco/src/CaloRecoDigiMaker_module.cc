@@ -11,15 +11,14 @@
 #include "ConditionsService/inc/CalorimeterCalibrations.hh"
 #include "RecoDataProducts/inc/CaloDigi.hh"
 #include "RecoDataProducts/inc/CaloRecoDigi.hh"
-#include "CaloReco/inc/WaveformProcessor.hh"
-#include "CaloReco/inc/TemplateProcessor.hh"
-#include "CaloReco/inc/RawProcessor.hh"
+#include "CaloReco/inc/CaloWaveformProcessor.hh"
+#include "CaloReco/inc/CaloTemplateWFProcessor.hh"
+#include "CaloReco/inc/CaloRawWFProcessor.hh"
 
 #include <iostream>
 #include <string>
 #include <sstream>
 
-#include "MCDataProducts/inc/CaloShowerSim.hh"
 
 namespace mu2e {
 
@@ -32,14 +31,14 @@ namespace mu2e {
         {
            using Name    = fhicl::Name;
            using Comment = fhicl::Comment;        
-           fhicl::Table<mu2e::RawProcessor::Config>      proc_raw_conf       { Name("RawProcessor"),        Comment("Raw processor config") };
-           fhicl::Table<mu2e::TemplateProcessor::Config> proc_templ_conf     { Name("TemplateProcessor"),   Comment("Log normal fit processor config") };                    
-           fhicl::Atom<std::string>                      caloDigiModuleLabel { Name("caloDigiModuleLabel"), Comment("Calo Digi module label") };
-           fhicl::Atom<std::string>                      processorStrategy   { Name("processorStrategy"),   Comment("Digi reco processor name") };
-           fhicl::Atom<double>                           digiSampling        { Name("digiSampling"),        Comment("Calo ADC sampling time (ns)") };
-           fhicl::Atom<double>                           maxChi2Cut          { Name("maxChi2Cut"),          Comment("Chi2 cut for keeping reco digi") };
-           fhicl::Atom<int>                              maxPlots            { Name("maxPlots"),            Comment("Maximum number of waveform plots") };
-           fhicl::Atom<int>                              diagLevel           { Name("diagLevel"),           Comment("Diagnosis level") };
+           fhicl::Table<mu2e::CaloRawWFProcessor::Config>      proc_raw_conf       { Name("RawProcessor"),        Comment("Raw processor config") };
+           fhicl::Table<mu2e::CaloTemplateWFProcessor::Config> proc_templ_conf     { Name("TemplateProcessor"),   Comment("Log normal fit processor config") };                    
+           fhicl::Atom<std::string>                            caloDigiModuleLabel { Name("caloDigiModuleLabel"), Comment("Calo Digi module label") };
+           fhicl::Atom<std::string>                            processorStrategy   { Name("processorStrategy"),   Comment("Digi reco processor name") };
+           fhicl::Atom<double>                                 digiSampling        { Name("digiSampling"),        Comment("Calo ADC sampling time (ns)") };
+           fhicl::Atom<double>                                 maxChi2Cut          { Name("maxChi2Cut"),          Comment("Chi2 cut for keeping reco digi") };
+           fhicl::Atom<int>                                    maxPlots            { Name("maxPlots"),            Comment("Maximum number of waveform plots") };
+           fhicl::Atom<int>                                    diagLevel           { Name("diagLevel"),           Comment("Diagnosis level") };
         };
 
         explicit CaloRecoDigiMaker(const art::EDProducer::Table<Config>& config) :
@@ -61,12 +60,12 @@ namespace mu2e {
             {
                 case RawExtract:
                 {
-                    waveformProcessor_ = std::make_unique<RawProcessor>(config().proc_raw_conf());
+                    waveformProcessor_ = std::make_unique<CaloRawWFProcessor>(config().proc_raw_conf());
                     break;
                 }
                 case Template:
                 {
-                    waveformProcessor_ = std::make_unique<TemplateProcessor>(config().proc_templ_conf());
+                    waveformProcessor_ = std::make_unique<CaloTemplateWFProcessor>(config().proc_templ_conf());
                     break;
                 }
                 default:
@@ -88,7 +87,7 @@ namespace mu2e {
         double                                       maxChi2Cut_;
         int                                          maxPlots_;
         int                                          diagLevel_;
-        std::unique_ptr<WaveformProcessor>           waveformProcessor_;
+        std::unique_ptr<CaloWaveformProcessor>       waveformProcessor_;
   };
 
 
@@ -126,9 +125,9 @@ namespace mu2e {
       std::vector<double> x,y;
       for (const auto& caloDigi : caloDigis)
       {
-          int    roID     = caloDigi.roId();
+          int    SiPMID   = caloDigi.SiPMID();
           double t0       = caloDigi.t0();
-          double adc2MeV  = calorimeterCalibrations->ADC2MeV(roID);
+          double adc2MeV  = calorimeterCalibrations->ADC2MeV(SiPMID);
           const std::vector<int>& waveform = caloDigi.waveform();
 
           size_t index = &caloDigi - &caloDigis.front();
@@ -157,7 +156,7 @@ namespace mu2e {
               
               if (chi2/float(ndf) > maxChi2Cut_) continue;
               
-              if (roID%2==0) totEnergyReco += eDep;
+              if (SiPMID%2==0) totEnergyReco += eDep;
               recoCaloHits.emplace_back(CaloRecoDigi(caloDigiPtr, eDep, eDepErr, time, timeErr, chi2, ndf, isPileUp));
           }
       }     

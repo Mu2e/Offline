@@ -69,7 +69,7 @@ mu2e::CaloCrystalHitPrinter::Print(const mu2e::CaloHit& obj, int ind, std::ostre
   if(ind>=0) os << std::setw(4) << ind;
 
   os 
-    << " " << std::setw(5) << obj.id()
+    << " " << std::setw(5) << obj.crystalID()
     << " " 
     << " " << std::setw(8) << std::setprecision(1) << obj.time()
     << " " << std::setw(8) << std::setprecision(1) << obj.energyDep()
@@ -86,7 +86,7 @@ mu2e::CaloCrystalHitPrinter::PrintHeader(const std::string& tag, std::ostream& o
 void 
 mu2e::CaloCrystalHitPrinter::PrintListHeader(std::ostream& os) {
   if(verbose()<1) return;
-  os << "ind     id     time     energy    eTot   nROIds\n";
+  os << "ind     id     time     energy    eTot   nSiPMIds\n";
 
 }
 

@@ -71,7 +71,7 @@ mu2e::CaloShowerStepPrinter::Print(const mu2e::CaloShowerStep& obj, int ind, std
   const CLHEP::Hep3Vector& pos = obj.position();
   if(verbose()==1) {
     os 
-      << " " << std::setw(5) << obj.volumeId()
+      << " " << std::setw(5) << obj.volumeG4ID()
       << " " << std::setw(12) << obj.simParticle().key()
       << " " << std::setw(8) << std::setprecision(2) << obj.energyDepG4()
       << " " << std::setw(8) << std::setprecision(1) << obj.time() 

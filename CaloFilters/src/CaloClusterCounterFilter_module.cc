@@ -16,9 +16,6 @@
 #include "GeometryService/inc/GeomHandle.hh"
 #include "GeometryService/inc/GeometryService.hh"
 
-#include "CaloCluster/inc/ClusterMoments.hh"
-
-#include "RecoDataProducts/inc/CaloCluster.hh"
 #include "RecoDataProducts/inc/CaloCluster.hh"
 #include "RecoDataProducts/inc/TrkFitFlag.hh"
 #include "RecoDataProducts/inc/TriggerInfo.hh"

@@ -107,7 +107,7 @@ void ObjectDumpUtils::printCaloProtoCluster(const mu2e::CaloProtoCluster* Cluste
     printf("-----------------------------------------------------------------------------------------------------\n");
   }
 
-  const mu2e::CaloProtoCluster::CaloHitPtrVector caloClusterHits = Cluster->caloHitsPtrVector();
+  const mu2e::CaloHitPtrVector caloClusterHits = Cluster->caloHitsPtrVector();
   int nh = caloClusterHits.size();
 
   if ((opt == "") || (opt.Index("data") >= 0)) {
@@ -128,7 +128,7 @@ void ObjectDumpUtils::printCaloProtoCluster(const mu2e::CaloProtoCluster* Cluste
 //-----------------------------------------------------------------------------
     for (int i=0; i<nh; i++) {
       const mu2e::CaloHit* hit = &(*caloClusterHits.at(i));
-      int id = hit->id();
+      int id = hit->crystalID();
 
       //      pos = cg->crystalOriginInSection(id);
 

@@ -209,7 +209,7 @@ namespace mu2e {
       ConditionsHandle<CalorimeterCalibrations> calorimeterCalibrations("ignored");
 
       const Calorimeter& cal       = *(GeomHandle<Calorimeter>());
-      const int   nROs             = cal.caloInfo().nROPerCrystal();
+      const int   nROs             = cal.caloInfo().getInt("nSiPMPerCrystal");
       const float cryhalflength    = cal.caloInfo().getDouble("crystalZLength")/2.0;
 
       std::map<int,std::vector<StepEntry>> simEntriesMap;
@@ -235,9 +235,9 @@ namespace mu2e {
               size_t idx = std::distance(caloShowerSteps.begin(), istep);
               art::Ptr<CaloShowerStep> stepPtr = art::Ptr<CaloShowerStep>(showerHandle,idx);            
               
-              int   crystalID = step.volumeId();
-              int   ROIDBase  = cal.caloInfo().ROBaseByCrystal(crystalID);              
-              float posZ      = step.position().z();
+              int   crystalID  = step.volumeG4ID();
+              int   SiPMIDBase = cal.caloIDMapper().SiPMIDFromCrystalID(crystalID);              
+              float posZ       = step.position().z();
               
               float edep_corr(step.energyDepG4());
               if (BirksCorrection_) edep_corr = step.energyDepBirks();
@@ -246,8 +246,8 @@ namespace mu2e {
               // Generate individual PEs and their arrival times
               for (int i=0; i<nROs; ++i)
               {
-                  int ROID = ROIDBase + i;
-                  float peMeV = calorimeterCalibrations->peMeV(ROID);
+                  int SiPMID = SiPMIDBase + i;
+                  float peMeV = calorimeterCalibrations->peMeV(SiPMID);
                   int NPE     = randPoisson_.fire(edep_corr*peMeV);                  
                   if (NPE==0) continue;
                   
@@ -256,9 +256,9 @@ namespace mu2e {
                   {
                       for (auto& time : PETime) time += photonProp_.propTimeSimu(2.0*cryhalflength-posZ);
                   }    
-                  CaloShowerROs.push_back(CaloShowerRO(ROID,stepPtr,PETime));                  
+                  CaloShowerROs.push_back(CaloShowerRO(SiPMID,stepPtr,PETime));                  
                                     
-                  if (diagLevel_ > 2) std::cout<<"[CaloShowerROMaker::generatePE] ROID:"<<ROID<<"  energy / NPE = "<<edep_corr<<"  /  "<<NPE<<std::endl;
+                  if (diagLevel_ > 2) std::cout<<"[CaloShowerROMaker::generatePE] SiPMID:"<<SiPMID<<"  energy / NPE = "<<edep_corr<<"  /  "<<NPE<<std::endl;
                   if (diagLevel_ > 2) {std::cout<<"Time hit "<<std::endl; for (auto time : PETime) std::cout<<time<<" "; std::cout<<std::endl;}
                   if (diagLevel_ > 1) for (const auto& time : PETime) hTime_->Fill(2.0*cryhalflength-posZ,time-hitTime);
                                     
@@ -310,12 +310,12 @@ namespace mu2e {
          hStot_->Fill(diagSum.totSteps);
          
          std::set<int> crIds;
-         for (const auto& css : caloShowerSims) crIds.insert(css.crystalId());
+         for (const auto& css : caloShowerSims) crIds.insert(css.crystalID());
 
          for (auto crId : crIds)
          {
             std::map<const art::Ptr<SimParticle>, double> simMap;
-            for (const auto& css : caloShowerSims) if (css.crystalId()==crId) simMap[css.sim()] += css.energyDep();
+            for (const auto& css : caloShowerSims) if (css.crystalID()==crId) simMap[css.sim()] += css.energyDep();
             for (auto& kv : simMap) std::cout<<"CrId: "<<crId<<"  Sim id: "<<kv.first.id()<<"   energy="<<kv.second<<std::endl;   
          }
       }
@@ -350,7 +350,7 @@ namespace mu2e {
        for (auto& csm :  caloShowerSims)
        {
            csmEtot += csm.energyDep();
-           std::cout<<csm.crystalId()<<" "<<csm.sim()<<" "<<csm.time()<<" "<<csm.energyDep()<<" "<<csm.energyDepG4()<<std::endl;
+           std::cout<<csm.crystalID()<<" "<<csm.sim()<<" "<<csm.time()<<" "<<csm.energyDep()<<" "<<csm.energyDepG4()<<std::endl;
            for (auto& st : csm.caloShowerSteps()) std::cout<<"  "<<st<<std::endl;
        }
        std::cout<<"[CaloShowerROMaker] CSM Etot "<<csmEtot<<std::endl;

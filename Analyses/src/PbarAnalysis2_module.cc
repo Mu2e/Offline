@@ -56,6 +56,7 @@
 #include "Mu2eUtilities/inc/SimParticleTimeOffset.hh"
 #include "RecoDataProducts/inc/TrkCaloMatchCollection.hh"
 // data
+#include "CaloCluster/inc/ClusterUtils.hh"
 #include "RecoDataProducts/inc/CaloHit.hh"
 #include "RecoDataProducts/inc/CaloCluster.hh"
 
@@ -693,8 +694,8 @@ namespace mu2e {
        for (unsigned int ic=0; ic<CaloHits.size();++ic)
        {
            const CaloHit &hit     = CaloHits.at(ic);
-	   int diskId                    = cal.crystal(hit.id()).diskId();
-           CLHEP::Hep3Vector crystalPos  = cal.crystal(hit.id()).localPosition();  //in disk FF frame
+	   int diskId                    = cal.crystal(hit.crystalID()).diskID();
+           CLHEP::Hep3Vector crystalPos  = cal.crystal(hit.crystalID()).localPosition();  //in disk FF frame
 
            auto itMC = caloDigiTruth.begin();
            while (itMC != caloDigiTruth.end()) {if (itMC->first.get() == &hit) break; ++itMC;}
@@ -707,7 +708,7 @@ namespace mu2e {
            _cryPosX[_nHits]      = crystalPos.x();
            _cryPosY[_nHits]      = crystalPos.y();
            _cryPosZ[_nHits]      = crystalPos.z();
-           _cryId[_nHits]        = hit.id();
+           _cryId[_nHits]        = hit.crystalID();
            _crySectionId[_nHits] = diskId;
 
            _crySimIdx[_nHits]    = _nSim;
@@ -840,6 +841,7 @@ namespace mu2e {
 	        if (parent->genParticle() && parent->genParticle()->generatorId().isConversion() ) isConversion=true;
              }    		          
           }
+          ClusterUtils cluUtil(cal, cluster);
 
            _cluEnergy[_nCluster] = cluster.energyDep();
            _cluTime[_nCluster]   = cluster.time();
@@ -848,11 +850,11 @@ namespace mu2e {
            _cluCogY[_nCluster]   = cluster.cog3Vector().y();
 
 	   //FF as in CaloExample isn't really useful; replace with diskId
-           _cluCogZ[_nCluster]   = cluster.diskId();
-           _cluE1[_nCluster]     = cluster.e1();
-           _cluE9[_nCluster]     = cluster.e9();
-           _cluE25[_nCluster]    = cluster.e25();
-           _cluSecMom[_nCluster] = cluster.secondMoment();
+           _cluCogZ[_nCluster]   = cluster.diskID();
+           _cluE1[_nCluster]     = cluUtil.e1();
+           _cluE9[_nCluster]     = cluUtil.e9();
+           _cluE25[_nCluster]    = cluUtil.e25();
+           _cluSecMom[_nCluster] = cluUtil.secondMoment();
            _cluSplit[_nCluster]  = cluster.isSplit();
            _cluConv[_nCluster]   = isConversion;
            _cluList.push_back(cryList);
@@ -879,7 +881,7 @@ namespace mu2e {
 	       if (vdMapEntry != vdMap.end())
 	       {
 	          simMom = vdMapEntry->second->momentum().mag();
-		  CLHEP::Hep3Vector simPos = cal.geomUtil().mu2eToDiskFF(cluster.diskId(), vdMapEntry->second->position());
+		  CLHEP::Hep3Vector simPos = cal.geomUtil().mu2eToDiskFF(cluster.diskID(), vdMapEntry->second->position());
 	       }
 
                _clusimId[_nCluSim]     = sim->id().asInt();

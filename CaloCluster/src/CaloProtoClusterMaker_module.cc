@@ -135,7 +135,7 @@ namespace mu2e {
       for (const auto& hit : CaloHits)
       {
           if (hit.energyDep() < EnoiseCut_ || hit.time() < timeCut_) continue;
-          caloIdHitMap[hit.id()].push_back(&hit);
+          caloIdHitMap[hit.crystalID()].push_back(&hit);
           if (hit.energyDep() > EminSeed_ ) seedList.insert(&hit);
       }
       
@@ -231,7 +231,7 @@ namespace mu2e {
       if (diagLevel_ > 1)
       {
           std::cout<<"This cluster contains "<<clusterPtrList.size()<<" crystals, id= ";
-          for (auto clusterPrt : clusterPtrList) std::cout<<clusterPrt->id()<<" ";
+          for (auto clusterPrt : clusterPtrList) std::cout<<clusterPrt->crystalID()<<" ";
           std::cout<<" with energy="<<totalEnergy<<" and time="<<time<<std::endl;;
       }
   }

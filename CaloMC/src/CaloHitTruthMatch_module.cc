@@ -173,8 +173,8 @@ namespace mu2e {
       
       std::map<int, std::vector<const CaloHit*>> caloHitMap;
       std::map<int,std::vector<const CaloShowerSim*>>   caloShowerSimsMap;
-      for (auto const& CaloHit: CaloHits) caloHitMap[CaloHit.id()].push_back(&CaloHit);
-      for (auto const& caloShowerSim: caloShowerSims)   caloShowerSimsMap[caloShowerSim.crystalId()].push_back(&caloShowerSim);
+      for (auto const& CaloHit: CaloHits) caloHitMap[CaloHit.crystalID()].push_back(&CaloHit);
+      for (auto const& caloShowerSim: caloShowerSims)   caloShowerSimsMap[caloShowerSim.crystalID()].push_back(&caloShowerSim);
       
       int wfBinMax = std::distance(wf_.begin(),std::max_element(wf_.begin(),wf_.end())); 
       
@@ -194,7 +194,7 @@ namespace mu2e {
           
           if (diagLevel_ > 2) 
              for (const auto& shower : caloSims) 
-                 std::cout<<"[CaloHitTruthMatch] Sim shower  id/energy/time="<<shower->crystalId()<<" / "<<shower->energyDep()<<" / "<<shower->time()<<std::endl;
+                 std::cout<<"[CaloHitTruthMatch] Sim shower  id/energy/time="<<shower->crystalID()<<" / "<<shower->energyDep()<<" / "<<shower->time()<<std::endl;
           
 
           auto showerIt    = caloSims.begin();
@@ -221,7 +221,7 @@ namespace mu2e {
              double deltaTimePlus(nbin*digiSampling_);
 
 
-             if (diagLevel_ > 2) std::cout<<"[CaloHitTruthMatch]  inspect hit id/time/energy/length "<<hit->id()<<" / "<<hit->time()<<" / "<<hit->energyDep()<<" "<<nbin*digiSampling_<<std::endl;
+             if (diagLevel_ > 2) std::cout<<"[CaloHitTruthMatch]  inspect hit id/time/energy/length "<<hit->crystalID()<<" / "<<hit->time()<<" / "<<hit->energyDep()<<" "<<nbin*digiSampling_<<std::endl;
                                       
              //forward until we reach the recoHit time;
              while (showerIt != showerItEnd && ( (*showerIt)->time() < (*hitIt)->time() - digiSampling_) ) ++showerIt; 
@@ -278,7 +278,7 @@ namespace mu2e {
                                  
                                                   
                  if (diagLevel_ > 1) diag(showerSim,hit);
-                 if (diagLevel_ > 2) std::cout<<"[CaloHitTruthMatch]  matched shower id/time/energyDep()= "<<showerSim->crystalId()
+                 if (diagLevel_ > 2) std::cout<<"[CaloHitTruthMatch]  matched shower id/time/energyDep()= "<<showerSim->crystalID()
                                               <<" / "<<showerSim->time()<<" / "<<showerSim->energyDep()<<std::endl;
                  ++showerIt;                
              }

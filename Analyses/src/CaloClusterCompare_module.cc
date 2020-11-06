@@ -108,7 +108,6 @@ namespace mu2e
 		_Time->Fill(sts.time());
 		_TimeErr->Fill(sts.timeErr());
 		_EnergyErr->Fill(sts.energyDepErr());
-		_Angle->Fill(sts.angle());
 		_PosX->Fill(sts.cog3Vector().x());
 		_PosY->Fill(sts.cog3Vector().y());
 		_PosZ->Fill(sts.cog3Vector().z());
@@ -117,7 +116,7 @@ namespace mu2e
 		std::cout<<"Cluster "<<ist<<" size "<<sts.size()<<" Edep "<<sts.energyDep()<<" Time "<<sts.time()<<" Pos "<<sts.cog3Vector().x()<<" "<<sts.cog3Vector().y()<<std::endl;
 		for(unsigned i =0 ; i< sts.caloHitsPtrVector().size();i++){
 			art::Ptr< CaloHit>  cry=sts.caloHitsPtrVector()[i] ;
-           		std::cout<<"crystal ids "<<cry->id()<<" ROid "<<cry->nROId()<<"crystal time "<<cry->time()<<" crystal e dep "<<cry->energyDep()<<" E dep total "<<cry->energyDepTot()<<std::endl;
+           		std::cout<<"crystal ids "<<cry->crystalID()<<" SiPMID "<<cry->nSiPMs()<<"crystal time "<<cry->time()<<" crystal e dep "<<cry->energyDep()<<" E dep total "<<cry->energyDepTot()<<std::endl;
 			
 		}
 	}

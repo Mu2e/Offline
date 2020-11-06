@@ -31,7 +31,7 @@ namespace mu2e {
            using Name    = fhicl::Name;
            using Comment = fhicl::Comment;        
            fhicl::Atom<std::string> caloDigisModuleLabel{ Name("caloDigisModuleLabel"), Comment("Calo Digi module label")};
-           fhicl::Atom<double>      time4Merge          { Name("time4Merge"),           Comment("Maximal time differnce to merge two RoID signals (ns)")};
+           fhicl::Atom<double>      time4Merge          { Name("time4Merge"),           Comment("Maximal time differnce to merge two SiPM signals (ns)")};
            fhicl::Atom<int>         diagLevel           { Name("diagLevel"),            Comment("Diagnosis level")};
        };
 
@@ -113,11 +113,12 @@ namespace mu2e {
 
 
     // fill the map that associate for each crystal the corresponding CaloRecoDigi indexes
-    std::vector<std::vector<const CaloRecoDigi*>> hitMap(cal.nRO(),std::vector<const CaloRecoDigi*>());
+    int nSiPM = cal.nCrystal()*cal.caloInfo().getInt("nSiPMPerCrystal");
+    std::vector<std::vector<const CaloRecoDigi*>> hitMap(nSiPM,std::vector<const CaloRecoDigi*>());
     
     for (unsigned i=0; i< recoCaloDigis.size(); ++i)
     {
-        int crystalId = cal.caloInfo().crystalByRO(recoCaloDigis[i].ROid());
+        int crystalId = cal.caloIDMapper().crystalIDFromSiPMID(recoCaloDigis[i].SiPMID());
         hitMap[crystalId].push_back(&recoCaloDigis[i]);
     }
 
@@ -133,7 +134,7 @@ namespace mu2e {
         auto endHit   = hits.begin();
 
         std::vector<CaloRecoDigiPtr> buffer;
-        int nRoid(0);
+        int nSiPM(0);
         double timeW(0),timeWtot(0),eDepTot(0),eDepTotErr(0);
 
         while (endHit != hits.end())
@@ -147,15 +148,15 @@ namespace mu2e {
                 double time    = timeW/timeWtot;
                 double timeErr = 1.0/sqrt(timeWtot);
 
-                fillBuffer(crystalId, nRoid, time, timeErr, eDepTot/nRoid, eDepTotErr/nRoid, buffer, caloHits);
-                totEnergyRec += eDepTot/float(nRoid);
+                fillBuffer(crystalId, nSiPM, time, timeErr, eDepTot/nSiPM, eDepTotErr/nSiPM, buffer, caloHits);
+                totEnergyRec += eDepTot/float(nSiPM);
 
                 buffer.clear();
                 timeW      = 0.0;
                 timeWtot   = 0.0;
                 eDepTot    = 0.0;
                 eDepTotErr = 0.0;
-                nRoid      = 0;
+                nSiPM      = 0;
                 startHit   = endHit;
              } 
              else
@@ -167,7 +168,7 @@ namespace mu2e {
                 eDepTot    += (*endHit)->energyDep();
                 eDepTotErr += (*endHit)->energyDepErr() * (*endHit)->energyDepErr();
 
-                ++nRoid;
+                ++nSiPM;
 
                 size_t index = *endHit - base;
                 buffer.push_back(art::Ptr<CaloRecoDigi>(recoCaloDigisHandle, index));
@@ -180,8 +181,8 @@ namespace mu2e {
           //flush last buffer
           double time    = timeW/timeWtot;
           double timeErr = 1.0/sqrt(timeWtot);
-          fillBuffer(crystalId, nRoid, time, timeErr, eDepTot/nRoid, eDepTotErr/nRoid, buffer, caloHits);
-          totEnergyRec += eDepTot/float(nRoid);
+          fillBuffer(crystalId, nSiPM, time, timeErr, eDepTot/nSiPM, eDepTotErr/nSiPM, buffer, caloHits);
+          totEnergyRec += eDepTot/float(nSiPM);
       }
 
       if ( diagLevel_ > 1 ) std::cout<<"[CaloHitMaker::produce] produced RecoCrystalHits with caloHits.size() = "<<caloHits.size()<<std::endl;
@@ -189,26 +190,26 @@ namespace mu2e {
   }
 
   //--------------------------------------------------------------------------------------------------------------
-  void CaloHitMaker::fillBuffer(int crystalId,int nRoid,double time,double timeErr,double eDep,double eDepErr,
-                                         std::vector<CaloRecoDigiPtr>& buffer, CaloHitCollection& caloHits)
+  void CaloHitMaker::fillBuffer(int crystalId,int nSiPM,double time,double timeErr,double eDep,double eDepErr,
+                                std::vector<CaloRecoDigiPtr>& buffer, CaloHitCollection& caloHits)
   {
       //TODO: get conditions to check if a sensor is noisy or dead. Until then, consider hit with a single sensor to be bkg.
-      if (nRoid<2) return;
+      if (nSiPM<2) return;
       
-      caloHits.emplace_back(CaloHit(crystalId, nRoid, time, timeErr, eDep, eDepErr, buffer));
+      caloHits.emplace_back(CaloHit(crystalId, nSiPM, time, timeErr, eDep, eDepErr, buffer));
 
       if (diagLevel_ > 2) std::cout<<"[CaloHitMaker] created hit in crystal id="<<crystalId<<"\t with time="
-                                   <<time<<"\t eDep="<<eDep<<"\t  from "<<nRoid<<" RO"<<std::endl;
+                                   <<time<<"\t eDep="<<eDep<<"\t  from "<<nSiPM<<" RO"<<std::endl;
                     
       if (diagLevel_ > 2)
       {
           hTime_->Fill(time);
           hEdep_->Fill(eDep);
-          hNRo_->Fill(nRoid);
+          hNRo_->Fill(nSiPM);
           hEdep_Cry_->Fill(crystalId,eDep);
-          hNRo2_->Fill(nRoid,eDep);
-          if (nRoid==1) hEdep1_->Fill(eDep);
-          if (nRoid==2) hEdep2_->Fill(eDep);
+          hNRo2_->Fill(nSiPM,eDep);
+          if (nSiPM==1) hEdep1_->Fill(eDep);
+          if (nSiPM==2) hEdep2_->Fill(eDep);
       }
   }
 

@@ -24,7 +24,7 @@ namespace mu2e {
 
     class CaloPulseShape
     {
-        public:
+       public:
           CaloPulseShape(double digiSampling);
           ~CaloPulseShape() {};
 
@@ -35,13 +35,13 @@ namespace mu2e {
           double                     fromPeakToT0    (double timePeak)       const;
           void                       diag            (bool fullDiag=false)   const;
 
-      private:      
-         int                         nSteps_;	 
-         double                      digiStep_;
-         int                         nBinShape_;
-         std::vector<double>         pulseVec_;
-         double                      deltaT_;
-         mutable std::vector<double> digitizedPulse_; 
+       private:      
+          int                         nSteps_;	 
+          double                      digiStep_;
+          int                         nBinShape_;
+          std::vector<double>         pulseVec_;
+          double                      deltaT_;
+          mutable std::vector<double> digitizedPulse_; 
     };
 
 }

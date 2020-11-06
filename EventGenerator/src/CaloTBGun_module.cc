@@ -1,5 +1,6 @@
-// Bertrand
-
+//
+// A generator to shoot electrons right in the face of the caloriemter disk to simulate the calo test beam. Fire!
+//
 
 // CLHEP includes
 #include "CLHEP/Vector/ThreeVector.h"

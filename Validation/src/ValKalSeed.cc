@@ -148,7 +148,7 @@ int mu2e::ValKalSeed::fill(const mu2e::KalSeedCollection & coll,
     // associated cluster info
     if(ks.hasCaloCluster()){
       auto const& chs = ks.caloHit();
-      _hCCdisk->Fill(chs.caloCluster()->diskId());
+      _hCCdisk->Fill(chs.caloCluster()->diskID());
     // get momentum from the last segment
       auto const& ss = ks.segments().back(); //KalSegment
       double p = ss.mom();

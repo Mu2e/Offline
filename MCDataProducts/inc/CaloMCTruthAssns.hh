@@ -11,9 +11,9 @@
 
 namespace mu2e
 {
-    typedef art::Assns<CaloHit,    SimParticle, art::Ptr<CaloShowerSim>> CaloShowerMCTruthAssn;
-    typedef art::Assns<CaloHit,    CaloDigiMC>                           CaloDigiMCTruthAssn;
-    typedef art::Assns<CaloCluster,CaloClusterMC>                        CaloClusterMCTruthAssn;
+    using CaloShowerMCTruthAssn  = art::Assns<CaloHit,    SimParticle, art::Ptr<CaloShowerSim>>;
+    using CaloDigiMCTruthAssn    = art::Assns<CaloHit,    CaloDigiMC> ;
+    using CaloClusterMCTruthAssn = art::Assns<CaloCluster,CaloClusterMC> ;
 }
 
 #endif 

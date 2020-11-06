@@ -11,7 +11,6 @@
 // data
 #include "RecoDataProducts/inc/CaloHit.hh"
 #include "RecoDataProducts/inc/CaloCluster.hh"
-#include "RecoDataProducts/inc/CaloCluster.hh"
 #include "RecoDataProducts/inc/HelixVal.hh"
 #include "RecoDataProducts/inc/TimeCluster.hh"
 #include "RecoDataProducts/inc/HelixSeed.hh"

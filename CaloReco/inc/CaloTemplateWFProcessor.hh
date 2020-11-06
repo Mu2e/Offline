@@ -1,5 +1,5 @@
-#ifndef TemplateProcessor_HH
-#define TemplateProcessor_HH
+#ifndef CaloTemplateWFProcessor_HH
+#define CaloTemplateWFProcessor_HH
 
 // This is an signal extraction method based on the waveform template. 
 //
@@ -15,8 +15,8 @@
 // --> the first peak is never a pile-up
 //
 
-#include "CaloReco/inc/WaveformProcessor.hh"
-#include "CaloReco/inc/TemplateUtil.hh"
+#include "CaloReco/inc/CaloWaveformProcessor.hh"
+#include "CaloReco/inc/CaloTemplateWFUtil.hh"
 #include "fhiclcpp/types/Atom.h"
 #include "fhiclcpp/types/Sequence.h"
 #include "TH2.h"
@@ -26,7 +26,7 @@
 
 namespace mu2e {
 
-  class TemplateProcessor : public WaveformProcessor 
+  class CaloTemplateWFProcessor : public CaloWaveformProcessor 
   {
      public:
         struct Config
@@ -47,30 +47,31 @@ namespace mu2e {
         };
 
      
-        TemplateProcessor(const Config& config);
+        CaloTemplateWFProcessor(const Config& config);
 
-        virtual void     initialize  ();
-        virtual void     reset       ();
-        virtual void     extract     (const std::vector<double>& xInput, const std::vector<double>& yInput) ;
-        virtual void     plot        (const std::string& pname) const ;
+        virtual void     initialize  () override;
+        virtual void     reset       () override;
+        virtual void     extract     (const std::vector<double>& xInput, const std::vector<double>& yInput) override;
+        virtual void     plot        (const std::string& pname) const override;
 
-        virtual int      nPeaks      ()               const  {return resAmp_.size();}
-        virtual double   chi2        ()               const  {return chi2_;}
-        virtual int      ndf         ()               const  {return ndf_;}
-        virtual double   amplitude   (unsigned int i) const  {return resAmp_.at(i);}
-        virtual double   amplitudeErr(unsigned int i) const  {return resAmpErr_.at(i);}
-        virtual double   time        (unsigned int i) const  {return resTime_.at(i);}
-        virtual double   timeErr     (unsigned int i) const  {return resTimeErr_.at(i);}  
-        virtual bool     isPileUp    (unsigned int i) const  {return i > 1;}   // resAmp_.size() > 1 as alternative?
+        virtual int      nPeaks      ()               const override {return resAmp_.size();}
+        virtual double   chi2        ()               const override {return chi2_;}
+        virtual int      ndf         ()               const override {return ndf_;}
+        virtual double   amplitude   (unsigned int i) const override {return resAmp_.at(i);}
+        virtual double   amplitudeErr(unsigned int i) const override {return resAmpErr_.at(i);}
+        virtual double   time        (unsigned int i) const override {return resTime_.at(i);}
+        virtual double   timeErr     (unsigned int i) const override {return resTimeErr_.at(i);}  
+        virtual bool     isPileUp    (unsigned int i) const override {return i > 1;}   // resAmp_.size() > 1 as alternative?
 
 
     private:
+       void   initHistos         ();
        void   setPrimaryPeakPar1 (const std::vector<double>& xvec, const std::vector<double>& yvec);
        void   setPrimaryPeakPar2 (const std::vector<double>& xvec, const std::vector<double>& yvec);
        void   findRisingPeak     (int ipeak, std::vector<double>& parInit, const std::vector<double>& xvec, const std::vector<double>& yvec, std::vector<double>& ywork);
        void   setSecondaryPeakPar(const std::vector<double>& xvec, const std::vector<double>& yvec);
        double estimatePeakTime   (const std::vector<double>& xvec, const std::vector<double>& ywork, int ic);
-       bool   checkPeakDist      (double x0);		                 
+       bool   checkPeakDist      (double x0);                 
        void   dump               (const std::string& name, const std::vector<double>& val) const; 
 
        unsigned            windowPeak_ ;
@@ -81,7 +82,7 @@ namespace mu2e {
        double              chiThreshold_;
        bool                refitLeadingEdge_;
        int                 diagLevel_;       
-       TemplateUtil        fmutil_;                           
+       CaloTemplateWFUtil  fmutil_;                           
        double              chi2_;
        int                 ndf_;
        std::vector<double> resAmp_;

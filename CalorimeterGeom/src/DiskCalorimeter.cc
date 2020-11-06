@@ -22,7 +22,7 @@ namespace mu2e {
 
     std::vector<int> DiskCalorimeter::neighborsByLevel(int crystalId, int level, bool rawMap)  const
     {
-        int iv = fullCrystalList_.at(crystalId)->diskId();
+        int iv = fullCrystalList_.at(crystalId)->diskID();
 	int offset = disk(iv).crystalOffset();
 
         std::vector<int> list = disk(iv).findLocalNeighbors(fullCrystalList_.at(crystalId)->localId(),level,rawMap);

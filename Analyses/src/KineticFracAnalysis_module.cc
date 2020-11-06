@@ -802,8 +802,8 @@ namespace mu2e {
     for (unsigned int ic=0; ic<CaloHits.size();++ic)
     {
         const CaloHit &hit     = CaloHits.at(ic);
-	int diskId                    = cal.crystal(hit.id()).diskId();
-        CLHEP::Hep3Vector crystalPos  = cal.geomUtil().mu2eToDiskFF(diskId,cal.crystal(hit.id()).position()); //in disk FF frame
+	int diskId                    = cal.crystal(hit.crystalID()).diskID();
+        CLHEP::Hep3Vector crystalPos  = cal.geomUtil().mu2eToDiskFF(diskId,cal.crystal(hit.crystalID()).position()); //in disk FF frame
 
            auto itMC = caloDigiTruth.begin();
            while (itMC != caloDigiTruth.end()) {if (itMC->first.get() == &hit) break; ++itMC;}
@@ -815,7 +815,7 @@ namespace mu2e {
         _cryPosX[_nHits]      = crystalPos.x();
         _cryPosY[_nHits]      = crystalPos.y();
         _cryPosZ[_nHits]      = crystalPos.z();
-        _cryId[_nHits]        = hit.id();
+        _cryId[_nHits]        = hit.crystalID();
         _crySectionId[_nHits] = diskId;
 
         _crySimIdx[_nCluster] = _nCluSim;

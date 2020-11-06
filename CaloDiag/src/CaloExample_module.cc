@@ -27,6 +27,7 @@
 #include "GeometryService/inc/GeometryService.hh"
 #include "GeometryService/inc/VirtualDetector.hh"
 
+#include "CaloCluster/inc/ClusterUtils.hh"
 #include "DataProducts/inc/VirtualDetectorId.hh"
 #include "MCDataProducts/inc/GenParticleCollection.hh"
 #include "MCDataProducts/inc/SimParticleCollection.hh"
@@ -43,9 +44,14 @@
 #include "TH1F.h"
 
 
+namespace 
+{
+   constexpr int ntupLen = 16384;
+}
+
+
 
 namespace mu2e {
-
 
   class CaloExample : public art::EDAnalyzer {
 
@@ -64,12 +70,9 @@ namespace mu2e {
 
        int diagLevel_;
        bool doGenerated_;
-
        std::string g4ModuleLabel_;
        std::string generatorModuleLabel_;
        art::InputTag simParticleTag_;
-
-
        std::string caloCrystalModuleLabel_;
        std::string caloClusterModuleLabel_;
        std::string caloDigiTruthModuleLabel_;
@@ -87,28 +90,28 @@ namespace mu2e {
        TTree* Ntup_;
        int   _evt,_run;
 
-       int   nGen_,genPdgId_[16384],genCrCode_[16384];
-       float genmomX_[16384],genmomY_[16384],genmomZ_[16384],genStartX_[16384],genStartY_[16384],genStartZ_[16384],genStartT_[16384];
+       int   nGen_,genPdgId_[ntupLen],genCrCode_[ntupLen];
+       float genmomX_[ntupLen],genmomY_[ntupLen],genmomZ_[ntupLen],genStartX_[ntupLen],genStartY_[ntupLen],genStartZ_[ntupLen],genStartT_[ntupLen];
 
-       int   nHits_,cryId_[16384],crySectionId_[16384],crySimIdx_[16384],crySimLen_[16384];
-       float cryEtot_,cryTime_[16384],cryEdep_[16384],cryPosX_[16384],cryPosY_[16384],cryPosZ_[16384],_cryLeak[16384];
+       int   nHits_,cryId_[ntupLen],crySectionId_[ntupLen],crySimIdx_[ntupLen],crySimLen_[ntupLen];
+       float cryEtot_,cryTime_[ntupLen],cryEdep_[ntupLen],cryPosX_[ntupLen],cryPosY_[ntupLen],cryPosZ_[ntupLen],_cryLeak[ntupLen];
 
-       int   nSimHit_,crySimId_[16384],crySimPdgId_[16384],crySimCrCode_[16384],crySimGenIdx_[16384],cryConv_[16384];
-       float crySimMom_[16384],crySimStartX_[16384],crySimStartY_[16384],crySimStartZ_[16384],crySimStartT_[16384];
-       float crySimTime_[16384],crySimEdep_[16348],cryTimeErr_[16348], cryDT_[16384];
+       int   nSimHit_,crySimId_[ntupLen],crySimPdgId_[ntupLen],crySimCrCode_[ntupLen],crySimGenIdx_[ntupLen],cryConv_[ntupLen];
+       float crySimMom_[ntupLen],crySimStartX_[ntupLen],crySimStartY_[ntupLen],crySimStartZ_[ntupLen],crySimStartT_[ntupLen];
+       float crySimTime_[ntupLen],crySimEdep_[16348],cryTimeErr_[16348], cryDT_[ntupLen];
 
-       int   nCluster_,nCluSim_,cluNcrys_[16384];
-       float cluEnergy_[16384],cluEnergyErr_[16384],cluTime_[16384],cluTimeErr_[16384],cluCogX_[16384],cluCogY_[16384],
-             cluCogZ_[16384],cluE1_[16384],cluE9_[16384],cluE25_[16384],cluSecMom_[16384];
-       int   cluSplit_[16384],cluConv_[16384],cluSimIdx_[16384],cluSimLen_[16384];
+       int   nCluster_,nCluSim_,cluNcrys_[ntupLen];
+       float cluEnergy_[ntupLen],cluEnergyErr_[ntupLen],cluTime_[ntupLen],cluTimeErr_[ntupLen],cluCogX_[ntupLen],cluCogY_[ntupLen],
+             cluCogZ_[ntupLen],cluE1_[ntupLen],cluE9_[ntupLen],cluE25_[ntupLen],cluSecMom_[ntupLen];
+       int   cluSplit_[ntupLen],cluConv_[ntupLen],cluSimIdx_[ntupLen],cluSimLen_[ntupLen];
        std::vector<std::vector<int> > cluList_;
 
-       int   cluSimId_[16384],cluSimPdgId_[16384],cluSimGenId_[16384],cluSimGenPdg_[16384],cluSimCrCode_[16384];
-       float cluSimMom_[16384],cluSimMom2_[16384],cluSimPosX_[16384],cluSimPosY_[16384],cluSimPosZ_[16384],cluSimStartX_[16384],
-             cluSimStartY_[16384],cluSimStartZ_[16384],cluSimTime_[16384],cluSimEdep_[16384];
+       int   cluSimId_[ntupLen],cluSimPdgId_[ntupLen],cluSimGenId_[ntupLen],cluSimGenPdg_[ntupLen],cluSimCrCode_[ntupLen];
+       float cluSimMom_[ntupLen],cluSimMom2_[ntupLen],cluSimPosX_[ntupLen],cluSimPosY_[ntupLen],cluSimPosZ_[ntupLen],cluSimStartX_[ntupLen],
+             cluSimStartY_[ntupLen],cluSimStartZ_[ntupLen],cluSimTime_[ntupLen],cluSimEdep_[ntupLen];
 
-       int   nVd_,vdId_[16384],vdPdgId_[16384],vdGenId_[16384],vdGenIdx_[16384];
-       float vdTime_[16384],vdPosX_[16384],vdPosY_[16384],vdPosZ_[16384],vdMom_[16384],vdMomX_[16384],vdMomY_[16384],vdMomZ_[16384];
+       int   nVd_,vdId_[ntupLen],vdPdgId_[ntupLen],vdGenId_[ntupLen],vdGenIdx_[ntupLen];
+       float vdTime_[ntupLen],vdPosX_[ntupLen],vdPosY_[ntupLen],vdPosZ_[ntupLen],vdMom_[ntupLen],vdMomX_[ntupLen],vdMomY_[ntupLen],vdMomZ_[ntupLen];
   };
 
 
@@ -291,6 +294,7 @@ namespace mu2e {
 
 
 
+
       std::map<art::Ptr<SimParticle>, const StepPointMC*> vdMap;
       if (vdhits.isValid())
       {
@@ -345,8 +349,8 @@ namespace mu2e {
        for (unsigned int ic=0; ic<CaloHits.size();++ic)
        {
            const CaloHit& hit     = CaloHits.at(ic);
-	   int diskId                    = cal.crystal(hit.id()).diskId();
-           CLHEP::Hep3Vector crystalPos  = cal.geomUtil().mu2eToDiskFF(diskId,cal.crystal(hit.id()).position());  //in disk FF frame
+	   int diskId                    = cal.crystal(hit.crystalID()).diskID();
+           CLHEP::Hep3Vector crystalPos  = cal.geomUtil().mu2eToDiskFF(diskId,cal.crystal(hit.crystalID()).position());  //in disk FF frame
             
            //Find the caloDigiMC in the truth map          
            auto itMC = caloDigiTruth.begin();
@@ -367,12 +371,12 @@ namespace mu2e {
            float cryDT(999);
            if (hit.recoCaloDigis().size()==2)
            {
-              if (hit.recoCaloDigis().at(0)->ROid()%2==0) cryDT = hit.recoCaloDigis().at(1)->time()- hit.recoCaloDigis().at(0)->time();
-              else                                     cryDT = hit.recoCaloDigis().at(0)->time()- hit.recoCaloDigis().at(1)->time();
+              if (hit.recoCaloDigis().at(0)->SiPMID()%2==0) cryDT = hit.recoCaloDigis().at(1)->time()- hit.recoCaloDigis().at(0)->time();
+              else                                          cryDT = hit.recoCaloDigis().at(0)->time()- hit.recoCaloDigis().at(1)->time();
            } 
  
  
-           cryId_[nHits_]        = hit.id();
+           cryId_[nHits_]        = hit.crystalID();
            crySectionId_[nHits_] = diskId;
            cryEdep_[nHits_]      = hit.energyDep();
            cryTime_[nHits_]      = hit.time();
@@ -428,7 +432,7 @@ namespace mu2e {
        {
           const CaloCluster& cluster = caloClusters.at(ic);
           std::vector<int> cryList;
-          for (auto cryPtr : cluster.caloHitsPtrVector()) cryList.push_back(int(cryPtr.get()- &CaloHits.at(0)));
+          for (auto cryPtr : cluster.caloHitsPtrVector()) cryList.push_back(std::distance(&CaloHits.at(0),cryPtr.get()));
 
           auto itMC = caloClusterTruth.begin();
           while (itMC != caloClusterTruth.end()) {if (itMC->first.get() == &cluster) break; ++itMC;}
@@ -445,18 +449,22 @@ namespace mu2e {
              }    		          
           }
           
+          ClusterUtils cluUtil(cal, cluster);
+          auto cog = cluUtil.cog3Vector();
+
+          
           cluEnergy_[nCluster_]    = cluster.energyDep();
           cluEnergyErr_[nCluster_] = cluster.energyDepErr();
           cluTime_[nCluster_]      = cluster.time();
           cluTimeErr_[nCluster_]   = cluster.timeErr();
-          cluNcrys_[nCluster_]     = cluster.size();
+          cluNcrys_[nCluster_]     = cluster.size();          
           cluCogX_[nCluster_]      = cluster.cog3Vector().x(); //in disk FF frame
           cluCogY_[nCluster_]      = cluster.cog3Vector().y();
           cluCogZ_[nCluster_]      = cluster.cog3Vector().z();
-          cluE1_[nCluster_]        = cluster.e1();
-          cluE9_[nCluster_]        = cluster.e9();
-          cluE25_[nCluster_]       = cluster.e25();
-          cluSecMom_[nCluster_]    = cluster.secondMoment();
+          cluE1_[nCluster_]        = cluUtil.e1();
+          cluE9_[nCluster_]        = cluUtil.e9();
+          cluE25_[nCluster_]       = cluUtil.e25();
+          cluSecMom_[nCluster_]    = cluUtil.secondMoment();
           cluSplit_[nCluster_]     = cluster.isSplit();
           cluConv_[nCluster_]      = isConversion;
           cluList_.push_back(cryList);
@@ -483,7 +491,7 @@ namespace mu2e {
 	      if (vdMapEntry != vdMap.end())
 	      {
 	         simMom = vdMapEntry->second->momentum().mag();
-		 CLHEP::Hep3Vector simPos = cal.geomUtil().mu2eToDiskFF(cluster.diskId(), vdMapEntry->second->position());		  
+		 CLHEP::Hep3Vector simPos = cal.geomUtil().mu2eToDiskFF(cluster.diskID(), vdMapEntry->second->position());		  
 	      } 
 
               cluSimId_[nCluSim_]     = sim->id().asInt();

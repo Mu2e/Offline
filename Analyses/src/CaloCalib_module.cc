@@ -27,7 +27,6 @@
 
 #include "RecoDataProducts/inc/CaloHit.hh"
 #include "RecoDataProducts/inc/CaloCluster.hh"
-#include "RecoDataProducts/inc/CaloCluster.hh"
 
 #include "art/Framework/Core/EDAnalyzer.h"
 #include "art/Framework/Core/ModuleMacros.h"
@@ -301,7 +300,7 @@ namespace mu2e {
        for (unsigned int ic=0; ic<CaloHits.size();++ic) 
        {	   
 	   CaloHit const& hit            = CaloHits.at(ic);
-	   int diskId                    = cal.crystal(hit.id()).diskId();
+	   int diskId                    = cal.crystal(hit.id()).diskID();
            CLHEP::Hep3Vector crystalPos  = cal.geomUtil().mu2eToDiskFF(diskId,cal.crystal(hit.id()).position());  //in disk FF frame
            CaloHit const& caloHit        = *(hit.readouts().at(0));
 
@@ -318,7 +317,7 @@ namespace mu2e {
 	   _cryPosY[_nHits]      = crystalPos.y();
 	   _cryPosZ[_nHits]      = crystalPos.z();
 	   _cryId[_nHits]        = hit.id();
-	   _crySectionId[_nHits] = cal.crystal(hit.id()).diskId();
+	   _crySectionId[_nHits] = cal.crystal(hit.id()).diskID();
            _crySimIdx[_nHits]    = _nSim;   	              
            _crySimLen[_nHits]    = nPartInside;
 

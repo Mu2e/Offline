@@ -77,7 +77,6 @@ CaloClusterMaker :
   deltaTime              : 2
   maxDistSplit           : 150
   maxDistMain            : 150
-  cogTypeName            : Linear
   strategy               : 0
   diagLevel              : 0
 }  
