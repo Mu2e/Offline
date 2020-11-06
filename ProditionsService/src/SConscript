@@ -59,9 +59,6 @@ helper.make_plugins( [ mainlib,
                        'xerces-c'
                        ] )
 
-#BINLIBS   = [ mainlib, 'mu2e_DbExample' , 'cetlib', 'cetlib_except', "pq" ]
-#helper.make_bin("dbTool",BINLIBS,[])
-
 
 # This tells emacs to view this file in python mode.
 # Local Variables:
