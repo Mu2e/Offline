@@ -178,4 +178,8 @@ outputs: {
 }
 
 physics.producers.g4run.physics.minRangeCut : 1. // mm
-
+services.SeedService.baseSeed         :  8
+services.SeedService.maxUniqueEngines :  20
+services.GeometryService.simulatedDetector.tool_type : "Mu2e"
+services.scheduler.wantSummary: true
+services.TimeTracker.printSummary: true

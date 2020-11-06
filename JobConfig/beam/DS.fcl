@@ -288,3 +288,6 @@ physics.producers.g4run.physics.minRangeCut : 0.010 // mm
 // Initialze seeding of random engines: do not put these lines in base .fcl files for grid jobs.
 services.SeedService.baseSeed         :  8
 services.SeedService.maxUniqueEngines :  20
+services.GeometryService.simulatedDetector.tool_type : "Mu2e"
+services.scheduler.wantSummary: true
+services.TimeTracker.printSummary: true

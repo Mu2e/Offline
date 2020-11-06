@@ -1,0 +1,61 @@
+#
+# internal RPC, in time
+#
+#include "JobConfig/primary/prolog.fcl"
+#include "Analyses/fcl/prolog.fcl"
+
+process_name: InternalRPCDigi
+
+source: { module_type : EmptyEvent }
+services: @local::Services.Sim
+physics : { 
+  producers : {
+    generate : @local::EventGenerator.producers.RPCGun
+    @table::Primary.producers
+    genEventCount : {
+                module_type : GenEventCounter
+            }
+  }
+  filters: { 
+        @table::Primary.filters 
+        detectorFilter : {
+            module_type    : FilterStepPointMomentum
+            inputs         : [ "g4run:tracker" ]
+            cutMomentumMin : 0. // MeV/c CHNGED THIS
+        }
+         @table::GenAna.filters
+  }
+  analyzers: { @table::Primary.analyzers }
+  TriggerPath : [ generate, genEventCount, GenFilter,g4run, detectorFilter ]
+  EndPath : @local::Primary.EndPath
+}
+outputs : {
+    Output :@local::Primary.Output
+    rootout : {
+        module_type  : RootOutput
+        SelectEvents : ["TriggerPath"]
+        fileName     : "sim.owner.pions-g4s4-RPCInternalInTime.version.sequencer.art"
+        outputCommands: ["drop _*_*_*", "keep mu2e::*_*_*_*" ]
+        
+    }
+}
+
+#include "JobConfig/primary/epilog.fcl"
+physics.producers.generate.physics.generateIntConversion : 1
+physics.producers.generate.physics.spectrumShape : "Bistirlich"
+physics.producers.generate.physics.elow : 0.0
+physics.producers.generate.physics.ehi  : 140
+physics.producers.generate.physics.doHistograms : true
+physics.filters.DigiFilter.MinParticleMom : 10.0
+
+// change these lines to talk to the output of Stage 4
+physics.producers.generate.pionStops.inputFiles: ["pionStops/nts.owner.pions-nts3.version.sequencer.root"]
+physics.producers.generate.pionStops.averageNumRecordsToUse : 500000
+physics.producers.generate.pionStops.treeName : "stoppedPionDumper/stops"
+physics.producers.generate.pionStops.branchName : "stops"
+
+# customize the output
+services.TFileService.fileName: "nts.owner.internalRPCInTime.version.sequencer.root"
+outputs.Output.fileName: "dig.owner.internalRPCInTime.version.sequencer.art"
+physics.end_paths : [ EndPath] # needed for generate_fcl
+services.scheduler.wantSummary: true
