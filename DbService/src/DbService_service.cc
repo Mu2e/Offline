@@ -40,6 +40,7 @@ namespace mu2e {
 
     // the engine which will read db, hold calibrations, deliver them
     _engine.setVerbose(_verbose);
+    _engine.setSaveCsv(_config.saveCsv());
 
     _engine.setDbId( DbId(_config.dbName()) );
     _engine.setVersion( _version );
@@ -54,7 +55,7 @@ namespace mu2e {
       if(_verbose>1) std::cout << "DbService::beginJob reading file "<<
 		       ss <<std::endl;
       fn = configFile(ss);
-      auto coll = DbUtil::readFile(fn);
+      auto coll = DbUtil::readFile(fn,_config.saveCsv());
       if(_verbose>1) {
 	for(auto const& lt : coll) {
 	  std::cout << "  read table " << lt.table().name() <<std::endl;
