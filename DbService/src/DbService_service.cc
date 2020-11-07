@@ -1,6 +1,7 @@
 
 #include "DbService/inc/DbService.hh"
 #include "DbTables/inc/DbUtil.hh"
+#include "ConfigTools/inc/ConfigFileLookupPolicy.hh"
 
 
 namespace mu2e {
@@ -48,17 +49,20 @@ namespace mu2e {
     // then read them and tell the engine to let them override IOV
     std::vector<std::string> files;
     _config.textFile(files);
+   ConfigFileLookupPolicy configFile;
+   std::string fn;
     for(auto ss : files ) {
       if(_verbose>1) std::cout << "DbService::beginJob reading file "<<
 		       ss <<std::endl;
-      auto coll = DbUtil::readFile(ss,_config.saveCsv());
+      fn = configFile(ss);
+      auto coll = DbUtil::readFile(fn,_config.saveCsv());
       if(_verbose>1) {
 	for(auto const& lt : coll) {
 	  std::cout << "  read table " << lt.table().name() <<std::endl;
 	}
       }
       _engine.addOverride(coll);
-    }
+    } // end loop over files
 
     int cacheLifetime = 0;
     _config.cacheLifetime(cacheLifetime);
