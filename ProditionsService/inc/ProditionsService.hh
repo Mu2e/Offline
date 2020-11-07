@@ -1,5 +1,5 @@
-#ifndef DbExample_ProditionsService_hh
-#define DbExample_ProditionsService_hh
+#ifndef ProditionsService_ProditionsService_hh
+#define ProditionsService_ProditionsService_hh
 
 //
 // Service to hold and deliver time-dependent and
