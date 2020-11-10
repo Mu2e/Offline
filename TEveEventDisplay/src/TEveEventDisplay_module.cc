@@ -100,7 +100,6 @@ namespace mu2e
   void TEveEventDisplay::beginRun(const art::Run& run){
     _frame->SetRunGeometry(run, _diagLevel, _showBuilding, _showDSOnly, _showCRV);
     _frame->PrepareTrackerProjectionTab(run);
-    //if(_show2D) 
     _frame->PrepareCaloProjectionTab(run);
   }
 
