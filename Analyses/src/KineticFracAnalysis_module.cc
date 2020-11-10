@@ -843,25 +843,25 @@ namespace mu2e {
     _cluList.clear();
     for (unsigned int ic=0; ic<caloClusters.size();++ic)
     {
-       const CaloCluster& cluster = caloClusters.at(ic);
-
-        auto itMC = caloClusterTruth.begin();
-        while (itMC != caloClusterTruth.end()) {if (itMC->first.get() == &cluster) break; ++itMC;}
-        unsigned nCluSims   = (itMC != caloClusterTruth.end()) ? itMC->second->nParticles() : 0;
-
+        const CaloCluster& cluster = caloClusters.at(ic);
         std::vector<int> cryList;
         for (auto cryPtr : cluster.caloHitsPtrVector()) cryList.push_back(int(cryPtr.get()- &CaloHits.at(0)));
 
+        auto itMC = caloClusterTruth.begin();
+        while (itMC != caloClusterTruth.end()) {if (itMC->first.get() == &cluster) break; ++itMC;}
+        const auto eDepMCs = (itMC != caloClusterTruth.end()) ? itMC->second->energyDeposits() : std::vector<CaloEDepMC>{};
+
         bool isConversion(false);
-        if (nCluSims>0) 
+        if (itMC != caloClusterTruth.end()) 
         {
-           for (auto& edep : itMC->second->energyDeposits())
+           for (auto& edep : eDepMCs)
            {
               auto parent(edep.sim());
               while (parent->hasParent()) parent = parent->parent();                     
 	      if (parent->genParticle() && parent->genParticle()->generatorId().isConversion() ) isConversion=true;
            }    		          
         }
+
           
         _cluEnergy[_nCluster] = cluster.energyDep();
         _cluTime[_nCluster]   = cluster.time();
@@ -873,11 +873,11 @@ namespace mu2e {
         _cluList.push_back(cryList);
 
         _cluSimIdx[_nCluster] = _nCluSim;
-        _cluSimLen[_nCluster] = nCluSims;
+        _cluSimLen[_nCluster] = eDepMCs.size();
         
-	for (unsigned i=0;i< nCluSims;++i)
+	for (unsigned i=0;i< eDepMCs.size();++i)
 	{	       
-	    const auto& eDepMC = itMC->second->energyDeposit(i);	       
+            const auto& eDepMC = eDepMCs[i];	       
             art::Ptr<SimParticle> sim = eDepMC.sim();
 
 	    art::Ptr<SimParticle> smother(sim);

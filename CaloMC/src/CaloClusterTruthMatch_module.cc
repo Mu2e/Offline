@@ -99,45 +99,26 @@ namespace mu2e {
            const auto& hits = cluster.caloHitsPtrVector();
            
            if (diagLevel_ > 1) std::cout<<"[CaloClusterTruthMatch] Inspect cluster diskId/energy/time "<<cluster.diskID()<<" "<<cluster.energyDep()<<" "<<cluster.time()<<std::endl;
-           std::vector<CaloEDepMC> edeps;  
+           std::vector<art::Ptr<CaloDigiMC>> digis;  
                      
            for (auto i=caloHitTruth.begin(), ie = caloHitTruth.end(); i !=ie; ++i)
            {	       
 	        if (std::find(hits.begin(),hits.end(),i->first) == hits.end()) continue;
                 const auto& digiMC = i->second;
-                
-                if (diagLevel_ > 1) std::cout<<"[CaloClusterTruthMatch] found hit in map "<<digiMC->nParticles()<<" "<<digiMC->time()<<std::endl;
-                
-                for (const auto& digiEdep : digiMC->energyDeposits())
-                {
-                    auto it = edeps.begin();
-                    while (it != edeps.end()) {if (it->sim() == digiEdep.sim()) break;  ++it;}
-                    
-                    if (it!= edeps.end()) 
-                    {
-                        it->addEDep(digiEdep.energyDep());
-                        it->addEDepG4(digiEdep.energyDepG4());
-                        it->addTime(digiEdep.time());
-                        it->addMom(digiEdep.momentumIn());
-                    }
-                    else 
-                    {
-                        edeps.emplace_back(CaloEDepMC(digiEdep.sim(),digiEdep.energyDep(),digiEdep.energyDepG4(),
-                                                      digiEdep.time(),digiEdep.momentumIn(),digiEdep.rel()));                
-                    }
-                } 
-                
-           } 
-           if (edeps.empty()) continue;
-           
-           std::sort(edeps.begin(),edeps.end(),[](const auto& a, const auto& b){return a.energyDep() > b.energyDep();});
+                digis.push_back(digiMC);
 
-           CaloClusterMCs.emplace_back(CaloClusterMC(std::move(edeps)));
+                if (diagLevel_ > 1) std::cout<<"[CaloClusterTruthMatch] found hit in map "<<digiMC->nParticles()<<" "<<digiMC->time()<<std::endl;
+           } 
+           if (digis.empty()) continue;
+           
+           std::sort(digis.begin(),digis.end(),[](const auto& a, const auto& b){return a->totalEnergyDep() > b->totalEnergyDep();});
+           CaloClusterMCs.emplace_back(CaloClusterMC(std::move(digis)));
 
            art::Ptr<CaloClusterMC> clusterMCPtr = art::Ptr<CaloClusterMC>(clusterMCProductID, CaloClusterMCs.size()-1, clusterMCProductGetter);             
            caloClusterTruthMatch.addSingle(clusterPtr,clusterMCPtr);
            
-           totalEnergyMatched += clusterPtr->energyDep();++nMatched;
+           totalEnergyMatched += clusterPtr->energyDep();
+           ++nMatched;
       }            	      
       
       if (diagLevel_ > 0) std::cout<<"[CaloClusterTruthMatch]  total clusters / energy matched = "<<nMatched<<" / "<<totalEnergyMatched<<std::endl;

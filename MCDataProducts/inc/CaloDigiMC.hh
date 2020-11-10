@@ -1,3 +1,10 @@
+//
+// This calss contains CaloMCEdep for each CaloDigi, matching deposited energy at MC level to reco digi hits
+// Notes:
+// CaloEdepMC: the list of CaloEDepMC is ordered by energy - most energetic first. 
+// time:       taken as the time of the most energetic contribution.
+//
+//
 #ifndef MCDataProducts_CaloDigiMC_hh
 #define MCDataProducts_CaloDigiMC_hh
 
@@ -25,14 +32,7 @@ namespace mu2e
    };  
    
    using  CaloDigiMCCollection = std::vector<mu2e::CaloDigiMC>;
-
 } 
-
-// Notes:
-//
-// CaloEdepMC: the list of CaloEDepMC is ordered by energy - most energetic first. 
-// time:       taken as the time of the most energetic contribution.
-//
 
 #endif
 

@@ -434,24 +434,24 @@ namespace mu2e {
           std::vector<int> cryList;
           for (auto cryPtr : cluster.caloHitsPtrVector()) cryList.push_back(std::distance(&CaloHits.at(0),cryPtr.get()));
 
+          ClusterUtils cluUtil(cal, cluster);
+          auto cog = cluUtil.cog3Vector();
+
+
           auto itMC = caloClusterTruth.begin();
           while (itMC != caloClusterTruth.end()) {if (itMC->first.get() == &cluster) break; ++itMC;}
-          unsigned nCluSims   = (itMC != caloClusterTruth.end()) ? itMC->second->nParticles() : 0;
+          const auto eDepMCs = (itMC != caloClusterTruth.end()) ? itMC->second->energyDeposits() : std::vector<CaloEDepMC>{};
 
           bool isConversion(false);
-          if (nCluSims>0) 
+          if (itMC != caloClusterTruth.end()) 
           {
-             for (auto& edep : itMC->second->energyDeposits())
+             for (auto& edep : eDepMCs)
              {
                 auto parent(edep.sim());
                 while (parent->hasParent()) parent = parent->parent();                     
 	        if (parent->genParticle() && parent->genParticle()->generatorId().isConversion() ) isConversion=true;
              }    		          
           }
-          
-          ClusterUtils cluUtil(cal, cluster);
-          auto cog = cluUtil.cog3Vector();
-
           
           cluEnergy_[nCluster_]    = cluster.energyDep();
           cluEnergyErr_[nCluster_] = cluster.energyDepErr();
@@ -470,11 +470,11 @@ namespace mu2e {
           cluList_.push_back(cryList);
 
           cluSimIdx_[nCluster_] = nCluSim_;
-          cluSimLen_[nCluster_] = nCluSims;
+          cluSimLen_[nCluster_] = eDepMCs.size();
 
-          for (unsigned i=0;i< nCluSims;++i)
+          for (unsigned i=0;i< eDepMCs.size();++i)
 	  {	       
-	      const auto& eDepMC = itMC->second->energyDeposit(i);	       
+	      const auto& eDepMC = eDepMCs[i];	       
               art::Ptr<SimParticle> sim = eDepMC.sim();
 
 	      art::Ptr<SimParticle> smother(sim);
