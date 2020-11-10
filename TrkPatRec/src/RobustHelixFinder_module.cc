@@ -207,8 +207,8 @@ namespace mu2e {
     _maxphihitchi2(pset.get<float>("MaxHitPhiChi2", 25.0)),
     _maxdr	 (pset.get<float>("MaxRadiusDiff",100.0)), // mm
     _maxrpull	 (pset.get<float>("MaxRPull",5.0)), // unitless
-    _targetconInit(pset.get<bool>("targetconsistent_init",true)),
-    _targetcon   (pset.get<bool>("targetconsistent",true)),
+    _targetconInit(pset.get<bool>("targetconsistent_init",false)),
+    _targetcon   (pset.get<bool>("targetconsistent",false)),
     _rpullScaleF (pset.get<float>("RPullScaleF",1.414)), // unitless
     _maxphisep	 (pset.get<float>("MaxPhiHitSeparation",1.0)),
     _saveflag    (pset.get<vector<string> >("SaveHelixFlag",vector<string>{"HelixOK"})),
