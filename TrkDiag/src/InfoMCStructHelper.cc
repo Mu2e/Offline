@@ -200,11 +200,12 @@ namespace mu2e {
   }
 
   void InfoMCStructHelper::fillCaloClusterInfoMC(CaloClusterMC const& ccmc, CaloClusterInfoMC& ccimc) {
-    ccimc._nsim = ccmc.energyDeposits().size();
+    auto const& edeps = ccmc.energyDeposits();
+    ccimc._nsim = edeps.size();
     ccimc._etot = ccmc.totalEnergyDep();
-    ccimc._tavg = ccmc.time();
+    ccimc._tavg = edeps[0].time();
     if(ccmc.energyDeposits().size() > 0){
-      auto const& primary = ccmc.energyDeposits().front();
+      auto const& primary = edeps.front();
       ccimc._eprimary = primary.energyDep();
       ccimc._tprimary = primary.time();
       ccimc._prel = primary.rel();

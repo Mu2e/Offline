@@ -369,7 +369,7 @@ namespace mu2e {
     // sort
     auto esort = [](CaloEDepMC a, CaloEDepMC b) { return a.energyDep() > b.energyDep(); };
     std::sort(edeps.begin(),edeps.end(),esort);
-    ccmcc->push_back(CaloClusterMC(edeps));    
+//    ccmcc->push_back(CaloClusterMC(edeps));    
   }
 
   void SelectRecoMC::fillStrawHitCounts(ComboHitCollection const& chc, StrawHitFlagCollection const& shfc, RecoCount& nrec) {
