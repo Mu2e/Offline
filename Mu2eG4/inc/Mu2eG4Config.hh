@@ -123,8 +123,6 @@ namespace mu2e {
       fhicl::Atom<bool> decayMuonsWithSpin {Name("decayMuonsWithSpin"), false};
       fhicl::Atom<double> minRangeCut {Name("minRangeCut")};
 
-      fhicl::Atom<bool> modifyEMOption4 {Name("modifyEMOption4"), false};
-      fhicl::Atom<bool> modifyEMOption0 {Name("modifyEMOption0"), false};
 
       fhicl::Atom<bool> setMuHadLateralDisplacement {Name("setMuHadLateralDisplacement"), false};
 
@@ -138,6 +136,8 @@ namespace mu2e {
           Comment("pienu branching.  A string convertable to a double, "
                   "or one of \"PDG\", \"All\", \"None\" pre-defined settings.")
           };
+
+      OptionalDelegatedParameter mscTransitionEnergy {Name("mscTransitionEnergy")};
 
       OptionalDelegatedParameter BirksConsts {Name("BirksConsts")};
       OptionalDelegatedParameter minRangeRegionCuts {Name("minRangeRegionCuts")};

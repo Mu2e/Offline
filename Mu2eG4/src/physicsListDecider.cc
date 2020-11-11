@@ -34,10 +34,6 @@
 #include "Mu2eG4/inc/DecayMuonsWithSpin.hh"
 #include "Mu2eG4/inc/MinimalPhysicsList.hh"
 #include "Mu2eG4/inc/MinDEDXPhysicsList.hh"
-#if G4VERSION>4103
-#include "Mu2eG4/inc/Mu2eEmStandardPhysics_option4.hh"
-#include "Mu2eG4/inc/Mu2eEmStandardPhysics.hh"
-#endif
 #include "Mu2eG4/inc/StepLimiterPhysConstructor.hh"
 #include "Mu2eG4/inc/Mu2eG4CustomizationPhysicsConstructor.hh"
 
@@ -53,9 +49,6 @@
 
 #if G4VERSION>4103
 #include "G4EmParameters.hh"
-#endif
-#if G4VERSION<4099
-#include "QGSP.hh"
 #endif
 
 using namespace std;
@@ -122,36 +115,30 @@ namespace mu2e{
       tmpPL->RegisterPhysics(new G4RadioactiveDecayPhysics(debug.diagLevel()));
     }
 
-#if G4VERSION>4103
-    // for version 4105 it will need to be rplaced with
-    // emParams->SetMscEnergyLimit(115.0*CLHEP::MeV);
-    if ( phys.modifyEMOption4() && (name.find("_EMZ") != std::string::npos) ) {
-      tmpPL->RemovePhysics(("G4EmStandard_opt4"));
+#if G4VERSION>4104
+
+    // changing msc model transition energy if requested
+    double mscTransitionEnergyValue;
+    if (phys.mscTransitionEnergy.get_if_present(mscTransitionEnergyValue)) {
       if (debug.diagLevel()>0) {
-        G4cout << __func__ << " Registering Mu2eEmStandardPhysics_option4" << G4endl;
+        G4cout << __func__
+               << " Changing MscEnergyLimit to "
+               << mscTransitionEnergyValue << " MeV" << G4endl;
       }
-      tmpPL->RegisterPhysics( new Mu2eEmStandardPhysics_option4(debug.diagLevel()));
+      G4EmParameters* emParams = G4EmParameters::Instance();
+      emParams->SetMscEnergyLimit(mscTransitionEnergyValue*CLHEP::MeV);
     }
 
     if ( phys.useEmOption4InTracker() && (name.find("_EMZ") == std::string::npos) ) {
-      // assign Mu2eEmStandard_opt4 to the tracker
+      // assign EmStandard_opt4 to the tracker
       if (debug.diagLevel()>0) {
         G4cout << __func__
                << " Assigning EmStandardPhysics_option4 to the TrackerMother" << G4endl;
       }
       G4EmParameters* emParams = G4EmParameters::Instance();
-      // fixme: get the value from fhicl and key on modifyEMOption once using 4105
-      // emParams->SetMscEnergyLimit(115.0*CLHEP::MeV);
       emParams->AddPhysics("TrackerMother", "G4EmStandard_opt4");
     }
 
-    if ( phys.modifyEMOption0() && (name.find("_EM") == std::string::npos) ) {
-      tmpPL->RemovePhysics(("G4EmStandard"));
-      if (debug.diagLevel()>0) {
-        G4cout << __func__ << " Registering Mu2eEmStandardPhysics" << G4endl;
-      }
-      tmpPL->RegisterPhysics( new Mu2eEmStandardPhysics(debug.diagLevel()));
-    }
 #endif
 
     // Muon Spin and Radiative decays plus pion muons with spin
