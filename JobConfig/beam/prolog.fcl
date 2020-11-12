@@ -196,11 +196,7 @@ mu2e.physics.g4s4CommonBase: {
 }
 
 crvPathCommon: [ g4run, g4consistent, crvFilter, compressPVCRV ]
-<<<<<<< HEAD
-detPathCommon: [ g4run, g4consistent, CaloShowerStepFromStepPt, detectorFilter, CaloShowerCrystalSteps, CaloShowerROSteps, compressPVDetector, @sequence::TrackerMC.StepSim ]
-=======
-detPathCommon: [ g4run, g4consistent, CaloShowerStepMaker, detectorFilter, CaloShowerCrystalSteps, CaloShowerROSteps, compressPVDetector ]
->>>>>>> Renamed Calo MC data products and module names
+detPathCommon: [ g4run, g4consistent, CaloShowerStepMaker, detectorFilter, CaloShowerCrystalSteps, CaloShowerROSteps, compressPVDetector, @sequence::TrackerMC.StepSim  ]
 g4StatusPathCommon:  [ g4run, "!g4status", compressPVFull ]
 
 #----------------------------------------------------------------

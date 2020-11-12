@@ -157,8 +157,10 @@
  <class name="art::Wrapper<std::vector<mu2e::CaloEDepMC> >"/>
  
  <class name="mu2e::CaloDigiMC"/>
- <class name="art::Ptr<mu2e::CaloDigiMC>" />
  <class name="mu2e::CaloDigiMCCollection"/>
+ <class name="art::Ptr<mu2e::CaloDigiMC>" />
+ <class name="std::vector<mu2e::CaloDigiMC>" />
+ <class name="std::vector<art::Ptr<mu2e::CaloDigiMC> >" />
  <class name="art::Wrapper<mu2e::CaloDigiMCCollection>"/>
  
  <class name="mu2e::CaloClusterMC" />
