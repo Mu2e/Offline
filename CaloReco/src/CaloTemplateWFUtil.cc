@@ -124,7 +124,7 @@ namespace mu2e {
 
            for (unsigned ip=nParBkg_; ip<nParTot_; ip += nParFcn_)
            {    
-	       if (selectComponent(tempPar,ip)) continue;           
+	       if (selectComponent(tempPar,tempErr,ip)) continue;           
 	       minuit.mnparm(ip,   "fixed par", 0, 0.01, -1e6, 1e6, ierr);
 	       minuit.mnparm(ip+1, "fixed par", 0, 0.01, -1e6, 1e6, ierr);
                minuit.FixParameter(ip);
@@ -217,10 +217,12 @@ namespace mu2e {
    }
    
    //----------------------------------------------------------------------------------
-   bool CaloTemplateWFUtil::selectComponent(const std::vector<double>& tempPar, unsigned ip)
+   bool CaloTemplateWFUtil::selectComponent(const std::vector<double>& tempPar, const std::vector<double>& tempErr, unsigned ip)
    {
-       // first check if component is too small
-       if (tempPar[ip] < minPeakAmplitude_) return false;
+       // first check if component is too small, error too large or out of time
+       if (tempPar[ip] < minPeakAmplitude_)                               return false;
+       if (tempPar[ip+1] < xvec_.front() || tempPar[ip+1] > xvec_.back()) return false;
+       if (tempErr[ip] >1e3)                                              return false;
 
        //remove peaks close in time with smaller amplitude
        for (unsigned ip2=nParBkg_; ip2<npTot_; ip2 += nParFcn_)

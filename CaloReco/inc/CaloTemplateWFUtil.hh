@@ -45,7 +45,7 @@ namespace mu2e {
 
 
      private:              
-        bool                selectComponent(const std::vector<double>& tempPar, unsigned ip);       
+        bool                selectComponent(const std::vector<double>& tempPar, const std::vector<double>& tempErr, unsigned ip);       
 
         CaloPulseShape      pulseCache_;
         double              minPeakAmplitude_;

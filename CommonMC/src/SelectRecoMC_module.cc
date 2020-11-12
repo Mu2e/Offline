@@ -78,6 +78,7 @@ namespace mu2e {
       fhicl::Atom<art::InputTag> CSSC           { Name("CSSCollection"),	          Comment("CaloShowerSim collection")};
       fhicl::Atom<art::InputTag> EWM            { Name("EventWindowMarker"),	          Comment("EventWindowMarker")};
       fhicl::Atom<art::InputTag> PBI            { Name("ProtonBunchIntensity"),	          Comment("ProtonBunchIntensity")};
+      fhicl::Atom<art::InputTag> PBTMC          { Name("ProtonBunchTimeMC"),              Comment("ProtonBunchTimeMC")};
       fhicl::Atom<double> CCMCDT                { Name("CaloClusterMCDTime"),	          Comment("Max time difference between CaloCluster and CaloShowerSim for MC match")};
       fhicl::Atom<double> CSME                  { Name("CaloMinE"),	                  Comment("Min CaloShowerSim MC energy to include")};
       fhicl::Atom<double> CCME                  { Name("CaloClusterMinE"),                Comment("Minimum energy CaloCluster to save (MeV)"), 10.0};
