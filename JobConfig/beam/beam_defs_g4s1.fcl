@@ -23,7 +23,7 @@ dsRegionCuts: {
      { type: plane normal: [ -1, 0, 0 ] point : [ 2800., 0, 0 ] },
 
       // Make sure the muon beam reaches our DS2Vacuum stopping volume
-      {type: notInVolume pars:[TS2Vacuum, TS3Vacuum, TS4Vacuum, TS5Vacuum, Coll31, Coll32, Coll51, TS2InnerCryoShell, TS3InnerCryoShell, TS4InnerCryoShell, TS2CryoInsVac, TS3CryoInsVac, PbarAbsDisk, PbarAbsWedge, VirtualDetector_Coll31_In, VirtualDetector_Coll32_In, VirtualDetector_Coll31_Out, VirtualDetector_Coll32_Out, Coll31OutRecord, Coll32InRecord, Coll31OutRecord, VirtualDetector_TS4_Bend, VirtualDetector_Coll5_In, VirtualDetector_Coll5_Out, VirtualDetector_Coll5_OutSurf]},
+      {type: notInVolume pars:[TS2Vacuum, TS3Vacuum, TS4Vacuum, TS5Vacuum, Coll31, Coll32, Coll51, TS2InnerCryoShell, TS3InnerCryoShell, TS4InnerCryoShell, TS2CryoInsVac, TS3CryoInsVac, VirtualDetector_Coll31_In, VirtualDetector_Coll32_In, VirtualDetector_Coll31_Out, VirtualDetector_Coll32_Out, Coll31OutRecord, Coll32InRecord, Coll31OutRecord, VirtualDetector_TS4_Bend, VirtualDetector_Coll5_In, VirtualDetector_Coll5_Out, VirtualDetector_Coll5_OutSurf]},
 
       // This union splits the output of the above cuts
       // into two exclusive streams
