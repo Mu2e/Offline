@@ -137,7 +137,7 @@ namespace mu2e {
                   "or one of \"PDG\", \"All\", \"None\" pre-defined settings.")
           };
 
-      OptionalDelegatedParameter mscTransitionEnergy {Name("mscTransitionEnergy")};
+      fhicl::OptionalAtom<double> mscModelTransitionEnergy {Name("mscModelTransitionEnergy")};
 
       OptionalDelegatedParameter BirksConsts {Name("BirksConsts")};
       OptionalDelegatedParameter minRangeRegionCuts {Name("minRangeRegionCuts")};

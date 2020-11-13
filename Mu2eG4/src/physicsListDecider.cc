@@ -120,7 +120,7 @@ namespace mu2e{
     // Changing MSC model transition energy if requested
     { double mscModelTransitionEnergy(std::numeric_limits<double>::max());  // initializing
       // to something distinct before fetching the requested value if present and only using it then
-      if (phys.mscModelTransitionEnergy.get_if_present(mscModelTransitionEnergy)) {
+      if (phys.mscModelTransitionEnergy(mscModelTransitionEnergy)) {
         if (debug.diagLevel()>0) {
           G4cout << __func__
                  << " Changing MscEnergyLimit to "
