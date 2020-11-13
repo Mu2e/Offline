@@ -9,6 +9,7 @@
 #include "CaloMC/fcl/prolog.fcl"
 #include "CRVResponse/fcl/prolog.fcl"
 #include "Filters/fcl/prolog.fcl"
+#include "Compression/fcl/prolog.fcl"
 #
 BEGIN_PROLOG
 
