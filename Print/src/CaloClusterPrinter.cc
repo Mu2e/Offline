@@ -64,47 +64,30 @@ mu2e::CaloClusterPrinter::Print(const mu2e::CaloCluster& obj, int ind, std::ostr
   if(verbose()<1) return;
 
   if( obj.energyDep() < _eCut ) return;
-
-  CLHEP::Hep3Vector const&  cog = obj.cog3Vector();
-
+  
   os << std::setiosflags(std::ios::fixed | std::ios::right);
   if(ind>=0) os << std::setw(4) << ind;
 
   if(verbose()==1) {
     os 
-      << " " << std::setw(5) << obj.diskId()
+      << " " << std::setw(5) << obj.diskID()
       << " " << std::setw(5) << obj.size()
       << " " 
       << " " << std::setw(8) << std::setprecision(1) << obj.time()
       << " " << std::setw(8) << std::setprecision(1) << obj.energyDep()
-      << "  " 
-      << " " << std::setw(8) << std::setprecision(1) << cog.x()
-      << " " << std::setw(8) << std::setprecision(1) << cog.y()
-      << " " << std::setw(8) << std::setprecision(1) << cog.z()
       << std::endl;
   } else if(verbose()==2) {
      os 
-       << "  secId: " << std::setw(8) << obj.diskId()
+       << "  secId: " << std::setw(8) << obj.diskID()
        << "  size: " << std::setw(4) << obj.size()
        << "  time: " << std::setw(8) << std::setprecision(1) << obj.time()
-       << "  eDep: " << std::setw(8) << std::setprecision(1) << obj.energyDep() << "\n";
-
-     os
-       << "  e1: " << std::setw(8) << std::setprecision(1) << obj.e1()
-       << "  e9: " << std::setw(8) << std::setprecision(1) << obj.e9()
-       << "  e25: " << std::setw(8) << std::setprecision(1) << obj.e25()
-       << "  2ndMom: " << std::setw(8) << std::setprecision(1) << obj.secondMoment()
-       << "  angle: " << std::setw(8) << std::setprecision(1) << obj.angle() << "\n";
-     os
-       << "  COG: " << std::setw(8) << std::setprecision(1) << cog.x()
-       << " " << std::setw(8) << std::setprecision(1) << cog.y()
-       << " " << std::setw(8) << std::setprecision(1) << cog.z() 
-       << "    split: " << std::setw(4) << obj.isSplit()
+       << "  eDep: " << std::setw(8) << std::setprecision(1) << obj.energyDep()
+       << "  split: " << std::setw(4) << obj.isSplit()
        << "\n";
      os 
        << " CrystalHits:";
-       for(auto& ic: obj.caloCrystalHitsPtrVector()) {
-	 os << " " << (*ic).id();
+       for(auto& ic: obj.caloHitsPtrVector()) {
+	 os << " " << (*ic).crystalID();
        }
       os << "\n";
 

@@ -40,7 +40,7 @@ physics : {
       readCD : 
       {
 	  module_type : CaloDigiAna
-	 digisTag     : CaloDigiFromShower
+	 digisTag     : CaloDigiMaker
       }
 
    }

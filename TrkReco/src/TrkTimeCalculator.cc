@@ -51,7 +51,7 @@ namespace mu2e
    double TrkTimeCalculator::caloClusterTime(CaloCluster const& cc,double pitch) const 
    {
       mu2e::GeomHandle<mu2e::Calorimeter> ch;
-      CLHEP::Hep3Vector cog = ch->geomUtil().mu2eToTracker(ch->geomUtil().diskToMu2e( cc.diskId(), cc.cog3Vector())); 
+      CLHEP::Hep3Vector cog = ch->geomUtil().mu2eToTracker(ch->geomUtil().diskToMu2e( cc.diskID(), cc.cog3Vector())); 
       return cc.time() - timeOfFlightTimeOffset(cog.z()+_caloZOffset,pitch) + trkToCaloTimeOffset();
    }
 

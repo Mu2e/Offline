@@ -23,12 +23,12 @@ TimeClusterFinder : {
   
   ComboHitCollection     : "makePH"
   StrawHitFlagCollection : "FlagBkgHits:ComboHits"
-  CaloClusterCollection  : "CaloClusterFromProtoCluster"
+  CaloClusterCollection  : "CaloClusterMaker"
   ClusterMVA             : { MVAWeights : "TrkPatRec/test/TimeCluster.weights.xml" }
   ClusterCaloMVA         : { MVAWeights : "TrkPatRec/test/TimeClusterCalo.weights.xml" }
   HitSelectionBits       : ["EnergySelection","TimeSelection","RadiusSelection"]
   HitBackgroundBits      : ["Background"]
-  UseCaloCluster         : true
+  UseCaloCluster : true
   UseCaloClusterPosition : true
   CaloClusterWeight      : 10.0
   TestFlag               : true
@@ -305,7 +305,7 @@ KFF : {
   module_type                 : KalFinalFit
   ComboHitCollection	      : "makeSH"
   StrawHitFlagCollection      : "FlagBkgHits:StrawHits"
-  CaloClusterCollection       : "CaloClusterFromProtoCluster"
+  CaloClusterCollection       : "CaloClusterMaker"
   KalFit		      : @local::KFFinal
   GoodKallSeedFitBits	      : ["SeedOK"]
   AddHitSelectionBits	      : []

@@ -263,7 +263,7 @@ physics.producers.g4run.physics.minRangeCut : 0.01 // mm
 
 # don't bother with time collections
 physics.producers.makeSD.TimeOffsets : {}
-physics.producers.CaloShowerStepROFromShowerStep.TimeOffsets : {}
+physics.producers.CaloShowerROFromShowerStep.TimeOffsets : {}
 physics.producers.CrvPhotons.timeOffsets : {}
 
 // turn on Calo compression for muons

@@ -112,22 +112,18 @@ mu2e.physics.g4s4CommonBase: {
    producers: {
       g4run: @nil
 
-      CaloShowerStepFromStepPt: @local::CaloShowerStepFromStepPt
+      CaloShowerStepMaker: @local::CaloShowerStepMaker
 
       CaloShowerCrystalSteps: {
-         module_type: CaloShowerUpdater
-         showerInput: "CaloShowerStepFromStepPt:calorimeter"
-         newSimParticles: "detectorFilter"
+	 module_type: CaloShowerUpdater
+	 showerInput: "CaloShowerStepMaker:calorimeter"
+	 newSimParticles: "detectorFilter"
       }
 
       CaloShowerROSteps: {
-         module_type: CaloShowerUpdater
-         showerInput: "CaloShowerStepFromStepPt:calorimeterRO"
-         newSimParticles: "detectorFilter"
-      }
-
-      makeSGS : { @table::TrackerMC.producers.makeSGS
-                  SkipTheseStepPoints : "g4run" # this will run after detectorFilter so want to ignore steps from g4run
+	 module_type: CaloShowerUpdater
+	 showerInput: "CaloShowerStepMaker:calorimeterRO"
+	 newSimParticles: "detectorFilter"
       }
 
       compressPVDetector: {
@@ -152,11 +148,11 @@ mu2e.physics.g4s4CommonBase: {
 
    filters: {
       detectorFilter: {
-         module_type: FilterG4Out
-         mainHitInputs: [ "g4run:tracker" ]
-         mainSPPtrInputs: [ "CaloShowerStepFromStepPt" ]
-         extraHitInputs: [ "g4run:virtualdetector", "g4run:protonabsorber" ]
-         vetoDaughters: []
+	 module_type: FilterG4Out
+	 mainHitInputs: [ "g4run:tracker" ]
+	 mainSPPtrInputs: [ "CaloShowerStepMaker" ]
+	 extraHitInputs: [ "g4run:virtualdetector", "g4run:protonabsorber" ]
+	 vetoDaughters: []
       }
 
       crvFilter: {
@@ -200,7 +196,7 @@ mu2e.physics.g4s4CommonBase: {
 }
 
 crvPathCommon: [ g4run, g4consistent, crvFilter, compressPVCRV ]
-detPathCommon: [ g4run, g4consistent, CaloShowerStepFromStepPt, detectorFilter, CaloShowerCrystalSteps, CaloShowerROSteps, compressPVDetector, @sequence::TrackerMC.StepSim ]
+detPathCommon: [ g4run, g4consistent, CaloShowerStepMaker, detectorFilter, CaloShowerCrystalSteps, CaloShowerROSteps, compressPVDetector, @sequence::TrackerMC.StepSim  ]
 g4StatusPathCommon:  [ g4run, "!g4status", compressPVFull ]
 
 #----------------------------------------------------------------
@@ -229,7 +225,7 @@ mu2e.physics.g4s4Muons.producers.genCounter: {
 mu2e.physics.g4s4Muons.crvPath: [ generate, genCounter,  @sequence::crvPathCommon ]
 mu2e.physics.g4s4Muons.detPath: [ generate, genCounter,  @sequence::detPathCommon ]
 mu2e.physics.g4s4Muons.g4StatusPath:  [ generate, genCounter, @sequence::g4StatusPathCommon ]
-mu2e.physics.Signal.detPath : [ generate, genCounter,  g4run, g4consistent, CaloShowerStepFromStepPt, TrkStepFilter, detectorFilter, CaloShowerCrystalSteps, CaloShowerROSteps, compressPVDetector ]
+mu2e.physics.Signal.detPath : [ generate, genCounter,  g4run, g4consistent, CaloShowerStepMaker, TrkStepFilter, detectorFilter, CaloShowerCrystalSteps, CaloShowerROSteps, compressPVDetector ]
 
 #================================================================
 
