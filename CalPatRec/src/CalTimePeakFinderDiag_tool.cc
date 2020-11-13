@@ -239,7 +239,7 @@ namespace mu2e {
     Hist->energy->Fill(Cl->energyDep());
     Hist->time->Fill(Cl->time());
     Hist->size->Fill(Cl->size());
-    Hist->diskID->Fill(Cl->diskId());
+    Hist->diskID->Fill(Cl->diskID());
 
     return 0;
   }

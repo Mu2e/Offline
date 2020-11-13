@@ -60,21 +60,21 @@ physics :{
       }
       caloDigiPrinter : {
         verbose: 1   # 0, 1
-	#inputTags : [ "CaloDigiFromShower" ] # select instances
+	#inputTags : [ "CaloDigiMaker" ] # select instances
       }
       caloRecoDigiPrinter : {
         verbose: 1   # 0, 1
-	#inputTags : [ "CaloRecoDigiFromDigi" ] # select instances
+	#inputTags : [ "CaloRecoDigiMaker" ] # select instances
       }
       caloCrystalHitPrinter : {
         verbose: 1   # 0, 1
         #eCut : 10.0          # cut on hits
-	#inputTags : [ "CaloCrystalHitFromHit" ] # select instances
+	#inputTags : [ "CaloHitMaker" ] # select instances
       }
       caloClusterPrinter : {
         verbose: 1   # 0, 1
         eCut : -10.0          # cut on hits
-	#inputTags : [ "CaloClusterFromProtoCluster" ] # select instances
+	#inputTags : [ "CaloClusterMaker" ] # select instances
       }
 
       crvDigiPrinter : {

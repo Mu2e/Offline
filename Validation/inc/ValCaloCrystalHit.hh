@@ -4,7 +4,7 @@
 
 #include "art/Framework/Principal/Event.h"
 #include "art_root_io/TFileDirectory.h"
-#include "RecoDataProducts/inc/CaloCrystalHitCollection.hh"
+#include "RecoDataProducts/inc/CaloHit.hh"
 #include "TH1D.h"
 #include <string>
 
@@ -15,7 +15,7 @@ namespace mu2e {
   public:
     ValCaloCrystalHit(std::string name):_name(name){}
     int declare( art::TFileDirectory tfs);
-    int fill(const CaloCrystalHitCollection & coll, art::Event const& event);
+    int fill(const CaloHitCollection & coll, art::Event const& event);
     std::string& name() { return _name; }
 
   private:

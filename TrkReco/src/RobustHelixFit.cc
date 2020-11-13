@@ -1270,7 +1270,7 @@ namespace mu2e
       {
 	// mu2e::GeomHandle<mu2e::Calorimeter> ch;
 	// const Calorimeter* calo = ch.get();
-	XYZVec cog = Geom::toXYZVec(_calorimeter->geomUtil().mu2eToTracker(_calorimeter->geomUtil().diskFFToMu2e(HelixData._hseed.caloCluster()->diskId(),HelixData._hseed.caloCluster()->cog3Vector())));
+	XYZVec cog = Geom::toXYZVec(_calorimeter->geomUtil().mu2eToTracker(_calorimeter->geomUtil().diskFFToMu2e(HelixData._hseed.caloCluster()->diskID(),HelixData._hseed.caloCluster()->cog3Vector())));
 	float rad = sqrtf(XYZVec(cog - center).perp2());
 	radii.push_back(make_pair(rad,_ccwt));
       }

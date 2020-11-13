@@ -21,7 +21,6 @@ namespace mu2e {
     {
        public:     
           CaloInfoData() : data_() {};
-          ~CaloInfoData() {};
 
           const T& get(const std::string& key) const
           { 
@@ -38,24 +37,11 @@ namespace mu2e {
     };
 
     
-    
-    
-    
-    
-    
+        
     class CaloInfo {
 
        public:
-
-           CaloInfo() : dataBool_(),dataInt_(),dataDouble_(),dataVDouble_(),nROPerCrystal_(0)
-           {}
-	     
-           ~CaloInfo() {}
-           
-	   void nROPerCrystal(int value)             {nROPerCrystal_ = value;}
-  	   int  nROPerCrystal()                const {return nROPerCrystal_;}         
-	   int  crystalByRO(int roid)          const {return (roid/nROPerCrystal_);}
-	   int  ROBaseByCrystal(int crystalId) const {return (crystalId*nROPerCrystal_);}
+           CaloInfo() : dataBool_(),dataInt_(),dataDouble_(),dataVDouble_() {}                
 
            void set(const std::string& key, int value)                       {dataInt_.set(key,value);}
            void set(const std::string& key, double value)                    {dataDouble_.set(key,value);}
@@ -69,18 +55,11 @@ namespace mu2e {
            //helper function
            double crystalVolume() const {return dataDouble_.get("crystalXYLength")*dataDouble_.get("crystalXYLength")*dataDouble_.get("crystalZLength");}
 
-
        private:
-
           CaloInfoData<bool>                dataBool_;
           CaloInfoData<int>                 dataInt_;
           CaloInfoData<double>              dataDouble_;
           CaloInfoData<std::vector<double>> dataVDouble_;
-          int                               nROPerCrystal_;
-          
-          
-          
-                   
      };
 
 }    

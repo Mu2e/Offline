@@ -26,10 +26,10 @@
 //#include "MCDataProducts/inc/GenParticleCollection.hh"
 //#include "DataProducts/inc/VirtualDetectorId.hh"
 
-#include "RecoDataProducts/inc/CaloTrigSeedCollection.hh"
+#include "RecoDataProducts/inc/CaloTrigSeed.hh"
 
 #include "RecoDataProducts/inc/CaloDigi.hh"
-#include "RecoDataProducts/inc/CaloDigiCollection.hh"
+#include "RecoDataProducts/inc/CaloDigi.hh"
 
 #include "RecoDataProducts/inc/ComboHit.hh"
 #include "RecoDataProducts/inc/StrawHitCollection.hh"
@@ -352,7 +352,7 @@ namespace mu2e {
     _peaklist.clear();
 
     for (CaloTrigSeedCollection::const_iterator seedIt = caloTrigSeeds.begin(); seedIt != caloTrigSeeds.end(); ++seedIt){
-      disk= cal.crystal((int)seedIt->crystalid()).diskId();
+      disk= cal.crystal((int)seedIt->crystalid()).diskID();
       _fdiskpeak   = (float) disk;
       _Epeak   = seedIt->epeak();
       _tpeak   = seedIt->tpeak()+_TOFF;

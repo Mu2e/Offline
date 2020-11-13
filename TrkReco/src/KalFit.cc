@@ -511,10 +511,10 @@ namespace mu2e
     art::Ptr<CaloCluster> const& calo = kalData.kalSeed->caloCluster();
     if (calo.isNonnull()){
       mu2e::GeomHandle<mu2e::Calorimeter> ch;
-      Hep3Vector cog = ch->geomUtil().mu2eToTracker(ch->geomUtil().diskFFToMu2e( calo->diskId(), calo->cog3Vector()));
+      Hep3Vector cog = ch->geomUtil().mu2eToTracker(ch->geomUtil().diskFFToMu2e( calo->diskID(), calo->cog3Vector()));
       if(_debug > 0){
 	std::cout << "Cluster COG (disk) " << calo->cog3Vector() << std::endl
-	<< "Cluster COG (Mu2e) " << ch->geomUtil().diskFFToMu2e( calo->diskId(), calo->cog3Vector()) << std::endl
+	<< "Cluster COG (Mu2e) " << ch->geomUtil().diskFFToMu2e( calo->diskID(), calo->cog3Vector()) << std::endl
 	<<" Cluster COG (Det ) " << cog << std::endl; 
       }
       double      crystalLength = ch->caloInfo().getDouble("crystalZLength");
@@ -895,10 +895,10 @@ namespace mu2e
 
       for (unsigned icc=0; icc<nClusters; ++icc){ 
 	cl    = &kalData.caloClusterCol->at(icc);
-	if (cl->diskId() != trkToCaloDiskId ||
+	if (cl->diskID() != trkToCaloDiskId ||
 	    cl->energyDep() < _mintchenergy) continue;
 	// double      hflt(0.0);
-	Hep3Vector cog = ch->geomUtil().mu2eToTracker(ch->geomUtil().diskFFToMu2e( cl->diskId(), cl->cog3Vector()));
+	Hep3Vector cog = ch->geomUtil().mu2eToTracker(ch->geomUtil().diskFFToMu2e( cl->diskID(), cl->cog3Vector()));
 	double      dt = cl->time() + _ttcalc.trkToCaloTimeOffset() - tflt;
 
 	//check the compatibility of the track and time within a given time window
@@ -964,7 +964,7 @@ namespace mu2e
       if (hit == 0)     continue;
       if (hit->isActive()) {
 	//evaluate the flight length at the z of the calorimeter cluster + half crystallength
-	unsigned    diskId = hit->caloCluster().diskId();
+	unsigned    diskId = hit->caloCluster().diskID();
 	double      flt(0);
 	TrkHelixUtils::findZFltlen(*reftraj, (_zmincalo[diskId]+0.5*crystalLength),flt);
 	//evaluate the transittime using the full trajectory

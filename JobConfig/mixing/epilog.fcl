@@ -44,5 +44,5 @@ physics.filters.PSMixerCRV.mu2e.products.stepPointMCMixer: { mixingMap: [ [ "PSM
 physics.filters.TSMixerCRV.mu2e.products.genParticleMixer: { mixingMap: [ [ "crvFilter", "" ] ] }
 
 # calo configuration
-physics.producers.CaloShowerStepROFromShowerStep.caloCrystalShowerInputs     : [ "CaloShowerStepFromStepPt:calorimeter", @sequence::Mixing.caloMixerTags ]
+physics.producers.CaloShowerROMaker.caloCrystalShowerInputs     : [ "CaloShowerStepMaker:calorimeter", @sequence::Mixing.caloMixerTags ]
 

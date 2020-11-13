@@ -337,7 +337,7 @@ namespace mu2e {
 	    printf(">>> DeltaFinder2::orderHits() no CaloCluster found within the time peak %i\n", i);
 	    continue;
 	  }
-	  iDisk = cl->diskId();
+	  iDisk = cl->diskID();
 	  double    dt = cl->time() - (hitTime + _stationToCaloTOF[iDisk][os]);
 	  if ( (dt < _maxCaloDt) && (dt > _minCaloDt) ) {
 	    intime = true;

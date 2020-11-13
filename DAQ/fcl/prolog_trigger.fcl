@@ -13,7 +13,7 @@ DAQ : {
 	 #      module_type     : BinaryPacketsFromDataBlocks
 	 module_type     : ArtBinaryPacketsFromDigis
 	 strawDigiCollection : "makeSD"
-	 caloDigiCollection  : "CaloDigiFromShower"
+	 caloDigiCollection  : "CaloDigiMaker"
 	 crvDigiCollection   : "CrvDigi"
 	 diagLevel       : 0
 	 maxFullPrint    : 0
@@ -46,7 +46,7 @@ DAQ : {
 	 caloTag : "daq:calo"
       }
 
-      CaloDigiFromShower:		
+      CaloDigiMaker:		
       {
 	 module_type: StrawAndCaloDigisFromFragments
 	 diagLevel: 0
