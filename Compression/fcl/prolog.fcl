@@ -87,6 +87,9 @@ DigiCompression : {
 	newCaloShowerSimTag : "compressDigiMCs"
 	oldCrvDigiMCTag : @local::DigiCompressionTags.commonCrvDigiMCTag
 	newCrvDigiMCTag : "compressDigiMCs"
+	strawDigiMCIndexMapTag : ""
+	crvDigiMCIndexMapTag : ""
+	checkTrackerDuplicateSteps : true
     }
 
     CaloFix : {
