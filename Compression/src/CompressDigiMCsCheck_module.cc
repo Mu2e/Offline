@@ -108,62 +108,62 @@ namespace mu2e {
 
       // Only check for this if we haven't reduced the number of StrawDigiMCs
       if (_strawDigiMCIndexMapTag == "" && n_old_straw_digi_mcs != n_new_straw_digi_mcs) {
-	throw cet::exception("CompressDigiMCsCheck") << "Number of old and new StrawDigiMCs do not match" << std::endl;
+        throw cet::exception("CompressDigiMCsCheck") << "Number of old and new StrawDigiMCs do not match" << std::endl;
       }
-      
-      for (unsigned int i_old_digi_mc = 0; i_old_digi_mc < n_old_straw_digi_mcs; ++i_old_digi_mc) {
-	const auto& i_oldStrawDigiMC = oldStrawDigiMCs.at(i_old_digi_mc);
-	unsigned int i_new_digi_mc = i_old_digi_mc;
-	if (_strawDigiMCIndexMapTag != "") {
-	  if (_strawDigiMCIndexMap.checkInMap(i_old_digi_mc)) {
-	    i_new_digi_mc = _strawDigiMCIndexMap.getCondensedIndex(i_old_digi_mc);
-	  }
-	  else {
-	    continue; // to next old digi MC, since this one was compressed out...
-	  }
-	}
-	const auto& i_newStrawDigiMC = newStrawDigiMCs.at(i_new_digi_mc);
-	
-	const auto& i_oldStepPointMC = i_oldStrawDigiMC.strawGasStep(StrawEnd::hv);
-	if (!i_oldStepPointMC.isAvailable()) {
-	  continue; // this is a null step point
-	}
-	const auto& i_newStepPointMC = i_newStrawDigiMC.strawGasStep(StrawEnd::hv);
-	
-	const auto& i_old_digi_mc_strawId = i_oldStrawDigiMC.strawId();
-	const auto& i_new_digi_mc_strawId = i_newStrawDigiMC.strawId();
-	if (i_old_digi_mc_strawId != i_new_digi_mc_strawId) {
-	  throw cet::exception("CompressDigiMCsCheck") << "Old and new StrawDigiMC's StrawIds do not match" << std::endl;
-	}
-	
-	const auto& i_old_step_strawId = i_oldStepPointMC->strawId();
-	const auto& i_new_step_strawId = i_newStepPointMC->strawId();
-	if (i_old_step_strawId != i_new_step_strawId) {
-	  throw cet::exception("CompressDigiMCsCheck") << "Old and new StrawDigiMC's StepPointMC's StrawIds do not match" << std::endl;
-	}
-	
-	if (i_new_step_strawId != i_new_digi_mc_strawId) {
-	  throw cet::exception("CompressDigiMCsCheck") << "New StrawDigiMC's StrawId is inconsistent with its StepPointMC's StrawId" << std::endl;
-	}
-	
-	double old_time = _oldTOff.timeWithOffsetsApplied(*i_oldStepPointMC);
-	double new_time = _newTOff.timeWithOffsetsApplied(*i_newStepPointMC);
-	if (std::fabs(old_time - new_time) > 1e-5) {
-	  throw cet::exception("CompressDigiMCsCheck") << "Old and new StepPointMC times with offsets applied do not match (StrawDigiMC)" << std::endl;
-	}
 
-	// Check for tracker duplicate steps, there are two different cases. What should be happening is something like the following:
-	// We have five StepPointMCs: A, B, C, D, E
-	// StrawDigiMC has seven StepPtrs: HVStepPtr-->A   CalStepPtr-->A  WaveformStepPtrs-->A, B, C, D, E
-	if (_checkTrackerDuplicateSteps) {
-	  // Case 1. In this case we have accidentally treated the HVStepPtr and CalStepPtr as separate and duplicated step A (A' and A'')
-	  //         so we end up with seven StepPointsMCs: A, B, C, D, E, A', A''
-	  //         and the StepPtrs all point to different: HVStepPtr-->A'   CalStepPtr-->A''   WaveformStepPtrs-->A, B, C, D, E
-	  // This will not trigger the exception in Case 2
-	  // If we only access steps through digis then you will get the correct information
-	  // You cannot loop over the StepPointMCCollection however
-	  // Here we check that the HV and Cal StepPtrs also exist in the WaveformStepPtrs
-	}
+      for (unsigned int i_old_digi_mc = 0; i_old_digi_mc < n_old_straw_digi_mcs; ++i_old_digi_mc) {
+        const auto& i_oldStrawDigiMC = oldStrawDigiMCs.at(i_old_digi_mc);
+        unsigned int i_new_digi_mc = i_old_digi_mc;
+        if (_strawDigiMCIndexMapTag != "") {
+          if (_strawDigiMCIndexMap.checkInMap(i_old_digi_mc)) {
+            i_new_digi_mc = _strawDigiMCIndexMap.getCondensedIndex(i_old_digi_mc);
+          }
+          else {
+            continue; // to next old digi MC, since this one was compressed out...
+          }
+        }
+        const auto& i_newStrawDigiMC = newStrawDigiMCs.at(i_new_digi_mc);
+
+        const auto& i_oldStepPointMC = i_oldStrawDigiMC.strawGasStep(StrawEnd::hv);
+        if (!i_oldStepPointMC.isAvailable()) {
+          continue; // this is a null step point
+        }
+        const auto& i_newStepPointMC = i_newStrawDigiMC.strawGasStep(StrawEnd::hv);
+
+        const auto& i_old_digi_mc_strawId = i_oldStrawDigiMC.strawId();
+        const auto& i_new_digi_mc_strawId = i_newStrawDigiMC.strawId();
+        if (i_old_digi_mc_strawId != i_new_digi_mc_strawId) {
+          throw cet::exception("CompressDigiMCsCheck") << "Old and new StrawDigiMC's StrawIds do not match" << std::endl;
+        }
+
+        const auto& i_old_step_strawId = i_oldStepPointMC->strawId();
+        const auto& i_new_step_strawId = i_newStepPointMC->strawId();
+        if (i_old_step_strawId != i_new_step_strawId) {
+          throw cet::exception("CompressDigiMCsCheck") << "Old and new StrawDigiMC's StepPointMC's StrawIds do not match" << std::endl;
+        }
+
+        if (i_new_step_strawId != i_new_digi_mc_strawId) {
+          throw cet::exception("CompressDigiMCsCheck") << "New StrawDigiMC's StrawId is inconsistent with its StepPointMC's StrawId" << std::endl;
+        }
+
+        double old_time = _oldTOff.timeWithOffsetsApplied(*i_oldStepPointMC);
+        double new_time = _newTOff.timeWithOffsetsApplied(*i_newStepPointMC);
+        if (std::fabs(old_time - new_time) > 1e-5) {
+          throw cet::exception("CompressDigiMCsCheck") << "Old and new StepPointMC times with offsets applied do not match (StrawDigiMC)" << std::endl;
+        }
+
+        // Check for tracker duplicate steps, there are two different cases. What should be happening is something like the following:
+        // We have five StepPointMCs: A, B, C, D, E
+        // StrawDigiMC has seven StepPtrs: HVStepPtr-->A   CalStepPtr-->A  WaveformStepPtrs-->A, B, C, D, E
+        if (_checkTrackerDuplicateSteps) {
+          // Case 1. In this case we have accidentally treated the HVStepPtr and CalStepPtr as separate and duplicated step A (A' and A'')
+          //         so we end up with seven StepPointsMCs: A, B, C, D, E, A', A''
+          //         and the StepPtrs all point to different: HVStepPtr-->A'   CalStepPtr-->A''   WaveformStepPtrs-->A, B, C, D, E
+          // This will not trigger the exception in Case 2
+          // If we only access steps through digis then you will get the correct information
+          // You cannot loop over the StepPointMCCollection however
+          // Here we check that the HV and Cal StepPtrs also exist in the WaveformStepPtrs
+        }
       }
     }
 
@@ -193,9 +193,9 @@ namespace mu2e {
 
       // Only check for this if we haven't reduced the number of CrvDigiMCs (e.g. in digi production)
       if (_crvDigiMCIndexMapTag == "" && n_old_crv_digi_mcs != n_new_crv_digi_mcs) {
-	throw cet::exception("CompressDigiMCsCheck") << "Number of old and new CrvDigiMCs do not match" << std::endl;
+        throw cet::exception("CompressDigiMCsCheck") << "Number of old and new CrvDigiMCs do not match" << std::endl;
       }
-      
+
       for (unsigned int i_old_digi_mc = 0; i_old_digi_mc < n_old_crv_digi_mcs; ++i_old_digi_mc) {
 	const auto& i_oldCrvDigiMC = oldCrvDigiMCs.at(i_old_digi_mc);
 	unsigned int i_new_digi_mc = i_old_digi_mc;
@@ -221,17 +221,17 @@ namespace mu2e {
 	  if (i_old_digi_mc_barIndex != i_new_digi_mc_barIndex) {
 	    throw cet::exception("CompressDigiMCsCheck") << "Old and new CrvDigiMC's ScintillatorBarIndexs do not match" << std::endl;
 	  }
-	
+
 	  const auto& i_old_step_barIndex = i_oldCrvStep->barIndex();
 	  const auto& i_new_step_barIndex = i_newCrvStep->barIndex();
 	  if (i_old_step_barIndex != i_new_step_barIndex) {
 	    throw cet::exception("CompressDigiMCsCheck") << "Old and new CrvDigiMC's StepPointMC's BarIndexs do not match" << std::endl;
 	  }
-	
+
 	  if (i_new_step_barIndex != i_new_digi_mc_barIndex) {
 	    throw cet::exception("CompressDigiMCsCheck") << "New CrvDigiMC's BarIndex is inconsistent with its StepPointMC's BarIndex" << std::endl;
 	  }
-	
+
           double old_timeOffset = _oldTOff.totalTimeOffset(i_oldCrvStep->simParticle());
           double new_timeOffset = _newTOff.totalTimeOffset(i_newCrvStep->simParticle());
 	  double old_time = i_oldCrvStep->startTime() + old_timeOffset;
@@ -258,15 +258,15 @@ namespace mu2e {
 
       unsigned int n_old_calo_shower_sims = oldCaloShowerSims.size();
       for (unsigned int i_old_calo_shower_sim = 0; i_old_calo_shower_sim < n_old_calo_shower_sims; ++i_old_calo_shower_sim) {
-	unsigned int i_new_calo_shower_sim = i_old_calo_shower_sim;
-	const auto& i_oldCaloShowerSim = oldCaloShowerSims.at(i_old_calo_shower_sim);
-	const auto& i_newCaloShowerSim = newCaloShowerSims.at(i_new_calo_shower_sim);
+        unsigned int i_new_calo_shower_sim = i_old_calo_shower_sim;
+        const auto& i_oldCaloShowerSim = oldCaloShowerSims.at(i_old_calo_shower_sim);
+        const auto& i_newCaloShowerSim = newCaloShowerSims.at(i_new_calo_shower_sim);
 
-	const auto& i_oldCaloShowerStepPtr = *(i_oldCaloShowerSim.caloShowerSteps().begin());
-	const auto& i_newCaloShowerStepPtr = *(i_newCaloShowerSim.caloShowerSteps().begin());
-	if (i_oldCaloShowerStepPtr->momentumIn() != i_newCaloShowerStepPtr->momentumIn()) {
-	  throw cet::exception("CompressDigiMCsCheck") << "Old and new CaloShowerStepPtrs do not match" << std::endl;
-	}
+        const auto& i_oldCaloShowerStepPtr = *(i_oldCaloShowerSim.caloShowerSteps().begin());
+        const auto& i_newCaloShowerStepPtr = *(i_newCaloShowerSim.caloShowerSteps().begin());
+        if (i_oldCaloShowerStepPtr->momentumIn() != i_newCaloShowerStepPtr->momentumIn()) {
+          throw cet::exception("CompressDigiMCsCheck") << "Old and new CaloShowerStepPtrs do not match" << std::endl;
+        }
       }
     }
   } // analyze(event)
