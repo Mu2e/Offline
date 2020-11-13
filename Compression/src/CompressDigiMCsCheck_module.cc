@@ -21,6 +21,25 @@ using namespace std;
 namespace mu2e {
 
   class CompressDigiMCsCheck : public art::EDAnalyzer {
+
+    struct Config {
+      using Name=fhicl::Name;
+      using Comment=fhicl::Comment;
+
+      fhicl::Atom<art::InputTag> oldStrawDigiMCTag{Name("oldStrawDigiMCTag"), Comment("InputTag for uncompressed StrawDigiMCCollection")};
+      fhicl::Atom<art::InputTag> newStrawDigiMCTag{Name("newStrawDigiMCTag"), Comment("InputTag for compressed StrawDigiMCCollection")};
+      fhicl::Table<SimParticleTimeOffset::Config> oldTOff{Name("OldTimeOffsets"), Comment("TimeOffsets for uncompressed SimParticleCollection")};
+      fhicl::Table<SimParticleTimeOffset::Config> newTOff{Name("NewTimeOffsets"), Comment("TimeOffsets for compressed SimParticleCollection")};
+      fhicl::Atom<art::InputTag> strawDigiMCIndexMapTag{Name("strawDigiMCIndexMapTag"), Comment("If a StrawDigiMCIndexMap was passed to the compression originally, then pass it here too")};
+      fhicl::Atom<art::InputTag> oldCrvDigiMCTag{Name("oldCrvDigiMCTag"), Comment("InputTag for uncompressed CrvDigiMCCollection")};
+      fhicl::Atom<art::InputTag> newCrvDigiMCTag{Name("newCrvDigiMCTag"), Comment("InputTag for compressed CrvDigiMCCollection")};
+      fhicl::Atom<art::InputTag> crvDigiMCIndexMapTag{Name("crvDigiMCIndexMapTag"), Comment("If a CrvDigiMCIndexMap was passed to the compression originally, then pass it here too")};
+      fhicl::Atom<art::InputTag> oldCaloShowerSimTag{Name("oldCaloShowerSimTag"), Comment("InputTag for uncompressed CaloShowerSimCollection")};
+      fhicl::Atom<art::InputTag> newCaloShowerSimTag{Name("newCaloShowerSimTag"), Comment("InputTag for compressed CaloShowerSimCollection")};
+      fhicl::Atom<bool> checkTrackerDuplicateSteps{Name("checkTrackerDuplicateSteps"), Comment("Set to true to check if tracker StepPointMCs have been duplicated by mistake")};
+    };
+    typedef art::EDAnalyzer::Table<Config> Parameters;
+
     art::InputTag _oldStrawDigiMCTag;
     art::InputTag _newStrawDigiMCTag;
 
@@ -40,24 +59,24 @@ namespace mu2e {
 
     bool _checkTrackerDuplicateSteps;
   public:
-    explicit CompressDigiMCsCheck(const fhicl::ParameterSet& pset);
+    explicit CompressDigiMCsCheck(const Parameters& conf);
     virtual void analyze(const art::Event& event);
   };
 
   //================================================================
-  CompressDigiMCsCheck::CompressDigiMCsCheck(const fhicl::ParameterSet& pset)
-    : art::EDAnalyzer(pset)
-    , _oldStrawDigiMCTag(pset.get<art::InputTag>("oldStrawDigiMCTag"))
-    , _newStrawDigiMCTag(pset.get<art::InputTag>("newStrawDigiMCTag"))
-    , _oldTOff(pset.get<fhicl::ParameterSet>("OldTimeOffsets", {}))
-    , _newTOff(pset.get<fhicl::ParameterSet>("NewTimeOffsets", {}))
-    , _strawDigiMCIndexMapTag(pset.get<art::InputTag>("strawDigiMCIndexMapTag", ""))
-    , _oldCrvDigiMCTag(pset.get<art::InputTag>("oldCrvDigiMCTag"))
-    , _newCrvDigiMCTag(pset.get<art::InputTag>("newCrvDigiMCTag"))
-    , _crvDigiMCIndexMapTag(pset.get<art::InputTag>("crvDigiMCIndexMapTag", ""))
-    , _oldCaloShowerSimTag(pset.get<art::InputTag>("oldCaloShowerSimTag"))
-    , _newCaloShowerSimTag(pset.get<art::InputTag>("newCaloShowerSimTag"))
-    , _checkTrackerDuplicateSteps(pset.get<bool>("checkTrackerDuplicateSteps",true))
+  CompressDigiMCsCheck::CompressDigiMCsCheck(const Parameters& conf)
+    : art::EDAnalyzer(conf)
+    , _oldStrawDigiMCTag(conf().oldStrawDigiMCTag())
+    , _newStrawDigiMCTag(conf().newStrawDigiMCTag())
+    , _oldTOff(conf().oldTOff())
+    , _newTOff(conf().newTOff())
+    , _strawDigiMCIndexMapTag(conf().strawDigiMCIndexMapTag())
+    , _oldCrvDigiMCTag(conf().oldCrvDigiMCTag())
+    , _newCrvDigiMCTag(conf().newCrvDigiMCTag())
+    , _crvDigiMCIndexMapTag(conf().crvDigiMCIndexMapTag())
+    , _oldCaloShowerSimTag(conf().oldCaloShowerSimTag())
+    , _newCaloShowerSimTag(conf().newCaloShowerSimTag())
+    , _checkTrackerDuplicateSteps(conf().checkTrackerDuplicateSteps())
   {  }
 
   //================================================================
