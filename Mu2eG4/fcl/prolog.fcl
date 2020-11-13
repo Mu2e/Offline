@@ -26,7 +26,7 @@ mu2eg4DefaultPhysics: {
     setMuHadLateralDisplacement: true // improves accuracy of boundary
                                       // crossing for muons and common charged hadrons
 
-    // mscTransitionEnergy = 115. // uncomment to change the Geant4 deafult
+    // mscModelTransitionEnergy: 115. // MeV uncomment to change the Geant4 deafult
 
     useEmOption4InTracker: false // to use that option in the tracker only if not using _EMZ;
                                  // does not seem to work all that well in geant4 10.4

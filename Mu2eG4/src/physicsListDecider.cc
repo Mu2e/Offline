@@ -117,16 +117,18 @@ namespace mu2e{
 
 #if G4VERSION>4104
 
-    // changing msc model transition energy if requested
-    double mscTransitionEnergyValue;
-    if (phys.mscTransitionEnergy.get_if_present(mscTransitionEnergyValue)) {
-      if (debug.diagLevel()>0) {
-        G4cout << __func__
-               << " Changing MscEnergyLimit to "
-               << mscTransitionEnergyValue << " MeV" << G4endl;
+    // Changing MSC model transition energy if requested
+    { double mscModelTransitionEnergy(std::numeric_limits<double>::max());  // initializing
+      // to something distinct before fetching the requested value if present and only using it then
+      if (phys.mscModelTransitionEnergy.get_if_present(mscModelTransitionEnergy)) {
+        if (debug.diagLevel()>0) {
+          G4cout << __func__
+                 << " Changing MscEnergyLimit to "
+                 << mscModelTransitionEnergy << " MeV" << G4endl;
+        }
+        G4EmParameters* emParams = G4EmParameters::Instance();
+        emParams->SetMscEnergyLimit(mscModelTransitionEnergy*CLHEP::MeV);
       }
-      G4EmParameters* emParams = G4EmParameters::Instance();
-      emParams->SetMscEnergyLimit(mscTransitionEnergyValue*CLHEP::MeV);
     }
 
     if ( phys.useEmOption4InTracker() && (name.find("_EMZ") == std::string::npos) ) {
