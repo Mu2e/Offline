@@ -15,6 +15,7 @@ TTmakeSH : {
     ProtonBunchTimeTag      : "EWMProducer"
     StrawDigiCollectionTag  : "makeSD"
     CaloClusterCollectionTag  : "CaloClusterFast"
+    StrawDigiADCWaveformCollectionTag: "notUsed"
 }
 # combine hits in a panel
 TTmakePH : {
