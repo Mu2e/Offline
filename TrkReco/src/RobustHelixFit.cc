@@ -1,7 +1,7 @@
 //
 // .
 // Object to perform helix fit to straw hits
-//
+// .
 //
 // mu2e
 #include "TrkReco/inc/RobustHelixFit.hh"
