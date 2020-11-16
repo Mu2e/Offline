@@ -12,7 +12,7 @@ mu2eg4BeamDumpNormal: [ -0.237177266249502805 , 0,  -0.971466388700305217 ]
 mu2eg4DefaultPhysics: {
     PiENuPolicy : "PDG"
     noDecay: []
-    BirksConsts : {} // e.g. { G4_POLYSTYRENE : 0.07943 } // {string : mm/MeV}
+    // BirksConsts : {} // uncomment to activate and add e.g. { G4_POLYSTYRENE : 0.07943 } // {string : mm/MeV}
     minRangeCut: 0.010 // mm
 
     // uncomment to activate the cuts per region; works for Geant4 "root" volumes
@@ -26,8 +26,8 @@ mu2eg4DefaultPhysics: {
     setMuHadLateralDisplacement: true // improves accuracy of boundary
                                       // crossing for muons and common charged hadrons
 
-    modifyEMOption4: false // to set 115 MeV transition energy for the msc models when using _EMZ
-    modifyEMOption0: false // to set 115 MeV transition energy for the msc models with "opt0"
+    // mscModelTransitionEnergy: 115. // MeV uncomment to change the Geant4 deafult
+
     useEmOption4InTracker: false // to use that option in the tracker only if not using _EMZ;
                                  // does not seem to work all that well in geant4 10.4
     addProcesses: []
