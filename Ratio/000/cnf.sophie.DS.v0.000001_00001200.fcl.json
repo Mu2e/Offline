@@ -1,0 +1,26 @@
+{
+    "content_status": "good",
+    "parents": [
+        "sim.sophie.TS-mubeam.v0.000001_00001200.art",
+        "sim.sophie.TS-mubeam.v0.000001_00001210.art",
+        "sim.sophie.TS-mubeam.v0.000001_00001220.art",
+        "sim.sophie.TS-mubeam.v0.000001_00001230.art",
+        "sim.sophie.TS-mubeam.v0.000001_00001240.art",
+        "sim.sophie.TS-mubeam.v0.000001_00001250.art",
+        "sim.sophie.TS-mubeam.v0.000001_00001260.art",
+        "sim.sophie.TS-mubeam.v0.000001_00001270.art",
+        "sim.sophie.TS-mubeam.v0.000001_00001280.art",
+        "sim.sophie.TS-mubeam.v0.000001_00001290.art"
+    ],
+    "data_tier": "cnf",
+    "dh.configuration": "v0",
+    "dh.dataset": "cnf.sophie.DS.v0.fcl",
+    "dh.description": "DS",
+    "dh.owner": "sophie",
+    "dh.sequencer": "000001_00001200",
+    "dh.sha256": "650cfbb72ee7ae93fae5c135b6d836db696b6702a6e07ca53fabcd1f5df3726a",
+    "file_format": "fcl",
+    "file_name": "cnf.sophie.DS.v0.000001_00001200.fcl",
+    "file_size": 11957,
+    "file_type": "mc"
+}
