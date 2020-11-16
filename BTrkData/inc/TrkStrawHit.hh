@@ -13,6 +13,7 @@
 // Mu2e
 #include "RecoDataProducts/inc/ComboHit.hh"
 #include "RecoDataProducts/inc/StrawHitIndex.hh"
+#include "TrackerGeom/inc/Tracker.hh"
 #include "TrackerGeom/inc/Straw.hh"
 #include "TrackerConditions/inc/StrawResponse.hh"
 // CLHEP
@@ -30,7 +31,7 @@ namespace mu2e
   public:
   // enum for hit flags
     TrkStrawHit(StrawResponse::cptr_t strawResponse,
-		const ComboHit& strawhit, const Straw& straw,StrawHitIndex index,
+		const ComboHit& strawhit, const Tracker& tracker,StrawHitIndex index,
 		const TrkT0& trkt0, double fltlen, double maxdriftpull,
 		double timeWeight);
     virtual ~TrkStrawHit();
@@ -88,6 +89,7 @@ namespace mu2e
 
     const ComboHit&   _combohit;
     const Straw&      _straw;
+    double	      _rstraw; // straw radius; cached from Tracker
     StrawHitIndex     _index;
     TrkLineTraj*      _hittraj;
     CLHEP::Hep3Vector _wpos;

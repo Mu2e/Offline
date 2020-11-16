@@ -12,12 +12,13 @@
 
 namespace mu2e {
 
-  class AlignedTrackerMaker {
 
-  public:
+  class AlignedTrackerMaker {
+    typedef std::shared_ptr<Tracker> ptr_t;
+public:
     AlignedTrackerMaker(AlignedTrackerConfig const& config):_config(config) {}
-    Tracker::ptr_t fromFcl();
-    Tracker::ptr_t fromDb(TrkAlignTracker::cptr_t tatr_p,
+    ptr_t fromFcl();
+    ptr_t fromDb(TrkAlignTracker::cptr_t tatr_p,
 			  TrkAlignPlane::cptr_t   tapl_p,
 			  TrkAlignPanel::cptr_t   tapa_p );
 

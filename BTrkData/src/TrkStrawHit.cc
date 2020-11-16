@@ -24,12 +24,13 @@ using CLHEP::Hep3Vector;
 namespace mu2e
 {
   TrkStrawHit::TrkStrawHit(StrawResponse::cptr_t strawResponse,
-			   const ComboHit& strawhit  , const Straw& straw    , StrawHitIndex index,
+			   const ComboHit& strawhit  , Tracker const& tracker, StrawHitIndex index,
 			   const TrkT0&    hitt0     , double       fltlen   , double maxdriftpull,
 			   double          timeWeight) :
     _strawResponse(strawResponse),
     _combohit(strawhit),
-    _straw(straw),
+    _straw(tracker.getStraw(strawhit.strawId())),
+    _rstraw(tracker.strawOuterRadius()),
     _index(index),
     _penerr(0.0),
     _toterr(0.0),
@@ -40,8 +41,8 @@ namespace mu2e
     if(_combohit.nStrawHits() != 1 || _combohit.driftEnd() == StrawEnd::unknown)
       throw cet::exception("RECO")<<"mu2e::TrkStrawHit: ComboHit > 1 StrawHit"<< endl;
     // The StrawResponse should be passsed in from outside FIXME!
-    Hep3Vector const& wiredir = straw.getDirection();
-    Hep3Vector const& mid = straw.getMidPoint();
+    Hep3Vector const& wiredir = _straw.getDirection();
+    Hep3Vector const& mid = _straw.getMidPoint();
     // cache the propagation velocity: this depends just on the pulseheight
     _vprop = 2.0*_strawResponse->halfPropV(_combohit.strawId(),1000.0*_combohit.energyDep()); // edep in KeV, FIXME!
     // initialize wire position using time difference
@@ -103,9 +104,8 @@ namespace mu2e
       else
 	doca = _rdrift + _iamb*resid;
     // restrict the range, symmetrically to avoid bias
-      double rad       = _straw.getRadius();
       double mint0doca = _strawResponse->Mint0doca(); 
-      if(doca > mint0doca && doca < rad-mint0doca){
+      if(doca > mint0doca && doca < _rstraw-mint0doca){
 	// compute phi WRT BField for lorentz drift.
 	CLHEP::Hep3Vector trjDir(parentRep()->traj().direction(fltLen()));
 	Hep3Vector tperp = trjDir - trjDir.dot(straw().getDirection())*straw().getDirection();
@@ -149,7 +149,6 @@ namespace mu2e
     // total hit error is the sum of all
     _toterr = sqrt(_rdrifterr*_rdrifterr + rt0err*rt0err + exterr*exterr + _penerr*_penerr);
 // If the hit is wildly away from the track , disable it
-    double rstraw = _straw.getRadius();
     if(!isPhysical(_maxdriftpull)){
       setActivity(false);
       setFlag(driftFail);
@@ -157,14 +156,14 @@ namespace mu2e
 // otherwise restrict to a physical range
       if (_rdrift < 0.0){
         _rdrift = 0.0;
-      } else if( _rdrift > rstraw){
-        _rdrift = rstraw;
+      } else if( _rdrift > _rstraw){
+        _rdrift = _rstraw;
       }
     }
   }
 
   bool TrkStrawHit::isPhysical(double maxchi) const {
-    return _rdrift < _straw.getRadius() + maxchi*_toterr &&
+    return _rdrift < _rstraw + maxchi*_toterr &&
       _rdrift > -maxchi*_toterr;
   }
 

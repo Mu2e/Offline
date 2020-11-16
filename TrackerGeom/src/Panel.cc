@@ -1,8 +1,6 @@
 //
 // Hold information about one Panel in a tracker.
 //
-//
-//
 // Original author Rob Kutschke
 //
 
@@ -13,10 +11,11 @@
 using namespace std;
 
 namespace mu2e {
+// define equivalence unique panels
+  StrawIdMask Panel::_sidmask(StrawIdMask::uniquepanel);
 
   string Panel::name( string const& base ) const{
     ostringstream os;
-
     os << base
        << _id.getPlane() << "_"
        << _id.getPanel();
@@ -24,29 +23,13 @@ namespace mu2e {
     return os.str();
   }
 
-  // void Panel::fillPointers ( const Tracker& tracker ) const {
-  //   for( size_t i=0; i<_layers.size(); ++i ){
-  //     _layers[i].fillPointers(tracker);
-  //     _straw0MidPoint += _layers[i].straw0MidPoint();
-  //   }
-  //   _straw0Direction = _layers[0].straw0Direction();
-  //   _straw0MidPoint  /= _layers.size();
-  // }
-
-  void Panel::fillPointers ( const Tracker* tracker ) const {
-
-    for(auto& isp : getStrawPointers()) {
-      isp->fillPointers(tracker);
+  Panel::Panel( const StrawId& id, TrackerStrawCollection const& straws ) : _id(id) {
+    for(auto const& straw : straws ) {
+    // pick out all the straws belonging to this panel.  This code relies on the Tracker collection being in order.
+      if(_sidmask.equal(_id,straw.id())){
+	_straws[straw.id().straw()] = &straw;
+      }
     }
-
-
-    _straw0MidPoint = CLHEP::Hep3Vector();
-    for ( uint16_t ilay=0; ilay<StrawId::_nlayers; ++ilay ) {
-      const Straw& straw = getStraw( StrawId(id().asUint16() + ilay ) );
-      _straw0MidPoint += straw.getMidPoint();
-    }
-    _straw0Direction = getStraw(0).getDirection();
-    _straw0MidPoint  /= StrawId::_nlayers;
   }
 
 } // end namespace mu2e

@@ -3,6 +3,7 @@
 //
 // Hold all geometry and identifier information about
 // a Tracker.  This is intended as a "data only" class.
+//  Note that the only 'aligned' information is implicit in the individual straws
 //
 // An un-aligned version can be made by GeometryService
 // and an aligned verison can be made by ProditionsService
@@ -15,9 +16,9 @@
 #include <array>
 #include <limits>
 #include <string>
+#include <memory>
 
 #include "cetlib_except/exception.h"
-
 
 #include "Mu2eInterfaces/inc/Detector.hh"
 #include "Mu2eInterfaces/inc/ProditionsEntity.hh"
@@ -27,58 +28,118 @@
 #include "TrackerGeom/inc/SupportStructure.hh"
 
 #include "TrackerGeom/inc/Plane.hh"
-#include "DataProducts/inc/PanelId.hh"
+#include "TrackerGeom/inc/Panel.hh"
 #include "GeomPrimitives/inc/TubsParams.hh"
 #include "GeomPrimitives/inc/PlacedTubs.hh"
+#include "TrackerGeom/inc/PanelEB.hh"
+#include "TrackerGeom/inc/StrawProperties.hh"
 
 namespace mu2e {
-
   class Tracker : public Detector, public ProditionsEntity {
+    friend class TrackerMaker; // remove after factorizing out the G4 stuff FIXME!
+//    friend class AlignedTrackerMaker;
+    using xyzVec = CLHEP::Hep3Vector; // switch to XYZVec TODO
 
-        friend class TrackerMaker;
-        friend class AlignedTrackerMaker;
-
-  public:
-
+    public:
     typedef std::shared_ptr<Tracker> ptr_t;
     typedef std::shared_ptr<const Tracker> cptr_t;
-
-    constexpr static uint16_t _maxRedirect =
-      ((StrawId::_nplanes -1) << StrawId::_planesft) +
-      ((StrawId::_npanels -1) << StrawId::_panelsft) +
-      StrawId::_nstraws;
-
-    // =============== NewTracker Public Objects End   ==============
-
-    Tracker():_name("AlignedTracker") {
-      if (StrawId::_nlayers != 2)
-        throw cet::exception("GEOM")
-          << "Expect configuration with 2 layers per panel\n";
-    }  // TODO: insert proper initializer list, starting w/ base class
-
-    // Need to be able to copy, but this has internal
-    // pointers, so needs a deep copy, but can except default dtor
-
+    using PlaneCollection = std::array<Plane,StrawId::_nplanes>;
+    using PanelCollection = std::array<Panel,StrawId::_nupanels>;
+    using StrawCollection = std::array<Straw,StrawId::_nustraws>;
+    using StrawIndexMap = std::array<uint16_t,StrawId::_maxval>; 
+    // default constructor results in non-functional object, but is required by proditions service
+    Tracker() : _name("AlignedTracker") {}
     // copy constructor
     Tracker(const Tracker& other);
+    // construct from a set of straws and their global properties.  It would be better to take ownership of
+    // existing straws via std::move, but the need for the copy constructor above precludes that
+    Tracker(StrawCollection const& straws, StrawProperties const& sprops, const char* name);
+    // accessors
 
     std::string const& name() const { return _name; }
 
-    void fillPointers () const;
-
-    double rOut() const { return _rOut;}
-    double z0()   const { return _z0;}
+    // geometry parameters used only by G4.  These should be factorized out FIXME!
+    double z0()   const { return _z0;} // in Mu2e coordinates (everything else is in Tracker coordiates).
     double zHalfLength() const;
 
-    double strawInnerRadius() const{ return _strawInnerRadius; }
-    double strawOuterRadius() const{ return _strawOuterRadius; }
-    double strawWallThickness() const{ return _strawWallThickness; }
-    double outerMetalThickness() const{ return _outerMetalThickness; }
-    double innerMetal1Thickness() const{ return _innerMetal1Thickness; }
-    double innerMetal2Thickness() const{ return _innerMetal2Thickness; }
-    double wireRadius()           const { return _wireRadius; }
-    double wirePlateThickness()   const { return _wirePlateThickness; }
+    // Tracker Element Accessors
+    size_t nPlanes() const { return _planes.size(); }
+    size_t nPanels() const { return _panels.size(); }
+    size_t nStraws() const { return _straws.size(); }
 
+    // origin: defines nominal tracker coordinate system
+    const xyzVec& origin() const { return _origin; }
+    xyzVec& origin()  { return _origin; }
+
+    // constituent access
+    const Plane& plane( const StrawId& id ) const{
+      return _planes.at(id.getPlane());
+    }
+
+    PlaneCollection const& planes() const {
+      return _planes;
+    }
+    const Panel& panel( const StrawId& id ) const{
+      return _panels.at(id.uniquePanel());
+    }
+
+    uint16_t strawIndex(const StrawId& id) const {
+      return _strawindex.at(id.asUint16());
+    }
+
+    const Straw& straw( const StrawId& id) const{
+      return _straws[strawIndex(id)];
+    }
+
+    StrawCollection const& straws() const{
+      return _straws;
+    }
+// deprecated interface 
+    const Plane& getPlane( const StrawId& id ) const{
+      return _planes.at(id.getPlane());
+    }
+    
+    const Plane& getPlane( uint16_t n ) const{
+      return _planes.at(n);
+    }
+
+    PlaneCollection const& getPlanes() const {
+      return _planes;
+    }
+
+    const Panel& getPanel( const StrawId& id ) const{
+      return _panels.at(id.uniquePanel());
+    }
+
+    const Straw& getStraw( const StrawId& id) const{
+      return _straws[strawIndex(id)];
+    }
+
+    Straw& getStraw( const StrawId& id) {
+      return _straws[strawIndex(id)];
+    }
+    
+    StrawCollection const& getStraws() const{
+      return _straws;
+    }
+
+
+    // common attributes that don't depend on the specific element
+    const StrawProperties& strawProperties() const { return _strawprops; }
+    // the following are deprecated: access should be through StrawProperties
+    double strawInnerRadius() const{ return _strawprops._strawInnerRadius; }
+    double strawOuterRadius() const{ return _strawprops._strawOuterRadius; }
+    double strawWallThickness() const{ return _strawprops._strawWallThickness; }
+    double outerMetalThickness() const{ return _strawprops._outerMetalThickness; }
+    double innerMetal1Thickness() const{ return _strawprops._innerMetal1Thickness; }
+    double innerMetal2Thickness() const{ return _strawprops._innerMetal2Thickness; }
+    double wireRadius()           const { return _strawprops._wireRadius; }
+    double wirePlateThickness()   const { return _strawprops._wirePlateThickness; }
+
+// depracted 'exists' interface: should switch to TrackerStatus FIXME!
+    bool planeExists(StrawId const& id) const { return _planeExists[id.plane()]; }
+
+    // G4 stuff: this should be factorized out TODO!
     std::string const& wallMaterialName()            const{ return _wallMaterialName; }
     std::string const& wallCoreMaterialName()        const{ return  wallMaterialName();  }
     std::string const& wallOuterMetalMaterialName()  const{ return _outerMetalMaterial;  }
@@ -88,31 +149,15 @@ namespace mu2e {
     std::string const& wireMaterialName()            const{ return _wireMaterialName; }
     std::string const& wireCoreMaterialName()        const{ return  wireMaterialName();  }
     std::string const& wirePlateMaterialName()       const{ return _wirePlateMaterial;   }
+    std::string const& envelopeMaterial()	     const { return _envelopeMaterial; }
 
-    // istraw is StrawId::straw()
-    double getStrawHalfLength(int istraw) const { return _strawHalfLengths[istraw];}
-    double getStrawActiveHalfLength(int istraw) const { return _strawActiveHalfLengths[istraw];}
+//Mu2eG4 specific interface: these should be factored out TODO
 
-    std::string const& envelopeMaterial() const { return _envelopeMaterial; }
-
-    // Check for legal identifiers. (for what decays to StrawId)
-    bool isLegal(const StrawId strid) const{
-       return strid.valid();
-    }
-
-    // Accessors
-    uint16_t nPlanes() const { return StrawId::_nplanes; }
-
-    uint16_t nPanels() const { return StrawId::_nupanels; }
-
-    uint16_t nStraws() const { return StrawId::_nustraws; }
-
-    const std::vector<double>& getManifoldHalfLengths () const{
-      return _manifoldHalfLengths;
-    }
-
+    // electronics board
+    const PanelEB& panelElectronicsBoard() const { return _panelEB;}
+//    double rOut() const { return _rOut;}
     double panelOffset() const { return _panelZOffset; }
-
+// why does this return by value??? FIXME!
     SupportModel getSupportModel() const{
       return _supportModel;
     }
@@ -124,8 +169,7 @@ namespace mu2e {
     const SupportStructure& getSupportStructure() const{
       return _supportStructure;
     }
-
-
+// why do these return by value????? FIXME
     TubsParams getPlaneEnvelopeParams() const{
       return _planeEnvelopeParams;
     }
@@ -142,39 +186,6 @@ namespace mu2e {
       return _mother;
     }
 
-
-    const Plane& getPlane( const StrawId id ) const{
-      return _planes.at(id.getPlane());
-    }
-    const Plane& getPlane( uint16_t n ) const{
-      return _planes.at(n);
-    }
-
-    std::array<Plane,StrawId::_nplanes> const& getPlanes() const {
-      return _planes;
-    }
-
-    const Panel& getPanel( const StrawId id ) const{
-      return _panels.at(id.uniquePanel());
-    }
-
-    const Straw& getStraw( const StrawId id) const{
-      return getStrawById(id);
-    }
-
-    Straw &getStraw(StrawId const& id) {
-      return const_cast<Straw &>(getStrawById(id));
-    }
-
-    std::array<Straw,StrawId::_nustraws> const& getStraws() const{
-      return _allStraws;
-    }
-
-    bool strawExists( StrawId const id) const{
-      // return _allStraws_p.at(id.asUint16()) != nullptr;
-      return _strawExists2.at(id.asUint16());
-    }
-
     // Return G4TUBS parameters for straws, includes
     // wire, gas and straw materials.
     TubsParams strawOuterTubsParams(StrawId const& id) const;
@@ -184,30 +195,13 @@ namespace mu2e {
     TubsParams strawWallInnerMetal2(StrawId const& id) const;
     TubsParams strawWireMother(StrawId const& id) const;
     TubsParams strawWirePlate(StrawId const& id) const;
-
   protected:
-
-
-    std::string _name;
-
     // Position of the center of the tracker, in the Mu2e coordinate system.
     double _z0;
-
     // Outer radius of a logical volume that will just contain the entire tracker.
-    double _rOut;
+    double _rOut; // is this ever used?  I think not
 
     // All envelope volumes are made of this.
-    std::string _envelopeMaterial;
-
-    double _strawInnerRadius;
-    double _strawOuterRadius;
-    double _strawWallThickness;
-    double _outerMetalThickness;
-    double _innerMetal1Thickness;
-    double _innerMetal2Thickness;
-    double _wireRadius;
-    double _wirePlateThickness;
-
     std::string _wallMaterialName;
     std::string _outerMetalMaterial;
     std::string _innerMetal1Material;
@@ -215,80 +209,51 @@ namespace mu2e {
     std::string _gasMaterialName;
     std::string _wireMaterialName;
     std::string _wirePlateMaterial;
-
-    // Lengths of straws indexed by manifold, from innermost radius, outwards.
-    std::array<double,StrawId::_nstraws> _strawHalfLengths;
-
-    // Same for the active length of the straw.
-    // This is only valid for SupportModel==simple
-    std::array<double,StrawId::_nstraws> _strawActiveHalfLengths;
-
-    // Deprecated: part of the ancient MECO Tracker design.
-    // A few vestiges not yet removed.
-    std::vector<Manifold> _allManifolds;
+    std::string _envelopeMaterial;
 
     // Outer envelope that holds the new style support structure.
     PlacedTubs _mother;
-
     // The envelope that holds all of the planes in the tracker,
     // including the plane supports.
     TubsParams _innerTrackerEnvelopeParams;
-
     // The envelope that holds all of the pieces in one plane, including supports.
     TubsParams _planeEnvelopeParams;
-
     // Ditto for Panel
     TubsParams _panelEnvelopeParams;
-
     // Which level of detail is present in the model of the support structure?
     SupportModel _supportModel;
-
     // All supports are the same shape; only relevant for _supportModel=="simple"
     Support _supportParams;
-    double _panelZOffset; // introduced for version 5
 
     // A more detailed model of the supports; again each plane has identical supports.
     // only relevant for _supportModel == "detailedv0".
     SupportStructure _supportStructure;
 
-    // All manifolds are the same shape.
     // Deprecated: these will go away soon.
     std::vector<double> _manifoldHalfLengths;
+    double _panelZOffset; // introduced for version 5
 
     // Inner radius of inside edge of innermost straw.
     double _envelopeInnerRadius;
 
-    // presence info for each straw.
-    //    std::vector<bool> _strawExists;
+   // Electronics board
+    PanelEB _panelEB;
 
-    // =============== NewTracker Private Objects Start ==============
-
-    // Dense arrays
-    std::array<Plane,StrawId::_nplanes> _planes;
-    std::array<Panel,StrawId::_nupanels> _panels;
-    std::array<Straw,StrawId::_nustraws> _allStraws;
-
-    // Sparse array: designed for indexing by StrawId.
-    // For all legal entries in StrawId, this points to a straw in _straws2;
-    // All other entries are null.
-    std::array<Straw const*,Tracker::_maxRedirect> _allStraws_p;
-
-    // Another sparse array
-    std::array<bool,Tracker::_maxRedirect> _strawExists2;
-
-    // =============== NewTracker Private Objects End ==============
-
-
+    // non-G4 content; this is the core of the class.  The G4 content should be factorized away to a separate class FIXME!
   private:
-    // copying is complex
-    // prevent these from being generated or used
-    Tracker& operator=(const Tracker& other);
-    Tracker(Tracker&& other) noexcept; // move constructor
-    Tracker& operator=(Tracker&& other) noexcept; // move assignment
-
-    Straw const& getStrawById(StrawId const&id) const {
-        return *(_allStraws_p.at(id.asUint16()));
-    }
+    std::string _name;
+    xyzVec _origin;
+    // global straw properties
+    StrawProperties _strawprops;
+    // Dense arrays
+    PlaneCollection _planes;
+    PanelCollection _panels;
+    // indirection from StrawId, for efficient lookup
+    StrawIndexMap _strawindex;
+    // plane existence: use cases of this should switch to using TrackerStatus and this should be removed FIXME!!
+    std::array<bool,StrawId::_nplanes> _planeExists;
+    // fundamental content is in the following
+    StrawCollection _straws;
   };
 
 } //namespace mu2e

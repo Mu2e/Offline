@@ -6,6 +6,7 @@
 #include <iomanip>
 #include <sstream>
 #include <map>
+#include "DataProducts/inc/StrawId.hh"
 #include "DbTables/inc/DbTable.hh"
 #include "GeneralUtilities/inc/HepTransform.hh"
 
@@ -48,7 +49,7 @@ namespace mu2e {
     const Row& rowAt(const std::size_t index) const { return _rows.at(index);}
     std::vector<Row> const& rows() const {return _rows;}
     std::size_t nrow() const { return _rows.size(); };
-    virtual std::size_t nrowFix() const { return 36; };
+    virtual std::size_t nrowFix() const { return StrawId::_nplanes; };
     size_t size() const { return _csv.capacity() + nrow()*sizeof(Row); };
 
     void addRow(const std::vector<std::string>& columns) {

@@ -70,7 +70,7 @@ namespace mu2e {
     // we now estiamte the ratio of the number of measured hits to the number of the expected ones
     // we make a few assumptions and appriximations:
     float    expected_faces(1e-6);
-    for (int planeId=0; planeId<_tracker->nPlanes(); planeId++) {
+    for (size_t planeId=0; planeId<_tracker->nPlanes(); planeId++) {
       const Plane* pln = &_tracker->getPlane(planeId);
       int   nPanels = pln->nPanels();
       if (nPanels == 0 )         continue;

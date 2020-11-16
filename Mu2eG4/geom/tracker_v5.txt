@@ -11,7 +11,7 @@ string trackerSupport.model = "detailedv0";
 int TrackerVersion   = 5;
 bool TrackerHasBrassRings = true;
 
-int    tracker.verbosityLevel     =    0;
+int    tracker.verbosityLevel     =    5;
 bool   tracker.doSurfaceCheck     = false;
 // Mother to hold all straws and supports.
 double tracker.mother.rIn         =    376.9; // mm

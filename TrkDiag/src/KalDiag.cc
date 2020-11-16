@@ -391,7 +391,7 @@ namespace mu2e
     tshinfo._rdrifterr = tsh->driftRadiusErr();
     tshinfo._wdist = tsh->comboHit().wireDist();
     tshinfo._werr = tsh->comboHit().wireRes();
-    double rstraw = tsh->straw().getRadius();
+    double rstraw = 5.0; // temporary kludge: this class should be retired FIXME
     tshinfo._dx = sqrt(max(0.0,rstraw*rstraw-tshinfo._rdrift*tshinfo._rdrift));
     tshinfo._trklen = tsh->fltLen();
     tshinfo._hlen = tsh->hitLen();
