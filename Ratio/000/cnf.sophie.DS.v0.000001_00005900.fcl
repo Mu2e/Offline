@@ -291,3 +291,32 @@ services.SeedService.maxUniqueEngines :  20
 services.GeometryService.simulatedDetector.tool_type : "Mu2e"
 services.scheduler.wantSummary: true
 services.TimeTracker.printSummary: true
+
+#----------------------------------------------------------------
+# Code added by generate_fcl:
+services.SeedService.policy:  autoIncrement
+services.SeedService.maxUniqueEngines: 20
+services.SeedService.baseSeed: 517115192
+source.fileNames : [
+"/pnfs/mu2e/scratch/users/sophie/workflow/default/outstage/13900954/00/00590/sim.sophie.TS-mubeam.v0.000001_00005900.art",
+"/pnfs/mu2e/scratch/users/sophie/workflow/default/outstage/13900954/00/00591/sim.sophie.TS-mubeam.v0.000001_00005910.art",
+"/pnfs/mu2e/scratch/users/sophie/workflow/default/outstage/13900954/00/00592/sim.sophie.TS-mubeam.v0.000001_00005920.art",
+"/pnfs/mu2e/scratch/users/sophie/workflow/default/outstage/13900954/00/00593/sim.sophie.TS-mubeam.v0.000001_00005930.art",
+"/pnfs/mu2e/scratch/users/sophie/workflow/default/outstage/13900954/00/00594/sim.sophie.TS-mubeam.v0.000001_00005940.art",
+"/pnfs/mu2e/scratch/users/sophie/workflow/default/outstage/13900954/00/00595/sim.sophie.TS-mubeam.v0.000001_00005950.art",
+"/pnfs/mu2e/scratch/users/sophie/workflow/default/outstage/13900954/00/00596/sim.sophie.TS-mubeam.v0.000001_00005960.art",
+"/pnfs/mu2e/scratch/users/sophie/workflow/default/outstage/13900954/00/00597/sim.sophie.TS-mubeam.v0.000001_00005970.art",
+"/pnfs/mu2e/scratch/users/sophie/workflow/default/outstage/13900954/00/00598/sim.sophie.TS-mubeam.v0.000001_00005980.art",
+"/pnfs/mu2e/scratch/users/sophie/workflow/default/outstage/13900954/00/00599/sim.sophie.TS-mubeam.v0.000001_00005990.art"
+]
+services.TFileService.fileName: "nts.MU2EGRIDDSOWNER.DS.MU2EGRIDDSCONF.000001_00005900.root"
+outputs.crvOutput.fileName : "sim.MU2EGRIDDSOWNER.DS-crv.MU2EGRIDDSCONF.000001_00005900.art"
+outputs.mothersOutput.fileName : "sim.MU2EGRIDDSOWNER.DS-beam.MU2EGRIDDSCONF.000001_00005900.art"
+outputs.ootStopOutput.fileName : "sim.MU2EGRIDDSOWNER.DS-OOTstops.MU2EGRIDDSCONF.000001_00005900.art"
+outputs.tgtStopOutput.fileName : "sim.MU2EGRIDDSOWNER.DS-TGTstops.MU2EGRIDDSCONF.000001_00005900.art"
+outputs.truncatedEvtsOutput.fileName : "sim.MU2EGRIDDSOWNER.DS-truncated.MU2EGRIDDSCONF.000001_00005900.art"
+mu2emetadata.fcl.prologkeys: [  ]
+mu2emetadata.fcl.inkeys: [ "source.fileNames" ]
+mu2emetadata.fcl.outkeys: [ "services.TFileService.fileName", "outputs.crvOutput.fileName", "outputs.mothersOutput.fileName", "outputs.ootStopOutput.fileName", "outputs.tgtStopOutput.fileName", "outputs.truncatedEvtsOutput.fileName" ]
+# End code added by generate_fcl:
+#----------------------------------------------------------------
