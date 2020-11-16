@@ -12,6 +12,8 @@
 using namespace std;
 
 namespace mu2e {
+// define equivalence plane 
+  StrawIdMask Plane::_sidmask(StrawIdMask::plane);
 
   string Plane::name( string const& base ) const{
     ostringstream os;
@@ -21,9 +23,12 @@ namespace mu2e {
     return os.str();
   }
 
-  void Plane::fillPointers ( const Tracker* tracker ) const{
-    for ( size_t i=0; i<_panels.size(); ++i ){
-      _panels[i]->fillPointers(tracker);
+  Plane::Plane( const StrawId& id, TrackerPanelCollection const& panels) : _id(id) {
+    for(auto const& panel : panels ) {
+    // pick out all the panels belonging to this plane.  This code relies on the Tracker collection being in order.
+      if(_sidmask.equal(_id,panel.id())){
+	_panels[panel.id().panel()] = &panel;
+      }
     }
   }
 

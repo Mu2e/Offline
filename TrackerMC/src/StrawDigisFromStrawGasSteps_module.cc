@@ -176,6 +176,7 @@ namespace mu2e {
 	ProditionsHandle<StrawElectronics> _strawele_h;
 	art::Selector _selector;
 	SimParticleTimeOffset _toff; // time offsets
+	double _rstraw; // cache
 	// diagnostics
 	TTree* _swdiag;
 	Int_t _swplane, _swpanel, _swlayer, _swstraw, _ndigi;
@@ -417,6 +418,8 @@ namespace mu2e {
     }
 
     void StrawDigisFromStrawGasSteps::beginRun( art::Run& run ){
+      const Tracker& tracker = *GeomHandle<Tracker>();
+      _rstraw = tracker.strawProperties()._strawInnerRadius;
       if ( _printLevel > 0 ) {
 	auto const& strawphys = _strawphys_h.get(run.id());
 	strawphys.print(cout);
@@ -877,9 +880,14 @@ namespace mu2e {
       StrawId selfid = straw.id();
       xtalk.clear();
       // find straws sensitive to straw-to-straw cross talk
-      vector<StrawId> const& strawNeighbors = straw.nearestNeighboursById();
+      vector<StrawId> strawNeighbors;
+      vector<StrawId> preampNeighbors;
+      for(uint16_t istraw=0; istraw < StrawId::_nstraws; istraw++){
+	StrawId nid(selfid.plane(),selfid.panel(),istraw);
+	if(nid != selfid && selfid.nearestNeighbor(nid)) strawNeighbors.push_back(nid);
+	if(nid != selfid && selfid.samePreamp(nid)) preampNeighbors.push_back(nid);
+      }
       // find straws sensitive to electronics cross talk
-      vector<StrawId> const& preampNeighbors = straw.preampNeighboursById();
       // convert these to cross-talk
       for(auto isid=strawNeighbors.begin();isid!=strawNeighbors.end();++isid){
 	xtalk.push_back(XTalk(selfid,*isid,_preampxtalk,0));
@@ -1222,7 +1230,7 @@ namespace mu2e {
       float dw = delta.Dot(sdir);
       XYZVec cperp = delta - dw*sdir; // just perp part
       float phi = atan2(cperp.Dot(pdir),cperp.Dot(zdir));// angle around wire WRT Z axis in range -pi,pi
-      float rho = min(sqrt(cperp.mag2()),(float)straw.innerRadius()); // truncate!
+      float rho = min(sqrt(cperp.mag2()),(float)_rstraw); // truncate!
       return StrawPosition(rho,dw,phi);
     }
 

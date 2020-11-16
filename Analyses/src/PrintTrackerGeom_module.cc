@@ -89,9 +89,6 @@ namespace mu2e {
                << n++ << " "
                << sid.asUint16() << " "
                << sid  << "  | ";
-          for ( auto nid : straw.nearestNeighboursById() ){
-            cout << " " << nid;
-          }
           cout << " "
                << straw.getMidPoint() << " "
                << straw.direction()

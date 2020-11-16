@@ -331,7 +331,7 @@ namespace mu2e
 // update the time in the HitT0 object
         hitt0._t0 += tflt;  
 // create the hit object.  Assume we're at the last iteration over added error
-        TrkStrawHit* trkhit = new TrkStrawHit(srep,strawhit,straw,istraw,hitt0,hflt,
+        TrkStrawHit* trkhit = new TrkStrawHit(srep,strawhit,*_tracker,istraw,hitt0,hflt,
 					      _maxpull,_strHitW );
         assert(trkhit != 0);
 	trkhit->setTemperature(_herr.back()); // give this hit the final annealing temperature
@@ -489,8 +489,7 @@ namespace mu2e
       // create a TrkStrawHit from this seed.
       size_t index = ths.index();
       const ComboHit& strawhit(kalData.chcol->at(index));
-      const Straw& straw = _tracker->getStraw(strawhit.strawId());
-      TrkStrawHit* trkhit = new TrkStrawHit(srep,strawhit,straw,ths.index(),ths.t0(),ths.trkLen(),
+      TrkStrawHit* trkhit = new TrkStrawHit(srep,strawhit,*_tracker,ths.index(),ths.t0(),ths.trkLen(),
 					    _maxpull,_strHitW);
       assert(trkhit != 0);
       // set the initial ambiguity
@@ -570,8 +569,8 @@ namespace mu2e
     // for(auto const& plane : tracker.getPlanes()){
     for ( size_t i=0; i!= tracker.nPlanes(); ++i){
       const auto& plane = tracker.getPlane(i);
-      _debug>3 && std::cout << __func__ << " plane " << plane.id() << " exists: " << plane.exists() << std::endl;
-       if(plane.exists()) {
+      _debug>3 && std::cout << __func__ << " plane " << plane.id() << " exists: " << _tracker->planeExists(plane.id()) << std::endl;
+       if(_tracker->planeExists(plane.id())) {
       // if (!(plane.exists())) continue;
       // # of straws in a panel
       int nstraws = plane.getPanel(0).nStraws();

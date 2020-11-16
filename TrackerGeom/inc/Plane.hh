@@ -9,50 +9,43 @@
 
 // C++ includes
 #include <vector>
+#include <array>
 
 // Mu2e includes
-#include "DataProducts/inc/PlaneId.hh"
+#include "DataProducts/inc/StrawId.hh"
+#include "DataProducts/inc/StrawIdMask.hh"
 #include "TrackerGeom/inc/Panel.hh"
 
 // CLHEP includes
 #include "CLHEP/Vector/ThreeVector.h"
 
 namespace mu2e {
-
   class Plane{
+    using PanelCollection = std::array<const Panel*,StrawId::_npanels>;
+    using TrackerPanelCollection = std::array<Panel,StrawId::_nupanels>; 
+    using xyzVec = CLHEP::Hep3Vector;
 
-    friend class AlignedTrackerMaker;
+    public:
 
-    friend class TrackerMaker;
-    friend class Tracker; // needed for deep copy
-
-  public:
-
-    // A free function, returning void, that takes a const Plane& as an argument.
-    typedef void (*PlaneFunction)( const Plane& s);
-
-    Plane():_id(PlaneId()),_origin(),_panels(),_exists(true){}
-
-    explicit Plane( const PlaneId& id,
-            CLHEP::Hep3Vector const& origin = CLHEP::Hep3Vector(0.,0.,0.),
-            bool exists = true ):
-      _id(id),
-      _origin(origin),
-      _exists(exists) {
-    }
+    Plane(){} // default object is not functional but needed for storage classes
+    // construct from the full set of panels
+    explicit Plane( const StrawId& id, TrackerPanelCollection const& panels);
 
     // Accept the compiler generated destructor, copy constructor and assignment operators
 
     // Accessors
-    const PlaneId&  id()  const { return _id;}
+    const StrawId&  id()  const { return _id;}
 
-    const CLHEP::Hep3Vector & origin() const { return _origin; }
+    const xyzVec& origin() const { return _origin; }
+    xyzVec& origin() { return _origin; }
 
-    int nPanels() const{
+    PanelCollection const& panels() const { return _panels; }
+
+    size_t nPanels() const{
       return _panels.size();
     }
 
-    const std::array<Panel const*,StrawId::_npanels>& getPanels () const{
+    const PanelCollection& getPanels () const{
       return _panels;
     }
 
@@ -60,31 +53,22 @@ namespace mu2e {
       return *_panels.at(n);
     }
 
-    const Panel& getPanel ( const PanelId& pnlid ) const{
+    const Panel& getPanel ( const StrawId& pnlid ) const{
       return *_panels.at(pnlid.getPanel());
     }
 
     const Straw& getStraw ( const StrawId& strid ) const{
-      return _panels.at(strid.getPanel())->getStraw(strid);
+      return getPanel(strid).getStraw(strid);
     }
 
     // Formatted string embedding the id of the panel.
     std::string name( std::string const& base ) const;
 
-    // On readback from persistency, recursively recompute mutable members.
-    void fillPointers ( const Tracker* tracker ) const;
-
-    bool exists() const {
-      return _exists;
-    }
-
-
-  protected:
-
-    PlaneId             _id;
-    CLHEP::Hep3Vector   _origin;
-    std::array<Panel const*,StrawId::_npanels> _panels;
-    bool                _exists;
+    private:
+    StrawId             _id;
+    xyzVec              _origin; // deprecated
+    PanelCollection     _panels;
+    static StrawIdMask  _sidmask; // to define equivalence
   };
 
 } //namespace mu2e
