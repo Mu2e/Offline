@@ -37,7 +37,6 @@
 namespace mu2e {
   class Tracker : public Detector, public ProditionsEntity {
     friend class TrackerMaker; // remove after factorizing out the G4 stuff FIXME!
-//    friend class AlignedTrackerMaker;
     using xyzVec = CLHEP::Hep3Vector; // switch to XYZVec TODO
 
     public:

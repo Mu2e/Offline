@@ -9,6 +9,7 @@
 #include "DbTables/inc/TrkAlignTracker.hh"
 #include "DbTables/inc/TrkAlignPlane.hh"
 #include "DbTables/inc/TrkAlignPanel.hh"
+#include "DbTables/inc/TrkAlignStraw.hh"
 
 namespace mu2e {
 
@@ -20,7 +21,8 @@ public:
     ptr_t fromFcl();
     ptr_t fromDb(TrkAlignTracker::cptr_t tatr_p,
 			  TrkAlignPlane::cptr_t   tapl_p,
-			  TrkAlignPanel::cptr_t   tapa_p );
+			  TrkAlignPanel::cptr_t   tapa_p,
+			  TrkAlignStraw::cptr_t   tast_p );
 
   private:
 
