@@ -52,11 +52,10 @@ namespace mu2e {
     const Row& row(const int channel) const { 
                 return _rows.at(_chanIndex.at(channel)); }
     std::vector<Row> const& rows() const {return _rows;}
-    std::size_t nrow() const { return _rows.size(); };
-    size_t size() const { return _csv.capacity() 
-	+ nrow()*nrow()/2 + nrow()*sizeof(Row); };
+    std::size_t nrow() const override { return _rows.size(); };
+    size_t size() const override { return baseSize() + nrow()*nrow()/2 + nrow()*sizeof(Row); };
 
-    void addRow(const std::vector<std::string>& columns) {
+    void addRow(const std::vector<std::string>& columns) override {
       _rows.emplace_back(std::stoul(columns[0]),
 			 std::stof(columns[1]),
 			 std::stof(columns[2]),
@@ -71,7 +70,7 @@ namespace mu2e {
       _chanIndex[_rows.back().channel()] = _rows.size()-1;
     }
 
-    void rowToCsv(std::ostringstream& sstream, std::size_t irow) const {
+    void rowToCsv(std::ostringstream& sstream, std::size_t irow) const override {
       Row const& r = _rows.at(irow);
       sstream << r.channel()<<",";
       sstream << std::fixed << std::setprecision(5);
@@ -87,7 +86,7 @@ namespace mu2e {
       sstream << r.v9();
     }
 
-    virtual void clear() { _csv.clear(); _rows.clear(); _chanIndex.clear();}
+    virtual void clear() override { baseClear(); _rows.clear(); _chanIndex.clear();}
 
   private:
     std::vector<Row> _rows;

@@ -34,9 +34,10 @@ namespace mu2e {
     // number of rows - overridden by derived class
     virtual std::size_t nrow() const =0;
     // expected nrows - overridden by derived class
-    virtual std::size_t nrowFix() const { return 0; };
+    virtual std::size_t nrowFix() const { return 0; }
     // approx size in bytes - overridden by derived class
-    virtual std::size_t size() const { return 0; };
+    virtual std::size_t size() const =0;
+    std::size_t baseSize() const { return _csv.capacity(); }
 
     // take the cvs text from a query and build out the table contents
     int fill(const std::string& csv, bool saveCsv=true);
@@ -48,9 +49,10 @@ namespace mu2e {
     // convert a row in a binary format to a string
     virtual void rowToCsv(std::ostringstream& stream, size_t irow) const =0;
     // remove all rows
-    virtual void clear() {}
+    virtual void clear() =0;
+    void baseClear() { _csv.clear(); }
 
-  protected:
+  private:
     std::string _name;
     std::string _dbname;
     std::string _query;

@@ -39,20 +39,21 @@ namespace mu2e {
     const Row& rowAt(const std::size_t index) const { return _rows.at(index);}
     const Row& row(const int tid) const { return _rows.at(_index.at(tid)); }
     std::vector<Row> const& rows() const {return _rows;}
-    std::size_t nrow() const { return _rows.size(); };
-    size_t size() const {
-      size_t b = sizeof(this) + _csv.capacity() + nrow()*44 + nrow()*nrow()/2;
+    std::size_t nrow() const override { return _rows.size(); };
+    size_t size() const override {
+      std::cout << "DEBUG " << baseSize() << " " << sizeof(this) << std::endl;
+      size_t b = baseSize() + sizeof(this) + nrow()*44 + nrow()*nrow()/2;
       for (auto const& r : _rows) b += r.name().capacity() + r.dbname().capacity();
       return b;
     };
 
-    void addRow(const std::vector<std::string>& columns) {
+    void addRow(const std::vector<std::string>& columns) override {
       _rows.emplace_back(std::stoi(columns[0]),columns[1],
 			 columns[2],columns[3],columns[4]);
       _index[_rows.back().tid()] = _rows.size()-1;
     }
 
-    void rowToCsv(std::ostringstream& sstream, std::size_t irow) const {
+    void rowToCsv(std::ostringstream& sstream, std::size_t irow) const override {
       Row const& r = _rows.at(irow);
       sstream << r.tid()<<",";
       sstream << r.name()<<",";
@@ -61,7 +62,7 @@ namespace mu2e {
       sstream << r.create_user();
     }
 
-    virtual void clear() { _csv.clear(); _rows.clear(); }
+    virtual void clear() override { baseClear(); _rows.clear(); }
 
   private:
     std::vector<Row> _rows;
