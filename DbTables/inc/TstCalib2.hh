@@ -31,27 +31,27 @@ namespace mu2e {
     const Row& row(const int channel) const { 
                 return _rows.at(_chanIndex.at(channel)); }
     std::vector<Row> const& rows() const {return _rows;}
-    std::size_t nrow() const { return _rows.size(); };
+    std::size_t nrow() const override { return _rows.size(); };
     // this is not quite right with strings...
-    size_t size() const { 
-      size_t b = _csv.capacity() + nrow()*nrow()/2 + nrow()*sizeof(Row); 
+    size_t size() const override { 
+      size_t b = baseSize() + nrow()*nrow()/2 + nrow()*sizeof(Row); 
       for(auto const& r : _rows) b += r.status().capacity(); 
       return b;
     };
 
-    void addRow(const std::vector<std::string>& columns) {
+    void addRow(const std::vector<std::string>& columns) override {
       _rows.emplace_back(std::stoul(columns[0]),
 			 columns[1] );
       _chanIndex[_rows.back().channel()] = _rows.size()-1;
     }
 
-    void rowToCsv(std::ostringstream& sstream, std::size_t irow) const {
+    void rowToCsv(std::ostringstream& sstream, std::size_t irow) const override {
       Row const& r = _rows.at(irow);
       sstream << r.channel()<<",";
       sstream << r.status();
     }
 
-    virtual void clear() { _csv.clear(); _rows.clear(); _chanIndex.clear();}
+    virtual void clear() override { baseClear(); _rows.clear(); _chanIndex.clear();}
 
   private:
     std::vector<Row> _rows;

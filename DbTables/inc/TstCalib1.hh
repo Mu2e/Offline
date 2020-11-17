@@ -33,13 +33,13 @@ namespace mu2e {
     const Row& row(const int channel) const { 
                 return _rows.at(_chanIndex.at(channel)); }
     std::vector<Row> const& rows() const {return _rows;}
-    std::size_t nrow() const { return _rows.size(); };
+    std::size_t nrow() const override { return _rows.size(); };
     //this table should always be 3 rows
-    virtual std::size_t nrowFix() const { return 3; }; 
-    size_t size() const { return _csv.capacity() + 
-	+ nrow()*nrow()/2 + nrow()*sizeof(Row); };
+    virtual std::size_t nrowFix() const override { return 3; }; 
+    size_t size() const override { return baseSize() + 
+	nrow()*nrow()/2 + nrow()*sizeof(Row); };
 
-    void addRow(const std::vector<std::string>& columns) {
+    void addRow(const std::vector<std::string>& columns) override {
       int channel = std::stoi(columns[0]);
       // enforce a strict sequential order - optional
       if(channel!=int(_rows.size())) {
@@ -54,14 +54,14 @@ namespace mu2e {
       _chanIndex[_rows.back().channel()] = _rows.size()-1;
     }
 
-    void rowToCsv(std::ostringstream& sstream, std::size_t irow) const {
+    void rowToCsv(std::ostringstream& sstream, std::size_t irow) const override {
       Row const& r = _rows.at(irow);
       sstream << r.channel()<<",";
       sstream << r.flag()<<",";
       sstream << std::fixed << std::setprecision(3) << r.dToE();
     }
 
-    virtual void clear() { _csv.clear(); _rows.clear(); _chanIndex.clear();}
+    virtual void clear() override { baseClear(); _rows.clear(); _chanIndex.clear();}
 
   private:
     std::vector<Row> _rows;
