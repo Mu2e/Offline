@@ -536,6 +536,7 @@ namespace mu2e {
       double planeDeltaZ = choosePlaneSpacing(ipln);
       CLHEP::Hep3Vector planeorigin( 0.0, 0.0, _z0+planeDeltaZ);
       for ( int ipnl=0; ipnl<StrawId::_npanels; ++ipnl ){
+	_strawPanelConstrCount = -1; // these counts are useless and should go away FIXME!
 	for ( int ilay=0; ilay<StrawId::_nlayers; ++ilay ){
 	  StrawId sid(ipln,ipnl,ilay);
 	  // we use the straw field to indicate the layer.  Layer structure is deprecated FIXME
@@ -609,7 +610,6 @@ namespace mu2e {
 //
     auto const& panel = _tt->getPlane(pnlId).getPanel(pnlId);
 
-    _strawPanelConstrCount = -1;
     // check if the opposite panels do not overlap
     static double const tolerance = 1.e-6; // this should be in a config file
 
