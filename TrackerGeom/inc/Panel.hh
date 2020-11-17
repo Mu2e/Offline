@@ -53,13 +53,19 @@ namespace mu2e {
     }
     // Define the origin as the average of straw 0 and 1 origins; note this is pure convention
     xyzVec origin()  const { return 0.5*(_straws[0]->origin() + _straws[1]->origin()); }
+    // define the local (UVW) coordinate system.  U points along the straw (Cal to HV), V is radially outwards (from straw 0 to 95), W is
+    // given by right-handedness
+    xyzVec UDirection() const { return _straws.front()->wireDirection(); }
+    xyzVec VDirection() const { return (_straws[StrawId::_nstraws-2]->origin()-_straws[0]->origin()).unit(); }// must pick straws in the same layer!
+    xyzVec WDirection() const { return UDirection().cross(VDirection()); }
 
+    // deprecated interface: either use the above local coordinates, or get the straw direction directly
     xyzVec straw0Direction() const { return _straws[0]->wireDirection(); }
    // (The primary straw of each layer is the straw used to establish position.
     //  In the Tracker the primary straw is the innermost straw.)
     // *** In a multi-layer geometry, the straw0MidPoint ***
     // ***        need not lie on any actaul straw       ***
-    // this function is misnamed and deprecated FIXME!
+    // this function is misnamed and deprecated, users should use origin instead  FIXME!
     xyzVec straw0MidPoint()  const { return origin(); }
     // deprecated useless function
     size_t nLayers() const { return 2; }

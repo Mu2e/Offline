@@ -26,7 +26,8 @@ namespace mu2e {
   ptr_t AlignedTrackerMaker::fromDb(
       TrkAlignTracker::cptr_t tatr_p,
       TrkAlignPlane::cptr_t   tapl_p,
-      TrkAlignPanel::cptr_t   tapa_p ) {
+      TrkAlignPanel::cptr_t   tapa_p,
+      TrkAlignStraw::cptr_t   tast_p ) {
 
 
     // get default geometry
@@ -78,9 +79,12 @@ namespace mu2e {
 	HepTransform align_panel(rowpa.dx(),rowpa.dy(),rowpa.dz(), rowpa.rx(),rowpa.ry(),rowpa.rz());
 	// panel origin WRT plane origin in nominal coordinates
 	auto dv = panel.origin() - oplane;
-	// panel rotation
-	double rz = dv.phi();
-	HepTransform panel_to_plane(dv.x(),dv.y(),dv.z(),0.0,0.0,rz);
+	// panel rotation: map U onto X, V onto Y.  Note we have to flip Z depending on the panel orientation (1/2 the panels are flipped)
+	HepRotation prot;
+	auto wdir = panel.WDirection();
+	if(wdir.z() > 0.0)prot *= HepRotation(0.0,M_PI,0.0);
+	prot *= HepRotation(0.0,0.0,panel.UDirection().phi());
+	HepTransform panel_to_plane(dv,prot);
 	// inverse: note that the rotation must be applied to the displacement.  This should be in HepTransform FIXME!
 	auto invrz = panel_to_plane.rotation().inverse();
 	auto invdv = -(invrz*dv);
@@ -103,30 +107,25 @@ namespace mu2e {
 	  HepTransform aligned_straw_to_tracker = aligned_panel_to_tracker*straw_to_panel;
 	  // chain from nominal tracker to straw coordintes
 	  HepTransform tracker_to_straw = panel_to_straw*tracker_to_panel;
-	  // transform straw and wire ends from nominal XYZ to nominal straw UVW 
-	  std::array<xyzVec,2> wireends_UVW, strawends_UVW, wireends, strawends;
+	  // transform straw and wire ends from nominal XYZ to nominal straw UVW and correct for end alignments
+	  xyzVec wireend_UVW, strawend_UVW;
+	  std::array<xyzVec,2> wireends, strawends;
+	  auto const& rowsea = tast_p->rowAt(straw.id().uniqueStraw());
 	  for(int iend=0;iend < StrawEnd::nends; iend++){
 	    auto end = static_cast<StrawEnd::End>(iend);
-	    wireends_UVW[iend] = tracker_to_straw*straw.wireEnd(end);
-	    strawends_UVW[iend] = tracker_to_straw*straw.strawEnd(end);
-	  // correct for end alignments
-	  // auto const& rowsea = strawendalign_p->rowAt(straw.id().uniqueStraw());
-	  // xyzvec dcalwire(0.0,rowsea.calWiredV(),rowsea.calWiredW());
-	  // xyzvec dhvwire(0.0,rowsea.hvWiredV(),rowsea.hvWiredW());
-	  // xyzvec dcalstraw(0.0,rowsea.calStrawdV(),rowsea.calStrawdW());
-	  // xyzvec dhvstraw(0.0,rowsea.hvStrawdV(),rowsea.hvStrawdW());
-	  // wireends_UVW[StrawEnd::cal] += dcalwire;
-	  // wireends_UVW[StrawEnd::hv] += dhvwire;
-	  // strawends_UVW[StrawEnd::cal] += dcalstraw;
-	  // strawends_UVW[StrawEnd::hv] += dhvstraw;
-	  //
+	    wireend_UVW = tracker_to_straw*straw.wireEnd(end) + rowsea.wireDeltaUVW(end);
+	    strawend_UVW = tracker_to_straw*straw.strawEnd(end) + rowsea.strawDeltaUVW(end);
 	  // Transform back to global coordinates
-	    wireends[iend] = aligned_straw_to_tracker*wireends_UVW[iend];
-	    strawends[iend] = aligned_straw_to_tracker*strawends_UVW[iend];
+	    wireends[iend] = aligned_straw_to_tracker*wireend_UVW;
+	    strawends[iend] = aligned_straw_to_tracker*strawend_UVW;
 	    // diagnostics
 	    StrawEnd stend = StrawEnd(end);
-	    std::cout << "Wire end " << stend << " aligned " << wireends[iend]  << " aligned " << straw.wireEnd(end) << std::endl;
-	    std::cout << "Straw end " << stend << " aligned " << strawends[iend] << " aligned " << straw.strawEnd(end) << std::endl;
+	    if ( _config.verbose() > 2 || (_config.verbose() > 1 && (wireends[iend]-straw.wireEnd(end)).mag() > 1e-5)){
+	      std::cout << "Straw " << straw.id() << " wire " << stend << " aligned " << wireends[iend]  << " nominal " << straw.wireEnd(end) << std::endl;
+	    }
+	    if ( _config.verbose() > 2 || (_config.verbose() > 1 && (strawends[iend]-straw.strawEnd(end)).mag() > 1e-5)){
+	      std::cout << "Straw " << straw.id() << " straw " << stend << " aligned " << strawends[iend] << " nominal " << straw.strawEnd(end) << std::endl;
+	    } 
 	  }
 	  // overwrite straw content with aligned information
 	  straw = Straw(straw.id(),

@@ -811,8 +811,12 @@ namespace mu2e {
     // CLHEP::HepRotationZ RZ(_panelBaseRotations.at(ipnl));
     CLHEP::HepRotationZ RZ(panelRotation(ipnl,layId.getPlane()));
 
-    // Unit vector in the wire direction. (nominal is the panel 0 to the right?)
-    CLHEP::Hep3Vector unit = RZ*CLHEP::Hep3Vector(0.,1.,0.);
+    // Unit vector in the wire direction. This depends on the Plane and Panel
+    CLHEP::Hep3Vector unit;
+    if((ipnl+iplane)%2)
+     unit = RZ*CLHEP::Hep3Vector(0.,-1.,0.); // odd
+    else
+     unit = RZ*CLHEP::Hep3Vector(0.,1.,0.); // even
 
     // Straw number within the layer; does not reset to zero at each manifold.
     // we number the straws starting from the most inner one across the two layers in the panel/panel

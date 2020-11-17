@@ -1,7 +1,6 @@
 #ifndef DbTables_TrkAlignStraw_hh
 #define DbTables_TrkAlignStraw_hh
 
-
 #include <string>
 #include <iomanip>
 #include <sstream>
@@ -10,11 +9,13 @@
 #include "DataProducts/inc/StrawEnd.hh"
 #include "DataProducts/inc/XYZVec.hh"
 #include "DbTables/inc/DbTable.hh"
+#include "CLHEP/Vector/ThreeVector.h"
 
 namespace mu2e {
 
   class TrkAlignStraw : public DbTable {
   public:
+    using xyzVec = CLHEP::Hep3Vector; // switch to XYZVec TODO
 
     typedef std::shared_ptr<TrkAlignStraw> ptr_t;
     typedef std::shared_ptr<const TrkAlignStraw> cptr_t;
@@ -31,10 +32,10 @@ namespace mu2e {
 	_straw_hv_dV(straw_hv_dV), _straw_hv_dW(straw_hv_dW) {}
 
       StrawId strawId() const { return StrawId(unsigned(_strawid)); } // this will throw if the value is illegal
-      XYZVec wireDeltaUVW(StrawEnd::End end) const { return end == StrawEnd::cal ? XYZVec(0.0,_wire_cal_dV,_wire_cal_dW) : XYZVec(0.0,_wire_hv_dV,_wire_hv_dW); }
-      XYZVec wireDeltaUVW(StrawEnd const& end) const { return wireDeltaUVW(end.end()); }
-      XYZVec strawDeltaUVW(StrawEnd::End end) const { return end == StrawEnd::cal ? XYZVec(0.0,_straw_cal_dV,_straw_cal_dW) : XYZVec(0.0,_straw_hv_dV,_straw_hv_dW); }
-      XYZVec strawDeltaUVW(StrawEnd const& end) const { return strawDeltaUVW(end.end()); }
+      xyzVec wireDeltaUVW(StrawEnd::End end) const { return end == StrawEnd::cal ? xyzVec(0.0,_wire_cal_dV,_wire_cal_dW) : xyzVec(0.0,_wire_hv_dV,_wire_hv_dW); }
+      xyzVec wireDeltaUVW(StrawEnd const& end) const { return wireDeltaUVW(end.end()); }
+      xyzVec strawDeltaUVW(StrawEnd::End end) const { return end == StrawEnd::cal ? xyzVec(0.0,_straw_cal_dV,_straw_cal_dW) : xyzVec(0.0,_straw_hv_dV,_straw_hv_dW); }
+      xyzVec strawDeltaUVW(StrawEnd const& end) const { return strawDeltaUVW(end.end()); }
 
       int _strawid;
       float _wire_cal_dV, _wire_cal_dW; // wire cal end displacements from nominal
