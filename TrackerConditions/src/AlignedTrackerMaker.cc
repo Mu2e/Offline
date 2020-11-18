@@ -75,7 +75,7 @@ namespace mu2e {
 	// panel rotation: map U onto X, V onto Y.  Note we have to flip Z depending on the panel orientation (1/2 the panels are flipped)
 	HepRotation prot;
 	auto wdir = panel.WDirection();
-	if(wdir.z() > 0.0)prot *= HepRotation(0.0,M_PI,0.0);
+	if(wdir.z() < 0.0)prot *= HepRotation(0.0,M_PI,0.0);
 	prot *= HepRotation(0.0,0.0,panel.UDirection().phi());
 	HepTransform panel_to_plane(dv,prot);
 	// inverse

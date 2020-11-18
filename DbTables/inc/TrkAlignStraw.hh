@@ -21,7 +21,7 @@ namespace mu2e {
     typedef std::shared_ptr<const TrkAlignStraw> cptr_t;
 
     struct Row {
-      Row(int strawid,
+      Row(int index, StrawId const& id,
 	  float wire_cal_dV, float wire_cal_dW,
 	  float wire_hv_dV, float wire_hv_dW,
 	  float straw_cal_dV, float straw_cal_dW,
@@ -31,13 +31,14 @@ namespace mu2e {
 	_straw_cal_dV(straw_cal_dV), _straw_cal_dW(straw_cal_dW),
 	_straw_hv_dV(straw_hv_dV), _straw_hv_dW(straw_hv_dW) {}
 
-      StrawId strawId() const { return StrawId(unsigned(_strawid)); } // this will throw if the value is illegal
+      StrawId const& id() const { return _id; }
       xyzVec wireDeltaUVW(StrawEnd::End end) const { return end == StrawEnd::cal ? xyzVec(0.0,_wire_cal_dV,_wire_cal_dW) : xyzVec(0.0,_wire_hv_dV,_wire_hv_dW); }
       xyzVec wireDeltaUVW(StrawEnd const& end) const { return wireDeltaUVW(end.end()); }
       xyzVec strawDeltaUVW(StrawEnd::End end) const { return end == StrawEnd::cal ? xyzVec(0.0,_straw_cal_dV,_straw_cal_dW) : xyzVec(0.0,_straw_hv_dV,_straw_hv_dW); }
       xyzVec strawDeltaUVW(StrawEnd const& end) const { return strawDeltaUVW(end.end()); }
 
-      int _strawid;
+      int _index;
+      StrawId _id;
       float _wire_cal_dV, _wire_cal_dW; // wire cal end displacements from nominal
       float _wire_hv_dV, _wire_hv_dW; // wire hv end displacements from nominal
       float _straw_cal_dV, _straw_cal_dW; // straw cal end displacements from nominal
@@ -46,7 +47,7 @@ namespace mu2e {
 
 
     TrkAlignStraw():DbTable("TrkAlignStraw","trk.alignstraw",
-	"strawid,wire_cal_dV,wire_cal_dW,wire_hv_dV,wire_hv_dW,straw_cal_dV,straw_cal_dW,straw_hv_dV,straw_hv_dW") {}
+	"index,wire_cal_dV,wire_cal_dW,wire_hv_dV,wire_hv_dW,straw_cal_dV,straw_cal_dW,straw_hv_dV,straw_hv_dW") {}
     const Row& rowAt(const std::size_t index) const { return _rows.at(index);}
     std::vector<Row> const& rows() const {return _rows;}
     size_t nrow() const override { return _rows.size(); };
@@ -56,19 +57,21 @@ namespace mu2e {
     void addRow(const std::vector<std::string>& columns) override {
       _rows.emplace_back(
 	  std::stoi(columns[0]),
-	  std::stof(columns[1]),
+	  StrawId(columns[1]),
 	  std::stof(columns[2]),
 	  std::stof(columns[3]),
 	  std::stof(columns[4]),
 	  std::stof(columns[5]),
 	  std::stof(columns[6]),
 	  std::stof(columns[7]),
-	  std::stof(columns[8]) );
+	  std::stof(columns[8]),
+	  std::stof(columns[9]) );
     }
 
     void rowToCsv(std::ostringstream& sstream, std::size_t irow) const override {
       Row const& r = _rows.at(irow);
-      sstream << r._strawid <<",";
+      sstream << r._index <<",";
+      sstream << r.id().plane() << "_" << r.id().panel() << "_" << r.id().straw() << ",";
       sstream << std::fixed << std::setprecision(4); 
       sstream << r._wire_cal_dV <<",";
       sstream << r._wire_cal_dW <<",";

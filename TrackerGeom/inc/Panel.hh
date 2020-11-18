@@ -51,8 +51,8 @@ namespace mu2e {
 	throw cet::exception("RANGE") << msg.str();
       }
     }
-    // Define the origin as the average of straw 0 and 1 origins; note this is pure convention
-    xyzVec origin()  const { return 0.5*(_straws[0]->origin() + _straws[1]->origin()); }
+    // Define the origin as the average of straw 47 and 48 origins, ie roughly the panel center.   
+    xyzVec origin()  const { return 0.5*(_straws[47]->origin() + _straws[48]->origin()); }
     // define the local (UVW) coordinate system.  U points along the straw (Cal to HV), V is radially outwards (from straw 0 to 95), W is
     // given by right-handedness
     xyzVec UDirection() const { return _straws.front()->wireDirection(); }
