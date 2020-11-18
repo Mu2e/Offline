@@ -452,7 +452,7 @@ void art::StrawAndCaloDigisFromFragments::analyze_calorimeter_(
         uint16_t apdID = hits[hitIdx].first.DIRACB >> 12;
 
         // FIXME: Can we match vector types here?
-        std::vector<int> caloHits(hits[hitIdx].second.size());
+        std::vector<int> caloHits;
         std::copy(hits[hitIdx].second.begin(), hits[hitIdx].second.end(), std::back_inserter(caloHits));
 
         calo_digis->emplace_back((crystalID * 2 + apdID), hits[hitIdx].first.Time, caloHits,
