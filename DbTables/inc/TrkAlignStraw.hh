@@ -47,7 +47,7 @@ namespace mu2e {
 
 
     TrkAlignStraw():DbTable("TrkAlignStraw","trk.alignstraw",
-	"index,wire_cal_dV,wire_cal_dW,wire_hv_dV,wire_hv_dW,straw_cal_dV,straw_cal_dW,straw_hv_dV,straw_hv_dW") {}
+	"index,StrawId,wire_cal_dV,wire_cal_dW,wire_hv_dV,wire_hv_dW,straw_cal_dV,straw_cal_dW,straw_hv_dV,straw_hv_dW") {}
     const Row& rowAt(const std::size_t index) const { return _rows.at(index);}
     std::vector<Row> const& rows() const {return _rows;}
     size_t nrow() const override { return _rows.size(); };

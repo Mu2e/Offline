@@ -78,6 +78,13 @@ namespace mu2e {
     PlaneCollection const& planes() const {
       return _planes;
     }
+    PanelCollection const& panels() const{
+      return _panels;
+    }
+    StrawCollection const& straws() const{
+      return _straws;
+    }
+
     const Panel& panel( const StrawId& id ) const{
       return _panels.at(id.uniquePanel());
     }
@@ -90,9 +97,6 @@ namespace mu2e {
       return _straws[strawIndex(id)];
     }
 
-    StrawCollection const& straws() const{
-      return _straws;
-    }
 // deprecated interface 
     const Plane& getPlane( const StrawId& id ) const{
       return _planes.at(id.getPlane());

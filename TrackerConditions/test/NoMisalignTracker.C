@@ -20,13 +20,14 @@ void NoMisalignTracker(const char* outfile="NoMisalignTracker.txt") {
   os << "# Tracker With No Misalignments" << endl;
   for(unsigned ibuf=0;ibuf<3;ibuf++)
     os << "#" << endl;
-
   os << " TABLE TrkAlignTracker " << endl;
+  os << "#row, strawid, dx, dy, dz, rx, ry, rz" << endl;
   os << "0, 0_0_0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0" << endl;
   for(unsigned ibuf=0;ibuf<3;ibuf++)
     os << "#" << endl;
  
   os << "TABLE TrkAlignPlane" << endl;
+  os << "#row, strawid, dx, dy, dz, rx, ry, rz" << endl;
   for(unsigned iplane=0;iplane < NPlanes; ++iplane){
      os << iplane << ", " << iplane << "_0_0, "
        << "0.0, 0.0, 0.0, 0.0, 0.0, 0.0" << endl;
@@ -35,6 +36,7 @@ void NoMisalignTracker(const char* outfile="NoMisalignTracker.txt") {
   for(unsigned ibuf=0;ibuf<3;ibuf++)
     os << "#" << endl;
   os << "TABLE TrkAlignPanel" << endl;
+  os << "#row, strawid, dU, dV, dW, rU, rV, rW" << endl;
   for(unsigned iplane=0;iplane < NPlanes; ++iplane){
     for(unsigned ipanel=0;ipanel<NPanels; ++ipanel){
       unsigned irow = iplane*NPanels + ipanel;
@@ -46,6 +48,7 @@ void NoMisalignTracker(const char* outfile="NoMisalignTracker.txt") {
   for(unsigned ibuf=0;ibuf<3;ibuf++)
     os << "#" << endl;
   os << "TABLE TrkAlignStraw" << endl;
+  os << "#index,StrawId,wire_cal_dV,wire_cal_dW,wire_hv_dV,wire_hv_dW,straw_cal_dV,straw_cal_dW,straw_hv_dV,straw_hv_dW" << endl;
   for(unsigned iplane=0;iplane < NPlanes; ++iplane){
     for(unsigned ipanel=0;ipanel<NPanels; ++ipanel){
       for(unsigned istraw=0;istraw<NStraws; ++istraw){
