@@ -107,10 +107,10 @@ namespace mu2e {
 							  "Disk0: calo digi amplitude; caloDigi_amplitude [adc]", 250, 0, 2500);
       _histDisk[i]._hNSamplesPerDigi   = tfdir.make<TH1F>(Form("hNSampleHitsDisk%i", i),
 							  "Disk0: N of words per caloDigi ",
-							  1e4, 0, 1e4);
+							  200, 0., 200.);
       _histDisk[i]._hNSamplesPerEvent  = tfdir.make<TH1F>(Form("hNSampleDisk%i", i),
 							  "Disk0: N of words per event ",
-							  5e4, 0, 5e4);
+							  5e2, 0, 5e4);
     }
   }
 
