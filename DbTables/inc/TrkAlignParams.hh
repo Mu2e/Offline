@@ -1,19 +1,21 @@
 //
-//  Rigid body alignment parameters
+//  Rigid body alignment parameters for tracker
 //
-#ifndef DbTables_AlignParams_hh
-#define DbTables_AlignParams_hh
+#ifndef DbTables_TrkAlignParams_hh
+#define DbTables_TrkAlignParams_hh
 
 #include "GeneralUtilities/inc/HepTransform.hh"
+#include "DataProducts/inc/StrawId.hh"
 
 namespace mu2e {
-  class AlignParams {
+  class TrkAlignParams {
     public:
-      AlignParams(int index, float dx, float dy, float dz, 
+      TrkAlignParams(int index, StrawId const& id, float dx, float dy, float dz, 
 	  float rx, float ry, float rz):
-	_index(index),_dx(dx),_dy(dy),_dz(dz),
+	_index(index), _id(id), _dx(dx),_dy(dy),_dz(dz),
 	_rx(rx),_ry(ry),_rz(rz),_transform(dx,dy,dz,rx,ry,rz) {}
       int index() const { return _index; }
+      StrawId const& id() const { return _id; }
       float dx() const {return _dx;}
       float dy() const {return _dy;}
       float dz() const {return _dz;}
@@ -23,6 +25,7 @@ namespace mu2e {
       HepTransform const& transform() const {return _transform;}
     private:
       int _index;
+      StrawId _id;
       float _dx;
       float _dy;
       float _dz;

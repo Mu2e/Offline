@@ -49,32 +49,11 @@ namespace mu2e {
       int ipln = -1;
       int ipnl = -1;
       int ilay = -1;
-//      double iang = -36000;
 
       cout << __func__ << " (_tt->_allStraws).size(), StrawId::_nustraws "
            << fixed << setw(6) << _tt->nStraws()
            << fixed << setw(6) << StrawId::_nustraws
            << endl;
-
-//      size_t istr = -1;
-//      for (const auto& istr_p : _tt->_allStraws_p) {
-//        cout << __func__ << setw(10) << ++istr
-//          // << setw(20) << istr_p;
-//             << setw(20) << " ";
-//        if (istr_p != nullptr ) {
-//          StrawId const & lsid =  (*istr_p).id();
-//          std::ostringstream nsid("",std::ios_base::ate); // to write at the end
-//          nsid << lsid;
-//          cout << setw(6) << lsid.asUint16()
-//               << setw(17) << std::bitset<16>(lsid.asUint16())
-//               << " "
-//               << setw(10) << std::showbase << std::hex << lsid.asUint16()
-//               << " " << std::dec << std::noshowbase << setw(7) << nsid.str()
-//               << endl;
-//        } else {
-//          cout << endl;
-//        }
-//      }
 
       for ( const Straw& straw : _tt->getStraws() ){
 
@@ -487,11 +466,6 @@ namespace mu2e {
       cout << "Tracker Support Structure: \n" << _tt->_supportStructure << endl;
     }
 
-    // Test the forAll methods.
-    //_tt->forAllLayers( lptest);
-    //_tt->forAllPlanes( plntest);
-    //_tt->forAllLayers( positionTest);
-
   } //end TrackerMaker::buildIt.
 
   void TrackerMaker::makeMother(){
@@ -601,13 +575,6 @@ namespace mu2e {
 
   void TrackerMaker::makePanel( const PanelId& pnlId ){
 
-//    auto& panels = _tt->_panels;
-//    // create a Panel in the Tracker global list of all panels
-//    panels.at(pnlId.uniquePanel()) = Panel(pnlId);
-//    Panel& panel = panels.at(pnlId.uniquePanel());
-//    // put a pointer to this Panel on its Plane
-//    plane._panels.at(pnlId.getPanel()) = &panel;
-//
     auto const& panel = _tt->getPlane(pnlId).getPanel(pnlId);
 
     // check if the opposite panels do not overlap
@@ -766,15 +733,6 @@ namespace mu2e {
     _tt->_panelEB._EBKeyShieldMaterial   = _EBKeyShieldMaterial;
     _tt->_panelEB._EBKeyPhiExtraRotation = _EBKeyPhiExtraRotation;
 
-    // set the panel origin for alignment
-//    HepTransform plane_to_tracker(0.0,0.0,plane.origin().z(),0.0,0.0,0.0);
-//    CLHEP::Hep3Vector dv = panel.straw0MidPoint()
-//        - plane_to_tracker.displacement();
-//    double rz = dv.phi();
-//
-//    HepTransform panel_to_plane(dv.x(), dv.y(), dv.z(),0.0,0.0,rz);
-//    panel._origin = (plane_to_tracker * panel_to_plane) * CLHEP::Hep3Vector(0,0,0);
-
   }  // end makePanel
 
   void TrackerMaker::makeLayer ( const StrawId& layId, CLHEP::Hep3Vector const& planeorigin, StrawCollection& allStraws ){
@@ -782,7 +740,6 @@ namespace mu2e {
     // straws per panel
     constexpr int spp = StrawId::_nstraws;
 
-//    const Plane& plane = _tt->getPlane( layId );
     int ilay = layId.getLayer();
     int ipnl = layId.getPanel();
     int iplane = layId.getPlane();
@@ -793,14 +750,10 @@ namespace mu2e {
     //    cout << "Debugging TrackerMaker ilay: " << ilay << endl;
 
     // Start to populate the layer.
-    // layer._nStraws      = _manifoldsPerEnd*_strawsPerManifold; // not really used
-    // layer._straws.reserve(_manifoldsPerEnd*_strawsPerManifold);
-
     // |z| of straw center, relative to the center of the plane.
     // Sign is taken care of elsewhere.
 
     // see similar calc in computePanelBoxParams
-    //    double zOffset = _supportHalfThickness + _strawOuterRadius + ilay*2.*_layerHalfSpacing;
     // the above commented out calculation places the straws at the edge of the manifold in Z
 
     double zOffset = _supportHalfThickness + _manifoldZEdgeExcessSpace +
@@ -808,15 +761,14 @@ namespace mu2e {
 
     // Rotation that puts wire direction and wire mid-point into their
     // correct orientations.
-    // CLHEP::HepRotationZ RZ(_panelBaseRotations.at(ipnl));
     CLHEP::HepRotationZ RZ(panelRotation(ipnl,layId.getPlane()));
 
-    // Unit vector in the wire direction. This depends on the Plane and Panel
+    // Unit vector in the wire direction. This depends on the Plane and Panel.  Hardware convention is U points from HV to Cal (Duke convention)
     CLHEP::Hep3Vector unit;
     if((ipnl+iplane)%2)
-     unit = RZ*CLHEP::Hep3Vector(0.,-1.,0.); // odd
+     unit = RZ*CLHEP::Hep3Vector(0.,1.,0.); // odd
     else
-     unit = RZ*CLHEP::Hep3Vector(0.,1.,0.); // even
+     unit = RZ*CLHEP::Hep3Vector(0.,-1.,0.); // even
 
     // Straw number within the layer; does not reset to zero at each manifold.
     // we number the straws starting from the most inner one across the two layers in the panel/panel

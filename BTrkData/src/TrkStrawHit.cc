@@ -170,7 +170,7 @@ namespace mu2e
   void
   TrkStrawHit::updateSignalTime() {
 // compute the electronics propagation time for the 2 ends.
-// note: the wire direction points from cal to HV
+// note: the wire (U) direction points from HV to Cal (Duke convention)
     if( poca().status().success()){
       switch (_combohit.driftEnd()) {
 	case StrawEnd::cal:

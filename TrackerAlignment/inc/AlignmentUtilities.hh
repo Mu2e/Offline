@@ -81,8 +81,8 @@ bool testDerivatives(
 
     CosmicTimeTrack const& track,
     StrawId const& strawId,
-    AlignParams const&rowpl,
-    AlignParams const&rowpa,
+    TrkAlignParams const&rowpl,
+    TrkAlignParams const&rowpa,
     Tracker const& nominalTracker,
     StrawResponse const& strawRes);
 
@@ -90,8 +90,8 @@ bool testDerivatives(
 std::pair<std::vector<double>, std::vector<double>> 
   analyticalDerivatives(CosmicTimeTrack const& track,
     StrawId const& strawId,
-    AlignParams const&rowpl,
-    AlignParams const&rowpa,
+    TrkAlignParams const&rowpl,
+    TrkAlignParams const&rowpa,
     Tracker const& nominalTracker,
     double const& driftvel);
 
@@ -127,8 +127,8 @@ std::pair<Hep3Vector, Hep3Vector> alignStraw(Tracker const& tracker, Plane const
 
 std::pair<std::vector<double>, std::vector<double>>
 numericalDerivatives(CosmicTimeTrack const& _track, StrawId const& straw,
-                         AlignParams const& alignPlane,
-                         AlignParams const& alignPanel,
+                         TrkAlignParams const& alignPlane,
+                         TrkAlignParams const& alignPanel,
                          Tracker const& nominalTracker, 
                          StrawResponse const& strawRes, 
                          bool useTimeDomain = true);
