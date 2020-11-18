@@ -12,11 +12,10 @@
 #include "art_root_io/TFileService.h"
 
 #include "CLHEP/Vector/ThreeVector.h"
-#include "DbTables/inc/TrkAlignPlane.hh"
 #include "GeneralUtilities/inc/HepTransform.hh"
 #include "Minuit2/MnUserCovariance.h"
 #include "Mu2eUtilities/inc/TwoLinePCA.hh"
-#include "DbTables/inc/TrkAlignPanel.hh"
+#include "DbTables/inc/TrkAlignElement.hh"
 #include "DataProducts/inc/StrawId.hh"
 #include "RecoDataProducts/inc/ComboHit.hh"
 #include "TrackerConditions/inc/StrawResponse.hh"
@@ -34,8 +33,8 @@ bool testDerivatives(
 
     CosmicTimeTrack const& track,
     StrawId const& strawId,
-    TrkAlignPlane::Row const&rowpl,
-    TrkAlignPanel::Row const&rowpa,
+    AlignParams const&rowpl,
+    AlignParams const&rowpa,
     Tracker const& nominalTracker,
     StrawResponse const& strawRes) {
   double tolerance = 0.5;
@@ -113,8 +112,8 @@ bool testDerivatives(
 std::pair<std::vector<double>, std::vector<double>> 
   analyticalDerivatives(CosmicTimeTrack const& track,
     StrawId const& strawId,
-    TrkAlignPlane::Row const&rowpl,
-    TrkAlignPanel::Row const&rowpa,
+    AlignParams const&rowpl,
+    AlignParams const&rowpa,
     Tracker const& nominalTracker,
     double const& driftvel) {
 
@@ -416,8 +415,8 @@ namespace {
 
 std::pair<std::vector<double>, std::vector<double>>
 numericalDerivatives(CosmicTimeTrack const& _track, StrawId const& straw,
-                         TrkAlignPlane::Row const& alignPlane,
-                         TrkAlignPanel::Row const& alignPanel,
+                         AlignParams const& alignPlane,
+                         AlignParams const& alignPanel,
                          Tracker const& nominalTracker, 
                          StrawResponse const& strawRes,
                          bool useTimeDomain) {

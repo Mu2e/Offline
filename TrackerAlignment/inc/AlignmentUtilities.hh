@@ -2,9 +2,8 @@
 // roneil@fnal.gov
 // ryunoneil@gmail.com
 
-// ROOT
 #include "CLHEP/Vector/ThreeVector.h"
-#include "DbTables/inc/TrkAlignPlane.hh"
+#include "DbTables/inc/TrkAlignElement.hh"
 #include "GeneralUtilities/inc/HepTransform.hh"
 #include "Mu2eUtilities/inc/TwoLinePCA.hh"
 #include "RtypesCore.h"
@@ -16,8 +15,6 @@
 #include "art_root_io/TFileService.h"
 
 // Offline
-
-#include "DbTables/inc/TrkAlignPanel.hh"
 
 #include "DataProducts/inc/StrawId.hh"
 
@@ -84,8 +81,8 @@ bool testDerivatives(
 
     CosmicTimeTrack const& track,
     StrawId const& strawId,
-    TrkAlignPlane::Row const&rowpl,
-    TrkAlignPanel::Row const&rowpa,
+    AlignParams const&rowpl,
+    AlignParams const&rowpa,
     Tracker const& nominalTracker,
     StrawResponse const& strawRes);
 
@@ -93,8 +90,8 @@ bool testDerivatives(
 std::pair<std::vector<double>, std::vector<double>> 
   analyticalDerivatives(CosmicTimeTrack const& track,
     StrawId const& strawId,
-    TrkAlignPlane::Row const&rowpl,
-    TrkAlignPanel::Row const&rowpa,
+    AlignParams const&rowpl,
+    AlignParams const&rowpa,
     Tracker const& nominalTracker,
     double const& driftvel);
 
@@ -130,8 +127,8 @@ std::pair<Hep3Vector, Hep3Vector> alignStraw(Tracker const& tracker, Plane const
 
 std::pair<std::vector<double>, std::vector<double>>
 numericalDerivatives(CosmicTimeTrack const& _track, StrawId const& straw,
-                         TrkAlignPlane::Row const& alignPlane,
-                         TrkAlignPanel::Row const& alignPanel,
+                         AlignParams const& alignPlane,
+                         AlignParams const& alignPanel,
                          Tracker const& nominalTracker, 
                          StrawResponse const& strawRes, 
                          bool useTimeDomain = true);

@@ -8,9 +8,7 @@
 #include "DbTables/inc/TrkPreampRStraw.hh"
 #include "DbTables/inc/TrkPreampStraw.hh"
 #include "DbTables/inc/TrkThresholdRStraw.hh"
-#include "DbTables/inc/TrkAlignTracker.hh"
-#include "DbTables/inc/TrkAlignPlane.hh"
-#include "DbTables/inc/TrkAlignPanel.hh"
+#include "DbTables/inc/TrkAlignElement.hh"
 #include "DbTables/inc/TrkAlignStraw.hh"
 #include "DbTables/inc/AnaTrkQualDb.hh"
 

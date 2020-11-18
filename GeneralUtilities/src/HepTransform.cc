@@ -30,5 +30,11 @@ namespace mu2e {
     return a.displacement() + a.rotation()*v;
   }
 
+  HepTransform HepTransform::inverse() const {
+    auto invrot = _rotation.inverse();
+    auto invdisp = -(invrot*_displacement);
+    return HepTransform(invdisp,invrot);
+  }
+
 
 } // end of namespace mu2e

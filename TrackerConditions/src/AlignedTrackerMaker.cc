@@ -1,6 +1,6 @@
 
-#include "TrackerGeom/inc/Tracker.hh"
 #include "TrackerConditions/inc/AlignedTrackerMaker.hh"
+#include "TrackerGeom/inc/Tracker.hh"
 #include "GeometryService/inc/GeomHandle.hh"
 #include "CLHEP/Vector/ThreeVector.h"
 #include "cetlib_except/exception.h"
@@ -50,33 +50,26 @@ namespace mu2e {
     // the tracker nominal origin
     auto const& otracker = tracker.origin();
     auto const& rowtr = tatr_p->rowAt(0); // exactly 1 row in this table
-    // create the transform.  This is identical for all the levels (tracker, plane, panel) and should be consolidated in a single row class
-    // and encapsulated in a common utility FIXME!
-    HepTransform align_tracker(rowtr.dx(),rowtr.dy(),rowtr.dz(),rowtr.rx(),rowtr.ry(),rowtr.rz());
     HepRotation nullrot;
 
     for(auto& plane : tracker.getPlanes()) {
 
       auto const& rowpl = tapl_p->rowAt( plane.id().plane() );
-      HepTransform align_plane(rowpl.dx(),rowpl.dy(),rowpl.dz(), rowpl.rx(),rowpl.ry(),rowpl.rz());
 
       if ( _config.verbose() > 0 ) {
-	cout << "AlignedTrackerMaker::fromDb plane ID " << plane.id().plane() << " alignment constants: " << align_plane << endl;
+	cout << "AlignedTrackerMaker::fromDb plane ID " << plane.id().plane() << " alignment constants: " << rowpl.transform() << endl;
       }
       // relative plane origin; nominal plane rotation is 0.
       auto oplane = plane.origin() - otracker;
       HepTransform plane_to_tracker(oplane, nullrot);
       // inverse
-      auto ioplane = -oplane; 
-      HepTransform tracker_to_plane(ioplane, nullrot);
-
+      auto tracker_to_plane = plane_to_tracker.inverse();
       // chain to transform plane coordinates into tracker, includering alignment
-      HepTransform aligned_plane_to_tracker = align_tracker * (plane_to_tracker * align_plane);
+      HepTransform aligned_plane_to_tracker = rowtr.transform() * (plane_to_tracker * rowpl.transform());
 
       for(auto panel_p : plane.getPanels()) {
 	auto& panel = *panel_p;
 	auto const& rowpa = tapa_p->rowAt( panel.id().uniquePanel() );
-	HepTransform align_panel(rowpa.dx(),rowpa.dy(),rowpa.dz(), rowpa.rx(),rowpa.ry(),rowpa.rz());
 	// panel origin WRT plane origin in nominal coordinates
 	auto dv = panel.origin() - oplane;
 	// panel rotation: map U onto X, V onto Y.  Note we have to flip Z depending on the panel orientation (1/2 the panels are flipped)
@@ -85,24 +78,21 @@ namespace mu2e {
 	if(wdir.z() > 0.0)prot *= HepRotation(0.0,M_PI,0.0);
 	prot *= HepRotation(0.0,0.0,panel.UDirection().phi());
 	HepTransform panel_to_plane(dv,prot);
-	// inverse: note that the rotation must be applied to the displacement.  This should be in HepTransform FIXME!
-	auto invrz = panel_to_plane.rotation().inverse();
-	auto invdv = -(invrz*dv);
-	HepTransform plane_to_panel(invdv,invrz);
-
+	// inverse
+	auto  plane_to_panel  = panel_to_plane.inverse();
 	// chain to transform panel coordinates into global (tracker), including alignment
-	HepTransform aligned_panel_to_tracker = aligned_plane_to_tracker * (panel_to_plane * align_panel);
+	HepTransform aligned_panel_to_tracker = aligned_plane_to_tracker * (panel_to_plane * rowpa.transform());
 	// nominal inverse; takes nominal tracker coordinates into panel UVW coordinates
 	HepTransform tracker_to_panel = plane_to_panel*tracker_to_plane; 
 
 	for(size_t istr=0; istr< StrawId::_nstraws; istr++) {
 	  Straw &straw = tracker.getStraw(panel.getStraw(istr).id());
-	  // transform from straw to panel UVW
+	  // transform from straw to panel UVW; this is just a displacement in the Panel frame
+	  auto const& invrz = plane_to_panel.rotation();
 	  auto strawdv = invrz*(straw.origin() - panel.origin());
 	  HepTransform straw_to_panel(strawdv,nullrot);
 	  // inverse
-	  auto istrawdv = -strawdv;
-	  HepTransform panel_to_straw(istrawdv,nullrot);
+	  HepTransform panel_to_straw = straw_to_panel.inverse();
 	  // chain from straw to global, including alignment
 	  HepTransform aligned_straw_to_tracker = aligned_panel_to_tracker*straw_to_panel;
 	  // chain from nominal tracker to straw coordintes
@@ -136,7 +126,7 @@ namespace mu2e {
       // set the aligned plane origin.  Not clear why this doesn't work, some weirdness inside CLHEP??
 //      plane.origin() = aligned_plane_to_tracker * otracker;
     } // plane loop
-    tracker.origin() = align_tracker * otracker;
+    tracker.origin() = rowtr.transform() * otracker;
     return ptr;
   }
 

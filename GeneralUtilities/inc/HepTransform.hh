@@ -26,8 +26,8 @@ namespace mu2e {
       _rotation.rotateZ(rz);
     }
 
-    CLHEP::Hep3Vector  displacement() const { return _displacement;}
-    CLHEP::HepRotation rotation()     const { return _rotation;    }
+    CLHEP::Hep3Vector const&  displacement() const { return _displacement;}
+    CLHEP::HepRotation const& rotation()     const { return _rotation;    }
 
     void  setDisplacement ( CLHEP::Hep3Vector & aDisp ) { 
                                    _displacement = aDisp;}
@@ -36,6 +36,9 @@ namespace mu2e {
     // combine HepTransform
     HepTransform& operator*=(HepTransform const& b);
     friend HepTransform operator*(HepTransform const& a, HepTransform const& b);
+
+    // inversion
+    HepTransform inverse() const;
 
     // apply to a vector
     friend CLHEP::Hep3Vector operator*(HepTransform const& a, 

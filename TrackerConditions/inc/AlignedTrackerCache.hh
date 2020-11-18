@@ -8,9 +8,7 @@
 
 #include "Mu2eInterfaces/inc/ProditionsCache.hh"
 #include "DbService/inc/DbHandle.hh"
-#include "DbTables/inc/TrkAlignTracker.hh"
-#include "DbTables/inc/TrkAlignPlane.hh"
-#include "DbTables/inc/TrkAlignPanel.hh"
+#include "DbTables/inc/TrkAlignElement.hh"
 #include "DbTables/inc/TrkAlignStraw.hh"
 #include "TrackerConditions/inc/AlignedTrackerMaker.hh"
 
