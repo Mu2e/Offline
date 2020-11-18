@@ -33,18 +33,21 @@ namespace mu2e {
       void beginJob ( ) override;
     private:
       ProditionsHandle<Tracker> _alignedTracker_h;
-      TTree* trkalign_;
+      TTree* strawtest_, *paneltest_;
       int print_, diag_;
-      int plane_, panel_, straw_;
+      int splane_, spanel_, straw_;
+      int pplane_, panel_;
       float nomx_, nomy_, nomz_;
       float nomdx_, nomdy_, nomdz_;
       float rnom_, phinom_, dphinom_;
       float deltax_, deltay_, deltaz_;
       bool first_;
+      float uphi_, vphi_, wcost_;
+      float oz_, or_, ophi_;
   };
 
   TrkGeomTest::TrkGeomTest(Parameters const& config) :     art::EDAnalyzer(config),
-  trkalign_(0),
+  strawtest_(0),
   print_(config().printLevel()),
   diag_(config().diagLevel()),
   first_(true) {}
@@ -54,22 +57,25 @@ namespace mu2e {
   void TrkGeomTest::beginJob(){ 
     if(diag_ > 0){
       art::ServiceHandle<art::TFileService> tfs;
-      trkalign_=tfs->make<TTree>("trkalign","tracker alignment");
-      trkalign_->Branch("plane",&plane_,"plane/I");
-      trkalign_->Branch("panel",&panel_,"panel/I");
-      trkalign_->Branch("straw",&straw_,"straw/I");
-      trkalign_->Branch("nomx",&nomx_,"nomx/F");
-      trkalign_->Branch("nomy",&nomy_,"nomy/F");
-      trkalign_->Branch("nomz",&nomz_,"nomz/F");
-      trkalign_->Branch("nomdx",&nomdx_,"nomdx/F");
-      trkalign_->Branch("nomdy",&nomdy_,"nomdy/F");
-      trkalign_->Branch("nomdz",&nomdz_,"nomdz/F");
-      trkalign_->Branch("rnom",&rnom_,"rnom/F");
-      trkalign_->Branch("phinom",&phinom_,"phinom/F");
-      trkalign_->Branch("dphinom",&dphinom_,"dphinom/F");
-      trkalign_->Branch("deltax",&deltax_,"deltax/F");
-      trkalign_->Branch("deltay",&deltay_,"deltay/F");
-      trkalign_->Branch("deltaz",&deltaz_,"deltaz/F");
+      strawtest_=tfs->make<TTree>("strawtest","strawtest");
+      strawtest_->Branch("plane",&splane_,"plane/I");
+      strawtest_->Branch("panel",&spanel_,"panel/I");
+      strawtest_->Branch("straw",&straw_,"straw/I");
+      strawtest_->Branch("nomx",&nomx_,"nomx/F");
+      strawtest_->Branch("nomy",&nomy_,"nomy/F");
+      strawtest_->Branch("nomz",&nomz_,"nomz/F");
+      strawtest_->Branch("nomdx",&nomdx_,"nomdx/F");
+      strawtest_->Branch("nomdy",&nomdy_,"nomdy/F");
+      strawtest_->Branch("nomdz",&nomdz_,"nomdz/F");
+      strawtest_->Branch("rnom",&rnom_,"rnom/F");
+      strawtest_->Branch("phinom",&phinom_,"phinom/F");
+      strawtest_->Branch("dphinom",&dphinom_,"dphinom/F");
+      strawtest_->Branch("deltax",&deltax_,"deltax/F");
+      strawtest_->Branch("deltay",&deltay_,"deltay/F");
+      strawtest_->Branch("deltaz",&deltaz_,"deltaz/F");
+      paneltest_=tfs->make<TTree>("paneltest","paneltest");
+      paneltest_->Branch("plane",&pplane_,"plane/I");
+      paneltest_->Branch("panel",&panel_,"panel/I");
     }
   }
 
@@ -87,8 +93,8 @@ namespace mu2e {
 	  auto const& astraw = atracker.straws()[istr];
 	  if(nstraw.id() != astraw.id())
 	    std::cout << "StrawIds don't match: nominal " << nstraw.id() << " aligned " << astraw.id() << std::endl;
-	  plane_ = nstraw.id().plane();
-	  panel_ = nstraw.id().panel();
+	  splane_ = nstraw.id().plane();
+	  spanel_ = nstraw.id().panel();
 	  straw_ = nstraw.id().straw();
 	  auto npos = nstraw.origin();
 	  auto ndir = nstraw.wireDirection();
@@ -100,7 +106,21 @@ namespace mu2e {
 	  phinom_ = npos.phi();
 	  dphinom_ = ndir.phi();
 	  deltax_ = delta.x(); deltay_ = delta.y(); deltaz_ = delta.z();
-	  trkalign_->Fill();
+	  strawtest_->Fill();
+	}
+//
+// panel test
+//
+	for(auto const& panel : ntracker.panels()){
+	  pplane_ = panel.id().plane();
+	  panel_ = panel.id().panel();
+	  uphi_ = panel.UDirection().phi();
+	  vphi_ = panel.VDirection().phi();
+	  wcost_ = cos(panel.WDirection().theta());
+	  oz_ = panel.origin().z();
+	  or_ = panel.origin().rho();
+	  ophi_ = panel.origin().phi();
+	  paneltest_->Fill();
 	}
       }
     }

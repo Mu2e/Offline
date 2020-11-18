@@ -3,11 +3,13 @@
 #
 #
  TABLE TrkAlignTracker 
+#row, strawid, dx, dy, dz, rx, ry, rz
 0, 0_0_0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0
 #
 #
 #
 TABLE TrkAlignPlane
+#row, strawid, dx, dy, dz, rx, ry, rz
 0, 0_0_0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0
 1, 1_0_0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0
 2, 2_0_0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0
@@ -48,6 +50,7 @@ TABLE TrkAlignPlane
 #
 #
 TABLE TrkAlignPanel
+#row, strawid, dU, dV, dW, rU, rV, rW
 0, 0_0_0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0
 1, 0_1_0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0
 2, 0_2_0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0
@@ -268,6 +271,7 @@ TABLE TrkAlignPanel
 #
 #
 TABLE TrkAlignStraw
+#index,StrawId,wire_cal_dV,wire_cal_dW,wire_hv_dV,wire_hv_dW,straw_cal_dV,straw_cal_dW,straw_hv_dV,straw_hv_dW
 0, 0_0_0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0
 1, 0_0_1, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0
 2, 0_0_2, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0
