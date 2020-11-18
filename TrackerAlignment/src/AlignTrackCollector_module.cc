@@ -23,8 +23,7 @@
 
 #include "CosmicReco/inc/MinuitDriftFitter.hh"
 #include "CosmicReco/inc/PDFFit.hh"
-#include "DbTables/inc/TrkAlignPanel.hh"
-#include "DbTables/inc/TrkAlignPlane.hh"
+#include "DbTables/inc/TrkAlignElement.hh"
 #include "GeneralUtilities/inc/BitMap.hh"
 #include "GeneralUtilities/inc/HepTransform.hh"
 #include "GeometryService/inc/GeomHandle.hh"

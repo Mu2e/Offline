@@ -6,9 +6,7 @@
 
 #include "TrackerGeom/inc/Tracker.hh"
 #include "TrackerConfig/inc/AlignedTrackerConfig.hh"
-#include "DbTables/inc/TrkAlignTracker.hh"
-#include "DbTables/inc/TrkAlignPlane.hh"
-#include "DbTables/inc/TrkAlignPanel.hh"
+#include "DbTables/inc/TrkAlignElement.hh"
 #include "DbTables/inc/TrkAlignStraw.hh"
 
 namespace mu2e {
