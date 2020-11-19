@@ -76,6 +76,12 @@ namespace mu2e {
       paneltest_=tfs->make<TTree>("paneltest","paneltest");
       paneltest_->Branch("plane",&pplane_,"plane/I");
       paneltest_->Branch("panel",&panel_,"panel/I");
+      paneltest_->Branch("uphi",&uphi_,"uphi/F");
+      paneltest_->Branch("vphi",&vphi_,"vphi/F");
+      paneltest_->Branch("wcost",&wcost_,"wcost/F");
+      paneltest_->Branch("oz",&oz_,"oz/F");
+      paneltest_->Branch("or",&or_,"or/F");
+      paneltest_->Branch("ophi",&ophi_,"ophi/F");
     }
   }
 

@@ -57,7 +57,7 @@ namespace mu2e {
       auto const& rowpl = tapl_p->rowAt( plane.id().plane() );
 
       if ( _config.verbose() > 0 ) {
-	cout << "AlignedTrackerMaker::fromDb plane ID " << plane.id().plane() << " alignment constants: " << rowpl.transform() << endl;
+	cout << "AlignedTrackerMaker::fromDb plane ID " << plane.id() << " alignment transform: " << rowpl.transform() << endl;
       }
       // relative plane origin; nominal plane rotation is 0.
       auto oplane = plane.origin() - otracker;
@@ -70,20 +70,36 @@ namespace mu2e {
       for(auto panel_p : plane.getPanels()) {
 	auto& panel = *panel_p;
 	auto const& rowpa = tapa_p->rowAt( panel.id().uniquePanel() );
+	if ( _config.verbose() > 0 ) {
+	  cout << "AlignedTrackerMaker::fromDb panel ID " << panel.id() << " alignment transform: " << rowpa.transform() << endl;
+	}
 	// panel origin WRT plane origin in nominal coordinates
 	auto dv = panel.origin() - oplane;
-	// panel rotation: map U onto X, V onto Y.  Note we have to flip Z depending on the panel orientation (1/2 the panels are flipped)
-	HepRotation prot;
+	// panel rotation.  Note we have to flip depending on the panel orientation (1/2 the panels are flipped)
+	// sign flip because CLHEP::Rotation is a passive transform
+	HepRotation prot(0.0,0.0,-panel.UDirection().phi());
 	auto wdir = panel.WDirection();
 	if(wdir.z() < 0.0)prot *= HepRotation(0.0,M_PI,0.0);
-	prot *= HepRotation(0.0,0.0,panel.UDirection().phi());
 	HepTransform panel_to_plane(dv,prot);
+	if ( _config.verbose() > 1 ) {
+	  cout << "AlignedTrackerMaker::fromDb panel ID " << panel.id() << " phi " << panel.VDirection().phi() << " nominal transform: " << panel_to_plane << endl;
+	}
 	// inverse
 	auto  plane_to_panel  = panel_to_plane.inverse();
 	// chain to transform panel coordinates into global (tracker), including alignment
 	HepTransform aligned_panel_to_tracker = aligned_plane_to_tracker * (panel_to_plane * rowpa.transform());
 	// nominal inverse; takes nominal tracker coordinates into panel UVW coordinates
-	HepTransform tracker_to_panel = plane_to_panel*tracker_to_plane; 
+	HepTransform tracker_to_panel = tracker_to_plane*plane_to_panel;
+	// test
+	if( _config.verbose() > 0) {
+	  auto udir = tracker_to_panel.rotation()*panel.UDirection();
+	  auto vdir = tracker_to_panel.rotation()*panel.VDirection();
+	  auto wdir = tracker_to_panel.rotation()*panel.WDirection();
+	  if( fabs(1.0 - udir.dot(Hep3Vector(1.0,0.0,0.0))) > 1e-6 ||
+	      fabs(1.0 - vdir.dot(Hep3Vector(0.0,1.0,0.0))) > 1e-6 ||
+	      fabs(1.0 - wdir.dot(Hep3Vector(0.0,0.0,1.0))) > 1e-6 )
+	  cout << "Panel direction error: id " << panel.id() << " udir " << udir << " vdir " << vdir << " wdir " << wdir << endl;
+	}
 
 	for(size_t istr=0; istr< StrawId::_nstraws; istr++) {
 	  Straw &straw = tracker.getStraw(panel.getStraw(istr).id());
