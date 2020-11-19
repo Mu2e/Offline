@@ -763,12 +763,13 @@ namespace mu2e {
     // correct orientations.
     CLHEP::HepRotationZ RZ(panelRotation(ipnl,layId.getPlane()));
 
-    // Unit vector in the wire direction. This depends on the Plane and Panel.  Hardware convention is U points from HV to Cal (Duke convention)
-    CLHEP::Hep3Vector unit;
-    if((ipnl+iplane)%2)
-     unit = RZ*CLHEP::Hep3Vector(0.,1.,0.); // odd
+    // Unit vector in the wire (U) direction. This depends on Station, Plane and Panel  Hardware convention is U points from HV to Cal (Duke convention)
+    // See doc 888 table 4 and figure 9 and doc 5703 figure 1 for details
+    CLHEP::Hep3Vector Udir;
+    if((ipnl +iplane + iplane/2)%2)
+      Udir = RZ*CLHEP::Hep3Vector(0.,1.,0.); // upstream-facing panel
     else
-     unit = RZ*CLHEP::Hep3Vector(0.,-1.,0.); // even
+      Udir = RZ*CLHEP::Hep3Vector(0.,-1.,0.); // downstream-facing panel
 
     // Straw number within the layer; does not reset to zero at each manifold.
     // we number the straws starting from the most inner one across the two layers in the panel/panel
@@ -829,7 +830,7 @@ namespace mu2e {
         allStraws.at(strawCountReCounted) =
           Straw( lsid,
                  offset,
-                 unit,
+                 Udir,
 		 halflen
                  );
 
