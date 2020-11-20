@@ -37,7 +37,7 @@ namespace mu2e
       fhicl::Atom<bool> showBuilding{Name("showBuilding"), Comment("set false to remove building"),false};   
       fhicl::Atom<bool> showDSOnly{Name("showDSOnly"), Comment(""),true};     
       fhicl::Atom<bool> showEvent{Name("showEvent"), Comment(""),true};  
-      fhicl::Atom<bool> show2D{Name("show2D"), Comment(""),true};
+     // fhicl::Atom<bool> show2D{Name("show2D"), Comment(""),true};
       fhicl::Atom<bool> accumulate{Name("accumulate"), Comment(""),false};      
       fhicl::Table<Collection_Filler::Config> filler{Name("filler"),Comment("fill collections")};
     };
@@ -56,7 +56,7 @@ namespace mu2e
       bool _showDSOnly;
       bool _showCRV;
       bool _showEvent;  
-      bool _show2D;
+    //  bool _show2D;
       bool _accumulate;
       TApplication* application_;
       TDirectory*   directory_ = nullptr;   
@@ -76,7 +76,6 @@ namespace mu2e
   _showDSOnly(conf().showDSOnly()),
   _showCRV(conf().showCRV()),
   _showEvent(conf().showEvent()),
-  _show2D(conf().show2D()),
   _accumulate(conf().accumulate()),
   _filler(conf().filler())
 	{}
@@ -100,7 +99,6 @@ namespace mu2e
   void TEveEventDisplay::beginRun(const art::Run& run){
     _frame->SetRunGeometry(run, _diagLevel, _showBuilding, _showDSOnly, _showCRV);
     _frame->PrepareTrackerProjectionTab(run);
-    //if(_show2D) 
     _frame->PrepareCaloProjectionTab(run);
   }
 
@@ -116,7 +114,7 @@ namespace mu2e
       if(_filler.addTracks_)_filler.FillRecoCollections(event, data, KalSeeds);
       if(_filler.addClusters_)_filler.FillRecoCollections(event, data, CaloClusters);
       if(_filler.addMCTraj_)_filler.FillMCCollections(event, data, MCTrajectories);
-      if(!_frame->isClosed()) _frame->setEvent(event, _firstLoop, data, -1, _show2D, _accumulate);
+      if(!_frame->isClosed()) _frame->setEvent(event, _firstLoop, data, -1, _accumulate);
       _firstLoop = false;
     }
 
