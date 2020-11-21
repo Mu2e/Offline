@@ -182,23 +182,44 @@ namespace mu2e{
     return energies;
   }
 
+
   std::vector<double> TEveMu2eDataInterface::AddCaloClusters(bool firstloop, const CaloClusterCollection *clustercol, TEveMu2e2DProjection *calo2Dproj, double time, bool Redraw, double min_energy, double max_energy, bool accumulate, TEveProjectionManager *CfXYMgr, TEveProjectionManager *CfRZMgr, TEveScene *scene1, TEveScene *scene2){
     vector <double> energies = {0, 0};
     DataLists<const CaloClusterCollection*, TEveMu2e2DProjection*>(clustercol, Redraw, accumulate, "CaloCluster", &fClusterList3D, &fClusterList2D, calo2Dproj);
 	CfXYMgr->ImportElements(fClusterList2D, scene1); 
         CfRZMgr->ImportElements(fClusterList2D, scene2); 
+
     if(clustercol!=0){ 
       TEveElementList *ClusterList3D = new TEveElementList("CaloClusters3D");
       TEveElementList *ClusterList2D = new TEveElementList("CaloClusters2D");
+      //TEveElementList *CrystalList2D = new TEveElementList("CaloCrystalHits2D");
       int *energylevels = new int[clustercol->size()];
       energies = Energies<const CaloClusterCollection*>(clustercol, &energylevels);
       for(unsigned int i=0; i<clustercol->size();i++){
         CaloCluster const  &cluster= (*clustercol)[i];
         TEveMu2eCluster *teve_cluster3D = new TEveMu2eCluster(cluster);
         TEveMu2eCluster *teve_cluster2D = new TEveMu2eCluster(cluster);
-
+        //TEveMu2eCluster *teve_cluster_hits_2D = new TEveMu2eCluster(cluster);
+        
         CLHEP::Hep3Vector COG(cluster.cog3Vector().x(),cluster.cog3Vector().y(), cluster.cog3Vector().z());
         CLHEP::Hep3Vector pointInMu2e = PointToCalo(COG,cluster.diskId());
+        /*Calorimeter const &cal = *(GeomHandle<Calorimeter>());
+        if(cluster.caloCrystalHitsPtrVector().size()!=0){
+          std::cout<<"Cluster has "<<cluster.caloCrystalHitsPtrVector().size()<<" Crystal hits : "<<std::endl;
+           //Access crystal hits from cluster:
+           std::vector<art::Ptr< CaloCrystalHit>>cryHitcol;
+           for(unsigned h =0 ; h < cluster.caloCrystalHitsPtrVector().size();h++){
+               
+               art::Ptr<CaloCrystalHit>  crystalhit = cluster.caloCrystalHitsPtrVector()[h] ;
+               int diskId = cal.crystal(crystalhit->id()).diskId();
+               CLHEP::Hep3Vector HitPos(cal.geomUtil().mu2eToDiskFF(diskId, cal.crystal(crystalhit->id()).position()));
+               CLHEP::Hep3Vector pointInMu2e = PointToCalo(HitPos,diskId);
+               cryHitcol.push_back(crystalhit);
+               std::cout<<"Hit "<<h<<" at "<<HitPos.x()<<std::endl;
+               if(i==1) teve_cluster_hits_2D->DrawCrystalHits("Crystal Hits for Cluster #" + to_string(i + 1), pointInMu2e, CrystalList2D);
+          }
+         }*/
+       
        
         string pos3D = "(" + to_string((double)pointInMu2e.x()) + ", " + to_string((double)pointInMu2e.y()) + ", " + to_string((double)pointInMu2e.z()) + ")";
         string pos2D = "(" + to_string((double)COG.x()) + ", " + to_string((double)COG.y()) + ", " + to_string((double)COG.z()) + ")";
@@ -206,10 +227,12 @@ namespace mu2e{
         if ((time == -1 || (cluster.time() <= time && time != -1)) && ((cluster.energyDep() >= min_energy && cluster.energyDep() <= max_energy) || (min_energy == -1 && max_energy == -1))){
           teve_cluster3D->DrawCluster("CaloCluster3D, Cluster #" + to_string(i + 1) + ", Position =" + pos3D + ", Energy = " + to_string(cluster.energyDep()) + ", Time = " + to_string(cluster.time()), pointInMu2e, energylevels[i], ClusterList3D);
           fClusterList3D->AddElement(ClusterList3D); 
+
           
             teve_cluster2D->DrawCluster("CaloCluster3D, Cluster #" + to_string(i + 1) + ", Position =" + pos2D + ", Energy = " + to_string(cluster.energyDep()) + ", Time = " + to_string(cluster.time()), pointInMu2e,energylevels[i], ClusterList2D);   
-            fClusterList2D->AddElement(ClusterList2D); 
 
+            fClusterList2D->AddElement(ClusterList2D); 
+            //fClusterList2D->AddElement(CrystalList2D); 
             if(cluster.diskId()==0)  calo2Dproj->fXYMgr->ImportElements(fClusterList2D, calo2Dproj->fDetXYScene); 
 
             if(cluster.diskId()==1) calo2Dproj->fRZMgr->ImportElements(fClusterList2D, calo2Dproj->fDetRZScene); 

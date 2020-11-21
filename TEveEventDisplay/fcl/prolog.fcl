@@ -26,7 +26,7 @@ TEveEventDisplayHelix : {
       TrkExtTrajCollection      : NULL
       MCTrajectoryCollection    : NULL
       addHits 			            : false
-      addTracks 			          : true
+      addTracks 			          : false
       addCrvHits			          : false
       addCosmicSeedFit	        : false
       addClusters			          : true
@@ -55,7 +55,7 @@ TEveEventDisplayCosmics : {
       addTracks 			            : false
       addCrvHits			            : false
       addCosmicSeedFit	          : false
-      addMCTraj				            : false
+      addMCTraj				            : true
    }
   }   
 

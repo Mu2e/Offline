@@ -115,13 +115,11 @@ namespace mu2e{
    frm->SetName("Main_View");
    // create (embed) a GL viewer inside
    fViewer0 = new TGLEmbeddedViewer(frm, fPad);
-
    frm->AddFrame(fViewer0->GetFrame(), new TGLayoutHints(kLHintsExpandX |
                  kLHintsExpandY));
    // set the camera to perspective (XOZ) for this viewer
    fViewer0->SetCurrentCamera(TGLViewer::kCameraPerspXOZ);
    // connect signal we are interested to
-
    fViewer[0] = new TEveViewer("SplitGLViewer[0]");
    fViewer[0]->SetGLViewer(fViewer0, fViewer0->GetFrame());
    fViewer[0]->IncDenyDestroy();
@@ -242,6 +240,7 @@ namespace mu2e{
    Resize(GetDefaultSize());
    MapSubwindows();
    MapWindow();
+
 }
 
   void TEveMu2eMainWindow::CreateGUI(){

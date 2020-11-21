@@ -105,7 +105,7 @@ physics : {
          particleInput : "g4run"
          // multiple matches, we'll get the one from the current process, which is what we want
          physVolInfoInput : "g4run"
-         stoppingMaterial : "StoppingTarget_Al"
+         stoppingMaterial : "StoppingTarget_Ti"
          particleTypes : [ 13 ] // mu-
          particleOffsetThreshold: 200000
          verbosityLevel: 1
@@ -122,7 +122,7 @@ physics : {
          module_type : StoppedParticlesFinder
          particleInput : "g4run"
          physVolInfoInput : "g4run"
-         vetoedMaterials : [ "StoppingTarget_Al" ]
+         vetoedMaterials : [ "StoppingTarget_Ti" ]
          particleTypes : [ 13 ] // mu-
          particleOffsetThreshold: 200000
          verbosityLevel: 1
@@ -288,3 +288,6 @@ physics.producers.g4run.physics.minRangeCut : 0.010 // mm
 // Initialze seeding of random engines: do not put these lines in base .fcl files for grid jobs.
 services.SeedService.baseSeed         :  8
 services.SeedService.maxUniqueEngines :  20
+services.GeometryService.simulatedDetector.tool_type : "Mu2e"
+services.scheduler.wantSummary: true
+services.TimeTracker.printSummary: true
