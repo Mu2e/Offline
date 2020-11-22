@@ -16,7 +16,7 @@ namespace mu2e{
     double edep = fCaloCluster.energyDep();
     this->SetTitle((DataTitle(pstr, edep)).c_str());
     hep3vectorTocm(cog);
-    bool addHits = true;
+    /*bool addHits = true;
     if(addHits){
        Calorimeter const &cal = *(GeomHandle<Calorimeter>());
        TEvePointSet *teve_hit2D = new TEvePointSet();
@@ -32,7 +32,7 @@ namespace mu2e{
         teve_hit2D->SetPickable(kTRUE);
         ClusterList->AddElement(teve_hit2D);
       }
-    }
+    }*/
     Int_t mSize = 3;
     int colors[] = {+10, +5, +7, +8, -3, +1, -5, 0, -2, -4, +6, -9};
     this->SetMarkerColor(kViolet + colors[energylevel]);

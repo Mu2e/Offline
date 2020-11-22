@@ -53,8 +53,8 @@ namespace mu2e{
       fhicl::Atom<art::InputTag>cluTag{Name("CaloClusterCollection"),Comment("cluTag")};
       fhicl::Atom<art::InputTag>cryHitTag{Name("CaloCrystalHitCollection"),Comment("cryHitTag")};
       fhicl::Atom<art::InputTag>hseedTag{Name("HelixSeedCollection"),Comment("hseedTag")};
-      fhicl::Atom<art::InputTag>kalseedTag{Name("KalSeedCollection"),Comment("kalseedTag")};
-      fhicl::Atom<art::InputTag>trkexttrajTag{Name("TrkExtTrajCollection"),Comment("trkexttrajTag")};
+      fhicl::Sequence<art::InputTag>kalseedTag{Name("KalSeedCollection"),Comment("kalseedTag")};
+ fhicl::Atom<art::InputTag>trkexttrajTag{Name("TrkExtTrajCollection"),Comment("trkexttrajTag")};
       //MC Data Products
       fhicl::Atom<art::InputTag>mctrajTag{Name("MCTrajectoryCollection"),Comment("mctrajTag")};
 
@@ -85,7 +85,7 @@ namespace mu2e{
     art::InputTag cluTag_;
     art::InputTag cryHitTag_;
     art::InputTag hseedTag_;
-    art::InputTag kalseedTag_;
+    std::vector<art::InputTag> kalseedTag_;
     art::InputTag trkexttrajTag_;
     
     //MCDataProdutcs:
