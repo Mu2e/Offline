@@ -13,7 +13,7 @@ EventFilter : {
 
 
 TEveEventDisplayHelix : {
-    show2D : true
+    show2D : false
     module_type : TEveEventDisplay
     accumulate : false
     filler : {
@@ -23,11 +23,11 @@ TEveEventDisplayHelix : {
       CaloClusterCollection		  :  "CaloClusterFromProtoCluster"
       CaloCrystalHitCollection  :  "CaloCrystalHitFromHit"
       HelixSeedCollection       :  "HelixFinderDe:Negative"
-      KalSeedCollection         :  "KFFDeM" 
+      KalSeedCollection         :  ["KFFDeM", "KFFDeMHPar", "KFFDeMHDar" ]
       TrkExtTrajCollection      : NULL
       MCTrajectoryCollection    : NULL
       addHits 			            : false
-      addTracks 			          : false
+      addTracks 			          : true
       addCrvHits			          : false
       addCosmicSeedFit	        : false
       addClusters			          : true
@@ -78,7 +78,7 @@ TEveEventDisplayCaloOnly : {
       addHits 			              : false
       addTracks 			            : true
       addClusters			            : true
-      addCrvHits			            : false
+      addCrvHits			            : true
       addCosmicSeedFit	          : false
       addCrystalHits              : false
       addMCTraj				:false 
