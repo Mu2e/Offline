@@ -46,14 +46,15 @@ namespace mu2e{
       TEveElementList *fExtTrackList3D;
       
       std::vector<double> getTimeRange(bool firstloop, const ComboHitCollection *chcol, const CrvRecoPulseCollection *crvcoincol, const CaloClusterCollection *clustercol, const CaloCrystalHitCollection *cryHitcol);
+
       void AddCRVInfo(bool firstloop, const CrvRecoPulseCollection *crvcoincol, double time, bool Redraw, bool accumulate);
       std::vector<double> AddComboHits(bool firstloop, const ComboHitCollection *chcol, TEveMu2e2DProjection *tracker2Dproj, double time, bool Redraw, double min_energy, double max_energy, bool accumulate, TEveProjectionManager *TXYMgr, TEveProjectionManager *TRZMgr, TEveScene *scene1, TEveScene *scene2);
       std::vector<double> AddCaloClusters(bool firstloop, const CaloClusterCollection *clustercol,TEveMu2e2DProjection *calo2Dproj,  double time, bool Redraw, double min_energy, double max_energy, bool accumulate, TEveProjectionManager *CfXYMgr, TEveProjectionManager *CfRZMgr, TEveScene *scene1, TEveScene *scene2);
       void AddCrystalHits(bool firstloop, const CaloCrystalHitCollection *cryHitcol, TEveMu2e2DProjection *calo2Dproj,  double time, bool Redraw, bool accumulate, TEveProjectionManager *CfXYMgr, TEveProjectionManager *CfRZMgr, TEveScene *scene1, TEveScene *scene2);
       void AddCosmicTrack(bool firstloop, const CosmicTrackSeedCollection *cosmiccol, TEveMu2e2DProjection *tracker2Dproj, double time, bool Redraw, bool accumulate, TEveProjectionManager *TXYMgr, TEveProjectionManager *TRZMgr, TEveScene *scene1, TEveScene *scene2);
-      void AddHelixPieceWise(bool firstloop, const KalSeedCollection *seedcol, TEveMu2e2DProjection *tracker2Dproj, double time, bool Redraw, bool accumulate, TEveProjectionManager *TXYMgr, TEveProjectionManager *TRZMgr, TEveScene *scene1, TEveScene *scene2);
+      void AddHelixPieceWise(bool firstloop, const KalSeedCollection *seedcol, std::vector<const KalSeedCollection*> track_list, TEveMu2e2DProjection *tracker2Dproj, double time, bool Redraw, bool accumulate, TEveProjectionManager *TXYMgr, TEveProjectionManager *TRZMgr, TEveScene *scene1, TEveScene *scene2);
       void AddTrackExitTrajectories(bool firstloop, const TrkExtTrajCollection *trkextcol, double time, bool Redraw, bool accumulate);
-     
+
       ClassDef(TEveMu2eDataInterface,0);
 
   }; //end class def

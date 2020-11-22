@@ -50,7 +50,7 @@ namespace mu2e{
       const HelixSeedCollection* hseedcol = 0;
       const KalSeedCollection* kalseedcol = 0;
       const TrkExtTrajCollection* trkextcol = 0;
-
+      std::vector<const KalSeedCollection*> track_list;
       //MCDataProducts:
       const MCTrajectoryCollection *mctrajcol = 0;
 

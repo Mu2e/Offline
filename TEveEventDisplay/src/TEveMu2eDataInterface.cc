@@ -278,10 +278,14 @@ namespace mu2e{
     gEve->Redraw3D(kTRUE);  
     }
   }
-  void TEveMu2eDataInterface::AddHelixPieceWise(bool firstloop, const KalSeedCollection *seedcol, TEveMu2e2DProjection *tracker2Dproj, double time, bool Redraw, bool accumulate, TEveProjectionManager *TXYMgr, TEveProjectionManager *TRZMgr, TEveScene *scene1, TEveScene *scene2){
-  DataLists<const KalSeedCollection*, TEveMu2e2DProjection*>(seedcol, Redraw, accumulate, "HelixTrack", &fTrackList3D, &fTrackList2D, tracker2Dproj);
-	TXYMgr->ImportElements(fTrackList2D, scene1); 
-        TRZMgr->ImportElements(fTrackList2D, scene2); 
+
+  void TEveMu2eDataInterface::AddHelixPieceWise(bool firstloop, const KalSeedCollection *seedcol, std::vector<const KalSeedCollection*> track_list, TEveMu2e2DProjection *tracker2Dproj, double time, bool Redraw, bool accumulate, TEveProjectionManager *TXYMgr, TEveProjectionManager *TRZMgr, TEveScene *scene1, TEveScene *scene2){
+    DataLists<const KalSeedCollection*, TEveMu2e2DProjection*>(seedcol, Redraw, accumulate, "HelixTrack", &fTrackList3D, &fTrackList2D, tracker2Dproj);
+    TXYMgr->ImportElements(fTrackList2D, scene1); 
+    TRZMgr->ImportElements(fTrackList2D, scene2); 
+    for(unsigned int i=0; i< track_list.size(); i++){
+    seedcol = track_list[i];
+    std::cout<<"Looking at track "<<i<<endl;
     if(seedcol!=0){  
       for(unsigned int k = 0; k < seedcol->size(); k = k + 20){
         KalSeed kseed = (*seedcol)[k];
@@ -332,6 +336,8 @@ namespace mu2e{
       TRZMgr->ImportElements(fTrackList2D, scene2);
       gEve->AddElement(fTrackList3D);
       gEve->Redraw3D(kTRUE);
+      }
+      
     }
   }
 
