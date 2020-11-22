@@ -9,15 +9,15 @@
 using namespace mu2e;
 namespace mu2e{
 
-  template <typename T, typename U> void DataLists(T data, bool Redraw, bool show2D, bool accumulate, string title, TEveElementList **List3D, TEveElementList **List2D = 0, U projection = 0){	
+  template <typename T, typename U> void DataLists(T data, bool Redraw, bool accumulate, string title, TEveElementList **List3D, TEveElementList **List2D = 0, U projection = 0){	
       if(data == 0 && Redraw){
         if (*List3D != 0){
           (*List3D)->DestroyElements();
         }
-        if(show2D){
+        
           if (*List2D != 0){
             (*List2D)->DestroyElements();
-          }
+          
           projection->fXYMgr->ImportElements(*List2D, projection->fDetXYScene); 
           projection->fRZMgr->ImportElements(*List2D, projection->fDetRZScene);
         }
@@ -42,8 +42,8 @@ namespace mu2e{
     }
   }
 
-  void TEveMu2eMCInterface::AddMCTrajectory(bool firstloop, const MCTrajectoryCollection *trajcol, TEveMu2e2DProjection *tracker2Dproj, bool Redraw, bool show2D, bool accumulate){
-	DataLists<const MCTrajectoryCollection*, TEveMu2e2DProjection*>(trajcol, Redraw, show2D, accumulate, "MC Trajectory", &fTrackList3D, &fTrackList2D, tracker2Dproj);
+  void TEveMu2eMCInterface::AddMCTrajectory(bool firstloop, const MCTrajectoryCollection *trajcol, TEveMu2e2DProjection *tracker2Dproj, bool Redraw, bool accumulate){
+	DataLists<const MCTrajectoryCollection*, TEveMu2e2DProjection*>(trajcol, Redraw, accumulate, "MC Trajectory", &fTrackList3D, &fTrackList2D, tracker2Dproj);
     if(trajcol!=0){
       TEveElementList *HitList3D = new TEveElementList("MCtraj3D");
       TEveElementList *HitList2D = new TEveElementList("MCtraj2D");
@@ -59,19 +59,19 @@ namespace mu2e{
         teve_hit3D->DrawLine("MCTraj PDG " + pdgId + "Energy = " + energy  + ", ",  StartHitPos, EndHitPos, HitList3D);
         
         fTrackList3D->AddElement(HitList3D);
-        if(show2D){
+        
           GeomHandle<DetectorSystem> det;
           StartHitPos = det->toMu2e(StartHitPos);
           EndHitPos = det->toMu2e(EndHitPos);
           TEveMu2eMCTraj *teve_hit2D = new TEveMu2eMCTraj();
           teve_hit2D->DrawLine("MCTraj PDG " + pdgId + "Energy = " + energy + ", ", StartHitPos, EndHitPos, HitList2D);
           fTrackList2D->AddElement(HitList2D); 
-        }
+        
       }
-      if(show2D){
+      
         tracker2Dproj->fXYMgr->ImportElements(fTrackList2D, tracker2Dproj->fDetXYScene); 
         tracker2Dproj->fRZMgr->ImportElements(fTrackList2D, tracker2Dproj->fDetRZScene);
-      }
+      
       gEve->AddElement(fTrackList3D);
       gEve->Redraw3D(kTRUE);
       }
