@@ -26,6 +26,7 @@
 #include "TrackerGeom/inc/Support.hh"
 #include "TrackerGeom/inc/SupportModel.hh"
 #include "TrackerGeom/inc/SupportStructure.hh"
+#include "GeneralUtilities/inc/HepTransform.hh"
 
 #include "TrackerGeom/inc/Plane.hh"
 #include "TrackerGeom/inc/Panel.hh"
@@ -68,7 +69,6 @@ namespace mu2e {
 
     // origin: defines nominal tracker coordinate system
     const xyzVec& origin() const { return _origin; }
-    xyzVec& origin()  { return _origin; }
 
     // constituent access
     const Plane& plane( const StrawId& id ) const{
@@ -199,12 +199,13 @@ namespace mu2e {
     TubsParams strawWireMother(StrawId const& id) const;
     TubsParams strawWirePlate(StrawId const& id) const;
   protected:
+  // G4-specific variables, set in TrackerMaker.  These should all go to G4Tracker FIXME!
     // Position of the center of the tracker, in the Mu2e coordinate system.
     double _z0;
     // Outer radius of a logical volume that will just contain the entire tracker.
     double _rOut; // is this ever used?  I think not
 
-    // All envelope volumes are made of this.
+    // these should be in a struct FIXME!
     std::string _wallMaterialName;
     std::string _outerMetalMaterial;
     std::string _innerMetal1Material;
@@ -242,10 +243,11 @@ namespace mu2e {
    // Electronics board
     PanelEB _panelEB;
 
-    // non-G4 content; this is the core of the class.  The G4 content should be factorized away to a separate class FIXME!
+    // non-G4 content; this is the core of the class.  These are kept when the G4 content is factorized away to a separate class FIXME!
   private:
-    std::string _name;
+    std::string _name; // needed for proditions
     xyzVec _origin;
+    HepTransform _tracker_to_tnom; // transform to NOMINAL tracker coordinate system.  This is a null transform for the nominal tracker
     // global straw properties
     StrawProperties _strawprops;
     // Dense arrays

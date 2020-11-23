@@ -91,12 +91,11 @@ namespace mu2e {
     xyzVec const& getMidPoint() const {return _wmid; }
     xyzVec const& getDirection() const { return _wdir; }
  private:
-
     // Identifier
     StrawId _id;
     // wire and straw midpoints.
-    // wire and straw directions
     xyzVec _wmid, _smid;
+    // wire and straw directions
     xyzVec _wdir, _sdir;
     // half length
     float _hlen;

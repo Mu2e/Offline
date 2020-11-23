@@ -47,83 +47,41 @@ namespace mu2e {
       cout << "AlignedTrackerMaker::fromDb now aligning Tracker " << endl;
     }
 
-    // the tracker nominal origin
-    auto const& otracker = tracker.origin();
-    auto const& rowtr = tatr_p->rowAt(0); // exactly 1 row in this table
+    // the tracker global transform in DS coordinates
+    auto const& tracker_align = tatr_p->rowAt(0); // exactly 1 row in this table
     HepRotation nullrot;
 
     for(auto& plane : tracker.getPlanes()) {
-
-      auto const& rowpl = tapl_p->rowAt( plane.id().plane() );
-
-      if ( _config.verbose() > 0 ) {
-	cout << "AlignedTrackerMaker::fromDb plane ID " << plane.id() << " alignment transform: " << rowpl.transform() << endl;
-      }
-      // relative plane origin; nominal plane rotation is 0.
-      auto oplane = plane.origin() - otracker;
-      HepTransform plane_to_tracker(oplane, nullrot);
-      // inverse
-      auto tracker_to_plane = plane_to_tracker.inverse();
+      // plane alignment
+      auto const& plane_align = tapl_p->rowAt( plane.id().plane() );
+      if ( _config.verbose() > 0 ) cout << "AlignedTrackerMaker::fromDb plane ID " << plane.id() << " alignment transform: " << plane_align.transform() << endl;
       // chain to transform plane coordinates into tracker, includering alignment
-      HepTransform aligned_plane_to_tracker = rowtr.transform() * (plane_to_tracker * rowpl.transform());
-
+      auto aligned_plane_to_ds = tracker_align.transform() * (plane.planeToDS() * plane_align.transform());
+      // cache the inverse nominal transform
+      auto ds_to_plane = plane.dsToPlane();
       for(auto panel_p : plane.getPanels()) {
 	auto& panel = *panel_p;
-	auto const& rowpa = tapa_p->rowAt( panel.id().uniquePanel() );
-	if ( _config.verbose() > 0 ) {
-	  cout << "AlignedTrackerMaker::fromDb panel ID " << panel.id() << " alignment transform: " << rowpa.transform() << endl;
-	}
-	// panel origin WRT plane origin in nominal coordinates
-	auto dv = panel.origin() - oplane;
-	// panel rotation.  Note we have to flip depending on the panel orientation (1/2 the panels are flipped)
-	// sign flip because CLHEP::Rotation is a passive transform
-	HepRotation prot(0.0,0.0,-panel.UDirection().phi());
-	auto wdir = panel.WDirection();
-	if(wdir.z() < 0.0)prot *= HepRotation(0.0,M_PI,0.0);
-	HepTransform panel_to_plane(dv,prot);
-	if ( _config.verbose() > 1 ) {
-	  cout << "AlignedTrackerMaker::fromDb panel ID " << panel.id() << " phi " << panel.VDirection().phi() << " nominal transform: " << panel_to_plane << endl;
-	}
-	// inverse
-	auto  plane_to_panel  = panel_to_plane.inverse();
+	auto const& panel_align = tapa_p->rowAt( panel.id().uniquePanel() );
+	if ( _config.verbose() > 0 ) cout << "AlignedTrackerMaker::fromDb panel ID " << panel.id() << " alignment transform: " << panel_align.transform() << endl;
+	// separate just the panel->plane transform
+	auto panel_to_plane = ds_to_plane*panel.panelToDS();
+	// cache the nominal inverse
+	auto ds_to_panel = panel.dsToPanel();
 	// chain to transform panel coordinates into global (tracker), including alignment
-	HepTransform aligned_panel_to_tracker = aligned_plane_to_tracker * (panel_to_plane * rowpa.transform());
-	// nominal inverse; takes nominal tracker coordinates into panel UVW coordinates
-	HepTransform tracker_to_panel = tracker_to_plane*plane_to_panel;
-	// test
-	if( _config.verbose() > 0) {
-	  auto udir = tracker_to_panel.rotation()*panel.UDirection();
-	  auto vdir = tracker_to_panel.rotation()*panel.VDirection();
-	  auto wdir = tracker_to_panel.rotation()*panel.WDirection();
-	  if( fabs(1.0 - udir.dot(Hep3Vector(1.0,0.0,0.0))) > 1e-6 ||
-	      fabs(1.0 - vdir.dot(Hep3Vector(0.0,1.0,0.0))) > 1e-6 ||
-	      fabs(1.0 - wdir.dot(Hep3Vector(0.0,0.0,1.0))) > 1e-6 )
-	  cout << "Panel direction error: id " << panel.id() << " udir " << udir << " vdir " << vdir << " wdir " << wdir << endl;
-	}
-
+	HepTransform aligned_panel_to_ds = aligned_plane_to_ds * (panel_to_plane * panel_align.transform());
+	// loop over straws
 	for(size_t istr=0; istr< StrawId::_nstraws; istr++) {
 	  Straw &straw = tracker.getStraw(panel.getStraw(istr).id());
-	  // transform from straw to panel UVW; this is just a displacement in the Panel frame
-	  auto const& invrz = plane_to_panel.rotation();
-	  auto strawdv = invrz*(straw.origin() - panel.origin());
-	  HepTransform straw_to_panel(strawdv,nullrot);
-	  // inverse
-	  HepTransform panel_to_straw = straw_to_panel.inverse();
-	  // chain from straw to global, including alignment
-	  HepTransform aligned_straw_to_tracker = aligned_panel_to_tracker*straw_to_panel;
-	  // chain from nominal tracker to straw coordintes
-	  HepTransform tracker_to_straw = panel_to_straw*tracker_to_panel;
-	  // transform straw and wire ends from nominal XYZ to nominal straw UVW and correct for end alignments
-	  xyzVec wireend_UVW, strawend_UVW;
+	  auto const& straw_align = tast_p->rowAt( straw.id().uniqueStraw() );
+	  // transform straw and wire ends from nominal XYZ to Panel UVW and correct for end alignment
 	  std::array<xyzVec,2> wireends, strawends;
-	  auto const& rowsea = tast_p->rowAt(straw.id().uniqueStraw());
 	  for(int iend=0;iend < StrawEnd::nends; iend++){
 	    auto end = static_cast<StrawEnd::End>(iend);
-	    wireend_UVW = tracker_to_straw*straw.wireEnd(end) + rowsea.wireDeltaUVW(end);
-	    strawend_UVW = tracker_to_straw*straw.strawEnd(end) + rowsea.strawDeltaUVW(end);
-	  // Transform back to global coordinates
-	    wireends[iend] = aligned_straw_to_tracker*wireend_UVW;
-	    strawends[iend] = aligned_straw_to_tracker*strawend_UVW;
+	    auto wireend_UVW = ds_to_panel*straw.wireEnd(end) + straw_align.wireDeltaUVW(end);
+	    auto strawend_UVW = ds_to_panel*straw.strawEnd(end) + straw_align.strawDeltaUVW(end);
+	  // Transform back to global coordinates, including all the alignment corrections
+	    wireends[iend] = aligned_panel_to_ds*wireend_UVW;
+	    strawends[iend] = aligned_panel_to_ds*strawend_UVW;
 	    // diagnostics
 	    StrawEnd stend = StrawEnd(end);
 	    if ( _config.verbose() > 2 || (_config.verbose() > 1 && (wireends[iend]-straw.wireEnd(end)).mag() > 1e-5)){
@@ -139,10 +97,8 @@ namespace mu2e {
 	      strawends[StrawEnd::cal], strawends[StrawEnd::hv]);
 	} // straw loop
       } // panel loop
-      // set the aligned plane origin.  Not clear why this doesn't work, some weirdness inside CLHEP??
-//      plane.origin() = aligned_plane_to_tracker * otracker;
     } // plane loop
-    tracker.origin() = rowtr.transform() * otracker;
+    // should update tracker, plane and panel origins FIXME!
     return ptr;
   }
 

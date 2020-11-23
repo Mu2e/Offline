@@ -120,9 +120,9 @@ namespace mu2e {
 	for(auto const& panel : ntracker.panels()){
 	  pplane_ = panel.id().plane();
 	  panel_ = panel.id().panel();
-	  uphi_ = panel.UDirection().phi();
-	  vphi_ = panel.VDirection().phi();
-	  wcost_ = cos(panel.WDirection().theta());
+	  uphi_ = panel.uDirection().phi();
+	  vphi_ = panel.vDirection().phi();
+	  wcost_ = cos(panel.wDirection().theta());
 	  oz_ = panel.origin().z();
 	  or_ = panel.origin().rho();
 	  ophi_ = panel.origin().phi();

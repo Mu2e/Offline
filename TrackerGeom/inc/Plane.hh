@@ -15,6 +15,7 @@
 #include "DataProducts/inc/StrawId.hh"
 #include "DataProducts/inc/StrawIdMask.hh"
 #include "TrackerGeom/inc/Panel.hh"
+#include "GeneralUtilities/inc/HepTransform.hh"
 
 // CLHEP includes
 #include "CLHEP/Vector/ThreeVector.h"
@@ -36,8 +37,7 @@ namespace mu2e {
     // Accessors
     const StrawId&  id()  const { return _id;}
 
-    const xyzVec& origin() const { return _origin; }
-    xyzVec& origin() { return _origin; }
+    const xyzVec& origin() const { return _PlanetoDS.displacement(); }
 
     PanelCollection const& panels() const { return _panels; }
 
@@ -64,11 +64,14 @@ namespace mu2e {
     // Formatted string embedding the id of the panel.
     std::string name( std::string const& base ) const;
 
+    auto const& planeToDS() const { return _PlanetoDS; }
+    auto dsToPlane() const { return _PlanetoDS.inverse(); }
+
     private:
     StrawId             _id;
-    xyzVec              _origin; // deprecated
+    HepTransform        _PlanetoDS; // transform from plane coordinates to DS (just a translation)
     PanelCollection     _panels;
-    static StrawIdMask  _sidmask; // to define equivalence
+    static StrawIdMask  _sidmask; // mask to plane level
   };
 
 } //namespace mu2e
