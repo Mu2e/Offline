@@ -36,11 +36,12 @@ namespace mu2e {
       StrawId sid(plane,0,0);
       _planes[sid.plane()] = Plane(sid, _panels);
     }
+
   }
 
 // the following copies the core tracker plus all the elements built outside this class by TrackerMaker: this design needs to be refactored FIXME
   Tracker::Tracker(const Tracker& other) : Tracker(other.straws(), other.strawProperties(),other.name().c_str()) {
-// copy all the G4 variables by hand.
+// copy all the G4 variables by hand.  These should never be needed by this copy
     _z0 = other._z0;
     _rOut = other._rOut;
     _envelopeMaterial = other._envelopeMaterial;

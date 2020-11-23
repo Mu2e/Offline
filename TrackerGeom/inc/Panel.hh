@@ -13,6 +13,7 @@
 #include "DataProducts/inc/StrawId.hh"
 #include "DataProducts/inc/StrawIdMask.hh"
 #include "CLHEP/Vector/ThreeVector.h"
+#include "GeneralUtilities/inc/HepTransform.hh"
 
 namespace mu2e {
 
@@ -51,13 +52,15 @@ namespace mu2e {
 	throw cet::exception("RANGE") << msg.str();
       }
     }
-    // Define the origin as the average of straw 47 and 48 origins, ie roughly the panel center.   
-    xyzVec origin()  const { return 0.5*(_straws[47]->origin() + _straws[48]->origin()); }
-    // define the local (UVW) coordinate system.  U points along the straw (Cal to HV), V is radially outwards (from straw 0 to 95), W is
-    // given by right-handedness
-    xyzVec UDirection() const { return _straws.front()->wireDirection(); }
-    xyzVec VDirection() const { return (_straws[StrawId::_nstraws-2]->origin()-_straws[0]->origin()).unit(); }// must pick straws in the same layer!
-    xyzVec WDirection() const { return UDirection().cross(VDirection()); }
+    xyzVec origin()  const { return _UVWtoDS.displacement(); }
+    // local (UVW) coordinate system.
+    xyzVec uDirection() const { return _udir; }
+    xyzVec vDirection() const { return _vdir; }
+    xyzVec wDirection() const { return _wdir; }
+  
+    // transform from local to DS coordinates
+    auto const& panelToDS() const { return _UVWtoDS; }
+    auto dsToPanel() const { return _UVWtoDS.inverse(); }
 
     // deprecated interface: either use the above local coordinates, or get the straw direction directly
     xyzVec straw0Direction() const { return _straws[0]->wireDirection(); }
@@ -75,10 +78,12 @@ namespace mu2e {
 
     private:
     StrawId _id; // only the plane and panel fields are used to define a panel
+    xyzVec _udir, _vdir, _wdir; // direction vectors in DS frame 
+    HepTransform  _UVWtoDS; // transform from this panel's frame to the DS frame
+//    HepTransform _align; // local alignment of this this panel
     // indirection to straws
     StrawCollection _straws;
     static StrawIdMask _sidmask; // mask to panel level
-
   };
 
 }  //namespace mu2e

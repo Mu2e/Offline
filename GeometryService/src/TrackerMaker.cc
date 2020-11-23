@@ -438,7 +438,7 @@ namespace mu2e {
 
     _tt->_z0                  = _zCenter;
     _tt->_envelopeInnerRadius = _envelopeInnerRadius;
-    _tt->_manifoldHalfLengths = _manifoldHalfLengths;
+    _tt->_manifoldHalfLengths = _manifoldHalfLengths; // is this needed????
     _tt->_envelopeMaterial    = _envelopeMaterial;
 
     _tt->_wallMaterialName    = _strawMaterials[0];
@@ -523,10 +523,8 @@ namespace mu2e {
   void TrackerMaker::makePlane( const StrawId& planeId ){
     //std::cout << "->->-> makePlane\n";
     int ipln = planeId.getPlane();
-    double planeDeltaZ = choosePlaneSpacing(ipln);
     auto& planes = _tt->_planes;
     Plane& plane = planes.at(ipln);
-    plane.origin() = (CLHEP::Hep3Vector( 0.0, 0.0, _z0+planeDeltaZ));
 
     if (_verbosityLevel>2) {
       cout << __func__ << " making plane " <<  ipln;

@@ -6,9 +6,7 @@ using namespace std;
 namespace mu2e {
 
   ostream& operator<<(ostream& os, const HepTransform& rhs) {
-    os << "translate: " << rhs.displacement() << endl 
-       << "rotate: " 
-       << rhs.rotation() << endl;
+    os << "translate: " << rhs.displacement() << "rotate: " << endl <<  rhs.rotation() << endl;
     return os;
   } // end of outputter
 
