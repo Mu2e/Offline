@@ -61,9 +61,9 @@ namespace mu2e {
     // end positions
     //
     xyzVec wireEnd(StrawEnd const& end ) const { return wireEnd(end.end()); }
-    xyzVec wireEnd(StrawEnd::End end ) const { return end == StrawEnd::hv ? _wmid + _hlen*_wdir : _wmid - _hlen*_wdir; }
+    xyzVec wireEnd(StrawEnd::End end ) const { return end == StrawEnd::cal ? _wmid + _hlen*_wdir : _wmid - _hlen*_wdir; }
     xyzVec strawEnd(StrawEnd const& end ) const { return strawEnd(end.end()); }
-    xyzVec strawEnd(StrawEnd::End end ) const { return end == StrawEnd::hv ? _smid + _hlen*_sdir : _smid - _hlen*_sdir; }
+    xyzVec strawEnd(StrawEnd::End end ) const { return end == StrawEnd::cal ? _smid + _hlen*_sdir : _smid - _hlen*_sdir; }
 
     bool operator==(const Straw other) const {
       return _id == other.id();

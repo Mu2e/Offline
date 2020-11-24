@@ -34,8 +34,8 @@ namespace mu2e {
 	  _id(id),
 	  _wmid(0.5*(hvwireend + calwireend)), 
 	  _smid(0.5*(hvstrawend + calstrawend)),
-	  _wdir((hvwireend - calwireend).unit()), 
-	  _sdir((hvstrawend - calstrawend).unit()),
+	  _wdir((calwireend - hvwireend).unit()),  // convention is U points from HV to cal
+	  _sdir((calstrawend - hvstrawend).unit()),
 	  _hlen(0.5*(hvwireend - calwireend).mag()) {}
 
   std::string Straw::name( std::string const& base ) const{

@@ -104,6 +104,9 @@ namespace mu2e {
 	  straw_ = nstraw.id().straw();
 	  auto npos = nstraw.origin();
 	  auto ndir = nstraw.wireDirection();
+	  auto adir = astraw.wireDirection();
+	  // test
+	  if(ndir.dot(adir)<0.0)std::cout << "Straw directions don't match: nominal " << ndir << " aligned " << adir << std::endl;
 	  auto apos = astraw.origin();
 	  auto delta = apos-npos;
 	  nomx_ = npos.x(); nomy_ = npos.y(); nomz_ = npos.z();
