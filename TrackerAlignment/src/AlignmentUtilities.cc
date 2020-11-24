@@ -2,35 +2,32 @@
 // roneil@fnal.gov
 // ryunoneil@gmail.com
 
-#include <cstdint>
-#include <iostream>
-#include <iterator>
-#include <vector>
+#include "TrackerAlignment/inc/AlignmentUtilities.hh"
+#include "TrackerAlignment/inc/AlignmentDerivatives.hh"
+#include "TrackerAlignment/inc/MilleDataWriter.hh"
+#include "DataProducts/inc/StrawId.hh"
+#include "RecoDataProducts/inc/ComboHit.hh"
+#include "TrackerConditions/inc/StrawResponse.hh"
+#include "Mu2eUtilities/inc/TwoLinePCA.hh"
 
-#include "DataProducts/inc/PlaneId.hh"
 #include "art/Framework/Services/Registry/ServiceHandle.h"
 #include "art_root_io/TFileService.h"
 
 #include "CLHEP/Vector/ThreeVector.h"
-#include "GeneralUtilities/inc/HepTransform.hh"
 #include "Minuit2/MnUserCovariance.h"
-#include "Mu2eUtilities/inc/TwoLinePCA.hh"
-#include "DbTables/inc/TrkAlignElement.hh"
-#include "DataProducts/inc/StrawId.hh"
-#include "RecoDataProducts/inc/ComboHit.hh"
-#include "TrackerConditions/inc/StrawResponse.hh"
-#include "TrackerAlignment/inc/AlignmentDerivatives.hh"
-#include "TrackerAlignment/inc/MilleDataWriter.hh"
-#include "TrackerAlignment/inc/AlignmentUtilities.hh"
 
+#include <cstdint>
+#include <iostream>
+#include <iterator>
+#include <vector>
 using namespace mu2e;
 
 namespace AlignmentUtilities {
+  using xyzVec = CLHEP::Hep3Vector; // switch to XYZVec TODO
 
 bool testDerivatives(
     TwoLinePCA const& expected_pca,
     Tracker const& alignedTracker,
-
     CosmicTimeTrack const& track,
     StrawId const& strawId,
     TrkAlignParams const&rowpl,
@@ -117,10 +114,9 @@ std::pair<std::vector<double>, std::vector<double>>
     Tracker const& nominalTracker,
     double const& driftvel) {
 
-  auto const& plane_origin = nominalTracker.getPlane(strawId.getPlane()).origin();
-  auto const& panel_origin = nominalTracker.getPanel(strawId).straw0MidPoint();
-
-  Straw const& nominalStraw = nominalTracker.getStraw(strawId);
+  auto const& plane_origin = nominalTracker.getPlane(strawId).origin();
+  auto const& panel_origin = nominalTracker.getPanel(strawId).origin();
+  auto const& nominalStraw = nominalTracker.getStraw(strawId);
   auto const& nominalStraw_mp = nominalStraw.getMidPoint();
   auto const& nominalStraw_dir = nominalStraw.getDirection();
 
@@ -262,40 +258,36 @@ void diagPrintHit(CosmicTimeTrack const& track,
 
 // straw alignment function
 // carbon copy of AlignedTrackerMaker::fromDb
-std::pair<Hep3Vector, Hep3Vector> alignStraw(Tracker const& tracker, Plane const& plane,
-                                             Panel const& panel, StrawId const& strawId,
-                                             HepTransform const& align_tracker,
-                                             HepTransform const& align_plane,
-                                             HepTransform const& align_panel) {  
-  // the whole tracker has nominal center on 0,0,0
-  // how to place the plane in the tracker
-  HepTransform plane_to_tracker(0.0, 0.0, plane.origin().z(), 0.0, 0.0, 0.0);
+std::pair<Hep3Vector, Hep3Vector> alignStraw(Tracker const& tracker, 
+                                             StrawId const& strawId,
+                                             TrkAlignParams const& align_tracker,
+                                             TrkAlignParams const& align_plane,
+                                             TrkAlignParams const& align_panel,
+					     TrkStrawEndAlign const& align_straw) {  
 
-  // make an intermediate multiplication
-  HepTransform plane_temp = align_tracker * (plane_to_tracker * align_plane);
+  auto const& plane = tracker.getPlane(strawId);
+  auto const& panel = tracker.getPanel(strawId);
+  auto const& straw = tracker.getStraw(strawId);
 
-  // how to place the panel in the plane
-  Hep3Vector dv = panel.straw0MidPoint() - plane_to_tracker.displacement();
-  double rz = dv.phi();
-
-  HepTransform panel_to_plane(dv.x(), dv.y(), dv.z(), 0.0, 0.0, rz);
-
-  // make an intermediate multiplication
-  HepTransform panel_temp = plane_temp * (panel_to_plane * align_panel);
-
-  Straw const& straw = tracker.getStraw(strawId);
-
-  // how to place the straw in the panel
-  double dx = straw.getMidPoint().perp() - panel.straw0MidPoint().perp();
-  double dz = (straw.getMidPoint() - panel.straw0MidPoint()).z();
-
-  Hep3Vector straw_to_panel = Hep3Vector(dx, 0.0, dz);
-  Hep3Vector straw_dir = Hep3Vector(0.0, 1.0, 0.0);
-
-  Hep3Vector aligned_straw = panel_temp * straw_to_panel;
-  Hep3Vector aligned_straw_dir = panel_temp.rotation() * straw_dir;
-
-  return {aligned_straw, aligned_straw_dir};
+  // nominal place of plane in the tracker
+  auto plane_to_ds = plane.planeToDS();
+  // nominal panel in the plane
+  auto panel_to_plane = plane.dsToPlane()*panel.panelToDS();
+  // chained alignment including panel
+  auto aligned_panel_to_ds = align_tracker.transform() * (plane_to_ds * align_plane.transform()) * (panel_to_plane * align_panel.transform());
+  // Move wire back to the nominal panel frame (UVW)
+  auto ds_to_panel = panel.dsToPanel();
+  std::array<xyzVec,2> wireends;
+  for(int iend=0;iend < StrawEnd::nends; iend++){
+    auto end = static_cast<StrawEnd::End>(iend);
+    // include the straw end alignment
+    auto wireend_UVW = ds_to_panel*straw.wireEnd(end) + align_straw.wireDeltaUVW(end);
+    wireends[iend] = aligned_panel_to_ds*wireend_UVW;
+  }
+// compute the net position and direction from these
+  auto aligned_strawmid = 0.5*(wireends[0] + wireends[1]); 
+  auto aligned_strawdir = (wireends[StrawEnd::cal]- wireends[StrawEnd::hv]).unit(); // convention  is direction points from HV to Cal
+  return {aligned_strawmid, aligned_strawdir};
 }
 
 
@@ -306,23 +298,21 @@ std::pair<Hep3Vector, Hep3Vector> alignStraw(Tracker const& tracker, Plane const
 
 
 namespace {
+
+// do the alignment parameters really need to be double?
   double tocaGlobalDep(CosmicTimeTrack const& track, StrawId const& strawId,
                                 std::vector<double> const& globals, Tracker const& nominalTracker, StrawResponse const& strawRes) {
 
-    Plane const& nominal_plane = nominalTracker.getPlane(strawId);
-    Panel const& nominal_panel = nominalTracker.getPanel(strawId);
 
-    HepTransform align_tracker{0, 0, 0, 0, 0, 0};
-    HepTransform align_plane{globals[0], globals[1], globals[2], 
-                            globals[3], globals[4], globals[5]};
-
-    HepTransform align_panel{globals[6], globals[7],  globals[8],
-                            globals[9], globals[10], globals[11]};
+    TrkAlignParams align_tracker{strawId, StrawIdMask::tracker, 0, 0, 0, 0, 0, 0};
+    TrkAlignParams align_plane{strawId, StrawIdMask::plane, globals[0], globals[1], globals[2], globals[3], globals[4], globals[5]};
+    TrkAlignParams align_panel{strawId, StrawIdMask::panel, globals[6], globals[7],  globals[8], globals[9], globals[10], globals[11]};
+    TrkStrawEndAlign align_straw{strawId.uniqueStraw(), strawId, 0,0,0,0,0,0,0,0}; // not sure how to really initialize this FIXME!
 
     // returns pair of vectors { straw_pos, straw_dir }
     Hep3Vector straw_pos, straw_dir;
-    std::tie(straw_pos, straw_dir) = alignStraw(nominalTracker, nominal_plane, nominal_panel,
-                                                strawId, align_tracker, align_plane, align_panel);
+    std::tie(straw_pos, straw_dir) = alignStraw(nominalTracker, 
+                                                strawId, align_tracker, align_plane, align_panel, align_straw);
 
     TwoLinePCA pca(track.intercept(), track.direction(), straw_pos, straw_dir);
 
@@ -337,20 +327,15 @@ namespace {
 
   double docaGlobalDep(CosmicTimeTrack const& track, StrawId const& strawId,
                                 std::vector<double> const& globals, Tracker const& nominalTracker, StrawResponse const& strawRes) {
-
-    Plane const& nominal_plane = nominalTracker.getPlane(strawId);
-    Panel const& nominal_panel = nominalTracker.getPanel(strawId);
-
-    HepTransform align_tracker{0, 0, 0, 0, 0, 0};
-    HepTransform align_plane{globals[0], globals[1], globals[2], 
-                            globals[3], globals[4], globals[5]};
-    HepTransform align_panel{globals[6], globals[7],  globals[8],
-                            globals[9], globals[10], globals[11]};
-
+// this function should be consolidated with the above FIXME!
+    TrkAlignParams align_tracker{strawId, StrawIdMask::tracker, 0, 0, 0, 0, 0, 0};
+    TrkAlignParams align_plane{strawId, StrawIdMask::plane, globals[0], globals[1], globals[2], globals[3], globals[4], globals[5]};
+    TrkAlignParams align_panel{strawId, StrawIdMask::panel, globals[6], globals[7],  globals[8], globals[9], globals[10], globals[11]}; 
+    TrkStrawEndAlign align_straw{strawId.uniqueStraw(), strawId, 0,0,0,0,0,0,0,0}; // not sure how to really initialize this FIXME!
     // returns pair of vectors { straw_pos, straw_dir }
     Hep3Vector straw_pos, straw_dir;
-    std::tie(straw_pos, straw_dir) = alignStraw(nominalTracker, nominal_plane, nominal_panel,
-                                                strawId, align_tracker, align_plane, align_panel);
+    std::tie(straw_pos, straw_dir) = alignStraw(nominalTracker, 
+                                                strawId, align_tracker, align_plane, align_panel,align_straw);
 
     TwoLinePCA pca(track.intercept(), track.direction(), straw_pos, straw_dir);
 
