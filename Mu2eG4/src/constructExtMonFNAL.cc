@@ -355,73 +355,6 @@ namespace mu2e {
   }// constructExtMonFNALModules
 
 
-
-  //================================================================
-  void constructExtMonFNALVirtualDetectors(const VolumeInfo& roomAir,
-                                           const CLHEP::HepRotation& parentRotationInMu2e,
-                                           const SimpleConfig& config
-                                           )
-  {
-    const int verbosityLevel = config.getInt("vd.verbosityLevel");
-
-    const auto geomOptions = art::ServiceHandle<GeometryService>()->geomOptions();
-    geomOptions->loadEntry( config, "virtualDetector", "vd" );
-
-    bool const vdIsVisible          = geomOptions->isVisible("virtualDetector");
-    bool const vdIsSolid            = geomOptions->isSolid("virtualDetector");
-    bool const forceAuxEdgeVisible  = geomOptions->forceAuxEdgeVisible("virtualDetector");
-    bool const doSurfaceCheck       = geomOptions->doSurfaceCheck("virtualDetector");
-    bool const placePV              = geomOptions->placePV("virtualDetector");
-
-    GeomHandle<DetectorSolenoid> ds;
-    G4Material* vacuumMaterial     = findMaterialOrThrow(ds->insideMaterial());
-
-    AntiLeakRegistry& reg = art::ServiceHandle<G4Helper>()->antiLeakRegistry();
-
-    GeomHandle<VirtualDetector> vdg;
-    GeomHandle<ExtMonFNALBuilding> emfb;
-
-    //----------------------------------------------------------------
-    const CLHEP::HepRotation* vdRotInRoomInv =
-      reg.add(emfb->coll2ShieldingRotationInMu2e().inverse() * parentRotationInMu2e);
-
-    for(int vdId = VirtualDetectorId::EMFC2Entrance; vdId <= VirtualDetectorId::EMFC2Exit; ++vdId) {
-      if( vdg->exist(vdId) ) {
-        if ( verbosityLevel > 0) {
-          std::cout <<__func__<<" constructing "<<VirtualDetector::volumeName(vdId)<<"\n";
-        }
-
-        std::vector<double> hlen(3);
-        hlen[0] = emfb->coll2ShieldingHalfSize()[0];
-        hlen[1] = emfb->coll2ShieldingHalfSize()[1];
-        hlen[2] = vdg->getHalfLength();
-        const CLHEP::Hep3Vector vdCenterInMu2e =
-          emfb->coll2ShieldingCenterInMu2e()
-          + emfb->coll2ShieldingRotationInMu2e()*CLHEP::Hep3Vector
-          (0, 0,
-           ((vdId == VirtualDetectorId::EMFC2Entrance) ? +1 : -1)*(emfb->coll2ShieldingHalfSize()[2] + hlen[2])
-           );
-
-        VolumeInfo vdInfo = nestBox(VirtualDetector::volumeName(vdId),
-                                    hlen,
-                                    vacuumMaterial,
-                                    vdRotInRoomInv,
-                                    parentRotationInMu2e.inverse()*(vdCenterInMu2e - roomAir.centerInMu2e()),
-                                    roomAir,
-                                    vdId,
-                                    vdIsVisible,
-                                    G4Color::Red(),
-                                    vdIsSolid,
-                                    forceAuxEdgeVisible,
-                                    placePV,
-                                    false);
-
-        // vd are very thin, a more thorough check is needed
-        doSurfaceCheck && checkForOverlaps( vdInfo.physical, config, verbosityLevel>0);
-      }
-    } // for(vdId-2)
-  }
-
   //================================================================
   void addBoxVDPlane(int vdId,
                      const std::vector<double> box,
@@ -632,9 +565,6 @@ namespace mu2e {
                               mainParent,
                               mainParentRotationInMu2e,
                               config);
-
-    // EMFC2* VDs
-    constructExtMonFNALVirtualDetectors(mainParent, mainParentRotationInMu2e, config);
 
     // enclose whole ExtMon magnet+sensors in a set of VDs
     constructExtMonFNALBoxVirtualDetectors(*extmon,

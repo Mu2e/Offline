@@ -107,7 +107,6 @@ namespace mu2e {
 
     CLHEP::Hep3Vector coll2ShieldingCenterInMu2e() const { return coll2ShieldingCenterInMu2e_; }
     CLHEP::HepRotation coll2ShieldingRotationInMu2e() const { return coll2ShieldingRotationInMu2e_; }
-    const std::vector<double>& coll2ShieldingHalfSize() const { return coll2ShieldingHalfSize_; }
     std::vector<CLHEP::Hep2Vector> coll2ShieldingOutline() const { return coll2ShieldingOutline_; }
 
   private:
@@ -152,7 +151,6 @@ namespace mu2e {
 
     CLHEP::Hep3Vector coll2ShieldingCenterInMu2e_;
     CLHEP::HepRotation coll2ShieldingRotationInMu2e_;
-    std::vector<double> coll2ShieldingHalfSize_;
     std::vector<CLHEP::Hep2Vector> coll2ShieldingOutline_;
   };
 
