@@ -271,11 +271,6 @@ namespace mu2e {
     emfb->coll2ShieldingRotationInMu2e_ = shieldingRot;
     emfb->coll2ShieldingCenterInMu2e_ = CLHEP::Hep3Vector(0, (emfb->roomInsideYmin()+emfb->roomInsideYmax())/2.0, 0);
 
-    emfb->coll2ShieldingHalfSize_.resize(3);
-    emfb->coll2ShieldingHalfSize_[0] = 0.5*shieldwidth;
-    emfb->coll2ShieldingHalfSize_[1] = 0.5*emfb->roomInsideFullHeight();
-    emfb->coll2ShieldingHalfSize_[2] = 0.5*col2zLength;
-
     return emfb;
 
   } // make()
