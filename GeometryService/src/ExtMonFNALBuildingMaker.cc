@@ -75,10 +75,10 @@ namespace mu2e {
 
     int verbose = c.getInt("extMonFNAL.verbosityLevel");
 
-  // Get relevant Hall solid
+    // Get relevant Hall solid
     ExtrudedSolid extMonRoom = hall.getBldgSolid("extMon");
     const CLHEP::Hep3Vector& offset = extMonRoom.getOffsetFromMu2eOrigin();
-  // Get corner coordinates of extinction monitor room
+    // Get corner coordinates of extinction monitor room
     const auto & roomVertices = extMonRoom.getVertices();
     const double xfront = roomVertices[0][1]+offset[0];
     const double zfront = roomVertices[0][0]+offset[2];
@@ -110,7 +110,7 @@ namespace mu2e {
 
     emfb->magnetRoomLength_ = magnetRoomLength;
 
-  // hand stacked shielding sizes and locations in magnet room
+    // hand stacked shielding sizes and locations in magnet room
     const double steelLength = c.getDouble("extMonFNAL.steelLength");
     const double steelwidthN = c.getDouble("extMonFNAL.steelWidthN");
     const double steelwidthS = c.getDouble("extMonFNAL.steelWidthS");
@@ -164,7 +164,7 @@ namespace mu2e {
     //----------------------------------------------------------------
     // collimator1
     const double referenceLength = dump.coreCenterDistanceToReferencePlane()    - dump.coreCenterDistanceToShieldingFace()
-                                                                                + dump.frontShieldingHalfSize()[2];
+      + dump.frontShieldingHalfSize()[2];
     const Hep3Vector collimator1CenterInDump(emfb->filterEntranceOffsetX()
                                              + referenceLength*tan(emfb->collimator1().angleH()),
 
@@ -214,7 +214,7 @@ namespace mu2e {
     //----------------------------------------------------------------
     // collimator2
 
-   emfb->_collimator2 = readCollimatorExtMonFNAL("collimator2",
+    emfb->_collimator2 = readCollimatorExtMonFNAL("collimator2",
                                                   col2zLength,
                                                   angleH,
                                                   entranceAngleV - 2 * emfb->_filterMagnet.trackBendHalfAngle(pNominal),

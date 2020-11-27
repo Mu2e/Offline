@@ -112,7 +112,7 @@ namespace mu2e {
 
   private:
     friend class ExtMonFNALBuildingMaker;
-      // Private ctr: the class should be only obtained via the maker
+    // Private ctr: the class should be only obtained via the maker
     ExtMonFNALBuilding();
     // Or read back from persistent storage
     template<class T> friend class art::Wrapper;
