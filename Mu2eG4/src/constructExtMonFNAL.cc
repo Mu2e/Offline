@@ -519,6 +519,53 @@ namespace mu2e {
                                           doSurfaceCheck
                                           );
   }
+
+  //================================================================
+  VolumeInfo constructExtMonFNALDetectorRoom(const VolumeInfo& parent,
+                                             const CLHEP::HepRotation& parentRotationInMu2e,
+                                             const SimpleConfig& config)
+  {
+    GeomHandle<ExtMonFNALBuilding> emfb;
+
+    const std::string detectorRoomName = "ExtMonDetectorRoom";
+
+    const auto geomOptions = art::ServiceHandle<GeometryService>()->geomOptions();
+    geomOptions->loadEntry(config, "extMonFNAL", "extMonFNAL");
+    geomOptions->loadEntry(config, detectorRoomName, "extMonFNAL."+detectorRoomName);
+
+    bool const isVisible = geomOptions->isVisible(detectorRoomName);
+    bool const isSolid   = geomOptions->isSolid(detectorRoomName);
+    bool const forceAuxEdgeVisible  = geomOptions->forceAuxEdgeVisible("extMonFNAL");
+    bool const doSurfaceCheck       = geomOptions->doSurfaceCheck("extMonFNAL");
+    bool const placePV              = geomOptions->placePV("extMonFNAL");
+
+    //----------------------------------------------------------------
+    AntiLeakRegistry& reg = art::ServiceHandle<G4Helper>()->antiLeakRegistry();
+
+    CLHEP::HepRotation *rotationInParentInv =
+      reg.add(emfb->detectorRoomRotationInMu2e().inverse() * parentRotationInMu2e);
+
+    const CLHEP::Hep3Vector refPointInParent(parentRotationInMu2e.inverse()*(emfb->detectorRoomCenterInMu2e() - parent.centerInMu2e()));
+
+    //----------------------------------------------------------------
+    VolumeInfo room = nestBox(detectorRoomName,
+                              emfb->detectorRoomHalfSize(),
+                              findMaterialOrThrow("G4_AIR"),
+                              rotationInParentInv,
+                              refPointInParent,
+                              parent,
+                              0, //copyNo
+                              isVisible,
+                              G4Colour::White(),
+                              isSolid,
+                              forceAuxEdgeVisible,
+                              placePV,
+                              doSurfaceCheck
+                              );
+
+    return room;
+  }
+
   //================================================================
   void constructExtMonFNAL(const VolumeInfo& collimator1Parent,
                            const CLHEP::HepRotation& collimator1ParentRotationInMu2e,
@@ -532,44 +579,46 @@ namespace mu2e {
                                 mainParentRotationInMu2e,
                                 config);
 
+    VolumeInfo detectorRoom = constructExtMonFNALDetectorRoom(mainParent,
+                                                              mainParentRotationInMu2e,
+                                                              config);
 
     GeomHandle<ExtMonFNAL::ExtMon> extmon;
     GeomHandle<ExtMonFNALBuilding> emfb;
-
 
     constructExtMonFNALPlaneStack(extmon->module(),
                                   extmon->dn(),
                                   "Dn",
                                   VirtualDetectorId::EMFDetectorDnEntrance,
-                                  mainParent,
-                                  mainParentRotationInMu2e,
+                                  detectorRoom,
+                                  emfb->detectorRoomRotationInMu2e(),
                                   config);
 
     constructExtMonFNALPlaneStack(extmon->module(),
                                   extmon->up(),
                                   "Up",
                                   VirtualDetectorId::EMFDetectorUpEntrance,
-                                  mainParent,
-                                  mainParentRotationInMu2e,
+                                  detectorRoom,
+                                  emfb->detectorRoomRotationInMu2e(),
                                   config);
 
     constructExtMonFNALMagnet(extmon->spectrometerMagnet(),
-                              mainParent,
+                              detectorRoom,
                               "spectrometer",
-                              mainParentRotationInMu2e,
+                              emfb->detectorRoomRotationInMu2e(),
                               config);
 
     constructExtMonFNALMuonID(extmon->module(),
                               extmon->muonID(),
                               "muonID",
-                              mainParent,
-                              mainParentRotationInMu2e,
+                              detectorRoom,
+                              emfb->detectorRoomRotationInMu2e(),
                               config);
 
     // enclose whole ExtMon magnet+sensors in a set of VDs
     constructExtMonFNALBoxVirtualDetectors(*extmon,
-                                           mainParent,
-                                           mainParentRotationInMu2e,
+                                           detectorRoom,
+                                           emfb->detectorRoomRotationInMu2e(),
                                            config);
 
   } // constructExtMonFNAL()
