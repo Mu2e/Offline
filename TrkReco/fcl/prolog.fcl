@@ -28,7 +28,7 @@ TrkReco: { @table::TrkReco
 	mcUtils            : { @table::TrkReco.McUtils } # defined on top of this file
     }
 
-    TTrobustHelixFit     : {
+    RobustHelixFit : {
 	diagLevel      : 0
 	debugLevel     : 0
 	CircleInitType : 0     # 0=median, 1=mean
@@ -51,7 +51,6 @@ TrkReco: { @table::TrkReco
 	minzsep            : 100.0
 	maxzsep            : 500.0
 	mindphi            : 0.5
-	maxdphi            : 2.5
 	sigmaPhi           : 0.49
 	mindist            : 50.0
 	maxdist            : 2000.0
@@ -79,12 +78,23 @@ TrkReco: { @table::TrkReco
 	ntripleMax         : 500
 	
 	maxzsep            : 1000.	
-	maxdphi            : 10.
 	fitFZMinLambda     : 30
 	fitFZMaxLambda     : 1000
 	fitFZStepLambda    : 10
 
 	minArea            : 500.0
+
+	
+	nLoopsdfdz: 2
+	use_initFZ_from_dzFrequency: false
+	initFZMinLambda: 30.
+	initFZMaxLambda: 1000.
+	initFZStepLambda: 20.
+	initFZFrequencyNSigma: 3
+	initFZFrequencyBinsToIntegrate: 10
+	initFZFrequencyArraySize:  200
+        initFZFrequencyNMaxPeaks: 10 
+	initFZFrequencyTolerance: 2.
     }
     
     DoubletAmbigResolver : {

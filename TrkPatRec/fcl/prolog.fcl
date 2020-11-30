@@ -150,13 +150,50 @@ TimeClusterFinderUpi : {
 RobustHelixFinder : {
     module_type		: RobustHelixFinder
     ComboHitCollection     : "makePH"
-    ComboHitFlagCollection : "FlagBkgHits:ComboHits"
     HelixStereoHitMVA      : { MVAWeights : "TrkPatRec/test/HelixStereoHitMVA.weights.xml" }
     HelixNonStereoHitMVA   : { MVAWeights : "TrkPatRec/test/HelixNonStereoHitMVA.weights.xml" }
-    diagPlugin : { tool_type                    : "RobustHelixFinderDiag"
-	mcTruth                                 : 0
+    DiagPlugin : { 
+	diagLevel                    : 0
+	tool_type                    : "RobustHelixFinderDiag"
+	mcTruth                      : 0
     }
+    TimeClusterCollection : "TTtimeClusterFinder"
     T0Calculator : @local::TimeCalculator
+    HelixFitter : @local::TrkReco.RobustHelixFit
+    DiagLevel : 0
+    DebugLevel : 0
+    PrintFrequency : 101
+    PrefilterHits : true
+    UpdateStereoHits : false
+    MinNStrawHits : 10
+    AveragePitch : 0.6
+    MaxChi2dXY : 5.0
+    MaxChi2dZPhi : 5.0
+    MaxHitPhiChi2 : 25.0
+    MaxRadiusDiff : 100.0
+    MaxRPull : 5.0
+    targetconsistent_init : false
+    targetconsistent : false
+    RPullScaleF : 1.414
+    MaxPhiHitSeparation : 1.0
+    SaveHelixFlag : ["HelixOK"]
+    MaxIterations : 10
+    CentralRadialResolution : 20.0
+    CentralPerpResolution : 12.0
+    MaxWireDistance : 200.0
+    MaxTransDistance : 80.0
+    MaxChisquared : 25.
+    MaxRWDot : 1.0
+    MinRadiusErr : 20.0
+    UseHitMVA : false
+    MinMVA : 0.1
+    UseTripletArea : false
+    UpdateStereo : false
+    HitSelectionBits : ["TimeDivision"]
+    HitBackgroundBits : ["Background"]
+    Helicities : [-1,1]
+    
+    
 }
 RobustHelixFinderDe : {
   @table::RobustHelixFinder
