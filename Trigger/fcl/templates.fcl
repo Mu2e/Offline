@@ -4,12 +4,12 @@
 # at the trigger level and the filters used to make the trigger decision
 #------------------------------------------------------------------------------
 #include "CalPatRec/fcl/prolog.fcl"
-#include "TrkPatRec/fcl/prolog_trigger.fcl"
 #include "CalPatRec/fcl/prolog_trigger.fcl"
 #include "CaloReco/fcl/prolog_trigger.fcl"
 #include "CaloCluster/fcl/prolog_trigger.fcl"
 #include "TrkHitReco/fcl/prolog_trigger.fcl"
 #include "TrkReco/fcl/prolog_trigger.fcl"
+#include "TrkPatRec/fcl/prolog_trigger.fcl"
 #include "TrkFilters/fcl/prolog_trigger.fcl"
 #include "CaloFilters/fcl/prolog_trigger.fcl"
 
