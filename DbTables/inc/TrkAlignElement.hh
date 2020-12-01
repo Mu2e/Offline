@@ -22,7 +22,7 @@ namespace mu2e {
     typedef std::shared_ptr<const TrkAlignElement> cptr_t;
 
 
-    TrkAlignElement(const char* Name, const char* DbName,size_t nrows ):DbTable(Name,DbName, "index,dx,dy,dz,rx,ry,rz"), _nrows(nrows) {}
+    TrkAlignElement(const char* Name, const char* DbName,size_t nrows ):DbTable(Name,DbName, "index,strawid,dx,dy,dz,rx,ry,rz"), _nrows(nrows) {}
     const TrkAlignParams& rowAt(const std::size_t index) const { return _rows.at(index);}
     std::vector<TrkAlignParams> const& rows() const {return _rows;}
     std::size_t nrow() const override { return _rows.size(); };
