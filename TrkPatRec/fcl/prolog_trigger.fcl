@@ -50,7 +50,7 @@ TTrobustHelixFinder : { @table::RobustHelixFinder
     MaxRadiusDiff    : 100.
     MaxRPull         : 5.0
 
-    targetconsistent_init  : true
+    targetconsistent_init  : false
     targetconsistent       : false
     RPullScaleF            : 1.0
     MaxPhiHitSeparation    : 1.0
@@ -66,7 +66,7 @@ TTrobustHelixFinder : { @table::RobustHelixFinder
     UseHitMVA              : false
     MinMVA                 : 0.1
     
-    RobustHelixFit         : { @table::TrkReco.TTrobustHelixFit }
+    HelixFitter            : { @table::TrkRecoTrigger.TTrobustHelixFit}
 
     T0Calculator : @local::TimeCalculator
     UpdateStereo         : false
