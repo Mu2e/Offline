@@ -19,8 +19,35 @@
 #include "CLHEP/Vector/TwoVector.h"
 #include "CLHEP/Vector/ThreeVector.h"
 
+#include "cetlib_except/exception.h"
 
 namespace mu2e {
+  const ExtrudedSolid& Mu2eHall::getBldgSolid(const std::string& name) const {
+    auto it = bldgSolids_.find(name);
+    if(it == bldgSolids_.end()) {
+      throw cet::exception("GEOM")
+        <<"Mu2eHall::getBldgSolid(): unknown volume \""<< name <<"\"\n";
+    }
+    return it->second;
+  }
+
+  const ExtrudedSolid& Mu2eHall::getDirtSolid(const std::string& name) const {
+    auto it = dirtSolids_.find(name);
+    if(it == dirtSolids_.end()) {
+      throw cet::exception("GEOM")
+        <<"Mu2eHall::getDirtSolid(): unknown volume \""<< name <<"\"\n";
+    }
+    return it->second;
+  }
+
+  const GenericTrap& Mu2eHall::getDirtTrapSolid(const std::string& name) const {
+    auto it = dirtTrapSolids_.find(name);
+    if(it == dirtTrapSolids_.end()) {
+      throw cet::exception("GEOM")
+        <<"Mu2eHall::getDirtTrapSolid(): unknown volume \""<< name <<"\"\n";
+    }
+    return it->second;
+  }
 
   double Mu2eHall::getWallExtentz( const std::string& bldgSolName, const int side) const {
 

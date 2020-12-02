@@ -59,19 +59,13 @@ namespace mu2e {
     const std::map<std::string,GenericTrap>&   getDirtTrapSolids()  const { return dirtTrapSolids_; }
 
     const ExtrudedSolid&
-    getBldgSolid( const std::string& str ) const {
-      return bldgSolids_.find( str )->second;
-    }
+    getBldgSolid( const std::string& str ) const;
 
     const ExtrudedSolid&
-    getDirtSolid( const std::string& str ) const {
-      return dirtSolids_.find( str )->second;
-    }
+    getDirtSolid( const std::string& str ) const;
 
     const GenericTrap&
-    getDirtTrapSolid( const std::string& str ) const {
-      return dirtTrapSolids_.find( str )->second;
-    }
+    getDirtTrapSolid( const std::string& str ) const;
 
     double getWallExtentz( const std::string& , const int  ) const;
 
