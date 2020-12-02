@@ -76,7 +76,7 @@ namespace mu2e {
     int verbose = c.getInt("extMonFNAL.verbosityLevel");
 
     // Get relevant Hall solid
-    ExtrudedSolid extMonRoomWall = hall.getBldgSolid("extMon");
+    ExtrudedSolid extMonRoomWall = hall.getBldgSolid("extMonExteriorWall");
     const CLHEP::Hep3Vector& offset = extMonRoomWall.getOffsetFromMu2eOrigin();
     // Get corner coordinates of extinction monitor room
     const auto & roomVertices = extMonRoomWall.getVertices();
