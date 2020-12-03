@@ -98,7 +98,7 @@ namespace mu2e {
 
        int   nSimHit_,crySimId_[ntupLen],crySimPdgId_[ntupLen],crySimCrCode_[ntupLen],crySimGenIdx_[ntupLen],cryConv_[ntupLen];
        float crySimMom_[ntupLen],crySimStartX_[ntupLen],crySimStartY_[ntupLen],crySimStartZ_[ntupLen],crySimStartT_[ntupLen];
-       float crySimTime_[ntupLen],crySimEdep_[16348],cryTimeErr_[16348], cryDT_[ntupLen];
+       float crySimTime_[ntupLen],crySimEdep_[ntupLen],cryTimeErr_[16348],cryT1_[ntupLen],cryT2_[ntupLen],cryT1Err_[ntupLen],cryT2Err_[ntupLen];
 
        int   nCluster_,nCluSim_,cluNcrys_[ntupLen];
        float cluEnergy_[ntupLen],cluEnergyErr_[ntupLen],cluTime_[ntupLen],cluTimeErr_[ntupLen],cluCogX_[ntupLen],cluCogY_[ntupLen],
@@ -166,7 +166,10 @@ namespace mu2e {
        Ntup_->Branch("cryEdep",      &cryEdep_ ,     "cryEdep[nCry]/F");
        Ntup_->Branch("cryTime",      &cryTime_ ,     "cryTime[nCry]/F");
        Ntup_->Branch("cryTimeErr",   &cryTimeErr_ ,  "cryTimeErr[nCry]/F");
-       Ntup_->Branch("cryDT",        &cryDT_ ,       "cryDT[nCry]/F");
+       Ntup_->Branch("cryT1",        &cryT1_ ,       "cryT1[nCry]/F");
+       Ntup_->Branch("cryT2",        &cryT2_ ,       "cryT2[nCry]/F");
+       Ntup_->Branch("cryT1Err",     &cryT1Err_ ,    "cryT1Err[nCry]/F");
+       Ntup_->Branch("cryT2Err",     &cryT2Err_ ,    "cryT2Err[nCry]/F");
        Ntup_->Branch("cryConv",      &cryConv_ ,     "cryConv[nCry]/I");
 
        Ntup_->Branch("crySimIdx",    &crySimIdx_ ,   "crySimIdx[nCry]/I");
@@ -368,20 +371,26 @@ namespace mu2e {
               }    		          
            }
  
-           float cryDT(999);
-           if (hit.recoCaloDigis().size()==2)
+           float cryT1(999),cryT2(999),cryT1Err(999),cryT2Err(999);
+           if (hit.recoCaloDigis().size()>1)
            {
-              if (hit.recoCaloDigis().at(0)->SiPMID()%2==0) cryDT = hit.recoCaloDigis().at(1)->time()- hit.recoCaloDigis().at(0)->time();
-              else                                          cryDT = hit.recoCaloDigis().at(0)->time()- hit.recoCaloDigis().at(1)->time();
+              int idx0 = hit.crystalID()%2==0 ? 0 : 1; //hit.recoCaloDigis().at(0)->SiPMID()%2==0 ? 0 : 1;
+              int idx1 = 1-idx0;
+              cryT1    = hit.recoCaloDigis().at(idx0)->time();
+              cryT2    = hit.recoCaloDigis().at(idx1)->time();
+              cryT1Err = hit.recoCaloDigis().at(idx0)->timeErr();
+              cryT2Err = hit.recoCaloDigis().at(idx1)->timeErr();
            } 
- 
  
            cryId_[nHits_]        = hit.crystalID();
            crySectionId_[nHits_] = diskId;
            cryEdep_[nHits_]      = hit.energyDep();
            cryTime_[nHits_]      = hit.time();
            cryTimeErr_[nHits_]   = hit.timeErr();
-           cryDT_[nHits_]        = cryDT;
+           cryT1_[nHits_]        = cryT1;
+           cryT2_[nHits_]        = cryT2;
+           cryT1Err_[nHits_]     = cryT1Err;
+           cryT2Err_[nHits_]     = cryT2Err;
            cryPosX_[nHits_]      = crystalPos.x();
            cryPosY_[nHits_]      = crystalPos.y();
            cryPosZ_[nHits_]      = crystalPos.z();
