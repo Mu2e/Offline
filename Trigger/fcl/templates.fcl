@@ -10,6 +10,8 @@
 #include "CaloCluster/fcl/prolog_trigger.fcl"
 #include "TrkHitReco/fcl/prolog_trigger.fcl"
 #include "TrkReco/fcl/prolog_trigger.fcl"
+#include "CosmicReco/fcl/prolog.fcl"
+#include "CosmicReco/fcl/prolog_trigger.fcl"
 #include "TrkFilters/fcl/prolog_trigger.fcl"
 #include "CaloFilters/fcl/prolog_trigger.fcl"
 
@@ -21,6 +23,8 @@ Trigger : {
 	@table::TrkHitRecoTrigger.producers
 	@table::TrkHitReco.producers
 	@table::TrkRecoTrigger.producers
+	@table::CosmicTracking.producers
+	@table::CstTrigger.producers
 	@table::TprTrigger.producers
 	@table::CprTrigger.producers
 	
@@ -30,6 +34,7 @@ Trigger : {
 	@table::CprTrigger.filters
 	@table::CaloFilters.filters
 	@table::TrkFilters.filters
+	@table::CstTrigger.filters
 
 	#used to select 1 event out of N
 	unbiasedPrescale : {
@@ -186,6 +191,9 @@ Trigger : {
 	
 	#tracking filters. It includes: TrkPatRec, CalPatRec
 	@table::TrkFilters.sequences
+
+	#straight track finder
+	@table::CstTrigger.sequences
 
 	#unbiased filter. It selects the events based on their event id
 	unbiased           : [ unbiasedPrescale ]
