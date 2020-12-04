@@ -152,7 +152,7 @@ Mixing : {
 }
 
 Mixing.producers.compressDigiMCs.simParticleTags : [ "g4run", @sequence::Mixing.TrkCalMixSequence, @sequence::Mixing.CRVMixSequence ]
-Mixing.producers.compressDigiMCs.caloShowerStepTags : [ "CaloShowerStepFromStepPt:calorimeter", @sequence::Mixing.caloMixerTags ]
+Mixing.producers.compressDigiMCs.caloShowerStepTags : [ "CaloShowerStepMaker:calorimeter", @sequence::Mixing.caloMixerTags ]
 
 Mixing.MixSequence : [ protonBunchIntensity,
     @sequence::Mixing.TrkCalMixSequence,

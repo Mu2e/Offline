@@ -12,7 +12,7 @@ TimeClusterFinder : {
     ClusterCaloMVA : { MVAWeights : "TrkPatRec/test/TimeClusterCalo.weights.xml" }
     ComboHitCollection : "makePH"
     StrawHitFlagCollection : "FlagBkgHits:ComboHits"
-    CaloClusterCollection : "CaloClusterFromProtoCluster"
+    CaloClusterCollection : "CaloClusterMaker"
     T0Calculator : { CaloT0Offset : @local::TrackCaloMatching.DtOffset }
     UseCaloCluster : true
     UseCaloClusterPosition : true
@@ -173,7 +173,7 @@ CosmicMuonInfo : {
     strawHitsTag    : "makeSH"
     panelHitsTag    : "makePH"
     strawDigiMCsTag : "compressDigiMCs"
-    caloDigisTag    : "CaloDigiFromShower"
+    caloDigisTag    : "CaloDigiMaker"
     diagLevel       : 0
     filterCuts      : {
 	pmin          : 200. # MeV/c set low 

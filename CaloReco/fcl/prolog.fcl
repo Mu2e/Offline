@@ -5,41 +5,51 @@
 
 BEGIN_PROLOG
 
+RawProcessor : 
+{
+    windowPeak       : 3
+    minPeakAmplitude : 5
+    shiftTime        : 57.5
+    scaleFactor      : 0.0625
+    diagLevel        : 0
+}
 
-
-CaloRecoDigiFromDigi :
-{ 
-
-    module_type           : CaloRecoDigiFromDigi
-    caloDigiModuleLabel   : CaloDigiFromShower
-    processorStrategy     : "FixedFast"     
-    digiSampling          : @local::HitMakerDigiSampling
-    maxChi2Cut            : 10
-    diagLevel             : 0
-
-    FixedFastProcessor : 
-    {
-        windowPeak        : 2
-        minPeakAmplitude  : 15
-	psdThreshold      : 0.2
-	pulseLowBuffer    : 3
-        pulseHighBuffer   : 8
-        minDiffTime       : 6
-        shiftTime         : 19.90
-
-	fitPrintLevel     : -1
- 	fitStrategy       : 1
-	diagLevel         : 0
-    }
+TemplateProcessor : 
+{
+    windowPeak         : 3
+    minPeakAmplitude   : 24
+    numNoiseBins       : 5
+    minDTPeaks         : 20
+    psdThreshold       : 0.1
+    chiThreshold       : 1.0
+    refitLeadingEdge   : false
+    digiSampling       : @local::HitMakerDigiSampling
+    fitPrintLevel      : -1
+    fitStrategy        : 1
+    diagLevel          : 0
 }
 
 
-CaloCrystalHitFromHit:
+CaloRecoDigiMaker :
+{ 
+    module_type         : CaloRecoDigiMaker
+    caloDigiModuleLabel : CaloDigiMaker
+    RawProcessor        : { @table::RawProcessor }
+    TemplateProcessor   : { @table::TemplateProcessor }
+    processorStrategy   : "TemplateFit"     
+    digiSampling        : @local::HitMakerDigiSampling
+    maxChi2Cut          : 2.0
+    maxPlots            : 50
+    diagLevel           : 0
+}
+
+
+CaloHitMaker:
 {
-    module_type           : CaloCrystalHitFromHit
-    caloDigisModuleLabel  : CaloRecoDigiFromDigi	    	    
-    time4Merge            : 4.0   #ns
-    diagLevel             : 0
+    module_type          : CaloHitMaker
+    caloDigisModuleLabel : CaloRecoDigiMaker	    	    
+    time4Merge           : 6.0   #ns
+    diagLevel            : 0
 }
 
 
@@ -47,10 +57,10 @@ CaloCrystalHitFromHit:
 CaloReco : 
 {
    producers : {
-     CaloRecoDigiFromDigi    : @local::CaloRecoDigiFromDigi
-     CaloCrystalHitFromHit  : @local::CaloCrystalHitFromHit
+     CaloRecoDigiMaker  : @local::CaloRecoDigiMaker
+     CaloHitMaker       : @local::CaloHitMaker
    }
-   Reco : [ CaloRecoDigiFromDigi ,CaloCrystalHitFromHit ]
+   Reco : [ CaloRecoDigiMaker, CaloHitMaker ]
 }
 
 END_PROLOG

@@ -29,8 +29,8 @@
 #include "MCDataProducts/inc/StepPointMCCollection.hh"
 #include "MCDataProducts/inc/MCTrajectoryCollection.hh"
 #include "MCDataProducts/inc/StrawDigiMCCollection.hh"
-#include "MCDataProducts/inc/CaloShowerStepCollection.hh"
-#include "MCDataProducts/inc/CaloDigiMCCollection.hh"
+#include "MCDataProducts/inc/CaloShowerStep.hh"
+#include "MCDataProducts/inc/CaloDigiMC.hh"
 #include "MCDataProducts/inc/CrvDigiMCCollection.hh"
 
 
@@ -492,9 +492,9 @@ namespace mu2e {
     n=n2=nn=na=ni=0;
     for(auto const& s: coll) { // loop over the collection
       n++;
-      for(int i=0; i<s.nParticles(); i++) {
+      for(unsigned i=0; i<s.nParticles(); i++) {
 	n2++;
-	auto const& p = s.simParticle(i);
+	auto const& p = s.energyDeposit(i).sim();
 	if(p.isNonnull()) {
 	  nn++;
 	  if(p.isAvailable()) {

@@ -29,7 +29,7 @@
 #include "MCDataProducts/inc/SimParticleCollection.hh"
 #include "MCDataProducts/inc/StepPointMCCollection.hh"
 #include "MCDataProducts/inc/MCTrajectoryCollection.hh"
-#include "MCDataProducts/inc/CaloShowerStepCollection.hh"
+#include "MCDataProducts/inc/CaloShowerStep.hh"
 #include "MCDataProducts/inc/StrawGasStep.hh"
 #include "MCDataProducts/inc/ExtMonFNALSimHitCollection.hh"
 #include "MCDataProducts/inc/ProtonBunchIntensity.hh"
