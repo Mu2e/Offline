@@ -11,7 +11,7 @@ physics.filters.tprCosmicSeedDeMHSFilter.maxChi2PhiZ   : 8.0
 physics.filters.tprCosmicSeedDeMHSFilter.maxD0         : 600.0
 physics.filters.tprCosmicSeedDeMHSFilter.minD0         : -600.0
 physics.filters.tprCosmicSeedDeMHSFilter.minAbsLambda  : 50.0
-physics.filters.tprCosmicSeedDeMHSFilter.maxAbsLambda  : 500.0
+physics.filters.tprCosmicSeedDeMHSFilter.maxAbsLambda  : 1000.0
 physics.filters.tprCosmicSeedDeMHSFilter.minNLoops     : 0
 physics.filters.tprCosmicSeedDeMHSFilter.maxNLoops     : 30
 physics.filters.tprCosmicSeedDeMHSFilter.prescaleUsingD0Phi  : false
