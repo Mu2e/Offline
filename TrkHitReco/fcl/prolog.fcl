@@ -9,6 +9,7 @@ PBTFSD : {
 
 makeSH : {
   module_type             : StrawHitReco
+  FitType                 : 1
   FilterHits              : false
   WriteStrawHitCollection : true
   ProtonBunchTimeTag  : "EWMProducer"
