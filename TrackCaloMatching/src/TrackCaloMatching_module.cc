@@ -27,7 +27,7 @@
 #include "RecoDataProducts/inc/TrkCaloIntersectCollection.hh"
 #include "RecoDataProducts/inc/TrackClusterMatch.hh"
 
-#include "RecoDataProducts/inc/CaloClusterCollection.hh"
+#include "RecoDataProducts/inc/CaloCluster.hh"
 
 #include "CalorimeterGeom/inc/Calorimeter.hh"
 
@@ -353,7 +353,7 @@ namespace mu2e {
         // move peak to zero
         dt      = trk_time-cl_time-_dtOffset;
 
-        if (cl->diskId() != idisk           )            goto NEXT_CLUSTER;
+        if (cl->diskID() != idisk           )            goto NEXT_CLUSTER;
         if (cl->energyDep() < _minClusterEnergy)            goto NEXT_CLUSTER;
         if (std::fabs(dt)   > _maxDeltaT       )            goto NEXT_CLUSTER;
         //------------------------------------------------------------------------------

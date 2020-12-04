@@ -12,6 +12,8 @@
 #include "CosmicRayShieldGeom/inc/CosmicRayShield.hh"
 #include "GeometryService/inc/GeomHandle.hh"
 #include "GeometryService/inc/GeometryService.hh"
+#include "CalorimeterGeom/inc/Calorimeter.hh"
+#include "CalorimeterGeom/inc/DiskCalorimeter.hh"
 #include "MCDataProducts/inc/GenParticleCollection.hh"
 #include "MCDataProducts/inc/PhysicalVolumeInfoMultiCollection.hh"
 #include "MCDataProducts/inc/SimParticleCollection.hh"
@@ -19,12 +21,10 @@
 #include "MCDataProducts/inc/StepPointMCCollection.hh"
 #include "MCDataProducts/inc/PtrStepPointMCVectorCollection.hh"
 #include "MCDataProducts/inc/MCTrajectoryCollection.hh"
-#include "MCDataProducts/inc/CaloShowerStepCollection.hh"
-#include "MCDataProducts/inc/CaloShowerSimCollection.hh"
-#include "CaloMC/inc/CrystalContentMC.hh"
+#include "MCDataProducts/inc/CaloShowerStep.hh"
+#include "MCDataProducts/inc/CaloShowerSim.hh"
 #include "Mu2eUtilities/inc/TwoLinePCA.hh"
-#include "RecoDataProducts/inc/CaloCrystalHitCollection.hh"
-#include "RecoDataProducts/inc/CaloHitCollection.hh"
+#include "RecoDataProducts/inc/CaloHit.hh"
 #include "TDirectory.h"
 #include "TGraph.h"
 #include "TH1F.h"
@@ -91,7 +91,7 @@ namespace mu2e {
     // Module which made the MC CaloShowers
     std::string _caloShowerSimModuleLabel;
 
-    // Module which made the CaloCrystalHits
+    // Module which made the CaloHits
     std::string _caloCrystalModuleLabel;
 
     // Name of the stopping target StepPoint collection
@@ -187,8 +187,8 @@ namespace mu2e {
     _generatorModuleLabel(pset.get<string>("generatorModuleLabel")),
     _trackerStepPoints(pset.get<string>("trackerStepPoints","tracker")),
     _calorimeterStepPoints(pset.get<string>("calorimeterStepPoints","calorimeter")),
-    _caloShowerSimModuleLabel(pset.get<string>("caloShowerSimModuleLabel","CaloShowerStepROFromShowerStep")),
-    _caloCrystalModuleLabel(pset.get<string>("caloCrystalModuleLabel","CaloCrystalHitFromHit")),
+    _caloShowerSimModuleLabel(pset.get<string>("caloShowerSimModuleLabel","CaloShowerROMaker")),
+    _caloCrystalModuleLabel(pset.get<string>("caloCrystalModuleLabel","CaloHitMaker")),
     _targetStepPoints(pset.get<string>("targetStepPoints","stoppingtarget")),
     _crvStepPoints(pset.get<string>("CRVStepPoints","CRV")),
     _minimumEnergy(pset.get<double>("minimumEnergy")),
@@ -392,9 +392,9 @@ namespace mu2e {
      const CaloShowerSimCollection& caloShowerSims(*caloShowerSimHandle);
 
      //Crystal hits (average from readouts)
-     art::Handle<CaloCrystalHitCollection> caloCrystalHitsHandle;
-     event.getByLabel(_caloCrystalModuleLabel, caloCrystalHitsHandle);
-     CaloCrystalHitCollection const& caloCrystalHits(*caloCrystalHitsHandle);
+     art::Handle<CaloHitCollection> CaloHitsHandle;
+     event.getByLabel(_caloCrystalModuleLabel, CaloHitsHandle);
+     CaloHitCollection const& CaloHits(*CaloHitsHandle);
 
 
 
@@ -434,12 +434,12 @@ namespace mu2e {
      map<int,int> showerMap2;
      for (const auto& showerSim : caloShowerSims)
      {
-         showerMap[showerSim.crystalId()] += showerSim.energy();
-         for (const auto& step : showerSim.caloShowerSteps()) showerMap2[showerSim.crystalId()] += step->nCompress();
+         showerMap[showerSim.crystalID()] += showerSim.energyDep();
+         for (const auto& step : showerSim.caloShowerSteps()) showerMap2[showerSim.crystalID()] += step->nCompress();
          _hCaTime->Fill(showerSim.time());
 
          if ( _diagLevel > 1 && _nAnalyzed < _maxFullPrint )
-	   std::cout<<"Readback: caloshower in crystal "<< showerSim.crystalId()<<" eDep = "<<showerSim.energy()
+	   std::cout<<"Readback: caloshower in crystal "<< showerSim.crystalID()<<" eDep = "<<showerSim.energyDep()
 	            <<" time = "<<showerSim.time()<<std::endl;
      }
 
@@ -448,20 +448,20 @@ namespace mu2e {
 
 
      //look at reconstructed hits
-     if (!caloCrystalHitsHandle.isValid()) return;
+     if (!CaloHitsHandle.isValid()) return;
 
      double totalEdep = 0.0;
      set<int> hit_crystals;
 
-     for (unsigned int ic=0; ic<caloCrystalHits.size();++ic)
+     for (unsigned int ic=0; ic<CaloHits.size();++ic)
      {
-         const CaloCrystalHit &hit     = caloCrystalHits.at(ic);
+         const CaloHit &hit     = CaloHits.at(ic);
 
          totalEdep += hit.energyDep();
-         hit_crystals.insert(hit.id());
+         hit_crystals.insert(hit.crystalID());
 
 	 if ( _diagLevel > 1 && _nAnalyzed < _maxFullPrint )
-	   cout<<"Readback: caloHit id = "<<hit.id()<<" "<<"energy = "<<hit.energyDep()<<" time= "<<hit.time()<<endl;
+	   cout<<"Readback: caloHit id = "<<hit.crystalID()<<" "<<"energy = "<<hit.energyDep()<<" time= "<<hit.time()<<endl;
      }
 
      _hCaEdep->Fill(totalEdep);

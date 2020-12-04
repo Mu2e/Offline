@@ -421,7 +421,7 @@ namespace mu2e
 
   void KalDiag::fillCaloHitInfo(const TrkCaloHit* tch, TrkCaloHitInfo& tchinfo) const {
     tchinfo._active = tch->isActive();  
-    tchinfo._did = tch->caloCluster().diskId();
+    tchinfo._did = tch->caloCluster().diskID();
     tchinfo._trklen = tch->fltLen();
     tchinfo._clen = tch->hitLen();
     HepPoint hpos = tch->hitTraj()->position(tch->hitLen());

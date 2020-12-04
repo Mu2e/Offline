@@ -19,7 +19,6 @@
 
 // Mu2e includes.
 #include "MCDataProducts/inc/StepPointMCCollection.hh"
-#include "RecoDataProducts/inc/CaloHitCollection.hh"
 #include "RecoDataProducts/inc/StrawHitCollection.hh"
 #include "MCDataProducts/inc/StepInstanceName.hh"
 #include "GeneralUtilities/inc/Binning.hh"

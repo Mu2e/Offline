@@ -385,7 +385,7 @@ namespace mu2e {
       const CaloCluster* cluster = _data->kscol->at(i).caloCluster().get();
 
       if (cluster != 0)  {
-	CLHEP::Hep3Vector gpos        = _data->calorimeter->geomUtil().diskToMu2e(cluster->diskId(),cluster->cog3Vector());
+	CLHEP::Hep3Vector gpos        = _data->calorimeter->geomUtil().diskToMu2e(cluster->diskID(),cluster->cog3Vector());
 	CLHEP::Hep3Vector cog_cluster = _data->calorimeter->geomUtil().mu2eToTracker(gpos);
 
 	z_cls    = cog_cluster.z(); // z-coordinate of the cluster in the tracker coordinate frame

@@ -38,7 +38,7 @@
 #include "dtcInterfaceLib/DTC.h"
 
 // Mu2e includes.
-#include "RecoDataProducts/inc/CaloDigiCollection.hh"
+#include "RecoDataProducts/inc/CaloDigi.hh"
 #include "RecoDataProducts/inc/CrvDigiCollection.hh"
 #include "RecoDataProducts/inc/StrawDigiCollection.hh"
 #include "RecoDataProducts/inc/StrawHitCollection.hh"
@@ -816,7 +816,7 @@ void ArtBinaryPacketsFromDigis::fillCalorimeterDataPacket(const CaloDigi& CD,
 
   CalorimeterBoardID ccBoardID;
   // ROC ID, counting from 0, across all (for the calorimeter)
-  size_t crystalId = _calorimeter->caloInfo().crystalByRO(CD.roId());
+  size_t crystalId = _calorimeter->caloIDMapper().crystalIDFromSiPMID(CD.SiPMID());
   size_t globalROCID = crystalId / number_of_crystals_per_roc;
 
   ccBoardID.BoardID = globalROCID % number_of_calo_rocs_per_dtc;
@@ -827,9 +827,9 @@ void ArtBinaryPacketsFromDigis::fillCalorimeterDataPacket(const CaloDigi& CD,
   CaloData.boardID = ccBoardID;
 
   CalorimeterHitReadoutPacket hitPacket;
-  hitPacket.ChannelNumber = CD.roId();
+  hitPacket.ChannelNumber = CD.SiPMID();
   hitPacket.DIRACA = 0;
-  hitPacket.DIRACB = (((CD.roId() % 2) << 12) | (crystalId));
+  hitPacket.DIRACB = (((CD.SiPMID() % 2) << 12) | (crystalId));
   hitPacket.ErrorFlags = 0;
   hitPacket.Time = CD.t0();
   std::vector<adc_t> theWaveform;
@@ -980,7 +980,7 @@ void ArtBinaryPacketsFromDigis::fillCalorimeterHeaderDataPacket(const CaloDigi& 
   HeaderData.s.PacketType = 5; // PacketType::Dataheader;
 
   // ROC ID, counting from 0, across all (for the calorimeter)
-  size_t crystalId = _calorimeter->caloInfo().crystalByRO(CD.roId());
+  size_t crystalId = _calorimeter->caloIDMapper().crystalIDFromSiPMID(CD.SiPMID());
   size_t globalROCID = crystalId / number_of_crystals_per_roc;
 
   HeaderData.s.LinkID = globalROCID % number_of_rocs_per_dtc; // currently unknown. FIXME!

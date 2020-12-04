@@ -8,7 +8,7 @@
 #include <iostream>
 
 #include "Print/inc/ProductPrinter.hh"
-#include "RecoDataProducts/inc/CaloCrystalHitCollection.hh"
+#include "RecoDataProducts/inc/CaloHit.hh"
 #include "art/Framework/Principal/Handle.h"
 #include "canvas/Persistency/Common/Ptr.h"
 
@@ -29,15 +29,15 @@ namespace mu2e {
     // all the ways to request a printout
     void Print(art::Event const& event,
 	       std::ostream& os = std::cout) override;
-    void Print(const art::Handle<CaloCrystalHitCollection>& handle, 
+    void Print(const art::Handle<CaloHitCollection>& handle, 
 	       std::ostream& os = std::cout);
-    void Print(const art::ValidHandle<CaloCrystalHitCollection>& handle, 
+    void Print(const art::ValidHandle<CaloHitCollection>& handle, 
 	       std::ostream& os = std::cout);
-    void Print(const CaloCrystalHitCollection& coll, 
+    void Print(const CaloHitCollection& coll, 
 	       std::ostream& os = std::cout);
-    void Print(const art::Ptr<CaloCrystalHit>& ptr, 
+    void Print(const art::Ptr<CaloHit>& ptr, 
 	       int ind = -1, std::ostream& os = std::cout);
-    void Print(const mu2e::CaloCrystalHit& obj, 
+    void Print(const mu2e::CaloHit& obj, 
 	       int ind = -1, std::ostream& os = std::cout);
 
     void PrintHeader(const std::string& tag, 

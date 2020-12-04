@@ -69,7 +69,7 @@ mu2e::CaloHitPrinter::Print(const mu2e::CaloHit& obj, int ind, std::ostream& os)
   if(ind>=0) os << std::setw(4) << ind;
 
   os 
-    << " " << std::setw(5) << obj.id()
+    << " " << std::setw(5) << obj.crystalID()
     << " " 
     << " " << std::setw(8) << std::setprecision(1) << obj.time()
     << " " << std::setw(8) << std::setprecision(1) << obj.energyDep()
