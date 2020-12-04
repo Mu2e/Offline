@@ -1,0 +1,68 @@
+// Andrei Gaponenko, 2015
+// Run this script over stage 1 dsregion output
+// For example you can use the sample as an input: sim.mu2e.cd3-beam-g4s1cat-dsregion.051017.art 
+
+#include "fcl/minimalMessageService.fcl"
+#include "fcl/standardProducers.fcl"
+#include "fcl/standardServices.fcl"
+#include "Mu2eG4/fcl/prolog.fcl"
+#include "CRVResponse/fcl/prolog.fcl"
+#include "CommonMC/fcl/prolog.fcl"
+
+# Give this job a name.
+process_name : MakeCRVtree
+
+source : {
+   module_type : RootInput
+}
+
+services : {
+   message               : @local::default_message
+   TFileService          : { fileName : "nts.owner.crvtree.version.sequencer.root" }
+   GeometryService        : { inputFile      : "Mu2eG4/geom/geom_common_crv_v07.txt" }
+   ConditionsService      : { conditionsfile : "Mu2eG4/test/conditions_01.txt"      }
+   GlobalConstantsService : { inputFile      : "Mu2eG4/test/globalConstants_01.txt" }
+   G4Helper               : { }
+   RandomNumberGenerator: { }
+   SeedService            : @local::automaticSeeds
+}
+
+physics : {
+   analyzers: {
+      genCountLogger: {
+         module_type: GenEventCountReader
+      }
+    crvtree: {
+        module_type : CRVAnalysisTree
+
+
+	CrvCoincidenceModuleLabel : "CrvCoincidenceClusterFinder"
+        CrvCoincidenceMCModuleLabel : "CrvCoincidenceClusterFinder"
+        CrvRecoPulseLabel : "CrvRecoPulses"
+        CrvStepPointMCLabel : "g4run:CRV"
+        SimParticleLabel : "g4run"
+        MCTrajectoryLabel : "g4run"
+        CrvWaveformsModuleLabel : "compressRecoMCs"
+        CrvDigiModuleLabel : "CrvDigi"
+        CrvPlaneY : 2653
+        FillMCInfo : true
+
+//	BeamIntensity 	            : "protonBunchIntensity"
+	BeamIntensity 	            : ""
+	CrvWaveformsModuleLabel     : "CrvWaveforms"
+        TimeOffsets                 : { inputs : [ @sequence::CommonMC.TimeMaps ] }
+//        TimeOffsets                 : { inputs : [""] }
+	SignalWindowStartTime : 700
+	SignalWindowEndTime   : 1705
+//	IgnoreUE   	      : true
+      }
+   }
+//   an: [ genCountLogger, crvtree ]
+   an: [ crvtree ]
+   end_paths: [an]
+}
+
+//Add Mu2e geometry service identifier
+services.GeometryService.simulatedDetector.tool_type : "Mu2e"
+services.SeedService.maxUniqueEngines :  20
+services.SeedService.baseSeed         :  773651

@@ -1,0 +1,24 @@
+Install teststand simulation files:
+cp /mu2e/users/nmesmer/workDir/Offline/CRVResponse/efficiencyCheck/genconfig_L_teststand.txt CRVResponse/efficiencyCheck
+cp /mu2e/users/nmesmer/workDir/Offline/CRVResponse/efficiencyCheck/geom_L_teststand.txt CRVResponse/efficiencyCheck
+
+
+Delete all lines except for first line of CRVResponse/efficiencyCheck/jobs.sh (This step doesn't apply to running this for the first time)
+Remove all files from CRVResponse/efficiencyCheck/submit (This step doesn't apply to running this for the first time)
+
+Make sure the format of Mu2eANL/Scripts/CRV_Efficiency_check_submit.sh is correct:
+- Proper PE range, correct number of events, --njobs is set reasonably.
+
+source Mu2eANL/Scripts/CRV_Efficiency_check_submit.sh
+
+gridexport
+
+Copy the file location onto the first line of CRVResponse/efficiencyCheck/jobs.sh
+
+
+In a new terminal window (This may have been fixed and the same terminal window might work now)
+setup mu2egrid v6_09_00
+source CRVResponse/efficiencyCheck/jobs.sh
+
+
+
