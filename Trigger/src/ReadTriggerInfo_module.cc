@@ -83,14 +83,14 @@ namespace mu2e {
       kNTrigInfo     = 40,
       kNTrackTrig    = 20,
       kNTrackTrigVar = 50,
-      kNHelixTrig    = 10,
+      kNHelixTrig    = 40,
       kNHelixTrigVar = 130,
       kNCaloCalib    = 5,
       kNCaloCalibVar = 30,
       kNCaloOnly     = 5,
       kNCaloOnlyVar  = 30,
-      kNOcc          = 40,
-      kNOccVar       = 10
+      kNOcc          = 100,
+      kNOccVar       = 100
     };
 
     struct MCInfo {
@@ -122,7 +122,10 @@ namespace mu2e {
       TH2F *_h2DTrigInfo[kNTrigInfo];
       TH1F *_hTrigBDW   [kNTrigInfo];
       
+      TH1F *_hTrigBits;
+
       summaryInfoHist_() {
+	_hTrigBits = NULL;
 	for (int i=0; i<kNTrigInfo; ++i){ 
 	  _hTrigInfo  [i] = NULL;
 	  _h2DTrigInfo[i] = NULL;
@@ -316,7 +319,7 @@ namespace mu2e {
   //--------------------------------------------------------------------------------//
   void     ReadTriggerInfo::bookTrigInfoHist         (art::ServiceHandle<art::TFileService> & Tfs, summaryInfoHist_       &Hist){
     art::TFileDirectory trigInfoDir = Tfs->mkdir("trigInfo");
-
+    Hist._hTrigBits      = trigInfoDir.make<TH1F>("hTrigInfo_bits"      , "Trigger bits"                               , 31, -0.5, 30.5);       
     Hist._hTrigInfo[0]   = trigInfoDir.make<TH1F>("hTrigInfo_global"    , "Global Trigger rejection"                   , (_nMaxTrig+2), -0.5, (_nMaxTrig+1.5));       
     Hist._hTrigInfo[1]   = trigInfoDir.make<TH1F>("hTrigInfo_track"     , "Calo-only Triggers rejection"               , (_nMaxTrig+2), -0.5, (_nMaxTrig+1.5));       
     Hist._hTrigInfo[2]   = trigInfoDir.make<TH1F>("hTrigInfo_calo"      , "Track Triggers rejection"                   , (_nMaxTrig+2), -0.5, (_nMaxTrig+1.5));       
@@ -378,11 +381,11 @@ namespace mu2e {
       Hist._hHelInfo[i][0] = helInfoDir.make<TH1F>(Form("hP_%i"        , i), "Helix Momentum; p[MeV/c]", 400, 0, 200);
       Hist._hHelInfo[i][1] = helInfoDir.make<TH1F>(Form("hPt_%i"       , i), "Helix Pt; p_{t} [MeV/c]", 400, 0, 200);
       Hist._hHelInfo[i][2] = helInfoDir.make<TH1F>(Form("hNSh_%i"      , i), "N-StrawHits; nStrawHits", 101, -0.5, 100.5);
-      Hist._hHelInfo[i][3] = helInfoDir.make<TH1F>(Form("hD0_%i"       , i), "Helix impact parameter; d0 [mm]", 801, -400.5, 400.5);
+      Hist._hHelInfo[i][3] = helInfoDir.make<TH1F>(Form("hD0_%i"       , i), "Helix impact parameter; d0 [mm]", 800, -800, 800);//801, -400.5, 400.5);
       Hist._hHelInfo[i][4] = helInfoDir.make<TH1F>(Form("hChi2dXY_%i"  , i), "Helix #chi^{2}_{xy}/ndof;#chi^{2}_{xy}/ndof"      , 100, 0, 50);
       Hist._hHelInfo[i][5] = helInfoDir.make<TH1F>(Form("hChi2dZPhi_%i", i), "Helix #chi^{2}_{z#phi}/ndof;#chi^{2}_{z#phi}/ndof", 100, 0, 50);
       Hist._hHelInfo[i][6] = helInfoDir.make<TH1F>(Form("hClE_%i"      , i), "calorimeter Cluster energy; E [MeV]", 240, 0, 120);
-      Hist._hHelInfo[i][7] = helInfoDir.make<TH1F>(Form("hLambda_%i"   , i), "Helix #lambda=dz/d#phi; |#lambda| [mm/rad]", 500, 0, 500);
+      Hist._hHelInfo[i][7] = helInfoDir.make<TH1F>(Form("hLambda_%i"   , i), "Helix #lambda=dz/d#phi; |#lambda| [mm/rad]", 500, 0, 600);//500, 0, 500);
       Hist._hHelInfo[i][8] = helInfoDir.make<TH1F>(Form("hNLoops_%i"   , i), "Helix nLoops; nLoops", 500, 0, 50);
       Hist._hHelInfo[i][9] = helInfoDir.make<TH1F>(Form("hHitRatio_%i" , i), "Helix hitRatio; NComboHits/nExpectedComboHits", 200, 0, 2);
 
@@ -408,7 +411,7 @@ namespace mu2e {
       Hist._hHelInfo[i][26] = helInfoDir.make<TH1F>(Form("hMuMinusPDG_%i"  , i), "PDG Id; PdgId"                        , 2253,   -30.5,   2222.5);
       Hist._hHelInfo[i][27] = helInfoDir.make<TH1F>(Form("hMuMinusGenZ_%i" , i), "origin; z-origin [mm]", 300,   0,   15000);
       Hist._hHelInfo[i][28] = helInfoDir.make<TH1F>(Form("hMuMinusGenR_%i" , i), "r origin; r-origin [mm]",500,   0,   5000);
-      Hist._hHelInfo[i][29] = helInfoDir.make<TH1F>(Form("hMuMinusLambda_%i" , i), "Helix #lambda=dz/d#phi; |#lambda| [mm/rad]", 500, 0, 500);
+      Hist._hHelInfo[i][29] = helInfoDir.make<TH1F>(Form("hMuMinusLambda_%i" , i), "Helix #lambda=dz/d#phi; |#lambda| [mm/rad]", 500, 0, 600);
      
       Hist._hHelInfo[i][30] = helInfoDir.make<TH1F>(Form("hMuPlusPMC_%i" , i), "MC Track Momentum @ tracker front; p[MeV/c]", 400, 0, 200);
       Hist._hHelInfo[i][31] = helInfoDir.make<TH1F>(Form("hMuPlusP_%i", i), "Track P; p [MeV/c]" , 400, 0, 200);
@@ -419,7 +422,7 @@ namespace mu2e {
       Hist._hHelInfo[i][36] = helInfoDir.make<TH1F>(Form("hMuPlusPDG_%i"  , i), "PDG Id; PdgId"                        , 2253,   -30.5,   2222.5);
       Hist._hHelInfo[i][37] = helInfoDir.make<TH1F>(Form("hMuPlusGenZ_%i" , i), "origin; z-origin [mm];", 300,   0,   15000);
       Hist._hHelInfo[i][38] = helInfoDir.make<TH1F>(Form("hMuPlusGenR_%i" , i), "r origin;  r-origin [mm]", 500,   0,   5000);
-      Hist._hHelInfo[i][39] = helInfoDir.make<TH1F>(Form("hMuPlusLambda_%i" , i), "Helix #lambda=dz/d#phi; |#lambda| [mm/rad]", 500, 0, 500);
+      Hist._hHelInfo[i][39] = helInfoDir.make<TH1F>(Form("hMuPlusLambda_%i" , i), "Helix #lambda=dz/d#phi; |#lambda| [mm/rad]", 500, 0, 600);
 
       Hist._hHelInfo[i][40] = helInfoDir.make<TH1F>(Form("hIPAMuPMC_%i" , i), "MC Track Momentum @ tracker front; p[MeV/c]", 400, 0, 200);
       Hist._hHelInfo[i][41] = helInfoDir.make<TH1F>(Form("hIPAMuP_%i", i), "Track P; p [MeV/c]" , 400, 0, 200);
@@ -430,7 +433,7 @@ namespace mu2e {
       Hist._hHelInfo[i][46] = helInfoDir.make<TH1F>(Form("hIPAMuPDG_%i"  , i), "PDG Id; PdgId"                        , 2253,   -30.5,   2222.5);
       Hist._hHelInfo[i][47] = helInfoDir.make<TH1F>(Form("hIPAMuGenZ_%i" , i), "z origin; z-origin [mm]", 300,   0,   15000);
       Hist._hHelInfo[i][48] = helInfoDir.make<TH1F>(Form("hIPAMuGenR_%i" , i), "r origin; r-origin [mm]", 500,   0,   5000);
-      Hist._hHelInfo[i][49] = helInfoDir.make<TH1F>(Form("hIPAMuLambda_%i" , i), "Helix #lambda=dz/d#phi; |#lambda| [mm/rad]", 500, 0, 500);
+      Hist._hHelInfo[i][49] = helInfoDir.make<TH1F>(Form("hIPAMuLambda_%i" , i), "Helix #lambda=dz/d#phi; |#lambda| [mm/rad]", 500, 0, 600);
 
       Hist._hHelInfo[i][50] = helInfoDir.make<TH1F>(Form("hGammaPMC_%i" , i), "MC Track Momentum @ tracker front; p[MeV/c]", 400, 0, 200);
       Hist._hHelInfo[i][51] = helInfoDir.make<TH1F>(Form("hGammaP_%i", i), "Track P; p [MeV/c]" , 400, 0, 200);
@@ -441,7 +444,7 @@ namespace mu2e {
       Hist._hHelInfo[i][56] = helInfoDir.make<TH1F>(Form("hGammaPDG_%i"  , i), "PDG Id; PdgId"                        , 2253,   -30.5,   2222.5);
       Hist._hHelInfo[i][57] = helInfoDir.make<TH1F>(Form("hGammaGenZ_%i" , i), "origin; z-origin [mm]", 300,   0,   15000);
       Hist._hHelInfo[i][58] = helInfoDir.make<TH1F>(Form("hGammaGenR_%i" , i), "radial position origin; r-origin [mm]", 500,   0,   5000);
-      Hist._hHelInfo[i][59] = helInfoDir.make<TH1F>(Form("hGammaLambda_%i" , i), "Helix #lambda=dz/d#phi; |#lambda| [mm/rad]", 500, 0, 500);
+      Hist._hHelInfo[i][59] = helInfoDir.make<TH1F>(Form("hGammaLambda_%i" , i), "Helix #lambda=dz/d#phi; |#lambda| [mm/rad]", 500, 0, 600);
 
       Hist._hHelInfo[i][60] = helInfoDir.make<TH1F>(Form("hProtonPMC_%i" , i), "MC Track Momentum @ tracker front; p[MeV/c]", 400, 0, 200);
       Hist._hHelInfo[i][61] = helInfoDir.make<TH1F>(Form("hProtonP_%i", i), "Track P; p [MeV/c]" , 400, 0, 200);
@@ -452,7 +455,7 @@ namespace mu2e {
       Hist._hHelInfo[i][66] = helInfoDir.make<TH1F>(Form("hProtonPDG_%i"  , i), "PDG Id; PdgId"                        , 2253,   -30.5,   2222.5);
       Hist._hHelInfo[i][67] = helInfoDir.make<TH1F>(Form("hProtonGenZ_%i" , i), "origin; z-origin [mm]", 300,   0,   15000);
       Hist._hHelInfo[i][68] = helInfoDir.make<TH1F>(Form("hProtonGenR_%i" , i), "radial position origin; r-origin [mm]", 500,   0,   5000);
-      Hist._hHelInfo[i][69] = helInfoDir.make<TH1F>(Form("hProtonLambda_%i" , i), "Helix #lambda=dz/d#phi; |#lambda| [mm/rad]", 500, 0, 500);
+      Hist._hHelInfo[i][69] = helInfoDir.make<TH1F>(Form("hProtonLambda_%i" , i), "Helix #lambda=dz/d#phi; |#lambda| [mm/rad]", 500, 0, 600);
 
       Hist._hHelInfo[i][70] = helInfoDir.make<TH1F>(Form("hN0PMC_%i" , i), "MC Track Momentum @ tracker front; p[MeV/c]", 400, 0, 200);
       Hist._hHelInfo[i][71] = helInfoDir.make<TH1F>(Form("hN0P_%i", i), "Track P; p [MeV/c]" , 400, 0, 200);
@@ -463,7 +466,7 @@ namespace mu2e {
       Hist._hHelInfo[i][76] = helInfoDir.make<TH1F>(Form("hN0PDG_%i"  , i), "PDG Id; PdgId"                        , 2253,   -30.5,   2222.5);
       Hist._hHelInfo[i][77] = helInfoDir.make<TH1F>(Form("hN0GenZ_%i" , i), "origin; z-origin [mm]", 300,   0,   15000);
       Hist._hHelInfo[i][78] = helInfoDir.make<TH1F>(Form("hN0GenR_%i" , i), "radial position origin; r-origin [mm]", 500,   0,   5000);
-      Hist._hHelInfo[i][79] = helInfoDir.make<TH1F>(Form("hN0Lambda_%i" , i), "Helix #lambda=dz/d#phi; |#lambda| [mm/rad]", 500, 0, 500);
+      Hist._hHelInfo[i][79] = helInfoDir.make<TH1F>(Form("hN0Lambda_%i" , i), "Helix #lambda=dz/d#phi; |#lambda| [mm/rad]", 500, 0, 600);
       
       Hist._hHelInfo[i][80] = helInfoDir.make<TH1F>(Form("hPiMinusPMC_%i" , i), "MC Track Momentum @ tracker front; p[MeV/c]", 400, 0, 200);
       Hist._hHelInfo[i][81] = helInfoDir.make<TH1F>(Form("hPiMinusP_%i", i), "Track P; p [MeV/c]" , 400, 0, 200);
@@ -474,7 +477,7 @@ namespace mu2e {
       Hist._hHelInfo[i][86] = helInfoDir.make<TH1F>(Form("hPiMinusPDG_%i"  , i), "PDG Id; PdgId"                        , 2253,   -30.5,   2222.5);
       Hist._hHelInfo[i][87] = helInfoDir.make<TH1F>(Form("hPiMinusGenZ_%i" , i), "origin; z-origin [mm]", 300,   0,   15000);
       Hist._hHelInfo[i][88] = helInfoDir.make<TH1F>(Form("hPiMinusGenR_%i" , i), "r origin; r-origin [mm]",500,   0,   5000);
-      Hist._hHelInfo[i][89] = helInfoDir.make<TH1F>(Form("hPiMinusLambda_%i" , i), "Helix #lambda=dz/d#phi; |#lambda| [mm/rad]", 500, 0, 500);
+      Hist._hHelInfo[i][89] = helInfoDir.make<TH1F>(Form("hPiMinusLambda_%i" , i), "Helix #lambda=dz/d#phi; |#lambda| [mm/rad]", 500, 0, 600);
      
       Hist._hHelInfo[i][90] = helInfoDir.make<TH1F>(Form("hPiPlusPMC_%i" , i), "MC Track Momentum @ tracker front; p[MeV/c]", 400, 0, 200);
       Hist._hHelInfo[i][91] = helInfoDir.make<TH1F>(Form("hPiPlusP_%i", i), "Track P; p [MeV/c]" , 400, 0, 200);
@@ -485,7 +488,30 @@ namespace mu2e {
       Hist._hHelInfo[i][96] = helInfoDir.make<TH1F>(Form("hPiPlusPDG_%i"  , i), "PDG Id; PdgId"                        , 2253,   -30.5,   2222.5);
       Hist._hHelInfo[i][97] = helInfoDir.make<TH1F>(Form("hPiPlusGenZ_%i" , i), "origin; z-origin [mm];", 300,   0,   15000);
       Hist._hHelInfo[i][98] = helInfoDir.make<TH1F>(Form("hPiPlusGenR_%i" , i), "r origin;  r-origin [mm]", 500,   0,   5000);
-      Hist._hHelInfo[i][99] = helInfoDir.make<TH1F>(Form("hPiPlusLambda_%i" , i), "Helix #lambda=dz/d#phi; |#lambda| [mm/rad]", 500, 0, 500);
+      Hist._hHelInfo[i][99] = helInfoDir.make<TH1F>(Form("hPiPlusLambda_%i" , i), "Helix #lambda=dz/d#phi; |#lambda| [mm/rad]", 500, 0, 600);
+
+      Hist._hHelInfo[i][100] = helInfoDir.make<TH1F>(Form("hEMinusPMC_%i" , i), "MC Track Momentum @ tracker front; p[MeV/c]", 400, 0, 200);
+      Hist._hHelInfo[i][101] = helInfoDir.make<TH1F>(Form("hEMinusP_%i", i), "Track P; p [MeV/c]" , 400, 0, 250);
+      Hist._hHelInfo[i][102] = helInfoDir.make<TH1F>(Form("hEMinusD0_%i", i), "Helix impact parameter; d0 [mm]", 800, -800, 800);
+      Hist._hHelInfo[i][103] = helInfoDir.make<TH1F>(Form("hEMinusDP_%i"  , i), "#Delta p @ tracker front; #Delta p = p_{hel} - p_{MC} [MeV/c]"     , 800, -200, 200);
+      Hist._hHelInfo[i][104] = helInfoDir.make<TH1F>(Form("hEMinusDPt_%i"  , i), "#Delta pT @ tracker front; #Delta pT = pT_{hel} - pT_{MC} [MeV/c]", 800, -200, 200);
+      Hist._hHelInfo[i][105] = helInfoDir.make<TH1F>(Form("hEMinusDPz_%i"  , i), "#Delta pZ @ tracker front; #Delta pZ = pZ_{hel} - pZ_{MC} [MeV/c]", 800, -200, 200);
+      Hist._hHelInfo[i][106] = helInfoDir.make<TH1F>(Form("hEMinusPDG_%i"  , i), "PDG Id; PdgId"                        , 2253,   -30.5,   2222.5);
+      Hist._hHelInfo[i][107] = helInfoDir.make<TH1F>(Form("hEMinusGenZ_%i" , i), "origin; z-origin [mm];", 300,   0,   15000);
+      Hist._hHelInfo[i][108] = helInfoDir.make<TH1F>(Form("hEMinusGenR_%i" , i), "r origin;  r-origin [mm]", 500,   0,   5000);
+      Hist._hHelInfo[i][109] = helInfoDir.make<TH1F>(Form("hEMinusLambda_%i" , i), "Helix #lambda=dz/d#phi; |#lambda| [mm/rad]", 500, 0, 600);
+
+      Hist._hHelInfo[i][110] = helInfoDir.make<TH1F>(Form("hEPlusPMC_%i" , i), "MC Track Momentum @ tracker front; p[MeV/c]", 400, 0, 200);
+      Hist._hHelInfo[i][111] = helInfoDir.make<TH1F>(Form("hEPlusP_%i", i), "Track P; p [MeV/c]" , 400, 0, 250);
+      Hist._hHelInfo[i][112] = helInfoDir.make<TH1F>(Form("hEPlusD0_%i", i), "Helix impact parameter; d0 [mm]", 800, -800, 800);
+      Hist._hHelInfo[i][113] = helInfoDir.make<TH1F>(Form("hEPlusDP_%i"  , i), "#Delta p @ tracker front; #Delta p = p_{hel} - p_{MC} [MeV/c]"     , 800, -200, 200);
+      Hist._hHelInfo[i][114] = helInfoDir.make<TH1F>(Form("hEPlusDPt_%i"  , i), "#Delta pT @ tracker front; #Delta pT = pT_{hel} - pT_{MC} [MeV/c]", 800, -200, 200);
+      Hist._hHelInfo[i][115] = helInfoDir.make<TH1F>(Form("hEPlusDPz_%i"  , i), "#Delta pZ @ tracker front; #Delta pZ = pZ_{hel} - pZ_{MC} [MeV/c]", 800, -200, 200);
+      Hist._hHelInfo[i][116] = helInfoDir.make<TH1F>(Form("hEPlusPDG_%i"  , i), "PDG Id; PdgId"                        , 2253,   -30.5,   2222.5);
+      Hist._hHelInfo[i][117] = helInfoDir.make<TH1F>(Form("hEPlusGenZ_%i" , i), "origin; z-origin [mm];", 300,   0,   15000);
+      Hist._hHelInfo[i][118] = helInfoDir.make<TH1F>(Form("hEPlusGenR_%i" , i), "r origin;  r-origin [mm]", 500,   0,   5000);
+      Hist._hHelInfo[i][119] = helInfoDir.make<TH1F>(Form("hEPlusLambda_%i" , i), "Helix #lambda=dz/d#phi; |#lambda| [mm/rad]", 500, 0, 600);
+
 
       Hist._hHelInfo[i][120] = helInfoDir.make<TH1F>(Form("hNTrigHelixes_%i" , i), "NHelixes trigger matched; NHelixes trigger matched", 11, -0.5, 10)
 	;
@@ -514,7 +540,7 @@ namespace mu2e {
   //--------------------------------------------------------------------------------//
   //--------------------------------------------------------------------------------//
   void     ReadTriggerInfo::bookOccupancyInfoHist         (art::ServiceHandle<art::TFileService> & Tfs, occupancyHist_       &Hist){
-    
+
     for (int i=0; i<_nTrackTrig; ++i){
       art::TFileDirectory occInfoDir = Tfs->mkdir(Form("occInfoTrk_%i", i));
       Hist._hOccInfo  [i][0]  = occInfoDir.make<TH1F>(Form("hInstLum_%i"  ,i),"distrbution of instantaneous lum; p/#mu-bunch"  ,  1000, 1e6, 4e8);
@@ -818,6 +844,15 @@ namespace mu2e {
     art::InputTag const tag{Form("TriggerResults::%s", _processName.c_str())};  
     auto const trigResultsH   = event.getValidHandle<art::TriggerResults>(tag);
     const art::TriggerResults*trigResults = trigResultsH.product();
+    
+    //fill the histogram with the trigger bits
+    for (unsigned i=0; i<trigResults->size(); ++i){
+      if (trigResults->accept(i)){
+	_sumHist._hTrigBits->Fill(i);
+      }
+    }
+
+
     TriggerResultsNavigator   trigNavig(trigResults);
     
     for (unsigned int i=0; i< _trigPaths.size(); ++i){
@@ -962,7 +997,8 @@ namespace mu2e {
 		fillCaloTrigSeedInfo(index, clseed.get(), _caloTSeedHist);
 		if (passed) {
 		  passed = false;
-		  fillOccupancyInfo   (_nTrackTrig*2+index, sdCol, cdCol, _occupancyHist);
+		  // fillOccupancyInfo   (_nTrackTrig*2+index, sdCol, cdCol, _occupancyHist);
+		  fillOccupancyInfo   (_nTrackTrig + index, sdCol, cdCol, _occupancyHist);
 		}
 	      }
 	    }
@@ -1264,6 +1300,10 @@ namespace mu2e {
 	indexMother = 80;
       }else if (pdgM == 211){ //case 8: pi plus
 	indexMother = 90;
+      }else if (pdgM == 11){ //case 9: electrons
+	indexMother = 100;
+      }else if (pdgM == -11){ //case 10: positrons
+	indexMother = 110;
       }
 
       double   pTMC   = sqrt(pXMC*pXMC + pYMC*pYMC);
