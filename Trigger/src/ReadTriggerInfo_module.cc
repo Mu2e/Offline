@@ -1007,7 +1007,8 @@ namespace mu2e {
 	  }
 	  
 
-	  if ( moduleLabel.find("caloMVACEFilter") || moduleLabel.find("TSFilter")){ 
+	  if ( (moduleLabel.find("caloMVACEFilter")!= std::string::npos) || 
+	       (moduleLabel.find("TSFilter")       != std::string::npos) ){ 
 	    findTrigIndex(_trigFinal, moduleLabel, index);
 	    _trigFinal[index].label    = moduleLabel;
 	    _trigFinal[index].counts   = _trigFinal[index].counts + 1;
