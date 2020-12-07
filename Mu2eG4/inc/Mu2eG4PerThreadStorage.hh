@@ -7,11 +7,8 @@
 // Author: Lisa Goodeough
 // Date: 2019/07/09
 //
-//
 
 //Mu2e includes
-//#include "Mu2eG4/inc/SteppingVerbose.hh"
-#include "Mu2eG4/inc/Mu2eG4Config.hh"
 #include "Mu2eG4/inc/SimParticleHelper.hh"
 #include "Mu2eG4/inc/SimParticlePrimaryHelper.hh"
 #include "MCDataProducts/inc/GenParticleCollection.hh"
@@ -21,15 +18,18 @@
 #include "MCDataProducts/inc/MCTrajectoryCollection.hh"
 #include "MCDataProducts/inc/SimParticleRemapping.hh"
 #include "MCDataProducts/inc/ExtMonFNALSimHitCollection.hh"
-#include "MCDataProducts/inc/StepInstanceName.hh"
 
-//C++ includes
-#include <iostream>
+// C++ includes
+#include <memory>
+#include <vector>
+#include <string>
+#include <unordered_map>
 
 //art includes
+#include "art/Framework/Principal/Handle.h"
 #include "art/Framework/Principal/Event.h"
 #include "art/Framework/Principal/Run.h"
-#include "cetlib_except/exception.h"
+#include "canvas/Utilities/InputTag.h"
 
 namespace art { class EDProductGetter; }
 
@@ -39,34 +39,13 @@ namespace mu2e {
 
   struct Mu2eG4PerThreadStorage
   {
-    explicit Mu2eG4PerThreadStorage()
-    {
-      tvd.first = "";
-      tvd.second = nullptr;
-    }
-
+    Mu2eG4PerThreadStorage() : tvd{"", nullptr} {}
 
     void initializeEventInfo(art::Event* evt,
                              SimParticleHelper* sim_part_helper,
                              SimParticlePrimaryHelper* sim_part_primary_helper,
                              HitHandles* gen_input_hits,
-                             art::InputTag gen_module_label) {
-      artEvent = evt;
-      simParticleHelper = sim_part_helper;
-      simParticlePrimaryHelper = sim_part_primary_helper;
-      genInputHits = gen_input_hits;
-      generatorModuleLabel = gen_module_label;
-
-      if(!(generatorModuleLabel == art::InputTag())) {
-        artEvent->getByLabel(generatorModuleLabel, gensHandle);
-      }
-
-      if ( !gensHandle.isValid() && genInputHits == nullptr ) {
-        throw cet::exception("CONFIG")
-          << "Error in PerThreadStorage::initializeEventInfo.  You are trying to run a G4job without an input for G4.\n";
-      }
-
-    }
+                             art::InputTag gen_module_label);
 
     /////////////////////////////////////////////////////////////
     /////////////////////////////////////////////////////////////
@@ -117,102 +96,36 @@ namespace mu2e {
       return std::move(statG4);
     }
 
-    std::string getTVDName()
-    {
+    std::string getTVDName() {
       return tvd.first;
     }
 
-    std::unique_ptr<StepPointMCCollection> getTVDHits()
-    {
+    std::unique_ptr<StepPointMCCollection> getTVDHits() {
       return std::move(tvd.second);
     }
 
-    std::unique_ptr<MCTrajectoryCollection> getMCTrajCollection()
-    {
+    std::unique_ptr<MCTrajectoryCollection> getMCTrajCollection() {
       return std::move(mcTrajectories);
     }
 
-    std::unique_ptr<SimParticleRemapping> getSimParticleRemap()
-    {
+    std::unique_ptr<SimParticleRemapping> getSimParticleRemap() {
       return std::move(simRemapping);
     }
 
-    std::unique_ptr<ExtMonFNALSimHitCollection> getExtMonFNALSimHitCollection()
-    {
+    std::unique_ptr<ExtMonFNALSimHitCollection> getExtMonFNALSimHitCollection() {
       return std::move(extMonFNALHits);
     }
 
-    void putSensitiveDetectorData(art::EDProductGetter const* sim_product_getter) {
+    void putSensitiveDetectorData(art::EDProductGetter const* sim_product_getter);
 
-      std::unordered_map< std::string, std::unique_ptr<StepPointMCCollection> > steps_map =
-        std::move(sensitiveDetectorSteps);
+    void putCutsData(art::EDProductGetter const* sim_product_getter);
 
-      for (std::unordered_map< std::string, std::unique_ptr<StepPointMCCollection> >::iterator i = steps_map.begin();
-           i != steps_map.end(); ++i) {
-
-        for ( StepPointMCCollection::iterator j=i->second->begin(); j!=i->second->end(); ++j ){
-
-          StepPointMC& step = *j;
-
-          if ( step.simParticle().isNonnull() ){
-            step.simParticle() = art::Ptr<SimParticle>(step.simParticle().id(),
-                                                       step.simParticle().key(),
-                                                       sim_product_getter );
-          }//if
-        }//for StepPointMCCollection::iterator
-
-        artEvent->put(std::move(i->second), i->first);
-      }//for (std::unordered_map...
-    }
-
-
-    void putCutsData(art::EDProductGetter const* sim_product_getter) {
-
-      std::unordered_map< std::string, std::unique_ptr<StepPointMCCollection> > cuts_map = std::move(cutsSteps);
-
-      for (std::unordered_map< std::string, std::unique_ptr<StepPointMCCollection> >::iterator i = cuts_map.begin();
-           i != cuts_map.end(); ++i) {
-
-        for ( StepPointMCCollection::iterator j=i->second->begin(); j!=i->second->end(); ++j ){
-          StepPointMC& step = *j;
-
-          if ( step.simParticle().isNonnull() ){
-            step.simParticle() = art::Ptr<SimParticle>(step.simParticle().id(),
-                                                       step.simParticle().key(),
-                                                       sim_product_getter );
-          }//if
-        }//for StepPointMCCollection::iterator
-
-        artEvent->put(std::move(i->second), i->first);
-      }
-    }
-
-
-    void clearData() {
-
-      artEvent = nullptr;
-      simParticleHelper = nullptr;
-      simParticlePrimaryHelper = nullptr;
-      genInputHits = nullptr;
-      gensHandle.clear();
-      generatorModuleLabel = "";
-
-      statG4 = nullptr;
-      simPartCollection = nullptr;
-      tvd.first = "";
-      tvd.second = nullptr;
-      mcTrajectories = nullptr;
-      simRemapping = nullptr;
-      extMonFNALHits = nullptr;
-      sensitiveDetectorSteps.clear();
-      cutsSteps.clear();
-    }
+    void clearData();
 
     /////////////////////////////////////////////////////////////
     // run-level data members
     art::RunNumber_t currentRunNumber = 0;
 
-    //bool threadInitialized = false;
     bool runTerminated = false;
 
     // event-level data members
@@ -223,7 +136,7 @@ namespace mu2e {
     art::Handle<GenParticleCollection> gensHandle;
     art::InputTag generatorModuleLabel;
 
-    std::unique_ptr<StatusG4> statG4 = nullptr;
+    std::unique_ptr<StatusG4> statG4{nullptr};
     std::unique_ptr<SimParticleCollection> simPartCollection = nullptr;
     std::pair< std::string, std::unique_ptr<StepPointMCCollection> > tvd;
     std::unique_ptr<MCTrajectoryCollection> mcTrajectories = nullptr;
@@ -232,26 +145,6 @@ namespace mu2e {
 
     std::unordered_map< std::string, std::unique_ptr<StepPointMCCollection> > sensitiveDetectorSteps;
     std::unordered_map< std::string, std::unique_ptr<StepPointMCCollection> > cutsSteps;
-
-    /*
-      G4RunManagerKernel* kernel = nullptr;
-      SteppingVerbose* steppingVerbose = nullptr;
-      WorldMaker<Mu2eWorld,ConstructMaterials>* userDetector = nullptr;
-      G4VUserPhysicsList* physList = nullptr;
-      G4Run* currentRun = nullptr;
-      std::unique_ptr<G4Event> currentEvent;
-      RandomNumberEngine
-      G4EventManager * eventManager;
-      G4VUserDetectorConstruction * userDetector;
-      G4UserWorkerThreadInitialization * userWorkerThreadInitialization;
-      G4UserRunAction * userRunAction;
-      G4VUserPrimaryGeneratorAction * userPrimaryGeneratorAction;
-      G4UserEventAction * userEventAction;
-      G4UserStackingAction * userStackingAction;
-      G4UserTrackingAction * userTrackingAction;
-      G4UserSteppingAction * userSteppingAction;
-    */
-
   };
 
 }  // end namespace mu2e
