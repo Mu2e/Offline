@@ -40,8 +40,6 @@ namespace mu2e {
   class TrackingAction;
   class Mu2eG4SteppingAction;
   class SensitiveDetectorHelper;
-  class SimParticleHelper;
-  class SimParticlePrimaryHelper;
   class PhysicsProcessInfo;
   class IMu2eG4Cut;
 
@@ -71,11 +69,7 @@ namespace mu2e {
 
   private:
 
-    //used to set the art::Event
-    void setEventData();
-
     Mu2eG4PerThreadStorage* perThreadObjects_;
-
 
     //these are set using fhicl pset
     Mu2eG4TrajectoryControl trajectoryControl_;
@@ -104,12 +98,7 @@ namespace mu2e {
     std::unique_ptr<SimParticleRemapping> simsRemap;
     std::unique_ptr<ExtMonFNALSimHitCollection> extMonFNALHits;
 
-    SimParticleHelper *_spHelper;
-    SimParticlePrimaryHelper *_parentHelper;
     PhysicsProcessInfo *_processInfo;
-
-    //this are set in setEventData
-    art::Event *_artEvent;
 
     bool _g4InternalFiltering;
 
