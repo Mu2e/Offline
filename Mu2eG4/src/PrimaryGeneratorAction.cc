@@ -112,7 +112,7 @@ namespace mu2e {
                       genpart.properTime(),
                       genpart.momentum());
 
-        parentMapping_->addEntryFromGenParticle(i);
+        parentMapping_->addEntryFromGenParticle(perThreadObjects_->gensHandle, i);
       }
     }
 

@@ -221,7 +221,7 @@ namespace mu2e {
     _userElapsed(0.),
     _standardMu2eDetector((art::ServiceHandle<GeometryService>())->isStandardMu2eDetector()),
     _sensitiveDetectorHelper(pars().SDConfig()),
-    perThreadStore()
+    perThreadStore(pars().generatorModuleLabel())
     {
 
       if((_generatorModuleLabel == art::InputTag()) && multiStagePars_.genInputHits().empty()) {
@@ -447,11 +447,6 @@ namespace mu2e {
   // Create one G4 event and copy its output to the art::event.
   void Mu2eG4::produce(art::Event& event) {
 
-    art::Handle<GenParticleCollection> gensHandle;
-    if(!(_generatorModuleLabel == art::InputTag())) {
-      event.getByLabel(_generatorModuleLabel, gensHandle);
-    }
-
     // StepPointMCCollection of input hits from the previous simulation stage
     HitHandles genInputHits;
     for(const auto& i : multiStagePars_.genInputHits()) {
@@ -463,9 +458,9 @@ namespace mu2e {
     art::EDProductGetter const* simProductGetter = event.productGetter(simPartId);
 
     SimParticleHelper spHelper(multiStagePars_.simParticleNumberOffset(), simPartId, &event, simProductGetter);
-    SimParticlePrimaryHelper parentHelper(&event, simPartId, gensHandle, simProductGetter);
+    SimParticlePrimaryHelper parentHelper(&event, simPartId, simProductGetter);
 
-    perThreadStore.initializeEventInfo(&event, &spHelper, &parentHelper, &genInputHits, _generatorModuleLabel);
+    perThreadStore.initializeEventInfo(&event, &spHelper, &parentHelper, &genInputHits);
 
     // Run G4 for this event and access the completed event.
     BeamOnDoOneArtEvent( event.id().event() );

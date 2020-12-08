@@ -39,13 +39,12 @@ namespace mu2e {
 
   struct Mu2eG4PerThreadStorage
   {
-    Mu2eG4PerThreadStorage() : tvd{"", nullptr} {}
+    explicit Mu2eG4PerThreadStorage(const art::InputTag &generatorModuleLabel);
 
     void initializeEventInfo(art::Event* evt,
                              SimParticleHelper* sim_part_helper,
                              SimParticlePrimaryHelper* sim_part_primary_helper,
-                             HitHandles* gen_input_hits,
-                             art::InputTag gen_module_label);
+                             HitHandles* gen_input_hits);
 
     /////////////////////////////////////////////////////////////
     /////////////////////////////////////////////////////////////
@@ -123,6 +122,8 @@ namespace mu2e {
     void clearData();
 
     /////////////////////////////////////////////////////////////
+    const art::InputTag generatorModuleLabel;
+
     // run-level data members
     art::RunNumber_t currentRunNumber = 0;
 
@@ -134,7 +135,6 @@ namespace mu2e {
     SimParticlePrimaryHelper* simParticlePrimaryHelper = nullptr;
     const HitHandles* genInputHits = nullptr;
     art::Handle<GenParticleCollection> gensHandle;
-    art::InputTag generatorModuleLabel;
 
     std::unique_ptr<StatusG4> statG4{nullptr};
     std::unique_ptr<SimParticleCollection> simPartCollection = nullptr;

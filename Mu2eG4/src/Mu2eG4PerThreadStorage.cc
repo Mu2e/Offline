@@ -11,18 +11,21 @@
 
 namespace mu2e {
 
+  Mu2eG4PerThreadStorage::Mu2eG4PerThreadStorage(const art::InputTag &genLabel)
+    : generatorModuleLabel(genLabel)
+    , tvd{"", nullptr}
+ {}
+
   //----------------------------------------------------------------
   void Mu2eG4PerThreadStorage::
   initializeEventInfo(art::Event* evt,
                       SimParticleHelper* sim_part_helper,
                       SimParticlePrimaryHelper* sim_part_primary_helper,
-                      HitHandles* gen_input_hits,
-                      art::InputTag gen_module_label) {
+                      HitHandles* gen_input_hits) {
     artEvent = evt;
     simParticleHelper = sim_part_helper;
     simParticlePrimaryHelper = sim_part_primary_helper;
     genInputHits = gen_input_hits;
-    generatorModuleLabel = gen_module_label;
 
     if(!(generatorModuleLabel == art::InputTag())) {
       artEvent->getByLabel(generatorModuleLabel, gensHandle);
@@ -90,7 +93,6 @@ namespace mu2e {
     simParticlePrimaryHelper = nullptr;
     genInputHits = nullptr;
     gensHandle.clear();
-    generatorModuleLabel = "";
 
     statG4 = nullptr;
     simPartCollection = nullptr;
