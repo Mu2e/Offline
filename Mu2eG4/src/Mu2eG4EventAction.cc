@@ -77,10 +77,7 @@ namespace mu2e {
     _tvdOutputName(StepInstanceName::timeVD),
     _timer(std::make_unique<G4Timer>()),
 
-    _spHelper(),
-    _parentHelper(),
     _processInfo(phys_process_info),
-    _artEvent(),
     _g4InternalFiltering(conf.G4InteralFiltering())
   {
     auto c = global_c;
@@ -98,10 +95,9 @@ namespace mu2e {
 
   void Mu2eG4EventAction::BeginOfEventAction(const G4Event *evt)
   {
-    setEventData();
-
-    _spHelper = perThreadObjects_->simParticleHelper;
-    _parentHelper = perThreadObjects_->simParticlePrimaryHelper;
+    art::Event *_artEvent = perThreadObjects_->artEvent;
+    SimParticleHelper *_spHelper = perThreadObjects_->simParticleHelper;
+    SimParticlePrimaryHelper *_parentHelper = perThreadObjects_->simParticlePrimaryHelper;
 
     // local Mu2e timer, almost equal to time of G4EventManager::ProcessOneEvent()
     _timer->Start();
@@ -250,11 +246,5 @@ namespace mu2e {
     }//else put NULL ptrs into the stash
 
   }//EndOfEventAction
-
-
-  void Mu2eG4EventAction::setEventData()
-  {
-    _artEvent = perThreadObjects_->artEvent;
-  }
 
 } // end namespace mu2e
