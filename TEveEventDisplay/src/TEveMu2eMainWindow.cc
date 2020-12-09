@@ -15,6 +15,7 @@
 #include<TGLViewer.h>
 #include <TGMsgBox.h>
 #include<TPolyLine3D.h>
+#include "TVirtualX.h"
 // ... libRGL
 #include <TGLViewer.h>
 // ... libEve

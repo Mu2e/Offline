@@ -14,10 +14,6 @@
 #include <iomanip>
 #include <iostream>
 
-#ifndef __CINT__
-#include "boost/bind.hpp"
-#endif
-
 #include "CLHEP/Vector/ThreeVector.h"
 
 #include "cetlib_except/exception.h"
