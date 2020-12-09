@@ -52,7 +52,7 @@ namespace mu2e {
       struct Config {
 	fhicl::Atom<int> diag{ Name("diagLevel"), Comment("Diag level"), 0};
 	fhicl::Atom<int> print{ Name("printLevel"), Comment("Print level"), 0};
-	fhicl::Atom<int> fittype { Name( "FitType"), Comment("Waveform Fit Type"), TrkHitReco::FitType::firmwarepmp};
+	fhicl::Atom<int> fittype { Name( "FitType"), Comment("Waveform Fit Type")};//, TrkHitReco::FitType::firmwarepmp};
 	fhicl::Atom<bool> usecc{ Name("UseCalorimeter"), Comment("Use Calo cluster times to filter" ),false};
 	fhicl::Atom<float>clusterDt{ Name("clusterDt"), Comment("Calo cluster time 1/2 window"),100};
 	fhicl::Atom<float>minE{ Name("minimumEnergy"), Comment("Minimum straw energy deposit (MeV)"),0.0};
