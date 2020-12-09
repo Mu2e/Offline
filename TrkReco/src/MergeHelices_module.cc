@@ -19,7 +19,7 @@
 #include <vector>
 #include <memory>
 #include <iostream>
-#include <set>
+#include <forward_list>
 #include <string>
 
 
@@ -88,13 +88,13 @@ namespace mu2e {
     auto TimeClusterCollectionPID = event.getProductID<TimeClusterCollection>();
     auto TimeClusterCollectionGetter = event.productGetter(TimeClusterCollectionPID);
     // loop over helix products and flatten the helix collections into a single collection
-    std::set<const HelixSeed*> hseeds;
+    std::list<const HelixSeed*> hseeds;
     for (auto const& hf : _hfs) {
       art::InputTag hsct(hf);
       auto hsch = event.getValidHandle<HelixSeedCollection>(hsct);
       auto const& hsc = *hsch;
       for(auto const&  hs : hsc) {
-	hseeds.insert(&hs);
+	hseeds.insert(hseeds.end(),&hs);
       }
     }
 // now loop over all combinations
