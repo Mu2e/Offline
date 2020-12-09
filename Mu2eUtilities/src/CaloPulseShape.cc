@@ -50,7 +50,7 @@ namespace mu2e {
        while(istart>0)                    {if (pulseShape.GetBinContent(istart)<fitlevel) break; --istart;}
        while(iend<pulseShape.GetNbinsX()) {if (pulseShape.GetBinContent(iend)  <fitlevel) break; ++iend;}
 
-       pulseShape.Fit("pol6","q","",pulseShape.GetBinCenter(istart), pulseShape.GetBinCenter(iend));
+       pulseShape.Fit("pol6","q0","",pulseShape.GetBinCenter(istart), pulseShape.GetBinCenter(iend));
        TF1 *funPeak = pulseShape.GetFunction("pol6");
        while (istart < iend) {if (fabs(pulseShape.GetBinContent(istart)-funPeak->Eval(pulseShape.GetBinCenter(istart))) < 0.001) break; ++istart;}
        while (iend > istart) {if (fabs(pulseShape.GetBinContent(iend)-funPeak->Eval(pulseShape.GetBinCenter(iend))) < 0.001) break; --iend;}
