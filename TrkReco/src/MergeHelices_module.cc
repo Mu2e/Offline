@@ -148,7 +148,7 @@ namespace mu2e {
       if(h1.caloCluster().isNonnull() && h2.caloCluster().isNull())
 	retval = first;
       else if( h2.caloCluster().isNonnull() && h1.caloCluster().isNull())
-	retval = first;
+	retval = second;
 	// then compare active StrawHit counts
       else if(nh1 > nh2)
 	retval = first;
