@@ -41,13 +41,13 @@
 
 //Other includes
 #include "CLHEP/Random/JamesRandom.h"
-#include <tbb/atomic.h>
+#include <atomic>
 
 
 using namespace std;
 
 namespace {
-  tbb::atomic<int> thread_counter{0};
+  std::atomic<int> thread_counter{0};
 
   int get_new_thread_index() { return thread_counter++; }
 
