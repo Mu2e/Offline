@@ -108,8 +108,6 @@ namespace mu2e {
     simsRemap = unique_ptr<SimParticleRemapping>( new SimParticleRemapping );
     extMonFNALHits = unique_ptr<ExtMonFNALSimHitCollection>( new ExtMonFNALSimHitCollection );
 
-    //these will NEVER be run in MT mode, so we don't need a mutex and lock
-    //on the _artEvent->getByLabel call, even though the call is not thread-safe
     art::Handle<SimParticleCollection> inputSimHandle;
     if(art::InputTag() != multiStagePars_.inputSimParticles()) {
       _artEvent->getByLabel(multiStagePars_.inputSimParticles(), inputSimHandle);
