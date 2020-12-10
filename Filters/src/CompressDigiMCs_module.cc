@@ -192,6 +192,8 @@ private:
   // This std::set is used to make sure that this doesn't happen
   std::set<art::Ptr<StepPointMC> > _crvStepPointMCsSeen;
   std::map<art::Ptr<StepPointMC>, art::Ptr<StepPointMC> > _crvStepPointMCsMap;
+
+  bool _noCompression;
 };
 
 
@@ -213,7 +215,8 @@ mu2e::CompressDigiMCs::CompressDigiMCs(fhicl::ParameterSet const & pset)
     _crvCoincClusterMCTag(pset.get<art::InputTag>("crvCoincClusterMCTag", "")),
     _primaryParticleTag(pset.get<art::InputTag>("primaryParticleTag", "")),
     _rekeySimParticleCollection(pset.get<bool>("rekeySimParticleCollection", true)),
-    _mcTrajectoryTag(pset.get<art::InputTag>("mcTrajectoryTag", ""))
+  _mcTrajectoryTag(pset.get<art::InputTag>("mcTrajectoryTag", "")),
+  _noCompression(pset.get<bool>("noCompression", false))
 {
   // Call appropriate produces<>() functions here.
   produces<StrawDigiMCCollection>();
@@ -293,7 +296,7 @@ void mu2e::CompressDigiMCs::produce(art::Event & event)
 
     _simParticlesToKeep[i_product_id].clear();
 
-    if (_keepAllGenParticles) {
+    if (_keepAllGenParticles || _noCompression) {
       // Add all the SimParticles that are also GenParticles
       for (const auto& i_oldSimParticle : *oldSimParticles) {
         const cet::map_vector_key& key = i_oldSimParticle.first;
@@ -301,6 +304,9 @@ void mu2e::CompressDigiMCs::produce(art::Event & event)
         if (i_oldSim.genParticle().isNonnull()) {
           keepSimParticle(art::Ptr<SimParticle>(i_product_id, key.asUint(), i_product_getter));
           ++n_gen_particles_to_keep;
+        }
+        if (_noCompression) { // while we're going through the SimParticleCollection, just add everything if we want no compression
+          keepSimParticle(art::Ptr<SimParticle>(i_product_id, key.asUint(), i_product_getter));
         }
       }
     }
@@ -365,13 +371,13 @@ void mu2e::CompressDigiMCs::produce(art::Event & event)
     if (_strawDigiMCIndexMapTag != "") {
       in_index_map = _strawDigiMCIndexMap.checkInMap(full_i);
     }
-    if (_strawDigiMCIndexMapTag == "" || in_index_map) {
+    if (_strawDigiMCIndexMapTag == "" || in_index_map || _noCompression) {
       copyStrawDigiMC(i_strawDigiMC);
     }
   }
 
   // Only check for this if we are not reducing the number of StrawDigiMCs
-  if (_strawDigiMCIndexMapTag == "" && strawDigiMCs.size() != _newStrawDigiMCs->size()) {
+  if ((_strawDigiMCIndexMapTag == "" || _noCompression) && strawDigiMCs.size() != _newStrawDigiMCs->size()) {
     throw cet::exception("CompressDigiMCs") << "The number of StrawDigiMCs before and after compression does not match ("
                                             << strawDigiMCs.size() << " != " << _newStrawDigiMCs->size() << ")" << std::endl;
   }
@@ -390,12 +396,12 @@ void mu2e::CompressDigiMCs::produce(art::Event & event)
       if (_crvDigiMCIndexMapTag != "") {
         in_index_map = _crvDigiMCIndexMap.checkInMap(full_i);
       }
-      if (_crvDigiMCIndexMapTag == "" || in_index_map) {
+      if (_crvDigiMCIndexMapTag == "" || in_index_map || _noCompression) {
         copyCrvDigiMC(i_crvDigiMC);
       }
     }
     // Only check for this if we are not reducing the number of CrvDigiMCs
-    if (_crvDigiMCIndexMapTag == "" && crvDigiMCs.size() != _newCrvDigiMCs->size()) {
+    if ((_crvDigiMCIndexMapTag == "" || _noCompression) && crvDigiMCs.size() != _newCrvDigiMCs->size()) {
       throw cet::exception("CompressDigiMCs") << "The number of CrvDigiMCs before and after compression does not match ("
                                               << crvDigiMCs.size() << " != " << _newCrvDigiMCs->size() << ")" << std::endl;
     }
@@ -465,11 +471,16 @@ void mu2e::CompressDigiMCs::produce(art::Event & event)
         if (stepPointMC.simParticle().id() != oldProdID) {
           continue;
         }
-        const SimParticleSet& alreadyKeptSimParts = simPartsToKeep.second;
-        for (const auto& alreadyKeptSimPart : alreadyKeptSimParts) {
-          if (stepPointMC.simParticle() == alreadyKeptSimPart) {
-            copyStepPointMC(stepPointMC, (*i_tag).instance() );
+        if (!_noCompression) { // if we want to compress
+          const SimParticleSet& alreadyKeptSimParts = simPartsToKeep.second;
+          for (const auto& alreadyKeptSimPart : alreadyKeptSimParts) {
+            if (stepPointMC.simParticle() == alreadyKeptSimPart) {
+              copyStepPointMC(stepPointMC, (*i_tag).instance() );
+            }
           }
+        }
+        else { // if we don't want to compress
+          copyStepPointMC(stepPointMC, (*i_tag).instance() );
         }
       }
     }
@@ -521,7 +532,7 @@ void mu2e::CompressDigiMCs::produce(art::Event & event)
       newsim.genParticle() = art::Ptr<GenParticle>(_newGenParticlesPID, _newGenParticles->size()-1, _newGenParticleGetter);
     }
   }
-  if (_keepAllGenParticles && _newGenParticles->size() != n_gen_particles_to_keep) {
+  if ((_keepAllGenParticles || _noCompression) && _newGenParticles->size() != n_gen_particles_to_keep) {
     throw cet::exception("CompressDigiMCs") << "Number of GenParticles in output collection does not match the number of GenParticles we wanted to keep (" << n_gen_particles_to_keep << " != " << _newGenParticles->size() << ")" << std::endl;
   }
 
