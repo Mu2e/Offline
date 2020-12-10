@@ -18,7 +18,6 @@
 #include "Print/inc/StepPointMCPrinter.hh"
 #include "Print/inc/MCTrajectoryPrinter.hh"
 #include "Print/inc/CaloShowerStepPrinter.hh"
-#include "Print/inc/CaloHitPrinter.hh"
 #include "Print/inc/CaloDigiPrinter.hh"
 #include "Print/inc/CaloRecoDigiPrinter.hh"
 #include "Print/inc/CaloHitPrinter.hh"
@@ -27,6 +26,7 @@
 #include "Print/inc/CrvDigiMCPrinter.hh"
 #include "Print/inc/CrvRecoPulsePrinter.hh"
 #include "Print/inc/CrvCoincidenceClusterPrinter.hh"
+#include "Print/inc/StrawGasStepPrinter.hh"
 #include "Print/inc/StrawDigiPrinter.hh"
 #include "Print/inc/StrawDigiADCWaveformPrinter.hh"
 #include "Print/inc/StrawDigiMCPrinter.hh"
@@ -68,14 +68,12 @@ namespace mu2e {
 	fhicl::Name("mcTrajectoryPrinter") }; 
       fhicl::Table<ProductPrinter::ConfigE> caloShowerStepPrinter { 
 	fhicl::Name("caloShowerStepPrinter") }; 
-      fhicl::Table<ProductPrinter::ConfigE> caloHitPrinter { 
-	fhicl::Name("caloHitPrinter") }; 
       fhicl::Table<ProductPrinter::Config> caloDigiPrinter { 
 	fhicl::Name("caloDigiPrinter") }; 
       fhicl::Table<ProductPrinter::ConfigE> caloRecoDigiPrinter { 
 	fhicl::Name("caloRecoDigiPrinter") }; 
       fhicl::Table<ProductPrinter::ConfigE> CaloHitPrinter { 
-	fhicl::Name("CaloHitPrinter") }; 
+	fhicl::Name("caloHitPrinter") }; 
       fhicl::Table<ProductPrinter::ConfigE> caloClusterPrinter { 
 	fhicl::Name("caloClusterPrinter") }; 
       fhicl::Table<ProductPrinter::Config> crvDigiPrinter { 
@@ -86,6 +84,8 @@ namespace mu2e {
 	fhicl::Name("crvRecoPulsePrinter") }; 
       fhicl::Table<ProductPrinter::Config> crvCoincidenceClusterPrinter { 
 	fhicl::Name("crvCoincidenceClusterPrinter") }; 
+      fhicl::Table<ProductPrinter::Config> strawGasStepPrinter { 
+      	fhicl::Name("strawGasStepPrinter") }; 
       fhicl::Table<ProductPrinter::Config> strawDigiPrinter { 
       	fhicl::Name("strawDigiPrinter") }; 
       fhicl::Table<ProductPrinter::Config> strawDigiADCWaveformPrinter { 
@@ -100,8 +100,6 @@ namespace mu2e {
 	fhicl::Name("bkgClusterPrinter") }; 
       fhicl::Table<ProductPrinter::ConfigE> bkgQualPrinter { 
 	fhicl::Name("bkgQualPrinter") }; 
-
-
       fhicl::Table<ProductPrinter::Config> trackClusterMatchPrinter { 
 	fhicl::Name("trackClusterMatchPrinter") }; 
       fhicl::Table<ProductPrinter::Config> trkCaloIntersectPrinter { 
@@ -154,7 +152,6 @@ mu2e::PrintModule::PrintModule(const Parameters& conf):
   _printers.push_back( make_unique<StepPointMCPrinter>( conf().stepPointMCPrinter() ) );
   _printers.push_back( make_unique<MCTrajectoryPrinter>( conf().mcTrajectoryPrinter() ) );
   _printers.push_back( make_unique<CaloShowerStepPrinter>( conf().caloShowerStepPrinter() ) );
-  _printers.push_back( make_unique<CaloHitPrinter>( conf().caloHitPrinter() ) );
   _printers.push_back( make_unique<CaloDigiPrinter>( conf().caloDigiPrinter() ) );
   _printers.push_back( make_unique<CaloRecoDigiPrinter>( conf().caloRecoDigiPrinter() ) );
   _printers.push_back( make_unique<CaloHitPrinter>( conf().CaloHitPrinter() ) );
@@ -163,6 +160,7 @@ mu2e::PrintModule::PrintModule(const Parameters& conf):
   _printers.push_back( make_unique<CrvDigiMCPrinter>( conf().crvDigiMCPrinter() ) );
   _printers.push_back( make_unique<CrvRecoPulsePrinter>( conf().crvRecoPulsePrinter() ) );
   _printers.push_back( make_unique<CrvCoincidenceClusterPrinter>( conf().crvCoincidenceClusterPrinter() ) );
+  _printers.push_back( make_unique<StrawGasStepPrinter>( conf().strawGasStepPrinter() ) );
   _printers.push_back( make_unique<StrawDigiPrinter>( conf().strawDigiPrinter() ) );
   _printers.push_back( make_unique<StrawDigiADCWaveformPrinter>( conf().strawDigiADCWaveformPrinter() ) );
   _printers.push_back( make_unique<StrawDigiMCPrinter>( conf().strawDigiMCPrinter() ) );
