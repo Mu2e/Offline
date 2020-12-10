@@ -58,7 +58,7 @@ void MisalignTracker(double twist, double skew, double squeeze, double sigalpha,
     double dy = myrand.Gaus(planez*yskew/trackerlen,sigpos);
     double dz = myrand.Gaus(planez*rsqueeze/trackerlen,sigpos);
 
-    os << iplane << ", " 
+    os << iplane << ", " << iplane << "_0_0, "
       << dx << ", "
       << dy << ", "
       << dz << ", "
@@ -67,12 +67,4 @@ void MisalignTracker(double twist, double skew, double squeeze, double sigalpha,
       << dalphaz << endl;
   }
 
-   for(unsigned ibuf=0;ibuf<3;ibuf++)
-    os << "#" << endl;
- // dummy panel alignment for now
-  os << "TABLE TrkAlignPanel" << endl;
-  for(unsigned ipanel=0;ipanel<6*NPlanes; ++ipanel){
-    os << ipanel << ", "
-    << "0.0, 0.0, 0.0, 0.0, 0.0, 0.0" << endl;
-  }
 }

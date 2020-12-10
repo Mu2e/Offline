@@ -165,7 +165,7 @@ namespace mu2e {
       tshinfo._rdrift = ihit->driftRadius();
       tshinfo._rdrifterr = ihit->radialErr();
 
-      double rstraw = straw.getRadius();
+      double rstraw = tracker.strawOuterRadius();
       tshinfo._dx = std::sqrt(std::max(0.0,rstraw*rstraw-tshinfo._rdrift*tshinfo._rdrift));
 	
       tshinfo._trklen = ihit->trkLen();

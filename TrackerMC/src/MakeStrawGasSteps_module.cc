@@ -117,6 +117,7 @@ namespace mu2e {
       // cache the BField direction at the tracker center
       Hep3Vector _bdir;
       float _bnom; // BField in units of (MeV/c)/mm
+      double _rstraw; // straw radius cache
       ProditionsHandle<TrackerStatus> _trackerStatus_h; // tracker element status
       // diagnostic histograms
       TH1F *_hendrad, *_hphi;
@@ -194,8 +195,8 @@ namespace mu2e {
     _bnom = bnom.mag()*BField::mmTeslaToMeVc;
     // pre-compute momentum thresholds for straight, arc, and curler
     const Tracker& tracker = *GeomHandle<Tracker>();
-    const Straw& straw = tracker.getStraw(StrawId(0,0,0)); // any straw is good enough
-    float pstraw = _bnom*straw.innerRadius();// transverse momentum with same radius as straw
+    _rstraw = tracker.strawProperties()._strawInnerRadius;
+    float pstraw = _bnom*_rstraw;// transverse momentum with same radius as straw
     _curlmom = _curlfac*pstraw;
     _linemom = _linefac*pstraw;
   }
@@ -278,7 +279,7 @@ namespace mu2e {
 
 	  // check if end is inside physical straw
 	  const Straw& straw = tracker.getStraw(sgs.strawId());
-	  static double r2 = straw.innerRadius()*straw.innerRadius();
+	  static double r2 = tracker.strawProperties()._strawInnerRadius * tracker.strawProperties()._strawInnerRadius;
 	  Hep3Vector hend = Geom::Hep3Vec(sgs.endPosition());
 	  double rd2 = (hend-straw.getMidPoint()).perpPart(straw.getDirection()).mag2();
 	  if(rd2 - r2 > 1e-5 ) cout << "End outside straw, radius " << sqrt(rd2) << endl;
@@ -344,7 +345,7 @@ namespace mu2e {
     // determine the width from the sigitta or curl radius
     auto pdir = first->momentum().unit();
     auto pperp = pdir.perp(_bdir);
-    float bendrms = 0.5*std::min(straw.innerRadius(),mom*pperp/_bnom); // bend radius spread.  0.5 factor givs RMS of a circle
+    float bendrms = 0.5*std::min(_rstraw,mom*pperp/_bnom); // bend radius spread.  0.5 factor givs RMS of a circle
     // only sigitta perp to the wire counts
     float sint = (_bdir.cross(pdir).cross(straw.getDirection())).mag();
     static const float prms(1.0/(12.0*sqrt(5.0))); // RMS for a parabola.  This includes a factor 1/8 for the sagitta calculation too
@@ -367,7 +368,7 @@ namespace mu2e {
 	Straw const& straw = tracker.getStraw(sid);
 	double wpos = fabs((step.position()-straw.getMidPoint()).dot(straw.getDirection()));
 	//skip steps that occur in the deadened region near the end of each wire
-	if( wpos <  straw.activeHalfLength()){
+	if( wpos <  straw.halfLength()){
 	  cet::map_vector_key tid = step.simParticle().get()->id();
 	  // create key
 	  SSPair stpair(sid,tid);
@@ -460,7 +461,7 @@ namespace mu2e {
   }
 
   XYZVec MakeStrawGasSteps::endPosition(SPMCP const& last, Straw const& straw, float charge,StrawGasStep::StepType& stype) {
-    static const double r2 = straw.innerRadius()*straw.innerRadius();
+    static const double r2 = _rstraw*_rstraw;
     XYZVec retval;
     // null charge has no propagation.
     if(charge == 0.0 || stype.shape()==StrawGasStep::StepType::point){
