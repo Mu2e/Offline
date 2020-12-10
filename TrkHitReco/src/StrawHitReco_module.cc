@@ -312,7 +312,7 @@ namespace mu2e {
 	ch.addIndex(isd); // reference the digi; this allows MC truth matching to work
 	// crude initial estimate of the transverse error
 	static const float invsqrt12 = 1.0/sqrt(12.0);
-	ch._tres = straw.getRadius()*invsqrt12;
+	ch._tres = tt.strawOuterRadius()*invsqrt12;
 	// set flags
 	ch._mask = _mask;
 	ch._flag = flag;

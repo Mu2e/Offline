@@ -246,7 +246,6 @@ void DataInterface::fillGeometry()
       double z = p.z();
       double theta = d.theta();
       double phi = d.phi();
-//      double r = s.getRadius();
       double l = s.halfLength();
       int idStraw =  s.id().getStraw();
       int idLayer =  s.id().getLayer();

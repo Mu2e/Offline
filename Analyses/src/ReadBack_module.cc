@@ -762,14 +762,11 @@ namespace mu2e {
                                     art::Handle<StepPointMCCollection>& hits ){
 
     int count(0);
-    for ( auto id : straw.nearestNeighboursById() ){
-      for ( auto const& step : *hits ){
-        if ( step.strawId() == id ){
-          ++count;
-          break;
-        }
-      }
 
+    for ( auto const& step : *hits ){
+      if ( step.strawId().nearestNeighbor(straw.id()) ){
+	++count;
+      }
     }
     return count;
   }  // end countHitNeighbours

@@ -12,11 +12,12 @@ namespace mu2e {
     // levels of StrawId to mask.  Note that 'straw' and 'panel' refer to ALL straws and panels with that value (ie
     // straw 18 of every panel in the detector.  uniquestraw and uniquepanel refer to individual straws and panels
     public:
-    enum Level{unknown=-1,plane,panel,straw,uniquestraw,uniquepanel};
+//    enum Level{unknown=-1,tracker,plane,panel,straw,uniquestraw,uniquepanel};
+    enum Level{tracker,plane,panel,straw,uniquestraw,uniquepanel};
     // compute the mask associated with a given level
     static uint16_t levelMask(Level fval);
     // default constructor matches nothing
-    StrawIdMask() : _level(unknown), _mask(0) {}  // default: will match NOTHING
+    StrawIdMask() : _level(tracker), _mask(0) {}  // default: will match Everything
     // specify which levels to compare on construction.
     StrawIdMask(Level lev) : _level(lev), _mask(levelMask(_level)) {}
     // identity is obvious

@@ -131,8 +131,8 @@ namespace mu2e {
     const ComboHit* ch    = &StrawHit->comboHit();
     const Straw*    straw = &StrawHit->straw();
 
-    const CLHEP::Hep3Vector* v1 = &straw->getMidPoint();
-    HepPoint p1(v1->x(),v1->y(),v1->z());
+    CLHEP::Hep3Vector v1 = straw->getMidPoint();
+    HepPoint p1(v1.x(),v1.y(),v1.z());
 
     int hitIndex = ch-&_chColl->at(0);
     

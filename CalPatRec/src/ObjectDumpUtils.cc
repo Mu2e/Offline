@@ -320,8 +320,8 @@ void ObjectDumpUtils::printKalRep(const KalRep* Krep, const char* Opt, const cha
       double mcdoca = -99.0;
 
       if (step) {
-	const Hep3Vector* v1 = &straw->getMidPoint();
-	HepPoint p1(v1->x(),v1->y(),v1->z());
+	auto v1 = straw->getMidPoint();
+	HepPoint p1(v1.x(),v1.y(),v1.z());
 
 	Hep3Vector v2 = step->position();
 	HepPoint    p2(v2.x(),v2.y(),v2.z());

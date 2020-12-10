@@ -41,6 +41,7 @@ namespace mu2e {
       constexpr static uint16_t _nupanels = _npanels * _nplanes; // number of unique panels
       constexpr static uint16_t _nustraws = _nupanels* _nstraws; // number of unique straws
       constexpr static uint16_t _ntotalfaces = StrawId::_nfaces*StrawId::_nplanes;
+      constexpr static uint16_t _maxval = ((_nplanes -1) << _planesft) + ((_npanels -1) << _panelsft) + _nstraws; // maximum Id as uint16 value
 
       // One more than the largest legal StrawId; not a fully functional end iterator.
       constexpr static uint16_t _end = ((StrawId::_nplanes -1) << StrawId::_planesft) +
