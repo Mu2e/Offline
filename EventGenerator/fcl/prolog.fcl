@@ -128,6 +128,11 @@ StoppedMuonXRayGammaRayGun: {
     physics        : { }
 }
 
+
+CaloTBGun : {
+    module_type    : CaloTBGun
+}
+
 # Save state of random numbers at the start of each event
 # the module is defined in art/Framework/Modules
 
@@ -335,8 +340,11 @@ EventGenerator : { @table::EventGenerator
                 physicsVerbosityLevel : 0
             }
             muonStops                 : { @table::muonStops  }
+	}
 
-        }
+        CaloTBGun : {
+	    module_type    : CaloTBGun
+	}
     }
 }
 

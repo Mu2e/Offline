@@ -25,9 +25,9 @@
 
 #include "MCDataProducts/inc/StrawDigiMCCollection.hh"
 #include "MCDataProducts/inc/CrvDigiMCCollection.hh"
-#include "MCDataProducts/inc/CaloShowerStepCollection.hh"
-#include "MCDataProducts/inc/CaloShowerSimCollection.hh"
-#include "MCDataProducts/inc/CaloShowerStepROCollection.hh"
+#include "MCDataProducts/inc/CaloShowerStep.hh"
+#include "MCDataProducts/inc/CaloShowerSim.hh"
+#include "MCDataProducts/inc/CaloShowerRO.hh"
 
 #include "MCDataProducts/inc/StepPointMCCollection.hh"
 #include "MCDataProducts/inc/SimParticleCollection.hh"
@@ -62,24 +62,24 @@ public:
   // Other functions
   art::Ptr<mu2e::CaloShowerStep> copyCaloShowerStep(const mu2e::CaloShowerStep& old_calo_shower_step);
   void copyCaloShowerSim(const mu2e::CaloShowerSim& old_calo_shower_sim, const CaloShowerStepRemap& remap);
-  void copyCaloShowerStepRO(const mu2e::CaloShowerStepRO& old_calo_shower_step_ro, const CaloShowerStepRemap& remap);
+  void copyCaloShowerRO(const mu2e::CaloShowerRO& old_calo_shower_step_ro, const CaloShowerStepRemap& remap);
 
 private:
 
   // art tags for the input collections
   std::vector<art::InputTag> _caloShowerStepTags;
   art::InputTag _caloShowerSimTag;
-  art::InputTag _caloShowerStepROTag;
+  art::InputTag _caloShowerROTag;
 
   // handles to the old collections
   art::Handle<CaloShowerStepCollection> _caloShowerStepsHandle;
   art::Handle<CaloShowerSimCollection> _caloShowerSimsHandle;
-  art::Handle<CaloShowerStepROCollection> _caloShowerStepROsHandle;
+  art::Handle<CaloShowerROCollection> _caloShowerROsHandle;
 
   // unique_ptrs to the new output collections
   std::unique_ptr<CaloShowerStepCollection> _newCaloShowerSteps;
   std::unique_ptr<CaloShowerSimCollection> _newCaloShowerSims;
-  std::unique_ptr<CaloShowerStepROCollection> _newCaloShowerStepROs;
+  std::unique_ptr<CaloShowerROCollection> _newCaloShowerROs;
 
   // for StepPointMCs, SimParticles and GenParticles we also need reference their new locations with art::Ptrs and so need their ProductIDs and Getters
   art::ProductID _newCaloShowerStepsPID;
@@ -92,12 +92,12 @@ mu2e::FixCaloShowerStepPtrs::FixCaloShowerStepPtrs(fhicl::ParameterSet const & p
   : art::EDProducer{pset},
     _caloShowerStepTags(pset.get<std::vector<art::InputTag> >("caloShowerStepTags")),
     _caloShowerSimTag(pset.get<art::InputTag>("caloShowerSimTag")),
-    _caloShowerStepROTag(pset.get<art::InputTag>("caloShowerStepROTag"))
+    _caloShowerROTag(pset.get<art::InputTag>("caloShowerROTag"))
 {
   // Call appropriate produces<>() functions here.
   produces<CaloShowerStepCollection>();
   produces<CaloShowerSimCollection>();
-  produces<CaloShowerStepROCollection>();
+  produces<CaloShowerROCollection>();
 }
 
 void mu2e::FixCaloShowerStepPtrs::produce(art::Event & event)
@@ -147,16 +147,16 @@ void mu2e::FixCaloShowerStepPtrs::produce(art::Event & event)
     copyCaloShowerSim(i_caloShowerSim, caloShowerStepRemap);
   }
 
-  _newCaloShowerStepROs = std::unique_ptr<CaloShowerStepROCollection>(new CaloShowerStepROCollection);
-  event.getByLabel(_caloShowerStepROTag, _caloShowerStepROsHandle);
-  const auto& caloShowerStepROs = *_caloShowerStepROsHandle;
-  for (const auto& i_caloShowerStepRO : caloShowerStepROs) {
-    copyCaloShowerStepRO(i_caloShowerStepRO, caloShowerStepRemap);
+  _newCaloShowerROs = std::unique_ptr<CaloShowerROCollection>(new CaloShowerROCollection);
+  event.getByLabel(_caloShowerROTag, _caloShowerROsHandle);
+  const auto& CaloShowerROs = *_caloShowerROsHandle;
+  for (const auto& i_CaloShowerRO : CaloShowerROs) {
+    copyCaloShowerRO(i_CaloShowerRO, caloShowerStepRemap);
   }
     
   event.put(std::move(_newCaloShowerSteps));
   event.put(std::move(_newCaloShowerSims));
-  event.put(std::move(_newCaloShowerStepROs));
+  event.put(std::move(_newCaloShowerROs));
 }
 
 art::Ptr<mu2e::CaloShowerStep> mu2e::FixCaloShowerStepPtrs::copyCaloShowerStep(const mu2e::CaloShowerStep& old_calo_shower_step) {
@@ -192,14 +192,14 @@ void mu2e::FixCaloShowerStepPtrs::copyCaloShowerSim(const mu2e::CaloShowerSim& o
   _newCaloShowerSims->push_back(new_calo_shower_sim);
 }
 
-void mu2e::FixCaloShowerStepPtrs::copyCaloShowerStepRO(const mu2e::CaloShowerStepRO& old_calo_shower_step_ro, const CaloShowerStepRemap& remap) {
+void mu2e::FixCaloShowerStepPtrs::copyCaloShowerRO(const mu2e::CaloShowerRO& old_calo_shower_step_ro, const CaloShowerStepRemap& remap) {
 
   const auto& caloShowerStepPtr = old_calo_shower_step_ro.caloShowerStep();
-  CaloShowerStepRO new_calo_shower_step_ro = old_calo_shower_step_ro;
+  CaloShowerRO new_calo_shower_step_ro = old_calo_shower_step_ro;
 
   new_calo_shower_step_ro.setCaloShowerStep(remap.at(caloShowerStepPtr));
 
-  _newCaloShowerStepROs->push_back(new_calo_shower_step_ro);
+  _newCaloShowerROs->push_back(new_calo_shower_step_ro);
 }
 
 DEFINE_ART_MODULE(mu2e::FixCaloShowerStepPtrs)

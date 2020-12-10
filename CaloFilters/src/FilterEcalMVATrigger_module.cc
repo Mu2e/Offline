@@ -23,7 +23,7 @@
 #include "GeometryService/inc/GeomHandle.hh"
 #include "GeometryService/inc/GeometryService.hh"
 
-#include "RecoDataProducts/inc/CaloTrigSeedCollection.hh"
+#include "RecoDataProducts/inc/CaloTrigSeed.hh"
 #include "RecoDataProducts/inc/TriggerInfo.hh"
 
 #include "ConfigTools/inc/ConfigFileLookupPolicy.hh"
@@ -183,7 +183,7 @@ namespace mu2e {
     }
     size_t trig_ind(0);
     for (CaloTrigSeedCollection::const_iterator seedIt = caloTrigSeeds.begin(); seedIt != caloTrigSeeds.end(); ++seedIt){
-      disk= cal.crystal((int)seedIt->crystalid()).diskId();
+      disk= cal.crystal((int)seedIt->crystalid()).diskID();
       _fdiskpeak   = (float) disk;
       _Epeak   = seedIt->epeak();
       _tpeak   = seedIt->tpeak()+_TOFF;

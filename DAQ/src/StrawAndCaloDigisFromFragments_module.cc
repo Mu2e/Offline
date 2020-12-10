@@ -16,7 +16,7 @@
 #include "mu2e-artdaq-core/Overlays/TrackerFragment.hh"
 
 #include "DataProducts/inc/TrkTypes.hh"
-#include "RecoDataProducts/inc/CaloDigiCollection.hh"
+#include "RecoDataProducts/inc/CaloDigi.hh"
 #include "RecoDataProducts/inc/StrawDigiCollection.hh"
 #include <artdaq-core/Data/Fragment.hh>
 

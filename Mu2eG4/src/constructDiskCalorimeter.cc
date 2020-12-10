@@ -597,8 +597,7 @@ namespace mu2e {
 
 
        G4VPhysicalVolume* pv;
-
-       if (cal.caloInfo().nROPerCrystal()==0) return nullptr;
+       if (cal.caloInfo().getInt("nSiPMPerCrystal")==0) return nullptr;
 
 
        //-------------------------------------------------------------------------------------------

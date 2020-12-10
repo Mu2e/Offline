@@ -32,7 +32,7 @@
 #include "RecoDataProducts/inc/KalSeed.hh"
 #include "RecoDataProducts/inc/KalRepCollection.hh"
 #include "RecoDataProducts/inc/KalRepPtrCollection.hh"
-#include "RecoDataProducts/inc/CaloClusterCollection.hh"
+#include "RecoDataProducts/inc/CaloCluster.hh"
 #include "TrkReco/inc/KalFitData.hh"
 #include "TrkPatRec/inc/KalFinalFit_types.hh"
 #include "TrkReco/inc/DoubletAmbigResolver.hh"

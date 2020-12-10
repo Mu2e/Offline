@@ -18,7 +18,7 @@ Ensemble : {
           "keep mu2e::CrvCoincidenceClusters_*_*_*",
           "keep mu2e::CrvRecoPulses_*_*_*",
           "keep mu2e::CaloDigis_*_*_*",
-          "keep mu2e::CaloCrystalHits_*_*_*",
+          "keep mu2e::CaloHits_*_*_*",
 	  "keep mu2e::CaloClusters_*_*_*",
           "keep mu2e::HelixSeeds_*_*_*",
           "keep mu2e::EventWindowMarker_*_*_*",
@@ -27,7 +27,7 @@ Ensemble : {
 	  "keep mu2e::StrawDigis_*_*_*",
 	  "keep mu2e::RecoCount_*_*_*",
 	  "keep mu2e::IndexMap_*_*_*",
-	  "keep mu2e::CaloCrystalHitart::Ptrmu2e::CaloCrystalHitart::Ptrstd::map_*_*_*",
+	  "keep mu2e::CaloHitart::Ptrmu2e::CaloHitart::Ptrstd::map_*_*_*",
 	  "keep mu2e::CrvDigis_*_*_*"]
 }
 

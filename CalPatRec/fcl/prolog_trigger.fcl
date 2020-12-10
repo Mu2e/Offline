@@ -65,7 +65,7 @@ CprTrigger : { @table::CprTrigger
 	    fetchStrawHitPositions        : 0
 	    fetchComboHits                : 0
 
-	    caloDigiCollectionTag         : CaloDigiFromShower
+	    caloDigiCollectionTag         : CaloDigiMaker
 	    strawDigiCollection           : makeSD
 	    strawHitCollectionTag         : TTmakeSH
 	    strawHitPositionCollectionTag : TTmakeSH

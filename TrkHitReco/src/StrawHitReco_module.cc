@@ -31,7 +31,7 @@
 
 #include "RecoDataProducts/inc/ProtonBunchTime.hh"
 #include "DataProducts/inc/StrawEnd.hh"
-#include "RecoDataProducts/inc/CaloClusterCollection.hh"
+#include "RecoDataProducts/inc/CaloCluster.hh"
 #include "RecoDataProducts/inc/StrawDigi.hh"
 #include "RecoDataProducts/inc/ComboHit.hh"
 #include "RecoDataProducts/inc/StrawHit.hh"

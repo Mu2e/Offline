@@ -15,9 +15,7 @@
 #include "ConditionsService/inc/ConditionsHandle.hh"
 #include "ConditionsService/inc/CalorimeterCalibrations.hh"
 #include "RecoDataProducts/inc/CaloDigi.hh"
-#include "RecoDataProducts/inc/CaloDigiCollection.hh"
 #include "RecoDataProducts/inc/CaloRecoDigi.hh"
-#include "RecoDataProducts/inc/CaloRecoDigiCollection.hh"
 #include "RecoDataProducts/inc/ProtonBunchTime.hh"
 
 #include <iostream>
@@ -94,7 +92,7 @@ namespace mu2e {
 
 		for (const auto& caloDigi : caloDigis)
 		{
- 			int    roId     = caloDigi.roId();
+ 			int    roId     = caloDigi.SiPMID();
 			double t0       = caloDigi.t0();
 				// TODO:+ calorimeterCalibrations->timeOffset(roId);
 			double adc2MeV  = calorimeterCalibrations->Peak2MeV(roId);
@@ -112,7 +110,7 @@ namespace mu2e {
 			    std::cout<<"[FastRecoDigiFromDigi::extractAmplitude] extracted Digi with roId =  "<<roId<<"  eDep = "<<eDep<<" time = " <<time<<std::endl;
 			  }
 
-			recoCaloHits.emplace_back(CaloRecoDigi(roId, caloDigiPtr, eDep,eDepErr,time,timeErr,0,1,false));
+			recoCaloHits.emplace_back(CaloRecoDigi(caloDigiPtr, eDep,eDepErr,time,timeErr,0,1,false));
 			
 		}
 	}

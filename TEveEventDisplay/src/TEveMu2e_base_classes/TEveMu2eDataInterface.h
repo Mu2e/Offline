@@ -45,11 +45,11 @@ namespace mu2e{
       TEveElementList *fExtTrackList2D;
       TEveElementList *fExtTrackList3D;
       
-      std::vector<double> getTimeRange(bool firstloop, const ComboHitCollection *chcol, const CrvRecoPulseCollection *crvcoincol, const CaloClusterCollection *clustercol, const CaloCrystalHitCollection *cryHitcol);
+      std::vector<double> getTimeRange(bool firstloop, const ComboHitCollection *chcol, const CrvRecoPulseCollection *crvcoincol, const CaloClusterCollection *clustercol, const CaloHitCollection *cryHitcol);
       void AddCRVInfo(bool firstloop, const CrvRecoPulseCollection *crvcoincol, double time, bool Redraw, bool show2D, bool accumulate);
       std::vector<double> AddComboHits(bool firstloop, const ComboHitCollection *chcol, TEveMu2e2DProjection *tracker2Dproj, double time, bool Redraw, bool show2D, double min_energy, double max_energy, bool accumulate);
       std::vector<double> AddCaloClusters(bool firstloop, const CaloClusterCollection *clustercol,TEveMu2e2DProjection *calo2Dproj,  double time, bool Redraw, bool show2D, double min_energy, double max_energy, bool accumulate);
-      void AddCrystalHits(bool firstloop, const CaloCrystalHitCollection *cryHitcol, TEveMu2e2DProjection *calo2Dproj,  double time, bool Redraw, bool show2D, bool accumulate);
+      void AddCrystalHits(bool firstloop, const CaloHitCollection *cryHitcol, TEveMu2e2DProjection *calo2Dproj,  double time, bool Redraw, bool show2D, bool accumulate);
       void AddCosmicTrack(bool firstloop, const CosmicTrackSeedCollection *cosmiccol, TEveMu2e2DProjection *tracker2Dproj, double time, bool Redraw, bool show2D, bool accumulate);
       void AddHelixPieceWise(bool firstloop, const KalSeedCollection *seedcol, TEveMu2e2DProjection *tracker2Dproj, double time, bool Redraw, bool show2D, bool accumulate);
       void AddTrackExitTrajectories(bool firstloop, const TrkExtTrajCollection *trkextcol, double time, bool Redraw, bool show2D, bool accumulate);
