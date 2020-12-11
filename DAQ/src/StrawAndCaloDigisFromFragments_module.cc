@@ -18,6 +18,8 @@
 #include "DataProducts/inc/TrkTypes.hh"
 #include "RecoDataProducts/inc/CaloDigi.hh"
 #include "RecoDataProducts/inc/StrawDigiCollection.hh"
+#include "RecoDataProducts/inc/ProtonBunchTime.hh"
+
 #include <artdaq-core/Data/Fragment.hh>
 
 #include <iostream>
@@ -91,6 +93,8 @@ art::StrawAndCaloDigisFromFragments::StrawAndCaloDigisFromFragments(
   if (parseCAL_) {
     produces<mu2e::CaloDigiCollection>();
   }
+  //FIXME!
+  produces<mu2e::ProtonBunchTime>();
 }
 
 // ----------------------------------------------------------------------
@@ -104,6 +108,12 @@ void art::StrawAndCaloDigisFromFragments::produce(Event& event) {
 
   // Collection of CaloDigis for the event
   std::unique_ptr<mu2e::CaloDigiCollection> calo_digis(new mu2e::CaloDigiCollection);
+
+  //FIXME! this is temporary
+  std::unique_ptr<mu2e::ProtonBunchTime> pbt(new mu2e::ProtonBunchTime);
+  pbt->pbtime_ = 0;
+  pbt->pbterr_ = 0;
+  event.put(std::move(pbt));
 
   art::Handle<artdaq::Fragments> trkFragments, calFragments;
   size_t numTrkFrags(0), numCalFrags(0);
@@ -452,7 +462,8 @@ void art::StrawAndCaloDigisFromFragments::analyze_calorimeter_(
         uint16_t apdID = hits[hitIdx].first.DIRACB >> 12;
 
         // FIXME: Can we match vector types here?
-        std::vector<int> caloHits(hits[hitIdx].second.size());
+        std::vector<int> caloHits;
+	caloHits.reserve(hits[hitIdx].second.size());
         std::copy(hits[hitIdx].second.begin(), hits[hitIdx].second.end(), std::back_inserter(caloHits));
 
         calo_digis->emplace_back((crystalID * 2 + apdID), hits[hitIdx].first.Time, caloHits,

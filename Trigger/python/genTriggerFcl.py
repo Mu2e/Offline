@@ -3,9 +3,9 @@
 #           HOW RUN THE TRIGGER-FCL GENERATOR SCRIPT                           #
 #------------------------------------------------------------------------------#
 # 
-# Trigger/python/genTriggerFcl.py -c Trigger/data/allTrig.config 
+# Trigger/python/genTriggerFcl.py -c Trigger/data/allPaths.config 
 # or just
-# Trigger/python/genTriggerFcl.py -c allTrig
+# Trigger/python/genTriggerFcl.py -c allPaths
 # add "-o" to create online main fcl
 #
 
@@ -26,18 +26,22 @@ from codecs import open
 
 def appendEpilog(trig_path, projectDir, verbose, doWrite, sourceFiles, targetFiles):
 
-    trk_filters      = ['EventPrescale','SDCountFilter','TCFilter', 'HSFilter', 'TSFilter','Prescale']
-    helix_filters    = ['EventPrescale','SDCountFilter','TCFilter', 'HSFilter', 'Prescale']
-    tc_filters       = ['EventPrescale','SDCountFilter','TCFilter', 'Prescale']
-    calo_filters     = ['EventPrescale','CDCountFilter','Filter'  , 'Prescale']
+    trk_filters      = ['EventPrescale','SDCountFilter','TCFilter', 'HSFilter', 'TSFilter']
+    helix_filters    = ['EventPrescale','SDCountFilter','TCFilter', 'HSFilter']
+    tc_filters       = ['EventPrescale','SDCountFilter','TCFilter']
+    calo_filters     = ['EventPrescale','CDCountFilter','Filter'  ]
     unbiased_filters = ['Prescale']
-    minbias_filters  = ['EventPrescale','Filter'       , 'Prescale']
-
+    minbias_filters  = ['EventPrescale','Filter'       ]
+    cst_filters      = ['EventPrescale','SDCountFilter','TCFilter', 'TSFilter']
+    
     filters     = []
 
     #understand which kind of trigger path are we dealing with
     if "Seed" in trig_path:
-        filters = trk_filters
+        if "cst" in trig_path:
+            filters = cst_filters
+        else:
+            filters = trk_filters
     elif "Helix" in trig_path:
         filters = helix_filters
     elif "TimeCluster" in trig_path:
@@ -111,7 +115,7 @@ def appendEpilog(trig_path, projectDir, verbose, doWrite, sourceFiles, targetFil
 # returns the list of files input and output, for use in scons
 #
 
-def generate(configFileText="allTrig", online=False, verbose=True, doWrite=True):
+def generate(configFileText="allPaths", online=False, verbose=True, doWrite=True):
 
     if verbose :
         print("doWrite = {}".format(doWrite))
@@ -128,7 +132,7 @@ def generate(configFileText="allTrig", online=False, verbose=True, doWrite=True)
     sourceFiles = []
     targetFiles = []
 
-    # allow "Trigger/data/allTrig.config" or "allTrig.config" or "allTrig"
+    # allow "Trigger/data/allPaths.config" or "allPaths.config" or "allPaths"
     tempArr = configFileText.split("/")
     if len(tempArr) > 1:
         temp = "/".join (tempArr[:-1])
@@ -147,7 +151,8 @@ def generate(configFileText="allTrig", online=False, verbose=True, doWrite=True)
     trig_prolog_files = [
         'Trigger/fcl/templates.fcl',
         'TrkFilters/fcl/prolog_trigger.fcl',
-        'CaloFilters/fcl/prolog_trigger.fcl'
+        'CaloFilters/fcl/prolog_trigger.fcl',
+        'CosmicReco/fcl/prolog_trigger.fcl'
         ]
     for fn in trig_prolog_files:
         sourceFiles.append(fn)
@@ -187,7 +192,7 @@ def generate(configFileText="allTrig", online=False, verbose=True, doWrite=True)
     path_list = ""
     trig_list = ""
 
-    mainEpilogFileName   = projectDir + "/" + "allPaths.fcl"
+    mainEpilogFileName   = projectDir + "/" + "{}.fcl".format(configFileBaseName)
     targetFiles.append(mainEpilogFileName)
     if verbose :
         print("Creating {}".format(mainEpilogFileName))
@@ -271,7 +276,7 @@ def generate(configFileText="allTrig", online=False, verbose=True, doWrite=True)
 
     # include the main epilog file, which includes the others, in main fcl
     if doWrite :
-        mainFclFile.write("\n#include \""+projectDir+"/allPaths.fcl\"\n")
+        mainFclFile.write("\n#include \""+projectDir+"/{}.fcl\"\n".format(configFileBaseName))
         mainFclFile.close()
 
     if verbose :

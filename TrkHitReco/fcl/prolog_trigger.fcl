@@ -10,11 +10,14 @@ TTPBTFSD : {
 
 TTmakeSH : {
     module_type             : StrawHitReco
+    FitType                 : 5
     FilterHits              : true
     WriteStrawHitCollection : false
     ProtonBunchTimeTag      : "EWMProducer"
     StrawDigiCollectionTag  : "makeSD"
     CaloClusterCollectionTag  : "CaloClusterFast"
+    StrawDigiADCWaveformCollectionTag : "notUsed"
+    ProtonBunchTimeTag                : "makeSD"
 }
 # combine hits in a panel
 TTmakePH : {
@@ -25,6 +28,7 @@ TTmakePH : {
 }
 TTmakeSHUCC : {
     module_type             : StrawHitReco
+    FitType                 : 5
     UseCalorimeter          : true
     FilterHits              : true
     WriteStrawHitCollection : false
