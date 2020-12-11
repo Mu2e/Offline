@@ -174,7 +174,7 @@ CaloFilters : { @table::CaloFilters
 	    triggerPath        : "CaloMVACE"	    	    
 	}
 
-	caloMVAMixedCECDCountFilter     : {
+	caloMVAMixedCDCountFilter     : {
 	    module_type : DigiFilter
 	    strawDigiCollection : notUSed
 	    caloDigiCollection  : CaloDigiMaker
@@ -245,7 +245,7 @@ CaloFilters : { @table::CaloFilters
 	    triggerFlag       : ["PrescaleGoodEvents"]	    
 	}
 	
-	caloMixedEventPrescale : {
+	caloMVAMixedEventPrescale : {
 	    module_type : PrescaleEvent
 	    nPrescale         : 1
 #	    nPrescale         : @local::caloMixed_evt_sf
@@ -253,7 +253,7 @@ CaloFilters : { @table::CaloFilters
 	    triggerFlag   : ["PrescaleRandom"]	    
 	}
 	
-	caloMixedPrescale : {
+	caloMVAMixedPrescale : {
 	    module_type : PrescaleEvent
 	    nPrescale         : 1
 #	    nPrescale         : @local::caloMixed_sf
