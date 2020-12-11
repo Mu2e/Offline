@@ -1289,21 +1289,21 @@ namespace mu2e {
 	}else{//case 2: negative cosmic muon
 	  indexMother = 20;	  
 	}
-      }else if (pdgM == -13){//case 3: positive muon
+      }else if (pdgM == PDGCode::mu_plus){//case 3: positive muon
 	indexMother = 30;
-      }else if (pdgM == 22){//case 4: photon
+      }else if (pdgM == PDGCode::gamma){//case 4: photon
 	indexMother = 50;
-      }else if (pdgM == 2212){//case 5: proton
+      }else if (pdgM == PDGCode::proton){//case 5: proton
 	indexMother = 60;
-      }else if (pdgM == 2112){ //case 6: neutron
+      }else if (pdgM == PDGCode::n0){ //case 6: neutron
 	indexMother = 70;
-      }else if (pdgM == -211){ //case 7: pi minus
+      }else if (pdgM == PDGCode::pi_minus){ //case 7: pi minus
 	indexMother = 80;
-      }else if (pdgM == 211){ //case 8: pi plus
+      }else if (pdgM == PDGCode::pi_plus){ //case 8: pi plus
 	indexMother = 90;
-      }else if (pdgM == 11){ //case 9: electrons
+      }else if (pdgM == PDGCode::e_minus){ //case 9: electrons
 	indexMother = 100;
-      }else if (pdgM == -11){ //case 10: positrons
+      }else if (pdgM == PDGCode::e_plus){ //case 10: positrons
 	indexMother = 110;
       }
 
