@@ -6,6 +6,7 @@
 //
 
 #include <string>
+#include <boost/type_index.hpp>
 #include "canvas/Persistency/Provenance/EventID.h"
 #include "ProditionsService/inc/ProditionsService.hh"
 #include "DbTables/inc/DbIoV.hh"
@@ -19,10 +20,20 @@ namespace mu2e {
     typedef std::shared_ptr<ENTITY> ptr_t;
     typedef std::shared_ptr<const ENTITY> cptr_t;
 
-    ProditionsHandle() {
-      ENTITY e;
+    ProditionsHandle():ptr(nullptr) {
+      // find the name of the ENTITY and strip the namespace
+      _name =  boost::typeindex::type_id<ENTITY>().pretty_name();
+      if(_name.find("::")!=std::string::npos) _name=_name.erase(0,_name.find("::")+2);
+      // connect to the service cache of this type
       art::ServiceHandle<ProditionsService> sg;
-      _cptr = sg->getCache(e.name());
+      _cptr = sg->getCache(_name);
+
+      if(!_cptr) {
+	throw cet::exception("PRODITIONSHANDLE_NO_CACHE")
+	  << "ProditionsHandle could not get cache " << _name
+	  << " from ProditionsService ";
+      }
+
     }
     ~ProditionsHandle() { }
 
@@ -46,7 +57,15 @@ namespace mu2e {
 	ptr = std::dynamic_pointer_cast
 	  <const ENTITY,const ProditionsEntity>(bptr);
       }
+
+      if(!ptr) {
+	throw cet::exception("PRODITIONSHANDLE_NO_ENTITY") 
+	  << "ProditionsHandle could not load entity " << _name
+	  << " for Run "<<eid.run() << " SubRun " << eid.subRun();
+      }
+
       return *ptr; 
+
     }
 
     DbIoV const& iov() const { return _iov;}
@@ -54,6 +73,7 @@ namespace mu2e {
   private:
     ProditionsCache::ptr _cptr;
     cptr_t ptr;
+    std::string _name;
     DbIoV _iov;
   };
 }

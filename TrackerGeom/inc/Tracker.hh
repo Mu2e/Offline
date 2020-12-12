@@ -48,7 +48,7 @@ namespace mu2e {
     using StrawCollection = std::array<Straw,StrawId::_nustraws>;
     using StrawIndexMap = std::array<uint16_t,StrawId::_maxval>; 
     // default constructor results in non-functional object, but is required by proditions service
-    Tracker() : _name("AlignedTracker") {}
+    Tracker() : _name("Tracker") {}
     // copy constructor
     Tracker(const Tracker& other);
     // construct from a set of straws and their global properties.  It would be better to take ownership of
