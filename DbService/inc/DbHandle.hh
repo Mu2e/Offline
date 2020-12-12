@@ -3,6 +3,7 @@
 
 #include <memory>
 #include <iostream>
+#include <boost/type_index.hpp>
 #include "canvas/Persistency/Provenance/EventID.h"
 #include "DbService/inc/DbService.hh"
 #include "DbTables/inc/DbLiveTable.hh"
@@ -46,10 +47,17 @@ bool mu2e::DbHandle<T>::current(art::EventID const& eid) {
 
   // delayed initialization so that the service
   // can exist without calling the db
-  if(_tid<0) {
-    T t;
-    _name = t.name();
+  if (_tid<0) {
+    // get name of template argument and strip namespace
+    _name =  boost::typeindex::type_id<T>().pretty_name();
+    if(_name.find("::")!=std::string::npos) _name=_name.erase(0,_name.find("::")+2);
     _tid =  _dbh->engine().tidByName(_name);
+
+    if(_tid<0) { // table not defined in the engine
+      throw cet::exception("DBHANDLE_NO_TID")
+	<< "DbHandle could not get TID (Table ID) from DbEngine for "
+	<< _name << " at first use ";
+    }
   }
 
   return _liveTable.iov().inInterval(
@@ -69,12 +77,14 @@ T const& mu2e::DbHandle<T>::get(art::EventID const& eid) {
   
   _table = std::dynamic_pointer_cast<const T,const mu2e::DbTable>(
 						  _liveTable.ptr());
-  if(_table) return *_table;
 
-  throw cet::exception("DBHANDLE_NO_TABLE") 
-    << "DbHandle could not load table " << _name
-    << " for Run "<<eid.run() << " SubRun " << eid.subRun();
+  if(!_table) {
+    throw cet::exception("DBHANDLE_NO_DATA")
+      << "DbHandle could not load data for table " << _name
+      << " for Run "<<eid.run() << " SubRun " << eid.subRun();
+  }
 
+  return *_table;
 }
 
 template <class T>

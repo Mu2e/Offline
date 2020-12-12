@@ -17,7 +17,7 @@ namespace mu2e {
   class AlignedTrackerCache : public ProditionsCache {
   public: 
     AlignedTrackerCache(AlignedTrackerConfig const& config):
-      ProditionsCache("AlignedTracker",config.verbose()),
+      ProditionsCache("Tracker",config.verbose()),
       _useDb(config.useDb()),_maker(config) {}
 
     void initialize() {
