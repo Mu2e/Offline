@@ -137,7 +137,7 @@ double yOfFloorSurface.below.mu2eOrigin = -2312; // mm -(728.58684' - 721')
 #include "Mu2eG4/geom/bldg/escapeStairWallW04.txt"
 #include "Mu2eG4/geom/bldg/escapeStairBrick.txt"
 #include "Mu2eG4/geom/bldg/escapeWallE.txt"
-#include "Mu2eG4/geom/bldg/extMon_v02.txt"
+#include "Mu2eG4/geom/bldg/extMonExteriorWall_v02.txt"
 #include "Mu2eG4/geom/bldg/extMonBitN.txt"
 #include "Mu2eG4/geom/bldg/extMonBitS.txt"
 #include "Mu2eG4/geom/bldg/extMonCeiling_v02.txt"
@@ -366,7 +366,7 @@ vector<string> bldg.prefix.list = {
    "building.escape.stair.wall.W03",
    "building.escape.stair.wall.W04",
    "building.escape.wall.E",
-   "building.extMon",
+   "building.extMon.exteriorWall",
    "building.extMon.bit.N",
    "building.extMon.bit.S",
    "building.extMon.ceiling",
