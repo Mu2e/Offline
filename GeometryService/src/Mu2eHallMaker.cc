@@ -43,9 +43,9 @@ namespace mu2e {
 
   //==================================================================
   void Mu2eHallMaker::makeTrapDirt( Mu2eHall& b,
-				    G4GeometryOptions& geomOptions,
-				    const SimpleConfig& c,
-				    const Mu2eEnvelope& mu2eEnv ) {
+                                    G4GeometryOptions& geomOptions,
+                                    const SimpleConfig& c,
+                                    const Mu2eEnvelope& mu2eEnv ) {
     loadTrapSolids      ( b.dirtTrapSolids_, geomOptions, c, "dirt.trap.prefix.list" );
     replaceBoundaryValues( b.dirtTrapSolids_, c, "dirt.trap.prefix.list", "y", mu2eEnv.xmin(), mu2eEnv.xmax() );
     replaceBoundaryValues( b.dirtTrapSolids_, c, "dirt.trap.prefix.list", "x", mu2eEnv.zmin(), mu2eEnv.zmax() );
@@ -96,9 +96,9 @@ namespace mu2e {
 
   //==================================================================
   void Mu2eHallMaker::loadTrapSolids( std::map<std::string,GenericTrap>& solidMap,
-				      G4GeometryOptions& geomOptions,
-				      const SimpleConfig& c,
-				      const std::string& varPrefixStr )
+                                      G4GeometryOptions& geomOptions,
+                                      const SimpleConfig& c,
+                                      const std::string& varPrefixStr )
   {
     std::vector<std::string> varNames;
     c.getVectorString( varPrefixStr, varNames, varNames ); //default is empty list
@@ -130,12 +130,12 @@ namespace mu2e {
       if ( place2 != std::string::npos ) loadPrefix = prefix.substr(0,place2);
 
       solidMap[volName] = GenericTrap( volName,
-				       c.getString( prefix+".material"),
-				       offset,
-				       c.getDouble( prefix+".yHalfThickness" ),
-				       getPairedVector(x,y),
-				       rot);
-      
+                                       c.getString( prefix+".material"),
+                                       offset,
+                                       c.getDouble( prefix+".yHalfThickness" ),
+                                       getPairedVector(x,y),
+                                       rot);
+
 
       geomOptions.loadEntry( c, volName, loadPrefix );
 
@@ -253,4 +253,3 @@ namespace mu2e {
 
   }
 }
-

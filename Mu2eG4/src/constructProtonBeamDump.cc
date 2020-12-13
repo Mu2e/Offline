@@ -72,7 +72,7 @@ namespace mu2e {
     geomOptions->loadEntry( config, "ProtonBeamDumpCore"     , "protonBeamDump.core"       );
     geomOptions->loadEntry( config, "ProtonBeamDumpMouth"    , "protonBeamDump.mouth"      );
     geomOptions->loadEntry( config, "ProtonBeamNeutronCave"  , "protonBeamDump.neutronCave");
-  
+
 
     static CLHEP::HepRotation shieldingRot(CLHEP::HepRotation::IDENTITY);
     shieldingRot.rotateX( 90*CLHEP::degree);
@@ -86,8 +86,8 @@ namespace mu2e {
     beamDumpFront.solid = new G4ExtrudedSolid(beamDumpFront.name, dump->frontShieldingOutline(),
                                               dump->frontShieldingHalfSize()[1],
                                               G4TwoVector(0,0), 1., G4TwoVector(0,0), 1.);
-    
-    
+
+
     finishNesting(beamDumpFront,
                   materialFinder.get("protonBeamDump.material.shielding"),
                   &shieldingRot,
@@ -126,16 +126,16 @@ namespace mu2e {
                   );
 
     static const CLHEP::HepRotation rotationInShield( (shieldingRot*dump->coreRotationInMu2e()).inverse() );
-    CLHEP::Hep3Vector coreAirPositionInShield( shieldingRot * (dump->coreAirCenterInMu2e() - beamDumpFront.centerInMu2e())); 
+    CLHEP::Hep3Vector coreAirPositionInShield( shieldingRot * (dump->coreAirCenterInMu2e() - beamDumpFront.centerInMu2e()));
     VolumeInfo  beamDumpCoreAir = nestBox("ProtonBeamDumpCoreAir",
-            dump->coreAirHalfSize(),
-            materialFinder.get("protonBeamDump.material.air"),
-            &rotationInShield,
-            coreAirPositionInShield,
-            beamDumpFront, 0,
-            G4Colour::Cyan()
-            );
-    
+                                          dump->coreAirHalfSize(),
+                                          materialFinder.get("protonBeamDump.material.air"),
+                                          &rotationInShield,
+                                          coreAirPositionInShield,
+                                          beamDumpFront, 0,
+                                          G4Colour::Cyan()
+                                          );
+
     CLHEP::Hep3Vector corePositionInCoreAir( dump->coreCenterInMu2e()-dump->coreAirCenterInMu2e() );
     nestBox("ProtonBeamDumpCore",
             dump->coreHalfSize(),

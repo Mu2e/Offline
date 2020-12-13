@@ -75,11 +75,11 @@ namespace mu2e {
 
     int verbose = c.getInt("extMonFNAL.verbosityLevel");
 
-  // Get relevant Hall solid
-    ExtrudedSolid extMonRoom = hall.getBldgSolid("extMon");
-    const CLHEP::Hep3Vector& offset = extMonRoom.getOffsetFromMu2eOrigin();
-  // Get corner coordinates of extinction monitor room
-    const auto & roomVertices = extMonRoom.getVertices();
+    // Get relevant Hall solid
+    ExtrudedSolid extMonRoomWall = hall.getBldgSolid("extMonExteriorWall");
+    const CLHEP::Hep3Vector& offset = extMonRoomWall.getOffsetFromMu2eOrigin();
+    // Get corner coordinates of extinction monitor room
+    const auto & roomVertices = extMonRoomWall.getVertices();
     const double xfront = roomVertices[0][1]+offset[0];
     const double zfront = roomVertices[0][0]+offset[2];
     const double xback = roomVertices[1][1]+offset[0];
@@ -90,8 +90,8 @@ namespace mu2e {
     const double roomWidth = sqrt((zfront-zScorner)*(zfront-zScorner)+(xfront-xScorner)*(xfront-xScorner));
 
 
-    emfb->roomInsideFullHeight_ = 2*extMonRoom.getYhalfThickness();
-    emfb->roomInsideYmin_ = offset[1] - extMonRoom.getYhalfThickness();
+    emfb->roomInsideFullHeight_ = 2*extMonRoomWall.getYhalfThickness();
+    emfb->roomInsideYmin_ = offset[1] - extMonRoomWall.getYhalfThickness();
     emfb->roomInsideYmax_ = emfb->roomInsideYmin_ + emfb->roomInsideFullHeight_;
 
     const double col2zLength = c.getDouble("extMonFNAL.collimator2.shielding.thickness");
@@ -110,7 +110,7 @@ namespace mu2e {
 
     emfb->magnetRoomLength_ = magnetRoomLength;
 
-  // hand stacked shielding sizes and locations in magnet room
+    // hand stacked shielding sizes and locations in magnet room
     const double steelLength = c.getDouble("extMonFNAL.steelLength");
     const double steelwidthN = c.getDouble("extMonFNAL.steelWidthN");
     const double steelwidthS = c.getDouble("extMonFNAL.steelWidthS");
@@ -164,7 +164,7 @@ namespace mu2e {
     //----------------------------------------------------------------
     // collimator1
     const double referenceLength = dump.coreCenterDistanceToReferencePlane()    - dump.coreCenterDistanceToShieldingFace()
-                                                                                + dump.frontShieldingHalfSize()[2];
+      + dump.frontShieldingHalfSize()[2];
     const Hep3Vector collimator1CenterInDump(emfb->filterEntranceOffsetX()
                                              + referenceLength*tan(emfb->collimator1().angleH()),
 
@@ -214,7 +214,7 @@ namespace mu2e {
     //----------------------------------------------------------------
     // collimator2
 
-   emfb->_collimator2 = readCollimatorExtMonFNAL("collimator2",
+    emfb->_collimator2 = readCollimatorExtMonFNAL("collimator2",
                                                   col2zLength,
                                                   angleH,
                                                   entranceAngleV - 2 * emfb->_filterMagnet.trackBendHalfAngle(pNominal),
@@ -271,11 +271,43 @@ namespace mu2e {
     emfb->coll2ShieldingRotationInMu2e_ = shieldingRot;
     emfb->coll2ShieldingCenterInMu2e_ = CLHEP::Hep3Vector(0, (emfb->roomInsideYmin()+emfb->roomInsideYmax())/2.0, 0);
 
-    emfb->coll2ShieldingHalfSize_.resize(3);
-    emfb->coll2ShieldingHalfSize_[0] = 0.5*shieldwidth;
-    emfb->coll2ShieldingHalfSize_[1] = 0.5*emfb->roomInsideFullHeight();
-    emfb->coll2ShieldingHalfSize_[2] = 0.5*col2zLength;
+    //----------------------------------------------------------------
+    // Detector room box
 
+    Hep2Vector corner1(emfb->coll2ShieldingOutline_[1] + Hep2Vector(emfb->coll2ShieldingCenterInMu2e_[2], emfb->coll2ShieldingCenterInMu2e_[0]));
+    Hep2Vector corner2(extMonRoomWall.getVertices()[1] + Hep2Vector(offset[2], offset[0]));
+    Hep2Vector corner3(extMonRoomWall.getVertices()[2] + Hep2Vector(offset[2], offset[0]));
+
+    // Sanity check.  Did we use the correct indexes to get room corner, which should be 90 degrees?
+    //
+    // The default tolerance is order 10^{-14} while we have a worse than 10^{-6} precision
+    // on the concrete coordinates.   So we have have to relax the tolerance.
+    Hep2Vector dv21(corner2-corner1);
+    dv21.setTolerance(1.e-4);
+    if(!dv21.isOrthogonal(corner3-corner2)) {
+      throw cet::exception("GEOM")<<"ExtMonFNALBuildingMaker::make(): "
+                                  <<" Error: unexpected non-right angle when computing ExtMon detector geometry: "
+                                  <<" non-orthogonalizy = "<<dv21.howOrthogonal(corner3-corner2)
+                                  <<"\n";
+    }
+
+    // Compute detector room parameters.  Due to the finite floating
+    // point precision we get spurious volume overlaps when using the
+    // exact box size and position.  Use an ad-hoc margin to slightly
+    // shrink the box we place.
+    const double detectorRoomMargin = 0.1*CLHEP::mm;
+    emfb->detectorRoomHalfSize_ = std::vector<double>{
+      0.5*(corner3-corner2).mag() - detectorRoomMargin,
+      extMonRoomWall.getYhalfThickness() - detectorRoomMargin,
+      0.5*(corner2-corner1).mag() - detectorRoomMargin
+    };
+
+    Hep2Vector detectorRoomCenter((corner1 + corner3)/2);
+    emfb->detectorRoomCenterInMu2e_ = Hep3Vector(detectorRoomCenter[1] , (emfb->roomInsideYmin()+emfb->roomInsideYmax())/2, detectorRoomCenter[0]);
+
+    emfb->detectorRoomRotationInMu2e_.rotateY(asin( (corner1[1]-corner2[1])/(corner1-corner2).mag() ));
+
+    //----------------------------------------------------------------
     return emfb;
 
   } // make()
