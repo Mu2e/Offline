@@ -212,7 +212,7 @@ BEGIN_PROLOG
   TrackAnalysisReco : {
     module_type : TrackAnalysisReco
     RecoCountTag : "SelectRecoMC"
-    CaloCrystalHitMapTag : "SelectRecoMC"
+    CaloHitMapTag : "SelectRecoMC"
     MeanBeamIntensity : "protonBunchIntensity:MeanIntensity"
     PBIWeightTag : "PBIWeight"
     CrvCoincidenceModuleLabel : "SelectRecoMC"
@@ -233,7 +233,7 @@ BEGIN_PROLOG
     AnalyzeCRVPulses : false
     PrimaryParticleTag : "compressRecoMCs"
     KalSeedMCAssns : "SelectRecoMC"
-    CaloClusterMCAssns : "SelectRecoMC"
+    CaloClusterMCTruthAssn : "SelectRecoMC"
     InfoMCStructHelper : {
       SimParticleCollectionTag : "compressRecoMCs"
       TimeMaps : [ @sequence::RecoCompression.TimeMaps ]

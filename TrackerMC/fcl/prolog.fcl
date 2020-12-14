@@ -2,7 +2,7 @@
 BEGIN_PROLOG
 makeSGS : {
     module_type : MakeStrawGasSteps
-    KeepDeltasModule : "g4run" # don'e compress deltas on primary particles
+    KeepDeltasModule : "g4run" # don't compress deltas on primary particles
 }
 # straw digis
 makeSD : {

@@ -1,0 +1,55 @@
+#
+# Prolog specific to creating primary (signal, signal-like or calibration) particles
+#
+#include "CommonMC/fcl/prolog.fcl"
+#include "TrackerMC/fcl/prolog.fcl"
+#include "CaloMC/fcl/prolog.fcl"
+#include "CRVResponse/fcl/prolog.fcl"
+#include "Filters/fcl/prolog.fcl"
+#
+BEGIN_PROLOG
+
+Digitize: {
+  producers : {
+    g4run : @local::mu2e.physics.producers.g4run.muons
+    genCounter: { module_type: GenEventCounter }
+    @table::EventGenerator.producers
+    @table::CommonMC.producers
+    @table::TrackerMC.producers
+    @table::CaloDigiMC.producers
+    @table::CrvDAQPackage.producers
+    makeCSS : @local::CaloShowerStepMaker
+    compressDigiMCs : @local::DigiCompression.Primary
+  }
+  filters : {
+# digi filtering for Digi Primary selection.
+    DigiFilter : {
+      module_type : StrawDigiMCFilter
+      StrawDigiMCCollection : "makeSD"
+    }
+  }
+  Sequence : [  @sequence::CommonMC.DigiSim,
+    @sequence::TrackerMC.StepAndDigiSim,
+    DigiFilter,
+    @sequence::CaloDigiMC.DigiSim,
+    @sequence::CrvDAQPackage.CrvResponseSequence,
+    compressDigiMCs ]
+
+  analyzers: {
+    digiCompressionCheck : @local::DigiCompression.Check
+  }
+
+  Output : {
+     module_type : RootOutput
+     SelectEvents : [ DigiPath ]
+     fileName    : @nil
+     # drop StepPoints from calorimeter
+     outputCommands : @local::DigiCompression.OutputCommands
+  }
+  EndPath : [ digiCompressionCheck, Output ]
+
+}
+# define paths
+Primary.TriggerPath : [ @sequence::PrimaryDigiSequence ]
+
+END_PROLOG
