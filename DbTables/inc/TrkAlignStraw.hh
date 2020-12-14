@@ -24,7 +24,7 @@ namespace mu2e {
     std::vector<TrkStrawEndAlign> const& rows() const {return _rows;}
     size_t nrow() const override { return _rows.size(); };
     size_t nrowFix() const override { return StrawId::_nustraws; };
-    size_t size() const override { return _csv.capacity() + nrow()*sizeof(TrkStrawEndAlign); };
+    size_t size() const override { return baseSize() + nrow()*sizeof(TrkStrawEndAlign); };
 
     void addRow(const std::vector<std::string>& columns) override {
       _rows.emplace_back(
@@ -55,7 +55,7 @@ namespace mu2e {
       sstream << r._straw_hv_dW;
     }
 
-    virtual void clear() { _csv.clear(); _rows.clear(); }
+    virtual void clear() { baseClear(); _rows.clear(); }
 
   private:
     std::vector<TrkStrawEndAlign> _rows;

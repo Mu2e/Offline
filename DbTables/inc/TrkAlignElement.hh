@@ -27,7 +27,7 @@ namespace mu2e {
     std::vector<TrkAlignParams> const& rows() const {return _rows;}
     std::size_t nrow() const override { return _rows.size(); };
     std::size_t nrowFix() const override { return _nrows; };
-    size_t size() const override { return _csv.capacity() + nrow()*sizeof(TrkAlignParams); };
+    size_t size() const override { return baseSize() + nrow()*sizeof(TrkAlignParams); };
 
     void addRow(const std::vector<std::string>& columns) override {
       _rows.emplace_back(std::stoi(columns[0]),
@@ -54,7 +54,7 @@ namespace mu2e {
       sstream << r.rz()<<",";
     }
 
-    void clear() override { _csv.clear(); _rows.clear(); }
+    void clear() override { baseClear(); _rows.clear(); }
 
   private:
     std::vector<TrkAlignParams> _rows;
