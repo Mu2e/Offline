@@ -5,9 +5,9 @@
 #include "fcl/standardProducers.fcl"
 #include "TrkDiag/fcl/prolog.fcl"
 # the following is for reading primary digis.  Note there is no trigger information for primaries
-##include "JobConfig/reco/mcdigis_primary.fcl"
+#include "JobConfig/reco/mcdigis_primary.fcl"
 # the following is for reading mixed digis MDC2018g and earlier
-#include "JobConfig/reco/mcdigis-trig_nocosmic.fcl"
+##include "JobConfig/reco/mcdigis-trig_nocosmic.fcl"
 # the following is for reading mixed digis MDC2018h and later
 ###include "JobConfig/reco/mcdigis-trig.fcl"
 process_name : TrkAnaDigisReco
