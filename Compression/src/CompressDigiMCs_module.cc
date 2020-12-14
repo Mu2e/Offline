@@ -265,16 +265,26 @@ mu2e::CompressDigiMCs::CompressDigiMCs(const Parameters& conf)
   _noCompression(_conf.noCompression())
 {
   // Call appropriate produces<>() functions here.
-  produces<StrawDigiMCCollection>();
-  produces<CrvDigiMCCollection>();
+  produces<GenParticleCollection>();
+  produces<SimParticleCollection>();
+
+  if (_strawDigiMCTag != "") {
+    produces<StrawGasStepCollection>();
+    produces<StrawDigiMCCollection>();
+  }
+
+  if (_crvDigiMCTag != "") {
+    produces<CrvDigiMCCollection>();
+    _newStepPointMCInstances.push_back(_crvOutputInstanceLabel); // filled with the StepPointMCs referenced by their DigiMCs
+  }
 
   for (std::vector<art::InputTag>::const_iterator i_tag = _extraStepPointMCTags.begin(); i_tag != _extraStepPointMCTags.end(); ++i_tag) {
     _newStepPointMCInstances.push_back( (*i_tag).instance() );
   }
-
   for (const auto& i_instance : _newStepPointMCInstances) {
     produces<StepPointMCCollection>( i_instance );
   }
+
   produces<StrawGasStepCollection>();
   produces<CrvStepCollection>();
   produces<SimParticleCollection>();
@@ -313,8 +323,12 @@ mu2e::CompressDigiMCs::CompressDigiMCs(const Parameters& conf)
 void mu2e::CompressDigiMCs::produce(art::Event & event)
 {
   // Implementation of required member function here.
-  _newStrawDigiMCs = std::unique_ptr<StrawDigiMCCollection>(new StrawDigiMCCollection);
-  _newCrvDigiMCs = std::unique_ptr<CrvDigiMCCollection>(new CrvDigiMCCollection);
+  if (_strawDigiMCTag != "") {
+    _newStrawDigiMCs = std::unique_ptr<StrawDigiMCCollection>(new StrawDigiMCCollection);
+  }
+  if (_crvDigiMCTag != "") {
+    _newCrvDigiMCs = std::unique_ptr<CrvDigiMCCollection>(new CrvDigiMCCollection);
+  }
 
   for (const auto& i_instance : _newStepPointMCInstances) {
     _newStepPointMCs[i_instance] = std::unique_ptr<StepPointMCCollection>(new StepPointMCCollection);
@@ -416,17 +430,19 @@ void mu2e::CompressDigiMCs::produce(art::Event & event)
 
 
   // Now start to compress
-  event.getByLabel(_strawDigiMCTag, _strawDigiMCsHandle);
-  const auto& strawDigiMCs = *_strawDigiMCsHandle;
-  for (size_t i = 0; i < strawDigiMCs.size(); ++i) {
-    const auto& i_strawDigiMC = strawDigiMCs.at(i);
-    mu2e::FullIndex full_i = i;
-    bool in_index_map = false;
-    if (_strawDigiMCIndexMapTag != "") {
-      in_index_map = _strawDigiMCIndexMap.checkInMap(full_i);
-    }
-    if (_strawDigiMCIndexMapTag == "" || in_index_map || _noCompression) {
-      copyStrawDigiMC(i_strawDigiMC);
+  if (_strawDigiMCTag != "") {
+    event.getByLabel(_strawDigiMCTag, _strawDigiMCsHandle);
+    const auto& strawDigiMCs = *_strawDigiMCsHandle;
+    for (size_t i = 0; i < strawDigiMCs.size(); ++i) {
+      const auto& i_strawDigiMC = strawDigiMCs.at(i);
+      mu2e::FullIndex full_i = i;
+      bool in_index_map = false;
+      if (_strawDigiMCIndexMapTag != "") {
+        in_index_map = _strawDigiMCIndexMap.checkInMap(full_i);
+      }
+      if (_strawDigiMCIndexMapTag == "" || in_index_map || _noCompression) {
+        copyStrawDigiMC(i_strawDigiMC);
+      }
     }
   }
 
@@ -618,9 +634,11 @@ void mu2e::CompressDigiMCs::produce(art::Event & event)
   }
 
   // Update the StrawGasSteps
-  for (auto& i_strawGasStep : *_newStrawGasSteps) {
-    art::Ptr<SimParticle> newSimPtr = remap.at(i_strawGasStep.simParticle());
-    i_strawGasStep.simParticle() = newSimPtr;
+  if (_strawDigiMCTag != "") {
+    for (auto& i_strawGasStep : *_newStrawGasSteps) {
+      art::Ptr<SimParticle> newSimPtr = remap.at(i_strawGasStep.simParticle());
+      i_strawGasStep.simParticle() = newSimPtr;
+    }
   }
 
   // Update the CrvSteps
@@ -695,11 +713,14 @@ void mu2e::CompressDigiMCs::produce(art::Event & event)
   for (const auto& i_instance : _newStepPointMCInstances) {
     event.put(std::move(_newStepPointMCs.at(i_instance)), i_instance);
   }
-  event.put(std::move(_newStrawDigiMCs));
-  event.put(std::move(_newStrawGasSteps));
-  event.put(std::move(_newCrvSteps));
-  event.put(std::move(_newCrvDigiMCs));
-
+  if (_strawDigiMCTag != "") {
+    event.put(std::move(_newStrawDigiMCs));
+    event.put(std::move(_newStrawGasSteps));
+  }
+  if (_crvDigiMCTag != "") {
+    event.put(std::move(_newCrvSteps));
+    event.put(std::move(_newCrvDigiMCs));
+  }
   event.put(std::move(_newSimParticles));
   event.put(std::move(_newGenParticles));
 
