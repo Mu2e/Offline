@@ -2,7 +2,7 @@
 #  Specific values for primary simulation that can't be done in prolog
 #  Currently set for MDC2018 production
 #  
-# set the stops
+# set the stops.  This should go away with art-based muon stops FIXME!
 physics.producers.generate.muonStops.inputFiles : [ "mergedMuonStops/nts.mu2e.DS-TGTstops.MDC2018a.001002_00000000.root" ]
 # save the MC Trajectories of primary particles
 physics.producers.g4run.TrajectoryControl: @local::mu2eg4DefaultTrajectories
