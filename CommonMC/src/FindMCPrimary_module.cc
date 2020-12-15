@@ -38,8 +38,6 @@ namespace mu2e {
 	  Comment("SimParticle collection")};
 	fhicl::Sequence<std::string> genIDs { Name("PrimaryGenIds"),
 	  Comment("Generator IDs of potential Primary Particles")};
-	fhicl::Sequence<art::InputTag> SPTO { Name("TimeOffsets"),
-	  Comment("Sim Particle Time Offset Maps")};
       };
       using Parameters = art::EDProducer::Table<Config>;
       explicit FindMCPrimary(const Parameters& conf);
@@ -49,7 +47,6 @@ namespace mu2e {
       int _debug;
       bool _single, _none;
       art::InputTag _gpc, _spc;
-      SimParticleTimeOffset _toff;
       std::vector<int> _pgenids; 
       double _proton_mass; // cache for efficiency
   };
@@ -61,7 +58,6 @@ namespace mu2e {
     _none(config().none()),
     _gpc(config().genPC()),
     _spc(config().simPC()),
-    _toff(config().SPTO()),
     _proton_mass(GlobalConstantsHandle<ParticleDataTable>()->particle(PDGCode::p_plus).ref().mass().value())
   {
     consumes<GenParticleCollection>(_gpc);
@@ -75,8 +71,6 @@ namespace mu2e {
   }
 
   void FindMCPrimary::produce(art::Event& event) {
-    // update the time maps
-    _toff.updateMap(event);
     // create output: by default, this is null
     GenParticle pgp(PDGCode::null, GenId::unknown,CLHEP::Hep3Vector(),
 	CLHEP::HepLorentzVector(), 0.0,0.0);
