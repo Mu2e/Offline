@@ -32,8 +32,9 @@ namespace mu2e {
       std::string _create_user;
     };
 
+    constexpr static const char* cxname = "ValExtensions";
 
-    ValExtensions():DbTable("ValExtensions","val.extensions",
+    ValExtensions():DbTable(cxname,"val.extensions",
 		      "eid,vid,extension,create_time,create_user") {}
 
     const Row& rowAt(const std::size_t index) const { return _rows.at(index);}

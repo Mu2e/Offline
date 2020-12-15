@@ -26,8 +26,9 @@ namespace mu2e {
       std::string _create_user;
     };
 
+    constexpr static const char* cxname = "ValGroups";
 
-    ValGroups():DbTable("ValGroups","val.groups",
+    ValGroups():DbTable(cxname,"val.groups",
 			"gid,create_time,create_user") {}
 
     const Row& rowAt(const std::size_t index) const { return _rows.at(index);}

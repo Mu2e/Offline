@@ -3,7 +3,6 @@
 
 #include <memory>
 #include <iostream>
-#include <boost/type_index.hpp>
 #include "canvas/Persistency/Provenance/EventID.h"
 #include "DbService/inc/DbService.hh"
 #include "DbTables/inc/DbLiveTable.hh"
@@ -48,9 +47,8 @@ bool mu2e::DbHandle<T>::current(art::EventID const& eid) {
   // delayed initialization so that the service
   // can exist without calling the db
   if (_tid<0) {
-    // get name of template argument and strip namespace
-    _name =  boost::typeindex::type_id<T>().pretty_name();
-    if(_name.find("::")!=std::string::npos) _name=_name.erase(0,_name.find("::")+2);
+    // get name of template argument
+    _name =  std::string(T::cxname);
     _tid =  _dbh->engine().tidByName(_name);
 
     if(_tid<0) { // table not defined in the engine

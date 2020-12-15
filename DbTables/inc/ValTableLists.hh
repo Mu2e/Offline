@@ -24,8 +24,9 @@ namespace mu2e {
       int _tid;
     };
 
+    constexpr static const char* cxname = "ValTableLists";
 
-    ValTableLists():DbTable("ValTableLists","val.tablelists","lid,tid") {}
+    ValTableLists():DbTable(cxname,"val.tablelists","lid,tid") {}
 
     const Row& rowAt(const std::size_t index) const { return _rows.at(index);}
     std::vector<Row> const& rows() const {return _rows;}

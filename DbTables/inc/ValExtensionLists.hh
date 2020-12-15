@@ -24,8 +24,9 @@ namespace mu2e {
       int _gid;
     };
 
+    constexpr static const char* cxname = "ValExtensionLists";
 
-    ValExtensionLists():DbTable("ValExtensionLists","val.extensionlists",
+    ValExtensionLists():DbTable(cxname,"val.extensionlists",
 			    "eid,gid") {}
 
     const Row& rowAt(const std::size_t index) const { return _rows.at(index);}

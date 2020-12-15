@@ -27,8 +27,9 @@ namespace mu2e {
       float _dtoe;
     };
 
+    constexpr static const char* cxname = "TstCalib1";
 
-    TstCalib1():DbTable("TstCalib1","tst.calib1","channel,flag,dtoe") {}
+    TstCalib1():DbTable(cxname,"tst.calib1","channel,flag,dtoe") {}
     const Row& rowAt(const std::size_t index) const { return _rows.at(index);}
     const Row& row(const int channel) const { 
                 return _rows.at(_chanIndex.at(channel)); }

@@ -38,8 +38,9 @@ namespace mu2e {
       float _gain;
     };
 
+    constexpr static const char* cxname = "TrkPreampRStraw";
 
-    TrkPreampRStraw():DbTable("TrkPreampRStraw","trk.preamprstraw",
+    TrkPreampRStraw():DbTable(cxname,"trk.preamprstraw",
 	 "index,delay_hv,delay_cal,threshold_hv,threshold_cal,gain") {}
     const Row& rowAt(const std::size_t index) const { return _rows.at(index);}
     std::vector<Row> const& rows() const {return _rows;}

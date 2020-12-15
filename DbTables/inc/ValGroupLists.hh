@@ -24,8 +24,9 @@ namespace mu2e {
       int _iid;
     };
 
+   constexpr static const char* cxname = "ValGroupLists";
 
-    ValGroupLists():DbTable("ValGroupLists","val.grouplists","gid,iid") {}
+    ValGroupLists():DbTable(cxname,"val.grouplists","gid,iid") {}
 
     const Row& rowAt(const std::size_t index) const { return _rows.at(index);}
     std::vector<Row> const& rows() const {return _rows;}

@@ -33,8 +33,9 @@ namespace mu2e {
       double _eff;
     };
 
+    constexpr static const char* cxname = "SimEfficiencies";
 
-    SimEfficiencies():DbTable("SimEfficiencies","sim.efficiencies","tag,numerator,denominator,eff") { }
+    SimEfficiencies():DbTable(cxname,"sim.efficiencies","tag,numerator,denominator,eff") { }
 
     const Row& rowAt(const std::size_t index) const { return _rows.at(index);}
     const Row& row(const int idx) const { return _rows.at(idx); }

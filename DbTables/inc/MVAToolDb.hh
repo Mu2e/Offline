@@ -36,8 +36,9 @@ namespace mu2e {
       int _calibrated;
     };
 
+    constexpr static const char* cxname = "MVAToolDb";
 
-    MVAToolDb():DbTable("MVAToolDb","MVATool.db","idx,mvaname,xmlfilename,calibrated") {
+    MVAToolDb():DbTable(cxname,"MVATool.db","idx,mvaname,xmlfilename,calibrated") {
       throw cet::exception("MVAToolDb") << "Shouldn't be creating a bare MVAToolDb table" << std::endl;
     }
 
