@@ -331,7 +331,7 @@ namespace mu2e
 // update the time in the HitT0 object
         hitt0._t0 += tflt;  
 // create the hit object.  Assume we're at the last iteration over added error
-        TrkStrawHit* trkhit = new TrkStrawHit(srep,strawhit,straw,istraw,hitt0,hflt,
+        TrkStrawHit* trkhit = new TrkStrawHit(srep,strawhit,*_tracker,istraw,hitt0,hflt,
 					      _maxpull,_strHitW );
         assert(trkhit != 0);
 	trkhit->setTemperature(_herr.back()); // give this hit the final annealing temperature
@@ -489,8 +489,7 @@ namespace mu2e
       // create a TrkStrawHit from this seed.
       size_t index = ths.index();
       const ComboHit& strawhit(kalData.chcol->at(index));
-      const Straw& straw = _tracker->getStraw(strawhit.strawId());
-      TrkStrawHit* trkhit = new TrkStrawHit(srep,strawhit,straw,ths.index(),ths.t0(),ths.trkLen(),
+      TrkStrawHit* trkhit = new TrkStrawHit(srep,strawhit,*_tracker,ths.index(),ths.t0(),ths.trkLen(),
 					    _maxpull,_strHitW);
       assert(trkhit != 0);
       // set the initial ambiguity
@@ -557,117 +556,72 @@ namespace mu2e
   }
 
   unsigned KalFit::addMaterial(Mu2eDetector::cptr_t detmodel, KalRep* krep) {
-    _debug>3 && std::cout << __func__ << " called " << std::endl;
     unsigned retval(0);
 // Tracker geometry
     const Tracker& tracker = *_tracker;
-// storage of potential straws
+    // general properties; these should be computed once/job and stored FIXME!
+    double strawradius = tracker.strawOuterRadius();
+    auto const& plane0 = tracker.planes().front();
+    auto const& panel0 = plane0.getPanel(0);
+    auto const& straw0 = panel0.getStraw(0);
+    auto const& straw95 = panel0.getStraw(StrawId::_nstraws-1);
+    // compute limits: add some buffer for the finite size of the straw
+    auto DStoP = panel0.dsToPanel();
+    auto s0origin = DStoP*straw0.origin();
+    auto s95origin = DStoP*straw95.origin();
+    double ymin = s0origin.y() - strawradius;
+    double ymax = s95origin.y() + strawradius;
+    double umax = straw0.halfLength() + strawradius;
+    double rmax = tracker.getSupportParams().innerRadius() + strawradius;
+    double spitch = (StrawId::_nstraws-1)/(ymax-ymin);
+    // storage of potential straws
     StrawFlightComp strawcomp(_maxmatfltdiff);
     std::set<StrawFlight,StrawFlightComp> matstraws(strawcomp);
-// loop over Planes
-    double strawradius = tracker.strawOuterRadius();
+// loop  
     unsigned nadded(0);
-    // for(auto const& plane : tracker.getPlanes()){
-    for ( size_t i=0; i!= tracker.nPlanes(); ++i){
-      const auto& plane = tracker.getPlane(i);
-      _debug>3 && std::cout << __func__ << " plane " << plane.id() << " exists: " << plane.exists() << std::endl;
-       if(plane.exists()) {
-      // if (!(plane.exists())) continue;
-      // # of straws in a panel
-      int nstraws = plane.getPanel(0).nStraws();
-       _debug>3 && std::cout << __func__ << " nstraws " << nstraws << std::endl;
-// get an approximate z position for this plane from the average position of the 1st and last straws
-      // Hep3Vector s0 = plane.getPanel(0).getLayer(0).getStraw(0).getMidPoint();
-      // plane id is id of 0th straw
-      Hep3Vector s0 = plane.getPanel(0).getStraw(StrawId(plane.id())).getMidPoint();
-       _debug>3 && std::cout << __func__ << " s0 via panel " << s0 << std::endl;
-      // funky convention for straw numbering in a layer FIXME!!!!
-      // Hep3Vector sn = plane.getPanel(0).getLayer(1).getStraw(2*plane.getPanel(0).getLayer(1).nStraws()-1).getMidPoint();
-      Hep3Vector sn = plane.getPanel(0).getStraw(nstraws-1).getMidPoint();
-      _debug>3 && std::cout << __func__ << " sn via panel " << sn << std::endl;
-      double pz = 0.5*(s0.z() + sn.z());
-      _debug>3 && std::cout << __func__ << " an approximate z position for this plane " << plane.id() << " " << pz << std::endl;
-// find the transverse position at this z using the reference trajectory
-      double flt = krep->referenceTraj()->zFlight(pz);
-      HepPoint pos = krep->referenceTraj()->position(flt);
-      Hep3Vector posv(pos.x(),pos.y(),pos.z());
-// see if this position is in the active region.  Double the straw radius to be generous
-      double rho = posv.perp();
-      double rmin = s0.perp()-2*strawradius;
-      double rmax = sn.perp()+2*strawradius;
-      if(rho > rmin && rho < rmax){
-  // loop over panels
-        for(auto panel_p : plane.getPanels()){
+    for(auto const& plane : tracker.planes()){
+      if(_tracker->planeExists(plane.id())) {
+	// get an approximate z position for this plane from the average position of the 1st and last straws
+	auto s0 = plane.origin();
+	// find the track position at this z using the reference trajectory
+	double flt = krep->referenceTraj()->zFlight(s0.z());
+	HepPoint pos = krep->referenceTraj()->position(flt);
+	Hep3Vector posv(pos.x(),pos.y(),pos.z());
+	// loop over panels
+	for(auto panel_p : plane.panels()){
 	  auto const& panel = *panel_p;
-          if (_debug>4) {
-            std::cout << __func__ << " panel " << panel.id() << std::endl;
-            std::cout << __func__ << " printing all straws in layer 0 " << std::endl;
-            for (const auto straw_p : panel.getStrawPointers() ) {
-              Straw const& straw(*straw_p);
-              StrawId sid = straw.id();
-              if ( sid.getLayer() != 0 ) continue;
-              std::cout.width(7);
-              std::cout << sid << ", ";
-            }
-            std::cout << std::endl;
-            std::cout << __func__ << " printing all straws in layer 1 " << std::endl;
-            for (const auto straw_p : panel.getStrawPointers() ) {
-              Straw const& straw(*straw_p);
-              StrawId sid = straw.id();
-              if ( sid.getLayer() != 1 ) continue;
-              std::cout.width(7);
-              std::cout << sid << ", ";
-            }
-            std::cout << std::endl;
-          }
-      // get the straw direction for this panel
-          // Hep3Vector sdir = panel.getLayer(0).getStraw(0).getDirection();
-          Hep3Vector sdir = panel.getStraw(0).getDirection();
-      // get the transverse direction to this and z
-          static Hep3Vector zdir(0,0,1.0);
-          Hep3Vector pdir = sdir.cross(zdir);
-     //  project the position along this
-          double prho = posv.dot(pdir);
-      // test for acceptance of this panel
-          if(prho > rmin && prho < rmax) {
-          // translate the transverse position into a rough straw number
-          // nstraws is the number of straws in the panel
-            int istraw = (int)rint(nstraws*(prho-s0.perp())/(sn.perp()-s0.perp()));
-            // take a few straws around this
-            for(int is = max(0,istraw-3); is<min(nstraws,istraw+3); ++is){
-              _debug>3 && std::cout << __func__ << " taking a few straws, istraw, is "
-                                    << istraw << ", " << is << std::endl;
-              _debug>3 && std::cout << __func__ << " straw id "
-                                    << panel.getStraw(is).id() << std::endl;
-              if (_debug>4) {
-                if ( panel.getStraw(is).id().getLayer()==0) {
-                  std::cout << __func__ << " straw id l0 by id "
-                            << panel.getStraw(StrawId(panel.id().asUint16()+is)).id()
-                            << std::endl;
-                } else {
-                  std::cout << __func__ << " straw id l1 by id "
-                            << panel.getStraw(StrawId(panel.id().asUint16()+is)).id()
-                            << std::endl;
-                }
-              }
-              matstraws.insert(StrawFlight(panel.getStraw(is).id(),flt));
-              ++nadded;
-            }
-          }  // if prho
-        } // panel loop
-      } // if rho
+	  // convert track position into panel coordinates
+	  auto DStoP = panel.dsToPanel();
+	  auto pposv = DStoP*posv;
+	  // see if this point is roughly in the active region of this panel.  Use the z possition as a buffer, to
+	  // account for the test being performed at the plane center.  Note the radius cut is made in the Mu2e coordinate system
+	  // this is not a bug!
+	  double pbuff = fabs(pposv.z());
+	  if(pposv.y() > ymin - pbuff && pposv.y() < ymax + pbuff && fabs(pposv.x()) < umax && posv.perp() < rmax + pbuff) {
+	    if(_debug>2)std::cout << "position " << pposv << " in rough acceptance " << std::endl;
+	    // translate the y position into a rough straw number
+	    int istraw = (int)rint( (pposv.y()-ymin)*spitch);
+	    // take a few straws around this.  This value should be configurable FIXME!
+	    for(int is = max(0,istraw-3); is<min(StrawId::_nstraws-1,istraw+3); ++is){
+	      if(_debug>3)std::cout << "Adding Straw " << is << " in panel " << panel.id() << std::endl;
+	      matstraws.insert(StrawFlight(panel.getStraw(is).id(),flt));
+	      ++nadded;
+	    }
+	  } // acceptance
+	} // panels
       } // plane exists
-    } // nplanes
-// Now test if the Kalman rep hits these straws
+    }  // planes
+    // Now test if the Kalman rep hits these straws
     if(_debug>2)std::cout << "Found " << matstraws.size() << " unique possible straws " << " out of " << nadded << std::endl;
+    unsigned nfound(0);
     for(auto const& strawflt : matstraws){
       const DetStrawElem* strawelem = detmodel->strawElem(strawflt._id);
       DetIntersection strawinter;
       strawinter.delem = strawelem;
       strawinter.pathlen = strawflt._flt;
       if(strawelem->reIntersect(krep->referenceTraj(),strawinter)){
-// If the rep already has a material site for this element, skip it
-        std::vector<const KalMaterial*> kmats;
+	// If the rep already has a material site for this element, skip it
+	std::vector<const KalMaterial*> kmats;
         krep->findMaterialSites(strawelem,kmats);
         if(_debug>2)std::cout << "found intersection with straw " << strawelem->straw()->id() << " with "
         << kmats.size() << " materials " << std::endl;
@@ -682,6 +636,7 @@ namespace mu2e
               if(_debug>2)std::cout << "operator returned false!!" << std::endl;
               // this straw is already on the track: stop
               hasmat = true;
+	      nfound++;
               break;
             }
           }
@@ -695,7 +650,7 @@ namespace mu2e
         }
       }
     }
-    if(_debug>1)std::cout << "Added " << retval << " new material sites" << std::endl;
+    if(_debug>1)std::cout << "Added " << retval << " new material sites; found " << nfound << " intersections out of " << krep->nActive() << " active hits " << std::endl;
     return retval;
   }
 

@@ -54,6 +54,7 @@ using namespace std;
 
 namespace {
   atomic<int> thread_counter{0};
+
   int get_new_thread_index() { return thread_counter++; }
   thread_local int s_thread_index = get_new_thread_index();
   int getThreadIndex() { return s_thread_index; }

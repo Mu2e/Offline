@@ -40,16 +40,13 @@ physics :{
       caloShowerStepPrinter : {
         verbose: 0
       }
-      caloHitPrinter : {
-        verbose: 0
-      }
       caloDigiPrinter : {
         verbose: 0
       }
       caloRecoDigiPrinter : {
         verbose: 1
       }
-      caloCrystalHitPrinter : {
+      caloHitPrinter : {
         verbose: 0
       }
       caloClusterPrinter : {
@@ -69,6 +66,9 @@ physics :{
         verbose: 1
       }
 
+      strawGasStepPrinter : {
+        verbose: 0
+      }
       strawDigiPrinter : {
         verbose: 0
       }

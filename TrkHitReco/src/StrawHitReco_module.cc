@@ -52,7 +52,7 @@ namespace mu2e {
       struct Config {
 	fhicl::Atom<int> diag{ Name("diagLevel"), Comment("Diag level"), 0};
 	fhicl::Atom<int> print{ Name("printLevel"), Comment("Print level"), 0};
-	fhicl::Atom<int> fittype { Name( "FitType"), Comment("Waveform Fit Type"), TrkHitReco::FitType::peakminuspedavg};
+	fhicl::Atom<int> fittype { Name( "FitType"), Comment("Waveform Fit Type")};//, TrkHitReco::FitType::firmwarepmp};
 	fhicl::Atom<bool> usecc{ Name("UseCalorimeter"), Comment("Use Calo cluster times to filter" ),false};
 	fhicl::Atom<float>clusterDt{ Name("clusterDt"), Comment("Calo cluster time 1/2 window"),100};
 	fhicl::Atom<float>minE{ Name("minimumEnergy"), Comment("Minimum straw energy deposit (MeV)"),0.0};
@@ -166,7 +166,7 @@ namespace mu2e {
       }
 
       // Detailed histogram-based waveform fits are no longer supported TODO!
-      if (_fittype != TrkHitReco::FitType::peakminusped && _fittype != TrkHitReco::FitType::peakminuspedavg)
+      if (_fittype != TrkHitReco::FitType::peakminusped && _fittype != TrkHitReco::FitType::peakminuspedavg && _fittype != TrkHitReco::FitType::firmwarepmp)
 	throw cet::exception("RECO")<<"TrkHitReco: Peak fit " << _fittype << " not implemented " <<  std::endl;
   }
 
@@ -312,7 +312,7 @@ namespace mu2e {
 	ch.addIndex(isd); // reference the digi; this allows MC truth matching to work
 	// crude initial estimate of the transverse error
 	static const float invsqrt12 = 1.0/sqrt(12.0);
-	ch._tres = straw.getRadius()*invsqrt12;
+	ch._tres = tt.strawOuterRadius()*invsqrt12;
 	// set flags
 	ch._mask = _mask;
 	ch._flag = flag;

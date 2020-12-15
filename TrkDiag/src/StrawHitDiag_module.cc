@@ -245,7 +245,7 @@ namespace mu2e
   void StrawHitDiag::fillStrawHitDiag() {
     GeomHandle<DetectorSystem> det;
     const Tracker& tracker = *GeomHandle<Tracker>();
-    static const double rstraw = tracker.getStraw(StrawId(0,0,0)).getRadius();
+    static const double rstraw = tracker.strawOuterRadius();
     unsigned nstrs = _chcol->size();
     for(unsigned istr=0; istr<nstrs;++istr){
       StrawHit const& sh = _shcol->at(istr);
@@ -343,7 +343,7 @@ namespace mu2e
           Hep3Vector cdir = (cpos-straw.getMidPoint());
           cdir -= straw.getDirection()*(cdir.dot(straw.getDirection()));
           _mccphi[iend] = cdir.theta();
-          _mccd[iend] = min(cdir.perp(straw.getDirection()),straw.innerRadius());
+          _mccd[iend] = min(cdir.perp(straw.getDirection()),tracker.strawProperties()._strawInnerRadius);
 	}
         _mcshp = spmcp->position();
         _mcop = det->toDetector(osp.startPosition());

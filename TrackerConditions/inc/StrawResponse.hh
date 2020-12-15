@@ -172,8 +172,6 @@ namespace mu2e {
     double _vsat;
     double _ADCped;
     double _pmpEnergyScaleAvg;
-
-
   };
 }
 #endif
