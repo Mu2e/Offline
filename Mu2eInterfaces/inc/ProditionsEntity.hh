@@ -10,13 +10,15 @@ namespace mu2e {
     typedef std::shared_ptr<ProditionsEntity> ptr;
     typedef std::set<int> set_t;
 
+    ProditionsEntity(std::string name):_name(name) {}
     virtual ~ProditionsEntity() {}
-    virtual std::string const& name() const =0 ;
+    std::string const& name() const { return _name; }
     set_t const& getCids() const { return _cids; }
     void addCids(set_t const& s) { _cids.insert(s.begin(),s.end()); }
     virtual void print( std::ostream& ) const {}
   private:
     set_t _cids;
+    const std::string _name;
   };
 };
 

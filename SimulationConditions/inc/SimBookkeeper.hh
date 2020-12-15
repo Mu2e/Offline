@@ -19,9 +19,10 @@ namespace mu2e {
   class SimBookkeeper : public ProditionsEntity {
 
   public:
-    SimBookkeeper() : _name("SimBookkeeper") {}
+    constexpr static const char* cxname = {"SimBookkeeper"};
+
+    SimBookkeeper() : ProditionsEntity(cxname) {}
     // accessors
-    std::string const& name() const { return _name; }
     double const getEff(const std::string& name) const {
       for (const auto& i_eff : _effs) {
         if (i_eff.first == name) {
@@ -45,7 +46,6 @@ namespace mu2e {
 
   private:
     // data
-    std::string _name;
     std::map<std::string, double> _effs;
   };
 }

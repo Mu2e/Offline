@@ -48,16 +48,15 @@ namespace mu2e {
     using StrawCollection = std::array<Straw,StrawId::_nustraws>;
     using StrawIndexMap = std::array<uint16_t,StrawId::_maxval>; 
     // default constructor results in non-functional object, but is required by proditions service
-    Tracker() : _name("Tracker") {}
+
+    constexpr static const char* cxname = {"Tracker"};
     // copy constructor
     Tracker(const Tracker& other);
     // construct from a set of straws and their global properties.  It would be better to take ownership of
     // existing straws via std::move, but the need for the copy constructor above precludes that
-    Tracker(StrawCollection const& straws, StrawProperties const& sprops, const char* name);
+    Tracker(StrawCollection const& straws, StrawProperties const& sprops);
+
     // accessors
-
-    std::string const& name() const { return _name; }
-
     // geometry parameters used only by G4.  These should be factorized out FIXME!
     double z0()   const { return _z0;} // in Mu2e coordinates (everything else is in Tracker coordiates).
     double zHalfLength() const;
@@ -245,7 +244,6 @@ namespace mu2e {
 
     // non-G4 content; this is the core of the class.  These are kept when the G4 content is factorized away to a separate class FIXME!
   private:
-    std::string _name; // needed for proditions
     xyzVec _origin;
     HepTransform _tracker_to_tnom; // transform to NOMINAL tracker coordinate system.  This is a null transform for the nominal tracker
     // global straw properties

@@ -6,7 +6,6 @@
 //
 
 #include <string>
-#include <boost/type_index.hpp>
 #include "canvas/Persistency/Provenance/EventID.h"
 #include "ProditionsService/inc/ProditionsService.hh"
 #include "DbTables/inc/DbIoV.hh"
@@ -21,9 +20,8 @@ namespace mu2e {
     typedef std::shared_ptr<const ENTITY> cptr_t;
 
     ProditionsHandle():ptr(nullptr) {
-      // find the name of the ENTITY and strip the namespace
-      _name =  boost::typeindex::type_id<ENTITY>().pretty_name();
-      if(_name.find("::")!=std::string::npos) _name=_name.erase(0,_name.find("::")+2);
+      // find the name of the ENTITY
+      _name =  std::string(ENTITY::cxname);
       // connect to the service cache of this type
       art::ServiceHandle<ProditionsService> sg;
       _cptr = sg->getCache(_name);

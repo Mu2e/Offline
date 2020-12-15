@@ -76,11 +76,12 @@ namespace mu2e {
   class MVACatalog : virtual public ProditionsEntity {
 
   public:
-    MVACatalog() : _name("MVACatalog") { }
-    MVACatalog(MVAEntries<T> entries) : _name("MVACatalog"), _entries(entries) { }
+
+    constexpr static const char* cxname = T::cxname;
+
+    MVACatalog(MVAEntries<T> entries) : ProditionsEntity(cxname), _entries(entries) { }
 
     // accessors
-    std::string const& name() const { return _name; }
     MVAEntries<T>& modifiableEntries() { return _entries;}
     MVAEntries<T> const& entries() const { return _entries;}
 
@@ -91,7 +92,7 @@ namespace mu2e {
     }
 
     void print(std::ostream& os) const {
-      os << "Entries in " << _name << ":" << std::endl;
+      os << "Entries in " << name() << ":" << std::endl;
       for (const auto& i_entry : _entries) {
         os << "Train Name: " << i_entry._trainName << ", XML File: " << i_entry._xmlFileName << std::endl;
       }
@@ -116,7 +117,6 @@ namespace mu2e {
 
   private:
     // data
-    std::string _name;
     MVAEntries<T> _entries;
   };
 }

@@ -15,7 +15,7 @@ namespace mu2e {
   class Mu2eDetectorCache : public ProditionsCache {
   public: 
     Mu2eDetectorCache(Mu2eDetectorConfig const& config):
-      ProditionsCache("Mu2eDetector",config.verbose()),
+      ProditionsCache(Mu2eDetector::cxname,config.verbose()),
       _useDb(config.useDb()),_maker(config) {}
 
 
