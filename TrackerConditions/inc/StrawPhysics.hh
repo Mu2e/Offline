@@ -39,7 +39,7 @@ namespace mu2e {
 		 std::vector<double> dtvar,
 		 bool nonlindrift, double bz,
 		 StrawDrift::cptr_t strawDrift) :
-      ProditionsEntity("StrawPhysics"),
+      ProditionsEntity(cxname),
       _EIonize(EIonize),
       _meanpath(meanpath),  _eKin(eKin), _Qe(Qe),
       _intNProb(intNProb),
