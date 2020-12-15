@@ -1,25 +1,23 @@
 #include "CommonMC/fcl/prolog.fcl"
 BEGIN_PROLOG
-makeSGS : {
-    module_type : MakeStrawGasSteps
-    KeepDeltasModule : "g4run" # don't compress deltas on primary particles
-}
-# straw digis
-makeSD : {
-    module_type : StrawDigisFromStrawGasSteps
-    TimeOffsets   : [  @sequence::CommonMC.TimeMaps ]
-    StrawGasStepModule : ""
-}
 #------------------------------------------------------------------------------
 
 TrackerMC : {
-    producers : {
-        makeSGS : {@table::makeSGS }
-        makeSD  : { @table::makeSD  }
+  StepProducers : {
+    StrawGasStepMaker : {
+      module_type : MakeStrawGasSteps
+      KeepDeltasModule : "g4run" # don't compress deltas on primary particles
     }
-    StepSim : [ makeSGS ]
-    DigiSim : [ makeSD ]
-    StepAndDigiSim : [ makeSGS, makeSD ]
+  }
+  DigiProducers : {
+    StrawDigiMaker  : {
+      module_type : StrawDigisFromStrawGasSteps
+      TimeOffsets   : [  @sequence::CommonMC.TimeMaps ]
+      StrawGasStepModule : "StrawGasStepMaker"
+    }
+  }
+  StepSim : [ StrawGasStepMaker ]
+  DigiSim : [ StrawDigiMaker ]
 }
 
 END_PROLOG

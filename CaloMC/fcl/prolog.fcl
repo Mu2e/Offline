@@ -87,16 +87,19 @@ CaloClusterTruthMatch:
 }
 
 
-CaloDigiMC : 
+CaloMC : 
 {
-   producers : {
+   StepProducers : {
      CaloShowerStepMaker  : @local::CaloShowerStepMaker
+   }
+   StepSim     : [ CaloShowerStepMaker]
+   DigiProducers : {
      CaloShowerROMaker    : @local::CaloShowerROMaker
      CaloDigiMaker        : @local::CaloDigiMaker
    }
    producersMC : { CaloDigiTruthMatch : @local::CaloDigiTruthMatch }
 
-   DigiSim     : [ CaloShowerStepMaker, CaloShowerROMaker, CaloDigiMaker]
+   DigiSim     : [ CaloShowerROMaker, CaloDigiMaker]
    TruthMatch  : [ CaloDigiTruthMatch ]
 }
 
