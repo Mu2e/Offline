@@ -41,7 +41,6 @@ namespace mu2e {
     std::vector<Row> const& rows() const {return _rows;}
     std::size_t nrow() const override { return _rows.size(); };
     size_t size() const override {
-      std::cout << "DEBUG " << baseSize() << " " << sizeof(this) << std::endl;
       size_t b = baseSize() + sizeof(this) + nrow()*44 + nrow()*nrow()/2;
       for (auto const& r : _rows) b += r.name().capacity() + r.dbname().capacity();
       return b;

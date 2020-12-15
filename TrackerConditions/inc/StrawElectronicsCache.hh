@@ -16,7 +16,7 @@ namespace mu2e {
   class StrawElectronicsCache : public ProditionsCache {
   public: 
     StrawElectronicsCache(StrawElectronicsConfig const& config):
-      ProditionsCache("StrawElectronics",config.verbose()),
+      ProditionsCache(StrawElectronics::cxname,config.verbose()),
       _useDb(config.useDb()),_maker(config) {}
 
     void initialize() {
