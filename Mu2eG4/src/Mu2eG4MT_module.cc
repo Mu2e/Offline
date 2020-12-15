@@ -361,7 +361,7 @@ namespace mu2e {
     Mu2eG4WorkerRunManager* scheduleWorkerRM = (access_workerMap->second).get();
     access_workerMap.release();
 
-    if (_mtDebugOutput > 0){
+    if (_mtDebugOutput > 1){
       G4cout << "FOR SchedID: " << schedID << ", TID=" << tid << ", workerRunManagers[schedID].get() is:" << scheduleWorkerRM << "\n";
     }
 
@@ -375,7 +375,7 @@ namespace mu2e {
     perThreadStore->initializeEventInfo(&event, &spHelper, &parentHelper, &genInputHits, _generatorModuleLabel);
     scheduleWorkerRM->processEvent(&event);
 
-    if (_mtDebugOutput > 0){
+    if (_mtDebugOutput > 2){
       G4cout << "Current Event in RM is: " << scheduleWorkerRM->GetCurrentEvent()->GetEventID() << "\n";
     }
 
@@ -418,7 +418,7 @@ namespace mu2e {
   // Tell G4 that this run is over.
   void Mu2eG4MT::endRun(art::Run & run, art::ProcessingFrame const& procFrame) {
     
-    if (_mtDebugOutput > 1){
+    if (_mtDebugOutput > 0){
       G4cout << "At endRun pt1, we have " << myworkerRunManagerMap.size() << " members in the map "
              << "and are running " << num_threads << " threads.\n" ;
     }
