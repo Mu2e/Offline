@@ -26,8 +26,9 @@ namespace mu2e {
       float _delay;
     };
 
+    constexpr static const char* cxname = "TrkDelayPanel";
 
-    TrkDelayPanel():DbTable("TrkDelayPanel","trk.delaypanel",
+    TrkDelayPanel():DbTable(cxname,"trk.delaypanel",
 	 "index,delay") {}
     const Row& rowAt(const std::size_t index) const { return _rows.at(index);}
     std::vector<Row> const& rows() const {return _rows;}

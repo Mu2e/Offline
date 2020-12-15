@@ -29,8 +29,9 @@ namespace mu2e {
       std::string _create_user;
     };
 
+    constexpr static const char* cxname = "ValCalibrations";
 
-    ValCalibrations():DbTable("ValCalibrations","val.calibrations",
+    ValCalibrations():DbTable(cxname,"val.calibrations",
 			      "cid,tid,create_time,create_user") {}
 
     const Row& rowAt(const std::size_t index) const { return _rows.at(index);}

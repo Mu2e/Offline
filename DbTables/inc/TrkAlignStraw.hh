@@ -17,8 +17,9 @@ namespace mu2e {
 
     typedef std::shared_ptr<TrkAlignStraw> ptr_t;
     typedef std::shared_ptr<const TrkAlignStraw> cptr_t;
+    constexpr static const char* cxname = "TrkAlignStraw";
 
-    TrkAlignStraw():DbTable("TrkAlignStraw","trk.alignstraw",
+    TrkAlignStraw():DbTable(cxname,"trk.alignstraw",
 	"index,StrawId,wire_cal_dV,wire_cal_dW,wire_hv_dV,wire_hv_dW,straw_cal_dV,straw_cal_dW,straw_hv_dV,straw_hv_dW") {} // this last should come from the Row class FIXME!
     const TrkStrawEndAlign& rowAt(const std::size_t index) const { return _rows.at(index);}
     std::vector<TrkStrawEndAlign> const& rows() const {return _rows;}

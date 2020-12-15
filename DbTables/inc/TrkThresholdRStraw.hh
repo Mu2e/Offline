@@ -30,8 +30,9 @@ namespace mu2e {
       float _threshold_cal;
     };
 
+    constexpr static const char* cxname = "TrkThresholdRStraw";
 
-    TrkThresholdRStraw():DbTable("TrkThresholdRStraw","trk.thresholdrstraw",
+    TrkThresholdRStraw():DbTable(cxname,"trk.thresholdrstraw",
 	 "index,threshold_hv,threshold_cal") {}
     const Row& rowAt(const std::size_t index) const { return _rows.at(index);}
     std::vector<Row> const& rows() const {return _rows;}

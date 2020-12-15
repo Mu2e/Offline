@@ -44,8 +44,9 @@ namespace mu2e {
       float _v9;
     };
 
+    constexpr static const char* cxname = "TstCalib3";
 
-    TstCalib3():DbTable("TstCalib3","tst.calib3",
+    TstCalib3():DbTable(cxname,"tst.calib3",
 			"channel,v0,v1,v2,v3,v4,v5,v6,v7,v8,v9") {}
 
     const Row& rowAt(const std::size_t index) const { return _rows.at(index);}
