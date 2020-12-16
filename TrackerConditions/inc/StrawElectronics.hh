@@ -48,8 +48,7 @@ namespace mu2e {
 
     typedef std::shared_ptr<StrawElectronics> ptr_t;
     typedef std::shared_ptr<const StrawElectronics> cptr_t;
-
-    StrawElectronics():_name("StrawElectronics") {}
+    constexpr static const char* cxname = {"StrawElectronics"};
 
     // construct with constants, then some values are computed and filled below
     StrawElectronics( double tdeadAnalog, double tdeadDigital, double vsat, 
@@ -81,7 +80,7 @@ namespace mu2e {
 		      std::vector<double> timeOffsetPanel, 
 		      std::vector<double> timeOffsetStrawHV, 
 		      std::vector<double> timeOffsetStrawCal) :
-      _name("StrawElectronics"),
+      ProditionsEntity(cxname),
       _tdeadAnalog(tdeadAnalog), _tdeadDigital(tdeadDigital), _vsat(vsat), 
       _snoise(snoise), _ADCLSB(ADCLSB), _maxADC(maxADC), _nADCPackets(nADCPackets), 
       _nADCpre(nADCpre), _ADCPeriod(ADCPeriod), _ADCOffset(ADCOffset), 
@@ -167,7 +166,6 @@ namespace mu2e {
 		  std::vector<double> const& zeros, std::vector<double> const& input, 
                   std::vector<double> &response);
 
-    std::string const& name() const { return _name; }
     void print(std::ostream& os) const;
     void printVector(std::ostream& os, std::string const& name, 
 		    std::vector<double> const& a) const;
@@ -203,8 +201,6 @@ namespace mu2e {
     }
 
   private:
-    
-    std::string _name;
 
     // generic waveform parameters
     std::array<std::vector<double>,npaths> _dVdI; // scale factor between charge and voltage (milliVolts/picoCoulombs)
