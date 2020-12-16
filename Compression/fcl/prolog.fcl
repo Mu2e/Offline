@@ -1,5 +1,20 @@
 BEGIN_PROLOG
 
+Compression : {
+  compressDetStepMCs : {
+    module_type : CompressDetStepMCs
+    strawGasStepTag : "makeSGS"
+    simParticleTag : "g4run"
+#   strawGasStepCompressionLevel : -1
+#   caloShowerStepTag : "CaloShowerStepMaker"
+#   caloShowerStepCompressionLevel : -1
+#   crvBarStepTag : "g4run" # currently a StepPointMC
+#   crvBarStepCompressionLevel : -1
+#   stepPointMCTags : [ "g4run:virutaldetector", "g4run:protonabsorber", "g4run:stoppingtarget" ]
+    debugLevel : 0
+  }
+}
+
 DigiCompressionTags : {
     
     commonStrawDigiMCTag : "makeSD"
