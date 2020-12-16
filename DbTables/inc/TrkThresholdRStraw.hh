@@ -30,22 +30,23 @@ namespace mu2e {
       float _threshold_cal;
     };
 
+    constexpr static const char* cxname = "TrkThresholdRStraw";
 
-    TrkThresholdRStraw():DbTable("TrkThresholdRStraw","trk.thresholdrstraw",
+    TrkThresholdRStraw():DbTable(cxname,"trk.thresholdrstraw",
 	 "index,threshold_hv,threshold_cal") {}
     const Row& rowAt(const std::size_t index) const { return _rows.at(index);}
     std::vector<Row> const& rows() const {return _rows;}
-    std::size_t nrow() const { return _rows.size(); };
-    virtual std::size_t nrowFix() const { return 96; }; 
-    size_t size() const { return _csv.capacity() + nrow()*sizeof(Row); };
+    std::size_t nrow() const override { return _rows.size(); };
+    virtual std::size_t nrowFix() const override { return 96; }; 
+    size_t size() const override { return baseSize() + nrow()*sizeof(Row); };
 
-    void addRow(const std::vector<std::string>& columns) {
+    void addRow(const std::vector<std::string>& columns) override {
       _rows.emplace_back(std::stoi(columns[0]),
 			 std::stof(columns[1]),
 			 std::stof(columns[2]) );
     }
 
-    void rowToCsv(std::ostringstream& sstream, std::size_t irow) const {
+    void rowToCsv(std::ostringstream& sstream, std::size_t irow) const override {
       Row const& r = _rows.at(irow);
       sstream << r.index()<<",";
       sstream << std::fixed << std::setprecision(1); 
@@ -53,7 +54,7 @@ namespace mu2e {
       sstream << r.thresholdCal();
     }
 
-    virtual void clear() { _csv.clear(); _rows.clear(); }
+    virtual void clear() override { baseClear(); _rows.clear(); }
 
   private:
     std::vector<Row> _rows;

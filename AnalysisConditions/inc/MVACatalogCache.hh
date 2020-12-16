@@ -17,8 +17,8 @@ namespace mu2e {
   template <class T, class DB>
   class MVACatalogCache : public ProditionsCache {
   public: 
-    MVACatalogCache(std::string name, MVACatalogConfig const& config):
-      ProditionsCache(name,config.verbose()),
+    MVACatalogCache(MVACatalogConfig const& config):
+      ProditionsCache(T::cxname,config.verbose()),
       _useDb(config.useDb()),_maker(config) {}
 
     void initialize() {

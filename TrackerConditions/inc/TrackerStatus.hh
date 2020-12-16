@@ -31,12 +31,12 @@ namespace mu2e {
     typedef std::shared_ptr<TrackerStatus> ptr_t;
     typedef std::shared_ptr<const TrackerStatus> cptr_t;
     typedef std::set<TrackerElementStatus> estat_t;
-    TrackerStatus(): _name("TrackerStatus") {}
-    TrackerStatus(estat_t const& estatus): _name("TrackerStatus"), _estatus(estatus) {}
+    constexpr static const char* cxname = {"TrackerStatus"};
+
+    TrackerStatus(estat_t const& estatus): ProditionsEntity(cxname), _estatus(estatus) {}
 
     virtual ~TrackerStatus() {}
 
-    std::string const& name() const override { return _name; }
     void print( std::ostream& ) const override;
     // convenience operators for some common situations
     bool noSignal(StrawId const& sid) const;    // return 'true' if we expect no usable signal from this straw
@@ -50,7 +50,6 @@ namespace mu2e {
     StrawStatus panelStatus(StrawId const& sid) const;
     StrawStatus planeStatus(StrawId const& sid) const;
   private:
-    std::string _name;
     estat_t _estatus; // sparse list of tracker element status
   };
 

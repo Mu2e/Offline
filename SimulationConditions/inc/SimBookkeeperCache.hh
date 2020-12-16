@@ -19,7 +19,7 @@ namespace mu2e {
   class SimBookkeeperCache : public ProditionsCache {
   public:
     SimBookkeeperCache(SimBookkeeperConfig const& config):
-      ProditionsCache("SimBookkeeper", config.verbose()),
+      ProditionsCache(SimBookkeeper::cxname, config.verbose()),
       _useDb(config.useDb()),_maker(config) {}
 
     void initialize();

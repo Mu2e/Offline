@@ -25,8 +25,8 @@ namespace mu2e {
   public:
     typedef std::shared_ptr<StrawPhysics> ptr_t;
     typedef std::shared_ptr<const StrawPhysics> cptr_t;
+    constexpr static const char* cxname = {"StrawPhysics"};
 
-    StrawPhysics():_name("StrawPhysics") {}
     StrawPhysics(
 		 std::vector<double> EIonize,
 		 double meanpath, double eKin, double Qe,
@@ -39,7 +39,7 @@ namespace mu2e {
 		 std::vector<double> dtvar,
 		 bool nonlindrift, double bz,
 		 StrawDrift::cptr_t strawDrift) :
-      _name("StrawPhysics"),
+      ProditionsEntity(cxname),
       _EIonize(EIonize),
       _meanpath(meanpath),  _eKin(eKin), _Qe(Qe),
       _intNProb(intNProb),
@@ -53,8 +53,6 @@ namespace mu2e {
       _strawDrift(strawDrift) {}
     
     virtual ~StrawPhysics() {}
-
-    std::string const& name() const { return _name; }
 
     // models.  Note these are different from the corresponding
     // functions used in reconstruction, as those can be wire-
@@ -77,8 +75,6 @@ namespace mu2e {
     void print(std::ostream& os) const;
 
   private:
-
-    std::string _name;
 
     std::vector<double> _EIonize; // cumulative energy to create N ionization electrons (MeV)
     double _meanpath; // mean free path (mm)

@@ -13,8 +13,8 @@ using namespace std;
 
 namespace mu2e {
 
-  Tracker::Tracker(StrawCollection const& straws, StrawProperties const& sprops, const char* name) :
-  _name(name), _strawprops(sprops), _strawindex{}, _straws(straws) {
+  Tracker::Tracker(StrawCollection const& straws, StrawProperties const& sprops) :
+  ProditionsEntity(cxname), _strawprops(sprops), _strawindex{}, _straws(straws) {
     // create the fast lookup map
     for(uint16_t plane=0; plane < StrawId::_nplanes; plane++){
       for(uint16_t panel = 0;panel < StrawId::_npanels; panel++){
@@ -40,7 +40,7 @@ namespace mu2e {
   }
 
 // the following copies the core tracker plus all the elements built outside this class by TrackerMaker: this design needs to be refactored FIXME
-  Tracker::Tracker(const Tracker& other) : Tracker(other.straws(), other.strawProperties(),other.name().c_str()) {
+  Tracker::Tracker(const Tracker& other) : Tracker(other.straws(), other.strawProperties()) {
 // copy all the G4 variables by hand.  These should never be needed by this copy
     _z0 = other._z0;
     _rOut = other._rOut;

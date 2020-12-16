@@ -413,7 +413,7 @@ namespace mu2e {
     // fill their content
     makeStraws(allStraws);
     // build tracker with these
-    _tt = unique_ptr<Tracker>(new Tracker(allStraws,strawprops,"Tracker"));
+    _tt = unique_ptr<Tracker>(new Tracker(allStraws,strawprops));
 
 // now G4 stuff.  This should be factorized away, preferably to a different class FIXME
     for ( int ipln=0; ipln<StrawId::_nplanes; ++ipln ){
