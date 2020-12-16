@@ -69,7 +69,7 @@ public:
     // fhicl parameters for all of our inputs
     fhicl::Atom<art::InputTag> strawGasStepTag{Name("strawGasStepTag"), Comment("InputTag for the StrawGasSteps")};
     fhicl::Atom<art::InputTag> caloShowerStepTag{Name("caloShowerStepTag"), Comment("InputTag for CaloShowerSteps")};
-    //    fhicl::Atom<art::InputTag> crvBarStepTag{Name("crvBarStepTag"), Comment("InputTag for CrvBarSteps")};
+    fhicl::Atom<art::InputTag> crvBarStepTag{Name("crvBarStepTag"), Comment("InputTag for CrvBarSteps")};
     fhicl::Atom<art::InputTag> simParticleTag{Name("simParticleTag"), Comment("InputTag for the SimParticleCollection")};
     fhicl::Atom<int> debugLevel{Name("debugLevel"), Comment("Debug level (0 = no debug output)")};
   };
@@ -93,6 +93,8 @@ public:
   void updateStrawGasSteps();
   void compressCaloShowerSteps(const art::Event& event);
   void updateCaloShowerSteps();
+  void compressCrvBarSteps(const art::Event& event);
+  void updateCrvBarSteps();
   void compressSimParticles(const art::Event& event);
   void compressGenParticles();
   void recordSimParticle(const art::Ptr<mu2e::SimParticle>& sim_ptr);
@@ -104,7 +106,7 @@ private:
   // unique_ptrs to the new output collections
   std::unique_ptr<mu2e::StrawGasStepCollection> _newStrawGasSteps;
   std::unique_ptr<CaloShowerStepCollection> _newCaloShowerSteps;
-  //  std::unique_ptr<CrvBarStepCollection> _newCrvBarSteps;
+  std::unique_ptr<CrvBarStepCollection> _newCrvBarSteps;
 
   // To create art::Ptrs to the new SimParticles and GenParticles,
   // we need their art::ProductIDs and art::EDProductGetters
@@ -132,14 +134,14 @@ mu2e::CompressDetStepMCs::CompressDetStepMCs(const Parameters& conf)
 
   produces<StrawGasStepCollection>();
   produces<CaloShowerStepCollection>();
-  //  produces<CrvBarStepCollection>();
+  produces<CrvBarStepCollection>("CRV"); // need to give an instance name because this is currently a StepPointMC
 }
 
 void mu2e::CompressDetStepMCs::produce(art::Event & event)
 {
   _newStrawGasSteps = std::unique_ptr<StrawGasStepCollection>(new StrawGasStepCollection);
   _newCaloShowerSteps = std::unique_ptr<CaloShowerStepCollection>(new CaloShowerStepCollection);
-  //  _newCrvBarSteps = std::unique_ptr<CrvBarStepCollection>(new CrvBarStepCollection);
+  _newCrvBarSteps = std::unique_ptr<CrvBarStepCollection>(new CrvBarStepCollection);
 
   _newSimParticles = std::unique_ptr<SimParticleCollection>(new SimParticleCollection);
   _newSimParticlesPID = event.getProductID<SimParticleCollection>();
@@ -170,7 +172,7 @@ void mu2e::CompressDetStepMCs::produce(art::Event & event)
   // Now add everything to the event
   event.put(std::move(_newStrawGasSteps));
   event.put(std::move(_newCaloShowerSteps));
-  //  event.put(std::move(_newCrvBarSteps));
+  event.put(std::move(_newCrvBarSteps), "CRV");
   event.put(std::move(_newSimParticles));
   event.put(std::move(_newGenParticles));
 }
@@ -209,6 +211,23 @@ void mu2e::CompressDetStepMCs::compressCaloShowerSteps(const art::Event& event) 
   }
 }
 
+void mu2e::CompressDetStepMCs::compressCrvBarSteps(const art::Event& event) {
+  art::Handle<mu2e::CrvBarStepCollection> crvBarStepsHandle;
+  event.getByLabel(_conf.crvBarStepTag(), crvBarStepsHandle);
+  const auto& crvBarSteps = *crvBarStepsHandle;
+  if(_conf.debugLevel()>0 && crvBarSteps.size()>0) {
+    std::cout << "Compressing CrvBarSteps from " << _conf.crvBarStepTag() << std::endl;
+  }
+  for (const auto& i_crvBarStep : crvBarSteps) {
+    recordSimParticle(i_crvBarStep.simParticle());
+    CrvBarStep newCrvBarStep(i_crvBarStep);
+    _newCrvBarSteps->push_back(newCrvBarStep);
+  }
+  if (_newCrvBarSteps->size() != crvBarSteps.size()) {
+    throw cet::exception("CompressDetStepMCs") << "Number of CrvBarSteps in output collection (" << _newCrvBarSteps->size() << ") does not match the number of CrvBarSteps in the inout collection (" << crvBarSteps.size() << ")" << std::endl;
+  }
+}
+
 void mu2e::CompressDetStepMCs::updateStrawGasSteps() {
   for (auto& i_strawGasStep : *_newStrawGasSteps) {
     const auto& oldSimPtr = i_strawGasStep.simParticle();
@@ -230,6 +249,18 @@ void mu2e::CompressDetStepMCs::updateCaloShowerSteps() {
     }
 
     i_caloShowerStep.setSimParticle(newSimPtr);
+  }
+}
+
+void mu2e::CompressDetStepMCs::updateCrvBarSteps() {
+  for (auto& i_crvBarStep : *_newCrvBarSteps) {
+    const auto& oldSimPtr = i_crvBarStep.simParticle();
+    art::Ptr<mu2e::SimParticle> newSimPtr = _simPtrRemap.at(oldSimPtr);
+    if(_conf.debugLevel()>0) {
+      std::cout << "Updating SimParticlePtr in CrvBarStep from " << oldSimPtr << " to " << newSimPtr << std::endl;
+    }
+
+    i_crvBarStep.simParticle() = newSimPtr;
   }
 }
 

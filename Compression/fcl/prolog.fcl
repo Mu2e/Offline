@@ -5,7 +5,7 @@ Compression : {
     module_type : CompressDetStepMCs
     strawGasStepTag : "makeSGS"
     caloShowerStepTag : "CaloShowerStepMaker"
-#    crvBarStepTag : "g4run" # currently a StepPointMC
+    crvBarStepTag : "g4run:CRV" # currently a StepPointMC
     simParticleTag : "g4run"
 #   strawGasStepCompressionLevel : -1
 #   caloShowerStepCompressionLevel : -1
