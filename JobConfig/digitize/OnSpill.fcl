@@ -1,0 +1,34 @@
+#
+#  Digitization specialization for on-spill simulations
+#
+#include "JobConfig/digitize/prolog.fcl"
+# trigger shoud be onspill specific FIXME
+#include "gen/fcl/Trigger/offline/allTrig/allPaths.fcl"
+source : { module_type : RootInput }
+services : @local::Services.SimAndReco # reco is needed for the trigger
+physics : { 
+  producers : {
+    @table::Digitize.producers
+    @table::Trigger.producers 
+  }
+  filters: { 
+    @table::Digitize.filters 
+    @table::Trigger.filters
+# Tighten the primary selection.  This will only be used to select the 'trigger reject' stream
+    DetStepFilter : {
+      @table::Primary.DetStepFilter
+      MinimumPartMom : 80.0 # MeV/c
+      MaximumPartMom : 130.0 # MeV/c
+      TestTrk : true
+      TestCalo : false
+      TestCrv : false
+      MinimumTrkSteps : 15
+    }
+  }
+  # setup 'trigger reject' stream after RejectEvents is implemented TODO!
+  analyzers: { @table::Digitize.analyzers }
+  TriggerPath : @local::Digitize.TriggerPath
+  EndPath : @local::Digitize.EndPath
+}
+
+

@@ -43,8 +43,8 @@ Primary: {
       MinimumCaloStepEnergy : 1.0 # 1 MeV
       MinimumCrvStepEnergy : 1.0e-6 # get a real value from CRV experts FIXME!
       MinimumPartMom : 80.0 # MeV/c
-      MaximumPartMom : 200.0 # MeV/c
-      KeepPDG : [-11, 11, -13, 13 ] # electrons and muons: should be central FIXME
+      MaximumPartMom : 10000.0 # MeV/c
+      KeepPDG : [-11, 11, -13, 13 ] # electrons and muons: should be defined in a common config file FIXME
       TestTrk : true
       TestCalo : true
       TestCrv : false

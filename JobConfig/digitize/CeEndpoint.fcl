@@ -1,0 +1,16 @@
+#
+# mono-energetic e- at the Al Ce endpoint without background mixing
+#
+# original author: Dave Brown, LBNL
+#
+#include "JobConfig/digitize/OnSpill.fcl"
+process_name: CeEndpointDigis
+
+#
+# final configuration
+#
+#include "JobConfig/primary/epilog.fcl"
+# customize the output
+services.TFileService.fileName: "nts.owner.CeEndpointDigis.version.sequencer.root"
+outputs.Output.fileName: "sim.owner.CeEndpointDigis.version.sequencer.art"
+physics.end_paths : [ EndPath ] # needed for generate_fcl
