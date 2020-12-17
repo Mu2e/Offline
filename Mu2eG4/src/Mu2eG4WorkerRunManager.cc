@@ -276,7 +276,7 @@ namespace mu2e {
   }
 
 
-  void Mu2eG4WorkerRunManager::processEvent(art::EventID evtID){
+  void Mu2eG4WorkerRunManager::processEvent(const art::EventID& evtID){
 
     numberOfEventToBeProcessed = 1;
     runIsSeeded = false;
@@ -293,7 +293,7 @@ namespace mu2e {
   }
   
   
-  G4Event* Mu2eG4WorkerRunManager::generateEvt(art::EventID evtID){
+  G4Event* Mu2eG4WorkerRunManager::generateEvt(const art::EventID& evtID){
     
     G4Event* anEvent = new G4Event(evtID.event());
     G4bool eventHasToBeSeeded = true;
