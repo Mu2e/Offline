@@ -203,6 +203,8 @@ namespace mu2e {
 
       fhicl::Atom<std::string> generatorModuleLabel {Name("generatorModuleLabel"), ""};
 
+      fhicl::Atom<std::string> salt {Name("salt"), ""};
+
       fhicl::Atom<bool> G4InteralFiltering {Name("G4InteralFiltering"), false};
     };
   }
