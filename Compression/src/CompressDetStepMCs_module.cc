@@ -57,6 +57,7 @@ namespace mu2e {
 
   typedef mu2e::StepPointMC CrvBarStep; // this will become a CrvBarStep class
   typedef mu2e::StepPointMCCollection CrvBarStepCollection;
+  typedef std::string InstanceLabel;
 }
 
 
@@ -70,6 +71,7 @@ public:
     fhicl::Atom<art::InputTag> strawGasStepTag{Name("strawGasStepTag"), Comment("InputTag for the StrawGasSteps")};
     fhicl::Atom<art::InputTag> caloShowerStepTag{Name("caloShowerStepTag"), Comment("InputTag for CaloShowerSteps")};
     fhicl::Atom<art::InputTag> crvBarStepTag{Name("crvBarStepTag"), Comment("InputTag for CrvBarSteps")};
+    fhicl::Sequence<art::InputTag> stepPointMCTags{Name("stepPointMCTags"), Comment("Sequence of InputTags for StepPointMCCollections (e.g. virtualdetector)")};
     fhicl::Atom<art::InputTag> simParticleTag{Name("simParticleTag"), Comment("InputTag for the SimParticleCollection")};
     fhicl::Atom<int> debugLevel{Name("debugLevel"), Comment("Debug level (0 = no debug output)")};
   };
@@ -95,6 +97,8 @@ public:
   void updateCaloShowerSteps();
   void compressCrvBarSteps(const art::Event& event);
   void updateCrvBarSteps();
+  void compressStepPointMCs(const art::Event& event);
+  void updateStepPointMCs();
   void compressSimParticles(const art::Event& event);
   void compressGenParticles();
   void recordSimParticle(const art::Ptr<mu2e::SimParticle>& sim_ptr);
@@ -107,6 +111,7 @@ private:
   std::unique_ptr<mu2e::StrawGasStepCollection> _newStrawGasSteps;
   std::unique_ptr<CaloShowerStepCollection> _newCaloShowerSteps;
   std::unique_ptr<CrvBarStepCollection> _newCrvBarSteps;
+  std::map<InstanceLabel, std::unique_ptr<StepPointMCCollection> > _newStepPointMCs;
 
   // To create art::Ptrs to the new SimParticles and GenParticles,
   // we need their art::ProductIDs and art::EDProductGetters
@@ -135,6 +140,10 @@ mu2e::CompressDetStepMCs::CompressDetStepMCs(const Parameters& conf)
   produces<StrawGasStepCollection>();
   produces<CaloShowerStepCollection>();
   produces<CrvBarStepCollection>("CRV"); // need to give an instance name because this is currently a StepPointMC
+
+  for (const auto& i_tag : _conf.stepPointMCTags()) {
+    produces<StepPointMCCollection>( i_tag.instance() );
+  }
 }
 
 void mu2e::CompressDetStepMCs::produce(art::Event & event)
@@ -142,6 +151,10 @@ void mu2e::CompressDetStepMCs::produce(art::Event & event)
   _newStrawGasSteps = std::unique_ptr<StrawGasStepCollection>(new StrawGasStepCollection);
   _newCaloShowerSteps = std::unique_ptr<CaloShowerStepCollection>(new CaloShowerStepCollection);
   _newCrvBarSteps = std::unique_ptr<CrvBarStepCollection>(new CrvBarStepCollection);
+
+  for (const auto& i_tag : _conf.stepPointMCTags()) {
+    _newStepPointMCs[i_tag.instance()] = std::unique_ptr<StepPointMCCollection>(new StepPointMCCollection);
+  }
 
   _newSimParticles = std::unique_ptr<SimParticleCollection>(new SimParticleCollection);
   _newSimParticlesPID = event.getProductID<SimParticleCollection>();
@@ -157,22 +170,29 @@ void mu2e::CompressDetStepMCs::produce(art::Event & event)
   // Compress detector steps and record which SimParticles we want to keep
   compressStrawGasSteps(event);
   compressCaloShowerSteps(event);
+  compressCrvBarSteps(event);
 
   // Compress the SimParticles and record their new keys
   compressSimParticles(event);
 
-  // Create the new GenParticleCollection for the SimParticles we are keeping
-  // and have the new SimParticle point to the new GenParticle
+  // Now that we know which SimParticles we are keeping,
+  // we will only keep StepPointMCs and GenParticles that are connected to those
+  compressStepPointMCs(event);
   compressGenParticles();
 
   // Update all the detector steps so that their SimParticlePtrs point to the new collection
   updateStrawGasSteps();
   updateCaloShowerSteps();
+  updateCrvBarSteps();
+  updateStepPointMCs();
 
   // Now add everything to the event
   event.put(std::move(_newStrawGasSteps));
   event.put(std::move(_newCaloShowerSteps));
   event.put(std::move(_newCrvBarSteps), "CRV");
+  for (const auto& i_tag : _conf.stepPointMCTags()) {
+    event.put(std::move(_newStepPointMCs.at(i_tag.instance())), i_tag.instance());
+  }
   event.put(std::move(_newSimParticles));
   event.put(std::move(_newGenParticles));
 }
@@ -294,6 +314,44 @@ void mu2e::CompressDetStepMCs::compressGenParticles() {
       // Copy GenParticle to the new collection
       _newGenParticles->emplace_back(*newsim.genParticle());
       newsim.genParticle() = art::Ptr<mu2e::GenParticle>(_newGenParticlesPID, _newGenParticles->size()-1, _newGenParticleGetter);
+    }
+  }
+}
+
+void mu2e::CompressDetStepMCs::compressStepPointMCs(const art::Event& event) {
+
+  for (const auto& i_tag : _conf.stepPointMCTags()) {
+    const auto& stepPointMCs = event.getValidHandle<StepPointMCCollection>(i_tag);
+    if(_conf.debugLevel()>0 && stepPointMCs->size()>0) {
+      std::cout << "Compressing StepPointMCs from " << i_tag << std::endl;
+    }
+    for (const auto& stepPointMC : *stepPointMCs) {
+      for (const auto& simPartsToKeep : _simParticlesToKeep) {
+        const art::ProductID& oldProdID = simPartsToKeep.first;
+        if (stepPointMC.simParticle().id() != oldProdID) {
+          continue;
+        }
+        const SimParticleSet& alreadyKeptSimParts = simPartsToKeep.second;
+        for (const auto& alreadyKeptSimPart : alreadyKeptSimParts) {
+          if (stepPointMC.simParticle() == alreadyKeptSimPart) {
+            StepPointMC newStepPointMC(stepPointMC);
+            _newStepPointMCs.at(i_tag.instance())->push_back(newStepPointMC);
+          }
+        }
+      }
+    }
+  }
+}
+
+void mu2e::CompressDetStepMCs::updateStepPointMCs() {
+  for (const auto& i_tag : _conf.stepPointMCTags()) {
+    for (auto& i_stepPointMC : *(_newStepPointMCs.at(i_tag.instance()))) {
+      const auto& oldSimPtr = i_stepPointMC.simParticle();
+      art::Ptr<mu2e::SimParticle> newSimPtr = _simPtrRemap.at(oldSimPtr);
+      if(_conf.debugLevel()>0) {
+        std::cout << "Updating SimParticlePtr in StepPointMC from " << oldSimPtr << " to " << newSimPtr << std::endl;
+      }
+      i_stepPointMC.simParticle() = newSimPtr;
     }
   }
 }
