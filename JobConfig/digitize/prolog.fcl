@@ -1,42 +1,67 @@
 #
 # Prolog for digitizing detector steps.  These scripts can be run as-is, or in conjunction with mixing
 #
+#
+BEGIN_PROLOG
+TrackCaloMatching : { 
+#    DtOffset : -0.4 # v6_3: was 2.9  # track-cluster offset, ns v5_7_6 # 1.2  # 1.4   
+    DtOffset : 0.2 # from TrkCaloHit matching
+}
+END_PROLOG
+
+#
+#include "JobConfig/primary/prolog.fcl"
 #include "CommonMC/fcl/prolog.fcl"
 #include "TrackerMC/fcl/prolog.fcl"
 #include "CaloMC/fcl/prolog.fcl"
 #include "CRVResponse/fcl/prolog.fcl"
 #include "Filters/fcl/prolog.fcl"
+#include "Trigger/fcl/templates.fcl"
 #
 BEGIN_PROLOG
 
 Digitize: {
   producers : {
     @table::CommonMC.producers
-    @table::TrackerDigiMC.producers
-    @table::CaloDigiMC.producers
+    @table::TrackerMC.DigiProducers
+    @table::CaloMC.DigiProducers
     @table::CrvDAQPackage.producers
+    # default PBI with no intensity
+    protonBunchIntensity : {
+      module_type: ProtonBunchIntensityFlat
+      mean: 0.0 # No PBI possible for pure signal! 
+      halfWidth : 1.0
+    } 
   }
-  filters : {
-# digi filtering for Digi Primary selection.
-    DigiFilter : {
-      module_type : StrawDigiMCFilter
-      StrawDigiMCCollection : "makeStrawDigis"
-    }
+  analyzers: {
+    digiCompressionCheck : @local::DigiCompression.Check
   }
-  Sequence : [  @sequence::CommonMC.DigiSim,
-    makeStrawDigis,
-    @sequence::CaloDigiMC.DigiSim,
-    @sequence::CaloDigiMC.TruthMatch,
-    @sequence::CrvDAQPackage.CrvResponseSequence ]
+
+  TriggerSequence : [  @sequence::CommonMC.DigiSim,
+    @sequence::TrackerMC.DigiSim,
+    @sequence::CaloMC.DigiSim,
+    @sequence::CaloMC.TruthMatch,
+    @sequence::CrvDAQPackage.CrvResponseSequence,
+    DetStepFilter ]
 #    compressDigiMCs ]
 
-  analyzers: {
-#    digiCompressionCheck : @local::DigiCompression.Check
-  }
+  KeptProducts : [  "keep mu2e::StrawDigis_*_*_*",
+                    "keep mu2e::StrawDigiADCWaveforms_*_*_*",
+		    "keep mu2e::CaloDigis_*_*_*",
+		    "keep mu2e::CrvDigis_*_*_*",
+		    "keep mu2e::StatusG4_*_*_*",
+		    "keep art::TriggerResults_*_*_*",
+		    "keep mu2e::EventWindowMarker_*_*_*",
+		    "keep mu2e::ProtonBunchTimeMC_*_*_*",
+		    "keep mu2e::ProtonBunchTime_*_*_*",
+		    "keep *_genCounter_*_*",
+		    "keep mu2e::EventWeight_*_*_*",
+		    "keep mu2e::ProtonBunchIntensity_*_*_*" ]
+#		    "keep *_compressDigiMCs_*_*" ]
 
   Output : {
-     module_type : RootOutput
-#     SelectEvents : [ DigiPath ]
+     module_type : RootOutput     SelectEvents : [ DigiPath ]
+     SelectEvents : [ "*_trigger" ] # this selects events passing any trigger
      fileName    : @nil
      # drop StepPoints from calorimeter
 #     outputCommands : @local::DigiCompression.OutputCommands
@@ -44,7 +69,12 @@ Digitize: {
   EndPath : [ digiCompressionCheck, Output ]
 
 }
+Digitize.Output.outputCommands : [ "drop *_*_*_*",
+		       @sequence::Primary.KeptProducts,
+		       @sequence::Digitize.KeptProducts ]
+
 # define paths
-Digitize.TriggerPath : [ @sequence::Digitize.Sequence ]
+Digitize.TriggerPath : [ @sequence::Digitize.TriggerSequence ]
+outputs.Output.SelectEvents : # add output stream of 'good' events that fail the trigger; this requiers a new verison of art FIXME!
 
 END_PROLOG

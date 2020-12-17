@@ -1,10 +1,10 @@
 #
-# mono-energetic e- at the Al Ce endpoint without background mixing
+# generate and produce Detector Steps from mono-energetic e- at the Al Ce endpoint
 #
 # original author: Dave Brown, LBNL
 #
 #include "JobConfig/primary/prolog.fcl"
-process_name: CeEndpoint
+process_name: CeEndpointSteps
 
 source: { module_type : EmptyEvent }
 services: @local::Services.Sim
@@ -26,6 +26,6 @@ outputs : {
 #
 #include "JobConfig/primary/epilog.fcl"
 # customize the output
-services.TFileService.fileName: "nts.owner.CeEndpoint.version.sequencer.root"
-outputs.Output.fileName: "sim.owner.CeEndpoint.version.sequencer.art"
+services.TFileService.fileName: "nts.owner.CeEndpointSteps.version.sequencer.root"
+outputs.Output.fileName: "sim.owner.CeEndpointSteps.version.sequencer.art"
 physics.end_paths : [ EndPath ] # needed for generate_fcl
