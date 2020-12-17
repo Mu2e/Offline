@@ -19,7 +19,6 @@ helper=mu2e_helper(env)
 
 g4inc    = os.environ['G4INCLUDE'] + '/Geant4'
 g4libdir = os.environ['G4LIB']
-g4LibInc = [ '-L'+g4libdir, '-I'+g4inc]
 cryptoppinc = os.environ['CRYPTOPP_INC']
 cryptopplibdir = os.environ['CRYPTOPP_LIB']
 g4LibInc = [ '-L'+g4libdir, '-I'+g4inc, '-L'+cryptopplibdir, '-I'+cryptoppinc ]
