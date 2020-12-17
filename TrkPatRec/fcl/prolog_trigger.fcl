@@ -31,45 +31,8 @@ TTtimeClusterFinder : {
 TTrobustHelixFinder : { @table::RobustHelixFinder
     ComboHitCollection    : "TTflagBkgHits"
     TimeClusterCollection : "TTtimeClusterFinder"
-    HitSelectionBits      : ["TimeDivision"]
-    HitBackgroundBits     : ["Background"]
-#    HelixStereoHitMVA     : { MVAWeights : "TrkPatRec/test/HelixStereoHitMVA.weights.xml" }
-#    HelixNonStereoHitMVA  : { MVAWeights : "TrkPatRec/test/HelixNonStereoHitMVA.weights.xml" }
-    
-    diagLevel        : 0
-    debugLevel       : 0
-    reducedchi2      : 0
-    printFrequency   : 101
-    PrefilterHits    : true
-    UpdateStereoHits : false
-    minNStrawHits    : 10
-    minNHit          : 5
-    MaxChi2dXY       : 5.0
-    MaxChi2dZPhi     : 5.0
-    MaxHitPhiChi2    : 25.
-    MaxRadiusDiff    : 100.
-    MaxRPull         : 5.0
-
-    targetconsistent_init  : false
-    targetconsistent       : false
-    RPullScaleF            : 1.0
-    MaxPhiHitSeparation    : 1.0
-    SaveHelixFlag          : ["HelixOK"]
-    MaxIterations          : 10
-    CenterRadialResolution : 20.0
-    CenterPerpResolution   : 12.
-    MaxWireDistance        : 200.0
-    MaxTransDistance       : 80.0
-    MaxChisquared          : 25.
-    MaxRWDot               : 1.0
-    MinRadiusErr           : 20.0
-    UseHitMVA              : false
-    MinMVA                 : 0.1
-    
-    HelixFitter            : { @table::TrkRecoTrigger.TTrobustHelixFit}
-
-    T0Calculator : @local::TimeCalculator
-    UpdateStereo         : false
+    RPullScaleF           : 1.0
+    HelixFitter           : { @table::TrkRecoTrigger.TTrobustHelixFit}
 }
 # pattern recognition internals
 # Kalman fit configuration for the seed fit (least squares configuration of Kalman fit)
