@@ -1,6 +1,7 @@
 //
-// Compression module that takes detector steps (e.g. StrawGasStep)
-// and compresses out unwanted MC information (e.g. SimParticles)
+// Compression module that takes detector steps (StrawGasSteps, CaloShowerSteps, and CrvBarSteps)
+// and compresses out unwanted MC information (StepPointMCs, SimParticles and GenParticles).
+// Note that the number of detector steps is NOT reduced.
 //
 // Dec 2020, Andy Edmonds
 //
@@ -200,34 +201,38 @@ void mu2e::CompressDetStepMCs::produce(art::Event & event)
 void mu2e::CompressDetStepMCs::compressStrawGasSteps(const art::Event& event) {
   art::Handle<mu2e::StrawGasStepCollection> strawGasStepsHandle;
   event.getByLabel(_conf.strawGasStepTag(), strawGasStepsHandle);
-  const auto& strawGasSteps = *strawGasStepsHandle;
-  if(_conf.debugLevel()>0 && strawGasSteps.size()>0) {
-    std::cout << "Compressing StrawGasSteps from " << _conf.strawGasStepTag() << std::endl;
-  }
-  for (const auto& i_strawGasStep : strawGasSteps) {
-    recordSimParticle(i_strawGasStep.simParticle());
-    StrawGasStep newStrawGasStep(i_strawGasStep);
-    _newStrawGasSteps->push_back(newStrawGasStep);
-  }
-  if (_newStrawGasSteps->size() != strawGasSteps.size()) {
-    throw cet::exception("CompressDetStepMCs") << "Number of StrawGasSteps in output collection (" << _newStrawGasSteps->size() << ") does not match the number of StrawGasSteps in the inout collection (" << strawGasSteps.size() << ")" << std::endl;
+  if (strawGasStepsHandle.isValid()) {
+    const auto& strawGasSteps = *strawGasStepsHandle;
+    if(_conf.debugLevel()>0 && strawGasSteps.size()>0) {
+      std::cout << "Compressing StrawGasSteps from " << _conf.strawGasStepTag() << std::endl;
+    }
+    for (const auto& i_strawGasStep : strawGasSteps) {
+      recordSimParticle(i_strawGasStep.simParticle());
+      StrawGasStep newStrawGasStep(i_strawGasStep);
+      _newStrawGasSteps->push_back(newStrawGasStep);
+    }
+    if (_newStrawGasSteps->size() != strawGasSteps.size()) {
+      throw cet::exception("CompressDetStepMCs") << "Number of StrawGasSteps in output collection (" << _newStrawGasSteps->size() << ") does not match the number of StrawGasSteps in the input collection (" << strawGasSteps.size() << ")" << std::endl;
+    }
   }
 }
 
 void mu2e::CompressDetStepMCs::compressCaloShowerSteps(const art::Event& event) {
   art::Handle<mu2e::CaloShowerStepCollection> caloShowerStepsHandle;
   event.getByLabel(_conf.caloShowerStepTag(), caloShowerStepsHandle);
-  const auto& caloShowerSteps = *caloShowerStepsHandle;
-  if(_conf.debugLevel()>0 && caloShowerSteps.size()>0) {
-    std::cout << "Compressing CaloShowerSteps from " << _conf.caloShowerStepTag() << std::endl;
-  }
-  for (const auto& i_caloShowerStep : caloShowerSteps) {
-    recordSimParticle(i_caloShowerStep.simParticle());
-    CaloShowerStep newCaloShowerStep(i_caloShowerStep);
-    _newCaloShowerSteps->push_back(newCaloShowerStep);
-  }
-  if (_newCaloShowerSteps->size() != caloShowerSteps.size()) {
-    throw cet::exception("CompressDetStepMCs") << "Number of CaloShowerSteps in output collection (" << _newCaloShowerSteps->size() << ") does not match the number of CaloShowerSteps in the inout collection (" << caloShowerSteps.size() << ")" << std::endl;
+  if (caloShowerGasStepsHandle.isValid()) {
+    const auto& caloShowerSteps = *caloShowerStepsHandle;
+    if(_conf.debugLevel()>0 && caloShowerSteps.size()>0) {
+      std::cout << "Compressing CaloShowerSteps from " << _conf.caloShowerStepTag() << std::endl;
+    }
+    for (const auto& i_caloShowerStep : caloShowerSteps) {
+      recordSimParticle(i_caloShowerStep.simParticle());
+      CaloShowerStep newCaloShowerStep(i_caloShowerStep);
+      _newCaloShowerSteps->push_back(newCaloShowerStep);
+    }
+    if (_newCaloShowerSteps->size() != caloShowerSteps.size()) {
+      throw cet::exception("CompressDetStepMCs") << "Number of CaloShowerSteps in output collection (" << _newCaloShowerSteps->size() << ") does not match the number of CaloShowerSteps in the input collection (" << caloShowerSteps.size() << ")" << std::endl;
+    }
   }
 }
 
@@ -235,16 +240,18 @@ void mu2e::CompressDetStepMCs::compressCrvBarSteps(const art::Event& event) {
   art::Handle<mu2e::CrvBarStepCollection> crvBarStepsHandle;
   event.getByLabel(_conf.crvBarStepTag(), crvBarStepsHandle);
   const auto& crvBarSteps = *crvBarStepsHandle;
-  if(_conf.debugLevel()>0 && crvBarSteps.size()>0) {
-    std::cout << "Compressing CrvBarSteps from " << _conf.crvBarStepTag() << std::endl;
-  }
-  for (const auto& i_crvBarStep : crvBarSteps) {
-    recordSimParticle(i_crvBarStep.simParticle());
-    CrvBarStep newCrvBarStep(i_crvBarStep);
-    _newCrvBarSteps->push_back(newCrvBarStep);
-  }
-  if (_newCrvBarSteps->size() != crvBarSteps.size()) {
-    throw cet::exception("CompressDetStepMCs") << "Number of CrvBarSteps in output collection (" << _newCrvBarSteps->size() << ") does not match the number of CrvBarSteps in the inout collection (" << crvBarSteps.size() << ")" << std::endl;
+  if (crvBarStepsHandle.isValid()) {
+    if(_conf.debugLevel()>0 && crvBarSteps.size()>0) {
+      std::cout << "Compressing CrvBarSteps from " << _conf.crvBarStepTag() << std::endl;
+    }
+    for (const auto& i_crvBarStep : crvBarSteps) {
+      recordSimParticle(i_crvBarStep.simParticle());
+      CrvBarStep newCrvBarStep(i_crvBarStep);
+      _newCrvBarSteps->push_back(newCrvBarStep);
+    }
+    if (_newCrvBarSteps->size() != crvBarSteps.size()) {
+      throw cet::exception("CompressDetStepMCs") << "Number of CrvBarSteps in output collection (" << _newCrvBarSteps->size() << ") does not match the number of CrvBarSteps in the input collection (" << crvBarSteps.size() << ")" << std::endl;
+    }
   }
 }
 
