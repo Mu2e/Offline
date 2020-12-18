@@ -13,9 +13,7 @@ fi
 if [[ ${#@} -ne 0 ]]; then
     cat >&2 <<EOF
 ERROR: the setup.sh script does not accept arguments. Use
-
     $(dirname ${BASH_SOURCE})/buildopts
-
 to query and define build configuraton.
 EOF
     return 1
@@ -141,6 +139,7 @@ setup -B BTrk   v1_02_30  -q${MU2E_UPS_QUALIFIERS}:p383b
 setup -B cry   v1_7n  -q${MU2E_UPS_QUALIFIERS}
 setup -B gsl v2_6a
 setup curl v7_64_1
+setup cryptopp v08_02_00 -q${MU2E_UPS_QUALIFIERS}
 
 # The build system.
 setup -B scons v3_1_2  -q +p383b
