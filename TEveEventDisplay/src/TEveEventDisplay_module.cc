@@ -29,26 +29,26 @@ namespace mu2e
   class TEveEventDisplay : public art::EDAnalyzer {
 	public:
 
-    struct Config{
-      using Name=fhicl::Name;
-      using Comment=fhicl::Comment;
-      fhicl::Atom<int> diagLevel{Name("diagLevel"), Comment("for info"),0};
-      fhicl::Atom<bool> showCRV{Name("showCRV"), Comment("set false if you just want to see DS"),false};   
-      fhicl::Atom<bool> showBuilding{Name("showBuilding"), Comment("set false to remove building"),false};   
-      fhicl::Atom<bool> showDSOnly{Name("showDSOnly"), Comment(""),true};     
-      fhicl::Atom<bool> showEvent{Name("showEvent"), Comment(""),true};  
-     // fhicl::Atom<bool> show2D{Name("show2D"), Comment(""),true};
-      fhicl::Atom<bool> accumulate{Name("accumulate"), Comment(""),false};      
-      fhicl::Table<Collection_Filler::Config> filler{Name("filler"),Comment("fill collections")};
-    };
+      struct Config{
+        using Name=fhicl::Name;
+        using Comment=fhicl::Comment;
+        fhicl::Atom<int> diagLevel{Name("diagLevel"), Comment("for info"),0};
+        fhicl::Atom<bool> showCRV{Name("showCRV"), Comment("set false if you just want to see DS"),false};   
+        fhicl::Atom<bool> showBuilding{Name("showBuilding"), Comment("set false to remove building"),false};   
+        fhicl::Atom<bool> showDSOnly{Name("showDSOnly"), Comment(""),true};     
+        fhicl::Atom<bool> showEvent{Name("showEvent"), Comment(""),true};  
+      
+        fhicl::Atom<bool> accumulate{Name("accumulate"), Comment(""),false};      
+        fhicl::Table<Collection_Filler::Config> filler{Name("filler"),Comment("fill collections")};
+      };
 
-    typedef art::EDAnalyzer::Table<Config> Parameters;
-    explicit TEveEventDisplay(const Parameters& conf);
-    virtual ~TEveEventDisplay();
-    virtual void beginJob() override;
-    virtual void beginRun(const art::Run& run) override;
-    virtual void analyze(const art::Event& e);
-    virtual void endJob() override;
+      typedef art::EDAnalyzer::Table<Config> Parameters;
+      explicit TEveEventDisplay(const Parameters& conf);
+      virtual ~TEveEventDisplay();
+      virtual void beginJob() override;
+      virtual void beginRun(const art::Run& run) override;
+      virtual void analyze(const art::Event& e);
+      virtual void endJob() override;
     private:
       Config _conf;
       int _diagLevel;     
@@ -56,7 +56,6 @@ namespace mu2e
       bool _showDSOnly;
       bool _showCRV;
       bool _showEvent;  
-    //  bool _show2D;
       bool _accumulate;
       TApplication* application_;
       TDirectory*   directory_ = nullptr;   
@@ -66,7 +65,11 @@ namespace mu2e
       bool foundEvent = false;
       void MakeTEveMu2eMainWindow();
       bool _firstLoop = true;
-         
+      int runn = 0;
+      int subrunn= 0;
+      int eventn = 0;
+      char select = 'n';
+    
   };
 
   TEveEventDisplay::TEveEventDisplay(const Parameters& conf) :
@@ -84,6 +87,18 @@ namespace mu2e
   TEveEventDisplay::~TEveEventDisplay(){}
 
   void TEveEventDisplay::beginJob(){
+    if(_firstLoop){
+      std::cout<<" Would you like to select an event? (y/n) type n - for sequential"<<std::endl;
+      std::cin>>select;
+      if(select=='y'){
+        std::cout<<"Which Run?"<<std::endl;
+        std::cin>>runn;
+        std::cout<<"Which SubRun?"<<std::endl;
+        std::cin>>subrunn;
+        std::cout<<"Which Event?"<<std::endl;
+        std::cin>>eventn;
+      }
+    }
     directory_ = gDirectory;
     if ( !gApplication ){
       int    tmp_argc(0);
@@ -109,19 +124,20 @@ namespace mu2e
     int runid = event.run();
     int subrunid = event.subRun();
     
-    std::cout<<"Run : "<<runid<<" Sub-Run "<<subrunid<<" Event : "<<eventid<<std::endl;
-    
-    if(_showEvent){
-      foundEvent = true;
-      Data_Collections data;
-      if(_filler.addHits_)_filler.FillRecoCollections(event, data, ComboHits);
-      if(_filler.addCrvHits_)_filler.FillRecoCollections(event, data, CRVRecoPulses);
-      if(_filler.addCosmicSeedFit_)_filler.FillRecoCollections(event, data, CosmicTracks);
-      if(_filler.addTracks_)_filler.FillRecoCollections(event, data, KalSeeds);
-      if(_filler.addClusters_)_filler.FillRecoCollections(event, data, CaloClusters);
-      if(_filler.addMCTraj_)_filler.FillMCCollections(event, data, MCTrajectories);
-      if(!_frame->isClosed()) _frame->setEvent(event, _firstLoop, data, -1, _accumulate);
-      _firstLoop = false;
+    std::cout<<"Drawing Run : "<<runid<<" Sub-Run "<<subrunid<<" Event : "<<eventid<<std::endl;
+    if((select=='n') or (runn==runid and subrunn==subrunid and eventn==eventid)){
+      if(_showEvent){
+        foundEvent = true;
+        Data_Collections data;
+        if(_filler.addHits_)_filler.FillRecoCollections(event, data, ComboHits);
+        if(_filler.addCrvHits_)_filler.FillRecoCollections(event, data, CRVRecoPulses);
+        if(_filler.addCosmicSeedFit_)_filler.FillRecoCollections(event, data, CosmicTracks);
+        if(_filler.addTracks_)_filler.FillRecoCollections(event, data, KalSeeds);
+        if(_filler.addClusters_)_filler.FillRecoCollections(event, data, CaloClusters);
+        if(_filler.addMCTraj_)_filler.FillMCCollections(event, data, MCTrajectories);
+        if(!_frame->isClosed()) _frame->setEvent(event, _firstLoop, data, -1, _accumulate);
+        _firstLoop = false;
+      }
     }
   } 
 
