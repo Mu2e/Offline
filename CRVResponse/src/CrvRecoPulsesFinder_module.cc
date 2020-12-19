@@ -122,7 +122,7 @@ namespace mu2e
 
     art::Handle<CrvDigiCollection> crvDigiCollection;
     event.getByLabel(_crvDigiModuleLabel,"",crvDigiCollection);
-
+    if (crvDigiCollection.isValid()) {
     size_t waveformIndex = 0;
     while(waveformIndex<crvDigiCollection->size())
     {
@@ -166,7 +166,7 @@ namespace mu2e
                                                   waveformIndices, barIndex, SiPM);
       }
     }
-
+}
     event.put(std::move(crvRecoPulseCollection));
   } // end produce
 
