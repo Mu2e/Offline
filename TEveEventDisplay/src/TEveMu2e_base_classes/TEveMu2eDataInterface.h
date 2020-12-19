@@ -27,7 +27,7 @@ namespace mu2e{
     class TEveMu2eDataInterface {
     public:
       #ifndef __CINT__
-      TEveMu2eDataInterface() : fHitsList2D(0),fHitsList3D(0),fCrystalHitList(0),fTrackList2D(0),fTrackList3D(0), fClusterList2D(0), fClusterList3D(0), fCrvList2D(0), fCrvList3D(0), fExtTrackList2D(0), fExtTrackList3D(0){};
+      TEveMu2eDataInterface() : fHitsList2D(0),fHitsList3D(0),fCrystalHitList(0),fTrackList2D(0),fTrackList3D(0), fClusterList2D_disk0(0), fClusterList2D_disk1(0), fClusterList3D(0), fCrvList2D(0), fCrvList3D(0), fExtTrackList2D(0), fExtTrackList3D(0){};
       TEveMu2eDataInterface(const TEveMu2eDataInterface &);
       TEveMu2eDataInterface& operator=(const TEveMu2eDataInterface &);
       virtual ~TEveMu2eDataInterface(){};
@@ -38,7 +38,8 @@ namespace mu2e{
       TEveElementList *fCrystalHitList;
       TEveElementList *fTrackList2D;
       TEveElementList *fTrackList3D;
-      TEveElementList *fClusterList2D;
+      TEveElementList *fClusterList2D_disk0;
+      TEveElementList *fClusterList2D_disk1;
       TEveElementList *fClusterList3D;
       TEveElementList *fCrvList2D;
       TEveElementList *fCrvList3D;
