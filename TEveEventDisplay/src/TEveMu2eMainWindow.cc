@@ -81,7 +81,7 @@ namespace mu2e{
 
       TEveManager::Create();
       gEve->GetBrowser()->GetTabRight()->SetTab(0);
-      	gClient->GetRoot();
+      gClient->GetRoot();
       browser = gEve->GetBrowser();
       CreateGUI();
       CreateMultiViews();
@@ -127,7 +127,7 @@ namespace mu2e{
      gEve->AddToListTree(axes_xy,kTRUE);
      gEve->AddToListTree(CfXYMgr,kTRUE);
      fViewer[0]->AddScene(proj0);
-}
+  }
 
    frm = fSplitFrame->GetFirst()->GetSecond();
    frm->SetName("Calorimeter_RZ_View");
@@ -236,9 +236,9 @@ namespace mu2e{
         navFrame->AddFrame(f);
         f->Associate(this);
 
-        TEveParamList *edep = new TEveParamList("CaloEnergySelection");
+        /*TEveParamList *edep = new TEveParamList("CaloEnergySelection");
         gEve->AddToListTree(edep,0);
-        edep->AddParameter(TEveParamList::FloatConfig_t("Min Energy Depositied",20,0,100));
+        edep->AddParameter(TEveParamList::FloatConfig_t("Min Energy Depositied",20,0,100));*/
 
         // ... Create run num text entry widget and connect to "GotoEvent" rcvr in visutils
         TGHorizontalFrame* runoFrame = new TGHorizontalFrame(evtidFrame);
@@ -248,7 +248,7 @@ namespace mu2e{
         runoFrame->AddFrame(fTlRun);
 
         fTeRun = new TGTextEntry(runoFrame, _runNumber = new TGTextBuffer(5), 1);
-        _runNumber->AddText(0, "1");
+        _runNumber->AddText(0, "...");
 
         runoFrame->AddFrame(fTeRun,new TGLayoutHints(kLHintsExpandX));
         fTeRun->Associate(this);
@@ -261,7 +261,7 @@ namespace mu2e{
         evnoFrame->AddFrame(fTlEvt);
 
         fTeEvt = new TGTextEntry(evnoFrame, _eventNumber = new TGTextBuffer(5), 1);
-        _eventNumber->AddText(0, "1");
+        _eventNumber->AddText(0, "111");
 
         evnoFrame->AddFrame(fTeEvt,new TGLayoutHints(kLHintsExpandX));
         fTeEvt->Associate(this);
@@ -657,7 +657,7 @@ namespace mu2e{
        {
           eventToFind = atoi(fTeEvt->GetText());
           runToFind = atoi(fTeRun->GetText());
-          gApplication->Terminate();
+          usereventSelected = true;
        } 
        if(param1==1400){
           //RedrawGeometry(); 
@@ -669,7 +669,7 @@ namespace mu2e{
   return kTRUE;
   }
 
-  void TEveMu2eMainWindow::setEvent(const art::Event& event, bool firstLoop, Data_Collections &data, double time, bool accumulate)
+  void TEveMu2eMainWindow::setEvent(const art::Event& event, bool firstLoop, Data_Collections &data, double time, bool accumulate, int &runn, int &eventn, bool &eventSelected)
   {
     _event=event.id().event();
     _subrun=event.id().subRun();
@@ -720,6 +720,11 @@ namespace mu2e{
     gApplication->Run(true);
 
     gEve->Redraw3D(kTRUE);
+    if(usereventSelected == true){
+      eventn = eventToFind;
+      runn = runToFind;
+      eventSelected = true;
+    }
   }
 
   void TEveMu2eMainWindow::fillEvent(bool firstLoop)

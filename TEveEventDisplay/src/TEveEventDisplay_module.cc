@@ -68,8 +68,7 @@ namespace mu2e
       int runn = 0;
       int subrunn= 0;
       int eventn = 0;
-      char select = 'n';
-    
+      bool eventSelected = false;
   };
 
   TEveEventDisplay::TEveEventDisplay(const Parameters& conf) :
@@ -87,18 +86,7 @@ namespace mu2e
   TEveEventDisplay::~TEveEventDisplay(){}
 
   void TEveEventDisplay::beginJob(){
-    if(_firstLoop){
-      std::cout<<" Would you like to select an event? (y/n) type n - for sequential"<<std::endl;
-      std::cin>>select;
-      if(select=='y'){
-        std::cout<<"Which Run?"<<std::endl;
-        std::cin>>runn;
-        std::cout<<"Which SubRun?"<<std::endl;
-        std::cin>>subrunn;
-        std::cout<<"Which Event?"<<std::endl;
-        std::cin>>eventn;
-      }
-    }
+   
     directory_ = gDirectory;
     if ( !gApplication ){
       int    tmp_argc(0);
@@ -110,22 +98,20 @@ namespace mu2e
   
   }
 
-
   void TEveEventDisplay::beginRun(const art::Run& run){
     _frame->SetRunGeometry(run, _diagLevel, _showBuilding, _showDSOnly, _showCRV);
     _frame->PrepareTrackerProjectionTab(run);
     _frame->PrepareCaloProjectionTab(run);
   }
 
-
   void TEveEventDisplay::analyze(const art::Event& event){
     std::cout<<"[In TEveEventDisplay::analyze()]"<<std::endl;
     int eventid = event.id().event();
     int runid = event.run();
     int subrunid = event.subRun();
-    
-    std::cout<<"Drawing Run : "<<runid<<" Sub-Run "<<subrunid<<" Event : "<<eventid<<std::endl;
-    if((select=='n') or (runn==runid and subrunn==subrunid and eventn==eventid)){
+
+    if((eventSelected==false) or ( eventSelected == true and runid == runn and eventid == eventn)){
+      std::cout<<"Drawing Run : "<<runid<<" Sub-Run "<<subrunid<<" Event : "<<eventid<<std::endl;
       if(_showEvent){
         foundEvent = true;
         Data_Collections data;
@@ -135,7 +121,7 @@ namespace mu2e
         if(_filler.addTracks_)_filler.FillRecoCollections(event, data, KalSeeds);
         if(_filler.addClusters_)_filler.FillRecoCollections(event, data, CaloClusters);
         if(_filler.addMCTraj_)_filler.FillMCCollections(event, data, MCTrajectories);
-        if(!_frame->isClosed()) _frame->setEvent(event, _firstLoop, data, -1, _accumulate);
+        if(!_frame->isClosed()) _frame->setEvent(event, _firstLoop, data, -1, _accumulate, runn, eventn, eventSelected);
         _firstLoop = false;
       }
     }
