@@ -19,6 +19,7 @@
 #include <TGSplitFrame.h>
 // ... libRGL
 #include <TGLViewer.h>
+#include <TVirtualX.h>
 // ... libEve
 #include <TEveManager.h>
 #include <TEveEventManager.h>
