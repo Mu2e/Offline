@@ -105,10 +105,10 @@ namespace mu2e
 
   void TEveEventDisplay::analyze(const art::Event& event){
     std::cout<<"[In TEveEventDisplay::analyze()]"<<std::endl;
-    int eventid = event.id().event();
+    /*int eventid = event.id().event();
     int runid = event.run();
-    int subrunid = event.subRun();
-    if (eventid == 126351 and runid==1002 and subrunid == 75905){
+    int subrunid = event.subRun();*/
+    
     if(_showEvent){
       foundEvent = true;
       Data_Collections data;
