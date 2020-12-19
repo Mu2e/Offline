@@ -13,7 +13,6 @@ EventFilter : {
 
 
 TEveEventDisplayHelix : {
-    show2D : false
     module_type : TEveEventDisplay
     accumulate : false
     filler : {
@@ -41,7 +40,6 @@ TEveEventDisplayCosmics : {
     module_type : TEveEventDisplay
     showCRV : false
     showDSOnly : true
-    show2D : false
     accumulate : false
     filler : {
       ComboHitCollection 		      : "makePH"
@@ -62,8 +60,7 @@ TEveEventDisplayCosmics : {
   }   
 
 TEveEventDisplayCaloOnly : {
-    module_type : TEveEventDisplay
-    show2D : false  
+    module_type : TEveEventDisplay 
     filler : {
       ComboHitCollection 		      : NULL
       CrvRecoPulseCollection		  : NULL
