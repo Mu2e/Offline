@@ -86,19 +86,10 @@ namespace mu2e{
       CreateMultiViews();
       gEve->AddEvent(new TEveEventManager("Event", "Empty Event"));
 
-	
-      //TGLViewer *glv = gEve->GetDefaultGLViewer(frm, fPad);
-//	glv->SetGLViewer(embview, embview->GetFrame());
-   //   embview[0]->SetGuideState(TGLUtil::kAxesEdge, kTRUE, kFALSE, 0);
-   //   embview[0]->CurrentCamera().RotateRad(camRotateCenterH_,camRotateCenterV_);
-    //  embview[0]->CurrentCamera().Dolly(camDollyDelta_,kFALSE,kFALSE);
     }
 
   void TEveMu2eMainWindow::CreateMultiViews(){
    gEve->GetBrowser()->GetTabRight()->SetTab(0);
-   //browser->ShowCloseTab(kFALSE);
-   //browser->ExecPlugin("SplitGLView", 0, "new SplitGLView(gClient->GetRoot(), 600, 450, kTRUE)");
-   //browser->ShowCloseTab(kTRUE);
 
    fPad = new TEvePad();
    fPad->SetFillColor(kBlack);
@@ -109,34 +100,6 @@ namespace mu2e{
    fSplitFrame->HSplit(350);
    fSplitFrame->GetFirst()->VSplit(410);
    fSplitFrame->GetSecond()->VSplit(410);
-  // get top (main) split frame
-/*   frm = fSplitFrame->GetFirst();
-   frmMain->AddFrame(frm);
-   frm->SetName("Main_View");
-   // create (embed) a GL viewer inside
-   fViewer0 = new TGLEmbeddedViewer(frm, fPad);
-   frm->AddFrame(fViewer0->GetFrame(), new TGLayoutHints(kLHintsExpandX |
-                 kLHintsExpandY));
-   // set the camera to perspective (XOZ) for this viewer
-   fViewer0->SetCurrentCamera(TGLViewer::kCameraPerspXOZ);
-   // connect signal we are interested to
-   fViewer[0] = new TEveViewer("SplitGLViewer[0]");
-   fViewer[0]->SetGLViewer(fViewer0, fViewer0->GetFrame());
-   fViewer[0]->IncDenyDestroy();
-   if (fIsEmbedded && gEve) {
-      fViewer[0]->AddScene(gEve->GetGlobalScene());
-      fViewer[0]->AddScene(gEve->GetEventScene());
-      gEve->GetViewers()->AddElement(fViewer[0]);
-      s = gEve->SpawnNewScene("Rho-Z Projection");
-      // projections
-      fRhoZMgr = new TEveProjectionManager(TEveProjection::kPT_RhoZ);
-      s->AddElement(fRhoZMgr);
-      gEve->AddToListTree(fRhoZMgr, kTRUE);
-      TEveProjectionAxes* a = new TEveProjectionAxes(fRhoZMgr);
-      s->AddElement(a);
-   }*/
-
-
    frm = fSplitFrame->GetFirst()->GetFirst();
    frm->SetName("Calorimeter_XY_View");
    fViewer0 = new TGLEmbeddedViewer(frm, fPad);
@@ -240,43 +203,10 @@ namespace mu2e{
    Resize(GetDefaultSize());
    MapSubwindows();
    MapWindow();
-    /*TEveWindowSlot *slot = 0;
-    TEveWindowPack *pack = 0;
-    slot = TEveWindow::CreateWindowInTab(gEve->GetBrowser()->GetTabRight());
-    pack = slot->MakePack();
-    pack->SetElementName("MainView");
-    pack->SetVertical();
-    pack->SetShowTitleBar(kFALSE);
     
-    slot = pack->NewSlot();
-    //v = new TEveViewer("BarViewer");
-    v = gEve->SpawnNewViewer("MainView", "");
-    v->GetGLViewer()->SetCurrentCamera(TGLViewer::kCameraOrthoXOY);
-    slot->ReplaceWindow(v);
-    v->SetElementName("Bar Embedded Viewer");
-    //v->SetCurrentCamera(TGLViewer::kCameraPerspXOZ);
-   // connect signal we are interested to
-   if (fIsEmbedded && gEve) {
-      v->AddScene(gEve->GetGlobalScene());
-      v->AddScene(gEve->GetEventScene());
-      gEve->GetViewers()->AddElement(v);
-      s = gEve->SpawnNewScene("Rho-Z Projection");
-      // projections
-      fRhoZMgr = new TEveProjectionManager(TEveProjection::kPT_RhoZ);
-      s->AddElement(fRhoZMgr);
-      gEve->AddToListTree(fRhoZMgr, kTRUE);
-      TEveProjectionAxes* a = new TEveProjectionAxes(fRhoZMgr);
-      s->AddElement(a);
-   }*/
 }
 
   void TEveMu2eMainWindow::CreateGUI(){
-    //  gROOT->ProcessLine(".L SplitGLView.C+");
-      //gClient->GetRoot();
-      //TEveBrowser* browser = gEve->GetBrowser();
-	//browser->ShowCloseTab(kFALSE);
-      //browser->ExecPlugin("SplitGLView", 0, "new SplitGLView(gClient->GetRoot(), 600, 450, kTRUE)");
-	//browser->ShowCloseTab(kTRUE);
       FontStruct_t buttonfont = gClient->GetFontByName("-*-helvetica-medium-r-*-*-8-*-*-*-*-*-iso8859-1");
       GCValues_t gval;
       gval.fMask = kGCForeground | kGCFont;
@@ -442,8 +372,6 @@ namespace mu2e{
         browser->StopEmbedding();
         browser->SetTabTitle("Event Nav", 0);
       }
-
-
 }
 
    void TEveMu2eMainWindow::StartProjectionTabs(){
