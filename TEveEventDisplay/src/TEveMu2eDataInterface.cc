@@ -5,17 +5,6 @@
 #include "TEveEventDisplay/src/TEveMu2e_base_classes/TEveMu2eDataInterface.h"
 #include "TEveEventDisplay/src/dict_classes/GeomUtils.h"
 
-struct TimeOrderClusters : public std::binary_function<mu2e::CaloCluster, mu2e::CaloCluster, bool> {
-  bool operator()(mu2e::CaloCluster const& p1, mu2e::CaloCluster const& p2) { 
-    return p1.time() > p2.time(); 
-  }
-};
-
-struct TimeOrderHits : public std::binary_function<mu2e::ComboHit, mu2e::ComboHit, bool> {
-  bool operator()(mu2e::ComboHit const& p1, mu2e::ComboHit const& p2) { 
-    return p1.time() > p2.time(); 
-  }
-};
 
 using namespace mu2e;
 namespace mu2e{
@@ -192,33 +181,16 @@ namespace mu2e{
     if(clustercol!=0){ 
       TEveElementList *ClusterList3D = new TEveElementList("CaloClusters3D");
       TEveElementList *ClusterList2D = new TEveElementList("CaloClusters2D");
-      //TEveElementList *CrystalList2D = new TEveElementList("CaloCrystalHits2D");
+
       int *energylevels = new int[clustercol->size()];
       energies = Energies<const CaloClusterCollection*>(clustercol, &energylevels);
       for(unsigned int i=0; i<clustercol->size();i++){
         CaloCluster const  &cluster= (*clustercol)[i];
         TEveMu2eCluster *teve_cluster3D = new TEveMu2eCluster(cluster);
         TEveMu2eCluster *teve_cluster2D = new TEveMu2eCluster(cluster);
-        //TEveMu2eCluster *teve_cluster_hits_2D = new TEveMu2eCluster(cluster);
-        
+       
         CLHEP::Hep3Vector COG(cluster.cog3Vector().x(),cluster.cog3Vector().y(), cluster.cog3Vector().z());
         CLHEP::Hep3Vector pointInMu2e = PointToCalo(COG,cluster.diskId());
-        /*Calorimeter const &cal = *(GeomHandle<Calorimeter>());
-        if(cluster.caloCrystalHitsPtrVector().size()!=0){
-          std::cout<<"Cluster has "<<cluster.caloCrystalHitsPtrVector().size()<<" Crystal hits : "<<std::endl;
-           //Access crystal hits from cluster:
-           std::vector<art::Ptr< CaloCrystalHit>>cryHitcol;
-           for(unsigned h =0 ; h < cluster.caloCrystalHitsPtrVector().size();h++){
-               
-               art::Ptr<CaloCrystalHit>  crystalhit = cluster.caloCrystalHitsPtrVector()[h] ;
-               int diskId = cal.crystal(crystalhit->id()).diskId();
-               CLHEP::Hep3Vector HitPos(cal.geomUtil().mu2eToDiskFF(diskId, cal.crystal(crystalhit->id()).position()));
-               CLHEP::Hep3Vector pointInMu2e = PointToCalo(HitPos,diskId);
-               cryHitcol.push_back(crystalhit);
-               std::cout<<"Hit "<<h<<" at "<<HitPos.x()<<std::endl;
-               if(i==1) teve_cluster_hits_2D->DrawCrystalHits("Crystal Hits for Cluster #" + to_string(i + 1), pointInMu2e, CrystalList2D);
-          }
-         }*/
        
        
         string pos3D = "(" + to_string((double)pointInMu2e.x()) + ", " + to_string((double)pointInMu2e.y()) + ", " + to_string((double)pointInMu2e.z()) + ")";
@@ -272,8 +244,8 @@ namespace mu2e{
           fCrystalHitList->AddElement(HitList);    
         }
       }
- 	CfXYMgr->ImportElements(fClusterList2D, scene1); 
-        CfRZMgr->ImportElements(fClusterList2D, scene2); 
+    CfXYMgr->ImportElements(fClusterList2D, scene1); 
+    CfRZMgr->ImportElements(fClusterList2D, scene2); 
     gEve->AddElement(fCrystalHitList);
     gEve->Redraw3D(kTRUE);  
     }

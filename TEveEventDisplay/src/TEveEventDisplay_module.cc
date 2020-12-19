@@ -105,9 +105,11 @@ namespace mu2e
 
   void TEveEventDisplay::analyze(const art::Event& event){
     std::cout<<"[In TEveEventDisplay::analyze()]"<<std::endl;
-    /*int eventid = event.id().event();
+    int eventid = event.id().event();
     int runid = event.run();
-    int subrunid = event.subRun();*/
+    int subrunid = event.subRun();
+    
+    std::cout<<"Run : "<<runid<<" Sub-Run "<<subrunid<<" Event : "<<eventid<<std::endl;
     
     if(_showEvent){
       foundEvent = true;
@@ -121,7 +123,6 @@ namespace mu2e
       if(!_frame->isClosed()) _frame->setEvent(event, _firstLoop, data, -1, _accumulate);
       _firstLoop = false;
     }
-
   } 
 
 
