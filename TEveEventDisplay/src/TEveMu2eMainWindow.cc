@@ -248,7 +248,7 @@ namespace mu2e{
         runoFrame->AddFrame(fTlRun);
 
         fTeRun = new TGTextEntry(runoFrame, _runNumber = new TGTextBuffer(5), 1);
-        _runNumber->AddText(0, "...");
+        _runNumber->AddText(0, "Enter Event Number");
 
         runoFrame->AddFrame(fTeRun,new TGLayoutHints(kLHintsExpandX));
         fTeRun->Associate(this);
@@ -261,7 +261,7 @@ namespace mu2e{
         evnoFrame->AddFrame(fTlEvt);
 
         fTeEvt = new TGTextEntry(evnoFrame, _eventNumber = new TGTextBuffer(5), 1);
-        _eventNumber->AddText(0, "111");
+        _eventNumber->AddText(0, "Event Run Number");
 
         evnoFrame->AddFrame(fTeEvt,new TGLayoutHints(kLHintsExpandX));
         fTeEvt->Associate(this);
@@ -658,6 +658,7 @@ namespace mu2e{
           eventToFind = atoi(fTeEvt->GetText());
           runToFind = atoi(fTeRun->GetText());
           usereventSelected = true;
+          gApplication->Terminate(0);
        } 
        if(param1==1400){
           //RedrawGeometry(); 
