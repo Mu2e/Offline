@@ -694,7 +694,7 @@ namespace mu2e{
     hitenergy = new vector<double>(2);
     if(_data.chcol!=0) *hitenergy = pass_data->AddComboHits(firstLoop, data.chcol, tracker2Dproj, time, false, fhitmin, fhitmax, _accumulate, TfXYMgr, TfRZMgr, proj2, proj3);
 
-    clusterenergy = new vector<double>(2);
+    clusterenergy = new std::vector<double>(2);
 
     if(_data.clustercol!=0) *clusterenergy = pass_data->AddCaloClusters(firstLoop, data.clustercol, calo2Dproj, time, false, fclustmin, fclustmax, _accumulate, CfXYMgr, CfRZMgr, proj0, proj1);
     if (_data.cryHitcol!=0) pass_data->AddCrystalHits(_firstLoop, _data.cryHitcol, calo2Dproj, texttime, false, _accumulate, CfXYMgr, CfRZMgr, proj0, proj1);

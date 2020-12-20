@@ -118,7 +118,7 @@ namespace mu2e{
       TGLOverlayButton *but1, *but2, *but3, *but4, *but5, *but6;
       TGTextEntry     *fTeRun,*fTeEvt, *fTTEvt, *fTeh1, *fTeh2, *fTeh3, *cminenergy, *cmaxenergy, *hminenergy, *hmaxenergy;    
       TGHSlider       *fTHSlid;
-      TGLabel         *fTlRun,*fTlEvt, *fTlTEvt, *fTlHSlid, *celabel, *helabel, *spacer, *spacer1;
+      TGLabel         *fTlRun,*fTlEvt, *fTlTEvt, *fTlHSlid, *celabel, *helabel,*timelabel, *spacer, *spacer1;
       TGButtonGroup	*br;
       TGCheckButton	*clusterscheck, *hitscheck, *trackscheck, *cosmicscheck, *cosmictrkscheck, *mctrajcheck;
       Double_t        hitMarkerSize_;
