@@ -2,6 +2,10 @@
 #include <TEvePad.h>
 #include <TObject.h>
 #include <TSystem.h>
+#include <limits>
+#include <vector>
+#include <tuple>
+#include <algorithm>
 #include "TEveEventDisplay/src/TEveMu2e_base_classes/TEveMu2eDataInterface.h"
 #include "TEveEventDisplay/src/dict_classes/GeomUtils.h"
 
@@ -41,60 +45,87 @@ namespace mu2e{
     }
   }
 
+ 
+template <typename L> void maxminE(L data, double &max, double &min){
+    auto order = std::minmax_element(data->begin(), data->end(),
+         [] (auto const& lhs, auto const& rhs) { return lhs.energyDep() < rhs.energyDep(); });
+    int min_pos = order.first - data->begin();
+    int max_pos = order.second - data->begin();
+    min = data->at(min_pos).energyDep();
+    max = data->at(max_pos).energyDep();
+  }
+template <typename L> void maxminT(L data, double &max, double &min){
+    auto order = std::minmax_element(data->begin(), data->end(),
+       [] (auto const& lhs, auto const& rhs) { return lhs.time() < rhs.time(); });
+    int min_pos = order.first - data->begin();
+    int max_pos = order.second - data->begin();
+    min = data->at(min_pos).time();
+    max = data->at(max_pos).time();
+  }
+template <typename L> void maxminCRV(L data, double &max, double &min){
+    auto order = std::minmax_element(data->begin(), data->end(),
+         [] (auto const& lhs, auto const& rhs) { return lhs.GetPulseTime() < rhs.GetPulseTime(); });
+    int min_pos = order.first - data->begin();
+    int max_pos = order.second - data->begin();
+    min = data->at(min_pos).GetPulseTime();
+    max = data->at(max_pos).GetPulseTime();
+}
+ 
+  
   template <typename L> std::vector<double> Energies(L data, int *energylevels[]){
     std::vector<double> energies = {0, 0};
     double Max_Energy = 0;
     double Min_Energy = 1000;
-    for(unsigned int i=0; i < data->size();i++){
-      if (((*data)[i]).energyDep() > Max_Energy){Max_Energy = ((*data)[i]).energyDep();}
-      if (((*data)[i]).energyDep()< Min_Energy){Min_Energy = ((*data)[i]).energyDep();}
-    }
+    maxminE(data, Max_Energy, Min_Energy);
+    
     double interval = (Max_Energy - Min_Energy)/(9);
 
-    for(size_t i=0; i<data->size();i++){
-      for(int n=0; n<9;n++){
+    for(unsigned int i=0; i<data->size();i++){
+      for(unsigned int n=0; n<9;n++){
         if(((*data)[i]).energyDep() >= Min_Energy + n * interval && ((*data)[i]).energyDep() <=Min_Energy + (n+1)*interval){
         (*energylevels)[i] = n;}
       }
     }
     energies.at(0) = Min_Energy;
     energies.at(1) = Max_Energy;
+    
     return energies;
   }
 
   std::vector<double> TEveMu2eDataInterface::getTimeRange(bool firstloop, const ComboHitCollection *chcol, const CrvRecoPulseCollection *crvcoincol, const CaloClusterCollection *clustercol, const CaloCrystalHitCollection *cryHitcol){
-	vector <double> time = {-1, -1};
-
+	  std::vector <double> time = {-1, -1};
+    double max, min;
+    std::vector<double> alltime;
     if (crvcoincol != 0){
-      for(unsigned int i=0; i <crvcoincol->size(); i++){
-        const CrvRecoPulse &crvRecoPulse = crvcoincol->at(i);
-        if (crvRecoPulse.GetPulseTime() > time.at(1)){time.at(1) = crvRecoPulse.GetPulseTime();}
-        if (crvRecoPulse.GetPulseTime() < time.at(0)){time.at(0) = crvRecoPulse.GetPulseTime();}
-      }
+      maxminCRV(crvcoincol, max, min);
+      alltime.push_back(max);
+      alltime.push_back(min);
     }
+    
     if (chcol != 0){
-      for(size_t i=0; i<chcol->size();i++){
-        ComboHit hit = (*chcol)[i];
-        if (hit.time() > time.at(1)){time.at(1) = hit.time();}
-        if (hit.time() < time.at(0)){time.at(0) = hit.time();}
-      }
+      maxminT(chcol, max, min);
+      alltime.push_back(max);
+      alltime.push_back(min);
     }
 
     if (clustercol != 0){
-      for(unsigned int i=0; i<clustercol->size();i++){
-        CaloCluster const  &cluster= (*clustercol)[i];
-        if (cluster.time() > time.at(1)){time.at(1) = cluster.time();}
-        if (cluster.time() < time.at(0)){time.at(0) = cluster.time();}
-      }
+      maxminT(clustercol, max, min);
+      alltime.push_back(max);
+      alltime.push_back(min);
     }
 
     if (cryHitcol != 0){
-    for(unsigned int i=0; i<cryHitcol->size();i++){
-      CaloCrystalHit const  &hit = (*cryHitcol)[i];
-        if (hit.time() > time.at(1)){time.at(1) = hit.time();}
-        if (hit.time() < time.at(0)){time.at(0) = hit.time();}
-      }
+      maxminT(cryHitcol, max, min);
+      alltime.push_back(max);
+      alltime.push_back(min);
     }
+    auto order = std::minmax_element(alltime.begin(), alltime.end(),
+       [] (auto const& lhs, auto const& rhs) { return lhs < rhs; });
+    int min_pos = order.first - alltime.begin();
+    int max_pos = order.second - alltime.begin();
+    time.at(0) = alltime.at(min_pos);
+    time.at(1) = alltime.at(max_pos);
+    std::cout<<time.at(0)<<" "<<time.at(1)<<std::endl;
     if (time.at(0) == -1){time.at(0) = 0;}
     if (time.at(1) == -1){time.at(1) = 100;} 
     return time;
@@ -186,8 +217,21 @@ namespace mu2e{
       TEveElementList *ClusterList2D_disk1 = new TEveElementList("CaloClusters2D_Disk1");
       int *energylevels = new int[clustercol->size()];
       energies = Energies<const CaloClusterCollection*>(clustercol, &energylevels);
+      Calorimeter const &cal = *(GeomHandle<Calorimeter>());
+      std::vector<CLHEP::Hep3Vector> hits;
+      bool addHits = false;
       for(unsigned int i=0; i<clustercol->size();i++){
         CaloCluster const  &cluster= (*clustercol)[i];
+        if(addHits){
+          for(unsigned h =0 ; h < cluster.caloCrystalHitsPtrVector().size();h++)     {
+            art::Ptr<CaloCrystalHit>  crystalhit = cluster.caloCrystalHitsPtrVector()[h];
+            int diskId = cal.crystal(crystalhit->id()).diskId();
+            CLHEP::Hep3Vector HitPos(cal.geomUtil().mu2eToDiskFF(diskId, cal.crystal(crystalhit->id()).position()));
+            CLHEP::Hep3Vector hit = PointToCalo(HitPos,diskId);
+            hep3vectorTocm(hit);
+            hits.push_back(hit);
+          }
+        }
         TEveMu2eCluster *teve_cluster3D = new TEveMu2eCluster(cluster);
         TEveMu2eCluster *teve_cluster2D = new TEveMu2eCluster(cluster);
        
@@ -199,18 +243,18 @@ namespace mu2e{
         string pos2D = "(" + to_string((double)COG.x()) + ", " + to_string((double)COG.y()) + ", " + to_string((double)COG.z()) + ")";
 
         if ((time == -1 || (cluster.time() <= time && time != -1)) && ((cluster.energyDep() >= min_energy && cluster.energyDep() <= max_energy) || (min_energy == -1 && max_energy == -1))){
-          teve_cluster3D->DrawCluster("CaloCluster3D, Cluster #" + to_string(i + 1) + ", Position =" + pos3D + ", Energy = " + to_string(cluster.energyDep()) + ", Time = " + to_string(cluster.time()), pointInMu2e, energylevels[i], ClusterList3D);
-          fClusterList3D->AddElement(ClusterList3D); 
+          teve_cluster3D->DrawCluster("CaloCluster3D, Cluster #" + to_string(i + 1) + ", Position =" + pos3D + ", Energy = " + to_string(cluster.energyDep()) + ", Time = " + to_string(cluster.time()), pointInMu2e, energylevels[i], ClusterList3D, hits, addHits);
+            fClusterList3D->AddElement(ClusterList3D); 
             
             //fClusterList2D->AddElement(CrystalList2D); 
             if(cluster.diskId()==0){
-              teve_cluster2D->DrawCluster("CaloCluster3D, Cluster #" + to_string(i + 1) + ", Position =" + pos2D + ", Energy = " + to_string(cluster.energyDep()) + ", Time = " + to_string(cluster.time()), pointInMu2e,energylevels[i], ClusterList2D_disk0); 
+              teve_cluster2D->DrawCluster("CaloCluster3D, Cluster #" + to_string(i + 1) + ", Position =" + pos2D + ", Energy = " + to_string(cluster.energyDep()) + ", Time = " + to_string(cluster.time()), pointInMu2e,energylevels[i], ClusterList2D_disk0, hits, addHits); 
               fClusterList2D_disk0->AddElement(ClusterList2D_disk0); 
               calo2Dproj->fXYMgr->ImportElements(fClusterList2D_disk0, calo2Dproj->fDetXYScene); 
               CfXYMgr->ImportElements(fClusterList2D_disk0, scene1); 
             }
             if(cluster.diskId()==1){
-             teve_cluster2D->DrawCluster("CaloCluster3D, Cluster #" + to_string(i + 1) + ", Position =" + pos2D + ", Energy = " + to_string(cluster.energyDep()) + ", Time = " + to_string(cluster.time()), pointInMu2e,energylevels[i], ClusterList2D_disk1); 
+             teve_cluster2D->DrawCluster("CaloCluster3D, Cluster #" + to_string(i + 1) + ", Position =" + pos2D + ", Energy = " + to_string(cluster.energyDep()) + ", Time = " + to_string(cluster.time()), pointInMu2e,energylevels[i], ClusterList2D_disk1, hits, addHits); 
              fClusterList2D_disk1->AddElement(ClusterList2D_disk1); 
              calo2Dproj->fRZMgr->ImportElements(fClusterList2D_disk1, calo2Dproj->fDetRZScene); 
              
@@ -262,37 +306,37 @@ namespace mu2e{
     TXYMgr->ImportElements(fTrackList2D, scene1); 
     TRZMgr->ImportElements(fTrackList2D, scene2); 
     for(unsigned int i=0; i< track_list.size(); i++){
-    seedcol = track_list[i];
-    std::cout<<"Looking at track "<<i<<endl;
-    if(seedcol!=0){  
-      for(unsigned int k = 0; k < seedcol->size(); k = k + 20){
-        KalSeed kseed = (*seedcol)[k];
-        TEveMu2eCustomHelix *line = new TEveMu2eCustomHelix();
-        TEveMu2eCustomHelix *line_twoD = new TEveMu2eCustomHelix();
-        line->fKalSeed = kseed;
-        line->SetSeedInfo(kseed);
+      seedcol = track_list[i];
+      std::cout<<"Looking at track "<<i<<endl;
+      if(seedcol!=0){  
+        for(unsigned int k = 0; k < seedcol->size(); k = k + 20){
+          KalSeed kseed = (*seedcol)[k];
+          TEveMu2eCustomHelix *line = new TEveMu2eCustomHelix();
+          TEveMu2eCustomHelix *line_twoD = new TEveMu2eCustomHelix();
+          line->fKalSeed = kseed;
+          line->SetSeedInfo(kseed);
 
-        unsigned int nSteps = 65;  
-        double kStepSize = nSteps/(CaloLength() + TrackerLength()) + 70;
-        for(unsigned int i = 0 ; i< nSteps; i++){
-          double zpos = (i*kStepSize)-TrackerLength()/2;
-          line->SetPostionAndDirectionFromKalRep(zpos);
-          if(i==0) {
-            CLHEP::Hep3Vector Pos(line->Position.x(), line->Position.y(), zpos+line->Position.z());
-           
-            GeomHandle<DetectorSystem> det;
-            CLHEP::Hep3Vector InMu2e = det->toMu2e(Pos);
-            line->SetPoint(i,pointmmTocm(InMu2e.x())+line->Direction.x()*pointmmTocm(line->Momentum),pointmmTocm(InMu2e.y())+line->Direction.y()*pointmmTocm(line->Momentum), pointmmTocm(InMu2e.z())-TrackerLength()/2);
-             line_twoD->SetPoint(i,pointmmTocm(Pos.x())+line->Direction.x()*pointmmTocm(line->Momentum),pointmmTocm(Pos.y())+line->Direction.y()*pointmmTocm(line->Momentum),pointmmTocm(Pos.z())-TrackerLength()/2);
-          } else {
-            CLHEP::Hep3Vector Pos(line->Position.x(), line->Position.y(), zpos+line->Position.z());
-           
-            GeomHandle<DetectorSystem> det;
-            CLHEP::Hep3Vector InMu2e = det->toMu2e(Pos);
-            line->SetNextPoint(pointmmTocm(InMu2e.x())+line->Direction.x()*pointmmTocm(line->Momentum),pointmmTocm(InMu2e.y())+line->Direction.y()*pointmmTocm(line->Momentum), pointmmTocm(InMu2e.z())-TrackerLength()/2);
-            line_twoD->SetNextPoint(pointmmTocm(Pos.x())+line->Direction.x()*pointmmTocm(line->Momentum),pointmmTocm(Pos.y())+line->Direction.y()*pointmmTocm(line->Momentum), pointmmTocm(Pos.z())-TrackerLength()/2);
-            }
-        }
+          unsigned int nSteps = 65;  
+          double kStepSize = nSteps/(CaloLength() + TrackerLength()) + 70;
+          for(unsigned int i = 0 ; i< nSteps; i++){
+            double zpos = (i*kStepSize)-TrackerLength()/2;
+            line->SetPostionAndDirectionFromKalRep(zpos);
+            if(i==0) {
+              CLHEP::Hep3Vector Pos(line->Position.x(), line->Position.y(), zpos+line->Position.z());
+             
+              GeomHandle<DetectorSystem> det;
+              CLHEP::Hep3Vector InMu2e = det->toMu2e(Pos);
+              line->SetPoint(i,pointmmTocm(InMu2e.x())+line->Direction.x()*pointmmTocm(line->Momentum),pointmmTocm(InMu2e.y())+line->Direction.y()*pointmmTocm(line->Momentum), pointmmTocm(InMu2e.z())-TrackerLength()/2);
+               line_twoD->SetPoint(i,pointmmTocm(Pos.x())+line->Direction.x()*pointmmTocm(line->Momentum),pointmmTocm(Pos.y())+line->Direction.y()*pointmmTocm(line->Momentum),pointmmTocm(Pos.z())-TrackerLength()/2);
+            } else {
+              CLHEP::Hep3Vector Pos(line->Position.x(), line->Position.y(), zpos+line->Position.z());
+             
+              GeomHandle<DetectorSystem> det;
+              CLHEP::Hep3Vector InMu2e = det->toMu2e(Pos);
+              line->SetNextPoint(pointmmTocm(InMu2e.x())+line->Direction.x()*pointmmTocm(line->Momentum),pointmmTocm(InMu2e.y())+line->Direction.y()*pointmmTocm(line->Momentum), pointmmTocm(InMu2e.z())-TrackerLength()/2);
+              line_twoD->SetNextPoint(pointmmTocm(Pos.x())+line->Direction.x()*pointmmTocm(line->Momentum),pointmmTocm(Pos.y())+line->Direction.y()*pointmmTocm(line->Momentum), pointmmTocm(Pos.z())-TrackerLength()/2);
+              }
+          }
         
           line_twoD->SetLineColor(kGreen);
           line_twoD->SetLineWidth(3);
