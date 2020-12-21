@@ -95,4 +95,4 @@ In order to add Data Products to the Event Display you may need to add an additi
 
 ## Authors
 
-This code is built upon the Mu2e Offline code however TEveEventDisplay is package developed within Mu2e Offline by Sophie Middleton with help from Aditi Venkatesh both from Caltech. If you have any questions/comments about TEveEventDisplay place contact: smidd@caltech.edu.
+This code is built upon the Mu2e Offline code however TEveEventDisplay is package developed within Mu2e Offline by Sophie Middleton with help from Aditi Venkatesh both from Caltech. If you have any questions/comments about TEveEventDisplay please contact: smidd@caltech.edu.
