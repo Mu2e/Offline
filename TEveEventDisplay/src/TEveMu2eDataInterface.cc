@@ -305,8 +305,10 @@ template <typename L> void maxminCRV(L data, double &max, double &min){
     DataLists<const KalSeedCollection*, TEveMu2e2DProjection*>(seedcol, Redraw, accumulate, "HelixTrack", &fTrackList3D, &fTrackList2D, tracker2Dproj);
     TXYMgr->ImportElements(fTrackList2D, scene1); 
     TRZMgr->ImportElements(fTrackList2D, scene2); 
+    std::vector<int> colour;
     for(unsigned int i=0; i< track_list.size(); i++){
       seedcol = track_list[i];
+      colour.push_back(i+3);
       std::cout<<"Looking at track "<<i<<endl;
       if(seedcol!=0){  
         for(unsigned int k = 0; k < seedcol->size(); k = k + 20){
@@ -338,21 +340,20 @@ template <typename L> void maxminCRV(L data, double &max, double &min){
               }
           }
         
-          line_twoD->SetLineColor(kGreen);
+          line_twoD->SetLineColor(colour[i]);
           line_twoD->SetLineWidth(3);
           fTrackList2D->AddElement(line_twoD);
 
-          
         line->SetPickable(kTRUE);
         const std::string title = "Helix #" + to_string(k + 1) + ", Momentum = " + to_string(line->Momentum);
         line->SetTitle(Form(title.c_str()));
-        line->SetLineColor(kGreen);
+        line->SetLineColor(colour[i]);
         line->SetLineWidth(3);
         fTrackList3D->AddElement(line);
       }
       
-       tracker2Dproj->fXYMgr->ImportElements(fTrackList2D, tracker2Dproj->fDetXYScene);
-       tracker2Dproj->fRZMgr->ImportElements(fTrackList2D, tracker2Dproj->fDetRZScene);
+       //tracker2Dproj->fXYMgr->ImportElements(fTrackList2D, tracker2Dproj->fDetXYScene);
+       //tracker2Dproj->fRZMgr->ImportElements(fTrackList2D, tracker2Dproj->fDetRZScene);
 	    
       TXYMgr->ImportElements(fTrackList2D, scene1);
       TRZMgr->ImportElements(fTrackList2D, scene2);
