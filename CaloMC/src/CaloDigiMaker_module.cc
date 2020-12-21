@@ -171,7 +171,7 @@ namespace mu2e {
       auto caloShowerStepHandle = event.getValidHandle(caloShowerToken_);
       const auto& CaloShowerROs = *caloShowerStepHandle;
       
-      auto caloDigiColl             = std::make_unique<CaloDigiCollection>();
+      auto caloDigiColl = std::make_unique<CaloDigiCollection>();
      
       makeDigitization(CaloShowerROs, *caloDigiColl);
 
