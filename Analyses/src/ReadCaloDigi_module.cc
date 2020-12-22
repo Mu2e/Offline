@@ -52,7 +52,7 @@
 #include "MCDataProducts/inc/StepPointMCCollection.hh"
 #include "MCDataProducts/inc/PtrStepPointMCVectorCollection.hh"
 #include "MCDataProducts/inc/GenId.hh"
-#include "MCDataProducts/inc/CaloDigiMC.hh"
+#include "MCDataProducts/inc/CaloHitMC.hh"
 #include "MCDataProducts/inc/PtrStepPointMCVectorCollection.hh"
 
 #include "DataProducts/inc/PDGCode.hh"
@@ -401,14 +401,14 @@ namespace mu2e {
     _toff.updateMap(event);
 
     //data about hits in the calorimeter crystals
-    art::Handle<CaloDigiMCCollection> caloDigiMCHandle;
+    art::Handle<CaloHitMCCollection> caloDigiMCHandle;
     event.getByLabel(_caloDigisModuleLabel, caloDigiMCHandle);
 
-    const     CaloDigiMCCollection*       caloDigiMCCol(0);
-    int       nCaloDigiMC(0);
+    const     CaloHitMCCollection*       caloDigiMCCol(0);
+    int       nCaloHitMC(0);
     if (caloDigiMCHandle.isValid()){
        caloDigiMCCol = caloDigiMCHandle.product();
-       nCaloDigiMC   = caloDigiMCCol->size();
+       nCaloHitMC   = caloDigiMCCol->size();
     }
 
     art::Handle<CaloRecoDigiCollection>   recoCaloDigiHandle;
@@ -622,7 +622,7 @@ namespace mu2e {
     const CaloHit                    *crystalHit;
     const CaloRecoDigi                      *recoDigi;
     //    const CaloDigi                          *caloDigi;
-    const CaloDigiMC                        *caloDigiMC(0);
+    const CaloHitMC                        *caloDigiMC(0);
     const SimParticle                       *sim;
 
 
@@ -790,7 +790,7 @@ namespace mu2e {
       indexMC          = 0;//caloDigi.index();
 
 
-      if (nCaloDigiMC > 0) {
+      if (nCaloHitMC > 0) {
         caloDigiMC       = &caloDigiMCCol->at(indexMC);
 
         for (unsigned k=0; k<caloDigiMC->nParticles(); ++k){
@@ -860,7 +860,7 @@ namespace mu2e {
       	    clusterTime       = crystalTime;
       	    energyMax         = eDep;
 
-	    if (nCaloDigiMC > 0) {
+	    if (nCaloHitMC > 0) {
 	      caloDigiMC        = &caloDigiMCCol->at(indexMC);
 	      clusterMCMeanTime = caloDigiMC->time();
 	      clusterMCTime     = caloDigiMC->time();
@@ -868,7 +868,7 @@ namespace mu2e {
   	  }
       	}
 
-	if (nCaloDigiMC > 0) {
+	if (nCaloHitMC > 0) {
 
 	  for (unsigned k=0; k<caloDigiMC->nParticles(); ++k){
 	    sim =   caloDigiMC->energyDeposit(k).sim().operator ->();

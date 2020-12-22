@@ -9,7 +9,7 @@
 #include "MCDataProducts/inc/CaloEDepMC.hh"
 #include "MCDataProducts/inc/SimParticle.hh"
 #include "MCDataProducts/inc/CaloMCTruthAssns.hh"
-#include "MCDataProducts/inc/CaloDigiMC.hh"
+#include "MCDataProducts/inc/CaloHitMC.hh"
 #include "MCDataProducts/inc/CaloClusterMC.hh"
 #include "RecoDataProducts/inc/CaloCluster.hh"
 
@@ -37,7 +37,7 @@ namespace mu2e {
         explicit CaloClusterTruthMatch(const art::EDProducer::Table<Config>& config) :
            EDProducer{config},
            caloClusterToken_    {consumes<CaloClusterCollection>(config().caloClusterCollection())},
-           caloDigiMCTruthToken_{consumes<CaloDigiMCTruthAssn>  (config().caloDigiMCTruthAssn())},
+           caloDigiMCTruthToken_{consumes<CaloHitMCTruthAssn>  (config().caloDigiMCTruthAssn())},
            diagLevel_           (config().diagLevel())
         {
            produces<CaloClusterMCCollection>();    
@@ -51,7 +51,7 @@ namespace mu2e {
 	void makeTruthMatch(art::Event&, CaloClusterMCCollection&,CaloClusterMCTruthAssn&);
         
         const art::ProductToken<CaloClusterCollection>  caloClusterToken_;
-        const art::ProductToken<CaloDigiMCTruthAssn>    caloDigiMCTruthToken_;
+        const art::ProductToken<CaloHitMCTruthAssn>    caloDigiMCTruthToken_;
 	int                                             diagLevel_;
   };
 
@@ -99,7 +99,7 @@ namespace mu2e {
            const auto& hits = cluster.caloHitsPtrVector();
            
            if (diagLevel_ > 1) std::cout<<"[CaloClusterTruthMatch] Inspect cluster diskId/energy/time "<<cluster.diskID()<<" "<<cluster.energyDep()<<" "<<cluster.time()<<std::endl;
-           std::vector<art::Ptr<CaloDigiMC>> digis;  
+           std::vector<art::Ptr<CaloHitMC>> digis;  
                      
            for (auto i=caloHitTruth.begin(), ie = caloHitTruth.end(); i !=ie; ++i)
            {	       
