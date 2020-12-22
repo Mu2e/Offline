@@ -6,17 +6,17 @@
 
 #include <TEvePointSet.h>
 #include <TEveLine.h>
-#include "MCDataProducts/inc/CaloDigiMC.hh"
+#include "MCDataProducts/inc/CaloHitMC.hh"
 
 namespace mu2e {
   class TEveMu2eCaloSimParticle : public TEvePointSet {
     public:
       #ifndef __CINT__
       explicit TEveMu2eCaloSimParticle();
-      TEveMu2eCaloSimParticle(CaloDigiMC simpartmc) : fCaloDigiMC(simpartmc){};
+      TEveMu2eCaloSimParticle(CaloHitMC simpartmc) : fCaloHitMC(simpartmc){};
       virtual ~TEveMu2eCaloSimParticle(){};
 
-      CaloDigiMC fCaloDigiMC; 
+      CaloHitMC fCaloHitMC; 
       Int_t mSize= 1; 
 
 

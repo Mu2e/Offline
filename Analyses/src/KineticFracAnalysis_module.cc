@@ -752,9 +752,9 @@ namespace mu2e {
     CaloClusterCollection const& caloClusters(*caloClustersHandle);
 
     //Calo digi truth assignment
-    art::Handle<CaloDigiMCTruthAssn> caloDigiTruthHandle;
+    art::Handle<CaloHitMCTruthAssn> caloDigiTruthHandle;
     event.getByLabel(_caloDigiTruthModuleLabel, caloDigiTruthHandle);
-    const CaloDigiMCTruthAssn& caloDigiTruth(*caloDigiTruthHandle);
+    const CaloHitMCTruthAssn& caloDigiTruth(*caloDigiTruthHandle);
 
      //Calo cluster truth assignment
     art::Handle<CaloClusterMCTruthAssn> caloClusterTruthHandle;

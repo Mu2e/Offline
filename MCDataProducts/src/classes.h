@@ -58,7 +58,7 @@
 #include "MCDataProducts/inc/CaloShowerRO.hh"
 #include "MCDataProducts/inc/CaloShowerStep.hh"
 #include "MCDataProducts/inc/CaloShowerSim.hh"
-#include "MCDataProducts/inc/CaloDigiMC.hh"
+#include "MCDataProducts/inc/CaloHitMC.hh"
 #include "MCDataProducts/inc/CaloClusterMC.hh"
 #include "MCDataProducts/inc/CaloEDepMC.hh"
 // straws

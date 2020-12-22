@@ -93,9 +93,9 @@ namespace mu2e {
       const CaloShowerSimCollection& caloShowerSims(*caloShowerSimHandle);
       
       //Calorimeter digi truth assignment
-      art::Handle<CaloDigiMCTruthAssn> caloDigiTruthHandle;
+      art::Handle<CaloHitMCTruthAssn> caloDigiTruthHandle;
       event.getByLabel(caloDigiTruthModuleLabel_, caloDigiTruthHandle);
-      const CaloDigiMCTruthAssn& caloDigiTruth(*caloDigiTruthHandle);
+      const CaloHitMCTruthAssn& caloDigiTruth(*caloDigiTruthHandle);
 
 
       for (const auto& hit :CaloHits )

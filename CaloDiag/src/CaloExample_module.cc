@@ -286,9 +286,9 @@ namespace mu2e {
       event.getByLabel(g4ModuleLabel_,virtualDetectorLabel_,vdhits);
 
       //Calo digi truth assignment
-      art::Handle<CaloDigiMCTruthAssn> caloDigiTruthHandle;
+      art::Handle<CaloHitMCTruthAssn> caloDigiTruthHandle;
       event.getByLabel(caloDigiTruthModuleLabel_, caloDigiTruthHandle);
-      const CaloDigiMCTruthAssn& caloDigiTruth(*caloDigiTruthHandle);
+      const CaloHitMCTruthAssn& caloDigiTruth(*caloDigiTruthHandle);
       
       //Calo cluster truth assignment
       art::Handle<CaloClusterMCTruthAssn> caloClusterTruthHandle;
