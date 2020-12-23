@@ -98,7 +98,7 @@ namespace mu2e {
 
        int   nSimHit_,crySimId_[ntupLen],crySimPdgId_[ntupLen],crySimCrCode_[ntupLen],crySimGenIdx_[ntupLen],cryConv_[ntupLen];
        float crySimMom_[ntupLen],crySimStartX_[ntupLen],crySimStartY_[ntupLen],crySimStartZ_[ntupLen],crySimStartT_[ntupLen];
-       float crySimTime_[ntupLen],crySimEdep_[ntupLen],cryTimeErr_[16348],cryT1_[ntupLen],cryT2_[ntupLen],cryT1Err_[ntupLen],cryT2Err_[ntupLen];
+       float crySimTime_[ntupLen],crySimEdep_[ntupLen],cryTimeErr_[ntupLen],cryT1_[ntupLen],cryT2_[ntupLen],cryT1Err_[ntupLen],cryT2Err_[ntupLen];
 
        int   nCluster_,nCluSim_,cluNcrys_[ntupLen];
        float cluEnergy_[ntupLen],cluEnergyErr_[ntupLen],cluTime_[ntupLen],cluTimeErr_[ntupLen],cluCogX_[ntupLen],cluCogY_[ntupLen],
@@ -371,11 +371,12 @@ namespace mu2e {
               }    		          
            }
  
-           float cryT1(999),cryT2(999),cryT1Err(999),cryT2Err(999);
+           constexpr float invalid(999.0);
+           float cryT1(invalid),cryT2(invalid),cryT1Err(invalid),cryT2Err(invalid);
            if (hit.recoCaloDigis().size()>1)
            {
-              int idx0 = hit.crystalID()%2==0 ? 0 : 1; //hit.recoCaloDigis().at(0)->SiPMID()%2==0 ? 0 : 1;
-              int idx1 = 1-idx0;
+              int idx0 = cal.caloIDMapper().SiPMIdx(hit.recoCaloDigis().at(0)->SiPMID());
+              int idx1 = cal.caloIDMapper().SiPMIdx(hit.recoCaloDigis().at(1)->SiPMID());
               cryT1    = hit.recoCaloDigis().at(idx0)->time();
               cryT2    = hit.recoCaloDigis().at(idx1)->time();
               cryT1Err = hit.recoCaloDigis().at(idx0)->timeErr();
