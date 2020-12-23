@@ -1,10 +1,10 @@
-#include "MCDataProducts/inc/CaloDigiMC.hh"
+#include "MCDataProducts/inc/CaloHitMC.hh"
 #include <numeric>
 
 namespace mu2e {
 
    /*
-   bool CaloDigiMC::isConversion() const 
+   bool CaloHitMC::isConversion() const 
    {
       for (auto& edep : edeps_)
       {
@@ -16,14 +16,14 @@ namespace mu2e {
    }
    */
 
-   float CaloDigiMC::totalEnergyDep() const 
+   float CaloHitMC::totalEnergyDep() const 
    {
       auto sumEdep = [](float sum, const CaloEDepMC& edep){return sum +=edep.energyDep();};
       return std::accumulate(edeps_.begin(),edeps_.end(),0.0f,sumEdep);
    }
 
 
-   float CaloDigiMC::totalEnergyDepG4() const 
+   float CaloHitMC::totalEnergyDepG4() const 
    {
       auto sumEdepG4 = [](float sum, const CaloEDepMC& edep){return sum +=edep.energyDepG4();};
       return std::accumulate(edeps_.begin(),edeps_.end(),0.0f,sumEdepG4);

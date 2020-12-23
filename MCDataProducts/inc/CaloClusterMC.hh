@@ -9,7 +9,7 @@
 #ifndef MCDataProducts_CaloClusterMC_hh
 #define MCDataProducts_CaloClusterMC_hh
 
-#include "MCDataProducts/inc/CaloDigiMC.hh"
+#include "MCDataProducts/inc/CaloHitMC.hh"
 #include "MCDataProducts/inc/CaloEDepMC.hh"
 #include <vector>
 
@@ -18,18 +18,18 @@ namespace mu2e
    class CaloClusterMC
    {
        public:                    
-          using CaloDigiMCPtr = art::Ptr<CaloDigiMC>;
+          using CaloHitMCPtr = art::Ptr<CaloHitMC>;
 
           CaloClusterMC()                                        : digis_()      {};
-          CaloClusterMC(const std::vector<CaloDigiMCPtr>& digis) : digis_(digis) {};
+          CaloClusterMC(const std::vector<CaloHitMCPtr>& digis) : digis_(digis) {};
                 
-          const std::vector<CaloDigiMCPtr>&  caloDigiMCs     () const {return digis_; }
+          const std::vector<CaloHitMCPtr>&  caloDigiMCs     () const {return digis_; }
           std::vector<CaloEDepMC>            energyDeposits  () const;
           float                              totalEnergyDep  () const;
           float                              totalEnergyDepG4() const;
 
        private:
-          std::vector<CaloDigiMCPtr> digis_; 
+          std::vector<CaloHitMCPtr> digis_; 
    };
       
    using  CaloClusterMCCollection = std::vector<mu2e::CaloClusterMC>;
