@@ -23,8 +23,9 @@ namespace mu2e {
 	                
 	   void nSiPMPerCrystal(int value)               {nSiPMPerCrystal_ = value;}
   	   int  nSiPMPerCrystal()                  const {return nSiPMPerCrystal_;}         
-	   int  crystalIDFromSiPMID(int roid)      const {return (roid/nSiPMPerCrystal_);}
-	   int  SiPMIDFromCrystalID(int crystalId) const {return (crystalId*nSiPMPerCrystal_);}
+	   int  crystalIDFromSiPMID(int roid)      const {return roid/nSiPMPerCrystal_;}
+	   int  SiPMIDFromCrystalID(int crystalId) const {return crystalId*nSiPMPerCrystal_;}
+	   int  SiPMIdx(int SiPMID)                const {return SiPMID%nSiPMPerCrystal_;}
 
        private:
           int nSiPMPerCrystal_;

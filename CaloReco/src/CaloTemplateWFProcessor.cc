@@ -115,7 +115,7 @@ namespace mu2e {
    void CaloTemplateWFProcessor::setPrimaryPeakPar1(const std::vector<double>& xvec, const std::vector<double>& yvecOrig)
    {        
         if (windowPeak_ > xvec.size()) return;
-        std::vector<double> parInit,yvec(yvecOrig);
+        std::vector<double> parInit{},yvec(yvecOrig);
                
 	//estimate the noise level with the first few bins 
 	float noise= std::accumulate(yvec.begin(),yvec.begin()+numNoiseBins_,0)/float(numNoiseBins_);
@@ -154,7 +154,7 @@ namespace mu2e {
    void CaloTemplateWFProcessor::setPrimaryPeakPar2(const std::vector<double>& xvec, const std::vector<double>& yvecOrig)
    {        
         if (windowPeak_ > xvec.size()) return;
-        std::vector<double> parInit,yvec(yvecOrig);
+        std::vector<double> parInit{},yvec(yvecOrig);
                
 	//estimate the noise level with the first few bins 
 	float noise= std::accumulate(yvec.begin(),yvec.begin()+numNoiseBins_,0)/float(numNoiseBins_);
