@@ -5,9 +5,8 @@
 // a Tracker.  This is intended as a "data only" class.
 //  Note that the only 'aligned' information is implicit in the individual straws
 //
-// An un-aligned version can be made by GeometryService
-// and an aligned verison can be made by ProditionsService
-// by copying then adding alignment to the GeometryService version
+// An un-aligned version is provided by GeometryService
+// and an aligned verison is provided  by ProditionsService
 //
 // Original author Rob Kutschke
 //
@@ -22,23 +21,17 @@
 
 #include "Mu2eInterfaces/inc/Detector.hh"
 #include "Mu2eInterfaces/inc/ProditionsEntity.hh"
-#include "TrackerGeom/inc/Manifold.hh"
-#include "TrackerGeom/inc/Support.hh"
-#include "TrackerGeom/inc/SupportModel.hh"
-#include "TrackerGeom/inc/SupportStructure.hh"
 #include "GeneralUtilities/inc/HepTransform.hh"
+#include "TrackerGeom/G4Tracker.hh"
 
 #include "TrackerGeom/inc/Plane.hh"
 #include "TrackerGeom/inc/Panel.hh"
-#include "GeomPrimitives/inc/TubsParams.hh"
-#include "GeomPrimitives/inc/PlacedTubs.hh"
-#include "TrackerGeom/inc/PanelEB.hh"
 #include "TrackerGeom/inc/StrawProperties.hh"
+#include "TrackerGeom/inc/G4Tracker.hh"
 
 namespace mu2e {
   class Tracker : public Detector, public ProditionsEntity {
-    friend class TrackerMaker; // remove after factorizing out the G4 stuff FIXME!
-    using xyzVec = CLHEP::Hep3Vector; // switch to XYZVec TODO
+    using xyzVec = CLHEP::Hep3Vector; // switch to root XYZVec TODO
 
     public:
     typedef std::shared_ptr<Tracker> ptr_t;
@@ -66,8 +59,11 @@ namespace mu2e {
     size_t nPanels() const { return _panels.size(); }
     size_t nStraws() const { return _straws.size(); }
 
-    // origin: defines nominal tracker coordinate system
+    // origin in nominal tracker coordinate system
     const xyzVec& origin() const { return _origin; }
+
+    // common straw attributes that don't depend on the specific element
+    const StrawProperties& strawProperties() const { return _strawprops; }
 
     // constituent access
     const Plane& plane( const StrawId& id ) const{
@@ -126,8 +122,6 @@ namespace mu2e {
     }
 
 
-    // common attributes that don't depend on the specific element
-    const StrawProperties& strawProperties() const { return _strawprops; }
     // the following are deprecated: access should be through StrawProperties
     double strawInnerRadius() const{ return _strawprops._strawInnerRadius; }
     double strawOuterRadius() const{ return _strawprops._strawOuterRadius; }
@@ -140,18 +134,6 @@ namespace mu2e {
 
 // depracted 'exists' interface: should switch to TrackerStatus FIXME!
     bool planeExists(StrawId const& id) const { return _planeExists[id.plane()]; }
-
-    // G4 stuff: this should be factorized out TODO!
-    std::string const& wallMaterialName()            const{ return _wallMaterialName; }
-    std::string const& wallCoreMaterialName()        const{ return  wallMaterialName();  }
-    std::string const& wallOuterMetalMaterialName()  const{ return _outerMetalMaterial;  }
-    std::string const& wallInnerMetal1MaterialName() const{ return _innerMetal1Material; }
-    std::string const& wallInnerMetal2MaterialName() const{ return _innerMetal2Material; }
-    std::string const& gasMaterialName()             const{ return _gasMaterialName; }
-    std::string const& wireMaterialName()            const{ return _wireMaterialName; }
-    std::string const& wireCoreMaterialName()        const{ return  wireMaterialName();  }
-    std::string const& wirePlateMaterialName()       const{ return _wirePlateMaterial;   }
-    std::string const& envelopeMaterial()	     const { return _envelopeMaterial; }
 
 //Mu2eG4 specific interface: these should be factored out TODO
 
@@ -204,35 +186,7 @@ namespace mu2e {
     // Outer radius of a logical volume that will just contain the entire tracker.
     double _rOut; // is this ever used?  I think not
 
-    // these should be in a struct FIXME!
-    std::string _wallMaterialName;
-    std::string _outerMetalMaterial;
-    std::string _innerMetal1Material;
-    std::string _innerMetal2Material;
-    std::string _gasMaterialName;
-    std::string _wireMaterialName;
-    std::string _wirePlateMaterial;
-    std::string _envelopeMaterial;
-
-    // Outer envelope that holds the new style support structure.
-    PlacedTubs _mother;
-    // The envelope that holds all of the planes in the tracker,
-    // including the plane supports.
-    TubsParams _innerTrackerEnvelopeParams;
-    // The envelope that holds all of the pieces in one plane, including supports.
-    TubsParams _planeEnvelopeParams;
-    // Ditto for Panel
-    TubsParams _panelEnvelopeParams;
-    // Which level of detail is present in the model of the support structure?
-    SupportModel _supportModel;
-    // All supports are the same shape; only relevant for _supportModel=="simple"
-    Support _supportParams;
-
-    // A more detailed model of the supports; again each plane has identical supports.
-    // only relevant for _supportModel == "detailedv0".
-    SupportStructure _supportStructure;
-
-    // Deprecated: these will go away soon.
+   // Deprecated: these will go away soon.
     std::vector<double> _manifoldHalfLengths;
     double _panelZOffset; // introduced for version 5
 
