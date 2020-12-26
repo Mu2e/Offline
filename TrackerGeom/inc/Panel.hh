@@ -80,7 +80,6 @@ namespace mu2e {
     StrawId _id; // only the plane and panel fields are used to define a panel
     xyzVec _udir, _vdir, _wdir; // direction vectors in DS frame 
     HepTransform  _UVWtoDS; // transform from this panel's frame to the DS frame
-//    HepTransform _align; // local alignment of this this panel
     // indirection to straws
     StrawCollection _straws;
     static StrawIdMask _sidmask; // mask to panel level

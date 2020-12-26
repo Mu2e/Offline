@@ -572,7 +572,8 @@ namespace mu2e
     double ymin = s0origin.y() - strawradius;
     double ymax = s95origin.y() + strawradius;
     double umax = straw0.halfLength() + strawradius;
-    double rmax = tracker.getSupportParams().innerRadius() + strawradius;
+    // use the outermost straw end to set the max hit radius
+    double rmax = straw95.wireEnd(StrawEnd::cal).mag() + strawradius;
     double spitch = (StrawId::_nstraws-1)/(ymax-ymin);
     // storage of potential straws
     StrawFlightComp strawcomp(_maxmatfltdiff);

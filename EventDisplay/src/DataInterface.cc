@@ -264,9 +264,9 @@ void DataInterface::fillGeometry()
     }
 
 //Support Structure
-    double innerRadius=tracker->getSupportParams().innerRadius();
-    double outerRadius=tracker->getSupportParams().outerRadius();
-    double zHalfLength=tracker->getInnerTrackerEnvelopeParams().zHalfLength();
+    double innerRadius=tracker->g4Tracker()->getSupportParams().innerRadius();
+    double outerRadius=tracker->g4Tracker()->getSupportParams().outerRadius();
+    double zHalfLength=tracker->g4Tracker()->getInnerTrackerEnvelopeParams().zHalfLength();
     findBoundaryP(_trackerMinmax, outerRadius, outerRadius, zHalfLength);
     findBoundaryP(_trackerMinmax, -outerRadius, -outerRadius, -zHalfLength);
 
@@ -284,9 +284,9 @@ void DataInterface::fillGeometry()
     _supportstructures.push_back(shape);
 
 //Envelope
-    innerRadius=tracker->getInnerTrackerEnvelopeParams().innerRadius();
-    outerRadius=tracker->getInnerTrackerEnvelopeParams().outerRadius();
-    zHalfLength=tracker->getInnerTrackerEnvelopeParams().zHalfLength();
+    innerRadius=tracker->g4Tracker()->getInnerTrackerEnvelopeParams().innerRadius();
+    outerRadius=tracker->g4Tracker()->getInnerTrackerEnvelopeParams().outerRadius();
+    zHalfLength=tracker->g4Tracker()->getInnerTrackerEnvelopeParams().zHalfLength();
 
     boost::shared_ptr<ComponentInfo> infoEnvelope(new ComponentInfo());
     infoEnvelope->setName("Tracker Envelope");
