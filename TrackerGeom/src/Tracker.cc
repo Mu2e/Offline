@@ -14,7 +14,7 @@ using namespace std;
 namespace mu2e {
 
   Tracker::Tracker(StrawCollection const& straws, StrawProperties const& sprops, 
-      const std::shared_ptr<G4Tracker>& g4tracker,     PEType const& pexists) :
+      const G4TrackerPtr& g4tracker, PEType const& pexists) :
     ProditionsEntity(cxname), _strawprops(sprops), _straws(straws) , _strawindex{}, 
     _planeExists(pexists), _g4tracker(g4tracker) {
       // create the fast lookup map

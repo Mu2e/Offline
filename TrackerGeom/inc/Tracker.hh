@@ -33,6 +33,7 @@ namespace mu2e {
     public:
     typedef std::shared_ptr<Tracker> ptr_t;
     typedef std::shared_ptr<const Tracker> cptr_t;
+    using G4TrackerPtr = std::shared_ptr<G4Tracker>;
     using PlaneCollection = std::array<Plane,StrawId::_nplanes>;
     using PanelCollection = std::array<Panel,StrawId::_nupanels>;
     using StrawCollection = std::array<Straw,StrawId::_nustraws>;
@@ -47,7 +48,7 @@ namespace mu2e {
     Tracker(const Tracker& other);
     // construct from a set of straws and their global properties.  It would be better to take ownership of
     // existing straws via std::move, but the need for the copy constructor above precludes that
-    Tracker(StrawCollection const& straws, StrawProperties const& sprops,const std::shared_ptr<G4Tracker>& g4tracker,
+    Tracker(StrawCollection const& straws, StrawProperties const& sprops,const G4TrackerPtr& g4tracker,
     PEType const& pexists);
 
     // accessors
@@ -71,7 +72,7 @@ namespace mu2e {
     const Straw& straw( const StrawId& id) const{ return _straws[strawIndex(id)]; }
 
     // access the G4Tracker
-    const std::shared_ptr<G4Tracker>& g4Tracker() const { return _g4tracker; }
+    const G4TrackerPtr& g4Tracker() const { return _g4tracker; }
 
     // deprecated interface: do not write new code using these, and replace existing calls opportunistically
     const Plane& getPlane( const StrawId& id ) const{ return _planes.at(id.getPlane()); }
@@ -109,7 +110,7 @@ namespace mu2e {
     // plane existence: use cases of this should switch to using TrackerStatus and this should be removed FIXME!!
     PEType _planeExists;
     // g4 content
-    std::shared_ptr<G4Tracker> _g4tracker;
+    G4TrackerPtr _g4tracker;
   };
 
 } //namespace mu2e
