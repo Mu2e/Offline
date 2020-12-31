@@ -6,11 +6,15 @@ Compression : {
     strawGasStepTag : "makeSGS"
     caloShowerStepTag : "CaloShowerStepMaker"
     crvBarStepTag : "g4run:CRV" # currently a StepPointMC
-    stepPointMCTags : [ "g4run:virtualdetector", "g4run:protonabsorber" ]#, "g4run:stoppingtarget" ]
     simParticleTag : "g4run"
-#   strawGasStepCompressionLevel : -1
-#   caloShowerStepCompressionLevel : -1
-#   crvBarStepCompressionLevel : -1
+    stepPointMCTags : [ "g4run:virtualdetector", "g4run:protonabsorber" ]#, "g4run:stoppingtarget" ]
+
+    strawGasStepCompressionLevel : "noCompression" # keep all StrawGasSteps
+    caloShowerStepCompressionLevel : "noCompression"
+    crvBarStepCompressionLevel : "noCompression"
+    simParticleCompressionLevel : "fullCompression" # only keep SimParticles related to other data products we are keeping
+    stepPointMCCompressionLevel : "noCompression" # "simParticleCompression" # only keep StepPointMCs related to SimParticles we are keeping
+
     debugLevel : 0
   }
 }

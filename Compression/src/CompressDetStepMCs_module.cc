@@ -3,6 +3,13 @@
 // and compresses out unwanted MC information (StepPointMCs, SimParticles and GenParticles).
 // Note that the number of detector steps is NOT reduced.
 //
+// Allowed compression levels for different data products:
+// - StrawGasSteps : noCompression
+// - CaloShowerSteps : noCompression
+// - CrvBarSteps : noCompression
+// - SimParticles : noCompression, fullCompression
+// - StepPointMCs : noCompression, simParticleCompression
+//
 // Dec 2020, Andy Edmonds
 //
 #include "art/Framework/Core/EDProducer.h"
@@ -24,6 +31,7 @@
 #include "MCDataProducts/inc/SimParticleCollection.hh"
 #include "Mu2eUtilities/inc/compressSimParticleCollection.hh"
 #include "MCDataProducts/inc/GenParticleCollection.hh"
+#include "Compression/inc/CompressionLevel.hh"
 
 namespace mu2e {
   class CompressDetStepMCs;
@@ -75,6 +83,11 @@ public:
     fhicl::Sequence<art::InputTag> stepPointMCTags{Name("stepPointMCTags"), Comment("Sequence of InputTags for StepPointMCCollections (e.g. virtualdetector)")};
     fhicl::Atom<art::InputTag> simParticleTag{Name("simParticleTag"), Comment("InputTag for the SimParticleCollection")};
     fhicl::Atom<int> debugLevel{Name("debugLevel"), Comment("Debug level (0 = no debug output)")};
+    fhicl::Atom<std::string> strawGasStepCompressionLevel{Name("strawGasStepCompressionLevel"), Comment("Compression level for StrawGasSteps")};
+    fhicl::Atom<std::string> caloShowerStepCompressionLevel{Name("caloShowerStepCompressionLevel"), Comment("Compression level for CaloShowerSteps")};
+    fhicl::Atom<std::string> crvBarStepCompressionLevel{Name("crvBarStepCompressionLevel"), Comment("Compression level for CrvBarSteps")};
+    fhicl::Atom<std::string> simParticleCompressionLevel{Name("simParticleCompressionLevel"), Comment("Compression level for SimParticles")};
+    fhicl::Atom<std::string> stepPointMCCompressionLevel{Name("stepPointMCCompressionLevel"), Comment("Compression level for StepPointMCs")};
   };
   typedef art::EDProducer::Table<Config> Parameters;
 
@@ -103,10 +116,16 @@ public:
   void compressSimParticles(const art::Event& event);
   void compressGenParticles();
   void recordSimParticle(const art::Ptr<mu2e::SimParticle>& sim_ptr);
+  void checkCompressionLevels();
 
 private:
 
   Config _conf;
+  mu2e::CompressionLevel _strawGasStepCompressionLevel;
+  mu2e::CompressionLevel _caloShowerStepCompressionLevel;
+  mu2e::CompressionLevel _crvBarStepCompressionLevel;
+  mu2e::CompressionLevel _simParticleCompressionLevel;
+  mu2e::CompressionLevel _stepPointMCCompressionLevel;
 
   // unique_ptrs to the new output collections
   std::unique_ptr<mu2e::StrawGasStepCollection> _newStrawGasSteps;
@@ -132,8 +151,16 @@ private:
 
 mu2e::CompressDetStepMCs::CompressDetStepMCs(const Parameters& conf)
   : art::EDProducer(conf),
-    _conf(conf())
+    _conf(conf()),
+    _strawGasStepCompressionLevel(mu2e::CompressionLevel::findByName(_conf.strawGasStepCompressionLevel())),
+    _caloShowerStepCompressionLevel(mu2e::CompressionLevel::findByName(_conf.caloShowerStepCompressionLevel())),
+    _crvBarStepCompressionLevel(mu2e::CompressionLevel::findByName(_conf.crvBarStepCompressionLevel())),
+    _simParticleCompressionLevel(mu2e::CompressionLevel::findByName(_conf.simParticleCompressionLevel())),
+    _stepPointMCCompressionLevel(mu2e::CompressionLevel::findByName(_conf.stepPointMCCompressionLevel()))
 {
+  // Check that we have valid compression levels for this module
+  checkCompressionLevels();
+
   // Call appropriate produces<>() functions here.
   produces<GenParticleCollection>();
   produces<SimParticleCollection>();
@@ -172,16 +199,25 @@ void mu2e::CompressDetStepMCs::produce(art::Event & event)
   compressStrawGasSteps(event);
   compressCaloShowerSteps(event);
   compressCrvBarSteps(event);
+  if (_stepPointMCCompressionLevel == mu2e::CompressionLevel::kNoCompression) {
+    // if we are not compressing StepPointMCs, then
+    // we want to make sure we record all their SimParticles
+    compressStepPointMCs(event);
+  }
 
   // Compress the SimParticles and record their new keys
   compressSimParticles(event);
 
   // Now that we know which SimParticles we are keeping,
-  // we will only keep StepPointMCs and GenParticles that are connected to those
-  compressStepPointMCs(event);
+  // we will keep the data products that are associated with these SimParticles
   compressGenParticles();
+  if (_stepPointMCCompressionLevel == mu2e::CompressionLevel::kSimParticleCompression) {
+    // if we are compressing StepPointMCs based on the SimParticles we are keeping,
+    // then compressStepPointMCs now
+    compressStepPointMCs(event);
+  }
 
-  // Update all the detector steps so that their SimParticlePtrs point to the new collection
+  // Update all the data products so that their SimParticlePtrs point to the new collection
   updateStrawGasSteps();
   updateCaloShowerSteps();
   updateCrvBarSteps();
@@ -207,12 +243,16 @@ void mu2e::CompressDetStepMCs::compressStrawGasSteps(const art::Event& event) {
       std::cout << "Compressing StrawGasSteps from " << _conf.strawGasStepTag() << std::endl;
     }
     for (const auto& i_strawGasStep : strawGasSteps) {
-      recordSimParticle(i_strawGasStep.simParticle());
+      if (_simParticleCompressionLevel == mu2e::CompressionLevel::kFullCompression) {
+        recordSimParticle(i_strawGasStep.simParticle());
+      }
       StrawGasStep newStrawGasStep(i_strawGasStep);
       _newStrawGasSteps->push_back(newStrawGasStep);
     }
-    if (_newStrawGasSteps->size() != strawGasSteps.size()) {
-      throw cet::exception("CompressDetStepMCs") << "Number of StrawGasSteps in output collection (" << _newStrawGasSteps->size() << ") does not match the number of StrawGasSteps in the input collection (" << strawGasSteps.size() << ")" << std::endl;
+    if(_strawGasStepCompressionLevel == mu2e::CompressionLevel::kNoCompression) {
+      if (_newStrawGasSteps->size() != strawGasSteps.size()) {
+        throw cet::exception("CompressDetStepMCs") << "Number of StrawGasSteps in output collection (" << _newStrawGasSteps->size() << ") does not match the number of StrawGasSteps in the input collection (" << strawGasSteps.size() << ") even though no compression has been requested (strawGasStepCompressionLevel = \"" << _strawGasStepCompressionLevel.name() << "\")" << std::endl;
+      }
     }
   }
 }
@@ -220,18 +260,22 @@ void mu2e::CompressDetStepMCs::compressStrawGasSteps(const art::Event& event) {
 void mu2e::CompressDetStepMCs::compressCaloShowerSteps(const art::Event& event) {
   art::Handle<mu2e::CaloShowerStepCollection> caloShowerStepsHandle;
   event.getByLabel(_conf.caloShowerStepTag(), caloShowerStepsHandle);
-  if (caloShowerGasStepsHandle.isValid()) {
+  if (caloShowerStepsHandle.isValid()) {
     const auto& caloShowerSteps = *caloShowerStepsHandle;
     if(_conf.debugLevel()>0 && caloShowerSteps.size()>0) {
       std::cout << "Compressing CaloShowerSteps from " << _conf.caloShowerStepTag() << std::endl;
     }
     for (const auto& i_caloShowerStep : caloShowerSteps) {
-      recordSimParticle(i_caloShowerStep.simParticle());
+      if (_simParticleCompressionLevel == mu2e::CompressionLevel::kFullCompression) {
+        recordSimParticle(i_caloShowerStep.simParticle());
+      }
       CaloShowerStep newCaloShowerStep(i_caloShowerStep);
       _newCaloShowerSteps->push_back(newCaloShowerStep);
     }
-    if (_newCaloShowerSteps->size() != caloShowerSteps.size()) {
-      throw cet::exception("CompressDetStepMCs") << "Number of CaloShowerSteps in output collection (" << _newCaloShowerSteps->size() << ") does not match the number of CaloShowerSteps in the input collection (" << caloShowerSteps.size() << ")" << std::endl;
+    if(_caloShowerStepCompressionLevel == mu2e::CompressionLevel::kNoCompression) {
+      if (_newCaloShowerSteps->size() != caloShowerSteps.size()) {
+        throw cet::exception("CompressDetStepMCs") << "Number of CaloShowerSteps in output collection (" << _newCaloShowerSteps->size() << ") does not match the number of CaloShowerSteps in the input collection (" << caloShowerSteps.size() << ") even though no compression has been requested (caloShowerStepCompressionLevel = \"" << _caloShowerStepCompressionLevel.name() << "\")" << std::endl;
+      }
     }
   }
 }
@@ -245,12 +289,16 @@ void mu2e::CompressDetStepMCs::compressCrvBarSteps(const art::Event& event) {
       std::cout << "Compressing CrvBarSteps from " << _conf.crvBarStepTag() << std::endl;
     }
     for (const auto& i_crvBarStep : crvBarSteps) {
-      recordSimParticle(i_crvBarStep.simParticle());
+      if (_simParticleCompressionLevel == mu2e::CompressionLevel::kFullCompression) {
+        recordSimParticle(i_crvBarStep.simParticle());
+      }
       CrvBarStep newCrvBarStep(i_crvBarStep);
       _newCrvBarSteps->push_back(newCrvBarStep);
     }
-    if (_newCrvBarSteps->size() != crvBarSteps.size()) {
-      throw cet::exception("CompressDetStepMCs") << "Number of CrvBarSteps in output collection (" << _newCrvBarSteps->size() << ") does not match the number of CrvBarSteps in the input collection (" << crvBarSteps.size() << ")" << std::endl;
+    if(_crvBarStepCompressionLevel == mu2e::CompressionLevel::kNoCompression) {
+      if (_newCrvBarSteps->size() != crvBarSteps.size()) {
+        throw cet::exception("CompressDetStepMCs") << "Number of CrvBarSteps in output collection (" << _newCrvBarSteps->size() << ") does not match the number of CrvBarSteps in the input collection (" << crvBarSteps.size() << ") even though no compression has been requested (crvBarStepCompressionLevel = \"" << _crvBarStepCompressionLevel.name() << "\")" << std::endl;
+      }
     }
   }
 }
@@ -296,6 +344,15 @@ void mu2e::CompressDetStepMCs::compressSimParticles(const art::Event& event) {
   unsigned int keep_size = 0;
   const auto& oldSimParticles = event.getValidHandle<mu2e::SimParticleCollection>(_conf.simParticleTag());
   art::ProductID i_product_id = oldSimParticles.id();
+  const art::EDProductGetter* i_prod_getter = event.productGetter(i_product_id);
+  if (_simParticleCompressionLevel == CompressionLevel::kNoCompression) {
+    // add all the SimParticles
+    for (const auto& i_simParticle : *oldSimParticles) {
+      art::Ptr<SimParticle> oldSimPtr(i_product_id, i_simParticle.first.asUint(), i_prod_getter);
+      recordSimParticle(oldSimPtr);
+    }
+  }
+
   SimParticleSelector simPartSelector(_simParticlesToKeep[i_product_id]);
   keep_size += _simParticlesToKeep[i_product_id].size();
   compressSimParticleCollection(_newSimParticlesPID, _newSimParticleGetter, *oldSimParticles, simPartSelector, *_newSimParticles);
@@ -310,6 +367,11 @@ void mu2e::CompressDetStepMCs::compressSimParticles(const art::Event& event) {
   }
   if (keep_size != _newSimParticles->size()) {
     throw cet::exception("CompressDetStepMCs") << "Number of SimParticles in output collection (" << _newSimParticles->size() << ") does not match the number of SimParticles we wanted to keep (" << keep_size << ")" << std::endl;
+  }
+  if (_simParticleCompressionLevel == mu2e::CompressionLevel::kNoCompression) {
+    if (_newSimParticles->size() != oldSimParticles->size()) {
+      throw cet::exception("CompressDetStepMCs") << "Number of SimParticles in output collection (" << _newSimParticles->size() << ") does not match the number of SimParticles in the input collection (" << oldSimParticles->size() << ") even though no compression has been requested (simParticleCompressionLevel = \"" << _simParticleCompressionLevel.name() << "\")" << std::endl;
+    }
   }
 }
 
@@ -333,18 +395,28 @@ void mu2e::CompressDetStepMCs::compressStepPointMCs(const art::Event& event) {
       std::cout << "Compressing StepPointMCs from " << i_tag << std::endl;
     }
     for (const auto& stepPointMC : *stepPointMCs) {
-      for (const auto& simPartsToKeep : _simParticlesToKeep) {
-        const art::ProductID& oldProdID = simPartsToKeep.first;
-        if (stepPointMC.simParticle().id() != oldProdID) {
-          continue;
-        }
-        const SimParticleSet& alreadyKeptSimParts = simPartsToKeep.second;
-        for (const auto& alreadyKeptSimPart : alreadyKeptSimParts) {
-          if (stepPointMC.simParticle() == alreadyKeptSimPart) {
-            StepPointMC newStepPointMC(stepPointMC);
-            _newStepPointMCs.at(i_tag.instance())->push_back(newStepPointMC);
+      if (_stepPointMCCompressionLevel == mu2e::CompressionLevel::kSimParticleCompression) {
+        for (const auto& simPartsToKeep : _simParticlesToKeep) {
+          const art::ProductID& oldProdID = simPartsToKeep.first;
+          if (stepPointMC.simParticle().id() != oldProdID) {
+            continue;
+          }
+          const SimParticleSet& alreadyKeptSimParts = simPartsToKeep.second;
+          for (const auto& alreadyKeptSimPart : alreadyKeptSimParts) {
+            if (stepPointMC.simParticle() == alreadyKeptSimPart) {
+              StepPointMC newStepPointMC(stepPointMC);
+              _newStepPointMCs.at(i_tag.instance())->push_back(newStepPointMC);
+            }
           }
         }
+      }
+      else if (_stepPointMCCompressionLevel == mu2e::CompressionLevel::kNoCompression) {
+        StepPointMC newStepPointMC(stepPointMC);
+        _newStepPointMCs.at(i_tag.instance())->push_back(newStepPointMC);
+        recordSimParticle(stepPointMC.simParticle());
+      }
+      else {
+        throw cet::exception("CompressDetStepMCs") << "Unrecognized compression level \"" << _stepPointMCCompressionLevel.name() <<"\" for StepPointMCs" << std::endl;
       }
     }
   }
@@ -382,5 +454,28 @@ void mu2e::CompressDetStepMCs::recordSimParticle(const art::Ptr<mu2e::SimParticl
   }
 }
 
+void mu2e::CompressDetStepMCs::checkCompressionLevels() {
+  if (_strawGasStepCompressionLevel != mu2e::CompressionLevel::kNoCompression) {
+    throw cet::exception("CompressDetStepMCs") << "This module does not allow StrawGasSteps to be compressed with compression level \"" << _strawGasStepCompressionLevel.name() <<"\"" << std::endl;
+  }
+
+  if (_caloShowerStepCompressionLevel != mu2e::CompressionLevel::kNoCompression) {
+    throw cet::exception("CompressDetStepMCs") << "This module does not allow CaloShowerSteps to be compressed with compression level \"" << _caloShowerStepCompressionLevel.name() <<"\"" << std::endl;
+  }
+
+  if (_crvBarStepCompressionLevel != mu2e::CompressionLevel::kNoCompression) {
+    throw cet::exception("CompressDetStepMCs") << "This module does not allow CrvBarSteps to be compressed with compression level \"" << _crvBarStepCompressionLevel.name() <<"\"" << std::endl;
+  }
+
+  if (_simParticleCompressionLevel != mu2e::CompressionLevel::kNoCompression &&
+      _simParticleCompressionLevel != mu2e::CompressionLevel::kFullCompression) {
+    throw cet::exception("CompressDetStepMCs") << "This module does not allow SimParticles to be compressed with compression level \"" << _simParticleCompressionLevel.name() <<"\"" << std::endl;
+  }
+
+  if (_stepPointMCCompressionLevel != mu2e::CompressionLevel::kNoCompression &&
+      _stepPointMCCompressionLevel != mu2e::CompressionLevel::kSimParticleCompression) {
+    throw cet::exception("CompressDetStepMCs") << "This module does not allow StepPointMCs to be compressed with compression level \"" << _stepPointMCCompressionLevel.name() <<"\"" << std::endl;
+  }
+}
 
 DEFINE_ART_MODULE(mu2e::CompressDetStepMCs)

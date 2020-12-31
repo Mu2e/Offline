@@ -14,15 +14,16 @@ helper=mu2e_helper(env)
 babarlibs = env['BABARLIBS']
 rootlibs  = env['ROOTLIBS']
 
-#mainlib = helper.make_mainlib ( [
-#    'art_Framework_Core',
-#    'art_Framework_IO_ProductMix',
-#    'mu2e_MCDataProducts',
-#    'mu2e_RecoDataProducts',
-#    'mu2e_GeneralUtilities',
-#    ] )
+mainlib = helper.make_mainlib ( [
+    'art_Framework_Core',
+    'art_Framework_IO_ProductMix',
+    'mu2e_MCDataProducts',
+    'mu2e_RecoDataProducts',
+    'mu2e_GeneralUtilities',
+    ] )
 
 helper.make_plugins( [
+    mainlib,
     'mu2e_Mu2eUtilities',
     'mu2e_CaloCluster',
     'mu2e_MCDataProducts',
