@@ -219,8 +219,6 @@ int main(int argc, char** argv)
   findArgs(argc, argv, "-z", posZ);
   findArgs(argc, argv, "-r", r);
 
-  G4String physName = "QGSP_BERT_EMV";
-//  G4String physName = "QGSP_BERT_HP";  //for neutrons
   G4int seed = r;
 
   CLHEP::HepRandom::setTheEngine(new CLHEP::RanecuEngine);
@@ -230,7 +228,7 @@ int main(int argc, char** argv)
 
   WLSMaterials::GetInstance();
   runManager->SetUserInitialization(new WLSDetectorConstruction(lengthOption, reflectorOption));
-  runManager->SetUserInitialization(new WLSPhysicsList(physName));
+  runManager->SetUserInitialization(new WLSPhysicsList());
 
   WLSPrimaryGeneratorAction *generator = new WLSPrimaryGeneratorAction(mode, n, simType, minBin, verbose, posY, posZ);   
                                                                        //n,simType,minBin not needed in modes UseGeantOnly, and UseGeantAndLookupTables

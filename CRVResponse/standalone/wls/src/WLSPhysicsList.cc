@@ -63,7 +63,7 @@
 
 #include "G4SystemOfUnits.hh"
 
-WLSPhysicsList::WLSPhysicsList(G4String physName) : G4VModularPhysicsList()
+WLSPhysicsList::WLSPhysicsList() : G4VModularPhysicsList()
 {
     G4LossTableManager::Instance();
 
@@ -73,12 +73,9 @@ WLSPhysicsList::WLSPhysicsList(G4String physName) : G4VModularPhysicsList()
     fCutForPositron  = defaultCutValue;
 
 //    G4PhysListFactory factory;
-    G4VModularPhysicsList* phys = NULL;
-    if (physName == "QGSP_BERT_HP") {
-       phys = new QGSP_BERT_HP;
-    } else {
-       phys = new FTFP_BERT;
-    }
+    G4VModularPhysicsList* phys = new QGSP_BERT_HP;
+//    G4VModularPhysicsList* phys = new FTFP_BERT;
+
 //    if (factory.IsReferencePhysList(physName)) {
 //       phys = factory.GetReferencePhysList(physName);
 //       if(!phys)G4Exception("WLSPhysicsList::WLSPhysicsList","InvalidSetup",
@@ -284,7 +281,7 @@ void WLSPhysicsList::AddStepMax()
 {
   // Step limitation seen as a process
 
-//  auto theParticleIterator=GetParticleIterator();  //FIXME: needed for GEANT v10_4
+  auto theParticleIterator=GetParticleIterator();
   theParticleIterator->reset();
   while ((*theParticleIterator)()){
       G4ParticleDefinition* particle = theParticleIterator->value();

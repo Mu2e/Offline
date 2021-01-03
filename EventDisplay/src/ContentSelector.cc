@@ -168,6 +168,7 @@ void ContentSelector::setAvailableCollections(const art::Event& event)
       std::string selectedEntry=(dynamic_cast<TGTextLBEntry*>(selections.At(i)))->GetText()->GetString();
       oldSelections.push_back(selectedEntry);
     }
+    selections.RemoveAll();
     _trackBox->RemoveAll();
     for(unsigned int i=0; i<newEntries.size(); i++)
     {

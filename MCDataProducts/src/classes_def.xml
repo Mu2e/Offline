@@ -249,6 +249,11 @@
  <class name="art::Wrapper<mu2e::KalSeedMCAssns>"/>
 
 <!--  ********* CRV  ********* -->
+ <class name="mu2e::CrvStep"/>
+ <class name="mu2e::CrvStepCollection"/>
+ <class name="art::Wrapper<mu2e::CrvStepCollection>"/>
+ <class name="art::Ptr<mu2e::CrvStep>"/>
+
  <class name="mu2e::CrvPhotons" />
  <class name="mu2e::CrvPhotons::SinglePhoton" />
  <class name="std::vector<mu2e::CrvPhotons::SinglePhoton>" />

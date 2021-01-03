@@ -33,6 +33,7 @@
 #include "MakeCrvRecoPulses.hh"
 
 #include <stdexcept>
+#include <boost/shared_ptr.hpp>
 
 #include "CLHEP/Random/Randomize.h"
 
@@ -92,7 +93,7 @@ WLSEventAction::WLSEventAction(WLSSteppingAction::simulationMode mode, const std
       _histPE[SiPM]->SetLineColor(1);
     }
 
-    _ntuple = new TNtuple("CRVNtuple","CRVNtuple","SiPM:photons:PEs:pulseHeight:pulseWidth:recoPEs:pulseTime:LEtime:chi2");
+    _ntuple = new TNtuple("CRVNtuple","CRVNtuple","SiPM:photons:PEs:pulseHeight:pulseBeta:recoPEs:pulseTime:LEtime:chi2");
   }
 }
 
@@ -338,7 +339,7 @@ void WLSEventAction::Draw(const G4Event* evt)
 
   mu2eCrv::MakeCrvDigis makeCrvDigis;
 
-  mu2eCrv::MakeCrvRecoPulses makeRecoPulses[4];
+  boost::shared_ptr<mu2eCrv::MakeCrvRecoPulses> makeRecoPulses[4];
 
   double startTime=-G4UniformRand()*digitizationInterval;
   std::vector<double> siPMtimes[4], siPMcharges[4], siPMchargesInPEs[4];
@@ -379,52 +380,53 @@ void WLSEventAction::Draw(const G4Event* evt)
     ADCs2[SiPM] = makeCrvDigis.GetADCs();
     TDC2 = makeCrvDigis.GetTDC();
 
-    makeRecoPulses[SiPM].SetWaveform(ADCs[SiPM], TDC, digitizationInterval, pedestal, calibrationFactor, calibrationFactorPulseHeight, false);
-    if(makeRecoPulses[SiPM].GetNPulses()>0) 
+    makeRecoPulses[SiPM]=boost::shared_ptr<mu2eCrv::MakeCrvRecoPulses>(new mu2eCrv::MakeCrvRecoPulses(5, 19.0, 5.0, 50.0, 20.0, 0.7, 1.5, 0.985)); //TODO
+    makeRecoPulses[SiPM]->SetWaveform(ADCs[SiPM], TDC, digitizationInterval, pedestal, calibrationFactor, calibrationFactorPulseHeight);
+    if(makeRecoPulses[SiPM]->GetNPulses()>0) 
     {
       double pulseHeight=0;
       double recoPEs= 0;
-      double pulseWidth=0;
+      double pulseBeta=0;
       double pulseTime=0;
       double LEtime=0;
       double pulseChi2=0;
-      for(size_t j=0; j<makeRecoPulses[SiPM].GetNPulses(); j++)
+      for(size_t j=0; j<makeRecoPulses[SiPM]->GetNPulses(); j++)
       {
-         double recoPEsTmp = makeRecoPulses[SiPM].GetPEs(j);
+         double recoPEsTmp = makeRecoPulses[SiPM]->GetPEs(j);
          if(recoPEsTmp>recoPEs)
          {
            recoPEs=recoPEsTmp;
-           pulseHeight = makeRecoPulses[SiPM].GetPulseHeight(j);
-           pulseWidth = makeRecoPulses[SiPM].GetPulseWidth(j);
-           pulseTime = makeRecoPulses[SiPM].GetPulseTime(j);
-           LEtime = makeRecoPulses[SiPM].GetLEtime(j);
-           pulseChi2 = makeRecoPulses[SiPM].GetPulseFitChi2(j);
+           pulseHeight = makeRecoPulses[SiPM]->GetPulseHeight(j);
+           pulseBeta = makeRecoPulses[SiPM]->GetPulseBeta(j);
+           pulseTime = makeRecoPulses[SiPM]->GetPulseTime(j);
+           LEtime = makeRecoPulses[SiPM]->GetLEtime(j);
+           pulseChi2 = makeRecoPulses[SiPM]->GetPulseFitChi2(j);
          }
       }
-      _ntuple->Fill(SiPM,photons,PEs,pulseHeight,pulseWidth,recoPEs,pulseTime,LEtime,pulseChi2);
+      _ntuple->Fill(SiPM,photons,PEs,pulseHeight,pulseBeta,recoPEs,pulseTime,LEtime,pulseChi2);
       _PEs[SiPM].push_back(PEs);
       _recoPEs[SiPM].push_back(recoPEs);
       _pulseTimes[SiPM].push_back(pulseTime);
       _LETimes[SiPM].push_back(LEtime);
-      _pulseWidths[SiPM].push_back(pulseWidth);
+      _pulseBetas[SiPM].push_back(pulseBeta);
       double avgPEs=0;
       double avgrecoPEs=0;
       double avgPulseTime=0;
       double avgLETime=0;
-      double avgPulseWidth=0;
+      double avgPulseBeta=0;
       for(size_t j=0; j<_PEs[SiPM].size(); j++) {avgPEs+=_PEs[SiPM][j];}
       for(size_t j=0; j<_recoPEs[SiPM].size(); j++) {avgrecoPEs+=_recoPEs[SiPM][j];}
       for(size_t j=0; j<_pulseTimes[SiPM].size(); j++) {avgPulseTime+=_pulseTimes[SiPM][j];}
       for(size_t j=0; j<_LETimes[SiPM].size(); j++) {avgLETime+=_LETimes[SiPM][j];}
-      for(size_t j=0; j<_pulseWidths[SiPM].size(); j++) {avgPulseWidth+=_pulseWidths[SiPM][j];}
+      for(size_t j=0; j<_pulseBetas[SiPM].size(); j++) {avgPulseBeta+=_pulseBetas[SiPM][j];}
       avgPEs/=_PEs[SiPM].size();
       avgrecoPEs/=_recoPEs[SiPM].size();
       avgPulseTime/=_pulseTimes[SiPM].size();
       avgLETime/=_LETimes[SiPM].size();
-      avgPulseWidth/=_pulseWidths[SiPM].size();
+      avgPulseBeta/=_pulseBetas[SiPM].size();
       std::cout<<"SiPM: "<<SiPM<<" PEs: "<<PEs<<"  avg: "<<avgPEs<<"     recoPEs: "<<recoPEs<<"("<<recoPEs/PEs<<") avg: "<<avgrecoPEs<<"("<<avgrecoPEs/avgPEs<<")   ";
-      std::cout<<"avgtime:"<<avgPulseTime<<"/"<<avgLETime<<"       width:"<<pulseWidth<<"  avg:"<<avgPulseWidth<<"   height:"<<pulseHeight<<"  ";
-      std::cout<<"nPulses:"<<makeRecoPulses[SiPM].GetNPulses()<<std::endl;
+      std::cout<<"avgtime:"<<avgPulseTime<<"/"<<avgLETime<<"       width:"<<pulseBeta<<"  avg:"<<avgPulseBeta<<"   height:"<<pulseHeight<<"  ";
+      std::cout<<"nPulses:"<<makeRecoPulses[SiPM]->GetNPulses()<<std::endl;
     }
   }
 
@@ -531,20 +533,20 @@ void WLSEventAction::Draw(const G4Event* evt)
     delete[] v;
 
 //fit
-    unsigned int nPulse = makeRecoPulses[SiPM].GetNPulses();
+    unsigned int nPulse = makeRecoPulses[SiPM]->GetNPulses();
     for(unsigned int pulse=0; pulse<nPulse; pulse++)
     {
-      if(isnan(makeRecoPulses[SiPM].GetPulseWidth(pulse))) continue;
-      double tF1=makeRecoPulses[SiPM].GetT1(pulse);
-      double tF2=makeRecoPulses[SiPM].GetT2(pulse);
+      if(isnan(makeRecoPulses[SiPM]->GetPulseBeta(pulse))) continue;
+      double tF1=makeRecoPulses[SiPM]->GetT1(pulse);
+      double tF2=makeRecoPulses[SiPM]->GetT2(pulse);
       int nF=(tF2-tF1)/1.0 + 1;
       double *tF = new double[nF];
       double *vF = new double[nF];
       for(int iF=0; iF<nF; iF++)
       {
-        double p0 = makeRecoPulses[SiPM].GetFitParam0(pulse);
-        double p1 = makeRecoPulses[SiPM].GetFitParam1(pulse);
-        double p2 = makeRecoPulses[SiPM].GetFitParam2(pulse);
+        double p0 = makeRecoPulses[SiPM]->GetFitParam0(pulse);
+        double p1 = makeRecoPulses[SiPM]->GetFitParam1(pulse);
+        double p2 = makeRecoPulses[SiPM]->GetFitParam2(pulse);
         tF[iF] = tF1 + iF*1.0;
         vF[iF] = p0*TMath::Exp(-(tF[iF]-p1)/p2-TMath::Exp(-(tF[iF]-p1)/p2));
         vF[iF]+=pedestal;
