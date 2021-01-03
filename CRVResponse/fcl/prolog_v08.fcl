@@ -7,6 +7,11 @@
 #include "CommonMC/fcl/prolog.fcl"
 BEGIN_PROLOG
 
+    CrvSteps:
+    {
+      module_type               : CrvStepsFromStepPointMCs
+      removeNeutralParticles    : true
+    }
     CrvPhotons:
     {
       module_type               : CrvPhotonGenerator
@@ -36,7 +41,8 @@ BEGIN_PROLOG
                                    "CRVConditions/v6_0/LookupTable_900_1",   //C2
                                    "CRVConditions/v6_0/LookupTable_2100_1",  //C3
                                    "CRVConditions/v6_0/LookupTable_1550_1"]  //C4
-      scintillationYield                : 39400 //for 68 PE/SiPM @ 1 m away from SiPM (Test beam June 2017)
+      scintillationYield                : 39400 //photons/MeV visible energy deposited
+                                                //for 68 PE/SiPM @ 1 m away from SiPM (Test beam June 2017)
                                                 //using the pulse height calibration, this value gives 45 PE/SiPM @ 1 m away from SiPM
       scintillationYieldVariation       : 0.2   //gaussian distribution with sigma equal to 20% of the mean
       scintillationYieldVariationCutoff : 0.4   //the scintillation yield variation is cut off at 40% below the mean

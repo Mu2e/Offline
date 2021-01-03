@@ -375,7 +375,8 @@ CrvCoincidenceD.muonMinTime                   :  20.0  //ns
 CrvCoincidenceD.muonMaxTime                   : 150.0  //ns
 CrvCoincidenceD.genParticleModuleLabel        : "generate" 
 
-CrvCoincidenceX  : @local::CrvCoincidenceT  //REPLACE
+CrvCoincidenceX: @local::CrvCoincidenceT  //REPLACE
+CrvCoincidenceX.timeWindowStart : 0
 
 END_PROLOG
 
@@ -690,6 +691,8 @@ physics.producers.CrvPhotons.processNames   : ["*"]
 physics.producers.CrvPhotons.lookupTableFileNames : ["CRVConditions/v6_0/LookupTable_6000_0"]  //REPLACE
 physics.producers.CrvPhotons.reflectors           : [ 0 ] //REPLACE
 physics.producers.CrvPhotons.CRVSectors           : ["Test"]
+physics.producers.CrvPhotons.startTime      : 0
+physics.producers.CrvSiPMCharges.blindTime  : 0
 services.GeometryService.simulatedDetector.tool_type : "Mu2e"
 
 physics.producers.CrvCoincidencePE6T5.PEthresholds                    : [6]
