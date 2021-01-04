@@ -13,7 +13,9 @@ Compression : {
     caloShowerStepCompressionLevel : "noCompression"
     crvBarStepCompressionLevel : "noCompression"
     simParticleCompressionLevel : "fullCompression" # only keep SimParticles related to other data products we are keeping
-    stepPointMCCompressionLevel : "noCompression" # "simParticleCompression" # only keep StepPointMCs related to SimParticles we are keeping
+    stepPointMCCompressionLevel : "simParticleCompression" # only keep StepPointMCs related to SimParticles we are keeping
+    genealogyCompressionLevel : "fullCompression" # "noCompression"
+    truncatedSimParticleKeyOffset : 400000
 
     debugLevel : 0
   }

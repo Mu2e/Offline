@@ -10,6 +10,11 @@
 // - SimParticles : noCompression, fullCompression
 // - StepPointMCs : noCompression, simParticleCompression
 //
+// There is also the concept of "genealogy" compression, the options are:
+// - noCompression : self-explanatory
+// - fullCompression : remove all SimParticles between the ones we are keeping and the very first SimParticle
+// in all cases the very first SimParticle is kept
+//
 // Dec 2020, Andy Edmonds
 //
 #include "art/Framework/Core/EDProducer.h"
@@ -88,6 +93,8 @@ public:
     fhicl::Atom<std::string> crvBarStepCompressionLevel{Name("crvBarStepCompressionLevel"), Comment("Compression level for CrvBarSteps")};
     fhicl::Atom<std::string> simParticleCompressionLevel{Name("simParticleCompressionLevel"), Comment("Compression level for SimParticles")};
     fhicl::Atom<std::string> stepPointMCCompressionLevel{Name("stepPointMCCompressionLevel"), Comment("Compression level for StepPointMCs")};
+    fhicl::Atom<std::string> genealogyCompressionLevel{Name("genealogyCompressionLevel"), Comment("Compression level for the genealogy")};
+    fhicl::Atom<int> truncatedSimParticleKeyOffset{Name("truncatedSimParticleKeyOffset"), Comment("Offset to use when adding a truncated SimParticle to the SimParticleCollection")};
   };
   typedef art::EDProducer::Table<Config> Parameters;
 
@@ -126,6 +133,7 @@ private:
   mu2e::CompressionLevel _crvBarStepCompressionLevel;
   mu2e::CompressionLevel _simParticleCompressionLevel;
   mu2e::CompressionLevel _stepPointMCCompressionLevel;
+  mu2e::CompressionLevel _genealogyCompressionLevel;
 
   // unique_ptrs to the new output collections
   std::unique_ptr<mu2e::StrawGasStepCollection> _newStrawGasSteps;
@@ -156,7 +164,8 @@ mu2e::CompressDetStepMCs::CompressDetStepMCs(const Parameters& conf)
     _caloShowerStepCompressionLevel(mu2e::CompressionLevel::findByName(_conf.caloShowerStepCompressionLevel())),
     _crvBarStepCompressionLevel(mu2e::CompressionLevel::findByName(_conf.crvBarStepCompressionLevel())),
     _simParticleCompressionLevel(mu2e::CompressionLevel::findByName(_conf.simParticleCompressionLevel())),
-    _stepPointMCCompressionLevel(mu2e::CompressionLevel::findByName(_conf.stepPointMCCompressionLevel()))
+  _stepPointMCCompressionLevel(mu2e::CompressionLevel::findByName(_conf.stepPointMCCompressionLevel())),
+  _genealogyCompressionLevel(mu2e::CompressionLevel::findByName(_conf.genealogyCompressionLevel()))
 {
   // Check that we have valid compression levels for this module
   checkCompressionLevels();
@@ -373,6 +382,68 @@ void mu2e::CompressDetStepMCs::compressSimParticles(const art::Event& event) {
       throw cet::exception("CompressDetStepMCs") << "Number of SimParticles in output collection (" << _newSimParticles->size() << ") does not match the number of SimParticles in the input collection (" << oldSimParticles->size() << ") even though no compression has been requested (simParticleCompressionLevel = \"" << _simParticleCompressionLevel.name() << "\")" << std::endl;
     }
   }
+
+  // If we asked for the genealogy to be compressed, we will now end up with some missing links
+  // add them back as truncated SimParticles
+  if (_genealogyCompressionLevel != mu2e::CompressionLevel::kNoCompression) {
+    // Go through the particles we are keeping and see if any parents are not there
+    for (const auto& i_keptSimPart : _simParticlesToKeep[i_product_id]) {
+
+      bool addedTruncated = false; // want to keep track of this because we don't want to add a truncated particle for every particle in the genealogy
+      int n_truncated_added = 0;
+      cet::map_vector_key truncKey;
+      art::Ptr<mu2e::SimParticle> truncSimPtr;
+      SimParticle* truncated = 0;
+
+      art::Ptr<mu2e::SimParticle> i_childPtr = i_keptSimPart;//art::Ptr<mu2e::SimParticle>(_newSimParticlesPID, i_newSimParticle.first.asUint(), _newSimParticleGetter);
+      art::Ptr<mu2e::SimParticle> i_parentPtr = i_childPtr->parent();
+      while (i_parentPtr) {
+        if (_simPtrRemap.find(i_parentPtr) == _simPtrRemap.end()) { // the parent is not in the output collection
+          if (_conf.debugLevel()>0) {
+            std::cout << "SimParticle " << i_parentPtr << " is not in output collection because it has been compressed away by genealogy compression" << std::endl;
+          }
+
+          // If we haven't added a truncated particle in this genealogy
+          if (!addedTruncated) {
+            // Add a truncated particle
+            truncated = new SimParticle();
+            truncKey = cet::map_vector_key(_conf.truncatedSimParticleKeyOffset() + n_truncated_added);
+            truncated->id() = truncKey;
+            //            truncated->addDaughter(i_childPtr);
+            ++n_truncated_added;
+            truncSimPtr = art::Ptr<mu2e::SimParticle>(_newSimParticlesPID, truncKey.asUint(), _newSimParticleGetter);
+            if (_conf.debugLevel()>0) {
+              std::cout << "Adding truncated SimParticle " << truncSimPtr << std::endl;
+            }
+            addedTruncated = true;
+          }
+
+          _simPtrRemap[i_parentPtr] = truncSimPtr;
+          if (_conf.debugLevel()>0) {
+            std::cout << "Previous SimParticlePtrs for " << i_parentPtr << " will now point to " << _simPtrRemap[i_parentPtr] << std::endl;
+          }
+        }
+        else {
+          // this parent is in the output collection so
+          if (_conf.debugLevel()>0) {
+            std::cout << "SimParticle " << i_parentPtr << " is in the output collection" << std::endl;
+          }
+          if(truncated) {
+            truncated->parent() = i_parentPtr; // have the truncated particle's parent point to this
+            addedTruncated = false; // and flag that we will need a new truncated particle next time
+            (*_newSimParticles)[truncKey] = *truncated;
+
+            if (_conf.debugLevel()>0) {
+              std::cout << "Set truncated SimParticle (" << truncSimPtr << ") parent to " << truncated->parent() << std::endl;
+            }
+          }
+        }
+        i_parentPtr = i_parentPtr->parent();
+      }
+    }
+  }
+
+  // Fill out the SimParticleRemapping so that the removed links point to the truncated SimParticle
 }
 
 void mu2e::CompressDetStepMCs::compressGenParticles() {
@@ -445,10 +516,20 @@ void mu2e::CompressDetStepMCs::recordSimParticle(const art::Ptr<mu2e::SimParticl
     std::cout << "Recording SimParticle " << sim_ptr << std::endl;
   }
   while (parentPtr) {
-    if(_conf.debugLevel()>0) {
-      std::cout << "and it's parent " << parentPtr << std::endl;
+    if (_genealogyCompressionLevel == mu2e::CompressionLevel::kNoCompression) {
+      _simParticlesToKeep[sim_ptr.id()].insert(parentPtr);
+      if(_conf.debugLevel()>0) {
+        std::cout << "and it's parent " << parentPtr << std::endl;
+      }
     }
-    _simParticlesToKeep[sim_ptr.id()].insert(parentPtr);
+    else if (_genealogyCompressionLevel == mu2e::CompressionLevel::kFullCompression) {
+      if (parentPtr->isPrimary()) {
+        _simParticlesToKeep[sim_ptr.id()].insert(parentPtr);
+        if(_conf.debugLevel()>0) {
+          std::cout << "and it's parent " << parentPtr << std::endl;
+        }
+      }
+    }
     childPtr = parentPtr;
     parentPtr = parentPtr->parent();
   }
@@ -475,6 +556,11 @@ void mu2e::CompressDetStepMCs::checkCompressionLevels() {
   if (_stepPointMCCompressionLevel != mu2e::CompressionLevel::kNoCompression &&
       _stepPointMCCompressionLevel != mu2e::CompressionLevel::kSimParticleCompression) {
     throw cet::exception("CompressDetStepMCs") << "This module does not allow StepPointMCs to be compressed with compression level \"" << _stepPointMCCompressionLevel.name() <<"\"" << std::endl;
+  }
+
+  if (_genealogyCompressionLevel != mu2e::CompressionLevel::kNoCompression &&
+      _genealogyCompressionLevel != mu2e::CompressionLevel::kFullCompression) {
+    throw cet::exception("CompressDetStepMCs") << "This module does not allow the genealogy to be compressed with compression level \"" << _genealogyCompressionLevel.name() <<"\"" << std::endl;
   }
 }
 
