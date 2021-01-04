@@ -125,13 +125,13 @@ template <typename L> void maxminCRV(L data, double &max, double &min){
     int max_pos = order.second - alltime.begin();
     time.at(0) = alltime.at(min_pos);
     time.at(1) = alltime.at(max_pos);
-    std::cout<<time.at(0)<<" "<<time.at(1)<<std::endl;
+    
     if (time.at(0) == -1){time.at(0) = 0;}
     if (time.at(1) == -1){time.at(1) = 100;} 
     return time;
   }
 
-   void TEveMu2eDataInterface::AddCRVInfo(bool firstloop, const CrvRecoPulseCollection *crvcoincol,  double time, bool Redraw, bool accumulate){
+   void TEveMu2eDataInterface::AddCRVInfo(bool firstloop, const CrvRecoPulseCollection *crvcoincol,  double min_time, double max_time, bool Redraw, bool accumulate){
       DataLists<const CrvRecoPulseCollection*, TEveMu2e2DProjection*>(crvcoincol, Redraw, accumulate,  "CRVRecoPulse", &fCrvList3D, &fCrvList2D);
 
         if(crvcoincol!=0){
@@ -147,16 +147,18 @@ template <typename L> void maxminCRV(L data, double &max, double &min){
             CLHEP::Hep3Vector crvCounterPos = crvCounter.getPosition(); 
             hep3vectorTocm(crvCounterPos);
             string pos3D = "(" + to_string((double)crvCounterPos.x()) + ", " + to_string((double)crvCounterPos.y()) + ", " + to_string((double)crvCounterPos.z()) + ")";
-            teve_crv3D->DrawHit3D("CRVHits3D, Position = " + pos3D + ", Pulse Time = " + to_string(crvRecoPulse.GetPulseTime()) + ", Pulse Height = "+ to_string(crvRecoPulse.GetPulseHeight()) + + "Pulse Width = " + to_string(crvRecoPulse.GetPulseWidth()),  i + 1, crvCounterPos, CrvList3D);
-            fCrvList3D->AddElement(CrvList3D); 
-
+            if( (min_time == -1 && max_time == -1) or (crvRecoPulse.GetPulseTime() > min_time and crvRecoPulse.GetPulseTime() < max_time)){
+              teve_crv3D->DrawHit3D("CRVHits3D, Position = " + pos3D + ", Pulse Time = " + to_string(crvRecoPulse.GetPulseTime()) + ", Pulse Height = "+ to_string(crvRecoPulse.GetPulseHeight()) + + "Pulse Width = " + to_string(crvRecoPulse.GetPulseWidth()),  i + 1, crvCounterPos, CrvList3D);
+              fCrvList3D->AddElement(CrvList3D); 
+            }
           } 
           gEve->AddElement(fCrvList3D);
           gEve->Redraw3D(kTRUE); 
         }
     }
 
-   std::vector<double> TEveMu2eDataInterface::AddComboHits(bool firstloop, const ComboHitCollection *chcol, TEveMu2e2DProjection *tracker2Dproj, double time, bool Redraw, double min_energy, double max_energy, bool accumulate, TEveProjectionManager *TXYMgr, TEveProjectionManager *TRZMgr, TEveScene *scene1, TEveScene *scene2){
+   std::vector<double> TEveMu2eDataInterface::AddComboHits(bool firstloop, const ComboHitCollection *chcol, TEveMu2e2DProjection *tracker2Dproj, bool Redraw, double min_energy, double max_energy, double min_time, double max_time, bool accumulate, TEveProjectionManager *TXYMgr, TEveProjectionManager *TRZMgr, TEveScene *scene1, TEveScene *scene2){
+    
     std::vector<double> energies = {0,0};
     DataLists<const ComboHitCollection*, TEveMu2e2DProjection*>(chcol, Redraw, accumulate, "ComboHit", &fHitsList3D, &fHitsList2D, tracker2Dproj);
 	TXYMgr->ImportElements(fHitsList2D, scene1); 
@@ -179,7 +181,7 @@ template <typename L> void maxminCRV(L data, double &max, double &min){
         string energy = to_string(teve_hit3D->GetEnergy());
         string pos3D = "(" + to_string((double)pointInMu2e.x()) + ", " + to_string((double)pointInMu2e.y()) + ", " + to_string((double)pointInMu2e.z()) + ")";
         string pos2D = "(" + to_string((double)hit.pos().x()) + ", " + to_string((double)hit.pos().y()) + ", " + to_string((double)hit.pos().z()) + ")";
-        if ((time == -1 || (hit.time() <= time && time != -1)) && ((hit.energyDep() >= min_energy && hit.energyDep() <= max_energy) || (min_energy == -1 && max_energy == -1))){
+        if (((min_time == -1 && max_time== -1) || (hit.time() > min_time && hit.time() < max_time)) && ((hit.energyDep() >= min_energy && hit.energyDep() <= max_energy) || (min_energy == -1 && max_energy == -1))){
           teve_hit3D->DrawHit3D("ComboHits3D, Position = " + pos3D + ", Energy = " + energy + ", Time = " + to_string(hit.time()) + ", ", i + 1,  pointInMu2e, energylevels[i], HitList3D);
           teve_hit2D->DrawHit2D("ComboHits2D, Position = " + pos2D + ", Energy = " + energy + ", Time = " + to_string(hit.time()) + ", ", i + 1, HitPos,energylevels[i], HitList2D);
 
@@ -203,9 +205,9 @@ template <typename L> void maxminCRV(L data, double &max, double &min){
   }
 
 
-  std::vector<double> TEveMu2eDataInterface::AddCaloClusters(bool firstloop, const CaloClusterCollection *clustercol, TEveMu2e2DProjection *calo2Dproj, double time, bool Redraw, double min_energy, double max_energy, bool accumulate, TEveProjectionManager *CfXYMgr, TEveProjectionManager *CfRZMgr, TEveScene *scene1, TEveScene *scene2){
+  std::vector<double> TEveMu2eDataInterface::AddCaloClusters(bool firstloop, const CaloClusterCollection *clustercol, TEveMu2e2DProjection *calo2Dproj, bool Redraw, double min_energy, double max_energy, double min_time, double max_time, bool accumulate, TEveProjectionManager *CfXYMgr, TEveProjectionManager *CfRZMgr, TEveScene *scene1, TEveScene *scene2){
     vector <double> energies = {0, 0};
-    
+    std::cout<<"Time interval"<<min_time<<" "<<max_time<<std::endl;
   DataLists<const CaloClusterCollection*, TEveMu2e2DProjection*>(clustercol, Redraw, accumulate, "CaloCluster", &fClusterList3D, &fClusterList2D_disk0, calo2Dproj);
   DataLists<const CaloClusterCollection*, TEveMu2e2DProjection*>(clustercol, Redraw, accumulate, "CaloCluster", &fClusterList3D, &fClusterList2D_disk1, calo2Dproj);
   CfXYMgr->ImportElements(fClusterList2D_disk0, scene1); 
@@ -242,7 +244,7 @@ template <typename L> void maxminCRV(L data, double &max, double &min){
         string pos3D = "(" + to_string((double)pointInMu2e.x()) + ", " + to_string((double)pointInMu2e.y()) + ", " + to_string((double)pointInMu2e.z()) + ")";
         string pos2D = "(" + to_string((double)COG.x()) + ", " + to_string((double)COG.y()) + ", " + to_string((double)COG.z()) + ")";
 
-        if ((time == -1 || (cluster.time() <= time && time != -1)) && ((cluster.energyDep() >= min_energy && cluster.energyDep() <= max_energy) || (min_energy == -1 && max_energy == -1))){
+        if (((min_time == -1 && max_time == -1) || (cluster.time() > min_time &&  cluster.time() < max_time )) && ((cluster.energyDep() >= min_energy && cluster.energyDep() <= max_energy) || (min_energy == -1 && max_energy == -1))){
           teve_cluster3D->DrawCluster("CaloCluster3D, Cluster #" + to_string(i + 1) + ", Position =" + pos3D + ", Energy = " + to_string(cluster.energyDep()) + ", Time = " + to_string(cluster.time()), pointInMu2e, energylevels[i], ClusterList3D, hits, addHits);
             fClusterList3D->AddElement(ClusterList3D); 
             
@@ -270,7 +272,7 @@ template <typename L> void maxminCRV(L data, double &max, double &min){
   }
 
   
-  void TEveMu2eDataInterface::AddCrystalHits(bool firstloop, const CaloCrystalHitCollection *cryHitcol, TEveMu2e2DProjection *calo2Dproj, double time, bool Redraw, bool accumulate, TEveProjectionManager *CfXYMgr, TEveProjectionManager *CfRZMgr, TEveScene *scene1, TEveScene *scene2){
+  void TEveMu2eDataInterface::AddCrystalHits(bool firstloop, const CaloCrystalHitCollection *cryHitcol, TEveMu2e2DProjection *calo2Dproj, double min_time, double max_time, bool Redraw, bool accumulate, TEveProjectionManager *CfXYMgr, TEveProjectionManager *CfRZMgr, TEveScene *scene1, TEveScene *scene2){
     vector <double> energies = {0, 0};
     Calorimeter const &cal = *(GeomHandle<Calorimeter>());
     DataLists<const CaloCrystalHitCollection*, TEveMu2e2DProjection*>(cryHitcol, Redraw, accumulate, "CrystalHit", &fHitsList3D, &fHitsList2D, calo2Dproj);
@@ -289,7 +291,7 @@ template <typename L> void maxminCRV(L data, double &max, double &min){
         int diskId = cal.crystal(hit.id()).diskId();
         CLHEP::Hep3Vector HitPos(cal.geomUtil().mu2eToDiskFF(diskId, cal.crystal(hit.id()).position()));
         CLHEP::Hep3Vector pointInMu2e = PointToCalo(HitPos,diskId);
-        if ((time == -1 || (hit.time() <= time && time != -1))){
+        if (((min_time == -1 && max_time == -1) || (hit.time() > min_time && hit.time() < max_time ))){
           teve_hit->DrawHit3D("CrystalHits",  1, pointInMu2e, energylevels[i], HitList);
           fCrystalHitList->AddElement(HitList);    
         }
@@ -301,7 +303,7 @@ template <typename L> void maxminCRV(L data, double &max, double &min){
     }
   }
 
-  void TEveMu2eDataInterface::AddHelixPieceWise(bool firstloop, const KalSeedCollection *seedcol, std::vector<const KalSeedCollection*> track_list, TEveMu2e2DProjection *tracker2Dproj, double time, bool Redraw, bool accumulate, TEveProjectionManager *TXYMgr, TEveProjectionManager *TRZMgr, TEveScene *scene1, TEveScene *scene2){
+  void TEveMu2eDataInterface::AddHelixPieceWise(bool firstloop, const KalSeedCollection *seedcol, std::vector<const KalSeedCollection*> track_list, TEveMu2e2DProjection *tracker2Dproj, double min_time, double max_time, bool Redraw, bool accumulate, TEveProjectionManager *TXYMgr, TEveProjectionManager *TRZMgr, TEveScene *scene1, TEveScene *scene2){
     DataLists<const KalSeedCollection*, TEveMu2e2DProjection*>(seedcol, Redraw, accumulate, "HelixTrack", &fTrackList3D, &fTrackList2D, tracker2Dproj);
     TXYMgr->ImportElements(fTrackList2D, scene1); 
     TRZMgr->ImportElements(fTrackList2D, scene2); 
@@ -364,7 +366,7 @@ template <typename L> void maxminCRV(L data, double &max, double &min){
     }
   }
 
-  void TEveMu2eDataInterface::AddCosmicTrack(bool firstloop, const CosmicTrackSeedCollection *cosmiccol, TEveMu2e2DProjection *tracker2Dproj, double time, bool Redraw, bool accumulate,  TEveProjectionManager *TXYMgr, TEveProjectionManager *TRZMgr, TEveScene *scene1, TEveScene *scene2){
+  void TEveMu2eDataInterface::AddCosmicTrack(bool firstloop, const CosmicTrackSeedCollection *cosmiccol, TEveMu2e2DProjection *tracker2Dproj, double min_time, double max_time, bool Redraw, bool accumulate,  TEveProjectionManager *TXYMgr, TEveProjectionManager *TRZMgr, TEveScene *scene1, TEveScene *scene2){
      if(cosmiccol !=0){
       DataLists<const CosmicTrackSeedCollection*, TEveMu2e2DProjection*>(cosmiccol, Redraw, accumulate,"CosmicTrack", &fTrackList3D, &fTrackList2D, tracker2Dproj);
 	TXYMgr->ImportElements(fTrackList2D, scene1); 
@@ -419,7 +421,7 @@ template <typename L> void maxminCRV(L data, double &max, double &min){
   }
   
   //TODO - Note this function is untested and awaits compatibility in current Offline. We made it for future upgrades.
-  void TEveMu2eDataInterface::AddTrackExitTrajectories(bool firstloop, const TrkExtTrajCollection *trkextcol, double time, bool Redraw, bool accumulate) {
+  void TEveMu2eDataInterface::AddTrackExitTrajectories(bool firstloop, const TrkExtTrajCollection *trkextcol, double min_time, double max_time, bool Redraw, bool accumulate) {
   DataLists<const TrkExtTrajCollection*, TEveMu2e2DProjection*>(trkextcol, Redraw, accumulate, "TrackExitTraj", &fExtTrackList3D);
     if(trkextcol!=0){
        for(unsigned int i = 0; i < trkextcol->size(); i++){

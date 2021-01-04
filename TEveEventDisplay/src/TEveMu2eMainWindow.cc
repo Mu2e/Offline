@@ -65,11 +65,11 @@ namespace mu2e{
     fTeRun(0),
     fTeEvt(0),
     fTTEvt(0),
-    fTHSlid(0),
+    //fTHSlid(0),
     fTlRun(0),
     fTlEvt(0),
     fTlTEvt(0),
-    fTlHSlid(0),
+    //fTlHSlid(0),
     br(0),
     clusterscheck(0),
     hitscheck(0),
@@ -236,10 +236,6 @@ namespace mu2e{
         navFrame->AddFrame(f);
         f->Associate(this);
 
-        /*TEveParamList *edep = new TEveParamList("CaloEnergySelection");
-        gEve->AddToListTree(edep,0);
-        edep->AddParameter(TEveParamList::FloatConfig_t("Min Energy Depositied",20,0,100));*/
-
         // ... Create run num text entry widget and connect to "GotoEvent" rcvr in visutils
         TGHorizontalFrame* runoFrame = new TGHorizontalFrame(evtidFrame);
         fTlRun = new TGLabel(runoFrame,"Run Number");
@@ -266,7 +262,7 @@ namespace mu2e{
         evnoFrame->AddFrame(fTeEvt,new TGLayoutHints(kLHintsExpandX));
         fTeEvt->Associate(this);
 
-        //Create a Time Slider
+        /*//Create a Time Slider
         TGHorizontalFrame* timeFrame = new TGHorizontalFrame(evtidFrame);
         fTlHSlid = new TGLabel(timeFrame, "Time (ns)");
         fTlHSlid->SetTextJustify(kTextLeft);
@@ -283,7 +279,8 @@ namespace mu2e{
         fTeh1->SetToolTipText("Time (ns)");
         fTbh1->AddText(0, "0.0");
         fHframe2->AddFrame(fTeh1,new TGLayoutHints(kLHintsExpandX));
-        fTeh1->Associate(this);
+        fTeh1->Associate(this);*/
+        
         TGTextButton *Gobutton         = new TGTextButton(navFrame, "&Go", 1999);
         navFrame->AddFrame(Gobutton, new TGLayoutHints(kLHintsLeft,3,0,3,0));         
         Gobutton->Associate(this);
@@ -328,6 +325,18 @@ namespace mu2e{
         _hitmaxenergy->AddText(0, "0.0");
         hentenergyframe->AddFrame(hmaxenergy,new TGLayoutHints(kLHintsExpandX));
         hmaxenergy->Associate(this);
+        timelabel = new TGLabel(evtidFrame, "Time Interval [ns]");
+        TGHorizontalFrame *henttimeframe = new TGHorizontalFrame(evtidFrame);
+        hmintime = new TGTextEntry(henttimeframe, _hitmintime = new TGTextBuffer(5), 1703);
+        _hitmintime->AddText(0, "0.0");
+        henttimeframe->AddFrame(hmintime,new TGLayoutHints(kLHintsExpandX));
+        hmintime->Associate(this);
+        spacer1 = new TGLabel(henttimeframe,"   ");
+        henttimeframe->AddFrame(spacer);
+        hmaxtime = new TGTextEntry(henttimeframe, _hitmaxtime = new TGTextBuffer(5), 1703);
+        _hitmaxtime->AddText(0, "0.0");
+        henttimeframe->AddFrame(hmaxtime,new TGLayoutHints(kLHintsExpandX));
+        hmaxtime->Associate(this);
 
         br = new TGButtonGroup(evtidFrame, "Data Products", kVerticalFrame);
         clusterscheck = new TGCheckButton(br, new TGHotString("Clusters"), 1200);
@@ -347,14 +356,16 @@ namespace mu2e{
         evtidFrame->AddFrame(runoFrame,new TGLayoutHints(kLHintsExpandX));
         evtidFrame->AddFrame(evnoFrame,new TGLayoutHints(kLHintsExpandX));
 
-        evtidFrame->AddFrame(timeFrame,new TGLayoutHints(kLHintsExpandX));
-        evtidFrame->AddFrame(fHframe2,new TGLayoutHints(kLHintsExpandX));
+        //evtidFrame->AddFrame(timeFrame,new TGLayoutHints(kLHintsExpandX));
+        //evtidFrame->AddFrame(fHframe2,new TGLayoutHints(kLHintsExpandX));
         evtidFrame->AddFrame(celabel, new TGLayoutHints(kLHintsLeft,3,0,3,0));
         evtidFrame->AddFrame(ceicon, new TGLayoutHints(kLHintsLeft,20,0,0,0));
         evtidFrame->AddFrame(centenergyframe, new TGLayoutHints(kLHintsLeft,3,0,3,0));
         evtidFrame->AddFrame(helabel, new TGLayoutHints(kLHintsLeft,3,0,3,0));
         evtidFrame->AddFrame(heicon, new TGLayoutHints(kLHintsLeft,20,0,0,0));
         evtidFrame->AddFrame(hentenergyframe, new TGLayoutHints(kLHintsLeft,3,0,3,0));
+        evtidFrame->AddFrame(timelabel, new TGLayoutHints(kLHintsLeft,3,0,3,0));
+        evtidFrame->AddFrame(henttimeframe, new TGLayoutHints(kLHintsLeft,3,0,3,0));
         evtidFrame->AddFrame(br, new TGLayoutHints(kLHintsExpandX));
 
         clusterscheck->Associate(this);
@@ -525,21 +536,21 @@ namespace mu2e{
 
   void TEveMu2eMainWindow::RedrawDataProducts(std::string type){
     if (type == "Clusters"){
-      *clusterenergy = pass_data->AddCaloClusters(_firstLoop, _emptydata.clustercol, calo2Dproj, texttime, true, fclustmin, fclustmax, _accumulate, CfXYMgr, CfRZMgr, proj0, proj1);
+      *clusterenergy = pass_data->AddCaloClusters(_firstLoop, _emptydata.clustercol, calo2Dproj,true, fclustmin, fclustmax, ftimemin, ftimemax, _accumulate, CfXYMgr, CfRZMgr, proj0, proj1);
     }
     if (type == "Hits"){
-      if (_data.chcol !=0){*hitenergy = pass_data->AddComboHits(_firstLoop, _emptydata.chcol, tracker2Dproj, texttime, true, fhitmin, fhitmax,_accumulate, TfXYMgr, TfRZMgr, proj2, proj3);}
-      if(_data.cryHitcol !=0){pass_data->AddCrystalHits(_firstLoop, _emptydata.cryHitcol, calo2Dproj, texttime, true, _accumulate, CfXYMgr, CfRZMgr, proj0, proj1);}
+      if (_data.chcol !=0){*hitenergy = pass_data->AddComboHits(_firstLoop, _emptydata.chcol, tracker2Dproj,  true, fhitmin, fhitmax,ftimemin, ftimemax,_accumulate, TfXYMgr, TfRZMgr, proj2, proj3);}
+      if(_data.cryHitcol !=0){pass_data->AddCrystalHits(_firstLoop, _emptydata.cryHitcol, calo2Dproj, ftimemin, ftimemax, true, _accumulate, CfXYMgr, CfRZMgr, proj0, proj1);}
     }
     if (type == "Tracks"){
-      pass_data->AddHelixPieceWise(_firstLoop, _emptydata.kalseedcol, _data.track_list, tracker2Dproj, texttime, true,  _accumulate, TfXYMgr, TfRZMgr, proj2, proj3);
+      pass_data->AddHelixPieceWise(_firstLoop, _emptydata.kalseedcol, _data.track_list, tracker2Dproj, ftimemin, ftimemax, true,  _accumulate, TfXYMgr, TfRZMgr, proj2, proj3);
 
     }
     if (type == "Cosmics"){
-      if(_data.crvcoincol!= 0){pass_data->AddCRVInfo(_firstLoop, _emptydata.crvcoincol, texttime, true,  _accumulate);}
+      if(_data.crvcoincol!= 0){pass_data->AddCRVInfo(_firstLoop, _emptydata.crvcoincol, ftimemin, ftimemax, true,  _accumulate);}
       }
     if (type == "Cosmic Tracks"){
-      if(_data.cosmiccol!=0){pass_data->AddCosmicTrack(_firstLoop, _emptydata.cosmiccol, tracker2Dproj, texttime, true, _accumulate, TfXYMgr, TfRZMgr, proj2, proj3);}
+      if(_data.cosmiccol!=0){pass_data->AddCosmicTrack(_firstLoop, _emptydata.cosmiccol, tracker2Dproj, ftimemin, ftimemax, true, _accumulate, TfXYMgr, TfRZMgr, proj2, proj3);}
     }
     if (type == "MC Trajectories"){
       if(_data.mctrajcol!=0){pass_mc->AddMCTrajectory(_firstLoop, _emptydata.mctrajcol, tracker2Dproj, true, _accumulate);}
@@ -553,7 +564,7 @@ namespace mu2e{
   Bool_t TEveMu2eMainWindow::ProcessMessage(Long_t msg, Long_t param1, Long_t param2){
     switch (GET_MSG(msg))
     {  
-    case kC_HSLIDER:
+    /*case kC_HSLIDER:
       if(param1==1600){
         char buf[32]; 
         sprintf(buf, "%.3d", fTHSlid->GetPosition());
@@ -564,11 +575,11 @@ namespace mu2e{
         gClient->NeedRedraw(fTeh1);
         texttime = fTHSlid->GetPosition();
         pass_data->AddCRVInfo(_firstLoop, _data.crvcoincol, texttime, false, _accumulate);//, CRV2Dproj);
-        *hitenergy = pass_data->AddComboHits(_firstLoop, _data.chcol, tracker2Dproj, texttime, false, fhitmin, fhitmax, _accumulate, TfXYMgr, TfRZMgr, proj2, proj3);
-        *clusterenergy = pass_data->AddCaloClusters(_firstLoop, _data.clustercol, calo2Dproj, texttime, false, fclustmin, fclustmax, _accumulate, CfXYMgr, CfRZMgr, proj0, proj1);
+        *hitenergy = pass_data->AddComboHits(_firstLoop, _data.chcol, tracker2Dproj, texttime, false, fhitmin, fhitmax, ftimemin, ftimemax,_accumulate, TfXYMgr, TfRZMgr, proj2, proj3);
+        *clusterenergy = pass_data->AddCaloClusters(_firstLoop, _data.clustercol, calo2Dproj, texttime, false, fclustmin, fclustmax, ftimemin, ftimemax, _accumulate, CfXYMgr, CfRZMgr, proj0, proj1);
         pass_data->AddHelixPieceWise(_firstLoop, _data.kalseedcol,_data.track_list,tracker2Dproj, texttime, false, _accumulate, TfXYMgr, TfRZMgr, proj2, proj3);
 
-	    }
+	    }*/
      break; 
     case kC_TEXTENTRY:
     switch (GET_SUBMSG(msg)){
@@ -579,7 +590,7 @@ namespace mu2e{
       if (param1 == 1701){
         fclustmin = atof(_clustminenergy->GetString());
         fclustmax = atof(_clustmaxenergy->GetString());
-        if (fclustmin < fclustmax) {*clusterenergy = pass_data->AddCaloClusters(_firstLoop, _data.clustercol, calo2Dproj, texttime, false, fclustmin, fclustmax, _accumulate, CfXYMgr, CfRZMgr, proj0, proj1);}
+        if (fclustmin < fclustmax) {*clusterenergy = pass_data->AddCaloClusters(_firstLoop, _data.clustercol, calo2Dproj,  false, fclustmin, fclustmax, ftimemin, ftimemax, _accumulate, CfXYMgr, CfRZMgr, proj0, proj1);}
         if (fclustmin > fclustmax){
           std::cout<<"Cluster Minimum Energy is greater than Maximum Energy"<<std::endl;
           char msg[300];
@@ -590,7 +601,7 @@ namespace mu2e{
       if (param1 == 1702){
         fhitmin = atof(_hitminenergy->GetString());
         fhitmax = atof(_hitmaxenergy->GetString());
-        if (fhitmin < fhitmax) {*hitenergy = pass_data->AddComboHits(_firstLoop, _data.chcol, tracker2Dproj, texttime, false, fhitmin, fhitmax, _accumulate, TfXYMgr, TfRZMgr, proj2, proj3);}
+        if (fhitmin < fhitmax) {*hitenergy = pass_data->AddComboHits(_firstLoop, _data.chcol, tracker2Dproj, false, fhitmin, fhitmax,ftimemin, ftimemax, _accumulate, TfXYMgr, TfRZMgr, proj2, proj3);}
         if (fhitmin > fhitmax){
           std::cout<<"Hit Minimum Energy is greater than Maximum Energy"<<std::endl;
           char msg[300];
@@ -598,6 +609,19 @@ namespace mu2e{
           new TGMsgBox(gClient->GetRoot(), gClient->GetRoot(), "Event Not Found", msg, kMBIconExclamation,kMBOk);
         }
 	    }	
+	    if (param1 == 1703){
+        ftimemin = atof(_hitmintime->GetString());
+        ftimemax = atof(_hitmaxtime->GetString());
+        if (ftimemin < ftimemax) {
+           if(_data.chcol!=0) {
+            *hitenergy = pass_data->AddComboHits(_firstLoop, _data.chcol, tracker2Dproj, false, fhitmin, fhitmax, ftimemin, ftimemax, _accumulate, TfXYMgr, TfRZMgr, proj2, proj3);
+           }  if(_data.clustercol!=0) {
+            *clusterenergy = pass_data->AddCaloClusters(_firstLoop, _data.clustercol, calo2Dproj,  false, fclustmin, fclustmax,ftimemin, ftimemax, _accumulate, CfXYMgr, CfRZMgr, proj0, proj1);
+            }if(_data.crvcoincol!=0) {
+               pass_data->AddCRVInfo(_firstLoop, _data.crvcoincol, ftimemin, ftimemax, false, _accumulate);
+            }
+          }
+	    }
       break;
     }
     case kC_COMMAND:
@@ -606,32 +630,32 @@ namespace mu2e{
       case kCM_CHECKBUTTON:
       if(param1==1200){
         if(clusterscheck->IsDown()){
-        *clusterenergy = pass_data->AddCaloClusters(_firstLoop, _data.clustercol, calo2Dproj, texttime, false, fclustmin, fclustmin, _accumulate, CfXYMgr, CfRZMgr, proj0, proj1);}
+        *clusterenergy = pass_data->AddCaloClusters(_firstLoop, _data.clustercol, calo2Dproj, false, fclustmin, fclustmin, ftimemin, ftimemax, _accumulate, CfXYMgr, CfRZMgr, proj0, proj1);}
         if(!clusterscheck->IsDown() && _data.clustercol!=0){RedrawDataProducts("Clusters");}
       }
       if(param1==1201){
         if(hitscheck->IsDown()){
-        *hitenergy = pass_data->AddComboHits(_firstLoop, _data.chcol, tracker2Dproj, texttime, false, fhitmin, fhitmax, _accumulate, TfXYMgr, TfRZMgr, proj2, proj3);
-        pass_data->AddCrystalHits(_firstLoop, _data.cryHitcol, calo2Dproj, texttime, false, _accumulate, CfXYMgr, CfRZMgr, proj0, proj1);
+        *hitenergy = pass_data->AddComboHits(_firstLoop, _data.chcol, tracker2Dproj, false, fhitmin, fhitmax,ftimemin, ftimemax, _accumulate, TfXYMgr, TfRZMgr, proj2, proj3);
+        pass_data->AddCrystalHits(_firstLoop, _data.cryHitcol, calo2Dproj, ftimemin, ftimemax, false, _accumulate, CfXYMgr, CfRZMgr, proj0, proj1);
         }
         if(!hitscheck->IsDown()){RedrawDataProducts("Hits");}
       }
       if(param1==1202){
 
-        if(trackscheck->IsDown()){pass_data->AddHelixPieceWise(_firstLoop, _data.kalseedcol, _data.track_list, tracker2Dproj, texttime, false, _accumulate, TfXYMgr, TfRZMgr, proj2, proj3);}
+        if(trackscheck->IsDown()){pass_data->AddHelixPieceWise(_firstLoop, _data.kalseedcol, _data.track_list, tracker2Dproj, ftimemin, ftimemax, false, _accumulate, TfXYMgr, TfRZMgr, proj2, proj3);}
 
         if(!trackscheck->IsDown() && _data.kalseedcol!=0){RedrawDataProducts("Tracks");}
       }
       if(param1==1203){
         if(cosmicscheck->IsDown()){
-        pass_data->AddCRVInfo(_firstLoop, _data.crvcoincol, texttime, false, _accumulate);
+        pass_data->AddCRVInfo(_firstLoop, _data.crvcoincol, ftimemin, ftimemax, false, _accumulate);
         
         }
         if(!cosmicscheck->IsDown()){RedrawDataProducts("Cosmics");}
       }
       if(param1==1204){
         if(cosmictrkscheck->IsDown()){
-          pass_data->AddCosmicTrack(_firstLoop, _data.cosmiccol,  tracker2Dproj, texttime, false, _accumulate, TfXYMgr, TfRZMgr, proj2, proj3);		
+          pass_data->AddCosmicTrack(_firstLoop, _data.cosmiccol,  tracker2Dproj,  ftimemin, ftimemax, false, _accumulate, TfXYMgr, TfRZMgr, proj2, proj3);		
           }
         if(!cosmictrkscheck->IsDown()){RedrawDataProducts("Cosmic Tracks");}
       }
@@ -686,20 +710,20 @@ namespace mu2e{
     _data.crvcoincol = data.crvcoincol;
     _data.cryHitcol = data.cryHitcol;
     _data.cosmiccol = data.cosmiccol;
-    if (texttime == -1){
-      std::vector<double> times = pass_data->getTimeRange(firstLoop, data.chcol, data.crvcoincol, data.clustercol, data.cryHitcol);
-      fTHSlid->SetRange(times.at(0), times.at(1));
-    }
-    if(_data.crvcoincol!=0) pass_data->AddCRVInfo(firstLoop, data.crvcoincol, time, false, _accumulate);
+    //if (texttime == -1){
+    std::vector<double> times = pass_data->getTimeRange(firstLoop, data.chcol, data.crvcoincol, data.clustercol, data.cryHitcol);
+      //fTHSlid->SetRange(times.at(0), times.at(1));
+    //}
+    if(_data.crvcoincol!=0) pass_data->AddCRVInfo(firstLoop, data.crvcoincol, ftimemin, ftimemax, false, _accumulate);
     hitenergy = new vector<double>(2);
-    if(_data.chcol!=0) *hitenergy = pass_data->AddComboHits(firstLoop, data.chcol, tracker2Dproj, time, false, fhitmin, fhitmax, _accumulate, TfXYMgr, TfRZMgr, proj2, proj3);
+    if(_data.chcol!=0) *hitenergy = pass_data->AddComboHits(firstLoop, data.chcol, tracker2Dproj, false, fhitmin, fhitmax,ftimemin, ftimemax, _accumulate, TfXYMgr, TfRZMgr, proj2, proj3);
 
     clusterenergy = new std::vector<double>(2);
 
-    if(_data.clustercol!=0) *clusterenergy = pass_data->AddCaloClusters(firstLoop, data.clustercol, calo2Dproj, time, false, fclustmin, fclustmax, _accumulate, CfXYMgr, CfRZMgr, proj0, proj1);
-    if (_data.cryHitcol!=0) pass_data->AddCrystalHits(_firstLoop, _data.cryHitcol, calo2Dproj, texttime, false, _accumulate, CfXYMgr, CfRZMgr, proj0, proj1);
-    if(_data.kalseedcol!=0) pass_data->AddHelixPieceWise(firstLoop, data.kalseedcol, _data.track_list, tracker2Dproj, time, false, _accumulate, TfXYMgr, TfRZMgr, proj2, proj3);
-    if(_data.cosmiccol!=0) pass_data->AddCosmicTrack(firstLoop, data.cosmiccol, tracker2Dproj, time, false, _accumulate, TfXYMgr, TfRZMgr, proj2, proj3);
+    if(_data.clustercol!=0) *clusterenergy = pass_data->AddCaloClusters(firstLoop, data.clustercol, calo2Dproj, false, fclustmin, fclustmax, ftimemin, ftimemax, _accumulate, CfXYMgr, CfRZMgr, proj0, proj1);
+    if (_data.cryHitcol!=0) pass_data->AddCrystalHits(_firstLoop, _data.cryHitcol, calo2Dproj, ftimemin, ftimemax, false, _accumulate, CfXYMgr, CfRZMgr, proj0, proj1);
+    if(_data.kalseedcol!=0) pass_data->AddHelixPieceWise(firstLoop, data.kalseedcol, _data.track_list, tracker2Dproj,  ftimemin, ftimemax, false, _accumulate, TfXYMgr, TfRZMgr, proj2, proj3);
+    if(_data.cosmiccol!=0) pass_data->AddCosmicTrack(firstLoop, data.cosmiccol, tracker2Dproj, ftimemin, ftimemax, false, _accumulate, TfXYMgr, TfRZMgr, proj2, proj3);
     if(_data.mctrajcol!=0) pass_mc->AddMCTrajectory(firstLoop, data.mctrajcol, tracker2Dproj, false, _accumulate);
 
     
@@ -713,11 +737,15 @@ namespace mu2e{
     _clustmaxenergy->Clear();
     _hitminenergy->Clear();
     _hitmaxenergy->Clear();
+    _hitmintime->Clear();
+    _hitmaxtime->Clear();
     _clustminenergy->AddText(0, (to_string(clusterenergy->at(0))).c_str());
     _clustmaxenergy->AddText(0, (to_string(clusterenergy->at(1))).c_str());
 
     _hitminenergy->AddText(0, (to_string(hitenergy->at(0))).c_str());
     _hitmaxenergy->AddText(0, (to_string(hitenergy->at(1))).c_str());
+    _hitmintime->AddText(0, (to_string(times.at(0))).c_str());
+    _hitmaxtime->AddText(0, (to_string(times.at(1))).c_str());
     gApplication->Run(true);
 
     gEve->Redraw3D(kTRUE);

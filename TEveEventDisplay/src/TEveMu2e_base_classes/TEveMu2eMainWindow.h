@@ -72,14 +72,15 @@ namespace mu2e{
       bool  isClosed() const;
       int   getEventToFind(bool &findEvent) const;
       double texttime = -1;
-      vector<double> *clusterenergy = 0;
-      vector<double> *hitenergy = 0;
+      std::vector<double> *clusterenergy = 0;
+      std::vector<double> *hitenergy = 0;
+      std::vector<double> times;
       #endif
 
       TGeoManager* geom = new TGeoManager("geom","Geom");
       Geom_Interface *mu2e_geom	=new Geom_Interface(); 
-      TEveMu2eDataInterface *pass_data	=new TEveMu2eDataInterface(); 
-      TEveMu2eMCInterface *pass_mc	=new TEveMu2eMCInterface(); 
+      TEveMu2eDataInterface *pass_data	= new TEveMu2eDataInterface(); 
+      TEveMu2eMCInterface *pass_mc	= new TEveMu2eMCInterface(); 
       TEveMu2eProjectionInterface *pass_proj = new TEveMu2eProjectionInterface();
       int eventToFind, runToFind;
       bool usereventSelected = false;
@@ -116,7 +117,7 @@ namespace mu2e{
       TEveScene *fdetXY = 0;
       TEveScene *fevtXY = 0;
       TGLOverlayButton *but1, *but2, *but3, *but4, *but5, *but6;
-      TGTextEntry     *fTeRun,*fTeEvt, *fTTEvt, *fTeh1, *fTeh2, *fTeh3, *cminenergy, *cmaxenergy, *hminenergy, *hmaxenergy;    
+      TGTextEntry     *fTeRun,*fTeEvt, *fTTEvt, *fTeh1, *fTeh2, *fTeh3, *cminenergy, *cmaxenergy, *hminenergy, *hmaxenergy, *hmintime, *hmaxtime;    
       TGHSlider       *fTHSlid;
       TGLabel         *fTlRun,*fTlEvt, *fTlTEvt, *fTlHSlid, *celabel, *helabel,*timelabel, *spacer, *spacer1;
       TGButtonGroup	*br;
@@ -129,7 +130,7 @@ namespace mu2e{
       Double_t        camRotateCenterV_;
       Double_t        camDollyDelta_;
       Int_t	      HSId1;
-      TGTextBuffer *_eventNumber, *_subrunNumber, *_runNumber, *_time, *fTbh1, *fTbh2, *fTbh3, *_clustminenergy, *_clustmaxenergy, *_hitminenergy, *_hitmaxenergy;
+      TGTextBuffer *_eventNumber, *_subrunNumber, *_runNumber, *_time, *fTbh1, *fTbh2, *fTbh3, *_clustminenergy, *_clustmaxenergy, *_hitminenergy, *_hitmaxenergy, *_hitmintime, *_hitmaxtime;
       int  _eventToFind = 0; ///TODO - this or one above>?
 
       bool _isClosed = false;
@@ -147,12 +148,13 @@ namespace mu2e{
       int _event, _subrun, _run;
       Data_Collections _data;
       Data_Collections _emptydata;
-      std::vector<double> times;
+      
       double fclustmin = -1;
       double fclustmax = -1;
       double fhitmin = -1;
       double fhitmax = -1;
-
+      double ftimemin = -1;
+      double ftimemax = -1;
 
      ClassDef(TEveMu2eMainWindow,0);
 

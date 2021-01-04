@@ -22,7 +22,7 @@ TEveEventDisplayHelix : {
       CaloClusterCollection		  :  "CaloClusterFromProtoCluster"
       CaloCrystalHitCollection  :  "CaloCrystalHitFromHit"
       HelixSeedCollection       :  "HelixFinderDe:Negative"
-      KalSeedCollection         :  ["KFFDeM", "KFFDeMHPar", "KFFDeMHDar" ]
+      KalSeedCollection         :  ["KFFDeM"]#, "KFFDeMHPar", "KFFDeMHDar" ]
       TrkExtTrajCollection      : NULL
       MCTrajectoryCollection    :  "compressDigiMCs"
       addHits 			            : false
