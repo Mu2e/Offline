@@ -105,7 +105,7 @@ physics : {
          particleInput : "g4run"
          // multiple matches, we'll get the one from the current process, which is what we want
          physVolInfoInput : "g4run"
-         stoppingMaterial : "StoppingTarget_Ti"
+         stoppingMaterial : "StoppingTarget_Al"
          particleTypes : [ 13 ] // mu-
          particleOffsetThreshold: 200000
          verbosityLevel: 1
@@ -122,7 +122,7 @@ physics : {
          module_type : StoppedParticlesFinder
          particleInput : "g4run"
          physVolInfoInput : "g4run"
-         vetoedMaterials : [ "StoppingTarget_Ti" ]
+         vetoedMaterials : [ "StoppingTarget_Al" ]
          particleTypes : [ 13 ] // mu-
          particleOffsetThreshold: 200000
          verbosityLevel: 1
