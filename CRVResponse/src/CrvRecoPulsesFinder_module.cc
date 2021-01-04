@@ -122,7 +122,7 @@ namespace mu2e
 
     art::Handle<CrvDigiCollection> crvDigiCollection;
     event.getByLabel(_crvDigiModuleLabel,"",crvDigiCollection);
-    
+
     size_t waveformIndex = 0;
     while(waveformIndex<crvDigiCollection->size())
     {
