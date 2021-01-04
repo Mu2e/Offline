@@ -10,7 +10,7 @@ CaloFilters : {
 	module_type            : EcalTriggerPreselect
 	trkPatRecModuleLabel   : MergePatRec
 	trkQualTag             : MergePatRec
-	caloClusterModuleLabel : CaloClusterFromProtoCluster
+	caloClusterModuleLabel : CaloClusterMaker
 	trackClusterMatchModuleLabel : TrackCaloMatching
 	fitparticle            : 11
 	fitdirection           : 0 
@@ -126,7 +126,7 @@ CaloFilters : { @table::CaloFilters
 	    fetchStrawHitPositions        : 0
 	    fetchComboHits                : 0
 
-	    caloDigiCollectionTag         : CaloDigiFromShower
+	    caloDigiCollectionTag         : CaloDigiMaker
 	    strawDigiCollection           : makeSD
 	    strawHitCollectionTag         : TTmakeSH
 	    strawHitPositionCollectionTag : TTmakeSH
@@ -145,7 +145,7 @@ CaloFilters : { @table::CaloFilters
 	    fetchStrawHitPositions        : 0
 	    fetchComboHits                : 0
 
-	    caloDigiCollectionTag         : CaloDigiFromShower
+	    caloDigiCollectionTag         : CaloDigiMaker
 	    strawDigiCollection           : makeSD
 	    strawHitCollectionTag         : TTmakeSH
 	    strawHitPositionCollectionTag : TTmakeSH
@@ -162,7 +162,7 @@ CaloFilters : { @table::CaloFilters
 	#TODO: add also a path for the selection of failed events
 	caloMVACECDCountFilter     : {
 	    module_type : DigiFilter
-	    caloDigiCollection  : CaloDigiFromShower
+	    caloDigiCollection  : CaloDigiMaker
 	    strawDigiCollection : notUSed	    
 	    useStrawDigi        : false		    
 	    useCaloDigi         : true		    
@@ -174,10 +174,10 @@ CaloFilters : { @table::CaloFilters
 	    triggerPath        : "CaloMVACE"	    	    
 	}
 
-	caloMVAMixedCECDCountFilter     : {
+	caloMVAMixedCDCountFilter     : {
 	    module_type : DigiFilter
 	    strawDigiCollection : notUSed
-	    caloDigiCollection  : CaloDigiFromShower
+	    caloDigiCollection  : CaloDigiMaker
 	    useStrawDigi        : false
 	    useCaloDigi         : true
 	    minNStrawDigi       : -1
@@ -191,7 +191,7 @@ CaloFilters : { @table::CaloFilters
 	caloCalibCosmicCDCountFilter     : {
 	    module_type : DigiFilter
 	    strawDigiCollection : notUSed
-	    caloDigiCollection  : CaloDigiFromShower
+	    caloDigiCollection  : CaloDigiMaker
 	    useStrawDigi        : false
 	    useCaloDigi         : true
 	    minNStrawDigi       : -1
@@ -205,7 +205,7 @@ CaloFilters : { @table::CaloFilters
 	caloLHCECDCountFilter     : {
 	    module_type : DigiFilter
 	    strawDigiCollection : notUSed
-	    caloDigiCollection  : CaloDigiFromShower
+	    caloDigiCollection  : CaloDigiMaker
 	    useStrawDigi        : false
 	    useCaloDigi         : true
 	    minNStrawDigi       : -1
@@ -219,7 +219,7 @@ CaloFilters : { @table::CaloFilters
 	caloPhotonCDCountFilter     : {
 	    module_type : DigiFilter
 	    strawDigiCollection : notUSed
-	    caloDigiCollection  : CaloDigiFromShower
+	    caloDigiCollection  : CaloDigiMaker
 	    useStrawDigi        : false
 	    useCaloDigi         : true
 	    minNStrawDigi       : -1
@@ -245,7 +245,7 @@ CaloFilters : { @table::CaloFilters
 	    triggerFlag       : ["PrescaleGoodEvents"]	    
 	}
 	
-	caloMixedEventPrescale : {
+	caloMVAMixedEventPrescale : {
 	    module_type : PrescaleEvent
 	    nPrescale         : 1
 #	    nPrescale         : @local::caloMixed_evt_sf
@@ -253,7 +253,7 @@ CaloFilters : { @table::CaloFilters
 	    triggerFlag   : ["PrescaleRandom"]	    
 	}
 	
-	caloMixedPrescale : {
+	caloMVAMixedPrescale : {
 	    module_type : PrescaleEvent
 	    nPrescale         : 1
 #	    nPrescale         : @local::caloMixed_sf

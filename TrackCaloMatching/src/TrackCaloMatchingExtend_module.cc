@@ -30,7 +30,7 @@
 #include "GeometryService/inc/GeomHandle.hh"
 
 #include "RecoDataProducts/inc/KalRepPtrCollection.hh"
-#include "RecoDataProducts/inc/CaloClusterCollection.hh"
+#include "RecoDataProducts/inc/CaloCluster.hh"
 #include "RecoDataProducts/inc/TrkCaloIntersectCollection.hh"
 #include "RecoDataProducts/inc/TrkCaloMatchCollection.hh"
 
@@ -206,7 +206,7 @@ namespace mu2e {
  	   for (const auto& cluster : caloClusters)
            {
                
-               if (trkIntersect.diskId() != cluster.diskId()) continue;               
+               if (trkIntersect.diskId() != cluster.diskID()) continue;               
 
                CLHEP::Hep3Vector diff = cluster.cog3Vector()-posTrkInSectionFF;
                double deltaTime       = std::abs(cluster.time()-trkTime-dtOffset_);
@@ -278,15 +278,15 @@ namespace mu2e {
     //---------------------------------------------------------------------------------------------------------
     CLHEP::Hep3Vector TrackCaloMatchingExtend::recalculateCog(const Calorimeter& cal, const CaloCluster& cluster)
     {
-         auto const& main = cluster.caloCrystalHitsPtrVector();
+         auto const& main = cluster.caloHitsPtrVector();
 
          double sxi(0),syi(0),swi(0);
          for (auto it = main.begin(); it !=main.end(); ++it)
          {
-              int    crId((*it)->id());
+              int    crId((*it)->crystalID());
               double energy((*it)->energyDep());
 
-              CLHEP::Hep3Vector crystalPos = cal.geomUtil().mu2eToDiskFF(cal.crystal(crId).diskId(), cal.crystal(crId).position());
+              CLHEP::Hep3Vector crystalPos = cal.geomUtil().mu2eToDiskFF(cal.crystal(crId).diskID(), cal.crystal(crId).position());
 
               double weight = energy - 4.939;
               //double weight = -5.45 + 2.63*log(energy);

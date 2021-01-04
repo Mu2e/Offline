@@ -8,16 +8,18 @@ makeSGS : {
 makeSD : {
     module_type : StrawDigisFromStrawGasSteps
     TimeOffsets   : [  @sequence::CommonMC.TimeMaps ]
-    StrawGasStepModule : makeSGS
+    StrawGasStepModule : ""
 }
 #------------------------------------------------------------------------------
 
 TrackerMC : {
-    producers : { 
-	makeSGS : {@table::makeSGS }
-	makeSD  : { @table::makeSD  }
+    producers : {
+        makeSGS : {@table::makeSGS }
+        makeSD  : { @table::makeSD  }
     }
-    DigiSim : [ makeSGS, makeSD ]
+    StepSim : [ makeSGS ]
+    DigiSim : [ makeSD ]
+    StepAndDigiSim : [ makeSGS, makeSD ]
 }
 
 END_PROLOG

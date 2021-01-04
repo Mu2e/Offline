@@ -22,9 +22,23 @@ namespace mu2e {
   TriggerResultsNavigator::TriggerResultsNavigator(const art::TriggerResults* trigResults):
     _trigResults(trigResults){
     auto const  id   = trigResults->parameterSetID();
-    auto const& pset = fhicl::ParameterSetRegistry::get(id);
-    //set the vector<string> with the names of the tirgger_paths
-    _trigPathsNames  = pset.get<std::vector<std::string>>("trigger_paths");
+    // Simplest thing: ParameterSetRegistry has correct ParameterSet
+    fhicl::ParameterSet pset;
+    fhicl::ParameterSetRegistry::get(id, pset);
+
+    // Go through ParameterSetRegistry and check for corrupted IDs
+    auto const& psets = fhicl::ParameterSetRegistry::get();
+    for(auto const& pset_pair : psets) {
+      auto nid = pset_pair.second.id();
+      assert(nid == pset_pair.first);
+
+      if(nid == id) {  
+	pset = pset_pair.second; 
+	if (pset.has_key("trigger_paths")){
+	  _trigPathsNames = pset.get<std::vector<std::string>>("trigger_paths",std::vector<std::string>());
+	}
+      }
+    }  
 
     //loop over trigResults to fill the map <string, unsigned int)
     for (unsigned int i=0; i< _trigPathsNames.size(); ++i){

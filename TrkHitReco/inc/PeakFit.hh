@@ -11,7 +11,7 @@ namespace mu2e {
   namespace TrkHitReco {
 	
     
-    enum FitType {peakminuspedavg=1,peakminusped=2,combopeakfit=3,peakfit=4};
+    enum FitType {peakminuspedavg=1,peakminusped=2,combopeakfit=3,peakfit=4,firmwarepmp=5};
 
     class PeakFit {
        

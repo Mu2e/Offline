@@ -261,25 +261,6 @@ namespace mu2e{
 
         evnoFrame->AddFrame(fTeEvt,new TGLayoutHints(kLHintsExpandX));
         fTeEvt->Associate(this);
-
-        /*//Create a Time Slider
-        TGHorizontalFrame* timeFrame = new TGHorizontalFrame(evtidFrame);
-        fTlHSlid = new TGLabel(timeFrame, "Time (ns)");
-        fTlHSlid->SetTextJustify(kTextLeft);
-        fTlHSlid->SetMargins(5,5,5,0);
-        timeFrame->AddFrame(fTlHSlid);
-
-        fTHSlid = new TGHSlider(timeFrame, 190, kScaleBoth, 1600, kHorizontalFrame, GetDefaultFrameBackground());//,kFALSE, kFALSE, kFALSE, kFALSE);
-        fTHSlid->SetRange(0.05, 5.0);
-        timeFrame->AddFrame(fTHSlid, new TGLayoutHints(kLHintsExpandX));
-        fTHSlid->Associate(this);
-
-        TGHorizontalFrame *fHframe2 = new TGHorizontalFrame(evtidFrame);
-        fTeh1 = new TGTextEntry(fHframe2, fTbh1 = new TGTextBuffer(5), 1700);
-        fTeh1->SetToolTipText("Time (ns)");
-        fTbh1->AddText(0, "0.0");
-        fHframe2->AddFrame(fTeh1,new TGLayoutHints(kLHintsExpandX));
-        fTeh1->Associate(this);*/
         
         TGTextButton *Gobutton         = new TGTextButton(navFrame, "&Go", 1999);
         navFrame->AddFrame(Gobutton, new TGLayoutHints(kLHintsLeft,3,0,3,0));         
@@ -356,8 +337,6 @@ namespace mu2e{
         evtidFrame->AddFrame(runoFrame,new TGLayoutHints(kLHintsExpandX));
         evtidFrame->AddFrame(evnoFrame,new TGLayoutHints(kLHintsExpandX));
 
-        //evtidFrame->AddFrame(timeFrame,new TGLayoutHints(kLHintsExpandX));
-        //evtidFrame->AddFrame(fHframe2,new TGLayoutHints(kLHintsExpandX));
         evtidFrame->AddFrame(celabel, new TGLayoutHints(kLHintsLeft,3,0,3,0));
         evtidFrame->AddFrame(ceicon, new TGLayoutHints(kLHintsLeft,20,0,0,0));
         evtidFrame->AddFrame(centenergyframe, new TGLayoutHints(kLHintsLeft,3,0,3,0));
@@ -564,23 +543,7 @@ namespace mu2e{
   Bool_t TEveMu2eMainWindow::ProcessMessage(Long_t msg, Long_t param1, Long_t param2){
     switch (GET_MSG(msg))
     {  
-    /*case kC_HSLIDER:
-      if(param1==1600){
-        char buf[32]; 
-        sprintf(buf, "%.3d", fTHSlid->GetPosition());
-        fTbh1->Clear();
-        fTbh1->AddText(0, buf);
-        fTeh1->SetCursorPosition(fTeh1->GetCursorPosition());
-        fTeh1->Deselect();
-        gClient->NeedRedraw(fTeh1);
-        texttime = fTHSlid->GetPosition();
-        pass_data->AddCRVInfo(_firstLoop, _data.crvcoincol, texttime, false, _accumulate);//, CRV2Dproj);
-        *hitenergy = pass_data->AddComboHits(_firstLoop, _data.chcol, tracker2Dproj, texttime, false, fhitmin, fhitmax, ftimemin, ftimemax,_accumulate, TfXYMgr, TfRZMgr, proj2, proj3);
-        *clusterenergy = pass_data->AddCaloClusters(_firstLoop, _data.clustercol, calo2Dproj, texttime, false, fclustmin, fclustmax, ftimemin, ftimemax, _accumulate, CfXYMgr, CfRZMgr, proj0, proj1);
-        pass_data->AddHelixPieceWise(_firstLoop, _data.kalseedcol,_data.track_list,tracker2Dproj, texttime, false, _accumulate, TfXYMgr, TfRZMgr, proj2, proj3);
-
-	    }*/
-     break; 
+    
     case kC_TEXTENTRY:
     switch (GET_SUBMSG(msg)){
       case kTE_TEXTCHANGED:

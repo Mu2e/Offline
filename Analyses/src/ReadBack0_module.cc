@@ -22,7 +22,6 @@
 #include "GeometryService/inc/GeomHandle.hh"
 #include "TrackerGeom/inc/Tracker.hh"
 #include "MCDataProducts/inc/StepPointMCCollection.hh"
-#include "RecoDataProducts/inc/CaloHitCollection.hh"
 
 // Root includes.
 #include "TH1F.h"

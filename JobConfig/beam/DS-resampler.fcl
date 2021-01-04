@@ -82,13 +82,13 @@ physics.filters.tgtStopFilter: {
 
 //----------------------------------------------------------------
 // Fix shower compressor config
-physics.producers.CaloShowerStepFromStepPt.physVolInfoInput: g4run
-physics.producers.CaloShowerStepFromStepPt.usePhysVolInfo: true
-physics.producers.CaloShowerStepFromStepPt.calorimeterStepPoints: "flashPrefilter:calorimeter"
-physics.producers.CaloShowerStepFromStepPt.calorimeterROStepPoints: "flashPrefilter:calorimeterRO"
+physics.producers.CaloShowerStepMaker.physVolInfoInput: g4run
+physics.producers.CaloShowerStepMaker.usePhysVolInfo: true
+physics.producers.CaloShowerStepMaker.calorimeterStepPoints: "flashPrefilter:calorimeter"
+physics.producers.CaloShowerStepMaker.calorimeterROStepPoints: "flashPrefilter:calorimeterRO"
 // The module needs to stop using getMany() and accept InputTags for configuration.
 // Until it is fixed, we have to use a hacked version.
-physics.producers.CaloShowerStepFromStepPt.module_type: CaloShowerStepFromStepPtHACKED
+physics.producers.CaloShowerStepMaker.module_type: CaloShowerStepMakerHACKED
 
 
 //----------------------------------------------------------------
@@ -100,7 +100,7 @@ physics.filters.detectorFilter: {
       "flashPrefilter:CRV"
    ]
    mainSPPtrInputs: [
-      "CaloShowerStepFromStepPt"
+      "CaloShowerStepMaker"
    ]
    extraHitInputs: [
       "flashPrefilter:virtualdetector",
@@ -117,7 +117,7 @@ physics.detPath: [ "genCounter", "flashResample",
    "stoppedMuonFinder",
    "stoppedMuonDaughters",
    "flashPrefilter", # removes stopped muon daughters, filters out stuff not hitting tracker or calo
-   "CaloShowerStepFromStepPt",
+   "CaloShowerStepMaker",
    "detectorFilter", # filters out particles in calo showers
    "CaloShowerCrystalSteps",
    "CaloShowerROSteps"

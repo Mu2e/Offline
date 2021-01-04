@@ -94,7 +94,7 @@ namespace mu2e {
     _debug(pset.get<int>(           "debugLevel",0)),
     _chTag(pset.get<art::InputTag>("ComboHitCollection")),
     _shsel(pset.get<std::vector<std::string> >("StrawHitSelectionBits",std::vector<std::string>{"EnergySelection","TimeSelection"} )),
-    _shmask(pset.get<std::vector<std::string> >("StrawHitMaskBits",std::vector<std::string>{} )),
+    _shmask(pset.get<std::vector<std::string> >("StrawHitMask",std::vector<std::string>{} )),
     _maxDt(pset.get<float>(   "maxDt",40.0)), // nsec //FIXME tune with TOT
     _useTOT(pset.get<bool>("UseTOT",false)), // use TOT to estimate drift time
     _maxDPerp(pset.get<float>("maxDPerp",500.)), // mm, maximum perpendicular distance between time-division points
@@ -106,16 +106,14 @@ namespace mu2e {
     _doMVA(pset.get<bool>(  "doMVA",false)),
     _maxfsep(pset.get<unsigned>("MaxFaceSeparation",3)), // max separation between faces in a station
     _testflag(pset.get<bool>("TestFlag")),
+    _smask("uniquepanel"),  // define the mask to select hits in the same unique panel
+
     _mvatool(pset.get<fhicl::ParameterSet>("MVATool",fhicl::ParameterSet()))
     {
       float minR = pset.get<float>("minimumRadius",395); // mm
       _minR2 = minR*minR;
       float maxR = pset.get<float>("maximumRadius",650); // mm
       _maxR2 = maxR*maxR;
-      // define the mask: straws are in the same unique panel
-      std::vector<StrawIdMask::field> fields;
-      fields.push_back(StrawIdMask::station);
-      _smask = StrawIdMask(fields);
       produces<ComboHitCollection>();
     }
 

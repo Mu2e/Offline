@@ -72,14 +72,14 @@ namespace mu2e {
     AntiLeakRegistry& reg = art::ServiceHandle<G4Helper>()->antiLeakRegistry();
 
     const auto geomOptions = art::ServiceHandle<GeometryService>()->geomOptions();
-    geomOptions->loadEntry( config, "extMonFNAL", "extMonFNAL" );    
-    geomOptions->loadEntry( config, "extMonFNAL"+collimator.name()+"alignmentHole", "extMonFNAL."+collimator.name()+".alignmentHole" );    
-    geomOptions->loadEntry( config, "extMonFNAL"+collimator.name()+"alignmentPlug", "extMonFNAL."+collimator.name()+".alignmentPlug" );    
-    geomOptions->loadEntry( config, "extMonFNAL"+collimator.name()+"channel",       "extMonFNAL."+collimator.name()+".channel" );    
-    
-    const bool forceAuxEdgeVisible  = geomOptions->forceAuxEdgeVisible("extMonFNAL"); 
-    const bool doSurfaceCheck       = geomOptions->doSurfaceCheck("extMonFNAL"); 
-    const bool placePV              = geomOptions->placePV("extMonFNAL"); 
+    geomOptions->loadEntry( config, "extMonFNAL", "extMonFNAL" );
+    geomOptions->loadEntry( config, "extMonFNAL"+collimator.name()+"alignmentHole", "extMonFNAL."+collimator.name()+".alignmentHole" );
+    geomOptions->loadEntry( config, "extMonFNAL"+collimator.name()+"alignmentPlug", "extMonFNAL."+collimator.name()+".alignmentPlug" );
+    geomOptions->loadEntry( config, "extMonFNAL"+collimator.name()+"channel",       "extMonFNAL."+collimator.name()+".channel" );
+
+    const bool forceAuxEdgeVisible  = geomOptions->forceAuxEdgeVisible("extMonFNAL");
+    const bool doSurfaceCheck       = geomOptions->doSurfaceCheck("extMonFNAL");
+    const bool placePV              = geomOptions->placePV("extMonFNAL");
 
 
     // The G4 interface we use through finishNesting() applies
@@ -238,16 +238,16 @@ namespace mu2e {
     MaterialFinder materialFinder(config);
 
     const auto geomOptions = art::ServiceHandle<GeometryService>()->geomOptions();
-    geomOptions->loadEntry( config, "extMonFNAL", "extMonFNAL" );    
-    geomOptions->loadEntry( config, "extMonFNAL"+volNameSuffix+"magnetIron",     "extMonFNAL."+volNameSuffix+".magnet.iron" );  
-    geomOptions->loadEntry( config, "extMonFNAL"+volNameSuffix+"magnetAperture", "extMonFNAL."+volNameSuffix+".magnet.aperture" );  
-    
-    const bool forceAuxEdgeVisible  = geomOptions->forceAuxEdgeVisible("extMonFNAL"); 
-    const bool doSurfaceCheck       = geomOptions->doSurfaceCheck("extMonFNAL"); 
-    const bool placePV              = geomOptions->placePV("extMonFNAL"); 
+    geomOptions->loadEntry( config, "extMonFNAL", "extMonFNAL" );
+    geomOptions->loadEntry( config, "extMonFNAL"+volNameSuffix+"magnetIron",     "extMonFNAL."+volNameSuffix+".magnet.iron" );
+    geomOptions->loadEntry( config, "extMonFNAL"+volNameSuffix+"magnetAperture", "extMonFNAL."+volNameSuffix+".magnet.aperture" );
+
+    const bool forceAuxEdgeVisible  = geomOptions->forceAuxEdgeVisible("extMonFNAL");
+    const bool doSurfaceCheck       = geomOptions->doSurfaceCheck("extMonFNAL");
+    const bool placePV              = geomOptions->placePV("extMonFNAL");
 
     AntiLeakRegistry& reg = art::ServiceHandle<G4Helper>()->antiLeakRegistry();
-    
+
     //----------------------------------------------------------------
     // finishNesting() uses the backwards interpretation of rotations
     CLHEP::HepRotation *magnetRotationInParentInv =
@@ -330,7 +330,7 @@ namespace mu2e {
               doSurfaceCheck
               );
 
-    VolumeInfo apertureMarginDn = 
+    VolumeInfo apertureMarginDn =
       nestBox("ExtMonFNAL"+volNameSuffix+"MagnetApertureMarginDn",
               apertureMarginHalfSize,
               materialFinder.get("hall.insideMaterialName"),
@@ -390,25 +390,25 @@ namespace mu2e {
 
   //================================================================
   void constructExtMonFNALBuilding(const VolumeInfo& collimator1Parent,
-                                         const CLHEP::HepRotation& collimator1ParentRotationInMu2e,
-                                         const VolumeInfo& mainParent,
-                                         const CLHEP::HepRotation& mainParentRotationInMu2e,
-                                         const SimpleConfig& config)
+                                   const CLHEP::HepRotation& collimator1ParentRotationInMu2e,
+                                   const VolumeInfo& mainParent,
+                                   const CLHEP::HepRotation& mainParentRotationInMu2e,
+                                   const SimpleConfig& config)
   {
     const auto geomOptions = art::ServiceHandle<GeometryService>()->geomOptions();
-    geomOptions->loadEntry( config, "extMonFNAL", "extMonFNAL" );    
-    geomOptions->loadEntry( config, "coll2Shielding",         "extMonFNAL.collimator2.shielding" );  
-    geomOptions->loadEntry( config, "coll2ShieldingHVACduct", "extMonFNAL.collimator2.shieldingHVACduct" );  
-    
-    const bool forceAuxEdgeVisible  = geomOptions->forceAuxEdgeVisible("extMonFNAL"); 
-    const bool doSurfaceCheck       = geomOptions->doSurfaceCheck("extMonFNAL"); 
+    geomOptions->loadEntry( config, "extMonFNAL", "extMonFNAL" );
+    geomOptions->loadEntry( config, "coll2Shielding",         "extMonFNAL.collimator2.shielding" );
+    geomOptions->loadEntry( config, "coll2ShieldingHVACduct", "extMonFNAL.collimator2.shieldingHVACduct" );
+
+    const bool forceAuxEdgeVisible  = geomOptions->forceAuxEdgeVisible("extMonFNAL");
+    const bool doSurfaceCheck       = geomOptions->doSurfaceCheck("extMonFNAL");
     const bool placePV              = geomOptions->placePV("extMonFNAL");
 
     MaterialFinder materialFinder(config);
 
     GeomHandle<ProtonBeamDump> dump;
     GeomHandle<ExtMonFNALBuilding> emfb;
-    
+
 
     static CLHEP::HepRotation shieldingRotationInMu2e = emfb->shieldingRotationInMu2e();
     const CLHEP::Hep3Vector offset(0.0,2*emfb->shieldingNHalfSize()[1],0.0);

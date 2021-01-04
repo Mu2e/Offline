@@ -53,7 +53,7 @@ physics : {
       module_type            : ReadBack
       generatorModuleLabel   : generate
       g4ModuleLabel          : g4run
-      caloReadoutModuleLabel : CaloShowerStepROFromShowerStep
+      caloReadoutModuleLabel : CaloShowerROMaker
       diagLevel              : 0
       minimumEnergy          : 0.000
       maxFullPrint           : 201

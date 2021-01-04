@@ -4,13 +4,15 @@
 # at the trigger level and the filters used to make the trigger decision
 #------------------------------------------------------------------------------
 #include "CalPatRec/fcl/prolog.fcl"
-#include "TrkPatRec/fcl/prolog_trigger.fcl"
 #include "CalPatRec/fcl/prolog_trigger.fcl"
 #include "CaloReco/fcl/prolog_trigger.fcl"
 #include "CaloCluster/fcl/prolog_trigger.fcl"
 #include "TrkHitReco/fcl/prolog_trigger.fcl"
 #include "TrkReco/fcl/prolog_trigger.fcl"
+#include "TrkPatRec/fcl/prolog_trigger.fcl"
 #include "TrkFilters/fcl/prolog_trigger.fcl"
+#include "CosmicReco/fcl/prolog.fcl"
+#include "CosmicReco/fcl/prolog_trigger.fcl"
 #include "CaloFilters/fcl/prolog_trigger.fcl"
 
 Trigger : {
@@ -21,6 +23,8 @@ Trigger : {
 	@table::TrkHitRecoTrigger.producers
 	@table::TrkHitReco.producers
 	@table::TrkRecoTrigger.producers
+	@table::CosmicTracking.producers
+	@table::CstTrigger.producers
 	@table::TprTrigger.producers
 	@table::CprTrigger.producers
 	
@@ -30,6 +34,7 @@ Trigger : {
 	@table::CprTrigger.filters
 	@table::CaloFilters.filters
 	@table::TrkFilters.filters
+	@table::CstTrigger.filters
 
 	#used to select 1 event out of N
 	unbiasedPrescale : {
@@ -146,7 +151,7 @@ Trigger : {
 	largeCDCountFilter     : {
 	    module_type : DigiFilter
 	    strawDigiCollection : notUsed
-	    caloDigiCollection  : CaloDigiFromShower
+	    caloDigiCollection  : CaloDigiMaker
 	    useStrawDigi        : false
 	    useCaloDigi         : true
 	    triggerPath         : "largeCaloDigiCount"	    	    	    
@@ -162,7 +167,7 @@ Trigger : {
 	minimumbiasCDCountFilter          : {
 	    module_type : DigiFilter
 	    strawDigiCollection : notUsed
-	    caloDigiCollection  : CaloDigiFromShower
+	    caloDigiCollection  : CaloDigiMaker
 	    useStrawDigi        : false
 	    useCaloDigi         : true
 	    triggerPath          : "minBiasCaloDigiCount"	    	    	    
@@ -186,6 +191,9 @@ Trigger : {
 	
 	#tracking filters. It includes: TrkPatRec, CalPatRec
 	@table::TrkFilters.sequences
+
+	#straight track finder
+	@table::CstTrigger.sequences
 
 	#unbiased filter. It selects the events based on their event id
 	unbiased           : [ unbiasedPrescale ]

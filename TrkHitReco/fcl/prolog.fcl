@@ -3,11 +3,19 @@ BEGIN_PROLOG
 # Normal reco seqence module: this produces a hit for every digi, and uses
 # flags to keep track of which hits to use
 # Reconstruct hits: this produces StrawHits and ComboHits
+PBTFSD : {
+  module_type             : ProtonBunchTimeFromStrawDigis
+}
+
 makeSH : {
   module_type             : StrawHitReco
+  FitType                 : 1
   FilterHits              : false
   WriteStrawHitCollection : true
-  EventWindowMarkerLabel  : "EWMProducer"
+  ProtonBunchTimeTag  : "EWMProducer"
+  StrawDigiCollectionTag  : "makeSD"
+  StrawDigiADCWaveformCollectionTag : "makeSD"
+  CaloClusterCollectionTag  : "CaloClusterFast"
 }
 
 # combine hits in a panel
@@ -98,6 +106,7 @@ SflagBkgHits : {
 TrkHitReco : {
     producers : { 
 	# normal reco
+	PBTFSD       : { @table::PBTFSD       }
 	makeSH        : { @table::makeSH       }
 	makePH        : { @table::makePH       }
 	makeSTH       : { @table::makeSTH      }
@@ -107,8 +116,8 @@ TrkHitReco : {
 
     # SEQUENCES
     # production sequence to prepare hits for tracking
-    PrepareHits  : [ makeSH, makePH, FlagBkgHits ]
-    SPrepareHits : [ makeSH, makePH, makeSTH, SflagBkgHits ]
+    PrepareHits  : [ PBTFSD, makeSH, makePH, FlagBkgHits ]
+    SPrepareHits : [ PBTFSD, makeSH, makePH, makeSTH, SflagBkgHits ]
 }
 
 END_PROLOG

@@ -14,11 +14,8 @@
 #include "CalorimeterGeom/inc/Calorimeter.hh"
 
 #include "RecoDataProducts/inc/CaloCluster.hh"
-#include "RecoDataProducts/inc/CaloClusterCollection.hh"
 #include "RecoDataProducts/inc/CaloProtoCluster.hh"
-#include "RecoDataProducts/inc/CaloCrystalHitCollection.hh"
-#include "RecoDataProducts/inc/CaloCrystalHit.hh"
-#include "RecoDataProducts/inc/CaloHitCollection.hh"
+#include "RecoDataProducts/inc/CaloHit.hh"
 #include "RecoDataProducts/inc/StrawHitCollection.hh"
 #include "RecoDataProducts/inc/StrawHitPositionCollection.hh"
 #include "RecoDataProducts/inc/StrawHitFlagCollection.hh"
@@ -110,7 +107,7 @@ void ObjectDumpUtils::printCaloProtoCluster(const mu2e::CaloProtoCluster* Cluste
     printf("-----------------------------------------------------------------------------------------------------\n");
   }
 
-  const mu2e::CaloProtoCluster::CaloCrystalHitPtrVector caloClusterHits = Cluster->caloCrystalHitsPtrVector();
+  const mu2e::CaloHitPtrVector caloClusterHits = Cluster->caloHitsPtrVector();
   int nh = caloClusterHits.size();
 
   if ((opt == "") || (opt.Index("data") >= 0)) {
@@ -130,8 +127,8 @@ void ObjectDumpUtils::printCaloProtoCluster(const mu2e::CaloProtoCluster* Cluste
 // print individual crystals in local disk coordinate system
 //-----------------------------------------------------------------------------
     for (int i=0; i<nh; i++) {
-      const mu2e::CaloCrystalHit* hit = &(*caloClusterHits.at(i));
-      int id = hit->id();
+      const mu2e::CaloHit* hit = &(*caloClusterHits.at(i));
+      int id = hit->crystalID();
 
       //      pos = cg->crystalOriginInSection(id);
 
@@ -323,8 +320,8 @@ void ObjectDumpUtils::printKalRep(const KalRep* Krep, const char* Opt, const cha
       double mcdoca = -99.0;
 
       if (step) {
-	const Hep3Vector* v1 = &straw->getMidPoint();
-	HepPoint p1(v1->x(),v1->y(),v1->z());
+	auto v1 = straw->getMidPoint();
+	HepPoint p1(v1.x(),v1.y(),v1.z());
 
 	Hep3Vector v2 = step->position();
 	HepPoint    p2(v2.x(),v2.y(),v2.z());

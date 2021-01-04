@@ -67,12 +67,8 @@ mu2e::KalSeedPrinter::Print(const mu2e::KalSeed& obj, int ind, std::ostream& os)
 
 
   KalSegment seg;  // this will be filled with 0's and -1's
-  // use the middle segment, which should be at the center 
-  // of the tracker by default, later there will be proper selectors
-  if( obj.segments().size()>0 ) {
-    std::size_t i = obj.segments().size()/2 +1;
-    seg = obj.segments()[i];
-  }
+  // use the first segment, at the front of the tracker
+  if( obj.segments().size()>0 ) seg = obj.segments()[0];
 
   const mu2e::HelixVal& hh = seg.helix();
 

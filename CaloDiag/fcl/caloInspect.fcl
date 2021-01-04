@@ -1,0 +1,87 @@
+#include "fcl/minimalMessageService.fcl"
+#include "fcl/standardProducers.fcl"
+#include "fcl/standardServices.fcl"
+#include "TrkDiag/fcl/prolog.fcl"
+#include "CommonMC/fcl/prolog.fcl"
+#include "Filters/fcl/prolog.fcl"
+
+process_name: g4CaloExample
+
+
+source: { 
+   module_type: RootInput
+   maxEvents : 5000
+}
+
+services : {
+  @table::Services.SimAndReco
+  TFileService : { fileName : "test.root" }
+}
+
+
+
+physics: {
+
+  producers : 
+  {
+      FindMCPrimary : { 
+        @table::CommonMC.FindMCPrimary
+        TimeOffsets : [ @sequence::DigiCompression.TimeMaps ]
+      }
+      
+      @table::CaloReco.producers
+      @table::CaloDigiMC.producersMC
+      @table::CaloCluster.producers
+      @table::CaloClusterMC.producersMC	
+      @table::TrkHitReco.producers
+      @table::Tracking.producers
+  }
+  
+  analyzers : 
+  {
+      CaloExample: {
+          module_type                : CaloExample
+          doGenerated                : true
+          g4ModuleLabel              : compressDigiMCs
+          generatorModuleLabel       : compressDigiMCs
+          simParticleTag             : compressDigiMCs
+          caloCrystalModuleLabel     : CaloHitMaker
+          caloClusterModuleLabel     : CaloClusterMaker
+          caloClusterTruthModuleLabel: CaloClusterTruthMatch
+          caloHitTruthModuleLabel    : CaloDigiTruthMatch
+          virtualDetectorName        : virtualdetector
+          stepPointMCLabel           : compressDigiMCs
+	  TimeOffsets                : { inputs : [ "compressDigiMCs:protonTimeMap", "compressDigiMCs:muonTimeMap" ] } 
+      }
+
+      CaloMCInspector: {
+          module_type               : CaloMCInspector
+          caloCrystalModuleLabel    : CaloHitMaker
+          caloShowerSimModuleLabel  : compressDigiMCs # CaloShowerStepROFromShowerStep
+          caloDigiTruthModuleLabel  : CaloDigiTruthMatch
+      }
+  }
+  
+  p1: [ 
+        FindMCPrimary,
+        @sequence::CaloReco.Reco,
+        @sequence::CaloDigiMC.TruthMatch,	 	  
+	@sequence::CaloCluster.Reco,
+        @sequence::CaloClusterMC.TruthMatch
+      ]
+
+  e1: [CaloExample,CaloMCInspector]
+  #e1: []
+   
+
+  trigger_paths: [p1]
+  end_paths:     [e1]
+}
+
+
+
+
+services.SeedService.baseSeed         :  99
+services.SeedService.maxUniqueEngines :  20
+
+physics.producers.CaloDigiTruthMatch.caloShowerSimCollection  : "compressDigiMCs"
