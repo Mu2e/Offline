@@ -320,6 +320,9 @@ void MakeCrvPhotons::MakePhotons(const CLHEP::Hep3Vector &stepStartTmp,   //they
   stepEnd[3].setZ(-stepEnd[3].z());
   stepEnd[3].setY(-stepEnd[3].y());
 
+static int nPScintillation=0;
+static int nPCerenkov=0;
+
   for(int SiPM=0; SiPM<4; SiPM++)
   {
     //there are only lookup tables without reflector or with reflector on the +z side (i.e. at SiPMs #1 and #3)
@@ -384,6 +387,9 @@ void MakeCrvPhotons::MakePhotons(const CLHEP::Hep3Vector &stepStartTmp,   //they
         }
       }
 
+nPScintillation+=nPhotonsScintillation;
+nPCerenkov+=nPhotonsCerenkov;
+
       //loop over all photons created at this point
       int nPhotons = nPhotonsScintillation + nPhotonsCerenkov;
       for(int i=0; i<nPhotons; i++)
@@ -401,14 +407,11 @@ void MakeCrvPhotons::MakePhotons(const CLHEP::Hep3Vector &stepStartTmp,   //they
           double arrivalTime = t;
 
           //add fiber decay times depending on the number of emissions
-          bool overflow=false;
-          int nEmissions = GetRandomFiberEmissions(theBin,overflow);
-          if(overflow) continue;  //don't include photons which arrive very late. they are spread out, and can be ignored
+          int nEmissions = GetRandomFiberEmissions(theBin);
           for(int iEmission=0; iEmission<nEmissions; iEmission++) arrivalTime+=-_LC.WLSfiberDecayTime*log(_randFlat.fire());
 
           //add additional time delay due to the photons bouncing around
-          arrivalTime+=GetRandomTime(theBin,overflow);
-          if(overflow) continue;  //don't include photons which arrive very late. they are spread out, and can be ignored
+          arrivalTime+=GetRandomTime(theBin);
 
           if(reflector!=-1) _arrivalTimes[SiPM].push_back(arrivalTime);
           else _arrivalTimes[SiPM+1].push_back(arrivalTime);
@@ -417,6 +420,9 @@ void MakeCrvPhotons::MakePhotons(const CLHEP::Hep3Vector &stepStartTmp,   //they
       }//loop over all SiPMs
     }//loop over all photons at this point
   }//loop over all points along the track
+
+//std::cout<<"Lookup tables:  total scintillation: "<<nPScintillation<<"  total Cerenkov: "<<nPCerenkov<<std::endl;
+
 }
 
 bool MakeCrvPhotons::IsInsideScintillator(const CLHEP::Hep3Vector &p)
@@ -469,40 +475,46 @@ bool MakeCrvPhotons::IsInsideFiber(const CLHEP::Hep3Vector &p, const CLHEP::Hep3
   return true;
 }
 
-double MakeCrvPhotons::GetRandomTime(const LookupBin *theBin, bool &overflow)
+double MakeCrvPhotons::GetRandomTime(const LookupBin *theBin)
 {
-  //the lookup tables encodes probabilities as probability*probabilityScale(10000), 
-  //so that the probabilities can be stored as integers.
-  //therefore, the probability of 1 is stored as 10000.
-  double rand=_randFlat.fire()*LookupBin::probabilityScale;
-  double sumProb=0;
+  //The lookup tables encodes probabilities as probability*mu2eCrv::LookupBin::probabilityScale(255), 
+  //so that the probabilities can be stored as integers. For example, the probability of 1 is stored as 255.
+  //Due to rounding issues, the sum of all entries for this bin may not be 255.
+  //Therefore, the sum needs to be calculated here to serve as actual probability scale.
+  double probabilityScale=0;
+  for(size_t timeDelay=0; timeDelay<theBin->timeDelays.size(); timeDelay++) probabilityScale+=theBin->timeDelays[timeDelay];
+
   size_t timeDelay=0;
+  double rand=_randFlat.fire()*probabilityScale;
+  double sumProb=0;
   size_t maxTimeDelay=theBin->timeDelays.size();
-  for(; timeDelay<maxTimeDelay; timeDelay++)
+  for(timeDelay=0; timeDelay<maxTimeDelay; timeDelay++)
   {
     sumProb+=theBin->timeDelays[timeDelay];
     if(rand<=sumProb) break;
   }
-  if(rand>sumProb) overflow=true; else overflow=false;
 
-  return timeDelay;
+  return static_cast<double>(timeDelay);
 }
 
-int MakeCrvPhotons::GetRandomFiberEmissions(const LookupBin *theBin, bool &overflow)
+int MakeCrvPhotons::GetRandomFiberEmissions(const LookupBin *theBin)
 {
-  //the lookup tables encodes probabilities as probability*probabilityScale(10000), 
-  //so that the probabilities can be stored as integers.
-  //therefore, the probability of 1 is stored as 10000.
-  double rand=_randFlat.fire()*LookupBin::probabilityScale;
-  double sumProb=0;
+  //The lookup tables encodes probabilities as probability*mu2eCrv::LookupBin::probabilityScale(255), 
+  //so that the probabilities can be stored as integers. For example, the probability of 1 is stored as 255.
+  //Due to rounding issues, the sum of all entries for this bin may not be 255.
+  //Therefore, the sum needs to be calculated here to serve as actual probability scale.
+  double probabilityScale=0;
+  for(size_t emissions=0; emissions<theBin->fiberEmissions.size(); emissions++) probabilityScale+=theBin->fiberEmissions[emissions];
+
   size_t emissions=0;
+  double rand=_randFlat.fire()*probabilityScale;
+  double sumProb=0;
   size_t maxEmissions=theBin->fiberEmissions.size();
-  for(; emissions<maxEmissions; emissions++)
+  for(emissions=0; emissions<maxEmissions; emissions++)
   {
     sumProb+=theBin->fiberEmissions[emissions];
     if(rand<=sumProb) break;
   }
-  if(rand>sumProb) overflow=true; else overflow=false;
 
   return emissions;
 }

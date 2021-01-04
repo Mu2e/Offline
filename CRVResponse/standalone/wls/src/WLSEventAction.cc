@@ -134,63 +134,66 @@ void WLSEventAction::EndOfEventAction(const G4Event* evt)
 
     bin.binNumber = _currentBin;  //gets set by WLSPrimaryGenerator
 
+    bin.arrivalProbability=0;
+    bin.timeDelays.clear();
+    bin.fiberEmissions.clear();
+
+    //prepare histograms
+    int histTimeDifference[mu2eCrv::LookupBin::maxTimeDelays]={0}; //in ns
+    int histEmissions[mu2eCrv::LookupBin::maxFiberEmissions]={0};
+    int maxTimeDifference=0;
+    int maxEmissions=0;
+    int arrivingPhotons=0;
+
     //Lookup tables are created only for SiPM# 0 due to symmetry reasons
-    if(WLSSteppingAction::Instance()->GetArrivalTimes(0).size()==0)
+    const std::vector<WLSSteppingAction::PhotonInfo> &photonInfo = WLSSteppingAction::Instance()->GetPhotonInfo(0);
+    for(size_t i=0; i<photonInfo.size(); i++)
     {
-      bin.arrivalProbability=0;
-      bin.timeDelays.clear();
-      bin.fiberEmissions.clear();
-    }
-    else
-    {
-
-      float arrivalProbability=static_cast<float>(WLSSteppingAction::Instance()->GetArrivalTimes(0).size())/static_cast<float>(_generatedPhotons);
-                                                                                                   //_generatedPhotons gets set by WLSPrimaryGeneratorAction
-                                                                                                   //after sending out all photons
-      bin.arrivalProbability=arrivalProbability;
-
-      const std::vector<double> &arrivalTimes = WLSSteppingAction::Instance()->GetArrivalTimes(0);
-      int histTimeDifference[mu2eCrv::LookupBin::maxTimeDelays]={0}; //in ns
-      int maxTimeDifference=0;
-      for(size_t i=0; i<arrivalTimes.size(); i++)
-      {
-        int timeDifference=static_cast<int>(arrivalTimes[i]+0.5); //rounded to full ns  
+      //extract travel times
+      int timeDifference=static_cast<int>(photonInfo[i]._arrivalTime+0.5); //rounded to full ns  
                                                                   //the WLS decay time has been set to 0 for mode=CreateLookupTables
                                                                   //so that the true travel time can be determined
                                                                   //(in WLSPrimaryGeneratorAction)
-        if(timeDifference<0) timeDifference=0;
-        if(timeDifference>=mu2eCrv::LookupBin::maxTimeDelays) continue;
-        histTimeDifference[timeDifference]++;   //fill this histogram bin
+      if(timeDifference<0) timeDifference=0;
+      if(timeDifference>=mu2eCrv::LookupBin::maxTimeDelays) continue;
 
-        if(timeDifference>maxTimeDifference) maxTimeDifference=timeDifference;
-      }
-      bin.timeDelays.clear();
+      //extract number of fiber emissions
+      int nEmissions=photonInfo[i]._fiberEmissions;
+      if(nEmissions<0) nEmissions=0;
+      if(nEmissions>=mu2eCrv::LookupBin::maxFiberEmissions) continue;
+
+      //fill histogram bins
+      histTimeDifference[timeDifference]++;   //fill this histogram bin
+      histEmissions[nEmissions]++;
+
+      if(timeDifference>maxTimeDifference) maxTimeDifference=timeDifference;
+      if(nEmissions>maxEmissions) maxEmissions=nEmissions;
+
+      arrivingPhotons++; //only count photons for which the arrival time and number of fiber emissions 
+                         //can be stored in the histograms
+    }
+
+    if(arrivingPhotons>0)
+    {
+      bin.arrivalProbability=static_cast<float>(arrivingPhotons)/static_cast<float>(_generatedPhotons);
+                                                              //_generatedPhotons gets set by WLSPrimaryGeneratorAction
+                                                              //after sending out all photons
+
+      //store time time delay histogram in bin
       bin.timeDelays.reserve(maxTimeDifference+1);
       for(int i=0; i<=maxTimeDifference; i++)
       {
-        float p=static_cast<float>(histTimeDifference[i])/static_cast<float>(arrivalTimes.size());
+        float p=static_cast<float>(histTimeDifference[i])/static_cast<float>(arrivingPhotons);
         //multiplying the probability with the probability scale makes it possible to store it as an unsigned char
         unsigned char pChar = static_cast<unsigned char>(mu2eCrv::LookupBin::probabilityScale*p+0.5);
         bin.timeDelays.push_back(pChar);
       }
 
-      const std::vector<int> &fiberEmissions = WLSSteppingAction::Instance()->GetFiberEmissions(0);
-      int histEmissions[mu2eCrv::LookupBin::maxFiberEmissions]={0};
-      int maxEmissions=0;
-      for(size_t i=0; i<fiberEmissions.size(); i++)
-      {
-        int nEmissions=fiberEmissions[i];
-        if(nEmissions<0) nEmissions=0;
-        if(nEmissions>=mu2eCrv::LookupBin::maxFiberEmissions) continue;
-        histEmissions[nEmissions]++;
-
-        if(nEmissions>maxEmissions) maxEmissions=nEmissions;
-      }
-      bin.fiberEmissions.clear();
+      //store fiber emission histogram in bin
       bin.fiberEmissions.reserve(maxEmissions+1);
       for(int i=0; i<=maxEmissions; i++)
       {
-        float p=static_cast<float>(histEmissions[i])/static_cast<float>(fiberEmissions.size());
+        float p=static_cast<float>(histEmissions[i])/static_cast<float>(arrivingPhotons);
         //multiplying the probability with the probability scale makes it possible to store it as an unsigned char
         unsigned char pChar = static_cast<unsigned char>(mu2eCrv::LookupBin::probabilityScale*p+0.5);
         bin.fiberEmissions.push_back(pChar);
@@ -278,12 +281,12 @@ void WLSEventAction::EndOfEventAction(const G4Event* evt)
   {
     for(int SiPM=0; SiPM<4; SiPM++)
     {
-      _histP[0][SiPM]->Fill(WLSSteppingAction::Instance()->GetArrivalTimes(SiPM).size());
+      _histP[0][SiPM]->Fill(WLSSteppingAction::Instance()->GetPhotonInfo(SiPM).size());
       _histP[1][SiPM]->Fill(WLSSteppingAction::Instance()->GetArrivalTimesFromLookupTables(SiPM).size());
-      const std::vector<double> &arrivalTimes = WLSSteppingAction::Instance()->GetArrivalTimes(SiPM);
+      const std::vector<WLSSteppingAction::PhotonInfo> &photonInfo = WLSSteppingAction::Instance()->GetPhotonInfo(SiPM);
       const std::vector<double> &arrivalTimesFromLookupTables = WLSSteppingAction::Instance()->GetArrivalTimesFromLookupTables(SiPM);
-      for(size_t i=0; i<arrivalTimes.size(); i++) _histT[0][SiPM]->Fill(arrivalTimes[i]);
-      for(size_t i=0; i<arrivalTimesFromLookupTables.size(); i++) _histT[1][SiPM]->Fill(arrivalTimes[i]);
+      for(size_t i=0; i<photonInfo.size(); i++) _histT[0][SiPM]->Fill(photonInfo[i]._arrivalTime);
+      for(size_t i=0; i<arrivalTimesFromLookupTables.size(); i++) _histT[1][SiPM]->Fill(arrivalTimesFromLookupTables[i]);
     }
 
     Draw(evt);
@@ -299,7 +302,8 @@ void WLSEventAction::EndOfEventAction(const G4Event* evt)
     std::cout<<std::endl;
   }
 
-//  WLSStackingAction::Instance()->PrintStatus();
+  WLSStackingAction::Instance()->PrintStatus();
+  WLSSteppingAction::Instance()->PrintFiberStats();
 }
 
 void WLSEventAction::Draw(const G4Event* evt) 
@@ -333,9 +337,9 @@ void WLSEventAction::Draw(const G4Event* evt)
   double digitizationInterval2 = 1.0; //ns
   double noise = 4.0e-4;
   double pedestal = 100; //ADC
-  double calibrationFactor = 394.6; //ADC*ns/PE
+  double calibrationFactor = 391.2; //ADC*ns/PE
   double calibrationFactorPulseHeight = 11.4; //ADC/PE
-  makeCrvWaveform.LoadSinglePEWaveform(_singlePEWaveformFilename.c_str(), 0.5, 1.047, 100, 2.652e-13);
+  makeCrvWaveform.LoadSinglePEWaveform(_singlePEWaveformFilename.c_str(), 0.5, 1.040, 100, 2.652e-13);
 
   mu2eCrv::MakeCrvDigis makeCrvDigis;
 
@@ -348,11 +352,17 @@ void WLSEventAction::Draw(const G4Event* evt)
   unsigned int TDC, TDC2;
   for(int SiPM=0; SiPM<4; SiPM++)
   {
-    const std::vector<double> &photonTimesTmp = (_mode==WLSSteppingAction::UseGeantAndLookupTables?
-                                                 WLSSteppingAction::Instance()->GetArrivalTimesFromLookupTables(SiPM):
-                                                 WLSSteppingAction::Instance()->GetArrivalTimes(SiPM));
     std::vector<std::pair<double, size_t> > photonTimes;
-    for(size_t i=0; i<photonTimesTmp.size(); i++) photonTimes.emplace_back(std::pair<double,size_t>(photonTimesTmp[i],0));
+    if(_mode==WLSSteppingAction::UseGeantAndLookupTables)
+    {
+      const std::vector<double> &photonTimesTmp = WLSSteppingAction::Instance()->GetArrivalTimesFromLookupTables(SiPM);
+      for(size_t i=0; i<photonTimesTmp.size(); i++) photonTimes.emplace_back(std::pair<double,size_t>(photonTimesTmp[i],0));
+    }
+    else
+    {
+      const std::vector<WLSSteppingAction::PhotonInfo> &photonInfo = WLSSteppingAction::Instance()->GetPhotonInfo(SiPM);
+      for(size_t i=0; i<photonInfo.size(); i++) photonTimes.emplace_back(std::pair<double,size_t>(photonInfo[i]._arrivalTime,0));
+    }
     int photons = photonTimes.size();
 
     std::vector<mu2eCrv::SiPMresponse> SiPMresponseVector;
@@ -456,12 +466,15 @@ void WLSEventAction::Draw(const G4Event* evt)
     s2<<"Photons_"<<evt->GetEventID()<<"__"<<SiPM;
     s3<<"Fiber: "<<SiPM/2<<",  Side: "<<SiPM%2;
     hist[SiPM]=new TH1D(s2.str().c_str(),s3.str().c_str(),100,0,maxTime);
-    const std::vector<double> &photonTimes = (_mode==WLSSteppingAction::UseGeantAndLookupTables?
-                                              WLSSteppingAction::Instance()->GetArrivalTimesFromLookupTables(SiPM):
-                                              WLSSteppingAction::Instance()->GetArrivalTimes(SiPM));
-    for(unsigned int i=0; i<photonTimes.size(); i++)
+    if(_mode==WLSSteppingAction::UseGeantAndLookupTables)
     {
-      hist[SiPM]->Fill(photonTimes[i]);
+      const std::vector<double> &photonTimesTmp = WLSSteppingAction::Instance()->GetArrivalTimesFromLookupTables(SiPM);
+      for(size_t i=0; i<photonTimesTmp.size(); i++) hist[SiPM]->Fill(photonTimesTmp[i]);
+    }
+    else
+    {
+      const std::vector<WLSSteppingAction::PhotonInfo> &photonInfo = WLSSteppingAction::Instance()->GetPhotonInfo(SiPM);
+      for(size_t i=0; i<photonInfo.size(); i++) hist[SiPM]->Fill(photonInfo[i]._arrivalTime);
     }
 
     hist[SiPM]->SetLineColor(kBlue);

@@ -91,7 +91,7 @@ namespace mu2eCrv
     double GetAvalancheProbability(double v);
     double GenerateAvalanche(Pixel &pixel, const std::pair<int,int> &pixelId, double time, size_t photonIndex, bool darkNoise);
     double GetVoltage(const Pixel &pixel, double time);
-    void   FillPhotonQueue(const std::vector<std::pair<double,size_t> > &photons);
+    void   FillQueue(const std::vector<std::pair<double,size_t> > &photons);
 
     CLHEP::RandFlat     &_randFlat;
     CLHEP::RandPoissonQ &_randPoissonQ;

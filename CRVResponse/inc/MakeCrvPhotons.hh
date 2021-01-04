@@ -132,8 +132,8 @@ class MakeCrvPhotons
 
     bool   IsInsideScintillator(const CLHEP::Hep3Vector &p);
     bool   IsInsideFiber(const CLHEP::Hep3Vector &p, const CLHEP::Hep3Vector &dir, double &r, double &phi);
-    double GetRandomTime(const LookupBin *theBin, bool &overflow);
-    int    GetRandomFiberEmissions(const LookupBin *theBin, bool &overflow);
+    double GetRandomTime(const LookupBin *theBin);
+    int    GetRandomFiberEmissions(const LookupBin *theBin);
     double GetAverageNumberOfCerenkovPhotons(double beta, double charge, std::map<double,double> &photons);
     int    GetNumberOfPhotonsFromAverage(double average, int nSteps);
 
