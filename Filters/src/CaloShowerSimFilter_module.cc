@@ -6,7 +6,7 @@
 //
 
 // Mu2e includes.
-#include "MCDataProducts/inc/CaloShowerSimCollection.hh"
+#include "MCDataProducts/inc/CaloShowerSim.hh"
 #include "MCDataProducts/inc/SimParticlePtrCollection.hh"
 // Framework includes.
 #include "art/Framework/Core/EDFilter.h"
@@ -49,7 +49,7 @@ namespace mu2e {
     minetot_(pset.get<double>("MinTotalEnergy")),
     diag_(pset.get<int>("diagLevel",0)),
     debug_(pset.get<int>("debugLevel",0)),
-    cssTag_(pset.get<art::InputTag>("CaloShowerSimCollection","CaloShowerStepROFromShowerStep"))
+    cssTag_(pset.get<art::InputTag>("CaloShowerSimCollection","CaloROStepMaker"))
   {
     produces<SimParticlePtrCollection>();
     auto pdgs = pset.get<std::vector<int>>("particleTypes");
@@ -67,10 +67,10 @@ namespace mu2e {
     double etot(0.0);
     for(auto const& css : *csscol) {
       art::Ptr<SimParticle> const& sp = css.sim();
-      double energy = css.energy();
+      double energy = css.energyDep();
       etot += energy;
       if(debug_ > 0)std::cout <<"SimParticle PDG = " << sp->pdgId() 
-      << " Crystal " << css.crystalId()
+      << " Crystal " << css.crystalID()
       << " Shower Energy = " << energy << std::endl;
       auto pdgfnd = std::find(pdgs_.begin(),pdgs_.end(),sp->pdgId());
       if(pdgfnd != pdgs_.end() ){

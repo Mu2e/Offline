@@ -71,11 +71,14 @@ mu2e::StrawDigiPrinter::Print(const mu2e::StrawDigi& obj, int ind, std::ostream&
     << " " 
     << " " << std::setw(6) << obj.TDC()[0]
     << " " << std::setw(6) << obj.TDC()[1]
-    << " " << std::setw(6) << obj.adcWaveform().size()
+    << " " << std::setw(6) << (int) obj.TOT()[0]
+    << " " << std::setw(6) << (int) obj.TOT()[1]
+    << " " << std::setw(6) << obj.PMP()
+    //<< " " << std::setw(6) << obj.adcWaveform().size()
     << " " ;
-  for(auto& i: obj.adcWaveform()) {
-    os << " " << std::setw(4) << i;
-  }
+  //for(auto& i: obj.adcWaveform()) {
+  //  os << " " << std::setw(4) << i;
+  //}
   os << std::endl;
 
 }
@@ -89,7 +92,7 @@ mu2e::StrawDigiPrinter::PrintHeader(const std::string& tag, std::ostream& os) {
 void 
 mu2e::StrawDigiPrinter::PrintListHeader(std::ostream& os) {
   if(verbose()<1) return;
-  os << " ind StrwInd TDC0   TDC1    NADC  ADC\n";
+  os << " ind StrwInd TDC0   TDC1    PMP\n";
 
 }
 

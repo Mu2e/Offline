@@ -45,7 +45,6 @@
 #include "GeneralUtilities/inc/RSNTIO.hh"
 #include "MCDataProducts/inc/FixedTimeMap.hh"
 #include "Mu2eUtilities/inc/ProtonPulseRandPDF.hh"
-#include "DataProducts/inc/EventWindowMarker.hh"
 
 // ROOT includes
 #include "TTree.h"

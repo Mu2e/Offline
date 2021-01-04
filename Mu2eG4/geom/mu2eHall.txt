@@ -46,7 +46,7 @@ double yOfFloorSurface.below.mu2eOrigin = -2312; // mm -(728.58684' - 721')
 #include "Mu2eG4/geom/bldg/dsAreaTrenchFloor.txt"
 #include "Mu2eG4/geom/bldg/dsAreaUpper.txt"
 #include "Mu2eG4/geom/bldg/dsAreaUpstreamCeiling.txt"
-#include "Mu2eG4/geom/bldg/extMon.txt"
+#include "Mu2eG4/geom/bldg/extMonExteriorWall.txt"
 #include "Mu2eG4/geom/bldg/extMonCeiling.txt"
 #include "Mu2eG4/geom/bldg/extMonUpper.txt"
 #include "Mu2eG4/geom/bldg/exteriorWallE.txt"
@@ -156,7 +156,7 @@ vector<string> bldg.prefix.list = {
    "building.dsArea.trench.floor",
    "building.dsArea.upper",
    "building.dsArea.upstreamCeiling",
-   "building.extMon",
+   "building.extMon.exteriorWall",
    "building.extMon.ceiling",
    "building.extMon.upper",
    "building.exteriorWall.E",

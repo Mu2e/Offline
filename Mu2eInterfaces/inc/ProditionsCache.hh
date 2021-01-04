@@ -37,7 +37,7 @@ namespace mu2e {
     // the following are provided by the 
     // concrete class
     //virtual std::string const& name() const =0 ;
-    std::string const& name() { return _name;}
+    std::string const& name() const { return _name;}
     // create pointers to services on demand
     // this allows lazy intialization and prevents
     // service dependence loops

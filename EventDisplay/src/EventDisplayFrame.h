@@ -14,6 +14,7 @@
 #include "art/Framework/Principal/Event.h"
 #include "boost/shared_ptr.hpp"
 #include "Mu2eUtilities/inc/SimParticleTimeOffset.hh"
+#include "TVirtualX.h"
 #endif
 
 class TBox;

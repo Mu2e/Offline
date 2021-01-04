@@ -8,7 +8,7 @@
 #include "ProditionsService/inc/ProditionsService.hh"
 
 #include "TrackerConditions/inc/FullReadoutStrawCache.hh"
-#include "TrackerConditions/inc/DeadStrawCache.hh"
+#include "TrackerConditions/inc/TrackerStatusCache.hh"
 #include "TrackerConditions/inc/StrawDriftCache.hh"
 #include "TrackerConditions/inc/StrawPhysicsCache.hh"
 #include "TrackerConditions/inc/StrawElectronicsCache.hh"
@@ -18,6 +18,8 @@
 #include "TrackerConditions/inc/Mu2eDetectorCache.hh"
 
 #include "AnalysisConditions/inc/TrkQualCatalogCache.hh"
+
+#include "SimulationConditions/inc/SimBookkeeperCache.hh"
 
 using namespace std;
 
@@ -34,8 +36,8 @@ namespace mu2e {
 
     auto frc = std::make_shared<mu2e::FullReadoutStrawCache>(_config.fullReadoutStraw());
     _caches[frc->name()] = frc;
-    auto dsc = std::make_shared<mu2e::DeadStrawCache>(_config.deadStraw());
-    _caches[dsc->name()] = dsc;
+    auto tsc = std::make_shared<mu2e::TrackerStatusCache>(_config.trackerStatus());
+    _caches[tsc->name()] = tsc;
     auto sdc = std::make_shared<mu2e::StrawDriftCache>(_config.strawDrift());
     _caches[sdc->name()] = sdc;
     auto spc = std::make_shared<mu2e::StrawPhysicsCache>(_config.strawPhysics());
@@ -50,13 +52,15 @@ namespace mu2e {
     _caches[mmc->name()] = mmc;
     auto mdc = std::make_shared<mu2e::Mu2eDetectorCache>(_config.mu2eDetector());
     _caches[mdc->name()] = mdc;
-    auto tqc = std::make_shared<mu2e::TrkQualCatalogCache>("TrkQualCatalog",_config.trkQualCatalog());
+    auto tqc = std::make_shared<mu2e::TrkQualCatalogCache>(_config.trkQualCatalog());
     _caches[tqc->name()] = tqc;
+    auto bkc = std::make_shared<mu2e::SimBookkeeperCache>(_config.simbookkeeper());
+    _caches[bkc->name()] = bkc;
 
     if( _config.verbose()>0) {
       cout << "Proditions built caches:" << endl;
       for( auto cc : _caches) {
-	cout << "  " << cc.first << endl;
+        cout << "  " << cc.first << endl;
       }
     }
 

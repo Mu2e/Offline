@@ -17,9 +17,11 @@ namespace mu2e {
      CalorimeterCalibrations::CalorimeterCalibrations( SimpleConfig const& config )
      {
         ConfigFileLookupPolicy configFile;
-	
-	_pulseFileName = configFile(config.getString("calorimeter.pulseFileName"));
-        _pulseHistName = config.getString("calorimeter.pulseHistName");
+        
+        _pulseFileName  = configFile(config.getString("calorimeter.pulseFileName"));
+        _pulseHistName  = config.getString("calorimeter.pulseHistName");
+        _propagFileName = configFile(config.getString("calorimeter.propagFileName"));
+        _propagHistName = config.getString("calorimeter.propagHistName");
 
         // Here we should eventually interface to some database
         _LRUpar0 = config.getDouble("CrystalNonUniformity_0");
@@ -33,11 +35,11 @@ namespace mu2e {
         //value of the sigma used to do the Gaussian smearing due to the electronic noise
         _ROnoise = config.getDouble("ReadOutElectronicNoise");//MeV
 
-	//conversion factor between ADC counts and MeV for a specific RO
-	_ADC2MeV  = config.getDouble("ADC2MeVConversionFactor");
+        //conversion factor between ADC counts and MeV for a specific RO
+        _ADC2MeV  = config.getDouble("ADC2MeVConversionFactor");
 
-	//conversion factor between ADC counts and MeV for Fast clustering
-	_Peak2MeV  = config.getDouble("Peak2MeVConversionFactor");
+        //conversion factor between ADC counts and MeV for Fast clustering
+        _Peak2MeV  = config.getDouble("Peak2MeVConversionFactor");
       
       }
 }

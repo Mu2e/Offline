@@ -6,9 +6,7 @@ using namespace std;
 namespace mu2e {
 
   ostream& operator<<(ostream& os, const HepTransform& rhs) {
-    os << "translate: " << rhs.displacement() << endl 
-       << "rotate: " 
-       << rhs.rotation() << endl;
+    os << "translate: " << rhs.displacement() << "rotate: " << endl <<  rhs.rotation() << endl;
     return os;
   } // end of outputter
 
@@ -28,6 +26,12 @@ namespace mu2e {
   CLHEP::Hep3Vector operator*(HepTransform const& a, 
 			      CLHEP::Hep3Vector const& v) {
     return a.displacement() + a.rotation()*v;
+  }
+
+  HepTransform HepTransform::inverse() const {
+    auto invrot = _rotation.inverse();
+    auto invdisp = -(invrot*_displacement);
+    return HepTransform(invdisp,invrot);
   }
 
 

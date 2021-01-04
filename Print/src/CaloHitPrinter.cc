@@ -69,11 +69,31 @@ mu2e::CaloHitPrinter::Print(const mu2e::CaloHit& obj, int ind, std::ostream& os)
   if(ind>=0) os << std::setw(4) << ind;
 
   os 
-    << " " << std::setw(5) << obj.id()
+    << " " << std::setw(5) << obj.crystalID()
     << " " 
     << " " << std::setw(8) << std::setprecision(1) << obj.time()
     << " " << std::setw(8) << std::setprecision(1) << obj.energyDep()
+    << " " << std::setw(8) << std::setprecision(1) << obj.energyDepTot()
+    << " " << std::setw(5) << std::setprecision(1) << obj.nSiPMs()
     << std::endl;
+
+  if(verbose()<2) return;
+
+  os << "     SiPM   time   energy  chi2" << std::endl;
+  for(auto const& artrdigi: obj.recoCaloDigis()) {
+    if (artrdigi.isAvailable()) {
+      auto const& rdigi = *artrdigi;
+      os 
+	<< "     " << std::setw(5) << rdigi.SiPMID() 
+	<< " " 
+	<< " " << std::setw(8) << std::setprecision(1) << rdigi.time()
+	<< " " << std::setw(8) << std::setprecision(1) << rdigi.energyDep()
+	<< " " << std::setw(8) << std::setprecision(1) << rdigi.chi2()
+	<< std::endl;
+    } else {
+      os <<"     CaloRecoDigi Ptr !isAvailable" << std::endl;
+    } //endif
+  } // loop on recoCaloDigi
 
 }
 
@@ -86,7 +106,7 @@ mu2e::CaloHitPrinter::PrintHeader(const std::string& tag, std::ostream& os) {
 void 
 mu2e::CaloHitPrinter::PrintListHeader(std::ostream& os) {
   if(verbose()<1) return;
-  os << "ind     id     time     energy\n";
+  os << "ind     id     time     energy    eTot   nSiPMI\n";
 
 }
 

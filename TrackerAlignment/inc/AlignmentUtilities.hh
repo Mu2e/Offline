@@ -2,10 +2,7 @@
 // roneil@fnal.gov
 // ryunoneil@gmail.com
 
-// ROOT
 #include "CLHEP/Vector/ThreeVector.h"
-#include "DbTables/inc/TrkAlignPlane.hh"
-#include "GeneralUtilities/inc/HepTransform.hh"
 #include "Mu2eUtilities/inc/TwoLinePCA.hh"
 #include "RtypesCore.h"
 #include "TTree.h"
@@ -17,12 +14,13 @@
 
 // Offline
 
-#include "DbTables/inc/TrkAlignPanel.hh"
-
 #include "DataProducts/inc/StrawId.hh"
 
 #include "RecoDataProducts/inc/ComboHit.hh"
 #include "RecoDataProducts/inc/CosmicTrackSeed.hh"
+
+#include "DbTables/inc/TrkAlignParams.hh"
+#include "DbTables/inc/TrkStrawEndAlign.hh"
 
 #include "TrackerAlignment/inc/AlignmentDerivatives.hh"
 #include "TrackerAlignment/inc/MilleDataWriter.hh"
@@ -80,22 +78,21 @@ struct CosmicTimeTrack {
 
 bool testDerivatives(
     TwoLinePCA const& expected_pca,
-    Tracker const& alignedTracker,
-
+    Tracker const& alignedTracker, // what is this used for??
     CosmicTimeTrack const& track,
     StrawId const& strawId,
-    TrkAlignPlane::Row const&rowpl,
-    TrkAlignPanel::Row const&rowpa,
+    TrkAlignParams const&rowpl, // what do these refer to if the tracker is already aligned?  Also, where is the tracker global alignment? FIXME!
+    TrkAlignParams const&rowpa,
     Tracker const& nominalTracker,
-    StrawResponse const& strawRes);
+    StrawResponse const& strawRes); // need to add Straw alignment FIXME!
 
 
 std::pair<std::vector<double>, std::vector<double>> 
   analyticalDerivatives(CosmicTimeTrack const& track,
     StrawId const& strawId,
-    TrkAlignPlane::Row const&rowpl,
-    TrkAlignPanel::Row const&rowpa,
-    Tracker const& nominalTracker,
+    TrkAlignParams const&rowpl,
+    TrkAlignParams const&rowpa,
+    Tracker const& nominalTracker, // 
     double const& driftvel);
 
 TMatrixD residualCovariance(CosmicTimeTrack const& track, 
@@ -118,11 +115,12 @@ void diagPrintHit(CosmicTimeTrack const& track,
   StrawId const& strawId);
 
 
-std::pair<Hep3Vector, Hep3Vector> alignStraw(Tracker const& tracker, Plane const& plane,
-                                             Panel const& panel, StrawId const& strawId,
-                                             HepTransform const& align_tracker,
-                                             HepTransform const& align_plane,
-                                             HepTransform const& align_panel);
+std::pair<Hep3Vector, Hep3Vector> alignStraw(Tracker const& tracker, 
+                                             StrawId const& strawId,
+                                             TrkAlignParams const& align_tracker,
+                                             TrkAlignParams const& align_plane,
+                                             TrkAlignParams const& align_panel,
+					     TrkStrawEndAlign const& align_straw);
 
 /* Numerical partial DOCA/TOCA derivatives
  *
@@ -130,8 +128,8 @@ std::pair<Hep3Vector, Hep3Vector> alignStraw(Tracker const& tracker, Plane const
 
 std::pair<std::vector<double>, std::vector<double>>
 numericalDerivatives(CosmicTimeTrack const& _track, StrawId const& straw,
-                         TrkAlignPlane::Row const& alignPlane,
-                         TrkAlignPanel::Row const& alignPanel,
+                         TrkAlignParams const& alignPlane,
+                         TrkAlignParams const& alignPanel,
                          Tracker const& nominalTracker, 
                          StrawResponse const& strawRes, 
                          bool useTimeDomain = true);

@@ -8,7 +8,7 @@
 #include "RecoDataProducts/inc/CosmicTrack.hh"
 #include "RecoDataProducts/inc/CosmicTrackSeed.hh"
 #include "CosmicReco/inc/CosmicTrackMCInfo.hh"
-#include "DataProducts/inc/EventWindowMarker.hh"
+#include "MCDataProducts/inc/ProtonBunchTimeMC.hh"
 #include "CosmicReco/inc/PDFFit.hh"
 
 //Mu2e Data Prods:
@@ -69,7 +69,7 @@ namespace mu2e
         fhicl::Atom<art::InputTag> tctag{Name("TimeClusterCollection"),Comment("tag for time cluster collection")};
         fhicl::Atom<art::InputTag> tstag{Name("CosmicTrackSeedCollection"),Comment("CosmicTrackSeed collection tag")};
         fhicl::Atom<art::InputTag> mcdigistag{Name("StrawDigiMCCollection"),Comment("StrawDigi collection tag"),"makeSD"};
-        fhicl::Atom<art::InputTag> ewMarkerTag{Name("EventWindowMarkerLabel"),Comment("Event window marker tag"),"EWMProducer"};
+        fhicl::Atom<art::InputTag> pbtmcTag{Name("ProtonBunchTimeMC"),Comment("ProtonbBunchTimeMC tag"),"EMProducer"};
         fhicl::Table<SimParticleTimeOffset::Config> toff{Name("TimeOffsets"), Comment("Sim particle time offset ")};
       };
       typedef art::EDAnalyzer::Table<Config> Parameters;
@@ -91,7 +91,7 @@ namespace mu2e
       art::InputTag   _tctag;//timeclusters
       art::InputTag   _tstag;//Striaght tracks
       art::InputTag   _mcdigistag; //MC digis
-      art::InputTag _ewMarkerTag;
+      art::InputTag _pbtmcTag;
       SimParticleTimeOffset _toff;
       const ComboHitCollection* _shcol;
       const TimeClusterCollection* _tccol;
@@ -99,7 +99,7 @@ namespace mu2e
       const StrawDigiMCCollection* _mcdigis;
       CLHEP::Hep3Vector _mcpos, _mcdir;
 
-      Float_t _ewMarkerOffset;
+      Float_t _pbtmc;
       const Tracker* tracker;
       ProditionsHandle<StrawResponse> _strawResponse_h; 
 
@@ -139,6 +139,7 @@ namespace mu2e
       Float_t _hitdresid, _hitdresiderr;
       Float_t _hitedep, _hitproptime, _hittime;
 
+      Float_t _ewMarkerOffset;
 
       void GetMCTrack(const art::Event& event, const StrawDigiMCCollection& mccol);
       void hitDiag(const art::Event& event, StrawResponse const& srep);
@@ -154,7 +155,7 @@ namespace mu2e
     _tctag (conf().tctag()),
     _tstag (conf().tstag()),
     _mcdigistag (conf().mcdigistag()),
-    _ewMarkerTag (conf().ewMarkerTag()),
+    _pbtmcTag (conf().pbtmcTag()),
     _toff (conf().toff())
   {
     consumes<CosmicTrackSeedCollection>(_tstag);
@@ -400,15 +401,16 @@ namespace mu2e
     _tccol = 0;
     _tscol = 0; 
     _ewMarkerOffset = 0;
+    _pbtmc = 0;
     auto shH = evt.getValidHandle<ComboHitCollection>(_shtag);
     _shcol = shH.product();
     auto tcH = evt.getValidHandle<TimeClusterCollection>(_tctag);
     _tccol =tcH.product();
     auto tsH = evt.getValidHandle<CosmicTrackSeedCollection>(_tstag);
     _tscol =tsH.product();
-    auto ewMarkerHandle = evt.getValidHandle<EventWindowMarker>(_ewMarkerTag);
-    auto ewMarker = ewMarkerHandle.product();
-    _ewMarkerOffset = ewMarker->timeOffset();
+    auto pbtmcHandle = evt.getValidHandle<ProtonBunchTimeMC>(_pbtmcTag);
+    _pbtmc = pbtmcHandle.product()->pbtime_;
+    _ewMarkerOffset = -1*_pbtmc;
     if(_mcdiag){
       _mcdigis=0;
       auto mcdH = evt.getValidHandle<StrawDigiMCCollection>(_mcdigistag);

@@ -18,7 +18,7 @@ BEGIN_PROLOG
 
 CaloTrigger : {    
     module_type           : CaloTrigger
-    caloDigiModuleLabel   : CaloDigiFromShower
+    caloDigiModuleLabel   : CaloDigiMaker
     digiSampling          : @local::HitMakerDigiSampling
     blindTime             : @local::HitMakerBlindTime   
     endTimeBuffer         : 80                          
@@ -37,7 +37,7 @@ CaloTrigger : {
 CaloClusterFast :
 { 
     module_type           : CaloClusterFast
-    caloDigiModuleLabel   : CaloDigiFromShower
+    caloDigiModuleLabel   : CaloDigiMaker
     digiSampling          : @local::HitMakerDigiSampling
     blindTime             : @local::HitMakerBlindTime
     endTimeBuffer         : 80
@@ -53,13 +53,12 @@ CaloClusterFast :
 }
 
 
-CaloProtoClusterFromCrystalHit :
+CaloProtoClusterMaker :
 {
-  module_type            : CaloProtoClusterFromCrystalHit
-  caloCrystalModuleLabel : CaloCrystalHitFromHit
-  mainClusterCollName    : mainCluster
-  splitClusterCollName   : splitCluster
-  minClusterEnergy	 : 0
+  module_type            : CaloProtoClusterMaker
+  caloCrystalModuleLabel : CaloHitMaker
+  mainTag                : mainCluster
+  splitTag               : splitCluster
   EminSeed               : 10
   ExpandCut              : 1.0
   EnoiseCut              : 1.0
@@ -69,39 +68,28 @@ CaloProtoClusterFromCrystalHit :
 }  
 
 
-
-CaloClusterFromProtoCluster :
+CaloClusterMaker :
 {
-  module_type            : CaloClusterFromProtoCluster
-  caloClusterModuleLabel : CaloProtoClusterFromCrystalHit
-  mainClusterCollName    : mainCluster
-  splitClusterCollName   : splitCluster
+  module_type            : CaloClusterMaker
+  caloClusterModuleLabel : CaloProtoClusterMaker
+  mainTag                : mainCluster
+  splitTag               : splitCluster
   deltaTime              : 2
   maxDistSplit           : 150
   maxDistMain            : 150
-  cogTypeName            : Linear
+  strategy               : 0
   diagLevel              : 0
 }  
 
-CaloClusterTruthMatch:
-{
-    module_type               : CaloClusterTruthMatch
-    caloClusterModuleLabel    : CaloClusterFromProtoCluster
-    caloHitTruthModuleLabel   : CaloHitTruthMatch
-    diagLevel                 : 0
-}
 
 CaloCluster : 
 {
    producers : {
-     CaloProtoClusterFromCrystalHit  : @local::CaloProtoClusterFromCrystalHit
-     CaloClusterFromProtoCluster : @local::CaloClusterFromProtoCluster
+      CaloProtoClusterMaker  : @local::CaloProtoClusterMaker
+      CaloClusterMaker       : @local::CaloClusterMaker
    }
-   producersMC : {
-     CaloClusterTruthMatch : @local::CaloClusterTruthMatch
-   }
-   Reco       : [ CaloProtoClusterFromCrystalHit, CaloClusterFromProtoCluster ]
-   TruthMatch : [ CaloClusterTruthMatch ]
+   
+   Reco : [ CaloProtoClusterMaker, CaloClusterMaker ]
 }
 
 
@@ -111,6 +99,7 @@ CaloClusterFast :
        CaloClusterFast  : @local::CaloClusterFast
        CaloTrigger      : @local::CaloTrigger
    }
+   
    Reco : [ CaloClusterFast ]
 }
 

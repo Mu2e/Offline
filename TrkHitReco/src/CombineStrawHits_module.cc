@@ -69,24 +69,22 @@ namespace mu2e {
     _testflag(pset.get<bool>("TestFlag")),
     _testrad(pset.get<bool>("TestRadius")),
     _shsel(pset.get<vector<string> >("StrawHitSelectionBits",vector<string>{"EnergySelection","TimeSelection"} )),
-    _shmask(pset.get<vector<string> >("StrawHitMaskBits",vector<string>{} )),
+    _shmask(pset.get<vector<string> >("StrawHitMask",vector<string>{} )),
     _maxdt(pset.get<float>("MaxDt",40.0)), // nsec 
     _useTOT(pset.get<bool>("UseTOT",false)), // use TOT corrected time
     _maxwdchi(pset.get<float>("MaxWireDistDiffPull",4.0)), //units of resolution sigma
     _terr(pset.get<float>("TransError",8.0)), //mm
-    _maxds(pset.get<int>("MaxDS",3)) // how far away 2 straws can be, in 0-95 numbering (including layers!!)
+    _maxds(pset.get<int>("MaxDS",3)), // how far away 2 straws can be, in 0-95 numbering (including layers!!)
+    _mask("uniquepanel")// define the mask: ComboHits are made from straws in the same unique panel
   {
-    consumes<ComboHitCollection>(_chTag);
     float werr = pset.get<float>("WireError",10.0); // mm
     _werr2 = werr*werr;
-    produces<ComboHitCollection>();
-    // define the mask: straws are in the same unique panel
-    std::vector<StrawIdMask::field> fields{StrawIdMask::plane,StrawIdMask::panel};
-    _mask = StrawIdMask(fields);
     float minR = pset.get<float>("minimumRadius",395); // mm
     _minR2 = minR*minR;
     float maxR = pset.get<float>("maximumRadius",650); // mm
     _maxR2 = maxR*maxR;
+    consumes<ComboHitCollection>(_chTag);
+    produces<ComboHitCollection>();
   }
 
   void CombineStrawHits::produce(art::Event& event)

@@ -1,6 +1,13 @@
+#include "TrkReco/fcl/prolog.fcl"
 BEGIN_PROLOG
 
 TrkRecoTrigger : { 
+
+    TTrobustHelixFit : {
+	@table::TrkReco.RobustHelixFit
+    }
+
+
     producers : { 
 # these module instance allows to remove the helix duplicates
 # from the output of the helix finders.

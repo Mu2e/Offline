@@ -3,8 +3,7 @@
 //Cosmics:
 #include "RecoDataProducts/inc/CosmicTrackSeed.hh"
 //Calo:
-#include "RecoDataProducts/inc/CaloCrystalHitCollection.hh"
-#include "RecoDataProducts/inc/CaloHitCollection.hh"
+#include "RecoDataProducts/inc/CaloHit.hh"
 //MC Products:
 #include "MCDataProducts/inc/MCTrajectoryCollection.hh"
 //Kalman Tracks
@@ -36,7 +35,7 @@ using namespace CLHEP;
 
 namespace mu2e{
 
-  enum RecoDataProductName {ComboHits, CaloCrystalHits, CaloClusters, CosmicTracks, HelixSeeds, KalSeeds, CRVRecoPulses, TrkExtTrajectories};
+  enum RecoDataProductName {ComboHits, CaloHits, CaloClusters, CosmicTracks, HelixSeeds, KalSeeds, CRVRecoPulses, TrkExtTrajectories};
   enum MCDataProductName {MCTrajectories};
 
 	class Collection_Filler

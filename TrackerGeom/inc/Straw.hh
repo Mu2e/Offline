@@ -7,10 +7,11 @@
 //
 
 #include <vector>
-
+#include <array>
+#include "cetlib_except/exception.h"
 #include "DataProducts/inc/StrawId.hh"
+#include "DataProducts/inc/StrawEnd.hh"
 #include "GeomPrimitives/inc/TubsParams.hh"
-
 #include "CLHEP/Vector/ThreeVector.h"
 
 namespace mu2e {
@@ -18,76 +19,52 @@ namespace mu2e {
   class Tracker;
 
   class Straw{
-
-    friend class TrackerMaker;
-    friend class AlignedTrackerMaker;
-
   public:
+    using xyzVec = CLHEP::Hep3Vector; // switch to XYZVec TODO
 
-    // A free function, returning void, that takes a const Straw& as an argument.
-    typedef void (*StrawFunction)( const Straw& s);
-
-    Straw();
+    Straw():_hlen(-1.0) {}; // default constructor should be deleted, it results in a non-fuctional object FIXME!
 
     // Constructor using wire tangents.
     Straw( const StrawId& id,
-           const CLHEP::Hep3Vector& c,
+           const xyzVec& c,
+	   double halflen,
            double wtx = 0.,
            double wty = 0.
            );
 
     // Constructor using wire unit vector.
     Straw( const StrawId& id,
-           const CLHEP::Hep3Vector& c,
-           CLHEP::Hep3Vector const& t
+           const xyzVec& c,
+           xyzVec const& t,
+	   double halflen
            );
+    // aligned tracker constructor takes the end positions
+    Straw (const StrawId& id,
+	  const xyzVec& calwireend, const xyzVec& hvwireend,
+	  const xyzVec& calstrawend, const xyzVec& hvstrawend);
+
+    Straw (const StrawId& id,
+	  const xyzVec wireends[2],
+	  const xyzVec strawends[2]);
 
     // Accept the compiler copy constructor and assignment operators
-
-    // I don't think that this class should have virtual functions but
-    // since it does, it must have a virtual destructor.
-    virtual ~Straw(){}
 
 
     const StrawId& id() const { return _id;}
 
-    // Navigation, normally within a panel:
-
-    // The following routnies will return the nearest neighbors (or the
-    // single nearest neighbor if this straw is at the end of its layer):
-    const std::vector<StrawId>& nearestNeighboursById() const{
-      return _nearestById;
-    }
-    const std::vector<StrawId>& preampNeighboursById() const{
-      return _preampById;
-    }
-
     // Formatted string embedding the id of the straw.
     std::string name( std::string const& base ) const;
 
-    virtual const CLHEP::Hep3Vector& getMidPoint() const {return _c;}
+    // Half length: same for straws and wires
+    float halfLength() const { return _hlen; }
 
-    // Delete one of these
-    virtual  const CLHEP::Hep3Vector& getDirection() const { return _w;}
-    const CLHEP::Hep3Vector& direction() const { return _w;}
+    // end positions
+    //
+    xyzVec wireEnd(StrawEnd const& end ) const { return wireEnd(end.end()); }
+    xyzVec wireEnd(StrawEnd::End end ) const { return end == StrawEnd::cal ? _wmid + _hlen*_wdir : _wmid - _hlen*_wdir; }
+    xyzVec strawEnd(StrawEnd const& end ) const { return strawEnd(end.end()); }
+    xyzVec strawEnd(StrawEnd::End end ) const { return end == StrawEnd::cal ? _smid + _hlen*_sdir : _smid - _hlen*_sdir; }
 
-    // outer radius
-    virtual double getRadius() const;
-
-    virtual double innerRadius() const;
-
-    virtual double  getThickness() const;
-
-    // Half length
-    virtual double halfLength() const;
-
-    // active length is a little smaller
-    virtual double activeHalfLength() const;
-
-    // On readback from persistency, recursively recompute mutable members.
-    void fillPointers ( const Tracker* tracker ) const;
-
-    int hack;
     bool operator==(const Straw other) const {
       return _id == other.id();
     }
@@ -97,25 +74,31 @@ namespace mu2e {
    bool operator<(const Straw other) const {
       return _id < other.id();
    }
- protected:
 
+   // aligned interface: these provide more refined information.  They call down
+   // to the unaligned information in case this is the unaligned tracker
+   // These take the position along the straw (WRT the center) as argument, accounting for misalignment, 
+   // and (eventually) gravitational sag and electrostatic displacement.
+   xyzVec wireDirection(float upos=0.0) const { return _wdir; }
+   xyzVec strawDirection(float upos=0.0) const { return _sdir; }
+   xyzVec wirePosition(float upos=0.0) const { return _wmid + upos*_wdir; }
+   xyzVec strawPosition(float upos=0.0) const { return _smid + upos*_sdir; }
+   // define the origin as the wire position in the middle
+   xyzVec const& origin() const { return _wmid; }
+   
+    // deprecated interface
+    xyzVec const& direction() const { return _wdir; }
+    xyzVec const& getMidPoint() const {return _wmid; }
+    xyzVec const& getDirection() const { return _wdir; }
+ private:
     // Identifier
     StrawId _id;
-
-    // Mid-point of the straw.
-    CLHEP::Hep3Vector _c;
-
-    // Unit vector along the wire direction.
-    // Need to add unit vectors along local u and v also.
-    // Use Euler angle convention from G4.
-    CLHEP::Hep3Vector _w;
-
-    mutable const Tracker* _tracker;
-
-    // Nearest neighbours.
-    std::vector<StrawId>    _nearestById;
-    std::vector<StrawId>    _preampById;
-
+    // wire and straw midpoints.
+    xyzVec _wmid, _smid;
+    // wire and straw directions
+    xyzVec _wdir, _sdir;
+    // half length
+    float _hlen;
   };
 
 }  //namespace mu2e

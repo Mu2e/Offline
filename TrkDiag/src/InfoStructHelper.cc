@@ -165,7 +165,7 @@ namespace mu2e {
       tshinfo._rdrift = ihit->driftRadius();
       tshinfo._rdrifterr = ihit->radialErr();
 
-      double rstraw = straw.getRadius();
+      double rstraw = tracker.strawOuterRadius();
       tshinfo._dx = std::sqrt(std::max(0.0,rstraw*rstraw-tshinfo._rdrift*tshinfo._rdrift));
 	
       tshinfo._trklen = ihit->trkLen();
@@ -229,7 +229,7 @@ namespace mu2e {
       auto const& cc = tch.caloCluster();
 
       tchinfo._active = tch.flag().hasAllProperties(StrawHitFlag::active);
-      tchinfo._did = cc->diskId();
+      tchinfo._did = cc->diskID();
       tchinfo._trklen = tch.trkLen();
       tchinfo._clen = tch.hitLen();
     
@@ -248,7 +248,7 @@ namespace mu2e {
       // transform cog to tracker coordinates; requires 2 steps.  This is at the front
       // of the disk
       mu2e::GeomHandle<mu2e::Calorimeter> calo;
-      XYZVec cpos = Geom::toXYZVec(calo->geomUtil().mu2eToTracker(calo->geomUtil().diskToMu2e(cc->diskId(),cc->cog3Vector())));
+      XYZVec cpos = Geom::toXYZVec(calo->geomUtil().mu2eToTracker(calo->geomUtil().diskToMu2e(cc->diskID(),cc->cog3Vector())));
       // move to the front face and 
       // add the cluster length (relative to the front face).  crystal size should come from geom FIXME!
       cpos.SetZ(cpos.z() -200.0 + tch.hitLen());

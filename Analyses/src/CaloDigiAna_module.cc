@@ -30,7 +30,6 @@
 #include "GeometryService/inc/GeometryService.hh"
 #include "GeometryService/inc/GeomHandle.hh"
 #include "RecoDataProducts/inc/CaloDigi.hh"
-#include "RecoDataProducts/inc/CaloDigiCollection.hh"
 
 #include <cmath>
 #include <iostream>
@@ -107,10 +106,10 @@ namespace mu2e {
 							  "Disk0: calo digi amplitude; caloDigi_amplitude [adc]", 250, 0, 2500);
       _histDisk[i]._hNSamplesPerDigi   = tfdir.make<TH1F>(Form("hNSampleHitsDisk%i", i),
 							  "Disk0: N of words per caloDigi ",
-							  1e4, 0, 1e4);
+							  200, 0., 200.);
       _histDisk[i]._hNSamplesPerEvent  = tfdir.make<TH1F>(Form("hNSampleDisk%i", i),
 							  "Disk0: N of words per event ",
-							  5e4, 0, 5e4);
+							  5e2, 0, 5e4);
     }
   }
 
@@ -133,7 +132,7 @@ namespace mu2e {
 
     //fill DAQ histograms
     double     amplitude(0);
-    int        roId(0), crystalId(0), diskId(0), peakPos(-1);
+    int        roId(0), crystalID(0), diskId(0), peakPos(-1);
 
     const std::vector<int>   *pulse;
     int                nDigi[2] = {0};
@@ -141,9 +140,9 @@ namespace mu2e {
     
     for (int i=0; i< nCalodigi; ++i){
       caloDigi   = &caloDigiCol->at(i);
-      roId       = caloDigi->roId();
-      crystalId  = _calorimeter->caloInfo().crystalByRO(roId);
-      diskId     = _calorimeter->crystal(crystalId).diskId();
+      roId       = caloDigi->SiPMID();
+      crystalID  = _calorimeter->caloIDMapper().crystalIDFromSiPMID(roId);
+      diskId     = _calorimeter->crystal(crystalID).diskID();
       ++nDigi[diskId];
 
       _histDisk[diskId]._hCDT0           ->Fill(caloDigi->t0());       		  

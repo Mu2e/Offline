@@ -16,8 +16,6 @@
 #include "GeometryService/inc/GeomHandle.hh"
 #include "GeometryService/inc/GeometryService.hh"
 
-#include "CaloCluster/inc/ClusterMoments.hh"
-
 #include "RecoDataProducts/inc/CrvCoincidenceClusterCollection.hh"
 #include "RecoDataProducts/inc/TrkFitFlag.hh"
 #include "RecoDataProducts/inc/TriggerInfo.hh"
@@ -80,8 +78,6 @@ namespace mu2e {
 
   private:
        
-    typedef art::Ptr< CaloCrystalHit> CaloCrystalHitPtr;
-
     int                     _diagLevel;
     int                     _nProcess;
     int                     _nPass;

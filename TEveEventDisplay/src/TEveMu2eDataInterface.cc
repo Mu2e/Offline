@@ -92,7 +92,7 @@ template <typename L> void maxminCRV(L data, double &max, double &min){
     return energies;
   }
 
-  std::vector<double> TEveMu2eDataInterface::getTimeRange(bool firstloop, const ComboHitCollection *chcol, const CrvRecoPulseCollection *crvcoincol, const CaloClusterCollection *clustercol, const CaloCrystalHitCollection *cryHitcol){
+  std::vector<double> TEveMu2eDataInterface::getTimeRange(bool firstloop, const ComboHitCollection *chcol, const CrvRecoPulseCollection *crvcoincol, const CaloClusterCollection *clustercol, const CaloHitCollection *cryHitcol){
 	  std::vector <double> time = {-1, -1};
     double max, min;
     std::vector<double> alltime;
@@ -225,10 +225,10 @@ template <typename L> void maxminCRV(L data, double &max, double &min){
       for(unsigned int i=0; i<clustercol->size();i++){
         CaloCluster const  &cluster= (*clustercol)[i];
         if(addHits){
-          for(unsigned h =0 ; h < cluster.caloCrystalHitsPtrVector().size();h++)     {
-            art::Ptr<CaloCrystalHit>  crystalhit = cluster.caloCrystalHitsPtrVector()[h];
-            int diskId = cal.crystal(crystalhit->id()).diskId();
-            CLHEP::Hep3Vector HitPos(cal.geomUtil().mu2eToDiskFF(diskId, cal.crystal(crystalhit->id()).position()));
+          for(unsigned h =0 ; h < cluster.caloHitsPtrVector().size();h++)     {
+            art::Ptr<CaloHit>  crystalhit = cluster.caloHitsPtrVector()[h];
+            int diskId = cal.crystal(crystalhit->crystalID()).diskID();
+            CLHEP::Hep3Vector HitPos(cal.geomUtil().mu2eToDiskFF(diskId, cal.crystal(crystalhit->crystalID()).position()));
             CLHEP::Hep3Vector hit = PointToCalo(HitPos,diskId);
             hep3vectorTocm(hit);
             hits.push_back(hit);
@@ -239,7 +239,7 @@ template <typename L> void maxminCRV(L data, double &max, double &min){
        
         CLHEP::Hep3Vector COG(cluster.cog3Vector().x(),cluster.cog3Vector().y(), cluster.cog3Vector().z());
         
-        CLHEP::Hep3Vector pointInMu2e = PointToCalo(COG,cluster.diskId());
+        CLHEP::Hep3Vector pointInMu2e = PointToCalo(COG,cluster.diskID());
        
         string pos3D = "(" + to_string((double)pointInMu2e.x()) + ", " + to_string((double)pointInMu2e.y()) + ", " + to_string((double)pointInMu2e.z()) + ")";
         string pos2D = "(" + to_string((double)COG.x()) + ", " + to_string((double)COG.y()) + ", " + to_string((double)COG.z()) + ")";
@@ -249,13 +249,13 @@ template <typename L> void maxminCRV(L data, double &max, double &min){
             fClusterList3D->AddElement(ClusterList3D); 
             
             //fClusterList2D->AddElement(CrystalList2D); 
-            if(cluster.diskId()==0){
+            if(cluster.diskID()==0){
               teve_cluster2D->DrawCluster("CaloCluster3D, Cluster #" + to_string(i + 1) + ", Position =" + pos2D + ", Energy = " + to_string(cluster.energyDep()) + ", Time = " + to_string(cluster.time()), pointInMu2e,energylevels[i], ClusterList2D_disk0, hits, addHits); 
               fClusterList2D_disk0->AddElement(ClusterList2D_disk0); 
               calo2Dproj->fXYMgr->ImportElements(fClusterList2D_disk0, calo2Dproj->fDetXYScene); 
               CfXYMgr->ImportElements(fClusterList2D_disk0, scene1); 
             }
-            if(cluster.diskId()==1){
+            if(cluster.diskID()==1){
              teve_cluster2D->DrawCluster("CaloCluster3D, Cluster #" + to_string(i + 1) + ", Position =" + pos2D + ", Energy = " + to_string(cluster.energyDep()) + ", Time = " + to_string(cluster.time()), pointInMu2e,energylevels[i], ClusterList2D_disk1, hits, addHits); 
              fClusterList2D_disk1->AddElement(ClusterList2D_disk1); 
              calo2Dproj->fRZMgr->ImportElements(fClusterList2D_disk1, calo2Dproj->fDetRZScene); 
@@ -272,10 +272,10 @@ template <typename L> void maxminCRV(L data, double &max, double &min){
   }
 
   
-  void TEveMu2eDataInterface::AddCrystalHits(bool firstloop, const CaloCrystalHitCollection *cryHitcol, TEveMu2e2DProjection *calo2Dproj, double min_time, double max_time, bool Redraw, bool accumulate, TEveProjectionManager *CfXYMgr, TEveProjectionManager *CfRZMgr, TEveScene *scene1, TEveScene *scene2){
+  void TEveMu2eDataInterface::AddCrystalHits(bool firstloop, const CaloHitCollection *cryHitcol, TEveMu2e2DProjection *calo2Dproj, double min_time, double max_time, bool Redraw, bool accumulate, TEveProjectionManager *CfXYMgr, TEveProjectionManager *CfRZMgr, TEveScene *scene1, TEveScene *scene2){
     vector <double> energies = {0, 0};
     Calorimeter const &cal = *(GeomHandle<Calorimeter>());
-    DataLists<const CaloCrystalHitCollection*, TEveMu2e2DProjection*>(cryHitcol, Redraw, accumulate, "CrystalHit", &fHitsList3D, &fHitsList2D, calo2Dproj);
+    DataLists<const CaloHitCollection*, TEveMu2e2DProjection*>(cryHitcol, Redraw, accumulate, "CrystalHit", &fHitsList3D, &fHitsList2D, calo2Dproj);
     CfXYMgr->ImportElements(fClusterList2D_disk0, scene1); 
     CfRZMgr->ImportElements(fClusterList2D_disk1, scene2); 
     if(cryHitcol!=0){
@@ -283,13 +283,13 @@ template <typename L> void maxminCRV(L data, double &max, double &min){
       TEveElementList *HitList = new TEveElementList("CrystalHits");
       int *energylevels = new int[cryHitcol->size()];
 
-      energies = Energies<const CaloCrystalHitCollection*>(cryHitcol, &energylevels);
+      energies = Energies<const CaloHitCollection*>(cryHitcol, &energylevels);
 
       for(unsigned int i=0; i<cryHitcol->size();i++){
         TEveMu2eHit *teve_hit = new TEveMu2eHit();
-        CaloCrystalHit const  &hit = (*cryHitcol)[i];
-        int diskId = cal.crystal(hit.id()).diskId();
-        CLHEP::Hep3Vector HitPos(cal.geomUtil().mu2eToDiskFF(diskId, cal.crystal(hit.id()).position()));
+        CaloHit const  &hit = (*cryHitcol)[i];
+        int diskId = cal.crystal(hit.crystalID()).diskID();
+        CLHEP::Hep3Vector HitPos(cal.geomUtil().mu2eToDiskFF(diskId, cal.crystal(hit.crystalID()).position()));
         CLHEP::Hep3Vector pointInMu2e = PointToCalo(HitPos,diskId);
         if (((min_time == -1 && max_time == -1) || (hit.time() > min_time && hit.time() < max_time ))){
           teve_hit->DrawHit3D("CrystalHits",  1, pointInMu2e, energylevels[i], HitList);

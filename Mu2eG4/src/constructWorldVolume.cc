@@ -43,7 +43,7 @@ namespace mu2e {
                                    worldMaterial, 0, G4ThreeVector(),
                                    nullptr,
                                    0, G4Colour::Red() );
-    
+
     //----------------------------------------------------------------
     // Here we create dirt slabs and place them in the World volume
     // around the formal "hall" box.

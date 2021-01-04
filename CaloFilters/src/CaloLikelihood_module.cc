@@ -12,17 +12,13 @@
 
 #include "CalorimeterGeom/inc/Calorimeter.hh"
 #include "CalorimeterGeom/inc/DiskCalorimeter.hh"
+#include "CaloCluster/inc/ClusterUtils.hh"
 
 #include "GeometryService/inc/GeomHandle.hh"
 #include "GeometryService/inc/GeometryService.hh"
 
-#include "CaloCluster/inc/ClusterMoments.hh"
-
-#include "RecoDataProducts/inc/CaloCrystalHitCollection.hh"
-#include "RecoDataProducts/inc/CaloHitCollection.hh"
 #include "RecoDataProducts/inc/CaloHit.hh"
 #include "RecoDataProducts/inc/CaloCluster.hh"
-#include "RecoDataProducts/inc/CaloClusterCollection.hh"
 #include "RecoDataProducts/inc/TrkFitFlag.hh"
 #include "RecoDataProducts/inc/TriggerInfo.hh"
 
@@ -76,12 +72,12 @@ namespace mu2e {
 
   private:
        
-    typedef art::Ptr< CaloCrystalHit> CaloCrystalHitPtr;
+    typedef art::Ptr< CaloHit> CaloHitPtr;
 
     int                     _diagLevel;
     int                     _nProcess;
     int                     _nPass;
-    ClusterMoments::cogtype _cogType;
+    ClusterUtils::Cogtype   _cogType;
     art::InputTag           _clTag;
     std::string             _signalTemplateFile;
     std::string             _bkgTemplateFile;
@@ -116,7 +112,7 @@ namespace mu2e {
     _diagLevel                   (pset.get<int>("diagLevel",0)),
     _nProcess                    (0),
     _nPass                       (0),
-    _cogType                     (ClusterMoments::Linear),                
+    _cogType                     (ClusterUtils::Linear),                
     _clTag                       (pset.get<art::InputTag> ("CaloClusterModuleLabel")),
     _signalTemplateFile          (pset.get<std::string>   ("SignalTemplates")),
     _bkgTemplateFile             (pset.get<std::string>   ("BackgroundTemplates")),
@@ -291,29 +287,28 @@ namespace mu2e {
     auto  clH = event.getValidHandle<CaloClusterCollection>(_clTag);
     const CaloClusterCollection*  caloClusters = clH.product();
 
-    const CaloCrystalHit* crystalHit(0);
-    const CaloCluster::CaloCrystalHitPtrVector* caloClusterHits(0);
+    const CaloHit* crystalHit(0);
+    const mu2e::CaloHitPtrVector* caloClusterHits(0);
     
     size_t trig_ind(0);
     //for loop over the clusters in the calorimeter
     for(auto icl = caloClusters->begin();icl != caloClusters->end(); ++icl){
       auto const& cluster = *icl;
       
-      int clSection = cluster.diskId();
+      int clSection = cluster.diskID();
       if (_dropSecondDisk && (clSection == 1))        continue;
-      
-      ClusterMoments cogCalculator(cal, cluster,clSection);
-      cogCalculator.calculate(_cogType);
-
-      double                   clEnergy = cluster.energyDep();
+ 
+      double clEnergy = cluster.energyDep();
       if ( clEnergy < _minClEnergy)                   continue;
 
-      const CLHEP::Hep3Vector& cog      = cluster.cog3Vector();
+      ClusterUtils cluUtil(cal,cluster,_cogType); 
+      const auto cog = cluUtil.cog3Vector();
+
       double                   xpos     = cog(0);
       double                   ypos     = cog(1);
       double                   rDist    = sqrt(xpos*xpos+ypos*ypos);
 
-      caloClusterHits = &cluster.caloCrystalHitsPtrVector();
+      caloClusterHits = &cluster.caloHitsPtrVector();
 
       int       nCrystalHits = caloClusterHits->size();
       double    maxECrystal(0);

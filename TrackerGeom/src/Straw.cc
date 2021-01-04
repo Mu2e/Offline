@@ -6,74 +6,43 @@
 
 #include <sstream>
 #include "TrackerGeom/inc/Straw.hh"
-#include "TrackerGeom/inc/Tracker.hh"
-
-#ifndef __CINT__
 
 using std::vector;
-using CLHEP::Hep3Vector;
 
 namespace mu2e {
 
-  Straw::Straw():
-    _id(StrawId()),
-    _c(CLHEP::Hep3Vector(0.,0.,0.)),
-    _w(CLHEP::Hep3Vector(0.,0.,1.))
-  {
-  }
+// unaligned construct
+  Straw::Straw( const StrawId& id,
+      const xyzVec& c,
+      double halflen,
+      double wtx,
+      double wty
+      ):
+    Straw(id,c,xyzVec(wtx,wty,1.),halflen) {}
 
   Straw::Straw( const StrawId& id,
-                CLHEP::Hep3Vector const& c,
-                double wtx,
-                double wty
-                ):
+      const xyzVec& c,
+      const xyzVec& w, double halfLength):
     _id(id),
-    _c(c)
-  {
-    _w = CLHEP::Hep3Vector(wtx,wty,1.).unit();
-  }
+    _wmid(c), _smid(c),_wdir(w.unit()), _sdir(w.unit()), _hlen(halfLength) {}
 
-  Straw::Straw( const StrawId& id,
-                CLHEP::Hep3Vector const& c,
-                CLHEP::Hep3Vector const& w
-                ):
-    _id(id),
-    _c(c),
-    _w(w.unit())
-  {
-  }
 
-  void Straw::fillPointers ( const Tracker* tracker ) const{
-    _tracker = tracker;
-  }
+// aligned constructor
+  Straw::Straw (const StrawId& id,
+	  const xyzVec& calwireend, const xyzVec& hvwireend,
+	  const xyzVec& calstrawend, const xyzVec& hvstrawend) :
+	  _id(id),
+	  _wmid(0.5*(hvwireend + calwireend)), 
+	  _smid(0.5*(hvstrawend + calstrawend)),
+	  _wdir((calwireend - hvwireend).unit()),  // convention is U points from HV to cal
+	  _sdir((calstrawend - hvstrawend).unit()),
+	  _hlen(0.5*(hvwireend - calwireend).mag()) {}
 
   std::string Straw::name( std::string const& base ) const{
     std::ostringstream os;
-
-    os << base
-       << _id.getPlane() << "_"
-       << _id.getPanel() << "_"
-       << _id.getLayer()  << "_"
-       << _id.getStraw();
+    os << base << _id;
     return os.str();
   }
 
-    // outer radius
-   double Straw::getRadius() const { return _tracker->strawOuterRadius(); }
-
-   double Straw::innerRadius() const { return _tracker->strawInnerRadius(); }
-
-   double  Straw::getThickness() const { return _tracker->strawWallThickness(); }
-
-    // Half length
-   double Straw::halfLength() const { 
-               return _tracker->getStrawHalfLength(_id.straw()); }
-
-    // active length is a little smaller
-   double Straw::activeHalfLength() const { 
-             return _tracker->getStrawActiveHalfLength(_id.straw()); }
-
-
 
 } // namespace mu2e
-#endif

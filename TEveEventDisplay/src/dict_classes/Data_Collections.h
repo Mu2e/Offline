@@ -3,8 +3,7 @@
 //Cosmics:
 #include "RecoDataProducts/inc/CosmicTrackSeed.hh"
 //Calo:
-#include "RecoDataProducts/inc/CaloCrystalHitCollection.hh"
-#include "RecoDataProducts/inc/CaloHitCollection.hh"
+#include "RecoDataProducts/inc/CaloHit.hh"
 //MC Products:
 #include "MCDataProducts/inc/MCTrajectoryCollection.hh"
 //Kalman Tracks
@@ -46,7 +45,7 @@ namespace mu2e{
       const CrvRecoPulseCollection* crvcoincol = 0;
       const CosmicTrackSeedCollection* cosmiccol = 0;
       const CaloClusterCollection* clustercol = 0;
-      const CaloCrystalHitCollection* cryHitcol = 0;
+      const CaloHitCollection* cryHitcol = 0;
       const HelixSeedCollection* hseedcol = 0;
       const KalSeedCollection* kalseedcol = 0;
       const TrkExtTrajCollection* trkextcol = 0;

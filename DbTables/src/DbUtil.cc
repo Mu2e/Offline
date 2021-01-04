@@ -22,7 +22,7 @@
 //   the table line may have IOV information (see wiki for formats):
 // TABLE tablename start_run:start_sr-end_run:end_sr
 // # can include comment lines with hash as first char
-mu2e::DbTableCollection mu2e::DbUtil::readFile(std::string const& fn) {
+mu2e::DbTableCollection mu2e::DbUtil::readFile(std::string const& fn, bool saveCsv) {
   if(fn.size()<=0) {
     throw cet::exception("DBFILE_NO_FILE_NAME") 
       << "DbUtil::read called with no file name\n";
@@ -51,7 +51,7 @@ mu2e::DbTableCollection mu2e::DbUtil::readFile(std::string const& fn) {
       // first fill the table based on the csv string 
       // then add it to the vector as a DbLiveTable
       if(current.get()!=nullptr) {
-	current->fill(csv);
+	current->fill(csv,saveCsv);
 	coll.emplace_back(iov,current,-1,-1);
       }
 
@@ -104,7 +104,7 @@ mu2e::DbTableCollection mu2e::DbUtil::readFile(std::string const& fn) {
   // first fill the table based on the csv string 
   // then add it tothe vector as a DbLiveTable
   if(current.get()!=nullptr) {
-    current->fill(csv);
+    current->fill(csv,saveCsv);
     coll.emplace_back(iov,current);
   }
 
