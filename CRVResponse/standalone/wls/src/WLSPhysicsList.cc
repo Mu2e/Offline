@@ -72,15 +72,8 @@ WLSPhysicsList::WLSPhysicsList() : G4VModularPhysicsList()
     fCutForElectron  = defaultCutValue;
     fCutForPositron  = defaultCutValue;
 
-//    G4PhysListFactory factory;
     G4VModularPhysicsList* phys = new QGSP_BERT_HP;
 //    G4VModularPhysicsList* phys = new FTFP_BERT;
-
-//    if (factory.IsReferencePhysList(physName)) {
-//       phys = factory.GetReferencePhysList(physName);
-//       if(!phys)G4Exception("WLSPhysicsList::WLSPhysicsList","InvalidSetup",
-//                            FatalException,"PhysicsList does not exist");
-//    }
 
     for (G4int i = 0; ; ++i) {
        G4VPhysicsConstructor* elem =

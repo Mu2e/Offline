@@ -90,6 +90,7 @@ void WLSSteppingAction::UserSteppingAction(const G4Step* theStep)
       int trackID=theStep->GetTrack()->GetTrackID();
       int parentID=theStep->GetTrack()->GetParentID();
       _wlsTrackParents[trackID]=parentID;
+      if(_wlsTrackParents.find(parentID)==_wlsTrackParents.end()) _tracksGettingAbsorbedInFiber.insert(parentID);
     }
   }
 
@@ -97,6 +98,14 @@ void WLSSteppingAction::UserSteppingAction(const G4Step* theStep)
   G4VPhysicalVolume* thePostPV = theStep->GetPostStepPoint()->GetPhysicalVolume();
   if(thePostPV)
   {
+    if(theStep->GetTrack()->GetParticleDefinition()->GetPDGEncoding()==0)
+    {
+      std::string currentVolume=thePostPV->GetName();
+      std::string creationVolume=theStep->GetTrack()->GetLogicalVolumeAtVertex()->GetName();
+      int trackID=theStep->GetTrack()->GetTrackID();
+      if((currentVolume=="WLSFiber" || currentVolume.compare(0,4,"Clad")==0) && creationVolume=="Scintillator") _tracksHittingFiber.insert(trackID);
+    }
+    
 /*
     double trueStepLength=theStep->GetStepLength();
     double stepLength=(theStep->GetPreStepPoint()->GetPosition()-theStep->GetPostStepPoint()->GetPosition()).mag();
@@ -128,7 +137,11 @@ void WLSSteppingAction::UserSteppingAction(const G4Step* theStep)
       }
       if(theStep->GetTrack()->GetCreatorProcess()!=NULL)
       {
-        std::cout<<theStep->GetTrack()->GetCreatorProcess()->GetProcessName();
+        std::cout<<theStep->GetTrack()->GetCreatorProcess()->GetProcessName()<<"  ";
+      }
+      if(theStep->GetTrack()->GetLogicalVolumeAtVertex()!=NULL)
+      {
+        std::cout<<theStep->GetTrack()->GetLogicalVolumeAtVertex()->GetName();
       }
       std::cout<<std::endl;
     }
@@ -136,7 +149,7 @@ void WLSSteppingAction::UserSteppingAction(const G4Step* theStep)
 
     if(theStatus==Detection)
     {
-         if(thePostPV->GetName()=="PhotonDet")
+         if(thePostPV->GetName()=="SiPM")
          {
 //std::cout<<"DETECTION  "<<thePostPV->GetCopyNo()<<std::endl;
            //a photon reached a SiPM
@@ -164,8 +177,8 @@ void WLSSteppingAction::UserSteppingAction(const G4Step* theStep)
              }
              else break;
            }
-           _fiberEmissions[thePostPV->GetCopyNo()].push_back(numberOfFiberEmissions);
-           _arrivalTimes[thePostPV->GetCopyNo()].push_back(theStep->GetPostStepPoint()->GetGlobalTime());
+           _photonInfo[thePostPV->GetCopyNo()].emplace_back(theStep->GetPostStepPoint()->GetGlobalTime(),numberOfFiberEmissions);
+           if(numberOfFiberEmissions==0) _zeroFiberEmissions++;
          }
     }
   }
@@ -218,9 +231,9 @@ void WLSSteppingAction::UserSteppingAction(const G4Step* theStep)
 
 }
 
-const std::vector<double> &WLSSteppingAction::GetArrivalTimes(int SiPM)
+const std::vector<WLSSteppingAction::PhotonInfo> &WLSSteppingAction::GetPhotonInfo(int SiPM)
 {
-  return _arrivalTimes[SiPM];
+  return _photonInfo[SiPM];
 }
 
 const std::vector<double> &WLSSteppingAction::GetArrivalTimesFromLookupTables(int SiPM)
@@ -228,24 +241,26 @@ const std::vector<double> &WLSSteppingAction::GetArrivalTimesFromLookupTables(in
   return _arrivalTimesFromLookupTables[SiPM];
 }
 
-const std::vector<int> &WLSSteppingAction::GetFiberEmissions(int SiPM)
-{
-  return _fiberEmissions[SiPM];
-}
-
 void WLSSteppingAction::Reset()
 {
   for(int SiPM=0; SiPM<4; SiPM++)
   {
-    _arrivalTimes[SiPM].clear();
-    _arrivalTimes[SiPM].reserve(10000);
+    _photonInfo[SiPM].clear();
+    _photonInfo[SiPM].reserve(10000);
     _arrivalTimesFromLookupTables[SiPM].clear();
     _arrivalTimesFromLookupTables[SiPM].reserve(10000);
-    _fiberEmissions[SiPM].clear();
-    _fiberEmissions[SiPM].reserve(10000);
   }
 
   _wlsTrackParents.clear();
+  _tracksGettingAbsorbedInFiber.clear();
+  _tracksHittingFiber.clear();
+  _zeroFiberEmissions=0;
+}
+
+void WLSSteppingAction::PrintFiberStats()
+{
+  std::cout<<"Full GEANT4:    Tracks hitting fiber: "<<_tracksHittingFiber.size()<<"    Tracks getting absorbed in fiber: "<<_tracksGettingAbsorbedInFiber.size();
+  std::cout<<"       Photons detected which have not been wavelength shifted in fiber: "<<_zeroFiberEmissions<<std::endl;
 }
 
 void WLSSteppingAction::ShowVisibleEnergyTable(const G4Step *theStep)

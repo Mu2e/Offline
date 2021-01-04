@@ -107,27 +107,33 @@ namespace mu2e
       double ionizingEnergy=0;
       double nonIonizingEnergy=0;
       double energyLoss=0;
-      for(size_t istep=0; istep<crvStepsCollection->size(); istep++)
+      if(crvStepsCollection.isValid())
       {
-        StepPointMC const& step(crvStepsCollection->at(istep));
-        if(step.volumeId()==barIndex.asUint())
+        for(size_t istep=0; istep<crvStepsCollection->size(); istep++)
         {
-          nonIonizingEnergy+=step.nonIonizingEDep();
-          ionizingEnergy+=step.ionizingEdep();
-          if(step.simParticle()->id().asUint()==1) energyLoss=step.simParticle()->startMomentum().e()-step.simParticle()->endMomentum().e();
+          StepPointMC const& step(crvStepsCollection->at(istep));
+          if(step.volumeId()==barIndex.asUint())
+          {
+            nonIonizingEnergy+=step.nonIonizingEDep();
+            ionizingEnergy+=step.ionizingEdep();
+            if(step.simParticle()->id().asUint()==1) energyLoss=step.simParticle()->startMomentum().e()-step.simParticle()->endMomentum().e();
+          }
         }
       }
 
       double notDepositedEnergyElectron=0;
       double notDepositedEnergyOther=0;
-      cet::map_vector<mu2e::SimParticle>::const_iterator iterParticle;
-      for(iterParticle=simParticleCollection->begin(); iterParticle!=simParticleCollection->end(); iterParticle++)
+      if(simParticleCollection.isValid())
       {
-        SimParticle const& particle(iterParticle->second);
-        if(particle.id().asUint()!=1)
+        cet::map_vector<mu2e::SimParticle>::const_iterator iterParticle;
+        for(iterParticle=simParticleCollection->begin(); iterParticle!=simParticleCollection->end(); iterParticle++)
         {
-          if(abs(particle.pdgId())==11) notDepositedEnergyElectron+=particle.endMomentum().v().mag();
-          else notDepositedEnergyOther+=particle.endMomentum().v().mag();
+          SimParticle const& particle(iterParticle->second);
+          if(particle.id().asUint()!=1)
+          {
+            if(abs(particle.pdgId())==11) notDepositedEnergyElectron+=particle.endMomentum().v().mag();
+            else notDepositedEnergyOther+=particle.endMomentum().v().mag();
+          }
         }
       }
 
