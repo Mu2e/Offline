@@ -14,10 +14,10 @@ namespace mu2e {
   class   TEveMu2eCustomHelix: public TEveLine {
     public:
       #ifndef __CINT__
-      explicit  TEveMu2eCustomHelix();
-      TEveMu2eCustomHelix(const TEveMu2eCustomHelix &helix);
-      TEveMu2eCustomHelix(HelixSeed hseed);
-      TEveMu2eCustomHelix(KalSeed kseed);
+      TEveMu2eCustomHelix();
+      explicit TEveMu2eCustomHelix(const TEveMu2eCustomHelix &helix);
+      explicit TEveMu2eCustomHelix(HelixSeed  const& hseed);
+      explicit TEveMu2eCustomHelix(KalSeed kseed);
       virtual ~TEveMu2eCustomHelix(){};
       #endif
       
@@ -27,8 +27,8 @@ namespace mu2e {
 
       void DrawHelixTrack();
       void Draw2DProjection();
-
-      void SetSeedInfo(KalSeed seed);
+      //TODO - this class will need redesigning
+      void SetSeedInfo(KalSeed const&  seed);
       void SetPostionAndDirectionFromHelixSeed(double zpos);
       void SetPostionAndDirectionFromKalRep(double zpos);
       void SetMomentumExt();
