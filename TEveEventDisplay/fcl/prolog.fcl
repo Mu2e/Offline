@@ -10,6 +10,9 @@ TEveEventDisplayBase : {
     module_type : TEveEventDisplay
     accumulate : false
     showCRV : false
+    showBuilding : false  
+    showDSOnly : true 
+    showEvent : true
     filler : {
       ComboHitCollection 		    : "makeSH"
       CrvRecoPulseCollection	  :  "CrvRecoPulses"
@@ -44,7 +47,7 @@ TEveEventDisplayHelix : {
         TrkExtTrajCollection      : NULL
         MCTrajectoryCollection    :  "compressDigiMCs"
         addHits 			            : false
-        addTracks 			          : false
+        addTracks 			          : true
         addCrvHits			          : false
         addCosmicSeedFit	        : false
         addClusters			          : true
