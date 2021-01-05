@@ -412,8 +412,8 @@ namespace mu2e {
     computeManifoldEdgeExcessSpace();
     // fill their content
     makeStraws(allStraws);
-    // create an empty G4Tracker: this gets filled further down
-    auto g4trackerptr = shared_ptr<G4Tracker>(new G4Tracker);
+    // create an empty TrackerG4Info: this gets filled further down
+    auto g4trackerptr = shared_ptr<TrackerG4Info>(new TrackerG4Info);
     // see which planes actually exist.  This is deprecated, TrackerStatus should be used instead  FIXME!
     std::array<bool,StrawId::_nplanes> planeExists;
     for ( int ipln=0; ipln<StrawId::_nplanes; ++ipln ){
