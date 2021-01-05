@@ -14,8 +14,8 @@ TEveEventDisplayBase : {
       ComboHitCollection 		    : "makeSH"
       CrvRecoPulseCollection	  :  "CrvRecoPulses"
       CosmicTrackSeedCollection :  NULL
-      CaloClusterCollection		  :  "CaloClusterFromProtoCluster"
-      CaloCrystalHitCollection  :  "CaloCrystalHitFromHit"
+      CaloClusterCollection		  :  "CaloClusterMaker"
+      CaloCrystalHitCollection  :  NULL
       HelixSeedCollection       :  "HelixFinderDe:Negative"
       KalSeedCollection         :  ["KFFDeM"]#, "KFFDeMHPar", "KFFDeMHDar" ]
       TrkExtTrajCollection      : NULL
@@ -37,14 +37,14 @@ TEveEventDisplayHelix : {
         ComboHitCollection 		    : "makeSH"
         CrvRecoPulseCollection	  :  NULL
         CosmicTrackSeedCollection :  NULL
-        CaloClusterCollection		  :  "CaloClusterFromProtoCluster"
-        CaloCrystalHitCollection  :  "CaloCrystalHitFromHit"
-        HelixSeedCollection       :  "HelixFinderDe:Negative"
+        CaloClusterCollection		  :  "CaloClusterMaker"
+        CaloCrystalHitCollection  :  NULL
+        HelixSeedCollection       :  NULL #"HelixFinderDe:Negative"
         KalSeedCollection         :  ["KFFDeM"]#, "KFFDeMHPar", "KFFDeMHDar" ]
         TrkExtTrajCollection      : NULL
         MCTrajectoryCollection    :  "compressDigiMCs"
         addHits 			            : false
-        addTracks 			          : true
+        addTracks 			          : false
         addCrvHits			          : false
         addCosmicSeedFit	        : false
         addClusters			          : true
