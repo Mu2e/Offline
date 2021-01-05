@@ -25,7 +25,7 @@
 #include "TrackerGeom/inc/Plane.hh"
 #include "TrackerGeom/inc/Panel.hh"
 #include "TrackerGeom/inc/StrawProperties.hh"
-#include "TrackerGeom/inc/G4Tracker.hh"
+#include "TrackerGeom/inc/TrackerG4Info.hh"
 
 namespace mu2e {
   class Tracker : public Detector, public ProditionsEntity {
@@ -33,7 +33,7 @@ namespace mu2e {
     public:
     typedef std::shared_ptr<Tracker> ptr_t;
     typedef std::shared_ptr<const Tracker> cptr_t;
-    using G4TrackerPtr = std::shared_ptr<G4Tracker>;
+    using TrackerG4InfoPtr = std::shared_ptr<TrackerG4Info>;
     using PlaneCollection = std::array<Plane,StrawId::_nplanes>;
     using PanelCollection = std::array<Panel,StrawId::_nupanels>;
     using StrawCollection = std::array<Straw,StrawId::_nustraws>;
@@ -45,7 +45,7 @@ namespace mu2e {
 
     constexpr static const char* cxname = {"Tracker"};
     // construct from a set of straws and their global properties.
-    Tracker(StrawCollection const& straws, StrawProperties const& sprops,const G4TrackerPtr& g4tracker, PEType const& pexists);
+    Tracker(StrawCollection const& straws, StrawProperties const& sprops,const TrackerG4InfoPtr& g4tracker, PEType const& pexists);
 
     // accessors
     // origin in nominal tracker coordinate system
@@ -67,9 +67,9 @@ namespace mu2e {
     const Panel& panel( const StrawId& id ) const{ return _panels.at(id.uniquePanel()); }
     const Straw& straw( const StrawId& id) const{ return _straws[strawIndex(id)]; }
 
-    // access the G4Tracker
-    G4Tracker const* g4Tracker() const { return _g4tracker.get(); }
-    G4Tracker* g4Tracker() { return _g4tracker.get(); }
+    // access the TrackerG4Info
+    TrackerG4Info const* g4Tracker() const { return _g4tracker.get(); }
+    TrackerG4Info* g4Tracker() { return _g4tracker.get(); }
 
     // deprecated interface: do not write new code using these, and replace existing calls opportunistically
     const Plane& getPlane( const StrawId& id ) const{ return _planes.at(id.getPlane()); }
@@ -107,7 +107,7 @@ namespace mu2e {
     // plane existence: use cases of this should switch to using TrackerStatus and this should be removed FIXME!!
     PEType _planeExists;
     // g4 content
-    G4TrackerPtr _g4tracker;
+    TrackerG4InfoPtr _g4tracker;
     // allow TrackerMaker non-const access to G4 content
   };
 

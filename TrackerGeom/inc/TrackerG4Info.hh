@@ -1,5 +1,5 @@
-#ifndef TrackerGeom_G4Tracker_hh
-#define TrackerGeom_G4Tracker_hh
+#ifndef TrackerGeom_TrackerG4Info_hh
+#define TrackerGeom_TrackerG4Info_hh
 ///
 // Tracker geometry content specific to building the G4 model
 // Extracted from the original Tracker
@@ -13,7 +13,7 @@
 #include "TrackerGeom/inc/SupportStructure.hh"
 
 namespace mu2e {
-  class G4Tracker {
+  class TrackerG4Info {
     friend class TrackerMaker; 
     public:
     // electronics board
