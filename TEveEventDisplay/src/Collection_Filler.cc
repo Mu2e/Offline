@@ -51,12 +51,10 @@ namespace mu2e{
       data.hseedcol = chH.product();
     }
     if(FillAll_ or RecoOnly_ or (addTracks_ and CollectionName==KalSeeds)){
-          
-          for(const auto &tag : kalseedTag_){
-            auto chH = evt.getValidHandle<mu2e::KalSeedCollection>(tag);
-            data.kalseedcol = chH.product();
-            data.track_list.push_back(data.kalseedcol);
-          }
+        for(const auto &tag : kalseedTag_){
+          auto chH = evt.getValidHandle<mu2e::KalSeedCollection>(tag);
+          data.track_list.push_back(chH.product());
+        }
     }
     if(FillAll_ or RecoOnly_ or (addCrvHits_ and CollectionName==CRVRecoPulses)){
       auto chH = evt.getValidHandle<mu2e::CrvRecoPulseCollection>(crvcoinTag_);
