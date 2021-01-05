@@ -41,11 +41,4 @@ namespace mu2e {
 
   }
 
-// the following copies the core tracker plus all the elements built outside this class by TrackerMaker
-// A default copy doesn't work as the panels etc have pointers back to the straws
-  Tracker::Tracker(const Tracker& other) : Tracker(other.straws(), other.strawProperties(), other.g4Tracker(),
-  other.planesExist()) {
-   // other variables: these should be removed or move into the functional constructor from straws FIXME!
-    _origin = other._origin;
-  }
 } // namespace mu2e
