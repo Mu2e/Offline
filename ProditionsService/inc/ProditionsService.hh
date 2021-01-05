@@ -88,8 +88,11 @@ namespace mu2e {
                        art::ActivityRegistry& iRegistry);
 
     ProditionsCache::ptr getCache(std::string name) {
+      if(_caches.count(name)==0) return ProditionsCache::ptr();
       return _caches[name];
     }
+
+
     //void postBeginJob();
 
   private:

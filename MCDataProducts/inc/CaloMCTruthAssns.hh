@@ -6,13 +6,13 @@
 #include "RecoDataProducts/inc/CaloCluster.hh"
 #include "MCDataProducts/inc/CaloShowerSim.hh"
 #include "MCDataProducts/inc/SimParticle.hh"
-#include "MCDataProducts/inc/CaloDigiMC.hh"
+#include "MCDataProducts/inc/CaloHitMC.hh"
 #include "MCDataProducts/inc/CaloClusterMC.hh"
 
 namespace mu2e
 {
     using CaloShowerMCTruthAssn  = art::Assns<CaloHit,    SimParticle, art::Ptr<CaloShowerSim>>;
-    using CaloDigiMCTruthAssn    = art::Assns<CaloHit,    CaloDigiMC> ;
+    using CaloHitMCTruthAssn    = art::Assns<CaloHit,    CaloHitMC> ;
     using CaloClusterMCTruthAssn = art::Assns<CaloCluster,CaloClusterMC> ;
 }
 

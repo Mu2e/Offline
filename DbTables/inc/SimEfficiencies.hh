@@ -33,15 +33,16 @@ namespace mu2e {
       double _eff;
     };
 
+    constexpr static const char* cxname = "SimEfficiencies";
 
-    SimEfficiencies():DbTable("SimEfficiencies","sim.efficiencies","tag,numerator,denominator,eff") { }
+    SimEfficiencies():DbTable(cxname,"sim.efficiencies","tag,numerator,denominator,eff") { }
 
     const Row& rowAt(const std::size_t index) const { return _rows.at(index);}
     const Row& row(const int idx) const { return _rows.at(idx); }
     std::vector<Row> const& rows() const {return _rows;}
     std::size_t nrow() const override { return _rows.size(); };
     //    virtual std::size_t nrowFix() const { return 3; };
-    size_t size() const override { return _csv.capacity() + nrow()*sizeof(Row); };
+    size_t size() const override { return baseSize() + nrow()*sizeof(Row); };
 
     void addRow(const std::vector<std::string>& columns) override {
       //      int idx = std::stoi(columns[0]);
@@ -69,7 +70,7 @@ namespace mu2e {
       throw cet::exception("SIMEFFICIENCIES_BAD_TAG") << "Efficiency with tag " << name << " not found in database" << std::endl;
     }
 
-    virtual void clear() override { _csv.clear(); _rows.clear();}
+    virtual void clear() override { baseClear(); _rows.clear();}
 
   private:
     std::vector<Row> _rows;

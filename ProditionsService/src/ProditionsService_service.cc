@@ -52,7 +52,7 @@ namespace mu2e {
     _caches[mmc->name()] = mmc;
     auto mdc = std::make_shared<mu2e::Mu2eDetectorCache>(_config.mu2eDetector());
     _caches[mdc->name()] = mdc;
-    auto tqc = std::make_shared<mu2e::TrkQualCatalogCache>("TrkQualCatalog",_config.trkQualCatalog());
+    auto tqc = std::make_shared<mu2e::TrkQualCatalogCache>(_config.trkQualCatalog());
     _caches[tqc->name()] = tqc;
     auto bkc = std::make_shared<mu2e::SimBookkeeperCache>(_config.simbookkeeper());
     _caches[bkc->name()] = bkc;

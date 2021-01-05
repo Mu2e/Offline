@@ -10,7 +10,7 @@ namespace mu2e {
   class StrawDriftCache : public ProditionsCache {
   public: 
     StrawDriftCache(StrawDriftConfig const& config):
-      ProditionsCache("StrawDrift",config.verbose()),
+      ProditionsCache(StrawDrift::cxname,config.verbose()),
       _useDb(config.useDb()),_maker(config) {}
 
 

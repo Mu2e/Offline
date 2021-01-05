@@ -17,14 +17,15 @@ namespace mu2e {
 
     typedef std::shared_ptr<TrkAlignStraw> ptr_t;
     typedef std::shared_ptr<const TrkAlignStraw> cptr_t;
+    constexpr static const char* cxname = "TrkAlignStraw";
 
-    TrkAlignStraw():DbTable("TrkAlignStraw","trk.alignstraw",
+    TrkAlignStraw():DbTable(cxname,"trk.alignstraw",
 	"index,StrawId,wire_cal_dV,wire_cal_dW,wire_hv_dV,wire_hv_dW,straw_cal_dV,straw_cal_dW,straw_hv_dV,straw_hv_dW") {} // this last should come from the Row class FIXME!
     const TrkStrawEndAlign& rowAt(const std::size_t index) const { return _rows.at(index);}
     std::vector<TrkStrawEndAlign> const& rows() const {return _rows;}
     size_t nrow() const override { return _rows.size(); };
     size_t nrowFix() const override { return StrawId::_nustraws; };
-    size_t size() const override { return _csv.capacity() + nrow()*sizeof(TrkStrawEndAlign); };
+    size_t size() const override { return baseSize() + nrow()*sizeof(TrkStrawEndAlign); };
 
     void addRow(const std::vector<std::string>& columns) override {
       _rows.emplace_back(
@@ -55,7 +56,7 @@ namespace mu2e {
       sstream << r._straw_hv_dW;
     }
 
-    virtual void clear() { _csv.clear(); _rows.clear(); }
+    virtual void clear() { baseClear(); _rows.clear(); }
 
   private:
     std::vector<TrkStrawEndAlign> _rows;

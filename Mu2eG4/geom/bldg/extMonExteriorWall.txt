@@ -2,17 +2,17 @@
 //
 //   geom/geom_extMon.ccl
 
-string building.extMon.name     = "extMon";
+string building.extMon.exteriorWall.name     = "extMonExteriorWall";
 
-string building.extMon.material = "CONCRETE_MARS";
+string building.extMon.exteriorWall.material = "CONCRETE_MARS";
 
-double building.extMon.offsetFromMu2eOrigin.x   = 947.4;
-double building.extMon.offsetFromFloorSurface.y = 5613.4;
-double building.extMon.offsetFromMu2eOrigin.z   = -3581.4;
+double building.extMon.exteriorWall.offsetFromMu2eOrigin.x   = 947.4;
+double building.extMon.exteriorWall.offsetFromFloorSurface.y = 5613.4;
+double building.extMon.exteriorWall.offsetFromMu2eOrigin.z   = -3581.4;
 
-double building.extMon.yHalfThickness           = 1219.2;
+double building.extMon.exteriorWall.yHalfThickness           = 1219.2;
 
-vector<double> building.extMon.xPositions = {
+vector<double> building.extMon.exteriorWall.xPositions = {
   -17334.4,   // Cmod
   -26955.7,   // D
   -26022.6,   // E
@@ -35,7 +35,7 @@ vector<double> building.extMon.xPositions = {
   -17405   // f3
 };
 
-vector<double> building.extMon.yPositions = {
+vector<double> building.extMon.exteriorWall.yPositions = {
   1391.73,   // Cmod
   -939.452,   // D
   -4790.42,   // E

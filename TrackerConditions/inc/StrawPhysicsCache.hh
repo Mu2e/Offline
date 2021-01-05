@@ -11,7 +11,7 @@ namespace mu2e {
   class StrawPhysicsCache : public ProditionsCache {
   public: 
     StrawPhysicsCache(StrawPhysicsConfig const& config):
-      ProditionsCache("StrawPhysics",config.verbose()),
+      ProditionsCache(StrawPhysics::cxname,config.verbose()),
       _useDb(config.useDb()),_maker(config) {}
 
     //    std::string const& name() const { return _name; }

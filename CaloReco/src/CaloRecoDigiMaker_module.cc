@@ -122,7 +122,7 @@ namespace mu2e {
       ConditionsHandle<CalorimeterCalibrations> calorimeterCalibrations("ignored");
 
       double totEnergyReco(0);
-      std::vector<double> x,y;
+      std::vector<double> x{},y{};
       for (const auto& caloDigi : caloDigis)
       {
           int    SiPMID   = caloDigi.SiPMID();
