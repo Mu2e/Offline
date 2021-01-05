@@ -473,6 +473,7 @@ namespace mu2e{
   }
 
   void TEveMu2eMainWindow::SetRunGeometry(const art::Run& run, int _diagLevel, bool _showBuilding, bool _showDSOnly, bool _showCRV){
+
     if(gGeoManager){
       gGeoManager->GetListOfNodes()->Delete();
       gGeoManager->GetListOfVolumes()->Delete();
@@ -487,11 +488,10 @@ namespace mu2e{
     TGeoVolume* topvol = geom->GetTopVolume();
 
     //Set Top Volume for gGeoManager:
+  
     gGeoManager->SetTopVolume(topvol);
-    gGeoManager->SetTopVisible(kTRUE);
-    int nn = gGeoManager->GetNNodes();
-    printf("nodes in geom = %d\n",nn);
-    
+    //gGeoManager->SetTopVisible(kTRUE);
+
     //Get Top Node:
     TGeoNode* topnode = gGeoManager->GetTopNode();
     TEveGeoTopNode* etopnode = new TEveGeoTopNode(gGeoManager, topnode);
@@ -500,14 +500,16 @@ namespace mu2e{
 
     setRecursiveColorTransp(etopnode->GetNode()->GetVolume(), kWhite-10,70);
 
-    if(!_showBuilding){   
+    if(!_showBuilding){ 
       mu2e_geom->SolenoidsOnly(topnode);
       mu2e_geom->hideTop(topnode, _diagLevel);
     }
-    if(_showDSOnly) mu2e_geom->InsideDS(topnode, false );
-  
-    if(_showCRV) mu2e_geom->InsideCRV(topnode, true);
-
+    if(_showDSOnly){
+     mu2e_geom->InsideDS(topnode, false );
+    }
+    if(_showCRV){
+      mu2e_geom->InsideCRV(topnode, true);
+    }
     //Add static detector geometry to global scene
     gEve->AddGlobalElement(etopnode);
     geom->Draw("ogl");
@@ -659,6 +661,7 @@ namespace mu2e{
 
   void TEveMu2eMainWindow::setEvent(const art::Event& event, bool firstLoop, Data_Collections &data, double time, bool accumulate, int &runn, int &eventn, bool &eventSelected)
   {
+     
     _event=event.id().event();
     _subrun=event.id().subRun();
     _run=event.id().run();
@@ -673,10 +676,9 @@ namespace mu2e{
     _data.crvcoincol = data.crvcoincol;
     _data.cryHitcol = data.cryHitcol;
     _data.cosmiccol = data.cosmiccol;
-    //if (texttime == -1){
+
     std::vector<double> times = pass_data->getTimeRange(firstLoop, data.chcol, data.crvcoincol, data.clustercol, data.cryHitcol);
-      //fTHSlid->SetRange(times.at(0), times.at(1));
-    //}
+
     if(_data.crvcoincol!=0) pass_data->AddCRVInfo(firstLoop, data.crvcoincol, ftimemin, ftimemax, false, _accumulate);
     hitenergy = new vector<double>(2);
     if(_data.chcol!=0) *hitenergy = pass_data->AddComboHits(firstLoop, data.chcol, tracker2Dproj, false, fhitmin, fhitmax,ftimemin, ftimemax, _accumulate, TfXYMgr, TfRZMgr, proj2, proj3);
@@ -709,7 +711,7 @@ namespace mu2e{
     _hitmaxenergy->AddText(0, (to_string(hitenergy->at(1))).c_str());
     _hitmintime->AddText(0, (to_string(times.at(0))).c_str());
     _hitmaxtime->AddText(0, (to_string(times.at(1))).c_str());
-    gApplication->Run(true);
+    gApplication->Run(kTRUE);
 
     gEve->Redraw3D(kTRUE);
     if(usereventSelected == true){
