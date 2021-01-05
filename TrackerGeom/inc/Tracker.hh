@@ -44,12 +44,8 @@ namespace mu2e {
     // default constructor results in non-functional object, but is required by proditions service
 
     constexpr static const char* cxname = {"Tracker"};
-    // copy constructor
-    Tracker(const Tracker& other);
-    // construct from a set of straws and their global properties.  It would be better to take ownership of
-    // existing straws via std::move, but the need for the copy constructor above precludes that
-    Tracker(StrawCollection const& straws, StrawProperties const& sprops,const G4TrackerPtr& g4tracker,
-    PEType const& pexists);
+    // construct from a set of straws and their global properties.
+    Tracker(StrawCollection const& straws, StrawProperties const& sprops,const G4TrackerPtr& g4tracker, PEType const& pexists);
 
     // accessors
     // origin in nominal tracker coordinate system
@@ -72,7 +68,8 @@ namespace mu2e {
     const Straw& straw( const StrawId& id) const{ return _straws[strawIndex(id)]; }
 
     // access the G4Tracker
-    const G4TrackerPtr& g4Tracker() const { return _g4tracker; }
+    G4Tracker const* g4Tracker() const { return _g4tracker.get(); }
+    G4Tracker* g4Tracker() { return _g4tracker.get(); }
 
     // deprecated interface: do not write new code using these, and replace existing calls opportunistically
     const Plane& getPlane( const StrawId& id ) const{ return _planes.at(id.getPlane()); }
@@ -111,6 +108,7 @@ namespace mu2e {
     PEType _planeExists;
     // g4 content
     G4TrackerPtr _g4tracker;
+    // allow TrackerMaker non-const access to G4 content
   };
 
 } //namespace mu2e

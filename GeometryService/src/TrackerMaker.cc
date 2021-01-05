@@ -581,7 +581,7 @@ namespace mu2e {
   void TrackerMaker::makePanel( const PanelId& pnlId ){
 
     auto const& panel = _tt->getPlane(pnlId).getPanel(pnlId);
-    auto g4tt = _tt->g4Tracker().get();
+    auto g4tt = _tt->g4Tracker();
 
     // check if the opposite panels do not overlap
     static double const tolerance = 1.e-6; // this should be in a config file
