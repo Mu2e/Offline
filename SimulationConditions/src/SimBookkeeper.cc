@@ -10,7 +10,7 @@ namespace mu2e {
   }
 
   void SimBookkeeper::print(std::ostream& os) const {
-    os << "Efficiencies in " << _name << ":" << std::endl;
+    os << "Efficiencies in " << name() << ":" << std::endl;
     for (const auto& i_eff : _effs) {
       os << i_eff.first << " = " << i_eff.second << std::endl;
     }

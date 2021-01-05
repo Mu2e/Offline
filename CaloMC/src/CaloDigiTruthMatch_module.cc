@@ -9,7 +9,7 @@
 #include "fhiclcpp/types/Atom.h"
 
 #include "MCDataProducts/inc/CaloEDepMC.hh"
-#include "MCDataProducts/inc/CaloDigiMC.hh"
+#include "MCDataProducts/inc/CaloHitMC.hh"
 #include "MCDataProducts/inc/CaloShowerStep.hh"
 #include "MCDataProducts/inc/CaloShowerSim.hh"
 #include "MCDataProducts/inc/CaloMCTruthAssns.hh"
@@ -60,8 +60,8 @@ namespace mu2e {
            fillDetailedMC_     (config().fillDetailedMC()),
            diagLevel_          (config().diagLevel())
         {
-            produces<CaloDigiMCCollection>();    
-            produces<CaloDigiMCTruthAssn>();    
+            produces<CaloHitMCCollection>();    
+            produces<CaloHitMCTruthAssn>();    
             if (fillDetailedMC_) produces<CaloShowerMCTruthAssn>();    
         }
 
@@ -73,7 +73,7 @@ namespace mu2e {
       private:
          using SimParticlePtr = art::Ptr<SimParticle>;
 
-         void makeTruthMatch (art::Event&, CaloDigiMCCollection&, CaloDigiMCTruthAssn&, CaloShowerMCTruthAssn&, const PrimaryParticle&);
+         void makeTruthMatch (art::Event&, CaloHitMCCollection&, CaloHitMCTruthAssn&, CaloShowerMCTruthAssn&, const PrimaryParticle&);
          void diag           (const CaloShowerSim*, const CaloHit* );
 
 
@@ -137,8 +137,8 @@ namespace mu2e {
       auto pph = event.getValidHandle<PrimaryParticle>(ppToken_);
       auto const& primaryParticles = *pph;
       
-      std::unique_ptr<CaloDigiMCCollection>  caloDigiMCs(new CaloDigiMCCollection);
-      std::unique_ptr<CaloDigiMCTruthAssn>   caloDigiMCTruth(new CaloDigiMCTruthAssn);
+      std::unique_ptr<CaloHitMCCollection>  caloDigiMCs(new CaloHitMCCollection);
+      std::unique_ptr<CaloHitMCTruthAssn>   caloDigiMCTruth(new CaloHitMCTruthAssn);
       std::unique_ptr<CaloShowerMCTruthAssn> caloHitMCTruth(new CaloShowerMCTruthAssn);
 
       makeTruthMatch(event, *caloDigiMCs, *caloDigiMCTruth, *caloHitMCTruth, primaryParticles);
@@ -157,12 +157,12 @@ namespace mu2e {
   //   MCtime must not already be in the window of the next hit, in which case it is associate to this one
   //
   //--------------------------------------------------------------------
-  void CaloDigiTruthMatch::makeTruthMatch(art::Event& event, CaloDigiMCCollection& caloDigiMCs,
-                                         CaloDigiMCTruthAssn& caloDigiTruthMatch, CaloShowerMCTruthAssn& caloShowerTruthMatch, 
+  void CaloDigiTruthMatch::makeTruthMatch(art::Event& event, CaloHitMCCollection& caloDigiMCs,
+                                         CaloHitMCTruthAssn& caloDigiTruthMatch, CaloShowerMCTruthAssn& caloShowerTruthMatch, 
                                          const PrimaryParticle& primaryParticle)
   {
         
-      art::ProductID digiMCProductID(event.getProductID<CaloDigiMCCollection>());
+      art::ProductID digiMCProductID(event.getProductID<CaloHitMCCollection>());
       const art::EDProductGetter* digiMCProductGetter = event.productGetter(digiMCProductID);
 
       const auto CaloHitHandle = event.getValidHandle(CaloHitToken_);
@@ -285,9 +285,9 @@ namespace mu2e {
              
              //sort CaloEDepMC by decreasing energy
              std::sort(edeps.begin(),edeps.end(),[](const auto& a, const auto& b){return a.energyDep() > b.energyDep();});
-             caloDigiMCs.emplace_back(CaloDigiMC(std::move(edeps)));
+             caloDigiMCs.emplace_back(CaloHitMC(std::move(edeps)));
 
-             art::Ptr<CaloDigiMC> digiMCPtr = art::Ptr<CaloDigiMC>(digiMCProductID, caloDigiMCs.size()-1, digiMCProductGetter);             
+             art::Ptr<CaloHitMC> digiMCPtr = art::Ptr<CaloHitMC>(digiMCProductID, caloDigiMCs.size()-1, digiMCProductGetter);             
              caloDigiTruthMatch.addSingle(hitPtr,digiMCPtr);
                           
              if (hitIsMatched) {totalEnergyMatched += (*hitIt)->energyDep();++nMatched;}

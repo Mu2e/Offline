@@ -171,7 +171,7 @@ namespace mu2e {
       auto caloShowerStepHandle = event.getValidHandle(caloShowerToken_);
       const auto& CaloShowerROs = *caloShowerStepHandle;
       
-      auto caloDigiColl             = std::make_unique<CaloDigiCollection>();
+      auto caloDigiColl = std::make_unique<CaloDigiCollection>();
      
       makeDigitization(CaloShowerROs, *caloDigiColl);
 
@@ -341,12 +341,12 @@ namespace mu2e {
                                       CaloDigiCollection& caloDigiColl)
   {
       float totEdepEq(0);
-      std::vector<int> hitStarts, hitStops, wf(waveforms[0].size(),0);
+      std::vector<int> hitStarts{}, hitStops{}, wf(waveforms[0].size(),0);
       for (unsigned int iRO=0; iRO<waveforms.size(); ++iRO)
       {    
            // round the waveform into integers and apply maxADC cut
            int wfSize = waveforms[iRO].size();
-           for (int i=0;i<wfSize;++i) wf[i] = std::min(maxADCCounts_,int(waveforms[iRO].at(i))-pedestals[iRO]);
+           for (int i=0;i<wfSize;++i) wf[i] = std::min(maxADCCounts_,int(waveforms[iRO][i]) - pedestals[iRO]);
 
            if (diagLevel_ > 2) diag0(iRO, wf);
 
@@ -357,7 +357,9 @@ namespace mu2e {
 	   {
 	       // find the local maximum over a window of size peakWindow_ and above threshold value
 	       if (wf[timeSample] < minPeakADC_) {++timeSample; continue;}
-	       if (std::max_element(&wf[timeSample-nBinsPeak_],&wf[timeSample+nBinsPeak_+1]) != &wf[timeSample]) {++timeSample; continue;}
+               
+               auto it1 =  wf.begin()+timeSample-nBinsPeak_, it2=wf.begin()+timeSample+nBinsPeak_+1;
+               if (std::max_element(it1,it2) != wf.begin()+timeSample) {++timeSample; continue;}
 
 	       // find the starting / stopping point of the peak
 	       // the stopping point is the first value below the threshold
@@ -399,10 +401,11 @@ namespace mu2e {
 	        int sampleStop  = hitStops[ihit];
 	        int t0          = int(sampleStart*digiSampling_+ blindTime_);
 
-	        auto peakPosition = std::max_element(&wf[sampleStart],&wf[sampleStop]+1) - &wf[sampleStart];
+	        auto it1 = wf.begin()+sampleStart, it2 = wf.begin()+sampleStop+1;
+                auto peakPosition = std::max_element(it1,it2) - it1;
 	        if (diagLevel_ >2) std::cout<<"[CaloDigiMaker] Start=" << sampleStart << " Stop=" << sampleStop << " peak in position " << peakPosition << std::endl; 
 
-	        std::vector<int> wfsample;
+	        std::vector<int> wfsample{};
 	        for (int i=sampleStart; i<=sampleStop; ++i) wfsample.push_back(std::min(int(waveforms[iRO][i]),maxADCCounts_));
 
 	        // make the CaloDigi

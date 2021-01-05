@@ -320,7 +320,7 @@ namespace mu2e {
           hStot_->Fill(diagSummary_.totalStep_);
           std::cout<<"CaloShowerStepMaker summary"<<std::endl;
           
-          std::set<int> volIds;
+          std::set<int> volIds{};
           for (auto caloShowerStepMC : caloShowerStepMCs) volIds.insert(caloShowerStepMC.volumeG4ID());
           
           for (auto volId: volIds)

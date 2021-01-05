@@ -9,7 +9,7 @@ namespace mu2e {
   class TrackerStatusCache : public ProditionsCache {
   public: 
     TrackerStatusCache(TrackerStatusConfig const& config):
-      ProditionsCache("TrackerStatus",config.settings().verbose()),
+      ProditionsCache(TrackerStatus::cxname,config.settings().verbose()),
       _useDb(config.settings().useDb()),_maker(config) {}
 
 

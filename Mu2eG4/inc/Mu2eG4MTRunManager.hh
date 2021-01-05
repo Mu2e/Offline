@@ -37,10 +37,7 @@ namespace mu2e {
     void initializeMasterRunAction();
     void stopG4();
     void terminateRun();
-    
-    G4bool SetUpAnEvent(G4Event* evt,
-                        long& s1, long& s2, long& s3,
-                        G4bool reseedRequired);
+    G4bool SetUpEvent();
 
     inline G4VUserPhysicsList* getMasterPhysicsList() {return physicsList_;}
 

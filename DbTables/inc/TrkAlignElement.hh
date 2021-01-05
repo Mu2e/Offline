@@ -21,13 +21,12 @@ namespace mu2e {
     typedef std::shared_ptr<TrkAlignElement> ptr_t;
     typedef std::shared_ptr<const TrkAlignElement> cptr_t;
 
-
     TrkAlignElement(const char* Name, const char* DbName,size_t nrows ):DbTable(Name,DbName, "index,strawid,dx,dy,dz,rx,ry,rz"), _nrows(nrows) {}
     const TrkAlignParams& rowAt(const std::size_t index) const { return _rows.at(index);}
     std::vector<TrkAlignParams> const& rows() const {return _rows;}
     std::size_t nrow() const override { return _rows.size(); };
     std::size_t nrowFix() const override { return _nrows; };
-    size_t size() const override { return _csv.capacity() + nrow()*sizeof(TrkAlignParams); };
+    size_t size() const override { return baseSize() + nrow()*sizeof(TrkAlignParams); };
 
     void addRow(const std::vector<std::string>& columns) override {
       _rows.emplace_back(std::stoi(columns[0]),
@@ -54,7 +53,7 @@ namespace mu2e {
       sstream << r.rz()<<",";
     }
 
-    void clear() override { _csv.clear(); _rows.clear(); }
+    void clear() override { baseClear(); _rows.clear(); }
 
   private:
     std::vector<TrkAlignParams> _rows;
@@ -64,17 +63,20 @@ namespace mu2e {
 // unique classes for Db usage: not sure why this is needed
   class TrkAlignPanel : public TrkAlignElement {
     public:
-      TrkAlignPanel() : TrkAlignElement("TrkAlignPanel","trk.alignpanel",StrawId::_nupanels) {}
+      constexpr static const char* cxname = "TrkAlignPanel";
+      TrkAlignPanel() : TrkAlignElement(cxname,"trk.alignpanel",StrawId::_nupanels) {}
   };
 
   class TrkAlignPlane : public TrkAlignElement {
     public:
-      TrkAlignPlane() : TrkAlignElement("TrkAlignPlane","trk.alignplane",StrawId::_nplanes) {}
+      constexpr static const char* cxname = "TrkAlignPlane";
+      TrkAlignPlane() : TrkAlignElement(cxname,"trk.alignplane",StrawId::_nplanes) {}
   };
   
   class TrkAlignTracker : public TrkAlignElement {
     public:
-      TrkAlignTracker() : TrkAlignElement("TrkAlignTracker","trk.aligntracker",size_t(1)) {}
+      constexpr static const char* cxname = "TrkAlignTracker";
+      TrkAlignTracker() : TrkAlignElement(cxname,"trk.aligntracker",size_t(1)) {}
   };
   
 };

@@ -133,7 +133,7 @@ namespace mu2e {
         auto startHit = hits.begin();
         auto endHit   = hits.begin();
 
-        std::vector<CaloRecoDigiPtr> buffer;
+        std::vector<CaloRecoDigiPtr> buffer{};
         int nSiPM(0);
         double timeW(0),timeWtot(0),eDepTot(0),eDepTotErr(0);
 

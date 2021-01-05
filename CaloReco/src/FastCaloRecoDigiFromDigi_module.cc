@@ -1,7 +1,3 @@
-//Author: S Middleton
-//Date: Nov 2019
-//Purpose: To make CaloRecoHits quickly from the Digis using the  data product structure (for Online compatib.)
-
 #include "art/Framework/Core/EDProducer.h"
 #include "art/Framework/Principal/Event.h"
 #include "art/Framework/Core/ModuleMacros.h"

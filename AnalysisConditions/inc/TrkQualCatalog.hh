@@ -15,11 +15,6 @@ namespace mu2e {
   typedef MVAEntries<TrkQual> TrkQualEntries;
   typedef MVACatalog<TrkQual> TrkQualCatalog;
 
-  template<>
-  MVACatalog<TrkQual>::MVACatalog() : _name("TrkQualCatalog") { }
-
-  template<>
-  MVACatalog<TrkQual>::MVACatalog(TrkQualEntries entries) : _name("TrkQualCatalog"), _entries(entries) { }
 }
 
 #endif

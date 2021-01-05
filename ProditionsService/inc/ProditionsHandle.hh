@@ -19,10 +19,19 @@ namespace mu2e {
     typedef std::shared_ptr<ENTITY> ptr_t;
     typedef std::shared_ptr<const ENTITY> cptr_t;
 
-    ProditionsHandle() {
-      ENTITY e;
+    ProditionsHandle():ptr(nullptr) {
+      // find the name of the ENTITY
+      _name =  std::string(ENTITY::cxname);
+      // connect to the service cache of this type
       art::ServiceHandle<ProditionsService> sg;
-      _cptr = sg->getCache(e.name());
+      _cptr = sg->getCache(_name);
+
+      if(!_cptr) {
+	throw cet::exception("PRODITIONSHANDLE_NO_CACHE")
+	  << "ProditionsHandle could not get cache " << _name
+	  << " from ProditionsService ";
+      }
+
     }
     ~ProditionsHandle() { }
 
@@ -46,7 +55,15 @@ namespace mu2e {
 	ptr = std::dynamic_pointer_cast
 	  <const ENTITY,const ProditionsEntity>(bptr);
       }
+
+      if(!ptr) {
+	throw cet::exception("PRODITIONSHANDLE_NO_ENTITY") 
+	  << "ProditionsHandle could not load entity " << _name
+	  << " for Run "<<eid.run() << " SubRun " << eid.subRun();
+      }
+
       return *ptr; 
+
     }
 
     DbIoV const& iov() const { return _iov;}
@@ -54,6 +71,7 @@ namespace mu2e {
   private:
     ProditionsCache::ptr _cptr;
     cptr_t ptr;
+    std::string _name;
     DbIoV _iov;
   };
 }

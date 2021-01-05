@@ -15,9 +15,9 @@
 //An anonymous namespace to use Minuit
 namespace 
 {
-    unsigned              npTot_,npFcn_,npBkg_,x0_,x1_;
-    std::vector<double>   xvec_,yvec_;
-    mu2e::CaloPulseShape* pulseCachePtr_;
+    unsigned              npTot_(0),npFcn_(0),npBkg_(0),x0_(0),x1_(0);
+    std::vector<double>   xvec_{},yvec_{};
+    mu2e::CaloPulseShape* pulseCachePtr_=(nullptr);
       
     double logn(double x, double *par) {return par[0]*pulseCachePtr_->evaluate(x-par[1]); }
 
@@ -100,9 +100,8 @@ namespace mu2e {
 
        for (unsigned ip=0;ip<nParTot_;++ip)
        {
- 	    std::stringstream sss; 
-	    sss<<"par "<<ip;
-            minuit.mnparm(ip, sss.str().c_str(),  param_[ip],  0.001,  0,  1e6, ierr);
+ 	    std::string sss = "par " + std::to_string(ip);
+            minuit.mnparm(ip, sss.c_str(),  param_[ip],  0.001,  0,  1e6, ierr);
        }      
 
        // Perform first fit with initial model
@@ -301,7 +300,7 @@ namespace mu2e {
        double dx = xvec_[1]-xvec_[0];
 
        TH1F h("test","Amplitude vs time",x1_-x0_,xvec_[x0_]-0.5*dx,xvec_[x1_-1]+0.5*dx);
-       for (unsigned int i=x0_;i<x1_;++i) h.SetBinContent(i+1-x0_,yvec_[i]);
+       for (unsigned i=x0_;i<x1_;++i) h.SetBinContent(i+1-x0_,yvec_[i]);
        h.GetXaxis()->SetTitle("Time (ns)");
        h.GetYaxis()->SetTitle("Amplitude"); 
        h.SetStats(0);
