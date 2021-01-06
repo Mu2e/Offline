@@ -126,6 +126,7 @@ namespace mu2e
         _firstLoop = false;
       }
     }
+   
     std::cout<<"[Ending TEveEventDisplay::analyze()]"<<std::endl;
   } 
 
