@@ -412,10 +412,18 @@ namespace mu2e {
     computeManifoldEdgeExcessSpace();
     // fill their content
     makeStraws(allStraws);
+    // create an empty TrackerG4Info: this gets filled further down
+    auto g4trackerptr = shared_ptr<TrackerG4Info>(new TrackerG4Info);
+    // see which planes actually exist.  This is deprecated, TrackerStatus should be used instead  FIXME!
+    std::array<bool,StrawId::_nplanes> planeExists;
+    for ( int ipln=0; ipln<StrawId::_nplanes; ++ipln ){
+      planeExists[ipln] =  ( find ( _nonExistingPlanes.begin(), _nonExistingPlanes.end(), ipln) == _nonExistingPlanes.end() );
+    }
     // build tracker with these
-    _tt = unique_ptr<Tracker>(new Tracker(allStraws,strawprops));
+    _tt = unique_ptr<Tracker>(new Tracker(allStraws,strawprops,g4trackerptr,planeExists));
+    auto g4tt = _tt->g4Tracker();
 
-// now G4 stuff.  This should be factorized away, preferably to a different class FIXME
+// now G4 stuff
     for ( int ipln=0; ipln<StrawId::_nplanes; ++ipln ){
       makePlane(StrawId(ipln,0,0));
     }
@@ -423,7 +431,7 @@ namespace mu2e {
     makeMother();
 
 
-    _tt->_supportModel = _supportModel;
+    g4tt->_supportModel = _supportModel;
 
     // Fill information about the new style, fully detailed support structure.
     if ( _supportModel == SupportModel::detailedv0 ) {
@@ -431,24 +439,23 @@ namespace mu2e {
     }
 
     // Fill the information about the, old style minimal supports.
-    _tt->_supportParams = Support( _innerSupportRadius,
+    g4tt->_supportParams = Support( _innerSupportRadius,
                                    _outerSupportRadius,
                                    _supportHalfThickness,
                                    _supportMaterial);
 
-    _tt->_z0                  = _zCenter;
-    _tt->_envelopeInnerRadius = _envelopeInnerRadius;
-    _tt->_manifoldHalfLengths = _manifoldHalfLengths; // is this needed????
-    _tt->_envelopeMaterial    = _envelopeMaterial;
+    g4tt->_z0                  = _zCenter;
+    g4tt->_envelopeMaterial    = _envelopeMaterial;
 
-    _tt->_wallMaterialName    = _strawMaterials[0];
-    _tt->_outerMetalMaterial  = _wallOuterMetalMaterial;
-    _tt->_innerMetal1Material = _wallInnerMetal1Material;
-    _tt->_innerMetal2Material = _wallInnerMetal2Material;
-    _tt->_gasMaterialName     = _strawMaterials[1];
-    _tt->_wireMaterialName    = _strawMaterials[2];
-    _tt->_wirePlateMaterial   = _wirePlateMaterial;
-
+    g4tt->_wallMaterialName    = _strawMaterials[0];
+    g4tt->_outerMetalMaterial  = _wallOuterMetalMaterial;
+    g4tt->_innerMetal1Material = _wallInnerMetal1Material;
+    g4tt->_innerMetal2Material = _wallInnerMetal2Material;
+    g4tt->_gasMaterialName     = _strawMaterials[1];
+    g4tt->_wireMaterialName    = _strawMaterials[2];
+    g4tt->_wirePlateMaterial   = _wirePlateMaterial;
+// the following is needed by the Detail constructor
+    g4tt->_panelZOffset        = _panelZOffset;
 
 
     //computeStrawHalfLengths();
@@ -463,14 +470,15 @@ namespace mu2e {
     finalCheck();
 
     if ( _verbosityLevel > 0 ) {
-      cout << "Tracker Support Structure: \n" << _tt->_supportStructure << endl;
+      cout << "Tracker Support Structure: \n" << g4tt->_supportStructure << endl;
     }
 
   } //end TrackerMaker::buildIt.
 
   void TrackerMaker::makeMother(){
+    auto g4tt = _tt->g4Tracker();
 
-    _tt->_mother = PlacedTubs ( "TrackerMother",
+    g4tt->_mother = PlacedTubs ( "TrackerMother",
                                 TubsParams( _motherRIn, _motherROut, _motherHalfLength),
                                 CLHEP::Hep3Vector( _xCenter, 0., _motherZ0),
                                 _envelopeMaterial );
@@ -523,15 +531,14 @@ namespace mu2e {
   void TrackerMaker::makePlane( const StrawId& planeId ){
     //std::cout << "->->-> makePlane\n";
     int ipln = planeId.getPlane();
-    auto& planes = _tt->_planes;
-    Plane& plane = planes.at(ipln);
+    auto const& planes = _tt->planes();
+    auto const& plane = planes.at(ipln);
 
     if (_verbosityLevel>2) {
       cout << __func__ << " making plane " <<  ipln;
     }
-    _tt->_planeExists[ipln] =  ( find ( _nonExistingPlanes.begin(), _nonExistingPlanes.end(), ipln) == _nonExistingPlanes.end() );
     if (_verbosityLevel>2) {
-      cout << ", exists " <<  _tt->_planeExists[ipln] << endl;
+      cout << ", exists " <<  _tt->planeExists(planeId) << endl;
     }
     for ( int ipnl=0; ipnl<StrawId::_npanels; ++ipnl ){
       makePanel ( StrawId(ipln,ipnl,0));
@@ -574,6 +581,7 @@ namespace mu2e {
   void TrackerMaker::makePanel( const PanelId& pnlId ){
 
     auto const& panel = _tt->getPlane(pnlId).getPanel(pnlId);
+    auto g4tt = _tt->g4Tracker();
 
     // check if the opposite panels do not overlap
     static double const tolerance = 1.e-6; // this should be in a config file
@@ -715,21 +723,21 @@ namespace mu2e {
     // Alignment of angle of full plane
 
 
-    _tt->_panelEB._EBKey       = TubsParams(_EBKeyInnerRadius,
+    g4tt->_panelEB._EBKey       = TubsParams(_EBKeyInnerRadius,
                                     _EBKeyOuterRadius,
                                     _EBKeyHalfLength,
                                     0.,
                                     _EBKeyPhiRange);
 
-    _tt->_panelEB._EBKeyShield = TubsParams(_EBKeyInnerRadius,
+    g4tt->_panelEB._EBKeyShield = TubsParams(_EBKeyInnerRadius,
                                     _EBKeyOuterRadius,
                                     _EBKeyShieldHalfLength,
                                     0.,
                                     _EBKeyPhiRange);
 
-    _tt->_panelEB._EBKeyMaterial         = _EBKeyMaterial;
-    _tt->_panelEB._EBKeyShieldMaterial   = _EBKeyShieldMaterial;
-    _tt->_panelEB._EBKeyPhiExtraRotation = _EBKeyPhiExtraRotation;
+    g4tt->_panelEB._EBKeyMaterial         = _EBKeyMaterial;
+    g4tt->_panelEB._EBKeyShieldMaterial   = _EBKeyShieldMaterial;
+    g4tt->_panelEB._EBKeyPhiExtraRotation = _EBKeyPhiExtraRotation;
 
   }  // end makePanel
 
@@ -939,9 +947,9 @@ namespace mu2e {
 
   // Identify the neighbour straws for all straws in the tracker
   void TrackerMaker::makeSupportStructure(){
+    auto g4tt = _tt->g4Tracker();
 
-    SupportStructure& sup  = _tt->_supportStructure;
-    _tt->_panelZOffset = _panelZOffset;
+    SupportStructure& sup  = g4tt->_supportStructure;
 
     // Positions for the next few objects in Mu2e coordinates.
     TubsParams endRingTubs( _endRingInnerRadius, _endRingOuterRadius, _endRingHalfLength);
@@ -1300,7 +1308,8 @@ namespace mu2e {
 
   // This needs to know the z positions of the support rings
   void TrackerMaker::makeThinSupportRings(){
-    SupportStructure& sup  = _tt->_supportStructure;
+    auto g4tt = _tt->g4Tracker();
+    SupportStructure& sup  = g4tt->_supportStructure;
 
     TubsParams thinRingTubs ( _endRingInnerRadius, _outerRingOuterRadius, _midRingHalfLength,
                               _midRingPhi0, _midRingdPhi); // by default, half rings, on the bottom part, but user-configurable
@@ -1333,29 +1342,30 @@ namespace mu2e {
 
   // Envelope that holds one plane ("TrackerPlaneEnvelope")
   void TrackerMaker::computePlaneEnvelope(){
+    auto g4tt = _tt->g4Tracker();
 
     if ( _supportModel == SupportModel::simple ){
-      double halfThick = _tt->_supportParams.halfThickness() +
-	2.*_tt->_manifoldHalfLengths[2];
-      _tt->_planeEnvelopeParams = TubsParams( _tt->_envelopeInnerRadius,
-					      _tt->_supportParams.outerRadius(),
+      double halfThick = g4tt->_supportParams.halfThickness() +
+	2.*_manifoldHalfLengths[2];
+      g4tt->_planeEnvelopeParams = TubsParams( _envelopeInnerRadius,
+					      g4tt->_supportParams.outerRadius(),
 					      halfThick);
     } else if ( _supportModel == SupportModel::detailedv0 ){
       // This is new for version 5, its existence doesn't affect earlier
       // versions.
-      _tt->_panelEnvelopeParams = TubsParams( _envelopeInnerRadius,
+      g4tt->_panelEnvelopeParams = TubsParams( _envelopeInnerRadius,
                                                _outerRingOuterRadius,
                                                _innerRingHalfLength
 					      + _panelPadding,
 					      0., _panelPhi);
       if ( _ttVersion > 3 ) {
-	_tt->_planeEnvelopeParams = TubsParams( _envelopeInnerRadius,
+	g4tt->_planeEnvelopeParams = TubsParams( _envelopeInnerRadius,
 						_outerRingOuterRadius,
 						2.0 * (_innerRingHalfLength
 						       + _panelPadding )
 						+ _planePadding );
       } else {
-	_tt->_planeEnvelopeParams = TubsParams( _envelopeInnerRadius,
+	g4tt->_planeEnvelopeParams = TubsParams( _envelopeInnerRadius,
 						_outerRingOuterRadius,
 						_innerRingHalfLength);
       } // end of if on version in assigning plane envelope params
@@ -1369,29 +1379,29 @@ namespace mu2e {
 
   // Envelope that holds the full Tracker ("TrackerMother")
   void TrackerMaker::computeTrackerEnvelope(){
-
+    auto g4tt = _tt->g4Tracker();
     if ( _supportModel == SupportModel::simple ){
 
       // Envelope of a single plane.
-      TubsParams planeEnvelope = _tt->getPlaneEnvelopeParams();
+      TubsParams planeEnvelope = _tt->g4Tracker()->getPlaneEnvelopeParams();
 
       // Full length from center to center of the first and last planes.
-      double fullLength = _tt->_planes.back().origin().z()-_tt->_planes.front().origin().z();
+      double fullLength = _tt->planes().back().origin().z()-_tt->planes().front().origin().z();
 
       // Remember the thickness of the planes.
       double halfLength = fullLength/2. + planeEnvelope.zHalfLength();
 
-      _tt->_innerTrackerEnvelopeParams = TubsParams( planeEnvelope.innerRadius(),
+      g4tt->_innerTrackerEnvelopeParams = TubsParams( planeEnvelope.innerRadius(),
                                                      planeEnvelope.outerRadius(),
                                                      halfLength);
 
     } else if ( _supportModel == SupportModel::detailedv0 ){
 
-      double fullLength = _tt->_planes.back().origin().z()-_tt->_planes.front().origin().z();
-      double halfLength = fullLength/2. + _tt->getPlaneEnvelopeParams().zHalfLength();
+      double fullLength = _tt->planes().back().origin().z()-_tt->planes().front().origin().z();
+      double halfLength = fullLength/2. + _tt->g4Tracker()->getPlaneEnvelopeParams().zHalfLength();
 
       TubsParams val( _envelopeInnerRadius, _outerRingOuterRadius, halfLength);
-      _tt->_innerTrackerEnvelopeParams = val;
+      g4tt->_innerTrackerEnvelopeParams = val;
 
     } else{
 
