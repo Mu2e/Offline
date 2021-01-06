@@ -81,7 +81,7 @@ namespace mu2e {
       _planesft = StrawId::_planesft;
 
       _verbosityLevel = max(verboseLevel,config.getInt("tracker.verbosityLevel",0)); // Geant4 SD verboseLevel
-      _supportModel   = tracker->getSupportModel();
+      _supportModel   = tracker->g4Tracker()->getSupportModel();
 
       if ( _TrackerVersion < 3 ) {
         throw cet::exception("StrawSD")
