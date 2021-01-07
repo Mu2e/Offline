@@ -3,7 +3,8 @@
 #
 
 # the main path defined includes filtering and compression
-#include "JobConfig/reco/mcdigis-trig.fcl"
+##include "JobConfig/reco/mcdigis-trig.fcl"
+#include "JobConfig/reco/mcdigis_primary.fcl"
 
 # only run DeM and DeP
 physics.producers.SelectRecoMC.KFFInstances : [ "KFFDeM", "KFFDeP"]
@@ -11,7 +12,7 @@ physics.producers.SelectRecoMC.MHInstances  : ["MHDeM", "MHDeP" ]
 physics.filters.RecoFilter.TrkTags : [ "KFFDeM", "KFFDeP"]
 physics.filters.RecoFilter.MomentumCutoff : [ 60.0, 60.0 ]
 # correct timemaps (unique to early MDC datasets)
-physics.RecoPath : [ @sequence::Reconstruction.DePath ]
+physics.RecoPath : [ cosmicTimeMap, protonBunchIntensity, @sequence::Reconstruction.DePath ]
 
 
 # print summaries
