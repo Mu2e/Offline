@@ -103,7 +103,8 @@ namespace mu2e {
 	Comment("Min CaloShowerSim MC energy to include")};
       fhicl::Atom<double> CCME{ Name("CaloClusterMinE"),
 	Comment("Minimum energy CaloCluster to save (MeV)"), 10.0};
-   };
+      fhicl::Atom<bool> SkipCrv{ Name("SkipCrv"), 
+	Comment("Option to skip the CrvCoincidenceClusterCollection"), false};   };
    using Parameters = art::EDProducer::Table<Config>;
    explicit SelectRecoMC(const Parameters& conf);
    void produce(art::Event& evt) override;
@@ -135,7 +136,7 @@ namespace mu2e {
    double _ccmcdt, _csme, _ccme;
    // cache
    double _mbtime; // period of 1 microbunch
-
+   bool _skipCrv; // option to skip the CrvCoincidenceClusterCollections
   };
 
   SelectRecoMC::SelectRecoMC(const Parameters& config )  : 
@@ -163,23 +164,20 @@ namespace mu2e {
     _toff(config().SPTO()),
     _ccmcdt(config().CCMCDT()),
     _csme(config().CSME()),
-    _ccme(config().CCME())
+    _ccme(config().CCME()),
+    _skipCrv(config().SkipCrv())
   {
     consumes<StrawDigiCollection>(_sdc);
     consumes<StrawHitFlagCollection>(_shfc);
     consumes<ComboHitCollection>(_chc);
-    consumes<CaloDigiCollection>(_cdc);
-    consumes<CrvDigiCollection>(_crvdc);
     consumesMany<KalSeedCollection>();
     consumes<CaloClusterCollection>(_ccc);
-    consumes<CrvCoincidenceClusterCollection>(_crvccc);
     consumes<PrimaryParticle>(_pp);
     consumes<StrawDigiMCCollection>(_sdmcc);
     consumes<CrvDigiMCCollection>(_crvdmcc);
     consumes<EventWindowMarker>(_ewm);
     consumes<ProtonBunchIntensity>(_pbi);
     produces <IndexMap>("StrawDigiMap"); 
-    produces <IndexMap>("CrvDigiMap"); 
     produces <IndexMap>("CaloDigiMap"); 
     produces <KalSeedMCCollection>(); 
     produces <KalSeedMCAssns>();
@@ -190,12 +188,19 @@ namespace mu2e {
     produces <StrawDigiCollection>();
     produces <StrawHitFlagCollection>();
     produces <CaloDigiCollection>();
-    produces <CrvDigiCollection>();
-    produces <CrvRecoPulseCollection>();
-    produces <CrvCoincidenceClusterCollection>();
     produces <RecoCount>();
     produces <EventWindowMarker>();
     produces <ProtonBunchIntensity>();
+    if (!_skipCrv) {
+      consumes<CaloDigiCollection>(_cdc);
+      consumes<CrvDigiCollection>(_crvdc);
+      consumes<CrvCoincidenceClusterCollection>(_crvccc);
+      consumes<CrvDigiMCCollection>(_crvdmcc);
+      produces <IndexMap>("CrvDigiMap"); 
+      produces <CrvDigiCollection>();
+      produces <CrvRecoPulseCollection>();
+      produces <CrvCoincidenceClusterCollection>();
+    }
     if(_debug > 0){
       std::cout << "Using KalSeed collections from ";
       for (auto const& kff : _kff)
@@ -225,7 +230,9 @@ namespace mu2e {
     // fill Tracking information
     fillTrk(event,ccptrs,pp,*nrec.get());
    // now select the CRV
-    fillCrv(event, pp, *nrec.get());
+    if(!_skipCrv) {
+      fillCrv(event, pp, *nrec.get());
+    }
     // now select Calo
     fillCalo(event, ccptrs, pp, *nrec.get());
     // put output in event

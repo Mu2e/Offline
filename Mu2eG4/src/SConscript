@@ -204,6 +204,7 @@ GS_LIBS = []
 # Link libraries needed to build G4 with XERCESC
 XERCESC_LIBS = [ 'xerces-c' ]
 
+rootlibs  = env['ROOTLIBS']
 
 mainlib = helper.make_mainlib ( [
         'mu2e_G4Helper_G4Helper_service',
@@ -252,6 +253,7 @@ mainlib = helper.make_mainlib ( [
         'CLHEP',
         'Hist', 'Tree', 'Core',
         'boost_regex',
+        rootlibs,
         'boost_system',
         'tbb',
         'pthread',
@@ -290,6 +292,7 @@ helper.make_plugins( [
     'CLHEP',
     'Tree', 'Core',
     'boost_filesystem',
+    rootlibs,
     'boost_system',
     'tbb',
     'pthread',

@@ -27,17 +27,24 @@ namespace mu2e {
   class GenEventCounter : public art::EDProducer {
     GenEventCount::count_t seenEvents_;
   public:
-    struct Config {};
+    struct Config {
+      using Name=fhicl::Name;
+      using Comment=fhicl::Comment;
+      fhicl::Atom<bool> allowOtherGenCounters{Name("allowOtherGenCounters"), Comment("Allow other gen counters in a subrun"), false};      
+    };
     using Parameters = art::EDProducer::Table<Config>;
     explicit GenEventCounter(const Parameters& conf);
     virtual void produce(art::Event& event) override;
     virtual void endSubRun(art::SubRun& sr) override;
+  private:
+    bool allowOtherGenCounters_; //throw an error upon finding other gen counts unless this is true
   };
 
   //================================================================
   GenEventCounter::GenEventCounter(const Parameters& conf)
-    : art::EDProducer{conf},
-      seenEvents_(0)
+    : art::EDProducer{conf},    
+    seenEvents_(0),
+    allowOtherGenCounters_(conf().allowOtherGenCounters())
   {
     produces<mu2e::GenEventCount, art::InSubRun>();
   }
@@ -57,16 +64,28 @@ namespace mu2e {
     sr.getManyByType(hh);
     if(!hh.empty()) {
       std::ostringstream os;
-      os<<"GenEventCounter: refusing to write event count in "
-        <<sr.id()<<" because conflicting products exist:\n";
-      for(const auto& h : hh) {
-        os<<"    moduleLabel = "<<h.provenance()->moduleLabel()
-          <<", instance = "<<h.provenance()->productInstanceName()
-          <<", process = "<<h.provenance()->processName()
-          <<"\n";
+      if(allowOtherGenCounters_) {
+	std::cout << "GenEventCounter: Warning in "
+		  << sr.id() << " because  similar products exist:\n";
+	for(const auto& h : hh) {
+	  std::cout << "    moduleLabel = " << h.provenance()->moduleLabel()
+		    << ", instance = "      << h.provenance()->productInstanceName()
+		    << ", process = "       << h.provenance()->processName()
+		    << "\n";
+	}
+	std::cout << "\n";
+      } else {
+	os<<"GenEventCounter: refusing to write event count in "
+	  <<sr.id()<<" because conflicting products exist:\n";
+	for(const auto& h : hh) {
+	  os<<"    moduleLabel = "<<h.provenance()->moduleLabel()
+	    <<", instance = "<<h.provenance()->productInstanceName()
+	    <<", process = "<<h.provenance()->processName()
+	    <<"\n";
+	}
+	os<<"\n";
+	throw cet::exception("BADCONFIG")<<os.str();
       }
-      os<<"\n";
-      throw cet::exception("BADCONFIG")<<os.str();
     }
 
     mf::LogInfo("Summary")<<"Creating GenEventCount record: "<<seenEvents_

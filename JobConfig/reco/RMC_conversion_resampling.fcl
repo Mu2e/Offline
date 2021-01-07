@@ -1,0 +1,34 @@
+# -*- mode:tcl -*-
+BEGIN_PROLOG
+  INPUT_MODULE  @protect_ignore: RootInput      # choices: EmptyEvent / RootInput
+  TRIGGER_PATHS @protect_ignore: [stntuple_p41 ,
+				  tprSeedDeM_trigger    , cprSeedDeM_trigger    , tprSeedDeP_trigger    , cprSeedDeP_trigger    , 
+				  cprLowPSeedDeM_trigger, cprLowPSeedDeP_trigger, tprLowPSeedDeM_trigger, tprLowPSeedDeP_trigger, 
+				  tprHelixIPADeM_trigger ]
+  PROCESS_NAME  @protect_ignore: RMCResampleConvRecoStn
+  GEN_ID        @protect_ignore: "gammaPairProduction"  
+  TIME_MAPS     @protect_ignore: [ "compressDigiMCs:protonTimeMap", "compressDigiMCs:muonTimeMap", "compressDigiMCs:cosmicTimeMap" ]
+END_PROLOG
+
+#include "Stntuple/fcl/stnmaker.fcl"
+
+process_name                              : @local::PROCESS_NAME
+outputs                                   : { @table::Stntuple.outputs }
+physics                                   : { @table::Stntuple.physics }              # note Stntuple.physics
+
+physics.output_path                       : [                          ]  # [ defaultOutput ]
+outputs.defaultOutput.SelectEvents        : [ @sequence::TRIGGER_PATHS ]
+#------------------------------------------------------------------------------
+# paths
+#------------------------------------------------------------------------------
+#include "gen/fcl/Trigger/offline/allTrig/allPaths.fcl"
+
+#------------------------------------------------------------------------------
+# output file names 
+#------------------------------------------------------------------------------
+services.TFileService.fileName            : "nts.owner.RMCResampleConvRecoStn.version.sequencer.root"
+physics.filters.InitStntuple.histFileName : "nts.owner.RMCResampleConvRecoStn.version.sequencer.stn"
+outputs.defaultOutput.fileName            : "mcs.owner.RMCResampleConvRecoStn.version.sequencer.art"
+
+services.SeedService.maxUniqueEngines: 50
+services.SeedService.baseSeed: 90

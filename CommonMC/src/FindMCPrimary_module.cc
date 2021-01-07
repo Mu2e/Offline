@@ -120,6 +120,7 @@ namespace mu2e {
       // virtual photon from these
       if(pgps.size() == 2 && pgps[0]->generatorId() == pgps[1]->generatorId() &&
 	  (pgps[0]->generatorId() == GenId::InternalRPC ||
+	   pgps[0]->generatorId() == GenId::gammaPairProduction ||
 	   pgps[0]->generatorId() == GenId::InternalRMC ) ) {
 	// double -check consistency
 	if(fabs(pgps[0]->time() - pgps[1]->time()) > 1e-6)

@@ -73,6 +73,7 @@ namespace mu2e {
     SetUserAction(genAction);
 
     Mu2eG4SteppingAction* steppingAction = new Mu2eG4SteppingAction(conf_.debug(),
+								    conf_.physics(),
                                                                     timeVDtimes_,
                                                                     stepping_Cuts,
                                                                     common_Cuts,

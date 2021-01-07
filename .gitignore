@@ -13,6 +13,7 @@ BaBar/TrajGeom/
 BaBar/TrkBase/
 BaBar/difAlgebra/
 .sconsign.dblite
+Stntuple
 bin/artProductSizes
 bin/eventCount
 bin/valCompare
@@ -37,6 +38,9 @@ BaBar/include
 EMFCAnalysis
 .tup
 .buildopts
+.rootrc
+.root_hist
+rootlogon.C
 tags
 .clangd/*
 compile_commands.json

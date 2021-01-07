@@ -117,7 +117,8 @@ namespace mu2e {
                part->genParticle()->generatorId() == GenId::dioTail                       ||
                part->genParticle()->generatorId().isConversion()  ||
                part->genParticle()->generatorId() == GenId::ExternalRMC          ||
-               part->genParticle()->generatorId() == GenId::InternalRMC )
+               part->genParticle()->generatorId() == GenId::InternalRMC          ||
+               part->genParticle()->generatorId() == GenId::gammaPairProduction )
 
               {
                 (*res)[part] = rexp_.fire(mean_);

@@ -29,6 +29,8 @@ namespace mu2e {
     GenEventCount::count_t numEvents_;
     unsigned numSubRuns_;
     bool makeHistograms_;
+    std::string moduleLabel_;
+    std::string countTag_;
   public:
 
     struct Config {
@@ -37,6 +39,16 @@ namespace mu2e {
           fhicl::Comment("Write out number of events and subruns as histograms, in addition to printing them out. "),
           true
           };
+      fhicl::Atom<std::string> moduleLabel {
+	fhicl::Name("moduleLabel"),
+	  fhicl::Comment("Module label for event count object"),
+	  ""
+	  };
+      fhicl::Atom<std::string> countTag {
+	fhicl::Name("countTag"),
+	  fhicl::Comment("GenEventCount tag in the given module"),
+	  ""
+	  };
     };
 
     using Parameters = art::EDAnalyzer::Table<Config>;
@@ -53,38 +65,51 @@ namespace mu2e {
     , numEvents_(0)
     , numSubRuns_(0)
     , makeHistograms_(conf().makeHistograms())
+    , moduleLabel_(conf().moduleLabel())
+    , countTag_(conf().countTag())
   {}
 
   //================================================================
   void GenEventCountReader::endSubRun(const art::SubRun& sr) {
-
-    // We expect exactly one object of type GenEventCount per SubRun.
-    std::vector<art::Handle<GenEventCount> > hh;
-    sr.getManyByType(hh);
-    if(hh.size() > 1) {
-      std::ostringstream os;
-      os<<"GenEventCountReader: multiple GenEventCount objects found in "
-        <<sr.id()<<":\n";
-      for(const auto& h : hh) {
-        os<<"    moduleLabel = "<<h.provenance()->moduleLabel()
-          <<", instance = "<<h.provenance()->productInstanceName()
-          <<", process = "<<h.provenance()->processName()
-          <<"\n";
+    GenEventCount::count_t count;
+    if(moduleLabel_ == "") {
+      // We expect exactly one object of type GenEventCount per SubRun.
+      std::vector<art::Handle<GenEventCount> > hh;
+      sr.getManyByType(hh);
+      if(hh.size() > 1) {
+	std::ostringstream os;
+	os<<"GenEventCountReader: multiple GenEventCount objects found in "
+	  <<sr.id()<<":\n";
+	for(const auto& h : hh) {
+	  os<<"    moduleLabel = "<<h.provenance()->moduleLabel()
+	    <<", instance = "<<h.provenance()->productInstanceName()
+	    <<", process = "<<h.provenance()->processName()
+	    <<"\n";
+	}
+	os<<"\n";
+	throw cet::exception("BADCONFIG")<<os.str();
       }
-      os<<"\n";
-      throw cet::exception("BADCONFIG")<<os.str();
+      else if(hh.empty()) {
+	throw cet::exception("BADCONFIG")
+	  <<"GenEventCountReader: no GenEventCount record in "<<sr.id()<<"\n";
+      }
+      count = hh.front()->count();
+    } else {
+      art::Handle<GenEventCount> h;
+      sr.getByLabel(moduleLabel_,countTag_,h);
+      if(!h.isValid()) {
+	throw cet::exception("BADCONFIG")
+	  <<"GenEventCountReader: no GenEventCount record " << moduleLabel_.c_str() 
+	  << ":" << countTag_.c_str() << " in "<<sr.id()<<"\n";
+      }
+      count = h->count();
     }
-    else if(hh.empty()) {
-      throw cet::exception("BADCONFIG")
-        <<"GenEventCountReader: no GenEventCount record in "<<sr.id()<<"\n";
-    }
-
     mf::LogInfo("INFO")<<"GenEventCount: "
-                       <<hh.front()->count()<<" events in "<<sr.id()
+                       <<count<<" events in "<<sr.id()
                        <<"\n";
 
     ++numSubRuns_;
-    numEvents_ += hh.front()->count();
+    numEvents_ += count;
   }
 
   //================================================================

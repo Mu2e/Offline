@@ -143,6 +143,14 @@ namespace mu2e {
       OptionalDelegatedParameter minRangeRegionCuts {Name("minRangeRegionCuts")};
 
       fhicl::Atom<double> rangeToIgnore {Name("rangeToIgnore")};
+
+      //parameters for RMC conversion killing
+      fhicl::Atom<double> minRMCDaughterEnergy {Name("steppingActionMinRMCDaughterEnergy"), 
+	  Comment("Minimum photon daughter energy"),-1.};
+      fhicl::Atom<double> maxRMCEndpoint       {Name("steppingActionMaxRMCEndpoint"), 
+	  Comment("Maximum photon energy considered"), -1.};
+      fhicl::Atom<bool>   RMCKillAfterConvert  {Name("steppingActionRMCKillAfterConvert"), 
+	  Comment("Kill event once the photon converts"), false};
     };
 
     struct Limits {
