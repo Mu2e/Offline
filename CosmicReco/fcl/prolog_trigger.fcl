@@ -112,6 +112,17 @@ CstTrigger : {
 			   CosmicTrackFinder,
 			   cstSeedTSFilter ]
 	
+	cstSeedTiming0 : [ cstSeedEventPrescale,
+			   @sequence::TrkHitRecoTrigger.sequences.TTmakefastHits,
+			   cstSeedSDCountFilter, 
+			   CstSimpleTimeCluster, cstSeedTCFilter,
+			   CosmicTrackFinder ]
+
+	cstSeedTiming1 : [ cstSeedEventPrescale,
+			   @sequence::TrkHitRecoTrigger.sequences.TTmakefastHits,
+			   cstSeedSDCountFilter, 
+			   CstSimpleTimeCluster ]
+	
 	cstTimeCluster : [ cstTimeClusterEventPrescale, 
 			   @sequence::TrkHitRecoTrigger.sequences.TTprepareHits,
 			   cstTimeClusterSDCountFilter, 
