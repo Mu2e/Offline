@@ -193,11 +193,14 @@ def generate(configFileText="allPaths", online=False, verbose=True, doWrite=True
     trig_list = ""
 
     mainEpilogFileName   = projectDir + "/" + "{}.fcl".format(configFileBaseName)
+    mainEpilogTimingFileName = projectDir + "/" + "{}_timing.fcl".format(configFileBaseName)
+
     targetFiles.append(mainEpilogFileName)
     if verbose :
         print("Creating {}".format(mainEpilogFileName))
     if doWrite :
-        mainEpilogFile   = open(mainEpilogFileName, "w");
+        mainEpilogFile       = open(mainEpilogFileName, "w");
+        mainEpilogTimingFile = open(mainEpilogTimingFileName, "w");
 
     #
     # main loop over lines in the config file
@@ -240,6 +243,14 @@ def generate(configFileText="allPaths", online=False, verbose=True, doWrite=True
                     digi_path += "CaloDigiFromShower, "
 
             new_path = ("\nphysics."+pathName+"_trigger"+" : [ "+ digi_path +"@sequence::Trigger.paths."+pathName+" ] \n")
+            timing_paths = []
+            if "Seed" in pathName:
+                nFilters = 3
+                if "cst" in pathName:
+                    nFilters = 2                    
+                for ind in range(nFilters):
+                    timing_label = "Timing{:d}".format(ind)
+                    timing_paths.append("\nphysics."+pathName+timing_label+"_trigger"+" : [ "+ digi_path +"@sequence::Trigger.paths."+pathName+timing_label+" ] \n")
 
             #now append the epilog files for setting the filters in the path
             subEpilogInclude = appendEpilog(pathName, projectDir, verbose, 
@@ -248,6 +259,12 @@ def generate(configFileText="allPaths", online=False, verbose=True, doWrite=True
             if doWrite :
                 mainEpilogFile.write(subEpilogInclude)
                 mainEpilogFile.write(new_path)
+                #
+                mainEpilogTimingFile.write(subEpilogInclude)
+                mainEpilogTimingFile.write(new_path)
+                for l in range(len(timing_paths)):
+                    mainEpilogTimingFile.write(timing_paths[l])
+                
 
         else:
             # triggerOutput keyword means create an output path
@@ -255,9 +272,10 @@ def generate(configFileText="allPaths", online=False, verbose=True, doWrite=True
             if doWrite :
                 mainFclFile.write(trigerOutput_line)
             hasFilteroutput = True
-
+    
     if doWrite :
         mainEpilogFile.write("\n")
+        mainEpilogTimingFile.write("\n")
 
     analyzer_line= ("physics.analyzers.readTriggerInfo.SelectEvents : [ "+path_list+" ]"+" \n")
     if doWrite :
@@ -273,6 +291,7 @@ def generate(configFileText="allPaths", online=False, verbose=True, doWrite=True
 
     if doWrite :
         mainEpilogFile.close()
+        mainEpilogTimingFile.close()
 
     # include the main epilog file, which includes the others, in main fcl
     if doWrite :
