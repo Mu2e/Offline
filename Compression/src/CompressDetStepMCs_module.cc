@@ -519,14 +519,19 @@ void mu2e::CompressDetStepMCs::recordSimParticle(const art::Ptr<mu2e::SimParticl
     if (_genealogyCompressionLevel == mu2e::CompressionLevel::kNoCompression) {
       _simParticlesToKeep[sim_ptr.id()].insert(parentPtr);
       if(_conf.debugLevel()>0) {
-        std::cout << "and it's parent " << parentPtr << std::endl;
+        std::cout << "and recording it's parent " << parentPtr << std::endl;
       }
     }
     else if (_genealogyCompressionLevel == mu2e::CompressionLevel::kFullCompression) {
       if (parentPtr->isPrimary()) {
         _simParticlesToKeep[sim_ptr.id()].insert(parentPtr);
         if(_conf.debugLevel()>0) {
-          std::cout << "and it's parent " << parentPtr << std::endl;
+          std::cout << "and recording it's parent " << parentPtr << std::endl;
+        }
+      }
+      else {
+        if(_conf.debugLevel()>0) {
+          std::cout << "and *not* recording it's parent " << parentPtr << std::endl;
         }
       }
     }
