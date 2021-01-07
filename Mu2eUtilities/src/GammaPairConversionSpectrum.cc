@@ -126,29 +126,28 @@ namespace mu2e {
 	}
 	rndnum = _rndFlat->fire();
       } while (greject < rndnum);
-
-      //randomly select charges
-      const int charge = (_rndFlat->fire() < 0.5) ? 1 : -1;
-
-      //get kinematics
-      const double positron_energy = (charge > 0) ? eps*photon_energy : (1.-eps)*photon_energy;
-      const double electron_energy = photon_energy - positron_energy;
-      const double positron_ke = std::max(0., positron_energy - _me);
-      const double electron_ke = std::max(0., electron_energy - _me);
-      //get direction of e+e-
-      CLHEP::Hep3Vector positron_dir, electron_dir;
-      //sample from anglular distribution from Modified Tsai spectrum
-      GammaPairConversionSpectrum::samplePairDirections(photon, electron_ke, positron_ke,
-							electron_dir, positron_dir);
-
-      //set electron and positron lorentz vectors
-      electron_dir.setMag(std::sqrt(electron_energy*electron_energy - _me*_me)); //use as p vector
-      positron_dir.setMag(std::sqrt(positron_energy*positron_energy - _me*_me));
-      positron.setE(positron_energy);
-      positron.setVect(positron_dir);
-      electron.setE(electron_energy);
-      electron.setVect(electron_dir);
     }
+    //randomly select charges
+    const int charge = (_rndFlat->fire() < 0.5) ? 1 : -1;
+
+    //get kinematics
+    const double positron_energy = (charge > 0) ? eps*photon_energy : (1.-eps)*photon_energy;
+    const double electron_energy = photon_energy - positron_energy;
+    const double positron_ke = std::max(0., positron_energy - _me);
+    const double electron_ke = std::max(0., electron_energy - _me);
+    //get direction of e+e-
+    CLHEP::Hep3Vector positron_dir, electron_dir;
+    //sample from anglular distribution from Modified Tsai spectrum
+    GammaPairConversionSpectrum::samplePairDirections(photon, electron_ke, positron_ke,
+						      electron_dir, positron_dir);
+
+    //set electron and positron lorentz vectors
+    electron_dir.setMag(std::sqrt(electron_energy*electron_energy - _me*_me)); //use as p vector
+    positron_dir.setMag(std::sqrt(positron_energy*positron_energy - _me*_me));
+    positron.setE(positron_energy);
+    positron.setVect(positron_dir);
+    electron.setE(electron_energy);
+    electron.setVect(electron_dir);
   }
 
   //from G4BetheHeitlerModel::ScreenFunction1
