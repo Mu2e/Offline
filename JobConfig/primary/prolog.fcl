@@ -3,7 +3,6 @@
 #
 #include "JobConfig/beam/prolog.fcl"
 #include "EventGenerator/fcl/prolog.fcl"
-#include "CommonMC/fcl/prolog.fcl"
 #include "TrackerMC/fcl/prolog.fcl"
 #include "CaloMC/fcl/prolog.fcl"
 #include "CRVResponse/fcl/prolog.fcl"
@@ -16,19 +15,10 @@ Primary: {
     g4run : @local::mu2e.physics.producers.g4run.muons
     genCounter: { module_type: GenEventCounter }
     @table::EventGenerator.producers
-    @table::CommonMC.producers
     @table::TrackerMC.producers
     @table::CaloDigiMC.producers
     @table::CrvDAQPackage.producers
-# dedicated digi maker for filter
-# 2 stages now
-    makeSGS : {
-      module_type : MakeStrawGasSteps
-      KeepDeltasModule : "g4run" # don'e compress deltas on primary particles
-    }
-    makeSD:{
-      @table::makeSD
-    }
+    makeCSS : @local::CaloShowerStepMaker
     compressDigiMCs : @local::DigiCompression.Primary
   }
   filters : {
@@ -37,38 +27,43 @@ Primary: {
       module_type: FilterStatusG4
       input: "g4run"
     }
-# digi filtering for Primary selection.
-    DigiFilter : {
-      module_type : StrawDigiMCFilter
-      StrawDigiMCCollection : "makeSD"
-    }
-# shower filter for calorimeter selection
-    CaloFilter : {
-      module_type : CaloShowerSimFilter
+# step filter for Sim Primary selection
+    DetStepFilter : {
+      module_type : DetectorStepFilter
+      StrawGasSteps : [ "makeSGS" ] 
+      CaloShowerSteps : [ "makeCSS" ]
+      CrvSteps : [ "g4run:CRV" ]
+      MinimumTrkStepEnergy : 1.0e-6 # 1 ev
+      MinimumCaloStepEnergy : 1.0 # 1 MeV
+      MinimumCrvStepEnergy : 1.0e-6 # FIXME!
+      MinimumPartMom : 80.0 # MeV/c
+      MaximumPartMom : 200.0 # MeV/c
+      KeepPDG : [-11, 11, -13, 13 ] # electrons and muons: should be central FIXME
+      TestTrk : true
+      TestCalo : true
+      TestCrv : false
+      MinimumTrkSteps : 10
+      MinimumSumCaloStepE : 50.0
     }
   }
+  Sequence : [ generate, genCounter, g4run, g4status,  
+    @sequence::TrackerMC.StepSim, makeCSS, 
+    DetStepFilter ]
+
   analyzers: {
     genCountLogger: { module_type: GenEventCountReader makeHistograms: false }
-    digiCompressionCheck : @local::DigiCompression.Check
   }
-  GenAndG4 :  [ generate, genCounter, g4run, g4status ]
 
- EndPath : [ genCountLogger, digiCompressionCheck, Output ]
   Output : {
      module_type : RootOutput
      SelectEvents : [ TriggerPath ]
      fileName    : @nil
      # drop StepPoints from calorimeter
-     outputCommands : @local::DigiCompression.OutputCommands
   }
+  EndPath : [ genCountLogger, Output ]
+
 }
-# must define this outside the brackets due to internal dependence
-Primary.TriggerPath : [ @sequence::Primary.GenAndG4,
-  @sequence::CommonMC.DigiSim,
-  @sequence::TrackerMC.StepAndDigiSim,
-  DigiFilter,
-  @sequence::CaloDigiMC.DigiSim,
-  @sequence::CrvDAQPackage.CrvResponseSequence,
-  compressDigiMCs ]
+# define path
+Primary.TriggerPath : [ @sequence::Primary.Sequence ]
 
 END_PROLOG
