@@ -6,7 +6,6 @@
 # Trigger/python/genTriggerFcl.py -c Trigger/data/allPaths.config 
 # or just
 # Trigger/python/genTriggerFcl.py -c allPaths
-# add "-o" to create online main fcl
 #
 
 import re
@@ -115,7 +114,7 @@ def appendEpilog(trig_path, projectDir, verbose, doWrite, sourceFiles, targetFil
 # returns the list of files input and output, for use in scons
 #
 
-def generate(configFileText="allPaths", online=False, verbose=True, doWrite=True):
+def generate(configFileText="allPaths", verbose=True, doWrite=True):
 
     if verbose :
         print("doWrite = {}".format(doWrite))
@@ -160,10 +159,6 @@ def generate(configFileText="allPaths", online=False, verbose=True, doWrite=True
     hasFilteroutput = False
     
     projectDir = "gen/fcl/Trigger"
-    if online :
-        projectDir = projectDir + "/online"
-    else :
-        projectDir = projectDir + "/offline"
     projectDir = projectDir + "/" + configFileBaseName
 
     if doWrite :
@@ -176,10 +171,7 @@ def generate(configFileText="allPaths", online=False, verbose=True, doWrite=True
     if verbose :
         print("Creating {}".format(mainFclFileName))
 
-    if online :
-        templateFileName = "Trigger/fcl/main_online.fcl"
-    else:
-        templateFileName = "Trigger/fcl/main.fcl"
+    templateFileName = "Trigger/fcl/main.fcl"
     sourceFiles.append(templateFileName)
 
     if doWrite :
@@ -193,11 +185,14 @@ def generate(configFileText="allPaths", online=False, verbose=True, doWrite=True
     trig_list = ""
 
     mainEpilogFileName   = projectDir + "/" + "{}.fcl".format(configFileBaseName)
+    mainEpilogTimingFileName = projectDir + "/" + "{}_timing.fcl".format(configFileBaseName)
+
     targetFiles.append(mainEpilogFileName)
     if verbose :
         print("Creating {}".format(mainEpilogFileName))
     if doWrite :
-        mainEpilogFile   = open(mainEpilogFileName, "w");
+        mainEpilogFile       = open(mainEpilogFileName, "w");
+        mainEpilogTimingFile = open(mainEpilogTimingFileName, "w");
 
     #
     # main loop over lines in the config file
@@ -233,13 +228,20 @@ def generate(configFileText="allPaths", online=False, verbose=True, doWrite=True
             trig_list += "\""+pathName+"\""
 
             digi_path = ""
-            if online :
-                if 'tpr'  in pathName or 'cpr' in pathName or 'Sd' in pathName: 
-                    digi_path += "makeSD, "
-                if 'calo' in pathName or 'cpr' in pathName or 'Cd' in pathName: 
-                    digi_path += "CaloDigiFromShower, "
+            if 'tpr'  in pathName or 'cpr' in pathName or 'cst' in pathName or 'Sd' in pathName: 
+                digi_path += "@sequence::TrakcerMC.DigiSim, "
+            if 'calo' in pathName or 'cpr' in pathName or 'Cd' in pathName: 
+                digi_path += "@sequence::CaloDigiMC.DigiSim, "
 
             new_path = ("\nphysics."+pathName+"_trigger"+" : [ "+ digi_path +"@sequence::Trigger.paths."+pathName+" ] \n")
+            timing_paths = []
+            if "Seed" in pathName:
+                nFilters = 3
+                if "cst" in pathName:
+                    nFilters = 2                    
+                for ind in range(nFilters):
+                    timing_label = "Timing{:d}".format(ind)
+                    timing_paths.append("\nphysics."+pathName+timing_label+"_trigger"+" : [ "+ digi_path +"@sequence::Trigger.paths."+pathName+timing_label+" ] \n")
 
             #now append the epilog files for setting the filters in the path
             subEpilogInclude = appendEpilog(pathName, projectDir, verbose, 
@@ -248,6 +250,12 @@ def generate(configFileText="allPaths", online=False, verbose=True, doWrite=True
             if doWrite :
                 mainEpilogFile.write(subEpilogInclude)
                 mainEpilogFile.write(new_path)
+                #
+                mainEpilogTimingFile.write(subEpilogInclude)
+                mainEpilogTimingFile.write(new_path)
+                for l in range(len(timing_paths)):
+                    mainEpilogTimingFile.write(timing_paths[l])
+                
 
         else:
             # triggerOutput keyword means create an output path
@@ -255,9 +263,10 @@ def generate(configFileText="allPaths", online=False, verbose=True, doWrite=True
             if doWrite :
                 mainFclFile.write(trigerOutput_line)
             hasFilteroutput = True
-
+    
     if doWrite :
         mainEpilogFile.write("\n")
+        mainEpilogTimingFile.write("\n")
 
     analyzer_line= ("physics.analyzers.readTriggerInfo.SelectEvents : [ "+path_list+" ]"+" \n")
     if doWrite :
@@ -273,6 +282,7 @@ def generate(configFileText="allPaths", online=False, verbose=True, doWrite=True
 
     if doWrite :
         mainEpilogFile.close()
+        mainEpilogTimingFile.close()
 
     # include the main epilog file, which includes the others, in main fcl
     if doWrite :
@@ -301,8 +311,6 @@ if __name__ == "__main__":
     parser = ArgumentParser()
     parser.add_argument("-c", "--config-file", dest="configFileText",
                         help="file with Trigger configuration. Paths available are: unbiased, minimumbiasSdCount,largeSdCount, minimumbiasCdCount,largeCdCount, caloOnly, caloMixed, caloCosmicMuon, tprDeMSeed, tprDePSeed, cprDeMSeed, cprDePSeed, triggerOutput", metavar="FILE")
-    parser.add_argument("-o", "--online", dest="online", action="store_true",
-                        help="if present, use the online main fcl file template instead of offline")
     parser.add_argument("-q", "--quiet",
                         action="store_false", dest="verbose", default=True,
                         help="don't print status messages to stdout")
@@ -310,9 +318,8 @@ if __name__ == "__main__":
     args = parser.parse_args()
     if args.verbose :
         print("Config file name: {}".format(args.configFileText))
-        print("Online flag: {}".format(str(args.online)))
 
-    generate(args.configFileText, args.online, args.verbose, True)
+    generate(args.configFileText, args.verbose, True)
 
 
     exit(0)
