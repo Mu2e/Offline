@@ -2,7 +2,6 @@
 #  Digitization specialization for on-spill simulations
 #
 #include "JobConfig/digitize/prolog.fcl"
-# trigger shoud be onspill specific FIXME
 source : { module_type : RootInput }
 services : @local::Services.SimAndReco # reco is needed for the trigger
 physics : { 
@@ -20,13 +19,8 @@ physics : {
   EndPath : @local::Digitize.EndPath
 }
 # add trigger paths
-#
-##include "gen/fcl/Trigger/offline/allTrig/allPaths.fcl"
-# temporary hack
-#include "gen/fcl/Trigger/online/allPaths/allPaths.fcl" 
+#include "gen/fcl/Trigger/OnSpillTrigMenu/OnSpillTrigMenu.fcl"
 #
 outputs : { 
   Output :@local::Digitize.Output
 }
-
-
