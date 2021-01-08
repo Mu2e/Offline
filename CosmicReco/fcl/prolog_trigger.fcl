@@ -94,7 +94,7 @@ CstTrigger : {
 
 	#From Filter, only by hits currently: 
 	cstSeedTSFilter : {
-	    module_type            : CosmicSTTrackSeedFilter
+	    module_type            : CosmicSeedFilter
 	    minnsh                 : 8	      
 	    minnch 		   : 8	      
 	    debugLevel             : 0	      
