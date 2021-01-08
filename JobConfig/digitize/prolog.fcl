@@ -1,14 +1,11 @@
 #
 # Prolog for digitizing detector steps.  These scripts can be run as-is, or in conjunction with mixing
 #
-#
 BEGIN_PROLOG
 TrackCaloMatching : { 
-#    DtOffset : -0.4 # v6_3: was 2.9  # track-cluster offset, ns v5_7_6 # 1.2  # 1.4   
-    DtOffset : 0.2 # from TrkCaloHit matching
+  DtOffset : 0.2 # from TrkCaloHit matching
 }
 END_PROLOG
-
 #
 #include "JobConfig/primary/prolog.fcl"
 #include "CommonMC/fcl/prolog.fcl"
@@ -33,6 +30,20 @@ Digitize: {
       halfWidth : 1.0
     } 
   }
+
+  filters : {
+# Tighten the primary selection.  This will only be used to select the 'trigger reject' stream
+    DetStepFilter : {
+      @table::Primary.filters.DetStepFilter
+      MinimumPartMom : 80.0 # MeV/c
+      MaximumPartMom : 130.0 # MeV/c
+      TestTrk : true
+      TestCalo : false
+      TestCrv : false
+      MinimumTrkSteps : 15
+    }
+  }
+
   analyzers: {
     digiCompressionCheck : @local::DigiCompression.Check
   }
@@ -40,7 +51,6 @@ Digitize: {
   TriggerSequence : [  @sequence::CommonMC.DigiSim,
     @sequence::TrackerMC.DigiSim,
     @sequence::CaloMC.DigiSim,
-    @sequence::CaloMC.TruthMatch,
     @sequence::CrvDAQPackage.CrvResponseSequence,
     DetStepFilter ]
 #    compressDigiMCs ]
@@ -67,14 +77,14 @@ Digitize: {
 #     outputCommands : @local::DigiCompression.OutputCommands
   }
   EndPath : [ digiCompressionCheck, Output ]
-
 }
+
 Digitize.Output.outputCommands : [ "drop *_*_*_*",
 		       @sequence::Primary.KeptProducts,
 		       @sequence::Digitize.KeptProducts ]
 
 # define paths
 Digitize.TriggerPath : [ @sequence::Digitize.TriggerSequence ]
-outputs.Output.SelectEvents : # add output stream of 'good' events that fail the trigger; this requiers a new verison of art FIXME!
+#outputs.Output.SelectEvents : # add output stream of 'good' events that fail the trigger; this requiers a new verison of art FIXME!
 
 END_PROLOG
