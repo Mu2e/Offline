@@ -14,7 +14,7 @@
 #include "CosmicReco/fcl/prolog.fcl"
 #include "CosmicReco/fcl/prolog_trigger.fcl"
 #include "CaloFilters/fcl/prolog_trigger.fcl"
-
+BEGIN_PROLOG
 Trigger : {
     producers : {
 	@table::CaloFilters.producers
@@ -276,3 +276,4 @@ Trigger : {
 
     }
 }
+END_PROLOG

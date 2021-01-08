@@ -5,7 +5,6 @@
 #
 #include "JobConfig/digitize/OnSpill.fcl"
 process_name: CeEndpointDigis
-
 #
 # final configuration
 #

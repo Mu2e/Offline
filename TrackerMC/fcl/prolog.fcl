@@ -10,14 +10,16 @@ TrackerMC : {
     }
   }
   DigiProducers : {
-    StrawDigiMaker  : {
+#    StrawDigiMaker  : {
+    makeSD  : {
       module_type : StrawDigisFromStrawGasSteps
       TimeOffsets   : [  @sequence::CommonMC.TimeMaps ]
       StrawGasStepModule : "StrawGasStepMaker"
     }
   }
   StepSim : [ StrawGasStepMaker ]
-  DigiSim : [ StrawDigiMaker ]
+#  DigiSim : [ StrawDigiMaker ]
+  DigiSim : [ makeSD ]
 }
 
 END_PROLOG
