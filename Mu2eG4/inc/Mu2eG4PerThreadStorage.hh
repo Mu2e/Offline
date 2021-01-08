@@ -9,6 +9,8 @@
 //
 
 //Mu2e includes
+#include "Mu2eG4/inc/Mu2eG4Config.hh"
+#include "Mu2eG4/inc/Mu2eG4MultiStageParameters.hh"
 #include "Mu2eG4/inc/SimParticleHelper.hh"
 #include "Mu2eG4/inc/SimParticlePrimaryHelper.hh"
 #include "MCDataProducts/inc/GenParticleCollection.hh"
@@ -39,12 +41,9 @@ namespace mu2e {
 
   struct Mu2eG4PerThreadStorage
   {
-    explicit Mu2eG4PerThreadStorage(const art::InputTag &generatorModuleLabel);
+    explicit Mu2eG4PerThreadStorage(const Mu2eG4Config::Top& conf);
 
-    void initializeEventInfo(art::Event* evt,
-                             SimParticleHelper* sim_part_helper,
-                             SimParticlePrimaryHelper* sim_part_primary_helper,
-                             HitHandles* gen_input_hits);
+    void initializeEventInfo(art::Event* evt);
 
     /////////////////////////////////////////////////////////////
     /////////////////////////////////////////////////////////////
@@ -123,6 +122,7 @@ namespace mu2e {
 
     /////////////////////////////////////////////////////////////
     const art::InputTag generatorModuleLabel;
+    const Mu2eG4MultiStageParameters multiStagePars;
 
     // run-level data members
     art::RunNumber_t currentRunNumber = 0;
@@ -131,9 +131,9 @@ namespace mu2e {
 
     // event-level data members
     art::Event* artEvent = nullptr;
-    SimParticleHelper* simParticleHelper = nullptr;
-    SimParticlePrimaryHelper* simParticlePrimaryHelper = nullptr;
-    const HitHandles* genInputHits = nullptr;
+    SimParticleHelper simParticleHelper;
+    SimParticlePrimaryHelper simParticlePrimaryHelper;
+    HitHandles genInputHits;
     art::Handle<GenParticleCollection> gensHandle;
 
     std::unique_ptr<StatusG4> statG4{nullptr};

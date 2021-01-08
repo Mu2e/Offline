@@ -86,7 +86,7 @@ namespace mu2e {
     m_mtDebugOutput(conf.debug().mtDebugOutput()),
     rmvlevel_(conf.debug().diagLevel()),
     salt_(conf.salt()),
-    perThreadObjects_(make_unique<Mu2eG4PerThreadStorage>(conf.generatorModuleLabel())),
+    perThreadObjects_(make_unique<Mu2eG4PerThreadStorage>(conf)),
     masterRM(nullptr),
     workerID_(worker_ID),
     mu2elimits_(conf.ResourceLimits()),

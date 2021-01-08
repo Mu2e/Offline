@@ -323,18 +323,6 @@ namespace mu2e {
   // Create one G4 event and copy its output to the art::event.
   void Mu2eG4MT::produce(art::Event& event, art::ProcessingFrame const& procFrame) {
 
-    HitHandles genInputHits;
-    for(const auto& i : multiStagePars_.genInputHits()) {
-      genInputHits.emplace_back(event.getValidHandle<StepPointMCCollection>(i));
-    }
-
-    art::ProductID simPartId(event.getProductID<SimParticleCollection>());
-    art::EDProductGetter const* simProductGetter = event.productGetter(simPartId);
-
-    SimParticleHelper spHelper(multiStagePars_.simParticleNumberOffset(), simPartId, &event, simProductGetter);
-    SimParticlePrimaryHelper parentHelper(&event, simPartId, simProductGetter);
-
-
     int schedID = std::stoi(std::to_string(procFrame.scheduleID().id()));
     auto const tid = std::this_thread::get_id();
 
@@ -367,7 +355,7 @@ namespace mu2e {
     }
 
     Mu2eG4PerThreadStorage* perThreadStore = scheduleWorkerRM->getMu2eG4PerThreadStorage();
-    perThreadStore->initializeEventInfo(&event, &spHelper, &parentHelper, &genInputHits);
+    perThreadStore->initializeEventInfo(&event);
     scheduleWorkerRM->processEvent(event.id());
 
     if (_mtDebugOutput > 2){
@@ -383,6 +371,9 @@ namespace mu2e {
     } else {
       event.put(std::move(perThreadStore->getG4Status()));
       event.put(std::move(simsToCheck));
+
+      art::ProductID simPartId(event.getProductID<SimParticleCollection>());
+      art::EDProductGetter const* simProductGetter = event.productGetter(simPartId);
       perThreadStore->putSensitiveDetectorData(simProductGetter);
       perThreadStore->putCutsData(simProductGetter);
 
