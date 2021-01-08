@@ -65,9 +65,9 @@ namespace mu2e {
       perThreadObjects_->gensHandle.product() :
       nullptr;
 
-    hitInputs_ = perThreadObjects_->genInputHits;
+    hitInputs_ = &perThreadObjects_->genInputHits;
 
-    parentMapping_ = perThreadObjects_->simParticlePrimaryHelper;
+    parentMapping_ = &perThreadObjects_->simParticlePrimaryHelper;
 
   }
 

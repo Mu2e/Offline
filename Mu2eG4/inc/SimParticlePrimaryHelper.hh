@@ -29,6 +29,8 @@ namespace mu2e {
   class SimParticlePrimaryHelper {
   public:
 
+    SimParticlePrimaryHelper() {}  // to avoid heap use in Mu2eG4PerThreadStorage
+
     SimParticlePrimaryHelper(const art::Event* event,
                              const art::ProductID& simProdID,
                              const art::EDProductGetter* sim_prod_getter);

@@ -221,7 +221,7 @@ namespace mu2e {
     _userElapsed(0.),
     _standardMu2eDetector((art::ServiceHandle<GeometryService>())->isStandardMu2eDetector()),
     _sensitiveDetectorHelper(pars().SDConfig()),
-    perThreadStore(pars().generatorModuleLabel())
+    perThreadStore(pars())
     {
 
       if((_generatorModuleLabel == art::InputTag()) && multiStagePars_.genInputHits().empty()) {
@@ -447,20 +447,7 @@ namespace mu2e {
   // Create one G4 event and copy its output to the art::event.
   void Mu2eG4::produce(art::Event& event) {
 
-    // StepPointMCCollection of input hits from the previous simulation stage
-    HitHandles genInputHits;
-    for(const auto& i : multiStagePars_.genInputHits()) {
-      genInputHits.emplace_back(event.getValidHandle<StepPointMCCollection>(i));
-    }
-
-    // ProductID and ProductGetter for the SimParticleCollection.
-    art::ProductID simPartId(event.getProductID<SimParticleCollection>());
-    art::EDProductGetter const* simProductGetter = event.productGetter(simPartId);
-
-    SimParticleHelper spHelper(multiStagePars_.simParticleNumberOffset(), simPartId, &event, simProductGetter);
-    SimParticlePrimaryHelper parentHelper(&event, simPartId, simProductGetter);
-
-    perThreadStore.initializeEventInfo(&event, &spHelper, &parentHelper, &genInputHits);
+    perThreadStore.initializeEventInfo(&event);
 
     // Run G4 for this event and access the completed event.
     BeamOnDoOneArtEvent( event.id().event() );
@@ -476,6 +463,9 @@ namespace mu2e {
 
       event.put(std::move(perThreadStore.getG4Status()));
       event.put(std::move(simsToCheck));
+
+      art::ProductID simPartId(event.getProductID<SimParticleCollection>());
+      art::EDProductGetter const* simProductGetter = event.productGetter(simPartId);
       perThreadStore.putSensitiveDetectorData(simProductGetter);
       perThreadStore.putCutsData(simProductGetter);
 

@@ -11,27 +11,39 @@
 
 namespace mu2e {
 
-  Mu2eG4PerThreadStorage::Mu2eG4PerThreadStorage(const art::InputTag &genLabel)
-    : generatorModuleLabel(genLabel)
+  Mu2eG4PerThreadStorage::Mu2eG4PerThreadStorage(const Mu2eG4Config::Top& conf)
+    : generatorModuleLabel{conf.generatorModuleLabel()}
+    , multiStagePars{conf}
     , tvd{"", nullptr}
  {}
 
   //----------------------------------------------------------------
   void Mu2eG4PerThreadStorage::
-  initializeEventInfo(art::Event* evt,
-                      SimParticleHelper* sim_part_helper,
-                      SimParticlePrimaryHelper* sim_part_primary_helper,
-                      HitHandles* gen_input_hits) {
+  initializeEventInfo(art::Event* evt) {
     artEvent = evt;
-    simParticleHelper = sim_part_helper;
-    simParticlePrimaryHelper = sim_part_primary_helper;
-    genInputHits = gen_input_hits;
 
     if(!(generatorModuleLabel == art::InputTag())) {
       artEvent->getByLabel(generatorModuleLabel, gensHandle);
     }
 
-    if ( !gensHandle.isValid() && genInputHits == nullptr ) {
+    // StepPointMCCollection of input hits from the previous simulation stage
+    for(const auto& i : multiStagePars.genInputHits()) {
+      genInputHits.emplace_back(evt->getValidHandle<StepPointMCCollection>(i));
+    }
+
+    // ProductID and ProductGetter for the SimParticleCollection.
+    art::ProductID simPartId(evt->getProductID<SimParticleCollection>());
+    art::EDProductGetter const* simProductGetter = evt->productGetter(simPartId);
+
+    simParticleHelper = SimParticleHelper(multiStagePars.simParticleNumberOffset(), simPartId, evt, simProductGetter);
+    simParticlePrimaryHelper = SimParticlePrimaryHelper(evt, simPartId, simProductGetter);
+
+    if ( !gensHandle.isValid() && genInputHits.empty() ) {
+      throw cet::exception("CONFIG")
+        << "Error in PerThreadStorage::initializeEventInfo.  You are trying to run a G4job without an input for G4.\n";
+    }
+
+    if ( !gensHandle.isValid() && genInputHits.empty() ) {
       throw cet::exception("CONFIG")
         << "Error in PerThreadStorage::initializeEventInfo.  You are trying to run a G4job without an input for G4.\n";
     }
@@ -89,9 +101,9 @@ namespace mu2e {
   void Mu2eG4PerThreadStorage::clearData() {
 
     artEvent = nullptr;
-    simParticleHelper = nullptr;
-    simParticlePrimaryHelper = nullptr;
-    genInputHits = nullptr;
+    simParticleHelper = SimParticleHelper();
+    simParticlePrimaryHelper = SimParticlePrimaryHelper();
+    genInputHits.clear();
     gensHandle.clear();
 
     statG4 = nullptr;
