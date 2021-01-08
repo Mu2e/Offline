@@ -228,7 +228,7 @@ def generate(configFileText="allPaths", verbose=True, doWrite=True):
             trig_list += "\""+pathName+"\""
 
             digi_path = ""
-            if 'tpr'  in pathName or 'cpr' in pathName 'cst' in pathName or 'Sd' in pathName: 
+            if 'tpr'  in pathName or 'cpr' in pathName or 'cst' in pathName or 'Sd' in pathName: 
                 digi_path += "@sequence::TrakcerMC.DigiSim, "
             if 'calo' in pathName or 'cpr' in pathName or 'Cd' in pathName: 
                 digi_path += "@sequence::CaloDigiMC.DigiSim, "
