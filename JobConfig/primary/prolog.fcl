@@ -62,7 +62,7 @@ Primary: {
 		       "keep mu2e::StepPointMCs_*_CRV_*", # update this to CrvStep FIXME!
 		       "keep mu2e::StepPointMCs_*_virtualdetector_*",
 		       "keep mu2e::StepPointMCs_*_protonabsorber_*",
-		       "keep mu2e::SimParticlemv_*_*_*",  # these need to be updated after compression FIXME!
+#		       "keep mu2e::SimParticlemv_*_*_*",  # these need to be updated after compression FIXME!
 		       "keep mu2e::StatusG4_*_*_*",
 		       "keep mu2e::SimParticleart::Ptrmu2e::MCTrajectorystd::map_*_*_*",
 		       "keep mu2e::GenParticles_*_*_*",
@@ -85,7 +85,7 @@ Primary: {
 # define paths
   EndPath : [ genCountLogger, Output ]
 }
-Primary.Output.outputCommands : [ "drop *_*_*_*",
+Primary.Output.outputCommands : [ "drop *_*_*_*","keep mu2e::SimParticlemv_*_*_*",  # these need to be updated after compression FIXME!
 		       @sequence::Primary.KeptProducts]
 Primary.TriggerPath : [ @sequence::Primary.TriggerSequence ]
 
