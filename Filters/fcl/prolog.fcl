@@ -37,7 +37,7 @@ VetoIncorrectHits: {
 DigiCompressionTags : {
     
     commonStrawDigiMCTag : "makeSD"
-    commonExtraStepPointMCTags : [ "g4run:virtualdetector", "g4run:protonabsorber" ]
+    commonExtraStepPointMCTags : [ "g4run:virtualdetector", "g4run:protonabsorber" ] # should add active target FIXME!!
     commonCaloShowerSimTag : "CaloShowerROMaker"
     commonCaloShowerROTag : "CaloShowerROMaker"
     commonCrvDigiMCTag : "CrvWaveforms"
