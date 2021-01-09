@@ -62,12 +62,9 @@ namespace mu2e {
       for ( StepPointMCCollection::iterator j=i->second->begin(); j!=i->second->end(); ++j ){
 
         StepPointMC& step = *j;
-
-        if ( step.simParticle().isNonnull() ){
-          step.simParticle() = art::Ptr<SimParticle>(step.simParticle().id(),
-                                                     step.simParticle().key(),
-                                                     sim_product_getter );
-        }//if
+        step.simParticle() = art::Ptr<SimParticle>(step.simParticle().id(),
+                                                   step.simParticle().key(),
+                                                   sim_product_getter );
       }//for StepPointMCCollection::iterator
 
       artEvent->put(std::move(i->second), i->first);
@@ -86,11 +83,9 @@ namespace mu2e {
       for ( StepPointMCCollection::iterator j=i->second->begin(); j!=i->second->end(); ++j ){
         StepPointMC& step = *j;
 
-        if ( step.simParticle().isNonnull() ){
-          step.simParticle() = art::Ptr<SimParticle>(step.simParticle().id(),
-                                                     step.simParticle().key(),
-                                                     sim_product_getter );
-        }//if
+        step.simParticle() = art::Ptr<SimParticle>(step.simParticle().id(),
+                                                   step.simParticle().key(),
+                                                   sim_product_getter );
       }//for StepPointMCCollection::iterator
 
       artEvent->put(std::move(i->second), i->first);
