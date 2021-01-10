@@ -99,13 +99,11 @@ class MakeCrvPhotons
     const std::string         &GetFileName() const {return _fileName;}
 
     void                      LoadLookupTable(const std::string &filename);
-    void                      LoadVisibleEnergyAdjustmentTable(const std::string &filename);
     void                      MakePhotons(const CLHEP::Hep3Vector &stepStart,   //they need to be points
                                       const CLHEP::Hep3Vector &stepEnd,         //local to the CRV bar
                                       double timeStart, double timeEnd,
-                                      int PDGcode, double beta, double charge,
-                                      double energyDepositedTotal,
-                                      double energyDepositedNonIonizing,
+                                      double beta, double charge,
+                                      double visibleEnergyDeposited,
                                       double trueStepLength,
                                       double scintillationYieldAdjustment=0,  //allows small random variations of the scintillation yield for individual counters
                                       int reflector=0);
@@ -136,13 +134,6 @@ class MakeCrvPhotons
     int    GetRandomFiberEmissions(const LookupBin *theBin);
     double GetAverageNumberOfCerenkovPhotons(double beta, double charge, std::map<double,double> &photons);
     int    GetNumberOfPhotonsFromAverage(double average, int nSteps);
-
-    double VisibleEnergyDeposition(int PDGcode, double stepLength,
-                                   double energyDepositedTotal,
-                                   double energyDepositedNonIonizing);
-    double FindVisibleEnergyAdjustmentFactor(double energy);
-
-    std::map<double,double>    _visibleEnergyAdjustmentTable;
 
     public:
     void   DrawHistograms();

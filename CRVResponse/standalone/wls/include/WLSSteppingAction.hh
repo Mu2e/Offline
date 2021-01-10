@@ -30,9 +30,8 @@ class WLSSteppingAction : public G4UserSteppingAction
       PhotonInfo(double arrivalTime, int fiberEmissions) : _arrivalTime(arrivalTime), _fiberEmissions(fiberEmissions) {}
     };
 
-    WLSSteppingAction(simulationMode mode, const std::string &lookupFileName = "", const std::string &visibleEnergyAdjustmentFileName = "");
-                                                                                 //lookupFileName and visibleEnergyAdjustmentFileName
-                                                                                 //only used for simulationMode::UseGeantAndLookupTables
+    WLSSteppingAction(simulationMode mode, const std::string &lookupFileName = ""); //lookupFileName and visibleEnergyAdjustmentFileName
+                                                                                    //only used for simulationMode::UseGeantAndLookupTables
     ~WLSSteppingAction();
 
     void                      UserSteppingAction(const G4Step*);
@@ -60,8 +59,6 @@ class WLSSteppingAction : public G4UserSteppingAction
     CLHEP::RandFlat           _randFlat;
     CLHEP::RandGaussQ         _randGaussQ;
     CLHEP::RandPoissonQ       _randPoissonQ;
-
-    void                      ShowVisibleEnergyTable(const G4Step *theStep);
 
     TNtuple*                  _ntuple;  //WLS fiber test
 };

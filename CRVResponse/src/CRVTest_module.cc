@@ -15,8 +15,8 @@
 #include "GeometryService/inc/GeometryService.hh"
 #include "MCDataProducts/inc/GenParticleCollection.hh"
 #include "MCDataProducts/inc/SimParticleCollection.hh"
-#include "MCDataProducts/inc/CrvPhotonsCollection.hh"
-#include "MCDataProducts/inc/CrvSiPMChargesCollection.hh"
+#include "MCDataProducts/inc/CrvPhotons.hh"
+#include "MCDataProducts/inc/CrvSiPMCharges.hh"
 #include "RecoDataProducts/inc/CrvRecoPulseCollection.hh"
 
 #include "canvas/Persistency/Common/Ptr.h"
@@ -102,8 +102,6 @@ namespace mu2e
     {
       const CRSScintillatorBarIndex &barIndex = (*iter)->index();
 
-      CrvSiPMChargesCollection::const_iterator   iterSiPMCharges   = crvSiPMChargesCollection->find(barIndex);
-
       double ionizingEnergy=0;
       double nonIonizingEnergy=0;
       double energyLoss=0;
@@ -167,15 +165,17 @@ namespace mu2e
           }
         }
 
-        if(iterSiPMCharges!=crvSiPMChargesCollection->end()) 
+        for(size_t chargeIndex=0; chargeIndex<crvSiPMChargesCollection->size(); chargeIndex++)
         {
-          const CrvSiPMCharges &crvSiPMCharges = iterSiPMCharges->second;
-
-          const std::vector<CrvSiPMCharges::CrvSingleCharge> &singleSiPMCharges = crvSiPMCharges.GetSiPMCharges(SiPM);
-          for(size_t i=0; i<singleSiPMCharges.size(); i++) 
+          const CrvSiPMCharges &crvSiPMCharges = crvSiPMChargesCollection->at(chargeIndex);
+          if(crvSiPMCharges.GetScintillatorBarIndex()==barIndex && crvSiPMCharges.GetSiPMNumber()==SiPM) 
           {
-            double charge = singleSiPMCharges[i]._chargeInPEs;
-            MCPEs+=charge; 
+            const std::vector<CrvSiPMCharges::SingleCharge> &singleCharges = crvSiPMCharges.GetCharges();
+            for(size_t i=0; i<singleCharges.size(); i++) 
+            {
+              double charge = singleCharges[i]._chargeInPEs;
+              MCPEs+=charge; 
+            }
           }
         }
 

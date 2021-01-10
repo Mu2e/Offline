@@ -26,17 +26,26 @@ namespace mu2e
               float pathLength, art::Ptr<SimParticle> const& simParticle) :
               _barIndex(barIndex), _visibleEDep(visibleEDep), 
               _startTime(startTime), _endTime(endTime), _startPos(startPos), _endPos(endPos),
-              _startMom(startMom), _endMom(endMom), _pathLength(pathLength), _simParticle(simParticle) {}
+              _startMom(startMom), _endMom(endMom),
+              _pathLength(pathLength), _simParticle(simParticle) {}
 
       CRSScintillatorBarIndex      barIndex() const    {return _barIndex;}
       float                        visibleEDep() const {return _visibleEDep;}
       double                       startTime() const   {return _startTime;}
       double                       endTime() const     {return _endTime;}
-      XYZVec                       startPos() const    {return _startPos;}
-      XYZVec                       endPos() const      {return _endPos;}
-      XYZVec                       startMom() const    {return _startMom;}
-      XYZVec                       endMom() const      {return _endMom;}
+
+      XYZVec const&                startPos() const    {return _startPos;}
+      XYZVec const&                endPos() const      {return _endPos;}
+      XYZVec const&                startMom() const    {return _startMom;}
+      XYZVec const&                endMom() const      {return _endMom;}
+
+      CLHEP::Hep3Vector            startPosition() const {return Geom::Hep3Vec(_startPos);}
+      CLHEP::Hep3Vector            endPosition() const   {return Geom::Hep3Vec(_endPos);}
+      CLHEP::Hep3Vector            startMomentum() const {return Geom::Hep3Vec(_startMom);}
+      CLHEP::Hep3Vector            endMomentum() const   {return Geom::Hep3Vec(_endMom);}
+
       float                        pathLength() const  {return _pathLength;}
+
       art::Ptr<SimParticle> const& simParticle() const {return _simParticle;}
       art::Ptr<SimParticle>&       simParticle()       {return _simParticle;}
 

@@ -17,8 +17,8 @@
 #include "GeometryService/inc/DetectorSystem.hh"
 #include "GeometryService/inc/GeomHandle.hh"
 #include "GeometryService/inc/GeometryService.hh"
-#include "MCDataProducts/inc/CrvPhotonsCollection.hh"
-#include "MCDataProducts/inc/CrvSiPMChargesCollection.hh"
+#include "MCDataProducts/inc/CrvPhotons.hh"
+#include "MCDataProducts/inc/CrvSiPMCharges.hh"
 #include "SeedService/inc/SeedService.hh"
 
 #include "canvas/Persistency/Common/Ptr.h"
@@ -121,9 +121,6 @@ namespace mu2e
     for(iter=counters.begin(); iter!=counters.end(); iter++)
     {
       const CRSScintillatorBarIndex &barIndex = (*iter)->index();
-      CrvPhotonsCollection::const_iterator crvPhotons=crvPhotonsCollection->find(barIndex);
-
-      CrvSiPMCharges &crvSiPMCharges = (*crvSiPMChargesCollection)[barIndex];
 
       for(int SiPM=0; SiPM<4; SiPM++)
       {
@@ -136,55 +133,53 @@ namespace mu2e
         if(_randFlat.fire() < _deadSiPMProbability) continue;  //assume that this random SiPM is dead
 
         std::vector<std::pair<double,size_t> > photonTimesAdjusted;   //pair of photon time and index in the original photon vector
-        if(crvPhotons!=crvPhotonsCollection->end())  //if there are no photons at this SiPM, then we still need to continue to simulate dark noise
+        CrvPhotonsCollection::const_iterator crvPhotons;
+        for(crvPhotons=crvPhotonsCollection->begin(); crvPhotons!=crvPhotonsCollection->end(); crvPhotons++)
         {
-          const std::vector<CrvPhotons::SinglePhoton> &photonTimes = crvPhotons->second.GetPhotons(SiPM);
-          for(size_t iphoton=0; iphoton<photonTimes.size(); iphoton++)
+          if(crvPhotons->GetScintillatorBarIndex()==barIndex && crvPhotons->GetSiPMNumber()==SiPM)
           {
-            double time = photonTimes[iphoton]._time;
-            time = fmod(time,_microBunchPeriod);
-            if(time>_blindTime) photonTimesAdjusted.push_back(std::pair<double,size_t>(time,iphoton)); //wrapped time
-            //no ghost hits, since the SiPMs are off during the blind time (which is longer than the "ghost time")
+            const std::vector<CrvPhotons::SinglePhoton> &photonTimes = crvPhotons->GetPhotons();
+            for(size_t iphoton=0; iphoton<photonTimes.size(); iphoton++)
+            {
+              double time = photonTimes[iphoton]._time;
+              //wrapped time
+              //no ghost hits, since the SiPMs are off during the blind time 
+              //(which is longer than the "ghost time")
+              time = fmod(time,_microBunchPeriod);
+              if(time>_blindTime) photonTimesAdjusted.push_back(std::pair<double,size_t>(time,iphoton)); 
+            }
+            break;
           }
         }
 
         std::vector<mu2eCrv::SiPMresponse> SiPMresponseVector;
         _makeCrvSiPMCharges->Simulate(photonTimesAdjusted, SiPMresponseVector);
 
-        std::vector<CrvSiPMCharges::CrvSingleCharge> &chargesOneSiPM = crvSiPMCharges.GetSiPMCharges(SiPM);
-
-        std::vector<mu2eCrv::SiPMresponse>::const_iterator responseIter;
-        for(responseIter=SiPMresponseVector.begin(); responseIter!=SiPMresponseVector.end(); responseIter++)
+        if(SiPMresponseVector.size()>0)
         {
-          //time in SiPMresponseVector is between blindTime and microBunchPeriod
-          //no additional time wrapping and check for blind time is required
-          double time=responseIter->_time;
-          double charge=responseIter->_charge;
-          double chargeInPEs=responseIter->_chargeInPEs;
-          int photonIndex=responseIter->_photonIndex;
-          bool darkNoise=responseIter->_darkNoise;
-          if(!darkNoise)
+          crvSiPMChargesCollection->emplace_back(barIndex,SiPM);
+          std::vector<CrvSiPMCharges::SingleCharge> &charges = crvSiPMChargesCollection->back().GetCharges();
+
+          std::vector<mu2eCrv::SiPMresponse>::const_iterator responseIter;
+          for(responseIter=SiPMresponseVector.begin(); responseIter!=SiPMresponseVector.end(); responseIter++)
           {
-            const std::vector<CrvPhotons::SinglePhoton> &photonTimes = crvPhotons->second.GetPhotons(SiPM);
-            chargesOneSiPM.emplace_back(time, charge, chargeInPEs,photonTimes[photonIndex]._step);
+            //time in SiPMresponseVector is between blindTime and microBunchPeriod
+            //no additional time wrapping and check for blind time is required
+            double time=responseIter->_time;
+            double charge=responseIter->_charge;
+            double chargeInPEs=responseIter->_chargeInPEs;
+            int photonIndex=responseIter->_photonIndex;
+            bool darkNoise=responseIter->_darkNoise;
+            if(!darkNoise)
+            {
+              const std::vector<CrvPhotons::SinglePhoton> &photonTimes = crvPhotons->GetPhotons();
+              charges.emplace_back(time, charge, chargeInPEs, photonTimes[photonIndex]._step);
+            }
+            else charges.emplace_back(time, charge, chargeInPEs);
           }
-          else chargesOneSiPM.emplace_back(time, charge, chargeInPEs);
-//std::cout<<"SiPM charge   bar index: "<<barIndex<<"   SiPM: "<<SiPM<<"   time: "<<time<<std::endl;
-        }
-
-      }
-
-      //2 options:
-      //(1) -create a crvSiPMCharges object as a reference to a crvSiPMChargesCollection map entry at the beginning for all counters
-      //    -fill this this crvSiPMCharges object
-      //    -if the crvSiPMCharges object stays empty, erase the map entry in crvSiPMChargesCollection
-      //(2) -create a standalone crvSiPMCharges object
-      //    -fill this this crvSiPMCharges object
-      //    -if the crvSiPMCharges didn't stay empty, create a new map entry in crvSiPMChargesCollection and fill its content with
-      //     the new crvSiPMCharges  <---- too time consuming, therefore use option (1)
-
-      if(crvSiPMCharges.IsEmpty()) crvSiPMChargesCollection->erase(barIndex);
-    }
+        }//non-empty SiPM charges
+      }//SiPM
+    }//barIndex
 
     event.put(std::move(crvSiPMChargesCollection));
   } // end produce
