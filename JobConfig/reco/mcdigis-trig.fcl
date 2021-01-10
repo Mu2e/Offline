@@ -6,7 +6,7 @@
 #include "fcl/standardProducers.fcl"
 #include "fcl/standardServices.fcl"
 #include "JobConfig/reco/prolog.fcl"
-#include "Trigger/fcl/templates.fcl"
+#include "Trigger/fcl/prolog_trigger.fcl"
 #
 process_name : recomcdigistrig
 

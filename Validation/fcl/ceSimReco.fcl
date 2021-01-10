@@ -9,7 +9,6 @@
 #include "fcl/standardProducers.fcl"
 #include "JobConfig/primary/prolog.fcl"
 #include "JobConfig/reco/prolog.fcl"
-#include "Trigger/fcl/templates.fcl"
 
 process_name : ceSimReco
 

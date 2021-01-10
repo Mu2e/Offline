@@ -13,7 +13,7 @@ END_PROLOG
 #include "CaloMC/fcl/prolog.fcl"
 #include "CRVResponse/fcl/prolog.fcl"
 #include "Filters/fcl/prolog.fcl"
-#include "Trigger/fcl/templates.fcl"
+#include "Trigger/fcl/prolog_trigger.fcl"
 #
 BEGIN_PROLOG
 
