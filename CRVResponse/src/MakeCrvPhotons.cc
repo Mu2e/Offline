@@ -283,11 +283,10 @@ MakeCrvPhotons::~MakeCrvPhotons()
 void MakeCrvPhotons::MakePhotons(const CLHEP::Hep3Vector &stepStartTmp,   //they need to be points
                           const CLHEP::Hep3Vector &stepEndTmp,            //local to the CRV bar
                           double timeStart, double timeEnd,
-                          int PDGcode, double beta, double charge,
-                          double energyDepositedTotal,
-                          double energyDepositedNonIonizing,
+                          double beta, double charge,
+                          double visibleEnergyDeposited,
                           double trueTotalStepLength,   //may be longer than stepEnd-stepStart due to scattering 
-                                                        //is needed for the visible energy adjustment, and for the Cerenkov photons
+                                                        //is needed for the Cerenkov photons
                           double scintillationYieldAdjustment,
                           int    reflector)
 {
@@ -335,12 +334,11 @@ static int nPCerenkov=0;
     double precision=0.1; //mm
     int    nSteps=std::max(static_cast<int>(totalStepLength/precision),1);
 
-    double energy = VisibleEnergyDeposition(PDGcode, trueTotalStepLength, energyDepositedTotal, energyDepositedNonIonizing);
-    double avgNPhotonsScintillation = (_scintillationYield+scintillationYieldAdjustment)*energy;
+    double avgNPhotonsScintillation = (_scintillationYield+scintillationYieldAdjustment)*visibleEnergyDeposited;
     double avgNPhotonsCerenkovInScintillator 
-           = GetAverageNumberOfCerenkovPhotons(beta, charge, _LCerenkov.photonsScintillator)*trueTotalStepLength;  //use the true path, since it  may be longer due to scattering
+           = GetAverageNumberOfCerenkovPhotons(beta, charge, _LCerenkov.photonsScintillator)*trueTotalStepLength;  //use the true path, since it  may be longer due to curved paths
     double avgNPhotonsCerenkovInFiber 
-           = GetAverageNumberOfCerenkovPhotons(beta, charge, _LCerenkov.photonsFiber)*trueTotalStepLength;  //use the true path, since it  may be longer due to scattering
+           = GetAverageNumberOfCerenkovPhotons(beta, charge, _LCerenkov.photonsFiber)*trueTotalStepLength;  //use the true path, since it  may be longer due to curved paths
 
     int nPhotonsScintillationPerStep          = GetNumberOfPhotonsFromAverage(avgNPhotonsScintillation,nSteps);
     int nPhotonsCerenkovInScintillatorPerStep = GetNumberOfPhotonsFromAverage(avgNPhotonsCerenkovInScintillator,nSteps);
@@ -571,100 +569,5 @@ double MakeCrvPhotons::GetAverageNumberOfCerenkovPhotons(double beta, double cha
   }
   return photons.rbegin()->second*fabs(charge/eplus); //this shouldn't happen
 } 
-
-
-//this mimics G4EmSaturation::VisibleEnergyDeposition
-//but assumes that nloss/(protonRange/chargesq) is small enough so that it can be approximated as 0
-//and uses a lookup table for the energyDepositedTotal/electronRange values obtained specifically for Polystyrene
-double MakeCrvPhotons::VisibleEnergyDeposition(int PDGcode, double stepLength,
-                                            double energyDepositedTotal,
-                                            double energyDepositedNonIonizing)
-{
-  if(energyDepositedTotal <= 0.0) { return 0.0; }
-
-  double evis = energyDepositedTotal;
-
-  if(PDGcode==22)
-  {
-    if(evis>0)
-    {
-      double correctionFactor=FindVisibleEnergyAdjustmentFactor(energyDepositedTotal);
-      evis /= (1.0 + _LC.scintillatorBirksConstant*correctionFactor);
-    }
-  }
-  else 
-  {
-    // protections
-    double nloss = energyDepositedNonIonizing;
-    if(nloss < 0.0) nloss = 0.0;
-    double eloss = energyDepositedTotal - nloss;
-
-    // neutrons
-    if(PDGcode==2112 || eloss < 0.0 || stepLength <= 0.0) 
-    {
-      nloss = energyDepositedTotal;
-      eloss = 0.0;
-    }
-
-    // continues energy loss
-    if(eloss > 0.0) 
-    { 
-      eloss /= (1.0 + _LC.scintillatorBirksConstant*eloss/stepLength); 
-    }
-
-    evis = eloss + nloss;
-  }
-
-/*
-  std::cout<<"PDGcode: "<<PDGcode<<std::endl;
-  std::cout<<"Original Energy Deposition (manual): "<<energyDepositedTotal<<std::endl;
-  std::cout<<"Original Nonionizing Energy Deposition (manual): "<<energyDepositedNonIonizing<<std::endl;
-  std::cout<<"Visible Energy Deposition (manual): "<<evis<<std::endl;
-*/
-
-  return evis;
-}
-
-void MakeCrvPhotons::LoadVisibleEnergyAdjustmentTable(const std::string &filename)
-{
-  std::ifstream visibleEnergyAdjustmentFile(filename);
-  if(!visibleEnergyAdjustmentFile.good()) throw std::logic_error("Could not open visible energy correction table file "+filename);
-  double lnEnergy, factor;
-  while(visibleEnergyAdjustmentFile >> lnEnergy >> factor)
-  {
-    _visibleEnergyAdjustmentTable[lnEnergy]=factor;
-  } 
-  visibleEnergyAdjustmentFile.close();
-}
-
-double MakeCrvPhotons::FindVisibleEnergyAdjustmentFactor(double energy)
-{
-  if(_visibleEnergyAdjustmentTable.size()==0) throw std::logic_error("Found no visible energy correction table.");
-
-  double lnEnergy=log(energy);
-  double correctionFactor=(--_visibleEnergyAdjustmentTable.end())->second;
-
-  std::map<double,double>::const_iterator iter=_visibleEnergyAdjustmentTable.begin();
-  if(lnEnergy<iter->first) correctionFactor=iter->second;
-  else
-  {
-    double prevLnEnergy=iter->first;
-    double prevFactor=iter->second;
-    iter++;
-    for(; iter!=_visibleEnergyAdjustmentTable.end(); iter++)
-    {
-      if(lnEnergy<iter->first)
-      {
-        double r=(lnEnergy-prevLnEnergy)/(iter->first-prevLnEnergy);
-        correctionFactor=(iter->second-prevFactor)*r + prevFactor;
-        break;
-      } 
-      prevLnEnergy=iter->first;
-      prevFactor=iter->second;
-    }
-  }
-
-  return correctionFactor;
-}
 
 } //namespace mu2e

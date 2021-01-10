@@ -186,8 +186,8 @@ namespace mu2e
 	auto const& barIndex = istepPointMap->first.first; //bar index
 	auto const& simptr = spmcptrv.front()->simParticle(); //sim particle
 	auto pref = pdt->particle(simptr->pdgId());
-	ParticleData const* pdata(0);
-	if(pref.isValid()) pdata = &pref.ref();
+	if(!pref.isValid()) continue;
+	ParticleData const* pdata = &pref.ref();
 
         // indices in the StepPointMC vector where a new CrvStep starts and ends
         vector<pair<size_t,size_t> > spmcIndices;
@@ -216,8 +216,9 @@ namespace mu2e
     {
       cout << "Total number of CrvSteps " << crvSteps->size() << " , StepPointMCs = " << nspmcs << endl;
     }
+
     event.put(move(crvSteps));
-  } // end of produce
+  }
 
   void CrvStepsFromStepPointMCs::fillSteps(SPMCPtrV const& spmcptrv, CRSScintillatorBarIndex const& barIndex,
                                            ParticleData const* pdata, cet::map_vector_key trackId, 
@@ -227,38 +228,32 @@ namespace mu2e
     //this situtation can be identified by the end process code of Transportation
     bool newCrvStep(true);
 
-    // variables we accumulate for all the StepPoints in this pair
+    // variables we accumulate for all StepPoints in this pair
     double edep(0.0), pathlen(0.0);
     // keep track of the first and last step
     SPMCPtr first;
     SPMCPtr last;
-    // loop over all the StepPoints
-    for(size_t i=0; i<=spmcptrv.size(); i++)
+    // loop over all StepPoints
+    for(size_t i=0; i<spmcptrv.size(); i++)
     {
-      if(i<spmcptrv.size())
+      const auto& spmcptr = spmcptrv[i];
+      if(newCrvStep)
       {
-        const auto& spmcptr = spmcptrv[i];
-        if(newCrvStep)
-        {
-          newCrvStep=false;
-          edep      =0.0;
-          pathlen   =0.0;
-          first     =spmcptr;
-          spmcIndices.emplace_back(i,i);
-        }
-        edep   +=spmcptr->visibleEDep();
-        pathlen+=spmcptr->stepLength();
-        last    =spmcptr;
-        spmcIndices.back().second=i;
-
-        if(spmcptr->endProcessCode()==ProcessCode::Transportation)
-        {
-          newCrvStep=true;
-        }
+        newCrvStep=false;
+        edep      =0.0;
+        pathlen   =0.0;
+        first     =spmcptr;
+        spmcIndices.emplace_back(i,i);
       }
+      edep   +=spmcptr->visibleEDep();
+      pathlen+=spmcptr->stepLength();
+      last    =spmcptr;
+      spmcIndices.back().second=i;
+
+      if(spmcptr->endProcessCode()==ProcessCode::Transportation) newCrvStep=true;
 
       //analyze the accumulated steps at the end of the sequence or if the track leaves the scintillator
-      if(i==spmcptrv.size() || newCrvStep)
+      if(i+1==spmcptrv.size() || newCrvStep)
       {
         if(first.isNull() || last.isNull())
           throw cet::exception("SIM")<<"mu2e::CrvStepsFromStepPointMCs: No first or last step" << endl;
@@ -276,19 +271,19 @@ namespace mu2e
         //TODO: would be nice to have an end momentum in the StepPointMC, 
         //      trying to calculate it by using the start momentum of the last step and the lost energy
         double mass            = pdata->mass();
-        double endMom          = endMomV.mag();
-        double endEnergyBefore = sqrt(endMom*endMom + mass*mass);
+        double endMom2         = endMomV.mag2();
+        double endEnergyBefore = sqrt(endMom2 + mass*mass);
         double endEnergyAfter  = endEnergyBefore - last->totalEDep(); //TODO: does not take the energy of daughter particles into account
 
-        double endMom2         = endEnergyAfter*endEnergyAfter - mass*mass;
+        endMom2          = endEnergyAfter*endEnergyAfter - mass*mass;
         if(endMom2<=0.0) endMomV=CLHEP::Hep3Vector(); //this shouldn't happen
-        else endMomV.setMag(sqrt(endMom2)); 
+        else endMomV.setMag(sqrt(endMom2));  //keeps direction, but updates magnitude
 
         //calculating the end time of the last step
         double avgEnergy = 0.5*(endEnergyBefore+endEnergyAfter);
-        double gamma     = avgEnergy/mass;
-        double beta      = sqrt(1.0-1.0/(gamma*gamma));
-        double velocity  = beta*CLHEP::c_light;
+        double avgGamma  = avgEnergy/mass;
+        double avgBeta   = sqrt(1.0-1.0/(avgGamma*avgGamma));
+        double velocity  = avgBeta*CLHEP::c_light;
         endTime         += last->stepLength()/velocity;
 
         // create the CrvStep and emplace it back into the vector of crvSteps
