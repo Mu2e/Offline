@@ -13,7 +13,7 @@
 #include "JobConfig/reco/prolog.fcl"
 #include "CosmicReco/fcl/prolog.fcl"
 #include "Alignment/fcl/prolog.fcl"
-#include "Trigger/fcl/templates.fcl"
+#include "Trigger/fcl/prolog_trigger.fcl"
 
 process_name : CosmicAlignTrackSelector
 

@@ -148,7 +148,7 @@ def generate(configFileText="allPaths", verbose=True, doWrite=True):
     sourceFiles.append(configFileName)
 
     trig_prolog_files = [
-        'Trigger/fcl/templates.fcl',
+        'Trigger/fcl/prolog_trigger.fcl',
         'TrkFilters/fcl/prolog_trigger.fcl',
         'CaloFilters/fcl/prolog_trigger.fcl',
         'CosmicReco/fcl/prolog_trigger.fcl'

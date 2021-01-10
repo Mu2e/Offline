@@ -66,9 +66,9 @@ CaloDigiMaker :
 }
 
 
-CaloDigiTruthMatch:
+CaloHitTruthMatch:
 {
-    module_type               : CaloDigiTruthMatch
+    module_type               : CaloHitTruthMatch
     caloShowerSimCollection   : CaloShowerROMaker
     caloHitCollection         : CaloHitMaker
     primaryParticle           : FindMCPrimary
@@ -82,7 +82,7 @@ CaloClusterTruthMatch:
 {
     module_type           : CaloClusterTruthMatch
     caloClusterCollection : CaloClusterMaker
-    caloDigiMCTruthAssn   : CaloDigiTruthMatch
+    caloDigiMCTruthAssn   : CaloHitTruthMatch
     diagLevel             : 0
 }
 
@@ -97,10 +97,10 @@ CaloMC :
      CaloShowerROMaker    : @local::CaloShowerROMaker
      CaloDigiMaker        : @local::CaloDigiMaker
    }
-   producersMC : { CaloDigiTruthMatch : @local::CaloDigiTruthMatch }
+   producersMC : { CaloHitTruthMatch : @local::CaloHitTruthMatch }
 
    DigiSim     : [ CaloShowerROMaker, CaloDigiMaker]
-   TruthMatch  : [ CaloDigiTruthMatch ]
+   TruthMatch  : [ CaloHitTruthMatch ]
 }
 
 CaloClusterMC : 

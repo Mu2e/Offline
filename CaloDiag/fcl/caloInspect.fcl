@@ -48,7 +48,7 @@ physics: {
           caloCrystalModuleLabel     : CaloHitMaker
           caloClusterModuleLabel     : CaloClusterMaker
           caloClusterTruthModuleLabel: CaloClusterTruthMatch
-          caloHitTruthModuleLabel    : CaloDigiTruthMatch
+          caloHitTruthModuleLabel    : CaloHitTruthMatch
           virtualDetectorName        : virtualdetector
           stepPointMCLabel           : compressDigiMCs
 	  TimeOffsets                : { inputs : [ "compressDigiMCs:protonTimeMap", "compressDigiMCs:muonTimeMap" ] } 
@@ -58,7 +58,7 @@ physics: {
           module_type               : CaloMCInspector
           caloCrystalModuleLabel    : CaloHitMaker
           caloShowerSimModuleLabel  : compressDigiMCs # CaloShowerStepROFromShowerStep
-          caloDigiTruthModuleLabel  : CaloDigiTruthMatch
+          caloDigiTruthModuleLabel  : CaloHitTruthMatch
       }
   }
   
@@ -84,4 +84,4 @@ physics: {
 services.SeedService.baseSeed         :  99
 services.SeedService.maxUniqueEngines :  20
 
-physics.producers.CaloDigiTruthMatch.caloShowerSimCollection  : "compressDigiMCs"
+physics.producers.CaloHitTruthMatch.caloShowerSimCollection  : "compressDigiMCs"
