@@ -102,11 +102,11 @@ namespace mu2e
 
     if(crvStepCollection.isValid())
     {
-      size_t nStepPoints=crvStepCollection->size();
+      size_t nSteps=crvStepCollection->size();
       MCSummary._totalEnergyDeposited=0;
       std::set<CRSScintillatorBarIndex> counters;
       double totalStep[] = {0, 0, 0, 0};
-      for(size_t i=0; i<nStepPoints; i++)
+      for(size_t i=0; i<nSteps; i++)
       {
         MCSummary._totalEnergyDeposited+=crvStepCollection->at(i).visibleEDep();
         counters.insert(crvStepCollection->at(i).barIndex());
@@ -121,7 +121,6 @@ namespace mu2e
       MCSummary._maxPathLayer=*std::max_element(totalStep,totalStep+4);
     }
 
-#if 1
     //locate points where the cosmic MC trajectories cross the xz plane of CRV-T
     if(mcTrajectoryCollection.isValid())
     {
@@ -162,84 +161,6 @@ namespace mu2e
         }
       }
     }
-#else   //only a temporary section due to the missing trajectories at the CRV. needs to be deleted soon
-    {
-      GlobalConstantsHandle<ParticleDataTable> pdt;
-      const HepPDT::ParticleData& mu_data = pdt->particle(PDGCode::mu_minus).ref();
-      const double _mMu = mu_data.mass().value();
-
-      int pdgId=0;
-      CLHEP::Hep3Vector primaryPos, planePos, planeDir;
-      double primaryEnergy=NAN;
-      double planeTime=NAN;
-      double earliestTime=NAN;
-      double planeKineticEnergy=0;
-      int dataSource=0;
-      if(crvStepPointMCCollection.isValid())
-      {
-        size_t nStepPoints=crvStepPointMCCollection->size();
-        for(size_t i=0; i<nStepPoints; i++)
-        {
-          if(crvStepPointMCCollection->at(i).simParticle()->id().asInt()==0) //only sim particles with ID 0
-          {
-            if(crvStepPointMCCollection->at(i).time()<earliestTime || isnan(earliestTime))
-            {
-              pdgId=crvStepPointMCCollection->at(i).simParticle()->pdgId();
-              primaryPos=crvStepPointMCCollection->at(i).simParticle()->startPosition();
-              primaryEnergy=crvStepPointMCCollection->at(i).simParticle()->startMomentum().e();
-
-              planePos=crvStepPointMCCollection->at(i).position();
-              planeDir=crvStepPointMCCollection->at(i).momentum().unit();
-              double fraction=(crvPlaneY-planePos.y())/planeDir.y();
-              planePos=fraction*planeDir+planePos;
-
-              planeTime=crvStepPointMCCollection->at(i).time();
-              earliestTime=planeTime;
-
-              double momentum = crvStepPointMCCollection->at(i).momentum().mag();
-              planeKineticEnergy=sqrt(momentum*momentum+_mMu*_mMu)-_mMu;
-
-              dataSource=1;
-              if(crvStepPointMCCollection->at(i).position().y()>=crvPlaneY) dataSource=2;
-            }
-          }
-        }
-      }
-      if(dataSource==0 && mcTrajectoryCollection.isValid())  //StepPoints not found for this event
-      {
-        std::map<art::Ptr<mu2e::SimParticle>,mu2e::MCTrajectory>::const_iterator trajectoryIter;
-        for(trajectoryIter=mcTrajectoryCollection->begin(); trajectoryIter!=mcTrajectoryCollection->end(); trajectoryIter++)
-        {
-          if(trajectoryIter->second.simid()==_trajectorySimParticleId) //seems to point to the primary
-          {
-            const std::vector<MCTrajectoryPoint> &points = trajectoryIter->second.points();
-            if(points.size()>=2 && abs(trajectoryIter->first->pdgId())==13)
-            {
-              pdgId=trajectoryIter->first->pdgId();
-              primaryPos=trajectoryIter->first->startPosition();
-              primaryEnergy=trajectoryIter->first->startMomentum().e();
-              double fraction=(crvPlaneY-points[1].pos().y())/(points[0].pos().y()-points[1].pos().y());
-              planePos=fraction*(points[0].pos()-points[1].pos())+points[1].pos();
-              planeDir=(points[1].pos()-points[0].pos()).unit();
-              planeTime=fraction*(points[0].t()-points[1].t())+points[1].t();
-              planeKineticEnergy=points[0].kineticEnergy();  //use Ekin of first point
-              dataSource=3;
-            }
-            break;
-          }
-        }
-      }
-      MCInfoPlane.emplace_back(pdgId,
-                               pdgId,
-                               primaryEnergy,
-                               primaryPos,
-                               planePos,
-                               planeDir,
-                               planeTime,
-                               planeKineticEnergy,
-                               dataSource);
-    }
-#endif
 
   }//FillCrvInfoStructure
 
