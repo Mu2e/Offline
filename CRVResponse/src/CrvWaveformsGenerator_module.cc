@@ -1,9 +1,6 @@
 //
 // A module to create CRV waveforms from CRV SiPMCharges
 //
-// $Id: $
-// $Author: ehrlich $
-// $Date: 2014/08/07 01:33:40 $
 //
 // Original Author: Ralf Ehrlich
 

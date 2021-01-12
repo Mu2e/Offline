@@ -14,7 +14,7 @@ namespace mu2e {
   class Mu2eMaterialCache : public ProditionsCache {
   public: 
     Mu2eMaterialCache(Mu2eMaterialConfig const& config):
-      ProditionsCache("Mu2eMaterial",config.verbose()),
+      ProditionsCache(Mu2eMaterial::cxname,config.verbose()),
       _maker(config) {
       // force a fake update so BTrk TrkParticle 
       // is working when modules are created

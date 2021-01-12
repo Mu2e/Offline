@@ -1,9 +1,6 @@
 # Configuration file for Histforpabs
 # Histforpabs the output of g4test_03.py; make histograms and printout.
 #
-# $Id: histforpabs.fcl,v 1.4 2012/03/02 17:16:22 gandr Exp $
-# $Author: gandr $
-# $Date: 2012/03/02 17:16:22 $
 #
 # Original author Rob Kutschke
 

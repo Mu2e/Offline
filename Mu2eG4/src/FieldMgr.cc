@@ -1,9 +1,6 @@
 //
 // Create a G4FieldManager object.
 //
-// $Id: FieldMgr.cc,v 1.4 2013/03/15 19:03:20 kutschke Exp $
-// $Author: kutschke $
-// $Date: 2013/03/15 19:03:20 $
 //
 // Original author Rob Kutschke
 //
@@ -39,7 +36,7 @@ namespace mu2e {
     mgr->_manager     = std::unique_ptr<G4FieldManager>         (new G4FieldManager      ( mgr->field(),
                                                                                            mgr->chordFinder(),
                                                                                            true ));
-    return std::move(mgr);
+    return mgr;
   }
 
   // Factory method to construct a manager for a gradient magnetic field (in DS3).
@@ -64,7 +61,7 @@ namespace mu2e {
     mgr->_manager     = std::unique_ptr<G4FieldManager>         (new G4FieldManager      ( mgr->field(),
                                                                                            mgr->chordFinder(),
                                                                                            true ));
-    return std::move(mgr);
+    return mgr;
   }
 
   // Release all of the objects that this class owns.

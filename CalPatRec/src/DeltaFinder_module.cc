@@ -237,7 +237,7 @@ namespace mu2e {
     int       nPlanesPerStation(2);
     double    station_z(0);
     
-    for (int planeId=0; planeId<_tracker->nPlanes(); planeId++) {
+    for (unsigned planeId=0; planeId<_tracker->nPlanes(); planeId++) {
       const Plane* pln = &_tracker->getPlane(planeId);
       int  ist = planeId/nPlanesPerStation;
       int  ipl = planeId % nPlanesPerStation;
@@ -252,12 +252,12 @@ namespace mu2e {
 	}
       }
       
-      for (int ipn=0; ipn<pln->nPanels(); ipn++) {
+      for (unsigned ipn=0; ipn<pln->nPanels(); ipn++) {
 	const Panel* panel = &pln->getPanel(ipn);
 	int face;
 	if (panel->id().getPanel() % 2 == 0) face = 0;
 	else                                 face = 1;
-	for (int il=0; il<panel->nLayers(); ++il) {
+	for (unsigned il=0; il<panel->nLayers(); ++il) {
 	  cx.Station = ist;
 	  cx.Plane   = ipl;
 	  cx.Face    = face;
@@ -338,7 +338,7 @@ namespace mu2e {
             printf(">>> DeltaFinder::orderHits() no CaloCluster found within the time peak %i\n", i);
             continue;
           }
-          iDisk = cl->diskId();
+          iDisk = cl->diskID();
           double    dt = cl->time() - (hitTime + _stationToCaloTOF[iDisk][os]);
           if ( (dt < _maxCaloDt) && (dt > _minCaloDt) ) {
             intime = true;

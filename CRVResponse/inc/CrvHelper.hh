@@ -3,9 +3,6 @@
 //
 // A class with static helper functions used at various CRV modules.
 //
-// $Id: $
-// $Author: ehrlich $
-// $Date: 2014/08/07 01:33:40 $
 //
 // Original Author: Ralf Ehrlich
 

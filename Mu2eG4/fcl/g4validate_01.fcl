@@ -6,9 +6,6 @@
 #  - Form Hits from StepPointMC objects
 #  - reconstruct electron tracks
 #
-# $Id: g4validate_01.fcl,v 1.1 2014/08/29 16:16:17 knoepfel Exp $
-# $Author: knoepfel $
-# $Date: 2014/08/29 16:16:17 $
 
 #include "fcl/minimalMessageService.fcl"
 #include "fcl/standardProducers.fcl"
@@ -61,7 +58,7 @@ physics : {
       module_type            : ReadBack
       generatorModuleLabel   : generate
       g4ModuleLabel          : g4run
-      caloReadoutModuleLabel : CaloShowerStepROFromShowerStep
+      caloReadoutModuleLabel : CaloShowerROMaker
       diagLevel              : 0
       minimumEnergy          : 0.000
       maxFullPrint           : 5

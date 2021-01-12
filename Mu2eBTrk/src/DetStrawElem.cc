@@ -7,6 +7,7 @@
 //------------------------------------------------------------------------
 #include "Mu2eBTrk/inc/DetStrawElem.hh"
 #include "Mu2eBTrk/inc/DetStrawType.hh"
+#include "TrackerGeom/inc/Tracker.hh"
 #include "TrackerGeom/inc/Straw.hh"
 #include "BTrk/TrkBase/TrkHit.hh"
 #include "BTrk/TrkBase/TrkPoca.hh"
@@ -19,8 +20,10 @@
 using CLHEP::Hep3Vector;
 
 namespace mu2e {
-  DetStrawElem::DetStrawElem(DetStrawType* stype,const Straw* straw) :
-    DetElem(stype,"TrackerStraw",straw->id().asUint16()),_straw(straw), _wtraj(0), _stype(stype){
+  DetStrawElem::DetStrawElem(DetStrawType* stype,Tracker const& tracker, StrawId const& id) :
+    DetElem(stype,"TrackerStraw",id.asUint16()),_straw(&tracker.getStraw(id)),
+    _rstraw(tracker.strawOuterRadius()), _wthick(tracker.strawWallThickness()),
+    _wtraj(0), _stype(stype){
 // the traj should be a propoerty of the straw, FIXME!!!
     Hep3Vector const& wiredir = _straw->getDirection();
     Hep3Vector const& mid = _straw->getMidPoint();
@@ -50,7 +53,7 @@ namespace mu2e {
   // otherwise, require the distance to the wire be inside the straw (within tolerance)
   // should also check the distance along the wire is inside the active length FIXME!!
       if( (dinter.thit != 0 && dinter.thit->isActive()) ||
-	fabs(poca.doca()) < _straw->getRadius() + _stype->tolerance() ){
+	fabs(poca.doca()) < _rstraw + _stype->tolerance() ){
 	retval = true;
 // call the base class function to update the base members
 	DetElem::reIntersect(traj,dinter);
@@ -92,11 +95,10 @@ namespace mu2e {
 
   // compute the pathlength through half the gas , given the drift distance and straw geometry
   double DetStrawElem::gasPath(double pdist,Hep3Vector const& tdir) const {
-    double radius = _straw->getRadius();
     double hlen = _straw->halfLength();
 // if the POCA distance is outside or too close the outside of the straw, force it inside
-    pdist = std::min(fabs(pdist),_stype->maxRadiusFraction()*radius);
-    double gaspath = sqrt( (radius+pdist)*(radius-pdist) );
+    pdist = std::min(fabs(pdist),_stype->maxRadiusFraction()*_rstraw);
+    double gaspath = sqrt( (_rstraw+pdist)*(_rstraw-pdist) );
 // scale for the other dimension.  Maximum path is a fraction of the straw length
     double cost = tdir.dot(_straw->getDirection());
 // avoid degenerate case
@@ -122,12 +124,10 @@ namespace mu2e {
 
 // compute the pathlength through one wall of the straw, given the drift distance and straw geometry
   double DetStrawElem::wallPath(double pdist,Hep3Vector const& tdir) const {
-    double thick = _straw->getThickness();
-    double radius = _straw->getRadius();
-    double inRadius = radius - thick;
+    double inRadius = _rstraw - _wthick;
 // if the POCA distance is outside or too close the outside of the straw, force it inside
     pdist = std::min(fabs(pdist),_stype->maxRadiusFraction()*inRadius);
-    double wallpath =  (sqrt( (radius+pdist)*(radius-pdist) ) -
+    double wallpath =  (sqrt( (_rstraw+pdist)*(_rstraw-pdist) ) -
 	sqrt( (inRadius+pdist)*(inRadius-pdist) ));
     // scale for the other dimension
     double cost = tdir.dot(_straw->getDirection());
@@ -135,9 +135,9 @@ namespace mu2e {
     if(fabs(cost)<0.999)
       wallpath /= sqrt( (1.0-cost)*(1.0+cost) );
     else
-      wallpath = radius;
+      wallpath = _rstraw;
   // restrict to a sensible maximu distance
-    wallpath = std::min(wallpath,radius);
+    wallpath = std::min(wallpath,_rstraw);
     return wallpath;
   }
 }

@@ -10,7 +10,7 @@ namespace mu2e {
   class StrawResponseCache : public ProditionsCache {
   public: 
     StrawResponseCache(StrawResponseConfig const& config):
-      ProditionsCache("StrawResponse",config.verbose()),
+      ProditionsCache(StrawResponse::cxname,config.verbose()),
       _useDb(config.useDb()),_maker(config) {}
 
     void initialize() {

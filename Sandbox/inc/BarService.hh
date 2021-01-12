@@ -4,9 +4,6 @@
 //
 // A test service that prints tracer ouptut. Used to study order of calls.
 //
-// $Id: BarService.hh,v 1.2 2013/03/14 19:54:49 kutschke Exp $
-// $Author: kutschke $
-// $Date: 2013/03/14 19:54:49 $
 //
 // Contact person Rob Kutschke
 //

@@ -1,9 +1,6 @@
 //
 // Object to allow exhaustively iterating over state permutations of a set of TrkStrawHits
 //
-// $Id: HitState.cc,v 1.2 2012/05/22 21:35:42 brownd Exp $
-// $Author: brownd $ 
-// $Date: 2012/05/22 21:35:42 $
 //
 // Original author David Brown, LBNL
 //

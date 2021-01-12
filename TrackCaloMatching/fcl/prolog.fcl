@@ -49,7 +49,7 @@ TrackCaloMatching : { @table::TrackCaloMatching
 	    dtOffset                     : @local::TrackCaloMatching.DtOffset             # ns
 	
 	    trkToCaloExtrapolModuleLabel : TrackCaloIntersection
-	    caloClusterModuleLabel       : CaloClusterFromProtoCluster
+	    caloClusterModuleLabel       : CaloClusterMaker
 #------------------------------------------------------------------------------
 # track fitter has to be the same as used by TrackCaloIntersection
 #------------------------------------------------------------------------------
@@ -390,7 +390,7 @@ TrackCaloIntersectionDmuM :
 TrkCaloMatcherExtDeM :
 {
   module_type             : TrackCaloMatchingExtend
-  caloClusterModuleLabel  : CaloClusterFromProtoCluster
+  caloClusterModuleLabel  : CaloClusterMaker
   trkIntersectModuleLabel : TrackCaloIntersectionDeM
   trackExtend             : 41.7
   dtOffset                : -2.072
@@ -403,7 +403,7 @@ TrkCaloMatcherExtDeM :
 TrkCaloMatcherMVADeM :
 {
   module_type             : TrackCaloMatchingMVA
-  caloClusterModuleLabel  : CaloClusterFromProtoCluster
+  caloClusterModuleLabel  : CaloClusterMaker
   trkIntersectModuleLabel : TrackCaloIntersectionDeM
   BDTWeightsX             : "TrackCaloMatching/test/TMVARegression_BDTGXEl.weights.xml"
   BDTWeightsY             : "TrackCaloMatching/test/TMVARegression_BDTGYEl.weights.xml"
@@ -419,7 +419,7 @@ TrkCaloMatcherMVADeM :
 TrkCaloMatcherExtDmuM :
 {
   module_type             : TrackCaloMatchingExtend
-  caloClusterModuleLabel  : CaloClusterFromProtoCluster
+  caloClusterModuleLabel  : CaloClusterMaker
   trkIntersectModuleLabel : TrackCaloIntersectionDmuM
   trackExtend             : 22.3
   dtOffset                : -2.072
@@ -432,7 +432,7 @@ TrkCaloMatcherExtDmuM :
 TrkCaloMatcherMVADmuM :
 {
   module_type             : TrackCaloMatchingMVA
-  caloClusterModuleLabel  : CaloClusterFromProtoCluster
+  caloClusterModuleLabel  : CaloClusterMaker
   trkIntersectModuleLabel : TrackCaloIntersectionDmuM
   BDTWeightsX             : "TrackCaloMatching/test/TMVARegression_BDTGXMu.weights.xml"
   BDTWeightsY             : "TrackCaloMatching/test/TMVARegression_BDTGYMu.weights.xml"

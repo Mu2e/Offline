@@ -37,6 +37,7 @@ namespace mu2e {
     typedef typename DETAIL::MVA_varindex MVA_varindex;
     typedef typename DETAIL::map_type map_type;
     typedef std::vector<Float_t> vcoll_type;
+    constexpr static const char* cxname = DETAIL::cxname;
 
     // default Constructor 
     explicit MVAStruct() : _values(DETAIL::n_vars,0.0){

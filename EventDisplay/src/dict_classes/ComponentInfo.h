@@ -1,9 +1,6 @@
 //
 // Class which holds (and is able to display) information of objects displayed by the event display. It is used as one of the base classes of each shape, e.g. TPolyLine3DTrack, etc.
 //
-// $Id: ComponentInfo.h,v 1.13 2013/03/15 18:20:22 kutschke Exp $
-// $Author: kutschke $
-// $Date: 2013/03/15 18:20:22 $
 //
 // Original author Ralf Ehrlich
 //

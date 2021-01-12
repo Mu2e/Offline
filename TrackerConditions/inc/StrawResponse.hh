@@ -25,8 +25,8 @@ namespace mu2e {
     public:
     typedef std::shared_ptr<StrawResponse> ptr_t;
     typedef std::shared_ptr<const StrawResponse> cptr_t;
+    constexpr static const char* cxname = {"StrawResponse"};
 
-    explicit StrawResponse() : _name("StrawResponse") {}
     explicit StrawResponse( StrawDrift::cptr_t strawDrift,
 			    StrawElectronics::cptr_t strawElectronics,
 			    StrawPhysics::cptr_t strawPhysics,
@@ -47,7 +47,7 @@ namespace mu2e {
         std::array<double,StrawElectronics::npaths> analognoise, 
 	std::array<double,StrawElectronics::npaths> dVdI, 
         double vsat, double ADCped, double pmpEnergyScaleAvg) : 
-      _name("StrawResponse"), 
+      ProditionsEntity(cxname), 
       _strawDrift(strawDrift),
       _strawElectronics(strawElectronics),
       _strawPhysics(strawPhysics),
@@ -119,11 +119,8 @@ namespace mu2e {
     // StrawPhysics functions we are allowed to use
     inline double ionizationEnergy(double q) const { return _strawPhysics->ionizationEnergy(q); }
     
-    const std::string& name() const { return _name; }
     double wpRes(double kedep, double wdist) const;
   private:
-
-    std::string _name;
 
     // helper functions
     static double PieceLine(std::vector<double> const& xvals, 
@@ -172,8 +169,6 @@ namespace mu2e {
     double _vsat;
     double _ADCped;
     double _pmpEnergyScaleAvg;
-
-
   };
 }
 #endif

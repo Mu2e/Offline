@@ -4,9 +4,6 @@
 // BEWARE: the current implementation is a naive O(N^2) algorithm.
 // There are much faster ways of doing this.
 //
-// $Id: KNearestNeighbors.hh,v 1.1 2012/11/01 23:32:36 gandr Exp $
-// $Author: gandr $
-// $Date: 2012/11/01 23:32:36 $
 //
 // Original author Andrei Gaponenko
 

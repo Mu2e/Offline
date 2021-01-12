@@ -1,9 +1,6 @@
  //
 // An EDAnalyzer module that reads back the hits created by the calorimeter and produces an ntuple
 //
-// $Id: CaloTrackMatchExample_module.cc,v 1.4 2014/08/01 20:57:44 echenard Exp $
-// $Author: echenard $
-// $Date: 2014/08/01 20:57:44 $
 //
 // Original author Bertrand Echenard
 //
@@ -24,12 +21,8 @@
 #include "RecoDataProducts/inc/KalRepPtrCollection.hh"
 
 
-#include "RecoDataProducts/inc/CaloCrystalHitCollection.hh"
-#include "RecoDataProducts/inc/CaloHitCollection.hh"
 #include "RecoDataProducts/inc/CaloHit.hh"
 #include "RecoDataProducts/inc/CaloCluster.hh"
-#include "RecoDataProducts/inc/CaloClusterCollection.hh"
-#include "RecoDataProducts/inc/CaloClusterCollection.hh"
 #include "RecoDataProducts/inc/TrkCaloIntersectCollection.hh"
 #include "RecoDataProducts/inc/TrkCaloMatchCollection.hh"
 #include "MCDataProducts/inc/StepPointMCCollection.hh"
@@ -211,9 +204,9 @@ namespace mu2e {
   
 
       // Get crystal hits
-      art::Handle<CaloCrystalHitCollection> caloCrystalHitsHandle;
-      event.getByLabel(_caloCrystalModuleLabel, caloCrystalHitsHandle);
-      CaloCrystalHitCollection const& caloCrystalHits(*caloCrystalHitsHandle);
+      art::Handle<CaloHitCollection> CaloHitsHandle;
+      event.getByLabel(_caloCrystalModuleLabel, CaloHitsHandle);
+      CaloHitCollection const& CaloHits(*CaloHitsHandle);
 
       // Get tracks
       art::Handle<KalRepPtrCollection> trksHandle;
@@ -249,18 +242,18 @@ namespace mu2e {
        //--------------------------  Do calorimeter hits --------------------------------
       
        _nHits = 0;
-       for (unsigned int ic=0; ic<caloCrystalHits.size();++ic) 
+       for (unsigned int ic=0; ic<CaloHits.size();++ic) 
        {	   
-	   CaloCrystalHit const& hit    = caloCrystalHits.at(ic);
-	   CLHEP::Hep3Vector crystalPos = cal.crystal(hit.id()).position();
+	   CaloHit const& hit    = CaloHits.at(ic);
+	   CLHEP::Hep3Vector crystalPos = cal.crystal(hit.crystalID()).position();
 
 	   _cryTime[_nHits]      = hit.time();
 	   _cryEdep[_nHits]      = hit.energyDep();
 	   _cryPosX[_nHits]      = crystalPos.x();
 	   _cryPosY[_nHits]      = crystalPos.y();
 	   _cryPosZ[_nHits]      = crystalPos.z();
-	   _cryId[_nHits]        = hit.id();
-	   _crySectionId[_nHits] = cal.crystal(hit.id()).diskId();
+	   _cryId[_nHits]        = hit.crystalID();
+	   _crySectionId[_nHits] = cal.crystal(hit.crystalID()).diskID();
            ++_nHits;
        }
       
@@ -271,7 +264,7 @@ namespace mu2e {
        {
 	  std::vector<int> _list;
 	  for (int i=0;i<clusterIt->size();++i) 
-	     _list.push_back( int(clusterIt->caloCrystalHitsPtrVector().at(i).get()- &caloCrystalHits.at(0)) );	    
+	     _list.push_back( int(clusterIt->caloHitsPtrVector().at(i).get()- &CaloHits.at(0)) );	    
 
 	  _cluEnergy[_nCluster] = clusterIt->energyDep();
 	  _cluTime[_nCluster]   = clusterIt->time();

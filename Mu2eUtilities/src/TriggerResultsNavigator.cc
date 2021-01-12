@@ -1,19 +1,46 @@
+#include <exception>
+#include <stddef.h>
+#include <algorithm>
+#include <iomanip>
+#include <iostream>
+#include <map>
+#include <string>
+#include <utility>
+#include <vector>
+
+#include "canvas/Persistency/Common/HLTenums.h"
+#include "canvas/Persistency/Common/TriggerResults.h"
 #include "fhiclcpp/ParameterSet.h"
 #include "fhiclcpp/ParameterSetRegistry.h"
+#include "fhiclcpp/coding.h"
+#include "fhiclcpp/exception.h"
+
 #include "Mu2eUtilities/inc/TriggerResultsNavigator.hh"
-#include <iostream>
-#include <iomanip>
 
 namespace mu2e {
 
-  TriggerResultsNavigator::TriggerResultsNavigator(const art::TriggerResults* trigResults): 
+  TriggerResultsNavigator::TriggerResultsNavigator(const art::TriggerResults* trigResults):
     _trigResults(trigResults){
     auto const  id   = trigResults->parameterSetID();
-    auto const& pset = fhicl::ParameterSetRegistry::get(id);
-    //set the vector<string> with the names of the tirgger_paths
-    _trigPathsNames  = pset.get<std::vector<std::string>>("trigger_paths");
-      
-    //loop over trigResults to fill the map <string, unsigned int) 
+    // Simplest thing: ParameterSetRegistry has correct ParameterSet
+    fhicl::ParameterSet pset;
+    fhicl::ParameterSetRegistry::get(id, pset);
+
+    // Go through ParameterSetRegistry and check for corrupted IDs
+    auto const& psets = fhicl::ParameterSetRegistry::get();
+    for(auto const& pset_pair : psets) {
+      auto nid = pset_pair.second.id();
+      assert(nid == pset_pair.first);
+
+      if(nid == id) {  
+	pset = pset_pair.second; 
+	if (pset.has_key("trigger_paths")){
+	  _trigPathsNames = pset.get<std::vector<std::string>>("trigger_paths",std::vector<std::string>());
+	}
+      }
+    }  
+
+    //loop over trigResults to fill the map <string, unsigned int)
     for (unsigned int i=0; i< _trigPathsNames.size(); ++i){
       _trigMap.insert(std::pair<std::string, unsigned int>(_trigPathsNames[i], i));
     }
@@ -43,15 +70,15 @@ namespace mu2e {
     size_t index = findTrigPath(name);
     return _trigResults->accept(index);
   }
-  
+
   bool
   TriggerResultsNavigator::wasrun(std::string const& name) const
   {
     size_t index = findTrigPath(name);
     return _trigResults->wasrun(index);
   }
-  
-  std::vector<std::string>   
+
+  std::vector<std::string>
   TriggerResultsNavigator::triggerModules(std::string const& name) const{
     std::vector<std::string>     modules;
 
@@ -66,17 +93,17 @@ namespace mu2e {
     return modules;
   }
 
-  unsigned                   
+  unsigned
   TriggerResultsNavigator::indexLastModule(std::string const& name) const{
     size_t index = findTrigPath(name);
     return _trigResults->index(index);
    }
 
-  std::string                
+  std::string
   TriggerResultsNavigator::nameLastModule (std::string const& name) const{
     unsigned                    indexLast  = indexLastModule(name);
     std::vector<std::string>    modulesVec = triggerModules(name);
-    
+
     if ( modulesVec.size() == 0) {
       std::string nn = "PATH "+name+" NOT FOUND";
       std::cout << "[TriggerResultsNavigator::nameLastModule] " << nn << std::endl;
@@ -85,14 +112,14 @@ namespace mu2e {
       return modulesVec[indexLast];
     }
   }
-  
-  art::hlt::HLTState 
+
+  art::hlt::HLTState
   TriggerResultsNavigator::state(std::string const& name) const{
     size_t index = findTrigPath(name);
     return _trigResults->state(index);
   }
 
-  void 
+  void
   TriggerResultsNavigator::print() const {
     std::cout << "TriggerResultsNaviogator Map" << std::endl;
     std::cout << "//------------------------------------------//" << std::endl;
@@ -107,7 +134,7 @@ namespace mu2e {
       std::cout <<"//"<<std::setw(24) << name << std::setw(2) << index << (good == true ? 1:0) << "//"<< std::endl;
       // %24s  %2li       %i    //\n", name.c_str(), index, good == true ? 1:0);
     }
-      
+
   }
 
 }

@@ -3,9 +3,6 @@
 //
 // First version of a Cluster.
 //
-// $Id: StrawCluster.hh,v 1.6 2011/06/07 21:32:22 kutschke Exp $
-// $Author: kutschke $
-// $Date: 2011/06/07 21:32:22 $
 //
 // Original author Hans Wenzel
 //

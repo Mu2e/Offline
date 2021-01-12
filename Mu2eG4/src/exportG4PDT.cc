@@ -1,9 +1,6 @@
 //
 // Export the G4 particle data table.
 //
-// $Id: exportG4PDT.cc,v 1.2 2012/06/20 19:13:07 kutschke Exp $
-// $Author: kutschke $
-// $Date: 2012/06/20 19:13:07 $
 //
 // Contact person Rob Kutschke
 //

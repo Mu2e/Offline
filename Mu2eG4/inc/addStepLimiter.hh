@@ -3,9 +3,6 @@
 //
 // Free functions to add step limiters to some particles.
 //
-// $Id: addStepLimiter.hh,v 1.2 2011/05/17 15:41:36 greenc Exp $
-// $Author: greenc $
-// $Date: 2011/05/17 15:41:36 $
 //
 // Original author Rob Kutschke
 //

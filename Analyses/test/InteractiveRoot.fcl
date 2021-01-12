@@ -3,9 +3,6 @@
 # It requires the existence of the input file data_03.root, that was
 # made by g4test_03.py
 #
-# $Id: InteractiveRoot.fcl,v 1.5 2012/12/03 15:35:45 kutschke Exp $
-# $Author: kutschke $
-# $Date: 2012/12/03 15:35:45 $
 #
 # Original author Rob Kutschke
 

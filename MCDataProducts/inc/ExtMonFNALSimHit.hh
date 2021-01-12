@@ -5,9 +5,6 @@
 // tracking step in an ExtMonFNAL silicon sensor to produce digitized
 // detector hits at a later stage.
 //
-// $Id: ExtMonFNALSimHit.hh,v 1.2 2013/07/30 18:45:00 wieschie Exp $
-// $Author: wieschie $
-// $Date: 2013/07/30 18:45:00 $
 //
 // Original author Andrei Gaponenko
 //

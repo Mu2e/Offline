@@ -1,9 +1,6 @@
 // Convert track from 3-point + 3-momentum representation to other
 //representations.
 //
-// $Id: TrackTool.cc,v 1.3 2011/05/18 20:09:10 wb Exp $
-// $Author: wb $
-// $Date: 2011/05/18 20:09:10 $
 //
 // Original author Rob Kutschke
 //
@@ -11,9 +8,11 @@
 #include <cmath>
 #include <iostream>
 
-#include "Mu2eUtilities/inc/TrackTool.hh"
-
 #include "CLHEP/Units/PhysicalConstants.h"
+#include "CLHEP/Vector/ThreeVector.h"
+
+
+#include "Mu2eUtilities/inc/TrackTool.hh"
 
 using namespace std;
 //using CLHEP::Hep3Vector;

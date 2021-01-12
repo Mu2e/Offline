@@ -4,15 +4,9 @@
 
 BEGIN_PROLOG
 
-TTtimeClusterFinder : { @table::TimeClusterFinder
-    ComboHitCollection     : "TTflagBkgHits"
-    CaloClusterCollection  : "CaloClusterFast"
-    StrawHitFlagCollection : "none"
-    TestFlag               : false
-    T0Calculator 	   : @local::TimeCalculator
-}
 
-TTCosmicSTTracktimeClusterFinder : { @table::TimeClusterFinderCosmics
+CstTimeClusterFinder : { 
+    module_type            : TimeClusterFinderCosmics
     ComboHitCollection     : "TTflagBkgHits"
     CaloClusterCollection  : "none"
     StrawHitFlagCollection : "none"
@@ -21,88 +15,120 @@ TTCosmicSTTracktimeClusterFinder : { @table::TimeClusterFinderCosmics
    
 }
 
-#PreEvent PreScaler:
-CosmicSTTrackFilters : {
-    CosmicSTTrackEventPrescale : {
-	    module_type 	: PrescaleEvent
-	    nPrescale         	: 1
-    	    triggerPath         : "CosmicSTTrackTrigger"	    	    
-	    triggerFlag   	: ["PrescaleRandom"]	    
-	}
-
-#From Filter, only by hits currently: 
-    CosmicSTTrackSeedFilter : {
-	module_type            : CosmicSTTrackSeedFilter
-        minnsh                 : 8
-        minnch 		       : 8
-	debugLevel             : 0	      
-	triggerPath            : "CosmicSTTrackTrigger"	
-        triggerFlag 	       : ["Track"]    
-    }
-
-  
+CstSimpleTimeCluster     : {
+    module_type : SimpleTimeCluster
+    ComboHitCollection     : "TTmakePH"
+    StrawHitFlagCollection : "TTflagBkgHits:ComboHits"
+    TestFlag               : false
 }
 
-CosmicSTTrackFilters : { @table::CosmicSTTrackFilters
+
+
+
+
+CstTrigger : { 
     
     producers : {
-    	
-	fetchDigis : { module_type: PrefetchData 
-	    debugLevel                    : 0
-	    mcDiag                        : true
-
-	    fetchCaloDigis                : 0
-	    fetchStrawDigis               : 1
-	    fetchStrawHits                : 1
-	    fetchStrawHitFlags            : 1
-	    fetchStrawHitPositions        : 1
-	    fetchComboHits                : 1
-
-	    strawDigiCollection           : makeSD
-	    strawHitCollectionTag         : TTmakeSH
-	    strawHitPositionCollectionTag : TTmakeSH
-	    strawHitFlagCollectionTag     : TTmakeSH
-	    comboHitCollectionTag         : TTmakePH
-	}
-    
+    	CstTimeClusterFinder : @local::CstTimeClusterFinder
+	CstSimpleTimeCluster : @local::CstSimpleTimeCluster
     }
 
     filters   : {
+	#PreEvent PreScaler:
+	cstSeedEventPrescale : {
+	    module_type 	: PrescaleEvent
+	    nPrescale         	: 1
+	    triggerPath         : "cstSeed"	    	    
+	    triggerFlag   	: ["PrescaleRandom"]	    
+	}
+
+	cstTimeClusterEventPrescale : {
+	    module_type 	: PrescaleEvent
+	    nPrescale         	: 1
+	    triggerPath         : "cstTimeCluster"	    	    
+	    triggerFlag   	: ["PrescaleRandom"]	    
+	}
 	
-	CosmicSTTrackCountFilter     : { 
-        module_type : DigiFilter #defined in Triggers
+	cstSeedSDCountFilter     : { 
+	    module_type : DigiFilter #defined in Triggers
 	    strawDigiCollection : makeSD
 	    caloDigiCollection  : notUsed
 	    useStrawDigi        : true
 	    useCaloDigi         : false
 	    minNStrawDigi       : 8 
-	    maxNStrawDigi       : 100
+	    maxNStrawDigi       : 10000
 	    minNCaloDigi        : -1
 	    maxNCaloDigi        : -1
 	    maxCaloEnergy       : -1
-	    triggerPath         : "CosmicSTTrackTrigger"	    	    	    
+	    triggerPath         : "cstSeed"	    	    	    
 	}
 
-#PreScaler for Passed Events: 
-	CosmicSTTrackEndEventPrescale : {
-	    module_type 	: PrescaleEvent
-	    nPrescale           : 1
-            useFilteredEvents   : true
-	    triggerPath         : "CosmicSTTrackTrigger"	    	    
-	    triggerFlag   	: ["PrescaleGoodEvents"]	    
+	cstTimeClusterSDCountFilter     : { 
+	    module_type : DigiFilter #defined in Triggers
+	    strawDigiCollection : makeSD
+	    caloDigiCollection  : notUsed
+	    useStrawDigi        : true
+	    useCaloDigi         : false
+	    minNStrawDigi       : 8 
+	    maxNStrawDigi       : 10000
+	    minNCaloDigi        : -1
+	    maxNCaloDigi        : -1
+	    maxCaloEnergy       : -1
+	    triggerPath         : "cstTimeCluster"	    	    	    
 	}
 
-	CosmicSTTrackTriggerPreselect   : { @table::CosmicReco.CosmicSTTrackTriggerPreselect  }
-	
-	CosmicSTTrackFilter  : { @table::CosmicReco.CosmicSTTrackFilters }
-	
+
+	cstSeedTCFilter       : {
+	    module_type : TimeClusterFilter
+	    timeClusterCollection  : "CstSimpleTimeCluster"
+	    minNHits               : 8
+	    triggerPath            : "cstTimeCluster"	    
+	}
+
+	cstTimeClusterTCFilter : {
+	    module_type : TimeClusterFilter
+	    timeClusterCollection  : "CstSimpleTimeCluster"
+	    minNHits               : 8
+	    triggerPath            : "cstTimeCluster"	    
+	}
+
+	#From Filter, only by hits currently: 
+	cstSeedTSFilter : {
+	    module_type            : CosmicSeedFilter
+	    minnsh                 : 8	      
+	    minnch 		   : 8	      
+	    debugLevel             : 0	      
+	    triggerPath            : "cstSeed"	
+	    triggerFlag 	   : ["Track"]     
+	}
     }
 
     sequences   : {
 	
-	CosmicSTTrackTrigger  : [ CosmicSTTrackEventPrescale, TTprepareHits CosmicSTTrackCountFilter, TTCosmicSTTracktimeClusterFinder, TTtimeClusterFinder, CosmicTrackFinder, CosmicSTTrackSeedFilter, CosmicSTTrackEndEventPrescale ] 
+	cstSeed        : [ cstSeedEventPrescale,
+			   @sequence::TrkHitRecoTrigger.sequences.TTmakefastHits,
+			   cstSeedSDCountFilter, 
+			   CstSimpleTimeCluster, cstSeedTCFilter,
+			   CosmicTrackFinder,
+			   cstSeedTSFilter ]
 	
-	
-}
+	cstSeedTiming0 : [ cstSeedEventPrescale,
+			   @sequence::TrkHitRecoTrigger.sequences.TTmakefastHits,
+			   cstSeedSDCountFilter, 
+			   CstSimpleTimeCluster, cstSeedTCFilter,
+			   CosmicTrackFinder ]
 
+	cstSeedTiming1 : [ cstSeedEventPrescale,
+			   @sequence::TrkHitRecoTrigger.sequences.TTmakefastHits,
+			   cstSeedSDCountFilter, 
+			   CstSimpleTimeCluster ]
+	
+	cstTimeCluster : [ cstTimeClusterEventPrescale, 
+			   @sequence::TrkHitRecoTrigger.sequences.TTprepareHits,
+			   cstTimeClusterSDCountFilter, 
+			   CstSimpleTimeCluster, cstTimeClusterTCFilter ]
+	
+	
+    }
+}
 END_PROLOG

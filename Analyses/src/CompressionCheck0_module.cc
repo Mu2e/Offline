@@ -1,9 +1,6 @@
 //
 // Check the output of FilterG4Out
 //
-// $Id: CompressionCheck0_module.cc,v 1.2 2013/10/21 20:44:04 genser Exp $
-// $Author: genser $
-// $Date: 2013/10/21 20:44:04 $
 //
 // Original author Rob Kutschke
 //
@@ -22,7 +19,6 @@
 
 // Mu2e includes.
 #include "MCDataProducts/inc/StepPointMCCollection.hh"
-#include "RecoDataProducts/inc/CaloHitCollection.hh"
 #include "RecoDataProducts/inc/StrawHitCollection.hh"
 #include "MCDataProducts/inc/StepInstanceName.hh"
 #include "GeneralUtilities/inc/Binning.hh"

@@ -2,9 +2,6 @@
 // Class to hold one magnetic field map. The map
 // is defined as a parametric function.
 //
-// $Id: BFParamMap.cc,v 1.00 2017/11/10 bpollack Exp $
-// $Author: bpollack $
-// $Date: 2017/11/10 $
 //
 // Original Brian Pollack, based on work by Krzysztof Genser, Rob Kutschke, Julie Managan, Bob
 // Bernstein.

@@ -5,9 +5,6 @@
 // Return CLHEP::Hep3Vector objects that are unit vectors uniformly
 // distributed over the unit sphere.
 //
-// $Id: RandomUnitSphere.hh,v 1.11 2013/03/21 20:33:55 gandr Exp $
-// $Author: gandr $
-// $Date: 2013/03/21 20:33:55 $
 //
 // Original author Rob Kutschke
 //
@@ -20,7 +17,11 @@
 #include "CLHEP/Random/RandFlat.h"
 #include "CLHEP/Random/RandomEngine.h"
 #include "CLHEP/Units/PhysicalConstants.h"
+#include "CLHEP/Units/SystemOfUnits.h"
 #include "CLHEP/Vector/ThreeVector.h"
+
+
+namespace CLHEP { class HepRandomEngine; }
 
 namespace mu2e {
 

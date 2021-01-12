@@ -2,9 +2,6 @@
 #define ProductionSolenoidGeom_PSVacuum_hh
 
 //
-// $Id: PSVacuum.hh,v 1.1 2012/06/06 19:29:30 gandr Exp $
-// $Author: gandr $
-// $Date: 2012/06/06 19:29:30 $
 //
 // Original author Andrei Gaponenko
 //

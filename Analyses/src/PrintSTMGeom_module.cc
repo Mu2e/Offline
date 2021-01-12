@@ -1,9 +1,6 @@
 //
 // Print some information about the STM geometry
 //
-// $Id: PrintSTMGeom_module.cc,v 1.1 2015/07/20 11:05:11 palladin Exp $
-// $Author: palladin $
-// $Date: 2015/07/20 11:05:11 $
 //
 // Original author Rob Kutschke
 // Modified by A. Palladino

@@ -1,8 +1,5 @@
 //
 // Filter events whit killed tracks.
-// $Id: EcalTrigger_module.cc,v 1.2 2013/03/11 23:18:11 brownd Exp $
-// $Author: brownd $
-// $Date: 2013/03/11 23:18:11 $
 //
 
 // Mu2e includes.
@@ -40,14 +37,13 @@
 
 #include "Mu2eUtilities/inc/SimParticleTimeOffset.hh"
 
-#include "RecoDataProducts/inc/CaloCrystalHitCollection.hh"
-#include "RecoDataProducts/inc/CaloClusterCollection.hh"
+#include "RecoDataProducts/inc/CaloCluster.hh"
 #include "RecoDataProducts/inc/CaloRecoDigi.hh"
-#include "RecoDataProducts/inc/CaloRecoDigiCollection.hh"
+#include "RecoDataProducts/inc/CaloRecoDigi.hh"
 
 // prefetching Digi
 #include "RecoDataProducts/inc/CaloDigi.hh"
-#include "RecoDataProducts/inc/CaloDigiCollection.hh"
+#include "RecoDataProducts/inc/CaloDigi.hh"
 
 #include "RecoDataProducts/inc/ComboHit.hh"
 #include "RecoDataProducts/inc/StrawHitCollection.hh"
@@ -206,7 +202,7 @@ namespace mu2e {
 
     int roId;
     for (const auto& caloDigi : caloDigis){
-      roId=caloDigi.roId();
+      roId=caloDigi.SiPMID();
       if (roId==0) continue;
     }
 

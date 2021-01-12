@@ -18,7 +18,6 @@
 #include "Mu2eG4/inc/nestTubs.hh"
 #include "GeometryService/inc/G4GeometryOptions.hh"
 #include "GeometryService/inc/GeometryService.hh"
-
 #include "TrackerGeom/inc/Tracker.hh"
 
 #include "G4Colour.hh"
@@ -102,7 +101,7 @@ namespace mu2e {
 // coordinate system of the mother.
 CLHEP::Hep3Vector
 mu2e::ConstructTrackerDetail5::computeOffset(){
-  return CLHEP::Hep3Vector(0., 0., _tracker.z0()-_tracker.mother().position().z() );
+  return CLHEP::Hep3Vector(0., 0., _tracker.g4Tracker()->z0()-_tracker.g4Tracker()->mother().position().z() );
 }
 // *****************************************************
 
@@ -114,7 +113,7 @@ void
 mu2e::ConstructTrackerDetail5::constructMother(){
 
   // Parameters of the new style mother volume ( replaces the envelope volume ).
-  PlacedTubs const& mother = _tracker.mother();
+  PlacedTubs const& mother = _tracker.g4Tracker()->mother();
 
   static int const newPrecision = 8;
   static int const newWidth = 14;
@@ -144,7 +143,7 @@ mu2e::ConstructTrackerDetail5::constructMother(){
   }
 
   // All mother/envelope volumes are made of this material.
-  G4Material* envelopeMaterial = findMaterialOrThrow(_tracker.envelopeMaterial());
+  G4Material* envelopeMaterial = findMaterialOrThrow(_tracker.g4Tracker()->envelopeMaterial());
 
   _motherInfo = nestTubs( "TrackerMother",
                           mother.tubsParams(),
@@ -189,7 +188,7 @@ mu2e::ConstructTrackerDetail5::constructMother(){
 void
 mu2e::ConstructTrackerDetail5::constructMainSupports(){
 
-  SupportStructure const& sup = _tracker.getSupportStructure();
+  SupportStructure const& sup = _tracker.g4Tracker()->getSupportStructure();
 
   const auto geomOptions = art::ServiceHandle<GeometryService>()->geomOptions();
   geomOptions->loadEntry( _config, "trackerSupport", "tracker.support" );
@@ -432,7 +431,7 @@ mu2e::ConstructTrackerDetail5::constructPlanes(){
   // Here is where the support material for each plane has historically been
   // built.
 
-  TubsParams planeEnvelopeParams = _tracker.getPlaneEnvelopeParams();
+  TubsParams planeEnvelopeParams = _tracker.g4Tracker()->getPlaneEnvelopeParams();
   
   const auto geomOptions = art::ServiceHandle<GeometryService>()->geomOptions();
   geomOptions->loadEntry( _config, "trackerPlaneEnvelope", "tracker.planeEnvelope" );
@@ -440,13 +439,13 @@ mu2e::ConstructTrackerDetail5::constructPlanes(){
   const bool planeEnvelopeVisible = geomOptions->isVisible("trackerPlaneEnvelope");
   const bool planeEnvelopeSolid   = geomOptions->isSolid("trackerPlaneEnvelope");
 
-  G4Material* envelopeMaterial = findMaterialOrThrow(_tracker.envelopeMaterial());
+  G4Material* envelopeMaterial = findMaterialOrThrow(_tracker.g4Tracker()->envelopeMaterial());
 
   double dPhiPanel = panelHalfAzimuth();
 
-  for ( int ipln=0; ipln<_tracker.nPlanes(); ++ipln ){
+  for ( size_t ipln=0; ipln<_tracker.nPlanes(); ++ipln ){
 
-    if ( plnDraw > -1 && ipln > plnDraw ) continue;
+    if ( plnDraw > -1 && (int)ipln > plnDraw ) continue;
 
     if (_verbosityLevel > 0 ) {
       cout << "Debugging pln: " << ipln << " plnDraw: " << plnDraw << endl;
@@ -455,7 +454,7 @@ mu2e::ConstructTrackerDetail5::constructPlanes(){
 
     const Plane& plane = _tracker.getPlane(ipln);
 
-    if (!plane.exists()) continue;
+    if (!_tracker.planeExists(plane.id())) continue;
     if (_verbosityLevel > 0 ) {
       cout << __func__ << " existing   plane:   " << ipln << endl;
     }
@@ -571,8 +570,8 @@ mu2e::ConstructTrackerDetail5::preparePanel(const int& iPlane,
   // and electronics associated with what we actually construct and call
   // a "panel."
 
-  TubsParams panEnvParams = _tracker.getPanelEnvelopeParams();
-  //  SupportStructure const& sup     = _tracker.getSupportStructure();
+  TubsParams panEnvParams = _tracker.g4Tracker()->getPanelEnvelopeParams();
+  //  SupportStructure const& sup     = _tracker.g4Tracker()->getSupportStructure();
 
   // Panels are identical other than placement - so get required properties from plane 0, panel 0.
   Panel const& panel(_tracker.getPanel(PanelId(iPlane,iPanel,0)));
@@ -592,8 +591,8 @@ mu2e::ConstructTrackerDetail5::preparePanel(const int& iPlane,
          << panel.id()
          << " panelCenterPhi "
          << panelCenterPhi/M_PI*180.
-         << " panel.boxRzAngle "
-         << panel.boxRzAngle()/M_PI*180.
+//         << " panel.boxRzAngle "
+//         << panel.boxRzAngle()/M_PI*180.
          << endl;
   }
 
@@ -626,7 +625,7 @@ mu2e::ConstructTrackerDetail5::preparePanel(const int& iPlane,
          << endl;
   }
 
-  G4Material* envelopeMaterial = findMaterialOrThrow(_tracker.envelopeMaterial());
+  G4Material* envelopeMaterial = findMaterialOrThrow(_tracker.g4Tracker()->envelopeMaterial());
 
   // *****************
   // Here we make the envelope for everything in one panel, including
@@ -688,12 +687,12 @@ mu2e::ConstructTrackerDetail5::prepareStrawPanel() {
   // all of the panels in all of the planes in all the world.
 
 
-  //  TubsParams planeEnvelopeParams = _tracker.getPlaneEnvelopeParams();
-  SupportStructure const& sup     = _tracker.getSupportStructure();
+  //  TubsParams planeEnvelopeParams = _tracker.g4Tracker()->getPlaneEnvelopeParams();
+  SupportStructure const& sup     = _tracker.g4Tracker()->getSupportStructure();
 
   // Straw Panels are identical other than placement - so get required
   // properties from plane 0, panel 0.
-  Plane const& plane(_tracker.getPlane(PlaneId(0,0,0)));
+  Plane const& plane(_tracker.getPlane(StrawId(0,0,0)));
   Panel const& panel(_tracker.getPanel(PanelId(0,0,0)));
 
   const auto geomOptions = art::ServiceHandle<GeometryService>()->geomOptions();
@@ -720,8 +719,8 @@ mu2e::ConstructTrackerDetail5::prepareStrawPanel() {
          << " preparing straw panel: "
          << " panelCenterPhi "
          << panelCenterPhi/M_PI*180.
-         << " panel.boxRzAngle "
-         << panel.boxRzAngle()/M_PI*180.
+//         << " panel.boxRzAngle "
+//         << panel.boxRzAngle()/M_PI*180.
          << endl;
   }
 
@@ -735,8 +734,8 @@ mu2e::ConstructTrackerDetail5::prepareStrawPanel() {
   //                          0.,
   //                          phiMax);
 
-  TubsParams panEnvParams = _tracker.getPanelEnvelopeParams();
-  double zCorrection = panEnvParams.zHalfLength() - _tracker.panelOffset();
+  TubsParams panEnvParams = _tracker.g4Tracker()->getPanelEnvelopeParams();
+  double zCorrection = panEnvParams.zHalfLength() - _tracker.g4Tracker()->panelOffset();
 
   if (_verbosityLevel>0) {
     cout << __func__
@@ -756,7 +755,7 @@ mu2e::ConstructTrackerDetail5::prepareStrawPanel() {
 
 
   G4Material* envelopeMaterial = findMaterialOrThrow(
-						_tracker.envelopeMaterial());
+						_tracker.g4Tracker()->envelopeMaterial());
 
   VolumeInfo spnl0Info = nestTubs( "StrawPanelEnvelope",
                                   panEnvParams,
@@ -789,7 +788,7 @@ mu2e::ConstructTrackerDetail5::prepareStrawPanel() {
   // The z of the center of the placed panel envelope, in Mu2e coordinates.
   // This carries a sign, depending on upstream/downstream.
   double zPanel(0.);
-  for ( int i=0; i<panel.nLayers(); ++i){
+  for ( size_t i=0; i<panel.nLayers(); ++i){
     // straw 0 is in layer 0, 1 in 1
     zPanel += panel.getStraw(StrawId(0,0,i)).getMidPoint().z();
   }
@@ -838,8 +837,8 @@ mu2e::ConstructTrackerDetail5::prepareStrawPanel() {
       // The enclosing volume for the straw is made of gas.  
       // The walls and the wire will be placed inside.
       VolumeInfo strawVol =  nestTubs( straw.name("TrackerStrawGas_"),
-                                       _tracker.strawOuterTubsParams(straw.id()),
-                                       findMaterialOrThrow(_tracker.gasMaterialName()),
+                                       strawOuterTubsParams(straw.id(),_tracker),
+                                       findMaterialOrThrow(_tracker.g4Tracker()->gasMaterialName()),
                                        panelRotation,
                                        mid,
                                        spnl0Info.logical,
@@ -855,8 +854,8 @@ mu2e::ConstructTrackerDetail5::prepareStrawPanel() {
       // Wall has 4 layers; the three metal layers sit inside the plastic layer.
       // The plastic layer sits inside the gas.
       VolumeInfo wallVol =  nestTubs( straw.name("TrackerStrawWall_"),
-                                      _tracker.strawWallMother(straw.id()),
-                                      findMaterialOrThrow(_tracker.wallMaterialName()),
+                                      strawWallMother(straw.id(),_tracker),
+                                      findMaterialOrThrow(_tracker.g4Tracker()->wallMaterialName()),
                                       noRotation,
                                       zeroVector,
                                       strawVol.logical,
@@ -871,8 +870,8 @@ mu2e::ConstructTrackerDetail5::prepareStrawPanel() {
 
 
       VolumeInfo outerMetalVol =  nestTubs( straw.name("TrackerStrawWallOuterMetal_"),
-                                            _tracker.strawWallOuterMetal(straw.id()),
-                                            findMaterialOrThrow(_tracker.wallOuterMetalMaterialName()),
+                                            strawWallOuterMetal(straw.id(),_tracker),
+                                            findMaterialOrThrow(_tracker.g4Tracker()->wallOuterMetalMaterialName()),
                                             noRotation,
                                             zeroVector,
                                             wallVol.logical,
@@ -887,8 +886,8 @@ mu2e::ConstructTrackerDetail5::prepareStrawPanel() {
 
 
       VolumeInfo innerMetal1Vol =  nestTubs( straw.name("TrackerStrawWallInnerMetal1_"),
-					     _tracker.strawWallInnerMetal1(straw.id()),
-                                             findMaterialOrThrow(_tracker.wallInnerMetal1MaterialName()),
+					     strawWallInnerMetal1(straw.id(),_tracker),
+                                             findMaterialOrThrow(_tracker.g4Tracker()->wallInnerMetal1MaterialName()),
                                              noRotation,
                                              zeroVector,
                                              wallVol.logical,
@@ -903,8 +902,8 @@ mu2e::ConstructTrackerDetail5::prepareStrawPanel() {
 
 
       VolumeInfo innerMetal2Vol =  nestTubs( straw.name("TrackerStrawWallInnerMetal2_"),
-					     _tracker.strawWallInnerMetal2(straw.id()),
-                                             findMaterialOrThrow(_tracker.wallInnerMetal2MaterialName()),
+					     strawWallInnerMetal2(straw.id(),_tracker),
+                                             findMaterialOrThrow(_tracker.g4Tracker()->wallInnerMetal2MaterialName()),
                                              noRotation,
                                              zeroVector,
                                              wallVol.logical,
@@ -919,8 +918,8 @@ mu2e::ConstructTrackerDetail5::prepareStrawPanel() {
 
 
       VolumeInfo wireVol =  nestTubs( straw.name("TrackerWireCore_"),
-				      _tracker.strawWireMother(straw.id()),
-                                      findMaterialOrThrow(_tracker.wireCoreMaterialName()),
+				      strawWireMother(straw.id(),_tracker),
+                                      findMaterialOrThrow(_tracker.g4Tracker()->wireCoreMaterialName()),
                                       noRotation,
                                       zeroVector,
                                       strawVol.logical,
@@ -935,8 +934,8 @@ mu2e::ConstructTrackerDetail5::prepareStrawPanel() {
 
 
       VolumeInfo platingVol =  nestTubs( straw.name("TrackerWirePlate_"),
-					 _tracker.strawWirePlate(straw.id()),
-                                         findMaterialOrThrow(_tracker.wirePlateMaterialName()),
+					 strawWirePlate(straw.id(),_tracker),
+                                         findMaterialOrThrow(_tracker.g4Tracker()->wirePlateMaterialName()),
                                          noRotation,
                                          zeroVector,
                                          wireVol.logical,
@@ -1233,13 +1232,12 @@ mu2e::ConstructTrackerDetail5::prepareEBKey(bool keyItself){
 
   // Internally all keys are the same.
   // Create one logical volume for now, do not place it.
-  Panel const& panel(_tracker.getPanel(StrawId(0,0,0)));
-
-  TubsParams  keyParams  = keyItself ? panel.getEBKeyParams() : panel.getEBKeyShieldParams();
+  
+  TubsParams  keyParams  = keyItself ? _tracker.g4Tracker()->panelElectronicsBoard().getEBKeyParams() : _tracker.g4Tracker()->panelElectronicsBoard().getEBKeyShieldParams();
 
   G4Material* keyMaterial = findMaterialOrThrow( keyItself ?
-                                                 panel.getEBKeyMaterial() :
-                                                 panel.getEBKeyShieldMaterial() );
+                                                 _tracker.g4Tracker()->panelElectronicsBoard().getEBKeyMaterial() :
+                                                 _tracker.g4Tracker()->panelElectronicsBoard().getEBKeyShieldMaterial() );
 
   VolumeInfo key0Info = keyItself ? nestTubs("PanelEBKey",
                                              keyParams,
@@ -1310,7 +1308,7 @@ mu2e::ConstructTrackerDetail5::constructAxes(){
   int isSolid(true);
   int edgeVisible(true);
 
-  G4Material* envelopeMaterial = findMaterialOrThrow(_tracker.envelopeMaterial());
+  G4Material* envelopeMaterial = findMaterialOrThrow(_tracker.g4Tracker()->envelopeMaterial());
 
   // A box marking the x-axis.
   double halfDimX[3];
@@ -1400,10 +1398,10 @@ mu2e::ConstructTrackerDetail5::addPanelsAndEBKeys(VolumeInfo& baseStrawPanel,
 
   Plane const& pln = _tracker.getPlane(ipln);
   // to get the key info from the base panel
-  Panel const& panel(_tracker.getPanel(StrawId(0,0,0)));
+//  Panel const& panel(_tracker.getPanel(StrawId(0,0,0)));
 
   // to prevent the overlaps
-  SupportStructure const& sup = _tracker.getSupportStructure();
+  SupportStructure const& sup = _tracker.g4Tracker()->getSupportStructure();
 
   int pnlDraw = _config.getInt ("tracker.pnlDraw",-1);
 
@@ -1411,13 +1409,13 @@ mu2e::ConstructTrackerDetail5::addPanelsAndEBKeys(VolumeInfo& baseStrawPanel,
   int baseCopyNo = ipln * _tracker.getPlane(0).nPanels();
 
   // The panel will be placed in the middle of the channel.
-  //  PlacedTubs const& chanUp(_tracker.getSupportStructure().innerChannelUpstream());
+  //  PlacedTubs const& chanUp(_tracker.g4Tracker()->getSupportStructure().innerChannelUpstream());
 
   // Place the panel envelope into the plane envelope, one placement per panel.
-  for ( int ipnl=0; ipnl<pln.nPanels(); ++ipnl){
+  for ( size_t ipnl=0; ipnl<pln.nPanels(); ++ipnl){
 
     // For debugging, only place the one requested panel.
-    if ( pnlDraw > -1  && ipnl > pnlDraw ) continue;
+    if ( pnlDraw > -1  && (int)ipnl > pnlDraw ) continue;
     //if ( pnlDraw > -1  && ipnl%2 == 0 ) continue;
 
     // Choose a representative straw from this  (plane,panel).
@@ -1428,8 +1426,8 @@ mu2e::ConstructTrackerDetail5::addPanelsAndEBKeys(VolumeInfo& baseStrawPanel,
     double phimid = mid.phi();
     if ( phimid < 0 ) phimid += 2.*M_PI;
 
-    //    double theZOffset = _tracker.panelOffset();
-    double theZOffset = _tracker.getPanelEnvelopeParams().zHalfLength();
+    //    double theZOffset = _tracker.g4Tracker()->panelOffset();
+    double theZOffset = _tracker.g4Tracker()->getPanelEnvelopeParams().zHalfLength();
 
     // Is this panel on the front(+) or back(-) face of the plane?
     double sign   = ((mid.z() - pln.origin().z())>0. ? 1.0 : -1.0 );
@@ -1492,20 +1490,20 @@ mu2e::ConstructTrackerDetail5::addPanelsAndEBKeys(VolumeInfo& baseStrawPanel,
     // Now placing the EBkey
 
     // see comment above about panel phi0
-    double keyAngShift = panel.getEBKeyParams().phiMax()*0.5;
+    double keyAngShift = _tracker.g4Tracker()->panelElectronicsBoard().getEBKeyParams().phiMax()*0.5;
 
     // additional rotation to place some of the keys at the top of the tracker
 
-    double keyPhi0 = keyAngShift - phimid - panel.getEBKeyPhiExtraRotation(); // as it needs to placed per geant4
+    double keyPhi0 = keyAngShift - phimid - _tracker.g4Tracker()->panelElectronicsBoard().getEBKeyPhiExtraRotation(); // as it needs to placed per geant4
     if ( sign > 0 ) {
-      keyPhi0 = keyAngShift + M_PI + phimid + panel.getEBKeyPhiExtraRotation();
+      keyPhi0 = keyAngShift + M_PI + phimid + _tracker.g4Tracker()->panelElectronicsBoard().getEBKeyPhiExtraRotation();
     }
 
     keyPhi0 = getWithinZeroTwoPi(keyPhi0);
 
     bool willOverlap = false;
 
-    double keyNominalPhi0 =  getWithinZeroTwoPi(phimid + panel.getEBKeyPhiExtraRotation());
+    double keyNominalPhi0 =  getWithinZeroTwoPi(phimid + _tracker.g4Tracker()->panelElectronicsBoard().getEBKeyPhiExtraRotation());
 
     for ( auto const& sbeam : sup.beamBody() ) {
 
@@ -1515,8 +1513,8 @@ mu2e::ConstructTrackerDetail5::addPanelsAndEBKeys(VolumeInfo& baseStrawPanel,
       double diffEdge1 = diffWithinZeroTwoPi(keyNominalPhi0,sbeam.phi0());
       double diffEdge2 = diffWithinZeroTwoPi(keyNominalPhi0,phiEnd);
 
-      if ( ( diffEdge1 < panel.getEBKeyParams().phiMax() ) ||
-           ( diffEdge2 < panel.getEBKeyParams().phiMax() ) ) {
+      if ( ( diffEdge1 < _tracker.g4Tracker()->panelElectronicsBoard().getEBKeyParams().phiMax() ) ||
+           ( diffEdge2 < _tracker.g4Tracker()->panelElectronicsBoard().getEBKeyParams().phiMax() ) ) {
         willOverlap = true;
       }
 
@@ -1538,7 +1536,7 @@ mu2e::ConstructTrackerDetail5::addPanelsAndEBKeys(VolumeInfo& baseStrawPanel,
               << ", keyPhi0 "
               << keyPhi0/M_PI*180.
               << ", span "
-              << panel.getEBKeyParams().phiMax()
+              << _tracker.g4Tracker()->panelElectronicsBoard().getEBKeyParams().phiMax()
               << ", keyAngShift "
               << keyAngShift/M_PI*180.
                << endl;
@@ -1569,7 +1567,7 @@ mu2e::ConstructTrackerDetail5::addPanelsAndEBKeys(VolumeInfo& baseStrawPanel,
       // keys/shield depending on the key location wrt to the plane
 
       CLHEP::Hep3Vector keyPosition =  panelPosition + pln.origin()+ _offset +
-        CLHEP::Hep3Vector(0., 0., panel.getEBKeyShieldParams().zHalfLength());
+        CLHEP::Hep3Vector(0., 0., _tracker.g4Tracker()->panelElectronicsBoard().getEBKeyShieldParams().zHalfLength());
 
       if (_verbosityLevel>1) {
         cout << __func__
@@ -1611,7 +1609,7 @@ mu2e::ConstructTrackerDetail5::addPanelsAndEBKeys(VolumeInfo& baseStrawPanel,
       }
 
       CLHEP::Hep3Vector keyShieldPosition =  panelPosition + pln.origin()+ _offset -
-        CLHEP::Hep3Vector(0., 0., panel.getEBKeyShieldParams().zHalfLength());
+        CLHEP::Hep3Vector(0., 0., _tracker.g4Tracker()->panelElectronicsBoard().getEBKeyShieldParams().zHalfLength());
 
       // EBKeyShield
       G4VPhysicalVolume* keyShieldPhysVol = new G4PVPlacement(keyRotation,
@@ -1638,7 +1636,7 @@ mu2e::ConstructTrackerDetail5::addPanelsAndEBKeys(VolumeInfo& baseStrawPanel,
 double
 mu2e::ConstructTrackerDetail5::panelHalfAzimuth(){
 
-  SupportStructure const& sup     = _tracker.getSupportStructure();
+  SupportStructure const& sup     = _tracker.g4Tracker()->getSupportStructure();
   return sup.panelPhiRange()/2.0;
 
 }
@@ -1658,3 +1656,40 @@ double mu2e::ConstructTrackerDetail5::diffWithinZeroTwoPi (double phi1, double p
   double diff = fabs(phi1 - phi2);
   return fmin(diff,2.*M_PI - diff);
 }
+
+mu2e::TubsParams mu2e::ConstructTrackerDetail5::strawOuterTubsParams(StrawId const& id , Tracker const& tracker) const {
+  return mu2e::TubsParams ( 0., tracker.strawProperties().strawOuterRadius(), tracker.getStraw(id).halfLength() );
+}
+mu2e::TubsParams mu2e::ConstructTrackerDetail5::strawWallMother(StrawId const& id , Tracker const& tracker)      const {
+  return TubsParams( tracker.strawProperties().strawInnerRadius(), 
+      tracker.strawProperties().strawOuterRadius(), tracker.getStraw(id).halfLength() );
+}
+mu2e::TubsParams mu2e::ConstructTrackerDetail5::strawWallOuterMetal(StrawId const& id , Tracker const& tracker)  const {
+  double rIn = tracker.strawProperties().strawOuterRadius() - tracker.strawProperties().outerMetalThickness();
+  return TubsParams( rIn, tracker.strawProperties().strawOuterRadius() , 
+      tracker.getStraw(id).halfLength() );
+}
+mu2e::TubsParams mu2e::ConstructTrackerDetail5::strawWallInnerMetal1(StrawId const& id , Tracker const& tracker) const {
+  double rIn  = tracker.strawProperties().strawInnerRadius() + tracker.strawProperties().innerMetal2Thickness();
+  double rOut = rIn + tracker.strawProperties().innerMetal1Thickness();
+  return mu2e::TubsParams (rIn,rOut,
+      tracker.getStraw(id).halfLength());
+}
+mu2e::TubsParams mu2e::ConstructTrackerDetail5::strawWallInnerMetal2(StrawId const& id , Tracker const& tracker) const {
+  double rIn  = tracker.strawProperties().strawInnerRadius();
+  double rOut = rIn + tracker.strawProperties().innerMetal2Thickness();
+  return mu2e::TubsParams (rIn,rOut,
+      tracker.getStraw(id).halfLength());
+}
+mu2e::TubsParams mu2e::ConstructTrackerDetail5::strawWireMother(StrawId const& id , Tracker const& tracker) const {
+  return mu2e::TubsParams (0.,tracker.strawProperties().wireRadius(),
+      tracker.getStraw(id).halfLength());
+}
+mu2e::TubsParams mu2e::ConstructTrackerDetail5::strawWirePlate(StrawId const& id , Tracker const& tracker) const {
+  double rIn = tracker.strawProperties().wireRadius() - tracker.strawProperties().wirePlateThickness();
+  double rOut = tracker.strawProperties().wireRadius();
+  return mu2e::TubsParams (rIn,rOut,
+      tracker.getStraw(id).halfLength());
+}
+
+

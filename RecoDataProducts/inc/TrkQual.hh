@@ -5,9 +5,6 @@
 #ifndef RecoDataProducts_TrkQual_hh
 #define RecoDataProducts_TrkQual_hh
 // 
-// $Id: TrkQual.hh,v 1.4 2013/04/04 01:08:20 brownd Exp $
-// $Author: brownd $
-// $Date: 2013/04/04 01:08:20 $
 //
 // Original author David Brown
 //
@@ -27,6 +24,7 @@ namespace mu2e {
     static std::string const& typeName();
     static std::map<std::string,MVA_varindex> const& varNames();
     static std::string varName(MVA_varindex vindex);
+    constexpr static const char* cxname = "TrkQualCatalog";
   };
   // define the types
   typedef MVAStruct<TrkQualDetail> TrkQual;

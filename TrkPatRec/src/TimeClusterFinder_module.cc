@@ -1,9 +1,6 @@
 //
 // Tracker time cluster finder
 //
-// $Id: TimeClusterFinder_module.cc,v 1.3 2014/08/25 12:08:29 tassiell Exp $
-// $Author: tassiell $
-// $Date: 2014/08/25 12:08:29 $
 //
 // Original author D. Brown and G. Tassielli
 //
@@ -22,7 +19,7 @@
 #include "RecoDataProducts/inc/ComboHit.hh"
 #include "RecoDataProducts/inc/StrawHitFlag.hh"
 #include "RecoDataProducts/inc/TimeCluster.hh"
-#include "RecoDataProducts/inc/CaloClusterCollection.hh"
+#include "RecoDataProducts/inc/CaloCluster.hh"
 // tracking
 #include "TrkReco/inc/TrkUtilities.hh"
 #include "TrkReco/inc/TrkTimeCalculator.hh"

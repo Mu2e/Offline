@@ -4,9 +4,6 @@
 //
 //  Format a number in hex.
 //
-// $Id: toHex.hh,v 1.2 2013/03/03 18:08:28 kutschke Exp $
-// $Author: kutschke $
-// $Date: 2013/03/03 18:08:28 $
 //
 // Original author Rob Kutschke
 //

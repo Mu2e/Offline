@@ -11,14 +11,16 @@
 #include "RecoDataProducts/inc/CosmicTrack.hh" 
 #include "RecoDataProducts/inc/CosmicTrackSeed.hh"
 
+// beam
+#include "RecoDataProducts/inc/ProtonBunchTime.hh"
+
 // calorimeter
 #include "RecoDataProducts/inc/CaloDigi.hh"
-#include "RecoDataProducts/inc/CaloRecoDigiCollection.hh"
-#include "RecoDataProducts/inc/CaloHitCollection.hh"
-#include "RecoDataProducts/inc/CaloCrystalHit.hh"
-#include "RecoDataProducts/inc/CaloProtoClusterCollection.hh"
+#include "RecoDataProducts/inc/CaloRecoDigi.hh"
+#include "RecoDataProducts/inc/CaloHit.hh"
+#include "RecoDataProducts/inc/CaloProtoCluster.hh"
 #include "RecoDataProducts/inc/CaloCluster.hh"
-#include "RecoDataProducts/inc/CaloTrigSeedCollection.hh"
+#include "RecoDataProducts/inc/CaloTrigSeed.hh"
 
 // straws
 #include "RecoDataProducts/inc/StrawHitCollection.hh"

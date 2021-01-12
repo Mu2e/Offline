@@ -1,7 +1,4 @@
 #
-# $Id: caloMatching.fcl,v 1.1 2012/07/10 00:02:19 gianipez Exp $
-# $Author: gianipez $
-# $Date: 2012/07/10 00:02:19 $
 
 #include "fcl/minimalMessageService.fcl"
 #include "fcl/standardProducers.fcl"

@@ -3,9 +3,6 @@
 //
 // Template used to instantiate enum-matched-to-string classes.
 //
-//   $Id: EnumToStringSparse.hh,v 1.1 2013/01/07 03:12:24 kutschke Exp $
-//   $Author: kutschke $
-//   $Date: 2013/01/07 03:12:24 $
 //
 // The user must supply a Detail class with the following requirements:
 //

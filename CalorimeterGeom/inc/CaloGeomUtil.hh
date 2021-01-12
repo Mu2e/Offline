@@ -9,7 +9,6 @@
 #define CalorimeterGeom_CaloGeomUtil_hh
 
 #include "CalorimeterGeom/inc/CaloGeomUtil.hh"
-#include "CalorimeterGeom/inc/CaloInfo.hh"
 #include "CalorimeterGeom/inc/Disk.hh"
 
 #include "CLHEP/Vector/ThreeVector.h"
@@ -27,9 +26,6 @@ namespace mu2e {
           
           CaloGeomUtil(const std::vector<std::shared_ptr<Disk>>& disks,
                        const std::vector<const Crystal*>& fullCrystalList);
-          
-          virtual ~CaloGeomUtil() {};
-
 
           void origin(const CLHEP::Hep3Vector& vec)        {origin_ = vec;}
           void trackerCenter(const CLHEP::Hep3Vector& vec) {trackerCenter_ = vec;}

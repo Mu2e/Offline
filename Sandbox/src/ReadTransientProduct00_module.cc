@@ -1,9 +1,6 @@
 //
 // Plugin to readback the transient data product.
 //
-// $Id: ReadTransientProduct00_module.cc,v 1.5 2013/10/21 21:01:23 kutschke Exp $
-// $Author: kutschke $
-// $Date: 2013/10/21 21:01:23 $
 //
 // Original author Rob Kutschke.
 //

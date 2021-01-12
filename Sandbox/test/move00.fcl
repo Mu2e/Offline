@@ -1,8 +1,5 @@
 # Run MoveAwareTest_00.fcl
 #
-# $Id: move00.fcl,v 1.1 2013/04/07 19:41:54 kutschke Exp $
-# $Author: kutschke $
-# $Id: move00.fcl,v 1.1 2013/04/07 19:41:54 kutschke Exp $
 #
 
 process_name : move00

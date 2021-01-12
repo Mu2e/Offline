@@ -29,8 +29,8 @@
 #include "MCDataProducts/inc/StepPointMCCollection.hh"
 #include "MCDataProducts/inc/MCTrajectoryCollection.hh"
 #include "MCDataProducts/inc/StrawDigiMCCollection.hh"
-#include "MCDataProducts/inc/CaloShowerStepCollection.hh"
-#include "MCDataProducts/inc/CaloDigiMCCollection.hh"
+#include "MCDataProducts/inc/CaloShowerStep.hh"
+#include "MCDataProducts/inc/CaloHitMC.hh"
 #include "MCDataProducts/inc/CrvStep.hh"
 #include "MCDataProducts/inc/CrvDigiMC.hh"
 
@@ -76,8 +76,8 @@ namespace mu2e {
           fhicl::Comment("InputTag for collections to skip"), 
 	  std::vector<art::InputTag>()
 	  };
-      fhicl::Sequence<art::InputTag> skipCaloDigiMC{ 
-	fhicl::Name("skipCaloDigiMC"),
+      fhicl::Sequence<art::InputTag> skipCaloHitMC{ 
+	fhicl::Name("skipCaloHitMC"),
           fhicl::Comment("InputTag for collections to skip"), 
 	  std::vector<art::InputTag>()
 	  };
@@ -112,7 +112,7 @@ namespace mu2e {
     InputTags _SPMCtags; // StepointMC to skip
     InputTags _trajtags; // MCTrajectories to skip
     InputTags _trkDMCtags; // StrawDigiMC to skip
-    InputTags _calDMCtags;  // CaloDigiMC to skip
+    InputTags _calDMCtags;  // CaloHitMC to skip
     InputTags _calCSStags;  // CaloShowerStep to skip
     InputTags _crvDMCtags;  // CaloShowerStep to skip
 
@@ -124,7 +124,7 @@ namespace mu2e {
     bool checkMCTrajectory(MCTrajectoryCollection const& coll);
     bool checkSimParticlePtr(SimParticlePtrCollection const& coll);
     bool checkStrawDigiMC(StrawDigiMCCollection const& coll);
-    bool checkCaloDigiMC(CaloDigiMCCollection const& coll);
+    bool checkCaloHitMC(CaloHitMCCollection const& coll);
     bool checkCaloShowerStep(CaloShowerStepCollection const& coll);
     bool checkCrvDigiMC(CrvDigiMCCollection const& coll);
 
@@ -140,7 +140,7 @@ namespace mu2e {
     _SPMCtags(conf().skipStepPointMC()),
     _trajtags(conf().skipMCTracjectory()),
     _trkDMCtags(conf().skipStrawDigiMC()),
-    _calDMCtags(conf().skipCaloDigiMC()),
+    _calDMCtags(conf().skipCaloHitMC()),
     _calCSStags(conf().skipCaloShowerStep()),
     _crvDMCtags(conf().skipCrvDigiMC())
   {
@@ -194,12 +194,12 @@ namespace mu2e {
       } // endif excluded
     } // loop over handles
 
-    std::vector< art::Handle<CaloDigiMCCollection> > vah_cd;
+    std::vector< art::Handle<CaloHitMCCollection> > vah_cd;
     event.getManyByType(vah_cd);
     for (auto const & ah : vah_cd) {
       if(!excludedCollection(*ah.provenance(),_calDMCtags)) {
 	printProvenance(*ah.provenance());
-	checkCaloDigiMC(*ah);
+	checkCaloHitMC(*ah);
       } // endif excluded
     } // loop over handles
     std::cout << "Startgin shower steps" << std::endl;
@@ -487,15 +487,15 @@ namespace mu2e {
     return rc;
   }
 
-  bool PointerCheck::checkCaloDigiMC(CaloDigiMCCollection const& coll) {
+  bool PointerCheck::checkCaloHitMC(CaloHitMCCollection const& coll) {
 
     int n,n2,nn,na,ni;
     n=n2=nn=na=ni=0;
     for(auto const& s: coll) { // loop over the collection
       n++;
-      for(int i=0; i<s.nParticles(); i++) {
+      for(unsigned i=0; i<s.nParticles(); i++) {
 	n2++;
-	auto const& p = s.simParticle(i);
+	auto const& p = s.energyDeposit(i).sim();
 	if(p.isNonnull()) {
 	  nn++;
 	  if(p.isAvailable()) {
@@ -512,13 +512,13 @@ namespace mu2e {
     if(_verbose<1 && !rc) return rc;
     // report
 
-    std::cout << std::setw(8) << n  << " CaloDigiMC checked" << std::endl;
+    std::cout << std::setw(8) << n  << " CaloHitMC checked" << std::endl;
     std::cout << std::setw(8) << n2 << " SimParticle Ptrs checked" << std::endl;
     std::cout << std::setw(8) << nn << " Ptrs nonnull" << std::endl;
     std::cout << std::setw(8) << na << " Ptrs available" << std::endl;
     std::cout << std::setw(8) << ni << " Ptrs dereferenced" << std::endl;
 
-    if(!rc) throw cet::exception("BadArtPtr") << " in CaloDigiMC coll";
+    if(!rc) throw cet::exception("BadArtPtr") << " in CaloHitMC coll";
 
     return rc;
   }

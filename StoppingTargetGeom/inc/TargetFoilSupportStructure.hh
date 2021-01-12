@@ -4,9 +4,6 @@
 //
 // Class to represent one support structure of one target foil.
 //
-// $Id: TargetFoilSupportStructure.hh,v 1.1 2013/10/14 23:57:32 roehrken Exp $
-// $Author: roehrken $
-// $Date: 2013/10/14 23:57:32 $
 //
 // Original author Rob Kutschke
 //

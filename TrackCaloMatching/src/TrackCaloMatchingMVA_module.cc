@@ -30,7 +30,7 @@
 #include "GeometryService/inc/GeomHandle.hh"
 
 #include "RecoDataProducts/inc/KalRepPtrCollection.hh"
-#include "RecoDataProducts/inc/CaloClusterCollection.hh"
+#include "RecoDataProducts/inc/CaloCluster.hh"
 #include "RecoDataProducts/inc/TrkCaloIntersectCollection.hh"
 #include "RecoDataProducts/inc/TrkCaloMatchCollection.hh"
 
@@ -203,7 +203,7 @@ namespace mu2e {
 
  	   for (const auto& cluster : caloClusters)
            {
-               if (trkIntersect.diskId() != cluster.diskId()) continue;               
+               if (trkIntersect.diskId() != cluster.diskID()) continue;               
 
                CLHEP::Hep3Vector diff = cluster.cog3Vector()-posTrkInSectionFF;
                double deltaTime       = std::abs(cluster.time()-trkTime-dtOffset_);
@@ -265,11 +265,11 @@ namespace mu2e {
                                             double trkTime, double cellsize)
    {
   
-        const auto& hit0 = cluster.caloCrystalHitsPtrVector().at(0);
-        CLHEP::Hep3Vector center = cal.geomUtil().mu2eToDiskFF(cal.crystal(hit0->id()).diskId(), cal.crystal(hit0->id()).position());
+        const auto& hit0 = cluster.caloHitsPtrVector().at(0);
+        CLHEP::Hep3Vector center = cal.geomUtil().mu2eToDiskFF(cal.crystal(hit0->crystalID()).diskID(), cal.crystal(hit0->crystalID()).position());
         
-        std::vector<int> neighbors1 = cal.neighbors(hit0->id(),true);
-        std::vector<int> neighbors2 = cal.nextNeighbors(hit0->id(),true);
+        std::vector<int> neighbors1 = cal.neighbors(hit0->crystalID(),true);
+        std::vector<int> neighbors2 = cal.nextNeighbors(hit0->crystalID(),true);
         neighbors1.insert(neighbors1.end(), neighbors2.begin(), neighbors2.end());
             
         double eCells(0);
@@ -281,8 +281,8 @@ namespace mu2e {
             if (in == -1){evec.push_back(-1);continue;}
 
             double eCell(0);
-            for (const auto& hit : cluster.caloCrystalHitsPtrVector() )                 
-                if (hit->id()==in) eCell=hit->energyDep();
+            for (const auto& hit : cluster.caloHitsPtrVector() )                 
+                if (hit->crystalID()==in) eCell=hit->energyDep();
 
             evec.push_back(eCell);
             eCells += eCell;           
@@ -378,9 +378,9 @@ namespace mu2e {
    /*
 
         std::vector<double> matrixX,matrixY,matrixE;                
-        for (const auto& hit : cluster.caloCrystalHitsPtrVector() )
+        for (const auto& hit : cluster.caloHitsPtrVector() )
         {
-           CLHEP::Hep3Vector crystalPos = cal.geomUtil().mu2eToDiskFF(cal.crystal(hit->id()).diskId(), cal.crystal(hit->id()).position());
+           CLHEP::Hep3Vector crystalPos = cal.geomUtil().mu2eToDiskFF(cal.crystal(hit->crystalID()).diskID(), cal.crystal(hit->crystalID()).position());
            
            matrixX.push_back( (crystalPos.x()-center.x())/cellsize );
            matrixY.push_back( (crystalPos.y()-center.y())/cellsize );

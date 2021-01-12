@@ -107,12 +107,22 @@ namespace mu2e {
 
     CLHEP::Hep3Vector coll2ShieldingCenterInMu2e() const { return coll2ShieldingCenterInMu2e_; }
     CLHEP::HepRotation coll2ShieldingRotationInMu2e() const { return coll2ShieldingRotationInMu2e_; }
-    const std::vector<double>& coll2ShieldingHalfSize() const { return coll2ShieldingHalfSize_; }
     std::vector<CLHEP::Hep2Vector> coll2ShieldingOutline() const { return coll2ShieldingOutline_; }
+
+    //----------------------------------------------------------------
+    // The "detector room" here does not correspond to a physical object.
+    // This is an intermediate box volume that fits between the non-rectangular
+    // concrete outer wall and collimator2 shielding and contains the
+    // detectors and their supports.
+
+    std::vector<double> detectorRoomHalfSize() const { return detectorRoomHalfSize_; }
+    CLHEP::Hep3Vector detectorRoomCenterInMu2e() const { return detectorRoomCenterInMu2e_; }
+    CLHEP::HepRotation detectorRoomRotationInMu2e() const { return detectorRoomRotationInMu2e_; }
+
 
   private:
     friend class ExtMonFNALBuildingMaker;
-      // Private ctr: the class should be only obtained via the maker
+    // Private ctr: the class should be only obtained via the maker
     ExtMonFNALBuilding();
     // Or read back from persistent storage
     template<class T> friend class art::Wrapper;
@@ -152,8 +162,11 @@ namespace mu2e {
 
     CLHEP::Hep3Vector coll2ShieldingCenterInMu2e_;
     CLHEP::HepRotation coll2ShieldingRotationInMu2e_;
-    std::vector<double> coll2ShieldingHalfSize_;
     std::vector<CLHEP::Hep2Vector> coll2ShieldingOutline_;
+
+    std::vector<double> detectorRoomHalfSize_;
+    CLHEP::Hep3Vector detectorRoomCenterInMu2e_;
+    CLHEP::HepRotation detectorRoomRotationInMu2e_;
   };
 
 

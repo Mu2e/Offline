@@ -9,6 +9,8 @@
 #include "Mu2eInterfaces/inc/Detector.hh"
 #include "CalorimeterGeom/inc/Calorimeter.hh"
 #include "CalorimeterGeom/inc/CaloGeomUtil.hh"
+#include "CalorimeterGeom/inc/CaloInfo.hh"
+#include "CalorimeterGeom/inc/CaloIDMapper.hh"
 #include "CalorimeterGeom/inc/Disk.hh"
 #include "CalorimeterGeom/inc/Crystal.hh"
 
@@ -26,20 +28,20 @@ namespace mu2e {
 	   virtual ~Calorimeter(){};
 
 
-           // calo sections
+           // calo section
 	   virtual unsigned                      nDisk()     const = 0;  
 	   virtual const Disk&                   disk(int i) const = 0;  
 
 
-  	   // crystal / readout section
-	   virtual int                           nRO()          const = 0; 
+  	   // crystal section - fast access
            virtual int                           nCrystal()     const = 0; 
            virtual const Crystal&                crystal(int i) const = 0; 
            
 
            // calorimeter geometry information 
-	   virtual const CaloInfo&               caloInfo() const = 0;
-	   virtual const CaloGeomUtil&           geomUtil() const = 0; 
+	   virtual const CaloInfo&               caloInfo()     const = 0;
+	   virtual const CaloIDMapper&           caloIDMapper() const = 0;
+	   virtual const CaloGeomUtil&           geomUtil()     const = 0; 
 
 
   	   // neighbors, indexing 

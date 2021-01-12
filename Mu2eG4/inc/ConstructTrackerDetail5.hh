@@ -9,8 +9,9 @@
 //
 
 #include "G4Helper/inc/VolumeInfo.hh"
-
 #include "G4RotationMatrix.hh"
+#include "GeomPrimitives/inc/TubsParams.hh"
+#include "DataProducts/inc/StrawId.hh"
 
 #include <vector>
 
@@ -28,6 +29,16 @@ namespace mu2e {
                               SimpleConfig const& config );
 
     VolumeInfo motherInfo() { return _motherInfo; }
+
+    // Return G4TUBS parameters for straws, includes
+    // wire, gas and straw materials.
+    TubsParams strawOuterTubsParams(StrawId const& id , Tracker const& tracker) const;
+    TubsParams strawWallMother(StrawId const& id , Tracker const& tracker) const;
+    TubsParams strawWallOuterMetal(StrawId const& id , Tracker const& tracker)  const;
+    TubsParams strawWallInnerMetal1(StrawId const& id , Tracker const& tracker) const;
+    TubsParams strawWallInnerMetal2(StrawId const& id , Tracker const& tracker) const;
+    TubsParams strawWireMother(StrawId const& id , Tracker const& tracker) const;
+    TubsParams strawWirePlate(StrawId const& id , Tracker const& tracker) const;
 
 
   private:

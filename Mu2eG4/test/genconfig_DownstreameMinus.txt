@@ -2,9 +2,6 @@
 //  Configure the generator to produce single particles
 //
 
-// $Id: genconfig_DownstreameMinus.txt,v 1.1 2013/02/11 14:48:58 genser Exp $
-// $Author: genser $
-// $Date: 2013/02/11 14:48:58 $
 
 bool particleGun.do      = true;
 

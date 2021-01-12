@@ -1,8 +1,5 @@
 # Run the data product inspector on a file of mixed events.
 #
-# $Id: inspectMixed.fcl,v 1.3 2012/03/02 17:16:22 gandr Exp $
-# $Author: gandr $
-# $Date: 2012/03/02 17:16:22 $
 
 #include "fcl/minimalMessageService.fcl"
 #include "fcl/standardProducers.fcl"

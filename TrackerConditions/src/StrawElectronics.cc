@@ -2,9 +2,6 @@
 // StrawElectronics collects the electronics response behavior of a Mu2e straw in
 // several functions.
 //
-// $Id: StrawElectronics.cc,v 1.17 2014/09/22 12:23:28 brownd Exp $
-// $Author: brownd $
-// $Date: 2014/09/22 12:23:28 $
 //
 // Original author David Brown, LBNL
 //
@@ -166,36 +163,37 @@ namespace mu2e {
   }
 
   
-  void StrawElectronics::digitizeWaveform(StrawId sid, ADCVoltages const& wf, ADCWaveform& adc) const{
-    if(wf.size() != adc.size()){
-      throw cet::exception("SIM") 
-	<< "mu2e::StrawElectronics: wrong number of voltages to digitize" 
-	<< endl;
+  void StrawElectronics::digitizeWaveform(StrawId sid, ADCVoltages const& wf, ADCWaveform& adc, ADCValue& pmp) const{
+    adc.reserve(wf.size());
+    ADCValue peak = 0;
+    ADCValue pedestal = 0;
+    for(size_t iadc=0;iadc<wf.size();++iadc){
+      adc.push_back(adcResponse(sid, wf[iadc]));
+      if (iadc <_nADCpre)
+        pedestal += adc.at(iadc);
+      peak = max(adc.at(iadc),peak);
     }
-    for(size_t iadc=0;iadc<adc.size();++iadc){
-      adc.at(iadc) = adcResponse(sid, wf[iadc]);
-    }
+    pmp = peak - (pedestal/(int)_nADCpre);
   }
 
-  bool StrawElectronics::digitizeAllTimes(TDCTimes const& times,double mbtime, TDCValues& tdcs) const {
+  bool StrawElectronics::digitizeAllTimes(TDCTimes const& times,double mbtime, TDCValues& tdcs, TDCValue const& eventWindowEndTDC) const {
     for(size_t itime=0;itime<2;++itime)
       tdcs[itime] = tdcResponse(times[itime]);
     // test these times against time wrapping.  This calculation should be done at construction or init,
     // FIXME!
     bool notwrap(true);
-    for(auto tdc : tdcs){
-      notwrap &= tdc > tdcResponse(_flashStart - mbtime) && tdc < _flashStartTDC;
-    }
+    for(size_t itime=0;itime<2;++itime)
+      notwrap &= times[itime]+_electronicsTimeDelay > 0 && tdcs[itime] < eventWindowEndTDC;
     return notwrap;
   }
 
-  bool StrawElectronics::digitizeTimes(TDCTimes const& times,TDCValues& tdcs) const {
+  bool StrawElectronics::digitizeTimes(TDCTimes const& times,TDCValues& tdcs, TDCValue const& eventWindowEndTDC) const {
     for(size_t itime=0;itime<2;++itime)
       tdcs[itime] = tdcResponse(times[itime]);
     // test bothe these times against the flash blanking. 
     bool notflash(true);
     for(auto tdc : tdcs){
-      notflash &= tdc > _flashEndTDC && tdc < _flashStartTDC;
+      notflash &= tdc > _flashEndTDC && tdc < eventWindowEndTDC;
     }
     return notflash;
   }
@@ -203,10 +201,10 @@ namespace mu2e {
   void StrawElectronics::adcTimes(double time, ADCTimes& adctimes) const {
 // clock has a fixed phase; Assume we digitize with a fixed delay relative to the leading edge
     adctimes.clear();
-    adctimes.reserve(TrkTypes::NADC);
+    adctimes.reserve(nADCSamples());
 // find the phase immediately proceeding this time.  Subtract presamples
     size_t phase = std::max((int)0,int(ceil(time/_ADCPeriod))-(int)_nADCpre);
-    for(unsigned itime=0;itime<TrkTypes::NADC;++itime){
+    for(unsigned itime=0;itime<nADCSamples();++itime){
       adctimes.push_back((phase+itime)*_ADCPeriod+_ADCOffset);
     }
   }
@@ -288,10 +286,7 @@ namespace mu2e {
     os << "tdcResolution = " << _tdcResolution << endl;
     os << "electronicsTimeDelay = " << _electronicsTimeDelay << endl;
     os << "ewMarkerROCJitter = " << _ewMarkerROCJitter << endl;
-    os << "flashStart = " << _flashStart << endl;
     os << "flashEnd = " << _flashEnd << endl;
-    os << "flashClockSpeed = " << _flashClockSpeed << endl;
-    os << "flashStartTDC = " << _flashStartTDC << endl;
     os << "flashEndTDC = " << _flashEndTDC << endl;
     os << "responseBins = " << _responseBins << endl;
     os << "sampleRate = " << _sampleRate << endl;

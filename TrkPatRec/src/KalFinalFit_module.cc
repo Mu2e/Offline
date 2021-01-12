@@ -32,7 +32,7 @@
 #include "RecoDataProducts/inc/KalSeed.hh"
 #include "RecoDataProducts/inc/KalRepCollection.hh"
 #include "RecoDataProducts/inc/KalRepPtrCollection.hh"
-#include "RecoDataProducts/inc/CaloClusterCollection.hh"
+#include "RecoDataProducts/inc/CaloCluster.hh"
 #include "TrkReco/inc/KalFitData.hh"
 #include "TrkPatRec/inc/KalFinalFit_types.hh"
 #include "TrkReco/inc/DoubletAmbigResolver.hh"
@@ -561,7 +561,7 @@ namespace mu2e
 
 	  double      rdrift;//, hit_error(0.2);
 
-	  TrkStrawHit hit(srep,sh,straw,istr,hitt0,hflt,1.,1.);//hit_error,1.,_maxadddoca,1.);
+	  TrkStrawHit hit(srep,sh,*_data.tracker,istr,hitt0,hflt,1.,1.);//hit_error,1.,_maxadddoca,1.);
 
 	  double tdrift=hit.time()-hit.hitT0()._t0;
 

@@ -17,7 +17,7 @@ CompressPhysicalVolumes : {
 
 FilterStepPointMomentum : {
     module_type    : FilterStepPointMomentum
-    inputs         : [ "g4run:tracker", "g4run:calorimeter", "g4run:calorimeterRO"]
+    inputs         : [ "g4run:tracker", "g4run:calorimeter"]
     cutMomentumMin : 10. # MeV/c
 }
 
@@ -38,12 +38,12 @@ DigiCompressionTags : {
     
     commonStrawDigiMCTag : "makeSD"
     commonExtraStepPointMCTags : [ "g4run:virtualdetector", "g4run:protonabsorber" ]
-    commonCaloShowerSimTag : "CaloShowerStepROFromShowerStep"
-    commonCaloShowerStepROTag : "CaloShowerStepROFromShowerStep"
+    commonCaloShowerSimTag : "CaloShowerROMaker"
+    commonCaloShowerROTag : "CaloShowerROMaker"
     commonCrvDigiMCTag : "CrvWaveforms"
 
     primarySimParticleTag : "g4run"
-    primaryCaloShowerStepTags : [ "CaloShowerStepFromStepPt:calorimeter", "CaloShowerStepFromStepPt:calorimeterRO" ]
+    primaryCaloShowerStepTags : [ "CaloShowerStepMaker"]
 }
 
 DigiCompression : {
@@ -72,7 +72,7 @@ DigiCompression : {
 	timeMapTags : [ @sequence::CommonMC.TimeMaps ]
 	caloShowerStepTags : @local::DigiCompressionTags.primaryCaloShowerStepTags
 	caloShowerSimTag : @local::DigiCompressionTags.commonCaloShowerSimTag
-	caloShowerStepROTag : @local::DigiCompressionTags.commonCaloShowerStepROTag
+	caloShowerROTag : @local::DigiCompressionTags.commonCaloShowerROTag
 	keptProducts : [ "keep *_compressDigiMCs_*_*" ]
 
     }
@@ -88,13 +88,16 @@ DigiCompression : {
 	timeMapTags : [ @sequence::CommonMC.TimeMaps ]
 	caloShowerStepTags : @nil
 	caloShowerSimTag : @local::DigiCompressionTags.commonCaloShowerSimTag
-	caloShowerStepROTag : @local::DigiCompressionTags.commonCaloShowerStepROTag
+	caloShowerROTag : @local::DigiCompressionTags.commonCaloShowerROTag
 	keptProducts : [ "keep mu2e::StrawDigis_*_*_*",
+                       "keep mu2e::StrawDigiADCWaveforms_*_*_*",
 		       "keep mu2e::CaloDigis_*_*_*",
 		       "keep mu2e::CrvDigis_*_*_*",
 		       "keep mu2e::StatusG4_*_*_*",
 		       "keep art::TriggerResults_*_*_*",
 		       "keep mu2e::EventWindowMarker_*_*_*",
+                       "keep mu2e::ProtonBunchTimeMC_*_*_*",
+                       "keep mu2e::ProtonBunchTime_*_*_*",
 		       "keep *_genCounter_*_*",
 		       "keep mu2e::EventWeight_*_*_*",
 		       "keep mu2e::ProtonBunchIntensity_*_*_*" ]
@@ -116,7 +119,7 @@ DigiCompression : {
 	module_type : FixCaloShowerStepPtrs
 	caloShowerStepTags : [ "" ]
 	caloShowerSimTag : ""
-	caloShowerStepROTag : ""
+	caloShowerROTag : ""
     }
 
     TrackerFix : {
@@ -134,7 +137,7 @@ DigiCompression : {
       timeMapTags : [ "" ]
       caloShowerStepTags : [ "" ]
       caloShowerSimTag : ""
-      caloShowerStepROTag : ""
+      caloShowerROTag : ""
       strawDigiMCIndexMapTag : ""
       crvDigiMCIndexMapTag : ""
     }

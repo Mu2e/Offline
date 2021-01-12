@@ -1,9 +1,6 @@
 # Test the seeds service: test of autoIncrement mode
 #
 #
-# $Id: test01.fcl,v 1.3 2012/02/10 16:27:49 gandr Exp $
-# $Author: gandr $
-# $Date: 2012/02/10 16:27:49 $
 
 #include "fcl/messageService.fcl"
 

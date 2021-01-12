@@ -318,7 +318,7 @@ CalPatRec : { @table::CalPatRec
 	    StrawDigiCollection                         : makeSD
 	    StrawHitFlagCollection                      : "DeltaFinder:StrawHits"
 	    SeedCollection                              : CalSeedFit
-	    CaloClusterCollection                       : "CaloClusterFromProtoCluster"
+	    CaloClusterCollection                       : "CaloClusterMaker"
 	    mcDigiCollTag                               : "dave,_it_is_used_only_when_debugging_MC._pasha"
 	    DtMaxMiss                                   : 55.
 	    MaxAddDoca                                  : 5.    # mm
@@ -460,7 +460,7 @@ CalPatRec : { @table::CalPatRec
 	    fetchStrawHitPositions        : 1
 	    fetchComboHits                : 1
 
-	    caloDigiCollectionTag         : CaloDigiFromShower
+	    caloDigiCollectionTag         : CaloDigiMaker
 	    strawDigiCollection           : makeSD
 	    strawHitCollectionTag         : makeSH
 	    strawHitPositionCollectionTag : makeSH
@@ -569,7 +569,7 @@ CalPatRec : { @table::CalPatRec
 	    useAsFilter                                 : 0
 	    StrawHitCollectionLabel                     : makePH            # CalTimePeakFinder uses ComboHits
 	    StrawHitFlagCollectionLabel                 : ShouldNotBeUsed
-	    caloClusterModuleLabel                      : CaloClusterFromProtoCluster
+	    caloClusterModuleLabel                      : CaloClusterMaker
 	    HitSelectionBits                            : [] 
 	    BackgroundSelectionBits                     : [] 
 	    MinNHits                                    : @local::CalPatRec.minNStrawHits  

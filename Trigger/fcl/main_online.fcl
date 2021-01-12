@@ -72,7 +72,7 @@ physics:
 	    parseTRK: 1
 	}
 	
-	CaloDigiFromShower:
+	CaloDigiMaker:
 	{
 	    module_type: Mu2eProducer
 	    diagLevel: 0
