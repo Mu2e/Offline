@@ -63,15 +63,18 @@ int mu2e::DbTool::init() {
 
 // ****************************************  printTable
 
-int mu2e::DbTool::printTable(std::string name, std::vector<int> cids) {
+int mu2e::DbTool::printTable(std::string name, std::vector<int> cids, 
+			     bool summary) {
   int rc = 0;
 
   map_ss args;
   args["name"] = "";
   args["cid"] = "";
+  args["summary"] = "";
   if( (rc = getArgs(args)) ) return rc;
   if(name.empty()) name = args["name"];
   if(cids.empty()) cids = intList(args["cid"]);
+  if(args["summary"]=="y") summary = true;
 
   std::string csv;
   if(cids.size()>0) {
@@ -106,18 +109,27 @@ int mu2e::DbTool::printTable(std::string name, std::vector<int> cids) {
 			   << cids.size() <<" cids" <<std::endl;
   
   for(auto cid : cids) {
-    int tid = _valcache.valCalibrations().row(cid).tid();
+    auto const& cidRow = _valcache.valCalibrations().row(cid);
+    int tid = cidRow.tid();
     auto name = _valcache.valTables().row(tid).name();
     auto ptr = mu2e::DbTableFactory::newTable(name);
     _reader.fillTableByCid(ptr, cid);
-    std::cout << "TABLE "<< name << std::endl;
-    std::cout << "#  cid " << cid << std::endl;
-    if(_pretty) {
-      std::string title = "# "+ptr->query();
-      prettyTable(title,ptr->csv());
-    } else {
-      std::cout << "# "<< ptr->query() << std::endl;
-      std::cout << ptr->csv();
+
+    if(summary) {
+	std::cout << std::setw(5) << cid 
+		  << std::setw(12) << cidRow.create_user() 
+		  << std::setw(35) << cidRow.create_time() 
+		  << std::endl;
+    }else {
+      std::cout << "TABLE "<< name << std::endl;
+      std::cout << "#  cid " << cid << std::endl;
+      if(_pretty) {
+	std::string title = "# "+ptr->query();
+	prettyTable(title,ptr->csv());
+      } else {
+	std::cout << "# "<< ptr->query() << std::endl;
+	std::cout << ptr->csv();
+      }
     }
   }
 
@@ -1255,6 +1267,12 @@ int mu2e::DbTool::help() {
       " what to do, and OPTIONS refine it.  Use dbTool ACTION --help for lists\n"
       " of options for that action.\n"
       " \n"
+      " Global options:\n"
+      "   --database <db>,  mu2e_conditions_dev or mu2e_conditions_prd \n"
+      "   --verbose <level>, an integer 0-10\n"
+      "   --pretty   when printing tables, format the columns more visually\n"
+      "   --admin   use admin privs to gain subdetector privs\n"
+      " \n"
       " <ACTION>\n"
       "    print-table : print any tables\n"
       "    print-tables : print types of calibration tables\n"
@@ -1422,7 +1440,7 @@ int mu2e::DbTool::help() {
       "    --dry-run : don't do final commit\n"
       " \n"
       " Example: \n"
-      " dbTool commit-tablelist --name TRK_TEST2 --tids 3,4,5 \\\n"
+      " dbTool commit-list --name TRK_TEST2 --tids 3,4,5 \\\n"
       "   --comment \"list for testing for trk, just trk delay tables\"\n"
       " \n"
       << std::endl;
@@ -1464,7 +1482,7 @@ int mu2e::DbTool::help() {
       "    --dry-run : don't do final commit\n"
       "  \n"
       "  Example:\n"
-      "  dbTool commit-version --purpose PRODUCTION --lid 12 \\\n"
+      "  dbTool commit-version --purpose PRODUCTION --list 12 \\\n"
       "     --major 2 --minor 0 --comment \"to add alignment tables\"\n"
       << std::endl;
   } else if(_action=="commit-extension") {
@@ -1595,13 +1613,15 @@ int mu2e::DbTool::parseArgs() {
 }
 
 int mu2e::DbTool::getArgs(std::map<std::string,std::string>& fArgs) {
+  // loop over given arg
   for(auto a:_argMap) {
     if(_verbose>=10) std::cout << "getArgs a="
 	     << a.first << "," << a.second <<std::endl;
     bool found = false;
+    // loop over args expected for given action
     for(auto& b: fArgs) {
-    if(_verbose>=10) std::cout << "getArgs b="
-	     << b.first << "," << b.second <<std::endl;
+      if(_verbose>=10) std::cout << "getArgs b="
+				 << b.first << "," << b.second <<std::endl;
       if(a.first==b.first) {
 	b.second = a.second;
 	if(_verbose>=10) std::cout << "match found" << std::endl;
