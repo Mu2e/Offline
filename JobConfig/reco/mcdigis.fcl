@@ -1,18 +1,14 @@
 #
-# Reconstruct from MC digis
-# David Brown (LBNL) 1 Feb 2019
+# Reconstruct from digis, including MC information
+# original author: David Brown (LBNL) 1 Feb 2020
 #
 #include "fcl/minimalMessageService.fcl"
 #include "fcl/standardProducers.fcl"
 #include "fcl/standardServices.fcl"
 #include "JobConfig/reco/prolog.fcl"
 #
-process_name : recomcdigis
-
 source : { module_type : RootInput }
-
 services : @local::Services.Reco
-
 physics :
 {
   producers : @local::Reconstruction.producers
@@ -20,17 +16,16 @@ physics :
   analyzers: @local::Reconstruction.analyzers
   RecoPath : [ @sequence::Reconstruction.RecoMCPath ]
   EndPath : [ Output, RecoCheck  ]
-
 }
-
-outputs : { 
-  Output :@local::Reconstruction.Output
+outputs : {   
+  Output : {
+    @table::Reconstruction.Output
+    SelectEvents : [ "RecoPath" ]
+  }
 }
-
 #include "JobConfig/reco/epilog.fcl"
-outputs.Output.SelectEvents : [ "RecoPath" ]
-#
+physics.end_paths : [ EndPath ] # needed for generate_fcl
 # the following need to be overwritten for the specific channel
+process_name : Reco
 services.TFileService.fileName: "nts.owner.RecoMC.version.sequencer.root"
 outputs.Output.fileName: "mcs.owner.RecoMC.version.sequencer.art"
-physics.end_paths : [ EndPath ] # needed for generate_fcl

@@ -41,6 +41,7 @@ Digitize: {
 	caloShowerStepTags : @local::DigiCompressionTags.primaryCaloShowerStepTags
 	caloShowerSimTag : @local::DigiCompressionTags.commonCaloShowerSimTag
 	caloShowerROTag : @local::DigiCompressionTags.commonCaloShowerROTag
+	primaryParticleTag : "FindMCPrimary"
     }
   }
 
@@ -61,7 +62,9 @@ Digitize: {
     digiCompressionCheck : @local::DigiCompression.Check
   }
 
-  TriggerSequence : [  @sequence::CommonMC.DigiSim,
+  TriggerSequence : [
+    protonBunchIntensity,
+    @sequence::CommonMC.DigiSim,
     @sequence::TrackerMC.DigiSim,
     @sequence::CaloMC.DigiSim,
     @sequence::CrvDAQPackage.CrvResponseSequence,
@@ -81,9 +84,6 @@ Digitize: {
 		    "keep mu2e::ProtonBunchTime_*_*_*",
 		    "keep mu2e::EventWeight_*_*_*",
 		    "keep mu2e::ProtonBunchIntensity_*_*_*",
-#		    "keep mu2e::StrawDigiMCs_*_*_*",
-#		    "keep mu2e::CrvDigiMCs_*_*_*",
-#		    "keep mu2e::SimParticleart::Ptrdoublestd::map_*_*_*" ]
 		    "keep *_compressDigiMCs_*_*" ]
 
   Output : {
@@ -97,7 +97,7 @@ Digitize: {
 }
 
 Digitize.Output.outputCommands : [ "drop *_*_*_*",
-		       @sequence::Primary.KeptProducts,
+#		       @sequence::Primary.KeptProducts,
 		       @sequence::Digitize.KeptProducts ]
 
 # define paths

@@ -61,7 +61,7 @@ Primary: {
 		       "keep mu2e::CaloShowerSteps_*_*_*",
 		       "keep mu2e::StepPointMCs_*_CRV_*", # update this to CrvStep FIXME!
 		       "keep mu2e::StepPointMCs_*_virtualdetector_*",
-		       "keep mu2e::StepPointMCs_*_protonabsorber_*",
+		       "keep mu2e::StepPointMCs_*_protonabsorber_*", # add active target too FIXME!
 #		       "keep mu2e::SimParticlemv_*_*_*",  # these need to be updated after compression FIXME!
 		       "keep mu2e::StatusG4_*_*_*",
 		       "keep mu2e::SimParticleart::Ptrmu2e::MCTrajectorystd::map_*_*_*",
@@ -73,6 +73,7 @@ Primary: {
 
   analyzers: {
     genCountLogger: { module_type: GenEventCountReader makeHistograms: false }
+#    printModule : { module_type : PrintModule }
   }
 
   Output : {

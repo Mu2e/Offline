@@ -174,10 +174,10 @@
  <class name="art::Wrapper<art::Assns<mu2e::CaloClusterMC,mu2e::CaloCluster,void>>"/>
  <class name="art::Wrapper<art::Assns<mu2e::CaloCluster,mu2e::CaloClusterMC,void>>"/>
 
- <class name="art::Assns<mu2e::CaloDigi,mu2e::CaloHitMC,void>"/>
- <class name="art::Assns<mu2e::CaloHitMC,mu2e::CaloDigi,void>"/>
- <class name="art::Wrapper<art::Assns<mu2e::CaloHitMC,mu2e::CaloDigi,void>>"/>
- <class name="art::Wrapper<art::Assns<mu2e::CaloDigi,mu2e::CaloHitMC,void>>"/>
+ <class name="art::Assns<mu2e::CaloHit,mu2e::CaloHitMC,void>"/>
+ <class name="art::Assns<mu2e::CaloHitMC,mu2e::CaloHit,void>"/>
+ <class name="art::Wrapper<art::Assns<mu2e::CaloHitMC,mu2e::CaloHit,void>>"/>
+ <class name="art::Wrapper<art::Assns<mu2e::CaloHit,mu2e::CaloHitMC,void>>"/>
 
  <class name="art::Assns<mu2e::CaloHit,mu2e::SimParticle,art::Ptr<mu2e::CaloShowerSim> >" />
  <class name="art::Assns<mu2e::CaloHit,mu2e::SimParticle,void >" />

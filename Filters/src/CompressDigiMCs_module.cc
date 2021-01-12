@@ -829,7 +829,7 @@ void mu2e::CompressDigiMCs::keepSimParticle(const art::Ptr<SimParticle>& sim_ptr
   art::Ptr<SimParticle> childPtr = sim_ptr;
   art::Ptr<SimParticle> parentPtr = childPtr->parent();
 
-  while (parentPtr) {
+  while (parentPtr.isNonnull()) {
     _simParticlesToKeep[sim_ptr.id()].insert(parentPtr);
     childPtr = parentPtr;
     parentPtr = parentPtr->parent();
