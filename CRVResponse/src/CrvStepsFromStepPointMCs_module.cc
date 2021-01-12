@@ -104,7 +104,7 @@ namespace mu2e
     _ssize(config().startSize()),
     _selector{art::ProductInstanceNameSelector(config().crvSteps()) &&
       !art::ModuleLabelSelector(config().stepsToSkip()) },
-    _firstEvent(false)
+    _firstEvent(true)
   {
     consumesMany<StepPointMCCollection>();
     produces <CrvStepCollection>();
@@ -147,9 +147,9 @@ namespace mu2e
     event.getMany(_selector, stepsHandles);
 
     // Informational message on the first event.
-    if(_firstEvent && _debug>0)
+    if(_firstEvent)
     {
-      mf::LogInfo log("CrvDigiSim");
+      mf::LogInfo log("COSMIC");
       log << "mu2e::CrvStepsFromStepPointMCs will use StepPointMCs from: \n";
       for(SPMCCHV::const_iterator i=stepsHandles.begin(), e=stepsHandles.end(); i!=e; ++i)
       {
