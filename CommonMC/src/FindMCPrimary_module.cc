@@ -49,6 +49,7 @@ namespace mu2e {
       art::InputTag _gpc, _spc;
       std::vector<int> _pgenids; 
       double _proton_mass; // cache for efficiency
+
   };
 
   FindMCPrimary::FindMCPrimary(const Parameters& config )  : 
@@ -79,6 +80,7 @@ namespace mu2e {
     auto const& gpc = *gpch;
     auto spch = event.getValidHandle<SimParticleCollection>(_spc);
     auto const& spc = *spch;
+
     // check for a single particle
     std::vector<GenParticleCollection::const_iterator> pgps;
     if(_single && gpc.size() ==1){
@@ -143,8 +145,7 @@ namespace mu2e {
       for(auto isp=spc.begin(); isp != spc.end(); ++isp) {
 	if(isp->second.genParticle() == gpp){
       // create a ptr for this SimParticle and remember it
-	  size_t spindex = std::distance(spc.begin(),isp);
-	  auto spp = art::Ptr<SimParticle>(spch,spindex);
+	   auto spp = art::Ptr<SimParticle>(spch, isp->first.asUint());
 	  simps.push_back(spp);
 	}
       }

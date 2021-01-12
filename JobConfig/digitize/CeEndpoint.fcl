@@ -8,7 +8,7 @@ process_name: CeEndpointDigis
 #
 # final configuration
 #
-#include "JobConfig/primary/epilog.fcl"
+#include "JobConfig/digitize/epilog.fcl"
 # customize the output
 services.TFileService.fileName: "nts.owner.CeEndpointDigis.version.sequencer.root"
 outputs.Output.fileName: "sim.owner.CeEndpointDigis.version.sequencer.art"

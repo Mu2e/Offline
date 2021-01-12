@@ -1,11 +1,14 @@
-
+#
 #  Prolog for production reconstruction jobs
 #
+#include "CommonMC/fcl/prolog.fcl"
 #include "TrkHitReco/fcl/prolog.fcl"
 #include "TrkReco/fcl/prolog.fcl"
 #include "TrkPatRec/fcl/prolog.fcl"
+#include "CaloReco/fcl/prolog.fcl"
+#include "CaloCluster/fcl/prolog.fcl"
+#include "CaloMC/fcl/prolog.fcl"
 #include "CalPatRec/fcl/prolog.fcl"
-#include "CommonMC/fcl/prolog.fcl"
 #include "Filters/fcl/prolog.fcl"
 #
 BEGIN_PROLOG
@@ -16,9 +19,12 @@ Reconstruction : {
     @table::CalPatRec.producers
     @table::CaloReco.producers
     @table::CaloCluster.producers
+    @table::CaloMC.producers
+    @table::CaloClusterMC.producers
     @table::CrvResponsePackage.producers
-    # instantiate explicit helix merger modules: this should be in TrkReco/prolog FIXME!
-    # NB: positive here refers to helicity, not charge!
+
+# instantiate explicit helix merger modules
+# NB: positive here refers to helicity, not charge!
     MHDeM : {
       @table::TrkReco.producers.MergeHelices
       HelixFinders : [ "HelixFinderDe:Positive", "CalHelixFinderDe:Positive" ]
@@ -86,13 +92,11 @@ Reconstruction : {
       SeedCollection             : MHUmuP
     }
     # Implicit TrkPatRec config for Final Fits and upstream fits (no merging)
-    # MC specific: this should be in a separate fcl file FIXME!
-    FindMCPrimary : { 
-      @table::CommonMC.FindMCPrimary
-      TimeOffsets : [ @sequence::DigiCompression.TimeMaps ]
-    }
+    #
+    # Prune output so that only parts related to reconstructed objects are kept
+    #
     SelectRecoMC : { 
-      @table::CommonMC.SelectRecoMC 
+       @table::CommonMC.SelectRecoMC 
        CSSCollection : "compressDigiMCs"
        CaloClusterMCDTime : 2.0
        CaloMinE : 1.0
@@ -100,7 +104,7 @@ Reconstruction : {
        SaveUnusedDigiMCs : true
        SaveAllUnusedDigiMCs : false
        TimeOffsets : [ @sequence::DigiCompression.TimeMaps ]
-       PrimaryParticle : "FindMCPrimary"
+       PrimaryParticle : "compressDigiMCs"
        StrawDigiCollection : "makeSD"
        StrawHitFlagCollection : "FlagBkgHits:StrawHits" 
        ComboHitCollection : "makeSH" 
@@ -119,12 +123,6 @@ Reconstruction : {
 		     "MHUeM", "MHUeP", "MHUmuM", "MHUmuP" ]
       VDSPCollection : "compressDigiMCs:virtualdetector"
     }
-    # calo fix: only need for MDC2018e and earlier
-    CaloMCFix : { @table::DigiCompression.CaloFix 
-      	caloShowerStepTags : [ "compressDigiMCs" ]
-	caloShowerSimTag : "compressDigiMCs"
-	caloShowerROTag : "compressDigiMCs"
-    }
     # Compresion
     compressRecoMCs : { @table::DigiCompression.Reco
       strawDigiMCTag : "compressDigiMCs"
@@ -137,14 +135,14 @@ Reconstruction : {
       crvDigiMCIndexMapTag : "SelectRecoMC:CrvDigiMap"
       keepAllGenParticles : false
       crvCoincClusterMCTag : "CrvCoincidenceClusterMatchMC"
-      primaryParticleTag : "FindMCPrimary"
+      primaryParticleTag : "compressDigiMCs"
       rekeySimParticleCollection : false
     }
   }
   
   filters : {
 # why are CalPatRec reconstruction modules implemented as filters????
-# This could have unexpected downstream consequences FIXME!
+# They should be remade as producers FIXME!
     @table::CalPatRec.filters
     # reco filter
     RecoFilter : {
@@ -163,7 +161,7 @@ Reconstruction : {
     }
   }
 
-  analyzers : {
+  analyzers : { # these are specific to MC
     RecoCheck : { 
       @table::DigiCompression.RecoCheck
       oldStrawDigiMCTag : "compressDigiMCs"
@@ -181,7 +179,7 @@ Reconstruction : {
   }
 # reconstruct multiple types of tracks.  These are separate sequences to allow granular execution
 # Downstream electron sequence (plus and minus), using merged helices
-  DeSequence : [
+  DeReco : [
     TimeClusterFinderDe, HelixFinderDe,  # TrkPatRec
     CalTimePeakFinder, CalHelixFinderDe,  # CalPatRec
     MHDeM, MHDeP, # helix merging
@@ -189,14 +187,14 @@ Reconstruction : {
     KFFDeM, KFFDeP # final Kalman filter fit
   ]
 # Upstream electron sequence (plus and minus): TrkPatRec only
-  UeSequence : [
+  UeReco : [
     TimeClusterFinderUe, HelixFinderUe,   
     MHUeM, MHUeP, # helix merging
     KSFUeM, KSFUeP, # Seed fit (chisquared, no drift)
     KFFUeM, KFFUeP # final Kalman filter fit
   ]
 # Downstream muon sequence (plus and minus)
-  DmuSequence : [
+  DmuReco : [
     TimeClusterFinderDmu, HelixFinderDmu,  # TrkPatRec
     CalTimePeakFinderMu, CalHelixFinderDmu,  # CalPatRec
     MHDmuM, MHDmuP, # helix merging
@@ -204,24 +202,26 @@ Reconstruction : {
     KFFDmuM, KFFDmuP # final Kalman filter fit
   ]
 # Upstream muon sequence (plus and minus)
-  UmuSequence : [
+  UmuReco : [
     TimeClusterFinderUmu, HelixFinderUmu,   
     MHUmuM, MHUmuP, # helix merging
     KSFUmuM, KSFUmuP, # Seed fit (chisquared, no drift)
     KFFUmuM, KFFUmuP # final Kalman filter fit
   ]
-# Other sequences
-  CaloRecoSequence : [ @sequence::CaloReco.Reco,
-			@sequence::CaloCluster.Reco ]
-#    TrkCaloMatchSequence : [ @sequence::TrackCaloMatching.matching_dem_TRF, 
-#                         @sequence::TrackCaloMatching.matching_dep_TRF ]
-  CrvRecoSequence : [ CrvRecoPulses, CrvCoincidence, CrvCoincidenceClusterFinder ]
-# full MC sequence
-  RecoMCSequence :  [ CaloMCFix, FindMCPrimary,  CrvCoincidenceClusterMatchMC, SelectRecoMC, compressRecoMCs ]
+# add protons for calibration TODO!
+
+# Track reco sequence
+  TrkReco : [  @sequence::TrkHitReco.PrepareHits ] # Track hit
+# Calo reco
+  CaloReco : [ @sequence::CaloReco.Reco, @sequence::CaloCluster.Reco ]
+# CRV reco 
+  CrvReco : [ CrvRecoPulses, CrvCoincidence, CrvCoincidenceClusterFinder ]
+# full MC sequence; form the Calo and CRV matching, and compress based on reco content
+  MCReco :  [@sequence::CaloMC.TruthMatch, @sequence::CaloClusterMC.TruthMatch,  CrvCoincidenceClusterMatchMC, SelectRecoMC, compressRecoMCs ]
 
 # define products to keep
 # First, high-level reco products
-  HighReco : [
+  HighRecoProducts : [
 	    "keep mu2e::KalSeeds_KFF*_*_*",
 	    "keep mu2e::KalSeeds_KSF*_*_*",
 	    "keep mu2e::HelixSeeds_MH*_*_*",
@@ -230,11 +230,11 @@ Reconstruction : {
             "keep art::TriggerResults_*_*_*"
 	    ]
 # low-level reco products, selected to match the high-level reco objects
-  LowReco : [ "keep *_SelectRecoMC_*_*",
+  LowRecoProducts : [ "keep *_SelectRecoMC_*_*",
              "keep mu2e::ComboHitCollection_*_*_*"
 	    ]
 # low-level reco products, without any high-level match
-  LowRecoAll : [ 
+  AllRecoProducts : [ 
             "keep mu2e::StrawDigis_makeSD_*_*",
             "keep mu2e::StrawHitFlags_FlagBkgHits_StrawHits_*",
             "keep mu2e::ComboHitCollection_makeSH_*_*",
@@ -245,13 +245,13 @@ Reconstruction : {
 	    "keep mu2e::CrvCoincidenceClusters_CrvCoincidenceClusterFinder_*_*"
 	    ]
 # MC truth matched to reco
-  RecoMC : [
+  MCRecoProducts : [
             "keep mu2e::ProtonBunchIntensity_*_MeanIntensity_*",
 	    "keep *_genCounter_*_*",
 	    "keep *_compressRecoMCs_*_*"
 	    ]
 # Digi-leverl MC truth 
-  DigiMC : [
+  DigiMCProducts : [
             "keep mu2e::ProtonBunchIntensity_*_MeanIntensity_*",
 	    "keep *_genCounter_*_*",
 	    "keep mu2e::PrimaryParticle_*_*_*",
@@ -262,59 +262,36 @@ Reconstruction : {
 	    "keep *_compressDigiMCs_*_*"
 	    ]
 }
-# must define some things outside the brackets due to internal dependence
-#
-# Aggregate to a full TrkRecoSequence (depends on CaloRecoSequence)
-Reconstruction.TrkRecoSequence : [
-    @sequence::TrkHitReco.PrepareHits, # Track hit
-    @sequence::Reconstruction.DeSequence,
-    @sequence::Reconstruction.UeSequence,
-    @sequence::Reconstruction.DmuSequence,
-    @sequence::Reconstruction.UmuSequence
-]
-#
-# Define paths; this allows for granularity in jobs without
-# any performance cost, since the same module instances are used.
-Reconstruction.DePath : [
-  @sequence::TrkHitReco.PrepareHits, # Track hit
-  @sequence::Reconstruction.CaloRecoSequence, # CaloReco needs to preceed TrkReco
-  @sequence::Reconstruction.DeSequence # tracking
-]
-Reconstruction.UePath : [
-  @sequence::TrkHitReco.PrepareHits, # Track hit
-  @sequence::Reconstruction.CaloRecoSequence, # CaloReco needs to preceed TrkReco
-  @sequence::Reconstruction.UeSequence # tracking
-]
-Reconstruction.DmuPath : [
-  @sequence::TrkHitReco.PrepareHits, # Track hit
-  @sequence::Reconstruction.CaloRecoSequence, # CaloReco needs to preceed TrkReco
-  @sequence::Reconstruction.DmuSequence # tracking
-]
-Reconstruction.UmuPath : [
-  @sequence::TrkHitReco.PrepareHits, # Track hit
-  @sequence::Reconstruction.CaloRecoSequence, # CaloReco needs to preceed TrkReco
-  @sequence::Reconstruction.UmuSequence # tracking
-]
 
+# override CalPatRec defaults: FIXME!
+Reconstruction.filters.CalHelixFinderDe.StrawHitFlagCollectionLabel                 : "FlagBkgHits:ComboHits"
+Reconstruction.filters.CalHelixFinderDmu.StrawHitFlagCollectionLabel                 : "FlagBkgHits:ComboHits"
+
+# override CaloMC Truth matching provenance for compression
+
+Reconstruction.producers.CaloHitTruthMatch.caloShowerSimCollection : "compressDigiMCs"
+Reconstruction.producers.CaloHitTruthMatch.primaryParticle : "compressDigiMCs"
+# fix time map lookup
+Reconstruction.producers.CrvCoincidenceClusterMatchMC.timeOffsets.inputs :  [ @sequence::DigiCompression.TimeMaps ]
+
+# all production tracks
+Reconstruction.TrackReco : [
+  @sequence::Reconstruction.DeReco,
+  @sequence::Reconstruction.UeReco,
+  @sequence::Reconstruction.DmuReco,
+  @sequence::Reconstruction.UmuReco ]
+#
 # Full reconstruction Path
 Reconstruction.RecoPath : [
-  @sequence::Reconstruction.CaloRecoSequence, # CaloReco needs to preceed TrkReco
-  @sequence::Reconstruction.TrkRecoSequence,
-  @sequence::Reconstruction.CrvRecoSequence 
+  @sequence::Reconstruction.CaloReco,
+  @sequence::Reconstruction.TrkReco,
+  @sequence::Reconstruction.CrvReco,
+  @sequence::Reconstruction.TrackReco
 ]
 # Full reco path with MC
 Reconstruction.RecoMCPath : [
   @sequence::Reconstruction.RecoPath,
-  @sequence::Reconstruction.RecoMCSequence,
-  RecoFilter
-]
-# Special path for validation
-Reconstruction.DePath : [
-  @sequence::Reconstruction.CaloRecoSequence, # CaloReco needs to preceed TrkReco
-  @sequence::TrkHitReco.PrepareHits, # Track hit
-  @sequence::Reconstruction.DeSequence,
-  @sequence::Reconstruction.CrvRecoSequence,
-  @sequence::Reconstruction.RecoMCSequence,
+  @sequence::Reconstruction.MCReco,
   RecoFilter
 ]
 # default output
@@ -322,12 +299,11 @@ Reconstruction.Output : {
   module_type : RootOutput
   SelectEvents : [ RecoPath ]
   fileName    : @nil
-  outputCommands : [ "drop *_*_*_*",
-  @sequence::Reconstruction.HighReco,
-  @sequence::Reconstruction.LowReco,
-  @sequence::Reconstruction.RecoMC ]
+  outputCommands : [ "keep *_*_*_*" ]
+#  outputCommands : [ "drop *_*_*_*",
+#  @sequence::Reconstruction.HighRecoProducts,
+#  @sequence::Reconstruction.LowRecoProducts,
+#  @sequence::Reconstruction.MCRecoProducts]
 }
-
-
 
 END_PROLOG

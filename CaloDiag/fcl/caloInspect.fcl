@@ -30,9 +30,9 @@ physics: {
       }
       
       @table::CaloReco.producers
-      @table::CaloDigiMC.producersMC
+      @table::CaloDigiMC.producers
       @table::CaloCluster.producers
-      @table::CaloClusterMC.producersMC	
+      @table::CaloClusterMC.producers	
       @table::TrkHitReco.producers
       @table::Tracking.producers
   }

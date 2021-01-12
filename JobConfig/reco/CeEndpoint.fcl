@@ -1,6 +1,5 @@
-# process primary signal-only digis
-#include "JobConfig/reco/mcdigis_primary.fcl"
-# compress MCTrajectories: this only works for digis produced in MDC2018h and later
-#physics.producers.compressRecoMCs.mcTrajectoryTag : "compressDigiMCs"
-services.TFileService.fileName: "nts.owner.CeEndpoint.version.sequencer.root"
-outputs.Output.fileName: "mcs.owner.CeEndpoint.version.sequencer.art"
+# Reconstruct CeEndpoint
+#include "JobConfig/reco/mcdigis.fcl"
+process_name : CeEndpointReco
+services.TFileService.fileName: "nts.owner.CeEndpointReco.version.sequencer.root"
+outputs.Output.fileName: "mcs.owner.CeEndpointReco.version.sequencer.art"
