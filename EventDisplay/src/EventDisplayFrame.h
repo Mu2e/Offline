@@ -1,9 +1,6 @@
 //
 // Class which builds the main frame for the event display, and provides functions to control the display, e.g. quit, moving to the next event, animations, storing the events into gif files (static and animated), detailed infos of tracks, hits, etc.
 //
-// $Id: EventDisplayFrame.h,v 1.29 2014/09/15 17:57:48 ehrlich Exp $
-// $Author: ehrlich $
-// $Date: 2014/09/15 17:57:48 $
 //
 // Original author Ralf Ehrlich
 //
@@ -17,6 +14,7 @@
 #include "art/Framework/Principal/Event.h"
 #include "boost/shared_ptr.hpp"
 #include "Mu2eUtilities/inc/SimParticleTimeOffset.hh"
+#include "TVirtualX.h"
 #endif
 
 class TBox;

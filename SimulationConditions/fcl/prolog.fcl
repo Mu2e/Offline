@@ -1,0 +1,15 @@
+BEGIN_PROLOG
+
+SimBookkeeper : {
+  verbose : 1
+  useDb : false
+  # some default values from small-scale tests
+  simStageEfficiencies : [
+    { tag : dsRegionPerPOT eff : 0.668017},
+    { tag : muBeamPerPOT eff : 0.180513},
+    { tag : flashPerMuBeam eff : 0.00801518},
+    { tag : muStopPerPOT eff : 0.00138571}
+ ]
+}
+
+END_PROLOG

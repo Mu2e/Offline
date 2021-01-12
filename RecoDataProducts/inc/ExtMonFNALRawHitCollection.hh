@@ -1,6 +1,3 @@
-// $Id: ExtMonFNALRawHitCollection.hh,v 1.1 2012/08/23 23:41:35 gandr Exp $
-// $Author: gandr $
-// $Date: 2012/08/23 23:41:35 $
 //
 // Original author Andrei Gaponenko
 

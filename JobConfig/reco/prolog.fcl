@@ -104,13 +104,14 @@ Reconstruction : {
        StrawDigiCollection : "makeSD"
        StrawHitFlagCollection : "FlagBkgHits:StrawHits" 
        ComboHitCollection : "makeSH" 
-       CaloDigiCollection : "CaloDigiFromShower"
+       CaloDigiCollection : "CaloDigiMaker"
        CrvDigiCollection : "CrvDigi"
-       CaloClusterCollection : "CaloClusterFromProtoCluster"
+       CaloClusterCollection : "CaloClusterMaker"
        CrvCoincidenceClusterCollection : "CrvCoincidenceClusterFinder"
        StrawDigiMCCollection : "compressDigiMCs"
        CrvDigiMCCollection : "compressDigiMCs"
        EventWindowMarker : "EWMProducer"
+       ProtonBunchTimeMC : "EWMProducer"
        ProtonBunchIntensity : "protonBunchIntensity"
        KFFInstances  : ["KFFDeM", "KFFDeP", "KFFDmuM", "KFFDmuP",
 		     "KFFUeM", "KFFUeP", "KFFUmuM", "KFFUmuP" ]
@@ -122,7 +123,7 @@ Reconstruction : {
     CaloMCFix : { @table::DigiCompression.CaloFix 
       	caloShowerStepTags : [ "compressDigiMCs" ]
 	caloShowerSimTag : "compressDigiMCs"
-	caloShowerStepROTag : "compressDigiMCs"
+	caloShowerROTag : "compressDigiMCs"
     }
     # Compresion
     compressRecoMCs : { @table::DigiCompression.Reco
@@ -225,7 +226,7 @@ Reconstruction : {
 	    "keep mu2e::KalSeeds_KSF*_*_*",
 	    "keep mu2e::HelixSeeds_MH*_*_*",
 	    "keep mu2e::TimeClusters_MH*_*_*",
-	    "keep mu2e::CaloClusters_CaloClusterFromProtoCluster_*_*",
+	    "keep mu2e::CaloClusters_CaloClusterMaker_*_*",
             "keep art::TriggerResults_*_*_*"
 	    ]
 # low-level reco products, selected to match the high-level reco objects
@@ -237,8 +238,8 @@ Reconstruction : {
             "keep mu2e::StrawDigis_makeSD_*_*",
             "keep mu2e::StrawHitFlags_FlagBkgHits_StrawHits_*",
             "keep mu2e::ComboHitCollection_makeSH_*_*",
-	    "keep mu2e::CaloDigis_CaloDigiFromShower_*_*",
-	    "keep mu2e::CaloCrystalHits_CaloCrystalHitFromHit_*_*",
+	    "keep mu2e::CaloDigis_CaloDigiMaker_*_*",
+	    "keep mu2e::CaloHits_CaloHitMaker_*_*",
 	    "keep mu2e::CrvDigis_CrvDigi_*_*",
 	    "keep mu2e::CrvRecoPulses_CrvRecoPulses_*_*",
 	    "keep mu2e::CrvCoincidenceClusters_CrvCoincidenceClusterFinder_*_*"
@@ -256,6 +257,8 @@ Reconstruction : {
 	    "keep mu2e::PrimaryParticle_*_*_*",
 	    "keep mu2e::ProtonBunchIntensity_protonBunchIntensity_*_*",
 	    "keep mu2e::EventWindowMarker_EWMProducer_*_*",
+            "keep mu2e::ProtonBunchTimeMC_EWMProducer_*_*",
+            "keep mu2e::ProtonBunchTime_EWMProducer_*_*",
 	    "keep *_compressDigiMCs_*_*"
 	    ]
 }

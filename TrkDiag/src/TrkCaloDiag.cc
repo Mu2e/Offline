@@ -1,7 +1,5 @@
 //
 // Diagnostics for track-calo matching
-// $Author: brownd $ 
-// $Date: 2014/09/20 14:34:22 $
 //
 
 #include "TrkDiag/inc/TrkCaloDiag.hh"
@@ -51,7 +49,7 @@ namespace mu2e
     const CaloCluster* cluster = tcm.caloCluster();
     tcinfo._eclust = cluster->energyDep();
     tcinfo._tclust = cluster->time();
-    tcinfo._section = cluster->diskId();
+    tcinfo._section = cluster->diskID();
     tcinfo._cpos = Geom::toXYZVec(cluster->cog3Vector());
 // track information at intersection point.  Don't use this as there's an
 // additional fltlen added for the depth (59mm).

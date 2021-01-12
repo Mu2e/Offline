@@ -3,9 +3,6 @@
 //
 // "Typical" Torus object
 //
-// $Id: Torus.hh,v 1.1 2013/08/07 20:20:07 knoepfel Exp $
-// $Author: knoepfel $
-// $Date: 2013/08/07 20:20:07 $
 //
 // Original author: Kyle Knoepfel
 //

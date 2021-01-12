@@ -4,9 +4,6 @@
 // index to access to the StrawHit by z ID position and by AbsSttn ID, it is the input for the final pattern recognition
 // stage in the fast pattern recognition
 //
-// $Id: ZRotStrawHitMap.hh,v 1.1 2011/10/28 00:17:18 tassiell Exp $
-// $Author: tassiell $
-// $Date: 2011/10/28 00:17:18 $
 //
 // Original author G. Tassielli
 //

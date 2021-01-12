@@ -1,9 +1,6 @@
 //
 // Free function to be used by the nest... functions
 //
-// $Id: finishNesting.cc,v 1.9 2014/09/19 19:15:17 knoepfel Exp $
-// $Author: knoepfel $
-// $Date: 2014/09/19 19:15:17 $
 //
 // Original author KLG based on nest... functions
 //

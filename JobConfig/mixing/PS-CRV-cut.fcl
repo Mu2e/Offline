@@ -15,7 +15,7 @@ source : {
   readParameterSets: false
 }
 
-physics.producers.protonTimeMap : { module_type : GenerateProtonTimes }
+physics.producers.protonTimeMap : @local::CommonMC.producers.protonTimeMap
 
 physics.filters.PSMixerCRVCut : @local::CRVCut
 physics.filters.PSMixerCRVCut.timeMapTags : [ "protonTimeMap" ]

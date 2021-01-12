@@ -1,9 +1,6 @@
 //
 // Information about physics processes.
 //
-// $Id: PhysicsProcessInfo.cc,v 1.8 2012/12/13 23:57:58 genser Exp $
-// $Author: genser $
-// $Date: 2012/12/13 23:57:58 $
 //
 // Original author Rob Kutschke
 //

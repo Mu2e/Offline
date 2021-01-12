@@ -2,9 +2,6 @@
 // Look for particles coming from the calorimeter and reflecting back in the
 // magnetic mirror
 //
-// $Id: Reflect_module.cc,v 1.12 2014/09/10 18:49:17 brownd Exp $
-// $Author: brownd $
-// $Date: 2014/09/10 18:49:17 $
 //
 // Framework includes.
 #include "art/Framework/Core/EDAnalyzer.h"

@@ -24,17 +24,16 @@ namespace mu2e {
     typedef std::shared_ptr<Mu2eMaterial> ptr_t;
     typedef std::shared_ptr<const Mu2eMaterial> cptr_t;
     friend class Mu2eMaterialMaker;
+    constexpr static const char* cxname = {"Mu2eMaterial"};
 
-    Mu2eMaterial(): _name("Mu2eMaterial") {}
+    Mu2eMaterial():ProditionsEntity(cxname)  {}
     virtual ~Mu2eMaterial() {}
 
     DetStrawType const* strawType() const { return _strawtype.get(); }
 
-    std::string const& name() const { return _name; }
     void print( std::ostream& ) const;
 
   private:
-    std::string _name;
 
     // types for straw elements
     std::unique_ptr<DetStrawType> _strawtype; // straw materials description

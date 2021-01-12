@@ -1,8 +1,6 @@
 //
 // Construct VirtualDetectors
 //
-// $Id: VirtualDetectorMaker.cc,v 1.35 2014/09/16 21:57:43 jrquirk Exp $
-// $Author: jrquirk $
 //
 
 #include <iostream>
@@ -208,7 +206,7 @@ namespace mu2e {
         }
 
         Tracker const & tracker = *(GeomHandle<Tracker>());
-        Hep3Vector ttOffset(-solenoidOffset,0.,tracker.z0());
+        Hep3Vector ttOffset(-solenoidOffset,0.,tracker.g4Tracker()->z0());
 
         // VD TT_Mid is placed inside the tracker mother volume in the
         // middle of the tracker shifted by the half length of vd
@@ -238,10 +236,10 @@ namespace mu2e {
         //       }
 
         // Global position is in Mu2e coordinates; local position in the detector system.
-        double zFrontGlobal = tracker.mother().position().z()-tracker.mother().tubsParams().zHalfLength()-vdHL;
-        double zBackGlobal  = tracker.mother().position().z()+tracker.mother().tubsParams().zHalfLength()+vdHL;
-        double zFrontLocal  = zFrontGlobal - tracker.z0();
-        double zBackLocal   = zBackGlobal  - tracker.z0();
+        double zFrontGlobal = tracker.g4Tracker()->mother().position().z()-tracker.g4Tracker()->mother().tubsParams().zHalfLength()-vdHL;
+        double zBackGlobal  = tracker.g4Tracker()->mother().position().z()+tracker.g4Tracker()->mother().tubsParams().zHalfLength()+vdHL;
+        double zFrontLocal  = zFrontGlobal - tracker.g4Tracker()->z0();
+        double zBackLocal   = zBackGlobal  - tracker.g4Tracker()->z0();
 
         Hep3Vector vdTTFrontOffset(0.,
                                    0.,
@@ -284,7 +282,7 @@ namespace mu2e {
         // these next two detectors are also thin, but they are not disks but cylinders
         // placed on the inner and outer surface of the tracker envelope
 
-        Hep3Vector vdTTOutSurfOffset(0.,0.,tracker.mother().position().z()-tracker.z0());
+        Hep3Vector vdTTOutSurfOffset(0.,0.,tracker.g4Tracker()->mother().position().z()-tracker.g4Tracker()->z0());
 
         vd->addVirtualDetector( VirtualDetectorId::TT_OutSurf,
                                  ttOffset, 0, vdTTOutSurfOffset);

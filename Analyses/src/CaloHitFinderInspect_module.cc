@@ -21,10 +21,9 @@
 #include "GeometryService/inc/GeomHandle.hh"
 #include "GeometryService/inc/GeometryService.hh"
 #include "GlobalConstantsService/inc/GlobalConstantsHandle.hh"
-#include "RecoDataProducts/inc/CaloHitCollection.hh"
-#include "RecoDataProducts/inc/CaloDigiCollection.hh"
-#include "RecoDataProducts/inc/CaloRecoDigiCollection.hh"
-#include "MCDataProducts/inc/CaloShowerSimCollection.hh"
+#include "RecoDataProducts/inc/CaloDigi.hh"
+#include "RecoDataProducts/inc/CaloRecoDigi.hh"
+#include "MCDataProducts/inc/CaloShowerSim.hh"
 
 #include "TH2F.h"
 #include "TFile.h"
@@ -129,7 +128,7 @@ namespace mu2e {
       CaloShowerSimCollection const& caloShowerSims(*caloShowerSimHandle);
 
       std::map<int, std::vector<const CaloShowerSim*>>  caloShowerSimsMap;
-      for (auto const& caloShowerSim: caloShowerSims) caloShowerSimsMap[caloShowerSim.crystalId()].push_back(&caloShowerSim);
+      for (auto const& caloShowerSim: caloShowerSims) caloShowerSimsMap[caloShowerSim.crystalID()].push_back(&caloShowerSim);
       
       
       for (const auto& caloDigis : caloDigisColl)
@@ -142,7 +141,7 @@ namespace mu2e {
 	 {	
 	      int    digitizedHitLength     = caloFromDigi.at(index);
 	      int    roId                   = caloFromDigi.at(index+1);
-              int    crystalId              = cal.caloInfo().crystalByRO(roId);
+              int    crystalId              = cal.caloIDMapper().crystalIDFromSiPMID(roId);
 	      double adc2MeV                = calorimeterCalibrations->ADC2MeV(roId);
               CaloShowerSimVec& caloShowers = caloShowerSimsMap[crystalId];
 

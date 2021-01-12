@@ -49,11 +49,8 @@
 //calorimeter includes
 #include "CalorimeterGeom/inc/Calorimeter.hh"
 #include "CalorimeterGeom/inc/DiskCalorimeter.hh"
-#include "RecoDataProducts/inc/CaloHitCollection.hh"
-#include "RecoDataProducts/inc/CaloCrystalHit.hh"
-#include "RecoDataProducts/inc/CaloCrystalHitCollection.hh"
+#include "RecoDataProducts/inc/CaloHit.hh"
 #include "RecoDataProducts/inc/CaloCluster.hh"
-#include "RecoDataProducts/inc/CaloClusterCollection.hh"
 
 
 // Other includes.
@@ -123,7 +120,7 @@ namespace mu2e {
       _caloReadoutModuleLabel(pset.get<std::string>("caloReadoutModuleLabel",
 						    "CaloReadoutHitsMaker")),
       _caloCrystalModuleLabel(pset.get<std::string>("caloCrystalModuleLabel",
-						    "CaloCrystalHitsMaker")),
+						    "CaloHitsMaker")),
       _directory(0),
       _firstEvent(true),
       _trkdiag(0){

@@ -3,9 +3,6 @@
 //
 // Defin a 
 //
-// $Id: $
-// $Author: $
-// $Date: $
 //
 // Original author G. Tassielli
 //

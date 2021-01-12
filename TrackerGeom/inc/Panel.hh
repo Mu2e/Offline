@@ -3,164 +3,86 @@
 //
 // Holds information about one panel in a tracker.
 //
-
-//
-// $Id: Panel.hh,v 1.14 2013/03/26 23:28:23 kutschke Exp $
-// $Author: kutschke $
-// $Date: 2013/03/26 23:28:23 $
-//
 // Original author Rob Kutschke
 //
 
-#include <vector>
 #include <array>
-#include <iomanip>
-#include <iostream>
-
-#ifndef __CINT__
-#include "boost/bind.hpp"
-#endif
-
-#include "CLHEP/Vector/ThreeVector.h"
 
 #include "cetlib_except/exception.h"
-
 #include "TrackerGeom/inc/Straw.hh"
-#include "DataProducts/inc/PanelId.hh"
-#include "GeomPrimitives/inc/TubsParams.hh"
+#include "DataProducts/inc/StrawId.hh"
+#include "DataProducts/inc/StrawIdMask.hh"
+#include "CLHEP/Vector/ThreeVector.h"
+#include "GeneralUtilities/inc/HepTransform.hh"
 
 namespace mu2e {
 
   class Panel{
+    using xyzVec = CLHEP::Hep3Vector; // switch to XYZVec TODO
 
-    friend class TrackerMaker;
-    friend class AlignedTrackerMaker;
-    friend class Tracker; // needed for deep copy
-
-  public:
-
-    Panel():_id(PanelId()),_straws2_p(){}
-    Panel( const PanelId& id ):_id(id),_straws2_p(){}
+    public:
+    using StrawCollection = std::array<const Straw*, StrawId::_nstraws>;
+    using TrackerStrawCollection = std::array<Straw,StrawId::_nustraws>;
+    Panel():_straws(){} // default object non-function but needed for storage classes
+    Panel( const StrawId& id, TrackerStrawCollection const& straws ); // construct from the Id and the full set of straws
 
     // Accept the compiler generated destructor, copy constructor and assignment operators
 
-    const PanelId& id() const { return _id;}
-
-    // const std::vector<Layer>& getLayers() const{
-    //   return _layers;
-    // }
-
+    const StrawId& id() const { return _id;}
     const auto& getStrawPointers() const{
-      return _straws2_p;
+      return _straws;
     }
 
-    int nLayers() const{
-      return StrawId::_nlayers;
-    }
+    StrawCollection const& straws() const { return _straws; }
 
-    int nStraws() const { return StrawId::_nstraws; }
+    size_t nStraws() const { return _straws.size(); }
 
     const Straw& getStraw( uint16_t n ) const {
-      return *(_straws2_p.at(n));
+      return *(_straws.at(n));
     }
-
-    // const Straw& getStraw ( const StrawId& strid ) const{
-    //   return _layers.at(strid.getLayer()).getStraw(strid);
-    // }
 
     // this getStraw checks if this is the right panel
-    const Straw& getStraw ( const StrawId& strid2 ) const{
-      if ( _id.samePlane(strid2) && _id.samePanel(strid2) ) {
-        return *(_straws2_p.at((strid2.asUint16() & StrawId::_strawmsk)));
+    const Straw& getStraw ( const StrawId& strid ) const{
+      if ( _sidmask.equal(_id,strid) ) {
+	return *(_straws.at(strid.straw()));
       } else {
-        std::ostringstream msg;
-        msg << __func__ << " Inconsistent straw/panel request "
-            << strid2 << " / " << _id << std::endl;
-        throw cet::exception("RANGE") << msg.str();
+	std::ostringstream msg;
+	msg << __func__ << " Inconsistent straw/panel request "
+	  << strid << " / " << _id << std::endl;
+	throw cet::exception("RANGE") << msg.str();
       }
     }
+    xyzVec origin()  const { return _UVWtoDS.displacement(); }
+    // local (UVW) coordinate system.
+    xyzVec uDirection() const { return _udir; }
+    xyzVec vDirection() const { return _vdir; }
+    xyzVec wDirection() const { return _wdir; }
+  
+    // transform from local to DS coordinates
+    auto const& panelToDS() const { return _UVWtoDS; }
+    auto dsToPanel() const { return _UVWtoDS.inverse(); }
 
-    // Mid-point position of the average (over the layers) of the primary
-    // straws, and (collective) straw direction.
-    // (The primary straw of each layer is the straw used to establish position.
+    // deprecated interface: either use the above local coordinates, or get the straw direction directly
+    xyzVec straw0Direction() const { return _straws[0]->wireDirection(); }
+   // (The primary straw of each layer is the straw used to establish position.
     //  In the Tracker the primary straw is the innermost straw.)
     // *** In a multi-layer geometry, the straw0MidPoint ***
     // ***        need not lie on any actaul straw       ***
-    CLHEP::Hep3Vector straw0MidPoint()  const { return _straw0MidPoint;  }
-    CLHEP::Hep3Vector straw0Direction() const { return _straw0Direction; }
-
-    CLHEP::Hep3Vector const& origin() const { return _origin; }
+    // this function is misnamed and deprecated, users should use origin instead  FIXME!
+    xyzVec straw0MidPoint()  const { return origin(); }
+    // deprecated useless function
+    size_t nLayers() const { return 2; }
 
     // Formatted string embedding the id of the panel.
     std::string name( std::string const& base ) const;
 
-    // const std::vector<double>& boxHalfLengths() const { return _boxHalfLengths; }
-
-    // double         boxRxAngle()     const { return _boxRxAngle;     }
-    // double         boxRyAngle()     const { return _boxRyAngle;     }
-    double         boxRzAngle()     const { return _boxRzAngle;     }
-    // const CLHEP::Hep3Vector&    boxOffset()      const { return _boxOffset;      }
-
-    std::vector<CLHEP::Hep3Vector> const& getBasePosition() const{
-      return _basePosition;
-    }
-
-    CLHEP::Hep3Vector const& getBaseDelta() const{
-      return _baseDelta;
-    }
-
-    TubsParams  const& getEBKeyParams()           const { return _EBKey; }
-    TubsParams  const& getEBKeyShieldParams()     const { return _EBKeyShield; }
-    std::string const& getEBKeyMaterial()         const { return _EBKeyMaterial; }
-    std::string const& getEBKeyShieldMaterial()   const { return _EBKeyShieldMaterial; }
-    double             getEBKeyPhiExtraRotation() const { return _EBKeyPhiExtraRotation; }
-
-    // On readback from persistency, recursively recompute mutable members.
-    void fillPointers ( const Tracker* tracker ) const;
-
-
-  protected:
-
-    PanelId _id;
-
-    std::array<Straw const*, StrawId::_nstraws> _straws2_p;
-
-    // Vertices of enclosing polygon.
-    std::vector<CLHEP::Hep3Vector> corners;
-
-    // Properties of the enclosing logical volume (box).
-
-    std::vector<CLHEP::Hep3Vector> _basePosition;
-    CLHEP::Hep3Vector _baseDelta;
-
-    // Rotations and offsets to place the logical box.
-    // placedshape = ( offset + RZ*RX*RY*shape );
-    //
-    // double _boxRxAngle;
-    // double _boxRyAngle;
-    double _boxRzAngle; // is it really used? needed?
-    // CLHEP::Hep3Vector _boxOffset;
-
-    // Position (in tracker coordinates) of the midpoint, and direction
-    // of the average of the primary straw.  Mutable because these are set
-    // by fillPointers.
-    // TODO -- there is clearly a way to design this such that these mutable
-    //         declarations can go away.
-    mutable CLHEP::Hep3Vector _straw0MidPoint;
-    mutable CLHEP::Hep3Vector _straw0Direction;
-
-    // panel origin
-    mutable CLHEP::Hep3Vector _origin;
-
-    // electronic boards; they are placed wrt to the panel, but in a
-    // different mother volume one per panel
-
-    TubsParams  _EBKey;
-    std::string _EBKeyMaterial;
-    TubsParams  _EBKeyShield;
-    std::string _EBKeyShieldMaterial;
-    double      _EBKeyPhiExtraRotation;
-
+    private:
+    StrawId _id; // only the plane and panel fields are used to define a panel
+    xyzVec _udir, _vdir, _wdir; // direction vectors in DS frame 
+    HepTransform  _UVWtoDS; // transform from this panel's frame to the DS frame
+    // indirection to straws
+    StrawCollection _straws;
+    static StrawIdMask _sidmask; // mask to panel level
   };
 
 }  //namespace mu2e

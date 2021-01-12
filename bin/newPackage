@@ -2,9 +2,6 @@
 #
 # Create new directories within the current Mu2e Offline environment.
 #
-#  $Id: newPackage,v 1.1 2011/05/12 22:46:19 kutschke Exp $
-#  $Author: kutschke $
-#  $Date: 2011/05/12 22:46:19 $
 #
 
 # Check that this request can be honoured.

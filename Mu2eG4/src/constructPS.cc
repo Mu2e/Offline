@@ -1,9 +1,6 @@
 //
 // Free function to create  Production Solenoid and Production Target.
 //
-// $Id: constructPS.cc,v 1.20 2014/09/19 19:15:04 knoepfel Exp $
-// $Author: knoepfel $
-// $Date: 2014/09/19 19:15:04 $
 //
 // Original author KLG based on Mu2eWorld constructPS
 //

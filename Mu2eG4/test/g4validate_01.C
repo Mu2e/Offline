@@ -1,9 +1,6 @@
 //
 // Root c++ function to compare tracking plots specified by another macro
 // 
-// $Id: g4validate_01.C,v 1.6 2014/04/03 22:13:53 genser Exp $
-// $Author: genser $
-// $Date: 2014/04/03 22:13:53 $
 // 
 // Original author KLG somewat based on Rob Kutschke's example
 //

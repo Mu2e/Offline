@@ -1,9 +1,6 @@
 //
 // Some parameters of the accelerator complex.
 //
-// $Id: AcceleratorParams.cc,v 1.6 2014/04/14 18:12:55 knoepfel Exp $
-// $Author: knoepfel $
-// $Date: 2014/04/14 18:12:55 $
 //
 
 // Mu2e include files

@@ -3,9 +3,6 @@
 //
 // Generate a proton with the primary proton energy
 //
-// $Id: PrimaryProtonGunImpl.hh,v 1.17 2013/12/13 21:35:07 gandr Exp $
-// $Author: gandr $
-// $Date: 2013/12/13 21:35:07 $
 //
 //
 // The coordinate system used in this class is:

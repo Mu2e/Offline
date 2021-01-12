@@ -1,9 +1,6 @@
 //
 // Parameters of the DAQ system.
 //
-// $Id: DAQParams.cc,v 1.3 2012/07/15 22:06:16 kutschke Exp $
-// $Author: kutschke $
-// $Date: 2012/07/15 22:06:16 $
 //
 
 // Mu2e include files

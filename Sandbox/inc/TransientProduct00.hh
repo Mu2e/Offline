@@ -4,9 +4,6 @@
 // A test data class that contains a bare pointer.
 // Used for tests of making transient-only data products.
 //
-// $Id: TransientProduct00.hh,v 1.2 2011/06/05 23:00:44 kutschke Exp $
-// $Author: kutschke $
-// $Date: 2011/06/05 23:00:44 $
 //
 // Original author Rob Kutschke
 //

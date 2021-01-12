@@ -81,7 +81,7 @@ namespace mu2e {
       _planesft = StrawId::_planesft;
 
       _verbosityLevel = max(verboseLevel,config.getInt("tracker.verbosityLevel",0)); // Geant4 SD verboseLevel
-      _supportModel   = tracker->getSupportModel();
+      _supportModel   = tracker->g4Tracker()->getSupportModel();
 
       if ( _TrackerVersion < 3 ) {
         throw cet::exception("StrawSD")
@@ -279,7 +279,7 @@ namespace mu2e {
       if ( _verbosityLevel>4 || diffMag>tolerance) {
 
         const Plane& plane = tracker->getPlane(straw.id().getPlane());
-        const Panel& panel = plane.getPanel(straw.id().getPanel());
+//        const Panel& panel = plane.getPanel(straw.id().getPanel());
 
         G4cout << __func__ << " straw info: event track panel plane straw id: " <<
           setw(4) << en << " " <<
@@ -296,7 +296,7 @@ namespace mu2e {
           ", straw.MidPoint "   << straw.getMidPoint() <<
           //          ", panel.boxOffset " << panel.boxOffset() <<
           ", plane.origin "    << plane.origin() <<
-          ", panel.boxRzAngle " << panel.boxRzAngle()/M_PI*180. <<
+//          ", panel.boxRzAngle " << panel.boxRzAngle()/M_PI*180. <<
           G4endl;
 
         G4cout << __func__ << " straw pos G4  "

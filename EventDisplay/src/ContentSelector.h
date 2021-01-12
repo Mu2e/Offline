@@ -1,9 +1,6 @@
 //
 // Class which manages the combo boxes and list box in the event display frame. It is able to returns the data objects associated with the selected box entries.
 //
-// $Id: ContentSelector.h,v 1.18 2014/04/20 10:57:09 ehrlich Exp $
-// $Author: ehrlich $
-// $Date: 2014/04/20 10:57:09 $
 //
 // Original author Ralf Ehrlich
 //
@@ -11,8 +8,7 @@
 #ifndef EventDisplay_src_ContentSelector_h
 #define EventDisplay_src_ContentSelector_h
 
-#include "RecoDataProducts/inc/CaloCrystalHitCollection.hh"
-#include "RecoDataProducts/inc/CaloHitCollection.hh"
+#include "RecoDataProducts/inc/CaloHit.hh"
 #include "RecoDataProducts/inc/CrvRecoPulseCollection.hh"
 #include "RecoDataProducts/inc/CrvDigiCollection.hh"
 #include "MCDataProducts/inc/PhysicalVolumeInfoMultiCollection.hh"
@@ -48,7 +44,6 @@ class ContentSelector
   std::vector<art::Handle<mu2e::StrawHitCollection> > _strawHitVector;
   std::vector<art::Handle<mu2e::StrawHitFlagCollection> > _strawHitFlagVector;
   std::vector<art::Handle<mu2e::StrawHitPositionCollection> > _strawHitPositionVector;
-  std::vector<art::Handle<mu2e::CaloCrystalHitCollection> > _caloCrystalHitVector;
   std::vector<art::Handle<mu2e::CaloHitCollection> > _caloHitVector;
   std::vector<art::Handle<mu2e::CrvRecoPulseCollection> > _crvRecoPulseVector;
   std::vector<art::Handle<mu2e::CrvDigiCollection> > _crvDigisVector;

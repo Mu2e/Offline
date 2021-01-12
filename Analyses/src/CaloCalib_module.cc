@@ -1,9 +1,6 @@
  //
 // An EDAnalyzer module that reads back the hits created by G4 and makes histograms.
 //
-// $Id: CaloCalib_module.cc,v 1.19 2012/09/08 02:24:24 echenard Exp $
-// $Author: echenard $
-// $Date: 2012/09/08 02:24:24 $
 //
 // Original author Rob Kutschke
 //
@@ -20,23 +17,16 @@
 #include "GeometryService/inc/GeometryService.hh"
 #include "GeometryService/inc/VirtualDetector.hh"
 
-#include "MCDataProducts/inc/CaloHitMCTruthCollection.hh"
 #include "MCDataProducts/inc/GenParticleCollection.hh"
 #include "MCDataProducts/inc/SimParticleCollection.hh"
 //#include "MCDataProducts/inc/StatusG4.hh"
 #include "MCDataProducts/inc/StepPointMCCollection.hh"
 #include "MCDataProducts/inc/PtrStepPointMCVectorCollection.hh"
 #include "MCDataProducts/inc/GenId.hh"
-#include "MCDataProducts/inc/CaloHitSimPartMCCollection.hh"
 #include "DataProducts/inc/VirtualDetectorId.hh"
 
-#include "Mu2eUtilities/inc/CaloHitMCNavigator.hh"
-
-#include "RecoDataProducts/inc/CaloCrystalHitCollection.hh"
-#include "RecoDataProducts/inc/CaloHitCollection.hh"
 #include "RecoDataProducts/inc/CaloHit.hh"
 #include "RecoDataProducts/inc/CaloCluster.hh"
-#include "RecoDataProducts/inc/CaloClusterCollection.hh"
 
 #include "art/Framework/Core/EDAnalyzer.h"
 #include "art/Framework/Core/ModuleMacros.h"
@@ -112,7 +102,7 @@ namespace mu2e {
      private:
        
        typedef std::vector< art::Handle<StepPointMCCollection> > HandleVector;
-       typedef art::Ptr< CaloCrystalHit> CaloCrystalHitPtr;
+       typedef art::Ptr< CaloHit> CaloHitPtr;
        typedef art::Ptr<SimParticle> SimParticlePtr;
 
 
@@ -168,7 +158,7 @@ namespace mu2e {
     _g4ModuleLabel(pset.get<string>("g4ModuleLabel","g4run")),
     _generatorModuleLabel(pset.get<string>("generatorModuleLabel","generate")),
     _caloReadoutModuleLabel(pset.get<string>("caloReadoutModuleLabel","CaloReadoutHitsMaker")),
-    _caloCrystalModuleLabel(pset.get<string>("caloCrystalModuleLabel","CaloCrystalHitsMaker")),
+    _caloCrystalModuleLabel(pset.get<string>("caloCrystalModuleLabel","CaloHitsMaker")),
     _caloHitMCCrystalPtrLabel(pset.get<string>("calorimeterHitMCCrystalPtr","CaloHitMCCrystalPtr")),
     _caloClusterModuleLabel(pset.get<std::string>("caloClusterModuleLabel","CaloClusterMakerNew")),
     _virtualDetectorLabel(pset.get<string>("virtualDetectorName","virtualdetector")),
@@ -264,31 +254,14 @@ namespace mu2e {
       GenParticleCollection const& genParticles(*gensHandle);
 
       //Get calorimeter readout hits (2 readout / crystal as of today)
-      art::Handle<CaloHitCollection> caloHitsHandle;
-      event.getByLabel(_caloReadoutModuleLabel, caloHitsHandle);
-      CaloHitCollection const& caloHits(*caloHitsHandle);
-      
-      //Get calorimeter readout hits MC level - energy/time/type
-      art::Handle<CaloHitMCTruthCollection> caloHitMCTruthHandle;
-      event.getByLabel(_caloReadoutModuleLabel, caloHitMCTruthHandle);
-      CaloHitMCTruthCollection const& caloHitsMCTruth(*caloHitMCTruthHandle);
-      
-      
-      //Get simParticles and stepPointMC summary for crystal readout hits
-      art::Handle<CaloHitSimPartMCCollection> caloHitSimMCHandle;
-      event.getByLabel(_caloReadoutModuleLabel, caloHitSimMCHandle);
-      CaloHitSimPartMCCollection const& caloHitSimPartMC(*caloHitSimMCHandle);
-            
+      //art::Handle<CaloHitCollection> caloHitsHandle;
+      //event.getByLabel(_caloReadoutModuleLabel, caloHitsHandle);
+      //CaloHitCollection const& caloHits(*caloHitsHandle);
+                  
       //Get calo crystal hits (average from readouts)
-      //art::Handle<CaloCrystalHitCollection> caloCrystalHitsHandle;
-      //event.getByLabel(_caloCrystalModuleLabel, caloCrystalHitsHandle);
-      //CaloCrystalHitCollection const& caloCrystalHits(*caloCrystalHitsHandle);
-
-   
-      //Utility to match  cloHits with MCtruth, simParticles and StepPoints
-      CaloHitMCNavigator caloHitNavigator(caloHits, caloHitsMCTruth, caloHitSimPartMC);
-
-   
+      //art::Handle<CaloHitCollection> CaloHitsHandle;
+      //event.getByLabel(_caloCrystalModuleLabel, CaloHitsHandle);
+      //CaloHitCollection const& CaloHits(*CaloHitsHandle);   
 
       //const double CrDensity = 4.9e-6;  // in kg/mm3 to be consistent with volume units!
       //const double CrMass    = CrDensity*cal.caloInfo().crystalVolume();
@@ -324,12 +297,12 @@ namespace mu2e {
        _nHits = _nSim = 0;
        
 /*
-       for (unsigned int ic=0; ic<caloCrystalHits.size();++ic) 
+       for (unsigned int ic=0; ic<CaloHits.size();++ic) 
        {	   
-	   CaloCrystalHit const& hit      = caloCrystalHits.at(ic);
-	   int diskId                     = cal.crystal(hit.id()).diskId();
-           CLHEP::Hep3Vector crystalPos   = cal.geomUtil().mu2eToDiskFF(diskId,cal.crystal(hit.id()).position());  //in disk FF frame
-           CaloHit const& caloHit         = *(hit.readouts().at(0));
+	   CaloHit const& hit            = CaloHits.at(ic);
+	   int diskId                    = cal.crystal(hit.id()).diskID();
+           CLHEP::Hep3Vector crystalPos  = cal.geomUtil().mu2eToDiskFF(diskId,cal.crystal(hit.id()).position());  //in disk FF frame
+           CaloHit const& caloHit        = *(hit.readouts().at(0));
 
 
 	   CaloHitSimPartMC const& hitSim = caloHitNavigator.sim(caloHit);
@@ -344,7 +317,7 @@ namespace mu2e {
 	   _cryPosY[_nHits]      = crystalPos.y();
 	   _cryPosZ[_nHits]      = crystalPos.z();
 	   _cryId[_nHits]        = hit.id();
-	   _crySectionId[_nHits] = cal.crystal(hit.id()).diskId();
+	   _crySectionId[_nHits] = cal.crystal(hit.id()).diskID();
            _crySimIdx[_nHits]    = _nSim;   	              
            _crySimLen[_nHits]    = nPartInside;
 
@@ -371,7 +344,7 @@ namespace mu2e {
              _motPosY[_nSim]    = hitSimPos.y();
              _motPosZ[_nSim]    = hitSimPos.z();
 	     _motTime[_nSim]    = hitSim.time().at(ip);
-	     _motEdep[_nSim]    = hitSim.eDep().at(ip);
+	     _motEdep[_nSim]    = hitSim.energyDep().at(ip);
 
 	     _motGenIdx[_nSim]  = -1;	     
 	     if (generated) _motGenIdx[_nSim] = generated - &(genParticles.at(0));

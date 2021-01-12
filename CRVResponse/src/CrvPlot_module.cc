@@ -1,9 +1,6 @@
 //
 // A module to extract number of PEs, arrival times, hit positions, etc. from the CRV waveforms
 //
-// $Id: $
-// $Author: ehrlich $
-// $Date: 2014/08/07 01:33:40 $
 // 
 // Original Author: Ralf Ehrlich
 

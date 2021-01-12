@@ -5,9 +5,6 @@
 // that the particle is a primary particle and other enum entries to
 // indicate that a particle was killed in one of the user actions written by G4.
 //
-// $Id: ProcessCode.cc,v 1.1 2011/05/24 17:16:44 kutschke Exp $
-// $Author: kutschke $
-// $Date: 2011/05/24 17:16:44 $
 //
 // Original author Rob Kutschke
 //

@@ -3,9 +3,6 @@
 
 // Identifier of a silicon chip in Mu2e ExtMonFNAL detector.
 //
-// $Id: ExtMonFNALChipId.hh,v 1.3 2013/07/01 06:52:13 gandr Exp $
-// $Author: gandr $
-// $Date: 2013/07/01 06:52:13 $
 //
 // Original author Andrei Gaponenko
 

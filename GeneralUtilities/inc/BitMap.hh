@@ -4,9 +4,6 @@
 //
 // Template used to instantiate the bit map classes.
 //
-//   $Id: BitMap.hh,v 1.8 2013/03/15 21:15:35 kutschke Exp $
-//   $Author: kutschke $
-//   $Date: 2013/03/15 21:15:35 $
 //
 // The user must supply a detail class with the following requirements:
 //
@@ -83,6 +80,7 @@
 #include <stdexcept>
 #include <iostream>
 #include <iomanip>
+#include <regex>
 
 namespace mu2e {
 
@@ -135,6 +133,11 @@ namespace mu2e {
 
     void merge( BitMap arg){
       _value = static_cast<mask_type>( _value | arg._value);
+    }
+
+    BitMap& operator | (BitMap const& other) {
+      merge(other);
+      return *this;
     }
 
     void clear( bit_type bitNumber) {
@@ -269,15 +272,21 @@ namespace mu2e {
     }
 
     mask_type findMaskByNameOrThrow( std::string const& name ){
-
-      typename map_type::const_iterator j = bitNames().find(name);
-      if ( j == bitNames().end() ){
-        std::ostringstream os;
-        os << DETAIL::typeName() << " invalid mask name : " << name;
-        throw std::out_of_range( os.str() );
+      mask_type mask(0);
+      const std::regex separator("[^\\s,:]+"); // begining or separator
+      auto sbegin = std::sregex_iterator(name.begin(), name.end(), separator);
+      auto send = std::sregex_iterator();
+      for (std::sregex_iterator match = sbegin; match != send; ++match) {
+	std::string subname = match->str();
+	typename map_type::const_iterator j = bitNames().find(subname);
+	if ( j == bitNames().end() ){
+	  std::ostringstream os;
+	  os << DETAIL::typeName() << " invalid mask name : " << name;
+	  throw std::out_of_range( os.str() );
+	}
+	mask |= j->second;
       }
-      return j->second;
-
+      return mask;
     }
 
     // Compute a mask in which all bits defined in the detail class are set.

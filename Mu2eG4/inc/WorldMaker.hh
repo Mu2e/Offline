@@ -3,9 +3,6 @@
 //
 // The Mu2e version of G4VUserDetectorConstruction.
 //
-// $Id: WorldMaker.hh,v 1.8 2013/03/15 20:11:23 russo Exp $
-// $Author: russo $
-// $Date: 2013/03/15 20:11:23 $
 //
 // Original author Rob Kutschke
 //

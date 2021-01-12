@@ -3,9 +3,6 @@
 //
 // Information about physics processes.
 //
-// $Id: PhysicsProcessInfo.hh,v 1.5 2011/05/24 17:19:03 kutschke Exp $
-// $Author: kutschke $
-// $Date: 2011/05/24 17:19:03 $
 //
 // Original author Rob Kutschke
 //

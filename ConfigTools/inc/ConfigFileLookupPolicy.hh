@@ -5,9 +5,6 @@
 // one of the elements in the environment variable MU2E_SEARCH_PATH,
 // which contains a colon separated list of directory names.
 //
-// $Id: ConfigFileLookupPolicy.hh,v 1.1 2012/07/15 22:00:35 kutschke Exp $
-// $Author: kutschke $
-// $Date: 2012/07/15 22:00:35 $
 //
 // Contact person Rob Kutschke
 

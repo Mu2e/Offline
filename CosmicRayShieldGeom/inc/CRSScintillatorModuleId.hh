@@ -6,9 +6,6 @@
 //
 
 //
-// $Id: CRSScintillatorModuleId.hh,v 1.5 2013/09/13 06:42:44 ehrlich Exp $
-// $Author: ehrlich $
-// $Date: 2013/09/13 06:42:44 $
 //
 // Original author KLG; based on Rob Kutschke's SectorId
 //

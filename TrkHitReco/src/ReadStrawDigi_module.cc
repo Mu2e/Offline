@@ -1,9 +1,6 @@
 //
 // This module transforms StrawDigi objects into StrawHit objects
 //
-// $Id: ReadStrawDigi_module.cc,v 1.12 2014/03/25 22:14:39 brownd Exp $
-// $Author: brownd $ 
-// $Date: 2014/03/25 22:14:39 $
 //
 // Original author David Brown, LBNL
 // Merged with flag and position creation B. Echenard, CalTech
@@ -47,7 +44,7 @@ namespace mu2e {
       if(digi.strawId().asUint16() == 0xffff ||
 	digi.TDC()[0] == 0xffff ||
 	digi.TOT()[0] == 0xffff ||
-	digi.adcWaveform()[0] == 0xffff)
+        digi.PMP() == 0xffff)
 	std::cout << "error " << std::endl;
     }
   }

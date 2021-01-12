@@ -1,8 +1,5 @@
 //
 // Struct describing a single straw hit assigned to a track, for use in TTree diagnostics
-// $Id: TrkStrawHitInfo.hh,v 1.2 2014/09/22 12:13:17 brownd Exp $
-// $Author: brownd $ 
-// $Date: 2014/09/22 12:13:17 $
 //
 #ifndef TrkStrawHitInfo_HH
 #define TrkStrawHitInfo_HH

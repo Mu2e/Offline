@@ -1,9 +1,6 @@
 //
 // Umbrela for the the Mu2e G4 world classes
 //
-// $Id: Mu2eUniverse.cc,v 1.2 2012/11/19 23:03:49 genser Exp $
-// $Author: genser $
-// $Date: 2012/11/19 23:03:49 $
 //
 // Original author Rob Kutschke
 //

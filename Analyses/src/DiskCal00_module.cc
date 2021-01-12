@@ -1,9 +1,6 @@
 //
 // Check self consistency of hits in the Disk Calorimeter.
 //
-// $Id: DiskCal00_module.cc,v 1.8 2014/08/01 20:57:44 echenard Exp $
-// $Author: echenard $
-// $Date: 2014/08/01 20:57:44 $
 //
 // Original author Rob Kutschke
 //
@@ -25,8 +22,7 @@
 // Mu2e includes.
 #include "CalorimeterGeom/inc/DiskCalorimeter.hh"
 #include "GeometryService/inc/GeomHandle.hh"
-#include "RecoDataProducts/inc/CaloCrystalHitCollection.hh"
-#include "RecoDataProducts/inc/CaloHitCollection.hh"
+#include "RecoDataProducts/inc/CaloHit.hh"
 #include "MCDataProducts/inc/PtrStepPointMCVectorCollection.hh"
 
 // Root includes.
@@ -59,7 +55,6 @@ namespace mu2e {
     std::string _apdHitMakerModuleLabel;
     std::string _crystalHitMakerModuleLabel;
 
-    const CaloHitCollection*              apdHits;
     const PtrStepPointMCVectorCollection*   steps;
 
     int    maxId;
@@ -75,12 +70,12 @@ namespace mu2e {
     TH1F* _hEnergyDep3;
     TH1F* _hTime;
     TH1F* _hStepTime;
-    TH1F* _hNROId;
+    TH1F* _hNSiPMID;
     TH1F* _hNSteps;
     TH1F* _hDeltaTime;
 
     void printCalInfo();
-    void followHistory( const CaloCrystalHit& cryHit);
+    void followHistory( const CaloHit& cryHit);
     void simCheck(const art::Event& event);
 
   };
@@ -89,10 +84,9 @@ namespace mu2e {
     art::EDAnalyzer(pset),
 
     _apdHitMakerModuleLabel("CaloReadoutHitsMaker"),
-    _crystalHitMakerModuleLabel("CaloCrystalHitsMaker"),
+    _crystalHitMakerModuleLabel("CaloHitsMaker"),
 
     //
-    apdHits(0),
     steps(0),
 
     // Limit checks
@@ -110,7 +104,7 @@ namespace mu2e {
     _hEnergyDep3(0),
     _hTime(0),
     _hStepTime(0),
-    _hNROId(0),
+    _hNSiPMID(0),
     _hNSteps(0),
     _hDeltaTime(0)
   {}
@@ -128,7 +122,7 @@ namespace mu2e {
     _hEnergyDep3  = tfs->make<TH1F>( "hEnergyDep3", "Log10(TotalEnergy deposit in one Crystal, Mev)", 180, -6.,     3. );
     _hTime        = tfs->make<TH1F>( "hTime",       "Time of hit;[ns]",                               125,  0.,  2500. );
     _hStepTime    = tfs->make<TH1F>( "hStepTime",   "Time of hit;[ns]",                               125,  0.,  2500. );
-    _hNROId       = tfs->make<TH1F>( "hNROid",      "Number of readout Ids",                            4, -1.,     3. );
+    _hNSiPMID     = tfs->make<TH1F>( "hNSiPMID",    "Number of SiPM Ids",                               4, -1.,     3. );
     _hNSteps      = tfs->make<TH1F>( "hNSteps",     "Number of StepPointMCs per Crystal",             100,  0.,   500. );
     _hDeltaTime   = tfs->make<TH1F>( "hDeltaTime",  "Delta Time (step-hit)",                          110, -10.,  550. );
 
@@ -151,13 +145,9 @@ namespace mu2e {
 
     simCheck(event);
 
-    art::Handle<CaloCrystalHitCollection> cryHitsHandle;
+    art::Handle<CaloHitCollection> cryHitsHandle;
     event.getByLabel(_crystalHitMakerModuleLabel,cryHitsHandle);
-    CaloCrystalHitCollection const& cryHits = *cryHitsHandle;
-
-    art::Handle<CaloHitCollection> apdHitsHandle;
-    event.getByLabel(_apdHitMakerModuleLabel, apdHitsHandle);
-    apdHits = apdHitsHandle.product();
+    CaloHitCollection const& cryHits = *cryHitsHandle;
 
     art::Handle<PtrStepPointMCVectorCollection> stepsHandle;
     event.getByLabel(_apdHitMakerModuleLabel, "CaloHitMCCrystalPtr", stepsHandle);
@@ -173,9 +163,9 @@ namespace mu2e {
 
     double minEnergy(0.001);
 
-    for ( CaloCrystalHitCollection::const_iterator i=cryHits.begin(), e=cryHits.end(); i != e; ++i ){
+    for ( CaloHitCollection::const_iterator i=cryHits.begin(), e=cryHits.end(); i != e; ++i ){
 
-      const CaloCrystalHit& cryHit(*i);
+      const CaloHit& cryHit(*i);
 
       totalEdep += cryHit.energyDep();
       _hEnergyDep ->Fill(cryHit.energyDep());
@@ -185,9 +175,9 @@ namespace mu2e {
       _hEnergyDep2->Fill(logE);
       _hEnergyDep3->Fill(logETot);
       _hTime->Fill(cryHit.time());
-      _hNROId->Fill( cryHit.nROId() );
+      _hNSiPMID->Fill( cryHit.nSiPMs() );
 
-      int id = cryHit.id();
+      int id = cryHit.crystalID();
       hit_crystals.insert(id);
 
       maxId = std::max(id, maxId);
@@ -214,14 +204,13 @@ namespace mu2e {
            << crystalsOverPed.size() << " "
            << totalEdep << " "
            << highestId << " "
-           << apdHits->size() << " "
            << steps->size()
            << endl;
     }
 
   } // end analyze
 
-  void DiskCal00::followHistory( const CaloCrystalHit& cryHit){
+  void DiskCal00::followHistory( const CaloHit& cryHit){
 
     /*
     vector<art::Ptr<CaloHit> > const & readouts(cryHit.readouts());
@@ -235,8 +224,8 @@ namespace mu2e {
 
       for (  vector<art::Ptr<StepPointMC> >::const_iterator j=stepv.begin(), je=stepv.end(); j != je; ++j ){
         const StepPointMC& step = **j;
-        if ( cryHit.id() != int(step.volumeId()) ){
-          cout << "FUBAR: " << cryHit.id() << " " << step.volumeId() << endl;
+        if ( cryHit.crystalID() != int(step.volumeId()) ){
+          cout << "FUBAR: " << cryHit.crystalID() << " " << step.volumeId() << endl;
         }
         _hStepTime->Fill(step.time());
         _hDeltaTime->Fill(step.time()-cryHit.time());
@@ -278,9 +267,10 @@ namespace mu2e {
 
   void DiskCal00::printCalInfo(){
     DiskCalorimeter const& cal(*GeomHandle<DiskCalorimeter>());
+    int nSiPM = cal.nCrystal()*cal.caloInfo().getInt("nSiPMPerCrystal");
     cout << "Information about the disk Calorimeter: "  << endl;
     cout << "Number of disks:    " << cal.nDisk()      << endl;
-    cout << "Number of Readouts: " << cal.nRO() << " "  << cal.caloInfo().nROPerCrystal() << " " << cal.nRO()/cal.caloInfo().nROPerCrystal() << endl;
+    cout << "Number of Readouts: " << nSiPM << " "  << cal.caloIDMapper().nSiPMPerCrystal() << " " << nSiPM/cal.caloIDMapper().nSiPMPerCrystal() << endl;
     cout << "Hex side size:      " << 2.0*cal.caloInfo().getDouble("crystalXYLength") << endl;
 
     cout << "Depth:              " << cal.caloInfo().getDouble("crystalZLength")   << endl;

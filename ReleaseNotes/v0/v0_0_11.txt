@@ -1,9 +1,6 @@
 
            Release notes for Mu2e Offline software, v0_0_11
 
-  $Id: v0_0_11.txt,v 1.1 2011/05/25 14:54:20 kutschke Exp $
-  $Author: kutschke $
-  $Date: 2011/05/25 14:54:20 $
 
 5) Mu2eG4/test/genconfig_05.txt
     Change the transverse size of the beam spot from 3 mm to 1 mm.

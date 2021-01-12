@@ -1,9 +1,6 @@
 //
 // Open a parameter set file and print it.
 //
-// $Id: StandAloneParameterSet_module.cc,v 1.1 2014/01/17 19:41:51 kutschke Exp $
-// $Author: kutschke $
-// $Date: 2014/01/17 19:41:51 $
 //
 // Contact person Rob Kutschke
 //

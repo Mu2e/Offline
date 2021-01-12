@@ -3,9 +3,6 @@
 //
 // Kinematics of 2 body decay.
 //
-// $Id: TwoBodyKinematics.hh,v 1.3 2011/05/18 02:27:16 wb Exp $
-// $Author: wb $
-// $Date: 2011/05/18 02:27:16 $
 //
 // Original author Rob Kutschke
 

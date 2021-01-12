@@ -53,28 +53,23 @@ physics :{
         #eCut : 10.0          # cut on hits
 	#inputTags : [ "CaloShowerStepFromShowerStep" ] # select instances
       }
-      caloHitPrinter : {
-        verbose: 1   # 0, 1
-        #eCut : 10.0          # cut on hits
-	#inputTags : [ "CaloShowerStepFromShowerStep" ] # select instances
-      }
       caloDigiPrinter : {
         verbose: 1   # 0, 1
-	#inputTags : [ "CaloDigiFromShower" ] # select instances
+	#inputTags : [ "CaloDigiMaker" ] # select instances
       }
       caloRecoDigiPrinter : {
         verbose: 1   # 0, 1
-	#inputTags : [ "CaloRecoDigiFromDigi" ] # select instances
+	#inputTags : [ "CaloRecoDigiMaker" ] # select instances
       }
-      caloCrystalHitPrinter : {
-        verbose: 1   # 0, 1
+      caloHitPrinter : {
+        verbose: 1   # 0, 1, 2
         #eCut : 10.0          # cut on hits
-	#inputTags : [ "CaloCrystalHitFromHit" ] # select instances
+	#inputTags : [ "CaloShowerStepFromShowerStep" ] # select instances
       }
       caloClusterPrinter : {
         verbose: 1   # 0, 1
         eCut : -10.0          # cut on hits
-	#inputTags : [ "CaloClusterFromProtoCluster" ] # select instances
+	#inputTags : [ "CaloClusterMaker" ] # select instances
       }
 
       crvDigiPrinter : {
@@ -94,6 +89,10 @@ physics :{
 	#inputTags : [ "CrvCoincidenceClusterFinder" ]
       }
 
+      strawGasStepPrinter : {
+        verbose: 1   # 0, 1
+	#inputTags : [ "MakeSGS" ] # select instances
+      }
       strawDigiPrinter : {
         verbose: 1   # 0, 1
 	#inputTags : [ "MakeSD" ] # select instances

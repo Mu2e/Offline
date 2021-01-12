@@ -46,7 +46,7 @@ namespace mu2e {
                                  bool const forceAuxEdgeVisible,
                                  bool const doSurfaceCheck,
                                  bool const placePV
-                                ); 
+                                 );
 
   void constructExtMonFNALModules(const VolumeInfo& mother,
                                   const G4ThreeVector& offset,
@@ -59,14 +59,14 @@ namespace mu2e {
                                   bool const doSurfaceCheck,
                                   bool const placePV
                                   );
-  
+
   void constructExtMonFNALMuonID(const ExtMonFNALModule& module,
-				 const ExtMonFNALMuonID& muid,
-				 const std::string& volNameSuffix,
-				 const VolumeInfo& parent,
-				 const CLHEP::HepRotation& parentRotationInMu2e,
-				 const SimpleConfig& config
-				 );
+                                 const ExtMonFNALMuonID& muid,
+                                 const std::string& volNameSuffix,
+                                 const VolumeInfo& parent,
+                                 const CLHEP::HepRotation& parentRotationInMu2e,
+                                 const SimpleConfig& config
+                                 );
 
 }
 

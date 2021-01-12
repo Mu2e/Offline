@@ -4,9 +4,6 @@
 //
 // Define a type for a collection of StrawHit objects.
 //
-// $Id: StrawHitCollection.hh,v 1.1 2011/05/24 17:16:43 kutschke Exp $
-// $Author: kutschke $
-// $Date: 2011/05/24 17:16:43 $
 //
 // Original author Rob Kutschke
 //

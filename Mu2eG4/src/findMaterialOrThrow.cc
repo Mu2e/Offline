@@ -4,9 +4,6 @@
 // The wrapper does the job of throwing if the pointer comes
 // back null.
 //
-// $Id: findMaterialOrThrow.cc,v 1.4 2011/05/18 02:27:18 wb Exp $
-// $Author: wb $
-// $Date: 2011/05/18 02:27:18 $
 //
 // Original author Rob Kutschke
 //

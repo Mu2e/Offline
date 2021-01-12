@@ -4,9 +4,6 @@
 //
 // Define a type for a collection of PIDProduct objects.
 //
-// $Id: 
-// $Author: 
-// $Date: 
 //
 // Original author Vadim Rusu
 //

@@ -1,9 +1,6 @@
 ///////////////////////////////////////////////////////////////////////////////
 // Helix fit to straw hits
 //
-// $Id: CalHelixFinderAlg.cc,v 1.13 2014/06/06 21:35:08 murat Exp $
-// $Author: murat $
-// $Date: 2014/06/06 21:35:08 $
 //
 //  use of HackData:
 //  ----------------
@@ -222,7 +219,7 @@ namespace mu2e {
       return;
     }
     //fill the calorimeter cluster info
-    Hep3Vector  gpos = _calorimeter->geomUtil().diskToMu2e(cl->diskId(),cl->cog3Vector());
+    Hep3Vector  gpos = _calorimeter->geomUtil().diskToMu2e(cl->diskID(),cl->cog3Vector());
     Hep3Vector  tpos = _calorimeter->geomUtil().mu2eToTracker(gpos);
     fCaloTime        = cl->time();
     fCaloX           = tpos.x();
@@ -243,7 +240,7 @@ namespace mu2e {
     // if (cl == NULL)   return false;
 
     // //fill the calorimeter cluster info
-    // Hep3Vector         gpos = _calorimeter->geomUtil().diskToMu2e(cl->diskId(),cl->cog3Vector());
+    // Hep3Vector         gpos = _calorimeter->geomUtil().diskToMu2e(cl->diskID(),cl->cog3Vector());
     // Hep3Vector         tpos = _calorimeter->geomUtil().mu2eToTracker(gpos);
     // fCaloTime = cl->time();
     // fCaloX    = tpos.x();

@@ -122,9 +122,9 @@ namespace mu2e {
 
     ChannelID cx, co;
     int       nPlanesPerStation(2);
-    for (int ipl=0; ipl<_tracker->nPlanes(); ipl++) {
+    for (size_t ipl=0; ipl<_tracker->nPlanes(); ipl++) {
       const Plane*  pln = &_tracker->getPlane(ipl);
-      for (int ipn=0; ipn<pln->nPanels(); ipn++) {
+      for (size_t ipn=0; ipn<pln->nPanels(); ipn++) {
 	const Panel* panel = &pln->getPanel(ipn);
 	int face;
 	if (panel->id().getPanel() % 2 == 0) face = 0;
@@ -484,7 +484,7 @@ namespace mu2e {
     double   tandip        = hel->tanDip();
     double   mom           = helixRadius*mm2MeV/std::cos( std::atan(tandip));
     double   beta          = _tpart.beta(mom);
-    CLHEP::Hep3Vector        gpos = _hfinder._calorimeter->geomUtil().diskToMu2e(HfResult._timeClusterPtr->caloCluster()->diskId(),
+    CLHEP::Hep3Vector        gpos = _hfinder._calorimeter->geomUtil().diskToMu2e(HfResult._timeClusterPtr->caloCluster()->diskID(),
                                                                         HfResult._timeClusterPtr->caloCluster()->cog3Vector());
     CLHEP::Hep3Vector        tpos = _hfinder._calorimeter->geomUtil().mu2eToTracker(gpos);
     double   pitchAngle    = M_PI/2. - atan(tandip);

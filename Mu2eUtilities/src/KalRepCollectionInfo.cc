@@ -4,6 +4,17 @@
 // Contact person, Rob Kutschke
 //
 
+#include <exception>
+#include <memory>
+#include <typeinfo>
+
+#include "art/Framework/Principal/Event.h"
+#include "art/Framework/Principal/Handle.h"
+#include "art/Framework/Principal/Provenance.h"
+#include "canvas/Persistency/Provenance/ProductID.h"
+#include "fhiclcpp/ParameterSet.h"
+#include "fhiclcpp/exception.h"
+
 #include "Mu2eUtilities/inc/KalRepCollectionInfo.hh"
 
 namespace {

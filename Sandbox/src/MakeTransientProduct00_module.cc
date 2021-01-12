@@ -1,9 +1,6 @@
 //
 // Test of producing one type of transient data product.
 //
-// $Id: MakeTransientProduct00_module.cc,v 1.7 2013/03/15 15:52:05 kutschke Exp $
-// $Author: kutschke $
-// $Date: 2013/03/15 15:52:05 $
 //
 // Original author Rob Kutschke
 //

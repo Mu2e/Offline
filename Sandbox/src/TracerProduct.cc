@@ -1,9 +1,6 @@
 //
 // A test class that makes printout whenever its methods are called.
 //
-// $Id: TracerProduct.cc,v 1.5 2013/04/10 14:38:03 kutschke Exp $
-// $Author: kutschke $
-// $Date: 2013/04/10 14:38:03 $
 //
 // Original author Rob Kutschke
 //
