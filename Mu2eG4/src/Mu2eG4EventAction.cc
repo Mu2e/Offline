@@ -31,6 +31,23 @@
 
 using namespace std;
 
+namespace {
+  // Because a Mu2eG4EventAction object can be created from multiple
+  // threads and because it uses configuration validation, which is
+  // not thread-safe, there exists the possibility of data races.
+  //
+  // To avoid this, we create a global configuration struct, which
+  // does all of the thread-unsafe manipulations upon construction
+  // (namely adjusting FHiCL's table-member and name-stack
+  // registries). We then copy the struct in the body of the c'tor,
+  // where they copy operation does not use the name-stack registry.
+  //
+  // NB - This is an expert-only workaround which should arguably go
+  //      away if fhiclcpp decides to adopt thread-local registries
+  //      for configuration validation.
+  mu2e::SimParticleCollectionPrinter::Config const global_c;
+}
+
 namespace mu2e {
 
   Mu2eG4EventAction::Mu2eG4EventAction(const Mu2eG4Config::Top& conf,
@@ -66,7 +83,7 @@ namespace mu2e {
     _artEvent(),
     _g4InternalFiltering(conf.G4InteralFiltering())
   {
-    SimParticleCollectionPrinter::Config c;
+    auto c = global_c;
     if(conf.SimParticlePrinter(c)) {
       simParticlePrinter_ = SimParticleCollectionPrinter(c);
     }

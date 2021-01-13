@@ -19,6 +19,18 @@ using namespace std;
 
 namespace mu2e {
 
+  auto step_instance_names(StepInstanceName::enum_type const begin,
+                           StepInstanceName::enum_type const end)
+  {
+    std::vector<StepInstanceName> values;
+    // NB - implicit conversion from enum_type to size_t to allow for
+    //      incrementation (++i).
+    for (size_t i = begin, e = end; i != e; ++i) {
+      values.emplace_back(i);
+    }
+    return values;
+  }
+
   void StepInstanceName::printAll( std::ostream& ost){
     ost << "List of names of instances for StepPointMCCollections Id codes: "
         << endl;
@@ -73,13 +85,8 @@ namespace mu2e {
 
   // Get all values, as class instances; this includes the unknown value.
   std::vector<StepInstanceName> const& StepInstanceName::allValues(){
-
-    static std::vector<StepInstanceName> values;
-    for ( size_t i=unknown; i<lastEnum; ++i ){
-      values.push_back(StepInstanceName(i));
-    }
+    static auto const values = step_instance_names(unknown, lastEnum);
     return values;
-
   } // end StepInstanceName::allValues
 
 
