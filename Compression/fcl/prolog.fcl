@@ -3,11 +3,12 @@ BEGIN_PROLOG
 Compression : {
   compressDetStepMCs : {
     module_type : CompressDetStepMCs
-    strawGasStepTag : "makeSGS"
+    strawGasStepTag : "StrawGasStepMaker"
     caloShowerStepTag : "CaloShowerStepMaker"
     crvBarStepTag : "g4run:CRV" # currently a StepPointMC
     simParticleTag : "g4run"
     stepPointMCTags : [ "g4run:virtualdetector", "g4run:protonabsorber" ]#, "g4run:stoppingtarget" ]
+    mcTrajectoryTag : "g4run"
 
     strawGasStepCompressionLevel : "noCompression" # keep all StrawGasSteps
     caloShowerStepCompressionLevel : "noCompression"
@@ -16,6 +17,7 @@ Compression : {
     stepPointMCCompressionLevel : "simParticleCompression" # only keep StepPointMCs related to SimParticles we are keeping
     genealogyCompressionLevel : "fullCompression" # "noCompression"
     truncatedSimParticleKeyOffset : 400000
+    mcTrajectoryCompressionLevel : "simParticleCompression"
 
     debugLevel : 0
   }
