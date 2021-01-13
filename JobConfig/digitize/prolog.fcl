@@ -71,6 +71,16 @@ Digitize: {
     DetStepFilter,
     compressDigiMCs ]
 
+# the following should come from the trigger FIXME!
+  TriggerProducts : [ 
+    "keep mu2e::TriggerInfo_*_*_*",  
+    "keep art::TriggerResults_*_*_*",
+    "keep mu2e::KalSeeds_TT*_*_*",
+    "keep mu2e::HelixSeeds_TT*_*_*",
+    "keep mu2e::TimeClusters_TT*_*_*",
+    "keep mu2e::CaloClusters_CaloClusterFast_*_*"
+  ]
+
   KeptProducts : [  
 		    "keep mu2e::StrawDigis_*_*_*",
                     "keep mu2e::StrawDigiADCWaveforms_*_*_*",
@@ -78,7 +88,6 @@ Digitize: {
 		    "keep mu2e::CrvDigis_*_*_*",
 		    "keep mu2e::StatusG4_*_*_*",
 		    "keep *_genCounter_*_*",
-		    "keep art::TriggerResults_*_*_*",
 		    "keep mu2e::EventWindowMarker_*_*_*",
 		    "keep mu2e::ProtonBunchTimeMC_*_*_*",
 		    "keep mu2e::ProtonBunchTime_*_*_*",
@@ -97,8 +106,8 @@ Digitize: {
 }
 
 Digitize.Output.outputCommands : [ "drop *_*_*_*",
-#		       @sequence::Primary.KeptProducts,
-		       @sequence::Digitize.KeptProducts ]
+		       @sequence::Digitize.KeptProducts,
+		       @sequence::Digitize.TriggerProducts ]
 
 # define paths
 Digitize.TriggerPath : [ @sequence::Digitize.TriggerSequence ]

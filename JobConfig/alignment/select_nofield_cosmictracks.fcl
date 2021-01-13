@@ -62,7 +62,7 @@ outputs : {
 #include "JobConfig/reco/epilog.fcl"
 #include "JobConfig/reco/NoCosmicTimeMap_epilog.fcl"
 # trigger epilog
-#include "gen/fcl/Trigger/offline/allTrig/allPaths.fcl"
+#include "gen/fcl/Trigger/OffSpillTrigMenu/OnSpillTrigMenu.fcl"
 outputs.Output.SelectEvents : [ "RecoPath" ]
 #
 # the following need to be overwritten for the specific channel

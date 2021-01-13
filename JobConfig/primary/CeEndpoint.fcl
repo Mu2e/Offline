@@ -4,7 +4,6 @@
 # original author: Dave Brown, LBNL
 #
 #include "JobConfig/primary/prolog.fcl"
-process_name: CeEndpointSteps
 
 source: { module_type : EmptyEvent }
 services: @local::Services.Sim

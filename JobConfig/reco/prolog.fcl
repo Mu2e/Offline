@@ -1,6 +1,7 @@
 #
 #  Prolog for production reconstruction jobs
 #
+#include "JobConfig/digitize/prolog.fcl"
 #include "CommonMC/fcl/prolog.fcl"
 #include "TrkHitReco/fcl/prolog.fcl"
 #include "TrkReco/fcl/prolog.fcl"
@@ -97,9 +98,7 @@ Reconstruction : {
     #
     SelectRecoMC : { 
        @table::CommonMC.SelectRecoMC 
-       CSSCollection : "compressDigiMCs"
-       CaloClusterMCDTime : 2.0
-       CaloMinE : 1.0
+       CaloClusterMinE : 10.0
        SaveEnergySteps : false
        SaveUnusedDigiMCs : true
        SaveAllUnusedDigiMCs : false
@@ -114,9 +113,6 @@ Reconstruction : {
        CrvCoincidenceClusterCollection : "CrvCoincidenceClusterFinder"
        StrawDigiMCCollection : "compressDigiMCs"
        CrvDigiMCCollection : "compressDigiMCs"
-       EventWindowMarker : "EWMProducer"
-       ProtonBunchTimeMC : "EWMProducer"
-       ProtonBunchIntensity : "protonBunchIntensity"
        KFFInstances  : ["KFFDeM", "KFFDeP", "KFFDmuM", "KFFDmuP",
 		     "KFFUeM", "KFFUeP", "KFFUmuM", "KFFUmuP" ]
        MHInstances  : ["MHDeM", "MHDeP", "MHDmuM", "MHDmuP",
@@ -124,13 +120,18 @@ Reconstruction : {
       VDSPCollection : "compressDigiMCs:virtualdetector"
     }
     # Compresion
-    compressRecoMCs : { @table::DigiCompression.Reco
+    compressRecoMCs : { 
+      module_type : CompressDigiMCs
       strawDigiMCTag : "compressDigiMCs"
       crvDigiMCTag : "compressDigiMCs"
       simParticleTags : [ "compressDigiMCs" ]
       extraStepPointMCTags : [ "compressDigiMCs:virtualdetector", "compressDigiMCs:protonabsorber" ]
       timeMapTags : [ @sequence::DigiCompression.TimeMaps ]
-      caloClusterMCTag : "SelectRecoMC"
+      caloShowerStepTags : [ ]
+      caloShowerSimTag : ""
+      caloShowerROTag : ""
+      caloClusterMCTag : "CaloClusterTruthMatch"
+      caloHitMCTag : "CaloHitTruthMatch"
       strawDigiMCIndexMapTag : "SelectRecoMC:StrawDigiMap"
       crvDigiMCIndexMapTag : "SelectRecoMC:CrvDigiMap"
       keepAllGenParticles : false
@@ -172,8 +173,8 @@ Reconstruction : {
       oldCrvDigiMCTag : "compressDigiMCs"
       newCrvDigiMCTag : "compressRecoMCs"
       crvDigiMCIndexMapTag : "SelectRecoMC:CrvDigiMap"
-      oldCaloShowerSimTag : "CaloFix"
-      newCaloShowerSimTag : "compressRecoMCs"
+      oldCaloShowerSimTag : ""
+      newCaloShowerSimTag : ""
       checkTrackerDuplicateSteps : false
     }
   }
@@ -220,46 +221,27 @@ Reconstruction : {
   MCReco :  [@sequence::CaloMC.TruthMatch, @sequence::CaloClusterMC.TruthMatch,  CrvCoincidenceClusterMatchMC, SelectRecoMC, compressRecoMCs ]
 
 # define products to keep
-# First, high-level reco products
+# First, high-level reco products, and associated sub-products
   HighRecoProducts : [
 	    "keep mu2e::KalSeeds_KFF*_*_*",
 	    "keep mu2e::KalSeeds_KSF*_*_*",
 	    "keep mu2e::HelixSeeds_MH*_*_*",
 	    "keep mu2e::TimeClusters_MH*_*_*",
 	    "keep mu2e::CaloClusters_CaloClusterMaker_*_*",
-            "keep art::TriggerResults_*_*_*"
-	    ]
-# low-level reco products, selected to match the high-level reco objects
-  LowRecoProducts : [ "keep *_SelectRecoMC_*_*",
-             "keep mu2e::ComboHitCollection_*_*_*"
-	    ]
-# low-level reco products, without any high-level match
-  AllRecoProducts : [ 
-            "keep mu2e::StrawDigis_makeSD_*_*",
-            "keep mu2e::StrawHitFlags_FlagBkgHits_StrawHits_*",
-            "keep mu2e::ComboHitCollection_makeSH_*_*",
-	    "keep mu2e::CaloDigis_CaloDigiMaker_*_*",
-	    "keep mu2e::CaloHits_CaloHitMaker_*_*",
-	    "keep mu2e::CrvDigis_CrvDigi_*_*",
-	    "keep mu2e::CrvRecoPulses_CrvRecoPulses_*_*",
-	    "keep mu2e::CrvCoincidenceClusters_CrvCoincidenceClusterFinder_*_*"
+	    "keep mu2e::EventWindowMarker_*_*_*",
+	    "keep mu2e::ProtonBunchTime_*_*_*",
+	    "keep *_SelectRecoMC_*_*"
 	    ]
 # MC truth matched to reco
   MCRecoProducts : [
-            "keep mu2e::ProtonBunchIntensity_*_MeanIntensity_*",
-	    "keep *_genCounter_*_*",
-	    "keep *_compressRecoMCs_*_*"
-	    ]
-# Digi-leverl MC truth 
-  DigiMCProducts : [
-            "keep mu2e::ProtonBunchIntensity_*_MeanIntensity_*",
 	    "keep *_genCounter_*_*",
 	    "keep mu2e::PrimaryParticle_*_*_*",
-	    "keep mu2e::ProtonBunchIntensity_protonBunchIntensity_*_*",
-	    "keep mu2e::EventWindowMarker_EWMProducer_*_*",
-            "keep mu2e::ProtonBunchTimeMC_EWMProducer_*_*",
-            "keep mu2e::ProtonBunchTime_EWMProducer_*_*",
-	    "keep *_compressDigiMCs_*_*"
+	    "keep mu2e::StatusG4_*_*_*",
+	    "keep mu2e::SimParticleart::Ptrmu2e::MCTrajectorystd::map_*_*_*",
+	    "keep mu2e::ProtonBunchIntensity_*_*_*",
+	    "keep mu2e::ProtonBunchTimeMC_*_*_*",
+	    "keep mu2e::EventWeight_*_*_*",
+	    "keep *_compressRecoMCs_*_*"
 	    ]
 }
 
@@ -299,11 +281,11 @@ Reconstruction.Output : {
   module_type : RootOutput
   SelectEvents : [ RecoPath ]
   fileName    : @nil
-  outputCommands : [ "keep *_*_*_*" ]
-#  outputCommands : [ "drop *_*_*_*",
-#  @sequence::Reconstruction.HighRecoProducts,
-#  @sequence::Reconstruction.LowRecoProducts,
-#  @sequence::Reconstruction.MCRecoProducts]
+#  outputCommands : [ "keep *_*_*_*" ]
+  outputCommands : [ "drop *_*_*_*",
+  @sequence::Digitize.TriggerProducts,
+  @sequence::Reconstruction.HighRecoProducts,
+  @sequence::Reconstruction.MCRecoProducts]
 }
 
 END_PROLOG

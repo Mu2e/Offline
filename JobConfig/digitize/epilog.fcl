@@ -1,3 +1,5 @@
+# name all processes the same, to mask any provenance in ensemble creation
+process_name: Digitize
 # adjust the time range for the cosmics
 physics.producers.cosmicTimeMap.tmin : 400
 physics.producers.cosmicTimeMap.tmax : 1705

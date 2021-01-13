@@ -26,6 +26,5 @@ outputs : {
 #include "JobConfig/reco/epilog.fcl"
 physics.end_paths : [ EndPath ] # needed for generate_fcl
 # the following need to be overwritten for the specific channel
-process_name : Reco
 services.TFileService.fileName: "nts.owner.RecoMC.version.sequencer.root"
 outputs.Output.fileName: "mcs.owner.RecoMC.version.sequencer.art"
