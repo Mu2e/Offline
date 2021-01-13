@@ -135,7 +135,7 @@ DigiCompression : {
       simParticleTags : [ "" ]
       extraStepPointMCTags : [ "" ]
       timeMapTags : [ "" ]
-      caloShowerStepTags : [ "" ]
+      caloShowerStepTags : [ ]
       caloShowerSimTag : ""
       caloShowerROTag : ""
       strawDigiMCIndexMapTag : ""

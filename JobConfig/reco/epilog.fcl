@@ -1,1 +1,2 @@
-# nothing for now
+# name all processes the same, to mask any provenance in ensemble creation
+process_name: Reconstruct

@@ -8,6 +8,7 @@
 #include "fcl/standardServices.fcl"
 #include "fcl/standardProducers.fcl"
 #include "JobConfig/primary/prolog.fcl"
+#include "JobConfig/digitize/prolog.fcl"
 #include "JobConfig/reco/prolog.fcl"
 
 process_name : ceSimReco
@@ -19,29 +20,30 @@ physics: {
   producers : {
     @table::Primary.producers
     @table::Reconstruction.producers
+    @table::Digitize.producers
+    @table::Trigger.producers 
     generate : @local::CeEndpointGun
-    protonBunchIntensity : {
-      module_type: ProtonBunchIntensityFlat
-      mean: 0.0 # No PBI possible for pure signal! 
-      halfWidth : 1.0
-    } 
   }
   filters : { 
     @table::Primary.filters
     @table::Reconstruction.filters
+    @table::Digitize.filters 
+    @table::Trigger.filters
   }
   analyzers: {
     @table::Primary.analyzers
+    @table::Digitize.analyzers
     @table::Reconstruction.analyzers
     @table::Trigger.analyzers
   }
 
   TriggerPath : [
     @sequence::Primary.TriggerPath,
-    protonBunchIntensity,
-    @sequence::Reconstruction.DePath,
-    @sequence::Reconstruction.CrvRecoSequence,
-    @sequence::Reconstruction.RecoMCSequence
+    @sequence::Digitize.TriggerPath,
+    @sequence::Reconstruction.CaloReco,
+    @sequence::Reconstruction.TrkReco,
+    @sequence::Reconstruction.CrvReco,
+    @sequence::Reconstruction.DeReco
   ]
   EndPath : @local::Primary.EndPath
 }
@@ -52,9 +54,8 @@ outputs : {
      #SelectEvents : [ TriggerPath ]
      fileName    : @nil
      outputCommands : [
-	 @sequence::Reconstruction.HighReco,
-	 @sequence::Reconstruction.LowReco,
-	 @sequence::Reconstruction.RecoMC,
+	 @sequence::Reconstruction.HighRecoProducts,
+	 @sequence::Reconstruction.MCRecoProducts,
 	 # drop reco products which be empty
 	 "drop mu2e::Crv*_*_*_*",
 	 "drop mu2e::StepPointMCs_*_CRV_*",

@@ -137,14 +137,14 @@ namespace mu2e {
       auto pph = event.getValidHandle<PrimaryParticle>(ppToken_);
       auto const& primaryParticles = *pph;
       
-      std::unique_ptr<CaloHitMCCollection>  caloDigiMCs(new CaloHitMCCollection);
-      std::unique_ptr<CaloHitMCTruthAssn>   caloDigiMCTruth(new CaloHitMCTruthAssn);
-      std::unique_ptr<CaloShowerMCTruthAssn> caloHitMCTruth(new CaloShowerMCTruthAssn);
+      std::unique_ptr<CaloHitMCCollection>  caloHitMCs(new CaloHitMCCollection);
+      std::unique_ptr<CaloHitMCTruthAssn>   caloHitMCTruth(new CaloHitMCTruthAssn);
+      std::unique_ptr<CaloShowerMCTruthAssn> caloShowerMCTruth(new CaloShowerMCTruthAssn);
 
-      makeTruthMatch(event, *caloDigiMCs, *caloDigiMCTruth, *caloHitMCTruth, primaryParticles);
+      makeTruthMatch(event, *caloHitMCs, *caloHitMCTruth, *caloShowerMCTruth, primaryParticles);
 
-      event.put(std::move(caloDigiMCTruth));
-      event.put(std::move(caloDigiMCs));
+      event.put(std::move(caloHitMCTruth));
+      event.put(std::move(caloHitMCs));
       if (fillDetailedMC_) event.put(std::move(caloHitMCTruth));
   } 
 
@@ -157,13 +157,13 @@ namespace mu2e {
   //   MCtime must not already be in the window of the next hit, in which case it is associate to this one
   //
   //--------------------------------------------------------------------
-  void CaloDigiTruthMatch::makeTruthMatch(art::Event& event, CaloHitMCCollection& caloDigiMCs,
+  void CaloDigiTruthMatch::makeTruthMatch(art::Event& event, CaloHitMCCollection& caloHitMCs,
                                          CaloHitMCTruthAssn& caloDigiTruthMatch, CaloShowerMCTruthAssn& caloShowerTruthMatch, 
                                          const PrimaryParticle& primaryParticle)
   {
         
-      art::ProductID digiMCProductID(event.getProductID<CaloHitMCCollection>());
-      const art::EDProductGetter* digiMCProductGetter = event.productGetter(digiMCProductID);
+      art::ProductID hitMCProductID(event.getProductID<CaloHitMCCollection>());
+      const art::EDProductGetter* hitMCProductGetter = event.productGetter(hitMCProductID);
 
       const auto CaloHitHandle = event.getValidHandle(CaloHitToken_);
       const auto& CaloHits(*CaloHitHandle);
@@ -285,10 +285,10 @@ namespace mu2e {
              
              //sort CaloEDepMC by decreasing energy
              std::sort(edeps.begin(),edeps.end(),[](const auto& a, const auto& b){return a.energyDep() > b.energyDep();});
-             caloDigiMCs.emplace_back(CaloHitMC(std::move(edeps)));
+             caloHitMCs.emplace_back(CaloHitMC(std::move(edeps)));
 
-             art::Ptr<CaloHitMC> digiMCPtr = art::Ptr<CaloHitMC>(digiMCProductID, caloDigiMCs.size()-1, digiMCProductGetter);             
-             caloDigiTruthMatch.addSingle(hitPtr,digiMCPtr);
+             art::Ptr<CaloHitMC> hitMCPtr = art::Ptr<CaloHitMC>(hitMCProductID, caloHitMCs.size()-1, hitMCProductGetter);             
+             caloDigiTruthMatch.addSingle(hitPtr,hitMCPtr);
                           
              if (hitIsMatched) {totalEnergyMatched += (*hitIt)->energyDep();++nMatched;}
              ++hitIt;

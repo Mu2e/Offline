@@ -89,5 +89,4 @@ Primary: {
 Primary.Output.outputCommands : [ "drop *_*_*_*","keep mu2e::SimParticlemv_*_*_*",  # these need to be updated after compression FIXME!
 		       @sequence::Primary.KeptProducts]
 Primary.TriggerPath : [ @sequence::Primary.TriggerSequence ]
-
 END_PROLOG
