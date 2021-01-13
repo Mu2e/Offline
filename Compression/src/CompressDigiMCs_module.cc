@@ -261,7 +261,7 @@ mu2e::CompressDigiMCs::CompressDigiMCs(const Parameters& conf)
   _caloShowerStepTags(_conf.caloShowerStepTags()),
   _caloShowerSimTag(_conf.caloShowerSimTag()),
   _caloShowerROTag(_conf.caloShowerROTag()),
-  _rekeySimParticleCollection(_conf.rekeySimParticleCollection())
+  _rekeySimParticleCollection(_conf.rekeySimParticleCollection()),
   _noCompression(_conf.noCompression())
 {
   // Call appropriate produces<>() functions here.
@@ -444,12 +444,12 @@ void mu2e::CompressDigiMCs::produce(art::Event & event)
         copyStrawDigiMC(i_strawDigiMC);
       }
     }
-  }
 
-  // Only check for this if we are not reducing the number of StrawDigiMCs
-  if ((_strawDigiMCIndexMapTag == "" || _noCompression) && strawDigiMCs.size() != _newStrawDigiMCs->size()) {
-    throw cet::exception("CompressDigiMCs") << "The number of StrawDigiMCs before and after compression does not match ("
-                                            << strawDigiMCs.size() << " != " << _newStrawDigiMCs->size() << ")" << std::endl;
+    // Only check for this if we are not reducing the number of StrawDigiMCs
+    if ((_strawDigiMCIndexMapTag == "" || _noCompression) && strawDigiMCs.size() != _newStrawDigiMCs->size()) {
+      throw cet::exception("CompressDigiMCs") << "The number of StrawDigiMCs before and after compression does not match ("
+                                              << strawDigiMCs.size() << " != " << _newStrawDigiMCs->size() << ")" << std::endl;
+    }
   }
 
 
