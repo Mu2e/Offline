@@ -246,22 +246,20 @@ void mu2e::CompressDetStepMCs::produce(art::Event & event)
 void mu2e::CompressDetStepMCs::compressStrawGasSteps(const art::Event& event) {
   art::Handle<mu2e::StrawGasStepCollection> strawGasStepsHandle;
   event.getByLabel(_conf.strawGasStepTag(), strawGasStepsHandle);
-  if (strawGasStepsHandle.isValid()) {
-    const auto& strawGasSteps = *strawGasStepsHandle;
-    if(_conf.debugLevel()>0 && strawGasSteps.size()>0) {
-      std::cout << "Compressing StrawGasSteps from " << _conf.strawGasStepTag() << std::endl;
+  const auto& strawGasSteps = *strawGasStepsHandle;
+  if(_conf.debugLevel()>0 && strawGasSteps.size()>0) {
+    std::cout << "Compressing StrawGasSteps from " << _conf.strawGasStepTag() << std::endl;
+  }
+  for (const auto& i_strawGasStep : strawGasSteps) {
+    if (_simParticleCompressionLevel == mu2e::CompressionLevel::kFullCompression) {
+      recordSimParticle(i_strawGasStep.simParticle());
     }
-    for (const auto& i_strawGasStep : strawGasSteps) {
-      if (_simParticleCompressionLevel == mu2e::CompressionLevel::kFullCompression) {
-        recordSimParticle(i_strawGasStep.simParticle());
-      }
-      StrawGasStep newStrawGasStep(i_strawGasStep);
-      _newStrawGasSteps->push_back(newStrawGasStep);
-    }
-    if(_strawGasStepCompressionLevel == mu2e::CompressionLevel::kNoCompression) {
-      if (_newStrawGasSteps->size() != strawGasSteps.size()) {
-        throw cet::exception("CompressDetStepMCs") << "Number of StrawGasSteps in output collection (" << _newStrawGasSteps->size() << ") does not match the number of StrawGasSteps in the input collection (" << strawGasSteps.size() << ") even though no compression has been requested (strawGasStepCompressionLevel = \"" << _strawGasStepCompressionLevel.name() << "\")" << std::endl;
-      }
+    StrawGasStep newStrawGasStep(i_strawGasStep);
+    _newStrawGasSteps->push_back(newStrawGasStep);
+  }
+  if(_strawGasStepCompressionLevel == mu2e::CompressionLevel::kNoCompression) {
+    if (_newStrawGasSteps->size() != strawGasSteps.size()) {
+      throw cet::exception("CompressDetStepMCs") << "Number of StrawGasSteps in output collection (" << _newStrawGasSteps->size() << ") does not match the number of StrawGasSteps in the input collection (" << strawGasSteps.size() << ") even though no compression has been requested (strawGasStepCompressionLevel = \"" << _strawGasStepCompressionLevel.name() << "\")" << std::endl;
     }
   }
 }
@@ -269,22 +267,20 @@ void mu2e::CompressDetStepMCs::compressStrawGasSteps(const art::Event& event) {
 void mu2e::CompressDetStepMCs::compressCaloShowerSteps(const art::Event& event) {
   art::Handle<mu2e::CaloShowerStepCollection> caloShowerStepsHandle;
   event.getByLabel(_conf.caloShowerStepTag(), caloShowerStepsHandle);
-  if (caloShowerStepsHandle.isValid()) {
-    const auto& caloShowerSteps = *caloShowerStepsHandle;
-    if(_conf.debugLevel()>0 && caloShowerSteps.size()>0) {
-      std::cout << "Compressing CaloShowerSteps from " << _conf.caloShowerStepTag() << std::endl;
+  const auto& caloShowerSteps = *caloShowerStepsHandle;
+  if(_conf.debugLevel()>0 && caloShowerSteps.size()>0) {
+    std::cout << "Compressing CaloShowerSteps from " << _conf.caloShowerStepTag() << std::endl;
+  }
+  for (const auto& i_caloShowerStep : caloShowerSteps) {
+    if (_simParticleCompressionLevel == mu2e::CompressionLevel::kFullCompression) {
+      recordSimParticle(i_caloShowerStep.simParticle());
     }
-    for (const auto& i_caloShowerStep : caloShowerSteps) {
-      if (_simParticleCompressionLevel == mu2e::CompressionLevel::kFullCompression) {
-        recordSimParticle(i_caloShowerStep.simParticle());
-      }
-      CaloShowerStep newCaloShowerStep(i_caloShowerStep);
-      _newCaloShowerSteps->push_back(newCaloShowerStep);
-    }
-    if(_caloShowerStepCompressionLevel == mu2e::CompressionLevel::kNoCompression) {
-      if (_newCaloShowerSteps->size() != caloShowerSteps.size()) {
-        throw cet::exception("CompressDetStepMCs") << "Number of CaloShowerSteps in output collection (" << _newCaloShowerSteps->size() << ") does not match the number of CaloShowerSteps in the input collection (" << caloShowerSteps.size() << ") even though no compression has been requested (caloShowerStepCompressionLevel = \"" << _caloShowerStepCompressionLevel.name() << "\")" << std::endl;
-      }
+    CaloShowerStep newCaloShowerStep(i_caloShowerStep);
+    _newCaloShowerSteps->push_back(newCaloShowerStep);
+  }
+  if(_caloShowerStepCompressionLevel == mu2e::CompressionLevel::kNoCompression) {
+    if (_newCaloShowerSteps->size() != caloShowerSteps.size()) {
+      throw cet::exception("CompressDetStepMCs") << "Number of CaloShowerSteps in output collection (" << _newCaloShowerSteps->size() << ") does not match the number of CaloShowerSteps in the input collection (" << caloShowerSteps.size() << ") even though no compression has been requested (caloShowerStepCompressionLevel = \"" << _caloShowerStepCompressionLevel.name() << "\")" << std::endl;
     }
   }
 }
@@ -293,21 +289,19 @@ void mu2e::CompressDetStepMCs::compressCrvBarSteps(const art::Event& event) {
   art::Handle<mu2e::CrvBarStepCollection> crvBarStepsHandle;
   event.getByLabel(_conf.crvBarStepTag(), crvBarStepsHandle);
   const auto& crvBarSteps = *crvBarStepsHandle;
-  if (crvBarStepsHandle.isValid()) {
-    if(_conf.debugLevel()>0 && crvBarSteps.size()>0) {
-      std::cout << "Compressing CrvBarSteps from " << _conf.crvBarStepTag() << std::endl;
+  if(_conf.debugLevel()>0 && crvBarSteps.size()>0) {
+    std::cout << "Compressing CrvBarSteps from " << _conf.crvBarStepTag() << std::endl;
+  }
+  for (const auto& i_crvBarStep : crvBarSteps) {
+    if (_simParticleCompressionLevel == mu2e::CompressionLevel::kFullCompression) {
+      recordSimParticle(i_crvBarStep.simParticle());
     }
-    for (const auto& i_crvBarStep : crvBarSteps) {
-      if (_simParticleCompressionLevel == mu2e::CompressionLevel::kFullCompression) {
-        recordSimParticle(i_crvBarStep.simParticle());
-      }
-      CrvBarStep newCrvBarStep(i_crvBarStep);
-      _newCrvBarSteps->push_back(newCrvBarStep);
-    }
-    if(_crvBarStepCompressionLevel == mu2e::CompressionLevel::kNoCompression) {
-      if (_newCrvBarSteps->size() != crvBarSteps.size()) {
-        throw cet::exception("CompressDetStepMCs") << "Number of CrvBarSteps in output collection (" << _newCrvBarSteps->size() << ") does not match the number of CrvBarSteps in the input collection (" << crvBarSteps.size() << ") even though no compression has been requested (crvBarStepCompressionLevel = \"" << _crvBarStepCompressionLevel.name() << "\")" << std::endl;
-      }
+    CrvBarStep newCrvBarStep(i_crvBarStep);
+    _newCrvBarSteps->push_back(newCrvBarStep);
+  }
+  if(_crvBarStepCompressionLevel == mu2e::CompressionLevel::kNoCompression) {
+    if (_newCrvBarSteps->size() != crvBarSteps.size()) {
+      throw cet::exception("CompressDetStepMCs") << "Number of CrvBarSteps in output collection (" << _newCrvBarSteps->size() << ") does not match the number of CrvBarSteps in the input collection (" << crvBarSteps.size() << ") even though no compression has been requested (crvBarStepCompressionLevel = \"" << _crvBarStepCompressionLevel.name() << "\")" << std::endl;
     }
   }
 }
