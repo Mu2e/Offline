@@ -10,6 +10,7 @@
 #include "art/Framework/Core/ModuleMacros.h"
 #include "cetlib_except/exception.h"
 #include "fhiclcpp/types/Atom.h"
+#include "fhiclcpp/types/Sequence.h"
 #include "canvas/Utilities/InputTag.h"
 
 #include "CLHEP/Units/GlobalPhysicalConstants.h"
@@ -50,10 +51,10 @@ namespace mu2e
 	  Comment("Diag Level"), 0};
 	fhicl::Atom<unsigned> csize{ Name("OutputCollectionSize"),
 	  Comment("Estimated size of output collection"), 2000};
-	fhicl::Atom<string> crvSteps { Name("crvStepPoints"),
-	  Comment("Tracker StepPointMC Instance name"),"CRV"};
-	fhicl::Atom<string> stepsToSkip { Name("SkipTheseStepPoints"),
-	  Comment("Tracker StepPointMC producers to skip"), ""};
+	fhicl::Atom<string> stepPointsInstance { Name("stepPointsInstance"),
+	  Comment("Crv StepPointMC product instance name"),"CRV"};
+	fhicl::Sequence<string> stepPointsModuleLabels { Name("stepPointsModuleLabels"),
+	  Comment("Crv StepPointMC module label names")};
 	fhicl::Atom<unsigned> startSize { Name("StartSize"),
 	  Comment("Starting size for crvIndex-particle vector"),4};
 	fhicl::Atom<bool> removeNeutralParticles{ Name("removeNeutralParticles"),
@@ -85,8 +86,8 @@ namespace mu2e
       // StepPointMC selector
       // This selector will select only data products with the given instance name.
       // optionally exclude modules: this is a fix
-      art::Selector _selector;
-      bool _firstEvent;
+      art::Selector   _selector;
+      bool            _firstEvent;
       // diagnostic histograms
       TTree*          _csdiag;
       Float_t         _cslen, _csdist, _csedep, _csPartP;
@@ -102,12 +103,26 @@ namespace mu2e
     _removeNeutralParticles(config().removeNeutralParticles()),
     _csize(config().csize()),
     _ssize(config().startSize()),
-    _selector{art::ProductInstanceNameSelector(config().crvSteps()) &&
-      !art::ModuleLabelSelector(config().stepsToSkip()) },
+    _selector(art::ProductInstanceNameSelector(config().stepPointsInstance())),
     _firstEvent(true)
   {
     consumesMany<StepPointMCCollection>();
     produces <CrvStepCollection>();
+    const std::vector<std::string> &labels = config().stepPointsModuleLabels();
+    if(labels.size()==0)
+    {
+      throw cet::exception("SIM")<<"mu2e::CrvStepsFromStepPointMCs: No StepPointMC Module Labels specificied" << endl;
+    }
+    if(std::find(labels.begin(),labels.end(),"*")==labels.end())
+    {
+      for(size_t i=0; i<labels.size(); i++)
+      {
+        art::Selector tmpSelector{art::ProductInstanceNameSelector(config().stepPointsInstance()) &&
+                                  art::ModuleLabelSelector(labels.at(i))};
+        if(i==0) _selector=tmpSelector;
+        else _selector=art::Selector{_selector || tmpSelector};
+      }
+    }
   }
 
   void CrvStepsFromStepPointMCs::beginJob()

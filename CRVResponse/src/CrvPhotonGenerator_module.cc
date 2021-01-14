@@ -49,8 +49,9 @@ namespace mu2e
     void beginRun(art::Run& r);
 
     private:
-    std::vector<std::string> _g4ModuleLabels;
+    std::vector<std::string> _moduleLabels;
     std::vector<std::string> _processNames;
+    std::vector<std::unique_ptr<art::Selector> > _selectors;
 
     ConfigFileLookupPolicy                                     _resolveFullPath;
     std::vector<std::string>                                   _lookupTableFileNames;
@@ -80,8 +81,8 @@ namespace mu2e
 
   CrvPhotonGenerator::CrvPhotonGenerator(fhicl::ParameterSet const& pset) :
     EDProducer{pset},
-    _g4ModuleLabels(pset.get<std::vector<std::string> >("g4ModuleLabels")),
-    _processNames(pset.get<std::vector<std::string> >("processNames")),
+    _moduleLabels(pset.get<std::vector<std::string> >("crvStepModuleLabels")),
+    _processNames(pset.get<std::vector<std::string> >("crvStepProcessNames")),
     _lookupTableFileNames(pset.get<std::vector<std::string> >("lookupTableFileNames")),
     _lookupTableReflectors(pset.get<std::vector<int> >("reflectors")),
     _lookupTableCRVSectors(pset.get<std::vector<std::string> >("CRVSectors")),
@@ -95,7 +96,18 @@ namespace mu2e
     _randGaussQ(_engine),
     _randPoissonQ(_engine)
   {
-    if(_g4ModuleLabels.size()!=_processNames.size()) throw std::logic_error("ERROR: mismatch between specified selectors (g4ModuleLabels/processNames)");
+    if(_moduleLabels.size()!=_processNames.size()) throw std::logic_error("ERROR: mismatch between specified selectors (crvStepModuleLabels/crvStepProcessNames)");
+    for(size_t j=0; j<_moduleLabels.size(); j++)
+    {
+      if(_moduleLabels[j]!="" && _moduleLabels[j]!="*")
+        _selectors.push_back(std::unique_ptr<art::Selector>(new art::Selector(art::ProductInstanceNameSelector("") &&
+                                                            art::ModuleLabelSelector(_moduleLabels[j]) &&
+                                                            art::ProcessNameSelector(_processNames[j]))));
+      else
+        _selectors.push_back(std::unique_ptr<art::Selector>(new art::Selector(art::ProductInstanceNameSelector("") &&
+                                                            art::ProcessNameSelector(_processNames[j]))));
+      //the ProcessNameSelector allows "*" and ""
+    }
 
     if(_lookupTableFileNames.size()!=_lookupTableCRVSectors.size()) throw std::logic_error("ERROR: mismatch between specified lookup tables (lookupTableFileNames/CRVSectors)");
     if(_lookupTableReflectors.size()!=_lookupTableCRVSectors.size()) throw std::logic_error("ERROR: mismatch between specified lookup tables (reflectors/CRVSectors)");
@@ -153,20 +165,10 @@ namespace mu2e
     GeomHandle<CosmicRayShield> CRS;
     GlobalConstantsHandle<ParticleDataTable> particleDataTable;
 
-    std::vector<art::Handle<CrvStepCollection> > CrvStepsVector;
-    std::unique_ptr<art::Selector> selector;
-    for(size_t j=0; j<_g4ModuleLabels.size(); j++)
+    for(size_t j=0; j<_selectors.size(); j++)
     {
-      if(_g4ModuleLabels[j]!="" && _g4ModuleLabels[j]!="*")
-        selector = std::unique_ptr<art::Selector>(new art::Selector(art::ProductInstanceNameSelector("") &&
-                                                                    art::ModuleLabelSelector(_g4ModuleLabels[j]) &&
-                                                                    art::ProcessNameSelector(_processNames[j])));
-      else
-        selector = std::unique_ptr<art::Selector>(new art::Selector(art::ProductInstanceNameSelector("") &&
-                                                                    art::ProcessNameSelector(_processNames[j])));
-      //the ProcessNameSelector allows "*" and ""
-
-      event.getMany(*selector, CrvStepsVector);
+      std::vector<art::Handle<CrvStepCollection> > CrvStepsVector;
+      event.getMany(*(_selectors.at(j)), CrvStepsVector);
       for(size_t i=0; i<CrvStepsVector.size(); i++)
       {
         const art::Handle<CrvStepCollection> &CrvSteps = CrvStepsVector[i];
