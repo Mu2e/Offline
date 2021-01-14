@@ -5,5 +5,5 @@
 #
 #include "JobConfig/digitize/OnSpill.fcl"
 # customize the output
-services.TFileService.fileName: "nts.owner.CeEndpointDigis.version.sequencer.root"
-outputs.Output.fileName: "sim.owner.CeEndpointDigis.version.sequencer.art"
+services.TFileService.fileName: "nts.owner.CeEndpoint-digis.version.sequencer.root"
+outputs.Output.fileName: "sim.owner.CeEndpoint-digis.version.sequencer.art"
