@@ -3,14 +3,9 @@
 #
 # original author: Dave Brown, LBNL
 #
-#include "JobConfig/primary/prolog.fcl"
-process_name: proton
-
-source: { module_type : EmptyEvent }
-services: @local::Services.Sim
-physics : { 
-  producers : {
-    generate : {
+#include "JobConfig/primary/primary.fcl"
+# set the generator
+physics.producers.generate :{
       module_type: StoppedParticleReactionGun
       verbosityLevel : 1
       muonStops: @local::mu2e.tgtMuonStops
@@ -21,22 +16,10 @@ physics : {
 	nbins: 1000
       }
     }
-    @table::Primary.producers
-  }
-  filters: { @table::Primary.filters }
-  analyzers: { @table::Primary.analyzers }
-  TriggerPath : @local::Primary.TriggerPath
-  EndPath : @local::Primary.EndPath
-}
-outputs : { 
-  Output :@local::Primary.Output
-}
-#
-# final configuration
-#
-#include "JobConfig/primary/epilog.fcl"
-physics.filters.DigiFilter.particleTypes : [ 2212 ]
+# for true primaries, keep only protons
+physics.filters.DetStepFilter.KeepPDG : [ 2212 ]
+# lower the thresolds for pileup generation
+##include "JobConfig/primary/pileup.fcl"
 # customize the output
-services.TFileService.fileName: "nts.owner.proton.version.sequencer.root"
-outputs.Output.fileName: "dig.owner.proton.version.sequencer.art"
-physics.end_paths : [ EndPath ] # needed for generate_fcl
+services.TFileService.fileName: "nts.owner.proton-steps.version.sequencer.root"
+outputs.Output.fileName: "dig.owner.proton-steps.version.sequencer.art"
