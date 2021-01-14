@@ -30,7 +30,7 @@ physics: {
       }
       
       @table::CaloReco.producers
-      @table::CaloDigiMC.producers
+      @table::CaloMC.producers
       @table::CaloCluster.producers
       @table::CaloClusterMC.producers	
       @table::TrkHitReco.producers
@@ -65,7 +65,7 @@ physics: {
   p1: [ 
         FindMCPrimary,
         @sequence::CaloReco.Reco,
-        @sequence::CaloDigiMC.TruthMatch,	 	  
+        @sequence::CaloMC.TruthMatch,	 	  
 	@sequence::CaloCluster.Reco,
         @sequence::CaloClusterMC.TruthMatch
       ]

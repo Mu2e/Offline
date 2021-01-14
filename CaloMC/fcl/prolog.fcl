@@ -108,6 +108,11 @@ CaloClusterMC :
    producers : { CaloClusterTruthMatch : @local::CaloClusterTruthMatch }
    TruthMatch  : [ CaloClusterTruthMatch ]
 }
-
+# legacy
+CaloMC.producers : {
+  @table::CaloMC.StepProducers
+  @table::CaloMC.DigiProducers
+}
+CaloMC.StepAndDigiSim : [@sequence::CaloMC.StepSim, @sequence::CaloMC.DigiSim]
 
 END_PROLOG

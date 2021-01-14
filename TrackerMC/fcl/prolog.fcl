@@ -21,5 +21,11 @@ TrackerMC : {
 #  DigiSim : [ StrawDigiMaker ]
   DigiSim : [ makeSD ]
 }
+# legacy
+TrackerMC.producers : {
+    @table::TrackerMC.StepProducers
+    @table::TrackerMC.DigiProducers
+}
+TrackerMC.StepAndDigiSim : [ @sequence::TrackerMC.StepSim,  @sequence::TrackerMC.DigiSim ]
 
 END_PROLOG
