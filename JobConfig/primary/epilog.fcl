@@ -3,11 +3,9 @@
 # 
 # name all processes the same, to mask any provenance in ensemble creation
 process_name: Primary
-# set the stops.  This should go away with art-based muon stops FIXME!
-physics.producers.generate.muonStops.inputFiles : [ "mergedMuonStops/nts.mu2e.DS-TGTstops.MDC2018a.001002_00000000.root" ]
 # save the MC Trajectories of primary particles
 physics.producers.g4run.TrajectoryControl: @local::mu2eg4DefaultTrajectories
+physics.end_paths : [ EndPath ] # needed for generate_fcl
 # test values; these get overwritten by generate_fcl
 services.SeedService.baseSeed         :  773651
 services.SeedService.maxUniqueEngines :  20
-

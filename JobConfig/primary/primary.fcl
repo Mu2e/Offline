@@ -1,0 +1,22 @@
+#
+# generate and produce Detector Steps from a primary particle
+#
+# original author: Dave Brown, LBNL
+#
+#include "JobConfig/primary/prolog.fcl"
+
+source: { module_type : EmptyEvent }
+services: @local::Services.Sim
+physics : { 
+  producers : { @table::Primary.producers }
+  filters : { @table::Primary.filters }
+  analyzers : { @table::Primary.analyzers }
+  TriggerPath : @local::Primary.TriggerPath
+  EndPath : @local::Primary.EndPath
+}
+outputs : { Output :@local::Primary.Output }
+#
+# final configuration
+#
+#include "JobConfig/primary/epilog.fcl"
+

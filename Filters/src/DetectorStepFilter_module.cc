@@ -181,7 +181,7 @@ namespace mu2e {
   }
 
   bool DetectorStepFilter::goodParticle(SimParticle const& simp) const {
-    bool retval(false);
+    bool retval = pdgToKeep_.size() > 0 ? false : true;
     for(auto pdg: pdgToKeep_){
       if(pdg == simp.pdgId()){
 	retval = true;

@@ -3,28 +3,11 @@
 #
 # original author: Dave Brown, LBNL
 #
-#include "JobConfig/primary/prolog.fcl"
-
-source: { module_type : EmptyEvent }
-services: @local::Services.Sim
-physics : { 
-  producers : {
-    generate : @local::CeEndpointGun
-    @table::Primary.producers
-  }
-  filters: { @table::Primary.filters }
-  analyzers: { @table::Primary.analyzers }
-  TriggerPath : @local::Primary.TriggerPath
-  EndPath : @local::Primary.EndPath
-}
-outputs : { 
-  Output :@local::Primary.Output
-}
-#
-# final configuration
-#
-#include "JobConfig/primary/epilog.fcl"
+#include "JobConfig/primary/primary.fcl"
+# set the generator
+physics.producers.generate : @local::CeEndpointGun
+# set the stops.  This should go away with art-based muon stops FIXME!
+physics.producers.generate.muonStops.inputFiles : [ "mergedMuonStops/nts.mu2e.DS-TGTstops.MDC2018a.001002_00000000.root" ]
 # customize the output
-services.TFileService.fileName: "nts.owner.CeEndpointSteps.version.sequencer.root"
-outputs.Output.fileName: "sim.owner.CeEndpointSteps.version.sequencer.art"
-physics.end_paths : [ EndPath ] # needed for generate_fcl
+services.TFileService.fileName: "nts.owner.CeEndpoint-steps.version.sequencer.root"
+outputs.Output.fileName: "sim.owner.CeEndpoint-steps.version.sequencer.art"
