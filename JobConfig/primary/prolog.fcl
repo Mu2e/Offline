@@ -40,7 +40,7 @@ Primary: {
       CaloShowerSteps : [ "CaloShowerStepMaker" ]
       CrvSteps : [ "g4run:CRV" ]
       MinimumTrkStepEnergy : 1.0e-6 # 1 ev
-      MinimumCaloStepEnergy : 1.0 # 1 MeV
+      MinimumCaloStepEnergy : 0.01 # need a realistic value FIXME!
       MinimumCrvStepEnergy : 1.0e-6 # get a real value from CRV experts FIXME!
       MinimumPartMom : 80.0 # MeV/c
       MaximumPartMom : 10000.0 # MeV/c
@@ -62,7 +62,7 @@ Primary: {
 		       "keep mu2e::StepPointMCs_*_CRV_*", # update this to CrvStep FIXME!
 		       "keep mu2e::StepPointMCs_*_virtualdetector_*",
 		       "keep mu2e::StepPointMCs_*_protonabsorber_*", # add active target too FIXME!
-#		       "keep mu2e::SimParticlemv_*_*_*",  # these need to be updated after compression FIXME!
+#		       "keep mu2e::SimParticlemv_*_*_*",  # these need to be updated after step compression FIXME!
 		       "keep mu2e::StatusG4_*_*_*",
 		       "keep mu2e::SimParticleart::Ptrmu2e::MCTrajectorystd::map_*_*_*",
 		       "keep mu2e::GenParticles_*_*_*",

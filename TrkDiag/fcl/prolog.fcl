@@ -1,11 +1,4 @@
-#include "CRVResponse/fcl/prolog.fcl"
-#include "CaloMC/fcl/prolog.fcl"
-#include "CaloReco/fcl/prolog.fcl"
-#include "CaloCluster/fcl/prolog.fcl"
-#include "TrkHitReco/fcl/prolog.fcl"
-#include "TrkPatRec/fcl/prolog.fcl"
-#include "TrkDiag/fcl/KalDiag.fcl"
-
+#include "Filters/fcl/prolog.fcl"
 BEGIN_PROLOG
 # Diagnostic modules    
   BD : {
@@ -227,6 +220,7 @@ BEGIN_PROLOG
     FillTrkQualInfo : true
     FillTrkPIDInfo : true
     FillHitInfo : false
+    FillTriggerInfo : true
     ProcessEmptyEvents : false
     AnalyzeCRV : true
     AnalyzeCRVPulses : false

@@ -1,4 +1,4 @@
 # Reconstruct CeEndpoint
-#include "JobConfig/reco/mcdigis.fcl"
+#include "JobConfig/reco/reco.fcl"
 services.TFileService.fileName: "nts.owner.CeEndpointReco.version.sequencer.root"
 outputs.Output.fileName: "mcs.owner.CeEndpointReco.version.sequencer.art"
