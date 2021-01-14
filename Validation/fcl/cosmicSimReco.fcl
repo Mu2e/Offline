@@ -130,8 +130,7 @@ physics.producers.g4run.SDConfig.enableSD : [ CRV ]
 # collect all StepPoints with instance CRV.  This will 
 # pick up both the g4run collection and the filtered collection,
 # so select only the latter
-#physics.producers.CrvPhotons.g4ModuleLabels : ["cosmicFilter"]
-physics.producers.CrvSteps.SkipTheseStepPoints : "g4run"
+physics.producers.CrvSteps.stepPointsModuleLabels : ["cosmicFilter"]
 
 # turn off very verbose
 physics.producers.CrvCoincidence.verboseLevel : 0

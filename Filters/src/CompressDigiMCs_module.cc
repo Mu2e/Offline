@@ -577,9 +577,11 @@ void mu2e::CompressDigiMCs::produce(art::Event & event)
   }
 
   // Update the CrvSteps
-  for (auto& i_crvStep : *_newCrvSteps) {
-    art::Ptr<SimParticle> newSimPtr = remap.at(i_crvStep.simParticle());
-    i_crvStep.simParticle() = newSimPtr;
+  if (_crvDigiMCTag != "") {
+    for (auto& i_crvStep : *_newCrvSteps) {
+      art::Ptr<SimParticle> newSimPtr = remap.at(i_crvStep.simParticle());
+      i_crvStep.simParticle() = newSimPtr;
+    }
   }
 
   if (_caloClusterMCTag == "") {
