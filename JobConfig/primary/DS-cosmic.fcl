@@ -16,4 +16,4 @@ physics.filters.DetStepFilter.MaximumPartMom : 1e7
 physics.producers.g4run.ResourceLimits.maxSimParticleCollectionSize: 1000000
 # customize the output
 services.TFileService.fileName: "nts.owner.DS-cosmic-steps.version.sequencer.root"
-outputs.Output.fileName: "dig.owner.DS-cosmic-steps.version.sequencer.art"
+outputs.Output.fileName: "sim.owner.DS-cosmic-steps.version.sequencer.art"
