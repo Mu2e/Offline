@@ -83,7 +83,7 @@ physics :
     # Form StrawHits (SH).
     makeSH : @local::makeSH
 
-    @table::CaloDigiMC.producers
+    @table::CaloMC.producers
     @table::CaloReco.producers
 
     randomsaver:
@@ -114,7 +114,7 @@ physics :
   {
   }
 
-  p1 : [generate , g4run , makeSH, @sequence::CaloDigiMC.DigiSim,@sequence::CaloReco.Reco, checkhits, randomsaver ]
+  p1 : [generate , g4run , makeSH, @sequence::CaloMC.DigiSim,@sequence::CaloReco.Reco, checkhits, randomsaver ]
   e1 : [outfile]
 
   trigger_paths  : [p1]
