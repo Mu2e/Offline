@@ -24,3 +24,9 @@ physics : {
 outputs : { 
   Output :@local::Digitize.Output
 }
+physics.end_paths : [ EndPath ] # needed for generate_fcl
+#
+# final configuration
+#
+#include "JobConfig/digitize/epilog.fcl"
+

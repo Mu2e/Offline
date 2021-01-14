@@ -1,9 +1,26 @@
 #
 #  Digitization specialization for off-spill simulations
 #
-
-
-# replace with off-spill specific trigger path FIXME!
-#include "gen/fcl/Trigger/offline/allTrig/allPaths.fcl"
-outputs.Output.SelectEvents : [ "RecoPath" ]
-
+#include "JobConfig/digitize/prolog.fcl"
+source : { module_type : RootInput }
+services : @local::Services.SimAndReco # reco is needed for the trigger
+physics : { 
+  producers : {
+    @table::Digitize.producers
+    @table::Trigger.producers 
+  }
+  filters: { 
+    @table::Digitize.filters 
+    @table::Trigger.filters
+  }
+  # setup 'trigger reject' stream after RejectEvents is implemented TODO!
+  analyzers: { @table::Digitize.analyzers }
+  TriggerPath : @local::Digitize.TriggerPath
+  EndPath : @local::Digitize.EndPath
+}
+# add trigger paths
+#include "gen/fcl/Trigger/OnSpillTrigMenu/OffSpillTrigMenu.fcl"
+#
+outputs : { 
+  Output :@local::Digitize.Output
+}
