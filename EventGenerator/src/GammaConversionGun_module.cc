@@ -182,7 +182,6 @@ namespace mu2e {
     produces<mu2e::EventWeight>();
     produces<mu2e::GenParticleCollection>("photon"); //store photon generation energy for RMC weights
     produces<mu2e::GenEventCount, art::InSubRun>("genEvents"); //for normalization
-    produces<mu2e::GenEventCount, art::InSubRun>("passedEvents"); //for tracking events actually produced
 
 
     if(verbosityLevel_ > 0) {
@@ -411,12 +410,11 @@ namespace mu2e {
   //================================================================
   void GammaConversionGun::endSubRun(art::SubRun& sr) {
 
-    mf::LogInfo("Summary")<<"Creating GenEventCount records in the GammaConversionGun: "<< genEvents_
-                          <<" generated events and "
-			  << passedEvents_ << " passed events for "<<sr.id()<<"\n";
+    mf::LogInfo("Summary")<<"Creating GenEventCount record in the GammaConversionGun: "<< genEvents_
+                          <<" generated events, where"
+			  << passedEvents_ << " events were produced for "<<sr.id()<<"\n";
 
     sr.put(std::unique_ptr<GenEventCount>(new GenEventCount(genEvents_)), "genEvents");
-    sr.put(std::unique_ptr<GenEventCount>(new GenEventCount(passedEvents_)), "passedEvents");
   }
 
 
