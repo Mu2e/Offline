@@ -177,19 +177,7 @@ Mu2eG4: {
     producers : {
         g4run : { @table::mu2eg4runDefaultSingleStage }
     }
-    filters : {
-	ConversionWriter : {
-	    module_type        : GammaConversionPoints
-	    g4ModuleLabel      : "g4run"
-	    generatorLabel     : "generate"
-	    # g4ModuleLabel      : "compressDigiMCs"
-	    # defaultMat         : "StoppingTarget_Al"
-	    # rMin               : -1.
-	    # rMax               : 500
-	    # zMin               : 5000
-	    # zMax               : 8000
-	}
-    }
+    filters : {    }
 }
 
 #----------------------------------------------------------------

@@ -102,17 +102,17 @@ namespace mu2e {
     // Store trajectory parameters at each G4Step; cleared at beginOfTrack time.
     std::vector<MCTrajectoryPoint> _trajectory;
 
-    // Values to kill low momentum RMC tracks
+    // Values to kill low momentum tracks from photon conversions/Compton scatters
     //minimum energy a daughter must have, <= 0 to not kill tracks
-    double minRMCConversionEnergy_;
+    double gammaFilterMinDaughterEnergy_;
     //maximum endpoint value intended with dataset, assumed partner of a given track could have
     // this energy when deciding whether or not to kill the track if haven't found energy  yet
-    double processRMCMaxEndpoint_;
+    double gammaFilterMaxGammaEnergy_;
     //kill event once the photon converts, useful if only interested in conversion points
-    bool   rmcKillAfterConvert_;
+    bool   gammaFilterKillAfterConvert_;
     //photon's energy in current event 
-    double rmcPhotonEnergy_;
-    int    rmcAccepted_; // 0 = undetermined, -1 = kill event, 1 = accept event
+    double gammaFilterPhotonEnergy_;
+    int    gammaFilterAccepted_; // 0 = undetermined, -1 = kill event, 1 = accept event
 
     // Lists of events and tracks for which to enable debug printout.
     EventNumberList _debugEventList;

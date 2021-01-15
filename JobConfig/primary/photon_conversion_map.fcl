@@ -5,7 +5,7 @@
 #include "JobConfig/primary/RMC_flat_external.fcl"
 process_name: RMCConversionMap
 
-physics.filters.conversionwriter : {@table::Mu2eG4.filters.ConversionWriter }
+physics.filters.conversionwriter : {@table::Mu2eG4Filters.filters.ConversionWriter }
 
 ####################
 ## Generator info ##
@@ -28,9 +28,9 @@ physics.producers.generate.czFuncString                  : "max(100*(0.1-abs(x))
 ##################
 
 #make it so the event often fails and will quit after the conversion in geant4
-physics.producers.g4run.physics.steppingActionMinRMCDaughterEnergy : 84.5 // MeV below this E < 90 MeV contribute
-physics.producers.g4run.physics.steppingActionMaxRMCEndpoint : 93.0 // MeV only used if error in finding photon energy
-physics.producers.g4run.physics.steppingActionRMCKillAfterConvert : true //no reason to continue after found
+physics.producers.g4run.physics.steppingActionGammaFilterMinDaughterEnergy : 84.5 // MeV below this E < 90 MeV contribute
+physics.producers.g4run.physics.steppingActionGammaFilterMaxGammaEnergy : 93.0 // MeV only used if error in finding photon energy
+physics.producers.g4run.physics.steppingActionGammaFilterKillAfterConvert : true //no reason to continue after found
 
 ################################
 ## Conversion map writer info ##
