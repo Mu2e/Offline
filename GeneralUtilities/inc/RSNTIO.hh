@@ -103,10 +103,11 @@ namespace mu2e {
       ConversionPointF() : x(), y(), z(), time(), px(), py(), pz(), weight(), genEnergy(), matN(), matZ(), matZeff(), matFrac() {}
 
       static const std::string branchDescription() {
-	char description[200];
-	sprintf(description,"x/F:y/F:z/F:time/F:px/F:py/F:pz/F:weight/F:genEnergy/F:matN/I:matZ[%i]/I:matZeff[%i]/F:matFrac[%i]/F",
-		kMaxConversionMaterialElements,kMaxConversionMaterialElements,kMaxConversionMaterialElements);
-	const std::string description_s = description;
+	std::ostringstream description;
+	int k = kMaxConversionMaterialElements; //maximum length of arrays
+	description << "x/F:y/F:z/F:time/F:px/F:py/F:pz/F:weight/F:genEnergy/F:matN/I:matZ["
+		    << k << "]/I:matZeff[" << k << "]/F:matFrac[" << k << "]/F";
+	const std::string description_s = description.str();
 	return description_s;
       }
 

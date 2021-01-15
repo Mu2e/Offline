@@ -3,7 +3,7 @@
 # this file is included by fcl/standardProducers.fcl inside the PROLOG section
 #------------------------------------------------------------------------------
 BEGIN_PROLOG
-GEN_ID : CeEndpoint # to be redefined
+GEN_ID : @nil # to be redefined
 #------------------------------------------------------------------------------
 # "muonStops" is a TDR config, deprecated for CD3:
 muonStops : {
