@@ -50,16 +50,14 @@ void
 mu2e::PrimaryParticlePrinter::Print(const mu2e::PrimaryParticle& obj, int ind, std::ostream& os) {
   if(verbose()<1) return;
   os << std::setiosflags(std::ios::fixed | std::ios::right);
-  std::string gtag("GenParticleFrom PrimaryParticle");
-  gprint_.PrintHeader(gtag, os);
+  os << "PrimaryParticle GenParticle:" << std::endl;
   gprint_.PrintListHeader(os);
   gprint_.Print(obj.primary(),-1,os);
-  std::string stag("SimParticleFrom PrimaryParticle");
-  sprint_.PrintHeader(stag, os);
+  os << "PrimaryParticle has "<< obj.primarySimParticles().size() << " SimParticles:" << std::endl;
   sprint_.PrintListHeader(os);
   for(size_t isp = 0; isp < obj.primarySimParticles().size(); isp++){
-    auto spp = obj.primarySimParticles()[isp];
-    sprint_.Print(spp,isp,os);
+    auto const& spp = obj.primarySimParticles()[isp];
+    if(spp.isNonnull()) sprint_.Print(spp,isp,os);
   }
 }
 
