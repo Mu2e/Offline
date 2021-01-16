@@ -7,7 +7,7 @@
 // Mu2e includes
 #include "DataProducts/inc/StrawId.hh"
 #include "DataProducts/inc/StrawIdMask.hh"
-#include "TrackerConditions/inc/StrawStatus.hh"
+#include "DataProducts/inc/StrawStatus.hh"
 #include "Mu2eInterfaces/inc/ProditionsEntity.hh"
 #include "fhiclcpp/type_traits.h"
 
@@ -39,9 +39,9 @@ namespace mu2e {
 
     void print( std::ostream& ) const override;
     // convenience operators for some common situations
-    bool noSignal(StrawId const& sid) const;    // return 'true' if we expect no usable signal from this straw
+    bool noSignal(StrawId const& sid) const;    // return 'true' if we expect no signal from this straw
     bool suppress(StrawId const& sid) const;  // This straw may produce a signal, but it should be suppressed as it is inaccurate 
-    bool noMaterial(StrawId const& sid) const;  // starw doesn't contribut to scattering or energy loss
+    bool noMaterial(StrawId const& sid) const;  // straw doesn't contribute to scattering or energy loss
 
     // Net status of an individual Straw.  If the straw is in a plane or panel with status, that will be aggregated
     StrawStatus strawStatus(StrawId const& sid) const;
