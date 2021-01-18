@@ -1,7 +1,8 @@
 #
 # Prolog to create primary (signal, signal-like or calibration) particles and subsequent detector steps
 #
-#include "JobConfig/beam/prolog.fcl"
+#include "JobConfig/beam/prolog.fcl" 
+#include "EventGenerator/fcl/prolog.fcl"
 #include "TrackerMC/fcl/prolog.fcl"
 #include "CaloMC/fcl/prolog.fcl"
 ##include "CRVResponse/fcl/prolog.fcl"
@@ -16,11 +17,9 @@ Primary: {
     @table::EventGenerator.producers
     @table::TrackerMC.StepProducers
     @table::CaloMC.StepProducers
-#    @table::CrvDAQPackage.producers
     # the following should be reconfigured to run after step compression once that is working
     FindMCPrimary : {
       module_type : FindMCPrimary
-      debugLevel : 2
       SinglePrimary : true
       GenParticles : "generate"
       SimParticles : "g4run"
@@ -67,13 +66,11 @@ Primary: {
 		       "keep mu2e::SimParticleart::Ptrmu2e::MCTrajectorystd::map_*_*_*",
 		       "keep mu2e::GenParticles_*_*_*",
 		       "keep mu2e::PrimaryParticle_*_*_*",
-		       "keep mu2e::StatusG4_*_*_*",
 		       "keep art::TriggerResults_*_*_*",
 		       "keep mu2e::GenEventCount_*_*_*" ]
 
   analyzers: {
     genCountLogger: { module_type: GenEventCountReader makeHistograms: false }
-#    printModule : { module_type : PrintModule }
   }
 
   Output : {
