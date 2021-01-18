@@ -1,0 +1,76 @@
+#
+# Prolog to create pileup particle steps for mixing
+#
+#include "JobConfig/beam/prolog.fcl"
+#include "EventGenerator/fcl/prolog.fcl"
+#include "TrackerMC/fcl/prolog.fcl"
+#include "CaloMC/fcl/prolog.fcl"
+#include "Filters/fcl/prolog.fcl"
+#
+BEGIN_PROLOG
+
+Pileup: {
+  producers : {
+    g4run : @local::mu2e.physics.producers.g4run.muons
+    genCounter: { module_type: GenEventCounter }
+    @table::EventGenerator.producers
+    @table::TrackerMC.StepProducers
+    @table::CaloMC.StepProducers
+  }
+  filters : {
+# generator truncation filter; only needed for cosmic rays in principle
+    g4status: {
+      module_type: FilterStatusG4
+      input: "g4run"
+    }
+# step filter to select any detectable signal
+    DetStepFilter : {
+      module_type : DetectorStepFilter
+      StrawGasSteps : [ "StrawGasStepMaker" ] 
+      CaloShowerSteps : [ "CaloShowerStepMaker" ]
+      CrvSteps : [ "g4run:CRV" ]
+      MinimumTrkStepEnergy : 1.0e-6 # 1 ev
+      MinimumCaloStepEnergy : 0.01 # need a realistic value FIXME!
+      MinimumCrvStepEnergy : 1.0e-6 # get a real value from CRV experts FIXME!
+      MinimumPartMom : 0.0 # MeV/c
+      MaximumPartMom : 10000.0 # MeV/c
+      KeepPDG : [ ] # all particles accepted
+      TestTrk : true
+      TestCalo : true
+      TestCrv : true # detectable signals in tracker, calo, or CRV are accepted
+      MinimumTrkSteps : 1
+      MinimumSumCaloStepE : 1.0 # check this threshold TODO!
+      MinimumCrvSteps : 1
+    }
+  }
+  TriggerSequence : [ generate, genCounter, g4run, g4status,  
+    @sequence::TrackerMC.StepSim,
+    @sequence::CaloMC.StepSim,
+    DetStepFilter ]
+
+  KeptProducts : [ "keep mu2e::StrawGasSteps_*_*_*",
+		       "keep mu2e::CaloShowerSteps_*_*_*",
+		       "keep mu2e::StepPointMCs_*_CRV_*", # update this to CrvStep FIXME!
+		       "keep mu2e::StatusG4_*_*_*",
+		       "keep mu2e::SimParticlemv_g4run_*_*",  # these need to be updated after step compression FIXME!
+		       "keep mu2e::GenParticles_*_*_*",
+		       "keep art::TriggerResults_*_*_*",
+		       "keep mu2e::GenEventCount_*_*_*" ]
+
+  analyzers: {
+    genCountLogger: { module_type: GenEventCountReader makeHistograms: false }
+  }
+
+  Output : {
+     module_type : RootOutput
+     SelectEvents : [ TriggerPath ]
+     fileName    : @nil
+     # drop StepPoints from calorimeter
+  }
+# define paths
+  EndPath : [ genCountLogger, Output ]
+}
+Pileup.Output.outputCommands : [ "drop *_*_*_*",
+		       @sequence::Pileup.KeptProducts]
+Pileup.TriggerPath : [ @sequence::Pileup.TriggerSequence ]
+END_PROLOG
