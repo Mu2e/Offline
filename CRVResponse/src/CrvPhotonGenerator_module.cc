@@ -60,6 +60,7 @@ namespace mu2e
     std::vector<boost::shared_ptr<mu2eCrv::MakeCrvPhotons> >   _makeCrvPhotons;
     std::vector<double>                                        _scintillationYields;
 
+    double      _scintillationYieldScaleFactor;
     double      _scintillationYieldVariation;
     double      _scintillationYieldVariationCutoff;
 
@@ -87,6 +88,7 @@ namespace mu2e
     _lookupTableReflectors(pset.get<std::vector<int> >("reflectors")),
     _lookupTableCRVSectors(pset.get<std::vector<std::string> >("CRVSectors")),
     _scintillationYields(pset.get<std::vector<double> >("scintillationYields")),    //39400 photons per MeV
+    _scintillationYieldScaleFactor(pset.get<double>("scintillationYieldScaleFactor")),    //100%
     _scintillationYieldVariation(pset.get<double>("scintillationYieldVariation")),    //20.0%
     _scintillationYieldVariationCutoff(pset.get<double>("scintillationYieldVariationCutoff")),    //20.0%
     _startTime(pset.get<double>("startTime")),               //0.0 ns
@@ -96,26 +98,26 @@ namespace mu2e
     _randGaussQ(_engine),
     _randPoissonQ(_engine)
   {
+    if(_moduleLabels.size()==0) throw std::logic_error("ERROR: a list of crvSteps module labels needs to be provided");
     if(_moduleLabels.size()!=_processNames.size()) throw std::logic_error("ERROR: mismatch between specified selectors (crvStepModuleLabels/crvStepProcessNames)");
-    for(size_t j=0; j<_moduleLabels.size(); j++)
+    for(size_t i=0; i<_moduleLabels.size(); ++i)
     {
-      if(_moduleLabels[j]!="" && _moduleLabels[j]!="*")
+      if(_moduleLabels[i]!="*")
         _selectors.push_back(std::unique_ptr<art::Selector>(new art::Selector(art::ProductInstanceNameSelector("") &&
-                                                            art::ModuleLabelSelector(_moduleLabels[j]) &&
-                                                            art::ProcessNameSelector(_processNames[j]))));
+                                                            art::ModuleLabelSelector(_moduleLabels[i]) &&
+                                                            art::ProcessNameSelector(_processNames[i]))));
       else
         _selectors.push_back(std::unique_ptr<art::Selector>(new art::Selector(art::ProductInstanceNameSelector("") &&
-                                                            art::ProcessNameSelector(_processNames[j]))));
-      //the ProcessNameSelector allows "*" and ""
+                                                            art::ProcessNameSelector(_processNames[i]))));
     }
 
     if(_lookupTableFileNames.size()!=_lookupTableCRVSectors.size()) throw std::logic_error("ERROR: mismatch between specified lookup tables (lookupTableFileNames/CRVSectors)");
     if(_lookupTableReflectors.size()!=_lookupTableCRVSectors.size()) throw std::logic_error("ERROR: mismatch between specified lookup tables (reflectors/CRVSectors)");
 
-    for(size_t i=0; i<_lookupTableFileNames.size(); i++)
+    for(size_t i=0; i<_lookupTableFileNames.size(); ++i)
     {
       bool tableLoaded=false;
-      for(size_t j=0; j<i; j++)
+      for(size_t j=0; j<i; ++j)
       {
         if(_lookupTableFileNames[i]==_lookupTableFileNames[j])
         {
@@ -130,7 +132,7 @@ namespace mu2e
       _makeCrvPhotons.emplace_back(boost::shared_ptr<mu2eCrv::MakeCrvPhotons>(new mu2eCrv::MakeCrvPhotons(_randFlat, _randGaussQ, _randPoissonQ)));
       boost::shared_ptr<mu2eCrv::MakeCrvPhotons> &photonMaker=_makeCrvPhotons.back();
       photonMaker->LoadLookupTable(_resolveFullPath(_lookupTableFileNames[i]));
-      photonMaker->SetScintillationYield(_scintillationYields[i]);
+      photonMaker->SetScintillationYield(_scintillationYields[i]*_scintillationYieldScaleFactor);
       std::cout<<"CRV sector "<<i<<" ("<<_lookupTableCRVSectors[i]<<") uses "<<_makeCrvPhotons.back()->GetFileName()<<std::endl;
     }
 
@@ -143,7 +145,7 @@ namespace mu2e
     std::vector<CRSScintillatorShield> const &shields = CRS->getCRSScintillatorShields();
     if(shields.size()!=_lookupTableCRVSectors.size()) throw std::logic_error("ERROR: mismatch between the geometry and the specified lookup table CRVSectors");
 
-    for(size_t i=0; i<shields.size(); i++)
+    for(size_t i=0; i<shields.size(); ++i)
     {
       if(shields[i].getCRSScintillatorBarDetail().getMaterialName()!="G4_POLYSTYRENE")
         throw std::logic_error("ERROR: scintillator material is not the expected G4_POLYSTYRENE which is used in the look-up tables");
@@ -165,14 +167,14 @@ namespace mu2e
     GeomHandle<CosmicRayShield> CRS;
     GlobalConstantsHandle<ParticleDataTable> particleDataTable;
 
-    for(size_t j=0; j<_selectors.size(); j++)
+    for(size_t j=0; j<_selectors.size(); ++j)
     {
       std::vector<art::Handle<CrvStepCollection> > CrvStepsVector;
       event.getMany(*(_selectors.at(j)), CrvStepsVector);
-      for(size_t i=0; i<CrvStepsVector.size(); i++)
+      for(size_t i=0; i<CrvStepsVector.size(); ++i)
       {
         const art::Handle<CrvStepCollection> &CrvSteps = CrvStepsVector[i];
-        for(size_t istep=0; istep<CrvSteps->size(); istep++)
+        for(size_t istep=0; istep<CrvSteps->size(); ++istep)
         {
           CrvStep const& step(CrvSteps->at(istep));
 
@@ -227,19 +229,19 @@ namespace mu2e
                                         _lookupTableReflectors[CRVSectorNumber]);
 
           art::Ptr<CrvStep> crvStepPtr(CrvSteps,istep);
-          for(int SiPM=0; SiPM<4; SiPM++)
+          for(int SiPM=0; SiPM<4; ++SiPM)
           {
             std::pair<CRSScintillatorBarIndex,int> barIndexSiPMNumber(step.barIndex(),SiPM);
             std::vector<CrvPhotons::SinglePhoton> &photons = photonMap[barIndexSiPMNumber];
             const std::vector<double> &times=photonMaker->GetArrivalTimes(SiPM);
-            for(size_t itime=0; itime<times.size(); itime++) photons.emplace_back(times[itime],crvStepPtr);
+            for(size_t itime=0; itime<times.size(); ++itime) photons.emplace_back(times[itime],crvStepPtr);
           }
 
         } //loop over StepPointMCs in the StepPointMC collection
       } //loop over all StepPointMC collections
     } //loop over all module labels / process names from the fcl file
 
-    for(auto p=photonMap.begin(); p!=photonMap.end(); p++)
+    for(auto p=photonMap.begin(); p!=photonMap.end(); ++p)
     {
       crvPhotonsCollection->emplace_back(p->first.first,p->first.second,p->second);
     }

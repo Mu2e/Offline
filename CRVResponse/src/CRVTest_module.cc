@@ -10,8 +10,6 @@
 #include "GeometryService/inc/DetectorSystem.hh"
 #include "GeometryService/inc/GeomHandle.hh"
 #include "GeometryService/inc/GeometryService.hh"
-#include "MCDataProducts/inc/GenParticleCollection.hh"
-#include "MCDataProducts/inc/SimParticleCollection.hh"
 #include "MCDataProducts/inc/CrvPhotons.hh"
 #include "MCDataProducts/inc/CrvSiPMCharges.hh"
 #include "RecoDataProducts/inc/CrvRecoPulseCollection.hh"
@@ -46,22 +44,19 @@ namespace mu2e
     std::string _crvStepsModuleLabel;
     std::string _crvSiPMChargesModuleLabel;
     std::string _crvRecoPulsesModuleLabel;
-    std::string _genParticleModuleLabel;
 
-    TNtuple  *_recoPulses, *_recoPulses2;
+    TNtuple  *_recoPulses;
   };
 
   CRVTest::CRVTest(fhicl::ParameterSet const& pset) :
     art::EDAnalyzer(pset),
     _crvStepsModuleLabel(pset.get<std::string>("crvStepsModuleLabel")),
     _crvSiPMChargesModuleLabel(pset.get<std::string>("crvSiPMChargesModuleLabel")),
-    _crvRecoPulsesModuleLabel(pset.get<std::string>("crvRecoPulsesModuleLabel")),
-    _genParticleModuleLabel(pset.get<std::string>("genParticleModuleLabel"))
+    _crvRecoPulsesModuleLabel(pset.get<std::string>("crvRecoPulsesModuleLabel"))
   {
     art::ServiceHandle<art::TFileService> tfs;
     art::TFileDirectory tfdir = tfs->mkdir("CrvSingleCounter");
-    _recoPulses = tfdir.make<TNtuple>("RecoPulses", "RecoPulses", "event:startX:startY:startZ:barIndex:SiPM:nRecoPulses:recoPEs:recoPulseHeight:recoPulseWidth:recoPulseTime:recoLEtime:MCPEs:chi2");
-    _recoPulses2 = tfdir.make<TNtuple>("RecoPulses2", "RecoPulses2", "startX:startY:startZ:SiPM:nRecoPulses:recoPEs:recoPulseHeight:recoPulseWidth:recoPulseTime:MCPEs:ionizingEnergy:nonIonizingEnergy:notDepositedEnergyElectron:notDepositedEnergyOther:energyLoss");
+    _recoPulses = tfdir.make<TNtuple>("RecoPulses", "RecoPulses", "event:barIndex:SiPM:nRecoPulses:recoPEs:recoPulseHeight:recoPulseWidth:recoPulseTime:recoLEtime:chi2:MCPEs:visibleEnergyDeposited");
   }
 
   void CRVTest::beginJob()
@@ -74,11 +69,8 @@ namespace mu2e
 
   void CRVTest::analyze(const art::Event& event) 
   {
-    art::Handle<StepPointMCCollection> crvStepsCollection;
-    event.getByLabel(_crvStepsModuleLabel,"CRV",crvStepsCollection);
-
-    art::Handle<SimParticleCollection> simParticleCollection;
-    event.getByLabel(_crvStepsModuleLabel,"",simParticleCollection);
+    art::Handle<CrvStepCollection> crvStepsCollection;
+    event.getByLabel(_crvStepsModuleLabel,"",crvStepsCollection);
 
     art::Handle<CrvSiPMChargesCollection> crvSiPMChargesCollection;
     event.getByLabel(_crvSiPMChargesModuleLabel,"",crvSiPMChargesCollection);
@@ -86,11 +78,7 @@ namespace mu2e
     art::Handle<CrvRecoPulseCollection> crvRecoPulseCollection;
     event.getByLabel(_crvRecoPulsesModuleLabel,"",crvRecoPulseCollection);
 
-    art::Handle<GenParticleCollection> genParticleCollection;
-    event.getByLabel(_genParticleModuleLabel,"",genParticleCollection);
-
     int eventID = event.id().event();
-    CLHEP::Hep3Vector startPos = genParticleCollection->at(0).position();
 
     GeomHandle<CosmicRayShield> CRS;
     const std::vector<std::shared_ptr<CRSScintillatorBar> > &counters = CRS->getAllCRSScintillatorBars();
@@ -99,36 +87,13 @@ namespace mu2e
     {
       const CRSScintillatorBarIndex &barIndex = (*iter)->index();
 
-      double ionizingEnergy=0;
-      double nonIonizingEnergy=0;
-      double energyLoss=0;
+      double visibleEnergyDeposited=0;
       if(crvStepsCollection.isValid())
       {
         for(size_t istep=0; istep<crvStepsCollection->size(); istep++)
         {
-          StepPointMC const& step(crvStepsCollection->at(istep));
-          if(step.volumeId()==barIndex.asUint())
-          {
-            nonIonizingEnergy+=step.nonIonizingEDep();
-            ionizingEnergy+=step.ionizingEdep();
-            if(step.simParticle()->id().asUint()==1) energyLoss=step.simParticle()->startMomentum().e()-step.simParticle()->endMomentum().e();
-          }
-        }
-      }
-
-      double notDepositedEnergyElectron=0;
-      double notDepositedEnergyOther=0;
-      if(simParticleCollection.isValid())
-      {
-        cet::map_vector<mu2e::SimParticle>::const_iterator iterParticle;
-        for(iterParticle=simParticleCollection->begin(); iterParticle!=simParticleCollection->end(); iterParticle++)
-        {
-          SimParticle const& particle(iterParticle->second);
-          if(particle.id().asUint()!=1)
-          {
-            if(abs(particle.pdgId())==11) notDepositedEnergyElectron+=particle.endMomentum().v().mag();
-            else notDepositedEnergyOther+=particle.endMomentum().v().mag();
-          }
+          CrvStep const& step(crvStepsCollection->at(istep));
+          if(step.barIndex()==barIndex) visibleEnergyDeposited+=step.visibleEDep();
         }
       }
 
@@ -176,8 +141,7 @@ namespace mu2e
           }
         }
 
-        _recoPulses->Fill(eventID,startPos.x(),startPos.y(),startPos.z(),barIndex.asInt(),SiPM,nRecoPulses,recoPEs,recoPulseHeight,recoPulseBeta,recoPulseTime,recoLEtime,MCPEs,chi2);
-        _recoPulses2->Fill(startPos.x(),startPos.y(),startPos.z(),SiPM,nRecoPulses,recoPEs,recoPulseHeight,recoPulseBeta,recoPulseTime,MCPEs,ionizingEnergy,nonIonizingEnergy,notDepositedEnergyElectron,notDepositedEnergyOther,energyLoss);
+        _recoPulses->Fill(eventID,barIndex.asInt(),SiPM,nRecoPulses,recoPEs,recoPulseHeight,recoPulseBeta,recoPulseTime,recoLEtime,chi2,MCPEs,visibleEnergyDeposited);
       }
     }
 

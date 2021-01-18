@@ -24,23 +24,23 @@ sed -i '441s/.*/         pars: [@local::outsideCrvCutT, @local::belowCrvCutT]/' 
 sed -i '441s/.*/         pars: [@local::outsideCrvCutU, @local::belowCrvCutU]/' CRVResponse/efficiencyCheck/submit/CRV_Efficiency_check_U.fcl
 sed -i '441s/.*/         pars: [@local::outsideCrvCutD, @local::belowCrvCutD]/' CRVResponse/efficiencyCheck/submit/CRV_Efficiency_check_D.fcl
 
-sed -i '691s/.*/physics.producers.CrvPhotons.lookupTableFileNames : ["CRVConditions\/v6_0\/LookupTable_6000_0"]/' CRVResponse/efficiencyCheck/submit/CRV_Efficiency_check_T.fcl
-sed -i '691s/.*/physics.producers.CrvPhotons.lookupTableFileNames : ["CRVConditions\/v6_0\/LookupTable_6000_1"]/' CRVResponse/efficiencyCheck/submit/CRV_Efficiency_check_TS.fcl
-sed -i '691s/.*/physics.producers.CrvPhotons.lookupTableFileNames : ["CRVConditions\/v6_0\/LookupTable_5000_1"]/' CRVResponse/efficiencyCheck/submit/CRV_Efficiency_check_E.fcl
-sed -i '691s/.*/physics.producers.CrvPhotons.lookupTableFileNames : ["CRVConditions\/v6_0\/LookupTable_4550_0"]/' CRVResponse/efficiencyCheck/submit/CRV_Efficiency_check_R.fcl
-sed -i '691s/.*/physics.producers.CrvPhotons.lookupTableFileNames : ["CRVConditions\/v6_0\/LookupTable_4550_0"]/' CRVResponse/efficiencyCheck/submit/CRV_Efficiency_check_L.fcl
-sed -i '691s/.*/physics.producers.CrvPhotons.lookupTableFileNames : ["CRVConditions\/v6_0\/LookupTable_4550_0"]/' CRVResponse/efficiencyCheck/submit/CRV_Efficiency_check_L_teststand.fcl
-sed -i '691s/.*/physics.producers.CrvPhotons.lookupTableFileNames : ["CRVConditions\/v6_0\/LookupTable_6900_1"]/' CRVResponse/efficiencyCheck/submit/CRV_Efficiency_check_U.fcl
-sed -i '691s/.*/physics.producers.CrvPhotons.lookupTableFileNames : ["CRVConditions\/v6_0\/LookupTable_5700_0"]/' CRVResponse/efficiencyCheck/submit/CRV_Efficiency_check_D.fcl
+sed -i '692s/.*/physics.producers.CrvPhotons.lookupTableFileNames : ["CRVConditions\/v6_0\/LookupTable_6000_0"]/' CRVResponse/efficiencyCheck/submit/CRV_Efficiency_check_T.fcl
+sed -i '692s/.*/physics.producers.CrvPhotons.lookupTableFileNames : ["CRVConditions\/v6_0\/LookupTable_6000_1"]/' CRVResponse/efficiencyCheck/submit/CRV_Efficiency_check_TS.fcl
+sed -i '692s/.*/physics.producers.CrvPhotons.lookupTableFileNames : ["CRVConditions\/v6_0\/LookupTable_5000_1"]/' CRVResponse/efficiencyCheck/submit/CRV_Efficiency_check_E.fcl
+sed -i '692s/.*/physics.producers.CrvPhotons.lookupTableFileNames : ["CRVConditions\/v6_0\/LookupTable_4550_0"]/' CRVResponse/efficiencyCheck/submit/CRV_Efficiency_check_R.fcl
+sed -i '692s/.*/physics.producers.CrvPhotons.lookupTableFileNames : ["CRVConditions\/v6_0\/LookupTable_4550_0"]/' CRVResponse/efficiencyCheck/submit/CRV_Efficiency_check_L.fcl
+sed -i '692s/.*/physics.producers.CrvPhotons.lookupTableFileNames : ["CRVConditions\/v6_0\/LookupTable_4550_0"]/' CRVResponse/efficiencyCheck/submit/CRV_Efficiency_check_L_teststand.fcl
+sed -i '692s/.*/physics.producers.CrvPhotons.lookupTableFileNames : ["CRVConditions\/v6_0\/LookupTable_6900_1"]/' CRVResponse/efficiencyCheck/submit/CRV_Efficiency_check_U.fcl
+sed -i '692s/.*/physics.producers.CrvPhotons.lookupTableFileNames : ["CRVConditions\/v6_0\/LookupTable_5700_0"]/' CRVResponse/efficiencyCheck/submit/CRV_Efficiency_check_D.fcl
 
-sed -i '692s/.*/physics.producers.CrvPhotons.reflectors           : [ 0 ]/' CRVResponse/efficiencyCheck/submit/CRV_Efficiency_check_T.fcl
-sed -i '692s/.*/physics.producers.CrvPhotons.reflectors           : [ 1 ]/' CRVResponse/efficiencyCheck/submit/CRV_Efficiency_check_TS.fcl
-sed -i '692s/.*/physics.producers.CrvPhotons.reflectors           : [-1 ]/' CRVResponse/efficiencyCheck/submit/CRV_Efficiency_check_E.fcl
-sed -i '692s/.*/physics.producers.CrvPhotons.reflectors           : [ 0 ]/' CRVResponse/efficiencyCheck/submit/CRV_Efficiency_check_R.fcl
-sed -i '692s/.*/physics.producers.CrvPhotons.reflectors           : [ 0 ]/' CRVResponse/efficiencyCheck/submit/CRV_Efficiency_check_L.fcl
-sed -i '692s/.*/physics.producers.CrvPhotons.reflectors           : [ 0 ]/' CRVResponse/efficiencyCheck/submit/CRV_Efficiency_check_L_teststand.fcl
-sed -i '692s/.*/physics.producers.CrvPhotons.reflectors           : [ 1 ]/' CRVResponse/efficiencyCheck/submit/CRV_Efficiency_check_U.fcl
-sed -i '692s/.*/physics.producers.CrvPhotons.reflectors           : [ 0 ]/' CRVResponse/efficiencyCheck/submit/CRV_Efficiency_check_D.fcl
+sed -i '693s/.*/physics.producers.CrvPhotons.reflectors           : [ 0 ]/' CRVResponse/efficiencyCheck/submit/CRV_Efficiency_check_T.fcl
+sed -i '693s/.*/physics.producers.CrvPhotons.reflectors           : [ 1 ]/' CRVResponse/efficiencyCheck/submit/CRV_Efficiency_check_TS.fcl
+sed -i '693s/.*/physics.producers.CrvPhotons.reflectors           : [-1 ]/' CRVResponse/efficiencyCheck/submit/CRV_Efficiency_check_E.fcl
+sed -i '693s/.*/physics.producers.CrvPhotons.reflectors           : [ 0 ]/' CRVResponse/efficiencyCheck/submit/CRV_Efficiency_check_R.fcl
+sed -i '693s/.*/physics.producers.CrvPhotons.reflectors           : [ 0 ]/' CRVResponse/efficiencyCheck/submit/CRV_Efficiency_check_L.fcl
+sed -i '693s/.*/physics.producers.CrvPhotons.reflectors           : [ 0 ]/' CRVResponse/efficiencyCheck/submit/CRV_Efficiency_check_L_teststand.fcl
+sed -i '693s/.*/physics.producers.CrvPhotons.reflectors           : [ 1 ]/' CRVResponse/efficiencyCheck/submit/CRV_Efficiency_check_U.fcl
+sed -i '693s/.*/physics.producers.CrvPhotons.reflectors           : [ 0 ]/' CRVResponse/efficiencyCheck/submit/CRV_Efficiency_check_D.fcl
 
 i=0
 name=CRV_Efficiency_check_L_teststand
@@ -107,7 +107,7 @@ joblist=CRVResponse/efficiencyCheck/jobs.sh
 
         echo "services.GeometryService.inputFile                      : \"$geomfile\"" >> $fclfile
         echo "physics.producers.generate.inputfile                    : \"$genconfigfile\"" >> $fclfile
-        echo "physics.producers.CrvPhotons.scintillationYield         : $photonYield" >> $fclfile
+        echo "physics.producers.CrvPhotons.scintillationYield         : [ $photonYield ]" >> $fclfile
         #echo "physics.producers.CrvSiPMCharges.deadSiPMProbability    : 0.02" >> $fclfile
         echo "physics.producers.CrvSiPMCharges.deadSiPMProbability    : 0.00" >> $fclfile
 
