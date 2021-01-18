@@ -11,6 +11,7 @@ physics.producers.generate.physics.generateIntConversion : 1
 physics.producers.generate.physics.spectrumShape : "flat"
 physics.producers.generate.physics.elow : 40.0
 physics.filters.DigiFilter.MinParticleMom : 40.0
+physics.producers.FindMCPrimary.PrimaryGenIds : ["InternalRPC"]
 #
 # customize the output
 services.TFileService.fileName: "nts.owner.flatInternalRPC-steps.version.sequencer.root"
