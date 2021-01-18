@@ -1,0 +1,6 @@
+process_name : Pileup
+physics.end_paths : [ EndPath ] # needed for generate_fcl
+# test values; these get overwritten by generate_fcl
+services.SeedService.baseSeed         :  773651
+services.SeedService.maxUniqueEngines :  20
+
