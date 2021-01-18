@@ -1,0 +1,20 @@
+#
+# generate and produce Detector Steps from pileup 
+#
+# original author: Dave Brown, LBNL
+#
+#include "JobConfig/pileup/prolog.fcl"
+
+source: { module_type : EmptyEvent }
+services: { @table::Services.Sim }
+physics: { 
+  producers : { @table::Pileup.producers }
+  filters : { @table::Pileup.filters }
+  analyzers : { @table::Pileup.analyzers }
+  TriggerPath : @local::Pileup.TriggerPath
+  EndPath : @local::Pileup.EndPath
+}
+outputs: { Output : @local::Pileup.Output }
+
+#include "JobConfig/pileup/epilog.fcl"
+
