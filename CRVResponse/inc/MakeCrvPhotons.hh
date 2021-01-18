@@ -79,6 +79,8 @@ struct LookupBin
   float arrivalProbability;
   std::vector<unsigned char> timeDelays;
   std::vector<unsigned char> fiberEmissions;
+  unsigned int probabilityScaleTimeDelays;
+  unsigned int probabilityScaleFiberEmissions;
   void WriteVector(std::vector<unsigned char> &v, std::ofstream &o);
   void ReadVector(std::vector<unsigned char> &v, std::ifstream &i);
   void Write(const std::string &filename);

@@ -14,13 +14,13 @@ BEGIN_PROLOG
       debugLevel                : 0
       diagLevel                 : 0
       stepPointsInstance        : "CRV"
-      stepPointsModuleLabels    : [] //This needs to be provided by the script. Use "*" for all module labels
+      stepPointsModuleLabels    : @nil
     }
     CrvPhotons:
     {
       module_type               : CrvPhotonGenerator
-      crvStepModuleLabels       : ["*"]
-      crvStepProcessNames       : ["*"]
+      crvStepModuleLabels       : @nil
+      crvStepProcessNames       : @nil
       CRVSectors                : ["R1","R2","R3","R4","R5","L1","L2","T1","T2","T3","T4","E1","E2","U" ,"D1","D2","D3","D4","C1","C2","C3","C4"] //used only to match the vector entries below
       reflectors                : [  0 , -1 ,  0 ,  0 ,  0 ,  0 ,  0 ,  1 ,  1 ,  0 ,  0 , -1 , -1 , 1  ,  0 ,  1 , -1 ,  0 ,  1 , -1 , -1 , -1 ]
       lookupTableFileNames      : ["CRVConditions/v6_0/LookupTable_4550_0",  //R1
@@ -57,6 +57,7 @@ BEGIN_PROLOG
                                    39400,39400,39400,39400,         //D1...4
                                    39400,39400,39400,39400]         //C1...4
 
+      scintillationYieldScaleFactor     : 1.0   //scale factor applied to scintillation yields to mimic aging
       scintillationYieldVariation       : 0.2   //gaussian distribution with sigma equal to 20% of the mean
       scintillationYieldVariationCutoff : 0.4   //the scintillation yield variation is cut off at 40% below the mean
       startTime                         : 400.0    //0.0 ns

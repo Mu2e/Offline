@@ -131,6 +131,8 @@ physics.producers.g4run.SDConfig.enableSD : [ CRV ]
 # pick up both the g4run collection and the filtered collection,
 # so select only the latter
 physics.producers.CrvSteps.stepPointsModuleLabels : ["cosmicFilter"]
+physics.producers.CrvPhotons.crvStepModuleLabels  : ["CrvSteps"]
+physics.producers.CrvPhotons.crvStepProcessNames  : ["cosmicSimReco"]
 
 # turn off very verbose
 physics.producers.CrvCoincidence.verboseLevel : 0

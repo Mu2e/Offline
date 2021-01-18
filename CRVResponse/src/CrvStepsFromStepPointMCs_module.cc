@@ -115,7 +115,7 @@ namespace mu2e
     }
     if(std::find(labels.begin(),labels.end(),"*")==labels.end())
     {
-      for(size_t i=0; i<labels.size(); i++)
+      for(size_t i=0; i<labels.size(); ++i)
       {
         art::Selector tmpSelector{art::ProductInstanceNameSelector(config().stepPointsInstance()) &&
                                   art::ModuleLabelSelector(labels.at(i))};
@@ -192,7 +192,7 @@ namespace mu2e
       fillMap(handle, stepPointMap, pdt);
 
       // convert the CrvBarIndex/SimParticle pair steps into CrvStep objects and fill the collection.  
-      for(auto istepPointMap = stepPointMap.begin(); istepPointMap != stepPointMap.end(); istepPointMap++)
+      for(auto istepPointMap = stepPointMap.begin(); istepPointMap != stepPointMap.end(); ++istepPointMap)
       {
 	auto& spmcptrv = istepPointMap->second;  // step pointer vector
         stable_sort(spmcptrv.begin(), spmcptrv.end(), compareStepTimes); //TODO: can be removed, if all StepPointMCs are time ordered
@@ -211,7 +211,7 @@ namespace mu2e
 	fillSteps(spmcptrv,barIndex,pdata,trackId,crvSteps,spmcIndices);
         size_t nNewCrvSteps = spmcIndices.size(); //number of CrvSteps created
 
-        for(size_t i=0; i<nNewCrvSteps; i++)
+        for(size_t i=0; i<nNewCrvSteps; ++i)
         {
           int iCrvStep = (int)crvSteps->size()-(int)nNewCrvSteps+i;
           CrvStep const& crvStep = crvSteps->at(iCrvStep);
@@ -249,7 +249,7 @@ namespace mu2e
     SPMCPtr first;
     SPMCPtr last;
     // loop over all StepPoints
-    for(size_t i=0; i<spmcptrv.size(); i++)
+    for(size_t i=0; i<spmcptrv.size(); ++i)
     {
       const auto& spmcptr = spmcptrv[i];
       if(newCrvStep)
@@ -354,7 +354,7 @@ namespace mu2e
     _sedep.clear();
     _sPartP.clear();
     _sPartPDG.clear();
-    for(size_t i=firstIndex; i<=lastIndex; i++)
+    for(size_t i=firstIndex; i<=lastIndex; ++i)
     {
       auto const& spmc = *spmcptrv.at(i);
       _slen.push_back(spmc.stepLength());

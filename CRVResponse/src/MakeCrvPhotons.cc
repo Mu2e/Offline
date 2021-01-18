@@ -242,6 +242,10 @@ void LookupBin::Read(std::ifstream &lookupfile, const unsigned int &i)
   lookupfile.read(reinterpret_cast<char*>(&arrivalProbability),sizeof(float));
   ReadVector(timeDelays, lookupfile);
   ReadVector(fiberEmissions, lookupfile);
+  probabilityScaleTimeDelays=0;
+  probabilityScaleFiberEmissions=0;
+  for(size_t j=0; j<timeDelays.size(); ++j) probabilityScaleTimeDelays+=timeDelays[j];
+  for(size_t j=0; j<fiberEmissions.size(); ++j) probabilityScaleFiberEmissions+=fiberEmissions[j];
   if(i!=binNumber) throw std::logic_error("Corrupt lookup table.");
 }
 
@@ -478,15 +482,13 @@ double MakeCrvPhotons::GetRandomTime(const LookupBin *theBin)
   //The lookup tables encodes probabilities as probability*mu2eCrv::LookupBin::probabilityScale(255), 
   //so that the probabilities can be stored as integers. For example, the probability of 1 is stored as 255.
   //Due to rounding issues, the sum of all entries for this bin may not be 255.
-  //Therefore, the sum needs to be calculated here to serve as actual probability scale.
-  double probabilityScale=0;
-  for(size_t timeDelay=0; timeDelay<theBin->timeDelays.size(); timeDelay++) probabilityScale+=theBin->timeDelays[timeDelay];
+  //This bin-specifc sum is the probabilityScaleTimeDelays.
 
   size_t timeDelay=0;
-  double rand=_randFlat.fire()*probabilityScale;
+  double rand=_randFlat.fire()*theBin->probabilityScaleTimeDelays;
   double sumProb=0;
   size_t maxTimeDelay=theBin->timeDelays.size();
-  for(timeDelay=0; timeDelay<maxTimeDelay; timeDelay++)
+  for(timeDelay=0; timeDelay<maxTimeDelay; ++timeDelay)
   {
     sumProb+=theBin->timeDelays[timeDelay];
     if(rand<=sumProb) break;
@@ -500,15 +502,13 @@ int MakeCrvPhotons::GetRandomFiberEmissions(const LookupBin *theBin)
   //The lookup tables encodes probabilities as probability*mu2eCrv::LookupBin::probabilityScale(255), 
   //so that the probabilities can be stored as integers. For example, the probability of 1 is stored as 255.
   //Due to rounding issues, the sum of all entries for this bin may not be 255.
-  //Therefore, the sum needs to be calculated here to serve as actual probability scale.
-  double probabilityScale=0;
-  for(size_t emissions=0; emissions<theBin->fiberEmissions.size(); emissions++) probabilityScale+=theBin->fiberEmissions[emissions];
+  //This bin-specifc sum is the probabilityScaleFiberEmissions.
 
   size_t emissions=0;
-  double rand=_randFlat.fire()*probabilityScale;
+  double rand=_randFlat.fire()*theBin->probabilityScaleFiberEmissions;
   double sumProb=0;
   size_t maxEmissions=theBin->fiberEmissions.size();
-  for(emissions=0; emissions<maxEmissions; emissions++)
+  for(emissions=0; emissions<maxEmissions; ++emissions)
   {
     sumProb+=theBin->fiberEmissions[emissions];
     if(rand<=sumProb) break;

@@ -330,7 +330,7 @@ void WLSEventAction::Draw(const G4Event* evt)
   static CLHEP::RandGaussQ randGaussQ(engine);
   static CLHEP::RandPoissonQ randPoissonQ(engine);
   mu2eCrv::MakeCrvSiPMCharges sim(randFlat,randPoissonQ,_photonMapFilename.c_str());
-  sim.SetSiPMConstants(40, 40, 3.0, 0, 1695, 13.3, 8.84e-14, probabilities, inactivePixels);
+  sim.SetSiPMConstants(40, 40, 3.0, 0, 1695, 13.3, 8.84e-14, probabilities, inactivePixels); //FIXME Organize constants in a better way
 
   mu2eCrv::MakeCrvWaveforms makeCrvWaveform;
   double digitizationInterval = 12.55; //ns
@@ -339,7 +339,7 @@ void WLSEventAction::Draw(const G4Event* evt)
   double pedestal = 100; //ADC
   double calibrationFactor = 391.2; //ADC*ns/PE
   double calibrationFactorPulseHeight = 11.4; //ADC/PE
-  makeCrvWaveform.LoadSinglePEWaveform(_singlePEWaveformFilename.c_str(), 0.5, 1.040, 100, 2.652e-13);
+  makeCrvWaveform.LoadSinglePEWaveform(_singlePEWaveformFilename.c_str(), 0.5, 1.040, 100, 2.652e-13); //FIXME Organize constants in a better way
 
   mu2eCrv::MakeCrvDigis makeCrvDigis;
 

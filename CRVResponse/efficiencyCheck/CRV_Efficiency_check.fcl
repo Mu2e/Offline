@@ -442,6 +442,7 @@ physics :
        }
     }
 
+    CrvSteps         : @local::CrvSteps
     CrvPhotons       : @local::CrvPhotons
     CrvSiPMCharges   : @local::CrvSiPMCharges
     CrvWaveforms     : @local::CrvWaveforms
@@ -569,7 +570,7 @@ physics :
   }
 
 
-  trig : [generate, g4run, belowCrvFilter, CrvPhotons, CrvSiPMCharges, CrvWaveforms, CrvDigi, CrvRecoPulses,
+  trig : [generate, g4run, belowCrvFilter, CrvSteps, CrvPhotons, CrvSiPMCharges, CrvWaveforms, CrvDigi, CrvRecoPulses,
           CrvCoincidencePE6T5,
           CrvCoincidencePE8T5,
           CrvCoincidencePE10T5,
@@ -685,9 +686,10 @@ physics :
   end_paths: []
 }
 
-physics.producers.CrvPhotons.timeOffsets    : { inputs : [] }
-physics.producers.CrvPhotons.g4ModuleLabels : ["*"]
-physics.producers.CrvPhotons.processNames   : ["*"]
+physics.producers.CrvSteps.stepPointsModuleLabels : ["g4run"]
+physics.producers.CrvPhotons.timeOffsets          : { inputs : [] }
+physics.producers.CrvPhotons.crvStepModuleLabels  : ["CrvSteps"]
+physics.producers.CrvPhotons.crvStepProcessNames  : ["CRVEfficiency"]
 physics.producers.CrvPhotons.lookupTableFileNames : ["CRVConditions/v6_0/LookupTable_6000_0"]  //REPLACE
 physics.producers.CrvPhotons.reflectors           : [ 0 ] //REPLACE
 physics.producers.CrvPhotons.CRVSectors           : ["Test"]

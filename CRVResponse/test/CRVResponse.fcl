@@ -46,6 +46,8 @@ outputs:
   }
 }
 
+physics.producers.CrvPhotons.crvStepModuleLabels  : ["CrvSteps"]
+physics.producers.CrvPhotons.crvStepProcessNames  : ["CrvStepsConverter"]
 services.GeometryService.simulatedDetector.tool_type : "Mu2e"
 services.SeedService.baseSeed         :  773651
 services.SeedService.maxUniqueEngines :  20
