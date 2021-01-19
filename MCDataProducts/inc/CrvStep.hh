@@ -22,7 +22,7 @@ namespace mu2e
 
       CrvStep() : _visibleEDep(0.0), _startTime(0.0), _endTime(0.0), _pathLength(0.0) {}
       CrvStep(CRSScintillatorBarIndex barIndex, float visibleEDep, double startTime, double endTime,
-              const XYZVec &startPos, const XYZVec &endPos, const XYZVec &startMom, const XYZVec &endMom, 
+              const XYZVec &startPos, const XYZVec &endPos, const XYZVec &startMom, float endMom, 
               float pathLength, art::Ptr<SimParticle> const& simParticle) :
               _barIndex(barIndex), _visibleEDep(visibleEDep), 
               _startTime(startTime), _endTime(endTime), _startPos(startPos), _endPos(endPos),
@@ -37,12 +37,11 @@ namespace mu2e
       XYZVec const&                startPos() const    {return _startPos;}
       XYZVec const&                endPos() const      {return _endPos;}
       XYZVec const&                startMom() const    {return _startMom;}
-      XYZVec const&                endMom() const      {return _endMom;}
+      float                        endMom() const      {return _endMom;}
 
       CLHEP::Hep3Vector            startPosition() const {return Geom::Hep3Vec(_startPos);}
       CLHEP::Hep3Vector            endPosition() const   {return Geom::Hep3Vec(_endPos);}
       CLHEP::Hep3Vector            startMomentum() const {return Geom::Hep3Vec(_startMom);}
-      CLHEP::Hep3Vector            endMomentum() const   {return Geom::Hep3Vec(_endMom);}
 
       float                        pathLength() const  {return _pathLength;}
 
@@ -54,15 +53,17 @@ namespace mu2e
       float                   _visibleEDep; 
       double                  _startTime, _endTime; //must be double to allow for long-lived particles
       XYZVec                  _startPos,  _endPos;
-      XYZVec                  _startMom,  _endMom;
-      float                   _pathLength;          //the actual step length, which may be longer than the differences between endPos and startPos
+      XYZVec                  _startMom;
+      float                   _endMom;              //direction of end momentum is not known
+      float                   _pathLength;          //the actual step length, which may be longer 
+                                                    //than the differences between endPos and startPos
       art::Ptr<SimParticle>   _simParticle;
   };
 
   typedef std::vector<CrvStep> CrvStepCollection;
 
   inline std::ostream& operator<<( std::ostream& ost, CrvStep const& cs){
-    ost << "CrvStep CounterIndex " << cs.barIndex()
+    ost << "CrvStep BarIndex " << cs.barIndex()
     << " visible energy deposit " << cs.visibleEDep() 
     << " path length " << cs.pathLength();
     return ost;
