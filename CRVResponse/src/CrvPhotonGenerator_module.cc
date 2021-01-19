@@ -198,7 +198,7 @@ namespace mu2e
           double charge = particle.ref().charge(); //in units of elementary charges
 
           double energy1   = sqrt(step.startMom().mag2() + mass*mass); //MeV
-          double energy2   = sqrt(step.endMom().mag2() + mass*mass);
+          double energy2   = sqrt(step.endMom()*step.endMom() + mass*mass);
           double avgEnergy = 0.5*(energy1+energy2);
           double avgGamma  = avgEnergy/mass;
           double avgBeta   = sqrt(1.0-1.0/(avgGamma*avgGamma));

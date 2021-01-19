@@ -283,16 +283,16 @@ namespace mu2e
         CLHEP::Hep3Vector startMomV = first->momentum();
         CLHEP::Hep3Vector endMomV   = last->momentum();
 
-        //TODO: would be nice to have an end momentum in the StepPointMC, 
-        //      trying to calculate it by using the start momentum of the last step and the lost energy
+        //endMomV is the start momentum of the last StepPointMC
+        //need to calculate the end momentum based on the energy loss
         double mass            = pdata->mass();
         double endMom2         = endMomV.mag2();
         double endEnergyBefore = sqrt(endMom2 + mass*mass);
         double endEnergyAfter  = endEnergyBefore - last->totalEDep(); //TODO: does not take the energy of daughter particles into account
 
         endMom2          = endEnergyAfter*endEnergyAfter - mass*mass;
-        if(endMom2<=0.0) endMomV=CLHEP::Hep3Vector(); //this shouldn't happen
-        else endMomV.setMag(sqrt(endMom2));  //keeps direction, but updates magnitude
+        double endMom    = 0.0;
+        if(endMom2>0.0) endMom=sqrt(endMom2);
 
         //calculating the end time of the last step
         double avgEnergy = 0.5*(endEnergyBefore+endEnergyAfter);
@@ -304,7 +304,7 @@ namespace mu2e
         // create the CrvStep and emplace it back into the vector of crvSteps
         crvSteps->emplace_back(first->barIndex(), edep, startTime, endTime, 
                                Geom::toXYZVec(startPos), Geom::toXYZVec(endPos),
-                               Geom::toXYZVec(startMomV), Geom::toXYZVec(endMomV),
+                               Geom::toXYZVec(startMomV), endMom,
                                pathlen, first->simParticle());
       }
     }
