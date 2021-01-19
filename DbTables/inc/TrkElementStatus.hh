@@ -24,20 +24,18 @@ namespace mu2e {
 
     // define a struct for each table row
     struct TrkElementStatusRow {
-      int _index;// AFAIK this is never used
       StrawId _sid;
       StrawStatus _status;
-      int index() const { return _index; }
       StrawId const& id() const { return _sid; }
       StrawStatus const& status() const { return _status; }
-      TrkElementStatusRow(int index, StrawId const& sid, StrawStatus const& status) : _index(index), _sid(sid), _status(status) {}
+      TrkElementStatusRow(StrawId const& sid, StrawStatus const& status) : _sid(sid), _status(status) {}
     };
 
     typedef std::shared_ptr<TrkElementStatus> ptr_t;
     typedef std::shared_ptr<const TrkElementStatus> cptr_t;
 
     TrkElementStatus(const char* Name, const char* DbName, StrawIdMask sidmask, StrawStatus statusmask):
-      DbTable(Name,DbName, "index,strawid,strawstatus"), _sidmask(sidmask), _statusmask(statusmask) {}
+      DbTable(Name,DbName, "strawid,strawstatus"), _sidmask(sidmask), _statusmask(statusmask) {}
     const TrkElementStatusRow& rowAt(const std::size_t index) const { return _rows.at(index);}
     std::vector<TrkElementStatusRow> const& rows() const {return _rows;}
     std::size_t nrow() const override { return _rows.size(); };
@@ -48,16 +46,14 @@ namespace mu2e {
     StrawStatus const& statusMask() const { return _statusmask; }
     // build from text table format
     void addRow(const std::vector<std::string>& columns) override {
-      auto index = std::stoi(columns[0]);
-      auto sid = StrawId(columns[1]);
-      StrawStatus status(columns[2]);
-      _rows.emplace_back(TrkElementStatusRow(index,sid,status));
+      auto sid = StrawId(columns[0]);
+      StrawStatus status(columns[1]);
+      _rows.emplace_back(TrkElementStatusRow(sid,status));
     }
     // printout, used to fill db content (?)
     void rowToCsv(std::ostringstream& sstream, std::size_t irow) const override {
       TrkElementStatusRow const& r = _rows.at(irow);
-      sstream << r.index()<<",";
-      sstream << r.id().plane() << "_" << r.id().panel() << "_" << r.id().straw() << ","; // should this be asUInt()?? FIXME!
+      sstream << r.id().plane() << "_" << r.id().panel() << "_" << r.id().straw() << ","; 
       sstream << r.status().hex(); // should this be the text string??
     }
 
