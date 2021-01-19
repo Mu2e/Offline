@@ -175,6 +175,18 @@ BEGIN_PROLOG
       crvWaveformsModuleLabel                : "CrvWaveforms"
       timeOffsets                            : { inputs : [ @sequence::CommonMC.TimeMaps ] }
     }
+    CrvPlot:
+    {
+      module_type                    : CrvPlot
+      events                         : @nil
+      crvBarIndices                  : @nil
+      crvPhotonsModuleLabel          : CrvPhotons
+      crvSiPMChargesModuleLabel      : CrvSiPMCharges
+      crvDigiModuleLabel             : CrvDigi
+      crvRecoPulsesModuleLabel       : CrvRecoPulses
+      timeStart                      : 500
+      timeEnd                        : 1600
+    }
 
 CrvDAQPackage : 
 {
