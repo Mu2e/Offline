@@ -11,6 +11,7 @@
 #include <iomanip>
 #include <sstream>
 #include <map>
+#include <regex>
 #include "DataProducts/inc/StrawId.hh"
 #include "DataProducts/inc/StrawIdMask.hh"
 #include "DataProducts/inc/StrawStatus.hh"
@@ -23,7 +24,7 @@ namespace mu2e {
 
     // define a struct for each table row
     struct TrkElementStatusRow {
-      int _index;//  I'm unclear what value this provides to a variable-length table, but the interface requires this
+      int _index;// AFAIK this is never used
       StrawId _sid;
       StrawStatus _status;
       int index() const { return _index; }
@@ -40,23 +41,24 @@ namespace mu2e {
     const TrkElementStatusRow& rowAt(const std::size_t index) const { return _rows.at(index);}
     std::vector<TrkElementStatusRow> const& rows() const {return _rows;}
     std::size_t nrow() const override { return _rows.size(); };
-    // this is a variable-size tabale, so no nrowFix()
+    // this is a variable-size table, so don't overrido nrowFix()
     size_t size() const override { return baseSize() + nrow()*sizeof(TrkElementStatusRow); }
     // table-specific info
     StrawIdMask const& sidMask() const { return _sidmask; }
     StrawStatus const& statusMask() const { return _statusmask; }
-
+    // build from text table format
     void addRow(const std::vector<std::string>& columns) override {
-      _rows.emplace_back(std::stoi(columns[0]),
-			 StrawId(columns[1]),
-			 StrawStatus(columns[2]));
+      auto index = std::stoi(columns[0]);
+      auto sid = StrawId(columns[1]);
+      StrawStatus status(columns[2]);
+      _rows.emplace_back(TrkElementStatusRow(index,sid,status));
     }
-
+    // printout, used to fill db content (?)
     void rowToCsv(std::ostringstream& sstream, std::size_t irow) const override {
       TrkElementStatusRow const& r = _rows.at(irow);
       sstream << r.index()<<",";
-      sstream << r.id().plane() << "_" << r.id().panel() << "_" << r.id().straw() << ",";
-      sstream << r.status().hex();
+      sstream << r.id().plane() << "_" << r.id().panel() << "_" << r.id().straw() << ","; // should this be asUInt()?? FIXME!
+      sstream << r.status().hex(); // should this be the text string??
     }
 
     void clear() override { baseClear(); _rows.clear(); }
@@ -71,7 +73,7 @@ namespace mu2e {
   class TrkPanelStatus : public TrkElementStatus {
     public:
       constexpr static const char* cxname = "TrkPanelStatus";
-      TrkPanelStatus() : TrkElementStatus(cxname,"trk.panelstatus", StrawIdMask("panel"), StrawStatus("Absent:NoHV:NoGas:NoLV:LowGasGain")) {}
+      TrkPanelStatus() : TrkElementStatus(cxname,"trk.panelstatus", StrawIdMask("uniquepanel"), StrawStatus("Absent:NoHV:NoGas:NoLV:LowGasGain")) {}
   };
 
   class TrkPlaneStatus : public TrkElementStatus {
@@ -83,12 +85,12 @@ namespace mu2e {
   class TrkStrawStatusShort : public TrkElementStatus {
     public:
       constexpr static const char* cxname = "TrkStrawStatusShort";
-      TrkStrawStatusShort() : TrkElementStatus(cxname,"trk.strawstatusshort", StrawIdMask("straw"), StrawStatus("Sparking:Suppress:Noise:Pickup")) {}
+      TrkStrawStatusShort() : TrkElementStatus(cxname,"trk.strawstatusshort", StrawIdMask("uniquestraw"), StrawStatus("Sparking:Suppress:Noise:Pickup")) {}
   };
   class TrkStrawStatusLong : public TrkElementStatus {
     public:
       constexpr static const char* cxname = "TrkStrawStatusLong";
-      TrkStrawStatusLong() : TrkElementStatus(cxname,"trk.strawstatuslong", StrawIdMask("straw"), StrawStatus("Absent:NoWire:NoHV:NoPreamp:NoADC:NoTDC")) {}
+      TrkStrawStatusLong() : TrkElementStatus(cxname,"trk.strawstatuslong", StrawIdMask("uniquestraw"), StrawStatus("Absent:NoWire:NoHV:NoPreamp:NoADC:NoTDC")) {}
   };
   
 };

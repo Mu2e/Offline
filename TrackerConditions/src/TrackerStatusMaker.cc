@@ -39,11 +39,38 @@ namespace mu2e {
     return std::make_shared<TrackerStatus>(estats);
   }
 
-  TrackerStatus::ptr_t TrackerStatusMaker::fromDb() {
-    return fromFcl(); // start with the Fcl version
+  TrackerStatus::ptr_t TrackerStatusMaker::fromDb(
+      TrkPlaneStatus::cptr_t tpls_p,
+      TrkPanelStatus::cptr_t   tpas_p,
+      TrkStrawStatusLong::cptr_t   tssl_p,
+      TrkStrawStatusShort::cptr_t   tsss_p ) {
+    // convert the tables to TrackerElementStatus sets
+    TrackerStatus::estat_t estatus;
+    auto const& settings = config_.settings();
+    if ( settings.verbose() > 1 ) {
+      cout << "TrackerStatus fromDb, with tables:" << endl;
+      cout << "Plane table has " << tpls_p->rows().size() << " rows " << endl;
+      cout << "Panel table has " << tpas_p->rows().size() << " rows " << endl;
+      cout << "Long-term Straw table has " << tssl_p->rows().size() << " rows " << endl;
+      cout << "Short-term Straw table has " << tsss_p->rows().size() << " rows " << endl;
+    }
 
+    for (auto const& row : tpls_p->rows()) estatus.insert(TrackerElementStatus(row.id(),tpls_p->sidMask(),row.status()));
+    for (auto const& row : tpas_p->rows()) estatus.insert(TrackerElementStatus(row.id(),tpas_p->sidMask(),row.status()));
+    for (auto const& row : tssl_p->rows()) estatus.insert(TrackerElementStatus(row.id(),tssl_p->sidMask(),row.status()));
+    for (auto const& row : tsss_p->rows()) estatus.insert(TrackerElementStatus(row.id(),tsss_p->sidMask(),row.status()));
 
+    if ( settings.verbose() > 1 ) {
+      cout << "Elements have status " << endl;
+      for(auto const& estat : estatus){
+	std::cout << "Tracker Element Id " << estat.sid_
+	  << " level " << estat.mask_.levelName()  
+	  << " mask " << estat.mask_.mask()  
+	  << " status " << estat.status_ << std::endl;
+      }
+    }
 
+    return std::make_shared<TrackerStatus>(estatus);
   }
 
-  } // namespace mu2e
+} // namespace mu2e
