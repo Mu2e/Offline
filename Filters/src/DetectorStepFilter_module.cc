@@ -40,10 +40,15 @@ namespace mu2e {
 	fhicl::Atom<bool> testTrk { Name("TestTrk"), Comment("Test Tracker steps"), true};
 	fhicl::Atom<bool> testCalo { Name("TestCalo"), Comment("Test calorimeter steps"), true };
 	fhicl::Atom<bool> testCrv { Name("TestCrv"), Comment("Test CRV steps"), false };
+	fhicl::Atom<bool> orRequirements { Name("ORRequirements"), Comment("Take the logical OR of requirements, otherwise take the AND"), true };
 
 	fhicl::Atom<unsigned> minNTrkSteps { Name("MinimumTrkSteps"), Comment("Minimum number of good tracker steps"), 10};
 	fhicl::Atom<double> minSumCaloStepE { Name("MinimumSumCaloStepE"), Comment("Minimum E sum of good calorimeter steps (MeV) "), 50.0 };
 	fhicl::Atom<unsigned> minNCrvSteps { Name("MinimumCrvSteps"), Comment("Minimum number of good CRV steps"), 3 };
+
+	fhicl::Atom<unsigned> maxNTrkSteps { Name("MaximumTrkSteps"), Comment("Maximum number of good tracker steps"), 1000000};
+	fhicl::Atom<double> maxSumCaloStepE { Name("MaximumSumCaloStepE"), Comment("Maximum E sum of good calorimeter steps (MeV) "), 1.0e8 };
+	fhicl::Atom<unsigned> maxNCrvSteps { Name("MaximumCrvSteps"), Comment("Maximum number of good CRV steps"), 1000000 };
 
 	fhicl::Sequence<int> keepPDG { Name("KeepPDG"), Comment("PDG particle codes to keep") };
 
@@ -58,11 +63,13 @@ namespace mu2e {
       bool goodParticle(SimParticle const& simp) const;
       double minTrkE_, minCaloE_, minCrvE_;
       double minPartM_, maxPartM_;
-      bool testTrk_, testCalo_, testCrv_;
+      bool testTrk_, testCalo_, testCrv_, or_;
       std::vector<PDGCode::type> pdgToKeep_;
       std::vector<art::InputTag> trkStepCols_, caloStepCols_, crvStepCols_;
       unsigned minNTrk_, minNCrv_;
       double minSumCaloE_;
+      unsigned maxNTrk_, maxNCrv_;
+      double maxSumCaloE_;
       unsigned nEvt_, nPassed_;
   };
 
@@ -77,9 +84,13 @@ namespace mu2e {
     , testTrk_(conf().testTrk())
     , testCalo_(conf().testCalo())
     , testCrv_(conf().testCrv())
+    , or_(conf().orRequirements())
     , minNTrk_(conf().minNTrkSteps())
     , minNCrv_(conf().minNCrvSteps())
     , minSumCaloE_(conf().minSumCaloStepE())
+    , maxNTrk_(conf().maxNTrkSteps())
+    , maxNCrv_(conf().maxNCrvSteps())
+    , maxSumCaloE_(conf().maxSumCaloStepE())
     , nEvt_(0)
     , nPassed_(0)
     {
@@ -91,6 +102,7 @@ namespace mu2e {
 
   bool DetectorStepFilter::filter(art::Event& event) {
     bool retval(false);
+    bool selecttrk(false), selectcalo(false), selectcrv(false);
     ++nEvt_;
     // Count Trk step from same particle
     if(testTrk_ ) {
@@ -112,8 +124,8 @@ namespace mu2e {
 	}
       }
       for(auto itrk=counttrk.begin();itrk != counttrk.end();itrk++){
-	if(itrk->second >= minNTrk_){
-	  retval = true;
+	if(itrk->second >= minNTrk_ && itrk->second <= maxNTrk_ ){
+	  selecttrk = true;
 	  break;
 	}
       }
@@ -135,11 +147,11 @@ namespace mu2e {
 	      ifnd->second += css.energyDepBirks(); // not sure Birks or G4 FIXME!
 	  }
 	}
-	for(auto icalo=caloESum.begin();icalo != caloESum.end();icalo++){
-	  if(icalo->second >= minSumCaloE_){
-	    retval = true;
-	    break;
-	  }
+      }
+      for(auto icalo=caloESum.begin();icalo != caloESum.end();icalo++){
+	if(icalo->second >= minSumCaloE_ && icalo->second <= maxSumCaloE_ ){
+	  selectcalo = true;
+	  break;
 	}
       }
     }
@@ -163,14 +175,15 @@ namespace mu2e {
 	}
       }
       for(auto icrv=countcrv.begin();icrv != countcrv.end();icrv++){
-	if(icrv->second >= minNCrv_){
-	  retval = true;
+	if(icrv->second >= minNCrv_ && icrv->second <= maxNCrv_){
+	  selectcrv = true;
 	  break;
 	}
       }
     }
-
-    if(retval) ++nPassed_;
+    if( (or_ && (selecttrk || selectcalo || selectcrv)) ||
+      ((!or_) && ( selecttrk && selectcalo && selectcrv)) )
+      retval = true;
     return retval;
   }
 
