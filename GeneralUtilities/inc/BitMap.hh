@@ -287,9 +287,17 @@ namespace mu2e {
 	mask |= j->second;
       }
       if(invalid){
-      // try to interpret as a (text) hex string
-	mask = std::stoul(name,0,16);
-	if(!isValid(mask)){
+      // try to interpret as a (text) hex string; make sure to edit out spaces first!
+	std::string cname(name);
+	cname.erase(cname.begin(), std::find_if(cname.begin(), cname.end(), std::not1(std::ptr_fun<int, int>(std::isspace))));
+	if(cname.compare(0,2,"0x") == 0 || cname.compare(0,2,"0X") == 0){
+	  mask = std::stoul(name,0,16);
+	  if((isValid(mask)) && mask != 0){
+	    invalid = false;
+	  }
+	}
+	// if it's still invalid, throw
+	if(invalid){
 	  std::ostringstream os;
 	  os << DETAIL::typeName() << " invalid mask name : " << name;
 	  throw std::out_of_range( os.str() );
