@@ -12,6 +12,7 @@
 #include <sstream>
 #include <map>
 #include <regex>
+#include "cetlib_except/exception.h"
 #include "DataProducts/inc/StrawId.hh"
 #include "DataProducts/inc/StrawIdMask.hh"
 #include "DataProducts/inc/StrawStatus.hh"
@@ -48,6 +49,9 @@ namespace mu2e {
     void addRow(const std::vector<std::string>& columns) override {
       auto sid = StrawId(columns[0]);
       StrawStatus status(columns[1]);
+      // verify the status is allowed
+      if(!_statusmask.hasAllProperties(status))
+	throw cet::exception(name()) << ": Illegal status specified " << status << std::endl;
       _rows.emplace_back(TrkElementStatusRow(sid,status));
     }
     // printout, used to fill db content (?)

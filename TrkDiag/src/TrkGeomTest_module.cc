@@ -87,6 +87,7 @@ namespace mu2e {
   }
 
   void TrkGeomTest::analyze(art::Event const& event) {
+  // this is a test module, so only a single event is processed.
     if(first_){
     // fetch tracker status
       ProditionsHandle<TrackerStatus> trackerstatus_h;
