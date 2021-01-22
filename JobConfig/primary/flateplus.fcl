@@ -5,5 +5,4 @@ physics.producers.generate.physics.genId : ExternalRMC
 physics.producers.generate.physics.pdgId : -11
 physics.producers.generate.physics.elow : 80.0 // MeV
 physics.producers.generate.physics.ehi : 105.0 // MeV
-services.TFileService.fileName: "nts.owner.flateplus-steps.version.sequencer.root"
-outputs.Output.fileName: "dig.owner.flateplus-steps.version.sequencer.art"
+outputs.Output.fileName: "dts.owner.flateplus.version.sequencer.art"

@@ -7,13 +7,12 @@
 #include "JobConfig/primary/primary.fcl"
 # set the generator
 physics.producers.generate : {
-       module_type : EventGenerator
-       inputfile   : "JobConfig/primary/genconfig_DS-cosmic.txt"
-    }
+   module_type : EventGenerator
+   inputfile   : "JobConfig/primary/genconfig_DS-cosmic.txt"
+}
 #  Allow 'infinite' momentum
 physics.filters.DetStepFilter.MaximumPartMom : 1e7
 # update the maximum # of particles
 physics.producers.g4run.ResourceLimits.maxSimParticleCollectionSize: 1000000
 # customize the output
-services.TFileService.fileName: "nts.owner.DS-cosmic-steps.version.sequencer.root"
-outputs.Output.fileName: "sim.owner.DS-cosmic-steps.version.sequencer.art"
+outputs.Output.fileName: "dts.owner.DS-cosmic.version.sequencer.art"

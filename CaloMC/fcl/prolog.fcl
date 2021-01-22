@@ -97,10 +97,12 @@ CaloMC :
      CaloShowerROMaker    : @local::CaloShowerROMaker
      CaloDigiMaker        : @local::CaloDigiMaker
    }
-   producers : { CaloHitTruthMatch : @local::CaloHitTruthMatch }
-
    DigiSim     : [ CaloShowerROMaker, CaloDigiMaker]
-   TruthMatch  : [ CaloHitTruthMatch ]
+   TruthProducers : {
+     CaloHitTruthMatch : @local::CaloHitTruthMatch
+     CaloClusterTruthMatch : @local::CaloClusterTruthMatch
+  }
+  TruthMatch  : [ CaloHitTruthMatch, CaloClusterTruthMatch ]
 }
 
 CaloClusterMC : 

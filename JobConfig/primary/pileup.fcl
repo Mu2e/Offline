@@ -1,8 +1,0 @@
-#
-# DetStepFilter overrides for pileup generation.  This make it behave like DetectorFilter
-#
-physics.filters.DetStepFilter.KeepPDG : [ ] # allow any particle
-physics.filters.DetStepFilter.MinimumPartMom : 0.0
-physics.filters.DetStepFilter.MinimumTrkSteps : 1
-physics.filters.DetStepFilter.MinimumCaloStepEnergy :0.01
-physics.filters.DetStepFilter.MinimumSumCaloStepE : 0.1
