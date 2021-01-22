@@ -4,7 +4,7 @@
 // Original author David Brown (7/2020)
 //
 // Mu2e includes
-#include "TrackerConditions/inc/StrawStatus.hh"
+#include "DataProducts/inc/StrawStatus.hh"
 #include <stdexcept>
 #include <iostream>
 #include <stdio.h>
