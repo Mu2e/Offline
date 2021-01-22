@@ -42,7 +42,7 @@ BEGIN_PROLOG
       scintillationYieldVariationCutoff : 0.4   //the scintillation yield variation is cut off at 40% below the mean
       startTime                         : 400.0    //0.0 ns
       visibleEnergyAdjustmentFileName   : "CRVResponse/fcl/visibleEnergyAdjustment.txt"
-      timeOffsets                       : { inputs : [ @sequence::TIME_MAPS ] }
+      timeOffsets                       : { inputs : [ @sequence::CommonMC.TimeMaps ] }
     }
     CrvSiPMCharges:
     {

@@ -5,8 +5,6 @@
 
 BEGIN_PROLOG
 
-TIME_MAPS : [ protonTimeMap, muonTimeMap, cosmicTimeMap ]
-
 CommonMC: {
   producers: {
 # time maps
@@ -32,7 +30,7 @@ CommonMC: {
 # Event window marker
     EWMProducer : { module_type : EventWindowMarkerProducer }
   }
-  TimeMaps : [ @sequence::TIME_MAPS ]
+  TimeMaps : [ protonTimeMap, muonTimeMap, cosmicTimeMap ]
   TimeMapsPrimary : [ protonTimeMapPrimary, muonTimeMapPrimary, cosmicTimeMapPrimary ]
   FindMCPrimary : {
     module_type : FindMCPrimary

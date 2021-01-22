@@ -4,7 +4,7 @@ BEGIN_PROLOG
   KalDiag : {
     StrawDigiMCLabel   : makeSD
     MCStepsInstance     : "virtualdetector"
-    TimeOffsets       :  { inputs : [ @sequence::TIME_MAPS ] }  # defined in CommonMC/fcl/prolog.fcl
+    TimeOffsets       :  { inputs : [ "protonTimeMap", "muonTimeMap" ] }
   }
 
 # If running KalDiag directly on G4 use KalDiagDirect

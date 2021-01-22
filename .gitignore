@@ -13,7 +13,6 @@ BaBar/TrajGeom/
 BaBar/TrkBase/
 BaBar/difAlgebra/
 .sconsign.dblite
-Stntuple
 bin/artProductSizes
 bin/eventCount
 bin/valCompare

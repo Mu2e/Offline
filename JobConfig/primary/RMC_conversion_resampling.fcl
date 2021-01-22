@@ -23,14 +23,8 @@ physics.producers.generate : { @table::EventGenerator.producers.GammaConversionG
 #Hack to find file for testing purposes
 physics.producers.generate.gammaStops.inputFiles : [ "../../../pnfs/mu2e/persistent/users/mu2epro/su2020/gammastops/nts.mu2e.su2020.rmce0s00b0.001000_10000000.root" ]
 
-#don't need to count gen events, so make it instead a trivial filter
+#don't need to count gen events, so make it instead a trivial producer
 physics.producers.genCounter : { module_type : NullProducer }
-
-# outputs.defaultOutput.outputCommands : [ @sequence::su2020.mixing_output_photon ]
-
-#FIXME: Remove this after testing
-physics.producers.g4run.physics.physicsListName : "QGSP_BERT"
-
 
 services.TFileService.fileName                           : "nts.owner.RMCResampleConv.version.sequencer.root"
 outputs.Output.fileName                                  : "dig.owner.RMCResampleConv.version.sequencer.art"
