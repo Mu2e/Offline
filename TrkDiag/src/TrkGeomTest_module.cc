@@ -10,6 +10,7 @@
 #include "art/Framework/Core/ModuleMacros.h"
 #include "GeometryService/inc/GeomHandle.hh"
 #include "ProditionsService/inc/ProditionsHandle.hh"
+#include "TrackerConditions/inc/TrackerStatus.hh"
 #include "TrackerGeom/inc/Tracker.hh"
 #include "TTree.h"
 #include <iostream>
@@ -86,7 +87,13 @@ namespace mu2e {
   }
 
   void TrkGeomTest::analyze(art::Event const& event) {
+  // this is a test module, so only a single event is processed.
     if(first_){
+    // fetch tracker status
+      ProditionsHandle<TrackerStatus> trackerstatus_h;
+      auto const& trkstatus = trackerstatus_h.get(event.id());
+      std::cout << "TrackerStatus ";
+      trkstatus.print(std::cout);
       // fetch aligned and nominal tracker objects
       GeomHandle<Tracker> nominalTracker_h;
       auto const& ntracker = *nominalTracker_h;
