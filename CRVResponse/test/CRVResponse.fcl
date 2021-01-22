@@ -7,18 +7,11 @@ process_name : CRVResponse
 source :
 {
   module_type : RootInput
-  inputCommands: ["keep *", 
-                  "drop *KalRepPayload*_*_*_*",
-                  "drop *CaloCrystalOnlyHit*_*_*_*"]
 }
 
 services :
 {
-  RandomNumberGenerator: {defaultEngineKind: "MixMaxRng" }
-  GeometryService        : { inputFile : "Mu2eG4/geom/geom_common.txt" }
-  ConditionsService      : { conditionsfile : "Mu2eG4/test/conditions_01.txt" }
-  GlobalConstantsService : { inputFile : "Mu2eG4/test/globalConstants_01.txt" }
-  SeedService            : @local::automaticSeeds
+  @table::Services.SimAndReco
 }
 
 physics :
@@ -31,7 +24,6 @@ physics :
 
   an : [ @sequence::CommonMC.DigiSim, @sequence::CrvResponsePackage.CrvResponseSequence]
   out: [Output]
-#  out: []
 
   trigger_paths: [an]
   end_paths:     [out]
@@ -46,5 +38,8 @@ outputs:
   }
 }
 
+physics.producers.CrvPhotons.crvStepModuleLabels  : ["CrvSteps"]
+physics.producers.CrvPhotons.crvStepProcessNames  : ["CrvStepsConverter"]
+services.GeometryService.simulatedDetector.tool_type : "Mu2e"
 services.SeedService.baseSeed         :  773651
 services.SeedService.maxUniqueEngines :  20

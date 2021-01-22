@@ -14,20 +14,20 @@ double particleGun.tmax  =  800.0;
 
 // position
 vector<double> particleGun.point = {-4404., 2673.11, 10200.0}; //x=1000 ,l=3000
-//vector<double> particleGun.point = {-5904., 2673.11, 10200.0}; //x=1000 ,l=6000
+//vector<double> particleGun.point = {-5904., 2673.10, 10200.0}; //x=1000 ,l=6000
 
 // half length
 vector<double> particleGun.halfLength = { 0., 0., 0. };
 
 // Limits on momentum:
-double particleGun.pmin = 120.0e3;
-double particleGun.pmax = 120.0e3;
-//double particleGun.pmin = 4.0e3;
-//double particleGun.pmax = 4.0e3;
+//double particleGun.pmin = 120.0e3;
+//double particleGun.pmax = 120.0e3;
+double particleGun.pmin = 4.0e3;
+double particleGun.pmax = 4.0e3;
 
 // Particle Id
-//int particleGun.id = 13;    //muon
-int particleGun.id = 2212;  //proton
+int particleGun.id = 13;    //muon
+//int particleGun.id = 2212;  //proton
 
 // Mean particle.
 double particleGun.mean =  -1; //only one particle per event

@@ -57,6 +57,7 @@ physics : {
       }
       @table::Mu2eG4.producers
       @table::CommonMC.producers
+      CrvSteps : @local::CrvSteps
       @table::CrvDAQPackage.producers
       @table::CrvRecoMCPackage.producers
    }
@@ -82,6 +83,7 @@ physics : {
       g4run, g4status , 
       cosmicFilter ,
       @sequence::CommonMC.DigiSim ,
+      CrvSteps ,
       @sequence::CrvDAQPackage.CrvResponseSequence ,
       @sequence::CrvRecoMCPackage.CrvRecoMCSequence
    ]
@@ -128,7 +130,9 @@ physics.producers.g4run.SDConfig.enableSD : [ CRV ]
 # collect all StepPoints with instance CRV.  This will 
 # pick up both the g4run collection and the filtered collection,
 # so select only the latter
-physics.producers.CrvPhotons.g4ModuleLabels : ["cosmicFilter"]
+physics.producers.CrvSteps.stepPointsModuleLabels : ["cosmicFilter"]
+physics.producers.CrvPhotons.crvStepModuleLabels  : ["CrvSteps"]
+physics.producers.CrvPhotons.crvStepProcessNames  : ["cosmicSimReco"]
 
 # turn off very verbose
 physics.producers.CrvCoincidence.verboseLevel : 0

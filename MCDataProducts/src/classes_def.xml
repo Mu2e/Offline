@@ -243,6 +243,12 @@
  <class name="art::Wrapper<mu2e::KalSeedMCAssns>"/>
 
 <!--  ********* CRV  ********* -->
+ <class name="mu2e::CrvStep"/>
+ <class name="mu2e::CrvStepCollection"/>
+ <class name="art::Wrapper<mu2e::CrvStepCollection>"/>
+ <class name="art::Ptr<mu2e::CrvStep>"/>
+ <class name="std::vector<art::Ptr<mu2e::CrvStep>>" />
+
  <class name="mu2e::CrvPhotons" />
  <class name="mu2e::CrvPhotons::SinglePhoton" />
  <class name="std::vector<mu2e::CrvPhotons::SinglePhoton>" />
@@ -252,8 +258,8 @@
  <class name="art::Wrapper<mu2e::CrvPhotonsCollection>" />
 
  <class name="mu2e::CrvSiPMCharges" />
- <class name="mu2e::CrvSiPMCharges::CrvSingleCharge" />
- <class name="std::vector<mu2e::CrvSiPMCharges::CrvSingleCharge>" />
+ <class name="mu2e::CrvSiPMCharges::SingleCharge" />
+ <class name="std::vector<mu2e::CrvSiPMCharges::SingleCharge>" />
  <class name="std::pair<mu2e::CRSScintillatorBarIndex,mu2e::CrvSiPMCharges>" />
  <class name="std::map<mu2e::CRSScintillatorBarIndex,mu2e::CrvSiPMCharges>" />
  <class name="mu2e::CrvSiPMChargesCollection" />

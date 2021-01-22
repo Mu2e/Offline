@@ -5,17 +5,17 @@
 #include "GeometryService/inc/GeomHandle.hh"
 #include "GeometryService/inc/GeometryService.hh"
 #include "MCDataProducts/inc/CrvCoincidenceClusterMCCollection.hh"
-#include "MCDataProducts/inc/StepPointMCCollection.hh"
+#include "MCDataProducts/inc/CrvDigiMC.hh"
+#include "MCDataProducts/inc/CrvStep.hh"
 #include "MCDataProducts/inc/MCTrajectoryCollection.hh"
 #include "RecoDataProducts/inc/CrvCoincidenceClusterCollection.hh"
+#include "RecoDataProducts/inc/CrvDigiCollection.hh"
 #include "RecoDataProducts/inc/CrvRecoPulseCollection.hh"
 #include "art/Framework/Core/ModuleMacros.h"
 #include "art/Framework/Principal/Handle.h"
 #include "GlobalConstantsService/inc/GlobalConstantsHandle.hh"
 #include "GlobalConstantsService/inc/PhysicsParams.hh"
 #include "GlobalConstantsService/inc/ParticleDataTable.hh"
-#include "MCDataProducts/inc/CrvDigiMCCollection.hh"
-#include "RecoDataProducts/inc/CrvDigiCollection.hh"
 #include "CRVResponse/inc/CrvHelper.hh"
 #include "ConditionsService/inc/CrvParams.hh"
 #include "ConditionsService/inc/ConditionsHandle.hh"
@@ -25,7 +25,7 @@ namespace mu2e
   void CRVAnalysis::FillCrvHitInfoCollections(const std::string &crvCoincidenceClusterModuleLabel,
                                               const std::string &crvCoincidenceClusterMCModuleLabel,
                                               const std::string &crvRecoPulseLabel,
-                                              const std::string &crvStepPointMCLabel,
+                                              const std::string &crvStepLabel,
                                               const std::string &simParticleLabel,
                                               const std::string &mcTrajectoryLabel,
                                               const art::Event& event, CrvHitInfoRecoCollection &recoInfo, CrvHitInfoMCCollection &MCInfo,
@@ -38,14 +38,14 @@ namespace mu2e
     art::Handle<CrvCoincidenceClusterCollection>   crvCoincidenceClusterCollection;
     art::Handle<CrvCoincidenceClusterMCCollection> crvCoincidenceClusterMCCollection;
     art::Handle<CrvRecoPulseCollection>            crvRecoPulseCollection;
-    art::Handle<StepPointMCCollection>             crvStepPointMCCollection;
+    art::Handle<CrvStepCollection>                 crvStepCollection;
     art::Handle<SimParticleCollection>             simParticleCollection;
     art::Handle<MCTrajectoryCollection>            mcTrajectoryCollection;
 
     event.getByLabel(crvCoincidenceClusterModuleLabel,"",crvCoincidenceClusterCollection);
     event.getByLabel(crvCoincidenceClusterMCModuleLabel,"",crvCoincidenceClusterMCCollection);
     event.getByLabel(crvRecoPulseLabel,"",crvRecoPulseCollection);
-    event.getByLabel(crvStepPointMCLabel,"CRV",crvStepPointMCCollection);
+    event.getByLabel(crvStepLabel,"CRV",crvStepCollection);
     event.getByLabel(simParticleLabel,"",simParticleCollection);
     event.getByLabel(mcTrajectoryLabel,"",mcTrajectoryCollection);
 
@@ -100,28 +100,27 @@ namespace mu2e
       }
     }
 
-    if(crvStepPointMCCollection.isValid())
+    if(crvStepCollection.isValid())
     {
-      size_t nStepPoints=crvStepPointMCCollection->size();
+      size_t nSteps=crvStepCollection->size();
       MCSummary._totalEnergyDeposited=0;
       std::set<CRSScintillatorBarIndex> counters;
       double totalStep[] = {0, 0, 0, 0};
-      for(size_t i=0; i<nStepPoints; i++)
+      for(size_t i=0; i<nSteps; i++)
       {
-        MCSummary._totalEnergyDeposited+=crvStepPointMCCollection->at(i).totalEDep();
-        counters.insert(crvStepPointMCCollection->at(i).barIndex());
-        const CRSScintillatorBarId &CRVCounterId = CRS->getBar(crvStepPointMCCollection->at(i).barIndex()).id();
+        MCSummary._totalEnergyDeposited+=crvStepCollection->at(i).visibleEDep();
+        counters.insert(crvStepCollection->at(i).barIndex());
+        const CRSScintillatorBarId &CRVCounterId = CRS->getBar(crvStepCollection->at(i).barIndex()).id();
         int layer = CRVCounterId.getLayerNumber();
-        int pdgId = crvStepPointMCCollection->at(i).simParticle()->pdgId();
+        int pdgId = crvStepCollection->at(i).simParticle()->pdgId();
         if(abs(pdgId)==13)
-          totalStep[layer] = totalStep[layer] + crvStepPointMCCollection->at(i).stepLength();
+          totalStep[layer] = totalStep[layer] + crvStepCollection->at(i).pathLength();
       }
       MCSummary._nHitCounters=counters.size();
       MCSummary._minPathLayer=*std::min_element(totalStep,totalStep+4);
       MCSummary._maxPathLayer=*std::max_element(totalStep,totalStep+4);
     }
 
-#if 1
     //locate points where the cosmic MC trajectories cross the xz plane of CRV-T
     if(mcTrajectoryCollection.isValid())
     {
@@ -162,84 +161,6 @@ namespace mu2e
         }
       }
     }
-#else   //only a temporary section due to the missing trajectories at the CRV. needs to be deleted soon
-    {
-      GlobalConstantsHandle<ParticleDataTable> pdt;
-      const HepPDT::ParticleData& mu_data = pdt->particle(PDGCode::mu_minus).ref();
-      const double _mMu = mu_data.mass().value();
-
-      int pdgId=0;
-      CLHEP::Hep3Vector primaryPos, planePos, planeDir;
-      double primaryEnergy=NAN;
-      double planeTime=NAN;
-      double earliestTime=NAN;
-      double planeKineticEnergy=0;
-      int dataSource=0;
-      if(crvStepPointMCCollection.isValid())
-      {
-        size_t nStepPoints=crvStepPointMCCollection->size();
-        for(size_t i=0; i<nStepPoints; i++)
-        {
-          if(crvStepPointMCCollection->at(i).simParticle()->id().asInt()==0) //only sim particles with ID 0
-          {
-            if(crvStepPointMCCollection->at(i).time()<earliestTime || isnan(earliestTime))
-            {
-              pdgId=crvStepPointMCCollection->at(i).simParticle()->pdgId();
-              primaryPos=crvStepPointMCCollection->at(i).simParticle()->startPosition();
-              primaryEnergy=crvStepPointMCCollection->at(i).simParticle()->startMomentum().e();
-
-              planePos=crvStepPointMCCollection->at(i).position();
-              planeDir=crvStepPointMCCollection->at(i).momentum().unit();
-              double fraction=(crvPlaneY-planePos.y())/planeDir.y();
-              planePos=fraction*planeDir+planePos;
-
-              planeTime=crvStepPointMCCollection->at(i).time();
-              earliestTime=planeTime;
-
-              double momentum = crvStepPointMCCollection->at(i).momentum().mag();
-              planeKineticEnergy=sqrt(momentum*momentum+_mMu*_mMu)-_mMu;
-
-              dataSource=1;
-              if(crvStepPointMCCollection->at(i).position().y()>=crvPlaneY) dataSource=2;
-            }
-          }
-        }
-      }
-      if(dataSource==0 && mcTrajectoryCollection.isValid())  //StepPoints not found for this event
-      {
-        std::map<art::Ptr<mu2e::SimParticle>,mu2e::MCTrajectory>::const_iterator trajectoryIter;
-        for(trajectoryIter=mcTrajectoryCollection->begin(); trajectoryIter!=mcTrajectoryCollection->end(); trajectoryIter++)
-        {
-          if(trajectoryIter->second.simid()==_trajectorySimParticleId) //seems to point to the primary
-          {
-            const std::vector<MCTrajectoryPoint> &points = trajectoryIter->second.points();
-            if(points.size()>=2 && abs(trajectoryIter->first->pdgId())==13)
-            {
-              pdgId=trajectoryIter->first->pdgId();
-              primaryPos=trajectoryIter->first->startPosition();
-              primaryEnergy=trajectoryIter->first->startMomentum().e();
-              double fraction=(crvPlaneY-points[1].pos().y())/(points[0].pos().y()-points[1].pos().y());
-              planePos=fraction*(points[0].pos()-points[1].pos())+points[1].pos();
-              planeDir=(points[1].pos()-points[0].pos()).unit();
-              planeTime=fraction*(points[0].t()-points[1].t())+points[1].t();
-              planeKineticEnergy=points[0].kineticEnergy();  //use Ekin of first point
-              dataSource=3;
-            }
-            break;
-          }
-        }
-      }
-      MCInfoPlane.emplace_back(pdgId,
-                               pdgId,
-                               primaryEnergy,
-                               primaryPos,
-                               planePos,
-                               planeDir,
-                               planeTime,
-                               planeKineticEnergy,
-                               dataSource);
-    }
-#endif
 
   }//FillCrvInfoStructure
 
@@ -299,14 +220,12 @@ namespace mu2e
          //MCtruth pulses information
          art::Handle<CrvDigiMCCollection> crvDigiMCCollection;
          if(crvWaveformsModuleLabel!="") event.getByLabel(crvWaveformsModuleLabel,"",crvDigiMCCollection); //this is an optional part for MC information
-         double totalEnergyDeposited    = 0;
-         double ionizingEnergyDeposited = 0;
+         double visibleEnergyDeposited  = 0;
          double earliestHitTime         = NAN;
          CLHEP::Hep3Vector earliestHitPos;
          art::Ptr<SimParticle> mostLikelySimParticle;
          //for this reco pulse
-         CrvHelper::GetInfoFromCrvRecoPulse(crvRecoPulse, crvDigiMCCollection, timeOffsets,
-                                            totalEnergyDeposited, ionizingEnergyDeposited,
+         CrvHelper::GetInfoFromCrvRecoPulse(crvRecoPulse, crvDigiMCCollection, timeOffsets, visibleEnergyDeposited,
                                             earliestHitTime, earliestHitPos, mostLikelySimParticle);
 
          bool hasMCInfo = (mostLikelySimParticle.isNonnull()?true:false); //MC
@@ -319,7 +238,7 @@ namespace mu2e
                                  primaryParticle->pdgId(), primaryParticle->startMomentum().e() - primaryParticle->startMomentum().m(), primaryParticle->startPosition(),
                                  parentParticle->pdgId(),  parentParticle->startMomentum().e()  - parentParticle->startMomentum().m(),  parentParticle->startPosition(),
                                  gparentParticle->pdgId(), gparentParticle->startMomentum().e() - gparentParticle->startMomentum().m(), gparentParticle->startPosition(),
-                                 earliestHitPos, earliestHitTime, ionizingEnergyDeposited);
+                                 earliestHitPos, earliestHitTime, visibleEnergyDeposited);
            }
          else
            MCInfo.emplace_back();

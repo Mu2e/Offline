@@ -37,7 +37,7 @@ do
 
     echo "Length "$length" Reflector "$reflector
 
-    mkdir /pnfs/mu2e/scratch/outstage/ehrlich/tables_6.0/$length'_'$reflector
+    mkdir /pnfs/mu2e/scratch/outstage/ehrlich/tables_6.5/$length'_'$reflector
 
     jobsub_submit \
     -N $((2000*3)) \
@@ -50,6 +50,7 @@ do
     --group=mu2e \
     -f dropbox:///mu2e/app/users/ehrlich/work_MDC2018/Offline/CRVResponse/standalone/wls-build/wlsProduction \
     -f dropbox:///mu2e/app/users/ehrlich/work_MDC2018/Offline/CRVResponse/standalone/wls-build/singlePEWaveform_v3.txt \
+    -f dropbox:///mu2e/app/users/ehrlich/work_MDC2018/Offline/CRVResponse/standalone/wls-build/photonMap.root \
     -f dropbox:///mu2e/app/users/ehrlich/work_MDC2018/Offline/CRVResponse/standalone/wls-build/visibleEnergyAdjustment.txt \
     file:///mu2e/app/users/ehrlich/work_MDC2018/Offline/CRVResponse/standalone/wls-build/wls.doProduction
 

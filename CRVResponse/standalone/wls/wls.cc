@@ -134,6 +134,8 @@ int main(int argc, char** argv)
     std::cout<<"                  0  no reflector (default)"<<std::endl;
     std::cout<<"                 -1  reflector at negative side"<<std::endl;
     std::cout<<"                  1  reflector at postiive side"<<std::endl;
+    std::cout<<"                 -2  black tape at negative side"<<std::endl;
+    std::cout<<"                  2  black tape at positive side"<<std::endl;
     std::cout<<"-m minbin         Minimum bin in lookup table (default is 0)."<<std::endl;
     std::cout<<"-M maxbin         Maximum bin in lookup table (default is"<<std::endl;
     std::cout<<"                  the maximum number of bins for this simulation type)."<<std::endl;
@@ -145,6 +147,8 @@ int main(int argc, char** argv)
     std::cout<<"                  0  no reflector (default)"<<std::endl;
     std::cout<<"                 -1  reflector at negative side"<<std::endl;
     std::cout<<"                  1  reflector at positive side"<<std::endl;
+    std::cout<<"                 -2  black tape at negative side"<<std::endl;
+    std::cout<<"                  2  black tape at positive side"<<std::endl;
     std::cout<<"-n events    Number of events to simulate (default 1000)."<<std::endl;
     std::cout<<"-r seed      seed for random number generator (default: 0)."<<std::endl;
     std::cout<<"-y pos       y coordinate of starting point in mm (default: 0 = center between fibers)."<<std::endl;
@@ -219,8 +223,6 @@ int main(int argc, char** argv)
   findArgs(argc, argv, "-z", posZ);
   findArgs(argc, argv, "-r", r);
 
-  G4String physName = "QGSP_BERT_EMV";
-//  G4String physName = "QGSP_BERT_HP";  //for neutrons
   G4int seed = r;
 
   CLHEP::HepRandom::setTheEngine(new CLHEP::RanecuEngine);
@@ -230,7 +232,7 @@ int main(int argc, char** argv)
 
   WLSMaterials::GetInstance();
   runManager->SetUserInitialization(new WLSDetectorConstruction(lengthOption, reflectorOption));
-  runManager->SetUserInitialization(new WLSPhysicsList(physName));
+  runManager->SetUserInitialization(new WLSPhysicsList());
 
   WLSPrimaryGeneratorAction *generator = new WLSPrimaryGeneratorAction(mode, n, simType, minBin, verbose, posY, posZ);   
                                                                        //n,simType,minBin not needed in modes UseGeantOnly, and UseGeantAndLookupTables
@@ -238,17 +240,15 @@ int main(int argc, char** argv)
   WLSRunAction* runAction = new WLSRunAction();
   std::string singlePEWaveformFilename="singlePEWaveform_v3.txt";
   std::string photonMapFilename="photonMap.root";
-  std::string visibleEnergyAdjustmentFilename="visibleEnergyAdjustment.txt";
   WLSEventAction* eventAction = new WLSEventAction(mode, singlePEWaveformFilename, photonMapFilename, n, simType, minBin, verbose); 
-  WLSSteppingAction* steppingAction = new WLSSteppingAction(mode, lookupFilename, visibleEnergyAdjustmentFilename);  
-                                                                       //lookupFilename not needed in modes CreateLookupTables, and UseGeantOnly
-//  WLSStackingAction* stackingAction = new WLSStackingAction();
+  WLSSteppingAction* steppingAction = new WLSSteppingAction(mode, lookupFilename); //lookupFilename not needed in modes CreateLookupTables, and UseGeantOnly
+  WLSStackingAction* stackingAction = new WLSStackingAction();
 
   runManager->SetUserAction(generator);
   runManager->SetUserAction(runAction);
   runManager->SetUserAction(eventAction);
   runManager->SetUserAction(steppingAction);
-//  runManager->SetUserAction(stackingAction);
+  runManager->SetUserAction(stackingAction);
   runManager->Initialize();
 
 /*
