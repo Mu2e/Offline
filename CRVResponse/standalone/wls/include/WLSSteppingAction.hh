@@ -23,35 +23,42 @@ class WLSSteppingAction : public G4UserSteppingAction
 
     enum simulationMode {CreateLookupTables, UseGeantOnly, UseGeantAndLookupTables, Undefined};
 
-    WLSSteppingAction(simulationMode mode, const std::string &lookupFileName = "", const std::string &visibleEnergyAdjustmentFileName = "");
-                                                                                 //lookupFileName and visibleEnergyAdjustmentFileName
-                                                                                 //only used for simulationMode::UseGeantAndLookupTables
+    struct PhotonInfo
+    {
+      double _arrivalTime;
+      int _fiberEmissions;
+      PhotonInfo(double arrivalTime, int fiberEmissions) : _arrivalTime(arrivalTime), _fiberEmissions(fiberEmissions) {}
+    };
+
+    WLSSteppingAction(simulationMode mode, const std::string &lookupFileName = ""); //lookupFileName and visibleEnergyAdjustmentFileName
+                                                                                    //only used for simulationMode::UseGeantAndLookupTables
     ~WLSSteppingAction();
 
     void                      UserSteppingAction(const G4Step*);
     static WLSSteppingAction* Instance() {return _fgInstance;}
     void                      Reset();
-    const std::vector<double> &GetArrivalTimes(int SiPM);
+    const std::vector<PhotonInfo> &GetPhotonInfo(int SiPM);
     const std::vector<double> &GetArrivalTimesFromLookupTables(int SiPM);
-    const std::vector<int>    &GetFiberEmissions(int SiPM);
+
+    void                      PrintFiberStats();
 
   private:
 
     std::unique_ptr<mu2eCrv::MakeCrvPhotons> _crvPhotons;
     static WLSSteppingAction *_fgInstance;  
-    std::vector<double>       _arrivalTimes[4];
+    std::vector<PhotonInfo>   _photonInfo[4];
     std::vector<double>       _arrivalTimesFromLookupTables[4];
-    std::vector<int>          _fiberEmissions[4];
     simulationMode            _mode;
 
     std::map<int,int>         _wlsTrackParents;
+    std::set<int>             _tracksHittingFiber;
+    std::set<int>             _tracksGettingAbsorbedInFiber;
+    int                       _zeroFiberEmissions;
 
     CLHEP::HepJamesRandom     _engine;
     CLHEP::RandFlat           _randFlat;
     CLHEP::RandGaussQ         _randGaussQ;
     CLHEP::RandPoissonQ       _randPoissonQ;
-
-    void                      ShowVisibleEnergyTable(const G4Step *theStep);
 
     TNtuple*                  _ntuple;  //WLS fiber test
 };

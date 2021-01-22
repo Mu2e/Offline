@@ -27,7 +27,7 @@
 #include "TTree.h"
 
 #include "MCDataProducts/inc/StrawDigiMCCollection.hh"
-#include "MCDataProducts/inc/CrvDigiMCCollection.hh"
+#include "MCDataProducts/inc/CrvDigiMC.hh"
 #include "MCDataProducts/inc/StepPointMCCollection.hh"
 
 #include "MCDataProducts/inc/GenId.hh"
@@ -56,6 +56,7 @@ public:
   // Other functions
   void fillTree(const mu2e::StepPointMC& old_step);
   void fillTree(const mu2e::StrawGasStep& old_step);
+  void fillTree(const mu2e::CrvStep& old_step);
 
 
 private:
@@ -135,7 +136,7 @@ void mu2e::StepPointsInDigis::analyze(art::Event const& event)
   const auto& crvDigiMCs = *_crvDigiMCsHandle;
   for (const auto& i_crvDigiMC : crvDigiMCs) {
 
-    for (const auto& i_step_mc : i_crvDigiMC.GetStepPoints()) {
+    for (const auto& i_step_mc : i_crvDigiMC.GetCrvSteps()) {
       if (i_step_mc.isAvailable()) {
 	fillTree(*i_step_mc);
       }
@@ -168,6 +169,24 @@ void mu2e::StepPointsInDigis::fillTree(const mu2e::StrawGasStep& old_step) {
   _stepRawTime = old_step.time();
   _stepOffsettedTime = _toff.timeWithOffsetsApplied(old_step);
   _stepEDep = old_step.totalEDep();
+  art::Ptr<SimParticle> simPtr = old_step.simParticle();
+  while (simPtr->isSecondary()) {
+    simPtr = simPtr->parent();
+  }
+  _stepGenId = simPtr->genParticle()->generatorId().id();
+  _stepProductId = simPtr.id().value();
+  _steps->Fill();
+}
+
+void mu2e::StepPointsInDigis::fillTree(const mu2e::CrvStep& old_step) {
+
+  _stepX = old_step.startPos().x();
+  _stepY = old_step.startPos().y();
+  _stepZ = old_step.startPos().z();
+  _stepRawTime = old_step.startTime();
+  double timeOffset = _toff.totalTimeOffset(old_step.simParticle());
+  _stepOffsettedTime = old_step.startTime()+timeOffset;
+  _stepEDep = old_step.visibleEDep();
   art::Ptr<SimParticle> simPtr = old_step.simParticle();
   while (simPtr->isSecondary()) {
     simPtr = simPtr->parent();

@@ -2,61 +2,32 @@
 #include "fcl/standardServices.fcl"
 #include "CRVResponse/fcl/prolog.fcl"
 
-process_name : CRVResponse
+process_name : CRVResponsePlot
 
 source :
 {
   module_type : RootInput
-  inputCommands: ["keep *", 
-                  "drop *KalRepPayload*_*_*_*",
-                  "drop *CaloCrystalOnlyHit*_*_*_*",
-                  "drop *Crv*_*_*_*"]
 }
 
 services :
 {
-  RandomNumberGenerator: {defaultEngineKind: "MixMaxRng" }
-  TFileService           : { fileName: "test.root" }
-  GeometryService        : { inputFile : "Mu2eG4/geom/geom_common.txt" }
-  ConditionsService      : { conditionsfile : "Mu2eG4/test/conditions_01.txt" }
-  GlobalConstantsService : { inputFile : "Mu2eG4/test/globalConstants_01.txt" }
-  SeedService            : @local::automaticSeeds
+  @table::Services.Core
 }
 
 physics :
 {
-  producers:
-  {
-    @table::CommonMC.producers
-    @table::CrvResponsePackage.producers
-  }
-
   analyzers:
   {
-    CrvPlot:
-    {
-      module_type                    : CrvPlot
-      crvPhotonsModuleLabel          : CrvPhotons
-      crvSiPMChargesModuleLabel      : CrvSiPMCharges
-      crvDigiModuleLabel             : CrvDigi
-      crvRecoPulsesModuleLabel       : CrvRecoPulses
-      crvBarIndex                    : 1
-      timeStart                      : 500
-      timeEnd                        : 1000
-      recoPulsePedestal              : 100.42
-    }
+    CrvPlot: @local::CrvPlot
   }
 
-  an : [ @sequence::CommonMC.DigiSim, @sequence::CrvResponsePackage.CrvResponseSequence]
+  an : []
   out: [CrvPlot]
 
   trigger_paths: [an]
   end_paths:     [out]
 }
 
-physics.producers.CrvPhotons.startTime         : 0.0 
-physics.producers.CrvSiPMCharges.blindTime     : 0.0
-#physics.producers.CrvWaveforms.minVoltage      : 0.0
-
-services.SeedService.baseSeed         :  773651
-services.SeedService.maxUniqueEngines :  20
+physics.analyzers.CrvPlot.events        : [0,1,2,3]
+physics.analyzers.CrvPlot.crvBarIndices : [4802,4852,4314]
+services.TFileService.fileName          : "crvPlots.root"

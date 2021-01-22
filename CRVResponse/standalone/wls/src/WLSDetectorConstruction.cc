@@ -39,35 +39,23 @@ WLSDetectorConstruction::WLSDetectorConstruction(double lengthOption, int reflec
 {
   _fgInstance = this;
 
-  _checkOverlaps = true;
-
   _materials = NULL;
   _physiWorld = NULL;
 
-  _mppcPolish = 1.;
-  _mppcReflectivity = 0.30;  
+  _mppcReflectivity          = 0.20;
+  _reflectorReflectivity     = 0.83;
+  _blacktapeReflectivity     = 0.00;
+  _fiberGuideBarReflectivity = 0.00;
 
-  _reflectorPolish = 1.;
-  _reflectorReflectivity = 0.90;  //reflector at test beam
-//  _reflectorReflectivity = 0.10;  //black tape at test beam
-
-  _extrusionPolish = 0.3;
-
-  _fiberGuideBarLength = 1.0*cm;
-  _fiberGuideBarPolish = 1.;
-  _fiberGuideBarReflectivity = 0.;
-
-  _holePolish = 0.;
- 
   _barLength        = lengthOption*mm;
-//#define TESTBEAM
+#define TESTBEAM
 #ifndef TESTBEAM
   _barThickness     = 19.78*mm;
   _barWidth         = 51.34*mm;
 #else
 #pragma message "USING TESTBEAM"
-  _barThickness     = 19.8*mm;  //FIXME testbeam
-  _barWidth         = 49.4*mm;  //FIXME testbeam
+  _barThickness     = 19.8*mm;
+  _barWidth         = 49.4*mm;
 #endif
   _fiberSeparation  = 2.6*cm;
   _holeRadiusX      = 2.00*mm;
@@ -77,21 +65,24 @@ WLSDetectorConstruction::WLSDetectorConstruction(double lengthOption, int reflec
   _fiberRadius      = 0.70*mm - 0.042*mm - 0.042*mm;
   _clad1Radius      = 0.70*mm - 0.042*mm;
   _clad2Radius      = 0.70*mm;
-  _sipmLength       = 1.*mm;
-  _sipmRadius       = 0.70*mm;
-  _airGap           = 0.0*mm;
+  _fiberGuideBarLength = 1.0*cm;
+  _sipmLength       = 0.2*mm;
+  _sipmWidth        = 2.0*mm;
+  _sipmWindowLength = 0.1*mm;
+  _airGap           = 1.0*um;
 
 #ifdef FIBERTEST
 #pragma message "USING FIBERTEST"
-  _mppcReflectivity       = 0.0;
-  _reflectorReflectivity  = 0.0;
+  _mppcReflectivity          = 0.0;
+  _reflectorReflectivity     = 0.0;
+  _blacktapeReflectivity     = 0.0;
+  _fiberGuideBarReflectivity = 0.0;
   _fiberGuideBarLength = 0.0*cm;
-  _airGap              = 0.0*mm;
 #endif
 
   _reflectorOption = reflectorOption;
-  _reflectorAtPositiveSide = (reflectorOption==1?true:false);
-  _reflectorAtNegativeSide = (reflectorOption==-1?true:false);
+  _reflectorAtPositiveSide = (reflectorOption>=1?true:false);  //1...reflector, 2...black tape
+  _reflectorAtNegativeSide = (reflectorOption<=-1?true:false);
 
 //use only the positive values of x (assuming symmetry) (0 is at the center)
 #ifndef TESTBEAM
@@ -99,8 +90,8 @@ WLSDetectorConstruction::WLSDetectorConstruction(double lengthOption, int reflec
   double ybinsTmp[42] = {-25.67, -25.2, -24.7, -23.5, -20.5, -17.5, -15.5, -15.0, -14.5, -14.0, -13.5, -13.0, -12.5, -12.0, -11.5, -11.0, -10.5, -8.5, -6.5, -4.5, -1.5, 1.5, 4.5, 6.5, 8.5, 10.5, 11.0, 11.5, 12.0, 12.5, 13.0, 13.5, 14.0, 14.5, 15.0, 15.5, 17.5, 20.5, 23.5, 24.7, 25.2, 25.67}; 
 #else
 #pragma message "USING TESTBEAM"
-  double xbinsTmp[11] = {0.0, 0.5, 1.0, 1.5, 2.0, 2.5, 3.0, 6.0, 9.0, 9.5, 9.9}; //FIXME testbeam
-  double ybinsTmp[42] = {-24.7, -24.25, -23.75, -22.5, -20.5, -17.5, -15.5, -15.0, -14.5, -14.0, -13.5, -13.0, -12.5, -12.0, -11.5, -11.0, -10.5, -8.5, -6.5, -4.5, -1.5, 1.5, 4.5, 6.5, 8.5, 10.5, 11.0, 11.5, 12.0, 12.5, 13.0, 13.5, 14.0, 14.5, 15.0, 15.5, 17.5, 20.5, 22.5, 23.75, 24.25, 24.7};  //FIXME testbeam
+  double xbinsTmp[11] = {0.0, 0.5, 1.0, 1.5, 2.0, 2.5, 3.0, 6.0, 9.0, 9.5, 9.9};
+  double ybinsTmp[42] = {-24.7, -24.25, -23.75, -22.5, -20.5, -17.5, -15.5, -15.0, -14.5, -14.0, -13.5, -13.0, -12.5, -12.0, -11.5, -11.0, -10.5, -8.5, -6.5, -4.5, -1.5, 1.5, 4.5, 6.5, 8.5, 10.5, 11.0, 11.5, 12.0, 12.5, 13.0, 13.5, 14.0, 14.5, 15.0, 15.5, 17.5, 20.5, 22.5, 23.75, 24.25, 24.7};
 #endif
 
   for(int i=0; i<11; i++) _xbins.push_back(xbinsTmp[i]*mm); //10 bins
@@ -164,7 +155,7 @@ G4VPhysicalVolume* WLSDetectorConstruction::ConstructDetector()
                                   logicWorld,
                                   "World",
                                   0,
-                                  _checkOverlaps,
+                                  false,
                                   0);
 
 #ifndef FIBERTEST
@@ -215,7 +206,7 @@ G4VPhysicalVolume* WLSDetectorConstruction::ConstructDetector()
                                          logicScintillator,
                                          "Scintillator",
                                          logicWorld,
-                                         _checkOverlaps,
+                                         false,
                                          0);
   _physiScintillator->CheckOverlaps();
 
@@ -254,7 +245,7 @@ G4VPhysicalVolume* WLSDetectorConstruction::ConstructDetector()
                                                         logicExtrusion,
                                                         "Extrusion",
                                                         logicWorld,
-                                                        _checkOverlaps,
+                                                        false,
                                                         0);
   physiExtrusion->CheckOverlaps();
 
@@ -273,7 +264,7 @@ G4VPhysicalVolume* WLSDetectorConstruction::ConstructDetector()
   G4double p_TiO2[11] =    {2.00*eV, 2.75*eV, 2.88*eV, 2.95*eV, 3.02*eV, 3.10*eV, 3.18*eV, 3.26*eV, 3.35*eV, 3.44*eV, 15.75*eV};
   G4double refl_TiO2[11] = {0.91,    0.91,    0.90,    0.85,    0.69,    0.44,    0.27,    0.13,    0.08,    0.07,    0.07}; //assume a constant value for energies > 3.44eV (most photons with these energies get absorbed and wave length shifted)
   G4double effi_TiO2[11] = {0,       0 ,      0,       0,       0,       0,       0,       0,       0,       0,       0};
-  for(int i=0; i<11; i++) refl_TiO2[i]=1.0-0.9*(1.0-refl_TiO2[i]);  //a higher reflectivities comparared to the numbers given by Anna 
+  for(int i=0; i<11; i++) refl_TiO2[i]=1.0-0.75*(1.0-refl_TiO2[i]);  //a higher reflectivities comparared to the numbers given by Anna 
                                                                     //improves the match between testbeam data and MC
 
   TiO2SurfaceProperty->AddProperty("REFLECTIVITY",p_TiO2,refl_TiO2,11);
@@ -321,7 +312,7 @@ G4VPhysicalVolume* WLSDetectorConstruction::ConstructDetector()
                                                         logicFiberGuideBar,
                                                         "FiberGuideBar",
                                                         logicWorld,
-                                                        _checkOverlaps,
+                                                        false,
                                                         0);
 
   G4VPhysicalVolume *physiFiberGuideBar1=
@@ -329,7 +320,7 @@ G4VPhysicalVolume* WLSDetectorConstruction::ConstructDetector()
                                                         logicFiberGuideBar,
                                                         "FiberGuideBar",
                                                         logicWorld,
-                                                        _checkOverlaps,
+                                                        false,
                                                         1);
   physiFiberGuideBar0->CheckOverlaps();
   physiFiberGuideBar1->CheckOverlaps();
@@ -338,10 +329,10 @@ G4VPhysicalVolume* WLSDetectorConstruction::ConstructDetector()
   //surface
 
   G4OpticalSurface* FiberGuideBarSurface = new G4OpticalSurface("FiberGuideBarSurface",
-                                                           glisur,
+                                                           unified,
                                                            ground,
                                                            dielectric_metal,
-                                                           _fiberGuideBarPolish);
+                                                           0.0);
 
   G4MaterialPropertiesTable* FiberGuideBarSurfaceProperty = new G4MaterialPropertiesTable();
 
@@ -374,7 +365,7 @@ G4VPhysicalVolume* WLSDetectorConstruction::ConstructDetector()
                     logicClad2,
                     "Clad2Hole0",
                     logicWorld,
-                    _checkOverlaps,
+                    false,
                     0);
   G4VPhysicalVolume *physiClad2Hole1=
   new G4PVPlacement(0,
@@ -382,7 +373,7 @@ G4VPhysicalVolume* WLSDetectorConstruction::ConstructDetector()
                     logicClad2,
                     "Clad2Hole1",
                     logicWorld,
-                    _checkOverlaps,
+                    false,
                     1);
 
   physiClad2Hole0->CheckOverlaps();
@@ -404,8 +395,9 @@ G4VPhysicalVolume* WLSDetectorConstruction::ConstructDetector()
                     logicClad1,
                     "Clad1",
                     logicClad2,
-                    _checkOverlaps,
+                    false,
                     0);
+
   physiClad1->CheckOverlaps();
 
   //--------------------------------------------------
@@ -424,51 +416,63 @@ G4VPhysicalVolume* WLSDetectorConstruction::ConstructDetector()
                     logicWLSfiber,
                     "WLSFiber",
                     logicClad1,
-                    _checkOverlaps,
+                    false,
                     0);
   physiWLSfiber->CheckOverlaps();
 
   //--------------------------------------------------
-  // PhotonDet (Sensitive Detector) Or Reflector
+  // SiPM (Sensitive Detector) Or Reflector
   //--------------------------------------------------  
 
-  // Physical Construction
-  G4VSolid* solidPhotonDet = new G4Tubs("PhotonDet",0.,_sipmRadius,_sipmLength/2.0,0.0*rad,twopi*rad);
+  G4VSolid* solidSiPMorReflector = new G4Box("SiPMorReflector",_sipmWidth/2.0,_sipmWidth/2.0,_sipmLength/2.0);
 
-  G4LogicalVolume* logicPhotonDet = new G4LogicalVolume(solidPhotonDet,
-                                                        FindMaterial("G4_Si"),
-                                                        "PhotonDet");
-  G4LogicalVolume* logicReflector = new G4LogicalVolume(solidPhotonDet,
-                                                        FindMaterial("G4_Al"),
-                                                        "Reflector");
+  //SiPM
+  G4VSolid* solidSiPMWindow = new G4Box("SiPMWindow",_sipmWidth/2.0,_sipmWidth/2.0,_sipmWindowLength);
+  G4LogicalVolume* logicSiPMWindow = new G4LogicalVolume(solidSiPMWindow, FindMaterial("Epoxy"),"SiPMWindow");
+
+  G4LogicalVolume* logicPhotonDet[4];
+  for(int i=0; i<4; i++)
+  {
+    logicPhotonDet[i] = new G4LogicalVolume(solidSiPMorReflector, FindMaterial("G4_Si"), "PhotonDet");
+    new G4PVPlacement(0, 
+                    G4ThreeVector(0.0, 0.0, (i%2==0)?(_sipmLength-_sipmWindowLength)/2.0:-(_sipmLength-_sipmWindowLength)/2.0),
+                    logicSiPMWindow,
+                    "PhotonSiPMWindow",
+                    logicPhotonDet[i],
+                    false,
+                    i);
+  }
+
+  //Reflector
+  G4LogicalVolume* logicReflector = new G4LogicalVolume(solidSiPMorReflector, FindMaterial("G4_Al"), "Reflector");
 
   new G4PVPlacement(0,
                     G4ThreeVector(0.0, -_fiberSeparation/2.0, -_barLength/2.0-_fiberGuideBarLength-_airGap-_sipmLength/2.0),
-                    _reflectorAtNegativeSide?logicReflector:logicPhotonDet,
-                    _reflectorAtNegativeSide?"Reflector":"PhotonDet",
+                    _reflectorAtNegativeSide?logicReflector:logicPhotonDet[0],
+                    _reflectorAtNegativeSide?"Reflector":"SiPM",
                     logicWorld,
-                    _checkOverlaps,
+                    false,
                     0);
   new G4PVPlacement(0,
                     G4ThreeVector(0.0, -_fiberSeparation/2.0, _barLength/2.0+_fiberGuideBarLength+_airGap+_sipmLength/2.0),
-                    _reflectorAtPositiveSide?logicReflector:logicPhotonDet,
-                    _reflectorAtPositiveSide?"Reflector":"PhotonDet",
+                    _reflectorAtPositiveSide?logicReflector:logicPhotonDet[1],
+                    _reflectorAtPositiveSide?"Reflector":"SiPM",
                     logicWorld,
-                    _checkOverlaps,
+                    false,
                     1);
   new G4PVPlacement(0,
                     G4ThreeVector(0.0, _fiberSeparation/2.0, -_barLength/2.0-_fiberGuideBarLength-_airGap-_sipmLength/2.0),
-                    _reflectorAtNegativeSide?logicReflector:logicPhotonDet,
-                    _reflectorAtNegativeSide?"Reflector":"PhotonDet",
+                    _reflectorAtNegativeSide?logicReflector:logicPhotonDet[2],
+                    _reflectorAtNegativeSide?"Reflector":"SiPM",
                     logicWorld,
-                    _checkOverlaps,
+                    false,
                     2);
   new G4PVPlacement(0,
                     G4ThreeVector(0.0, _fiberSeparation/2.0, _barLength/2.0+_fiberGuideBarLength+_airGap+_sipmLength/2.0),
-                    _reflectorAtPositiveSide?logicReflector:logicPhotonDet,
-                    _reflectorAtPositiveSide?"Reflector":"PhotonDet",
+                    _reflectorAtPositiveSide?logicReflector:logicPhotonDet[3],
+                    _reflectorAtPositiveSide?"Reflector":"SiPM",
                     logicWorld,
-                    _checkOverlaps,
+                    false,
                     3);
 
   // PhotonDet Surface Properties
@@ -476,7 +480,7 @@ G4VPhysicalVolume* WLSDetectorConstruction::ConstructDetector()
                                                             glisur,
                                                             ground,
                                                             dielectric_metal,
-                                                            _mppcPolish);
+                                                            1.0);
 
   G4MaterialPropertiesTable* PhotonDetSurfaceProperty = new G4MaterialPropertiesTable();
 
@@ -506,19 +510,21 @@ G4VPhysicalVolume* WLSDetectorConstruction::ConstructDetector()
 
   PhotonDetSurface -> SetMaterialPropertiesTable(PhotonDetSurfaceProperty);
  
-  new G4LogicalSkinSurface("PhotonDetSurface",logicPhotonDet,PhotonDetSurface); 
+  for(int i=0; i<4; i++) new G4LogicalSkinSurface("PhotonDetSurface",logicPhotonDet[i],PhotonDetSurface); 
 
   // Reflector Surface Properties
   G4OpticalSurface* ReflectorSurface = new G4OpticalSurface("ReflectorSurface",
                                                          glisur,
                                                          ground,
                                                          dielectric_metal,
-                                                         _reflectorPolish);
+                                                         1.0);
 
   G4MaterialPropertiesTable* ReflectorSurfaceProperty = new G4MaterialPropertiesTable();
 
+  G4double reflectivity = _reflectorReflectivity;
+  if(abs(_reflectorOption)==2) reflectivity=_blacktapeReflectivity;
   G4double p_reflector[2] = {2.00*eV, 15.75*eV};
-  G4double refl_reflector[2] = {_reflectorReflectivity,_reflectorReflectivity};
+  G4double refl_reflector[2] = {reflectivity,reflectivity};
   G4double effi_reflector[2] = {0.0, 0.0};  
   
   ReflectorSurfaceProperty -> AddProperty("REFLECTIVITY",p_reflector,refl_reflector,2);
@@ -527,6 +533,22 @@ G4VPhysicalVolume* WLSDetectorConstruction::ConstructDetector()
   ReflectorSurface -> SetMaterialPropertiesTable(ReflectorSurfaceProperty);
  
   new G4LogicalSkinSurface("ReflectorSurface",logicReflector,ReflectorSurface); 
+
+  // Fiber End Surface Properties
+  G4OpticalSurface* FiberEndSurface = new G4OpticalSurface("FiberEndSurface",
+                                                         unified,
+                                                         ground,
+                                                         dielectric_dielectric,
+                                                         0.02);
+
+  new G4LogicalBorderSurface("FiberEndSurface1",physiWLSfiber,_physiWorld,FiberEndSurface);
+  new G4LogicalBorderSurface("FiberEndSurface2",_physiWorld,physiWLSfiber,FiberEndSurface);
+  new G4LogicalBorderSurface("FiberEndSurface3",physiClad1,_physiWorld,FiberEndSurface);
+  new G4LogicalBorderSurface("FiberEndSurface4",_physiWorld,physiClad1,FiberEndSurface);
+  new G4LogicalBorderSurface("FiberEndSurface5",physiClad2Hole0,_physiWorld,FiberEndSurface);
+  new G4LogicalBorderSurface("FiberEndSurface6",_physiWorld,physiClad2Hole0,FiberEndSurface);
+  new G4LogicalBorderSurface("FiberEndSurface7",physiClad2Hole1,_physiWorld,FiberEndSurface);
+  new G4LogicalBorderSurface("FiberEndSurface8",_physiWorld,physiClad2Hole1,FiberEndSurface);
 
   //--------------------------------------------------
   // End of Construction
