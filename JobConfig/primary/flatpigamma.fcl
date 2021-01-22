@@ -3,18 +3,17 @@
 #include "JobConfig/primary/primary.fcl"
 # set the generator
 physics.producers.generate : {
-    module_type: RPCGun
-      verbosityLevel : 1
-      physics : {
-	spectrumShape : flat
-        elow : 80.0 // Mev
-        ehi : 140.0 // Mev
-      }
-      pionStops : {
-	treeName : "stoppedPionDumper/stops"
-	branchName : "stops"
-	inputFiles :  ["mergedMuonStops/nts.mu2e.pion-DS-TGTstops.MDC2018a.001002_00000000.root" ] 
-      }
-    }
-services.TFileService.fileName: "nts.owner.flatpigamma-steps.version.sequencer.root"
-outputs.Output.fileName: "dig.owner.flatpigamma-steps.version.sequencer.art"
+  module_type: RPCGun
+  verbosityLevel : 1
+  physics : {
+    spectrumShape : flat
+    elow : 80.0 // Mev
+    ehi : 140.0 // Mev
+  }
+  pionStops : {
+    treeName : "stoppedPionDumper/stops"
+    branchName : "stops"
+    inputFiles :  @nil # replace with valid pion stops FIXME!
+  }
+}
+outputs.Output.fileName: "dts.owner.flatpigamma.version.sequencer.art"

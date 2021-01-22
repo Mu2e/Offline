@@ -11,9 +11,8 @@ physics.producers.generate.physics.generateIntConversion : 1
 physics.producers.generate.physics.spectrumShape : "flat"
 physics.producers.generate.physics.elow : 40.0
 physics.filters.DigiFilter.MinParticleMom : 40.0
-physics.producers.FindMCPrimary.PrimaryGenIds : ["InternalRPC"]
+physics.producers.FindMCPrimary.PrimaryGenIds : ["InternalRPC"] # be explicit, since this is a multi-particle primary
 #
 # customize the output
-services.TFileService.fileName: "nts.owner.flatInternalRPC-steps.version.sequencer.root"
-outputs.Output.fileName: "dig.owner.flatInternalRPC-steps.version.sequencer.art"
+outputs.Output.fileName: "dts.owner.flatInternalRPC.version.sequencer.art"
 

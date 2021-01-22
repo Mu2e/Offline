@@ -12,6 +12,5 @@ physics.producers.generate.physics.elow : 40.0
 physics.filters.DetStepFilter.MinimumPartMom : 40.0
 physics.producers.FindMCPrimary.PrimaryGenIds : ["InternalRMC"]
 # customize the output
-services.TFileService.fileName: "nts.owner.flatInternalRMC-steps.version.sequencer.root"
-outputs.Output.fileName: "dig.owner.flatInternalRMC-steps.version.sequencer.art"
+outputs.Output.fileName: "dts.owner.flatInternalRMC.version.sequencer.art"
 

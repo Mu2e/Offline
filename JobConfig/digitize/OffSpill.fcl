@@ -18,6 +18,7 @@ physics : {
   TriggerPath : @local::Digitize.TriggerPath
   EndPath : @local::Digitize.EndPath
 }
+# setup timing for OffSpill FIXME!
 # add trigger paths
 #include "gen/fcl/Trigger/OnSpillTrigMenu/OffSpillTrigMenu.fcl"
 #

@@ -5,8 +5,7 @@
 #include "JobConfig/reco/reco.fcl"
 
 # the following need to be overwritten for the specific channel
-services.TFileService.fileName: "nts.owner.RecoIPAMichel.version.sequencer.root"
-outputs.Output.fileName: "mcs.owner.RecoIPAMichel.versionIPA.sequencer.art"
+outputs.Output.fileName: "mcs.owner.RecoIPAMichel.version.sequencer.art"
 physics.producers.KSFDeM.MaxDoca : 80
 physics.producers.KSFDeM.FilterOutliers : true
 physics.producers.KSFDeM.KalFit.maxPull : 10

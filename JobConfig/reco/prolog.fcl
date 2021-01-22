@@ -20,8 +20,7 @@ Reconstruction : {
     @table::CalPatRec.producers
     @table::CaloReco.producers
     @table::CaloCluster.producers
-    @table::CaloMC.producers
-    @table::CaloClusterMC.producers
+    @table::CaloMC.TruthProducers
     @table::CrvResponsePackage.producers
 
 # instantiate explicit helix merger modules
@@ -218,7 +217,7 @@ Reconstruction : {
 # CRV reco 
   CrvReco : [ CrvRecoPulses, CrvCoincidence, CrvCoincidenceClusterFinder ]
 # full MC sequence; form the Calo and CRV matching, and compress based on reco content
-  MCReco :  [@sequence::CaloMC.TruthMatch, @sequence::CaloClusterMC.TruthMatch,  CrvCoincidenceClusterMatchMC, SelectRecoMC, compressRecoMCs ]
+  MCReco :  [@sequence::CaloMC.TruthMatch,  CrvCoincidenceClusterMatchMC, SelectRecoMC, compressRecoMCs ]
 
 # define products to keep
 # First, high-level reco products, and associated sub-products

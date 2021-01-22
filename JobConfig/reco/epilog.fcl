@@ -1,2 +1,4 @@
 # name all processes the same, to mask any provenance in ensemble creation
 process_name: Reconstruct
+# dummy histogram file: this is just to force instantiating the TFile service
+services.TFileService.fileName : "nts.owner.reco.version.sequencer.root"
