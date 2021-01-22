@@ -136,6 +136,7 @@ Reconstruction : {
       keepAllGenParticles : false
       crvCoincClusterMCTag : "CrvCoincidenceClusterMatchMC"
       primaryParticleTag : "compressDigiMCs"
+      mcTrajectoryTag : "compressDigiMCs"
       rekeySimParticleCollection : false
     }
   }
@@ -236,7 +237,7 @@ Reconstruction : {
 	    "keep *_genCounter_*_*",
 	    "keep mu2e::PrimaryParticle_*_*_*",
 	    "keep mu2e::StatusG4_*_*_*",
-	    "keep mu2e::SimParticleart::Ptrmu2e::MCTrajectorystd::map_*_*_*",
+#	    "keep mu2e::SimParticleart::Ptrmu2e::MCTrajectorystd::map_*_*_*",
 	    "keep mu2e::ProtonBunchIntensity_*_*_*",
 	    "keep mu2e::ProtonBunchTimeMC_*_*_*",
 	    "keep mu2e::EventWeight_*_*_*",
