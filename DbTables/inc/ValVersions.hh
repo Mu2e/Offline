@@ -46,6 +46,7 @@ namespace mu2e {
       	  "vid,pid,lid,major,minor,comment,create_time,create_user") {}
 
     const Row& rowAt(const std::size_t index) const { return _rows.at(index);}
+    const Row& row(const int vid) const { return _rows.at(_index.at(vid)); }
     std::vector<Row> const& rows() const {return _rows;}
     std::size_t nrow() const override { return _rows.size(); };
     size_t size() const override {
@@ -59,6 +60,7 @@ namespace mu2e {
 			 std::stoi(columns[2]),std::stoi(columns[3]),
 			 std::stoi(columns[4]),columns[5],
 			 columns[6],columns[7]);
+      _index[_rows.back().vid()] = _rows.size()-1;
     }
 
     void rowToCsv(std::ostringstream& sstream, std::size_t irow) const override {
@@ -77,7 +79,8 @@ namespace mu2e {
 
   private:
     std::vector<Row> _rows;
-  };
+    std::map<int,std::size_t> _index;
+ };
   
 };
 #endif
