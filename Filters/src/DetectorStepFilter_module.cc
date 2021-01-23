@@ -144,7 +144,7 @@ namespace mu2e {
 	    if(ifnd == caloESum.end())
 	      caloESum.insert(CES::value_type(css.simParticle().get(),css.energyDepBirks()));
 	    else
-	      ifnd->second += css.energyDepBirks(); // not sure Birks or G4 FIXME!
+	      ifnd->second += css.energyDepBirks(); 
 	  }
 	}
       }
