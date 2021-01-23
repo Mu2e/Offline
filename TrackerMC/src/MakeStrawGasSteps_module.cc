@@ -100,7 +100,6 @@ namespace mu2e {
       void fillStep(SPMCPV const& spmcptrs, Straw const& straw,
 	  ParticleData const* pdata, cet::map_vector_key pid, StrawGasStep& sgs);
       void fillStepDiag(Straw const& straw, StrawGasStep const& sgs, SPMCPV const& spmcptrs);
-      XYZVec endPosition(SPMCP const& last, Straw const& straw,float charge,StrawGasStep::StepType& stype);
       int _debug, _diag;
       bool _combineDeltas, _allAssns;
       float _maxDeltaLen, _radtol, _parrot, _curlrot;
@@ -331,15 +330,11 @@ namespace mu2e {
       throw cet::exception("SIM")<<"mu2e::MakeStrawGasSteps: No first or last step" << endl;
     // Define the position at entrance and exit; note the StepPointMC position is at the start of the step, so we have to extend the last
     XYZVec start = Geom::toXYZVec(first->position());
-    float charge(0.0);
-    if(pdata!=0) charge = pdata->charge();
     // determine the type of step
     StrawGasStep::StepType stype;
     setStepType(first,pdata,stype);
     // compute the end position and step type
-    // in future we should store the end position in the StepPointMC FIXME!
-    XYZVec end = endPosition(last,straw,charge,stype);
-
+    XYZVec end = Geom::toXYZVec(last->postPosition());
     XYZVec momvec = Geom::toXYZVec(0.5*(first->momentum() + last->momentum()));	// average first and last momentum
     float  mom = sqrt(momvec.mag2()); 
     // determine the width from the sigitta or curl radius
@@ -458,42 +453,6 @@ namespace mu2e {
       // move to the next straw/particle pair
 	isps++;
     }
-  }
-
-  XYZVec MakeStrawGasSteps::endPosition(SPMCP const& last, Straw const& straw, float charge,StrawGasStep::StepType& stype) {
-    static const double r2 = _rstraw*_rstraw;
-    XYZVec retval;
-    // null charge has no propagation.
-    if(charge == 0.0 || stype.shape()==StrawGasStep::StepType::point){
-      retval = last->position();
-    } else {
-      auto momhat = last->momentum().unit();
-      // test parabolic extrapolation first
-      _brot = last->stepLength()*_bnom/last->momentum().mag(); // magnetic bending rotation angle
-      if(_debug > 2){
-	cout << "Step Length = " << last->stepLength() << " rotation angle " << _brot << endl;
-      }
-      auto rho = _bdir.cross(momhat);// points radially outwards for positive charge
-      if(_brot < _parrot){
-	// estimate end position with a parabolic trajectory
-	retval  = last->position() + last->stepLength()*(momhat -(0.5*charge*_brot)*rho);
-      } else {
-	Hep3Vector cdir;
-	if(_brot > _curlrot)
-	  // curler; assume the net motion is along the BField axis.  Sign by the projection of the momentum
-	  cdir = _bdir * (momhat.dot(_bdir)>0.0 ? 1.0 : -1.0);
-	else
-	  cdir = (momhat-(0.5*charge*_brot)*rho).unit(); // effective propagation direction
-	// propagate to the straw wall
-	auto pperp = (last->position()-straw.getMidPoint()).perpPart(straw.getDirection());
-	double pdot = pperp.dot(cdir);
-	double ppmag2 = pperp.mag2();
-	double len = sqrt(pdot*pdot + r2 - ppmag2)-pdot;
-	len = std::min(last->stepLength(),len);
-	retval = last->position() + len*cdir;
-      }
-    }
-    return retval; 
   }
 
   void MakeStrawGasSteps::fillStepDiag(Straw const& straw, StrawGasStep const& sgs, SPMCPV const& spmcptrs) {
