@@ -681,10 +681,9 @@ namespace mu2e {
     void StrawDigisFromStrawGasSteps::propagateCharge(
 	StrawPhysics const& strawphys, Straw const& straw,
 	WireCharge const& wireq, StrawEnd end, WireEndCharge& weq) {
-      // compute distance to the appropriate end
+      // compute distance to the appropriate end; note that the straw always points from HV to cal (Duke convention)
       double wlen = straw.halfLength(); // use the full length, not the active length
-      // NB: the following assumes the straw direction points in increasing azimuth.  FIXME!
-      if(end == StrawEnd::hv)
+      if(end == StrawEnd::cal)
 	weq._wdist = wlen - wireq._pos.Z();
       else
 	weq._wdist = wlen + wireq._pos.Z();

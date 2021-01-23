@@ -286,12 +286,12 @@ namespace mu2e {
 	// filter based on composite e/P separation FIXME!
 	const Straw& straw  = tt.getStraw( digi.strawId() );
 	double dw, dwerr;
-	double dt = times[StrawEnd::cal] - times[StrawEnd::hv];
+	double dt = times[StrawEnd::hv] - times[StrawEnd::cal];
         double halfpv;
 	// get distance along wire from the straw center and it's estimated error
 	bool td = srep.wireDistance(straw,energy,dt, dw,dwerr,halfpv);
         float propd = straw.halfLength()+dw;
-        if (eend == StrawEnd(StrawEnd::hv))
+        if (eend == StrawEnd(StrawEnd::cal))
           propd = straw.halfLength()-dw;
 	XYZVec pos = Geom::toXYZVec(straw.getMidPoint()+dw*straw.getDirection());
 	// create combo hit
