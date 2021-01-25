@@ -8,7 +8,7 @@
 #include "fcl/standardProducers.fcl"
 #include "TrkDiag/fcl/prolog.fcl"
 
-#include "Trigger/fcl/templates.fcl"
+#include "Trigger/fcl/prolog_trigger.fcl"
 
 
 events_to_generate: 5

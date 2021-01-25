@@ -44,6 +44,7 @@
 #include "Print/inc/KalSeedPrinter.hh"
 #include "Print/inc/PhysicalVolumePrinter.hh"
 #include "Print/inc/TriggerResultsPrinter.hh"
+#include "Print/inc/PrimaryParticlePrinter.hh"
 
 using namespace std;
 
@@ -120,6 +121,8 @@ namespace mu2e {
 	fhicl::Name("physicalVolumePrinter") }; 
       fhicl::Table<ProductPrinter::Config> triggerResultsPrinter { 
 	fhicl::Name("triggerResultsPrinter") }; 
+      fhicl::Table<ProductPrinter::Config> primaryParticlePrinter { 
+	fhicl::Name("primaryParticlePrinter") }; 
 
     };
 
@@ -179,6 +182,7 @@ mu2e::PrintModule::PrintModule(const Parameters& conf):
   _printers.push_back( make_unique<KalSeedPrinter>( conf().kalSeedPrinter() ) );
   _printers.push_back( make_unique<PhysicalVolumePrinter>( conf().physicalVolumePrinter() ) );
   _printers.push_back( make_unique<TriggerResultsPrinter>( conf().triggerResultsPrinter() ) );
+  _printers.push_back( make_unique<PrimaryParticlePrinter>( conf().primaryParticlePrinter() ) );
 }
 
 

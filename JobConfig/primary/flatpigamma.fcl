@@ -1,40 +1,19 @@
 # flat range of photons from pion stops to study external RPC background
 
-#include "JobConfig/primary/prolog.fcl"
-process_name: flatpigamma
-source: { module_type : EmptyEvent }
-services: @local::Services.Sim
-physics : { 
-  producers : {
-    generate : {
-      module_type: RPCGun
-      verbosityLevel : 1
-      physics : {
-	spectrumShape : flat
-        elow : 80.0 // Mev
-        ehi : 140.0 // Mev
-      }
-      pionStops : {
-	treeName : "stoppedPionDumper/stops"
-	branchName : "stops"
-      }
-    }
-    @table::Primary.producers
+#include "JobConfig/primary/primary.fcl"
+# set the generator
+physics.producers.generate : {
+  module_type: RPCGun
+  verbosityLevel : 1
+  physics : {
+    spectrumShape : flat
+    elow : 80.0 // Mev
+    ehi : 140.0 // Mev
   }
-  filters: { @table::Primary.filters }
-  analyzers: { @table::Primary.analyzers }
-  TriggerPath : @local::Primary.TriggerPath
-  EndPath : @local::Primary.EndPath
+  pionStops : {
+    treeName : "stoppedPionDumper/stops"
+    branchName : "stops"
+    inputFiles :  @nil # replace with valid pion stops FIXME!
+  }
 }
-outputs : { 
-  Output :@local::Primary.Output
-}
-#
-# final configuration
-#
-#include "JobConfig/primary/epilog.fcl"
-physics.end_paths : [ EndPath ] # needed for generate_fclprocess_name: flatpigamma
-services.TFileService.fileName: "nts.owner.flatpigamma.version.sequencer.root"
-outputs.Output.fileName: "dig.owner.flatpigamma.version.sequencer.art"
-physics.producers.generate.pionStops.inputFiles :  ["mergedMuonStops/nts.mu2e.pion-DS-TGTstops.MDC2018a.001002_00000000.root" ] 
-
+outputs.Output.fileName: "dts.owner.flatpigamma.version.sequencer.art"

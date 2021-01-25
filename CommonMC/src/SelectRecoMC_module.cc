@@ -16,8 +16,6 @@
 // mu2e data products
 #include "DataProducts/inc/VirtualDetectorId.hh"
 #include "DataProducts/inc/IndexMap.hh"
-#include "DataProducts/inc/EventWindowMarker.hh"
-#include "MCDataProducts/inc/ProtonBunchTimeMC.hh"
 #include "MCDataProducts/inc/PrimaryParticle.hh"
 #include "MCDataProducts/inc/StrawDigiMC.hh"
 #include "MCDataProducts/inc/CaloShowerSim.hh"
@@ -26,7 +24,6 @@
 #include "MCDataProducts/inc/CaloClusterMC.hh"
 #include "MCDataProducts/inc/CaloMCTruthAssns.hh"
 #include "MCDataProducts/inc/StepPointMC.hh"
-#include "MCDataProducts/inc/ProtonBunchIntensity.hh"
 #include "RecoDataProducts/inc/KalSeed.hh"
 #include "RecoDataProducts/inc/CaloCluster.hh"
 #include "RecoDataProducts/inc/CaloDigi.hh"
@@ -75,13 +72,7 @@ namespace mu2e {
       fhicl::Sequence<std::string> MHInstances  { Name("MHInstances"),	                  Comment("MergeHelices Module Instances")};
       fhicl::Atom<art::InputTag> VDSPC          { Name("VDSPCollection"),	          Comment("Virtual Detector StepPointMC collection")};
       fhicl::Sequence<art::InputTag> SPTO       { Name("TimeOffsets"),	                  Comment("Sim Particle Time Offset Maps")};
-      fhicl::Atom<art::InputTag> CSSC           { Name("CSSCollection"),	          Comment("CaloShowerSim collection")};
-      fhicl::Atom<art::InputTag> EWM            { Name("EventWindowMarker"),	          Comment("EventWindowMarker")};
-      fhicl::Atom<art::InputTag> PBI            { Name("ProtonBunchIntensity"),	          Comment("ProtonBunchIntensity")};
-      fhicl::Atom<art::InputTag> PBTMC          { Name("ProtonBunchTimeMC"),              Comment("ProtonBunchTimeMC")};
-      fhicl::Atom<double> CCMCDT                { Name("CaloClusterMCDTime"),	          Comment("Max time difference between CaloCluster and CaloShowerSim for MC match")};
-      fhicl::Atom<double> CSME                  { Name("CaloMinE"),	                  Comment("Min CaloShowerSim MC energy to include")};
-      fhicl::Atom<double> CCME                  { Name("CaloClusterMinE"),                Comment("Minimum energy CaloCluster to save (MeV)"), 10.0};
+      fhicl::Atom<double> CCME                  { Name("CaloClusterMinE"),                Comment("Minimum energy CaloCluster to save digis (MeV)")};
    };
    using Parameters = art::EDProducer::Table<Config>;
    explicit SelectRecoMC(const Parameters& conf);
@@ -96,17 +87,16 @@ namespace mu2e {
    void fillVDSP          (GeomHandle<DetectorSystem>const& det, art::Ptr<SimParticle> const& psp, StepPointMCCollection const& vdspc, KalSeedMC& mcseed);
    void fillSPStubs       (SPCC const& spcc, PrimaryParticle const& pp, KalSeedMC& mcseed);
    void fillSDMCI         (KalSeedMC const& mcseed,SHIS& shindices);
-   void fillCaloClusterMC (CaloCluster const& cc, CaloShowerSimCollection const& cssc, PrimaryParticle const& pp, std::unique_ptr<CaloClusterMCCollection>& ccmcc);
    void fillStrawHitCounts(ComboHitCollection const& chc, StrawHitFlagCollection const& shfc, RecoCount& nrec);
    void fillTrk           (art::Event& event, std::set<art::Ptr<CaloCluster> >& ccptrs, PrimaryParticle const& pp, RecoCount& nrec);
    void fillCrv           (art::Event& event, PrimaryParticle const& pp, RecoCount& nrec);
    void fillCalo          (art::Event& event, std::set<art::Ptr<CaloCluster> >& ccptrs,PrimaryParticle const& pp, RecoCount& nrec);
    int _debug;
    bool _saveallenergy, _saveunused, _saveallunused;
-   art::InputTag _pp, _ccc, _crvccc, _sdc, _shfc, _chc, _cdc, _sdmcc, _crvdc, _crvdmcc, _vdspc, _cssc, _ewm, _pbtmc, _pbi;
+   art::InputTag _pp, _ccc, _crvccc, _sdc, _shfc, _chc, _cdc, _sdmcc, _crvdc, _crvdmcc, _vdspc;
    std::vector<std::string> _kff, _mh;
    SimParticleTimeOffset _toff;
-   double _ccmcdt, _csme, _ccme;
+   double _ccme;
    // cache
    double _mbtime; // period of 1 microbunch
 
@@ -129,18 +119,13 @@ namespace mu2e {
     _crvdc(config().CRVDC()),
     _crvdmcc(config().CRVDMCC()),
     _vdspc(config().VDSPC()),
-    _cssc(config().CSSC()),
-    _ewm(config().EWM()),
-    _pbtmc(config().PBTMC()),
-    _pbi(config().PBI()),
     _kff(config().KFFInstances()),
     _mh(config().MHInstances()),
     _toff(config().SPTO()),
-    _ccmcdt(config().CCMCDT()),
-    _csme(config().CSME()),
     _ccme(config().CCME())
   {
     consumes<StrawDigiCollection>(_sdc);
+    consumes<StrawDigiADCWaveformCollection>(_sdc);
     consumes<StrawHitFlagCollection>(_shfc);
     consumes<ComboHitCollection>(_chc);
     consumes<CaloDigiCollection>(_cdc);
@@ -151,28 +136,18 @@ namespace mu2e {
     consumes<PrimaryParticle>(_pp);
     consumes<StrawDigiMCCollection>(_sdmcc);
     consumes<CrvDigiMCCollection>(_crvdmcc);
-    consumes<EventWindowMarker>(_ewm);
-    consumes<ProtonBunchTimeMC>(_pbtmc);
-    consumes<ProtonBunchIntensity>(_pbi);
     produces <IndexMap>("StrawDigiMap"); 
     produces <IndexMap>("CrvDigiMap"); 
-    produces <IndexMap>("CaloDigiMap"); 
     produces <KalSeedMCCollection>(); 
     produces <KalSeedMCAssns>();    
-    produces <CaloClusterMCCollection>(); 
-    produces <CaloClusterMCTruthAssn>();
-    produces <CaloHitCollection>();
-    produces <CaloHitRemapping>();
     produces <CaloDigiCollection>();    
     produces <StrawDigiCollection>();
+    produces <StrawDigiADCWaveformCollection>();
     produces <StrawHitFlagCollection>();
     produces <CrvDigiCollection>();
     produces <CrvRecoPulseCollection>();
     produces <CrvCoincidenceClusterCollection>();
     produces <RecoCount>();
-    produces <EventWindowMarker>();
-    produces <ProtonBunchTimeMC>();
-    produces <ProtonBunchIntensity>();
     
     if (_debug > 0)
     {
@@ -191,12 +166,6 @@ namespace mu2e {
 
     auto pph = event.getValidHandle<PrimaryParticle>(_pp);
     auto const& pp = *pph;
-    auto ewmh = event.getValidHandle<EventWindowMarker>(_ewm);
-    auto const& ewm = *ewmh;
-    auto pbtmch = event.getValidHandle<ProtonBunchTimeMC>(_pbtmc);
-    auto const& pbtmc = *pbtmch;
-    auto pbih = event.getValidHandle<ProtonBunchIntensity>(_pbi);
-    auto const& pbi = *pbih;
 
     std::unique_ptr<RecoCount> nrec(new RecoCount);
     std::set<art::Ptr<CaloCluster> > ccptrs;
@@ -204,9 +173,6 @@ namespace mu2e {
     fillCrv(event, pp, *nrec.get());
     fillCalo(event, ccptrs, pp, *nrec.get());
 
-    event.put(std::move(std::unique_ptr<EventWindowMarker>(new EventWindowMarker(ewm))));
-    event.put(std::move(std::unique_ptr<ProtonBunchTimeMC>(new ProtonBunchTimeMC(pbtmc))));
-    event.put(std::move(std::unique_ptr<ProtonBunchIntensity>(new ProtonBunchIntensity(pbi))));
     event.put(std::move(nrec));
   }
 
@@ -328,51 +294,6 @@ namespace mu2e {
     }
   }
 
-  void SelectRecoMC::fillCaloClusterMC(CaloCluster const& cc, CaloShowerSimCollection const& cssc, 
-  PrimaryParticle const& pp, std::unique_ptr<CaloClusterMCCollection>& ccmcc)
-  {       
-    //  keep track of energy contributions
-    std::vector<CaloEDepMC> edeps;
-    
-    for(auto const& cchptr : cc.caloHitsPtrVector()){
-      for(auto const& css : cssc){
-	if (css.energyDep() < _csme || css.crystalID() != cchptr->crystalID()) continue;
-	  double csstime = css.time();
-	  if(_debug > 2) std::cout << "Matching CaloShowerSim crystal id " << css.crystalID()
-                                   << " MCenergy " << css.energyDep() << " time " << csstime 
-	                           << " calohit time " << cchptr->time() << std::endl;
-	  if(fabs(csstime-cchptr->time()) < _ccmcdt) {
-	    // match: see if an entry for this SimParticle already exists	    
-            bool found(false);
-	    for(auto& edep : edeps) {
-	      if(css.sim() == edep.sim()){
-		// add in the energy; recalculate the time
-                edep.addTime(css.time());
-                edep.addEDep(css.energyDep());
-                edep.addEDepG4(css.energyDepG4());
-                edep.addMom(css.momentumIn());
-		found = true;
-		break;
-	      }
-	    }	    
-            if(!found){
-              MCRelationship mcrel;
-              for (auto const& spp : pp.primarySimParticles()){
-		MCRelationship mcr(spp,css.sim());
-		if (mcr > mcrel) mcrel = mcr;
-	      }
-	      CaloEDepMC edep(css.sim(),css.energyDep(),css.energyDepG4(),css.time(),css.momentumIn(),mcrel);
-	      edeps.push_back(edep);
-	    }
-	  }
-      }
-    }
-    // sort
-    auto esort = [](CaloEDepMC a, CaloEDepMC b) { return a.energyDep() > b.energyDep(); };
-    std::sort(edeps.begin(),edeps.end(),esort);
-//    ccmcc->push_back(CaloClusterMC(edeps));    
-  }
-
   void SelectRecoMC::fillStrawHitCounts(ComboHitCollection const& chc, StrawHitFlagCollection const& shfc, RecoCount& nrec) {
 // test
     if(chc.size() != shfc.size())
@@ -395,6 +316,8 @@ namespace mu2e {
      // Tracker-reated data products
     auto sdch = event.getValidHandle<StrawDigiCollection>(_sdc);
     auto const& sdc = *sdch;
+    auto sdadcch = event.getValidHandle<StrawDigiADCWaveformCollection>(_sdc);
+    auto const& sdadcc = *sdadcch;
     auto shfch = event.getValidHandle<StrawHitFlagCollection>(_shfc);
     auto const& shfc = *shfch;
     auto chch = event.getValidHandle<ComboHitCollection>(_chc);
@@ -411,6 +334,7 @@ namespace mu2e {
     std::unique_ptr<KalSeedMCCollection> ksmcc(new KalSeedMCCollection);
     std::unique_ptr<KalSeedMCAssns> ksmca(new KalSeedMCAssns);
     std::unique_ptr<StrawDigiCollection> ssdc(new StrawDigiCollection);
+    std::unique_ptr<StrawDigiADCWaveformCollection> ssdadcc(new StrawDigiADCWaveformCollection);
     std::unique_ptr<StrawHitFlagCollection> sshfc(new StrawHitFlagCollection);
 // index maps between original collections and pruned collections
     std::unique_ptr<IndexMap> sdmcim(new IndexMap);
@@ -490,10 +414,12 @@ namespace mu2e {
   // fill the StrawIndex map with the complete list of indices.
     StrawHitIndex shcount(0);
     ssdc->reserve(shindices.size());
+    ssdadcc->reserve(shindices.size());
     for(auto shindex : shindices){
       sdmcim->addElement(shindex,shcount++);
 // deep-copy the selected StrawDigis and StrawHitFlags
       ssdc->push_back(sdc[shindex]);
+      ssdadcc->push_back(sdadcc[shindex]);
       sshfc->push_back(shfc[shindex]);
     }
     if(_debug > 1) std::cout << "Selected " << shcount << " StrawDigis" << std::endl;
@@ -502,6 +428,7 @@ namespace mu2e {
     fillStrawHitCounts(chc,shfc,nrec);
     event.put(std::move(sdmcim),"StrawDigiMap");
     event.put(std::move(ssdc));
+    event.put(std::move(ssdadcc));
     event.put(std::move(sshfc));
     event.put(std::move(ksmcc));
     event.put(std::move(ksmca));
@@ -575,55 +502,32 @@ namespace mu2e {
     auto const& cdc = *cdch;
     auto ccch = event.getValidHandle<CaloClusterCollection>(_ccc);
     auto const& ccc = *ccch;
-    auto cssch = event.getValidHandle<CaloShowerSimCollection>(_cssc);
-    auto const& cssc = *cssch;
     
-    auto CaloClusterMCCollectionPID     = event.getProductID<CaloClusterMCCollection>();
-    auto CaloClusterMCCollectionGetter  = event.productGetter(CaloClusterMCCollectionPID);
-    auto CaloHitCollectionPID    = event.getProductID<CaloHitCollection>();
-    auto CaloHitCollectionGetter = event.productGetter(CaloHitCollectionPID);    
-    std::unique_ptr<CaloClusterMCCollection> ccmcc(new CaloClusterMCCollection);
-    std::unique_ptr<CaloClusterMCTruthAssn> ccmca(new CaloClusterMCTruthAssn);
     std::unique_ptr<CaloDigiCollection> scdc(new CaloDigiCollection);
-    std::unique_ptr<CaloHitCollection> scchc(new CaloHitCollection);
-    std::unique_ptr<IndexMap> cdim(new IndexMap);
-    std::unique_ptr<CaloHitRemapping> cchr(new CaloHitRemapping);
-    // loop over all the CaloClusters and save the ones that are above energy.  We do this with Ptrs (ugh)
+    // reco count
+    nrec._ncalodigi = cdc.size();
+    nrec._ncc = ccc.size();
+    nrec._cce = 0.0;
+    // loop over all the CaloClusters and mark the ones that are above energy for saving by adding their Ptrs to the list
     for(unsigned icc=0;icc < ccc.size(); icc++){
       auto const& cc = ccc[icc];
+      nrec._cce += cc.energyDep();
       if(cc.energyDep() > _ccme){
 	auto ccp = art::Ptr<CaloCluster>(ccch,icc);
 	ccptrs.insert(ccp);
       }
     }
-    // fill CaloClusterMCs
-    for(auto const& ccptr : ccptrs) {      
-      fillCaloClusterMC(*ccptr,cssc,pp,ccmcc);
-      // save and create the assn
-      auto ccmcp = art::Ptr<CaloClusterMC>(CaloClusterMCCollectionPID,ccmcc->size()-1,CaloClusterMCCollectionGetter);
-      ccmca->addSingle(ccptr,ccmcp);
-      // deep-copy CaloDigis used in clusters
+    // deep-copy CaloDigis from selected clusters
+    for(auto const& ccptr : ccptrs) {
       for(auto const& cchptr : ccptr->caloHitsPtrVector()){
-      // deep-copy the CaloHits
-	scchc->push_back(*cchptr);
-	// create a Ptr for this, and fill the Ptr map
-	auto scchptr = art::Ptr<CaloHit>(CaloHitCollectionPID,scchc->size()-1,CaloHitCollectionGetter);
-	(*cchr)[cchptr] = scchptr;
 	for (auto const& rcdptr : cchptr->recoCaloDigis()){
           // deep-copy CaloDigis used in clusters
 	  scdc->push_back(*rcdptr->caloDigiPtr());
 	}
       }
     }
-    // reco count
-    nrec._ncalodigi = cdc.size();
     // put new data into event
-    event.put(std::move(ccmcc));
-    event.put(std::move(ccmca));
     event.put(std::move(scdc));
-    event.put(std::move(scchc));
-    event.put(std::move(cdim),"CaloDigiMap");
-    event.put(std::move(cchr));
   }
 
 }

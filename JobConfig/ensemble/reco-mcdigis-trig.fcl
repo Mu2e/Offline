@@ -7,7 +7,6 @@
 #include "fcl/standardServices.fcl"
 #include "JobConfig/reco/prolog.fcl"
 ##include "JobConfig/ensemble/prolog_reco.fcl"
-#include "Trigger/fcl/templates.fcl"
 #
 process_name : recomcdigistrig
 
@@ -19,7 +18,6 @@ physics :
 {
   producers : {
     @table::Reconstruction.producers
-    @table::Trigger.producers
   }
   filters :  {
     @table::CalPatRec.filters
@@ -37,11 +35,9 @@ physics :
                          95.0, 85.0,
                          95.0, 85.0 ]
     }
-    @table::Trigger.filters
   }
   analyzers: {
     @table::Reconstruction.analyzers
-    @table::Trigger.analyzers
   }
   RecoPath : [ @sequence::Reconstruction.RecoMCPath ]
   EndPath : [ Output, RecoCheck  ]
@@ -55,8 +51,6 @@ outputs : {
 ##include "JobConfig/ensemble/epilog_reco.fcl"
 #include "JobConfig/reco/epilog.fcl"
 # trigger epilog
-##include "gen/fcl/Trigger/offline/allTrig/allPaths.fcl"
-#include "TriggerEpilogs/allPaths.fcl"
 outputs.Output.SelectEvents : [ "RecoPath" ]
 #
 # the following need to be overwritten for the specific channel

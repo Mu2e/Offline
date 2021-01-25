@@ -18,36 +18,19 @@ CommonMC: {
       ignoredGenIds : [@sequence::nonProtonGenIds ]
     }
     muonTimeMap:   { module_type : GenerateMuonLife
-            applyToGenIds : [@sequence::muLifeGenIds]
+      applyToGenIds : [@sequence::muLifeGenIds]
     }
     cosmicTimeMap:
     {
         module_type : GenerateCosmicTimes
-        hitsInputTag: "detectorFilter:tracker"
-        tmin : 450
-        tmax : 1705
+	StrawGasSteps : [  ] 
+	CaloShowerSteps : [ ]
+	CrvSteps : [ ]
     }
-# time maps for primaries in inline mixing jobs
-# These are historical and should be purged TODO!
-    protonTimeMapPrimary: {
-      module_type : GenerateProtonTimes
-# Exclude particles not generated from primary protons
-      ignoredGenIds : [@sequence::nonProtonGenIds ]
-    }
-    muonTimeMapPrimary:   { module_type : GenerateMuonLife }
-    cosmicTimeMapPrimary:
-    {
-        module_type : GenerateCosmicTimes
-        hitsInputTag: "detectorFilter:tracker"
-        tmin : 450
-        tmax : 1705
-    }
-
 # Event window marker
     EWMProducer : { module_type : EventWindowMarkerProducer }
   }
   TimeMaps : [ protonTimeMap, muonTimeMap, cosmicTimeMap ]
-  TimeMapsPrimary : [ protonTimeMapPrimary, muonTimeMapPrimary, cosmicTimeMapPrimary ]
   FindMCPrimary : {
     module_type : FindMCPrimary
     debugLevel : 0
@@ -62,8 +45,7 @@ CommonMC: {
     debugLevel : 0
   }
 }
-CommonMC.DigiSim : [ @sequence::CommonMC.TimeMaps, EWMProducer ]
-CommonMC.PrimaryDigiSim : [ @sequence::CommonMC.TimeMapsPrimary, EWMProducer ]
+CommonMC.DigiSim : [ EWMProducer,  @sequence::CommonMC.TimeMaps ]
 
 #------------------------------------------------------------------------------
 

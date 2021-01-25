@@ -1,6 +1,7 @@
 // Attach random, flat distributed time offsets to SimParticles
 // made by the Cosmic generator, and 0 offsets to
-// particles from other origins.
+// particles from other origins.  If detector steps are provided,
+// use the earliest to set the minimum time
 //
 // Yuri Oksuzian, 2019
 
@@ -19,79 +20,120 @@
 #include "art/Framework/Principal/Handle.h"
 #include "canvas/Utilities/InputTag.h"
 
+#include "DataProducts/inc/EventWindowMarker.hh"
+#include "MCDataProducts/inc/StrawGasStep.hh"
+#include "MCDataProducts/inc/CaloShowerStep.hh"
+#include "MCDataProducts/inc/CrvStep.hh"
 #include "MCDataProducts/inc/SimParticle.hh"
-#include "MCDataProducts/inc/SimParticleCollection.hh"
-#include "MCDataProducts/inc/StepPointMCCollection.hh"
 #include "MCDataProducts/inc/SimParticleTimeMap.hh"
 #include "MCDataProducts/inc/GenId.hh"
 #include "SeedService/inc/SeedService.hh"
 #include "Mu2eUtilities/inc/SimParticleCollectionPrinter.hh"
 #include "GlobalConstantsService/inc/GlobalConstantsHandle.hh"
-#include "GlobalConstantsService/inc/PhysicsParams.hh"
+#include "ProditionsService/inc/ProditionsHandle.hh"
+#include "TrackerConditions/inc/StrawElectronics.hh"
 
 namespace mu2e {
 
   class GenerateCosmicTimes : public art::EDProducer {
 
   public:
+    struct Config {
+      using Name=fhicl::Name;
+      using Comment=fhicl::Comment;
 
-    explicit GenerateCosmicTimes(const fhicl::ParameterSet& pset);
+      fhicl::Atom<int> verbosityLevel{ Name("verbosityLevel"), Comment("Verbosity Level"),0 };
+      fhicl::Atom<double> tBuff{ Name("TimeBuffer"), Comment("Time Offset buffer, to account for propagation and digitization delays (ns)"),150.0 };
+      fhicl::Sequence<art::InputTag> trkSteps { Name("StrawGasSteps"), Comment("StrawGasStep collections") };
+      fhicl::Sequence<art::InputTag> caloSteps { Name("CaloShowerSteps"), Comment("CaloShowerStep collections") };
+      fhicl::Sequence<art::InputTag> crvSteps { Name("CrvSteps"), Comment("CrvStep collections") };
+      fhicl::Sequence<art::InputTag> inMaps { Name("InputTimeMaps"), Comment("Input time maps to append to"), std::vector<art::InputTag>{} };
+      fhicl::Atom<art::InputTag> ewMarkerTag{ Name("EventWindowMarker"), Comment("EventWindowMarker producer"),"EWMProducer" };
+    };
+
+    using Parameters = art::EDProducer::Table<Config>;
+
+    explicit GenerateCosmicTimes(const Parameters& conf);
 
     virtual void produce(art::Event& e) override;
 
   private:
     CLHEP::RandFlat _randflat;
-    int verbosityLevel_, offsetToTracker_;
-    double tmin_, tmax_;
-    art::InputTag hitsInputTag_;
+    int verbosityLevel_;
+    double tbuff_; // time buffer to use when defining the event window
+    std::vector<art::InputTag> trkStepCols_, caloStepCols_, crvStepCols_;
+    art::InputTag ewMarkerTag_; 
     std::vector<art::ProductToken<SimParticleTimeMap> > inmaps_; // optional input maps
+    ProditionsHandle<StrawElectronics> strawele_h_;
   };
 
   //================================================================
-  GenerateCosmicTimes::GenerateCosmicTimes(const fhicl::ParameterSet& pset)
-    : art::EDProducer{pset}
-    , _randflat(createEngine( art::ServiceHandle<SeedService>()->getSeed() ))
-    , verbosityLevel_(pset.get<int>("verbosityLevel", 0))
-    , offsetToTracker_(pset.get<bool>("offsetToTracker", true))
-    , tmin_(pset.get<double>("tmin"))
-    , tmax_(pset.get<double>("tmax"))
-    , hitsInputTag_(pset.get<std::string>("hitsInputTag"))
+  GenerateCosmicTimes::GenerateCosmicTimes(const Parameters& conf) : art::EDProducer{conf}
+  , _randflat(createEngine( art::ServiceHandle<SeedService>()->getSeed() ))
+    , verbosityLevel_(conf().verbosityLevel())
+    , tbuff_(conf().tBuff())
+    , ewMarkerTag_(conf().ewMarkerTag())
   {
-    std::vector<art::InputTag> inmaps = pset.get<std::vector<art::InputTag> >("InputTimeMaps",std::vector<art::InputTag>());
-    for(auto const& tag : inmaps ){
-      inmaps_.push_back(consumes<SimParticleTimeMap>(tag));
-    }
+    for(const auto& trktag : conf().trkSteps()) { trkStepCols_.emplace_back(trktag); consumes<StrawGasStepCollection>(trktag); }
+    for(const auto& calotag : conf().caloSteps()) { caloStepCols_.emplace_back(calotag); consumes<CaloShowerStepCollection>(calotag); }
+    for(const auto& crvtag : conf().crvSteps()) { crvStepCols_.emplace_back(crvtag);  consumes<CrvStepCollection>(crvtag); }
+
+    for(auto const& tag : conf().inMaps() ){ inmaps_.push_back(consumes<SimParticleTimeMap>(tag)); consumes<SimParticleTimeMap>(tag); }
     consumesMany<SimParticleCollection>();
+    consumes<EventWindowMarker>(ewMarkerTag_);
     produces<SimParticleTimeMap>();
-    if(verbosityLevel_ > 0) {
-      std::cout<<"GenerateCosmicTimes initialized with range = ["<< tmin_ << ";"<< tmax_ << "]"<< std::endl;
-    }
+
   }
 
   //================================================================
   void GenerateCosmicTimes::produce(art::Event& event) {
+  // create output
     std::unique_ptr<SimParticleTimeMap> res(new SimParticleTimeMap);
     // copy over input maps (if any)
     for(auto const& token : inmaps_) {
       auto inmap = event.getValidHandle(token);
       res->insert(inmap->begin(),inmap->end());
     }
+    // find EventWindowMarker: this defines the event length
+    art::Handle<EventWindowMarker> ewMarkerHandle;
+    event.getByLabel(ewMarkerTag_, ewMarkerHandle);
+    const EventWindowMarker& ewMarker(*ewMarkerHandle);
 
-    std::vector<art::Handle<SimParticleCollection> > colls;
-    event.getManyByType(colls);
+// find the earliest step.
+    double tearly(0.0);
+    for(const auto& trkcoltag : trkStepCols_) {
+      auto sgscolH = event.getValidHandle<StrawGasStepCollection>(trkcoltag);
+      for(const auto& sgs : *sgscolH ) {
+	tearly = std::min(tearly,sgs.time());
+      }
+    }
+ 
+    for(const auto& calocoltag : caloStepCols_) {
+      auto csscolH = event.getValidHandle<CaloShowerStepCollection>(calocoltag);
+      for(const auto& css : *csscolH ) {
+	tearly = std::min(tearly,css.time());
+      }
+    }
 
-    art::Handle<std::vector<mu2e::StepPointMC>> spHndl;
-    bool gotIt = event.getByLabel(hitsInputTag_, spHndl);
-    
-    double firstTrackerHit = 0;
-    if(gotIt && offsetToTracker_ && spHndl->size() > 0){
-      firstTrackerHit = FLT_MAX;
-      std::vector<mu2e::StepPointMC> stepPoints = *spHndl;
-      for (auto const& spmc : stepPoints) 
-	if(spmc.time() < firstTrackerHit) firstTrackerHit = spmc.time();
+    for(const auto& crvcoltag : crvStepCols_) {
+      auto crvscolH = event.getValidHandle<CrvStepCollection>(crvcoltag);
+      for(const auto& crvs : *crvscolH ) {
+	tearly = std::min(tearly,crvs.startTime());	
+      }
+    }
+
+  // define the time offset to moves the earliest time into the flash window: this improves the generation efficiency
+    StrawElectronics const& strawele = strawele_h_.get(event.id());
+    double tmin = strawele.flashEnd() - tearly - tbuff_;
+    double tmax = tmin + ewMarker.eventLength();
+    if(verbosityLevel_ > 1) {
+      std::cout << "DetectorStep early time = " << tearly << std::endl;
+      std::cout<<"GenerateCosmicTimes time range = ["<< tmin << ","<< tmax << "]"<< std::endl;
     }
 
     // Generate and record offsets for all primaries
+    std::vector<art::Handle<SimParticleCollection> > colls;
+    event.getManyByType(colls);
     for(const auto& ih : colls) {
       for(const auto& iter : *ih) {
         if(iter.second.isPrimary()) {
@@ -103,9 +145,9 @@ namespace mu2e {
 	       part->genParticle()->generatorId() == GenId::cosmic      ||
                part->genParticle()->generatorId() == GenId::cosmicCORSIKA)
 	      {
-		(*res)[part] = _randflat.fire(tmin_ - firstTrackerHit, tmax_ - firstTrackerHit);
-		if(verbosityLevel_ > 0)
-		  std::cout << tmin_ << " " << tmax_ << " " << firstTrackerHit << std::endl;
+		(*res)[part] = _randflat.fire(tmin, tmax);
+		if(verbosityLevel_ > 1)
+		  std::cout << "Cosmic particle " << part->genParticle()->generatorId() << " given time " << (*res)[part] << std::endl;
 	      }
 	    else
 	      {
