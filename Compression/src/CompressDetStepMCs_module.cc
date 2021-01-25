@@ -12,10 +12,12 @@
 // - MCTrajectories : noCompression, simParticleCompression
 // - PrimaryParticle : noCompression
 //
-// There is also the concept of "genealogy" compression, the options are:
-// - noCompression : self-explanatory
-// - fullCompression : remove all SimParticles between the ones we are keeping and the very first SimParticle
-// in all cases the very first SimParticle is kept
+// There is also the concept of "genealogy" compression, which uses the fhicl parameter
+// keepNGenerations and takes an integer corresponding to the
+// number of generations back you want to keep. All missing generations are
+// replaced with a new SimParticle to identify that a truncation has occured
+// - Note 1: N = -1 means keep all generations (i.e. no compression)
+// - Note 2: the very first SimParticle (i.e. the one that has a valid Ptr to a GenParticle) is always kept
 //
 // Dec 2020, Andy Edmonds
 //
@@ -42,6 +44,7 @@
 #include "Compression/inc/CompressionLevel.hh"
 #include "MCDataProducts/inc/MCTrajectoryCollection.hh"
 #include "MCDataProducts/inc/PrimaryParticle.hh"
+#include "MCDataProducts/inc/MCRelationship.hh"
 
 namespace mu2e {
   class CompressDetStepMCs;
@@ -96,7 +99,7 @@ public:
     fhicl::Atom<std::string> crvStepCompressionLevel{Name("crvStepCompressionLevel"), Comment("Compression level for CrvSteps")};
     fhicl::Atom<std::string> simParticleCompressionLevel{Name("simParticleCompressionLevel"), Comment("Compression level for SimParticles")};
     fhicl::Atom<std::string> stepPointMCCompressionLevel{Name("stepPointMCCompressionLevel"), Comment("Compression level for StepPointMCs")};
-    fhicl::Atom<std::string> genealogyCompressionLevel{Name("genealogyCompressionLevel"), Comment("Compression level for the genealogy")};
+    fhicl::Atom<int> keepNGenerations{Name("keepNGenerations"), Comment("Number of generations to keep in the genealogy")};
     fhicl::Atom<int> truncatedSimParticleKeyOffset{Name("truncatedSimParticleKeyOffset"), Comment("Offset to use when adding a truncated SimParticle to the SimParticleCollection")};
     fhicl::Atom<art::InputTag> mcTrajectoryTag{Name("mcTrajectoryTag"), Comment("InputTag for the SimParticleCollection")};
     fhicl::Atom<std::string> mcTrajectoryCompressionLevel{Name("mcTrajectoryCompressionLevel"), Comment("Compression level for MCTrajectories")};
@@ -144,7 +147,7 @@ private:
   mu2e::CompressionLevel _crvStepCompressionLevel;
   mu2e::CompressionLevel _simParticleCompressionLevel;
   mu2e::CompressionLevel _stepPointMCCompressionLevel;
-  mu2e::CompressionLevel _genealogyCompressionLevel;
+  int _keepNGenerations;
   mu2e::CompressionLevel _mcTrajectoryCompressionLevel;
   mu2e::CompressionLevel _primaryParticleCompressionLevel;
 
@@ -180,7 +183,7 @@ mu2e::CompressDetStepMCs::CompressDetStepMCs(const Parameters& conf)
     _crvStepCompressionLevel(mu2e::CompressionLevel::findByName(_conf.crvStepCompressionLevel())),
     _simParticleCompressionLevel(mu2e::CompressionLevel::findByName(_conf.simParticleCompressionLevel())),
   _stepPointMCCompressionLevel(mu2e::CompressionLevel::findByName(_conf.stepPointMCCompressionLevel())),
-  _genealogyCompressionLevel(mu2e::CompressionLevel::findByName(_conf.genealogyCompressionLevel())),
+  _keepNGenerations(_conf.keepNGenerations()),
   _mcTrajectoryCompressionLevel(mu2e::CompressionLevel::findByName(_conf.mcTrajectoryCompressionLevel())),
   _primaryParticleCompressionLevel(mu2e::CompressionLevel::findByName(_conf.primaryParticleCompressionLevel()))
 {
@@ -415,7 +418,7 @@ void mu2e::CompressDetStepMCs::compressSimParticles(const art::Event& event) {
 
   // If we asked for the genealogy to be compressed, we will now end up with some missing links
   // add them back as truncated SimParticles
-  if (_genealogyCompressionLevel != mu2e::CompressionLevel::kNoCompression) {
+  if (_keepNGenerations >= 0) {
     // Go through the particles we are keeping and see if any parents are not there
     for (const auto& i_keptSimPart : _simParticlesToKeep[i_product_id]) {
 
@@ -615,23 +618,22 @@ void mu2e::CompressDetStepMCs::recordSimParticle(const art::Ptr<mu2e::SimParticl
     std::cout << "Recording SimParticle " << sim_ptr << std::endl;
   }
   while (parentPtr) {
-    if (_genealogyCompressionLevel == mu2e::CompressionLevel::kNoCompression) {
+    MCRelationship mcr(sim_ptr, parentPtr);
+    if (_keepNGenerations == -1 || ( (mcr.removal() <= _keepNGenerations) && mcr.removal()>=0) ) {
       _simParticlesToKeep[sim_ptr.id()].insert(parentPtr);
       if(_conf.debugLevel()>0) {
-        std::cout << "and recording it's parent " << parentPtr << std::endl;
+        std::cout << "and recording its ancestor " << parentPtr << " (NGen = " << (int)mcr.removal() << ")" << std::endl;
       }
     }
-    else if (_genealogyCompressionLevel == mu2e::CompressionLevel::kFullCompression) {
-      if (parentPtr->isPrimary()) {
-        _simParticlesToKeep[sim_ptr.id()].insert(parentPtr);
-        if(_conf.debugLevel()>0) {
-          std::cout << "and recording it's parent " << parentPtr << std::endl;
-        }
+    else if (parentPtr->isPrimary()) { // always keep the very first SimParticle
+      _simParticlesToKeep[sim_ptr.id()].insert(parentPtr);
+      if(_conf.debugLevel()>0) {
+        std::cout << "and recording the very first SimParticle " << parentPtr << std::endl;
       }
-      else {
-        if(_conf.debugLevel()>0) {
-          std::cout << "and *not* recording it's parent " << parentPtr << std::endl;
-        }
+    }
+    else {
+      if(_conf.debugLevel()>0) {
+        std::cout << "and *not* recording its ancestor " << parentPtr << " (NGen = " << (int)mcr.removal() << ")" << std::endl;
       }
     }
     childPtr = parentPtr;
@@ -660,11 +662,6 @@ void mu2e::CompressDetStepMCs::checkCompressionLevels() {
   if (_stepPointMCCompressionLevel != mu2e::CompressionLevel::kNoCompression &&
       _stepPointMCCompressionLevel != mu2e::CompressionLevel::kSimParticleCompression) {
     throw cet::exception("CompressDetStepMCs") << "This module does not allow StepPointMCs to be compressed with compression level \"" << _stepPointMCCompressionLevel.name() <<"\"" << std::endl;
-  }
-
-  if (_genealogyCompressionLevel != mu2e::CompressionLevel::kNoCompression &&
-      _genealogyCompressionLevel != mu2e::CompressionLevel::kFullCompression) {
-    throw cet::exception("CompressDetStepMCs") << "This module does not allow the genealogy to be compressed with compression level \"" << _genealogyCompressionLevel.name() <<"\"" << std::endl;
   }
 
   if (_mcTrajectoryCompressionLevel != mu2e::CompressionLevel::kNoCompression &&
