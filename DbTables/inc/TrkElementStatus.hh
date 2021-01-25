@@ -51,7 +51,7 @@ namespace mu2e {
       StrawStatus status(columns[1]);
       // verify the status is allowed
       if(!_statusmask.hasAllProperties(status))
-	throw cet::exception(name()) << ": Illegal status specified " << status << std::endl;
+	throw cet::exception(name()) << "Illegal status specified " << status << std::endl;
       _rows.emplace_back(TrkElementStatusRow(sid,status));
     }
     // printout, used to fill db content (?)
