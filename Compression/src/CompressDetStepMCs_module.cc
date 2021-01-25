@@ -1,12 +1,12 @@
 //
-// Compression module that takes detector steps (StrawGasSteps, CaloShowerSteps, and CrvBarSteps)
+// Compression module that takes detector steps (StrawGasSteps, CaloShowerSteps, and CrvSteps)
 // and compresses out unwanted MC information (StepPointMCs, SimParticles and GenParticles).
 // Note that the number of detector steps is NOT reduced.
 //
 // Allowed compression levels for different data products:
 // - StrawGasSteps : noCompression
 // - CaloShowerSteps : noCompression
-// - CrvBarSteps : noCompression
+// - CrvSteps : noCompression
 // - SimParticles : noCompression, fullCompression
 // - StepPointMCs : noCompression, simParticleCompression
 // - MCTrajectories : noCompression, simParticleCompression
@@ -33,6 +33,7 @@
 
 #include "MCDataProducts/inc/StrawGasStep.hh"
 #include "MCDataProducts/inc/CaloShowerStep.hh"
+#include "MCDataProducts/inc/CrvStep.hh"
 #include "MCDataProducts/inc/StepPointMCCollection.hh"
 #include "MCDataProducts/inc/SimParticleCollection.hh"
 #include "Mu2eUtilities/inc/compressSimParticleCollection.hh"
@@ -71,8 +72,6 @@ namespace mu2e {
 
   };
 
-  typedef mu2e::StepPointMC CrvBarStep; // this will become a CrvBarStep class
-  typedef mu2e::StepPointMCCollection CrvBarStepCollection;
   typedef std::string InstanceLabel;
 }
 
@@ -86,13 +85,13 @@ public:
     // fhicl parameters for all of our inputs
     fhicl::Atom<art::InputTag> strawGasStepTag{Name("strawGasStepTag"), Comment("InputTag for the StrawGasSteps")};
     fhicl::Atom<art::InputTag> caloShowerStepTag{Name("caloShowerStepTag"), Comment("InputTag for CaloShowerSteps")};
-    fhicl::Atom<art::InputTag> crvBarStepTag{Name("crvBarStepTag"), Comment("InputTag for CrvBarSteps")};
+    fhicl::Atom<art::InputTag> crvStepTag{Name("crvStepTag"), Comment("InputTag for CrvSteps")};
     fhicl::Sequence<art::InputTag> stepPointMCTags{Name("stepPointMCTags"), Comment("Sequence of InputTags for StepPointMCCollections (e.g. virtualdetector)")};
     fhicl::Atom<art::InputTag> simParticleTag{Name("simParticleTag"), Comment("InputTag for the SimParticleCollection")};
     fhicl::Atom<int> debugLevel{Name("debugLevel"), Comment("Debug level (0 = no debug output)")};
     fhicl::Atom<std::string> strawGasStepCompressionLevel{Name("strawGasStepCompressionLevel"), Comment("Compression level for StrawGasSteps")};
     fhicl::Atom<std::string> caloShowerStepCompressionLevel{Name("caloShowerStepCompressionLevel"), Comment("Compression level for CaloShowerSteps")};
-    fhicl::Atom<std::string> crvBarStepCompressionLevel{Name("crvBarStepCompressionLevel"), Comment("Compression level for CrvBarSteps")};
+    fhicl::Atom<std::string> crvStepCompressionLevel{Name("crvStepCompressionLevel"), Comment("Compression level for CrvSteps")};
     fhicl::Atom<std::string> simParticleCompressionLevel{Name("simParticleCompressionLevel"), Comment("Compression level for SimParticles")};
     fhicl::Atom<std::string> stepPointMCCompressionLevel{Name("stepPointMCCompressionLevel"), Comment("Compression level for StepPointMCs")};
     fhicl::Atom<std::string> genealogyCompressionLevel{Name("genealogyCompressionLevel"), Comment("Compression level for the genealogy")};
@@ -120,8 +119,8 @@ public:
   void updateStrawGasSteps();
   void compressCaloShowerSteps(const art::Event& event);
   void updateCaloShowerSteps();
-  void compressCrvBarSteps(const art::Event& event);
-  void updateCrvBarSteps();
+  void compressCrvSteps(const art::Event& event);
+  void updateCrvSteps();
   void compressStepPointMCs(const art::Event& event);
   void updateStepPointMCs();
   void compressSimParticles(const art::Event& event);
@@ -136,7 +135,7 @@ private:
   Config _conf;
   mu2e::CompressionLevel _strawGasStepCompressionLevel;
   mu2e::CompressionLevel _caloShowerStepCompressionLevel;
-  mu2e::CompressionLevel _crvBarStepCompressionLevel;
+  mu2e::CompressionLevel _crvStepCompressionLevel;
   mu2e::CompressionLevel _simParticleCompressionLevel;
   mu2e::CompressionLevel _stepPointMCCompressionLevel;
   mu2e::CompressionLevel _genealogyCompressionLevel;
@@ -145,7 +144,7 @@ private:
   // unique_ptrs to the new output collections
   std::unique_ptr<mu2e::StrawGasStepCollection> _newStrawGasSteps;
   std::unique_ptr<CaloShowerStepCollection> _newCaloShowerSteps;
-  std::unique_ptr<CrvBarStepCollection> _newCrvBarSteps;
+  std::unique_ptr<CrvStepCollection> _newCrvSteps;
   std::map<InstanceLabel, std::unique_ptr<StepPointMCCollection> > _newStepPointMCs;
   std::unique_ptr<MCTrajectoryCollection> _newMCTrajectories;
 
@@ -170,7 +169,7 @@ mu2e::CompressDetStepMCs::CompressDetStepMCs(const Parameters& conf)
     _conf(conf()),
     _strawGasStepCompressionLevel(mu2e::CompressionLevel::findByName(_conf.strawGasStepCompressionLevel())),
     _caloShowerStepCompressionLevel(mu2e::CompressionLevel::findByName(_conf.caloShowerStepCompressionLevel())),
-    _crvBarStepCompressionLevel(mu2e::CompressionLevel::findByName(_conf.crvBarStepCompressionLevel())),
+    _crvStepCompressionLevel(mu2e::CompressionLevel::findByName(_conf.crvStepCompressionLevel())),
     _simParticleCompressionLevel(mu2e::CompressionLevel::findByName(_conf.simParticleCompressionLevel())),
   _stepPointMCCompressionLevel(mu2e::CompressionLevel::findByName(_conf.stepPointMCCompressionLevel())),
   _genealogyCompressionLevel(mu2e::CompressionLevel::findByName(_conf.genealogyCompressionLevel())),
@@ -185,7 +184,7 @@ mu2e::CompressDetStepMCs::CompressDetStepMCs(const Parameters& conf)
 
   produces<StrawGasStepCollection>();
   produces<CaloShowerStepCollection>();
-  produces<CrvBarStepCollection>("CRV"); // need to give an instance name because this is currently a StepPointMC
+  produces<CrvStepCollection>();
 
   for (const auto& i_tag : _conf.stepPointMCTags()) {
     produces<StepPointMCCollection>( i_tag.instance() );
@@ -197,7 +196,7 @@ void mu2e::CompressDetStepMCs::produce(art::Event & event)
 {
   _newStrawGasSteps = std::unique_ptr<StrawGasStepCollection>(new StrawGasStepCollection);
   _newCaloShowerSteps = std::unique_ptr<CaloShowerStepCollection>(new CaloShowerStepCollection);
-  _newCrvBarSteps = std::unique_ptr<CrvBarStepCollection>(new CrvBarStepCollection);
+  _newCrvSteps = std::unique_ptr<CrvStepCollection>(new CrvStepCollection);
 
   for (const auto& i_tag : _conf.stepPointMCTags()) {
     _newStepPointMCs[i_tag.instance()] = std::unique_ptr<StepPointMCCollection>(new StepPointMCCollection);
@@ -219,7 +218,7 @@ void mu2e::CompressDetStepMCs::produce(art::Event & event)
   // Compress detector steps and record which SimParticles we want to keep
   compressStrawGasSteps(event);
   compressCaloShowerSteps(event);
-  compressCrvBarSteps(event);
+  compressCrvSteps(event);
   if (_stepPointMCCompressionLevel == mu2e::CompressionLevel::kNoCompression) {
     // if we are not compressing StepPointMCs, then
     // we want to make sure we record all their SimParticles
@@ -251,14 +250,14 @@ void mu2e::CompressDetStepMCs::produce(art::Event & event)
   // Update all the data products so that their SimParticlePtrs point to the new collection
   updateStrawGasSteps();
   updateCaloShowerSteps();
-  updateCrvBarSteps();
+  updateCrvSteps();
   updateStepPointMCs();
   updateMCTrajectories();
 
   // Now add everything to the event
   event.put(std::move(_newStrawGasSteps));
   event.put(std::move(_newCaloShowerSteps));
-  event.put(std::move(_newCrvBarSteps), "CRV");
+  event.put(std::move(_newCrvSteps));
   for (const auto& i_tag : _conf.stepPointMCTags()) {
     event.put(std::move(_newStepPointMCs.at(i_tag.instance())), i_tag.instance());
   }
@@ -309,23 +308,23 @@ void mu2e::CompressDetStepMCs::compressCaloShowerSteps(const art::Event& event) 
   }
 }
 
-void mu2e::CompressDetStepMCs::compressCrvBarSteps(const art::Event& event) {
-  art::Handle<mu2e::CrvBarStepCollection> crvBarStepsHandle;
-  event.getByLabel(_conf.crvBarStepTag(), crvBarStepsHandle);
-  const auto& crvBarSteps = *crvBarStepsHandle;
-  if(_conf.debugLevel()>0 && crvBarSteps.size()>0) {
-    std::cout << "Compressing CrvBarSteps from " << _conf.crvBarStepTag() << std::endl;
+void mu2e::CompressDetStepMCs::compressCrvSteps(const art::Event& event) {
+  art::Handle<mu2e::CrvStepCollection> crvStepsHandle;
+  event.getByLabel(_conf.crvStepTag(), crvStepsHandle);
+  const auto& crvSteps = *crvStepsHandle;
+  if(_conf.debugLevel()>0 && crvSteps.size()>0) {
+    std::cout << "Compressing CrvSteps from " << _conf.crvStepTag() << std::endl;
   }
-  for (const auto& i_crvBarStep : crvBarSteps) {
+  for (const auto& i_crvStep : crvSteps) {
     if (_simParticleCompressionLevel == mu2e::CompressionLevel::kFullCompression) {
-      recordSimParticle(i_crvBarStep.simParticle());
+      recordSimParticle(i_crvStep.simParticle());
     }
-    CrvBarStep newCrvBarStep(i_crvBarStep);
-    _newCrvBarSteps->push_back(newCrvBarStep);
+    CrvStep newCrvStep(i_crvStep);
+    _newCrvSteps->push_back(newCrvStep);
   }
-  if(_crvBarStepCompressionLevel == mu2e::CompressionLevel::kNoCompression) {
-    if (_newCrvBarSteps->size() != crvBarSteps.size()) {
-      throw cet::exception("CompressDetStepMCs") << "Number of CrvBarSteps in output collection (" << _newCrvBarSteps->size() << ") does not match the number of CrvBarSteps in the input collection (" << crvBarSteps.size() << ") even though no compression has been requested (crvBarStepCompressionLevel = \"" << _crvBarStepCompressionLevel.name() << "\")" << std::endl;
+  if(_crvStepCompressionLevel == mu2e::CompressionLevel::kNoCompression) {
+    if (_newCrvSteps->size() != crvSteps.size()) {
+      throw cet::exception("CompressDetStepMCs") << "Number of CrvSteps in output collection (" << _newCrvSteps->size() << ") does not match the number of CrvSteps in the input collection (" << crvSteps.size() << ") even though no compression has been requested (crvStepCompressionLevel = \"" << _crvStepCompressionLevel.name() << "\")" << std::endl;
     }
   }
 }
@@ -354,15 +353,15 @@ void mu2e::CompressDetStepMCs::updateCaloShowerSteps() {
   }
 }
 
-void mu2e::CompressDetStepMCs::updateCrvBarSteps() {
-  for (auto& i_crvBarStep : *_newCrvBarSteps) {
-    const auto& oldSimPtr = i_crvBarStep.simParticle();
+void mu2e::CompressDetStepMCs::updateCrvSteps() {
+  for (auto& i_crvStep : *_newCrvSteps) {
+    const auto& oldSimPtr = i_crvStep.simParticle();
     art::Ptr<mu2e::SimParticle> newSimPtr = _simPtrRemap.at(oldSimPtr);
     if(_conf.debugLevel()>0) {
-      std::cout << "Updating SimParticlePtr in CrvBarStep from " << oldSimPtr << " to " << newSimPtr << std::endl;
+      std::cout << "Updating SimParticlePtr in CrvStep from " << oldSimPtr << " to " << newSimPtr << std::endl;
     }
 
-    i_crvBarStep.simParticle() = newSimPtr;
+    i_crvStep.simParticle() = newSimPtr;
   }
 }
 
@@ -614,8 +613,8 @@ void mu2e::CompressDetStepMCs::checkCompressionLevels() {
     throw cet::exception("CompressDetStepMCs") << "This module does not allow CaloShowerSteps to be compressed with compression level \"" << _caloShowerStepCompressionLevel.name() <<"\"" << std::endl;
   }
 
-  if (_crvBarStepCompressionLevel != mu2e::CompressionLevel::kNoCompression) {
-    throw cet::exception("CompressDetStepMCs") << "This module does not allow CrvBarSteps to be compressed with compression level \"" << _crvBarStepCompressionLevel.name() <<"\"" << std::endl;
+  if (_crvStepCompressionLevel != mu2e::CompressionLevel::kNoCompression) {
+    throw cet::exception("CompressDetStepMCs") << "This module does not allow CrvSteps to be compressed with compression level \"" << _crvStepCompressionLevel.name() <<"\"" << std::endl;
   }
 
   if (_simParticleCompressionLevel != mu2e::CompressionLevel::kNoCompression &&

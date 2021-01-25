@@ -5,14 +5,14 @@ Compression : {
     module_type : CompressDetStepMCs
     strawGasStepTag : "StrawGasStepMaker"
     caloShowerStepTag : "CaloShowerStepMaker"
-    crvBarStepTag : "g4run:CRV" # currently a StepPointMC
+    crvStepTag : "CrvSteps" # currently a StepPointMC
     simParticleTag : "g4run"
     stepPointMCTags : [ "g4run:virtualdetector", "g4run:protonabsorber" ]#, "g4run:stoppingtarget" ]
     mcTrajectoryTag : "g4run"
 
     strawGasStepCompressionLevel : "noCompression" # keep all StrawGasSteps
     caloShowerStepCompressionLevel : "noCompression"
-    crvBarStepCompressionLevel : "noCompression"
+    crvStepCompressionLevel : "noCompression"
     simParticleCompressionLevel : "fullCompression" # only keep SimParticles related to other data products we are keeping
     stepPointMCCompressionLevel : "simParticleCompression" # only keep StepPointMCs related to SimParticles we are keeping
     genealogyCompressionLevel : "fullCompression" # "noCompression"
