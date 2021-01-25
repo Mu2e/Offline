@@ -34,6 +34,7 @@ class WLSMaterials
     G4Material*        FPethylene;
     G4Material*        PolystyreneFiber;
     G4Material*        PolystyreneScint;
+    G4Material*        Epoxy;
     G4Material*        Coating;
 };
 

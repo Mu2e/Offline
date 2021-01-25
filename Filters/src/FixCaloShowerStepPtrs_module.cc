@@ -24,7 +24,7 @@
 #include <memory>
 
 #include "MCDataProducts/inc/StrawDigiMCCollection.hh"
-#include "MCDataProducts/inc/CrvDigiMCCollection.hh"
+#include "MCDataProducts/inc/CrvDigiMC.hh"
 #include "MCDataProducts/inc/CaloShowerStep.hh"
 #include "MCDataProducts/inc/CaloShowerSim.hh"
 #include "MCDataProducts/inc/CaloShowerRO.hh"

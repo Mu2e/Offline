@@ -31,7 +31,8 @@
 #include "MCDataProducts/inc/StrawDigiMCCollection.hh"
 #include "MCDataProducts/inc/CaloShowerStep.hh"
 #include "MCDataProducts/inc/CaloHitMC.hh"
-#include "MCDataProducts/inc/CrvDigiMCCollection.hh"
+#include "MCDataProducts/inc/CrvStep.hh"
+#include "MCDataProducts/inc/CrvDigiMC.hh"
 
 
 namespace mu2e {
@@ -587,11 +588,11 @@ namespace mu2e {
     if(!rc) throw cet::exception("BadArtPtr") << " in CrvDigiMC coll";
 
     n=np=nn=na=ni=0;
-    std::vector<art::Ptr<StepPointMC> > ptrs;
+    std::vector<art::Ptr<CrvStep> > ptrs;
     for(auto const& d: coll) { // loop over the collection
       n++;
       // assemble all the pointer in the object
-      ptrs = d.GetStepPoints();
+      ptrs = d.GetCrvSteps();
 
       // check them
       for(auto const& p: ptrs) {
@@ -612,7 +613,7 @@ namespace mu2e {
     if(_verbose<1 && !rc) return rc;
     // report
 
-    std::cout << std::setw(8) << n  << " CrvDigiMC StepPoint Ptr checked" << std::endl;
+    std::cout << std::setw(8) << n  << " CrvDigiMC CrvStep Ptr checked" << std::endl;
     std::cout << std::setw(8) << np << " Ptrs checked" << std::endl;
     std::cout << std::setw(8) << nn << " Ptrs nonnull" << std::endl;
     std::cout << std::setw(8) << na << " Ptrs available" << std::endl;

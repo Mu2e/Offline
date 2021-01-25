@@ -1,0 +1,45 @@
+#include "Mu2eG4/geom/geom_common.txt"
+
+bool hasSTM = false;
+
+// replace the CRV counter setup:
+
+int   crs.nSectors = 1;
+int   crs.nLayers  = 4;
+
+vector<string>  crs.sectorNames = {"Test"};
+
+double          crs.scintillatorBarLengthTest    =  4550;
+
+double          crs.scintillatorBarThickness     =  19.78; //mm 
+double          crs.scintillatorBarWidth         =  51.34; //mm
+double          crs.layerOffset                  =  42.0; //mm
+double          crs.gapLarge                     =   0.5; //mm
+double          crs.gapSmall                     =   0.0875; //mm
+double          crs.gapBetweenModules            =   3.0;    //mm
+vector<double>  crs.gapBetweenLayers             =   {9.525, 9.525, 9.525}; //mm
+double          crs.aluminumSheetThickness       =   3.175;  //mm
+double          crs.strongBackThickness          =  12.7;    //mm
+
+int             crs.nModulesTest                 =   4;
+int             crs.nCountersPerModuleTest       =   16;
+vector<double>  crs.firstCounterTest             =  {-3904.0, 2663.21, 2014.55};
+
+vector<double>  crs.layerDirectionTest           =  {0, 1, 0};
+vector<double>  crs.offsetDirectionTest          =  {0, 0, -1}; 
+vector<double>  crs.gapDirectionTest             =  {0, 0, 1};
+
+int crs.precedingSectorForTest  = -1;   //no preceding sector
+
+int crs.sectorTypeTest  = 1;
+
+bool crs.sipmsAtSide0Test = true;
+bool crs.sipmsAtSide1Test = true;
+
+int crs.FEBBoxesAtSide0Test  = 0;
+int crs.FEBBoxesAtSide1Test  = 0;
+
+// This tells emacs to view this file in c++ mode.
+// Local Variables:
+// mode:c++
+// End:

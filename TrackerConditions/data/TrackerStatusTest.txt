@@ -1,0 +1,31 @@
+#
+# Tracker status test; these aren't real values for Mu2e, but they span the space of realistic values
+#
+#
+TABLE TrkPlaneStatus
+0_0_0, Absent
+35_0_0, Absent
+#
+#
+#
+TABLE TrkPanelStatus
+10_2_0, Absent
+15_4_0, NoHV
+34_1_0, NoGas:NoHV:NoLV
+7_5_0, LowGasGain
+#
+#
+TABLE TrkStrawStatusLong
+21_4_11, Absent
+19_1_88, NoWire
+28_3_3, NoHV
+#
+#
+#
+TABLE TrkStrawStatusShort
+21_4_1, Noise:Sparking
+3_0_38, Noise:Sparking
+3_0_39, Suppress:Pickup
+14_4_66, 0x600
+
+

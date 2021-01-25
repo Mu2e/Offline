@@ -23,9 +23,9 @@ CommonMC: {
     cosmicTimeMap:
     {
         module_type : GenerateCosmicTimes
-        hitsInputTag: "detectorFilter:tracker"
-        tmin : 450
-        tmax : 1705
+	StrawGasSteps : [  ] 
+	CaloShowerSteps : [ ]
+	CrvSteps : [ ]
     }
 # Event window marker
     EWMProducer : { module_type : EventWindowMarkerProducer }
@@ -45,7 +45,7 @@ CommonMC: {
     debugLevel : 0
   }
 }
-CommonMC.DigiSim : [ @sequence::CommonMC.TimeMaps, EWMProducer ]
+CommonMC.DigiSim : [ EWMProducer,  @sequence::CommonMC.TimeMaps ]
 
 #------------------------------------------------------------------------------
 
