@@ -9,6 +9,7 @@ Compression : {
     simParticleTag : "g4run"
     stepPointMCTags : [ "g4run:virtualdetector", "g4run:protonabsorber" ]#, "g4run:stoppingtarget" ]
     mcTrajectoryTag : "g4run"
+    primaryParticleTag : "FindMCPrimary"
 
     strawGasStepCompressionLevel : "noCompression" # keep all StrawGasSteps
     caloShowerStepCompressionLevel : "noCompression"
@@ -18,6 +19,7 @@ Compression : {
     genealogyCompressionLevel : "fullCompression" # "noCompression"
     truncatedSimParticleKeyOffset : 400000
     mcTrajectoryCompressionLevel : "simParticleCompression"
+    primaryParticleCompressionLevel : "noCompression"
 
     debugLevel : 0
   }
