@@ -7,11 +7,20 @@
 #include "CommonMC/fcl/prolog.fcl"
 BEGIN_PROLOG
 
+    CrvSteps:
+    {
+      module_type               : CrvStepsFromStepPointMCs
+      removeNeutralParticles    : true
+      debugLevel                : 0
+      diagLevel                 : 0
+      stepPointsInstance        : "CRV"
+      stepPointsModuleLabels    : @nil
+    }
     CrvPhotons:
     {
       module_type               : CrvPhotonGenerator
-      g4ModuleLabels            : ["*"]
-      processNames              : ["*"]
+      crvStepModuleLabels       : @nil
+      crvStepProcessNames       : @nil
       CRVSectors                : ["R1","R2","R3","R4","R5","L1","L2","T1","T2","T3","T4","E1","E2","U" ,"D1","D2","D3","D4","C1","C2","C3","C4"] //used only to match the vector entries below
       reflectors                : [  0 , -1 ,  0 ,  0 ,  0 ,  0 ,  0 ,  1 ,  1 ,  0 ,  0 , -1 , -1 , 1  ,  0 ,  1 , -1 ,  0 ,  1 , -1 , -1 , -1 ]
       lookupTableFileNames      : ["CRVConditions/v6_0/LookupTable_4550_0",  //R1
@@ -36,8 +45,19 @@ BEGIN_PROLOG
                                    "CRVConditions/v6_0/LookupTable_900_1",   //C2
                                    "CRVConditions/v6_0/LookupTable_2100_1",  //C3
                                    "CRVConditions/v6_0/LookupTable_1550_1"]  //C4
-      scintillationYield                : 39400 //for 68 PE/SiPM @ 1 m away from SiPM (Test beam June 2017)
-                                                //using the pulse height calibration, this value gives 45 PE/SiPM @ 1 m away from SiPM
+
+                                //number of photons per MeV visible energy deposited
+                                //for 68 PE/SiPM @ 1 m away from SiPM (Test beam June 2017)
+                                //using the pulse height calibration, this value gives 45 PE/SiPM @ 1 m away from SiPM
+      scintillationYields       : [39400,39400,39400,39400,39400,   //R1...5
+                                   39400,39400,                     //L1,L2
+                                   39400,39400,39400,39400,         //T1...4
+                                   39400,39400,                     //E1,E2
+                                   39400,                           //U
+                                   39400,39400,39400,39400,         //D1...4
+                                   39400,39400,39400,39400]         //C1...4
+
+      scintillationYieldScaleFactor     : 1.0   //scale factor applied to scintillation yields to mimic aging
       scintillationYieldVariation       : 0.2   //gaussian distribution with sigma equal to 20% of the mean
       scintillationYieldVariationCutoff : 0.4   //the scintillation yield variation is cut off at 40% below the mean
       startTime                         : 400.0    //0.0 ns
@@ -154,6 +174,18 @@ BEGIN_PROLOG
       crvCoincidenceClusterFinderModuleLabel : "CrvCoincidenceClusterFinder"
       crvWaveformsModuleLabel                : "CrvWaveforms"
       timeOffsets                            : { inputs : [ @sequence::CommonMC.TimeMaps ] }
+    }
+    CrvPlot:
+    {
+      module_type                    : CrvPlot
+      events                         : @nil
+      crvBarIndices                  : @nil
+      crvPhotonsModuleLabel          : CrvPhotons
+      crvSiPMChargesModuleLabel      : CrvSiPMCharges
+      crvDigiModuleLabel             : CrvDigi
+      crvRecoPulsesModuleLabel       : CrvRecoPulses
+      timeStart                      : 500
+      timeEnd                        : 1600
     }
 
 CrvDAQPackage : 

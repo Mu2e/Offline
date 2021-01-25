@@ -210,7 +210,7 @@ BEGIN_PROLOG
     CrvCoincidenceModuleLabel : "SelectRecoMC"
     CrvCoincidenceMCModuleLabel : "compressRecoMCs"
     CrvRecoPulseLabel : "SelectRecoMC"
-    CrvStepPointMCLabel : "compressRecoMCs"
+    CrvStepLabel : "compressRecoMCs"
     SimParticleLabel : "compressRecoMCs"
     MCTrajectoryLabel : "compressRecoMCs"
     CrvWaveformsModuleLabel : "compressRecoMCs"

@@ -1,17 +1,9 @@
-#
-#  Specific values for primary simulation that can't be done in prolog
-# 
-# name all processes the same, to mask any provenance in ensemble creation
-process_name: Primary
 # use detailed physics list  disable for now FIXME!
 #physics.producers.g4run.physics.physicsListName:ShieldingM_EMZ
 # use 'coarse' stepping in the calorimeter to save time  disble for now FIXME!
 #physics.producers.g4run.physics.minRangeRegionCuts: { CalorimeterMother : 0.1}  // {RegionName : mm }
 # save the MC Trajectories of primary particles
 physics.producers.g4run.TrajectoryControl: @local::mu2eg4DefaultTrajectories
-physics.end_paths : [ EndPath ] # needed for generate_fcl
-# test values; these get overwritten by generate_fcl
-services.SeedService.baseSeed         :  773651
-services.SeedService.maxUniqueEngines :  2
-# dummy histogram file: this is just to force instantiating the TFile service
-services.TFileService.fileName : "nts.owner.primary.version.sequencer.root"
+# patch CRV modules
+physics.producers.CrvSteps.stepPointsModuleLabels : ["g4run"]
+

@@ -5,9 +5,8 @@
 // Contact person Ralf Ehrlich
 //
 
-#include "MCDataProducts/inc/StepPointMCCollection.hh"
+#include "MCDataProducts/inc/CrvStep.hh"
 #include <vector>
-#include <cmath>
 
 namespace mu2e 
 {
@@ -15,42 +14,38 @@ namespace mu2e
   {
     public:
 
-    CrvSiPMCharges() {}
+    CrvSiPMCharges() : _SiPMNumber(-1) {} //automatically sets the barindex to invalid
 
-    struct CrvSingleCharge
+    CrvSiPMCharges(mu2e::CRSScintillatorBarIndex scintillatorBarIndex, int SiPMNumber) :
+                                         _scintillatorBarIndex(scintillatorBarIndex),
+                                         _SiPMNumber(SiPMNumber) {}
+
+    struct SingleCharge
     {
       double _time;
       double _charge;
       double _chargeInPEs;
-      art::Ptr<StepPointMC> _step;
-      CrvSingleCharge(double time, double charge, double chargeInPEs, art::Ptr<StepPointMC> step) : 
+      art::Ptr<CrvStep> _step;
+      SingleCharge(double time, double charge, double chargeInPEs, art::Ptr<CrvStep> step) : 
                                                _time(time), _charge(charge), _chargeInPEs(chargeInPEs), _step(step) {}
-      CrvSingleCharge(double time, double charge, double chargeInPEs) :      //that's for dark noise (i.e. no StepPointMCs)
+      SingleCharge(double time, double charge, double chargeInPEs) :   //that's for dark noise (i.e. no StepPointMCs)
                                                _time(time), _charge(charge), _chargeInPEs(chargeInPEs) {}
-      CrvSingleCharge() : _time(NAN), _charge(NAN), _chargeInPEs(NAN) {}  //to make ROOT happy
+      SingleCharge() : _time(NAN), _charge(NAN), _chargeInPEs(NAN) {}  //to make ROOT happy
     };
 
-    std::vector<CrvSingleCharge> &GetSiPMCharges(int fiberNumber, int side);
-    std::vector<CrvSingleCharge> &GetSiPMCharges(int SiPMNumber);
-
-    const std::vector<CrvSingleCharge> &GetSiPMCharges(int fiberNumber, int side) const;
-    const std::vector<CrvSingleCharge> &GetSiPMCharges(int SiPMNumber) const;
-
-    size_t GetNumberOfSiPMCharges(int fiberNumber, int side) const;
-    size_t GetNumberOfSiPMCharges(int SiPMNumber) const;
-
-    bool IsEmpty() const;
-
-    double GetFirstSiPMChargeTime(int fiberNumber, int side) const;
-    double GetFirstSiPMChargeTime(int SiPMNumber) const;
+    mu2e::CRSScintillatorBarIndex    GetScintillatorBarIndex() const {return _scintillatorBarIndex;}
+    int                              GetSiPMNumber() const           {return _SiPMNumber;}
+    std::vector<SingleCharge>       &GetCharges()                    {return _charges;}
+    const std::vector<SingleCharge> &GetCharges() const              {return _charges;}
 
     private:
 
-    static int  FindSiPMNumber(int fiberNumber, int side);
-    static void CheckSiPMNumber(int SiPMNumber);
-
-    std::vector<CrvSingleCharge> _crvSiPMCharges[4];
+    mu2e::CRSScintillatorBarIndex  _scintillatorBarIndex;
+    int                            _SiPMNumber; 
+    std::vector<SingleCharge>      _charges;
   };
+
+  typedef std::vector<mu2e::CrvSiPMCharges> CrvSiPMChargesCollection;
 }
 
 #endif /* MCDataProducts_CrvSiPMCharges_hh */

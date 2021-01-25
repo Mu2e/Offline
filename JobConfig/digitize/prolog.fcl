@@ -7,7 +7,7 @@ TrackCaloMatching : {
 }
 END_PROLOG
 #
-#include "JobConfig/primary/prolog.fcl"
+#include "fcl/standardServices.fcl"
 #include "CommonMC/fcl/prolog.fcl"
 #include "TrackerMC/fcl/prolog.fcl"
 #include "CaloMC/fcl/prolog.fcl"
@@ -23,7 +23,7 @@ Digitize: {
     @table::TrackerMC.DigiProducers
     @table::CaloMC.DigiProducers
     @table::CrvDAQPackage.producers
-    # default PBI with no intensity; this is for non-mixed only! FIXME!
+    # default PBI with no intensity; this must be overridden when mixing
     protonBunchIntensity : {
       module_type: ProtonBunchIntensityFlat
       mean: 0.0 # No PBI possible for pure signal! 
@@ -46,16 +46,6 @@ Digitize: {
   }
 
   filters : {
-# Tighten the primary selection.  This will only be used to select the 'trigger reject' stream
-    DetStepFilter : {
-      @table::Primary.filters.DetStepFilter
-      MinimumPartMom : 80.0 # MeV/c
-      MaximumPartMom : 130.0 # MeV/c
-      TestTrk : true
-      TestCalo : false
-      TestCrv : false
-      MinimumTrkSteps : 15
-    }
   }
 
   analyzers: {
@@ -67,8 +57,7 @@ Digitize: {
     @sequence::CommonMC.DigiSim,
     @sequence::TrackerMC.DigiSim,
     @sequence::CaloMC.DigiSim,
-    @sequence::CrvDAQPackage.CrvResponseSequence,
-    DetStepFilter,
+    @sequence::CrvDAQPackage.CrvDAQSequence,
     compressDigiMCs ]
 
 # the following should come from the trigger FIXME!

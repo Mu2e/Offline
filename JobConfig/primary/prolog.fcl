@@ -7,7 +7,7 @@
 #include "EventGenerator/fcl/prolog.fcl"
 #include "TrackerMC/fcl/prolog.fcl"
 #include "CaloMC/fcl/prolog.fcl"
-##include "CRVResponse/fcl/prolog.fcl"
+#include "CRVResponse/fcl/prolog.fcl"
 #include "Filters/fcl/prolog.fcl"
 #
 BEGIN_PROLOG
@@ -19,6 +19,7 @@ Primary: {
     @table::EventGenerator.producers
     @table::TrackerMC.StepProducers
     @table::CaloMC.StepProducers
+    CrvSteps : @local::CrvSteps
     # the following should be reconfigured to run after step compression once that is working
     FindMCPrimary : {
       module_type : FindMCPrimary
@@ -39,7 +40,7 @@ Primary: {
       module_type : DetectorStepFilter
       StrawGasSteps : [ "StrawGasStepMaker" ] 
       CaloShowerSteps : [ "CaloShowerStepMaker" ]
-      CrvSteps : [ "g4run:CRV" ]
+      CrvSteps : [ "CrvSteps" ]
       MinimumTrkStepEnergy : 1.0e-6 # 1 ev
       MinimumCaloStepEnergy : 0.0
       MinimumCrvStepEnergy : 1.0e-6 # get a real value from CRV experts FIXME!
@@ -56,11 +57,13 @@ Primary: {
   TriggerSequence : [ generate, genCounter, g4run, g4status,  
     @sequence::TrackerMC.StepSim,
     @sequence::CaloMC.StepSim,
+    CrvSteps,
     DetStepFilter, FindMCPrimary ]
 
-  KeptProducts : [ "keep mu2e::StrawGasSteps_*_*_*",
+  KeptProducts : [ 
+		       "keep mu2e::StrawGasSteps_*_*_*",
 		       "keep mu2e::CaloShowerSteps_*_*_*",
-		       "keep mu2e::StepPointMCs_*_CRV_*", # update this to CrvStep FIXME!
+		       "keep mu2e::CrvSteps_*_*_*",
 		       "keep mu2e::StepPointMCs_*_virtualdetector_*",
 		       "keep mu2e::StepPointMCs_*_protonabsorber_*", # add active target too FIXME!
 		       "keep mu2e::StatusG4_*_*_*",

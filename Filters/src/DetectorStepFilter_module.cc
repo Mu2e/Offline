@@ -16,6 +16,7 @@
 #include "MCDataProducts/inc/StepPointMC.hh"
 #include "MCDataProducts/inc/StrawGasStep.hh"
 #include "MCDataProducts/inc/CaloShowerStep.hh"
+#include "MCDataProducts/inc/CrvStep.hh"
 #include "MCDataProducts/inc/SimParticle.hh"
 #include <map>
 namespace mu2e {
@@ -28,7 +29,7 @@ namespace mu2e {
 
 	fhicl::Sequence<art::InputTag> trkSteps { Name("StrawGasSteps"), Comment("StrawGasStep collections") };
 	fhicl::Sequence<art::InputTag> caloSteps { Name("CaloShowerSteps"), Comment("CaloShowerStep collections") };
-	fhicl::Sequence<art::InputTag> crvSteps { Name("CrvSteps"), Comment("Crv StepPointMC collections") };
+	fhicl::Sequence<art::InputTag> crvSteps { Name("CrvSteps"), Comment("CrvStep collections") };
 
 	fhicl::Atom<double> minTrkStepEnergy { Name("MinimumTrkStepEnergy"), Comment("Minimum Trk step energy"), -std::numeric_limits<double>::max() };
 	fhicl::Atom<double> minCaloStepEnergy { Name("MinimumCaloStepEnergy"), Comment("Minimum Calo step energy"), -std::numeric_limits<double>::max() };
@@ -95,9 +96,9 @@ namespace mu2e {
     , nPassed_(0)
     {
       for(const auto ikeep : conf().keepPDG()) { pdgToKeep_.emplace_back(PDGCode::type(ikeep)); }
-      for(const auto& trktag : conf().trkSteps()) { trkStepCols_.emplace_back(trktag); }
-      for(const auto& calotag : conf().caloSteps()) { caloStepCols_.emplace_back(calotag); }
-      for(const auto& crvtag : conf().crvSteps()) { crvStepCols_.emplace_back(crvtag); }
+      for(const auto& trktag : conf().trkSteps()) { trkStepCols_.emplace_back(trktag); consumes<StrawGasStepCollection>(trktag); }
+      for(const auto& calotag : conf().caloSteps()) { caloStepCols_.emplace_back(calotag); consumes<CaloShowerStepCollection>(calotag); }
+      for(const auto& crvtag : conf().crvSteps()) { crvStepCols_.emplace_back(crvtag);  consumes<CrvStepCollection>(crvtag); }
     }
 
   bool DetectorStepFilter::filter(art::Event& event) {
@@ -155,20 +156,20 @@ namespace mu2e {
 	}
       }
     }
-    // Count good CRV from same particle; update this when CrvStep is written FIXME!!!
+    // Count good CRV from same particle
     if(testCrv_ && !retval ){
       using CC = std::map<const SimParticle*,unsigned>;
       CC countcrv;
       for(const auto& crvcoltag : crvStepCols_) {
-	auto spmccolH = event.getValidHandle<StepPointMCCollection>(crvcoltag);
-	for(const auto& spmc : *spmccolH ) {
-	  double mom = spmc.momentum().mag();
-	  if(spmc.ionizingEdep() > minCrvE_ && 
+	auto crvscolH = event.getValidHandle<CrvStepCollection>(crvcoltag);
+	for(const auto& crvs : *crvscolH ) {
+	  double mom = crvs.startMom().R();
+	  if(crvs.visibleEDep() > minCrvE_ && 
 	      mom > minPartM_ && mom < maxPartM_ &&
-	      goodParticle(*spmc.simParticle())) {
-	    auto ifnd = countcrv.find(spmc.simParticle().get());
+	      goodParticle(*crvs.simParticle())) {
+	    auto ifnd = countcrv.find(crvs.simParticle().get());
 	    if(ifnd == countcrv.end())
-	      countcrv.insert(CC::value_type(spmc.simParticle().get(),1));
+	      countcrv.insert(CC::value_type(crvs.simParticle().get(),1));
 	    else
 	      ifnd->second++;
 	  }

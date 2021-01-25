@@ -51,7 +51,7 @@ void WLSExtraPhysics::ConstructProcess()
     G4cout << "WLSExtraPhysics:: Add Extra Physics Processes"
               << G4endl;
 
-//    auto aParticleIterator=GetParticleIterator();   //FIXME: needed for GEANT v10_4
+    auto aParticleIterator=GetParticleIterator();
     aParticleIterator->reset();
 
     while ((*aParticleIterator)()) {
