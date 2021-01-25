@@ -12,7 +12,7 @@ helper = mu2e_helper(env)
 # this python code generates Trigger fcl in gen/fcl/Trigger
 import genTriggerFcl
 # run like this, it just generates the source and target file listss
-menus=["allPaths","OnSpillTrigMenu","OffSpillTrigMenu","ExtrPosTrigMenu"]
+menus=["OnSpillTrigMenu","OffSpillTrigMenu","ExtrPosTrigMenu"]
 for m in menus:
     sources,targets = genTriggerFcl.generate(m, False, False)
     # this schedules it to run again to make the files

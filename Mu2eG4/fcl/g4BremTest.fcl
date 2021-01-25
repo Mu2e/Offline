@@ -46,7 +46,7 @@ physics : {
     makeSD : @local::makeSD
     makeSH : @local::makeSH
 
-    @table::CaloDigiMC.producers
+    @table::CaloMC.producers
     @table::CaloReco.producers
 
     # Save state of the random number engines.
@@ -84,7 +84,7 @@ physics : {
 
   }
 
-  p1 : [g4run, makeSD, makeSH, @sequence::CaloDigiMC.DigiSim,@sequence::CaloReco.Reco, randomsaver ]
+  p1 : [g4run, makeSD, makeSH, @sequence::CaloMC.DigiSim,@sequence::CaloReco.Reco, randomsaver ]
   e1 : [checkhits, readStrawHits, readvd, outfile]
 
   trigger_paths  : [p1]

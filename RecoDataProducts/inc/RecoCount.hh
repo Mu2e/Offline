@@ -12,6 +12,9 @@ namespace mu2e {
     uint16_t _ncalodigi; // original number of calo digis in the event   
     uint16_t _ncrvdigi; // original number of crv digis in the event   
     uint16_t _nshfesel, _nshfrsel, _nshftsel, _nshfbkg, _nshftpk; // StrawHitFlag counts
+    // add counts of original time clusters TODO
+    uint16_t _ncc; // original number of calo clusters
+    float _cce; // original energy sum of calo clusters
     // histogram of straw hit times
     static constexpr size_t _nshtbins =70; // number of bins in the Straw Hit time histogram
     AHist<uint16_t, _nshtbins> _shthist;

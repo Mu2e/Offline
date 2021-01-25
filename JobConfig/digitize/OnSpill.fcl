@@ -1,0 +1,8 @@
+#
+#  Digitization specialization for on-spill simulations
+#
+#include "JobConfig/digitize/digitize.fcl"
+# add trigger paths
+#include "gen/fcl/Trigger/OnSpillTrigMenu/OnSpillTrigMenu.fcl"
+# set the event timing for Onspill
+physics.producers.EWMProducer.SpillType : 1

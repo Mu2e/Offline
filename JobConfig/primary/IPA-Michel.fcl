@@ -3,38 +3,19 @@
 #
 # original author: Dave Brown, LBNL
 #
-#include "JobConfig/primary/prolog.fcl"
-process_name: IPAMichel
-
-source: { module_type : EmptyEvent }
-services: @local::Services.Sim
-physics : { 
-  producers : {
-    generate : {
-      module_type: StoppedParticleG4Gun
-      verbosityLevel : 1
-      pdgId: 13 // mu-
-      muonStops : @local::mu2e.IPAMuonStops
-     }
-    @table::Primary.producers
-  }
-  filters: { @table::Primary.filters }
-  analyzers: { @table::Primary.analyzers }
-  TriggerPath : @local::Primary.TriggerPath
-  EndPath : @local::Primary.EndPath
+#include "JobConfig/primary/primary.fcl"
+# set the generator
+physics.producers.generate :{
+   module_type: StoppedParticleG4Gun
+   verbosityLevel : 1
+   pdgId: 13 // mu-
+   muonStops : @local::mu2e.IPAMuonStops
 }
-outputs : { 
-  Output :@local::Primary.Output
-}
-#
-# final configuration
-#
-#include "JobConfig/primary/epilog.fcl"
-# customize the output
-services.TFileService.fileName: "nts.owner.IPA-Michel.version.sequencer.root"
-outputs.Output.fileName: "dig.owner.IPA-Michel.version.sequencer.art"
-physics.end_paths : [ EndPath ] # needed for generate_fcl
 # set the correct stops
 physics.producers.generate.muonStops.inputFiles : [ "mergedMuonStops/nts.mu2e.DS-IPAstops.MDC2018a.001002_00000000.root"]
-physics.filters.DigiFilter.MinParticleMom : 40.0
-physics.filters.DigiFilter.MinNDigis : 50
+# reset the filter
+physics.filters.DetStepFilter.MinimumPartMom : 40.0
+physics.filters.DetStepFilter.MinimumTrkSteps : 50
+# customize the output
+outputs.Output.fileName: "dts.owner.IPA-Michel.version.sequencer.art"
+

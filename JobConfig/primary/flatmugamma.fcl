@@ -1,11 +1,11 @@
 # flat range of photons from muon stops to study external RMC background
 #include "JobConfig/primary/flatE.fcl"
-process_name: flatmugamma
 physics.producers.generate.physics.genId : ExternalRMC
 physics.producers.generate.physics.pdgId : 22
 physics.producers.generate.physics.elow : 80.0 // Mev
 physics.producers.generate.physics.ehi : 105.0 // Mev
-services.TFileService.fileName: "nts.owner.flatmugamma.version.sequencer.root"
-outputs.Output.fileName: "dig.owner.flatmugamma.version.sequencer.art"
+physics.filters.DetStepFilter.KeepPDG : [ 22  ] # only phootons
+physics.filters.DetStepFilter.MinimumTrkSteps : 10000 # disable
+outputs.Output.fileName: "dts.owner.flatmugamma.version.sequencer.art"
 
 

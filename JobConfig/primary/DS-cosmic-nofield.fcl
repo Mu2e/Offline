@@ -1,55 +1,18 @@
 #
 # cosmic-nofield ray muons produced at a box around the DS without field
 #
-#include "JobConfig/primary/prolog.fcl"
-process_name: DScosmicnofield
-
-source: { module_type : EmptyEvent }
-services: @local::Services.Sim
-physics : { 
-  producers : {
-    generate: 
-    {
-       module_type : EventGenerator
-       inputfile   : "JobConfig/primary/genconfig_DS-cosmic.txt"
-    }
-    @table::Primary.producers
-  }
-  filters: { @table::Primary.filters }
-  analyzers: { @table::Primary.analyzers }
-  TrkTriggerPath : [ @sequence::Primary.TriggerPath ]
-  CaloTriggerPath : [ @sequence::Primary.GenAndG4,
-    @sequence::CommonMC.DigiSim,
-    @sequence::CaloDigiMC.DigiSim,
-    CaloFilter,
-    @sequence::TrackerMC.DigiSim,
-    @sequence::CrvDAQPackage.CrvResponseSequence,
-    compressDigiMCs ]
-   EndPath : [ genCountLogger, digiCompressionCheck, TrkOutput, CaloOutput ]
+#include "JobConfig/primary/primary.fcl"
+# set the generator
+physics.producers.generate : {
+   module_type : EventGenerator
+   inputfile   : "JobConfig/primary/genconfig_DS-cosmic.txt"
 }
-outputs : {
-# separate for trk, calo: combine?
-  TrkOutput :@local::Primary.Output
-  CaloOutput :@local::Primary.Output
-}
-#
-# final configuration
-#
-#include "JobConfig/primary/epilog.fcl"
 # 0 field
 services.GeometryService.inputFile: "JobConfig/common/geom_nofield.txt"
 #  Allow 'infinite' momentum
-physics.filters.DigiFilter.MaxParticleMom : 1e7
-physics.filters.CaloFilter.MinParticleEnergy : 20.0
-physics.filters.CaloFilter.MinTotalEnergy : 50.0
-physics.filters.CaloFilter.particleTypes : [-11,11,-13,13]
+physics.filters.DetStepFilter.MaximumPartMom : 1e7
+physics.filters.DetStepFilter.MinimumPartMom : 20.0
 ## update the maximum # of particles
 physics.producers.g4run.ResourceLimits.maxSimParticleCollectionSize: 1000000
 # customize the output
-services.TFileService.fileName: "nts.owner.DS-cosmic-nofield.version.sequencer.root"
-outputs.TrkOutput.fileName: "dig.owner.DS-cosmic-nofield.version.sequencer.art"
-outputs.TrkOutput.SelectEvents : [TrkTriggerPath]
-# calorimeter output path
-outputs.CaloOutput.fileName: "dig.owner.DS-cosmic-nofield-calo.version.sequencer.art"
-outputs.CaloOutput.SelectEvents : [CaloTriggerPath]
-physics.end_paths : [ EndPath ] # needed for generate_fcl
+outputs.Output.fileName: "dts.owner.DS-cosmic-nofield.version.sequencer.art"
