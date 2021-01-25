@@ -113,9 +113,8 @@ outputs: {
 # turn off trajectories
 simulation.default.mod.g4run.TrajectoryControl: @local::mu2eg4NoTrajectories
 
-# generate the cosmics at one time
-physics.producers.cosmicTimeMap.tmin : 800
-physics.producers.cosmicTimeMap.tmax : 800
+# generate the cosmics as OffSpill
+physics.producers.EWMProducer.SpillType : 0
 
 # Larger range cut for the first stage - OK for CRV itself
 physics.producers.g4run.physics.minRangeCut : 1.0 // mm
