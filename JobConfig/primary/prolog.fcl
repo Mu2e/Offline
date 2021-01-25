@@ -40,16 +40,13 @@ Primary: {
       module_type : DetectorStepFilter
       StrawGasSteps : [ "StrawGasStepMaker" ] 
       CaloShowerSteps : [ "CaloShowerStepMaker" ]
-      CrvSteps : [ "CrvSteps" ]
+      CrvSteps : [ ]
       MinimumTrkStepEnergy : 1.0e-6 # 1 ev
       MinimumCaloStepEnergy : 0.0
       MinimumCrvStepEnergy : 1.0e-6 # get a real value from CRV experts FIXME!
       MinimumPartMom : 80.0 # MeV/c
-      MaximumPartMom : 10000.0 # MeV/c
+      MaximumPartMom : 1e6 # MeV/c
       KeepPDG : [-11, 11, -13, 13, -211, 211 ] # electrons and muons and pions: values should be defined in a common config file FIXME
-      TestTrk : true
-      TestCalo : true
-      TestCrv : false
       MinimumTrkSteps : 10
       MinimumSumCaloStepE : 50.0
     }
