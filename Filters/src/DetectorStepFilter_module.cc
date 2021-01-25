@@ -38,9 +38,6 @@ namespace mu2e {
 	fhicl::Atom<double> minPartMom { Name("MinimumPartMom"), Comment("Minimum particle momentum"), -std::numeric_limits<double>::max() };
 	fhicl::Atom<double> maxPartMom { Name("MaximumPartMom"), Comment("Maximum particle momentum"), std::numeric_limits<double>::max() };
 
-	fhicl::Atom<bool> testTrk { Name("TestTrk"), Comment("Test Tracker steps"), true};
-	fhicl::Atom<bool> testCalo { Name("TestCalo"), Comment("Test calorimeter steps"), true };
-	fhicl::Atom<bool> testCrv { Name("TestCrv"), Comment("Test CRV steps"), false };
 	fhicl::Atom<bool> orRequirements { Name("ORRequirements"), Comment("Take the logical OR of requirements, otherwise take the AND"), true };
 
 	fhicl::Atom<unsigned> minNTrkSteps { Name("MinimumTrkSteps"), Comment("Minimum number of good tracker steps"), 10};
@@ -64,7 +61,7 @@ namespace mu2e {
       bool goodParticle(SimParticle const& simp) const;
       double minTrkE_, minCaloE_, minCrvE_;
       double minPartM_, maxPartM_;
-      bool testTrk_, testCalo_, testCrv_, or_;
+      bool or_;
       std::vector<PDGCode::type> pdgToKeep_;
       std::vector<art::InputTag> trkStepCols_, caloStepCols_, crvStepCols_;
       unsigned minNTrk_, minNCrv_;
@@ -82,9 +79,6 @@ namespace mu2e {
     , minCrvE_(conf().minCrvStepEnergy())
     , minPartM_(conf().minPartMom())
     , maxPartM_(conf().maxPartMom())
-    , testTrk_(conf().testTrk())
-    , testCalo_(conf().testCalo())
-    , testCrv_(conf().testCrv())
     , or_(conf().orRequirements())
     , minNTrk_(conf().minNTrkSteps())
     , minNCrv_(conf().minNCrvSteps())
@@ -102,26 +96,23 @@ namespace mu2e {
     }
 
   bool DetectorStepFilter::filter(art::Event& event) {
-    bool retval(false);
     bool selecttrk(false), selectcalo(false), selectcrv(false);
     ++nEvt_;
     // Count Trk step from same particle
-    if(testTrk_ ) {
-      using CT = std::map<const SimParticle*,unsigned>;
+    using CT = std::map<const SimParticle*,unsigned>;
+    for(const auto& trkcoltag : trkStepCols_) {
       CT counttrk;
-      for(const auto& trkcoltag : trkStepCols_) {
-	auto sgscolH = event.getValidHandle<StrawGasStepCollection>(trkcoltag);
-	for(const auto& sgs : *sgscolH ) {
-	  double mom = sgs.momentum().R();
-	  if(sgs.ionizingEdep() > minTrkE_ && 
-	      mom > minPartM_ && mom < maxPartM_ &&
-	      goodParticle(*sgs.simParticle())){
-	    auto ifnd = counttrk.find(sgs.simParticle().get());
-	    if(ifnd == counttrk.end())
-	      counttrk.insert(CT::value_type(sgs.simParticle().get(),1));
-	    else
-	      ifnd->second++;
-	  }
+      auto sgscolH = event.getValidHandle<StrawGasStepCollection>(trkcoltag);
+      for(const auto& sgs : *sgscolH ) {
+	double mom = sgs.momentum().R();
+	if(sgs.ionizingEdep() > minTrkE_ && 
+	    mom > minPartM_ && mom < maxPartM_ &&
+	    goodParticle(*sgs.simParticle())){
+	  auto ifnd = counttrk.find(sgs.simParticle().get());
+	  if(ifnd == counttrk.end())
+	    counttrk.insert(CT::value_type(sgs.simParticle().get(),1));
+	  else
+	    ifnd->second++;
 	}
       }
       for(auto itrk=counttrk.begin();itrk != counttrk.end();itrk++){
@@ -130,23 +121,22 @@ namespace mu2e {
 	  break;
 	}
       }
+      if(selecttrk)break;
     }
     // sum Calo energy from same particle
-    if(testCalo_ && !retval){
-      using CES = std::map<const SimParticle*,float>;
+    using CES = std::map<const SimParticle*,float>;
+    for(const auto& calocoltag : caloStepCols_) {
       CES caloESum;
-      for(const auto& calocoltag : caloStepCols_) {
-	auto csscolH = event.getValidHandle<CaloShowerStepCollection>(calocoltag);
-	for(const auto& css : *csscolH ) {
-	  if(css.energyDepBirks() > minCaloE_ && 
-	      css.momentumIn() > minPartM_ && css.momentumIn() < maxPartM_ &&
-	      goodParticle(*css.simParticle())){
-	    auto ifnd = caloESum.find(css.simParticle().get());
-	    if(ifnd == caloESum.end())
-	      caloESum.insert(CES::value_type(css.simParticle().get(),css.energyDepBirks()));
-	    else
-	      ifnd->second += css.energyDepBirks(); 
-	  }
+      auto csscolH = event.getValidHandle<CaloShowerStepCollection>(calocoltag);
+      for(const auto& css : *csscolH ) {
+	if(css.energyDepBirks() > minCaloE_ && 
+	    css.momentumIn() > minPartM_ && css.momentumIn() < maxPartM_ &&
+	    goodParticle(*css.simParticle())){
+	  auto ifnd = caloESum.find(css.simParticle().get());
+	  if(ifnd == caloESum.end())
+	    caloESum.insert(CES::value_type(css.simParticle().get(),css.energyDepBirks()));
+	  else
+	    ifnd->second += css.energyDepBirks(); 
 	}
       }
       for(auto icalo=caloESum.begin();icalo != caloESum.end();icalo++){
@@ -155,24 +145,23 @@ namespace mu2e {
 	  break;
 	}
       }
+      if(selectcalo)break;
     }
     // Count good CRV from same particle
-    if(testCrv_ && !retval ){
-      using CC = std::map<const SimParticle*,unsigned>;
+    using CC = std::map<const SimParticle*,unsigned>;
+    for(const auto& crvcoltag : crvStepCols_) {
       CC countcrv;
-      for(const auto& crvcoltag : crvStepCols_) {
-	auto crvscolH = event.getValidHandle<CrvStepCollection>(crvcoltag);
-	for(const auto& crvs : *crvscolH ) {
-	  double mom = crvs.startMom().R();
-	  if(crvs.visibleEDep() > minCrvE_ && 
-	      mom > minPartM_ && mom < maxPartM_ &&
-	      goodParticle(*crvs.simParticle())) {
-	    auto ifnd = countcrv.find(crvs.simParticle().get());
-	    if(ifnd == countcrv.end())
-	      countcrv.insert(CC::value_type(crvs.simParticle().get(),1));
-	    else
-	      ifnd->second++;
-	  }
+      auto crvscolH = event.getValidHandle<CrvStepCollection>(crvcoltag);
+      for(const auto& crvs : *crvscolH ) {
+	double mom = crvs.startMom().R();
+	if(crvs.visibleEDep() > minCrvE_ && 
+	    mom > minPartM_ && mom < maxPartM_ &&
+	    goodParticle(*crvs.simParticle())) {
+	  auto ifnd = countcrv.find(crvs.simParticle().get());
+	  if(ifnd == countcrv.end())
+	    countcrv.insert(CC::value_type(crvs.simParticle().get(),1));
+	  else
+	    ifnd->second++;
 	}
       }
       for(auto icrv=countcrv.begin();icrv != countcrv.end();icrv++){
@@ -181,11 +170,10 @@ namespace mu2e {
 	  break;
 	}
       }
+      if(selectcrv)break;
     }
-    if( (or_ && (selecttrk || selectcalo || selectcrv)) ||
-      ((!or_) && ( selecttrk && selectcalo && selectcrv)) )
-      retval = true;
-    return retval;
+    return( (or_ && (selecttrk || selectcalo || selectcrv)) ||
+	((!or_) && ( selecttrk && selectcalo && selectcrv)) );
   }
 
   void DetectorStepFilter::endJob() {

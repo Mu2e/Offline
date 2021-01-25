@@ -4,6 +4,7 @@
 # original author: Dave Brown, LBNL
 #
 #include "JobConfig/pileup/prolog.fcl"
+process_name : Pileup
 
 source: { module_type : EmptyEvent }
 services: { @table::Services.Sim }
@@ -15,6 +16,10 @@ physics: {
   EndPath : @local::Pileup.EndPath
 }
 outputs: { Output : @local::Pileup.Output }
+#include "JobConfig/primary/epilog.fcl"
 
-#include "JobConfig/pileup/epilog.fcl"
+physics.end_paths : [ EndPath ] # needed for generate_fcl
+# test values; these get overwritten by generate_fcl
+services.SeedService.baseSeed         :  773651
+services.SeedService.maxUniqueEngines :  20
 
