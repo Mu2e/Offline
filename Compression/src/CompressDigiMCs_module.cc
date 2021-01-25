@@ -220,9 +220,6 @@ private:
   art::Handle<CaloClusterMCCollection> _caloClusterMCsHandle;
   std::unique_ptr<CaloClusterMCCollection> _newCaloClusterMCs;
   std::unique_ptr<CaloHitMCCollection> _newCaloHitMCs;
-  bool _keepAllGenParticles;
-  art::InputTag _crvCoincClusterMCTag;
-
   art::Handle<CrvCoincidenceClusterMCCollection> _crvCoincClusterMCsHandle;
   std::unique_ptr<CrvCoincidenceClusterMCCollection> _newCrvCoincClusterMCs;
   art::Handle<PrimaryParticle> _primaryParticleHandle;
@@ -265,26 +262,16 @@ mu2e::CompressDigiMCs::CompressDigiMCs(const Parameters& conf)
   _noCompression(_conf.noCompression())
 {
   // Call appropriate produces<>() functions here.
-  produces<GenParticleCollection>();
-  produces<SimParticleCollection>();
-
-  if (_strawDigiMCTag != "") {
-    produces<StrawGasStepCollection>();
-    produces<StrawDigiMCCollection>();
-  }
-
-  if (_crvDigiMCTag != "") {
-    produces<CrvDigiMCCollection>();
-    _newStepPointMCInstances.push_back(_crvOutputInstanceLabel); // filled with the StepPointMCs referenced by their DigiMCs
-  }
+  produces<StrawDigiMCCollection>();
+  produces<CrvDigiMCCollection>();
 
   for (std::vector<art::InputTag>::const_iterator i_tag = _extraStepPointMCTags.begin(); i_tag != _extraStepPointMCTags.end(); ++i_tag) {
     _newStepPointMCInstances.push_back( (*i_tag).instance() );
   }
+
   for (const auto& i_instance : _newStepPointMCInstances) {
     produces<StepPointMCCollection>( i_instance );
   }
-
   produces<StrawGasStepCollection>();
   produces<CrvStepCollection>();
   produces<SimParticleCollection>();
@@ -323,12 +310,8 @@ mu2e::CompressDigiMCs::CompressDigiMCs(const Parameters& conf)
 void mu2e::CompressDigiMCs::produce(art::Event & event)
 {
   // Implementation of required member function here.
-  if (_strawDigiMCTag != "") {
-    _newStrawDigiMCs = std::unique_ptr<StrawDigiMCCollection>(new StrawDigiMCCollection);
-  }
-  if (_crvDigiMCTag != "") {
-    _newCrvDigiMCs = std::unique_ptr<CrvDigiMCCollection>(new CrvDigiMCCollection);
-  }
+  _newStrawDigiMCs = std::unique_ptr<StrawDigiMCCollection>(new StrawDigiMCCollection);
+  _newCrvDigiMCs = std::unique_ptr<CrvDigiMCCollection>(new CrvDigiMCCollection);
 
   for (const auto& i_instance : _newStepPointMCInstances) {
     _newStepPointMCs[i_instance] = std::unique_ptr<StepPointMCCollection>(new StepPointMCCollection);
@@ -430,26 +413,24 @@ void mu2e::CompressDigiMCs::produce(art::Event & event)
 
 
   // Now start to compress
-  if (_strawDigiMCTag != "") {
-    event.getByLabel(_strawDigiMCTag, _strawDigiMCsHandle);
-    const auto& strawDigiMCs = *_strawDigiMCsHandle;
-    for (size_t i = 0; i < strawDigiMCs.size(); ++i) {
-      const auto& i_strawDigiMC = strawDigiMCs.at(i);
-      mu2e::FullIndex full_i = i;
-      bool in_index_map = false;
-      if (_strawDigiMCIndexMapTag != "") {
-        in_index_map = _strawDigiMCIndexMap.checkInMap(full_i);
-      }
-      if (_strawDigiMCIndexMapTag == "" || in_index_map || _noCompression) {
-        copyStrawDigiMC(i_strawDigiMC);
-      }
+  event.getByLabel(_strawDigiMCTag, _strawDigiMCsHandle);
+  const auto& strawDigiMCs = *_strawDigiMCsHandle;
+  for (size_t i = 0; i < strawDigiMCs.size(); ++i) {
+    const auto& i_strawDigiMC = strawDigiMCs.at(i);
+    mu2e::FullIndex full_i = i;
+    bool in_index_map = false;
+    if (_strawDigiMCIndexMapTag != "") {
+      in_index_map = _strawDigiMCIndexMap.checkInMap(full_i);
     }
+    if (_strawDigiMCIndexMapTag == "" || in_index_map || _noCompression) {
+      copyStrawDigiMC(i_strawDigiMC);
+    }
+  }
 
-    // Only check for this if we are not reducing the number of StrawDigiMCs
-    if ((_strawDigiMCIndexMapTag == "" || _noCompression) && strawDigiMCs.size() != _newStrawDigiMCs->size()) {
-      throw cet::exception("CompressDigiMCs") << "The number of StrawDigiMCs before and after compression does not match ("
-                                              << strawDigiMCs.size() << " != " << _newStrawDigiMCs->size() << ")" << std::endl;
-    }
+  // Only check for this if we are not reducing the number of StrawDigiMCs
+  if ((_strawDigiMCIndexMapTag == "" || _noCompression) && strawDigiMCs.size() != _newStrawDigiMCs->size()) {
+    throw cet::exception("CompressDigiMCs") << "The number of StrawDigiMCs before and after compression does not match ("
+                                            << strawDigiMCs.size() << " != " << _newStrawDigiMCs->size() << ")" << std::endl;
   }
 
 
@@ -632,13 +613,11 @@ void mu2e::CompressDigiMCs::produce(art::Event & event)
       i_stepPointMC.simParticle() = newSimPtr;
     }
   }
-
+ 
   // Update the StrawGasSteps
-  if (_strawDigiMCTag != "") {
-    for (auto& i_strawGasStep : *_newStrawGasSteps) {
-      art::Ptr<SimParticle> newSimPtr = remap.at(i_strawGasStep.simParticle());
-      i_strawGasStep.simParticle() = newSimPtr;
-    }
+  for (auto& i_strawGasStep : *_newStrawGasSteps) {
+    art::Ptr<SimParticle> newSimPtr = remap.at(i_strawGasStep.simParticle());
+    i_strawGasStep.simParticle() = newSimPtr;
   }
 
   // Update the CrvSteps
@@ -713,14 +692,11 @@ void mu2e::CompressDigiMCs::produce(art::Event & event)
   for (const auto& i_instance : _newStepPointMCInstances) {
     event.put(std::move(_newStepPointMCs.at(i_instance)), i_instance);
   }
-  if (_strawDigiMCTag != "") {
-    event.put(std::move(_newStrawDigiMCs));
-    event.put(std::move(_newStrawGasSteps));
-  }
-  if (_crvDigiMCTag != "") {
-    event.put(std::move(_newCrvSteps));
-    event.put(std::move(_newCrvDigiMCs));
-  }
+  event.put(std::move(_newStrawDigiMCs));
+  event.put(std::move(_newStrawGasSteps));
+  event.put(std::move(_newCrvSteps));
+  event.put(std::move(_newCrvDigiMCs));
+
   event.put(std::move(_newSimParticles));
   event.put(std::move(_newGenParticles));
 
@@ -769,10 +745,10 @@ void mu2e::CompressDigiMCs::copyStrawDigiMC(const mu2e::StrawDigiMC& old_straw_d
     const auto& newStepPtrIter = step_remap.find(old_step_point);
     if (newStepPtrIter == step_remap.end()) {
       if (old_step_point.isAvailable()) {
-        step_remap[old_step_point] = copyStrawGasStep( *old_step_point);
+	step_remap[old_step_point] = copyStrawGasStep( *old_step_point);
       }
       else { // this is a null Ptr but it should be added anyway to keep consistency (not expected for StrawDigis)
-        step_remap[old_step_point] = old_step_point;
+	step_remap[old_step_point] = old_step_point;
       }
     }
     art::Ptr<StrawGasStep> new_step_point = step_remap.at(old_step_point);
