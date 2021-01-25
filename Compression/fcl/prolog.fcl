@@ -16,7 +16,7 @@ Compression : {
     crvStepCompressionLevel : "noCompression"
     simParticleCompressionLevel : "fullCompression" # only keep SimParticles related to other data products we are keeping
     stepPointMCCompressionLevel : "simParticleCompression" # only keep StepPointMCs related to SimParticles we are keeping
-    genealogyCompressionLevel : "fullCompression" # "noCompression"
+    keepNGenerations : 1
     truncatedSimParticleKeyOffset : 400000
     mcTrajectoryCompressionLevel : "simParticleCompression"
     primaryParticleCompressionLevel : "noCompression"
