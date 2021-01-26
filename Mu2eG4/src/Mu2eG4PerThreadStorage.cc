@@ -51,45 +51,32 @@ namespace mu2e {
 
   //----------------------------------------------------------------
   void Mu2eG4PerThreadStorage::
-  putSensitiveDetectorData(art::EDProductGetter const* sim_product_getter) {
+  putStepPointMCCollections(std::unordered_map< std::string, std::unique_ptr<StepPointMCCollection> > &&steps_map) {
 
-    std::unordered_map< std::string, std::unique_ptr<StepPointMCCollection> > steps_map =
-      std::move(sensitiveDetectorSteps);
+    art::ProductID simPartId(artEvent->getProductID<SimParticleCollection>());
+    art::EDProductGetter const* simProductGetter = artEvent->productGetter(simPartId);
 
-    for (std::unordered_map< std::string, std::unique_ptr<StepPointMCCollection> >::iterator i = steps_map.begin();
-         i != steps_map.end(); ++i) {
-
-      for ( StepPointMCCollection::iterator j=i->second->begin(); j!=i->second->end(); ++j ){
+    for (auto i = steps_map.begin(); i != steps_map.end(); ++i) {
+      for (auto j=i->second->begin(); j!=i->second->end(); ++j ){
 
         StepPointMC& step = *j;
         step.simParticle() = art::Ptr<SimParticle>(step.simParticle().id(),
                                                    step.simParticle().key(),
-                                                   sim_product_getter );
-      }//for StepPointMCCollection::iterator
-
-      artEvent->put(std::move(i->second), i->first);
-    }//for (std::unordered_map...
-  }
-
-  //----------------------------------------------------------------
-  void Mu2eG4PerThreadStorage::
-  putCutsData(art::EDProductGetter const* sim_product_getter) {
-
-    std::unordered_map< std::string, std::unique_ptr<StepPointMCCollection> > cuts_map = std::move(cutsSteps);
-
-    for (std::unordered_map< std::string, std::unique_ptr<StepPointMCCollection> >::iterator i = cuts_map.begin();
-         i != cuts_map.end(); ++i) {
-
-      for ( StepPointMCCollection::iterator j=i->second->begin(); j!=i->second->end(); ++j ){
-        StepPointMC& step = *j;
-
-        step.simParticle() = art::Ptr<SimParticle>(step.simParticle().id(),
-                                                   step.simParticle().key(),
-                                                   sim_product_getter );
-      }//for StepPointMCCollection::iterator
+                                                   simProductGetter);
+      }
 
       artEvent->put(std::move(i->second), i->first);
     }
+  }
+
+  //----------------------------------------------------------------
+  void Mu2eG4PerThreadStorage::putSensitiveDetectorData() {
+    putStepPointMCCollections(std::move(sensitiveDetectorSteps));
+  }
+
+  //----------------------------------------------------------------
+  void Mu2eG4PerThreadStorage::putCutsData() {
+    putStepPointMCCollections(std::move(cutsSteps));
   }
 
   //----------------------------------------------------------------
