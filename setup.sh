@@ -136,7 +136,7 @@ setup -B mu2e_artdaq_core v1_05_04 -q${MU2E_UPS_QUALIFIERS}:+${MU2E_ART_SQUALIFI
 
 setup -B heppdt   v03_04_02 -q${MU2E_UPS_QUALIFIERS}
 setup -B BTrk   v1_02_30  -q${MU2E_UPS_QUALIFIERS}:p383b
-setup -B KinKal   v00_01_02  -q${MU2E_UPS_QUALIFIERS}:p383b
+#setup -B KinKal   v00_01_02  -q${MU2E_UPS_QUALIFIERS}:p383b
 setup -B cry   v1_7n  -q${MU2E_UPS_QUALIFIERS}
 setup -B gsl v2_6a
 setup curl v7_64_1
