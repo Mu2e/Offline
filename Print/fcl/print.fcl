@@ -53,6 +53,9 @@ physics :{
         eCut :  10.0
       }
 
+      crvStepPrinter : {
+        verbose: 0
+      }
       crvDigiPrinter : {
         verbose: 0
       }
