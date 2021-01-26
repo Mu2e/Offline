@@ -114,9 +114,12 @@ namespace mu2e {
       return std::move(extMonFNALHits);
     }
 
-    void putSensitiveDetectorData(art::EDProductGetter const* sim_product_getter);
 
-    void putCutsData(art::EDProductGetter const* sim_product_getter);
+    void putStepPointMCCollections(std::unordered_map< std::string, std::unique_ptr<StepPointMCCollection> > &&steps_map);
+
+    void putSensitiveDetectorData();
+
+    void putCutsData();
 
     void clearData();
 

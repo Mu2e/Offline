@@ -463,11 +463,8 @@ namespace mu2e {
 
       event.put(std::move(perThreadStore.getG4Status()));
       event.put(std::move(simsToCheck));
-
-      art::ProductID simPartId(event.getProductID<SimParticleCollection>());
-      art::EDProductGetter const* simProductGetter = event.productGetter(simPartId);
-      perThreadStore.putSensitiveDetectorData(simProductGetter);
-      perThreadStore.putCutsData(simProductGetter);
+      perThreadStore.putSensitiveDetectorData();
+      perThreadStore.putCutsData();
 
       if(timeVD_enabled_) {
         event.put(std::move(perThreadStore.getTVDHits()),perThreadStore.getTVDName());
