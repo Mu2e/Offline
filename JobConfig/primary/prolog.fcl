@@ -21,12 +21,13 @@ Primary: {
     @table::TrackerMC.StepProducers
     @table::CaloMC.StepProducers
     CrvSteps : @local::CrvSteps
+    compressDetStepMCs : @local::Compression.compressDetStepMCs_primary
     # the following should be reconfigured to run after step compression once that is working
     FindMCPrimary : {
       module_type : FindMCPrimary
       SinglePrimary : true
-      GenParticles : "generate"
-      SimParticles : "g4run"
+      GenParticles : "compressDetStepMCs"
+      SimParticles : "compressDetStepMCs"
       PrimaryGenIds : [] # this is intentionally empty: there should only be 1 GenParticle in primary production
     }
   }
@@ -57,19 +58,18 @@ Primary: {
     @sequence::TrackerMC.StepSim,
     @sequence::CaloMC.StepSim,
     CrvSteps,
-    DetStepFilter, FindMCPrimary ]
+    DetStepFilter, compressDetStepMCs, FindMCPrimary ]
 
   KeptProducts : [ 
-		       "keep mu2e::StrawGasSteps_*_*_*",
-		       "keep mu2e::CaloShowerSteps_*_*_*",
-		       "keep mu2e::CrvSteps_*_*_*",
-		       "keep mu2e::StepPointMCs_*_virtualdetector_*",
-		       "keep mu2e::StepPointMCs_*_protonabsorber_*", 
-		       "keep mu2e::StepPointMCs_*_stoppingtarget_*", 
+		       "keep mu2e::StrawGasSteps_compressDetStepMCs_*_*",
+		       "keep mu2e::CaloShowerSteps_compressDetStepMCs_*_*",
+		       "keep mu2e::CrvSteps_compressDetStepMCs_*_*",
+		       "keep mu2e::StepPointMCs_compressDetStepMCs_virtualdetector_*",
+		       "keep mu2e::StepPointMCs_compressDetStepMCs_protonabsorber_*", # add active target too FIXME!
 		       "keep mu2e::StatusG4_*_*_*",
-		       "keep mu2e::SimParticlemv_g4run_*_*",  # these need to be updated after step compression FIXME!
-		       "keep mu2e::SimParticleart::Ptrmu2e::MCTrajectorystd::map_*_*_*",
-		       "keep mu2e::GenParticles_*_*_*",
+		       "keep mu2e::SimParticlemv_compressDetStepMCs_*_*",
+		       "keep mu2e::SimParticleart::Ptrmu2e::MCTrajectorystd::map_compressDetStepMCs_*_*",
+		       "keep mu2e::GenParticles_compressDetStepMCs_*_*",
 		       "keep mu2e::PrimaryParticle_*_*_*",
 		       "keep art::TriggerResults_*_*_*",
 		       "keep mu2e::GenEventCount_*_*_*" ]

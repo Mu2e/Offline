@@ -34,6 +34,17 @@ CompressionTemplates : {
     truncatedSimParticleKeyOffset : 400000
     mcTrajectoryCompressionLevel : "simParticleCompression"
   }
+
+  compressDetStepMCs_pileup : {
+    strawGasStepCompressionLevel : "noCompression" # keep all StrawGasSteps
+    caloShowerStepCompressionLevel : "noCompression"
+    crvStepCompressionLevel : "noCompression"
+    simParticleCompressionLevel : "fullCompression" # only keep SimParticles related to other data products we are keeping
+    stepPointMCCompressionLevel : "simParticleCompression" # only keep StepPointMCs related to SimParticles we are keeping
+    keepNGenerations : 2
+    truncatedSimParticleKeyOffset : 400000
+    mcTrajectoryCompressionLevel : "simParticleCompression"
+  }
 }
 
 Compression : {
@@ -44,6 +55,10 @@ Compression : {
   compressDetStepMCs_primary : { 
     @table::CompressionTemplates.compressDetStepMCs_common
     @table::CompressionTemplates.compressDetStepMCs_primary
+  }
+  compressDetStepMCs_pileup : { 
+    @table::CompressionTemplates.compressDetStepMCs_common
+    @table::CompressionTemplates.compressDetStepMCs_pileup
   }
 }
 
