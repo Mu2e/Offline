@@ -10,7 +10,6 @@
 // - SimParticles : noCompression, fullCompression
 // - StepPointMCs : noCompression, simParticleCompression
 // - MCTrajectories : noCompression, simParticleCompression
-// - PrimaryParticle : noCompression
 //
 // There is also the concept of "genealogy" compression, which uses the fhicl parameter
 // keepNGenerations and takes an integer corresponding to the
@@ -43,7 +42,6 @@
 #include "MCDataProducts/inc/GenParticleCollection.hh"
 #include "Compression/inc/CompressionLevel.hh"
 #include "MCDataProducts/inc/MCTrajectoryCollection.hh"
-#include "MCDataProducts/inc/PrimaryParticle.hh"
 #include "MCDataProducts/inc/MCRelationship.hh"
 
 namespace mu2e {
@@ -103,8 +101,6 @@ public:
     fhicl::Atom<int> truncatedSimParticleKeyOffset{Name("truncatedSimParticleKeyOffset"), Comment("Offset to use when adding a truncated SimParticle to the SimParticleCollection")};
     fhicl::Atom<art::InputTag> mcTrajectoryTag{Name("mcTrajectoryTag"), Comment("InputTag for the SimParticleCollection")};
     fhicl::Atom<std::string> mcTrajectoryCompressionLevel{Name("mcTrajectoryCompressionLevel"), Comment("Compression level for MCTrajectories")};
-    fhicl::Atom<art::InputTag> primaryParticleTag{Name("primaryParticleTag"), Comment("InputTag for the SimParticleCollection")};
-    fhicl::Atom<std::string> primaryParticleCompressionLevel{Name("primaryParticleCompressionLevel"), Comment("Compression level for MCTrajectories")};
   };
   typedef art::EDProducer::Table<Config> Parameters;
 
@@ -134,8 +130,6 @@ public:
   void compressGenParticles();
   void compressMCTrajectories(const art::Event& event);
   void updateMCTrajectories();
-  void compressPrimaryParticle(const art::Event& event);
-  void updatePrimaryParticle();
   void recordSimParticle(const art::Ptr<mu2e::SimParticle>& sim_ptr);
   void checkCompressionLevels();
 
@@ -149,7 +143,6 @@ private:
   mu2e::CompressionLevel _stepPointMCCompressionLevel;
   int _keepNGenerations;
   mu2e::CompressionLevel _mcTrajectoryCompressionLevel;
-  mu2e::CompressionLevel _primaryParticleCompressionLevel;
 
   // unique_ptrs to the new output collections
   std::unique_ptr<mu2e::StrawGasStepCollection> _newStrawGasSteps;
@@ -157,7 +150,6 @@ private:
   std::unique_ptr<CrvStepCollection> _newCrvSteps;
   std::map<InstanceLabel, std::unique_ptr<StepPointMCCollection> > _newStepPointMCs;
   std::unique_ptr<MCTrajectoryCollection> _newMCTrajectories;
-  std::unique_ptr<PrimaryParticle> _newPrimaryParticle;
 
   // To create art::Ptrs to the new SimParticles and GenParticles,
   // we need their art::ProductIDs and art::EDProductGetters
@@ -184,8 +176,7 @@ mu2e::CompressDetStepMCs::CompressDetStepMCs(const Parameters& conf)
     _simParticleCompressionLevel(mu2e::CompressionLevel::findByName(_conf.simParticleCompressionLevel())),
   _stepPointMCCompressionLevel(mu2e::CompressionLevel::findByName(_conf.stepPointMCCompressionLevel())),
   _keepNGenerations(_conf.keepNGenerations()),
-  _mcTrajectoryCompressionLevel(mu2e::CompressionLevel::findByName(_conf.mcTrajectoryCompressionLevel())),
-  _primaryParticleCompressionLevel(mu2e::CompressionLevel::findByName(_conf.primaryParticleCompressionLevel()))
+  _mcTrajectoryCompressionLevel(mu2e::CompressionLevel::findByName(_conf.mcTrajectoryCompressionLevel()))
 {
   // Check that we have valid compression levels for this module
   checkCompressionLevels();
@@ -202,7 +193,6 @@ mu2e::CompressDetStepMCs::CompressDetStepMCs(const Parameters& conf)
     produces<StepPointMCCollection>( i_tag.instance() );
   }
   produces<MCTrajectoryCollection>();
-  produces<PrimaryParticle>();
 }
 
 void mu2e::CompressDetStepMCs::produce(art::Event & event)
@@ -242,7 +232,6 @@ void mu2e::CompressDetStepMCs::produce(art::Event & event)
     // we want to make sure we record all their SimParticles
     compressMCTrajectories(event);
   }
-  compressPrimaryParticle(event);
 
   // Compress the SimParticles and record their new keys
   compressSimParticles(event);
@@ -267,7 +256,6 @@ void mu2e::CompressDetStepMCs::produce(art::Event & event)
   updateCrvSteps();
   updateStepPointMCs();
   updateMCTrajectories();
-  updatePrimaryParticle();
 
   // Now add everything to the event
   event.put(std::move(_newStrawGasSteps));
@@ -279,7 +267,6 @@ void mu2e::CompressDetStepMCs::produce(art::Event & event)
   event.put(std::move(_newSimParticles));
   event.put(std::move(_newGenParticles));
   event.put(std::move(_newMCTrajectories));
-  event.put(std::move(_newPrimaryParticle));
 }
 
 void mu2e::CompressDetStepMCs::compressStrawGasSteps(const art::Event& event) {
@@ -558,18 +545,6 @@ void mu2e::CompressDetStepMCs::compressMCTrajectories(const art::Event& event) {
   }
 }
 
-void mu2e::CompressDetStepMCs::compressPrimaryParticle(const art::Event& event) {
-
-  const auto& primaryParticle = event.getValidHandle<PrimaryParticle>(_conf.primaryParticleTag());
-  if(_conf.debugLevel()>0) {
-    std::cout << "Compressing PrimaryParticle from " << _conf.primaryParticleTag() << std::endl;
-  }
-  _newPrimaryParticle = std::unique_ptr<PrimaryParticle>(new PrimaryParticle(*primaryParticle));
-  for (const auto& i_simParticle : _newPrimaryParticle->primarySimParticles()) {
-    recordSimParticle(i_simParticle);
-  }
-}
-
 void mu2e::CompressDetStepMCs::updateStepPointMCs() {
   for (const auto& i_tag : _conf.stepPointMCTags()) {
     for (auto& i_stepPointMC : *(_newStepPointMCs.at(i_tag.instance()))) {
@@ -595,16 +570,6 @@ void mu2e::CompressDetStepMCs::updateMCTrajectories() {
     mcTrajPair.key() = newSimPtr;
     _newMCTrajectories->insert(std::move(mcTrajPair));
     //    i_mcTrajectory.first = newSimPtr;
-  }
-}
-
-void mu2e::CompressDetStepMCs::updatePrimaryParticle() {
-  for (auto& i_simParticlePtr : _newPrimaryParticle->modifySimParticles()) {
-    art::Ptr<mu2e::SimParticle> newSimPtr = _simPtrRemap.at(i_simParticlePtr);
-    if(_conf.debugLevel()>0) {
-      std::cout << "Updating SimParticlePtr in PrimaryParticle from " << i_simParticlePtr << " to " << newSimPtr << std::endl;
-    }
-    i_simParticlePtr = newSimPtr;
   }
 }
 
@@ -668,11 +633,6 @@ void mu2e::CompressDetStepMCs::checkCompressionLevels() {
       _mcTrajectoryCompressionLevel != mu2e::CompressionLevel::kSimParticleCompression) {
     throw cet::exception("CompressDetStepMCs") << "This module does not allow MCTrajectories to be compressed with compression level \"" << _mcTrajectoryCompressionLevel.name() <<"\"" << std::endl;
   }
-
-  if (_primaryParticleCompressionLevel != mu2e::CompressionLevel::kNoCompression) {
-    throw cet::exception("CompressDetStepMCs") << "This module does not allow PrimaryPartilces to be compressed with compression level \"" << _primaryParticleCompressionLevel.name() <<"\"" << std::endl;
-  }
-
 }
 
 DEFINE_ART_MODULE(mu2e::CompressDetStepMCs)

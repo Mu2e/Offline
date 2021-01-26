@@ -1,27 +1,49 @@
 BEGIN_PROLOG
 
-Compression : {
-  compressDetStepMCs : {
+CompressionTemplates : {
+  compressDetStepMCs_common : {
     module_type : CompressDetStepMCs
     strawGasStepTag : "StrawGasStepMaker"
     caloShowerStepTag : "CaloShowerStepMaker"
-    crvStepTag : "CrvSteps" # currently a StepPointMC
+    crvStepTag : "CrvSteps"
     simParticleTag : "g4run"
     stepPointMCTags : [ "g4run:virtualdetector", "g4run:protonabsorber" ]#, "g4run:stoppingtarget" ]
     mcTrajectoryTag : "g4run"
-    primaryParticleTag : "FindMCPrimary"
 
+    debugLevel : 0
+  }
+
+  compressDetStepMCs_none : {
+    strawGasStepCompressionLevel : "noCompression" # keep all StrawGasSteps
+    caloShowerStepCompressionLevel : "noCompression"
+    crvStepCompressionLevel : "noCompression"
+    simParticleCompressionLevel : "noCompression"
+    stepPointMCCompressionLevel : "noCompression"
+    keepNGenerations : -1
+    truncatedSimParticleKeyOffset : 400000
+    mcTrajectoryCompressionLevel : "noCompression"
+  }
+
+  compressDetStepMCs_primary : {
     strawGasStepCompressionLevel : "noCompression" # keep all StrawGasSteps
     caloShowerStepCompressionLevel : "noCompression"
     crvStepCompressionLevel : "noCompression"
     simParticleCompressionLevel : "fullCompression" # only keep SimParticles related to other data products we are keeping
     stepPointMCCompressionLevel : "simParticleCompression" # only keep StepPointMCs related to SimParticles we are keeping
-    keepNGenerations : 1
+    keepNGenerations : -1
     truncatedSimParticleKeyOffset : 400000
     mcTrajectoryCompressionLevel : "simParticleCompression"
-    primaryParticleCompressionLevel : "noCompression"
+  }
+}
 
-    debugLevel : 0
+Compression : {
+  compressDetStepMCs_none : { 
+    @table::CompressionTemplates.compressDetStepMCs_common
+    @table::CompressionTemplates.compressDetStepMCs_none
+  }
+  compressDetStepMCs_primary : { 
+    @table::CompressionTemplates.compressDetStepMCs_common
+    @table::CompressionTemplates.compressDetStepMCs_primary
   }
 }
 
