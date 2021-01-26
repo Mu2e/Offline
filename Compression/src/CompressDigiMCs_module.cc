@@ -114,7 +114,6 @@ public:
     fhicl::Atom<art::InputTag> mcTrajectoryTag{Name("mcTrajectoryTag"), Comment("InputTag for the MCTrajectoryCollection")};
 
     // fhicl parameters for output
-    fhicl::Atom<std::string> crvOutputInstanceLabel{Name("crvOutputInstanceLabel"), Comment("Instance name for the output CRV StepPointMCCollection")};
     fhicl::Atom<bool> keepAllGenParticles{Name("keepAllGenParticles"), Comment("Set to true if you want to keep all GenParticles even if their descendents make no hits in the detector")};
     fhicl::Atom<bool> rekeySimParticleCollection{Name("rekeySimParticleCollection"), Comment("Set to true to change the keys in the SimParticleCollection (necessary for mixed events)")};
 
@@ -159,7 +158,6 @@ private:
   std::vector<art::InputTag> _simParticleTags;
   std::vector<art::InputTag> _extraStepPointMCTags;
   std::vector<art::InputTag> _timeMapTags;
-  InstanceLabel _crvOutputInstanceLabel;
   art::InputTag _caloClusterMCTag;
   art::InputTag _crvCoincClusterMCTag;
   art::InputTag _primaryParticleTag;
@@ -247,7 +245,6 @@ mu2e::CompressDigiMCs::CompressDigiMCs(const Parameters& conf)
     _simParticleTags(_conf.simParticleTags()),
     _extraStepPointMCTags(_conf.extraStepPointMCTags()),
     _timeMapTags(_conf.timeMapTags()),
-    _crvOutputInstanceLabel(_conf.crvOutputInstanceLabel()),
     _caloClusterMCTag(_conf.caloClusterMCTag()),
     _crvCoincClusterMCTag(_conf.crvCoincClusterMCTag()),
     _primaryParticleTag(_conf.primaryParticleTag()),
