@@ -228,11 +228,11 @@ def generate(configFileText="allPaths", verbose=True, doWrite=True):
             trig_list += "\""+pathName+"\""
 
             digi_path = ""
-            if 'tpr'  in pathName or 'cpr' in pathName or 'cst' in pathName or 'Sd' in pathName or 'calo' in pathName or 'Cd' in pathName:
+            if 'tpr'  in pathName or 'cpr' in pathName or 'cst' in pathName or 'SD' in pathName or 'calo' in pathName or 'CD' in pathName:
                 digi_path += "@sequence::CommonMC.DigiSim, "
-            if 'tpr'  in pathName or 'cpr' in pathName or 'cst' in pathName or 'Sd' in pathName:
+            if 'tpr'  in pathName or 'cpr' in pathName or 'cst' in pathName or 'SD' in pathName:
                 digi_path += "@sequence::TrackerMC.DigiSim, "
-            if 'calo' in pathName or 'cpr' in pathName or 'tpr' in pathName or 'Cd' in pathName:
+            if 'calo' in pathName or 'cpr' in pathName or 'tpr' in pathName or 'CD' in pathName:
                 digi_path += "@sequence::CaloMC.DigiSim, "
 
             new_path = ("\nphysics."+pathName+"_trigger"+" : [ "+ digi_path +"@sequence::Trigger.paths."+pathName+" ] \n")
