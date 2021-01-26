@@ -167,26 +167,6 @@ namespace mu2e {
 
     _timer->Stop();
 
-    // Populate the output data products.
-    // Fill the status object.
-    float cpuTime  = _timer->GetSystemElapsed() + _timer->GetUserElapsed();
-
-    int status(0);
-    if ( _steppingAction->nKilledStepLimit() > 0 ||
-         _trackingAction->nKilledByFieldPropagator() > 0 ) {
-      status =  1;
-    }
-    if ( _trackingAction->overflowSimParticles() ) status = 10;
-
-    auto g4stat = std::make_unique<StatusG4>(status,
-                                             _trackingAction->nG4Tracks(),
-                                             _trackingAction->overflowSimParticles(),
-                                             _steppingAction->nKilledStepLimit(),
-                                             _trackingAction->nKilledByFieldPropagator(),
-                                             cpuTime,
-                                             _timer->GetRealElapsed()
-                                             );
-
     simParticlePrinter_.print(std::cout, *simParticles);
 
     // Pass data products to the module to put into the event
@@ -204,6 +184,27 @@ namespace mu2e {
 
 
     if (event_passes) {
+
+      // Populate the output data products.
+      // Fill the status object.
+      float cpuTime  = _timer->GetSystemElapsed() + _timer->GetUserElapsed();
+
+      int status(0);
+      if ( _steppingAction->nKilledStepLimit() > 0 ||
+           _trackingAction->nKilledByFieldPropagator() > 0 ) {
+        status =  1;
+      }
+      if ( _trackingAction->overflowSimParticles() ) status = 10;
+
+      auto g4stat = std::make_unique<StatusG4>(status,
+                                               _trackingAction->nG4Tracks(),
+                                               _trackingAction->overflowSimParticles(),
+                                               _steppingAction->nKilledStepLimit(),
+                                               _trackingAction->nKilledByFieldPropagator(),
+                                               cpuTime,
+                                               _timer->GetRealElapsed()
+                                               );
+
       perThreadObjects_->insertSimsAndStatusData(std::move(g4stat), std::move(simParticles));
 
       _sensitiveDetectorHelper->insertSDDataIntoPerThreadStorage(perThreadObjects_);
