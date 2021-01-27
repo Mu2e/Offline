@@ -142,7 +142,7 @@ void MakeCrvSiPMCharges::SetSiPMConstants(int nPixelsX, int nPixelsY, double ove
   _avalancheProbFullyChargedPixel = GetAvalancheProbability(overvoltage);
 }
 
-void MakeCrvSiPMCharges::FillPhotonQueue(const std::vector<std::pair<double,size_t> > &photons)
+void MakeCrvSiPMCharges::FillQueue(const std::vector<std::pair<double,size_t> > &photons)
 {
 //schedule charges caused by the CRV counter photons
 //no check whether time>=_blindTime && time<_mircoBunchPeriod, since this should be done in the calling method
@@ -176,7 +176,7 @@ void MakeCrvSiPMCharges::Simulate(const std::vector<std::pair<double,size_t> > &
 {
   _pixels.clear();
   _scheduledCharges.clear();
-  FillPhotonQueue(photons);
+  FillQueue(photons);
 
   while(1)
   {

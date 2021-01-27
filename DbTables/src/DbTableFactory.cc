@@ -10,6 +10,7 @@
 #include "DbTables/inc/TrkThresholdRStraw.hh"
 #include "DbTables/inc/TrkAlignElement.hh"
 #include "DbTables/inc/TrkAlignStraw.hh"
+#include "DbTables/inc/TrkElementStatus.hh"
 #include "DbTables/inc/AnaTrkQualDb.hh"
 
 #include "DbTables/inc/SimEfficiencies.hh"
@@ -37,6 +38,14 @@ mu2e::DbTable::ptr_t mu2e::DbTableFactory::newTable(std::string const& name) {
     return std::shared_ptr<mu2e::DbTable>(new mu2e::TrkAlignPanel());
   } else if (name=="TrkAlignStraw") {
     return std::shared_ptr<mu2e::DbTable>(new mu2e::TrkAlignStraw());
+  } else if (name=="TrkPlaneStatus") {
+    return std::shared_ptr<mu2e::DbTable>(new mu2e::TrkPlaneStatus());
+  } else if (name=="TrkPanelStatus") {
+    return std::shared_ptr<mu2e::DbTable>(new mu2e::TrkPanelStatus());
+  } else if (name=="TrkStrawStatusLong") {
+    return std::shared_ptr<mu2e::DbTable>(new mu2e::TrkStrawStatusLong());
+  } else if (name=="TrkStrawStatusShort") {
+    return std::shared_ptr<mu2e::DbTable>(new mu2e::TrkStrawStatusShort());
   } else if (name=="AnaTrkQualDb") {
     return std::shared_ptr<mu2e::DbTable>(new mu2e::AnaTrkQualDb());
   } else if (name=="SimEfficiencies") {

@@ -14,8 +14,8 @@
 #include "GeometryService/inc/DetectorSystem.hh"
 #include "GeometryService/inc/GeomHandle.hh"
 #include "GeometryService/inc/GeometryService.hh"
-#include "MCDataProducts/inc/CrvSiPMChargesCollection.hh"
-#include "MCDataProducts/inc/CrvDigiMCCollection.hh"
+#include "MCDataProducts/inc/CrvSiPMCharges.hh"
+#include "MCDataProducts/inc/CrvDigiMC.hh"
 #include "SeedService/inc/SeedService.hh"
 
 #include "canvas/Persistency/Common/Ptr.h"
@@ -119,99 +119,98 @@ namespace mu2e
     for(CrvSiPMChargesCollection::const_iterator iter=crvSiPMChargesCollection->begin();
         iter!=crvSiPMChargesCollection->end(); iter++)
     {
-      const CRSScintillatorBarIndex &barIndex = iter->first;
-      const CrvSiPMCharges &siPMCharges = iter->second;
-
+      int SiPM = iter->GetSiPMNumber();
+      CRSScintillatorBarIndex barIndex = iter->GetScintillatorBarIndex();
       unsigned int FEB=barIndex.asUint()/32.0; //assume that the counters are ordered in the correct way,
                                                //i.e. that all counters beloning to the same FEB are grouped together
 
-      for(int SiPM=0; SiPM<4; SiPM++)
+      const std::vector<CrvSiPMCharges::SingleCharge> &timesAndCharges = iter->GetCharges();
+      double firstChargeTime = NAN;
+      for(size_t i=0; i<timesAndCharges.size(); i++)
       {
-        double firstSiPMChargeTime = siPMCharges.GetFirstSiPMChargeTime(SiPM);
-        if(isnan(firstSiPMChargeTime)) continue;
+        if(isnan(firstChargeTime) || firstChargeTime>timesAndCharges[i]._time) firstChargeTime=timesAndCharges[i]._time;
+      }
+      if(isnan(firstChargeTime)) continue;
 
-        double timeShiftFEB=0;
-        if(SiPM%2==0 && FEB<_timeShiftFEBsSide0.size()) timeShiftFEB=_timeShiftFEBsSide0[FEB];
-        if(SiPM%2==1 && FEB<_timeShiftFEBsSide1.size()) timeShiftFEB=_timeShiftFEBsSide1[FEB];
+      double timeShiftFEB=0;
+      if(SiPM%2==0 && FEB<_timeShiftFEBsSide0.size()) timeShiftFEB=_timeShiftFEBsSide0[FEB];
+      if(SiPM%2==1 && FEB<_timeShiftFEBsSide1.size()) timeShiftFEB=_timeShiftFEBsSide1[FEB];
 
-        firstSiPMChargeTime += timeShiftFEB;  //Ok, since all SiPMCharge times of this SiPM will be shifted by the same timeShiftFEB
+      firstChargeTime += timeShiftFEB;  //Ok, since all SiPMCharge times of this SiPM will be shifted by the same timeShiftFEB
 
-        double startTime = floor(firstSiPMChargeTime / _digitizationPeriod) * _digitizationPeriod;  //start time of the waveform
-                                                                                                    //in multiples of the
-                                                                                                    //digitization period (12.55ns)
+      double startTime = floor(firstChargeTime / _digitizationPeriod) * _digitizationPeriod;  //start time of the waveform
+                                                                                              //in multiples of the
+                                                                                              //digitization period (12.55ns)
 
-        startTime -= samplingPointShift;  //random shift of start time (same shift for all FEBs of this event)
+      startTime -= samplingPointShift;  //random shift of start time (same shift for all FEBs of this event)
 
-        const std::vector<CrvSiPMCharges::CrvSingleCharge> &timesAndCharges = siPMCharges.GetSiPMCharges(SiPM);
-        std::vector<double> times, charges;
-        for(size_t i=0; i<timesAndCharges.size(); i++)
+      std::vector<double> times, charges;
+      for(size_t i=0; i<timesAndCharges.size(); i++)
+      {
+        times.push_back(timesAndCharges[i]._time + timeShiftFEB);
+        charges.push_back(timesAndCharges[i]._charge);
+      }
+
+      //first create the full waveform
+      std::vector<double> fullWaveform;
+      _makeCrvWaveforms->MakeWaveform(times, charges, fullWaveform, startTime, _digitizationPeriod);
+      _makeCrvWaveforms->AddElectronicNoise(fullWaveform, _noise, _randGaussQ);
+
+      //break the waveform apart into short pieces (CrvDigiMC::NSamples)
+      //and apply the zero suppression, i.e. set all waveform digi points to zero which are below the minimum voltage,
+      //if the neighboring digi points are also below the minimum voltage
+      for(size_t i=0; i<fullWaveform.size(); i++)
+      {
+        if(SingleWaveformStart(fullWaveform, i)) //acts as a zero suppression
         {
-          times.push_back(timesAndCharges[i]._time + timeShiftFEB);
-          charges.push_back(timesAndCharges[i]._charge);
-        }
+          //start new single waveform
+          double digiStartTime=startTime+i*_digitizationPeriod;
 
-        //first create the full waveform
-        std::vector<double> fullWaveform;
-        _makeCrvWaveforms->MakeWaveform(times, charges, fullWaveform, startTime, _digitizationPeriod);
-        _makeCrvWaveforms->AddElectronicNoise(fullWaveform, _noise, _randGaussQ);
-
-        //break the waveform apart into short pieces (CrvDigiMC::NSamples)
-        //and apply the zero suppression, i.e. set all waveform digi points to zero which are below the minimum voltage,
-        //if the neighboring digi points are also below the minimum voltage
-        for(size_t i=0; i<fullWaveform.size(); i++)
-        {
-          if(SingleWaveformStart(fullWaveform, i)) //acts as a zero suppression
+          //collect voltages
+          std::array<double,CrvDigiMC::NSamples> voltages;
+          for(size_t singleWaveformIndex=0; singleWaveformIndex<CrvDigiMC::NSamples; i++, singleWaveformIndex++)
           {
-            //start new single waveform
-            double digiStartTime=startTime+i*_digitizationPeriod;
-
-            //collect voltages
-            std::array<double,CrvDigiMC::NSamples> voltages;
-            for(size_t singleWaveformIndex=0; singleWaveformIndex<CrvDigiMC::NSamples; i++, singleWaveformIndex++)
-            {
-              if(i<fullWaveform.size()) voltages[singleWaveformIndex]=fullWaveform[i];
-              else voltages[singleWaveformIndex]=0.0;  //so that all unused single waveform samples are set to zero
-            }
-
-            //collect StepPointMCs and SimParticles responsible for this single waveform
-            std::set<art::Ptr<StepPointMC> > steps;  //use a set to remove dublicate steppoints
-            std::map<art::Ptr<SimParticle>, int> simparticles;
-            for(size_t j=0; j<timesAndCharges.size(); j++)
-            {
-              if(timesAndCharges[j]._time>=digiStartTime-_singlePEWaveformMaxTime && 
-                 timesAndCharges[j]._time<=digiStartTime+CrvDigiMC::NSamples*_digitizationPeriod)
-              {
-                steps.insert(timesAndCharges[j]._step);
-                if(timesAndCharges[j]._step.isNonnull()) simparticles[timesAndCharges[j]._step->simParticle()]++;
-              }
-            }
-
-            //loop through the steps to fill the single waveform
-            std::vector<art::Ptr<StepPointMC> > stepVector;
-            std::set<art::Ptr<StepPointMC> >::iterator stepIter;
-            for(stepIter=steps.begin(); stepIter!=steps.end(); stepIter++) stepVector.push_back(*stepIter);
-
-            //find the most likely SimParticle
-            //if no SimParticle was recorded for this single waveform, then it was caused either by noise hits (if the threshold is low enough),
-            //or is the tail end of the peak. in that case, _simparticle will be null (set by the default constructor of art::Ptr)
-            art::Ptr<SimParticle> simParticle;
-            std::map<art::Ptr<SimParticle>,int >::iterator simparticleIter;
-            int simparticleCount=0;
-            for(simparticleIter=simparticles.begin(); simparticleIter!=simparticles.end(); simparticleIter++)
-            {
-              if(simparticleIter->second>simparticleCount)
-              {
-                simparticleCount=simparticleIter->second;
-                simParticle=simparticleIter->first;
-              }
-            }
-
-            i--;
-            crvDigiMCCollection->emplace_back(voltages, stepVector, simParticle, digiStartTime, barIndex, SiPM);
+            if(i<fullWaveform.size()) voltages[singleWaveformIndex]=fullWaveform[i];
+            else voltages[singleWaveformIndex]=0.0;  //so that all unused single waveform samples are set to zero
           }
-        }
-      } //SiPM
 
+          //collect CrvSteps and SimParticles responsible for this single waveform
+          std::set<art::Ptr<CrvStep> > steps;  //use a set to remove dublicate steppoints
+          std::map<art::Ptr<SimParticle>, int> simparticles;
+          for(size_t j=0; j<timesAndCharges.size(); j++)
+          {
+            if(timesAndCharges[j]._time>=digiStartTime-_singlePEWaveformMaxTime && 
+               timesAndCharges[j]._time<=digiStartTime+CrvDigiMC::NSamples*_digitizationPeriod)
+            {
+              steps.insert(timesAndCharges[j]._step);
+              if(timesAndCharges[j]._step.isNonnull()) simparticles[timesAndCharges[j]._step->simParticle()]++;
+            }
+          }
+
+          //loop through the steps to fill the single waveform
+          std::vector<art::Ptr<CrvStep> > stepVector;
+          std::set<art::Ptr<CrvStep> >::iterator stepIter;
+          for(stepIter=steps.begin(); stepIter!=steps.end(); stepIter++) stepVector.push_back(*stepIter);
+
+          //find the most likely SimParticle
+          //if no SimParticle was recorded for this single waveform, then it was caused either by noise hits (if the threshold is low enough),
+          //or is the tail end of the peak. in that case, _simparticle will be null (set by the default constructor of art::Ptr)
+          art::Ptr<SimParticle> simParticle;
+          std::map<art::Ptr<SimParticle>,int >::iterator simparticleIter;
+          int simparticleCount=0;
+          for(simparticleIter=simparticles.begin(); simparticleIter!=simparticles.end(); simparticleIter++)
+          {
+            if(simparticleIter->second>simparticleCount)
+            {
+              simparticleCount=simparticleIter->second;
+              simParticle=simparticleIter->first;
+            }
+          }
+
+          i--;
+          crvDigiMCCollection->emplace_back(voltages, stepVector, simParticle, digiStartTime, barIndex, SiPM);
+        }
+      }
     }
 
     event.put(std::move(crvDigiMCCollection));

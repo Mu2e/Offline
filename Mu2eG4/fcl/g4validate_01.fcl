@@ -44,7 +44,7 @@ physics : {
     g4run : @local::g4run
     @table::EventMixing.producers 
     @table::TrackerMC.producers
-    @table::CaloDigiMC.producers
+    @table::CaloMC.producers
     @table::CaloReco.producers
     @table::CaloCluster.producers
     @table::TrkHitReco.producers
@@ -86,7 +86,7 @@ physics : {
   p1 : [generate, g4run,
 	  @sequence::EventMixing.TimeMaps,
 	  makeSD, makeSH,
-	  @sequence::CaloDigiMC.DigiSim,
+	  @sequence::CaloMC.DigiSim,
           @sequence::CaloReco.Reco,
           @sequence::Tracking.DigiSim, 
           @sequence::Tracking.TPRDeM

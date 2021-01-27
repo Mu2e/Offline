@@ -8,9 +8,9 @@ namespace mu2e {
    std::vector<CaloEDepMC> CaloClusterMC::energyDeposits() const
    {
        std::vector<CaloEDepMC> edeps;
-       for (const auto& digi : digis_)
+       for (const auto& hit : hits_)
        {
-          for (const auto& eDepInDigi : digi->energyDeposits())
+          for (const auto& eDepInDigi : hit->energyDeposits())
           {
               auto it = edeps.begin();
               while (it != edeps.end()) {if (it->sim() == eDepInDigi.sim()) break;  ++it;}
@@ -36,14 +36,14 @@ namespace mu2e {
 
    float CaloClusterMC::totalEnergyDep() const 
    {
-      auto sumEdep = [](float sum, const auto& digi){return sum +=digi->totalEnergyDep();};
-      return std::accumulate(digis_.begin(),digis_.end(),0.0f,sumEdep);
+      auto sumEdep = [](float sum, const auto& hit){return sum +=hit->totalEnergyDep();};
+      return std::accumulate(hits_.begin(),hits_.end(),0.0f,sumEdep);
    }
 
    float CaloClusterMC::totalEnergyDepG4() const 
    {
-      auto sumEdepG4 = [](float sum, const auto& digi){return sum +=digi->totalEnergyDepG4();};
-      return std::accumulate(digis_.begin(),digis_.end(),0.0f,sumEdepG4);
+      auto sumEdepG4 = [](float sum, const auto& hit){return sum +=hit->totalEnergyDepG4();};
+      return std::accumulate(hits_.begin(),hits_.end(),0.0f,sumEdepG4);
    }
 
 }

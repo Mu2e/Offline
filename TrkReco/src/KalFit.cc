@@ -561,18 +561,19 @@ namespace mu2e
     const Tracker& tracker = *_tracker;
     // general properties; these should be computed once/job and stored FIXME!
     double strawradius = tracker.strawOuterRadius();
-    auto const& plane0 = tracker.planes().front();
-    auto const& panel0 = plane0.getPanel(0);
-    auto const& straw0 = panel0.getStraw(0);
-    auto const& straw95 = panel0.getStraw(StrawId::_nstraws-1);
+    auto const& frontplane = tracker.planes().front();
+    auto const& firstpanel = frontplane.getPanel(0);
+    auto const& innerstraw = firstpanel.getStraw(0);
+    auto const& outerstraw = firstpanel.getStraw(StrawId::_nstraws-1);
     // compute limits: add some buffer for the finite size of the straw
-    auto DStoP = panel0.dsToPanel();
-    auto s0origin = DStoP*straw0.origin();
-    auto s95origin = DStoP*straw95.origin();
-    double ymin = s0origin.y() - strawradius;
-    double ymax = s95origin.y() + strawradius;
-    double umax = straw0.halfLength() + strawradius;
-    double rmax = tracker.getSupportParams().innerRadius() + strawradius;
+    auto DStoP = firstpanel.dsToPanel();
+    auto innerstraw_origin = DStoP*innerstraw.origin();
+    auto outerstraw_origin = DStoP*outerstraw.origin();
+    double ymin = innerstraw_origin.y() - strawradius;
+    double ymax = outerstraw_origin.y() + strawradius;
+    double umax = innerstraw.halfLength() + strawradius;
+    // use the outermost straw end to set the max hit radius
+    double rmax = outerstraw.wireEnd(StrawEnd::cal).mag() + strawradius;
     double spitch = (StrawId::_nstraws-1)/(ymax-ymin);
     // storage of potential straws
     StrawFlightComp strawcomp(_maxmatfltdiff);

@@ -238,7 +238,7 @@ Below here are a series of macros -  they are not glamorous but they produce use
 		      
         	      GeomHandle<Tracker> th; 
 		      const Tracker* tracker = th.get(); 
-        	      TubsParams envelope(tracker->getInnerTrackerEnvelopeParams());
+        	      TubsParams envelope(tracker->g4Tracker()->getInnerTrackerEnvelopeParams());
 		      //double zlimit{envelope.zHalfLength()};
         	      if (doDisplay_) {
               
@@ -570,7 +570,7 @@ Below here are a series of macros -  they are not glamorous but they produce use
         GeomHandle<Plane> plane;     
         GeomHandle<Panel> panel;     
         // Annulus of a cylinder that bounds the tracker/straw info:
-        TubsParams envelope(tracker->getInnerTrackerEnvelopeParams());
+        TubsParams envelope(tracker->g4Tracker()->getInnerTrackerEnvelopeParams());
          
         if (doDisplay_) {
               
@@ -991,7 +991,7 @@ Below here are a series of macros -  they are not glamorous but they produce use
        	    GeomHandle<Tracker> th;
        	    const Tracker* tracker = th.get(); 
             // Annulus of a cylinder that bounds the tracker/straw info:
-            TubsParams envelope(tracker->getInnerTrackerEnvelopeParams());
+            TubsParams envelope(tracker->g4Tracker()->getInnerTrackerEnvelopeParams());
             if (doDisplay_) {
                 TPolyMarker poly, wirecentre;
 	      	TBox   box;
@@ -1078,7 +1078,7 @@ Below here are a series of macros -  they are not glamorous but they produce use
         GeomHandle<Tracker> tracker;
 
         // Annulus of a cylinder that bounds the tracker
-        TubsParams envelope(tracker->getInnerTrackerEnvelopeParams());
+        TubsParams envelope(tracker->g4Tracker()->getInnerTrackerEnvelopeParams());
 
 	std::vector<double> x, y, z, a0, a1, b0, b1;
 	std::vector<XYZVec> xprimes, yprimes, zprimes, initial_track_direction;
@@ -1223,7 +1223,7 @@ Below here are a series of macros -  they are not glamorous but they produce use
         GeomHandle<Tracker> tracker;
 
         // Annulus of a cylinder that bounds the tracker
-        TubsParams envelope(tracker->getInnerTrackerEnvelopeParams());
+        TubsParams envelope(tracker->g4Tracker()->getInnerTrackerEnvelopeParams());
 
 	std::vector<double> x, y, z, a0, a1, b0, b1;
 	std::vector<XYZVec> xprimes, yprimes, zprimes, initial_track_direction;
@@ -1380,7 +1380,7 @@ Below here are a series of macros -  they are not glamorous but they produce use
           GeomHandle<Tracker> tracker;
  
           // Annulus of a cylinder that bounds the tracker
-          TubsParams envelope(tracker->getInnerTrackerEnvelopeParams());
+          TubsParams envelope(tracker->g4Tracker()->getInnerTrackerEnvelopeParams());
           
 	  // Draw the frame for the cylinders in plot:
           double zlimit{envelope.zHalfLength()};

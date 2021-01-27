@@ -60,8 +60,6 @@ class WLSDetectorConstruction : public G4VUserDetectorConstruction
 
     static WLSDetectorConstruction*  _fgInstance;  
 
-    bool _checkOverlaps;
-
     WLSMaterials* _materials;
 
     G4VPhysicalVolume *_physiWorld;
@@ -71,14 +69,10 @@ class WLSDetectorConstruction : public G4VUserDetectorConstruction
     double _worldSizeY;
     double _worldSizeZ;
 
-    double _mppcPolish;
     double _mppcReflectivity;
-    double _reflectorPolish;
+    double _blacktapeReflectivity;
     double _reflectorReflectivity;
-    double _extrusionPolish;
-    double _fiberGuideBarPolish;
     double _fiberGuideBarReflectivity;
-    double _holePolish;
 
     double _barLength, _barWidth, _barThickness;
     double _fiberSeparation;
@@ -86,7 +80,7 @@ class WLSDetectorConstruction : public G4VUserDetectorConstruction
     double _extrusionCornerRadius;
     double _holeRadiusX, _holeRadiusY;
     double _fiberRadius, _clad1Radius, _clad2Radius;
-    double _sipmRadius, _sipmLength;
+    double _sipmWidth, _sipmLength, _sipmWindowLength;
     double _airGap;
     double _fiberGuideBarLength;
   

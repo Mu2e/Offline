@@ -14,8 +14,9 @@ namespace mu2eCrv
 void MakeCrvPhotons::DrawHistograms()
 {
   gStyle->SetOptStat(0);
+  gStyle->SetPalette(kRainBow);
 
-  TCanvas c1("ArrivalProbabilities1","",400,800);
+  TCanvas c1("ArrivalProbabilities1","",600,800);
   TH2F h1("HistArrivalProbabilities1","",_LBD.yBins.size()-1,_LBD.yBins.data(),_LBD.zBins.size()-1,_LBD.zBins.data());
 
   for(unsigned int iy=1; iy<_LBD.yBins.size(); iy++)
@@ -32,6 +33,9 @@ void MakeCrvPhotons::DrawHistograms()
 
   h1.SetXTitle("y [mm]");
   h1.SetYTitle("z [mm]");
+  h1.GetYaxis()->CenterTitle(true);
+  h1.GetYaxis()->SetTitleOffset(0.9);
+  h1.SetContour(100);
   h1.Draw("COLZ");
 
   TMarker marker(-13,_LBD.zBins[0],0);

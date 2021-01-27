@@ -69,6 +69,7 @@ helper.make_plugins( [
    'mu2e_GeometryService',
    'mu2e_BFieldGeom',
    'mu2e_Mu2eHallGeom',
+   'mu2e_TrackerConditions',
    'mu2e_TrackerGeom',
    'mu2e_CalorimeterGeom',
    'mu2e_MCDataProducts',

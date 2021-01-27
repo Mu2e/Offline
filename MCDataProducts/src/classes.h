@@ -70,9 +70,10 @@
 #include "MCDataProducts/inc/KalSeedMC.hh"
 
 // CRV
-#include "MCDataProducts/inc/CrvPhotonsCollection.hh"
-#include "MCDataProducts/inc/CrvSiPMChargesCollection.hh"
-#include "MCDataProducts/inc/CrvDigiMCCollection.hh"
+#include "MCDataProducts/inc/CrvStep.hh"
+#include "MCDataProducts/inc/CrvPhotons.hh"
+#include "MCDataProducts/inc/CrvSiPMCharges.hh"
+#include "MCDataProducts/inc/CrvDigiMC.hh"
 #include "MCDataProducts/inc/CrvCoincidenceClusterMCCollection.hh"
 #include "DataProducts/inc/CRSScintillatorBarIndex.hh"
 

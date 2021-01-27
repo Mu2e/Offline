@@ -17,6 +17,8 @@ WLSMaterials::~WLSMaterials()
   delete    FPethylene;
   delete    PolystyreneFiber;
   delete    PolystyreneScint;
+  delete    Epoxy;
+  delete    Coating;
 }
 
 WLSMaterials* WLSMaterials::instance = NULL;
@@ -130,6 +132,22 @@ void WLSMaterials::CreateMaterials()
   nistMan->FindOrBuildMaterial("G4_Si");
 
   //--------------------------------------------------
+  // Epoxy 
+  //--------------------------------------------------
+ 
+  elements.push_back("C");     natoms.push_back(21);
+  elements.push_back("H");     natoms.push_back(25);
+  elements.push_back("Cl");    natoms.push_back(1);
+  elements.push_back("O");     natoms.push_back(5);
+
+  density = 1.25*g/cm3;
+
+  Epoxy = nistMan->ConstructNewMaterial("Epoxy", elements, natoms, density);
+
+  elements.clear();
+  natoms.clear();
+
+  //--------------------------------------------------
   // TiO2
   //--------------------------------------------------
 
@@ -166,10 +184,10 @@ void WLSMaterials::CreateMaterials()
   G4double PhotonEnergyRefractiveIndexAir[nEntriesRefractiveIndexAir] = {2.00*eV, 15.75*eV};
   G4double RefractiveIndexAir[nEntriesRefractiveIndexAir] = {1.00, 1.00};
 
-  G4MaterialPropertiesTable* MPT = new G4MaterialPropertiesTable();
-  MPT->AddProperty("RINDEX", PhotonEnergyRefractiveIndexAir, RefractiveIndexAir, nEntriesRefractiveIndexAir);
+  G4MaterialPropertiesTable* MPTAir = new G4MaterialPropertiesTable();
+  MPTAir->AddProperty("RINDEX", PhotonEnergyRefractiveIndexAir, RefractiveIndexAir, nEntriesRefractiveIndexAir);
 
-  Air->SetMaterialPropertiesTable(MPT);
+  Air->SetMaterialPropertiesTable(MPTAir);
 
   //--------------------------------------------------
   // Fibers Core (polystyrene)
@@ -287,7 +305,7 @@ void WLSMaterials::CreateMaterials()
     5.98,  6.27,  6.82,  7.48,  7.78,  8.64,  9.26, 10.51, 11.11, 12.16,
     0.0,   0.0
   };
-  for(int i=0; i<273; i++) AbsorptionY11[i]*=0.80*m;
+  for(int i=0; i<273; i++) AbsorptionY11[i]*=0.85*m;
   for(int i=273; i<nEntriesAbsorptionY11; i++) AbsorptionY11[i]*=1.00*mm;
 
   //quantum yield for Y11
@@ -333,7 +351,7 @@ void WLSMaterials::CreateMaterials()
   MPTWLSfiber->AddProperty("WLSY11ABSLENGTH",PhotonEnergyAbsorptionY11,AbsorptionY11,nEntriesAbsorptionY11);
   MPTWLSfiber->AddProperty("WLSY11QUANTUMYIELD",PhotonEnergyQuantumYieldY11,QuantumYieldY11,nEntriesQuantumYieldY11);
   MPTWLSfiber->AddProperty("WLSY11COMPONENT",PhotonEnergyEmissionY11,EmissionY11,nEntriesEmissionY11);
-  MPTWLSfiber->AddConstProperty("WLSY11TIMECONSTANT", 8.7*ns);
+  MPTWLSfiber->AddConstProperty("WLSY11TIMECONSTANT", 10.0*ns);
 
   PolystyreneFiber->SetMaterialPropertiesTable(MPTWLSfiber);
 
@@ -364,7 +382,7 @@ void WLSMaterials::CreateMaterials()
     1.32, 1.26, 1.20, 1.14, 1.10, 1.04, 1.00
   };
   //0.1 less than polystyrene starting at 4.5eV (due to lack of data)
-  for(int i=21; i<nEntriesRefractiveIndexClad1; i++) RefractiveIndexClad1[i]-=0.1;
+  for(int i=21; i<nEntriesRefractiveIndexClad1; i++) RefractiveIndexClad1[i]-=0.15;
 
   G4MaterialPropertiesTable* MPTClad1 = new G4MaterialPropertiesTable();
   MPTClad1->AddProperty("RINDEX",PhotonEnergyRefractiveIndexClad1,RefractiveIndexClad1,nEntriesRefractiveIndexClad1);
@@ -386,6 +404,20 @@ void WLSMaterials::CreateMaterials()
   FPethylene->SetMaterialPropertiesTable(MPTClad2);
 
   //--------------------------------------------------
+  // Epoxy (SiPM window)
+  //--------------------------------------------------
+
+  //refractive index of Epoxy SiPM window is 1.55 according to Hamamatsu - assumed to be at 589nm. 
+  //since no other information is given, the fiber polystyrene index of refraction is used -0.04.
+  G4double RefractiveIndexEpoxy[nEntriesRefractiveIndexPS];
+  for(int i=0; i<nEntriesRefractiveIndexPS; i++) RefractiveIndexEpoxy[i]=RefractiveIndexPS[i]-0.04;
+
+  G4MaterialPropertiesTable* MPTEpoxy = new G4MaterialPropertiesTable();
+  MPTEpoxy->AddProperty("RINDEX", PhotonEnergyRefractiveIndexPS, RefractiveIndexEpoxy, nEntriesRefractiveIndexPS);
+
+  Epoxy->SetMaterialPropertiesTable(MPTEpoxy);
+
+  //--------------------------------------------------
   //  Polystyrene
   //--------------------------------------------------
 
@@ -393,47 +425,43 @@ void WLSMaterials::CreateMaterials()
 
 
   //emission spectrum for PPO (used for WLS [for PS+PPO] and for scintillation [for PS+PPO])
-  //(http://www.photochemcad.com/compounds/B09_2,5-Diphenyloxazole_[PPO].htm)
+  //(https://pubs.acs.org/doi/suppl/10.1021/ac062160k/suppl_file/ac062160ksi20061218_105400.pdf)
   //notes: -most emissions (due to WLS and scintillation) happen via an non-radiative energy transfer from PS to PPO
   //        followed by a PPO emission, so that the PS emissions can be neglected.
   //       -for WLS, no distingtion is made between photons being absorped by PS or PPO.
-  const G4int nEntriesEmissionPPO = 100;
+  const G4int nEntriesEmissionPPO = 70;
   G4double PhotonEnergyEmissionPPO[nEntriesEmissionPPO] = 
   {
-    2.000, 2.479, 
-    2.480, 2.490, 2.500, 2.510, 2.520, 2.530, 2.541, 2.551, 2.562, 2.572,
-    2.583, 2.594, 2.605, 2.616, 2.627, 2.638, 2.649, 2.661, 2.672, 2.684,
-    2.695, 2.707, 2.719, 2.731, 2.743, 2.755, 2.768, 2.780, 2.792, 2.805,
-    2.818, 2.831, 2.844, 2.857, 2.870, 2.883, 2.897, 2.910, 2.924, 2.938,
-    2.952, 2.966, 2.980, 2.995, 3.009, 3.024, 3.039, 3.054, 3.069, 3.084,
-    3.100, 3.115, 3.131, 3.147, 3.163, 3.179, 3.195, 3.212, 3.229, 3.246,
-    3.263, 3.280, 3.297, 3.315, 3.333, 3.351, 3.369, 3.388, 3.406, 3.425, 
-    3.444, 3.463, 3.483, 3.502, 3.522, 3.542, 3.563, 3.583, 3.604, 3.625,
-    3.647, 3.668, 3.690, 3.712, 3.734, 3.757, 3.780, 3.803, 3.827, 3.850,
-    3.875, 3.899, 3.924, 3.949, 3.974, 3.999,
-    4.000, 15.75
+    2.00, 
+    2.48, 2.50, 2.52, 2.54, 2.56, 2.58, 2.60, 2.62, 2.64, 2.66, 
+    2.68, 2.70, 2.72, 2.74, 2.76, 2.78, 2.80, 2.82, 2.84, 2.86, 
+    2.88, 2.90, 2.92, 2.94, 2.96, 2.98, 3.00, 3.02, 3.04, 3.06, 
+    3.08, 3.10, 3.12, 3.14, 3.16, 3.18, 3.20, 3.22, 3.24, 3.26, 
+    3.28, 3.30, 3.32, 3.34, 3.36, 3.38, 3.40, 3.42, 3.44, 3.46, 
+    3.48, 3.50, 3.52, 3.54, 3.56, 3.58, 3.60, 3.62, 3.64, 3.66, 
+    3.68, 3.70, 3.72, 3.74, 3.76, 3.78, 3.80, 
+    3.82, 15.75
   };
   for(int i=0; i<nEntriesEmissionPPO; i++) PhotonEnergyEmissionPPO[i]*=eV;
   G4double EmissionPPO[nEntriesEmissionPPO] = 
-  {   0,   0,
-      2,   2,   2,   2,   3,   3,   3,   3,   4,   4,
-      4,   5,   5,   6,   6,   7,   7,   8,   9,  10,
-     11,  12,  14,  16,  17,  19,  21,  23,  26,  28,
-     31,  33,  37,  41,  46,  52,  59,  66,  73,  80,
-     88,  95, 104, 112, 121, 131, 144, 162, 181, 204,
-    227, 250, 270, 290, 306, 320, 329, 339, 359, 395,
-    443, 495, 537, 568, 586, 594, 590, 570, 548, 550,
-    598, 683, 767, 797, 754, 676, 596, 501, 418, 388,
-    434, 528, 574, 482, 301, 163, 101,  77,  65,  57,
-     49,  40,  30,  24,  23,  23,
-      0,   0
+  {   0, 
+      0,  0,  0,  0,  0,  0,  1,  1,  1,  1,
+      1,  1,  1,  1,  2,  2,  2,  3,  3,  4,
+      4,  5,  6,  7,  8,  9, 10, 12, 13, 16,
+     19, 21, 24, 27, 29, 31, 33, 36, 42, 48,
+     55, 59, 63, 64, 64, 59, 62, 70, 80, 92,
+    100, 96, 89, 77, 66, 55, 51, 60, 73, 85,
+     82, 62, 40, 20, 11,  6,  5, 
+      0,  0
   };
 
   //quantum yield for PS+PPO (used for WLS)
   //(https://aip.scitation.org/doi/pdf/10.1063/1.1840616)  
   //(https://www.researchgate.net/publication/232974179_Photodynamics_of_OLED_triplet_emitters_lrppy3_and_PtOEP)
+  //(https://pubs.acs.org/doi/suppl/10.1021/ac062160k/suppl_file/ac062160ksi20061218_105400.pdf)
   //notes: -quantum efficiciencies for PS+PPO not given for energies less than 4.35eV, 
-  //       -use a value of 0.83 for energies below 4.35eV (from Birks, Photophysics or Aromatic Molecules), 
+  //       -use a value of 0.94 for energies below 4.35eV (from Boens et al., Supporting Information for 
+  //        Fluorescence Lifetime Standards for Time and Frequency Domain Fluorescence Spectroscopy), 
   //        which is the quantum yield of PPO (can be justified, because at these energies, almost all photons
   //        will be absorbed by PPO and not by PS due to the shorter absorption length of PPO)
   //       -quantum efficiciencies for PS+PPO for energies less than 3.4eV are set to zero
@@ -450,7 +478,7 @@ void WLSMaterials::CreateMaterials()
   for(int i=0; i<nEntriesQuantumYieldPSPPO; i++) PhotonEnergyQuantumYieldPSPPO[i]*=eV;
   G4double QuantumYieldPSPPO[nEntriesQuantumYieldPSPPO] =
   {
-     0.00, 0.00, 0.83, 0.83, 0.78, 0.74, 0.67, 0.63, 0.60, 0.65,
+     0.00, 0.00, 0.94, 0.94, 0.78, 0.74, 0.67, 0.63, 0.60, 0.65,
      0.68, 0.57, 0.48, 0.39, 0.38, 0.48, 0.53, 0.58, 0.56, 0.49,
      0.43, 0.40, 0.38, 0.35, 0.35, 0.38, 0.43
   };
@@ -488,35 +516,35 @@ void WLSMaterials::CreateMaterials()
 
 
   //emission spectrum for POPOP (used for WLS)
-  //(http://www.photochemcad.com/compounds/B10_1,4-Bis(5-phenyl-2-oxazolyl)benzene_%5bPOPOP%5d.htm)
+  //(https://pubs.acs.org/doi/suppl/10.1021/ac062160k/suppl_file/ac062160ksi20061218_105400.pdf)
 
-  const G4int nEntriesEmissionPOPOP = 58;
+  const G4int nEntriesEmissionPOPOP = 63;
   G4double PhotonEnergyEmissionPOPOP[nEntriesEmissionPOPOP] = 
   {
-    2.000, 2.479,
-    2.480, 2.492, 2.505, 2.517, 2.530, 2.543, 2.556, 2.570, 2.583, 2.597, 
-    2.610, 2.624, 2.638, 2.652, 2.666, 2.681, 2.695, 2.710, 2.725, 2.740,
-    2.755, 2.771, 2.786, 2.802, 2.818, 2.834, 2.850, 2.867, 2.883, 2.900,
-    2.917, 2.935, 2.952, 2.970, 2.988, 3.006, 3.024, 3.043, 3.061, 3.080,
-    3.100, 3.119, 3.139, 3.159, 3.179, 3.200, 3.220, 3.241, 3.263, 3.284,
-    3.306, 3.328, 3.351, 3.374, 3.397,
+    2.00, 2.24,
+    2.26, 2.28, 2.30, 2.32, 2.34, 2.36, 2.38, 2.40, 2.42, 2.44, 
+    2.46, 2.48, 2.50, 2.52, 2.54, 2.56, 2.58, 2.60, 2.62, 2.64, 
+    2.66, 2.68, 2.70, 2.72, 2.74, 2.76, 2.78, 2.80, 2.82, 2.84, 
+    2.86, 2.88, 2.90, 2.92, 2.94, 2.96, 2.98, 3.00, 3.02, 3.04, 
+    3.06, 3.08, 3.10, 3.12, 3.14, 3.16, 3.18, 3.20, 3.22, 3.24, 
+    3.26, 3.28, 3.30, 3.32, 3.34, 3.36, 3.38, 3.40, 3.42, 3.44, 
    15.75
   };
   for(int i=0; i<nEntriesEmissionPOPOP; i++) PhotonEnergyEmissionPOPOP[i]*=eV;
   G4double EmissionPOPOP[nEntriesEmissionPOPOP] = 
   {
-      0,   0,
-      6,   7,   7,   8,   8,   9,  10,  11,  12,  14,  
-     16,  19,  21,  24,  26,  28,  30,  31,  31,  32,
-     33,  35,  40,  46,  53,  60,  66,  70,  71,  69,
-     65,  60,  57,  60,  71,  85, 101, 108, 102,  92,
-     77,  62,  49,  45,  53,  69,  85,  79,  53,  29,
-     13,   6,   2,   1,   0,
+      0,  0,
+      1,  1,  1,  1,  1,  2,  2,  3,  3,  4, 
+      5,  6,  6,  7,  7,  9, 10, 13, 15, 19, 
+     21, 23, 24, 23, 26, 28, 35, 43, 52, 56, 
+     58, 58, 54, 49, 50, 57, 74, 89,100, 97, 
+     85, 73, 56, 46, 44, 56, 78, 94, 88, 60, 
+     36, 18,  9,  4,  2,  1,  1,  1,  1,  0, 
       0
   };
 
   //quantum yield for POPOP (used for WLS)
-  //(http://www.photochemcad.com/compounds/B10_1,4-Bis(5-phenyl-2-oxazolyl)benzene_%5bPOPOP%5d.htm)
+  //(https://pubs.acs.org/doi/suppl/10.1021/ac062160k/suppl_file/ac062160ksi20061218_105400.pdf)
   //note: only one quantum yield is available, so it will be used for all wavelength
   //      even though it is probably not constant
 
@@ -528,7 +556,7 @@ void WLSMaterials::CreateMaterials()
   for(int i=0; i<nEntriesQuantumYieldPOPOP; i++) PhotonEnergyQuantumYieldPOPOP[i]*=eV;
   G4double QuantumYieldPOPOP[nEntriesQuantumYieldPOPOP] =
   {
-     0.86, 0.86    //POPOP in benzene (Birks, Photophysics of Aromatic Molecules)
+     0.97, 0.97    //POPOP in cyclohexane (Boens et al.)
   };
 
   //absorption length for POPOP (used for attenuation [via quantum yield] and WLS)
@@ -564,9 +592,9 @@ void WLSMaterials::CreateMaterials()
 
   //for scintillation emission of PS+PPO
   MPTPolystyrene->AddProperty("FASTCOMPONENT",PhotonEnergyEmissionPPO,EmissionPPO,nEntriesEmissionPPO);
-  MPTPolystyrene->AddConstProperty("FASTTIMECONSTANT", 1.68*ns);  //PPO in cyclohexane (Birks, Photophysics of Aromatic Molecules)
+  MPTPolystyrene->AddConstProperty("FASTTIMECONSTANT", 1.36*ns);  //PPO in cyclohexane (Boens et al.)
   MPTPolystyrene->AddConstProperty("FASTSCINTILLATIONRISETIME", 1.0*ns);  //exact value not know, but the rise time of PS based scintillators tend to be around 1ns
-  MPTPolystyrene->AddConstProperty("SCINTILLATIONYIELD",39400./MeV); //to match the testbeam number of PEs
+  MPTPolystyrene->AddConstProperty("SCINTILLATIONYIELD",35900./MeV); //to match the testbeam number of PEs
   MPTPolystyrene->AddConstProperty("RESOLUTIONSCALE",1.0);
   MPTPolystyrene->AddConstProperty("YIELDRATIO", 1.0);  //100% fast component 
 
@@ -577,13 +605,13 @@ void WLSMaterials::CreateMaterials()
   MPTPolystyrene->AddProperty("WLSPSPPOCOMPONENT",PhotonEnergyEmissionPPO,EmissionPPO,nEntriesEmissionPPO);
   MPTPolystyrene->AddProperty("WLSPSPPOQUANTUMYIELD",PhotonEnergyQuantumYieldPSPPO,QuantumYieldPSPPO,nEntriesQuantumYieldPSPPO);
   MPTPolystyrene->AddProperty("WLSPSPPOABSLENGTH",PhotonEnergyAbsorptionPSPPO,AbsorptionPSPPO,nEntriesAbsorptionPSPPO);
-  MPTPolystyrene->AddConstProperty("WLSPSPPOTIMECONSTANT", 1.68*ns);  //PPO in cyclohexane (Birks, Photophysics of Aromatic Molecules)
+  MPTPolystyrene->AddConstProperty("WLSPSPPOTIMECONSTANT", 1.36*ns);  //PPO in cyclohexane (Boens et al.)
 
   //for WLS absorption/emission of POPOP
   MPTPolystyrene->AddProperty("WLSPOPOPCOMPONENT",PhotonEnergyEmissionPOPOP,EmissionPOPOP,nEntriesEmissionPOPOP);
   MPTPolystyrene->AddProperty("WLSPOPOPQUANTUMYIELD",PhotonEnergyQuantumYieldPOPOP,QuantumYieldPOPOP,nEntriesQuantumYieldPOPOP);
   MPTPolystyrene->AddProperty("WLSPOPOPABSLENGTH",PhotonEnergyAbsorptionPOPOP,AbsorptionPOPOP,nEntriesAbsorptionPOPOP);
-  MPTPolystyrene->AddConstProperty("WLSPOPOPTIMECONSTANT", 1.5*ns);  //POPOP in bezene (Birks, Photophysics of Aromatic Molecules)
+  MPTPolystyrene->AddConstProperty("WLSPOPOPTIMECONSTANT", 1.12*ns);  //POPOP in cyclohexane (Boesn et al.)
 
   PolystyreneScint->SetMaterialPropertiesTable(MPTPolystyrene);
 

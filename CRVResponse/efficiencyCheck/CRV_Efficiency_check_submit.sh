@@ -11,35 +11,39 @@ sed '378s/.*/CrvCoincidenceX  : @local::CrvCoincidenceTS/' CRVResponse/efficienc
 sed '378s/.*/CrvCoincidenceX  : @local::CrvCoincidenceE/' CRVResponse/efficiencyCheck/CRV_Efficiency_check.fcl >| CRVResponse/efficiencyCheck/submit/CRV_Efficiency_check_E.fcl
 sed '378s/.*/CrvCoincidenceX  : @local::CrvCoincidenceR/' CRVResponse/efficiencyCheck/CRV_Efficiency_check.fcl >| CRVResponse/efficiencyCheck/submit/CRV_Efficiency_check_R.fcl
 sed '378s/.*/CrvCoincidenceX  : @local::CrvCoincidenceL/' CRVResponse/efficiencyCheck/CRV_Efficiency_check.fcl >| CRVResponse/efficiencyCheck/submit/CRV_Efficiency_check_L.fcl
+sed '378s/.*/CrvCoincidenceX  : @local::CrvCoincidenceL/' CRVResponse/efficiencyCheck/CRV_Efficiency_check.fcl >| CRVResponse/efficiencyCheck/submit/CRV_Efficiency_check_L_teststand.fcl
 sed '378s/.*/CrvCoincidenceX  : @local::CrvCoincidenceU/' CRVResponse/efficiencyCheck/CRV_Efficiency_check.fcl >| CRVResponse/efficiencyCheck/submit/CRV_Efficiency_check_U.fcl
 sed '378s/.*/CrvCoincidenceX  : @local::CrvCoincidenceD/' CRVResponse/efficiencyCheck/CRV_Efficiency_check.fcl >| CRVResponse/efficiencyCheck/submit/CRV_Efficiency_check_D.fcl
 
-sed -i '440s/.*/         pars: [@local::outsideCrvCutT, @local::belowCrvCutT]/' CRVResponse/efficiencyCheck/submit/CRV_Efficiency_check_T.fcl
-sed -i '440s/.*/         pars: [@local::outsideCrvCutT, @local::belowCrvCutT]/' CRVResponse/efficiencyCheck/submit/CRV_Efficiency_check_TS.fcl
-sed -i '440s/.*/         pars: [@local::outsideCrvCutE, @local::belowCrvCutE]/' CRVResponse/efficiencyCheck/submit/CRV_Efficiency_check_E.fcl
-sed -i '440s/.*/         pars: [@local::outsideCrvCutR, @local::belowCrvCutR]/' CRVResponse/efficiencyCheck/submit/CRV_Efficiency_check_R.fcl
-sed -i '440s/.*/         pars: [@local::outsideCrvCutL, @local::belowCrvCutL]/' CRVResponse/efficiencyCheck/submit/CRV_Efficiency_check_L.fcl
-sed -i '440s/.*/         pars: [@local::outsideCrvCutU, @local::belowCrvCutU]/' CRVResponse/efficiencyCheck/submit/CRV_Efficiency_check_U.fcl
-sed -i '440s/.*/         pars: [@local::outsideCrvCutD, @local::belowCrvCutD]/' CRVResponse/efficiencyCheck/submit/CRV_Efficiency_check_D.fcl
+sed -i '441s/.*/         pars: [@local::outsideCrvCutT, @local::belowCrvCutT]/' CRVResponse/efficiencyCheck/submit/CRV_Efficiency_check_T.fcl
+sed -i '441s/.*/         pars: [@local::outsideCrvCutT, @local::belowCrvCutT]/' CRVResponse/efficiencyCheck/submit/CRV_Efficiency_check_TS.fcl
+sed -i '441s/.*/         pars: [@local::outsideCrvCutE, @local::belowCrvCutE]/' CRVResponse/efficiencyCheck/submit/CRV_Efficiency_check_E.fcl
+sed -i '441s/.*/         pars: [@local::outsideCrvCutR, @local::belowCrvCutR]/' CRVResponse/efficiencyCheck/submit/CRV_Efficiency_check_R.fcl
+sed -i '441s/.*/         pars: [@local::outsideCrvCutL, @local::belowCrvCutL]/' CRVResponse/efficiencyCheck/submit/CRV_Efficiency_check_L.fcl
+sed -i '441s/.*/         pars: [@local::outsideCrvCutT, @local::belowCrvCutT]/' CRVResponse/efficiencyCheck/submit/CRV_Efficiency_check_L_teststand.fcl
+sed -i '441s/.*/         pars: [@local::outsideCrvCutU, @local::belowCrvCutU]/' CRVResponse/efficiencyCheck/submit/CRV_Efficiency_check_U.fcl
+sed -i '441s/.*/         pars: [@local::outsideCrvCutD, @local::belowCrvCutD]/' CRVResponse/efficiencyCheck/submit/CRV_Efficiency_check_D.fcl
 
-sed -i '690s/.*/physics.producers.CrvPhotons.lookupTableFileNames : ["CRVConditions\/v6_0\/LookupTable_6000_0"]/' CRVResponse/efficiencyCheck/submit/CRV_Efficiency_check_T.fcl
-sed -i '690s/.*/physics.producers.CrvPhotons.lookupTableFileNames : ["CRVConditions\/v6_0\/LookupTable_6000_1"]/' CRVResponse/efficiencyCheck/submit/CRV_Efficiency_check_TS.fcl
-sed -i '690s/.*/physics.producers.CrvPhotons.lookupTableFileNames : ["CRVConditions\/v6_0\/LookupTable_5000_1"]/' CRVResponse/efficiencyCheck/submit/CRV_Efficiency_check_E.fcl
-sed -i '690s/.*/physics.producers.CrvPhotons.lookupTableFileNames : ["CRVConditions\/v6_0\/LookupTable_4550_0"]/' CRVResponse/efficiencyCheck/submit/CRV_Efficiency_check_R.fcl
-sed -i '690s/.*/physics.producers.CrvPhotons.lookupTableFileNames : ["CRVConditions\/v6_0\/LookupTable_4550_0"]/' CRVResponse/efficiencyCheck/submit/CRV_Efficiency_check_L.fcl
-sed -i '690s/.*/physics.producers.CrvPhotons.lookupTableFileNames : ["CRVConditions\/v6_0\/LookupTable_6900_1"]/' CRVResponse/efficiencyCheck/submit/CRV_Efficiency_check_U.fcl
-sed -i '690s/.*/physics.producers.CrvPhotons.lookupTableFileNames : ["CRVConditions\/v6_0\/LookupTable_5700_0"]/' CRVResponse/efficiencyCheck/submit/CRV_Efficiency_check_D.fcl
+sed -i '692s/.*/physics.producers.CrvPhotons.lookupTableFileNames : ["CRVConditions\/v6_0\/LookupTable_6000_0"]/' CRVResponse/efficiencyCheck/submit/CRV_Efficiency_check_T.fcl
+sed -i '692s/.*/physics.producers.CrvPhotons.lookupTableFileNames : ["CRVConditions\/v6_0\/LookupTable_6000_1"]/' CRVResponse/efficiencyCheck/submit/CRV_Efficiency_check_TS.fcl
+sed -i '692s/.*/physics.producers.CrvPhotons.lookupTableFileNames : ["CRVConditions\/v6_0\/LookupTable_5000_1"]/' CRVResponse/efficiencyCheck/submit/CRV_Efficiency_check_E.fcl
+sed -i '692s/.*/physics.producers.CrvPhotons.lookupTableFileNames : ["CRVConditions\/v6_0\/LookupTable_4550_0"]/' CRVResponse/efficiencyCheck/submit/CRV_Efficiency_check_R.fcl
+sed -i '692s/.*/physics.producers.CrvPhotons.lookupTableFileNames : ["CRVConditions\/v6_0\/LookupTable_4550_0"]/' CRVResponse/efficiencyCheck/submit/CRV_Efficiency_check_L.fcl
+sed -i '692s/.*/physics.producers.CrvPhotons.lookupTableFileNames : ["CRVConditions\/v6_0\/LookupTable_4550_0"]/' CRVResponse/efficiencyCheck/submit/CRV_Efficiency_check_L_teststand.fcl
+sed -i '692s/.*/physics.producers.CrvPhotons.lookupTableFileNames : ["CRVConditions\/v6_0\/LookupTable_6900_1"]/' CRVResponse/efficiencyCheck/submit/CRV_Efficiency_check_U.fcl
+sed -i '692s/.*/physics.producers.CrvPhotons.lookupTableFileNames : ["CRVConditions\/v6_0\/LookupTable_5700_0"]/' CRVResponse/efficiencyCheck/submit/CRV_Efficiency_check_D.fcl
 
-sed -i '691s/.*/physics.producers.CrvPhotons.reflectors           : [ 0 ]/' CRVResponse/efficiencyCheck/submit/CRV_Efficiency_check_T.fcl
-sed -i '691s/.*/physics.producers.CrvPhotons.reflectors           : [ 1 ]/' CRVResponse/efficiencyCheck/submit/CRV_Efficiency_check_TS.fcl
-sed -i '691s/.*/physics.producers.CrvPhotons.reflectors           : [-1 ]/' CRVResponse/efficiencyCheck/submit/CRV_Efficiency_check_E.fcl
-sed -i '691s/.*/physics.producers.CrvPhotons.reflectors           : [ 0 ]/' CRVResponse/efficiencyCheck/submit/CRV_Efficiency_check_R.fcl
-sed -i '691s/.*/physics.producers.CrvPhotons.reflectors           : [ 0 ]/' CRVResponse/efficiencyCheck/submit/CRV_Efficiency_check_L.fcl
-sed -i '691s/.*/physics.producers.CrvPhotons.reflectors           : [ 1 ]/' CRVResponse/efficiencyCheck/submit/CRV_Efficiency_check_U.fcl
-sed -i '691s/.*/physics.producers.CrvPhotons.reflectors           : [ 0 ]/' CRVResponse/efficiencyCheck/submit/CRV_Efficiency_check_D.fcl
+sed -i '693s/.*/physics.producers.CrvPhotons.reflectors           : [ 0 ]/' CRVResponse/efficiencyCheck/submit/CRV_Efficiency_check_T.fcl
+sed -i '693s/.*/physics.producers.CrvPhotons.reflectors           : [ 1 ]/' CRVResponse/efficiencyCheck/submit/CRV_Efficiency_check_TS.fcl
+sed -i '693s/.*/physics.producers.CrvPhotons.reflectors           : [-1 ]/' CRVResponse/efficiencyCheck/submit/CRV_Efficiency_check_E.fcl
+sed -i '693s/.*/physics.producers.CrvPhotons.reflectors           : [ 0 ]/' CRVResponse/efficiencyCheck/submit/CRV_Efficiency_check_R.fcl
+sed -i '693s/.*/physics.producers.CrvPhotons.reflectors           : [ 0 ]/' CRVResponse/efficiencyCheck/submit/CRV_Efficiency_check_L.fcl
+sed -i '693s/.*/physics.producers.CrvPhotons.reflectors           : [ 0 ]/' CRVResponse/efficiencyCheck/submit/CRV_Efficiency_check_L_teststand.fcl
+sed -i '693s/.*/physics.producers.CrvPhotons.reflectors           : [ 1 ]/' CRVResponse/efficiencyCheck/submit/CRV_Efficiency_check_U.fcl
+sed -i '693s/.*/physics.producers.CrvPhotons.reflectors           : [ 0 ]/' CRVResponse/efficiencyCheck/submit/CRV_Efficiency_check_D.fcl
 
 i=0
-name=CRV_Efficiency_check_L
+name=CRV_Efficiency_check_L_teststand
 layerOffset=42
 #layerOffset=0
 moduleGap="3.0"
@@ -66,20 +70,23 @@ joblist=CRVResponse/efficiencyCheck/jobs.sh
         #echo "#include \"CRVResponse/efficiencyCheck/genconfig_TS.txt\"" >| $genconfigfile
         #echo "#include \"CRVResponse/efficiencyCheck/genconfig_E.txt\"" >| $genconfigfile
         #echo "#include \"CRVResponse/efficiencyCheck/genconfig_R.txt\"" >| $genconfigfile
-        echo "#include \"CRVResponse/efficiencyCheck/genconfig_L.txt\"" >| $genconfigfile
+        #echo "#include \"CRVResponse/efficiencyCheck/genconfig_L.txt\"" >| $genconfigfile
+        echo "#include \"CRVResponse/efficiencyCheck/genconfig_L_teststand.txt\"" >| $genconfigfile
         #echo "#include \"CRVResponse/efficiencyCheck/genconfig_U.txt\"" >| $genconfigfile
         #echo "#include \"CRVResponse/efficiencyCheck/genconfig_D.txt\"" >| $genconfigfile
 
         #echo "double cosmicFromTH2.dx = $dx;" >> $genconfigfile  #for E
         #echo "double cosmicFromTH2.dy = $dy;" >> $genconfigfile  #for U,D
-        echo "double cosmicFromTH2.dz = $dz;" >> $genconfigfile  #for T,T4,TS,R,L
+        #echo "double cosmicFromTH2.dz = $dz;" >> $genconfigfile  #for T,T4,TS,R,L
+        echo "double cosmicDYB.dz = $dz;" >> $genconfigfile  #for teststand for T,T4,TS,R,L
 
         geomfile=CRVResponse/efficiencyCheck/submit/geom'_'$name'_'$i.txt
         #echo "#include \"CRVResponse/efficiencyCheck/geom_T.txt\"" >| $geomfile
         #echo "#include \"CRVResponse/efficiencyCheck/geom_TS.txt\"" >| $geomfile
         #echo "#include \"CRVResponse/efficiencyCheck/geom_E.txt\"" >| $geomfile
         #echo "#include \"CRVResponse/efficiencyCheck/geom_R.txt\"" >| $geomfile
-        echo "#include \"CRVResponse/efficiencyCheck/geom_L.txt\"" >| $geomfile
+        #echo "#include \"CRVResponse/efficiencyCheck/geom_L.txt\"" >| $geomfile
+        echo "#include \"CRVResponse/efficiencyCheck/geom_L_teststand.txt\"" >| $geomfile
         #echo "#include \"CRVResponse/efficiencyCheck/geom_U.txt\"" >| $geomfile
         #echo "#include \"CRVResponse/efficiencyCheck/geom_D.txt\"" >| $geomfile
 
@@ -93,21 +100,23 @@ joblist=CRVResponse/efficiencyCheck/jobs.sh
         #echo "#include \"CRVResponse/efficiencyCheck/submit/CRV_Efficiency_check_TS.fcl\"" >| $fclfile
         #echo "#include \"CRVResponse/efficiencyCheck/submit/CRV_Efficiency_check_E.fcl\"" >| $fclfile
         #echo "#include \"CRVResponse/efficiencyCheck/submit/CRV_Efficiency_check_R.fcl\"" >| $fclfile
-        echo "#include \"CRVResponse/efficiencyCheck/submit/CRV_Efficiency_check_L.fcl\"" >| $fclfile
+        #echo "#include \"CRVResponse/efficiencyCheck/submit/CRV_Efficiency_check_L.fcl\"" >| $fclfile
+        echo "#include \"CRVResponse/efficiencyCheck/submit/CRV_Efficiency_check_L_teststand.fcl\"" >| $fclfile
         #echo "#include \"CRVResponse/efficiencyCheck/submit/CRV_Efficiency_check_U.fcl\"" >| $fclfile
         #echo "#include \"CRVResponse/efficiencyCheck/submit/CRV_Efficiency_check_D.fcl\"" >| $fclfile
 
         echo "services.GeometryService.inputFile                      : \"$geomfile\"" >> $fclfile
         echo "physics.producers.generate.inputfile                    : \"$genconfigfile\"" >> $fclfile
-        echo "physics.producers.CrvPhotons.scintillationYield         : $photonYield" >> $fclfile
-        echo "physics.producers.CrvSiPMCharges.deadSiPMProbability    : 0.02" >> $fclfile
+        echo "physics.producers.CrvPhotons.scintillationYield         : [ $photonYield ]" >> $fclfile
+        #echo "physics.producers.CrvSiPMCharges.deadSiPMProbability    : 0.02" >> $fclfile
+        echo "physics.producers.CrvSiPMCharges.deadSiPMProbability    : 0.00" >> $fclfile
 
         generate_fcl --description=$name --dsconf=$i --run=1 --events=100000 --njobs=20 --include $fclfile
         tar -zcvf fcls.$name.$i.tar.gz 000/cnf.$USER.$name.$i.*.fcl
         rm -rf 000
-#        mv fcls.$name.$i.tar.gz /pnfs/mu2e/scratch/outstage/ehrlich/fcls/.
+        mv fcls.$name.$i.tar.gz /pnfs/mu2e/scratch/users/ehrlich/fcls/.
         clustername=$name'_'moduleGap$moduleGap'_'gapLarge$gapLarge'_'gapSmall$gapSmall'_'layerOffset$layerOffset'_'PEYieldYield$PEYield
-        echo "mu2eprodsys --expected-lifetime=8h --code=\$CODELOCATION --fcllist=/pnfs/mu2e/scratch/outstage/ehrlich/fcls/fcls.$name.$i.tar.gz --clustername=$clustername --dsconf=$i --wfproject=$name" >> $joblist
+        echo "mu2eprodsys --expected-lifetime=8h --code=\$CODELOCATION --fcllist=/pnfs/mu2e/scratch/users/ehrlich/fcls/fcls.$name.$i.tar.gz --clustername=$clustername --dsconf=$i --wfproject=$name" >> $joblist
 
     done
 #done

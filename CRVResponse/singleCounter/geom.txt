@@ -9,11 +9,11 @@ int   crs.nLayers  = 1;
 
 vector<string> crs.sectorNames = {"Test"};
 
-double          crs.scintillatorBarLengthTest    =  3000;
-//double          crs.scintillatorBarLengthTest    =  6000;
+//double          crs.scintillatorBarLengthTest    =  3000;
+double          crs.scintillatorBarLengthTest    =  6000;
 
-double          crs.scintillatorBarThickness     =  19.8; //mm
-double          crs.scintillatorBarWidth         =  49.4; //mm
+double          crs.scintillatorBarThickness     =  19.78; //mm 
+double          crs.scintillatorBarWidth         =  51.34; //mm
 vector<double>  crs.gapBetweenLayers             =   {};  //mm
 double          crs.aluminumSheetThickness       =   1e-6;  //mm
 double          crs.strongBackThickness          =   1e-6;  //mm

@@ -1,0 +1,18 @@
+bool cosmicDYB.do = true;
+
+double cosmicDYB.mean =  -1.1; 
+double cosmicDYB.muEMin = 0.5e3;
+double cosmicDYB.muEMax = 5000e3;
+double cosmicDYB.muThMax= 0.785;  //45 deg
+double cosmicDYB.dx     = 500.0;  //0.5m around the 1m point
+double cosmicDYB.dy     = 0;
+double cosmicDYB.dz     = 828.0;
+string cosmicDYB.direction = "Negative_y";
+bool   cosmicDYB.dontProjectToSurface = true;
+vector<double> cosmicDYB.productionCenterInMu2e = {-5179.0,2764.19,3670.55};  //1m from -x side
+
+//
+// This tells emacs to view this file in c++ mode.
+// Local Variables:
+// mode:c++
+// End:
