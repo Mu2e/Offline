@@ -2,8 +2,9 @@
 #------------------------------------------------------------------------------
 # this file is included by fcl/standardProducers.fcl inside the PROLOG section
 # track extrapolation to the calorimeter
-# TrackCaloMatching.DtOffset is defined in fcl/standardProducers.fcl
+# TrackCaloMatching.DtOffset is defined in fcl/TrkCaloDt.fcl
 #------------------------------------------------------------------------------
+#include "fcl/TrkCaloDt.fcl"
 BEGIN_PROLOG
 
 TrackCaloMatching : {  @table::TrackCaloMatching  # general namespace for everything defined in this file
