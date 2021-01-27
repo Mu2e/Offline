@@ -211,6 +211,7 @@ namespace mu2e {
     for (int ic=0; ic<ncl; ic++) {
       cl      = &_data.ccCollection->at(ic);
       int   nsh(0);
+      if (_debugLevel > 0) printf("[CalTimePeakFinder::findTimePeaks] E=%6.3f Time=%6.3f nHits=%u\n",  cl->energyDep(), cl->time(), cl->size());
 
       if ( cl->energyDep() >= _minClusterEnergy) {
 
@@ -228,12 +229,17 @@ namespace mu2e {
           ycl     = tpos.y();
           zcl     = tpos.z();
           mphi    = polyAtan2(ycl, xcl);
+	  if (_debugLevel > 0) printf("[CalTimePeakFinder::findTimePeaks] x_cl=%6.3f y_cl=%6.3f z_cl=%6.3f\n",  xcl, ycl, zcl);
 
           // create time peak
           TimeCluster tpeak;
 //-----------------------------------------------------------------------------
 // record hits in time with each peak, and accept them if they have a minimum # of hits
 //-----------------------------------------------------------------------------
+	  if (_debugLevel > 0){
+	    printf("[CalTimePeakFinder::findTimePeaks] nComboHits=%i\n",  nch);
+	    printf("[CalTimePeakFinder::findTimePeaks]     TOF      Dt\n");
+	  }
           for(int istr=0; istr<nch;++istr) {
 
             hit    = &_data.chcol->at(istr);
@@ -245,6 +251,7 @@ namespace mu2e {
 //-----------------------------------------------------------------------------
             tof = (zcl-zstraw)/_sinPitch/(CLHEP::c_light*_beta);
             dt  = cl_time-(time+tof-meanDriftTime);
+	    if (_debugLevel > 0) printf("[CalTimePeakFinder::findTimePeaks] %10.3f %10.3f\n",  tof, dt);
 //--------------------------------------------------------------------------------
 // check the angular distance from the calorimeter cluster
 //--------------------------------------------------------------------------------

@@ -125,10 +125,15 @@ namespace mu2e {
        extractRecoDigi( caloDigisHandle, *recoClustersColl, *crystalHitColl);
 
        if ( diagLevel_ > 3 )
-       {
-           printf("[CaloClusterFast::produce] produced RecoCrystalHits ");
-           printf(", recoClustersColl size  = %i \n", int(recoClustersColl->size()));
-       }
+	 {
+	   //printf("[CaloClusterFast::produce] produced RecoCrystalHits ");
+	   printf("[CaloClusterFast::produce]recoClustersColl size  = %i \n", int(recoClustersColl->size()));
+	   if (recoClustersColl->size()>0){
+	     printf("[CaloClusterFast::produce]recoClustersColl E= %6.3f t = %6.3f \n", 
+		    recoClustersColl->at(0).energyDep(),
+		    recoClustersColl->at(0).time());
+	   }
+	 }
        event.put(std::move(crystalHitColl));
        event.put(std::move(recoClustersColl));
 
