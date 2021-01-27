@@ -1,31 +1,11 @@
 #
-# mono-energetic e- at the Al Ce endpoint without background mixing
+# generate and produce Detector Steps from mono-energetic e- at the Al Ce endpoint
 #
 # original author: Dave Brown, LBNL
 #
-#include "JobConfig/primary/prolog.fcl"
-process_name: CeEndpoint
-
-source: { module_type : EmptyEvent }
-services: @local::Services.Sim
-physics : { 
-  producers : {
-    generate : @local::CeEndpointGun
-    @table::Primary.producers
-  }
-  filters: { @table::Primary.filters }
-  analyzers: { @table::Primary.analyzers }
-  TriggerPath : @local::Primary.TriggerPath
-  EndPath : @local::Primary.EndPath
-}
-outputs : { 
-  Output :@local::Primary.Output
-}
-#
-# final configuration
-#
-#include "JobConfig/primary/epilog.fcl"
-# customize the output
-services.TFileService.fileName: "nts.owner.CeEndpoint.version.sequencer.root"
-outputs.Output.fileName: "dig.owner.CeEndpoint.version.sequencer.art"
-physics.end_paths : [ EndPath ] # needed for generate_fcl
+#include "JobConfig/primary/primary.fcl"
+# set the generator
+physics.producers.generate : @local::CeEndpointGun
+# set the stops.  This should go away with art-based muon stops FIXME!
+physics.producers.generate.muonStops.inputFiles : [ "mergedMuonStops/nts.mu2e.DS-TGTstops.MDC2018a.001002_00000000.root" ]
+outputs.Output.fileName: "dts.owner.CeEndpoint.version.sequencer.art"

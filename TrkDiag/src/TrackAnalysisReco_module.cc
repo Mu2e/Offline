@@ -17,7 +17,6 @@
 #include "MCDataProducts/inc/EventWeight.hh"
 #include "MCDataProducts/inc/KalSeedMC.hh"
 #include "MCDataProducts/inc/CaloClusterMC.hh"
-#include "MCDataProducts/inc/CaloMCTruthAssns.hh"
 #include "RecoDataProducts/inc/CaloHit.hh"
 #include "RecoDataProducts/inc/TrkCaloHitPID.hh"
 #include "TrkReco/inc/TrkUtilities.hh"
@@ -121,13 +120,13 @@ namespace mu2e {
       fhicl::Table<BranchConfig> candidate{Name("candidate"), Comment("Candidate physics track info")};
       fhicl::OptionalSequence< fhicl::Table<BranchConfig> > supplements{Name("supplements"), Comment("Supplemental physics track info (TrkAna will find closest in time to candidate)")};
       fhicl::Atom<art::InputTag> rctag{Name("RecoCountTag"), Comment("RecoCount"), art::InputTag()};
-      fhicl::Atom<art::InputTag> cchmtag{Name("CaloHitMapTag"), Comment("CaloHitMapTag"), art::InputTag()};
       fhicl::Atom<art::InputTag> meanPBItag{Name("MeanBeamIntensity"), Comment("Tag for MeanBeamIntensity"), art::InputTag()};
       fhicl::Atom<art::InputTag> PBIwtTag{Name("PBIWeightTag"), Comment("Tag for PBIWeight") ,art::InputTag()};
+      fhicl::Atom<art::InputTag> caloClusterMCTag{Name("CaloClusterMCTag"), Comment("Tag for CaloClusterMCCollection") ,art::InputTag()};
       fhicl::Atom<std::string> crvCoincidenceModuleLabel{Name("CrvCoincidenceModuleLabel"), Comment("CrvCoincidenceModuleLabel")};
       fhicl::Atom<std::string> crvCoincidenceMCModuleLabel{Name("CrvCoincidenceMCModuleLabel"), Comment("CrvCoincidenceMCModuleLabel")};
       fhicl::Atom<std::string> crvRecoPulseLabel{Name("CrvRecoPulseLabel"), Comment("CrvRecoPulseLabel")};
-      fhicl::Atom<std::string> crvStepPointMCLabel{Name("CrvStepPointMCLabel"), Comment("CrvStepPointMCLabel")};
+      fhicl::Atom<std::string> crvStepLabel{Name("CrvStepLabel"), Comment("CrvStepLabel")};
       fhicl::Atom<std::string> simParticleLabel{Name("SimParticleLabel"), Comment("SimParticleLabel")};
       fhicl::Atom<std::string> mcTrajectoryLabel{Name("MCTrajectoryLabel"), Comment("MCTrajectoryLabel")};
       fhicl::Atom<double> crvPlaneY{Name("CrvPlaneY"),2751.485};  //y of center of the top layer of the CRV-T counters
@@ -148,7 +147,6 @@ namespace mu2e {
       fhicl::Atom<int> debug{Name("debugLevel"),0};
       fhicl::Atom<art::InputTag> primaryParticleTag{Name("PrimaryParticleTag"), Comment("Tag for PrimaryParticle"), art::InputTag()};
       fhicl::Atom<art::InputTag> kalSeedMCTag{Name("KalSeedMCAssns"), Comment("Tag for KalSeedMCAssn"), art::InputTag()};
-      fhicl::Atom<art::InputTag> caloClusterMCTag{Name("CaloClusterMCTruthAssn"), Comment("Tag for CaloClusterMCTruthAssn"), art::InputTag()};
       fhicl::Table<InfoMCStructHelper::Config> infoMCStructHelper{Name("InfoMCStructHelper"), Comment("Configuration for the InfoMCStructHelper")};
       fhicl::Atom<bool> fillmcxtra{Name("FillExtraMCSteps"),false};
       fhicl::OptionalSequence<art::InputTag> mcxtratags{Name("ExtraMCStepCollectionTags"), Comment("Input tags for any other StepPointMCCollections you want written out")};
@@ -203,10 +201,8 @@ namespace mu2e {
     // MC truth branches (inputs)
     art::Handle<PrimaryParticle> _pph;
     art::Handle<KalSeedMCAssns> _ksmcah;
-    art::Handle<CaloClusterMCTruthAssn> _ccmcah;
-    art::Handle<CaloHitRemapping> _cchmH;
+    art::Handle<CaloClusterMCCollection> _ccmcch;
     art::InputTag _primaryParticleTag;
-    art::InputTag _kalSeedMCTag, _caloClusterMCTag;
     std::vector<int> _entvids, _midvids, _xitvids;
     // MC truth branches (outputs)
     std::vector<TrkInfoMC> _allMCTIs;
@@ -416,7 +412,7 @@ namespace mu2e {
     std::vector<art::Handle<EventWeight> > eventWeightHandles;
     _wtHandles = createSpecialBranch(event, "evtwt", eventWeightHandles, _wtinfo);
 
-    std::string process = ""; // 
+    std::string process = "Digitize"; // Digitization process is where the trigger is run
     // Get the KalSeedCollections for both the candidate and all supplements
     _allKSCHs.clear();
     _allRQCHs.clear();
@@ -427,9 +423,6 @@ namespace mu2e {
       art::Handle<KalSeedCollection> kalSeedCollHandle;
       art::InputTag kalSeedInputTag = i_branchConfig.input() + i_branchConfig.suffix();
       event.getByLabel(kalSeedInputTag,kalSeedCollHandle);
-      if (i_branch == _candidateIndex) {
-	process = kalSeedCollHandle.provenance()->processName(); // get the provenance from this for trigger processing
-      }
       _allKSCHs.push_back(kalSeedCollHandle);
 
       // also create the reco qual branches
@@ -468,9 +461,6 @@ namespace mu2e {
       _allTCHPCHs.push_back(trkpidCollHandle);
     }
 
-    // get the TODO
-    event.getByLabel(_conf.cchmtag(),_cchmH);
-
     // general reco counts
     auto rch = event.getValidHandle<RecoCount>(_conf.rctag());
     auto const& rc = *rch;
@@ -488,7 +478,7 @@ namespace mu2e {
     if(_conf.fillmc()) { // get MC product collections
       event.getByLabel(_conf.primaryParticleTag(),_pph);
       event.getByLabel(_conf.kalSeedMCTag(),_ksmcah);
-      event.getByLabel(_conf.caloClusterMCTag(),_ccmcah);
+      event.getByLabel(_conf.caloClusterMCTag(),_ccmcch);
     }
     // reset event level structs
     _einfo.reset();
@@ -551,7 +541,7 @@ namespace mu2e {
       // fill CRV info
       if(_conf.crv()){
 	CRVAnalysis::FillCrvHitInfoCollections(_conf.crvCoincidenceModuleLabel(), _conf.crvCoincidenceMCModuleLabel(),
-                                               _conf.crvRecoPulseLabel(), _conf.crvStepPointMCLabel(), _conf.simParticleLabel(), _conf.mcTrajectoryLabel(), event,
+                                               _conf.crvRecoPulseLabel(), _conf.crvStepLabel(), _conf.simParticleLabel(), _conf.mcTrajectoryLabel(), event,
                                                _crvinfo, _crvinfomc, _crvsummary, _crvsummarymc, _crvinfomcplane, _conf.crvPlaneY());
         if(_conf.crvpulses())
           CRVAnalysis::FillCrvPulseInfoCollections(_conf.crvRecoPulseLabel(), _conf.crvWaveformsModuleLabel(), _conf.crvDigiModuleLabel(),
@@ -706,20 +696,6 @@ namespace mu2e {
 	auto const& cc = tch.caloCluster();
 	std::cout << "CaloCluster has energy " << cc->energyDep()
 		  << " +- " << cc->energyDepErr() << std::endl;
-	auto const& cchmap = *_cchmH;
-	for( auto const& cchptr: cc->caloHitsPtrVector() ) { 
-	  // map the crystal ptr to the reduced collection
-	  auto ifnd = cchmap.find(cchptr);
-	  if(ifnd != cchmap.end()){
-	    auto const& scchptr = ifnd->second;
-	    if(scchptr.isNonnull())
-	      std::cout << "CaloHit has " << scchptr->energyDep() << " energy Dep" << std::endl;
-	    else
-	      std::cout <<"CalCrystalHitPtr is invalid! "<< std::endl;
-	  } else {
-	    std::cout << "CaloHitPtr not in map!" << std::endl;
-	  }
-	}
       }
     }
 
@@ -776,15 +752,11 @@ namespace mu2e {
 	}
       }
       if (kseed.hasCaloCluster()) {
-	// fill MC truth of the associated CaloCluster 
-	for(auto iccmca= _ccmcah->begin(); iccmca != _ccmcah->end(); iccmca++){
-	  if(iccmca->first == kseed.caloCluster()){
-	    auto const& ccmc = *(iccmca->second);
-	    _infoMCStructHelper.fillCaloClusterInfoMC(ccmc,_allMCTCHIs.at(i_branch));
-	      
-	    break;
-	  }
-	}
+	// fill MC truth of the associated CaloCluster.  Use the fact that these are correlated by index with the clusters in that collection
+	auto index = kseed.caloCluster().key();
+	auto const& ccmcc = *_ccmcch;
+	auto const& ccmc = ccmcc[index];
+	_infoMCStructHelper.fillCaloClusterInfoMC(ccmc,_allMCTCHIs.at(i_branch));  // currently broken due to CaloMC changes.  This needs fixing in compression
       }
     }
   }

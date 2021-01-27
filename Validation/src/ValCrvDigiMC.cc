@@ -27,7 +27,7 @@ int mu2e::ValCrvDigiMC::fill(const mu2e::CrvDigiMCCollection & coll,
   for(auto dg : coll) {
     _hI->Fill(dg.GetScintillatorBarIndex().asInt());
     _hIS->Fill(dg.GetSiPMNumber());
-    _hNS->Fill(dg.GetStepPoints().size());
+    _hNS->Fill(dg.GetCrvSteps().size());
     _ht->Fill(dg.GetStartTime());
     _ht->Fill(dg.GetStartTime());
     for (auto v: dg.GetVoltages()) _hV->Fill(v);

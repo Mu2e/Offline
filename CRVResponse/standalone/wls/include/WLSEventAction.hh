@@ -57,7 +57,7 @@ class WLSEventAction : public G4UserEventAction
     std::vector<double>     _recoPEs[4];
     std::vector<double>     _pulseTimes[4];
     std::vector<double>     _LETimes[4];
-    std::vector<double>     _pulseWidths[4];
+    std::vector<double>     _pulseBetas[4];
 };
 
 #endif

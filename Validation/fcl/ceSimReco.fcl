@@ -6,10 +6,9 @@
 
 #include "fcl/minimalMessageService.fcl"
 #include "fcl/standardServices.fcl"
-#include "fcl/standardProducers.fcl"
 #include "JobConfig/primary/prolog.fcl"
+#include "JobConfig/digitize/prolog.fcl"
 #include "JobConfig/reco/prolog.fcl"
-#include "Trigger/fcl/templates.fcl"
 
 process_name : ceSimReco
 
@@ -19,30 +18,31 @@ services: @local::Services.SimAndReco
 physics: {
   producers : {
     @table::Primary.producers
+    @table::Digitize.producers
     @table::Reconstruction.producers
+    @table::Trigger.producers 
     generate : @local::CeEndpointGun
-    protonBunchIntensity : {
-      module_type: ProtonBunchIntensityFlat
-      mean: 0.0 # No PBI possible for pure signal! 
-      halfWidth : 1.0
-    } 
   }
   filters : { 
     @table::Primary.filters
+    @table::Digitize.filters 
     @table::Reconstruction.filters
+    @table::Trigger.filters
   }
   analyzers: {
     @table::Primary.analyzers
+    @table::Digitize.analyzers
     @table::Reconstruction.analyzers
     @table::Trigger.analyzers
   }
 
   TriggerPath : [
     @sequence::Primary.TriggerPath,
-    protonBunchIntensity,
-    @sequence::Reconstruction.DePath,
-    @sequence::Reconstruction.CrvRecoSequence,
-    @sequence::Reconstruction.RecoMCSequence
+    @sequence::Digitize.TriggerPath,
+    @sequence::Reconstruction.CaloReco,
+    @sequence::Reconstruction.TrkReco,
+    @sequence::Reconstruction.CrvReco,
+    @sequence::Reconstruction.DeReco
   ]
   EndPath : @local::Primary.EndPath
 }
@@ -53,9 +53,8 @@ outputs : {
      #SelectEvents : [ TriggerPath ]
      fileName    : @nil
      outputCommands : [
-	 @sequence::Reconstruction.HighReco,
-	 @sequence::Reconstruction.LowReco,
-	 @sequence::Reconstruction.RecoMC,
+	 @sequence::Reconstruction.HighRecoProducts,
+	 @sequence::Reconstruction.MCRecoProducts,
 	 # drop reco products which be empty
 	 "drop mu2e::Crv*_*_*_*",
 	 "drop mu2e::StepPointMCs_*_CRV_*",
@@ -67,14 +66,16 @@ outputs : {
   }
 }
 #include "JobConfig/primary/epilog.fcl"
-#include "JobConfig/reco/epilog.fcl"
+#include "JobConfig/digitize/epilog.fcl"
+#
+physics.producers.EWMProducer.SpillType : 1
 
 # print summaries
 services.scheduler.wantSummary: true
 services.TimeTracker.printSummary: true
 
 # histogram file
-services.TFileService.fileName: "nts.owner.val-ceSimReco.dsconf.seq.root"
+services.TFileService.fileName: "/dev/null"
 # art file 
 outputs.Output.fileName : "mcs.owner.val-ceSimReco.dsconf.seq.art"
 
@@ -91,3 +92,5 @@ services.GeometryService.inputFile : "Mu2eG4/geom/geom_common_current.txt"
 # explicit muon stop input file
 physics.producers.generate.muonStops.inputFiles : [
 "mergedMuonStops/nts.mu2e.DS-TGTstops.MDC2018a.001002_00000000.root" ]
+
+

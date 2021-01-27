@@ -10,7 +10,7 @@ namespace mu2e{
     void TEveMu2eTracker::DrawTrackerDetector(art::Run const& run, TGeoVolume* topvol, TEveElementList *orthodet){
       GeomHandle<Tracker> trkr;
 
-      TubsParams envelope(trkr->getInnerTrackerEnvelopeParams());
+      TubsParams envelope(trkr->g4Tracker()->getInnerTrackerEnvelopeParams());
 
       TGeoMaterial *mat = new TGeoMaterial("Mylar", 12,6,1.4);
       TGeoMedium *My = new TGeoMedium("Mylar",2, mat);

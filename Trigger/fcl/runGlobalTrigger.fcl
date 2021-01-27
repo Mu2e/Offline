@@ -7,7 +7,7 @@
 #include "fcl/standardServices.fcl"
 #include "fcl/standardProducers.fcl"
 
-#include "Trigger/fcl/templates.fcl"
+#include "Trigger/fcl/prolog_trigger.fcl"
 
 process_name : globalTrigger
 

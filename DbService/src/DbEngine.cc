@@ -52,9 +52,7 @@ int mu2e::DbEngine::beginJob() {
     return 0;
   }
 
-  if(_vcache) { // existing data was already set
-    _reader.fillValTables(*_vcache);
-  } else { // we have to create/fill it
+  if(!_vcache) { // if not already provided, create and fil it
     _vcache = std::make_shared<DbValCache>();
     _reader.fillValTables(*_vcache);
   }

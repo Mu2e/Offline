@@ -19,6 +19,7 @@
 #include "Validation/inc/ValCaloRecoDigi.hh"
 #include "Validation/inc/ValCaloHit.hh"
 #include "Validation/inc/ValCaloCluster.hh"
+#include "Validation/inc/ValCrvStep.hh"
 #include "Validation/inc/ValCrvDigi.hh"
 #include "Validation/inc/ValCrvDigiMC.hh"
 #include "Validation/inc/ValCrvRecoPulse.hh"
@@ -80,6 +81,7 @@ namespace mu2e {
     std::vector<std::shared_ptr<ValCaloRecoDigi>>      _calr;
     std::vector<std::shared_ptr<ValCaloHit>>            _calh;
     std::vector<std::shared_ptr<ValCaloCluster>>       _ccls;
+    std::vector<std::shared_ptr<ValCrvStep>>           _cvst;
     std::vector<std::shared_ptr<ValCrvDigi>>           _cvdg;
     std::vector<std::shared_ptr<ValCrvDigiMC>>         _cmdg;
     std::vector<std::shared_ptr<ValCrvRecoPulse>>      _cvrp;
@@ -134,6 +136,7 @@ void mu2e::Validation::analyze(art::Event const& event){
   analyzeProduct<CaloRecoDigiCollection,ValCaloRecoDigi>      (_calr,event);
   analyzeProduct<CaloHitCollection,ValCaloHit>                 (_calh,event);
   analyzeProduct<CaloClusterCollection,ValCaloCluster>        (_ccls,event);
+  analyzeProduct<CrvStepCollection,ValCrvStep>                (_cvst,event);
   analyzeProduct<CrvDigiCollection,ValCrvDigi>                (_cvdg,event);
   analyzeProduct<CrvDigiMCCollection,ValCrvDigiMC>            (_cmdg,event);
   analyzeProduct<CrvRecoPulseCollection,ValCrvRecoPulse>      (_cvrp,event);

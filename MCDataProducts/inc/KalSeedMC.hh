@@ -13,7 +13,6 @@
 #include "MCDataProducts/inc/ProcessCode.hh"
 #include "MCDataProducts/inc/GenId.hh"
 #include "MCDataProducts/inc/MCRelationship.hh"
-#include "MCDataProducts/inc/StepPointMC.hh"
 #include "MCDataProducts/inc/CaloClusterMC.hh"
 #include "art/Framework/Principal/Handle.h"
 #include "cetlib/map_vector.h"
@@ -59,7 +58,6 @@ namespace mu2e {
     VirtualDetectorId _vdid;
     VDStep() : _time(0.0) {}
     VDStep(CLHEP::Hep3Vector const& pos,CLHEP::Hep3Vector const& mom, double time, VirtualDetectorId const& vdid) :
-      
       _pos(Geom::toXYZVec(pos)),
     _mom(Geom::toXYZVec(mom)),
     _time(time),

@@ -5,7 +5,7 @@
 // Contact person Ralf Ehrlich
 //
 
-#include "MCDataProducts/inc/StepPointMCCollection.hh"
+#include "MCDataProducts/inc/CrvStep.hh"
 #include "DataProducts/inc/CRSScintillatorBarIndex.hh"
 #include <vector>
 
@@ -18,7 +18,7 @@ namespace mu2e
     static constexpr size_t NSamples = 8; //FIXME: this is also a parameter in CrvDigi
 
     CrvDigiMC() {}
-    CrvDigiMC(const std::array<double,NSamples> &voltages, const std::vector<art::Ptr<StepPointMC> > &steps, 
+    CrvDigiMC(const std::array<double,NSamples> &voltages, const std::vector<art::Ptr<CrvStep> > &steps, 
               art::Ptr<SimParticle> simParticle, double startTime, 
               mu2e::CRSScintillatorBarIndex scintillatorBarIndex, int SiPMNumber) :
                           _voltages(voltages), 
@@ -29,7 +29,7 @@ namespace mu2e
                           _SiPMNumber(SiPMNumber) {}
 
     const std::array<double,NSamples>         &GetVoltages() const        {return _voltages;}
-    const std::vector<art::Ptr<StepPointMC> > &GetStepPoints() const      {return _steps;}
+    const std::vector<art::Ptr<CrvStep> >     &GetCrvSteps() const        {return _steps;}
     const art::Ptr<SimParticle>               &GetSimParticle() const     {return _simParticle;}
     const double                              &GetStartTime() const       {return _startTime;}
 
@@ -37,12 +37,12 @@ namespace mu2e
     int                           GetSiPMNumber() const           {return _SiPMNumber;}
 
     void setSimParticle(const art::Ptr<SimParticle>& sim) {_simParticle = sim;}
-    void setStepPoints(const std::vector<art::Ptr<StepPointMC> >& steps) {_steps = steps;}
+    void setCrvSteps(const std::vector<art::Ptr<CrvStep> >& steps) {_steps = steps;}
 
     private:
 
     std::array<double,NSamples>         _voltages;
-    std::vector<art::Ptr<StepPointMC> > _steps;        //step points responsible for this waveform
+    std::vector<art::Ptr<CrvStep> >     _steps;        //crv steps responsible for this waveform
     art::Ptr<SimParticle>               _simParticle;  //most likely sim particle responsible for this waveform
     double                              _startTime;
 

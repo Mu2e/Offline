@@ -190,12 +190,12 @@ namespace mu2e {
 	}
 	const auto& i_newCrvDigiMC = newCrvDigiMCs.at(i_new_digi_mc);
 
-	if (i_oldCrvDigiMC.GetStepPoints().size() > 0 && i_newCrvDigiMC.GetStepPoints().size()>0) {
-	  const auto& i_oldStepPointMC = *i_oldCrvDigiMC.GetStepPoints().begin();
-	  if (!i_oldStepPointMC.isAvailable()) {
+	if (i_oldCrvDigiMC.GetCrvSteps().size() > 0 && i_newCrvDigiMC.GetCrvSteps().size()>0) {
+	  const auto& i_oldCrvStep = *i_oldCrvDigiMC.GetCrvSteps().begin();
+	  if (!i_oldCrvStep.isAvailable()) {
 	    continue; // this is a null step point
 	  }
-	  const auto& i_newStepPointMC = *i_newCrvDigiMC.GetStepPoints().begin();
+	  const auto& i_newCrvStep = *i_newCrvDigiMC.GetCrvSteps().begin();
 
 	  const auto& i_old_digi_mc_barIndex = i_oldCrvDigiMC.GetScintillatorBarIndex();
 	  const auto& i_new_digi_mc_barIndex = i_newCrvDigiMC.GetScintillatorBarIndex();
@@ -203,8 +203,8 @@ namespace mu2e {
 	    throw cet::exception("CompressDigiMCsCheck") << "Old and new CrvDigiMC's ScintillatorBarIndexs do not match" << std::endl;
 	  }
 	
-	  const auto& i_old_step_barIndex = i_oldStepPointMC->barIndex();
-	  const auto& i_new_step_barIndex = i_newStepPointMC->barIndex();
+	  const auto& i_old_step_barIndex = i_oldCrvStep->barIndex();
+	  const auto& i_new_step_barIndex = i_newCrvStep->barIndex();
 	  if (i_old_step_barIndex != i_new_step_barIndex) {
 	    throw cet::exception("CompressDigiMCsCheck") << "Old and new CrvDigiMC's StepPointMC's BarIndexs do not match" << std::endl;
 	  }
@@ -213,8 +213,10 @@ namespace mu2e {
 	    throw cet::exception("CompressDigiMCsCheck") << "New CrvDigiMC's BarIndex is inconsistent with its StepPointMC's BarIndex" << std::endl;
 	  }
 	
-	  double old_time = _oldTOff.timeWithOffsetsApplied(*i_oldStepPointMC);
-	  double new_time = _newTOff.timeWithOffsetsApplied(*i_newStepPointMC);
+          double old_timeOffset = _oldTOff.totalTimeOffset(i_oldCrvStep->simParticle());
+          double new_timeOffset = _newTOff.totalTimeOffset(i_newCrvStep->simParticle());
+	  double old_time = i_oldCrvStep->startTime() + old_timeOffset;
+	  double new_time = i_newCrvStep->startTime() + new_timeOffset;
 	  if (std::fabs(old_time - new_time) > 1e-5) {
 	    throw cet::exception("CompressDigiMCsCheck") << "Old and new StepPointMC times with offsets applied do not match (CrvDigiMC)" << std::endl;
 	  }

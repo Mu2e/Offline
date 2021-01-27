@@ -14,7 +14,7 @@
 #include "GeometryService/inc/GeomHandle.hh"
 #include "GeometryService/inc/GeometryService.hh"
 #include "MCDataProducts/inc/GenParticleCollection.hh"
-#include "MCDataProducts/inc/CrvDigiMCCollection.hh"
+#include "MCDataProducts/inc/CrvDigiMC.hh"
 #include "MCDataProducts/inc/CrvCoincidenceClusterMCCollection.hh"
 #include "RecoDataProducts/inc/CrvRecoPulse.hh"
 #include "RecoDataProducts/inc/CrvCoincidenceClusterCollection.hh"
@@ -93,23 +93,21 @@ namespace mu2e
     for(iter=crvCoincidenceClusterCollection->begin(); iter!=crvCoincidenceClusterCollection->end(); iter++)
     {
       bool   hasMCInfo                = (crvDigiMCCollection.isValid()?true:false); //MC
-      double totalEnergyDeposited     = 0;         //MC
-      double ionizingEnergyDeposited  = 0;         //MC  //not used here
+      double visibleEnergyDeposited   = 0;         //MC
       double earliestHitTime          = NAN;       //MC
       art::Ptr<SimParticle> simParticle;           //MC
       CLHEP::Hep3Vector     earliestHitPos;        //MC
 
       //loop through all reco pulses and try to find the MC information
       std::vector<CrvCoincidenceClusterMC::PulseInfo> pulses; //collection of all pulses (sim particle, energy dep.)
-      std::set<art::Ptr<StepPointMC> > steps;  //collection of all step points for total energy calculation
-                                               //use a set to avoid double counts, e.g. for two pulses coming from same digi
+      std::set<art::Ptr<CrvStep> > steps;  //collection of all crvSteps for total energy calculation
+                                           //use a set to avoid double counts, e.g. for two pulses coming from same digi
       const std::vector<art::Ptr<CrvRecoPulse> > &crvRecoPulses = iter->GetCrvRecoPulses();
       for(size_t i=0; i<crvRecoPulses.size(); i++)
       {
         const art::Ptr<CrvRecoPulse> crvRecoPulse = crvRecoPulses[i];
         art::Ptr<SimParticle> simParticleThisPulse;
-        double totalEnergyDepositedThisPulse = 0;
-        double ionizingEnergyDepositedThisPulse = 0; //not used here
+        double visibleEnergyDepositedThisPulse = 0;
         double earliestHitTimeThisPulse = NAN; //not used here
         CLHEP::Hep3Vector earliestHitPosThisPulse; //not used here
 
@@ -121,20 +119,20 @@ namespace mu2e
 
           //get the sim particle and deposited energy of this reco pulse
           CrvHelper::GetInfoFromCrvRecoPulse(crvRecoPulse, crvDigiMCCollection, _timeOffsets, 
-                                             totalEnergyDepositedThisPulse, ionizingEnergyDepositedThisPulse, 
+                                             visibleEnergyDepositedThisPulse, 
                                              earliestHitTimeThisPulse, earliestHitPosThisPulse, simParticleThisPulse);
         }
 
         //add the MC information (sim particle, dep. energy) of this reco pulse to the collection of pulses
-        pulses.emplace_back(simParticleThisPulse,totalEnergyDepositedThisPulse);
+        pulses.emplace_back(simParticleThisPulse,visibleEnergyDepositedThisPulse);
       }//loop over reco pulses
 
       //based on all step points, get the most likely sim particle, total energy, etc.
       CrvHelper::GetInfoFromStepPoints(steps, _timeOffsets, 
-                                       totalEnergyDeposited, ionizingEnergyDeposited, earliestHitTime, earliestHitPos, simParticle);
+                                       visibleEnergyDeposited, earliestHitTime, earliestHitPos, simParticle);
 
       //insert the cluster information into the vector of the crv coincidence clusters (collection of pulses, most likely sim particle, etc.)
-      crvCoincidenceClusterMCCollection->emplace_back(hasMCInfo, pulses, simParticle, totalEnergyDeposited, earliestHitTime, earliestHitPos);
+      crvCoincidenceClusterMCCollection->emplace_back(hasMCInfo, pulses, simParticle, visibleEnergyDeposited, earliestHitTime, earliestHitPos);
     }//loop over all clusters
 
     event.put(std::move(crvCoincidenceClusterMCCollection));
