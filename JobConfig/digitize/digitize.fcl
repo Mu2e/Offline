@@ -38,4 +38,3 @@ services.TFileService.fileName : "/dev/null"
 # test values; these get overwritten by generate_fcl
 services.SeedService.baseSeed         :  773651
 services.SeedService.maxUniqueEngines :  20
-services.scheduler.wantSummary        : true
