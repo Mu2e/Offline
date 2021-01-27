@@ -1,12 +1,7 @@
 #
 # Prolog for digitizing detector steps.  These scripts can be run as-is, or in conjunction with mixing
 #
-BEGIN_PROLOG
-TrackCaloMatching : { 
-  DtOffset : 0.2 # from TrkCaloHit matching
-}
-END_PROLOG
-#
+#include "fcl/TrkCaloDt.fcl"
 #include "fcl/standardServices.fcl"
 #include "CommonMC/fcl/prolog.fcl"
 #include "TrackerMC/fcl/prolog.fcl"

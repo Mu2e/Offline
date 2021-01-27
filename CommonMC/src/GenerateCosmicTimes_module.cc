@@ -100,6 +100,7 @@ namespace mu2e {
     const EventWindowMarker& ewMarker(*ewMarkerHandle);
 
 // find the earliest step.
+// Use this to define the earliest time, to improves the generation efficiency
     double tearly(0.0);
     for(const auto& trkcoltag : trkStepCols_) {
       auto sgscolH = event.getValidHandle<StrawGasStepCollection>(trkcoltag);
@@ -122,10 +123,14 @@ namespace mu2e {
       }
     }
 
-  // define the time offset to moves the earliest time into the flash window: this improves the generation efficiency
-    StrawElectronics const& strawele = strawele_h_.get(event.id());
-    double tmin = strawele.flashEnd() - tearly - tbuff_;
-    double tmax = tmin + ewMarker.eventLength();
+// use a buffer to set the earliest time offset
+    double tmin = -tearly - tbuff_;
+// adjust start time according to flashEnd for onspill; this assumes the 'flashend' won't be applied also for offspill in the digitizers FIXME!
+    if(ewMarker.spillType() == EventWindowMarker::onspill){
+      StrawElectronics const& strawele = strawele_h_.get(event.id());
+      tmin += strawele.flashEnd(); // flash end should be a Mu2e global quantity FIXME!
+    }
+    double tmax = tmin + ewMarker.eventLength() + tbuff_;
     if(verbosityLevel_ > 1) {
       std::cout << "DetectorStep early time = " << tearly << std::endl;
       std::cout<<"GenerateCosmicTimes time range = ["<< tmin << ","<< tmax << "]"<< std::endl;

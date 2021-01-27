@@ -42,7 +42,8 @@ physics: {
     @sequence::Reconstruction.CaloReco,
     @sequence::Reconstruction.TrkReco,
     @sequence::Reconstruction.CrvReco,
-    @sequence::Reconstruction.DeReco
+    @sequence::Reconstruction.DeReco,
+    RecoFilter
   ]
   EndPath : @local::Primary.EndPath
 }
@@ -50,17 +51,21 @@ physics: {
 outputs : { 
   Output : {
      module_type : RootOutput
-     #SelectEvents : [ TriggerPath ]
+     SelectEvents : [ TriggerPath ]
      fileName    : @nil
      outputCommands : [
 	 @sequence::Reconstruction.HighRecoProducts,
 	 @sequence::Reconstruction.MCRecoProducts,
+	 @sequence::Digitize.KeptProducts,
+	 @sequence::Primary.KeptProducts,
 	 # drop reco products which be empty
 	 "drop mu2e::Crv*_*_*_*",
+	 "drop *_*_cosmicTimeMap_*",
+	 "drop *_g4run_*_*",
+	 "drop mu2e::SimParticleart::Ptrmu2e::MCTrajectorystd::map_*_*_*", 
 	 "drop mu2e::StepPointMCs_*_CRV_*",
 	 "drop *_MHDeP_*_*",
-	 "drop *_KSFDeP_*_*",
-	 "drop *_KFFDeP_*_*",
+	 "drop *_*DeP_*_*",
 	 "keep mu2e::StatusG4_*_*_*"
      ]
   }
@@ -68,7 +73,12 @@ outputs : {
 #include "JobConfig/primary/epilog.fcl"
 #include "JobConfig/digitize/epilog.fcl"
 #
+# on-spill EWM
 physics.producers.EWMProducer.SpillType : 1
+# add trigger paths
+# This doesn't currently work, as the step filter stops processing before digis are made, and
+# the digis are required for trigger FIXME!
+##include "gen/fcl/Trigger/OnSpillTrigMenu/OnSpillTrigMenu.fcl"
 
 # print summaries
 services.scheduler.wantSummary: true

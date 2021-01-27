@@ -1,0 +1,9 @@
+#------------------------------------------------------------------------------
+# global definition of track-calo time difference.  This should be in proditions FIXME!
+#------------------------------------------------------------------------------
+BEGIN_PROLOG
+TrackCaloMatching : {
+  DtOffset : 0.2
+}
+END_PROLOG
+
