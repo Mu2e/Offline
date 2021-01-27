@@ -63,9 +63,7 @@ namespace mu2e {
   :
   G4UserEventAction(),
     perThreadObjects_(pts),
-    trajectoryControl_(conf.TrajectoryControl()),
     simParticlePrinter_(),
-    timeVDtimes_(conf.SDConfig().TimeVD().times()),
     multiStagePars_(conf),
     _trackingAction(tracking_action),
     _steppingAction(stepping_action),
@@ -74,7 +72,6 @@ namespace mu2e {
     _steppingCuts(&stepping_cuts),
     _commonCuts(&common_cuts),
     _originInWorld(origin_in_world),
-    _tvdOutputName(StepInstanceName::timeVD),
     _timer(std::make_unique<G4Timer>()),
 
     _processInfo(phys_process_info),
@@ -101,12 +98,6 @@ namespace mu2e {
 
     // local Mu2e timer, almost equal to time of G4EventManager::ProcessOneEvent()
     _timer->Start();
-
-    simParticles = unique_ptr<SimParticleCollection>( new SimParticleCollection );
-    tvdHits = unique_ptr<StepPointMCCollection>( new StepPointMCCollection );
-    mcTrajectories = unique_ptr<MCTrajectoryCollection>( new MCTrajectoryCollection );
-    simsRemap = unique_ptr<SimParticleRemapping>( new SimParticleRemapping );
-    extMonFNALHits = unique_ptr<ExtMonFNALSimHitCollection>( new ExtMonFNALSimHitCollection );
 
     art::Handle<SimParticleCollection> inputSimHandle;
     if(art::InputTag() != multiStagePars_.inputSimParticles()) {
@@ -147,14 +138,16 @@ namespace mu2e {
     _commonCuts->beginEvent(*_artEvent, *_spHelper);
 
     _trackingAction->beginEvent(inputSimHandle, inputMCTrajectoryHandle, *_spHelper,
-                                *_parentHelper, *mcTrajectories, *simsRemap);
+                                *_parentHelper, *perThreadObjects_->mcTrajectories,
+                                *perThreadObjects_->simRemapping);
 
-    _steppingAction->BeginOfEvent(*tvdHits, *_spHelper);
+    _steppingAction->BeginOfEvent(*perThreadObjects_->tvd_collection, *_spHelper);
 
     _sensitiveDetectorHelper->updateSensitiveDetectors(*_processInfo, *_spHelper);
 
     if (_sensitiveDetectorHelper->getExtMonFNALPixelSD()) {
-      _sensitiveDetectorHelper->getExtMonFNALPixelSD()->beforeG4Event(extMonFNALHits.get(), *_spHelper);
+      perThreadObjects_->extMonFNALHits = unique_ptr<ExtMonFNALSimHitCollection>( new ExtMonFNALSimHitCollection );
+      _sensitiveDetectorHelper->getExtMonFNALPixelSD()->beforeG4Event(perThreadObjects_->extMonFNALHits.get(), *_spHelper);
     }
 
   }
@@ -163,11 +156,11 @@ namespace mu2e {
   void Mu2eG4EventAction::EndOfEventAction(const G4Event *evt)
   {
     // Run self consistency checks if enabled.
-    _trackingAction->endEvent(*simParticles);
+    _trackingAction->endEvent(*perThreadObjects_->simPartCollection);
 
     _timer->Stop();
 
-    simParticlePrinter_.print(std::cout, *simParticles);
+    simParticlePrinter_.print(std::cout, *perThreadObjects_->simPartCollection);
 
     // Pass data products to the module to put into the event
     bool event_passes = false;
@@ -196,46 +189,22 @@ namespace mu2e {
       }
       if ( _trackingAction->overflowSimParticles() ) status = 10;
 
-      auto g4stat = std::make_unique<StatusG4>(status,
-                                               _trackingAction->nG4Tracks(),
-                                               _trackingAction->overflowSimParticles(),
-                                               _steppingAction->nKilledStepLimit(),
-                                               _trackingAction->nKilledByFieldPropagator(),
-                                               cpuTime,
-                                               _timer->GetRealElapsed()
-                                               );
-
-      perThreadObjects_->insertSimsAndStatusData(std::move(g4stat), std::move(simParticles));
+      perThreadObjects_->statG4 = std::make_unique<StatusG4>(status,
+                                                             _trackingAction->nG4Tracks(),
+                                                             _trackingAction->overflowSimParticles(),
+                                                             _steppingAction->nKilledStepLimit(),
+                                                             _trackingAction->nKilledByFieldPropagator(),
+                                                             cpuTime,
+                                                             _timer->GetRealElapsed()
+                                                             );
 
       _sensitiveDetectorHelper->insertSDDataIntoPerThreadStorage(perThreadObjects_);
       _stackingCuts->insertCutsDataIntoPerThreadStorage(perThreadObjects_);
       _steppingCuts->insertCutsDataIntoPerThreadStorage(perThreadObjects_);
       _commonCuts->insertCutsDataIntoPerThreadStorage(perThreadObjects_);
 
-      if(!timeVDtimes_.empty()) {
-        perThreadObjects_->insertTVDHits(std::move(tvdHits), _tvdOutputName.name());
-      }
-
-      if(trajectoryControl_.produce()) {
-        perThreadObjects_->insertMCTrajectoryCollection(std::move(mcTrajectories));
-      }
-
-      if(multiStagePars_.multiStage()) {
-        perThreadObjects_->insertSimsRemapping(std::move(simsRemap));
-      }
-
-      if(_sensitiveDetectorHelper->extMonPixelsEnabled()) {
-        perThreadObjects_->insertExtMonFNALSimHits(std::move(extMonFNALHits));
-      }
-
     }//event_passes cuts
     else {
-      simParticles = nullptr;
-      tvdHits = nullptr;
-      mcTrajectories = nullptr;
-      simsRemap = nullptr;
-      extMonFNALHits = nullptr;
-
       //there is no need to clear SD data here, since it is done in the call to
       //_sensitiveDetectorHelper->createProducts in the BeginOfEventAction above
 

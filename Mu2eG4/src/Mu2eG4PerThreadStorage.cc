@@ -8,13 +8,15 @@
 #include "Mu2eG4/inc/Mu2eG4PerThreadStorage.hh"
 #include "Mu2eG4/inc/SimParticleHelper.hh"
 #include "Mu2eG4/inc/SimParticlePrimaryHelper.hh"
+#include "MCDataProducts/inc/StepInstanceName.hh"
 
 namespace mu2e {
 
   Mu2eG4PerThreadStorage::Mu2eG4PerThreadStorage(const Mu2eG4Config::Top& conf)
     : generatorModuleLabel{conf.generatorModuleLabel()}
     , multiStagePars{conf}
-    , tvd{"", nullptr}
+    , timeVD_enabled(conf.SDConfig().TimeVD().enabled())
+    , produceMCTrajectories{conf.TrajectoryControl().produce()}
  {}
 
   //----------------------------------------------------------------
@@ -47,6 +49,22 @@ namespace mu2e {
       throw cet::exception("CONFIG")
         << "Error in PerThreadStorage::initializeEventInfo.  You are trying to run a G4job without an input for G4.\n";
     }
+
+    // Output collections
+    simPartCollection = std::unique_ptr<SimParticleCollection>( new SimParticleCollection );
+
+    if(timeVD_enabled) {
+      tvd_collection = std::unique_ptr<StepPointMCCollection>( new StepPointMCCollection );
+    }
+
+    if(produceMCTrajectories) {
+      mcTrajectories = std::unique_ptr<MCTrajectoryCollection>( new MCTrajectoryCollection );
+    }
+
+    if(multiStagePars.multiStage()) {
+      simRemapping = std::unique_ptr<SimParticleRemapping>( new SimParticleRemapping );
+    }
+
   }
 
   //----------------------------------------------------------------
@@ -80,6 +98,33 @@ namespace mu2e {
   }
 
   //----------------------------------------------------------------
+  void Mu2eG4PerThreadStorage::putDataIntoEvent() {
+      artEvent->put(std::move(statG4));
+      artEvent->put(std::move(simPartCollection));
+
+      putSensitiveDetectorData();
+      putCutsData();
+
+      if(timeVD_enabled) {
+        static const StepInstanceName timeVD(StepInstanceName::timeVD);
+        artEvent->put(std::move(tvd_collection), timeVD.name());
+      }
+
+      if(produceMCTrajectories) {
+        artEvent->put(std::move(mcTrajectories));
+      }
+
+      if(multiStagePars.multiStage()) {
+        artEvent->put(std::move(simRemapping));
+      }
+
+      if(extMonFNALHits) {
+        artEvent->put(std::move(extMonFNALHits));
+      }
+  }
+
+
+  //----------------------------------------------------------------
   void Mu2eG4PerThreadStorage::clearData() {
 
     artEvent = nullptr;
@@ -90,8 +135,7 @@ namespace mu2e {
 
     statG4 = nullptr;
     simPartCollection = nullptr;
-    tvd.first = "";
-    tvd.second = nullptr;
+    tvd_collection = nullptr;
     mcTrajectories = nullptr;
     simRemapping = nullptr;
     extMonFNALHits = nullptr;

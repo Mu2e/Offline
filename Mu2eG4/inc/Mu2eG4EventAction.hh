@@ -72,9 +72,7 @@ namespace mu2e {
     Mu2eG4PerThreadStorage* perThreadObjects_;
 
     //these are set using fhicl pset
-    Mu2eG4TrajectoryControl trajectoryControl_;
     SimParticleCollectionPrinter simParticlePrinter_;
-    std::vector<double> timeVDtimes_;
     Mu2eG4MultiStageParameters multiStagePars_;
 
     TrackingAction* _trackingAction;
@@ -86,17 +84,9 @@ namespace mu2e {
     IMu2eG4Cut* _steppingCuts;
     IMu2eG4Cut* _commonCuts;
     const CLHEP::Hep3Vector& _originInWorld;
-    const StepInstanceName _tvdOutputName;
 
     // local Mu2e per Geant4 event timer
     std::unique_ptr<G4Timer> _timer;
-
-    // Create empty data products.
-    std::unique_ptr<SimParticleCollection> simParticles;
-    std::unique_ptr<StepPointMCCollection> tvdHits;
-    std::unique_ptr<MCTrajectoryCollection> mcTrajectories;
-    std::unique_ptr<SimParticleRemapping> simsRemap;
-    std::unique_ptr<ExtMonFNALSimHitCollection> extMonFNALHits;
 
     PhysicsProcessInfo *_processInfo;
 

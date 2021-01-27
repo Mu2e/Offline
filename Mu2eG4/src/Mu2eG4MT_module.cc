@@ -364,34 +364,14 @@ namespace mu2e {
 
     /////////////////////////////////////////////////////////////////////////////////////
     //putting data into the event
-    std::unique_ptr<SimParticleCollection> simsToCheck = perThreadStore->getSimPartCollection();
 
-    if (simsToCheck == nullptr) {
+    if(!perThreadStore->eventPassed()) {
+      perThreadStore->clearData();
       numExcludedEvents++;
-    } else {
-      event.put(std::move(perThreadStore->getG4Status()));
-      event.put(std::move(simsToCheck));
-      perThreadStore->putSensitiveDetectorData();
-      perThreadStore->putCutsData();
-
-      if(timeVD_enabled_) {
-        event.put(std::move(perThreadStore->getTVDHits()),perThreadStore->getTVDName());
-      }
-
-      if(trajectoryControl_.produce()) {
-        event.put(std::move(perThreadStore->getMCTrajCollection()));
-      }
-
-      if(multiStagePars_.multiStage()) {
-        event.put(std::move(perThreadStore->getSimParticleRemap()));
-      }
-
-      if(sensitiveDetectorHelper_.extMonPixelsEnabled()) {
-        event.put(std::move(perThreadStore->getExtMonFNALSimHitCollection()));
-      }
     }
-
-    perThreadStore->clearData();
+    else {
+      perThreadStore->putDataIntoEvent();
+    }
 
     scheduleWorkerRM->TerminateOneEvent();
 
