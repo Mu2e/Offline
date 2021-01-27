@@ -452,40 +452,15 @@ namespace mu2e {
     // Run G4 for this event and access the completed event.
     BeamOnDoOneArtEvent( event.id().event() );
 
-
-    /////////////////////////////////////////////////////////////////////////////////////
-    std::unique_ptr<SimParticleCollection> simsToCheck = perThreadStore.getSimPartCollection();
-
-    if (simsToCheck == nullptr) {
+    if(!perThreadStore.eventPassed()) {
+      perThreadStore.clearData();
       numExcludedEvents++;
     }
     else {
-
-      event.put(std::move(perThreadStore.getG4Status()));
-      event.put(std::move(simsToCheck));
-      perThreadStore.putSensitiveDetectorData();
-      perThreadStore.putCutsData();
-
-      if(timeVD_enabled_) {
-        event.put(std::move(perThreadStore.getTVDHits()),perThreadStore.getTVDName());
-      }
-
-      if(trajectoryControl_.produce()) {
-        event.put(std::move(perThreadStore.getMCTrajCollection()));
-      }
-
-      if(multiStagePars_.multiStage()) {
-        event.put(std::move(perThreadStore.getSimParticleRemap()));
-      }
-
-      if(_sensitiveDetectorHelper.extMonPixelsEnabled()) {
-        event.put(std::move(perThreadStore.getExtMonFNALSimHitCollection()));
-      }
-
-    }//simsToCheck !=nullptr
+      perThreadStore.putDataIntoEvent();
+    }
 
     _runManager->TerminateOneEvent();
-    perThreadStore.clearData();
   }//end Mu2eG4::produce
 
 

@@ -48,28 +48,8 @@ namespace mu2e {
     /////////////////////////////////////////////////////////////
     /////////////////////////////////////////////////////////////
     // functions to get the event data from the EventAction
-    void insertSimsAndStatusData(std::unique_ptr<StatusG4> status_g4,
-                                 std::unique_ptr<SimParticleCollection> sims_data) {
-      statG4 = std::move(status_g4);
-      simPartCollection = std::move(sims_data);
-    }
-
-    void insertTVDHits(std::unique_ptr<StepPointMCCollection> tvd_hits,
-                       std::string tvd_output_name) {
-      tvd.first = tvd_output_name;
-      tvd.second = std::move(tvd_hits);
-    }
-
     void insertMCTrajectoryCollection(std::unique_ptr<MCTrajectoryCollection> mc_trajectories) {
       mcTrajectories = std::move(mc_trajectories);
-    }
-
-    void insertSimsRemapping(std::unique_ptr<SimParticleRemapping> sims_remap) {
-      simRemapping = std::move(sims_remap);
-    }
-
-    void insertExtMonFNALSimHits(std::unique_ptr<ExtMonFNALSimHitCollection> ext_mon_fnal_hits) {
-      extMonFNALHits = std::move(ext_mon_fnal_hits);
     }
 
     void insertSDStepPointMC(std::unique_ptr<StepPointMCCollection> step_point_mc,
@@ -86,34 +66,9 @@ namespace mu2e {
     /////////////////////////////////////////////////////////////
     /////////////////////////////////////////////////////////////
     // functions to move the data into the art::Event
-    std::unique_ptr<SimParticleCollection> getSimPartCollection() {
-      return std::move(simPartCollection);
-    }
 
-    std::unique_ptr<StatusG4> getG4Status() {
-      return std::move(statG4);
-    }
-
-    std::string getTVDName() {
-      return tvd.first;
-    }
-
-    std::unique_ptr<StepPointMCCollection> getTVDHits() {
-      return std::move(tvd.second);
-    }
-
-    std::unique_ptr<MCTrajectoryCollection> getMCTrajCollection() {
-      return std::move(mcTrajectories);
-    }
-
-    std::unique_ptr<SimParticleRemapping> getSimParticleRemap() {
-      return std::move(simRemapping);
-    }
-
-    std::unique_ptr<ExtMonFNALSimHitCollection> getExtMonFNALSimHitCollection() {
-      return std::move(extMonFNALHits);
-    }
-
+    bool eventPassed() const { return bool(statG4); }
+    void putDataIntoEvent();
 
     void putStepPointMCCollections(std::unordered_map< std::string, std::unique_ptr<StepPointMCCollection> > &&steps_map);
 
@@ -126,6 +81,8 @@ namespace mu2e {
     /////////////////////////////////////////////////////////////
     const art::InputTag generatorModuleLabel;
     const Mu2eG4MultiStageParameters multiStagePars;
+    const bool timeVD_enabled;
+    const bool produceMCTrajectories;
 
     // run-level data members
     art::RunNumber_t currentRunNumber = 0;
@@ -139,9 +96,11 @@ namespace mu2e {
     HitHandles genInputHits;
     art::Handle<GenParticleCollection> gensHandle;
 
+
+    // output data products
     std::unique_ptr<StatusG4> statG4{nullptr};
     std::unique_ptr<SimParticleCollection> simPartCollection = nullptr;
-    std::pair< std::string, std::unique_ptr<StepPointMCCollection> > tvd;
+    std::unique_ptr<StepPointMCCollection> tvd_collection;
     std::unique_ptr<MCTrajectoryCollection> mcTrajectories = nullptr;
     std::unique_ptr<SimParticleRemapping> simRemapping = nullptr;
     std::unique_ptr<ExtMonFNALSimHitCollection> extMonFNALHits = nullptr;
