@@ -118,7 +118,7 @@ physics.producers.EWMProducer.SpillType : 1
 
 # set timing relative to the 1st hit
 physics.producers.cosmicTimeMap.CrvSteps : [ "CrvSteps" ]
-physics.producers.cosmicTimeMap.TimeBuffer : 100 
+physics.producers.cosmicTimeMap.TimeBuffer : 50 
 
 # Larger range cut for the first stage - OK for CRV itself
 physics.producers.g4run.physics.minRangeCut : 1.0 // mm
