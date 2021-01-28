@@ -55,7 +55,6 @@ Digitize: {
     @sequence::CrvDAQPackage.CrvDAQSequence,
     compressDigiMCs ]
 
-# the following should come from the trigger FIXME!
   TriggerProducts : [ 
     "keep mu2e::TriggerInfo_*_*_*",  
     "keep art::TriggerResults_*_*_*",
@@ -76,7 +75,7 @@ Digitize: {
 		    "keep mu2e::ProtonBunchTimeMC_*_*_*",
 		    "keep mu2e::ProtonBunchTime_*_*_*",
 		    "keep mu2e::EventWeight_*_*_*",
-		    "keep mu2e::ProtonBunchIntensity_*_*_*",
+		    "keep mu2e::ProtonBunchIntensity*_*_*_*",
 		    "keep *_compressDigiMCs_*_*" ]
 
   Output : {

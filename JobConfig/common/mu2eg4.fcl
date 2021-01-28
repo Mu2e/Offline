@@ -12,7 +12,7 @@ mu2e.physics.producers.g4run.commonBase: {
    generatorModuleLabel: @nil
 
    SDConfig: {
-      enableSD: [ tracker, calorimeter, calorimeterRO, CRV, virtualdetector, protonabsorber ]
+      enableSD: [ tracker, calorimeter, calorimeterRO, CRV, virtualdetector ]
       TimeVD: { times: [] }
       preSimulatedHits: @nil
    }
