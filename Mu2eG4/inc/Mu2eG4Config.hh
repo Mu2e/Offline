@@ -145,12 +145,8 @@ namespace mu2e {
       fhicl::Atom<double> rangeToIgnore {Name("rangeToIgnore")};
 
       //parameters for low momentum gamma daughter killing
-      fhicl::Atom<double> gammaFilterMinDaughterEnergy {Name("steppingActionGammaFilterMinDaughterEnergy"), 
-	  Comment("Minimum generated photon daughter energy"),-1.};
-      fhicl::Atom<double> gammaFilterMaxGammaEnergy    {Name("steppingActionGammaFilterMaxGammaEnergy"), 
-	  Comment("Maximum generated photon energy considered"), -1.};
-      fhicl::Atom<bool>   gammaFilterKillAfterConvert  {Name("steppingActionGammaFilterKillAfterConvert"), 
-	  Comment("Kill event once the generated photon converts"), false};
+      fhicl::Atom<double> gammaFilterMinDaughterEnergy {Name("steppingActionGammaFilterMinDaughterEnergy"),
+          Comment("Minimum generated photon daughter energy"),-1.};
     };
 
     struct Limits {

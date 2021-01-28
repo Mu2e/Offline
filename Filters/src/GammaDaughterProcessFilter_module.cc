@@ -21,10 +21,10 @@ using namespace std;
 
 namespace mu2e {
 
-  class GammaDaughterFilter : public art::EDFilter {
+  class GammaDaughterProcessFilter : public art::EDFilter {
   public:
-    explicit GammaDaughterFilter(fhicl::ParameterSet const& pset);
-    virtual ~GammaDaughterFilter() { }
+    explicit GammaDaughterProcessFilter(fhicl::ParameterSet const& pset);
+    virtual ~GammaDaughterProcessFilter() { }
 
     bool filter( art::Event& event);
 
@@ -36,7 +36,7 @@ namespace mu2e {
     int _verbosityLevel;
   };
 
-  GammaDaughterFilter::GammaDaughterFilter(fhicl::ParameterSet const& pset):
+  GammaDaughterProcessFilter::GammaDaughterProcessFilter(fhicl::ParameterSet const& pset):
     art::EDFilter{pset},
     _g4ModuleLabel(pset.get<std::string>("g4ModuleLabel", "g4run")),
     _doFilter(pset.get<bool>("doFilter", true)),
@@ -44,7 +44,7 @@ namespace mu2e {
   {
   }
 
-  bool GammaDaughterFilter::filter(art::Event& event) {
+  bool GammaDaughterProcessFilter::filter(art::Event& event) {
     if(!_doFilter) return true;
 
     art::Handle<SimParticleCollection> simPCH;
@@ -52,24 +52,27 @@ namespace mu2e {
     bool retval(true);
     const SimParticleCollection& simPC = *simPCH;
     if (_verbosityLevel >0) {
-      cout << "SimParticleCollection has " << simPC.size() << " particles" << endl;
+      std::cout << "SimParticleCollection has " << simPC.size() << " particles" << std::endl;
     }
 
     for (const auto& simPMVO : simPC) {
       const mu2e::SimParticle& simP = simPMVO.second;
-      if(_verbosityLevel > 1) cout << "SimParticle: pdgId = " << simP.pdgId() 
-				   << " end status = " << simP.endG4Status() 
-				   <<  " creationCode = " << simP.creationCode().id()
-				   << " stoppingCode = " << simP.stoppingCode().id()
-				   << endl;
-      if(simP.stoppingCode() == ProcessCode::mu2eLowEnergyGammaKilled) {
+      if(_verbosityLevel > 1) std::cout << "SimParticle: pdgId = " << simP.pdgId() 
+					<< " end status = " << simP.endG4Status() 
+					<<  " creationCode = " << simP.creationCode()
+					<< " stoppingCode = " << simP.stoppingCode()
+					<< std::endl;
+      if(simP.stoppingCode() == ProcessCode::Mu2eGammaDaughterProcess) {
 	retval = false;
 	break;
       }
+    }
+    if(_verbosityLevel > 0) {
+      std::cout << "Filter returning " << retval << std::endl;
     }
     return retval;
   }
 }
 
-using mu2e::GammaDaughterFilter;
-DEFINE_ART_MODULE(GammaDaughterFilter);
+using mu2e::GammaDaughterProcessFilter;
+DEFINE_ART_MODULE(GammaDaughterProcessFilter);

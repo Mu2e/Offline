@@ -40,6 +40,7 @@
 
 // Mu2e includes
 #include "Mu2eG4/inc/Mu2eRecorderProcess.hh"
+#include "Mu2eG4/inc/Mu2eGammaDaughterProcess.hh"
 
 #include "Mu2eG4/inc/toggleProcesses.hh"
 
@@ -212,6 +213,29 @@ namespace mu2e{
       // ph->RegisterProcess(rmp, proton); // RegisterProcess only works for known geant4 processes
       pmanager->AddContinuousProcess(rmp);
       pmanager->SetProcessOrderingToLast(rmp, idxAlongStep);
+    }
+
+
+    if(phys.gammaFilterMinDaughterEnergy() > 0.) {
+      // special process to filter gamma conversions
+      if (diagLevel>=0) {
+        G4cout << __func__
+               << " adding Mu2eGammaDaughterProcess to relevant G4ParticleTable particles with E_min = "
+               << phys.gammaFilterMinDaughterEnergy() << G4endl;
+      }
+      Mu2eGammaDaughterProcess* gdp = new Mu2eGammaDaughterProcess();
+      gdp->SetVerboseLevel(debug.steppingVerbosityLevel()-1);
+      gdp->SetMinDaughterEnergy(phys.gammaFilterMinDaughterEnergy());
+      ptable = G4ParticleTable::GetParticleTable();
+      iter = ptable->GetIterator();
+      iter->reset();
+      while( (*iter)() ){
+        G4ParticleDefinition* particle = iter->value();
+        if(!gdp->IsApplicable(*particle)) continue;
+        G4ProcessManager* pmanager     = particle->GetProcessManager();
+        // The process manager takes ownership of the process
+        pmanager->AddDiscreteProcess(gdp);
+      }
     }
   }
 

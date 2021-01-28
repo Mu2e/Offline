@@ -179,7 +179,6 @@ namespace mu2e {
     SetUserAction(userPrimaryGeneratorAction);
 
     steppingAction_ = new Mu2eG4SteppingAction(conf_.debug(),
-					       conf_.physics(),
                                                conf_.SDConfig().TimeVD().times(),
                                                *steppingCuts_.get(),
                                                *commonCuts_.get(),
