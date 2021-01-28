@@ -12,11 +12,8 @@
 
 namespace mu2e {
 
-  Mu2eG4PerThreadStorage::Mu2eG4PerThreadStorage(const Mu2eG4Config::Top& conf)
-    : generatorModuleLabel{conf.generatorModuleLabel()}
-    , multiStagePars{conf}
-    , timeVD_enabled(conf.SDConfig().TimeVD().enabled())
-    , produceMCTrajectories{conf.TrajectoryControl().produce()}
+  Mu2eG4PerThreadStorage::Mu2eG4PerThreadStorage(const Mu2eG4IOConfigHelper& ioconf)
+    : ioconf_{ioconf}
  {}
 
   //----------------------------------------------------------------
@@ -24,12 +21,12 @@ namespace mu2e {
   initializeEventInfo(art::Event* evt) {
     artEvent = evt;
 
-    if(!(generatorModuleLabel == art::InputTag())) {
-      artEvent->getByLabel(generatorModuleLabel, gensHandle);
+    if(!(ioconf_.generatorModuleLabel() == art::InputTag())) {
+      artEvent->getByLabel(ioconf_.generatorModuleLabel(), gensHandle);
     }
 
     // StepPointMCCollection of input hits from the previous simulation stage
-    for(const auto& i : multiStagePars.genInputHits()) {
+    for(const auto& i : ioconf_.multiStagePars().genInputHits()) {
       genInputHits.emplace_back(evt->getValidHandle<StepPointMCCollection>(i));
     }
 
@@ -37,31 +34,21 @@ namespace mu2e {
     art::ProductID simPartId(evt->getProductID<SimParticleCollection>());
     art::EDProductGetter const* simProductGetter = evt->productGetter(simPartId);
 
-    simParticleHelper = SimParticleHelper(multiStagePars.simParticleNumberOffset(), simPartId, evt, simProductGetter);
+    simParticleHelper = SimParticleHelper(ioconf_.multiStagePars().simParticleNumberOffset(), simPartId, evt, simProductGetter);
     simParticlePrimaryHelper = SimParticlePrimaryHelper(evt, simPartId, simProductGetter);
-
-    if ( !gensHandle.isValid() && genInputHits.empty() ) {
-      throw cet::exception("CONFIG")
-        << "Error in PerThreadStorage::initializeEventInfo.  You are trying to run a G4job without an input for G4.\n";
-    }
-
-    if ( !gensHandle.isValid() && genInputHits.empty() ) {
-      throw cet::exception("CONFIG")
-        << "Error in PerThreadStorage::initializeEventInfo.  You are trying to run a G4job without an input for G4.\n";
-    }
 
     // Output collections
     simPartCollection = std::unique_ptr<SimParticleCollection>( new SimParticleCollection );
 
-    if(timeVD_enabled) {
+    if(ioconf_.timeVD_enabled()) {
       tvd_collection = std::unique_ptr<StepPointMCCollection>( new StepPointMCCollection );
     }
 
-    if(produceMCTrajectories) {
+    if(ioconf_.produceMCTrajectories()) {
       mcTrajectories = std::unique_ptr<MCTrajectoryCollection>( new MCTrajectoryCollection );
     }
 
-    if(multiStagePars.multiStage()) {
+    if(ioconf_.multiStagePars().multiStage()) {
       simRemapping = std::unique_ptr<SimParticleRemapping>( new SimParticleRemapping );
     }
 
@@ -105,20 +92,20 @@ namespace mu2e {
       putSensitiveDetectorData();
       putCutsData();
 
-      if(timeVD_enabled) {
+      if(ioconf_.timeVD_enabled()) {
         static const StepInstanceName timeVD(StepInstanceName::timeVD);
         artEvent->put(std::move(tvd_collection), timeVD.name());
       }
 
-      if(produceMCTrajectories) {
+      if(ioconf_.produceMCTrajectories()) {
         artEvent->put(std::move(mcTrajectories));
       }
 
-      if(multiStagePars.multiStage()) {
+      if(ioconf_.multiStagePars().multiStage()) {
         artEvent->put(std::move(simRemapping));
       }
 
-      if(extMonFNALHits) {
+      if(ioconf_.extMonPixelsEnabled()) {
         artEvent->put(std::move(extMonFNALHits));
       }
   }
