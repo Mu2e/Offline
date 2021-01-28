@@ -9,8 +9,7 @@
 //
 
 //Mu2e includes
-#include "Mu2eG4/inc/Mu2eG4Config.hh"
-#include "Mu2eG4/inc/Mu2eG4MultiStageParameters.hh"
+#include "Mu2eG4/inc/Mu2eG4IOConfigHelper.hh"
 #include "Mu2eG4/inc/SimParticleHelper.hh"
 #include "Mu2eG4/inc/SimParticlePrimaryHelper.hh"
 #include "MCDataProducts/inc/GenParticleCollection.hh"
@@ -41,7 +40,7 @@ namespace mu2e {
 
   struct Mu2eG4PerThreadStorage
   {
-    explicit Mu2eG4PerThreadStorage(const Mu2eG4Config::Top& conf);
+    explicit Mu2eG4PerThreadStorage(const Mu2eG4IOConfigHelper& ioconf);
 
     void initializeEventInfo(art::Event* evt);
 
@@ -79,10 +78,8 @@ namespace mu2e {
     void clearData();
 
     /////////////////////////////////////////////////////////////
-    const art::InputTag generatorModuleLabel;
-    const Mu2eG4MultiStageParameters multiStagePars;
-    const bool timeVD_enabled;
-    const bool produceMCTrajectories;
+    // Job-level configuration
+    Mu2eG4IOConfigHelper ioconf_;
 
     // run-level data members
     art::RunNumber_t currentRunNumber = 0;

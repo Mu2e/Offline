@@ -36,12 +36,13 @@ namespace mu2e {
   class Mu2eG4SteppingAction;
   class TrackingAction;
   class ExtMonFNALPixelSD;
+  class Mu2eG4IOConfigHelper;
 
   class Mu2eG4WorkerRunManager : public G4WorkerRunManager{
 
   public:
 
-    Mu2eG4WorkerRunManager(const Mu2eG4Config::Top& conf, std::thread::id worker_ID);
+    Mu2eG4WorkerRunManager(const Mu2eG4Config::Top& conf, const Mu2eG4IOConfigHelper& ioconf, std::thread::id worker_ID);
     virtual ~Mu2eG4WorkerRunManager();
 
     //**********************************************************

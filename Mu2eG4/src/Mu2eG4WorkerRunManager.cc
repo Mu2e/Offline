@@ -78,7 +78,7 @@ namespace mu2e {
 
   // If the c'tor is called a second time, the c'tor of base will
   // generate an exception.
-  Mu2eG4WorkerRunManager::Mu2eG4WorkerRunManager(const Mu2eG4Config::Top& conf, thread::id worker_ID):
+  Mu2eG4WorkerRunManager::Mu2eG4WorkerRunManager(const Mu2eG4Config::Top& conf, const Mu2eG4IOConfigHelper& ioconf, thread::id worker_ID):
     G4WorkerRunManager(),
     conf_(conf),
     m_managerInitialized(false),
@@ -86,7 +86,7 @@ namespace mu2e {
     m_mtDebugOutput(conf.debug().mtDebugOutput()),
     rmvlevel_(conf.debug().diagLevel()),
     salt_(conf.salt()),
-    perThreadObjects_(make_unique<Mu2eG4PerThreadStorage>(conf)),
+    perThreadObjects_(make_unique<Mu2eG4PerThreadStorage>(ioconf)),
     masterRM(nullptr),
     workerID_(worker_ID),
     mu2elimits_(conf.ResourceLimits()),
