@@ -43,6 +43,7 @@ namespace CLHEP { class Hep3Vector; }
 
 namespace art { class Event; }
 namespace art { class ProducesCollector; }
+namespace art { class ConsumesCollector; }
 namespace fhicl { class ParameterSet; }
 
 namespace mu2e {
@@ -57,7 +58,7 @@ namespace mu2e {
     virtual bool steppingActionCut(const G4Step  *step) = 0;
     virtual bool stackingActionCut(const G4Track *trk) = 0;
 
-    virtual void declareProducts(art::ProducesCollector& collector) =  0;
+    virtual void declareProducts(art::ProducesCollector& pc, art::ConsumesCollector& cc) =  0;
 
     virtual void finishConstruction(const CLHEP::Hep3Vector& mu2eOriginInWorld) = 0;
 
