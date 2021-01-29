@@ -14,6 +14,9 @@ namespace mu2e {
 
   Mu2eG4PerThreadStorage::Mu2eG4PerThreadStorage(const Mu2eG4IOConfigHelper& ioc)
     : ioconf{ioc}
+    , stackingCuts{createMu2eG4Cuts(ioc.stackingCutsConf(), ioc.mu2elimits())}
+    , steppingCuts{createMu2eG4Cuts(ioc.steppingCutsConf(), ioc.mu2elimits())}
+    , commonCuts{createMu2eG4Cuts(ioc.commonCutsConf(), ioc.mu2elimits())}
  {}
 
   //----------------------------------------------------------------
@@ -80,17 +83,15 @@ namespace mu2e {
   }
 
   //----------------------------------------------------------------
-  void Mu2eG4PerThreadStorage::putCutsData() {
-    putStepPointMCCollections(std::move(cutsSteps));
-  }
-
-  //----------------------------------------------------------------
   void Mu2eG4PerThreadStorage::putDataIntoEvent() {
       artEvent->put(std::move(statG4));
       artEvent->put(std::move(simPartCollection));
 
       putSensitiveDetectorData();
-      putCutsData();
+
+      stackingCuts->put(*artEvent);
+      steppingCuts->put(*artEvent);
+      commonCuts->put(*artEvent);
 
       if(ioconf.timeVD_enabled()) {
         static const StepInstanceName timeVD(StepInstanceName::timeVD);
@@ -127,7 +128,10 @@ namespace mu2e {
     simRemapping = nullptr;
     extMonFNALHits = nullptr;
     sensitiveDetectorSteps.clear();
-    cutsSteps.clear();
+
+    stackingCuts->deleteCutsData();
+    steppingCuts->deleteCutsData();
+    commonCuts->deleteCutsData();
   }
 
   //----------------------------------------------------------------

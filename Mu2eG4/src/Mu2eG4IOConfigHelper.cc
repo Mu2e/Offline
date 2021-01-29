@@ -27,6 +27,10 @@ namespace mu2e {
     , timeVD_enabled_(conf.SDConfig().TimeVD().enabled())
     , produceMCTrajectories_{conf.TrajectoryControl().produce()}
     , extMonPixelsEnabled_{false}
+    , mu2elimits_{conf.ResourceLimits()}
+    , stackingCutsConf_{conf.Mu2eG4StackingOnlyCut.get<fhicl::ParameterSet>()}
+    , steppingCutsConf_{conf.Mu2eG4SteppingOnlyCut.get<fhicl::ParameterSet>()}
+    , commonCutsConf_{conf.Mu2eG4CommonCut.get<fhicl::ParameterSet>()}
   {
     // Use temporary local objects to parse config and declare i/o below
     SensitiveDetectorHelper sd(conf.SDConfig());
@@ -81,14 +85,13 @@ namespace mu2e {
     // Use temporary local objects to call the declare methods
     sd.declareProducts(pc); // FIXME: also handle SD consumes
 
-    Mu2eG4ResourceLimits lims(conf.ResourceLimits());
-    auto stackingCuts{createMu2eG4Cuts(conf.Mu2eG4StackingOnlyCut.get<fhicl::ParameterSet>(), lims)};
+    auto stackingCuts{createMu2eG4Cuts(stackingCutsConf_, mu2elimits_)};
     stackingCuts->declareProducts(pc, cc);
 
-    auto steppingCuts{createMu2eG4Cuts(conf.Mu2eG4SteppingOnlyCut.get<fhicl::ParameterSet>(), lims)};
+    auto steppingCuts{createMu2eG4Cuts(steppingCutsConf_, mu2elimits_)};
     steppingCuts->declareProducts(pc, cc);
 
-    auto commonCuts{createMu2eG4Cuts(conf.Mu2eG4CommonCut.get<fhicl::ParameterSet>(), lims)};
+    auto commonCuts{createMu2eG4Cuts(commonCutsConf_, mu2elimits_)};
     commonCuts->declareProducts(pc, cc);
   }
 

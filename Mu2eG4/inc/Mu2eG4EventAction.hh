@@ -54,9 +54,6 @@ namespace mu2e {
                       TrackingAction*,
                       Mu2eG4SteppingAction*,
                       SensitiveDetectorHelper*,
-                      IMu2eG4Cut&,
-                      IMu2eG4Cut&,
-                      IMu2eG4Cut&,
                       Mu2eG4PerThreadStorage* pts,
                       PhysicsProcessInfo*,
                       const CLHEP::Hep3Vector&
@@ -80,9 +77,6 @@ namespace mu2e {
 
     SensitiveDetectorHelper* _sensitiveDetectorHelper;
 
-    IMu2eG4Cut* _stackingCuts;
-    IMu2eG4Cut* _steppingCuts;
-    IMu2eG4Cut* _commonCuts;
     const CLHEP::Hep3Vector& _originInWorld;
 
     // local Mu2e per Geant4 event timer

@@ -31,7 +31,6 @@ namespace mu2e {
   class Mu2eG4PerThreadStorage;
 
   class Mu2eG4MTRunManager;
-  class IMu2eG4Cut;
   class PrimaryGeneratorAction;
   class Mu2eG4SteppingAction;
   class TrackingAction;
@@ -82,9 +81,6 @@ namespace mu2e {
     PhysicsProcessInfo physicsProcessInfo_;
     SensitiveDetectorHelper sensitiveDetectorHelper_;
     ExtMonFNALPixelSD* extMonFNALPixelSD_;
-    std::unique_ptr<IMu2eG4Cut> stackingCuts_;
-    std::unique_ptr<IMu2eG4Cut> steppingCuts_;
-    std::unique_ptr<IMu2eG4Cut> commonCuts_;
 
     PrimaryGeneratorAction* genAction_;
     Mu2eG4SteppingAction* steppingAction_;

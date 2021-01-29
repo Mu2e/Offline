@@ -12,6 +12,7 @@
 #include "Mu2eG4/inc/Mu2eG4IOConfigHelper.hh"
 #include "Mu2eG4/inc/SimParticleHelper.hh"
 #include "Mu2eG4/inc/SimParticlePrimaryHelper.hh"
+#include "Mu2eG4/inc/IMu2eG4Cut.hh"
 #include "MCDataProducts/inc/GenParticleCollection.hh"
 #include "MCDataProducts/inc/StatusG4.hh"
 #include "MCDataProducts/inc/SimParticleCollection.hh"
@@ -19,6 +20,7 @@
 #include "MCDataProducts/inc/MCTrajectoryCollection.hh"
 #include "MCDataProducts/inc/SimParticleRemapping.hh"
 #include "MCDataProducts/inc/ExtMonFNALSimHitCollection.hh"
+
 
 // C++ includes
 #include <memory>
@@ -57,11 +59,6 @@ namespace mu2e {
 
     }
 
-    void insertCutsStepPointMC(std::unique_ptr<StepPointMCCollection> step_point_mc,
-                               std::string instance_name) {
-      cutsSteps[instance_name] = std::move(step_point_mc);
-    }
-
     /////////////////////////////////////////////////////////////
     /////////////////////////////////////////////////////////////
     // functions to move the data into the art::Event
@@ -72,8 +69,6 @@ namespace mu2e {
     void putStepPointMCCollections(std::unordered_map< std::string, std::unique_ptr<StepPointMCCollection> > &&steps_map);
 
     void putSensitiveDetectorData();
-
-    void putCutsData();
 
     void clearData();
 
@@ -103,7 +98,10 @@ namespace mu2e {
     std::unique_ptr<ExtMonFNALSimHitCollection> extMonFNALHits = nullptr;
 
     std::unordered_map< std::string, std::unique_ptr<StepPointMCCollection> > sensitiveDetectorSteps;
-    std::unordered_map< std::string, std::unique_ptr<StepPointMCCollection> > cutsSteps;
+
+    std::unique_ptr<IMu2eG4Cut> stackingCuts;
+    std::unique_ptr<IMu2eG4Cut> steppingCuts;
+    std::unique_ptr<IMu2eG4Cut> commonCuts;
   };
 
 }  // end namespace mu2e

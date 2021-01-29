@@ -54,9 +54,6 @@ namespace mu2e {
                                        TrackingAction* tracking_action,
                                        Mu2eG4SteppingAction* stepping_action,
                                        SensitiveDetectorHelper* sensitive_detectorhelper,
-                                       IMu2eG4Cut& stacking_cuts,
-                                       IMu2eG4Cut& stepping_cuts,
-                                       IMu2eG4Cut& common_cuts,
                                        Mu2eG4PerThreadStorage* pts,
                                        PhysicsProcessInfo* phys_process_info,
                                        const CLHEP::Hep3Vector& origin_in_world)
@@ -68,9 +65,6 @@ namespace mu2e {
     _trackingAction(tracking_action),
     _steppingAction(stepping_action),
     _sensitiveDetectorHelper(sensitive_detectorhelper),
-    _stackingCuts(&stacking_cuts),
-    _steppingCuts(&stepping_cuts),
-    _commonCuts(&common_cuts),
     _originInWorld(origin_in_world),
     _timer(std::make_unique<G4Timer>()),
 
@@ -129,13 +123,13 @@ namespace mu2e {
     //We cannot put these calls to finishConstruction() in ActionInitialization::Build(), because in sequential mode
     //Build() is called at the call to _runManager->SetUserInitialization(actioninit), which happens BEFORE _runManager->Initialize().
 
-    _stackingCuts->finishConstruction(_originInWorld);
-    _steppingCuts->finishConstruction(_originInWorld);
-    _commonCuts->finishConstruction(_originInWorld);
+    perThreadObjects_->stackingCuts->finishConstruction(_originInWorld);
+    perThreadObjects_->steppingCuts->finishConstruction(_originInWorld);
+    perThreadObjects_->commonCuts->finishConstruction(_originInWorld);
 
-    _stackingCuts->beginEvent(*_artEvent, *_spHelper);
-    _steppingCuts->beginEvent(*_artEvent, *_spHelper);
-    _commonCuts->beginEvent(*_artEvent, *_spHelper);
+    perThreadObjects_->stackingCuts->beginEvent(*_artEvent, *_spHelper);
+    perThreadObjects_->steppingCuts->beginEvent(*_artEvent, *_spHelper);
+    perThreadObjects_->commonCuts->beginEvent(*_artEvent, *_spHelper);
 
     _trackingAction->beginEvent(inputSimHandle, inputMCTrajectoryHandle, *_spHelper,
                                 *_parentHelper, *perThreadObjects_->mcTrajectories,
@@ -178,8 +172,9 @@ namespace mu2e {
 
     if (event_passes) {
 
-      // Populate the output data products.
       // Fill the status object.
+      // Existence of statG4 in perThreadObjects means that the event is accepted.
+
       float cpuTime  = _timer->GetSystemElapsed() + _timer->GetUserElapsed();
 
       int status(0);
@@ -199,19 +194,8 @@ namespace mu2e {
                                                              );
 
       _sensitiveDetectorHelper->insertSDDataIntoPerThreadStorage(perThreadObjects_);
-      _stackingCuts->insertCutsDataIntoPerThreadStorage(perThreadObjects_);
-      _steppingCuts->insertCutsDataIntoPerThreadStorage(perThreadObjects_);
-      _commonCuts->insertCutsDataIntoPerThreadStorage(perThreadObjects_);
 
     }//event_passes cuts
-    else {
-      //there is no need to clear SD data here, since it is done in the call to
-      //_sensitiveDetectorHelper->createProducts in the BeginOfEventAction above
-
-      _stackingCuts->deleteCutsData();
-      _steppingCuts->deleteCutsData();
-      _commonCuts->deleteCutsData();
-    }//else put NULL ptrs into the stash
 
   }//EndOfEventAction
 

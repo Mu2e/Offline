@@ -12,6 +12,8 @@
 #define Mu2eG4_Mu2eG4IOConfigHelper_hh
 
 #include "Mu2eG4/inc/Mu2eG4MultiStageParameters.hh"
+#include "Mu2eG4/inc/Mu2eG4ResourceLimits.hh"
+#include "fhiclcpp/ParameterSet.h"
 
 namespace art { class Event; }
 namespace art { class ProducesCollector; }
@@ -29,6 +31,11 @@ namespace mu2e {
     bool produceMCTrajectories_;
     bool extMonPixelsEnabled_;
 
+    Mu2eG4ResourceLimits mu2elimits_;
+    fhicl::ParameterSet stackingCutsConf_;
+    fhicl::ParameterSet steppingCutsConf_;
+    fhicl::ParameterSet commonCutsConf_;
+
   public:
 
     Mu2eG4IOConfigHelper(const Mu2eG4Config::Top& conf, art::ProducesCollector& pc, art::ConsumesCollector& cc);
@@ -39,6 +46,10 @@ namespace mu2e {
     bool produceMCTrajectories() const { return produceMCTrajectories_; }
     bool extMonPixelsEnabled() const { return extMonPixelsEnabled_; }
 
+    const Mu2eG4ResourceLimits& mu2elimits() const { return mu2elimits_; }
+    const fhicl::ParameterSet& stackingCutsConf() const { return stackingCutsConf_; }
+    const fhicl::ParameterSet& steppingCutsConf() const { return steppingCutsConf_; }
+    const fhicl::ParameterSet& commonCutsConf() const { return commonCutsConf_; }
   };
 
 } // end namespace mu2e
