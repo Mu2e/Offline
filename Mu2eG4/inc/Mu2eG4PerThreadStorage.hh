@@ -79,7 +79,7 @@ namespace mu2e {
 
     /////////////////////////////////////////////////////////////
     // Job-level configuration
-    Mu2eG4IOConfigHelper ioconf_;
+    Mu2eG4IOConfigHelper ioconf;
 
     // run-level data members
     art::RunNumber_t currentRunNumber = 0;

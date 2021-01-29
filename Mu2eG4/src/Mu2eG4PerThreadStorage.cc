@@ -12,8 +12,8 @@
 
 namespace mu2e {
 
-  Mu2eG4PerThreadStorage::Mu2eG4PerThreadStorage(const Mu2eG4IOConfigHelper& ioconf)
-    : ioconf_{ioconf}
+  Mu2eG4PerThreadStorage::Mu2eG4PerThreadStorage(const Mu2eG4IOConfigHelper& ioc)
+    : ioconf{ioc}
  {}
 
   //----------------------------------------------------------------
@@ -21,12 +21,12 @@ namespace mu2e {
   initializeEventInfo(art::Event* evt) {
     artEvent = evt;
 
-    if(!(ioconf_.generatorModuleLabel() == art::InputTag())) {
-      artEvent->getByLabel(ioconf_.generatorModuleLabel(), gensHandle);
+    if(!(ioconf.generatorModuleLabel() == art::InputTag())) {
+      artEvent->getByLabel(ioconf.generatorModuleLabel(), gensHandle);
     }
 
     // StepPointMCCollection of input hits from the previous simulation stage
-    for(const auto& i : ioconf_.multiStagePars().genInputHits()) {
+    for(const auto& i : ioconf.multiStagePars().genInputHits()) {
       genInputHits.emplace_back(evt->getValidHandle<StepPointMCCollection>(i));
     }
 
@@ -34,21 +34,21 @@ namespace mu2e {
     art::ProductID simPartId(evt->getProductID<SimParticleCollection>());
     art::EDProductGetter const* simProductGetter = evt->productGetter(simPartId);
 
-    simParticleHelper = SimParticleHelper(ioconf_.multiStagePars().simParticleNumberOffset(), simPartId, evt, simProductGetter);
+    simParticleHelper = SimParticleHelper(ioconf.multiStagePars().simParticleNumberOffset(), simPartId, evt, simProductGetter);
     simParticlePrimaryHelper = SimParticlePrimaryHelper(evt, simPartId, simProductGetter);
 
     // Output collections
     simPartCollection = std::unique_ptr<SimParticleCollection>( new SimParticleCollection );
 
-    if(ioconf_.timeVD_enabled()) {
+    if(ioconf.timeVD_enabled()) {
       tvd_collection = std::unique_ptr<StepPointMCCollection>( new StepPointMCCollection );
     }
 
-    if(ioconf_.produceMCTrajectories()) {
+    if(ioconf.produceMCTrajectories()) {
       mcTrajectories = std::unique_ptr<MCTrajectoryCollection>( new MCTrajectoryCollection );
     }
 
-    if(ioconf_.multiStagePars().multiStage()) {
+    if(ioconf.multiStagePars().multiStage()) {
       simRemapping = std::unique_ptr<SimParticleRemapping>( new SimParticleRemapping );
     }
 
@@ -92,20 +92,20 @@ namespace mu2e {
       putSensitiveDetectorData();
       putCutsData();
 
-      if(ioconf_.timeVD_enabled()) {
+      if(ioconf.timeVD_enabled()) {
         static const StepInstanceName timeVD(StepInstanceName::timeVD);
         artEvent->put(std::move(tvd_collection), timeVD.name());
       }
 
-      if(ioconf_.produceMCTrajectories()) {
+      if(ioconf.produceMCTrajectories()) {
         artEvent->put(std::move(mcTrajectories));
       }
 
-      if(ioconf_.multiStagePars().multiStage()) {
+      if(ioconf.multiStagePars().multiStage()) {
         artEvent->put(std::move(simRemapping));
       }
 
-      if(ioconf_.extMonPixelsEnabled()) {
+      if(ioconf.extMonPixelsEnabled()) {
         artEvent->put(std::move(extMonFNALHits));
       }
   }
