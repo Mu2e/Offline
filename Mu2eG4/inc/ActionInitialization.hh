@@ -68,10 +68,6 @@ namespace mu2e {
     std::vector<double> timeVDtimes_;
     Mu2eG4ResourceLimits mu2eLimits_;
 
-    std::unique_ptr<IMu2eG4Cut> stackingCuts_;
-    std::unique_ptr<IMu2eG4Cut> steppingCuts_;
-    std::unique_ptr<IMu2eG4Cut> commonCuts_;
-
     SensitiveDetectorHelper* sensitiveDetectorHelper_;
     Mu2eG4PerThreadStorage*  perThreadStorage_;
     PhysicalVolumeHelper* physVolHelper_;

@@ -95,12 +95,8 @@ namespace mu2e {
 
     physicsProcessInfo_(),
     sensitiveDetectorHelper_(conf.SDConfig()),
-    extMonFNALPixelSD_(),
-    stackingCuts_(createMu2eG4Cuts(conf.Mu2eG4StackingOnlyCut.get<fhicl::ParameterSet>(), mu2elimits_)),
-    steppingCuts_(createMu2eG4Cuts(conf.Mu2eG4SteppingOnlyCut.get<fhicl::ParameterSet>(), mu2elimits_)),
-    commonCuts_(createMu2eG4Cuts(conf.Mu2eG4CommonCut.get<fhicl::ParameterSet>(), mu2elimits_))
+    extMonFNALPixelSD_()
   {
-
     if (m_mtDebugOutput > 0) {
       G4cout << "WorkerRM on thread " << workerID_ << " is being created\n!";
     }
@@ -180,14 +176,14 @@ namespace mu2e {
 
     steppingAction_ = new Mu2eG4SteppingAction(conf_.debug(),
                                                conf_.SDConfig().TimeVD().times(),
-                                               *steppingCuts_.get(),
-                                               *commonCuts_.get(),
+                                               *perThreadObjects_->steppingCuts,
+                                               *perThreadObjects_->commonCuts,
                                                trajectoryControl_,
                                                mu2elimits_);
     SetUserAction(steppingAction_);
 
-    SetUserAction( new Mu2eG4StackingAction(*stackingCuts_.get(),
-                                            *commonCuts_.get()) );
+    SetUserAction( new Mu2eG4StackingAction(*perThreadObjects_->stackingCuts,
+                                            *perThreadObjects_->commonCuts) );
 
     trackingAction_ = new TrackingAction(conf_,
                                          steppingAction_,
@@ -208,9 +204,6 @@ namespace mu2e {
                                          trackingAction_,
                                          steppingAction_,
                                          &sensitiveDetectorHelper_,
-                                         *stackingCuts_.get(),
-                                         *steppingCuts_.get(),
-                                         *commonCuts_.get(),
                                          perThreadObjects_.get(),
                                          &physicsProcessInfo_,
                                          origin_in_world) );
