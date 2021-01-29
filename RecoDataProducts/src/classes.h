@@ -43,6 +43,7 @@
 #include "RecoDataProducts/inc/TrkFitFlag.hh"
 #include "RecoDataProducts/inc/TrkExtTrajCollection.hh"
 #include "RecoDataProducts/inc/KalRepPtrCollection.hh"
+#include "RecoDataProducts/inc/KKLoopHelix.hh"
 #include "RecoDataProducts/inc/TrackSummaryRecoMap.hh"
 #include "RecoDataProducts/inc/TrackSummary.hh"
 #include "RecoDataProducts/inc/TrackCaloAssns.hh" 
