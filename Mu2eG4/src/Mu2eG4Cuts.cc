@@ -10,6 +10,7 @@
 #include "fhiclcpp/ParameterSet.h"
 #include "art/Framework/Principal/Event.h"
 #include "art/Framework/Core/ProducesCollector.h"
+#include "art/Framework/Core/ConsumesCollector.h"
 #include "canvas/Utilities/InputTag.h"
 #include "messagefacility/MessageLogger/MessageLogger.h"
 #include "CLHEP/Vector/ThreeVector.h"
@@ -39,7 +40,7 @@ namespace mu2e {
     // A common implementation for some of the required IMu2eG4Cut methods
     class IOHelper: virtual public IMu2eG4Cut {
     public:
-      virtual void declareProducts(art::ProducesCollector& collector) override;
+      virtual void declareProducts(art::ProducesCollector& pc, art::ConsumesCollector& cc) override;
       virtual void finishConstruction(const CLHEP::Hep3Vector& mu2eOriginInWorld) override;
       virtual void beginEvent(const art::Event& evt, const SimParticleHelper& spHelper) override;
       virtual void insertCutsDataIntoPerThreadStorage(Mu2eG4PerThreadStorage* per_thread_store) override;
@@ -65,9 +66,14 @@ namespace mu2e {
       void addHit(const G4Step *aStep);
     };
 
-    void IOHelper::declareProducts(art::ProducesCollector& collector) {
+    void IOHelper::declareProducts(art::ProducesCollector& pc, art::ConsumesCollector& cc) {
+
       if(!steppingOutputName_.empty()) {
-        collector.produces<StepPointMCCollection>(steppingOutputName_);
+        if(preSimulatedHitTag_ != art::InputTag()) {
+          cc.consumes<StepPointMCCollection>(preSimulatedHitTag_);
+        }
+
+       pc.produces<StepPointMCCollection>(steppingOutputName_);
       }
     }
 
@@ -151,7 +157,7 @@ namespace mu2e {
       virtual bool stackingActionCut(const G4Track *trk);
 
       // Sequences need a different implementation
-      virtual void declareProducts(art::ProducesCollector& collector) override;
+      virtual void declareProducts(art::ProducesCollector& pc, art::ConsumesCollector& cc) override;
       virtual void beginEvent(const art::Event& evt, const SimParticleHelper& spHelper) override;
       virtual void insertCutsDataIntoPerThreadStorage(Mu2eG4PerThreadStorage* per_thread_store) override;
       virtual void deleteCutsData() override;
@@ -196,10 +202,10 @@ namespace mu2e {
       return result;
     }
 
-    void Union::declareProducts(art::ProducesCollector& collector) {
-      IOHelper::declareProducts(collector);
+    void Union::declareProducts(art::ProducesCollector& pc, art::ConsumesCollector& cc) {
+      IOHelper::declareProducts(pc, cc);
       for(auto& cut: cuts_) {
-        cut->declareProducts(collector);
+        cut->declareProducts(pc, cc);
       }
     }
 
@@ -241,7 +247,7 @@ namespace mu2e {
       virtual bool stackingActionCut(const G4Track *trk);
 
       // Sequences need a different implementation
-      virtual void declareProducts(art::ProducesCollector& collector) override;
+      virtual void declareProducts(art::ProducesCollector& pc, art::ConsumesCollector& cc) override;
       virtual void beginEvent(const art::Event& evt, const SimParticleHelper& spHelper) override;
       virtual void insertCutsDataIntoPerThreadStorage(Mu2eG4PerThreadStorage* per_thread_store) override;
       virtual void deleteCutsData() override;
@@ -287,10 +293,10 @@ namespace mu2e {
       return result;
     }
 
-    void Intersection::declareProducts(art::ProducesCollector& collector) {
-      IOHelper::declareProducts(collector);
+    void Intersection::declareProducts(art::ProducesCollector& pc, art::ConsumesCollector& cc) {
+      IOHelper::declareProducts(pc, cc);
       for(auto& cut: cuts_) {
-        cut->declareProducts(collector);
+        cut->declareProducts(pc, cc);
       }
     }
 

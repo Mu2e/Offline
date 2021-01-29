@@ -83,13 +83,13 @@ namespace mu2e {
 
     Mu2eG4ResourceLimits lims(conf.ResourceLimits());
     auto stackingCuts{createMu2eG4Cuts(conf.Mu2eG4StackingOnlyCut.get<fhicl::ParameterSet>(), lims)};
-    stackingCuts->declareProducts(pc); // FIXME: also handle cuts consumes
+    stackingCuts->declareProducts(pc, cc);
 
     auto steppingCuts{createMu2eG4Cuts(conf.Mu2eG4SteppingOnlyCut.get<fhicl::ParameterSet>(), lims)};
-    steppingCuts->declareProducts(pc);
+    steppingCuts->declareProducts(pc, cc);
 
     auto commonCuts{createMu2eG4Cuts(conf.Mu2eG4CommonCut.get<fhicl::ParameterSet>(), lims)};
-    commonCuts->declareProducts(pc);
+    commonCuts->declareProducts(pc, cc);
   }
 
 } // end namespace mu2e
