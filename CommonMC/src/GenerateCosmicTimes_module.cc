@@ -7,6 +7,7 @@
 
 #include <string>
 #include <memory>
+#include <cfloat>
 
 #include "fhiclcpp/ParameterSet.h"
 #include "messagefacility/MessageLogger/MessageLogger.h"
@@ -101,7 +102,7 @@ namespace mu2e {
 
 // find the earliest step.
 // Use this to define the earliest time, to improves the generation efficiency
-    double tearly(0.0);
+    double tearly(FLT_MAX);
     for(const auto& trkcoltag : trkStepCols_) {
       auto sgscolH = event.getValidHandle<StrawGasStepCollection>(trkcoltag);
       for(const auto& sgs : *sgscolH ) {
@@ -122,6 +123,7 @@ namespace mu2e {
 	tearly = std::min(tearly,crvs.startTime());	
       }
     }
+    if(tearly >= FLT_MAX)tearly = 0.0;
 
 // use a buffer to set the earliest time offset
     double tmin = -tearly - tbuff_;
@@ -130,7 +132,7 @@ namespace mu2e {
       StrawElectronics const& strawele = strawele_h_.get(event.id());
       tmin += strawele.flashEnd(); // flash end should be a Mu2e global quantity FIXME!
     }
-    double tmax = tmin + ewMarker.eventLength() + tbuff_;
+    double tmax = ewMarker.eventLength() - tearly;
     if(verbosityLevel_ > 1) {
       std::cout << "DetectorStep early time = " << tearly << std::endl;
       std::cout<<"GenerateCosmicTimes time range = ["<< tmin << ","<< tmax << "]"<< std::endl;
