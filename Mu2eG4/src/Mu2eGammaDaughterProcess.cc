@@ -42,45 +42,62 @@ namespace mu2e{
   G4double Mu2eGammaDaughterProcess::PostStepGetPhysicalInteractionLength( const G4Track& track,
                                                                            G4double,
                                                                            G4ForceCondition* condition) {
+
+    *condition = NotForced;
+
+    if(track.GetTrackID() == 1 && track.GetCurrentStepNumber() == 1) { // new event
+      accepted_ = 0; //reset accepted flag
+      photonEnergy_ = track.GetTotalEnergy();
+    }
+
+
+    //check if the event has been marked to accept or kill
+    if(accepted_ < 0) { //kill event
+      return 0.0;
+    } else if(accepted_ > 0) { //accepted event
+      return DBL_MAX;
+    }
+
     if(verbose_ > 9) G4cout << "Mu2eGammaDaughterProcess::" << __func__ << ": Track seen: ID = "
                             << track.GetTrackID() << " Parent ID = " << track.GetParentID()
+                            << " step number = " << track.GetCurrentStepNumber()
                             << " CreationCode = " << Mu2eG4UserHelpers::findCreationCode(&track)
                             << " E = " << track.GetTotalEnergy()
                             << " E_gamma = " << photonEnergy_ << " accepted = " << accepted_
                             << G4endl;
 
-    // if(accepted_ < 0) { //kill event
-    //   return 0.0;
-    // } else if(accepted_ > 0) { //accepted event
-    //   return DBL_MAX;
-    // }
-
-    if(track.GetTrackID() == 1) { //generated photon
+    if(track.GetTrackID() == 1) { //generated photon, should always be the first track in the event
       double energy = track.GetTotalEnergy();
       //update the photon energy if no energy is stored or not too small of an energy
-      if(photonEnergy_ < 0. || energy > 1.) {
+      if(energy > 1.) {
         photonEnergy_ = energy;
       }
-      if(photonEnergy_ > minDaughterEnergy_) accepted_ = 0;
       if(verbose_ > 1) G4cout << "Mu2eGammaDaughterProcess::" << __func__ << ": Updating photon energy" << G4endl;
       return DBL_MAX;
-    } else if(track.GetParentID() == 1) { //daughter of generated photon
+    }
+
+
+    if(track.GetParentID() == 1) { //daughter of generated photon
       double energy = track.GetTotalEnergy();
+      bool isCompt = Mu2eG4UserHelpers::findCreationCode(&track) == ProcessCode(ProcessCode::compt);
+      bool isConvn = Mu2eG4UserHelpers::findCreationCode(&track) == ProcessCode(ProcessCode::conv);
+      if(!isCompt && !isConvn) {
+        if(verbose_ > 1) G4cout << "Mu2eGammaDaughterProcess::" << __func__ << ": Not a relevant process" << G4endl;
+        return DBL_MAX;
+      }
       if(energy > minDaughterEnergy_) {
-        if(verbose_ > 0) G4cout << "Mu2eGammaDaughterProcess::" << __func__ << ": Event passed test" << G4endl;
-        accepted_ = 1;
+        if(verbose_ > 0) G4cout << "Mu2eGammaDaughterProcess::" << __func__ << ": Event passed the test" << G4endl;
+        accepted_ = (isConvn&&killAfterConvert_) ? -1 : 1; //kill the event if a conversion and asked to
         return DBL_MAX;
       } else if(photonEnergy_ > 0. && photonEnergy_ - energy < minDaughterEnergy_) {
         accepted_ = -1; //fails
-        if(verbose_ > 0) G4cout << "Mu2eGammaDaughterProcess::" << __func__ << ": Event failed test" << G4endl;
+        if(verbose_ > 0) G4cout << "Mu2eGammaDaughterProcess::" << __func__ << ": Event failed the test" << G4endl;
         return 0.0;
       }
       if(verbose_ > 1) G4cout << "Mu2eGammaDaughterProcess::" << __func__ << ": Event continues through test" << G4endl;
-      accepted_ = 0;
       return DBL_MAX; //still could have produced a passing daughter --> continue
     }
     if(verbose_ > 9) G4cout << "Mu2eGammaDaughterProcess::" << __func__ << ": Event not tested" << G4endl;
-    accepted_ = 0;
     return DBL_MAX; //not the primary photon or a daughter of it
   }
 

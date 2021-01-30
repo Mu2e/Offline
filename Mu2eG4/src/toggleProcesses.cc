@@ -221,11 +221,12 @@ namespace mu2e{
       if (diagLevel>=0) {
         G4cout << __func__
                << " adding Mu2eGammaDaughterProcess to relevant G4ParticleTable particles with E_min = "
-               << phys.gammaFilterMinDaughterEnergy() << G4endl;
+               << phys.gammaFilterMinDaughterEnergy() << " MeV" << G4endl;
       }
       Mu2eGammaDaughterProcess* gdp = new Mu2eGammaDaughterProcess();
       gdp->SetVerboseLevel(debug.steppingVerbosityLevel()-1);
       gdp->SetMinDaughterEnergy(phys.gammaFilterMinDaughterEnergy());
+      gdp->SetKillAfterConvert(phys.gammaFilterKillAfterConvert());
       ptable = G4ParticleTable::GetParticleTable();
       iter = ptable->GetIterator();
       iter->reset();

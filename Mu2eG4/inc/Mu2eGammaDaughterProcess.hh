@@ -24,6 +24,7 @@ namespace mu2e{
     virtual G4double GetMeanFreePath(const G4Track&, G4double,G4ForceCondition*);
 
     void SetMinDaughterEnergy(G4double energy) { minDaughterEnergy_ = energy; }
+    void SetKillAfterConvert(G4bool killAfterConvert) { killAfterConvert_ = killAfterConvert; }
     void SetVerboseLevel(G4int verbose) { verbose_ = verbose; }
 
   private:
@@ -33,6 +34,7 @@ namespace mu2e{
 
     G4double photonEnergy_;
     G4double minDaughterEnergy_;
+    G4bool killAfterConvert_;
     G4int accepted_;
     G4int verbose_;
   };

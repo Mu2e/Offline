@@ -18,11 +18,11 @@ physics.producers.generate.physics.ehi                   : 102.0 // Mev
 physics.producers.generate.physics.spectrumShape         : "flat" //alternate is "RMC"
 
 # configure geant4 to kill the event if it's a low energy conversion
-physics.producers.g4run.physics.steppingActionGammaFilterMinDaughterEnergy :  1.0 //78.0 // MeV, < 0 means not used
-# physics.producers.g4run.physics.steppingActionGammaFilterMaxGammaEnergy   : 102.0 // MeV
-# physics.producers.g4run.physics.steppingActionGammaFilterKillAfterConvert  : false 
+physics.producers.g4run.physics.gammaFilterMinDaughterEnergy :  78.0 // MeV, < 0 means not used
+physics.producers.g4run.physics.gammaFilterKillAfterConvert  : false 
 
 physics.filters.GammaFilter.doFilter    : true #filter out killed events
+# physics.producers.g4run.debug.trackingVerbosityLevel: 2
 
 services.TFileService.fileName                           : "nts.owner.RMCFlatExternal.version.sequencer.root"
 outputs.Output.fileName                                  : "dig.owner.RMCFlatExternal.version.sequencer.art"
