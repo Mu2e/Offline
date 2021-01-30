@@ -40,7 +40,7 @@
 
 // Mu2e includes
 #include "Mu2eG4/inc/Mu2eRecorderProcess.hh"
-#include "Mu2eG4/inc/Mu2eGammaDaughterProcess.hh"
+#include "Mu2eG4/inc/Mu2eGammaDaughterCut.hh"
 
 #include "Mu2eG4/inc/toggleProcesses.hh"
 
@@ -220,10 +220,10 @@ namespace mu2e{
       // special process to filter gamma conversions
       if (diagLevel>=0) {
         G4cout << __func__
-               << " adding Mu2eGammaDaughterProcess to relevant G4ParticleTable particles with E_min = "
+               << " adding Mu2eGammaDaughterCut to relevant G4ParticleTable particles with E_min = "
                << phys.gammaFilterMinDaughterEnergy() << " MeV" << G4endl;
       }
-      Mu2eGammaDaughterProcess* gdp = new Mu2eGammaDaughterProcess();
+      Mu2eGammaDaughterCut* gdp = new Mu2eGammaDaughterCut();
       gdp->SetVerboseLevel(debug.steppingVerbosityLevel()-1);
       gdp->SetMinDaughterEnergy(phys.gammaFilterMinDaughterEnergy());
       gdp->SetKillAfterConvert(phys.gammaFilterKillAfterConvert());

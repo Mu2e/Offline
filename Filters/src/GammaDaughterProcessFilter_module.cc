@@ -62,7 +62,7 @@ namespace mu2e {
 					<<  " creationCode = " << simP.creationCode()
 					<< " stoppingCode = " << simP.stoppingCode()
 					<< std::endl;
-      if(simP.stoppingCode() == ProcessCode::Mu2eGammaDaughterProcess) {
+      if(simP.stoppingCode() == ProcessCode::Mu2eGammaDaughterCut) {
 	retval = false;
 	break;
       }

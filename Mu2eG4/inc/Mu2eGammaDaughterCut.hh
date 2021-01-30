@@ -1,16 +1,16 @@
-#ifndef Mu2eG4_Mu2eGammaDaughterProcess_h
-#define Mu2eG4_Mu2eGammaDaughterProcess_h
+#ifndef Mu2eG4_Mu2eGammaDaughterCut_h
+#define Mu2eG4_Mu2eGammaDaughterCut_h
 
 #include "G4VDiscreteProcess.hh"
 
 namespace mu2e{
-  class Mu2eGammaDaughterProcess : public G4VDiscreteProcess
+  class Mu2eGammaDaughterCut : public G4VDiscreteProcess
   {
   public:
 
-    Mu2eGammaDaughterProcess(const G4String& processName ="Mu2eGammaDaughterProcess" );
+    Mu2eGammaDaughterCut(const G4String& processName ="Mu2eGammaDaughterCut" );
 
-    virtual ~Mu2eGammaDaughterProcess();
+    virtual ~Mu2eGammaDaughterCut();
 
     virtual G4bool IsApplicable(const G4ParticleDefinition&);
 
@@ -30,7 +30,7 @@ namespace mu2e{
   private:
 
     // hide assignment operator as private
-    Mu2eGammaDaughterProcess& operator=(const Mu2eGammaDaughterProcess&){return *this;};
+    Mu2eGammaDaughterCut& operator=(const Mu2eGammaDaughterCut&){return *this;};
 
     G4double photonEnergy_;
     G4double minDaughterEnergy_;

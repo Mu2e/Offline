@@ -73,7 +73,7 @@ namespace mu2e {
       G4MinEkineCuts,         G4MaxTimeCuts,           OpAbsorption,        OpBoundary, // 123
       Scintillation,          inelastic,               G4ErrorEnergyLoss,   G4ErrorStepLengthLimit, // 127
       G4ErrorMagFieldLimit,   ePairProd,               FieldPropagator,     Mu2eRecorderProcess,  // 131
-      mu2eProtonInelastic,    RadioactiveDecayBase,    Mu2eGammaDaughterProcess,
+      mu2eProtonInelastic,    RadioactiveDecayBase,    Mu2eGammaDaughterCut,
       lastEnum,
       // An alias for backward compatibility
       mu2eHallAir = mu2eKillerVolume
@@ -115,7 +115,7 @@ namespace mu2e {
     "G4MinEkineCuts",         "G4MaxTimeCuts",           "OpAbsorption",           "OpBoundary", \
     "Scintillation",          "inelastic",               "G4ErrorEnergyLoss",      "G4ErrorStepLengthLimit", \
     "G4ErrorMagFieldLimit",   "ePairProd",               "FieldPropagator",        "Mu2eRecorderProcess", \
-    "mu2eProtonInelastic",    "RadioactiveDecayBase",    "Mu2eGammaDaughterProcess"
+    "mu2eProtonInelastic",    "RadioactiveDecayBase",    "Mu2eGammaDaughterCut"
 
   public:
 
