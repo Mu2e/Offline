@@ -24,15 +24,6 @@ namespace mu2e {
   initializeEventInfo(art::Event* evt) {
     artEvent = evt;
 
-    if(!(ioconf.generatorModuleLabel() == art::InputTag())) {
-      artEvent->getByLabel(ioconf.generatorModuleLabel(), gensHandle);
-    }
-
-    // StepPointMCCollection of input hits from the previous simulation stage
-    for(const auto& i : ioconf.multiStagePars().genInputHits()) {
-      genInputHits.emplace_back(evt->getValidHandle<StepPointMCCollection>(i));
-    }
-
     // ProductID and ProductGetter for the SimParticleCollection.
     art::ProductID simPartId(evt->getProductID<SimParticleCollection>());
     art::EDProductGetter const* simProductGetter = evt->productGetter(simPartId);
@@ -118,8 +109,6 @@ namespace mu2e {
     artEvent = nullptr;
     simParticleHelper = SimParticleHelper();
     simParticlePrimaryHelper = SimParticlePrimaryHelper();
-    genInputHits.clear();
-    gensHandle.clear();
 
     statG4 = nullptr;
     simPartCollection = nullptr;

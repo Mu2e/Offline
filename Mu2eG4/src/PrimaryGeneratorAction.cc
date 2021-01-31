@@ -1,15 +1,9 @@
 //
-// Give generated tracks to G4. This implements two algorithms:
-//
-// 1) testTrack - a trivial 1 track generator for debugging geometries.
-// 2) fromEvent - copies generated tracks from the event.
-//
 // Original author Rob Kutschke
 //
 
 // C++ includes
 #include <iostream>
-#include <stdexcept>
 
 // Framework includes
 #include "art/Framework/Principal/Event.h"
@@ -23,7 +17,6 @@
 // G4 Includes
 #include "G4Event.hh"
 #include "G4IonTable.hh"
-#include "Randomize.hh"
 #include "globals.hh"
 #include "G4Threading.hh"
 #include "G4IsotopeProperty.hh"
@@ -33,9 +26,9 @@
 #include "ConfigTools/inc/SimpleConfig.hh"
 #include "Mu2eG4/inc/PrimaryGeneratorAction.hh"
 #include "Mu2eG4/inc/SimParticlePrimaryHelper.hh"
-#include "Mu2eUtilities/inc/RandomUnitSphere.hh"
 #include "Mu2eUtilities/inc/ThreeVectorUtil.hh"
 #include "MCDataProducts/inc/GenParticleCollection.hh"
+#include "MCDataProducts/inc/StepPointMCCollection.hh"
 #include "GeometryService/inc/GeomHandle.hh"
 #include "GeometryService/inc/WorldG4.hh"
 #include "DataProducts/inc/PDGCode.hh"
@@ -58,35 +51,8 @@ namespace mu2e {
     }
   }
 
-  //load in per-art-event data from GenEventBroker and per-G4-event data from EventObjectManager
-  void PrimaryGeneratorAction::setEventData()
-  {
-    genParticles_ = perThreadObjects_->gensHandle.isValid() ?
-      perThreadObjects_->gensHandle.product() :
-      nullptr;
 
-    hitInputs_ = &perThreadObjects_->genInputHits;
-
-    parentMapping_ = &perThreadObjects_->simParticlePrimaryHelper;
-
-  }
-
-
-  void PrimaryGeneratorAction::GeneratePrimaries(G4Event* anEvent)
-  {
-    //load the GenParticleCollection etc for the event
-    setEventData();
-    // For debugging.
-    //testTrack(anEvent);
-
-    fromEvent(anEvent);
-  }
-
-  // Copy generated particles from the event into G4.
-  // At the moment none of the supported generators make multi-particle vertices.
-  // That may change in the future.
-  void PrimaryGeneratorAction::fromEvent(G4Event* event)
-  {
+  void PrimaryGeneratorAction::GeneratePrimaries(G4Event* event) {
 
     art::ServiceHandle<GeometryService> geom;
     SimpleConfig const & _config = geom->config();
@@ -94,14 +60,29 @@ namespace mu2e {
     // Get the offsets to map from generator world to G4 world.
     // check if this is standard mu2e configuration or not
 
+    // FIXME: is the SimpleConfig access here thread safe?
     G4ThreeVector const mu2eOrigin =
       (!_config.getBool("mu2e.standardDetector",true) || !(geom->isStandardMu2eDetector()))
       ?  G4ThreeVector(0.0,0.0,0.0) : (GeomHandle<WorldG4>())->mu2eOriginInWorld();
 
+    art::Handle<GenParticleCollection> gensHandle;
+    if(perThreadObjects_->ioconf.generatorModuleLabel() != art::InputTag()) {
+      perThreadObjects_->artEvent->getByLabel(perThreadObjects_->ioconf.generatorModuleLabel(), gensHandle);
+    }
+
+    // StepPointMCCollection of input hits from the previous simulation stage
+    typedef std::vector< art::ValidHandle<StepPointMCCollection> > HitHandles;
+    HitHandles genInputHits;
+    for(const auto& i : perThreadObjects_->ioconf.multiStagePars().genInputHits()) {
+      genInputHits.emplace_back(perThreadObjects_->artEvent->getValidHandle<StepPointMCCollection>(i));
+    }
+
     // For each generated particle, add it to the event.
-    if(genParticles_) {
-      for (unsigned i=0; i < genParticles_->size(); ++i) {
-        const GenParticle& genpart = (*genParticles_)[i];
+    if(gensHandle.isValid()) {
+      const auto& coll = *gensHandle;
+      for (unsigned i=0; i < coll.size(); ++i) {
+        const GenParticle& genpart = coll[i];
+
         addG4Particle(event,
                       genpart.pdgId(),
                       0.0, // Mu2e GenParticles are not excited ions
@@ -112,7 +93,7 @@ namespace mu2e {
                       genpart.properTime(),
                       genpart.momentum());
 
-        parentMapping_->addEntryFromGenParticle(perThreadObjects_->gensHandle, i);
+        perThreadObjects_->simParticlePrimaryHelper.addEntryFromGenParticle(gensHandle, i);
       }
     }
 
@@ -121,7 +102,7 @@ namespace mu2e {
       // standard flow
 
       // Also create particles from the input hits
-      for(const auto& hitcoll : *hitInputs_) {
+      for(const auto& hitcoll : genInputHits) {
 
         for(const auto& hit : *hitcoll) {
           addG4Particle(event,
@@ -134,8 +115,7 @@ namespace mu2e {
                         hit.properTime(),
                         hit.momentum());
 
-          parentMapping_->addEntryFromStepPointMC(hit.simParticle()->id());
-
+          perThreadObjects_->simParticlePrimaryHelper.addEntryFromStepPointMC(hit.simParticle()->id());
         }
       }
 
