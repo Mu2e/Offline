@@ -29,7 +29,6 @@
 #include <unordered_map>
 
 //art includes
-#include "art/Framework/Principal/Handle.h"
 #include "art/Framework/Principal/Event.h"
 #include "art/Framework/Principal/Run.h"
 #include "canvas/Utilities/InputTag.h"
@@ -37,8 +36,6 @@
 namespace art { class EDProductGetter; }
 
 namespace mu2e {
-
-  typedef std::vector< art::ValidHandle<StepPointMCCollection> > HitHandles;
 
   struct Mu2eG4PerThreadStorage
   {
@@ -85,9 +82,6 @@ namespace mu2e {
     art::Event* artEvent = nullptr;
     SimParticleHelper simParticleHelper;
     SimParticlePrimaryHelper simParticlePrimaryHelper;
-    HitHandles genInputHits;
-    art::Handle<GenParticleCollection> gensHandle;
-
 
     // output data products
     std::unique_ptr<StatusG4> statG4{nullptr};
