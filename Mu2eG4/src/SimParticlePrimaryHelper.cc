@@ -13,19 +13,19 @@ namespace mu2e {
     event_(event),
     simProductGetter_(sim_prod_getter)
   {}
-    
-    void SimParticlePrimaryHelper::addEntryFromGenParticle(unsigned genId)
-    {        
-        entries_.emplace_back(art::Ptr<GenParticle>(gensHandle_, genId),
-                              art::Ptr<SimParticle>(simProdID_) );
-    }
-    
-    
-    void SimParticlePrimaryHelper::addEntryFromStepPointMC(SimParticleCollection::key_type simId)
-    {
-        entries_.emplace_back(art::Ptr<GenParticle>(gensHandle_.id()),
-                              art::Ptr<SimParticle>(simProdID_,
-                                                    simId.asUint(),
-                                                    simProductGetter_));
-    }
+
+  void SimParticlePrimaryHelper::addEntryFromGenParticle(unsigned genId)
+  {
+    entries_.emplace_back(art::Ptr<GenParticle>(gensHandle_, genId),
+                          art::Ptr<SimParticle>(simProdID_) );
+  }
+
+
+  void SimParticlePrimaryHelper::addEntryFromStepPointMC(SimParticleCollection::key_type simId)
+  {
+    entries_.emplace_back(art::Ptr<GenParticle>(gensHandle_.id()),
+                          art::Ptr<SimParticle>(simProdID_,
+                                                simId.asUint(),
+                                                simProductGetter_));
+  }
 }
