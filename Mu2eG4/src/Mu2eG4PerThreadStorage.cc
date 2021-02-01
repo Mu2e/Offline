@@ -42,7 +42,7 @@ namespace mu2e {
       mcTrajectories = std::unique_ptr<MCTrajectoryCollection>( new MCTrajectoryCollection );
     }
 
-    if(ioconf.multiStagePars().multiStage()) {
+    if(ioconf.multiStage()) {
       simRemapping = std::unique_ptr<SimParticleRemapping>( new SimParticleRemapping );
     }
 
@@ -93,7 +93,7 @@ namespace mu2e {
         artEvent->put(std::move(mcTrajectories));
       }
 
-      if(ioconf.multiStagePars().multiStage()) {
+      if(ioconf.multiStage()) {
         artEvent->put(std::move(simRemapping));
       }
 
