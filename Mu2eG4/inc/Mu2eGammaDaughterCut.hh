@@ -8,8 +8,8 @@ namespace mu2e{
   {
   public:
 
-    Mu2eGammaDaughterCut(const G4double minDaughterEnergy, const G4bool killAfterConvert,
-                         const G4int verbose,
+    Mu2eGammaDaughterCut(const G4double minDaughterEnergy, const G4bool killAfterConvert = false,
+                         const G4int verbose = 0,
                          const G4String& processName ="Mu2eGammaDaughterCut" );
 
     virtual ~Mu2eGammaDaughterCut();
