@@ -42,6 +42,8 @@ namespace mu2e {
 
     const art::InputTag& generatorModuleLabel() const { return generatorModuleLabel_; }
     const Mu2eG4MultiStageParameters& multiStagePars() const { return multiStagePars_; }
+
+    bool multiStage() const { return multiStagePars_.multiStage(); }
     bool timeVD_enabled() const { return timeVD_enabled_; }
     bool produceMCTrajectories() const { return produceMCTrajectories_; }
     bool extMonPixelsEnabled() const { return extMonPixelsEnabled_; }
