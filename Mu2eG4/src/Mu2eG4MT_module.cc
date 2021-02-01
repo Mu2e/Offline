@@ -154,7 +154,7 @@ namespace mu2e {
     int const num_threads{art::Globals::instance()->nthreads()};
 
     typedef tbb::concurrent_hash_map< std::thread::id, std::unique_ptr<Mu2eG4WorkerRunManager> > WorkerRMMap;
-    WorkerRMMap myworkerRunManagerMap;    
+    WorkerRMMap myworkerRunManagerMap;
   }; // end G4 header
 
 
@@ -322,7 +322,7 @@ namespace mu2e {
 
   // Create one G4 event and copy its output to the art::event.
   void Mu2eG4MT::produce(art::Event& event, art::ProcessingFrame const& procFrame) {
-    
+
     art::Handle<GenParticleCollection> gensHandle;
     if(!(_generatorModuleLabel == art::InputTag())) {
       event.getByLabel(_generatorModuleLabel, gensHandle);
@@ -409,15 +409,15 @@ namespace mu2e {
     }
 
     perThreadStore->clearData();
-    
+
     scheduleWorkerRM->TerminateOneEvent();
-    
+
   }//end Mu2eG4MT::produce
 
 
   // Tell G4 that this run is over.
   void Mu2eG4MT::endRun(art::Run & run, art::ProcessingFrame const& procFrame) {
-    
+
     if (_mtDebugOutput > 0){
       G4cout << "At endRun pt1, we have " << myworkerRunManagerMap.size() << " members in the map "
              << "and are running " << num_threads << " threads.\n" ;
@@ -426,30 +426,30 @@ namespace mu2e {
       G4cout << "At endRun pt1, we have " << myworkerRunManagerMap.size() << " members in the map "
              << "and are running " << num_threads << " threads.\n" ;
     }
-    
-    
+
+
     if (storePhysicsTablesDir_!="") {
       if ( _rmvlevel > 0 ) {
         G4cout << __func__ << " Will write out physics tables to "
-        << storePhysicsTablesDir_
-        << G4endl;
+               << storePhysicsTablesDir_
+               << G4endl;
       }
       masterThread->masterRunManagerPtr()->getMasterPhysicsList()->StorePhysicsTable(storePhysicsTablesDir_);
     }
-  
+
     std::atomic<int> threads_left = num_threads;
     tbb::task_group g;
     for (int i = 0; i < num_threads; ++i) {
-        
+
       auto destroy_worker = [&threads_left, i, this] {
         WorkerRMMap::accessor access_workerMap;
         std::thread::id this_tid = std::this_thread::get_id();
-          
+
         if (myworkerRunManagerMap.find(access_workerMap, this_tid)) {
           access_workerMap->second.reset();
           myworkerRunManagerMap.erase(access_workerMap);
         }
-          
+
         access_workerMap.release();
         --threads_left;
         while (threads_left != 0) {}
@@ -458,7 +458,7 @@ namespace mu2e {
       g.run(destroy_worker);
     }//for
     g.wait();
-    
+
     if (_mtDebugOutput > 0){
       G4cout << "At endRun pt2, we have " << myworkerRunManagerMap.size() << " members in the map.\n";
     }

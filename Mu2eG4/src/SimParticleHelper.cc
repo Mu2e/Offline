@@ -22,11 +22,11 @@ namespace mu2e {
   }
 
   art::Ptr<SimParticle> SimParticleHelper::particlePtrFromG4TrackID(int g4TrkID) const {
-      
+
     return art::Ptr<SimParticle>(simID_,
                                  particleNumberOffset_ + g4TrkID,
                                  simProductGetter_);
-      
+
   }
 
   SimParticleCollection::key_type SimParticleHelper::particleKeyFromG4TrackID(int g4TrkID) const {
