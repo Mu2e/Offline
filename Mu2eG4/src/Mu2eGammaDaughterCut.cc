@@ -14,14 +14,14 @@
 
 namespace mu2e{
 
-  Mu2eGammaDaughterCut::Mu2eGammaDaughterCut(const G4String& aName)
-    : G4VDiscreteProcess(aName,fUserDefined)
+  Mu2eGammaDaughterCut::Mu2eGammaDaughterCut(const G4double minDaughterEnergy, const G4bool killAfterConvert,
+                                             G4int verbose,
+                                             const G4String& aName)
+    : G4VDiscreteProcess(aName,fUserDefined), minDaughterEnergy_(minDaughterEnergy),
+      killAfterConvert_(killAfterConvert),
+      verbose_(verbose), accepted_(0), photonEnergy_(-1.)
   {
-    verbose_ = 10;
-    accepted_ = 0;
-    photonEnergy_ = -1.;
-    theProcessSubType = 0;
-    if (verbose_ > 0) {
+    if(verbose_ > 0) {
       G4cout << GetProcessName() << " is created " << G4endl;
     }
   }

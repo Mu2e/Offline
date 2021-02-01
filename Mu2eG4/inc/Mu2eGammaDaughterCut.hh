@@ -8,7 +8,9 @@ namespace mu2e{
   {
   public:
 
-    Mu2eGammaDaughterCut(const G4String& processName ="Mu2eGammaDaughterCut" );
+    Mu2eGammaDaughterCut(const G4double minDaughterEnergy, const G4bool killAfterConvert,
+                         const G4int verbose,
+                         const G4String& processName ="Mu2eGammaDaughterCut" );
 
     virtual ~Mu2eGammaDaughterCut();
 
@@ -32,11 +34,11 @@ namespace mu2e{
     // hide assignment operator as private
     Mu2eGammaDaughterCut& operator=(const Mu2eGammaDaughterCut&){return *this;};
 
-    G4double photonEnergy_;
     G4double minDaughterEnergy_;
     G4bool killAfterConvert_;
-    G4int accepted_;
     G4int verbose_;
+    G4int accepted_;
+    G4double photonEnergy_;
   };
 }
 #endif
