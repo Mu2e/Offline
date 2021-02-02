@@ -37,9 +37,7 @@ namespace mu2e {
   :
   G4VUserActionInitialization(),
     conf_(conf),
-    trajectoryControl_(conf.TrajectoryControl()),
     timeVDtimes_(conf.SDConfig().TimeVD().times()),
-    mu2eLimits_(conf.ResourceLimits()),
 
     sensitiveDetectorHelper_(sensitive_detectorhelper),
     perThreadStorage_(per_thread_storage),
@@ -68,8 +66,8 @@ namespace mu2e {
                                                                     timeVDtimes_,
                                                                     *perThreadStorage_->steppingCuts,
                                                                     *perThreadStorage_->commonCuts,
-                                                                    trajectoryControl_,
-                                                                    mu2eLimits_);
+                                                                    perThreadStorage_->ioconf.trajectoryControl(),
+                                                                    perThreadStorage_->ioconf.mu2elimits());
     SetUserAction(steppingAction);
 
     SetUserAction( new Mu2eG4StackingAction(*perThreadStorage_->stackingCuts, *perThreadStorage_->commonCuts) );
@@ -77,8 +75,8 @@ namespace mu2e {
     TrackingAction* trackingAction = new TrackingAction(conf_,
                                                         steppingAction,
                                                         stageOffset_,
-                                                        trajectoryControl_,
-                                                        mu2eLimits_);
+                                                        perThreadStorage_->ioconf.trajectoryControl(),
+                                                        perThreadStorage_->ioconf.mu2elimits());
     SetUserAction(trackingAction);
 
     SetUserAction( new Mu2eG4RunAction(conf_.debug(),
