@@ -156,19 +156,6 @@ DigiCompression : {
 	newCaloClusterMCTag : ""
     }
 
-    CaloFix : {
-	module_type : FixCaloShowerStepPtrs
-	caloShowerStepTags : [ "" ]
-	caloShowerSimTag : ""
-	caloShowerROTag : ""
-    }
-
-    TrackerFix : {
-	module_type : FixTrackerStepPointMCs
-	trackerSteps : ""
-    }
-
-
     Reco : {
       module_type : CompressDigiMCs
       strawDigiMCTag : ""
