@@ -12,6 +12,7 @@
 #define Mu2eG4_Mu2eG4IOConfigHelper_hh
 
 #include "Mu2eG4/inc/Mu2eG4MultiStageParameters.hh"
+#include "Mu2eG4/inc/Mu2eG4TrajectoryControl.hh"
 #include "Mu2eG4/inc/Mu2eG4ResourceLimits.hh"
 #include "fhiclcpp/ParameterSet.h"
 
@@ -27,8 +28,9 @@ namespace mu2e {
 
     art::InputTag generatorModuleLabel_;
     Mu2eG4MultiStageParameters multiStagePars_;
+    Mu2eG4TrajectoryControl trajectoryControl_;
+
     bool timeVD_enabled_;
-    bool produceMCTrajectories_;
     bool extMonPixelsEnabled_;
 
     Mu2eG4ResourceLimits mu2elimits_;
@@ -41,11 +43,14 @@ namespace mu2e {
     Mu2eG4IOConfigHelper(const Mu2eG4Config::Top& conf, art::ProducesCollector& pc, art::ConsumesCollector& cc);
 
     const art::InputTag& generatorModuleLabel() const { return generatorModuleLabel_; }
-    const Mu2eG4MultiStageParameters& multiStagePars() const { return multiStagePars_; }
 
+    const Mu2eG4MultiStageParameters& multiStagePars() const { return multiStagePars_; }
     bool multiStage() const { return multiStagePars_.multiStage(); }
+
+    const Mu2eG4TrajectoryControl& trajectoryControl() const { return trajectoryControl_; }
+    bool produceMCTrajectories() const { return trajectoryControl_.produce(); }
+
     bool timeVD_enabled() const { return timeVD_enabled_; }
-    bool produceMCTrajectories() const { return produceMCTrajectories_; }
     bool extMonPixelsEnabled() const { return extMonPixelsEnabled_; }
 
     const Mu2eG4ResourceLimits& mu2elimits() const { return mu2elimits_; }
