@@ -80,7 +80,7 @@ namespace mu2e {
       anti_lambda_bInelastic, anti_lambda_c_PlusInelastic, anti_omega_b_MinusInelastic, anti_omega_c0Inelastic, // 151
       anti_xi_b_MinusInelastic, anti_xi_b0Inelastic,   anti_xi_c_PlusInelastic, anti_xi_c0Inelastic, // 155
       lambda_bInelastic,      lambda_c_PlusInelastic,  omega_b_MinusInelastic, omega_c0Inelastic, // 159
-      xi_b_MinusInelastic,    xi_b0Inelastic,          xi_c_PlusInelastic,  xi_c0Inelastic, // 163
+      xi_b_MinusInelastic,    xi_b0Inelastic,          xi_c_PlusInelastic,  xi_c0Inelastic, truncated, // 164
       lastEnum,
       // An alias for backward compatibility
       mu2eHallAir = mu2eKillerVolume
@@ -129,7 +129,7 @@ namespace mu2e {
     "anti_lambda_bInelastic", "anti_lambda_c+Inelastic", "anti_omega_b-Inelastic", "anti_omega_c0Inelastic", \
     "anti_xi_b-Inelastic",    "anti_xi_b0Inelastic",     "anti_xi_c+Inelastic", "anti_xi_c0Inelastic", \
     "lambda_bInelastic",      "lambda_c+Inelastic",      "omega_b-Inelastic",   "omega_c0Inelastic", \
-    "xi_b-Inelastic",         "xi_b0Inelastic",          "xi_c+Inelastic",      "xi_c0Inelastic"
+      "xi_b-Inelastic",         "xi_b0Inelastic",          "xi_c+Inelastic",      "xi_c0Inelastic", "truncated"
 
   public:
 
