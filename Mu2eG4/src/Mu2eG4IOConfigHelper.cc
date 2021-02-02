@@ -24,8 +24,8 @@ namespace mu2e {
                                              art::ConsumesCollector& cc)
     : generatorModuleLabel_{conf.generatorModuleLabel()}
     , multiStagePars_{conf}
+    , trajectoryControl_(conf.TrajectoryControl())
     , timeVD_enabled_(conf.SDConfig().TimeVD().enabled())
-    , produceMCTrajectories_{conf.TrajectoryControl().produce()}
     , extMonPixelsEnabled_{false}
     , mu2elimits_{conf.ResourceLimits()}
     , stackingCutsConf_{conf.Mu2eG4StackingOnlyCut.get<fhicl::ParameterSet>()}
@@ -78,7 +78,7 @@ namespace mu2e {
       pc.produces<StepPointMCCollection>(timeVD.name());
     }
 
-    if(produceMCTrajectories_) {
+    if(trajectoryControl_.produce()) {
       pc.produces<MCTrajectoryCollection>();
     }
 
