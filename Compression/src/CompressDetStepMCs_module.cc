@@ -81,6 +81,21 @@ namespace mu2e {
 
 class mu2e::CompressDetStepMCs : public art::EDProducer {
 public:
+
+  struct OptionsConfig {
+    using Name=fhicl::Name;
+    using Comment=fhicl::Comment;
+
+    fhicl::Atom<std::string> strawGasStepCompressionLevel{Name("strawGasStepCompressionLevel"), Comment("Compression level for StrawGasSteps")};
+    fhicl::Atom<std::string> caloShowerStepCompressionLevel{Name("caloShowerStepCompressionLevel"), Comment("Compression level for CaloShowerSteps")};
+    fhicl::Atom<std::string> crvStepCompressionLevel{Name("crvStepCompressionLevel"), Comment("Compression level for CrvSteps")};
+    fhicl::Atom<std::string> simParticleCompressionLevel{Name("simParticleCompressionLevel"), Comment("Compression level for SimParticles")};
+    fhicl::Atom<std::string> stepPointMCCompressionLevel{Name("stepPointMCCompressionLevel"), Comment("Compression level for StepPointMCs")};
+    fhicl::Atom<int> keepNGenerations{Name("keepNGenerations"), Comment("Number of generations to keep in the genealogy")};
+    fhicl::Atom<int> truncatedSimParticleKeyOffset{Name("truncatedSimParticleKeyOffset"), Comment("Offset to use when adding a truncated SimParticle to the SimParticleCollection")};
+    fhicl::Atom<std::string> mcTrajectoryCompressionLevel{Name("mcTrajectoryCompressionLevel"), Comment("Compression level for MCTrajectories")};
+  };
+
   struct Config {
     using Name=fhicl::Name;
     using Comment=fhicl::Comment;
@@ -91,16 +106,9 @@ public:
     fhicl::Atom<art::InputTag> crvStepTag{Name("crvStepTag"), Comment("InputTag for CrvSteps")};
     fhicl::Sequence<art::InputTag> stepPointMCTags{Name("stepPointMCTags"), Comment("Sequence of InputTags for StepPointMCCollections (e.g. virtualdetector)")};
     fhicl::Atom<art::InputTag> simParticleTag{Name("simParticleTag"), Comment("InputTag for the SimParticleCollection")};
-    fhicl::Atom<int> debugLevel{Name("debugLevel"), Comment("Debug level (0 = no debug output)")};
-    fhicl::Atom<std::string> strawGasStepCompressionLevel{Name("strawGasStepCompressionLevel"), Comment("Compression level for StrawGasSteps")};
-    fhicl::Atom<std::string> caloShowerStepCompressionLevel{Name("caloShowerStepCompressionLevel"), Comment("Compression level for CaloShowerSteps")};
-    fhicl::Atom<std::string> crvStepCompressionLevel{Name("crvStepCompressionLevel"), Comment("Compression level for CrvSteps")};
-    fhicl::Atom<std::string> simParticleCompressionLevel{Name("simParticleCompressionLevel"), Comment("Compression level for SimParticles")};
-    fhicl::Atom<std::string> stepPointMCCompressionLevel{Name("stepPointMCCompressionLevel"), Comment("Compression level for StepPointMCs")};
-    fhicl::Atom<int> keepNGenerations{Name("keepNGenerations"), Comment("Number of generations to keep in the genealogy")};
-    fhicl::Atom<int> truncatedSimParticleKeyOffset{Name("truncatedSimParticleKeyOffset"), Comment("Offset to use when adding a truncated SimParticle to the SimParticleCollection")};
     fhicl::Atom<art::InputTag> mcTrajectoryTag{Name("mcTrajectoryTag"), Comment("InputTag for the SimParticleCollection")};
-    fhicl::Atom<std::string> mcTrajectoryCompressionLevel{Name("mcTrajectoryCompressionLevel"), Comment("Compression level for MCTrajectories")};
+    fhicl::Atom<int> debugLevel{Name("debugLevel"), Comment("Debug level (0 = no debug output)")};
+    fhicl::Table<OptionsConfig> compressionOptions{Name("compressionOptions"), Comment("Compression options for this module")};
   };
   typedef art::EDProducer::Table<Config> Parameters;
 
@@ -142,6 +150,7 @@ private:
   mu2e::CompressionLevel _simParticleCompressionLevel;
   mu2e::CompressionLevel _stepPointMCCompressionLevel;
   int _keepNGenerations;
+  cet::map_vector_key _truncatedSimParticleKeyOffset;
   mu2e::CompressionLevel _mcTrajectoryCompressionLevel;
 
   // unique_ptrs to the new output collections
@@ -170,13 +179,14 @@ private:
 mu2e::CompressDetStepMCs::CompressDetStepMCs(const Parameters& conf)
   : art::EDProducer(conf),
     _conf(conf()),
-    _strawGasStepCompressionLevel(mu2e::CompressionLevel::findByName(_conf.strawGasStepCompressionLevel())),
-    _caloShowerStepCompressionLevel(mu2e::CompressionLevel::findByName(_conf.caloShowerStepCompressionLevel())),
-    _crvStepCompressionLevel(mu2e::CompressionLevel::findByName(_conf.crvStepCompressionLevel())),
-    _simParticleCompressionLevel(mu2e::CompressionLevel::findByName(_conf.simParticleCompressionLevel())),
-  _stepPointMCCompressionLevel(mu2e::CompressionLevel::findByName(_conf.stepPointMCCompressionLevel())),
-  _keepNGenerations(_conf.keepNGenerations()),
-  _mcTrajectoryCompressionLevel(mu2e::CompressionLevel::findByName(_conf.mcTrajectoryCompressionLevel()))
+    _strawGasStepCompressionLevel(mu2e::CompressionLevel::findByName(_conf.compressionOptions().strawGasStepCompressionLevel())),
+    _caloShowerStepCompressionLevel(mu2e::CompressionLevel::findByName(_conf.compressionOptions().caloShowerStepCompressionLevel())),
+    _crvStepCompressionLevel(mu2e::CompressionLevel::findByName(_conf.compressionOptions().crvStepCompressionLevel())),
+    _simParticleCompressionLevel(mu2e::CompressionLevel::findByName(_conf.compressionOptions().simParticleCompressionLevel())),
+  _stepPointMCCompressionLevel(mu2e::CompressionLevel::findByName(_conf.compressionOptions().stepPointMCCompressionLevel())),
+  _keepNGenerations(_conf.compressionOptions().keepNGenerations()),
+  _truncatedSimParticleKeyOffset(_conf.compressionOptions().truncatedSimParticleKeyOffset()),
+  _mcTrajectoryCompressionLevel(mu2e::CompressionLevel::findByName(_conf.compressionOptions().mcTrajectoryCompressionLevel()))
 {
   // Check that we have valid compression levels for this module
   checkCompressionLevels();
@@ -426,7 +436,7 @@ void mu2e::CompressDetStepMCs::compressSimParticles(const art::Event& event) {
           // If we haven't added a truncated particle in this genealogy
           if (!addedTruncated) {
             // Add a truncated particle
-            truncKey = cet::map_vector_key(_conf.truncatedSimParticleKeyOffset() + n_truncated_added);
+            truncKey = cet::map_vector_key(_truncatedSimParticleKeyOffset.asUint() + n_truncated_added);
             // only want to fill in id and process code now, will add parent ptr later
             truncated = new SimParticle(truncKey,
                                         unsigned(),

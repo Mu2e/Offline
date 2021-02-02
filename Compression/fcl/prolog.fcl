@@ -1,19 +1,7 @@
 BEGIN_PROLOG
 
-CompressionTemplates : {
-  compressDetStepMCs_common : {
-    module_type : CompressDetStepMCs
-    strawGasStepTag : "StrawGasStepMaker"
-    caloShowerStepTag : "CaloShowerStepMaker"
-    crvStepTag : "CrvSteps"
-    simParticleTag : "g4run"
-    stepPointMCTags : [ "g4run:virtualdetector", "g4run:protonabsorber" ]#, "g4run:stoppingtarget" ]
-    mcTrajectoryTag : "g4run"
-
-    debugLevel : 0
-  }
-
-  compressDetStepMCs_none : {
+DetStepCompression : {
+  noCompression : {
     strawGasStepCompressionLevel : "noCompression" # keep all StrawGasSteps
     caloShowerStepCompressionLevel : "noCompression"
     crvStepCompressionLevel : "noCompression"
@@ -24,7 +12,7 @@ CompressionTemplates : {
     mcTrajectoryCompressionLevel : "noCompression"
   }
 
-  compressDetStepMCs_primary : {
+  standardCompression : {
     strawGasStepCompressionLevel : "noCompression" # keep all StrawGasSteps
     caloShowerStepCompressionLevel : "noCompression"
     crvStepCompressionLevel : "noCompression"
@@ -35,7 +23,7 @@ CompressionTemplates : {
     mcTrajectoryCompressionLevel : "simParticleCompression"
   }
 
-  compressDetStepMCs_pileup : {
+  extraCompression : {
     strawGasStepCompressionLevel : "noCompression" # keep all StrawGasSteps
     caloShowerStepCompressionLevel : "noCompression"
     crvStepCompressionLevel : "noCompression"
@@ -44,21 +32,6 @@ CompressionTemplates : {
     keepNGenerations : 2
     truncatedSimParticleKeyOffset : 400000
     mcTrajectoryCompressionLevel : "simParticleCompression"
-  }
-}
-
-Compression : {
-  compressDetStepMCs_none : { 
-    @table::CompressionTemplates.compressDetStepMCs_common
-    @table::CompressionTemplates.compressDetStepMCs_none
-  }
-  compressDetStepMCs_primary : { 
-    @table::CompressionTemplates.compressDetStepMCs_common
-    @table::CompressionTemplates.compressDetStepMCs_primary
-  }
-  compressDetStepMCs_pileup : { 
-    @table::CompressionTemplates.compressDetStepMCs_common
-    @table::CompressionTemplates.compressDetStepMCs_pileup
   }
 }
 
