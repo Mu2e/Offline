@@ -57,7 +57,7 @@ namespace mu2e {
   class RMCGun : public art::EDProducer {
   public:
     typedef RootTreeSampler<IO::StoppedParticleF> RTS;
-    
+
     struct PhysConfig {
       using Name=fhicl::Name;
       using Comment=fhicl::Comment;
@@ -70,26 +70,26 @@ namespace mu2e {
       fhicl::OptionalAtom<double> kMaxUser{Name("kMaxUser"), Comment("kMax value to use (MeV)")};
       fhicl::OptionalAtom<bool> kMaxUserSet{Name("kMaxUserSet"), Comment("Whether or not to use a user kMax value (true/false)")};
       //to allow for the other binned spectrum information that could be provided
-      fhicl::OptionalAtom<bool> fixMax{Name("FixMax"), Comment("Fix max (true/false)")};      
-      fhicl::OptionalAtom<PDGCode::type> pdgId{Name("pdgId"), Comment("PDG ID")};      
-      fhicl::OptionalAtom<unsigned> nbins{Name("nbins"), Comment("Number of bins")};      
-      fhicl::OptionalAtom<std::string> spectrumFileName{Name("spectrumFileName"), Comment("Name of spectrum file")};      
-      fhicl::OptionalAtom<bool> binCenter{Name("binCenter"), Comment("If spectrum uses bin centers")};      
+      fhicl::OptionalAtom<bool> fixMax{Name("FixMax"), Comment("Fix max (true/false)")};
+      fhicl::OptionalAtom<PDGCode::type> pdgId{Name("pdgId"), Comment("PDG ID")};
+      fhicl::OptionalAtom<unsigned> nbins{Name("nbins"), Comment("Number of bins")};
+      fhicl::OptionalAtom<std::string> spectrumFileName{Name("spectrumFileName"), Comment("Name of spectrum file")};
+      fhicl::OptionalAtom<bool> binCenter{Name("binCenter"), Comment("If spectrum uses bin centers")};
     };
-    
-      
+
+
     //ignore assumed keys for a EDProducer
     struct KeysToIgnore {
       std::set<std::string> operator()()
       {
-	return {"module_type"};
+        return {"module_type"};
       }
     };
 
     struct Config {
       using Name=fhicl::Name;
       using Comment=fhicl::Comment;
-      fhicl::Table<PhysConfig> psphys{Name("physics")}; //, Comment("Physics parameter set") 
+      fhicl::Table<PhysConfig> psphys{Name("physics")}; //, Comment("Physics parameter set")
       fhicl::Atom<int> verbosityLevel{Name("verbosityLevel"), Comment("verbosity level (>=0)"), 0};
       fhicl::Atom<double> czmin{Name("czmin"), Comment("Minimum cos(theta) value"), -1.};
       fhicl::Atom<double> czmax{Name("czmax"), Comment("Maximum cos(theta) value"),  1.};
@@ -146,7 +146,7 @@ namespace mu2e {
     double elow_;
     double enweightnorm_; //for weights
     double czweightnorm_;
-    
+
     double generateEnergy();
 
     //only used for cos generation weights
@@ -167,7 +167,7 @@ namespace mu2e {
     TH1F* _hMee;
     TH2F* _hMeeVsE;
     TH1F* _hMeeOverE;                   // M(ee)/E(gamma)
-    TH1F* _hy;				// splitting function
+    TH1F* _hy;                          // splitting function
 
   public:
     explicit RMCGun(const Parameters& pset);
@@ -209,8 +209,8 @@ namespace mu2e {
 // make sure the requested genID makes sense
 //-----------------------------------------------------------------------------
     if ((genId_ != GenId::InternalRMC) && (genId_ != GenId::ExternalRMC)) {
-      throw cet::exception("BADCONFIG") << "RMCGun: wrong process ID: " 
-					<< genId_.name() << "BAIL OUT!\n";
+      throw cet::exception("BADCONFIG") << "RMCGun: wrong process ID: "
+                                        << genId_.name() << "BAIL OUT!\n";
     }
 
     if(verbosityLevel_ > 1) {
@@ -225,9 +225,9 @@ namespace mu2e {
                <<" stopped particles"
                <<std::endl;
 
-      std::cout << "RMCGun: producing " 
-		<< ((genId_ == GenId::InternalRMC) ? "internal conversion" : "photon")
-		<< std::endl;
+      std::cout << "RMCGun: producing "
+                << ((genId_ == GenId::InternalRMC) ? "internal conversion" : "photon")
+                << std::endl;
     }
 
     if ( doHistograms_ ) {
@@ -253,35 +253,35 @@ namespace mu2e {
     //initialize TF1 for cos/energy generation if needed
     if(doCosWeights_) {
       if(genId_ == GenId::InternalRMC)
-	throw cet::exception("BADCONFIG")
-	  << "RMCGun: Cos generation weights not defined for internal conversions!\n";
+        throw cet::exception("BADCONFIG")
+          << "RMCGun: Cos generation weights not defined for internal conversions!\n";
       else {
-	cosThetaFunc_ = new TF1("cosThetaFunc", czFuncString_.c_str());
-	if(cosThetaFunc_->GetMinimum(czmin_,czmax_) < 0.)
-	  throw cet::exception("BADCONFIG")
-	    << "RMCGun: Cos generation weight function not positive for the entire spectrum!\n";
-	  
-	czweightnorm_ = cosThetaFunc_->Integral(czmin_,czmax_)/(czmax_-czmin_);
-	if(verbosityLevel_ > 0) 
-	  printf("RMCGun: Cos generation using function string %s with %.2f < cz < %.2f\n",
-		 czFuncString_.c_str(), czmin_, czmax_);
+        cosThetaFunc_ = new TF1("cosThetaFunc", czFuncString_.c_str());
+        if(cosThetaFunc_->GetMinimum(czmin_,czmax_) < 0.)
+          throw cet::exception("BADCONFIG")
+            << "RMCGun: Cos generation weight function not positive for the entire spectrum!\n";
+
+        czweightnorm_ = cosThetaFunc_->Integral(czmin_,czmax_)/(czmax_-czmin_);
+        if(verbosityLevel_ > 0)
+          printf("RMCGun: Cos generation using function string %s with %.2f < cz < %.2f\n",
+                 czFuncString_.c_str(), czmin_, czmax_);
       }
     }
     if(doEnergyWeights_) {
       ehi_ = psphys_.get<double>("ehi");
       elow_ = psphys_.get<double>("elow");
       if(psphys_.get<std::string>("spectrumShape") != "flat")
-	throw cet::exception("BADCONFIG")
-	  << "RMCGun: Energy generation weights and physics weights both defined\n";
+        throw cet::exception("BADCONFIG")
+          << "RMCGun: Energy generation weights and physics weights both defined\n";
       else {
-	energyFunc_ = new TF1("energyFunc", energyFuncString_.c_str());
-	if(energyFunc_->GetMinimum(elow_,ehi_) < 0.)
-	  throw cet::exception("BADCONFIG")
-	    << "RMCGun: Energy generation weight function not positive for the entire spectrum!\n";
-	enweightnorm_ = energyFunc_->Integral(elow_,ehi_)/(ehi_-elow_);
-	if(verbosityLevel_ > 0) 
-	  printf("RMCGun: Energy generation using function string %s with %.2f MeV < E < %.2f MeV\n",
-		 energyFuncString_.c_str(), elow_, ehi_);
+        energyFunc_ = new TF1("energyFunc", energyFuncString_.c_str());
+        if(energyFunc_->GetMinimum(elow_,ehi_) < 0.)
+          throw cet::exception("BADCONFIG")
+            << "RMCGun: Energy generation weight function not positive for the entire spectrum!\n";
+        enweightnorm_ = energyFunc_->Integral(elow_,ehi_)/(ehi_-elow_);
+        if(verbosityLevel_ > 0)
+          printf("RMCGun: Energy generation using function string %s with %.2f MeV < E < %.2f MeV\n",
+                 energyFuncString_.c_str(), elow_, ehi_);
 
       }
     }
@@ -298,9 +298,9 @@ namespace mu2e {
 
     const std::string spectrumShape(psphys.get<std::string>("spectrumShape"));
     if (spectrumShape == "RMC") {
-	*elow = psphys.get<double>("elow");
-	*ehi = psphys.get<double>("ehi");
-	res.initialize<MuonCaptureSpectrum>( *elow, *ehi, psphys.get<double>("spectrumResolution") );
+        *elow = psphys.get<double>("elow");
+        *ehi = psphys.get<double>("ehi");
+        res.initialize<MuonCaptureSpectrum>( *elow, *ehi, psphys.get<double>("spectrumResolution") );
     }
     else if (spectrumShape == "flat") {
       *elow = psphys.get<double>("elow");
@@ -329,39 +329,39 @@ namespace mu2e {
 
     if (genId_ != GenId::InternalRMC) {
       if(!doCosWeights_) {
-	CLHEP::HepLorentzVector mom( randomUnitSphere_.fire(energy), energy);
-	double cosTheta = mom.cosTheta();
-	if(doHistograms_) _hcos->Fill(cosTheta);
-	if(doHistograms_) _hcoswt->Fill(cosTheta); //no cos(theta) weights
+        CLHEP::HepLorentzVector mom( randomUnitSphere_.fire(energy), energy);
+        double cosTheta = mom.cosTheta();
+        if(doHistograms_) _hcos->Fill(cosTheta);
+        if(doHistograms_) _hcoswt->Fill(cosTheta); //no cos(theta) weights
 
-	output->emplace_back( PDGCode::gamma,
-			      GenId::ExternalRMC,
-			      pos,
-			      mom,
-			      stop.t );
+        output->emplace_back( PDGCode::gamma,
+                              GenId::ExternalRMC,
+                              pos,
+                              mom,
+                              stop.t );
 
-	event.put(std::move(output));
-	std::unique_ptr<mu2e::EventWeight> evtwt ( new EventWeight(weight) );
-	event.put(std::move(evtwt));
+        event.put(std::move(output));
+        std::unique_ptr<mu2e::EventWeight> evtwt ( new EventWeight(weight) );
+        event.put(std::move(evtwt));
       } else {
 
-	CLHEP::Hep3Vector mom(0.,0.,0.);
-	double theta = generateTheta();
-	mom.setRThetaPhi(energy, theta, (phimax_-phimin_)*randomFlat_.fire());
-	double coswt = getCosWeight(cos(theta));
-	if(doHistograms_) _hcos->Fill(cos(theta));
-	if(doHistograms_) _hcoswt->Fill(cos(theta), coswt);
+        CLHEP::Hep3Vector mom(0.,0.,0.);
+        double theta = generateTheta();
+        mom.setRThetaPhi(energy, theta, (phimax_-phimin_)*randomFlat_.fire());
+        double coswt = getCosWeight(cos(theta));
+        if(doHistograms_) _hcos->Fill(cos(theta));
+        if(doHistograms_) _hcoswt->Fill(cos(theta), coswt);
 
-	output->emplace_back( PDGCode::gamma,
-			      GenId::ExternalRMC,
-			      pos,
-			      CLHEP::HepLorentzVector( mom, energy),
-			      stop.t );
+        output->emplace_back( PDGCode::gamma,
+                              GenId::ExternalRMC,
+                              pos,
+                              CLHEP::HepLorentzVector( mom, energy),
+                              stop.t );
 
-	event.put(std::move(output));
-	weight *= coswt;
-	std::unique_ptr<mu2e::EventWeight> evtwt ( new EventWeight(weight) );
-	event.put(std::move(evtwt));
+        event.put(std::move(output));
+        weight *= coswt;
+        std::unique_ptr<mu2e::EventWeight> evtwt ( new EventWeight(weight) );
+        event.put(std::move(evtwt));
 
       }
     } else {
@@ -390,10 +390,10 @@ namespace mu2e {
 
         CLHEP::Hep3Vector p = mome.vect()+momp.vect();
         double y = (mome.e()-momp.e())/p.mag();
-	double cz = p.cosTheta();
-	_hcos->Fill(cz);
-	_hcoswt->Fill(cz); //no cos(theta) weights
-	
+        double cz = p.cosTheta();
+        _hcos->Fill(cz);
+        _hcoswt->Fill(cz); //no cos(theta) weights
+
         _hy->Fill(y);
       }
     }
@@ -419,19 +419,19 @@ namespace mu2e {
     return energy;
   }
 
-  //================================================================  
+  //================================================================
   double RMCGun::generateTheta() {
-    
+
     double maxC = cosThetaFunc_->GetMaximum(czmin_, czmax_);
     double r = randomFlat_.fire();
     double cz = czmin_ + (czmax_-czmin_)*randomFlat_.fire();
     while(cosThetaFunc_->Eval(cz) < maxC*r) {
       r = randomFlat_.fire();
-      cz = czmin_ + (czmax_-czmin_)*randomFlat_.fire();      
+      cz = czmin_ + (czmax_-czmin_)*randomFlat_.fire();
     }
     double theta = acos(cz);
     return theta;
-    
+
   }
 
   //================================================================
