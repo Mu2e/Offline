@@ -13,10 +13,7 @@
 
 //Mu2e includes
 #include "Mu2eG4/inc/Mu2eG4Config.hh"
-#include "Mu2eG4/inc/Mu2eG4ResourceLimits.hh"
-#include "Mu2eG4/inc/Mu2eG4TrajectoryControl.hh"
 #include "Mu2eG4/inc/PhysicsProcessInfo.hh"
-#include "Mu2eG4/inc/Mu2eG4MultiStageParameters.hh"
 #include "Mu2eG4/inc/SensitiveDetectorHelper.hh"
 
 // C++ includes
@@ -74,9 +71,6 @@ namespace mu2e {
     Mu2eG4MTRunManager* masterRM;
 
     std::thread::id workerID_;
-    Mu2eG4ResourceLimits mu2elimits_;
-    Mu2eG4TrajectoryControl trajectoryControl_;
-    Mu2eG4MultiStageParameters multiStagePars_;
 
     PhysicsProcessInfo physicsProcessInfo_;
     SensitiveDetectorHelper sensitiveDetectorHelper_;

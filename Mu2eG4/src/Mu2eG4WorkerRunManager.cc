@@ -89,10 +89,6 @@ namespace mu2e {
     perThreadObjects_(make_unique<Mu2eG4PerThreadStorage>(ioconf)),
     masterRM(nullptr),
     workerID_(worker_ID),
-    mu2elimits_(conf.ResourceLimits()),
-    trajectoryControl_(conf.TrajectoryControl()),
-    multiStagePars_(conf),
-
     physicsProcessInfo_(),
     sensitiveDetectorHelper_(conf.SDConfig()),
     extMonFNALPixelSD_()
@@ -178,8 +174,8 @@ namespace mu2e {
                                                conf_.SDConfig().TimeVD().times(),
                                                *perThreadObjects_->steppingCuts,
                                                *perThreadObjects_->commonCuts,
-                                               trajectoryControl_,
-                                               mu2elimits_);
+                                               perThreadObjects_->ioconf.trajectoryControl(),
+                                               perThreadObjects_->ioconf.mu2elimits());
     SetUserAction(steppingAction_);
 
     SetUserAction( new Mu2eG4StackingAction(*perThreadObjects_->stackingCuts,
@@ -187,9 +183,9 @@ namespace mu2e {
 
     trackingAction_ = new TrackingAction(conf_,
                                          steppingAction_,
-                                         multiStagePars_.simParticleNumberOffset(),
-                                         trajectoryControl_,
-                                         mu2elimits_);
+                                         perThreadObjects_->ioconf.multiStagePars().simParticleNumberOffset(),
+                                         perThreadObjects_->ioconf.trajectoryControl(),
+                                         perThreadObjects_->ioconf.mu2elimits());
     SetUserAction(trackingAction_);
 
     SetUserAction( new Mu2eG4RunAction(conf_.debug(),
