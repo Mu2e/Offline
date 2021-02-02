@@ -75,8 +75,7 @@ namespace mu2e {
     TrackingAction* trackingAction = new TrackingAction(conf_,
                                                         steppingAction,
                                                         stageOffset_,
-                                                        perThreadStorage_->ioconf.trajectoryControl(),
-                                                        perThreadStorage_->ioconf.mu2elimits());
+                                                        perThreadStorage_);
     SetUserAction(trackingAction);
 
     SetUserAction( new Mu2eG4RunAction(conf_.debug(),

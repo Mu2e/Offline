@@ -184,8 +184,7 @@ namespace mu2e {
     trackingAction_ = new TrackingAction(conf_,
                                          steppingAction_,
                                          perThreadObjects_->ioconf.multiStagePars().simParticleNumberOffset(),
-                                         perThreadObjects_->ioconf.trajectoryControl(),
-                                         perThreadObjects_->ioconf.mu2elimits());
+                                         perThreadObjects_.get());
     SetUserAction(trackingAction_);
 
     SetUserAction( new Mu2eG4RunAction(conf_.debug(),
