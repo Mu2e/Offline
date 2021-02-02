@@ -426,9 +426,20 @@ void mu2e::CompressDetStepMCs::compressSimParticles(const art::Event& event) {
           // If we haven't added a truncated particle in this genealogy
           if (!addedTruncated) {
             // Add a truncated particle
-            truncated = new SimParticle();
             truncKey = cet::map_vector_key(_conf.truncatedSimParticleKeyOffset() + n_truncated_added);
-            truncated->id() = truncKey;
+            // only want to fill in id and process code now, will add parent ptr later
+            truncated = new SimParticle(truncKey,
+                                        unsigned(),
+                                        art::Ptr<SimParticle>(),
+                                        PDGCode::type(),
+                                        art::Ptr<GenParticle>(),
+                                        CLHEP::Hep3Vector(),
+                                        CLHEP::HepLorentzVector(),
+                                        double(),
+                                        double(),
+                                        unsigned(),
+                                        unsigned(),
+                                        ProcessCode(ProcessCode::truncated));
             //            truncated->addDaughter(i_childPtr);
             ++n_truncated_added;
             truncSimPtr = art::Ptr<mu2e::SimParticle>(_newSimParticlesPID, truncKey.asUint(), _newSimParticleGetter);
