@@ -1,6 +1,6 @@
 // The intent of this class is to handle per-job tasks supporting
 // handling of input and output data products, like configuration
-// parsing and the procuces/consumes delcarations.  It is used by both
+// parsing and the produces/consumes declarations.  It is used by both
 // single- and multithreaded geant modules.
 //
 // The class exposes parsed configuration results for use by
