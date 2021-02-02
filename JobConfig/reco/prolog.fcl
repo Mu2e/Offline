@@ -130,7 +130,7 @@ Reconstruction : {
       caloShowerSimTag : ""
       caloShowerROTag : ""
       caloClusterMCTag : "CaloClusterTruthMatch"
-      caloHitMCTag : "CaloHitTruthMatch"
+#      caloHitMCTag : "CaloHitTruthMatch"
       strawDigiMCIndexMapTag : "SelectRecoMC:StrawDigiMap"
       crvDigiMCIndexMapTag : "SelectRecoMC:CrvDigiMap"
       keepAllGenParticles : false
@@ -138,6 +138,7 @@ Reconstruction : {
       primaryParticleTag : "compressDigiMCs"
       mcTrajectoryTag : "compressDigiMCs"
       rekeySimParticleCollection : false
+      noCompression : false
     }
   }
   
@@ -176,6 +177,8 @@ Reconstruction : {
       oldCaloShowerSimTag : ""
       newCaloShowerSimTag : ""
       checkTrackerDuplicateSteps : false
+      oldCaloClusterMCTag : "CaloClusterTruthMatch"
+      newCaloClusterMCTag : "compressRecoMCs"
     }
   }
 # reconstruct multiple types of tracks.  These are separate sequences to allow granular execution
