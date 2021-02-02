@@ -88,32 +88,9 @@ namespace mu2e {
   {
     art::Event *_artEvent = perThreadObjects_->artEvent;
     SimParticleHelper *_spHelper = &perThreadObjects_->simParticleHelper;
-    SimParticlePrimaryHelper *_parentHelper = &perThreadObjects_->simParticlePrimaryHelper;
 
     // local Mu2e timer, almost equal to time of G4EventManager::ProcessOneEvent()
     _timer->Start();
-
-    art::Handle<SimParticleCollection> inputSimHandle;
-    if(art::InputTag() != multiStagePars_.inputSimParticles()) {
-      _artEvent->getByLabel(multiStagePars_.inputSimParticles(), inputSimHandle);
-
-      if(!inputSimHandle.isValid()) {
-        throw cet::exception("CONFIG")
-          << "Error retrieving inputSimParticles for "
-          << multiStagePars_.inputSimParticles() <<"\n";
-      }
-    }
-
-    art::Handle<MCTrajectoryCollection> inputMCTrajectoryHandle;
-    if(art::InputTag() != multiStagePars_.inputMCTrajectories()) {
-      _artEvent->getByLabel(multiStagePars_.inputMCTrajectories(), inputMCTrajectoryHandle);
-
-      if(!inputMCTrajectoryHandle.isValid()) {
-        throw cet::exception("CONFIG")
-          << "Error retrieving inputMCTrajectories for "
-          << multiStagePars_.inputMCTrajectories() <<"\n";
-      }
-    }
 
     //these are OK, nothing put into or defined for event
     _sensitiveDetectorHelper->createProducts(*_artEvent, *_spHelper);
@@ -131,9 +108,7 @@ namespace mu2e {
     perThreadObjects_->steppingCuts->beginEvent(*_artEvent, *_spHelper);
     perThreadObjects_->commonCuts->beginEvent(*_artEvent, *_spHelper);
 
-    _trackingAction->beginEvent(inputSimHandle, inputMCTrajectoryHandle, *_spHelper,
-                                *_parentHelper, *perThreadObjects_->mcTrajectories,
-                                *perThreadObjects_->simRemapping);
+    _trackingAction->beginEvent();
 
     _steppingAction->BeginOfEvent(*perThreadObjects_->tvd_collection, *_spHelper);
 
@@ -150,7 +125,7 @@ namespace mu2e {
   void Mu2eG4EventAction::EndOfEventAction(const G4Event *evt)
   {
     // Run self consistency checks if enabled.
-    _trackingAction->endEvent(*perThreadObjects_->simPartCollection);
+    _trackingAction->endEvent();
 
     _timer->Stop();
 
