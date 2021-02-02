@@ -15,6 +15,7 @@
 #include "DataProducts/inc/IndexMap.hh"
 #include "MCDataProducts/inc/CrvDigiMC.hh"
 #include "MCDataProducts/inc/CaloShowerSim.hh"
+#include "MCDataProducts/inc/CaloClusterMC.hh"
 
 using namespace std;
 
@@ -36,6 +37,8 @@ namespace mu2e {
       fhicl::Atom<art::InputTag> crvDigiMCIndexMapTag{Name("crvDigiMCIndexMapTag"), Comment("If a CrvDigiMCIndexMap was passed to the compression originally, then pass it here too")};
       fhicl::Atom<art::InputTag> oldCaloShowerSimTag{Name("oldCaloShowerSimTag"), Comment("InputTag for uncompressed CaloShowerSimCollection")};
       fhicl::Atom<art::InputTag> newCaloShowerSimTag{Name("newCaloShowerSimTag"), Comment("InputTag for compressed CaloShowerSimCollection")};
+      fhicl::Atom<art::InputTag> oldCaloClusterMCTag{Name("oldCaloClusterMCTag"), Comment("InputTag for uncompressed CaloClusterMCCollection")};
+      fhicl::Atom<art::InputTag> newCaloClusterMCTag{Name("newCaloClusterMCTag"), Comment("InputTag for compressed CaloClusterMCCollection")};
       fhicl::Atom<bool> checkTrackerDuplicateSteps{Name("checkTrackerDuplicateSteps"), Comment("Set to true to check if tracker StepPointMCs have been duplicated by mistake")};
     };
     typedef art::EDAnalyzer::Table<Config> Parameters;
@@ -57,6 +60,9 @@ namespace mu2e {
     art::InputTag _oldCaloShowerSimTag;
     art::InputTag _newCaloShowerSimTag;
 
+    art::InputTag _oldCaloClusterMCTag;
+    art::InputTag _newCaloClusterMCTag;
+
     bool _checkTrackerDuplicateSteps;
   public:
     explicit CompressDigiMCsCheck(const Parameters& conf);
@@ -76,6 +82,8 @@ namespace mu2e {
     , _crvDigiMCIndexMapTag(conf().crvDigiMCIndexMapTag())
     , _oldCaloShowerSimTag(conf().oldCaloShowerSimTag())
     , _newCaloShowerSimTag(conf().newCaloShowerSimTag())
+    , _oldCaloClusterMCTag(conf().oldCaloClusterMCTag())
+    , _newCaloClusterMCTag(conf().newCaloClusterMCTag())
     , _checkTrackerDuplicateSteps(conf().checkTrackerDuplicateSteps())
   {  }
 
@@ -266,6 +274,32 @@ namespace mu2e {
         const auto& i_newCaloShowerStepPtr = *(i_newCaloShowerSim.caloShowerSteps().begin());
         if (i_oldCaloShowerStepPtr->momentumIn() != i_newCaloShowerStepPtr->momentumIn()) {
           throw cet::exception("CompressDigiMCsCheck") << "Old and new CaloShowerStepPtrs do not match" << std::endl;
+        }
+      }
+    }
+
+    //////////////////////////////////////
+    // Check CaloClusterMCs
+    if (_oldCaloClusterMCTag != "" && _newCaloClusterMCTag != "") {
+      art::Handle<CaloClusterMCCollection> oldCaloClusterMCHandle;
+      event.getByLabel(_oldCaloClusterMCTag, oldCaloClusterMCHandle);
+
+      art::Handle<CaloClusterMCCollection> newCaloClusterMCHandle;
+      event.getByLabel(_newCaloClusterMCTag, newCaloClusterMCHandle);
+
+      if (oldCaloClusterMCHandle.isValid() && newCaloClusterMCHandle.isValid()) {
+        const auto& oldCaloClusterMCs = *oldCaloClusterMCHandle;
+        const auto& newCaloClusterMCs = *newCaloClusterMCHandle;
+
+        unsigned int n_old_calo_cluster_mcs = oldCaloClusterMCs.size();
+        for (unsigned int i_old_calo_cluster_mc = 0; i_old_calo_cluster_mc < n_old_calo_cluster_mcs; ++i_old_calo_cluster_mc) {
+          unsigned int i_new_calo_cluster_mc = i_old_calo_cluster_mc;
+          const auto& i_oldCaloClusterMC = oldCaloClusterMCs.at(i_old_calo_cluster_mc);
+          const auto& i_newCaloClusterMC = newCaloClusterMCs.at(i_new_calo_cluster_mc);
+
+          if (i_oldCaloClusterMC.totalEnergyDep() != i_newCaloClusterMC.totalEnergyDep()) {
+            throw cet::exception("CompressDigiMCsCheck") << "Old and new CaloClusterMCs do not match" << std::endl;
+          }
         }
       }
     }

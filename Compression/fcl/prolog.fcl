@@ -152,6 +152,8 @@ DigiCompression : {
 	strawDigiMCIndexMapTag : ""
 	crvDigiMCIndexMapTag : ""
 	checkTrackerDuplicateSteps : true
+	oldCaloClusterMCTag : ""
+	newCaloClusterMCTag : ""
     }
 
     CaloFix : {
