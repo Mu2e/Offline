@@ -21,7 +21,18 @@ Primary: {
     @table::TrackerMC.StepProducers
     @table::CaloMC.StepProducers
     CrvSteps : @local::CrvSteps
-    compressDetStepMCs : @local::Compression.compressDetStepMCs_primary
+
+    compressDetStepMCs : {
+      module_type : CompressDetStepMCs
+      strawGasStepTag : "StrawGasStepMaker"
+      caloShowerStepTag : "CaloShowerStepMaker"
+      crvStepTag : "CrvSteps"
+      simParticleTag : "g4run"
+      stepPointMCTags : [ "g4run:virtualdetector", "g4run:protonabsorber" ]#, "g4run:stoppingtarget" ]
+      mcTrajectoryTag : "g4run"
+      debugLevel : 0
+      compressionOptions : @local::DetStepCompression.standardCompression
+    }
     # the following should be reconfigured to run after step compression once that is working
     FindMCPrimary : {
       module_type : FindMCPrimary
