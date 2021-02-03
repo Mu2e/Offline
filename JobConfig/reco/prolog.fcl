@@ -130,7 +130,6 @@ Reconstruction : {
       caloShowerSimTag : ""
       caloShowerROTag : ""
       caloClusterMCTag : "CaloClusterTruthMatch"
-#      caloHitMCTag : "CaloHitTruthMatch"
       strawDigiMCIndexMapTag : "SelectRecoMC:StrawDigiMap"
       crvDigiMCIndexMapTag : "SelectRecoMC:CrvDigiMap"
       keepAllGenParticles : false
