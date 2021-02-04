@@ -45,7 +45,7 @@ namespace mu2e {
       return entries_.at(g4TrkID - 1).simParticlePrimaryPtr;
     }
 
-    void addEntryFromGenParticle(const art::Handle<GenParticleCollection>& gensHandle, unsigned genId);
+    void addEntryFromGenParticle(const art::ValidHandle<GenParticleCollection>& gensHandle, unsigned genId);
 
     void addEntryFromStepPointMC (SimParticleCollection::key_type simId);
 

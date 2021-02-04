@@ -241,7 +241,7 @@ namespace mu2e {
     // Read in data products from previous stages and reseat SimParticle pointers
     if(ioconf.multiStage()) {
 
-      auto const& inputSims = perThreadObjects_->artEvent->getValidHandle<SimParticleCollection>(ioconf.multiStagePars().inputSimParticles());
+      auto const& inputSims = perThreadObjects_->artEvent->getValidHandle<SimParticleCollection>(ioconf.inputs().inputSimParticles());
 
       // We do not compress anything here, but use the call to reseat the pointers
       // while copying the inputs to _transientMap.
@@ -260,8 +260,8 @@ namespace mu2e {
         (*perThreadObjects_->simRemapping)[oldSim] = newSim;
       }
 
-      if(art::InputTag() != perThreadObjects_->ioconf.multiStagePars().inputMCTrajectories()) {
-        auto const& inputTraj = perThreadObjects_->artEvent->getValidHandle<MCTrajectoryCollection>(ioconf.multiStagePars().inputMCTrajectories());
+      if(art::InputTag() != perThreadObjects_->ioconf.inputs().inputMCTrajectories()) {
+        auto const& inputTraj = perThreadObjects_->artEvent->getValidHandle<MCTrajectoryCollection>(ioconf.inputs().inputMCTrajectories());
 
         for(const auto& i : *inputTraj) {
           const MCTrajectory& tr(i.second);

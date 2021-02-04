@@ -25,7 +25,6 @@
 #include "Mu2eG4/inc/TrackingAction.hh"
 #include "Mu2eG4/inc/Mu2eG4RunAction.hh"
 #include "Mu2eG4/inc/Mu2eG4EventAction.hh"
-#include "Mu2eG4/inc/Mu2eG4MultiStageParameters.hh"
 #include "Mu2eG4/inc/ExtMonFNALPixelSD.hh"
 
 //G4 includes
@@ -183,7 +182,7 @@ namespace mu2e {
 
     trackingAction_ = new TrackingAction(conf_,
                                          steppingAction_,
-                                         perThreadObjects_->ioconf.multiStagePars().simParticleNumberOffset(),
+                                         perThreadObjects_->ioconf.inputs().simParticleNumberOffset(),
                                          perThreadObjects_.get());
     SetUserAction(trackingAction_);
 

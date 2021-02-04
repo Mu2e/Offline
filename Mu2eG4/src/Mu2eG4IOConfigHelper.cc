@@ -17,13 +17,14 @@
 #include "art/Framework/Core/ProducesCollector.h"
 #include "art/Framework/Core/ConsumesCollector.h"
 
+#include "cetlib_except/exception.h"
+
 namespace mu2e {
 
   Mu2eG4IOConfigHelper::Mu2eG4IOConfigHelper(const Mu2eG4Config::Top& conf,
                                              art::ProducesCollector& pc,
                                              art::ConsumesCollector& cc)
-    : generatorModuleLabel_{conf.generatorModuleLabel()}
-    , multiStagePars_{conf}
+    : inputs_{conf.inputs()}
     , trajectoryControl_(conf.TrajectoryControl())
     , timeVD_enabled_(conf.SDConfig().TimeVD().enabled())
     , extMonPixelsEnabled_{false}
@@ -36,32 +37,33 @@ namespace mu2e {
     SensitiveDetectorHelper sd(conf.SDConfig());
     extMonPixelsEnabled_ = sd.extMonPixelsEnabled();
 
-    const art::InputTag invalid_tag;
+    switch(inputs_.primaryType().id()) {
+    default: throw cet::exception("CONFIG")
+        << "Error: unknown Mu2eG4 primaryType id = "<<inputs_.primaryType().id()<<std::endl;
 
-    if((generatorModuleLabel_ == invalid_tag) && !multiStagePars_.multiStage()) {
-      throw cet::exception("CONFIG")
-        << "Error: both generatorModuleLabel and genInputHits are empty - nothing to do!\n";
+    case Mu2eG4PrimaryType::GenParticles:
+      cc.consumes<GenParticleCollection>(inputs_.primaryTag());
+      break;
+
+    case Mu2eG4PrimaryType::StepPoints:
+      cc.consumes<StepPointMCCollection>(inputs_.primaryTag());
+      break;
     }
 
     //----------------------------------------------------------------
     // Declare which products we will read.
-    auto const& inputPhysVolTag = multiStagePars_.inputPhysVolumeMultiInfo();
+    const art::InputTag invalid_tag;
+    auto const& inputPhysVolTag = inputs_.inputPhysVolumeMultiInfo();
     if (inputPhysVolTag != invalid_tag) {
       cc.consumes<PhysicalVolumeInfoMultiCollection, art::InSubRun>(inputPhysVolTag);
     }
-    auto const& inputSimParticlesTag = multiStagePars_.inputSimParticles();
+    auto const& inputSimParticlesTag = inputs_.inputSimParticles();
     if (inputSimParticlesTag != invalid_tag) {
       cc.consumes<SimParticleCollection>(inputSimParticlesTag);
     }
-    auto const& inputMCTrajectoryTag = multiStagePars_.inputMCTrajectories();
+    auto const& inputMCTrajectoryTag = inputs_.inputMCTrajectories();
     if (inputMCTrajectoryTag != invalid_tag) {
       cc.consumes<MCTrajectoryCollection>(inputMCTrajectoryTag);
-    }
-    if (generatorModuleLabel_ != invalid_tag) {
-      cc.consumes<GenParticleCollection>(generatorModuleLabel_);
-    }
-    for (auto const& tag : multiStagePars_.genInputHits()) {
-      cc.consumes<StepPointMCCollection>(tag);
     }
 
     //----------------------------------------------------------------
@@ -69,7 +71,7 @@ namespace mu2e {
     pc.produces<SimParticleCollection>();
     pc.produces<PhysicalVolumeInfoMultiCollection,art::InSubRun>();
 
-    if(multiStagePars_.multiStage()) {
+    if(inputs_.multiStage()) {
       pc.produces<SimParticleRemapping>();
     }
 

@@ -12,7 +12,7 @@ namespace mu2e {
     simProductGetter_(sim_prod_getter)
   {}
 
-  void SimParticlePrimaryHelper::addEntryFromGenParticle(const art::Handle<GenParticleCollection>& gensHandle, unsigned genId)
+  void SimParticlePrimaryHelper::addEntryFromGenParticle(const art::ValidHandle<GenParticleCollection>& gensHandle, unsigned genId)
   {
     entries_.emplace_back(art::Ptr<GenParticle>(gensHandle, genId),
                           art::Ptr<SimParticle>(simProdID_) );
