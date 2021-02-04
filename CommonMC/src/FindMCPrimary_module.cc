@@ -151,8 +151,8 @@ namespace mu2e {
       }
     }
     // check consistency
-    if(pgps.size() != simps.size())
-      throw cet::exception("Simulation")<<"FindMCPrimary: GenParticle <-> SimParticle inconsistency" << std::endl;
+    if(pgp.pdgId() == PDGCode::null)
+      throw cet::exception("Simulation")<<"FindMCPrimary: GenParticle Not Found" << std::endl;
     // check that at least 1 primary particle was found
     if( !_none && simps.size()==0 )
       throw cet::exception("Simulation")<<"FindMCPrimary: No Primary Particle found" << std::endl;
