@@ -53,33 +53,7 @@ physics : {
             module_type : GenEventCounter
         }
 
-        g4run : {
-
-            module_type       : Mu2eG4
-            physics           : @local::mu2eg4DefaultPhysics
-            ResourceLimits    : @local::mu2eg4DefaultResourceLimits
-            TrajectoryControl : @local::mu2eg4NoTrajectories
-            debug             : @local::mu2eg4DefaultDebug
-            visualization     : @local::mu2eg4NoVisualization
-
-            generatorModuleLabel        : generate
-            doWriteLegacyPhysVolumeInfo : false
-
-            SDConfig : {
-                // do not want e.g. the "stoppingtarget" SD, thus do not use enableAllSDs
-                // Instead explicitly list all the detectors we want
-                enableSD         : [ tracker, calorimeter, calorimeterRO, virtualdetector ]
-                TimeVD           : { times : [] }
-                sensitiveVolumes : []
-            }
-
-            SimParticlePrinter : {
-                enabled       : false
-                primariesOnly : false
-                prefix        : "SimParticle: "
-            }
-
-        }
+        g4run : @local::g4run
 
     } // producers
 
@@ -109,6 +83,8 @@ outputs : {
         fileName     : "sim.owner.pions-g4s4-RPC.version.sequencer.art"
     }
 }
+
+physics.producers.g4run.SDConfig.enableSD: [ tracker, calorimeter, calorimeterRO, virtualdetector ]
 
 # Setting the seed values, since automaticSeeds sets to @nil by default.
 services.SeedService.baseSeed         : 8
