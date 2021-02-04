@@ -13,6 +13,7 @@ helper=mu2e_helper(env)
 XERCESC_LIBS = [ 'xerces-c' ]
 
 rootlibs = env['ROOTLIBS']
+rootlibs.append('-lMathMore')
 babarlibs = env['BABARLIBS']
 mainlib = helper.make_mainlib ( [ 'mu2e_ConditionsService_ConditionsService_service',
                                   'mu2e_GeometryService_GeometryService_service',
