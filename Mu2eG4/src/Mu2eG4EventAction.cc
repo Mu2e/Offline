@@ -61,7 +61,6 @@ namespace mu2e {
   G4UserEventAction(),
     perThreadObjects_(pts),
     simParticlePrinter_(),
-    multiStagePars_(conf),
     _trackingAction(tracking_action),
     _steppingAction(stepping_action),
     _sensitiveDetectorHelper(sensitive_detectorhelper),

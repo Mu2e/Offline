@@ -17,7 +17,6 @@
 #include "MCDataProducts/inc/MCTrajectoryCollection.hh"
 #include "MCDataProducts/inc/ExtMonFNALSimHitCollection.hh"
 #include "Mu2eG4/inc/Mu2eG4Config.hh"
-#include "Mu2eG4/inc/Mu2eG4MultiStageParameters.hh"
 #include "Mu2eG4/inc/Mu2eG4TrajectoryControl.hh"
 #include "Mu2eUtilities/inc/SimParticleCollectionPrinter.hh"
 #include "MCDataProducts/inc/StepInstanceName.hh"
@@ -70,7 +69,6 @@ namespace mu2e {
 
     //these are set using fhicl pset
     SimParticleCollectionPrinter simParticlePrinter_;
-    Mu2eG4MultiStageParameters multiStagePars_;
 
     TrackingAction* _trackingAction;
     Mu2eG4SteppingAction* _steppingAction;
