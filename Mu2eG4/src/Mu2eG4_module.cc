@@ -28,7 +28,7 @@
 #include "SeedService/inc/SeedService.hh"
 #include "Mu2eG4/inc/Mu2eG4ResourceLimits.hh"
 #include "Mu2eG4/inc/Mu2eG4TrajectoryControl.hh"
-#include "Mu2eG4/inc/Mu2eG4MultiStageParameters.hh"
+#include "Mu2eG4/inc/Mu2eG4Inputs.hh"
 #include "Mu2eG4/inc/findMaterialOrThrow.hh"
 #include "Mu2eG4/inc/checkConfigRelics.hh"
 #include "Mu2eG4/inc/Mu2eG4PerThreadStorage.hh"
@@ -108,7 +108,7 @@ namespace mu2e {
 
     Mu2eG4ResourceLimits mu2elimits_;
     Mu2eG4TrajectoryControl trajectoryControl_;
-    Mu2eG4MultiStageParameters multiStagePars_;
+    Mu2eG4Inputs multiStagePars_;
 
     // The THREE functions that call new G4RunManger functions and break G4's BeamOn() into 3 pieces
     void BeamOnBeginRun( unsigned int runNumber, const char* macroFile=0, G4int n_select=-1 );
@@ -182,7 +182,7 @@ namespace mu2e {
     conf_(pars()),
     mu2elimits_(pars().ResourceLimits()),
     trajectoryControl_(pars().TrajectoryControl()),
-    multiStagePars_(pars()),
+    multiStagePars_(pars().inputs()),
     _runManager(std::make_unique<G4RunManager>()),
     _warnEveryNewRun(pars().debug().warnEveryNewRun()),
     _exportPDTStart(pars().debug().exportPDTStart()),

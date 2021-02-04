@@ -65,24 +65,20 @@ namespace mu2e {
       (!_config.getBool("mu2e.standardDetector",true) || !(geom->isStandardMu2eDetector()))
       ?  G4ThreeVector(0.0,0.0,0.0) : (GeomHandle<WorldG4>())->mu2eOriginInWorld();
 
-    art::Handle<GenParticleCollection> gensHandle;
-    if(perThreadObjects_->ioconf.generatorModuleLabel() != art::InputTag()) {
-      perThreadObjects_->artEvent->getByLabel(perThreadObjects_->ioconf.generatorModuleLabel(), gensHandle);
-    }
 
-    // StepPointMCCollection of input hits from the previous simulation stage
-    typedef std::vector< art::ValidHandle<StepPointMCCollection> > HitHandles;
-    HitHandles genInputHits;
-    for(const auto& i : perThreadObjects_->ioconf.multiStagePars().genInputHits()) {
-      genInputHits.emplace_back(perThreadObjects_->artEvent->getValidHandle<StepPointMCCollection>(i));
-    }
+    auto artEvent = perThreadObjects_->artEvent;
+    auto& inputs = perThreadObjects_->ioconf.inputs();
 
-    // For each generated particle, add it to the event.
-    if(gensHandle.isValid()) {
-      const auto& coll = *gensHandle;
-      for (unsigned i=0; i < coll.size(); ++i) {
-        const GenParticle& genpart = coll[i];
+    switch(inputs.primaryType().id()) {
+    default: throw cet::exception("CONFIG")
+        << "Error: PrimaryGeneratorAction: unknown Mu2eG4 primaryType id = "
+        <<inputs.primaryType().id()
+        <<std::endl;
 
+    case Mu2eG4PrimaryType::GenParticles: {
+      auto const h = artEvent->getValidHandle<GenParticleCollection>(inputs.primaryTag());
+      for (unsigned i=0; i < h->size(); ++i) {
+        const GenParticle& genpart = (*h)[i];
         addG4Particle(event,
                       genpart.pdgId(),
                       0.0, // Mu2e GenParticles are not excited ions
@@ -93,33 +89,32 @@ namespace mu2e {
                       genpart.properTime(),
                       genpart.momentum());
 
-        perThreadObjects_->simParticlePrimaryHelper.addEntryFromGenParticle(gensHandle, i);
+        perThreadObjects_->simParticlePrimaryHelper.addEntryFromGenParticle(h, i);
       }
     }
+      break; // GenParticles
 
-    if ( !testPDGIdToGenerate_ ) {
+    case Mu2eG4PrimaryType::StepPoints: {
+      auto const h = artEvent->getValidHandle<StepPointMCCollection>(inputs.primaryTag());
+      for(const auto& hit : *h) {
+        addG4Particle(event,
+                      hit.simParticle()->pdgId(),
+                      hit.simParticle()->startExcitationEnergy(),
+                      hit.simParticle()->startFloatLevelBaseIndex(),
+                      // Transform into G4 world coordinate system
+                      hit.position() + mu2eOrigin,
+                      hit.time(),
+                      hit.properTime(),
+                      hit.momentum());
 
-      // standard flow
-
-      // Also create particles from the input hits
-      for(const auto& hitcoll : genInputHits) {
-
-        for(const auto& hit : *hitcoll) {
-          addG4Particle(event,
-                        hit.simParticle()->pdgId(),
-                        hit.simParticle()->startExcitationEnergy(),
-                        hit.simParticle()->startFloatLevelBaseIndex(),
-                        // Transform into G4 world coordinate system
-                        hit.position() + mu2eOrigin,
-                        hit.time(),
-                        hit.properTime(),
-                        hit.momentum());
-
-          perThreadObjects_->simParticlePrimaryHelper.addEntryFromStepPointMC(hit.simParticle()->id());
-        }
+        perThreadObjects_->simParticlePrimaryHelper.addEntryFromStepPointMC(hit.simParticle()->id());
       }
+    }
+      break; // StepPoints
+    }
 
-    } else {
+    //----------------------------------------------------------------
+    if ( testPDGIdToGenerate_ ) {
 
       // testing isomer creation; will fail shortly after the
       // creation, but will print a lot of diagnostic info
@@ -152,8 +147,9 @@ namespace mu2e {
                     G4ThreeVector());
       verbosityLevel_ = ovl;
       G4ParticleTable::GetParticleTable()->SetVerboseLevel(govl);
-
     }
+    //----------------------------------------------------------------
+
   }
 
   void PrimaryGeneratorAction::addG4Particle(G4Event *event,

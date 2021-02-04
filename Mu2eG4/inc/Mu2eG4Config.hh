@@ -168,15 +168,34 @@ namespace mu2e {
           };
     };
 
-    struct MultiStageParameters_ {
+    struct Inputs_ {
       using Name = fhicl::Name;
       using Comment = fhicl::Comment;
 
-      fhicl::Atom<unsigned> simParticleNumberOffset {Name("simParticleNumberOffset")};
-      fhicl::Atom<art::InputTag> inputSimParticles {Name("inputSimParticles")};
-      fhicl::Atom<art::InputTag> inputMCTrajectories {Name("inputMCTrajectories")};
-      fhicl::Atom<art::InputTag> inputPhysVolumeMultiInfo {Name("inputPhysVolumeMultiInfo")};
-      fhicl::Sequence<art::InputTag> genInputHits {Name("genInputHits")};
+      fhicl::Atom<std::string> primaryType { Name("primaryType"), Comment(primaryType_docstring()) };
+      static std::string primaryType_docstring();
+      bool multiStage() const { return primaryType() != "GenParticles"; }
+
+      fhicl::Atom<art::InputTag> primaryTag {Name("primaryTag"), Comment("Tag of the input collection for G4 primaries")};
+
+      fhicl::Atom<unsigned> simParticleNumberOffset {Name("simParticleNumberOffset"),
+          Comment("offset for SimParticle IDs generated in the current stage, required for non-GenParticles primaries"),
+          fhicl::use_if(this, &Inputs_::multiStage)
+          };
+
+      fhicl::Atom<art::InputTag> inputSimParticles {Name("inputSimParticles"),
+          Comment("SimParticleCollection from the previous simulation stage, required for non-GenParticles primaries"),
+          fhicl::use_if(this, &Inputs_::multiStage)
+          };
+
+      fhicl::Atom<art::InputTag> inputMCTrajectories {Name("inputMCTrajectories"),
+          Comment("MCTrajectoryCollection from the previous simulation stage, required for non-GenParticles primaries"),
+          fhicl::use_if(this, &Inputs_::multiStage)
+          };
+      fhicl::Atom<art::InputTag> inputPhysVolumeMultiInfo {Name("inputPhysVolumeMultiInfo"),
+          Comment("phys volumes from the previous simulation stage, required for non-GenParticles primaries"),
+          fhicl::use_if(this, &Inputs_::multiStage)
+          };
     };
 
     struct Top {
@@ -184,9 +203,10 @@ namespace mu2e {
       using Comment = fhicl::Comment;
       using DelegatedParameter = fhicl::DelegatedParameter;
 
+      fhicl::Table<Inputs_> inputs { Name("inputs") };
+
       fhicl::Table<Limits> ResourceLimits { Name("ResourceLimits") };
       fhicl::Table<TrajectoryControl_> TrajectoryControl { Name("TrajectoryControl") };
-      fhicl::OptionalTable<MultiStageParameters_> MultiStageParameters { Name("MultiStageParameters") };
       fhicl::Table<SDConfig_> SDConfig { Name("SDConfig") };
 
       DelegatedParameter  Mu2eG4StackingOnlyCut { Name("Mu2eG4StackingOnlyCut") };

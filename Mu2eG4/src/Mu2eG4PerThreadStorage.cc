@@ -28,7 +28,7 @@ namespace mu2e {
     art::ProductID simPartId(evt->getProductID<SimParticleCollection>());
     art::EDProductGetter const* simProductGetter = evt->productGetter(simPartId);
 
-    simParticleHelper = SimParticleHelper(ioconf.multiStagePars().simParticleNumberOffset(), simPartId, evt, simProductGetter);
+    simParticleHelper = SimParticleHelper(ioconf.inputs().simParticleNumberOffset(), simPartId, evt, simProductGetter);
     simParticlePrimaryHelper = SimParticlePrimaryHelper(evt, simPartId, simProductGetter);
 
     // Output collections

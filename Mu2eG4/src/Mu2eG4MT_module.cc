@@ -16,7 +16,7 @@
 #include "Mu2eG4/inc/PhysicalVolumeHelper.hh"
 #include "ConfigTools/inc/ConfigFileLookupPolicy.hh"
 #include "Mu2eG4/inc/Mu2eG4ResourceLimits.hh"
-#include "Mu2eG4/inc/Mu2eG4MultiStageParameters.hh"
+#include "Mu2eG4/inc/Mu2eG4Inputs.hh"
 #include "Mu2eG4/inc/checkConfigRelics.hh"
 #include "Mu2eG4/inc/Mu2eG4WorkerRunManager.hh"
 #include "Mu2eG4/inc/MTMasterThread.hh"
@@ -103,7 +103,7 @@ namespace mu2e {
     Mu2eG4Config::Top conf_;
     Mu2eG4ResourceLimits mu2elimits_;
     Mu2eG4TrajectoryControl trajectoryControl_;
-    Mu2eG4MultiStageParameters multiStagePars_;
+    Mu2eG4Inputs multiStagePars_;
 
     std::unique_ptr<MTMasterThread> masterThread;
 
@@ -154,7 +154,7 @@ namespace mu2e {
     conf_(pars()),
     mu2elimits_(pars().ResourceLimits()),
     trajectoryControl_(pars().TrajectoryControl()),
-    multiStagePars_(pars()),
+    multiStagePars_(pars().inputs()),
 
     masterThread(std::make_unique<MTMasterThread>(pars())),
 
