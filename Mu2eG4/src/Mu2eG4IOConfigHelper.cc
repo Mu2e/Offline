@@ -48,6 +48,10 @@ namespace mu2e {
     case Mu2eG4PrimaryType::StepPoints:
       cc.consumes<StepPointMCCollection>(inputs_.primaryTag());
       break;
+
+    case Mu2eG4PrimaryType::SimParticleLeaves:
+      cc.consumes<SimParticleCollection>(inputs_.primaryTag());
+      break;
     }
 
     //----------------------------------------------------------------
