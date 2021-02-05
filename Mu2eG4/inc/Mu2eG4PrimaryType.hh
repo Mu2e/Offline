@@ -24,7 +24,8 @@
 // Master list of all Mu2eG4 primary input types
 #define MU2EG4_PRIMARY_TYPES                         \
   X( GenParticles )                                  \
-  X( StepPoints )                                  \
+  X( StepPoints )                                    \
+  X( SimParticleLeaves )                             \
   /**/
 
 namespace mu2e {

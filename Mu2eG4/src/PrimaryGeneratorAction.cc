@@ -111,6 +111,29 @@ namespace mu2e {
       }
     }
       break; // StepPoints
+
+    case Mu2eG4PrimaryType::SimParticleLeaves: {
+      auto const h = artEvent->getValidHandle<SimParticleCollection>(inputs.primaryTag());
+      for(const auto& i : *h) {
+        const SimParticle& particle = i.second;
+        // Take the leaves only, we do not want to re-simulate
+        // everything starting with the primary proton.
+        if(particle.daughters().empty()) {
+          addG4Particle(event,
+                        particle.pdgId(),
+                        particle.startExcitationEnergy(),
+                        particle.startFloatLevelBaseIndex(),
+                        // Transform into G4 world coordinate system
+                        particle.endPosition() + mu2eOrigin,
+                        particle.endGlobalTime(),
+                        particle.endProperTime(),
+                        particle.endMomentum());
+
+          perThreadObjects_->simParticlePrimaryHelper.addEntryFromStepPointMC(particle.id());
+        }
+      }
+    }
+      break; // SimParticles
     }
 
     //----------------------------------------------------------------
