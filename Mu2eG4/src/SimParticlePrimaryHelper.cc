@@ -19,7 +19,7 @@ namespace mu2e {
   }
 
 
-  void SimParticlePrimaryHelper::addEntryFromStepPointMC(SimParticleCollection::key_type simId)
+  void SimParticlePrimaryHelper::addEntryFromSimParticleId(SimParticleCollection::key_type simId)
   {
     art::Handle<GenParticleCollection> gensHandle;
     entries_.emplace_back(art::Ptr<GenParticle>(gensHandle.id()),
