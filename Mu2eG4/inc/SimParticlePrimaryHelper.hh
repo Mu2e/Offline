@@ -47,7 +47,7 @@ namespace mu2e {
 
     void addEntryFromGenParticle(const art::ValidHandle<GenParticleCollection>& gensHandle, unsigned genId);
 
-    void addEntryFromStepPointMC (SimParticleCollection::key_type simId);
+    void addEntryFromSimParticleId (SimParticleCollection::key_type simId);
 
   private:
 

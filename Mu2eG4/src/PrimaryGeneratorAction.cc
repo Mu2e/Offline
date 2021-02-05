@@ -107,7 +107,7 @@ namespace mu2e {
                       hit.properTime(),
                       hit.momentum());
 
-        perThreadObjects_->simParticlePrimaryHelper.addEntryFromStepPointMC(hit.simParticle()->id());
+        perThreadObjects_->simParticlePrimaryHelper.addEntryFromSimParticleId(hit.simParticle()->id());
       }
     }
       break; // StepPoints
@@ -129,7 +129,7 @@ namespace mu2e {
                         particle.endProperTime(),
                         particle.endMomentum());
 
-          perThreadObjects_->simParticlePrimaryHelper.addEntryFromStepPointMC(particle.id());
+          perThreadObjects_->simParticlePrimaryHelper.addEntryFromSimParticleId(particle.id());
         }
       }
     }
