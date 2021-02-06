@@ -52,7 +52,7 @@ Primary: {
       MinimumSumCaloStepE : 50.0
     }
   }
-  TriggerSequence : [ generate, genCounter, g4run, g4status,  
+  TriggerSequence : [ genCounter, g4run, g4status,
     @sequence::TrackerMC.StepSim,
     @sequence::CaloMC.StepSim,
     CrvSteps,
@@ -70,6 +70,7 @@ Primary: {
 		       "keep mu2e::SimParticleart::Ptrmu2e::MCTrajectorystd::map_*_*_*",
 		       "keep mu2e::GenParticles_*_*_*",
 		       "keep mu2e::PrimaryParticle_*_*_*",
+                       "keep mu2e::CosmicLivetime_*_*_*",
 		       "keep art::TriggerResults_*_*_*",
 		       "keep mu2e::GenEventCount_*_*_*" ]
 
@@ -89,5 +90,5 @@ Primary: {
 }
 Primary.Output.outputCommands : [ "drop *_*_*_*",
 		       @sequence::Primary.KeptProducts]
-Primary.TriggerPath : [ @sequence::Primary.TriggerSequence ]
+Primary.TriggerPath : [ generate, @sequence::Primary.TriggerSequence ]
 END_PROLOG
