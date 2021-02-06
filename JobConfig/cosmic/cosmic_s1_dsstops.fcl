@@ -52,3 +52,5 @@ physics.producers.g4run.Mu2eG4CommonCut:
    ]
 }
 
+//FIX ME. Use the right geometry file!
+services.GeometryService.inputFile:"JobConfig/cosmic/geom_cosmic_PhaseI.txt"
