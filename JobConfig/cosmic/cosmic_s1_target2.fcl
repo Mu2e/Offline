@@ -1,7 +1,0 @@
-#include "JobConfig/cosmic/cosmic_defs_s1.fclinc"
-
-physics.producers.generate.inputfile : "JobConfig/cosmic/genconfig_cosmic_target2.txt"
-
-services.TFileService.fileName       : "nts.owner.cosmic-g4s1-target2.version.sequencer.root"
-outputs.filteredOutput.fileName      : "sim.owner.cosmic-g4s1-target2.version.sequencer.art"
-outputs.truncatedEvtsOutput.fileName : "sim.owner.cosmic-g4s1-truncated-target2.version.sequencer.art"
