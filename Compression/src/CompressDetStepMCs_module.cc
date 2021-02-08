@@ -115,12 +115,6 @@ public:
   // The compiler-generated destructor is fine for non-base
   // classes without bare pointers or other resource use.
 
-  // Plugins should not be copied or assigned.
-  CompressDetStepMCs(CompressDetStepMCs const &) = delete;
-  CompressDetStepMCs(CompressDetStepMCs &&) = delete;
-  CompressDetStepMCs & operator = (CompressDetStepMCs const &) = delete;
-  CompressDetStepMCs & operator = (CompressDetStepMCs &&) = delete;
-
   // Required functions.
   void produce(art::Event & event) override;
 
