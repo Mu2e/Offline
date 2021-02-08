@@ -146,6 +146,12 @@ private:
   mu2e::CompressionLevel _mcTrajectoryCompressionLevel;
   int _debugLevel;
 
+  art::ProductToken<mu2e::StrawGasStepCollection> _strawGasStepToken;
+  art::ProductToken<mu2e::CaloShowerStepCollection> _caloShowerStepToken;
+  art::ProductToken<mu2e::CrvStepCollection> _crvStepToken;
+  art::ProductToken<mu2e::SimParticleCollection> _simParticleToken;
+  art::ProductToken<mu2e::MCTrajectoryCollection> _mcTrajectoryToken;
+
   // unique_ptrs to the new output collections
   std::unique_ptr<mu2e::StrawGasStepCollection> _newStrawGasSteps;
   std::unique_ptr<CaloShowerStepCollection> _newCaloShowerSteps;
@@ -179,7 +185,12 @@ mu2e::CompressDetStepMCs::CompressDetStepMCs(const Parameters& conf)
   _stepPointMCCompressionLevel(mu2e::CompressionLevel::findByName(_conf.compressionOptions().stepPointMCCompressionLevel())),
   _keepNGenerations(_conf.compressionOptions().keepNGenerations()),
   _mcTrajectoryCompressionLevel(mu2e::CompressionLevel::findByName(_conf.compressionOptions().mcTrajectoryCompressionLevel())),
-  _debugLevel(_conf.debugLevel())
+  _debugLevel(_conf.debugLevel()),
+  _strawGasStepToken{consumes<mu2e::StrawGasStepCollection>(_conf.strawGasStepTag())},
+  _caloShowerStepToken{consumes<mu2e::CaloShowerStepCollection>(_conf.caloShowerStepTag())},
+  _crvStepToken{consumes<mu2e::CrvStepCollection>(_conf.crvStepTag())},
+  _simParticleToken{consumes<mu2e::SimParticleCollection>(_conf.simParticleTag())},
+  _mcTrajectoryToken{consumes<mu2e::MCTrajectoryCollection>(_conf.mcTrajectoryTag())}
 {
   // Check that we have valid compression levels for this module
   checkCompressionLevels();
@@ -193,6 +204,7 @@ mu2e::CompressDetStepMCs::CompressDetStepMCs(const Parameters& conf)
   produces<CrvStepCollection>();
 
   for (const auto& i_tag : _conf.stepPointMCTags()) {
+    consumes<StepPointMCCollection>(i_tag);
     produces<StepPointMCCollection>( i_tag.instance() );
   }
   produces<MCTrajectoryCollection>();
@@ -273,8 +285,7 @@ void mu2e::CompressDetStepMCs::produce(art::Event & event)
 }
 
 void mu2e::CompressDetStepMCs::compressStrawGasSteps(const art::Event& event) {
-  art::Handle<mu2e::StrawGasStepCollection> strawGasStepsHandle;
-  event.getByLabel(_conf.strawGasStepTag(), strawGasStepsHandle);
+  const auto& strawGasStepsHandle = event.getValidHandle(_strawGasStepToken);
   const auto& strawGasSteps = *strawGasStepsHandle;
   if(_debugLevel>0 && strawGasSteps.size()>0) {
     std::cout << "Compressing StrawGasSteps from " << _conf.strawGasStepTag() << std::endl;
@@ -294,8 +305,7 @@ void mu2e::CompressDetStepMCs::compressStrawGasSteps(const art::Event& event) {
 }
 
 void mu2e::CompressDetStepMCs::compressCaloShowerSteps(const art::Event& event) {
-  art::Handle<mu2e::CaloShowerStepCollection> caloShowerStepsHandle;
-  event.getByLabel(_conf.caloShowerStepTag(), caloShowerStepsHandle);
+  const auto& caloShowerStepsHandle = event.getValidHandle(_caloShowerStepToken);
   const auto& caloShowerSteps = *caloShowerStepsHandle;
   if(_debugLevel>0 && caloShowerSteps.size()>0) {
     std::cout << "Compressing CaloShowerSteps from " << _conf.caloShowerStepTag() << std::endl;
@@ -315,8 +325,7 @@ void mu2e::CompressDetStepMCs::compressCaloShowerSteps(const art::Event& event) 
 }
 
 void mu2e::CompressDetStepMCs::compressCrvSteps(const art::Event& event) {
-  art::Handle<mu2e::CrvStepCollection> crvStepsHandle;
-  event.getByLabel(_conf.crvStepTag(), crvStepsHandle);
+  const auto& crvStepsHandle = event.getValidHandle(_crvStepToken);
   const auto& crvSteps = *crvStepsHandle;
   if(_debugLevel>0 && crvSteps.size()>0) {
     std::cout << "Compressing CrvSteps from " << _conf.crvStepTag() << std::endl;
@@ -374,7 +383,7 @@ void mu2e::CompressDetStepMCs::updateCrvSteps() {
 void mu2e::CompressDetStepMCs::compressSimParticles(const art::Event& event) {
   // Now compress the SimParticleCollections into their new collections
   unsigned int keep_size = 0;
-  const auto& oldSimParticles = event.getValidHandle<mu2e::SimParticleCollection>(_conf.simParticleTag());
+  const auto& oldSimParticles = event.getValidHandle(_simParticleToken);
   art::ProductID i_product_id = oldSimParticles.id();
   const art::EDProductGetter* i_prod_getter = event.productGetter(i_product_id);
   if (_simParticleCompressionLevel == CompressionLevel::kNoCompression) {
@@ -524,7 +533,7 @@ void mu2e::CompressDetStepMCs::compressStepPointMCs(const art::Event& event) {
 }
 void mu2e::CompressDetStepMCs::compressMCTrajectories(const art::Event& event) {
 
-  const auto& mcTrajectories = event.getValidHandle<MCTrajectoryCollection>(_conf.mcTrajectoryTag());
+  const auto& mcTrajectories = event.getValidHandle(_mcTrajectoryToken);
   if(_debugLevel>0 && mcTrajectories->size()>0) {
     std::cout << "Compressing MCTrajectories from " << _conf.mcTrajectoryTag() << " (size = " << mcTrajectories->size() << ")" << std::endl;
   }
