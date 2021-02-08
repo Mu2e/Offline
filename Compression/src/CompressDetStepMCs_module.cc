@@ -92,7 +92,6 @@ public:
     fhicl::Atom<std::string> simParticleCompressionLevel{Name("simParticleCompressionLevel"), Comment("Compression level for SimParticles")};
     fhicl::Atom<std::string> stepPointMCCompressionLevel{Name("stepPointMCCompressionLevel"), Comment("Compression level for StepPointMCs")};
     fhicl::Atom<int> keepNGenerations{Name("keepNGenerations"), Comment("Number of generations to keep in the genealogy")};
-    fhicl::Atom<int> truncatedSimParticleKeyOffset{Name("truncatedSimParticleKeyOffset"), Comment("Offset to use when adding a truncated SimParticle to the SimParticleCollection")};
     fhicl::Atom<std::string> mcTrajectoryCompressionLevel{Name("mcTrajectoryCompressionLevel"), Comment("Compression level for MCTrajectories")};
   };
 
@@ -150,7 +149,6 @@ private:
   mu2e::CompressionLevel _simParticleCompressionLevel;
   mu2e::CompressionLevel _stepPointMCCompressionLevel;
   int _keepNGenerations;
-  cet::map_vector_key _truncatedSimParticleKeyOffset;
   mu2e::CompressionLevel _mcTrajectoryCompressionLevel;
 
   // unique_ptrs to the new output collections
@@ -185,7 +183,6 @@ mu2e::CompressDetStepMCs::CompressDetStepMCs(const Parameters& conf)
     _simParticleCompressionLevel(mu2e::CompressionLevel::findByName(_conf.compressionOptions().simParticleCompressionLevel())),
   _stepPointMCCompressionLevel(mu2e::CompressionLevel::findByName(_conf.compressionOptions().stepPointMCCompressionLevel())),
   _keepNGenerations(_conf.compressionOptions().keepNGenerations()),
-  _truncatedSimParticleKeyOffset(_conf.compressionOptions().truncatedSimParticleKeyOffset()),
   _mcTrajectoryCompressionLevel(mu2e::CompressionLevel::findByName(_conf.compressionOptions().mcTrajectoryCompressionLevel()))
 {
   // Check that we have valid compression levels for this module
@@ -401,7 +398,7 @@ void mu2e::CompressDetStepMCs::compressSimParticles(const art::Event& event) {
     cet::map_vector_key oldKey = cet::map_vector_key(i_keptSimPart.key());
     _simPtrRemap[i_keptSimPart] = art::Ptr<mu2e::SimParticle>(_newSimParticlesPID, oldKey.asUint(), _newSimParticleGetter);
     if (_conf.debugLevel()>0) {
-      std::cout << "Compressing SimParticle " << i_keptSimPart << " --> " << _simPtrRemap[i_keptSimPart] << std::endl;
+      std::cout << "Compressing SimParticle " << i_keptSimPart << " --> " << _simPtrRemap.at(i_keptSimPart) << std::endl;
     }
   }
   if (keep_size != _newSimParticles->size()) {
@@ -417,84 +414,68 @@ void mu2e::CompressDetStepMCs::compressSimParticles(const art::Event& event) {
   // add them back as truncated SimParticles
   if (_keepNGenerations >= 0) {
     // Go through the particles we are keeping and see if any parents are not there
-    int n_truncated_added = 0; // want to keep track of how many truncated particles we are adding so that we have one per genealogy tree
-    for (const auto& i_keptSimPart : _simParticlesToKeep[i_product_id]) {
+    for (auto& i_keptSimPart : _simParticlesToKeep[i_product_id]) {
 
-      bool addedTruncated = false; // want to keep track of this because we don't want to add a truncated particle for every particle in the genealogy
-      cet::map_vector_key truncKey;
-      art::Ptr<mu2e::SimParticle> truncSimPtr;
-      SimParticle* truncated = 0;
-
-      art::Ptr<mu2e::SimParticle> i_childPtr = i_keptSimPart;//art::Ptr<mu2e::SimParticle>(_newSimParticlesPID, i_newSimParticle.first.asUint(), _newSimParticleGetter);
+      art::Ptr<mu2e::SimParticle> i_childPtr = i_keptSimPart;
       art::Ptr<mu2e::SimParticle> i_parentPtr = i_childPtr->parent();
       while (i_parentPtr) {
-        if (_simPtrRemap.find(i_parentPtr) == _simPtrRemap.end()) { // the parent is not in the output collection
+        // if the parent will not be in the output collection
+        if (_simPtrRemap.find(i_parentPtr) == _simPtrRemap.end()) {
           if (_conf.debugLevel()>0) {
-            std::cout << "SimParticle " << i_parentPtr << " is not in output collection because it has been compressed away by genealogy compression" << std::endl;
+            std::cout << "SimParticle " << i_parentPtr << " will not be in output collection because it has been compressed away by genealogy compression" << std::endl;
           }
 
-          // If we haven't added a truncated particle in this genealogy
-          if (!addedTruncated) {
-            // Add a truncated particle
-            truncKey = cet::map_vector_key(_truncatedSimParticleKeyOffset.asUint() + n_truncated_added);
-            // only want to fill in id and process code now, will add parent ptr later
-            truncated = new SimParticle(truncKey,
-                                        unsigned(),
-                                        art::Ptr<SimParticle>(),
-                                        PDGCode::type(),
-                                        art::Ptr<GenParticle>(),
-                                        CLHEP::Hep3Vector(),
-                                        CLHEP::HepLorentzVector(),
-                                        double(),
-                                        double(),
-                                        unsigned(),
-                                        unsigned(),
-                                        ProcessCode(ProcessCode::truncated));
-            //            truncated->addDaughter(i_childPtr);
-            ++n_truncated_added;
-            truncSimPtr = art::Ptr<mu2e::SimParticle>(_newSimParticlesPID, truncKey.asUint(), _newSimParticleGetter);
-            if (_conf.debugLevel()>0) {
-              std::cout << "Adding truncated SimParticle " << truncSimPtr << std::endl;
-            }
-            addedTruncated = true;
-          }
-
-          _simPtrRemap[i_parentPtr] = truncSimPtr;
-          if (_conf.debugLevel()>0) {
-            std::cout << "Previous SimParticlePtrs for " << i_parentPtr << " will now point to " << _simPtrRemap[i_parentPtr] << std::endl;
-          }
+          (*_newSimParticles)[i_childPtr->id()].setCreationCode(ProcessCode::truncated);
+          break; // don't go further up the genealogy tree otherwise we will be adding particles
         }
         else {
           // this parent is in the output collection so
           if (_conf.debugLevel()>0) {
             std::cout << "SimParticle " << i_parentPtr << " is in the output collection as " << _simPtrRemap.at(i_parentPtr) << std::endl;
           }
-          if(truncated) {
-            if(truncated->parent().isNull()) { // only want to set the truncated particle's parent once
-              truncated->parent() = i_parentPtr; // have the truncated particle's parent point to this
-              (*_newSimParticles)[truncKey] = *truncated;
-              if (_conf.debugLevel()>0) {
-                std::cout << "Set truncated SimParticle (" << truncSimPtr << ") parent to " << truncated->parent() << std::endl;
-              }
-            }
-            addedTruncated = false; // flag that we will need a new truncated particle next time
-          }
         }
+        i_childPtr = i_parentPtr;
         i_parentPtr = i_parentPtr->parent();
       }
     }
 
-    // Go through the output SimParticleCollection and make sure the truncated particles are properly linked
+    // We might have turncated some SimParticles so go through the output SimParticleCollection and fix the parent/child links
     for (auto& i_simParticle : *_newSimParticles) {
       mu2e::SimParticle& newsim = i_simParticle.second;
-      const auto& newParentPtr = newsim.parent();
-      const auto& expectedParentPtr = _simPtrRemap.find(newParentPtr);
-      if (expectedParentPtr != _simPtrRemap.end()) {
-        newsim.parent() = expectedParentPtr->second;
-        if (_conf.debugLevel() > 0) {
-          std::cout << "Setting SimParticle (" << newsim.id() << ")'s parent to " << expectedParentPtr->second << std::endl;
+      if (newsim.isTruncated()) {
+        // go up genealogy to get the next ancestor that is in the output
+        art::Ptr<mu2e::SimParticle> i_ancestorPtr = newsim.parent();
+        if (_conf.debugLevel()>0) {
+          std::cout << "Look for a new parent for particle id " << newsim.id() << " (current parent = " << i_ancestorPtr << ")" << std::endl;
+        }
+        while (i_ancestorPtr) {
+          const auto& findIter = _simPtrRemap.find(i_ancestorPtr);
+          if (findIter != _simPtrRemap.end()) {
+            newsim.parent() = findIter->second;
+            art::Ptr<mu2e::SimParticle> newChildPtr = art::Ptr<mu2e::SimParticle>(_newSimParticlesPID, newsim.id().asUint(), _newSimParticleGetter);
+            (*_newSimParticles)[i_ancestorPtr->id()].addDaughter(newChildPtr);
+            if (_conf.debugLevel() > 0) {
+              std::cout << "Because of truncation setting SimParticle (" << newsim.id() << ")'s parent to " << findIter->second << " and adding daughter " << newChildPtr << std::endl;
+            }
+            break; // don't need to go any further
+          }
+          else {
+            i_ancestorPtr = i_ancestorPtr->parent();
+          }
         }
       }
+    }
+  }
+
+  if (_conf.debugLevel() > 0) {
+    std::cout << "Final SimParticleCollection:" << std::endl;
+    for (auto& i_simParticle : *_newSimParticles) {
+      mu2e::SimParticle& newsim = i_simParticle.second;
+      std::cout << "id = " << i_simParticle.first << ", pdg = " << newsim.pdgId() << ", creation code = " << newsim.creationCode() << ", parent = " << newsim.parent() << ", daughters: ";
+      for (const auto& i_daughter : newsim.daughters()) {
+        std::cout << i_daughter << " ";
+      }
+      std::cout << std::endl;
     }
   }
 }

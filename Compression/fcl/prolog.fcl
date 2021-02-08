@@ -8,7 +8,6 @@ DetStepCompression : {
     simParticleCompressionLevel : "noCompression"
     stepPointMCCompressionLevel : "noCompression"
     keepNGenerations : -1
-    truncatedSimParticleKeyOffset : 400000
     mcTrajectoryCompressionLevel : "noCompression"
   }
 
@@ -19,7 +18,6 @@ DetStepCompression : {
     simParticleCompressionLevel : "fullCompression" # only keep SimParticles related to other data products we are keeping
     stepPointMCCompressionLevel : "simParticleCompression" # only keep StepPointMCs related to SimParticles we are keeping
     keepNGenerations : -1
-    truncatedSimParticleKeyOffset : 400000
     mcTrajectoryCompressionLevel : "simParticleCompression"
   }
 
@@ -30,7 +28,6 @@ DetStepCompression : {
     simParticleCompressionLevel : "fullCompression" # only keep SimParticles related to other data products we are keeping
     stepPointMCCompressionLevel : "simParticleCompression" # only keep StepPointMCs related to SimParticles we are keeping
     keepNGenerations : 2
-    truncatedSimParticleKeyOffset : 400000
     mcTrajectoryCompressionLevel : "simParticleCompression"
   }
 }
