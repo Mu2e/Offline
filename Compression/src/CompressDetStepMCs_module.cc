@@ -539,14 +539,14 @@ void mu2e::CompressDetStepMCs::compressMCTrajectories(const art::Event& event) {
         for (const auto& alreadyKeptSimPart : alreadyKeptSimParts) {
           if (mcTrajectory.second.sim() == alreadyKeptSimPart) {
             MCTrajectory newMCTrajectory(mcTrajectory.second);
-            _newMCTrajectories->insert(std::pair<art::Ptr<SimParticle>, mu2e::MCTrajectory>(mcTrajectory.second.sim(), newMCTrajectory));
+            _newMCTrajectories->insert(std::make_pair(mcTrajectory.second.sim(), newMCTrajectory));
           }
         }
       }
     }
     else if (_mcTrajectoryCompressionLevel == mu2e::CompressionLevel::kNoCompression) {
       MCTrajectory newMCTrajectory(mcTrajectory.second);
-      _newMCTrajectories->insert(std::pair<art::Ptr<SimParticle>, mu2e::MCTrajectory>(mcTrajectory.second.sim(), newMCTrajectory));
+      _newMCTrajectories->insert(std::make_pair(mcTrajectory.second.sim(), newMCTrajectory));
       recordSimParticle(mcTrajectory.second.sim());
     }
     else {
