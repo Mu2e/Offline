@@ -150,6 +150,7 @@ private:
   mu2e::CompressionLevel _stepPointMCCompressionLevel;
   int _keepNGenerations;
   mu2e::CompressionLevel _mcTrajectoryCompressionLevel;
+  int _debugLevel;
 
   // unique_ptrs to the new output collections
   std::unique_ptr<mu2e::StrawGasStepCollection> _newStrawGasSteps;
@@ -183,7 +184,8 @@ mu2e::CompressDetStepMCs::CompressDetStepMCs(const Parameters& conf)
     _simParticleCompressionLevel(mu2e::CompressionLevel::findByName(_conf.compressionOptions().simParticleCompressionLevel())),
   _stepPointMCCompressionLevel(mu2e::CompressionLevel::findByName(_conf.compressionOptions().stepPointMCCompressionLevel())),
   _keepNGenerations(_conf.compressionOptions().keepNGenerations()),
-  _mcTrajectoryCompressionLevel(mu2e::CompressionLevel::findByName(_conf.compressionOptions().mcTrajectoryCompressionLevel()))
+  _mcTrajectoryCompressionLevel(mu2e::CompressionLevel::findByName(_conf.compressionOptions().mcTrajectoryCompressionLevel())),
+  _debugLevel(_conf.debugLevel())
 {
   // Check that we have valid compression levels for this module
   checkCompressionLevels();
@@ -280,7 +282,7 @@ void mu2e::CompressDetStepMCs::compressStrawGasSteps(const art::Event& event) {
   art::Handle<mu2e::StrawGasStepCollection> strawGasStepsHandle;
   event.getByLabel(_conf.strawGasStepTag(), strawGasStepsHandle);
   const auto& strawGasSteps = *strawGasStepsHandle;
-  if(_conf.debugLevel()>0 && strawGasSteps.size()>0) {
+  if(_debugLevel>0 && strawGasSteps.size()>0) {
     std::cout << "Compressing StrawGasSteps from " << _conf.strawGasStepTag() << std::endl;
   }
   for (const auto& i_strawGasStep : strawGasSteps) {
@@ -301,7 +303,7 @@ void mu2e::CompressDetStepMCs::compressCaloShowerSteps(const art::Event& event) 
   art::Handle<mu2e::CaloShowerStepCollection> caloShowerStepsHandle;
   event.getByLabel(_conf.caloShowerStepTag(), caloShowerStepsHandle);
   const auto& caloShowerSteps = *caloShowerStepsHandle;
-  if(_conf.debugLevel()>0 && caloShowerSteps.size()>0) {
+  if(_debugLevel>0 && caloShowerSteps.size()>0) {
     std::cout << "Compressing CaloShowerSteps from " << _conf.caloShowerStepTag() << std::endl;
   }
   for (const auto& i_caloShowerStep : caloShowerSteps) {
@@ -322,7 +324,7 @@ void mu2e::CompressDetStepMCs::compressCrvSteps(const art::Event& event) {
   art::Handle<mu2e::CrvStepCollection> crvStepsHandle;
   event.getByLabel(_conf.crvStepTag(), crvStepsHandle);
   const auto& crvSteps = *crvStepsHandle;
-  if(_conf.debugLevel()>0 && crvSteps.size()>0) {
+  if(_debugLevel>0 && crvSteps.size()>0) {
     std::cout << "Compressing CrvSteps from " << _conf.crvStepTag() << std::endl;
   }
   for (const auto& i_crvStep : crvSteps) {
@@ -343,7 +345,7 @@ void mu2e::CompressDetStepMCs::updateStrawGasSteps() {
   for (auto& i_strawGasStep : *_newStrawGasSteps) {
     const auto& oldSimPtr = i_strawGasStep.simParticle();
     art::Ptr<mu2e::SimParticle> newSimPtr = _simPtrRemap.at(oldSimPtr);
-    if(_conf.debugLevel()>0) {
+    if(_debugLevel>0) {
       std::cout << "Updating SimParticlePtr in StrawGasStep from " << oldSimPtr << " to " << newSimPtr << std::endl;
     }
 
@@ -355,7 +357,7 @@ void mu2e::CompressDetStepMCs::updateCaloShowerSteps() {
   for (auto& i_caloShowerStep : *_newCaloShowerSteps) {
     const auto& oldSimPtr = i_caloShowerStep.simParticle();
     art::Ptr<mu2e::SimParticle> newSimPtr = _simPtrRemap.at(oldSimPtr);
-    if(_conf.debugLevel()>0) {
+    if(_debugLevel>0) {
       std::cout << "Updating SimParticlePtr in CaloShowerStep from " << oldSimPtr << " to " << newSimPtr << std::endl;
     }
 
@@ -367,7 +369,7 @@ void mu2e::CompressDetStepMCs::updateCrvSteps() {
   for (auto& i_crvStep : *_newCrvSteps) {
     const auto& oldSimPtr = i_crvStep.simParticle();
     art::Ptr<mu2e::SimParticle> newSimPtr = _simPtrRemap.at(oldSimPtr);
-    if(_conf.debugLevel()>0) {
+    if(_debugLevel>0) {
       std::cout << "Updating SimParticlePtr in CrvStep from " << oldSimPtr << " to " << newSimPtr << std::endl;
     }
 
@@ -397,7 +399,7 @@ void mu2e::CompressDetStepMCs::compressSimParticles(const art::Event& event) {
   for (const auto& i_keptSimPart : _simParticlesToKeep[i_product_id]) {
     cet::map_vector_key oldKey = cet::map_vector_key(i_keptSimPart.key());
     _simPtrRemap[i_keptSimPart] = art::Ptr<mu2e::SimParticle>(_newSimParticlesPID, oldKey.asUint(), _newSimParticleGetter);
-    if (_conf.debugLevel()>0) {
+    if (_debugLevel>0) {
       std::cout << "Compressing SimParticle " << i_keptSimPart << " --> " << _simPtrRemap.at(i_keptSimPart) << std::endl;
     }
   }
@@ -421,7 +423,7 @@ void mu2e::CompressDetStepMCs::compressSimParticles(const art::Event& event) {
       while (i_parentPtr) {
         // if the parent will not be in the output collection
         if (_simPtrRemap.find(i_parentPtr) == _simPtrRemap.end()) {
-          if (_conf.debugLevel()>0) {
+          if (_debugLevel>0) {
             std::cout << "SimParticle " << i_parentPtr << " will not be in output collection because it has been compressed away by genealogy compression" << std::endl;
           }
 
@@ -430,7 +432,7 @@ void mu2e::CompressDetStepMCs::compressSimParticles(const art::Event& event) {
         }
         else {
           // this parent is in the output collection so
-          if (_conf.debugLevel()>0) {
+          if (_debugLevel>0) {
             std::cout << "SimParticle " << i_parentPtr << " is in the output collection as " << _simPtrRemap.at(i_parentPtr) << std::endl;
           }
         }
@@ -445,7 +447,7 @@ void mu2e::CompressDetStepMCs::compressSimParticles(const art::Event& event) {
       if (newsim.isTruncated()) {
         // go up genealogy to get the next ancestor that is in the output
         art::Ptr<mu2e::SimParticle> i_ancestorPtr = newsim.parent();
-        if (_conf.debugLevel()>0) {
+        if (_debugLevel>0) {
           std::cout << "Look for a new parent for particle id " << newsim.id() << " (current parent = " << i_ancestorPtr << ")" << std::endl;
         }
         while (i_ancestorPtr) {
@@ -454,7 +456,7 @@ void mu2e::CompressDetStepMCs::compressSimParticles(const art::Event& event) {
             newsim.parent() = findIter->second;
             art::Ptr<mu2e::SimParticle> newChildPtr = art::Ptr<mu2e::SimParticle>(_newSimParticlesPID, newsim.id().asUint(), _newSimParticleGetter);
             (*_newSimParticles)[i_ancestorPtr->id()].addDaughter(newChildPtr);
-            if (_conf.debugLevel() > 0) {
+            if (_debugLevel > 0) {
               std::cout << "Because of truncation setting SimParticle (" << newsim.id() << ")'s parent to " << findIter->second << " and adding daughter " << newChildPtr << std::endl;
             }
             break; // don't need to go any further
@@ -467,7 +469,7 @@ void mu2e::CompressDetStepMCs::compressSimParticles(const art::Event& event) {
     }
   }
 
-  if (_conf.debugLevel() > 0) {
+  if (_debugLevel > 0) {
     std::cout << "Final SimParticleCollection:" << std::endl;
     for (auto& i_simParticle : *_newSimParticles) {
       mu2e::SimParticle& newsim = i_simParticle.second;
@@ -496,7 +498,7 @@ void mu2e::CompressDetStepMCs::compressStepPointMCs(const art::Event& event) {
 
   for (const auto& i_tag : _conf.stepPointMCTags()) {
     const auto& stepPointMCs = event.getValidHandle<StepPointMCCollection>(i_tag);
-    if(_conf.debugLevel()>0 && stepPointMCs->size()>0) {
+    if(_debugLevel>0 && stepPointMCs->size()>0) {
       std::cout << "Compressing StepPointMCs from " << i_tag << std::endl;
     }
     for (const auto& stepPointMC : *stepPointMCs) {
@@ -529,7 +531,7 @@ void mu2e::CompressDetStepMCs::compressStepPointMCs(const art::Event& event) {
 void mu2e::CompressDetStepMCs::compressMCTrajectories(const art::Event& event) {
 
   const auto& mcTrajectories = event.getValidHandle<MCTrajectoryCollection>(_conf.mcTrajectoryTag());
-  if(_conf.debugLevel()>0 && mcTrajectories->size()>0) {
+  if(_debugLevel>0 && mcTrajectories->size()>0) {
     std::cout << "Compressing MCTrajectories from " << _conf.mcTrajectoryTag() << " (size = " << mcTrajectories->size() << ")" << std::endl;
   }
   for (const auto& mcTrajectory : *mcTrajectories) {
@@ -564,7 +566,7 @@ void mu2e::CompressDetStepMCs::updateStepPointMCs() {
     for (auto& i_stepPointMC : *(_newStepPointMCs.at(i_tag.instance()))) {
       const auto& oldSimPtr = i_stepPointMC.simParticle();
       art::Ptr<mu2e::SimParticle> newSimPtr = _simPtrRemap.at(oldSimPtr);
-      if(_conf.debugLevel()>0) {
+      if(_debugLevel>0) {
         std::cout << "Updating SimParticlePtr in StepPointMC from " << oldSimPtr << " to " << newSimPtr << std::endl;
       }
       i_stepPointMC.simParticle() = newSimPtr;
@@ -576,7 +578,7 @@ void mu2e::CompressDetStepMCs::updateMCTrajectories() {
   for (auto& i_mcTrajectory : *_newMCTrajectories) {
     const auto& oldSimPtr = i_mcTrajectory.second.sim();
     art::Ptr<mu2e::SimParticle> newSimPtr = _simPtrRemap.at(oldSimPtr);
-    if(_conf.debugLevel()>0) {
+    if(_debugLevel>0) {
       std::cout << "Updating SimParticlePtr in MCTrajectory from " << oldSimPtr << " to " << newSimPtr << std::endl;
     }
     i_mcTrajectory.second.sim() = newSimPtr;
@@ -593,25 +595,25 @@ void mu2e::CompressDetStepMCs::recordSimParticle(const art::Ptr<mu2e::SimParticl
   art::Ptr<mu2e::SimParticle> childPtr = sim_ptr;
   art::Ptr<mu2e::SimParticle> parentPtr = childPtr->parent();
 
-  if(_conf.debugLevel()>0) {
+  if(_debugLevel>0) {
     std::cout << "Recording SimParticle " << sim_ptr << std::endl;
   }
   while (parentPtr) {
     MCRelationship mcr(sim_ptr, parentPtr);
     if (_keepNGenerations == -1 || ( (mcr.removal() <= _keepNGenerations) && mcr.removal()>=0) ) {
       _simParticlesToKeep[sim_ptr.id()].insert(parentPtr);
-      if(_conf.debugLevel()>0) {
+      if(_debugLevel>0) {
         std::cout << "and recording its ancestor " << parentPtr << " (NGen = " << (int)mcr.removal() << ")" << std::endl;
       }
     }
     else if (parentPtr->isPrimary()) { // always keep the very first SimParticle
       _simParticlesToKeep[sim_ptr.id()].insert(parentPtr);
-      if(_conf.debugLevel()>0) {
+      if(_debugLevel>0) {
         std::cout << "and recording the very first SimParticle " << parentPtr << std::endl;
       }
     }
     else {
-      if(_conf.debugLevel()>0) {
+      if(_debugLevel>0) {
         std::cout << "and *not* recording its ancestor " << parentPtr << " (NGen = " << (int)mcr.removal() << ")" << std::endl;
       }
     }
