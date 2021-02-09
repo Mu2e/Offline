@@ -5,7 +5,7 @@
 #include "JobConfig/primary/primary.fcl"
 #include "JobConfig/cosmic/epilog.fcl"
 
-process_name :  CosmicS1
+process_name : Primary
 
 physics :
 {
@@ -32,10 +32,7 @@ physics :
    TriggerPath : [generate, genCounter, g4run, g4status, stepPointMomentumFilter, cosmicFilter]
 }
 
-outputs.Output.outputCommands : [@sequence::Primary.KeptProducts, "keep *_cosmicFilter_*_*"]
-services.TFileService.fileName  : "nts.owner.cosmic-s1-dsstops.version.sequencer.root"
-outputs.Output.fileName         : "sim.owner.cosmic-s1-dsstops.version.sequencer.art"
-
+outputs.Output.outputCommands : [@sequence::Primary.KeptProducts, "keep mu2e::GenParticles_*_*_*", "keep *_cosmicFilter_*_*"]
 physics.producers.g4run.TrajectoryControl: @local::mu2eg4DefaultTrajectories
 physics.producers.g4run.SDConfig.enableSD: [ CRV ]
 physics.producers.g4run.Mu2eG4CommonCut:
@@ -52,5 +49,6 @@ physics.producers.g4run.Mu2eG4CommonCut:
    ]
 }
 
+outputs.Output.fileName         : "sim.owner.cosmic-s1-dsstops.version.sequencer.art"
 //FIX ME. Use the right geometry file!
 services.GeometryService.inputFile:"JobConfig/cosmic/geom_cosmic_PhaseI.txt"
