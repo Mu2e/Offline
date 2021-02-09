@@ -34,6 +34,7 @@ TTmakeSHUCC : {
     WriteStrawHitCollection : false
     ProtonBunchTimeTag      : "EWMProducer"
     StrawDigiCollectionTag  : "makeSD"
+    StrawDigiADCWaveformCollectionTag : "makeSD"
     CaloClusterCollectionTag  : "CaloClusterFast"
 }
 # combine hits in a panel

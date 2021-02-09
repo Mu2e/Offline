@@ -8,6 +8,7 @@
 #include "CaloMC/fcl/prolog.fcl"
 #include "CRVResponse/fcl/prolog.fcl"
 #include "Filters/fcl/prolog.fcl"
+#include "Compression/fcl/prolog.fcl"
 #include "Trigger/fcl/prolog_trigger.fcl"
 #
 BEGIN_PROLOG
@@ -37,6 +38,15 @@ Digitize: {
 	caloShowerSimTag : @local::DigiCompressionTags.commonCaloShowerSimTag
 	caloShowerROTag : @local::DigiCompressionTags.commonCaloShowerROTag
 	primaryParticleTag : "FindMCPrimary"
+	keepAllGenParticles : true
+	rekeySimParticleCollection : false
+	noCompression : true
+
+	# Unused options
+	strawDigiMCIndexMapTag : ""
+	crvDigiMCIndexMapTag : ""
+	caloClusterMCTag : ""
+	crvCoincClusterMCTag : ""
     }
   }
 
