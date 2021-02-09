@@ -97,19 +97,6 @@ helper.make_plugins( [
 
     ] )
 
-# Fixme: do I need all of babarlibs below?
-helper.make_dict_and_map( [
-        mainlib,
-        babarlibs,
-        'art_Persistency_Common',
-        'art_Utilities',
-        'canvas',
-        'cetlib',
-        'cetlib_except',
-        'CLHEP',
-        'Core',
-        'boost_system'
-    ] )
 
 
 # This tells emacs to view this file in python mode.
