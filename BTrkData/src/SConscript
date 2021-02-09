@@ -26,17 +26,6 @@ mainlib = helper.make_mainlib ( [
     'CLHEP',
     'boost_system',
 ] )
-# Fixme: do I need all of babarlibs below?
-helper.make_dict_and_map( [
-    mainlib,
-    babarlibs,
-    'art_Persistency_Common',
-    'art_Utilities',
-    'canvas',
-    'cetlib',
-    'cetlib_except',
-    'CLHEP',
-] )
 
 
 # This tells emacs to view this file in python mode.
