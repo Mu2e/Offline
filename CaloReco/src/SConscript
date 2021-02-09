@@ -71,13 +71,6 @@ helper.make_plugins( [ mainlib,
                      ],
                      )
 
-helper.make_dict_and_map( [
-    mainlib,
-    'art_Utilities',
-    'art_Persistency_Common',
-    'canvas',
-    'Core'
-    ] )
 
 
 # This tells emacs to view this file in python mode.
