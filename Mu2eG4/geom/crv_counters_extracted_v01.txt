@@ -87,3 +87,8 @@ bool crs.forMARS = false;
 
 //FIXME: this is temporary until the GDML issue is fixed
 bool crs.hideCRVCMBs = true;
+
+// This tells emacs to view this file in c++ mode.
+// Local Variables:
+// mode:c++
+// End:
