@@ -1,6 +1,4 @@
-// Top level geometry file for Garage cosmics running
-//
-// Warning:  do not write 10000. as 10,000.; it will be read as two numbers (10., 0.).
+// Top level geometry file for extracted detector cosmics running
 
 // Start from recent baseline geometry
 #include "Mu2eG4/geom/geom_common_current.txt"
@@ -17,16 +15,15 @@ double garage.zOffset   = 14000.0;  // for creating special garageFakeDS3Vacuum
 bool hasSTM             = false;
 
 // Offset the detector system
-double mu2e.detectorSystemZ0 = 24171.;   // mm  
+double mu2e.detectorSystemZ0 = 24171.;   // mm
 
-// Modify the pit ceiling to be a layer of blocks toward the East end of
-// the pit, per George Ginther Dec 2017
-double building.dsArea.upstreamCeiling.yHalfThickness  = 457.2;
-double building.dsArea.upstreamCeiling.offsetFromFloorSurface.y = 6400.8;
-vector<double> building.dsArea.upstreamCeiling.xPositions = {
-  24333.2, 29362.4, 29362.4, 24333.2 };
-vector<double> building.dsArea.upstreamCeiling.yPositions = {
-  -1041.4, -1041.4, -8661.4, -8661.4 };
+//Reduce shielding block above DS, only cover some of extracted detectors
+vector<double> building.dsArea.hatchblock.xPositions = {
+  26078.08,   // B
+  29078.08,   // C
+  29078.08,   // C1
+  26078.08    // E
+};
 
 // Turn off downstream external shields
 int ExtShieldDownstream.numberOfBoxTypes = 0;
@@ -41,16 +38,17 @@ double tracker.z0                   = 24171.0; // Garage position only
 
 
 // Put Crystal calorimeter in garage
-double calorimeter.caloMotherZ0                 = 25842;   
-double calorimeter.caloMotherZ1                 = 27220; 
+double calorimeter.caloMotherZ0                 = 25842;
+double calorimeter.caloMotherZ1                 = 27220;
 double calorimeter.calorimeterZFront            = 25843.0;
 
-// Turn off the CRV here
-int  crs.nSectors = 0;
-int  crs.nLayers  = 0;
-vector<string>  crs.sectorNames = {};
-int  crs.nSupportStructures     =  0;
-vector<string> crs.supportStructureNames = {};
+#include "Mu2eG4/geom/crv_counters_extracted_v01.txt"
+// // Turn off the CRV here
+// int  crs.nSectors = 0;
+// int  crs.nLayers  = 0;
+// vector<string>  crs.sectorNames = {};
+// int  crs.nSupportStructures     =  0;
+// vector<string> crs.supportStructureNames = {};
 
 //
 // End notes:
