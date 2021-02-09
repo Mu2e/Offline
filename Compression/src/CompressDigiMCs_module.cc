@@ -125,12 +125,6 @@ public:
   // The compiler-generated destructor is fine for non-base
   // classes without bare pointers or other resource use.
 
-  // Plugins should not be copied or assigned.
-  CompressDigiMCs(CompressDigiMCs const &) = delete;
-  CompressDigiMCs(CompressDigiMCs &&) = delete;
-  CompressDigiMCs & operator = (CompressDigiMCs const &) = delete;
-  CompressDigiMCs & operator = (CompressDigiMCs &&) = delete;
-
   // Required functions.
   void produce(art::Event & event) override;
 
