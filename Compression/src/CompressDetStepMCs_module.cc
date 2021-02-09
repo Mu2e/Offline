@@ -199,15 +199,15 @@ mu2e::CompressDetStepMCs::CompressDetStepMCs(const Parameters& conf)
   produces<GenParticleCollection>();
   produces<SimParticleCollection>();
 
-  if (_conf.strawGasStepTag() != "") { produces<StrawGasStepCollection>(); }
-  if (_conf.caloShowerStepTag() != "") { produces<CaloShowerStepCollection>(); }
-  if (_conf.crvStepTag() != "") { produces<CrvStepCollection>(); }
+  produces<StrawGasStepCollection>();
+  produces<CaloShowerStepCollection>();
+  produces<CrvStepCollection>();
 
   for (const auto& i_tag : _conf.stepPointMCTags()) {
     consumes<StepPointMCCollection>(i_tag);
     produces<StepPointMCCollection>( i_tag.instance() );
   }
-  if (_conf.mcTrajectoryTag() != "") { produces<MCTrajectoryCollection>(); }
+  produces<MCTrajectoryCollection>();
 }
 
 void mu2e::CompressDetStepMCs::produce(art::Event & event)
@@ -277,15 +277,15 @@ void mu2e::CompressDetStepMCs::produce(art::Event & event)
   if (_conf.mcTrajectoryTag() != "") { updateMCTrajectories(); }
 
   // Now add everything to the event
-  if (_conf.strawGasStepTag() != "") { event.put(std::move(_newStrawGasSteps)); }
-  if (_conf.caloShowerStepTag() != "") { event.put(std::move(_newCaloShowerSteps)); }
-  if (_conf.crvStepTag() != "") { event.put(std::move(_newCrvSteps)); }
+  event.put(std::move(_newStrawGasSteps));
+  event.put(std::move(_newCaloShowerSteps));
+  event.put(std::move(_newCrvSteps));
   for (const auto& i_tag : _conf.stepPointMCTags()) {
     event.put(std::move(_newStepPointMCs.at(i_tag.instance())), i_tag.instance());
   }
   event.put(std::move(_newSimParticles));
   event.put(std::move(_newGenParticles));
-  if (_conf.mcTrajectoryTag() != "") { event.put(std::move(_newMCTrajectories)); }
+  event.put(std::move(_newMCTrajectories));
 }
 
 void mu2e::CompressDetStepMCs::compressStrawGasSteps(const art::Event& event) {
