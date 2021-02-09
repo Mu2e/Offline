@@ -23,7 +23,7 @@ mu2e.physics.producers.g4run.commonBase: {
 }
 
 # generator truncation filter; only needed for cosmic rays in principle
-mu2e.physics.physics.g4status: {
+mu2e.physics.filters.g4status: {
    module_type: FilterStatusG4
    input: "g4run"
    maxAcceptedStatus: 9  #  status 10 and above means StepPointMCCollection may have non-dereferencable pointers

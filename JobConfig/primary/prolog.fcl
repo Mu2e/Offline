@@ -30,6 +30,9 @@ Primary: {
     }
   }
   filters : {
+# generator truncation filter; only needed for cosmic rays in principle
+    g4status: @local::mu2e.physics.filters.g4status
+
 # default step filter for Sim Primary selection
     DetStepFilter : {
       module_type : DetectorStepFilter
