@@ -89,15 +89,41 @@ namespace mu2e {
 
 class mu2e::CompressDigiMCs : public art::EDProducer {
 public:
-  explicit CompressDigiMCs(fhicl::ParameterSet const & pset);
+  struct Config {
+    using Name=fhicl::Name;
+    using Comment=fhicl::Comment;
+
+    // fhicl parameters for all of our inputs
+    fhicl::Atom<art::InputTag> strawDigiMCTag{Name("strawDigiMCTag"), Comment("InputTag for the StrawDigiMCCollection")};
+    fhicl::Atom<art::InputTag> crvDigiMCTag{Name("crvDigiMCTag"), Comment("InputTag for the CrvDigiMCCollection")};
+    fhicl::Sequence<art::InputTag> simParticleTags{Name("simParticleTags"), Comment("Sequence of InputTags to the SimParticleCollections")};
+    fhicl::Sequence<art::InputTag> extraStepPointMCTags{Name("extraStepPointMCTags"), Comment("Sequence of InputTags for additional StepPointMCCollections that you want to keep the steps from")};
+    fhicl::Sequence<art::InputTag> timeMapTags{Name("timeMapTags"), Comment("Sequence of InputTags for TimeMaps")};
+    fhicl::Sequence<art::InputTag> caloShowerStepTags{Name("caloShowerStepTags"), Comment("Sequence of InputTags for CaloShowerSteps")};
+    fhicl::Atom<art::InputTag> caloShowerSimTag{Name("caloShowerSimTag"), Comment("InputTag for the CaloShowerSim")};
+    fhicl::Atom<art::InputTag> caloShowerROTag{Name("caloShowerROTag"), Comment("InputTag for the CaloShowerRO")};
+
+    fhicl::Atom<art::InputTag> strawDigiMCIndexMapTag{Name("strawDigiMCIndexMapTag"), Comment("InputTag for an IndexMap that maps the StrawDigiMCs we want to keep to those in the uncompressed StrawDigiMCCollection (leave blank to keep all StrawDigiMCs")};
+    fhicl::Atom<art::InputTag> crvDigiMCIndexMapTag{Name("crvDigiMCIndexMapTag"), Comment("InputTag for an IndexMap that maps the CrvDigiMCs we want to keep to those in the uncompressed CrvDigiMCCollection (leave blank to keep all CrvDigiMCs")};
+
+    // Reco objects
+    fhicl::Atom<art::InputTag> caloClusterMCTag{Name("caloClusterMCTag"), Comment("InputTag for CaloClusterMCCollection")};
+    fhicl::Atom<art::InputTag> crvCoincClusterMCTag{Name("crvCoincClusterMCTag"), Comment("InputTag for CrvCoincidenceClusterMCCollection")};
+
+    fhicl::Atom<art::InputTag> primaryParticleTag{Name("primaryParticleTag"), Comment("InputTag for PrimarParticle")};
+    fhicl::Atom<art::InputTag> mcTrajectoryTag{Name("mcTrajectoryTag"), Comment("InputTag for the MCTrajectoryCollection")};
+
+    // fhicl parameters for output
+    fhicl::Atom<bool> keepAllGenParticles{Name("keepAllGenParticles"), Comment("Set to true if you want to keep all GenParticles even if their descendents make no hits in the detector")};
+    fhicl::Atom<bool> rekeySimParticleCollection{Name("rekeySimParticleCollection"), Comment("Set to true to change the keys in the SimParticleCollection (necessary for mixed events)")};
+
+    fhicl::Atom<bool> noCompression{Name("noCompression"), Comment("Set to true to turn off compression"), false};
+  };
+  typedef art::EDProducer::Table<Config> Parameters;
+
+  explicit CompressDigiMCs(const Parameters& conf);
   // The compiler-generated destructor is fine for non-base
   // classes without bare pointers or other resource use.
-
-  // Plugins should not be copied or assigned.
-  CompressDigiMCs(CompressDigiMCs const &) = delete;
-  CompressDigiMCs(CompressDigiMCs &&) = delete;
-  CompressDigiMCs & operator = (CompressDigiMCs const &) = delete;
-  CompressDigiMCs & operator = (CompressDigiMCs &&) = delete;
 
   // Required functions.
   void produce(art::Event & event) override;
@@ -119,16 +145,24 @@ public:
 
 private:
 
-  // art tags for the input collections
+  Config _conf;
+
   art::InputTag _strawDigiMCTag;
   art::InputTag _crvDigiMCTag;
-
   std::vector<art::InputTag> _simParticleTags;
   std::vector<art::InputTag> _extraStepPointMCTags;
   std::vector<art::InputTag> _timeMapTags;
+  art::InputTag _caloClusterMCTag;
+  art::InputTag _crvCoincClusterMCTag;
+  art::InputTag _primaryParticleTag;
+  art::InputTag _mcTrajectoryTag;
+  bool _keepAllGenParticles;
+  art::InputTag _strawDigiMCIndexMapTag;
+  art::InputTag _crvDigiMCIndexMapTag;
   std::vector<art::InputTag> _caloShowerStepTags;
   art::InputTag _caloShowerSimTag;
-  art::InputTag _CaloShowerROTag;
+  art::InputTag _caloShowerROTag;
+  bool _rekeySimParticleCollection;
 
   // handles to the old collections
   art::Handle<StrawDigiMCCollection> _strawDigiMCsHandle;
@@ -173,25 +207,17 @@ private:
   std::vector<InstanceLabel> _newStepPointMCInstances;
 
   // Optional parameters for reco output
-  art::InputTag _strawDigiMCIndexMapTag;
   mu2e::IndexMap _strawDigiMCIndexMap;
-  art::InputTag _crvDigiMCIndexMapTag;
   mu2e::IndexMap _crvDigiMCIndexMap;
-  art::InputTag _caloClusterMCTag;
   art::Handle<CaloClusterMCCollection> _caloClusterMCsHandle;
   std::unique_ptr<CaloClusterMCCollection> _newCaloClusterMCs;
   std::unique_ptr<CaloHitMCCollection> _newCaloHitMCs;
-  bool _keepAllGenParticles;
-  art::InputTag _crvCoincClusterMCTag;
   art::Handle<CrvCoincidenceClusterMCCollection> _crvCoincClusterMCsHandle;
   std::unique_ptr<CrvCoincidenceClusterMCCollection> _newCrvCoincClusterMCs;
-  art::InputTag _primaryParticleTag;
   art::Handle<PrimaryParticle> _primaryParticleHandle;
   std::unique_ptr<PrimaryParticle> _newPrimaryParticle;
-  bool _rekeySimParticleCollection;
 
   // other optional parameters
-  art::InputTag _mcTrajectoryTag;
   art::Handle<MCTrajectoryCollection> _mcTrajectoriesHandle;
   std::unique_ptr<MCTrajectoryCollection> _newMCTrajectories;
 
@@ -205,25 +231,26 @@ private:
 };
 
 
-mu2e::CompressDigiMCs::CompressDigiMCs(fhicl::ParameterSet const & pset)
-  : art::EDProducer{pset},
-    _strawDigiMCTag(pset.get<art::InputTag>("strawDigiMCTag")),
-    _crvDigiMCTag(pset.get<art::InputTag>("crvDigiMCTag")),
-    _simParticleTags(pset.get<std::vector<art::InputTag> >("simParticleTags")),
-    _extraStepPointMCTags(pset.get<std::vector<art::InputTag> >("extraStepPointMCTags")),
-    _timeMapTags(pset.get<std::vector<art::InputTag> >("timeMapTags")),
-    _caloShowerStepTags(pset.get<std::vector<art::InputTag> >("caloShowerStepTags")),
-    _caloShowerSimTag(pset.get<art::InputTag>("caloShowerSimTag")),
-    _CaloShowerROTag(pset.get<art::InputTag>("caloShowerROTag")),
-    _strawDigiMCIndexMapTag(pset.get<art::InputTag>("strawDigiMCIndexMapTag", "")),
-    _crvDigiMCIndexMapTag(pset.get<art::InputTag>("crvDigiMCIndexMapTag", "")),
-    _caloClusterMCTag(pset.get<art::InputTag>("caloClusterMCTag", "")),
-    _keepAllGenParticles(pset.get<bool>("keepAllGenParticles", true)),
-    _crvCoincClusterMCTag(pset.get<art::InputTag>("crvCoincClusterMCTag", "")),
-    _primaryParticleTag(pset.get<art::InputTag>("primaryParticleTag", "")),
-    _rekeySimParticleCollection(pset.get<bool>("rekeySimParticleCollection", true)),
-  _mcTrajectoryTag(pset.get<art::InputTag>("mcTrajectoryTag", "")),
-  _noCompression(pset.get<bool>("noCompression", false))
+mu2e::CompressDigiMCs::CompressDigiMCs(const Parameters& conf)
+  : art::EDProducer(conf),
+    _conf(conf()),
+    _strawDigiMCTag(_conf.strawDigiMCTag()),
+    _crvDigiMCTag(_conf.crvDigiMCTag()),
+    _simParticleTags(_conf.simParticleTags()),
+    _extraStepPointMCTags(_conf.extraStepPointMCTags()),
+    _timeMapTags(_conf.timeMapTags()),
+    _caloClusterMCTag(_conf.caloClusterMCTag()),
+    _crvCoincClusterMCTag(_conf.crvCoincClusterMCTag()),
+    _primaryParticleTag(_conf.primaryParticleTag()),
+    _mcTrajectoryTag(_conf.mcTrajectoryTag()),
+    _keepAllGenParticles(_conf.keepAllGenParticles()),
+  _strawDigiMCIndexMapTag(_conf.strawDigiMCIndexMapTag()),
+  _crvDigiMCIndexMapTag(_conf.crvDigiMCIndexMapTag()),
+  _caloShowerStepTags(_conf.caloShowerStepTags()),
+  _caloShowerSimTag(_conf.caloShowerSimTag()),
+  _caloShowerROTag(_conf.caloShowerROTag()),
+  _rekeySimParticleCollection(_conf.rekeySimParticleCollection()),
+  _noCompression(_conf.noCompression())
 {
   // Call appropriate produces<>() functions here.
   produces<StrawDigiMCCollection>();
@@ -449,7 +476,7 @@ void mu2e::CompressDigiMCs::produce(art::Event & event)
     }
 
     _newCaloShowerROs = std::unique_ptr<CaloShowerROCollection>(new CaloShowerROCollection);
-    event.getByLabel(_CaloShowerROTag, _CaloShowerROsHandle);
+    event.getByLabel(_caloShowerROTag, _CaloShowerROsHandle);
     const auto& CaloShowerROs = *_CaloShowerROsHandle;
     for (const auto& i_CaloShowerRO : CaloShowerROs) {
       copyCaloShowerRO(i_CaloShowerRO, caloShowerStepRemap);
