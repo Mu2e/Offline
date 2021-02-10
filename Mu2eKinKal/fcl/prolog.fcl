@@ -1,0 +1,13 @@
+BEGIN_PROLOG
+Mu2eKinKal : {
+  Material : {
+    elements  : "TrackerConditions/data/ElementsList.data"
+    isotopes  : "TrackerConditions/data/IsotopesList.data"
+    materials : "TrackerConditions/data/MaterialsList.data"
+    strawGasMaterialName  : "straw-gas"
+    strawWallMaterialName : "straw-wall"
+    strawWireMaterialName : "straw-wire"
+    dahlLynchScatteringFraction : 0.995
+  }
+}
+END_PROLOG 

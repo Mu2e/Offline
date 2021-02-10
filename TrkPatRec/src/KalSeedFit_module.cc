@@ -292,7 +292,7 @@ namespace mu2e
 	double           helt0 = hseed.t0().t0();
 
 	//	KalSeed kf(_tpart,_fdir, hseed.t0(), flt0, seedok);
-	KalSeed kf(tpart,_fdir, hseed.t0(), flt0, hseed.status());
+	KalSeed kf(PDGCode::type(tpart.particleType()),_fdir, hseed.t0(), flt0, hseed.status());
 	auto hsH = event.getValidHandle(_hsToken);
 	kf._helix = art::Ptr<HelixSeed>(hsH,iseed);
 	// extract the hits from the rep and put the hitseeds into the KalSeed
@@ -354,7 +354,7 @@ namespace mu2e
 	  // create a KalSeed object from this fit, recording the particle and fit direction
 	  //	  KalSeed kseed(_tpart,_fdir,_result.krep->t0(),_result.krep->flt0(),seedok);
 
-	  KalSeed kseed(_result.krep->particleType(),_fdir,_result.krep->t0(),_result.krep->flt0(),kf.status());
+	  KalSeed kseed(PDGCode::type(_result.krep->particleType().particleType()),_fdir,_result.krep->t0(),_result.krep->flt0(),kf.status());
 	  kseed._status.merge(_ksf);
 
 	  // add CaloCluster if present
