@@ -42,7 +42,6 @@ namespace mu2e {
     void position(XYZVec& pos) const {
       pos.SetX(centerx() + _radius*cos(circleAzimuth(pos.z())));
       pos.SetY(centery() + _radius*sin(circleAzimuth(pos.z())));
-    //  pos.setz(0.0);  not sure why this was here
     }
     // unit vector in direction at the given z
     void direction(float zval,XYZVec& dir) const {
@@ -54,7 +53,6 @@ namespace mu2e {
     void position(CLHEP::Hep3Vector& pos) const {
       pos.setX(centerx() + _radius*cos(circleAzimuth(pos.z())));
       pos.setY(centery() + _radius*sin(circleAzimuth(pos.z())));
-    //  pos.setz(0.0);  not sure why this was here
     }
     // unit vector in direction at the given z
     void direction(float zval,CLHEP::Hep3Vector& dir) const {

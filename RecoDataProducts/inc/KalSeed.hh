@@ -5,6 +5,7 @@
 #ifndef RecoDataProducts_KalSeed_HH
 #define RecoDataProducts_KalSeed_HH
 // mu2e
+#include "DataProducts/inc/PDGCode.hh"
 #include "RecoDataProducts/inc/TrkFitDirection.hh"
 #include "RecoDataProducts/inc/TrkStrawHitSeed.hh"
 #include "RecoDataProducts/inc/TrkCaloHitSeed.hh"
@@ -13,8 +14,6 @@
 #include "RecoDataProducts/inc/TrkFitFlag.hh"
 #include "RecoDataProducts/inc/HelixSeed.hh"
 #include "canvas/Persistency/Common/Ptr.h"
-// BTrk
-#include "BTrk/TrkBase/TrkParticle.hh"
 // Root
 #include <Rtypes.h>
 // C++
@@ -23,11 +22,11 @@ namespace mu2e {
   class CaloCluster;
   struct KalSeed {
     KalSeed() :  _flt0(0), _chisq(0.0), _fitcon(0.0) {}
-    KalSeed(TrkParticle tpart,TrkFitDirection fdir,TrkT0 const& t0, double flt0, TrkFitFlag const& status) :
+    KalSeed(PDGCode::type tpart,TrkFitDirection fdir,TrkT0 const& t0, double flt0, TrkFitFlag const& status) :
       _tpart(tpart), _fdir(fdir), _status(status), _t0(t0), _flt0(static_cast<Float_t>(flt0)),
       _chisq(-1.0), _fitcon(-1.0), _nbend(0) {}
 
-    TrkParticle const& particle() const { return _tpart; }
+    PDGCode::type particle() const { return _tpart; }
     TrkFitDirection const& fitDirection() const { return _fdir; }
     std::vector<TrkStrawHitSeed> const& hits() const { return _hits;}
     TrkCaloHitSeed const& caloHit() const { return _chit; }
@@ -48,7 +47,7 @@ namespace mu2e {
     art::Ptr<KalSeed> const& kalSeed() const { return _kal; }
 
     // global information about the track
-    TrkParticle			    _tpart; // particle assumed for this fit
+    PDGCode::type		    _tpart; // particle assumed for this fit
     TrkFitDirection	      	    _fdir; // direction in which this particle was fit
     TrkFitFlag			    _status; // status of this fit
     HitT0			    _t0; // track t0; Time particle crosses z=0
