@@ -6,6 +6,8 @@
 #include <TPolyLine3D.h>
 #include "RecoDataProducts/inc/HelixSeed.hh"
 #include "RecoDataProducts/inc/KalSeed.hh"
+#include "GlobalConstantsService/inc/GlobalConstantsHandle.hh"
+#include "GlobalConstantsService/inc/ParticleDataTable.hh"
 
 #include <TEveTrackPropagator.h>
 
@@ -17,11 +19,12 @@ namespace mu2e {
       TEveMu2eCustomHelix(const TEveMu2eCustomHelix &helix) { fKalSeed = helix.fKalSeed;} ;
       TEveMu2eCustomHelix(HelixSeed hseed){fHelixSeed = hseed;};
       TEveMu2eCustomHelix(KalSeed kseed){
+	auto const& ptable = mu2e::GlobalConstantsHandle<mu2e::ParticleDataTable>();
         fKalSeed = kseed;
         this->Momentum = fKalSeed.helix()->helix().momentum();
-        this->PDGcode = fKalSeed.particle().particleType();
-        this->Charge = fKalSeed.particle().charge();
-        this->Mass = fKalSeed.particle().mass();
+        this->PDGcode = fKalSeed.particle();
+        this->Charge = ptable->particle(fKalSeed.particle()).ref().charge();
+        this->Mass = ptable->particle(fKalSeed.particle()).ref().mass().value(); 
       };
       virtual ~ TEveMu2eCustomHelix(){};
       #endif
@@ -34,11 +37,12 @@ namespace mu2e {
       void Draw2DProjection();
 
       void SetSeedInfo(KalSeed seed) { 
+	auto const& ptable = mu2e::GlobalConstantsHandle<mu2e::ParticleDataTable>();
         fKalSeed = seed;
         this->Momentum = fKalSeed.helix()->helix().momentum();
-        this->PDGcode = fKalSeed.particle().particleType();
-        this->Charge = fKalSeed.particle().charge();
-        this->Mass = fKalSeed.particle().mass();
+        this->PDGcode = fKalSeed.particle();
+        this->Charge = ptable->particle(fKalSeed.particle()).ref().charge();
+        this->Mass = ptable->particle(fKalSeed.particle()).ref().mass().value(); 
       }
 
       void SetPostionAndDirectionFromHelixSeed(double zpos){

@@ -34,7 +34,7 @@ namespace mu2e
   private:
     art::InputTag   _ksTag;
     bool            _hascc; // Calo Cluster
-    PDTCode::type     _tpart; // particle type being searched for
+    PDGCode::type     _tpart; // particle type being searched for
     TrkFitDirection _fdir;  // fit direction in search
     double          _minfitcons;
     unsigned        _minnhits;
