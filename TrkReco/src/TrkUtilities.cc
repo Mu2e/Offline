@@ -334,6 +334,9 @@ namespace mu2e {
       }
       return tch;
     }
-
+    double energy(double mass, double momentum) {  return sqrt(momentum*momentum + mass*mass); }
+    double beta(double mass, double momentum) { return fabs(momentum)/energy(mass,momentum); }
+    double betagamma(double mass, double momentum) { return fabs(momentum)/mass; }
+    double gamma(double mass, double momentum) { return energy(mass,momentum)/mass; }
   } // TrkUtilities
 }// mu2e

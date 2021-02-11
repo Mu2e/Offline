@@ -83,6 +83,7 @@ namespace mu2e {
     double driftTimeToDistance(StrawId strawId, double dtime, double phi) const;
     double driftInstantSpeed(StrawId strawId, double ddist, double phi) const;
     double driftConstantSpeed() const {return _lindriftvel;} // constant value used for annealing errors, should be close to average velocity
+    double driftTimeMaxError() const {return _rres_max/_lindriftvel;} // constant value used for initialization
     double driftDistanceError(StrawId strawId, double ddist, double phi, double DOCA) const;
     double driftDistanceOffset(StrawId strawId, double ddist, double phi, double DOCA) const;
 

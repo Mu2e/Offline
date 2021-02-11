@@ -50,10 +50,10 @@ namespace mu2e {
     unsigned countBends(const KalRep* krep);
     const TrkCaloHit* findTrkCaloHit(const KalRep* krep);
     // simple kinematic utilities
-    double energy(double mass, double momentum) {  return sqrt(momentum*momentum + mass*mass); }
-    double beta(double mass, double momentum) { return fabs(momentum)/energy(mass,momentum); }
-    double betagamma(double mass, double momentum) { return fabs(momentum)/mass; }
-    double gamma(double mass, double momentum) { return energy(mass,momentum)/mass; }
+    double energy(double mass, double momentum);
+    double beta(double mass, double momentum);
+    double betagamma(double mass, double momentum);
+    double gamma(double mass, double momentum);
   }
 }
 #endif

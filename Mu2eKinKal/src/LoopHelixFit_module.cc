@@ -52,7 +52,7 @@
 #include "KinKal/Trajectory/Line.hh"
 // Mu2eKinKal
 #include "Mu2eKinKal/inc/KKFileFinder.hh"
-//#include "Mu2eKinKal/inc/KKStrawHit.hh"
+#include "Mu2eKinKal/inc/KKStrawHit.hh"
 //#include "Mu2eKinKal/inc/KKPanelHit.hh"
 #include "Mu2eKinKal/inc/KKBField.hh"
 // root
@@ -85,6 +85,10 @@ namespace mu2e {
   using KinKal::MetaIterConfig;
   using KinKal::CAHint;
   using KinKal::StrawMat;
+  using MEAS = KinKal::Hit<KTRAJ>;
+  using MEASPTR = std::shared_ptr<MEAS>;
+  using MEASCOL = std::vector<MEASPTR>;
+  using KKSTRAWHIT = KKStrawHit<KTRAJ>;
 
   class LoopHelixFit : public art::EDProducer {
     using Name    = fhicl::Name;
@@ -127,10 +131,12 @@ namespace mu2e {
       fhicl::Atom<int> maxniter { Name("MaxNIter"), Comment("Maximum number of algebraic iteration steps in each fit meta-iteration"), 10 };
       fhicl::Atom<float> dwt { Name("Deweight"), Comment("Deweighting factor when initializing the track end parameters"), 1.0e6 };
       fhicl::Atom<float> tBuffer { Name("TimeBuffer"), Comment("Time buffer for final fit") };
-      fhicl::Atom<float> btol { Name("BCorrTolerance"), Comment("Tolerance on BField correction accuracy (mm"), 0.01 };
+      fhicl::Atom<float> btol { Name("BCorrTolerance"), Comment("Tolerance on BField correction accuracy (mm)"), 0.01 };
       fhicl::Atom<int> minndof { Name("MinNDOF"), Comment("Minimum number of Degrees of Freedom to conitnue fitting"), 5  };
       fhicl::Atom<bool> addmat { Name("AddMaterial"), Comment("Add material effecst to the fit"), true };
       fhicl::Atom<int> bfieldCorr { Name("BFieldCorr"), Comment("BField correction algorith") };
+      fhicl::Atom<float> nullvar { Name("NullHitVariance"), Comment("Spatial variance for null wire hits (mm)"), 1.0 };
+      fhicl::Atom<float> nulltoffset { Name("NullHitTimeOffset"), Comment("Time Offset for null wire hits (ns)"), 20.0 };
       fhicl::Atom<int> printLevel { Name("PrintLevel"), Comment("Print Level"),0};
     };
 
@@ -165,6 +171,7 @@ namespace mu2e {
     std::string wallmatname_, gasmatname_, wirematname_;
     std::unique_ptr<StrawMat> smat_; // straw material
     Config config_;
+    KinKal::WireHitState whstate_; // initial state of wire hits
   };
 
   LoopHelixFit::LoopHelixFit(const ModuleParams& config) : art::EDProducer{config}, 
@@ -182,7 +189,8 @@ namespace mu2e {
     filefinder_(config().matsettings().elements(),config().matsettings().isotopes(),config().matsettings().materials()),
     wallmatname_(config().matsettings().strawWallMaterialName()),
     gasmatname_(config().matsettings().strawGasMaterialName()),
-    wirematname_(config().matsettings().strawWireMaterialName())
+    wirematname_(config().matsettings().strawWireMaterialName()),
+    whstate_(KinKal::WireHitState::null, KinKal::WireHitState::both,config().fitsettings().nullvar(), config().fitsettings().nulltoffset())
   {
     // collection handling
     for(const auto& seedtag : config().modsettings().seedCollections()) { seedCols_.emplace_back(consumes<HelixSeedCollection>(seedtag)); }
@@ -235,7 +243,7 @@ namespace mu2e {
     auto const& tracker = alignedTracker_h_.getPtr(event.id()).get();
     GeomHandle<BFieldManager> bfmgr;
     GeomHandle<DetectorSystem> det;
-    KKBField kkbf(*bfmgr,*det);
+    KKBField kkbf(*bfmgr,*det); // should set this at beginrun TODO
     // find input hits
     auto ch_H = event.getValidHandle<ComboHitCollection>(chcol_T_);
     auto const& chcol = *ch_H;;
@@ -286,6 +294,8 @@ namespace mu2e {
 // dig down to the straw-level hits
 	    seed.hits().fillStrawHitIndices(event,ihit,strawHitIdxs);
 	  }
+	  MEASCOL thits; //polymorphic container of hits
+
 	  for(auto strawidx : strawHitIdxs) {
 	    const ComboHit& strawhit(chcol.at(strawidx));
 	    if(strawhit.mask().level() != StrawIdMask::uniquestraw)
@@ -310,8 +320,8 @@ namespace mu2e {
 	    std::cout << ptca.doca() << std::endl;
 	    // create the material crossing from this PTCA
 	    auto sxing = std::make_shared<STRAWXING>(ptca,*smat_);
-	    // now create the hit
-//	    thits.push_back(std::make_shared<WIREHIT>(bfield_, tline, sxing, whstate,
+	    // now create the hit; initial state is 
+	    thits.push_back(std::make_shared<KKSTRAWHIT>(kkbf, ptca, sxing, whstate_, strawhit, straw, *strawresponse));
 //		  sdrift_, sigt_*sigt_, rstraw_));
 
 	  }
