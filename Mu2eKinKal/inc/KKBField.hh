@@ -18,7 +18,7 @@ namespace mu2e
     // construct from BField object and system translator.  
     // This should be a single BField map valid in the detector system, to avoid making continuous translations FIXME!
       KKBField(BFieldManager const& bfmgr, DetectorSystem const& det) : bfmgr_(bfmgr), det_(det) {}
-      virtual ~KKBField();
+      virtual ~KKBField() {}
       // KinKal BField interface
       // return value of the field at a poin
       virtual VEC3 fieldVect(VEC3 const& position) const override;
