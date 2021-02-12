@@ -40,7 +40,7 @@ Digitize: {
 	primaryParticleTag : "FindMCPrimary"
 	keepAllGenParticles : true
 	rekeySimParticleCollection : false
-	noCompression : true
+	noCompression : false
 
 	# Unused options
 	strawDigiMCIndexMapTag : ""
