@@ -28,7 +28,7 @@ Primary: {
       caloShowerStepTag : "CaloShowerStepMaker"
       crvStepTag : "CrvSteps"
       simParticleTag : "g4run"
-      stepPointMCTags : [ "g4run:virtualdetector", "g4run:protonabsorber" ]#, "g4run:stoppingtarget" ]
+      stepPointMCTags : [ "g4run:virtualdetector", "g4run:protonabsorber", "g4run:stoppingtarget" ]
       mcTrajectoryTag : "g4run"
       debugLevel : 0
       compressionOptions : @local::DetStepCompression.standardCompression
@@ -76,7 +76,8 @@ Primary: {
 		       "keep mu2e::CaloShowerSteps_compressDetStepMCs_*_*",
 		       "keep mu2e::CrvSteps_compressDetStepMCs_*_*",
 		       "keep mu2e::StepPointMCs_compressDetStepMCs_virtualdetector_*",
-		       "keep mu2e::StepPointMCs_compressDetStepMCs_protonabsorber_*", # add active target too FIXME!
+		       "keep mu2e::StepPointMCs_compressDetStepMCs_protonabsorber_*",
+		       "keep mu2e::StepPointMCs_compressDetStepMCs_stoppingtarget_*",
 		       "keep mu2e::StatusG4_*_*_*",
 		       "keep mu2e::SimParticlemv_compressDetStepMCs_*_*",
 		       "keep mu2e::SimParticleart::Ptrmu2e::MCTrajectorystd::map_compressDetStepMCs_*_*",
