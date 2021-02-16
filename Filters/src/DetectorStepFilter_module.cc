@@ -172,8 +172,10 @@ namespace mu2e {
       }
       if(selectcrv)break;
     }
-    return( (or_ && (selecttrk || selectcalo || selectcrv)) ||
+    bool retval =( (or_ && (selecttrk || selectcalo || selectcrv)) ||
 	((!or_) && ( selecttrk && selectcalo && selectcrv)) );
+    if(retval)nPassed_++;
+    return retval;
   }
 
   void DetectorStepFilter::endJob() {
