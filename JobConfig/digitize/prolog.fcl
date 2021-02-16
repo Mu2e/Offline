@@ -20,7 +20,7 @@ Digitize: {
     @table::CaloMC.DigiProducers
     @table::CrvDAQPackage.producers
     # default PBI with no intensity; this must be overridden when mixing
-    protonBunchIntensity : {
+    PBISim : {
       module_type: ProtonBunchIntensityFlat
       mean: 0.0 # No PBI possible for pure signal! 
       halfWidth : 1.0
@@ -58,7 +58,7 @@ Digitize: {
   }
 
   TriggerSequence : [
-    protonBunchIntensity,
+    PBISim,
     @sequence::CommonMC.DigiSim,
     @sequence::TrackerMC.DigiSim,
     @sequence::CaloMC.DigiSim,
@@ -97,13 +97,13 @@ Digitize: {
   }
   EndPath : [ digiCompressionCheck, Output ]
 }
+# override the Trigger sequence to prepare digis
+Trigger.PrepareDigis: [ @sequence::CommonMC.DigiSim, @sequence::TrackerMC.DigiSim, @sequence::CaloMC.DigiSim ]
 
 Digitize.Output.outputCommands : [ "drop *_*_*_*",
 		       @sequence::Digitize.KeptProducts,
 		       @sequence::Digitize.TriggerProducts ]
 
-# define paths
-Digitize.TriggerPath : [ @sequence::Digitize.TriggerSequence ]
 #outputs.Output.SelectEvents : # add output stream of 'good' events that fail the trigger; this requiers a new verison of art FIXME!
 
 END_PROLOG

@@ -276,5 +276,7 @@ Trigger : {
 	
 
     }
+    # sequence to create digis
+    PrepareDigis: [] 
 }
 END_PROLOG
