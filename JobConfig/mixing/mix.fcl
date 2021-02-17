@@ -3,7 +3,7 @@
 #
 #include "JobConfig/digitize/prolog.fcl"
 #include "JobConfig/mixing/prolog.fcl"
-process_name: Mixing
+process_name: Digitize
 source : { module_type : RootInput }
 services : @local::Services.SimAndReco # reco is needed for the trigger
 physics : { 
