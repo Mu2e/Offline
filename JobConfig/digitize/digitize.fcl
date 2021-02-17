@@ -18,7 +18,7 @@ physics : {
   }
   # setup 'trigger reject' stream after RejectEvents is implemented TODO!
   analyzers: { @table::Digitize.analyzers }
-  TriggerPath : [   PBISim, @sequence::Digitize.TriggerSequence ]
+  TriggerPath : @local::Digitize.TriggerPath
   EndPath : @local::Digitize.EndPath
 }
 #

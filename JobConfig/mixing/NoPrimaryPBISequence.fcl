@@ -28,4 +28,3 @@ outputs.DetOutput.fileName: "dig.owner.NoPrimary-pbiseq-mix-det.version.sequence
 
 # Remove the full output
 outputs.FullOutput : @erase
-physics.EndPath    : [ digiCompressionCheck, DetOutput ]

@@ -28,22 +28,7 @@ outputs : {
 #
 # Final configuration
 #
-#include "JobConfig/digitize/epilog.fcl"
-#
-# add trigger paths
-#include "gen/fcl/Trigger/OnSpillTrigMenu/OnSpillTrigMenu.fcl"
-# set the event timing for Onspill
-physics.producers.EWMProducer.SpillType : 1
-
-
-physics.producers.compressDigiMCs.simParticleTags : ["compressDetStepMCs", "mustopMixer"]
-physics.producers.compressDigiMCs.caloShowerStepTags : ["compressDetStepMCs", "mustopMixer"]
-physics.producers.CrvPhotons.crvStepModuleLabels : [ "compressDetStepMCs", "mustopMixer" ]
-physics.producers.CrvPhotons.crvStepProcessNames : [ "", "" ]
-physics.producers.CaloShowerROMaker.caloShowerStepCollection : ["compressDetStepMCs", "mustopMixer" ]
-
-
-
+#include "JobConfig/mixing/epilog.fcl"
 #
 physics.end_paths : [ EndPath ] # needed for generate_fcl
 # generic output: this is overwritten by generate_fcl
