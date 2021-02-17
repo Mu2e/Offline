@@ -46,6 +46,7 @@ physics.producers.FindMCPrimary.GenParticles: "dsResample"
 physics.producers.FindMCPrimary.SimParticles: "dsResample"
 physics.producers.generate: @local::physics.filters.dsResample
 physics.TriggerPath: [dsResample, @sequence::Primary.TriggerSequence]
+physics.producers.compressDetStepMCs.simParticleTags : [ "g4run", "dsResample" ]
 
 outputs.Output.fileName        : "sim.owner.cosmic-s2-resampler.version.sequencer.art"
 // Test on the file with events that deposited lower than 14 MeV in CRV

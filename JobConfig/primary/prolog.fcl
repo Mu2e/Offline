@@ -27,7 +27,7 @@ Primary: {
       strawGasStepTag : "StrawGasStepMaker"
       caloShowerStepTag : "CaloShowerStepMaker"
       crvStepTag : "CrvSteps"
-      simParticleTag : "g4run"
+      simParticleTags : [ "g4run" ]
       stepPointMCTags : [ "g4run:virtualdetector", "g4run:protonabsorber", "g4run:stoppingtarget" ]
       mcTrajectoryTag : "g4run"
       debugLevel : 0
