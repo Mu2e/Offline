@@ -2,11 +2,7 @@
 # This script runs TrackAnalysisReco on digi inputs.  It runs the official Reco sequence inline.
 # David Brown (LBNL) Feb 2019
 #
-BEGIN_PROLOG
-TrackCaloMatching : { 
-  DtOffset : 0.2 # from TrkCaloHit matching
-}
-END_PROLOG
+#include "fcl/TrkCaloDt.fcl"
 #include "TrkDiag/fcl/prolog.fcl"
 # the following is for reconstructing from digis.
 #include "JobConfig/reco/reco.fcl"
@@ -19,10 +15,11 @@ physics.producers: {
 physics.analyzers: {
   @table::physics.analyzers
   @table::TrkAnaReco.analyzers
+  recoCompressionCheck : @local::RecoCompression.Check
 }
 # augment paths
 physics.RecoPath : [ @sequence::physics.RecoPath, @sequence::TrkAnaReco.TrigSequence ]
-physics.EndPath : [ RecoCheck, @sequence::TrkAnaReco.EndSequence ]
+physics.EndPath : [ recoCompressionCheck, @sequence::TrkAnaReco.EndSequence ]
 services.TFileService.fileName: "nts.owner.TrkAnaDigisReco.version.sequencer.root"
 #
 #  Script options

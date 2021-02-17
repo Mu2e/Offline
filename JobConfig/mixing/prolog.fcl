@@ -40,12 +40,11 @@ Mixing : {
   # input time maps from cut flash 
   flashTimeMaps : [ "flashMixer:protonTimeMap"]
 # sequences: add flash and OOT mixers TODO
-# PBISim also appears in digitization sequence, but it must precede the mixers.  It is only invoked once (the 1st time)
   TriggerSequence : [
     PBISim,   mustopMixer
   ]
 }
-# override the Trigger sequence to prepare digis; the mixers must preceed the digi making
+# override the Trigger 'PrepareDigis' sequence; the mixers must preceed the digi making
 Trigger.PrepareDigis: [ @sequence::Mixing.TriggerSequence, @sequence::CommonMC.DigiSim, @sequence::TrackerMC.DigiSim, @sequence::CaloMC.DigiSim ]
 # override the proton bunch intensity
 Digitize.producers.PBISim : {  

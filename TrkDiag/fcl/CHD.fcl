@@ -24,9 +24,6 @@ physics :
 }
 physics.producers.makePH.TestFlag : false
 physics.producers.makePH.TestRadius : false
-# uncomment the following to process MDC2018g and earlier
-#physics.analyzers.SHD.TimeOffsets.inputs : [ @sequence::DigiCompression.NoCosmicTimeMaps ]
-#physics.analyzers.PHD.TimeOffsets.inputs : [ @sequence::DigiCompression.NoCosmicTimeMaps ]
 physics.analyzers.SCHD.ComboHitCollection : "makeSH"
 physics.analyzers.PCHD.ComboHitCollection : "makePH"
 physics.producers.makeSH.WriteStrawHitCollection : true
