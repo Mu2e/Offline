@@ -163,22 +163,7 @@ Reconstruction : {
   }
 
   analyzers : { # these are specific to MC
-    RecoCheck : { 
-      @table::DigiCompression.RecoCheck
-      oldStrawDigiMCTag : "compressDigiMCs"
-      newStrawDigiMCTag : "compressRecoMCs"
-      OldTimeOffsets : { inputs : [ @sequence::DigiCompression.TimeMaps ] }
-      NewTimeOffsets : { inputs : [ @sequence::RecoCompression.TimeMaps ] }
-      strawDigiMCIndexMapTag : "SelectRecoMC:StrawDigiMap"
-      oldCrvDigiMCTag : "compressDigiMCs"
-      newCrvDigiMCTag : "compressRecoMCs"
-      crvDigiMCIndexMapTag : "SelectRecoMC:CrvDigiMap"
-      oldCaloShowerSimTag : ""
-      newCaloShowerSimTag : ""
-      checkTrackerDuplicateSteps : false
-      oldCaloClusterMCTag : "CaloClusterTruthMatch"
-      newCaloClusterMCTag : "compressRecoMCs"
-    }
+    recoCompressionCheck : @local::RecoCompression.Check
   }
 # reconstruct multiple types of tracks.  These are separate sequences to allow granular execution
 # Downstream electron sequence (plus and minus), using merged helices

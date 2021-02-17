@@ -58,7 +58,6 @@ Digitize: {
   }
 
   TriggerSequence : [
-    PBISim,
     @sequence::CommonMC.DigiSim,
     @sequence::TrackerMC.DigiSim,
     @sequence::CaloMC.DigiSim,
@@ -92,8 +91,6 @@ Digitize: {
      module_type : RootOutput     SelectEvents : [ DigiPath ]
      SelectEvents : [ "*_trigger" ] # this selects events passing any trigger
      fileName    : @nil
-     # drop StepPoints from calorimeter
-#     outputCommands : @local::DigiCompression.OutputCommands
   }
   EndPath : [ digiCompressionCheck, Output ]
 }
