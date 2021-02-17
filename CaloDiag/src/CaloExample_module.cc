@@ -10,7 +10,8 @@
 #include "art/Framework/Principal/Selector.h"
 #include "art/Framework/Principal/Provenance.h"
 #include "cetlib_except/exception.h"
-#include "fhiclcpp/ParameterSet.h"
+#include "fhiclcpp/types/Atom.h"
+#include "fhiclcpp/types/Sequence.h"
 #include "messagefacility/MessageLogger/MessageLogger.h"
 #include "canvas/Utilities/InputTag.h"
 
@@ -50,37 +51,48 @@ namespace
 }
 
 
-
 namespace mu2e {
 
   class CaloExample : public art::EDAnalyzer {
 
      public:
+         struct Config 
+         {
+             using Name    = fhicl::Name;
+             using Comment = fhicl::Comment;
+             using SPTO    = SimParticleTimeOffset::Config;
+             fhicl::Atom<art::InputTag>     generatorCollection   { Name("generatorCollection"),    Comment("generator particles collection name") }; 
+             fhicl::Atom<art::InputTag>     vdCollection          { Name("vdCollection"),           Comment("Virtual detector collection name") }; 
+             fhicl::Table<SPTO>             timeOffsets           { Name("timeOffsets"),            Comment("Sim Particle Time Offset Maps")};
+             fhicl::Atom<art::InputTag>     caloHitCollection     { Name("caloHitCollection"),      Comment("Calo Hit collection name") }; 
+             fhicl::Atom<art::InputTag>     caloClusterCollection { Name("caloClusterCollection"),  Comment("Calo cluster collection name") }; 
+             fhicl::Atom<art::InputTag>     caloHitTruth          { Name("caloHitTruth"),           Comment("CaloHit truth name") }; 
+             fhicl::Atom<art::InputTag>     caloClusterTruth      { Name("caloClusterTruth"),       Comment("caloCluster truth name") }; 
+             fhicl::Atom<bool>              addGenerator          { Name("addGenerator"),           Comment("Add generator info"),false }; 
+             fhicl::Atom<int>               diagLevel             { Name("diagLevel"),              Comment("Diag Level"),0 };
+         };
 
-       explicit CaloExample(fhicl::ParameterSet const& pset);
-       virtual ~CaloExample() { }
+       explicit CaloExample(const art::EDAnalyzer::Table<Config>& config);
+       virtual ~CaloExample() {}
 
        virtual void beginJob();
        virtual void endJob() {};
-
        virtual void analyze(const art::Event& e);
 
 
      private:
-
-       int diagLevel_;
-       bool doGenerated_;
-       std::string g4ModuleLabel_;
-       std::string generatorModuleLabel_;
-       art::InputTag simParticleTag_;
-       std::string caloCrystalModuleLabel_;
-       std::string caloClusterModuleLabel_;
-       std::string caloDigiTruthModuleLabel_;
-       std::string caloClusterTruthModuleLabel_;
-       std::string virtualDetectorLabel_;
-       std::string stepPointMCLabel_;
+       art::InputTag         generatorTag_;
+       art::InputTag         virtualDetectorTag_;
        SimParticleTimeOffset toff_; 
-       int nProcess_;
+       art::InputTag         caloHitTag_;
+       art::InputTag         caloClusterTag_;
+       art::InputTag         caloHitTruthTag_;
+       art::InputTag         caloClusterTruthTag_;
+       bool                  addGenerated_;
+       int                   diagLevel_;
+       int                   nProcess_;
+
+
 
 
        TH1F *hcryE_,*hcryT_,*hcryX_,*hcryY_,*hcryZ_;
@@ -94,7 +106,7 @@ namespace mu2e {
        float genmomX_[ntupLen],genmomY_[ntupLen],genmomZ_[ntupLen],genStartX_[ntupLen],genStartY_[ntupLen],genStartZ_[ntupLen],genStartT_[ntupLen];
 
        int   nHits_,cryId_[ntupLen],crySectionId_[ntupLen],crySimIdx_[ntupLen],crySimLen_[ntupLen];
-       float cryEtot_,cryTime_[ntupLen],cryEdep_[ntupLen],cryPosX_[ntupLen],cryPosY_[ntupLen],cryPosZ_[ntupLen],_cryLeak[ntupLen];
+       float cryEtot_,cryTime_[ntupLen],cryEdep_[ntupLen],cryEdepErr_[ntupLen],cryPosX_[ntupLen],cryPosY_[ntupLen],cryPosZ_[ntupLen],_cryLeak[ntupLen];
 
        int   nSimHit_,crySimId_[ntupLen],crySimPdgId_[ntupLen],crySimCrCode_[ntupLen],crySimGenIdx_[ntupLen],cryConv_[ntupLen];
        float crySimMom_[ntupLen],crySimStartX_[ntupLen],crySimStartY_[ntupLen],crySimStartZ_[ntupLen],crySimStartT_[ntupLen];
@@ -115,23 +127,17 @@ namespace mu2e {
   };
 
 
-//Fix this mess and move to Config
-//Add recoDigis
-
-  CaloExample::CaloExample(fhicl::ParameterSet const& pset) :
-    art::EDAnalyzer(pset),
-    diagLevel_(pset.get<int>("diagLevel",0)),
-    doGenerated_(pset.get<bool>("doGenerated",false)),
-    g4ModuleLabel_(pset.get<std::string>("g4ModuleLabel")),
-    generatorModuleLabel_(pset.get<std::string>("generatorModuleLabel")),
-    simParticleTag_(pset.get<std::string>("simParticleTag")),
-    caloCrystalModuleLabel_(pset.get<std::string>("caloCrystalModuleLabel")),
-    caloClusterModuleLabel_(pset.get<std::string>("caloClusterModuleLabel")),
-    caloDigiTruthModuleLabel_(pset.get<std::string>("caloHitTruthModuleLabel")),
-    caloClusterTruthModuleLabel_(pset.get<std::string>("caloClusterTruthModuleLabel")),
-    virtualDetectorLabel_(pset.get<std::string>("virtualDetectorName")),
-    stepPointMCLabel_(pset.get<std::string>("stepPointMCLabel")),
-    toff_(pset.get<fhicl::ParameterSet>("TimeOffsets", fhicl::ParameterSet())),
+  CaloExample::CaloExample(const art::EDAnalyzer::Table<Config>& config) :
+    EDAnalyzer{config},
+    generatorTag_       (config().generatorCollection()),
+    virtualDetectorTag_ (config().vdCollection()),
+    toff_               (config().timeOffsets()),
+    caloHitTag_         (config().caloHitCollection()),
+    caloClusterTag_     (config().caloClusterCollection()),
+    caloHitTruthTag_    (config().caloHitTruth()),
+    caloClusterTruthTag_(config().caloClusterTruth()),
+    addGenerated_       (config().addGenerator()),
+    diagLevel_          (config().diagLevel()),
     nProcess_(0),
     Ntup_(0)
   {}
@@ -164,6 +170,7 @@ namespace mu2e {
        Ntup_->Branch("cryPosY",      &cryPosY_ ,     "cryPosY[nCry]/F");
        Ntup_->Branch("cryPosZ",      &cryPosZ_ ,     "cryPosZ[nCry]/F");
        Ntup_->Branch("cryEdep",      &cryEdep_ ,     "cryEdep[nCry]/F");
+       Ntup_->Branch("cryEdepErr",   &cryEdepErr_ ,  "cryEdepErr[nCry]/F");
        Ntup_->Branch("cryTime",      &cryTime_ ,     "cryTime[nCry]/F");
        Ntup_->Branch("cryTimeErr",   &cryTimeErr_ ,  "cryTimeErr[nCry]/F");
        Ntup_->Branch("cryT1",        &cryT1_ ,       "cryT1[nCry]/F");
@@ -273,26 +280,26 @@ namespace mu2e {
 
       //Calorimeter crystal hits (average from readouts)
       art::Handle<CaloHitCollection> CaloHitsHandle;
-      event.getByLabel(caloCrystalModuleLabel_, CaloHitsHandle);
+      event.getByLabel(caloHitTag_, CaloHitsHandle);
       const CaloHitCollection& CaloHits(*CaloHitsHandle);
 
       //Calorimeter clusters
       art::Handle<CaloClusterCollection> caloClustersHandle;
-      event.getByLabel(caloClusterModuleLabel_, caloClustersHandle);
+      event.getByLabel(caloClusterTag_, caloClustersHandle);
       const CaloClusterCollection& caloClusters(*caloClustersHandle);
 
       //Virtual detector hits
       art::Handle<StepPointMCCollection> vdhits;
-      event.getByLabel(g4ModuleLabel_,virtualDetectorLabel_,vdhits);
+      event.getByLabel(virtualDetectorTag_,vdhits);
 
       //Calo digi truth assignment
       art::Handle<CaloHitMCTruthAssn> caloDigiTruthHandle;
-      event.getByLabel(caloDigiTruthModuleLabel_, caloDigiTruthHandle);
+      event.getByLabel(caloHitTruthTag_, caloDigiTruthHandle);
       const CaloHitMCTruthAssn& caloDigiTruth(*caloDigiTruthHandle);
       
       //Calo cluster truth assignment
       art::Handle<CaloClusterMCTruthAssn> caloClusterTruthHandle;
-      event.getByLabel(caloClusterTruthModuleLabel_, caloClusterTruthHandle);
+      event.getByLabel(caloClusterTruthTag_, caloClusterTruthHandle);
       const CaloClusterMCTruthAssn& caloClusterTruth(*caloClusterTruthHandle);
 
 
@@ -318,11 +325,11 @@ namespace mu2e {
 
        
        nGen_=0;
-       if (doGenerated_)
+       if (addGenerated_)
        {
            //Get generated particles
            art::Handle<GenParticleCollection> gensHandle;
-           event.getByLabel(generatorModuleLabel_, gensHandle);
+           event.getByLabel(generatorTag_, gensHandle);
            const GenParticleCollection& genParticles(*gensHandle);
 	   
 	   nGen_ = genParticles.size();
@@ -386,6 +393,7 @@ namespace mu2e {
            cryId_[nHits_]        = hit.crystalID();
            crySectionId_[nHits_] = diskId;
            cryEdep_[nHits_]      = hit.energyDep();
+           cryEdepErr_[nHits_]   = hit.energyDepErr();
            cryTime_[nHits_]      = hit.time();
            cryTimeErr_[nHits_]   = hit.timeErr();
            cryT1_[nHits_]        = cryT1;

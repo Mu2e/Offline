@@ -52,7 +52,9 @@ namespace mu2e {
 
        TH1F *hcryMatchE_,*hcryNoMatchE_,*hsimMatchT_,*hsimMatchE_,*hsimNoMatchE_,*hsimNoMatchT_,*hsimMatchELT_;
        TH1F *hSimNoMatchCE_;
-
+       
+       TH2F *hETimeErr_,*hETimePull_,*hEEnerErr_,*hEEnerPull_;
+       TH1F *hTimePull_[5],*hEnerPull_[5];
   };
 
 
@@ -76,6 +78,16 @@ namespace mu2e {
        hsimNoMatchE_    = tfs->make<TH1F>("hsimNoMatchE",  "sim Edep NO match;Edep (MeV);Entries",       100,0,100);
        hsimNoMatchT_    = tfs->make<TH1F>("hsimNoMatchT",  "sim Time match;time (ns);Entries",           100,0,2000);
        hSimNoMatchCE_   = tfs->make<TH1F>("hSimNoMatchCE", "sim E no match Ce match;Edep (MeV);Entries", 100,0,100);
+       
+       hETimeErr_       = tfs->make<TH2F>("hETimeErr",     "Reco time error;Edep (MeV);#Deltat (ns)",      100,0,100,100,0,3);
+       hETimePull_      = tfs->make<TH2F>("hETimePull",    "Reco time pull;Edep (MeV);(t-t_{mc})/#Deltat", 100,0,100,100,-10,10);
+       hEEnerErr_       = tfs->make<TH2F>("hEEnerErr",     "Reco ener error;Edep (MeV);#DeltaE (MeV)",     100,0,100,100,0,5);
+       hEEnerPull_      = tfs->make<TH2F>("hEEnerPull",    "Reco ener pull;Edep (MeV);(E-E_{mc})/#DeltaE", 100,0,100,100,-5,5);
+       for (int i=0;i<5;++i)
+       {
+          hTimePull_[i] = tfs->make<TH1F>(Form("timePull_%i",i), "Reco time pull;(T-T_{MC})/#DeltaT;Entries", 200, -10, 10);
+          hEnerPull_[i] = tfs->make<TH1F>(Form("enerPull_%i",i), "Reco ener pull;(E-E_{MC})/#DeltaE;Entries ", 200, -5, 5);
+       }
   }
 
 
@@ -121,6 +133,30 @@ namespace mu2e {
                                            <<" "<<eDepMC.time()<<" "<<eDepMC.energyDep()<<" "<<eDepMC.momentumIn()<<std::endl;
           }
           if (diagLevel_ > 0) std::cout<<std::endl;
+          
+
+          hETimeErr_->Fill(hit.energyDep(), hit.timeErr());
+          hEEnerErr_->Fill(hit.energyDep(), hit.energyDepErr());
+          if (nCrySims==0) continue;
+
+          const auto& eDepMC = itMC->second->energyDeposit(0);
+          double mcEdep = eDepMC.energyDep(); 
+          double mcTime = eDepMC.time()+1.9;      
+
+          hETimePull_->Fill(hit.energyDep(),(hit.time()-mcTime)/hit.timeErr());
+          hEEnerPull_->Fill(hit.energyDep(), (hit.energyDep()-mcEdep)/hit.energyDepErr());
+
+          if (hit.energyDep()>10 && hit.energyDep()<20)  hTimePull_[0]->Fill((hit.time()-mcTime)/hit.timeErr()); 
+          if (hit.energyDep()>20 && hit.energyDep()<30)  hTimePull_[1]->Fill((hit.time()-mcTime)/hit.timeErr()); 
+          if (hit.energyDep()>30 && hit.energyDep()<40)  hTimePull_[2]->Fill((hit.time()-mcTime)/hit.timeErr()); 
+          if (hit.energyDep()>40 && hit.energyDep()<50)  hTimePull_[3]->Fill((hit.time()-mcTime)/hit.timeErr()); 
+          if (hit.energyDep()>50 && hit.energyDep()<100) hTimePull_[4]->Fill((hit.time()-mcTime)/hit.timeErr()); 
+
+          if (hit.energyDep()>10 && hit.energyDep()<20)  hEnerPull_[0]->Fill((hit.energyDep()-mcEdep)/hit.energyDepErr()); 
+          if (hit.energyDep()>20 && hit.energyDep()<30)  hEnerPull_[1]->Fill((hit.energyDep()-mcEdep)/hit.energyDepErr()); 
+          if (hit.energyDep()>30 && hit.energyDep()<40)  hEnerPull_[2]->Fill((hit.energyDep()-mcEdep)/hit.energyDepErr()); 
+          if (hit.energyDep()>40 && hit.energyDep()<50)  hEnerPull_[3]->Fill((hit.energyDep()-mcEdep)/hit.energyDepErr()); 
+          if (hit.energyDep()>50 && hit.energyDep()<100) hEnerPull_[4]->Fill((hit.energyDep()-mcEdep)/hit.energyDepErr()); 
       }
 
       // set of all sims matched to reco hits
@@ -154,15 +190,10 @@ namespace mu2e {
          if (parent->genParticle() && parent->genParticle()->generatorId().isConversion() ) isConversion=true;
          
          if (!isConversion) continue;
-         
-         
          if (!isMatched) sumEno += showerSim.energyDep();
       }
-
       hSimNoMatchCE_->Fill(sumEno);
   }
-
-
 
 }  
 
