@@ -39,7 +39,7 @@ Digitize: {
 	caloShowerROTag : @local::DigiCompressionTags.commonCaloShowerROTag
 	primaryParticleTag : "FindMCPrimary"
 	keepAllGenParticles : true
-	rekeySimParticleCollection : false
+	rekeySimParticleCollection : true
 	noCompression : false
 
 	# Unused options
