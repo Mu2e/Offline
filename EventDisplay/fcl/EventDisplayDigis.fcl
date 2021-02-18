@@ -22,7 +22,7 @@ physics.analyzers: {
      }
 }
 # add the display to the path
-physics.EndPath : [ RecoCheck, eventdisplay]
+physics.EndPath : [ CompressionCheck, eventdisplay]
 services.TFileService.fileName: "nts.owner.EventDisplayDigis.version.sequencer.root"
 
 source.readParameterSets : false
