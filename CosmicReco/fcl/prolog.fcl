@@ -51,19 +51,6 @@ CosmicDriftFit : {
     LineSeedCollection : "LineFinder"
 }
 
-
-
-
-
-CHD : {
-    module_type : ComboHitDiag
-    StrawDigiMCCollection : "compressDigiMCs"
-    ComboHitCollection : "makePH"
-    UseFlagCollection : true
-    StrawHitFlagCollection : "FlagBkgHits:ComboHits"
-    TimeOffsets : {inputs : [ @sequence::DigiCompression.NoCosmicTimeMaps ]}
-}
-
 CosmicTrackFinder : { #split into Loose and tight below for efficieny studies
     module_type		: CosmicTrackFinder
     ComboHitCollection     : "makePH"
@@ -135,7 +122,7 @@ CosmicTrackDetails : {
     #TimeClusterCollection : TimeClusterFinderCosmics
     CosmicTrackSeedCollection : CosmicTrackFinder
     StrawDigiMCCollection : "compressDigiMCs"
-    TimeOffsets : {inputs : [ @sequence::DigiCompression.NoCosmicTimeMaps ]}
+    TimeOffsets : {inputs : [ @sequence::DigiCompression.TimeMaps ]}
 }
 
 CosmicAnalysis : {
@@ -145,7 +132,7 @@ CosmicAnalysis : {
     #TimeClusterCollection : TimeClusterFinderCosmics
     CosmicTrackSeedCollection : CosmicTrackFinder
     StrawDigiMCCollection : "compressDigiMCs"
-    TimeOffsets : {inputs : [ @sequence::DigiCompression.NoCosmicTimeMaps ]}
+    TimeOffsets : {inputs : [ @sequence::DigiCompression.TimeMaps ]}
 }
 
 CosmicFitDisplay : {

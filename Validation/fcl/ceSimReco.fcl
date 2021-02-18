@@ -45,7 +45,10 @@ physics: {
     @sequence::Reconstruction.DeReco,
     RecoFilter
   ]
-  EndPath : @local::Primary.EndPath
+  EndPath : [
+    @sequence::Primary.EndPath,
+    @sequence::Digitize.EndPath
+  ]
 }
 
 outputs : { 

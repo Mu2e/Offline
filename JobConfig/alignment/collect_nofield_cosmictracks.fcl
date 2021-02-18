@@ -43,7 +43,7 @@ physics :
 
   }
   RecoPath : [ @sequence::Reconstruction.RecoMCPath ]
-  EndPath : [ Output, RecoCheck  ]
+  EndPath : [ Output, CompressionCheck  ]
 }
 
 outputs : {
