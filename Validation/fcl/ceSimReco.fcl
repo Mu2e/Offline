@@ -43,11 +43,14 @@ physics: {
     @sequence::Reconstruction.TrkReco,
     @sequence::Reconstruction.CrvReco,
     @sequence::Reconstruction.DeReco,
+    @sequence::Reconstruction.MCReco,
     RecoFilter
   ]
   EndPath : [
-    @sequence::Primary.EndPath,
-    @sequence::Digitize.EndPath
+    @sequence::Primary.EndSequence,
+    @sequence::Digitize.EndSequence,
+    @sequence::Reconstruction.EndSequence,
+    Output
   ]
 }
 
@@ -75,6 +78,8 @@ outputs : {
 }
 #include "JobConfig/primary/epilog.fcl"
 #include "JobConfig/digitize/epilog.fcl"
+physics.analyzers.digiCompressionCheck.SelectEvents : [ TriggerPath ]
+physics.analyzers.recoCompressionCheck.SelectEvents : [ TriggerPath ]
 #
 # on-spill EWM
 physics.producers.EWMProducer.SpillType : 1
