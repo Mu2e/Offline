@@ -95,9 +95,10 @@ Primary: {
 
      # drop StepPoints from calorimeter
   }
+  EndSequence : [ genCountLogger ]
 # define paths
-  EndPath : [ genCountLogger, Output ]
 }
+Primary.EndPath : [ @sequence::Primary.EndSequence, Output ]
 Primary.Output.outputCommands : [ "drop *_*_*_*",
 		       @sequence::Primary.KeptProducts]
 Primary.TriggerPath : [ generate, @sequence::Primary.TriggerSequence ]
