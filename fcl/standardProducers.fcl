@@ -1,19 +1,11 @@
 # -*- mode: tcl -*-
-
-BEGIN_PROLOG
-#------------------------------------------------------------------------------
-# unfortunately, in the present scheme can't do it differently : 
-# CalPatRec needs DtOffset as well and the DtOffset declaration 
-# has to go before the CalPatRec prolog
-#------------------------------------------------------------------------------
-TrackCaloMatching : { 
-#    DtOffset : -0.4 # v6_3: was 2.9  # track-cluster offset, ns v5_7_6 # 1.2  # 1.4   
-    DtOffset : 0.2 # from TrkCaloHit matching
-}
-END_PROLOG
-
+#
+# this file is deprecated: please include the individual producers you need from the appropriate specific prologs below
+#
+#include "fcl/TrkCaloDt.fcl"
 #include "EventGenerator/fcl/prolog.fcl"
 #include "Filters/fcl/prolog.fcl"
+#include "Compression/fcl/prolog.fcl"
 #include "Mu2eG4/fcl/prolog.fcl"
 #include "TrackerMC/fcl/prolog.fcl"
 #include "CaloCluster/fcl/prolog.fcl"
@@ -30,7 +22,6 @@ END_PROLOG
 #include "CaloReco/fcl/prolog.fcl"
 #include "CRVResponse/fcl/prolog.fcl"
 #include "CommonMC/fcl/prolog.fcl"
-
 
 BEGIN_PROLOG
 

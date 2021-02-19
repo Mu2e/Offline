@@ -4,7 +4,7 @@ namespace mu2e
 {
   void CrvHelper::GetStepPointsFromCrvRecoPulse(const art::Ptr<CrvRecoPulse> &crvRecoPulse,
                                                 const art::Handle<CrvDigiMCCollection> &digis,
-                                                std::set<art::Ptr<StepPointMC> > &steps)
+                                                std::set<art::Ptr<CrvStep> > &steps)
   {
     if(!digis.isValid()) return;
 
@@ -13,7 +13,7 @@ namespace mu2e
     {
       size_t waveformIndex = waveformIndices[i];
       const CrvDigiMC &digi = digis->at(waveformIndex);
-      const std::vector<art::Ptr<StepPointMC> > &stepPoints = digi.GetStepPoints();
+      const std::vector<art::Ptr<CrvStep> > &stepPoints = digi.GetCrvSteps();
       for(size_t j=0; j<stepPoints.size(); j++)
       {
         if(stepPoints[j].isNonnull()) steps.insert(stepPoints[j]);
@@ -21,22 +21,20 @@ namespace mu2e
     }
   }
 
-  void CrvHelper::GetInfoFromStepPoints(const std::set<art::Ptr<StepPointMC> > &steps, 
+  void CrvHelper::GetInfoFromStepPoints(const std::set<art::Ptr<CrvStep> > &steps, 
                                         const SimParticleTimeOffset &timeOffsets,
-                                        double &totalEnergyDeposited, double &ionizingEnergyDeposited,
+                                        double &visibleEnergyDeposited,
                                         double &earliestHitTime, CLHEP::Hep3Vector &earliestHitPos,
                                         art::Ptr<SimParticle> &mostLikelySimParticle)
   {
-    totalEnergyDeposited=0;
-    ionizingEnergyDeposited=0;
+    visibleEnergyDeposited=0;
     std::map<art::Ptr<SimParticle>,double> simParticleMap;
-    std::set<art::Ptr<StepPointMC> >::const_iterator stepPointIter;
+    std::set<art::Ptr<CrvStep> >::const_iterator stepPointIter;
     for(stepPointIter=steps.begin(); stepPointIter!=steps.end(); stepPointIter++)
     {
-      const StepPointMC &step = **stepPointIter;
-      totalEnergyDeposited+=step.totalEDep();
-      ionizingEnergyDeposited+=step.ionizingEdep();
-      simParticleMap[step.simParticle()]+=step.totalEDep();
+      const CrvStep &step = **stepPointIter;
+      visibleEnergyDeposited+=step.visibleEDep();
+      simParticleMap[step.simParticle()]+=step.visibleEDep();
     }
 
     std::map<art::Ptr<SimParticle>,double>::const_iterator simParticleIter;
@@ -58,12 +56,13 @@ namespace mu2e
     earliestHitTime=NAN;
     for(stepPointIter=steps.begin(); stepPointIter!=steps.end(); stepPointIter++)
     {
-      const StepPointMC &step = **stepPointIter;
-      double t = timeOffsets.timeWithOffsetsApplied(step);
+      const CrvStep &step = **stepPointIter;
+      double timeOffset = timeOffsets.totalTimeOffset(step.simParticle());
+      double t = step.startTime()+timeOffset;
       if(isnan(earliestHitTime) || earliestHitTime>t)
       {
         earliestHitTime=t;
-        earliestHitPos=step.position();
+        earliestHitPos=step.startPosition();
       }
     }
   }
@@ -71,14 +70,14 @@ namespace mu2e
   void CrvHelper::GetInfoFromCrvRecoPulse(const art::Ptr<CrvRecoPulse> &crvRecoPulse, 
                                           const art::Handle<CrvDigiMCCollection> &digis,
                                           const SimParticleTimeOffset &timeOffsets,
-                                          double &totalEnergyDeposited, double &ionizingEnergyDeposited,
+                                          double &visibleEnergyDeposited,
                                           double &earliestHitTime, CLHEP::Hep3Vector &earliestHitPos,
                                           art::Ptr<SimParticle> &mostLikelySimParticle)
   {
-    std::set<art::Ptr<StepPointMC> > steps;
+    std::set<art::Ptr<CrvStep> > steps;
 
     CrvHelper::GetStepPointsFromCrvRecoPulse(crvRecoPulse, digis, steps);
-    CrvHelper::GetInfoFromStepPoints(steps, timeOffsets, totalEnergyDeposited, ionizingEnergyDeposited, 
+    CrvHelper::GetInfoFromStepPoints(steps, timeOffsets, visibleEnergyDeposited, 
                                      earliestHitTime, earliestHitPos, mostLikelySimParticle);
   }
 

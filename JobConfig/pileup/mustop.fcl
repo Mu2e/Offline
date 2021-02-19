@@ -1,0 +1,73 @@
+// Generate all muon stop emission products
+//
+// Andy Edmonds, 2020
+BEGIN_PROLOG
+dioGenTool : {
+  tool_type : DIOGenerator
+  spectrum : {
+    spectrumShape : Czarnecki
+    pdgId : 11 # Czarnecki option in BinnedSpecturm needs pdgId here
+    elow : 1. //MeV
+    spectrumResolution : 0.1 //MeV
+  }
+}
+
+muonCaptureProtonGenTool : {
+  tool_type : MuCapProtonGenerator
+  spectrumVariable : kineticEnergy
+  spectrum : {
+    spectrumShape : ejectedProtons
+    nbins: 1000
+  }
+}
+
+muonCaptureDeuteronGenTool : {
+  tool_type : MuCapDeuteronGenerator
+  spectrumVariable : kineticEnergy
+  spectrum : {
+    spectrumShape : ejectedProtons
+    nbins: 1000
+  }
+}
+
+muonCaptureNeutronGenTool : {
+  tool_type : MuCapNeutronGenerator
+  spectrumVariable: kineticEnergy
+  spectrum: {
+    spectrumShape: tabulated
+    spectrumFileName: "ConditionsService/data/neutronSpectrum.txt"
+  }
+}
+
+muonCapturePhotonGenTool : {
+  tool_type : MuCapPhotonGenerator
+  spectrum : {
+    spectrumShape: flat
+    elow: 0.0 // MeV
+    ehi: 7.0  // MeV
+  }
+}
+
+# An example that isn't used in this fcl
+#muonCapture1809keVGammaGenTool : {
+#  tool_type : MuCap1809keVGammaGenerator
+#}
+
+END_PROLOG
+#include "JobConfig/pileup/pileup.fcl"
+physics.producers.generate: {
+   module_type: MuStopProductsGun
+   verbosityLevel : 1
+   stops : @local::mu2e.tgtMuonStops
+   captureProducts : [ @local::muonCaptureProtonGenTool,
+                       @local::muonCaptureDeuteronGenTool,
+                       @local::muonCaptureNeutronGenTool,
+                       @local::muonCapturePhotonGenTool
+                     ]
+   decayProducts : [ @local::dioGenTool ]
+}
+# set the stops.  This should go away with art-based muon stops FIXME!
+physics.producers.generate.stops.inputFiles : [ "mergedMuonStops/nts.mu2e.DS-TGTstops.MDC2018a.001002_00000000.root" ]
+
+services.TFileService.fileName: "/dev/null"
+outputs.Output.fileName: "dts.owner.mustop.version.sequencer.art"

@@ -31,9 +31,11 @@
 #include "MCDataProducts/inc/MCTrajectoryCollection.hh"
 #include "MCDataProducts/inc/CaloShowerStep.hh"
 #include "MCDataProducts/inc/StrawGasStep.hh"
+#include "MCDataProducts/inc/CrvStep.hh"
 #include "MCDataProducts/inc/ExtMonFNALSimHitCollection.hh"
 #include "MCDataProducts/inc/ProtonBunchIntensity.hh"
 #include "MCDataProducts/inc/SimParticleTimeMap.hh"
+// add CRVSTEP FIXME!
 
 //================================================================
 namespace mu2e {
@@ -70,6 +72,7 @@ namespace mu2e {
       fhicl::Table<CollectionMixerConfig> mcTrajectoryMixer { fhicl::Name("mcTrajectoryMixer") };
       fhicl::Table<CollectionMixerConfig> caloShowerStepMixer { fhicl::Name("caloShowerStepMixer") };
       fhicl::Table<CollectionMixerConfig> strawGasStepMixer { fhicl::Name("strawGasStepMixer") };
+      fhicl::Table<CollectionMixerConfig> crvStepMixer { fhicl::Name("crvStepMixer") };
       fhicl::Table<CollectionMixerConfig> extMonSimHitMixer { fhicl::Name("extMonSimHitMixer") };
       fhicl::Table<CollectionMixerConfig> protonBunchIntensityMixer { fhicl::Name("protonBunchIntensityMixer") };
       fhicl::Table<CollectionMixerConfig> protonTimeMapMixer { fhicl::Name("protonTimeMapMixer") };
@@ -102,6 +105,10 @@ namespace mu2e {
 
     bool mixStrawGasSteps(std::vector<StrawGasStepCollection const*> const& in,
                             StrawGasStepCollection& out,
+                            art::PtrRemapper const& remap);
+
+    bool mixCrvSteps(std::vector<CrvStepCollection const*> const& in,
+                            CrvStepCollection& out,
                             art::PtrRemapper const& remap);
 
     bool mixExtMonSimHits(std::vector<ExtMonFNALSimHitCollection const*> const& in,

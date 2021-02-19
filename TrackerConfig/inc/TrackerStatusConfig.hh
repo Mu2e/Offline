@@ -26,7 +26,7 @@ namespace mu2e {
     TSSTable settings { Name("Settings") };
     TSSequence status { Name("Status"),
       Comment("Provide in order: StrawId contained by the element in'plane_panel_straw' format \n"
-	  "Level of the elemtn ('station', 'plane', 'panel', 'uniquepanel', 'straw', 'uniquestraw') \n"
+	  "Level of the element ('station', 'plane', 'panel', 'uniquepanel', 'straw', 'uniquestraw') \n"
 	  "Colon-separated status bits to set for the element(see StrawStatus for details)") };
   };
 

@@ -56,6 +56,7 @@ physics : {
          inputfile            : "JobConfig/cosmic/genconfig_cosmic_general.txt"
       }
       @table::Mu2eG4.producers
+      CrvSteps : @local::CrvSteps
       @table::CommonMC.producers
       @table::CrvDAQPackage.producers
       @table::CrvRecoMCPackage.producers
@@ -81,6 +82,7 @@ physics : {
       generate, 
       g4run, g4status , 
       cosmicFilter ,
+      CrvSteps ,
       @sequence::CommonMC.DigiSim ,
       @sequence::CrvDAQPackage.CrvResponseSequence ,
       @sequence::CrvRecoMCPackage.CrvRecoMCSequence
@@ -111,9 +113,12 @@ outputs: {
 # turn off trajectories
 simulation.default.mod.g4run.TrajectoryControl: @local::mu2eg4NoTrajectories
 
-# generate the cosmics at one time
-physics.producers.cosmicTimeMap.tmin : 800
-physics.producers.cosmicTimeMap.tmax : 800
+# generate the cosmics as Onspill.  CRV currently ignores the EWM, FIXME!
+physics.producers.EWMProducer.SpillType : 1 
+
+# set timing relative to the 1st hit
+physics.producers.cosmicTimeMap.CrvSteps : [ "CrvSteps" ]
+physics.producers.cosmicTimeMap.TimeBuffer : 50 
 
 # Larger range cut for the first stage - OK for CRV itself
 physics.producers.g4run.physics.minRangeCut : 1.0 // mm
@@ -128,7 +133,9 @@ physics.producers.g4run.SDConfig.enableSD : [ CRV ]
 # collect all StepPoints with instance CRV.  This will 
 # pick up both the g4run collection and the filtered collection,
 # so select only the latter
-physics.producers.CrvPhotons.g4ModuleLabels : ["cosmicFilter"]
+physics.producers.CrvSteps.stepPointsModuleLabels : ["cosmicFilter"]
+physics.producers.CrvPhotons.crvStepModuleLabels  : ["CrvSteps"]
+physics.producers.CrvPhotons.crvStepProcessNames  : ["cosmicSimReco"]
 
 # turn off very verbose
 physics.producers.CrvCoincidence.verboseLevel : 0

@@ -20,16 +20,17 @@ namespace mu2e
        public:                    
           using CaloHitMCPtr = art::Ptr<CaloHitMC>;
 
-          CaloClusterMC()                                        : digis_()      {};
-          CaloClusterMC(const std::vector<CaloHitMCPtr>& digis) : digis_(digis) {};
-                
-          const std::vector<CaloHitMCPtr>&  caloDigiMCs     () const {return digis_; }
+          CaloClusterMC()                                        : hits_()      {};
+          CaloClusterMC(const std::vector<CaloHitMCPtr>& digis) : hits_(digis) {};
+
+	  const std::vector<CaloHitMCPtr>&  caloHitMCs     () const {return hits_; }
+	  std::vector<CaloHitMCPtr>&  caloHitMCs     () {return hits_; } // needed for compression
           std::vector<CaloEDepMC>            energyDeposits  () const;
           float                              totalEnergyDep  () const;
           float                              totalEnergyDepG4() const;
 
        private:
-          std::vector<CaloHitMCPtr> digis_; 
+          std::vector<CaloHitMCPtr> hits_; 
    };
       
    using  CaloClusterMCCollection = std::vector<mu2e::CaloClusterMC>;

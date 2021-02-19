@@ -1,0 +1,8 @@
+#
+# mono-energetic e- at the Al Ce endpoint without background mixing
+#
+# original author: Dave Brown, LBNL
+#
+#include "JobConfig/digitize/OnSpill.fcl"
+# customize the output
+outputs.Output.fileName: "dig.owner.CeEndpoint.version.sequencer.art"

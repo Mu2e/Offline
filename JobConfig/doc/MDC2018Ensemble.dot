@@ -1,0 +1,41 @@
+/* A draft flowchart showing ensemble production
+ * To compile:
+ *
+ *     dot -Tpdf 'thisfile'.dot -o 'thisfile'.pdf
+ */
+
+digraph cd3beam {
+	/* size="14,11"; */
+	label = "MDC2018 Ensemble Production";
+	fontname="Helvetica";
+	fontsize="32";
+	labelloc = t;
+	"Ensemble" [shape=box,color=black, label="Ensemble Sample"];
+	"CeM" [shape=oval,color=blue, label ="&micro;&macr; &rarr; e&macr; Conversion"];
+	"CeP" [shape=oval,color=blue, label ="&micro;&macr; &rarr; e+ Conversion"];
+	"DIO" [shape=oval,color=red, label ="DIO"];
+	"IRMC" [shape=oval,color=red, label ="Internal RMC"];
+	"IRPC" [shape=oval,color=red, label ="Internal RPC"];
+	"ERMC" [shape=oval,color=red, label ="External RMC"];
+	"ERPC" [shape=oval,color=red, label ="External RPC"];
+	"Cosmic" [shape=oval,color=red, label ="Cosmic Rays"];
+	"CeM" -> "Ensemble" [label="&rho;=1.3e-5"];
+	"CeP" -> "Ensemble" [label="&rho;=7.2e-5"];
+	"DIO" -> "Ensemble" [label="&rho;=0.98"];
+	"IRMC" -> "Ensemble" [label="&rho;=3.7e-3"];
+	"IRPC" -> "Ensemble" [label="&rho;=2.3e-3"];
+	"ERMC" -> "Ensemble" [label="&rho;=8.1e-4"];
+	"ERPC" -> "Ensemble" [label="&rho;=7.8e-4"];
+	"Cosmic" -> "Ensemble" [label="&rho;=2.1e-2"];
+
+
+/*	subgraph clusterLegend {
+		 rankdir="TB";
+		 color="green";
+	         label="Legend";
+		 "Physics Process" [shape="oval",color=blue];
+		 "Background Process" [shape="oval",color=red];
+	}
+*/
+
+}

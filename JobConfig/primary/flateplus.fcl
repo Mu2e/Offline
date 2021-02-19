@@ -1,9 +1,8 @@
-# flat range of eplus near the DIO endpoint
+# flat range of eplus near the RMC endpoint
 #include "JobConfig/primary/flatE.fcl"
 process_name: flateplus
-physics.producers.generate.physics.genId : ExtRMC
+physics.producers.generate.physics.genId : ExternalRMC
 physics.producers.generate.physics.pdgId : -11
 physics.producers.generate.physics.elow : 80.0 // MeV
 physics.producers.generate.physics.ehi : 105.0 // MeV
-services.TFileService.fileName: "nts.owner.flateplus.version.sequencer.root"
-outputs.Output.fileName: "dig.owner.flateplus.version.sequencer.art"
+outputs.Output.fileName: "dts.owner.flateplus.version.sequencer.art"

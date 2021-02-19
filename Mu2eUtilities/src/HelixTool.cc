@@ -24,8 +24,8 @@ namespace mu2e {
   HelixTool::HelixTool(const HelixSeed *Helix, const mu2e::Tracker*MyTracker) :
     _tracker(MyTracker) {
     _hel = Helix;
-    _trackerRIn    = _tracker->getInnerTrackerEnvelopeParams().innerRadius();
-    _trackerROut   = _tracker->getInnerTrackerEnvelopeParams().outerRadius();
+    _trackerRIn    = _tracker->g4Tracker()->getInnerTrackerEnvelopeParams().innerRadius();
+    _trackerROut   = _tracker->g4Tracker()->getInnerTrackerEnvelopeParams().outerRadius();
 
     //initialize
     _meanHitRadialDist = 0.;

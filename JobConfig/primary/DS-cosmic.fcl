@@ -4,38 +4,15 @@
 # original author: Ralf Ehrlich, UVA 
 # (based on Dave Brown's CeEndpoint)
 #
-#include "JobConfig/primary/prolog.fcl"
-process_name: DScosmic
-
-source: { module_type : EmptyEvent }
-services: @local::Services.Sim
-physics : { 
-  producers : {
-    generate: 
-    {
-       module_type : EventGenerator
-       inputfile   : "JobConfig/primary/genconfig_DS-cosmic.txt"
-    }
-    @table::Primary.producers
-  }
-  filters: { @table::Primary.filters }
-  analyzers: { @table::Primary.analyzers }
-# enable CRV digis
-  TriggerPath : [ @sequence::Primary.TriggerPath ]
-  EndPath : @local::Primary.EndPath
+#include "JobConfig/primary/primary.fcl"
+# set the generator
+physics.producers.generate : {
+   module_type : EventGenerator
+   inputfile   : "JobConfig/primary/genconfig_DS-cosmic.txt"
 }
-outputs : { 
-  Output :@local::Primary.Output
-}
-#
-# final configuration
-#
-#include "JobConfig/primary/epilog.fcl"
 #  Allow 'infinite' momentum
-physics.filters.DigiFilter.MaxParticleMom : 1e7
+physics.filters.DetStepFilter.MaximumPartMom : 1e7
 # update the maximum # of particles
 physics.producers.g4run.ResourceLimits.maxSimParticleCollectionSize: 1000000
 # customize the output
-services.TFileService.fileName: "nts.owner.DS-cosmic.version.sequencer.root"
-outputs.Output.fileName: "dig.owner.DS-cosmic.version.sequencer.art"
-physics.end_paths : [ EndPath ] # needed for generate_fcl
+outputs.Output.fileName: "dts.owner.DS-cosmic.version.sequencer.art"

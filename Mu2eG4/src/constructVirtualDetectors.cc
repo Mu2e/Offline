@@ -431,11 +431,11 @@ namespace mu2e {
 
         // the radius of tracker mother
         Tracker const & tracker = *(GeomHandle<Tracker>());
-        double orvd = tracker.mother().tubsParams().outerRadius();
-        double irvd = tracker.mother().tubsParams().innerRadius();
+        double orvd = tracker.g4Tracker()->mother().tubsParams().outerRadius();
+        double irvd = tracker.g4Tracker()->mother().tubsParams().innerRadius();
 
-        if ( tracker.getSupportModel() == SupportModel::detailedv0 ) {
-          auto const& beams =  tracker.getSupportStructure().beamBody();
+        if ( tracker.g4Tracker()->getSupportModel() == SupportModel::detailedv0 ) {
+          auto const& beams =  tracker.g4Tracker()->getSupportStructure().beamBody();
           if ( beams.empty() ){
             throw cet::exception("GEOM")
               << "Cannot create virtual detector " << VirtualDetectorId(vdId).name()
@@ -541,7 +541,7 @@ namespace mu2e {
 
           // the radius of tracker mother
           Tracker const & tracker = *(GeomHandle<Tracker>());
-          double orvd = tracker.mother().tubsParams().outerRadius();
+          double orvd = tracker.g4Tracker()->mother().tubsParams().outerRadius();
           double vdZ  = vdg->getGlobal(vdId).z();
 
           if ( verbosityLevel > 0) {
@@ -767,7 +767,7 @@ namespace mu2e {
 
           // the radius of tracker mother
           Tracker const & tracker = *(GeomHandle<Tracker>());
-          double orvd = tracker.mother().tubsParams().outerRadius();
+          double orvd = tracker.g4Tracker()->mother().tubsParams().outerRadius();
           double vdZ  = vdg->getGlobal(vdId).z();
 
           if ( verbosityLevel > 0) {
@@ -813,7 +813,7 @@ namespace mu2e {
         }
         // the radius of tracker mother
         Tracker const & tracker = *(GeomHandle<Tracker>());
-        double orvd = tracker.mother().tubsParams().outerRadius();
+        double orvd = tracker.g4Tracker()->mother().tubsParams().outerRadius();
         double vdZ  = vdg->getGlobal(vdId).z();
 
         if ( verbosityLevel > 0) {
@@ -859,7 +859,7 @@ namespace mu2e {
 
         // the radius of tracker mother
         Tracker const & tracker = *(GeomHandle<Tracker>());
-        TubsParams const& motherParams = tracker.mother().tubsParams();
+        TubsParams const& motherParams = tracker.g4Tracker()->mother().tubsParams();
         double orvd = motherParams.outerRadius();
         double vdZ  = vdg->getGlobal(vdId).z();
 
@@ -908,7 +908,7 @@ namespace mu2e {
 
         // the radius of tracker mother
         Tracker const & tracker = *(GeomHandle<Tracker>());
-        TubsParams const& motherParams = tracker.mother().tubsParams();
+        TubsParams const& motherParams = tracker.g4Tracker()->mother().tubsParams();
         double irvd = motherParams.innerRadius();
         double vdZ  = vdg->getGlobal(vdId).z();
 

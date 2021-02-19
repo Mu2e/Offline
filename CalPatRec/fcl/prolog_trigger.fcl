@@ -112,6 +112,7 @@ CprTrigger : { @table::CprTrigger
 	    minClusterEnergy                            : 50.    # MeV
 	    minClusterSize                              : 2      # number of crystals
 	    minClusterTime                              : 500.   # ns
+	    dtOffset                                    : -41.8 #FIXME! this is necessary because CaloClusterFast returns an uncalibrated time!
 	}
 
 
@@ -125,6 +126,7 @@ CprTrigger : { @table::CprTrigger
 	    minClusterEnergy                            : 50.    # MeV
 	    minClusterSize                              : 2      # number of crystals
 	    minClusterTime                              : 500.   # ns
+	    dtOffset                                    : -41.8 #FIXME! this is necessary because CaloClusterFast returns an uncalibrated time!
 	}
 
 	TTCalHelixFinder             : { @table::CalPatRec.filters.CalHelixFinder
@@ -147,6 +149,7 @@ CprTrigger : { @table::CprTrigger
 	    minClusterEnergy                            : 50.    # MeV
 	    minClusterSize                              : 2      # number of crystals
 	    minClusterTime                              : 500.   # ns
+	    dtOffset                                    : -41.8 #FIXME! this is necessary because CaloClusterFast returns an uncalibrated time!
 	}
 
 	TTCalHelixFinderUCC          : { @table::CalPatRec.filters.CalHelixFinder

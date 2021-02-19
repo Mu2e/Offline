@@ -6,7 +6,7 @@
 //
 // Original Author: Ralf Ehrlich
 
-#include "MCDataProducts/inc/CrvDigiMCCollection.hh"
+#include "MCDataProducts/inc/CrvDigiMC.hh"
 #include "RecoDataProducts/inc/CrvRecoPulse.hh"
 #include "Mu2eUtilities/inc/SimParticleTimeOffset.hh"
 #include "art/Framework/Principal/Handle.h"
@@ -23,16 +23,16 @@ namespace mu2e
     //CrvRecoPulse to MC match function
     static void GetStepPointsFromCrvRecoPulse(const art::Ptr<CrvRecoPulse> &crvRecoPulse,
                                               const art::Handle<CrvDigiMCCollection> &digis,
-                                              std::set<art::Ptr<StepPointMC> > &steps);
-    static void GetInfoFromStepPoints(const std::set<art::Ptr<StepPointMC> > &steps,
+                                              std::set<art::Ptr<CrvStep> > &steps);
+    static void GetInfoFromStepPoints(const std::set<art::Ptr<CrvStep> > &steps,
                                       const SimParticleTimeOffset &timeOffsets,
-                                      double &totalEnergyDeposited, double &ionizingEnergyDeposited,
+                                      double &visibleEnergyDeposited,
                                       double &earliestHitTime, CLHEP::Hep3Vector &earliestHitPos,
                                       art::Ptr<SimParticle> &mostLikelySimParticle);
     static void GetInfoFromCrvRecoPulse(const art::Ptr<CrvRecoPulse> &crvRecoPulse,
                                         const art::Handle<CrvDigiMCCollection> &digis,
                                         const SimParticleTimeOffset &timeOffsets,
-                                        double &totalEnergyDeposited, double &ionizingEnergyDeposited,
+                                        double &visibleEnergyDeposited,
                                         double &earliestHitTime, CLHEP::Hep3Vector &earliestHitPos,
                                         art::Ptr<SimParticle> &mostLikelySimParticle);
 
