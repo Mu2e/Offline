@@ -8,7 +8,7 @@
 #include <iostream>
 
 #include "Print/inc/ProductPrinter.hh"
-#include "MCDataProducts/inc/CrvDigiMCCollection.hh"
+#include "MCDataProducts/inc/CrvDigiMC.hh"
 #include "art/Framework/Principal/Handle.h"
 #include "canvas/Persistency/Common/Ptr.h"
 

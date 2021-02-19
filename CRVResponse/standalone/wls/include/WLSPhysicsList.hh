@@ -48,7 +48,7 @@ class WLSPhysicsList: public G4VModularPhysicsList
 {
   public:
 
-    WLSPhysicsList(G4String);
+    WLSPhysicsList();
     virtual ~WLSPhysicsList();
 
     void SetCuts();

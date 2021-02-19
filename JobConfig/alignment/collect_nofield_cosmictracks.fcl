@@ -13,7 +13,7 @@
 #include "JobConfig/reco/prolog.fcl"
 #include "CosmicReco/fcl/prolog.fcl"
 #include "TrackerAlignment/fcl/prolog.fcl"
-#include "Trigger/fcl/templates.fcl"
+#include "Trigger/fcl/prolog_trigger.fcl"
 
 process_name : CosmicTimeFit
 
@@ -43,7 +43,7 @@ physics :
 
   }
   RecoPath : [ @sequence::Reconstruction.RecoMCPath ]
-  EndPath : [ Output, RecoCheck  ]
+  EndPath : [ Output, CompressionCheck  ]
 }
 
 outputs : {
@@ -55,7 +55,7 @@ outputs : {
 #include "JobConfig/reco/epilog.fcl"
 #include "JobConfig/reco/NoCosmicTimeMap_epilog.fcl"
 # trigger epilog
-#include "gen/fcl/Trigger/offline/allTrig/allPaths.fcl"
+#include "gen/fcl/Trigger/OffSpillTrigMenu/OnSpillTrigMenu.fcl"
 outputs.Output.SelectEvents : [ "RecoPath" ]
 #
 # the following need to be overwritten for the specific channel

@@ -1,0 +1,94 @@
+#
+# Standard configuration for compression modules
+#
+BEGIN_PROLOG
+
+DetStepCompression : {
+  noCompression : {
+    strawGasStepCompressionLevel : "noCompression" # keep all StrawGasSteps
+    caloShowerStepCompressionLevel : "noCompression"
+    crvStepCompressionLevel : "noCompression"
+    simParticleCompressionLevel : "noCompression"
+    stepPointMCCompressionLevel : "noCompression"
+    keepNGenerations : -1
+    mcTrajectoryCompressionLevel : "noCompression"
+  }
+
+  standardCompression : {
+    strawGasStepCompressionLevel : "noCompression" # keep all StrawGasSteps
+    caloShowerStepCompressionLevel : "noCompression"
+    crvStepCompressionLevel : "noCompression"
+    simParticleCompressionLevel : "fullCompression" # only keep SimParticles related to other data products we are keeping
+    stepPointMCCompressionLevel : "simParticleCompression" # only keep StepPointMCs related to SimParticles we are keeping
+    keepNGenerations : -1
+    mcTrajectoryCompressionLevel : "simParticleCompression"
+  }
+
+  extraCompression : {
+    strawGasStepCompressionLevel : "noCompression" # keep all StrawGasSteps
+    caloShowerStepCompressionLevel : "noCompression"
+    crvStepCompressionLevel : "noCompression"
+    simParticleCompressionLevel : "fullCompression" # only keep SimParticles related to other data products we are keeping
+    stepPointMCCompressionLevel : "simParticleCompression" # only keep StepPointMCs related to SimParticles we are keeping
+    keepNGenerations : 2
+    mcTrajectoryCompressionLevel : "simParticleCompression"
+  }
+}
+
+DigiCompressionTags : {
+    commonStrawDigiMCTag : "makeSD"
+    commonExtraStepPointMCTags : [ "g4run:virtualdetector", "g4run:protonabsorber" ]
+    commonCaloShowerSimTag : "CaloShowerROMaker"
+    commonCaloShowerROTag : "CaloShowerROMaker"
+    commonCrvDigiMCTag : "CrvWaveforms"
+    primarySimParticleTag : "g4run"
+    primaryCaloShowerStepTags : [ "CaloShowerStepMaker"]
+}
+
+DigiCompression : {
+    TimeMaps : [ "compressDigiMCs:protonTimeMap", "compressDigiMCs:muonTimeMap", "compressDigiMCs:cosmicTimeMap" ]
+}
+DigiCompression : {
+  @table::DigiCompression
+    Check : {
+	module_type : CompressDigiMCsCheck
+	oldStrawDigiMCTag : @local::DigiCompressionTags.commonStrawDigiMCTag
+	newStrawDigiMCTag : "compressDigiMCs"
+	OldTimeOffsets : { inputs : [ @sequence::CommonMC.TimeMaps  ] }
+	NewTimeOffsets : { inputs : [ @sequence::DigiCompression.TimeMaps ] }
+	oldCaloShowerSimTag : @local::DigiCompressionTags.commonCaloShowerSimTag
+	newCaloShowerSimTag : "compressDigiMCs"
+	oldCrvDigiMCTag : @local::DigiCompressionTags.commonCrvDigiMCTag
+	newCrvDigiMCTag : "compressDigiMCs"
+	strawDigiMCIndexMapTag : ""
+	crvDigiMCIndexMapTag : ""
+	checkTrackerDuplicateSteps : true
+	oldCaloClusterMCTag : ""
+	newCaloClusterMCTag : ""
+    }
+}
+
+RecoCompression : {
+    TimeMaps : [ "compressRecoMCs:protonTimeMap", "compressRecoMCs:muonTimeMap", "compressRecoMCs:cosmicTimeMap" ]
+}
+RecoCompression: {
+  @table::RecoCompression
+    Check : {
+      module_type : CompressDigiMCsCheck
+      oldStrawDigiMCTag : "compressDigiMCs"
+      newStrawDigiMCTag : "compressRecoMCs"
+      OldTimeOffsets : { inputs : [ @sequence::DigiCompression.TimeMaps ] }
+      NewTimeOffsets : { inputs : [ @sequence::RecoCompression.TimeMaps ] }
+      strawDigiMCIndexMapTag : "SelectRecoMC:StrawDigiMap"
+      oldCrvDigiMCTag : "compressDigiMCs"
+      newCrvDigiMCTag : "compressRecoMCs"
+      crvDigiMCIndexMapTag : "SelectRecoMC:CrvDigiMap"
+      oldCaloShowerSimTag : ""
+      newCaloShowerSimTag : ""
+      checkTrackerDuplicateSteps : false
+      oldCaloClusterMCTag : "CaloClusterTruthMatch"
+      newCaloClusterMCTag : "compressRecoMCs"
+    }
+}
+
+END_PROLOG

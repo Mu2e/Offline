@@ -10,7 +10,7 @@ void mu2e::DbId::setDb(std::string const& name) {
     _url =        "https://dbdata0vm.fnal.gov:8444/QE/mu2e/prod/app/SQ/query?";
     _urlNoCache = "https://dbdata0vm.fnal.gov:9443/QE/mu2e/prod/app/SQ/query?";
   } else if(_name=="mu2e_conditions_dev") {
-    _host = "ifdb04";
+    _host = "ifdb07";
     _port = "5444";
     _url =        "https://dbdata0vm.fnal.gov:8444/QE/mu2e/dev/app/SQ/query?";
     _urlNoCache = "https://dbdata0vm.fnal.gov:9443/QE/mu2e/dev/app/SQ/query?";

@@ -94,7 +94,7 @@ CstTrigger : {
 
 	#From Filter, only by hits currently: 
 	cstSeedTSFilter : {
-	    module_type            : CosmicSTTrackSeedFilter
+	    module_type            : CosmicSeedFilter
 	    minnsh                 : 8	      
 	    minnch 		   : 8	      
 	    debugLevel             : 0	      
@@ -111,6 +111,17 @@ CstTrigger : {
 			   CstSimpleTimeCluster, cstSeedTCFilter,
 			   CosmicTrackFinder,
 			   cstSeedTSFilter ]
+	
+	cstSeedTiming0 : [ cstSeedEventPrescale,
+			   @sequence::TrkHitRecoTrigger.sequences.TTmakefastHits,
+			   cstSeedSDCountFilter, 
+			   CstSimpleTimeCluster, cstSeedTCFilter,
+			   CosmicTrackFinder ]
+
+	cstSeedTiming1 : [ cstSeedEventPrescale,
+			   @sequence::TrkHitRecoTrigger.sequences.TTmakefastHits,
+			   cstSeedSDCountFilter, 
+			   CstSimpleTimeCluster ]
 	
 	cstTimeCluster : [ cstTimeClusterEventPrescale, 
 			   @sequence::TrkHitRecoTrigger.sequences.TTprepareHits,

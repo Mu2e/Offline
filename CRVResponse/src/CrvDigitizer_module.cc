@@ -15,7 +15,7 @@
 #include "GeometryService/inc/DetectorSystem.hh"
 #include "GeometryService/inc/GeomHandle.hh"
 #include "GeometryService/inc/GeometryService.hh"
-#include "MCDataProducts/inc/CrvDigiMCCollection.hh"
+#include "MCDataProducts/inc/CrvDigiMC.hh"
 #include "RecoDataProducts/inc/CrvDigiCollection.hh"
 
 #include "canvas/Persistency/Common/Ptr.h"

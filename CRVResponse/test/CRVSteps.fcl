@@ -1,0 +1,47 @@
+#include "fcl/minimalMessageService.fcl"
+#include "fcl/standardServices.fcl"
+#include "CRVResponse/fcl/prolog.fcl"
+
+process_name : CrvStepsConverter
+
+source :
+{
+  module_type : RootInput
+}
+
+services : @local::Services.Core
+
+physics :
+{
+  producers:
+  {
+    CrvSteps: @local::CrvSteps
+  }
+
+  an : [CrvSteps]
+  out: [Output]
+
+  trigger_paths: [an]
+  end_paths:     [out]
+}
+
+outputs: 
+{
+  Output : 
+  {
+    module_type : RootOutput
+    outputCommands:   
+    [ 
+      "keep *_*_*_*",
+      "drop mu2e::StepPointMCs_*_CRV_*"
+    ]
+  }
+}
+
+physics.producers.CrvSteps.stepPointsModuleLabels : ["cosmicFilter"]
+#physics.producers.CrvSteps.stepPointsModuleLabels : ["g4run"]
+#physics.producers.CrvSteps.stepPointsModuleLabels : ["cosmicFilter","g4run"]
+#physics.producers.CrvSteps.stepPointsModuleLabels : ["*"]
+services.TFileService.fileName                    : "crvStepsConverter.root"
+outputs.Output.fileName                           : "crvStepsConverter.art"
+

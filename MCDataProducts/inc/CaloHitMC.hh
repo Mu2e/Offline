@@ -9,6 +9,7 @@
 #define MCDataProducts_CaloHitMC_hh
 
 #include "MCDataProducts/inc/CaloEDepMC.hh"
+#include "MCDataProducts/inc/SimParticleRemapping.hh"
 #include <vector>
 
 namespace mu2e
@@ -19,8 +20,16 @@ namespace mu2e
        public:                    
           CaloHitMC()                                     : edeps_()      {};
           CaloHitMC(const std::vector<CaloEDepMC>& edeps) : edeps_(edeps) {};
-                
+	  // reset SimParticle Ptrs
+          void resetSim(SimParticleRemapping const& remap) {
+	    for(auto& edep : edeps_){
+	      auto newsim = remap.at(edep.sim());
+	      edep.resetSim(newsim);
+	    }
+	  }
+        
           const std::vector<CaloEDepMC>& energyDeposits  ()           const {return edeps_;       }
+          std::vector<CaloEDepMC>& energyDeposits  ()           {return edeps_;       }
           const CaloEDepMC&              energyDeposit   (unsigned i) const {return edeps_.at(i); } 
           unsigned                       nParticles      ()           const {return edeps_.size();}
           float                          time            ()           const {return edeps_.at(0).time();}

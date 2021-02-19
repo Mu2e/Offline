@@ -1,4 +1,0 @@
-#include "JobConfig/cosmic/cosmic_defs_s4.fclinc"
-
-services.TFileService.fileName       : "nts.owner.cosmic-g4s4-target3.version.sequencer.root"
-outputs.filteredOutput.fileName      : "sim.owner.cosmic-g4s4-target3.version.sequencer.art"

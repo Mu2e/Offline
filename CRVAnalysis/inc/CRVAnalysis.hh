@@ -22,7 +22,7 @@ namespace mu2e
     static void FillCrvHitInfoCollections(const std::string &crvCoincidenceClusterModuleLabel,
                                           const std::string &crvCoincidenceClusterMCModuleLabel,
                                           const std::string &crvRecoPulseLabel,
-                                          const std::string &crvStepPointMCLabel,
+                                          const std::string &crvStepLabel,
                                           const std::string &simParticleLabel,
                                           const std::string &mcTrajectoryLabel,
                                           const art::Event& event, CrvHitInfoRecoCollection &recoInfo, CrvHitInfoMCCollection &MCInfo,

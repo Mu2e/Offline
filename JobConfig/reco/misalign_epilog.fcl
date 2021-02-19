@@ -5,6 +5,6 @@
 services.ProditionsService.alignedTracker.useDb: true
 services.ProditionsService.alignedTracker.verbose: 2
 #
-# select nominal (perfect) alignment or a misaligned file
+# select nominal (perfect) alignment or a misaligned file.  Select MDC2020 misalignment FIXME!
 services.DbService.textFile : ["JobConfig/reco/MT_MDC2018.txt"]
 services.DbService.verbose: 10

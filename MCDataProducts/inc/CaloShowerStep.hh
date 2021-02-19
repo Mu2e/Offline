@@ -31,7 +31,7 @@ namespace mu2e {
           const CLHEP::Hep3Vector&       position()       const {return pos_;}          
           int                            volumeG4ID()     const {return volumeG4ID_;}
           unsigned                       nCompress()      const {return nCompress_;}
-          float                          time()           const {return time_;}
+          double                         time()           const {return time_;}
           float                          energyDepG4()    const {return energyDepG4_;}
           float                          energyDepBirks() const {return energyDepBirks_;}
           float                          momentumIn()     const {return momentumIn_;}
@@ -45,7 +45,7 @@ namespace mu2e {
           art::Ptr<SimParticle>   sim_;            
           int                     volumeG4ID_;       
           unsigned                nCompress_;      
-          float                   time_;           
+          double                  time_;           
           float                   energyDepG4_;    
           float                   energyDepBirks_; 
           float                   momentumIn_;     

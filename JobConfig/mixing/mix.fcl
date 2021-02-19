@@ -1,0 +1,40 @@
+#
+#  Mixing configuration: this is a form of OnSpill digitization
+#
+#include "JobConfig/digitize/prolog.fcl"
+#include "JobConfig/mixing/prolog.fcl"
+process_name: Digitize
+source : { module_type : RootInput }
+services : @local::Services.SimAndReco # reco is needed for the trigger
+physics : { 
+  producers : {
+    @table::Digitize.producers
+    @table::Trigger.producers 
+  }
+  filters: { 
+    @table::Digitize.filters 
+    @table::Trigger.filters
+    @table::Mixing.filters
+  }
+  # setup 'trigger reject' stream after RejectEvents is implemented TODO!
+  analyzers: { @table::Digitize.analyzers }
+  TriggerPath : [ @sequence::Mixing.TriggerSequence, @sequence::Digitize.TriggerSequence ]
+  EndPath : @local::Digitize.EndPath
+}
+#
+outputs : { 
+  Output :@local::Digitize.Output
+}
+#
+# Final configuration
+#
+#include "JobConfig/mixing/epilog.fcl"
+#
+physics.end_paths : [ EndPath ] # needed for generate_fcl
+# generic output: this is overwritten by generate_fcl
+outputs.Output.fileName: "dig.owner.description.version.sequencer.art"
+# no histogram output
+services.TFileService.fileName : "/dev/null"
+# test values; these get overwritten by generate_fcl
+services.SeedService.baseSeed         :  773651
+services.SeedService.maxUniqueEngines :  20

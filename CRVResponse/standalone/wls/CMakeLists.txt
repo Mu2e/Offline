@@ -36,8 +36,8 @@ include_directories(${PROJECT_SOURCE_DIR}/include
                     ${PROJECT_SOURCE_DIR}/../../inc
                     ${PROJECT_SOURCE_DIR}/../../../
                     ${Geant4_INCLUDE_DIR}
-#                    ${ROOT_INCLUDE_DIRS})
-                    ${ROOT_INCLUDE_DIR})
+                    ${ROOT_INCLUDE_DIRS})
+#                    ${ROOT_INCLUDE_DIR})
 file(GLOB sources ${PROJECT_SOURCE_DIR}/src/*.cc
                   ${PROJECT_SOURCE_DIR}/../../src/MakeCrvPhotons.cc
                   ${PROJECT_SOURCE_DIR}/../../src/MakeCrvSiPMCharges.cc

@@ -73,6 +73,11 @@ namespace mu2e {
         (e.inTag, e.resolvedInstanceName(), &Mu2eProductMixer::mixStrawGasSteps, *this);
     }
 
+    for(const auto& e: conf.crvStepMixer().mixingMap()) {
+      helper.declareMixOp
+        (e.inTag, e.resolvedInstanceName(), &Mu2eProductMixer::mixCrvSteps, *this);
+    }
+
     for(const auto& e: conf.extMonSimHitMixer().mixingMap()) {
       helper.declareMixOp
         (e.inTag, e.resolvedInstanceName(), &Mu2eProductMixer::mixExtMonSimHits, *this);
@@ -221,6 +226,22 @@ namespace mu2e {
     art::flattenCollections(in, out, stepOffsets);
 
     for(StrawGasStepCollection::size_type i=0; i<out.size(); ++i) {
+      auto ie = getInputEventIndex(i, stepOffsets);
+      auto& step = out[i];
+      step.simParticle() = remap(step.simParticle(), simOffsets_[ie]);
+    }
+
+    return true;
+  }
+
+  bool Mu2eProductMixer::mixCrvSteps(std::vector<CrvStepCollection const*> const& in,
+                                          CrvStepCollection& out,
+                                          art::PtrRemapper const& remap)
+  {
+    std::vector<CrvStepCollection::size_type> stepOffsets;
+    art::flattenCollections(in, out, stepOffsets);
+
+    for(CrvStepCollection::size_type i=0; i<out.size(); ++i) {
       auto ie = getInputEventIndex(i, stepOffsets);
       auto& step = out[i];
       step.simParticle() = remap(step.simParticle(), simOffsets_[ie]);

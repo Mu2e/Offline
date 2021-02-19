@@ -2,6 +2,7 @@
 #------------------------------------------------------------------------------
 # this file is included by fcl/standardProducers.fcl inside the PROLOG section
 #------------------------------------------------------------------------------
+#include "fcl/TrkCaloDt.fcl"
 
 BEGIN_PROLOG
 
@@ -48,19 +49,6 @@ CosmicDriftFit : {
     module_type : CosmicDriftFit
     ComboHitCollection : "makeSH"
     LineSeedCollection : "LineFinder"
-}
-
-
-
-
-
-CHD : {
-    module_type : ComboHitDiag
-    StrawDigiMCCollection : "compressDigiMCs"
-    ComboHitCollection : "makePH"
-    UseFlagCollection : true
-    StrawHitFlagCollection : "FlagBkgHits:ComboHits"
-    TimeOffsets : {inputs : [ @sequence::DigiCompression.NoCosmicTimeMaps ]}
 }
 
 CosmicTrackFinder : { #split into Loose and tight below for efficieny studies
@@ -134,7 +122,7 @@ CosmicTrackDetails : {
     #TimeClusterCollection : TimeClusterFinderCosmics
     CosmicTrackSeedCollection : CosmicTrackFinder
     StrawDigiMCCollection : "compressDigiMCs"
-    TimeOffsets : {inputs : [ @sequence::DigiCompression.NoCosmicTimeMaps ]}
+    TimeOffsets : {inputs : [ @sequence::DigiCompression.TimeMaps ]}
 }
 
 CosmicAnalysis : {
@@ -144,7 +132,7 @@ CosmicAnalysis : {
     #TimeClusterCollection : TimeClusterFinderCosmics
     CosmicTrackSeedCollection : CosmicTrackFinder
     StrawDigiMCCollection : "compressDigiMCs"
-    TimeOffsets : {inputs : [ @sequence::DigiCompression.NoCosmicTimeMaps ]}
+    TimeOffsets : {inputs : [ @sequence::DigiCompression.TimeMaps ]}
 }
 
 CosmicFitDisplay : {
