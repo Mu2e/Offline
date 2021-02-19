@@ -11,12 +11,12 @@ namespace mu2e {
       CosmicTrackSeed* fCosmicTrackSeed;
     public:
       #ifndef __CINT__
-      explicit TEveMu2eStraightTrack(){};
+      explicit TEveMu2eStraightTrack();
       virtual ~TEveMu2eStraightTrack(){};
       #endif
       void DrawStraightTrack();
-      XYZVec GetPositon(){ return fCosmicTrackSeed->_track.MinuitEquation.Pos; } ;
-      XYZVec GetDirection(){ return fCosmicTrackSeed->_track.MinuitEquation.Dir; };
+      XYZVec GetPositon();
+      XYZVec GetDirection();
       ClassDef( TEveMu2eStraightTrack, 0);
   };
 }

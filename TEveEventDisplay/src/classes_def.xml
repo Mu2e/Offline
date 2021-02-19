@@ -12,11 +12,11 @@
   <class name="mu2e::TEveMu2eCRVEvent"/>
   <class name="mu2e::TEveMu2eBField"/>
   <class name="mu2e::TEveMu2e2DProjection"/>
+  <class name="mu2e::TEveMu2eProjectionInterface"/>
   <class name="mu2e::TEveMu2eTracker"/>
   <class name="mu2e::TEveMu2eCalorimeter"/>
   <class name="mu2e::TEveMu2eCRV"/>
   <class name="mu2e::TEveMu2eMCTraj"/>
-  <class name="mu2e::TEveMu2eCaloSimParticle"/>
 
 </lcgdict>
 
