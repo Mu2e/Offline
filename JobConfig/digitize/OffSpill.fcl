@@ -3,9 +3,9 @@
 #
 #include "JobConfig/digitize/digitize.fcl"
 # add trigger paths
-#include "gen/fcl/Trigger/OnSpillTrigMenu/OffSpillTrigMenu.fcl"
+#include "gen/fcl/Trigger/OffSpillTrigMenu/OffSpillTrigMenu.fcl"
 # setthe event timing for OffSpill
-physics.producers.EWMProducer.SillType : 0
+physics.producers.EWMProducer.SpillType : 0
 # set the cosmic time window WRT the detector steps
 physics.producers.cosmicTimeMap.StrawGasSteps : [ "StrawGasStepMaker" ] 
 physics.producers.cosmicTimeMap.CaloShowerSteps : [ "CaloShowerStepMaker" ]

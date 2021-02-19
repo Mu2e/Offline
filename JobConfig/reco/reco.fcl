@@ -16,7 +16,7 @@ physics :
   filters : @local::Reconstruction.filters
   analyzers: @local::Reconstruction.analyzers
   RecoPath : [ @sequence::Reconstruction.RecoMCPath ]
-  EndPath : [ Output, recoCompressionCheck  ]
+  EndPath : @local::Reconstruction.EndPath
 }
 outputs : {   
   Output : {
