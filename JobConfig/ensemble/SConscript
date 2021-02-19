@@ -3,18 +3,20 @@
 # Original author Rob Kutschke.
 #
 
-import os
-Import('env')
-
-Import('mu2e_helper')
-helper = mu2e_helper(env)
-
-# this python code generates ensemble fcl in gen/fcl/JobConfig/ensemble
-import genEnsembleFcl
-# run like this, it just generates the source and target file listss
-sources,targets = genEnsembleFcl.generate(False)
-# this schedules it to run again to make the files
-helper.make_generic(sources,targets,"JobConfig/ensemble/genEnsembleFcl.py")
+# rlc 2/2021 disable for now - restart when it is reviewed/updated
+#
+#   import os
+#   Import('env')
+#   
+#   Import('mu2e_helper')
+#   helper = mu2e_helper(env)
+#   
+#   # this python code generates ensemble fcl in gen/fcl/JobConfig/ensemble
+#   import genEnsembleFcl
+#   # run like this, it just generates the source and target file listss
+#   sources,targets = genEnsembleFcl.generate(False)
+#   # this schedules it to run again to make the files
+#   helper.make_generic(sources,targets,"JobConfig/ensemble/genEnsembleFcl.py")
 
 # this tells emacs to view this file in python mode.
 # Local Variables:
