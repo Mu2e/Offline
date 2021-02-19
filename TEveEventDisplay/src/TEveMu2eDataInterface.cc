@@ -148,10 +148,12 @@ template <typename L> void maxminCRV(L data, double &max, double &min){
             hep3vectorTocm(crvCounterPos);
             string pos3D = "(" + to_string((double)crvCounterPos.x()) + ", " + to_string((double)crvCounterPos.y()) + ", " + to_string((double)crvCounterPos.z()) + ")";
 
-            teve_crv3D->DrawHit3D("CRVHits3D, Position = " + pos3D + ", Pulse Time = " + to_string(crvRecoPulse.GetPulseTime()) + ", Pulse Height = "+ to_string(crvRecoPulse.GetPulseHeight()) + + "Pulse Beta = " + to_string(crvRecoPulse.GetPulseBeta()),  i + 1, crvCounterPos, CrvList3D);
-            fCrvList3D->AddElement(CrvList3D); 
 
-          } 
+            if( (min_time == -1 && max_time == -1) or (crvRecoPulse.GetPulseTime() > min_time and crvRecoPulse.GetPulseTime() < max_time)){
+              teve_crv3D->DrawHit3D("CRVHits3D, Position = " + pos3D + ", Pulse Time = " + to_string(crvRecoPulse.GetPulseTime()) + ", Pulse Height = "+ to_string(crvRecoPulse.GetPulseHeight()) + + "Pulse Beta = " + to_string(crvRecoPulse.GetPulseBeta()),  i + 1, crvCounterPos, CrvList3D);
+              fCrvList3D->AddElement(CrvList3D); 
+            }
+         } 
           gEve->AddElement(fCrvList3D);
           gEve->Redraw3D(kTRUE); 
         }
