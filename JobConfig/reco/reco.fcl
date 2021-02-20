@@ -24,6 +24,8 @@ outputs : {
     SelectEvents : [ "RecoPath" ]
   }
 }
+# final config
+#include "JobConfig/reco/epilog.fcl"
 physics.end_paths : [ EndPath ] # needed for generate_fcl
 # no histogram output
 services.TFileService.fileName: "/dev/null"

@@ -1,0 +1,2 @@
+# patch CRV
+physics.producers.CrvCoincidenceClusterMatchMC.crvWaveformsModuleLabel : "compressDigiMCs"
