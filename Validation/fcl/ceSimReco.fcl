@@ -78,6 +78,7 @@ outputs : {
 }
 #include "JobConfig/primary/epilog.fcl"
 #include "JobConfig/digitize/epilog.fcl"
+#include "JobConfig/reco/epilog.fcl"
 physics.analyzers.digiCompressionCheck.SelectEvents : [ TriggerPath ]
 physics.analyzers.recoCompressionCheck.SelectEvents : [ TriggerPath ]
 #
