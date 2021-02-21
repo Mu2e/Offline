@@ -10,6 +10,7 @@
 #include "CRVResponse/fcl/prolog.fcl"
 #include "Filters/fcl/prolog.fcl"
 #include "Compression/fcl/prolog.fcl"
+#include "JobConfig/cosmic/prolog.fcl"
 #
 BEGIN_PROLOG
 
@@ -48,7 +49,6 @@ Primary: {
     g4status: @local::Cosmic.g4status
     stepPointMomentumFilter : @local::Cosmic.stepPointMomentumFilter
     cosmicFilter : @local::Cosmic.cosmicFilter
-
 
 # default step filter for Sim Primary selection
     DetStepFilter : {
