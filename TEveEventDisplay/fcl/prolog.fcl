@@ -4,6 +4,10 @@ TEveGDMLTest : {
   module_type : TEveGDMLTest
 }
 
+TEveNonGDMLTest : {
+  module_type : TEveNonGDMLTest
+}
+
 TEveEventDisplayBase : {
     module_type : TEveEventDisplay
     accumulate : false
@@ -84,10 +88,12 @@ TEveDis : {
 			TEveEventDisplayCosmics  : @local::TEveEventDisplayCosmics
  			TEveEventDisplayHelix    : @local::TEveEventDisplayHelix
  			TEveGDMLTest             : @local::TEveGDMLTest
+ 			TEveNonGDMLTest           : @local::TEveNonGDMLTest
 	} 
 
 	seqCosmics 	: [TEveEventDisplayCosmics]
 	seqHelix   	: [TEveEventDisplayHelix]
 	seqTest     : [TEveGDMLTest]
+	seqGeomTest     : [TEveNonGDMLTest]
 }
 END_PROLOG
