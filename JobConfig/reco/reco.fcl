@@ -16,7 +16,7 @@ physics :
   filters : @local::Reconstruction.filters
   analyzers: @local::Reconstruction.analyzers
   RecoPath : [ @sequence::Reconstruction.RecoMCPath ]
-  EndPath : [ Output, recoCompressionCheck  ]
+  EndPath : @local::Reconstruction.EndPath
 }
 outputs : {   
   Output : {
@@ -24,6 +24,8 @@ outputs : {
     SelectEvents : [ "RecoPath" ]
   }
 }
+# final config
+#include "JobConfig/reco/epilog.fcl"
 physics.end_paths : [ EndPath ] # needed for generate_fcl
 # no histogram output
 services.TFileService.fileName: "/dev/null"

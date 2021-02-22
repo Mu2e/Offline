@@ -139,6 +139,8 @@ Reconstruction : {
       rekeySimParticleCollection : false
       noCompression : false
     }
+
+
   }
   
   filters : {
@@ -229,7 +231,9 @@ Reconstruction : {
 	    "keep mu2e::EventWeight_*_*_*",
 	    "keep *_compressRecoMCs_*_*"
 	    ]
+    EndSequence : [ recoCompressionCheck ]
 }
+Reconstruction.EndPath : [ @sequence::Reconstruction.EndSequence, Output  ]
 
 # override CalPatRec defaults: FIXME!
 Reconstruction.filters.CalHelixFinderDe.StrawHitFlagCollectionLabel                 : "FlagBkgHits:ComboHits"
