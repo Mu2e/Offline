@@ -93,16 +93,16 @@ namespace mu2e
       application_ = new TApplication( "noapplication", &tmp_argc, tmp_argv );
     }
     _frame = new TEveMu2eMainWindow(gClient->GetRoot(), 1000,600, _pset);
-    _frame->StartProjectionTabs();
+    //_frame->StartProjectionTabs();
     std::cout<<"[Ending TEveEventDisplay::beginJob()]"<<std::endl;
   }
 
   void TEveEventDisplay::beginRun(const art::Run& run){
     std::cout<<"[Starting TEveEventDisplay::beginRun()]"<<std::endl;
     _frame->SetRunGeometry(run, _diagLevel, _showBuilding, _showDSOnly, _showCRV);
-    _frame->PrepareTrackerProjectionTab(run);
-    _frame->PrepareCaloProjectionTab(run);
-    std::cout<<"[Ending TEveEventDisplay::beginJob()]"<<std::endl;
+    //_frame->PrepareTrackerProjectionTab(run);
+    //_frame->PrepareCaloProjectionTab(run);
+    std::cout<<"[Ending TEveEventDisplay::beginRun()]"<<std::endl;
   }
 
   void TEveEventDisplay::analyze(const art::Event& event){

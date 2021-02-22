@@ -1,6 +1,8 @@
-
-
 BEGIN_PROLOG
+
+TEveGDMLTest : {
+  module_type : TEveGDMLTest
+}
 
 TEveEventDisplayBase : {
     module_type : TEveEventDisplay
@@ -16,7 +18,7 @@ TEveEventDisplayBase : {
       CaloClusterCollection		  :  "CaloClusterMaker"
       CaloCrystalHitCollection  :  NULL
       HelixSeedCollection       :  "HelixFinderDe:Negative"
-      KalSeedCollection         :  ["KFFDeM"]#, "KFFDeMHPar", "KFFDeMHDar" ]
+      KalSeedCollection         :  ["KFFDeM"]
       TrkExtTrajCollection      : NULL
       MCTrajectoryCollection    :  "compressDigiMCs"
       addHits 			            : true
@@ -33,22 +35,22 @@ TEveEventDisplayBase : {
 TEveEventDisplayHelix : {
       @table::TEveEventDisplayBase
       filler : {
-        ComboHitCollection 		    : "makeSH"
+        ComboHitCollection 	  : "makeSH"
         CrvRecoPulseCollection	  :  NULL
         CosmicTrackSeedCollection :  NULL
-        CaloClusterCollection		  :  "CaloClusterMaker"
+        CaloClusterCollection     :  "CaloClusterMaker"
         CaloCrystalHitCollection  :  NULL
-        HelixSeedCollection       :  NULL #"HelixFinderDe:Negative"
+        HelixSeedCollection       :  "HelixFinderDe:Negative"
         KalSeedCollection         :  ["KFFDeM"]#, "KFFDeMHPar", "KFFDeMHDar" ]
-        TrkExtTrajCollection      : NULL
+        TrkExtTrajCollection      :  NULL
         MCTrajectoryCollection    :  "compressDigiMCs"
-        addHits 			            : false
-        addTracks 			          : true
-        addCrvHits			          : false
-        addCosmicSeedFit	        : false
-        addClusters			          : true
-        addTrkExtTrajs		        : false
-        addMCTraj				          : false 
+        addHits 		  : false
+        addTracks 		  : false
+        addCrvHits		  : false
+        addCosmicSeedFit	  : false
+        addClusters		  : false
+        addTrkExtTrajs		  : false
+        addMCTraj		  : false 
       }
   }   
 
@@ -81,9 +83,11 @@ TEveDis : {
 	    TEveEventDisplayBase     : @local::TEveEventDisplayBase
 			TEveEventDisplayCosmics  : @local::TEveEventDisplayCosmics
  			TEveEventDisplayHelix    : @local::TEveEventDisplayHelix
+ 			TEveGDMLTest             : @local::TEveGDMLTest
 	} 
 
 	seqCosmics 	: [TEveEventDisplayCosmics]
 	seqHelix   	: [TEveEventDisplayHelix]
+	seqTest     : [TEveGDMLTest]
 }
 END_PROLOG

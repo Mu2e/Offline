@@ -8,17 +8,24 @@
 #include "TrkHitReco/fcl/prolog.fcl"
 #include "TEveEventDisplay/fcl/prolog.fcl"
 
+source : { module_type : RootInput
+}
+
 services : @local::Services.Reco
 
-process_name : HelixED
+process_name : MultipleHelixED
 
 source : { module_type : RootInput }
 
 physics :
 {
- analyzers : { @table::TEveDis.analyzers}
+  
+  producers : { @table::TrkHitReco.producers} 
+  analyzers : { @table::TEveDis.analyzers}
+  filters : { @table::TEveDis.filters}
 }
 
+physics.RecoPath : [ EventFilter, @sequence::TrkHitReco.PrepareHits]
 physics.EndPath  : [ @sequence::TEveDis.seqHelix] 
 
 

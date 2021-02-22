@@ -473,42 +473,45 @@ namespace mu2e{
   }
 
   void TEveMu2eMainWindow::SetRunGeometry(const art::Run& run, int _diagLevel, bool _showBuilding, bool _showDSOnly, bool _showCRV){
-
+    std::cout<<"Point 1"<<std::endl;
     if(gGeoManager){
       gGeoManager->GetListOfNodes()->Delete();
       gGeoManager->GetListOfVolumes()->Delete();
       gGeoManager->GetListOfShapes()->Delete();
     }
     gEve->GetGlobalScene()->DestroyElements();
-
+    std::cout<<"Point 2"<<std::endl;
     // Import the GDML of entire Mu2e Geometry
     geom = mu2e_geom->Geom_Interface::getGeom("TEveEventDisplay/src/fix.gdml");
-
+    std::cout<<"Point 3"<<std::endl;
     //Get Top Volume
     TGeoVolume* topvol = geom->GetTopVolume();
-
+    std::cout<<"Point 4"<<std::endl;
     //Set Top Volume for gGeoManager:
-  
+    
     gGeoManager->SetTopVolume(topvol);
-    //gGeoManager->SetTopVisible(kTRUE);
-
+    gGeoManager->SetTopVisible(kTRUE);//HERE
+    std::cout<<"Point 5"<<std::endl;
     //Get Top Node:
     TGeoNode* topnode = gGeoManager->GetTopNode();
     TEveGeoTopNode* etopnode = new TEveGeoTopNode(gGeoManager, topnode);
     etopnode->SetVisLevel(4);
     etopnode->GetNode()->GetVolume()->SetVisibility(kFALSE);
-
+    std::cout<<"Point 6"<<std::endl;
     setRecursiveColorTransp(etopnode->GetNode()->GetVolume(), kWhite-10,70);
 
     if(!_showBuilding){ 
       mu2e_geom->SolenoidsOnly(topnode);
       mu2e_geom->hideTop(topnode, _diagLevel);
+     std::cout<<"Point 7"<<std::endl;
     }
     if(_showDSOnly){
      mu2e_geom->InsideDS(topnode, false );
+     std::cout<<"Point 8"<<std::endl;
     }
     if(_showCRV){
       mu2e_geom->InsideCRV(topnode, true);
+      std::cout<<"Point 1"<<std::endl;
     }
     //Add static detector geometry to global scene
     gEve->AddGlobalElement(etopnode);
