@@ -46,7 +46,7 @@
 #include "KinKal/Trajectory/LoopHelix.hh"
 #include "KinKal/Trajectory/ParticleTrajectory.hh"
 #include "KinKal/Trajectory/PiecewiseClosestApproach.hh"
-#include "KinKal/Detector/StrawMat.hh"
+#include "KinKal/Detector/StrawMaterial.hh"
 #include "KinKal/Detector/StrawXing.hh"
 #include "KinKal/MatEnv/MatDBInfo.hh"
 #include "KinKal/Trajectory/Line.hh"
@@ -73,29 +73,33 @@ namespace mu2e {
 //  using TSH = KKStrawHit<KTRAJ>;
 //  using TPH = KKPanelHit<KTRAJ>;
   using KKTRK = KinKal::Track<KTRAJ>;
-  using STRAWXING = KinKal::StrawXing<KTRAJ>;
-  using KinKal::Line;
-  using PTCA = KinKal::PiecewiseClosestApproach<KTRAJ,Line>;
-  using MatEnv::MatDBInfo;
-  using KinKal::DVEC;
-  using KinKal::Parameters;
-  using KinKal::VEC3;
-  using KinKal::TimeRange;
-  using KinKal::Config;
-  using KinKal::MetaIterConfig;
-  using KinKal::CAHint;
-  using KinKal::StrawMat;
   using MEAS = KinKal::Hit<KTRAJ>;
   using MEASPTR = std::shared_ptr<MEAS>;
   using MEASCOL = std::vector<MEASPTR>;
   using KKSTRAWHIT = KKStrawHit<KTRAJ>;
-
+  using STRAWXING = KinKal::StrawXing<KTRAJ>;
+  using EXING = KinKal::ElementXing<KTRAJ>;
+  using EXINGPTR = std::shared_ptr<EXING>;
+  using EXINGCOL = std::vector<EXINGPTR>;
+  using KinKal::Line;
+  using PTCA = KinKal::PiecewiseClosestApproach<KTRAJ,Line>;
+  using TCA = KinKal::ClosestApproach<KTRAJ,Line>;
+  using MatEnv::MatDBInfo;
+  using KKConfig = KinKal::Config;
+  using KinKal::DVEC;
+  using KinKal::Parameters;
+  using KinKal::VEC3;
+  using KinKal::TimeRange;
+  using KinKal::MetaIterConfig;
+  using KinKal::CAHint;
+  using KinKal::StrawMaterial;
+  using KinKal::WireHitState;
   class LoopHelixFit : public art::EDProducer {
     using Name    = fhicl::Name;
     using Comment = fhicl::Comment;
 
     struct ModuleSettings {
-      fhicl::Sequence<art::InputTag> seedCollections         {Name("HelixSeedCollections"),     Comment("Helix seed fit collections to be processed ") };
+      fhicl::Sequence<art::InputTag> helixSeedCollections         {Name("HelixSeedCollections"),     Comment("Helix seed fit collections to be processed ") };
       fhicl::Atom<art::InputTag>     comboHitCollection     {Name("ComboHitCollection"),     Comment("Single Straw ComboHit collection ") };
       fhicl::Atom<art::InputTag>     strawHitFlagCollection {Name("StrawHitFlagCollection"), Comment("StrawHitFlag collection ") };
       fhicl::Atom<int> fitParticle {  Name("fitparticle"), Comment("Particle type to fit: e-, e+, mu-, ..."), PDGCode::e_minus};
@@ -104,7 +108,7 @@ namespace mu2e {
       fhicl::Atom<bool> useCalo { Name("UseCaloCluster"), Comment("Add CaloCluster info to final fit or not") };
       fhicl::Atom<int> diagLevel { Name("DiagLevel"), Comment("Diagnostic Level"), 0 };
       fhicl::Atom<int> debugLevel { Name("DebugLevel"), Comment("Debug Level"), 0 };
-      fhicl::Sequence<std::string> helixFlags { Name("HelixFlags"), Comment("Flags required to be present to convert a seed to a KinKal track") };
+      fhicl::Sequence<std::string> helixFlags { Name("HelixFlags"), Comment("Flags required to be present to convert a helix seed to a KinKal track") };
       fhicl::Atom<bool> saveAll { Name("SaveAllFits"), Comment("Save all fits, whether they suceed or not"),false };
       fhicl::Sequence<std::string> addHitFlags { Name("AddHitFlags"), Comment("Flags required to be present to add a hit") };
       fhicl::Sequence<std::string> rejectHitFlags { Name("RejectHitFlags"), Comment("Flags required not to be present to add a hit") };
@@ -133,21 +137,21 @@ namespace mu2e {
       fhicl::Atom<float> tBuffer { Name("TimeBuffer"), Comment("Time buffer for final fit") };
       fhicl::Atom<float> btol { Name("BCorrTolerance"), Comment("Tolerance on BField correction accuracy (mm)"), 0.01 };
       fhicl::Atom<int> minndof { Name("MinNDOF"), Comment("Minimum number of Degrees of Freedom to conitnue fitting"), 5  };
-      fhicl::Atom<bool> addmat { Name("AddMaterial"), Comment("Add material effecst to the fit"), true };
-      fhicl::Atom<int> bfieldCorr { Name("BFieldCorr"), Comment("BField correction algorith") };
-      fhicl::Atom<float> nullvar { Name("NullHitVariance"), Comment("Spatial variance for null wire hits (mm)"), 1.0 };
-      fhicl::Atom<float> nulltoffset { Name("NullHitTimeOffset"), Comment("Time Offset for null wire hits (ns)"), 20.0 };
+      fhicl::Atom<int> bfieldCorr { Name("BFieldCorr"), Comment("BField correction algorithm") };
       fhicl::Atom<int> printLevel { Name("PrintLevel"), Comment("Print Level"),0};
     };
 
-    using MetaSettings = fhicl::Sequence<fhicl::Tuple<bool,bool,bool,float,float,float,float,float>>;
+    using MetaIterationSettings = fhicl::Sequence<fhicl::Tuple<float,float,float,float>>;
+    using StrawHitUpdateSettings = fhicl::Sequence<fhicl::Tuple<float,float,bool,unsigned,unsigned>>;
     struct ModuleConfig {
       fhicl::Table<ModuleSettings> modsettings { Name("ModuleSettings") };
       fhicl::Table<FitSettings> fitsettings { Name("FitSettings") };
       fhicl::Table<MaterialSettings> matsettings { Name("MaterialSettings") };
-      MetaSettings mconfig { Name("MetaIterationSettings"), Comment("MetaIteration sequence configuration parameters, format: \n"
-      " 'UpdateMaterials (t/f)', 'UpdateBFieldCorrection (t/f)', 'UpdateHits (t/f)', 'Temperature (dimensionless)', \n"
-      "'chisq/dof for convergence', 'chisq/dof for divergence', 'chisq/dof for oscillation', 'TPOCA convergence tolerance (ns)'") };
+      MetaIterationSettings mconfig { Name("MetaIterationSettings"), Comment("MetaIteration sequence configuration parameters, format: \n"
+      " 'Temperature (dimensionless)', 'TPOCA convergence tolerance (ns)', \n"
+      "'Delta chisquared/DOF for convergence', 'Delta chisquared/DOF for divergence'") };
+      StrawHitUpdateSettings shuconfig { Name("StrawHitUpdateSettings"), Comment("Setting sequence for updating StrawHits, format: \n"
+      " 'MinDoca', 'MaxDoca', 'UseNullTime', 'First Meta-iteration', 'Last Meta-iteration'") };
     };
     using ModuleParams = art::EDProducer::Table<ModuleConfig>;
 
@@ -157,7 +161,7 @@ namespace mu2e {
     void beginRun(art::Run& aRun) override;
     void produce(art::Event& event) override;
     private:
-    std::vector<art::ProductToken<HelixSeedCollection>> seedCols_;
+    std::vector<art::ProductToken<HelixSeedCollection>> hseedCols_;
     art::ProductToken<ComboHitCollection> chcol_T_;
     art::ProductToken<StrawHitFlagCollection> shfcol_T_;
     TrkFitFlag goodhelix_;
@@ -166,12 +170,12 @@ namespace mu2e {
     PDGCode::type tpart_;
     ProditionsHandle<StrawResponse> strawResponse_h_;
     ProditionsHandle<Tracker> alignedTracker_h_;
+    int diag_, debug_;
     float maxDoca_, maxDt_, maxChi_, maxDU_, tbuff_, tpocaprec_;
     KKFileFinder filefinder_;
     std::string wallmatname_, gasmatname_, wirematname_;
-    std::unique_ptr<StrawMat> smat_; // straw material
-    Config config_;
-    KinKal::WireHitState whstate_; // initial state of wire hits
+    std::unique_ptr<StrawMaterial> smat_; // straw material
+    KKConfig kkconfig_; // KinKal fit configuration
   };
 
   LoopHelixFit::LoopHelixFit(const ModuleParams& config) : art::EDProducer{config}, 
@@ -180,6 +184,8 @@ namespace mu2e {
     goodhelix_(config().modsettings().helixFlags()),
     saveall_(config().modsettings().saveAll()),
     tdir_(static_cast<TrkFitDirection::FitDirection>(config().modsettings().fitDirection())), tpart_(static_cast<PDGCode::type>(config().modsettings().fitParticle())),
+    diag_(config().modsettings().diagLevel()),
+    debug_(config().modsettings().debugLevel()),
     maxDoca_(config().modsettings().maxAddDOCA()),
     maxDt_(config().modsettings().maxAddDt()),
     maxChi_(config().modsettings().maxAddChi()),
@@ -189,36 +195,41 @@ namespace mu2e {
     filefinder_(config().matsettings().elements(),config().matsettings().isotopes(),config().matsettings().materials()),
     wallmatname_(config().matsettings().strawWallMaterialName()),
     gasmatname_(config().matsettings().strawGasMaterialName()),
-    wirematname_(config().matsettings().strawWireMaterialName()),
-    whstate_(KinKal::WireHitState::null, KinKal::WireHitState::both,config().fitsettings().nullvar(), config().fitsettings().nulltoffset())
+    wirematname_(config().matsettings().strawWireMaterialName())
   {
     // collection handling
-    for(const auto& seedtag : config().modsettings().seedCollections()) { seedCols_.emplace_back(consumes<HelixSeedCollection>(seedtag)); }
+    for(const auto& hseedtag : config().modsettings().helixSeedCollections()) { hseedCols_.emplace_back(consumes<HelixSeedCollection>(hseedtag)); }
     produces<KKLoopHelixCollection>();
     produces<KalSeedCollection>();
     // construct the fit configuration object.  This controls all the global and iteration-specific aspects of the fit
-    config_.maxniter_ = config().fitsettings().maxniter();
-    config_.dwt_ = config().fitsettings().dwt();
-    config_.tbuff_ = config().fitsettings().tBuffer();
-    config_.tol_ = config().fitsettings().btol();
-    config_.minndof_ = config().fitsettings().minndof();
-    config_.addmat_ = config().fitsettings().addmat();
-    config_.bfcorr_ = static_cast<Config::BFCorr>(config().fitsettings().bfieldCorr());
-    config_.plevel_ = static_cast<Config::printLevel>(config().fitsettings().printLevel());
+    kkconfig_.maxniter_ = config().fitsettings().maxniter();
+    kkconfig_.dwt_ = config().fitsettings().dwt();
+    kkconfig_.tbuff_ = config().fitsettings().tBuffer();
+    kkconfig_.tol_ = config().fitsettings().btol();
+    kkconfig_.minndof_ = config().fitsettings().minndof();
+    kkconfig_.bfcorr_ = static_cast<KKConfig::BFCorr>(config().fitsettings().bfieldCorr());
+    kkconfig_.plevel_ = static_cast<KKConfig::printLevel>(config().fitsettings().printLevel());
     // Now set the schedule for the meta-iterations
     unsigned nmiter(0);
     for(auto const& misetting : config().mconfig()) {
       MetaIterConfig mconfig;
-      mconfig.updatemat_ = std::get<0>(misetting);
-      mconfig.updatebfcorr_ = std::get<1>(misetting);
-      mconfig.updatehits_ = std::get<2>(misetting);
-      mconfig.temp_ = std::get<3>(misetting);
-      mconfig.convdchisq_ = std::get<4>(misetting);
-      mconfig.divdchisq_ = std::get<5>(misetting);
-      mconfig.oscdchisq_ = std::get<6>(misetting);
-      mconfig.tprec_ = std::get<7>(misetting);
+      mconfig.temp_ = std::get<0>(misetting);
+      mconfig.tprec_ = std::get<1>(misetting);
+      mconfig.convdchisq_ = std::get<2>(misetting);
+      mconfig.divdchisq_ = std::get<3>(misetting);
       mconfig.miter_ = nmiter++;
-      config_.schedule_.push_back(mconfig);
+      kkconfig_.schedule_.push_back(mconfig);
+    }
+    auto& schedule = kkconfig_.schedule();
+    // simple hit updating
+    for(auto const& shusetting : config().shuconfig() ) {
+      KKSimpleStrawHitUpdater shupdater(std::get<0>(shusetting), std::get<1>(shusetting), std::get<2>(shusetting));
+      unsigned minmeta = std::get<3>(shusetting);
+      unsigned maxmeta = std::get<4>(shusetting);
+      if(maxmeta < minmeta || kkconfig_.schedule_.size() < maxmeta)
+	throw cet::exception("RECO")<<"mu2e::LoopHelixFit: Hit updater configuration error"<< endl;
+      for(unsigned imeta=minmeta; imeta<=maxmeta; imeta++)
+	schedule[imeta].updaters_.push_back(shupdater);
     }
   }
 
@@ -229,7 +240,7 @@ namespace mu2e {
     GeomHandle<Tracker> tracker_h;
     auto const& sprop = tracker_h->strawProperties();
     MatDBInfo matdbinfo(filefinder_);
-    smat_ = std::make_unique<StrawMat>(
+    smat_ = std::make_unique<StrawMaterial>(
 	sprop._strawOuterRadius, sprop._strawWallThickness, sprop._wireRadius,
 	matdbinfo.findDetMaterial(wallmatname_),
 	matdbinfo.findDetMaterial(gasmatname_),
@@ -243,37 +254,41 @@ namespace mu2e {
     auto const& tracker = alignedTracker_h_.getPtr(event.id()).get();
     GeomHandle<BFieldManager> bfmgr;
     GeomHandle<DetectorSystem> det;
-    KKBField kkbf(*bfmgr,*det); // should set this at beginrun TODO
+    KKBField kkbf(*bfmgr,*det); // move this to beginrun TODO
+    // initial WireHitState; this gets overwritten in updating.  Move this to beginrun TODO
+    double rstraw = tracker->strawProperties().strawInnerRadius();
+    static const double invsqrt12(1.0/sqrt(12.0));
+    WireHitState whstate(WireHitState::null, WireHitState::both, rstraw*invsqrt12,0.5*rstraw/strawresponse->driftConstantSpeed()); 
     // find input hits
     auto ch_H = event.getValidHandle<ComboHitCollection>(chcol_T_);
     auto const& chcol = *ch_H;;
-
     // create output
     unique_ptr<KKLoopHelixCollection> kktrkcol(new KKLoopHelixCollection );
     unique_ptr<KalSeedCollection> kkseedcol(new KalSeedCollection );
     // find the seed collections
-    for (auto const& seedtag : seedCols_) {
-      auto const& seedcol_h = event.getValidHandle<HelixSeedCollection>(seedtag);
+    for (auto const& hseedtag : hseedCols_) {
+      auto const& hseedcol_h = event.getValidHandle<HelixSeedCollection>(hseedtag);
       // loop over the seeds
-      for( auto const& seed : *seedcol_h ) {
-	if(seed.status().hasAllProperties(goodhelix_)){
+      for( auto const& hseed : *hseedcol_h ) {
+	if(hseed.status().hasAllProperties(goodhelix_)){
 	  // create a PKTRAJ from the helix fit result, to seed the KinKal fit.  First, translate the parameters
 	  // Note the flips in case of backwards propagation
-	  auto const& shelix = seed.helix();
+	  auto const& shelix = hseed.helix();
+	  auto const& hhits = hseed.hits();
 	  DVEC pars;
 	  pars[KTRAJ::rad_] = shelix.radius();
 	  pars[KTRAJ::lam_] = shelix.lambda();
 	  pars[KTRAJ::cx_] = shelix.centerx();
 	  pars[KTRAJ::cy_] = shelix.centery();
 	  pars[KTRAJ::phi0_] = shelix.fz0();
-	  pars[KTRAJ::t0_] = seed.t0().t0();
+	  pars[KTRAJ::t0_] = hseed.t0().t0();
 	  if(tdir_ == TrkFitDirection::upstream){
 	    pars[KTRAJ::rad_] *= -1.0;
 	    pars[KTRAJ::lam_] *= -1.0;
 	  }
 	  Parameters kkpars(pars);
 	  // compute the magnetic field at the center.  We only want the z compontent, as the helix fit assumes B points along Z
-	  float zcent = 0.5*(seed.hits().front().pos().Z()+seed.hits().back().pos().Z());
+	  float zcent = 0.5*(hhits.front().pos().Z()+hhits.back().pos().Z());
 	  VEC3 center(shelix.centerx(), shelix.centery(),zcent);
 	  auto bcent = kkbf.fieldVect(center);
 	  VEC3 bnom(0.0,0.0,bcent.Z());
@@ -283,18 +298,19 @@ namespace mu2e {
 	  // find the time range, using the hit time
 	  //	float tmin = std::numeric_limits<float>::max();
 	  //	float tmax = std::numeric_limits<float>::min();
-	  TimeRange trange(seed.hits().front().correctedTime() - tbuff_, seed.hits().back().correctedTime() + tbuff_);
+	  TimeRange trange(hhits.front().correctedTime() - tbuff_, hhits.back().correctedTime() + tbuff_);
 	  //  construct the trajectory
-	  KTRAJ ktraj(kkpars, trange, mass, charge, bnom);
-	  PKTRAJ seedtraj(ktraj);
+	  KTRAJ seedtraj(kkpars, trange, mass, charge, bnom);
+	  PKTRAJ pseedtraj(seedtraj);
 	  // construct individual KKHit objects from each Helix hit
 	  // first, we need to unwind the straw combination
 	  std::vector<StrawHitIndex> strawHitIdxs;
-	  for(size_t ihit = 0; ihit < seed.hits().size(); ++ihit ){
+	  for(size_t ihit = 0; ihit < hhits.size(); ++ihit ){
 // dig down to the straw-level hits
-	    seed.hits().fillStrawHitIndices(event,ihit,strawHitIdxs);
+	    hhits.fillStrawHitIndices(event,ihit,strawHitIdxs);
 	  }
-	  MEASCOL thits; //polymorphic container of hits
+	  MEASCOL thits; // polymorphic container of hits
+	  EXINGCOL exings; // polymorphic container of detector element crossings 
 
 	  for(auto strawidx : strawHitIdxs) {
 	    const ComboHit& strawhit(chcol.at(strawidx));
@@ -314,45 +330,38 @@ namespace mu2e {
 	    // compute 'hint' to TPOCA.  correct the hit time using the time division
 	    double psign = propdir.dot(straw.wireDirection());  // wire distance is WRT straw center, in the nominal wire direction
 	    double htime = wline.t0() - (straw.halfLength()-psign*strawhit.wireDist())/wline.speed();
-	    CAHint hint(ktraj.ztime(vp0.Z()),htime);
+	    CAHint hint(seedtraj.ztime(vp0.Z()),htime);
 	    // compute a preliminary PTCA between the seed trajectory and this straw.
-	    PTCA ptca(seedtraj, wline, hint, tpocaprec_);
+	    PTCA ptca(pseedtraj, wline, hint, tpocaprec_);
 	    std::cout << ptca.doca() << std::endl;
-	    // create the material crossing from this PTCA
-	    auto sxing = std::make_shared<STRAWXING>(ptca,*smat_);
-	    // now create the hit; initial state is 
-	    thits.push_back(std::make_shared<KKSTRAWHIT>(kkbf, ptca, sxing, whstate_, strawhit, straw, *strawresponse));
-//		  sdrift_, sigt_*sigt_, rstraw_));
+	    // create the material crossing
+	    exings.push_back(std::make_shared<STRAWXING>(ptca,*smat_));
+	    // create the hit
+	    thits.push_back(std::make_shared<KKSTRAWHIT>(kkbf, ptca, whstate, strawhit, straw, *strawresponse));
 
 	  }
-	  // search for straws near the trajectory, and add them as passive material if they aren't already hits
-
-
-	  // build the KinKal track.  Fit is performed on construction
-	  //	  kktrk = new KKTRACK(config_, 
+	  // add calorimeter cluster hit TODO
 	  //	      art::Ptr<CaloCluster> ccPtr;
 	  //	      if (kseed.caloCluster()){
 	  //	      ccPtr = kseed.caloCluster(); // remember the Ptr for creating the TrkCaloHitSeed and KalSeed Ptr
 	  //	      }
-	  //
-	  //	      // save all the fits
-	  //	      kktrkcol->push_back(kktrk);
-	  //
-	  //	      // convert successful fits into 'seeds' for persistence
-	  //	      TrkFitFlag fflag(kseed.status());
-	  //	      fflag.merge(TrkFitFlag::KFF);
-	  //	      KalSeed fseed(krep->particleType(),_fdir,krep->t0(),krep->flt0(),fflag);
-	  //
-	  //
-	  //	      // save KalSeed for this track
-	  //	      kscol->push_back(fseed)
-	  //	      if (diag_ > 0) _hmanager->fillHistograms(&_data);
+	  // search for straws near the trajectory, and add them as passive material if they aren't already hits TODO
+	  // create and fit the track.  
+	  auto kktrk = make_unique<KKTRK>(kkconfig_,kkbf,seedtraj,thits,exings);
+	  if(debug_ > 0)kktrk->print(std::cout,debug_);
+	  // 2nd search for passive material TODO
+	  // Build a refined track using the output of the previous fit and updated material TODO
+	  if(kktrk->fitStatus().usable() || saveall_){
+	    kktrkcol->push_back(kktrk.release()); // OwningPointerCollection should use unique_ptr FIXME!
+	  // convert fits into KalSeeds for persistence TODO
+	  }
 	}
       }
     }
 
     // put the output products into the event
-    //  event.put(move(krcol));
+    event.put(move(kktrkcol));
+    event.put(move(kkseedcol));
   }
 
   //
