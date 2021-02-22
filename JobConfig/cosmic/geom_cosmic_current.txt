@@ -1,4 +1,4 @@
-#include "Mu2eG4/geom/geom_2019_PhaseI_hayman_v2.txt"
+#include "Mu2eG4/geom/geom_common_current.txt"
 
 // Cosmis s1 samples for CD3 were generated with the TDR target geometry.
 // Keep using it for the subsequent stages.

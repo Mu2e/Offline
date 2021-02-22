@@ -10,6 +10,7 @@
 #include "CRVResponse/fcl/prolog.fcl"
 #include "Filters/fcl/prolog.fcl"
 #include "Compression/fcl/prolog.fcl"
+#include "JobConfig/cosmic/prolog.fcl"
 #
 BEGIN_PROLOG
 
@@ -42,9 +43,12 @@ Primary: {
       PrimaryGenIds : [] # this is intentionally empty: there should only be 1 GenParticle in primary production
     }
   }
+
   filters : {
-# generator truncation filter; only needed for cosmic rays in principle
-    g4status: @local::mu2e.physics.filters.g4status
+# needed for cosmic rays
+    g4status: @local::Cosmic.g4status
+    stepPointMomentumFilter : @local::Cosmic.stepPointMomentumFilter
+    cosmicFilter : @local::Cosmic.cosmicFilter
 
 # default step filter for Sim Primary selection
     DetStepFilter : {
