@@ -92,8 +92,9 @@ Digitize: {
      SelectEvents : [ "*_trigger" ] # this selects events passing any trigger
      fileName    : @nil
   }
-  EndPath : [ digiCompressionCheck, Output ]
+  EndSequence : [digiCompressionCheck]
 }
+Digitize.EndPath : [ @sequence::Digitize.EndSequence, Output ]
 # override the Trigger sequence to prepare digis
 Trigger.PrepareDigis: [ @sequence::CommonMC.DigiSim, @sequence::TrackerMC.DigiSim, @sequence::CaloMC.DigiSim ]
 Digitize.TriggerPath : [ PBISim, @sequence::Digitize.TriggerSequence ]
