@@ -3,6 +3,9 @@
 // Proton Kinetic Energy
 double physicsParams.protonKE = 800.; // - in MeV
 
+//Alternate stopping target material
+// string physicsParams.chosenStoppingTargetMaterial = "Ti";
+
 // This tells emacs to view this file in c++ mode.
 // Local Variables:
 // mode:c++

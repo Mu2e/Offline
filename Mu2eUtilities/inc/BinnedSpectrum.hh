@@ -82,7 +82,7 @@ namespace mu2e {
 
       Shape s( std::forward<Args>(args)... );
       if (_fixMax){
-        for (double step = XMax-_binWidth/2.; step >= XMin + _binWidth/2.; step += _binWidth){
+        for (double step = XMax-_binWidth/2.; step >= XMin + _binWidth/2.; step -= _binWidth){
           abscissa.push_back( step );
           pdf     .push_back( s.getWeight(step) ); 
         }

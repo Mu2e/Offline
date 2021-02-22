@@ -1,0 +1,45 @@
+# -*- mode:tcl -*-
+#Example script to calculate the number of generated/simulated conversions from GammaConversionGun
+#include "fcl/minimalMessageService.fcl"
+#include "fcl/standardProducers.fcl"
+#include "fcl/standardServices.fcl"
+
+process_name: conversionsampler
+
+source : { module_type : RootInput}
+services : @local::Services.Sim
+services.TimeTracker : {
+	printSummary : true
+	dbOutput : {
+	    filename  : ""
+	    overwrite : false
+	}
+    }
+services.scheduler.wantSummary: true
+physics : {
+    analyzers : {
+	genCounter : { 
+	    module_type : GenEventCountReader
+	    makeHistograms : true
+	    moduleLabel : "generate"
+	    countTag : "genEvents"
+	}
+	simCounter : { 
+	    module_type : GenEventCountReader
+	    makeHistograms : true
+	    moduleLabel : "generate"
+	    countTag : "passedEvents"
+	}
+	#this should agree with the sim counter
+	standardCounter : {
+	    module_type : GenEventCountReader
+	    makeHistograms : true
+	    moduleLabel : "genCounter"
+	}
+    }
+    e1 : [ genCounter, simCounter ] //, standardCounter ]  
+    p1 : [ ]
+    trigger_paths : [ p1 ]
+    end_paths : [ e1 ]
+}
+services.TFileService.fileName: "nts.owner.countGenConversions.version.sequencer.root"

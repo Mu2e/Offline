@@ -37,6 +37,9 @@ BaBar/include
 EMFCAnalysis
 .tup
 .buildopts
+.rootrc
+.root_hist
+rootlogon.C
 tags
 .clangd/*
 compile_commands.json

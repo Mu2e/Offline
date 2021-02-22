@@ -15,10 +15,22 @@ CompressPhysicalVolumes : {
     particleInputs : [ "g4run" ]
 }
 
+g4status: { module_type: FilterStatusG4
+    input: "g4run"
+}
+
 FilterStepPointMomentum : {
     module_type    : FilterStepPointMomentum
     inputs         : [ "g4run:tracker", "g4run:calorimeter", "g4run:calorimeterRO"]
     cutMomentumMin : 10. # MeV/c
+}
+
+StrawDigiMCFilter : { module_type : StrawDigiMCFilter
+    StrawDigiMCCollection : "makeSD"
+    MinNDigis             : 10
+    particleTypes         : [ 11, -11, 13, -13 ]
+    MinParticleMom        : 40.0
+    MaxParticleMom        : 1e8
 }
 
 # throw when hits are outside their sensitive volumes
@@ -73,7 +85,11 @@ DigiCompression : {
 	caloShowerStepTags : @local::DigiCompressionTags.primaryCaloShowerStepTags
 	caloShowerSimTag : @local::DigiCompressionTags.commonCaloShowerSimTag
 	caloShowerStepROTag : @local::DigiCompressionTags.commonCaloShowerStepROTag
-	keptProducts : [ "keep *_compressDigiMCs_*_*" ]
+	keptProducts : [ "keep *_compressDigiMCs_*_*"                      ,
+			 "keep    mu2e::EventWeight_*_*_*"                 ,
+			 "keep    mu2e::GenEventCount_*_*_*"               ,
+			 "keep    mu2e::GenParticles_generate_photon_*"
+			]
 
     }
 
@@ -90,14 +106,14 @@ DigiCompression : {
 	caloShowerSimTag : @local::DigiCompressionTags.commonCaloShowerSimTag
 	caloShowerStepROTag : @local::DigiCompressionTags.commonCaloShowerStepROTag
 	keptProducts : [ "keep mu2e::StrawDigis_*_*_*",
-		       "keep mu2e::CaloDigis_*_*_*",
-		       "keep mu2e::CrvDigis_*_*_*",
-		       "keep mu2e::StatusG4_*_*_*",
-		       "keep art::TriggerResults_*_*_*",
-		       "keep mu2e::EventWindowMarker_*_*_*",
-		       "keep *_genCounter_*_*",
-		       "keep mu2e::EventWeight_*_*_*",
-		       "keep mu2e::ProtonBunchIntensity_*_*_*" ]
+			 "keep mu2e::CaloDigis_*_*_*",
+			 "keep mu2e::CrvDigis_*_*_*",
+			 "keep mu2e::StatusG4_*_*_*",
+			 "keep art::TriggerResults_*_*_*",
+			 "keep mu2e::EventWindowMarker_*_*_*",
+			 "keep *_genCounter_*_*",
+			 "keep mu2e::EventWeight_*_*_*",
+			 "keep mu2e::ProtonBunchIntensity_*_*_*"]
     }
 
     Check : {

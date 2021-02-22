@@ -143,6 +143,12 @@ namespace mu2e {
       OptionalDelegatedParameter minRangeRegionCuts {Name("minRangeRegionCuts")};
 
       fhicl::Atom<double> rangeToIgnore {Name("rangeToIgnore")};
+
+      //parameters for low momentum gamma daughter killing
+      fhicl::Atom<double> gammaFilterMinDaughterEnergy {Name("gammaFilterMinDaughterEnergy"),
+          Comment("Minimum generated photon daughter energy"),-1.};
+      fhicl::Atom<bool> gammaFilterKillAfterConvert {Name("gammaFilterKillAfterConvert"),
+          Comment("Kill tracks after the generated photon converts"),false};
     };
 
     struct Limits {

@@ -1,0 +1,30 @@
+# -*- mode: tcl -*-
+#------------------------------------------------------------------------------
+# this FCL file is used to generate photon conversions from a map of conversion
+# locations, generate simulate these e+/e-, and create digis
+#------------------------------------------------------------------------------
+#include "JobConfig/primary/flatE.fcl"
+
+process_name: RMCResampledConv
+services.TimeTracker : {
+    printSummary : true
+    dbOutput : {
+	filename  : ""
+	overwrite : false
+    }
+}
+services.scheduler.wantSummary: true
+physics.producers.generate : { @table::EventGenerator.producers.GammaConversionGun
+    pMax             : 93 // MeV, maximum photon energy
+    pMin             : 84.48 // MeV, minimum daughter energy, slightly below EMin_Gen - electron mass
+    requireCharge    : 1 //require positron passes the cuts (only pMin cut applies for this)
+}
+
+#Hack to find file for testing purposes
+physics.producers.generate.gammaStops.inputFiles : [ "../../../pnfs/mu2e/persistent/users/mu2epro/su2020/gammastops/nts.mu2e.su2020.rmce0s00b0.001000_10000000.root" ]
+
+#don't need to count gen events, so make it instead a trivial producer
+physics.producers.genCounter : { module_type : NullProducer }
+
+services.TFileService.fileName                           : "nts.owner.RMCResampleConv.version.sequencer.root"
+outputs.Output.fileName                                  : "dig.owner.RMCResampleConv.version.sequencer.art"

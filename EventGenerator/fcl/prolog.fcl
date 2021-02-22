@@ -3,6 +3,7 @@
 # this file is included by fcl/standardProducers.fcl inside the PROLOG section
 #------------------------------------------------------------------------------
 BEGIN_PROLOG
+GEN_ID : @nil # to be redefined
 #------------------------------------------------------------------------------
 # "muonStops" is a TDR config, deprecated for CD3:
 muonStops : {
@@ -39,7 +40,7 @@ mu2e.tgtMuonStops: {
     averageNumRecordsToUse: 500000
     treeName              : "stoppedMuonDumper/stops"
     branchName            : "stops"
-    verbositylevel        : 0
+    verbosityLevel        : 0
 }
 mu2e.ootMuonStops: {
     inputFiles            : @nil
@@ -52,6 +53,17 @@ mu2e.IPAMuonStops: {
     inputFiles            : @nil
     averageNumRecordsToUse: 1000000
     treeName              : "IPAstops/stops"
+    branchName            : "stops"
+    verbosityLevel        : 0
+}
+
+# Photon conversion points
+mergedGamma_tgtRegionStops_su2020_1  : [ "xroot://fndca1.fnal.gov/pnfs/fnal.gov/usr/mu2e/persistent/users/mu2epro/su2020/gammastops/nts.mu2e.su2020.rmce0s00b0.001000_10000000.root" ]
+
+mu2e.gammaStops : {
+    inputFiles            : @local::mergedGamma_tgtRegionStops_su2020_1
+    averageNumRecordsToUse: 1000000
+    treeName              : "conversionwriter/gammaStops/conversions"
     branchName            : "stops"
     verbosityLevel        : 0
 }
@@ -371,15 +383,14 @@ EventGenerator : { @table::EventGenerator
 	    pionStops                 : { @table::EventGenerator.pionStops }
 	}
         
-        RMCGun : {
-	    module_type    : RMCGun
+        RMCGun : { module_type    : RMCGun
 	    verbosityLevel : 0
 	    doHistograms   : false
 	    physics : {
-		generateIntConversion : 0
+		genId                 : @local::GEN_ID  #  InternalRMC or ExternalRMC, defines the generated process
 		spectrumShape         : "flat"
-		elow                  : 60
-		ehi                   : 110
+		elow                  : 57.             # reported RMC BR's are measured for Egamam > 57 MeV
+		ehi                   : 102.            # kinematic limit for RMC on Al is at 101.87
 		spectrumResolution    : 0.1
 	    }
 	    muonStops      : { @table::EventGenerator.muonStops }
@@ -399,6 +410,11 @@ EventGenerator : { @table::EventGenerator
 	    }
 	    muonStops                 : { @table::muonStops  }
 
+	}
+	GammaConversionGun : { module_type: GammaConversionGun
+	    verbosityLevel : 0	  
+	    doHistograms   : true
+	    gammaStops: @local::mu2e.gammaStops
 	}
     }
 }

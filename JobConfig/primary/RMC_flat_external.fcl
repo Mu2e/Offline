@@ -1,0 +1,30 @@
+# -*- mode: tcl -*-
+# flat range of photons from muon stops to study external RMC background
+#include "JobConfig/primary/flatE.fcl"
+process_name: RMCFlatExternal
+services.TimeTracker : {
+    printSummary : true
+    dbOutput : {
+	filename  : ""
+	overwrite : false
+    }
+}
+services.scheduler.wantSummary        : true
+physics.producers.generate : @local::EventGenerator.producers.RMCGun
+physics.producers.generate.physics.genId                 : ExternalRMC
+physics.producers.generate.doHistograms                  : true
+physics.producers.generate.physics.elow                  :  80.0 // Mev
+physics.producers.generate.physics.ehi                   : 102.0 // Mev
+physics.producers.generate.physics.spectrumShape         : "flat" //alternate is "RMC"
+
+# configure geant4 to kill the event if it's a low energy conversion
+physics.producers.g4run.physics.gammaFilterMinDaughterEnergy :  78.0 // MeV, < 0 means not used
+physics.producers.g4run.physics.gammaFilterKillAfterConvert  : false 
+
+physics.filters.GammaFilter.doFilter    : true #filter out killed events
+# physics.producers.g4run.debug.trackingVerbosityLevel: 2
+
+services.TFileService.fileName                           : "nts.owner.RMCFlatExternal.version.sequencer.root"
+outputs.Output.fileName                                  : "dig.owner.RMCFlatExternal.version.sequencer.art"
+
+

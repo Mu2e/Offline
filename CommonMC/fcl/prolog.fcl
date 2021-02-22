@@ -39,7 +39,7 @@ CommonMC: {
     SimParticles : "compressDigiMCs"
     PrimaryGenIds : ["CeEndpoint", "CeLeadingLog", "dioTail",
 	"cosmicDYB", "CosmicCRY", "CosmicCORSIKA", 
- 	"InternalRPC" , "InternalRMC", "ExternalRPC", "ExternalRMC"  ]
+ 	"InternalRPC" , "InternalRMC", "ExternalRPC", "ExternalRMC", "gammaPairProduction"  ]
   }
   SelectRecoMC : {
     module_type : SelectRecoMC
@@ -48,7 +48,6 @@ CommonMC: {
 }
 CommonMC.DigiSim : [ @sequence::CommonMC.TimeMaps, EWMProducer ]
 CommonMC.PrimaryDigiSim : [ @sequence::CommonMC.TimeMapsPrimary, EWMProducer ]
-
 #------------------------------------------------------------------------------
 
 END_PROLOG

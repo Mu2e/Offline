@@ -73,7 +73,15 @@ namespace mu2e {
       G4MinEkineCuts,         G4MaxTimeCuts,           OpAbsorption,        OpBoundary, // 123
       Scintillation,          inelastic,               G4ErrorEnergyLoss,   G4ErrorStepLengthLimit, // 127
       G4ErrorMagFieldLimit,   ePairProd,               FieldPropagator,     Mu2eRecorderProcess,  // 131
-      mu2eProtonInelastic,    RadioactiveDecayBase,
+      mu2eProtonInelastic,    RadioactiveDecayBase,    B_PlusInelastic,     B_MinusInelastic, // 135
+      B0Inelastic,            Bc_PlusInelastic,        Bc_MinusInelastic,   Bs0Inelastic, // 139
+      D_PlusInelastic,        D_MinusInelastic,        D0Inelastic,         Ds_PlusInelastic, // 143
+      Ds_MinusInelastic,      anti_B0Inelastic,        anti_Bs0Inelastic,   anti_D0Inelastic, // 147
+      anti_lambda_bInelastic, anti_lambda_c_PlusInelastic, anti_omega_b_MinusInelastic, anti_omega_c0Inelastic, // 151
+      anti_xi_b_MinusInelastic, anti_xi_b0Inelastic,   anti_xi_c_PlusInelastic, anti_xi_c0Inelastic, // 155
+      lambda_bInelastic,      lambda_c_PlusInelastic,  omega_b_MinusInelastic, omega_c0Inelastic, // 159
+      xi_b_MinusInelastic,    xi_b0Inelastic,          xi_c_PlusInelastic,  xi_c0Inelastic, // 163
+      Mu2eGammaDaughterCut, //164
       lastEnum,
       // An alias for backward compatibility
       mu2eHallAir = mu2eKillerVolume
@@ -115,7 +123,15 @@ namespace mu2e {
     "G4MinEkineCuts",         "G4MaxTimeCuts",           "OpAbsorption",           "OpBoundary", \
     "Scintillation",          "inelastic",               "G4ErrorEnergyLoss",      "G4ErrorStepLengthLimit", \
     "G4ErrorMagFieldLimit",   "ePairProd",               "FieldPropagator",        "Mu2eRecorderProcess", \
-    "mu2eProtonInelastic",    "RadioactiveDecayBase"
+    "mu2eProtonInelastic",    "RadioactiveDecayBase",      "B+Inelastic",         "B-Inelastic", \
+    "B0Inelastic",            "Bc+Inelastic",            "Bc-Inelastic",        "Bs0Inelastic", \
+    "D+Inelastic",            "D-Inelastic",             "D0Inelastic",         "Ds+Inelastic", \
+    "Ds-Inelastic",           "anti_B0Inelastic",        "anti_Bs0Inelastic",   "anti_D0Inelastic", \
+    "anti_lambda_bInelastic", "anti_lambda_c+Inelastic", "anti_omega_b-Inelastic", "anti_omega_c0Inelastic", \
+    "anti_xi_b-Inelastic",    "anti_xi_b0Inelastic",     "anti_xi_c+Inelastic", "anti_xi_c0Inelastic", \
+    "lambda_bInelastic",      "lambda_c+Inelastic",      "omega_b-Inelastic",   "omega_c0Inelastic", \
+    "xi_b-Inelastic",         "xi_b0Inelastic",          "xi_c+Inelastic",      "xi_c0Inelastic", \
+    "Mu2eGammaDaughterCut"
 
   public:
 
