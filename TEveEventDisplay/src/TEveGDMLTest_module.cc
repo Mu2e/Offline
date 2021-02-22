@@ -75,10 +75,10 @@ namespace mu2e
     private:
       Config _conf;
       int _diagLevel;     
-      
+      bool isFirstEvent = true;
       TApplication* application_;
       TDirectory*   directory_ = nullptr;   
-      
+      TGeoManager *geom;
       fhicl::ParameterSet _pset;
       void MakeTEveMu2eMainWindow();
   };
@@ -153,7 +153,6 @@ namespace mu2e
     gEve->GetGlobalScene()->DestroyElements();
     
     // Import the GDML of entire Mu2e Geometry
-    TGeoManager *geom;
     geom = geom->TGeoManager::Import("TEveEventDisplay/src/fix.gdml");
 
     //Get Top Volume
@@ -183,7 +182,17 @@ namespace mu2e
     int runid = event.run();
     int subrunid = event.subRun();
     std::cout<<"Drawing Run : "<<runid<<" Sub-Run "<<subrunid<<" Event : "<<eventid<<std::endl;
+    
+    if(!isFirstEvent){
+      gEve->GetViewers()->DeleteAnnotations();
+      gEve->GetCurrentEvent()->DestroyElements();
+    }
+    // Import event into ortho views and apply projections
+    //TEveElement* currevt = gEve->GetCurrentEvent();
 
+    geom->Draw("ogl");
+    gPad->WaitPrimitive();
+    isFirstEvent = false;
     std::cout<<"[Ending TEveGDMLTest::analyze()]"<<std::endl;
   } 
 
