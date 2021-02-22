@@ -490,7 +490,7 @@ namespace mu2e{
     //Set Top Volume for gGeoManager:
     
     gGeoManager->SetTopVolume(topvol);
-    gGeoManager->SetTopVisible(kTRUE);//HERE
+    //gGeoManager->SetTopVisible(kTRUE);//HERE
     std::cout<<"Point 5"<<std::endl;
     //Get Top Node:
     TGeoNode* topnode = gGeoManager->GetTopNode();
@@ -714,8 +714,9 @@ namespace mu2e{
     _hitmaxenergy->AddText(0, (to_string(hitenergy->at(1))).c_str());
     _hitmintime->AddText(0, (to_string(times.at(0))).c_str());
     _hitmaxtime->AddText(0, (to_string(times.at(1))).c_str());
+    std::cout<<"before application"<<std::endl;
     gApplication->Run(kTRUE);
-
+    std::cout<<"after application"<<std::endl;
     gEve->Redraw3D(kTRUE);
     if(usereventSelected == true){
       eventn = eventToFind;
