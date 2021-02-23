@@ -12,32 +12,32 @@ Mu2eKinKal : {
       dahlLynchScatteringFraction : 0.995
     }
   
-    FitSettings {
+    FitSettings: {
       PrintLevel : 1
-      BFieldCorrection : 0 # no correction
     }
   
     ModuleSettings : {
       DebugLevel : 3
-      HelixFlags : [ "helixOK", "hitsOK" ]
+      HelixFlags : [ "HelixOK", "HitsOK" ]
       ZSavePositions : [-1522.0,0.0,1522.0]
+    }
   }
 }
-Mu2eKinKal.producers : {
-  KKDeMSeedFit : {
-    @table::Mu2eKinKal.KKFit
-    MetaIterationSettings : [ 
-      [ 2.0, 1e-6, 10, 100.0 ],
-      [ 1.0, 1e-6, 1.0, 50.0 ],
-      [ 0.0, 1e-6, 0.01, 10.0 ]
-    ]
-    StrawHitUpdateSettings : [
-      [ 10.0, 10.0, 0, 0 ],
-      [ 10.0, 5.0, 1, 2 ]
-    ]
-    FitParticle : 11
-    FitDirection : 0
+Mu2eKinKal : {
+  @table::Mu2eKinKal
+  producers : {
+    KKDeMSeedFit : {
+      @table::Mu2eKinKal.KKFit
+      MetaIterationSettings : [ 
+        [ 2.0, 1e-6, 10, 100.0 ],
+        [ 1.0, 1e-6, 1.0, 50.0 ],
+        [ 0.0, 1e-6, 0.01, 10.0 ]
+      ]
+      StrawHitUpdateSettings : [
+        [ 10.0, 10.0, true, 0, 0 ],
+        [ 10.0, 5.0, true, 1, 2 ]
+      ]
+    }
   }
 }
-
 END_PROLOG 

@@ -136,7 +136,7 @@ namespace mu2e {
       fhicl::Atom<float> tBuffer { Name("TimeBuffer"), Comment("Time buffer for final fit (ns)"), 0.2 };
       fhicl::Atom<float> btol { Name("BCorrTolerance"), Comment("Tolerance on BField correction accuracy (mm)"), 0.01 };
       fhicl::Atom<int> minndof { Name("MinNDOF"), Comment("Minimum number of Degrees of Freedom to conitnue fitting"), 5  };
-      fhicl::Atom<int> bfieldCorr { Name("BFieldCorrecion"), Comment("BField correction algorithm") };
+      fhicl::Atom<int> bfieldCorr { Name("BFieldCorrection"), Comment("BField correction algorithm") };
       fhicl::Atom<int> printLevel { Name("PrintLevel"), Comment("Print Level"),0};
     };
 
