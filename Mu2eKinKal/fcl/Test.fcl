@@ -1,0 +1,38 @@
+#include "fcl/minimalMessageService.fcl"
+#include "fcl/standardServices.fcl"
+#include "JobConfig/reco/prolog.fcl"
+#include "Mu2eKinKal/fcl/prolog.fcl"
+
+process_name: Reconstruct
+source : { module_type : RootInput }
+services : @local::Services.Reco
+physics :
+{
+  producers : {
+    @table::TrkHitReco.producers
+    @table::Tracking.producers
+    @table::CalPatRec.producers
+    @table::CaloReco.producers
+    @table::CaloCluster.producers
+    @table::Mu2eKinKal.producers
+    MHDeM : {
+      @table::TrkReco.producers.MergeHelices
+      HelixFinders : [ "HelixFinderDe:Positive", "CalHelixFinderDe:Positive" ]
+    }
+  }
+  RecoPath : [ 
+    @sequence::Reconstruction.CaloReco,
+    @sequence::Reconstruction.TrkReco,
+    TimeClusterFinderDe, HelixFinderDe,  # TrkPatRec
+    CalTimePeakFinder, CalHelixFinderDe,  # CalPatRec
+    MHDeM,
+    KKDeMSeedFit 
+  ] 
+  EndPath : [ ]
+}
+physics.producers.KKDeMSeedFit.HelixSeedCollections : [ "MHDeM" ]
+physics.producers.KKDeMSeedFit.ComboHitCollection	      : "makeSH"
+
+# no histogram output
+services.TFileService.fileName: "/dev/null"
+outputs.Output.fileName: "mcs.owner.Test.version.sequencer.art"

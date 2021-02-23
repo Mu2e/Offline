@@ -1,13 +1,43 @@
 BEGIN_PROLOG
 Mu2eKinKal : {
-  Material : {
-    elements  : "TrackerConditions/data/ElementsList.data"
-    isotopes  : "TrackerConditions/data/IsotopesList.data"
-    materials : "TrackerConditions/data/MaterialsList.data"
-    strawGasMaterialName  : "straw-gas"
-    strawWallMaterialName : "straw-wall"
-    strawWireMaterialName : "straw-wire"
-    dahlLynchScatteringFraction : 0.995
+  KKFit : {
+    module_type : LoopHelixFit
+    MaterialSettings : {
+      elements  : "TrackerConditions/data/ElementsList.data"
+      isotopes  : "TrackerConditions/data/IsotopesList.data"
+      materials : "TrackerConditions/data/MaterialsList.data"
+      strawGasMaterialName  : "straw-gas"
+      strawWallMaterialName : "straw-wall"
+      strawWireMaterialName : "straw-wire"
+      dahlLynchScatteringFraction : 0.995
+    }
+  
+    FitSettings {
+      PrintLevel : 1
+      BFieldCorrection : 0 # no correction
+    }
+  
+    ModuleSettings : {
+      DebugLevel : 3
+      HelixFlags : [ "helixOK", "hitsOK" ]
+      ZSavePositions : [-1522.0,0.0,1522.0]
   }
 }
+Mu2eKinKal.producers : {
+  KKDeMSeedFit : {
+    @table::Mu2eKinKal.KKFit
+    MetaIterationSettings : [ 
+      [ 2.0, 1e-6, 10, 100.0 ],
+      [ 1.0, 1e-6, 1.0, 50.0 ],
+      [ 0.0, 1e-6, 0.01, 10.0 ]
+    ]
+    StrawHitUpdateSettings : [
+      [ 10.0, 10.0, 0, 0 ],
+      [ 10.0, 5.0, 1, 2 ]
+    ]
+    FitParticle : 11
+    FitDirection : 0
+  }
+}
+
 END_PROLOG 

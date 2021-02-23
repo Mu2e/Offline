@@ -102,21 +102,20 @@ namespace mu2e {
       fhicl::Sequence<art::InputTag> helixSeedCollections         {Name("HelixSeedCollections"),     Comment("Helix seed fit collections to be processed ") };
       fhicl::Atom<art::InputTag>     comboHitCollection     {Name("ComboHitCollection"),     Comment("Single Straw ComboHit collection ") };
       fhicl::Atom<art::InputTag>     strawHitFlagCollection {Name("StrawHitFlagCollection"), Comment("StrawHitFlag collection ") };
-      fhicl::Atom<int> fitParticle {  Name("fitparticle"), Comment("Particle type to fit: e-, e+, mu-, ..."), PDGCode::e_minus};
-      fhicl::Atom<int> fitDirection { Name("fitdirection"), Comment("Particle direction to fit, either upstream or downstream"), TrkFitDirection::downstream };
-      fhicl::Atom<bool> refine { Name("Refine"), Comment("Refine and redo the final fit") };
-      fhicl::Atom<bool> useCalo { Name("UseCaloCluster"), Comment("Add CaloCluster info to final fit or not") };
+      fhicl::Atom<int> fitParticle {  Name("FitParticle"), Comment("Particle type to fit: e-, e+, mu-, ..."), PDGCode::e_minus};
+      fhicl::Atom<int> fitDirection { Name("FitDirection"), Comment("Particle direction to fit, either upstream or downstream"), TrkFitDirection::downstream };
+      fhicl::Atom<bool> refine { Name("Refine"), Comment("Refine and redo the final fit"),false};
       fhicl::Atom<int> diagLevel { Name("DiagLevel"), Comment("Diagnostic Level"), 0 };
       fhicl::Atom<int> debugLevel { Name("DebugLevel"), Comment("Debug Level"), 0 };
       fhicl::Sequence<std::string> helixFlags { Name("HelixFlags"), Comment("Flags required to be present to convert a helix seed to a KinKal track") };
       fhicl::Atom<bool> saveAll { Name("SaveAllFits"), Comment("Save all fits, whether they suceed or not"),false };
-      fhicl::Sequence<std::string> addHitFlags { Name("AddHitFlags"), Comment("Flags required to be present to add a hit") };
-      fhicl::Sequence<std::string> rejectHitFlags { Name("RejectHitFlags"), Comment("Flags required not to be present to add a hit") };
-      fhicl::Atom<float> maxAddDOCA { Name("MaxAddDOCA"), Comment("Max DOCA to add a hit") };
-      fhicl::Atom<float> maxAddDt { Name("MaxAddDt"), Comment("Max Detla time to add a hit") };
-      fhicl::Atom<float> maxAddChi { Name("MaxAddChi"), Comment("Max Chi to add a hit") };
-      fhicl::Atom<float> maxAddDeltaU { Name("MaxAddDeltaU"), Comment("Max Delta-U to add a hit") };
-      fhicl::Atom<float> tBuffer { Name("TimeBuffer"), Comment("Time buffer for initiaion time range") };
+      fhicl::Sequence<std::string> addHitFlags { Name("AddHitFlags"), Comment("Flags required to be present to add a hit"), std::vector<std::string>() };
+      fhicl::Sequence<std::string> rejectHitFlags { Name("RejectHitFlags"), Comment("Flags required not to be present to add a hit"), std::vector<std::string>() };
+      fhicl::Atom<float> maxAddDOCA { Name("MaxAddDOCA"), Comment("Max DOCA to add a hit (mm)"), 2.75 };
+      fhicl::Atom<float> maxAddDt { Name("MaxAddDt"), Comment("Max Detla time to add a hit (ns)"), 3.0 };
+      fhicl::Atom<float> maxAddChi { Name("MaxAddChi"), Comment("Max Chi to add a hit"), 4.0 };
+      fhicl::Atom<float> maxAddDeltaU { Name("MaxAddDeltaU"), Comment("Max Delta-U to add a hit (mm)"), 10.0 };
+      fhicl::Atom<float> tBuffer { Name("TimeBuffer"), Comment("Time buffer for initiaion time range (ns)"), 0.5 };
       fhicl::Atom<float> tPOCAPrec { Name("TPOCAPrecision"), Comment("Precision for initial TPOCA (ns)"), 0.1 };
       fhicl::Sequence<float> zsave { Name("ZSavePositions"), Comment("Z positions to sample and save the fit")};
     };
@@ -134,10 +133,10 @@ namespace mu2e {
     struct FitSettings {
       fhicl::Atom<int> maxniter { Name("MaxNIter"), Comment("Maximum number of algebraic iteration steps in each fit meta-iteration"), 10 };
       fhicl::Atom<float> dwt { Name("Deweight"), Comment("Deweighting factor when initializing the track end parameters"), 1.0e6 };
-      fhicl::Atom<float> tBuffer { Name("TimeBuffer"), Comment("Time buffer for final fit") };
+      fhicl::Atom<float> tBuffer { Name("TimeBuffer"), Comment("Time buffer for final fit (ns)"), 0.2 };
       fhicl::Atom<float> btol { Name("BCorrTolerance"), Comment("Tolerance on BField correction accuracy (mm)"), 0.01 };
       fhicl::Atom<int> minndof { Name("MinNDOF"), Comment("Minimum number of Degrees of Freedom to conitnue fitting"), 5  };
-      fhicl::Atom<int> bfieldCorr { Name("BFieldCorr"), Comment("BField correction algorithm") };
+      fhicl::Atom<int> bfieldCorr { Name("BFieldCorrecion"), Comment("BField correction algorithm") };
       fhicl::Atom<int> printLevel { Name("PrintLevel"), Comment("Print Level"),0};
     };
 
