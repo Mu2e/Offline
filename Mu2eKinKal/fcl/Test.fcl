@@ -20,18 +20,26 @@ physics :
       HelixFinders : [ "HelixFinderDe:Positive", "CalHelixFinderDe:Positive" ]
     }
   }
+  filters : {
+    @table::CalPatRec.filters
+  }
   RecoPath : [ 
     @sequence::Reconstruction.CaloReco,
     @sequence::Reconstruction.TrkReco,
-    TimeClusterFinderDe, HelixFinderDe,  # TrkPatRec
-    CalTimePeakFinder, CalHelixFinderDe,  # CalPatRec
+    TimeClusterFinderDe, HelixFinderDe,
+    CalTimePeakFinder, CalHelixFinderDe,
     MHDeM,
     KKDeMSeedFit 
   ] 
   EndPath : [ ]
 }
-physics.producers.KKDeMSeedFit.HelixSeedCollections : [ "MHDeM" ]
-physics.producers.KKDeMSeedFit.ComboHitCollection	      : "makeSH"
+physics.filters.CalHelixFinderDe.StrawHitFlagCollectionLabel                 : "FlagBkgHits:ComboHits"
+physics.producers.KKDeMSeedFit.ModuleSettings.HelixSeedCollections : [ "MHDeM" ]
+physics.producers.KKDeMSeedFit.ModuleSettings.ComboHitCollection : "makeSH"
+physics.producers.KKDeMSeedFit.ModuleSettings.StrawHitFlagCollection : "FlagBkgHits"
+physics.producers.KKDeMSeedFit.ModuleSettings.FitParticle : 11
+physics.producers.KKDeMSeedFit.ModuleSettings.FitDirection : 0
+physics.producers.KKDeMSeedFit.FitSettings.BFieldCorrection : 0
 
 # no histogram output
 services.TFileService.fileName: "/dev/null"
