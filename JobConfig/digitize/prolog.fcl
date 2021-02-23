@@ -8,6 +8,7 @@
 #include "CaloMC/fcl/prolog.fcl"
 #include "CRVResponse/fcl/prolog.fcl"
 #include "Filters/fcl/prolog.fcl"
+#include "Compression/fcl/prolog.fcl"
 #include "Trigger/fcl/prolog_trigger.fcl"
 #
 BEGIN_PROLOG
@@ -19,7 +20,7 @@ Digitize: {
     @table::CaloMC.DigiProducers
     @table::CrvDAQPackage.producers
     # default PBI with no intensity; this must be overridden when mixing
-    protonBunchIntensity : {
+    PBISim : {
       module_type: ProtonBunchIntensityFlat
       mean: 0.0 # No PBI possible for pure signal! 
       halfWidth : 1.0
@@ -37,6 +38,15 @@ Digitize: {
 	caloShowerSimTag : @local::DigiCompressionTags.commonCaloShowerSimTag
 	caloShowerROTag : @local::DigiCompressionTags.commonCaloShowerROTag
 	primaryParticleTag : "FindMCPrimary"
+	keepAllGenParticles : true
+	rekeySimParticleCollection : true
+	noCompression : false
+
+	# Unused options
+	strawDigiMCIndexMapTag : ""
+	crvDigiMCIndexMapTag : ""
+	caloClusterMCTag : ""
+	crvCoincClusterMCTag : ""
     }
   }
 
@@ -48,7 +58,6 @@ Digitize: {
   }
 
   TriggerSequence : [
-    protonBunchIntensity,
     @sequence::CommonMC.DigiSim,
     @sequence::TrackerMC.DigiSim,
     @sequence::CaloMC.DigiSim,
@@ -82,18 +91,18 @@ Digitize: {
      module_type : RootOutput     SelectEvents : [ DigiPath ]
      SelectEvents : [ "*_trigger" ] # this selects events passing any trigger
      fileName    : @nil
-     # drop StepPoints from calorimeter
-#     outputCommands : @local::DigiCompression.OutputCommands
   }
-  EndPath : [ digiCompressionCheck, Output ]
+  EndSequence : [digiCompressionCheck]
 }
+Digitize.EndPath : [ @sequence::Digitize.EndSequence, Output ]
+# override the Trigger sequence to prepare digis
+Trigger.PrepareDigis: [ @sequence::CommonMC.DigiSim, @sequence::TrackerMC.DigiSim, @sequence::CaloMC.DigiSim ]
+Digitize.TriggerPath : [ PBISim, @sequence::Digitize.TriggerSequence ]
 
 Digitize.Output.outputCommands : [ "drop *_*_*_*",
 		       @sequence::Digitize.KeptProducts,
 		       @sequence::Digitize.TriggerProducts ]
 
-# define paths
-Digitize.TriggerPath : [ @sequence::Digitize.TriggerSequence ]
 #outputs.Output.SelectEvents : # add output stream of 'good' events that fail the trigger; this requiers a new verison of art FIXME!
 
 END_PROLOG

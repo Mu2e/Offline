@@ -9,6 +9,7 @@
 #include "CaloMC/fcl/prolog.fcl"
 #include "CRVResponse/fcl/prolog.fcl"
 #include "Filters/fcl/prolog.fcl"
+#include "Compression/fcl/prolog.fcl"
 #
 BEGIN_PROLOG
 
@@ -20,6 +21,18 @@ Pileup: {
     @table::TrackerMC.StepProducers
     @table::CaloMC.StepProducers
     CrvSteps : @local::CrvSteps
+
+    compressDetStepMCs : {
+      module_type : CompressDetStepMCs
+      strawGasStepTag : "StrawGasStepMaker"
+      caloShowerStepTag : "CaloShowerStepMaker"
+      crvStepTag : "CrvSteps"
+      simParticleTag : "g4run"
+      stepPointMCTags : [ "g4run:virtualdetector", "g4run:protonabsorber" ]#, "g4run:stoppingtarget" ]
+      mcTrajectoryTag : "g4run"
+      debugLevel : 0
+      compressionOptions : @local::DetStepCompression.extraCompression
+    }
   }
   filters : {
 # generator truncation filter; only needed for cosmic rays in principle
@@ -48,14 +61,15 @@ Pileup: {
     @sequence::TrackerMC.StepSim,
     @sequence::CaloMC.StepSim,
     CrvSteps,
-    DetStepFilter ]
+    DetStepFilter,
+    compressDetStepMCs ]
 
-  KeptProducts : [ "keep mu2e::StrawGasSteps_*_*_*",
-		       "keep mu2e::CaloShowerSteps_*_*_*",
-		       "keep mu2e::CrvSteps_*_*_*",
+  KeptProducts : [ "keep mu2e::StrawGasSteps_compressDetStepMCs_*_*",
+		       "keep mu2e::CaloShowerSteps_compressDetStepMCs_*_*",
+		       "keep mu2e::CrvSteps_compressDetStepMCs_*_*",
 		       "keep mu2e::StatusG4_*_*_*",
-		       "keep mu2e::SimParticlemv_g4run_*_*",  # these need to be updated after step compression FIXME!
-		       "keep mu2e::GenParticles_*_*_*",
+		       "keep mu2e::SimParticlemv_compressDetStepMCs_*_*",
+		       "keep mu2e::GenParticles_compressDetStepMCs_*_*",
 		       "keep art::TriggerResults_*_*_*",
 		       "keep mu2e::GenEventCount_*_*_*" ]
 

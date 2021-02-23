@@ -197,6 +197,8 @@ namespace mu2e {
     unsigned    startVolumeIndex() const { return _startVolumeIndex;}
     unsigned    startG4Status()    const { return _startG4Status;}
     ProcessCode creationCode()     const { return _creationCode;   }
+    void setCreationCode(ProcessCode newCode) { _creationCode = newCode;   }
+    bool isTruncated() { return (_creationCode == ProcessCode::truncated);}
 
     // the following is for excited ions
     IonDetail const& ion()                      const { return _ion; }

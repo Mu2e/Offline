@@ -1,3 +1,4 @@
+
 # Mu2e TEve Event Display Development Branch
 The directory contains all the code for the TEve based mu2e Event display. This code allows 2D and 3D rendering of several of the Mu2e Data Products. It is still being developed so if we are missing some thing you need contact us (see below for details).
 
@@ -95,4 +96,4 @@ In order to add Data Products to the Event Display you may need to add an additi
 
 ## Authors
 
-This code is built upon the Mu2e Offline code however TEveEventDisplay is package developed within Mu2e Offline by Sophie Middleton with help from Aditi Venkatesh both from Caltech. If you have any questions/comments about TEveEventDisplay place contact: smidd@caltech.edu.
+This code is built upon the Mu2e Offline code however TEveEventDisplay is package developed within Mu2e Offline by Sophie Middleton with help from Aditi Venkatesh both from Caltech. If you have any questions/comments about TEveEventDisplay please contact: smidd@caltech.edu.

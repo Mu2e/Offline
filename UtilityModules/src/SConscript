@@ -71,15 +71,6 @@ helper.make_plugins( [ mainlib,
                      ]
                      )
 
-helper.make_dict_and_map( [ mainlib,
-                           'mu2e_GeneralUtilities',
-                           'art_Persistency_Common',
-                           'art_Utilities',
-                           'canvas',
-                           'cetlib',
-                           'cetlib_except',
-                           'Core'
-                            ] )
 
 # This tells emacs to view this file in python mode.
 # Local Variables:

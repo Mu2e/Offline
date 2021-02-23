@@ -31,7 +31,7 @@ outputs : {
 #include "JobConfig/digitize/epilog.fcl"
 #
 physics.end_paths : [ EndPath ] # needed for generate_fcl
-# generic output: this is overwritten by generateFcl
+# generic output: this is overwritten by generate_fcl
 outputs.Output.fileName: "dig.owner.description.version.sequencer.art"
 # no histogram output
 services.TFileService.fileName : "/dev/null"

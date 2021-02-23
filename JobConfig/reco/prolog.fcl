@@ -130,7 +130,6 @@ Reconstruction : {
       caloShowerSimTag : ""
       caloShowerROTag : ""
       caloClusterMCTag : "CaloClusterTruthMatch"
-      caloHitMCTag : "CaloHitTruthMatch"
       strawDigiMCIndexMapTag : "SelectRecoMC:StrawDigiMap"
       crvDigiMCIndexMapTag : "SelectRecoMC:CrvDigiMap"
       keepAllGenParticles : false
@@ -138,7 +137,10 @@ Reconstruction : {
       primaryParticleTag : "compressDigiMCs"
       mcTrajectoryTag : "compressDigiMCs"
       rekeySimParticleCollection : false
+      noCompression : false
     }
+
+
   }
   
   filters : {
@@ -163,20 +165,7 @@ Reconstruction : {
   }
 
   analyzers : { # these are specific to MC
-    RecoCheck : { 
-      @table::DigiCompression.RecoCheck
-      oldStrawDigiMCTag : "compressDigiMCs"
-      newStrawDigiMCTag : "compressRecoMCs"
-      OldTimeOffsets : { inputs : [ @sequence::DigiCompression.TimeMaps ] }
-      NewTimeOffsets : { inputs : [ @sequence::RecoCompression.TimeMaps ] }
-      strawDigiMCIndexMapTag : "SelectRecoMC:StrawDigiMap"
-      oldCrvDigiMCTag : "compressDigiMCs"
-      newCrvDigiMCTag : "compressRecoMCs"
-      crvDigiMCIndexMapTag : "SelectRecoMC:CrvDigiMap"
-      oldCaloShowerSimTag : ""
-      newCaloShowerSimTag : ""
-      checkTrackerDuplicateSteps : false
-    }
+    recoCompressionCheck : @local::RecoCompression.Check
   }
 # reconstruct multiple types of tracks.  These are separate sequences to allow granular execution
 # Downstream electron sequence (plus and minus), using merged helices
@@ -242,7 +231,9 @@ Reconstruction : {
 	    "keep mu2e::EventWeight_*_*_*",
 	    "keep *_compressRecoMCs_*_*"
 	    ]
+    EndSequence : [ recoCompressionCheck ]
 }
+Reconstruction.EndPath : [ @sequence::Reconstruction.EndSequence, Output  ]
 
 # override CalPatRec defaults: FIXME!
 Reconstruction.filters.CalHelixFinderDe.StrawHitFlagCollectionLabel                 : "FlagBkgHits:ComboHits"

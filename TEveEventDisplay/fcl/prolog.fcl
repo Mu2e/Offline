@@ -1,101 +1,89 @@
-# -*- mode: tcl -*-
-#------------------------------------------------------------------------------
-# this file is included by fcl/standardProducers.fcl inside the PROLOG section
-#------------------------------------------------------------------------------
 
 
 BEGIN_PROLOG
 
-EventFilter : {
-    module_type : EventFilter
-    Sequential : true
-}
-
-
-TEveEventDisplayHelix : {
-    show2D : true
+TEveEventDisplayBase : {
     module_type : TEveEventDisplay
     accumulate : false
+    showCRV : false
+    showBuilding : false  
+    showDSOnly : true 
+    showEvent : true
     filler : {
       ComboHitCollection 		    : "makeSH"
-      CrvRecoPulseCollection	  :  NULL
+      CrvRecoPulseCollection	  :  "CrvRecoPulses"
       CosmicTrackSeedCollection :  NULL
-      CaloClusterCollection		  :  "CaloClusterFromProtoCluster"
-      CaloCrystalHitCollection  :  "CaloCrystalHitFromHit"
+      CaloClusterCollection		  :  "CaloClusterMaker"
+      CaloCrystalHitCollection  :  NULL
       HelixSeedCollection       :  "HelixFinderDe:Negative"
-      KalSeedCollection         :  "KFFDeM" 
+      KalSeedCollection         :  ["KFFDeM"]#, "KFFDeMHPar", "KFFDeMHDar" ]
       TrkExtTrajCollection      : NULL
-      MCTrajectoryCollection    : NULL
-      addHits 			            : false
+      MCTrajectoryCollection    :  "compressDigiMCs"
+      addHits 			            : true
       addTracks 			          : true
-      addCrvHits			          : false
+      addCrvHits			          : true
       addCosmicSeedFit	        : false
       addClusters			          : true
       addTrkExtTrajs		        : false
-      addMCTraj				          : false 
+      addMCTraj				          : true 
 
     }
+  }  
+  
+TEveEventDisplayHelix : {
+      @table::TEveEventDisplayBase
+      filler : {
+        ComboHitCollection 		    : "makeSH"
+        CrvRecoPulseCollection	  :  NULL
+        CosmicTrackSeedCollection :  NULL
+        CaloClusterCollection		  :  "CaloClusterMaker"
+        CaloCrystalHitCollection  :  NULL
+        HelixSeedCollection       :  NULL #"HelixFinderDe:Negative"
+        KalSeedCollection         :  ["KFFDeM"]#, "KFFDeMHPar", "KFFDeMHDar" ]
+        TrkExtTrajCollection      : NULL
+        MCTrajectoryCollection    :  "compressDigiMCs"
+        addHits 			            : false
+        addTracks 			          : true
+        addCrvHits			          : false
+        addCosmicSeedFit	        : false
+        addClusters			          : true
+        addTrkExtTrajs		        : false
+        addMCTraj				          : false 
+      }
   }   
 
 TEveEventDisplayCosmics : {
-    module_type : TEveEventDisplay
-    showCRV : false
-    showDSOnly : true
-    show2D : false
-    accumulate : false
+    @table::TEveEventDisplayBase
+    showCRV : true
     filler : {
-      ComboHitCollection 		      : "makePH"
+      ComboHitCollection 		    : "makeSH"
+      CrvRecoPulseCollection	  :  "CrvRecoPulses"
       CosmicTrackSeedCollection 	: "CosmicTrackFinderTimeFit"
-      CrvRecoPulseCollection		  : "CrvRecoPulses"
-      CaloClusterCollection		    : NULL
-      CaloCrystalHitCollection    : NULL
-      MCTrajectoryCollection      : "compressDigiMCs"
-      HelixSeedCollection         : NULL
-      KalSeedCollection           : NULL
-      TrkExtTrajCollection        : NULL
-      addHits 			              : true
-      addTracks 			            : false
-      addCrvHits			            : false
-      addCosmicSeedFit	          : false
-      addMCTraj				            : true
+      CaloClusterCollection		  :  NULL
+      CaloCrystalHitCollection  :  NULL
+      HelixSeedCollection       :  NULL
+      KalSeedCollection         :  NULL
+      TrkExtTrajCollection      :  NULL
+      MCTrajectoryCollection    :  "compressDigiMCs"
+      addHits 			            : true
+      addTracks 			          : true
+      addCrvHits			          : true
+      addCosmicSeedFit	        : false
+      addClusters			          : false
+      addTrkExtTrajs		        : false
+      addMCTraj				          : true 
    }
   }   
 
-TEveEventDisplayCaloOnly : {
-    module_type : TEveEventDisplay
-    show2D : false  
-    filler : {
-      ComboHitCollection 		      : NULL
-      CrvRecoPulseCollection		  : NULL
-      CosmicTrackSeedCollection 	: NULL
-      CaloClusterCollection		    : "CaloClusterFromProtCluster"
-      CaloCrystalHitCollection    : "CaloCrystalHitFromHit"
-      HelixSeedCollection         :  NULL
-      KalSeedCollection           :  NULL
-      CaloHitSimPartMCCollection:  NULL
-      CrvCoincidenceClusterMCCollection:  NULL
-      MCTrajectoryCollection:  NULL
-      addHits 			              : false
-      addTracks 			            : true
-      addClusters			            : true
-      addCrvHits			            : false
-      addCosmicSeedFit	          : false
-      addCrystalHits              : false
-      addMCTraj				:false 
-  }
-  }   
 
 TEveDis : {  
 	analyzers : { 	
+	    TEveEventDisplayBase     : @local::TEveEventDisplayBase
 			TEveEventDisplayCosmics  : @local::TEveEventDisplayCosmics
  			TEveEventDisplayHelix    : @local::TEveEventDisplayHelix
-			TEveEventDisplayCaloOnly : @local::TEveEventDisplayCaloOnly
 	} 
-  filters : {
-      EventFilter : @local::EventFilter
-  }
+
 	seqCosmics 	: [TEveEventDisplayCosmics]
 	seqHelix   	: [TEveEventDisplayHelix]
-	seqCaloOnly     : [TEveEventDisplayCaloOnly]
 }
 END_PROLOG

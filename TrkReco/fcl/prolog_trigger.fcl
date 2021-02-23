@@ -12,6 +12,16 @@ TrkRecoTrigger : {
 # these module instance allows to remove the helix duplicates
 # from the output of the helix finders.
 # We need an instance for each track trigger sequence
+	TTHelixMergerUeM : {
+	    module_type : MergeHelices
+	    HelixFinders  : [ "TThelixFinder:Negative" ]
+	}	
+
+	TTHelixMergerUeP : {
+	    module_type : MergeHelices
+	    HelixFinders  : [ "TThelixFinder:Positive" ]
+	}	
+
 	TTHelixMergerDeM : {
 	    module_type : MergeHelices
 	    HelixFinders  : [ "TThelixFinder:Positive" ]

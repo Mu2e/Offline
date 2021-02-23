@@ -1768,12 +1768,10 @@ TrkFilters : {
 				 TTCalSeedFitDep, cprCosmicSeedDePTSFilter ]
 	cprCosmicHelixDeM     : [ cprCosmicHelixDeMEventPrescale, cprCosmicHelixDeMSDCountFilter, @sequence::CaloClusterTrigger.Reco,
 				 @sequence::TrkHitRecoTrigger.sequences.TTprepareHits,
-				 TTCalTimePeakFinder, cprCosmicHelixDeMTCFilter, TTCalHelixFinderDe, TTCalHelixMergerDeM, cprCosmicHelixDeMHSFilter,
-				 TTCalHelixFitDem, cprCosmicHelixDeMTSFilter ]
+				 TTCalTimePeakFinder, cprCosmicHelixDeMTCFilter, TTCalHelixFinderDe, TTCalHelixMergerDeM, cprCosmicHelixDeMHSFilter ]
 	cprCosmicHelixDeP     : [ cprCosmicHelixDePEventPrescale, cprCosmicHelixDePSDCountFilter, @sequence::CaloClusterTrigger.Reco,
 				 @sequence::TrkHitRecoTrigger.sequences.TTprepareHits, 
-				 TTCalTimePeakFinder, cprCosmicHelixDePTCFilter, TTCalHelixFinderDe, TTCalHelixMergerDeP, cprCosmicHelixDePHSFilter, 
-				 TTCalHelixFitDep, cprCosmicHelixDePTSFilter ]
+				 TTCalTimePeakFinder, cprCosmicHelixDePTCFilter, TTCalHelixFinderDe, TTCalHelixMergerDeP, cprCosmicHelixDePHSFilter ]
 
 	cprSeedUCCDeM        : [ cprSeedUCCDeMEventPrescale, cprSeedUCCDeMSDCountFilter, @sequence::CaloClusterTrigger.Reco,
 				 @sequence::TrkHitRecoTrigger.sequences.TTprepareHitsUCC,
