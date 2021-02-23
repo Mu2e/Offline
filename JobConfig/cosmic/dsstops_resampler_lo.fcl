@@ -1,9 +1,0 @@
-// Re-sample cosmic dsstops particles from stage-1
-// Yuri Oksuzian, 2019
-
-#include "JobConfig/cosmic/dsstops_resampler.fcl"
-physics.filters.filterS1.cutEDepMax: 14
-//Drop truncated stream
-physics.outputs: [DSVacuumOut]
-//Events that deposited lower than 14 MeV in CRV
-physics.filters.dsResample.fileNames: ["/pnfs/mu2e/persistent/users/oksuzian/workflow/cry_rs1_1019_g4_10_5/outstage/25394938.fcllist_191106224859/00/00053/sim.oksuzian.minedep-filter.cry-minedep_filter-10-5.002701_00007722.art"]

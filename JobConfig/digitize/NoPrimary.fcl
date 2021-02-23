@@ -1,0 +1,7 @@
+#
+# NoPrimary is a special case of OnSpill where some data products associated with the primary particle are missing
+#
+#include "JobConfig/digitize/OnSpill.fcl"
+physics.producers.compressDigiMCs.primaryParticleTag : ""
+physics.producers.compressDigiMCs.extraStepPointMCTags : [ ]
+physics.producers.compressDigiMCs.mcTrajectoryTag : ""

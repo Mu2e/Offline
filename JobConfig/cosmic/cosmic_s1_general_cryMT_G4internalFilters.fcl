@@ -1,9 +1,0 @@
-#include "JobConfig/cosmic/cosmic_s1_general_cry_G4internalFilters.fcl"
-
-# this sets the number of threads used in MT mode
-# number and threads and number of schedules should
-# be the same
-services.scheduler.num_schedules : 5
-services.scheduler.num_threads   : 5
-
-physics.producers.g4run.module_type : "Mu2eG4MT"

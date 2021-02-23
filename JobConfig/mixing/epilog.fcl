@@ -1,48 +1,17 @@
 #
 #  Specific values for mixers that can't be done in prolog
-#  Currently set for MDC2018 production
 #
-#  Mixing can include primary generation
-#include "JobConfig/primary/epilog.fcl"
-#
-# Using example simStageEfficiencyTags
-# TrkCal mixing
-physics.filters.flashMixerTrkCal.mu2e.simStageEfficiencyTags : [ flashHitPerMuBeamEnterDS, muBeamEnterDSPerPOT ]
-physics.filters.ootMixerTrkCal.mu2e.simStageEfficiencyTags : [ ootHitPerOotStop, ootStopPerMuBeamEnterDS, muBeamEnterDSPerPOT ]
-physics.filters.mustopMixerTrkCal.mu2e.simStageEfficiencyTags : [ muHitPerMuStop, muStopPerMuBeamEnterDS, muBeamEnterDSPerPOT ]
+#include "JobConfig/digitize/epilog.fcl"
+# add trigger paths
+#include "gen/fcl/Trigger/OnSpillTrigMenu/OnSpillTrigMenu.fcl"
+# set the event timing for Onspill
+physics.producers.EWMProducer.SpillType : 1
+# add mixers to the list of step producers.  Note the StrawDigi maker uses a general selector if no module is specified
+physics.producers.makeSD.StrawGasStepModule : ""
+physics.producers.compressDigiMCs.simParticleTags : ["compressDetStepMCs", "mustopMixer"]
+physics.producers.compressDigiMCs.caloShowerStepTags : ["compressDetStepMCs", "mustopMixer"]
+physics.producers.CrvPhotons.crvStepModuleLabels : [ "compressDetStepMCs", "mustopMixer" ]
+physics.producers.CrvPhotons.crvStepProcessNames : [ "", "" ]
+physics.producers.CaloShowerROMaker.caloShowerStepCollection : ["compressDetStepMCs", "mustopMixer" ]
 
-# CRV mixing
-physics.filters.ootMixerCRV.mu2e.simStageEfficiencyTags : [ ootHitCrvPerOotStop, OotStopPerMuBeamEnterDS, muBeamEnterDSPerPOT ]
-physics.filters.mustopMixerCRV.mu2e.simStageEfficiencyTags      : [ muHitCrvPerMuStop, muStopPerMuBeamEnterDS, muBeamEnterDSPerPOT ]
-physics.filters.PSMixerCRV.mu2e.simStageEfficiencyTags  : [ CrvHitPerPSEvent, PSEventPerPOT ]
-physics.filters.TSMixerCRV.mu2e.simStageEfficiencyTags  : [ CrvHitPerTSEvent, TSEventPerPOT ]
-physics.filters.DSMixerCRV.mu2e.simStageEfficiencyTags  : [ CrvHitPerDSEvent, DSEventPerPOT ]
-
-# input maps from prirmaries and flash. these get used first, new times are only generated for mu-daughter backgrounds
-physics.producers.protonTimeMap.InputTimeMaps : [ "protonTimeMapPrimary", @sequence::Mixing.protonTimeMaps ]
-physics.producers.muonTimeMap.InputTimeMaps : [ "muonTimeMapPrimary" ]
-# after flash time cut mix change
-#  Don't include VD and IPA steps from flash: they just add bulk
-physics.filters.flashMixerTrkCal.mu2e.products.genParticleMixer: { mixingMap: [ [ "flashMixerTrkCalCut", "" ] ] }
-physics.filters.flashMixerTrkCal.mu2e.products.simParticleMixer: { mixingMap: [ [ "flashMixerTrkCalCut", "" ] ] }
-physics.filters.flashMixerTrkCal.mu2e.products.protonTimeMapMixer: { mixingMap: [ [ "flashMixerTrkCalCut:protonTimeMap", ":" ] ] }
-physics.filters.flashMixerTrkCal.mu2e.products.stepPointMCMixer: { mixingMap: [ [ "flashMixerTrkCalCut:tracker", ":" ] ] }
-physics.filters.flashMixerTrkCal.mu2e.products.caloShowerStepMixer: { mixingMap:
-  [ [ "flashMixerTrkCalCut:CaloShowerCrystalSteps", ":" ],
-    [ "flashMixerTrkCalCut:CaloShowerROSteps", ":" ] ] }
-#
-physics.filters.DSMixerCRV.mu2e.products.genParticleMixer: { mixingMap: [ [ "DSMixerCRVCut", "" ] ] }
-physics.filters.DSMixerCRV.mu2e.products.simParticleMixer: { mixingMap: [ [ "DSMixerCRVCut", "" ] ] }
-physics.filters.DSMixerCRV.mu2e.products.protonTimeMapMixer: { mixingMap: [ [ "DSMixerCRVCut:protonTimeMap", ":" ] ] }
-physics.filters.DSMixerCRV.mu2e.products.stepPointMCMixer: { mixingMap: [ [ "DSMixerCRVCut:CRV", ":" ] ] }
-#
-physics.filters.PSMixerCRV.mu2e.products.genParticleMixer: { mixingMap: [ [ "PSMixerCRVCut", "" ] ] }
-physics.filters.PSMixerCRV.mu2e.products.simParticleMixer: { mixingMap: [ [ "PSMixerCRVCut", "" ] ] }
-physics.filters.PSMixerCRV.mu2e.products.protonTimeMapMixer: { mixingMap: [ [ "PSMixerCRVCut:protonTimeMap", ":" ] ] }
-physics.filters.PSMixerCRV.mu2e.products.stepPointMCMixer: { mixingMap: [ [ "PSMixerCRVCut:CRV", ":" ] ] }
-# TS input wasn't cut, just uses the production filter
-physics.filters.TSMixerCRV.mu2e.products.genParticleMixer: { mixingMap: [ [ "crvFilter", "" ] ] }
-
-# calo configuration
-physics.producers.CaloShowerROMaker.caloCrystalShowerInputs     : [ "CaloShowerStepMaker:calorimeter", @sequence::Mixing.caloMixerTags ]
 

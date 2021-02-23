@@ -9,6 +9,8 @@
 #include "CaloMC/fcl/prolog.fcl"
 #include "CRVResponse/fcl/prolog.fcl"
 #include "Filters/fcl/prolog.fcl"
+#include "Compression/fcl/prolog.fcl"
+#include "JobConfig/cosmic/prolog.fcl"
 #
 BEGIN_PROLOG
 
@@ -20,22 +22,34 @@ Primary: {
     @table::TrackerMC.StepProducers
     @table::CaloMC.StepProducers
     CrvSteps : @local::CrvSteps
+
+    compressDetStepMCs : {
+      module_type : CompressDetStepMCs
+      strawGasStepTag : "StrawGasStepMaker"
+      caloShowerStepTag : "CaloShowerStepMaker"
+      crvStepTag : "CrvSteps"
+      simParticleTag : "g4run"
+      stepPointMCTags : [ "g4run:virtualdetector", "g4run:protonabsorber", "g4run:stoppingtarget" ]
+      mcTrajectoryTag : "g4run"
+      debugLevel : 0
+      compressionOptions : @local::DetStepCompression.standardCompression
+    }
     # the following should be reconfigured to run after step compression once that is working
     FindMCPrimary : {
       module_type : FindMCPrimary
       SinglePrimary : true
-      GenParticles : "generate"
-      SimParticles : "g4run"
+      GenParticles : "compressDetStepMCs"
+      SimParticles : "compressDetStepMCs"
       PrimaryGenIds : [] # this is intentionally empty: there should only be 1 GenParticle in primary production
     }
   }
+
   filters : {
-# generator truncation filter; only needed for cosmic rays in principle
-    g4status: {
-      module_type: FilterStatusG4
-      input: "g4run"
-      maxAcceptedStatus: 9  #  status 10 and above means StepPointMCCollection may have non-dereferencable pointers
-    }
+# needed for cosmic rays
+    g4status: @local::Cosmic.g4status
+    stepPointMomentumFilter : @local::Cosmic.stepPointMomentumFilter
+    cosmicFilter : @local::Cosmic.cosmicFilter
+
 # default step filter for Sim Primary selection
     DetStepFilter : {
       module_type : DetectorStepFilter
@@ -52,24 +66,25 @@ Primary: {
       MinimumSumCaloStepE : 50.0
     }
   }
-  TriggerSequence : [ generate, genCounter, g4run, g4status,  
+  TriggerSequence : [ genCounter, g4run, g4status,
     @sequence::TrackerMC.StepSim,
     @sequence::CaloMC.StepSim,
     CrvSteps,
-    DetStepFilter, FindMCPrimary ]
+    DetStepFilter, compressDetStepMCs, FindMCPrimary ]
 
   KeptProducts : [ 
-		       "keep mu2e::StrawGasSteps_*_*_*",
-		       "keep mu2e::CaloShowerSteps_*_*_*",
-		       "keep mu2e::CrvSteps_*_*_*",
-		       "keep mu2e::StepPointMCs_*_virtualdetector_*",
-		       "keep mu2e::StepPointMCs_*_protonabsorber_*", 
-		       "keep mu2e::StepPointMCs_*_stoppingtarget_*", 
+		       "keep mu2e::StrawGasSteps_compressDetStepMCs_*_*",
+		       "keep mu2e::CaloShowerSteps_compressDetStepMCs_*_*",
+		       "keep mu2e::CrvSteps_compressDetStepMCs_*_*",
+		       "keep mu2e::StepPointMCs_compressDetStepMCs_virtualdetector_*",
+		       "keep mu2e::StepPointMCs_compressDetStepMCs_protonabsorber_*",
+		       "keep mu2e::StepPointMCs_compressDetStepMCs_stoppingtarget_*",
 		       "keep mu2e::StatusG4_*_*_*",
-		       "keep mu2e::SimParticlemv_g4run_*_*",  # these need to be updated after step compression FIXME!
-		       "keep mu2e::SimParticleart::Ptrmu2e::MCTrajectorystd::map_*_*_*",
-		       "keep mu2e::GenParticles_*_*_*",
+		       "keep mu2e::SimParticlemv_compressDetStepMCs_*_*",
+		       "keep mu2e::SimParticleart::Ptrmu2e::MCTrajectorystd::map_compressDetStepMCs_*_*",
+		       "keep mu2e::GenParticles_compressDetStepMCs_*_*",
 		       "keep mu2e::PrimaryParticle_*_*_*",
+                       "keep mu2e::CosmicLivetime_*_*_*",
 		       "keep art::TriggerResults_*_*_*",
 		       "keep mu2e::GenEventCount_*_*_*" ]
 
@@ -84,10 +99,11 @@ Primary: {
 
      # drop StepPoints from calorimeter
   }
+  EndSequence : [ genCountLogger ]
 # define paths
-  EndPath : [ genCountLogger, Output ]
 }
+Primary.EndPath : [ @sequence::Primary.EndSequence, Output ]
 Primary.Output.outputCommands : [ "drop *_*_*_*",
 		       @sequence::Primary.KeptProducts]
-Primary.TriggerPath : [ @sequence::Primary.TriggerSequence ]
+Primary.TriggerPath : [ generate, @sequence::Primary.TriggerSequence ]
 END_PROLOG

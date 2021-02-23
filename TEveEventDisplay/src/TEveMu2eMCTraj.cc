@@ -6,6 +6,15 @@
 using namespace mu2e;
 namespace mu2e{
 
+  TEveMu2eMCTraj::TEveMu2eMCTraj(){};
+  
+  std::string TEveMu2eMCTraj::DataTitle(const std::string &pstr, Int_t n){
+    std::string dstr = "";
+    if (n != -1){dstr=" hit#" + std::to_string(n) + "\nLayer: ";}
+    std::string strlab=pstr+dstr;
+    return (strlab);
+  }
+  
   void TEveMu2eMCTraj::DrawHit3D(const std::string &pstr, Int_t n, CLHEP::Hep3Vector pointInMu2e, TEveElementList *HitList)
   {
     this->SetTitle((DataTitle(pstr, n)).c_str());

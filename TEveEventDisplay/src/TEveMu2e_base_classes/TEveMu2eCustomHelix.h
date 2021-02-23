@@ -3,30 +3,22 @@
 
 #include <TObject.h>
 #include <THelix.h>
-#include <TPolyLine3D.h>
+#include <TEveLine.h>
 #include "RecoDataProducts/inc/HelixSeed.hh"
 #include "RecoDataProducts/inc/KalSeed.hh"
-#include "GlobalConstantsService/inc/GlobalConstantsHandle.hh"
-#include "GlobalConstantsService/inc/ParticleDataTable.hh"
+#include "RecoDataProducts/inc/TrkExtTraj.hh"
 
-#include <TEveTrackPropagator.h>
+using namespace mu2e;
 
 namespace mu2e {
   class   TEveMu2eCustomHelix: public TEveLine {
     public:
-       #ifndef __CINT__
-      explicit  TEveMu2eCustomHelix(){};
-      TEveMu2eCustomHelix(const TEveMu2eCustomHelix &helix) { fKalSeed = helix.fKalSeed;} ;
-      TEveMu2eCustomHelix(HelixSeed hseed){fHelixSeed = hseed;};
-      TEveMu2eCustomHelix(KalSeed kseed){
-	auto const& ptable = mu2e::GlobalConstantsHandle<mu2e::ParticleDataTable>();
-        fKalSeed = kseed;
-        this->Momentum = fKalSeed.helix()->helix().momentum();
-        this->PDGcode = fKalSeed.particle();
-        this->Charge = ptable->particle(fKalSeed.particle()).ref().charge();
-        this->Mass = ptable->particle(fKalSeed.particle()).ref().mass().value(); 
-      };
-      virtual ~ TEveMu2eCustomHelix(){};
+      #ifndef __CINT__
+      TEveMu2eCustomHelix();
+      explicit TEveMu2eCustomHelix(const TEveMu2eCustomHelix &helix);
+      explicit TEveMu2eCustomHelix(HelixSeed  const& hseed);
+      explicit TEveMu2eCustomHelix(KalSeed kseed);
+      virtual ~TEveMu2eCustomHelix(){};
       #endif
       
       KalSeed fKalSeed; 
@@ -35,39 +27,14 @@ namespace mu2e {
 
       void DrawHelixTrack();
       void Draw2DProjection();
-
-      void SetSeedInfo(KalSeed seed) { 
-	auto const& ptable = mu2e::GlobalConstantsHandle<mu2e::ParticleDataTable>();
-        fKalSeed = seed;
-        this->Momentum = fKalSeed.helix()->helix().momentum();
-        this->PDGcode = fKalSeed.particle();
-        this->Charge = ptable->particle(fKalSeed.particle()).ref().charge();
-        this->Mass = ptable->particle(fKalSeed.particle()).ref().mass().value(); 
-      }
-
-      void SetPostionAndDirectionFromHelixSeed(double zpos){
-        fHelixSeed.helix().position(Position);
-        fHelixSeed.helix().direction(zpos, Direction);
-      }
-
-      void SetPostionAndDirectionFromKalRep(double zpos){
-        fKalSeed.helix()->helix().position(Position);
-        fKalSeed.helix()->helix().direction(zpos, Direction);
-      }
-
-      void SetMomentumExt(){
-        this->Momentum = fTrkExtTraj.front().momentum().mag();
-      }
-
-      void SetParticleExt(){
-        this->PDGcode = 11; //FIXME
-      }
-
-      const std::string Title(){
-        const std::string title = "Track PDG " + to_string(PDGcode) +" Momentum = " + to_string(Momentum) + " Charge "+ to_string(Charge);
-        return title;
-      }
-
+      //TODO - this class will need redesigning
+      void SetSeedInfo(KalSeed const&  seed);
+      void SetPostionAndDirectionFromHelixSeed(double zpos);
+      void SetPostionAndDirectionFromKalRep(double zpos);
+      void SetMomentumExt();
+      void SetParticleExt();
+      const std::string Title();
+      std::string DataTitle(const std::string &pstr, int n);
       XYZVec Direction;
       XYZVec Position;
       double Momentum;

@@ -4,19 +4,38 @@ using namespace mu2e;
 namespace mu2e{
 
   TEveMu2eCluster::TEveMu2eCluster(){}
+  
+  std::string TEveMu2eCluster::DataTitle(const std::string &pstr, double edep){
+        std::string dstr= "\nLayer: ";
+        std::string strlst=pstr+dstr+std::to_string(edep);
+        return(strlst);
+  }
 
-  void TEveMu2eCluster::DrawCluster(const std::string &pstr,  CLHEP::Hep3Vector cog, int energylevel, TEveElementList *ClusterList)
+  void TEveMu2eCluster::DrawCluster(const std::string &pstr,  CLHEP::Hep3Vector const& cog, int energylevel, TEveElementList *ClusterList,   std::vector<CLHEP::Hep3Vector> const& hits, bool addHits)
   {
     double edep = fCaloCluster.energyDep();
     this->SetTitle((DataTitle(pstr, edep)).c_str());
-    hep3vectorTocm(cog);
-    Int_t mSize = 3;
+ 
     int colors[] = {+10, +5, +7, +8, -3, +1, -5, 0, -2, -4, +6, -9};
     this->SetMarkerColor(kViolet + colors[energylevel]);
     this->SetNextPoint(cog.x(), cog.y(), cog.z()); 
-    this->SetMarkerStyle(9);
-    this->SetMarkerSize(mSize);
+    this->SetMarkerStyle(kFullDotLarge);
+    this->SetMarkerSize(cluster_size);
     this->SetPickable(kTRUE);
+
+    if(addHits){
+      
+       TEvePointSet *teve_hit2D = new TEvePointSet();
+       for(unsigned int h =0 ; h < hits.size();h++) {
+        teve_hit2D->SetNextPoint(hits[h].x(), hits[h].y(), hits[h].z());
+        teve_hit2D->SetMarkerSize(hit_size);
+        teve_hit2D->SetMarkerStyle(kFullCrossX);
+        teve_hit2D->SetMarkerColor(kViolet + colors[energylevel]);
+        ClusterList->AddElement(teve_hit2D);
+      }
+    }
+    
+   
     ClusterList->AddElement(this);
   }
 }
