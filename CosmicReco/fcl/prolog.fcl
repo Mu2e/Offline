@@ -52,11 +52,12 @@ CosmicDriftFit : {
 }
 
 CosmicTrackFinder : { #split into Loose and tight below for efficieny studies
-    module_type		: CosmicTrackFinder
+    module_type		   : CosmicTrackFinder
     ComboHitCollection     : "makePH"
     TimeClusterCollection  : "SimpleTimeCluster"
-    UseLineFinder : false
-    
+    UseLineFinder          : false
+    DoDrift                : true
+    UseTime                : false
 }
 
 CosmicTrackFinderLoose : {
