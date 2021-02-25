@@ -16,13 +16,13 @@ namespace mu2e {
   // simple implementation of the above
   class KKSimpleStrawHitUpdater : public KKStrawHitUpdater {
     public:
-      KKSimpleStrawHitUpdater() : mindoca_(std::numeric_limits<float>::max()), maxdoca_(-1.0), nulltime_(false) {}
-      KKSimpleStrawHitUpdater(double mindoca, double maxdoca, bool nulltime) : mindoca_(mindoca), maxdoca_(maxdoca), nulltime_(nulltime) {}
+      KKSimpleStrawHitUpdater() : mindoca_(std::numeric_limits<float>::max()), maxdoca_(-1.0), nulldim_(WireHitState::both) {}
+      KKSimpleStrawHitUpdater(double mindoca, double maxdoca, WireHitState::Dimension nulldim) : mindoca_(mindoca), maxdoca_(maxdoca), nulldim_(nulldim) {}
       void updateState(WireHitState& hitstate, ClosestApproachData const& poca) const override;
     private:
       double mindoca_; // minimum DOCA value to use drift information
       double maxdoca_; // maximum DOCA to still use a hit
-      bool nulltime_; // constrain time when hit has null ambiguity
+      WireHitState::Dimension nulldim_; // constrain dimension for null hits
   };
 }
 #endif

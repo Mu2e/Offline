@@ -49,6 +49,7 @@
 #include "KinKal/Detector/StrawMaterial.hh"
 #include "KinKal/Detector/StrawXing.hh"
 #include "KinKal/MatEnv/MatDBInfo.hh"
+#include "KinKal/General/Parameters.hh"
 #include "KinKal/Trajectory/Line.hh"
 // Mu2eKinKal
 #include "Mu2eKinKal/inc/KKFileFinder.hh"
@@ -94,6 +95,7 @@ namespace mu2e {
   using KinKal::CAHint;
   using KinKal::StrawMaterial;
   using KinKal::WireHitState;
+  using KinKal::DMAT;
   class LoopHelixFit : public art::EDProducer {
     using Name    = fhicl::Name;
     using Comment = fhicl::Comment;
@@ -105,7 +107,7 @@ namespace mu2e {
       fhicl::Atom<int> fitParticle {  Name("FitParticle"), Comment("Particle type to fit: e-, e+, mu-, ..."), PDGCode::e_minus};
       fhicl::Atom<int> fitDirection { Name("FitDirection"), Comment("Particle direction to fit, either upstream or downstream"), TrkFitDirection::downstream };
       fhicl::Atom<bool> refine { Name("Refine"), Comment("Refine and redo the final fit"),false};
-      fhicl::Atom<int> diagLevel { Name("DiagLevel"), Comment("Diagnostic Level"), 0 };
+      fhicl::Atom<int> printLevel { Name("PrintLevel"), Comment("Diagnostic printout Level"), 0 };
       fhicl::Atom<int> debugLevel { Name("DebugLevel"), Comment("Debug Level"), 0 };
       fhicl::Sequence<std::string> helixFlags { Name("HelixFlags"), Comment("Flags required to be present to convert a helix seed to a KinKal track") };
       fhicl::Atom<bool> saveAll { Name("SaveAllFits"), Comment("Save all fits, whether they suceed or not"),false };
@@ -135,13 +137,15 @@ namespace mu2e {
       fhicl::Atom<float> dwt { Name("Deweight"), Comment("Deweighting factor when initializing the track end parameters"), 1.0e6 };
       fhicl::Atom<float> tBuffer { Name("TimeBuffer"), Comment("Time buffer for final fit (ns)"), 0.2 };
       fhicl::Atom<float> btol { Name("BCorrTolerance"), Comment("Tolerance on BField correction accuracy (mm)"), 0.01 };
-      fhicl::Atom<int> minndof { Name("MinNDOF"), Comment("Minimum number of Degrees of Freedom to conitnue fitting"), 5  };
+      fhicl::Sequence<float> seederrors { Name("SeedErrors"), Comment("Initial value of seed parameter errors (rms, various units)") };
       fhicl::Atom<int> bfieldCorr { Name("BFieldCorrection"), Comment("BField correction algorithm") };
+      fhicl::Atom<int> minndof { Name("MinNDOF"), Comment("Minimum number of Degrees of Freedom to conitnue fitting"), 5  };
       fhicl::Atom<int> printLevel { Name("PrintLevel"), Comment("Print Level"),0};
+      fhicl::Atom<int> nullHitDimension { Name("NullHitDimension"), Comment("Null hit constrain dimension"), 2 }; 
     };
 
     using MetaIterationSettings = fhicl::Sequence<fhicl::Tuple<float,float,float,float>>;
-    using StrawHitUpdateSettings = fhicl::Sequence<fhicl::Tuple<float,float,bool,unsigned,unsigned>>;
+    using StrawHitUpdateSettings = fhicl::Sequence<fhicl::Tuple<float,float,unsigned,unsigned>>;
     struct ModuleConfig {
       fhicl::Table<ModuleSettings> modsettings { Name("ModuleSettings") };
       fhicl::Table<FitSettings> fitsettings { Name("FitSettings") };
@@ -150,7 +154,7 @@ namespace mu2e {
       " 'Temperature (dimensionless)', 'TPOCA convergence tolerance (ns)', \n"
       "'Delta chisquared/DOF for convergence', 'Delta chisquared/DOF for divergence'") };
       StrawHitUpdateSettings shuconfig { Name("StrawHitUpdateSettings"), Comment("Setting sequence for updating StrawHits, format: \n"
-      " 'MinDoca', 'MaxDoca', 'UseNullTime', 'First Meta-iteration', 'Last Meta-iteration'") };
+      " 'MinDoca', 'MaxDoca', First Meta-iteration', 'Last Meta-iteration'") };
     };
     using ModuleParams = art::EDProducer::Table<ModuleConfig>;
 
@@ -169,12 +173,13 @@ namespace mu2e {
     PDGCode::type tpart_;
     ProditionsHandle<StrawResponse> strawResponse_h_;
     ProditionsHandle<Tracker> alignedTracker_h_;
-    int diag_, debug_;
+    int print_, debug_;
     float maxDoca_, maxDt_, maxChi_, maxDU_, tbuff_, tpocaprec_;
     KKFileFinder filefinder_;
     std::string wallmatname_, gasmatname_, wirematname_;
     std::unique_ptr<StrawMaterial> smat_; // straw material
     KKConfig kkconfig_; // KinKal fit configuration
+    DMAT seedcov_; // seed covariance matrix
   };
 
   LoopHelixFit::LoopHelixFit(const ModuleParams& config) : art::EDProducer{config}, 
@@ -183,7 +188,7 @@ namespace mu2e {
     goodhelix_(config().modsettings().helixFlags()),
     saveall_(config().modsettings().saveAll()),
     tdir_(static_cast<TrkFitDirection::FitDirection>(config().modsettings().fitDirection())), tpart_(static_cast<PDGCode::type>(config().modsettings().fitParticle())),
-    diag_(config().modsettings().diagLevel()),
+    print_(config().modsettings().printLevel()),
     debug_(config().modsettings().debugLevel()),
     maxDoca_(config().modsettings().maxAddDOCA()),
     maxDt_(config().modsettings().maxAddDt()),
@@ -208,6 +213,13 @@ namespace mu2e {
     kkconfig_.minndof_ = config().fitsettings().minndof();
     kkconfig_.bfcorr_ = static_cast<KKConfig::BFCorr>(config().fitsettings().bfieldCorr());
     kkconfig_.plevel_ = static_cast<KKConfig::printLevel>(config().fitsettings().printLevel());
+    // build the seed covariance
+    auto const& seederrors = config().fitsettings().seederrors();
+    if(seederrors.size() != KinKal::NParams()) 
+      throw cet::exception("RECO")<<"mu2e::LoopHelixFit:Seed error configuration error"<< endl;
+    for(size_t ipar=0;ipar < seederrors.size(); ++ipar){
+      seedcov_[ipar][ipar] = seederrors[ipar]*seederrors[ipar];
+    }
     // Now set the schedule for the meta-iterations
     unsigned nmiter(0);
     for(auto const& misetting : config().mconfig()) {
@@ -222,9 +234,9 @@ namespace mu2e {
     auto& schedule = kkconfig_.schedule();
     // simple hit updating
     for(auto const& shusetting : config().shuconfig() ) {
-      KKSimpleStrawHitUpdater shupdater(std::get<0>(shusetting), std::get<1>(shusetting), std::get<2>(shusetting));
-      unsigned minmeta = std::get<3>(shusetting);
-      unsigned maxmeta = std::get<4>(shusetting);
+      KKSimpleStrawHitUpdater shupdater(std::get<0>(shusetting), std::get<1>(shusetting), static_cast<WireHitState::Dimension>(config().fitsettings().nullHitDimension()));
+      unsigned minmeta = std::get<2>(shusetting);
+      unsigned maxmeta = std::get<3>(shusetting);
       if(maxmeta < minmeta || kkconfig_.schedule_.size() < maxmeta)
 	throw cet::exception("RECO")<<"mu2e::LoopHelixFit: Hit updater configuration error"<< endl;
       for(unsigned imeta=minmeta; imeta<=maxmeta; imeta++)
@@ -275,17 +287,18 @@ namespace mu2e {
 	  auto const& shelix = hseed.helix();
 	  auto const& hhits = hseed.hits();
 	  DVEC pars;
-	  pars[KTRAJ::rad_] = shelix.radius();
+	  pars[KTRAJ::rad_] = shelix.radius(); // translation should depend on fit direction and charge FIXME!
 	  pars[KTRAJ::lam_] = shelix.lambda();
 	  pars[KTRAJ::cx_] = shelix.centerx();
 	  pars[KTRAJ::cy_] = shelix.centery();
-	  pars[KTRAJ::phi0_] = shelix.fz0();
+	  pars[KTRAJ::phi0_] = shelix.fz0()+M_PI_2; // convention difference for phi0: not sure if this is fixable. TODO
 	  pars[KTRAJ::t0_] = hseed.t0().t0();
 	  if(tdir_ == TrkFitDirection::upstream){
 	    pars[KTRAJ::rad_] *= -1.0;
 	    pars[KTRAJ::lam_] *= -1.0;
 	  }
-	  Parameters kkpars(pars);
+	  // create the initial trajectory
+	  Parameters kkpars(pars,seedcov_);
 	  // compute the magnetic field at the center.  We only want the z compontent, as the helix fit assumes B points along Z
 	  float zcent = 0.5*(hhits.front().pos().Z()+hhits.back().pos().Z());
 	  VEC3 center(shelix.centerx(), shelix.centery(),zcent);
@@ -301,6 +314,12 @@ namespace mu2e {
 	  //  construct the trajectory
 	  KTRAJ seedtraj(kkpars, trange, mass, charge, bnom);
 	  PKTRAJ pseedtraj(seedtraj);
+	  // test
+	  std::cout << "SeedTraj direction " << seedtraj.direction(seedtraj.t0()) << std::endl
+	  << "HelixSeed direction " << shelix.direction(0.0) << std::endl;
+	  std::cout << "SeedTraj position " << seedtraj.position3(seedtraj.t0()) << std::endl
+	  << "HelixSeed position " << shelix.position(0.0) << std::endl;
+
 	  // construct individual KKHit objects from each Helix hit
 	  // first, we need to unwind the straw combination
 	  std::vector<StrawHitIndex> strawHitIdxs;

@@ -12,10 +12,7 @@ namespace mu2e {
       hitstate.dimension_ = WireHitState::none; // disable the hit
     } else { // hit very close to the wire: ambiguity information is unusable
       hitstate.lrambig_ = WireHitState::null;
-      if(nulltime_)
-	hitstate.dimension_ = WireHitState::both;
-      else
-	hitstate.dimension_ = WireHitState::distance;
+      hitstate.dimension_ = nulldim_;
     }
   }
 }

@@ -13,6 +13,7 @@ Mu2eKinKal : {
     }
   
     FitSettings: {
+      SeedErrors : [5.0, 5.0, 5.0, 5.0, 0.02, 5.0] # R, Lambda, Cx, Cy, phi0, t0
       PrintLevel : 1
     }
   
@@ -34,8 +35,8 @@ Mu2eKinKal : {
         [ 0.0, 1e-6, 0.01, 10.0 ]
       ]
       StrawHitUpdateSettings : [
-        [ 10.0, 10.0, true, 0, 0 ],
-        [ 10.0, 5.0, true, 1, 2 ]
+        [ 10.0, 10.0, 0, 0 ],
+        [ 10.0, 5.0, 1, 2 ]
       ]
     }
   }
