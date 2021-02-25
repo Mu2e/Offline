@@ -1,4 +1,10 @@
-physics.filters.caloCalibCosmicFilter.debugLevel      : 0	         
-physics.filters.caloCalibCosmicFilter.MinNCrystalHits : 7	         
-physics.filters.caloCalibCosmicFilter.MinEnergy       : 150.0     
-physics.filters.caloCalibCosmicFilter.MaxEnergy       : 600.0       
+physics.filters.caloCalibCosmicFilter.debugLevel       : 0	         
+physics.filters.caloCalibCosmicFilter.MinNCrystalHits  : 0	         
+physics.filters.caloCalibCosmicFilter.MinEnergy        : 120.0     
+physics.filters.caloCalibCosmicFilter.MaxEnergy        : 600.0       
+physics.filters.caloCalibCosmicFilter.triggerPath      : "CaloCalibCosmic"     
+physics.filters.caloCalibCosmicFilter.MinNumCelinout   : 6
+physics.filters.caloCalibCosmicFilter.MinNumCeldiagver : 6     
+physics.filters.caloCalibCosmicFilter.MinCelEneCut     : 15.0    
+physics.filters.caloCalibCosmicFilter.OutRadius        : 580.0    
+physics.filters.caloCalibCosmicFilter.InnerRadius      : 460.0     
