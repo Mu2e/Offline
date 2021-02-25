@@ -7,6 +7,11 @@
 
 import os
 Import('env')
+
+# if building for the trigger exe, don't build this lib
+if env['TRIGGER'] == 'on':
+    Return()
+
 Import('mu2e_helper')
 
 helper=mu2e_helper(env);

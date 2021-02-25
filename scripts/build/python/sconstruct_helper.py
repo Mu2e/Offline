@@ -162,15 +162,6 @@ def sconscriptList(mu2eOpts):
         if 'SConscript' in files:
             ss_append(os.path.join(root[2:], 'SConscript'))
 
-    # If we are making a build for the trigger, do not build everything.
-    if mu2eOpts["trigger"] == 'on':
-        notNeeded = ["Mu2eG4/src/SConscript",
-                     #"CRVResponse/src/SConscript",
-                     "Sandbox/src/SConscript"]
-        for x in notNeeded:
-            if x in ss:
-                ss.remove(x)
-
     return ss
 
 # Make sure the build directories are created
