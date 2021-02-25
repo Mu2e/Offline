@@ -39,11 +39,18 @@ namespace mu2e {
     // azimuth wrt the circle center expected for a given z position
     Float_t circleAzimuth( double zpos) const { return _lambda != 0.0 ? _fz0 + zpos/_lambda : 0.0; }
     // position in space given the Z position of the input vector
+    XYZVec position(float z) const {
+      return XYZVec(centerx() + _radius*cos(circleAzimuth(z)), centery() + _radius*sin(circleAzimuth(z)), z);
+    }
     void position(XYZVec& pos) const {
       pos.SetX(centerx() + _radius*cos(circleAzimuth(pos.z())));
       pos.SetY(centery() + _radius*sin(circleAzimuth(pos.z())));
     }
     // unit vector in direction at the given z
+    XYZVec direction(float zval) const {
+      return XYZVec( -_radius*sin(circleAzimuth(zval)),
+	  _radius*cos(circleAzimuth(zval)),
+	  _lambda)/momentum(); }
     void direction(float zval,XYZVec& dir) const {
       float mom = momentum();
       dir.SetX(-_radius*sin(circleAzimuth(zval))/mom);
