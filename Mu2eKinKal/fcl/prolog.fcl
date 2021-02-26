@@ -13,12 +13,10 @@ Mu2eKinKal : {
     }
   
     FitSettings: {
-      SeedErrors : [5.0, 5.0, 5.0, 5.0, 0.02, 5.0] # R, Lambda, Cx, Cy, phi0, t0
-      PrintLevel : 1
+      SeedErrors : [5.0, 5.0, 5.0, 5.0, 0.02, 25.0] # R, Lambda, Cx, Cy, phi0, t0
     }
   
     ModuleSettings : {
-      DebugLevel : 3
       HelixFlags : [ "HelixOK", "HitsOK" ]
       ZSavePositions : [-1522.0,0.0,1522.0]
     }
@@ -30,14 +28,17 @@ Mu2eKinKal : {
     KKDeMSeedFit : {
       @table::Mu2eKinKal.KKFit
       MetaIterationSettings : [ 
-        [ 2.0, 1e-6, 10, 100.0 ],
-        [ 1.0, 1e-6, 1.0, 50.0 ],
-        [ 0.0, 1e-6, 0.01, 10.0 ]
-      ]
+        [ 10.0, 1.0, 10.0 ],
+        [ 5.0, 1.0, 10.0 ]]
+#        [ 0.0, 0.01, 10.0 ]
+#      ]
+#     MetaIterationSettings : [ 
+#        [ 2.0, 10, 100.0 ] ]
+#      StrawHitUpdateSettings : []
       StrawHitUpdateSettings : [
-        [ 10.0, 10.0, 0, 0 ],
-        [ 10.0, 5.0, 1, 2 ]
-      ]
+        [ 10.0, 10.0, 1, 1 ]]
+#        [ 10.0, 5.0, 1, 2 ]
+#      ]
     }
   }
 }
