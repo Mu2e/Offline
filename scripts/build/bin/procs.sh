@@ -7,13 +7,26 @@
 COMMAND=$1
 RC=0
 
+# if running in muse, the default dir will be above Offline
+if [ -n "$MUSE_WORK_DIR"  ]; then
+    OUT=${MUSE_BUILD_BASE}/Offline/
+    IN=Offline/
+    SC=" -f $MUSE_DIR/python/SConstruct "
+else
+    OUT=""
+    IN=""
+    SC=""
+fi
+
 echo [$(date)] procs.sh starting $COMMAND
 
 if [ "$COMMAND" == "DEPS"  ]; then
     # make a text file of the package dependencies
-    scons -Q --tree=prune | deps -i > gen/txt/deps.txt
+    mkdir -p ${OUT}gen/txt
+    scons $SC  -Q --tree=prune | deps -i > ${OUT}gen/txt/deps.txt
     [ $? -ne 0 ] && RC=1
 elif [ "$COMMAND" == "GDML"  ]; then
+    mkdir -p ${OUT}gen/gdml
     # if mu2e.gdml exists, save it
     if [ -f mu2e.gdml ]; then
 	STR=$(date +%s)
@@ -21,18 +34,18 @@ elif [ "$COMMAND" == "GDML"  ]; then
 	/bin/mv mu2e.gdml mu2e.gdml.$STR
     fi
     # make the standard gdml file
-    mu2e -c Mu2eG4/fcl/gdmldump.fcl; 
+    mu2e -c ${IN}Mu2eG4/fcl/gdmldump.fcl; 
     [ $? -ne 0 ] && RC=1
-    /bin/mv mu2e.gdml gen/gdml/mu2e.gdml
+    /bin/mv mu2e.gdml ${OUT}gen/gdml/mu2e.gdml
     [ $? -ne 0 ] && RC=1
 elif [ "$COMMAND" == "TEST03"  ]; then
     # see if this fcl runs
-    mu2e -c Mu2eG4/fcl/g4test_03.fcl -o /dev/null -T /dev/null
+    mu2e -c ${IN}Mu2eG4/fcl/g4test_03.fcl -o /dev/null -T /dev/null
     [ $? -ne 0 ] && RC=1
 elif [ "$COMMAND" == "ROVERLAPS"  ]; then
     # fast root overlap check 
     TMP=$(mktemp)
-    root -l -b -q bin/overlapCheck.C\(\"gen/gdml/mu2e.gdml\"\) >& $TMP
+    root -l -b -q ${IN}bin/overlapCheck.C\(\"${OUT}gen/gdml/mu2e.gdml\"\) >& $TMP
     [ $? -ne 0 ] && RC=1
     # a message on how many volumes checked
     grep "in Geometry imported from GDML" $TMP
@@ -45,21 +58,29 @@ elif [ "$COMMAND" == "ROVERLAPS"  ]; then
     rm -f $TMP
 
 elif [ "$COMMAND" == "GITPACK"  ]; then
-    # set the remote to the writeable url
-    git remote set-url origin  ssh://p-mu2eofflinesoftwaremu2eoffline@cdcvs.fnal.gov/cvs/projects/mu2eofflinesoftwaremu2eoffline/Offline.git
-    [ $? -ne 0 ] && RC=1
-    # make sure .git is packed
+    if [ -n "$MUSE_WORK_DIR"  ]; then
+	cd Offline
+    fi
     git repack -d -l
     [ $? -ne 0 ] && RC=1
+    if [ -n "$MUSE_WORK_DIR"  ]; then
+	cd ..
+    fi
 elif [ "$COMMAND" == "RMSO" ]; then
-    rm -rf tmp
+    if [ -n "$MUSE_WORK_DIR"  ]; then
+	find ${MUSE_BUILD_BASE}/Offline -name "*.os" -delete
+	find ${MUSE_BUILD_BASE}/Offline -name "*.o"  -delete
+    else
+	rm -rf tmp
+	find . -name "*.os" -delete
+	find . -name "*.o"  -delete
+    fi
     rm -f .sconsign.dblite
-    find . -name "*.os" -delete
-    find . -name "*.o"  -delete
 elif [ "$COMMAND" == "VAL0" ]; then
-    mu2e -n 5000 -c Validation/fcl/ceSimReco.fcl -o ceSimReco.art -T /dev/null
+    mkdir -p ${OUT}gen/val
+    mu2e -n 5 -c ${IN}Validation/fcl/ceSimReco.fcl -o ceSimReco.art -T /dev/null
     [ $? -ne 0 ] && RC=1
-    mu2e -s ceSimReco.art -T gen/val/ceSimReco_5000.root -c Validation/fcl/val.fcl
+    mu2e -s ceSimReco.art -T ${OUT}gen/val/ceSimReco_5000.root -c ${IN}Validation/fcl/val.fcl
     [ $? -ne 0 ] && RC=1
     rm -f ceSimReco.art
 else
