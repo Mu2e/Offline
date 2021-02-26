@@ -135,7 +135,7 @@ namespace mu2e {
 
         std::vector<CaloRecoDigiPtr> buffer{};
         int nSiPM(0);
-        double timeW(0),timeWtot(0),eDepTot(0),eDepTotErr(0);
+        double timeW(0),timeWtot(0),eDepW(0),eDepWtot(0);
 
         while (endHit != hits.end())
         {
@@ -147,15 +147,17 @@ namespace mu2e {
             {
                 double time    = timeW/timeWtot;
                 double timeErr = 1.0/sqrt(timeWtot);
+                double eDep    = eDepW/eDepWtot;
+                double eDepErr = 1.0/sqrt(eDepWtot);
 
-                fillBuffer(crystalId, nSiPM, time, timeErr, eDepTot/nSiPM, eDepTotErr/nSiPM, buffer, caloHits);
-                totEnergyRec += eDepTot/float(nSiPM);
+                fillBuffer(crystalId, nSiPM, time, timeErr, eDep, eDepErr, buffer, caloHits);
+                totEnergyRec += eDep;
 
                 buffer.clear();
                 timeW      = 0.0;
                 timeWtot   = 0.0;
-                eDepTot    = 0.0;
-                eDepTotErr = 0.0;
+                eDepW      = 0.0;
+                eDepWtot   = 0.0;
                 nSiPM      = 0;
                 startHit   = endHit;
              } 
@@ -164,9 +166,13 @@ namespace mu2e {
                 double wt  = 1.0/(*endHit)->timeErr()/(*endHit)->timeErr();
                 timeWtot   += wt;
                 timeW      += wt*(*endHit)->time();
-
-                eDepTot    += (*endHit)->energyDep();
-                eDepTotErr += (*endHit)->energyDepErr() * (*endHit)->energyDepErr();
+                
+                wt  = 1.0/(*endHit)->energyDepErr()/(*endHit)->energyDepErr();
+                eDepWtot   += wt;
+                eDepW      += wt*(*endHit)->energyDep();
+                
+                //eDepTot    += (*endHit)->energyDep();
+                //eDepTotErr += (*endHit)->energyDepErr() * (*endHit)->energyDepErr();
 
                 ++nSiPM;
 
@@ -181,8 +187,10 @@ namespace mu2e {
           //flush last buffer
           double time    = timeW/timeWtot;
           double timeErr = 1.0/sqrt(timeWtot);
-          fillBuffer(crystalId, nSiPM, time, timeErr, eDepTot/nSiPM, eDepTotErr/nSiPM, buffer, caloHits);
-          totEnergyRec += eDepTot/float(nSiPM);
+          double eDep    = eDepW/eDepWtot;
+          double eDepErr = 1.0/sqrt(eDepWtot);
+          fillBuffer(crystalId, nSiPM, time, timeErr, eDep, eDepErr, buffer, caloHits);
+          totEnergyRec += eDep;
       }
 
       if ( diagLevel_ > 1 ) std::cout<<"[CaloHitMaker::produce] produced RecoCrystalHits with caloHits.size() = "<<caloHits.size()<<std::endl;
@@ -199,7 +207,7 @@ namespace mu2e {
       caloHits.emplace_back(CaloHit(crystalId, nSiPM, time, timeErr, eDep, eDepErr, buffer));
 
       if (diagLevel_ > 2) std::cout<<"[CaloHitMaker] created hit in crystal id="<<crystalId<<"\t with time="
-                                   <<time<<"\t eDep="<<eDep<<"\t  from "<<nSiPM<<" RO"<<std::endl;
+                                   <<time<<"+-"<<timeErr<<"\t eDep="<<eDep<<"+-"<<eDepErr<<"\t from "<<nSiPM<<" RO"<<std::endl;
                     
       if (diagLevel_ > 2)
       {

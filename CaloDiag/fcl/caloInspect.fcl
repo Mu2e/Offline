@@ -26,32 +26,26 @@ physics: {
   {
       FindMCPrimary : { 
         @table::CommonMC.FindMCPrimary
-        TimeOffsets : [ @sequence::DigiCompression.TimeMaps ]
       }
       
       @table::CaloReco.producers
-      @table::CaloMC.producers
+      @table::CaloMC.TruthProducers
       @table::CaloCluster.producers
       @table::CaloClusterMC.producers	
-      @table::TrkHitReco.producers
-      @table::Tracking.producers
   }
   
   analyzers : 
   {
       CaloExample: {
           module_type                : CaloExample
-          doGenerated                : true
-          g4ModuleLabel              : compressDigiMCs
-          generatorModuleLabel       : compressDigiMCs
-          simParticleTag             : compressDigiMCs
-          caloCrystalModuleLabel     : CaloHitMaker
-          caloClusterModuleLabel     : CaloClusterMaker
-          caloClusterTruthModuleLabel: CaloClusterTruthMatch
-          caloHitTruthModuleLabel    : CaloHitTruthMatch
-          virtualDetectorName        : virtualdetector
-          stepPointMCLabel           : compressDigiMCs
-	  TimeOffsets                : { inputs : [ "compressDigiMCs:protonTimeMap", "compressDigiMCs:muonTimeMap" ] } 
+          generatorCollection        : compressDigiMCs
+          vdCollection               : "compressDigiMCs:virtualdetector"
+          caloHitCollection          : CaloHitMaker
+          caloClusterCollection      : CaloClusterMaker
+          caloHitTruth               : CaloHitTruthMatch
+          caloClusterTruth           : CaloClusterTruthMatch
+	  timeOffsets                : { inputs : [ "compressDigiMCs:protonTimeMap", "compressDigiMCs:muonTimeMap" ] }
+          addGenerator               : true
       }
 
       CaloMCInspector: {
@@ -62,16 +56,13 @@ physics: {
       }
   }
   
-  p1: [ 
-        FindMCPrimary,
+  p1: [ FindMCPrimary,
         @sequence::CaloReco.Reco,
-        @sequence::CaloMC.TruthMatch,	 	  
 	@sequence::CaloCluster.Reco,
-        @sequence::CaloClusterMC.TruthMatch
+        @sequence::CaloMC.TruthMatch	 	  
       ]
 
   e1: [CaloExample,CaloMCInspector]
-  #e1: []
    
 
   trigger_paths: [p1]

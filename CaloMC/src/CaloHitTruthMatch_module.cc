@@ -31,7 +31,7 @@
 
 namespace mu2e {
 
-  class CaloDigiTruthMatch : public art::EDProducer 
+  class CaloHitTruthMatch : public art::EDProducer 
   {
       public:
          struct Config 
@@ -49,7 +49,7 @@ namespace mu2e {
          };
 
 
-        explicit CaloDigiTruthMatch(const art::EDProducer::Table<Config>& config) :
+        explicit CaloHitTruthMatch(const art::EDProducer::Table<Config>& config) :
            EDProducer{config},
            caloShowerSimToken_ {consumes<CaloShowerSimCollection> (config().caloShowerSimCollection())},
            CaloHitToken_       {consumes<CaloHitCollection>(config().caloHitCollection())},
@@ -105,7 +105,7 @@ namespace mu2e {
 
 
   //--------------------------------------------------------------------
-  void CaloDigiTruthMatch::beginJob()
+  void CaloHitTruthMatch::beginJob()
   {
       if ( diagLevel_ > 2)
       {
@@ -121,7 +121,7 @@ namespace mu2e {
   }
 
   //-----------------------------------------------------------------------------
-  void CaloDigiTruthMatch::beginRun(art::Run& aRun)
+  void CaloHitTruthMatch::beginRun(art::Run& aRun)
   {
       CaloPulseShape cps(digiSampling_);
       cps.buildShapes();
@@ -132,7 +132,7 @@ namespace mu2e {
 
 
   //--------------------------------------------------------------------
-  void CaloDigiTruthMatch::produce(art::Event& event)
+  void CaloHitTruthMatch::produce(art::Event& event)
   {
       auto pph = event.getValidHandle<PrimaryParticle>(ppToken_);
       auto const& primaryParticles = *pph;
@@ -157,8 +157,8 @@ namespace mu2e {
   //   MCtime must not already be in the window of the next hit, in which case it is associate to this one
   //
   //--------------------------------------------------------------------
-  void CaloDigiTruthMatch::makeTruthMatch(art::Event& event, CaloHitMCCollection& caloHitMCs,
-                                         CaloHitMCTruthAssn& caloDigiTruthMatch, CaloShowerMCTruthAssn& caloShowerTruthMatch, 
+  void CaloHitTruthMatch::makeTruthMatch(art::Event& event, CaloHitMCCollection& caloHitMCs,
+                                         CaloHitMCTruthAssn& CaloHitTruthMatch, CaloShowerMCTruthAssn& caloShowerTruthMatch, 
                                          const PrimaryParticle& primaryParticle)
   {
         
@@ -194,7 +194,7 @@ namespace mu2e {
           
           if (diagLevel_ > 2) 
              for (const auto& shower : caloSims) 
-                 std::cout<<"[CaloDigiTruthMatch] Sim shower  id/energy/time="<<shower->crystalID()<<" / "<<shower->energyDep()<<" / "<<shower->time()<<std::endl;
+                 std::cout<<"[CaloHitTruthMatch] Sim shower  id/energy/time="<<shower->crystalID()<<" / "<<shower->energyDep()<<" / "<<shower->time()<<std::endl;
           
 
           auto showerIt    = caloSims.begin();
@@ -221,7 +221,7 @@ namespace mu2e {
              double deltaTimePlus(nbin*digiSampling_);
 
 
-             if (diagLevel_ > 2) std::cout<<"[CaloDigiTruthMatch]  inspect hit id/time/energy/length "<<hit->crystalID()<<" / "<<hit->time()<<" / "<<hit->energyDep()<<" "<<nbin*digiSampling_<<std::endl;
+             if (diagLevel_ > 2) std::cout<<"[CaloHitTruthMatch]  inspect hit id/time/energy/length "<<hit->crystalID()<<" / "<<hit->time()<<" / "<<hit->energyDep()<<" "<<nbin*digiSampling_<<std::endl;
                                       
              //forward until we reach the recoHit time;
              while (showerIt != showerItEnd && ( (*showerIt)->time() < (*hitIt)->time() - digiSampling_) ) ++showerIt; 
@@ -278,7 +278,7 @@ namespace mu2e {
                                  
                                                   
                  if (diagLevel_ > 1) diag(showerSim,hit);
-                 if (diagLevel_ > 2) std::cout<<"[CaloDigiTruthMatch]  matched shower id/time/energyDep()= "<<showerSim->crystalID()
+                 if (diagLevel_ > 2) std::cout<<"[CaloHitTruthMatch]  matched shower id/time/energyDep()= "<<showerSim->crystalID()
                                               <<" / "<<showerSim->time()<<" / "<<showerSim->energyDep()<<std::endl;
                  ++showerIt;                
              }
@@ -288,18 +288,18 @@ namespace mu2e {
              caloHitMCs.emplace_back(CaloHitMC(std::move(edeps)));
 
              art::Ptr<CaloHitMC> hitMCPtr = art::Ptr<CaloHitMC>(hitMCProductID, caloHitMCs.size()-1, hitMCProductGetter);             
-             caloDigiTruthMatch.addSingle(hitPtr,hitMCPtr);
+             CaloHitTruthMatch.addSingle(hitPtr,hitMCPtr);
                           
              if (hitIsMatched) {totalEnergyMatched += (*hitIt)->energyDep();++nMatched;}
              ++hitIt;
           }      
       }      
        
-      if (diagLevel_ > 0) std::cout<<"[CaloDigiTruthMatch]  total particles / energy matched = "<<nMatched<<" / "<<totalEnergyMatched<<std::endl;
+      if (diagLevel_ > 0) std::cout<<"[CaloHitTruthMatch]  total particles / energy matched = "<<nMatched<<" / "<<totalEnergyMatched<<std::endl;
   } 
   
 
-  void CaloDigiTruthMatch::diag(const CaloShowerSim* shower, const CaloHit* hit)
+  void CaloHitTruthMatch::diag(const CaloShowerSim* shower, const CaloHit* hit)
   {
       hTime_->Fill(shower->time()-hit->time());
       hEnerTime_->Fill(shower->energyDep(),shower->time()-hit->time());
@@ -317,8 +317,8 @@ namespace mu2e {
 
 }
 
-using mu2e::CaloDigiTruthMatch;
-DEFINE_ART_MODULE(CaloDigiTruthMatch);
+using mu2e::CaloHitTruthMatch;
+DEFINE_ART_MODULE(CaloHitTruthMatch);
 
 
 

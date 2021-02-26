@@ -81,9 +81,11 @@ namespace mu2e {
        for (unsigned i=0;i<fmutil_.nPeaks();++i)
        {            
 	   unsigned ip = fmutil_.peakIdx(i);
-	   resAmp_.push_back(fmutil_.par()[ip]);                          
-	   resAmpErr_.push_back(fmutil_.parErr()[ip]);
-	   resTime_.push_back(fmutil_.fromPeakToT0(fmutil_.par()[ip+1])); 
+	   if (fmutil_.par()[ip+1] > xInput.back()) continue;
+           resAmp_.push_back(fmutil_.par()[ip]);                          
+	   //modified estimate for the uncertainty, see note in CaloTemplateWFUtil
+	   resAmpErr_.push_back( sqrt(fmutil_.parErr()[ip]*fmutil_.parErr()[ip]+fmutil_.par()[ip]) );
+           resTime_.push_back(fmutil_.fromPeakToT0(fmutil_.par()[ip+1])); 
 	   resTimeErr_.push_back(fmutil_.parErr()[ip+1]);
        }
        
@@ -122,6 +124,8 @@ namespace mu2e {
         parInit.push_back(noise);
         for (auto& val : yvec) val -= noise;   
         
+        if (diagLevel_>1) std::cout<<"[CaloTemplateWFProcessor] Noise level "<<noise<<std::endl;
+
 	std::vector<double> ywork(yvec);
 	for (auto i=windowPeak_;i<int(xvec.size())-windowPeak_;++i)
         {
@@ -133,20 +137,24 @@ namespace mu2e {
 	    	    
 	    parInit.push_back(ymaxEstimate); 
             parInit.push_back(xmaxEstimate);
-            fmutil_.setPar(parInit);	                 	    
+            fmutil_.setPar(parInit);
+
+            if (diagLevel_>1) std::cout<<"[CaloTemplateWFProcessor] Found primary peak "<<xmaxEstimate<<std::endl;	                 	    
         }
         
         if (fmutil_.nPeaks()==0) 
         {
             unsigned ipeak(0);
-            while (ipeak < ywork.size()) {if (ywork[ipeak] >= minPeakAmplitude_) break; ++ipeak;}
+            while (ipeak < ywork.size()) {if (ywork[ipeak] >= minPeakAmplitude_ && ywork[ipeak+1] >= 0.8*ywork[ipeak]) break; ++ipeak;}
             if (ipeak < ywork.size())
             { 
                 parInit.push_back(ywork[ipeak]); 
                 parInit.push_back(xvec[ipeak]);	     
                 fmutil_.setPar(parInit);
+                if (diagLevel_>1) std::cout<<"[CaloTemplateWFProcessor] Found primary peak "<<xvec[ipeak] <<std::endl;
             }
         }
+        
     }
   
 
@@ -308,7 +316,7 @@ namespace mu2e {
    void CaloTemplateWFProcessor::initHistos()
    {
        art::ServiceHandle<art::TFileService> tfs;
-       art::TFileDirectory tfdir = tfs->mkdir("FastFixedDiag");
+       art::TFileDirectory tfdir = tfs->mkdir("CaloTemplateWFDiag");
        _hTime     = tfdir.make<TH1F>("hTime",    "time;t (ns); Entries",                  100, 0., 2000);
        _hTimeErr  = tfdir.make<TH1F>("hTimeErr", "time error;dt (ns); Entries",           100, 0.,   10);
        _hEner     = tfdir.make<TH1F>("hAmp",     "Amplitude;A;Entries",                   200, 0.,  200);
@@ -316,7 +324,7 @@ namespace mu2e {
        _hNpeak    = tfdir.make<TH1F>("hNpeak",   "Number of peak fitted;N_{peak};Entries", 10, 0.,   10);
        _hChi2     = tfdir.make<TH1F>("hChi2",    "Chi2/ndf;#chi^{2}/ndf;Entries",         100, 0.,   20);
        _hchi2Amp  = tfdir.make<TH2F>("hchi2Amp", "Amp vs chi2/ndf",    50, 0.,   20, 100, 0, 2000);
-       _hchi2Peak = tfdir.make<TH2F>("hchi2Peak", "Npeak vs chi2/ndf", 50, 0.,   20, 10, 0, 10);
+       _hchi2Peak = tfdir.make<TH2F>("hchi2Peak","Npeak vs chi2/ndf",  50, 0.,   20, 10, 0, 10);
    }
 
 }
