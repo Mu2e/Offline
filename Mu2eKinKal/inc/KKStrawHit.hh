@@ -64,7 +64,7 @@ namespace mu2e {
     // look for an updater
     const KKStrawHitUpdater* whupdater(0);
     for(auto const& uparams : miconfig.updaters_){
-      auto const* whu = std::any_cast<KKStrawHitUpdater>(&uparams);
+      const KKStrawHitUpdater* whu = std::any_cast<KKStrawHitUpdater>(&uparams);
       if(whu != 0){
 	if(whupdater !=0) throw std::invalid_argument("Multiple KKStrawHitUpdaters found");
 	whupdater = whu;
