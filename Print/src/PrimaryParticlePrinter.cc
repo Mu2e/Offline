@@ -57,7 +57,7 @@ mu2e::PrimaryParticlePrinter::Print(const mu2e::PrimaryParticle& obj, int ind, s
   sprint_.PrintListHeader(os);
   for(size_t isp = 0; isp < obj.primarySimParticles().size(); isp++){
     auto const& spp = obj.primarySimParticles()[isp];
-    if(spp.isNonnull()) sprint_.Print(spp,isp,os);
+    if(spp.isAvailable()) sprint_.Print(spp,isp,os);
   }
 }
 
