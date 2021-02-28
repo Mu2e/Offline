@@ -203,10 +203,10 @@ namespace mu2e {
     auto const& edeps = ccmc.energyDeposits();
     ccimc._nsim = edeps.size();
     ccimc._etot = ccmc.totalEnergyDep();
-    ccimc._tavg = edeps[0].time();
     if(ccmc.energyDeposits().size() > 0){
       auto const& primary = edeps.front();
       ccimc._eprimary = primary.energyDep();
+      ccimc._tavg = primary.time(); // this is unnecessary FIXMI
       ccimc._tprimary = primary.time();
       ccimc._prel = primary.rel();
     }
