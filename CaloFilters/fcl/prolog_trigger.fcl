@@ -83,6 +83,10 @@ CaloFilters : {
 	MinCelEneCut           : 15.0   # MeV
 	OutRadius              : 580   # mm
 	InnerRadius            : 460   # mm
+	crystalsize            : 35    # mm (include wrap)
+	diagminval             : 1.5   # slope min
+	diagmaxval             : 2.5   # slope max
+	dyminval               : 140   # mm
     }
  
     
