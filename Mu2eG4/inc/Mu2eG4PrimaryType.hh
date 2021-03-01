@@ -22,6 +22,12 @@
 
 
 // Master list of all Mu2eG4 primary input types
+//
+// We use the X-macro technique to have a single point
+// of maintenance for enum values and their names as strings,
+// see https://en.wikipedia.org/wiki/X_Macro or (for more
+// advanced examples) https://digitalmars.com/articles/b51.html
+//
 #define MU2EG4_PRIMARY_TYPES                         \
   X( GenParticles )                                  \
   X( StepPoints )                                    \
