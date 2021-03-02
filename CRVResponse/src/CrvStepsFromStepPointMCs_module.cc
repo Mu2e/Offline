@@ -59,6 +59,8 @@ namespace mu2e
 	  Comment("Starting size for crvIndex-particle vector"),4};
 	fhicl::Atom<bool> removeNeutralParticles{ Name("removeNeutralParticles"),
 	  Comment("Removes steps of neutral particles"),true};
+	fhicl::Atom<bool> useTotalEDep{ Name("useTotalEDep"),
+	  Comment("Use total energy deposition instead. Visible is a new default"),false};
       };
       using Parameters = art::EDProducer::Table<Config>;
       explicit CrvStepsFromStepPointMCs(const Parameters& conf);
@@ -82,6 +84,7 @@ namespace mu2e
 
       int      _debug, _diag;
       bool     _removeNeutralParticles;
+      bool     _useTotalEDep;
       unsigned _csize, _ssize;
       // StepPointMC selector
       // This selector will select only data products with the given instance name.
@@ -101,6 +104,8 @@ namespace mu2e
     _debug(config().debug()),
     _diag(config().diag()),
     _removeNeutralParticles(config().removeNeutralParticles()),
+    _useTotalEDep(config().useTotalEDep()),
+
     _csize(config().csize()),
     _ssize(config().startSize()),
     _selector(art::ProductInstanceNameSelector(config().stepPointsInstance())),
@@ -260,7 +265,12 @@ namespace mu2e
         first     =spmcptr;
         spmcIndices.emplace_back(i,i);
       }
-      edep   +=spmcptr->visibleEDep();
+
+      if(_useTotalEDep)
+        edep+=spmcptr->totalEDep();
+      else
+        edep+=spmcptr->visibleEDep();
+
       pathlen+=spmcptr->stepLength();
       last    =spmcptr;
       spmcIndices.back().second=i;
