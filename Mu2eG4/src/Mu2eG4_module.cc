@@ -12,7 +12,6 @@
 #include "Mu2eG4/inc/WorldMaker.hh"
 #include "Mu2eG4/inc/Mu2eWorld.hh"
 #include "Mu2eG4/inc/Mu2eStudyWorld.hh"
-#include "Mu2eG4/inc/IMu2eG4Cut.hh"
 #include "Mu2eG4/inc/SensitiveDetectorHelper.hh"
 #include "Mu2eG4/inc/exportG4PDT.hh"
 #include "GeometryService/inc/GeometryService.hh"
@@ -29,11 +28,12 @@
 #include "SeedService/inc/SeedService.hh"
 #include "Mu2eG4/inc/Mu2eG4ResourceLimits.hh"
 #include "Mu2eG4/inc/Mu2eG4TrajectoryControl.hh"
-#include "Mu2eG4/inc/Mu2eG4MultiStageParameters.hh"
+#include "Mu2eG4/inc/Mu2eG4Inputs.hh"
 #include "Mu2eG4/inc/findMaterialOrThrow.hh"
 #include "Mu2eG4/inc/checkConfigRelics.hh"
 #include "Mu2eG4/inc/Mu2eG4PerThreadStorage.hh"
 #include "Mu2eG4/inc/Mu2eG4Config.hh"
+#include "Mu2eG4/inc/Mu2eG4IOConfigHelper.hh"
 #if ( defined G4VIS_USE_OPENGLX || defined G4VIS_USE_OPENGL || defined G4VIS_USE_OPENGLQT )
 #include "Mu2eG4/inc/Mu2eVisCommands.hh"
 #endif
@@ -108,7 +108,7 @@ namespace mu2e {
 
     Mu2eG4ResourceLimits mu2elimits_;
     Mu2eG4TrajectoryControl trajectoryControl_;
-    Mu2eG4MultiStageParameters multiStagePars_;
+    Mu2eG4Inputs multiStagePars_;
 
     // The THREE functions that call new G4RunManger functions and break G4's BeamOn() into 3 pieces
     void BeamOnBeginRun( unsigned int runNumber, const char* macroFile=0, G4int n_select=-1 );
@@ -130,12 +130,6 @@ namespace mu2e {
     G4VUserPhysicsList* physicsList_;
     std::string storePhysicsTablesDir_;
 
-    //these cut objects are used to indicate what data product is produced
-    //additional thread-local cut objects are owned by ActionInitialization
-    std::unique_ptr<IMu2eG4Cut> stackingCuts_;
-    std::unique_ptr<IMu2eG4Cut> steppingCuts_;
-    std::unique_ptr<IMu2eG4Cut> commonCuts_;
-
     G4UIsession  *_session;
     G4UImanager  *_UI;
 #if     ( defined G4VIS_USE_OPENGLX || defined G4VIS_USE_OPENGL || defined G4VIS_USE_OPENGLQT )
@@ -152,8 +146,6 @@ namespace mu2e {
     // Name of a macro file to be used for controling G4 parameters after
     // the initialization phase.
     string _g4Macro;
-
-    art::InputTag _generatorModuleLabel;
 
     // Helps with indexology related to persisting G4 volume information.
     // string to ptr maps, speed optimization
@@ -177,6 +169,7 @@ namespace mu2e {
     G4ThreeVector _originInWorld;
 
     SensitiveDetectorHelper _sensitiveDetectorHelper;
+    Mu2eG4IOConfigHelper ioconf_;
 
     Mu2eG4PerThreadStorage perThreadStore;
 
@@ -189,17 +182,13 @@ namespace mu2e {
     conf_(pars()),
     mu2elimits_(pars().ResourceLimits()),
     trajectoryControl_(pars().TrajectoryControl()),
-    multiStagePars_(pars()),
+    multiStagePars_(pars().inputs()),
     _runManager(std::make_unique<G4RunManager>()),
     _warnEveryNewRun(pars().debug().warnEveryNewRun()),
     _exportPDTStart(pars().debug().exportPDTStart()),
     _exportPDTEnd(pars().debug().exportPDTEnd()),
 
     storePhysicsTablesDir_(pars().debug().storePhysicsTablesDir()),
-
-    stackingCuts_(createMu2eG4Cuts(pars().Mu2eG4StackingOnlyCut.get<fhicl::ParameterSet>(), mu2elimits_)),
-    steppingCuts_(createMu2eG4Cuts(pars().Mu2eG4SteppingOnlyCut.get<fhicl::ParameterSet>(), mu2elimits_)),
-    commonCuts_(createMu2eG4Cuts(pars().Mu2eG4CommonCut.get<fhicl::ParameterSet>(), mu2elimits_)),
 
     _session(nullptr),
     _UI(nullptr),
@@ -211,7 +200,6 @@ namespace mu2e {
     _visMacro(pars().visualization().initMacro()),
     _visGUIMacro(pars().visualization().GUIMacro()),
     _g4Macro(pars().g4Macro()),
-    _generatorModuleLabel(pars().generatorModuleLabel()),
     _physVolHelper(),
     _tvdOutputName(StepInstanceName::timeVD),
     timeVD_enabled_(pars().SDConfig().TimeVD().enabled()),
@@ -221,65 +209,14 @@ namespace mu2e {
     _userElapsed(0.),
     _standardMu2eDetector((art::ServiceHandle<GeometryService>())->isStandardMu2eDetector()),
     _sensitiveDetectorHelper(pars().SDConfig()),
-    perThreadStore()
+    ioconf_(pars(), producesCollector(), consumesCollector()),
+    perThreadStore(ioconf_)
     {
-
-      if((_generatorModuleLabel == art::InputTag()) && multiStagePars_.genInputHits().empty()) {
-        throw cet::exception("CONFIG")
-          << "Error: both generatorModuleLabel and genInputHits are empty - nothing to do!\n";
-      }
-
-      auto& collector = producesCollector();
-      _sensitiveDetectorHelper.declareProducts(collector);
-
-      produces<StatusG4>();
-      produces<SimParticleCollection>();
-
-      if(timeVD_enabled_) {
-        produces<StepPointMCCollection>(_tvdOutputName.name());
-      }
-
-      if(trajectoryControl_.produce()) {
-        produces<MCTrajectoryCollection>();
-      }
-
-      if(multiStagePars_.multiStage()) {
-        produces<SimParticleRemapping>();
-      }
-
-      //can we simplify this and directly declare the relevent products
-      //rather than contructing these unneccesary object?
-      stackingCuts_->declareProducts(collector);
-      steppingCuts_->declareProducts(collector);
-      commonCuts_->declareProducts(collector);
-
-      // Declare which products this module will read.
-      auto const& inputPhysVolTag = multiStagePars_.inputPhysVolumeMultiInfo();
-      if (inputPhysVolTag != invalid_tag) {
-        consumes<PhysicalVolumeInfoMultiCollection, art::InSubRun>(inputPhysVolTag);
-      }
-      auto const& inputSimParticlesTag = multiStagePars_.inputSimParticles();
-      if (inputSimParticlesTag != invalid_tag) {
-        consumes<SimParticleCollection>(inputSimParticlesTag);
-      }
-      auto const& inputMCTrajectoryTag = multiStagePars_.inputMCTrajectories();
-      if (inputMCTrajectoryTag != invalid_tag) {
-        consumes<MCTrajectoryCollection>(inputMCTrajectoryTag);
-      }
-      if (_generatorModuleLabel != invalid_tag) {
-        consumes<GenParticleCollection>(_generatorModuleLabel);
-      }
-      for (auto const& tag : multiStagePars_.genInputHits()) {
-        consumes<StepPointMCCollection>(tag);
-      }
-
-      produces<PhysicalVolumeInfoMultiCollection,art::InSubRun>();
+      // produces() and consumes()  calls are handled by Mu2eG4IOConfigHelper
 
       // The string "G4Engine" is magic; see the docs for RandomNumberGenerator.
       createEngine( art::ServiceHandle<SeedService>()->getSeed(), "G4Engine");
-
-    } // end Mu2eG4 constructor
-
+    }
 
   // That should really be beginJob().  G4 does not care about run
   // numbers, so we could use a hardcoded 1 for that.  The problem is
@@ -447,63 +384,20 @@ namespace mu2e {
   // Create one G4 event and copy its output to the art::event.
   void Mu2eG4::produce(art::Event& event) {
 
-    art::Handle<GenParticleCollection> gensHandle;
-    if(!(_generatorModuleLabel == art::InputTag())) {
-      event.getByLabel(_generatorModuleLabel, gensHandle);
-    }
-
-    // StepPointMCCollection of input hits from the previous simulation stage
-    HitHandles genInputHits;
-    for(const auto& i : multiStagePars_.genInputHits()) {
-      genInputHits.emplace_back(event.getValidHandle<StepPointMCCollection>(i));
-    }
-
-    // ProductID and ProductGetter for the SimParticleCollection.
-    art::ProductID simPartId(event.getProductID<SimParticleCollection>());
-    art::EDProductGetter const* simProductGetter = event.productGetter(simPartId);
-
-    SimParticleHelper spHelper(multiStagePars_.simParticleNumberOffset(), simPartId, &event, simProductGetter);
-    SimParticlePrimaryHelper parentHelper(&event, simPartId, gensHandle, simProductGetter);
-
-    perThreadStore.initializeEventInfo(&event, &spHelper, &parentHelper, &genInputHits, _generatorModuleLabel);
+    perThreadStore.initializeEventInfo(&event);
 
     // Run G4 for this event and access the completed event.
     BeamOnDoOneArtEvent( event.id().event() );
 
-
-    /////////////////////////////////////////////////////////////////////////////////////
-    std::unique_ptr<SimParticleCollection> simsToCheck = perThreadStore.getSimPartCollection();
-
-    if (simsToCheck == nullptr) {
+    if(!perThreadStore.eventPassed()) {
+      perThreadStore.clearData();
       numExcludedEvents++;
     }
     else {
-
-      event.put(std::move(perThreadStore.getG4Status()));
-      event.put(std::move(simsToCheck));
-      perThreadStore.putSensitiveDetectorData(simProductGetter);
-      perThreadStore.putCutsData(simProductGetter);
-
-      if(timeVD_enabled_) {
-        event.put(std::move(perThreadStore.getTVDHits()),perThreadStore.getTVDName());
-      }
-
-      if(trajectoryControl_.produce()) {
-        event.put(std::move(perThreadStore.getMCTrajCollection()));
-      }
-
-      if(multiStagePars_.multiStage()) {
-        event.put(std::move(perThreadStore.getSimParticleRemap()));
-      }
-
-      if(_sensitiveDetectorHelper.extMonPixelsEnabled()) {
-        event.put(std::move(perThreadStore.getExtMonFNALSimHitCollection()));
-      }
-
-    }//simsToCheck !=nullptr
+      perThreadStore.putDataIntoEvent();
+    }
 
     _runManager->TerminateOneEvent();
-    perThreadStore.clearData();
   }//end Mu2eG4::produce
 
 

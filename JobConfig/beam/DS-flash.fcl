@@ -42,9 +42,10 @@ physics.filters.flashResample: {
 }
 
 // Point Mu2eG4 to the pre-simulated data
-physics.producers.g4run.MultiStageParameters: {
+physics.producers.g4run.inputs: {
+   primaryType: "StepPoints"
+   primaryTag: "flashResample:DSVacuum"
    simParticleNumberOffset: 300000
-   genInputHits:  [ "flashResample:DSVacuum" ]
    inputSimParticles: "flashResample"
    inputMCTrajectories: ""
    inputPhysVolumeMultiInfo: "" # earlier info dropped

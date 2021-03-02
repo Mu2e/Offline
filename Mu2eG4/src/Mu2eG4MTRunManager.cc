@@ -23,7 +23,6 @@
 #include "Mu2eG4/inc/Mu2eWorld.hh"
 #include "Mu2eG4/inc/physicsListDecider.hh"
 #include "Mu2eG4/inc/preG4InitializeTasks.hh"
-#include "Mu2eG4/inc/ActionInitialization.hh"
 #include "Mu2eG4/inc/Mu2eG4MasterRunAction.hh"
 
 //G4 includes
