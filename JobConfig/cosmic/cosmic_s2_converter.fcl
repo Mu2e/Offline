@@ -22,4 +22,5 @@ physics.producers.CrvSteps.stepPointsModuleLabels : ["detectorFilter"]
 physics.producers.compressDetStepMCs.simParticleTag: "detectorFilter"
 physics.producers.compressDetStepMCs.stepPointMCTags : [ "detectorFilter:virtualdetector", "detectorFilter:protonabsorber" ]
 physics.producers.compressDetStepMCs.mcTrajectoryTag: "detectorFilter"
+physics.producers.CrvSteps.useTotalEDep: true
 outputs.Output.fileName        : "sim.owner.cosmic-s2-converter.version.sequencer.art"
