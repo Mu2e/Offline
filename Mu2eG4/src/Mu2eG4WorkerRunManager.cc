@@ -25,7 +25,6 @@
 #include "Mu2eG4/inc/TrackingAction.hh"
 #include "Mu2eG4/inc/Mu2eG4RunAction.hh"
 #include "Mu2eG4/inc/Mu2eG4EventAction.hh"
-#include "Mu2eG4/inc/Mu2eG4MultiStageParameters.hh"
 #include "Mu2eG4/inc/ExtMonFNALPixelSD.hh"
 
 //G4 includes
@@ -78,7 +77,7 @@ namespace mu2e {
 
   // If the c'tor is called a second time, the c'tor of base will
   // generate an exception.
-  Mu2eG4WorkerRunManager::Mu2eG4WorkerRunManager(const Mu2eG4Config::Top& conf, thread::id worker_ID):
+  Mu2eG4WorkerRunManager::Mu2eG4WorkerRunManager(const Mu2eG4Config::Top& conf, const Mu2eG4IOConfigHelper& ioconf, thread::id worker_ID):
     G4WorkerRunManager(),
     conf_(conf),
     m_managerInitialized(false),
@@ -86,21 +85,13 @@ namespace mu2e {
     m_mtDebugOutput(conf.debug().mtDebugOutput()),
     rmvlevel_(conf.debug().diagLevel()),
     salt_(conf.salt()),
-    perThreadObjects_(make_unique<Mu2eG4PerThreadStorage>()),
+    perThreadObjects_(make_unique<Mu2eG4PerThreadStorage>(ioconf)),
     masterRM(nullptr),
     workerID_(worker_ID),
-    mu2elimits_(conf.ResourceLimits()),
-    trajectoryControl_(conf.TrajectoryControl()),
-    multiStagePars_(conf),
-
     physicsProcessInfo_(),
     sensitiveDetectorHelper_(conf.SDConfig()),
-    extMonFNALPixelSD_(),
-    stackingCuts_(createMu2eG4Cuts(conf.Mu2eG4StackingOnlyCut.get<fhicl::ParameterSet>(), mu2elimits_)),
-    steppingCuts_(createMu2eG4Cuts(conf.Mu2eG4SteppingOnlyCut.get<fhicl::ParameterSet>(), mu2elimits_)),
-    commonCuts_(createMu2eG4Cuts(conf.Mu2eG4CommonCut.get<fhicl::ParameterSet>(), mu2elimits_))
+    extMonFNALPixelSD_()
   {
-
     if (m_mtDebugOutput > 0) {
       G4cout << "WorkerRM on thread " << workerID_ << " is being created\n!";
     }
@@ -180,20 +171,19 @@ namespace mu2e {
 
     steppingAction_ = new Mu2eG4SteppingAction(conf_.debug(),
                                                conf_.SDConfig().TimeVD().times(),
-                                               *steppingCuts_.get(),
-                                               *commonCuts_.get(),
-                                               trajectoryControl_,
-                                               mu2elimits_);
+                                               *perThreadObjects_->steppingCuts,
+                                               *perThreadObjects_->commonCuts,
+                                               perThreadObjects_->ioconf.trajectoryControl(),
+                                               perThreadObjects_->ioconf.mu2elimits());
     SetUserAction(steppingAction_);
 
-    SetUserAction( new Mu2eG4StackingAction(*stackingCuts_.get(),
-                                            *commonCuts_.get()) );
+    SetUserAction( new Mu2eG4StackingAction(*perThreadObjects_->stackingCuts,
+                                            *perThreadObjects_->commonCuts) );
 
     trackingAction_ = new TrackingAction(conf_,
                                          steppingAction_,
-                                         multiStagePars_.simParticleNumberOffset(),
-                                         trajectoryControl_,
-                                         mu2elimits_);
+                                         perThreadObjects_->ioconf.inputs().simParticleNumberOffset(),
+                                         perThreadObjects_.get());
     SetUserAction(trackingAction_);
 
     SetUserAction( new Mu2eG4RunAction(conf_.debug(),
@@ -208,9 +198,6 @@ namespace mu2e {
                                          trackingAction_,
                                          steppingAction_,
                                          &sensitiveDetectorHelper_,
-                                         *stackingCuts_.get(),
-                                         *steppingCuts_.get(),
-                                         *commonCuts_.get(),
                                          perThreadObjects_.get(),
                                          &physicsProcessInfo_,
                                          origin_in_world) );

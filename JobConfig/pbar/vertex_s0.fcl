@@ -44,42 +44,7 @@ physics : {
 
       genCounter: { module_type : GenEventCounter }
 
-      g4run : {
-         module_type       : Mu2eG4
-         physics           : @local::mu2eg4DefaultPhysics
-         ResourceLimits    : @local::mu2eg4DefaultResourceLimits
-         TrajectoryControl : @local::mu2eg4NoTrajectories
-         debug             : @local::mu2eg4DefaultDebug
-         visualization     : @local::mu2eg4NoVisualization
-
-         generatorModuleLabel : generate
-
-         SDConfig: {
-            enableSD : [] // activate just the explicitly listed SDs
-            TimeVD   : { times: [] }
-         }
-
-         Mu2eG4StackingOnlyCut : @local::mu2eg4NoCut
-         // Mu2eG4 cuts are evaluated in the listed order.
-         // The first match wins.  For the "intersection"
-         // type, the first false stops the evaluation.
-         // For the "union" type the first true stops the evaluation.
-         Mu2eG4SteppingOnlyCut : {
-            type: union pars: [
-               @local::pbars0out,
-               @local::pbars0EkCuts,
-               { type: notInVolume pars: [ "ProductionTarget" ] }
-            ]
-         }
-         Mu2eG4CommonCut : @local::mu2eg4NoCut
-
-         SimParticlePrinter : {
-            enabled             : false
-            primariesOnly       : false
-            prefix              : "SimParticle: "
-         }
-
-      }
+      g4run : @local::g4run
 
      compressPV : {
          module_type    : CompressPhysicalVolumes
@@ -135,6 +100,21 @@ outputs: {
 
 
 }
+
+//================================================================
+// Mu2eG4 cuts are evaluated in the listed order.
+// The first match wins.  For the "intersection"
+// type, the first false stops the evaluation.
+// For the "union" type the first true stops the evaluation.
+physics.producers.g4run.Mu2eG4SteppingOnlyCut: {
+   type: union pars: [
+      @local::pbars0out,
+      @local::pbars0EkCuts,
+      { type: notInVolume pars: [ "ProductionTarget" ] }
+   ]
+}
+
+physics.producers.g4run.SDConfig.enableSD: [] // activate just the explicitly listed SDs
 
 physics.producers.g4run.physics.minRangeCut : 1.0 // mm
 #physics.producers.g4run.physics.physicsListName: "FTFP_BERT_PBAR_MU2E02"
