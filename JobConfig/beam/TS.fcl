@@ -33,10 +33,7 @@ physics : {
    }
 
    producers: {
-      g4run : {
-         Mu2eG4CommonCut: {
-         }
-      }
+      g4run: @local::g4run
 
       compressPVmuonBeam : {
          module_type: CompressPhysicalVolumes
