@@ -34,7 +34,7 @@ digraph SimWorkflow {
 
   subgraph Campaign {
 
-    POT [shape=box,color=blue, 
+    POT [shape=box,color=blue,
 	label=<<table border="0" cellborder="0" cellspacing="1">
 	  <tr><td align="center"><b>Protons On Target</b></td></tr>
 	  <tr><td align="left"><font color="darkgreen">beam/POT.fcl</font></td></tr>
@@ -60,19 +60,19 @@ digraph SimWorkflow {
     POT ->  Beam [ label="At TS5"];
     POT ->  EarlyFlash [ label=< At TS5 + CRV, 300 &gt; t &gt; 0 ns, prescale 10<sup>-4</sup>?> ];
 
-    EarlyFlashResampling [shape=box,color=blue, 
+    EarlyFlashResampling [shape=box,color=blue,
 		    label=<<table border="0" cellborder="0" cellspacing="1">
 		      <tr><td align="center"><b>Early Flash Resampling</b></td></tr>
 		      <tr><td align="left"><font color="darkgreen">pileup/EarlyFlashResampler.fcl</font></td></tr>
 		      </table>>];
 
-    FlashResampling [shape=box,color=blue, 
+    FlashResampling [shape=box,color=blue,
 		    label=<<table border="0" cellborder="0" cellspacing="1">
 		      <tr><td align="center"><b>Flash Resampling</b></td></tr>
 		      <tr><td align="left"><font color="darkgreen">pileup/FlashResampler.fcl</font></td></tr>
 		      </table>>];
 
-    StopPositionResampling [shape=box,color=blue, 
+    StopPositionResampling [shape=box,color=blue,
 			   label=<<table border="0" cellborder="0" cellspacing="1">
 			     <tr><td align="center"><b>Particle Stopper</b></td></tr>
 			     <tr><td align="left"><font color="darkgreen">beam/ParticleStopper.fcl</font></td></tr>
@@ -120,25 +120,25 @@ digraph SimWorkflow {
     StopPositionResampling -> OutOfTargetStops;
     StopPositionResampling -> IPAStops;
 
-    PrimaryMuonTerm [shape=box, peripheries=3, color=blue, 
+    PrimaryMuonTerm [shape=box, peripheries=3, color=blue,
 		    label=<<table border="0" cellborder="0" cellspacing="1">
 		      <tr><td align="center"><b>&mu; on Al to X &isin; [Ce<sup>-</sup>, Ce<sup>+</sup>, DIO Tail, Internal RPC, ...] </b></td></tr>
 		      <tr><td align="left"><font color="darkgreen">primary/X.fcl, X &isin; [CeMinus, CePlus, DIOTail, ...]</font></td></tr>
 		      </table>>];
 
-    PileupMuonTerm [shape=box,color=blue, 
+    PileupMuonTerm [shape=box,color=blue,
 		       label=<<table border="0" cellborder="0" cellspacing="1">
 			 <tr><td align="center"><b>&mu; to X &isin; [P, D, N,&gamma;, e &nu;]  </b></td></tr>
 			 <tr><td align="left"><font color="darkgreen">pileup/mustop.fcl</font></td></tr>
 			 </table>>];
 
-    OutOfTargetMuonTerm [shape=box,color=blue, 
+    OutOfTargetMuonTerm [shape=box,color=blue,
 			label=<<table border="0" cellborder="0" cellspacing="1">
 			  <tr><td align="center"><b>OOT &mu; decay (G4)</b></td></tr>
 			  <tr><td align="left"><font color="darkgreen">pileup/OOTmustop.fcl</font></td></tr>
 			  </table>>];
 
-    IPAMuonTerm [shape=box,color=blue, 
+    IPAMuonTerm [shape=box,color=blue,
 		label=<<table border="0" cellborder="0" cellspacing="1">
 		  <tr><td align="center"><b>IPA Muon Termination</b></td></tr>v
 		  <tr><td align="left"><font color="darkgreen">primary/IPAmustop.fcl</font></td></tr></table>>];
@@ -148,17 +148,48 @@ digraph SimWorkflow {
     OutOfTargetStops -> OutOfTargetMuonTerm [ label=<resample 10<sup>+3</sup>?> ];
     IPAStops -> IPAMuonTerm [ label=<resample 10<sup>+3</sup>?> ];
 
+    CosmicStage0 [shape=box, peripheries=1, color=blue,
+            label=<<table border="0" cellborder="0" cellspacing="1">
+                        <tr><td align="center"><b>CORSIKA executable</b></td></tr>
+                        <tr><td align="left">./corsika77400Linux_QGSJET_fluka &lt; input_configuration</td></tr>
+                        </table>>];
 
-    CosmicGenerator [shape=box, peripheries=3, color=blue, 
+    CORSIKAOutput [shape=oval, peripheries=1, color=lightblue,
+		  label=<<table border="0" cellborder="0" cellspacing="1">
+		    <tr><td align="center"><b>CORSIKA binaries</b></td></tr>
+		    <tr><td align="left"><font color="red">sim.mu2e.CORSIKA.csk</font></td></tr>
+		    </table>>];
+
+    CosmicStage0 -> CORSIKAOutput;
+
+    CosmicGenerator [shape=box, peripheries=3, color=blue,
 		    label=<<table border="0" cellborder="0" cellspacing="1">
-		      <tr><td align="center"><b>Coriska, CRY, ... Cosmic Ray Generator</b></td></tr>
-		      <tr><td align="left"><font color="darkgreen">cosmic/generateX.fcl, X &isin; [Corsika, CRY, ...]</font></td></tr>
+		      <tr><td align="center"><b>CORSIKA, CRY, ... generation</b></td></tr>
+		      <tr><td align="left"><font color="darkgreen">cosmic/cosmic_s1_dsstops_X.fcl, X &isin; [CORSIKA, CRY, ...]</font></td></tr>
 		      </table>>];
+
+    CORSIKAOutput -> CosmicGenerator;
+
+    CosmicStage1Output [shape=oval, peripheries=3, color=lightblue,
+		  label=<<table border="0" cellborder="0" cellspacing="1">
+		    <tr><td align="center"><b>Cosmic generation output</b></td></tr>
+		    <tr><td align="left"><font color="red">sim.mu2e.CosmicDSStopsX.art, X &isin; [CORSIKA, CRY, ...]</font></td></tr>
+		    </table>>];
+
+    CosmicGenerator -> CosmicStage1Output;
+
+    CosmicStage2 [shape=box, peripheries=3, color=blue,
+        label=<<table border="0" cellborder="0" cellspacing="1">
+            <tr><td align="center"><b>Cosmic resampling</b></td></tr>
+            <tr><td align="left"><font color="darkgreen">cosmic/cosmic_s2_resampler_X.fcl, X &isin; [hi, lo]</font></td></tr>
+            </table>>];
+
+    CosmicStage1Output -> CosmicStage2;
 
     CosmicPrimary [shape=oval, peripheries=3, color=lightblue,
 		  label=<<table border="0" cellborder="0" cellspacing="1">
 		    <tr><td align="center"><b>Cosmic Ray Primary</b></td></tr>
-		    <tr><td align="left"><font color="red">dts.mu2e.X.art, X &isin; [Corsika, CRY, ...]</font></td></tr>
+		    <tr><td align="left"><font color="red">dts.mu2e.X.art, X &isin; [CORSIKA, CRY, ...]</font></td></tr>
 		    </table>>];
 
     IPAPrimary [shape=oval, color=lightblue,
@@ -173,15 +204,15 @@ digraph SimWorkflow {
 		  <tr><td align="left"><font color="red">dts.mu2e.X.art, X &isin;[CeMinus, CePlus, ...] </font></td></tr>
 		  </table>>];
 
-    CosmicGenerator -> CosmicPrimary;
+    CosmicStage2 -> CosmicPrimary;
     PrimaryMuonTerm -> MuonPrimary;
     IPAMuonTerm -> IPAPrimary;
-    {rank=same CosmicGenerator PrimaryMuonTerm};
+    {rank=same CosmicStage1Output IPAStops};
 
     CosmicPrimary [shape=oval, peripheries=3, color=lightblue,
 		  label=<<table border="0" cellborder="0" cellspacing="1">
 		    <tr><td align="center"><b>Cosmic Ray Primary</b></td></tr>
-		    <tr><td align="left"><font color="red">dts.mu2e.X.art, X &isin; [Corsika, CRY, ...] </font></td></tr>
+		    <tr><td align="left"><font color="red">dts.mu2e.X.art, X &isin; [CORSIKA, CRY, ...] </font></td></tr>
 		    </table>>];
 
     TargetMuonPileup [shape=oval, color=lightblue,
@@ -198,15 +229,15 @@ digraph SimWorkflow {
 
     PileupMuonTerm -> TargetMuonPileup;
     OutOfTargetMuonTerm -> OutOfTargetMuonPileup;
-    {rank=same TargetMuonPileup OutOfTargetMuonPileup EarlyFlashPileup FlashPileup };
+    {rank=same TargetMuonPileup OutOfTargetMuonPileup EarlyFlashPileup FlashPileup CosmicPrimary MuonPrimary IPAPrimary};
 
-    MixDigitization [shape=box, peripheries=1, color=blue, 
+    MixDigitization [shape=box, peripheries=1, color=blue,
 		    label=<<table border="0" cellborder="0" cellspacing="1">
 		      <tr><td align="center"><b> Primary + Pileup Digitization </b></td></tr>
 		      <tr><td align="left"><font color="darkgreen">mixing/mix.fcl</font></td></tr>
 		      </table>>];
 
-    NomixDigitization [shape=box, peripheries=1, color=blue, 
+    NomixDigitization [shape=box, peripheries=1, color=blue,
 		      label=<<table border="0" cellborder="0" cellspacing="1">
 		      <tr><td align="center"><b> Primary Only Digitization </b></td></tr>
 		      <tr><td align="left"><font color="darkgreen">digitize/OnSpill.fcl</font></td></tr>
@@ -242,7 +273,7 @@ digraph SimWorkflow {
 
     {rank=same NomixDigitization MixDigitization};
 
-    Reconstruction [shape=box, peripheries=1, color=blue, 
+    Reconstruction [shape=box, peripheries=1, color=blue,
 		   label=<<table border="0" cellborder="0" cellspacing="1">
 		     <tr><td align="center"><b> Reconstruction </b></td></tr>
 		     <tr><td align="left"><font color="darkgreen">reco/reco.fcl </font></td></tr>
