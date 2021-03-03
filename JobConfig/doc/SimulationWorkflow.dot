@@ -259,13 +259,13 @@ digraph SimWorkflow {
     UnmixedDigis [shape=oval, peripheries=3, color=lightblue,
 		 label=<<table border="0" cellborder="0" cellspacing="1">
 		   <tr><td align="center"><b>Unmixed Digis</b></td></tr>
-		   <tr><td align="left"><font color="red">dig.mu2e.X.art, X &isin; [CeMinus, Corsika, ...]</font></td></tr>
+		   <tr><td align="left"><font color="red">dig.mu2e.X.art, X &isin; [CeMinus, CORSIKA, ...]</font></td></tr>
 		   </table>>];
 
     MixedDigis [shape=oval, peripheries=3, color=lightblue,
 	       label=<<table border="0" cellborder="0" cellspacing="1">
 		 <tr><td align="center"><b>Mixed Digis</b></td></tr>
-		 <tr><td align="left"><font color="red">dig.mu2e.XMix.art, X &isin; [CeMinus, Corsika, ...]</font></td></tr>
+		 <tr><td align="left"><font color="red">dig.mu2e.XMix.art, X &isin; [CeMinus, CORSIKA, ...]</font></td></tr>
 		 </table>>];
 
     NomixDigitization -> UnmixedDigis;
@@ -282,7 +282,7 @@ digraph SimWorkflow {
     Reco [shape=oval, color=lightblue, peripheries=3
 	 label=<<table border="0" cellborder="0" cellspacing="1">
 	   <tr><td align="center"><b>Reconstructed Events (Tracks, CaloClusters, CRVClusters, ...)</b></td></tr>
-	   <tr><td align="left"><font color="red">mcs.mu2e.X.art, X &isin; [CeMinus, Corsika, ...]</font></td></tr>
+	   <tr><td align="left"><font color="red">mcs.mu2e.X.art, X &isin; [CeMinus, CORSIKA, ...]</font></td></tr>
 	   </table>>];
 
     MixedDigis -> Reconstruction
