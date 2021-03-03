@@ -50,26 +50,26 @@ namespace mu2e
 	struct Config{
 	      using Name=fhicl::Name;
 	      using Comment=fhicl::Comment;
-	      fhicl::Atom<int> Npara{Name("NParameters"),Comment("number of fit parameters used"), 4 };
-	      fhicl::Atom<int> diag{Name("diagLevel"), Comment("set to 1 for info"),2};
-	      fhicl::Atom<int> debug{Name("debugLevel"), Comment("set to 1 for debug prints"),1};
-	      fhicl::Atom<string> dontuseflag {Name("DoNotUseFlag"),Comment("if set to OK then save the track"), "Outlier"};
-              fhicl::Atom<unsigned> minnsh {Name("minNStrawHits"), Comment("minimum number of straw hits "),2};
-    	      fhicl::Atom<unsigned> minnch {Name("minNComboHits"), Comment("number of combohits allowed"),8};
-	      fhicl::Atom<unsigned> n_outliers{Name("Noutliers"),Comment("maximum number of outliers allowed in track fit"),2};
-    	      fhicl::Atom<unsigned> maxniter{Name("maxNiter"), Comment("Maximum allowed number of iterations before considered unconverged in seed fit"),1000};
+	      fhicl::Atom<int> Npara{Name("NParameters"),Comment("number of fit parameters used")};
+	      fhicl::Atom<int> diag{Name("diagLevel"), Comment("set to 1 for info"),0};
+	      fhicl::Atom<int> debug{Name("debugLevel"), Comment("set to 1 for debug prints"),0};
+	      fhicl::Atom<string> dontuseflag {Name("DoNotUseFlag"),Comment("if set to OK then save the track")};
+              fhicl::Atom<unsigned> minnsh {Name("minNStrawHits"), Comment("minimum number of straw hits ")};
+    	      fhicl::Atom<unsigned> minnch {Name("minNComboHits"), Comment("number of combohits allowed")};
+	      fhicl::Atom<unsigned> n_outliers{Name("Noutliers"),Comment("maximum number of outliers allowed in track fit")};
+    	      fhicl::Atom<unsigned> maxniter{Name("maxNiter"), Comment("Maximum allowed number of iterations before considered unconverged in seed fit")};
     	      
-              fhicl::Atom<unsigned> minNHitsTimeCluster{Name("minNHitsTimeCluster"),Comment("minium allowed time cluster"), 1 };
-    	      fhicl::Atom<float> max_seed_chi2{Name("MaxSeedChi2DOF"),Comment("maximum chi 2/dof for seed"),2.5};
-	      fhicl::Atom<float> max_chi2_change{Name("MaxDeltaChi2"),Comment("The maxiumum allowed change in chi2 before convergeing seed fit"),0.001};
-	      fhicl::Atom<float> max_position_deviation{Name("MaxPosDev"),Comment("The maxiumum allowed change in position correlated parameters between seed fit iterations "), 200 };
-	      fhicl::Atom<float> maxHitDOCA{Name("MaxDOCA"),Comment("The maxiumum allowed DOCA to wire for any hit used for full drift fit"), 2.5 };
-	      fhicl::Atom<float> maxLogL{Name("MaxLogL"),Comment("The maxiumum allowed outcome of Minuit fit routine"), 150 };
-	      fhicl::Atom<float> gaussTres{Name("GaussianSeedTimeResolution"),Comment("The resolution of the Gaussian seed fit in time"), 24 };
-              fhicl::Atom<float> maxTres{Name("MaxTimeResidual"),Comment("The maxiumum allowed time residual for any hit used for full drift fit"), 40 };
-	      fhicl::Atom<float> maxd{Name("MaxTrackLength"),Comment("The maxiumum allowed length of track") ,2000.};
-	      fhicl::Atom<float> maxpull{Name("MaxHitPullForSeed"),Comment("The maxiumum allowed combo hit pull from fit") ,100.};
-              fhicl::Atom<bool> UseTSeedDirection{Name("UseTSeedDirection"),Comment("Uses the direction in the input tseed to initialize fit"), false};
+              fhicl::Atom<unsigned> minNHitsTimeCluster{Name("minNHitsTimeCluster"),Comment("minium allowed time cluster")};
+    	      fhicl::Atom<float> max_seed_chi2{Name("MaxSeedChi2DOF"),Comment("maximum chi 2/dof for seed")};
+	      fhicl::Atom<float> max_chi2_change{Name("MaxDeltaChi2"),Comment("The maxiumum allowed change in chi2 before convergeing seed fit")};
+	      fhicl::Atom<float> max_position_deviation{Name("MaxPosDev"),Comment("The maxiumum allowed change in position correlated parameters between seed fit iterations ") };
+	      fhicl::Atom<float> maxHitDOCA{Name("MaxDOCA"),Comment("The maxiumum allowed DOCA to wire for any hit used for full drift fit") };
+	      fhicl::Atom<float> maxLogL{Name("MaxLogL"),Comment("The maxiumum allowed outcome of Minuit fit routine") };
+	      fhicl::Atom<float> gaussTres{Name("GaussianSeedTimeResolution"),Comment("The resolution of the Gaussian seed fit in time") };
+              fhicl::Atom<float> maxTres{Name("MaxTimeResidual"),Comment("The maxiumum allowed time residual for any hit used for full drift fit") };
+	      fhicl::Atom<float> maxd{Name("MaxTrackLength"),Comment("The maxiumum allowed length of track")};
+	      fhicl::Atom<float> maxpull{Name("MaxHitPullForSeed"),Comment("The maxiumum allowed combo hit pull from fit")};
+              fhicl::Atom<bool> UseTSeedDirection{Name("UseTSeedDirection"),Comment("Uses the direction in the input tseed to initialize fit")};
     	};
 		
 		explicit CosmicTrackFit(const Config& conf);
