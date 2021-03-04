@@ -1,7 +1,8 @@
-/* A lowchart showing the simulation workflow for Mu2e.
+/* Flowchart showing the simulation workflow for Mu2e.
  * To compile:
  *
- *     dot -Ttiff SimulationWorkflow.dot -o SimulationWorkflow.tiff
+ *     dot -T(suf) SimulationWorkflow.dot -o SimulationWorkflow.(suf), suf=tiff, jpg, pdf, ... 
+ *    See https://graphviz.gitlab.io/documentation/ for more details
  *
  */
 
@@ -19,17 +20,26 @@ digraph SimWorkflow {
     Job [shape=box,color=blue,
 	label=<<table border="0" cellborder="0" cellspacing="1">
 	  <tr><td align="center"><b>Job</b></td></tr>
+	  <tr><td align="center"><b><font color="gold">excutable(=mu2e)</font></b></td></tr>
 	  <tr><td align="left"><font color="darkgreen">fhicl file</font></td></tr>
+	  <tr><td align="left"><font color="lightgreen">alternate fhicl file</font></td></tr>
 	  </table>>];
 
-    Dataset [shape=oval, color=lightblue,
+    Input [shape=oval, color=lightblue,
 	    label=<<table border="0" cellborder="0" cellspacing="1">
-	      <tr><td align="center"><b>Dataset</b></td></tr>
+	      <tr><td align="center"><b>Input Dataset</b></td></tr>
 	      <tr><td align="left"><font color="red">SAM name</font></td></tr>
 	      </table>>];
+    Output [shape=oval, color=lightblue,
+	    label=<<table border="0" cellborder="0" cellspacing="1">
+	      <tr><td align="center"><b>Output Dataset</b></td></tr>
+	      <tr><td align="left"><font color="red">Primary</font></td></tr>
+	      <tr><td align="left"><font color="fuchsia">Secondary</font></td></tr>
+	      </table>>];
 
-    Dataset -> Job [style=dashed, label="Mixin"];
-    Dataset -> Job [style=solid, label="Main"];
+    Input -> Job [style=dashed, label="Mixin"];
+    Input -> Job [style=solid, label="Main"];
+    Job->Output;
   }
 
   subgraph Campaign {
@@ -42,29 +52,17 @@ digraph SimWorkflow {
     Beam [shape=oval,color=lightblue,
 	 label=<<table border="0" cellborder="0" cellspacing="1">
 	   <tr><td align="center"><b>Meson Beam</b></td></tr>
-	   <tr><td align="left"><font color="red">sim.mu2e.MuBeam.art</font></td></tr>
-	   <tr><td align="left"><font color="yellow">sim.mu2e.PiBeam.art</font></td></tr>
+	   <tr><td align="left"><font color="red">sim.mu2e.MesonBeam.art</font></td></tr>
 	   </table>>];
     Flash [shape=oval, color=lightblue,
 	      label=<<table border="0" cellborder="0" cellspacing="1">
 		<tr><td align="center"><b>Flash</b></td></tr>
-		<tr><td align="left"><font color="red">sim.mu2e.FlashBeam.art</font></td></tr>
+		<tr><td align="left"><font color="red">sim.mu2e.FlashBeam.art</font> <font color="black">t &gt; 450 ns</font></td></tr>
+		<tr><td align="left"><font color="fuchsia">sim.mu2e.EarlyFlashBeam.art</font></td></tr>
 		</table>>];
-    EarlyFlash [shape=oval, color=lightblue,
-	       label=<<table border="0" cellborder="0" cellspacing="1">
-		 <tr><td align="center"><b>Early Flash</b></td></tr>
-		 <tr><td align="left"><font color="red">sim.mu2e.EarlyFlashBeam.art</font></td></tr>
-		 </table>>];
 
-    POT -> Flash [ label="At TS5 + CRV, t > 300? ns"];
+    POT -> Flash [ label="At TS5 + CRV"];
     POT ->  Beam [ label="At TS5"];
-    POT ->  EarlyFlash [ label=< At TS5 + CRV, 300 &gt; t &gt; 0 ns, prescale 10<sup>-4</sup>?> ];
-
-    EarlyFlashResampling [shape=box,color=blue,
-		    label=<<table border="0" cellborder="0" cellspacing="1">
-		      <tr><td align="center"><b>Early Flash Resampling</b></td></tr>
-		      <tr><td align="left"><font color="darkgreen">pileup/EarlyFlashResampler.fcl</font></td></tr>
-		      </table>>];
 
     FlashResampling [shape=box,color=blue,
 		    label=<<table border="0" cellborder="0" cellspacing="1">
@@ -79,15 +77,7 @@ digraph SimWorkflow {
 			     </table>>];
 
     Beam -> StopPositionResampling [ label=<resample 10<sup>+4</sup>?> ];
-    Flash -> FlashResampling [ label=<t &gt; 450 ns, resample 10<sup>+4</sup>?> ];
-    EarlyFlash -> EarlyFlashResampling [ label=<tracker only, resample 10<sup>+4</sup>?> ];
-
-    EarlyFlashPileup [shape=oval, color=lightblue,
-		    label=<<table border="0" cellborder="0" cellspacing="1">
-		      <tr><td align="center"><b>Early Flash Pileup</b></td></tr>
-		      <tr><td align="left"><font color="red">dts.mu2e.EarlyFlash.art</font></td></tr>
-		      </table>>];
-
+    Flash -> FlashResampling [ label=<resample 10<sup>+4</sup>?> ];
     FlashPileup [shape=oval, color=lightblue,
 		    label=<<table border="0" cellborder="0" cellspacing="1">
 		      <tr><td align="center"><b>Flash Pileup</b></td></tr>
@@ -98,13 +88,13 @@ digraph SimWorkflow {
 		label=<<table border="0" cellborder="0" cellspacing="1">
 		  <tr><td align="center"><b>Target Stops</b></td></tr>
 		  <tr><td align="left"><font color="red">sim.mu2e.MuTargetStops.art</font></td></tr>
-		  <tr><td align="left"><font color="yellow">sim.mu2e.PiTargetStops.art</font></td></tr>
+		  <tr><td align="left"><font color="fuchsia">sim.mu2e.PiTargetStops.art</font></td></tr>
 		  </table>>];
 
     OutOfTargetStops [shape=oval, color=lightblue,
 		     label=<<table border="0" cellborder="0" cellspacing="1">
 		       <tr><td align="center"><b>Out Of Target (OOT) Stops</b></td></tr>
-		       <tr><td align="left"><font color="red">sim.mu2e.MuOOTStops.art</font></td></tr>
+		       <tr><td align="left"><font color="red">sim.mu2e.OOTStops.art</font></td></tr>
 		       </table>>];
 
     IPAStops [shape=oval, color=lightblue,
@@ -113,8 +103,8 @@ digraph SimWorkflow {
 	       <tr><td align="left"><font color="red">sim.mu2e.IPAStops.art</font></td></tr>
 	       </table>>];
 
-    FlashResampling -> FlashPileup;
-    EarlyFlashResampling -> EarlyFlashPileup [ label=<selected straws> ];
+    FlashResampling -> FlashPileup [ label=<concatenate 10<sup>+4</sup>?> ];
+
 
     StopPositionResampling -> TargetStops;
     StopPositionResampling -> OutOfTargetStops;
@@ -135,7 +125,7 @@ digraph SimWorkflow {
     OutOfTargetMuonTerm [shape=box,color=blue,
 			label=<<table border="0" cellborder="0" cellspacing="1">
 			  <tr><td align="center"><b>OOT &mu; decay (G4)</b></td></tr>
-			  <tr><td align="left"><font color="darkgreen">pileup/OOTmustop.fcl</font></td></tr>
+			  <tr><td align="left"><font color="darkgreen">pileup/OOTstop.fcl</font></td></tr>
 			  </table>>];
 
     IPAMuonTerm [shape=box,color=blue,
@@ -150,13 +140,14 @@ digraph SimWorkflow {
 
     CosmicStage0 [shape=box, peripheries=1, color=blue,
             label=<<table border="0" cellborder="0" cellspacing="1">
-                        <tr><td align="center"><b>CORSIKA executable</b></td></tr>
-                        <tr><td align="left">./corsika77400Linux_QGSJET_fluka &lt; input_configuration</td></tr>
+                        <tr><td align="center"><b>CORSIKA Binary Generation</b></td></tr>
+                        <tr><td align="left"><font color="gold">corsika77400Linux_QGSJET_fluka</font></td></tr>
+                        <tr><td align="left"><font color="darkgreen">cosmic/CORSIKAInput.txt</font></td></tr>
                         </table>>];
 
     CORSIKAOutput [shape=oval, peripheries=1, color=lightblue,
 		  label=<<table border="0" cellborder="0" cellspacing="1">
-		    <tr><td align="center"><b>CORSIKA binaries</b></td></tr>
+		    <tr><td align="center"><b>CORSIKA Binaries</b></td></tr>
 		    <tr><td align="left"><font color="red">sim.mu2e.CORSIKA.csk</font></td></tr>
 		    </table>>];
 
@@ -164,24 +155,25 @@ digraph SimWorkflow {
 
     CosmicGenerator [shape=box, peripheries=3, color=blue,
 		    label=<<table border="0" cellborder="0" cellspacing="1">
-		      <tr><td align="center"><b>CORSIKA, CRY, ... generation</b></td></tr>
-		      <tr><td align="left"><font color="darkgreen">cosmic/cosmic_s1_dsstops_X.fcl, X &isin; [CORSIKA, CRY, ...]</font></td></tr>
+		      <tr><td align="center"><b>Cosmic Generation</b></td></tr>
+		      <tr><td align="left"><font color="darkgreen">cosmic/S1StopsX.fcl, X &isin; [CORSIKA, CRY, ...]</font></td></tr>
 		      </table>>];
 
     CORSIKAOutput -> CosmicGenerator;
 
     CosmicStage1Output [shape=oval, peripheries=3, color=lightblue,
 		  label=<<table border="0" cellborder="0" cellspacing="1">
-		    <tr><td align="center"><b>Cosmic generation output</b></td></tr>
+		    <tr><td align="center"><b>Cosmic Stops</b></td></tr>
 		    <tr><td align="left"><font color="red">sim.mu2e.CosmicDSStopsX.art, X &isin; [CORSIKA, CRY, ...]</font></td></tr>
 		    </table>>];
 
     CosmicGenerator -> CosmicStage1Output;
 
-    CosmicStage2 [shape=box, peripheries=3, color=blue,
+    CosmicStage2 [shape=box, peripheries=1, color=blue,
         label=<<table border="0" cellborder="0" cellspacing="1">
             <tr><td align="center"><b>Cosmic resampling</b></td></tr>
-            <tr><td align="left"><font color="darkgreen">cosmic/cosmic_s2_resampler_X.fcl, X &isin; [hi, lo]</font></td></tr>
+            <tr><td align="left"><font color="darkgreen">cosmic/S2ResamplerHigh.fcl</font></td></tr>
+            <tr><td align="left"><font color="lightgreen">cosmic/S2ResamplerLow.fcl</font></td></tr>
             </table>>];
 
     CosmicStage1Output -> CosmicStage2;
@@ -227,9 +219,9 @@ digraph SimWorkflow {
 				<tr><td align="left"><font color="red">dts.mu2e.ootmu.art</font></td></tr>
 				</table>>];
 
-    PileupMuonTerm -> TargetMuonPileup;
-    OutOfTargetMuonTerm -> OutOfTargetMuonPileup;
-    {rank=same TargetMuonPileup OutOfTargetMuonPileup EarlyFlashPileup FlashPileup CosmicPrimary MuonPrimary IPAPrimary};
+    PileupMuonTerm -> TargetMuonPileup [ label=<concatenate 10<sup>+4</sup>?> ];
+    OutOfTargetMuonTerm -> OutOfTargetMuonPileup [ label=<concatenate 10<sup>+4</sup>?> ];
+    {rank=same TargetMuonPileup OutOfTargetMuonPileup FlashPileup CosmicPrimary MuonPrimary IPAPrimary};
 
     MixDigitization [shape=box, peripheries=1, color=blue,
 		    label=<<table border="0" cellborder="0" cellspacing="1">
@@ -240,8 +232,8 @@ digraph SimWorkflow {
     NomixDigitization [shape=box, peripheries=1, color=blue,
 		      label=<<table border="0" cellborder="0" cellspacing="1">
 		      <tr><td align="center"><b> Primary Only Digitization </b></td></tr>
-		      <tr><td align="left"><font color="darkgreen">digitize/OnSpill.fcl</font></td></tr>
 		      <tr><td align="left"><font color="darkgreen">digitize/OffSpill.fcl</font></td></tr>
+		      <tr><td align="left"><font color="lightgreen">digitize/OnSpill.fcl</font></td></tr>
 		      </table>>];
 
     MuonPrimary -> MixDigitization;
@@ -249,7 +241,6 @@ digraph SimWorkflow {
     IPAPrimary -> MixDigitization;
     TargetMuonPileup -> MixDigitization [style=dashed, label=<resample 10<sup>+4</sup>?> ];
     OutOfTargetMuonPileup -> MixDigitization [style=dashed, label=<resample 10<sup>+4</sup>?>];
-    EarlyFlashPileup -> MixDigitization [style=dashed, label=<resample 10<sup>+4</sup>?>];
     FlashPileup -> MixDigitization [style=dashed, label=<resample 10<sup>+4</sup>?>];
 
     MuonPrimary -> NomixDigitization;
