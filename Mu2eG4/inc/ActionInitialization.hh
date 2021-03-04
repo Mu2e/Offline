@@ -45,8 +45,7 @@ namespace mu2e {
                          SensitiveDetectorHelper* sensitive_detectorhelper,
                          Mu2eG4PerThreadStorage* per_thread_storage,
                          PhysicalVolumeHelper* phys_volume_helper,
-                         CLHEP::Hep3Vector const& origin_in_world,
-                         unsigned stage_offset_for_tracking_action
+                         CLHEP::Hep3Vector const& origin_in_world
                          );
 
     virtual ~ActionInitialization();
@@ -73,7 +72,6 @@ namespace mu2e {
     mutable PhysicsProcessInfo physicsProcessInfo_;
 
     CLHEP::Hep3Vector const& originInWorld_;
-    unsigned stageOffset_;
   };
 
 }  // end namespace mu2e

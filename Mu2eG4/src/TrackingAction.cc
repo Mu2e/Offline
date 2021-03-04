@@ -64,7 +64,6 @@ namespace mu2e {
 
   TrackingAction::TrackingAction(const Mu2eG4Config::Top& conf,
                                  Mu2eG4SteppingAction * steppingAction,
-                                 unsigned stageOffset,
                                  Mu2eG4PerThreadStorage *pts):
     _debugList(conf.debug().trackingActionEventList()),
     _physVolHelper(0),
@@ -79,7 +78,6 @@ namespace mu2e {
     _nKilledByFieldPropagator(0),
     _rangeToIgnore(conf.physics().rangeToIgnore()),
     _steppingAction(steppingAction),
-    _stageOffset(stageOffset),
     _processInfo(0),
     _printTrackTiming(conf.debug().printTrackTiming()),
     _stepLimitKillerVerbose(conf.debug().stepLimitKillerVerbose())
@@ -424,7 +422,7 @@ namespace mu2e {
     }
 
     _transientMap.insert(std::make_pair(kid,SimParticle( kid,
-                                                         _stageOffset,
+                                                         perThreadObjects_->simParticleHelper.stageOffset(),
                                                          parentPtr,
                                                          ppdgId,
                                                          genPtr,

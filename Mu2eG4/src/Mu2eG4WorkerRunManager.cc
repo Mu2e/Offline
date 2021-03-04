@@ -182,7 +182,6 @@ namespace mu2e {
 
     trackingAction_ = new TrackingAction(conf_,
                                          steppingAction_,
-                                         perThreadObjects_->ioconf.inputs().simParticleNumberOffset(),
                                          perThreadObjects_.get());
     SetUserAction(trackingAction_);
 

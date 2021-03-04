@@ -44,6 +44,8 @@ namespace mu2e {
 
     // For arbitrary product in this event - e.g. the "old" SimParticleCollection
     const art::EDProductGetter *otherProductGetter(art::ProductID otherID) const;
+
+    unsigned stageOffset() const { return particleNumberOffset_; }
   };
 }
 
