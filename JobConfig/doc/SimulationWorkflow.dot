@@ -72,8 +72,8 @@ digraph SimWorkflow {
 
     StopPositionResampling [shape=box,color=blue,
 			   label=<<table border="0" cellborder="0" cellspacing="1">
-			     <tr><td align="center"><b>Particle Stopper</b></td></tr>
-			     <tr><td align="left"><font color="darkgreen">beam/ParticleStopper.fcl</font></td></tr>
+			     <tr><td align="center"><b>Beam Resampling</b></td></tr>
+			     <tr><td align="left"><font color="darkgreen">beam/BeamResampler.fcl</font></td></tr>
 			     </table>>];
 
     Beam -> StopPositionResampling [ label=<resample 10<sup>+4</sup>?> ];
@@ -112,13 +112,13 @@ digraph SimWorkflow {
 
     PrimaryMuonTerm [shape=box, peripheries=3, color=blue,
 		    label=<<table border="0" cellborder="0" cellspacing="1">
-		      <tr><td align="center"><b>&mu; on Al to X &isin; [Ce<sup>-</sup>, Ce<sup>+</sup>, DIO Tail, Internal RPC, ...] </b></td></tr>
-		      <tr><td align="left"><font color="darkgreen">primary/X.fcl, X &isin; [CeMinus, CePlus, DIOTail, ...]</font></td></tr>
+		      <tr><td align="center"><b>&mu; on Al to X = [Ce<sup>-</sup>, Ce<sup>+</sup>, DIO Tail, Internal RPC, ...] </b></td></tr>
+		      <tr><td align="left"><font color="darkgreen">primary/X.fcl, X = [CeMinus, CePlus, DIOTail, ...]</font></td></tr>
 		      </table>>];
 
     PileupMuonTerm [shape=box,color=blue,
 		       label=<<table border="0" cellborder="0" cellspacing="1">
-			 <tr><td align="center"><b>&mu; to X &isin; [P, D, N,&gamma;, e &nu;]  </b></td></tr>
+			 <tr><td align="center"><b>&mu; to X = [P, D, N,&gamma;, e &nu;]  </b></td></tr>
 			 <tr><td align="left"><font color="darkgreen">pileup/mustop.fcl</font></td></tr>
 			 </table>>];
 
@@ -156,7 +156,7 @@ digraph SimWorkflow {
     CosmicGenerator [shape=box, peripheries=3, color=blue,
 		    label=<<table border="0" cellborder="0" cellspacing="1">
 		      <tr><td align="center"><b>Cosmic Generation</b></td></tr>
-		      <tr><td align="left"><font color="darkgreen">cosmic/S1StopsX.fcl, X &isin; [CORSIKA, CRY, ...]</font></td></tr>
+		      <tr><td align="left"><font color="darkgreen">cosmic/S1StopsX.fcl, X = [CORSIKA, CRY, ...]</font></td></tr>
 		      </table>>];
 
     CORSIKAOutput -> CosmicGenerator;
@@ -164,7 +164,7 @@ digraph SimWorkflow {
     CosmicStage1Output [shape=oval, peripheries=3, color=lightblue,
 		  label=<<table border="0" cellborder="0" cellspacing="1">
 		    <tr><td align="center"><b>Cosmic Stops</b></td></tr>
-		    <tr><td align="left"><font color="red">sim.mu2e.CosmicDSStopsX.art, X &isin; [CORSIKA, CRY, ...]</font></td></tr>
+		    <tr><td align="left"><font color="red">sim.mu2e.CosmicDSStopsX.art, X = [CORSIKA, CRY, ...]</font></td></tr>
 		    </table>>];
 
     CosmicGenerator -> CosmicStage1Output;
@@ -181,7 +181,7 @@ digraph SimWorkflow {
     CosmicPrimary [shape=oval, peripheries=3, color=lightblue,
 		  label=<<table border="0" cellborder="0" cellspacing="1">
 		    <tr><td align="center"><b>Cosmic Ray Primary</b></td></tr>
-		    <tr><td align="left"><font color="red">dts.mu2e.X.art, X &isin; [CORSIKA, CRY, ...]</font></td></tr>
+		    <tr><td align="left"><font color="red">dts.mu2e.X.art, X = [CORSIKA, CRY, ...]</font></td></tr>
 		    </table>>];
 
     IPAPrimary [shape=oval, color=lightblue,
@@ -193,7 +193,7 @@ digraph SimWorkflow {
     MuonPrimary [shape=oval, peripheries=3, color=lightblue,
 		label=<<table border="0" cellborder="0" cellspacing="1">
 		  <tr><td align="center"><b>Target Muon Primary</b></td></tr>
-		  <tr><td align="left"><font color="red">dts.mu2e.X.art, X &isin;[CeMinus, CePlus, ...] </font></td></tr>
+		  <tr><td align="left"><font color="red">dts.mu2e.X.art, X =[CeMinus, CePlus, ...] </font></td></tr>
 		  </table>>];
 
     CosmicStage2 -> CosmicPrimary;
@@ -204,7 +204,7 @@ digraph SimWorkflow {
     CosmicPrimary [shape=oval, peripheries=3, color=lightblue,
 		  label=<<table border="0" cellborder="0" cellspacing="1">
 		    <tr><td align="center"><b>Cosmic Ray Primary</b></td></tr>
-		    <tr><td align="left"><font color="red">dts.mu2e.X.art, X &isin; [CORSIKA, CRY, ...] </font></td></tr>
+		    <tr><td align="left"><font color="red">dts.mu2e.X.art, X = [CORSIKA, CRY, ...] </font></td></tr>
 		    </table>>];
 
     TargetMuonPileup [shape=oval, color=lightblue,
@@ -250,13 +250,13 @@ digraph SimWorkflow {
     UnmixedDigis [shape=oval, peripheries=3, color=lightblue,
 		 label=<<table border="0" cellborder="0" cellspacing="1">
 		   <tr><td align="center"><b>Unmixed Digis</b></td></tr>
-		   <tr><td align="left"><font color="red">dig.mu2e.X.art, X &isin; [CeMinus, CORSIKA, ...]</font></td></tr>
+		   <tr><td align="left"><font color="red">dig.mu2e.X.art, X = [CeMinus, CORSIKA, ...]</font></td></tr>
 		   </table>>];
 
     MixedDigis [shape=oval, peripheries=3, color=lightblue,
 	       label=<<table border="0" cellborder="0" cellspacing="1">
 		 <tr><td align="center"><b>Mixed Digis</b></td></tr>
-		 <tr><td align="left"><font color="red">dig.mu2e.XMix.art, X &isin; [CeMinus, CORSIKA, ...]</font></td></tr>
+		 <tr><td align="left"><font color="red">dig.mu2e.XMix.art, X = [CeMinus, CORSIKA, ...]</font></td></tr>
 		 </table>>];
 
     NomixDigitization -> UnmixedDigis;
@@ -273,7 +273,7 @@ digraph SimWorkflow {
     Reco [shape=oval, color=lightblue, peripheries=3
 	 label=<<table border="0" cellborder="0" cellspacing="1">
 	   <tr><td align="center"><b>Reconstructed Events (Tracks, CaloClusters, CRVClusters, ...)</b></td></tr>
-	   <tr><td align="left"><font color="red">mcs.mu2e.X.art, X &isin; [CeMinus, CORSIKA, ...]</font></td></tr>
+	   <tr><td align="left"><font color="red">mcs.mu2e.X.art, X = [CeMinus, CORSIKA, ...]</font></td></tr>
 	   </table>>];
 
     MixedDigis -> Reconstruction
