@@ -226,7 +226,7 @@ digraph SimWorkflow {
     MixDigitization [shape=box, peripheries=1, color=blue,
 		    label=<<table border="0" cellborder="0" cellspacing="1">
 		      <tr><td align="center"><b> Primary + Pileup Digitization </b></td></tr>
-		      <tr><td align="left"><font color="darkgreen">mixing/mix.fcl</font></td></tr>
+		      <tr><td align="left"><font color="darkgreen">mixing/Mix.fcl</font></td></tr>
 		      </table>>];
 
     NomixDigitization [shape=box, peripheries=1, color=blue,
@@ -267,7 +267,7 @@ digraph SimWorkflow {
     Reconstruction [shape=box, peripheries=1, color=blue,
 		   label=<<table border="0" cellborder="0" cellspacing="1">
 		     <tr><td align="center"><b> Reconstruction </b></td></tr>
-		     <tr><td align="left"><font color="darkgreen">reco/reco.fcl </font></td></tr>
+		     <tr><td align="left"><font color="darkgreen">reco/Reco.fcl </font></td></tr>
 		     </table>>];
 
     Reco [shape=oval, color=lightblue, peripheries=3
