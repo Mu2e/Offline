@@ -314,8 +314,7 @@ namespace mu2e {
                                                                 &_sensitiveDetectorHelper,
                                                                 &perThreadStore,
                                                                 &_physVolHelper,
-                                                                _originInWorld,
-                                                                multiStagePars_.simParticleNumberOffset()
+                                                                _originInWorld
                                                                 );
 
     // in sequential mode, this is where Build() is called for main thread
