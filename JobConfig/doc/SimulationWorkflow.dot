@@ -124,13 +124,13 @@ digraph SimWorkflow {
 
     OutOfTargetMuonTerm [shape=box,color=blue,
 			label=<<table border="0" cellborder="0" cellspacing="1">
-			  <tr><td align="center"><b>OOT &mu; decay (G4)</b></td></tr>
+			  <tr><td align="center"><b>OOT &mu; Decay+Capture (G4)</b></td></tr>
 			  <tr><td align="left"><font color="darkgreen">pileup/OOTstop.fcl</font></td></tr>
 			  </table>>];
 
     IPAMuonTerm [shape=box,color=blue,
 		label=<<table border="0" cellborder="0" cellspacing="1">
-		  <tr><td align="center"><b>IPA Muon Termination</b></td></tr>v
+		  <tr><td align="center"><b>IPA &mu; Termination</b></td></tr>v
 		  <tr><td align="left"><font color="darkgreen">primary/IPAmustop.fcl</font></td></tr></table>>];
 
     TargetStops -> PrimaryMuonTerm [ label=<resample 10<sup>+3</sup>?> ];
@@ -156,7 +156,7 @@ digraph SimWorkflow {
     CosmicGenerator [shape=box, peripheries=3, color=blue,
 		    label=<<table border="0" cellborder="0" cellspacing="1">
 		      <tr><td align="center"><b>Cosmic Generation</b></td></tr>
-		      <tr><td align="left"><font color="darkgreen">cosmic/S1StopsX.fcl, X = [CORSIKA, CRY, ...]</font></td></tr>
+		      <tr><td align="left"><font color="darkgreen">cosmic/S1DSStopsX.fcl, X = [CORSIKA, CRY, ...]</font></td></tr>
 		      </table>>];
 
     CORSIKAOutput -> CosmicGenerator;
@@ -171,8 +171,8 @@ digraph SimWorkflow {
 
     CosmicStage2 [shape=box, peripheries=1, color=blue,
         label=<<table border="0" cellborder="0" cellspacing="1">
-            <tr><td align="center"><b>Cosmic resampling</b></td></tr>
-            <tr><td align="left"><font color="darkgreen">cosmic/S2ResamplerHigh.fcl</font></td></tr>
+            <tr><td align="center"><b>Cosmic Resampling</b></td></tr>
+            <tr><td align="left"><font color="darkgreen">cosmic/S2Resampler.fcl</font></td></tr>
             <tr><td align="left"><font color="lightgreen">cosmic/S2ResamplerLow.fcl</font></td></tr>
             </table>>];
 
