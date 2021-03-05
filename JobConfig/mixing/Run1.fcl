@@ -3,7 +3,7 @@
 #
 # original author: Dave Brown, LBNL
 #
-#include "JobConfig/mixing/mix.fcl"
+#include "JobConfig/mixing/Mix.fcl"
 # temporary test
 #physics.filters.mustopMixer.fileNames : [ "/pnfs/mu2e/scratch/users/brownd/workflow/default/outstage/41883875/dts.brownd.mustop.MDC2020a.001201.art" ]
 #physics.filters.mustopMixer.mu2e.simStageEfficiencyTags : [ muHitPerMuStop, muStopPerMuBeamEnterDS, muBeamEnterDSPerPOT ]
