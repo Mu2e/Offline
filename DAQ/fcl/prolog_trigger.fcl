@@ -48,14 +48,9 @@ DAQ : {
 
       CaloDigiMaker:		
       {
-	 module_type: CaloRecoFromFragments
-	 diagLevel: 0
-	 parseCAL: 1
-	 parseTRK: 0
-         useTrkADC : 0
-	 
-	 trkTag  : "daq:trk"
-	 caloTag : "daq:calo"
+	 module_type : CaloRecoFromFragments
+	 diagLevel   : 0
+	 caloTag     : "daq:calo"
       }
 
        CaloHitMaker:		
