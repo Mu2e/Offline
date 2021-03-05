@@ -2,7 +2,7 @@
 //  Filter for selecting Calo Cosmic MIP-like events
 //  From CaloCosmicCalib by clusters to cells level
 //  V1 version: S.Miscetti 28/January/2021
-//  from original version of D.Brown
+//  from original version of G. Pezzullo
 // -------------------------------------------------
 // framework
 #include "art/Framework/Core/EDFilter.h"
@@ -50,7 +50,6 @@ namespace mu2e
       fhicl::Atom<float>        mincelcut        { Name("MinCelEneCut"),           Comment("Minimum Energy for the crystals") }; 
       fhicl::Atom<float>        outradius        { Name("OutRadius"),              Comment("Value of the Outer radius considered") }; 
       fhicl::Atom<float>        innradius        { Name("InnerRadius"),            Comment("Value of the Inner radius considered") };
-      fhicl::Atom<float>        crystalsize      { Name("crystalsize"),            Comment("Crystal size") }; 
       fhicl::Atom<float>        diagminval       { Name("diagminval"),             Comment("Min slope val for DIAG algo") }; 
       fhicl::Atom<float>        diagmaxval       { Name("diagmaxval"),             Comment("Max slope value for DIAG algo") };
       fhicl::Atom<float>        dyminval         { Name("dyminval"),               Comment("Min value of Y-depths for OUT-OUT algo   ") };     
@@ -94,7 +93,6 @@ namespace mu2e
     _mincelcut      (config().mincelcut()),
     _outradius      (config().outradius()),
     _innradius      (config().innradius()),
-    _crystalsize    (config().crystalsize()),
     _diagminval     (config().diagminval()),
     _diagmaxval     (config().diagmaxval()),
     _dyminval       (config().dyminval()),     
@@ -105,13 +103,9 @@ namespace mu2e
 
   bool CaloCosmicCalib::beginRun(art::Run & run){
     GeomHandle<Calorimeter> ch;    
-    _calogeom = ch.get();
-    
-    // get bfield
-    // GeomHandle<BFieldManager> bfmgr;
-    // GeomHandle<DetectorSystem> det;
-    // Hep3Vector vpoint_mu2e = det->toMu2e(Hep3Vector(0.0,0.0,0.0));
-    // _bz0 = bfmgr->getBField(vpoint_mu2e).z();
+    _calogeom    = ch.get();
+    _crystalsize = _calogeom->caloInfo().getDouble("crystalXYLength") +  2.*_calogeom->caloInfo().getDouble("wrapperThickness");
+
     return true;
   }
 
@@ -127,15 +121,6 @@ namespace mu2e
     
     const CaloHit* hitcalo(0);
     const CaloHitPtrVector* caloClusterHits(0);
-    
-    // ----------------------------------------------------------
-    // These are the cuts that should be handled by the FCL file
-    // ---- default for initialization --------------------------
-    //float EMIPcut =  _mincelcut; // cut to select MIP
-    //float RMINcut = _innradius; // inner radius cut
-    //float _outradius = _outradius; // outer radius cut
-    //int   MinNumMIPcel = _mincelinout;    // Min Number of MIP cells
-    //int   MinNumMIPdia = _minceldiagver;
     
     // loop over the collection: if any pass the selection, pass this event
     
@@ -159,17 +144,10 @@ namespace mu2e
 	// -----------------------------------------------
 	caloClusterHits = &cl.caloHitsPtrVector();
 
-	int selflag=0;	
-	int NumMipCel= 0;
-	float Eouter = 0.;
-	float Einner = 0.;
+	int selflag(0), NumMipCel(0);
+	float Eouter(0), Einner(0);
 	float DXmax, DYmax;
-	float RMax=-999;
-	float RMin=-999;
-	float XMin= 999.;
-	float XMax=-999.;	
-	float YoutMin= 999.;
-	float YoutMax=-999.;
+	float RMax(-999), RMin(-999), XMin(999.), XMax(-999.), YoutMin(999.), YoutMax(-999.);
 	
 	float xval,yval,rval;
 	for( int icry=0; icry< clsize; icry++){
@@ -179,8 +157,7 @@ namespace mu2e
 	  int _cryid = hitcalo->crystalID();	  
 	  int DiskId = _calogeom->crystal(_cryid).diskID();	
 	  
-	  CLHEP::Hep3Vector crystalpos =
-	    _calogeom->geomUtil().mu2eToDiskFF(DiskId,_calogeom->crystal(_cryid).position());
+	  CLHEP::Hep3Vector crystalpos = _calogeom->geomUtil().mu2eToDiskFF(DiskId,_calogeom->crystal(_cryid).position());
 	  
 	  if( ene> _mincelcut){         // Use cells with energy above a MIP-like threshold
 	    xval = crystalpos.x();
