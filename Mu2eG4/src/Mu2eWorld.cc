@@ -361,7 +361,7 @@ namespace mu2e {
     // The target is built inside this volume.
     std::string theDS3("DS3Vacuum");
     std::string theDS2("DS2Vacuum");
-    if ( _config.getBool("inGaragePosition",false) ) {
+    if ( _config.getBool("inGaragePosition",false) && _config.getBool("garage.extractOPA_IPA_ST")) {
       theDS3 = "garageFakeDS3Vacuum";
       theDS2 = "garageFakeDS2Vacuum";
     }

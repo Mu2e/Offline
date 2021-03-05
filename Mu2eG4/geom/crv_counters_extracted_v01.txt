@@ -1,11 +1,15 @@
 //CRV module geometry in the extracted detector geometry
 
-int   crs.nSectors = 1;
+int   crs.nSectors = 3;
 int   crs.nLayers  = 4;
 
-vector<string> crs.sectorNames = {"EX"};
+vector<string> crs.sectorNames = {"EX", //0
+                                  "T1", //1  trigger module 1
+                                  "T2"}; //2  trigger module 2
 
-double          crs.scintillatorBarLengthEX      =  6000; //0
+double          crs.scintillatorBarLengthEX      =  6000; //0   CRV-T modules
+double          crs.scintillatorBarLengthT1      =  2370; //1   CRV-D short modules
+double          crs.scintillatorBarLengthT2      =  3200; //2   CRV-L endcap modules
 
 double          crs.scintillatorBarThickness     =  19.8; //mm
 double          crs.scintillatorBarWidth         =  51.3; //mm
@@ -17,10 +21,17 @@ vector<double>  crs.gapBetweenLayers             =  {9.525, 9.525, 9.525}; //mm
 double          crs.aluminumSheetThickness       =   3.175;  //mm
 double          crs.strongBackThickness          =  12.7;    //mm
 
-int             crs.nModulesEX                   =  3;  //0
-int             crs.nCountersPerModuleEX         = 16;  //0 //per layer
+int             crs.nModulesEX                   =  4;  //0
+int             crs.nModulesT1                   =  2;  //1
+int             crs.nModulesT2                   =  2;  //2
 
-vector<double>  crs.firstCounterEX               =  {-3904.0,   4580,  23000}; //0 //in mu2e coordinates
+int             crs.nCountersPerModuleEX         = 16;  //0 //per layer
+int             crs.nCountersPerModuleT1         = 16;  //1
+int             crs.nCountersPerModuleT2         = 16;  //2
+
+vector<double>  crs.firstCounterEX               =  {-3904.00,   4730,  22486.00}; //0 //in mu2e coordinates
+vector<double>  crs.firstCounterT1               =  {-4704.85,   4580,  24114.85}; //1
+vector<double>  crs.firstCounterT2               =  {-3904.00,   4880,  23314.00}; //2
 
 string          crs.scintillatorBarMaterialName  = "G4_POLYSTYRENE";
 string          crs.absorberMaterialName         = "G4_Al";
@@ -31,14 +42,19 @@ bool   crs.veto.solid      = true;
 int    crs.verbosityLevel = 0;
 
 vector<double>  crs.layerDirectionEX  =  {0, 1, 0}; //0
+vector<double>  crs.layerDirectionT1  =  {0, 1, 0}; //1
+vector<double>  crs.layerDirectionT2  =  {0, 1, 0}; //2
 
 vector<double>  crs.offsetDirectionEX =  {0, 0, -1}; //0
+vector<double>  crs.offsetDirectionT1 =  {0, 0,  0}; //1  no offset
+vector<double>  crs.offsetDirectionT2 =  {0, 0, -1}; //2
 
 vector<double>  crs.gapDirectionEX    =  {0,  0, 1}; //0
+vector<double>  crs.gapDirectionT1    =  {1,  0, 0}; //1
+vector<double>  crs.gapDirectionT2    =  {0,  0, 1}; //2
 
 // virtual detectors
 bool vd.crv.build = false;
-vector<double>  crs.vdDirectionEX  =  {0, 1, 0};
 
 // counter mother boards
 double crs.CMBOffset        = 15.0;
@@ -48,21 +64,34 @@ string crs.CMBMaterialName  = "ElectronicsCMB";
 // information about the SiPMs
 double crs.fiberSeparation = 26.0; //mm
 
+// Using CRV-DS modules as bottom trigger modules. They have readouts at one side only.
 // side 0 is the negative side of the counter, i.e. the -x side of a CRV-T counter, or the -y side of a CRV-R counter
 bool crs.sipmsAtSide0EX  = true;  //0
+bool crs.sipmsAtSide0T1  = true;  //1
+bool crs.sipmsAtSide0T2  = true;  //2
 
 // side 1 is the positive side of the counter, i.e. the +x side of a CRV-T counter, or the +y side of a CRV-R counter
 bool crs.sipmsAtSide1EX  = true;  //0
+bool crs.sipmsAtSide1T1  = false; //1
+bool crs.sipmsAtSide1T2  = true;  //2
 
 // information about the coincidence groups
 int crs.precedingSectorForEX  = -1;  //0   //no preceding sector
+int crs.precedingSectorForT1  = -1;  //1   //no preceding sector
+int crs.precedingSectorForT2  = -1;  //2   //no preceding sector
 
-int crs.sectorTypeEX  = 3;  //0
+int crs.sectorTypeEX  = 1;  //0
+int crs.sectorTypeT1  = 2;  //1
+int crs.sectorTypeT2  = 3;  //2
 
 //information about the FEBs
 int crs.FEBBoxesAtSide0EX  = 0; //0
+int crs.FEBBoxesAtSide0T1  = 0; //1
+int crs.FEBBoxesAtSide0T2  = 0; //2
 
 int crs.FEBBoxesAtSide1EX  = 0; //0
+int crs.FEBBoxesAtSide1T1  = 0; //1
+int crs.FEBBoxesAtSide1T2  = 0; //2
 
 string         crs.FEBMaterialName     = "ElectronicsFEB";
 double         crs.FEBDistanceToModule =  50;        //between surface of 4th scintillator layer and center of 1st FEB

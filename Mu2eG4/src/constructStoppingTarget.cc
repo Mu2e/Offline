@@ -61,7 +61,8 @@ namespace mu2e {
     const bool placePV                 = geomOptions->placePV("stoppingTarget"); 
 
     bool const inGaragePosition = config.getBool("inGaragePosition",false);
-    double zOffGarage = (inGaragePosition) ? config.getDouble("garage.zOffset") : 0.;
+    bool const OPA_IPA_ST_Extracted = (inGaragePosition) ? config.getBool("garage.extractOPA_IPA_ST") : false;
+    double zOffGarage = (inGaragePosition && OPA_IPA_ST_Extracted) ? config.getDouble("garage.zOffset") : 0.;
     CLHEP::Hep3Vector relPosFake(0.,0., zOffGarage); //for offsetting target in garage position
 
     int verbosity(config.getInt("stoppingTarget.verbosity",0));

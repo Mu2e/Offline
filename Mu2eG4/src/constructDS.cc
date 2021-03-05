@@ -52,7 +52,9 @@ namespace mu2e {
     int const verbosityLevel = _config.getInt("ds.verbosityLevel",0);
     bool const inGaragePosition = _config.getBool("inGaragePosition",false);
     double zOffGarage = (inGaragePosition) ? _config.getDouble("garage.zOffset") : 0.;
-    CLHEP::Hep3Vector relPosFake(0.,0., zOffGarage);
+    bool const OPA_IPA_ST_Extracted = (inGaragePosition) ? _config.getBool("garage.extractOPA_IPA_ST") : false;
+    //insert Z offset for the extracted position
+    CLHEP::Hep3Vector relPosExtracted(0.,0., zOffGarage);
 
     G4GeometryOptions* geomOptions = art::ServiceHandle<GeometryService>()->geomOptions();
     geomOptions->loadEntry( _config, "ds"         , "ds"           );
@@ -441,19 +443,20 @@ namespace mu2e {
                 "dsVacuum"
                 );
 
-    if(inGaragePosition) {
+    //create volume for detector elements in the extracted position
+    if(inGaragePosition && OPA_IPA_ST_Extracted) {
       G4Material*  airMaterial = findMaterialOrThrow( _config.getString("hall.insideMaterialName","G4_AIR") );
 
       VolumeInfo dsShieldParent = nestTubs( "garageFakeDS2Vacuum",
-					    ds2VacParams,
-					    airMaterial,
-					    0,
-					    ds2Position - _hallOriginInMu2e + relPosFake,
-					    parent,
-					    0,
-					    G4Colour::Yellow(),
-					    "dsVacuum"
-					    );
+                                            ds2VacParams,
+                                            airMaterial,
+                                            0,
+                                            ds2Position - _hallOriginInMu2e + relPosExtracted,
+                                            parent,
+                                            0,
+                                            G4Colour::Yellow(),
+                                            "dsVacuum"
+                                            );
     }
     // Polycone geometry allows for MBS to extend beyond solenoid
     // physical boundaries
@@ -513,18 +516,20 @@ namespace mu2e {
     if ( inGaragePosition ) {
       G4Material*  airMaterial = findMaterialOrThrow( _config.getString("hall.insideMaterialName","G4_AIR") );
 
-      VolumeInfo dsShieldParent = nestPolycone( "garageFakeDS3Vacuum",
-                                                ds3PolyParams,
-                                                airMaterial,
-                                                0,
-                                                ds3positionInMu2e - parent.centerInMu2e() + relPosFake,
-                                                parent,
-                                                0,
-                                                G4Colour::Yellow(),
-                                                "dsVacuum"
-                                                );
-      dsShieldPointer = &dsShieldParent;
+      tmpDS = nestPolycone( "garageFakeDS3Vacuum",
+                            ds3PolyParams,
+                            airMaterial,
+                            0,
+                            ds3positionInMu2e - parent.centerInMu2e() + relPosExtracted,
+                            parent,
+                            0,
+                            G4Colour::Yellow(),
+                            "dsVacuum"
+                            );
+    } else {
+      tmpDS = dsShieldParent;
     }
+    VolumeInfo & dsShieldPointer = tmpDS;
 
 
     // Construct shielding downstream of DS
