@@ -68,10 +68,15 @@ outputs : {
 	 "drop mu2e::Crv*_*_*_*",
 	 "drop *_*_cosmicTimeMap_*",
 	 "drop *_g4run_*_*",
-	 "drop mu2e::SimParticleart::Ptrmu2e::MCTrajectorystd::map_*_*_*", 
 	 "drop mu2e::StepPointMCs_*_CRV_*",
-	 "drop *_MHDeP_*_*",
+	 "drop mu2e::SimParticleart::Ptrmu2e::MCTrajectorystd::map_*_*_*", 
 	 "drop *_*DeP_*_*",
+	 "drop *_compressDetStepMCs_*_*",
+	 "drop *_compressDigiMCs_*_*",
+	 "drop mu2e::CaloDigis_CaloDigiMaker_*_*",
+         "drop mu2e::StrawDigiADCWaveforms_makeSD_*_*",
+         "drop mu2e::StrawDigis_makeSD_*_*",
+	 "keep mu2e::CaloShowerSteps_compressDigiMCs_*_*",
 	 "keep mu2e::StatusG4_*_*_*"
      ]
   }
