@@ -1,3 +1,0 @@
-# Reconstruct CeEndpoint
-#include "JobConfig/reco/reco.fcl"
-outputs.Output.fileName: "mcs.owner.CeEndpoint.version.sequencer.art"
