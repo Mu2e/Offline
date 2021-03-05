@@ -24,7 +24,7 @@ TrackSummaryMaker: {
 
 CaloClusterCompareNew : {
 	module_type : CaloClusterCompare
-        CaloClusterCollection : NewCaloClusterFast
+        CaloClusterCollection : CaloClusterOnline
 }
 
 CaloClusterCompareOld : {
