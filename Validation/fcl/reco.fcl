@@ -3,7 +3,7 @@
 #
 
 # the main path defined includes filtering and compression
-#include "JobConfig/reco/reco.fcl"
+#include "JobConfig/reco/Reco.fcl"
 
 # only run DeM and DeP
 physics.producers.SelectRecoMC.KFFInstances : [ "KFFDeM", "KFFDeP"]
