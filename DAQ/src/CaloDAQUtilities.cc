@@ -79,8 +79,8 @@ namespace mu2e {
 					 DTCLib::DTC_DataHeaderPacket &Header, 
 					 CalorimeterFragment::CalorimeterHitReadoutPacket& Hit, std::vector<uint16_t>& Pulse){
     
-    std::cout << "Crystal ID: " << (int)CrystalID           << std::endl;
-    std::cout << "SiPM ID: "    << (int)SiPMID              << std::endl;
+    std::cout << "Crystal ID: " << CrystalID           << std::endl;
+    std::cout << "SiPM ID: "    << SiPMID              << std::endl;
     std::cout << "Time: "       << (int)Hit.Time            << std::endl;
     std::cout << "NumSamples: " << (int)Hit.NumberOfSamples << std::endl;
     printWaveform(Pulse);
