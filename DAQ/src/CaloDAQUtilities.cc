@@ -1,0 +1,106 @@
+
+#include "mu2e-artdaq-core/Overlays/CalorimeterFragment.hh"
+#include "mu2e-artdaq-core/Overlays/FragmentType.hh"
+#include <artdaq-core/Data/Fragment.hh>
+
+#include "DAQ/inc/CaloDAQUtilities.hh"
+#include <iostream>
+
+namespace mu2e {
+  CaloDAQUtilities::CaloDAQUtilities(std::string ModuleName):moduleName_(ModuleName){}
+
+  void CaloDAQUtilities::printCaloFragmentInfo(const artdaq::Fragment& f, CalorimeterFragment& cc){
+    std::cout << std::endl;
+    std::cout << "ArtFragmentReader: ";
+    std::cout << "\tBlock Count: " << std::dec << cc.block_count() << std::endl;
+    std::cout << "\tByte Count: " << f.dataSizeBytes() << std::endl;
+    std::cout << std::endl;
+    std::cout << "\t"
+              << "====== Example Block Sizes ======" << std::endl;
+    for (size_t i = 0; i < 10; i++) {
+      if (i < cc.block_count()) {
+        std::cout << "\t" << i  << "\t" << cc.blockSizeBytes(i)
+                  << std::endl;
+      }
+    }
+    std::cout << "\t"
+              << "=========================" << std::endl;
+  }
+
+
+  void CaloDAQUtilities::printCaloFragmentHeader(DTCLib::DTC_DataHeaderPacket &Header){
+    
+    std::cout << "timestamp: " << static_cast<int>(Header.GetTimestamp().GetTimestamp(true)) << std::endl;
+    std::cout << "Header->SubsystemID: " << static_cast<int>(Header.GetSubsystemID()) << std::endl;
+    std::cout << "dtcID: " << static_cast<int>(Header.GetID()) << std::endl;
+    std::cout << "rocID: " << static_cast<int>(Header.GetRingID()) << std::endl;
+    std::cout << "packetCount: " << static_cast<int>(Header.GetPacketCount()) << std::endl;
+    std::cout << "EVB mode: " << static_cast<int>(Header.GetEVBMode()) << std::endl;
+
+    std::cout << std::endl;
+    
+  }
+
+  void CaloDAQUtilities::printCaloPulse(CalorimeterFragment::CalorimeterHitReadoutPacket& Hit){
+    std::cout << "[CaloHitsFromFragments] \tChNumber   "
+	      << (int)Hit.ChannelNumber
+	      << std::endl;
+    std::cout << "[CaloHitsFromFragments] \tDIRACA     "
+	      << (int)Hit.DIRACA
+	      << std::endl;
+    std::cout << "[CaloHitsFromFragments] \tDIRACB     "
+	      << (int)Hit.DIRACB
+	      << std::endl;
+    std::cout << "[CaloHitsFromFragments] \tErrorFlags "
+	      << (int)Hit.ErrorFlags
+	      << std::endl;
+    std::cout << "[CaloHitsFromFragments] \tTime	      "
+	      << (int)Hit.Time
+	      << std::endl;
+    std::cout << "[CaloHitsFromFragments] \tNSamples   "
+	      << (int)Hit.NumberOfSamples << std::endl;
+    std::cout << "[CaloHitsFromFragments] \tIndexMax   "
+	      << (int)Hit.IndexOfMaxDigitizerSample << std::endl;
+  
+  }
+
+  void CaloDAQUtilities::printWaveform(std::vector<uint16_t>& Pulse){
+    std::cout << "Waveform: {";
+    for (size_t i = 0; i < Pulse.size(); i++) {
+      std::cout << Pulse[i];
+      if (i < Pulse.size() - 1) {
+	std::cout << ",";
+      }
+    }
+    std::cout << "}" << std::endl;
+  }
+
+  void CaloDAQUtilities::printAllHitInfo(int CrystalID, int SiPMID, 
+					 DTCLib::DTC_DataHeaderPacket &Header, 
+					 CalorimeterFragment::CalorimeterHitReadoutPacket& Hit, std::vector<uint16_t>& Pulse){
+    
+    std::cout << "Crystal ID: " << (int)CrystalID           << std::endl;
+    std::cout << "SiPM ID: "    << (int)SiPMID              << std::endl;
+    std::cout << "Time: "       << (int)Hit.Time            << std::endl;
+    std::cout << "NumSamples: " << (int)Hit.NumberOfSamples << std::endl;
+    printWaveform(Pulse);
+
+    // Text format: timestamp crystalID roID time nsamples samples...
+    // Example: 1 201 402 660 18 0 0 0 0 1 17 51 81 91 83 68 60 58 52 42 33 23 16
+    std::cout << "GREPMECAL: "  << Header.GetTimestamp().GetTimestamp(true) << " ";
+    std::cout << CrystalID      << " ";
+    std::cout << SiPMID         << " ";
+    std::cout << Hit.Time       << " ";
+    std::cout << Pulse.size()   << " ";
+    for (size_t i = 0; i < Pulse.size(); i++) {
+      std::cout << Pulse[i];
+      if (i < Pulse.size() - 1) {
+	std::cout << " ";
+      }
+    }
+    std::cout << std::endl;
+
+  }
+
+
+}
