@@ -27,6 +27,7 @@
 #include <vector>
 #include <string>
 #include <unordered_map>
+#include <optional>
 
 //art includes
 #include "art/Framework/Principal/Event.h"
@@ -80,8 +81,9 @@ namespace mu2e {
 
     // event-level data members
     art::Event* artEvent = nullptr;
-    SimParticleHelper simParticleHelper;
-    SimParticlePrimaryHelper simParticlePrimaryHelper;
+    // delay initialization of the helpers using std::optional
+    std::optional<SimParticleHelper> simParticleHelper;
+    std::optional<SimParticlePrimaryHelper> simParticlePrimaryHelper;
 
     // output data products
     std::unique_ptr<StatusG4> statG4{nullptr};
