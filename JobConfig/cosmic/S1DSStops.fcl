@@ -11,6 +11,6 @@ outputs.Output.outputCommands : [@sequence::Primary.KeptProducts, "keep mu2e::Ge
 physics.producers.g4run.TrajectoryControl: @local::mu2eg4DefaultTrajectories
 physics.producers.g4run.SDConfig.enableSD: [ CRV ]
 physics.producers.g4run.Mu2eG4CommonCut: @local::Cosmic.Mu2eG4CommonCutCosmicS1
-outputs.Output.fileName         : "sim.owner.cosmic-s1-dsstops.version.sequencer.art"
+outputs.Output.fileName         : "sim.owner.CosmicDSStops.version.sequencer.art"
 //Need this to increase the world volume.
 services.GeometryService.inputFile:"JobConfig/cosmic/geom_cosmic_current.txt"

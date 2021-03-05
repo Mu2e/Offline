@@ -1,4 +1,4 @@
-#include "JobConfig/cosmic/cosmic_s1_dsstops.fcl"
+#include "JobConfig/cosmic/S1DSStops.fcl"
 
 targetParams: {
     projectToTargetBox : true
@@ -32,3 +32,4 @@ physics.producers.generate.stashSize    : @erase
 
 services.GeometryService.inputFile : "JobConfig/cosmic/geom_cosmic.txt"
 services.GeometryService.simulatedDetector : { tool_type: "Mu2e" }
+outputs.Output.fileName         : "sim.owner.CosmicDSStopsCORSIKA.version.sequencer.art"
