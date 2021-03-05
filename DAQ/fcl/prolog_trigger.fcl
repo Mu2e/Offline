@@ -48,7 +48,7 @@ DAQ : {
 
       CaloDigiMaker:		
       {
-	 module_type: StrawAndCaloDigisFromFragments
+	 module_type: CaloRecoFromFragments
 	 diagLevel: 0
 	 parseCAL: 1
 	 parseTRK: 0
@@ -56,6 +56,17 @@ DAQ : {
 	 
 	 trkTag  : "daq:trk"
 	 caloTag : "daq:calo"
+      }
+
+       CaloHitMaker:		
+      {
+	 module_type   : CaloHitsFromFragments
+	 diagLevel     : 0
+	 caloTag       : "daq:calo"
+	 digiSampling  : @local::HitMakerDigiSampling
+	 deltaTPulses  : 5.
+	 pulseRatioMax : 1.1
+	 pulseRatioMin : 0.9
       }
 
       CrvDigi:
