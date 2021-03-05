@@ -5,8 +5,9 @@
 
 // Special - for garage position!
 bool inGaragePosition   = true;
-double garage.zOffset   = 14000.0;  // for creating special garageFakeDS3Vacuum
-                                    // volume
+double garage.zOffset   = 14000.0;  // for creating special garageFakeDS(2/3)Vacuum volume
+bool garage.extractOPA_IPA_ST = false; //include the OPA, IPA, and Stopping Target in the extracted train
+
 // End special
 
 //bool hasCosmicRayShield = false;  // It would be nice to be able to turn
@@ -42,13 +43,8 @@ double calorimeter.caloMotherZ0                 = 25842;
 double calorimeter.caloMotherZ1                 = 27220;
 double calorimeter.calorimeterZFront            = 25843.0;
 
+//CRV in the extracted position for the detector KPP
 #include "Mu2eG4/geom/crv_counters_extracted_v01.txt"
-// // Turn off the CRV here
-// int  crs.nSectors = 0;
-// int  crs.nLayers  = 0;
-// vector<string>  crs.sectorNames = {};
-// int  crs.nSupportStructures     =  0;
-// vector<string> crs.supportStructureNames = {};
 
 //
 // End notes:
