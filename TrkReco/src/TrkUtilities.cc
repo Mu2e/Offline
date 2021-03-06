@@ -25,6 +25,8 @@
 #include "BTrkData/inc/TrkCaloHit.hh"
 #include "Mu2eBTrk/inc/DetStrawElem.hh"
 #include "BTrk/ProbTools/ChisqConsistency.hh"
+// KinKal
+#include "KinKal/Trajectory/CentralHelix.hh"
 // CLHEP
 #include "CLHEP/Vector/ThreeVector.h"
 #include "CLHEP/Matrix/Vector.h"
@@ -34,7 +36,6 @@
 using CLHEP::Hep3Vector;
 using CLHEP::HepSymMatrix;
 using CLHEP::HepVector;
-using namespace std;
 namespace mu2e {
   namespace TrkUtilities {
 
@@ -89,19 +90,43 @@ namespace mu2e {
       helix._fz0 = phi;
     }
 
-    void fillSegment(HelixTraj const& htraj, BbrVectorErr const& momerr,double dflt, KalSegment& kseg) {
+    void fillSegment(HelixTraj const& htraj, double dflt, TrkT0 t0, double mass, int charge, double Bz, KalSegment& kseg) {
       kseg._fmin = htraj.lowRange();
       kseg._fmax = htraj.hiRange();
       kseg._dflt = dflt;
-      kseg._helix = htraj.parameters()->parameter();
-      kseg._hcov = htraj.parameters()->covariance();
-      kseg._mom = momerr.mag();
-      Hep3Vector md = momerr.unit();
-      HepVector mdir(3);
-      for(size_t icor=0;icor<3;++icor) // CLHEP auto-conversion is broken, FIXME!!
-	mdir[icor] = md[icor];
-
-      kseg._momerr = sqrt(momerr.covMatrix().similarity(mdir));
+// compute the kinematics; this is external to htraj
+      static double clight =299.792;  // This value should come from conditions FIXME!!!	
+      // can I use this instead? CLHEP::c_light;
+      double radToMom = charge*Bz*clight/1000.0;
+      double mom = fabs(radToMom/(htraj.omega()*htraj.cosDip()));
+      double energy = sqrt(mom*mom + mass*mass);
+      double v = clight*mom/energy;
+      double vz = v*htraj.sinDip();
+      // translate BTrk t0 to CentralHelix t0
+      double ct0 = t0.t0() + htraj.z0()/vz;
+      // translate htraj (3D) flight range to time ranges
+      kseg._tmin = ct0 + kseg._fmin/v;
+      kseg._tmax = ct0 + kseg._fmax/v;
+      // conver the helix content to a CentralHelix.  Note the t0 value supplied is in the BTrk convention (time at z=0).
+      KinKal::DVEC chpars;
+      //{htraj.d0(), htraj.phi0(), htraj.omega(), htraj.z0(), htraj.tanDip(), ct0};
+      KinKal::DMAT cov;
+      for(unsigned ipar=0; ipar<5; ipar++){
+	chpars(ipar) = htraj.parameters()->parameter()[ipar];
+	for(unsigned jpar=0; jpar<5; jpar++){
+	  cov(ipar,jpar) = htraj.parameters()->covariance().fast(ipar+1,jpar+1);
+	}
+      }
+      // insert t0 error by hand
+      cov(KinKal::CentralHelix::t0_,KinKal::CentralHelix::t0_) = t0.t0Err()*t0.t0Err();
+      KinKal::Parameters params(chpars,cov);
+      KinKal::CentralHelix chelix(params,mass,charge,Bz,KinKal::TimeRange(kseg._tmin,kseg._tmax));
+      // use this helix to convert back to a state.  Synchronize the times at the midpoint of the range
+      double fmid = 0.5*(kseg._fmin+kseg._fmax);
+      double tref = ct0 + fmid/v;
+      kseg._pstate = chelix.stateEstimate(tref);
+      // BField
+      kseg._bnom = XYZVec(0.0,0.0,Bz);
     }
   
     void fillStraws(const KalRep* krep, std::vector<TrkStraw>& tstraws) {

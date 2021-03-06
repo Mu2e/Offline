@@ -44,7 +44,6 @@ namespace mu2e {
     bool hasCaloCluster() const { return _chit.caloCluster().isNonnull(); }
     art::Ptr<CaloCluster> const& caloCluster() const { return _chit.caloCluster(); }
     art::Ptr<HelixSeed> const& helix() const { return _helix; }
-    art::Ptr<KalSeed> const& kalSeed() const { return _kal; }
 
     // global information about the track
     PDGCode::type		    _tpart; // particle assumed for this fit
@@ -66,8 +65,7 @@ namespace mu2e {
     // 
     // referenced content.
     //
-    art::Ptr<HelixSeed>             _helix; // associated Helix Seed (for seed fits); can be null
-    art::Ptr<KalSeed>               _kal; // associated Kalman Seed (for final fits); can be null
+    art::Ptr<HelixSeed>             _helix; // associated Helix Seed
   };
   typedef std::vector<mu2e::KalSeed> KalSeedCollection;
 }

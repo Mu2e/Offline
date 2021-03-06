@@ -10,26 +10,44 @@
 #include <Rtypes.h>
 #include "RecoDataProducts/inc/HelixVal.hh"
 #include "DataProducts/inc/XYZVec.hh"
+#include "KinKal/General/ParticleState.hh"
+#include "KinKal/Trajectory/CentralHelix.hh"
+#include "KinKal/Trajectory/LoopHelix.hh"
+#include "CLHEP/Matrix/Vector.h"
 
 namespace mu2e {
   struct KalSegment {
-    KalSegment() : _fmin(0.0), _fmax(-1.0), _dflt(0.0), _mom(-1.0), _momerr(-1.0) {}
-    Float_t fmin() const { return _fmin; } // local helix flight limits
+    KalSegment() : _tmin(0.0), _tmax(-1.0), _fmin(0.), _fmax(-1.0), _dflt(0.0) {}
+    // provide a few call-down functions
+    double mom() const { return _pstate.momentum(); }
+    double momerr() const { return sqrt(_pstate.momentumVariance()); }
+    KinKal::VEC3 momentum3() const { return _pstate.momentum3(); }
+    KinKal::VEC3 position3() const { return _pstate.position3(); }
+ //   void mom(float fltlen, XYZVec& momvec) const { helix().direction(fltlen,momvec); momvec *= mom(); } // momentum as a function of local flightlength
+    // conver the content as a LoopHelix
+    KinKal::LoopHelix loopHelix() const { return KinKal::LoopHelix(_pstate, bnom(),KinKal::TimeRange(tmin(),tmax())); }
+    // same, as a CentralHelix
+    KinKal::CentralHelix centralHelix() const { return KinKal::CentralHelix(_pstate, bnom(),KinKal::TimeRange(tmin(),tmax())); }
+    Float_t tmin() const { return _tmin; }
+    Float_t tmax() const { return _tmax; }
+    KinKal::VEC3 bnom() const { return KinKal::VEC3(_bnom.X(), _bnom.Y(), _bnom.Z()); }
+    XYZVec _bnom; // Bfield associated with this segment, needed to reconstitute helix
+    Float_t _tmin, _tmax; // time range
+// main payload is the particle state estimate.  this includes all the kinematic information to
+// interpret as anything else.  BField is needed to interpret geometrically
+    KinKal::ParticleStateEstimate _pstate; // particle state at this sample
+ // the following are deprecated legacy functions specific to the BTrk fit and will go away eventually
+    HelixVal helix() const;
+    HelixCov covar() const;
+    void mom(double flt, XYZVec& momvec) const;
+    Float_t fmin() const { return _fmin; }
     Float_t fmax() const { return _fmax; }
-    HelixVal const& helix() const { return _helix; }
-    HelixCov const& covar() const { return _hcov; }
-    Float_t mom() const { return _mom; }
-    Float_t momerr() const { return _momerr; }
-    void mom(float fltlen, XYZVec& momvec) const { helix().direction(fltlen,momvec); momvec *= mom(); } // momentum as a function of local flightlength
-    // translate back and forth to global and local flightlengths
     float localFlt(float globalflt) const { return globalflt + _dflt; }
     float globalFlt(float localflt) const { return localflt - _dflt; }
-    Float_t _fmin, _fmax; // local Flight lengths along the helix for which this segment is valid.
-    Float_t _dflt; // difference between local and global flight length
-    HelixVal _helix; // helix valid for this segment
-    HelixCov _hcov; // covariance matrix for this helix
-    Float_t _mom; // scalar momentum of this helix segment
-    Float_t _momerr; // error on the scalar momentum
+    double fltToTime(float flt) const { return _tmin + (_tmax-_tmin)*(flt-_fmin)/(_fmax - _fmin); }
+    // legacy payload for BTrk
+    Float_t _fmin, _fmax; // legacy for BTrk
+    Float_t _dflt; // legacy
   };
 }
 #endif
