@@ -53,7 +53,7 @@
 #include "RecoDataProducts/inc/RecoQual.hh"
 #include "RecoDataProducts/inc/AlgorithmID.hh"
 #include "RecoDataProducts/inc/AlgorithmIDCollection.hh"
-
+#include "KinKal/General/ParticleState.hh"
 
 // extrapolation and PID
 #include "RecoDataProducts/inc/TrkCaloIntersectCollection.hh"

@@ -467,8 +467,9 @@ namespace mu2e {
       kseg._fmin = zpiece.range().begin();
       kseg._fmax = zpiece.range().end();
       kseg._dflt = 0.0;
-      kseg._mom = zpiece.momentum(tz);
-      kseg._momerr = sqrt(zpiece.momentumVar(tz));
+      kseg._pstate = zpiece.stateEstimate(tz);
+      auto const& bnom = zpiece.bnom();
+      kseg._bnom = XYZVec(bnom.X(),bnom.Y(),bnom.Z());
 // 5D helix parameters and covariance are meaningless FIXME!
       fseed._segments.push_back(kseg);
     }

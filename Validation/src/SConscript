@@ -35,7 +35,9 @@ mainlib = helper.make_mainlib ( [ 'mu2e_Validation_root',
                                   'canvas',
                                   'cetlib',
                                   'cetlib_except',
-                                  rootlibs,
+				  'Trajectory',
+				  'General',
+				  rootlibs,
                                   'CLHEP',
                                   'boost_system'
                                   ] )

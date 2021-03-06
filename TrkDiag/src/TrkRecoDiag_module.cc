@@ -419,9 +419,9 @@ namespace mu2e {
     // should add quality info testing FIXME!
     double maxmom(0.0);
     for(auto iks = ksc.begin(); iks != ksc.end(); ++iks) {
-      if(iks->status().hasAllProperties(goodreco) &&
-	  iks->segments().front()._mom > maxmom){
-	maxmom = iks->segments().front()._mom;
+      double mom = iks->segments().front().mom();
+      if(iks->status().hasAllProperties(goodreco) && mom > maxmom){
+	maxmom = mom; 
 	retval = iks;
       }
     }
@@ -519,12 +519,6 @@ namespace mu2e {
     }
     // count straws
     _kfns = kf.straws().size();
-    // follow down the reco chain
-    auto ksP = kf.kalSeed();
-    if(ksP.isNonnull()){
-      fillKalSeed(spp,*ksP);
-    } else
-      std::cout << "No kal seed found in kal final!" << std::endl;
   }
 
   void TrkRecoDiag::fillKalSeed(SPP const& spp,KalSeed const& ks) {
