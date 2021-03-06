@@ -30,10 +30,10 @@ namespace mu2e {
 
   void CaloDAQUtilities::printCaloFragmentHeader(DTCLib::DTC_DataHeaderPacket &Header){
     
-    std::cout << "timestamp: " << static_cast<int>(Header.GetTimestamp().GetTimestamp(true)) << std::endl;
+    std::cout << "timestamp: " << static_cast<int>(Header.GetEventWindowTag().GetEventWindowTag(true)) << std::endl;
     std::cout << "Header->SubsystemID: " << static_cast<int>(Header.GetSubsystemID()) << std::endl;
     std::cout << "dtcID: " << static_cast<int>(Header.GetID()) << std::endl;
-    std::cout << "rocID: " << static_cast<int>(Header.GetRingID()) << std::endl;
+    std::cout << "rocID: " << static_cast<int>(Header.GetLinkID()) << std::endl;
     std::cout << "packetCount: " << static_cast<int>(Header.GetPacketCount()) << std::endl;
     std::cout << "EVB mode: " << static_cast<int>(Header.GetEVBMode()) << std::endl;
 
@@ -87,7 +87,7 @@ namespace mu2e {
 
     // Text format: timestamp crystalID roID time nsamples samples...
     // Example: 1 201 402 660 18 0 0 0 0 1 17 51 81 91 83 68 60 58 52 42 33 23 16
-    std::cout << "GREPMECAL: "  << Header.GetTimestamp().GetTimestamp(true) << " ";
+    std::cout << "GREPMECAL: "  << Header.GetEventWindowTag().GetEventWindowTag(true) << " ";
     std::cout << CrystalID      << " ";
     std::cout << SiPMID         << " ";
     std::cout << Hit.Time       << " ";
