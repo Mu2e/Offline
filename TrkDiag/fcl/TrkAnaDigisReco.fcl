@@ -5,7 +5,7 @@
 #include "fcl/TrkCaloDt.fcl"
 #include "TrkDiag/fcl/prolog.fcl"
 # the following is for reconstructing from digis.
-#include "JobConfig/reco/reco.fcl"
+#include "JobConfig/reco/Reco.fcl"
 process_name : TrkAnaDigisReco
 # augment producers and analyzers
 physics.producers: {

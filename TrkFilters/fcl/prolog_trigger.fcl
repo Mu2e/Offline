@@ -59,6 +59,16 @@ TrkFilters : {
 	    timeClusterCollection : "TTtimeClusterFinder"
 	    triggerPath            : "tprCosmicSeedDeP"
 	}
+	tprCosmicHelixDeMTCFilter : {
+	    module_type : TimeClusterFilter
+	    timeClusterCollection : "TTtimeClusterFinder"
+	    triggerPath            : "tprCosmicHelixDeM"
+	}
+	tprCosmicHelixDePTCFilter : {
+	    module_type : TimeClusterFilter
+	    timeClusterCollection : "TTtimeClusterFinder"
+	    triggerPath            : "tprCosmicHelixDeP"
+	}
 	tprCosmicHelixUeMTCFilter : {
 	    module_type : TimeClusterFilter
 	    timeClusterCollection : "TTtimeClusterFinder"
@@ -80,6 +90,18 @@ TrkFilters : {
 	    timeClusterCollection : "TTCalTimePeakFinder"
 	    minNHits              : 1  #just check if there are TimeClusters
 	    triggerPath            : "cprCosmicSeedDeP"	    
+	}
+	cprCosmicHelixDeMTCFilter : {
+	    module_type : TimeClusterFilter
+	    timeClusterCollection : "TTCalTimePeakFinder"
+	    minNHits              : 1  #just check if there are TimeClusters
+	    triggerPath            : "cprCosmicHelixDeM"	    
+	}
+	cprCosmicHelixDePTCFilter : {
+	    module_type : TimeClusterFilter
+	    timeClusterCollection : "TTCalTimePeakFinder"
+	    minNHits              : 1  #just check if there are TimeClusters
+	    triggerPath            : "cprCosmicHelixDeP"	    
 	}
 
 	#low p particles from the ST
@@ -256,43 +278,6 @@ TrkFilters : {
 	    minAbsLambda        : 100. 
 	    maxAbsLambda        : 330. 
 	    triggerPath         : "tprCosmicSeedDeP"	    
-	    prescaleUsingD0Phi  : false
-	    prescalerPar        : { amplitude: 0 frequency : 0 phase : 0}
-	}
-	
-	tprCosmicHelixUeMHSFilter : {
-	    module_type : HelixFilter
-	    helixSeedCollection : "TTHelixMergerUeM"
-	    helicity            : -1
-	    minNStrawHits       : 15   
-	    minMomentum         : 50.  
-	    maxMomentum         : 70. 
-	    minPt               : 0    
-	    maxChi2XY           : 8.   
-	    maxChi2PhiZ         : 8.   
-	    maxD0               : 300. 
-	    minD0               : -150.
-	    minAbsLambda        : 140. 
-	    maxAbsLambda        : 300. 
-	    triggerPath         : "tprCosmicHelixUeM"	    
-	    prescaleUsingD0Phi  : false
-	    prescalerPar        : { amplitude: 0 frequency : 0 phase : 0}
-	}
-	tprCosmicHelixUePHSFilter : {
-	    module_type : HelixFilter
-	    helixSeedCollection : "TTHelixMergerUeP"
-	    helicity            : 1
-	    minNStrawHits       : 15   
-	    minMomentum         : 40.  
-	    maxMomentum         : 60. 
-	    minPt               : 0    
-	    maxChi2XY           : 8.   
-	    maxChi2PhiZ         : 8.   
-	    maxD0               : 300. 
-	    minD0               : -150.
-	    minAbsLambda        : 100. 
-	    maxAbsLambda        : 330. 
-	    triggerPath         : "tprCosmicHelixUeP"	    
 	    prescaleUsingD0Phi  : false
 	    prescalerPar        : { amplitude: 0 frequency : 0 phase : 0}
 	}

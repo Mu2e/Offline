@@ -51,56 +51,9 @@ physics : {
 
     producers : {
 
-        g4run : {
+        g4run : @local::g4run
 
-            module_type       : Mu2eG4
-            physics           : @local::mu2eg4DefaultPhysics
-            ResourceLimits    : @local::mu2eg4DefaultResourceLimits
-            TrajectoryControl : @local::mu2eg4NoTrajectories
-            debug             : @local::mu2eg4DefaultDebug
-            visualization     : @local::mu2eg4NoVisualization
-
-            MultiStageParameters : {
-                 simParticleNumberOffset : 1000000
-                 genInputHits               : ["pbarWrite"]
-                 inputSimParticles          : "pbarWrite"
-                 inputMCTrajectories        : ""
-                 inputPhysVolumeMultiInfo   : ""
-          }
-
-            doWriteLegacyPhysVolumeInfo : false
-
-            SDConfig : {
-                enableSD         : [ virtualdetector ] // activate just the explicitly listed SDs
-                TimeVD           : { times : [] }
-            }
-
-            // Mu2eG4 cuts are evaluated in the listed order.
-            // The first match wins.  For the "intersection"
-            // type, the first false stops the evaluation.
-            // For the "union" type the first true stops the evaluation.
-            Mu2eG4StackingOnlyCut : @local::mu2eg4CutNeutrinos
-            Mu2eG4SteppingOnlyCut : @local::mu2eg4NoCut
             Mu2eG4CommonCut : {
-                type : union
-                pars : [
-                    @local::CutEPPhN,
-                    { type: inVolume pars: [ HallAir ] },
-                   {
-		      type: intersection
-		      pars: [
-     		     {
-                        type  : inVolume
-                        pars  : [VirtualDetector_PSPbarIn]
-		     },
-		     {
-			type: pdgId
-			pars: [ -2212 ]
-		     }
-		     ]
-                        write : VirtualDetectorPSPbarIn
-                    }
-                ]
             }
 
  
@@ -193,6 +146,44 @@ outputs : {
    }
 
 }
+
+//================================================================
+physics.producers.g4run.inputs: {
+   primaryType: "StepPoints"
+   primaryTag: "pbarWrite"
+   simParticleNumberOffset    : 1000000
+   inputSimParticles          : "pbarWrite"
+   inputMCTrajectories        : ""
+   inputPhysVolumeMultiInfo   : ""
+}
+//
+// Mu2eG4 cuts are evaluated in the listed order.
+// The first match wins.  For the "intersection"
+// type, the first false stops the evaluation.
+// For the "union" type the first true stops the evaluation.
+physics.producers.g4run.Mu2eG4CommonCut: {
+   type : union
+   pars : [
+      @local::CutEPPhN,
+      { type: inVolume pars: [ HallAir ] },
+      {
+         type: intersection
+         pars: [
+            {
+               type  : inVolume
+               pars  : [VirtualDetector_PSPbarIn]
+            },
+            {
+               type: pdgId
+               pars: [ -2212 ]
+            }
+         ]
+         write : VirtualDetectorPSPbarIn
+      }
+   ]
+}
+
+physics.producers.g4run.SDConfig.enableSD: [ virtualdetector ] // activate just the explicitly listed SDs
 
 physics.producers.g4run.physics.minRangeCut : 1.0 // mm
 //physics.filters.mixread.fileNames : @local::protonInteractionFile

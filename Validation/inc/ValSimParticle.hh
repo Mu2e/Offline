@@ -79,6 +79,7 @@ namespace mu2e {
     TH1D* _tgtmux;
     TH1D* _tgtmuy;
     TH1D* _tgtmuz;
+    TH1D* _tgtmut;
 
 
   };

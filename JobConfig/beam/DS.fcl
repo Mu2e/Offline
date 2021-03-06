@@ -25,44 +25,7 @@ physics : {
 
    //================================================================
    producers: {
-      g4run : {
-         module_type: Mu2eG4
-         physics: @local::mu2eg4DefaultPhysics
-         ResourceLimits: @local::mu2eg4DefaultResourceLimits
-         TrajectoryControl: @local::mu2eg4NoTrajectories
-         debug:  @local::mu2eg4DefaultDebug
-         visualization: @local::mu2eg4NoVisualization
-
-         MultiStageParameters : {
-            simParticleNumberOffset: 200000  // safe b/c of g4.particlesSizeLimit in stage1
-            genInputHits:  [ "muonBeamFilter:DSVacuum" ]
-            inputSimParticles: "muonBeamFilter"
-            inputMCTrajectories: ""
-            inputPhysVolumeMultiInfo: "compressPVmuonBeam"
-         }
-
-         SDConfig : {
-            enableSD : [ virtualdetector, CRV ] // activate just the explicitly listed SDs
-            preSimulatedHits: ["muonBeamFilter:virtualdetector"]
-            TimeVD: { times: [] }
-         }
-
-         Mu2eG4StackingOnlyCut: @local::mu2eg4CutNeutrinos
-
-         Mu2eG4SteppingOnlyCut: {}
-
-         Mu2eG4CommonCut: {
-            type: inVolume
-            pars: [TrackerMother, CalorimeterMother]
-            write: DetectorMother
-         }
-
-         SimParticlePrinter : {
-            enabled : false
-            primariesOnly : false
-            prefix : "SimParticle: "
-         }
-      }
+      g4run: @local::g4run
 
       compressPVMothers: {
          module_type: CompressPhysicalVolumes
@@ -276,6 +239,31 @@ outputs: {
       ]
       fileName    : "sim.owner.DS-truncated.version.sequencer.art"
    }
+}
+//================================================================
+physics.producers.g4run.inputs: {
+   primaryType: "StepPoints"
+   primaryTag: "muonBeamFilter:DSVacuum"
+   simParticleNumberOffset: 200000  // safe b/c of g4.particlesSizeLimit in stage1
+   inputSimParticles: "muonBeamFilter"
+   inputMCTrajectories: ""
+   inputPhysVolumeMultiInfo: "compressPVmuonBeam"
+}
+
+// Mu2eG4 cuts are evaluated in the listed order.
+// The first match wins.  For the "intersection"
+// type, the first false stops the evaluation.
+// For the "union" type the first true stops the evaluation.
+physics.producers.g4run.Mu2eG4CommonCut: {
+   type: inVolume
+   pars: [TrackerMother, CalorimeterMother]
+   write: DetectorMother
+}
+
+physics.producers.g4run.SDConfig: {
+   enableSD : [ virtualdetector, CRV ] // activate just the explicitly listed SDs
+   preSimulatedHits: ["muonBeamFilter:virtualdetector"]
+   TimeVD: { times: [] }
 }
 
 // Limit the amount of "Begin processing the ... record" messages
