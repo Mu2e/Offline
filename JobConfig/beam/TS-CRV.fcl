@@ -35,47 +35,7 @@ physics : {
    }
 
    producers: {
-      g4run : {
-         module_type: Mu2eG4
-         physics: @local::mu2eg4DefaultPhysics
-         ResourceLimits: @local::mu2eg4DefaultResourceLimits
-	 TrajectoryControl: @local::mu2eg4NoTrajectories
-         debug:  @local::mu2eg4DefaultDebug
-         visualization: @local::mu2eg4NoVisualization
-
-	 MultiStageParameters : {
-            simParticleNumberOffset: 100000 // safe b/c of g4.particlesSizeLimit in stage1
-            genInputHits: [ "dsRegionFilter:dsregion" ]
-            inputSimParticles: "dsRegionFilter"
-	    inputMCTrajectories: ""
-            inputPhysVolumeMultiInfo: "compressPVdsRegion"
-	 }
-
-         SDConfig : {
-            enableSD : [ CRV ] // activate just the explicitly listed SDs
-            preSimulatedHits: []
-	    TimeVD: { times: [] }
-         }	 
-
-	 Mu2eG4StackingOnlyCut: @local::mu2eg4CutNeutrinos
-
-         Mu2eG4SteppingOnlyCut: {}
-
-         Mu2eG4CommonCut: {
-            type: intersection
-            pars: [
-	       {
-		  type: intersection
-		  pars: [ { type: kineticEnergy cut: 1.0 }, { type: pdgId pars: [ 11, -11 ] }]
-	       },
-               {
-	          type: inVolume
-	          pars: [TS2Vacuum, TS3Vacuum, TS4Vacuum, TS5Vacuum, DS1Vacuum, DS2Vacuum, DS3Vacuum ]
-	          write: DSVacuum
-	       }
-            ]
-         }
-      }
+      g4run: @local::g4run
 
       compressPVCRV : {
          module_type    : CompressPhysicalVolumes
@@ -151,6 +111,35 @@ outputs: {
    }
 
 }
+//================================================================
+physics.producers.g4run.inputs: {
+   primaryType: "StepPoints"
+   primaryTag: "dsRegionFilter:dsregion"
+   simParticleNumberOffset: 100000 // safe b/c of g4.particlesSizeLimit in stage1
+   inputSimParticles: "dsRegionFilter"
+   inputMCTrajectories: ""
+   inputPhysVolumeMultiInfo: "compressPVdsRegion"
+}
+
+// Mu2eG4 cuts are evaluated in the listed order.
+// The first match wins.  For the "intersection"
+// type, the first false stops the evaluation.
+// For the "union" type the first true stops the evaluation.
+physics.producers.g4run.Mu2eG4CommonCut: {
+   type: intersection
+   pars: [
+      {
+         type: intersection
+         pars: [ { type: kineticEnergy cut: 1.0 }, { type: pdgId pars: [ 11, -11 ] }]
+      },
+      {
+         type: inVolume
+         pars: [TS2Vacuum, TS3Vacuum, TS4Vacuum, TS5Vacuum, DS1Vacuum, DS2Vacuum, DS3Vacuum ]
+         write: DSVacuum
+      }
+   ]
+}
+
+physics.producers.g4run.SDConfig.enableSD: [ "CRV" ]
 
 //physics.producers.g4run.physics.minRangeCut : 1. // mm
-

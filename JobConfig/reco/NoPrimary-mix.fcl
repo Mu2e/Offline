@@ -1,5 +1,0 @@
-#include "JobConfig/reco/reco.fcl"
-services.TFileService.fileName: "nts.owner.NoPrimary.version.sequencer.root"
-outputs.Output.fileName: "mcs.owner.NoPrimary.version.sequencer.art"
-physics.producers.compressRecoMCs.extraStepPointMCTags : [] # don't look for VD and PA hits 
-outputs.Output.SelectEvents : [] # don't filter the output based on having a track

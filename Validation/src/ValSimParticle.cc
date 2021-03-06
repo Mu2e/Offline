@@ -59,7 +59,7 @@ int mu2e::ValSimParticle::declare(art::TFileDirectory tfs) {
   _tgtmux = tfs.make<TH1D>( "tgtmux", "target stopped mu x", 50, -4000.0, -3800.0);
   _tgtmuy = tfs.make<TH1D>( "tgtmuy", "target stopped mu y", 50, -100.0, 100.0);
   _tgtmuz = tfs.make<TH1D>( "tgtmuz", "target stopped mu z", 100, 5400, 6350 );
-
+  _tgtmut = tfs.make<TH1D>( "tgtmut", "target stopped mu time", 100, 0.0, 2000.0);
   return 0;
 }
 
@@ -164,6 +164,7 @@ int mu2e::ValSimParticle::fill(const mu2e::SimParticleCollection & coll,
 	_tgtmux->Fill( part.endPosition().x() );
 	_tgtmuy->Fill( part.endPosition().y() );
 	_tgtmuz->Fill( part.endPosition().z() );
+	_tgtmut->Fill( part.endGlobalTime() );
       }
     }
 

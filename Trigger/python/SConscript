@@ -14,7 +14,7 @@ import genTriggerFcl
 # run like this, it just generates the source and target file listss
 menus=["OnSpillTrigMenu","OffSpillTrigMenu","ExtrPosTrigMenu"]
 for m in menus:
-    sources,targets,command = genTriggerFcl.generate(m, True, False)
+    sources,targets,command = genTriggerFcl.generate(m, False, False)
     # this schedules it to run again to make the files
     helper.make_generic(sources,targets,command+" -c "+m)
 

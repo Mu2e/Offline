@@ -15,6 +15,7 @@
 #include "mu2e-artdaq-core/Overlays/FragmentType.hh"
 
 #include "RecoDataProducts/inc/CaloDigi.hh"
+#include "DAQ/inc/CaloDAQUtilities.hh"
 
 #include <artdaq-core/Data/Fragment.hh>
 
@@ -49,11 +50,12 @@ private:
   void analyze_calorimeter_(const artdaq::Fragment& f,
                             std::unique_ptr<mu2e::CaloDigiCollection> const& calo_digis);
 
-  int diagLevel_;
+  int                        diagLevel_;
 
-  art::InputTag caloFragmentsTag_;
+  art::InputTag             caloFragmentsTag_;
+  mu2e::CaloDAQUtilities    caloDAQUtil_;
 
-  const int hexShiftPrint = 7;
+  const int                 hexShiftPrint = 7;
 
 }; // CaloRecoFromFragments
 
@@ -62,7 +64,8 @@ private:
 art::CaloRecoFromFragments::CaloRecoFromFragments(const art::EDProducer::Table<Config>& config) :
   art::EDProducer{config},
   diagLevel_(config().diagLevel()), 
-  caloFragmentsTag_(config().caloTag()) {
+  caloFragmentsTag_(config().caloTag()),
+  caloDAQUtil_("CaloRecoFromFragments") {
     produces<mu2e::CaloDigiCollection>();
   }
 
@@ -231,18 +234,18 @@ void art::CaloRecoFromFragments::analyze_calorimeter_(
         // IMPORTANT NOTE: we don't have a final
         // mapping yet so for the moment, the BoardID field (described in docdb 4914) is just a
         // placeholder. Because we still need to know which crystal a hit belongs to, we are
-        // temporarily storing the 4-bit apdID and 12-bit crystalID in the Reserved DIRAC A slot.
+        // temporarily storing the 4-bit sipmID and 12-bit crystalID in the Reserved DIRAC A slot.
         // Also, note that until we have an actual map, channel index does not actually correspond
         // to the physical readout channel on a ROC.
-        uint16_t crystalID = hits[hitIdx].first.DIRACB & 0x0FFF;
-        uint16_t apdID = hits[hitIdx].first.DIRACB >> 12;
+        uint16_t crystalID = caloDAQUtil_.getCrystalID(hits[hitIdx].first); //hits[hitIdx].first.DIRACB & 0x0FFF;
+        uint16_t sipmID    = caloDAQUtil_.getSiPMID   (hits[hitIdx].first); //hits[hitIdx].first.DIRACB >> 12;
 
         // FIXME: Can we match vector types here?
         std::vector<int> caloHits;
 	caloHits.reserve(hits[hitIdx].second.size());
         std::copy(hits[hitIdx].second.begin(), hits[hitIdx].second.end(), std::back_inserter(caloHits));
 
-        calo_digis->emplace_back((crystalID * 2 + apdID), hits[hitIdx].first.Time, caloHits,
+        calo_digis->emplace_back((sipmID), hits[hitIdx].first.Time, caloHits,
                                  hits[hitIdx].first.IndexOfMaxDigitizerSample);
 
         if (diagLevel_ > 1) {
@@ -250,7 +253,7 @@ void art::CaloRecoFromFragments::analyze_calorimeter_(
           // adc_t BoardId    = cc.DBC_BoardID(pos,channelIdx);
 
           std::cout << "Crystal ID: " << (int)crystalID << std::endl;
-          std::cout << "APD ID: " << (int)apdID << std::endl;
+          std::cout << "SiPM ID: " << (int)sipmID << std::endl;
           std::cout << "Time: " << (int)hits[hitIdx].first.Time << std::endl;
           std::cout << "NumSamples: " << (int)hits[hitIdx].first.NumberOfSamples << std::endl;
           std::cout << "Waveform: {";
@@ -266,7 +269,7 @@ void art::CaloRecoFromFragments::analyze_calorimeter_(
           // Example: 1 201 402 660 18 0 0 0 0 1 17 51 81 91 83 68 60 58 52 42 33 23 16
           std::cout << "GREPMECAL: " << hdr.GetTimestamp().GetTimestamp(true) << " ";
           std::cout << crystalID << " ";
-          std::cout << apdID << " ";
+          std::cout << sipmID << " ";
           std::cout << hits[hitIdx].first.Time << " ";
           std::cout << hits[hitIdx].second.size() << " ";
           for (size_t i = 0; i < hits[hitIdx].second.size(); i++) {
