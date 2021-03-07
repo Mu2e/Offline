@@ -28,6 +28,7 @@
 // KinKal
 #include "KinKal/Trajectory/CentralHelix.hh"
 // CLHEP
+#include "CLHEP/Units/PhysicalConstants.h"
 #include "CLHEP/Vector/ThreeVector.h"
 #include "CLHEP/Matrix/Vector.h"
 #include "CLHEP/Matrix/SymMatrix.h"
@@ -69,10 +70,7 @@ namespace mu2e {
     }
 
     void RobustHelixFromMom(Hep3Vector const& pos, Hep3Vector const& mom, double charge, double Bz, RobustHelix& helix){
-      // speed of light in mm/nsec
-      static double clight =299.792;  // This value should come from conditions FIXME!!!	
-      // translation factor from MeV/c to curvature radius.
-      double momToRad = 1000.0/(charge*Bz*clight);
+      double momToRad = 1000.0/(charge*Bz*CLHEP::c_light);
       // compute some simple useful parameters
       double pt = mom.perp();
       // transverse radius of the helix
@@ -90,17 +88,15 @@ namespace mu2e {
       helix._fz0 = phi;
     }
 
-    void fillSegment(HelixTraj const& htraj, double dflt, TrkT0 t0, double mass, int charge, double Bz, KalSegment& kseg) {
+    void fillSegment(HelixTraj const& htraj, double locflt, double globflt, TrkT0 t0, double mass, int charge, double Bz, KalSegment& kseg) {
       kseg._fmin = htraj.lowRange();
       kseg._fmax = htraj.hiRange();
-      kseg._dflt = dflt;
+      kseg._dflt = locflt-globflt;
 // compute the kinematics; this is external to htraj
-      static double clight =299.792;  // This value should come from conditions FIXME!!!	
-      // can I use this instead? CLHEP::c_light;
-      double radToMom = charge*Bz*clight/1000.0;
+      double radToMom = charge*Bz*CLHEP::c_light/1000.0;
       double mom = fabs(radToMom/(htraj.omega()*htraj.cosDip()));
       double energy = sqrt(mom*mom + mass*mass);
-      double v = clight*mom/energy;
+      double v = CLHEP::c_light*mom/energy;
       double vz = v*htraj.sinDip();
       // translate BTrk t0 to CentralHelix t0
       double ct0 = t0.t0() + htraj.z0()/vz;
@@ -109,7 +105,6 @@ namespace mu2e {
       kseg._tmax = ct0 + kseg._fmax/v;
       // conver the helix content to a CentralHelix.  Note the t0 value supplied is in the BTrk convention (time at z=0).
       KinKal::DVEC chpars;
-      //{htraj.d0(), htraj.phi0(), htraj.omega(), htraj.z0(), htraj.tanDip(), ct0};
       KinKal::DMAT cov;
       for(unsigned ipar=0; ipar<5; ipar++){
 	chpars(ipar) = htraj.parameters()->parameter()[ipar];
@@ -117,16 +112,29 @@ namespace mu2e {
 	  cov(ipar,jpar) = htraj.parameters()->covariance().fast(ipar+1,jpar+1);
 	}
       }
-      // insert t0 error by hand
+      // insert t0 by hand
+      chpars(KinKal::CentralHelix::t0_) = ct0;
       cov(KinKal::CentralHelix::t0_,KinKal::CentralHelix::t0_) = t0.t0Err()*t0.t0Err();
       KinKal::Parameters params(chpars,cov);
       KinKal::CentralHelix chelix(params,mass,charge,Bz,KinKal::TimeRange(kseg._tmin,kseg._tmax));
-      // use this helix to convert back to a state.  Synchronize the times at the midpoint of the range
-      double fmid = 0.5*(kseg._fmin+kseg._fmax);
-      double tref = ct0 + fmid/v;
+// check
+      auto chpos0 = chelix.position3(ct0);
+      auto hpos0 = htraj.position(0.0);
+      // sample at the position described
+      double tref = kseg._tmin + (locflt-kseg._fmin)*(kseg._tmax-kseg._tmax)/(kseg._fmax-kseg._fmin);
+      double chmom = chelix.momentum(tref);
       kseg._pstate = chelix.stateEstimate(tref);
+      double smom = kseg._pstate.momentum();
+      if(fabs(chpos0.X()-hpos0.x()) > 1e-6||
+	  fabs(chpos0.Y()-hpos0.y()) > 1e-6 ||
+	  fabs(chpos0.Z()-hpos0.z()) > 1e-6  ||
+	  fabs(mom-chmom) > 1e-6 ||
+	  fabs(mom-smom) > 1e-6)
+      throw cet::exception("RECO")<<"fillSegment: momentum mismatch" << std::endl;
       // BField
       kseg._bnom = XYZVec(0.0,0.0,Bz);
+      // test
+
     }
   
     void fillStraws(const KalRep* krep, std::vector<TrkStraw>& tstraws) {
