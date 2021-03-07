@@ -331,7 +331,7 @@ namespace mu2e {
 	  // find the time range, using the hit time
 	  TimeRange trange(hhits.front().correctedTime() - tbuff_, hhits.back().correctedTime() + tbuff_);
 	  //  construct the trajectory
-	  KTRAJ seedtraj(kkpars, trange, mass, charge, bnom);
+	  KTRAJ seedtraj(kkpars, mass, charge, bnom, trange );
 	  PKTRAJ pseedtraj(seedtraj);
 	  if(print_ > 1){
 	    std::cout << "Seed Helix parameters " << shelix << std::endl;
