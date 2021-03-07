@@ -14,25 +14,51 @@ physics :
     @table::CalPatRec.producers
     @table::CaloReco.producers
     @table::CaloCluster.producers
+    @table::CaloMC.TruthProducers
     @table::Mu2eKinKal.producers
+    @table::CrvResponsePackage.producers
     MHDeM : {
       @table::TrkReco.producers.MergeHelices
       HelixFinders : [ "HelixFinderDe:Positive", "CalHelixFinderDe:Positive" ]
     }
+    compressRecoMCs : @local::Reconstruction.producers.compressRecoMCs  
+    SelectRecoMC : {
+      @table::Reconstruction.producers.SelectRecoMC
+    }
   }
   filters : {
     @table::CalPatRec.filters
+    # reco filter
+    RecoFilter : {
+      module_type   : RecoMomFilter
+      KalFinalTagRoot : ""
+      TrkTags : [ "KKDeMSeedFit" ]
+      MomentumCutoff : [ 60.0 ]
+    }
   }
   RecoPath : [ 
     @sequence::Reconstruction.CaloReco,
     @sequence::Reconstruction.TrkReco,
+    @sequence::Reconstruction.CrvReco,
     TimeClusterFinderDe, HelixFinderDe,
     CalTimePeakFinder, CalHelixFinderDe,
     MHDeM,
-    KKDeMSeedFit 
+    KKDeMSeedFit,
+    @sequence::Reconstruction.MCReco,
+    RecoFilter
   ] 
-  EndPath : [ ]
+  EndPath : [Output ]
 }
+outputs : {   
+  Output : {
+    @table::Reconstruction.Output
+    SelectEvents : [ "RecoPath" ]
+  }
+}
+#include "JobConfig/reco/epilog.fcl"
+physics.producers.CrvCoincidenceClusterMatchMC.timeOffsets.inputs :  [ @sequence::DigiCompression.TimeMaps ]
+physics.producers.CaloHitTruthMatch.primaryParticle : "compressDigiMCs"
+physics.producers.CaloHitTruthMatch.caloShowerSimCollection : "compressDigiMCs"
 physics.filters.CalHelixFinderDe.StrawHitFlagCollectionLabel                 : "FlagBkgHits:ComboHits"
 physics.producers.KKDeMSeedFit.ModuleSettings.HelixSeedCollections : [ "MHDeM" ]
 physics.producers.KKDeMSeedFit.ModuleSettings.ComboHitCollection : "makeSH"
@@ -43,7 +69,17 @@ physics.producers.KKDeMSeedFit.FitSettings.BFieldCorrection : 0
 physics.producers.KKDeMSeedFit.FitSettings.AddMaterial : false
 physics.producers.KKDeMSeedFit.ModuleSettings.PrintLevel : 1
 physics.producers.KKDeMSeedFit.FitSettings.PrintLevel : 2
+physics.producers.SelectRecoMC.KFFInstances  : ["KKDeMSeedFit"]
+physics.producers.SelectRecoMC.MHInstances  : ["MHDeM"]
 
 # no histogram output
 services.TFileService.fileName: "/dev/null"
-outputs.Output.fileName: "mcs.owner.Test.version.sequencer.art"
+outputs.Output.fileName: "mcs.owner.CeEndpointKKSeed.version.sequencer.art"
+# drop trigger input products
+source.inputCommands: ["keep *",
+  "drop mu2e::KalSeeds_*_*_*",
+  "drop mu2e::TriggerInfo_*_*_*",
+  "drop mu2e::HelixSeeds_*_*_*",
+  "drop mu2e::TimeClusters_*_*_*",
+  "drop art::TriggerResults_*_*_*"
+]

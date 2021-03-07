@@ -212,8 +212,7 @@ Reconstruction : {
 # define products to keep
 # First, high-level reco products, and associated sub-products
   HighRecoProducts : [
-	    "keep mu2e::KalSeeds_KFF*_*_*",
-	    "keep mu2e::KalSeeds_KSF*_*_*",
+	    "keep mu2e::KalSeeds_K*_*_*",
 	    "keep mu2e::HelixSeeds_MH*_*_*",
 	    "keep mu2e::TimeClusters_MH*_*_*",
 	    "keep mu2e::CaloClusters_CaloClusterMaker_*_*",
