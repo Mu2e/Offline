@@ -10,4 +10,4 @@ physics.filters.filterS1: {
 }
 physics.TriggerPath: [dsResample, filterS1, @sequence::Primary.TriggerSequence]
 physics.filters.DetStepFilter.MaximumPartMom: 500
-outputs.Output.fileName        : "sim.owner.Cosmic.version.sequencer.art"
+outputs.Output.fileName        : "sim.owner.CosmicHigh.version.sequencer.art"

@@ -2,5 +2,5 @@
 // Yuri Oksuzian, 2020
 
 #include "JobConfig/cosmic/S2Resampler.fcl"
-outputs.Output.fileName        : "sim.owner.Cosmic.version.sequencer.art"
+outputs.Output.fileName        : "sim.owner.CosmicLow.version.sequencer.art"
 physics.filters.DetStepFilter.MaximumPartMom: 500
