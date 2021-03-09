@@ -1,6 +1,0 @@
-// Re-sample cosmic dsstops particles from stage-1
-// Yuri Oksuzian, 2020
-
-#include "JobConfig/cosmic/cosmic_s2_resampler.fcl"
-outputs.Output.fileName        : "sim.owner.cosmic-s2-resampler-lo.version.sequencer.art"
-physics.filters.DetStepFilter.MaximumPartMom: 500
