@@ -1,0 +1,76 @@
+# Mu2eG4 config file to test the first stage of a multistage job
+# and prepare inputs for testing the next stage.
+#
+# Andrei Gaponenko, 2021
+
+#include "fcl/minimalMessageService.fcl"
+#include "fcl/standardProducers.fcl"
+#include "fcl/standardServices.fcl"
+
+# Give this job a name.
+process_name : g4tests0
+
+# Start form an empty source
+source : {
+   module_type : EmptyEvent
+   maxEvents : 100
+}
+
+services : { @table::Services.Sim }
+
+physics : {
+
+   producers: {
+      # Shoot particles from the production target towards TS2Vacuum
+      generate: {
+         module_type: ExtMonFNALGun
+         guns: [ {
+               reference: "productionTargetEntrance"
+               pdgId: -13
+               pmin: 200
+               pmax: 200
+               coneAngleMin: 3.1415927
+               coneAngleMax: 3.1415927
+            } ]
+      }
+
+      # Run G4 and add its output to the event.
+      g4run : @local::g4run
+
+      # Save state of the random number engines.
+      randomsaver : @local::randomsaver
+   }
+
+   p1 : [generate, g4run]
+   o1: [fullOutput]
+
+   trigger_paths  : [p1]
+   end_paths      : [o1]
+}
+
+outputs: {
+   fullOutput : {
+      module_type : RootOutput
+      fileName    : "sim.owner.g4test_stage0.ver.seq.root"
+   }
+}
+
+physics.producers.g4run.physics.physicsListName: "QGSP_BERT" # faster than default
+physics.producers.g4run.SDConfig.enableSD: [virtualdetector ]
+physics.producers.g4run.SimParticlePrinter: { enabled: true prefix: "Mu2eG4" }
+physics.producers.g4run.Mu2eG4CommonCut: {
+   type: union
+   pars: [
+      @local::mu2eg4CutDeltaElectrons,
+      {
+         type: inVolume
+         pars: [TS2Vacuum]
+         write: ts2in
+      }
+   ]
+}
+
+services.TFileService.fileName: "/dev/null"
+
+services.SeedService.baseSeed         :  8
+services.SeedService.maxUniqueEngines :  20
