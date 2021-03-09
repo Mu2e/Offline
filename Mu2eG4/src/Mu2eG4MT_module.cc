@@ -242,19 +242,18 @@ namespace mu2e {
     using Collection_t = PhysicalVolumeInfoMultiCollection;
     auto mvi = std::make_unique<Collection_t>();
 
-    if(multiStagePars_.inputPhysVolumeMultiInfo() != invalid_tag) {
+    if(multiStagePars_.multiStage()) {
       // Copy over data from the previous simulation stages
       auto const& ih = sr.getValidHandle<Collection_t>(multiStagePars_.inputPhysVolumeMultiInfo());
       mvi->reserve(1 + ih->size());
       mvi->insert(mvi->begin(), ih->cbegin(), ih->cend());
-
     }
 
     // By definition simStage=0 if we start with GenParticles and not doing multiStage.
     simStage_ = mvi->size();
 
     // Append info for the current stage
-    mvi->emplace_back(multiStagePars_.simParticleNumberOffset(), physVolHelper_.persistentSingleStageInfo());
+    mvi->emplace_back(physVolHelper_.persistentSingleStageInfo());
 
     sr.put(std::move(mvi));
   }
