@@ -1,0 +1,50 @@
+# Mu2eG4 config file to test a continuation stage of a multistage job.
+# An input file can be prepared by running g4test_stage0.fcl
+#
+# Andrei Gaponenko, 2021
+
+#include "fcl/minimalMessageService.fcl"
+#include "fcl/standardProducers.fcl"
+#include "fcl/standardServices.fcl"
+
+# Give this job a name.
+process_name : g4tests1
+
+# Start form an empty source
+source : {
+   module_type : RootInput
+   fileNames: [ "sim.owner.g4test_stage0.ver.seq.root"]
+}
+
+services : { @table::Services.Sim }
+
+physics : {
+
+   producers: {
+      g4run : @local::g4run
+
+      # Save state of the random number engines.
+      randomsaver : @local::randomsaver
+   }
+
+   p1 : [g4run]
+   trigger_paths  : [p1]
+}
+
+physics.producers.g4run.physics.physicsListName: "QGSP_BERT" # faster than default
+physics.producers.g4run.SDConfig.enableSD: [virtualdetector ]
+physics.producers.g4run.SimParticlePrinter: { enabled: true prefix: "Mu2eG4" }
+physics.producers.g4run.Mu2eG4CommonCut: @local::mu2eg4CutDeltaElectrons
+physics.producers.g4run.inputs: {
+   primaryType: StepPoints
+   primaryTag: "g4run:ts2in"
+   simParticleNumberOffset: 100000
+   inputSimParticles: "g4run"
+   inputMCTrajectories: ""
+   inputPhysVolumeMultiInfo: "g4run"
+}
+
+services.TFileService.fileName: "/dev/null"
+
+services.SeedService.baseSeed         :  8
+services.SeedService.maxUniqueEngines :  20
