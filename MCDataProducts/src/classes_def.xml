@@ -90,12 +90,10 @@
 <!--  ********* simulation bookeeping  ********* -->
 
  <class name="mu2e::PhysicalVolumeInfo"/>
- <class name="mu2e::PhysicalVolumeInfoCollection"/>
  <class name="std::pair<cet::map_vector_key,mu2e::PhysicalVolumeInfo>"/>
  <class name="cet::map_vector<mu2e::PhysicalVolumeInfo>"/> 
  <class name="std::pair<unsigned int,cet::map_vector<mu2e::PhysicalVolumeInfo> >"/>
  <class name="std::vector<std::pair<cet::map_vector_key,mu2e::PhysicalVolumeInfo> >"/>
- <class name="art::Wrapper<mu2e::PhysicalVolumeInfoCollection>"/>
 
  <class name="mu2e::PhysicalVolumeInfoMultiCollection"/>
  <class name="art::Wrapper<mu2e::PhysicalVolumeInfoMultiCollection>"/>
