@@ -46,7 +46,8 @@ physics : {
    }
 
    t1 : [ binaryOutput ] 
-   e1 : [ readSD, readCD ]
+   #   e1 : [ readSD, readCD ]
+   e1 : [ ]
 
    trigger_paths  : [t1]
    end_paths      : [e1]
