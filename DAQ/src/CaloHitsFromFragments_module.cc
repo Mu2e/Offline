@@ -305,10 +305,14 @@ void art::CaloHitsFromFragments::analyze_calorimeter_(const artdaq::Fragment& f,
     //now create the CaloHitCollection
     CrystalInfo*  crystalInfo(0);
     for (size_t crId=0; crId<pulseMap_.size(); ++crId){
+      bool   isCaphri= std::find(caphriCrystalID_.begin(), caphriCrystalID_.end(), crId) != caphriCrystalID_.end();
       for (size_t j=0; j<pulseMap_[crId].size(); ++j){
 	crystalInfo = &pulseMap_[crId].at(j);
-	if ( std::find(caphriCrystalID_.begin(), caphriCrystalID_.end(), crystalInfo->_crystalID) != caphriCrystalID_.end())
-	calo_hits->emplace_back(crId, crystalInfo->_nSiPM, crystalInfo->_time, crystalInfo->_eDep);
+	if (isCaphri){
+	  caphri_hits->emplace_back(crId, crystalInfo->_nSiPM, crystalInfo->_time, crystalInfo->_eDep);
+	}else{
+	  calo_hits->emplace_back(crId, crystalInfo->_nSiPM, crystalInfo->_time, crystalInfo->_eDep);
+	}
       }
     }
 
