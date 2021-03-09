@@ -422,7 +422,7 @@ namespace mu2e {
     }
 
     _transientMap.insert(std::make_pair(kid,SimParticle( kid,
-                                                         perThreadObjects_->simParticleHelper->stageOffset(),
+                                                         perThreadObjects_->simParticleHelper->simStage(),
                                                          parentPtr,
                                                          ppdgId,
                                                          genPtr,

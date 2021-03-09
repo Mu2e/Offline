@@ -42,7 +42,7 @@ namespace mu2e {
   {
     explicit Mu2eG4PerThreadStorage(const Mu2eG4IOConfigHelper& ioconf);
 
-    void initializeEventInfo(art::Event* evt);
+    void initializeEventInfo(art::Event* evt, unsigned simStage);
 
     /////////////////////////////////////////////////////////////
     /////////////////////////////////////////////////////////////
@@ -78,6 +78,9 @@ namespace mu2e {
     art::RunNumber_t currentRunNumber = 0;
 
     bool runTerminated = false;
+
+    // this comes in from subRuns, via the physical volume info
+    unsigned simStage = -1u;
 
     // event-level data members
     art::Event* artEvent = nullptr;

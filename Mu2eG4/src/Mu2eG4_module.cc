@@ -110,6 +110,8 @@ namespace mu2e {
     Mu2eG4TrajectoryControl trajectoryControl_;
     Mu2eG4Inputs multiStagePars_;
 
+    unsigned simStage_;
+
     // The THREE functions that call new G4RunManger functions and break G4's BeamOn() into 3 pieces
     void BeamOnBeginRun( unsigned int runNumber, const char* macroFile=0, G4int n_select=-1 );
     void BeamOnDoOneArtEvent( int eventNumber );
@@ -183,6 +185,7 @@ namespace mu2e {
     mu2elimits_(pars().ResourceLimits()),
     trajectoryControl_(pars().TrajectoryControl()),
     multiStagePars_(pars().inputs()),
+    simStage_(-1u),
     _runManager(std::make_unique<G4RunManager>()),
     _warnEveryNewRun(pars().debug().warnEveryNewRun()),
     _exportPDTStart(pars().debug().exportPDTStart()),
@@ -373,6 +376,9 @@ namespace mu2e {
 
     }
 
+    // By definition simStage=0 if we start with GenParticles and not doing multiStage.
+    simStage_ = mvi->size();
+
     // Append info for the current stage
     mvi->emplace_back(multiStagePars_.simParticleNumberOffset(), _physVolHelper.persistentSingleStageInfo());
 
@@ -383,7 +389,7 @@ namespace mu2e {
   // Create one G4 event and copy its output to the art::event.
   void Mu2eG4::produce(art::Event& event) {
 
-    perThreadStore.initializeEventInfo(&event);
+    perThreadStore.initializeEventInfo(&event, simStage_);
 
     // Run G4 for this event and access the completed event.
     BeamOnDoOneArtEvent( event.id().event() );
