@@ -123,6 +123,7 @@ void art::CaloHitsFromFragments::addPulse(uint16_t& crystalID, float& time, floa
       pulse->_eDep   = (pulse->_eDep + eDep)/2.;
       pulse->_nSiPM += 1;
       addNewHit      = false;
+      break;
     } 
   }
   if (addNewHit){
@@ -283,11 +284,6 @@ void art::CaloHitsFromFragments::analyze_calorimeter_(const artdaq::Fragment& f,
       uint16_t crystalID = caloDAQUtil_.getCrystalID(hits[hitIdx].first); //hits[hitIdx].first.DIRACB & 0x0FFF;
       uint16_t sipmID    = caloDAQUtil_.getSiPMID   (hits[hitIdx].first); //hits[hitIdx].first.DIRACB >> 12;
 
-      // FIXME: Can we match vector types here?
-      // std::vector<int> caloHits;
-      // caloHits.reserve(hits[hitIdx].second.size());
-      // std::copy(hits[hitIdx].second.begin(), hits[hitIdx].second.end(), std::back_inserter(caloHits));
-	
       size_t   peakIndex = hits[hitIdx].first.IndexOfMaxDigitizerSample;
       float    eDep(0);
       if (hits[hitIdx].first.IndexOfMaxDigitizerSample < hits[hitIdx].second.size()){
