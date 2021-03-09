@@ -1,22 +1,28 @@
 // Andrei Gaponenko, 2013
 
 #include "Mu2eG4/inc/SimParticleHelper.hh"
+#include "Mu2eG4/inc/Mu2eG4Inputs.hh"
 
 #include "art/Framework/Principal/Event.h"
 #include "G4Track.hh"
 #include "G4Threading.hh"
 
 namespace mu2e {
-  SimParticleHelper::SimParticleHelper(unsigned particleNumberOffset,
+
+  //================================================================
+  SimParticleHelper::SimParticleHelper(unsigned simStage,
+                                       const Mu2eG4Inputs& inputs,
                                        const art::ProductID& simID,
                                        const art::Event* event,
                                        const art::EDProductGetter* sim_prod_getter)
-    : particleNumberOffset_(particleNumberOffset)
+    : simStage_(simStage)
+    , particleNumberOffset_(inputs.simParticleNumberOffset())
     , simID_(simID)
     , event_(event)
     , simProductGetter_(sim_prod_getter)
   {}
 
+  //================================================================
   art::Ptr<SimParticle> SimParticleHelper::particlePtr(const G4Track *trk) const {
     return particlePtrFromG4TrackID(trk->GetTrackID());
   }

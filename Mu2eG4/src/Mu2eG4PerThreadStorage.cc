@@ -21,14 +21,14 @@ namespace mu2e {
 
   //----------------------------------------------------------------
   void Mu2eG4PerThreadStorage::
-  initializeEventInfo(art::Event* evt) {
+  initializeEventInfo(art::Event* evt, unsigned simStage) {
     artEvent = evt;
 
     // ProductID and ProductGetter for the SimParticleCollection.
     art::ProductID simPartId(evt->getProductID<SimParticleCollection>());
     art::EDProductGetter const* simProductGetter = evt->productGetter(simPartId);
 
-    simParticleHelper.emplace(ioconf.inputs().simParticleNumberOffset(), simPartId, evt, simProductGetter);
+    simParticleHelper.emplace(simStage, ioconf.inputs(), simPartId, evt, simProductGetter);
     simParticlePrimaryHelper.emplace(evt, simPartId, simProductGetter);
 
     // Output collections
