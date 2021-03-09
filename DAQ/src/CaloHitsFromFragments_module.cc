@@ -105,7 +105,7 @@ void art::CaloHitsFromFragments::beginRun(art::Run&  Run){
   //FIX ME!
   //the list of the SiPM-IDs of the channels that are used for the 
   //calorimeter-lumi monitor should come from a pro-dition
-  caphriCrystalID_ = {1, 2, 3, 4};
+  caphriCrystalID_ = {623,624, 595, 596};
  
 }
 
