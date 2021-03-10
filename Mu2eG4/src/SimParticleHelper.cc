@@ -23,10 +23,9 @@ namespace mu2e {
   {
     // particleNumberOffset_ is set per event, based on the highest number
     // used by SimParticles in previous simulation stages.
-    if(inputs.multiStage()) {
-      const auto sph = event->getValidHandle<SimParticleCollection>(inputs.inputSimParticles());
+    const auto sph = inputs.inputSimParticles(*event);
+    if(sph.isValid() && !sph->empty()) {
       particleNumberOffset_ = sph->back().first.asUint();
-      std::cout<<"AG: particleNumberOffset_ = "<<particleNumberOffset_<<std::endl;
     }
   }
 
