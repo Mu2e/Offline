@@ -5,7 +5,7 @@ namespace mu2e{
 
   TEveMu2eCustomHelix::TEveMu2eCustomHelix(){};
  
-  TEveMu2eCustomHelix::TEveMu2eCustomHelix(HelixSeed const& hseed){fHelixSeed = hseed;};
+  TEveMu2eCustomHelix::TEveMu2eCustomHelix(HelixSeed hseed){fHelixSeed = hseed;};
   TEveMu2eCustomHelix::TEveMu2eCustomHelix(KalSeed kseed){
     fKalSeed = kseed;
     this->Momentum = fKalSeed.helix()->helix().momentum();
@@ -14,7 +14,7 @@ namespace mu2e{
     this->Mass = fKalSeed.particle().mass();
   };
 
-  void TEveMu2eCustomHelix::SetSeedInfo(KalSeed const&  seed) { 
+  void TEveMu2eCustomHelix::SetSeedInfo(KalSeed seed) { 
     fKalSeed = seed;
     this->Momentum = fKalSeed.helix()->helix().momentum();
     this->PDGcode = fKalSeed.particle().particleType();
