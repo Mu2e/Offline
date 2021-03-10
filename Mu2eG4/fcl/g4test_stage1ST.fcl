@@ -44,7 +44,6 @@ physics.producers.g4run.Mu2eG4CommonCut: @local::mu2eg4CutDeltaElectrons
 physics.producers.g4run.inputs: {
    primaryType: StepPoints
    primaryTag: "g4run:ts2in"
-   simParticleNumberOffset: 100000
    inputSimParticles: "g4run"
    inputMCTrajectories: ""
    inputPhysVolumeMultiInfo: "g4run"

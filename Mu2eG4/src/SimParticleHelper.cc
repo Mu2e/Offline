@@ -16,11 +16,19 @@ namespace mu2e {
                                        const art::Event* event,
                                        const art::EDProductGetter* sim_prod_getter)
     : simStage_(simStage)
-    , particleNumberOffset_(inputs.simParticleNumberOffset())
+    , particleNumberOffset_(0u)
     , simID_(simID)
     , event_(event)
     , simProductGetter_(sim_prod_getter)
-  {}
+  {
+    // particleNumberOffset_ is set per event, based on the highest number
+    // used by SimParticles in previous simulation stages.
+    if(inputs.multiStage()) {
+      const auto sph = event->getValidHandle<SimParticleCollection>(inputs.inputSimParticles());
+      particleNumberOffset_ = sph->back().first.asUint();
+      std::cout<<"AG: particleNumberOffset_ = "<<particleNumberOffset_<<std::endl;
+    }
+  }
 
   //================================================================
   art::Ptr<SimParticle> SimParticleHelper::particlePtr(const G4Track *trk) const {

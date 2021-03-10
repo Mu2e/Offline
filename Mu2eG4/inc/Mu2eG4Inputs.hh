@@ -22,8 +22,6 @@ namespace mu2e {
 
     const art::InputTag& primaryTag() const { return primaryTag_; }
 
-    unsigned simParticleNumberOffset() const { return simParticleNumberOffset_; }
-
     const art::InputTag& inputSimParticles() const { return inputSimParticles_; }
 
     const art::InputTag& inputMCTrajectories() const { return inputMCTrajectories_; }
@@ -33,7 +31,6 @@ namespace mu2e {
   private:
     Mu2eG4PrimaryType primaryType_;
     art::InputTag primaryTag_;
-    unsigned simParticleNumberOffset_;
     art::InputTag inputSimParticles_;
     art::InputTag inputMCTrajectories_;
     art::InputTag inputPhysVolumeMultiInfo_;
