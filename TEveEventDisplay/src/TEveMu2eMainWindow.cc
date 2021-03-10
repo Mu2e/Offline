@@ -19,7 +19,7 @@
 #include <TGSplitFrame.h>
 // ... libRGL
 #include <TGLViewer.h>
-//#include <TVirtualX.h>
+#include <TVirtualX.h>
 // ... libEve
 #include <TEveManager.h>
 #include <TEveEventManager.h>
@@ -211,10 +211,10 @@ namespace mu2e{
 }
 
   void TEveMu2eMainWindow::CreateGUI(){
-      //FontStruct_t buttonfont = gClient->GetFontByName("-*-helvetica-medium-r-*-*-8-*-*-*-*-*-iso8859-1");
+      FontStruct_t buttonfont = gClient->GetFontByName("-*-helvetica-medium-r-*-*-8-*-*-*-*-*-iso8859-1");
       GCValues_t gval;
       gval.fMask = kGCForeground | kGCFont;
-      //gval.fFont = gVirtualX->GetFontHandle(buttonfont);
+      gval.fFont = gVirtualX->GetFontHandle(buttonfont);
       gClient->GetColorByName("black", gval.fForeground);
 
       browser->StartEmbedding(TRootBrowser::kLeft); // insert nav frame as new tab in left pane
@@ -473,46 +473,41 @@ namespace mu2e{
   }
 
   void TEveMu2eMainWindow::SetRunGeometry(const art::Run& run, int _diagLevel, bool _showBuilding, bool _showDSOnly, bool _showCRV){
-    std::cout<<"Point 1"<<std::endl;
     if(gGeoManager){
       gGeoManager->GetListOfNodes()->Delete();
       gGeoManager->GetListOfVolumes()->Delete();
       gGeoManager->GetListOfShapes()->Delete();
     }
     gEve->GetGlobalScene()->DestroyElements();
-    std::cout<<"Point 2"<<std::endl;
+
     // Import the GDML of entire Mu2e Geometry
     geom = mu2e_geom->Geom_Interface::getGeom("TEveEventDisplay/src/fix.gdml");
-    std::cout<<"Point 3"<<std::endl;
+
     //Get Top Volume
     TGeoVolume* topvol = geom->GetTopVolume();
-    std::cout<<"Point 4"<<std::endl;
+
     //Set Top Volume for gGeoManager:
-    
     gGeoManager->SetTopVolume(topvol);
-    //gGeoManager->SetTopVisible(kTRUE);//HERE
-    std::cout<<"Point 5"<<std::endl;
+    gGeoManager->SetTopVisible(kTRUE);
+    int nn = gGeoManager->GetNNodes();
+    printf("nodes in geom = %d\n",nn);
+    
     //Get Top Node:
     TGeoNode* topnode = gGeoManager->GetTopNode();
     TEveGeoTopNode* etopnode = new TEveGeoTopNode(gGeoManager, topnode);
     etopnode->SetVisLevel(4);
     etopnode->GetNode()->GetVolume()->SetVisibility(kFALSE);
-    std::cout<<"Point 6"<<std::endl;
+
     setRecursiveColorTransp(etopnode->GetNode()->GetVolume(), kWhite-10,70);
 
-    if(!_showBuilding){ 
+    if(!_showBuilding){   
       mu2e_geom->SolenoidsOnly(topnode);
       mu2e_geom->hideTop(topnode, _diagLevel);
-     std::cout<<"Point 7"<<std::endl;
     }
-    if(_showDSOnly){
-     mu2e_geom->InsideDS(topnode, false );
-     std::cout<<"Point 8"<<std::endl;
-    }
-    if(_showCRV){
-      mu2e_geom->InsideCRV(topnode, true);
-      std::cout<<"Point 1"<<std::endl;
-    }
+    if(_showDSOnly) mu2e_geom->InsideDS(topnode, false );
+  
+    if(_showCRV) mu2e_geom->InsideCRV(topnode, true);
+
     //Add static detector geometry to global scene
     gEve->AddGlobalElement(etopnode);
     geom->Draw("ogl");
@@ -537,7 +532,7 @@ namespace mu2e{
       if(_data.cosmiccol!=0){pass_data->AddCosmicTrack(_firstLoop, _emptydata.cosmiccol, tracker2Dproj, ftimemin, ftimemax, true, _accumulate, TfXYMgr, TfRZMgr, proj2, proj3);}
     }
     if (type == "MC Trajectories"){
-      if(_data.mctrajcol!=0){pass_mc->AddMCTrajectory(_firstLoop, _emptydata.mctrajcol, tracker2Dproj, true, _accumulate);}
+      if(_data.mctrajcol!=0){pass_mc->AddFullMCTrajectory(_firstLoop, _emptydata.mctrajcol, tracker2Dproj, true, _accumulate, TfXYMgr, TfRZMgr, proj2, proj3);}
     }
     gSystem->ProcessEvents();
     gClient->NeedRedraw(fTeRun);
@@ -629,7 +624,7 @@ namespace mu2e{
       }
       if(param1==1205){
         if(mctrajcheck->IsDown()){
-          pass_mc->AddMCTrajectory(_firstLoop, _data.mctrajcol, tracker2Dproj, false, _accumulate);	
+          pass_mc->AddFullMCTrajectory(_firstLoop, _data.mctrajcol, tracker2Dproj, false, _accumulate, TfXYMgr, TfRZMgr, proj2, proj3);	
         }
         if(!mctrajcheck->IsDown()){RedrawDataProducts("MC Trajectories");}
       }
@@ -664,7 +659,6 @@ namespace mu2e{
 
   void TEveMu2eMainWindow::setEvent(const art::Event& event, bool firstLoop, Data_Collections &data, double time, bool accumulate, int &runn, int &eventn, bool &eventSelected)
   {
-     
     _event=event.id().event();
     _subrun=event.id().subRun();
     _run=event.id().run();
@@ -679,9 +673,10 @@ namespace mu2e{
     _data.crvcoincol = data.crvcoincol;
     _data.cryHitcol = data.cryHitcol;
     _data.cosmiccol = data.cosmiccol;
-
+    //if (texttime == -1){
     std::vector<double> times = pass_data->getTimeRange(firstLoop, data.chcol, data.crvcoincol, data.clustercol, data.cryHitcol);
-
+      //fTHSlid->SetRange(times.at(0), times.at(1));
+    //}
     if(_data.crvcoincol!=0) pass_data->AddCRVInfo(firstLoop, data.crvcoincol, ftimemin, ftimemax, false, _accumulate);
     hitenergy = new vector<double>(2);
     if(_data.chcol!=0) *hitenergy = pass_data->AddComboHits(firstLoop, data.chcol, tracker2Dproj, false, fhitmin, fhitmax,ftimemin, ftimemax, _accumulate, TfXYMgr, TfRZMgr, proj2, proj3);
@@ -692,7 +687,7 @@ namespace mu2e{
     if (_data.cryHitcol!=0) pass_data->AddCrystalHits(_firstLoop, _data.cryHitcol, calo2Dproj, ftimemin, ftimemax, false, _accumulate, CfXYMgr, CfRZMgr, proj0, proj1);
     if(_data.kalseedcol!=0) pass_data->AddHelixPieceWise(firstLoop, data.kalseedcol, _data.track_list, tracker2Dproj,  ftimemin, ftimemax, false, _accumulate, TfXYMgr, TfRZMgr, proj2, proj3);
     if(_data.cosmiccol!=0) pass_data->AddCosmicTrack(firstLoop, data.cosmiccol, tracker2Dproj, ftimemin, ftimemax, false, _accumulate, TfXYMgr, TfRZMgr, proj2, proj3);
-    if(_data.mctrajcol!=0) pass_mc->AddMCTrajectory(firstLoop, data.mctrajcol, tracker2Dproj, false, _accumulate);
+    if(_data.mctrajcol!=0) pass_mc->AddFullMCTrajectory(firstLoop, data.mctrajcol, tracker2Dproj, false, _accumulate,  TfXYMgr, TfRZMgr, proj2, proj3);
 
     
     gSystem->ProcessEvents();
@@ -714,9 +709,8 @@ namespace mu2e{
     _hitmaxenergy->AddText(0, (to_string(hitenergy->at(1))).c_str());
     _hitmintime->AddText(0, (to_string(times.at(0))).c_str());
     _hitmaxtime->AddText(0, (to_string(times.at(1))).c_str());
-    std::cout<<"before application"<<std::endl;
-    gApplication->Run(kTRUE);
-    std::cout<<"after application"<<std::endl;
+    gApplication->Run(true);
+
     gEve->Redraw3D(kTRUE);
     if(usereventSelected == true){
       eventn = eventToFind;

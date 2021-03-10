@@ -34,7 +34,7 @@ namespace mu2e{
       auto chH = evt.getValidHandle<mu2e::ComboHitCollection>(chTag_);
       data.chcol = chH.product();
     }
-    if(FillAll_ or RecoOnly_ or CollectionName == CaloHits){
+    if(FillAll_ or RecoOnly_ or CollectionName == CaloCrystalHits){
       auto chH = evt.getValidHandle<mu2e::CaloHitCollection>(cryHitTag_);
       data.cryHitcol = chH.product();
     }
@@ -51,10 +51,12 @@ namespace mu2e{
       data.hseedcol = chH.product();
     }
     if(FillAll_ or RecoOnly_ or (addTracks_ and CollectionName==KalSeeds)){
-        for(const auto &tag : kalseedTag_){
-          auto chH = evt.getValidHandle<mu2e::KalSeedCollection>(tag);
-          data.track_list.push_back(chH.product());
-        }
+          
+          for(const auto &tag : kalseedTag_){
+            auto chH = evt.getValidHandle<mu2e::KalSeedCollection>(tag);
+            data.kalseedcol = chH.product();
+            data.track_list.push_back(data.kalseedcol);
+          }
     }
     if(FillAll_ or RecoOnly_ or (addCrvHits_ and CollectionName==CRVRecoPulses)){
       auto chH = evt.getValidHandle<mu2e::CrvRecoPulseCollection>(crvcoinTag_);
@@ -69,6 +71,7 @@ namespace mu2e{
 
   void Collection_Filler::FillMCCollections(const art::Event& evt, Data_Collections &data, MCDataProductName CollectionName){
     if(FillAll_ or MCOnly_ or (addMCTraj_ and CollectionName == MCTrajectories)){ 
+      std::cout<<" Filling MC Traj "<<std::endl;
       auto chH = evt.getValidHandle<mu2e::MCTrajectoryCollection>(mctrajTag_);
       data.mctrajcol = chH.product();
     }

@@ -2,10 +2,6 @@
 #include "fcl/minimalMessageService.fcl"
 #include "fcl/standardProducers.fcl"
 #include "fcl/standardServices.fcl"
-#include "TrkDiag/fcl/prolog.fcl"
-#include "TrkPatRec/fcl/prolog.fcl"
-#include "TrackerConditions/fcl/prolog.fcl"
-#include "TrkHitReco/fcl/prolog.fcl"
 #include "TEveEventDisplay/fcl/prolog.fcl"
 
 services : @local::Services.Reco
