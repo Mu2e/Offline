@@ -80,7 +80,7 @@ private:
 
   const int     hexShiftPrint = 7;
 
-  std::array<std::vector<CrystalInfo>, 674*4>  pulseMap_;
+  std::array<std::vector<CrystalInfo>, 0xFFF>  pulseMap_; // Temporary hack until the Calorimeter channel map is finialized
   mu2e::CaloDAQUtilities                       caloDAQUtil_;
 
   std::array<float, 674*4>                     peakADC2MeV_;
@@ -110,18 +110,17 @@ void art::CaloHitsFromFragments::beginRun(art::Run&  Run){
 }
 
 void art::CaloHitsFromFragments::addPulse(uint16_t& crystalID, float& time, float& eDep){
-  CrystalInfo* pulse(0);
+ 
   bool      addNewHit(true);
-  for (size_t i=0; i<pulseMap_[crystalID].size(); ++i){
+  for (auto& pulse : pulseMap_[crystalID]){
     //search if there is a hit matching in time and eDep
-    pulse = &pulseMap_[crystalID].at(i);
-    if ((std::fabs(pulse->_time - time) < deltaTPulses_) 
-	&& (eDep/pulse->_eDep <= pulseRatioMax_) 
-	&& (eDep/pulse->_eDep >= pulseRatioMin_)){
+    if ((std::fabs(pulse._time - time) < deltaTPulses_) 
+	&& (eDep/pulse._eDep <= pulseRatioMax_) 
+	&& (eDep/pulse._eDep >= pulseRatioMin_)){
       //combine the pulses
-      pulse->_time   = (pulse->_time + time)/2.;
-      pulse->_eDep   = (pulse->_eDep + eDep)/2.;
-      pulse->_nSiPM += 1;
+      pulse._time   = (pulse._time + time)/2.;
+      pulse._eDep   = (pulse._eDep + eDep)/2.;
+      pulse._nSiPM += 1;
       addNewHit      = false;
       break;
     } 
