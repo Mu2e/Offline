@@ -227,8 +227,8 @@ namespace mu2e {
               const CaloShowerStep& step = *istep;
 
               // time folding and filtering, see docdb-3425 for a stunning explanation
-              float hitTimeUnfolded = toff_.totalTimeOffset(istep->simParticle())+istep->time();
-              float hitTime         = fmod(hitTimeUnfolded,mbtime_);
+              double hitTimeUnfolded = toff_.totalTimeOffset(istep->simParticle())+istep->time();
+              double hitTime         = fmod(hitTimeUnfolded,mbtime_);
 
               if (hitTime < blindTime_ || hitTime > mbtime_ ) continue;
 
