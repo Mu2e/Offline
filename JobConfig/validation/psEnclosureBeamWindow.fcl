@@ -54,37 +54,7 @@ physics : {
          module_type: GenEventCounter
       }
 
-      g4run : {
-         module_type: Mu2eG4
-         physics: @local::mu2eg4DefaultPhysics
-         ResourceLimits: @local::mu2eg4DefaultResourceLimits
-	 TrajectoryControl: @local::mu2eg4NoTrajectories
-         debug: @local::mu2eg4DefaultDebug
-         visualization: @local::mu2eg4NoVisualization
-
-         generatorModuleLabel: generate
-
-         SDConfig: {
-            enableSD: [ virtualdetector ] // activate just the explicitly listed SDs
-	    sensitiveVolumes: [ PSEnclosureEndPlate, PSEnclosureWindow0, PSEnclosureWindow1 ]
-            TimeVD: { times: [] }
-         }
-
-         Mu2eG4StackingOnlyCut: @local::mu2eg4CutNeutrinos
-
-         Mu2eG4SteppingOnlyCut: {}
-
-         Mu2eG4CommonCut: {
-	    type: union
-	    pars: [
-	       // speed things up
-	       { type: inVolume pars: [TS1Vacuum,PSShieldShell1,ProtonBeamDumpCore,ProtonBeamDumpFront] },
-	       // ignore the soft stuff
-	       { type: kineticEnergy cut: 3000 }
-	    ]
-
-         }
-      }
+      g4run: @local::g4run
    }
 
    trigmainbeam : [generate, genCounter, g4run]
@@ -93,6 +63,24 @@ physics : {
    an: [ genCountLogger, endplate, win0, win1 ]
    end_paths: [an]
 }
+
+//================================================================
+physics.producers.g4run.Mu2eG4CommonCut: {
+   type: union
+   pars: [
+      // speed things up
+      { type: inVolume pars: [TS1Vacuum,PSShieldShell1,ProtonBeamDumpCore,ProtonBeamDumpFront] },
+      // ignore the soft stuff
+      { type: kineticEnergy cut: 3000 }
+   ]
+}
+
+physics.producers.g4run.SDConfig: {
+   enableSD: [ virtualdetector ] // activate just the explicitly listed SDs
+   sensitiveVolumes: [ PSEnclosureEndPlate, PSEnclosureWindow0, PSEnclosureWindow1 ]
+   TimeVD: { times: [] }
+}
+
 
 // Larger range cut for the first stage
 physics.producers.g4run.physics.minRangeCut : 1. // mm

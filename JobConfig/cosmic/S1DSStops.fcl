@@ -1,0 +1,16 @@
+// This configuration propogates cosmics from the surface towards DS.
+// Cosmics hitting crvStage1End volumes are stopped and saved for later resampling.
+//
+// Yuri Oksuzian, 2021
+#include "JobConfig/primary/primary.fcl"
+
+process_name : Primary
+
+physics.TriggerPath: [generate, genCounter, g4run, g4status, stepPointMomentumFilter, cosmicFilter]
+outputs.Output.outputCommands : [@sequence::Primary.KeptProducts, "keep mu2e::GenParticles_*_*_*", "keep *_cosmicFilter_*_*"]
+physics.producers.g4run.TrajectoryControl: @local::mu2eg4DefaultTrajectories
+physics.producers.g4run.SDConfig.enableSD: [ CRV ]
+physics.producers.g4run.Mu2eG4CommonCut: @local::Cosmic.Mu2eG4CommonCutCosmicS1
+outputs.Output.fileName         : "sim.owner.CosmicDSStops.version.sequencer.art"
+//Need this to increase the world volume.
+services.GeometryService.inputFile:"JobConfig/cosmic/geom_cosmic_current.txt"

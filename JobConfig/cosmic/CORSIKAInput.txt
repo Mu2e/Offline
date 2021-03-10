@@ -1,0 +1,32 @@
+RUNNR   1                              run number
+EVTNR   1                              number of first shower event
+NSHOW   _NSHOW_                        number of showers to generate
+PRMPAR  14                             particle type of prim. particle  (14=p)
+ESLOPE  -2.7                           slope of primary energy spectrum
+ERANGE  1.3 100000                     energy range of primary (GeV)
+THETAP  0.  90.                        range of zenith angle (degree)
+PHIP    -180.  180.                    range of azimuth angle (degree)
+SEED    _SEED1_   0  0                 seed for 1. random number sequence
+SEED    _SEED2_   0  0                 seed for 2. random number sequence
+QGSJET  T   0		               QGSJET for high energy & debug level
+QGSSIG  T			       QGSJET cross-sections enable
+OBSLEV  228E2                          observation level (in cm)
+MAGNET  19.066  50.628                 Earth's mag. field at detector- Bx & Bz (22/09/2014)
+HADFLG  0  0  0  0  0  2               flags hadr.interact.&fragmentation
+ECUTS   0.05 0.05 0.05 0.05            energy cuts for particles
+MUADDI  F                              additional info for muons
+MUMULT  T                              muon multiple scattering angle
+ELMFLG  F   T                          em. interaction flags (NKG,EGS)
+STEPFC  1.0                            mult. scattering step length fact.
+RADNKG  200.E2                         outer radius for NKG lat.dens.distr.
+ARRANG  0                              rotation of array to north
+ATMOD   1			       U.S. standard atmosphere (1-Linsley; 22-Keilhauer)
+LONGI   F  20.  F  F                   longit.distr. & step size & fit & out
+ECTMAP  1.E2                           cut on gamma factor for printout
+MAXPRT  0                              max. number of printed events
+DIRECT  _DIRECT_                       output directory
+DATDIR  _DATDIR_                       CORSIKA directory
+DATBAS  F                              write .dbase file
+USER    _USER_                         user
+DEBUG   F  6  F  1000000               debug flag and log.unit for out
+EXIT                                   terminates input

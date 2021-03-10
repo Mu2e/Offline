@@ -140,7 +140,6 @@ namespace mu2e {
               y.push_back(waveform.at(i));
           }
 
-
           waveformProcessor_->reset();
           waveformProcessor_->extract(x,y);
 
@@ -155,7 +154,7 @@ namespace mu2e {
               int    ndf       = waveformProcessor_->ndf();
               
               if (chi2/float(ndf) > maxChi2Cut_) continue;
-              
+           
               if (SiPMID%2==0) totEnergyReco += eDep;
               recoCaloHits.emplace_back(CaloRecoDigi(caloDigiPtr, eDep, eDepErr, time, timeErr, chi2, ndf, isPileUp));
           }

@@ -39,56 +39,7 @@ physics : {
 
     producers : {
 
-        g4run : {
-
-            module_type       : Mu2eG4
-            physics           : @local::mu2eg4DefaultPhysics
-            ResourceLimits    : @local::mu2eg4DefaultResourceLimits
-            TrajectoryControl : @local::mu2eg4NoTrajectories
-            debug             : @local::mu2eg4DefaultDebug
-            visualization     : @local::mu2eg4NoVisualization
-
-            MultiStageParameters : {
-                simParticleNumberOffset  : 100000 // safe b/c of g4.particlesSizeLimit in stage1
-                genInputHits             : [ "g4filter:vacuuas1" ]
-                inputSimParticles        : "g4filter"
-                inputMCTrajectories      : ""
-                inputPhysVolumeMultiInfo : "compressPV"
-            }
-
-            doWriteLegacyPhysVolumeInfo : false
-
-            SDConfig : {
-                enableSD         : [ virtualdetector ] // activate just the explicitly listed SDs
-                preSimulatedHits : ["g4filter:virtualdetector"]
-                TimeVD           : { times : [] }
-            }
-
-            // Mu2eG4 cuts are evaluated in the listed order.
-            // The first match wins.  For the "intersection"
-            // type, the first false stops the evaluation.
-            // For the "union" type the first true stops the evaluation.
-            Mu2eG4StackingOnlyCut : @local::mu2eg4CutNeutrinos //remove neutrinos
-            Mu2eG4SteppingOnlyCut : @local::mu2eg4NoCut
-            Mu2eG4CommonCut : {
-                type : union
-                pars : [
-                    @local::CutEPPhN,
-                    { type: inVolume pars: [ HallAir ] } //remove particles that escape solenoids
-                    //{
-                    //    type  : inVolume
-                    //    pars  : [ DS1Vacuum, DS2Vacuum, DS3Vacuum ]
-                    //    write : vacuuas2
-                    //}
-                ]
-            }
-
-            SimParticlePrinter : {
-                enabled       : false
-                primariesOnly : false
-                prefix        : "SimParticle : "
-            }
-        } // g4run
+        g4run: @local::g4run
 
         vacuuas1: {
             module_type: StepPointMCCollectionUpdater
@@ -150,6 +101,39 @@ outputs : {
         fileName       : "sim.owner.DS-pions.version.sequencer.art"
     }
 }
+//================================================================
+physics.producers.g4run.inputs: {
+   primaryType              : "StepPoints"
+   primaryTag               : "g4filter:vacuuas1"
+   simParticleNumberOffset  : 100000 // safe b/c of g4.particlesSizeLimit in stage1
+   inputSimParticles        : "g4filter"
+   inputMCTrajectories      : ""
+   inputPhysVolumeMultiInfo : "compressPV"
+}
+
+// Mu2eG4 cuts are evaluated in the listed order.
+// The first match wins.  For the "intersection"
+// type, the first false stops the evaluation.
+// For the "union" type the first true stops the evaluation.
+physics.producers.g4run.Mu2eG4CommonCut: {
+   type : union
+   pars : [
+      @local::CutEPPhN,
+      { type: inVolume pars: [ HallAir ] } //remove particles that escape solenoids
+      //{
+         //    type  : inVolume
+         //    pars  : [ DS1Vacuum, DS2Vacuum, DS3Vacuum ]
+         //    write : vacuuas2
+         //}
+   ]
+}
+
+physics.producers.g4run.SDConfig: {
+   enableSD         : [ virtualdetector ] // activate just the explicitly listed SDs
+   preSimulatedHits : ["g4filter:virtualdetector"]
+   TimeVD           : { times : [] }
+}
+
 
 physics.producers.g4run.physics.minRangeCut : 1.0 // mm
 physics.producers.g4run.physics.noDecay     : [ 211, -211 ]

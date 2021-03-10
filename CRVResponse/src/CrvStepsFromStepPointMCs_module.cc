@@ -59,6 +59,11 @@ namespace mu2e
 	  Comment("Starting size for crvIndex-particle vector"),4};
 	fhicl::Atom<bool> removeNeutralParticles{ Name("removeNeutralParticles"),
 	  Comment("Removes steps of neutral particles"),true};
+	fhicl::Atom<bool> useTotalEDep{ Name("useTotalEDep"),
+	  Comment("Use total energy deposition instead. Visible is a new default"),false};
+	fhicl::Atom<bool> noPostPositionAvailable{ Name("noPostPositionAvailable"),
+	  Comment("No postposition is available for CRY3/4 samples"),false};
+
       };
       using Parameters = art::EDProducer::Table<Config>;
       explicit CrvStepsFromStepPointMCs(const Parameters& conf);
@@ -82,6 +87,8 @@ namespace mu2e
 
       int      _debug, _diag;
       bool     _removeNeutralParticles;
+      bool     _useTotalEDep;
+      bool     _noPostPositionAvailable;
       unsigned _csize, _ssize;
       // StepPointMC selector
       // This selector will select only data products with the given instance name.
@@ -101,6 +108,8 @@ namespace mu2e
     _debug(config().debug()),
     _diag(config().diag()),
     _removeNeutralParticles(config().removeNeutralParticles()),
+    _useTotalEDep(config().useTotalEDep()),
+    _noPostPositionAvailable(config().noPostPositionAvailable()),
     _csize(config().csize()),
     _ssize(config().startSize()),
     _selector(art::ProductInstanceNameSelector(config().stepPointsInstance())),
@@ -260,7 +269,12 @@ namespace mu2e
         first     =spmcptr;
         spmcIndices.emplace_back(i,i);
       }
-      edep   +=spmcptr->visibleEDep();
+
+      if(_useTotalEDep)
+        edep+=spmcptr->totalEDep();
+      else
+        edep+=spmcptr->visibleEDep();
+
       pathlen+=spmcptr->stepLength();
       last    =spmcptr;
       spmcIndices.back().second=i;
@@ -276,6 +290,7 @@ namespace mu2e
         // Define the position at entrance and exit
         CLHEP::Hep3Vector startPos = first->position();
         CLHEP::Hep3Vector endPos   = last->postPosition();
+        if(_noPostPositionAvailable) endPos = last->position() + last->momentum().unit()*last->stepLength();
 
         double startTime = first->time();
         double endTime   = last->time();
