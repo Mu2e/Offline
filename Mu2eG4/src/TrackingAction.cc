@@ -237,21 +237,23 @@ namespace mu2e {
     const Mu2eG4IOConfigHelper& ioconf = perThreadObjects_->ioconf;
 
     // Read in data products from previous stages and reseat SimParticle pointers
-    if(ioconf.multiStage()) {
-
-      auto const& inputSims = perThreadObjects_->artEvent->getValidHandle<SimParticleCollection>(ioconf.inputs().inputSimParticles());
-
+    // The returned handle is not valid for GenParticle driven jobs
+    // but also for non-filtered events in subsequent stages which do not
+    // have any primary StepPointMCs, for example.
+    const auto inputSimHandle = ioconf.inputs().inputSimParticles(*perThreadObjects_->artEvent);
+    if(inputSimHandle.isValid()) {
+      const SimParticleCollection& inputSims = *inputSimHandle;
       // We do not compress anything here, but use the call to reseat the pointers
       // while copying the inputs to _transientMap.
       compressSimParticleCollection(perThreadObjects_->simParticleHelper->productID(),
                                     perThreadObjects_->simParticleHelper->productGetter(),
-                                    *inputSims,
+                                    inputSims,
                                     KeepAll(),
                                     _transientMap);
 
       // old -> new particle remapping
-      for(const auto& sim: *inputSims) {
-        art::ProductID oldID(inputSims.id());
+      for(const auto& sim: inputSims) {
+        art::ProductID oldID(inputSimHandle.id());
         auto key(sim.second.id().asUint());
         art::Ptr<SimParticle> oldSim(oldID, key, perThreadObjects_->simParticleHelper->otherProductGetter(oldID));
         art::Ptr<SimParticle> newSim(perThreadObjects_->simParticleHelper->productID(), key, perThreadObjects_->simParticleHelper->productGetter());

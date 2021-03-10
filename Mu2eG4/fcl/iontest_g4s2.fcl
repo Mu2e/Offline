@@ -52,10 +52,9 @@ physics : {
             debug             : @local::mu2eg4DefaultDebug
             visualization     : @local::mu2eg4NoVisualization
 
-            MultiStageParameters : {
-                simParticleNumberOffset  : 100000 // safe b/c of g4.particlesSizeLimit in stage1
-                genInputHits             : [ "g4run:someions" ]
-                inputSimParticles        : "g4run"
+            inputs: {
+                primaryType              : "StepPoints"
+                primaryTag               : "g4run:someions"
                 inputMCTrajectories      : ""
                 inputPhysVolumeMultiInfo : "compressPV"
             }
