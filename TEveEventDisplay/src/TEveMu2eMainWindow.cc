@@ -19,7 +19,7 @@
 #include <TGSplitFrame.h>
 // ... libRGL
 #include <TGLViewer.h>
-#include <TVirtualX.h>
+//#include <TVirtualX.h>
 // ... libEve
 #include <TEveManager.h>
 #include <TEveEventManager.h>
@@ -211,10 +211,10 @@ namespace mu2e{
 }
 
   void TEveMu2eMainWindow::CreateGUI(){
-      FontStruct_t buttonfont = gClient->GetFontByName("-*-helvetica-medium-r-*-*-8-*-*-*-*-*-iso8859-1");
+      //FontStruct_t buttonfont = gClient->GetFontByName("-*-helvetica-medium-r-*-*-8-*-*-*-*-*-iso8859-1");
       GCValues_t gval;
       gval.fMask = kGCForeground | kGCFont;
-      gval.fFont = gVirtualX->GetFontHandle(buttonfont);
+      //gval.fFont = gVirtualX->GetFontHandle(buttonfont);
       gClient->GetColorByName("black", gval.fForeground);
 
       browser->StartEmbedding(TRootBrowser::kLeft); // insert nav frame as new tab in left pane
