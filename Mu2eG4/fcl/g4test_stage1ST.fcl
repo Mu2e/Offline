@@ -27,8 +27,14 @@ physics : {
       randomsaver : @local::randomsaver
    }
 
+   analyzers: {
+      validation : { module_type : Validation }
+   }
+
    p1 : [g4run]
-   trigger_paths  : [p1]
+   e1:  [validation]
+   trigger_paths: [p1]
+   end_paths: [e1]
 }
 
 physics.producers.g4run.physics.physicsListName: "QGSP_BERT" # faster than default
@@ -44,7 +50,7 @@ physics.producers.g4run.inputs: {
    inputPhysVolumeMultiInfo: "g4run"
 }
 
-services.TFileService.fileName: "/dev/null"
+services.TFileService.fileName: "nts.owner.g4test_stage1.ver.seq.root"
 
 services.SeedService.baseSeed         :  8
 services.SeedService.maxUniqueEngines :  20
