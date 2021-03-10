@@ -218,7 +218,8 @@ private:
                                  uint8_t& DTCId, uint8_t Subsys);
   void printHeader(DataBlockHeader const& headerDataBlock);
 
-  void putBlockInEvent(DTCLib::DTC_Event& currentEvent, uint8_t dtcID, DTCLib::DTC_DataBlock thisBlock) {
+  void putBlockInEvent(DTCLib::DTC_Event& currentEvent, uint8_t dtcID,
+                       DTCLib::DTC_DataBlock thisBlock) {
     auto subEvt = currentEvent.GetSubEventByDTCID(dtcID);
     if (subEvt == nullptr) {
       DTCLib::DTC_SubEvent newSubEvt;
@@ -227,7 +228,9 @@ private:
       hdrPtr->source_dtc_id = dtcID;
       newSubEvt.AddDataBlock(thisBlock);
       currentEvent.AddSubEvent(newSubEvt);
+
     } else {
+
       subEvt->AddDataBlock(thisBlock);
     }
   }
@@ -426,7 +429,7 @@ void ArtBinaryPacketsFromDigis::fillTrackerDataStream(DTCLib::DTC_Event& current
   }
 
   auto pos = 0;
-  memcpy(thisBlock.blockPointer, &trackerData.first, sizeof(DataBlockHeader));
+  memcpy(thisBlock.allocBytes->data(), &trackerData.first, sizeof(DataBlockHeader));
   pos += sizeof(DataBlockHeader);
 
   if (trackerData.first.s.PacketCount > 0) {
@@ -439,11 +442,10 @@ void ArtBinaryPacketsFromDigis::fillTrackerDataStream(DTCLib::DTC_Event& current
     for (size_t ipkt = 0; ipkt < trackerData.second.size(); ipkt++) {
       auto ptr = &(trackerData.second[ipkt]);
       size_t num_packets = ptr->mainPacket.NumADCPackets;
-      memcpy(static_cast<uint8_t*>(thisBlock.blockPointer) + pos, &(ptr->mainPacket),
-             sizeof(TrackerDataPacket));
+      memcpy(thisBlock.allocBytes->data() + pos, &(ptr->mainPacket), sizeof(TrackerDataPacket));
       pos += sizeof(TrackerDataPacket);
       if (trackerData.second[ipkt].adcPacketVec.size() > 0) {
-        memcpy(static_cast<uint8_t*>(thisBlock.blockPointer) + pos, &(ptr->adcPacketVec[0]),
+        memcpy(thisBlock.allocBytes->data() + pos, &(ptr->adcPacketVec[0]),
                sizeof(TrackerADCPacket) * num_packets);
         pos += sizeof(TrackerADCPacket) * num_packets;
       }
@@ -895,33 +897,32 @@ void ArtBinaryPacketsFromDigis::fillCalorimeterDataStream(DTCLib::DTC_Event& cur
   }
 
   auto pos = 0;
-  memcpy(thisBlock.blockPointer, &caloData.first, sizeof(DataBlockHeader));
+  memcpy(thisBlock.allocBytes->data(), &caloData.first, sizeof(DataBlockHeader));
   pos += sizeof(DataBlockHeader);
 
   if (caloData.second.hitPacketVec.size() != 0) {
 
     uint16_t hitCount = caloData.second.hitPacketVec.size();
-    memcpy(static_cast<uint8_t*>(thisBlock.blockPointer) + pos, &hitCount, sizeof(uint16_t));
+    memcpy(thisBlock.allocBytes->data() + pos, &hitCount, sizeof(uint16_t));
     pos += sizeof(uint16_t);
 
-    memcpy(static_cast<uint8_t*>(thisBlock.blockPointer) + pos, &caloData.second.hitIndex[0],
+    memcpy(thisBlock.allocBytes->data() + pos, &caloData.second.hitIndex[0],
            sizeof(uint16_t) * caloData.second.hitIndex.size());
     pos += sizeof(uint16_t) * caloData.second.hitIndex.size();
 
-    memcpy(static_cast<uint8_t*>(thisBlock.blockPointer) + pos, &(caloData.second.boardID),
+    memcpy(thisBlock.allocBytes->data() + pos, &(caloData.second.boardID),
            sizeof(CalorimeterBoardID));
     pos += sizeof(CalorimeterBoardID);
 
     for (size_t i = 0; i < caloData.second.hitPacketVec.size(); ++i) {
 
-      memcpy(static_cast<uint8_t*>(thisBlock.blockPointer) + pos,
-             &(caloData.second.hitPacketVec[i]),
+      memcpy(thisBlock.allocBytes->data() + pos, &(caloData.second.hitPacketVec[i]),
              sizeof(CalorimeterHitReadoutPacket));
       pos += sizeof(CalorimeterHitReadoutPacket);
 
       auto waveform_size = sizeof(uint16_t) * (caloData.second.waveformVec[i].size());
-      memcpy(static_cast<uint8_t*>(thisBlock.blockPointer) + pos,
-             &(caloData.second.waveformVec[i][0]), waveform_size);
+      memcpy(thisBlock.allocBytes->data() + pos, &(caloData.second.waveformVec[i][0]),
+             waveform_size);
       pos += waveform_size;
     } // end loop over the calorimeterHitReadoutPacketVector
   }
@@ -1217,20 +1218,20 @@ void ArtBinaryPacketsFromDigis::fillCrvDataStream(DTCLib::DTC_Event& currentEven
   DTCLib::DTC_DataBlock thisBlock(sz);
 
   if (thisBlock.blockPointer == nullptr) {
-    throw cet::exception("MemoryAllocationError") << "Unable to allocate memory for CRV block! sz=" << sz;
+    throw cet::exception("MemoryAllocationError")
+        << "Unable to allocate memory for CRV block! sz=" << sz;
   }
 
   auto pos = 0;
-  memcpy(thisBlock.blockPointer, &crvData.header, sizeof(DataBlockHeader));
+  memcpy(thisBlock.allocBytes->data(), &crvData.header, sizeof(DataBlockHeader));
   pos += sizeof(DataBlockHeader);
-  memcpy(static_cast<uint8_t*>(thisBlock.blockPointer) + pos, &crvData.rocStatus, sizeof(CRVROCStatusPacket));
+  memcpy(thisBlock.allocBytes->data() + pos, &crvData.rocStatus, sizeof(CRVROCStatusPacket));
   pos += sizeof(CRVROCStatusPacket);
 
   uint16_t hitCount = crvData.hits.size();
 
   for (size_t i = 0; i < hitCount; i++) {
-    memcpy(static_cast<uint8_t*>(thisBlock.blockPointer) + pos, &(crvData.hits[i]),
-           sizeof(CRVHitReadoutPacket));
+    memcpy(thisBlock.allocBytes->data() + pos, &(crvData.hits[i]), sizeof(CRVHitReadoutPacket));
     pos += sizeof(CRVHitReadoutPacket);
   }
 
