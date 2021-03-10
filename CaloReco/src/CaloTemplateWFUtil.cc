@@ -10,6 +10,11 @@
 #include <vector>
 #include <sstream>
 
+//
+// The fit function has been modified to include the correlations in the waveform (signal bins are fully correlated)
+// Instead of using the full covariance matrix, one can obtain similr results if the expected numnber of events 
+// in a bin is replaced by the background estimate, and the uncertainty on the efficiency is modified to account for
+// the signal (see doc-db 36707 for a full explanation)
 
 
 //An anonymous namespace to use Minuit
@@ -37,7 +42,8 @@ namespace
             double x = xvec_[i];
             double y = yvec_[i];
             double val = fitfunction(x, par);
-            if (y>1e-5) f += (y-val)*(y-val)/y;
+            // modified fit function
+            if (fabs(par[0]) > 1e-5) f += (y-val)*(y-val)/par[0];
 	}
     }      
 }

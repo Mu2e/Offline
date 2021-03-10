@@ -26,13 +26,16 @@
 
 // Mu2e includes
 #include "Mu2eG4/inc/Mu2eG4UserHelpers.hh"
+#include "Mu2eG4/inc/PhysicalVolumeHelper.hh"
 #include "Mu2eG4/inc/Mu2eG4SteppingAction.hh"
 #include "Mu2eG4/inc/TrackingAction.hh"
 #include "Mu2eG4/inc/UserTrackInformation.hh"
 #include "Mu2eG4/inc/SimParticleHelper.hh"
 #include "Mu2eG4/inc/SimParticlePrimaryHelper.hh"
+#include "Mu2eG4/inc/Mu2eG4Config.hh"
 #include "Mu2eG4/inc/Mu2eG4ResourceLimits.hh"
 #include "Mu2eG4/inc/Mu2eG4TrajectoryControl.hh"
+#include "Mu2eG4/inc/Mu2eG4PerThreadStorage.hh"
 #include "MCDataProducts/inc/SimParticleCollection.hh"
 #include "MCDataProducts/inc/ProcessCode.hh"
 #include "Mu2eUtilities/inc/compressSimParticleCollection.hh"
@@ -62,26 +65,23 @@ namespace mu2e {
   TrackingAction::TrackingAction(const Mu2eG4Config::Top& conf,
                                  Mu2eG4SteppingAction * steppingAction,
                                  unsigned stageOffset,
-                                 const Mu2eG4TrajectoryControl& trajectoryControl,
-                                 const Mu2eG4ResourceLimits& lim):
+                                 Mu2eG4PerThreadStorage *pts):
     _debugList(conf.debug().trackingActionEventList()),
     _physVolHelper(0),
+    perThreadObjects_(pts),
     _timer(),
-    _trajectories(nullptr),
-    _sizeLimit(lim.maxSimParticleCollectionSize()),
+    _sizeLimit(pts->ioconf.mu2elimits().maxSimParticleCollectionSize()),
     _currentSize(0),
     _overflowSimParticles(false),
-    _mcTrajectoryMomentumCut(trajectoryControl.mcTrajectoryMomentumCut()),
-    _saveTrajectoryMomentumCut(trajectoryControl.saveTrajectoryMomentumCut()),
-    _mcTrajectoryMinSteps(trajectoryControl.mcTrajectoryMinSteps()),
+    _mcTrajectoryMomentumCut(pts->ioconf.trajectoryControl().mcTrajectoryMomentumCut()),
+    _saveTrajectoryMomentumCut(pts->ioconf.trajectoryControl().saveTrajectoryMomentumCut()),
+    _mcTrajectoryMinSteps(pts->ioconf.trajectoryControl().mcTrajectoryMinSteps()),
     _nKilledByFieldPropagator(0),
     _rangeToIgnore(conf.physics().rangeToIgnore()),
     _steppingAction(steppingAction),
     _stageOffset(stageOffset),
     _processInfo(0),
     _printTrackTiming(conf.debug().printTrackTiming()),
-    _spHelper(),
-    _primaryHelper(),
     _stepLimitKillerVerbose(conf.debug().stepLimitKillerVerbose())
   {
 
@@ -235,63 +235,61 @@ namespace mu2e {
   }
 
 
-  void TrackingAction::beginEvent(const art::Handle<SimParticleCollection>& inputSimHandle,
-                                  const art::Handle<MCTrajectoryCollection>& inputTraj,
-                                  const SimParticleHelper& spHelper,
-                                  const SimParticlePrimaryHelper& primaryHelper,
-                                  MCTrajectoryCollection&  trajectories,
-                                  SimParticleRemapping& simsRemap) {
+  void TrackingAction::beginEvent() {
+    const Mu2eG4IOConfigHelper& ioconf = perThreadObjects_->ioconf;
 
-    _currentSize          = 0;
-    _overflowSimParticles = false;
-    _nKilledByFieldPropagator = 0;
-    _spHelper             = &spHelper;
-    _primaryHelper        = &primaryHelper;
-    _trajectories         = &trajectories;
+    // Read in data products from previous stages and reseat SimParticle pointers
+    if(ioconf.multiStage()) {
 
-    if(inputSimHandle.isValid()) {
+      auto const& inputSims = perThreadObjects_->artEvent->getValidHandle<SimParticleCollection>(ioconf.inputs().inputSimParticles());
+
       // We do not compress anything here, but use the call to reseat the pointers
       // while copying the inputs to _transientMap.
-      compressSimParticleCollection(_spHelper->productID(),
-                                    _spHelper->productGetter(),
-                                    *inputSimHandle,
+      compressSimParticleCollection(perThreadObjects_->simParticleHelper.productID(),
+                                    perThreadObjects_->simParticleHelper.productGetter(),
+                                    *inputSims,
                                     KeepAll(),
                                     _transientMap);
 
       // old -> new particle remapping
-      for(const auto& sim: *inputSimHandle) {
-        art::ProductID oldID(inputSimHandle.id());
+      for(const auto& sim: *inputSims) {
+        art::ProductID oldID(inputSims.id());
         auto key(sim.second.id().asUint());
-        art::Ptr<SimParticle> oldSim(oldID, key, _spHelper->otherProductGetter(oldID));
-        art::Ptr<SimParticle> newSim(_spHelper->productID(), key, _spHelper->productGetter());
-        simsRemap[oldSim] = newSim;
+        art::Ptr<SimParticle> oldSim(oldID, key, perThreadObjects_->simParticleHelper.otherProductGetter(oldID));
+        art::Ptr<SimParticle> newSim(perThreadObjects_->simParticleHelper.productID(), key, perThreadObjects_->simParticleHelper.productGetter());
+        (*perThreadObjects_->simRemapping)[oldSim] = newSim;
+      }
+
+      if(art::InputTag() != perThreadObjects_->ioconf.inputs().inputMCTrajectories()) {
+        auto const& inputTraj = perThreadObjects_->artEvent->getValidHandle<MCTrajectoryCollection>(ioconf.inputs().inputMCTrajectories());
+
+        for(const auto& i : *inputTraj) {
+          const MCTrajectory& tr(i.second);
+          art::Ptr<SimParticle> newSim(perThreadObjects_->simParticleHelper.productID(), tr.sim().key(), perThreadObjects_->simParticleHelper.productGetter());
+          auto retval = perThreadObjects_->mcTrajectories->insert(MCTrajectoryCollection::value_type(newSim, MCTrajectory(newSim)));
+          if ( !retval.second ){
+            throw cet::exception("RANGE")
+              << "In TrackingAction::beginEvent(): error adding pre-simulated MCTrajectory for particle id "
+              << newSim->id()
+              << "\n";
+          }
+          MCTrajectory& newTraj = retval.first->second;
+          newTraj.points() = tr.points();
+        }
       }
     }
 
-    if(inputTraj.isValid()) {
-      // Read trajectories from the previous simulation step,  reseat the pointers.
-      for(const auto& i : *inputTraj) {
-        const MCTrajectory& tr(i.second);
-        art::Ptr<SimParticle> newSim(_spHelper->productID(), tr.sim().key(), _spHelper->productGetter());
-        auto retval = _trajectories->insert(MCTrajectoryCollection::value_type(newSim, MCTrajectory(newSim)));
-        if ( !retval.second ){
-          throw cet::exception("RANGE")
-            << "In TrackingAction::beginEvent(): error adding pre-simulated MCTrajectory for particle id "
-            << newSim->id()
-            << "\n";
-        }
-        MCTrajectory& newTraj = retval.first->second;
-        newTraj.points() = tr.points();
-      }
-    }
+    _currentSize          = 0;
+    _overflowSimParticles = false;
+    _nKilledByFieldPropagator = 0;
 
   }//beginEvent
 
 
-  void TrackingAction::endEvent(SimParticleCollection& persistentSims ){
+  void TrackingAction::endEvent(){
 
     Mu2eG4UserHelpers::checkCrossReferences(true,true,_transientMap);
-    persistentSims.insert( _transientMap.begin(), _transientMap.end() );
+    perThreadObjects_->simPartCollection->insert( _transientMap.begin(), _transientMap.end() );
     _transientMap.clear();
 
     if ( !_debugList.inList() ) return;
@@ -314,7 +312,7 @@ namespace mu2e {
       return;
     }
 
-    const key_type kid = _spHelper->particleKeyFromG4TrackID(trk->GetTrackID());
+    const key_type kid = perThreadObjects_->simParticleHelper.particleKeyFromG4TrackID(trk->GetTrackID());
 
     const int parentId = trk->GetParentID();
 
@@ -322,11 +320,11 @@ namespace mu2e {
     art::Ptr<SimParticle> parentPtr;
 
     if(parentId == 0) { // primary
-      genPtr = _primaryHelper->genParticlePtr(trk->GetTrackID());
-      parentPtr = _primaryHelper->simParticlePrimaryPtr(trk->GetTrackID());
+      genPtr = perThreadObjects_->simParticlePrimaryHelper.genParticlePtr(trk->GetTrackID());
+      parentPtr = perThreadObjects_->simParticlePrimaryHelper.simParticlePrimaryPtr(trk->GetTrackID());
     }
     else { // not a primary
-      parentPtr = _spHelper->particlePtrFromG4TrackID(parentId);
+      parentPtr = perThreadObjects_->simParticleHelper.particlePtrFromG4TrackID(parentId);
     }
 
     // Find the physics process that created this track.
@@ -448,7 +446,7 @@ namespace mu2e {
           << parentPtr.key()
           << "\n";
       }
-      i->second.addDaughter(_spHelper->particlePtr(trk));
+      i->second.addDaughter(perThreadObjects_->simParticleHelper.particlePtr(trk));
 
       // // print parent of an ion
       //
@@ -487,7 +485,7 @@ namespace mu2e {
 
     G4int trackingVerbosityLevel = fpTrackingManager->GetVerboseLevel();
 
-    key_type kid(_spHelper->particleKeyFromG4TrackID(trk->GetTrackID()));
+    key_type kid(perThreadObjects_->simParticleHelper.particleKeyFromG4TrackID(trk->GetTrackID()));
 
     // Find the particle in the map.
     map_type::iterator i(_transientMap.find(kid));
@@ -564,10 +562,10 @@ namespace mu2e {
     // art::Ptr<SimParticle> parentPtr;
     // int parPDGId = 0;
     // if(parentId == 0) { // primary
-    //   parentPtr = _primaryHelper->simParticlePrimaryPtr(trk->GetTrackID());
+    //   parentPtr = perThreadObjects_->simParticlePrimaryHelper.simParticlePrimaryPtr(trk->GetTrackID());
     // }
     // else { // not a primary
-    //   parentPtr = _spHelper->particlePtrFromG4TrackID(parentId);
+    //   parentPtr = perThreadObjects_->simParticleHelper.particlePtrFromG4TrackID(parentId);
     // }
     // if ( parentPtr.isNonnull() ){
     //   map_type::iterator i(_transientMap.find(SimParticleCollection::key_type(parentPtr.key())));
@@ -627,7 +625,7 @@ namespace mu2e {
   // it in the output data product.  For efficiency, the store uses a swap.
   void TrackingAction::swapTrajectory(const G4Track* trk){
 
-    key_type kid(_spHelper->particleKeyFromG4TrackID(trk->GetTrackID()));
+    key_type kid(perThreadObjects_->simParticleHelper.particleKeyFromG4TrackID(trk->GetTrackID()));
 
     const auto& trajectory = _steppingAction->trajectory();
     if ( int(trajectory.size()) < _mcTrajectoryMinSteps ) return;
@@ -648,10 +646,10 @@ namespace mu2e {
     CLHEP::HepLorentzVector const& p0 = i->second.startMomentum();
     if ( p0.vect().mag() < _mcTrajectoryMomentumCut ) return;
 
-    art::Ptr<SimParticle> sim = _spHelper->particlePtr(trk);
+    art::Ptr<SimParticle> sim = perThreadObjects_->simParticleHelper.particlePtr(trk);
 
     // Default construct the trajectory object in the output data product.
-    auto retval = _trajectories->insert( MCTrajectoryCollection::value_type( sim, MCTrajectory(sim) ));
+    auto retval = perThreadObjects_->mcTrajectories->insert( MCTrajectoryCollection::value_type( sim, MCTrajectory(sim) ));
 
     if ( !retval.second ){
       throw cet::exception("RANGE")

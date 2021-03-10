@@ -72,12 +72,20 @@ CaloFilters : {
 #skelethon for a cosmic muon calibration
     caloCalibCosmicFilter : {
 	module_type            : CaloCosmicCalib
-	CaloClusterCollection  : "CaloClusterFast"
+	CaloClusterModuleLabel : "CaloClusterFast"
 	debugLevel             : 0	      
-	MinNCrystalHits        : 7	      
-	MinEnergy              : 150.0    #MeV
+	MinNCrystalHits        : 0	      
+	MinEnergy              : 10.0    #MeV
 	MaxEnergy              : 600.0    #MeV
-	triggerPath             : "CaloCalibCosmic"	    
+	triggerPath            : "CaloCalibCosmic"
+	MinNumCelinout         : 6 
+	MinNumCeldiagver       : 6
+	MinCelEneCut           : 15.0   # MeV
+	OutRadius              : 580   # mm
+	InnerRadius            : 460   # mm
+	diagminval             : 1.5   # slope min
+	diagmaxval             : 2.5   # slope max
+	dyminval               : 140   # mm
     }
  
     

@@ -1,5 +1,3 @@
 physics.filters.cstSeedTSFilter.minnsh      : 8	      	    
-physics.filters.cstSeedTSFilter.minnch 	    : 8	      	    
 physics.filters.cstSeedTSFilter.debugLevel  : 0	      
 physics.filters.cstSeedTSFilter.triggerPath : "cstSeed"	    
-physics.filters.cstSeedTSFilter.triggerFlag : ["Track"]	    

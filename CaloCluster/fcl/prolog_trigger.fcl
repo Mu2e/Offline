@@ -43,10 +43,10 @@ CaloClusterFast :
     includeCrystalHits    : true
 }
 
-NewCaloClusterFast :
+CaloClusterOnline  :
 {
   module_type            : CaloClusterOnline
-  caloCrystalModuleLabel : FastCaloHitMaker
+  caloCrystalModuleLabel : CaloHitMaker
   minClusterEnergy       : 50
   EminSeed               : 20 
   ExpandCut              : 1 
@@ -60,7 +60,7 @@ NewCaloClusterFast :
 CaloClusterTrigger :
 {
    producers : {
-       NewCaloClusterFast  : @local::NewCaloClusterFast
+       CaloClusterOnline   : @local::CaloClusterOnline
        CaloTrigger         : @local::CaloTrigger
        CaloClusterFast     : @local::CaloClusterFast
    }

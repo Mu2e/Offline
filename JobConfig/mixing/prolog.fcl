@@ -26,7 +26,6 @@ Mixing : {
 	meanEventsPerProton: @nil
 	simStageEfficiencyTags: @nil
 	products: @nil
-	skipFactor : 1 # temporary; Should generate_fcl set this?  Is it a factor or an offset?
 	products: {
 	  genParticleMixer: { mixingMap: [ [ "compressDetStepMCs", "" ] ] }
 	  simParticleMixer: { mixingMap: [ [ "compressDetStepMCs", "" ] ] }
