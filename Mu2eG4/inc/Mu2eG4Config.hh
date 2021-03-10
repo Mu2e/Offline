@@ -178,11 +178,6 @@ namespace mu2e {
 
       fhicl::Atom<art::InputTag> primaryTag {Name("primaryTag"), Comment("Tag of the input collection for G4 primaries")};
 
-      fhicl::Atom<unsigned> simParticleNumberOffset {Name("simParticleNumberOffset"),
-          Comment("offset for SimParticle IDs generated in the current stage, required for non-GenParticles primaries"),
-          fhicl::use_if(this, &Inputs_::multiStage)
-          };
-
       fhicl::Atom<art::InputTag> inputSimParticles {Name("inputSimParticles"),
           Comment("SimParticleCollection from the previous simulation stage, required for non-GenParticles primaries"),
           fhicl::use_if(this, &Inputs_::multiStage)

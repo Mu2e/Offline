@@ -227,7 +227,6 @@ namespace mu2e {
       mf::LogInfo logInfo("GEOM");
       logInfo << "Initializing Geant4 for " << run.id()
               << " with verbosity " << _rmvlevel << endl;
-      logInfo << " Configured simParticleNumberOffset = "<< multiStagePars_.simParticleNumberOffset() << endl;
     }
 
     masterThread->storeRunNumber(run.id().run());
