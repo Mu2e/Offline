@@ -127,8 +127,9 @@ Cosmic: {
       ]
    }
    MultiStageParametersCosmicS2: {
+      primaryType: "StepPoints"
       simParticleNumberOffset: 300000  # FIX ME!!!
-      genInputHits:  [ "dsResample:crvStage1" ]
+      primaryTag: "dsResample:crvStage1"
       inputSimParticles: "dsResample"
       inputMCTrajectories: "dsResample"
       inputPhysVolumeMultiInfo: "" 
