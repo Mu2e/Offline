@@ -51,7 +51,7 @@ namespace mu2e {
     TrkParticle			    _tpart; // particle assumed for this fit
     TrkFitDirection	      	    _fdir; // direction in which this particle was fit
     TrkFitFlag			    _status; // status of this fit
-    HitT0			    _t0; // track t0; Time particle crosses z=0
+    HitT0			       _t0; // track t0; Time particle crosses z=0
     Float_t			    _flt0; // flight distance where the track crosses the tracker midplane (z=0)
     Float_t			    _chisq; // fit chisquared value
     Float_t			    _fitcon; // fit consistency

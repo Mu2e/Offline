@@ -347,7 +347,7 @@ template <typename L> void maxminCRV(L data, double &max, double &min){
           fTrackList2D->AddElement(line_twoD);
 
         line->SetPickable(kTRUE);
-        const std::string title = "Helix #" + to_string(k + 1) + ", Momentum = " + to_string(line->Momentum);
+        const std::string title = "Helix #" + to_string(k + 1) + "PDG Code" + to_string(line->PDGcode) +", Momentum = " + to_string(line->Momentum)+ ", Time = " + to_string(line->Time);
         line->SetTitle(Form(title.c_str()));
         line->SetLineColor(colour[i]);
         line->SetLineWidth(3);
