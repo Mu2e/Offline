@@ -62,8 +62,8 @@ namespace mu2e {
           [this](){ return stoppingMaterial().empty(); }
           };
 
-      fhicl::Atom<unsigned> particleOffsetThreshold{ Name("particleOffsetThreshold"),
-          Comment("Ignore particles with numbers below the threshold. This should be used\n"
+      fhicl::Atom<unsigned> simStageThreshold{ Name("simStageThreshold"),
+          Comment("Ignore particles from earlier simulatino stages than the threshold. This should be used\n"
                   "to limit the selection to stops in just the latest simulation stage."
                   ),
           0
@@ -88,7 +88,7 @@ namespace mu2e {
     std::string stoppingMaterial_;
     std::vector<std::string> vetoedMaterials_;
 
-    unsigned offsetThreshold_; // to select particles from the current simulation stage
+    unsigned simStageThreshold_; // to select particles from the current simulation stage
 
     int verbosityLevel_;
 
@@ -113,7 +113,7 @@ namespace mu2e {
     , particleInput_(conf().particleInput())
     , physVolInfoInput_(conf().physVolInfoInput())
     , stoppingMaterial_(conf().stoppingMaterial())
-    , offsetThreshold_(conf().particleOffsetThreshold())
+    , simStageThreshold_(conf().simStageThreshold())
     , verbosityLevel_(conf().verbosityLevel())
     , hStopMaterials_(art::ServiceHandle<art::TFileService>()->make<TH1D>("stopmat", "Stopping materials", 1, 0., 1.))
     , vols_()
@@ -139,7 +139,7 @@ namespace mu2e {
       std::copy(particleTypes_.begin(), particleTypes_.end(), std::ostream_iterator<int>(os, ", "));
       os<<" ]"<<std::endl;
 
-      os<<"offsetThreshold  = "<<offsetThreshold_<<std::endl;
+      os<<"simStageThreshold  = "<<simStageThreshold_<<std::endl;
 
       os<<"stoppingMaterial = "<<stoppingMaterial_<<std::endl;
 
@@ -180,7 +180,7 @@ namespace mu2e {
     numTotalParticles_ += ih->size();
     for(const auto& i : *ih) {
       const SimParticle& particle = i.second;
-      if((particle.id().asUint() >= offsetThreshold_)
+      if((particle.simStage() >= simStageThreshold_)
          &&(particleTypes_.find(particle.pdgId()) != particleTypes_.end())
          && isStopped(particle))
         {
