@@ -522,7 +522,7 @@ namespace mu2e{
       if(_data.cryHitcol !=0){pass_data->AddCrystalHits(_firstLoop, _emptydata.cryHitcol, calo2Dproj, ftimemin, ftimemax, true, _accumulate, CfXYMgr, CfRZMgr, proj0, proj1);}
     }
     if (type == "Tracks"){
-      pass_data->AddHelixPieceWise(_firstLoop, _emptydata.kalseedcol, _data.track_list, tracker2Dproj, ftimemin, ftimemax, true,  _accumulate, TfXYMgr, TfRZMgr, proj2, proj3);
+      pass_data->AddHelixPieceWise(_firstLoop, _emptydata.track_tuple, tracker2Dproj, ftimemin, ftimemax, true,  _accumulate, TfXYMgr, TfRZMgr, proj2, proj3);
 
     }
     if (type == "Cosmics"){
@@ -605,9 +605,9 @@ namespace mu2e{
       }
       if(param1==1202){
 
-        if(trackscheck->IsDown()){pass_data->AddHelixPieceWise(_firstLoop, _data.kalseedcol, _data.track_list, tracker2Dproj, ftimemin, ftimemax, false, _accumulate, TfXYMgr, TfRZMgr, proj2, proj3);}
-
-        if(!trackscheck->IsDown() && _data.kalseedcol!=0){RedrawDataProducts("Tracks");}
+        if(trackscheck->IsDown()){pass_data->AddHelixPieceWise(_firstLoop, _data.track_tuple, tracker2Dproj, ftimemin, ftimemax, false, _accumulate, TfXYMgr, TfRZMgr, proj2, proj3);}
+       
+        if(!trackscheck->IsDown()){RedrawDataProducts("Tracks");}
       }
       if(param1==1203){
         if(cosmicscheck->IsDown()){
@@ -667,16 +667,15 @@ namespace mu2e{
     _data.chcol = data.chcol; 
     _data.clustercol = data.clustercol;
     _data.crvcoincol = data.crvcoincol;
-    _data.kalseedcol = data.kalseedcol;
-    _data.track_list = data.track_list;
+    _data.track_tuple = data.track_tuple;
     _data.mctrajcol = data.mctrajcol;
     _data.crvcoincol = data.crvcoincol;
     _data.cryHitcol = data.cryHitcol;
     _data.cosmiccol = data.cosmiccol;
-    //if (texttime == -1){
+    std::vector<const KalSeedCollection*> track_list = std::get<1>(data.track_tuple);
+    std::cout<<"in main "<<track_list.size()<<std::endl;
     std::vector<double> times = pass_data->getTimeRange(firstLoop, data.chcol, data.crvcoincol, data.clustercol, data.cryHitcol);
-      //fTHSlid->SetRange(times.at(0), times.at(1));
-    //}
+
     if(_data.crvcoincol!=0) pass_data->AddCRVInfo(firstLoop, data.crvcoincol, ftimemin, ftimemax, false, _accumulate);
     hitenergy = new vector<double>(2);
     if(_data.chcol!=0) *hitenergy = pass_data->AddComboHits(firstLoop, data.chcol, tracker2Dproj, false, fhitmin, fhitmax,ftimemin, ftimemax, _accumulate, TfXYMgr, TfRZMgr, proj2, proj3);
@@ -684,8 +683,8 @@ namespace mu2e{
     clusterenergy = new std::vector<double>(2);
 
     if(_data.clustercol!=0) *clusterenergy = pass_data->AddCaloClusters(firstLoop, data.clustercol, calo2Dproj, false, fclustmin, fclustmax, ftimemin, ftimemax, _accumulate, CfXYMgr, CfRZMgr, proj0, proj1);
-    if (_data.cryHitcol!=0) pass_data->AddCrystalHits(_firstLoop, _data.cryHitcol, calo2Dproj, ftimemin, ftimemax, false, _accumulate, CfXYMgr, CfRZMgr, proj0, proj1);
-    if(_data.kalseedcol!=0) pass_data->AddHelixPieceWise(firstLoop, data.kalseedcol, _data.track_list, tracker2Dproj,  ftimemin, ftimemax, false, _accumulate, TfXYMgr, TfRZMgr, proj2, proj3);
+    if (_data.cryHitcol!=0) pass_data->AddCrystalHits(firstLoop, data.cryHitcol, calo2Dproj, ftimemin, ftimemax, false, _accumulate, CfXYMgr, CfRZMgr, proj0, proj1);
+    pass_data->AddHelixPieceWise(firstLoop, data.track_tuple, tracker2Dproj,  ftimemin, ftimemax, false, _accumulate, TfXYMgr, TfRZMgr, proj2, proj3);
     if(_data.cosmiccol!=0) pass_data->AddCosmicTrack(firstLoop, data.cosmiccol, tracker2Dproj, ftimemin, ftimemax, false, _accumulate, TfXYMgr, TfRZMgr, proj2, proj3);
     if(_data.mctrajcol!=0) pass_mc->AddFullMCTrajectory(firstLoop, data.mctrajcol, tracker2Dproj, false, _accumulate,  TfXYMgr, TfRZMgr, proj2, proj3);
 

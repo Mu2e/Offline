@@ -93,21 +93,21 @@ namespace mu2e{
             const std::vector<MCTrajectoryPoint> &points = trajectoryIter->second.points();
             for(unsigned int i=0; i<points.size();i++){
                    
-                   
-                    CLHEP::Hep3Vector Pos(points[i].x(), points[i].y(), points[i].z());
-                     GeomHandle<DetectorSystem> det;
-                    CLHEP::Hep3Vector HitPos2D = det->toDetector(Pos);
 
-                    if(i==0) {
-                          
-                            line->SetPoint(i,pointmmTocm(Pos.x()), pointmmTocm(Pos.y()),pointmmTocm(Pos.z()));
-                            line_twoD->SetPoint(i,pointmmTocm(HitPos2D.x()), pointmmTocm(HitPos2D.y()),pointmmTocm(HitPos2D.z()));
-                        } else {
+            CLHEP::Hep3Vector Pos(points[i].x(), points[i].y(), points[i].z());
+            GeomHandle<DetectorSystem> det;
+            CLHEP::Hep3Vector HitPos2D = det->toDetector(Pos);
 
-                            line->SetNextPoint(pointmmTocm(Pos.x()), pointmmTocm(Pos.y()),pointmmTocm(Pos.z()));
-                            line_twoD->SetNextPoint(pointmmTocm(HitPos2D.x()), pointmmTocm(HitPos2D.y()),pointmmTocm(HitPos2D.z()));
-                          }
-                  }
+            if(i==0) {
+                
+                  line->SetPoint(i,pointmmTocm(Pos.x()), pointmmTocm(Pos.y()),pointmmTocm(Pos.z()));
+                  line_twoD->SetPoint(i,pointmmTocm(HitPos2D.x()), pointmmTocm(HitPos2D.y()),pointmmTocm(HitPos2D.z()));
+              } else {
+
+                  line->SetNextPoint(pointmmTocm(Pos.x()), pointmmTocm(Pos.y()),pointmmTocm(Pos.z()));
+                  line_twoD->SetNextPoint(pointmmTocm(HitPos2D.x()), pointmmTocm(HitPos2D.y()),pointmmTocm(HitPos2D.z()));
+                }
+            }
             
             string energy = to_string(points[0].kineticEnergy());
             string pdgId= to_string(trajectoryIter->first->pdgId());
@@ -117,7 +117,7 @@ namespace mu2e{
             fTrackList2D->AddElement(line_twoD);
 
             line->SetPickable(kTRUE);
-            const std::string title = "MCTraj PDG " + pdgId + "Energy = " + energy ;
+            const std::string title = "MCTrajectory PDG Code = " + pdgId + "Energy = " + energy ;
             line->SetTitle(Form(title.c_str()));
             line->SetLineColor(kRed);
             line->SetLineWidth(3);

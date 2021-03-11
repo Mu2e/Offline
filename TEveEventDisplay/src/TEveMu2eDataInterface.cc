@@ -303,15 +303,19 @@ template <typename L> void maxminCRV(L data, double &max, double &min){
     }
   }
 
-  void TEveMu2eDataInterface::AddHelixPieceWise(bool firstloop, const KalSeedCollection *seedcol, std::vector<const KalSeedCollection*> track_list, TEveMu2e2DProjection *tracker2Dproj, double min_time, double max_time, bool Redraw, bool accumulate, TEveProjectionManager *TXYMgr, TEveProjectionManager *TRZMgr, TEveScene *scene1, TEveScene *scene2){
-    DataLists<const KalSeedCollection*, TEveMu2e2DProjection*>(seedcol, Redraw, accumulate, "HelixTrack", &fTrackList3D, &fTrackList2D, tracker2Dproj);
-    TXYMgr->ImportElements(fTrackList2D, scene1); 
-    TRZMgr->ImportElements(fTrackList2D, scene2); 
+  void TEveMu2eDataInterface::AddHelixPieceWise(bool firstloop, std::tuple<std::vector<std::string>, std::vector<const KalSeedCollection*>> track_tuple, TEveMu2e2DProjection *tracker2Dproj, double min_time, double max_time, bool Redraw, bool accumulate, TEveProjectionManager *TXYMgr, TEveProjectionManager *TRZMgr, TEveScene *scene1, TEveScene *scene2){
+  
+    std::vector<const KalSeedCollection*> track_list = std::get<1>(track_tuple);
+    std::cout<<" size "<<track_list.size()<<std::endl;
+    std::vector<std::string> names = std::get<0>(track_tuple);
     std::vector<int> colour;
-    for(unsigned int i=0; i< track_list.size(); i++){
-      seedcol = track_list[i];
-      colour.push_back(i+3);
-
+    for(unsigned int j=0; j< track_list.size(); j++){
+      std::cout<<" looping "<<j<<std::endl;
+      const KalSeedCollection* seedcol = track_list[j];
+      colour.push_back(j+3);
+      DataLists<const KalSeedCollection*, TEveMu2e2DProjection*>(seedcol, Redraw, accumulate, "HelixTrack", &fTrackList3D, &fTrackList2D, tracker2Dproj);
+      TXYMgr->ImportElements(fTrackList2D, scene1); 
+      TRZMgr->ImportElements(fTrackList2D, scene2); 
       if(seedcol!=0){  
         for(unsigned int k = 0; k < seedcol->size(); k = k + 20){
           KalSeed kseed = (*seedcol)[k];
@@ -320,43 +324,48 @@ template <typename L> void maxminCRV(L data, double &max, double &min){
           line->fKalSeed = kseed;
           line->SetSeedInfo(kseed);
 
-          unsigned int nSteps = 65;  
-          double kStepSize = nSteps/(CaloLength() + TrackerLength()) + 70;
+          unsigned int nSteps = 50;  
+          double kStepSize = 61;//nSteps/(TrackerLength())+70; //+ 70;///TODO CaloLength() +
           for(unsigned int i = 0 ; i< nSteps; i++){
             double zpos = (i*kStepSize)-TrackerLength()/2;
-            line->SetPostionAndDirectionFromKalRep(zpos);
+            GeomHandle<DetectorSystem> det;
             if(i==0) {
+              line->SetPostionAndDirectionFromKalRep(zpos);
               CLHEP::Hep3Vector Pos(line->Position.x(), line->Position.y(), zpos+line->Position.z());
-             
-              GeomHandle<DetectorSystem> det;
-              CLHEP::Hep3Vector InMu2e = det->toMu2e(Pos);
-              line->SetPoint(i,pointmmTocm(InMu2e.x())+line->Direction.x()*pointmmTocm(line->Momentum),pointmmTocm(InMu2e.y())+line->Direction.y()*pointmmTocm(line->Momentum), pointmmTocm(InMu2e.z())-TrackerLength()/2);
-               line_twoD->SetPoint(i,pointmmTocm(Pos.x())+line->Direction.x()*pointmmTocm(line->Momentum),pointmmTocm(Pos.y())+line->Direction.y()*pointmmTocm(line->Momentum),pointmmTocm(Pos.z())-TrackerLength()/2);
+              std::cout<<"track "<<Pos.x()<<" "<<Pos.y()<<" "<<Pos.z()<<std::endl;
+              double x = (Pos.x()+line->Direction.x()*line->Momentum);
+              double y = (Pos.y()+line->Direction.y()*line->Momentum);
+              double z = (Pos.z());
+              CLHEP::Hep3Vector Point(x,y,z);
+              CLHEP::Hep3Vector InMu2e = det->toMu2e(Point);
+              line->SetPoint(i,pointmmTocm(InMu2e.x()), pointmmTocm(InMu2e.y()), pointmmTocm(InMu2e.z()));
+              line_twoD->SetPoint(i,pointmmTocm(InMu2e.x()), pointmmTocm(InMu2e.y()), pointmmTocm(InMu2e.z()));
             } else {
+              line->SetPostionAndDirectionFromKalRep(zpos);
               CLHEP::Hep3Vector Pos(line->Position.x(), line->Position.y(), zpos+line->Position.z());
-             
-              GeomHandle<DetectorSystem> det;
-              CLHEP::Hep3Vector InMu2e = det->toMu2e(Pos);
-              line->SetNextPoint(pointmmTocm(InMu2e.x())+line->Direction.x()*pointmmTocm(line->Momentum),pointmmTocm(InMu2e.y())+line->Direction.y()*pointmmTocm(line->Momentum), pointmmTocm(InMu2e.z())-TrackerLength()/2);
-              line_twoD->SetNextPoint(pointmmTocm(Pos.x())+line->Direction.x()*pointmmTocm(line->Momentum),pointmmTocm(Pos.y())+line->Direction.y()*pointmmTocm(line->Momentum), pointmmTocm(Pos.z())-TrackerLength()/2);
+              std::cout<<Pos.x()<<" "<<Pos.y()<<" "<<Pos.z()<<std::endl;
+              double x = (Pos.x()+line->Direction.x()*line->Momentum);
+              double y = (Pos.y()+line->Direction.y()*line->Momentum);
+              double z = (Pos.z());
+              CLHEP::Hep3Vector Point(x,y,z);
+              CLHEP::Hep3Vector InMu2e = det->toMu2e(Point);
+              line->SetNextPoint(pointmmTocm(InMu2e.x()), pointmmTocm(InMu2e.y()), pointmmTocm(InMu2e.z()));
+              line_twoD->SetNextPoint(pointmmTocm(InMu2e.x()), pointmmTocm(InMu2e.y()), pointmmTocm(InMu2e.z()));
               }
           }
         
-          line_twoD->SetLineColor(colour[i]);
+          line_twoD->SetLineColor(colour[j]);
           line_twoD->SetLineWidth(3);
           fTrackList2D->AddElement(line_twoD);
 
         line->SetPickable(kTRUE);
-        const std::string title = "Helix #" + to_string(k + 1) + "PDG Code" + to_string(line->PDGcode) +", Momentum = " + to_string(line->Momentum)+ ", Time = " + to_string(line->Time);
+        const std::string title = "Helix: " + names[j] + "PDG Code = " + to_string(line->PDGcode) +", Momentum = " + to_string(line->Momentum)+ ", Time = " + to_string(line->Time);
         line->SetTitle(Form(title.c_str()));
-        line->SetLineColor(colour[i]);
+        line->SetLineColor(colour[j]);
         line->SetLineWidth(3);
         fTrackList3D->AddElement(line);
       }
-      
-       //tracker2Dproj->fXYMgr->ImportElements(fTrackList2D, tracker2Dproj->fDetXYScene);
-       //tracker2Dproj->fRZMgr->ImportElements(fTrackList2D, tracker2Dproj->fDetRZScene);
-	    
+        
       TXYMgr->ImportElements(fTrackList2D, scene1);
       TRZMgr->ImportElements(fTrackList2D, scene2);
       gEve->AddElement(fTrackList3D);

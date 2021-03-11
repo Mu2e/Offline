@@ -28,7 +28,7 @@
 #include <TGListBox.h>
 #include <iostream>
 #include <vector>
-
+#include <tuple>
 using namespace CLHEP;
 
 namespace mu2e{
@@ -50,6 +50,9 @@ namespace mu2e{
       const KalSeedCollection* kalseedcol = 0;
       const TrkExtTrajCollection* trkextcol = 0;
       std::vector<const KalSeedCollection*> track_list;
+      std::vector<std::string> track_labels;
+      std::tuple<std::vector<std::string>, std::vector<const KalSeedCollection*>> track_tuple;
+      
       //MCDataProducts:
       const MCTrajectoryCollection *mctrajcol = 0;
 
