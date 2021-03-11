@@ -29,6 +29,15 @@ namespace mu2e{
   {}
 
 
+
+  template <typename T>
+  std::string TurnNameToString( const T& value )
+  {
+    std::ostringstream ss;
+    ss << value;
+    return ss.str();
+  }
+
   void Collection_Filler::FillRecoCollections(const art::Event& evt, Data_Collections &data, RecoDataProductName CollectionName){
     if(FillAll_ or RecoOnly_ or (addHits_ and CollectionName == ComboHits)){ 
       auto chH = evt.getValidHandle<mu2e::ComboHitCollection>(chTag_);
@@ -56,7 +65,13 @@ namespace mu2e{
             auto chH = evt.getValidHandle<mu2e::KalSeedCollection>(tag);
             data.kalseedcol = chH.product();
             data.track_list.push_back(data.kalseedcol);
+
+            std::string name = TurnNameToString(tag);
+            std::cout<<"adding "<<name<<" size "<<data.track_list.size()<<std::endl;
+            data.track_labels.push_back(name);
+            
           }
+          data.track_tuple = std::make_tuple(data.track_labels,data.track_list);
     }
     if(FillAll_ or RecoOnly_ or (addCrvHits_ and CollectionName==CRVRecoPulses)){
       auto chH = evt.getValidHandle<mu2e::CrvRecoPulseCollection>(crvcoinTag_);
