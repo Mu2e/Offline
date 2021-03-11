@@ -12,6 +12,7 @@ namespace mu2e{
     this->PDGcode = fKalSeed.particle().particleType();
     this->Charge = fKalSeed.particle().charge();
     this->Mass = fKalSeed.particle().mass();
+    this->Time = fKalSeed.t0().t0();
   };
 
   void TEveMu2eCustomHelix::SetSeedInfo(KalSeed seed) { 
@@ -20,6 +21,7 @@ namespace mu2e{
     this->PDGcode = fKalSeed.particle().particleType();
     this->Charge = fKalSeed.particle().charge();
     this->Mass = fKalSeed.particle().mass();
+    this->Time = fKalSeed.t0().t0();
   }
 
   void TEveMu2eCustomHelix::SetPostionAndDirectionFromHelixSeed(double zpos){

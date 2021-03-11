@@ -93,17 +93,19 @@ namespace mu2e{
             const std::vector<MCTrajectoryPoint> &points = trajectoryIter->second.points();
             for(unsigned int i=0; i<points.size();i++){
                    
-                    //GeomHandle<DetectorSystem> det;
+                   
                     CLHEP::Hep3Vector Pos(points[i].x(), points[i].y(), points[i].z());
-                    //CLHEP::Hep3Vector InMu2e = det->toDetector(Pos);
+                     GeomHandle<DetectorSystem> det;
+                    CLHEP::Hep3Vector HitPos2D = det->toDetector(Pos);
+
                     if(i==0) {
                           
                             line->SetPoint(i,pointmmTocm(Pos.x()), pointmmTocm(Pos.y()),pointmmTocm(Pos.z()));
-                            line_twoD->SetPoint(i,pointmmTocm(Pos.x()), pointmmTocm(Pos.y()),pointmmTocm(Pos.z()));
+                            line_twoD->SetPoint(i,pointmmTocm(HitPos2D.x()), pointmmTocm(HitPos2D.y()),pointmmTocm(HitPos2D.z()));
                         } else {
 
                             line->SetNextPoint(pointmmTocm(Pos.x()), pointmmTocm(Pos.y()),pointmmTocm(Pos.z()));
-                            line_twoD->SetNextPoint(pointmmTocm(Pos.x()), pointmmTocm(Pos.y()),pointmmTocm(Pos.z()));
+                            line_twoD->SetNextPoint(pointmmTocm(HitPos2D.x()), pointmmTocm(HitPos2D.y()),pointmmTocm(HitPos2D.z()));
                           }
                   }
             

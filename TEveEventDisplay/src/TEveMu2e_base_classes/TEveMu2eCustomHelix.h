@@ -41,6 +41,7 @@ namespace mu2e {
       int PDGcode;
       double Charge;
       double Mass;
+      double Time;
       bool _trajectory;
       ClassDef( TEveMu2eCustomHelix, 0);
     };
