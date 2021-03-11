@@ -651,6 +651,7 @@ void ArtBinaryPacketsFromDigis::produce(art::Event& evt) {
   }
 
   DTCLib::DTC_Event thisEvent;
+  thisEvent.SetEventWindowTag(DTCLib::DTC_EventWindowTag(ts));
 
   if (_includeTracker > 0) {
 
