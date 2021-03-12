@@ -45,6 +45,8 @@ namespace mu2e {
 
       fhicl::Atom<int> verbosityLevel{ Name("verbosityLevel"), Comment("Verbosity Level"),0 };
       fhicl::Atom<double> tBuff{ Name("TimeBuffer"), Comment("Time Offset buffer, to account for propagation and digitization delays (ns)"),150.0 };
+      fhicl::Atom<double> genTmin{ Name("TimeMin"), Comment("TEST: Minimum generation time  (ns)"), -1};
+      fhicl::Atom<double> genTmax{ Name("TimeMax"), Comment("TEST: Maximum generation time  (ns)"), -1};
       fhicl::Sequence<art::InputTag> trkSteps { Name("StrawGasSteps"), Comment("StrawGasStep collections") };
       fhicl::Sequence<art::InputTag> caloSteps { Name("CaloShowerSteps"), Comment("CaloShowerStep collections") };
       fhicl::Sequence<art::InputTag> crvSteps { Name("CrvSteps"), Comment("CrvStep collections") };
@@ -62,6 +64,8 @@ namespace mu2e {
     CLHEP::RandFlat _randflat;
     int verbosityLevel_;
     double tbuff_; // time buffer to use when defining the event window
+    double genTmin_; // TEST: Minimum generation time
+    double genTmax_; // TEST: Maximum generation time
     std::vector<art::InputTag> trkStepCols_, caloStepCols_, crvStepCols_;
     art::InputTag ewMarkerTag_; 
     std::vector<art::ProductToken<SimParticleTimeMap> > inmaps_; // optional input maps
@@ -73,6 +77,8 @@ namespace mu2e {
   , _randflat(createEngine( art::ServiceHandle<SeedService>()->getSeed() ))
     , verbosityLevel_(conf().verbosityLevel())
     , tbuff_(conf().tBuff())
+    , genTmin_(conf().genTmin())
+    , genTmax_(conf().genTmax())
     , ewMarkerTag_(conf().ewMarkerTag())
   {
     for(const auto& trktag : conf().trkSteps()) { trkStepCols_.emplace_back(trktag); consumes<StrawGasStepCollection>(trktag); }
@@ -127,16 +133,25 @@ namespace mu2e {
 
 // use a buffer to set the earliest time offset
     double tmin = -tearly - tbuff_;
+
 // adjust start time according to flashEnd for onspill; this assumes the 'flashend' won't be applied also for offspill in the digitizers FIXME!
     if(ewMarker.spillType() == EventWindowMarker::onspill){
       StrawElectronics const& strawele = strawele_h_.get(event.id());
       tmin += strawele.flashEnd(); // flash end should be a Mu2e global quantity FIXME!
     }
     double tmax = ewMarker.eventLength() - tearly;
+
+    if(genTmin_ > 0)
+      tmin = genTmin_;
+    if(genTmax_ > 0)
+      tmax = genTmax_;
+
     if(verbosityLevel_ > 1) {
       std::cout << "DetectorStep early time = " << tearly << std::endl;
       std::cout<<"GenerateCosmicTimes time range = ["<< tmin << ","<< tmax << "]"<< std::endl;
     }
+
+
 
     // Generate and record offsets for all primaries
     std::vector<art::Handle<SimParticleCollection> > colls;

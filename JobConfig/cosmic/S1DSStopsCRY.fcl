@@ -2,4 +2,3 @@
 
 physics.producers.generate.inputFile    : "EventGenerator/defaultConfigs/defaultCRYconfig.txt"
 physics.producers.generate.module_type  : CRYEventGenerator
-outputs.Output.fileName         : "sim.owner.CosmicDSStopsCRY.version.sequencer.art"
