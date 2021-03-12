@@ -101,6 +101,7 @@ namespace mu2e {
    //------------------------------------------------------------------------------------------------------------------
    void CaloNoiseSimGenerator::generateFragments(const CaloWFExtractor& wfExtractor)
    {
+       constexpr unsigned enoughFragments(20);
        unsigned nwf(0), nfound(0), length(255);
        for (;nwf<nMaxFragment_;++nwf)
        {
@@ -108,18 +109,21 @@ namespace mu2e {
           addFullNoise(temp,false);
 
           std::vector<int> wf;
+          wf.reserve(temp.size());
           for (const auto& val : temp) wf.emplace_back(val - pedestal_);    
 
-          std::vector<unsigned> starts, stops;         
+          std::vector<unsigned> starts, stops;
+          starts.reserve(16); stops.reserve(16);         
           wfExtractor.extract(wf,starts,stops);
           if (starts.empty()) continue;
 
           std::vector<double> fragment;
+          fragment.reserve(stops[0]-starts[0]+1);
           std::copy(temp.begin()+starts[0], temp.begin()+stops[0]+1, std::back_inserter(fragment));
           digiNoise_.push_back(fragment);
 
           ++nfound;         
-          if (nfound==20) break;
+          if (nfound==enoughFragments) break;
        }
 
        digiNoiseProb_= float(nfound)/float(nwf)/float(length);

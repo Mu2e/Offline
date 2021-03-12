@@ -214,6 +214,8 @@ namespace mu2e {
 
        unsigned timeSample(0);
        std::vector<unsigned> hitStarts{}, hitStops{};
+       hitStarts.reserve(16);hitStops.reserve(16);
+
        while (timeSample < waveform.size())
        {
 	   if (waveform[timeSample] < minAmplitude) {++timeSample; continue;}
@@ -256,11 +258,13 @@ namespace mu2e {
   {
        // round the waveform into integers and apply maxADC cut
        std::vector<int> wf;
+       wf.reserve(waveform.size());
        for (const auto& val : waveform) wf.emplace_back( std::min(maxADCCounts_,int(val) - pedestal) );
        if (diagLevel_ > 2) diag0(iRO, wf);
 
        //extract hits start / stop times
        std::vector<unsigned> hitStarts, hitStops;
+       hitStarts.reserve(16);hitStops.reserve(16);
        wfExtractor_.extract(wf,hitStarts,hitStops);
 
        // Build digi for concatenated hits   

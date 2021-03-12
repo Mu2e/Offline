@@ -47,7 +47,7 @@ CaloShowerROMaker :
 #See doc-db 35519 for noise level discussion
 NoiseGenerator : 
 {
-    noiseWFSize             : 2500
+    noiseWFSize             : 10000
     elecNphotPerNs          : 0.18
     rinNphotPerNs           : 0.36
     darkNphotPerNs          : 0.60
