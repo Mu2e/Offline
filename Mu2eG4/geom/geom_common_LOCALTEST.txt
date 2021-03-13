@@ -1,0 +1,14 @@
+//
+// TEMPORARY redirection to geom_common.txt, with my new geom files added.
+// This way if geom_common gets updated things won't collide.
+// CANNOT merge into main repo with this still here.
+//
+
+bool hasPTM = true;
+#include "Mu2eG4/geom/geom_common.txt"
+#include "Mu2eG4/geom/ProductionTargetMonitor.txt"
+
+// This tells emacs to view this file in c++ mode.
+// Local Variables:
+// mode:c++
+// End:
