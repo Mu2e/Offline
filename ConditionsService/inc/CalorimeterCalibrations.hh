@@ -34,6 +34,7 @@ namespace mu2e
     double peMeV(int crystalId)        const {return _peMeV;}
     double ROnoise(int roId)           const {return _ROnoise;}       
     double ADC2MeV(int roId)           const {return _ADC2MeV;}
+    double MeV2ADC(int roId)           const {return 1.0/_ADC2MeV;}
     double Peak2MeV(int roId)          const {return _Peak2MeV;}
 
   private:

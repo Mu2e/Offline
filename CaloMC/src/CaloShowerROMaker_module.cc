@@ -271,7 +271,10 @@ namespace mu2e {
 
               //Produce an MC object that include the step and additional information for each original step
               simEntriesMap[crystalID].push_back(StepEntry(stepPtr,edep_corr,hitTime));
-          } 
+          }
+          
+          auto sortFunctor = [](const auto& a, const auto& b){return a.SiPMID() < b.SiPMID();};
+          std::sort(CaloShowerROs.begin(),CaloShowerROs.end(),sortFunctor); 
       } 
 
       

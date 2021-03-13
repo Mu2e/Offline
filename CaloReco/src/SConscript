@@ -66,8 +66,7 @@ helper.make_plugins( [ mainlib,
                        'CLHEP',
                        'boost_filesystem',
                        'boost_system',
-                       rootlibs,
-                       'Minuit'  #needed for reco hit fitting
+                       rootlibs
                      ],
                      )
 
