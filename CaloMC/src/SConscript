@@ -43,7 +43,8 @@ mainlib = helper.make_mainlib ( [ 'mu2e_ConditionsService',
                                   'cetlib_except',
                                   'CLHEP',
                                   rootlibs,
-                                  'boost_system'
+                                  'boost_system',
+                                  'Minuit'
                                 ] )
 
 helper.make_plugins( [ mainlib,
@@ -73,7 +74,7 @@ helper.make_plugins( [ mainlib,
                        'HepPDT',
                        'boost_filesystem',
                        'boost_system',
-                       rootlibs
+                       rootlibs  #needed for reco hit fitting
                      ],
                      )
 
