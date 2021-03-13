@@ -89,6 +89,7 @@
 #include "Mu2eG4/inc/SensitiveDetectorHelper.hh"
 #include "TrackerGeom/inc/Tracker.hh"
 #include "ExtinctionMonitorFNAL/Geometry/inc/ExtMonFNAL.hh"
+#include "Mu2eG4/inc/constructProductionTargetMon.hh"
 
 // G4 includes
 #include "Geant4/G4Threading.hh"
@@ -249,6 +250,10 @@ namespace mu2e {
 
     if ( _config.getBool("hasSTM",false) ) {
       constructSTM(_config);
+    }
+
+    if (_config.getBool("hasPTM",false) ){
+      constructProductionTargetMon(hallInfo, _config);
     }
 
     // _geom is member data of Mu2eG4Universe, from which this inherits
