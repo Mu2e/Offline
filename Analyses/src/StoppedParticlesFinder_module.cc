@@ -103,6 +103,7 @@ namespace mu2e {
     bool materialAccepted(const std::string& material) const;
 
     unsigned numTotalParticles_;
+    unsigned numStageParticles_;
     unsigned numRequestedTypeStops_;
     unsigned numRequestedMateralStops_;
   };
@@ -118,6 +119,7 @@ namespace mu2e {
     , hStopMaterials_(art::ServiceHandle<art::TFileService>()->make<TH1D>("stopmat", "Stopping materials", 1, 0., 1.))
     , vols_()
     , numTotalParticles_()
+    , numStageParticles_()
     , numRequestedTypeStops_()
     , numRequestedMateralStops_()
   {
@@ -180,29 +182,32 @@ namespace mu2e {
     numTotalParticles_ += ih->size();
     for(const auto& i : *ih) {
       const SimParticle& particle = i.second;
-      if((particle.simStage() >= simStageThreshold_)
-         &&(particleTypes_.find(particle.pdgId()) != particleTypes_.end())
-         && isStopped(particle))
-        {
-          ++numRequestedTypeStops_;
+      if(particle.simStage() >= simStageThreshold_) {
+        ++numStageParticles_;
 
-          if(verbosityLevel_ > 2) {
-            std::cout<<"stopped particle "<<particle.pdgId()
-                     <<" at pos="<<particle.endPosition()
-                     <<" time="<<particle.endGlobalTime()
-                     <<" reason="<<particle.stoppingCode()
-                     <<" in volume "<<vi.endVolume(particle)
-                     <<std::endl;
+        if((particleTypes_.find(particle.pdgId()) != particleTypes_.end())
+           && isStopped(particle))
+          {
+            ++numRequestedTypeStops_;
+
+            if(verbosityLevel_ > 2) {
+              std::cout<<"stopped particle "<<particle.pdgId()
+                       <<" at pos="<<particle.endPosition()
+                       <<" time="<<particle.endGlobalTime()
+                       <<" reason="<<particle.stoppingCode()
+                       <<" in volume "<<vi.endVolume(particle)
+                       <<std::endl;
+            }
+
+            const std::string material = vi.endVolume(particle).materialName();
+            hStopMaterials_->Fill(material.c_str(), 1.);
+
+            if(materialAccepted(material)) {
+              ++numRequestedMateralStops_;
+              output->emplace_back(ih, particle.id().asUint());
+            }
           }
-
-          const std::string material = vi.endVolume(particle).materialName();
-          hStopMaterials_->Fill(material.c_str(), 1.);
-
-          if(materialAccepted(material)) {
-            ++numRequestedMateralStops_;
-            output->emplace_back(ih, particle.id().asUint());
-          }
-        }
+      }
     }
 
     event.put(std::move(output));
@@ -245,6 +250,7 @@ namespace mu2e {
       <<"StoppedParticlesFinder stats:"
       <<" accepted = "<<numRequestedMateralStops_
       <<", requested type stops = "<<numRequestedTypeStops_
+      <<", passing stage cut = "<<numStageParticles_
       <<", total input particles = "<<numTotalParticles_
       << "\n";
   }
