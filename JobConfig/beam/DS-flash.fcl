@@ -57,7 +57,6 @@ physics.producers.g4run.SDConfig.preSimulatedHits:  ["flashResample:virtualdetec
 physics.producers.stoppedMuonFinder: {
    module_type: "StoppedParticlesFinder"
    particleInput: "g4run"
-   simStageThreshold: 2 // this must correspond to the current stage
    particleTypes: [ 13 ]
    physVolInfoInput: "g4run"
    stoppingMaterial: "StoppingTarget_Al"
@@ -77,7 +76,6 @@ physics.producers.outOfTargetMuonFinder : {
    physVolInfoInput : "g4run"
    vetoedMaterials : [ "StoppingTarget_Al" ]
    particleTypes : [ 13 ] // mu-
-   simStageThreshold: 2 // this must correspond to the current stage
    verbosityLevel: 1
 }
 

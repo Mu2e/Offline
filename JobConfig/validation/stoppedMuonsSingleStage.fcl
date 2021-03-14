@@ -71,7 +71,6 @@ physics : {
          physVolInfoInput : "g4run"
          stoppingMaterial : "StoppingTarget_Al"
          particleTypes : [ 13 ] // mu-
-         simStageThreshold: 0
          verbosityLevel: 1
       }
    }
