@@ -14,6 +14,10 @@
 
 #include "messagefacility/MessageLogger/MessageLogger.h"
 
+#include "fhiclcpp/types/Atom.h"
+#include "fhiclcpp/types/OptionalAtom.h"
+#include "fhiclcpp/types/Sequence.h"
+
 #include "art/Framework/Core/EDProducer.h"
 #include "art/Framework/Core/ModuleMacros.h"
 #include "art/Framework/Principal/Event.h"
@@ -62,11 +66,11 @@ namespace mu2e {
           [this](){ return stoppingMaterial().empty(); }
           };
 
-      fhicl::Atom<unsigned> simStageThreshold{ Name("simStageThreshold"),
-          Comment("Ignore particles from earlier simulatino stages than the threshold. This should be used\n"
-                  "to limit the selection to stops in just the latest simulation stage."
-                  ),
-          0
+      fhicl::OptionalAtom<unsigned> simStageThreshold{ Name("simStageThreshold"),
+          Comment("By default only particles from the current simulation stage are considered.\n"
+                  "This setting allows to override that behavior and include into the search\n"
+                  "all particles with simStage()>=simStageThreshold."
+                  )
           };
 
       fhicl::Atom<int> verbosityLevel{ Name("verbosityLevel"),
@@ -88,6 +92,7 @@ namespace mu2e {
     std::string stoppingMaterial_;
     std::vector<std::string> vetoedMaterials_;
 
+    bool simStageThresholdConfigured_;
     unsigned simStageThreshold_; // to select particles from the current simulation stage
 
     int verbosityLevel_;
@@ -114,7 +119,8 @@ namespace mu2e {
     , particleInput_(conf().particleInput())
     , physVolInfoInput_(conf().physVolInfoInput())
     , stoppingMaterial_(conf().stoppingMaterial())
-    , simStageThreshold_(conf().simStageThreshold())
+    , simStageThresholdConfigured_(false)
+    , simStageThreshold_(-1u)
     , verbosityLevel_(conf().verbosityLevel())
     , hStopMaterials_(art::ServiceHandle<art::TFileService>()->make<TH1D>("stopmat", "Stopping materials", 1, 0., 1.))
     , vols_()
@@ -129,6 +135,8 @@ namespace mu2e {
       vetoedMaterials_ = conf().vetoedMaterials();
     }
 
+    simStageThresholdConfigured_ = conf().simStageThreshold(simStageThreshold_);
+
     auto pt(conf().particleTypes());
     for(const auto& pid : pt) {
       particleTypes_.insert(PDGCode::type(pid));
@@ -141,7 +149,9 @@ namespace mu2e {
       std::copy(particleTypes_.begin(), particleTypes_.end(), std::ostream_iterator<int>(os, ", "));
       os<<" ]"<<std::endl;
 
-      os<<"simStageThreshold  = "<<simStageThreshold_<<std::endl;
+      if(simStageThresholdConfigured_) {
+        os<<"simStageThreshold  = "<<simStageThreshold_<<std::endl;
+      }
 
       os<<"stoppingMaterial = "<<stoppingMaterial_<<std::endl;
 
@@ -169,6 +179,14 @@ namespace mu2e {
         }
       }
       std::cout<<"PhysicalVolumeInfoMultiCollection dump end"<<std::endl;
+    }
+
+    if(!simStageThresholdConfigured_) {
+      if(vols_->empty()) {
+        throw cet::exception("BADINPUT")<<"StoppedParticlesFinder: something is wrong,"
+          " got empty PhysicalVolumeInfoMultiCollection "<<physVolInfoInput_<<std::endl;
+      }
+      simStageThreshold_ = vols_->size() - 1;  // the current simStage points to the last entry in vols_
     }
   }
 
