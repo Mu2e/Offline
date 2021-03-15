@@ -33,8 +33,7 @@ namespace mu2e {
       void SetPostionAndDirectionFromKalRep(double zpos);
       void SetMomentumExt();
       void SetParticleExt();
-      const std::string Title();
-      std::string DataTitle(const std::string &pstr, int n);
+
       XYZVec Direction;
       XYZVec Position;
       double Momentum;
@@ -42,6 +41,7 @@ namespace mu2e {
       double Charge;
       double Mass;
       double Time;
+      double Radius;
       bool _trajectory;
       ClassDef( TEveMu2eCustomHelix, 0);
     };

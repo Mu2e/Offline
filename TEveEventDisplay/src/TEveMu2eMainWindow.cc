@@ -522,7 +522,7 @@ namespace mu2e{
       if(_data.cryHitcol !=0){pass_data->AddCrystalHits(_firstLoop, _emptydata.cryHitcol, calo2Dproj, ftimemin, ftimemax, true, _accumulate, CfXYMgr, CfRZMgr, proj0, proj1);}
     }
     if (type == "Tracks"){
-      pass_data->AddHelixPieceWise(_firstLoop, _emptydata.track_tuple, tracker2Dproj, ftimemin, ftimemax, true,  _accumulate, TfXYMgr, TfRZMgr, proj2, proj3);
+      pass_data->AddHelixPieceWise3D(_firstLoop, _emptydata.track_tuple, tracker2Dproj, ftimemin, ftimemax, true,  _accumulate, TfXYMgr, TfRZMgr, proj2, proj3);
 
     }
     if (type == "Cosmics"){
@@ -605,7 +605,7 @@ namespace mu2e{
       }
       if(param1==1202){
 
-        if(trackscheck->IsDown()){pass_data->AddHelixPieceWise(_firstLoop, _data.track_tuple, tracker2Dproj, ftimemin, ftimemax, false, _accumulate, TfXYMgr, TfRZMgr, proj2, proj3);}
+        if(trackscheck->IsDown()){pass_data->AddHelixPieceWise3D(_firstLoop, _data.track_tuple, tracker2Dproj, ftimemin, ftimemax, false, _accumulate, TfXYMgr, TfRZMgr, proj2, proj3);}
        
         if(!trackscheck->IsDown()){RedrawDataProducts("Tracks");}
       }
@@ -684,7 +684,7 @@ namespace mu2e{
 
     if(_data.clustercol!=0) *clusterenergy = pass_data->AddCaloClusters(firstLoop, data.clustercol, calo2Dproj, false, fclustmin, fclustmax, ftimemin, ftimemax, _accumulate, CfXYMgr, CfRZMgr, proj0, proj1);
     if (_data.cryHitcol!=0) pass_data->AddCrystalHits(firstLoop, data.cryHitcol, calo2Dproj, ftimemin, ftimemax, false, _accumulate, CfXYMgr, CfRZMgr, proj0, proj1);
-    pass_data->AddHelixPieceWise(firstLoop, data.track_tuple, tracker2Dproj,  ftimemin, ftimemax, false, _accumulate, TfXYMgr, TfRZMgr, proj2, proj3);
+    pass_data->AddHelixPieceWise3D(firstLoop, data.track_tuple, tracker2Dproj,  ftimemin, ftimemax, false, _accumulate, TfXYMgr, TfRZMgr, proj2, proj3);
     if(_data.cosmiccol!=0) pass_data->AddCosmicTrack(firstLoop, data.cosmiccol, tracker2Dproj, ftimemin, ftimemax, false, _accumulate, TfXYMgr, TfRZMgr, proj2, proj3);
     if(_data.mctrajcol!=0) pass_mc->AddFullMCTrajectory(firstLoop, data.mctrajcol, tracker2Dproj, false, _accumulate,  TfXYMgr, TfRZMgr, proj2, proj3);
 
