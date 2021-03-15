@@ -26,8 +26,8 @@ namespace mu2e {
       Int_t mSize= 1; 
 
       bool AddErrorBar = true;
-   
-      void DrawHit3D(const std::string &pstr, Int_t b,CLHEP::Hep3Vector const& HitPos, TEveElementList *list); 
+      void DrawHit2D(const std::string &pstr, Int_t b,CLHEP::Hep3Vector HitPos, TEveElementList *list); 
+      void DrawHit3D(const std::string &pstr, Int_t b,CLHEP::Hep3Vector HitPos, TEveElementList *list); 
       std::string DataTitle(const std::string &pstr, int n);
       #endif
       ClassDef(TEveMu2eCRVEvent, 0);

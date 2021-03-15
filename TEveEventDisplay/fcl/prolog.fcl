@@ -1,6 +1,12 @@
-
-
 BEGIN_PROLOG
+
+TEveGDMLTest : {
+  module_type : TEveGDMLTest
+}
+
+TEveNonGDMLTest : {
+  module_type : TEveNonGDMLTest
+}
 
 TEveEventDisplayBase : {
     module_type : TEveEventDisplay
@@ -14,9 +20,9 @@ TEveEventDisplayBase : {
       CrvRecoPulseCollection	  :  "CrvRecoPulses"
       CosmicTrackSeedCollection :  NULL
       CaloClusterCollection		  :  "CaloClusterMaker"
-      CaloCrystalHitCollection  :  NULL
+      CaloHitCollection  :  NULL
       HelixSeedCollection       :  "HelixFinderDe:Negative"
-      KalSeedCollection         :  ["KFFDeM"]#, "KFFDeMHPar", "KFFDeMHDar" ]
+      KalSeedCollection         :  ["KFFDeM"]
       TrkExtTrajCollection      : NULL
       MCTrajectoryCollection    :  "compressDigiMCs"
       addHits 			            : true
@@ -30,25 +36,53 @@ TEveEventDisplayBase : {
     }
   }  
   
+TEveEventDisplayUpstream : {
+    module_type : TEveEventDisplay
+    showCRV : false
+    showDSOnly : false
+    accumulate : false
+    filler : {
+      ComboHitCollection 		      : NULL
+      CosmicTrackSeedCollection 	: NULL
+      CrvRecoPulseCollection		  : NULL
+      CaloClusterCollection		    : NULL
+      CaloHitCollection    : NULL
+      MCTrajectoryCollection      : "g4run"
+      HelixSeedCollection         : NULL
+      KalSeedCollection           : [NULL]
+      TrkExtTrajCollection        : NULL
+      addHits 			              : false
+      addTracks 			            : false
+      addCrvHits			            : false
+      addCosmicSeedFit	          : false
+      addMCTraj				            : true
+   }
+  }  
+  
 TEveEventDisplayHelix : {
-      @table::TEveEventDisplayBase
+      module_type : TEveEventDisplay
+      accumulate : false
+      showCRV : false
+      showBuilding : false  
+      showDSOnly : true 
+      showEvent : true
       filler : {
-        ComboHitCollection 		    : "makeSH"
+        ComboHitCollection 	  : "makeSH"
         CrvRecoPulseCollection	  :  NULL
         CosmicTrackSeedCollection :  NULL
-        CaloClusterCollection		  :  "CaloClusterMaker"
-        CaloCrystalHitCollection  :  NULL
-        HelixSeedCollection       :  NULL #"HelixFinderDe:Negative"
+        CaloClusterCollection     :  "CaloClusterMaker"
+        CaloHitCollection  :  NULL
+        HelixSeedCollection       :  "HelixFinderDe:Negative"
         KalSeedCollection         :  ["KFFDeM"]#, "KFFDeMHPar", "KFFDeMHDar" ]
-        TrkExtTrajCollection      : NULL
-        MCTrajectoryCollection    :  "compressDigiMCs"
-        addHits 			            : false
-        addTracks 			          : true
-        addCrvHits			          : false
-        addCosmicSeedFit	        : false
-        addClusters			          : true
-        addTrkExtTrajs		        : false
-        addMCTraj				          : false 
+        TrkExtTrajCollection      :  NULL
+        MCTrajectoryCollection    :  "compressRecoMCs"
+        addHits 		  : false
+        addTracks 		  : true
+        addCrvHits		  : false
+        addCosmicSeedFit	  : false
+        addClusters		  : true
+        addTrkExtTrajs		  : false
+        addMCTraj		  : true
       }
   }   
 
@@ -60,7 +94,7 @@ TEveEventDisplayCosmics : {
       CrvRecoPulseCollection	  :  "CrvRecoPulses"
       CosmicTrackSeedCollection 	: "CosmicTrackFinderTimeFit"
       CaloClusterCollection		  :  NULL
-      CaloCrystalHitCollection  :  NULL
+      CaloHitCollection  :  NULL
       HelixSeedCollection       :  NULL
       KalSeedCollection         :  NULL
       TrkExtTrajCollection      :  NULL
@@ -81,9 +115,15 @@ TEveDis : {
 	    TEveEventDisplayBase     : @local::TEveEventDisplayBase
 			TEveEventDisplayCosmics  : @local::TEveEventDisplayCosmics
  			TEveEventDisplayHelix    : @local::TEveEventDisplayHelix
+ 			TEveGDMLTest             : @local::TEveGDMLTest
+ 			TEveNonGDMLTest           : @local::TEveNonGDMLTest
+ 			TEveEventDisplayUpstream : @local::TEveEventDisplayUpstream
 	} 
 
 	seqCosmics 	: [TEveEventDisplayCosmics]
 	seqHelix   	: [TEveEventDisplayHelix]
+	seqTest     : [TEveGDMLTest]
+	seqGeomTest     : [TEveNonGDMLTest]
+  seqPOT     : [TEveEventDisplayUpstream]
 }
 END_PROLOG

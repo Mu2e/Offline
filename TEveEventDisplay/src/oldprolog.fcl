@@ -1,0 +1,74 @@
+#
+# Prolog specific to creating primary (signal, signal-like or calibration) particles
+#
+#include "JobConfig/beam/prolog.fcl"
+#include "EventGenerator/fcl/prolog.fcl"
+#include "CommonMC/fcl/prolog.fcl"
+#include "TrackerMC/fcl/prolog.fcl"
+#include "CaloMC/fcl/prolog.fcl"
+#include "CRVResponse/fcl/prolog.fcl"
+#include "Filters/fcl/prolog.fcl"
+#
+BEGIN_PROLOG
+
+Primary: {
+  producers : {
+    g4run : @local::mu2e.physics.producers.g4run.muons
+    genCounter: { module_type: GenEventCounter }
+    @table::EventGenerator.producers
+    @table::CommonMC.producers
+    @table::TrackerMC.producers
+    @table::CaloDigiMC.producers
+    @table::CrvDAQPackage.producers
+# dedicated digi maker for filter
+# 2 stages now
+    makeSGS : {
+      module_type : MakeStrawGasSteps
+      KeepDeltasModule : "g4run" # don'e compress deltas on primary particles
+    }
+    makeSD:{
+      @table::makeSD
+    }
+    compressDigiMCs : @local::DigiCompression.Primary
+  }
+  filters : {
+# generator truncation filter; only needed for cosmic rays in principle
+    g4status: {
+      module_type: FilterStatusG4
+      input: "g4run"
+    }
+# digi filtering for Primary selection.
+    DigiFilter : {
+      module_type : StrawDigiMCFilter
+      StrawDigiMCCollection : "makeSD"
+    }
+# shower filter for calorimeter selection
+    CaloFilter : {
+      module_type : CaloShowerSimFilter
+    }
+  }
+  analyzers: {
+    genCountLogger: { module_type: GenEventCountReader makeHistograms: false }
+    digiCompressionCheck : @local::DigiCompression.Check
+  }
+  GenAndG4 :  [ generate, g4run, g4status ]
+
+ EndPath : [ digiCompressionCheck, Output ]
+  Output : {
+     module_type : RootOutput
+     SelectEvents : [ TriggerPath ]
+     fileName    : @nil
+     # drop StepPoints from calorimeter
+     outputCommands : @local::DigiCompression.OutputCommands
+  }
+}
+# must define this outside the brackets due to internal dependence
+Primary.TriggerPath : [ @sequence::Primary.GenAndG4,
+  @sequence::CommonMC.DigiSim,
+  @sequence::TrackerMC.DigiSim,
+  DigiFilter,
+  @sequence::CaloDigiMC.DigiSim,
+  @sequence::CrvDAQPackage.CrvResponseSequence,
+  compressDigiMCs ]
+
+END_PROLOG
