@@ -30,5 +30,4 @@ physics.end_paths : [ EndPath ] # needed for generate_fcl
 # no histogram output
 services.TFileService.fileName: "/dev/null"
 # the fileds below will get filled in by generate_fcl
-physics.producers.compressRecoMCs.mcTrajectoryTag : "compressDigiMCs"
 outputs.Output.fileName: "mcs.owner.description.version.sequencer.art"
