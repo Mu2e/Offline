@@ -4,17 +4,17 @@
 #include "fcl/standardServices.fcl"
 #include "TEveEventDisplay/fcl/prolog.fcl"
 
+source : { module_type : EmptyEvent}
+
 services : @local::Services.Reco
 
-process_name : HelixED
-
-source : { module_type : RootInput }
+process_name : TestDisplay
 
 physics :
 {
  analyzers : { @table::TEveDis.analyzers}
 }
 
-physics.EndPath  : [ @sequence::TEveDis.seqHelix] 
+physics.EndPath  : [ @sequence::TEveDis.seqTest] 
 
 

@@ -22,7 +22,7 @@
 #include "fhiclcpp/types/Sequence.h"
 #include "fhiclcpp/types/Table.h"
 
-#include<TObject.h>
+#include <TObject.h>
 #include <TROOT.h>
 #include <TGComboBox.h>
 #include <TGListBox.h>
@@ -35,7 +35,7 @@ using namespace CLHEP;
 
 namespace mu2e{
 
-  enum RecoDataProductName {ComboHits, CaloHits, CaloClusters, CosmicTracks, HelixSeeds, KalSeeds, CRVRecoPulses, TrkExtTrajectories};
+  enum RecoDataProductName {ComboHits, CaloCrystalHits, CaloClusters, CosmicTracks, HelixSeeds, KalSeeds, CRVRecoPulses, TrkExtTrajectories};
   enum MCDataProductName {MCTrajectories};
 
 	class Collection_Filler
@@ -50,14 +50,14 @@ namespace mu2e{
       fhicl::Atom<art::InputTag>crvdigiTag{Name("CrvRecoPulseCollection"),Comment("crvTag")};
       fhicl::Atom<art::InputTag>cosmicTag{Name("CosmicTrackSeedCollection"),Comment("cosmicTag"), "CosmicTrackFinderTimeFit"};
       fhicl::Atom<art::InputTag>cluTag{Name("CaloClusterCollection"),Comment("cluTag")};
-      fhicl::Atom<art::InputTag>cryHitTag{Name("CaloCrystalHitCollection"),Comment("cryHitTag")};
+      fhicl::Atom<art::InputTag>cryHitTag{Name("CaloHitCollection"),Comment("cryHitTag")};
       fhicl::Atom<art::InputTag>hseedTag{Name("HelixSeedCollection"),Comment("hseedTag")};
       fhicl::Sequence<art::InputTag>kalseedTag{Name("KalSeedCollection"),Comment("kalseedTag")};
- fhicl::Atom<art::InputTag>trkexttrajTag{Name("TrkExtTrajCollection"),Comment("trkexttrajTag")};
+      fhicl::Atom<art::InputTag>trkexttrajTag{Name("TrkExtTrajCollection"),Comment("trkexttrajTag")};
       //MC Data Products
       fhicl::Atom<art::InputTag>mctrajTag{Name("MCTrajectoryCollection"),Comment("mctrajTag")};
 
-      //RecoData Products
+      //To add RecoDataProducts
       fhicl::Atom<bool> addHits{Name("addHits"), Comment("set to add the hits"),false};
       fhicl::Atom<bool> addTracks{Name("addTracks"), Comment("set to add tracks"),false};
       fhicl::Atom<bool> addClusters{Name("addClusters"), Comment("set to add calo lusters"),false};
