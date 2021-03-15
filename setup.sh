@@ -160,3 +160,4 @@ export PYTHONPATH=`dropit -p $PYTHONPATH -sf $MU2E_BASE_RELEASE/scripts/build/py
 export PATH=`dropit -p $PATH -sf $MU2E_BASE_RELEASE/bin`
 # root6 needs a path to include files to prevent some runtime warnings
 export ROOT_INCLUDE_PATH=`dropit -p $ROOT_INCLUDE_PATH -sf $MU2E_BASE_RELEASE`
+
