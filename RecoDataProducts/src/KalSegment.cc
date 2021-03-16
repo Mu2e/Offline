@@ -6,14 +6,13 @@ namespace mu2e {
     // CentralHelix uses the same parameter convention as BTrk.  First,
     // convert the state estimate into a helix.
     KinKal::CentralHelix chel = centralHelix();
-    //convert that to the BaBar helix parameters.  We skip t0
+    //convert that to the BaBar helix parameters.  skip t0 since that isn't part of the geometric helix
     CLHEP::HepVector pvec(5,0);
-    // crude interface to BaBar code
     pvec[KinKal::CentralHelix::d0_] = chel.d0();
     pvec[KinKal::CentralHelix::phi0_] = chel.phi0();
     pvec[KinKal::CentralHelix::omega_] = chel.omega();
-    pvec[KinKal::CentralHelix::z0_] = chel.z0();
     pvec[KinKal::CentralHelix::tanDip_] = chel.tanDip();
+    pvec[KinKal::CentralHelix::z0_] = chel.z0();
     return HelixVal(pvec);
   }
 
@@ -37,5 +36,15 @@ namespace mu2e {
     auto momv = chel.momentum3(fltToTime(flt));
     // translate
     momvec = XYZVec(momv.X(),momv.Y(),momv.Z());
+  }
+
+  double KalSegment::fltToTime(double flt) const {
+    KinKal::CentralHelix chel(_pstate,bnom());
+    return chel.t0() + flt/chel.speed();
+  }
+
+  double KalSegment::timeToFlt(double time) const {
+    KinKal::CentralHelix chel(_pstate,bnom());
+    return (time -chel.t0())*chel.speed();
   }
 }
