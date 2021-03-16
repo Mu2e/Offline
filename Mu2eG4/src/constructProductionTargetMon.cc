@@ -41,11 +41,14 @@ namespace mu2e {
     void constructTargetHallPWC(VolumeInfo const & parent, SimpleConfig const & _config, std::string nameSuffix, G4ThreeVector positionInParent) {
         double gasLength = _config.getDouble("pTargetMon_gasLength");
         double outerPlateLength = _config.getDouble("pTargetMon_outerPlateLength");
-        double detectorLength = gasLength + (2*outerPlateLength);
         double windowWidth = _config.getDouble("pTargetMon_windowWidth");
         double windowHeight = _config.getDouble("pTargetMon_windowHeight");
         double height = _config.getDouble("pTargetMon_height");
         double width = _config.getDouble("pTargetMon_width");
+        double windowThick = _config.getDouble("pTargetMon_windowThick");
+        double frameThick = _config.getDouble("pTargetMon_frameThick");
+        double detectorLength = gasLength + (2*outerPlateLength) + frameThick;
+
 
         std::vector<double> halfDims;
         halfDims.push_back(width/2.);
@@ -96,24 +99,173 @@ namespace mu2e {
                     0, 
                     G4Colour::Blue(), 
                     "PTM");
+
+        // insert the windows
+        G4Material *windowMaterial = findMaterialOrThrow(_config.getString("pTargetMon_windowMaterial"));
+        std::vector<double> windowHalfDims;
+        windowHalfDims.push_back(windowWidth/2.);
+        windowHalfDims.push_back(windowHeight/2.);
+        windowHalfDims.push_back(windowThick/2.);
+        // first ground plane
+        // TODO: make this a virtual detector
+        std::string ground1Name = "pTargetMonGround1";
+        ground1Name.append(nameSuffix)
+        double ground1Z = -5.5*frameThick
+        nextBox(ground1Name,
+                windowHalfDims,
+                windowMaterial,
+                noRotation,
+                G4ThreeVector(0.0, 0.0, ground1Z),
+                PWCContainerInfo,
+                0,
+                G4Color::Green(),
+                "PTM");
+        // first HV plane
+        std::string hv1Name = "pTargetMonHV1";
+        hv1Name.append(nameSuffix)
+        double hv1Z = -3.5*frameThick;
+        nextBox(hv1Name,
+                windowHalfDims,
+                windowMaterial,
+                noRotation,
+                G4ThreeVector(0.0, 0.0, hv1Z),
+                PWCContainerInfo,
+                0,
+                G4Color::Green(),
+                "PTM");
+        // second HV plane
+        std::string hv2Name = "pTargetMonHV2";
+        hv2Name.append(nameSuffix)
+        double hv2Z = 0.5*frameThick;
+        nextBox(hv2Name,
+                windowHalfDims,
+                windowMaterial,
+                noRotation,
+                G4ThreeVector(0.0, 0.0, hv2Z),
+                PWCContainerInfo,
+                0,
+                G4Color::Green(),
+                "PTM");
+        // third HV plane
+        std::string hv3Name = "pTargetMonHV3";
+        hv3Name.append(nameSuffix)
+        double hv3Z = 4.5*frameThick;
+        nextBox(hv3Name,
+                windowHalfDims,
+                windowMaterial,
+                noRotation,
+                G4ThreeVector(0.0, 0.0, hv3Z),
+                PWCContainerInfo,
+                0,
+                G4Color::Green(),
+                "PTM");
+        // last ground plane
+        std::string ground2Name = "pTargetMonGround2";
+        ground2Name.append(nameSuffix)
+        double ground2Z = 6.5*frameThick
+        nextBox(ground2Name,
+                windowHalfDims,
+                windowMaterial,
+                noRotation,
+                G4ThreeVector(0.0, 0.0, ground2Z),
+                PWCContainerInfo,
+                0,
+                G4Color::Green(),
+                "PTM");
+
         
         // gas inside PWC
         G4Material *gasMaterial = findMaterialOrThrow(_config.getString("pTargetMon_innerGas"));
-        std::string gasName = "pTargetMonGas";
-        gasName.append(nameSuffix);
-        std::vector<double> gasHalfDims;
-        gasHalfDims.push_back(windowWidth/2.);
-        gasHalfDims.push_back(windowHeight/2.);
-        gasHalfDims.push_back(gasLength/2.);
-        nestBox(gasName,
-                gasHalfDims,
+        // between ground plane 1 and HV plane 1
+        std::string gasName1 = "pTargetMonGas1";
+        gasName1.append(nameSuffix);
+        double gasLength1 = hv1Z - ground1Z - windowThick;
+        double gasZ1 = 0.5*(hv1Z + ground1Z);
+        std::vector<double> gasHalfDims1;
+        gasHalfDims1.push_back(windowWidth/2.);
+        gasHalfDims1.push_back(windowHeight/2.);
+        gasHalfDims1.push_back(gasLength1/2.);
+        nestBox(gasName1,
+                gasHalfDims1,
                 gasMaterial,
                 noRotation,
-                G4ThreeVector(0.0, 0.0, 0.0),
+                G4ThreeVector(0.0, 0.0, gasZ1),
                 PWCContainerInfo,
                 0,
                 G4Colour::Red(),
                 "PTM");
+        // between HV plane 1 and HV plane 2
+        // TODO: divide this into strips and treat as indiv sensitive detectors
+        std::string gasName2 = "pTargetMonGas2";
+        gasName2.append(nameSuffix);
+        double gasLength2 = hv2Z - hv1Z - windowThick;
+        double gasZ2 = 0.5*(hv2Z + hv1Z);
+        std::vector<double> gasHalfDims2;
+        gasHalfDims2.push_back(windowWidth/2.);
+        gasHalfDims2.push_back(windowHeight/2.);
+        gasHalfDims2.push_back(gasLength2/2.);
+        nestBox(gasName2,
+                gasHalfDims2,
+                gasMaterial,
+                noRotation,
+                G4ThreeVector(0.0, 0.0, gasZ2),
+                PWCContainerInfo,
+                0,
+                G4Colour::Red(),
+                "PTM");
+        // between HV plane 2 and HV plane 3
+        // TODO: divide this into strips and treat as indiv sensitive detectors
+        std::string gasName3 = "pTargetMonGas3";
+        gasName3.append(nameSuffix);
+        double gasLength3 = hv3Z - hv2Z - windowThick;
+        double gasZ3 = 0.5*(hv3Z + hv2Z);
+        std::vector<double> gasHalfDims3;
+        gasHalfDims3.push_back(windowWidth/2.);
+        gasHalfDims3.push_back(windowHeight/2.);
+        gasHalfDims3.push_back(gasLength3/2.);
+        nestBox(gasName3,
+                gasHalfDims3,
+                gasMaterial,
+                noRotation,
+                G4ThreeVector(0.0, 0.0, gasZ3),
+                PWCContainerInfo,
+                0,
+                G4Colour::Red(),
+                "PTM");
+        // between HV plane 3 and ground plane 2
+        std::string gasName4 = "pTargetMonGas4";
+        gasName4.append(nameSuffix);
+        double gasLength4 = ground2Z - hv3Z - windowThick;
+        double gasZ4 = 0.5*(ground2Z + hv3Z);
+        std::vector<double> gasHalfDims4;
+        gasHalfDims4.push_back(windowWidth/2.);
+        gasHalfDims4.push_back(windowHeight/2.);
+        gasHalfDims4.push_back(gasLength4/2.);
+        nestBox(gasName4,
+                gasHalfDims4,
+                gasMaterial,
+                noRotation,
+                G4ThreeVector(0.0, 0.0, gasZ4),
+                PWCContainerInfo,
+                0,
+                G4Colour::Red(),
+                "PTM");
+
+        // std::string gasName = "pTargetMonGas";
+        // gasName.append(nameSuffix);
+        // std::vector<double> gasHalfDims;
+        // gasHalfDims.push_back(windowWidth/2.);
+        // gasHalfDims.push_back(windowHeight/2.);
+        // gasHalfDims.push_back(gasLength/2.);
+        // nestBox(gasName,
+        //         gasHalfDims,
+        //         gasMaterial,
+        //         noRotation,
+        //         G4ThreeVector(0.0, 0.0, 0.0),
+        //         PWCContainerInfo,
+        //         0,
+        //         G4Colour::Red(),
+        //         "PTM");
         
     } //constructTargetHallPWC
 
