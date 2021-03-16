@@ -29,7 +29,9 @@ CaloShowerROMaker :
 {
     module_type              : CaloShowerROMaker
     caloShowerStepCollection : ["CaloShowerStepMaker"]
-    TimeOffsets              : { inputs : [ @sequence::CommonMC.TimeMaps ] }
+    eventWindowMarker        : EWMProducer
+    protonBunchTimeMC        : EWMProducer
+    timeOffsets              : { inputs : [ @sequence::CommonMC.TimeMaps ] }
     blindTime                : @local::HitMakerBlindTime
     LRUCorrection            : true
     BirksCorrection          : true
@@ -37,7 +39,6 @@ CaloShowerROMaker :
     addTravelTime            : true	    
     diagLevel                : 0
 }
-
 
 #See doc-db 35519 for noise level discussion
 NoiseGenerator : 
@@ -58,6 +59,7 @@ CaloDigiMaker :
 {
     module_type             : CaloDigiMaker
     caloShowerROCollection  : CaloShowerROMaker
+    eventWindowMarker       : EWMProducer
     blindTime               : @local::HitMakerBlindTime
     addNoise                : true
     generateSpotNoise       : true
