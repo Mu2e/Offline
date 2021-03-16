@@ -16,6 +16,7 @@
 #include "RecoDataProducts/inc/ComboHit.hh"
 // BTrk
 #include "BTrk/TrkBase/HelixTraj.hh"
+#include "BTrk/TrkBase/TrkMomCalculator.hh"
 #include "BTrk/KalmanTrack/KalRep.hh"
 #include "BTrk/KalmanTrack/KalMaterial.hh"
 #include "BTrk/BbrGeom/BbrVectorErr.hh"
@@ -88,21 +89,20 @@ namespace mu2e {
       helix._fz0 = phi;
     }
 
-    void fillSegment(HelixTraj const& htraj, double locflt, double globflt, TrkT0 t0, double mass, int charge, double Bz, KalSegment& kseg) {
-      kseg._fmin = htraj.lowRange();
-      kseg._fmax = htraj.hiRange();
-      kseg._dflt = locflt-globflt;
+// legacy function
+    void fillSegment(HelixTraj const& htraj, double locflt, double globflt, TrkT0 t0, double mass, int charge, BField const& bfield, KalSegment& kseg) {
 // compute the kinematics; this is external to htraj
-      double radToMom = charge*Bz*CLHEP::c_light/1000.0;
+      double radToMom = charge*bfield.bFieldNominal()*CLHEP::c_light/1000.0;
       double mom = fabs(radToMom/(htraj.omega()*htraj.cosDip()));
       double energy = sqrt(mom*mom + mass*mass);
       double v = CLHEP::c_light*mom/energy;
       double vz = v*htraj.sinDip();
-      // translate BTrk t0 to CentralHelix t0
+      // translate BTrk t0 to CentralHelix t0 (different convention)
       double ct0 = t0.t0() + htraj.z0()/vz;
       // translate htraj (3D) flight range to time ranges
-      kseg._tmin = ct0 + kseg._fmin/v;
-      kseg._tmax = ct0 + kseg._fmax/v;
+      double tmin = ct0 + htraj.lowRange()/v;
+      double tmax = ct0 + htraj.hiRange()/v;
+      double tref = ct0 + locflt/v;
       // conver the helix content to a CentralHelix.  Note the t0 value supplied is in the BTrk convention (time at z=0).
       KinKal::DVEC chpars;
       KinKal::DMAT cov;
@@ -116,25 +116,28 @@ namespace mu2e {
       chpars(KinKal::CentralHelix::t0_) = ct0;
       cov(KinKal::CentralHelix::t0_,KinKal::CentralHelix::t0_) = t0.t0Err()*t0.t0Err();
       KinKal::Parameters params(chpars,cov);
-      KinKal::CentralHelix chelix(params,mass,charge,Bz,KinKal::TimeRange(kseg._tmin,kseg._tmax));
+      // create the CentralHelix from these
+      KinKal::CentralHelix chelix(params,mass,charge,bfield.bFieldNominal(),KinKal::TimeRange(tmin,tmax));
+      kseg = KalSegment(chelix, tref, globflt-locflt);
 // check
-      auto chpos0 = chelix.position3(ct0);
-      auto hpos0 = htraj.position(0.0);
-      // sample at the position described
-      double tref = kseg._tmin + (locflt-kseg._fmin)*(kseg._tmax-kseg._tmax)/(kseg._fmax-kseg._fmin);
-      double chmom = chelix.momentum(tref);
-      kseg._pstate = chelix.stateEstimate(tref);
-      double smom = kseg._pstate.momentum();
-      if(fabs(chpos0.X()-hpos0.x()) > 1e-6||
-	  fabs(chpos0.Y()-hpos0.y()) > 1e-6 ||
-	  fabs(chpos0.Z()-hpos0.z()) > 1e-6  ||
-	  fabs(mom-chmom) > 1e-6 ||
-	  fabs(mom-smom) > 1e-6)
-      throw cet::exception("RECO")<<"fillSegment: momentum mismatch" << std::endl;
-      // BField
-      kseg._bnom = XYZVec(0.0,0.0,Bz);
-      // test
-
+      auto tchelix = kseg.centralHelix();
+      auto chpos0 = tchelix.position3(tref);
+      auto hpos0 = htraj.position(locflt);
+      // sample at the reference time 
+      auto chmom = chelix.momentum3(tref);
+      auto hmom = TrkMomCalculator::vecMom(htraj,bfield,locflt);
+      auto smom = kseg._pstate.momentum3();
+      if(
+	  fabs(chpos0.X()-hpos0.x()) > 1e-4 ||
+	  fabs(chpos0.Y()-hpos0.y()) > 1e-4 ||
+	  fabs(chpos0.Z()-hpos0.z()) > 1e-4 ||
+	  fabs(hmom.x()-chmom.X()) > 1e-6 ||
+	  fabs(hmom.y()-chmom.Y()) > 1e-6 ||
+	  fabs(hmom.z()-chmom.Z()) > 1e-6 ||
+	  fabs(smom.X()-chmom.X()) > 1e-6 ||
+	  fabs(smom.Y()-chmom.Y()) > 1e-6 ||
+	  fabs(smom.Z()-chmom.Z()) > 1e-6 )
+      throw cet::exception("RECO")<<"fillSegment: position or momentum mismatch" << std::endl;
     }
   
     void fillStraws(const KalRep* krep, std::vector<TrkStraw>& tstraws) {
