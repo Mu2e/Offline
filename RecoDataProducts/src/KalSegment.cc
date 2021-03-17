@@ -1,11 +1,10 @@
 #include "RecoDataProducts/inc/KalSegment.hh"
-#include "KinKal/Trajectory/CentralHelix.hh"
 
 namespace mu2e {
   HelixVal KalSegment::helix() const {
     // CentralHelix uses the same parameter convention as BTrk.  First,
     // convert the state estimate into a helix.
-    KinKal::CentralHelix chel = centralHelix();
+    auto chel = centralHelix();
     //convert that to the BaBar helix parameters.  skip t0 since that isn't part of the geometric helix
     CLHEP::HepVector pvec(5,0);
     pvec[KinKal::CentralHelix::d0_] = chel.d0();
@@ -17,7 +16,7 @@ namespace mu2e {
   }
 
   HelixCov KalSegment::covar() const {
-    KinKal::CentralHelix chel = centralHelix();
+    auto chel = centralHelix();
     auto const& kkcov = chel.params().covariance();
     CLHEP::HepSymMatrix cov(5,1);
     for(size_t ipar=0; ipar <5; ipar++){
@@ -31,7 +30,7 @@ namespace mu2e {
 
 
   void KalSegment::mom(double flt, XYZVec& momvec) const { 
-    KinKal::CentralHelix chel(_pstate,bnom());
+    auto chel = centralHelix();
     // momentum at the time corresponding to this flight
     auto momv = chel.momentum3(fltToTime(flt));
     // translate
@@ -39,12 +38,19 @@ namespace mu2e {
   }
 
   double KalSegment::fltToTime(double flt) const {
-    KinKal::CentralHelix chel(_pstate,bnom());
+    auto chel = centralHelix();
     return chel.t0() + flt/chel.speed();
   }
 
   double KalSegment::timeToFlt(double time) const {
-    KinKal::CentralHelix chel(_pstate,bnom());
+    auto chel = centralHelix();
     return (time -chel.t0())*chel.speed();
+  }
+
+  HitT0 KalSegment::t0() const {
+  // convert to LoopHelix.  In that parameterization, t0 is defined WRT z=0
+    auto lhelix = loopHelix();
+    return HitT0(lhelix.params().parameters()(KinKal::LoopHelix::t0_), 
+	sqrt(lhelix.params().covariance()(KinKal::LoopHelix::t0_,KinKal::LoopHelix::t0_)));
   }
 }
