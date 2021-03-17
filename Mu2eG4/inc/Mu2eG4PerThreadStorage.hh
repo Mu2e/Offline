@@ -79,9 +79,6 @@ namespace mu2e {
 
     bool runTerminated = false;
 
-    // this comes in from subRuns, via the physical volume info
-    unsigned simStage = -1u;
-
     // event-level data members
     art::Event* artEvent = nullptr;
     // delay initialization of the helpers using std::optional
