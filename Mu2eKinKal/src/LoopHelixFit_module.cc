@@ -328,9 +328,20 @@ namespace mu2e {
 	  // now compute kinematics
 	  double mass = ptable->particle(tpart_).ref().mass().value(); 
 	  int charge = static_cast<int>(ptable->particle(tpart_).ref().charge());
-	  // find the time range, using the hit time
-	  TimeRange trange(hhits.front().correctedTime() - tbuff_, hhits.back().correctedTime() + tbuff_);
-	  //  construct the trajectory
+	  // construct individual KKHit objects from each Helix hit
+	  // first, we need to unwind the straw combination
+	  std::vector<StrawHitIndex> strawHitIdxs;
+	  float tmin = std::numeric_limits<float>::max();
+	  float tmax = std::numeric_limits<float>::min();
+	  for(size_t ihit = 0; ihit < hhits.size(); ++ihit ){
+	    hhits.fillStrawHitIndices(event,ihit,strawHitIdxs);
+	    auto const& hhit = hhits[ihit];
+	    tmin = std::min(tmin,hhit.correctedTime());
+	    tmax = std::max(tmax,hhit.correctedTime());
+	  }
+	  // buffer the time range
+	  TimeRange trange(tmin - tbuff_, tmax + tbuff_);
+	  //  construct the seed trajectory
 	  KTRAJ seedtraj(kkpars, mass, charge, bnom, trange );
 	  PKTRAJ pseedtraj(seedtraj);
 	  if(print_ > 1){
@@ -340,12 +351,6 @@ namespace mu2e {
 	              << "Seed Helix z-0 direction " << shelix.direction(0.0) << std::endl;
 	    std::cout << "Seed Traj t=t0 position " << seedtraj.position3(seedtraj.t0()) << std::endl
 	              << "Seed Helix z=0 position " << shelix.position(0.0) << std::endl;
-	  }
-	  // construct individual KKHit objects from each Helix hit
-	  // first, we need to unwind the straw combination
-	  std::vector<StrawHitIndex> strawHitIdxs;
-	  for(size_t ihit = 0; ihit < hhits.size(); ++ihit ){
-	    hhits.fillStrawHitIndices(event,ihit,strawHitIdxs);
 	  }
 	  MEASCOL thits; // polymorphic container of hits
 	  EXINGCOL exings; // polymorphic container of detector element crossings 
