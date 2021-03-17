@@ -367,11 +367,10 @@ namespace mu2e
 	    if(krep->fitStatus().success()) fflag.merge(TrkFitFlag::kalmanOK);
 	    if(krep->fitStatus().success()==1) fflag.merge(TrkFitFlag::kalmanConverged);
 	    //	  KalSeed fseed(_tpart,_fdir,krep->t0(),krep->flt0(),kseed.status());
-	    KalSeed fseed(PDGCode::type(krep->particleType().particleType()),_fdir,krep->t0(),krep->flt0(),fflag);
+	    KalSeed fseed(PDGCode::type(krep->particleType().particleType()),_fdir,fflag,krep->flt0());
 	    // forward link to helix 
 	    fseed._helix = kseed.helix();
 	    // fill with new information
-	    fseed._t0 = krep->t0();
 	    fseed._flt0 = krep->flt0();
 	    // global fit information
 	    fseed._chisq = krep->chisq();

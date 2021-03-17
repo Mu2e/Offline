@@ -418,7 +418,7 @@ namespace mu2e {
     auto const& t0piece = fittraj.nearestPiece(tz0);
     HitT0 t0(t0piece.paramVal(KTRAJ::t0_), sqrt(t0piece.paramVar(KTRAJ::t0_))); 
     // create the shell for the output.  Note the (obsolete) flight length is given as t0
-    KalSeed fseed(tpart_,tdir_,t0,t0.t0(),fflag);
+    KalSeed fseed(tpart_,tdir_,fflag,t0.t0());
     fseed._helix = hptr;
     auto const& fstatus = kktrk.fitStatus();
     fseed._chisq = fstatus.chisq_.chisq();
