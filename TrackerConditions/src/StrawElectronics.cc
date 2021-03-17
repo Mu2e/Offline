@@ -176,24 +176,26 @@ namespace mu2e {
     pmp = peak - (pedestal/(int)_nADCpre);
   }
 
-  bool StrawElectronics::digitizeAllTimes(TDCTimes const& times,double mbtime, TDCValues& tdcs, TDCValue const& eventWindowEndTDC) const {
+  bool StrawElectronics::digitizeAllTimes(TDCTimes const& times,double mbtime, TDCValues& tdcs, bool onspill) const {
     for(size_t itime=0;itime<2;++itime)
       tdcs[itime] = tdcResponse(times[itime]);
-    // test these times against time wrapping.  This calculation should be done at construction or init,
-    // FIXME!
-    bool notwrap(true);
-    for(size_t itime=0;itime<2;++itime)
-      notwrap &= times[itime]+_electronicsTimeDelay > 0 && tdcs[itime] < eventWindowEndTDC;
-    return notwrap;
+    // test these times against time wrapping.
+    if (onspill){
+      bool notwrap(true);
+      for(size_t itime=0;itime<2;++itime)
+        notwrap &= times[itime]+_electronicsTimeDelay > 0 && times[itime]+_electronicsTimeDelay < mbtime;
+      return notwrap;
+    }
+    return true;
   }
 
-  bool StrawElectronics::digitizeTimes(TDCTimes const& times,TDCValues& tdcs, TDCValue const& eventWindowEndTDC) const {
+  bool StrawElectronics::digitizeTimes(TDCTimes const& times,TDCValues& tdcs) const {
     for(size_t itime=0;itime<2;++itime)
       tdcs[itime] = tdcResponse(times[itime]);
     // test bothe these times against the flash blanking. 
     bool notflash(true);
     for(auto tdc : tdcs){
-      notflash &= tdc > _flashEndTDC && tdc < eventWindowEndTDC;
+      notflash &= tdc > _digitizationStartTDC && tdc < _digitizationEndTDC;
     }
     return notflash;
   }
@@ -286,8 +288,10 @@ namespace mu2e {
     os << "tdcResolution = " << _tdcResolution << endl;
     os << "electronicsTimeDelay = " << _electronicsTimeDelay << endl;
     os << "ewMarkerROCJitter = " << _ewMarkerROCJitter << endl;
-    os << "flashEnd = " << _flashEnd << endl;
-    os << "flashEndTDC = " << _flashEndTDC << endl;
+    os << "digitizationStart = " << _digitizationStart << endl;
+    os << "digitizationStartTDC = " << _digitizationStartTDC << endl;
+    os << "digitizationEnd = " << _digitizationEnd << endl;
+    os << "digitizationEndTDC = " << _digitizationEndTDC << endl;
     os << "responseBins = " << _responseBins << endl;
     os << "sampleRate = " << _sampleRate << endl;
     os << "saturationSampleFactor = " << _saturationSampleFactor << endl;
