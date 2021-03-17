@@ -31,7 +31,7 @@ namespace mu2e {
       using PKTRAJ = KinKal::ParticleTrajectory<KTRAJ>;
       using PTCA = KinKal::PiecewiseClosestApproach<KTRAJ,Line>;
       KKStrawHit(BFieldMap const& bfield, PTCA const& ptca, WireHitState const&, 
-	  ComboHit const& chit, Straw const& straw, StrawResponse const& sresponse);
+	  ComboHit const& chit, Straw const& straw, StrawHitIndex const& shindex, StrawResponse const& sresponse);
 // WireHit and Hit interface implementations
       void updateState(PKTRAJ const& pktraj, MetaIterConfig const& config) override;
       void distanceToTime(POL2 const& drift, DriftInfo& dinfo) const override;
@@ -41,15 +41,17 @@ namespace mu2e {
       // accessors
       ComboHit const& hit() const { return chit_; }
       Straw const& straw() const { return straw_; }
+      StrawHitIndex const& strawHitIndex() const { return shindex_; }
     private:
       ComboHit const& chit_; // reference to hit
+      StrawHitIndex shindex_; // index to the StarwHit
       Straw const& straw_; // reference to straw of this hit
       StrawResponse const& sresponse_; // straw calibration information
   };
 
   template <class KTRAJ> KKStrawHit<KTRAJ>::KKStrawHit(BFieldMap const& bfield, PTCA const& ptca, WireHitState const& whstate,
-      ComboHit const& chit, Straw const& straw, StrawResponse const& sresponse) : 
-    WIREHIT(bfield,ptca,whstate), chit_(chit), straw_(straw), sresponse_(sresponse)
+      ComboHit const& chit, Straw const& straw, StrawHitIndex const& shindex, StrawResponse const& sresponse) : 
+    WIREHIT(bfield,ptca,whstate), chit_(chit), shindex_(shindex), straw_(straw), sresponse_(sresponse)
   {
   // make sure this is a single-straw based ComboHit
     if(chit_.mask().level() != StrawIdMask::uniquestraw)

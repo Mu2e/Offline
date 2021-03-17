@@ -382,7 +382,8 @@ namespace mu2e {
 	      if(print_ > 2)exings.back()->print(std::cout,1);
 	    }
 	    // create the hit
-	    thits.push_back(std::make_shared<KKSTRAWHIT>(kkbf, ptca, whstate, strawhit, straw, *strawresponse));
+	    thits.push_back(std::make_shared<KKSTRAWHIT>(kkbf, ptca, whstate, strawhit, straw, strawidx, *strawresponse));
+	    // 
 	    if(print_ > 2)thits.back()->print(std::cout,2);
 	  }
 	  // add calorimeter cluster hit TODO
@@ -432,7 +433,7 @@ namespace mu2e {
 	  StrawHitFlag hflag = chit.flag();
 	  if(strawhit->active())hflag.merge(StrawHitFlag::active);
 	  auto const& ca = strawhit->closestApproach();
-	  TrkStrawHitSeed seedhit(static_cast<StrawHitIndex>(0), // index is obsolete, as are drift radius and drift radius error
+	  TrkStrawHitSeed seedhit(strawhit->strawHitIndex(), // drift radius and drift radius error are unfilled TODO
 	      HitT0(ca.sensorToca(),sqrt(ca.tocaVar())),
 	      static_cast<float>(ca.particleToca()), static_cast<float>(ca.sensorToca()),
 	      static_cast<float>(-1.0), static_cast<float>(strawhit->time()),
