@@ -17,7 +17,7 @@ Mu2eKinKal : {
     }
   
     ModuleSettings : {
-      HelixFlags : [ "HelixOK", "HitsOK" ]
+      HelixFlags : [ "HelixOK" ]
       ZSavePositions : [-1522.0,0.0,1522.0]
     }
   }

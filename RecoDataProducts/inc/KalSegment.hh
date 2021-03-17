@@ -23,7 +23,6 @@ namespace mu2e {
     template <class KTRAJ> explicit KalSegment(KTRAJ const& ktraj, double time, double dflt=0.0) :
       _tmin(ktraj.range().begin()), _tmax(ktraj.range().end()),
       _bnom(ktraj.bnom()),
-//      _bnom(ktraj.bnom().X(),ktraj.bnom().Y(),ktraj.bnom().Z()),
       _pstate(ktraj.stateEstimate(time)) , _dflt(dflt) {}
     // provide a few call-down functions
     double mom() const { return _pstate.momentum(); }
