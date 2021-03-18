@@ -55,6 +55,7 @@
 #include "Mu2eKinKal/inc/KKFileFinder.hh"
 #include "Mu2eKinKal/inc/KKStrawHit.hh"
 //#include "Mu2eKinKal/inc/KKPanelHit.hh"
+#include "Mu2eKinKal/inc/KKCaloHit.hh"
 #include "Mu2eKinKal/inc/KKBField.hh"
 // root
 #include "TH1F.h"
@@ -78,6 +79,7 @@ namespace mu2e {
   using MEASPTR = std::shared_ptr<MEAS>;
   using MEASCOL = std::vector<MEASPTR>;
   using KKSTRAWHIT = KKStrawHit<KTRAJ>;
+  using KKCALOHIT = KKCaloHit<KTRAJ>;
   using STRAWXING = KinKal::StrawXing<KTRAJ>;
   using EXING = KinKal::ElementXing<KTRAJ>;
   using EXINGPTR = std::shared_ptr<EXING>;
@@ -147,6 +149,7 @@ namespace mu2e {
       fhicl::Atom<int> minndof { Name("MinNDOF"), Comment("Minimum number of Degrees of Freedom to conitnue fitting"), 5  };
       fhicl::Atom<int> printLevel { Name("PrintLevel"), Comment("Internal fit print level"),0};
       fhicl::Atom<int> nullHitDimension { Name("NullHitDimension"), Comment("Null hit constrain dimension"), 2 }; 
+      fhicl::Atom<float> nullHitVarianceScale { Name("NullHitVarianceScale"), Comment("Scale factor on geometric null hit variance"), 1.0 }; 
       fhicl::Atom<float> tPOCAPrec { Name("TPOCAPrecision"), Comment("Precision for TPOCA calculation (ns)"), 1e-5 };
       fhicl::Atom<bool> addMaterial { Name("AddMaterial"), Comment("Add material effects to the fit"), true }; 
     };
@@ -187,13 +190,16 @@ namespace mu2e {
     ProditionsHandle<Tracker> alignedTracker_h_;
     int print_;
     float maxDoca_, maxDt_, maxChi_, maxDU_, tbuff_, tpocaprec_;
-    WireHitState::Dimension nulldim_; 
+    WireHitState::Dimension nulldim_;
+    float nullvscale_;
     bool addmat_;
     KKFileFinder filefinder_;
     std::string wallmatname_, gasmatname_, wirematname_;
     std::unique_ptr<StrawMaterial> smat_; // straw material
     KKConfig kkconfig_; // KinKal fit configuration
     DMAT seedcov_; // seed covariance matrix
+    MatDBInfo* matdbinfo_; // material database
+    double crystalLength_; // length of a calo crystal
   };
 
   LoopHelixFit::LoopHelixFit(const ModuleParams& config) : art::EDProducer{config}, 
@@ -211,11 +217,13 @@ namespace mu2e {
     tbuff_(config().fitsettings().tBuffer()),
     tpocaprec_(config().fitsettings().tPOCAPrec()),
     nulldim_(static_cast<WireHitState::Dimension>(config().fitsettings().nullHitDimension())),
+    nullvscale_(config().fitsettings().nullHitVarianceScale()),
     addmat_(config().fitsettings().addMaterial()),
     filefinder_(config().matsettings().elements(),config().matsettings().isotopes(),config().matsettings().materials()),
     wallmatname_(config().matsettings().strawWallMaterialName()),
     gasmatname_(config().matsettings().strawGasMaterialName()),
-    wirematname_(config().matsettings().strawWireMaterialName())
+    wirematname_(config().matsettings().strawWireMaterialName()),
+    matdbinfo_(0)
   {
     // collection handling
     for(const auto& hseedtag : config().modsettings().helixSeedCollections()) { hseedCols_.emplace_back(consumes<HelixSeedCollection>(hseedtag)); }
@@ -266,12 +274,14 @@ namespace mu2e {
     // initialize material access
     GeomHandle<Tracker> tracker_h;
     auto const& sprop = tracker_h->strawProperties();
-    MatDBInfo matdbinfo(filefinder_);
+    matdbinfo_ = new MatDBInfo(filefinder_);
     smat_ = std::make_unique<StrawMaterial>(
 	sprop._strawOuterRadius, sprop._strawWallThickness, sprop._wireRadius,
-	matdbinfo.findDetMaterial(wallmatname_),
-	matdbinfo.findDetMaterial(gasmatname_),
-	matdbinfo.findDetMaterial(wirematname_));
+	matdbinfo_->findDetMaterial(wallmatname_),
+	matdbinfo_->findDetMaterial(gasmatname_),
+	matdbinfo_->findDetMaterial(wirematname_));
+    GeomHandle<mu2e::Calorimeter> calo_h;
+    crystalLength_ = calo_h->caloInfo().getDouble("crystalZLength");
   }
 
   void LoopHelixFit::produce(art::Event& event ) {
@@ -281,12 +291,14 @@ namespace mu2e {
     auto const& tracker = alignedTracker_h_.getPtr(event.id()).get();
     GeomHandle<BFieldManager> bfmgr;
     GeomHandle<DetectorSystem> det;
+    GeomHandle<mu2e::Calorimeter> calo_h;
     KKBField kkbf(*bfmgr,*det); // move this to beginrun TODO
     // initial WireHitState; this gets overwritten in updating.  Move this to beginrun TODO
     double rstraw = tracker->strawProperties().strawInnerRadius();
-    static const double invsqrt12(1.0/sqrt(12.0));
     // initialize hits as null (no drift)  Move this to beginrun TODO
-    WireHitState whstate(WireHitState::null, nulldim_, rstraw*invsqrt12,0.5*rstraw/strawresponse->driftConstantSpeed()); 
+    double nulldt = 0.5*rstraw/strawresponse->driftConstantSpeed(); // approximate shift in time due to ignoring drift
+    double nullvar = nullvscale_*rstraw*rstraw/3.0; // scaled square RMS (distance is between 0 and r)
+    WireHitState whstate(WireHitState::null, nulldim_,nullvar ,nulldt);
     // find input hits
     auto ch_H = event.getValidHandle<ComboHitCollection>(chcol_T_);
     auto const& chcol = *ch_H;;
@@ -387,10 +399,13 @@ namespace mu2e {
 	    if(print_ > 2)thits.back()->print(std::cout,2);
 	  }
 	  // add calorimeter cluster hit TODO
-	  //	      art::Ptr<CaloCluster> ccPtr;
-	  //	      if (kseed.caloCluster()){
-	  //	      ccPtr = kseed.caloCluster(); // remember the Ptr for creating the TrkCaloHitSeed and KalSeed Ptr
-	  //	      }
+	  if (hseed.caloCluster()){
+	    // move cluster COG into the tracker frame
+	    auto cluster = hseed.caloCluster();
+	    CLHEP::Hep3Vector cog = calo_h->geomUtil().mu2eToTracker(calo_h->geomUtil().diskFFToMu2e( cluster->diskID(), cluster->cog3Vector()));
+
+
+	  }
 	  // create and fit the track.  
 	  auto kktrk = make_unique<KKTRK>(kkconfig_,kkbf,seedtraj,thits,exings);
 	  if(kktrk->fitStatus().usable() || saveall_){
@@ -428,6 +443,7 @@ namespace mu2e {
       const KKHIT* kkhit = dynamic_cast<const KKHIT*>(eff.get());
       if(kkhit != 0){
 	const KKSTRAWHIT* strawhit = dynamic_cast<const KKSTRAWHIT*>(kkhit->hit().get());
+	const KKCALOHIT* calohit = dynamic_cast<const KKCALOHIT*> (kkhit->hit().get());
 	if(strawhit != 0) {
 	  auto const& chit = strawhit->hit();
 	  StrawHitFlag hflag = chit.flag();
@@ -439,26 +455,26 @@ namespace mu2e {
 	      static_cast<float>(-1.0), static_cast<float>(strawhit->time()),
 	      static_cast<float>(ca.doca()), strawhit->hitState().lrambig_,static_cast<float>(-1.0), hflag, chit);
 	  fseed._hits.push_back(seedhit);
-	} else {
-	// see if this is a TrkCaloHit
+	} else if(calohit != 0) {
+	  // see if this is a TrkCaloHit
 	  //const TrkCaloHit* tch = TrkUtilities::findTrkCaloHit(kktrk); TODO
-//    if(tch != 0){
-//      TrkUtilities::fillCaloHitSeed(tch,fseed._chit);
-//      // set the Ptr using the helix: this could be more direct FIXME!
-//      fseed._chit._cluster = ccPtr;
-//      // create a helix segment at the TrkCaloHit
-//      KalSegment kseg;
-//      // sample the momentum at this flight.  This belongs in a separate utility FIXME
-//      BbrVectorErr momerr = kktrk.momentumErr(tch->fltLen());
-//      double locflt(0.0);
-//      const HelixTraj* htraj = dynamic_cast<const HelixTraj*>(kktrk.localTrajectory(tch->fltLen(),locflt));
-//      TrkUtilities::fillSegment(*htraj,momerr,locflt-tch->fltLen(),kseg);
-//      fseed._segments.push_back(kseg);
-//    }
+	  //    if(tch != 0){
+	  //      TrkUtilities::fillCaloHitSeed(tch,fseed._chit);
+	  //      // set the Ptr using the helix: this could be more direct FIXME!
+	  //      fseed._chit._cluster = ccPtr;
+	  //      // create a helix segment at the TrkCaloHit
+	  //      KalSegment kseg;
+	  //      // sample the momentum at this flight.  This belongs in a separate utility FIXME
+	  //      BbrVectorErr momerr = kktrk.momentumErr(tch->fltLen());
+	  //      double locflt(0.0);
+	  //      const HelixTraj* htraj = dynamic_cast<const HelixTraj*>(kktrk.localTrajectory(tch->fltLen(),locflt));
+	  //      TrkUtilities::fillSegment(*htraj,momerr,locflt-tch->fltLen(),kseg);
+	  //      fseed._segments.push_back(kseg);
+	  //    }
 	}
       }
-//      const KKMAT* kkmat = dynamic_cast<const KKMAT*>(eff.get());
-//TrkUtilities::fillStraws(ktrk,fseed._straws); TODO!!
+      //      const KKMAT* kkmat = dynamic_cast<const KKMAT*>(eff.get());
+      //TrkUtilities::fillStraws(ktrk,fseed._straws); TODO!!
       const KKBF* kkbf = dynamic_cast<const KKBF*>(eff.get());
       if(kkbf != 0)fseed._nbend++;
     }
