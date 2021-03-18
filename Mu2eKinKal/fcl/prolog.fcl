@@ -17,7 +17,7 @@ Mu2eKinKal : {
     }
   
     ModuleSettings : {
-      HelixFlags : [ "HelixOK" ]
+      HelixFlags : [ "HelixOK" ] # why doesn't "HitsOK" work?? FIXME!
       ZSavePositions : [-1522.0,0.0,1522.0]
     }
   }
@@ -29,12 +29,10 @@ Mu2eKinKal : {
       @table::Mu2eKinKal.KKFit
       MetaIterationSettings : [ 
         [ 10.0, 1.0, 10.0 ],
-        [ 5.0, 1.0, 10.0 ]]
-#        [ 0.0, 0.01, 10.0 ]
-#      ]
-#     MetaIterationSettings : [ 
-#        [ 2.0, 10, 100.0 ] ]
-#      StrawHitUpdateSettings : []
+        [ 5.0, 1.0, 10.0 ],
+        [ 2.0, 0.5, 10.0 ],
+        [ 1.0, 0.2, 20.0 ],
+        [ 0.0, 0.2, 20.0 ]]
       StrawHitUpdateSettings : [
         [ 10.0, 10.0, 1, 1 ]]
 #        [ 10.0, 5.0, 1, 2 ]

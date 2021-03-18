@@ -44,7 +44,7 @@ namespace mu2e {
       StrawHitIndex const& strawHitIndex() const { return shindex_; }
     private:
       ComboHit const& chit_; // reference to hit
-      StrawHitIndex shindex_; // index to the StarwHit
+      StrawHitIndex shindex_; // index to the StrawHit
       Straw const& straw_; // reference to straw of this hit
       StrawResponse const& sresponse_; // straw calibration information
   };
