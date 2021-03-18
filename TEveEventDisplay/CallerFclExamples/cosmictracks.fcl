@@ -10,39 +10,15 @@
 #include "TEveEventDisplay/fcl/prolog.fcl"
 #include "JobConfig/reco/mcdigis_nocosmic.fcl"
 
-source : { module_type : RootInput
-maxEvents : 100
-}
+source : { module_type : RootInput}
+
+services : @local::Services.Reco
+
+process_name : HelixED
 
 StrawPhysics.useNonLinearDrift: false
 StrawDrift.phiBins: 20
 StrawResponse.linearDriftVelocity: 0.0625
-
-services : {
-   
-    message               : @local::default_message
-    TFileService          : { fileName : "nts.MU2EGRIDDSOWNER.cd3-beam-cosmictracking.MU2EGRIDDSCONF.sequencer.root" }//Name of root file output at end.
-    RandomNumberGenerator : { }
-    #   Timing                : { }
-
-    GeometryService	    : { inputFile      : "Mu2eG4/geom/geom_common.txt" 
-	simulatedDetector   : { tool_type: "Mu2e" }
-    }
-    ConditionsService      : { conditionsfile : "Mu2eG4/test/conditions_01.txt"        }
-    GlobalConstantsService : { inputFile      : "Mu2eG4/test/globalConstants_01.txt"   }
-    G4Helper               : { }
-    
-    SeedService            : { @table::automaticSeeds
-	baseSeed         :  0
-	maxUniqueEngines :  20
-    }
-   DbService : @local::DbEmpty
-   ProditionsService: @local::Proditions
-}
-
-process_name : CosmicRecoFitter
-
-source : { module_type : RootInput }
 
 physics :
 {

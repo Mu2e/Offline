@@ -5,21 +5,25 @@ namespace mu2e{
 
   TEveMu2eCustomHelix::TEveMu2eCustomHelix(){};
  
-  TEveMu2eCustomHelix::TEveMu2eCustomHelix(HelixSeed const& hseed){fHelixSeed = hseed;};
+  TEveMu2eCustomHelix::TEveMu2eCustomHelix(HelixSeed hseed){fHelixSeed = hseed;};
   TEveMu2eCustomHelix::TEveMu2eCustomHelix(KalSeed kseed){
     fKalSeed = kseed;
     this->Momentum = fKalSeed.helix()->helix().momentum();
     this->PDGcode = fKalSeed.particle().particleType();
     this->Charge = fKalSeed.particle().charge();
     this->Mass = fKalSeed.particle().mass();
+    this->Time = fKalSeed.t0().t0();
+    this->Radius = fKalSeed.helix()->helix().radius();
   };
 
-  void TEveMu2eCustomHelix::SetSeedInfo(KalSeed const&  seed) { 
+  void TEveMu2eCustomHelix::SetSeedInfo(KalSeed seed) { 
     fKalSeed = seed;
     this->Momentum = fKalSeed.helix()->helix().momentum();
     this->PDGcode = fKalSeed.particle().particleType();
     this->Charge = fKalSeed.particle().charge();
     this->Mass = fKalSeed.particle().mass();
+    this->Time = fKalSeed.t0().t0();
+    this->Radius = fKalSeed.helix()->helix().radius();
   }
 
   void TEveMu2eCustomHelix::SetPostionAndDirectionFromHelixSeed(double zpos){
@@ -38,17 +42,7 @@ namespace mu2e{
 
   void TEveMu2eCustomHelix::SetParticleExt(){
     this->PDGcode = 11; 
-  }
-
-  std::string TEveMu2eCustomHelix::DataTitle(const std::string &pstr, int n){
-        std::string dstr=" hit#" + std::to_string(n) + "\nLayer: ";
-        std::string strlab=pstr+dstr;
-        return (strlab);
-  }
-  
-  const std::string TEveMu2eCustomHelix::Title(){
-    const std::string title = "Track PDG " + std::to_string(this->PDGcode) +" Momentum = " + std::to_string(this->Momentum) + " Charge "+ std::to_string(this->Charge);
-    return title;
+ 
   }
   
 }

@@ -162,38 +162,12 @@ def sconscriptList(mu2eOpts):
         if 'SConscript' in files:
             ss_append(os.path.join(root[2:], 'SConscript'))
 
-    # If we are making a build for the trigger, do not build everything.
-    if mu2eOpts["trigger"] == 'on':
-        notNeeded = ["Mu2eG4/src/SConscript",
-                     #"CRVResponse/src/SConscript",
-                     "Sandbox/src/SConscript"]
-        for x in notNeeded:
-            if x in ss:
-                ss.remove(x)
-
     return ss
 
 # Make sure the build directories are created
 def makeSubDirs(mu2eOpts):
     for mdir in [mu2eOpts[d] for d in ['libdir','bindir','tmpdir', 'gendir']]:
         os.makedirs(mdir, exist_ok=True)
-
-#
-# a method for creating build-on-demand targets
-#
-def PhonyTarget(env,name,targets,action):
-    if not isinstance(targets,list):
-        targets = [targets]
-    if env.GetOption('clean'):
-        for t in targets:
-            if os.path.isfile(t):
-                os.remove(t)
-    else:
-        for t in targets:
-            d = os.path.dirname(t)
-            if not os.path.isdir(d):
-                os.makedirs(d)
-    return env.AlwaysBuild(env.Alias(name, [], action))
 
 
 # with -c, scons will remove all dependant files it knows about

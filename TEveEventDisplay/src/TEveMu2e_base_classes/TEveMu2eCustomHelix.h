@@ -14,10 +14,10 @@ namespace mu2e {
   class   TEveMu2eCustomHelix: public TEveLine {
     public:
       #ifndef __CINT__
-      TEveMu2eCustomHelix();
-      explicit TEveMu2eCustomHelix(const TEveMu2eCustomHelix &helix);
-      explicit TEveMu2eCustomHelix(HelixSeed  const& hseed);
-      explicit TEveMu2eCustomHelix(KalSeed kseed);
+      explicit  TEveMu2eCustomHelix();
+      TEveMu2eCustomHelix(const TEveMu2eCustomHelix &helix);
+      TEveMu2eCustomHelix(HelixSeed hseed);
+      TEveMu2eCustomHelix(KalSeed kseed);
       virtual ~TEveMu2eCustomHelix(){};
       #endif
       
@@ -27,20 +27,21 @@ namespace mu2e {
 
       void DrawHelixTrack();
       void Draw2DProjection();
-      //TODO - this class will need redesigning
-      void SetSeedInfo(KalSeed const&  seed);
+
+      void SetSeedInfo(KalSeed seed);
       void SetPostionAndDirectionFromHelixSeed(double zpos);
       void SetPostionAndDirectionFromKalRep(double zpos);
       void SetMomentumExt();
       void SetParticleExt();
-      const std::string Title();
-      std::string DataTitle(const std::string &pstr, int n);
+
       XYZVec Direction;
       XYZVec Position;
       double Momentum;
       int PDGcode;
       double Charge;
       double Mass;
+      double Time;
+      double Radius;
       bool _trajectory;
       ClassDef( TEveMu2eCustomHelix, 0);
     };
