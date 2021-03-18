@@ -35,7 +35,6 @@
 
 // simulation bookeeping
 #include "MCDataProducts/inc/PhysicalVolumeInfo.hh"
-#include "MCDataProducts/inc/PhysicalVolumeInfoCollection.hh"
 #include "MCDataProducts/inc/PhysicalVolumeInfoMultiCollection.hh"
 #include "MCDataProducts/inc/StepFilterMode.hh"
 #include "MCDataProducts/inc/ProtonBunchTimeMC.hh"

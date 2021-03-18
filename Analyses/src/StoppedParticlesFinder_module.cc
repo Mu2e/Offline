@@ -14,6 +14,10 @@
 
 #include "messagefacility/MessageLogger/MessageLogger.h"
 
+#include "fhiclcpp/types/Atom.h"
+#include "fhiclcpp/types/OptionalAtom.h"
+#include "fhiclcpp/types/Sequence.h"
+
 #include "art/Framework/Core/EDProducer.h"
 #include "art/Framework/Core/ModuleMacros.h"
 #include "art/Framework/Principal/Event.h"
@@ -62,11 +66,11 @@ namespace mu2e {
           [this](){ return stoppingMaterial().empty(); }
           };
 
-      fhicl::Atom<unsigned> particleOffsetThreshold{ Name("particleOffsetThreshold"),
-          Comment("Ignore particles with numbers below the threshold. This should be used\n"
-                  "to limit the selection to stops in just the latest simulation stage."
-                  ),
-          0
+      fhicl::OptionalAtom<unsigned> simStageThreshold{ Name("simStageThreshold"),
+          Comment("By default only particles from the current simulation stage are considered.\n"
+                  "This setting allows to override that behavior and include into the search\n"
+                  "all particles with simStage()>=simStageThreshold."
+                  )
           };
 
       fhicl::Atom<int> verbosityLevel{ Name("verbosityLevel"),
@@ -88,7 +92,8 @@ namespace mu2e {
     std::string stoppingMaterial_;
     std::vector<std::string> vetoedMaterials_;
 
-    unsigned offsetThreshold_; // to select particles from the current simulation stage
+    bool simStageThresholdConfigured_;
+    unsigned simStageThreshold_; // to select particles from the current simulation stage
 
     int verbosityLevel_;
 
@@ -103,6 +108,7 @@ namespace mu2e {
     bool materialAccepted(const std::string& material) const;
 
     unsigned numTotalParticles_;
+    unsigned numStageParticles_;
     unsigned numRequestedTypeStops_;
     unsigned numRequestedMateralStops_;
   };
@@ -113,11 +119,13 @@ namespace mu2e {
     , particleInput_(conf().particleInput())
     , physVolInfoInput_(conf().physVolInfoInput())
     , stoppingMaterial_(conf().stoppingMaterial())
-    , offsetThreshold_(conf().particleOffsetThreshold())
+    , simStageThresholdConfigured_(false)
+    , simStageThreshold_(-1u)
     , verbosityLevel_(conf().verbosityLevel())
     , hStopMaterials_(art::ServiceHandle<art::TFileService>()->make<TH1D>("stopmat", "Stopping materials", 1, 0., 1.))
     , vols_()
     , numTotalParticles_()
+    , numStageParticles_()
     , numRequestedTypeStops_()
     , numRequestedMateralStops_()
   {
@@ -126,6 +134,8 @@ namespace mu2e {
     if(stoppingMaterial_.empty()) {
       vetoedMaterials_ = conf().vetoedMaterials();
     }
+
+    simStageThresholdConfigured_ = conf().simStageThreshold(simStageThreshold_);
 
     auto pt(conf().particleTypes());
     for(const auto& pid : pt) {
@@ -139,7 +149,9 @@ namespace mu2e {
       std::copy(particleTypes_.begin(), particleTypes_.end(), std::ostream_iterator<int>(os, ", "));
       os<<" ]"<<std::endl;
 
-      os<<"offsetThreshold  = "<<offsetThreshold_<<std::endl;
+      if(simStageThresholdConfigured_) {
+        os<<"simStageThreshold  = "<<simStageThreshold_<<std::endl;
+      }
 
       os<<"stoppingMaterial = "<<stoppingMaterial_<<std::endl;
 
@@ -161,12 +173,20 @@ namespace mu2e {
       std::cout<<"PhysicalVolumeInfoMultiCollection dump begin"<<std::endl;
       for(const auto& i : *vols_) {
         std::cout<<"*********************************************************"<<std::endl;
-        std::cout<<"SimParticleNumberOffset = "<<i.first<<", collection size = "<<i.second.size()<<std::endl;
-        for(const auto& entry : i.second) {
+        std::cout<<"Ccollection size = "<<i.size()<<std::endl;
+        for(const auto& entry : i) {
           std::cout<<entry.second<<std::endl;
         }
       }
       std::cout<<"PhysicalVolumeInfoMultiCollection dump end"<<std::endl;
+    }
+
+    if(!simStageThresholdConfigured_) {
+      if(vols_->empty()) {
+        throw cet::exception("BADINPUT")<<"StoppedParticlesFinder: something is wrong,"
+          " got empty PhysicalVolumeInfoMultiCollection "<<physVolInfoInput_<<std::endl;
+      }
+      simStageThreshold_ = vols_->size() - 1;  // the current simStage points to the last entry in vols_
     }
   }
 
@@ -180,29 +200,32 @@ namespace mu2e {
     numTotalParticles_ += ih->size();
     for(const auto& i : *ih) {
       const SimParticle& particle = i.second;
-      if((particle.id().asUint() >= offsetThreshold_)
-         &&(particleTypes_.find(particle.pdgId()) != particleTypes_.end())
-         && isStopped(particle))
-        {
-          ++numRequestedTypeStops_;
+      if(particle.simStage() >= simStageThreshold_) {
+        ++numStageParticles_;
 
-          if(verbosityLevel_ > 2) {
-            std::cout<<"stopped particle "<<particle.pdgId()
-                     <<" at pos="<<particle.endPosition()
-                     <<" time="<<particle.endGlobalTime()
-                     <<" reason="<<particle.stoppingCode()
-                     <<" in volume "<<vi.endVolume(particle)
-                     <<std::endl;
+        if((particleTypes_.find(particle.pdgId()) != particleTypes_.end())
+           && isStopped(particle))
+          {
+            ++numRequestedTypeStops_;
+
+            if(verbosityLevel_ > 2) {
+              std::cout<<"stopped particle "<<particle.pdgId()
+                       <<" at pos="<<particle.endPosition()
+                       <<" time="<<particle.endGlobalTime()
+                       <<" reason="<<particle.stoppingCode()
+                       <<" in volume "<<vi.endVolume(particle)
+                       <<std::endl;
+            }
+
+            const std::string material = vi.endVolume(particle).materialName();
+            hStopMaterials_->Fill(material.c_str(), 1.);
+
+            if(materialAccepted(material)) {
+              ++numRequestedMateralStops_;
+              output->emplace_back(ih, particle.id().asUint());
+            }
           }
-
-          const std::string material = vi.endVolume(particle).materialName();
-          hStopMaterials_->Fill(material.c_str(), 1.);
-
-          if(materialAccepted(material)) {
-            ++numRequestedMateralStops_;
-            output->emplace_back(ih, particle.id().asUint());
-          }
-        }
+      }
     }
 
     event.put(std::move(output));
@@ -245,6 +268,7 @@ namespace mu2e {
       <<"StoppedParticlesFinder stats:"
       <<" accepted = "<<numRequestedMateralStops_
       <<", requested type stops = "<<numRequestedTypeStops_
+      <<", passing stage cut = "<<numStageParticles_
       <<", total input particles = "<<numTotalParticles_
       << "\n";
   }

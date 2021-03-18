@@ -41,8 +41,6 @@ physics.filters.flashResample: {
 physics.producers.g4run.inputs: {
    primaryType: "StepPoints"
    primaryTag: "flashResample:mubeam"
-   simParticleNumberOffset: 100000
-   inputSimParticles: "flashResample"
    inputMCTrajectories: ""
    inputPhysVolumeMultiInfo: "" # earlier info dropped
 }
@@ -54,7 +52,6 @@ physics.producers.g4run.SDConfig.preSimulatedHits:  ["flashResample:virtualdetec
 physics.producers.stoppedMuonFinder: {
    module_type: "StoppedParticlesFinder"
    particleInput: "g4run"
-   particleOffsetThreshold: 100000
    particleTypes: [ 13 ]
    physVolInfoInput: "g4run"
    stoppingMaterial: "StoppingTarget_Al"

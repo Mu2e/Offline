@@ -41,8 +41,6 @@ physics.filters.flashResample: {
 physics.producers.g4run.inputs: {
    primaryType: "StepPoints"
    primaryTag: "flashResample:dsregion"
-   simParticleNumberOffset: 100000
-   inputSimParticles: "flashResample"
    inputMCTrajectories: ""
    inputPhysVolumeMultiInfo: "" # earlier info dropped
 }
