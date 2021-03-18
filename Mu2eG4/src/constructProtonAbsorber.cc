@@ -68,8 +68,18 @@ namespace mu2e {
     // Access to the G4HelperService.
     G4Helper* _helper = &(*(art::ServiceHandle<G4Helper>()));
 
-    VolumeInfo const & parent1Info  = _helper->locateVolInfo("DS2Vacuum");
-    VolumeInfo const & parent2Info  = _helper->locateVolInfo("DS3Vacuum");
+    bool const inGaragePosition = _config.getBool("inGaragePosition",false); //offset detector train elements for extracted position
+    double zOffGarage = (inGaragePosition) ? _config.getDouble("garage.zOffset") : 0.;
+    CLHEP::Hep3Vector relPosFake(0.,0., zOffGarage);
+
+    std::string theDS2("DS2Vacuum");
+    std::string theDS3("DS3Vacuum");
+    if (inGaragePosition) {
+      theDS2 = "garageFakeDS2Vacuum";
+      theDS3 = "garageFakeDS3Vacuum";
+    }
+    VolumeInfo const & parent1Info  = _helper->locateVolInfo(theDS2);
+    VolumeInfo const & parent2Info  = _helper->locateVolInfo(theDS3);
 
     // Fetch DS geometry
     GeomHandle<DetectorSolenoid> ds;
@@ -174,9 +184,10 @@ namespace mu2e {
       // The proton absorber starts at the target end.
       // we add space for the virtual detector here
       double pabsStartInMu2eZ = target->centerInMu2e().z() + 0.5*target->cylinderLength() + 2.*vdHL;
+      double pabsStartInMu2eZ = target->centerInMu2e().z() + 0.5*target->cylinderLength() + 2.*vdHL + zOffGarage;
 
       // Need to split it at the DS2/DS3 boundary
-      double pabs1EndInMu2eZ = ds->vac_zLocDs23Split();
+      double pabs1EndInMu2eZ = ds->vac_zLocDs23Split() + zOffGarage;
 
       double pabs1len = pabs1EndInMu2eZ - pabsStartInMu2eZ;
 
@@ -193,7 +204,7 @@ namespace mu2e {
       double pabs1rIn1  = pabs1rOut1 - thick;
 
       double pabs2len     = (2.0*pabsZHalfLen) - pabs1len;
-      double pabs2ZOffset = (pabs2len*0.5) +  ds->vac_zLocDs23Split();
+      double pabs2ZOffset = (pabs2len*0.5) +  ds->vac_zLocDs23Split() + zOffGarage;
 
       // protonabs2 should touch protonabs1 and both of them should touch the ds2/ds3 boundary
       // it looks like the boolean solid center is in the center of ConstituentSolid(0)
@@ -323,10 +334,10 @@ namespace mu2e {
       }
 
       double pabs1ZOffset = 0, pabs2ZOffset = 0, pabs3ZOffset = 0, pabs4ZOffset = 0;
-      if (pabs->isAvailable(0)) pabs1ZOffset = CLHEP::mm * pabs->part(0).center().z() - ds2zcenter;
-      if (pabs->isAvailable(1)) pabs2ZOffset = CLHEP::mm * pabs->part(1).center().z() - ds3zcenter;
-      if (pabs->isAvailable(2)) pabs3ZOffset = CLHEP::mm * pabs->part(2).center().z() - ds2zcenter;
-      if (pabs->isAvailable(3)) pabs4ZOffset = CLHEP::mm * pabs->part(3).center().z() - ds3zcenter;
+      if (pabs->isAvailable(0)) pabs1ZOffset = CLHEP::mm * pabs->part(0).center().z() - ds2zcenter + zOffGarage;
+      if (pabs->isAvailable(1)) pabs2ZOffset = CLHEP::mm * pabs->part(1).center().z() - ds3zcenter + zOffGarage;
+      if (pabs->isAvailable(2)) pabs3ZOffset = CLHEP::mm * pabs->part(2).center().z() - ds2zcenter + zOffGarage;
+      if (pabs->isAvailable(3)) pabs4ZOffset = CLHEP::mm * pabs->part(3).center().z() - ds3zcenter + zOffGarage;
 
       G4ThreeVector pabs1Offset(0.0, 0.0, pabs1ZOffset);
       G4ThreeVector pabs2Offset(0.0, 0.0, pabs2ZOffset);
@@ -699,7 +710,7 @@ namespace mu2e {
           if ( iSup == 1 ) {
             // Make notches in this one for the Stopping target support slats
             VolumeInfo ring2Info(myName.str(),
-                                 location - parent1Info.centerInMu2e(),
+                                 location - parent1Info.centerInMu2e() + relPosFake,
                                  parent1Info.centerInWorld);
 
             G4Tubs* aRingTub = new G4Tubs("TheRing",
@@ -760,7 +771,7 @@ namespace mu2e {
             finishNesting( ring2Info,
                            oPAsupportMaterial,
                            0,
-                           location - parent1Info.centerInMu2e(),
+                           location - parent1Info.centerInMu2e() + relPosFake,
                            parent1Info.logical,
                            0,
                            pabsIsVisible,
@@ -775,7 +786,7 @@ namespace mu2e {
                                     dPhiX*CLHEP::deg),
                         oPAsupportMaterial,
                         0,
-                        location - parent1Info.centerInMu2e(),
+                        location - parent1Info.centerInMu2e() + relPosFake,
                         parent1Info,
                         0,
                         pabsIsVisible,
@@ -791,7 +802,7 @@ namespace mu2e {
                         TubsParams( rin, rou, hl ),
                         oPAsupportMaterial,
                         0,
-                        location - parent1Info.centerInMu2e(),
+                        location - parent1Info.centerInMu2e() + relPosFake,
                         parent1Info,
                         0,
                         pabsIsVisible,
@@ -806,7 +817,7 @@ namespace mu2e {
                                       dPhiX*CLHEP::deg),
                           oPAsupportMaterial,
                           0,
-                          location - parent1Info.centerInMu2e(),
+                          location - parent1Info.centerInMu2e() + relPosFake,
                           parent1Info,
                           0,
                           pabsIsVisible,
@@ -851,7 +862,7 @@ namespace mu2e {
                                                           boxPars,
                                                           parent1Info.logical->GetMaterial(),
                                                           slatRotat,
-                                                          slatLoc - parent1Info.centerInMu2e(),
+                                                          slatLoc - parent1Info.centerInMu2e() + relPosFake,
                                                           parent1Info,
                                                           0,
                                                           pabsIsVisible,
@@ -1019,7 +1030,7 @@ namespace mu2e {
                                                                 weightMotherParams,
                                                                 parent1Info.logical->GetMaterial(),
                                                                 0,
-                                                                weightMotherLoc - parent1Info.centerInMu2e(),
+                                                                weightMotherLoc - parent1Info.centerInMu2e() + relPosFake,
                                                                 parent1Info,
                                                                 0,
                                                                 pabsIsVisible,
@@ -1131,7 +1142,7 @@ namespace mu2e {
                               boxPars,
                               oPAsupportMaterial,
                               slatRotat,
-                              slatLoc - parent1Info.centerInMu2e(),
+                              slatLoc - parent1Info.centerInMu2e() + relPosFake,
                               parent1Info,
                               0,
                               pabsIsVisible,
@@ -1148,7 +1159,7 @@ namespace mu2e {
                         TubsParams( rin, rou, hl ),
                         oPAsupportMaterial,
                         0,
-                        location - parent2Info.centerInMu2e(),
+                        location - parent2Info.centerInMu2e() + relPosFake,
                         parent2Info,
                         0,
                         pabsIsVisible,
@@ -1194,7 +1205,7 @@ namespace mu2e {
                                                 motherBoxParams,
                                                 parent1Info.logical->GetMaterial(),
                                                 motherBoxRot,
-                                                motherBoxLoc-parent1Info.centerInMu2e(),
+                                                motherBoxLoc-parent1Info.centerInMu2e() + relPosFake,
                                                 parent1Info,
                                                 0,
                                                 pabsIsVisible,
@@ -1295,7 +1306,7 @@ namespace mu2e {
             crossBar2Name << "OPA_CrossSupport_" << iCross+1 << "_CrossBar_2";
             G4Box* crossBar1Box= new G4Box(crossBar1Name.str(), barThickness/2., barWidth/2., crossBarLength/2.);
             G4Box* crossBar2Box= new G4Box(crossBar2Name.str(), barThickness/2., barWidth/2., crossBarLength/2.);
-            VolumeInfo crossBarInfo(crossBarName.str(), crossBar1Loc, parent1Info.centerInMu2e());
+            VolumeInfo crossBarInfo(crossBarName.str(), crossBar1Loc, parent1Info.centerInMu2e() + relPosFake);
             crossBarInfo.solid = new G4UnionSolid(crossBar1Name.str()
                                                   , crossBar1Box, crossBar2Box, crossBar2Rot , crossBar2Loc);
             finishNesting( crossBarInfo,
@@ -1315,7 +1326,6 @@ namespace mu2e {
 
           } //end loop of cross supports
         } //end opa version check for cross support
-
       } // end if nSupports > 0 for OPA
 
       //***************************
@@ -1556,7 +1566,7 @@ namespace mu2e {
                     endRing.getTubsParams(),
                     findMaterialOrThrow( endRing.materialName() ),
                     0,
-                    endRing.originInMu2e()-parent1Info.centerInMu2e(),
+                    endRing.originInMu2e()-parent1Info.centerInMu2e() + relPosFake,
                     parent1Info,
                     0,
                     pabsIsVisible,
@@ -1565,7 +1575,6 @@ namespace mu2e {
                     forceAuxEdgeVisible,
                     placePV,
                     doSurfaceCheck );
-
         } // end ring loop
 
 
@@ -1642,7 +1651,7 @@ namespace mu2e {
                       supportWire.getTubsParams(),
                       findMaterialOrThrow( supportWire.materialName() ),
                       supportRot,
-                      supportWire.originInMu2e()+additionalOffset-parent1Info.centerInMu2e(),
+                      supportWire.originInMu2e()+additionalOffset-parent1Info.centerInMu2e() + relPosFake,
                       parent1Info,
                       0,
                       pabsIsVisible,
