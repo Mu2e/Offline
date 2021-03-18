@@ -24,6 +24,8 @@ namespace mu2e {
     const art::EDProductGetter* simProductGetter_;
 
   public:
+    SimParticleHelper() {} // to avoid heap use in Mu2eG4PerThreadStorage
+
     SimParticleHelper(unsigned particleNumberOffset,
                       const art::ProductID& simID,
                       const art::Event* event,

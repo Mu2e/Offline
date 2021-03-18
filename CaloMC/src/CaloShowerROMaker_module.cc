@@ -227,8 +227,8 @@ namespace mu2e {
               const CaloShowerStep& step = *istep;
 
               // time folding and filtering, see docdb-3425 for a stunning explanation
-              float hitTimeUnfolded = toff_.totalTimeOffset(istep->simParticle())+istep->time();
-              float hitTime         = fmod(hitTimeUnfolded,mbtime_);
+              double hitTimeUnfolded = toff_.totalTimeOffset(istep->simParticle())+istep->time();
+              double hitTime         = fmod(hitTimeUnfolded,mbtime_);
 
               if (hitTime < blindTime_ || hitTime > mbtime_ ) continue;
 
@@ -271,7 +271,10 @@ namespace mu2e {
 
               //Produce an MC object that include the step and additional information for each original step
               simEntriesMap[crystalID].push_back(StepEntry(stepPtr,edep_corr,hitTime));
-          } 
+          }
+          
+          auto sortFunctor = [](const auto& a, const auto& b){return a.SiPMID() < b.SiPMID();};
+          std::sort(CaloShowerROs.begin(),CaloShowerROs.end(),sortFunctor); 
       } 
 
       

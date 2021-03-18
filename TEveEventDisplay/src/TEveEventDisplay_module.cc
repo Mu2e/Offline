@@ -37,6 +37,7 @@ namespace mu2e
         fhicl::Atom<bool> showBuilding{Name("showBuilding"), Comment("set false to remove building"),false};   
         fhicl::Atom<bool> showDSOnly{Name("showDSOnly"), Comment(""),true};     
         fhicl::Atom<bool> showEvent{Name("showEvent"), Comment(""),true};  
+      
         fhicl::Atom<bool> accumulate{Name("accumulate"), Comment(""),false};      
         fhicl::Table<Collection_Filler::Config> filler{Name("filler"),Comment("fill collections")};
       };
@@ -85,7 +86,7 @@ namespace mu2e
   TEveEventDisplay::~TEveEventDisplay(){}
 
   void TEveEventDisplay::beginJob(){
-    std::cout<<"[Starting TEveEventDisplay::beginJob()]"<<std::endl;
+   
     directory_ = gDirectory;
     if ( !gApplication ){
       int    tmp_argc(0);
@@ -94,15 +95,13 @@ namespace mu2e
     }
     _frame = new TEveMu2eMainWindow(gClient->GetRoot(), 1000,600, _pset);
     _frame->StartProjectionTabs();
-    std::cout<<"[Ending TEveEventDisplay::beginJob()]"<<std::endl;
+  
   }
 
   void TEveEventDisplay::beginRun(const art::Run& run){
-    std::cout<<"[Starting TEveEventDisplay::beginRun()]"<<std::endl;
     _frame->SetRunGeometry(run, _diagLevel, _showBuilding, _showDSOnly, _showCRV);
     _frame->PrepareTrackerProjectionTab(run);
     _frame->PrepareCaloProjectionTab(run);
-    std::cout<<"[Ending TEveEventDisplay::beginJob()]"<<std::endl;
   }
 
   void TEveEventDisplay::analyze(const art::Event& event){
@@ -126,13 +125,10 @@ namespace mu2e
         _firstLoop = false;
       }
     }
-   
-    std::cout<<"[Ending TEveEventDisplay::analyze()]"<<std::endl;
   } 
 
 
   void TEveEventDisplay::endJob(){
-    std::cout<<"[In TEveEventDisplay::endJob()]"<<std::endl;
     if(!foundEvent){
       char msg[300];
       sprintf(msg, "Reached end of file but #%i has not been found", true);

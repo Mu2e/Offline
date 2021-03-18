@@ -473,7 +473,6 @@ namespace mu2e{
   }
 
   void TEveMu2eMainWindow::SetRunGeometry(const art::Run& run, int _diagLevel, bool _showBuilding, bool _showDSOnly, bool _showCRV){
-
     if(gGeoManager){
       gGeoManager->GetListOfNodes()->Delete();
       gGeoManager->GetListOfVolumes()->Delete();
@@ -488,10 +487,11 @@ namespace mu2e{
     TGeoVolume* topvol = geom->GetTopVolume();
 
     //Set Top Volume for gGeoManager:
-  
     gGeoManager->SetTopVolume(topvol);
-    //gGeoManager->SetTopVisible(kTRUE);
-
+    gGeoManager->SetTopVisible(kTRUE);
+    int nn = gGeoManager->GetNNodes();
+    printf("nodes in geom = %d\n",nn);
+    
     //Get Top Node:
     TGeoNode* topnode = gGeoManager->GetTopNode();
     TEveGeoTopNode* etopnode = new TEveGeoTopNode(gGeoManager, topnode);
@@ -500,16 +500,14 @@ namespace mu2e{
 
     setRecursiveColorTransp(etopnode->GetNode()->GetVolume(), kWhite-10,70);
 
-    if(!_showBuilding){ 
+    if(!_showBuilding){   
       mu2e_geom->SolenoidsOnly(topnode);
       mu2e_geom->hideTop(topnode, _diagLevel);
     }
-    if(_showDSOnly){
-     mu2e_geom->InsideDS(topnode, false );
-    }
-    if(_showCRV){
-      mu2e_geom->InsideCRV(topnode, true);
-    }
+    if(_showDSOnly) mu2e_geom->InsideDS(topnode, false );
+  
+    if(_showCRV) mu2e_geom->InsideCRV(topnode, true);
+
     //Add static detector geometry to global scene
     gEve->AddGlobalElement(etopnode);
     geom->Draw("ogl");
@@ -524,7 +522,7 @@ namespace mu2e{
       if(_data.cryHitcol !=0){pass_data->AddCrystalHits(_firstLoop, _emptydata.cryHitcol, calo2Dproj, ftimemin, ftimemax, true, _accumulate, CfXYMgr, CfRZMgr, proj0, proj1);}
     }
     if (type == "Tracks"){
-      pass_data->AddHelixPieceWise(_firstLoop, _emptydata.kalseedcol, _data.track_list, tracker2Dproj, ftimemin, ftimemax, true,  _accumulate, TfXYMgr, TfRZMgr, proj2, proj3);
+      pass_data->AddHelixPieceWise3D(_firstLoop, _emptydata.track_tuple, tracker2Dproj, ftimemin, ftimemax, true,  _accumulate, TfXYMgr, TfRZMgr, proj2, proj3);
 
     }
     if (type == "Cosmics"){
@@ -534,7 +532,7 @@ namespace mu2e{
       if(_data.cosmiccol!=0){pass_data->AddCosmicTrack(_firstLoop, _emptydata.cosmiccol, tracker2Dproj, ftimemin, ftimemax, true, _accumulate, TfXYMgr, TfRZMgr, proj2, proj3);}
     }
     if (type == "MC Trajectories"){
-      if(_data.mctrajcol!=0){pass_mc->AddMCTrajectory(_firstLoop, _emptydata.mctrajcol, tracker2Dproj, true, _accumulate);}
+      if(_data.mctrajcol!=0){pass_mc->AddFullMCTrajectory(_firstLoop, _emptydata.mctrajcol, tracker2Dproj, true, _accumulate, TfXYMgr, TfRZMgr, proj2, proj3);}
     }
     gSystem->ProcessEvents();
     gClient->NeedRedraw(fTeRun);
@@ -607,9 +605,9 @@ namespace mu2e{
       }
       if(param1==1202){
 
-        if(trackscheck->IsDown()){pass_data->AddHelixPieceWise(_firstLoop, _data.kalseedcol, _data.track_list, tracker2Dproj, ftimemin, ftimemax, false, _accumulate, TfXYMgr, TfRZMgr, proj2, proj3);}
-
-        if(!trackscheck->IsDown() && _data.kalseedcol!=0){RedrawDataProducts("Tracks");}
+        if(trackscheck->IsDown()){pass_data->AddHelixPieceWise3D(_firstLoop, _data.track_tuple, tracker2Dproj, ftimemin, ftimemax, false, _accumulate, TfXYMgr, TfRZMgr, proj2, proj3);}
+       
+        if(!trackscheck->IsDown()){RedrawDataProducts("Tracks");}
       }
       if(param1==1203){
         if(cosmicscheck->IsDown()){
@@ -626,7 +624,7 @@ namespace mu2e{
       }
       if(param1==1205){
         if(mctrajcheck->IsDown()){
-          pass_mc->AddMCTrajectory(_firstLoop, _data.mctrajcol, tracker2Dproj, false, _accumulate);	
+          pass_mc->AddFullMCTrajectory(_firstLoop, _data.mctrajcol, tracker2Dproj, false, _accumulate, TfXYMgr, TfRZMgr, proj2, proj3);	
         }
         if(!mctrajcheck->IsDown()){RedrawDataProducts("MC Trajectories");}
       }
@@ -661,7 +659,6 @@ namespace mu2e{
 
   void TEveMu2eMainWindow::setEvent(const art::Event& event, bool firstLoop, Data_Collections &data, double time, bool accumulate, int &runn, int &eventn, bool &eventSelected)
   {
-     
     _event=event.id().event();
     _subrun=event.id().subRun();
     _run=event.id().run();
@@ -670,13 +667,13 @@ namespace mu2e{
     _data.chcol = data.chcol; 
     _data.clustercol = data.clustercol;
     _data.crvcoincol = data.crvcoincol;
-    _data.kalseedcol = data.kalseedcol;
-    _data.track_list = data.track_list;
+    _data.track_tuple = data.track_tuple;
     _data.mctrajcol = data.mctrajcol;
     _data.crvcoincol = data.crvcoincol;
     _data.cryHitcol = data.cryHitcol;
     _data.cosmiccol = data.cosmiccol;
-
+    std::vector<const KalSeedCollection*> track_list = std::get<1>(data.track_tuple);
+    std::cout<<"in main "<<track_list.size()<<std::endl;
     std::vector<double> times = pass_data->getTimeRange(firstLoop, data.chcol, data.crvcoincol, data.clustercol, data.cryHitcol);
 
     if(_data.crvcoincol!=0) pass_data->AddCRVInfo(firstLoop, data.crvcoincol, ftimemin, ftimemax, false, _accumulate);
@@ -686,10 +683,10 @@ namespace mu2e{
     clusterenergy = new std::vector<double>(2);
 
     if(_data.clustercol!=0) *clusterenergy = pass_data->AddCaloClusters(firstLoop, data.clustercol, calo2Dproj, false, fclustmin, fclustmax, ftimemin, ftimemax, _accumulate, CfXYMgr, CfRZMgr, proj0, proj1);
-    if (_data.cryHitcol!=0) pass_data->AddCrystalHits(_firstLoop, _data.cryHitcol, calo2Dproj, ftimemin, ftimemax, false, _accumulate, CfXYMgr, CfRZMgr, proj0, proj1);
-    if(_data.kalseedcol!=0) pass_data->AddHelixPieceWise(firstLoop, data.kalseedcol, _data.track_list, tracker2Dproj,  ftimemin, ftimemax, false, _accumulate, TfXYMgr, TfRZMgr, proj2, proj3);
+    if (_data.cryHitcol!=0) pass_data->AddCrystalHits(firstLoop, data.cryHitcol, calo2Dproj, ftimemin, ftimemax, false, _accumulate, CfXYMgr, CfRZMgr, proj0, proj1);
+    pass_data->AddHelixPieceWise3D(firstLoop, data.track_tuple, tracker2Dproj,  ftimemin, ftimemax, false, _accumulate, TfXYMgr, TfRZMgr, proj2, proj3);
     if(_data.cosmiccol!=0) pass_data->AddCosmicTrack(firstLoop, data.cosmiccol, tracker2Dproj, ftimemin, ftimemax, false, _accumulate, TfXYMgr, TfRZMgr, proj2, proj3);
-    if(_data.mctrajcol!=0) pass_mc->AddMCTrajectory(firstLoop, data.mctrajcol, tracker2Dproj, false, _accumulate);
+    if(_data.mctrajcol!=0) pass_mc->AddFullMCTrajectory(firstLoop, data.mctrajcol, tracker2Dproj, false, _accumulate,  TfXYMgr, TfRZMgr, proj2, proj3);
 
     
     gSystem->ProcessEvents();
@@ -711,7 +708,7 @@ namespace mu2e{
     _hitmaxenergy->AddText(0, (to_string(hitenergy->at(1))).c_str());
     _hitmintime->AddText(0, (to_string(times.at(0))).c_str());
     _hitmaxtime->AddText(0, (to_string(times.at(1))).c_str());
-    gApplication->Run(kTRUE);
+    gApplication->Run(true);
 
     gEve->Redraw3D(kTRUE);
     if(usereventSelected == true){

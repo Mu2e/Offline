@@ -51,66 +51,65 @@ CosmicDriftFit : {
     LineSeedCollection : "LineFinder"
 }
 
+CosmicTrackFit : {
+    NParameters : 4
+    DoNotUseFlag : "Outlier"
+    minNStrawHits : 2
+    minNComboHits : 8
+    Noutliers : 2
+    maxNiter : 1000
+    minNHitsTimeCluster : 1
+    MaxSeedChi2DOF : 2.5
+    MaxDeltaChi2 : 0.001
+    MaxPosDev : 200
+    MaxDOCA : 2.5
+    MaxLogL : 150
+    GaussianSeedTimeResolution : 24
+    MaxTimeResidual : 40
+    MaxTrackLength : 2000.
+    MaxHitPullForSeed : 100.
+    UseTSeedDirection : false
+}
+
 CosmicTrackFinder : { #split into Loose and tight below for efficieny studies
     module_type		   : CosmicTrackFinder
     ComboHitCollection     : "makePH"
     TimeClusterCollection  : "SimpleTimeCluster"
+    LineFinderTag          : "LineFinder"
+    minNStrawHits          : 2
+    minNComboHits          : 8
+    minNHitsTimeCluster    : 1
     UseLineFinder          : false
+    UseChiFit              : true
     DoDrift                : true
     UseTime                : false
+    MinuitTolerance        : 0.1
+    MinuitPrecision        : -1
+    CosmicTrackFit : @local::CosmicTrackFit
 }
 
 CosmicTrackFinderLoose : {
-    module_type		: CosmicTrackFinder
-    ComboHitCollection     : "makePH"
-    TimeClusterCollection  : "SimpleTimeCluster"
-    # TimeClusterCollection  : "TimeClusterFinderCosmics"
+    @table::CosmicTrackFinder
     DoDrift : true
     UseTime : false
     UseLineFinder : false
     CosmicTrackFit :{
+        @table::CosmicTrackFit
 	minNComboHits : 4
 	MaxSeedChi2DOF : 10
 	MaxDeltaChi2 : 0.5
 	MaxPosDev : 20000
-	MaxHitPullForSeed : 1000
-	Noutliers : 2
-	GaussianSeedTimeResolution : 24
-	MaxTimeResidual : 40
-    }
-    
-}
-
-CosmicTrackFinderTight : {
-    module_type		: CosmicTrackFinder
-    ComboHitCollection     : "makePH"
-    TimeClusterCollection  : "SimpleTimeCluster"
-    DoDrift : true
-    UseTime : false
-    UseLineFinder : false
-    CosmicTrackFit :{
-	minNComboHits : 8
-	MaxSeedChi2DOF : 2.5
-	MaxDeltaChi2 : 0.001
-	MaxPosDev : 200
-	MaxHitPullForSeed : 100
-	Noutliers : 2
-	GaussianSeedTimeResolution : 24
-	MaxTimeResidual : 40
     }
 }
 
 CosmicTrackFinderTimeFit : {
-    module_type		: CosmicTrackFinder
-    ComboHitCollection     : "makePH"
-    TimeClusterCollection  : "SimpleTimeCluster"
+    @table::CosmicTrackFinder
     DoDrift : true
     UseTime : true
     UseLineFinder : true
     UseChiFit : false
     minNStrawHits : 4
     minNComboHits : 0
-    debugLevel : 0
     MinuitTolerance : 0.5
 }
 
@@ -179,7 +178,6 @@ CosmicTracking : {
 	TimeClusterFinderCosmics : @local::TimeClusterFinderCosmics
 	CosmicTrackFinder  : @local::CosmicTrackFinder
 	CosmicTrackFinderLoose  : @local::CosmicTrackFinderLoose
-	CosmicTrackFinderTight  : @local::CosmicTrackFinderTight
 	CosmicTrackFinderTimeFit  : @local::CosmicTrackFinderTimeFit
 	LineFinder : @local::LineFinder
 	CosmicDriftFit : @local::CosmicDriftFit
@@ -217,6 +215,5 @@ Output : {
 #production sequence to find straight track
 CosmicTracking.FindCosmics : [  SimpleTimeCluster, CosmicTrackFinder ]
 CosmicTracking.FindCosmicsLoose : [  SimpleTimeCluster, CosmicTrackFinderLoose ]
-CosmicTracking.FindCosmicsTight : [  SimpleTimeCluster, CosmicTrackFinderTight ]
 
 END_PROLOG

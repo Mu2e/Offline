@@ -29,9 +29,10 @@ namespace mu2e {
   class SimParticlePrimaryHelper {
   public:
 
+    SimParticlePrimaryHelper() {}  // to avoid heap use in Mu2eG4PerThreadStorage
+
     SimParticlePrimaryHelper(const art::Event* event,
                              const art::ProductID& simProdID,
-                             const art::Handle<GenParticleCollection>& gensHandle,
                              const art::EDProductGetter* sim_prod_getter);
 
     unsigned numPrimaries() const { return entries_.size(); }
@@ -44,9 +45,9 @@ namespace mu2e {
       return entries_.at(g4TrkID - 1).simParticlePrimaryPtr;
     }
 
-    void addEntryFromGenParticle(unsigned genId);
+    void addEntryFromGenParticle(const art::ValidHandle<GenParticleCollection>& gensHandle, unsigned genId);
 
-    void addEntryFromStepPointMC (SimParticleCollection::key_type simId);
+    void addEntryFromSimParticleId (SimParticleCollection::key_type simId);
 
   private:
 
@@ -60,9 +61,6 @@ namespace mu2e {
 
     typedef std::vector<Entry> Entries;
     Entries entries_;
-
-    // need this to create art::Ptr to GenParticles
-    const art::Handle<GenParticleCollection> gensHandle_;
 
     // need these to create art::Ptr to SimParticles
     art::ProductID simProdID_;

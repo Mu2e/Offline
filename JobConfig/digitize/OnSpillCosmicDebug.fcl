@@ -1,0 +1,9 @@
+#
+#  Digitization specialization for on-spill simulations
+#  Configuration is used for cosmics debugging
+#
+#include "JobConfig/digitize/OnSpill.fcl"
+physics.producers.compressDigiMCs.extraStepPointMCTags : ["compressDetStepMCs:virtualdetector", "compressDetStepMCs:protonabsorber" ]
+physics.producers.compressDigiMCs.noCompression: true
+physics.producers.cosmicTimeMap.TimeMin: 1100
+physics.producers.cosmicTimeMap.TimeMax: 1200

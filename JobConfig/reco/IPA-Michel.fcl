@@ -2,7 +2,7 @@
 # Reconstruct from Michel electrons from the IPA
 # David Brown (LBNL) 1 Feb 2019
 #
-#include "JobConfig/reco/reco.fcl"
+#include "JobConfig/reco/Reco.fcl"
 
 # the following need to be overwritten for the specific channel
 outputs.Output.fileName: "mcs.owner.RecoIPAMichel.version.sequencer.art"
