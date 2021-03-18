@@ -359,7 +359,13 @@ namespace mu2e {
   VolumeInfo Mu2eWorld::constructTarget(){
 
     // The target is built inside this volume.
-    VolumeInfo const & detSolUpstreamVacInfo   = ( _config.getBool("isDumbbell",false) ) ? _helper->locateVolInfo("DS3Vacuum") : _helper->locateVolInfo("DS2Vacuum");//DS3Vacuum to move the targets
+    std::string theDS3("DS3Vacuum");
+    std::string theDS2("DS2Vacuum");
+    if ( _config.getBool("inGaragePosition",false) ) {
+      theDS3 = "garageFakeDS3Vacuum";
+      theDS2 = "garageFakeDS2Vacuum";
+    }
+    VolumeInfo const & detSolUpstreamVacInfo   = ( _config.getBool("isDumbbell",false) ) ? _helper->locateVolInfo(theDS3) : _helper->locateVolInfo(theDS2);//DS3Vacuum to move the targets
 
     if ( _verbosityLevel > 0) {
       G4cout << __func__ << "detSolUpstreamVacInfo.centerInWorld.z()=" << detSolUpstreamVacInfo.centerInWorld.z() << G4endl;
