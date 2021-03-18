@@ -88,8 +88,6 @@ outputs: {
 physics.producers.g4run.inputs: {
    primaryType: "StepPoints"
    primaryTag: "extmonBeamFilter:extmonbeam"
-   simParticleNumberOffset: 100000  // safe b/c of g4.particlesSizeLimit in stage1
-   inputSimParticles: "extmonBeamFilter"
    inputMCTrajectories: ""
    inputPhysVolumeMultiInfo: "compressPVextmonBeam"
 }

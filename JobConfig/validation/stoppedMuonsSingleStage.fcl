@@ -1,5 +1,5 @@
 // This job starts with protons on target and writes stopped muons
-// into a framework format output file. Run 
+// into a framework format output file. Run
 // JobConfig/beam/beam_nts3tgtstops.fcl on the output to get an ntuple.
 //
 // Andrei Gaponenko, 2015
@@ -71,7 +71,6 @@ physics : {
          physVolInfoInput : "g4run"
          stoppingMaterial : "StoppingTarget_Al"
          particleTypes : [ 13 ] // mu-
-         particleOffsetThreshold: 0
          verbosityLevel: 1
       }
    }
@@ -87,7 +86,7 @@ physics : {
       g4consistent: {
          module_type: FilterStatusG4
          input: "g4run"
-	 maxAcceptedStatus: 9  #  status 10 and above means StepPointMCCollection may have non-dereferencable pointers
+         maxAcceptedStatus: 9  #  status 10 and above means StepPointMCCollection may have non-dereferencable pointers
       }
    }
 

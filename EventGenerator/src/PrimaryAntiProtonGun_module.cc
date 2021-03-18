@@ -124,7 +124,6 @@ namespace mu2e {
     typedef cet::map_vector_key key_type;
 
     key_type                       idPbar;
-    const unsigned                 stageOffsetPbar{0};
     const PDGCode::type            pdgIdPbar{PDGCode::anti_proton};
     const CLHEP::Hep3Vector&       positionPbar{0.,0.,0.};
     const CLHEP::HepLorentzVector& momentumPbar{0.,0.,0.,0.};
@@ -487,7 +486,7 @@ namespace mu2e {
     auto const& oldParent = simParticles[key_type(iInteracting)];
     SimParticle newPbar(
                         newPbarKey                         // id
-                        ,0                                 // stageOffset
+                        ,0                                 // simStage
                         ,pptr                              // parentSim
                         ,PDGCode::anti_proton              // pdgId
                         ,art::Ptr<GenParticle>()           // since this comes from a SimParticle the ptr to a GenParticle should be null
