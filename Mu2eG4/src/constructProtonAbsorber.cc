@@ -184,7 +184,6 @@ namespace mu2e {
 
       // The proton absorber starts at the target end.
       // we add space for the virtual detector here
-      double pabsStartInMu2eZ = target->centerInMu2e().z() + 0.5*target->cylinderLength() + 2.*vdHL;
       double pabsStartInMu2eZ = target->centerInMu2e().z() + 0.5*target->cylinderLength() + 2.*vdHL + zOffGarage;
 
       // Need to split it at the DS2/DS3 boundary
@@ -1364,7 +1363,7 @@ namespace mu2e {
         // Make mother volume for degrader
         std::string motherName("Degrader");
         VolumeInfo degraderMother ( motherName,
-                                    locationInMu2e - parent1Info.centerInMu2e(), parent1Info.centerInWorld);
+                                    locationInMu2e - parent1Info.centerInMu2e() + relPosFake, parent1Info.centerInWorld);
 
         // Make box for degrader mother volume.
         G4Box* motherBox = new G4Box ( "degraderOutline",
@@ -1456,7 +1455,7 @@ namespace mu2e {
         nestTubs("degraderCounterweight",
                  TubsParams(counterDims.at(0),counterDims.at(1),counterDims.at(2)),
                  findMaterialOrThrow(pabs->degraderCountwtMaterial()),
-                 cwtRot, location2InMu2e-parent1Info.centerInMu2e(),
+                 cwtRot, location2InMu2e-parent1Info.centerInMu2e() + relPosFake,
                  parent1Info,
                  0, pabsIsVisible, G4Color::Red(),
                  pabsIsSolid,
@@ -1475,7 +1474,7 @@ namespace mu2e {
           nestBox ("degraderSupportArm0",
                    lwhs2,
                    findMaterialOrThrow(pabs->degraderSupportMaterial()),
-                   0, transa0 -parent1Info.centerInMu2e(), parent1Info,
+                   0, transa0 -parent1Info.centerInMu2e() + relPosFake, parent1Info,
                    0, pabsIsVisible, G4Color::Red(),
                    pabsIsSolid,
                    forceAuxEdgeVisible,
@@ -1489,7 +1488,7 @@ namespace mu2e {
           nestBox ("degraderSupportArm1",
                    lwhs2,
                    findMaterialOrThrow(pabs->degraderSupportMaterial()),
-                   0, transa1 -parent1Info.centerInMu2e(), parent1Info,
+                   0, transa1 -parent1Info.centerInMu2e() + relPosFake, parent1Info,
                    0, pabsIsVisible, G4Color::Red(),
                    pabsIsSolid,
                    forceAuxEdgeVisible,
@@ -1503,7 +1502,7 @@ namespace mu2e {
           nestBox ("degraderSupportArm2",
                    lwhs2,
                    findMaterialOrThrow(pabs->degraderSupportMaterial()),
-                   0, transa2 -parent1Info.centerInMu2e(), parent1Info,
+                   0, transa2 -parent1Info.centerInMu2e() + relPosFake, parent1Info,
                    0, pabsIsVisible, G4Color::Red(),
                    pabsIsSolid,
                    forceAuxEdgeVisible,
@@ -1517,7 +1516,7 @@ namespace mu2e {
           nestBox ("degraderSupportArm3",
                    lwhs2,
                    findMaterialOrThrow(pabs->degraderSupportMaterial()),
-                   0, transa3 -parent1Info.centerInMu2e(), parent1Info,
+                   0, transa3 -parent1Info.centerInMu2e() + relPosFake, parent1Info,
                    0, pabsIsVisible, G4Color::Red(),
                    pabsIsSolid,
                    forceAuxEdgeVisible,
@@ -1535,7 +1534,7 @@ namespace mu2e {
           nestBox ("degraderSupportPlate",
                    lwhs3,
                    findMaterialOrThrow(pabs->degraderSupportMaterial()),
-                   0, transp1 - parent1Info.centerInMu2e(), parent1Info,
+                   0, transp1 - parent1Info.centerInMu2e() + relPosFake, parent1Info,
                    0, pabsIsVisible, G4Color::Red(),
                    pabsIsSolid,
                    forceAuxEdgeVisible,
