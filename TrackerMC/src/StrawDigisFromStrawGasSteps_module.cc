@@ -215,6 +215,7 @@ namespace mu2e {
         TDCValue _eventWindowEndTDC;
         TDCValue _mbtimeTDC;
         bool _onSpill;
+        double _digitizationEnd;
 
 	//  helper functions
 	void fillClusterMap(StrawPhysics const& strawphys,
@@ -447,6 +448,10 @@ namespace mu2e {
       _eventWindowEndTDC = strawele.tdcResponse( _eventWindowLength - strawele.electronicsTimeDelay());
       _mbtimeTDC = strawele.tdcResponse( _mbtime - strawele.electronicsTimeDelay());
       _onSpill = (ewMarker.spillType() == EventWindowMarker::SpillType::onspill);
+      // for offspill events, we assume we digitize for the whole event length
+      _digitizationEnd = strawele.digitizationEnd();
+      if (!_onSpill)
+        _digitizationEnd = _eventWindowLength;
       art::Handle<ProtonBunchTimeMC> pbtmcHandle;
       event.getByLabel(_pbtmcTag, pbtmcHandle);
       const ProtonBunchTimeMC& pbtmc(*pbtmcHandle);
@@ -577,7 +582,7 @@ namespace mu2e {
       double ctime  = microbunchTime(strawele,sgs.time() + _toff.totalTimeOffset(sgs.simParticle()));
       // test if this step point is roughly in the digitization window
       if( (ctime > strawele.digitizationStart() - strawele.electronicsTimeDelay() - _steptimebuf
-	    && ctime <  strawele.digitizationEnd() - strawele.electronicsTimeDelay() + _steptimebuf) || readAll(sid) || (ctime < strawele.digitizationEnd() - strawele.electronicsTimeDelay() + _steptimebuf - _mbtime)) {
+	    && ctime <  _digitizationEnd - strawele.electronicsTimeDelay() + _steptimebuf) || readAll(sid) || (_onSpill && ctime < _digitizationEnd - strawele.electronicsTimeDelay() + _steptimebuf - _mbtime)) {
 	// Subdivide the StrawGasStep into ionization clusters
 	_clusters.clear();
 	divideStep(strawphys,strawele,straw,sgs,_clusters);
@@ -743,7 +748,7 @@ namespace mu2e {
       // loop until we hit the end of the waveforms.  Require both in time.  Buffer to account for eventual TDC jitter
       // this is a loose pre-selection, final selection is done at digitization
       while( crosses[0] && crosses[1] && std::max(wfx[0]._time,wfx[1]._time)
-	  < strawele.digitizationEnd() - strawele.electronicsTimeDelay() + _tdcbuf){
+	  < max(_digitizationEnd,_mbtime) - strawele.electronicsTimeDelay() + _tdcbuf){
 	// see if the crossings match
 	if(strawele.combineEnds(wfx[0]._time,wfx[1]._time)){
 	  // put the pair of crossings in the crosing list
