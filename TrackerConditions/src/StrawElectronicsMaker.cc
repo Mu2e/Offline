@@ -70,8 +70,8 @@ namespace mu2e {
     ptr->setvthresh(vthresh);
 
     // here we start using the partially constructed StrawElectronics *ptr
-    ptr->setFlashTDC( ptr->tdcResponse( _config.digitizationStart()   ) );
-    ptr->setDigitizationTDC( ptr->tdcResponse( _config.digitizationEnd() ) );
+    ptr->setDigitizationStartTDC( ptr->tdcResponse( _config.digitizationStart() - _config.electronicsTimeDelay()  ));
+    ptr->setDigitizationEndTDC( ptr->tdcResponse( _config.digitizationEnd() - _config.electronicsTimeDelay()  ));
 
     std::vector<uint16_t> ADCped(96,0);
     for (int i=0;i<96;i++){

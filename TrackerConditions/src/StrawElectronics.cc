@@ -176,26 +176,34 @@ namespace mu2e {
     pmp = peak - (pedestal/(int)_nADCpre);
   }
 
-  bool StrawElectronics::digitizeAllTimes(TDCTimes const& times,double mbtime, TDCValues& tdcs, bool onspill) const {
+  bool StrawElectronics::digitizeAllTimes(TDCTimes const& times, TDCValues& tdcs, bool onspill, TDCValue eventWindowEndTDC, TDCValue mbtimeTDC) const {
     for(size_t itime=0;itime<2;++itime)
       tdcs[itime] = tdcResponse(times[itime]);
     // test these times against time wrapping.
-    if (onspill){
-      bool notwrap(true);
-      for(size_t itime=0;itime<2;++itime)
-        notwrap &= times[itime]+_electronicsTimeDelay > 0 && times[itime]+_electronicsTimeDelay < mbtime;
-      return notwrap;
-    }
-    return true;
+    TDCValue upperLimit;
+    if (onspill)
+      upperLimit = max(mbtimeTDC,_digitizationEndTDC);
+    else
+      upperLimit = eventWindowEndTDC;
+      
+    bool notwrap(true);
+    for(size_t itime=0;itime<2;++itime)
+      notwrap &= times[itime]+_electronicsTimeDelay > 0 && tdcs[itime] < upperLimit;
+    return notwrap;
   }
 
-  bool StrawElectronics::digitizeTimes(TDCTimes const& times,TDCValues& tdcs) const {
+  bool StrawElectronics::digitizeTimes(TDCTimes const& times, TDCValues& tdcs, bool onspill, TDCValue eventWindowEndTDC) const {
     for(size_t itime=0;itime<2;++itime)
       tdcs[itime] = tdcResponse(times[itime]);
     // test bothe these times against the flash blanking. 
+    TDCValue upperLimit;
+    if (onspill)
+      upperLimit = _digitizationEndTDC;
+    else
+      upperLimit = eventWindowEndTDC;
     bool notflash(true);
     for(auto tdc : tdcs){
-      notflash &= tdc > _digitizationStartTDC && tdc < _digitizationEndTDC;
+      notflash &= tdc > _digitizationStartTDC && tdc < upperLimit;
     }
     return notflash;
   }

@@ -152,7 +152,7 @@ namespace mu2e {
 	art::InputTag _ewMarkerTag; 
 	art::InputTag _pbtmcTag; 
 	double _mbtime; 
-	double _mbbuffer; 
+	double _mbbufferEarly, _mbbufferLate; 
 	double _flashbuffer;
 	double _adcbuffer; 
 	double _steptimebuf; 
@@ -212,8 +212,9 @@ namespace mu2e {
 	Float_t _pbtimemc;
 	array<Float_t, StrawId::_nupanels> _ewMarkerROCdt;
         double _eventWindowLength;
+        TDCValue _eventWindowEndTDC;
+        TDCValue _mbtimeTDC;
         bool _onSpill;
-        TDCValue _wrapTDC;
 
 	//  helper functions
 	void fillClusterMap(StrawPhysics const& strawphys,
@@ -373,7 +374,7 @@ namespace mu2e {
 	  _sddiag->Branch("layer",&_sdlayer,"layer/I");
 	  _sddiag->Branch("straw",&_sdstraw,"straw/I");
 	  _sddiag->Branch("nstep",&_nstep,"nstep/I");
-          _sddiag->Branch("ewlength",&_eventWindowLength,"ewlength/F");
+          _sddiag->Branch("ewlength",&_eventWindowLength,"ewlength/D");
           _sddiag->Branch("pbtimemc",&_pbtimemc,"pbtimemc/F");
 	  _sddiag->Branch("xtime",&_xtime,"xtimecal/F:xtimehv/F");
 	  _sddiag->Branch("tctime",&_tctime,"tctimecal/F:tctimehv/F");
@@ -443,7 +444,8 @@ namespace mu2e {
       event.getByLabel(_ewMarkerTag, ewMarkerHandle);
       const EventWindowMarker& ewMarker(*ewMarkerHandle);
       _eventWindowLength = ewMarker.eventLength();
-      std::cout << "Event length: " << _eventWindowLength << std::endl;
+      _eventWindowEndTDC = strawele.tdcResponse( _eventWindowLength - strawele.electronicsTimeDelay());
+      _mbtimeTDC = strawele.tdcResponse( _mbtime - strawele.electronicsTimeDelay());
       _onSpill = (ewMarker.spillType() == EventWindowMarker::SpillType::onspill);
       art::Handle<ProtonBunchTimeMC> pbtmcHandle;
       event.getByLabel(_pbtmcTag, pbtmcHandle);
@@ -454,7 +456,10 @@ namespace mu2e {
 	_ewMarkerROCdt.at(i) = _randgauss.fire(0,strawele.eventWindowMarkerROCJitter());
       }
       // make the microbunch buffer long enough to get the full waveform
-      _mbbuffer = (strawele.nADCSamples() - strawele.nADCPreSamples())*strawele.adcPeriod();
+      _mbbufferEarly = (strawele.nADCSamples() - strawele.nADCPreSamples())*strawele.adcPeriod();
+      _mbbufferLate = _mbbufferEarly;
+      if (strawele.digitizationEnd() > _mbtime)
+        _mbbufferLate += strawele.digitizationEnd()-_mbtime;
       _adcbuffer = 0.01*strawele.adcPeriod();
       // Containers to hold the output information.
       unique_ptr<StrawDigiCollection> digis(new StrawDigiCollection);
@@ -572,7 +577,7 @@ namespace mu2e {
       double ctime  = microbunchTime(strawele,sgs.time() + _toff.totalTimeOffset(sgs.simParticle()));
       // test if this step point is roughly in the digitization window
       if( (ctime > strawele.digitizationStart() - strawele.electronicsTimeDelay() - _steptimebuf
-	    && ctime <  strawele.digitizationEnd() - strawele.electronicsTimeDelay() + _steptimebuf) || readAll(sid)) {
+	    && ctime <  strawele.digitizationEnd() - strawele.electronicsTimeDelay() + _steptimebuf) || readAll(sid) || (ctime < strawele.digitizationEnd() - strawele.electronicsTimeDelay() + _steptimebuf - _mbtime)) {
 	// Subdivide the StrawGasStep into ionization clusters
 	_clusters.clear();
 	divideStep(strawphys,strawele,straw,sgs,_clusters);
@@ -710,10 +715,10 @@ namespace mu2e {
       // add enough buffer to cover both the flash blanking and the ADC waveform
       // at this point cluster times are relative to marker and wrapped at 1695 (if onspill)
       // wrap from beginning of microbunch to times > 1695 to digitize ADCs for hits near end of event window
-      if(clust.time() < _mbbuffer)
+      if(clust.time() < _mbbufferLate)
 	shs.insert(StrawCluster(clust,_mbtime));
       // wrap from end of microbunch to negative time to digitize ADCs for hits at tdc time=0
-      if(clust.time() > _mbtime - _mbbuffer) shs.insert(StrawCluster(clust,-_mbtime));
+      if(clust.time() > _mbtime - _mbbufferEarly) shs.insert(StrawCluster(clust,-_mbtime));
     }
 
     void StrawDigisFromStrawGasSteps::findThresholdCrossings(StrawElectronics const& strawele, SWFP const& swfp, WFXPList& xings){
@@ -857,9 +862,9 @@ namespace mu2e {
       TrkTypes::TDCValues tdcs;
       bool digitize;
       if(readAll(sid))
-	digitize = strawele.digitizeAllTimes(xtimes,_mbtime,tdcs,_onSpill);
+	digitize = strawele.digitizeAllTimes(xtimes,tdcs,_onSpill,_eventWindowEndTDC,_mbtimeTDC);
       else
-	digitize = strawele.digitizeTimes(xtimes,tdcs);
+	digitize = strawele.digitizeTimes(xtimes,tdcs,_onSpill,_eventWindowEndTDC);
 
       if(digitize){
 	TrkTypes::ADCWaveform adc;
@@ -990,7 +995,7 @@ namespace mu2e {
 	set<SGSPtr > steps;
 	set<SPPtr > parts;
 	_nxing[iend] = 0;
-	_txing[iend] = _eventWindowLength + _mbbuffer;
+	_txing[iend] = _eventWindowLength + _mbbufferLate;
 	_xddist[iend] = _xwdist[iend] = _xpdist[iend] = -1.0;
 	for(auto ixing=xings.begin();ixing!=xings.end();++ixing){
 	  ++_nxing[iend];
@@ -1022,7 +1027,7 @@ namespace mu2e {
 	  _tmin[iend] = clusts.begin()->time();
 	  _tmax[iend] = clusts.rbegin()->time();
 	} else {
-	  _tmin[iend] = _mbtime+_mbbuffer;
+	  _tmin[iend] = _mbtime+_mbbufferLate;
 	  _tmax[iend] = -100.0;
 	}
 
@@ -1147,7 +1152,7 @@ namespace mu2e {
 	    ++iclust;
 	  }
 	  _iclust[iend] = iclust;
-          while (iclu != clist.end() && iclu->time() < _xtime[iend] + _mbbuffer){
+          while (iclu != clist.end() && iclu->time() < _xtime[iend] + _mbbufferLate){
             _acharge[iend] += iclu->charge();
             ++iclu;
           }
