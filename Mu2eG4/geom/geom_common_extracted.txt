@@ -6,7 +6,7 @@
 // Special - for garage position!
 bool inGaragePosition   = true;
 double garage.zOffset   = 14000.0;  // for creating special garageFakeDS(2/3)Vacuum volume
-bool garage.extractOPA_IPA_ST = true; //include the OPA, IPA, and Stopping Target in the extracted train
+bool garage.extractOPA_IPA_ST = false; //include the OPA, IPA, and Stopping Target in the extracted train
 
 // End special
 
