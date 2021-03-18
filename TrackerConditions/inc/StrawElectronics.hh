@@ -123,8 +123,8 @@ namespace mu2e {
     TrkTypes::ADCValue adcResponse(StrawId id, double mvolts) const; // ADC response to analog inputs
     TrkTypes::TDCValue tdcResponse(double time) const; // TDC response to a signal input to electronics at a given time (in ns since eventWindowMarker)
     void digitizeWaveform(StrawId id, TrkTypes::ADCVoltages const& wf, TrkTypes::ADCWaveform& adc, TrkTypes::ADCValue &pmp) const; // digitize an array of voltages at the ADC
-    bool digitizeTimes(TrkTypes::TDCTimes const& times,TrkTypes::TDCValues& tdc) const; // times in ns since eventWindowMarker
-    bool digitizeAllTimes(TrkTypes::TDCTimes const& times,double mbtime, TrkTypes::TDCValues& tdcs, bool onspill) const; // for straws which are being read regardless of flash blanking
+    bool digitizeTimes(TrkTypes::TDCTimes const& times,TrkTypes::TDCValues& tdc, bool onspill, TrkTypes::TDCValue eventWindowEndTDC) const; // times in ns since eventWindowMarker
+    bool digitizeAllTimes(TrkTypes::TDCTimes const& times, TrkTypes::TDCValues& tdcs, bool onspill, TrkTypes::TDCValue eventWindowEndTDC, TrkTypes::TDCValue mbtimeTDC) const; // for straws which are being read regardless of flash blanking
     void uncalibrateTimes(TrkTypes::TDCTimes &times, const StrawId &id) const; // convert time from beam t0 to tracker channel t0
     bool combineEnds(double t1, double t2) const; // are times from 2 ends combined into a single digi?
     // interpretation of digital data
@@ -179,10 +179,10 @@ namespace mu2e {
     void setAnalogNoise(std::array<double,npaths> analognoise) 
               { _analognoise = analognoise; }
     void setvthresh(std::vector<double> vthresh) { _vthresh = vthresh;}
-    void setFlashTDC( double digitizationStartTDC) {
+    void setDigitizationStartTDC( double digitizationStartTDC) {
       _digitizationStartTDC = digitizationStartTDC;
     }
-    void setDigitizationTDC( double digitizationEndTDC) {
+    void setDigitizationEndTDC( double digitizationEndTDC) {
       _digitizationEndTDC = digitizationEndTDC;
     }
     void setADCPed( std::vector<uint16_t> ADCped) { _ADCped = ADCped; }
