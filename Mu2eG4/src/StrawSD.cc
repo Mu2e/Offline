@@ -251,6 +251,7 @@ namespace mu2e {
                                         prePosTracker,
                                         postPosTracker,
                                         preMomWorld,
+                                        aStep->GetPostStepPoint()->GetMomentum(),
                                         stepL,
                                         endCode
                                         ));
