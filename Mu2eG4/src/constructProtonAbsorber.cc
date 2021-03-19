@@ -68,10 +68,10 @@ namespace mu2e {
     // Access to the G4HelperService.
     G4Helper* _helper = &(*(art::ServiceHandle<G4Helper>()));
 
-    bool const inGaragePosition = _config.getBool("inGaragePosition",false); //offset detector train elements for extracted position
-    bool const OPA_IPA_ST_Extracted = (inGaragePosition) ? _config.getBool("garage.extractOPA_IPA_ST") : false;
-    double zOffGarage = (inGaragePosition && OPA_IPA_ST_Extracted) ? _config.getDouble("garage.zOffset") : 0.;
-    CLHEP::Hep3Vector relPosFake(0.,0., zOffGarage);
+    const bool inGaragePosition = _config.getBool("inGaragePosition",false); //offset detector train elements for extracted position
+    const bool OPA_IPA_ST_Extracted = (inGaragePosition) ? _config.getBool("garage.extractOPA_IPA_ST") : false;
+    const double zOffGarage = (inGaragePosition && OPA_IPA_ST_Extracted) ? _config.getDouble("garage.zOffset") : 0.;
+    const CLHEP::Hep3Vector relPosFake(0.,0., zOffGarage);
 
     std::string theDS2("DS2Vacuum");
     std::string theDS3("DS3Vacuum");
@@ -334,10 +334,10 @@ namespace mu2e {
       }
 
       double pabs1ZOffset = 0, pabs2ZOffset = 0, pabs3ZOffset = 0, pabs4ZOffset = 0;
-      if (pabs->isAvailable(0)) pabs1ZOffset = CLHEP::mm * pabs->part(0).center().z() - ds2zcenter + zOffGarage;
-      if (pabs->isAvailable(1)) pabs2ZOffset = CLHEP::mm * pabs->part(1).center().z() - ds3zcenter + zOffGarage;
-      if (pabs->isAvailable(2)) pabs3ZOffset = CLHEP::mm * pabs->part(2).center().z() - ds2zcenter + zOffGarage;
-      if (pabs->isAvailable(3)) pabs4ZOffset = CLHEP::mm * pabs->part(3).center().z() - ds3zcenter + zOffGarage;
+      if (pabs->isAvailable(0)) pabs1ZOffset = CLHEP::mm * pabs->part(0).center().z() - ds2zcenter + relPosFake.z();
+      if (pabs->isAvailable(1)) pabs2ZOffset = CLHEP::mm * pabs->part(1).center().z() - ds3zcenter + relPosFake.z();
+      if (pabs->isAvailable(2)) pabs3ZOffset = CLHEP::mm * pabs->part(2).center().z() - ds2zcenter + relPosFake.z();
+      if (pabs->isAvailable(3)) pabs4ZOffset = CLHEP::mm * pabs->part(3).center().z() - ds3zcenter + relPosFake.z();
 
       G4ThreeVector pabs1Offset(0.0, 0.0, pabs1ZOffset);
       G4ThreeVector pabs2Offset(0.0, 0.0, pabs2ZOffset);
@@ -464,6 +464,14 @@ namespace mu2e {
 
         G4Material* pabs3Material = materialFinder.get("protonabsorber.outerPAMaterialName");
 
+        if(verbosityLevel > 0) {
+          cout << __func__ << " protonabs3 center in Mu2e: " << pabs3Offset - parent1Info.centerInMu2e() << endl
+               << __func__ << " protonabs3 {r1_0, r2_0}: {" << pabs3rIn0 << ", "
+               << pabs3rOut0 << "}" << endl
+               << __func__ << " protonabs3 {r1_1, r2_1}: {" << pabs3rIn1 << ", "
+               << pabs3rOut1 << "}" << endl
+               << __func__ << " protonabs3 length: " << pabs3len << endl;
+        }
         if ( 0 == pabs3nS ) {
           // This is the "classic" implementation as a conical frustrum
           double pabs3Param[7] = { pabs3rIn0, pabs3rOut0, pabs3rIn1, pabs3rOut1, pabs3len*0.5,
@@ -484,6 +492,9 @@ namespace mu2e {
                                                 doSurfaceCheck
                                                 );
         } else {
+          if(verbosityLevel > 0) {
+            cout << __func__ << "protonabs3 implemented with " << pabs3nS << " slats" << endl;
+          }
           // This is an implementation as a polyhedron - like a barrel of
           // slats.  We also put slots in it for stopping target support
           // wires to go through
@@ -593,7 +604,7 @@ namespace mu2e {
 
       }
       else {
-        if ( verbosityLevel > 0 ) cout << __func__ << " outer protonabs1 disabled" << endl;
+        if ( verbosityLevel > 0 ) cout << __func__ << " outer protonabs3 disabled" << endl;
       }
 
 
@@ -671,7 +682,7 @@ namespace mu2e {
 
       }
       else {
-        if ( verbosityLevel > 0 ) cout << __func__ << " outer protonabs2 disabled" << endl;
+        if ( verbosityLevel > 0 ) cout << __func__ << " outer protonabs4 disabled" << endl;
       }
 
       //***************************
@@ -707,6 +718,10 @@ namespace mu2e {
           ostringstream myName2;
           myName2 << "OPAsupportExtra_" << iSup+1;
 
+          if(verbosityLevel > 0) {
+            cout << __func__ << ": Constructing " << myName.str() << " with center in Mu2e " << location << " and {r1, r2} = {"
+                 << rin << ", " << rou << "}" << endl;
+          }
           if ( iSup == 1 ) {
             // Make notches in this one for the Stopping target support slats
             VolumeInfo ring2Info(myName.str(),
@@ -798,19 +813,20 @@ namespace mu2e {
             }
           } else {
             if ( zm < pabs1EndInMu2eZ ) {
-              nestTubs( myName.str(),
-                        TubsParams( rin, rou, hl ),
-                        oPAsupportMaterial,
-                        0,
-                        location - parent1Info.centerInMu2e() + relPosFake,
-                        parent1Info,
-                        0,
-                        pabsIsVisible,
-                        G4Color::Blue(),
-                        pabsIsSolid,
-                        forceAuxEdgeVisible,
-                        placePV,
-                        doSurfaceCheck );
+              auto vi = nestTubs( myName.str(),
+                                  TubsParams( rin, rou, hl ),
+                                  oPAsupportMaterial,
+                                  0,
+                                  location - parent1Info.centerInMu2e() + relPosFake,
+                                  parent1Info,
+                                  0,
+                                  pabsIsVisible,
+                                  G4Color::Blue(),
+                                  pabsIsSolid,
+                                  forceAuxEdgeVisible,
+                                  placePV,
+                                  doSurfaceCheck );
+              if(verbosityLevel > 0) cout << " Support final center = " << vi.centerInMu2e() << endl;
               if ( hasExtra ) {
                 nestTubs( myName2.str(),
                           TubsParams( rou, rou+xRad, hl, (270-dPhiX/2.)*CLHEP::deg,
@@ -833,7 +849,7 @@ namespace mu2e {
                 // Add slats to support ST
                 for(int iSlat = 0; iSlat < pabs->nOPASupportSlats(); ++iSlat) {
                   if(verbosityLevel > 0)
-                    cout << "iSlat = " << iSlat << endl;
+                    cout << " iSlat = " << iSlat << endl;
                   const double slatAngle = pabs->slatAngles().at(iSlat)*CLHEP::degree; //taken in as degrees
 
                   CLHEP::HepRotation* slatRotat = new CLHEP::HepRotation(CLHEP::HepRotation::IDENTITY);
@@ -1001,14 +1017,14 @@ namespace mu2e {
                       vector<double> suppZStart;
                       vector<double> suppZEnd;
                       if(verbosityLevel > 0)
-                        cout << "Weight box z range = {" << weightBoxLoc.z() - weightBoxL/2. << ","
+                        cout << " Weight box z range = {" << weightBoxLoc.z() - weightBoxL/2. << ","
                              << weightBoxLoc.z() + weightBoxL/2. << "}" <<  endl;
                       unsigned count = 0;
                       for(int index : suppIndices) {
                         suppZStart.push_back(pabs->oPAsupportZMidpoint().at(index) - pabs->oPAsupportHalflength().at(index));
                         suppZEnd  .push_back(pabs->oPAsupportZMidpoint().at(index) + pabs->oPAsupportHalflength().at(index));
                         if(verbosityLevel > 0)
-                          cout << "supp index = " << index << " z start = " << suppZStart[count]
+                          cout << "  supp index = " << index << " z start = " << suppZStart[count]
                                << " z end = " << suppZEnd[count] << endl;
                         ++count;
                       }
@@ -1022,9 +1038,9 @@ namespace mu2e {
                         weightMotherLoc.setZ(suppZStart[step]-currL/2.);
                         const double weightMotherParams[] = {weightBoxW/2., weightBoxH/2., currL/2.-0.0005};
                         if(verbosityLevel > 0)
-                          cout << "step: " << step << " Current Weight box z range = {" << weightMotherLoc.z() - currL/2. << ","
+                          cout << " step: " << step << " Current Weight box z range = {" << weightMotherLoc.z() - currL/2. << ","
                                << weightMotherLoc.z() + currL/2. << "} total length = " << currL << endl
-                               << "Weight box mother params: {" << weightMotherParams[0] << ", "
+                               << " Weight box mother params: {" << weightMotherParams[0] << ", "
                                << weightMotherParams[1] << ", " << weightMotherParams[2] << "}\n";
                         VolumeInfo weightMotherInfo = nestBox ( "STsupportWeightMother"+std::to_string(step),
                                                                 weightMotherParams,
@@ -1059,7 +1075,7 @@ namespace mu2e {
                           zCenter += side*sideThickness/2.;
                           currL   -= sideThickness;
                           if(verbosityLevel > 0)
-                            cout << "Extra panel params: {" << frontPars[0] << ", "
+                            cout << " Extra panel params: {" << frontPars[0] << ", "
                                  << frontPars[1] << ", " << frontPars[2] << "} loc = "
                                  << "{0, 0, " << side*(sideThickness/2.0 - currL/2.0) << "}\n";
                         }
@@ -1155,22 +1171,23 @@ namespace mu2e {
                 }
               } // end if iSub == 2  (adding slats for ST support)
             } else {
-              nestTubs( myName.str(),
-                        TubsParams( rin, rou, hl ),
-                        oPAsupportMaterial,
-                        0,
-                        location - parent2Info.centerInMu2e() + relPosFake,
-                        parent2Info,
-                        0,
-                        pabsIsVisible,
-                        G4Color::Blue(),
-                        pabsIsSolid,
-                        forceAuxEdgeVisible,
-                        placePV,
-                        doSurfaceCheck );
+              auto vi = nestTubs( myName.str(),
+                                  TubsParams( rin, rou, hl ),
+                                  oPAsupportMaterial,
+                                  0,
+                                  location - parent2Info.centerInMu2e() + relPosFake,
+                                  parent2Info,
+                                  0,
+                                  pabsIsVisible,
+                                  G4Color::Blue(),
+                                  pabsIsSolid,
+                                  forceAuxEdgeVisible,
+                                  placePV,
+                                  doSurfaceCheck );
+              if(verbosityLevel > 0) cout << " Support final center = " << vi.centerInMu2e() << endl;
             } // end of if for placing in DS2Vac or DS3Vac
           } // end of if else for support 2 (iSup == 1)
-        }// end for loop over OPA supports
+        } // end for loop over OPA supports
 
         // in opa version 3 and above, add cross supports between support rings
         if(opaVersion > 2) {
