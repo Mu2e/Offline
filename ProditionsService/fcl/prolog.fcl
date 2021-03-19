@@ -1,3 +1,4 @@
+#include "DAQConditions/fcl/prolog.fcl"
 #include "TrackerConditions/fcl/prolog.fcl"
 #include "AnalysisConditions/fcl/prolog.fcl"
 #include "SimulationConditions/fcl/prolog.fcl"
@@ -5,6 +6,7 @@
 BEGIN_PROLOG
 
 Proditions : {
+   eventTiming : @local::EventTiming
    fullReadoutStraw : @local::FullReadoutStraw
    trackerStatus : @local::TrackerStatus
    strawDrift : @local::StrawDrift

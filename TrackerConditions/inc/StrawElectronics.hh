@@ -124,7 +124,7 @@ namespace mu2e {
     TrkTypes::TDCValue tdcResponse(double time) const; // TDC response to a signal input to electronics at a given time (in ns since eventWindowMarker)
     void digitizeWaveform(StrawId id, TrkTypes::ADCVoltages const& wf, TrkTypes::ADCWaveform& adc, TrkTypes::ADCValue &pmp) const; // digitize an array of voltages at the ADC
     bool digitizeTimes(TrkTypes::TDCTimes const& times,TrkTypes::TDCValues& tdc, bool onspill, TrkTypes::TDCValue eventWindowEndTDC) const; // times in ns since eventWindowMarker
-    bool digitizeAllTimes(TrkTypes::TDCTimes const& times, TrkTypes::TDCValues& tdcs, bool onspill, TrkTypes::TDCValue eventWindowEndTDC, TrkTypes::TDCValue mbtimeTDC) const; // for straws which are being read regardless of flash blanking
+    bool digitizeAllTimes(TrkTypes::TDCTimes const& times, TrkTypes::TDCValues& tdcs, TrkTypes::TDCValue eventWindowEndTDC) const; // for straws which are being read regardless of flash blanking
     void uncalibrateTimes(TrkTypes::TDCTimes &times, const StrawId &id) const; // convert time from beam t0 to tracker channel t0
     bool combineEnds(double t1, double t2) const; // are times from 2 ends combined into a single digi?
     // interpretation of digital data
@@ -145,6 +145,8 @@ namespace mu2e {
     double adcOffset() const { return _ADCOffset; } // offset WRT clock edge for digitization
     double digitizationStart() const { return _digitizationStart; } // time flash blanking ends
     double digitizationEnd() const { return _digitizationEnd; }
+    double digitizationStartFromMarker() const { return _digitizationStart - _timeFromProtonsToDRMarker; } // this is the actual time set in hardware
+    double digitizationEndFromMarker() const { return _digitizationEnd - _timeFromProtonsToDRMarker; }
     void adcTimes(double time, TrkTypes::ADCTimes& adctimes) const; // given crossing time, fill sampling times of ADC CHECK THIS IS CORRECT IN DRAC FIXME!
     double saturationVoltage() const { return _vsat; }
     double threshold(StrawId const &sid, StrawEnd::End iend) const { return _vthresh[sid.getStraw()*2 + iend]; }
@@ -184,6 +186,9 @@ namespace mu2e {
     }
     void setDigitizationEndTDC( double digitizationEndTDC) {
       _digitizationEndTDC = digitizationEndTDC;
+    }
+    void setTimeFromProtonsToDRMarker( double timeFromProtonsToDRMarker) {
+      _timeFromProtonsToDRMarker = timeFromProtonsToDRMarker;
     }
     void setADCPed( std::vector<uint16_t> ADCped) { _ADCped = ADCped; }
     void setttrunc(std::array<double,npaths> ttrunc) { _ttrunc = ttrunc; }
@@ -277,6 +282,8 @@ namespace mu2e {
     std::vector<double> _timeOffsetPanel;
     std::vector<double> _timeOffsetStrawHV;
     std::vector<double> _timeOffsetStrawCal;
+
+    double _timeFromProtonsToDRMarker;
 
   };
   
