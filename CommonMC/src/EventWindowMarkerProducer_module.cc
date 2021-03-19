@@ -18,6 +18,9 @@
 #include "RecoDataProducts/inc/ProtonBunchTime.hh"
 #include "DataProducts/inc/EventWindowMarker.hh"
 
+#include "ProditionsService/inc/ProditionsHandle.hh"
+#include "DAQConditions/inc/EventTiming.hh"
+
 #include "CLHEP/Random/RandFlat.h"
 #include "CLHEP/Random/RandGaussQ.h"
 
@@ -32,12 +35,7 @@ namespace mu2e {
       using Name=fhicl::Name;
       using Comment=fhicl::Comment;
       struct Config {
-        fhicl::Atom<float> systemClockSpeed{ Name("SystemClockSpeed"), Comment("Detector clock speed in MHz"), 40.0};
-        fhicl::Atom<float> timeFromProtonsToDRMarker{ Name("TimeFromProtonsToDRMarker"), Comment("Time shift in ns of DR marker wrt to proton peak"), 0.0};
         fhicl::Atom<unsigned> spillType { Name( "SpillType"), Comment("Whether simulating on or off spill")};
-        fhicl::Atom<unsigned> offSpillLength{ Name("OffSpillEventLength"), Comment("Length of off spill events in clock counts" ),4000};
-        fhicl::Atom<int> onSpillBins{ Name("OnSpillBins"), Comment("Number of microbunches before proton bunch phase repeats"), 5};
-        fhicl::Atom<unsigned> onSpillMaxLength{ Name("OnSpillEventMaxLength"), Comment("Length of longest on spill events in clock counts"),68};
         fhicl::Atom<bool> recoFromMCTruth{ Name("RecoFromMCTruth"), Comment("Create reco PBT from MC truth"),false};
         fhicl::Atom<float> recoFromMCTruthErr{ Name("RecoFromMCTruthErr"), Comment("If creating reco PBT from MC truth, smear by this amount in ns"),0};
       };
@@ -50,12 +48,7 @@ namespace mu2e {
       void beginRun(art::Run& run) override;
       void produce(art::Event& event) override;
 
-      float _systemClockSpeed;
-      float _timeFromProtonsToDRMarker;
       EventWindowMarker::SpillType _spillType;
-      uint16_t _offSpillLength;
-      int _onSpillBins;
-      uint16_t _onSpillMaxLength;
       bool _recoFromMCTruth;
       float _recoFromMCTruthErr;
       art::RandomNumberGenerator::base_engine_t& _engine;
@@ -63,16 +56,13 @@ namespace mu2e {
       CLHEP::RandFlat _randflat;
 
       double _initialPhaseShift;
+	
+      ProditionsHandle<EventTiming> _eventTiming_h;
   };
 
   EventWindowMarkerProducer::EventWindowMarkerProducer(Parameters const& config):
     art::EDProducer{config},
-    _systemClockSpeed( config().systemClockSpeed()), // MHz
-    _timeFromProtonsToDRMarker( config().timeFromProtonsToDRMarker()), // ns (is a calibration value to get data/sim agreement)
     _spillType(static_cast<EventWindowMarker::SpillType>( config().spillType())),
-    _offSpillLength( config().offSpillLength()),
-    _onSpillBins( config().onSpillBins()),
-    _onSpillMaxLength( config().onSpillMaxLength()),
     _recoFromMCTruth( config().recoFromMCTruth()),
     _recoFromMCTruthErr( config().recoFromMCTruthErr()),
     _engine(createEngine( art::ServiceHandle<SeedService>()->getSeed())),
@@ -86,7 +76,7 @@ namespace mu2e {
 
   void EventWindowMarkerProducer::beginJob() {
     // Proton bunch is 0 to 25 ns before event window marker
-    _initialPhaseShift = -1*_randflat.fire(1/_systemClockSpeed*1000);
+    _initialPhaseShift = -1*_randflat.fire(1);
   }
 
   void EventWindowMarkerProducer::beginRun(art::Run& run) {
@@ -98,39 +88,41 @@ namespace mu2e {
       unique_ptr<ProtonBunchTime> pbt(new ProtonBunchTime);
       marker->_spillType = _spillType;
 
-      double period = (1/_systemClockSpeed)*1000; // in ns
+      EventTiming const& eventTiming = _eventTiming_h.get(event.id());
+
+      double period = (1/eventTiming.systemClockSpeed())*1000; // in ns
 
       if (_spillType == EventWindowMarker::SpillType::offspill){
         pbtmc->pbtime_ = 0;
         pbt->pbtime_ = 0;
         pbt->pbterr_ = 0;
-        marker->_eventLength = _offSpillLength*period;
+        marker->_eventLength = eventTiming.offSpillLength()*period;
       }else{
         // calculate which bin we are in from event number
-        int bin = event.id().event() % _onSpillBins;
+        int bin = event.id().event() % eventTiming.onSpillBins();
         // determine phase for this event
         // each microbunch the proton bunch gets shifted back 5 ns from the event window
-        double shiftPer = -1*period/_onSpillBins;
-        double phaseShift = (_initialPhaseShift + bin*shiftPer);
+        double shiftPer = -1*period/eventTiming.onSpillBins();
+        double phaseShift = (_initialPhaseShift/period + bin*shiftPer);
         if (phaseShift < -1*period)
           phaseShift += period;
         // when phase shift would be > than one clock period by next microbunch
         // the event window is one clock tick shorter
         if (phaseShift < -1*period - shiftPer)
-          marker->_eventLength = (_onSpillMaxLength-1)*period;
+          marker->_eventLength = (eventTiming.onSpillMaxLength()-1)*period;
         else
-          marker->_eventLength = _onSpillMaxLength*period;
+          marker->_eventLength = eventTiming.onSpillMaxLength()*period;
 
         // we set pbtime to be the time of the proton bunch in terms of the DAQ clock
         // t=0 (which is determined by the event window marker arrival time)
-        pbtmc->pbtime_ = _timeFromProtonsToDRMarker + phaseShift;
+        pbtmc->pbtime_ = -1*eventTiming.timeFromProtonsToDRMarker() + phaseShift;
         if (_recoFromMCTruth){
           pbt->pbtime_ = pbtmc.get()->pbtime_;
           if (_recoFromMCTruthErr > 0)
             pbt->pbtime_ += _randgauss.fire(0,_recoFromMCTruthErr); 
           pbt->pbterr_ = _recoFromMCTruthErr;
         }else{
-          pbt->pbtime_ = -1*period/2.;
+          pbt->pbtime_ = -1*eventTiming.timeFromProtonsToDRMarker() - period/2.;
           pbt->pbterr_ = period/sqrt(12);
         }
       }

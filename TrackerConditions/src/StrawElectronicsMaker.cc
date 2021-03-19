@@ -14,7 +14,7 @@ using namespace std;
 namespace mu2e {
   using namespace TrkTypes;
 
-  StrawElectronics::ptr_t StrawElectronicsMaker::fromFcl() {
+  StrawElectronics::ptr_t StrawElectronicsMaker::fromFcl(EventTiming::cptr_t eventTiming) {
 
     // creat this at the beginning since it must be used,
     // partially constructed, to complete the construction
@@ -70,8 +70,9 @@ namespace mu2e {
     ptr->setvthresh(vthresh);
 
     // here we start using the partially constructed StrawElectronics *ptr
-    ptr->setDigitizationStartTDC( ptr->tdcResponse( _config.digitizationStart() - _config.electronicsTimeDelay()  ));
-    ptr->setDigitizationEndTDC( ptr->tdcResponse( _config.digitizationEnd() - _config.electronicsTimeDelay()  ));
+    ptr->setDigitizationStartTDC( ptr->tdcResponse( _config.digitizationStart() - _config.electronicsTimeDelay() - eventTiming->timeFromProtonsToDRMarker() ));
+    ptr->setDigitizationEndTDC( ptr->tdcResponse( _config.digitizationEnd() - _config.electronicsTimeDelay() - eventTiming->timeFromProtonsToDRMarker()  ));
+    ptr->setTimeFromProtonsToDRMarker(eventTiming->timeFromProtonsToDRMarker());
 
     std::vector<uint16_t> ADCped(96,0);
     for (int i=0;i<96;i++){
@@ -223,9 +224,10 @@ namespace mu2e {
 				   TrkDelayPanel::cptr_t tdp,
 				   TrkPreampRStraw::cptr_t tprs,
 				   TrkPreampStraw::cptr_t tps,
-				   TrkThresholdRStraw::cptr_t ttrs ) {
+				   TrkThresholdRStraw::cptr_t ttrs,
+                                   EventTiming::cptr_t eventTiming ) {
     // initially fill from fcl to get all the constants
-    auto ptr = fromFcl();
+    auto ptr = fromFcl(eventTiming);
 
     // now overwrite with db values
 

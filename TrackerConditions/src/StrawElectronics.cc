@@ -176,19 +176,14 @@ namespace mu2e {
     pmp = peak - (pedestal/(int)_nADCpre);
   }
 
-  bool StrawElectronics::digitizeAllTimes(TDCTimes const& times, TDCValues& tdcs, bool onspill, TDCValue eventWindowEndTDC, TDCValue mbtimeTDC) const {
+  bool StrawElectronics::digitizeAllTimes(TDCTimes const& times, TDCValues& tdcs, TDCValue eventWindowEndTDC) const {
     for(size_t itime=0;itime<2;++itime)
       tdcs[itime] = tdcResponse(times[itime]);
     // test these times against time wrapping.
-    TDCValue upperLimit;
-    if (onspill)
-      upperLimit = max(mbtimeTDC,_digitizationEndTDC);
-    else
-      upperLimit = eventWindowEndTDC;
       
     bool notwrap(true);
     for(size_t itime=0;itime<2;++itime)
-      notwrap &= times[itime]+_electronicsTimeDelay > 0 && tdcs[itime] < upperLimit;
+      notwrap &= times[itime]+_electronicsTimeDelay > 0 && tdcs[itime] < eventWindowEndTDC;
     return notwrap;
   }
 
