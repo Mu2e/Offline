@@ -152,7 +152,11 @@ namespace mu2e {
       fhicl::Atom<float> nullHitVarianceScale { Name("NullHitVarianceScale"), Comment("Scale factor on geometric null hit variance"), 1.0 }; 
       fhicl::Atom<float> tPOCAPrec { Name("TPOCAPrecision"), Comment("Precision for TPOCA calculation (ns)"), 1e-5 };
       fhicl::Atom<bool> addMaterial { Name("AddMaterial"), Comment("Add material effects to the fit"), true }; 
-    };
+      fhicl::Atom<bool> useCaloCluster { Name("UseCaloCluster"), Comment("Use CaloCluster in the fit"), true }; 
+      fhicl::Atom<float> caloDt{ Name("CaloTrackerTimeOffset"), Comment("Time offset of calorimeter data WRT tracker (ns)"), -0.1 };
+      fhicl::Atom<float> caloPosRes{ Name("CaloPositionResolution"), Comment("Transverse resolution of CaloCluster position (mm)"), 15.0 };
+      fhicl::Atom<float> caloPropSpeed{ Name("CaloPropagationSpeed"), Comment("Axial speed of light in a crystal (mm/ns)"), 200.0 }; // see doc 25320
+  };
 
     using MetaIterationSettings = fhicl::Sequence<fhicl::Tuple<float,float,float>>;
     using StrawHitUpdateSettings = fhicl::Sequence<fhicl::Tuple<float,float,unsigned,unsigned>>;
@@ -192,14 +196,17 @@ namespace mu2e {
     float maxDoca_, maxDt_, maxChi_, maxDU_, tbuff_, tpocaprec_;
     WireHitState::Dimension nulldim_;
     float nullvscale_;
-    bool addmat_;
+    bool addmat_, usecalo_;
     KKFileFinder filefinder_;
     std::string wallmatname_, gasmatname_, wirematname_;
     std::unique_ptr<StrawMaterial> smat_; // straw material
     KKConfig kkconfig_; // KinKal fit configuration
     DMAT seedcov_; // seed covariance matrix
     MatDBInfo* matdbinfo_; // material database
-    double crystalLength_; // length of a calo crystal
+    VEC3 crystalF2B_; // displacement vector from the front to the back of a crystal
+    double caloDt_; // calo time offset; should come from proditions FIXME!
+    double caloPosRes_; // calo cluster transverse position resolution; should come from proditions or CaloCluster FIXME!
+    double caloPropSpeed_; // effective light propagation speed in a crystal (including reflections).  Should come from prodtions FIXME
   };
 
   LoopHelixFit::LoopHelixFit(const ModuleParams& config) : art::EDProducer{config}, 
@@ -219,11 +226,15 @@ namespace mu2e {
     nulldim_(static_cast<WireHitState::Dimension>(config().fitsettings().nullHitDimension())),
     nullvscale_(config().fitsettings().nullHitVarianceScale()),
     addmat_(config().fitsettings().addMaterial()),
+    usecalo_(config().fitsettings().useCaloCluster()),
     filefinder_(config().matsettings().elements(),config().matsettings().isotopes(),config().matsettings().materials()),
     wallmatname_(config().matsettings().strawWallMaterialName()),
     gasmatname_(config().matsettings().strawGasMaterialName()),
     wirematname_(config().matsettings().strawWireMaterialName()),
-    matdbinfo_(0)
+    matdbinfo_(0),
+    caloDt_(config().fitsettings().caloDt()),
+    caloPosRes_(config().fitsettings().caloPosRes()),
+    caloPropSpeed_(config().fitsettings().caloPropSpeed())
   {
     // collection handling
     for(const auto& hseedtag : config().modsettings().helixSeedCollections()) { hseedCols_.emplace_back(consumes<HelixSeedCollection>(hseedtag)); }
@@ -281,7 +292,8 @@ namespace mu2e {
 	matdbinfo_->findDetMaterial(gasmatname_),
 	matdbinfo_->findDetMaterial(wirematname_));
     GeomHandle<mu2e::Calorimeter> calo_h;
-    crystalLength_ = calo_h->caloInfo().getDouble("crystalZLength");
+    double lcrystal = calo_h->caloInfo().getDouble("crystalZLength");
+    crystalF2B_ = VEC3(0.0,0.0,lcrystal); // this should come directly from the calogeometry, TODO
   }
 
   void LoopHelixFit::produce(art::Event& event ) {
@@ -399,12 +411,21 @@ namespace mu2e {
 	    if(print_ > 2)thits.back()->print(std::cout,2);
 	  }
 	  // add calorimeter cluster hit TODO
-	  if (hseed.caloCluster()){
-	    // move cluster COG into the tracker frame
+	  if (usecalo_ && hseed.caloCluster()){
+	    // move cluster COG into the tracker frame.  COG is at the front face of the disk
 	    auto cluster = hseed.caloCluster();
 	    CLHEP::Hep3Vector cog = calo_h->geomUtil().mu2eToTracker(calo_h->geomUtil().diskFFToMu2e( cluster->diskID(), cluster->cog3Vector()));
-
-
+	    // project this along the crystal axis to the SIPM, which is at the back.  This is the point the time measurement corresponds to
+	    VEC3 FFCOG(cog);
+	    VEC3 SIPMCOG = FFCOG + crystalF2B_;
+	    // create the Line trajectory from this information: signal goes towards the sipm
+	    Line cogaxis(SIPMCOG,FFCOG,cluster->time()+caloDt_,caloPropSpeed_); 
+	    // create the hit
+	    double tvar = cluster->timeErr()*cluster->timeErr();
+	    double wvar = caloPosRes_*caloPosRes_;
+	    // I should verify the cluster looks physically reasonable before adding it TODO!
+	    thits.push_back(std::make_shared<KKCALOHIT>(cluster,cogaxis,tvar,wvar));
+	    if(print_ > 2)thits.back()->print(std::cout,2);
 	  }
 	  // create and fit the track.  
 	  auto kktrk = make_unique<KKTRK>(kkconfig_,kkbf,seedtraj,thits,exings);
@@ -450,27 +471,26 @@ namespace mu2e {
 	  if(strawhit->active())hflag.merge(StrawHitFlag::active);
 	  auto const& ca = strawhit->closestApproach();
 	  TrkStrawHitSeed seedhit(strawhit->strawHitIndex(), // drift radius and drift radius error are unfilled TODO
-	      HitT0(ca.sensorToca(),sqrt(ca.tocaVar())),
+	      HitT0(ca.particleToca(),sqrt(ca.tocaVar())),
 	      static_cast<float>(ca.particleToca()), static_cast<float>(ca.sensorToca()),
 	      static_cast<float>(-1.0), static_cast<float>(strawhit->time()),
 	      static_cast<float>(ca.doca()), strawhit->hitState().lrambig_,static_cast<float>(-1.0), hflag, chit);
 	  fseed._hits.push_back(seedhit);
 	} else if(calohit != 0) {
-	  // see if this is a TrkCaloHit
-	  //const TrkCaloHit* tch = TrkUtilities::findTrkCaloHit(kktrk); TODO
-	  //    if(tch != 0){
-	  //      TrkUtilities::fillCaloHitSeed(tch,fseed._chit);
-	  //      // set the Ptr using the helix: this could be more direct FIXME!
-	  //      fseed._chit._cluster = ccPtr;
-	  //      // create a helix segment at the TrkCaloHit
-	  //      KalSegment kseg;
-	  //      // sample the momentum at this flight.  This belongs in a separate utility FIXME
-	  //      BbrVectorErr momerr = kktrk.momentumErr(tch->fltLen());
-	  //      double locflt(0.0);
-	  //      const HelixTraj* htraj = dynamic_cast<const HelixTraj*>(kktrk.localTrajectory(tch->fltLen(),locflt));
-	  //      TrkUtilities::fillSegment(*htraj,momerr,locflt-tch->fltLen(),kseg);
-	  //      fseed._segments.push_back(kseg);
-	  //    }
+	  auto const& ca = calohit->closestApproach();
+	  StrawHitFlag hflag;
+	  if(calohit->active()){
+	    hflag.merge(StrawHitFlag::active);
+	    hflag.merge(StrawHitFlag::doca);
+	  }
+	  fseed._chit = TrkCaloHitSeed(HitT0(ca.particleToca(),sqrt(ca.tocaVar())),
+	    static_cast<float>(ca.particleToca()), static_cast<float>(ca.sensorToca()),
+	    static_cast<float>(ca.doca()), static_cast<float>(caloPosRes_),static_cast<float>(ca.sensorToca()),
+	    static_cast<float>(calohit->caloCluster()->timeErr()),hflag);
+	  fseed._chit._cluster = calohit->caloCluster();
+	  // save the segment at the CH
+	  auto const& zpiece = fittraj.nearestPiece(ca.particleToca());
+	  fseed._segments.emplace_back(zpiece,ca.particleToca());
 	}
       }
       //      const KKMAT* kkmat = dynamic_cast<const KKMAT*>(eff.get());
