@@ -1,7 +1,7 @@
 #ifndef Mu2e_KKCaloHit_hh
 #define Mu2e_KKCaloHit_hh
 //
-//  hit representing a time measurement using a calorimeter cluster
+//  hit representing a time measurement from a calorimeter cluster
 //
 #include "KinKal/Detector/ResidualHit.hh"
 #include "KinKal/Trajectory/Line.hh"
