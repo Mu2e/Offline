@@ -79,11 +79,11 @@ physics.producers.SelectRecoMC.debugLevel : 0
 physics.producers.KKDeMSeedFit.ModuleSettings.HelixSeedCollections : [ "MHDeM" ]
 physics.producers.KKDeMSeedFit.ModuleSettings.ComboHitCollection : "makeSH"
 physics.producers.KKDeMSeedFit.ModuleSettings.StrawHitFlagCollection : "FlagBkgHitss:StrawHits"
-physics.producers.KKDeMSeedFit.ModuleSettings.PrintLevel : 1
-physics.producers.KKDeMSeedFit.FitSettings.PrintLevel : 1
+physics.producers.KKDeMSeedFit.ModuleSettings.PrintLevel : 0
+physics.producers.KKDeMSeedFit.FitSettings.PrintLevel : 1 
 
-outputs.Output.fileName: "KKBTrkSeed.art"
-services.TFileService.fileName: "KKSeedtest.root"
+outputs.Output.fileName: "KKSeed.art"
+services.TFileService.fileName: "KKSeed.root"
 # Include more information (MC, full TrkQual and TrkPID branches)
 #physics.analyzers.TAKFF.candidate.options : @local::AllOpt
 #physics.analyzers.TAKFF.diagLevel : 1

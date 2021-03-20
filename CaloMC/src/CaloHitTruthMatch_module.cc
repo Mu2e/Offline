@@ -8,9 +8,10 @@
 #include "art_root_io/TFileDirectory.h"
 #include "fhiclcpp/types/Atom.h"
 
+#include "ConditionsService/inc/ConditionsHandle.hh"
+#include "ConditionsService/inc/CalorimeterCalibrations.hh"
 #include "MCDataProducts/inc/CaloEDepMC.hh"
 #include "MCDataProducts/inc/CaloHitMC.hh"
-#include "MCDataProducts/inc/CaloShowerStep.hh"
 #include "MCDataProducts/inc/CaloShowerSim.hh"
 #include "MCDataProducts/inc/CaloMCTruthAssns.hh"
 #include "MCDataProducts/inc/PrimaryParticle.hh"
@@ -41,7 +42,6 @@ namespace mu2e {
              fhicl::Atom<art::InputTag>  caloShowerSimCollection  { Name("caloShowerSimCollection"),  Comment("Name of caloShowerSim Collection") };
              fhicl::Atom<art::InputTag>  caloHitCollection        { Name("caloHitCollection"),        Comment("Name of CaloHit collection") };
              fhicl::Atom<art::InputTag>  primaryParticle          { Name("primaryParticle"),	      Comment("PrimaryParticle producer")};
-             fhicl::Atom<double>         MeVToADC                 { Name("MeVToADC"),                 Comment("MeV to ADC conversion factor") }; 
              fhicl::Atom<double>         digiSampling             { Name("digiSampling"),             Comment("Digitization time sampling") }; 
              fhicl::Atom<double>         minAmplitude             { Name("minAmplitude"),             Comment("Minimum amplitude of waveform to define hit length") }; 
              fhicl::Atom<bool>           fillDetailedMC           { Name("fillDetailedMC"),           Comment("Fill SimParticle - SimShower Assn map")};
@@ -52,9 +52,8 @@ namespace mu2e {
         explicit CaloHitTruthMatch(const art::EDProducer::Table<Config>& config) :
            EDProducer{config},
            caloShowerSimToken_ {consumes<CaloShowerSimCollection> (config().caloShowerSimCollection())},
-           CaloHitToken_       {consumes<CaloHitCollection>(config().caloHitCollection())},
+           caloHitToken_       {consumes<CaloHitCollection>(config().caloHitCollection())},
            ppToken_            {consumes<PrimaryParticle>(config().primaryParticle())},
-           MeVToADC_           (config().MeVToADC()),
            digiSampling_       (config().digiSampling()),
            minAmplitude_       (config().minAmplitude()),
            fillDetailedMC_     (config().fillDetailedMC()),
@@ -77,16 +76,15 @@ namespace mu2e {
          void diag           (const CaloShowerSim*, const CaloHit* );
 
 
-         const art::ProductToken<CaloShowerSimCollection>  caloShowerSimToken_;
-         const art::ProductToken<CaloHitCollection> CaloHitToken_;
-         const art::ProductToken<PrimaryParticle>          ppToken_;
-         double               deltaTimeMinus_;
-         double               MeVToADC_;
-         double               digiSampling_;
-         double               minAmplitude_;
-         bool                 fillDetailedMC_;
-         std::vector<double>  wf_;
-         int                  diagLevel_;
+         const art::ProductToken<CaloShowerSimCollection> caloShowerSimToken_;
+         const art::ProductToken<CaloHitCollection>       caloHitToken_;
+         const art::ProductToken<PrimaryParticle>         ppToken_;
+         double                                           deltaTimeMinus_;
+         double                                           digiSampling_;
+         double                                           minAmplitude_;
+         bool                                             fillDetailedMC_;
+         std::vector<double>                              wf_;
+         int                                              diagLevel_;
 
          //some diagnostic histograms
          TH1F*  hTime_;
@@ -126,8 +124,11 @@ namespace mu2e {
       CaloPulseShape cps(digiSampling_);
       cps.buildShapes();
       
+      ConditionsHandle<CalorimeterCalibrations> calorimeterCalibrations("ignored");
+      double MeVToADC = calorimeterCalibrations->MeV2ADC(0);
+
       wf_ = cps.digitizedPulse(0);
-      for (auto& v : wf_) v *= MeVToADC_;
+      for (auto& v : wf_) v *= MeVToADC;
   }
 
 
@@ -165,7 +166,7 @@ namespace mu2e {
       art::ProductID hitMCProductID(event.getProductID<CaloHitMCCollection>());
       const art::EDProductGetter* hitMCProductGetter = event.productGetter(hitMCProductID);
 
-      const auto CaloHitHandle = event.getValidHandle(CaloHitToken_);
+      const auto CaloHitHandle = event.getValidHandle(caloHitToken_);
       const auto& CaloHits(*CaloHitHandle);
       const auto caloShowerSimHandle = event.getValidHandle(caloShowerSimToken_);
       const auto& caloShowerSims(*caloShowerSimHandle);

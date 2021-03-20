@@ -115,8 +115,6 @@ outputs: {
 physics.producers.g4run.inputs: {
    primaryType: "StepPoints"
    primaryTag: "dsRegionFilter:dsregion"
-   simParticleNumberOffset: 100000 // safe b/c of g4.particlesSizeLimit in stage1
-   inputSimParticles: "dsRegionFilter"
    inputMCTrajectories: ""
    inputPhysVolumeMultiInfo: "compressPVdsRegion"
 }

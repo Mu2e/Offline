@@ -28,7 +28,6 @@
 #include "MCDataProducts/inc/StepPointMC.hh"
 #include "MCDataProducts/inc/StepPointMCCollection.hh"
 #include "MCDataProducts/inc/PhysicalVolumeInfo.hh"
-#include "MCDataProducts/inc/PhysicalVolumeInfoCollection.hh"
 
 #include "BTrkData/inc/TrkStrawHit.hh"
 

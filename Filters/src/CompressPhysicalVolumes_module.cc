@@ -22,7 +22,6 @@
 #include "MCDataProducts/inc/SimParticle.hh"
 #include "MCDataProducts/inc/SimParticleCollection.hh"
 #include "MCDataProducts/inc/PhysicalVolumeInfoMultiCollection.hh"
-#include "Mu2eUtilities/inc/PhysicalVolumeMultiHelper.hh"
 
 namespace mu2e {
 
@@ -37,7 +36,6 @@ namespace mu2e {
     UsedKeys used_;
 
     PhysicalVolumeInfoMultiCollection const* incoll_{nullptr};
-    std::unique_ptr<PhysicalVolumeMultiHelper> helper_{nullptr};
 
     void produce(art::Event& event) override;
     void beginSubRun(art::SubRun& sr) override;
@@ -89,8 +87,6 @@ namespace mu2e {
   void CompressPhysicalVolumes::beginSubRun(art::SubRun& sr) {
     auto const& ih = sr.getValidHandle(volumesToken_);
     incoll_ = &*ih;
-    helper_.reset(new PhysicalVolumeMultiHelper{*incoll_});
-
     used_.clear();
     used_.resize(incoll_->size());
   }
@@ -105,7 +101,7 @@ namespace mu2e {
       auto ih = event.getValidHandle(token);
       for(const auto& hit : *ih) {
         const SimParticle& p = *hit.simParticle();
-        const PhysicalVolumeInfoMultiCollection::size_type stage = helper_->iSimStage(p);
+        const PhysicalVolumeInfoMultiCollection::size_type stage = p.simStage();
         used_[stage].insert(key_type(hit.simParticle()->startVolumeIndex()));
         used_[stage].insert(key_type(hit.simParticle()->endVolumeIndex()));
       }
@@ -115,7 +111,7 @@ namespace mu2e {
       auto ih = event.getValidHandle(token);
       for(const auto& spe : *ih) {
         const SimParticle& p = spe.second;
-        const PhysicalVolumeInfoMultiCollection::size_type stage = helper_->iSimStage(p);
+        const PhysicalVolumeInfoMultiCollection::size_type stage = p.simStage();
         used_[stage].insert(key_type(p.startVolumeIndex()));
         used_[stage].insert(key_type(p.endVolumeIndex()));
       }
@@ -130,13 +126,13 @@ namespace mu2e {
 
     unsigned totalCount(0), passedCount(0);
     for(unsigned stage = 0; stage < incoll_->size(); ++stage) {
-      (*out)[stage] = std::make_pair((*incoll_)[stage].first, PhysicalVolumeInfoSingleStage());
-      const auto& ss = (*incoll_)[stage].second;
+      (*out)[stage] = PhysicalVolumeInfoSingleStage();
+      const auto& ss = (*incoll_)[stage];
       totalCount += ss.size();
       for(const auto& in : ss) {
         if(used_[stage].find(in.first) != used_[stage].end()) {
           ++passedCount;
-          (*out)[stage].second[in.first] = in.second;
+          (*out)[stage][in.first] = in.second;
         }
       }
     }

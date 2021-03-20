@@ -61,10 +61,6 @@ namespace mu2e {
     if (inputPhysVolTag != invalid_tag) {
       cc.consumes<PhysicalVolumeInfoMultiCollection, art::InSubRun>(inputPhysVolTag);
     }
-    auto const& inputSimParticlesTag = inputs_.inputSimParticles();
-    if (inputSimParticlesTag != invalid_tag) {
-      cc.consumes<SimParticleCollection>(inputSimParticlesTag);
-    }
     auto const& inputMCTrajectoryTag = inputs_.inputMCTrajectories();
     if (inputMCTrajectoryTag != invalid_tag) {
       cc.consumes<MCTrajectoryCollection>(inputMCTrajectoryTag);

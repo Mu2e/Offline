@@ -41,7 +41,6 @@ namespace mu2e {
 
     TrackingAction(const Mu2eG4Config::Top& conf,
                    Mu2eG4SteppingAction *,
-                   unsigned stageOffset,
                    Mu2eG4PerThreadStorage *pts);
 
     // These methods are required by G4
@@ -107,9 +106,6 @@ namespace mu2e {
 
     // Non-owning pointer to stepping action; lifetime of pointee is one run.
     Mu2eG4SteppingAction * _steppingAction;
-
-    // Simulation stage identifier to be put into each new SimParticle we create.
-    unsigned _stageOffset;
 
     // Non-owning pointer to the information about physical processes;
     // lifetime of pointee is one run.

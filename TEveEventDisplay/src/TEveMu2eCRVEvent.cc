@@ -11,7 +11,7 @@ namespace mu2e{
         return (strlab);
   }
   
-  void TEveMu2eCRVEvent::DrawHit3D(const std::string &pstr, Int_t n, CLHEP::Hep3Vector const& pointInMu2e, TEveElementList *HitList)
+  void TEveMu2eCRVEvent::DrawHit3D(const std::string &pstr, Int_t n, CLHEP::Hep3Vector pointInMu2e, TEveElementList *HitList)
 	{
     this->SetTitle((DataTitle(pstr, n)).c_str());
     this->SetNextPoint(pointInMu2e.x(), pointInMu2e.y(), pointInMu2e.z()); 
@@ -21,5 +21,15 @@ namespace mu2e{
     HitList->AddElement(this);
   }
 
+  void TEveMu2eCRVEvent::DrawHit2D(const std::string &pstr, Int_t n, CLHEP::Hep3Vector pointInMu2e, TEveElementList *HitList)
+  {
+    this->SetTitle((DataTitle(pstr, n)).c_str());
+    hep3vectorTocm(pointInMu2e);
+    this->SetNextPoint(pointInMu2e.x(), pointInMu2e.y(), pointInMu2e.z()); 
+    this->SetMarkerColor(mColor);
+    this->SetMarkerSize(mSize);
+    this->SetPickable(kTRUE);
+    HitList->AddElement(this);
+  }
 }
 

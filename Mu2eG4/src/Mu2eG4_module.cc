@@ -110,6 +110,8 @@ namespace mu2e {
     Mu2eG4TrajectoryControl trajectoryControl_;
     Mu2eG4Inputs multiStagePars_;
 
+    unsigned simStage_;
+
     // The THREE functions that call new G4RunManger functions and break G4's BeamOn() into 3 pieces
     void BeamOnBeginRun( unsigned int runNumber, const char* macroFile=0, G4int n_select=-1 );
     void BeamOnDoOneArtEvent( int eventNumber );
@@ -183,6 +185,7 @@ namespace mu2e {
     mu2elimits_(pars().ResourceLimits()),
     trajectoryControl_(pars().TrajectoryControl()),
     multiStagePars_(pars().inputs()),
+    simStage_(-1u),
     _runManager(std::make_unique<G4RunManager>()),
     _warnEveryNewRun(pars().debug().warnEveryNewRun()),
     _exportPDTStart(pars().debug().exportPDTStart()),
@@ -266,7 +269,6 @@ namespace mu2e {
       mf::LogInfo logInfo("GEOM");
       logInfo << "Initializing Geant4 for " << run.id()
               << " with verbosity " << _rmvlevel << endl;
-      logInfo << " Configured simParticleNumberOffset = "<< multiStagePars_.simParticleNumberOffset() << endl;
     }
 
 
@@ -314,8 +316,7 @@ namespace mu2e {
                                                                 &_sensitiveDetectorHelper,
                                                                 &perThreadStore,
                                                                 &_physVolHelper,
-                                                                _originInWorld,
-                                                                multiStagePars_.simParticleNumberOffset()
+                                                                _originInWorld
                                                                 );
 
     // in sequential mode, this is where Build() is called for main thread
@@ -366,16 +367,18 @@ namespace mu2e {
     using Collection_t = PhysicalVolumeInfoMultiCollection;
     auto mvi = std::make_unique<Collection_t>();
 
-    if(multiStagePars_.inputPhysVolumeMultiInfo() != invalid_tag) {
+    if(multiStagePars_.multiStage()) {
       // Copy over data from the previous simulation stages
       auto const& ih = sr.getValidHandle<Collection_t>(multiStagePars_.inputPhysVolumeMultiInfo());
       mvi->reserve(1 + ih->size());
       mvi->insert(mvi->begin(), ih->cbegin(), ih->cend());
-
     }
 
+    // By definition simStage=0 if we start with GenParticles and not doing multiStage.
+    simStage_ = mvi->size();
+
     // Append info for the current stage
-    mvi->emplace_back(multiStagePars_.simParticleNumberOffset(), _physVolHelper.persistentSingleStageInfo());
+    mvi->emplace_back(_physVolHelper.persistentSingleStageInfo());
 
     sr.put(std::move(mvi));
   }
@@ -384,7 +387,7 @@ namespace mu2e {
   // Create one G4 event and copy its output to the art::event.
   void Mu2eG4::produce(art::Event& event) {
 
-    perThreadStore.initializeEventInfo(&event);
+    perThreadStore.initializeEventInfo(&event, simStage_);
 
     // Run G4 for this event and access the completed event.
     BeamOnDoOneArtEvent( event.id().event() );

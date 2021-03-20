@@ -1,12 +1,10 @@
-// Each stage of multi-stage simulations, in general, need its own
-// PhysicalVolumeInfoCollection.   This data product records the mapping
-// between simulation stages (identified by the sim particle number offset
-// in the first element of the pair) and their PhysicalVolumeInfoCollections.
+// Each stage of multi-stage simulations may use a different geometry.
+// This data product records the mapping between simulation stage
+// (stored in each SimParticle) and the corresponding geometry info in
+// PhysicalVolumeInfoSingleStage, so that  particle.simStage() is an index into the
+// top level vector of PhysicalVolumeInfoMultiCollection.
 //
-// Sim particle offsets (the first member of the pair) must be
-// monotonically increasing with index in the collection.
-//
-// Andrei Gaponenko, 2013
+// Andrei Gaponenko, 2013, 2021
 
 
 #ifndef MCDataProducts_PhysicalVolumeInfoMultiCollection_hh
@@ -21,7 +19,7 @@
 
 namespace mu2e {
   typedef cet::map_vector<PhysicalVolumeInfo> PhysicalVolumeInfoSingleStage;
-  typedef std::vector<std::pair<unsigned int, PhysicalVolumeInfoSingleStage> > PhysicalVolumeInfoMultiCollection;
+  typedef std::vector<PhysicalVolumeInfoSingleStage> PhysicalVolumeInfoMultiCollection;
 }
 
 #endif /* MCDataProducts_PhysicalVolumeInfoMultiCollection_hh */

@@ -1,0 +1,4 @@
+#include "JobConfig/cosmic/S1DSStops.fcl"
+
+physics.producers.generate.inputfile    : "JobConfig/cosmic/genconfig_cosmic_general_box.txt"
+physics.producers.generate.module_type  : EventGenerator

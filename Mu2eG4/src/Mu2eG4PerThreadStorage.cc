@@ -21,15 +21,15 @@ namespace mu2e {
 
   //----------------------------------------------------------------
   void Mu2eG4PerThreadStorage::
-  initializeEventInfo(art::Event* evt) {
+  initializeEventInfo(art::Event* evt, unsigned simStage) {
     artEvent = evt;
 
     // ProductID and ProductGetter for the SimParticleCollection.
     art::ProductID simPartId(evt->getProductID<SimParticleCollection>());
     art::EDProductGetter const* simProductGetter = evt->productGetter(simPartId);
 
-    simParticleHelper = SimParticleHelper(ioconf.inputs().simParticleNumberOffset(), simPartId, evt, simProductGetter);
-    simParticlePrimaryHelper = SimParticlePrimaryHelper(evt, simPartId, simProductGetter);
+    simParticleHelper.emplace(simStage, ioconf.inputs(), simPartId, evt, simProductGetter);
+    simParticlePrimaryHelper.emplace(evt, simPartId, simProductGetter);
 
     // Output collections
     simPartCollection = std::unique_ptr<SimParticleCollection>( new SimParticleCollection );
@@ -107,8 +107,8 @@ namespace mu2e {
   void Mu2eG4PerThreadStorage::clearData() {
 
     artEvent = nullptr;
-    simParticleHelper = SimParticleHelper();
-    simParticlePrimaryHelper = SimParticlePrimaryHelper();
+    simParticleHelper.reset();
+    simParticlePrimaryHelper.reset();
 
     statG4 = nullptr;
     simPartCollection = nullptr;

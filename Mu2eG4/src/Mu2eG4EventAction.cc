@@ -86,7 +86,7 @@ namespace mu2e {
   void Mu2eG4EventAction::BeginOfEventAction(const G4Event *evt)
   {
     art::Event *_artEvent = perThreadObjects_->artEvent;
-    SimParticleHelper *_spHelper = &perThreadObjects_->simParticleHelper;
+    SimParticleHelper *_spHelper = &perThreadObjects_->simParticleHelper.value();
 
     // local Mu2e timer, almost equal to time of G4EventManager::ProcessOneEvent()
     _timer->Start();
