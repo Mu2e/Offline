@@ -601,6 +601,7 @@ namespace mu2e {
                                    ,oldParent.endPosition()     // born where parent stopped
                                    ,oldParent.endPosition()     // making both post and pre step point positions the same
                                    ,momPbar.vect()              // momentum created here
+                                   ,momPbar.vect()              // making both post and pre step point momenta the same
                                    ,0.                          // step length
                                    ,ProcessCode::Transportation // this is like a virtual detector
                                    );

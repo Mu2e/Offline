@@ -133,6 +133,7 @@ namespace mu2e {
                                 aStep->GetPreStepPoint()->GetPosition() - mu2eOrigin_,
                                 aStep->GetPostStepPoint()->GetPosition() - mu2eOrigin_,
                                 aStep->GetPreStepPoint()->GetMomentum(),
+                                aStep->GetPostStepPoint()->GetMomentum(),
                                 aStep->GetStepLength(),
                                 endCode
                                 ));
