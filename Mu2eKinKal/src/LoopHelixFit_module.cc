@@ -104,6 +104,10 @@ namespace mu2e {
   using KinKal::DMAT;
   using KinKal::Status;
   using HPtr = art::Ptr<HelixSeed>;
+  using CCPtr = art::Ptr<CaloCluster>;
+  using StrawHitIndexCollection = std::vector<StrawHitIndex>;
+
+
   class LoopHelixFit : public art::EDProducer {
     using Name    = fhicl::Name;
     using Comment = fhicl::Comment;
@@ -175,11 +179,16 @@ namespace mu2e {
     public:
     explicit LoopHelixFit(const ModuleParams& config);
     virtual ~LoopHelixFit();
-    void beginRun(art::Run& aRun) override;
+    void beginRun(art::Run& run) override;
+    void beginSubRun(art::SubRun& subrun) override;
     void produce(art::Event& event) override;
     private:
     // utility functions
     KalSeed createSeed(KKTRK const& ktrk,HPtr const& hptr) const;
+    KTRAJ makeSeedTraj(HelixSeed const& hseed) const;
+    void makeStrawHits(Tracker const& tracker,StrawResponse const& strawresponse,KTRAJ const& ktraj,ComboHitCollection const& hhits,StrawHitIndexCollection const& shidxs,
+      MEASCOL& thits,EXINGCOL& exings) const;
+    void makeCaloHit(CCPtr const& cluster, MEASCOL& thits) const;
     double zTime(PKTRAJ const& trak, double zpos) const; // find the time the trajectory crosses the plane perp to z at the given z position
     // data payload
     std::vector<art::ProductToken<HelixSeedCollection>> hseedCols_;
@@ -197,6 +206,7 @@ namespace mu2e {
     WireHitState::Dimension nulldim_;
     float nullvscale_;
     bool addmat_, usecalo_;
+    WireHitState whstate_; // initial state for new straw hits
     KKFileFinder filefinder_;
     std::string wallmatname_, gasmatname_, wirematname_;
     std::unique_ptr<StrawMaterial> smat_; // straw material
@@ -207,6 +217,9 @@ namespace mu2e {
     double caloDt_; // calo time offset; should come from proditions FIXME!
     double caloPosRes_; // calo cluster transverse position resolution; should come from proditions or CaloCluster FIXME!
     double caloPropSpeed_; // effective light propagation speed in a crystal (including reflections).  Should come from prodtions FIXME
+    double mass_; // caches
+    int charge_;
+    std::unique_ptr<KKBField> kkbf_;
   };
 
   LoopHelixFit::LoopHelixFit(const ModuleParams& config) : art::EDProducer{config}, 
@@ -248,7 +261,7 @@ namespace mu2e {
     kkconfig_.minndof_ = config().fitsettings().minndof();
     kkconfig_.bfcorr_ = static_cast<KKConfig::BFCorr>(config().fitsettings().bfieldCorr());
     kkconfig_.plevel_ = static_cast<KKConfig::printLevel>(config().fitsettings().printLevel());
-    // build the seed covariance
+    // build the initial seed covariance
     auto const& seederrors = config().fitsettings().seederrors();
     if(seederrors.size() != KinKal::NParams()) 
       throw cet::exception("RECO")<<"mu2e::LoopHelixFit:Seed error configuration error"<< endl;
@@ -280,44 +293,54 @@ namespace mu2e {
   }
 
   LoopHelixFit::~LoopHelixFit(){}
-  //-----------------------------------------------------------------------------
+
   void LoopHelixFit::beginRun(art::Run& run) {
     // initialize material access
-    GeomHandle<Tracker> tracker_h;
-    auto const& sprop = tracker_h->strawProperties();
+    GeomHandle<Tracker> tracker;
+    GeomHandle<mu2e::Calorimeter> calo_h;
+    auto const& ptable = GlobalConstantsHandle<ParticleDataTable>();
+    auto const& sprop = tracker->strawProperties();
     matdbinfo_ = new MatDBInfo(filefinder_);
     smat_ = std::make_unique<StrawMaterial>(
 	sprop._strawOuterRadius, sprop._strawWallThickness, sprop._wireRadius,
 	matdbinfo_->findDetMaterial(wallmatname_),
 	matdbinfo_->findDetMaterial(gasmatname_),
 	matdbinfo_->findDetMaterial(wirematname_));
-    GeomHandle<mu2e::Calorimeter> calo_h;
     double lcrystal = calo_h->caloInfo().getDouble("crystalZLength");
     crystalF2B_ = VEC3(0.0,0.0,lcrystal); // this should come directly from the calogeometry, TODO
+    // kinematic properties
+    mass_ = ptable->particle(tpart_).ref().mass().value(); 
+    charge_ = static_cast<int>(ptable->particle(tpart_).ref().charge());
+    GeomHandle<BFieldManager> bfmgr;
+    GeomHandle<DetectorSystem> det;
+    kkbf_ = std::move(std::make_unique<KKBField>(*bfmgr,*det));
+  }
+
+  void LoopHelixFit::beginSubRun(art::SubRun& subrun) {
   }
 
   void LoopHelixFit::produce(art::Event& event ) {
     // find current proditions
-    auto const& ptable = GlobalConstantsHandle<ParticleDataTable>();
     auto const& strawresponse = strawResponse_h_.getPtr(event.id());
     auto const& tracker = alignedTracker_h_.getPtr(event.id()).get();
-    GeomHandle<BFieldManager> bfmgr;
-    GeomHandle<DetectorSystem> det;
-    GeomHandle<mu2e::Calorimeter> calo_h;
-    KKBField kkbf(*bfmgr,*det); // move this to beginrun TODO
-    // initial WireHitState; this gets overwritten in updating.  Move this to beginrun TODO
-    double rstraw = tracker->strawProperties().strawInnerRadius();
-    // initialize hits as null (no drift)  Move this to beginrun TODO
-    double nulldt = 0.5*rstraw/strawresponse->driftConstantSpeed(); // approximate shift in time due to ignoring drift
-    double nullvar = nullvscale_*rstraw*rstraw/3.0; // scaled square RMS (distance is between 0 and r)
-    WireHitState whstate(WireHitState::null, nulldim_,nullvar ,nulldt);
+    // initialize hits as null (no drift).  This should be in the constructor, but it relies on StrawResponse so has to wait FIXME
+    static bool first(true);
+    if(first){
+      first = false;
+      auto const& sprop = tracker->strawProperties();
+      double rstraw = sprop.strawInnerRadius();
+      double nulldt = 0.5*rstraw/strawresponse->driftConstantSpeed(); // approximate shift in time due to ignoring drift
+      double nullvar = nullvscale_*rstraw*rstraw/3.0; // scaled square RMS (distance is between 0 and r)
+      whstate_ = WireHitState(WireHitState::null, nulldim_, nullvar ,nulldt);
+    }
     // find input hits
     auto ch_H = event.getValidHandle<ComboHitCollection>(chcol_T_);
-    auto const& chcol = *ch_H;;
+    auto const& chcol = *ch_H;
+    // find calo clusters TODO
     // create output
     unique_ptr<KKLoopHelixCollection> kktrkcol(new KKLoopHelixCollection );
     unique_ptr<KalSeedCollection> kkseedcol(new KalSeedCollection );
-    // find the seed collections
+    // find the helix seed collections
     for (auto const& hseedtag : hseedCols_) {
       auto const& hseedcol_h = event.getValidHandle<HelixSeedCollection>(hseedtag);
       auto const& hseedcol = *hseedcol_h;
@@ -325,119 +348,36 @@ namespace mu2e {
       for(size_t iseed=0; iseed < hseedcol.size(); ++iseed) {
 	auto const& hseed = hseedcol[iseed];
   	auto hptr = HPtr(hseedcol_h,iseed);
-
 	if(hseed.status().hasAllProperties(goodhelix_)){
-	  // create a PKTRAJ from the helix fit result, to seed the KinKal fit.  First, translate the parameters
-	  // Note the flips in case of backwards propagation
-	  auto const& shelix = hseed.helix();
-	  auto const& hhits = hseed.hits();
-	  DVEC pars;
-	  pars[KTRAJ::rad_] = shelix.radius(); // translation should depend on fit direction and charge FIXME!
-	  pars[KTRAJ::lam_] = shelix.lambda();
-	  pars[KTRAJ::cx_] = shelix.centerx();
-	  pars[KTRAJ::cy_] = shelix.centery();
-	  pars[KTRAJ::phi0_] = shelix.fz0()+M_PI_2; // convention difference for phi0: not sure if this is fixable. TODO
-	  pars[KTRAJ::t0_] = hseed.t0().t0();
-	  if(tdir_ == TrkFitDirection::upstream){
-	    pars[KTRAJ::rad_] *= -1.0;
-	    pars[KTRAJ::lam_] *= -1.0;
-	  }
-	  // create the initial trajectory
-	  Parameters kkpars(pars,seedcov_);
-	  // compute the magnetic field at the center.  We only want the z compontent, as the helix fit assumes B points along Z
-	  float zcent = 0.5*(hhits.front().pos().Z()+hhits.back().pos().Z());
-	  VEC3 center(shelix.centerx(), shelix.centery(),zcent);
-	  auto bcent = kkbf.fieldVect(center);
-	  VEC3 bnom(0.0,0.0,bcent.Z());
-	  // now compute kinematics
-	  double mass = ptable->particle(tpart_).ref().mass().value(); 
-	  int charge = static_cast<int>(ptable->particle(tpart_).ref().charge());
-	  // construct individual KKHit objects from each Helix hit
-	  // first, we need to unwind the straw combination
-	  std::vector<StrawHitIndex> strawHitIdxs;
-	  float tmin = std::numeric_limits<float>::max();
-	  float tmax = std::numeric_limits<float>::min();
-	  for(size_t ihit = 0; ihit < hhits.size(); ++ihit ){
-	    hhits.fillStrawHitIndices(event,ihit,strawHitIdxs);
-	    auto const& hhit = hhits[ihit];
-	    tmin = std::min(tmin,hhit.correctedTime());
-	    tmax = std::max(tmax,hhit.correctedTime());
-	  }
-	  // buffer the time range
-	  TimeRange trange(tmin - tbuff_, tmax + tbuff_);
-	  //  construct the seed trajectory
-	  KTRAJ seedtraj(kkpars, mass, charge, bnom, trange );
-	  PKTRAJ pseedtraj(seedtraj);
-	  if(print_ > 1){
-	    std::cout << "Seed Helix parameters " << shelix << std::endl;
-	    std::cout << "Seed Traj parameters  " << seedtraj << std::endl;
-	    std::cout << "Seed Traj t=t0 direction" << seedtraj.direction(seedtraj.t0()) << std::endl
-	              << "Seed Helix z-0 direction " << shelix.direction(0.0) << std::endl;
-	    std::cout << "Seed Traj t=t0 position " << seedtraj.position3(seedtraj.t0()) << std::endl
-	              << "Seed Helix z=0 position " << shelix.position(0.0) << std::endl;
-	  }
+	  // construt the seed trajectory
+	  KTRAJ seedtraj = makeSeedTraj(hseed); 
+	  // construct hit amd material objects from Helix hits
 	  MEASCOL thits; // polymorphic container of hits
-	  EXINGCOL exings; // polymorphic container of detector element crossings 
-	  // loop over the individual straw hits
-	  for(auto strawidx : strawHitIdxs) {
-	    const ComboHit& strawhit(chcol.at(strawidx));
-	    if(strawhit.mask().level() != StrawIdMask::uniquestraw)
-	      throw cet::exception("RECO")<<"mu2e::LoopHelixFit: ComboHit error"<< endl;
-	    const Straw& straw = tracker->getStraw(strawhit.strawId());
-	    // find the propagation speed for signals along this straw
-	    double sprop = 2*strawresponse->halfPropV(strawhit.strawId(),strawhit.energyDep());
-	    // construct a kinematic line trajectory from this straw. the measurement point is the signal end
-	    auto p0 = straw.wireEnd(strawhit.driftEnd());
-	    auto p1 = straw.wireEnd(StrawEnd(strawhit.driftEnd().otherEnd()));
-	    auto propdir = (p0 - p1).unit(); // The signal propagates from the far end to the near
-	    // clumsy conversion: make this more elegant TODO
-	    VEC3 vp0(p0.x(),p0.y(),p0.z());
-	    VEC3 vp1(p1.x(),p1.y(),p1.z());
-	    Line wline(vp0,vp1,strawhit.time(),sprop);
-	    // compute 'hint' to TPOCA.  correct the hit time using the time division
-	    double psign = propdir.dot(straw.wireDirection());  // wire distance is WRT straw center, in the nominal wire direction
-	    double htime = wline.t0() - (straw.halfLength()-psign*strawhit.wireDist())/wline.speed();
-	    CAHint hint(seedtraj.ztime(vp0.Z()),htime);
-	    // compute a preliminary PTCA between the seed trajectory and this straw.
-	    PTCA ptca(pseedtraj, wline, hint, tpocaprec_);
-	    // create the material crossing
-	    if(addmat_){
-	      exings.push_back(std::make_shared<STRAWXING>(ptca,*smat_));
-	      if(print_ > 2)exings.back()->print(std::cout,1);
+	  EXINGCOL exings; // polymorphic container of detector element crossings
+	  // first, we need to unwind the combohits.  We use this also to find the time range
+	  StrawHitIndexCollection strawHitIdxs;
+	  auto const& hhits = hseed.hits();
+	  for(size_t ihit = 0; ihit < hhits.size(); ++ihit ){ hhits.fillStrawHitIndices(event,ihit,strawHitIdxs); }
+	  makeStrawHits(*tracker, *strawresponse, seedtraj,chcol,strawHitIdxs,thits,exings);
+	  if (usecalo_){
+	    if(hseed.caloCluster()){
+	      makeCaloHit(hseed.caloCluster(),thits);
+	    } else {
+	      // search for matching low-energy clusters TODO
 	    }
-	    // create the hit
-	    thits.push_back(std::make_shared<KKSTRAWHIT>(kkbf, ptca, whstate, strawhit, straw, strawidx, *strawresponse));
-	    // 
-	    if(print_ > 2)thits.back()->print(std::cout,2);
 	  }
-	  // add calorimeter cluster hit TODO
-	  if (usecalo_ && hseed.caloCluster()){
-	    // move cluster COG into the tracker frame.  COG is at the front face of the disk
-	    auto cluster = hseed.caloCluster();
-	    CLHEP::Hep3Vector cog = calo_h->geomUtil().mu2eToTracker(calo_h->geomUtil().diskFFToMu2e( cluster->diskID(), cluster->cog3Vector()));
-	    // project this along the crystal axis to the SIPM, which is at the back.  This is the point the time measurement corresponds to
-	    VEC3 FFCOG(cog);
-	    VEC3 SIPMCOG = FFCOG + crystalF2B_;
-	    // create the Line trajectory from this information: signal goes towards the sipm
-	    Line cogaxis(SIPMCOG,FFCOG,cluster->time()+caloDt_,caloPropSpeed_); 
-	    // create the hit
-	    double tvar = cluster->timeErr()*cluster->timeErr();
-	    double wvar = caloPosRes_*caloPosRes_;
-	    // I should verify the cluster looks physically reasonable before adding it TODO!
-	    thits.push_back(std::make_shared<KKCALOHIT>(cluster,cogaxis,tvar,wvar));
-	    if(print_ > 2)thits.back()->print(std::cout,2);
-	  }
-	  // create and fit the track.  
-	  auto kktrk = make_unique<KKTRK>(kkconfig_,kkbf,seedtraj,thits,exings);
+	  // add nearby unused straws as passive material TODO
+	  // add calorimeter front face and other passive material TODO
+	  // create and fit the track  
+	  auto kktrk = make_unique<KKTRK>(kkconfig_,*kkbf_,seedtraj,thits,exings);
 	  if(kktrk->fitStatus().usable() || saveall_){
 	  // convert fits into KalSeeds for persistence	
 	    kkseedcol->push_back(createSeed(*kktrk,hptr));
-	    kktrkcol->push_back(kktrk.release()); // OwningPointerCollection should use unique_ptr FIXME!
+	    kktrkcol->push_back(kktrk.release());
 	  }
 	}
       }
     }
-
     // put the output products into the event
     event.put(move(kktrkcol));
     event.put(move(kkseedcol));
@@ -508,6 +448,98 @@ namespace mu2e {
       fseed._segments.emplace_back(zpiece,tz);
     }
     return fseed;
+  }
+
+  KTRAJ LoopHelixFit::makeSeedTraj(HelixSeed const& hseed) const {
+  // first, find the time range of the hits
+    auto const& hhits = hseed.hits();
+    float tmin = std::numeric_limits<float>::max();
+    float tmax = std::numeric_limits<float>::min();
+    for( auto const& hhit: hhits) {
+      tmin = std::min(tmin,hhit.correctedTime());
+      tmax = std::max(tmax,hhit.correctedTime());
+    }
+    TimeRange trange(tmin-tbuff_,tmax+tbuff_);
+    // compute the magnetic field at the helix center.  We only want the z compontent, as the helix fit assumes B points along Z
+    auto const& shelix = hseed.helix();
+    float zcent = 0.5*(hhits.front().pos().Z()+hhits.back().pos().Z());
+    VEC3 center(shelix.centerx(), shelix.centery(),zcent);
+    auto bcent = kkbf_->fieldVect(center);
+    VEC3 bnom(0.0,0.0,bcent.Z());
+    // create a PKTRAJ from the helix fit result, to seed the KinKal fit.  First, translate the parameters
+    // Note the sign adjustments; RobustHelix is a purely geometric helix, LoopHelix is a kinematic helix
+    DVEC pars;
+    double psign = copysign(1.0,-charge_*bcent.Z());
+    pars[KTRAJ::rad_] = shelix.radius()*psign;
+    pars[KTRAJ::lam_] = shelix.lambda()*tdir_.dzdt();
+    pars[KTRAJ::cx_] = shelix.centerx();
+    pars[KTRAJ::cy_] = shelix.centery();
+    pars[KTRAJ::phi0_] = shelix.fz0()+psign*M_PI_2;
+    pars[KTRAJ::t0_] = hseed.t0().t0();
+    // create the initial trajectory
+    Parameters kkpars(pars,seedcov_);
+    if(print_ > 1){
+      std::cout << "Seed Helix parameters " << shelix << std::endl;
+      std::cout << "Seed Traj parameters  " << kkpars << std::endl;
+    }
+    //  construct the seed trajectory
+    return KTRAJ(kkpars, mass_, charge_, bnom, trange );
+  }
+
+  void LoopHelixFit::makeStrawHits(Tracker const& tracker,StrawResponse const& strawresponse,KTRAJ const& seedtraj,
+      ComboHitCollection const& chcol, StrawHitIndexCollection const& strawHitIdxs,
+      MEASCOL& thits,EXINGCOL& exings) const {
+  // wrap the seed traj in a Piecewise traj: needed to satisfy PTOCA interface
+    PKTRAJ pseedtraj(seedtraj);
+    // loop over the individual straw hits
+    for(auto strawidx : strawHitIdxs) {
+      const ComboHit& strawhit(chcol.at(strawidx));
+      if(strawhit.mask().level() != StrawIdMask::uniquestraw)
+	throw cet::exception("RECO")<<"mu2e::LoopHelixFit: ComboHit error"<< endl;
+      const Straw& straw = tracker.getStraw(strawhit.strawId());
+      // find the propagation speed for signals along this straw
+      double sprop = 2*strawresponse.halfPropV(strawhit.strawId(),strawhit.energyDep());
+      // construct a kinematic line trajectory from this straw. the measurement point is the signal end
+      auto p0 = straw.wireEnd(strawhit.driftEnd());
+      auto p1 = straw.wireEnd(StrawEnd(strawhit.driftEnd().otherEnd()));
+      auto propdir = (p0 - p1).unit(); // The signal propagates from the far end to the near
+      // clumsy conversion: make this more elegant TODO
+      VEC3 vp0(p0.x(),p0.y(),p0.z());
+      VEC3 vp1(p1.x(),p1.y(),p1.z());
+      Line wline(vp0,vp1,strawhit.time(),sprop);
+      // compute 'hint' to TPOCA.  correct the hit time using the time division
+      double psign = propdir.dot(straw.wireDirection());  // wire distance is WRT straw center, in the nominal wire direction
+      double htime = wline.t0() - (straw.halfLength()-psign*strawhit.wireDist())/wline.speed();
+      CAHint hint(seedtraj.ztime(vp0.Z()),htime);
+      // compute a preliminary PTCA between the seed trajectory and this straw.
+      PTCA ptca(pseedtraj, wline, hint, tpocaprec_);
+      // create the material crossing
+      if(addmat_){
+	exings.push_back(std::make_shared<STRAWXING>(ptca,*smat_));
+	if(print_ > 2)exings.back()->print(std::cout,1);
+      }
+      // create the hit
+      thits.push_back(std::make_shared<KKSTRAWHIT>(*kkbf_, ptca, whstate_, strawhit, straw, strawidx, strawresponse));
+      // 
+      if(print_ > 2)thits.back()->print(std::cout,2);
+    }
+  }
+
+  void LoopHelixFit::makeCaloHit(CCPtr const& cluster, MEASCOL& thits) const {
+    // move cluster COG into the tracker frame.  COG is at the front face of the disk
+    GeomHandle<mu2e::Calorimeter> calo_h;
+    CLHEP::Hep3Vector cog = calo_h->geomUtil().mu2eToTracker(calo_h->geomUtil().diskFFToMu2e( cluster->diskID(), cluster->cog3Vector()));
+    // project this along the crystal axis to the SIPM, which is at the back.  This is the point the time measurement corresponds to
+    VEC3 FFCOG(cog);
+    VEC3 SIPMCOG = FFCOG + crystalF2B_;
+    // create the Line trajectory from this information: signal goes towards the sipm
+    Line cogaxis(SIPMCOG,FFCOG,cluster->time()+caloDt_,caloPropSpeed_); 
+    // create the hit
+    double tvar = cluster->timeErr()*cluster->timeErr();
+    double wvar = caloPosRes_*caloPosRes_;
+    // verify the cluster looks physically reasonable before adding it TODO!
+    thits.push_back(std::make_shared<KKCALOHIT>(cluster,cogaxis,tvar,wvar));
+    if(print_ > 2)thits.back()->print(std::cout,2);
   }
 
   double LoopHelixFit::zTime(PKTRAJ const& ptraj, double zpos) const {
