@@ -133,8 +133,9 @@ namespace mu2e {
                          0., // time
                          0., // proper time
                          pos_,
-                         pos_,
+                         pos_, // making post position the same as pre
                          mom_,
+                         mom_, // making post momentum the same as pre
                          0., // stepLength
                          ProcessCode::mu2ePrimary
                          );
