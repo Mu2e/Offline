@@ -210,7 +210,7 @@ namespace mu2e {
       vols_ = volh.product();
       for (const auto& vol : *volh)
       {
-          for (const auto& mv : vol.second) 
+          for (const auto& mv : vol)
           {  
               if (std::find(caloMaterial_.begin(),caloMaterial_.end(), mv.second.materialName()) != caloMaterial_.end()) 
                  mapPhysVol_.insert(&mv.second);

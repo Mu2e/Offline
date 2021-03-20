@@ -51,7 +51,7 @@ namespace mu2e {
     // A default c'tor is required for ROOT.
     SimParticle():
       _id(),
-      _stageOffset(),
+      _simStage(-1u),
       _parentSim(),
       _pdgId(),
       _genParticle(),
@@ -79,7 +79,7 @@ namespace mu2e {
     }
 
     SimParticle( key_type                       aid,
-                 unsigned                       stageOffset,
+                 unsigned                       simStage,
                  art::Ptr<SimParticle> const&   aparentSim,
                  PDGCode::type                  apdgId,
                  art::Ptr<GenParticle> const&   agenParticle,
@@ -93,7 +93,7 @@ namespace mu2e {
                  IonDetail             const&   ion = IonDetail()
                  ):
       _id(aid),
-      _stageOffset(stageOffset),
+      _simStage(simStage),
       _parentSim(aparentSim),
       _pdgId(apdgId),
       _genParticle(agenParticle),
@@ -157,7 +157,7 @@ namespace mu2e {
     key_type  id() const {return _id;}
     key_type& id()       { return _id;}
 
-    unsigned stageOffset() const { return _stageOffset; }
+    unsigned simStage() const { return _simStage; }
 
     // The parent of this track; may be null.
     art::Ptr<SimParticle> const& parent() const { return _parentSim; }
@@ -254,10 +254,10 @@ namespace mu2e {
     // See notes 1 and 2.
     key_type _id;
 
-    // The offset between G4 track number and _id above, which
-    // uniquely identifies the Mu2eG4 simulation stage that produced
-    // this particle
-    unsigned _stageOffset;
+    // The sequential simulation stage number.
+    // Simulations starting with GenParticles get simStage=0,
+    // each next stage increments the number by one.
+    unsigned _simStage;
 
     art::Ptr<SimParticle> _parentSim;
 

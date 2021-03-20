@@ -36,11 +36,9 @@ services.GeometryService.simulatedDetector.tool_type: "ConstructEnvTube"
 physics.producers.g4run.SDConfig.enableSD: []
 physics.producers.g4run.TrajectoryControl.perVolumeMinDistance: {}
 
-physics.producers.g4run.generatorModuleLabel: ""
-physics.producers.g4run.MultiStageParameters: {
-   simParticleNumberOffset: 100000
-   genInputHits: [ "generate" ]
-   inputSimParticles: "generate"
+physics.producers.g4run.inputs: {
+   primaryType: StepPoints
+   primaryTag:  "generate"
    inputMCTrajectories: ""
    inputPhysVolumeMultiInfo: ""
 }

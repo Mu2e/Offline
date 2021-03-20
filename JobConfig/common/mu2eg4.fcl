@@ -27,8 +27,6 @@ mu2e.physics.producers.g4run.flash: @local::mu2e.physics.producers.g4run.commonB
 mu2e.physics.producers.g4run.flash.inputs: {
    primaryType: "StepPoints"
    primaryTag:  "mothersFilter:DetectorMother"
-   simParticleNumberOffset: 300000
-   inputSimParticles: "mothersFilter"
    inputMCTrajectories: ""
    inputPhysVolumeMultiInfo: "compressPVMothers"
 }

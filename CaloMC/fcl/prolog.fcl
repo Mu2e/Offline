@@ -7,7 +7,6 @@
 BEGIN_PROLOG
   HitMakerBlindTime      : 500. 
   HitMakerDigiSampling   : 5    
-  HitMakerMeVToADC       : 16   
   HitMakerMinPeakADC     : 16
 END_PROLOG
 
@@ -44,17 +43,29 @@ CaloShowerROMaker :
     diagLevel                : 0
 }
 
+
 #See doc-db 35519 for noise level discussion
+NoiseGenerator : 
+{
+    noiseWFSize             : 10000
+    elecNphotPerNs          : 0.18
+    rinNphotPerNs           : 0.36
+    darkNphotPerNs          : 0.60
+    digiSampling            : @local::HitMakerDigiSampling
+    enableAR                : true
+    nParAR                  : 5
+    nMaxFragment            : 1000
+    diagLevel               : 0
+}
+
 CaloDigiMaker : 
 {
     module_type             : CaloDigiMaker
     caloShowerROCollection  : CaloShowerROMaker
     blindTime               : @local::HitMakerBlindTime
     addNoise                : true
-    elecNphotPerNs          : 0.18
-    rinNphotPerNs           : 0.36
-    darkNphotPerNs          : 0.60
-    MeVToADC                : @local::HitMakerMeVToADC
+    generateSpotNoise       : true
+    NoiseGenerator          : { @table::NoiseGenerator  }
     digiSampling            : @local::HitMakerDigiSampling
     nBits                   : 12
     minPeakADC              : @local::HitMakerMinPeakADC
@@ -72,7 +83,6 @@ CaloHitTruthMatch:
     caloShowerSimCollection   : CaloShowerROMaker
     caloHitCollection         : CaloHitMaker
     primaryParticle           : FindMCPrimary
-    MeVToADC                  : @local::HitMakerMeVToADC
     digiSampling              : @local::HitMakerDigiSampling
     minAmplitude              : 32
     fillDetailedMC            : false
@@ -93,28 +103,32 @@ CaloMC :
      CaloShowerStepMaker  : @local::CaloShowerStepMaker
    }
    StepSim     : [ CaloShowerStepMaker]
+
    DigiProducers : {
      CaloShowerROMaker    : @local::CaloShowerROMaker
      CaloDigiMaker        : @local::CaloDigiMaker
    }
    DigiSim     : [ CaloShowerROMaker, CaloDigiMaker]
+
    TruthProducers : {
      CaloHitTruthMatch : @local::CaloHitTruthMatch
      CaloClusterTruthMatch : @local::CaloClusterTruthMatch
-  }
-  TruthMatch  : [ CaloHitTruthMatch, CaloClusterTruthMatch ]
+   }
+   TruthMatch  : [ CaloHitTruthMatch, CaloClusterTruthMatch ]
 }
 
 CaloClusterMC : 
 {
-   producers : { CaloClusterTruthMatch : @local::CaloClusterTruthMatch }
+   producers   : { CaloClusterTruthMatch : @local::CaloClusterTruthMatch }
    TruthMatch  : [ CaloClusterTruthMatch ]
 }
+
 # legacy
 CaloMC.producers : {
   @table::CaloMC.StepProducers
   @table::CaloMC.DigiProducers
 }
+
 CaloMC.StepAndDigiSim : [@sequence::CaloMC.StepSim, @sequence::CaloMC.DigiSim]
 
 END_PROLOG

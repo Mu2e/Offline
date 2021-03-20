@@ -26,9 +26,29 @@ namespace mu2e{
     HitList->AddElement(this);
   }
 
- void TEveMu2eMCTraj::DrawLine(const std::string &pstr,  CLHEP::Hep3Vector Start, CLHEP::Hep3Vector End, TEveElementList *HitList)
-  {
+ void TEveMu2eMCTraj::DrawSimpleLine(const std::string &pstr,  CLHEP::Hep3Vector Start, CLHEP::Hep3Vector End, TEveElementList *HitList)
+  {//For straight lines only
     
+    this->SetTitle((DataTitle(pstr, -1)).c_str());
+   
+    hep3vectorTocm(Start);
+    hep3vectorTocm(End);
+    TEveLine *line = new TEveLine();
+ 
+    line->SetPoint(0, Start.x(), Start.y(), Start.z()); 
+    line->SetNextPoint(End.x(), End.y(), End.z()); 
+    
+    line->SetLineColor(kYellow);
+    this->SetMarkerColor(kYellow);
+    this->SetMarkerSize(5);
+    this->SetPickable(kTRUE);
+    HitList->AddElement(line);
+    HitList->AddElement(this);
+  }
+  
+   void TEveMu2eMCTraj::DrawFullLine(const std::string &pstr,  CLHEP::Hep3Vector Start, CLHEP::Hep3Vector End, TEveElementList *HitList)
+  {
+    std::cout<<"Drawing Line"<<std::endl;
     this->SetTitle((DataTitle(pstr, -1)).c_str());
    
     hep3vectorTocm(Start);

@@ -22,8 +22,7 @@ physics.producers.CrvSteps.stepPointsModuleLabels : ["detectorFilter"]
 physics.producers.compressDetStepMCs.simParticleTag: "detectorFilter"
 physics.producers.compressDetStepMCs.stepPointMCTags : [ "detectorFilter:virtualdetector", "detectorFilter:protonabsorber" ]
 physics.producers.compressDetStepMCs.mcTrajectoryTag: "detectorFilter"
-outputs.Output.fileName        : "dts.owner.cosmic-s2-converter.version.sequencer.art"
+outputs.Output.fileName        : "sim.owner.CosmicConverted.version.sequencer.art"
 // CRY3 and CRY4 samples don't have visible energy and post step position
 physics.producers.CrvSteps.useTotalEDep: true
 physics.producers.CrvSteps.noPostPositionAvailable: true
-

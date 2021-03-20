@@ -105,6 +105,8 @@ namespace mu2e {
     Mu2eG4TrajectoryControl trajectoryControl_;
     Mu2eG4Inputs multiStagePars_;
 
+    unsigned simStage_;
+
     std::unique_ptr<MTMasterThread> masterThread;
 
     // Do we issue warnings about multiple runs?
@@ -155,6 +157,7 @@ namespace mu2e {
     mu2elimits_(pars().ResourceLimits()),
     trajectoryControl_(pars().TrajectoryControl()),
     multiStagePars_(pars().inputs()),
+    simStage_(-1u),
 
     masterThread(std::make_unique<MTMasterThread>(pars())),
 
@@ -224,7 +227,6 @@ namespace mu2e {
       mf::LogInfo logInfo("GEOM");
       logInfo << "Initializing Geant4 for " << run.id()
               << " with verbosity " << _rmvlevel << endl;
-      logInfo << " Configured simParticleNumberOffset = "<< multiStagePars_.simParticleNumberOffset() << endl;
     }
 
     masterThread->storeRunNumber(run.id().run());
@@ -239,16 +241,18 @@ namespace mu2e {
     using Collection_t = PhysicalVolumeInfoMultiCollection;
     auto mvi = std::make_unique<Collection_t>();
 
-    if(multiStagePars_.inputPhysVolumeMultiInfo() != invalid_tag) {
+    if(multiStagePars_.multiStage()) {
       // Copy over data from the previous simulation stages
       auto const& ih = sr.getValidHandle<Collection_t>(multiStagePars_.inputPhysVolumeMultiInfo());
       mvi->reserve(1 + ih->size());
       mvi->insert(mvi->begin(), ih->cbegin(), ih->cend());
-
     }
 
+    // By definition simStage=0 if we start with GenParticles and not doing multiStage.
+    simStage_ = mvi->size();
+
     // Append info for the current stage
-    mvi->emplace_back(multiStagePars_.simParticleNumberOffset(), physVolHelper_.persistentSingleStageInfo());
+    mvi->emplace_back(physVolHelper_.persistentSingleStageInfo());
 
     sr.put(std::move(mvi));
   }
@@ -290,7 +294,7 @@ namespace mu2e {
     }
 
     Mu2eG4PerThreadStorage* perThreadStore = scheduleWorkerRM->getMu2eG4PerThreadStorage();
-    perThreadStore->initializeEventInfo(&event);
+    perThreadStore->initializeEventInfo(&event, simStage_);
     scheduleWorkerRM->processEvent(event.id());
 
     if (_mtDebugOutput > 2){

@@ -33,6 +33,7 @@ namespace mu2e {
       <<", pstart="<<p.startMomentum()
       <<", end="<<p.endPosition()
       <<", pend="<<p.endMomentum()
+      <<", simStage = "<<p.simStage()
       <<", nSteps = "<<p.nSteps()
       <<", preLastStepKE = "<<p.preLastStepKineticEnergy()
       <<", creationCode = "<<p.creationCode()

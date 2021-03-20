@@ -10,6 +10,11 @@
 #include "Mu2eG4/inc/Mu2eG4Config.hh"
 #include "Mu2eG4/inc/Mu2eG4PrimaryType.hh"
 
+#include "art/Framework/Principal/Handle.h"
+#include "MCDataProducts/inc/SimParticleCollection.hh"
+
+namespace art { class Event; }
+
 namespace mu2e {
 
   class Mu2eG4Inputs {
@@ -22,19 +27,18 @@ namespace mu2e {
 
     const art::InputTag& primaryTag() const { return primaryTag_; }
 
-    unsigned simParticleNumberOffset() const { return simParticleNumberOffset_; }
-
-    const art::InputTag& inputSimParticles() const { return inputSimParticles_; }
-
     const art::InputTag& inputMCTrajectories() const { return inputMCTrajectories_; }
 
     const art::InputTag& inputPhysVolumeMultiInfo() const { return inputPhysVolumeMultiInfo_; }
 
+    // The handle is not valid if there are no input sim particles, either for
+    // initial stage jobs, or for non-filtered multistage input when the
+    // input event has no primaries for the current stage.
+    art::Handle<SimParticleCollection> inputSimParticles(const art::Event& evt) const;
+
   private:
     Mu2eG4PrimaryType primaryType_;
     art::InputTag primaryTag_;
-    unsigned simParticleNumberOffset_;
-    art::InputTag inputSimParticles_;
     art::InputTag inputMCTrajectories_;
     art::InputTag inputPhysVolumeMultiInfo_;
 

@@ -93,7 +93,7 @@ namespace mu2e {
 
     cet::map_vector_key one{1};
     SimParticle sp(one,  // index
-                   0,    // stageOffset
+                   0,    // simStage
                    art::Ptr<SimParticle>(), // parent
                    pdgId_,
                    art::Ptr<GenParticle>(),

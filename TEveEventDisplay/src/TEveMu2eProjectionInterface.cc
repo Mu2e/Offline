@@ -124,4 +124,81 @@ namespace mu2e{
     //gEve->GetBrowser()->GetTabRight()->SetTab(0);
 
   }
+
+/*
+  void TEveMu2eMainWindow::PrepareCaloProjectionTab(const art::Run& run){
+    calo2Dproj->fDetXYScene->DestroyElements();
+    calo2Dproj->fDetRZScene->DestroyElements();
+    TEveElementList *orthodet0 = new TEveElementList("CaloOrthoDet0");
+    TEveElementList *orthodet1 = new TEveElementList("CaloOrthoDet1");
+    TGeoVolume* topvol = geom->GetTopVolume(); 
+    Mu2eCalo->DrawCaloDetector(run, topvol,orthodet0,orthodet1);
+
+    gEve->AddGlobalElement(orthodet0);
+    gEve->AddGlobalElement(orthodet1);
+
+    // ... Import elements of the list into the projected views
+    calo2Dproj->fXYMgr->ImportElements(orthodet0, calo2Dproj->fDetXYScene);
+    calo2Dproj->fRZMgr->ImportElements(orthodet1, calo2Dproj->fDetRZScene);
+
+    // ... Turn OFF rendering of duplicate detector in main 3D view
+    gEve->GetGlobalScene()->FindChild("OrthoDet")->SetRnrState(kFALSE);
+
+    // ... Turn ON rendering of detector in RPhi and RZ views
+    calo2Dproj->fDetXYScene->FindChild("CaloOrthoDet0 [P]")->SetRnrState(kTRUE);
+    calo2Dproj->fDetRZScene->FindChild("CaloOrthoDet1 [P]")->SetRnrState(kTRUE);
+  }
+
+  void TEveMu2eMainWindow::PrepareTrackerProjectionTab(const art::Run& run){
+    tracker2Dproj->fDetXYScene->DestroyElements();
+    tracker2Dproj->fDetRZScene->DestroyElements();
+    TEveElementList *orthodet = new TEveElementList("OrthoDet");
+    TGeoVolume* topvol = geom->GetTopVolume();
+    Mu2eTracker->DrawTrackerDetector(run, topvol, orthodet);
+
+    gEve->AddGlobalElement(orthodet);
+
+    // ... Import elements of the list into the projected views
+    tracker2Dproj->fXYMgr->ImportElements(orthodet, tracker2Dproj->fDetXYScene);
+    tracker2Dproj->fRZMgr->ImportElements(orthodet, tracker2Dproj->fDetRZScene);
+
+    // ... Turn OFF rendering of duplicate detector in main 3D view
+    gEve->GetGlobalScene()->FindChild("OrthoDet")->SetRnrState(kFALSE);
+
+    // ... Turn ON rendering of detector in RPhi and RZ views
+    tracker2Dproj->fDetXYScene->FindChild("OrthoDet [P]")->SetRnrState(kTRUE);
+    tracker2Dproj->fDetRZScene->FindChild("OrthoDet [P]")->SetRnrState(kTRUE);
+  }
+
+  void TEveMu2eMainWindow::PrepareCRVProjectionTab(const art::Run& run){
+
+  CRV2Dproj->fDetXYScene->DestroyElements();
+  CRV2Dproj->fEvtXYScene->DestroyElements();
+
+  TGeoVolume* topvol = geom->GetTopVolume();
+
+  TEveElementList *orthodetT1 = new TEveElementList("CRVT1OrthoDet");
+  TEveElementList *orthodetT2 = new TEveElementList("CRVT2OrthoDet");
+  TEveElementList *orthodetT3 = new TEveElementList("CRVT3OrthoDet");
+  TEveElementList *orthodetT4 = new TEveElementList("CRVT4OrthoDet");
+  TEveElementList *orthodetlist[] = {orthodetT1, orthodetT2, orthodetT3, orthodetT4};
+
+  Mu2eCRV->DrawCRVDetector(run, topvol, orthodetlist);
+
+  for (unsigned int i=0; i<4; i++){
+    gEve->AddGlobalElement(orthodetlist[i]);
+  }
+
+  for (unsigned int i=0; i<4; i++){
+    CRV2Dproj->fXYMgr->ImportElements(orthodetlist[i], CRV2Dproj->fDetXYScene);
+  }
+
+  // ... Turn OFF rendering of duplicate detector in main 3D view
+  gEve->GetGlobalScene()->FindChild("OrthoDet")->SetRnrState(kFALSE);
+
+  // ... Turn ON rendering of detector in RPhi and RZ views
+  //CRV2Dproj->fDetXYScene->FindChild("OrthoDet [P]")->SetRnrState(kTRUE);
+  //CRV2Dproj->fDetRZScene->FindChild("OrthoDets0 [P]")->SetRnrState(kTRUE);
+
+  }*/
 }
