@@ -78,7 +78,7 @@ physics.producers.SelectRecoMC.debugLevel : 0
 
 physics.producers.KKDeMSeedFit.ModuleSettings.HelixSeedCollections : [ "MHDeM" ]
 physics.producers.KKDeMSeedFit.ModuleSettings.ComboHitCollection : "makeSH"
-physics.producers.KKDeMSeedFit.ModuleSettings.StrawHitFlagCollection : "FlagBkgHitss:StrawHits"
+physics.producers.KKDeMSeedFit.ModuleSettings.StrawHitFlagCollection : "FlagBkgHits:StrawHits"
 physics.producers.KKDeMSeedFit.ModuleSettings.PrintLevel : 0
 physics.producers.KKDeMSeedFit.FitSettings.PrintLevel : 1 
 
