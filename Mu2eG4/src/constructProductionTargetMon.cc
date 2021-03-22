@@ -110,68 +110,68 @@ namespace mu2e {
         // first ground plane
         // TODO: make this a virtual detector
         std::string ground1Name = "pTargetMonGround1";
-        ground1Name.append(nameSuffix)
-        double ground1Z = -5.5*frameThick
-        nextBox(ground1Name,
+        ground1Name.append(nameSuffix);
+        double ground1Z = -5.5*frameThick;
+        nestBox(ground1Name,
                 windowHalfDims,
                 windowMaterial,
                 noRotation,
                 G4ThreeVector(0.0, 0.0, ground1Z),
                 PWCContainerInfo,
                 0,
-                G4Color::Green(),
+                G4Colour::Green(),
                 "PTM");
         // first HV plane
         std::string hv1Name = "pTargetMonHV1";
-        hv1Name.append(nameSuffix)
+        hv1Name.append(nameSuffix);
         double hv1Z = -3.5*frameThick;
-        nextBox(hv1Name,
+        nestBox(hv1Name,
                 windowHalfDims,
                 windowMaterial,
                 noRotation,
                 G4ThreeVector(0.0, 0.0, hv1Z),
                 PWCContainerInfo,
                 0,
-                G4Color::Green(),
+                G4Colour::Green(),
                 "PTM");
         // second HV plane
         std::string hv2Name = "pTargetMonHV2";
-        hv2Name.append(nameSuffix)
+        hv2Name.append(nameSuffix);
         double hv2Z = 0.5*frameThick;
-        nextBox(hv2Name,
+        nestBox(hv2Name,
                 windowHalfDims,
                 windowMaterial,
                 noRotation,
                 G4ThreeVector(0.0, 0.0, hv2Z),
                 PWCContainerInfo,
                 0,
-                G4Color::Green(),
+                G4Colour::Green(),
                 "PTM");
         // third HV plane
         std::string hv3Name = "pTargetMonHV3";
-        hv3Name.append(nameSuffix)
+        hv3Name.append(nameSuffix);
         double hv3Z = 4.5*frameThick;
-        nextBox(hv3Name,
+        nestBox(hv3Name,
                 windowHalfDims,
                 windowMaterial,
                 noRotation,
                 G4ThreeVector(0.0, 0.0, hv3Z),
                 PWCContainerInfo,
                 0,
-                G4Color::Green(),
+                G4Colour::Green(),
                 "PTM");
         // last ground plane
         std::string ground2Name = "pTargetMonGround2";
-        ground2Name.append(nameSuffix)
-        double ground2Z = 6.5*frameThick
-        nextBox(ground2Name,
+        ground2Name.append(nameSuffix);
+        double ground2Z = 6.5*frameThick;
+        nestBox(ground2Name,
                 windowHalfDims,
                 windowMaterial,
                 noRotation,
                 G4ThreeVector(0.0, 0.0, ground2Z),
                 PWCContainerInfo,
                 0,
-                G4Color::Green(),
+                G4Colour::Green(),
                 "PTM");
 
         
@@ -197,19 +197,19 @@ namespace mu2e {
                 "PTM");
         // between HV plane 1 and HV plane 2
         // TODO: treat as indiv sensitive detectors
-        std::string wireGasNameVert = "pTargetMonWireVert"
+        std::string wireGasNameVert = "pTargetMonWireVert";
         wireGasNameVert.append(nameSuffix);
         double gasLength2 = hv2Z - hv1Z - windowThick;
         double gasZ2 = 0.5*(hv2Z + hv1Z);
         int numVertWires = static_cast<int>(windowHeight/wireSpacing);
-        for (int 1=0; i<numVertWires; i++) {
-            std:string wireGasName = wireGasNameVert;
+        for (int i=0; i<numVertWires; i++) {
+            std::string wireGasName = wireGasNameVert;
             wireGasName.append(std::to_string(i));
             std::vector<double> gasHalfDims2;
             gasHalfDims2.push_back(windowWidth/2.);
-            gasHalfDims2.push_back(wireSpacing/2.)
+            gasHalfDims2.push_back(wireSpacing/2.);
             gasHalfDims2.push_back(gasLength2/2.);
-            double gasY2 = (-0.5*windowHeight) + ((i+0.5)*wireSpacing)
+            double gasY2 = (-0.5*windowHeight) + ((i+0.5)*wireSpacing);
             nestBox(wireGasName,
                 gasHalfDims2,
                 gasMaterial,
@@ -236,21 +236,21 @@ namespace mu2e {
         // between HV plane 2 and HV plane 3
         // TODO: treat as indiv sensitive detectors
         //std::string gasName3 = "pTargetMonGas3";
-        std::string wireGasNameHoriz = "pTargetMonWireHoriz"
+        std::string wireGasNameHoriz = "pTargetMonWireHoriz";
         wireGasNameHoriz.append(nameSuffix);
         //gasName3.append(nameSuffix);
         double gasLength3 = hv3Z - hv2Z - windowThick;
         double gasZ3 = 0.5*(hv3Z + hv2Z);
         int numHorizWires = static_cast<int>(windowWidth/wireSpacing);
-        for (int 1=0; i<numHorizWires; i++) {
-            std:string wireGasName = wireGasNameHoriz;
+        for (int i=0; i<numHorizWires; i++) {
+            std::string wireGasName = wireGasNameHoriz;
             wireGasName.append(std::to_string(i));
             std::vector<double> gasHalfDims3;
             gasHalfDims3.push_back(wireSpacing/2.);
             gasHalfDims3.push_back(windowHeight/2.);
             gasHalfDims3.push_back(gasLength3/2.);
-            double gasX3 = (-0.5*windowWidth) + ((i+0.5)*wireSpacing)
-            nestBox(wireGasName
+            double gasX3 = (-0.5*windowWidth) + ((i+0.5)*wireSpacing);
+            nestBox(wireGasName,
                 gasHalfDims3,
                 gasMaterial,
                 noRotation,
