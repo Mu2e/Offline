@@ -1,0 +1,149 @@
+BEGIN_PROLOG
+
+crvOuterBox: {
+   type: union
+   pars:
+   [
+   // Upstream plane
+   { type: plane normal: [  0, 0, -1 ] point : [ 0, 0, -3400 ] },
+   // Downstream plane
+   { type: plane normal: [  0, 0, 1 ] point : [ 0, 0, 19800 ] },
+   // +x plane
+   { type: plane normal: [  1, 0, 0 ] point : [ 1500, 0, 0 ] },
+   // -x plane (outside of cryo box)
+   { type: plane normal: [  -1, 0, 0 ] point : [ -8200, 0, 0 ] },
+   // +y plane
+   { type: plane normal: [  0, 1, 0 ] point : [ 0, 4000, 0 ] },
+   // -y plane
+   { type: plane normal: [  0, -1, 0 ] point : [ 0, -2100, 0 ] }
+   ]
+}
+
+crvInnerBox: {
+   type: intersection
+   pars:
+   [
+   // Upstream plane
+   { type: plane normal: [  0, 0, 1 ] point : [ 0, 0, -2200 ] },
+   // Downstream plane
+   { type: plane normal: [  0, 0, -1 ] point : [ 0, 0, 18500 ] },
+   // +x plane
+   { type: plane normal: [  -1, 0, 0 ] point : [ -1500, 0, 0 ] },
+   // -x plane
+   { type: plane normal: [  1, 0, 0 ] point : [ -6300, 0, 0 ] },
+   // +y plane
+   { type: plane normal: [  0, -1, 0 ] point : [ 0, 2500, 0 ] },
+   // -y plane
+   { type: plane normal: [  0, 1, 0 ] point : [ 0, -2100, 0 ] }
+   ]
+}
+
+crvStage1End: {
+   type: inVolume
+   pars: [DSOuterCryoShell, DSInnerCryoShell, DSUpEndWallShell, TS5OuterCryoShell, TS5CryoInsVac, TS5Vacuum, Coll51, DS1Vacuum, DS2Vacuum, DS3Vacuum]
+   write: crvStage1
+}
+
+cosmicKineticEnergyCutS1: {
+   type: union
+   pars:
+   [
+      {
+      type: intersection
+      pars:
+      [
+	{ type: union pars: [ @local::crvOuterBox, @local::crvInnerBox ] },
+      	{ type: kineticEnergy cut: 10.0 },
+      	{ type: pdgId pars: [ 22, 2112 ] }
+      ]
+      },
+      {
+      // 5 MeV can only make a hit in 1 CRV layer
+      type: intersection
+      pars:
+      [
+	{ type: union pars: [ @local::crvOuterBox, @local::crvInnerBox ] },
+        { type: kineticEnergy cut: 5.0 },
+        { type: pdgId pars: [ 2212, 11, -11 ] }
+      ]
+      }
+   ]
+}
+
+cosmicKineticEnergyCutS2: {
+// Kill lower momentum particles outside of the CRV box
+   type: intersection
+   pars:
+   [
+	{ type: intersection pars: [
+	{ type: kineticEnergy cut: 80.0 },
+ 	{ type: pdgId pars: [ 22, 11, -11, 2112 ] }]},
+ 	{ type: union pars: [ @local::crvOuterBox ] }
+   ]
+}
+
+Cosmic: {
+# generator truncation filter; only needed for cosmic rays in principle
+   g4status: {
+      module_type: FilterStatusG4
+      input: "g4run"
+      maxAcceptedStatus: 9  #  status 10 and above means StepPointMCCollection may have non-dereferencable pointers
+   }
+   stepPointMomentumFilter: {
+      module_type: FilterStepPointMomentum
+      inputs : [ "g4run:crvStage1" ]
+      cutMomentumMin: 0. // Filter all particles that hit DS region
+   }
+   cosmicFilter: {
+      module_type: FilterG4Out
+      mainHitInputs : [ "g4run:crvStage1", "g4run:CRV" ]
+      extraHitInputs : []               //stores only StepPoints of tracks which also have StepPoints in the mainHitInputs
+      mcTrajectoryInputs : [ "g4run" ]
+      vetoDaughters: []
+   }
+   dsResample: {
+      module_type: ResamplingMixer
+      fileNames: @nil  
+      readMode: "sequential"
+      wrapFiles: true
+      mu2e: {
+         products: {
+	    genParticleMixer: { mixingMap: [ [ "generate", "" ] ] }
+	    simParticleMixer: { mixingMap: [ [ "cosmicFilter", ""] ] } 
+	    mcTrajectoryMixer:{ mixingMap: [ [ "cosmicFilter", ""] ] }
+	    stepPointMCMixer: { mixingMap: [ [ "cosmicFilter:crvStage1", ":" ], [ "cosmicFilter:CRV", ":" ] ] }
+         }
+      }
+   }
+   Mu2eG4CommonCutCosmicS2:{
+      type: union
+      pars:
+      [
+      @local::cosmicKineticEnergyCutS2,
+      {
+         type: inVolume
+         pars: [ worldDirtBottom ]
+      }
+      ]
+   }
+   MultiStageParametersCosmicS2: {
+      primaryType: StepPoints
+      primaryTag: "dsResample:crvStage1"
+      inputMCTrajectories: "dsResample"
+      inputPhysVolumeMultiInfo: "" 
+   }
+   Mu2eG4CommonCutCosmicS1: {
+      type: union
+      pars:
+      [
+      @local::cosmicKineticEnergyCutS1,
+      @local::crvStage1End,
+      {
+         type: inVolume
+         pars: [ worldDirtBottom ]
+      }
+      ]
+   }
+
+}
+END_PROLOG

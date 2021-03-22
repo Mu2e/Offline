@@ -51,6 +51,7 @@ namespace mu2e {
 
     const Row& rowAt(const std::size_t index) const { return _rows.at(index);}
     const Row& row(const int iid) const { return _rows.at(_index.at(iid)); }
+    std::vector<Row> const& rows() const {return _rows;}
     std::size_t nrow() const override { return _rows.size(); };
     size_t size() const override { return baseSize() + sizeof(this) 
 	+ nrow()*nrow()/2 + nrow()*64; };

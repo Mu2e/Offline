@@ -1,0 +1,33 @@
+#
+# Reconstruct from digis, including MC information
+# original author: David Brown (LBNL) 1 Feb 2020
+#
+#include "fcl/minimalMessageService.fcl"
+#include "fcl/standardServices.fcl"
+#include "JobConfig/reco/prolog.fcl"
+#
+# name all processes the same, to mask any provenance in ensemble creation
+process_name: Reconstruct
+source : { module_type : RootInput }
+services : @local::Services.Reco
+physics :
+{
+  producers : @local::Reconstruction.producers
+  filters : @local::Reconstruction.filters
+  analyzers: @local::Reconstruction.analyzers
+  RecoPath : [ @sequence::Reconstruction.RecoMCPath ]
+  EndPath : @local::Reconstruction.EndPath
+}
+outputs : {   
+  Output : {
+    @table::Reconstruction.Output
+    SelectEvents : [ "RecoPath" ]
+  }
+}
+# final config
+#include "JobConfig/reco/epilog.fcl"
+physics.end_paths : [ EndPath ] # needed for generate_fcl
+# no histogram output
+services.TFileService.fileName: "/dev/null"
+# the fileds below will get filled in by generate_fcl
+outputs.Output.fileName: "mcs.owner.description.version.sequencer.art"

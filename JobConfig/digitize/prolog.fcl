@@ -1,0 +1,108 @@
+#
+# Prolog for digitizing detector steps.  These scripts can be run as-is, or in conjunction with mixing
+#
+#include "fcl/TrkCaloDt.fcl"
+#include "fcl/standardServices.fcl"
+#include "CommonMC/fcl/prolog.fcl"
+#include "TrackerMC/fcl/prolog.fcl"
+#include "CaloMC/fcl/prolog.fcl"
+#include "CRVResponse/fcl/prolog.fcl"
+#include "Filters/fcl/prolog.fcl"
+#include "Compression/fcl/prolog.fcl"
+#include "Trigger/fcl/prolog_trigger.fcl"
+#
+BEGIN_PROLOG
+
+Digitize: {
+  producers : {
+    @table::CommonMC.producers
+    @table::TrackerMC.DigiProducers
+    @table::CaloMC.DigiProducers
+    @table::CrvDAQPackage.producers
+    # default PBI with no intensity; this must be overridden when mixing
+    PBISim : {
+      module_type: ProtonBunchIntensityFlat
+      mean: 0.0 # No PBI possible for pure signal! 
+      halfWidth : 1.0
+    }
+
+    compressDigiMCs : {
+	module_type : CompressDigiMCs
+	strawDigiMCTag : @local::DigiCompressionTags.commonStrawDigiMCTag
+	crvDigiMCTag : @local::DigiCompressionTags.commonCrvDigiMCTag
+	simParticleTags : [ @local::DigiCompressionTags.primarySimParticleTag ] 
+	mcTrajectoryTag : @local::DigiCompressionTags.primarySimParticleTag
+	extraStepPointMCTags : @local::DigiCompressionTags.commonExtraStepPointMCTags
+	timeMapTags : [ @sequence::CommonMC.TimeMaps ]
+	caloShowerStepTags : @local::DigiCompressionTags.primaryCaloShowerStepTags
+	caloShowerSimTag : @local::DigiCompressionTags.commonCaloShowerSimTag
+	caloShowerROTag : @local::DigiCompressionTags.commonCaloShowerROTag
+	primaryParticleTag : "FindMCPrimary"
+	keepAllGenParticles : true
+	rekeySimParticleCollection : true
+	noCompression : false
+
+	# Unused options
+	strawDigiMCIndexMapTag : ""
+	crvDigiMCIndexMapTag : ""
+	caloClusterMCTag : ""
+	crvCoincClusterMCTag : ""
+    }
+  }
+
+  filters : {
+  }
+
+  analyzers: {
+    digiCompressionCheck : @local::DigiCompression.Check
+  }
+
+  TriggerSequence : [
+    @sequence::CommonMC.DigiSim,
+    @sequence::TrackerMC.DigiSim,
+    @sequence::CaloMC.DigiSim,
+    @sequence::CrvDAQPackage.CrvDAQSequence,
+    compressDigiMCs ]
+
+  TriggerProducts : [ 
+    "keep mu2e::TriggerInfo_*_*_*",  
+    "keep art::TriggerResults_*_*_*",
+    "keep mu2e::KalSeeds_TT*_*_*",
+    "keep mu2e::HelixSeeds_TT*_*_*",
+    "keep mu2e::TimeClusters_TT*_*_*",
+    "keep mu2e::CaloClusters_CaloClusterFast_*_*"
+  ]
+
+  KeptProducts : [  
+		    "keep mu2e::StrawDigis_*_*_*",
+                    "keep mu2e::StrawDigiADCWaveforms_*_*_*",
+		    "keep mu2e::CaloDigis_*_*_*",
+		    "keep mu2e::CrvDigis_*_*_*",
+		    "keep mu2e::StatusG4_*_*_*",
+		    "keep *_genCounter_*_*",
+		    "keep mu2e::EventWindowMarker_*_*_*",
+		    "keep mu2e::ProtonBunchTimeMC_*_*_*",
+		    "keep mu2e::ProtonBunchTime_*_*_*",
+		    "keep mu2e::EventWeight_*_*_*",
+		    "keep mu2e::ProtonBunchIntensity*_*_*_*",
+		    "keep *_compressDigiMCs_*_*" ]
+
+  Output : {
+     module_type : RootOutput     SelectEvents : [ DigiPath ]
+     SelectEvents : [ "*_trigger" ] # this selects events passing any trigger
+     fileName    : @nil
+  }
+  EndSequence : [digiCompressionCheck]
+}
+Digitize.EndPath : [ @sequence::Digitize.EndSequence, Output ]
+# override the Trigger sequence to prepare digis
+Trigger.PrepareDigis: [ @sequence::CommonMC.DigiSim, @sequence::TrackerMC.DigiSim, @sequence::CaloMC.DigiSim ]
+Digitize.TriggerPath : [ PBISim, @sequence::Digitize.TriggerSequence ]
+
+Digitize.Output.outputCommands : [ "drop *_*_*_*",
+		       @sequence::Digitize.KeptProducts,
+		       @sequence::Digitize.TriggerProducts ]
+
+#outputs.Output.SelectEvents : # add output stream of 'good' events that fail the trigger; this requiers a new verison of art FIXME!
+
+END_PROLOG

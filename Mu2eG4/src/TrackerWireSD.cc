@@ -80,6 +80,7 @@ namespace mu2e {
                             preStepPoint->GetPosition() - _mu2eDetCenter,
                             aStep->GetPostStepPoint()->GetPosition() - _mu2eDetCenter,
                             preStepPoint->GetMomentum(),
+                            aStep->GetPostStepPoint()->GetMomentum(),
                             stepL,
                             endCode
                             ));

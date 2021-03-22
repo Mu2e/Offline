@@ -1,0 +1,43 @@
+# default production configuration of G4.  Specific stages may customize this
+
+BEGIN_PROLOG
+mu2e.physics.producers.g4run.commonBase: {
+   module_type: Mu2eG4
+   physics: @local::mu2eg4DefaultPhysics
+   ResourceLimits: @local::mu2eg4DefaultResourceLimits
+   TrajectoryControl: @local::mu2eg4NoTrajectories
+   debug:  @local::mu2eg4DefaultDebug
+   visualization: @local::mu2eg4NoVisualization
+
+   inputs: @nil
+
+   SDConfig: {
+      enableSD: [ tracker, calorimeter, CRV, virtualdetector ]
+      TimeVD: { times: [] }
+      preSimulatedHits: @nil
+   }
+
+   Mu2eG4StackingOnlyCut: @local::mu2eg4CutNeutrinos
+   Mu2eG4SteppingOnlyCut: {}
+   Mu2eG4CommonCut: {}
+}
+
+#----------------------------------------------------------------
+mu2e.physics.producers.g4run.flash: @local::mu2e.physics.producers.g4run.commonBase
+mu2e.physics.producers.g4run.flash.inputs: {
+   primaryType: "StepPoints"
+   primaryTag:  "mothersFilter:DetectorMother"
+   inputMCTrajectories: ""
+   inputPhysVolumeMultiInfo: "compressPVMothers"
+}
+mu2e.physics.producers.g4run.flash.SDConfig.preSimulatedHits:  ["mothersFilter:virtualdetector"]
+
+#----------------------------------------------------------------
+mu2e.physics.producers.g4run.muons: @local::mu2e.physics.producers.g4run.commonBase
+mu2e.physics.producers.g4run.muons.inputs: {
+   primaryType: "GenParticles"
+   primaryTag: "generate"
+}
+mu2e.physics.producers.g4run.muons.SDConfig.preSimulatedHits: []
+
+END_PROLOG

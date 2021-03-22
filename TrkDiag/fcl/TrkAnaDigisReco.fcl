@@ -2,31 +2,24 @@
 # This script runs TrackAnalysisReco on digi inputs.  It runs the official Reco sequence inline.
 # David Brown (LBNL) Feb 2019
 #
-#include "fcl/standardProducers.fcl"
+#include "fcl/TrkCaloDt.fcl"
 #include "TrkDiag/fcl/prolog.fcl"
-# the following is for reading primary digis.  Note there is no trigger information for primaries
-##include "JobConfig/reco/mcdigis_primary.fcl"
-# the following is for reading mixed digis MDC2018g and earlier
-#include "JobConfig/reco/mcdigis-trig_nocosmic.fcl"
-# the following is for reading mixed digis MDC2018h and later
-###include "JobConfig/reco/mcdigis-trig.fcl"
+# the following is for reconstructing from digis.
+#include "JobConfig/reco/Reco.fcl"
 process_name : TrkAnaDigisReco
 # augment producers and analyzers
 physics.producers: {
   @table::physics.producers
-  @table::CommonMC.producers  
   @table::TrkAnaReco.producers
 }
 physics.analyzers: {
   @table::physics.analyzers
   @table::TrkAnaReco.analyzers
+  recoCompressionCheck : @local::RecoCompression.Check
 }
-# for MDC2018g and earlier, correct the time maps.  Comment these out for MDC2018h and beyond
-physics.analyzers.TrkAnaNeg.InfoMCStructHelper.TimeMaps : [ @sequence::RecoCompression.NoCosmicTimeMaps ]
-physics.analyzers.TrkAnaPos.InfoMCStructHelper.TimeMaps : [ @sequence::RecoCompression.NoCosmicTimeMaps ]
-
+# augment paths
 physics.RecoPath : [ @sequence::physics.RecoPath, @sequence::TrkAnaReco.TrigSequence ]
-physics.EndPath : [ RecoCheck, @sequence::TrkAnaReco.EndSequence ]
+physics.EndPath : [ recoCompressionCheck, @sequence::TrkAnaReco.EndSequence ]
 services.TFileService.fileName: "nts.owner.TrkAnaDigisReco.version.sequencer.root"
 #
 #  Script options
@@ -40,16 +33,12 @@ services.TFileService.fileName: "nts.owner.TrkAnaDigisReco.version.sequencer.roo
 # uncomment the following for hit level diagnostics
 #physics.analyzers.TrkAnaNeg.diagLevel : 2
 #physics.analyzers.TrkAnaPos.diagLevel : 2
-# trigger information is only for mixed digis
-physics.analyzers.TrkAnaNeg.FillTriggerInfo : true
-physics.analyzers.TrkAnaPos.FillTriggerInfo : true
-
 
 # Filter based on the reco path
 physics.analyzers.TrkAnaNeg.SelectEvents : [RecoPath]
 physics.analyzers.TrkAnaPos.SelectEvents : [RecoPath]
 
-# Include more information (MC, full TrkQual and TrkPID branches)
+# Include more information (MC, full TrkQual and TrkPID branches), etc
 physics.analyzers.TrkAnaNeg.candidate.options : @local::AllOpt
 physics.analyzers.TrkAnaPos.candidate.options : @local::AllOpt
 

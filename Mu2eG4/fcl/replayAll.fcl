@@ -27,7 +27,7 @@ physics : {
     g4run                : @local::g4run
     makeSD               : @local::makeSD
     makeSH               : @local::makeSH
-    @table::CaloDigiMC.producers
+    @table::CaloMC.producers
     @table::CaloReco.producers
     randomsaver          : @local::randomsaver
   }
@@ -56,7 +56,7 @@ physics : {
 
   }
 
-  p1 : [ generate, g4run, makeSD, makeSH, @sequence::CaloDigiMC.DigiSim,@sequence::CaloReco.Reco, randomsaver ]
+  p1 : [ generate, g4run, makeSD, makeSH, @sequence::CaloMC.DigiSim,@sequence::CaloReco.Reco, randomsaver ]
   e1 : [ checkhits, readStrawHits, outfile]
 
   trigger_paths  : [p1]

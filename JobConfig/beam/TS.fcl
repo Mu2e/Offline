@@ -12,18 +12,7 @@ source : {
    module_type : RootInput
 }
 
-services : {
-
-   message               : @local::default_message
-   TFileService          : { fileName : "nts.owner.TS.version.sequencer.root" }
-   RandomNumberGenerator : {defaultEngineKind: "MixMaxRng" }
-
-   GeometryService        : { inputFile      : "JobConfig/common/geom_baseline.txt" }
-   ConditionsService      : { conditionsfile : "Mu2eG4/test/conditions_01.txt"      }
-   GlobalConstantsService : { inputFile      : "Mu2eG4/test/globalConstants_01.txt" }
-   G4Helper               : { }
-   SeedService            : @local::automaticSeeds
-}
+services : @local::Services.Sim
 
 physics : {
    analyzers: {
@@ -33,46 +22,7 @@ physics : {
    }
 
    producers: {
-      g4run : {
-         module_type: Mu2eG4
-         physics: @local::mu2eg4DefaultPhysics
-         ResourceLimits: @local::mu2eg4DefaultResourceLimits
-	 TrajectoryControl: @local::mu2eg4NoTrajectories
-         debug:  @local::mu2eg4DefaultDebug
-         visualization: @local::mu2eg4NoVisualization
-
-	 MultiStageParameters : {
-            simParticleNumberOffset: 100000  // safe b/c of g4.particlesSizeLimit in stage1
-            genInputHits: [ "muonBeamFilter:mubeam" ]
-            inputSimParticles: "muonBeamFilter"
-	    inputMCTrajectories: ""
-            inputPhysVolumeMultiInfo: "compressPVmuonBeam"
-	 }
-
-         SDConfig : {
-            enableSD : [ virtualdetector, CRV ] // activate just the explicitly listed SDs
-            preSimulatedHits: ["muonBeamFilter:virtualdetector"]
-	    TimeVD: { times: [] }
-         }
-
-         Mu2eG4StackingOnlyCut: @local::mu2eg4CutNeutrinos
-
-         Mu2eG4SteppingOnlyCut: {}
-
-         Mu2eG4CommonCut: {
-            type: union
-            pars: [
-
-               @local::mu2eg4CutDeltaElectrons,
-
-               {
-	          type: inVolume
-	          pars: [TS5Vacuum, DS1Vacuum, DS2Vacuum, DS3Vacuum ]
-	          write: DSVacuum
-	       }
-            ]
-         }
-      }
+      g4run: @local::g4run
 
       compressPVmuonBeam : {
          module_type: CompressPhysicalVolumes
@@ -176,6 +126,39 @@ outputs: {
    }
 
 }
+//================================================================
+physics.producers.g4run.inputs: {
+   primaryType: "StepPoints"
+   primaryTag: "muonBeamFilter:mubeam"
+   inputMCTrajectories: ""
+   inputPhysVolumeMultiInfo: "compressPVmuonBeam"
+}
+
+// Mu2eG4 cuts are evaluated in the listed order.
+// The first match wins.  For the "intersection"
+// type, the first false stops the evaluation.
+// For the "union" type the first true stops the evaluation.
+physics.producers.g4run.Mu2eG4CommonCut: {
+   type: union
+   pars: [
+      @local::mu2eg4CutDeltaElectrons,
+      {
+         type: inVolume
+         pars: [TS5Vacuum, DS1Vacuum, DS2Vacuum, DS3Vacuum ]
+         write: DSVacuum
+      }
+   ]
+}
+
+physics.producers.g4run.SDConfig: {
+   enableSD : [ virtualdetector, CRV ] // activate just the explicitly listed SDs
+   preSimulatedHits: ["muonBeamFilter:virtualdetector"]
+   TimeVD: { times: [] }
+}
 
 physics.producers.g4run.physics.minRangeCut : 1. // mm
 
+services.TFileService.fileName : "nts.owner.TS.version.sequencer.root"
+
+services.SeedService.baseSeed         :  8
+services.SeedService.maxUniqueEngines :  20

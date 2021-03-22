@@ -66,18 +66,10 @@ helper.make_plugins( [ mainlib,
                        'CLHEP',
                        'boost_filesystem',
                        'boost_system',
-                       rootlibs,
-                       'Minuit'  #needed for reco hit fitting
+                       rootlibs
                      ],
                      )
 
-helper.make_dict_and_map( [
-    mainlib,
-    'art_Utilities',
-    'art_Persistency_Common',
-    'canvas',
-    'Core'
-    ] )
 
 
 # This tells emacs to view this file in python mode.

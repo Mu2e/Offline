@@ -769,9 +769,10 @@ namespace mu2e
       retval = true;
       besthit->setActivity(true);
       besthit->setFlag(TrkHit::unweededHit);
+      int oldndof = krep->nDof(); 
       TrkErrCode fitstat = krep->fit();
-      if (fitstat.success() && besthit->isActive() ) {
-	krep->addHistory(fitstat, "HitUnWeed");
+      krep->addHistory(fitstat, "HitUnWeed");
+      if (fitstat.success() && besthit->isActive() && krep->nDof() > oldndof) {
 	// Recursively iterate
         retval |= unweedBestHit(kalData, maxchi);
       }

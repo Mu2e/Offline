@@ -38,13 +38,23 @@ namespace mu2e {
     int run();
     int init();
 
-    int printTable(std::string name="", 
-		   std::vector<int> cids=std::vector<int>());
+    int printCalibration();
+    int printTable();
+    int printIov();
+    int printGroup();
+    int printExtension();
+    int printVersions();
+    int printPurposes();
     int printTables();
     int printLists();
-    int printPurposes();
-    int printVersions(bool details=false);
-    int printSet();
+
+    int printCIDLine(int cid, int indent=0);
+    int printIOVLine(int iov, int details=0, int indent=0);
+    int printGIDLine(int gid, int details=0, int indent=0);
+    int printEIDLine(int eid, int details=0, int indent=0);
+    int printVIDLine(int vid, int details=0, int indent=0);
+    int printPIDLine(int pid, int details=0, int indent=0);
+
     int commitCalibration();
     int commitCalibrationTable(DbTable::cptr_t const& ptr, 
 			       bool qdr=false, bool admin=false);
@@ -58,6 +68,7 @@ namespace mu2e {
     int commitPurpose();
     int commitVersion();
 
+    int findPidVid(std::string purpose, std::string version, int& pid, int& vid);
     int testUrl();
 
     int prettyTable(std::string title, std::string csv);

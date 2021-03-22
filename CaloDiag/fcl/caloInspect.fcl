@@ -26,52 +26,43 @@ physics: {
   {
       FindMCPrimary : { 
         @table::CommonMC.FindMCPrimary
-        TimeOffsets : [ @sequence::DigiCompression.TimeMaps ]
       }
       
       @table::CaloReco.producers
-      @table::CaloDigiMC.producersMC
+      @table::CaloMC.TruthProducers
       @table::CaloCluster.producers
-      @table::CaloClusterMC.producersMC	
-      @table::TrkHitReco.producers
-      @table::Tracking.producers
+      @table::CaloClusterMC.producers	
   }
   
   analyzers : 
   {
       CaloExample: {
           module_type                : CaloExample
-          doGenerated                : true
-          g4ModuleLabel              : compressDigiMCs
-          generatorModuleLabel       : compressDigiMCs
-          simParticleTag             : compressDigiMCs
-          caloCrystalModuleLabel     : CaloHitMaker
-          caloClusterModuleLabel     : CaloClusterMaker
-          caloClusterTruthModuleLabel: CaloClusterTruthMatch
-          caloHitTruthModuleLabel    : CaloDigiTruthMatch
-          virtualDetectorName        : virtualdetector
-          stepPointMCLabel           : compressDigiMCs
-	  TimeOffsets                : { inputs : [ "compressDigiMCs:protonTimeMap", "compressDigiMCs:muonTimeMap" ] } 
+          generatorCollection        : compressDigiMCs
+          vdCollection               : "compressDigiMCs:virtualdetector"
+          caloHitCollection          : CaloHitMaker
+          caloClusterCollection      : CaloClusterMaker
+          caloHitTruth               : CaloHitTruthMatch
+          caloClusterTruth           : CaloClusterTruthMatch
+	  timeOffsets                : { inputs : [ "compressDigiMCs:protonTimeMap", "compressDigiMCs:muonTimeMap" ] }
+          addGenerator               : true
       }
 
       CaloMCInspector: {
           module_type               : CaloMCInspector
           caloCrystalModuleLabel    : CaloHitMaker
           caloShowerSimModuleLabel  : compressDigiMCs # CaloShowerStepROFromShowerStep
-          caloDigiTruthModuleLabel  : CaloDigiTruthMatch
+          caloDigiTruthModuleLabel  : CaloHitTruthMatch
       }
   }
   
-  p1: [ 
-        FindMCPrimary,
+  p1: [ FindMCPrimary,
         @sequence::CaloReco.Reco,
-        @sequence::CaloDigiMC.TruthMatch,	 	  
 	@sequence::CaloCluster.Reco,
-        @sequence::CaloClusterMC.TruthMatch
+        @sequence::CaloMC.TruthMatch	 	  
       ]
 
   e1: [CaloExample,CaloMCInspector]
-  #e1: []
    
 
   trigger_paths: [p1]
@@ -84,4 +75,4 @@ physics: {
 services.SeedService.baseSeed         :  99
 services.SeedService.maxUniqueEngines :  20
 
-physics.producers.CaloDigiTruthMatch.caloShowerSimCollection  : "compressDigiMCs"
+physics.producers.CaloHitTruthMatch.caloShowerSimCollection  : "compressDigiMCs"

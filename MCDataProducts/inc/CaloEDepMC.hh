@@ -16,7 +16,6 @@ namespace mu2e {
           CaloEDepMC(const art::Ptr<SimParticle>& sim, float eDep, float eDepG4, float time, float mom, const MCRelationship& rel) : 
              sim_(sim),eDep_(eDep),eDepG4_(eDepG4),time_(time),momentumIn_(mom),rel_(rel)
           {};
-                    
           
           const art::Ptr<SimParticle>&   sim        ()  const  {return sim_;}
           const MCRelationship&          rel        ()  const  {return rel_;}

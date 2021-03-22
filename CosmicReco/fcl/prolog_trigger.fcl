@@ -1,6 +1,7 @@
 # -*- mode: tcl -*-
 #------------------------------------------------------------------------------
 #------------------------------------------------------------------------------
+#include "CosmicReco/fcl/prolog.fcl"
 
 BEGIN_PROLOG
 
@@ -23,14 +24,18 @@ CstSimpleTimeCluster     : {
 }
 
 
-
-
-
 CstTrigger : { 
     
     producers : {
     	CstTimeClusterFinder : @local::CstTimeClusterFinder
 	CstSimpleTimeCluster : @local::CstSimpleTimeCluster
+
+	CstCosmicTrackFinder :{ @table::CosmicTracking.producers.CosmicTrackFinder
+	    ComboHitCollection     : "TTmakePH"
+	    TimeClusterCollection  : "CstSimpleTimeCluster"
+
+	}
+
     }
 
     filters   : {
@@ -95,35 +100,35 @@ CstTrigger : {
 	#From Filter, only by hits currently: 
 	cstSeedTSFilter : {
 	    module_type            : CosmicSeedFilter
-	    minnsh                 : 8	      
-	    minnch 		   : 8	      
-	    debugLevel             : 0	      
-	    triggerPath            : "cstSeed"	
-	    triggerFlag 	   : ["Track"]     
+	    CosmicTrackSeedCollection  : "CstCosmicTrackFinder"
+	    cosmicseedFitFlag          : ["HelixOK","HelixConverged"]
+	    minnsh                     : 8	      
+	    debugLevel                 : 0	      
+	    triggerPath                : "cstSeed"	
 	}
     }
 
     sequences   : {
 	
-	cstSeed        : [ cstSeedEventPrescale,
+	cstSeed        : [ cstSeedEventPrescale, @sequence::CaloClusterTrigger.Reco, 
 			   @sequence::TrkHitRecoTrigger.sequences.TTmakefastHits,
 			   cstSeedSDCountFilter, 
 			   CstSimpleTimeCluster, cstSeedTCFilter,
-			   CosmicTrackFinder,
+			   CstCosmicTrackFinder,
 			   cstSeedTSFilter ]
 	
-	cstSeedTiming0 : [ cstSeedEventPrescale,
+	cstSeedTiming0 : [ cstSeedEventPrescale, @sequence::CaloClusterTrigger.Reco, 
 			   @sequence::TrkHitRecoTrigger.sequences.TTmakefastHits,
 			   cstSeedSDCountFilter, 
 			   CstSimpleTimeCluster, cstSeedTCFilter,
-			   CosmicTrackFinder ]
+			   CstCosmicTrackFinder ]
 
-	cstSeedTiming1 : [ cstSeedEventPrescale,
+	cstSeedTiming1 : [ cstSeedEventPrescale, @sequence::CaloClusterTrigger.Reco, 
 			   @sequence::TrkHitRecoTrigger.sequences.TTmakefastHits,
 			   cstSeedSDCountFilter, 
 			   CstSimpleTimeCluster ]
 	
-	cstTimeCluster : [ cstTimeClusterEventPrescale, 
+	cstTimeCluster : [ cstTimeClusterEventPrescale, @sequence::CaloClusterTrigger.Reco, 
 			   @sequence::TrkHitRecoTrigger.sequences.TTprepareHits,
 			   cstTimeClusterSDCountFilter, 
 			   CstSimpleTimeCluster, cstTimeClusterTCFilter ]

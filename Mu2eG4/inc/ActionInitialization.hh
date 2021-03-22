@@ -45,8 +45,7 @@ namespace mu2e {
                          SensitiveDetectorHelper* sensitive_detectorhelper,
                          Mu2eG4PerThreadStorage* per_thread_storage,
                          PhysicalVolumeHelper* phys_volume_helper,
-                         CLHEP::Hep3Vector const& origin_in_world,
-                         unsigned stage_offset_for_tracking_action
+                         CLHEP::Hep3Vector const& origin_in_world
                          );
 
     virtual ~ActionInitialization();
@@ -64,13 +63,7 @@ namespace mu2e {
 
     Mu2eG4Config::Top conf_;
 
-    Mu2eG4TrajectoryControl trajectoryControl_;
     std::vector<double> timeVDtimes_;
-    Mu2eG4ResourceLimits mu2eLimits_;
-
-    std::unique_ptr<IMu2eG4Cut> stackingCuts_;
-    std::unique_ptr<IMu2eG4Cut> steppingCuts_;
-    std::unique_ptr<IMu2eG4Cut> commonCuts_;
 
     SensitiveDetectorHelper* sensitiveDetectorHelper_;
     Mu2eG4PerThreadStorage*  perThreadStorage_;
@@ -79,7 +72,6 @@ namespace mu2e {
     mutable PhysicsProcessInfo physicsProcessInfo_;
 
     CLHEP::Hep3Vector const& originInWorld_;
-    unsigned stageOffset_;
   };
 
 }  // end namespace mu2e

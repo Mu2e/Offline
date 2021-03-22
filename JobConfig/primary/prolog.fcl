@@ -1,13 +1,16 @@
 #
-# Prolog specific to creating primary (signal, signal-like or calibration) particles
+# Prolog to create primary (signal, signal-like or calibration) particles and subsequent detector steps
 #
-#include "JobConfig/beam/prolog.fcl"
+#include "Mu2eG4/fcl/prolog.fcl"
+#include "JobConfig/common/mu2eg4.fcl" 
+#include "fcl/standardServices.fcl"
 #include "EventGenerator/fcl/prolog.fcl"
-#include "CommonMC/fcl/prolog.fcl"
 #include "TrackerMC/fcl/prolog.fcl"
 #include "CaloMC/fcl/prolog.fcl"
 #include "CRVResponse/fcl/prolog.fcl"
 #include "Filters/fcl/prolog.fcl"
+#include "Compression/fcl/prolog.fcl"
+#include "JobConfig/cosmic/prolog.fcl"
 #
 BEGIN_PROLOG
 
@@ -16,59 +19,91 @@ Primary: {
     g4run : @local::mu2e.physics.producers.g4run.muons
     genCounter: { module_type: GenEventCounter }
     @table::EventGenerator.producers
-    @table::CommonMC.producers
-    @table::TrackerMC.producers
-    @table::CaloDigiMC.producers
-    @table::CrvDAQPackage.producers
-# dedicated digi maker for filter
-# 2 stages now
-    makeSGS : {
-      module_type : MakeStrawGasSteps
-      KeepDeltasModule : "g4run" # don'e compress deltas on primary particles
+    @table::TrackerMC.StepProducers
+    @table::CaloMC.StepProducers
+    CrvSteps : @local::CrvSteps
+
+    compressDetStepMCs : {
+      module_type : CompressDetStepMCs
+      strawGasStepTag : "StrawGasStepMaker"
+      caloShowerStepTag : "CaloShowerStepMaker"
+      crvStepTag : "CrvSteps"
+      simParticleTag : "g4run"
+      stepPointMCTags : [ "g4run:virtualdetector", "g4run:protonabsorber", "g4run:stoppingtarget" ]
+      mcTrajectoryTag : "g4run"
+      debugLevel : 0
+      compressionOptions : @local::DetStepCompression.standardCompression
     }
-    makeSD:{
-      @table::makeSD
+    # the following should be reconfigured to run after step compression once that is working
+    FindMCPrimary : {
+      module_type : FindMCPrimary
+      SinglePrimary : true
+      GenParticles : "compressDetStepMCs"
+      SimParticles : "compressDetStepMCs"
+      PrimaryGenIds : [] # this is intentionally empty: there should only be 1 GenParticle in primary production
     }
-    compressDigiMCs : @local::DigiCompression.Primary
   }
+
   filters : {
-# generator truncation filter; only needed for cosmic rays in principle
-    g4status: {
-      module_type: FilterStatusG4
-      input: "g4run"
-    }
-# digi filtering for Primary selection.
-    DigiFilter : {
-      module_type : StrawDigiMCFilter
-      StrawDigiMCCollection : "makeSD"
-    }
-# shower filter for calorimeter selection
-    CaloFilter : {
-      module_type : CaloShowerSimFilter
+# needed for cosmic rays
+    g4status: @local::Cosmic.g4status
+    stepPointMomentumFilter : @local::Cosmic.stepPointMomentumFilter
+    cosmicFilter : @local::Cosmic.cosmicFilter
+
+# default step filter for Sim Primary selection
+    DetStepFilter : {
+      module_type : DetectorStepFilter
+      StrawGasSteps : [ "StrawGasStepMaker" ] 
+      CaloShowerSteps : [ "CaloShowerStepMaker" ]
+      CrvSteps : [ ]
+      MinimumTrkStepEnergy : 1.0e-6 # 1 ev
+      MinimumCaloStepEnergy : 0.0
+      MinimumCrvStepEnergy : 1.0e-6 # get a real value from CRV experts FIXME!
+      MinimumPartMom : 80.0 # MeV/c
+      MaximumPartMom : 1e6 # MeV/c
+      KeepPDG : [-11, 11, -13, 13, -211, 211 ] # electrons and muons and pions: values should be defined in a common config file FIXME
+      MinimumTrkSteps : 10
+      MinimumSumCaloStepE : 50.0
     }
   }
+  TriggerSequence : [ genCounter, g4run, g4status,
+    @sequence::TrackerMC.StepSim,
+    @sequence::CaloMC.StepSim,
+    CrvSteps,
+    DetStepFilter, compressDetStepMCs, FindMCPrimary ]
+
+  KeptProducts : [ 
+		       "keep mu2e::StrawGasSteps_compressDetStepMCs_*_*",
+		       "keep mu2e::CaloShowerSteps_compressDetStepMCs_*_*",
+		       "keep mu2e::CrvSteps_compressDetStepMCs_*_*",
+		       "keep mu2e::StepPointMCs_compressDetStepMCs_virtualdetector_*",
+		       "keep mu2e::StepPointMCs_compressDetStepMCs_protonabsorber_*",
+		       "keep mu2e::StepPointMCs_compressDetStepMCs_stoppingtarget_*",
+		       "keep mu2e::StatusG4_*_*_*",
+		       "keep mu2e::SimParticlemv_compressDetStepMCs_*_*",
+		       "keep mu2e::SimParticleart::Ptrmu2e::MCTrajectorystd::map_compressDetStepMCs_*_*",
+		       "keep mu2e::GenParticles_compressDetStepMCs_*_*",
+		       "keep mu2e::PrimaryParticle_*_*_*",
+                       "keep mu2e::CosmicLivetime_*_*_*",
+		       "keep art::TriggerResults_*_*_*",
+		       "keep mu2e::GenEventCount_*_*_*" ]
+
   analyzers: {
     genCountLogger: { module_type: GenEventCountReader makeHistograms: false }
-    digiCompressionCheck : @local::DigiCompression.Check
   }
-  GenAndG4 :  [ generate, genCounter, g4run, g4status ]
 
- EndPath : [ genCountLogger, digiCompressionCheck, Output ]
   Output : {
      module_type : RootOutput
      SelectEvents : [ TriggerPath ]
      fileName    : @nil
-     # drop StepPoints from calorimeter
-     outputCommands : @local::DigiCompression.OutputCommands
-  }
-}
-# must define this outside the brackets due to internal dependence
-Primary.TriggerPath : [ @sequence::Primary.GenAndG4,
-  @sequence::CommonMC.DigiSim,
-  @sequence::TrackerMC.StepAndDigiSim,
-  DigiFilter,
-  @sequence::CaloDigiMC.DigiSim,
-  @sequence::CrvDAQPackage.CrvResponseSequence,
-  compressDigiMCs ]
 
+     # drop StepPoints from calorimeter
+  }
+  EndSequence : [ genCountLogger ]
+# define paths
+}
+Primary.EndPath : [ @sequence::Primary.EndSequence, Output ]
+Primary.Output.outputCommands : [ "drop *_*_*_*",
+		       @sequence::Primary.KeptProducts]
+Primary.TriggerPath : [ generate, @sequence::Primary.TriggerSequence ]
 END_PROLOG

@@ -11,7 +11,7 @@ int mu2e::ValStrawDigiMC::declare(art::TFileDirectory tfs) {
   _henerT = tfs.make<TH1D>( "enerT", "trigger energy",50, -1.0e-6, 0.01);
   _hcross = tfs.make<TH1D>( "cross", "cross talk flag",2, -0.5, 1.5);
   _hgStep = tfs.make<TH1D>( "gStep", "N good step pointers",3, -0.5, 2.5);
-  _hSI = tfs.make<TH1D>( "Straw", "Straw Index",100, -0.5, 40960.0);
+  _hSI = tfs.make<TH1D>( "Straw", "Straw Index",100, -0.5, StrawId::_maxval);
 
   return 0;
 }
@@ -21,7 +21,7 @@ int mu2e::ValStrawDigiMC::fill(const mu2e::StrawDigiMCCollection & coll,
 
   // increment this by 1 any time the defnitions of the histograms or the 
   // histogram contents change, and will not match previous versions
-  _hVer->Fill(2.0);
+  _hVer->Fill(3.0);
 
   _hN->Fill(coll.size()); 
   _hN2->Fill(coll.size()); 
@@ -49,7 +49,7 @@ int mu2e::ValStrawDigiMC::fill(const mu2e::StrawDigiMCCollection & coll,
       _henerT->Fill(sd.triggerEnergySum(StrawEnd::hv));
       if(sd.isCrossTalk(StrawEnd::cal)) _hcross->Fill(0.0);
       if(sd.isCrossTalk(StrawEnd::hv) ) _hcross->Fill(1.0);
-      _hSI->Fill(sd.strawId().asUint16()); // <40960
+      _hSI->Fill(sd.strawId().asUint16()); 
     }
   }
   return 0;

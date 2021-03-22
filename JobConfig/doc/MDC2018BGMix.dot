@@ -1,0 +1,85 @@
+/* A draft flowchart showing principal MDC2018 mixing jobs and datasets.
+ * To compile:
+ *
+ *     dot -Tpdf BGMixJobflow.dot -o BGMixJobflow.pdf
+ *
+ * Adapted from the CD3 version of Gaponenko by DNB 4/17/2018 for MDC2018
+ */
+
+digraph cd3beam {
+	/* size="14,11"; */
+	label = "MDC2018 Background Frame Production";
+	fontname="Helvetica";
+	fontsize="32";
+	labelloc = t;
+	subgraph clusterLegend {
+		 rankdir="TB";
+		 color="red";
+	         label="Legend";
+		 "Processing Job" [shape="box",color=blue];
+		 "CD3 art dataset" [shape="octagon"];
+		 "MDC2018 art dataset";
+		 "MDC2018 ntuple dataset" [shape=hexagon];
+		 "Processing Job" -> "CD3 art dataset" -> "MDC2018 art dataset" -> "MDC2018 ntuple dataset" [style="invis"];
+	}
+
+	"g4s1-dsregion" [shape=octagon, label="sim.mu2e.cd3-beam-cs1-dsregion.0506a.art"];
+	"g4s1-mubeam" [shape=octagon, label="sim.mu2e.cd3-beam-cs1-mubeam.0506a.art"];
+	"g4s2-mubeam" [shape=octagon, label="sim.mu2e.cd3-beam-g4s2-mubeam.0728a.art"];
+
+	"PS-CRV scoring" [shape=box,color=blue, label="PS-CRV.fcl"];
+	"g4s1-dsregion" -> "PS-CRV scoring";
+/*	"PS-CRV scoring" -> "PS-CRV" [label="1.1e-4"]; */
+	"PS-CRV scoring" -> "PS-CRV";
+
+        
+        "TS-CRV scoring" [shape=box,color=blue, label="TS-CRV.fcl"];
+        "g4s1-mubeam" -> "TS-CRV scoring";
+/*	"TS-CRV scoring" -> "TS-CRV" [label="2.1e-6"]; */
+	"TS-CRV scoring" -> "TS-CRV";
+	
+	"DS.fcl" [shape=box,color=blue];
+        "g4s2-mubeam" -> "DS.fcl";
+	"DS.fcl" -> "DS-CRV";
+	"DS-TGTstops";
+	"DS.fcl" -> "DS-TGTstops";
+	"DS-OOTstops";
+	"DS.fcl" -> "DS-OOTstops";
+
+	"TGTstops.fcl" [shape=box,color=blue];
+	"DS-TGTstops.root" [shape=hexagon];
+	"DS-TGTstops" -> "TGTstops.fcl";
+	"TGTstops.fcl" -> "DS-TGTstops.root";
+	"OOTstops.fcl" [shape=box,color=blue];
+	"DS-OOTstops.root" [shape=hexagon];
+	"DS-OOTstops" -> "OOTstops.fcl";
+	"OOTstops.fcl" -> "DS-OOTstops.root";
+
+	"X.fcl, X=proton,..." [shape=box,peripheries=3,color=blue];
+	"oot.fcl" [shape=box,color=blue];
+	"DS-TGTstops.root" -> "X.fcl, X=proton,...";
+	"DS-OOTstops.root" -> "oot.fcl";
+	"X.fcl, X=proton,..." -> "Det MuDau" [label="Det filter"];
+	"oot.fcl" -> "Det MuDau" [label="Det filter"];
+	"Det MuDau" [shape=ellipse,peripheries=3];
+	"X.fcl, X=proton,..." -> "CRV MuDau" [label="CRV filter"];
+	"oot.fcl" -> "CRV MuDau" [label="CRV filter"];
+	"CRV MuDau" [shape=ellipse,peripheries=3];
+
+	"DS-flash.fcl" [shape=box,peripheries=1,color=blue];
+        "g4s2-mubeam" -> "DS-flash.fcl";
+	"DS-flash.fcl" -> "DS-flash-TrkCal";
+	"DS-flash-cut.fcl" [shape=box,peripheries=1,color=blue];
+	"DS-flash-TrkCal" -> "DS-flash-cut.fcl";
+	"DS-flash-cut.fcl" -> "DS-flash-TrkCal-cut";
+
+	"CeEndpointMix.fcl" [shape=box,color=blue];
+	"DS-flash-TrkCal-cut" -> "CeEndpointMix.fcl";
+	"Det MuDau" -> "CeEndpointMix.fcl";
+	"PS-CRV" -> "CeEndpointMix.fcl";
+	"DS-CRV" -> "CeEndpointMix.fcl";
+	"CRV MuDau" -> "CeEndpointMix.fcl";
+	"TS-CRV" -> "CeEndpointMix.fcl";
+	"CeEndpointMix.fcl" -> "CeEndpoint-mix";
+
+}

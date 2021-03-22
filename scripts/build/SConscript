@@ -1,0 +1,34 @@
+#!/usr/bin/env python
+#
+#
+import os
+Import('env')
+
+# make a copy of env with the full build environmentals so it can run exe's
+exe_env = env.Clone()
+exe_env.Append(ENV=os.environ)
+
+# if building in Muse, default dir will be above Offline
+command="scripts/build/bin/procs.sh "
+if 'MUSE_WORK_DIR' in env:
+    command = "Offline/"+command
+
+# each of these generates a useful file or runs a test
+targets = ["DEPS","GDML","ROVERLAPS","TEST03","GITPACK","RMSO","VAL0"]
+
+for target in targets:
+    exe_env.AlwaysBuild(exe_env.Alias(target, [], 
+                                      command+target))
+
+# the RELEASE target runs all the above generators and tests
+
+exe_env.AlwaysBuild(env.Alias('RELEASE', [], '#echo completed release targets'))
+Depends('RELEASE', targets)
+
+
+# This tells emacs to view this file in python mode.
+# Local Variables:
+# mode:python
+# End:
+# vi:syntax=python
+

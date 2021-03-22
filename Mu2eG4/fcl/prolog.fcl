@@ -147,7 +147,10 @@ mu2eg4runDefaultSingleStage: {
     Mu2eG4SteppingOnlyCut : @local::mu2eg4NoCut
     Mu2eG4CommonCut       : @local::mu2eg4NoCut
 
-    generatorModuleLabel  : generate
+    inputs: {
+      primaryType: GenParticles
+      primaryTag:  generate
+    }
 
     SDConfig : {
         verbosityLevel : 0

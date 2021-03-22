@@ -28,23 +28,23 @@ namespace mu2e
     struct Config{
       using Name=fhicl::Name;
       using Comment=fhicl::Comment;
-      fhicl::Atom<art::InputTag> cosmictag{Name("CosmicTrackSeedCollection"),Comment("track collection"),"KSFDeM"};
+      fhicl::Atom<art::InputTag>   cosmictag {Name("CosmicTrackSeedCollection"),Comment("track collection")};
       fhicl::Sequence<std::string> goodcosmic{Name("cosmicseedFitFlag"),Comment("Required flags"),vector<string>{"HelixOK","HelixConverged"}};
-      fhicl::Atom<int> minnsh {Name("minnsh"), Comment("minimum number of straw hits "),8};
-      fhicl::Atom<std::string> trigpath {Name("triggerPath"), Comment("Trigger path")};
-      fhicl::Atom<int> debug{Name("debugLevel"), Comment("set to 1 for debug prints"),0};
+      fhicl::Atom<int>             minnsh    {Name("minnsh"), Comment("minimum number of straw hits ")};
+      fhicl::Atom<std::string>     trigpath  {Name("triggerPath"), Comment("Trigger path")};
+      fhicl::Atom<int>             debug     {Name("debugLevel"), Comment("set to 1 for debug prints")};
     };
     typedef art::EDFilter::Table<Config> Parameters;
     explicit CosmicSeedFilter(const Parameters& conf);
 
     virtual bool filter(art::Event& event) override;
-    virtual bool endRun( art::Run& run ) override;
+    virtual bool endRun( art::Run& run )   override;
 
   private:
 
     art::InputTag   _cosmicTag;
     TrkFitFlag      _goodcosmic; 
-    unsigned int _minnsh;
+    unsigned int    _minnsh;
     std::string     _trigPath;
     int             _debug;
     unsigned        _nevt, _npass;

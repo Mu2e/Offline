@@ -1,3 +1,4 @@
+#include "TrkHitReco/fcl/prolog.fcl"
 BEGIN_PROLOG
 # Normal reco seqence module: this produces a hit for every digi, and uses
 # flags to keep track of which hits to use
@@ -33,6 +34,7 @@ TTmakeSHUCC : {
     WriteStrawHitCollection : false
     ProtonBunchTimeTag      : "EWMProducer"
     StrawDigiCollectionTag  : "makeSD"
+    StrawDigiADCWaveformCollectionTag : "makeSD"
     CaloClusterCollectionTag  : "CaloClusterFast"
 }
 # combine hits in a panel

@@ -27,11 +27,7 @@ namespace mu2e {
       void DrawHitCollection(const std::string &pstr, size_t i, std::vector<CLHEP::Hep3Vector> HitPos, int energylevel, TEveElementList *list); 
       XYZVec const GetPosition() { return fComboHit.pos();}
       double GetEnergy(){ return fComboHit.energyDep();}
-      inline std::string DataTitle(const std::string &pstr, int n){
-        std::string dstr=" hit#" + std::to_string(n) + "\nLayer: ";
-        std::string strlab=pstr+dstr;
-        return (strlab);
-      }
+      std::string DataTitle(const std::string &pstr, int n);
       #endif
       ClassDef(TEveMu2eHit, 0);
     };

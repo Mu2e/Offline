@@ -1,0 +1,13 @@
+// Re-sample cosmic dsstops particles from stage-1
+// Yuri Oksuzian, 2020
+
+#include "JobConfig/cosmic/S2Resampler.fcl"
+physics.filters.filterS1.cutEDepMin: 16
+physics.filters.filterS1: {
+         module_type: FilterCosmicsStage1
+         inputs : [ "dsResample:CRV" ]
+         cutEDepMin: 16  // Filter events that deposit lower than 16 MeV in CRV
+}
+physics.TriggerPath: [dsResample, filterS1, @sequence::Primary.TriggerSequence]
+physics.filters.DetStepFilter.MaximumPartMom: 500
+outputs.Output.fileName        : "dts.owner.CosmicHigh.version.sequencer.art"

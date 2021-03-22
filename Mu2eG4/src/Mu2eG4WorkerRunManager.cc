@@ -25,7 +25,6 @@
 #include "Mu2eG4/inc/TrackingAction.hh"
 #include "Mu2eG4/inc/Mu2eG4RunAction.hh"
 #include "Mu2eG4/inc/Mu2eG4EventAction.hh"
-#include "Mu2eG4/inc/Mu2eG4MultiStageParameters.hh"
 #include "Mu2eG4/inc/ExtMonFNALPixelSD.hh"
 
 //G4 includes
@@ -56,13 +55,13 @@ namespace {
   int get_new_thread_index() { return thread_counter++; }
   thread_local int s_thread_index = get_new_thread_index();
   int getThreadIndex() { return s_thread_index; }
-  
-  
+
+
   string CryptoPP_Hash(const string msg){
-    
+
     CryptoPP::SHA3_224 hash;
     string digest, str_hex;
-    
+
     //digest is 56 hex numbers, or 28 pairs of hex numbers = 28 bytes
     //compute the digest and keep 8 bytes of it
     CryptoPP::StringSource(msg, true, new CryptoPP::HashFilter(hash, new CryptoPP::StringSink(digest), false, 8));
@@ -70,7 +69,7 @@ namespace {
     CryptoPP::StringSource(digest, true, new CryptoPP::Redirector(encoder_out));
     return str_hex;
   }
-  
+
 }
 
 namespace mu2e {
@@ -78,7 +77,7 @@ namespace mu2e {
 
   // If the c'tor is called a second time, the c'tor of base will
   // generate an exception.
-  Mu2eG4WorkerRunManager::Mu2eG4WorkerRunManager(const Mu2eG4Config::Top& conf, thread::id worker_ID):
+  Mu2eG4WorkerRunManager::Mu2eG4WorkerRunManager(const Mu2eG4Config::Top& conf, const Mu2eG4IOConfigHelper& ioconf, thread::id worker_ID):
     G4WorkerRunManager(),
     conf_(conf),
     m_managerInitialized(false),
@@ -86,21 +85,13 @@ namespace mu2e {
     m_mtDebugOutput(conf.debug().mtDebugOutput()),
     rmvlevel_(conf.debug().diagLevel()),
     salt_(conf.salt()),
-    perThreadObjects_(make_unique<Mu2eG4PerThreadStorage>()),
+    perThreadObjects_(make_unique<Mu2eG4PerThreadStorage>(ioconf)),
     masterRM(nullptr),
     workerID_(worker_ID),
-    mu2elimits_(conf.ResourceLimits()),
-    trajectoryControl_(conf.TrajectoryControl()),
-    multiStagePars_(conf),
-
     physicsProcessInfo_(),
     sensitiveDetectorHelper_(conf.SDConfig()),
-    extMonFNALPixelSD_(),
-    stackingCuts_(createMu2eG4Cuts(conf.Mu2eG4StackingOnlyCut.get<fhicl::ParameterSet>(), mu2elimits_)),
-    steppingCuts_(createMu2eG4Cuts(conf.Mu2eG4SteppingOnlyCut.get<fhicl::ParameterSet>(), mu2elimits_)),
-    commonCuts_(createMu2eG4Cuts(conf.Mu2eG4CommonCut.get<fhicl::ParameterSet>(), mu2elimits_))
+    extMonFNALPixelSD_()
   {
-
     if (m_mtDebugOutput > 0) {
       G4cout << "WorkerRM on thread " << workerID_ << " is being created\n!";
     }
@@ -108,7 +99,7 @@ namespace mu2e {
 
   // Destructor of base is called automatically.  No need to do anything.
   Mu2eG4WorkerRunManager::~Mu2eG4WorkerRunManager(){
-    
+
     if (m_mtDebugOutput > 0) {
       G4cout << "WorkerRM on thread " << workerID_ << " is being destroyed\n!";
     }
@@ -180,20 +171,18 @@ namespace mu2e {
 
     steppingAction_ = new Mu2eG4SteppingAction(conf_.debug(),
                                                conf_.SDConfig().TimeVD().times(),
-                                               *steppingCuts_.get(),
-                                               *commonCuts_.get(),
-                                               trajectoryControl_,
-                                               mu2elimits_);
+                                               *perThreadObjects_->steppingCuts,
+                                               *perThreadObjects_->commonCuts,
+                                               perThreadObjects_->ioconf.trajectoryControl(),
+                                               perThreadObjects_->ioconf.mu2elimits());
     SetUserAction(steppingAction_);
 
-    SetUserAction( new Mu2eG4StackingAction(*stackingCuts_.get(),
-                                            *commonCuts_.get()) );
+    SetUserAction( new Mu2eG4StackingAction(*perThreadObjects_->stackingCuts,
+                                            *perThreadObjects_->commonCuts) );
 
     trackingAction_ = new TrackingAction(conf_,
                                          steppingAction_,
-                                         multiStagePars_.simParticleNumberOffset(),
-                                         trajectoryControl_,
-                                         mu2elimits_);
+                                         perThreadObjects_.get());
     SetUserAction(trackingAction_);
 
     SetUserAction( new Mu2eG4RunAction(conf_.debug(),
@@ -208,20 +197,17 @@ namespace mu2e {
                                          trackingAction_,
                                          steppingAction_,
                                          &sensitiveDetectorHelper_,
-                                         *stackingCuts_.get(),
-                                         *steppingCuts_.get(),
-                                         *commonCuts_.get(),
                                          perThreadObjects_.get(),
                                          &physicsProcessInfo_,
                                          origin_in_world) );
 
   }
 
-  
+
   void Mu2eG4WorkerRunManager::initializeRun(art::Event* const art_event){
 
     perThreadObjects_->currentRunNumber = art_event->id().run();
-      
+
     ConstructScoringWorlds();
 
     //following taken from G4WorkerRunManager::RunInitialization()
@@ -272,7 +258,7 @@ namespace mu2e {
     runAborted = false;
     numberOfEventProcessed = 0;
     m_managerInitialized = true;
-    
+
   }
 
 
@@ -281,58 +267,58 @@ namespace mu2e {
     numberOfEventToBeProcessed = 1;
     runIsSeeded = false;
     eventLoopOnGoing = true;
-    
+
     //below code is from ProcessOneEvent(i_event);
     currentEvent = generateEvt(evtID);
-    
+
     if(eventLoopOnGoing) {
       eventManager->ProcessOneEvent(currentEvent);
       AnalyzeEvent(currentEvent);
       UpdateScoring();
     }
   }
-  
-  
+
+
   G4Event* Mu2eG4WorkerRunManager::generateEvt(const art::EventID& evtID){
-    
+
     G4Event* anEvent = new G4Event(evtID.event());
     G4bool eventHasToBeSeeded = true;
-    
+
     eventLoopOnGoing = masterRM->SetUpEvent();
     runIsSeeded = true;
-    
+
     if(!eventLoopOnGoing)
-    {
-      delete anEvent;
-      return 0;
-    }
-    
-    if(eventHasToBeSeeded)
-    {
-      string msg = "r" + to_string(evtID.run()) + "s" + to_string(evtID.subRun()) + "e" + to_string(evtID.event()) + salt_;
-      string hash_out = CryptoPP_Hash(msg);
-      vector<string> randnumstrings = {hash_out.substr(0,8), hash_out.substr(8,8)};
- 
-      long rn1 = stol(randnumstrings[0],nullptr,16);
-      long rn2 = stol(randnumstrings[1],nullptr,16);
-      long seeds[3] = { rn1, rn2, 0 };
-      G4Random::setTheSeeds(seeds,-1);
-      runIsSeeded = true;
-      
-      if(m_mtDebugOutput > 1) {
-        G4cout << "--> Event " << anEvent->GetEventID() << " starts with initial seeds ("
-               << rn1 << "," << rn2 << ")." << G4endl;
+      {
+        delete anEvent;
+        return 0;
       }
-      
-    }
-    
+
+    if(eventHasToBeSeeded)
+      {
+        string msg = "r" + to_string(evtID.run()) + "s" + to_string(evtID.subRun()) + "e" + to_string(evtID.event()) + salt_;
+        string hash_out = CryptoPP_Hash(msg);
+        vector<string> randnumstrings = {hash_out.substr(0,8), hash_out.substr(8,8)};
+
+        long rn1 = stol(randnumstrings[0],nullptr,16);
+        long rn2 = stol(randnumstrings[1],nullptr,16);
+        long seeds[3] = { rn1, rn2, 0 };
+        G4Random::setTheSeeds(seeds,-1);
+        runIsSeeded = true;
+
+        if(m_mtDebugOutput > 1) {
+          G4cout << "--> Event " << anEvent->GetEventID() << " starts with initial seeds ("
+                 << rn1 << "," << rn2 << ")." << G4endl;
+        }
+
+      }
+
     //This is the filename base constructed from run and event
     const auto filename = [&] {
       ostringstream os;
       os << "run" << currentRun->GetRunID() << "evt" << anEvent->GetEventID();
       return os.str();
     };
-    
+
     G4bool RNGstatusReadFromFile = false;
     if ( readStatusFromFile ) {
       //Build full path of RNG status file for this event
@@ -345,15 +331,15 @@ namespace mu2e {
         G4Random::restoreEngineStatus(randomStatusFile.c_str());
       }
     }
-    
-    
+
+
     if(storeRandomNumberStatusToG4Event==1 || storeRandomNumberStatusToG4Event==3) {
       ostringstream oss;
       G4Random::saveFullState(oss);
       randomNumberStatusForThisEvent = oss.str();
       anEvent->SetRandomNumberStatus(randomNumberStatusForThisEvent);
     }
-    
+
     if(storeRandomNumberStatus && ! RNGstatusReadFromFile ) { //If reading from file, avoid to rewrite the same
       G4String fileN = "currentEvent";
       if ( rngStatusEventsFlag ) {
@@ -361,10 +347,10 @@ namespace mu2e {
       }
       StoreRNGStatus(fileN);
     }
-  
+
     userPrimaryGeneratorAction->GeneratePrimaries(anEvent);
     return anEvent;
-    
+
   }
 
 } // end namespace mu2e

@@ -140,29 +140,28 @@ class mu2e_helper:
     #   Make the dictionary and rootmap plugins.
     #
     def make_dict_and_map( self, userlibs=[], pf_dict=[] ):
-        if os.path.exists('classes.h') and os.path.exists('classes_def.xml'):
-            sources = ["classes.h","classes_def.xml"]
-            targets = ["#/"+self.dict_file(),
-                       "#/"+self.rootmap_file(),
-                       "#/"+self.pcm_file() ]
+        sources = ["classes.h","classes_def.xml"]
+        targets = ["#/"+self.dict_file(),
+                   "#/"+self.rootmap_file(),
+                   "#/"+self.pcm_file() ]
+        dflag = ""
+        if self.env["BUILD"] == "debug":
             dflag = ""
-            if self.env["BUILD"] == "debug":
-                dflag = ""
-            else:
-                dflag = "-DNDEBUG"
-            self.env.DictionarySource( targets, sources ,
-                                       LIBTEXT=self.dict_lib_file(),
-                                       DEBUG_FLAG=dflag)
-            # if classdef is used, do not make the dictionary into its own lib,
-            # it will be put in the mainlib
-            if self.classdef :
-                return
-            # make lib for the dictionary
-            self.env.SharedLibrary( "#/"+self.dict_lib_file(),
-                                    "#/"+self.dict_file(),
-                                    LIBS=[ userlibs ],
-                                    parse_flags=pf_dict
-                                    )
+        else:
+            dflag = "-DNDEBUG"
+        self.env.DictionarySource( targets, sources ,
+                                   LIBTEXT=self.dict_lib_file(),
+                                   DEBUG_FLAG=dflag)
+        # if classdef is used, do not make the dictionary into its own lib,
+        # it will be put in the mainlib
+        if self.classdef :
+            return
+        # make lib for the dictionary
+        self.env.SharedLibrary( "#/"+self.dict_lib_file(),
+                                "#/"+self.dict_file(),
+                                LIBS=[ userlibs ],
+                                parse_flags=pf_dict
+                                )
     #
     #   Make a bin based on binname_main.cc -> binname
     #
@@ -186,3 +185,4 @@ class mu2e_helper:
         for t in target :
             topTargets.append("#/"+t)
         self.env.GenericBuild( topTargets, topSources, COMMAND=command)
+

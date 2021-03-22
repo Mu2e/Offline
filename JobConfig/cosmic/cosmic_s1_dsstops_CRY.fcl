@@ -1,4 +1,0 @@
-#include "JobConfig/cosmic/cosmic_s1_dsstops.fcl"
-
-physics.producers.generate.inputFile    : "EventGenerator/defaultConfigs/defaultCRYconfig.txt"
-physics.producers.generate.module_type  : CRYEventGenerator

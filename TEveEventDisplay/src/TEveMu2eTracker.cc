@@ -11,7 +11,6 @@ namespace mu2e{
       GeomHandle<Tracker> trkr;
 
       TubsParams envelope(trkr->g4Tracker()->getInnerTrackerEnvelopeParams());
-
       TGeoMaterial *mat = new TGeoMaterial("Mylar", 12,6,1.4);
       TGeoMedium *My = new TGeoMedium("Mylar",2, mat);
 
@@ -24,7 +23,6 @@ namespace mu2e{
       orthodet->AddElement(tr);
         
       // ... Create tracker using the composite shape defined above
-      CLHEP::Hep3Vector trackerCenterGDML = GetGDMLTrackerCenter();
       CLHEP::Hep3Vector trackerCentrMu2e = GetTrackerCenter();
       TGeoShape *gs = new TGeoTube("Straw Tracker",rmin,rmax,dz); 
       TGeoVolume *tracker = new TGeoVolume("straw Tracker ",gs, My);

@@ -31,27 +31,19 @@ namespace mu2e {
                                              SensitiveDetectorHelper* sensitive_detectorhelper,
                                              Mu2eG4PerThreadStorage* per_thread_storage,
                                              PhysicalVolumeHelper* phys_volume_helper,
-                                             CLHEP::Hep3Vector const& origin_in_world,
-                                             unsigned stage_offset_for_tracking_action
+                                             CLHEP::Hep3Vector const& origin_in_world
                                              )
   :
   G4VUserActionInitialization(),
     conf_(conf),
-    trajectoryControl_(conf.TrajectoryControl()),
     timeVDtimes_(conf.SDConfig().TimeVD().times()),
-    mu2eLimits_(conf.ResourceLimits()),
-
-    stackingCuts_(createMu2eG4Cuts(conf.Mu2eG4StackingOnlyCut.get<fhicl::ParameterSet>(), mu2eLimits_)),
-    steppingCuts_(createMu2eG4Cuts(conf.Mu2eG4SteppingOnlyCut.get<fhicl::ParameterSet>(), mu2eLimits_)),
-    commonCuts_(createMu2eG4Cuts(conf.Mu2eG4CommonCut.get<fhicl::ParameterSet>(), mu2eLimits_)),
 
     sensitiveDetectorHelper_(sensitive_detectorhelper),
     perThreadStorage_(per_thread_storage),
     physVolHelper_(phys_volume_helper),
     physicsProcessInfo_(),
 
-    originInWorld_(origin_in_world),
-    stageOffset_(stage_offset_for_tracking_action)
+    originInWorld_(origin_in_world)
   {}
 
   ActionInitialization::~ActionInitialization()
@@ -65,28 +57,22 @@ namespace mu2e {
   // used for defining user action classes in sequential mode.
   void ActionInitialization::Build() const
   {
-    IMu2eG4Cut& stacking_Cuts = *stackingCuts_.get();
-    IMu2eG4Cut& stepping_Cuts = *steppingCuts_.get();
-    IMu2eG4Cut& common_Cuts = *commonCuts_.get();
-
     PrimaryGeneratorAction* genAction = new PrimaryGeneratorAction(conf_.debug(), perThreadStorage_);
     SetUserAction(genAction);
 
     Mu2eG4SteppingAction* steppingAction = new Mu2eG4SteppingAction(conf_.debug(),
                                                                     timeVDtimes_,
-                                                                    stepping_Cuts,
-                                                                    common_Cuts,
-                                                                    trajectoryControl_,
-                                                                    mu2eLimits_);
+                                                                    *perThreadStorage_->steppingCuts,
+                                                                    *perThreadStorage_->commonCuts,
+                                                                    perThreadStorage_->ioconf.trajectoryControl(),
+                                                                    perThreadStorage_->ioconf.mu2elimits());
     SetUserAction(steppingAction);
 
-    SetUserAction( new Mu2eG4StackingAction(stacking_Cuts, common_Cuts) );
+    SetUserAction( new Mu2eG4StackingAction(*perThreadStorage_->stackingCuts, *perThreadStorage_->commonCuts) );
 
     TrackingAction* trackingAction = new TrackingAction(conf_,
                                                         steppingAction,
-                                                        stageOffset_,
-                                                        trajectoryControl_,
-                                                        mu2eLimits_);
+                                                        perThreadStorage_);
     SetUserAction(trackingAction);
 
     SetUserAction( new Mu2eG4RunAction(conf_.debug(),
@@ -102,9 +88,6 @@ namespace mu2e {
                                          trackingAction,
                                          steppingAction,
                                          sensitiveDetectorHelper_,
-                                         stacking_Cuts,
-                                         stepping_Cuts,
-                                         common_Cuts,
                                          perThreadStorage_,
                                          &physicsProcessInfo_,
                                          originInWorld_) );

@@ -90,12 +90,10 @@
 <!--  ********* simulation bookeeping  ********* -->
 
  <class name="mu2e::PhysicalVolumeInfo"/>
- <class name="mu2e::PhysicalVolumeInfoCollection"/>
  <class name="std::pair<cet::map_vector_key,mu2e::PhysicalVolumeInfo>"/>
  <class name="cet::map_vector<mu2e::PhysicalVolumeInfo>"/> 
  <class name="std::pair<unsigned int,cet::map_vector<mu2e::PhysicalVolumeInfo> >"/>
  <class name="std::vector<std::pair<cet::map_vector_key,mu2e::PhysicalVolumeInfo> >"/>
- <class name="art::Wrapper<mu2e::PhysicalVolumeInfoCollection>"/>
 
  <class name="mu2e::PhysicalVolumeInfoMultiCollection"/>
  <class name="art::Wrapper<mu2e::PhysicalVolumeInfoMultiCollection>"/>
@@ -174,10 +172,10 @@
  <class name="art::Wrapper<art::Assns<mu2e::CaloClusterMC,mu2e::CaloCluster,void>>"/>
  <class name="art::Wrapper<art::Assns<mu2e::CaloCluster,mu2e::CaloClusterMC,void>>"/>
 
- <class name="art::Assns<mu2e::CaloDigi,mu2e::CaloHitMC,void>"/>
- <class name="art::Assns<mu2e::CaloHitMC,mu2e::CaloDigi,void>"/>
- <class name="art::Wrapper<art::Assns<mu2e::CaloHitMC,mu2e::CaloDigi,void>>"/>
- <class name="art::Wrapper<art::Assns<mu2e::CaloDigi,mu2e::CaloHitMC,void>>"/>
+ <class name="art::Assns<mu2e::CaloHit,mu2e::CaloHitMC,void>"/>
+ <class name="art::Assns<mu2e::CaloHitMC,mu2e::CaloHit,void>"/>
+ <class name="art::Wrapper<art::Assns<mu2e::CaloHitMC,mu2e::CaloHit,void>>"/>
+ <class name="art::Wrapper<art::Assns<mu2e::CaloHit,mu2e::CaloHitMC,void>>"/>
 
  <class name="art::Assns<mu2e::CaloHit,mu2e::SimParticle,art::Ptr<mu2e::CaloShowerSim> >" />
  <class name="art::Assns<mu2e::CaloHit,mu2e::SimParticle,void >" />

@@ -1,0 +1,30 @@
+#
+# generate and produce Detector Steps from a primary particle
+#
+# original author: Dave Brown, LBNL
+#
+#include "JobConfig/primary/prolog.fcl"
+# name all processes the same, to mask any provenance in ensemble creation
+process_name: Primary
+# the following will change when we read art stops
+source: { module_type : EmptyEvent }
+services: @local::Services.Sim
+physics : { 
+  producers : { @table::Primary.producers }
+  filters : { @table::Primary.filters }
+  analyzers : { @table::Primary.analyzers }
+  TriggerPath : @local::Primary.TriggerPath
+  EndPath : @local::Primary.EndPath
+}
+outputs : { Output :@local::Primary.Output }
+#
+# final configuration
+#
+#include "JobConfig/primary/epilog.fcl"
+physics.end_paths : [ EndPath ] # needed for generate_fcl
+# no histogram output
+services.TFileService.fileName : "/dev/null"
+# test values; these get overwritten by generate_fcl
+services.SeedService.baseSeed         :  773651
+services.SeedService.maxUniqueEngines :  2
+

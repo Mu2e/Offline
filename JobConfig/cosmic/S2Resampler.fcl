@@ -1,0 +1,18 @@
+// Re-sample cosmics from stage-1
+// Yuri Oksuzian, 2020
+
+#include "JobConfig/primary/primary.fcl"
+
+// Bring in info from the previous stage
+physics.filters.dsResample: @local::Cosmic.dsResample
+// Point Mu2eG4 to the pre-simulated data
+physics.producers.g4run.inputs: @local::Cosmic.MultiStageParametersCosmicS2
+// Kill cosmics outside of the CRV region
+physics.producers.g4run.Mu2eG4CommonCut: @local::Cosmic.Mu2eG4CommonCutCosmicS2
+physics.producers.g4run.SDConfig.preSimulatedHits:  ["dsResample:CRV"]
+physics.producers.FindMCPrimary.PrimaryGenIds: ["CosmicCRY", "CosmicCORSIKA"]
+physics.TriggerPath: [dsResample, @sequence::Primary.TriggerSequence]
+
+outputs.Output.fileName        : "dts.owner.Cosmic.version.sequencer.art"
+// Test on the file with events that deposited lower than 14 MeV in CRV
+// physics.filters.dsResample.fileNames: ["/pnfs/mu2e/persistent/users/oksuzian/workflow/cry_rs1_1019_g4_10_5/outstage/25394938.fcllist_191106224859/00/00053/sim.oksuzian.minedep-filter.cry-minedep_filter-10-5.002701_00007722.art"]

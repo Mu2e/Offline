@@ -8,14 +8,9 @@
 
 BEGIN_PROLOG
 
-# this should go in a general file FIXME!!
-FitDir : {
-    downstream : 0
-    upstream : 1
-}
-# duplicated: FIXME!
-TimeCalculator : {
-  TrkToCaloTimeOffset : @local::TrackCaloMatching.DtOffset
+# FIXME! IXME! this is necessary because CaloClusterFast returns an uncalibrated time!
+TTTimeCalculator : {
+  TrkToCaloTimeOffset : -20.
   CaloTimeErr : 0.5
 }
 
@@ -25,7 +20,7 @@ TTtimeClusterFinder : {
     StrawHitFlagCollection : "none"
     CaloClusterCollection  : "CaloClusterFast"
     TestFlag               : false
-    T0Calculator           : @local::TimeCalculator
+    T0Calculator           : @local::TTTimeCalculator
 }
 
 TTrobustHelixFinder : { @table::RobustHelixFinder

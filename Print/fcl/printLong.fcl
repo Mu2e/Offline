@@ -49,7 +49,7 @@ physics :{
       }
 
       caloShowerStepPrinter : {
-        verbose: 0   # 0, 1
+        verbose: 1   # 0, 1
         #eCut : 10.0          # cut on hits
 	#inputTags : [ "CaloShowerStepFromShowerStep" ] # select instances
       }
@@ -72,12 +72,17 @@ physics :{
 	#inputTags : [ "CaloClusterMaker" ] # select instances
       }
 
+      crvStepPrinter : {
+        verbose: 1      # 0.1
+        eCut : -10.0          # cut on hits
+	#inputTags : [ "CrvStep" ]
+      }
       crvDigiPrinter : {
-        verbose: 0
+        verbose: 1
 	#inputTags : [ "CrvDigi" ]
       }
       crvDigiMCPrinter : {
-        verbose: 0
+        verbose: 1
 	#inputTags : [ "CrvWaveforms" ]
       }
       crvRecoPulsePrinter : {

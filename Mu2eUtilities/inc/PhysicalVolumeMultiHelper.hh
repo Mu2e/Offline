@@ -1,7 +1,10 @@
 // Figure out which simulation stage corresponds to a given SimParticle
 // and provide access to its associated PhysicalVolumeInfo-s.
+// The March 2021 update of PhysicalVolumeInfoMultiCollection makes
+// this helper's function almost trivial; it is kept to avoid
+// breakage of existing code that relies on the helper.
 //
-// Andrei Gaponenko, 2013
+// Andrei Gaponenko, 2013, 2021
 
 #ifndef Mu2eUtilities_PhysicalVolumeMultiHelper_hh
 #define Mu2eUtilities_PhysicalVolumeMultiHelper_hh
@@ -18,10 +21,6 @@ struct PhysicalVolumeInfo;
     typedef PhysicalVolumeInfoMultiCollection::size_type size_type;
 
     PhysicalVolumeMultiHelper(const PhysicalVolumeInfoMultiCollection& coll);
-
-    // Index into the MultiCollection
-    size_type iSimStage(SimParticleCollection::key_type key) const;
-    size_type iSimStage(const SimParticle& p ) const { return iSimStage(p.id()); }
 
     // the volumes
     const PhysicalVolumeInfo& startVolume(const SimParticle& p) const;
