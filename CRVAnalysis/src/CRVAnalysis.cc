@@ -10,7 +10,7 @@
 #include "MCDataProducts/inc/MCTrajectoryCollection.hh"
 #include "RecoDataProducts/inc/CrvCoincidenceClusterCollection.hh"
 #include "RecoDataProducts/inc/CrvDigiCollection.hh"
-#include "RecoDataProducts/inc/CrvRecoPulseCollection.hh"
+#include "RecoDataProducts/inc/CrvRecoPulse.hh"
 #include "art/Framework/Core/ModuleMacros.h"
 #include "art/Framework/Principal/Handle.h"
 #include "GlobalConstantsService/inc/GlobalConstantsHandle.hh"

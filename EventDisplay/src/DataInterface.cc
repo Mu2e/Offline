@@ -48,6 +48,7 @@ using namespace std;
 #include <TMath.h>
 #include <TView.h>
 #include <TGraphErrors.h>
+#include <TF1.h>
 
 #include <boost/shared_array.hpp>
 
@@ -1149,21 +1150,15 @@ void DataInterface::fillEvent(boost::shared_ptr<ContentSelector> const &contentS
             double fitParam1 = recoPulse.GetPulseTime();
             double fitParam2 = recoPulse.GetPulseBeta();
 
-            double tF1=fitParam1 - 2.5*fitParam2;
-            double tF2=fitParam1 + 2.5*fitParam2;
-            int nF=(tF2-tF1)/1.0 + 1;
-            TGraph *graph = new TGraph(nF);
-            for(int iF=0; iF<nF; iF++)
-            {
-              double t   = tF1 + iF*1.0;
-              double ADC = fitParam0*TMath::Exp(-(t-fitParam1)/fitParam2-TMath::Exp(-(t-fitParam1)/fitParam2));
-              if(isnan(ADC)) ADC=0;
-              ADC += recoPulsePedestal;
-              graph->SetPoint(iF,t,ADC);
-            }
-            graph->SetLineWidth(2);
-            graph->SetLineColor(2);
-            boost::dynamic_pointer_cast<TMultiGraph>(v[k])->Add(graph,"l");
+            TList *functionList = boost::dynamic_pointer_cast<TMultiGraph>(v[k])->GetListOfFunctions();
+            if(functionList->GetSize()==0) functionList->Add(new TF1("pedestal",Form("%f",recoPulsePedestal))); //TODO: Use compiled function
+            TF1 *f = new TF1(Form("peakfitter%i",functionList->GetSize()),
+                             Form("%f*(TMath::Exp(-(x-%f)/%f-TMath::Exp(-(x-%f)/%f)))",
+                             fitParam0,fitParam1,fitParam2,fitParam1,fitParam2));  //TODO: Use compiled function
+            f->SetLineWidth(2);
+            f->SetLineColor(2);
+            if(recoPulse.GetRecoPulseFlags().test(mu2e::CrvRecoPulseFlagEnums::failedFit)) f->SetLineStyle(2);
+            functionList->Add(f);
           }
         }
       }
@@ -1485,6 +1480,7 @@ void DataInterface::findTrajectory(boost::shared_ptr<ContentSelector> const &con
     for(traj_iter=mcTrajectories->begin(); traj_iter!=mcTrajectories->end(); traj_iter++)
     {
       if(traj_iter->first->id()==id)
+//      if(traj_iter->second.sim()->id()==id)
       {
         const auto& points = traj_iter->second.points();
         for(auto point_iter=points.begin(); point_iter!=points.end(); ++point_iter)
