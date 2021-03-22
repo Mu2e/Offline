@@ -62,7 +62,8 @@ namespace mu2e
 
     double      _scintillationYieldScaleFactor;
     double      _scintillationYieldVariation;
-    double      _scintillationYieldVariationCutoff;
+    double      _scintillationYieldVariationCutoffLow;
+    double      _scintillationYieldVariationCutoffHigh;
 
     double      _startTime;             //StepPoint times before this time will be ignored to reduce computation times
                                         //(in particular by ignoring hits during the beam flash).
@@ -77,7 +78,7 @@ namespace mu2e
     CLHEP::RandGaussQ     _randGaussQ;
     CLHEP::RandPoissonQ   _randPoissonQ;
 
-    std::map<CRSScintillatorBarIndex,double>  _scintillationYieldAdjustments;
+    std::map<CRSScintillatorBarIndex,double>  _scintillationYieldsAdjusted;
   };
 
   CrvPhotonGenerator::CrvPhotonGenerator(fhicl::ParameterSet const& pset) :
@@ -90,7 +91,8 @@ namespace mu2e
     _scintillationYields(pset.get<std::vector<double> >("scintillationYields")),    //39400 photons per MeV
     _scintillationYieldScaleFactor(pset.get<double>("scintillationYieldScaleFactor")),    //100%
     _scintillationYieldVariation(pset.get<double>("scintillationYieldVariation")),    //20.0%
-    _scintillationYieldVariationCutoff(pset.get<double>("scintillationYieldVariationCutoff")),    //20.0%
+    _scintillationYieldVariationCutoffLow(pset.get<double>("scintillationYieldVariationCutoffLow")),    //60.0%
+    _scintillationYieldVariationCutoffHigh(pset.get<double>("scintillationYieldVariationCutoffHigh")),    //120.0%
     _startTime(pset.get<double>("startTime")),               //0.0 ns
     _timeOffsets(pset.get<fhicl::ParameterSet>("timeOffsets", fhicl::ParameterSet())),
     _engine{createEngine(art::ServiceHandle<SeedService>()->getSeed())},
@@ -111,11 +113,14 @@ namespace mu2e
                                                             art::ProcessNameSelector(_processNames[i]))));
     }
 
-    if(_lookupTableFileNames.size()!=_lookupTableCRVSectors.size()) throw std::logic_error("ERROR: mismatch between specified lookup tables (lookupTableFileNames/CRVSectors)");
-    if(_lookupTableReflectors.size()!=_lookupTableCRVSectors.size()) throw std::logic_error("ERROR: mismatch between specified lookup tables (reflectors/CRVSectors)");
+    if(_lookupTableFileNames.size()!=_lookupTableCRVSectors.size()) throw std::logic_error("ERROR: mismatch between specified CRV sector names and lookup table list");
+    if(_lookupTableReflectors.size()!=_lookupTableCRVSectors.size()) throw std::logic_error("ERROR: mismatch between specified CRV sector names and reflector list");
+    if(_scintillationYields.size()!=_lookupTableCRVSectors.size()) throw std::logic_error("ERROR: mismatch between specified CRV sector names and scintillation yield list");
 
     for(size_t i=0; i<_lookupTableFileNames.size(); ++i)
     {
+      _scintillationYields[i]*=_scintillationYieldScaleFactor;
+
       bool tableLoaded=false;
       for(size_t j=0; j<i; ++j)
       {
@@ -132,8 +137,8 @@ namespace mu2e
       _makeCrvPhotons.emplace_back(boost::shared_ptr<mu2eCrv::MakeCrvPhotons>(new mu2eCrv::MakeCrvPhotons(_randFlat, _randGaussQ, _randPoissonQ)));
       boost::shared_ptr<mu2eCrv::MakeCrvPhotons> &photonMaker=_makeCrvPhotons.back();
       photonMaker->LoadLookupTable(_resolveFullPath(_lookupTableFileNames[i]));
-      photonMaker->SetScintillationYield(_scintillationYields[i]*_scintillationYieldScaleFactor);
-      std::cout<<"CRV sector "<<i<<" ("<<_lookupTableCRVSectors[i]<<") uses "<<_makeCrvPhotons.back()->GetFileName()<<std::endl;
+      photonMaker->SetScintillationYield(_scintillationYields[i]);
+      std::cout<<"CRV sector "<<i<<" ("<<_lookupTableCRVSectors[i]<<") uses "<<_makeCrvPhotons.back()->GetFileName()<<" with scintillation yield of "<<_scintillationYields[i]<<" photons/MeV"<<std::endl;
     }
 
     produces<CrvPhotonsCollection>();
@@ -158,7 +163,7 @@ namespace mu2e
   {
     _timeOffsets.updateMap(event);
 
-    _scintillationYieldAdjustments.clear();
+    _scintillationYieldsAdjusted.clear();
 
     std::unique_ptr<CrvPhotonsCollection> crvPhotonsCollection(new CrvPhotonsCollection);
 
@@ -209,31 +214,35 @@ namespace mu2e
 
           const CRSScintillatorBarId &barId = CRSbar.id();
           int CRVSectorNumber=barId.getShieldNumber();
-          if(_scintillationYieldAdjustments.find(step.barIndex())==_scintillationYieldAdjustments.end())
+          if(_scintillationYieldsAdjusted.find(step.barIndex())==_scintillationYieldsAdjusted.end())
           {
-            double adjustment=0;
+            double sectorScintillationYield=_scintillationYields[CRVSectorNumber];
+            double adjustedYield=0;
             do
             {
-              adjustment=_randGaussQ.fire(0, _scintillationYields[CRVSectorNumber]*_scintillationYieldVariation);
-            } while(adjustment<-_scintillationYields[CRVSectorNumber]*_scintillationYieldVariationCutoff);
-            _scintillationYieldAdjustments[step.barIndex()] = adjustment;
+              adjustedYield=_randGaussQ.fire(sectorScintillationYield, sectorScintillationYield*_scintillationYieldVariation);
+            } while(adjustedYield<sectorScintillationYield*_scintillationYieldVariationCutoffLow ||
+                    adjustedYield>sectorScintillationYield*_scintillationYieldVariationCutoffHigh);
+
+            _scintillationYieldsAdjusted[step.barIndex()] = adjustedYield;
           }
-          double scintillationYieldAdjustment = _scintillationYieldAdjustments[step.barIndex()];
+          double currentAdjustedYield = _scintillationYieldsAdjusted[step.barIndex()];
 
           boost::shared_ptr<mu2eCrv::MakeCrvPhotons> &photonMaker=_makeCrvPhotons.at(CRVSectorNumber);
+          photonMaker->SetScintillationYield(currentAdjustedYield);
           photonMaker->MakePhotons(pos1Local, pos2Local, t1, t2,
                                         avgBeta, charge,
                                         step.visibleEDep(),
                                         step.pathLength(),
-                                        scintillationYieldAdjustment,
                                         _lookupTableReflectors[CRVSectorNumber]);
 
           art::Ptr<CrvStep> crvStepPtr(CrvSteps,istep);
           for(int SiPM=0; SiPM<4; ++SiPM)
           {
             std::pair<CRSScintillatorBarIndex,int> barIndexSiPMNumber(step.barIndex(),SiPM);
-            std::vector<CrvPhotons::SinglePhoton> &photons = photonMap[barIndexSiPMNumber];
             const std::vector<double> &times=photonMaker->GetArrivalTimes(SiPM);
+            if(times.empty()) continue;
+            std::vector<CrvPhotons::SinglePhoton> &photons = photonMap[barIndexSiPMNumber];
             for(size_t itime=0; itime<times.size(); ++itime) photons.emplace_back(times[itime],crvStepPtr);
           }
 
