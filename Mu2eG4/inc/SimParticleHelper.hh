@@ -1,5 +1,7 @@
-// The job of this class is to translate between G4 track IDs and
-// keys of SimParticles produced by the current job.
+// The job of this class is to help with SimParticle creation.
+// It translates between G4 track IDs and keys of SimParticles
+// produced by the current job.  It also keeps the simulation
+// stage number.
 //
 // Andrei Gaponenko, 2013
 
@@ -14,17 +16,19 @@
 class G4Track;
 namespace art { class Event; }
 namespace art { class ProductID; }
+namespace mu2e { class Mu2eG4Inputs; }
 
 namespace mu2e {
   class SimParticleHelper {
-    
-      unsigned particleNumberOffset_;
-      art::ProductID simID_;
-      const art::Event* event_;
-      const art::EDProductGetter* simProductGetter_;
+    unsigned simStage_;
+    unsigned particleNumberOffset_;
+    art::ProductID simID_;
+    const art::Event* event_;
+    const art::EDProductGetter* simProductGetter_;
 
   public:
-    SimParticleHelper(unsigned particleNumberOffset,
+    SimParticleHelper(unsigned simStage,
+                      const Mu2eG4Inputs& inputs,
                       const art::ProductID& simID,
                       const art::Event* event,
                       const art::EDProductGetter* sim_prod_getter);
@@ -42,6 +46,8 @@ namespace mu2e {
 
     // For arbitrary product in this event - e.g. the "old" SimParticleCollection
     const art::EDProductGetter *otherProductGetter(art::ProductID otherID) const;
+
+    unsigned simStage() const { return simStage_; }
   };
 }
 

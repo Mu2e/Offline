@@ -1,0 +1,20 @@
+# Sophie Middleton 
+#include "fcl/minimalMessageService.fcl"
+#include "fcl/standardProducers.fcl"
+#include "fcl/standardServices.fcl"
+#include "TEveEventDisplay/fcl/prolog.fcl"
+
+services : @local::Services.Reco
+
+process_name : HelixED
+
+source : { module_type : RootInput }
+
+physics :
+{
+ analyzers : { @table::TEveDis.analyzers}
+}
+
+physics.EndPath  : [ @sequence::TEveDis.seqHelix] 
+
+

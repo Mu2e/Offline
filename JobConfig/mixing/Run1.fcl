@@ -1,0 +1,16 @@
+#
+# Run1 mixing this assume 50% design-nominal intensity and 60% SDF 
+#
+# original author: Dave Brown, LBNL
+#
+#include "JobConfig/mixing/Mix.fcl"
+# temporary test
+#physics.filters.mustopMixer.fileNames : [ "/pnfs/mu2e/scratch/users/brownd/workflow/default/outstage/41883875/dts.brownd.mustop.MDC2020a.001201.art" ]
+#physics.filters.mustopMixer.mu2e.simStageEfficiencyTags : [ muHitPerMuStop, muStopPerMuBeamEnterDS, muBeamEnterDSPerPOT ]
+physics.filters.mustopMixer.mu2e.meanEventsPerProton : 3.51e-5 # from hand calculations: will come from simStageEfficiency once we have the full chain TODO
+physics.filters.mustopMixer.mu2e.simStageEfficiencyTags: []
+physics.filters.mustopMixer.mu2e.skipFactor : 10.0 # skip a random number of mixin events between 0 and this factor times the number corresponding to the nominal pulse.  Set to the maximum PBI
+physics.producers.PBISim.sigma: 0.7147 # =sqrt(-ln(0.6)) SDF=0.6
+physics.producers.PBISim.extendedMean: 1.58e7 // mean of the uncut distribution
+physics.producers.PBISim.cutMax: 1.58e8  // cut the tail at 10 times the mean
+services.TimeTracker.printSummary: true

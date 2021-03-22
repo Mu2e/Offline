@@ -42,10 +42,9 @@ physics.filters.flashResample: {
 }
 
 // Point Mu2eG4 to the pre-simulated data
-physics.producers.g4run.MultiStageParameters: {
-   simParticleNumberOffset: 300000
-   genInputHits:  [ "flashResample:DSVacuum" ]
-   inputSimParticles: "flashResample"
+physics.producers.g4run.inputs: {
+   primaryType: "StepPoints"
+   primaryTag: "flashResample:DSVacuum"
    inputMCTrajectories: ""
    inputPhysVolumeMultiInfo: "" # earlier info dropped
 }
@@ -58,7 +57,6 @@ physics.producers.g4run.SDConfig.preSimulatedHits:  ["flashResample:virtualdetec
 physics.producers.stoppedMuonFinder: {
    module_type: "StoppedParticlesFinder"
    particleInput: "g4run"
-   particleOffsetThreshold: 300000
    particleTypes: [ 13 ]
    physVolInfoInput: "g4run"
    stoppingMaterial: "StoppingTarget_Al"
@@ -78,7 +76,6 @@ physics.producers.outOfTargetMuonFinder : {
    physVolInfoInput : "g4run"
    vetoedMaterials : [ "StoppingTarget_Al" ]
    particleTypes : [ 13 ] // mu-
-   particleOffsetThreshold: 300000
    verbosityLevel: 1
 }
 

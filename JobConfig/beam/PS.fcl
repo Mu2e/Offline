@@ -113,38 +113,7 @@ physics : {
          module_type: GenEventCounter
       }
 
-      g4run : {
-         module_type: Mu2eG4
-         physics: @local::mu2eg4DefaultPhysics
-         ResourceLimits: @local::mu2eg4DefaultResourceLimits
-	 TrajectoryControl: @local::mu2eg4NoTrajectories
-         debug: @local::mu2eg4DefaultDebug
-         visualization: @local::mu2eg4NoVisualization
-
-         generatorModuleLabel: generate
-
-         SDConfig: {
-            enableSD: [ virtualdetector ] // activate just the explicitly listed SDs
-            TimeVD: { times: [] }
-         }
-
-         Mu2eG4StackingOnlyCut: @local::mu2eg4CutNeutrinos
-
-         Mu2eG4SteppingOnlyCut: {}
-
-         // Mu2eG4 cuts are evaluated in the listed order.
-         // The first match wins.  For the "intersection"
-         // type, the first false stops the evaluation.
-         // For the "union" type the first true stops the evaluation.
-         Mu2eG4CommonCut: {
-            type: union
-            pars: [
-               @local::mu2eg4CutDeltaElectrons, // 8% speed up from killing electrons with Ek<1 MeV
-               @local::dsRegionCuts,
-               @local::extMonRegionCuts
-            ]
-         }
-      }
+      g4run: @local::g4run
 
       compressPVmuonBeam : {
          module_type: CompressPhysicalVolumes
@@ -304,6 +273,23 @@ outputs: {
    }
 
 }
+
+//================================================================
+// Mu2eG4 cuts are evaluated in the listed order.
+// The first match wins.  For the "intersection"
+// type, the first false stops the evaluation.
+// For the "union" type the first true stops the evaluation.
+physics.producers.g4run.Mu2eG4CommonCut: {
+   type: union
+   pars: [
+      @local::mu2eg4CutDeltaElectrons, // 8% speed up from killing electrons with Ek<1 MeV
+      @local::dsRegionCuts,
+      @local::extMonRegionCuts
+   ]
+}
+
+physics.producers.g4run.SDConfig.enableSD: [ virtualdetector ] // activate just the explicitly listed SDs
+
 // Larger range cut for the first stage
 physics.producers.g4run.physics.minRangeCut : 1. // mm
 
@@ -313,4 +299,3 @@ services.SeedService.maxUniqueEngines :  20
 
 services.GeometryService.inputFile : "JobConfig/common/geom_baseline.txt"
 services.TFileService.fileName     : "nts.owner.PS.version.sequencer.root"
-

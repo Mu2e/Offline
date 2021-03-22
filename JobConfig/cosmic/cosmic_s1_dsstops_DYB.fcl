@@ -1,3 +1,0 @@
-#include "JobConfig/cosmic/cosmic_s1_dsstops.fcl"
-
-physics.producers.generate.inputfile    : "JobConfig/cosmic/genconfig_cosmic_general_box.txt"

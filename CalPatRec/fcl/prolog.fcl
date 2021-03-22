@@ -8,7 +8,7 @@
 # CalPatRec uses its own instance of the hit flags
 # DoubletAmbigResolver is defined in TrkReco/fcl/prolog.fcl
 #------------------------------------------------------------------------------
-
+#include "fcl/TrkCaloDt.fcl"
 BEGIN_PROLOG
 #------------------------------------------------------------------------------
 # there seems to be a circular dependence between MakeStrawHitPositions and 

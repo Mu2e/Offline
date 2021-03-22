@@ -58,15 +58,14 @@ mu2e::PhysicalVolumePrinter::Print(
 
 void 
 mu2e::PhysicalVolumePrinter::Print(
-	     const std::pair<unsigned int, PhysicalVolumeInfoSingleStage>& obj, 
+	     const PhysicalVolumeInfoSingleStage& obj, 
 	     int ind, std::ostream& os) {
   if(verbose()<1) return;
-  int indexLim = obj.first;
-  const PhysicalVolumeInfoSingleStage& ss = obj.second;
+  const PhysicalVolumeInfoSingleStage& ss = obj;
   int n = ss.size();
   if(verbose()>=1) {
     if(verbose()>1) PrintListHeader(os);
-    std::cout << std::setw(3) << ind << std::setw(12) << indexLim << std::setw(8) << n << std::endl;
+    std::cout << std::setw(3) << ind << std::setw(8) << n << std::endl;
   }
   if(verbose()>1) {
     PrintPVListHeader(os);
@@ -108,7 +107,7 @@ mu2e::PhysicalVolumePrinter::PrintHeader(const std::string& tag, std::ostream& o
 void 
 mu2e::PhysicalVolumePrinter::PrintListHeader(std::ostream& os) {
   if(verbose()<1) return;
-  os << "ind    idOffset   count\n";
+  os << "ind    count\n";
 
 }
 

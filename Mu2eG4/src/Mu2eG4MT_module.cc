@@ -8,8 +8,6 @@
 
 // Mu2e includes
 #include "Mu2eHallGeom/inc/Mu2eHall.hh"
-#include "Mu2eG4/inc/IMu2eG4Cut.hh"
-#include "Mu2eG4/inc/SensitiveDetectorHelper.hh"
 #include "Mu2eG4/inc/exportG4PDT.hh"
 #include "Mu2eG4/inc/Mu2eG4PerThreadStorage.hh"
 #include "GeometryService/inc/GeometryService.hh"
@@ -18,13 +16,14 @@
 #include "Mu2eG4/inc/PhysicalVolumeHelper.hh"
 #include "ConfigTools/inc/ConfigFileLookupPolicy.hh"
 #include "Mu2eG4/inc/Mu2eG4ResourceLimits.hh"
-#include "Mu2eG4/inc/Mu2eG4MultiStageParameters.hh"
+#include "Mu2eG4/inc/Mu2eG4Inputs.hh"
 #include "Mu2eG4/inc/checkConfigRelics.hh"
 #include "Mu2eG4/inc/Mu2eG4WorkerRunManager.hh"
 #include "Mu2eG4/inc/MTMasterThread.hh"
 #include "Mu2eG4/inc/SimParticleHelper.hh"
 #include "Mu2eG4/inc/SimParticlePrimaryHelper.hh"
 #include "Mu2eG4/inc/Mu2eG4Config.hh"
+#include "Mu2eG4/inc/Mu2eG4IOConfigHelper.hh"
 #include "Mu2eG4/inc/Mu2eG4MTRunManager.hh"
 
 // Data products that will be produced by this module.
@@ -104,7 +103,9 @@ namespace mu2e {
     Mu2eG4Config::Top conf_;
     Mu2eG4ResourceLimits mu2elimits_;
     Mu2eG4TrajectoryControl trajectoryControl_;
-    Mu2eG4MultiStageParameters multiStagePars_;
+    Mu2eG4Inputs multiStagePars_;
+
+    unsigned simStage_;
 
     std::unique_ptr<MTMasterThread> masterThread;
 
@@ -117,16 +118,8 @@ namespace mu2e {
 
     std::string storePhysicsTablesDir_;
 
-    //these cut objects are used in the master thread to indicate what data product is produced
-    //additional thread-local cut objects are owned by Mu2eG4EventAction
-    std::unique_ptr<IMu2eG4Cut> stackingCuts_;
-    std::unique_ptr<IMu2eG4Cut> steppingCuts_;
-    std::unique_ptr<IMu2eG4Cut> commonCuts_;
-
     int _rmvlevel;
     int _mtDebugOutput;
-
-    art::InputTag _generatorModuleLabel;
 
     // Instance name of the timeVD StepPointMC data product.
     const StepInstanceName _tvdOutputName;
@@ -138,7 +131,7 @@ namespace mu2e {
     // do a counter that counts how mnay times it was called with an unknown process
     //NOW DONE IN Master Run Manager code
     PhysicalVolumeHelper physVolHelper_;
-    SensitiveDetectorHelper sensitiveDetectorHelper_;
+    Mu2eG4IOConfigHelper ioconf_;
 
     // Do the G4 initialization that must be done only once per job, not once per run
     void initializeG4( GeometryService& geom, art::Run const& run );
@@ -154,7 +147,7 @@ namespace mu2e {
     int const num_threads{art::Globals::instance()->nthreads()};
 
     typedef tbb::concurrent_hash_map< std::thread::id, std::unique_ptr<Mu2eG4WorkerRunManager> > WorkerRMMap;
-    WorkerRMMap myworkerRunManagerMap;    
+    WorkerRMMap myworkerRunManagerMap;
   }; // end G4 header
 
 
@@ -163,7 +156,8 @@ namespace mu2e {
     conf_(pars()),
     mu2elimits_(pars().ResourceLimits()),
     trajectoryControl_(pars().TrajectoryControl()),
-    multiStagePars_(pars()),
+    multiStagePars_(pars().inputs()),
+    simStage_(-1u),
 
     masterThread(std::make_unique<MTMasterThread>(pars())),
 
@@ -173,76 +167,20 @@ namespace mu2e {
 
     storePhysicsTablesDir_(pars().debug().storePhysicsTablesDir()),
 
-    stackingCuts_(createMu2eG4Cuts(pars().Mu2eG4StackingOnlyCut.get<fhicl::ParameterSet>(), mu2elimits_)),
-    steppingCuts_(createMu2eG4Cuts(pars().Mu2eG4SteppingOnlyCut.get<fhicl::ParameterSet>(), mu2elimits_)),
-    commonCuts_(createMu2eG4Cuts(pars().Mu2eG4CommonCut.get<fhicl::ParameterSet>(), mu2elimits_)),
-
     _rmvlevel(pars().debug().diagLevel()),
     _mtDebugOutput(pars().debug().mtDebugOutput()),
 
-    _generatorModuleLabel(pars().generatorModuleLabel()),
     _tvdOutputName(StepInstanceName::timeVD),
     timeVD_enabled_(pars().SDConfig().TimeVD().enabled()),
     physVolHelper_(),
-    sensitiveDetectorHelper_(pars().SDConfig()),
+    ioconf_(pars(), producesCollector(), consumesCollector()),
     standardMu2eDetector_((art::ServiceHandle<GeometryService>())->isStandardMu2eDetector())
     {
-      if((_generatorModuleLabel == art::InputTag()) && multiStagePars_.genInputHits().empty()) {
-        throw cet::exception("CONFIG")
-          << "Error: both generatorModuleLabel and genInputHits are empty - nothing to do!\n";
-      }
+      // produces() and consumes()  calls are handled by Mu2eG4IOConfigHelper
 
       // This statement requires that the external libraries the module uses are thread-safe,
       // and that the data member members are used in a thread-safe manner
       async<art::InEvent>();
-
-      //produces
-      auto& collector = producesCollector();
-
-      sensitiveDetectorHelper_.declareProducts(collector);
-
-      stackingCuts_->declareProducts(collector);
-      steppingCuts_->declareProducts(collector);
-      commonCuts_->declareProducts(collector);
-
-      produces<StatusG4>();
-      produces<SimParticleCollection>();
-
-      if(timeVD_enabled_) {
-        produces<StepPointMCCollection>(_tvdOutputName.name());
-      }
-
-      if(trajectoryControl_.produce()) {
-        produces<MCTrajectoryCollection>();
-      }
-
-      if(multiStagePars_.multiStage()) {
-        produces<SimParticleRemapping>();
-      }
-
-      produces<PhysicalVolumeInfoMultiCollection,art::InSubRun>();
-
-      //consumes
-      if (_generatorModuleLabel != invalid_tag) {
-        consumes<GenParticleCollection>(_generatorModuleLabel);
-      }
-
-      // Declare which products this module will read.
-      auto const& inputPhysVolTag = multiStagePars_.inputPhysVolumeMultiInfo();
-      if (inputPhysVolTag != invalid_tag) {
-        consumes<PhysicalVolumeInfoMultiCollection, art::InSubRun>(inputPhysVolTag);
-      }
-      auto const& inputSimParticlesTag = multiStagePars_.inputSimParticles();
-      if (inputSimParticlesTag != invalid_tag) {
-        consumes<SimParticleCollection>(inputSimParticlesTag);
-      }
-      auto const& inputMCTrajectoryTag = multiStagePars_.inputMCTrajectories();
-      if (inputMCTrajectoryTag != invalid_tag) {
-        consumes<MCTrajectoryCollection>(inputMCTrajectoryTag);
-      }
-      for (auto const& tag : multiStagePars_.genInputHits()) {
-        consumes<StepPointMCCollection>(tag);
-      }
 
       G4cout << "WE WILL RUN " << num_schedules << " SCHEDULES" <<  G4endl;
     } // end Mu2eG4MT constructor
@@ -289,7 +227,6 @@ namespace mu2e {
       mf::LogInfo logInfo("GEOM");
       logInfo << "Initializing Geant4 for " << run.id()
               << " with verbosity " << _rmvlevel << endl;
-      logInfo << " Configured simParticleNumberOffset = "<< multiStagePars_.simParticleNumberOffset() << endl;
     }
 
     masterThread->storeRunNumber(run.id().run());
@@ -304,16 +241,18 @@ namespace mu2e {
     using Collection_t = PhysicalVolumeInfoMultiCollection;
     auto mvi = std::make_unique<Collection_t>();
 
-    if(multiStagePars_.inputPhysVolumeMultiInfo() != invalid_tag) {
+    if(multiStagePars_.multiStage()) {
       // Copy over data from the previous simulation stages
       auto const& ih = sr.getValidHandle<Collection_t>(multiStagePars_.inputPhysVolumeMultiInfo());
       mvi->reserve(1 + ih->size());
       mvi->insert(mvi->begin(), ih->cbegin(), ih->cend());
-
     }
 
+    // By definition simStage=0 if we start with GenParticles and not doing multiStage.
+    simStage_ = mvi->size();
+
     // Append info for the current stage
-    mvi->emplace_back(multiStagePars_.simParticleNumberOffset(), physVolHelper_.persistentSingleStageInfo());
+    mvi->emplace_back(physVolHelper_.persistentSingleStageInfo());
 
     sr.put(std::move(mvi));
   }
@@ -322,23 +261,6 @@ namespace mu2e {
 
   // Create one G4 event and copy its output to the art::event.
   void Mu2eG4MT::produce(art::Event& event, art::ProcessingFrame const& procFrame) {
-    
-    art::Handle<GenParticleCollection> gensHandle;
-    if(!(_generatorModuleLabel == art::InputTag())) {
-      event.getByLabel(_generatorModuleLabel, gensHandle);
-    }
-
-    HitHandles genInputHits;
-    for(const auto& i : multiStagePars_.genInputHits()) {
-      genInputHits.emplace_back(event.getValidHandle<StepPointMCCollection>(i));
-    }
-
-    art::ProductID simPartId(event.getProductID<SimParticleCollection>());
-    art::EDProductGetter const* simProductGetter = event.productGetter(simPartId);
-
-    SimParticleHelper spHelper(multiStagePars_.simParticleNumberOffset(), simPartId, &event, simProductGetter);
-    SimParticlePrimaryHelper parentHelper(&event, simPartId, gensHandle, simProductGetter);
-
 
     int schedID = std::stoi(std::to_string(procFrame.scheduleID().id()));
     auto const tid = std::this_thread::get_id();
@@ -350,7 +272,7 @@ namespace mu2e {
         G4cout << "FOR TID: " << tid << ", NO WORKER.  We are making one.\n";
       }
       myworkerRunManagerMap.insert(access_workerMap, tid);
-      access_workerMap->second = std::make_unique<Mu2eG4WorkerRunManager>(conf_, tid);
+      access_workerMap->second = std::make_unique<Mu2eG4WorkerRunManager>(conf_, ioconf_, tid);
     }
 
     if (event.id().event() == 1) {
@@ -372,7 +294,7 @@ namespace mu2e {
     }
 
     Mu2eG4PerThreadStorage* perThreadStore = scheduleWorkerRM->getMu2eG4PerThreadStorage();
-    perThreadStore->initializeEventInfo(&event, &spHelper, &parentHelper, &genInputHits, _generatorModuleLabel);
+    perThreadStore->initializeEventInfo(&event, simStage_);
     scheduleWorkerRM->processEvent(event.id());
 
     if (_mtDebugOutput > 2){
@@ -381,43 +303,23 @@ namespace mu2e {
 
     /////////////////////////////////////////////////////////////////////////////////////
     //putting data into the event
-    std::unique_ptr<SimParticleCollection> simsToCheck = perThreadStore->getSimPartCollection();
 
-    if (simsToCheck == nullptr) {
+    if(!perThreadStore->eventPassed()) {
+      perThreadStore->clearData();
       numExcludedEvents++;
-    } else {
-      event.put(std::move(perThreadStore->getG4Status()));
-      event.put(std::move(simsToCheck));
-      perThreadStore->putSensitiveDetectorData(simProductGetter);
-      perThreadStore->putCutsData(simProductGetter);
-
-      if(timeVD_enabled_) {
-        event.put(std::move(perThreadStore->getTVDHits()),perThreadStore->getTVDName());
-      }
-
-      if(trajectoryControl_.produce()) {
-        event.put(std::move(perThreadStore->getMCTrajCollection()));
-      }
-
-      if(multiStagePars_.multiStage()) {
-        event.put(std::move(perThreadStore->getSimParticleRemap()));
-      }
-
-      if(sensitiveDetectorHelper_.extMonPixelsEnabled()) {
-        event.put(std::move(perThreadStore->getExtMonFNALSimHitCollection()));
-      }
+    }
+    else {
+      perThreadStore->putDataIntoEvent();
     }
 
-    perThreadStore->clearData();
-    
     scheduleWorkerRM->TerminateOneEvent();
-    
+
   }//end Mu2eG4MT::produce
 
 
   // Tell G4 that this run is over.
   void Mu2eG4MT::endRun(art::Run & run, art::ProcessingFrame const& procFrame) {
-    
+
     if (_mtDebugOutput > 0){
       G4cout << "At endRun pt1, we have " << myworkerRunManagerMap.size() << " members in the map "
              << "and are running " << num_threads << " threads.\n" ;
@@ -426,30 +328,30 @@ namespace mu2e {
       G4cout << "At endRun pt1, we have " << myworkerRunManagerMap.size() << " members in the map "
              << "and are running " << num_threads << " threads.\n" ;
     }
-    
-    
+
+
     if (storePhysicsTablesDir_!="") {
       if ( _rmvlevel > 0 ) {
         G4cout << __func__ << " Will write out physics tables to "
-        << storePhysicsTablesDir_
-        << G4endl;
+               << storePhysicsTablesDir_
+               << G4endl;
       }
       masterThread->masterRunManagerPtr()->getMasterPhysicsList()->StorePhysicsTable(storePhysicsTablesDir_);
     }
-  
+
     std::atomic<int> threads_left = num_threads;
     tbb::task_group g;
     for (int i = 0; i < num_threads; ++i) {
-        
+
       auto destroy_worker = [&threads_left, i, this] {
         WorkerRMMap::accessor access_workerMap;
         std::thread::id this_tid = std::this_thread::get_id();
-          
+
         if (myworkerRunManagerMap.find(access_workerMap, this_tid)) {
           access_workerMap->second.reset();
           myworkerRunManagerMap.erase(access_workerMap);
         }
-          
+
         access_workerMap.release();
         --threads_left;
         while (threads_left != 0) {}
@@ -458,7 +360,7 @@ namespace mu2e {
       g.run(destroy_worker);
     }//for
     g.wait();
-    
+
     if (_mtDebugOutput > 0){
       G4cout << "At endRun pt2, we have " << myworkerRunManagerMap.size() << " members in the map.\n";
     }

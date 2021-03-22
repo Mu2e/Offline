@@ -8,61 +8,13 @@ process_name : DS
 
 source : { module_type : RootInput }
 
-services : {
-
-   message               : @local::default_message
-   TFileService          : { fileName : "nts.owner.DS.version.sequencer.root" }
-   RandomNumberGenerator : {defaultEngineKind: "MixMaxRng" }
-
-   GeometryService        : { inputFile      : "JobConfig/common/geom_baseline.txt" }
-   ConditionsService      : { conditionsfile : "Mu2eG4/test/conditions_01.txt"      }
-   GlobalConstantsService : { inputFile      : "Mu2eG4/test/globalConstants_01.txt" }
-   G4Helper               : { }
-   SeedService            : @local::automaticSeeds
-}
+services : @local::Services.Sim
 
 physics : {
 
    //================================================================
    producers: {
-      g4run : {
-         module_type: Mu2eG4
-         physics: @local::mu2eg4DefaultPhysics
-         ResourceLimits: @local::mu2eg4DefaultResourceLimits
-         TrajectoryControl: @local::mu2eg4NoTrajectories
-         debug:  @local::mu2eg4DefaultDebug
-         visualization: @local::mu2eg4NoVisualization
-
-         MultiStageParameters : {
-            simParticleNumberOffset: 200000  // safe b/c of g4.particlesSizeLimit in stage1
-            genInputHits:  [ "muonBeamFilter:DSVacuum" ]
-            inputSimParticles: "muonBeamFilter"
-            inputMCTrajectories: ""
-            inputPhysVolumeMultiInfo: "compressPVmuonBeam"
-         }
-
-         SDConfig : {
-            enableSD : [ virtualdetector, CRV ] // activate just the explicitly listed SDs
-            preSimulatedHits: ["muonBeamFilter:virtualdetector"]
-            TimeVD: { times: [] }
-         }
-
-         Mu2eG4StackingOnlyCut: @local::mu2eg4CutNeutrinos
-
-         Mu2eG4SteppingOnlyCut: {}
-
-         Mu2eG4CommonCut: {
-            type: inVolume
-            pars: [TrackerMother, CalorimeterMother]
-            write: DetectorMother
-         }
-
-         SimParticlePrinter : {
-            enabled : false
-            primariesOnly : false
-            prefix : "SimParticle: "
-         }
-      }
+      g4run: @local::g4run
 
       compressPVMothers: {
          module_type: CompressPhysicalVolumes
@@ -107,7 +59,6 @@ physics : {
          physVolInfoInput : "g4run"
          stoppingMaterial : "StoppingTarget_Al"
          particleTypes : [ 13 ] // mu-
-         particleOffsetThreshold: 200000
          verbosityLevel: 1
       }
 
@@ -124,7 +75,6 @@ physics : {
          physVolInfoInput : "g4run"
          vetoedMaterials : [ "StoppingTarget_Al" ]
          particleTypes : [ 13 ] // mu-
-         particleOffsetThreshold: 200000
          verbosityLevel: 1
       }
 
@@ -277,6 +227,29 @@ outputs: {
       fileName    : "sim.owner.DS-truncated.version.sequencer.art"
    }
 }
+//================================================================
+physics.producers.g4run.inputs: {
+   primaryType: "StepPoints"
+   primaryTag: "muonBeamFilter:DSVacuum"
+   inputMCTrajectories: ""
+   inputPhysVolumeMultiInfo: "compressPVmuonBeam"
+}
+
+// Mu2eG4 cuts are evaluated in the listed order.
+// The first match wins.  For the "intersection"
+// type, the first false stops the evaluation.
+// For the "union" type the first true stops the evaluation.
+physics.producers.g4run.Mu2eG4CommonCut: {
+   type: inVolume
+   pars: [TrackerMother, CalorimeterMother]
+   write: DetectorMother
+}
+
+physics.producers.g4run.SDConfig: {
+   enableSD : [ virtualdetector, CRV ] // activate just the explicitly listed SDs
+   preSimulatedHits: ["muonBeamFilter:virtualdetector"]
+   TimeVD: { times: [] }
+}
 
 // Limit the amount of "Begin processing the ... record" messages
 services.message.destinations.log.categories.ArtReport.reportEvery : 1
@@ -284,6 +257,8 @@ services.message.destinations.log.categories.ArtReport.limit : 1
 services.message.destinations.log.categories.ArtReport.timespan : 300
 
 physics.producers.g4run.physics.minRangeCut : 0.010 // mm
+
+services.TFileService.fileName : "nts.owner.DS.version.sequencer.root"
 
 // Initialze seeding of random engines: do not put these lines in base .fcl files for grid jobs.
 services.SeedService.baseSeed         :  8

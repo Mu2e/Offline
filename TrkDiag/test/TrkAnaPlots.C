@@ -125,12 +125,12 @@ void TrkAnaPlots::BuildCuts(float momwin){
   double crvhigh(150.0);
   snprintf(ctext,200,"bestcrv<0||(de.t0-crvinfo._timeWindowStart[bestcrv]<%5.1f||de.t0-crvinfo._timeWindowStart[bestcrv]>%5.1f)",crvlow,crvhigh);
   _CRV = TCut(ctext);
-  _eminustq = TCut("dequal.TrkQualDeM>0.8");
-  _eplustq = TCut("dequal.TrkQualDeP>0.8");
-  _eminuspid = TCut("dequal.TrkPIDDeM>0.95");
-  _epluspid = TCut("dequal.TrkPIDDeP>0.95");
-  _eminustrig = TCut("(trigbits&0x80080)>0"); // negative, TrkPatRec or CalPatRec
-  _eplustrig = TCut("(trigbits&0x100100)>0"); // positive, TrkPatRec or CalPatRec
+  _eminustq = TCut("dequal.TrkQual>0.8");
+  _eplustq = TCut("dequal.TrkQual>0.8");
+  _eminuspid = TCut("dequal.TrkPID>0.95");
+  _epluspid = TCut("dequal.TrkPID>0.95");
+  _eminustrig = TCut("trigbits>0"); // negative, TrkPatRec or CalPatRec
+  _eplustrig = TCut("trigbits>0"); // positive, TrkPatRec or CalPatRec
   snprintf(ctext,200,"abs(deent.mom-%f)<%f",eminusmom,momwin);
   _eminusrmom = TCut(ctext);
   snprintf(ctext,200,"abs(deent.mom-%f)<%f",eplusmom,momwin);
@@ -268,10 +268,10 @@ void TrkAnaPlots::PID() {
   qvqmu->SetStats(0);
   qvqe->SetStats(0);
 
-  _tn->Project("qvqmu","dequal.TrkQualDeM:dequal.TrkPIDDeM",_downstream&&_muminus);
-  _tp->Project("+qvqmu","dequal.TrkQualDeP:dequal.TrkPIDDeP",_downstream&&_muplus);
-  _tn->Project("qvqe","dequal.TrkQualDeM:dequal.TrkPIDDeM",_downstream&&_eminus);
-  _tp->Project("+qvqe","dequal.TrkQualDeP:dequal.TrkPIDDeP",_downstream&&_eplus);
+  _tn->Project("qvqmu","dequal.TrkQual:dequal.TrkPID",_downstream&&_muminus);
+  _tp->Project("+qvqmu","dequal.TrkQual:dequal.TrkPID",_downstream&&_muplus);
+  _tn->Project("qvqe","dequal.TrkQual:dequal.TrkPID",_downstream&&_eminus);
+  _tp->Project("+qvqe","dequal.TrkQual:dequal.TrkPID",_downstream&&_eplus);
 
   _pidqcan = new TCanvas("pidqcan","pidqcan",1000,500);
   _pidqcan->Divide(2,1);
@@ -434,8 +434,8 @@ void TrkAnaPlots::MomRes(TrackerRegion region) {
 
 void TrkAnaPlots::SelPlots(int charge) {
   vector<string> names={"trig", "trkqual", "t0", "pitch","d0", "rmax", "PID", "CRVDT", "Momentum"};
-  vector<string> titles={"Trigger Bits;log2(trigger)", "Track Fit Quality;trkqual", "t0", "Reco pitch;tan(#lambda)", "d0;d0 (mm)", "Rmax;rmax (mm)", "PID;TrkPIDDeM", "CRV #Deltat;t0-#t_{CRV}", "Track Momentum;Momentum (MeV/c)"};
-  vector<string> vars={"log2(trigbits)", "dequal.TrkQualDeM", "de.t0", "deent.td", "deent.d0", "abs(de.ent.d0+2.0/deent.om)", "dequal.TrkPIDDeM", "de.t0-crvinfo._timeWindowStart[bestcrv]", "deent.mom"};
+  vector<string> titles={"Trigger Bits;log2(trigger)", "Track Fit Quality;trkqual", "t0", "Reco pitch;tan(#lambda)", "d0;d0 (mm)", "Rmax;rmax (mm)", "PID;TrkPID", "CRV #Deltat;t0-#t_{CRV}", "Track Momentum;Momentum (MeV/c)"};
+  vector<string> vars={"log2(trigbits)", "dequal.TrkQual", "de.t0", "deent.td", "deent.d0", "abs(de.ent.d0+2.0/deent.om)", "dequal.TrkPID", "de.t0-crvinfo._timeWindowStart[bestcrv]", "deent.mom"};
   vector<double> low={0,-0.01, 400.0, 0.2, -150.0, 450.0, -0.01, -150.0, 95.0 };
   vector<double> hi={32, 1.1, 1700.0, 1.8, 150.0, 650.0, 1.1, 250.0, 110.0 };
   
@@ -984,9 +984,9 @@ void TrkAnaPlots::TrkQual(const char* extra) {
   tq->SetStats(0);
   tqtch->SetStats(0);
   tqntch->SetStats(0);
-  _tn->Project("tq","dequal.TrkQualDeM",ecut);
-  _tn->Project("tqtch","dequal.TrkQualDeM","detch.active"+ecut);
-  _tn->Project("tqntch","dequal.TrkQualDeM","!detch.active"+ecut);
+  _tn->Project("tq","dequal.TrkQual",ecut);
+  _tn->Project("tqtch","dequal.TrkQual","detch.active"+ecut);
+  _tn->Project("tqntch","dequal.TrkQual","!detch.active"+ecut);
 
   double* tqintarray = tq->GetIntegral();
 
@@ -1044,8 +1044,8 @@ void TrkAnaPlots::TrkQualRes(float tqcut) {
   badf->Sumw2();
   char tqcutgc[40];
   char tqcutbc[40];
-  snprintf(tqcutgc,40,"dequal.TrkQualDeM>%f",tqcut);
-  snprintf(tqcutbc,40,"dequal.TrkQualDeM>0");
+  snprintf(tqcutgc,40,"dequal.TrkQual>%f",tqcut);
+  snprintf(tqcutbc,40,"dequal.TrkQual>0");
   TCut tqcutg(tqcutgc);
   TCut tqcutb(tqcutbc);
   TCut reco(_reco);
@@ -1160,9 +1160,9 @@ void TrkAnaPlots::StrawMat() {
 
 void TrkAnaPlots::TrkCaloHit(float tqcut,int pdg) {
   char cstring[100];
-  snprintf(cstring,100,"detch.active&&dequal.TrkQualDeM>%f&&abs(demc.pdg)==%i&&demcxit.momz>0",tqcut,pdg);
+  snprintf(cstring,100,"detch.active&&dequal.TrkQual>%f&&abs(demc.pdg)==%i&&demcxit.momz>0",tqcut,pdg);
   TCut goodtrkcalo(cstring);
-  snprintf(cstring,100,"(!detch.active)&&dequal.TrkQualDeM>%f&&abs(demc.pdg)==%i&&demcxit.momz>0",tqcut,pdg);
+  snprintf(cstring,100,"(!detch.active)&&dequal.TrkQual>%f&&abs(demc.pdg)==%i&&demcxit.momz>0",tqcut,pdg);
   TCut goodtrk(cstring);
   TCut disk0("detch.disk==0");
   TCut disk1("detch.disk==1");
@@ -1377,7 +1377,7 @@ void TrkAnaPlots::TrkCaloHit(float tqcut,int pdg) {
 }
 
 void TrkAnaPlots::TrkCaloHitMC() {
-  TCut goodtrkcalo("dequal.TrkQualDeM>0.6&&detch.active");
+  TCut goodtrkcalo("dequal.TrkQual>0.6&&detch.active");
   TCut disk0("detch.disk==0");
   TCut disk1("detch.disk==1");
 
@@ -1445,8 +1445,8 @@ void TrkAnaPlots::TrkCaloHitMC() {
 }
 
 void TrkAnaPlots::t0() {
-  TCut goodtrkcalo("dequal.TrkQualDeM>0.6&&detch.active");
-  TCut goodtrknocalo("dequal.TrkQualDeM>0.6&&!detch.active");
+  TCut goodtrkcalo("dequal.TrkQual>0.6&&detch.active");
+  TCut goodtrknocalo("dequal.TrkQual>0.6&&!detch.active");
   TCut disk0("detch.disk==0");
   TCut disk1("detch.disk==1");
   TH1F* t00 = new TH1F("t00","Track Fit t_{0} Resolution, TrkCaloHit;t_{0} reco - t_{0} MC (ns)",100,-5,5);
@@ -1479,23 +1479,23 @@ void TrkAnaPlots::Eff(unsigned norm, double plo, double phi, int q) {
   TH1F* cctrig = new TH1F("cctrig","Reco Fraction vs Generated Momentum",100,plo,phi);
 
   TCut t0cut("de.t0>700");
-  TCut goodfit("dequal.TrkQualDeM>0.4");
+  TCut goodfit("dequal.TrkQual>0.4");
 
-  TCut cc("(trigbits&0x4)==0x4");
+  TCut cc("trigbits>0");
   // trigger depends on sign
   TCut goodtpr, goodcpr, goodtrk, goodtrig;
   if(q <0){
     // electrons
-    goodtpr = TCut("(trigbits&0x200)==0x200");
-    goodcpr = TCut("(trigbits&0x8)==0x8");
-    goodtrk = TCut("(trigbits&0x208)>0");
-    goodtrig = TCut("(trigbits&0x20C)>0");
+    goodtpr = TCut("trigbits>0");
+    goodcpr = TCut("trigbits>0");
+    goodtrk = TCut("trigbits>0");
+    goodtrig = TCut("trigbits>0");
   } else {
     // positrons
-    goodtpr = TCut("(trigbits&0x400)==0x400");
-    goodcpr = TCut("(trigbits&0x10)==0x10");
-    goodtrk = TCut("(trigbits&0x410)>0");
-    goodtrig = TCut("(trigbits&0x414)>0");
+    goodtpr = TCut("trigbits>0");
+    goodcpr = TCut("trigbits>0");
+    goodtrk = TCut("trigbits>0");
+    goodtrig = TCut("trigbits>0");
   }
 
   allrec->SetStats(0);
@@ -1558,10 +1558,10 @@ void TrkAnaPlots::PlotIPA() {
   TH1F* momres = new TH1F("momres","Momentum Resolution;P_{reco} - P_{MC} (MeV/c)",100,-5.0,5.0);
   TH1F* nactive = new TH1F("nactive","N Active Straw Hits",121,-0.5,120.5);
   trkqual->SetStats(0);
-  _tn->Project("trkqual","dequal.TrkQualDeM");
-  _tn->Project("mom","deent.mom","dequal.TrkQualDeM>0.4");
-  _tn->Project("momres","deent.mom-sqrt(demcent.momx^2+demcent.momy^2+demcent.momz^2)","dequal.TrkQualDeM>0.4");
-  _tn->Project("nactive","de.nactive","dequal.TrkQualDeM>0.4");
+  _tn->Project("trkqual","dequal.TrkQual");
+  _tn->Project("mom","deent.mom","dequal.TrkQual>0.4");
+  _tn->Project("momres","deent.mom-sqrt(demcent.momx^2+demcent.momy^2+demcent.momz^2)","dequal.TrkQual>0.4");
+  _tn->Project("nactive","de.nactive","dequal.TrkQual>0.4");
   _ipacan = new TCanvas("ipacan","ipacan",800,800);
   _ipacan->Divide(2,2);
   _ipacan->cd(1);

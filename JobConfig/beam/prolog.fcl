@@ -30,7 +30,7 @@ mu2e.physics.producers.g4run.commonBase: {
    debug:  @local::mu2eg4DefaultDebug
    visualization: @local::mu2eg4NoVisualization
 
-   generatorModuleLabel: @nil
+   inputs: @nil
 
    SDConfig: {
       enableSD: [ tracker, calorimeter, calorimeterRO, CRV, virtualdetector, protonabsorber ]
@@ -45,11 +45,9 @@ mu2e.physics.producers.g4run.commonBase: {
 
 #----------------------------------------------------------------
 mu2e.physics.producers.g4run.flash: @local::mu2e.physics.producers.g4run.commonBase
-mu2e.physics.producers.g4run.flash.generatorModuleLabel: ""
-mu2e.physics.producers.g4run.flash.MultiStageParameters: {
-   simParticleNumberOffset: 300000
-   genInputHits:  [ "mothersFilter:DetectorMother" ]
-   inputSimParticles: "mothersFilter"
+mu2e.physics.producers.g4run.flash.inputs: {
+   primaryType: "StepPoints"
+   primaryTag:  "mothersFilter:DetectorMother"
    inputMCTrajectories: ""
    inputPhysVolumeMultiInfo: "compressPVMothers"
 }
@@ -57,7 +55,10 @@ mu2e.physics.producers.g4run.flash.SDConfig.preSimulatedHits:  ["mothersFilter:v
 
 #----------------------------------------------------------------
 mu2e.physics.producers.g4run.muons: @local::mu2e.physics.producers.g4run.commonBase
-mu2e.physics.producers.g4run.muons.generatorModuleLabel: "generate"
+mu2e.physics.producers.g4run.muons.inputs: {
+   primaryType: "GenParticles"
+   primaryTag: "generate"
+}
 mu2e.physics.producers.g4run.muons.SDConfig.preSimulatedHits: []
 
 #================================================================

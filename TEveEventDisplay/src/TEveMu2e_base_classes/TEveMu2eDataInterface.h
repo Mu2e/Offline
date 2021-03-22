@@ -27,7 +27,7 @@ namespace mu2e{
     class TEveMu2eDataInterface {
     public:
       #ifndef __CINT__
-      TEveMu2eDataInterface() : fHitsList2D(0),fHitsList3D(0),fCrystalHitList(0),fTrackList2D(0),fTrackList3D(0), fClusterList2D(0), fClusterList3D(0), fCrvList2D(0), fCrvList3D(0), fExtTrackList2D(0), fExtTrackList3D(0){};
+      TEveMu2eDataInterface() : fHitsList2D(0),fHitsList3D(0),fCrystalHitList(0),fTrackList2D(0),fTrackList3D(0), fClusterList2D_disk0(0), fClusterList2D_disk1(0), fClusterList3D(0), fCrvList2D(0), fCrvList3D(0), fExtTrackList2D(0), fExtTrackList3D(0){};
       TEveMu2eDataInterface(const TEveMu2eDataInterface &);
       TEveMu2eDataInterface& operator=(const TEveMu2eDataInterface &);
       virtual ~TEveMu2eDataInterface(){};
@@ -38,7 +38,8 @@ namespace mu2e{
       TEveElementList *fCrystalHitList;
       TEveElementList *fTrackList2D;
       TEveElementList *fTrackList3D;
-      TEveElementList *fClusterList2D;
+      TEveElementList *fClusterList2D_disk0;
+      TEveElementList *fClusterList2D_disk1;
       TEveElementList *fClusterList3D;
       TEveElementList *fCrvList2D;
       TEveElementList *fCrvList3D;
@@ -46,14 +47,23 @@ namespace mu2e{
       TEveElementList *fExtTrackList3D;
       
       std::vector<double> getTimeRange(bool firstloop, const ComboHitCollection *chcol, const CrvRecoPulseCollection *crvcoincol, const CaloClusterCollection *clustercol, const CaloHitCollection *cryHitcol);
-      void AddCRVInfo(bool firstloop, const CrvRecoPulseCollection *crvcoincol, double time, bool Redraw, bool show2D, bool accumulate);
-      std::vector<double> AddComboHits(bool firstloop, const ComboHitCollection *chcol, TEveMu2e2DProjection *tracker2Dproj, double time, bool Redraw, bool show2D, double min_energy, double max_energy, bool accumulate);
-      std::vector<double> AddCaloClusters(bool firstloop, const CaloClusterCollection *clustercol,TEveMu2e2DProjection *calo2Dproj,  double time, bool Redraw, bool show2D, double min_energy, double max_energy, bool accumulate);
-      void AddCrystalHits(bool firstloop, const CaloHitCollection *cryHitcol, TEveMu2e2DProjection *calo2Dproj,  double time, bool Redraw, bool show2D, bool accumulate);
-      void AddCosmicTrack(bool firstloop, const CosmicTrackSeedCollection *cosmiccol, TEveMu2e2DProjection *tracker2Dproj, double time, bool Redraw, bool show2D, bool accumulate);
-      void AddHelixPieceWise(bool firstloop, const KalSeedCollection *seedcol, TEveMu2e2DProjection *tracker2Dproj, double time, bool Redraw, bool show2D, bool accumulate);
-      void AddTrackExitTrajectories(bool firstloop, const TrkExtTrajCollection *trkextcol, double time, bool Redraw, bool show2D, bool accumulate);
-     
+
+      void AddCRVInfo(bool firstloop, const CrvRecoPulseCollection *crvcoincol, double min_time, double max_time, bool Redraw, bool accumulate);
+      
+      std::vector<double> AddComboHits(bool firstloop, const ComboHitCollection *chcol, TEveMu2e2DProjection *tracker2Dproj, bool Redraw, double min_energy, double max_energy, double min_time, double max_time, bool accumulate, TEveProjectionManager *TXYMgr, TEveProjectionManager *TRZMgr, TEveScene *scene1, TEveScene *scene2);
+      
+      std::vector<double> AddCaloClusters(bool firstloop, const CaloClusterCollection *clustercol,TEveMu2e2DProjection *calo2Dproj,  bool Redraw, double min_energy, double max_energy, double min_time, double max_time, bool accumulate, TEveProjectionManager *CfXYMgr, TEveProjectionManager *CfRZMgr, TEveScene *scene1, TEveScene *scene2);
+      
+      void AddCrystalHits(bool firstloop, const CaloHitCollection *cryHitcol, TEveMu2e2DProjection *calo2Dproj,  double min_time, double max_time, bool Redraw, bool accumulate, TEveProjectionManager *CfXYMgr, TEveProjectionManager *CfRZMgr, TEveScene *scene1, TEveScene *scene2);
+      
+      void AddCosmicTrack(bool firstloop, const CosmicTrackSeedCollection *cosmiccol, TEveMu2e2DProjection *tracker2Dproj, double min_time, double max_time, bool Redraw, bool accumulate, TEveProjectionManager *TXYMgr, TEveProjectionManager *TRZMgr, TEveScene *scene1, TEveScene *scene2);
+      
+      void AddHelixPieceWise3D(bool firstloop, std::tuple<std::vector<std::string>, std::vector<const KalSeedCollection*>> track_tuple, TEveMu2e2DProjection *tracker2Dproj, double min_time, double max_time, bool Redraw, bool accumulate, TEveProjectionManager *TXYMgr, TEveProjectionManager *TRZMgr, TEveScene *scene1, TEveScene *scene2);
+      
+      void AddHelixPieceWise2D(bool firstloop, std::tuple<std::vector<std::string>, std::vector<const KalSeedCollection*>> track_tuple, TEveMu2e2DProjection *tracker2Dproj, double min_time, double max_time, bool Redraw, bool accumulate, TEveProjectionManager *TXYMgr, TEveProjectionManager *TRZMgr, TEveScene *scene1, TEveScene *scene2);
+      
+      void AddTrackExitTrajectories(bool firstloop, const TrkExtTrajCollection *trkextcol, double min_time, double max_time, bool Redraw, bool accumulate);
+
       ClassDef(TEveMu2eDataInterface,0);
 
   }; //end class def

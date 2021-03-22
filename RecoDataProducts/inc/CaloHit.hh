@@ -13,13 +13,18 @@ namespace mu2e {
    class CaloHit
    {
        public:
-         CaloHit(): crystalId_(-1),nSiPMs_(0),time_(0.),timeErr_(0.),eDep_(0.),eDepErr_(0.),recoCaloDigis_()
+          CaloHit(): crystalId_(-1),nSiPMs_(0),time_(0.),eDep_(0.),eDepErr_(0.),timeErr_(0.),recoCaloDigis_()
           {}
 
           CaloHit(int crystalId, int nSiPMs, float time, float timeErr, float eDep, float eDepErr, 
                   std::vector<art::Ptr<CaloRecoDigi>> &CaloRecoDigi)  :
-                    crystalId_(crystalId),nSiPMs_(nSiPMs),time_(time),timeErr_(timeErr),eDep_(eDep),
-                    eDepErr_(eDepErr),recoCaloDigis_(CaloRecoDigi)
+                    crystalId_(crystalId),nSiPMs_(nSiPMs),time_(time),eDep_(eDep),
+                    eDepErr_(eDepErr),timeErr_(timeErr),recoCaloDigis_(CaloRecoDigi)
+          {}
+
+          CaloHit(int crystalId, int nSiPMs, float time, float eDep)  :
+	    crystalId_(crystalId),nSiPMs_(nSiPMs),time_(time),eDep_(eDep),
+	    eDepErr_(0),timeErr_(0)
           {}
 
           int                                          crystalID      () const { return crystalId_; }
@@ -37,9 +42,9 @@ namespace mu2e {
           int    crystalId_;
           int    nSiPMs_;
           float  time_;             
-          float  timeErr_;             
           float  eDep_;        
           float  eDepErr_;        
+          float  timeErr_;             
           std::vector<art::Ptr<CaloRecoDigi>> recoCaloDigis_;
 
    };

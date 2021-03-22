@@ -6,10 +6,9 @@
 
 #include "fcl/minimalMessageService.fcl"
 #include "fcl/standardServices.fcl"
-#include "fcl/standardProducers.fcl"
 #include "JobConfig/primary/prolog.fcl"
+#include "JobConfig/digitize/prolog.fcl"
 #include "JobConfig/reco/prolog.fcl"
-#include "Trigger/fcl/templates.fcl"
 
 process_name : ceSimReco
 
@@ -19,64 +18,88 @@ services: @local::Services.SimAndReco
 physics: {
   producers : {
     @table::Primary.producers
-    CrvSteps : @local::CrvSteps
+    @table::Digitize.producers
     @table::Reconstruction.producers
+    @table::Trigger.producers 
     generate : @local::CeEndpointGun
-    protonBunchIntensity : {
-      module_type: ProtonBunchIntensityFlat
-      mean: 0.0 # No PBI possible for pure signal! 
-      halfWidth : 1.0
-    } 
   }
   filters : { 
     @table::Primary.filters
+    @table::Digitize.filters 
     @table::Reconstruction.filters
+    @table::Trigger.filters
   }
   analyzers: {
     @table::Primary.analyzers
+    @table::Digitize.analyzers
     @table::Reconstruction.analyzers
     @table::Trigger.analyzers
   }
 
   TriggerPath : [
     @sequence::Primary.TriggerPath,
-    protonBunchIntensity,
-    CrvSteps,
-    @sequence::Reconstruction.DePath,
-    @sequence::Reconstruction.CrvRecoSequence,
-    @sequence::Reconstruction.RecoMCSequence
+    @sequence::Digitize.TriggerPath,
+    @sequence::Reconstruction.CaloReco,
+    @sequence::Reconstruction.TrkReco,
+    @sequence::Reconstruction.CrvReco,
+    @sequence::Reconstruction.DeReco,
+    @sequence::Reconstruction.MCReco,
+    RecoFilter
   ]
-  EndPath : @local::Primary.EndPath
+  EndPath : [
+    @sequence::Primary.EndSequence,
+    @sequence::Digitize.EndSequence,
+    @sequence::Reconstruction.EndSequence,
+    Output
+  ]
 }
 
 outputs : { 
   Output : {
      module_type : RootOutput
-     #SelectEvents : [ TriggerPath ]
+     SelectEvents : [ TriggerPath ]
      fileName    : @nil
      outputCommands : [
-	 @sequence::Reconstruction.HighReco,
-	 @sequence::Reconstruction.LowReco,
-	 @sequence::Reconstruction.RecoMC,
+	 @sequence::Reconstruction.HighRecoProducts,
+	 @sequence::Reconstruction.MCRecoProducts,
+	 @sequence::Digitize.KeptProducts,
+	 @sequence::Primary.KeptProducts,
 	 # drop reco products which be empty
 	 "drop mu2e::Crv*_*_*_*",
+	 "drop *_*_cosmicTimeMap_*",
+	 "drop *_g4run_*_*",
 	 "drop mu2e::StepPointMCs_*_CRV_*",
-	 "drop *_MHDeP_*_*",
-	 "drop *_KSFDeP_*_*",
-	 "drop *_KFFDeP_*_*",
+	 "drop mu2e::SimParticleart::Ptrmu2e::MCTrajectorystd::map_*_*_*", 
+	 "drop *_*DeP_*_*",
+	 "drop *_compressDetStepMCs_*_*",
+	 "drop *_compressDigiMCs_*_*",
+	 "drop mu2e::CaloDigis_CaloDigiMaker_*_*",
+         "drop mu2e::StrawDigiADCWaveforms_makeSD_*_*",
+         "drop mu2e::StrawDigis_makeSD_*_*",
+	 "keep mu2e::CaloShowerSteps_compressDigiMCs_*_*",
 	 "keep mu2e::StatusG4_*_*_*"
      ]
   }
 }
 #include "JobConfig/primary/epilog.fcl"
+#include "JobConfig/digitize/epilog.fcl"
 #include "JobConfig/reco/epilog.fcl"
+physics.analyzers.digiCompressionCheck.SelectEvents : [ TriggerPath ]
+physics.analyzers.recoCompressionCheck.SelectEvents : [ TriggerPath ]
+#
+# on-spill EWM
+physics.producers.EWMProducer.SpillType : 1
+# add trigger paths
+# This doesn't currently work, as the step filter stops processing before digis are made, and
+# the digis are required for trigger FIXME!
+##include "gen/fcl/Trigger/OnSpillTrigMenu/OnSpillTrigMenu.fcl"
 
 # print summaries
 services.scheduler.wantSummary: true
 services.TimeTracker.printSummary: true
 
 # histogram file
-services.TFileService.fileName: "nts.owner.val-ceSimReco.dsconf.seq.root"
+services.TFileService.fileName: "/dev/null"
 # art file 
 outputs.Output.fileName : "mcs.owner.val-ceSimReco.dsconf.seq.art"
 
@@ -94,7 +117,4 @@ services.GeometryService.inputFile : "Mu2eG4/geom/geom_common_current.txt"
 physics.producers.generate.muonStops.inputFiles : [
 "mergedMuonStops/nts.mu2e.DS-TGTstops.MDC2018a.001002_00000000.root" ]
 
-physics.producers.CrvSteps.stepPointsModuleLabels : ["g4run"]
-physics.producers.CrvPhotons.crvStepModuleLabels  : ["CrvSteps"]
-physics.producers.CrvPhotons.crvStepProcessNames  : ["ceSimReco"]
 

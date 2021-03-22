@@ -63,6 +63,7 @@ namespace mu2e {
                                oldTSPM.position() + offset,
                                oldTSPM.postPosition() + offset,
                                oldTSPM.momentum(),
+                               oldTSPM.postMomentum(),
                                oldTSPM.stepLength(),
                                oldTSPM.endProcessCode() );
       //      std::cout << ".  Made myTSPM." << std::endl;

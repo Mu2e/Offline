@@ -95,6 +95,8 @@ namespace mu2e {
     //having this duplicated is inelegant but when it comes time to rip out Tier 1 I think it will be easier
     _protonBeamRotation.rotateX(rotHaymanX).rotateY(rotHaymanY).rotateZ(rotHaymanZ);
     _protonBeamInverseRotation = _protonBeamRotation.inverse();
+    _halfLength = _productionTargetMotherHalfLength;
+    _prodTargetPosition = _haymanProdTargetPosition;
   }
 
 

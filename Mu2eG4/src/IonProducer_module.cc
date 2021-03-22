@@ -93,7 +93,7 @@ namespace mu2e {
 
     cet::map_vector_key one{1};
     SimParticle sp(one,  // index
-                   0,    // stageOffset
+                   0,    // simStage
                    art::Ptr<SimParticle>(), // parent
                    pdgId_,
                    art::Ptr<GenParticle>(),
@@ -133,8 +133,9 @@ namespace mu2e {
                          0., // time
                          0., // proper time
                          pos_,
-                         pos_,
+                         pos_, // making post position the same as pre
                          mom_,
+                         mom_, // making post momentum the same as pre
                          0., // stepLength
                          ProcessCode::mu2ePrimary
                          );

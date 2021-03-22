@@ -38,8 +38,6 @@ namespace mu2e {
 	  Comment("SimParticle collection")};
 	fhicl::Sequence<std::string> genIDs { Name("PrimaryGenIds"),
 	  Comment("Generator IDs of potential Primary Particles")};
-	fhicl::Sequence<art::InputTag> SPTO { Name("TimeOffsets"),
-	  Comment("Sim Particle Time Offset Maps")};
       };
       using Parameters = art::EDProducer::Table<Config>;
       explicit FindMCPrimary(const Parameters& conf);
@@ -49,9 +47,9 @@ namespace mu2e {
       int _debug;
       bool _single, _none;
       art::InputTag _gpc, _spc;
-      SimParticleTimeOffset _toff;
       std::vector<int> _pgenids; 
       double _proton_mass; // cache for efficiency
+
   };
 
   FindMCPrimary::FindMCPrimary(const Parameters& config )  : 
@@ -61,7 +59,6 @@ namespace mu2e {
     _none(config().none()),
     _gpc(config().genPC()),
     _spc(config().simPC()),
-    _toff(config().SPTO()),
     _proton_mass(GlobalConstantsHandle<ParticleDataTable>()->particle(PDGCode::p_plus).ref().mass().value())
   {
     consumes<GenParticleCollection>(_gpc);
@@ -75,8 +72,6 @@ namespace mu2e {
   }
 
   void FindMCPrimary::produce(art::Event& event) {
-    // update the time maps
-    _toff.updateMap(event);
     // create output: by default, this is null
     GenParticle pgp(PDGCode::null, GenId::unknown,CLHEP::Hep3Vector(),
 	CLHEP::HepLorentzVector(), 0.0,0.0);
@@ -85,6 +80,7 @@ namespace mu2e {
     auto const& gpc = *gpch;
     auto spch = event.getValidHandle<SimParticleCollection>(_spc);
     auto const& spc = *spch;
+
     // check for a single particle
     std::vector<GenParticleCollection::const_iterator> pgps;
     if(_single && gpc.size() ==1){
@@ -149,15 +145,14 @@ namespace mu2e {
       for(auto isp=spc.begin(); isp != spc.end(); ++isp) {
 	if(isp->second.genParticle() == gpp){
       // create a ptr for this SimParticle and remember it
-	  size_t spindex = std::distance(spc.begin(),isp);
-	  auto spp = art::Ptr<SimParticle>(spch,spindex);
+	   auto spp = art::Ptr<SimParticle>(spch, isp->first.asUint());
 	  simps.push_back(spp);
 	}
       }
     }
     // check consistency
-    if(pgps.size() != simps.size())
-      throw cet::exception("Simulation")<<"FindMCPrimary: GenParticle <-> SimParticle inconsistency" << std::endl;
+    if(pgp.pdgId() == PDGCode::null)
+      throw cet::exception("Simulation")<<"FindMCPrimary: GenParticle Not Found" << std::endl;
     // check that at least 1 primary particle was found
     if( !_none && simps.size()==0 )
       throw cet::exception("Simulation")<<"FindMCPrimary: No Primary Particle found" << std::endl;

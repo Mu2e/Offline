@@ -4,43 +4,15 @@
 # original author: Ralf Ehrlich, UVA 
 # (based on Dave Brown's CeEndpoint)
 #
-#include "JobConfig/primary/prolog.fcl"
-process_name: Garagecosmic
-
-source: { module_type : EmptyEvent }
-services: @local::Services.Sim
-physics : { 
-  producers : {
-    generate: 
-    {
-       module_type : EventGenerator
-       inputfile   : "JobConfig/cosmic/genconfig_cosmic_calib_ext.txt"
-    }
-    @table::Primary.producers
-  }
-  filters: { @table::Primary.filters }
-  analyzers: { @table::Primary.analyzers }
-# disable CRV digis
-  TriggerPath : [ generate, genCounter, g4run, g4status,
-    @sequence::CommonMC.DigiSim,
-    @sequence::TrackerMC.DigiSim,
-    DigiFilter,
-    @sequence::CaloDigiMC.DigiSim,
-    compressDigiMCs ]
-  EndPath : @local::Primary.EndPath
+#include "JobConfig/primary/primary.fcl"
+# set the generator
+physics.producers.generate : {
+   module_type : EventGenerator
+   inputfile   : "JobConfig/cosmic/genconfig_cosmic_calib_ext.txt"
 }
-outputs : { 
-  Output :@local::Primary.Output
-}
-#
-# final configuration
-#
-#include "JobConfig/primary/epilog.fcl"
-# use garage geometry
+# use garage geometry.  Update to extracted geometry FIXME!
 services.GeometryService.inputFile   : "Mu2eG4/geom/geom_common_garage.txt"
 # update the maximum # of particles
 physics.producers.g4run.ResourceLimits.maxSimParticleCollectionSize: 1000000
 # customize the output
-services.TFileService.fileName: "nts.owner.Garage-cosmic.version.sequencer.root"
-outputs.Output.fileName: "dig.owner.Garage-cosmic.version.sequencer.art"
-physics.end_paths : [ EndPath ] # needed for generate_fcl
+outputs.Output.fileName: "dts.owner.Garage-cosmic.version.sequencer.art"

@@ -494,7 +494,7 @@ namespace mu2e {
     bool haveSimPart = ( simParticles.isValid() && volsHandle.isValid() );
 
     PhysicalVolumeInfoSingleStage const* vols = (volsHandle.isValid() && !volsHandle->empty()) ?
-      &volsHandle->at(0).second : nullptr;
+      &volsHandle->at(0) : nullptr;
 
     // Other files might have empty collections.
     if ( haveSimPart ){

@@ -1,0 +1,28 @@
+// Convert existing cosmic stage-2 jobs into det steps format
+// In addition the configuration filters events with candidates below 500 MeV
+// Yuri Oksuzian, 2021
+
+#include "JobConfig/primary/primary.fcl"
+
+source : { module_type : RootInput }
+
+physics.producers.FindMCPrimary.PrimaryGenIds: ["CosmicCRY", "CosmicCORSIKA"]
+physics.TriggerPath: [ @sequence::TrackerMC.StepSim, @sequence::CaloMC.StepSim, CrvSteps,
+    TrkStepFilter, CaloStepFilter, compressDetStepMCs, FindMCPrimary ]
+
+physics.filters.TrkStepFilter : @local::Primary.filters.DetStepFilter
+physics.filters.TrkStepFilter.MaximumPartMom: 500
+physics.filters.TrkStepFilter.CaloShowerSteps: [ ]
+physics.filters.CaloStepFilter : @local::Primary.filters.DetStepFilter
+physics.filters.CalStepFilter.MaximumPartMom: 500
+physics.filters.CaloStepFilter.StrawGasSteps: [ ]
+
+physics.producers.CaloShowerStepMaker.caloStepPointCollection: ["detectorFilter:calorimeter"]
+physics.producers.CrvSteps.stepPointsModuleLabels : ["detectorFilter"]
+physics.producers.compressDetStepMCs.simParticleTag: "detectorFilter"
+physics.producers.compressDetStepMCs.stepPointMCTags : [ "detectorFilter:virtualdetector", "detectorFilter:protonabsorber" ]
+physics.producers.compressDetStepMCs.mcTrajectoryTag: "detectorFilter"
+outputs.Output.fileName        : "sim.owner.CosmicConverted.version.sequencer.art"
+// CRY3 and CRY4 samples don't have visible energy and post step position
+physics.producers.CrvSteps.useTotalEDep: true
+physics.producers.CrvSteps.noPostPositionAvailable: true

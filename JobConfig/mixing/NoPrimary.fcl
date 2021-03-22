@@ -3,41 +3,24 @@
 #
 # original author: Dave Brown, LBNL
 #
-#include "JobConfig/mixing/prolog.fcl"
-process_name: NoPrimary
+#include "JobConfig/mixing/Mix.fcl"
 
 source: { module_type : EmptyEvent }
-services: @local::Services.Sim
-physics : { 
-  producers : { @table::Mixing.producers }
-  filters: { @table::Mixing.filters }
-  analyzers: { @table::Mixing.analyzers }
-  TriggerPath : [ @sequence::Mixing.MixSequence, compressDigiMCs ]
-  EndPath : [ digiCompressionCheck, FullOutput, DetOutput ] 
-}
-outputs : { 
-  FullOutput :@local::Mixing.Output
-  DetOutput :@local::Mixing.Output
-}
-outputs.DetOutput.outputCommands : [ "drop *_*_*_*",
-		     "keep mu2e::ProtonBunchIntensity_*_*_*",
-    		     "keep mu2e::StrawDigis_*_*_*",
-    		     "keep mu2e::CaloDigis_*_*_*",
-		     "keep mu2e::CrvDigis_*_*_*" ]
 #
 # final configuration
 #
 #include "JobConfig/mixing/epilog.fcl"
-#patches; not clear how to get rid of this FIXME!
-physics.producers.generate.module_type : StoppedParticleReactionGun 
-physics.producers.protonTimeMap.InputTimeMaps : [ @sequence::Mixing.protonTimeMaps ]
-physics.producers.muonTimeMap.InputTimeMaps : [ ]
-physics.producers.compressDigiMCs.simParticleTags : [ @sequence::Mixing.TrkCalMixSequence, @sequence::Mixing.CRVMixSequence ]
+#patches since there are no primaries
 physics.producers.compressDigiMCs.extraStepPointMCTags : [ ]
 physics.producers.compressDigiMCs.mcTrajectoryTag : ""
+physics.producers.compressDigiMCs.simParticleTags : ["mustopMixer"]
+physics.producers.compressDigiMCs.caloShowerStepTags : ["mustopMixer"]
+physics.producers.compressDigiMCs.primaryParticleTag : ""
+physics.producers.makeSD.StrawGasStepModule : "mustopMixer"
+physics.producers.CrvPhotons.crvStepModuleLabels : [ "mustopMixer" ]
+physics.producers.CrvPhotons.crvStepProcessNames : [ "" ]
+physics.producers.CaloShowerROMaker.caloShowerStepCollection : ["mustopMixer" ]
+physics.producers.FindMCPrimary : @erase
 
 # customize the output
-services.TFileService.fileName: "nts.owner.NoPrimary-mix.version.sequencer.root"
-outputs.FullOutput.fileName: "dig.owner.NoPrimary-mix.version.sequencer.art"
-outputs.DetOutput.fileName: "dig.owner.NoPrimary-mix-det.version.sequencer.art"
 physics.end_paths : [ EndPath ] # needed for generate_fcl

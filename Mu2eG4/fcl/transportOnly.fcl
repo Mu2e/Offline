@@ -34,7 +34,7 @@ physics : {
     @table::TrackerMC.producers
 
     # Calorimeter sequence
-    @table::CaloDigiMC.producers
+    @table::CaloMC.producers
     @table::CaloReco.producers
 
     # Save state of the random number engines.
@@ -68,7 +68,7 @@ physics : {
 
   }
 
-  p1 : [generate , g4run, @sequence::CommonMC.DigiSim, @sequence::TrackerMC.StepAndDigiSim, @sequence::CaloDigiMC.DigiSim, @sequence::CaloReco.Reco,randomsaver ]
+  p1 : [generate , g4run, @sequence::CommonMC.DigiSim, @sequence::TrackerMC.StepAndDigiSim, @sequence::CaloMC.StepAndDigiSim, @sequence::CaloReco.Reco,randomsaver ]
 #  e1 : [readGens, checkhits, readvd, outfile, dump]
   e1 : [readGens, checkhits, readvd, outfile]
 
@@ -92,6 +92,7 @@ outputs:  {
 #  }
 
 }
+physics.producers.EWMProducer.SpillType : 1
 
 // Initialze seeding of random engines: do not put these lines in base .fcl files for grid jobs.
 services.SeedService.baseSeed         :   8

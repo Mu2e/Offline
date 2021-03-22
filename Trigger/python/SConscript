@@ -12,11 +12,11 @@ helper = mu2e_helper(env)
 # this python code generates Trigger fcl in gen/fcl/Trigger
 import genTriggerFcl
 # run like this, it just generates the source and target file listss
-menus=["allPaths","OnSpillTrigMenu","OffSpillTrigMenu","ExtrPosTrigMenu"]
+menus=["OnSpillTrigMenu","OffSpillTrigMenu","ExtrPosTrigMenu"]
 for m in menus:
-    sources,targets = genTriggerFcl.generate(m, False, False)
+    sources,targets,command = genTriggerFcl.generate(m, False, False)
     # this schedules it to run again to make the files
-    helper.make_generic(sources,targets,"Trigger/python/genTriggerFcl.py -c {}".format(m))
+    helper.make_generic(sources,targets,command+" -c "+m)
 
 # this tells emacs to view this file in python mode.
 # Local Variables:

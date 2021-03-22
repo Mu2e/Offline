@@ -6,6 +6,10 @@
 import os, re
 Import('env')
 
+# if building for the trigger exe, don't build this lib
+if env['TRIGGER'] == 'on':
+    Return()
+
 Import('mu2e_helper')
 
 helper=mu2e_helper(env)
@@ -18,10 +22,11 @@ helper=mu2e_helper(env)
 #
 
 g4inc    = os.environ['G4INCLUDE'] + '/Geant4'
+g4inc2   = os.environ['G4INCLUDE']
 g4libdir = os.environ['G4LIB']
 cryptoppinc = os.environ['CRYPTOPP_INC']
 cryptopplibdir = os.environ['CRYPTOPP_LIB']
-g4LibInc = [ '-L'+g4libdir, '-I'+g4inc, '-L'+cryptopplibdir, '-I'+cryptoppinc ]
+g4LibInc = [ '-L'+g4libdir, '-I'+g4inc, '-I'+g4inc2, '-L'+cryptopplibdir, '-I'+cryptoppinc ]
 g4_version = os.environ['GEANT4_VERSION']
 g4_version=g4_version.replace('_','')
 if g4_version[2] == '9':
@@ -190,6 +195,9 @@ if g4_version < '4095':
     G4LIBS = G4GRANULARLIBS
 else:
     G4LIBS = G4GLOBALIBS
+
+if g4_version > '4106':
+    G4GLOBALIBS.append('libG4ptl')
 
 # Link libraries needed to build G4 with OPENGL and possibly Qt
 #OPENGL_LIBS = [ 'GLU', 'GL' ]

@@ -5,6 +5,8 @@
 #include "ConfigTools/inc/SimpleConfig.hh"
 #include "GeometryService/inc/GeomHandle.hh"
 #include "CalorimeterGeom/inc/Calorimeter.hh"
+#include "TrackerGeom/inc/Tracker.hh"
+#include "GeometryService/inc/DetectorSystem.hh"
 //C++
 #include <vector>
 using namespace CLHEP;
@@ -36,15 +38,6 @@ namespace mu2e{
       return c;
     }
 
-    inline CLHEP::Hep3Vector GetGDMLTrackerCenter() {
-      std::string filename("Mu2eG4/geom/mu2eHall.txt");
-      SimpleConfig HallConfig(filename);
-      double yCenter  = HallConfig.getDouble("yOfFloorSurface.below.mu2eOrigin");
-      double zCenter  = 1288; 
-      double xCenter  = 0;
-      CLHEP::Hep3Vector c(xCenter, yCenter, zCenter);
-      return c;
-    }
 
     inline CLHEP::Hep3Vector PointToCalo( CLHEP::Hep3Vector point, int nDisk){
       CLHEP::Hep3Vector Mu2eCaloOrigin = GetCaloCenter(nDisk);
@@ -53,12 +46,23 @@ namespace mu2e{
     }
 
     inline double TrackerLength(){
-      //From GDML:
-      return 300.8;
+      GeomHandle<Tracker> trkr;
+      TubsParams envelope(trkr->g4Tracker()->getInnerTrackerEnvelopeParams());
+      double dz{(envelope.zHalfLength())};
+      std::cout<<"Length "<<dz*2<<std::endl;
+      return (dz*2);
+    }
+    
+    inline CLHEP::Hep3Vector NewCenter(){
+      GeomHandle<Tracker> trkr;
+      GeomHandle<DetectorSystem> det;
+      CLHEP::Hep3Vector origin = trkr->origin();
+      CLHEP::Hep3Vector InMu2e = det->toMu2e(origin);
+      return InMu2e;
     }
 
     inline double CaloLength(){
-      //From GDML:
+      //Not used anymore....
       return 320;
     }
 }

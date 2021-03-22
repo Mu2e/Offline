@@ -1,5 +1,5 @@
 // This job starts with protons on target and writes stopped muons
-// into a framework format output file. Run 
+// into a framework format output file. Run
 // JobConfig/beam/beam_nts3tgtstops.fcl on the output to get an ntuple.
 //
 // Andrei Gaponenko, 2015
@@ -54,37 +54,7 @@ physics : {
          module_type: GenEventCounter
       }
 
-      g4run : {
-         module_type: Mu2eG4
-         physics: @local::mu2eg4DefaultPhysics
-         ResourceLimits: @local::mu2eg4DefaultResourceLimits
-	 TrajectoryControl: @local::mu2eg4NoTrajectories
-         debug: @local::mu2eg4DefaultDebug
-         visualization: @local::mu2eg4NoVisualization
-
-         generatorModuleLabel: generate
-
-         SDConfig: {
-            enableSD: [ virtualdetector ] // activate just the explicitly listed SDs
-            TimeVD: { times: [] }
-         }
-
-         Mu2eG4StackingOnlyCut: @local::mu2eg4CutNeutrinos
-
-         Mu2eG4SteppingOnlyCut: {}
-
-         // Mu2eG4 cuts are evaluated in the listed order.
-         // The first match wins.  For the "intersection"
-         // type, the first false stops the evaluation.
-         // For the "union" type the first true stops the evaluation.
-         Mu2eG4CommonCut: {
-            type: union
-            pars: [
-               @local::killLowEnergyStuff,
-               @local::killInSideVolumes
-            ]
-         }
-      }
+      g4run: @local::g4run
 
       compressPVTGTStops: {
          module_type: CompressPhysicalVolumes
@@ -101,7 +71,6 @@ physics : {
          physVolInfoInput : "g4run"
          stoppingMaterial : "StoppingTarget_Al"
          particleTypes : [ 13 ] // mu-
-         particleOffsetThreshold: 0
          verbosityLevel: 1
       }
    }
@@ -117,7 +86,7 @@ physics : {
       g4consistent: {
          module_type: FilterStatusG4
          input: "g4run"
-	 maxAcceptedStatus: 9  #  status 10 and above means StepPointMCCollection may have non-dereferencable pointers
+         maxAcceptedStatus: 9  #  status 10 and above means StepPointMCCollection may have non-dereferencable pointers
       }
    }
 
@@ -143,6 +112,22 @@ outputs: {
       fileName    : "sim.owner.stoppedMuonsSingleStage.version.sequencer.art"
    }
 }
+
+//================================================================
+// Mu2eG4 cuts are evaluated in the listed order.
+// The first match wins.  For the "intersection"
+// type, the first false stops the evaluation.
+// For the "union" type the first true stops the evaluation.
+physics.producers.g4run.Mu2eG4CommonCut: {
+   type: union
+   pars: [
+      @local::killLowEnergyStuff,
+      @local::killInSideVolumes
+   ]
+}
+
+physics.producers.g4run.SDConfig.enableSD: [ virtualdetector ] // activate just the explicitly listed SDs
+
 // Not too coarse - we care about stopped muon positions.
 physics.producers.g4run.physics.minRangeCut : 0.010 // mm
 

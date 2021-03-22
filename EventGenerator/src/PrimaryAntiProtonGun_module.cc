@@ -124,7 +124,6 @@ namespace mu2e {
     typedef cet::map_vector_key key_type;
 
     key_type                       idPbar;
-    const unsigned                 stageOffsetPbar{0};
     const PDGCode::type            pdgIdPbar{PDGCode::anti_proton};
     const CLHEP::Hep3Vector&       positionPbar{0.,0.,0.};
     const CLHEP::HepLorentzVector& momentumPbar{0.,0.,0.,0.};
@@ -487,7 +486,7 @@ namespace mu2e {
     auto const& oldParent = simParticles[key_type(iInteracting)];
     SimParticle newPbar(
                         newPbarKey                         // id
-                        ,0                                 // stageOffset
+                        ,0                                 // simStage
                         ,pptr                              // parentSim
                         ,PDGCode::anti_proton              // pdgId
                         ,art::Ptr<GenParticle>()           // since this comes from a SimParticle the ptr to a GenParticle should be null
@@ -602,6 +601,7 @@ namespace mu2e {
                                    ,oldParent.endPosition()     // born where parent stopped
                                    ,oldParent.endPosition()     // making both post and pre step point positions the same
                                    ,momPbar.vect()              // momentum created here
+                                   ,momPbar.vect()              // making both post and pre step point momenta the same
                                    ,0.                          // step length
                                    ,ProcessCode::Transportation // this is like a virtual detector
                                    );

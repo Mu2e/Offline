@@ -1,0 +1,31 @@
+# Sophie Middleton 
+#include "fcl/minimalMessageService.fcl"
+#include "fcl/standardProducers.fcl"
+#include "fcl/standardServices.fcl"
+#include "TrkDiag/fcl/prolog.fcl"
+#include "TrkPatRec/fcl/prolog.fcl"
+#include "TrackerConditions/fcl/prolog.fcl"
+#include "TrkHitReco/fcl/prolog.fcl"
+#include "TEveEventDisplay/fcl/prolog.fcl"
+
+source : { module_type : RootInput
+}
+
+services : @local::Services.Reco
+
+process_name : MultipleHelixED
+
+source : { module_type : RootInput }
+
+physics :
+{
+  
+  producers : { @table::TrkHitReco.producers} 
+  analyzers : { @table::TEveDis.analyzers}
+  filters : { @table::TEveDis.filters}
+}
+
+physics.RecoPath : [ EventFilter, @sequence::TrkHitReco.PrepareHits]
+physics.EndPath  : [ @sequence::TEveDis.seqHelix] 
+
+

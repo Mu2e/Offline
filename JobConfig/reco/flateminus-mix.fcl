@@ -1,4 +1,0 @@
-#include "JobConfig/reco/mcdigis-trig_nocosmic.fcl"
-services.TFileService.fileName: "nts.owner.flateminus-mix.version.sequencer.root"
-outputs.Output.fileName: "mcs.owner.flateminus-mix.version.sequencer.art"
-

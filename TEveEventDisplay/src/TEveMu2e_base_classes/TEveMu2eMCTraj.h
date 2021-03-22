@@ -9,19 +9,15 @@
 #include "RecoDataProducts/inc/ComboHit.hh"
 
 namespace mu2e {
-  class TEveMu2eMCTraj : public TEvePointSet{//, public TPolyLine3D {
+  class TEveMu2eMCTraj : public TEvePointSet{
     public:
       #ifndef __CINT__
-      explicit TEveMu2eMCTraj(){};
+      explicit TEveMu2eMCTraj();
       virtual ~TEveMu2eMCTraj(){};
       void DrawHit3D(const std::string &pstr, Int_t b,CLHEP::Hep3Vector HitPos, TEveElementList *list); 
-      void DrawLine(const std::string &pstr, CLHEP::Hep3Vector Start, CLHEP::Hep3Vector End, TEveElementList *HitList);
-      inline std::string DataTitle(const std::string &pstr, Int_t n){
-        std::string dstr = "";
-        if (n != -1){dstr=" hit#" + std::to_string(n) + "\nLayer: ";}
-        std::string strlab=pstr+dstr;
-        return (strlab);
-      }
+      void DrawSimpleLine(const std::string &pstr, CLHEP::Hep3Vector Start, CLHEP::Hep3Vector End, TEveElementList *HitList);
+      void DrawFullLine(const std::string &pstr, CLHEP::Hep3Vector Start, CLHEP::Hep3Vector End, TEveElementList *HitList);
+      std::string DataTitle(const std::string &pstr, Int_t n);
       #endif
       ClassDef(TEveMu2eMCTraj, 0);
     };

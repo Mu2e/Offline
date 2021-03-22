@@ -96,7 +96,7 @@ namespace mu2e {
     , randSpectrum_(eng_, spectrum_.getPDF(), spectrum_.getNbins())
     , randomUnitSphere_(eng_)
     , stops_(eng_, pset.get<fhicl::ParameterSet>("muonStops"))
-    , doHistograms_       (pset.get<bool>("doHistograms",true ) )
+    , doHistograms_       (pset.get<bool>("doHistograms",false ) )
   {
     produces<mu2e::GenParticleCollection>();
 

@@ -68,19 +68,6 @@ helper.make_plugins( [
    'boost_system',
     ] )
 
-helper.make_dict_and_map( [
-    mainlib,
-    'mu2e_RecoDataProducts',
-    'art_Persistency_Provenance',
-    'art_Persistency_Common',
-    'art_Utilities',
-    'canvas',
-    'CLHEP',
-    'cetlib',
-    'cetlib_except',
-    'Core',
-    'boost_system'
-    ] )
 
 # This tells emacs to view this file in python mode.
 # Local Variables:
