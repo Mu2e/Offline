@@ -220,25 +220,10 @@ namespace mu2e {
                 G4Colour::Red(),
                 "PTM");
         }
-        // std::vector<double> gasHalfDims2;
-        // gasHalfDims2.push_back(windowWidth/2.);
-        // gasHalfDims2.push_back(windowHeight/2.);
-        // gasHalfDims2.push_back(gasLength2/2.);
-        // nestBox(gasName2,
-        //         gasHalfDims2,
-        //         gasMaterial,
-        //         noRotation,
-        //         G4ThreeVector(0.0, 0.0, gasZ2),
-        //         PWCContainerInfo,
-        //         0,
-        //         G4Colour::Red(),
-        //         "PTM");
-        // between HV plane 2 and HV plane 3
+        
         // TODO: treat as indiv sensitive detectors
-        //std::string gasName3 = "pTargetMonGas3";
         std::string wireGasNameHoriz = "pTargetMonWireHoriz";
         wireGasNameHoriz.append(nameSuffix);
-        //gasName3.append(nameSuffix);
         double gasLength3 = hv3Z - hv2Z - windowThick;
         double gasZ3 = 0.5*(hv3Z + hv2Z);
         int numHorizWires = static_cast<int>(windowWidth/wireSpacing);
@@ -260,19 +245,7 @@ namespace mu2e {
                 G4Colour::Red(),
                 "PTM");
         }
-        // std::vector<double> gasHalfDims3;
-        // gasHalfDims3.push_back(windowWidth/2.);
-        // gasHalfDims3.push_back(windowHeight/2.);
-        // gasHalfDims3.push_back(gasLength3/2.);
-        // nestBox(gasName3,
-        //         gasHalfDims3,
-        //         gasMaterial,
-        //         noRotation,
-        //         G4ThreeVector(0.0, 0.0, gasZ3),
-        //         PWCContainerInfo,
-        //         0,
-        //         G4Colour::Red(),
-        //         "PTM");
+
         // between HV plane 3 and ground plane 2
         std::string gasName4 = "pTargetMonGas4";
         gasName4.append(nameSuffix);
@@ -292,21 +265,6 @@ namespace mu2e {
                 G4Colour::Red(),
                 "PTM");
 
-        // std::string gasName = "pTargetMonGas";
-        // gasName.append(nameSuffix);
-        // std::vector<double> gasHalfDims;
-        // gasHalfDims.push_back(windowWidth/2.);
-        // gasHalfDims.push_back(windowHeight/2.);
-        // gasHalfDims.push_back(gasLength/2.);
-        // nestBox(gasName,
-        //         gasHalfDims,
-        //         gasMaterial,
-        //         noRotation,
-        //         G4ThreeVector(0.0, 0.0, 0.0),
-        //         PWCContainerInfo,
-        //         0,
-        //         G4Colour::Red(),
-        //         "PTM");
         
     } //constructTargetHallPWC
 
