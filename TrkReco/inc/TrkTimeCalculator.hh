@@ -34,7 +34,7 @@ namespace mu2e
           fhicl::Atom<bool>    useTOTdrift{    Name("UseTOTDrift"),         Comment("Switch to use the time drift"),true };
           fhicl::Atom<double>  beta{           Name("StrawHitBeta"),        Comment("Beta of the particle-hypothesis used"),1.0 };
           fhicl::Atom<double>  shErr{          Name("StrawHitTimeErr"),     Comment("Effective hit time res. without TOT"),9.7 };
-          fhicl::Atom<double>  caloTimeOffset{ Name("TrkToCaloTimeOffset"), Comment("Time offsets for downstream particls in the calorimeter"),-0.4 };
+          fhicl::Atom<double>  caloTimeOffset{ Name("TrkToCaloTimeOffset"), Comment("Time offsets for downstream particles in the calorimeter"),-0.4 };
           fhicl::Atom<double>  caloZOffset{    Name("CaloShowermaxZ"),      Comment("Location of shower max WRT COG Z position"),-120.0 };
           fhicl::Atom<double>  caloTimeErr{    Name("CaloTimeErr"),         Comment("Time resolution for calorimeter"),0.5 };
        };
