@@ -97,7 +97,7 @@ services.SeedService.baseSeed         :   8
 services.SeedService.maxUniqueEngines :  20
 #services.message.destinations.log.noTimeStamps : true
 # inform the geometry service it is not the standard Mu2e Detector
-services.GeometryService.standardMu2eDetector: false
+# done via the tool_type above now
 #physics.producers.g4run.visualization.initMacro : "Mu2eG4/test/visxz.mac"
 #physics.producers.g4run.visualization.initMacro : "Mu2eG4/test/vismqt.mac"
 
