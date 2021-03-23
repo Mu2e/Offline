@@ -24,7 +24,7 @@
 
 // Mu2e includes
 #include "ConfigTools/inc/SimpleConfig.hh"
-#include "Mu2eG4/inc/PrimaryGeneratorAction.hh"
+#include "Mu2eG4/inc/Mu2eG4PrimaryGeneratorAction.hh"
 #include "Mu2eG4/inc/SimParticlePrimaryHelper.hh"
 #include "Mu2eUtilities/inc/ThreeVectorUtil.hh"
 #include "MCDataProducts/inc/GenParticleCollection.hh"
@@ -40,7 +40,7 @@ using namespace std;
 
 namespace mu2e {
 
-  PrimaryGeneratorAction::PrimaryGeneratorAction(const Mu2eG4Config::Debug& debug,
+  Mu2eG4PrimaryGeneratorAction::Mu2eG4PrimaryGeneratorAction(const Mu2eG4Config::Debug& debug,
                                                  Mu2eG4PerThreadStorage* tls)
     : verbosityLevel_(debug.diagLevel())
     , testPDGIdToGenerate_(debug.ionToGenerate(testIonToGenerate_))
@@ -52,7 +52,7 @@ namespace mu2e {
   }
 
 
-  void PrimaryGeneratorAction::GeneratePrimaries(G4Event* event) {
+  void Mu2eG4PrimaryGeneratorAction::GeneratePrimaries(G4Event* event) {
 
     art::ServiceHandle<GeometryService> geom;
     SimpleConfig const & _config = geom->config();
@@ -71,7 +71,7 @@ namespace mu2e {
 
     switch(inputs.primaryType().id()) {
     default: throw cet::exception("CONFIG")
-        << "Error: PrimaryGeneratorAction: unknown Mu2eG4 primaryType id = "
+        << "Error: Mu2eG4PrimaryGeneratorAction: unknown Mu2eG4 primaryType id = "
         <<inputs.primaryType().id()
         <<std::endl;
 
@@ -175,7 +175,7 @@ namespace mu2e {
 
   }
 
-  void PrimaryGeneratorAction::addG4Particle(G4Event *event,
+  void Mu2eG4PrimaryGeneratorAction::addG4Particle(G4Event *event,
                                              PDGCode::type pdgId,
                                              double excitationEnergy,
                                              int floatLevelBaseIndex,

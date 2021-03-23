@@ -1,5 +1,5 @@
-#ifndef Mu2eG4_PrimaryGeneratorAction_hh
-#define Mu2eG4_PrimaryGeneratorAction_hh
+#ifndef Mu2eG4_Mu2eG4PrimaryGeneratorAction_hh
+#define Mu2eG4_Mu2eG4PrimaryGeneratorAction_hh
 //
 // Give generated tracks to G4 by copying information from a GenParticleCollection.
 //
@@ -20,10 +20,10 @@ namespace mu2e {
 
   class Mu2eG4PerThreadStorage;
 
-  class PrimaryGeneratorAction : public G4VUserPrimaryGeneratorAction {
+  class Mu2eG4PrimaryGeneratorAction : public G4VUserPrimaryGeneratorAction {
   public:
 
-    explicit PrimaryGeneratorAction(const Mu2eG4Config::Debug& debug,
+    explicit Mu2eG4PrimaryGeneratorAction(const Mu2eG4Config::Debug& debug,
                                     Mu2eG4PerThreadStorage* pts);
 
     // This is the interface specified by G4.
@@ -51,4 +51,4 @@ namespace mu2e {
   };
 
 }  // end namespace mu2e
-#endif /* Mu2eG4_PrimaryGeneratorAction_hh */
+#endif /* Mu2eG4_Mu2eG4PrimaryGeneratorAction_hh */

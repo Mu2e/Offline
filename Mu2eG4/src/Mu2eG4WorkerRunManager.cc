@@ -19,7 +19,7 @@
 #include "Mu2eG4/inc/SteppingVerbose.hh"
 #include "Mu2eG4/inc/WorldMaker.hh"
 #include "Mu2eG4/inc/physicsListDecider.hh"
-#include "Mu2eG4/inc/PrimaryGeneratorAction.hh"
+#include "Mu2eG4/inc/Mu2eG4PrimaryGeneratorAction.hh"
 #include "Mu2eG4/inc/Mu2eG4SteppingAction.hh"
 #include "Mu2eG4/inc/Mu2eG4StackingAction.hh"
 #include "Mu2eG4/inc/TrackingAction.hh"
@@ -166,7 +166,7 @@ namespace mu2e {
 
   void Mu2eG4WorkerRunManager::initializeUserActions(const G4ThreeVector& origin_in_world){
 
-    userPrimaryGeneratorAction = new PrimaryGeneratorAction(conf_.debug(), perThreadObjects_.get());
+    userPrimaryGeneratorAction = new Mu2eG4PrimaryGeneratorAction(conf_.debug(), perThreadObjects_.get());
     SetUserAction(userPrimaryGeneratorAction);
 
     steppingAction_ = new Mu2eG4SteppingAction(conf_.debug(),

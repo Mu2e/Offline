@@ -8,7 +8,7 @@
 
 //Mu2e includes
 #include "Mu2eG4/inc/ActionInitialization.hh"
-#include "Mu2eG4/inc/PrimaryGeneratorAction.hh"
+#include "Mu2eG4/inc/Mu2eG4PrimaryGeneratorAction.hh"
 #include "Mu2eG4/inc/Mu2eG4StackingAction.hh"
 #include "Mu2eG4/inc/TrackingAction.hh"
 #include "Mu2eG4/inc/Mu2eG4SteppingAction.hh"
@@ -57,7 +57,7 @@ namespace mu2e {
   // used for defining user action classes in sequential mode.
   void ActionInitialization::Build() const
   {
-    PrimaryGeneratorAction* genAction = new PrimaryGeneratorAction(conf_.debug(), perThreadStorage_);
+    Mu2eG4PrimaryGeneratorAction* genAction = new Mu2eG4PrimaryGeneratorAction(conf_.debug(), perThreadStorage_);
     SetUserAction(genAction);
 
     Mu2eG4SteppingAction* steppingAction = new Mu2eG4SteppingAction(conf_.debug(),
