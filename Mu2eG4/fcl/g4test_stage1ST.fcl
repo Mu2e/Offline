@@ -13,7 +13,7 @@ process_name : g4tests1
 # Start form an empty source
 source : {
    module_type : RootInput
-   fileNames: [ "sim.owner.g4test_stage0.ver.seq.root"]
+   fileNames: [ "sim.owner.g4test_stage0.ver.seq.art"]
 }
 
 services : { @table::Services.Sim }
