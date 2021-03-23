@@ -1,5 +1,5 @@
-#ifndef G4Helper_G4Helper_hh
-#define G4Helper_G4Helper_hh
+#ifndef Mu2eG4Helper_Mu2eG4Helper_hh
+#define Mu2eG4Helper_Mu2eG4Helper_hh
 //
 // The design of G4 requires that users new many objects and then delete
 // them at the appropriate time, usually the end of the G4 run.  This
@@ -12,8 +12,8 @@
 //
 
 // Mu2e includes
-#include "G4Helper/inc/AntiLeakRegistry.hh"
-#include "G4Helper/inc/VolumeInfo.hh"
+#include "Mu2eG4Helper/inc/AntiLeakRegistry.hh"
+#include "Mu2eG4Helper/inc/VolumeInfo.hh"
 
 // Framework include files
 #include "art/Framework/Services/Registry/ServiceHandle.h"
@@ -28,10 +28,10 @@
 
 namespace mu2e {
 
-  class G4Helper {
+  class Mu2eG4Helper {
   public:
-    G4Helper(const fhicl::ParameterSet&, art::ActivityRegistry&);
-    ~G4Helper();
+    Mu2eG4Helper(const fhicl::ParameterSet&, art::ActivityRegistry&);
+    ~Mu2eG4Helper();
 
     AntiLeakRegistry& antiLeakRegistry(){ return _antiLeakRegistry; }
 
@@ -52,5 +52,5 @@ namespace mu2e {
 
 }
 
-DECLARE_ART_SERVICE(mu2e::G4Helper, SHARED)
-#endif /* G4Helper_G4Helper_hh */
+DECLARE_ART_SERVICE(mu2e::Mu2eG4Helper, SHARED)
+#endif /* Mu2eG4Helper_Mu2eG4Helper_hh */

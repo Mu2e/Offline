@@ -23,7 +23,7 @@
 #include "MCDataProducts/inc/StepPointMCCollection.hh"
 #include "MCDataProducts/inc/ExtMonFNALSimHitCollection.hh"
 #include "Mu2eG4/inc/SensitiveDetectorName.hh"
-#include "G4Helper/inc/G4Helper.hh"
+#include "Mu2eG4Helper/inc/Mu2eG4Helper.hh"
 #include "Mu2eG4/inc/Mu2eG4PerThreadStorage.hh"
 #include "GeometryService/inc/GeometryService.hh"
 
@@ -133,7 +133,7 @@ namespace mu2e {
   void SensitiveDetectorHelper::instantiateLVSDs(const SimpleConfig& config){
 
     G4SDManager* SDman = G4SDManager::GetSDMpointer();
-    art::ServiceHandle<G4Helper> helper;
+    art::ServiceHandle<Mu2eG4Helper> helper;
 
     for(auto& iter : lvsd_) {
       iter.second.sensitiveDetector = new Mu2eSensitiveDetector(iter.first, config);

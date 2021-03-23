@@ -2,7 +2,7 @@
 
 #include "Mu2eG4/inc/constructProtonBeamDump.hh"
 #include "Mu2eG4/inc/constructExtMonFNAL.hh"
-#include "G4Helper/inc/AntiLeakRegistry.hh"
+#include "Mu2eG4Helper/inc/AntiLeakRegistry.hh"
 
 #include <iostream>
 #include <cmath>
@@ -38,9 +38,9 @@
 #include "GeometryService/inc/WorldG4.hh"
 #include "GeometryService/inc/Mu2eEnvelope.hh"
 
-#include "G4Helper/inc/G4Helper.hh"
-#include "G4Helper/inc/VolumeInfo.hh"
-#include "G4Helper/inc/AntiLeakRegistry.hh"
+#include "Mu2eG4Helper/inc/Mu2eG4Helper.hh"
+#include "Mu2eG4Helper/inc/VolumeInfo.hh"
+#include "Mu2eG4Helper/inc/AntiLeakRegistry.hh"
 #include "ConfigTools/inc/SimpleConfig.hh"
 #include "Mu2eG4/inc/nestBox.hh"
 #include "Mu2eG4/inc/MaterialFinder.hh"
@@ -48,7 +48,7 @@
 #include "Mu2eG4/inc/FieldMgr.hh"
 
 #include "Mu2eG4/inc/finishNesting.hh"
-#include "G4Helper/inc/VolumeInfo.hh"
+#include "Mu2eG4Helper/inc/VolumeInfo.hh"
 
 //#define AGDEBUG(stuff) std::cerr<<"AG: "<<__FILE__<<", line "<<__LINE__<<": "<<stuff<<std::endl;
 #define AGDEBUG(stuff)

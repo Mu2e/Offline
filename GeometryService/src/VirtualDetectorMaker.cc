@@ -33,8 +33,8 @@
 
 #include "CalorimeterGeom/inc/DiskCalorimeter.hh"
 
-//#include "G4Helper/inc/G4Helper.hh"
-//#include "G4Helper/inc/VolumeInfo.hh"
+//#include "Mu2eG4Helper/inc/Mu2eG4Helper.hh"
+//#include "Mu2eG4Helper/inc/VolumeInfo.hh"
 
 using namespace std;
 using namespace CLHEP;

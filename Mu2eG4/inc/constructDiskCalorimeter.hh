@@ -13,7 +13,7 @@
 
 // Mu2e includes.
 #include "CalorimeterGeom/inc/DiskCalorimeter.hh"
-#include "G4Helper/inc/VolumeInfo.hh"
+#include "Mu2eG4Helper/inc/VolumeInfo.hh"
 #include "Mu2eG4/inc/MaterialFinder.hh"
 #include "G4String.hh"
 #include "G4VSolid.hh"

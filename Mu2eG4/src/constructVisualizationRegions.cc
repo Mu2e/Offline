@@ -26,9 +26,9 @@
 #include "GeometryService/inc/WorldG4.hh"
 #include "GeometryService/inc/G4GeometryOptions.hh"
 
-#include "G4Helper/inc/AntiLeakRegistry.hh"
-#include "G4Helper/inc/G4Helper.hh"
-#include "G4Helper/inc/VolumeInfo.hh"
+#include "Mu2eG4Helper/inc/AntiLeakRegistry.hh"
+#include "Mu2eG4Helper/inc/Mu2eG4Helper.hh"
+#include "Mu2eG4Helper/inc/VolumeInfo.hh"
 
 #include "ConfigTools/inc/SimpleConfig.hh"
 #include "Mu2eG4/inc/findMaterialOrThrow.hh"

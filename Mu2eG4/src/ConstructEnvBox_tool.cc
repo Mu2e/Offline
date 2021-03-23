@@ -18,7 +18,7 @@
 #include "Mu2eG4/inc/InitEnvToolBase.hh"
 #include "Mu2eG4/inc/nestTubs.hh"
 #include "Mu2eG4/inc/nestBox.hh"
-#include "G4Helper/inc/VolumeInfo.hh"
+#include "Mu2eG4Helper/inc/VolumeInfo.hh"
 #include "ConfigTools/inc/SimpleConfig.hh"
 
 // G4 includes
@@ -27,7 +27,7 @@
 #include "G4Color.hh"
 #include "G4Tubs.hh"
 #include "G4RotationMatrix.hh"
-#include "G4Helper/inc/G4Helper.hh"
+#include "Mu2eG4Helper/inc/Mu2eG4Helper.hh"
 #include "CLHEP/Units/SystemOfUnits.h"
 
 using namespace std;

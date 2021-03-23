@@ -11,10 +11,10 @@
 #include "Mu2eG4/inc/generateFieldMap.hh"
 #include "BeamlineGeom/inc/Beamline.hh"
 #include "BeamlineGeom/inc/StraightSection.hh"
-#include "G4Helper/inc/VolumeInfo.hh"
+#include "Mu2eG4Helper/inc/VolumeInfo.hh"
 #include "GeometryService/inc/GeomHandle.hh"
 #include "GeometryService/inc/GeometryService.hh"
-#include "G4Helper/inc/G4Helper.hh"
+#include "Mu2eG4Helper/inc/Mu2eG4Helper.hh"
 
 #include "art_root_io/TFileService.h"
 #include "art/Framework/Principal/Handle.h"

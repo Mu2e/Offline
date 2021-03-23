@@ -9,7 +9,7 @@
 //
 // This method is used for setting and overriding various flags that
 // are specified when creating volumes in G4.  Ideally, it would go in
-// the G4Helper service, but it is tied to GeometryService because of
+// the Mu2eG4Helper service, but it is tied to GeometryService because of
 // SimpleConfig and linkage loops.
 //
 // The idiom of this helper is the following:
