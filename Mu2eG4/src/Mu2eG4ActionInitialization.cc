@@ -1,5 +1,5 @@
 //
-// ActionInitialization.cc provides implementation of Mu2e G4's built-in action initialization.
+// Mu2eG4ActionInitialization.cc provides implementation of Mu2e G4's built-in action initialization.
 //
 // Author: Lisa Goodenough
 // Date: 2017/05/08
@@ -7,10 +7,10 @@
 //
 
 //Mu2e includes
-#include "Mu2eG4/inc/ActionInitialization.hh"
-#include "Mu2eG4/inc/PrimaryGeneratorAction.hh"
+#include "Mu2eG4/inc/Mu2eG4ActionInitialization.hh"
+#include "Mu2eG4/inc/Mu2eG4PrimaryGeneratorAction.hh"
 #include "Mu2eG4/inc/Mu2eG4StackingAction.hh"
-#include "Mu2eG4/inc/TrackingAction.hh"
+#include "Mu2eG4/inc/Mu2eG4TrackingAction.hh"
 #include "Mu2eG4/inc/Mu2eG4SteppingAction.hh"
 #include "Mu2eG4/inc/Mu2eG4EventAction.hh"
 #include "Mu2eG4/inc/Mu2eG4RunAction.hh"
@@ -27,7 +27,7 @@
 
 namespace mu2e {
 
-  ActionInitialization::ActionInitialization(const Mu2eG4Config::Top& conf,
+  Mu2eG4ActionInitialization::Mu2eG4ActionInitialization(const Mu2eG4Config::Top& conf,
                                              SensitiveDetectorHelper* sensitive_detectorhelper,
                                              Mu2eG4PerThreadStorage* per_thread_storage,
                                              PhysicalVolumeHelper* phys_volume_helper,
@@ -46,18 +46,18 @@ namespace mu2e {
     originInWorld_(origin_in_world)
   {}
 
-  ActionInitialization::~ActionInitialization()
+  Mu2eG4ActionInitialization::~Mu2eG4ActionInitialization()
   {}
 
   //nothing to do, this is only for the Master Thread
-  void ActionInitialization::BuildForMaster() const
+  void Mu2eG4ActionInitialization::BuildForMaster() const
   {}
 
 
   // used for defining user action classes in sequential mode.
-  void ActionInitialization::Build() const
+  void Mu2eG4ActionInitialization::Build() const
   {
-    PrimaryGeneratorAction* genAction = new PrimaryGeneratorAction(conf_.debug(), perThreadStorage_);
+    Mu2eG4PrimaryGeneratorAction* genAction = new Mu2eG4PrimaryGeneratorAction(conf_.debug(), perThreadStorage_);
     SetUserAction(genAction);
 
     Mu2eG4SteppingAction* steppingAction = new Mu2eG4SteppingAction(conf_.debug(),
@@ -70,7 +70,7 @@ namespace mu2e {
 
     SetUserAction( new Mu2eG4StackingAction(*perThreadStorage_->stackingCuts, *perThreadStorage_->commonCuts) );
 
-    TrackingAction* trackingAction = new TrackingAction(conf_,
+    Mu2eG4TrackingAction* trackingAction = new Mu2eG4TrackingAction(conf_,
                                                         steppingAction,
                                                         perThreadStorage_);
     SetUserAction(trackingAction);
@@ -95,7 +95,7 @@ namespace mu2e {
   }//Build()
 
 
-  G4VSteppingVerbose* ActionInitialization::InitializeSteppingVerbose() const
+  G4VSteppingVerbose* Mu2eG4ActionInitialization::InitializeSteppingVerbose() const
   {
     return new SteppingVerbose;
   }
