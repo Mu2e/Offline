@@ -36,9 +36,9 @@
 #include "ProtonBeamDumpGeom/inc/ProtonBeamDump.hh"
 #include "ExtinctionMonitorFNAL/Geometry/inc/ExtMonFNALBuilding.hh"
 
-#include "G4Helper/inc/VolumeInfo.hh"
-#include "G4Helper/inc/G4Helper.hh"
-#include "G4Helper/inc/AntiLeakRegistry.hh"
+#include "Mu2eG4Helper/inc/VolumeInfo.hh"
+#include "Mu2eG4Helper/inc/Mu2eG4Helper.hh"
+#include "Mu2eG4Helper/inc/AntiLeakRegistry.hh"
 #include "ConfigTools/inc/SimpleConfig.hh"
 #include "Mu2eG4/inc/nestBox.hh"
 #include "Mu2eG4/inc/finishNesting.hh"
@@ -69,7 +69,7 @@ namespace mu2e {
     GeomHandle<ExtMonFNALBuilding> emfb;
 
     MaterialFinder materialFinder(config);
-    AntiLeakRegistry& reg = art::ServiceHandle<G4Helper>()->antiLeakRegistry();
+    AntiLeakRegistry& reg = art::ServiceHandle<Mu2eG4Helper>()->antiLeakRegistry();
 
     const auto geomOptions = art::ServiceHandle<GeometryService>()->geomOptions();
     geomOptions->loadEntry( config, "extMonFNAL", "extMonFNAL" );
@@ -246,7 +246,7 @@ namespace mu2e {
     const bool doSurfaceCheck       = geomOptions->doSurfaceCheck("extMonFNAL");
     const bool placePV              = geomOptions->placePV("extMonFNAL");
 
-    AntiLeakRegistry& reg = art::ServiceHandle<G4Helper>()->antiLeakRegistry();
+    AntiLeakRegistry& reg = art::ServiceHandle<Mu2eG4Helper>()->antiLeakRegistry();
 
     //----------------------------------------------------------------
     // finishNesting() uses the backwards interpretation of rotations
@@ -484,7 +484,7 @@ namespace mu2e {
 
     static const CLHEP::HepRotation HVACductRotInParent( collimator2ParentRotationInMu2e*emfb->shieldingRotationInMu2e().inverse() );
 
-    AntiLeakRegistry& reg = art::ServiceHandle<G4Helper>()->antiLeakRegistry();
+    AntiLeakRegistry& reg = art::ServiceHandle<Mu2eG4Helper>()->antiLeakRegistry();
     CLHEP::HepRotation *ductrot = reg.add(HVACductRotInParent.inverse());
 
     G4Tubs *holeCylinder = new G4Tubs( "holeCylinder", 0.0, emfb->HVACductRadius(), emfb->HVACductHalfLength(), 0.0, CLHEP::twopi );
@@ -536,7 +536,7 @@ namespace mu2e {
 
     // Test
     if (false) {
-      G4Helper* _helper = &(*(art::ServiceHandle<G4Helper>()));
+      Mu2eG4Helper* _helper = &(*(art::ServiceHandle<Mu2eG4Helper>()));
       const VolumeInfo& hall = _helper->locateVolInfo("HallAir");
       VolumeInfo test("emfMagnettest", emfb->filterMagnet().geometricCenterInMu2e() - hall.centerInMu2e(), hall.centerInWorld);
       test.solid = new G4Orb(test.name, 500.);

@@ -32,7 +32,7 @@ services :
 
   BTrkHelper             : @local::BTrkHelperDefault
 
-  G4Helper : { }
+  Mu2eG4Helper : { }
 
   SeedService : @local::automaticSeeds
 

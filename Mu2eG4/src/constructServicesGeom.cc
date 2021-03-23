@@ -22,7 +22,7 @@
 #include "DetectorSolenoidGeom/inc/DetectorSolenoid.hh"
 #include "GeometryService/inc/WorldG4.hh"
 #include "Mu2eG4/inc/findMaterialOrThrow.hh"
-#include "G4Helper/inc/VolumeInfo.hh"
+#include "Mu2eG4Helper/inc/VolumeInfo.hh"
 #include "GeomPrimitives/inc/Torus.hh"
 #include "GeomPrimitives/inc/TorusParams.hh"
 #include "GeomPrimitives/inc/Tube.hh"

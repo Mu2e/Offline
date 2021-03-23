@@ -19,12 +19,12 @@
 
 // Mu2e includes.
 #include "Mu2eG4/inc/constructProtonAbsorber.hh"
-#include "G4Helper/inc/VolumeInfo.hh"
+#include "Mu2eG4Helper/inc/VolumeInfo.hh"
 #include "GeometryService/inc/GeometryService.hh"
 #include "GeometryService/inc/GeomHandle.hh"
 #include "GeometryService/inc/VirtualDetector.hh"
 #include "StoppingTargetGeom/inc/StoppingTarget.hh"
-#include "G4Helper/inc/G4Helper.hh"
+#include "Mu2eG4Helper/inc/Mu2eG4Helper.hh"
 #include "GeomPrimitives/inc/TubsParams.hh"
 #include "GeomPrimitives/inc/PolyhedraParams.hh"
 #include "Mu2eG4/inc/findMaterialOrThrow.hh"
@@ -65,8 +65,8 @@ namespace mu2e {
 
     int  const verbosityLevel           = _config.getInt("protonabsorber.verbosityLevel", 0);
 
-    // Access to the G4HelperService.
-    G4Helper* _helper = &(*(art::ServiceHandle<G4Helper>()));
+    // Access to the Mu2eG4HelperService.
+    Mu2eG4Helper* _helper = &(*(art::ServiceHandle<Mu2eG4Helper>()));
 
     const bool inGaragePosition = _config.getBool("inGaragePosition",false); //offset detector train elements for extracted position
     const bool OPA_IPA_ST_Extracted = (inGaragePosition) ? _config.getBool("garage.extractOPA_IPA_ST") : false;
@@ -1565,7 +1565,7 @@ namespace mu2e {
 
       if ( pabs->buildSupports() ) {
 
-        AntiLeakRegistry& reg = art::ServiceHandle<G4Helper>()->antiLeakRegistry();
+        AntiLeakRegistry& reg = art::ServiceHandle<Mu2eG4Helper>()->antiLeakRegistry();
 
         const InnerProtonAbsSupport* ipaSup = pabs->getIPAsupport();
         const int ipa_version = _config.getInt("protonabsorber.version", 1); // also need to know the version number in this file

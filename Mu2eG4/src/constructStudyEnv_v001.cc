@@ -15,7 +15,7 @@
 #include "Mu2eG4/inc/MaterialFinder.hh"
 #include "Mu2eG4/inc/constructStudyEnv_v001.hh"
 #include "Mu2eG4/inc/nestTubs.hh"
-#include "G4Helper/inc/VolumeInfo.hh"
+#include "Mu2eG4Helper/inc/VolumeInfo.hh"
 #include "ConfigTools/inc/SimpleConfig.hh"
 
 // G4 includes
@@ -24,7 +24,7 @@
 #include "G4Color.hh"
 #include "G4Tubs.hh"
 #include "G4RotationMatrix.hh"
-#include "G4Helper/inc/G4Helper.hh"
+#include "Mu2eG4Helper/inc/Mu2eG4Helper.hh"
 #include "CLHEP/Units/SystemOfUnits.h"
 
 using namespace std;
@@ -60,7 +60,7 @@ namespace mu2e {
 
     double sgn(_config.getDouble("tube.sign"));
 
-    G4Helper& helper(*art::ServiceHandle<G4Helper>());
+    Mu2eG4Helper& helper(*art::ServiceHandle<Mu2eG4Helper>());
     AntiLeakRegistry& reg(helper.antiLeakRegistry());
 
     CLHEP::HepRotationZ rotZ(_config.getDouble("tube.phiRotZ")*CLHEP::degree);

@@ -9,7 +9,7 @@
 
 #include <iomanip>
 
-#include "G4Helper/inc/AntiLeakRegistry.hh"
+#include "Mu2eG4Helper/inc/AntiLeakRegistry.hh"
 
 namespace mu2e {
 

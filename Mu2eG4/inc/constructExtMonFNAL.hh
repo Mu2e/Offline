@@ -5,7 +5,7 @@
 
 #include <string>
 
-#include "G4Helper/inc/VolumeInfo.hh"
+#include "Mu2eG4Helper/inc/VolumeInfo.hh"
 #include "ExtinctionMonitorFNAL/Geometry/inc/ExtMonFNALPlaneStack.hh"
 #include "G4ThreeVector.hh"
 

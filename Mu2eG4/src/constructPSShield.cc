@@ -15,9 +15,9 @@
 #include "G4UnionSolid.hh"
 #include "G4Color.hh"
 
-#include "G4Helper/inc/G4Helper.hh"
-#include "G4Helper/inc/AntiLeakRegistry.hh"
-#include "G4Helper/inc/VolumeInfo.hh"
+#include "Mu2eG4Helper/inc/Mu2eG4Helper.hh"
+#include "Mu2eG4Helper/inc/AntiLeakRegistry.hh"
+#include "Mu2eG4Helper/inc/VolumeInfo.hh"
 
 #include "Mu2eG4/inc/findMaterialOrThrow.hh"
 #include "Mu2eG4/inc/finishNesting.hh"

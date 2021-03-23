@@ -22,8 +22,8 @@
 #include "CalorimeterGeom/inc/Disk.hh"
 #include "CalorimeterGeom/inc/Crystal.hh"
 #include "ConfigTools/inc/SimpleConfig.hh"
-#include "G4Helper/inc/VolumeInfo.hh"
-#include "G4Helper/inc/G4Helper.hh"
+#include "Mu2eG4Helper/inc/VolumeInfo.hh"
+#include "Mu2eG4Helper/inc/Mu2eG4Helper.hh"
 #include "GeometryService/inc/GeometryService.hh"
 #include "GeometryService/inc/GeomHandle.hh"
 #include "GeometryService/inc/G4GeometryOptions.hh"
@@ -215,7 +215,7 @@ namespace mu2e {
   //  
   G4LogicalVolume* caloBuildFrontPlate(const SimpleConfig& config, MaterialFinder& materialFinder, const DiskCalorimeter& cal, int idisk)
   { 
-       G4Helper& _helper = *(art::ServiceHandle<G4Helper>());
+       Mu2eG4Helper& _helper = *(art::ServiceHandle<Mu2eG4Helper>());
        AntiLeakRegistry& reg = _helper.antiLeakRegistry();
        
        const auto geomOptions = art::ServiceHandle<GeometryService>()->geomOptions();
@@ -341,7 +341,7 @@ namespace mu2e {
   //construct central part of the disk with crystals
   G4LogicalVolume* caloBuildDisk(const SimpleConfig& config, MaterialFinder& materialFinder, const DiskCalorimeter& cal, int idisk)
   {
-       G4Helper& _helper = *(art::ServiceHandle<G4Helper>());
+       Mu2eG4Helper& _helper = *(art::ServiceHandle<Mu2eG4Helper>());
        AntiLeakRegistry & reg = _helper.antiLeakRegistry();
        
        const auto geomOptions = art::ServiceHandle<GeometryService>()->geomOptions();
@@ -534,7 +534,7 @@ namespace mu2e {
   // build full backplate - yes this was annoying
   G4LogicalVolume* caloBuildBackPlate(const SimpleConfig& config, MaterialFinder& materialFinder, const DiskCalorimeter& cal, int idisk)
   {            
-       G4Helper& _helper = *(art::ServiceHandle<G4Helper>());
+       Mu2eG4Helper& _helper = *(art::ServiceHandle<Mu2eG4Helper>());
        AntiLeakRegistry& reg = _helper.antiLeakRegistry();
 
        const auto geomOptions = art::ServiceHandle<GeometryService>()->geomOptions();
@@ -904,7 +904,7 @@ namespace mu2e {
   // build full FEB
   G4LogicalVolume* caloBuildFEB(const SimpleConfig& config, MaterialFinder& materialFinder, const DiskCalorimeter& cal)
   {                  
-       G4Helper& _helper = *(art::ServiceHandle<G4Helper>());
+       Mu2eG4Helper& _helper = *(art::ServiceHandle<Mu2eG4Helper>());
        AntiLeakRegistry& reg = _helper.antiLeakRegistry();
        
        const auto geomOptions = art::ServiceHandle<GeometryService>()->geomOptions();
