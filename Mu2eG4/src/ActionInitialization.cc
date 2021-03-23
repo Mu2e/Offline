@@ -10,7 +10,7 @@
 #include "Mu2eG4/inc/ActionInitialization.hh"
 #include "Mu2eG4/inc/Mu2eG4PrimaryGeneratorAction.hh"
 #include "Mu2eG4/inc/Mu2eG4StackingAction.hh"
-#include "Mu2eG4/inc/TrackingAction.hh"
+#include "Mu2eG4/inc/Mu2eG4TrackingAction.hh"
 #include "Mu2eG4/inc/Mu2eG4SteppingAction.hh"
 #include "Mu2eG4/inc/Mu2eG4EventAction.hh"
 #include "Mu2eG4/inc/Mu2eG4RunAction.hh"
@@ -70,7 +70,7 @@ namespace mu2e {
 
     SetUserAction( new Mu2eG4StackingAction(*perThreadStorage_->stackingCuts, *perThreadStorage_->commonCuts) );
 
-    TrackingAction* trackingAction = new TrackingAction(conf_,
+    Mu2eG4TrackingAction* trackingAction = new Mu2eG4TrackingAction(conf_,
                                                         steppingAction,
                                                         perThreadStorage_);
     SetUserAction(trackingAction);

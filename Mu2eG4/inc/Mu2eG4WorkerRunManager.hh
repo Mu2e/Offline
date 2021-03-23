@@ -30,7 +30,7 @@ namespace mu2e {
   class Mu2eG4MTRunManager;
   class PrimaryGeneratorAction;
   class Mu2eG4SteppingAction;
-  class TrackingAction;
+  class Mu2eG4TrackingAction;
   class ExtMonFNALPixelSD;
   class Mu2eG4IOConfigHelper;
 
@@ -78,7 +78,7 @@ namespace mu2e {
 
     PrimaryGeneratorAction* genAction_;
     Mu2eG4SteppingAction* steppingAction_;
-    TrackingAction* trackingAction_;
+    Mu2eG4TrackingAction* trackingAction_;
 
   };
 

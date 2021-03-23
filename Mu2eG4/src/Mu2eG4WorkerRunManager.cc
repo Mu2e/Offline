@@ -22,7 +22,7 @@
 #include "Mu2eG4/inc/Mu2eG4PrimaryGeneratorAction.hh"
 #include "Mu2eG4/inc/Mu2eG4SteppingAction.hh"
 #include "Mu2eG4/inc/Mu2eG4StackingAction.hh"
-#include "Mu2eG4/inc/TrackingAction.hh"
+#include "Mu2eG4/inc/Mu2eG4TrackingAction.hh"
 #include "Mu2eG4/inc/Mu2eG4RunAction.hh"
 #include "Mu2eG4/inc/Mu2eG4EventAction.hh"
 #include "Mu2eG4/inc/ExtMonFNALPixelSD.hh"
@@ -180,7 +180,7 @@ namespace mu2e {
     SetUserAction( new Mu2eG4StackingAction(*perThreadObjects_->stackingCuts,
                                             *perThreadObjects_->commonCuts) );
 
-    trackingAction_ = new TrackingAction(conf_,
+    trackingAction_ = new Mu2eG4TrackingAction(conf_,
                                          steppingAction_,
                                          perThreadObjects_.get());
     SetUserAction(trackingAction_);

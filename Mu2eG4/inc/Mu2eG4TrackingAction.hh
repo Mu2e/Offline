@@ -1,5 +1,5 @@
-#ifndef Mu2eG4_TrackingAction_hh
-#define Mu2eG4_TrackingAction_hh
+#ifndef Mu2eG4_Mu2eG4TrackingAction_hh
+#define Mu2eG4_Mu2eG4TrackingAction_hh
 //
 // Steering routine for user tracking actions.
 // If Mu2e needs many different user tracking actions, they
@@ -35,11 +35,11 @@ namespace mu2e {
   namespace Mu2eG4Config { class Top; }
 
 
-  class TrackingAction: public G4UserTrackingAction{
+  class Mu2eG4TrackingAction: public G4UserTrackingAction{
 
   public:
 
-    TrackingAction(const Mu2eG4Config::Top& conf,
+    Mu2eG4TrackingAction(const Mu2eG4Config::Top& conf,
                    Mu2eG4SteppingAction *,
                    Mu2eG4PerThreadStorage *pts);
 
@@ -125,4 +125,4 @@ namespace mu2e {
 
 } // end namespace mu2e
 
-#endif /* Mu2eG4_TrackingAction_hh */
+#endif /* Mu2eG4_Mu2eG4TrackingAction_hh */
