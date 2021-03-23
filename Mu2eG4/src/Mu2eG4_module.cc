@@ -17,7 +17,7 @@
 #include "GeometryService/inc/GeometryService.hh"
 #include "GeometryService/inc/GeomHandle.hh"
 #include "GeometryService/inc/WorldG4.hh"
-#include "Mu2eG4/inc/ActionInitialization.hh"
+#include "Mu2eG4/inc/Mu2eG4ActionInitialization.hh"
 #include "Mu2eG4/inc/PhysicalVolumeHelper.hh"
 #include "Mu2eG4/inc/physicsListDecider.hh"
 #include "Mu2eG4/inc/preG4InitializeTasks.hh"
@@ -312,7 +312,7 @@ namespace mu2e {
 
 
     //this is where the UserActions are instantiated
-    ActionInitialization* actioninit = new ActionInitialization(conf_,
+    Mu2eG4ActionInitialization* actioninit = new Mu2eG4ActionInitialization(conf_,
                                                                 &_sensitiveDetectorHelper,
                                                                 &perThreadStore,
                                                                 &_physVolHelper,

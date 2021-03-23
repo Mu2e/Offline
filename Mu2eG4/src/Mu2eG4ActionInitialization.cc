@@ -1,5 +1,5 @@
 //
-// ActionInitialization.cc provides implementation of Mu2e G4's built-in action initialization.
+// Mu2eG4ActionInitialization.cc provides implementation of Mu2e G4's built-in action initialization.
 //
 // Author: Lisa Goodenough
 // Date: 2017/05/08
@@ -7,7 +7,7 @@
 //
 
 //Mu2e includes
-#include "Mu2eG4/inc/ActionInitialization.hh"
+#include "Mu2eG4/inc/Mu2eG4ActionInitialization.hh"
 #include "Mu2eG4/inc/Mu2eG4PrimaryGeneratorAction.hh"
 #include "Mu2eG4/inc/Mu2eG4StackingAction.hh"
 #include "Mu2eG4/inc/Mu2eG4TrackingAction.hh"
@@ -27,7 +27,7 @@
 
 namespace mu2e {
 
-  ActionInitialization::ActionInitialization(const Mu2eG4Config::Top& conf,
+  Mu2eG4ActionInitialization::Mu2eG4ActionInitialization(const Mu2eG4Config::Top& conf,
                                              SensitiveDetectorHelper* sensitive_detectorhelper,
                                              Mu2eG4PerThreadStorage* per_thread_storage,
                                              PhysicalVolumeHelper* phys_volume_helper,
@@ -46,16 +46,16 @@ namespace mu2e {
     originInWorld_(origin_in_world)
   {}
 
-  ActionInitialization::~ActionInitialization()
+  Mu2eG4ActionInitialization::~Mu2eG4ActionInitialization()
   {}
 
   //nothing to do, this is only for the Master Thread
-  void ActionInitialization::BuildForMaster() const
+  void Mu2eG4ActionInitialization::BuildForMaster() const
   {}
 
 
   // used for defining user action classes in sequential mode.
-  void ActionInitialization::Build() const
+  void Mu2eG4ActionInitialization::Build() const
   {
     Mu2eG4PrimaryGeneratorAction* genAction = new Mu2eG4PrimaryGeneratorAction(conf_.debug(), perThreadStorage_);
     SetUserAction(genAction);
@@ -95,7 +95,7 @@ namespace mu2e {
   }//Build()
 
 
-  G4VSteppingVerbose* ActionInitialization::InitializeSteppingVerbose() const
+  G4VSteppingVerbose* Mu2eG4ActionInitialization::InitializeSteppingVerbose() const
   {
     return new SteppingVerbose;
   }
