@@ -1,7 +1,7 @@
-#ifndef Mu2eG4_ActionInitialization_hh
-#define Mu2eG4_ActionInitialization_hh
+#ifndef Mu2eG4_Mu2eG4ActionInitialization_hh
+#define Mu2eG4_Mu2eG4ActionInitialization_hh
 //
-// ActionInitialization.hh provides declarations for the built-in action
+// Mu2eG4ActionInitialization.hh provides declarations for the built-in action
 // initialization for the Mu2e G4 simulation. In both BuildForMaster and Build,
 // it instantiates user action classes and registers user actions through the
 // SetUserAction method defined in the G4VUserActionInitialization base class.
@@ -33,22 +33,21 @@ namespace mu2e {
 
   class SensitiveDetectorHelper;
   class IMu2eG4Cut;
-  class PrimaryGeneratorAction;
   class Mu2eG4PerThreadStorage;
   class PhysicalVolumeHelper;
 
 
-  class ActionInitialization : public G4VUserActionInitialization
+  class Mu2eG4ActionInitialization : public G4VUserActionInitialization
   {
   public:
-    ActionInitialization(const Mu2eG4Config::Top& conf,
+    Mu2eG4ActionInitialization(const Mu2eG4Config::Top& conf,
                          SensitiveDetectorHelper* sensitive_detectorhelper,
                          Mu2eG4PerThreadStorage* per_thread_storage,
                          PhysicalVolumeHelper* phys_volume_helper,
                          CLHEP::Hep3Vector const& origin_in_world
                          );
 
-    virtual ~ActionInitialization();
+    virtual ~Mu2eG4ActionInitialization();
 
     //BuildForMaster should be used for defining only the UserRunAction for the master thread.
     virtual void BuildForMaster() const;
@@ -75,4 +74,4 @@ namespace mu2e {
   };
 
 }  // end namespace mu2e
-#endif /* Mu2eG4_ActionInitialization_hh */
+#endif /* Mu2eG4_Mu2eG4ActionInitialization_hh */

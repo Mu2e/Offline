@@ -64,8 +64,8 @@ namespace mu2e {
     std::vector<MCTrajectoryPoint> const&  trajectory();
 
     // Give away ownership of the trajectory information ( to the data product ).
-    // This is called from TrackingAction::addTrajectory which is called from
-    // TrackingAction::PostUserTrackingAction.  The result is that the
+    // This is called from Mu2eG4TrackingAction::addTrajectory which is called from
+    // Mu2eG4TrackingAction::PostUserTrackingAction.  The result is that the
     // _trajectory data member is empty.
     void swapTrajectory( std::vector<MCTrajectoryPoint>& trajectory);
 
