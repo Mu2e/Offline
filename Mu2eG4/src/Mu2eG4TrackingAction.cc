@@ -28,7 +28,7 @@
 #include "Mu2eG4/inc/Mu2eG4UserHelpers.hh"
 #include "Mu2eG4/inc/PhysicalVolumeHelper.hh"
 #include "Mu2eG4/inc/Mu2eG4SteppingAction.hh"
-#include "Mu2eG4/inc/TrackingAction.hh"
+#include "Mu2eG4/inc/Mu2eG4TrackingAction.hh"
 #include "Mu2eG4/inc/UserTrackInformation.hh"
 #include "Mu2eG4/inc/SimParticleHelper.hh"
 #include "Mu2eG4/inc/SimParticlePrimaryHelper.hh"
@@ -62,7 +62,7 @@ using namespace std;
 
 namespace mu2e {
 
-  TrackingAction::TrackingAction(const Mu2eG4Config::Top& conf,
+  Mu2eG4TrackingAction::Mu2eG4TrackingAction(const Mu2eG4Config::Top& conf,
                                  Mu2eG4SteppingAction * steppingAction,
                                  Mu2eG4PerThreadStorage *pts):
     _debugList(conf.debug().trackingActionEventList()),
@@ -95,7 +95,7 @@ namespace mu2e {
   }
 
   // Receive information that has a lifetime of a run.
-  void TrackingAction::beginRun(const PhysicalVolumeHelper* physVolHelper,
+  void Mu2eG4TrackingAction::beginRun(const PhysicalVolumeHelper* physVolHelper,
                                 PhysicsProcessInfo* processInfo,
                                 CLHEP::Hep3Vector const& mu2eOrigin ){
     _physVolHelper = physVolHelper;
@@ -103,7 +103,7 @@ namespace mu2e {
     _mu2eOrigin    =  mu2eOrigin;
   }
 
-  void TrackingAction::PreUserTrackingAction(const G4Track* trk){
+  void Mu2eG4TrackingAction::PreUserTrackingAction(const G4Track* trk){
 
     G4int trackingVerbosityLevel = fpTrackingManager->GetVerboseLevel();
 
@@ -203,7 +203,7 @@ namespace mu2e {
   }
 
 
-  void TrackingAction::PostUserTrackingAction(const G4Track* trk){
+  void Mu2eG4TrackingAction::PostUserTrackingAction(const G4Track* trk){
 
     // This is safe even if it was never started.
     _timer.stop();
@@ -233,7 +233,7 @@ namespace mu2e {
   }
 
 
-  void TrackingAction::beginEvent() {
+  void Mu2eG4TrackingAction::beginEvent() {
     const Mu2eG4IOConfigHelper& ioconf = perThreadObjects_->ioconf;
 
     // Read in data products from previous stages and reseat SimParticle pointers
@@ -269,7 +269,7 @@ namespace mu2e {
           auto retval = perThreadObjects_->mcTrajectories->insert(MCTrajectoryCollection::value_type(newSim, MCTrajectory(newSim)));
           if ( !retval.second ){
             throw cet::exception("RANGE")
-              << "In TrackingAction::beginEvent(): error adding pre-simulated MCTrajectory for particle id "
+              << "In Mu2eG4TrackingAction::beginEvent(): error adding pre-simulated MCTrajectory for particle id "
               << newSim->id()
               << "\n";
           }
@@ -286,7 +286,7 @@ namespace mu2e {
   }//beginEvent
 
 
-  void TrackingAction::endEvent(){
+  void Mu2eG4TrackingAction::endEvent(){
 
     Mu2eG4UserHelpers::checkCrossReferences(true,true,_transientMap);
     perThreadObjects_->simPartCollection->insert( _transientMap.begin(), _transientMap.end() );
@@ -297,7 +297,7 @@ namespace mu2e {
 
 
   // Save start of track info.
-  void TrackingAction::saveSimParticleStart(const G4Track* trk){
+  void Mu2eG4TrackingAction::saveSimParticleStart(const G4Track* trk){
 
     G4int trackingVerbosityLevel = fpTrackingManager->GetVerboseLevel();
 
@@ -305,7 +305,7 @@ namespace mu2e {
 
     if( _sizeLimit>0 && _currentSize>_sizeLimit ) {
       if( (_currentSize - _sizeLimit)==1 ) {
-        mf::LogWarning("G4") << "Maximum number of particles reached in TrackingAction: "
+        mf::LogWarning("G4") << "Maximum number of particles reached in Mu2eG4TrackingAction: "
                              << _currentSize << endl;
         _overflowSimParticles = true;
       }
@@ -479,7 +479,7 @@ namespace mu2e {
 
 
   // Append end of track information to the existing SimParticle.
-  void TrackingAction::saveSimParticleEnd(const G4Track* trk){
+  void Mu2eG4TrackingAction::saveSimParticleEnd(const G4Track* trk){
 
     if( _sizeLimit>0 && _currentSize>=_sizeLimit ) return;
 
@@ -491,7 +491,7 @@ namespace mu2e {
     map_type::iterator i(_transientMap.find(kid));
     if ( i == _transientMap.end() ){
       throw cet::exception("RANGE")
-        << "Could not find existing SimParticle in PostUserTrackingAction::saveSimParticleEnd()  id: "
+        << "Could not find existing SimParticle in Mu2eG4TrackingAction::saveSimParticleEnd()  id: "
         << kid
         << "\n";
     }
@@ -623,7 +623,7 @@ namespace mu2e {
 
   // If the track passes the cuts needed to store the trajectory object, then store
   // it in the output data product.  For efficiency, the store uses a swap.
-  void TrackingAction::swapTrajectory(const G4Track* trk){
+  void Mu2eG4TrackingAction::swapTrajectory(const G4Track* trk){
 
     key_type kid(perThreadObjects_->simParticleHelper->particleKeyFromG4TrackID(trk->GetTrackID()));
 
@@ -635,7 +635,7 @@ namespace mu2e {
     if ( i == _transientMap.end() ){
       G4Event const* event = G4RunManager::GetRunManager()->GetCurrentEvent();
 
-      mf::LogWarning("G4") << "TrackingAction::swapTrajectory: "
+      mf::LogWarning("G4") << "Mu2eG4TrackingAction::swapTrajectory: "
                            << "SimParticle is not found.\nprobably the SimParticleCollection exceeds its maximum allowed size."
                            << "Will not store MCTrajectory for: event "
                            << event->GetEventID()
@@ -653,7 +653,7 @@ namespace mu2e {
 
     if ( !retval.second ){
       throw cet::exception("RANGE")
-        << "In TrackingAction::addTrajectory the MCTrajectory was already present for id: "
+        << "In Mu2eG4TrackingAction::addTrajectory the MCTrajectory was already present for id: "
         << kid
         << "\n";
     }
