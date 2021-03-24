@@ -46,7 +46,6 @@ mainlib = helper.make_mainlib ( [
     'CLHEP',
     'boost_iostreams',
     'boost_regex',
-    'boost_system',
     'Core'
     ] )
 
@@ -76,7 +75,6 @@ helper.make_plugins( [
     'CLHEP',
     'Core',
     'boost_filesystem',
-    'boost_system',
     ] )
 
 helper.make_dict_and_map( [

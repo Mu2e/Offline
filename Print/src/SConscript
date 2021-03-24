@@ -26,7 +26,7 @@ mainlib = helper.make_mainlib ( [ 'mu2e_GeometryService',
                                   'art_Framework_Core',
                                   'art_Framework_Principal',
                                   'art_Framework_Services_Registry',
-                                  'art_root_io_TFileService_service',
+                                  'art_root_io_TFileService',
                                   'art_root_io_tfile_support',
                                   'art_Persistency_Provenance',
                                   'art_Persistency_Common',
@@ -42,7 +42,6 @@ mainlib = helper.make_mainlib ( [ 'mu2e_GeometryService',
                                   'CLHEP',
 			          'HepPDT',
                                   'boost_filesystem',
-                                  'boost_system'
                                   ] )
 
 
@@ -57,7 +56,7 @@ helper.make_plugins( [ mainlib,
                        'art_Framework_Principal',
                        'art_Framework_Services_Registry',
                        'art_root_io_tfile_support',
-                       'art_root_io_TFileService_service',
+                       'art_root_io_TFileService',
                        'art_Persistency_Provenance',
                        'art_Persistency_Common',
                        'art_Utilities',
@@ -72,7 +71,6 @@ helper.make_plugins( [ mainlib,
                        rootlibs,
                        'xerces-c',
                        'boost_filesystem',
-                       'boost_system',
                        ] )
 
 # this tells emacs to view this file in python mode.

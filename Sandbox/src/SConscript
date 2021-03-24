@@ -40,7 +40,6 @@ common = [ 'mu2e_SeedService_SeedService_service',
            'CLHEP',
            'Core',
            'boost_filesystem',
-           'boost_system',
     ]
 
 services = [ 'BarService_service.cc',
@@ -61,7 +60,6 @@ helper.make_plugin( 'FooService_service.cc',
                       'canvas',
                       'fhiclcpp',
                       'boost_filesystem',
-                      'boost_system',
                       'Core'
                       ],
                     )
@@ -78,7 +76,6 @@ helper.make_plugin( 'BarService_service.cc',
                       'cetlib',
                       'cetlib_except',
                       'boost_filesystem',
-                      'boost_system',
                       'Core'
                       ],
                     )
@@ -95,7 +92,6 @@ helper.make_plugin( 'XBarService_service.cc',
                       'cetlib',
                       'cetlib_except',
                       'boost_filesystem',
-                      'boost_system',
                       'Core'
                       ],
                     )
@@ -112,7 +108,6 @@ helper.make_plugin( 'Bug01Service_service.cc',
                       'cetlib',
                       'cetlib_except',
                       'boost_filesystem',
-                      'boost_system',
                       'Core'
                       ],
                     )
@@ -149,7 +144,6 @@ helper.make_plugins( [ mainlib,
                        'CLHEP',
                        'Core',
                        'boost_filesystem',
-                       'boost_system',
                        'tbb',
                        'hep_concurrency'
                      ],
