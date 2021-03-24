@@ -131,7 +131,7 @@
 #include "Geant4/G4ProductionCuts.hh"
 #include "Geant4/G4Region.hh"
 
-#include "Mu2eG4/inc/Mu2eGlobalField.hh"
+#include "Mu2eG4/inc/Mu2eG4GlobalMagneticField.hh"
 
 #include "boost/regex.hpp"
 
@@ -427,7 +427,7 @@ namespace mu2e {
 
     // Create global field managers; don't use FieldMgr here to avoid problem with ownership
 
-    G4MagneticField * _field = new Mu2eGlobalField(worldGeom->mu2eOriginInWorld());
+    G4MagneticField * _field = new Mu2eG4GlobalMagneticField(worldGeom->mu2eOriginInWorld());
     G4Mag_EqRhs * _rhs  = new G4Mag_UsualEqRhs(_field);
     G4MagIntegratorStepper * _stepper;
     if ( _g4VerbosityLevel > 0 ) G4cout << __func__ << " Setting up " << g4stepperName_ << " stepper" << G4endl;
