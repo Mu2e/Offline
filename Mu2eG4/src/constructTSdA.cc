@@ -9,6 +9,9 @@
 // David Norvil Brown (the other one):  rename to TSdA for consistency
 // with TDR, and update - May 2015.
 
+// art includes
+#include "art/Framework/Services/Registry/ServiceDefinitionMacros.h"
+
 // clhep includes
 #include "CLHEP/Vector/ThreeVector.h"
 #include "CLHEP/Units/PhysicalConstants.h"

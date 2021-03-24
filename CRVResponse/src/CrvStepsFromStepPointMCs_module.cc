@@ -12,6 +12,7 @@
 #include "fhiclcpp/types/Atom.h"
 #include "fhiclcpp/types/Sequence.h"
 #include "canvas/Utilities/InputTag.h"
+#include "messagefacility/MessageLogger/MessageLogger.h"
 
 #include "CLHEP/Units/GlobalPhysicalConstants.h"
 #include "GeometryService/inc/GeomHandle.hh"

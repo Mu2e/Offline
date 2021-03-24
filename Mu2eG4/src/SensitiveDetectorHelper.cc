@@ -31,6 +31,7 @@
 #include "art/Framework/Principal/Event.h"
 #include "art/Framework/Core/ProducesCollector.h"
 #include "art/Framework/Services/Registry/ServiceHandle.h"
+#include "art/Framework/Services/Registry/ServiceDefinitionMacros.h"
 
 // From G4
 #include "Geant4/G4VSensitiveDetector.hh"

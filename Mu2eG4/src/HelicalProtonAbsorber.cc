@@ -8,6 +8,9 @@
 // Notes:
 // Construct the Helical Proton Absorber
 
+// art includes
+#include "art/Framework/Services/Registry/ServiceDefinitionMacros.h"
+
 // C++ includes
 #include <cmath>
 

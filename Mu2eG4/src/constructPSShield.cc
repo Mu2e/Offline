@@ -19,6 +19,8 @@
 #include "Mu2eG4Helper/inc/AntiLeakRegistry.hh"
 #include "Mu2eG4Helper/inc/VolumeInfo.hh"
 
+#include "art/Framework/Services/Registry/ServiceDefinitionMacros.h"
+
 #include "Mu2eG4/inc/findMaterialOrThrow.hh"
 #include "Mu2eG4/inc/finishNesting.hh"
 #include "Mu2eG4/inc/nestPolycone.hh"

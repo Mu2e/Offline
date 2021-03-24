@@ -48,6 +48,9 @@
 // CLHEP includes
 #include "CLHEP/Vector/ThreeVector.h"
 
+// art includes
+#include "art/Framework/Services/Registry/ServiceDefinitionMacros.h"
+
 #include <cmath>
 #include <vector>
 #include <sstream>

@@ -15,6 +15,7 @@
 #include "art_root_io/TFileService.h"
 #include "SeedService/inc/SeedService.hh"
 #include "cetlib_except/exception.h"
+#include "messagefacility/MessageLogger/MessageLogger.h"
 // conditions
 #include "ProditionsService/inc/ProditionsHandle.hh"
 #include "ConditionsService/inc/ConditionsHandle.hh"

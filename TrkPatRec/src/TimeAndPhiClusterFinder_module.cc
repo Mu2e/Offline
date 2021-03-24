@@ -28,7 +28,7 @@
 #include "TrkPatRec/inc/TimeAndPhiClusterFinder_types.hh"
 
 #include <algorithm>
-
+#include <numeric>
 
 
 namespace

@@ -7,6 +7,8 @@
 
 
 // Mu2e includes
+#include "art/Framework/Services/Registry/ServiceDefinitionMacros.h"
+#include "messagefacility/MessageLogger/MessageLogger.h"
 #include "MCDataProducts/inc/GenParticleCollection.hh"
 #include "Mu2eHallGeom/inc/Mu2eHall.hh"
 #include "Mu2eG4/inc/WorldMaker.hh"

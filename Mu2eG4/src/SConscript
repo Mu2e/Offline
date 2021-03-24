@@ -252,6 +252,7 @@ mainlib = helper.make_mainlib ( [
         'art_Utilities',
         'canvas',
         'fhiclcpp',
+        'fhiclcpp_types',
         'MF_MessageLogger',
         'cetlib',
         'cetlib_except',

@@ -3,6 +3,7 @@
 //
 #include <iostream>
 #include <typeinfo>
+#include "art/Framework/Services/Registry/ServiceDefinitionMacros.h"
 #include "DbService/inc/DbService.hh"
 #include "GeometryService/inc/GeometryService.hh"
 #include "ProditionsService/inc/ProditionsService.hh"

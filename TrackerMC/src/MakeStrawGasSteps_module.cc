@@ -11,6 +11,7 @@
 #include "cetlib_except/exception.h"
 #include "fhiclcpp/types/Atom.h"
 #include "canvas/Utilities/InputTag.h"
+#include "messagefacility/MessageLogger/MessageLogger.h"
 
 #include "TrackerGeom/inc/Tracker.hh"
 #include "GeometryService/inc/GeomHandle.hh"

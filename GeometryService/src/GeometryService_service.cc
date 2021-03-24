@@ -11,6 +11,7 @@
 
 // Framework include files
 #include "art/Persistency/Provenance/ModuleDescription.h"
+#include "art/Framework/Services/Registry/ServiceDefinitionMacros.h"
 #include "canvas/Persistency/Provenance/EventID.h"
 #include "canvas/Persistency/Provenance/Timestamp.h"
 #include "canvas/Persistency/Provenance/SubRunID.h"

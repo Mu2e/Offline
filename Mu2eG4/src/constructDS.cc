@@ -38,6 +38,8 @@
 // CLHEP includes
 #include "CLHEP/Vector/ThreeVector.h"
 #include "CLHEP/Vector/TwoVector.h"
+// art includes
+#include "art/Framework/Services/Registry/ServiceDefinitionMacros.h"
 
 using namespace std;
 

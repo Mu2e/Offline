@@ -43,6 +43,7 @@ art_libs = [
 other_libs = [
     'canvas',
     'fhiclcpp',
+    'fhiclcpp_types',
     'cetlib',
     'cetlib_except',
     'CLHEP',

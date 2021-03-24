@@ -16,6 +16,7 @@
 
 // Framework includes
 #include "messagefacility/MessageLogger/MessageLogger.h"
+#include "art/Framework/Services/Registry/ServiceDefinitionMacros.h"
 
 // Mu2e includes.
 #include "Mu2eG4/inc/constructProtonAbsorber.hh"
