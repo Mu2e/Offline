@@ -7,18 +7,18 @@
 // The intial release is just a copy of the G4 Novice N02 example.
 //
 
-#include "Mu2eG4/inc/SteppingVerbose.hh"
+#include "Mu2eG4/inc/Mu2eG4SteppingVerbose.hh"
 
 #include "Geant4/G4SteppingManager.hh"
 #include "Geant4/G4UnitsTable.hh"
 
 namespace mu2e {
 
-  SteppingVerbose::SteppingVerbose(){}
+  Mu2eG4SteppingVerbose::Mu2eG4SteppingVerbose(){}
 
-  SteppingVerbose::~SteppingVerbose(){}
+  Mu2eG4SteppingVerbose::~Mu2eG4SteppingVerbose(){}
 
-  void SteppingVerbose::StepInfo(){
+  void Mu2eG4SteppingVerbose::StepInfo(){
     CopyState();
 
     G4int prec = G4cout.precision(3);
@@ -109,7 +109,7 @@ namespace mu2e {
   }
 
 
-  void SteppingVerbose::TrackingStarted()
+  void Mu2eG4SteppingVerbose::TrackingStarted()
   {
 
     CopyState();
