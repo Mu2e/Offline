@@ -2,11 +2,11 @@
 #define Mu2eG4_CaloReadoutCardSD_hh
 
 // Mu2e includes
-#include "Mu2eG4/inc/Mu2eSensitiveDetector.hh"
+#include "Mu2eG4/inc/Mu2eG4SensitiveDetector.hh"
 
 namespace mu2e {
 
-  class CaloReadoutCardSD : public Mu2eSensitiveDetector{
+  class CaloReadoutCardSD : public Mu2eG4SensitiveDetector{
 
      public:
 

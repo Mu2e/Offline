@@ -1,5 +1,5 @@
-#ifndef Mu2eG4_Mu2eSensitiveDetector_hh
-#define Mu2eG4_Mu2eSensitiveDetector_hh
+#ifndef Mu2eG4_Mu2eG4SensitiveDetector_hh
+#define Mu2eG4_Mu2eG4SensitiveDetector_hh
 //
 // Defines a generic Mu2e sensitive detector
 //
@@ -26,11 +26,11 @@ namespace mu2e {
   class PhysicsProcessInfo;
   class SimParticleHelper;
 
-  class Mu2eSensitiveDetector : public G4VSensitiveDetector{
+  class Mu2eG4SensitiveDetector : public G4VSensitiveDetector{
 
   public:
 
-    Mu2eSensitiveDetector(G4String const name, SimpleConfig const & config);
+    Mu2eG4SensitiveDetector(G4String const name, SimpleConfig const & config);
 
     virtual void Initialize(G4HCofThisEvent*) override;
 
@@ -66,4 +66,4 @@ namespace mu2e {
 
 } // namespace mu2e
 
-#endif /* Mu2eG4_Mu2eSensitiveDetector_hh */
+#endif /* Mu2eG4_Mu2eG4SensitiveDetector_hh */

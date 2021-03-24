@@ -8,7 +8,7 @@
 //
 
 // From Mu2e
-#include "Mu2eG4/inc/Mu2eSensitiveDetector.hh"
+#include "Mu2eG4/inc/Mu2eG4SensitiveDetector.hh"
 #include "MCDataProducts/inc/StepPointMCCollection.hh"
 #include "MCDataProducts/inc/StepInstanceName.hh"
 #include "Mu2eG4/inc/ExtMonFNALPixelSD.hh"
@@ -96,7 +96,7 @@ namespace mu2e {
       // For historical reasons the two names are different; maybe some day we will synchronize them.
       StepPointMCCollection    p;
       std::string              stepName;
-      Mu2eSensitiveDetector *  sensitiveDetector = nullptr;
+      Mu2eG4SensitiveDetector *  sensitiveDetector = nullptr;
     };
 
     // Enabled pre-defined StepPointMC collections, except the timevd.

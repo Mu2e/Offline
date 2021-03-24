@@ -24,7 +24,7 @@
 namespace mu2e {
 
   CaloCrystalSD::CaloCrystalSD(G4String name, SimpleConfig const & config ):
-    Mu2eSensitiveDetector(name,config)
+    Mu2eG4SensitiveDetector(name,config)
   { }
 
   G4bool CaloCrystalSD::ProcessHits(G4Step* aStep,G4TouchableHistory*)
