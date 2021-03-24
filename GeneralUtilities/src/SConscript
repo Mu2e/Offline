@@ -21,7 +21,6 @@ mainlib = helper.make_mainlib ( [ 'art_Persistency_Common',
                                   'CLHEP',
                                   'boost_regex',
                                   'boost_filesystem',
-                                  'boost_system',
                                 ]
                               )
 

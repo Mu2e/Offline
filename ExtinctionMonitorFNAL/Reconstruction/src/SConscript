@@ -25,7 +25,7 @@ my_libs=['mu2e_ExtinctionMonitorFNAL_Geometry',
 mainlib = helper.make_mainlib ( my_libs )
 helper.make_plugins( [ mainlib, my_libs,
                        'mu2e_Mu2eInterfaces',
-                       'art_root_io_TFileService_service',
+                       'art_root_io_TFileService',
                        'art_Framework_Services_Registry',
                        'art_root_io_tfile_support',
                        'art_Framework_Core',
@@ -33,7 +33,6 @@ helper.make_plugins( [ mainlib, my_libs,
                        'fhiclcpp',
                        'fhiclcpp_types',
                        'boost_filesystem',
-                       'boost_system',
                        'Hist',
                        'Core'
                        ] )

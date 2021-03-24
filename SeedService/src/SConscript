@@ -38,7 +38,6 @@ helper.make_plugin( 'SeedService_service.cc',
                       'CLHEP',
                       'Core',
                       'boost_filesystem',
-                      'boost_system',
                       ] )
 
 helper.make_plugins( [
@@ -59,7 +58,6 @@ helper.make_plugins( [
                        'CLHEP',
                        'Core',
                        'boost_filesystem',
-                       'boost_system',
                        ],
                      [ 'SeedService_service.cc', ],
                      )

@@ -34,7 +34,6 @@ mainlib = helper.make_mainlib ( [
         'cetlib_except',
         'CLHEP',
         'Core',
-        'boost_system',
         ] )
 
 helper.make_plugins( [ mainlib,
@@ -65,7 +64,6 @@ helper.make_plugins( [ mainlib,
                        'HepPID',
                        'Core',
                        'boost_filesystem',
-                       'boost_system',
                        ] )
 
 

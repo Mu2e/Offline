@@ -17,14 +17,14 @@ babarlibs = env['BABARLIBS']
 rootlibs = env['ROOTLIBS']
 extrarootlibs = [ 'Geom', 'Geom', 'GeomPainter', 'Ged', 'Graf3d', 'Eve','EG', 'RGL','Gui', "Gdml" , "Core", "Rint"]
 
-userlibs = [ rootlibs, 
+userlibs = [ rootlibs,
              extrarootlibs,
              babarlibs,
                           'mu2e_DataProducts',
                           'mu2e_Mu2eBTrk',
-			  'mu2e_TrkReco',
+                          'mu2e_TrkReco',
                           'mu2e_BTrkData',
-			  'mu2e_Mu2eUtilities',
+                          'mu2e_Mu2eUtilities',
                           'mu2e_MCDataProducts',
                           'mu2e_RecoDataProducts',
 			  'mu2e_GlobalConstantsService_GlobalConstantsService_service',
@@ -63,7 +63,7 @@ userlibs = [ rootlibs,
 			  ]
 
 
-# when using ClassDef, tell the build to include the 
+# when using ClassDef, tell the build to include the
 # dictionary in the mainlib
 helper.classDef(True)
 
@@ -79,5 +79,3 @@ helper.make_plugins( [ 'mu2e_TEveEventDisplay',userlibs ] )
 # Local Variables:
 # mode:python
 # End:
-
-

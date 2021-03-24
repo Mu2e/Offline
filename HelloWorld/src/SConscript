@@ -26,7 +26,6 @@ helper.make_plugins( [ mainlib,
                        'cetlib',
                        'cetlib_except',
                        'boost_filesystem',
-                       'boost_system',
                        'Core',
                      ] )
 

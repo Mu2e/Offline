@@ -26,7 +26,6 @@ mainlib = helper.make_mainlib ( [ 'mu2e_ExtinctionMonitorFNAL_Geometry',
                                   'HepPDT',
                                   'HepPID',
                                   'Core',
-                                  'boost_system'
                                   ] )
 
 # This tells emacs to view this file in python mode.

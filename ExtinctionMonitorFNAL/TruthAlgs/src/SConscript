@@ -27,7 +27,6 @@ helper.make_plugins ( [ 'mu2e_Mu2eUtilities',
                         rootlibs,
                         'CLHEP',
                         'boost_filesystem',
-                        'boost_system',
  ] )
 
 # This tells emacs to view this file in python mode.

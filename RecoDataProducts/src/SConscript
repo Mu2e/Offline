@@ -39,7 +39,6 @@ mainlib = helper.make_mainlib ( [ 'mu2e_DataProducts',
                                   'CLHEP',
                                   'Hist',
                                   'Core',
-                                  'boost_system'    
                                 ] )
 
 helper.make_dict_and_map( [ mainlib,
@@ -63,7 +62,6 @@ helper.make_dict_and_map( [ mainlib,
                             'Core',
                             'art_Persistency_Common',
                             'art_Utilities',
-                            'boost_system'    
                             ],
                           [ '-fvar-tracking-assignments-toggle'] )
 
