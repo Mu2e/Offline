@@ -11,24 +11,24 @@
 //    all methods callbacks that are called be G4.
 
 // Mu2e includes
-#include "Mu2eG4/inc/StepLimiterPhysConstructor.hh"
+#include "Mu2eG4/inc/Mu2eG4StepLimiterPhysicsConstructor.hh"
 #include "Mu2eG4/inc/addStepLimiter.hh"
 
 using namespace std;
 
 namespace mu2e {
 
-  StepLimiterPhysConstructor::StepLimiterPhysConstructor():
-    G4VPhysicsConstructor("StepLimiterPhysConstructor"){
+  Mu2eG4StepLimiterPhysicsConstructor::Mu2eG4StepLimiterPhysicsConstructor():
+    G4VPhysicsConstructor("Mu2eG4StepLimiterPhysicsConstructor"){
   }
 
-  StepLimiterPhysConstructor::~StepLimiterPhysConstructor(){
+  Mu2eG4StepLimiterPhysicsConstructor::~Mu2eG4StepLimiterPhysicsConstructor(){
   }
 
-  void StepLimiterPhysConstructor::ConstructParticle(){
+  void Mu2eG4StepLimiterPhysicsConstructor::ConstructParticle(){
   }
 
-  void StepLimiterPhysConstructor::ConstructProcess(){
+  void Mu2eG4StepLimiterPhysicsConstructor::ConstructProcess(){
     addStepLimiter();
   }
 
