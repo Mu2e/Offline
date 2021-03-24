@@ -32,7 +32,7 @@
 // Mu2e includes
 #include "Mu2eG4/inc/physicsListDecider.hh"
 #include "Mu2eG4/inc/Mu2eG4DecayMuonsWithSpinPhysicsConstructor.hh"
-#include "Mu2eG4/inc/MinimalPhysicsList.hh"
+#include "Mu2eG4/inc/Mu2eG4MinimalModularPhysicsList.hh"
 #include "Mu2eG4/inc/MinDEDXPhysicsList.hh"
 #include "Mu2eG4/inc/Mu2eG4StepLimiterPhysicsConstructor.hh"
 #include "Mu2eG4/inc/Mu2eG4CustomizationPhysicsConstructor.hh"
@@ -65,7 +65,7 @@ namespace mu2e{
 
     // special cases
     if ( name  == "Minimal" ) {
-      return new MinimalPhysicsList();
+      return new Mu2eG4MinimalModularPhysicsList();
     }
 
     else if ( name  == "MinDEDX" ) {
