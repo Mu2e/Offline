@@ -548,15 +548,10 @@ namespace mu2e {
     // assume linear transit to get an initial estimate
     double tz = ptraj.range().begin() + ptraj.range().range()*(zpos-bpos.Z())/(epos.Z()-bpos.Z());
     size_t zindex = ptraj.nearestIndex(tz);
-    size_t oldindex;
-    do {
-      oldindex = zindex;
-      auto const& traj = ptraj.piece(zindex);
-      bpos = traj.position3(traj.range().begin());
-      epos = traj.position3(traj.range().end());
-      tz = traj.range().begin() + traj.range().range()*(zpos-bpos.Z())/(epos.Z()-bpos.Z());
-      zindex = ptraj.nearestIndex(tz);
-    } while(zindex != oldindex);
+    auto const& traj = ptraj.piece(zindex);
+    bpos = traj.position3(traj.range().begin());
+    epos = traj.position3(traj.range().end());
+    tz = traj.range().begin() + traj.range().range()*(zpos-bpos.Z())/(epos.Z()-bpos.Z());
     return tz;
   }
 
