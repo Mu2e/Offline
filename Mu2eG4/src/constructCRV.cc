@@ -16,7 +16,7 @@
 #include "GeometryService/inc/GeomHandle.hh"
 #include "GeometryService/inc/GeometryService.hh"
 #include "GeometryService/inc/G4GeometryOptions.hh"
-#include "G4Helper/inc/G4Helper.hh"
+#include "Mu2eG4Helper/inc/Mu2eG4Helper.hh"
 #include "CosmicRayShieldGeom/inc/CosmicRayShield.hh"
 #include "CosmicRayShieldGeom/inc/CRSScintillatorShield.hh"
 #include "Mu2eG4/inc/findMaterialOrThrow.hh"
@@ -47,7 +47,7 @@ namespace mu2e
   {
     GeomHandle<CosmicRayShield> CosmicRayShieldGeomHandle;
 
-    G4Helper& _helper       = *(art::ServiceHandle<G4Helper>());
+    Mu2eG4Helper& _helper       = *(art::ServiceHandle<Mu2eG4Helper>());
     AntiLeakRegistry& reg   = _helper.antiLeakRegistry();
     const auto& geomOptions = art::ServiceHandle<GeometryService>()->geomOptions();
     

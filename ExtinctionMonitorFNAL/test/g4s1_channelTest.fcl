@@ -25,7 +25,7 @@ services : {
     ConditionsService : { conditionsfile : "Mu2eG4/test/conditions_01.txt" }
     GlobalConstantsService : { inputFile : "Mu2eG4/test/globalConstants_01.txt" }
     SeedService       : @local::automaticSeeds
-    G4Helper : { }
+    Mu2eG4Helper : { }
 }
 
 physics : {

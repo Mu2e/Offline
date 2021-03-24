@@ -10,7 +10,7 @@
 #include <string>
 #include <vector>
 
-#include "G4Helper/inc/VolumeInfo.hh"
+#include "Mu2eG4Helper/inc/VolumeInfo.hh"
 
 class G4CSGSolid;
 class G4LogicalVolume;

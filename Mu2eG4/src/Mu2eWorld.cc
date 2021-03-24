@@ -30,7 +30,7 @@
 
 // Mu2e includes
 #include "ConfigTools/inc/checkForStale.hh"
-#include "G4Helper/inc/G4Helper.hh"
+#include "Mu2eG4Helper/inc/Mu2eG4Helper.hh"
 #include "Mu2eG4/inc/SensitiveDetectorName.hh"
 #include "Mu2eG4/inc/Mu2eWorld.hh"
 #include "Mu2eG4/inc/constructWorldVolume.hh"
@@ -552,7 +552,7 @@ namespace mu2e {
   void Mu2eWorld::stepLimiterHelper ( std::string const& regexp, G4UserLimits* stepLimit ) {
     boost::regex expression(regexp.c_str());
     std::vector<mu2e::VolumeInfo const*> vols =
-      art::ServiceHandle<mu2e::G4Helper>()->locateVolInfo(expression);
+      art::ServiceHandle<mu2e::Mu2eG4Helper>()->locateVolInfo(expression);
     for ( auto v : vols ){
       v->logical->SetUserLimits( stepLimit );
       if(_g4VerbosityLevel > 0)  {
@@ -628,7 +628,7 @@ namespace mu2e {
     // We may make separate G4UserLimits objects per logical volume but we choose not to.
     // At some it might be interesting to make several step limiters, each with different
     // limits.  For now that is not necessary.
-    AntiLeakRegistry& reg = art::ServiceHandle<G4Helper>()->antiLeakRegistry();
+    AntiLeakRegistry& reg = art::ServiceHandle<Mu2eG4Helper>()->antiLeakRegistry();
     G4UserLimits* stepLimit = reg.add( G4UserLimits(bfieldMaxStep_) );
     if(_g4VerbosityLevel > 0) {
       G4cout << __func__ << " Using step limit = "<<bfieldMaxStep_/CLHEP::mm<<" mm"<<G4endl;

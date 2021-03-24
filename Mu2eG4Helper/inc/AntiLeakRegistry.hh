@@ -1,5 +1,5 @@
-#ifndef G4Helper_AntiLeakRegistry_hh
-#define G4Helper_AntiLeakRegistry_hh
+#ifndef Mu2eG4Helper_AntiLeakRegistry_hh
+#define Mu2eG4Helper_AntiLeakRegistry_hh
 //
 // An anti-leak system to aid in using G4 from the Mu2e framework.
 //
@@ -23,7 +23,7 @@
 // goes out of scope at the end of the job.  If the correct time to delete your object is
 // not at the end of job, then you will need to find another way to manage its lifetime.
 //
-// This registry is accessed via the G4Helper service.
+// This registry is accessed via the Mu2eG4Helper service.
 //
 // Here is an example of a call to G4 that leaks memory:
 //
@@ -33,7 +33,7 @@
 // The logical volume does not take ownership of the G4VisAttributes object.
 // The recommended practice for this situation is:
 //
-//      AntiLeakRegistry& reg = art::ServiceHandle<G4Helper>()->antiLeakRegistry();
+//      AntiLeakRegistry& reg = art::ServiceHandle<Mu2eG4Helper>()->antiLeakRegistry();
 //      G4LogicalVolume v = ...;
 //
 //      lvol->SetVisAttributes( reg.add(G4VisAttributes(true, color)) );
@@ -191,4 +191,4 @@ namespace mu2e
 
 }
 
-#endif /* G4Helper_AntiLeakRegistry_hh */
+#endif /* Mu2eG4Helper_AntiLeakRegistry_hh */

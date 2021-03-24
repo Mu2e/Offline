@@ -1,5 +1,5 @@
-#ifndef G4Helper_VolumeInfo_hh
-#define G4Helper_VolumeInfo_hh
+#ifndef Mu2eG4Helper_VolumeInfo_hh
+#define Mu2eG4Helper_VolumeInfo_hh
 //
 // Information about a physical volume.  Used by Mu2eWorld and its utility routines.
 // The center information is not fully general: it does not know about rotations
@@ -62,4 +62,4 @@ namespace mu2e {
 
 }
 
-#endif /* G4Helper_VolumeInfo_hh */
+#endif /* Mu2eG4Helper_VolumeInfo_hh */

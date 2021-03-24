@@ -17,7 +17,7 @@
 #include "ProductionSolenoidGeom/inc/ProductionSolenoid.hh"
 #include "GeomPrimitives/inc/Tube.hh"
 #include "GeomPrimitives/inc/Polycone.hh"
-#include "G4Helper/inc/VolumeInfo.hh"
+#include "Mu2eG4Helper/inc/VolumeInfo.hh"
 #include "GeometryService/inc/G4GeometryOptions.hh"
 #include "GeometryService/inc/GeometryService.hh"
 #include "GeometryService/inc/GeomHandle.hh"

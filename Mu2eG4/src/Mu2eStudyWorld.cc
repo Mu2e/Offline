@@ -20,7 +20,7 @@
 #include "art/Utilities/make_tool.h"
 
 // Mu2e includes
-#include "G4Helper/inc/G4Helper.hh"
+#include "Mu2eG4Helper/inc/Mu2eG4Helper.hh"
 // #include "Mu2eG4/inc/constructStudyEnv_v001.hh"
 // #include "Mu2eG4/inc/constructStudyEnv_v002.hh"
 // #include "Mu2eG4/inc/constructStudyEnv_v003.hh"
@@ -204,7 +204,7 @@ namespace mu2e {
 
     // Maximum step length, in mm.
 
-    // AntiLeakRegistry& reg = art::ServiceHandle<G4Helper>()->antiLeakRegistry();
+    // AntiLeakRegistry& reg = art::ServiceHandle<Mu2eG4Helper>()->antiLeakRegistry();
     // G4UserLimits* stepLimit = reg.add( G4UserLimits(bfieldMaxStep_) );
 
     // double maxStep = _config.getDouble("bfield.maxStep", 20.);
@@ -213,7 +213,7 @@ namespace mu2e {
     // _stepLimits.push_back( G4UserLimits(maxStep) );
     // G4UserLimits* stepLimit = &(_stepLimits.back());
 
-    // AntiLeakRegistry& reg = art::ServiceHandle<G4Helper>()->antiLeakRegistry();
+    // AntiLeakRegistry& reg = art::ServiceHandle<Mu2eG4Helper>()->antiLeakRegistry();
     // G4UserLimits* stepLimit = reg.add( G4UserLimits(maxStep) );
     // tracker->SetUserLimits( stepLimit );
 

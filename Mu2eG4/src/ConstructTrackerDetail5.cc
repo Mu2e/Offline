@@ -8,7 +8,7 @@
 //
 
 #include "ConfigTools/inc/SimpleConfig.hh"
-#include "G4Helper/inc/G4Helper.hh"
+#include "Mu2eG4Helper/inc/Mu2eG4Helper.hh"
 #include "GeometryService/inc/GeomHandle.hh"
 #include "Mu2eG4/inc/checkForOverlaps.hh"
 #include "Mu2eG4/inc/ConstructTrackerDetail5.hh"
@@ -43,7 +43,7 @@ mu2e::ConstructTrackerDetail5::ConstructTrackerDetail5( VolumeInfo   const& ds3V
   _config(config),
 
   // Assorted tools
-  _helper(*art::ServiceHandle<G4Helper>()),
+  _helper(*art::ServiceHandle<Mu2eG4Helper>()),
   _reg(_helper.antiLeakRegistry()),
 
   _tracker(*GeomHandle<Tracker>()),

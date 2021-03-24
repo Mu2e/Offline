@@ -8,7 +8,7 @@
 // Construct the earthen overburden
 
 // Mu2e includes
-#include "G4Helper/inc/VolumeInfo.hh"
+#include "Mu2eG4Helper/inc/VolumeInfo.hh"
 #include "GeneralUtilities/inc/OrientationResolver.hh"
 #include "GeometryService/inc/GeomHandle.hh"
 #include "GeometryService/inc/GeometryService.hh"

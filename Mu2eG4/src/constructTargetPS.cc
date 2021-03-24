@@ -18,8 +18,8 @@
 #include "GeomPrimitives/inc/Tube.hh"
 #include "GeomPrimitives/inc/Polycone.hh"
 #include "GeomPrimitives/inc/Box.hh"
-#include "G4Helper/inc/VolumeInfo.hh"
-#include "G4Helper/inc/G4Helper.hh"
+#include "Mu2eG4Helper/inc/VolumeInfo.hh"
+#include "Mu2eG4Helper/inc/Mu2eG4Helper.hh"
 #include "GeometryService/inc/G4GeometryOptions.hh"
 #include "GeometryService/inc/GeometryService.hh"
 #include "GeometryService/inc/GeomHandle.hh"
@@ -431,7 +431,7 @@ namespace mu2e {
       bool placePV             = geomOptions->placePV( "ProductionTarget" );
       bool doSurfaceCheck      = geomOptions->doSurfaceCheck( "ProductionTarget" );
       
-      G4Helper    & _helper = *(art::ServiceHandle<G4Helper>());
+      Mu2eG4Helper    & _helper = *(art::ServiceHandle<Mu2eG4Helper>());
       AntiLeakRegistry & reg = _helper.antiLeakRegistry();
  
       // 
