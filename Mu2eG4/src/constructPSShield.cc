@@ -9,11 +9,11 @@
 #include "cetlib_except/exception.h"
 #include "CLHEP/Vector/ThreeVector.h"
 
-#include "G4Tubs.hh"
-#include "G4Polycone.hh"
-#include "G4SubtractionSolid.hh"
-#include "G4UnionSolid.hh"
-#include "G4Color.hh"
+#include "Geant4/G4Tubs.hh"
+#include "Geant4/G4Polycone.hh"
+#include "Geant4/G4SubtractionSolid.hh"
+#include "Geant4/G4UnionSolid.hh"
+#include "Geant4/G4Color.hh"
 
 #include "Mu2eG4Helper/inc/Mu2eG4Helper.hh"
 #include "Mu2eG4Helper/inc/AntiLeakRegistry.hh"

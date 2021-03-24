@@ -30,10 +30,10 @@
 #ifndef PBARExcitedStringDecay_h
 #define PBARExcitedStringDecay_h 1
 
-#include "globals.hh"
-#include "G4VStringFragmentation.hh"
-#include "G4ExcitedStringVector.hh"
-#include "G4KineticTrackVector.hh"
+#include "Geant4/globals.hh"
+#include "Geant4/G4VStringFragmentation.hh"
+#include "Geant4/G4ExcitedStringVector.hh"
+#include "Geant4/G4KineticTrackVector.hh"
 #include "Mu2eG4/inc/PBARLundStringFragmentation.hh"
 
 class PBARExcitedStringDecay: public G4VStringFragmentation 

@@ -60,19 +60,19 @@
 #include "canvas/Utilities/InputTag.h"
 
 // Geant4 includes
-#include "G4UIExecutive.hh"
-#include "G4UImanager.hh"
+#include "Geant4/G4UIExecutive.hh"
+#include "Geant4/G4UImanager.hh"
 #if ( defined G4VIS_USE_OPENGLX || defined G4VIS_USE_OPENGL || defined G4VIS_USE_OPENGLQT )
-#include "G4VisExecutive.hh"
+#include "Geant4/G4VisExecutive.hh"
 #endif
-#include "G4Run.hh"
-#include "G4Timer.hh"
-#include "G4VUserPhysicsList.hh"
-#include "G4ParticleHPManager.hh"
-#include "G4HadronicProcessStore.hh"
-#include "G4RunManagerKernel.hh"
-#include "G4RunManager.hh"
-#include "G4SDManager.hh"
+#include "Geant4/G4Run.hh"
+#include "Geant4/G4Timer.hh"
+#include "Geant4/G4VUserPhysicsList.hh"
+#include "Geant4/G4ParticleHPManager.hh"
+#include "Geant4/G4HadronicProcessStore.hh"
+#include "Geant4/G4RunManagerKernel.hh"
+#include "Geant4/G4RunManager.hh"
+#include "Geant4/G4SDManager.hh"
 
 // C++ includes.
 #include <iostream>

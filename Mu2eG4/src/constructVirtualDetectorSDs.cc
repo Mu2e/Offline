@@ -8,7 +8,7 @@
 
 #include "Mu2eG4/inc/constructVirtualDetectorSDs.hh"
 #include "Mu2eG4/inc/Mu2eSensitiveDetector.hh"
-#include "G4LogicalVolumeStore.hh"
+#include "Geant4/G4LogicalVolumeStore.hh"
 
 using namespace std;
 

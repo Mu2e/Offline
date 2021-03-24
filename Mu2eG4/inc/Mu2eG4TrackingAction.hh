@@ -10,7 +10,7 @@
 
 #include "CLHEP/Vector/ThreeVector.h"
 
-#include "G4UserTrackingAction.hh"
+#include "Geant4/G4UserTrackingAction.hh"
 
 #include "MCDataProducts/inc/SimParticleCollection.hh"
 

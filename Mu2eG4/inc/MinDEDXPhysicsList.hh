@@ -33,8 +33,8 @@
 
 #include <CLHEP/Units/SystemOfUnits.h>
 
-#include "globals.hh"
-#include "G4VModularPhysicsList.hh"
+#include "Geant4/globals.hh"
+#include "Geant4/G4VModularPhysicsList.hh"
 #include "CompileTimeConstraints.hh"
 
 template<class T>

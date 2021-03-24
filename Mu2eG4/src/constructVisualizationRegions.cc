@@ -10,10 +10,10 @@
 #include <string>
 #include <vector>
 
-#include "G4Box.hh"
-#include "G4Color.hh"
-#include "G4LogicalVolume.hh"
-#include "G4Transform3D.hh"
+#include "Geant4/G4Box.hh"
+#include "Geant4/G4Color.hh"
+#include "Geant4/G4LogicalVolume.hh"
+#include "Geant4/G4Transform3D.hh"
 
 #include "CLHEP/Units/SystemOfUnits.h"
 #include "CLHEP/Vector/Rotation.h"

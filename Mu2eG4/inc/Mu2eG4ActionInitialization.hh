@@ -12,9 +12,9 @@
 //
 
 //G4 includes
-#include "G4VUserActionInitialization.hh"
-#include "G4ThreeVector.hh"
-#include "G4Threading.hh"
+#include "Geant4/G4VUserActionInitialization.hh"
+#include "Geant4/G4ThreeVector.hh"
+#include "Geant4/G4Threading.hh"
 
 //Mu2e includes
 #include "Mu2eG4/inc/Mu2eG4Config.hh"

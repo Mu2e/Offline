@@ -19,7 +19,7 @@
 #include "ConfigTools/inc/SimpleConfig.hh"
 #include "Mu2eG4Helper/inc/Mu2eG4Helper.hh"
 
-#include "G4LogicalVolume.hh"
+#include "Geant4/G4LogicalVolume.hh"
 
 namespace mu2e {
 

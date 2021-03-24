@@ -41,14 +41,14 @@
 #include "CLHEP/Units/SystemOfUnits.h"
 
 // G4 includes
-#include "G4PhysListFactory.hh"
-#include "G4VUserPhysicsList.hh"
-#include "G4RadioactiveDecayPhysics.hh"
-#include "G4ErrorPhysicsList.hh"
-#include "G4EmStandardPhysics_option4.hh"
+#include "Geant4/G4PhysListFactory.hh"
+#include "Geant4/G4VUserPhysicsList.hh"
+#include "Geant4/G4RadioactiveDecayPhysics.hh"
+#include "Geant4/G4ErrorPhysicsList.hh"
+#include "Geant4/G4EmStandardPhysics_option4.hh"
 
 #if G4VERSION>4103
-#include "G4EmParameters.hh"
+#include "Geant4/G4EmParameters.hh"
 #endif
 
 using namespace std;

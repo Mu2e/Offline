@@ -15,8 +15,8 @@
 #include "Mu2eG4/inc/SensitiveDetectorName.hh"
 
 //G4 includes
-#include "G4RunManager.hh"
-#include "G4TransportationManager.hh"
+#include "Geant4/G4RunManager.hh"
+#include "Geant4/G4TransportationManager.hh"
 
 //CLHEP includes
 #include "CLHEP/Vector/ThreeVector.h"

@@ -18,8 +18,8 @@
 #include "Mu2eG4/inc/getPhysicalVolumeOrThrow.hh"
 
 // G4 includes
-#include "G4String.hh"
-#include "G4PhysicalVolumeStore.hh"
+#include "Geant4/G4String.hh"
+#include "Geant4/G4PhysicalVolumeStore.hh"
 
 namespace mu2e {
 

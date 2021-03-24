@@ -39,12 +39,12 @@
 // Modified: KLG added Zhengyun's pbar related modifications (on the top of 9.6.p04)
 // ------------------------------------------------------------
 
-#include "globals.hh"
+#include "Geant4/globals.hh"
 class G4VSplitableHadron;
 class G4ExcitedString;
-#include "G4FTFParameters.hh"
-#include "G4ElasticHNScattering.hh"  // Uzhi 3.09.09
-#include "G4ThreeVector.hh"
+#include "Geant4/G4FTFParameters.hh"
+#include "Geant4/G4ElasticHNScattering.hh"  // Uzhi 3.09.09
+#include "Geant4/G4ThreeVector.hh"
 
 class PBARDiffractiveExcitation 
 {

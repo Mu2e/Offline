@@ -21,10 +21,10 @@
 #include "GeometryService/inc/WorldG4.hh"
 
 // G4 includes
-#include "G4RunManager.hh"
-#include "G4Step.hh"
-#include "G4ios.hh"
-#include "G4Threading.hh"
+#include "Geant4/G4RunManager.hh"
+#include "Geant4/G4Step.hh"
+#include "Geant4/G4ios.hh"
+#include "Geant4/G4Threading.hh"
 
 using namespace std;
 

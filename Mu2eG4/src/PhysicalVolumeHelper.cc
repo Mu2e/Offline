@@ -34,8 +34,8 @@
 #include "Mu2eG4/inc/PhysicalVolumeHelper.hh"
 
 // G4 includes
-#include "G4PhysicalVolumeStore.hh"
-#include "G4Track.hh"
+#include "Geant4/G4PhysicalVolumeStore.hh"
+#include "Geant4/G4Track.hh"
 
 using namespace std;
 

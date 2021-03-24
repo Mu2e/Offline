@@ -12,7 +12,7 @@
 #include "MCDataProducts/inc/StepPointMCCollection.hh"
 
 // G4 includes
-#include "G4VSensitiveDetector.hh"
+#include "Geant4/G4VSensitiveDetector.hh"
 
 // Art includes
 

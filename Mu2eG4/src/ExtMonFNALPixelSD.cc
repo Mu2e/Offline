@@ -5,10 +5,10 @@
 
 #include <sstream>
 
-#include "G4Step.hh"
-#include "G4ThreeVector.hh"
-#include "G4AffineTransform.hh"
-#include "G4ios.hh"
+#include "Geant4/G4Step.hh"
+#include "Geant4/G4ThreeVector.hh"
+#include "Geant4/G4AffineTransform.hh"
+#include "Geant4/G4ios.hh"
 
 #include "messagefacility/MessageLogger/MessageLogger.h"
 

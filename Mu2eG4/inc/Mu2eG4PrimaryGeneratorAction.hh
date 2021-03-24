@@ -7,8 +7,8 @@
 //
 
 // G4 includes
-#include "G4VUserPrimaryGeneratorAction.hh"
-#include "G4ThreeVector.hh"
+#include "Geant4/G4VUserPrimaryGeneratorAction.hh"
+#include "Geant4/G4ThreeVector.hh"
 
 // Mu2eG4 includes
 #include "Mu2eG4/inc/Mu2eG4Config.hh"

@@ -15,9 +15,9 @@
 #include "messagefacility/MessageLogger/MessageLogger.h"
 #include "CLHEP/Vector/ThreeVector.h"
 
-#include "G4Track.hh"
-#include "G4Step.hh"
-#include "G4VProcess.hh"
+#include "Geant4/G4Track.hh"
+#include "Geant4/G4Step.hh"
+#include "Geant4/G4VProcess.hh"
 
 #include "Mu2eG4/inc/IMu2eG4Cut.hh"
 #include "Mu2eG4/inc/Mu2eG4ResourceLimits.hh"
