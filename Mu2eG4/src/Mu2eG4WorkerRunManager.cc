@@ -16,7 +16,7 @@
 #include "Mu2eG4/inc/Mu2eG4WorkerRunManager.hh"
 #include "Mu2eG4/inc/Mu2eG4PerThreadStorage.hh"
 #include "Mu2eG4/inc/Mu2eG4MTRunManager.hh"
-#include "Mu2eG4/inc/SteppingVerbose.hh"
+#include "Mu2eG4/inc/Mu2eG4SteppingVerbose.hh"
 #include "Mu2eG4/inc/WorldMaker.hh"
 #include "Mu2eG4/inc/physicsListDecider.hh"
 #include "Mu2eG4/inc/Mu2eG4PrimaryGeneratorAction.hh"
