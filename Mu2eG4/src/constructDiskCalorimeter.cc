@@ -59,6 +59,8 @@
 #include "CLHEP/Units/SystemOfUnits.h"
 #include "CLHEP/Vector/TwoVector.h"
 
+#include "art/Framework/Services/Registry/ServiceDefinitionMacros.h"
+
 #include <array>
 #include <iostream>
 #include <sstream>

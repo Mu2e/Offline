@@ -37,6 +37,7 @@ libs =  [
     'canvas',
     'MF_MessageLogger',
     'fhiclcpp',
+    'fhiclcpp_types',
     'cetlib',
     'cetlib_except',
     'CLHEP',

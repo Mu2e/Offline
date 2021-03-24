@@ -31,6 +31,8 @@
 
 #include "cetlib_except/exception.h"
 
+#include "art/Framework/Services/Registry/ServiceDefinitionMacros.h"
+
 #include "GeometryService/inc/G4GeometryOptions.hh"
 #include "GeometryService/inc/GeomHandle.hh"
 #include "ProtonBeamDumpGeom/inc/ProtonBeamDump.hh"

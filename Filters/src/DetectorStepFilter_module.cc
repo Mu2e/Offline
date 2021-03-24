@@ -13,6 +13,7 @@
 #include "art/Framework/Principal/Handle.h"
 #include "art/Framework/Core/ModuleMacros.h"
 #include "DataProducts/inc/PDGCode.hh"
+#include "messagefacility/MessageLogger/MessageLogger.h"
 #include "MCDataProducts/inc/StepPointMC.hh"
 #include "MCDataProducts/inc/StrawGasStep.hh"
 #include "MCDataProducts/inc/CaloShowerStep.hh"

@@ -44,6 +44,7 @@ mainlib = helper.make_mainlib ( [
         'canvas',
         'CRY',
         'fhiclcpp',
+        'fhiclcpp_types',
         'MF_MessageLogger',
         'cetlib',
         'cetlib_except',

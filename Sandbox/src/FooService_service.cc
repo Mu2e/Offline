@@ -12,6 +12,7 @@
 
 // Framework include files
 #include "canvas/Persistency/Provenance/RunID.h"
+#include "art/Framework/Services/Registry/ServiceDefinitionMacros.h"
 
 using namespace std;
 
