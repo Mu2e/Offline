@@ -31,7 +31,7 @@
 
 // Mu2e includes
 #include "Mu2eG4/inc/physicsListDecider.hh"
-#include "Mu2eG4/inc/DecayMuonsWithSpin.hh"
+#include "Mu2eG4/inc/Mu2eG4DecayMuonsWithSpinPhysicsConstructor.hh"
 #include "Mu2eG4/inc/MinimalPhysicsList.hh"
 #include "Mu2eG4/inc/MinDEDXPhysicsList.hh"
 #include "Mu2eG4/inc/Mu2eG4StepLimiterPhysicsConstructor.hh"
@@ -150,11 +150,11 @@ namespace mu2e{
       if ( phys.stepper() != "G4ClassicalRK4WSpin" &&
            phys.stepper() != "G4DormandPrince745WSpin" ) {
         mf::LogError("Config") << "Inconsistent config";
-        G4cout << "Error: DecayMuonsWithSpin requires enabling spin tracking" << G4endl;
-        throw cet::exception("BADINPUT")<<" DecayMuonsWithSpin requires enabling spin tracking\n";
+        G4cout << "Error: Mu2eG4DecayMuonsWithSpinPhysicsConstructor requires enabling spin tracking" << G4endl;
+        throw cet::exception("BADINPUT")<<" Mu2eG4DecayMuonsWithSpinPhysicsConstructor requires enabling spin tracking\n";
       }
 
-      tmpPL->RegisterPhysics( new DecayMuonsWithSpin(debug.diagLevel()));
+      tmpPL->RegisterPhysics( new Mu2eG4DecayMuonsWithSpinPhysicsConstructor(debug.diagLevel()));
     }
 
     G4double productionCut = phys.minRangeCut();

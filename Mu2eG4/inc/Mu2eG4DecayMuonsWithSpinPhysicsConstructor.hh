@@ -26,7 +26,7 @@
 //
 //---------------------------------------------------------------------------
 //
-// ClassName:   DecayMuonsWithSpin based on G4DecayPhysics & F05PhysicsList
+// ClassName:   Mu2eG4DecayMuonsWithSpinPhysicsConstructor based on G4DecayPhysics & F05PhysicsList
 //              a G4VPhysicsConstructor
 // Author: KLG
 //
@@ -34,20 +34,20 @@
 //----------------------------------------------------------------------------
 //
 
-#ifndef DecayMuonsWithSpin_h
-#define DecayMuonsWithSpin_h 1
+#ifndef Mu2eG4DecayMuonsWithSpinPhysicsConstructor_h
+#define Mu2eG4DecayMuonsWithSpinPhysicsConstructor_h 1
 
 #include "Geant4/globals.hh"
 #include "Geant4/G4VPhysicsConstructor.hh"
 
 #include "Geant4/G4DecayWithSpin.hh"
 
-class DecayMuonsWithSpin : public G4VPhysicsConstructor
+class Mu2eG4DecayMuonsWithSpinPhysicsConstructor : public G4VPhysicsConstructor
 {
   public:
-    DecayMuonsWithSpin(G4int ver = 1);
-    DecayMuonsWithSpin(const G4String& name, G4int ver = 1);
-    virtual ~DecayMuonsWithSpin();
+    Mu2eG4DecayMuonsWithSpinPhysicsConstructor(G4int ver = 1);
+    Mu2eG4DecayMuonsWithSpinPhysicsConstructor(const G4String& name, G4int ver = 1);
+    virtual ~Mu2eG4DecayMuonsWithSpinPhysicsConstructor();
 
   public:
     // This method will be invoked in the Construct() method.
