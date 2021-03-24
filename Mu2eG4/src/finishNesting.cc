@@ -16,14 +16,14 @@
 #include "Mu2eG4/inc/checkForOverlaps.hh"
 
 // G4 includes
-#include "G4LogicalVolume.hh"
-#include "G4PVPlacement.hh"
-#include "G4VisAttributes.hh"
+#include "Geant4/G4LogicalVolume.hh"
+#include "Geant4/G4PVPlacement.hh"
+#include "Geant4/G4VisAttributes.hh"
 
 // if using cout << *info.solid etc...
-#include "G4VSolid.hh"
-#include "G4RotationMatrix.hh"
-#include "G4ThreeVector.hh"
+#include "Geant4/G4VSolid.hh"
+#include "Geant4/G4RotationMatrix.hh"
+#include "Geant4/G4ThreeVector.hh"
 
 using namespace std;
 

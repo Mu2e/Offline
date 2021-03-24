@@ -43,29 +43,29 @@
 
 #include "Mu2eG4/inc/HadronPhysicsShielding_MU2E00.hh"
 
-#include "globals.hh"
-#include "G4ios.hh"
-#include "G4SystemOfUnits.hh"
-#include "G4ParticleDefinition.hh"
-#include "G4ParticleTable.hh"
+#include "Geant4/globals.hh"
+#include "Geant4/G4ios.hh"
+#include "Geant4/G4SystemOfUnits.hh"
+#include "Geant4/G4ParticleDefinition.hh"
+#include "Geant4/G4ParticleTable.hh"
 
-#include "G4MesonConstructor.hh"
-#include "G4BaryonConstructor.hh"
-#include "G4ShortLivedConstructor.hh"
+#include "Geant4/G4MesonConstructor.hh"
+#include "Geant4/G4BaryonConstructor.hh"
+#include "Geant4/G4ShortLivedConstructor.hh"
 
-#include "G4BGGNucleonInelasticXS.hh"
-#include "G4NeutronHPBGGNucleonInelasticXS.hh"
-#include "G4NeutronHPJENDLHEInelasticData.hh"
-#include "G4NeutronHPInelasticData.hh"
+#include "Geant4/G4BGGNucleonInelasticXS.hh"
+#include "Geant4/G4NeutronHPBGGNucleonInelasticXS.hh"
+#include "Geant4/G4NeutronHPJENDLHEInelasticData.hh"
+#include "Geant4/G4NeutronHPInelasticData.hh"
 
-#include "G4ChipsKaonMinusInelasticXS.hh"
-#include "G4ChipsKaonPlusInelasticXS.hh"
-#include "G4ChipsKaonZeroInelasticXS.hh"
-#include "G4CrossSectionDataSetRegistry.hh"
-#include "G4PhysListUtil.hh"
+#include "Geant4/G4ChipsKaonMinusInelasticXS.hh"
+#include "Geant4/G4ChipsKaonPlusInelasticXS.hh"
+#include "Geant4/G4ChipsKaonZeroInelasticXS.hh"
+#include "Geant4/G4CrossSectionDataSetRegistry.hh"
+#include "Geant4/G4PhysListUtil.hh"
 
 // factory
-#include "G4PhysicsConstructorFactory.hh"
+#include "Geant4/G4PhysicsConstructorFactory.hh"
 //
 G4_DECLARE_PHYSCONSTR_FACTORY(HadronPhysicsShielding_MU2E00);
 
@@ -119,7 +119,7 @@ HadronPhysicsShielding_MU2E00::HadronPhysicsShielding_MU2E00(const G4String& nam
     , evaluation()
 {}
 
-#include "G4NeutronLENDBuilder.hh"
+#include "Geant4/G4NeutronLENDBuilder.hh"
 void HadronPhysicsShielding_MU2E00::CreateModels()
 {
 
@@ -211,7 +211,7 @@ void HadronPhysicsShielding_MU2E00::ConstructParticle()
   pShortLivedConstructor.ConstructParticle();
 }
 
-#include "G4ProcessManager.hh"
+#include "Geant4/G4ProcessManager.hh"
 void HadronPhysicsShielding_MU2E00::ConstructProcess()
 {
   CreateModels();

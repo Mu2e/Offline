@@ -11,9 +11,9 @@
 
 #include <string>
 
-#include "G4MagneticField.hh"
-#include "G4Types.hh"
-#include "G4ThreeVector.hh"
+#include "Geant4/G4MagneticField.hh"
+#include "Geant4/G4Types.hh"
+#include "Geant4/G4ThreeVector.hh"
 
 namespace mu2e {
 

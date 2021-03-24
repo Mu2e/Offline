@@ -31,7 +31,7 @@
 #ifndef G4VISCOMMANDSSCENEHANDLER_HH
 #define G4VISCOMMANDSSCENEHANDLER_HH
 
-#include "G4VVisCommand.hh"
+#include "Geant4/G4VVisCommand.hh"
 
 class G4UIcommand;
 ;

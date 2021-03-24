@@ -26,16 +26,16 @@
 #include "Mu2eG4/inc/Mu2eG4MasterRunAction.hh"
 
 //G4 includes
-#include "G4Timer.hh"
-#include "G4VUserPhysicsList.hh"
-#include "G4ParticleHPManager.hh"
-#include "G4HadronicProcessStore.hh"
-#include "G4StateManager.hh"
-#include "G4GeometryManager.hh"
-#include "G4UserWorkerThreadInitialization.hh"
-#include "G4MTRunManagerKernel.hh"
-#include "G4VUserPhysicsList.hh"
-#include "G4SDManager.hh"
+#include "Geant4/G4Timer.hh"
+#include "Geant4/G4VUserPhysicsList.hh"
+#include "Geant4/G4ParticleHPManager.hh"
+#include "Geant4/G4HadronicProcessStore.hh"
+#include "Geant4/G4StateManager.hh"
+#include "Geant4/G4GeometryManager.hh"
+#include "Geant4/G4UserWorkerThreadInitialization.hh"
+#include "Geant4/G4MTRunManagerKernel.hh"
+#include "Geant4/G4VUserPhysicsList.hh"
+#include "Geant4/G4SDManager.hh"
 
 using namespace std;
 

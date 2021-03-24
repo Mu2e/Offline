@@ -6,11 +6,11 @@
 
 #include <iostream>
 
-#include "G4Color.hh"
-#include "G4RotationMatrix.hh"
-#include "G4LogicalVolume.hh"
-#include "G4SDManager.hh"
-#include "G4ExtrudedSolid.hh"
+#include "Geant4/G4Color.hh"
+#include "Geant4/G4RotationMatrix.hh"
+#include "Geant4/G4LogicalVolume.hh"
+#include "Geant4/G4SDManager.hh"
+#include "Geant4/G4ExtrudedSolid.hh"
 #include "Mu2eG4Helper/inc/AntiLeakRegistry.hh"
 
 #include "GeometryService/inc/GeomHandle.hh"

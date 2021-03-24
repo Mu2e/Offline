@@ -23,11 +23,11 @@
 #include "Mu2eG4/inc/findMaterialOrThrow.hh"
 
 // G4 includes
-#include "G4ThreeVector.hh"
-#include "G4Material.hh"
-#include "G4Color.hh"
-#include "G4Tubs.hh"
-#include "G4RotationMatrix.hh"
+#include "Geant4/G4ThreeVector.hh"
+#include "Geant4/G4Material.hh"
+#include "Geant4/G4Color.hh"
+#include "Geant4/G4Tubs.hh"
+#include "Geant4/G4RotationMatrix.hh"
 #include "Mu2eG4Helper/inc/Mu2eG4Helper.hh"
 #include "CLHEP/Units/SystemOfUnits.h"
 

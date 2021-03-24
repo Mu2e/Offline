@@ -32,10 +32,10 @@
 //
 #include <iomanip>   
 
-#include "globals.hh"
-#include "G4ios.hh"
+#include "Geant4/globals.hh"
+#include "Geant4/G4ios.hh"
 
-//#include "G4DataQuestionaire.hh"
+//#include "Geant4/G4DataQuestionaire.hh"
 
 #include "Mu2eG4/inc/EmDEDXPhysics.hh"
 

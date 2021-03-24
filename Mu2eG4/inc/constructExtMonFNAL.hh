@@ -7,7 +7,7 @@
 
 #include "Mu2eG4Helper/inc/VolumeInfo.hh"
 #include "ExtinctionMonitorFNAL/Geometry/inc/ExtMonFNALPlaneStack.hh"
-#include "G4ThreeVector.hh"
+#include "Geant4/G4ThreeVector.hh"
 
 namespace CLHEP { class HepRotation; }
 

@@ -33,10 +33,10 @@
 #include "ConfigTools/inc/SimpleConfig.hh"
 
 // G4 includes
-#include "G4RunManager.hh"
-#include "G4Step.hh"
-#include "G4ThreeVector.hh"
-#include "G4ios.hh"
+#include "Geant4/G4RunManager.hh"
+#include "Geant4/G4Step.hh"
+#include "Geant4/G4ThreeVector.hh"
+#include "Geant4/G4ios.hh"
 
 //
 // Outstanding questions:

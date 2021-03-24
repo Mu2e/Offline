@@ -15,12 +15,12 @@
 #include "art/Utilities/Globals.h"
 
 // G4 Includes
-#include "G4Event.hh"
-#include "G4IonTable.hh"
-#include "globals.hh"
-#include "G4Threading.hh"
-#include "G4IsotopeProperty.hh"
-#include "G4NuclideTable.hh"
+#include "Geant4/G4Event.hh"
+#include "Geant4/G4IonTable.hh"
+#include "Geant4/globals.hh"
+#include "Geant4/G4Threading.hh"
+#include "Geant4/G4IsotopeProperty.hh"
+#include "Geant4/G4NuclideTable.hh"
 
 // Mu2e includes
 #include "ConfigTools/inc/SimpleConfig.hh"

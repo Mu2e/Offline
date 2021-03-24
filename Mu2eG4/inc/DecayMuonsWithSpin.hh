@@ -37,10 +37,10 @@
 #ifndef DecayMuonsWithSpin_h
 #define DecayMuonsWithSpin_h 1
 
-#include "globals.hh"
-#include "G4VPhysicsConstructor.hh"
+#include "Geant4/globals.hh"
+#include "Geant4/G4VPhysicsConstructor.hh"
 
-#include "G4DecayWithSpin.hh"
+#include "Geant4/G4DecayWithSpin.hh"
 
 class DecayMuonsWithSpin : public G4VPhysicsConstructor
 {

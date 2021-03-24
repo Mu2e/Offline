@@ -20,7 +20,7 @@
 #include "CalorimeterGeom/inc/Calorimeter.hh"
 
 // G4 includes
-#include "G4Step.hh"
+#include "Geant4/G4Step.hh"
 
 
 namespace mu2e {

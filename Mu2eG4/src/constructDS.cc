@@ -27,14 +27,14 @@
 #include "Mu2eG4/inc/checkForOverlaps.hh"
 
 // G4 includes
-#include "G4ThreeVector.hh"
-#include "G4Material.hh"
-#include "G4Color.hh"
-#include "G4ExtrudedSolid.hh"
-#include "G4Polycone.hh"
-#include "G4Tubs.hh"
-#include "G4SubtractionSolid.hh"
-#include "G4SDManager.hh"
+#include "Geant4/G4ThreeVector.hh"
+#include "Geant4/G4Material.hh"
+#include "Geant4/G4Color.hh"
+#include "Geant4/G4ExtrudedSolid.hh"
+#include "Geant4/G4Polycone.hh"
+#include "Geant4/G4Tubs.hh"
+#include "Geant4/G4SubtractionSolid.hh"
+#include "Geant4/G4SDManager.hh"
 // CLHEP includes
 #include "CLHEP/Vector/ThreeVector.h"
 #include "CLHEP/Vector/TwoVector.h"

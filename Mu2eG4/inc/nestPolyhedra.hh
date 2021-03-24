@@ -18,10 +18,10 @@ class G4Material;
 class G4VPhysicalVolume;
 
 // G4 includes
-#include "G4Polyhedra.hh"
-#include "G4Colour.hh"
-#include "G4RotationMatrix.hh"
-#include "G4ThreeVector.hh"
+#include "Geant4/G4Polyhedra.hh"
+#include "Geant4/G4Colour.hh"
+#include "Geant4/G4RotationMatrix.hh"
+#include "Geant4/G4ThreeVector.hh"
 
 
 namespace mu2e {

@@ -46,17 +46,17 @@
 #include "cetlib_except/exception.h"
 
 // G4 includes
-#include "globals.hh"
-#include "G4Event.hh"
-#include "G4Ions.hh"
-#include "G4IonTable.hh"
-#include "G4RunManager.hh"
-#include "G4EventManager.hh"
-#include "G4SteppingManager.hh"
-#include "G4LossTableManager.hh"
-#include "G4MaterialCutsCouple.hh"
-#include "G4ParticleChange.hh"
-#include "G4DynamicParticle.hh"
+#include "Geant4/globals.hh"
+#include "Geant4/G4Event.hh"
+#include "Geant4/G4Ions.hh"
+#include "Geant4/G4IonTable.hh"
+#include "Geant4/G4RunManager.hh"
+#include "Geant4/G4EventManager.hh"
+#include "Geant4/G4SteppingManager.hh"
+#include "Geant4/G4LossTableManager.hh"
+#include "Geant4/G4MaterialCutsCouple.hh"
+#include "Geant4/G4ParticleChange.hh"
+#include "Geant4/G4DynamicParticle.hh"
 
 using namespace std;
 

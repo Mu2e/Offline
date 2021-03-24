@@ -12,8 +12,8 @@
 
 
 //G4 includes
-#include "G4UserRunAction.hh"
-#include "G4Run.hh"
+#include "Geant4/G4UserRunAction.hh"
+#include "Geant4/G4Run.hh"
 
 #include <vector>
 

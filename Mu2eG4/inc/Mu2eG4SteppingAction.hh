@@ -18,9 +18,9 @@
 
 // G4 includes
 #include "CLHEP/Vector/ThreeVector.h"
-#include "G4UserSteppingAction.hh"
-#include "G4TrackStatus.hh"
-#include "G4ThreeVector.hh"
+#include "Geant4/G4UserSteppingAction.hh"
+#include "Geant4/G4TrackStatus.hh"
+#include "Geant4/G4ThreeVector.hh"
 
 // Forward declarations outside of mu2e namespace.
 class G4VPhysicalVolume;

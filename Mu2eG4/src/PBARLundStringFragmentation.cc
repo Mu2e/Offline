@@ -37,12 +37,12 @@
 #if G4VERSION<4099
 
 #include "Mu2eG4/inc/PBARLundStringFragmentation.hh"
-#include "G4PhysicalConstants.hh"
-#include "G4SystemOfUnits.hh"
+#include "Geant4/G4PhysicalConstants.hh"
+#include "Geant4/G4SystemOfUnits.hh"
 #include "Randomize.hh"
-#include "G4FragmentingString.hh"
-#include "G4DiQuarks.hh"
-#include "G4Quarks.hh"
+#include "Geant4/G4FragmentingString.hh"
+#include "Geant4/G4DiQuarks.hh"
+#include "Geant4/G4Quarks.hh"
 
 // Class PBARLundStringFragmentation 
 //*************************************************************************************

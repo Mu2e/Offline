@@ -48,18 +48,18 @@
 // Modified: KLG added Zhengyun's pbar related modifications (on the top of 9.6.p04)
 
 
-#include "G4VPartonStringModel.hh"
+#include "Geant4/G4VPartonStringModel.hh"
 
 class G4VSplitableHadron;
 class G4ExcitedString;
 
-#include "G4FTFParameters.hh"
-#include "G4FTFParticipants.hh"
+#include "Geant4/G4FTFParameters.hh"
+#include "Geant4/G4FTFParticipants.hh"
 
-#include "G4ExcitedStringVector.hh"
+#include "Geant4/G4ExcitedStringVector.hh"
 #include "Mu2eG4/inc/PBARDiffractiveExcitation.hh"
-#include "G4ElasticHNScattering.hh"
-#include "G4FTFAnnihilation.hh"
+#include "Geant4/G4ElasticHNScattering.hh"
+#include "Geant4/G4FTFAnnihilation.hh"
 
 class PBARFTFModel : public G4VPartonStringModel
 {

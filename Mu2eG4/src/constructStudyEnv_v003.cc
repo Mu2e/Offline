@@ -19,10 +19,10 @@
 #include "ConfigTools/inc/SimpleConfig.hh"
 
 // G4 includes
-#include "G4ThreeVector.hh"
-#include "G4Material.hh"
-#include "G4Colour.hh"
-#include "G4Box.hh"
+#include "Geant4/G4ThreeVector.hh"
+#include "Geant4/G4Material.hh"
+#include "Geant4/G4Colour.hh"
+#include "Geant4/G4Box.hh"
 
 // c++ includes
 #include <sstream>

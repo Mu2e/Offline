@@ -9,7 +9,7 @@
 //
 
 #include "Mu2eG4Helper/inc/VolumeInfo.hh"
-#include "G4RotationMatrix.hh"
+#include "Geant4/G4RotationMatrix.hh"
 #include "GeomPrimitives/inc/TubsParams.hh"
 #include "DataProducts/inc/StrawId.hh"
 

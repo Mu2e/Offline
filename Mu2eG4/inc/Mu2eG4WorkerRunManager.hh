@@ -9,7 +9,7 @@
 
 
 // Included from Geant4
-#include "G4WorkerRunManager.hh"
+#include "Geant4/G4WorkerRunManager.hh"
 
 //Mu2e includes
 #include "Mu2eG4/inc/Mu2eG4Config.hh"

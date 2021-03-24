@@ -43,9 +43,9 @@
 #include "messagefacility/MessageLogger/MessageLogger.h"
 #include "cetlib_except/exception.h"
 
-#include "G4ParticleTable.hh"
-#include "G4DecayTable.hh"
-#include "G4PhaseSpaceDecayChannel.hh"
+#include "Geant4/G4ParticleTable.hh"
+#include "Geant4/G4DecayTable.hh"
+#include "Geant4/G4PhaseSpaceDecayChannel.hh"
 
 #include <sstream>
 #include <algorithm>

@@ -37,31 +37,31 @@
 #ifndef HadronPhysicsShielding_MU2E02_h
 #define HadronPhysicsShielding_MU2E02_h 1
 
-#include "globals.hh"
-#include "G4ios.hh"
+#include "Geant4/globals.hh"
+#include "Geant4/G4ios.hh"
 
-#include "G4VPhysicsConstructor.hh"
+#include "Geant4/G4VPhysicsConstructor.hh"
 
-#include "G4PiKBuilder.hh"
-#include "G4BertiniPiKBuilder.hh"
-#include "G4FTFPPiKBuilder.hh"
+#include "Geant4/G4PiKBuilder.hh"
+#include "Geant4/G4BertiniPiKBuilder.hh"
+#include "Geant4/G4FTFPPiKBuilder.hh"
 
-#include "G4ProtonBuilder.hh"
-#include "G4BertiniProtonBuilder.hh"
-#include "G4FTFPNeutronBuilder.hh"
-#include "G4FTFPProtonBuilder.hh"
+#include "Geant4/G4ProtonBuilder.hh"
+#include "Geant4/G4BertiniProtonBuilder.hh"
+#include "Geant4/G4FTFPNeutronBuilder.hh"
+#include "Geant4/G4FTFPProtonBuilder.hh"
 
-#include "G4NeutronBuilder.hh"
-#include "G4BertiniNeutronBuilder.hh"
-#include "G4FTFPNeutronBuilder.hh"
+#include "Geant4/G4NeutronBuilder.hh"
+#include "Geant4/G4BertiniNeutronBuilder.hh"
+#include "Geant4/G4FTFPNeutronBuilder.hh"
 #if G4VERSION<4099
-#include "G4LEPNeutronBuilder.hh"
+#include "Geant4/G4LEPNeutronBuilder.hh"
 #endif
-#include "G4NeutronHPBuilder.hh"
+#include "Geant4/G4NeutronHPBuilder.hh"
 
-#include "G4HyperonFTFPBuilder.hh"
-#include "G4AntiBarionBuilder.hh"
-#include "G4FTFPAntiBarionBuilder.hh"
+#include "Geant4/G4HyperonFTFPBuilder.hh"
+#include "Geant4/G4AntiBarionBuilder.hh"
+#include "Geant4/G4FTFPAntiBarionBuilder.hh"
 
 class HadronPhysicsShielding_MU2E02 : public G4VPhysicsConstructor
 {

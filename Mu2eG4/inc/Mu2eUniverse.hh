@@ -20,7 +20,7 @@
 #include "Mu2eG4/inc/Mu2eG4Config.hh"
 
 // G4 includes
-#include "G4Types.hh"
+#include "Geant4/G4Types.hh"
 
 //G4 forward reference
 class G4VPhysicalVolume;
