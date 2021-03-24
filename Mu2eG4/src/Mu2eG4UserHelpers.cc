@@ -18,7 +18,7 @@
 // Mu2e includes.
 
 #include "Mu2eG4/inc/Mu2eG4UserHelpers.hh"
-#include "Mu2eG4/inc/UserTrackInformation.hh"
+#include "Mu2eG4/inc/Mu2eG4UserTrackInformation.hh"
 #include "MCDataProducts/inc/ProcessCode.hh"
 #include "GeneralUtilities/inc/sqrtOrThrow.hh"
 
@@ -66,13 +66,13 @@ namespace mu2e {
 
     // kinetic energy at the point of annihilation
     double getEndKE(G4Track const* const trk) {
-      auto const* uti = dynamic_cast<UserTrackInformation*>(trk->GetUserInformation());
+      auto const* uti = dynamic_cast<Mu2eG4UserTrackInformation*>(trk->GetUserInformation());
       return uti->GetKineticEnergy();
     }
 
     // momentum at the point of annihilation
     CLHEP::HepLorentzVector getEndMomentum(G4Track const* const trk) {
-      auto const* const uti = dynamic_cast<UserTrackInformation*>(trk->GetUserInformation());
+      auto const* const uti = dynamic_cast<Mu2eG4UserTrackInformation*>(trk->GetUserInformation());
       auto const& pdir = uti->GetMomentumDirection();
       double ke = uti->GetKineticEnergy();
       double mass = trk->GetParticleDefinition()->GetPDGMass();
@@ -112,7 +112,7 @@ namespace mu2e {
 
       // First check to see if Mu2e code killed this track.
       G4VUserTrackInformation* info = trk->GetUserInformation();
-      UserTrackInformation const* tinfo   = dynamic_cast<UserTrackInformation*>(info);
+      Mu2eG4UserTrackInformation const* tinfo   = dynamic_cast<Mu2eG4UserTrackInformation*>(info);
 
       if ( tinfo->isForced() ){
         return tinfo->code().name();
