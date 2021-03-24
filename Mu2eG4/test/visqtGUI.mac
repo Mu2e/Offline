@@ -1,7 +1,7 @@
 #
 # Macro file for defining new menus and buttons in GUI One of the main
 # functionalities is predefining a button to invoke Mu2e specific
-# /vis/sceneHandler/drawEvent (defined in Mu2eVisCommands)
+# /vis/sceneHandler/drawEvent (defined in Mu2eG4VisCommands)
 #
 #
 # Original author KLG
