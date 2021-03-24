@@ -30,8 +30,9 @@ namespace mu2e {
       std::string order;
     };
 
-    DbReader(const DbId& id = DbId());
+    DbReader();
     ~DbReader();
+
     const DbId& id() const { return _id; }
 
     // run query url, answer returned in csv
@@ -51,7 +52,7 @@ namespace mu2e {
     double lastTime() { return _lastTime.count()*1.0e-6; } // seconds
     double totalTime() { return _totalTime.count()*1.0e-6; } // seconds
 
-    void setDbId(DbId id) { _id = id; }
+    void setDbId(const DbId& id) { _id = id; }
     // time to keep retrying to read data from the web server
     void setTimeout(float timeout=3600) { _timeout = timeout; }
     // stop on errors, set false to handle errors in caller

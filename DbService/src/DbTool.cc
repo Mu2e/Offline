@@ -6,6 +6,7 @@
 #include <iterator>
 #include "cetlib_except/exception.h"
 #include "DbService/inc/DbTool.hh"
+#include "DbService/inc/DbIdList.hh"
 #include "DbTables/inc/DbTableFactory.hh"
 
 mu2e::DbTool::DbTool():_verbose(0),_pretty(false),_admin(false) {
@@ -51,7 +52,11 @@ int mu2e::DbTool::setArgs(std::vector<std::string> const& args) {
 
 int mu2e::DbTool::init() {
   int rc = 0;
-  if(!_database.empty()) _id.setDb(_database);
+
+  DbIdList idList; // read the connections info file
+  _id = idList.getDbId();
+  if(!_database.empty()) _id = idList.getDbId(_database);
+
   _reader.setDbId(_id);
   _reader.setVerbose(_verbose);
   _reader.setTimeVerbose(_verbose);
