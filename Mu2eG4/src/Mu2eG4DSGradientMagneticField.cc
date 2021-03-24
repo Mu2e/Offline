@@ -8,7 +8,7 @@
 #include <iostream>
 
 // Mu2e includes.
-#include "Mu2eG4/inc/DSGradientField.hh"
+#include "Mu2eG4/inc/Mu2eG4DSGradientMagneticField.hh"
 
 // Other includes.
 #include "CLHEP/Vector/ThreeVector.h"
@@ -18,16 +18,16 @@ using namespace std;
 
 namespace mu2e {
 
-  DSGradientField::DSGradientField( std::string name, G4ThreeVector mapOrigin,
+  Mu2eG4DSGradientMagneticField::Mu2eG4DSGradientMagneticField( std::string name, G4ThreeVector mapOrigin,
                                     double gradient, double B0 ):
     _name(name), _mapOrigin(mapOrigin), _gradient(gradient), _B0(B0) {
   }
 
   // This is the entry point called by G4.
-  void DSGradientField::GetFieldValue(const G4double Point[4],
+  void Mu2eG4DSGradientMagneticField::GetFieldValue(const G4double Point[4],
                                       G4double *Bfield) const {
       
-//      cout << "calling DSGradientField::GetFieldValue()" << endl;
+//      cout << "calling Mu2eG4DSGradientMagneticField::GetFieldValue()" << endl;
 
 
     CLHEP::Hep3Vector point(Point[0],Point[1],Point[2]);
