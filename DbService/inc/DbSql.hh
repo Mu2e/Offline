@@ -10,7 +10,7 @@ namespace mu2e {
 
   class DbSql {
   public:
-    DbSql(const DbId& id = DbId());
+    DbSql();
 
     const DbId& id() const { return _id; }
 
@@ -18,7 +18,7 @@ namespace mu2e {
     int disconnect();
     int execute(const std::string& command, std::string& result);
 
-    void setDbId(DbId id) { _id = id; }
+    void setDbId(const DbId& id) { _id = id; }
     void setUserPass(const std::string& user, const std::string& pass) 
                                          { _user=user; _pass=pass; }
     void setVerbose(uint v) { _verbose = v; }
