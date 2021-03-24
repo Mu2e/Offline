@@ -49,7 +49,7 @@ using namespace std;
 namespace mu2e {
 
   StrawSD::StrawSD(G4String name, SimpleConfig const & config ):
-    Mu2eSensitiveDetector(name,config),
+    Mu2eG4SensitiveDetector(name,config),
     _nStrawsPerPlane(0),
     _nStrawsPerPanel(0),
     _TrackerVersion(0),

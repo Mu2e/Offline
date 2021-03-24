@@ -1,12 +1,12 @@
 #ifndef Mu2eG4_CaloReadoutSD_hh
 #define Mu2eG4_CaloReadoutSD_hh
 
-#include "Mu2eG4/inc/Mu2eSensitiveDetector.hh"
+#include "Mu2eG4/inc/Mu2eG4SensitiveDetector.hh"
 
 
 namespace mu2e {
 
-  class CaloReadoutSD : public Mu2eSensitiveDetector{
+  class CaloReadoutSD : public Mu2eG4SensitiveDetector{
 
      public:
 

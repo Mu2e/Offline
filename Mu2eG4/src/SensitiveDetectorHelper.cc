@@ -136,7 +136,7 @@ namespace mu2e {
     art::ServiceHandle<Mu2eG4Helper> helper;
 
     for(auto& iter : lvsd_) {
-      iter.second.sensitiveDetector = new Mu2eSensitiveDetector(iter.first, config);
+      iter.second.sensitiveDetector = new Mu2eG4SensitiveDetector(iter.first, config);
       SDman->AddNewDetector(iter.second.sensitiveDetector);
       helper->locateVolInfo(iter.first).logical->SetSensitiveDetector(iter.second.sensitiveDetector);
     }
@@ -157,7 +157,7 @@ namespace mu2e {
             }
       bool printWarnings = (verbosityLevel_ > -1) ? true : false;
       step.sensitiveDetector =
-        dynamic_cast<Mu2eSensitiveDetector*>(sdManager->FindSensitiveDetector(step.stepName.c_str(),printWarnings));
+        dynamic_cast<Mu2eG4SensitiveDetector*>(sdManager->FindSensitiveDetector(step.stepName.c_str(),printWarnings));
     }
 
     extMonFNALPixelSD_ = ( standardMu2eDetector_ && extMonPixelsEnabled_) ?

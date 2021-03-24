@@ -7,11 +7,11 @@
 //
 
 //// Mu2e includes
-#include "Mu2eG4/inc/Mu2eSensitiveDetector.hh"
+#include "Mu2eG4/inc/Mu2eG4SensitiveDetector.hh"
 
 namespace mu2e {
 
-  class TrackerWireSD : public Mu2eSensitiveDetector {
+  class TrackerWireSD : public Mu2eG4SensitiveDetector {
 
   public:
     TrackerWireSD(G4String, const SimpleConfig& config);
