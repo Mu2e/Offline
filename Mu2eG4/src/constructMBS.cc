@@ -29,13 +29,13 @@
 
 #include "Mu2eG4/inc/constructMBS.hh"
 #include "DetectorSolenoidGeom/inc/DetectorSolenoid.hh"
-#include "G4Helper/inc/VolumeInfo.hh"
+#include "Mu2eG4Helper/inc/VolumeInfo.hh"
 #include "GeometryService/inc/GeomHandle.hh"
 #include "GeometryService/inc/GeometryService.hh"
 #include "GeometryService/inc/G4GeometryOptions.hh"
 #include "CosmicRayShieldGeom/inc/CosmicRayShield.hh"
 #include "MBSGeom/inc/MBS.hh"
-#include "G4Helper/inc/G4Helper.hh"
+#include "Mu2eG4Helper/inc/Mu2eG4Helper.hh"
 #include "Mu2eG4/inc/findMaterialOrThrow.hh"
 #include "Mu2eG4/inc/nestBox.hh"
 #include "Mu2eG4/inc/nestTubs.hh"
@@ -91,8 +91,8 @@ namespace mu2e {
 
 
 
-    // Access to the G4HelperService.
-    G4Helper* _helper = &(*(art::ServiceHandle<G4Helper>()));
+    // Access to the Mu2eG4HelperService.
+    Mu2eG4Helper* _helper = &(*(art::ServiceHandle<Mu2eG4Helper>()));
 
     // Fetch DS geometry handle
     GeomHandle<DetectorSolenoid> ds;

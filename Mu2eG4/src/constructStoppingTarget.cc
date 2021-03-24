@@ -27,7 +27,7 @@
 #include "GeometryService/inc/GeometryService.hh"
 #include "Mu2eG4/inc/StrawSD.hh"
 #include "Mu2eG4/inc/findMaterialOrThrow.hh"
-#include "G4Helper/inc/G4Helper.hh"
+#include "Mu2eG4Helper/inc/Mu2eG4Helper.hh"
 #include "GeomPrimitives/inc/TubsParams.hh"
 #include "Mu2eG4/inc/nestTubs.hh"
 #include "Mu2eG4/inc/nestCons.hh"
@@ -71,7 +71,7 @@ namespace mu2e {
     // Master geometry for the Target assembly
     GeomHandle<StoppingTarget> target;
 
-    G4Helper    & _helper = *(art::ServiceHandle<G4Helper>());
+    Mu2eG4Helper    & _helper = *(art::ServiceHandle<Mu2eG4Helper>());
     AntiLeakRegistry & reg = _helper.antiLeakRegistry();
 
     //get the proton absorber elements to prevent overlaps
