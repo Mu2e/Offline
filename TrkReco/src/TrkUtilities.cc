@@ -119,25 +119,6 @@ namespace mu2e {
       // create the CentralHelix from these
       KinKal::CentralHelix chelix(params,mass,charge,bfield.bFieldNominal(),KinKal::TimeRange(tmin,tmax));
       kseg = KalSegment(chelix, tref, globflt-locflt);
-// check
-      auto tchelix = kseg.centralHelix();
-      auto chpos0 = tchelix.position3(tref);
-      auto hpos0 = htraj.position(locflt);
-      // sample at the reference time 
-      auto chmom = chelix.momentum3(tref);
-      auto hmom = TrkMomCalculator::vecMom(htraj,bfield,locflt);
-      auto smom = kseg._pstate.momentum3();
-      if(
-	  fabs(chpos0.X()-hpos0.x()) > 1e-4 ||
-	  fabs(chpos0.Y()-hpos0.y()) > 1e-4 ||
-	  fabs(chpos0.Z()-hpos0.z()) > 1e-4 ||
-	  fabs(hmom.x()-chmom.X()) > 1e-6 ||
-	  fabs(hmom.y()-chmom.Y()) > 1e-6 ||
-	  fabs(hmom.z()-chmom.Z()) > 1e-6 ||
-	  fabs(smom.X()-chmom.X()) > 1e-6 ||
-	  fabs(smom.Y()-chmom.Y()) > 1e-6 ||
-	  fabs(smom.Z()-chmom.Z()) > 1e-6 )
-      throw cet::exception("RECO")<<"fillSegment: position or momentum mismatch" << std::endl;
     }
   
     void fillStraws(const KalRep* krep, std::vector<TrkStraw>& tstraws) {
