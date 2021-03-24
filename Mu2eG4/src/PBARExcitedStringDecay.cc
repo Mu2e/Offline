@@ -29,8 +29,8 @@
 #if G4VERSION<4099
 
 #include "Mu2eG4/inc/PBARExcitedStringDecay.hh"
-#include "G4SystemOfUnits.hh"
-#include "G4KineticTrack.hh"
+#include "Geant4/G4SystemOfUnits.hh"
+#include "Geant4/G4KineticTrack.hh"
 
 PBARExcitedStringDecay::PBARExcitedStringDecay() : G4VStringFragmentation(),
 	theStringDecay(0)

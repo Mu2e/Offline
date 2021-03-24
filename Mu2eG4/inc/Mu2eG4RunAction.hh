@@ -11,9 +11,9 @@
 
 
 //G4 includes
-#include "G4UserRunAction.hh"
-#include "G4Run.hh"
-#include "G4SDManager.hh"
+#include "Geant4/G4UserRunAction.hh"
+#include "Geant4/G4Run.hh"
+#include "Geant4/G4SDManager.hh"
 
 #include "Mu2eG4/inc/Mu2eG4Config.hh"
 

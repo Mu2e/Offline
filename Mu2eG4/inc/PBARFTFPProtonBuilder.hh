@@ -40,22 +40,22 @@
 #ifndef PBARFTFPProtonBuilder_h
 #define PBARFTFPProtonBuilder_h 
 
-#include "globals.hh"
+#include "Geant4/globals.hh"
 
-#include "G4HadronElasticProcess.hh"
-#include "G4HadronFissionProcess.hh"
-#include "G4HadronCaptureProcess.hh"
-#include "G4ProtonInelasticProcess.hh"
-#include "G4VProtonBuilder.hh"
+#include "Geant4/G4HadronElasticProcess.hh"
+#include "Geant4/G4HadronFissionProcess.hh"
+#include "Geant4/G4HadronCaptureProcess.hh"
+#include "Geant4/G4ProtonInelasticProcess.hh"
+#include "Geant4/G4VProtonBuilder.hh"
 
-#include "G4TheoFSGenerator.hh"
-#include "G4ExcitationHandler.hh"
-#include "G4PreCompoundModel.hh"
-#include "G4GeneratorPrecompoundInterface.hh"
+#include "Geant4/G4TheoFSGenerator.hh"
+#include "Geant4/G4ExcitationHandler.hh"
+#include "Geant4/G4PreCompoundModel.hh"
+#include "Geant4/G4GeneratorPrecompoundInterface.hh"
 #include "Mu2eG4/inc/PBARFTFModel.hh"
 #include "Mu2eG4/inc/PBARLundStringFragmentation.hh"
 #include "Mu2eG4/inc/PBARExcitedStringDecay.hh"
-#include "G4QuasiElasticChannel.hh"
+#include "Geant4/G4QuasiElasticChannel.hh"
 
 class PBARFTFPProtonBuilder : public G4VProtonBuilder
 {

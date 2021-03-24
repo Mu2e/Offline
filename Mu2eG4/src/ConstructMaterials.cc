@@ -38,19 +38,19 @@
 #include "CLHEP/Units/PhysicalConstants.h"
 
 // G4 includes
-#include "G4GeometryManager.hh"
-#include "G4PhysicalVolumeStore.hh"
-#include "G4LogicalVolumeStore.hh"
-#include "G4SolidStore.hh"
+#include "Geant4/G4GeometryManager.hh"
+#include "Geant4/G4PhysicalVolumeStore.hh"
+#include "Geant4/G4LogicalVolumeStore.hh"
+#include "Geant4/G4SolidStore.hh"
 
-#include "G4Material.hh"
-#include "G4Box.hh"
-#include "G4Tubs.hh"
-#include "G4LogicalVolume.hh"
-#include "G4ThreeVector.hh"
-#include "globals.hh"
-#include "G4NistManager.hh"
-#include "G4VisAttributes.hh"
+#include "Geant4/G4Material.hh"
+#include "Geant4/G4Box.hh"
+#include "Geant4/G4Tubs.hh"
+#include "Geant4/G4LogicalVolume.hh"
+#include "Geant4/G4ThreeVector.hh"
+#include "Geant4/globals.hh"
+#include "Geant4/G4NistManager.hh"
+#include "Geant4/G4VisAttributes.hh"
 
 using namespace std;
 

@@ -28,15 +28,15 @@
 #include "Mu2eG4/inc/ExtMonFNALPixelSD.hh"
 
 //G4 includes
-#include "G4WorkerThread.hh"
-#include "G4StateManager.hh"
-#include "G4UserWorkerThreadInitialization.hh"
-#include "G4VPhysicalVolume.hh"
-#include "G4TransportationManager.hh"
-#include "G4VUserPhysicsList.hh"
-#include "G4ParallelWorldProcessStore.hh"
-#include "G4ParticleHPManager.hh"
-#include "G4HadronicProcessStore.hh"
+#include "Geant4/G4WorkerThread.hh"
+#include "Geant4/G4StateManager.hh"
+#include "Geant4/G4UserWorkerThreadInitialization.hh"
+#include "Geant4/G4VPhysicalVolume.hh"
+#include "Geant4/G4TransportationManager.hh"
+#include "Geant4/G4VUserPhysicsList.hh"
+#include "Geant4/G4ParallelWorldProcessStore.hh"
+#include "Geant4/G4ParticleHPManager.hh"
+#include "Geant4/G4HadronicProcessStore.hh"
 
 //Other includes
 #include <string>

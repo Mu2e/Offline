@@ -9,8 +9,8 @@
 
 #include "Mu2eG4/inc/SteppingVerbose.hh"
 
-#include "G4SteppingManager.hh"
-#include "G4UnitsTable.hh"
+#include "Geant4/G4SteppingManager.hh"
+#include "Geant4/G4UnitsTable.hh"
 
 namespace mu2e {
 

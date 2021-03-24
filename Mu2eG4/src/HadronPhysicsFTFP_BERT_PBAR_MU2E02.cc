@@ -41,25 +41,25 @@
 
 #include "Mu2eG4/inc/HadronPhysicsFTFP_BERT_PBAR_MU2E02.hh"
 
-#include "globals.hh"
-#include "G4ios.hh"
-#include "G4SystemOfUnits.hh"
-#include "G4ParticleDefinition.hh"
-#include "G4ParticleTable.hh"
+#include "Geant4/globals.hh"
+#include "Geant4/G4ios.hh"
+#include "Geant4/G4SystemOfUnits.hh"
+#include "Geant4/G4ParticleDefinition.hh"
+#include "Geant4/G4ParticleTable.hh"
 
-#include "G4MesonConstructor.hh"
-#include "G4BaryonConstructor.hh"
-#include "G4ShortLivedConstructor.hh"
+#include "Geant4/G4MesonConstructor.hh"
+#include "Geant4/G4BaryonConstructor.hh"
+#include "Geant4/G4ShortLivedConstructor.hh"
 
-#include "G4ChipsKaonMinusInelasticXS.hh"
-#include "G4ChipsKaonPlusInelasticXS.hh"
-#include "G4ChipsKaonZeroInelasticXS.hh"
-#include "G4CrossSectionDataSetRegistry.hh"
+#include "Geant4/G4ChipsKaonMinusInelasticXS.hh"
+#include "Geant4/G4ChipsKaonPlusInelasticXS.hh"
+#include "Geant4/G4ChipsKaonZeroInelasticXS.hh"
+#include "Geant4/G4CrossSectionDataSetRegistry.hh"
 
-#include "G4PhysListUtil.hh"
+#include "Geant4/G4PhysListUtil.hh"
 
 // factory
-#include "G4PhysicsConstructorFactory.hh"
+#include "Geant4/G4PhysicsConstructorFactory.hh"
 //
 G4_DECLARE_PHYSCONSTR_FACTORY(HadronPhysicsFTFP_BERT_PBAR_MU2E02);
 
@@ -176,7 +176,7 @@ void HadronPhysicsFTFP_BERT_PBAR_MU2E02::ConstructParticle()
   pShortLivedConstructor.ConstructParticle();  
 }
 
-#include "G4ProcessManager.hh"
+#include "Geant4/G4ProcessManager.hh"
 void HadronPhysicsFTFP_BERT_PBAR_MU2E02::ConstructProcess()
 {
   CreateModels();

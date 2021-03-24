@@ -18,9 +18,9 @@
 #include "MCDataProducts/inc/StatusG4.hh"
 
 //G4 includes
-#include "G4Timer.hh"
-#include "G4SDManager.hh"
-#include "G4EventManager.hh"
+#include "Geant4/G4Timer.hh"
+#include "Geant4/G4SDManager.hh"
+#include "Geant4/G4EventManager.hh"
 
 //art includes
 #include "canvas/Utilities/InputTag.h"

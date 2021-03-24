@@ -31,9 +31,9 @@
 #if ( defined G4VIS_USE_OPENGLX || defined G4VIS_USE_OPENGL || defined  G4VIS_USE_OPENGLQT ) 
 #include "Mu2eG4/inc/Mu2eVisCommands.hh"
 
-#include "G4VVisCommand.hh"
-#include "G4RunManager.hh"
-#include "G4UImanager.hh"
+#include "Geant4/G4VVisCommand.hh"
+#include "Geant4/G4RunManager.hh"
+#include "Geant4/G4UImanager.hh"
 
 Mu2eVisCommandSceneHandlerDrawEvent::Mu2eVisCommandSceneHandlerDrawEvent() {
   

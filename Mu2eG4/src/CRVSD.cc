@@ -19,8 +19,8 @@
 #include "ConfigTools/inc/SimpleConfig.hh"
 
 // G4 includes
-#include "G4LossTableManager.hh"
-#include "G4Step.hh"
+#include "Geant4/G4LossTableManager.hh"
+#include "Geant4/G4Step.hh"
 
 using namespace std;
 

@@ -25,16 +25,16 @@
 //#include "Mu2eG4/inc/nestCons.hh"
 
 // G4 includes
-//#include "G4Material.hh"
-#include "G4Color.hh"
-//#include "G4Box.hh"
-//#include "G4Cons.hh"
-//#include "G4Tubs.hh"
-//#include "G4BooleanSolid.hh"
-//#include "globals.hh"
-#include "G4ThreeVector.hh"
-#include "G4TessellatedSolid.hh"
-#include "G4VPhysicalVolume.hh"
+//#include "Geant4/G4Material.hh"
+#include "Geant4/G4Color.hh"
+//#include "Geant4/G4Box.hh"
+//#include "Geant4/G4Cons.hh"
+//#include "Geant4/G4Tubs.hh"
+//#include "Geant4/G4BooleanSolid.hh"
+//#include "Geant4/globals.hh"
+#include "Geant4/G4ThreeVector.hh"
+#include "Geant4/G4TessellatedSolid.hh"
+#include "Geant4/G4VPhysicalVolume.hh"
 
 
 namespace mu2e {

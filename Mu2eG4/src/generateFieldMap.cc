@@ -20,11 +20,11 @@
 #include "art/Framework/Principal/Handle.h"
 
 // G4 includes
-#include "G4TransportationManager.hh"
-#include "G4LogicalVolume.hh"
-#include "G4VPhysicalVolume.hh"
-#include "G4FieldManager.hh"
-#include "G4Field.hh"
+#include "Geant4/G4TransportationManager.hh"
+#include "Geant4/G4LogicalVolume.hh"
+#include "Geant4/G4VPhysicalVolume.hh"
+#include "Geant4/G4FieldManager.hh"
+#include "Geant4/G4Field.hh"
 
 #include "TNtuple.h"
 

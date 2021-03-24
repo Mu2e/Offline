@@ -41,11 +41,11 @@
 //
 #if G4VERSION<4099
 #include "Mu2eG4/inc/PBARFTFPProtonBuilder.hh"
-#include "G4SystemOfUnits.hh"
-#include "G4ParticleDefinition.hh"
-#include "G4ParticleTable.hh"
-#include "G4ProcessManager.hh"
-#include "G4BGGNucleonInelasticXS.hh"
+#include "Geant4/G4SystemOfUnits.hh"
+#include "Geant4/G4ParticleDefinition.hh"
+#include "Geant4/G4ParticleTable.hh"
+#include "Geant4/G4ProcessManager.hh"
+#include "Geant4/G4BGGNucleonInelasticXS.hh"
 
 PBARFTFPProtonBuilder::
 PBARFTFPProtonBuilder(G4bool quasiElastic) 

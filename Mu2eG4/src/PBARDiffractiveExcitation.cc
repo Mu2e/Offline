@@ -44,26 +44,26 @@
 // ---------------------------------------------------------------------
 #if G4VERSION<4099
 
-#include "globals.hh"
+#include "Geant4/globals.hh"
 #include "Randomize.hh"
-#include "G4PhysicalConstants.hh"
-#include "G4SystemOfUnits.hh"
+#include "Geant4/G4PhysicalConstants.hh"
+#include "Geant4/G4SystemOfUnits.hh"
 
 #include "Mu2eG4/inc/PBARDiffractiveExcitation.hh"
-#include "G4FTFParameters.hh"
-#include "G4ElasticHNScattering.hh"
+#include "Geant4/G4FTFParameters.hh"
+#include "Geant4/G4ElasticHNScattering.hh"
 
-#include "G4LorentzRotation.hh"
-#include "G4RotationMatrix.hh"
-#include "G4ThreeVector.hh"
-#include "G4ParticleDefinition.hh" 
-#include "G4VSplitableHadron.hh"
-#include "G4ExcitedString.hh"
-#include "G4ParticleTable.hh"
-#include "G4Neutron.hh"
-#include "G4ParticleDefinition.hh"
+#include "Geant4/G4LorentzRotation.hh"
+#include "Geant4/G4RotationMatrix.hh"
+#include "Geant4/G4ThreeVector.hh"
+#include "Geant4/G4ParticleDefinition.hh" 
+#include "Geant4/G4VSplitableHadron.hh"
+#include "Geant4/G4ExcitedString.hh"
+#include "Geant4/G4ParticleTable.hh"
+#include "Geant4/G4Neutron.hh"
+#include "Geant4/G4ParticleDefinition.hh"
 
-//#include "G4ios.hh"
+//#include "Geant4/G4ios.hh"
 //#include "UZHI_diffraction.hh"
 
 PBARDiffractiveExcitation::PBARDiffractiveExcitation()

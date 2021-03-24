@@ -11,8 +11,8 @@
 #include "MCDataProducts/inc/ProcessCode.hh"
 
 // Geant4 includes
-#include "G4VUserTrackInformation.hh"
-#include "G4ThreeVector.hh"
+#include "Geant4/G4VUserTrackInformation.hh"
+#include "Geant4/G4ThreeVector.hh"
 
 namespace mu2e{
 

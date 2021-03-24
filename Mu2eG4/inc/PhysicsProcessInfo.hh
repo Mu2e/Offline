@@ -14,7 +14,7 @@
 
 #include "MCDataProducts/inc/ProcessCode.hh"
 
-#include "G4String.hh"
+#include "Geant4/G4String.hh"
 
 namespace mu2e {
 

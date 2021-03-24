@@ -19,7 +19,7 @@
 #include "cetlib/cpu_timer.h"
 
 // G4 includes
-#include "globals.hh"
+#include "Geant4/globals.hh"
 
 // Mu2e includes
 

@@ -25,11 +25,11 @@
 #include "Mu2eG4/inc/ConstructMaterials.hh"
 
 // G4 includes
-#include "G4GeometryManager.hh"
-#include "G4PhysicalVolumeStore.hh"
-#include "G4LogicalVolumeStore.hh"
-#include "G4SolidStore.hh"
-#include "G4VUserDetectorConstruction.hh"
+#include "Geant4/G4GeometryManager.hh"
+#include "Geant4/G4PhysicalVolumeStore.hh"
+#include "Geant4/G4LogicalVolumeStore.hh"
+#include "Geant4/G4SolidStore.hh"
+#include "Geant4/G4VUserDetectorConstruction.hh"
 
 
 namespace mu2e {

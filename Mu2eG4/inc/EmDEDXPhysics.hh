@@ -37,8 +37,8 @@
 #ifndef EmDEDXPhysics_h
 #define EmDEDXPhysics_h 1
 
-#include "G4VPhysicsConstructor.hh"
-#include "globals.hh"
+#include "Geant4/G4VPhysicsConstructor.hh"
+#include "Geant4/globals.hh"
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
