@@ -34,7 +34,7 @@
 #include "Mu2eG4/inc/DecayMuonsWithSpin.hh"
 #include "Mu2eG4/inc/MinimalPhysicsList.hh"
 #include "Mu2eG4/inc/MinDEDXPhysicsList.hh"
-#include "Mu2eG4/inc/StepLimiterPhysConstructor.hh"
+#include "Mu2eG4/inc/Mu2eG4StepLimiterPhysicsConstructor.hh"
 #include "Mu2eG4/inc/Mu2eG4CustomizationPhysicsConstructor.hh"
 
 // CLHEP includes
@@ -95,8 +95,8 @@ namespace mu2e{
         << "\n";
     }
 
-    // The modular physics list takes ownership of the StepLimiterPhysConstructor.
-    tmpPL->RegisterPhysics( new StepLimiterPhysConstructor() );
+    // The modular physics list takes ownership of the Mu2eG4StepLimiterPhysicsConstructor.
+    tmpPL->RegisterPhysics( new Mu2eG4StepLimiterPhysicsConstructor() );
 
     // Mu2e Customizations
     tmpPL->RegisterPhysics( new Mu2eG4CustomizationPhysicsConstructor(&phys, &debug));
