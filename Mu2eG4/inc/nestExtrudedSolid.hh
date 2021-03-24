@@ -16,11 +16,11 @@ class G4VPhysicalVolume;
 class G4CSGSolid;
 
 // G4 includes
-#include "G4ThreeVector.hh"
-#include "G4TwoVector.hh"
-#include "G4RotationMatrix.hh"
-#include "G4Colour.hh"
-#include "G4ExtrudedSolid.hh"
+#include "Geant4/G4ThreeVector.hh"
+#include "Geant4/G4TwoVector.hh"
+#include "Geant4/G4RotationMatrix.hh"
+#include "Geant4/G4Colour.hh"
+#include "Geant4/G4ExtrudedSolid.hh"
 
 
 namespace mu2e {

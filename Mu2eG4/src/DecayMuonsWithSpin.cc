@@ -35,31 +35,31 @@
 
 #include "Mu2eG4/inc/DecayMuonsWithSpin.hh"
 
-#include "G4ParticleDefinition.hh"
-#include "G4ProcessManager.hh"
+#include "Geant4/G4ParticleDefinition.hh"
+#include "Geant4/G4ProcessManager.hh"
 
-#include "G4PionDecayMakeSpin.hh"
-#include "G4DecayWithSpin.hh"
+#include "Geant4/G4PionDecayMakeSpin.hh"
+#include "Geant4/G4DecayWithSpin.hh"
 
-#include "G4DecayTable.hh"
-#include "G4ProcessTable.hh"
+#include "Geant4/G4DecayTable.hh"
+#include "Geant4/G4ProcessTable.hh"
 
-#include "G4MuonDecayChannelWithSpin.hh"
-#include "G4MuonRadiativeDecayChannelWithSpin.hh"
+#include "Geant4/G4MuonDecayChannelWithSpin.hh"
+#include "Geant4/G4MuonRadiativeDecayChannelWithSpin.hh"
 
-#include "G4LeptonConstructor.hh"
+#include "Geant4/G4LeptonConstructor.hh"
 
-#include "G4MuonPlus.hh"
-#include "G4MuonMinus.hh"
-#include "G4PionPlus.hh"
-#include "G4PionMinus.hh"
-#include "G4PionZero.hh"
-#include "G4KaonPlus.hh"
-#include "G4KaonMinus.hh"
-#include "G4KaonZeroLong.hh"
+#include "Geant4/G4MuonPlus.hh"
+#include "Geant4/G4MuonMinus.hh"
+#include "Geant4/G4PionPlus.hh"
+#include "Geant4/G4PionMinus.hh"
+#include "Geant4/G4PionZero.hh"
+#include "Geant4/G4KaonPlus.hh"
+#include "Geant4/G4KaonMinus.hh"
+#include "Geant4/G4KaonZeroLong.hh"
 
 // factory
-#include "G4PhysicsConstructorFactory.hh"
+#include "Geant4/G4PhysicsConstructorFactory.hh"
 //
 G4_DECLARE_PHYSCONSTR_FACTORY(DecayMuonsWithSpin);
 

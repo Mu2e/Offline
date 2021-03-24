@@ -40,17 +40,17 @@
 #include <utility> 
 
 #include "Mu2eG4/inc/PBARFTFModel.hh"
-#include "G4ios.hh"
-#include "G4PhysicalConstants.hh"
-#include "G4SystemOfUnits.hh"
-#include "G4FTFParameters.hh"
-#include "G4FTFParticipants.hh"
-#include "G4DiffractiveSplitableHadron.hh"
-#include "G4InteractionContent.hh"
-#include "G4LorentzRotation.hh"
-#include "G4ParticleDefinition.hh"
-#include "G4ParticleTable.hh"
-#include "G4IonTable.hh"
+#include "Geant4/G4ios.hh"
+#include "Geant4/G4PhysicalConstants.hh"
+#include "Geant4/G4SystemOfUnits.hh"
+#include "Geant4/G4FTFParameters.hh"
+#include "Geant4/G4FTFParticipants.hh"
+#include "Geant4/G4DiffractiveSplitableHadron.hh"
+#include "Geant4/G4InteractionContent.hh"
+#include "Geant4/G4LorentzRotation.hh"
+#include "Geant4/G4ParticleDefinition.hh"
+#include "Geant4/G4ParticleTable.hh"
+#include "Geant4/G4IonTable.hh"
 
 // Class PBARFTFModel 
 

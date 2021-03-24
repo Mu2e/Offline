@@ -31,13 +31,13 @@
 #include "Mu2eG4/inc/finishNesting.hh"
 
 // G4 includes
-#include "G4Material.hh"
-#include "G4Color.hh"
-#include "G4VSolid.hh"
-#include "G4Tubs.hh"
-#include "G4Cons.hh"
-#include "G4Polycone.hh"
-#include "G4VPhysicalVolume.hh"
+#include "Geant4/G4Material.hh"
+#include "Geant4/G4Color.hh"
+#include "Geant4/G4VSolid.hh"
+#include "Geant4/G4Tubs.hh"
+#include "Geant4/G4Cons.hh"
+#include "Geant4/G4Polycone.hh"
+#include "Geant4/G4VPhysicalVolume.hh"
 
 using namespace std;
 

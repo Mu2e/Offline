@@ -15,17 +15,17 @@
 #include "Mu2eG4/inc/HelicalProtonAbsorber.hh"
 
 // G4 includes
-#include "G4VPhysicalVolume.hh"
-#include "G4LogicalVolume.hh"
-//#include "G4Material.hh"
-#include "G4PVPlacement.hh"
-#include "G4QuadrangularFacet.hh"
-#include "G4TriangularFacet.hh"
-#include "G4VisAttributes.hh"
+#include "Geant4/G4VPhysicalVolume.hh"
+#include "Geant4/G4LogicalVolume.hh"
+//#include "Geant4/G4Material.hh"
+#include "Geant4/G4PVPlacement.hh"
+#include "Geant4/G4QuadrangularFacet.hh"
+#include "Geant4/G4TriangularFacet.hh"
+#include "Geant4/G4VisAttributes.hh"
 
-//#include "G4RunManager.hh"
+//#include "Geant4/G4RunManager.hh"
 //#include "PAbsSD.hh"
-//#include "G4SDManager.hh"
+//#include "Geant4/G4SDManager.hh"
 
 // I have created some comments on the files to generate the helical proton absorber geometry.
 // We might have used a different notation than used in Fermilab. If there is any problem reading

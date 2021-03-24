@@ -17,9 +17,9 @@
 #include "Mu2eG4/inc/finishNesting.hh"
 
 // G4 includes
-#include "G4Material.hh"
-#include "G4Color.hh"
-#include "G4Box.hh"
+#include "Geant4/G4Material.hh"
+#include "Geant4/G4Color.hh"
+#include "Geant4/G4Box.hh"
 
 using namespace std;
 

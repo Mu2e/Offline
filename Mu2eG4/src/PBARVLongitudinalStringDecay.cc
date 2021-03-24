@@ -37,28 +37,28 @@
 #if G4VERSION<4099
 
 #include "Mu2eG4/inc/PBARVLongitudinalStringDecay.hh"
-#include "G4PhysicalConstants.hh"
-#include "G4SystemOfUnits.hh"
-#include "G4ios.hh"
+#include "Geant4/G4PhysicalConstants.hh"
+#include "Geant4/G4SystemOfUnits.hh"
+#include "Geant4/G4ios.hh"
 #include "Randomize.hh"
-#include "G4FragmentingString.hh"
+#include "Geant4/G4FragmentingString.hh"
 
-#include "G4ParticleDefinition.hh"
-#include "G4ParticleTypes.hh"
-#include "G4ParticleChange.hh"
-#include "G4VShortLivedParticle.hh"
-#include "G4ShortLivedConstructor.hh"
-#include "G4ParticleTable.hh"
+#include "Geant4/G4ParticleDefinition.hh"
+#include "Geant4/G4ParticleTypes.hh"
+#include "Geant4/G4ParticleChange.hh"
+#include "Geant4/G4VShortLivedParticle.hh"
+#include "Geant4/G4ShortLivedConstructor.hh"
+#include "Geant4/G4ParticleTable.hh"
 #if G4VERSION<4099
-#include "G4ShortLivedTable.hh"
+#include "Geant4/G4ShortLivedTable.hh"
 #endif
-#include "G4PhaseSpaceDecayChannel.hh"
-#include "G4VDecayChannel.hh"
-#include "G4DecayTable.hh"
+#include "Geant4/G4PhaseSpaceDecayChannel.hh"
+#include "Geant4/G4VDecayChannel.hh"
+#include "Geant4/G4DecayTable.hh"
 
-#include "G4DiQuarks.hh"
-#include "G4Quarks.hh"
-#include "G4Gluons.hh"
+#include "Geant4/G4DiQuarks.hh"
+#include "Geant4/G4Quarks.hh"
+#include "Geant4/G4Gluons.hh"
 
 //------------------------debug switches
 //#define DEBUG_LightFragmentationTest 1

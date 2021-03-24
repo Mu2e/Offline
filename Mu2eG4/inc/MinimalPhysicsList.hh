@@ -8,7 +8,7 @@
 // Original author Rob Kutschke
 //
 
-#include "G4VModularPhysicsList.hh"
+#include "Geant4/G4VModularPhysicsList.hh"
 
 namespace mu2e {
   class MinimalPhysicsList: public G4VModularPhysicsList{

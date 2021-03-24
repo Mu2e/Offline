@@ -17,7 +17,7 @@ class G4LogicalVolume;
 class G4VPhysicalVolume;
 class G4Element;
 
-#include "G4String.hh"
+#include "Geant4/G4String.hh"
 
 namespace mu2e {
 

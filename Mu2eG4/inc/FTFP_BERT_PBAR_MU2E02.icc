@@ -47,25 +47,25 @@
 //
 #include <iomanip>   
 
-#include "globals.hh"
-#include "G4ios.hh"
-#include "G4ProcessManager.hh"
-#include "G4ProcessVector.hh"
-#include "G4ParticleTypes.hh"
-#include "G4ParticleTable.hh"
+#include "Geant4/globals.hh"
+#include "Geant4/G4ios.hh"
+#include "Geant4/G4ProcessManager.hh"
+#include "Geant4/G4ProcessVector.hh"
+#include "Geant4/G4ParticleTypes.hh"
+#include "Geant4/G4ParticleTable.hh"
 
-#include "G4Material.hh"
-#include "G4MaterialTable.hh"
+#include "Geant4/G4Material.hh"
+#include "Geant4/G4MaterialTable.hh"
 
-#include "G4DecayPhysics.hh"
-#include "G4EmStandardPhysics.hh"
-#include "G4EmExtraPhysics.hh"
-#include "G4IonPhysics.hh"
-#include "G4StoppingPhysics.hh"
-#include "G4HadronElasticPhysics.hh"
-#include "G4NeutronTrackingCut.hh"
+#include "Geant4/G4DecayPhysics.hh"
+#include "Geant4/G4EmStandardPhysics.hh"
+#include "Geant4/G4EmExtraPhysics.hh"
+#include "Geant4/G4IonPhysics.hh"
+#include "Geant4/G4StoppingPhysics.hh"
+#include "Geant4/G4HadronElasticPhysics.hh"
+#include "Geant4/G4NeutronTrackingCut.hh"
 
-#include "G4DataQuestionaire.hh"
+#include "Geant4/G4DataQuestionaire.hh"
 #include "HadronPhysicsFTFP_BERT_PBAR_MU2E02.hh"
 
 template<class T> TFTFP_BERT_PBAR_MU2E02<T>::TFTFP_BERT_PBAR_MU2E02(G4int ver):  T()

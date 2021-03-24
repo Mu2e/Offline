@@ -24,14 +24,14 @@
 
 // G4 includes
 
-#include "G4Track.hh"
-#include "G4Step.hh"
-#include "G4Event.hh"
-#include "G4ParticleDefinition.hh"
-#include "G4VProcess.hh"
-#include "G4RunManager.hh"
-#include "G4TrackingManager.hh"
-#include "G4LossTableManager.hh"
+#include "Geant4/G4Track.hh"
+#include "Geant4/G4Step.hh"
+#include "Geant4/G4Event.hh"
+#include "Geant4/G4ParticleDefinition.hh"
+#include "Geant4/G4VProcess.hh"
+#include "Geant4/G4RunManager.hh"
+#include "Geant4/G4TrackingManager.hh"
+#include "Geant4/G4LossTableManager.hh"
 
 using namespace std;
 

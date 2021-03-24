@@ -6,7 +6,7 @@
 //
 // Original author Rob Kutschke
 //
-#include "G4VPhysicsConstructor.hh"
+#include "Geant4/G4VPhysicsConstructor.hh"
 
 namespace mu2e {
 

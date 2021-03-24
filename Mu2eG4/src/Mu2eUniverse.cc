@@ -20,7 +20,7 @@
 #include "Mu2eG4/inc/Mu2eUniverse.hh"
 
 // G4 includes
-#include "G4PhysicalVolumeStore.hh"
+#include "Geant4/G4PhysicalVolumeStore.hh"
 
 using namespace std;
 

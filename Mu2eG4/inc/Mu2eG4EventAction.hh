@@ -8,8 +8,8 @@
 //
 
 //G4 includes
-#include "G4UserEventAction.hh"
-#include "G4Threading.hh"
+#include "Geant4/G4UserEventAction.hh"
+#include "Geant4/G4Threading.hh"
 
 //Mu2e includes
 #include "MCDataProducts/inc/SimParticleCollection.hh"

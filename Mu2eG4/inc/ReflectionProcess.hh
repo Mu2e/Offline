@@ -13,13 +13,13 @@
 #include "CLHEP/Units/SystemOfUnits.h"
 
 // Geant4 includes
-#include "G4ParticleDefinition.hh"
-#include "G4ParticleTable.hh"
-#include "G4Step.hh"
-#include "G4ThreeVector.hh"
-#include "G4Track.hh"
-#include "G4VDiscreteProcess.hh"
-#include "G4VParticleChange.hh"
+#include "Geant4/G4ParticleDefinition.hh"
+#include "Geant4/G4ParticleTable.hh"
+#include "Geant4/G4Step.hh"
+#include "Geant4/G4ThreeVector.hh"
+#include "Geant4/G4Track.hh"
+#include "Geant4/G4VDiscreteProcess.hh"
+#include "Geant4/G4VParticleChange.hh"
 #include "cetlib/pow.h"
 
 namespace mu2e{

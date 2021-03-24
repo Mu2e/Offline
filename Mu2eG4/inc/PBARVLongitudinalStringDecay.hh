@@ -35,11 +35,11 @@
 // -----------------------------------------------------------------------------
 #ifndef PBARVLongitudinalStringDecay_h
 #define PBARVLongitudinalStringDecay_h 1
-#include "G4VStringFragmentation.hh"
-#include "G4DynamicParticle.hh"
-#include "G4KineticTrack.hh"
-#include "G4KineticTrackVector.hh"
-#include "G4HadronBuilder.hh"
+#include "Geant4/G4VStringFragmentation.hh"
+#include "Geant4/G4DynamicParticle.hh"
+#include "Geant4/G4KineticTrack.hh"
+#include "Geant4/G4KineticTrackVector.hh"
+#include "Geant4/G4HadronBuilder.hh"
 
 class G4FragmentingString;
 //**************************************************************************************

@@ -17,9 +17,9 @@ class G4LogicalVolume;
 class G4VPhysicalVolume;
 class G4CSGSolid;
 
-#include "G4ThreeVector.hh"
-#include "G4RotationMatrix.hh"
-#include "G4Colour.hh"
+#include "Geant4/G4ThreeVector.hh"
+#include "Geant4/G4RotationMatrix.hh"
+#include "Geant4/G4Colour.hh"
 
 namespace mu2e {
 

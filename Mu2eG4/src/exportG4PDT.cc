@@ -8,7 +8,7 @@
 #include "Mu2eG4/inc/exportG4PDT.hh"
 #include "DataProducts/inc/PDGCode.hh"
 
-#include "G4ParticleTable.hh"
+#include "Geant4/G4ParticleTable.hh"
 
 #include <iostream>
 

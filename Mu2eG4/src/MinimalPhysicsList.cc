@@ -13,10 +13,10 @@
 #include "Mu2eG4/inc/MinimalPhysicsList.hh"
 #include "Mu2eG4/inc/addStepLimiter.hh"
 
-#include "G4ParticleTypes.hh"
-#include "G4ProcessManager.hh"
-#include "G4StepLimiter.hh"
-#include "G4ParticleTable.hh"
+#include "Geant4/G4ParticleTypes.hh"
+#include "Geant4/G4ProcessManager.hh"
+#include "Geant4/G4StepLimiter.hh"
+#include "Geant4/G4ParticleTable.hh"
 
 namespace mu2e {
   MinimalPhysicsList::MinimalPhysicsList():  G4VModularPhysicsList(){

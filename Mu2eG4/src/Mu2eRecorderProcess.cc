@@ -9,10 +9,10 @@
 #include "Mu2eG4/inc/Mu2eRecorderProcess.hh"
 
 // G4 includes
-#include "G4ios.hh"
-#include "G4VParticleChange.hh"
-#include "G4Track.hh"
-#include "G4Step.hh"
+#include "Geant4/G4ios.hh"
+#include "Geant4/G4VParticleChange.hh"
+#include "Geant4/G4Track.hh"
+#include "Geant4/G4Step.hh"
 
 namespace mu2e{
 

@@ -8,7 +8,7 @@
 //
 
 // Geant4 includes
-#include "G4ThreeVector.hh"
+#include "Geant4/G4ThreeVector.hh"
 
 namespace mu2e {
 

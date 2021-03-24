@@ -4,8 +4,8 @@
 // Free function to create strawman Production Target
 
 // G4 includes
-#include "G4ThreeVector.hh"
-#include "G4RotationMatrix.hh"
+#include "Geant4/G4ThreeVector.hh"
+#include "Geant4/G4RotationMatrix.hh"
 #include "TMath.h"
 namespace mu2e {
 

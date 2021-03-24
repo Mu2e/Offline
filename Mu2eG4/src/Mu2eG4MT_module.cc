@@ -45,8 +45,8 @@
 #include "art/Utilities/Globals.h"
 
 // Geant4 includes
-#include "G4Run.hh"
-#include "G4VUserPhysicsList.hh"
+#include "Geant4/G4Run.hh"
+#include "Geant4/G4VUserPhysicsList.hh"
 
 // C++ includes.
 #include <cstdlib>

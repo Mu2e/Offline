@@ -5,7 +5,7 @@
 #ifndef Mu2eG4CustomizationPhysicsConstructor_h
 #define Mu2eG4CustomizationPhysicsConstructor_h 1
 
-#include "G4VPhysicsConstructor.hh"
+#include "Geant4/G4VPhysicsConstructor.hh"
 #include "Mu2eG4/inc/Mu2eG4Config.hh"
 
 

@@ -6,8 +6,8 @@
 //
 
 //G4 includes
-#include "G4VUserPhysicsList.hh"
-#include "G4RunManager.hh"
+#include "Geant4/G4VUserPhysicsList.hh"
+#include "Geant4/G4RunManager.hh"
 
 //Mu2e includes
 #include "Mu2eG4/inc/Mu2eG4MasterRunAction.hh"

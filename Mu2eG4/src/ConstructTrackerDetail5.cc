@@ -20,14 +20,14 @@
 #include "GeometryService/inc/GeometryService.hh"
 #include "TrackerGeom/inc/Tracker.hh"
 
-#include "G4Colour.hh"
-#include "G4Material.hh"
-#include "G4Polycone.hh"
-#include "G4PVPlacement.hh"
-#include "G4SDManager.hh"
-#include "G4ThreeVector.hh"
-#include "G4Tubs.hh"
-#include "G4VPhysicalVolume.hh"
+#include "Geant4/G4Colour.hh"
+#include "Geant4/G4Material.hh"
+#include "Geant4/G4Polycone.hh"
+#include "Geant4/G4PVPlacement.hh"
+#include "Geant4/G4SDManager.hh"
+#include "Geant4/G4ThreeVector.hh"
+#include "Geant4/G4Tubs.hh"
+#include "Geant4/G4VPhysicalVolume.hh"
 
 #include <iostream>
 #include <iomanip>

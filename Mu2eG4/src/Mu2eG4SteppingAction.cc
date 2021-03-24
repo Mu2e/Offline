@@ -10,8 +10,8 @@
 // Framework includes
 #include "messagefacility/MessageLogger/MessageLogger.h"
 
-#include "G4Step.hh"
-#include "G4Threading.hh"
+#include "Geant4/G4Step.hh"
+#include "Geant4/G4Threading.hh"
 
 // Mu2e includes
 #include "Mu2eG4/inc/Mu2eG4SteppingAction.hh"

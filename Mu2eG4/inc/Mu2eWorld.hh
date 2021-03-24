@@ -43,11 +43,11 @@ class G4UserLimits;
 
 
 //G4 includes
-#include "G4String.hh"
-#include "G4Colour.hh"
-#include "G4ThreeVector.hh"
-#include "G4RotationMatrix.hh"
-#include "G4VisAttributes.hh"
+#include "Geant4/G4String.hh"
+#include "Geant4/G4Colour.hh"
+#include "Geant4/G4ThreeVector.hh"
+#include "Geant4/G4RotationMatrix.hh"
+#include "Geant4/G4VisAttributes.hh"
 
 class G4VPhysicalVolume;
 class G4LogicalVolume;

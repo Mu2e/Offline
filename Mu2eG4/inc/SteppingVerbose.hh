@@ -9,7 +9,7 @@
 // The intial release is just a copy of the G4 Novice N02 example.
 //
 
-#include "G4SteppingVerbose.hh"
+#include "Geant4/G4SteppingVerbose.hh"
 
 namespace mu2e {
   class SteppingVerbose : public G4SteppingVerbose {

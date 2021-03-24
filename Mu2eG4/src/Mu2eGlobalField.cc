@@ -19,7 +19,7 @@
 #include "CLHEP/Vector/ThreeVector.h"
 
 
-#include "G4Threading.hh"
+#include "Geant4/G4Threading.hh"
 
 using CLHEP::Hep3Vector;
 using namespace std;

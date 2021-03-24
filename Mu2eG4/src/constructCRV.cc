@@ -25,19 +25,19 @@
 
 // G4 includes
 
-#include "G4Material.hh"
-#include "G4Color.hh"
-#include "G4Box.hh"
+#include "Geant4/G4Material.hh"
+#include "Geant4/G4Color.hh"
+#include "Geant4/G4Box.hh"
 
-#include "G4VSolid.hh"
-#include "G4LogicalVolume.hh"
-#include "G4PVPlacement.hh"
+#include "Geant4/G4VSolid.hh"
+#include "Geant4/G4LogicalVolume.hh"
+#include "Geant4/G4PVPlacement.hh"
 
-#include "G4VisAttributes.hh"
+#include "Geant4/G4VisAttributes.hh"
 
-#include "G4RotationMatrix.hh"
+#include "Geant4/G4RotationMatrix.hh"
 
-#include "G4SDManager.hh"
+#include "Geant4/G4SDManager.hh"
 
 using namespace std;
 
