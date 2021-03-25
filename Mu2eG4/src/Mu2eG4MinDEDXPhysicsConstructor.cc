@@ -25,7 +25,7 @@
 //
 //---------------------------------------------------------------------------
 //
-// ClassName:   EmDEDXPhysics
+// ClassName:   Mu2eG4MinDEDXPhysicsConstructor
 //
 // Author:      KLG based on G4EmStandardPhysics
 //
@@ -34,7 +34,7 @@
 // This class constructs special limited EM physics
 //
 
-#include "Mu2eG4/inc/EmDEDXPhysics.hh"
+#include "Mu2eG4/inc/Mu2eG4MinDEDXPhysicsConstructor.hh"
 #include "Geant4/G4SystemOfUnits.hh"
 #include "Geant4/G4ParticleDefinition.hh"
 #include "Geant4/G4EmParameters.hh"
@@ -88,12 +88,12 @@
 // factory
 #include "Geant4/G4PhysicsConstructorFactory.hh"
 //
-G4_DECLARE_PHYSCONSTR_FACTORY(EmDEDXPhysics);
+G4_DECLARE_PHYSCONSTR_FACTORY(Mu2eG4MinDEDXPhysicsConstructor);
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
-EmDEDXPhysics::EmDEDXPhysics(G4int ver)
-  : G4VPhysicsConstructor("EmDEDXPhysics"), verbose(ver)
+Mu2eG4MinDEDXPhysicsConstructor::Mu2eG4MinDEDXPhysicsConstructor(G4int ver)
+  : G4VPhysicsConstructor("Mu2eG4MinDEDXPhysicsConstructor"), verbose(ver)
 {
   G4EmParameters* param = G4EmParameters::Instance();
   param->SetDefaults();
@@ -104,12 +104,12 @@ EmDEDXPhysics::EmDEDXPhysics(G4int ver)
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
-EmDEDXPhysics::~EmDEDXPhysics()
+Mu2eG4MinDEDXPhysicsConstructor::~Mu2eG4MinDEDXPhysicsConstructor()
 {}
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
-void EmDEDXPhysics::ConstructParticle()
+void Mu2eG4MinDEDXPhysicsConstructor::ConstructParticle()
 {
   // gamma
   G4Gamma::Definition();
@@ -141,7 +141,7 @@ void EmDEDXPhysics::ConstructParticle()
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
-void EmDEDXPhysics::ConstructProcess()
+void Mu2eG4MinDEDXPhysicsConstructor::ConstructProcess()
 {
   if(verbose > 1) {
     G4cout << "### " << GetPhysicsName() << " Construct Processes " << G4endl;
