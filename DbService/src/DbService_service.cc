@@ -1,5 +1,6 @@
 
 #include "DbService/inc/DbService.hh"
+#include "DbService/inc/DbIdList.hh"
 #include "DbTables/inc/DbUtil.hh"
 #include "ConfigTools/inc/ConfigFileLookupPolicy.hh"
 
@@ -42,7 +43,8 @@ namespace mu2e {
     _engine.setVerbose(_verbose);
     _engine.setSaveCsv(_config.saveCsv());
 
-    _engine.setDbId( DbId(_config.dbName()) );
+    DbIdList idList; // read file of db connection details
+    _engine.setDbId( idList.getDbId(_config.dbName()) );
     _engine.setVersion( _version );
 
     // if there were text files containing calibrations,

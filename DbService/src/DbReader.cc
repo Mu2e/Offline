@@ -9,7 +9,7 @@
 
 using namespace std;
 
-mu2e::DbReader::DbReader(const DbId& id):_id(id),_curl_handle(nullptr),
+mu2e::DbReader::DbReader():_curl_handle(nullptr),
 		_timeout(3600),_totalTime(0),_removeHeader(true),
 	        _abortOnFail(true),_useCache(true),_cacheLifetime(0),
 					 _verbose(0),_timeVerbose(0),_saveCsv(true) {
@@ -181,6 +181,11 @@ int mu2e::DbReader::fillValTables(DbValCache& vcache) {
 }
 
 int mu2e::DbReader::openHandle() {
+
+  if(_id.name().empty()) {
+      throw cet::exception("DBREADER_DBID NOT_SET") 
+	<< "DbReader found the DbId was not set\n";
+  }
 
   _curl_handle = curl_easy_init();
 
