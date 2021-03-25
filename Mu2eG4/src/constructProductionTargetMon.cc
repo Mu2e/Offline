@@ -49,7 +49,8 @@ namespace mu2e {
         double frameThick = _config.getDouble("pTargetMon_frameThick");
         double wireSpacing = _config.getDouble("pTargetMon_wireSpacing");
         double detectorLength = gasLength + (2*outerPlateLength) + frameThick;
-
+        std::string wireNameSuffix = nameSuffix;
+        wireNameSuffix.append("_");
 
         std::vector<double> halfDims;
         halfDims.push_back(width/2.);
@@ -198,7 +199,7 @@ namespace mu2e {
         // between HV plane 1 and HV plane 2
         // TODO: treat as indiv sensitive detectors
         std::string wireGasNameVert = "pTargetMonWireVert";
-        wireGasNameVert.append(nameSuffix);
+        wireGasNameVert.append(wireNameSuffix);
         double gasLength2 = hv2Z - hv1Z - windowThick;
         double gasZ2 = 0.5*(hv2Z + hv1Z);
         int numVertWires = static_cast<int>(windowHeight/wireSpacing);
@@ -223,7 +224,7 @@ namespace mu2e {
         
         // TODO: treat as indiv sensitive detectors
         std::string wireGasNameHoriz = "pTargetMonWireHoriz";
-        wireGasNameHoriz.append(nameSuffix);
+        wireGasNameHoriz.append(wireNameSuffix);
         double gasLength3 = hv3Z - hv2Z - windowThick;
         double gasZ3 = 0.5*(hv3Z + hv2Z);
         int numHorizWires = static_cast<int>(windowWidth/wireSpacing);
@@ -234,7 +235,11 @@ namespace mu2e {
             gasHalfDims3.push_back(wireSpacing/2.);
             gasHalfDims3.push_back(windowHeight/2.);
             gasHalfDims3.push_back(gasLength3/2.);
-            double gasX3 = (-0.5*windowWidth) + ((i+0.5)*wireSpacing);
+            // Wire numbering is reversed, because we rotate the overall 
+            // container by almost 180 degrees to be along the beam path.
+            // This puts wire 0 all the way on the left, from the oncoming
+            // beam's point of view.
+            double gasX3 = (0.5*windowWidth) - ((i+0.5)*wireSpacing);
             nestBox(wireGasName,
                 gasHalfDims3,
                 gasMaterial,
@@ -289,8 +294,8 @@ namespace mu2e {
         G4double zPosInMu2e = _config.getDouble("pTargetMon_positionZ");
         G4ThreeVector positionInMu2e = G4ThreeVector(xPosInMu2e, yPosInMu2e, zPosInMu2e);
 
-        double yRotInMu2e = _config.getDouble("pTargetMon_rotY")*-1.;
-        double xRotInMu2e = _config.getDouble("pTargetMon_rotX")*-1.;
+        double yRotInMu2e = _config.getDouble("pTargetMon_rotY");
+        double xRotInMu2e = _config.getDouble("pTargetMon_rotX");
         AntiLeakRegistry& reg = art::ServiceHandle<G4Helper>()->antiLeakRegistry();
         G4RotationMatrix* rotation = reg.add(new G4RotationMatrix);
         //G4RotationMatrix* rotation = new G4RotationMatrix();
