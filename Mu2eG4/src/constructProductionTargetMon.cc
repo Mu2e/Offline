@@ -10,11 +10,11 @@
 #include <string>
 
 // Mu2e includes
-#include "G4Helper/inc/VolumeInfo.hh"
+#include "Mu2eG4Helper/inc/VolumeInfo.hh"
 #include "Mu2eG4/inc/nestBox.hh"
 #include "ConfigTools/inc/SimpleConfig.hh"
-#include "G4Helper/inc/AntiLeakRegistry.hh"
-#include "G4Helper/inc/G4Helper.hh"
+#include "Mu2eG4Helper/inc/AntiLeakRegistry.hh"
+#include "Mu2eG4Helper/inc/Mu2eG4Helper.hh"
 #include "Mu2eG4/inc/findMaterialOrThrow.hh"
 #include "Mu2eG4/inc/finishNesting.hh"
 
@@ -57,7 +57,7 @@ namespace mu2e {
         halfDims.push_back(height/2.);
         halfDims.push_back(detectorLength/2.);
 
-        AntiLeakRegistry& reg = art::ServiceHandle<G4Helper>()->antiLeakRegistry();
+        AntiLeakRegistry& reg = art::ServiceHandle<Mu2eG4Helper>()->antiLeakRegistry();
         G4RotationMatrix* noRotation = reg.add(new G4RotationMatrix);
 
         G4Material* baseMaterial = parent.logical->GetMaterial();
@@ -296,7 +296,7 @@ namespace mu2e {
 
         double yRotInMu2e = _config.getDouble("pTargetMon_rotY");
         double xRotInMu2e = _config.getDouble("pTargetMon_rotX");
-        AntiLeakRegistry& reg = art::ServiceHandle<G4Helper>()->antiLeakRegistry();
+        AntiLeakRegistry& reg = art::ServiceHandle<Mu2eG4Helper>()->antiLeakRegistry();
         G4RotationMatrix* rotation = reg.add(new G4RotationMatrix);
         //G4RotationMatrix* rotation = new G4RotationMatrix();
         rotation->rotateY(yRotInMu2e*CLHEP::deg);
