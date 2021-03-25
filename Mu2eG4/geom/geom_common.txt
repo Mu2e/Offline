@@ -1,9 +1,9 @@
 //
-// Redirection to the current Mu2e top level geometry file.
+// Redirection to the current stable Mu2e top level geometry file.
 // The file that is included will be time dependent.
 //
 
-#include "Mu2eG4/geom/geom_common_hayman_v2.txt"
+#include "Mu2eG4/geom/geom_2021_PhaseI.txt"
 
 // This tells emacs to view this file in c++ mode.
 // Local Variables:
