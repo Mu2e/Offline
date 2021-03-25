@@ -18,7 +18,8 @@ string pTargetMon_innerGas = "StrawGas"; // in ConstructMaterials.cc
 string pTargetMon_windowMaterial = "Kapton"; // TODO: carbon kapton
 string pTargetMon_frameMaterial = "G10";
 
-double pTargetMon_rotY = 13.74; // degree
+//double pTargetMon_rotY = 13.74+180.0; // degree
+double pTargetMon_rotY = -193.74; // degree
 double pTargetMon_rotX = 2.21; // degree
 
 // positions in Mu2e coordinates
