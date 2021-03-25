@@ -23,49 +23,35 @@
 // * acceptance of all terms of the Geant4 Software license.          *
 // ********************************************************************
 //
-//---------------------------------------------------------------------------
-//
-// Author: KLG based on FTPF_BERT; 
+// Author: KLG based on FTPF_BERT
 // Special Mu2e physics list for beam transportation studies
 //
 //----------------------------------------------------------------------------
 //
-#include <iomanip>   
+#ifndef TMu2eG4MinDEDXModularPhysicsList_h
+#define TMu2eG4MinDEDXModularPhysicsList_h 1
+
+#include <CLHEP/Units/SystemOfUnits.h>
 
 #include "Geant4/globals.hh"
-#include "Geant4/G4ios.hh"
+#include "Geant4/G4VModularPhysicsList.hh"
+#include "CompileTimeConstraints.hh"
 
-//#include "Geant4/G4DataQuestionaire.hh"
-
-#include "Mu2eG4/inc/EmDEDXPhysics.hh"
-
-template<class T> TMinDEDXPhysicsList<T>::TMinDEDXPhysicsList(G4int ver):  T()
+template<class T>
+class TMu2eG4MinDEDXModularPhysicsList: public T
 {
-  //  G4DataQuestionaire it(photon); // dataset check
-  G4cout << "<<< Geant4 Mu2e Physics List simulation engine: MinDEDXPhysicsList 1.0"<<G4endl;
-  G4cout <<G4endl;
-  this->defaultCutValue = 1.0*CLHEP::mm;  
-  this->SetVerboseLevel(ver);
+public:
+  TMu2eG4MinDEDXModularPhysicsList(G4int ver = 1);
+  virtual ~TMu2eG4MinDEDXModularPhysicsList();
+  
+public:
+  // SetCuts() 
+  virtual void SetCuts();
 
- // EM Physics
-  this->RegisterPhysics( new EmDEDXPhysics(ver));
+private:
+  enum {ok = CompileTimeConstraints::IsA<T, G4VModularPhysicsList>::ok };
+};
+#include "Mu2eG4/inc/Mu2eG4MinDEDXModularPhysicsList.icc"
+typedef TMu2eG4MinDEDXModularPhysicsList<G4VModularPhysicsList> Mu2eG4MinDEDXModularPhysicsList;
 
-}
-
-template<class T> TMinDEDXPhysicsList<T>::~TMinDEDXPhysicsList()
-{
-}
-
-template<class T> void TMinDEDXPhysicsList<T>::SetCuts()
-{
-  if (this->verboseLevel >1){
-    G4cout << "MinDEDXPhysicsList::SetCuts:";
-  }  
-  //  " G4VUserPhysicsList::SetCutsWithDefault" method sets 
-  //   the default cut value for all particle types 
-
-  this->SetCutsWithDefault();   
- 
-//  if (this->verboseLevel > 0)
-//    G4VUserPhysicsList::DumpCutValuesTable();  
-}
+#endif
