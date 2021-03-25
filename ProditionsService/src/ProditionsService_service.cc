@@ -16,6 +16,7 @@
 #include "TrackerConditions/inc/AlignedTrackerCache.hh"
 #include "TrackerConditions/inc/Mu2eMaterialCache.hh"
 #include "TrackerConditions/inc/Mu2eDetectorCache.hh"
+#include "CaloConditions/inc/CaloDAQConditionsCache.hh"
 
 #include "AnalysisConditions/inc/TrkQualCatalogCache.hh"
 
@@ -52,6 +53,8 @@ namespace mu2e {
     _caches[mmc->name()] = mmc;
     auto mdc = std::make_shared<mu2e::Mu2eDetectorCache>(_config.mu2eDetector());
     _caches[mdc->name()] = mdc;
+    auto cdc = std::make_shared<mu2e::CaloDAQConditionsCache>(_config.caloDAQConditions());
+    _caches[cdc->name()] = cdc;
     auto tqc = std::make_shared<mu2e::TrkQualCatalogCache>(_config.trkQualCatalog());
     _caches[tqc->name()] = tqc;
     auto bkc = std::make_shared<mu2e::SimBookkeeperCache>(_config.simbookkeeper());
