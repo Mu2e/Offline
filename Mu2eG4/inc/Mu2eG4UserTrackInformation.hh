@@ -1,5 +1,5 @@
-#ifndef Mu2eG4_UserTrackInformation_hh
-#define Mu2eG4_UserTrackInformation_hh
+#ifndef Mu2eG4_Mu2eG4UserTrackInformation_hh
+#define Mu2eG4_Mu2eG4UserTrackInformation_hh
 //
 // Mu2e specific information about one G4 track.
 //
@@ -16,11 +16,11 @@
 
 namespace mu2e{
 
-  class UserTrackInformation : public G4VUserTrackInformation{
+  class Mu2eG4UserTrackInformation : public G4VUserTrackInformation{
 
   public:
-    UserTrackInformation();
-    virtual ~UserTrackInformation();
+    Mu2eG4UserTrackInformation();
+    virtual ~Mu2eG4UserTrackInformation();
 
     void setProcessCode ( ProcessCode code){
       _forcedStop = true;
@@ -75,4 +75,4 @@ namespace mu2e{
 
 } // end namespace mu2e
 
-#endif /* Mu2eG4_UserTrackInformation_hh */
+#endif /* Mu2eG4_Mu2eG4UserTrackInformation_hh */

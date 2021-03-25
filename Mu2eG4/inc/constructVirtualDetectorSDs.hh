@@ -12,10 +12,10 @@
 namespace mu2e {
 
     class SimpleConfig;
-    class Mu2eSensitiveDetector;
+    class Mu2eG4SensitiveDetector;
 
     void constructVirtualDetectorSDs(SimpleConfig const & _config,
-                                     Mu2eSensitiveDetector* vdSD);
+                                     Mu2eG4SensitiveDetector* vdSD);
 
 }
 

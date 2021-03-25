@@ -10,7 +10,7 @@
 #include <iostream>
 
 // Mu2e includes.
-#include "Mu2eG4/inc/Mu2eGlobalField.hh"
+#include "Mu2eG4/inc/Mu2eG4GlobalMagneticField.hh"
 #include "GeometryService/inc/GeomHandle.hh"
 #include "BFieldGeom/inc/BFieldManager.hh"
 
@@ -26,14 +26,14 @@ using namespace std;
 
 namespace mu2e {
 
-  Mu2eGlobalField::Mu2eGlobalField(const G4ThreeVector& mapOrigin)
+  Mu2eG4GlobalMagneticField::Mu2eG4GlobalMagneticField(const G4ThreeVector& mapOrigin)
   {
     // Load map.
     update(mapOrigin);
   }
 
   // This is the entry point called by G4.
-  void Mu2eGlobalField::GetFieldValue(const G4double Point[4],
+  void Mu2eG4GlobalMagneticField::GetFieldValue(const G4double Point[4],
                               G4double *Bfield) const {
 
     // Put point in required format and required reference frame.
@@ -47,7 +47,7 @@ namespace mu2e {
     Bfield[2] = bf.z()*CLHEP::tesla;
 
     /*
-    cout << "Mu2eGlobalField map=" << _map->getKey()
+    cout << "Mu2eG4GlobalMagneticField map=" << _map->getKey()
          << " point=("<<point.x()<<","<<point.y()<<","<<point.z()<<")"
          << " field=("<<Bfield[0]<<","<<Bfield[1]<<","<<Bfield[2]<<")"
          << endl;
@@ -56,7 +56,7 @@ namespace mu2e {
   }
 
   // Update the map and its origin.  Might be called for new runs?
-  void Mu2eGlobalField::update( const G4ThreeVector& mapOrigin){
+  void Mu2eG4GlobalMagneticField::update( const G4ThreeVector& mapOrigin){
 
     _mapOrigin = mapOrigin;
 

@@ -7,11 +7,11 @@
 //
 
 // Mu2e includes
-#include "Mu2eG4/inc/Mu2eSensitiveDetector.hh"
+#include "Mu2eG4/inc/Mu2eG4SensitiveDetector.hh"
 
 namespace mu2e {
 
-  class CRVSD : public Mu2eSensitiveDetector{
+  class CRVSD : public Mu2eG4SensitiveDetector{
 
   public:
 

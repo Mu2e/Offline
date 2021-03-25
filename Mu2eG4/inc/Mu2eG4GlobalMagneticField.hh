@@ -1,5 +1,5 @@
-#ifndef Mu2eG4_Mu2eGlobalField_hh
-#define Mu2eG4_Mu2eGlobalField_hh
+#ifndef Mu2eG4_Mu2eG4GlobalMagneticField_hh
+#define Mu2eG4_Mu2eG4GlobalMagneticField_hh
 //
 // G4 interface to the Detector Solenoid full magnetic field.
 //
@@ -21,12 +21,12 @@ namespace mu2e {
   // Forward references
   class BFieldManager;
 
-  class Mu2eGlobalField: public G4MagneticField {
+  class Mu2eG4GlobalMagneticField: public G4MagneticField {
 
   public:
 
-    explicit Mu2eGlobalField(const G4ThreeVector& mapOrigin);
-    virtual ~Mu2eGlobalField(){}
+    explicit Mu2eG4GlobalMagneticField(const G4ThreeVector& mapOrigin);
+    virtual ~Mu2eG4GlobalMagneticField(){}
 
     // This is called by G4.
     virtual void GetFieldValue(const G4double Point[4],
@@ -49,4 +49,4 @@ namespace mu2e {
 
   };
 }
-#endif /* Mu2eG4_Mu2eGlobalField_hh */
+#endif /* Mu2eG4_Mu2eG4GlobalMagneticField_hh */

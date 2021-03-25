@@ -29,7 +29,7 @@
 #include "Mu2eG4/inc/PhysicalVolumeHelper.hh"
 #include "Mu2eG4/inc/Mu2eG4SteppingAction.hh"
 #include "Mu2eG4/inc/Mu2eG4TrackingAction.hh"
-#include "Mu2eG4/inc/UserTrackInformation.hh"
+#include "Mu2eG4/inc/Mu2eG4UserTrackInformation.hh"
 #include "Mu2eG4/inc/SimParticleHelper.hh"
 #include "Mu2eG4/inc/SimParticlePrimaryHelper.hh"
 #include "Mu2eG4/inc/Mu2eG4Config.hh"
@@ -108,7 +108,7 @@ namespace mu2e {
     G4int trackingVerbosityLevel = fpTrackingManager->GetVerboseLevel();
 
     // Create a user track information object and attach it to the track.
-    UserTrackInformation* ti =  new UserTrackInformation();
+    Mu2eG4UserTrackInformation* ti =  new Mu2eG4UserTrackInformation();
 
     // an old code used when mu2e was using a custom geant4 version
     G4VUserTrackInformation* tui = trk->GetUserInformation();
@@ -121,7 +121,7 @@ namespace mu2e {
       if (cCode == ProcessCode(ProcessCode::muMinusCaptureAtRest)) {
         ti->setMuCapCode(ProcessCode::findByName((tui->GetType()).c_str()));
         if ( trackingVerbosityLevel > 0 ) {
-          G4cout << __func__ << " set UserTrackInformation  muCapCode "
+          G4cout << __func__ << " set Mu2eG4UserTrackInformation  muCapCode "
                  << ti->muCapCode()  << G4endl;
         }
       }
@@ -163,13 +163,13 @@ namespace mu2e {
                  << ProcessCode::name(cCode) << G4endl;
         }
 
-        // we label the track using the UserTrackInformation as above
+        // we label the track using the Mu2eG4UserTrackInformation as above
 
         if (cCode == ProcessCode(ProcessCode::muMinusCaptureAtRest)) {
           ti->setMuCapCode(ProcessCode::findByName(modelName.c_str()));
 
           if ( trackingVerbosityLevel > 0 ) {
-            G4cout << __func__ << " set UserTrackInformation  muCapCode "
+            G4cout << __func__ << " set Mu2eG4UserTrackInformation  muCapCode "
                    << ti->muCapCode()  << G4endl;
           }
 
@@ -329,7 +329,7 @@ namespace mu2e {
 
     // Find the physics process that created this track.
     ProcessCode creationCode = Mu2eG4UserHelpers::findCreationCode(trk);
-    // we shall replace creationCode with muCapCode from UserTrackInformation if needed/present
+    // we shall replace creationCode with muCapCode from Mu2eG4UserTrackInformation if needed/present
 
     if (creationCode==ProcessCode(ProcessCode::muMinusCaptureAtRest)) {
 
@@ -346,13 +346,13 @@ namespace mu2e {
                  << G4endl;
           G4cout << __func__
                  << " muCapCode is: "
-                 << (dynamic_cast<UserTrackInformation*>(tui))->muCapCode()
+                 << (dynamic_cast<Mu2eG4UserTrackInformation*>(tui))->muCapCode()
                  << G4endl;
         }
       }
 
       ProcessCode utic =
-        (dynamic_cast<UserTrackInformation*>(trk->GetUserInformation()))->muCapCode();
+        (dynamic_cast<Mu2eG4UserTrackInformation*>(trk->GetUserInformation()))->muCapCode();
       if (utic!=ProcessCode(ProcessCode::unknown)) {
         creationCode=utic;
       }
@@ -525,8 +525,8 @@ namespace mu2e {
       const G4DynamicParticle*  pParticle = trk->GetDynamicParticle();
       double theKEnergy  = pParticle->GetKineticEnergy();
       const G4ThreeVector& theMomentumDirection = pParticle->GetMomentumDirection();
-      UserTrackInformation* uti =
-        (dynamic_cast<UserTrackInformation*>(trk->GetUserInformation()));
+      Mu2eG4UserTrackInformation* uti =
+        (dynamic_cast<Mu2eG4UserTrackInformation*>(trk->GetUserInformation()));
       G4cout << __func__ << " KE before int " << uti->GetKineticEnergy()
              << " Momentum direction before int " << uti->GetMomentumDirection()
              << G4endl;

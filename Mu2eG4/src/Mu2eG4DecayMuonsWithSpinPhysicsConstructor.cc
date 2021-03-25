@@ -26,14 +26,14 @@
 //
 //---------------------------------------------------------------------------
 //
-// ClassName:   DecayMuonsWithSpin based on G4DecayPhysics & F05PhysicsList
+// ClassName:   Mu2eG4DecayMuonsWithSpinPhysicsConstructor based on G4DecayPhysics & F05PhysicsList
 //              applied to muons/pions/kaons
 //
 // Author: KLG
 //----------------------------------------------------------------------------
 //
 
-#include "Mu2eG4/inc/DecayMuonsWithSpin.hh"
+#include "Mu2eG4/inc/Mu2eG4DecayMuonsWithSpinPhysicsConstructor.hh"
 
 #include "Geant4/G4ParticleDefinition.hh"
 #include "Geant4/G4ProcessManager.hh"
@@ -61,30 +61,30 @@
 // factory
 #include "Geant4/G4PhysicsConstructorFactory.hh"
 //
-G4_DECLARE_PHYSCONSTR_FACTORY(DecayMuonsWithSpin);
+G4_DECLARE_PHYSCONSTR_FACTORY(Mu2eG4DecayMuonsWithSpinPhysicsConstructor);
 
-DecayMuonsWithSpin::DecayMuonsWithSpin(G4int ver)
+Mu2eG4DecayMuonsWithSpinPhysicsConstructor::Mu2eG4DecayMuonsWithSpinPhysicsConstructor(G4int ver)
   :  G4VPhysicsConstructor("Decay"), verbose(ver), wasActivated(false)
 {
   fDecayWithSpinProcess = 0;
 }
 
-DecayMuonsWithSpin::DecayMuonsWithSpin(const G4String& name, G4int ver)
+Mu2eG4DecayMuonsWithSpinPhysicsConstructor::Mu2eG4DecayMuonsWithSpinPhysicsConstructor(const G4String& name, G4int ver)
   :  G4VPhysicsConstructor(name), verbose(ver), wasActivated(false)
 {
   fDecayWithSpinProcess = 0;
 }
 
-DecayMuonsWithSpin::~DecayMuonsWithSpin()
+Mu2eG4DecayMuonsWithSpinPhysicsConstructor::~Mu2eG4DecayMuonsWithSpinPhysicsConstructor()
 {
   delete fDecayWithSpinProcess;
 }
 
-void DecayMuonsWithSpin::ConstructParticle()
+void Mu2eG4DecayMuonsWithSpinPhysicsConstructor::ConstructParticle()
 {
 
   if ( 1 < verbose ) {
-    G4cout << "DecayMuonsWithSpin::ConstructParticle invoked" << G4endl;
+    G4cout << "Mu2eG4DecayMuonsWithSpinPhysicsConstructor::ConstructParticle invoked" << G4endl;
   }
 
   G4LeptonConstructor pLeptonConstructor;
@@ -113,7 +113,7 @@ void DecayMuonsWithSpin::ConstructParticle()
   G4MuonMinus::MuonMinusDefinition() -> SetDecayTable(MuonMinusDecayTable);
 }
 
-void DecayMuonsWithSpin::ConstructProcess()
+void Mu2eG4DecayMuonsWithSpinPhysicsConstructor::ConstructProcess()
 {
   if(wasActivated) { return; }
   wasActivated = true;

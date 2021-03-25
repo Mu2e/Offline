@@ -62,8 +62,8 @@
 #include "Geant4/G4HelixSimpleRunge.hh"
 #include "Geant4/G4GDMLParser.hh"
 
-#include "Mu2eG4/inc/Mu2eGlobalField.hh"
-#include "Mu2eG4/inc/FieldMgr.hh"
+//#include "Mu2eG4/inc/Mu2eG4GlobalMagneticField.hh"
+//#include "Mu2eG4/inc/FieldMgr.hh"
 
 
 using namespace std;
