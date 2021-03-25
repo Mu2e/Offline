@@ -10,7 +10,7 @@
 #include "CLHEP/Units/SystemOfUnits.h"
 
 // Geant4 includes
-#include "Mu2eG4/inc/MinimalPhysicsList.hh"
+#include "Mu2eG4/inc/Mu2eG4MinimalModularPhysicsList.hh"
 #include "Mu2eG4/inc/addStepLimiter.hh"
 
 #include "Geant4/G4ParticleTypes.hh"
@@ -19,15 +19,15 @@
 #include "Geant4/G4ParticleTable.hh"
 
 namespace mu2e {
-  MinimalPhysicsList::MinimalPhysicsList():  G4VModularPhysicsList(){
+  Mu2eG4MinimalModularPhysicsList::Mu2eG4MinimalModularPhysicsList():  G4VModularPhysicsList(){
     defaultCutValue = 1.0*CLHEP::cm;
     SetVerboseLevel(1);
   }
 
-  MinimalPhysicsList::~MinimalPhysicsList(){
+  Mu2eG4MinimalModularPhysicsList::~Mu2eG4MinimalModularPhysicsList(){
   }
 
-  void MinimalPhysicsList::ConstructParticle(){
+  void Mu2eG4MinimalModularPhysicsList::ConstructParticle(){
 
     G4ChargedGeantino::Definition();
     G4Electron::Definition();
@@ -41,7 +41,7 @@ namespace mu2e {
 
   }
 
-  void MinimalPhysicsList::ConstructProcess(){
+  void Mu2eG4MinimalModularPhysicsList::ConstructProcess(){
     AddTransportation();
 
     // Add step limiters to a standard list of particles.
@@ -49,7 +49,7 @@ namespace mu2e {
 
   }
 
-  void MinimalPhysicsList::SetCuts(){
+  void Mu2eG4MinimalModularPhysicsList::SetCuts(){
   }
 
 }  // end namespace mu2e

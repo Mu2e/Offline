@@ -18,7 +18,7 @@ namespace mu2e {
   class SimpleConfig;
   class SimParticleHelper;
 
-  // This class should not derive from Mu2eSensitiveDetector because the latter
+  // This class should not derive from Mu2eG4SensitiveDetector because the latter
   // presumes a wrong type for the hit collection.
   class ExtMonFNALPixelSD : public G4VSensitiveDetector {
 

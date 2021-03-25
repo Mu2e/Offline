@@ -23,49 +23,49 @@
 // * acceptance of all terms of the Geant4 Software license.          *
 // ********************************************************************
 //
+//
 //---------------------------------------------------------------------------
 //
-// Author: KLG based on FTPF_BERT; 
-// Special Mu2e physics list for beam transportation studies
+// ClassName:   Mu2eG4DecayMuonsWithSpinPhysicsConstructor based on G4DecayPhysics & F05PhysicsList
+//              a G4VPhysicsConstructor
+// Author: KLG
+//
 //
 //----------------------------------------------------------------------------
 //
-#include <iomanip>   
+
+#ifndef Mu2eG4DecayMuonsWithSpinPhysicsConstructor_h
+#define Mu2eG4DecayMuonsWithSpinPhysicsConstructor_h 1
 
 #include "Geant4/globals.hh"
-#include "Geant4/G4ios.hh"
+#include "Geant4/G4VPhysicsConstructor.hh"
 
-//#include "Geant4/G4DataQuestionaire.hh"
+#include "Geant4/G4DecayWithSpin.hh"
 
-#include "Mu2eG4/inc/EmDEDXPhysics.hh"
-
-template<class T> TMinDEDXPhysicsList<T>::TMinDEDXPhysicsList(G4int ver):  T()
+class Mu2eG4DecayMuonsWithSpinPhysicsConstructor : public G4VPhysicsConstructor
 {
-  //  G4DataQuestionaire it(photon); // dataset check
-  G4cout << "<<< Geant4 Mu2e Physics List simulation engine: MinDEDXPhysicsList 1.0"<<G4endl;
-  G4cout <<G4endl;
-  this->defaultCutValue = 1.0*CLHEP::mm;  
-  this->SetVerboseLevel(ver);
+  public:
+    Mu2eG4DecayMuonsWithSpinPhysicsConstructor(G4int ver = 1);
+    Mu2eG4DecayMuonsWithSpinPhysicsConstructor(const G4String& name, G4int ver = 1);
+    virtual ~Mu2eG4DecayMuonsWithSpinPhysicsConstructor();
 
- // EM Physics
-  this->RegisterPhysics( new EmDEDXPhysics(ver));
+  public:
+    // This method will be invoked in the Construct() method.
+    // each particle type will be instantiated
+  virtual void ConstructParticle();
 
-}
+    // This method will be invoked in the Construct() method.
+    // each physics process will be instantiated and
+    // registered to the process manager of each particle type
+  virtual void ConstructProcess();
 
-template<class T> TMinDEDXPhysicsList<T>::~TMinDEDXPhysicsList()
-{
-}
+  virtual G4Decay* GetDecayProcess() { return fDecayWithSpinProcess; }
 
-template<class T> void TMinDEDXPhysicsList<T>::SetCuts()
-{
-  if (this->verboseLevel >1){
-    G4cout << "MinDEDXPhysicsList::SetCuts:";
-  }  
-  //  " G4VUserPhysicsList::SetCutsWithDefault" method sets 
-  //   the default cut value for all particle types 
+private:
+  G4Decay* fDecayWithSpinProcess;
+  G4int    verbose;
+  G4bool   wasActivated;
+};
 
-  this->SetCutsWithDefault();   
- 
-//  if (this->verboseLevel > 0)
-//    G4VUserPhysicsList::DumpCutValuesTable();  
-}
+
+#endif

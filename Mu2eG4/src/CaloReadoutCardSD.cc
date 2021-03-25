@@ -25,7 +25,7 @@
 namespace mu2e {
 
   CaloReadoutCardSD::CaloReadoutCardSD(G4String name, SimpleConfig const & config ):
-    Mu2eSensitiveDetector(name,config),_nro(0)
+    Mu2eG4SensitiveDetector(name,config),_nro(0)
   {
     GeomHandle<Calorimeter> cg;
     _nro  = cg->caloInfo().getInt("nSiPMPerCrystal");

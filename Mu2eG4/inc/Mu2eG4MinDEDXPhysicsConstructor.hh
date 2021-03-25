@@ -23,35 +23,39 @@
 // * acceptance of all terms of the Geant4 Software license.          *
 // ********************************************************************
 //
-// Author: KLG based on FTPF_BERT
-// Special Mu2e physics list for beam transportation studies
+//---------------------------------------------------------------------------
+//
+// ClassName:   Mu2eG4MinDEDXPhysicsConstructor
+//
+// Author:      KLG based on G4EmStandardPhysics
 //
 //----------------------------------------------------------------------------
 //
-#ifndef TMinDEDXPhysicsList_h
-#define TMinDEDXPhysicsList_h 1
+// This class constructs special limited EM physics
+//
 
-#include <CLHEP/Units/SystemOfUnits.h>
+#ifndef Mu2eG4MinDEDXPhysicsConstructor_h
+#define Mu2eG4MinDEDXPhysicsConstructor_h 1
 
+#include "Geant4/G4VPhysicsConstructor.hh"
 #include "Geant4/globals.hh"
-#include "Geant4/G4VModularPhysicsList.hh"
-#include "CompileTimeConstraints.hh"
 
-template<class T>
-class TMinDEDXPhysicsList: public T
+//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
+
+class Mu2eG4MinDEDXPhysicsConstructor : public G4VPhysicsConstructor
 {
 public:
-  TMinDEDXPhysicsList(G4int ver = 1);
-  virtual ~TMinDEDXPhysicsList();
-  
-public:
-  // SetCuts() 
-  virtual void SetCuts();
+  Mu2eG4MinDEDXPhysicsConstructor(G4int ver = 0);
+
+  virtual ~Mu2eG4MinDEDXPhysicsConstructor();
+
+  virtual void ConstructParticle();
+  virtual void ConstructProcess();
 
 private:
-  enum {ok = CompileTimeConstraints::IsA<T, G4VModularPhysicsList>::ok };
+  G4int  verbose;
 };
-#include "Mu2eG4/inc/MinDEDXPhysicsList.icc"
-typedef TMinDEDXPhysicsList<G4VModularPhysicsList> MinDEDXPhysicsList;
+
+//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
 #endif

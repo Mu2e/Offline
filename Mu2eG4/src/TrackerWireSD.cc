@@ -25,7 +25,7 @@ namespace mu2e {
   G4ThreeVector TrackerWireSD::_mu2eDetCenter;
 
   TrackerWireSD::TrackerWireSD(G4String name, const SimpleConfig& config) :
-                  Mu2eSensitiveDetector(name,config) { }
+                  Mu2eG4SensitiveDetector(name,config) { }
 
   TrackerWireSD::~TrackerWireSD(){ }
 

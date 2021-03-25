@@ -59,7 +59,7 @@
 #include "Mu2eG4/inc/CaloCrateSD.hh"
 #include "Mu2eG4/inc/ExtMonFNALPixelSD.hh"
 #include "Mu2eG4/inc/TrackerWireSD.hh"
-#include "Mu2eG4/inc/Mu2eSensitiveDetector.hh"
+#include "Mu2eG4/inc/Mu2eG4SensitiveDetector.hh"
 #include "Mu2eG4/inc/CRVSD.hh"
 #include "Mu2eG4/inc/StrawSD.hh"
 #include "Mu2eG4/inc/TrackerPlaneSupportSD.hh"
@@ -131,7 +131,7 @@
 #include "Geant4/G4ProductionCuts.hh"
 #include "Geant4/G4Region.hh"
 
-#include "Mu2eG4/inc/Mu2eGlobalField.hh"
+#include "Mu2eG4/inc/Mu2eG4GlobalMagneticField.hh"
 
 #include "boost/regex.hpp"
 
@@ -427,7 +427,7 @@ namespace mu2e {
 
     // Create global field managers; don't use FieldMgr here to avoid problem with ownership
 
-    G4MagneticField * _field = new Mu2eGlobalField(worldGeom->mu2eOriginInWorld());
+    G4MagneticField * _field = new Mu2eG4GlobalMagneticField(worldGeom->mu2eOriginInWorld());
     G4Mag_EqRhs * _rhs  = new G4Mag_UsualEqRhs(_field);
     G4MagIntegratorStepper * _stepper;
     if ( _g4VerbosityLevel > 0 ) G4cout << __func__ << " Setting up " << g4stepperName_ << " stepper" << G4endl;
@@ -826,8 +826,8 @@ namespace mu2e {
     //done
     if(sdHelper_->enabled(StepInstanceName::virtualdetector)) {
 
-      Mu2eSensitiveDetector* vdSD =
-        new Mu2eSensitiveDetector( SensitiveDetectorName::VirtualDetector(), _config );
+      Mu2eG4SensitiveDetector* vdSD =
+        new Mu2eG4SensitiveDetector( SensitiveDetectorName::VirtualDetector(), _config );
       SDman->AddNewDetector(vdSD);
 
       constructVirtualDetectorSDs(_config, vdSD);
@@ -966,7 +966,7 @@ namespace mu2e {
 
 
     /************************** ExtMonFNALPixelSD **************************/
-    if(true) { // this SD does not derive from Mu2eSensitiveDetector as it does not produce StepPointMCCollection
+    if(true) { // this SD does not derive from Mu2eG4SensitiveDetector as it does not produce StepPointMCCollection
       GeomHandle<mu2e::ExtMonFNAL::ExtMon> extmon;
       //SDman->AddNewDetector(new ExtMonFNALPixelSD(_config, *extmon));
 
@@ -988,8 +988,8 @@ namespace mu2e {
     //done
     if(sdHelper_->enabled(StepInstanceName::stoppingtarget)) {
 
-      Mu2eSensitiveDetector* stSD =
-        new Mu2eSensitiveDetector( SensitiveDetectorName::StoppingTarget(), _config );
+      Mu2eG4SensitiveDetector* stSD =
+        new Mu2eG4SensitiveDetector( SensitiveDetectorName::StoppingTarget(), _config );
       SDman->AddNewDetector(stSD);
 
       //loop over all of the LV names to find ones we need
@@ -1013,8 +1013,8 @@ namespace mu2e {
 
 
     if(sdHelper_->enabled(StepInstanceName::ProductionTargetCoreSection)) {
-      Mu2eSensitiveDetector* prodtargcoreSD =
-        new Mu2eSensitiveDetector( SensitiveDetectorName::ProductionTargetCoreSection(), _config );
+      Mu2eG4SensitiveDetector* prodtargcoreSD =
+        new Mu2eG4SensitiveDetector( SensitiveDetectorName::ProductionTargetCoreSection(), _config );
       SDman->AddNewDetector(prodtargcoreSD);
       for(G4LogicalVolumeStore::iterator pos=store->begin(); pos!=store->end(); pos++){
         G4String LVname = (*pos)->GetName();
@@ -1024,8 +1024,8 @@ namespace mu2e {
       }
     }
     if(sdHelper_->enabled(StepInstanceName::ProductionTargetStartingCoreSection)) {
-      Mu2eSensitiveDetector* prodtargstartingcoreSD =
-        new Mu2eSensitiveDetector( SensitiveDetectorName::ProductionTargetStartingCoreSection(), _config );
+      Mu2eG4SensitiveDetector* prodtargstartingcoreSD =
+        new Mu2eG4SensitiveDetector( SensitiveDetectorName::ProductionTargetStartingCoreSection(), _config );
       SDman->AddNewDetector(prodtargstartingcoreSD);
       for(G4LogicalVolumeStore::iterator pos=store->begin(); pos!=store->end(); pos++){
         G4String LVname = (*pos)->GetName();
@@ -1035,8 +1035,8 @@ namespace mu2e {
       }
     }
     if(sdHelper_->enabled(StepInstanceName::ProductionTargetFinStartingSection)) {
-      Mu2eSensitiveDetector* prodtargfinstartingSD =
-        new Mu2eSensitiveDetector( SensitiveDetectorName::ProductionTargetFinStartingSection(), _config );
+      Mu2eG4SensitiveDetector* prodtargfinstartingSD =
+        new Mu2eG4SensitiveDetector( SensitiveDetectorName::ProductionTargetFinStartingSection(), _config );
       SDman->AddNewDetector(prodtargfinstartingSD);
       for(G4LogicalVolumeStore::iterator pos=store->begin(); pos!=store->end(); pos++){
         G4String LVname = (*pos)->GetName();
@@ -1046,8 +1046,8 @@ namespace mu2e {
       }
     }
     if(sdHelper_->enabled(StepInstanceName::ProductionTargetNegativeEndRing)) {
-      Mu2eSensitiveDetector* prodtargnegativeendringSD =
-        new Mu2eSensitiveDetector( SensitiveDetectorName::ProductionTargetNegativeEndRing(), _config );
+      Mu2eG4SensitiveDetector* prodtargnegativeendringSD =
+        new Mu2eG4SensitiveDetector( SensitiveDetectorName::ProductionTargetNegativeEndRing(), _config );
       SDman->AddNewDetector(prodtargnegativeendringSD);
       for(G4LogicalVolumeStore::iterator pos=store->begin(); pos!=store->end(); pos++){
         G4String LVname = (*pos)->GetName();
@@ -1057,8 +1057,8 @@ namespace mu2e {
       }
     }
     if(sdHelper_->enabled(StepInstanceName::ProductionTargetPositiveEndRing)) {
-      Mu2eSensitiveDetector* prodtargpositiveendringSD =
-        new Mu2eSensitiveDetector( SensitiveDetectorName::ProductionTargetPositiveEndRing(), _config );
+      Mu2eG4SensitiveDetector* prodtargpositiveendringSD =
+        new Mu2eG4SensitiveDetector( SensitiveDetectorName::ProductionTargetPositiveEndRing(), _config );
       SDman->AddNewDetector(prodtargpositiveendringSD);
       for(G4LogicalVolumeStore::iterator pos=store->begin(); pos!=store->end(); pos++){
         G4String LVname = (*pos)->GetName();
@@ -1068,8 +1068,8 @@ namespace mu2e {
       }
     }
     if(sdHelper_->enabled(StepInstanceName::ProductionTargetFinSection)) {
-      Mu2eSensitiveDetector* prodtargfinsectionSD =
-        new Mu2eSensitiveDetector( SensitiveDetectorName::ProductionTargetFinSection(), _config );
+      Mu2eG4SensitiveDetector* prodtargfinsectionSD =
+        new Mu2eG4SensitiveDetector( SensitiveDetectorName::ProductionTargetFinSection(), _config );
       SDman->AddNewDetector(prodtargfinsectionSD);
       for(G4LogicalVolumeStore::iterator pos=store->begin(); pos!=store->end(); pos++){
         G4String LVname = (*pos)->GetName();
@@ -1080,8 +1080,8 @@ namespace mu2e {
     }
 
     if(sdHelper_->enabled(StepInstanceName::ProductionTargetFinTopSection)) {
-      Mu2eSensitiveDetector* prodtargfintopsectionSD =
-        new Mu2eSensitiveDetector( SensitiveDetectorName::ProductionTargetFinTopSection(), _config );
+      Mu2eG4SensitiveDetector* prodtargfintopsectionSD =
+        new Mu2eG4SensitiveDetector( SensitiveDetectorName::ProductionTargetFinTopSection(), _config );
       SDman->AddNewDetector(prodtargfintopsectionSD);
       for(G4LogicalVolumeStore::iterator pos=store->begin(); pos!=store->end(); pos++){
         G4String LVname = (*pos)->GetName();
@@ -1092,8 +1092,8 @@ namespace mu2e {
     }
 
     if(sdHelper_->enabled(StepInstanceName::ProductionTargetFinTopStartingSection)) {
-      Mu2eSensitiveDetector* prodtargfintopstartingsectionSD =
-        new Mu2eSensitiveDetector( SensitiveDetectorName::ProductionTargetFinTopStartingSection(), _config );
+      Mu2eG4SensitiveDetector* prodtargfintopstartingsectionSD =
+        new Mu2eG4SensitiveDetector( SensitiveDetectorName::ProductionTargetFinTopStartingSection(), _config );
       SDman->AddNewDetector(prodtargfintopstartingsectionSD);
       for(G4LogicalVolumeStore::iterator pos=store->begin(); pos!=store->end(); pos++){
         G4String LVname = (*pos)->GetName();
@@ -1125,8 +1125,8 @@ namespace mu2e {
 
     /************************** ProtonAbsorber **************************/
     if(sdHelper_->enabled(StepInstanceName::protonabsorber)) {
-      Mu2eSensitiveDetector* paSD =
-        new Mu2eSensitiveDetector( SensitiveDetectorName::ProtonAbsorber(),  _config );
+      Mu2eG4SensitiveDetector* paSD =
+        new Mu2eG4SensitiveDetector( SensitiveDetectorName::ProtonAbsorber(),  _config );
       SDman->AddNewDetector(paSD);
 
       for(G4LogicalVolumeStore::iterator pos=store->begin(); pos!=store->end(); pos++){
@@ -1151,8 +1151,8 @@ namespace mu2e {
     //done
     if(sdHelper_->enabled(StepInstanceName::PSVacuum)) {
 
-      Mu2eSensitiveDetector* psVacuumSD =
-        new Mu2eSensitiveDetector( SensitiveDetectorName::PSVacuum(), _config );
+      Mu2eG4SensitiveDetector* psVacuumSD =
+        new Mu2eG4SensitiveDetector( SensitiveDetectorName::PSVacuum(), _config );
       SDman->AddNewDetector(psVacuumSD);
 
       if( _config.getBool("PS.Vacuum.Sensitive", false) ) {
@@ -1164,8 +1164,8 @@ namespace mu2e {
     /************************** STMDet **************************/
     //done
     if(sdHelper_->enabled(StepInstanceName::STMDet)) {
-      Mu2eSensitiveDetector* STMDetSD =
-        new Mu2eSensitiveDetector( SensitiveDetectorName::STMDet(), _config );
+      Mu2eG4SensitiveDetector* STMDetSD =
+        new Mu2eG4SensitiveDetector( SensitiveDetectorName::STMDet(), _config );
       SDman->AddNewDetector(STMDetSD);
 
       for(G4LogicalVolumeStore::iterator pos=store->begin(); pos!=store->end(); pos++){
@@ -1180,8 +1180,8 @@ namespace mu2e {
 
     /************************** panelEBKey **************************/
     if(sdHelper_->enabled(StepInstanceName::panelEBKey)) {
-      Mu2eSensitiveDetector* EBKeySD =
-        new Mu2eSensitiveDetector( SensitiveDetectorName::panelEBKey(), _config );
+      Mu2eG4SensitiveDetector* EBKeySD =
+        new Mu2eG4SensitiveDetector( SensitiveDetectorName::panelEBKey(), _config );
       SDman->AddNewDetector(EBKeySD);
 
       for(G4LogicalVolumeStore::iterator pos=store->begin(); pos!=store->end(); pos++) {
@@ -1199,8 +1199,8 @@ namespace mu2e {
     /************************** DSCableRun **************************/
     //if ( cableRunSensitive && sdHelper.enabled(StepInstanceName::DSCableRun) )
     if(sdHelper_->enabled(StepInstanceName::DSCableRun)) {
-      Mu2eSensitiveDetector* cableRunSD =
-        new Mu2eSensitiveDetector( SensitiveDetectorName::DSCableRun(), _config );
+      Mu2eG4SensitiveDetector* cableRunSD =
+        new Mu2eG4SensitiveDetector( SensitiveDetectorName::DSCableRun(), _config );
       SDman->AddNewDetector(cableRunSD);
 
       //NOTE: THIS 'if' test seems redundant to me, but I am just copying the format from constructDS.cc

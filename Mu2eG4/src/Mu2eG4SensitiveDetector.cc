@@ -11,7 +11,7 @@
 #include "cetlib_except/exception.h"
 
 // Mu2e includes
-#include "Mu2eG4/inc/Mu2eSensitiveDetector.hh"
+#include "Mu2eG4/inc/Mu2eG4SensitiveDetector.hh"
 #include "MCDataProducts/inc/StepPointMCCollection.hh"
 #include "Mu2eG4/inc/Mu2eG4UserHelpers.hh"
 #include "Mu2eG4/inc/PhysicsProcessInfo.hh"
@@ -30,7 +30,7 @@ using namespace std;
 
 namespace mu2e {
 
-  Mu2eSensitiveDetector::Mu2eSensitiveDetector(G4String const name, const SimpleConfig& config):
+  Mu2eG4SensitiveDetector::Mu2eG4SensitiveDetector(G4String const name, const SimpleConfig& config):
     G4VSensitiveDetector(name),
     _collection(0),
     _processInfo(0),
@@ -57,12 +57,12 @@ namespace mu2e {
     }
   }
 
-  void Mu2eSensitiveDetector::Initialize(G4HCofThisEvent* HCE){
+  void Mu2eG4SensitiveDetector::Initialize(G4HCofThisEvent* HCE){
       _currentSize=0;
   }
 
 
-  G4bool Mu2eSensitiveDetector::ProcessHits(G4Step* aStep,G4TouchableHistory*){
+  G4bool Mu2eG4SensitiveDetector::ProcessHits(G4Step* aStep,G4TouchableHistory*){
 
     _currentSize += 1;
 
@@ -115,7 +115,7 @@ namespace mu2e {
   }//ProcessHits
 
 
-  void Mu2eSensitiveDetector::EndOfEvent(G4HCofThisEvent*){
+  void Mu2eG4SensitiveDetector::EndOfEvent(G4HCofThisEvent*){
 
     if( _sizeLimit>0 && _currentSize>=_sizeLimit ) {
       mf::LogWarning("G4") << "Total of " << _currentSize << " "
@@ -144,7 +144,7 @@ namespace mu2e {
   }//EndOfEvent
 
 
-  void Mu2eSensitiveDetector::beforeG4Event(StepPointMCCollection& outputHits,
+  void Mu2eG4SensitiveDetector::beforeG4Event(StepPointMCCollection& outputHits,
                                             PhysicsProcessInfo& processInfo,
                                             const SimParticleHelper& spHelper){
     _collection  = &outputHits;

@@ -14,7 +14,7 @@
 
 // Mu2e includes
 #include "Mu2eG4/inc/FieldMgr.hh"
-#include "Mu2eG4/inc/DSGradientField.hh"
+#include "Mu2eG4/inc/Mu2eG4DSGradientMagneticField.hh"
 
 using namespace std;
 
@@ -47,7 +47,7 @@ namespace mu2e {
 
     unique_ptr<FieldMgr> mgr(new FieldMgr() );
 
-    mgr->_field = std::unique_ptr<G4MagneticField>(new DSGradientField( "DS3Grad",
+    mgr->_field = std::unique_ptr<G4MagneticField>(new Mu2eG4DSGradientMagneticField( "DS3Grad",
                                                                         fieldOrigin,
                                                                         gradient,
                                                                         fieldValue

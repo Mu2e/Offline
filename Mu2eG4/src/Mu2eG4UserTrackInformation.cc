@@ -8,13 +8,13 @@
 #include <iostream>
 
 // Mu2e includes
-#include "Mu2eG4/inc/UserTrackInformation.hh"
+#include "Mu2eG4/inc/Mu2eG4UserTrackInformation.hh"
 
 using namespace std;
 
 namespace mu2e{
 
-  UserTrackInformation::UserTrackInformation():
+  Mu2eG4UserTrackInformation::Mu2eG4UserTrackInformation():
     G4VUserTrackInformation("Mu2eTrackInfo"),
     _forcedStop(false),
     _code(),
@@ -23,10 +23,10 @@ namespace mu2e{
     _kinEnergy(0)
   {}
 
-  UserTrackInformation::~UserTrackInformation(){
+  Mu2eG4UserTrackInformation::~Mu2eG4UserTrackInformation(){
   }
 
-  void UserTrackInformation::Print() const{
+  void Mu2eG4UserTrackInformation::Print() const{
   }
 
 } // end namespace mu2e

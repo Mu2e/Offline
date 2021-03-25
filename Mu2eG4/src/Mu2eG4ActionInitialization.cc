@@ -18,7 +18,7 @@
 #include "Mu2eG4/inc/SensitiveDetectorHelper.hh"
 #include "Mu2eG4/inc/IMu2eG4Cut.hh"
 #include "Mu2eG4/inc/Mu2eG4PerThreadStorage.hh"
-#include "Mu2eG4/inc/SteppingVerbose.hh"
+#include "Mu2eG4/inc/Mu2eG4SteppingVerbose.hh"
 #include "Mu2eG4/inc/PhysicalVolumeHelper.hh"
 #include "Mu2eG4/inc/PhysicsProcessInfo.hh"
 
@@ -97,7 +97,7 @@ namespace mu2e {
 
   G4VSteppingVerbose* Mu2eG4ActionInitialization::InitializeSteppingVerbose() const
   {
-    return new SteppingVerbose;
+    return new Mu2eG4SteppingVerbose;
   }
 
 

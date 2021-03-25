@@ -52,7 +52,7 @@
 #include "Geant4/G4Mag_EqRhs.hh"
 #include "Geant4/G4Mag_UsualEqRhs.hh"
 #include "Geant4/G4MagneticField.hh"
-#include "Mu2eG4/inc/Mu2eGlobalField.hh"
+#include "Mu2eG4/inc/Mu2eG4GlobalMagneticField.hh"
 
 namespace mu2e {
 
@@ -91,7 +91,7 @@ namespace mu2e {
 
       std::unique_ptr<FieldMgr> mgr(new FieldMgr() );
 
-      mgr->_field       = std::unique_ptr<G4MagneticField>        (new Mu2eGlobalField  ( mu2eOrigin) );
+      mgr->_field       = std::unique_ptr<G4MagneticField>        (new Mu2eG4GlobalMagneticField  ( mu2eOrigin) );
       mgr->_rhs         = std::unique_ptr<G4Mag_UsualEqRhs>       (new G4Mag_UsualEqRhs ( mgr->field()) );
       mgr->_integrator  = std::unique_ptr<G4MagIntegratorStepper> (new INTEGRATOR       ( mgr->rhs()) );
       mgr->_chordFinder = std::unique_ptr<G4ChordFinder>          (new G4ChordFinder    ( mgr->field(),

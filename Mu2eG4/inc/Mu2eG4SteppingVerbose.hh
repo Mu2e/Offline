@@ -1,5 +1,5 @@
-#ifndef Mu2eG4_SteppingVerbose_hh
-#define Mu2eG4_SteppingVerbose_hh
+#ifndef Mu2eG4_Mu2eG4SteppingVerbose_hh
+#define Mu2eG4_Mu2eG4SteppingVerbose_hh
 //
 // Verbose version of the stepping action.
 //
@@ -12,11 +12,11 @@
 #include "Geant4/G4SteppingVerbose.hh"
 
 namespace mu2e {
-  class SteppingVerbose : public G4SteppingVerbose {
+  class Mu2eG4SteppingVerbose : public G4SteppingVerbose {
   public:
 
-    SteppingVerbose();
-    ~SteppingVerbose();
+    Mu2eG4SteppingVerbose();
+    ~Mu2eG4SteppingVerbose();
 
     void StepInfo();
     void TrackingStarted();
@@ -25,4 +25,4 @@ namespace mu2e {
 
 } // end namespace mu2e
 
-#endif /* Mu2eG4_SteppingVerbose_hh */
+#endif /* Mu2eG4_Mu2eG4SteppingVerbose_hh */

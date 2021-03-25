@@ -1,5 +1,5 @@
-#ifndef Mu2eG4_DSGradientField_hh
-#define Mu2eG4_DSGradientField_hh
+#ifndef Mu2eG4_Mu2eG4DSGradientMagneticField_hh
+#define Mu2eG4_Mu2eG4DSGradientMagneticField_hh
 //
 // G4 interface to the Detector Solenoid gradient magnetic field.
 // Right now the field direction is assumed to be along Z.
@@ -17,12 +17,12 @@
 
 namespace mu2e {
 
-  class DSGradientField: public G4MagneticField {
+  class Mu2eG4DSGradientMagneticField: public G4MagneticField {
 
   public:
 
-    DSGradientField( std::string name, G4ThreeVector mapOrigin, double gradient, double B0 );
-    virtual ~DSGradientField(){}
+    Mu2eG4DSGradientMagneticField( std::string name, G4ThreeVector mapOrigin, double gradient, double B0 );
+    virtual ~Mu2eG4DSGradientMagneticField(){}
 
     // This is called by G4.
     virtual void GetFieldValue(const G4double Point[4],
@@ -44,4 +44,4 @@ namespace mu2e {
 
   };
 }
-#endif /* Mu2eG4_DSGradientField_hh */
+#endif /* Mu2eG4_Mu2eG4DSGradientMagneticField_hh */
