@@ -323,16 +323,12 @@ namespace mu2e {
     // find current proditions
     auto const& strawresponse = strawResponse_h_.getPtr(event.id());
     auto const& tracker = alignedTracker_h_.getPtr(event.id()).get();
-    // initialize hits as null (no drift).  This should be in the constructor, but it relies on StrawResponse so has to wait FIXME
-    static bool first(true);
-    if(first){
-      first = false;
-      auto const& sprop = tracker->strawProperties();
-      double rstraw = sprop.strawInnerRadius();
-      double nulldt = 0.5*rstraw/strawresponse->driftConstantSpeed(); // approximate shift in time due to ignoring drift
-      double nullvar = nullvscale_*rstraw*rstraw/3.0; // scaled square RMS (distance is between 0 and r)
-      whstate_ = WireHitState(WireHitState::null, nulldim_, nullvar ,nulldt);
-    }
+    // initialize hits as null (no drift)
+    auto const& sprop = tracker->strawProperties();
+    double rstraw = sprop.strawInnerRadius();
+    double nulldt = 0.5*rstraw/strawresponse->driftConstantSpeed(); // approximate shift in time due to ignoring drift
+    double nullvar = nullvscale_*rstraw*rstraw/3.0; // scaled square RMS (distance is between 0 and r)
+    whstate_ = WireHitState(WireHitState::null, nulldim_, nullvar ,nulldt);
     // find input hits
     auto ch_H = event.getValidHandle<ComboHitCollection>(chcol_T_);
     auto const& chcol = *ch_H;
