@@ -110,7 +110,7 @@ namespace mu2e {
         windowHalfDims.push_back(windowThick/2.);
         // first ground plane
         // TODO: make this a virtual detector
-        std::string ground1Name = "pTargetMonGround1";
+        std::string ground1Name = "VirtualDetector_pTargetMonGroundIn";
         ground1Name.append(nameSuffix);
         double ground1Z = -5.5*frameThick;
         nestBox(ground1Name,
@@ -162,7 +162,7 @@ namespace mu2e {
                 G4Colour::Green(),
                 "PTM");
         // last ground plane
-        std::string ground2Name = "pTargetMonGround2";
+        std::string ground2Name = "pTargetMonGroundOut";
         ground2Name.append(nameSuffix);
         double ground2Z = 6.5*frameThick;
         nestBox(ground2Name,
