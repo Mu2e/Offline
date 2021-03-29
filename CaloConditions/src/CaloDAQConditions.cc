@@ -16,7 +16,7 @@ namespace mu2e {
 
     uint16_t DiracNumber  = packetId & 0xFF;              // first 8 bits
     uint16_t DiracChannel = (packetId & 0x1F00) >> 8;     // second 5 bits
-    uint16_t DetType      = (packetId & 0xE000) >> 13;    // last 3 bits: 0=Calo,1=Caphri,2=Pin
+    uint16_t DetType      = (packetId & 0x7000) >> 13;    // last 3 bits: 0=Calo,1=Caphri,2=Pin
 
     if (DiracChannel >= 19 || DiracNumber >= 136 || DetType>8 ){
       throw cet::exception("BADINPUTS")<<"CaloDAQConditions::packetIdTocaloRoId : packetId DiracChannel/DiracNumber out of range" << std::endl;
@@ -57,7 +57,7 @@ namespace mu2e {
     // Leave PIN-diodes for another round
     //
     uint16_t DetType =0;
-    if ( caloRoId == 624 || caloRoId == 625) DetType=1;
+    if ( caloRoId == 624 || caloRoId == 625) DetType=1; // FIX ME As soon as I know it when and how
     uint16_t PacketId;
     PacketId = (DiracNum & 0xFF) | ((DiracChannel & 0x1F) << 8)| ((DetType & 0x7) << 13);
     return PacketId;
