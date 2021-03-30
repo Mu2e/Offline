@@ -843,7 +843,7 @@ void ArtBinaryPacketsFromDigis::fillCalorimeterDataPacket(CaloDAQConditions cons
   //=========================================
   
   uint16_t roId = CD.SiPMID();
-  uint16_t crystalId = roId%2;
+  uint16_t crystalId = roId/2;
   if( _diagLevel==1) printf( "...FromDigis: cryId %d roId %d \n",crystalId,roId);
 
   //=========================================================================================
