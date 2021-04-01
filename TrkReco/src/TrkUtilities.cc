@@ -16,6 +16,7 @@
 #include "RecoDataProducts/inc/ComboHit.hh"
 // BTrk
 #include "BTrk/TrkBase/HelixTraj.hh"
+#include "BTrk/TrkBase/TrkMomCalculator.hh"
 #include "BTrk/KalmanTrack/KalRep.hh"
 #include "BTrk/KalmanTrack/KalMaterial.hh"
 #include "BTrk/BbrGeom/BbrVectorErr.hh"
@@ -25,7 +26,10 @@
 #include "BTrkData/inc/TrkCaloHit.hh"
 #include "Mu2eBTrk/inc/DetStrawElem.hh"
 #include "BTrk/ProbTools/ChisqConsistency.hh"
+// KinKal
+#include "KinKal/Trajectory/CentralHelix.hh"
 // CLHEP
+#include "CLHEP/Units/PhysicalConstants.h"
 #include "CLHEP/Vector/ThreeVector.h"
 #include "CLHEP/Matrix/Vector.h"
 #include "CLHEP/Matrix/SymMatrix.h"
@@ -34,7 +38,6 @@
 using CLHEP::Hep3Vector;
 using CLHEP::HepSymMatrix;
 using CLHEP::HepVector;
-using namespace std;
 namespace mu2e {
   namespace TrkUtilities {
 
@@ -68,10 +71,7 @@ namespace mu2e {
     }
 
     void RobustHelixFromMom(Hep3Vector const& pos, Hep3Vector const& mom, double charge, double Bz, RobustHelix& helix){
-      // speed of light in mm/nsec
-      static double clight =299.792;  // This value should come from conditions FIXME!!!	
-      // translation factor from MeV/c to curvature radius.
-      double momToRad = 1000.0/(charge*Bz*clight);
+      double momToRad = 1000.0/(charge*Bz*CLHEP::c_light);
       // compute some simple useful parameters
       double pt = mom.perp();
       // transverse radius of the helix
@@ -89,19 +89,36 @@ namespace mu2e {
       helix._fz0 = phi;
     }
 
-    void fillSegment(HelixTraj const& htraj, BbrVectorErr const& momerr,double dflt, KalSegment& kseg) {
-      kseg._fmin = htraj.lowRange();
-      kseg._fmax = htraj.hiRange();
-      kseg._dflt = dflt;
-      kseg._helix = htraj.parameters()->parameter();
-      kseg._hcov = htraj.parameters()->covariance();
-      kseg._mom = momerr.mag();
-      Hep3Vector md = momerr.unit();
-      HepVector mdir(3);
-      for(size_t icor=0;icor<3;++icor) // CLHEP auto-conversion is broken, FIXME!!
-	mdir[icor] = md[icor];
-
-      kseg._momerr = sqrt(momerr.covMatrix().similarity(mdir));
+// legacy function
+    void fillSegment(HelixTraj const& htraj, double locflt, double globflt, TrkT0 t0, double mass, int charge, BField const& bfield, KalSegment& kseg) {
+// compute the kinematics; this is external to htraj
+      double radToMom = charge*bfield.bFieldNominal()*CLHEP::c_light/1000.0;
+      double mom = fabs(radToMom/(htraj.omega()*htraj.cosDip()));
+      double energy = sqrt(mom*mom + mass*mass);
+      double v = CLHEP::c_light*mom/energy;
+      double vz = v*htraj.sinDip();
+      // translate BTrk t0 to CentralHelix t0 (different convention)
+      double ct0 = t0.t0() + htraj.z0()/vz;
+      // translate htraj (3D) flight range to time ranges
+      double tmin = ct0 + htraj.lowRange()/v;
+      double tmax = ct0 + htraj.hiRange()/v;
+      double tref = ct0 + locflt/v;
+      // conver the helix content to a CentralHelix.  Note the t0 value supplied is in the BTrk convention (time at z=0).
+      KinKal::DVEC chpars;
+      KinKal::DMAT cov;
+      for(unsigned ipar=0; ipar<5; ipar++){
+	chpars(ipar) = htraj.parameters()->parameter()[ipar];
+	for(unsigned jpar=0; jpar<5; jpar++){
+	  cov(ipar,jpar) = htraj.parameters()->covariance().fast(ipar+1,jpar+1);
+	}
+      }
+      // insert t0 by hand
+      chpars(KinKal::CentralHelix::t0_) = ct0;
+      cov(KinKal::CentralHelix::t0_,KinKal::CentralHelix::t0_) = t0.t0Err()*t0.t0Err();
+      KinKal::Parameters params(chpars,cov);
+      // create the CentralHelix from these
+      KinKal::CentralHelix chelix(params,mass,charge,bfield.bFieldNominal(),KinKal::TimeRange(tmin,tmax));
+      kseg = KalSegment(chelix, tref, globflt-locflt);
     }
   
     void fillStraws(const KalRep* krep, std::vector<TrkStraw>& tstraws) {
@@ -334,6 +351,9 @@ namespace mu2e {
       }
       return tch;
     }
-
+    double energy(double mass, double momentum) {  return sqrt(momentum*momentum + mass*mass); }
+    double beta(double mass, double momentum) { return fabs(momentum)/energy(mass,momentum); }
+    double betagamma(double mass, double momentum) { return fabs(momentum)/mass; }
+    double gamma(double mass, double momentum) { return energy(mass,momentum)/mass; }
   } // TrkUtilities
 }// mu2e

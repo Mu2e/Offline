@@ -16,6 +16,15 @@ namespace mu2e {
     TrkStrawHitSeed() : _index(0), _trklen(0), _hitlen(0), _rdrift(0), _dtime(0), _stime(0), _htime(0),
       _wdoca(0), _rerr(0), _ambig(0), _edep(0), _wdist(0), _werr(0) {}
     // construct from the information
+    TrkStrawHitSeed(StrawHitIndex index, HitT0 const& t0, Float_t trklen, Float_t hitlen, Float_t rdrift,
+	Float_t stime,
+	Float_t wdoca, Int_t ambig, Float_t rerr, StrawHitFlag const& flag, ComboHit const& chit) :
+      _index(index), _sid(chit.strawId()), _t0(t0), _trklen(trklen),
+      _hitlen(hitlen), _rdrift(rdrift),
+      _dtime(chit.driftTime()), _stime(stime),_htime(chit.time()),
+      _wdoca(wdoca), _rerr(rerr), _ambig(ambig), 
+      _edep(chit.energyDep()),_wdist(chit.wireDist()), _werr(chit.wireRes()), _end(chit.driftEnd()), 
+      _flag(flag)  {}
     TrkStrawHitSeed(StrawHitIndex index, TrkT0 const& t0, Float_t trklen, Float_t hitlen, Float_t rdrift,
 	Float_t stime,
 	Float_t wdoca, Int_t ambig, Float_t rerr, StrawHitFlag const& flag, ComboHit const& chit) :

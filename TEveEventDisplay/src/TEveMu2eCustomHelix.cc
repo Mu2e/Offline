@@ -1,4 +1,6 @@
 #include "TEveEventDisplay/src/TEveMu2e_base_classes/TEveMu2eCustomHelix.h"
+#include "GlobalConstantsService/inc/GlobalConstantsHandle.hh"
+#include "GlobalConstantsService/inc/ParticleDataTable.hh"
 
 using namespace mu2e;
 namespace mu2e{
@@ -9,19 +11,21 @@ namespace mu2e{
   TEveMu2eCustomHelix::TEveMu2eCustomHelix(KalSeed kseed){
     fKalSeed = kseed;
     this->Momentum = fKalSeed.helix()->helix().momentum();
-    this->PDGcode = fKalSeed.particle().particleType();
-    this->Charge = fKalSeed.particle().charge();
-    this->Mass = fKalSeed.particle().mass();
-    this->Time = fKalSeed.t0().t0();
+    this->PDGcode = fKalSeed.particle();
+    auto const& ptable = mu2e::GlobalConstantsHandle<mu2e::ParticleDataTable>();
+    this->Charge = ptable->particle(fKalSeed.particle()).ref().charge();
+    this->Mass = ptable->particle(fKalSeed.particle()).ref().mass().value();
     this->Radius = fKalSeed.helix()->helix().radius();
+    this->Time = fKalSeed.t0().t0();
   };
 
   void TEveMu2eCustomHelix::SetSeedInfo(KalSeed seed) { 
     fKalSeed = seed;
     this->Momentum = fKalSeed.helix()->helix().momentum();
-    this->PDGcode = fKalSeed.particle().particleType();
-    this->Charge = fKalSeed.particle().charge();
-    this->Mass = fKalSeed.particle().mass();
+    this->PDGcode = fKalSeed.particle();
+    auto const& ptable = mu2e::GlobalConstantsHandle<mu2e::ParticleDataTable>();
+    this->Charge = ptable->particle(fKalSeed.particle()).ref().charge();
+    this->Mass = ptable->particle(fKalSeed.particle()).ref().mass().value();
     this->Time = fKalSeed.t0().t0();
     this->Radius = fKalSeed.helix()->helix().radius();
   }

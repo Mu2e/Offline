@@ -18,6 +18,8 @@
 #include "AnalysisConditions/inc/TrkQualCatalog.hh"
 #include "TrkDiag/inc/InfoStructHelper.hh"
 #include "TrkDiag/inc/TrkInfo.hh"
+#include "GlobalConstantsService/inc/GlobalConstantsHandle.hh"
+#include "GlobalConstantsService/inc/ParticleDataTable.hh"
 // data
 #include "RecoDataProducts/inc/KalSeed.hh"
 #include "RecoDataProducts/inc/TrkQual.hh"
@@ -75,6 +77,7 @@ namespace mu2e
   }
 
   void TrackQuality::produce(art::Event& event ) {
+    auto const& ptable = GlobalConstantsHandle<ParticleDataTable>();
     // create output
     unique_ptr<TrkQualCollection> tqcol(new TrkQualCollection());
     unique_ptr<RecoQualCollection> rqcol(new RecoQualCollection());
@@ -133,8 +136,7 @@ namespace mu2e
         }
         kseg = *bestkseg;
         if (bestkseg != ksegs.end()) {
-          double charge = i_kalSeed.particle().charge();
-
+          double charge = ptable->particle(i_kalSeed.particle()).ref().charge();
           trkqual[TrkQual::momerr] = bestkseg->momerr();
           trkqual[TrkQual::d0] = -1*charge*bestkseg->helix().d0();
           trkqual[TrkQual::rmax] = -1*charge*(bestkseg->helix().d0() + 2.0/bestkseg->helix().omega());
