@@ -10,6 +10,7 @@ namespace mu2e {
     int8_t _end;
     operator int8_t() const { return _end; }
     End end() const { return static_cast<End>(_end); }
+    End otherEnd() const { return (_end == cal) ? hv : cal; }
     StrawEnd(End end=cal) : _end(static_cast<int8_t>(end)) {}
     bool operator == (End end) const { return _end == end; }
     bool operator != (End end) const { return _end != end; }

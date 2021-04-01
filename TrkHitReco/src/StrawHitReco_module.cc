@@ -133,6 +133,7 @@ namespace mu2e {
     _flagXT(config().flagXT()),
     _printLevel(config().print()),
     _diagLevel(config().diag()),
+    _mask(StrawIdMask::uniquestraw), // this module produces individual straw ComboHits
     _end{StrawEnd::cal,StrawEnd::hv}, // this should be in a general place, FIXME!
     _sdctoken{consumes<StrawDigiCollection>(config().sdcTag())},
     _sdadctoken{mayConsume<StrawDigiADCWaveformCollection>(config().sdadcTag())},

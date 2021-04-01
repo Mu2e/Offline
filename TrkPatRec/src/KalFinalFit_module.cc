@@ -367,14 +367,10 @@ namespace mu2e
 	    if(krep->fitStatus().success()) fflag.merge(TrkFitFlag::kalmanOK);
 	    if(krep->fitStatus().success()==1) fflag.merge(TrkFitFlag::kalmanConverged);
 	    //	  KalSeed fseed(_tpart,_fdir,krep->t0(),krep->flt0(),kseed.status());
-	    KalSeed fseed(krep->particleType(),_fdir,krep->t0(),krep->flt0(),fflag);
-	    // reference the seed fit in this fit
-	    auto ksH = event.getValidHandle<KalSeedCollection>(_ksToken);
-	    fseed._kal = art::Ptr<KalSeed>(ksH,ikseed);
-	    // redundant but possibly useful
+	    KalSeed fseed(PDGCode::type(krep->particleType().particleType()),_fdir,fflag,krep->flt0());
+	    // forward link to helix 
 	    fseed._helix = kseed.helix();
 	    // fill with new information
-	    fseed._t0 = krep->t0();
 	    fseed._flt0 = krep->flt0();
 	    // global fit information
 	    fseed._chisq = krep->chisq();
@@ -395,7 +391,7 @@ namespace mu2e
 	      const HelixTraj* htraj = dynamic_cast<const HelixTraj*>(krep->localTrajectory(fltlen,locflt));
 	      // fill the segment
 	      KalSegment kseg;
-	      TrkUtilities::fillSegment(*htraj,momerr,locflt-fltlen,kseg);
+	      TrkUtilities::fillSegment(*htraj,locflt,fltlen,krep->t0(),_tpart.mass(),(int)_tpart.charge(),_kfit.bField(),kseg);
 	      fseed._segments.push_back(kseg);
 	    }
 	    // see if there's a TrkCaloHit
@@ -410,7 +406,7 @@ namespace mu2e
 	      BbrVectorErr momerr = krep->momentumErr(tch->fltLen());
 	      double locflt(0.0);
 	      const HelixTraj* htraj = dynamic_cast<const HelixTraj*>(krep->localTrajectory(tch->fltLen(),locflt));
-	      TrkUtilities::fillSegment(*htraj,momerr,locflt-tch->fltLen(),kseg);
+	      TrkUtilities::fillSegment(*htraj,locflt,tch->fltLen(),krep->t0(),_tpart.mass(),(int)_tpart.charge(),_kfit.bField(),kseg);
 	      fseed._segments.push_back(kseg);
 	    }
 	    // save KalSeed for this track

@@ -1,0 +1,54 @@
+BEGIN_PROLOG
+Mu2eKinKal : {
+# general configuration for seed fits (no drift)
+  KKSeedFit : {
+    module_type : LoopHelixFit
+    MaterialSettings : {
+      elements  : "TrackerConditions/data/ElementsList.data"
+      isotopes  : "TrackerConditions/data/IsotopesList.data"
+      materials : "TrackerConditions/data/MaterialsList.data"
+      strawGasMaterialName  : "straw-gas"
+      strawWallMaterialName : "straw-wall"
+      strawWireMaterialName : "straw-wire"
+      dahlLynchScatteringFraction : 0.995
+    }
+  
+    FitSettings: {
+      SeedErrors : [5.0, 5.0, 5.0, 5.0, 0.02, 25.0] # R, Lambda, Cx, Cy, phi0, t0
+      NullHitVarianceScale : 1.0
+      UseCaloCluster : true
+      BFieldCorrection : 0
+      AddMaterial : true
+    }
+  
+    ModuleSettings : {
+      HelixFlags : [ "HelixOK" ] # why doesn't "HitsOK" work?? FIXME!
+      ZSavePositions : [-1522.0,0.0,1522.0]
+    }
+    MetaIterationSettings : [ 
+      [ 10.0, 1.0, 10.0 ],
+      [ 2.0, 0.5, 10.0 ],
+      [ 0.0, 0.2, 20.0 ]]
+#      [ 10.0, 1.0, 10.0 ],
+#      [ 5.0, 1.0, 10.0 ],
+#      [ 2.0, 0.5, 10.0 ],
+#      [ 1.0, 0.2, 20.0 ],
+#      [ 0.0, 0.2, 20.0 ]]
+    StrawHitUpdateSettings : [
+      [ 10.0, 10.0, 1, 1 ]]
+#     [ 10.0, 5.0, 1, 2 ]
+  }
+}
+Mu2eKinKal : {
+  @table::Mu2eKinKal
+  producers : {
+    KKDePSeedFit: @local::Mu2eKinKal.KKSeedFit
+    KKDeMSeedFit: @local::Mu2eKinKal.KKSeedFit
+  }
+}
+Mu2eKinKal.producers.KKDeMSeedFit.FitSettings.FitParticle : 11
+Mu2eKinKal.producers.KKDeMSeedFit.FitSettings.FitDirection : 0
+Mu2eKinKal.producers.KKDePSeedFit.FitSettings.FitParticle : -11
+Mu2eKinKal.producers.KKDePSeedFit.FitSettings.FitDirection : 0
+
+END_PROLOG 
