@@ -24,43 +24,22 @@ CaloTrigger : {
     diagLevel             : 0
 }
 
-
-CaloClusterFast :
-{ 
-    module_type           : CaloClusterFast
-    caloDigiModuleLabel   : CaloDigiMaker
-    digiSampling          : @local::HitMakerDigiSampling
-    blindTime             : @local::HitMakerBlindTime
-    endTimeBuffer         : 80
-    windowPeak            : 2
-    minAmplitude          : 20
-    extendSecond          : true
-    minSeedAmplitude      : 200
-    minEnergy             : 50
-    timeCorrection        : 20.0
-    adcToEnergy           : 0.0461333
-    diagLevel             : 0
-    includeCrystalHits    : true
-}
-
-CaloClusterOnline  :
+CaloClusterFast:
 {
-  module_type            : CaloClusterOnline
-  caloCrystalModuleLabel : CaloHitMaker
-  minClusterEnergy       : 50
-  EminSeed               : 20 
-  ExpandCut              : 1 
-  EnoiseCut              : 1
-  timeCut                : @local::HitMakerBlindTime   
-  deltaTime              : 5.01
-  diagLevel              : 0
+   module_type            : CaloClusterFast
+   caloCrystalModuleLabel : CaloHitMaker
+   EminSeed               : 10
+   ExpandCut              : 1.0
+   EnoiseCut              : 1.0
+   deltaTime              : 10
+   extendSearch           : true
+   diagLevel              : 0
 }  
-
 
 CaloClusterTrigger :
 {
    producers : {
-       CaloClusterOnline   : @local::CaloClusterOnline
+       CaloClusterFast     : @local::CaloClusterFast
        CaloTrigger         : @local::CaloTrigger
        CaloClusterFast     : @local::CaloClusterFast
    }
