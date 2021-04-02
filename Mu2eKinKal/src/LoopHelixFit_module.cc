@@ -146,6 +146,7 @@ namespace mu2e {
       fhicl::Atom<int> fitDirection { Name("FitDirection"), Comment("Particle direction to fit, either upstream or downstream"), TrkFitDirection::downstream };
       fhicl::Atom<int> maxniter { Name("MaxNIter"), Comment("Maximum number of algebraic iteration steps in each fit meta-iteration"), 10 };
       fhicl::Atom<float> dwt { Name("Deweight"), Comment("Deweighting factor when initializing the track end parameters"), 1.0e6 };
+      fhicl::Atom<float> dparams { Name("DeltaParams"), Comment("Parameter difference threshold (units of chisquared)"), 1.0e4 };
       fhicl::Atom<float> tBuffer { Name("TimeBuffer"), Comment("Time buffer for final fit (ns)"), 0.2 };
       fhicl::Atom<float> btol { Name("BCorrTolerance"), Comment("Tolerance on BField correction accuracy (mm)"), 0.01 };
       fhicl::Sequence<float> seederrors { Name("SeedErrors"), Comment("Initial value of seed parameter errors (rms, various units)") };
@@ -256,6 +257,7 @@ namespace mu2e {
     // construct the fit configuration object.  This controls all the global and iteration-specific aspects of the fit
     kkconfig_.maxniter_ = config().fitsettings().maxniter();
     kkconfig_.dwt_ = config().fitsettings().dwt();
+    kkconfig_.pdchi2_ = config().fitsettings().dparams();
     kkconfig_.tbuff_ = config().fitsettings().tBuffer();
     kkconfig_.tol_ = config().fitsettings().btol();
     kkconfig_.minndof_ = config().fitsettings().minndof();
