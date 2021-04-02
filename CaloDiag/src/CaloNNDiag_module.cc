@@ -97,7 +97,7 @@ namespace mu2e {
 
        int   nCluster_,nCluSim_,cluNcrys_[ntupLen],cluDisk_[ntupLen];
        float cluEnergy_[ntupLen],cluEnergyErr_[ntupLen],cluTime_[ntupLen],cluTimeErr_[ntupLen],cluCogX_[ntupLen],cluCogY_[ntupLen],cluCogR_[ntupLen],
-             cluCogZ_[ntupLen],cluE1_[ntupLen],cluE2_[ntupLen],cluE9_[ntupLen],cluE25_[ntupLen],cluSecMom_[ntupLen],cluEout_[ntupLen],cluEin_[ntupLen];
+             cluCogZ_[ntupLen],cluE1_[ntupLen],cluE2_[ntupLen],cluE9_[ntupLen],cluE25_[ntupLen],cluSecMom_[ntupLen],cluDR_[ntupLen];
        int   cluSplit_[ntupLen],cluConv_[ntupLen],cluSimIdx_[ntupLen],cluSimLen_[ntupLen];
        std::vector<std::vector<int> > cluList_;
 
@@ -178,8 +178,7 @@ namespace mu2e {
        Ntup_->Branch("cluE2",        &cluE2_ ,       "cluE2[nCluster]/F");
        Ntup_->Branch("cluE9",        &cluE9_ ,       "cluE9[nCluster]/F");
        Ntup_->Branch("cluE25",       &cluE25_ ,      "cluE25[nCluster]/F");
-       Ntup_->Branch("cluEout",      &cluEout_ ,     "cluEout[nCluster]/F");
-       Ntup_->Branch("cluEin",       &cluEin_ ,      "cluEin[nCluster]/F");
+       Ntup_->Branch("cluDR",        &cluDR_ ,       "cluDR[nCluster]/F");
        Ntup_->Branch("cluSecMom",    &cluSecMom_ ,   "cluSecMom[nCluster]/F");
        Ntup_->Branch("cluSplit",     &cluSplit_ ,    "cluSplit[nCluster]/I");
        Ntup_->Branch("cluConv",      &cluConv_ ,     "cluConv[nCluster]/I");
@@ -404,20 +403,18 @@ namespace mu2e {
           auto itMC = caloClusterTruth.begin();
           while (itMC != caloClusterTruth.end()) {if (itMC->first.get() == &cluster) break; ++itMC;}
           const auto eDepMCs = (itMC != caloClusterTruth.end()) ? itMC->second->energyDeposits() : std::vector<CaloEDepMC>{};
-
           
 	  const CaloHit& seedHit    = CaloHits.at(cryList[0]);
           CLHEP::Hep3Vector seedPos = cal.geomUtil().mu2eToDiskFF(cluster.diskID(),cal.crystal(seedHit.crystalID()).position());
 
-          double enerIn(0),enerOut(0);
-          double r0 = seedPos.perp();
-          for (auto cryPtr : cluster.caloHitsPtrVector())
+          double dr(0);
+          if (cryList.size()>1) 
 	  {
-              const CaloHit& hit    = *cryPtr;
-              CLHEP::Hep3Vector pos = cal.geomUtil().mu2eToDiskFF(cluster.diskID(),cal.crystal(hit.crystalID()).position());
-	      double r1 = pos.perp();
-	      if (r1 > 1.01*r0) enerOut += hit.energyDep();	     
-	      if (r1 < 0.99*r0) enerIn  += hit.energyDep();	     
+              const CaloHit& hit    = CaloHits.at(cryList[1]);
+              CLHEP::Hep3Vector hitPos = cal.geomUtil().mu2eToDiskFF(cluster.diskID(),cal.crystal(hit.crystalID()).position());
+	      double dx = hitPos.x()-seedPos.x();
+              double dy = hitPos.y()-seedPos.y();
+              dr = sqrt(dx*dx+dy*dy);	     
 	  }
 
 
@@ -435,8 +432,7 @@ namespace mu2e {
           cluE2_[nCluster_]        = cluUtil.e2();
           cluE9_[nCluster_]        = cluUtil.e9();
           cluE25_[nCluster_]       = cluUtil.e25();
-          cluEout_[nCluster_]      = enerOut;
-          cluEin_[nCluster_]       = enerIn;
+          cluDR_[nCluster_]        = dr;
           cluSecMom_[nCluster_]    = cluUtil.secondMoment();
           cluSplit_[nCluster_]     = cluster.isSplit();
           cluConv_[nCluster_]      = ic == icMCIdx;

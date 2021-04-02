@@ -44,7 +44,7 @@ namespace mu2e {
           EnoiseCut_       (config().EnoiseCut()),
           ExpandCut_       (config().ExpandCut()),
           deltaTime_       (config().deltaTime()),
-	  extendSearch_    (config().extendSearch()),
+          extendSearch_    (config().extendSearch()),
           diagLevel_       (config().diagLevel())
         {
            produces<CaloClusterCollection>();
@@ -99,8 +99,8 @@ namespace mu2e {
       while (iterSeed != hits.end())
       {
           //find the first hit above the energy threshold, and the last hit within the required time window
-	  const CaloHit& hitSeed = caloHits[*iterSeed];
-	  if (*iterSeed==-1 || hitSeed.energyDep()< EminSeed_) {++iterSeed; continue;}
+          const CaloHit& hitSeed = caloHits[*iterSeed];
+          if (*iterSeed==-1 || hitSeed.energyDep()< EminSeed_) {++iterSeed; continue;}
           double timeStart = hitSeed.time();
 
           //find the range around the seed time to search for other hits to form clusters
@@ -110,19 +110,20 @@ namespace mu2e {
           ++iterStart; 
 
           //start the clustering algorithm for the hits between iStart and iStop
-	  std::queue<int> crystalToVisit;
-	  std::vector<bool> isVisited(cal.nCrystal()); 
+          std::queue<int> crystalToVisit;
+          std::vector<bool> isVisited(cal.nCrystal()); 
 
           //put the first hit in the cluster list
           std::vector<int> clusterList{*iterSeed};
           int seedId = caloHits[*iterSeed].crystalID();
           crystalToVisit.push(seedId);
-	  *iterSeed=-1;
+          *iterSeed=-1;
 
+          // loop until all seeds are processed
           while (!crystalToVisit.empty())
           {            
               int visitId = crystalToVisit.front();
-	      isVisited[visitId]=true;
+              isVisited[visitId]=true;
 
               std::vector<int>  neighborsId = cal.crystal(visitId).neighbors();
               if (extendSearch_) std::copy(cal.nextNeighbors(visitId).begin(), cal.nextNeighbors(visitId).end(), std::back_inserter(neighborsId));
@@ -130,28 +131,28 @@ namespace mu2e {
               for (auto& iId : neighborsId)
               {
                   if (isVisited[iId]) continue;
-        	  isVisited[iId] = true;
+                  isVisited[iId] = true;
 
-        	  //loop over the caloHits, check if one is in the neighbor list and add it to the cluster
-		  for (auto it=iterStart; it != iterStop; ++it)
-        	  {
+                  //loop over the caloHits, check if one is in the neighbor list and add it to the cluster
+                  for (auto it=iterStart; it != iterStop; ++it)
+                  {
                       if (*it==-1) continue;
                       if (caloHits[*it].crystalID() != iId) continue;
 
                       if (caloHits[*it].energyDep() > ExpandCut_) crystalToVisit.push(iId);
                       clusterList.push_back(*it);
                       *it = -1;
-        	  }
+                  }
                }
-	       crystalToVisit.pop();                 
+               crystalToVisit.pop();                 
            }
 
            auto functorEnergy = [&caloHits](int a, int b) {return caloHits[a].energyDep() > caloHits[b].energyDep();};
-	   std::sort(clusterList.begin(),clusterList.end(),functorEnergy);
+           std::sort(clusterList.begin(),clusterList.end(),functorEnergy);
 
            fillCluster(cal, caloHitsHandle, caloHits, clusterList, caloClusters );
 
-	   ++iterSeed;
+           ++iterSeed;
         }      
    }
 
@@ -159,7 +160,7 @@ namespace mu2e {
   //----------------------------------------------------------------------------------------------------------
   void CaloClusterFast::fillCluster(const Calorimeter& cal, const art::Handle<CaloHitCollection>& caloHitsHandle, 
                                       const CaloHitCollection& caloHits, const std::vector<int>& clusterList, 
-				      CaloClusterCollection& caloClusters)
+                                      CaloClusterCollection& caloClusters)
   {
       std::vector<art::Ptr<CaloHit>> caloHitsPtrs;
       double totalEnergy(0), xCOG(0), yCOG(0);
