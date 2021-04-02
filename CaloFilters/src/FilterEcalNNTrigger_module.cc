@@ -14,6 +14,7 @@
 #include "RecoDataProducts/inc/TriggerInfo.hh"
 
 #include <vector>
+#include <string>
 
 
 
@@ -30,6 +31,7 @@ namespace mu2e {
             fhicl::Table<MVATools::Config> caloBkgMVA            { Name("caloBkgMVA"),             Comment("MVA Configuration") };
             fhicl::Atom<float>             minEtoTest            { Name("minEtoTest"),             Comment("Minimum Energy to run the MVA") };
             fhicl::Atom<float>             minMVAScore           { Name("minMVAScore"),            Comment("MVA cut for signal") };
+            fhicl::Atom<std::string>       trigPath              { Name("trigPath"),               Comment("Trigger path name") };
             fhicl::Atom<int>               diagLevel             { Name("diagLevel"),              Comment("Diag Level"),0 };
         };
 
@@ -38,7 +40,8 @@ namespace mu2e {
           caloClusterToken_{consumes<CaloClusterCollection>(config().caloClusterCollection())},
           caloBkgMVA_      (config().caloBkgMVA()),
           minEtoTest_      (config().minEtoTest()),
-	  minMVAScore_     (config().minMVAScore()),
+          minMVAScore_     (config().minMVAScore()),
+          trigPath_        (config().trigPath()),
           diagLevel_       (config().diagLevel())
         {
            produces<TriggerInfo>();
@@ -53,6 +56,7 @@ namespace mu2e {
         MVATools          caloBkgMVA_;
         float             minEtoTest_;
         float             minMVAScore_;
+        std::string       trigPath_;
         int               diagLevel_;
 
         bool filterClusters(const art::Handle<CaloClusterCollection>& caloClustersHandle, TriggerInfo& trigInfo);
@@ -83,40 +87,47 @@ namespace mu2e {
   bool FilterEcalNNTrigger::filterClusters(const art::Handle<CaloClusterCollection>& caloClustersHandle, TriggerInfo& trigInfo)
   {
        const Calorimeter& cal = *(GeomHandle<Calorimeter>());
-       const CaloClusterCollection& clusters(*caloClustersHandle);
+       const CaloClusterCollection& caloClusters(*caloClustersHandle);
  
-       bool select(false);
-       for (auto clusterIt=clusters.begin(); clusterIt != clusters.end();++clusterIt)
+       bool select(false), firstTrig(false);
+       for (auto clusterIt=caloClusters.begin(); clusterIt != caloClusters.end();++clusterIt)
        {
           if (clusterIt->energyDep() < minEtoTest_) continue;
 
           const auto& hits          = clusterIt->caloHitsPtrVector();
-	  const auto& neighborsId   = cal.crystal(hits[0]->crystalID()).neighbors();
-	  const auto& nneighborsId  = cal.crystal(hits[0]->crystalID()).nextNeighbors();
-	            
-	  double e9(hits[0]->energyDep()),e25(hits[0]->energyDep());
+          const auto& neighborsId   = cal.crystal(hits[0]->crystalID()).neighbors();
+          const auto& nneighborsId  = cal.crystal(hits[0]->crystalID()).nextNeighbors();
+                    
+          double e9(hits[0]->energyDep()),e25(hits[0]->energyDep());
           for (auto hit : hits)
-	  {
-	      if (std::find(neighborsId.begin(),  neighborsId.end(),  hit->crystalID()) != neighborsId.end())  {e9 += hit->energyDep();e25 += hit->energyDep();}
-	      if (std::find(nneighborsId.begin(), nneighborsId.end(), hit->crystalID()) != nneighborsId.end()) {e25 += hit->energyDep();}
-	  }
+          {
+              if (std::find(neighborsId.begin(),  neighborsId.end(),  hit->crystalID()) != neighborsId.end())  {e9 += hit->energyDep();e25 += hit->energyDep();}
+              if (std::find(nneighborsId.begin(), nneighborsId.end(), hit->crystalID()) != nneighborsId.end()) {e25 += hit->energyDep();}
+          }
 
-	  std::vector<float> mvavars(8,0.0);
-	  mvavars[0] = clusterIt->energyDep();
-	  mvavars[1] = clusterIt->cog3Vector().perp();
-	  mvavars[2] = clusterIt->size(); 
-	  mvavars[3] = hits[0]->energyDep();
-	  mvavars[4] = (hits.size()>1) ?  hits[0]->energyDep() + hits[1]->energyDep() : hits[0]->energyDep();
-	  mvavars[5] = e9;
-	  mvavars[6] = e25;
-	  mvavars[7] = clusterIt->diskID();
-	  
-	  float mvaout = caloBkgMVA_.evalMVA(mvavars);
-	  if (mvaout < minMVAScore_) continue;
+          std::vector<float> mvavars(8,0.0);
+          mvavars[0] = clusterIt->energyDep();
+          mvavars[1] = clusterIt->cog3Vector().perp();
+          mvavars[2] = clusterIt->size(); 
+          mvavars[3] = hits[0]->energyDep();
+          mvavars[4] = (hits.size()>1) ?  hits[0]->energyDep() + hits[1]->energyDep() : hits[0]->energyDep();
+          mvavars[5] = e9;
+          mvavars[6] = e25;
+          mvavars[7] = clusterIt->diskID();
+          
+          float mvaout = caloBkgMVA_.evalMVA(mvavars);
+          if (mvaout < minMVAScore_) continue;
 
-	  select = true;
-	  //size_t index = std::distance(caloClusters.begin(),clusterIt);
-	  //triginfo->_caloClusters.push_back(art::Ptr<CaloCluster>(caloClustersHandle,index));
+          select = true;
+
+          if (firstTrig){
+            trigInfo._triggerBits.merge(TriggerFlag::caloDigis);
+            trigInfo._triggerPath = trigPath_;
+            firstTrig = false;
+          }
+
+          size_t index = std::distance(caloClusters.begin(),clusterIt);
+          trigInfo._caloClusters.push_back(art::Ptr<CaloCluster>(caloClustersHandle,index));
      }
      
      return select;

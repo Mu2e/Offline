@@ -118,6 +118,15 @@ CaloFilters : {
 	triggerPath             : "CaloPhoton"	    
     }
   
+    caloNNFilter : {
+	module_type            : FilterEcalNNTrigger
+	caloClusterCollection  : CaloClusterFast
+        caloBkgMVA             :{ MVAWeights : "CaloFilters/data/CE_NN_ReLU.weights.xml" }
+        minEtoTest             : 40
+        minMVAScore            : 0.95
+        trigPath               : "CaloNewClusterTrigger"
+        diagLevel              : 0
+    }
 }
 
 CaloFilters : { @table::CaloFilters

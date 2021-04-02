@@ -68,7 +68,7 @@ helper.make_plugins( [ mainlib,
                        'cetlib_except',
                        'CLHEP',
                        'TMVA',
-                     'xerces-c',  # only needed for MakeStereoHits_module.cc
+                       'xerces-c',  #needed for MVA 
                        'boost_filesystem',
                        'boost_system',
                        rootlibs
