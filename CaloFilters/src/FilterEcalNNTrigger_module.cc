@@ -89,7 +89,7 @@ namespace mu2e {
        const Calorimeter& cal = *(GeomHandle<Calorimeter>());
        const CaloClusterCollection& caloClusters(*caloClustersHandle);
  
-       bool select(false), firstTrig(false);
+       bool select(false);
        for (auto clusterIt=caloClusters.begin(); clusterIt != caloClusters.end();++clusterIt)
        {
           if (clusterIt->energyDep() < minEtoTest_) continue;
@@ -119,17 +119,16 @@ namespace mu2e {
           if (mvaout < minMVAScore_) continue;
 
           select = true;
-
-          if (firstTrig){
-            trigInfo._triggerBits.merge(TriggerFlag::caloDigis);
-            trigInfo._triggerPath = trigPath_;
-            firstTrig = false;
-          }
-
           size_t index = std::distance(caloClusters.begin(),clusterIt);
           trigInfo._caloClusters.push_back(art::Ptr<CaloCluster>(caloClustersHandle,index));
      }
      
+     if (select)
+     {
+        trigInfo._triggerBits.merge(TriggerFlag::caloDigis);
+        trigInfo._triggerPath = trigPath_;
+     }     
+
      return select;
   }
 
