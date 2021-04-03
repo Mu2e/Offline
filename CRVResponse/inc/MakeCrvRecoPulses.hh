@@ -50,6 +50,20 @@ class MakeCrvRecoPulses
   std::vector<double> _pulseTimes, _LEtimes; 
   std::vector<float>  _pulseHeights, _pulseBetas, _pulseFitChi2s;
   std::vector<bool>   _failedFits;
+
+  public:
+  const std::vector<float>  &GetPEsADCvalues() const        {return _PEsADCvalues;}
+  const std::vector<double> &GetPulseTimesADCvalues() const {return _pulseTimesADCvalues;}
+  const std::vector<double> &GetPulseStarts() const         {return _pulseStart;}
+  const std::vector<double> &GetPulseEnds() const           {return _pulseEnd;}
+
+  private:
+  void NoFitOption(const std::vector<unsigned int> &waveform, float pedestal, 
+                   size_t peakStart, size_t peakEnd, float &sum, size_t &pulseStart, size_t &pulseEnd);
+  std::vector<float>  _PEsADCvalues;
+  std::vector<double> _pulseTimesADCvalues;
+  std::vector<double> _pulseStart;
+  std::vector<double> _pulseEnd;
 };
 
 }

@@ -169,10 +169,17 @@ namespace mu2e
         CrvRecoPulseFlags flags;
         if(failedFit)              flags.set(CrvRecoPulseFlagEnums::failedFit);
 
+        float  PEsADCvalues      = _makeCrvRecoPulses->GetPEsADCvalues().at(j);
+        double pulseTimeADCvalues= _makeCrvRecoPulses->GetPulseTimesADCvalues().at(j);
+        double pulseStart        = _makeCrvRecoPulses->GetPulseStarts().at(j);
+        double pulseEnd          = _makeCrvRecoPulses->GetPulseEnds().at(j);
+
         if(PEs<_minPEs) continue; 
         crvRecoPulseCollection->emplace_back(PEs, PEsPulseHeight, pulseTime, pulseHeight, pulseBeta, pulseFitChi2, LEtime, flags, 
-                                                  waveformIndices, barIndex, SiPM);
+                                             PEsADCvalues, pulseTimeADCvalues, pulseStart, pulseEnd,
+                                             waveformIndices, barIndex, SiPM);
       }
+
     }
 
     event.put(std::move(crvRecoPulseCollection));
