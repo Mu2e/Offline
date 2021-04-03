@@ -18,7 +18,7 @@
 #include "DetectorSolenoidGeom/inc/DetectorSolenoid.hh"
 #include "CosmicRayShieldGeom/inc/CosmicRayShield.hh"
 #include "StoppingTargetGeom/inc/StoppingTarget.hh"
-#include "G4Helper/inc/VolumeInfo.hh"
+#include "Mu2eG4Helper/inc/VolumeInfo.hh"
 #include "GeometryService/inc/GeomHandle.hh"
 #include "GeometryService/inc/GeometryService.hh"
 #include "GeometryService/inc/G4GeometryOptions.hh"
@@ -26,7 +26,7 @@
 #include "STMGeom/inc/PermanentMagnet.hh"
 #include "STMGeom/inc/SupportTable.hh"
 #include "STMGeom/inc/TransportPipe.hh"
-#include "G4Helper/inc/G4Helper.hh"
+#include "Mu2eG4Helper/inc/Mu2eG4Helper.hh"
 #include "Mu2eG4/inc/findMaterialOrThrow.hh"
 #include "Mu2eG4/inc/nestBox.hh"
 #include "Mu2eG4/inc/nestTubs.hh"
@@ -37,23 +37,23 @@
 #include "GeomPrimitives/inc/PolyconsParams.hh"
 
 // G4 includes
-#include "G4Material.hh"
-#include "G4Color.hh"
-#include "G4VSolid.hh"
-#include "G4Tubs.hh"
-#include "G4Box.hh"
-#include "G4Polycone.hh"
-#include "G4Cons.hh"
-#include "G4SubtractionSolid.hh"
-#include "G4LogicalVolume.hh"
-#include "G4VPhysicalVolume.hh"
-#include "G4UniformMagField.hh"
-#include "G4Mag_UsualEqRhs.hh"
-#include "G4ExactHelixStepper.hh"
-#include "G4ChordFinder.hh"
-#include "G4FieldManager.hh"
-#include "G4UserLimits.hh"
-#include "G4SDManager.hh"
+#include "Geant4/G4Material.hh"
+#include "Geant4/G4Color.hh"
+#include "Geant4/G4VSolid.hh"
+#include "Geant4/G4Tubs.hh"
+#include "Geant4/G4Box.hh"
+#include "Geant4/G4Polycone.hh"
+#include "Geant4/G4Cons.hh"
+#include "Geant4/G4SubtractionSolid.hh"
+#include "Geant4/G4LogicalVolume.hh"
+#include "Geant4/G4VPhysicalVolume.hh"
+#include "Geant4/G4UniformMagField.hh"
+#include "Geant4/G4Mag_UsualEqRhs.hh"
+#include "Geant4/G4ExactHelixStepper.hh"
+#include "Geant4/G4ChordFinder.hh"
+#include "Geant4/G4FieldManager.hh"
+#include "Geant4/G4UserLimits.hh"
+#include "Geant4/G4SDManager.hh"
 
 using namespace std;
 
@@ -90,8 +90,8 @@ namespace mu2e {
     }
 
     
-    // Access to the G4HelperService.
-    G4Helper* _helper = &(*(art::ServiceHandle<G4Helper>()));
+    // Access to the Mu2eG4HelperService.
+    Mu2eG4Helper* _helper = &(*(art::ServiceHandle<Mu2eG4Helper>()));
 
     //For now just make the mother HallAir because the STM transpport pipe goes 
     //into the End Cap Shielding mother

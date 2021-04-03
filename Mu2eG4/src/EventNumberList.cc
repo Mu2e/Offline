@@ -7,7 +7,7 @@
 
 #include "Mu2eG4/inc/EventNumberList.hh"
 
-#include "G4RunManager.hh"
+#include "Geant4/G4RunManager.hh"
 
 namespace mu2e {
 

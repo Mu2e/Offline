@@ -2,11 +2,11 @@
 #define Mu2eG4_CaloCrateSD_hh
 
 // Mu2e includes
-#include "Mu2eG4/inc/Mu2eSensitiveDetector.hh"
+#include "Mu2eG4/inc/Mu2eG4SensitiveDetector.hh"
 
 namespace mu2e {
 
-  class CaloCrateSD : public Mu2eSensitiveDetector{
+  class CaloCrateSD : public Mu2eG4SensitiveDetector{
 
      public:
 

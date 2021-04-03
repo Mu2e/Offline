@@ -6,18 +6,18 @@
 
 #include <iostream>
 
-#include "G4Color.hh"
-#include "G4RotationMatrix.hh"
-#include "G4LogicalVolume.hh"
-#include "G4SDManager.hh"
-#include "G4ExtrudedSolid.hh"
-#include "G4Helper/inc/AntiLeakRegistry.hh"
+#include "Geant4/G4Color.hh"
+#include "Geant4/G4RotationMatrix.hh"
+#include "Geant4/G4LogicalVolume.hh"
+#include "Geant4/G4SDManager.hh"
+#include "Geant4/G4ExtrudedSolid.hh"
+#include "Mu2eG4Helper/inc/AntiLeakRegistry.hh"
 
 #include "GeometryService/inc/GeomHandle.hh"
 #include "GeometryService/inc/G4GeometryOptions.hh"
 #include "ProtonBeamDumpGeom/inc/ProtonBeamDump.hh"
-#include "G4Helper/inc/VolumeInfo.hh"
-#include "G4Helper/inc/G4Helper.hh"
+#include "Mu2eG4Helper/inc/VolumeInfo.hh"
+#include "Mu2eG4Helper/inc/Mu2eG4Helper.hh"
 #include "ConfigTools/inc/SimpleConfig.hh"
 #include "Mu2eG4/inc/nestBox.hh"
 #include "Mu2eG4/inc/nestExtrudedSolid.hh"
@@ -60,7 +60,7 @@ namespace mu2e {
     bool const placePV              = geomOptions->placePV("extMonFNAL");
 
     MaterialFinder materialFinder(config);
-    AntiLeakRegistry& reg = art::ServiceHandle<G4Helper>()->antiLeakRegistry();
+    AntiLeakRegistry& reg = art::ServiceHandle<Mu2eG4Helper>()->antiLeakRegistry();
 
 
     //----------------------------------------------------------------
@@ -288,7 +288,7 @@ namespace mu2e {
                                stack.planes()[iplane].module_yoffset()[imodule] + offset[1],
                                stack.planes()[iplane].module_zoffset()[imodule]*(module.chipHalfSize()[2]*2 + stack.planes()[iplane].halfSize()[2]+ module.sensorHalfSize()[2]) + offset[2]};
 
-      AntiLeakRegistry& reg = art::ServiceHandle<G4Helper>()->antiLeakRegistry();
+      AntiLeakRegistry& reg = art::ServiceHandle<Mu2eG4Helper>()->antiLeakRegistry();
       G4RotationMatrix* mRot = reg.add(new G4RotationMatrix);
       mRot->rotateZ(stack.planes()[iplane].module_rotation()[imodule]);
       if( stack.planes()[iplane].module_zoffset()[imodule] < 0.0 ) {
@@ -378,7 +378,7 @@ namespace mu2e {
     GeomHandle<DetectorSolenoid> ds;
     G4Material* vacuumMaterial     = findMaterialOrThrow(ds->insideMaterial());
 
-    AntiLeakRegistry& reg = art::ServiceHandle<G4Helper>()->antiLeakRegistry();
+    AntiLeakRegistry& reg = art::ServiceHandle<Mu2eG4Helper>()->antiLeakRegistry();
 
     //----------------------------------------------------------------
     // finishNesting() uses the backwards interpretation of rotations
@@ -475,7 +475,7 @@ namespace mu2e {
     bool const placePV             = true;
 
     MaterialFinder materialFinder(config);
-    AntiLeakRegistry& reg = art::ServiceHandle<G4Helper>()->antiLeakRegistry();
+    AntiLeakRegistry& reg = art::ServiceHandle<Mu2eG4Helper>()->antiLeakRegistry();
 
 
     //----------------------------------------------------------------
@@ -540,7 +540,7 @@ namespace mu2e {
     bool const placePV              = geomOptions->placePV("extMonFNAL");
 
     //----------------------------------------------------------------
-    AntiLeakRegistry& reg = art::ServiceHandle<G4Helper>()->antiLeakRegistry();
+    AntiLeakRegistry& reg = art::ServiceHandle<Mu2eG4Helper>()->antiLeakRegistry();
 
     CLHEP::HepRotation *rotationInParentInv =
       reg.add(emfb->detectorRoomRotationInMu2e().inverse() * parentRotationInMu2e);

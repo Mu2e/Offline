@@ -9,13 +9,13 @@
 
 #include <string>
 
-#include "G4Helper/inc/VolumeInfo.hh"
+#include "Mu2eG4Helper/inc/VolumeInfo.hh"
 #include "GeometryService/inc/G4GeometryOptions.hh"
 #include "GeometryService/inc/GeometryService.hh"
 
-#include "G4Colour.hh"
-#include "G4ThreeVector.hh"
-#include "G4RotationMatrix.hh"
+#include "Geant4/G4Colour.hh"
+#include "Geant4/G4ThreeVector.hh"
+#include "Geant4/G4RotationMatrix.hh"
 
 class G4Material;
 class G4LogicalVolume;

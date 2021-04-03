@@ -18,8 +18,8 @@
 #include "GeomPrimitives/inc/Tube.hh"
 #include "GeomPrimitives/inc/Polycone.hh"
 #include "GeomPrimitives/inc/Box.hh"
-#include "G4Helper/inc/VolumeInfo.hh"
-#include "G4Helper/inc/G4Helper.hh"
+#include "Mu2eG4Helper/inc/VolumeInfo.hh"
+#include "Mu2eG4Helper/inc/Mu2eG4Helper.hh"
 #include "GeometryService/inc/G4GeometryOptions.hh"
 #include "GeometryService/inc/GeometryService.hh"
 #include "GeometryService/inc/GeomHandle.hh"
@@ -36,23 +36,23 @@
 #include "Mu2eG4/inc/checkForOverlaps.hh"
 
 // G4 includes
-#include "G4ThreeVector.hh"
-#include "G4Material.hh"
-#include "G4Color.hh"
-#include "G4Polycone.hh"
-#include "G4SDManager.hh"
-#include "G4Trd.hh"
+#include "Geant4/G4ThreeVector.hh"
+#include "Geant4/G4Material.hh"
+#include "Geant4/G4Color.hh"
+#include "Geant4/G4Polycone.hh"
+#include "Geant4/G4SDManager.hh"
+#include "Geant4/G4Trd.hh"
 #include "CLHEP/Units/SystemOfUnits.h"
 #include "CLHEP/GenericFunctions/ASin.hh"
-#include "G4Box.hh"
-#include "G4SubtractionSolid.hh"
-#include "G4VSolid.hh"
-#include "G4Tubs.hh"
-#include "G4VPhysicalVolume.hh"
-#include "G4PVPlacement.hh"
+#include "Geant4/G4Box.hh"
+#include "Geant4/G4SubtractionSolid.hh"
+#include "Geant4/G4VSolid.hh"
+#include "Geant4/G4Tubs.hh"
+#include "Geant4/G4VPhysicalVolume.hh"
+#include "Geant4/G4PVPlacement.hh"
 
-#include "G4UnionSolid.hh"
-#include "G4IntersectionSolid.hh"
+#include "Geant4/G4UnionSolid.hh"
+#include "Geant4/G4IntersectionSolid.hh"
 #include <cmath>
 using namespace std;
 
@@ -431,7 +431,7 @@ namespace mu2e {
       bool placePV             = geomOptions->placePV( "ProductionTarget" );
       bool doSurfaceCheck      = geomOptions->doSurfaceCheck( "ProductionTarget" );
       
-      G4Helper    & _helper = *(art::ServiceHandle<G4Helper>());
+      Mu2eG4Helper    & _helper = *(art::ServiceHandle<Mu2eG4Helper>());
       AntiLeakRegistry & reg = _helper.antiLeakRegistry();
  
       // 

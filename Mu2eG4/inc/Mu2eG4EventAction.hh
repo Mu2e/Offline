@@ -8,8 +8,8 @@
 //
 
 //G4 includes
-#include "G4UserEventAction.hh"
-#include "G4Threading.hh"
+#include "Geant4/G4UserEventAction.hh"
+#include "Geant4/G4Threading.hh"
 
 //Mu2e includes
 #include "MCDataProducts/inc/SimParticleCollection.hh"
@@ -36,7 +36,7 @@ namespace art { class Event; }
 
 namespace mu2e {
 
-  class TrackingAction;
+  class Mu2eG4TrackingAction;
   class Mu2eG4SteppingAction;
   class SensitiveDetectorHelper;
   class PhysicsProcessInfo;
@@ -50,7 +50,7 @@ namespace mu2e {
   public:
 
     Mu2eG4EventAction(const Mu2eG4Config::Top&,
-                      TrackingAction*,
+                      Mu2eG4TrackingAction*,
                       Mu2eG4SteppingAction*,
                       SensitiveDetectorHelper*,
                       Mu2eG4PerThreadStorage* pts,
@@ -70,7 +70,7 @@ namespace mu2e {
     //these are set using fhicl pset
     SimParticleCollectionPrinter simParticlePrinter_;
 
-    TrackingAction* _trackingAction;
+    Mu2eG4TrackingAction* _trackingAction;
     Mu2eG4SteppingAction* _steppingAction;
 
     SensitiveDetectorHelper* _sensitiveDetectorHelper;

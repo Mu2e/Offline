@@ -22,7 +22,7 @@
 #include "DetectorSolenoidGeom/inc/DetectorSolenoid.hh"
 #include "GeometryService/inc/WorldG4.hh"
 #include "Mu2eG4/inc/findMaterialOrThrow.hh"
-#include "G4Helper/inc/VolumeInfo.hh"
+#include "Mu2eG4Helper/inc/VolumeInfo.hh"
 #include "GeomPrimitives/inc/Torus.hh"
 #include "GeomPrimitives/inc/TorusParams.hh"
 #include "GeomPrimitives/inc/Tube.hh"
@@ -35,15 +35,15 @@
 #include "GeneralUtilities/inc/OrientationResolver.hh"
 
 // G4 includes
-#include "G4Material.hh"
-#include "G4Color.hh"
-#include "G4Orb.hh"
-#include "G4Box.hh"
-#include "G4Tubs.hh"
-#include "G4TwoVector.hh"
-#include "G4NistManager.hh"
+#include "Geant4/G4Material.hh"
+#include "Geant4/G4Color.hh"
+#include "Geant4/G4Orb.hh"
+#include "Geant4/G4Box.hh"
+#include "Geant4/G4Tubs.hh"
+#include "Geant4/G4TwoVector.hh"
+#include "Geant4/G4NistManager.hh"
 
-#include "G4LogicalVolume.hh"
+#include "Geant4/G4LogicalVolume.hh"
 
 #include <vector>
 #include <sstream>

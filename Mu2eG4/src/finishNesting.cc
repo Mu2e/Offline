@@ -11,19 +11,19 @@
 
 // Mu2e includes
 #include "Mu2eG4/inc/finishNesting.hh"
-#include "G4Helper/inc/G4Helper.hh"
+#include "Mu2eG4Helper/inc/Mu2eG4Helper.hh"
 #include "ConfigTools/inc/SimpleConfig.hh"
 #include "Mu2eG4/inc/checkForOverlaps.hh"
 
 // G4 includes
-#include "G4LogicalVolume.hh"
-#include "G4PVPlacement.hh"
-#include "G4VisAttributes.hh"
+#include "Geant4/G4LogicalVolume.hh"
+#include "Geant4/G4PVPlacement.hh"
+#include "Geant4/G4VisAttributes.hh"
 
 // if using cout << *info.solid etc...
-#include "G4VSolid.hh"
-#include "G4RotationMatrix.hh"
-#include "G4ThreeVector.hh"
+#include "Geant4/G4VSolid.hh"
+#include "Geant4/G4RotationMatrix.hh"
+#include "Geant4/G4ThreeVector.hh"
 
 using namespace std;
 
@@ -44,7 +44,7 @@ namespace mu2e {
                      bool const verbose
                      ) {
 
-    G4Helper    & _helper = *(art::ServiceHandle<G4Helper>());
+    Mu2eG4Helper    & _helper = *(art::ServiceHandle<Mu2eG4Helper>());
     AntiLeakRegistry & reg = _helper.antiLeakRegistry();
     GeometryService const& _geom(*(art::ServiceHandle<GeometryService>()));
     SimpleConfig    const& _config(_geom.config());

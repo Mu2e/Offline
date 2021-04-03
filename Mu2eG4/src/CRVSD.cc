@@ -19,15 +19,15 @@
 #include "ConfigTools/inc/SimpleConfig.hh"
 
 // G4 includes
-#include "G4LossTableManager.hh"
-#include "G4Step.hh"
+#include "Geant4/G4LossTableManager.hh"
+#include "Geant4/G4Step.hh"
 
 using namespace std;
 
 namespace mu2e {
 
   CRVSD::CRVSD(G4String name, SimpleConfig const & config ):
-    Mu2eSensitiveDetector(name,config)
+    Mu2eG4SensitiveDetector(name,config)
   {}
 
   G4bool CRVSD::ProcessHits(G4Step* aStep,G4TouchableHistory*){

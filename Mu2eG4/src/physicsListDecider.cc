@@ -31,24 +31,24 @@
 
 // Mu2e includes
 #include "Mu2eG4/inc/physicsListDecider.hh"
-#include "Mu2eG4/inc/DecayMuonsWithSpin.hh"
-#include "Mu2eG4/inc/MinimalPhysicsList.hh"
-#include "Mu2eG4/inc/MinDEDXPhysicsList.hh"
-#include "Mu2eG4/inc/StepLimiterPhysConstructor.hh"
+#include "Mu2eG4/inc/Mu2eG4DecayMuonsWithSpinPhysicsConstructor.hh"
+#include "Mu2eG4/inc/Mu2eG4MinimalModularPhysicsList.hh"
+#include "Mu2eG4/inc/Mu2eG4MinDEDXModularPhysicsList.hh"
+#include "Mu2eG4/inc/Mu2eG4StepLimiterPhysicsConstructor.hh"
 #include "Mu2eG4/inc/Mu2eG4CustomizationPhysicsConstructor.hh"
 
 // CLHEP includes
 #include "CLHEP/Units/SystemOfUnits.h"
 
 // G4 includes
-#include "G4PhysListFactory.hh"
-#include "G4VUserPhysicsList.hh"
-#include "G4RadioactiveDecayPhysics.hh"
-#include "G4ErrorPhysicsList.hh"
-#include "G4EmStandardPhysics_option4.hh"
+#include "Geant4/G4PhysListFactory.hh"
+#include "Geant4/G4VUserPhysicsList.hh"
+#include "Geant4/G4RadioactiveDecayPhysics.hh"
+#include "Geant4/G4ErrorPhysicsList.hh"
+#include "Geant4/G4EmStandardPhysics_option4.hh"
 
 #if G4VERSION>4103
-#include "G4EmParameters.hh"
+#include "Geant4/G4EmParameters.hh"
 #endif
 
 using namespace std;
@@ -65,11 +65,11 @@ namespace mu2e{
 
     // special cases
     if ( name  == "Minimal" ) {
-      return new MinimalPhysicsList();
+      return new Mu2eG4MinimalModularPhysicsList();
     }
 
     else if ( name  == "MinDEDX" ) {
-      return new MinDEDXPhysicsList(); // limited EM Processes
+      return new Mu2eG4MinDEDXModularPhysicsList(); // limited EM Processes
     }
 
     else if ( name  == "ErrorPhysicsList" ) {
@@ -95,8 +95,8 @@ namespace mu2e{
         << "\n";
     }
 
-    // The modular physics list takes ownership of the StepLimiterPhysConstructor.
-    tmpPL->RegisterPhysics( new StepLimiterPhysConstructor() );
+    // The modular physics list takes ownership of the Mu2eG4StepLimiterPhysicsConstructor.
+    tmpPL->RegisterPhysics( new Mu2eG4StepLimiterPhysicsConstructor() );
 
     // Mu2e Customizations
     tmpPL->RegisterPhysics( new Mu2eG4CustomizationPhysicsConstructor(&phys, &debug));
@@ -150,11 +150,11 @@ namespace mu2e{
       if ( phys.stepper() != "G4ClassicalRK4WSpin" &&
            phys.stepper() != "G4DormandPrince745WSpin" ) {
         mf::LogError("Config") << "Inconsistent config";
-        G4cout << "Error: DecayMuonsWithSpin requires enabling spin tracking" << G4endl;
-        throw cet::exception("BADINPUT")<<" DecayMuonsWithSpin requires enabling spin tracking\n";
+        G4cout << "Error: Mu2eG4DecayMuonsWithSpinPhysicsConstructor requires enabling spin tracking" << G4endl;
+        throw cet::exception("BADINPUT")<<" Mu2eG4DecayMuonsWithSpinPhysicsConstructor requires enabling spin tracking\n";
       }
 
-      tmpPL->RegisterPhysics( new DecayMuonsWithSpin(debug.diagLevel()));
+      tmpPL->RegisterPhysics( new Mu2eG4DecayMuonsWithSpinPhysicsConstructor(debug.diagLevel()));
     }
 
     G4double productionCut = phys.minRangeCut();

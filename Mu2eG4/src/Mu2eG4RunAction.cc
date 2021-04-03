@@ -9,14 +9,14 @@
 #include "Mu2eG4/inc/Mu2eG4RunAction.hh"
 #include "Mu2eG4/inc/PhysicalVolumeHelper.hh"
 #include "Mu2eG4/inc/PhysicsProcessInfo.hh"
-#include "Mu2eG4/inc/TrackingAction.hh"
+#include "Mu2eG4/inc/Mu2eG4TrackingAction.hh"
 #include "Mu2eG4/inc/Mu2eG4SteppingAction.hh"
 #include "Mu2eG4/inc/SensitiveDetectorHelper.hh"
 #include "Mu2eG4/inc/SensitiveDetectorName.hh"
 
 //G4 includes
-#include "G4RunManager.hh"
-#include "G4TransportationManager.hh"
+#include "Geant4/G4RunManager.hh"
+#include "Geant4/G4TransportationManager.hh"
 
 //CLHEP includes
 #include "CLHEP/Vector/ThreeVector.h"
@@ -29,7 +29,7 @@ namespace mu2e {
                                    CLHEP::Hep3Vector const& origin_in_world,
                                    PhysicalVolumeHelper* phys_volume_helper,
                                    PhysicsProcessInfo* phys_process_info,
-                                   TrackingAction *tracking_action,
+                                   Mu2eG4TrackingAction *tracking_action,
                                    Mu2eG4SteppingAction *stepping_action,
                                    SensitiveDetectorHelper* sensitive_detectorhelper
                                    )

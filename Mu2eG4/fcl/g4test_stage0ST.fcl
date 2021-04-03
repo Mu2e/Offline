@@ -56,7 +56,7 @@ physics : {
 outputs: {
    fullOutput : {
       module_type : RootOutput
-      fileName    : "sim.owner.g4test_stage0.ver.seq.root"
+      fileName    : "sim.owner.g4test_stage0.ver.seq.art"
    }
 }
 

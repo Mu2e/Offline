@@ -12,8 +12,8 @@
 // Mu2e includes.
 #include "DetectorSolenoidGeom/inc/DetectorSolenoid.hh"
 #include "DetectorSolenoidGeom/inc/DetectorSolenoidShielding.hh"
-#include "G4Helper/inc/G4Helper.hh"
-#include "G4Helper/inc/VolumeInfo.hh"
+#include "Mu2eG4Helper/inc/Mu2eG4Helper.hh"
+#include "Mu2eG4Helper/inc/VolumeInfo.hh"
 #include "GeometryService/inc/GeomHandle.hh"
 #include "GeometryService/inc/GeometryService.hh"
 #include "GeometryService/inc/G4GeometryOptions.hh"
@@ -28,22 +28,22 @@
 #include "GeometryService/inc/Mu2eEnvelope.hh"
 
 // G4 includes
-#include "G4ThreeVector.hh"
-#include "G4Material.hh"
-#include "G4Color.hh"
-#include "G4Box.hh"
-#include "G4Tubs.hh"
-#include "G4LogicalVolume.hh"
-#include "G4SubtractionSolid.hh"
-#include "G4UniformMagField.hh"
-#include "G4Mag_UsualEqRhs.hh"
-#include "G4ExactHelixStepper.hh"
-#include "G4ChordFinder.hh"
-#include "G4FieldManager.hh"
+#include "Geant4/G4ThreeVector.hh"
+#include "Geant4/G4Material.hh"
+#include "Geant4/G4Color.hh"
+#include "Geant4/G4Box.hh"
+#include "Geant4/G4Tubs.hh"
+#include "Geant4/G4LogicalVolume.hh"
+#include "Geant4/G4SubtractionSolid.hh"
+#include "Geant4/G4UniformMagField.hh"
+#include "Geant4/G4Mag_UsualEqRhs.hh"
+#include "Geant4/G4ExactHelixStepper.hh"
+#include "Geant4/G4ChordFinder.hh"
+#include "Geant4/G4FieldManager.hh"
 
-#include "G4UserLimits.hh"
+#include "Geant4/G4UserLimits.hh"
 
-#include "G4SDManager.hh"
+#include "Geant4/G4SDManager.hh"
 
 // CLHEP includes
 #include "CLHEP/Vector/ThreeVector.h"

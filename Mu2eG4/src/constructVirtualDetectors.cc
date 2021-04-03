@@ -15,8 +15,8 @@
 #include "CalorimeterGeom/inc/DiskCalorimeter.hh"
 #include "CosmicRayShieldGeom/inc/CosmicRayShield.hh"
 #include "DetectorSolenoidGeom/inc/DetectorSolenoid.hh"
-#include "G4Helper/inc/G4Helper.hh"
-#include "G4Helper/inc/VolumeInfo.hh"
+#include "Mu2eG4Helper/inc/Mu2eG4Helper.hh"
+#include "Mu2eG4Helper/inc/VolumeInfo.hh"
 #include "GeomPrimitives/inc/Tube.hh"
 #include "GeometryService/inc/GeomHandle.hh"
 #include "GeometryService/inc/GeometryService.hh"
@@ -35,13 +35,13 @@
 #include "TrackerGeom/inc/Tracker.hh"
 
 // G4 includes
-#include "G4Material.hh"
-#include "G4SDManager.hh"
-#include "G4Color.hh"
-#include "G4Tubs.hh"
-#include "G4Cons.hh"
-#include "G4SubtractionSolid.hh"
-#include "G4IntersectionSolid.hh"
+#include "Geant4/G4Material.hh"
+#include "Geant4/G4SDManager.hh"
+#include "Geant4/G4Color.hh"
+#include "Geant4/G4Tubs.hh"
+#include "Geant4/G4Cons.hh"
+#include "Geant4/G4SubtractionSolid.hh"
+#include "Geant4/G4IntersectionSolid.hh"
 
 using namespace std;
 
@@ -80,7 +80,7 @@ namespace mu2e {
 
     // Virtual Detectors Coll1_In, COll1_Out are placed inside TS1
 
-    G4Helper* _helper = &(*(art::ServiceHandle<G4Helper>()));
+    Mu2eG4Helper* _helper = &(*(art::ServiceHandle<Mu2eG4Helper>()));
 
     if(verbosityLevel>0) {
       VirtualDetectorId::printAll();

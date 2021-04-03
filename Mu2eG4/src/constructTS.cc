@@ -9,7 +9,7 @@
 
 // Mu2e includes.
 #include "Mu2eG4/inc/constructTS.hh"
-#include "G4Helper/inc/VolumeInfo.hh"
+#include "Mu2eG4Helper/inc/VolumeInfo.hh"
 
 // C++ includes
 #include <array>
@@ -26,10 +26,10 @@
 // Mu2e includes.
 #include "BeamlineGeom/inc/Collimator_TS1.hh"
 #include "BeamlineGeom/inc/PbarWindow.hh"
-#include "G4Helper/inc/VolumeInfo.hh"
+#include "Mu2eG4Helper/inc/VolumeInfo.hh"
 #include "GeometryService/inc/GeomHandle.hh"
 #include "GeometryService/inc/GeometryService.hh"
-#include "G4Helper/inc/G4Helper.hh"
+#include "Mu2eG4Helper/inc/Mu2eG4Helper.hh"
 #include "Mu2eG4/inc/findMaterialOrThrow.hh"
 #include "Mu2eG4/inc/MaterialFinder.hh"
 #include "GeomPrimitives/inc/PolyconsParams.hh"
@@ -45,16 +45,16 @@
 #include "ProductionSolenoidGeom/inc/PSVacuum.hh"
 
 // G4 includes
-#include "G4ThreeVector.hh"
-#include "G4Color.hh"
-#include "G4Box.hh"
-#include "G4Tubs.hh"
-#include "G4Trd.hh"
-#include "G4IntersectionSolid.hh"
-#include "G4SubtractionSolid.hh"
-#include "G4LogicalVolume.hh"
-#include "G4TwoVector.hh"
-#include "G4ExtrudedSolid.hh"
+#include "Geant4/G4ThreeVector.hh"
+#include "Geant4/G4Color.hh"
+#include "Geant4/G4Box.hh"
+#include "Geant4/G4Tubs.hh"
+#include "Geant4/G4Trd.hh"
+#include "Geant4/G4IntersectionSolid.hh"
+#include "Geant4/G4SubtractionSolid.hh"
+#include "Geant4/G4LogicalVolume.hh"
+#include "Geant4/G4TwoVector.hh"
+#include "Geant4/G4ExtrudedSolid.hh"
 
 using namespace std;
 
@@ -65,7 +65,7 @@ namespace mu2e {
                     ) {
 
     GeomHandle<Beamline> bl;
-    G4Helper* _helper = &(*art::ServiceHandle<G4Helper>() );
+    Mu2eG4Helper* _helper = &(*art::ServiceHandle<Mu2eG4Helper>() );
 
     constructCryostat   ( parent, c, *bl);
     constructCoils      ( parent, c, *bl);
@@ -89,7 +89,7 @@ namespace mu2e {
     StraightSection   const * strsec (nullptr);
     TorusSection      const * torsec (nullptr);
 
-    G4Helper * const _helper = &(*art::ServiceHandle<G4Helper>());
+    Mu2eG4Helper * const _helper = &(*art::ServiceHandle<Mu2eG4Helper>());
 
     const int  verbosityLevel      = config.getInt ("ts.cryo.verbosityLevel", 0     );
     const bool polyLiningUp        = config.getBool("ts.polyliner.Up.build"   , false );
@@ -278,7 +278,7 @@ namespace mu2e {
 
     torsec = ts->getTSPolyLining(TransportSolenoid::TSRegion::TS2);
     if ( polyLiningUp && torsec->rIn() > 0. ) {
-      VolumeInfo ts2Vacuum = art::ServiceHandle<G4Helper>()->locateVolInfo("TS2Vacuum");
+      VolumeInfo ts2Vacuum = art::ServiceHandle<Mu2eG4Helper>()->locateVolInfo("TS2Vacuum");
       nestTorus("TS2PolyLining",
                 torsec->getParameters(),
                 findMaterialOrThrow(torsec->getMaterial()),
@@ -495,7 +495,7 @@ namespace mu2e {
 
     torsec = ts->getTSPolyLining(TransportSolenoid::TSRegion::TS4);
     if ( polyLiningDown && torsec->rIn() > 0. ) {
-      VolumeInfo ts4Vacuum = art::ServiceHandle<G4Helper>()->locateVolInfo("TS4Vacuum");
+      VolumeInfo ts4Vacuum = art::ServiceHandle<Mu2eG4Helper>()->locateVolInfo("TS4Vacuum");
       nestTorus("TS4PolyLining",
                 torsec->getParameters(),
                 findMaterialOrThrow( torsec->getMaterial() ),
@@ -788,7 +788,7 @@ namespace mu2e {
 	double router = config.getDouble("pbar.support.midRout")*CLHEP::mm;
 	double halflen = config.getDouble("pbar.support.midThickness")*CLHEP::mm/2.0;
 
-	G4Helper* _helper = &(*art::ServiceHandle<G4Helper>() );
+	Mu2eG4Helper* _helper = &(*art::ServiceHandle<Mu2eG4Helper>() );
 	VolumeInfo useAsParent = _helper->locateVolInfo( "TS3CryoInsVac" );
 
 	std::ostringstream PabsSupMidName;
@@ -886,7 +886,7 @@ namespace mu2e {
       verbosityLevel && G4cout << __func__ << " constructing " << caName << G4endl;
 
       VolumeInfo useAsParent;
-      G4Helper* _helper = &(*art::ServiceHandle<G4Helper>() );
+      Mu2eG4Helper* _helper = &(*art::ServiceHandle<Mu2eG4Helper>() );
 
       if ( its==tsCAReg_enum::TS2 || its==tsCAReg_enum::TS4 ) {
         
@@ -1009,7 +1009,7 @@ namespace mu2e {
 	ostringstream ivName;
 	ivName << "TS" << iTS << "CryoInsVac";
 
-	G4Helper* _helper = &(*art::ServiceHandle<G4Helper>() );
+	Mu2eG4Helper* _helper = &(*art::ServiceHandle<Mu2eG4Helper>() );
 	VolumeInfo useAsParent = _helper->locateVolInfo( ivName.str() );
 
 	CLHEP::Hep3Vector V = coil.getGlobal() - useAsParent.centerInMu2e();
@@ -1108,7 +1108,7 @@ namespace mu2e {
                               coll1.halfLength() - 2.*vdHalfLength,
                               0.0, CLHEP::twopi };
 
-    G4Helper* _helper = &(*art::ServiceHandle<G4Helper>() );
+    Mu2eG4Helper* _helper = &(*art::ServiceHandle<Mu2eG4Helper>() );
 
     CLHEP::Hep3Vector parentPosW    = _helper->locateVolInfo("TS1Vacuum").centerInWorld;
     CLHEP::Hep3Vector parentPosM    = _helper->locateVolInfo("TS1Vacuum").centerInMu2e();
@@ -1236,7 +1236,7 @@ namespace mu2e {
                                               G4ThreeVector(0,coll32.holeDisplacement(),0));
 
     // Now use finishNesting to place collimators 31 and 32
-    AntiLeakRegistry& reg = art::ServiceHandle<G4Helper>()->antiLeakRegistry();
+    AntiLeakRegistry& reg = art::ServiceHandle<Mu2eG4Helper>()->antiLeakRegistry();
 
     G4RotationMatrix* coll31Rot = reg.add(G4RotationMatrix());
     G4RotationMatrix* coll32Rot = reg.add(G4RotationMatrix());
@@ -1521,7 +1521,7 @@ namespace mu2e {
                                         degraderDZT[i]/2.0,degraderDZB[i]/2.0,
                                         R2/2);
 
-        AntiLeakRegistry& reg = art::ServiceHandle<G4Helper>()->antiLeakRegistry();
+        AntiLeakRegistry& reg = art::ServiceHandle<Mu2eG4Helper>()->antiLeakRegistry();
         G4RotationMatrix* degRot = reg.add(G4RotationMatrix());
         degRot->rotateX(-90.0*CLHEP::degree);
         G4ThreeVector degTrans(0.0,-R2/2,0.0);
@@ -1655,7 +1655,7 @@ namespace mu2e {
 					   pbarWedge_dz0/2.,pbarWedge_dz1/2.,
 					   pbarWedge_h/2.);
       
-	  AntiLeakRegistry& reg = art::ServiceHandle<G4Helper>()->antiLeakRegistry();
+	  AntiLeakRegistry& reg = art::ServiceHandle<Mu2eG4Helper>()->antiLeakRegistry();
 	  G4RotationMatrix* pbarWedgeRot = reg.add(G4RotationMatrix());
 	  pbarWedgeRot->rotateX(90.0*CLHEP::degree);
 	  G4ThreeVector pbarWedgeTrans(0.0,pbarWedge_dy,0.0);
@@ -1826,7 +1826,7 @@ namespace mu2e {
 					   pbarWedge_dz0/2.,pbarWedge_dz1/2.,
 					   pbarWedge_h/2.);
 
-	  AntiLeakRegistry& reg = art::ServiceHandle<G4Helper>()->antiLeakRegistry();
+	  AntiLeakRegistry& reg = art::ServiceHandle<Mu2eG4Helper>()->antiLeakRegistry();
 	  G4RotationMatrix* pbarWedgeRot = reg.add(G4RotationMatrix());
 	  pbarWedgeRot->rotateX(90.0*CLHEP::degree);
 	  G4ThreeVector pbarWedgeTrans(0.0,pbarWedge_dy,pbarWedge_offsetZ);
@@ -2014,7 +2014,7 @@ namespace mu2e {
 							     G4TwoVector(0,0),1. );
 
 
-	  AntiLeakRegistry& reg = art::ServiceHandle<G4Helper>()->antiLeakRegistry();
+	  AntiLeakRegistry& reg = art::ServiceHandle<Mu2eG4Helper>()->antiLeakRegistry();
 	  G4RotationMatrix* pbarWedgeRot = reg.add(G4RotationMatrix());
 	  pbarWedgeRot->rotateY(90.0*CLHEP::degree);
 	  G4ThreeVector pbarWedgeTrans(0.0,pbarWedge_y1,pbarWedge_offsetZ);
@@ -2048,7 +2048,7 @@ namespace mu2e {
     TransportSolenoid const& ts = bl.getTS();
     GeomHandle<VirtualDetector> vdg;
     double vdHalfLength = vdg->getHalfLength()*CLHEP::mm;
-    G4Helper* _helper = &(*art::ServiceHandle<G4Helper>() );
+    Mu2eG4Helper* _helper = &(*art::ServiceHandle<Mu2eG4Helper>() );
 
     bool is_pbarTS1In  = config.getBool("pbar.coll1In.build", true);
     bool is_pbarTS1Out = config.getBool("pbar.coll1Out.build", true);
@@ -2418,7 +2418,7 @@ namespace mu2e {
       CLHEP::Hep3Vector pbarTS31Pos = coll31.getLocal();
       pbarTS31Pos.setZ( pbarTS31Pos.z() - coll31.halfLength() - pbarTS31HalfLength - pbarTS31Offset);
 
-      AntiLeakRegistry& reg = art::ServiceHandle<G4Helper>()->antiLeakRegistry();
+      AntiLeakRegistry& reg = art::ServiceHandle<Mu2eG4Helper>()->antiLeakRegistry();
 
       G4RotationMatrix* coll31Rot = reg.add(G4RotationMatrix());
       coll31Rot->rotateZ(coll31.rotationAngle()*CLHEP::degree);

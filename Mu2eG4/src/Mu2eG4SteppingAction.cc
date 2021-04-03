@@ -10,8 +10,8 @@
 // Framework includes
 #include "messagefacility/MessageLogger/MessageLogger.h"
 
-#include "G4Step.hh"
-#include "G4Threading.hh"
+#include "Geant4/G4Step.hh"
+#include "Geant4/G4Threading.hh"
 
 // Mu2e includes
 #include "Mu2eG4/inc/Mu2eG4SteppingAction.hh"
@@ -19,7 +19,7 @@
 #include "DataProducts/inc/PDGCode.hh"
 #include "Mu2eG4/inc/getPhysicalVolumeOrThrow.hh"
 #include "Mu2eG4/inc/SimParticleHelper.hh"
-#include "Mu2eG4/inc/UserTrackInformation.hh"
+#include "Mu2eG4/inc/Mu2eG4UserTrackInformation.hh"
 #include "Mu2eG4/inc/PhysicsProcessInfo.hh"
 #include "Mu2eG4/inc/Mu2eG4ResourceLimits.hh"
 #include "Mu2eG4/inc/Mu2eG4TrajectoryControl.hh"
@@ -262,7 +262,7 @@ namespace mu2e {
 
     // Get user track informaton object from the track.
     G4VUserTrackInformation* info = track->GetUserInformation();
-    UserTrackInformation* tinfo   = static_cast<UserTrackInformation*>(info);
+    Mu2eG4UserTrackInformation* tinfo   = static_cast<Mu2eG4UserTrackInformation*>(info);
 
     // Record why the track was killed.
     tinfo->setProcessCode(ProcessCode(code));

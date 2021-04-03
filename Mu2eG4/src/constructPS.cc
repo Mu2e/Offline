@@ -15,7 +15,7 @@
 #include "ProductionSolenoidGeom/inc/ProductionSolenoid.hh"
 #include "GeomPrimitives/inc/Tube.hh"
 #include "GeomPrimitives/inc/Polycone.hh"
-#include "G4Helper/inc/VolumeInfo.hh"
+#include "Mu2eG4Helper/inc/VolumeInfo.hh"
 #include "GeometryService/inc/G4GeometryOptions.hh"
 #include "GeometryService/inc/GeomHandle.hh"
 #include "ProductionTargetGeom/inc/ProductionTarget.hh"
@@ -33,12 +33,12 @@
 #include "ProductionSolenoidGeom/inc/PSShield.hh"
 
 // G4 includes
-#include "G4ThreeVector.hh"
-#include "G4Material.hh"
-#include "G4Color.hh"
-#include "G4Polycone.hh"
-#include "G4SDManager.hh"
-#include "G4LogicalVolume.hh"
+#include "Geant4/G4ThreeVector.hh"
+#include "Geant4/G4Material.hh"
+#include "Geant4/G4Color.hh"
+#include "Geant4/G4Polycone.hh"
+#include "Geant4/G4SDManager.hh"
+#include "Geant4/G4LogicalVolume.hh"
 
 #include "cetlib_except/exception.h"
 #include "CLHEP/Units/SystemOfUnits.h"

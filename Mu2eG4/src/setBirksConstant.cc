@@ -10,7 +10,7 @@
 #include "messagefacility/MessageLogger/MessageLogger.h"
 
 // Geant4 includes
-#include "G4Material.hh"
+#include "Geant4/G4Material.hh"
 
 // C++ includes
 

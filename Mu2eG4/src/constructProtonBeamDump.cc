@@ -2,28 +2,28 @@
 
 #include "Mu2eG4/inc/constructProtonBeamDump.hh"
 #include "Mu2eG4/inc/constructExtMonFNAL.hh"
-#include "G4Helper/inc/AntiLeakRegistry.hh"
+#include "Mu2eG4Helper/inc/AntiLeakRegistry.hh"
 
 #include <iostream>
 #include <cmath>
 
-#include "G4Color.hh"
-#include "G4LogicalVolume.hh"
-#include "G4Trap.hh"
-#include "G4Orb.hh"
-#include "G4Box.hh"
-#include "G4Polycone.hh"
-#include "G4ExtrudedSolid.hh"
-#include "G4IntersectionSolid.hh"
-#include "G4TwoVector.hh"
-#include "G4SDManager.hh"
+#include "Geant4/G4Color.hh"
+#include "Geant4/G4LogicalVolume.hh"
+#include "Geant4/G4Trap.hh"
+#include "Geant4/G4Orb.hh"
+#include "Geant4/G4Box.hh"
+#include "Geant4/G4Polycone.hh"
+#include "Geant4/G4ExtrudedSolid.hh"
+#include "Geant4/G4IntersectionSolid.hh"
+#include "Geant4/G4TwoVector.hh"
+#include "Geant4/G4SDManager.hh"
 
-#include "G4UniformMagField.hh"
-#include "G4Mag_UsualEqRhs.hh"
-#include "G4ExactHelixStepper.hh"
-//#include "G4NystromRK4.hh"
-#include "G4ChordFinder.hh"
-#include "G4FieldManager.hh"
+#include "Geant4/G4UniformMagField.hh"
+#include "Geant4/G4Mag_UsualEqRhs.hh"
+#include "Geant4/G4ExactHelixStepper.hh"
+//#include "Geant4/G4NystromRK4.hh"
+#include "Geant4/G4ChordFinder.hh"
+#include "Geant4/G4FieldManager.hh"
 
 #include "CLHEP/Vector/ThreeVector.h"
 #include "CLHEP/Vector/Rotation.h"
@@ -38,9 +38,9 @@
 #include "GeometryService/inc/WorldG4.hh"
 #include "GeometryService/inc/Mu2eEnvelope.hh"
 
-#include "G4Helper/inc/G4Helper.hh"
-#include "G4Helper/inc/VolumeInfo.hh"
-#include "G4Helper/inc/AntiLeakRegistry.hh"
+#include "Mu2eG4Helper/inc/Mu2eG4Helper.hh"
+#include "Mu2eG4Helper/inc/VolumeInfo.hh"
+#include "Mu2eG4Helper/inc/AntiLeakRegistry.hh"
 #include "ConfigTools/inc/SimpleConfig.hh"
 #include "Mu2eG4/inc/nestBox.hh"
 #include "Mu2eG4/inc/MaterialFinder.hh"
@@ -48,7 +48,7 @@
 #include "Mu2eG4/inc/FieldMgr.hh"
 
 #include "Mu2eG4/inc/finishNesting.hh"
-#include "G4Helper/inc/VolumeInfo.hh"
+#include "Mu2eG4Helper/inc/VolumeInfo.hh"
 
 //#define AGDEBUG(stuff) std::cerr<<"AG: "<<__FILE__<<", line "<<__LINE__<<": "<<stuff<<std::endl;
 #define AGDEBUG(stuff)

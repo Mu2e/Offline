@@ -8,7 +8,7 @@
 // Construct the earthen overburden
 
 // Mu2e includes
-#include "G4Helper/inc/VolumeInfo.hh"
+#include "Mu2eG4Helper/inc/VolumeInfo.hh"
 #include "GeneralUtilities/inc/OrientationResolver.hh"
 #include "GeometryService/inc/GeomHandle.hh"
 #include "GeometryService/inc/GeometryService.hh"
@@ -22,17 +22,17 @@
 #include "Mu2eG4/inc/nestBox.hh"
 
 // G4 includes
-#include "G4Material.hh"
-#include "G4Color.hh"
-#include "G4ExtrudedSolid.hh"
-#include "G4GenericTrap.hh"
-#include "G4RotationMatrix.hh"
-#include "G4Orb.hh"
-#include "G4Box.hh"
-#include "G4SubtractionSolid.hh"
-#include "G4TwoVector.hh"
+#include "Geant4/G4Material.hh"
+#include "Geant4/G4Color.hh"
+#include "Geant4/G4ExtrudedSolid.hh"
+#include "Geant4/G4GenericTrap.hh"
+#include "Geant4/G4RotationMatrix.hh"
+#include "Geant4/G4Orb.hh"
+#include "Geant4/G4Box.hh"
+#include "Geant4/G4SubtractionSolid.hh"
+#include "Geant4/G4TwoVector.hh"
 #include "CLHEP/Vector/Rotation.h"
-#include "G4NistManager.hh"
+#include "Geant4/G4NistManager.hh"
 
 // C++ includes
 #include <cmath>

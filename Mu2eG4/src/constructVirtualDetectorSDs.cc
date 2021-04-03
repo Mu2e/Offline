@@ -7,8 +7,8 @@
 //
 
 #include "Mu2eG4/inc/constructVirtualDetectorSDs.hh"
-#include "Mu2eG4/inc/Mu2eSensitiveDetector.hh"
-#include "G4LogicalVolumeStore.hh"
+#include "Mu2eG4/inc/Mu2eG4SensitiveDetector.hh"
+#include "Geant4/G4LogicalVolumeStore.hh"
 
 using namespace std;
 
@@ -17,7 +17,7 @@ namespace mu2e {
   // Construct the virtual detectors
 
   void constructVirtualDetectorSDs(SimpleConfig const & _config,
-                                   Mu2eSensitiveDetector* vdSD){
+                                   Mu2eG4SensitiveDetector* vdSD){
       
       G4LogicalVolumeStore* store = G4LogicalVolumeStore::GetInstance();
       

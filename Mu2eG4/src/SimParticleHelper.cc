@@ -4,8 +4,8 @@
 #include "Mu2eG4/inc/Mu2eG4Inputs.hh"
 
 #include "art/Framework/Principal/Event.h"
-#include "G4Track.hh"
-#include "G4Threading.hh"
+#include "Geant4/G4Track.hh"
+#include "Geant4/G4Threading.hh"
 
 namespace mu2e {
 

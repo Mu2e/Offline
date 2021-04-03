@@ -17,12 +17,12 @@
 #include "MCDataProducts/inc/StepPointMCCollection.hh"
 
 // G4 includes
-#include "G4Step.hh"
+#include "Geant4/G4Step.hh"
 
 namespace mu2e {
 
   CaloCrateSD::CaloCrateSD(G4String name, SimpleConfig const & config ):
-    Mu2eSensitiveDetector(name,config)
+    Mu2eG4SensitiveDetector(name,config)
   {}
 
   G4bool CaloCrateSD::ProcessHits(G4Step* aStep,G4TouchableHistory*)

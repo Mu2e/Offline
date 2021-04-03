@@ -15,14 +15,14 @@
 #include "Mu2eG4/inc/MaterialFinder.hh"
 #include "Mu2eG4/inc/constructStudyEnv_v002.hh"
 #include "Mu2eG4/inc/nestBox.hh"
-#include "G4Helper/inc/VolumeInfo.hh"
+#include "Mu2eG4Helper/inc/VolumeInfo.hh"
 #include "ConfigTools/inc/SimpleConfig.hh"
 
 // G4 includes
-#include "G4ThreeVector.hh"
-#include "G4Material.hh"
-#include "G4Color.hh"
-#include "G4Box.hh"
+#include "Geant4/G4ThreeVector.hh"
+#include "Geant4/G4Material.hh"
+#include "Geant4/G4Color.hh"
+#include "Geant4/G4Box.hh"
 
 using namespace std;
 

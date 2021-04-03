@@ -12,6 +12,12 @@ int mu2e::DbEngine::beginJob() {
   _initialized = true;  // true no matter when we return
 
   _gids.clear();
+
+  if(_id.name().empty()) {
+      throw cet::exception("DBENGINE_DBID NOT_SET") 
+	<< "DbEngine::beginJob found the DbId was not set\n";
+   }
+
   auto start_time = std::chrono::high_resolution_clock::now();
 
   _reader.setDbId(_id);

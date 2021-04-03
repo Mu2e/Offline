@@ -42,6 +42,8 @@ mainlib = helper.make_mainlib ( [
     'fhiclcpp',
     'cetlib',
     'cetlib_except',
+    'Trajectory',
+    'General',
     rootlibs,
     'CLHEP',
     'HepPDT',

@@ -7,6 +7,8 @@
 #define TrkReco_TrkUtilities_HH
 #include "CLHEP/Vector/ThreeVector.h"
 #include "CLHEP/Matrix/Vector.h"
+#include "BTrk/TrkBase/TrkT0.hh"
+#include "BTrk/BField/BField.hh"
 #include "RecoDataProducts/inc/StrawHitIndex.hh"
 #include <vector>
 
@@ -33,7 +35,7 @@ namespace mu2e {
   // create a robust helix from raw particle informaiton.  This is useful for MC comparison
     void RobustHelixFromMom(CLHEP::Hep3Vector const& pos, CLHEP::Hep3Vector const& mom, double charge, double Bz, RobustHelix& helix);
     // create a KalSegment (helix segment) from a HelixTraj
-    void fillSegment(HelixTraj const& htraj, BbrVectorErr const& momerr,double dflt, KalSegment& kseg);
+    void fillSegment(HelixTraj const& htraj, double locflt, double globflt, TrkT0 t0, double mass, int charge, BField const& bfield,  KalSegment& kseg);
     // create HitSeeds from the TrkStrawHits in a KalRep
     void fillStrawHitSeeds(const KalRep* krep, ComboHitCollection const& chits, std::vector<TrkStrawHitSeed>& hitseeds);
     void fillCaloHitSeed(const TrkCaloHit* chit, TrkCaloHitSeed& caloseed);
@@ -49,6 +51,11 @@ namespace mu2e {
     double chisqConsistency(const KalRep* krep);
     unsigned countBends(const KalRep* krep);
     const TrkCaloHit* findTrkCaloHit(const KalRep* krep);
+    // simple kinematic utilities
+    double energy(double mass, double momentum);
+    double beta(double mass, double momentum);
+    double betagamma(double mass, double momentum);
+    double gamma(double mass, double momentum);
   }
 }
 #endif

@@ -1,7 +1,7 @@
 #ifndef Mu2eG4_Mu2eRecorderProcess_h
 #define Mu2eG4_Mu2eRecorderProcess_h 1
 
-#include "G4VContinuousProcess.hh"
+#include "Geant4/G4VContinuousProcess.hh"
 
 namespace mu2e{
   class Mu2eRecorderProcess : public G4VContinuousProcess
