@@ -8,6 +8,7 @@
 
 #include "CosmicRayShieldGeom/inc/CosmicRayShield.hh"
 #include "DataProducts/inc/CRSScintillatorBarIndex.hh"
+#include "DataProducts/inc/EventWindowMarker.hh"
 
 #include "ConditionsService/inc/AcceleratorParams.hh"
 #include "ConditionsService/inc/CrvParams.hh"
@@ -49,6 +50,7 @@ namespace mu2e
 
     double      _digitizationPeriod;
     std::string _crvWaveformsModuleLabel;
+    std::string _eventWindowMarkerLabel;
     double      _ADCconversionFactor;
     int         _pedestal;
   };
@@ -56,6 +58,7 @@ namespace mu2e
   CrvDigitizer::CrvDigitizer(fhicl::ParameterSet const& pset) :
     art::EDProducer{pset},
     _crvWaveformsModuleLabel(pset.get<std::string>("crvWaveformsModuleLabel")),
+    _eventWindowMarkerLabel(pset.get<std::string>("EventWindowMarker","EWMProducer")),
     _ADCconversionFactor(pset.get<double>("ADCconversionFactor")),
     _pedestal(pset.get<int>("pedestal"))
   {
@@ -79,6 +82,10 @@ namespace mu2e
 
   void CrvDigitizer::produce(art::Event& event) 
   {
+    art::Handle<EventWindowMarker> eventWindowMarker;
+    event.getByLabel(_eventWindowMarkerLabel,"",eventWindowMarker);
+    double eventWindowLength = eventWindowMarker->eventLength();
+
     std::unique_ptr<CrvDigiCollection> crvDigiCollection(new CrvDigiCollection);
 
     art::Handle<CrvDigiMCCollection> crvDigiMCCollection;
@@ -92,6 +99,9 @@ namespace mu2e
       const int SiPM = crvDigiMC.GetSiPMNumber();
       const std::array<double,CrvDigiMC::NSamples> &voltages = crvDigiMC.GetVoltages();
       const double startTime = crvDigiMC.GetStartTime();
+
+      //ADC samples cannot be recorded after the end of the event window
+      if(startTime+CrvDigi::NSamples*_digitizationPeriod>eventWindowLength) continue;
 
       std::vector<double> voltageVector;
       for(size_t i=0; i<voltages.size(); i++) voltageVector.push_back(voltages[i]); 

@@ -60,7 +60,7 @@ void MakeCrvRecoPulses::FillGraphAndFindPeaks(const std::vector<unsigned int> &w
     {
       if(peakStartBin>0)  //found a peak
       {
-        peaks.emplace_back(peakStartBin,peakEndBin);
+        if(waveform[peakEndBin]-pedestal>_minADCdifference) peaks.emplace_back(peakStartBin,peakEndBin);
         peakStartBin=0;  //so that the loop has to wait for the next rising edge
       }
     }
@@ -93,7 +93,7 @@ bool MakeCrvRecoPulses::FailedFit(TFitResultPtr fr, int paramStart, int paramEnd
   if(fr!=0) return true;
   if(!fr->IsValid()) return true;
 
-  const double tolerance=0.01; //FIXME: Need a user variable. Perhaps the limit condition can be extracted from the minimizer
+  const double tolerance=0.01; //TODO: Need a user variable. Perhaps the limit condition can be extracted from the minimizer
   for(int i=paramStart; i<=paramEnd; ++i)
   {
     double v=fr->Parameter(i);
@@ -103,6 +103,32 @@ bool MakeCrvRecoPulses::FailedFit(TFitResultPtr fr, int paramStart, int paramEnd
     if((upper-v)/(upper-lower)<tolerance) return true;
   }
   return false;
+}
+
+void MakeCrvRecoPulses::NoFitOption(const std::vector<unsigned int> &waveform, float pedestal, 
+                                    size_t peakStart, size_t peakEnd, float &sum, size_t &pulseStart, size_t &pulseEnd)
+{
+  float maxADC=waveform[peakStart]-pedestal;
+  float FWHMthreshold=maxADC/2.0;
+  bool  foundPulseStart=false;
+  bool  foundPulseEnd=false;
+  sum=(peakEnd-peakStart-1)*maxADC;
+  for(size_t i=peakEnd; i<waveform.size(); ++i)
+  {
+    float ADC=waveform[i]-pedestal;
+    sum+=ADC;
+    if(ADC<FWHMthreshold && !foundPulseEnd) pulseEnd=i;
+    if(ADC<_minADCdifference) break;
+  }
+  if(!foundPulseEnd) pulseEnd=waveform.size()-1;
+  for(size_t i=peakStart; ; --i)
+  {
+    float ADC=waveform[i]-pedestal;
+    sum+=ADC;
+    if(ADC<FWHMthreshold && !foundPulseStart) pulseStart=i;
+    if(ADC<_minADCdifference || i==0) break;
+  }
+  if(!foundPulseStart) pulseStart=0;
 }
 
 void MakeCrvRecoPulses::SetWaveform(const std::vector<unsigned int> &waveform, 
@@ -117,6 +143,10 @@ void MakeCrvRecoPulses::SetWaveform(const std::vector<unsigned int> &waveform,
   _PEsPulseHeight.clear();
   _LEtimes.clear();
   _failedFits.clear();
+  _PEsADCvalues.clear();
+  _pulseTimesADCvalues.clear();
+  _pulseStart.clear();
+  _pulseEnd.clear();
 
   //fill graph and find peaks
   std::vector<std::pair<size_t,size_t> > peaks;
@@ -262,6 +292,15 @@ void MakeCrvRecoPulses::SetWaveform(const std::vector<unsigned int> &waveform,
     _LEtimes.push_back(LEtime);
     _failedFits.push_back(failedFit);
 
+    float  sum;
+    size_t pulseStartBin;
+    size_t pulseEndBin;
+    NoFitOption(waveform, pedestal, peakStartBin, peakEndBin, sum, pulseStartBin, pulseEndBin);
+    _PEsADCvalues.push_back(sum*digitizationPeriod);
+    _pulseTimesADCvalues.push_back(peakTime);
+    _pulseStart.push_back((startTDC+pulseStartBin)*digitizationPeriod);
+    _pulseEnd.push_back((startTDC+pulseEndBin)*digitizationPeriod);
+
     if(simpleFit) continue;  //no second peak
 
     //collect fit information for the second peak
@@ -297,8 +336,25 @@ void MakeCrvRecoPulses::SetWaveform(const std::vector<unsigned int> &waveform,
     _PEs.back()+=PEs_2;
     _PEsPulseHeight.back()+=PEsPulseHeight_2;
 */
+
+    if(fittingNpeaks==2)
+    {
+      NoFitOption(waveform, pedestal, peakStartBin2, peakEndBin2, sum, pulseStartBin, pulseEndBin);
+      _PEsADCvalues.push_back(sum*digitizationPeriod);
+      _pulseTimesADCvalues.push_back(peakTime2);
+      _pulseStart.push_back((startTDC+pulseStartBin)*digitizationPeriod);
+      _pulseEnd.push_back((startTDC+pulseEndBin)*digitizationPeriod);
+    }
+    else
+    {
+      _PEsADCvalues.push_back(0);
+      _pulseTimesADCvalues.push_back(0);
+      _pulseStart.push_back(0);
+      _pulseEnd.push_back(0);
+    }
     
   }
+
 }
 
 }
