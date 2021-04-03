@@ -7,7 +7,7 @@
 
 // Mu2e includes
 #include "Mu2eG4/inc/Mu2eG4EventAction.hh"
-#include "Mu2eG4/inc/TrackingAction.hh"
+#include "Mu2eG4/inc/Mu2eG4TrackingAction.hh"
 #include "Mu2eG4/inc/Mu2eG4SteppingAction.hh"
 #include "Mu2eG4/inc/SensitiveDetectorHelper.hh"
 #include "Mu2eG4/inc/SimParticleHelper.hh"
@@ -18,9 +18,9 @@
 #include "MCDataProducts/inc/StatusG4.hh"
 
 //G4 includes
-#include "G4Timer.hh"
-#include "G4SDManager.hh"
-#include "G4EventManager.hh"
+#include "Geant4/G4Timer.hh"
+#include "Geant4/G4SDManager.hh"
+#include "Geant4/G4EventManager.hh"
 
 //art includes
 #include "canvas/Utilities/InputTag.h"
@@ -51,7 +51,7 @@ namespace {
 namespace mu2e {
 
   Mu2eG4EventAction::Mu2eG4EventAction(const Mu2eG4Config::Top& conf,
-                                       TrackingAction* tracking_action,
+                                       Mu2eG4TrackingAction* tracking_action,
                                        Mu2eG4SteppingAction* stepping_action,
                                        SensitiveDetectorHelper* sensitive_detectorhelper,
                                        Mu2eG4PerThreadStorage* pts,

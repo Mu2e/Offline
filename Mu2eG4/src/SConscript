@@ -20,7 +20,7 @@ helper=mu2e_helper(env)
 # 2) Construct G4GRANULARLIBS using shell() on the g4 command that makes
 #    the granular lib string.
 #
-
+# th fisrt line below has to stay due to PTL/Types.hh included in the native Geant4 files
 g4inc    = os.environ['G4INCLUDE'] + '/Geant4'
 g4inc2   = os.environ['G4INCLUDE']
 g4libdir = os.environ['G4LIB']
@@ -216,8 +216,8 @@ XERCESC_LIBS = [ 'xerces-c' ]
 
 
 mainlib = helper.make_mainlib ( [
-        'mu2e_G4Helper_G4Helper_service',
-        'mu2e_G4Helper',
+        'mu2e_Mu2eG4Helper_Mu2eG4Helper_service',
+        'mu2e_Mu2eG4Helper',
         'mu2e_SeedService_SeedService_service',
         'mu2e_Mu2eUtilities',
         'mu2e_GeometryService',

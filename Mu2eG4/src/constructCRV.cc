@@ -16,7 +16,7 @@
 #include "GeometryService/inc/GeomHandle.hh"
 #include "GeometryService/inc/GeometryService.hh"
 #include "GeometryService/inc/G4GeometryOptions.hh"
-#include "G4Helper/inc/G4Helper.hh"
+#include "Mu2eG4Helper/inc/Mu2eG4Helper.hh"
 #include "CosmicRayShieldGeom/inc/CosmicRayShield.hh"
 #include "CosmicRayShieldGeom/inc/CRSScintillatorShield.hh"
 #include "Mu2eG4/inc/findMaterialOrThrow.hh"
@@ -25,19 +25,19 @@
 
 // G4 includes
 
-#include "G4Material.hh"
-#include "G4Color.hh"
-#include "G4Box.hh"
+#include "Geant4/G4Material.hh"
+#include "Geant4/G4Color.hh"
+#include "Geant4/G4Box.hh"
 
-#include "G4VSolid.hh"
-#include "G4LogicalVolume.hh"
-#include "G4PVPlacement.hh"
+#include "Geant4/G4VSolid.hh"
+#include "Geant4/G4LogicalVolume.hh"
+#include "Geant4/G4PVPlacement.hh"
 
-#include "G4VisAttributes.hh"
+#include "Geant4/G4VisAttributes.hh"
 
-#include "G4RotationMatrix.hh"
+#include "Geant4/G4RotationMatrix.hh"
 
-#include "G4SDManager.hh"
+#include "Geant4/G4SDManager.hh"
 
 using namespace std;
 
@@ -47,7 +47,7 @@ namespace mu2e
   {
     GeomHandle<CosmicRayShield> CosmicRayShieldGeomHandle;
 
-    G4Helper& _helper       = *(art::ServiceHandle<G4Helper>());
+    Mu2eG4Helper& _helper       = *(art::ServiceHandle<Mu2eG4Helper>());
     AntiLeakRegistry& reg   = _helper.antiLeakRegistry();
     const auto& geomOptions = art::ServiceHandle<GeometryService>()->geomOptions();
     

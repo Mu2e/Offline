@@ -8,7 +8,7 @@
 //
 
 #include "ConfigTools/inc/SimpleConfig.hh"
-#include "G4Helper/inc/G4Helper.hh"
+#include "Mu2eG4Helper/inc/Mu2eG4Helper.hh"
 #include "GeometryService/inc/GeomHandle.hh"
 #include "Mu2eG4/inc/checkForOverlaps.hh"
 #include "Mu2eG4/inc/ConstructTrackerDetail5.hh"
@@ -20,14 +20,14 @@
 #include "GeometryService/inc/GeometryService.hh"
 #include "TrackerGeom/inc/Tracker.hh"
 
-#include "G4Colour.hh"
-#include "G4Material.hh"
-#include "G4Polycone.hh"
-#include "G4PVPlacement.hh"
-#include "G4SDManager.hh"
-#include "G4ThreeVector.hh"
-#include "G4Tubs.hh"
-#include "G4VPhysicalVolume.hh"
+#include "Geant4/G4Colour.hh"
+#include "Geant4/G4Material.hh"
+#include "Geant4/G4Polycone.hh"
+#include "Geant4/G4PVPlacement.hh"
+#include "Geant4/G4SDManager.hh"
+#include "Geant4/G4ThreeVector.hh"
+#include "Geant4/G4Tubs.hh"
+#include "Geant4/G4VPhysicalVolume.hh"
 
 #include <iostream>
 #include <iomanip>
@@ -43,7 +43,7 @@ mu2e::ConstructTrackerDetail5::ConstructTrackerDetail5( VolumeInfo   const& ds3V
   _config(config),
 
   // Assorted tools
-  _helper(*art::ServiceHandle<G4Helper>()),
+  _helper(*art::ServiceHandle<Mu2eG4Helper>()),
   _reg(_helper.antiLeakRegistry()),
 
   _tracker(*GeomHandle<Tracker>()),

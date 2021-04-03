@@ -29,13 +29,13 @@
 
 #include "Mu2eG4/inc/constructMBS.hh"
 #include "DetectorSolenoidGeom/inc/DetectorSolenoid.hh"
-#include "G4Helper/inc/VolumeInfo.hh"
+#include "Mu2eG4Helper/inc/VolumeInfo.hh"
 #include "GeometryService/inc/GeomHandle.hh"
 #include "GeometryService/inc/GeometryService.hh"
 #include "GeometryService/inc/G4GeometryOptions.hh"
 #include "CosmicRayShieldGeom/inc/CosmicRayShield.hh"
 #include "MBSGeom/inc/MBS.hh"
-#include "G4Helper/inc/G4Helper.hh"
+#include "Mu2eG4Helper/inc/Mu2eG4Helper.hh"
 #include "Mu2eG4/inc/findMaterialOrThrow.hh"
 #include "Mu2eG4/inc/nestBox.hh"
 #include "Mu2eG4/inc/nestTubs.hh"
@@ -43,15 +43,15 @@
 #include "Mu2eG4/inc/finishNesting.hh"
 
 // G4 includes
-#include "G4Material.hh"
-#include "G4Box.hh"
-#include "G4Color.hh"
-#include "G4VSolid.hh"
-#include "G4Tubs.hh"
-#include "G4Polycone.hh"
-#include "G4Cons.hh"
-#include "G4SubtractionSolid.hh"
-#include "G4VPhysicalVolume.hh"
+#include "Geant4/G4Material.hh"
+#include "Geant4/G4Box.hh"
+#include "Geant4/G4Color.hh"
+#include "Geant4/G4VSolid.hh"
+#include "Geant4/G4Tubs.hh"
+#include "Geant4/G4Polycone.hh"
+#include "Geant4/G4Cons.hh"
+#include "Geant4/G4SubtractionSolid.hh"
+#include "Geant4/G4VPhysicalVolume.hh"
 
 #include <iostream>
 using namespace std;
@@ -91,8 +91,8 @@ namespace mu2e {
 
 
 
-    // Access to the G4HelperService.
-    G4Helper* _helper = &(*(art::ServiceHandle<G4Helper>()));
+    // Access to the Mu2eG4HelperService.
+    Mu2eG4Helper* _helper = &(*(art::ServiceHandle<Mu2eG4Helper>()));
 
     // Fetch DS geometry handle
     GeomHandle<DetectorSolenoid> ds;

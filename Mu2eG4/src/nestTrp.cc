@@ -10,10 +10,10 @@
 #include "Mu2eG4/inc/nestTrp.hh"
 #include "Mu2eG4/inc/finishNesting.hh"
 
-#include "G4Trd.hh"
-#include "G4LogicalVolume.hh"
-#include "G4Material.hh"
-#include "G4ThreeVector.hh"
+#include "Geant4/G4Trd.hh"
+#include "Geant4/G4LogicalVolume.hh"
+#include "Geant4/G4Material.hh"
+#include "Geant4/G4ThreeVector.hh"
 
 using namespace std;
 

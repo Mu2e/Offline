@@ -116,7 +116,8 @@ StrawElectronics : {
    TDCResolution : 0.1
    electronicsTimeDelay : 0.0
    eventWindowMarkerROCJitter : 0.5
-   flashEnd : 500.0
+   digitizationStart : 500.0
+   digitizationEnd : 1695.0
    responseBins : 10000
    sampleRate : 10.0
    saturationSampleFactor : 25

@@ -275,7 +275,7 @@ namespace mu2e
  
       TrkT0 t0(kalData.kalSeed->t0());
       // create Kalman rep
-      kalData.krep = new KalRep(htraj, thv, detinter, *this, kalData.kalSeed->particle(), t0, flt0);
+      kalData.krep = new KalRep(htraj, thv, detinter, *this, TrkParticle(TrkParticle::type(kalData.kalSeed->particle())), t0, flt0);
       assert(kalData.krep != 0);
       
       if (_debug > 0) {
@@ -520,7 +520,8 @@ namespace mu2e
        // estimate fltlen from pitch; take the last segment
       HelixVal const& hval = kalData.kalSeed->segments().back().helix();
       double mom = kalData.kalSeed->segments().back().mom();
-      double beta = kalData.kalSeed->particle().beta(mom);
+      TrkParticle tpart(TrkParticle::type(kalData.kalSeed->particle()));
+      double beta = tpart.beta(mom);
       double td = hval.tanDip();
       double sd = td/sqrt(1.0+td*td);
       double fltlen = (cog.z()- hval.z0() + 0.5*crystalLength)/sd;// - kalData.kalSeed->flt0();

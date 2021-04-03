@@ -17,11 +17,11 @@
 #include "GeometryService/inc/GeometryService.hh"
 #include "GeometryService/inc/GeomHandle.hh"
 #include "GeometryService/inc/WorldG4.hh"
-#include "Mu2eG4/inc/ActionInitialization.hh"
+#include "Mu2eG4/inc/Mu2eG4ActionInitialization.hh"
 #include "Mu2eG4/inc/PhysicalVolumeHelper.hh"
 #include "Mu2eG4/inc/physicsListDecider.hh"
 #include "Mu2eG4/inc/preG4InitializeTasks.hh"
-#include "Mu2eG4/inc/Mu2eSensitiveDetector.hh"
+#include "Mu2eG4/inc/Mu2eG4SensitiveDetector.hh"
 #include "Mu2eG4/inc/SensitiveDetectorName.hh"
 #include "ConfigTools/inc/ConfigFileLookupPolicy.hh"
 #include "Mu2eG4/inc/generateFieldMap.hh"
@@ -35,7 +35,7 @@
 #include "Mu2eG4/inc/Mu2eG4Config.hh"
 #include "Mu2eG4/inc/Mu2eG4IOConfigHelper.hh"
 #if ( defined G4VIS_USE_OPENGLX || defined G4VIS_USE_OPENGL || defined G4VIS_USE_OPENGLQT )
-#include "Mu2eG4/inc/Mu2eVisCommands.hh"
+#include "Mu2eG4/inc/Mu2eG4VisCommands.hh"
 #endif
 
 // Data products that will be produced by this module.
@@ -60,19 +60,19 @@
 #include "canvas/Utilities/InputTag.h"
 
 // Geant4 includes
-#include "G4UIExecutive.hh"
-#include "G4UImanager.hh"
+#include "Geant4/G4UIExecutive.hh"
+#include "Geant4/G4UImanager.hh"
 #if ( defined G4VIS_USE_OPENGLX || defined G4VIS_USE_OPENGL || defined G4VIS_USE_OPENGLQT )
-#include "G4VisExecutive.hh"
+#include "Geant4/G4VisExecutive.hh"
 #endif
-#include "G4Run.hh"
-#include "G4Timer.hh"
-#include "G4VUserPhysicsList.hh"
-#include "G4ParticleHPManager.hh"
-#include "G4HadronicProcessStore.hh"
-#include "G4RunManagerKernel.hh"
-#include "G4RunManager.hh"
-#include "G4SDManager.hh"
+#include "Geant4/G4Run.hh"
+#include "Geant4/G4Timer.hh"
+#include "Geant4/G4VUserPhysicsList.hh"
+#include "Geant4/G4ParticleHPManager.hh"
+#include "Geant4/G4HadronicProcessStore.hh"
+#include "Geant4/G4RunManagerKernel.hh"
+#include "Geant4/G4RunManager.hh"
+#include "Geant4/G4SDManager.hh"
 
 // C++ includes.
 #include <iostream>
@@ -312,7 +312,7 @@ namespace mu2e {
 
 
     //this is where the UserActions are instantiated
-    ActionInitialization* actioninit = new ActionInitialization(conf_,
+    Mu2eG4ActionInitialization* actioninit = new Mu2eG4ActionInitialization(conf_,
                                                                 &_sensitiveDetectorHelper,
                                                                 &perThreadStore,
                                                                 &_physVolHelper,

@@ -13,10 +13,10 @@
 #include "Mu2eG4/inc/SimParticleHelper.hh"
 
 // G4 includes
-#include "G4ThreeVector.hh"
-#include "G4RunManager.hh"
-#include "G4Step.hh"
-#include "G4ios.hh"
+#include "Geant4/G4ThreeVector.hh"
+#include "Geant4/G4RunManager.hh"
+#include "Geant4/G4Step.hh"
+#include "Geant4/G4ios.hh"
 
 using namespace std;
 
@@ -25,7 +25,7 @@ namespace mu2e {
   G4ThreeVector TrackerWireSD::_mu2eDetCenter;
 
   TrackerWireSD::TrackerWireSD(G4String name, const SimpleConfig& config) :
-                  Mu2eSensitiveDetector(name,config) { }
+                  Mu2eG4SensitiveDetector(name,config) { }
 
   TrackerWireSD::~TrackerWireSD(){ }
 

@@ -23,7 +23,7 @@
 #include "MCDataProducts/inc/StepPointMCCollection.hh"
 #include "MCDataProducts/inc/ExtMonFNALSimHitCollection.hh"
 #include "Mu2eG4/inc/SensitiveDetectorName.hh"
-#include "G4Helper/inc/G4Helper.hh"
+#include "Mu2eG4Helper/inc/Mu2eG4Helper.hh"
 #include "Mu2eG4/inc/Mu2eG4PerThreadStorage.hh"
 #include "GeometryService/inc/GeometryService.hh"
 
@@ -33,9 +33,9 @@
 #include "art/Framework/Services/Registry/ServiceHandle.h"
 
 // From G4
-#include "G4VSensitiveDetector.hh"
-#include "G4SDManager.hh"
-#include "G4Threading.hh"
+#include "Geant4/G4VSensitiveDetector.hh"
+#include "Geant4/G4SDManager.hh"
+#include "Geant4/G4Threading.hh"
 
 #include <map>
 
@@ -133,10 +133,10 @@ namespace mu2e {
   void SensitiveDetectorHelper::instantiateLVSDs(const SimpleConfig& config){
 
     G4SDManager* SDman = G4SDManager::GetSDMpointer();
-    art::ServiceHandle<G4Helper> helper;
+    art::ServiceHandle<Mu2eG4Helper> helper;
 
     for(auto& iter : lvsd_) {
-      iter.second.sensitiveDetector = new Mu2eSensitiveDetector(iter.first, config);
+      iter.second.sensitiveDetector = new Mu2eG4SensitiveDetector(iter.first, config);
       SDman->AddNewDetector(iter.second.sensitiveDetector);
       helper->locateVolInfo(iter.first).logical->SetSensitiveDetector(iter.second.sensitiveDetector);
     }
@@ -157,7 +157,7 @@ namespace mu2e {
             }
       bool printWarnings = (verbosityLevel_ > -1) ? true : false;
       step.sensitiveDetector =
-        dynamic_cast<Mu2eSensitiveDetector*>(sdManager->FindSensitiveDetector(step.stepName.c_str(),printWarnings));
+        dynamic_cast<Mu2eG4SensitiveDetector*>(sdManager->FindSensitiveDetector(step.stepName.c_str(),printWarnings));
     }
 
     extMonFNALPixelSD_ = ( standardMu2eDetector_ && extMonPixelsEnabled_) ?

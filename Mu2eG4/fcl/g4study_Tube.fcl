@@ -1,4 +1,4 @@
-# -*- mode:tcl -*-
+#
 # fcl config file to perform Geant4 studies using the Mu2e framework infrastructure and simple geometry
 #
 # Original author K.L. Genser
@@ -36,61 +36,25 @@ services : {
 
 physics : {
 
-    producers:  {
-	#    generate : @local::generate
-	generate:		{
-	    module_type          : EventGenerator
-	    inputfile            : "Mu2eG4/test/g4studyParticleGun.txt"
-	    allowReplacement     : true
-	    messageOnReplacement : true
-	}
+  producers:  {
 
-	g4run                    :  { @table::g4run 
-	    Mu2eG4SteppingOnlyCut : @local::stepperout
-	    Mu2eG4StackingOnlyCut : @local::mu2eg4NoCut
-	    # Mu2eG4CommonCut: { type: kineticEnergy cut: 1000000. }
+    generate: {
+      module_type          : EventGenerator
+      inputfile            : "Mu2eG4/test/g4studyParticleGun.txt"
+      allowReplacement     : true
+      messageOnReplacement : true
+    }
 
-	    physics : { @table::g4run.physics
-		physicsListName : "ShieldingM"
-		#  bfieldMaxStep   : 500000. // not implemented (no field)
-	    }
+    g4run :  @local::g4run
+    randomsaver          : @local::randomsaver
 
-	    TrajectoryControl : { @table::g4run.TrajectoryControl 
-		mcTrajectoryMinSteps       : 0
-		mcTrajectoryMomentumCut    : 0. // MeV/c
-		saveTrajectoryMomentumCut  : 0.  // MeV/c
-		perVolumeMinDistance       : {}
-	    }
-
-	    SDConfig: {
-		enableSD                   : []                   # not implemented
-		TimeVD                     : { times : [0.01] }   #
-	    }
-
-	    debug : { @table::g4run.debug
-		# writeGDML                  : true 
-		# GDMLFileName               : "g4study_Tube.gdml"
-		diagLevel                  : 1
-		printElements              : true
-		worldVerbosityLevel        : 2
-		fillDiagnosticHistograms   : true
-		printPhysicsProcessSummary : true
-		#            checkFieldMap : 0 // not implemented (no field)
-	    }
-
-	    visualization : { @table::g4run.visualization 
-		#initMacro : "Mu2eG4/test/visxz.mac"
-		#initMacro : "Mu2eG4/test/vismqt.mac"
-	    }
-	}
-
-	randomsaver              : @local::randomsaver
   }
 
 
   analyzers: {
 
-    checkhits: {
+    checkhits:
+    {
       module_type            : Mu2eG4StudyReadBack
       generatorModuleLabel   : generate
       g4ModuleLabel          : g4run
@@ -99,7 +63,8 @@ physics : {
       maxPrint               : 100
       diagLevel              : 2
     }
-  } 
+
+  }
 
   p1 : [generate , g4run , randomsaver]
 #  e1 : [dumper, outfile]
@@ -126,6 +91,28 @@ outputs:  {
 }
 
 # Initialze seeding of random engines: do not put these lines in base .fcl files for grid jobs.
-services.SeedService.baseSeed         :  8
+services.SeedService.baseSeed         :   8
 services.SeedService.maxUniqueEngines :  20
 #services.message.destinations.log.noTimeStamps : true
+#physics.producers.g4run.visualization.initMacro : "Mu2eG4/test/visxz.mac"
+#physics.producers.g4run.visualization.initMacro : "Mu2eG4/test/vismqt.mac"
+
+physics.producers.g4run.physics.physicsListName : "ShieldingM"
+#physics.producers.g4run.physics.bfieldMaxStep   : 500000. // not implemented (no field)
+physics.producers.g4run.debug.diagLevel         : 1
+physics.producers.g4run.debug.printElements     : true
+physics.producers.g4run.debug.worldVerbosityLevel : 2
+#physics.producers.g4run.debug.checkFieldMap : 0 // not implemented (no field)
+physics.producers.g4run.TrajectoryControl.mcTrajectoryMinSteps:     0
+physics.producers.g4run.TrajectoryControl.mcTrajectoryMomentumCut : 0. // MeV/c
+physics.producers.g4run.TrajectoryControl.saveTrajectoryMomentumCut : 0.  // MeV/c
+physics.producers.g4run.TrajectoryControl.perVolumeMinDistance : {}
+#physics.producers.g4run.Mu2eG4CommonCut: { type: kineticEnergy cut: 1000000. }
+physics.producers.g4run.SDConfig: {
+       enableSD: [] // not implemented
+       TimeVD: { times: [0.01] }
+      }
+// The line below causes a StepPointMC being stored for each step; comment it out to disable it
+physics.producers.g4run.Mu2eG4SteppingOnlyCut : @local::stepperout
+physics.producers.g4run.Mu2eG4StackingOnlyCut : @local::mu2eg4NoCut
+#physics.producers.g4run.debug.trackingVerbosityLevel : 1

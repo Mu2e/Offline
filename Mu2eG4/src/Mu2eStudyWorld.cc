@@ -20,7 +20,7 @@
 #include "art/Utilities/make_tool.h"
 
 // Mu2e includes
-#include "G4Helper/inc/G4Helper.hh"
+#include "Mu2eG4Helper/inc/Mu2eG4Helper.hh"
 // #include "Mu2eG4/inc/constructStudyEnv_v001.hh"
 // #include "Mu2eG4/inc/constructStudyEnv_v002.hh"
 // #include "Mu2eG4/inc/constructStudyEnv_v003.hh"
@@ -37,33 +37,33 @@
 #include "BFieldGeom/inc/BFieldManager.hh"
 
 // G4 includes
-#include "G4GeometryManager.hh"
-#include "G4PhysicalVolumeStore.hh"
-#include "G4LogicalVolumeStore.hh"
-#include "G4Material.hh"
-#include "G4Box.hh"
-#include "G4Colour.hh"
-#include "G4Tubs.hh"
-#include "G4ThreeVector.hh"
-#include "globals.hh"
-#include "G4UniformMagField.hh"
-#include "G4FieldManager.hh"
-#include "G4Mag_UsualEqRhs.hh"
-#include "G4ExactHelixStepper.hh"
-#include "G4ChordFinder.hh"
-#include "G4TransportationManager.hh"
-#include "G4UserLimits.hh"
-#include "G4ClassicalRK4.hh"
-#include "G4ImplicitEuler.hh"
-#include "G4ExplicitEuler.hh"
-#include "G4SimpleRunge.hh"
-#include "G4SimpleHeum.hh"
-#include "G4HelixImplicitEuler.hh"
-#include "G4HelixSimpleRunge.hh"
-#include "G4GDMLParser.hh"
+#include "Geant4/G4GeometryManager.hh"
+#include "Geant4/G4PhysicalVolumeStore.hh"
+#include "Geant4/G4LogicalVolumeStore.hh"
+#include "Geant4/G4Material.hh"
+#include "Geant4/G4Box.hh"
+#include "Geant4/G4Colour.hh"
+#include "Geant4/G4Tubs.hh"
+#include "Geant4/G4ThreeVector.hh"
+#include "Geant4/globals.hh"
+#include "Geant4/G4UniformMagField.hh"
+#include "Geant4/G4FieldManager.hh"
+#include "Geant4/G4Mag_UsualEqRhs.hh"
+#include "Geant4/G4ExactHelixStepper.hh"
+#include "Geant4/G4ChordFinder.hh"
+#include "Geant4/G4TransportationManager.hh"
+#include "Geant4/G4UserLimits.hh"
+#include "Geant4/G4ClassicalRK4.hh"
+#include "Geant4/G4ImplicitEuler.hh"
+#include "Geant4/G4ExplicitEuler.hh"
+#include "Geant4/G4SimpleRunge.hh"
+#include "Geant4/G4SimpleHeum.hh"
+#include "Geant4/G4HelixImplicitEuler.hh"
+#include "Geant4/G4HelixSimpleRunge.hh"
+#include "Geant4/G4GDMLParser.hh"
 
-#include "Mu2eG4/inc/Mu2eGlobalField.hh"
-#include "Mu2eG4/inc/FieldMgr.hh"
+//#include "Mu2eG4/inc/Mu2eG4GlobalMagneticField.hh"
+//#include "Mu2eG4/inc/FieldMgr.hh"
 
 
 using namespace std;
@@ -204,7 +204,7 @@ namespace mu2e {
 
     // Maximum step length, in mm.
 
-    // AntiLeakRegistry& reg = art::ServiceHandle<G4Helper>()->antiLeakRegistry();
+    // AntiLeakRegistry& reg = art::ServiceHandle<Mu2eG4Helper>()->antiLeakRegistry();
     // G4UserLimits* stepLimit = reg.add( G4UserLimits(bfieldMaxStep_) );
 
     // double maxStep = _config.getDouble("bfield.maxStep", 20.);
@@ -213,7 +213,7 @@ namespace mu2e {
     // _stepLimits.push_back( G4UserLimits(maxStep) );
     // G4UserLimits* stepLimit = &(_stepLimits.back());
 
-    // AntiLeakRegistry& reg = art::ServiceHandle<G4Helper>()->antiLeakRegistry();
+    // AntiLeakRegistry& reg = art::ServiceHandle<Mu2eG4Helper>()->antiLeakRegistry();
     // G4UserLimits* stepLimit = reg.add( G4UserLimits(maxStep) );
     // tracker->SetUserLimits( stepLimit );
 

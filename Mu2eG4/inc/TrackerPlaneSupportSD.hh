@@ -10,7 +10,7 @@
 // Mu2e includes
 #include "Mu2eG4/inc/EventNumberList.hh"
 #include "MCDataProducts/inc/StepPointMCCollection.hh"
-#include "Mu2eG4/inc/Mu2eSensitiveDetector.hh"
+#include "Mu2eG4/inc/Mu2eG4SensitiveDetector.hh"
 
 // Art includes
 #include "canvas/Persistency/Provenance/ProductID.h"
@@ -18,7 +18,7 @@
 
 namespace mu2e {
 
-  class TrackerPlaneSupportSD : public Mu2eSensitiveDetector{
+  class TrackerPlaneSupportSD : public Mu2eG4SensitiveDetector{
 
   public:
 

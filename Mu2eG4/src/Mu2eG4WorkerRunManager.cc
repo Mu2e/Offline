@@ -16,27 +16,27 @@
 #include "Mu2eG4/inc/Mu2eG4WorkerRunManager.hh"
 #include "Mu2eG4/inc/Mu2eG4PerThreadStorage.hh"
 #include "Mu2eG4/inc/Mu2eG4MTRunManager.hh"
-#include "Mu2eG4/inc/SteppingVerbose.hh"
+#include "Mu2eG4/inc/Mu2eG4SteppingVerbose.hh"
 #include "Mu2eG4/inc/WorldMaker.hh"
 #include "Mu2eG4/inc/physicsListDecider.hh"
-#include "Mu2eG4/inc/PrimaryGeneratorAction.hh"
+#include "Mu2eG4/inc/Mu2eG4PrimaryGeneratorAction.hh"
 #include "Mu2eG4/inc/Mu2eG4SteppingAction.hh"
 #include "Mu2eG4/inc/Mu2eG4StackingAction.hh"
-#include "Mu2eG4/inc/TrackingAction.hh"
+#include "Mu2eG4/inc/Mu2eG4TrackingAction.hh"
 #include "Mu2eG4/inc/Mu2eG4RunAction.hh"
 #include "Mu2eG4/inc/Mu2eG4EventAction.hh"
 #include "Mu2eG4/inc/ExtMonFNALPixelSD.hh"
 
 //G4 includes
-#include "G4WorkerThread.hh"
-#include "G4StateManager.hh"
-#include "G4UserWorkerThreadInitialization.hh"
-#include "G4VPhysicalVolume.hh"
-#include "G4TransportationManager.hh"
-#include "G4VUserPhysicsList.hh"
-#include "G4ParallelWorldProcessStore.hh"
-#include "G4ParticleHPManager.hh"
-#include "G4HadronicProcessStore.hh"
+#include "Geant4/G4WorkerThread.hh"
+#include "Geant4/G4StateManager.hh"
+#include "Geant4/G4UserWorkerThreadInitialization.hh"
+#include "Geant4/G4VPhysicalVolume.hh"
+#include "Geant4/G4TransportationManager.hh"
+#include "Geant4/G4VUserPhysicsList.hh"
+#include "Geant4/G4ParallelWorldProcessStore.hh"
+#include "Geant4/G4ParticleHPManager.hh"
+#include "Geant4/G4HadronicProcessStore.hh"
 
 //Other includes
 #include <string>
@@ -166,7 +166,7 @@ namespace mu2e {
 
   void Mu2eG4WorkerRunManager::initializeUserActions(const G4ThreeVector& origin_in_world){
 
-    userPrimaryGeneratorAction = new PrimaryGeneratorAction(conf_.debug(), perThreadObjects_.get());
+    userPrimaryGeneratorAction = new Mu2eG4PrimaryGeneratorAction(conf_.debug(), perThreadObjects_.get());
     SetUserAction(userPrimaryGeneratorAction);
 
     steppingAction_ = new Mu2eG4SteppingAction(conf_.debug(),
@@ -180,7 +180,7 @@ namespace mu2e {
     SetUserAction( new Mu2eG4StackingAction(*perThreadObjects_->stackingCuts,
                                             *perThreadObjects_->commonCuts) );
 
-    trackingAction_ = new TrackingAction(conf_,
+    trackingAction_ = new Mu2eG4TrackingAction(conf_,
                                          steppingAction_,
                                          perThreadObjects_.get());
     SetUserAction(trackingAction_);

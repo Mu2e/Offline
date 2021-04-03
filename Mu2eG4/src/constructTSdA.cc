@@ -18,11 +18,11 @@
 #include "Mu2eG4/inc/constructTSdA.hh"
 #include "BeamlineGeom/inc/Beamline.hh"
 #include "BeamlineGeom/inc/StraightSection.hh"
-#include "G4Helper/inc/VolumeInfo.hh"
+#include "Mu2eG4Helper/inc/VolumeInfo.hh"
 #include "GeometryService/inc/GeomHandle.hh"
 #include "GeometryService/inc/GeometryService.hh"
 #include "GeometryService/inc/G4GeometryOptions.hh"
-#include "G4Helper/inc/G4Helper.hh"
+#include "Mu2eG4Helper/inc/Mu2eG4Helper.hh"
 #include "DetectorSolenoidGeom/inc/DetectorSolenoid.hh"
 #include "BeamlineGeom/inc/TSdA.hh"
 #include "Mu2eG4/inc/findMaterialOrThrow.hh"
@@ -31,13 +31,13 @@
 #include "Mu2eG4/inc/finishNesting.hh"
 
 // G4 includes
-#include "G4Material.hh"
-#include "G4Color.hh"
-#include "G4VSolid.hh"
-#include "G4Tubs.hh"
-#include "G4Cons.hh"
-#include "G4Polycone.hh"
-#include "G4VPhysicalVolume.hh"
+#include "Geant4/G4Material.hh"
+#include "Geant4/G4Color.hh"
+#include "Geant4/G4VSolid.hh"
+#include "Geant4/G4Tubs.hh"
+#include "Geant4/G4Cons.hh"
+#include "Geant4/G4Polycone.hh"
+#include "Geant4/G4VPhysicalVolume.hh"
 
 using namespace std;
 
@@ -58,8 +58,8 @@ namespace mu2e {
     const bool forceAuxEdgeVisible = geomOptions->forceAuxEdgeVisible("tsda"); 
     const bool placePV             = geomOptions->placePV("tsda");  
  
-    // Access to the G4HelperService.
-    G4Helper* _helper = &(*(art::ServiceHandle<G4Helper>()));
+    // Access to the Mu2eG4HelperService.
+    Mu2eG4Helper* _helper = &(*(art::ServiceHandle<Mu2eG4Helper>()));
 
     // now constructing the internal neutron absorber
     // it is placed inside DS2Vacuum & DS3Vacuum like the protonabs1 & 2

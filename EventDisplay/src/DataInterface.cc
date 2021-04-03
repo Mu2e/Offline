@@ -24,12 +24,14 @@ using namespace std;
 #include "GeometryService/inc/GeomHandle.hh"
 #include "GeometryService/inc/DetectorSystem.hh"
 #include "HepPID/ParticleName.hh"
+#include "HepPDT/ParticleData.hh"
 #include "MCDataProducts/inc/PhysicalVolumeInfoMultiCollection.hh"
 #include "MCDataProducts/inc/MCTrajectoryCollection.hh"
 #include "MCDataProducts/inc/SimParticlePtrCollection.hh"
 #include "MCDataProducts/inc/StepPointMCCollection.hh"
 #include "Mu2eUtilities/inc/PhysicalVolumeMultiHelper.hh"
 #include "ConfigTools/inc/SimpleConfig.hh"
+#include "RecoDataProducts/inc/KalSeed.hh"
 #include "RecoDataProducts/inc/CrvDigiCollection.hh"
 #include "RecoDataProducts/inc/CaloHit.hh"
 #include "RecoDataProducts/inc/StrawHitCollection.hh"
@@ -39,6 +41,7 @@ using namespace std;
 #include "RecoDataProducts/inc/TrkExtTrajCollection.hh"
 #include "StoppingTargetGeom/inc/StoppingTarget.hh"
 #include "StoppingTargetGeom/inc/TargetFoil.hh"
+#include "TrkReco/inc/TrkUtilities.hh"
 #include "TrackerGeom/inc/Tracker.hh"
 #include "art/Framework/Principal/Run.h"
 #include "cetlib/map_vector.h"
@@ -781,6 +784,7 @@ void DataInterface::findBoundaryP(spaceminmax &m, double x, double y, double z)
 
 void DataInterface::fillEvent(boost::shared_ptr<ContentSelector> const &contentSelector, const mu2e::SimParticleTimeOffset &timeOffsets)
 {
+  auto const& ptable = mu2e::GlobalConstantsHandle<mu2e::ParticleDataTable>();
   removeNonGeometryComponents();
   if(!_geometrymanager) createGeometryManager();
   resetBoundaryT(_hitsTimeMinmax);
@@ -1348,7 +1352,7 @@ void DataInterface::fillEvent(boost::shared_ptr<ContentSelector> const &contentS
       int trackclass=trackInfos[i].classID;
       int trackclassindex=trackInfos[i].index;
       std::string trackcollection=trackInfos[i].entryText;
-      int particleid=kalseed.particle().particleType();
+      int particleid=kalseed.particle();
       std::string particlename=HepPID::particleName(particleid);
 
       const std::vector<mu2e::KalSegment> &segments = kalseed.segments();
@@ -1366,7 +1370,8 @@ void DataInterface::fillEvent(boost::shared_ptr<ContentSelector> const &contentS
 
       double t0   = kalseed.t0().t0();
       double flt0 = kalseed.flt0();
-      double v    = kalseed.particle().beta((p1+p2)/2.0)*CLHEP::c_light;
+      double mass = ptable->particle(kalseed.particle()).ref().mass().value(); 
+      double v  = mu2e::TrkUtilities::beta(mass,(p1+p2)/2.0)*CLHEP::c_light;
 
       boost::shared_ptr<ComponentInfo> info(new ComponentInfo());
       std::string c=Form("KalSeed Track %lu  %s  (%s)",j,particlename.c_str(),trackcollection.c_str());

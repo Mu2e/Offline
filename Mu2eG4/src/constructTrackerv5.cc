@@ -31,7 +31,7 @@
 #include "messagefacility/MessageLogger/MessageLogger.h"
 
 // Mu2e includes
-#include "G4Helper/inc/G4Helper.hh"
+#include "Mu2eG4Helper/inc/Mu2eG4Helper.hh"
 #include "GeometryService/inc/GeomHandle.hh"
 #include "Mu2eG4/inc/StrawSD.hh"
 #include "Mu2eG4/inc/constructTracker.hh"
@@ -43,16 +43,16 @@
 #include "Mu2eG4/inc/checkForOverlaps.hh"
 
 // G4 includes
-#include "G4Box.hh"
-#include "G4Colour.hh"
-#include "G4IntersectionSolid.hh"
-#include "G4Material.hh"
-#include "G4PVPlacement.hh"
-#include "G4SDManager.hh"
-#include "G4String.hh"
-#include "G4ThreeVector.hh"
-#include "G4Trd.hh"
-#include "G4Tubs.hh"
+#include "Geant4/G4Box.hh"
+#include "Geant4/G4Colour.hh"
+#include "Geant4/G4IntersectionSolid.hh"
+#include "Geant4/G4Material.hh"
+#include "Geant4/G4PVPlacement.hh"
+#include "Geant4/G4SDManager.hh"
+#include "Geant4/G4String.hh"
+#include "Geant4/G4ThreeVector.hh"
+#include "Geant4/G4Trd.hh"
+#include "Geant4/G4Tubs.hh"
 
 
 using namespace std;

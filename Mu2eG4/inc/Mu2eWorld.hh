@@ -35,19 +35,19 @@ class G4UserLimits;
 // Mu2e includes
 #include "Mu2eG4/inc/Mu2eUniverse.hh"
 #include "Mu2eG4/inc/Mu2eG4Config.hh"
-#include "G4Helper/inc/VolumeInfo.hh"
+#include "Mu2eG4Helper/inc/VolumeInfo.hh"
 #include "Mu2eG4/inc/FieldMgr.hh"
-#include "G4Helper/inc/G4Helper.hh"
+#include "Mu2eG4Helper/inc/Mu2eG4Helper.hh"
 #include "GeomPrimitives/inc/TubsParams.hh"
 #include "BFieldGeom/inc/BFieldConfig.hh"
 
 
 //G4 includes
-#include "G4String.hh"
-#include "G4Colour.hh"
-#include "G4ThreeVector.hh"
-#include "G4RotationMatrix.hh"
-#include "G4VisAttributes.hh"
+#include "Geant4/G4String.hh"
+#include "Geant4/G4Colour.hh"
+#include "Geant4/G4ThreeVector.hh"
+#include "Geant4/G4RotationMatrix.hh"
+#include "Geant4/G4VisAttributes.hh"
 
 class G4VPhysicalVolume;
 class G4LogicalVolume;

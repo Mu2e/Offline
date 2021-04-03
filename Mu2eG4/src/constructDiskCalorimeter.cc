@@ -22,8 +22,8 @@
 #include "CalorimeterGeom/inc/Disk.hh"
 #include "CalorimeterGeom/inc/Crystal.hh"
 #include "ConfigTools/inc/SimpleConfig.hh"
-#include "G4Helper/inc/VolumeInfo.hh"
-#include "G4Helper/inc/G4Helper.hh"
+#include "Mu2eG4Helper/inc/VolumeInfo.hh"
+#include "Mu2eG4Helper/inc/Mu2eG4Helper.hh"
 #include "GeometryService/inc/GeometryService.hh"
 #include "GeometryService/inc/GeomHandle.hh"
 #include "GeometryService/inc/G4GeometryOptions.hh"
@@ -38,23 +38,23 @@
 #include "Mu2eG4/inc/checkForOverlaps.hh"
 #include "Mu2eG4/inc/constructDS.hh" // for calculateTubeCoreParams
 
-#include "G4Box.hh"
-#include "G4Polyhedra.hh"
-#include "G4Tubs.hh"
-#include "G4Torus.hh"
-#include "G4SubtractionSolid.hh"
-#include "G4UnionSolid.hh"
-#include "G4IntersectionSolid.hh"
-#include "G4LogicalVolume.hh"
-#include "G4Material.hh"
-#include "G4VisAttributes.hh"
-#include "G4Colour.hh"
-#include "G4ThreeVector.hh"
-#include "G4PVPlacement.hh"
-#include "G4SDManager.hh"
-#include "G4UnitsTable.hh"
-#include "G4VSolid.hh"
-#include "G4String.hh"
+#include "Geant4/G4Box.hh"
+#include "Geant4/G4Polyhedra.hh"
+#include "Geant4/G4Tubs.hh"
+#include "Geant4/G4Torus.hh"
+#include "Geant4/G4SubtractionSolid.hh"
+#include "Geant4/G4UnionSolid.hh"
+#include "Geant4/G4IntersectionSolid.hh"
+#include "Geant4/G4LogicalVolume.hh"
+#include "Geant4/G4Material.hh"
+#include "Geant4/G4VisAttributes.hh"
+#include "Geant4/G4Colour.hh"
+#include "Geant4/G4ThreeVector.hh"
+#include "Geant4/G4PVPlacement.hh"
+#include "Geant4/G4SDManager.hh"
+#include "Geant4/G4UnitsTable.hh"
+#include "Geant4/G4VSolid.hh"
+#include "Geant4/G4String.hh"
 
 #include "CLHEP/Units/SystemOfUnits.h"
 #include "CLHEP/Vector/TwoVector.h"
@@ -215,7 +215,7 @@ namespace mu2e {
   //  
   G4LogicalVolume* caloBuildFrontPlate(const SimpleConfig& config, MaterialFinder& materialFinder, const DiskCalorimeter& cal, int idisk)
   { 
-       G4Helper& _helper = *(art::ServiceHandle<G4Helper>());
+       Mu2eG4Helper& _helper = *(art::ServiceHandle<Mu2eG4Helper>());
        AntiLeakRegistry& reg = _helper.antiLeakRegistry();
        
        const auto geomOptions = art::ServiceHandle<GeometryService>()->geomOptions();
@@ -341,7 +341,7 @@ namespace mu2e {
   //construct central part of the disk with crystals
   G4LogicalVolume* caloBuildDisk(const SimpleConfig& config, MaterialFinder& materialFinder, const DiskCalorimeter& cal, int idisk)
   {
-       G4Helper& _helper = *(art::ServiceHandle<G4Helper>());
+       Mu2eG4Helper& _helper = *(art::ServiceHandle<Mu2eG4Helper>());
        AntiLeakRegistry & reg = _helper.antiLeakRegistry();
        
        const auto geomOptions = art::ServiceHandle<GeometryService>()->geomOptions();
@@ -534,7 +534,7 @@ namespace mu2e {
   // build full backplate - yes this was annoying
   G4LogicalVolume* caloBuildBackPlate(const SimpleConfig& config, MaterialFinder& materialFinder, const DiskCalorimeter& cal, int idisk)
   {            
-       G4Helper& _helper = *(art::ServiceHandle<G4Helper>());
+       Mu2eG4Helper& _helper = *(art::ServiceHandle<Mu2eG4Helper>());
        AntiLeakRegistry& reg = _helper.antiLeakRegistry();
 
        const auto geomOptions = art::ServiceHandle<GeometryService>()->geomOptions();
@@ -904,7 +904,7 @@ namespace mu2e {
   // build full FEB
   G4LogicalVolume* caloBuildFEB(const SimpleConfig& config, MaterialFinder& materialFinder, const DiskCalorimeter& cal)
   {                  
-       G4Helper& _helper = *(art::ServiceHandle<G4Helper>());
+       Mu2eG4Helper& _helper = *(art::ServiceHandle<Mu2eG4Helper>());
        AntiLeakRegistry& reg = _helper.antiLeakRegistry();
        
        const auto geomOptions = art::ServiceHandle<GeometryService>()->geomOptions();

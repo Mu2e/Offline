@@ -22,7 +22,7 @@
 #include "MCDataProducts/inc/SimParticleCollection.hh"
 #include "MCDataProducts/inc/StepPointMCCollection.hh"
 
-#include "G4IonTable.hh"
+#include "Geant4/G4IonTable.hh"
 
 namespace mu2e {
 

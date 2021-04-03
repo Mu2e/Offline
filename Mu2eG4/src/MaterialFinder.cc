@@ -11,7 +11,7 @@
 #include "ConfigTools/inc/SimpleConfig.hh"
 #include "GeometryService/inc/GeomHandle.hh"
 
-#include "G4Material.hh"
+#include "Geant4/G4Material.hh"
 
 using namespace std;
 

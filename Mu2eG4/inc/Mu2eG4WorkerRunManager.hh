@@ -9,7 +9,7 @@
 
 
 // Included from Geant4
-#include "G4WorkerRunManager.hh"
+#include "Geant4/G4WorkerRunManager.hh"
 
 //Mu2e includes
 #include "Mu2eG4/inc/Mu2eG4Config.hh"
@@ -30,7 +30,7 @@ namespace mu2e {
   class Mu2eG4MTRunManager;
   class PrimaryGeneratorAction;
   class Mu2eG4SteppingAction;
-  class TrackingAction;
+  class Mu2eG4TrackingAction;
   class ExtMonFNALPixelSD;
   class Mu2eG4IOConfigHelper;
 
@@ -78,7 +78,7 @@ namespace mu2e {
 
     PrimaryGeneratorAction* genAction_;
     Mu2eG4SteppingAction* steppingAction_;
-    TrackingAction* trackingAction_;
+    Mu2eG4TrackingAction* trackingAction_;
 
   };
 

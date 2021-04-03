@@ -5,14 +5,14 @@
 // #include <iostream>
 
 // Mu2e includes
-#include "Mu2eG4/inc/UserTrackInformation.hh"
+#include "Mu2eG4/inc/Mu2eG4UserTrackInformation.hh"
 #include "Mu2eG4/inc/Mu2eRecorderProcess.hh"
 
 // G4 includes
-#include "G4ios.hh"
-#include "G4VParticleChange.hh"
-#include "G4Track.hh"
-#include "G4Step.hh"
+#include "Geant4/G4ios.hh"
+#include "Geant4/G4VParticleChange.hh"
+#include "Geant4/G4Track.hh"
+#include "Geant4/G4Step.hh"
 
 namespace mu2e{
 
@@ -53,7 +53,7 @@ namespace mu2e{
       //      pParticleChange->DumpInfo();
     }
 
-    UserTrackInformation* ti = dynamic_cast<UserTrackInformation*>(trk.GetUserInformation());
+    Mu2eG4UserTrackInformation* ti = dynamic_cast<Mu2eG4UserTrackInformation*>(trk.GetUserInformation());
     // the two most important lines getting the intermediate info from the G4PostStepPoint
     ti->SetKineticEnergy(step.GetPostStepPoint()->GetKineticEnergy());
     ti->SetMomentumDirection(step.GetPostStepPoint()->GetMomentumDirection());

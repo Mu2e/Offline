@@ -6,7 +6,7 @@
 // Andrei Gaponenko, 2012
 //
 
-#include "G4VSensitiveDetector.hh"
+#include "Geant4/G4VSensitiveDetector.hh"
 #include "ExtinctionMonitorFNAL/Geometry/inc/ExtMonFNAL.hh"
 #include "canvas/Persistency/Provenance/ProductID.h"
 #include "art/Framework/Principal/Event.h"
@@ -18,7 +18,7 @@ namespace mu2e {
   class SimpleConfig;
   class SimParticleHelper;
 
-  // This class should not derive from Mu2eSensitiveDetector because the latter
+  // This class should not derive from Mu2eG4SensitiveDetector because the latter
   // presumes a wrong type for the hit collection.
   class ExtMonFNALPixelSD : public G4VSensitiveDetector {
 

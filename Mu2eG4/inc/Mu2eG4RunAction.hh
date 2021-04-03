@@ -11,9 +11,9 @@
 
 
 //G4 includes
-#include "G4UserRunAction.hh"
-#include "G4Run.hh"
-#include "G4SDManager.hh"
+#include "Geant4/G4UserRunAction.hh"
+#include "Geant4/G4Run.hh"
+#include "Geant4/G4SDManager.hh"
 
 #include "Mu2eG4/inc/Mu2eG4Config.hh"
 
@@ -23,7 +23,7 @@ namespace mu2e {
 
   class PhysicalVolumeHelper;
   class PhysicsProcessInfo;
-  class TrackingAction;
+  class Mu2eG4TrackingAction;
   class Mu2eG4SteppingAction;
   class SensitiveDetectorHelper;
 
@@ -34,7 +34,7 @@ namespace mu2e {
                     CLHEP::Hep3Vector const&,
                     PhysicalVolumeHelper*,
                     PhysicsProcessInfo*,
-                    TrackingAction*,
+                    Mu2eG4TrackingAction*,
                     Mu2eG4SteppingAction*,
                     SensitiveDetectorHelper*
                     );
@@ -53,7 +53,7 @@ namespace mu2e {
 
     PhysicalVolumeHelper* _physVolHelper;
     PhysicsProcessInfo* _processInfo;
-    TrackingAction* _trackingAction;
+    Mu2eG4TrackingAction* _trackingAction;
     Mu2eG4SteppingAction* _steppingAction;
 
     SensitiveDetectorHelper* _sensitiveDetectorHelper;

@@ -27,7 +27,7 @@
 #include "GeometryService/inc/GeometryService.hh"
 #include "Mu2eG4/inc/StrawSD.hh"
 #include "Mu2eG4/inc/findMaterialOrThrow.hh"
-#include "G4Helper/inc/G4Helper.hh"
+#include "Mu2eG4Helper/inc/Mu2eG4Helper.hh"
 #include "GeomPrimitives/inc/TubsParams.hh"
 #include "Mu2eG4/inc/nestTubs.hh"
 #include "Mu2eG4/inc/nestCons.hh"
@@ -35,14 +35,14 @@
 #include "MECOStyleProtonAbsorberGeom/inc/MECOStyleProtonAbsorber.hh"
 
 // G4 includes
-#include "G4Material.hh"
-#include "G4Colour.hh"
-#include "G4Tubs.hh"
-#include "G4LogicalVolume.hh"
-#include "G4ThreeVector.hh"
-#include "G4PVPlacement.hh"
-#include "G4VisAttributes.hh"
-#include "G4LogicalVolumeStore.hh"
+#include "Geant4/G4Material.hh"
+#include "Geant4/G4Colour.hh"
+#include "Geant4/G4Tubs.hh"
+#include "Geant4/G4LogicalVolume.hh"
+#include "Geant4/G4ThreeVector.hh"
+#include "Geant4/G4PVPlacement.hh"
+#include "Geant4/G4VisAttributes.hh"
+#include "Geant4/G4LogicalVolumeStore.hh"
 
 using namespace std;
 
@@ -60,6 +60,10 @@ namespace mu2e {
     const bool doSurfaceCheck          = geomOptions->doSurfaceCheck("stoppingTarget"); 
     const bool placePV                 = geomOptions->placePV("stoppingTarget"); 
 
+    bool const inGaragePosition = config.getBool("inGaragePosition",false);
+    bool const OPA_IPA_ST_Extracted = (inGaragePosition) ? config.getBool("garage.extractOPA_IPA_ST") : false;
+    double zOffGarage = (inGaragePosition && OPA_IPA_ST_Extracted) ? config.getDouble("garage.zOffset") : 0.;
+    CLHEP::Hep3Vector relPosFake(0.,0., zOffGarage); //for offsetting target in garage position
 
     int verbosity(config.getInt("stoppingTarget.verbosity",0));
 
@@ -67,7 +71,7 @@ namespace mu2e {
     // Master geometry for the Target assembly
     GeomHandle<StoppingTarget> target;
 
-    G4Helper    & _helper = *(art::ServiceHandle<G4Helper>());
+    Mu2eG4Helper    & _helper = *(art::ServiceHandle<Mu2eG4Helper>());
     AntiLeakRegistry & reg = _helper.antiLeakRegistry();
 
     //get the proton absorber elements to prevent overlaps
@@ -79,63 +83,63 @@ namespace mu2e {
       opaR1 = pabs->part(2).innerRadiusAtStart();
       opaR2 = pabs->part(2).innerRadiusAtEnd();
       if(!(cylinderRadius < opaR1 && cylinderRadius < opaR2)) { //could overlap
-	if(cylinderRadius > opaR1 && cylinderRadius > opaR2) 
-	  throw cet::exception("GEOM") << "constructStoppingTarget::" << __func__
-				       << ": Stopping target mother overlaps with OPA!\n";
-
-	//could overlap, so check if it does in this z range
-	opaZCenter = CLHEP::mm * pabs->part(2).center().z();
-	opaHL = pabs->part(2).halfLength();
-	stZCenter = target->centerInMu2e().z();
-	int side = (opaR1 <= opaR2) ? 1 : -1; //check which way the cone opens
-	zclosest = stZCenter - side*target->cylinderLength()/2.;
-	//make sure closest point is within OPA region
-	if(zclosest > opaZCenter + opaHL) zclosest = opaZCenter+opaHL;
-	else if(zclosest < opaZCenter - opaHL) zclosest = opaZCenter-opaHL;
-	rAtZClosest = opaR1 + (opaR2-opaR1)*(zclosest - (opaZCenter-opaHL))/(2.*opaHL); //linear radius change in z
-	if(rAtZClosest < cylinderRadius + 0.001) overlapPabs = true; //require a small buffer
+        if(cylinderRadius > opaR1 && cylinderRadius > opaR2) {
+          throw cet::exception("GEOM") << "constructStoppingTarget::" << __func__
+                                       << ": Stopping target mother overlaps with OPA!\n";
+        }
+        //could overlap, so check if it does in this z range
+        opaZCenter = CLHEP::mm * pabs->part(2).center().z();
+        opaHL = pabs->part(2).halfLength();
+        stZCenter = target->centerInMu2e().z();
+        int side = (opaR1 <= opaR2) ? 1 : -1; //check which way the cone opens
+        zclosest = stZCenter - side*target->cylinderLength()/2.;
+        //make sure closest point is within OPA region
+        if(zclosest > opaZCenter + opaHL) zclosest = opaZCenter+opaHL;
+        else if(zclosest < opaZCenter - opaHL) zclosest = opaZCenter-opaHL;
+        rAtZClosest = opaR1 + (opaR2-opaR1)*(zclosest - (opaZCenter-opaHL))/(2.*opaHL); //linear radius change in z
+        if(rAtZClosest < cylinderRadius + 0.001) overlapPabs = true; //require a small buffer
       } //end possible radius overlap check
     } //end OPA is available check
-    
+
     TubsParams targetMotherParams(0., target->cylinderRadius(), target->cylinderLength()/2.);
 
     VolumeInfo targetInfo;
     std::string targetMotherName = "StoppingTargetMother";
     if(!overlapPabs) {
       targetInfo = nestTubs(targetMotherName,
-			    targetMotherParams,
-			    findMaterialOrThrow(target->fillMaterial()),
-			    0,
-			    target->centerInMu2e() - parent.centerInMu2e(),
-			    parent,
-			    0,
-			    false/*visible*/,
-			    G4Colour::Black(),
-			    false/*solid*/,
-			    forceAuxEdgeVisible,
-			    placePV,
-			    doSurfaceCheck
-			    );
+                            targetMotherParams,
+                            findMaterialOrThrow(target->fillMaterial()),
+                            0,
+                            target->centerInMu2e() - parent.centerInMu2e() + relPosFake,
+                            parent,
+                            0,
+                            false/*visible*/,
+                            G4Colour::Black(),
+                            false/*solid*/,
+                            forceAuxEdgeVisible,
+                            placePV,
+                            doSurfaceCheck
+                            );
     } else { //if going to overlap, make a conic section mother volume
       //simply follow the OPA with a small gap
-      double motherParams[7] = {0., rAtZClosest-0.001, 
-				0., rAtZClosest + abs(opaR2 - opaR1)/(2.*opaHL)*target->cylinderLength() - 0.001,
-				target->cylinderLength()/2.,
-				0.0, 360.0*CLHEP::degree}; 
+      double motherParams[7] = {0., rAtZClosest-0.001,
+                                0., rAtZClosest + abs(opaR2 - opaR1)/(2.*opaHL)*target->cylinderLength() - 0.001,
+                                target->cylinderLength()/2.,
+                                0.0, 360.0*CLHEP::degree};
       targetInfo = nestCons(targetMotherName,
-			    motherParams,
-			    findMaterialOrThrow(target->fillMaterial()),
-			    0,
-			    target->centerInMu2e() - parent.centerInMu2e(),
-			    parent,
-			    0,
-			    false/*visible*/,
-			    G4Colour::Black(),
-			    false/*solid*/,
-			    forceAuxEdgeVisible,
-			    placePV,
-			    doSurfaceCheck
-			    );
+                            motherParams,
+                            findMaterialOrThrow(target->fillMaterial()),
+                            0,
+                            target->centerInMu2e() - parent.centerInMu2e() + relPosFake,
+                            parent,
+                            0,
+                            false/*visible*/,
+                            G4Colour::Black(),
+                            false/*solid*/,
+                            forceAuxEdgeVisible,
+                            placePV,
+                            doSurfaceCheck
+                            );
 
     }
 
@@ -173,7 +177,7 @@ namespace mu2e {
         // rotation matrix...
         G4RotationMatrix* rot = 0; //... will have to wait
 
-        G4ThreeVector foilOffset(foil.centerInMu2e() - targetInfo.centerInMu2e());
+        G4ThreeVector foilOffset(foil.centerInMu2e() - targetInfo.centerInMu2e() + relPosFake);
         if ( verbosity > 1 ) std::cout << "foil " 
                                   << itf
                                   << " centerInMu2e=" 
@@ -258,7 +262,7 @@ namespace mu2e {
 
         // vector where to place to support tube
         // first find target center
-        G4ThreeVector supportStructureOffset(supportStructure.centerInMu2e() - targetInfo.centerInMu2e()); 
+        G4ThreeVector supportStructureOffset(supportStructure.centerInMu2e() - targetInfo.centerInMu2e() + relPosFake); 
 
         if ( verbosity > 1 ) std::cout << supportStructureInfo.name << " "
                                   << itf 

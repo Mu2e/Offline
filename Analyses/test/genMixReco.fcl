@@ -45,7 +45,7 @@ services : {
     GeometryService        : { inputFile      : "JobConfig/TDR/geom_MothersToHits.txt" }
     ConditionsService      : { conditionsfile : "Mu2eG4/test/conditions_01.txt"        }
     GlobalConstantsService : { inputFile      : "Mu2eG4/test/globalConstants_01.txt"   }
-    G4Helper               : { }
+    Mu2eG4Helper           : { }
     BTrkHelper             : @local::BTrkHelperDefault
     SeedService            : @local::automaticSeeds
 }

@@ -3,7 +3,7 @@
 #ifndef Mu2eG4_Mu2eG4StackingAction_hh
 #define Mu2eG4_Mu2eG4StackingAction_hh
 
-#include "G4UserStackingAction.hh"
+#include "Geant4/G4UserStackingAction.hh"
 
 #include "Mu2eG4/inc/IMu2eG4Cut.hh"
 

@@ -15,11 +15,11 @@
 #include "Mu2eG4/inc/findMaterialOrThrow.hh"
 #include "Mu2eG4/inc/nestTubs.hh"
 #include "Mu2eG4/inc/nestCons.hh"
-#include "G4Helper/inc/VolumeInfo.hh"
+#include "Mu2eG4Helper/inc/VolumeInfo.hh"
 #include "ConfigTools/inc/SimpleConfig.hh"
-#include "G4Helper/inc/G4Helper.hh"
+#include "Mu2eG4Helper/inc/Mu2eG4Helper.hh"
 
-#include "G4LogicalVolume.hh"
+#include "Geant4/G4LogicalVolume.hh"
 
 namespace mu2e {
 
@@ -92,7 +92,7 @@ namespace mu2e {
     }
 
     // get the mass of the Shell
-    G4Helper* _helper = &(*art::ServiceHandle<G4Helper>());
+    Mu2eG4Helper* _helper = &(*art::ServiceHandle<Mu2eG4Helper>());
     verbosityLevel 
       && std::cout << __func__ << " " << sName << " Mass in kg: " 
                    << _helper->locateVolInfo(sName).logical->GetMass()/CLHEP::kg 

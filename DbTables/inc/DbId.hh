@@ -7,15 +7,15 @@ namespace mu2e {
 
   class DbId {
   public:
-    DbId() { setDb("mu2e_conditions_prd"); }
-    DbId(std::string const& name) { setDb(name.c_str()); }
-    DbId(const char* name) { setDb(name); }
+    DbId() {}
+    DbId(std::string const& name, std::string const& host, std::string const& port,
+	 std::string const& url, std::string const& urlNoCache):
+      _name(name),_host(host),_port(port),_url(url),_urlNoCache(urlNoCache) {}
     const std::string& name() const { return _name; }
     const std::string& host() const { return _host; }
     const std::string& port() const { return _port; }
     const std::string& url() const { return _url; }
     const std::string& urlNoCache() const { return _urlNoCache; }
-    void setDb(std::string const& name);
   private:
     std::string _name;
     std::string _host;

@@ -15,12 +15,12 @@
 
 
 // Mu2e includes
-#include "G4Helper/inc/G4Helper.hh"
+#include "Mu2eG4Helper/inc/Mu2eG4Helper.hh"
 #include "GeometryService/inc/GeometryService.hh"
 #include "Mu2eG4/inc/Mu2eG4Config.hh"
 
 // G4 includes
-#include "G4Types.hh"
+#include "Geant4/G4Types.hh"
 
 //G4 forward reference
 class G4VPhysicalVolume;
@@ -57,8 +57,8 @@ namespace mu2e {
     // Stash a pointer to the config object so that all methods can get at it easily.
     SimpleConfig const & _config; // make it ref?? (some functions need to change before it...
 
-    // Access to the G4HelperService.
-    G4Helper * _helper;
+    // Access to the Mu2eG4HelperService.
+    Mu2eG4Helper * _helper;
 
     int  _verbosityLevel;
     int  _g4VerbosityLevel; // for non geometry related printouts

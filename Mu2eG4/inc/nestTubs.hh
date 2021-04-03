@@ -10,7 +10,7 @@
 #include <string>
 #include <vector>
 
-#include "G4Helper/inc/VolumeInfo.hh"
+#include "Mu2eG4Helper/inc/VolumeInfo.hh"
 #include "GeomPrimitives/inc/TubsParams.hh"
 
 class G4CSGSolid;
@@ -19,9 +19,9 @@ class G4Material;
 class G4VPhysicalVolume;
 
 // G4 includes
-#include "G4Colour.hh"
-#include "G4RotationMatrix.hh"
-#include "G4ThreeVector.hh"
+#include "Geant4/G4Colour.hh"
+#include "Geant4/G4RotationMatrix.hh"
+#include "Geant4/G4ThreeVector.hh"
 
 
 namespace mu2e {

@@ -20,16 +20,16 @@
 #include "TrackerGeom/inc/Tracker.hh"
 
 // G4 includes
-#include "G4RunManager.hh"
-#include "G4Step.hh"
-#include "G4ios.hh"
+#include "Geant4/G4RunManager.hh"
+#include "Geant4/G4Step.hh"
+#include "Geant4/G4ios.hh"
 
 using namespace std;
 
 namespace mu2e {
 
   TrackerPlaneSupportSD::TrackerPlaneSupportSD(G4String name, SimpleConfig const & config ):
-    Mu2eSensitiveDetector(name,config)
+    Mu2eG4SensitiveDetector(name,config)
   {
 
     SetVerboseLevel(config.getInt("tracker.verbosityLevel",0));

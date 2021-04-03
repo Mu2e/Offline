@@ -33,10 +33,10 @@
 #include "ConfigTools/inc/SimpleConfig.hh"
 
 // G4 includes
-#include "G4RunManager.hh"
-#include "G4Step.hh"
-#include "G4ThreeVector.hh"
-#include "G4ios.hh"
+#include "Geant4/G4RunManager.hh"
+#include "Geant4/G4Step.hh"
+#include "Geant4/G4ThreeVector.hh"
+#include "Geant4/G4ios.hh"
 
 //
 // Outstanding questions:
@@ -49,7 +49,7 @@ using namespace std;
 namespace mu2e {
 
   StrawSD::StrawSD(G4String name, SimpleConfig const & config ):
-    Mu2eSensitiveDetector(name,config),
+    Mu2eG4SensitiveDetector(name,config),
     _nStrawsPerPlane(0),
     _nStrawsPerPanel(0),
     _TrackerVersion(0),

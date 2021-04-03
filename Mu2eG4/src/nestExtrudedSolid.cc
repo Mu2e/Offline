@@ -10,11 +10,11 @@
 #include "Mu2eG4/inc/finishNesting.hh"
 
 // G4 includes
-#include "G4ExtrudedSolid.hh"
-#include "G4LogicalVolume.hh"
-#include "G4Material.hh"
-#include "G4TwoVector.hh"
-#include "G4ThreeVector.hh"
+#include "Geant4/G4ExtrudedSolid.hh"
+#include "Geant4/G4LogicalVolume.hh"
+#include "Geant4/G4Material.hh"
+#include "Geant4/G4TwoVector.hh"
+#include "Geant4/G4ThreeVector.hh"
 
 using namespace std;
 

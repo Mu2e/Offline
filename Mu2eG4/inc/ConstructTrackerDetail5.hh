@@ -8,8 +8,8 @@
 // This implementation by David N. Brown (Louisville), November 2017
 //
 
-#include "G4Helper/inc/VolumeInfo.hh"
-#include "G4RotationMatrix.hh"
+#include "Mu2eG4Helper/inc/VolumeInfo.hh"
+#include "Geant4/G4RotationMatrix.hh"
 #include "GeomPrimitives/inc/TubsParams.hh"
 #include "DataProducts/inc/StrawId.hh"
 
@@ -18,7 +18,7 @@
 namespace mu2e {
 
   class SimpleConfig;
-  class G4Helper;
+  class Mu2eG4Helper;
   class AntiLeakRegistry;
   class Tracker;
 
@@ -91,7 +91,7 @@ namespace mu2e {
     VolumeInfo   const& _ds3Vac;
     SimpleConfig const& _config;
 
-    G4Helper&          _helper;
+    Mu2eG4Helper&          _helper;
     AntiLeakRegistry & _reg;
 
     Tracker const& _tracker;

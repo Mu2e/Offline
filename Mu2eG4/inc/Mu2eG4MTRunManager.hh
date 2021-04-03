@@ -9,7 +9,7 @@
 
 
 // Included from Geant4
-#include "G4MTRunManager.hh"
+#include "Geant4/G4MTRunManager.hh"
 
 //Mu2e includes
 #include "Mu2eG4/inc/Mu2eG4Config.hh"
