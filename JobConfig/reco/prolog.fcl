@@ -6,6 +6,7 @@
 #include "TrkHitReco/fcl/prolog.fcl"
 #include "TrkReco/fcl/prolog.fcl"
 #include "TrkPatRec/fcl/prolog.fcl"
+#include "Mu2eKinKal/fcl/prolog.fcl"
 #include "CaloReco/fcl/prolog.fcl"
 #include "CaloCluster/fcl/prolog.fcl"
 #include "CaloMC/fcl/prolog.fcl"
@@ -91,6 +92,28 @@ Reconstruction : {
       @table::Tracking.producers.KSFUmuP
       SeedCollection             : MHUmuP
     }
+# KinKal fits
+    KKSDeM : {
+      @table::Mu2eKinKal.producers.KKDeMSeedFit
+      ModuleSettings : {
+	@table::Mu2eKinKal.producers.KKDeMSeedFit.ModuleSettings
+	HelixSeedCollections : [ "MHDeM" ]
+        ComboHitCollection : "makeSH"
+        StrawHitFlagCollection : "FlagBkgHitss:StrawHits"
+        PrintLevel : 0
+      }
+    }
+    KKSDeP : {
+      @table::Mu2eKinKal.producers.KKDePSeedFit
+      ModuleSettings : {
+	@table::Mu2eKinKal.producers.KKDePSeedFit.ModuleSettings
+	HelixSeedCollections : [ "MHDeP" ]
+        ComboHitCollection : "makeSH"
+        StrawHitFlagCollection : "FlagBkgHitss:StrawHits"
+        PrintLevel : 0
+      }
+    }
+
     # Implicit TrkPatRec config for Final Fits and upstream fits (no merging)
     #
     # Prune output so that only parts related to reconstructed objects are kept
@@ -112,9 +135,9 @@ Reconstruction : {
        CrvCoincidenceClusterCollection : "CrvCoincidenceClusterFinder"
        StrawDigiMCCollection : "compressDigiMCs"
        CrvDigiMCCollection : "compressDigiMCs"
-       KFFInstances  : ["KFFDeM", "KFFDeP", "KFFDmuM", "KFFDmuP",
+       KalSeedCollections  : ["KFFDeM", "KFFDeP", "KFFDmuM", "KFFDmuP",
 		     "KFFUeM", "KFFUeP", "KFFUmuM", "KFFUmuP" ]
-       MHInstances  : ["MHDeM", "MHDeP", "MHDmuM", "MHDmuP",
+       HelixSeedCollections  : ["MHDeM", "MHDeP", "MHDmuM", "MHDmuP",
 		     "MHUeM", "MHUeP", "MHUmuM", "MHUmuP" ]
       VDSPCollection : "compressDigiMCs:virtualdetector"
     }
@@ -174,6 +197,7 @@ Reconstruction : {
     CalTimePeakFinder, CalHelixFinderDe,  # CalPatRec
     MHDeM, MHDeP, # helix merging
     KSFDeM, KSFDeP, # Seed fit (chisquared, no drift)
+    KKSDeM, KKSDeP, # KinKal seed fits
     KFFDeM, KFFDeP # final Kalman filter fit
   ]
 # Upstream electron sequence (plus and minus): TrkPatRec only

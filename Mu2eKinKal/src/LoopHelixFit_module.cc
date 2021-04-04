@@ -119,6 +119,7 @@ namespace mu2e {
       fhicl::Sequence<std::string> helixFlags { Name("HelixFlags"), Comment("Flags required to be present to convert a helix seed to a KinKal track") };
       fhicl::Atom<int> printLevel { Name("PrintLevel"), Comment("Diagnostic printout Level"), 0 };
       fhicl::Atom<bool> saveAll { Name("SaveAllFits"), Comment("Save all fits, whether they suceed or not"),false };
+      fhicl::Atom<bool> saveFull { Name("SaveFullFit"), Comment("Save all helix segments associated with the fit")};
       fhicl::Sequence<float> zsave { Name("ZSavePositions"), Comment("Z positions to sample and save the fit result helices")};
     };
 
@@ -196,7 +197,7 @@ namespace mu2e {
     art::ProductToken<ComboHitCollection> chcol_T_;
     art::ProductToken<StrawHitFlagCollection> shfcol_T_;
     TrkFitFlag goodhelix_;
-    bool saveall_;
+    bool saveall_, savefull_;
     std::vector<float> zsave_;
     TrkFitDirection tdir_;
     PDGCode::type tpart_;
@@ -228,6 +229,7 @@ namespace mu2e {
     shfcol_T_(mayConsume<StrawHitFlagCollection>(config().modsettings().strawHitFlagCollection())),
     goodhelix_(config().modsettings().helixFlags()),
     saveall_(config().modsettings().saveAll()),
+    savefull_(config().modsettings().saveFull()),
     zsave_(config().modsettings().zsave()),
     tdir_(static_cast<TrkFitDirection::FitDirection>(config().fitsettings().fitDirection())), tpart_(static_cast<PDGCode::type>(config().fitsettings().fitParticle())),
     print_(config().modsettings().printLevel()),
@@ -346,7 +348,8 @@ namespace mu2e {
       for(size_t iseed=0; iseed < hseedcol.size(); ++iseed) {
 	auto const& hseed = hseedcol[iseed];
   	auto hptr = HPtr(hseedcol_h,iseed);
-	if(hseed.status().hasAllProperties(goodhelix_)){
+	// check helicity.  The test on the charge and helicity 
+	if(hseed.status().hasAllProperties(goodhelix_) ){
 	  // construt the seed trajectory
 	  KTRAJ seedtraj = makeSeedTraj(hseed); 
 	  // construct hit amd material objects from Helix hits
@@ -368,6 +371,7 @@ namespace mu2e {
 	  // add calorimeter front face and other passive material TODO
 	  // create and fit the track  
 	  auto kktrk = make_unique<KKTRK>(kkconfig_,*kkbf_,seedtraj,thits,exings);
+	  // Check fit for physical consistency; it can succeed but have the wrong charge TODO
 	  if(kktrk->fitStatus().usable() || saveall_){
 	  // convert fits into KalSeeds for persistence	
 	    kkseedcol->push_back(createSeed(*kktrk,hptr));
@@ -386,6 +390,8 @@ namespace mu2e {
     fflag.merge(TrkFitFlag::KKLoopHelix);
     if(kktrk.fitStatus().usable()) fflag.merge(TrkFitFlag::kalmanOK);
     if(kktrk.fitStatus().status_ == Status::converged) fflag.merge(TrkFitFlag::kalmanConverged);
+    if(addmat_)fflag.merge(TrkFitFlag::MatCorr);
+    if(kkconfig_.bfcorr_ != 0)fflag.merge(TrkFitFlag::BFCorr);
     // explicit T0 is needed for backwards-compatibility; sample from the appropriate trajectory piece
     auto const& fittraj = kktrk.fitTraj();
     double tz0 = zTime(fittraj,0.0);
@@ -397,6 +403,7 @@ namespace mu2e {
     auto const& fstatus = kktrk.fitStatus();
     fseed._chisq = fstatus.chisq_.chisq();
     fseed._fitcon = fstatus.chisq_.probability();
+    fseed._nseg = fittraj.pieces().size();
     // loop over individual effects
     for(auto const& eff: kktrk.effects()) {
       const KKHIT* kkhit = dynamic_cast<const KKHIT*>(eff.get());
@@ -433,17 +440,22 @@ namespace mu2e {
       }
       //      const KKMAT* kkmat = dynamic_cast<const KKMAT*>(eff.get());
       //TrkUtilities::fillStraws(ktrk,fseed._straws); TODO!!
-      const KKBF* kkbf = dynamic_cast<const KKBF*>(eff.get());
-      if(kkbf != 0)fseed._nbend++;
     }
     // sample the fit at the requested z positions.
-    for(auto zpos : zsave_ ) {
-      // compute the time the trajectory crosses this plane
-      double tz = zTime(fittraj,zpos);
-      // find the explicit trajectory piece at this time
-      auto const& zpiece = fittraj.nearestPiece(tz);
-      // construct and add the segment
-      fseed._segments.emplace_back(zpiece,tz);
+    if(savefull_){
+// loop over all pieces of the fit trajectory
+      for (auto const& traj : fittraj.pieces() ) {
+	fseed._segments.emplace_back(traj,traj.range().mid());
+      }
+    } else {
+      for(auto zpos : zsave_ ) {
+	// compute the time the trajectory crosses this plane
+	double tz = zTime(fittraj,zpos);
+	// find the explicit trajectory piece at this time
+	auto const& zpiece = fittraj.nearestPiece(tz);
+	// construct and add the segment
+	fseed._segments.emplace_back(zpiece,tz);
+      }
     }
     return fseed;
   }

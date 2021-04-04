@@ -26,7 +26,8 @@ Mu2eKinKal : {
   
     ModuleSettings : {
       HelixFlags : [ "HelixOK" ] # why doesn't "HitsOK" work?? FIXME!
-      ZSavePositions : [-1522.0,0.0,1522.0]
+      SaveFullFit : true
+      ZSavePositions : [0.0]
     }
     MetaIterationSettings : [ 
       [ 10.0, 1.0, 10.0 ],
