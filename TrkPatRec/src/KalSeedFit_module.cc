@@ -354,7 +354,7 @@ namespace mu2e
 
 	  KalSeed kseed(PDGCode::type(_result.krep->particleType().particleType()),_fdir,kf.status(), _result.krep->flt0());
 	  kseed._status.merge(_ksf);
-
+	  if(_result.krep->fitStatus().success())kseed._status.merge(TrkFitFlag::kalmanOK);
 	  // add CaloCluster if present
 	  kseed._chit._cluster = hseed.caloCluster();
 	  // fill ptr to the helix seed
