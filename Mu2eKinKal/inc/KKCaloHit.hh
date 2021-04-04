@@ -30,8 +30,10 @@ namespace mu2e {
       void updateState(PKTRAJ const& pktraj, MetaIterConfig const& config) override;
       void print(std::ostream& ost=std::cout,int detail=0) const override;
       // scintHit explicit interface
-      KKCaloHit(CCPtr caloCluster, Line const& sensorAxis, double tvar, double wvar) : 
-	caloCluster_(caloCluster), saxis_(sensorAxis), tvar_(tvar), wvar_(wvar), active_(true), precision_(1e-6) {}
+      KKCaloHit(CCPtr caloCluster,  Line const& sensorAxis, PKTRAJ const& ptraj, double tvar, double wvar) : 
+	caloCluster_(caloCluster), saxis_(sensorAxis), tvar_(tvar), wvar_(wvar), active_(true), precision_(1e-6) {
+	  update(ptraj);
+	}
       virtual ~KKCaloHit(){}
       Residual const& timeResidual() const { return rresid_; }
       // the line encapsulates both the measurement value (through t0), and the light propagation model (through the velocity)

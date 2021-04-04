@@ -188,9 +188,9 @@ namespace mu2e {
     // utility functions
     KalSeed createSeed(KKTRK const& ktrk,HPtr const& hptr) const;
     KTRAJ makeSeedTraj(HelixSeed const& hseed) const;
-    void makeStrawHits(Tracker const& tracker,StrawResponse const& strawresponse,KTRAJ const& ktraj,ComboHitCollection const& hhits,StrawHitIndexCollection const& shidxs,
+    void makeStrawHits(Tracker const& tracker,StrawResponse const& strawresponse,PKTRAJ const& pktraj,ComboHitCollection const& hhits,StrawHitIndexCollection const& shidxs,
       MEASCOL& thits,EXINGCOL& exings) const;
-    void makeCaloHit(CCPtr const& cluster, MEASCOL& thits) const;
+    void makeCaloHit(CCPtr const& cluster, PKTRAJ const& pktraj, MEASCOL& thits) const;
     double zTime(PKTRAJ const& trak, double zpos) const; // find the time the trajectory crosses the plane perp to z at the given z position
     // data payload
     std::vector<art::ProductToken<HelixSeedCollection>> hseedCols_;
@@ -351,7 +351,9 @@ namespace mu2e {
 	// check helicity.  The test on the charge and helicity 
 	if(hseed.status().hasAllProperties(goodhelix_) ){
 	  // construt the seed trajectory
-	  KTRAJ seedtraj = makeSeedTraj(hseed); 
+	  KTRAJ seedtraj = makeSeedTraj(hseed);
+	  // wrap the seed traj in a Piecewise traj: needed to satisfy PTOCA interface
+	  PKTRAJ pseedtraj(seedtraj);
 	  // construct hit amd material objects from Helix hits
 	  MEASCOL thits; // polymorphic container of hits
 	  EXINGCOL exings; // polymorphic container of detector element crossings
@@ -359,20 +361,29 @@ namespace mu2e {
 	  StrawHitIndexCollection strawHitIdxs;
 	  auto const& hhits = hseed.hits();
 	  for(size_t ihit = 0; ihit < hhits.size(); ++ihit ){ hhits.fillStrawHitIndices(event,ihit,strawHitIdxs); }
-	  makeStrawHits(*tracker, *strawresponse, seedtraj,chcol,strawHitIdxs,thits,exings);
+	  makeStrawHits(*tracker, *strawresponse, pseedtraj,chcol,strawHitIdxs,thits,exings);
 	  if (usecalo_){
 	    if(hseed.caloCluster()){
-	      makeCaloHit(hseed.caloCluster(),thits);
-	    } else {
-	      // search for matching low-energy clusters TODO
+	      makeCaloHit(hseed.caloCluster(),pseedtraj, thits);
 	    }
 	  }
-	  // add nearby unused straws as passive material TODO
-	  // add calorimeter front face and other passive material TODO
+	  // reset the  seed range given the TPOCA values
+	  double tmin = std::numeric_limits<float>::max();
+	  double tmax = std::numeric_limits<float>::min();
+	  for( auto const& thit : thits) {
+	    tmin = std::min(tmin,thit->time());
+	    tmax = std::max(tmax,thit->time());
+	  }
+	  seedtraj.range() = TimeRange(tmin-tbuff_,tmax+tbuff_);
 	  // create and fit the track  
 	  auto kktrk = make_unique<KKTRK>(kkconfig_,*kkbf_,seedtraj,thits,exings);
-	  // Check fit for physical consistency; it can succeed but have the wrong charge TODO
-	  if(kktrk->fitStatus().usable() || saveall_){
+	  bool save(false);
+	  if(kktrk->fitStatus().usable()){
+	    // Check fit for physical consistency; fit can succeed but the result can have the wrong charge
+	    auto const& midtraj = kktrk->fitTraj().nearestPiece(kktrk->fitTraj().range().mid());
+	    save = midtraj.Q()*midtraj.rad() > 0;
+	  }
+	  if(save || saveall_){
 	  // convert fits into KalSeeds for persistence	
 	    kkseedcol->push_back(createSeed(*kktrk,hptr));
 	    kktrkcol->push_back(kktrk.release());
@@ -461,7 +472,7 @@ namespace mu2e {
   }
 
   KTRAJ LoopHelixFit::makeSeedTraj(HelixSeed const& hseed) const {
-  // first, find the time range of the hits
+  // first, find the time range of the hits. This will grossly over-estimate the range, due to drift, but it's a start
     auto const& hhits = hseed.hits();
     float tmin = std::numeric_limits<float>::max();
     float tmax = std::numeric_limits<float>::min();
@@ -496,11 +507,9 @@ namespace mu2e {
     return KTRAJ(kkpars, mass_, charge_, bnom, trange );
   }
 
-  void LoopHelixFit::makeStrawHits(Tracker const& tracker,StrawResponse const& strawresponse,KTRAJ const& seedtraj,
+  void LoopHelixFit::makeStrawHits(Tracker const& tracker,StrawResponse const& strawresponse,PKTRAJ const& ptraj,
       ComboHitCollection const& chcol, StrawHitIndexCollection const& strawHitIdxs,
       MEASCOL& thits,EXINGCOL& exings) const {
-  // wrap the seed traj in a Piecewise traj: needed to satisfy PTOCA interface
-    PKTRAJ pseedtraj(seedtraj);
     // loop over the individual straw hits
     for(auto strawidx : strawHitIdxs) {
       const ComboHit& strawhit(chcol.at(strawidx));
@@ -520,9 +529,9 @@ namespace mu2e {
       // compute 'hint' to TPOCA.  correct the hit time using the time division
       double psign = propdir.dot(straw.wireDirection());  // wire distance is WRT straw center, in the nominal wire direction
       double htime = wline.t0() - (straw.halfLength()-psign*strawhit.wireDist())/wline.speed();
-      CAHint hint(seedtraj.ztime(vp0.Z()),htime);
+      CAHint hint(ptraj.front().ztime(vp0.Z()),htime);
       // compute a preliminary PTCA between the seed trajectory and this straw.
-      PTCA ptca(pseedtraj, wline, hint, tpocaprec_);
+      PTCA ptca(ptraj, wline, hint, tpocaprec_);
       // create the material crossing
       if(addmat_){
 	exings.push_back(std::make_shared<STRAWXING>(ptca,*smat_));
@@ -535,7 +544,7 @@ namespace mu2e {
     }
   }
 
-  void LoopHelixFit::makeCaloHit(CCPtr const& cluster, MEASCOL& thits) const {
+  void LoopHelixFit::makeCaloHit(CCPtr const& cluster, PKTRAJ const& ptraj, MEASCOL& thits) const {
     // move cluster COG into the tracker frame.  COG is at the front face of the disk
     GeomHandle<mu2e::Calorimeter> calo_h;
     CLHEP::Hep3Vector cog = calo_h->geomUtil().mu2eToTracker(calo_h->geomUtil().diskFFToMu2e( cluster->diskID(), cluster->cog3Vector()));
@@ -548,7 +557,7 @@ namespace mu2e {
     double tvar = cluster->timeErr()*cluster->timeErr();
     double wvar = caloPosRes_*caloPosRes_;
     // verify the cluster looks physically reasonable before adding it TODO!
-    thits.push_back(std::make_shared<KKCALOHIT>(cluster,cogaxis,tvar,wvar));
+    thits.push_back(std::make_shared<KKCALOHIT>(cluster,cogaxis,ptraj,tvar,wvar));
     if(print_ > 2)thits.back()->print(std::cout,2);
   }
 
