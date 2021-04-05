@@ -32,6 +32,7 @@ using namespace std;
 #include "EventDisplay/src/dict_classes/EventDisplayViewSetup.h"
 #include "EventDisplay/src/dict_classes/ComponentInfoContainer.h"
 #include "EventDisplay/src/dict_classes/HistDraw.h"
+#include "ConfigTools/inc/ConfigFileLookupPolicy.hh"
 
 #include "TGGC.h"
 #include "TGFont.h"
@@ -397,8 +398,8 @@ EventDisplayFrame::EventDisplayFrame(const TGWindow* p, UInt_t w, UInt_t h, fhic
   applyButton->Associate(this);
   goButton->Associate(this);
 
-  std::string logoFileName=getenv("MU2E_BASE_RELEASE");
-  logoFileName.append("/EventDisplay/src/logo_small.png");
+  mu2e::ConfigFileLookupPolicy configFile;
+  std::string logoFileName = configFile("EventDisplay/src/logo_small.png");
   const TGPicture *logo = gClient->GetPicture(logoFileName.c_str());
   TGIcon *icon = new TGIcon(navigationFrame, logo, 50, 50);
   navigationFrame->AddFrame(icon, new TGLayoutHints(kLHintsLeft,20,0,0,0));
