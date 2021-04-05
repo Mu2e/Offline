@@ -13,6 +13,8 @@
 #include "ConditionsService/inc/AcceleratorParams.hh"
 #include "ConditionsService/inc/CrvParams.hh"
 #include "ConditionsService/inc/ConditionsHandle.hh"
+#include "ProditionsService/inc/ProditionsHandle.hh"
+#include "DAQConditions/inc/EventTiming.hh"
 #include "GeometryService/inc/DetectorSystem.hh"
 #include "GeometryService/inc/GeomHandle.hh"
 #include "GeometryService/inc/GeometryService.hh"
@@ -50,6 +52,7 @@ namespace mu2e
 
     double      _digitizationPeriod;
     std::string _crvWaveformsModuleLabel;
+    double      _digitizationStart, _digitizationEnd;
     std::string _eventWindowMarkerLabel;
     double      _ADCconversionFactor;
     int         _pedestal;
@@ -58,6 +61,8 @@ namespace mu2e
   CrvDigitizer::CrvDigitizer(fhicl::ParameterSet const& pset) :
     art::EDProducer{pset},
     _crvWaveformsModuleLabel(pset.get<std::string>("crvWaveformsModuleLabel")),
+    _digitizationStart(pset.get<double>("digitizationStart")),       //400ns
+    _digitizationEnd(pset.get<double>("digitizationEnd")),           //1750ns
     _eventWindowMarkerLabel(pset.get<std::string>("EventWindowMarker","EWMProducer")),
     _ADCconversionFactor(pset.get<double>("ADCconversionFactor")),
     _pedestal(pset.get<int>("pedestal"))
@@ -84,7 +89,20 @@ namespace mu2e
   {
     art::Handle<EventWindowMarker> eventWindowMarker;
     event.getByLabel(_eventWindowMarkerLabel,"",eventWindowMarker);
-    double eventWindowLength = eventWindowMarker->eventLength();
+    EventWindowMarker::SpillType spillType = eventWindowMarker->spillType();
+
+    ProditionsHandle<EventTiming> eventTimingHandle;
+    const EventTiming &eventTiming = eventTimingHandle.get(event.id());
+    double TDC0time = eventTiming.timeFromProtonsToDRMarker();
+
+    double digitizationStart=_digitizationStart;
+    double digitizationEnd=_digitizationEnd;
+    if(spillType!=EventWindowMarker::SpillType::onspill)
+    {
+      double eventWindowLength = eventWindowMarker->eventLength();
+      digitizationStart = TDC0time;
+      digitizationEnd = digitizationStart + eventWindowLength;
+    }
 
     std::unique_ptr<CrvDigiCollection> crvDigiCollection(new CrvDigiCollection);
 
@@ -98,10 +116,14 @@ namespace mu2e
       const CRSScintillatorBarIndex &barIndex = crvDigiMC.GetScintillatorBarIndex();
       const int SiPM = crvDigiMC.GetSiPMNumber();
       const std::array<double,CrvDigiMC::NSamples> &voltages = crvDigiMC.GetVoltages();
-      const double startTime = crvDigiMC.GetStartTime();
+      double startTime = crvDigiMC.GetStartTime();
 
-      //ADC samples cannot be recorded after the end of the event window
-      if(startTime+CrvDigi::NSamples*_digitizationPeriod>eventWindowLength) continue;
+      //waveform get recorded only between digitization start and end
+      if(startTime<digitizationStart || startTime>digitizationEnd) continue;
+
+      //start time gets measured with respect to the event window start
+      startTime-=TDC0time;
+      if(startTime<0) continue; //this shouldn't happen
 
       std::vector<double> voltageVector;
       for(size_t i=0; i<voltages.size(); i++) voltageVector.push_back(voltages[i]); 
