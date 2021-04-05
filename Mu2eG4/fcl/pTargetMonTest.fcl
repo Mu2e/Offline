@@ -1,0 +1,62 @@
+# Testing the Production Target Monitoring PWC's
+
+#include "fcl/minimalMessageService.fcl"
+#include "fcl/standardProducers.fcl"
+#include "fcl/standardServices.fcl"
+
+process_name : pTargetMonTest
+
+source : { module_type : EmptyEvent maxEvents : 100 }
+
+services : {
+   @table::Services.Sim
+   TFileService : { fileName : "pTargetMonTestOut.root" }
+}
+
+physics : {
+   producers:  {
+      generate: {
+         module_type          : PrimaryProtonGun
+         beamDisplacementOnTarget: [5.0, 0.0, 0.0]
+         beamSpotSigma: 0.1
+      }
+
+      g4run :  @local::g4run
+   }
+
+   analyzers : {
+      # Look at the hits from virtualdetectors
+      readvd: {
+         module_type      : ReadVirtualDetector
+         vdStepPoints     : "g4run:virtualdetector"
+         savePDG          : [11,2212]
+         maxPrint         : 201
+      }
+
+   }
+
+   p1 : [generate , g4run ]
+   e1 : [readvd, outfile]
+   trigger_paths  : [p1]
+   end_paths      : [e1]
+}
+
+outputs:  {
+
+  outfile : {
+    module_type   :   RootOutput
+    fileName      :   "pTargetMonTestOut.art"
+  }
+
+}
+
+// TODO return the following to geom_common.txt before you're done
+services.GeometryService.inputFile : "Mu2eG4/geom/geom_common_LOCALTEST.txt"
+
+// Disable all physics except transport.
+physics.producers.g4run.physics.physicsListName: "Minimal"
+physics.producers.g4run.SDConfig.sensitiveVolumes: ["VirtualDetector_pTargetMonGroundIn_1", "VirtualDetector_pTargetMonGroundIn_2"]
+//physics.producers.g4run.SDConfig.enableSD     : [virtualdetector]
+
+services.SeedService.baseSeed         :  8
+services.SeedService.maxUniqueEngines :  20

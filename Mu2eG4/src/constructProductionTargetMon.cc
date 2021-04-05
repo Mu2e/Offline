@@ -275,15 +275,9 @@ namespace mu2e {
 
 
     void constructProductionTargetMon(VolumeInfo const & parent, SimpleConfig const & _config) {
-        cout << endl << endl;
-        cout << "~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~" << endl;
-        cout << "Now ENTERING constructProductionTargetMon" << endl;
-        cout << "~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~" << endl << endl;
-        // for now, do this in a simple way that hopefully works?
         double height = _config.getDouble("pTargetMon_height");
         double width = _config.getDouble("pTargetMon_width");
         double length = _config.getDouble("pTargetMon_length");
-        //double halfDimsRaw[3] = {width/2., height/2., length/2.};
         std::vector<double> halfDims;
         halfDims.push_back(width/2.);
         halfDims.push_back(height/2.);
@@ -330,16 +324,8 @@ namespace mu2e {
         G4ThreeVector position_2 = G4ThreeVector(0.0, 0.0, z2);
         constructTargetHallPWC(pTargetMonContainer, _config, "_2", position_2);
 
-
-        cout << endl << endl;
-        cout << "~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~" << endl;
-        cout << "Now LEAVING constructProductionTargetMon" << endl;
-        cout << "~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~" << endl << endl;
-
     } // constructProductionTargetMon
 
-
-    
 
     
 } // namespace mu2e
