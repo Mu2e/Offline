@@ -12,6 +12,8 @@
 #include "ConditionsService/inc/AcceleratorParams.hh"
 #include "ConditionsService/inc/CrvParams.hh"
 #include "ConditionsService/inc/ConditionsHandle.hh"
+#include "ProditionsService/inc/ProditionsHandle.hh"
+#include "DAQConditions/inc/EventTiming.hh"
 #include "GeometryService/inc/DetectorSystem.hh"
 #include "GeometryService/inc/GeomHandle.hh"
 #include "GeometryService/inc/GeometryService.hh"
@@ -125,6 +127,10 @@ namespace mu2e
   {
     std::unique_ptr<CrvRecoPulseCollection> crvRecoPulseCollection(new CrvRecoPulseCollection);
 
+    ProditionsHandle<EventTiming> eventTimingHandle;
+    const EventTiming &eventTiming = eventTimingHandle.get(event.id());
+    double TDC0time = eventTiming.timeFromProtonsToDRMarker();
+
     art::Handle<CrvDigiCollection> crvDigiCollection;
     event.getByLabel(_crvDigiModuleLabel,"",crvDigiCollection);
 
@@ -157,8 +163,10 @@ namespace mu2e
       size_t n = _makeCrvRecoPulses->GetPEs().size();
       for(size_t j=0; j<n; ++j)
       {
-        double pulseTime   = _makeCrvRecoPulses->GetPulseTimes().at(j);
-        double LEtime      = _makeCrvRecoPulses->GetLEtimes().at(j);
+        //the TDC times were recored with respect to the event window start.
+        //need to shift the times back to the original time scale (i.e. microbunch time)
+        double pulseTime   = _makeCrvRecoPulses->GetPulseTimes().at(j) + TDC0time;
+        double LEtime      = _makeCrvRecoPulses->GetLEtimes().at(j) + TDC0time;
         float  PEs         = _makeCrvRecoPulses->GetPEs().at(j);
         float  PEsPulseHeight = _makeCrvRecoPulses->GetPEsPulseHeight().at(j);
         float  pulseHeight = _makeCrvRecoPulses->GetPulseHeights().at(j); 
@@ -170,9 +178,9 @@ namespace mu2e
         if(failedFit)              flags.set(CrvRecoPulseFlagEnums::failedFit);
 
         float  PEsADCvalues      = _makeCrvRecoPulses->GetPEsADCvalues().at(j);
-        double pulseTimeADCvalues= _makeCrvRecoPulses->GetPulseTimesADCvalues().at(j);
-        double pulseStart        = _makeCrvRecoPulses->GetPulseStarts().at(j);
-        double pulseEnd          = _makeCrvRecoPulses->GetPulseEnds().at(j);
+        double pulseTimeADCvalues= _makeCrvRecoPulses->GetPulseTimesADCvalues().at(j) + TDC0time;
+        double pulseStart        = _makeCrvRecoPulses->GetPulseStarts().at(j) + TDC0time;
+        double pulseEnd          = _makeCrvRecoPulses->GetPulseEnds().at(j) + TDC0time;
 
         if(PEs<_minPEs) continue; 
         crvRecoPulseCollection->emplace_back(PEs, PEsPulseHeight, pulseTime, pulseHeight, pulseBeta, pulseFitChi2, LEtime, flags, 

@@ -8,8 +8,10 @@
 #include "CosmicRayShieldGeom/inc/CosmicRayShield.hh"
 #include "DataProducts/inc/CRSScintillatorBarIndex.hh"
 
-#include "ConditionsService/inc/AcceleratorParams.hh"
 #include "ConditionsService/inc/ConditionsHandle.hh"
+#include "ProditionsService/inc/ProditionsHandle.hh"
+#include "DAQConditions/inc/EventTiming.hh"
+#include "DataProducts/inc/EventWindowMarker.hh"
 #include "ConfigTools/inc/ConfigFileLookupPolicy.hh"
 #include "GeometryService/inc/DetectorSystem.hh"
 #include "GeometryService/inc/GeomHandle.hh"
@@ -51,8 +53,8 @@ namespace mu2e
     double      _overvoltage;
     double      _timeConstant;
     double      _capacitance;
-    double      _blindTime;             //time window during which the SiPM is blind
-    double      _microBunchPeriod;
+    double      _digitizationStart, _digitizationEnd;
+    std::string _eventWindowMarkerLabel;
 
     mu2eCrv::MakeCrvSiPMCharges::ProbabilitiesStruct _probabilities;
     std::vector<std::pair<int,int> >   _inactivePixels;
@@ -76,7 +78,9 @@ namespace mu2e
     _overvoltage(pset.get<double>("overvoltage")),                   //3.0V
     _timeConstant(pset.get<double>("timeConstant")),                 //12.0ns
     _capacitance(pset.get<double>("capacitance")),                   //8.84e-14F (per pixel)
-    _blindTime(pset.get<double>("blindTime")),                       //500ns
+    _digitizationStart(pset.get<double>("digitizationStart")),       //400ns
+    _digitizationEnd(pset.get<double>("digitizationEnd")),           //1750ns
+    _eventWindowMarkerLabel(pset.get<std::string>("EventWindowMarker","EWMProducer")),
     _inactivePixels(pset.get<std::vector<std::pair<int,int> > >("inactivePixels")),      //{18,18},....,{21,21}
     _engine{createEngine(art::ServiceHandle<SeedService>()->getSeed())},
     _randFlat{_engine},
@@ -99,10 +103,7 @@ namespace mu2e
 
   void CrvSiPMChargeGenerator::beginRun(art::Run &run)
   {
-    mu2e::ConditionsHandle<mu2e::AcceleratorParams> accPar("ignored");
-    _microBunchPeriod = accPar->deBuncherPeriod;
-    _makeCrvSiPMCharges->SetSiPMConstants(_nPixelsX, _nPixelsY, _overvoltage, _blindTime, _microBunchPeriod,
-                                            _timeConstant, _capacitance, _probabilities, _inactivePixels);
+    _makeCrvSiPMCharges->SetSiPMConstants(_nPixelsX, _nPixelsY, _overvoltage, _timeConstant, _capacitance, _probabilities, _inactivePixels);
   }
 
   void CrvSiPMChargeGenerator::produce(art::Event& event)
@@ -111,6 +112,21 @@ namespace mu2e
 
     art::Handle<CrvPhotonsCollection> crvPhotonsCollection;
     event.getByLabel(_crvPhotonsModuleLabel,"",crvPhotonsCollection);
+
+    art::Handle<EventWindowMarker> eventWindowMarker;
+    event.getByLabel(_eventWindowMarkerLabel,"",eventWindowMarker);
+    EventWindowMarker::SpillType spillType = eventWindowMarker->spillType();
+
+    double startTime=_digitizationStart;
+    double endTime=_digitizationEnd;
+    if(spillType!=EventWindowMarker::SpillType::onspill)
+    {
+      ProditionsHandle<EventTiming> eventTimingHandle;
+      const EventTiming &eventTiming = eventTimingHandle.get(event.id());
+      double eventWindowLength = eventWindowMarker->eventLength();
+      startTime = eventTiming.timeFromProtonsToDRMarker();
+      endTime = startTime + eventWindowLength;
+    }
 
     GeomHandle<CosmicRayShield> CRS;
     const std::vector<std::shared_ptr<CRSScintillatorBar> > &counters = CRS->getAllCRSScintillatorBars();
@@ -121,7 +137,6 @@ namespace mu2e
 
       for(int SiPM=0; SiPM<4; SiPM++)
       {
-
         if(!(*iter)->getBarDetail().hasCMB(SiPM%2)) continue;  //no SiPM charges at non-existing SiPMs
                                                                //SiPM%2 returns the side of the CRV counter
                                                                //0 ... negative side
@@ -129,7 +144,8 @@ namespace mu2e
 
         if(_randFlat.fire() < _deadSiPMProbability) continue;  //assume that this random SiPM is dead
 
-        std::vector<std::pair<double,size_t> > photonTimesAdjusted;   //pair of photon time and index in the original photon vector
+        //time wrapping happened in the photon generator
+        std::vector<std::pair<double,size_t> > photonTimesNew;   //pair of photon time and index in the original photon vector
         CrvPhotonsCollection::const_iterator crvPhotons;
         for(crvPhotons=crvPhotonsCollection->begin(); crvPhotons!=crvPhotonsCollection->end(); crvPhotons++)
         {
@@ -139,18 +155,14 @@ namespace mu2e
             for(size_t iphoton=0; iphoton<photonTimes.size(); iphoton++)
             {
               double time = photonTimes[iphoton]._time;
-              //wrapped time
-              //no ghost hits, since the SiPMs are off during the blind time 
-              //(which is longer than the "ghost time")
-              time = fmod(time,_microBunchPeriod);
-              if(time>_blindTime) photonTimesAdjusted.push_back(std::pair<double,size_t>(time,iphoton)); 
+              photonTimesNew.emplace_back(time,iphoton);
             }
             break;
           }
         }
 
         std::vector<mu2eCrv::SiPMresponse> SiPMresponseVector;
-        _makeCrvSiPMCharges->Simulate(photonTimesAdjusted, SiPMresponseVector);
+        _makeCrvSiPMCharges->Simulate(photonTimesNew, SiPMresponseVector, startTime, endTime);
 
         if(SiPMresponseVector.size()>0)
         {
@@ -160,8 +172,6 @@ namespace mu2e
           std::vector<mu2eCrv::SiPMresponse>::const_iterator responseIter;
           for(responseIter=SiPMresponseVector.begin(); responseIter!=SiPMresponseVector.end(); responseIter++)
           {
-            //time in SiPMresponseVector is between blindTime and microBunchPeriod
-            //no additional time wrapping and check for blind time is required
             double time=responseIter->_time;
             double charge=responseIter->_charge;
             double chargeInPEs=responseIter->_chargeInPEs;

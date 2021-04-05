@@ -67,13 +67,20 @@ BEGIN_PROLOG
                                                     //previously used 0.2 without upper limit
       scintillationYieldVariationCutoffLow  : 0.7   //the scintillation yield variation is cut off at 70% below the mean
       scintillationYieldVariationCutoffHigh : 1.2   //the scintillation yield variation is cut off at 120% above the mean
-      startTime                             : 400.0    //0.0 ns
-      timeOffsets                           : { inputs : [ @sequence::CommonMC.TimeMaps ] }
+      digitizationStart                     :  400.0    //400ns
+      digitizationEnd                       : 1750.0    //1750ns
+      crvStepMargin                         :   50.0    //50ns
+      eventWindowMarker                     : "EWMProducer"
+      timeOffsets                           : [ @sequence::CommonMC.TimeMaps ]
     }
     CrvSiPMCharges:
     {
       module_type                  : CrvSiPMChargeGenerator
       crvPhotonsModuleLabel        : "CrvPhotons"
+      digitizationStart            :  400.0    //400ns
+      digitizationEnd              : 1750.0    //1750ns
+      eventWindowMarker            : "EWMProducer"
+
       deadSiPMProbability          : 0.01
       nPixelsX                     : 40
       nPixelsY                     : 40
@@ -85,7 +92,6 @@ BEGIN_PROLOG
       overvoltage                  : 3.0        //V
       timeConstant                 : 13.3       //ns  according to an Hamamatsu example with R_q=150kOhm --> tau=R_q*C=13.3ns
       capacitance                  : 8.84e-14   //F   capacitance of one pixel according to specs
-      blindTime                    : 400.0      //ns
 
       AvalancheProbParam1          : 0.607      // = p1
       AvalancheProbParam2          : 2.7        // = p2
@@ -117,8 +123,10 @@ BEGIN_PROLOG
     {
       module_type                  : CrvDigitizer
       crvWaveformsModuleLabel      : "CrvWaveforms"
-      ADCconversionFactor          : 2300  //2300 ADC/V
-      pedestal                     : 100
+      digitizationStart            :  400.0    //400ns
+      digitizationEnd              : 1750.0    //1750ns
+      ADCconversionFactor          : 2300      //2300 ADC/V
+      pedestal                     : 100       //ADC
     }
     CrvRecoPulses:
     {
@@ -158,7 +166,7 @@ BEGIN_PROLOG
       maxSlope                      : 7.0    //7.0mm over 1mm, which is a little bit more than 4 counters per layer
       maxSlopeDifference            : 2.0    //
       acceptThreeAdjacentCounters   : false  //use hits in three adjacent counters in one layer to form a coincidence
-      timeWindowStart               : 500    //ns
+      timeWindowStart               : 400    //ns
       timeWindowEnd                 : 1750   //ns
       leadingVetoTime               : 0      //the time window before the first hit time of the coincidence triplet (only used to print out the results)
       trailingVetoTime              : 125    //the time window after the last hit time of the coincidence triplet (only used to print out the results)
@@ -172,7 +180,7 @@ BEGIN_PROLOG
       maxDistance                    : 1000 //mm
       maxTimeDifference              : 100  //ns
       crvCoincidenceCheckModuleLabel : "CrvCoincidence"
-      timeWindowStart                : 500  //ns
+      timeWindowStart                : 400  //ns
       timeWindowEnd                  : 1750 //ns
       deadTimeWindowStartMargin      : 0    //ns
       deadTimeWindowEndMargin        : 125  //ns
