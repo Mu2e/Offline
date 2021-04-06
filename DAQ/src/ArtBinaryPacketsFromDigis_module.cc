@@ -88,6 +88,8 @@ struct CrvDataPacket {
   DataBlockHeader header;
   CRVROCStatusPacket rocStatus;
   std::vector<CRVHitReadoutPacket> hits;
+
+  CrvDataPacket() : rocStatus(), hits() { bzero(&header, sizeof(header)); }
 };
 
 using crv_data_block_list_t = std::map<int, CrvDataPacket>; // the map key is the CRV ROC ID
@@ -478,7 +480,9 @@ void ArtBinaryPacketsFromDigis::fillTrackerDMABlocks(DTCLib::DTC_Event& currentE
       }
       if (dataBlock.first.s.PacketCount > 0) {
         printHeader(dataBlock.first);
-        printTrackerData(dataBlock.second);
+        if (_diagLevel > 2) {
+          printTrackerData(dataBlock.second);
+        }
       }
     }
 
@@ -492,6 +496,7 @@ void ArtBinaryPacketsFromDigis::fillEmptyHeaderDataPacket(DataBlockHeader& heade
                                                           uint64_t& EventNum, uint8_t& ROCId,
                                                           uint8_t& DTCId, uint8_t Subsys) {
 
+  bzero(&headerData.s, sizeof(DataBlockHeader));
   // Fill in the byte count field of the header packet
   // Word 0
   headerData.s.TransferByteCount = sizeof(DataBlockHeader);
@@ -852,7 +857,10 @@ void ArtBinaryPacketsFromDigis::fillCalorimeterDMABlocks(DTCLib::DTC_Event& curr
       }
       if (caloData[dataBlockIdx].first.s.PacketCount > 0) {
         printHeader(caloData[dataBlockIdx].first);
-        printCalorimeterData(caloData[dataBlockIdx].second);
+        if (_diagLevel > 2) {
+
+          printCalorimeterData(caloData[dataBlockIdx].second);
+        }
       }
     }
 
@@ -937,6 +945,7 @@ void ArtBinaryPacketsFromDigis::fillCalorimeterDataStream(DTCLib::DTC_Event& cur
 void ArtBinaryPacketsFromDigis::fillCalorimeterHeaderDataPacket(const CaloDigi& CD,
                                                                 DataBlockHeader& HeaderData,
                                                                 uint64_t& EventNum) {
+  bzero(&HeaderData.s, sizeof(DataBlockHeader));
   // Word 0
   adc_t nBytes =
       sizeof(DataBlockHeader) + sizeof(CalorimeterDataPacket) +
