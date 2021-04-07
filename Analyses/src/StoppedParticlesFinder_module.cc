@@ -48,6 +48,7 @@ namespace mu2e {
       fhicl::Atom<art::InputTag> particleInput{ Name("particleInput"), Comment("The particle input collection.") };
 
       fhicl::Atom<art::InputTag> physVolInfoInput{ Name("physVolInfoInput"), Comment("The PhysicalVolumeInfoMultiCollection input.") };
+      fhicl::Atom<bool> useEventLevelVolumeInfo{ Name("useEventLevelVolumeInfo"), Comment("Get PhysicalVolumeInfoMultiCollection from Event instead of SubRun"), false};
 
       fhicl::Sequence<int> particleTypes{
         Name("particleTypes"),
@@ -89,6 +90,7 @@ namespace mu2e {
   private:
     art::InputTag particleInput_;
     art::InputTag physVolInfoInput_;
+    bool useEventLevelVolumeInfo_;
     std::string stoppingMaterial_;
     std::vector<std::string> vetoedMaterials_;
 
@@ -118,6 +120,7 @@ namespace mu2e {
     : EDProducer{conf}
     , particleInput_(conf().particleInput())
     , physVolInfoInput_(conf().physVolInfoInput())
+    , useEventLevelVolumeInfo_(conf().useEventLevelVolumeInfo())
     , stoppingMaterial_(conf().stoppingMaterial())
     , simStageThresholdConfigured_(false)
     , simStageThreshold_(-1u)
@@ -165,33 +168,47 @@ namespace mu2e {
 
   //================================================================
   void StoppedParticlesFinder::beginSubRun(art::SubRun& sr) {
-    art::Handle<PhysicalVolumeInfoMultiCollection> volh;
-    sr.getByLabel(physVolInfoInput_, volh);
-    vols_ = &*volh;
+    if(!useEventLevelVolumeInfo_) {
+     const auto& ih = sr.getValidHandle<PhysicalVolumeInfoMultiCollection>(physVolInfoInput_);
+      vols_ = &*ih;
 
-    if(verbosityLevel_ > 1) {
-      std::cout<<"PhysicalVolumeInfoMultiCollection dump begin"<<std::endl;
-      for(const auto& i : *vols_) {
-        std::cout<<"*********************************************************"<<std::endl;
-        std::cout<<"Ccollection size = "<<i.size()<<std::endl;
-        for(const auto& entry : i) {
-          std::cout<<entry.second<<std::endl;
+      if(verbosityLevel_ > 1) {
+        std::cout<<"PhysicalVolumeInfoMultiCollection dump begin"<<std::endl;
+        for(const auto& i : *vols_) {
+          std::cout<<"*********************************************************"<<std::endl;
+          std::cout<<"Ccollection size = "<<i.size()<<std::endl;
+          for(const auto& entry : i) {
+            std::cout<<entry.second<<std::endl;
+          }
         }
+        std::cout<<"PhysicalVolumeInfoMultiCollection dump end"<<std::endl;
       }
-      std::cout<<"PhysicalVolumeInfoMultiCollection dump end"<<std::endl;
-    }
 
-    if(!simStageThresholdConfigured_) {
-      if(vols_->empty()) {
-        throw cet::exception("BADINPUT")<<"StoppedParticlesFinder: something is wrong,"
-          " got empty PhysicalVolumeInfoMultiCollection "<<physVolInfoInput_<<std::endl;
+      if(!simStageThresholdConfigured_) {
+        if(vols_->empty()) {
+          throw cet::exception("BADINPUT")<<"StoppedParticlesFinder: something is wrong,"
+            " got empty PhysicalVolumeInfoMultiCollection "<<physVolInfoInput_<<std::endl;
+        }
+        simStageThreshold_ = vols_->size() - 1;  // the current simStage points to the last entry in vols_
       }
-      simStageThreshold_ = vols_->size() - 1;  // the current simStage points to the last entry in vols_
     }
   }
 
   //================================================================
   void StoppedParticlesFinder::produce(art::Event& event) {
+
+    if(useEventLevelVolumeInfo_) {
+      const auto& ih = event.getValidHandle<PhysicalVolumeInfoMultiCollection>(physVolInfoInput_);
+      vols_ = &*ih;
+
+      if(!simStageThresholdConfigured_) {
+        if(vols_->empty()) {
+          throw cet::exception("BADINPUT")<<"StoppedParticlesFinder: something is wrong,"
+            " got empty PhysicalVolumeInfoMultiCollection "<<physVolInfoInput_<<std::endl;
+        }
+        simStageThreshold_ = vols_->size() - 1;  // the current simStage points to the last entry in vols_
+      }
+    }
 
     std::unique_ptr<SimParticlePtrCollection> output(new SimParticlePtrCollection());
 
