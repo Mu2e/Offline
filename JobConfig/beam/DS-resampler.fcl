@@ -27,12 +27,12 @@ physics.filters.flashResample: {
    wrapFiles: true
    mu2e: {
       products: {
-	 genParticleMixer: { mixingMap: [ [ "generate", "" ] ] }
-	 simParticleMixer: { mixingMap: [ [ "muonBeamFilter", "" ] ] }
-	 stepPointMCMixer: { mixingMap: [ 
-	       [ "muonBeamFilter:virtualdetector", ":" ],
-	       [ "muonBeamFilter:mubeam", ":" ] 
-	       ] }
+         genParticleMixer: { mixingMap: [ [ "generate", "" ] ] }
+         simParticleMixer: { mixingMap: [ [ "muonBeamFilter", "" ] ] }
+         stepPointMCMixer: { mixingMap: [
+               [ "muonBeamFilter:virtualdetector", ":" ],
+               [ "muonBeamFilter:mubeam", ":" ]
+            ] }
       }
    }
 }
@@ -107,7 +107,7 @@ physics.filters.detectorFilter: {
 }
 
 // Add genCounter and flashResample to the trigger path.
-physics.detPath: [ "genCounter", "flashResample", 
+physics.detPath: [ "genCounter", "flashResample",
    //need to remove compressPVDetector//  @sequence::physics.detPath
    "g4run",
    "g4consistent",
@@ -143,12 +143,12 @@ services.GeometryService.simulatedDetector.tool_type : "Mu2e"
 services.GeometryService.inputFile : "Mu2eG4/geom/geom_common_phase1.txt"
 
 physics.producers.g4run.Mu2eG4CommonCut:{
-   // Kill stuck e+/e-	
+   // Kill stuck e+/e-
    type: intersection
-   pars: 
+   pars:
    [
-   {type: intersection pars: [ { type: kineticEnergy cut: 1.0 }, { type: pdgId pars: [ 11, -11] }]},
-   {type: inVolume pars: [ TS2Vacuum, TS3Vacuum, TS4Vacuum, TS5Vacuum, DS2Vacuum, HallAir ]}
+      {type: intersection pars: [ { type: kineticEnergy cut: 1.0 }, { type: pdgId pars: [ 11, -11] }]},
+      {type: inVolume pars: [ TS2Vacuum, TS3Vacuum, TS4Vacuum, TS5Vacuum, DS2Vacuum, HallAir ]}
    ]
 }
 
