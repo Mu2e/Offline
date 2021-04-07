@@ -412,6 +412,10 @@ namespace mu2e {
     return fseed;
   }
 
+  //TODO - the followinf function requires work:
+  // 1) KinematicLine - constructor doesnt work
+  // 2) paramVal-->paramVar
+  // 3) set parameters
   KTRAJ KinematicLineFit::makeSeedTraj(CosmicTrackSeed const& hseed) const { //TODO - switch to CosmicTrackSeed
     // first, find the time range of the hits
     auto const& hhits = hseed.hits();
@@ -436,8 +440,6 @@ namespace mu2e {
     pars[KTRAJ::phi0_] = 1.0;
     pars[KTRAJ::mom_] = 1.0;
     pars[KTRAJ::t0_] = hseed.t0().t0();
-
-
 
 /*static const VEC3 zdir(0.0, 0.0, 1.0);
     static const VEC3 zpos(0.0, 0.0, 0.0);
