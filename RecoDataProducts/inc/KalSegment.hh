@@ -38,6 +38,7 @@ namespace mu2e {
     KinKal::LoopHelix loopHelix() const { return KinKal::LoopHelix(_pstate, KKbnom(),KinKal::TimeRange(tmin(),tmax())); }
     // convert to a CentralHelix
     KinKal::CentralHelix centralHelix() const { return KinKal::CentralHelix(_pstate, KKbnom(),KinKal::TimeRange(tmin(),tmax())); }
+    // convert to a KinematicLine
     KinKal::KinematicLine kinematicLine() const { return KinKal::KinematicLine(_pstate, KKbnom(),KinKal::TimeRange(tmin(),tmax())); }
     Float_t tmin() const { return _tmin; }
     Float_t tmax() const { return _tmax; }

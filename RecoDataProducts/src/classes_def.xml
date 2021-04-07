@@ -191,12 +191,22 @@
  <class name="std::vector<art::Ptr<mu2e::KalSeed> >"/>
  <class name="art::Wrapper<mu2e::KalSeedCollection>"/>
 
+ <class name="mu2e::CosmicKalSeed"/>
+ <class name="mu2e::CosmicKalSeedCollection"/>
+ <class name="art::Ptr<mu2e::CosmicKalSeed>"/>
+ <class name="std::vector<art::Ptr<mu2e::CosmicKalSeed> >"/>
+ <class name="art::Wrapper<mu2e::CosmicKalSeedCollection>"/>
+ 
 <!-- KinKal products: these cannot be directly persisted -->
 
  <class name="mu2e::KKLoopHelix"/>
  <class name="mu2e::KKLoopHelixCollection" persistent="false"/>
  <class name="art::Wrapper<mu2e::KKLoopHelixCollection>"/>
 
+ <class name="mu2e::KKLine"/>
+ <class name="mu2e::KKLineCollection" persistent="false"/>
+ <class name="art::Wrapper<mu2e::KKLineCollection>"/>
+ 
  <class name="mu2e::MVAStatus"/>
  <class name="mu2e::TrkQual"/>
  <class name="mu2e::TrkQualCollection"/>
