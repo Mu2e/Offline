@@ -22,14 +22,13 @@ namespace mu2e {
     CosmicTrack const& track() const { return _track; }
     TrkFitFlag const& status() const { return _status; }
     art::Ptr<TimeCluster> const& timeCluster() const { return _timeCluster; }
-
+    ComboHitCollection const& hits() const { return _straw_chits; }
 
     TrkT0	             _t0;	      // t0 for this track
     CosmicTrack              _track;	     // Cosmic track created from these hits  
     TrkFitFlag	             _status;      // status of processes used to create this seed
     // helixOK: ???, helixConverged: ???, circleInit: ???, Straight: ???, hitsOK: ???
-    art::Ptr<TimeCluster>    _timeCluster; // associated time cluster
-    
+    art::Ptr<TimeCluster>    _timeCluster; // associated time cluster  
     ComboHitCollection       _straw_chits;    // get the straw level hits and store here (need to find panel hits first)
  
     // For future use only

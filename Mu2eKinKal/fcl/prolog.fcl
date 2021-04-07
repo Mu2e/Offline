@@ -12,6 +12,7 @@ Mu2eKinKal : {
       strawWireMaterialName : "straw-wire"
       dahlLynchScatteringFraction : 0.995
     }
+    
   
     FitSettings: {
       SeedErrors : [5.0, 5.0, 5.0, 5.0, 0.02, 25.0] # R, Lambda, Cx, Cy, phi0, t0
@@ -38,12 +39,54 @@ Mu2eKinKal : {
       [ 10.0, 10.0, 1, 1 ]]
 #     [ 10.0, 5.0, 1, 2 ]
   }
+
+
+KKLineSeedFit : {
+    module_type : KinematicLineFit
+    MaterialSettings : {
+      elements  : "TrackerConditions/data/ElementsList.data"
+      isotopes  : "TrackerConditions/data/IsotopesList.data"
+      materials : "TrackerConditions/data/MaterialsList.data"
+      strawGasMaterialName  : "straw-gas"
+      strawWallMaterialName : "straw-wall"
+      strawWireMaterialName : "straw-wire"
+      dahlLynchScatteringFraction : 0.995
+    }
+    
+    FitSettings: {
+      SeedErrors : [5.0, 5.0, 5.0, 0.1, 25.0,1.0] # //d0_ = 0, phi0_ = 1,z0_ = 2,cost_ = 3,t0_ = 4,mom_ = 5,
+   
+      NullHitVarianceScale : 1.0
+      BFieldCorrection : 0
+      AddMaterial : true
+    }
+  
+    ModuleSettings : {
+      LineFlags : [ "HelixOK" ] //TODO
+      ZSavePositions : [-1522.0,0.0,1522.0]
+    }
+    MetaIterationSettings : [ 
+      [ 10.0, 1.0, 10.0 ],
+      [ 2.0, 0.5, 10.0 ],
+      [ 0.0, 0.2, 20.0 ]]
+#      [ 10.0, 1.0, 10.0 ],
+#      [ 5.0, 1.0, 10.0 ],
+#      [ 2.0, 0.5, 10.0 ],
+#      [ 1.0, 0.2, 20.0 ],
+#      [ 0.0, 0.2, 20.0 ]]
+    StrawHitUpdateSettings : [
+      [ 10.0, 10.0, 1, 1 ]]
+#     [ 10.0, 5.0, 1, 2 ]
+  }
+
 }
+
 Mu2eKinKal : {
   @table::Mu2eKinKal
   producers : {
     KKDePSeedFit: @local::Mu2eKinKal.KKSeedFit
     KKDeMSeedFit: @local::Mu2eKinKal.KKSeedFit
+    KKLineSeedFit: @local::Mu2eKinKal.KKLineSeedFit
   }
 }
 Mu2eKinKal.producers.KKDeMSeedFit.FitSettings.FitParticle : 11
