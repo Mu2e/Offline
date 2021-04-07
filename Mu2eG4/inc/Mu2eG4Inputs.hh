@@ -18,6 +18,11 @@ namespace art { class Event; }
 
 namespace mu2e {
 
+  struct EventLevelVolInfos {
+    art::InputTag input;
+    std::string outInstance;
+  };
+
   class Mu2eG4Inputs {
   public:
     explicit Mu2eG4Inputs(const Mu2eG4Config::Inputs_& conf);
@@ -34,6 +39,8 @@ namespace mu2e {
 
     const art::InputTag& inputPhysVolumeMultiInfo() const { return inputPhysVolumeMultiInfo_; }
 
+    const std::optional<EventLevelVolInfos>& updateEventLevelVolumeInfos() const { return elvi_; }
+
     // The handle is not valid if there are no input sim particles, either for
     // initial stage jobs, or for non-filtered multistage input when the
     // input event has no primaries for the current stage.
@@ -45,7 +52,7 @@ namespace mu2e {
     art::InputTag inputMCTrajectories_;
     std::optional<unsigned> simStageOverride_;
     art::InputTag inputPhysVolumeMultiInfo_;
-
+    std::optional<EventLevelVolInfos> elvi_;
     // derived
     bool multiStage_;
   };

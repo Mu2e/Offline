@@ -19,6 +19,11 @@ namespace mu2e {
     if(conf.simStageOverride(simStage)) {
       simStageOverride_.emplace(simStage);
     }
+
+    Mu2eG4Config::EventLevelVolInfos evconf;
+    if(conf.updateEventLevelVolumeInfos(evconf)) {
+      elvi_.emplace(EventLevelVolInfos{evconf.input(), evconf.outInstance()});
+    }
   }
 
   //================================================================

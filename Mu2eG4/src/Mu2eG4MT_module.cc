@@ -264,7 +264,7 @@ namespace mu2e {
 
       if(pvstage != simStage_) {
         throw cet::exception("BADINPUT")
-          << "Mu2eG4::endSubRun() Error: inconsistent simStage: "
+          << "Mu2eG4MT::endSubRun() Error: inconsistent simStage: "
           <<simStage_<<" vs "<<pvstage<<"\n";
       }
     }
@@ -321,6 +321,20 @@ namespace mu2e {
     }
     else {
       perThreadStore->putDataIntoEvent();
+
+      if(multiStagePars_.updateEventLevelVolumeInfos()) {
+        const unsigned pvstage =
+          writePhysicalVolumes(event,
+                               multiStagePars_.updateEventLevelVolumeInfos()->input,
+                               physVolHelper_.persistentSingleStageInfo(),
+                               multiStagePars_.updateEventLevelVolumeInfos()->outInstance);
+
+        if(pvstage != simStage_) {
+          throw cet::exception("BADINPUT")
+            << "Mu2eG4MT::produce() Error: inconsistent simStage: "
+            <<simStage_<<" vs "<<pvstage<<"\n";
+        }
+      }
     }
 
     scheduleWorkerRM->TerminateOneEvent();

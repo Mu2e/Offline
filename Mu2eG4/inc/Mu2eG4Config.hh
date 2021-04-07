@@ -168,6 +168,16 @@ namespace mu2e {
           };
     };
 
+    struct EventLevelVolInfos {
+      using Name = fhicl::Name;
+      using Comment = fhicl::Comment;
+      fhicl::Atom<art::InputTag> input { Name("input"), Comment("Tag of the event-level PhysicalVolumeInfoMultiCollection to read")};
+      fhicl::Atom<std::string> outInstance { Name("outInstance"),
+          Comment("Instance name of PhysicalVolumeInfoMultiCollection written into events."),
+          "eventlevel"
+          };
+    };
+
     struct Inputs_ {
       using Name = fhicl::Name;
       using Comment = fhicl::Comment;
@@ -195,6 +205,13 @@ namespace mu2e {
           Comment("phys volumes from the previous simulation stage, required for non-GenParticles primaries"),
           fhicl::use_if(this, &Inputs_::multiStage)
           };
+
+      fhicl::OptionalTable<EventLevelVolInfos> updateEventLevelVolumeInfos {Name("updateEventLevelVolumeInfos"),
+          Comment("An option to update event-level volume infos, for mixing jobs.\n"
+                  "May only be used for non-GenParticles primaries."),
+          fhicl::use_if(this, &Inputs_::multiStage)
+          };
+
     };
 
     struct Top {
