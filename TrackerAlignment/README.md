@@ -100,7 +100,8 @@ python ${MU2E_BASE_RELEASE}/TrackerAlignment/scripts/make_shiftplot.py "First Ru
 # Issues
 - Only the track drift time measurement is included in the chi^2 which is why chi^2/Ndof tends to peak at 0.5, rather than 1 when you plot it. Also Millepede will report a global chi2/ndof of around 0.5.
    - In the actual cosmic fit, there are two terms added to the chi-squared for the track per straw hit (see the definition [here](https://github.com/Mu2e/Offline/blob/ff2d1d20467d56c67c3c035784de95d0df47f490/CosmicReco/src/PDFFit.cc#L317-L332))
-
+- Panel d.o.f.'s not supported yet
+   - constraints need to be developed (if you enable the panel DOFs the fit will fail for lack of these)
 
 # Alignment Derivatives
 
