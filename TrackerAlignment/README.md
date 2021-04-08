@@ -5,6 +5,8 @@ Ryunosuke O'Neil
 
 A Tracker Alignment utility for performing Track-based alignment with the [Millepede-II software package](https://www.desy.de/~kleinwrt/MP2/doc/html/index.html). Only no-field cosmic tracks are currently supported.
 
+My thesis on this work: [FERMILAB-MASTERS-2020-07](https://inspirehep.net/literature/1849484).
+
 ### Alignment set-up
 ![Alignment flow(2)](https://user-images.githubusercontent.com/56410978/82936768-fa2e6500-9f86-11ea-81fe-b9f0bf20e842.png)
 - 'Digis' refers to art files containing 'digi' data products. Supported datasets are `DS-cosmic-nofield` or `DS-cosmic-nofield-alignselect`. Please see MDC2020Dev on the Mu2e Wiki.
@@ -95,6 +97,11 @@ aligntrack_display TrackDiag.root < other trackdiag.root files to compare agains
 python ${MU2E_BASE_RELEASE}/TrackerAlignment/scripts/make_shiftplot.py "First Run" alignconstants_out.txt "Second Run" iter1/alignconstants_out.txt
 ```
 
+# Issues
+- Only the track drift time measurement is included in the chi^2 which is why chi^2/Ndof tends to peak at 0.5, rather than 1 when you plot it. Also Millepede will report a global chi2/ndof of around 0.5.
+   - In the actual cosmic fit, there are two terms added to the chi-squared for the track per straw hit (see the definition [here](https://github.com/Mu2e/Offline/blob/ff2d1d20467d56c67c3c035784de95d0df47f490/CosmicReco/src/PDFFit.cc#L317-L332))
+
+
 # Alignment Derivatives
 
 ## Terms
@@ -112,7 +119,6 @@ There can be as many as 100 or 1000 global degrees of freedom, however of those 
 
 For the cosmic track time fit, there is a numerical differentiation utility to calculate these quantities. 
 There is also a python utility that constructs the algebraic form of the derivatives. Once calculated, the utility will generate a C++ header and source file (AlignmentDerivatives.hh/AlignmentDerivatives.cc). This is included and implemented in the `AlignmentUtilities` namespace to provide the required non-zero derivatives given a cosmic track hit for 3 translation and 3 rotational degrees of freedom for Planes, and Panels.
+Run the `generate_derivatives.py` script to regenerate these files for the currently sourced Mu2e Offline release, if needed. 
 
-Simply run the `generate_derivatives.py` script to regenerate these files for the currently sourced Mu2e Offline release, if needed. 
-
-Please note: The algebraic derivatives are *not working* in this version. The time offset term still needs to be added to the residual expression.
+Please note: The algebraic derivatives are *not used* at the moment. Ideally (whether or not this implementation is used), analytical forms of the partial derivatives will be used in the alignment.
