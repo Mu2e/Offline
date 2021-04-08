@@ -40,6 +40,7 @@ helper.make_plugins( [
     'MF_MessageLogger',
     'fhiclcpp',
     'fhiclcpp_types',
+    'tbb',
     'cetlib',
     'cetlib_except',
     'CLHEP',

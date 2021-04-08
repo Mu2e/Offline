@@ -135,6 +135,7 @@ fi
 setup -B mu2e_artdaq_core v1_05_07 -q${MU2E_UPS_QUALIFIERS}:+${MU2E_ART_SQUALIFIER}
 
 setup -B heppdt   v03_04_02 -q${MU2E_UPS_QUALIFIERS}
+setup cetpkgsupport
 setup -B KinKal   v00_01_05a  -q${MU2E_UPS_QUALIFIERS}:p392
 setup -B BTrk   v1_02_31  -q${MU2E_UPS_QUALIFIERS}:p392
 setup -B cry   v1_7n  -q${MU2E_UPS_QUALIFIERS}

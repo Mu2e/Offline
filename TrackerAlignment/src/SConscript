@@ -44,6 +44,7 @@ other_libs = [
     'canvas',
     'fhiclcpp',
     'fhiclcpp_types',
+    'tbb',
     'cetlib',
     'cetlib_except',
     'CLHEP',

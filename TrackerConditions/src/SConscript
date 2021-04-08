@@ -35,6 +35,7 @@ mainlib = helper.make_mainlib ( [
                                   'canvas',
                                   'fhiclcpp',
                                   'fhiclcpp_types',
+                                  'tbb',
                                   'cetlib',
                                   'cetlib_except',
                                   'CLHEP',
