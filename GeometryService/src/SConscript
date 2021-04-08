@@ -70,6 +70,8 @@ helper.make_plugins( [
     'canvas',
     'MF_MessageLogger',
     'fhiclcpp',
+    'fhiclcpp_types',
+    'tbb',
     'cetlib',
     'cetlib_except',
     'CLHEP',

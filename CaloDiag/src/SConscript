@@ -15,7 +15,8 @@ babarlibs = env['BABARLIBS']
 
 extrarootlibs = [ 'Geom' ]
 
-mainlib = helper.make_mainlib ( [] )
+mainlib = helper.make_mainlib ( ['fhiclcpp_types',
+                                 'tbb',] )
 
 helper.make_plugins( [ mainlib,
                        'mu2e_TrkExt',
@@ -58,6 +59,7 @@ helper.make_plugins( [ mainlib,
                        'MF_MessageLogger',
                        'fhiclcpp',
                        'fhiclcpp_types',
+                       'tbb',
                        'cetlib',
                        'cetlib_except',
                        'CLHEP',
