@@ -5,9 +5,9 @@
 #include "TMatrixD.h"
 #include "DataProducts/inc/XYZVec.hh"
 #include "Mu2eUtilities/inc/PointLinePCA_XYZ.hh"
-#include<vector>
-#include<bitset>
-
+#include <vector>
+#include <bitset>
+#include <tuple>
 using CLHEP::Hep3Vector;
 using namespace std;
    //Struct To Hold Covarience Info:
@@ -73,7 +73,7 @@ using namespace std;
    	double InitialChiY;
    	double InitialChiTot;
    	
-	TrackSeedDiag();
+	  TrackSeedDiag();
 
    };
 
@@ -112,8 +112,8 @@ namespace mu2e {
         this->MinuitParams.B0 = par_b0;
         this->MinuitParams.B1 = par_b1;
         this->MinuitParams.T0 = par_t0;
-
       }
+      
       void SetFitCoordSystem(TrackAxes coordsys){
         this->FitCoordSystem = coordsys;
       }
@@ -136,6 +136,26 @@ namespace mu2e {
 
       void SetMinuitEquation(TrackEquation Track){ 
         this->MinuitEquation = Track;
+      }
+
+      std::tuple <XYZVec, double, double> GetTrackPOCAInfo() {
+        XYZVec TrackerCenter(0,0,0);//FIXME!!
+        std::tuple <XYZVec, double, double> poca_info;
+        PointLinePCA_XYZ PCA = PointLinePCA_XYZ(TrackerCenter, this->FirstHitVec, this->LastHitVec);
+        XYZVec POCA = PCA.pca();
+        double DOCA = PCA.dca();
+        double AMSIGN = copysign(1.0,PCA.pca().X());
+        poca_info = make_tuple(POCA, DOCA, AMSIGN);
+        return poca_info;
+	    }
+	    
+      XYZVec Pos0() const { 
+        return XYZVec intercept(this->MinuitParams.A0, 0, this->MinuitParams.B0); 
+      }
+
+      XYZVec Dir() const {
+        XYZVec direction(this->MinuitParams.A1, -1, this->MinuitParams.B1); 
+        return direction.Unit();
       }
 
       //----------------------------End Diag Fill---------------------------------//
@@ -182,6 +202,7 @@ namespace mu2e {
       double cost_;
       double  phi0_;
       double mom_;
+
   };
   std::ostream& operator<<(std::ostream& os, mu2e::CosmicTrack const& track);
 }
