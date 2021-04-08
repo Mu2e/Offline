@@ -426,22 +426,24 @@ namespace mu2e {
       tmax = std::max(tmax,hhit.correctedTime());
     }
     TimeRange trange(tmin-tbuff_,tmax+tbuff_);
-    // compute the magnetic field at the helix center.  We only want the z compontent, as the helix fit assumes B points along Z
-    auto const& scosmic = hseed.track();
-    //auto bcent = kkbf_->fieldVect(center);
+    auto const& scosmic = hseed.track(); //a CosmicTrack
+
     VEC3 bnom(0.0,0.0,0.0);
-    // create a PKTRAJ from the helix fit result, to seed the KinKal fit.  First, translate the parameters
-    // Note the sign adjustments; RobustHelix is a purely geometric helix, KinematicLine is a kinematic helix
+    // create a PKTRAJ from the CosmicTrack fit result, to seed the KinKal fit.  First, translate the parameters
+    std::tuple <XYZVec, double, double> poca_info = scosmic.GetTrackPOCAInfo();//POCA, DOCA, AMSIGN
     DVEC pars;
-    //double psign = copysign(1.0,-charge_*bcent.Z());
-    pars[KTRAJ::d0_] = 1.0;
-    pars[KTRAJ::z0_] = 1.0;
-    pars[KTRAJ::cost_] = 1.0;
-    pars[KTRAJ::phi0_] = 1.0;
+    pars[KTRAJ::d0_] = get<1>(poca_info)*get<2>(poca_info);
+    pars[KTRAJ::z0_] = get<0>(poca_info).point1().Z();
+    pars[KTRAJ::cost_] = scosmic.Dir().Z();
+    pars[KTRAJ::phi0_] = Dir().Phi();
     pars[KTRAJ::mom_] = 1.0;
     pars[KTRAJ::t0_] = hseed.t0().t0();
 
-/*static const VEC3 zdir(0.0, 0.0, 1.0);
+/*double mommag = mom0.R();
+    double speed = ( mommag/ mom0.E()) * CLHEP::c_light;
+    VEC3 dir = mom0.Vect().Unit();
+    
+    static const VEC3 zdir(0.0, 0.0, 1.0);
     static const VEC3 zpos(0.0, 0.0, 0.0);
 
 // calculate POCA to the Z axis.  This is the reference for the parameters
@@ -455,7 +457,8 @@ namespace mu2e {
     param(z0_) = poca.point1().Z();
     param(cost_) = dir.Z();
     param(t0_) = pos0.T() - flen/speed;
-    param(mom_) = mommag;*/
+    param(mom_) = mommag;
+  }*/
 
     // create the initial trajectory
     Parameters kkpars(pars,seedcov_);
@@ -464,7 +467,7 @@ namespace mu2e {
       std::cout << "Seed Traj parameters  " << kkpars << std::endl;
     }
     //  construct the seed trajectory
-    return KTRAJ(kkpars, mass_, charge_, bnom, trange );
+    return KTRAJ(kkpars, mass_, charge_, bnom, trange );//TODO
   }
 
   //Following functions are the same as for LoopHelix:
