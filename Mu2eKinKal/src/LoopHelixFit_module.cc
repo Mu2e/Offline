@@ -119,6 +119,7 @@ namespace mu2e {
       fhicl::Sequence<std::string> helixFlags { Name("HelixFlags"), Comment("Flags required to be present to convert a helix seed to a KinKal track") };
       fhicl::Atom<int> printLevel { Name("PrintLevel"), Comment("Diagnostic printout Level"), 0 };
       fhicl::Atom<bool> saveAll { Name("SaveAllFits"), Comment("Save all fits, whether they suceed or not"),false };
+      fhicl::Atom<bool> saveFull { Name("SaveFullFit"), Comment("Save all helix segments associated with the fit")};
       fhicl::Sequence<float> zsave { Name("ZSavePositions"), Comment("Z positions to sample and save the fit result helices")};
     };
 
@@ -146,6 +147,7 @@ namespace mu2e {
       fhicl::Atom<int> fitDirection { Name("FitDirection"), Comment("Particle direction to fit, either upstream or downstream"), TrkFitDirection::downstream };
       fhicl::Atom<int> maxniter { Name("MaxNIter"), Comment("Maximum number of algebraic iteration steps in each fit meta-iteration"), 10 };
       fhicl::Atom<float> dwt { Name("Deweight"), Comment("Deweighting factor when initializing the track end parameters"), 1.0e6 };
+      fhicl::Atom<float> dparams { Name("DeltaParams"), Comment("Parameter difference threshold (units of chisquared)"), 1.0e4 };
       fhicl::Atom<float> tBuffer { Name("TimeBuffer"), Comment("Time buffer for final fit (ns)"), 0.2 };
       fhicl::Atom<float> btol { Name("BCorrTolerance"), Comment("Tolerance on BField correction accuracy (mm)"), 0.01 };
       fhicl::Sequence<float> seederrors { Name("SeedErrors"), Comment("Initial value of seed parameter errors (rms, various units)") };
@@ -186,16 +188,16 @@ namespace mu2e {
     // utility functions
     KalSeed createSeed(KKTRK const& ktrk,HPtr const& hptr) const;
     KTRAJ makeSeedTraj(HelixSeed const& hseed) const;
-    void makeStrawHits(Tracker const& tracker,StrawResponse const& strawresponse,KTRAJ const& ktraj,ComboHitCollection const& hhits,StrawHitIndexCollection const& shidxs,
+    void makeStrawHits(Tracker const& tracker,StrawResponse const& strawresponse,PKTRAJ const& pktraj,ComboHitCollection const& hhits,StrawHitIndexCollection const& shidxs,
       MEASCOL& thits,EXINGCOL& exings) const;
-    void makeCaloHit(CCPtr const& cluster, MEASCOL& thits) const;
+    void makeCaloHit(CCPtr const& cluster, PKTRAJ const& pktraj, MEASCOL& thits) const;
     double zTime(PKTRAJ const& trak, double zpos) const; // find the time the trajectory crosses the plane perp to z at the given z position
     // data payload
     std::vector<art::ProductToken<HelixSeedCollection>> hseedCols_;
     art::ProductToken<ComboHitCollection> chcol_T_;
     art::ProductToken<StrawHitFlagCollection> shfcol_T_;
     TrkFitFlag goodhelix_;
-    bool saveall_;
+    bool saveall_, savefull_;
     std::vector<float> zsave_;
     TrkFitDirection tdir_;
     PDGCode::type tpart_;
@@ -227,6 +229,7 @@ namespace mu2e {
     shfcol_T_(mayConsume<StrawHitFlagCollection>(config().modsettings().strawHitFlagCollection())),
     goodhelix_(config().modsettings().helixFlags()),
     saveall_(config().modsettings().saveAll()),
+    savefull_(config().modsettings().saveFull()),
     zsave_(config().modsettings().zsave()),
     tdir_(static_cast<TrkFitDirection::FitDirection>(config().fitsettings().fitDirection())), tpart_(static_cast<PDGCode::type>(config().fitsettings().fitParticle())),
     print_(config().modsettings().printLevel()),
@@ -256,6 +259,7 @@ namespace mu2e {
     // construct the fit configuration object.  This controls all the global and iteration-specific aspects of the fit
     kkconfig_.maxniter_ = config().fitsettings().maxniter();
     kkconfig_.dwt_ = config().fitsettings().dwt();
+    kkconfig_.pdchi2_ = config().fitsettings().dparams();
     kkconfig_.tbuff_ = config().fitsettings().tBuffer();
     kkconfig_.tol_ = config().fitsettings().btol();
     kkconfig_.minndof_ = config().fitsettings().minndof();
@@ -344,9 +348,12 @@ namespace mu2e {
       for(size_t iseed=0; iseed < hseedcol.size(); ++iseed) {
 	auto const& hseed = hseedcol[iseed];
   	auto hptr = HPtr(hseedcol_h,iseed);
-	if(hseed.status().hasAllProperties(goodhelix_)){
+	// check helicity.  The test on the charge and helicity 
+	if(hseed.status().hasAllProperties(goodhelix_) ){
 	  // construt the seed trajectory
-	  KTRAJ seedtraj = makeSeedTraj(hseed); 
+	  KTRAJ seedtraj = makeSeedTraj(hseed);
+	  // wrap the seed traj in a Piecewise traj: needed to satisfy PTOCA interface
+	  PKTRAJ pseedtraj(seedtraj);
 	  // construct hit amd material objects from Helix hits
 	  MEASCOL thits; // polymorphic container of hits
 	  EXINGCOL exings; // polymorphic container of detector element crossings
@@ -354,19 +361,29 @@ namespace mu2e {
 	  StrawHitIndexCollection strawHitIdxs;
 	  auto const& hhits = hseed.hits();
 	  for(size_t ihit = 0; ihit < hhits.size(); ++ihit ){ hhits.fillStrawHitIndices(event,ihit,strawHitIdxs); }
-	  makeStrawHits(*tracker, *strawresponse, seedtraj,chcol,strawHitIdxs,thits,exings);
+	  makeStrawHits(*tracker, *strawresponse, pseedtraj,chcol,strawHitIdxs,thits,exings);
 	  if (usecalo_){
 	    if(hseed.caloCluster()){
-	      makeCaloHit(hseed.caloCluster(),thits);
-	    } else {
-	      // search for matching low-energy clusters TODO
+	      makeCaloHit(hseed.caloCluster(),pseedtraj, thits);
 	    }
 	  }
-	  // add nearby unused straws as passive material TODO
-	  // add calorimeter front face and other passive material TODO
+	  // reset the  seed range given the TPOCA values
+	  double tmin = std::numeric_limits<float>::max();
+	  double tmax = std::numeric_limits<float>::min();
+	  for( auto const& thit : thits) {
+	    tmin = std::min(tmin,thit->time());
+	    tmax = std::max(tmax,thit->time());
+	  }
+	  seedtraj.range() = TimeRange(tmin-tbuff_,tmax+tbuff_);
 	  // create and fit the track  
 	  auto kktrk = make_unique<KKTRK>(kkconfig_,*kkbf_,seedtraj,thits,exings);
-	  if(kktrk->fitStatus().usable() || saveall_){
+	  bool save(false);
+	  if(kktrk->fitStatus().usable()){
+	    // Check fit for physical consistency; fit can succeed but the result can have the wrong charge
+	    auto const& midtraj = kktrk->fitTraj().nearestPiece(kktrk->fitTraj().range().mid());
+	    save = midtraj.Q()*midtraj.rad() > 0;
+	  }
+	  if(save || saveall_){
 	  // convert fits into KalSeeds for persistence	
 	    kkseedcol->push_back(createSeed(*kktrk,hptr));
 	    kktrkcol->push_back(kktrk.release());
@@ -384,6 +401,8 @@ namespace mu2e {
     fflag.merge(TrkFitFlag::KKLoopHelix);
     if(kktrk.fitStatus().usable()) fflag.merge(TrkFitFlag::kalmanOK);
     if(kktrk.fitStatus().status_ == Status::converged) fflag.merge(TrkFitFlag::kalmanConverged);
+    if(addmat_)fflag.merge(TrkFitFlag::MatCorr);
+    if(kkconfig_.bfcorr_ != 0)fflag.merge(TrkFitFlag::BFCorr);
     // explicit T0 is needed for backwards-compatibility; sample from the appropriate trajectory piece
     auto const& fittraj = kktrk.fitTraj();
     double tz0 = zTime(fittraj,0.0);
@@ -395,6 +414,7 @@ namespace mu2e {
     auto const& fstatus = kktrk.fitStatus();
     fseed._chisq = fstatus.chisq_.chisq();
     fseed._fitcon = fstatus.chisq_.probability();
+    fseed._nseg = fittraj.pieces().size();
     // loop over individual effects
     for(auto const& eff: kktrk.effects()) {
       const KKHIT* kkhit = dynamic_cast<const KKHIT*>(eff.get());
@@ -431,23 +451,28 @@ namespace mu2e {
       }
       //      const KKMAT* kkmat = dynamic_cast<const KKMAT*>(eff.get());
       //TrkUtilities::fillStraws(ktrk,fseed._straws); TODO!!
-      const KKBF* kkbf = dynamic_cast<const KKBF*>(eff.get());
-      if(kkbf != 0)fseed._nbend++;
     }
     // sample the fit at the requested z positions.
-    for(auto zpos : zsave_ ) {
-      // compute the time the trajectory crosses this plane
-      double tz = zTime(fittraj,zpos);
-      // find the explicit trajectory piece at this time
-      auto const& zpiece = fittraj.nearestPiece(tz);
-      // construct and add the segment
-      fseed._segments.emplace_back(zpiece,tz);
+    if(savefull_){
+// loop over all pieces of the fit trajectory
+      for (auto const& traj : fittraj.pieces() ) {
+	fseed._segments.emplace_back(traj,traj.range().mid());
+      }
+    } else {
+      for(auto zpos : zsave_ ) {
+	// compute the time the trajectory crosses this plane
+	double tz = zTime(fittraj,zpos);
+	// find the explicit trajectory piece at this time
+	auto const& zpiece = fittraj.nearestPiece(tz);
+	// construct and add the segment
+	fseed._segments.emplace_back(zpiece,tz);
+      }
     }
     return fseed;
   }
 
   KTRAJ LoopHelixFit::makeSeedTraj(HelixSeed const& hseed) const {
-  // first, find the time range of the hits
+  // first, find the time range of the hits. This will grossly over-estimate the range, due to drift, but it's a start
     auto const& hhits = hseed.hits();
     float tmin = std::numeric_limits<float>::max();
     float tmax = std::numeric_limits<float>::min();
@@ -482,11 +507,9 @@ namespace mu2e {
     return KTRAJ(kkpars, mass_, charge_, bnom, trange );
   }
 
-  void LoopHelixFit::makeStrawHits(Tracker const& tracker,StrawResponse const& strawresponse,KTRAJ const& seedtraj,
+  void LoopHelixFit::makeStrawHits(Tracker const& tracker,StrawResponse const& strawresponse,PKTRAJ const& ptraj,
       ComboHitCollection const& chcol, StrawHitIndexCollection const& strawHitIdxs,
       MEASCOL& thits,EXINGCOL& exings) const {
-  // wrap the seed traj in a Piecewise traj: needed to satisfy PTOCA interface
-    PKTRAJ pseedtraj(seedtraj);
     // loop over the individual straw hits
     for(auto strawidx : strawHitIdxs) {
       const ComboHit& strawhit(chcol.at(strawidx));
@@ -506,9 +529,9 @@ namespace mu2e {
       // compute 'hint' to TPOCA.  correct the hit time using the time division
       double psign = propdir.dot(straw.wireDirection());  // wire distance is WRT straw center, in the nominal wire direction
       double htime = wline.t0() - (straw.halfLength()-psign*strawhit.wireDist())/wline.speed();
-      CAHint hint(seedtraj.ztime(vp0.Z()),htime);
+      CAHint hint(ptraj.front().ztime(vp0.Z()),htime);
       // compute a preliminary PTCA between the seed trajectory and this straw.
-      PTCA ptca(pseedtraj, wline, hint, tpocaprec_);
+      PTCA ptca(ptraj, wline, hint, tpocaprec_);
       // create the material crossing
       if(addmat_){
 	exings.push_back(std::make_shared<STRAWXING>(ptca,*smat_));
@@ -521,7 +544,7 @@ namespace mu2e {
     }
   }
 
-  void LoopHelixFit::makeCaloHit(CCPtr const& cluster, MEASCOL& thits) const {
+  void LoopHelixFit::makeCaloHit(CCPtr const& cluster, PKTRAJ const& ptraj, MEASCOL& thits) const {
     // move cluster COG into the tracker frame.  COG is at the front face of the disk
     GeomHandle<mu2e::Calorimeter> calo_h;
     CLHEP::Hep3Vector cog = calo_h->geomUtil().mu2eToTracker(calo_h->geomUtil().diskFFToMu2e( cluster->diskID(), cluster->cog3Vector()));
@@ -534,7 +557,7 @@ namespace mu2e {
     double tvar = cluster->timeErr()*cluster->timeErr();
     double wvar = caloPosRes_*caloPosRes_;
     // verify the cluster looks physically reasonable before adding it TODO!
-    thits.push_back(std::make_shared<KKCALOHIT>(cluster,cogaxis,tvar,wvar));
+    thits.push_back(std::make_shared<KKCALOHIT>(cluster,cogaxis,ptraj,tvar,wvar));
     if(print_ > 2)thits.back()->print(std::cout,2);
   }
 

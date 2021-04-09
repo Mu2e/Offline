@@ -26,13 +26,12 @@ physics.RecoPath : [
   @sequence::Reconstruction.TrkReco,
   @sequence::Reconstruction.CrvReco,
   @sequence::Reconstruction.DeReco,
-  KKDeMSeedFit,KKDePSeedFit,   # KinKal seed fits
   @sequence::Reconstruction.MCReco,
   RecoFilter
 ]
 #
-physics.producers.SelectRecoMC.KFFInstances : [ "KFFDeM", "KFFDeP", "KKDeMSeedFit", "KKDePSeedFit"]
-physics.producers.SelectRecoMC.MHInstances  : ["MHDeM", "MHDeP" ]
+physics.producers.SelectRecoMC.KalSeedCollections : [ "KFFDeM", "KFFDeP", "KKSDeM", "KKSDeP"]
+physics.producers.SelectRecoMC.HelixSeedCollections  : ["MHDeM", "MHDeP" ]
 physics.filters.RecoFilter.TrkTags : [ "KFFDeM", "KFFDeP"]
 physics.filters.RecoFilter.MomentumCutoff : [ 60.0, 60.0 ]
 physics.producers.KKDeMSeedFit.ModuleSettings.HelixSeedCollections : [ "MHDeM" ]

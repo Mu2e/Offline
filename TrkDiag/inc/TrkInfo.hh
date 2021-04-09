@@ -36,7 +36,7 @@ namespace mu2e
     Int_t _ndouble,_ndactive; // number of double-hit panels, and active double-hit panels
     Int_t _nnullambig;  // number of hits without any ambiguity assigned
     Int_t _nmat, _nmatactive; // number materials (straw) assigned and used (active) to this fit
-    Int_t _nbend;     // number of magnetic field corrections assigned to this fit
+    Int_t _nseg;     // number of trajectory segments 
     Float_t _t0;      // time this particle was estimated to cross z=0
     Float_t _t0err;   // error on t0
     Float_t _chisq;   // Kalman fit chisquared
@@ -50,13 +50,13 @@ namespace mu2e
       _status = -1000;
       _alg=0;
       _pdg = 0;
-      _nhits = _nactive = _ndouble = _ndactive = _nnullambig = _nmat = _nmatactive = _nbend = _ndof = -1;
+      _nhits = _nactive = _ndouble = _ndactive = _nnullambig = _nmat = _nmatactive = _nseg = _ndof = -1;
       _t0 = _t0err = _chisq = _fitcon = _radlen = _firstflt = _lastflt = -1.0;
       _trkqual=-1000.0;
       _startvalid = _endvalid = -999999.0;
     }
     static std::string const& leafnames() { static const std::string leaves =
-    std::string("status/I:alg/I:pdg/I:nhits/I:ndof/I:nactive/I:ndouble/I:ndactive/I:nnullambig/I:nmat/I:nmatactive/I:nbend/I:t0/F:t0err/F:chisq/F:fitcon/F:radlen/F:firstflt/F:lastflt/F:startvalid/F:endvalid/F");
+    std::string("status/I:alg/I:pdg/I:nhits/I:ndof/I:nactive/I:ndouble/I:ndactive/I:nnullambig/I:nmat/I:nmatactive/I:nseg/I:t0/F:t0err/F:chisq/F:fitcon/F:radlen/F:firstflt/F:lastflt/F:startvalid/F:endvalid/F");
      return leaves;
     }
   };

@@ -71,9 +71,9 @@ physics.producers.CrvCoincidenceClusterMatchMC.timeOffsets.inputs :  [ @sequence
 physics.producers.CaloHitTruthMatch.primaryParticle : "compressDigiMCs"
 physics.producers.CaloHitTruthMatch.caloShowerSimCollection : "compressDigiMCs"
 physics.filters.CalHelixFinderDe.StrawHitFlagCollectionLabel                 : "FlagBkgHits:ComboHits"
-#physics.producers.SelectRecoMC.KFFInstances  : ["KSFDeM", "KFFDeM", "KKDeMSeedFit"]
-physics.producers.SelectRecoMC.KFFInstances  : ["KKDeMSeedFit"]
-physics.producers.SelectRecoMC.MHInstances  : ["MHDeM"]
+#physics.producers.SelectRecoMC.KalSeedCollections  : ["KSFDeM", "KFFDeM", "KKDeMSeedFit"]
+physics.producers.SelectRecoMC.KalSeedCollections  : ["KKDeMSeedFit"]
+physics.producers.SelectRecoMC.HelixSeedCollections  : ["MHDeM"]
 physics.producers.SelectRecoMC.debugLevel : 0
 
 physics.producers.KKDeMSeedFit.ModuleSettings.HelixSeedCollections : [ "MHDeM" ]
