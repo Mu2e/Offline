@@ -25,7 +25,7 @@ namespace mu2e {
     KalSeed() :  _chisq(-1.0), _fitcon(-1.0), _flt0(0)  {}
     KalSeed(PDGCode::type tpart,TrkFitDirection fdir, TrkFitFlag const& status, double flt0=0.0 ) :
       _tpart(tpart), _fdir(fdir), _status(status),
-      _chisq(-1.0), _fitcon(-1.0), _nbend(0), _flt0(static_cast<Float_t>(flt0)){}
+      _chisq(-1.0), _fitcon(-1.0), _nseg(0), _flt0(static_cast<Float_t>(flt0)){}
 
     PDGCode::type particle() const { return _tpart; }
     TrkFitDirection const& fitDirection() const { return _fdir; }
@@ -37,7 +37,7 @@ namespace mu2e {
     HitT0 t0() const;
     Float_t chisquared() const { return _chisq; }
     Float_t fitConsistency() const { return _fitcon; }
-    UInt_t nBend() const { return _nbend; }
+    UInt_t nTrajSegments() const { return _nseg; }
     bool hasCaloCluster() const { return _chit.caloCluster().isNonnull(); }
     art::Ptr<CaloCluster> const& caloCluster() const { return _chit.caloCluster(); }
     art::Ptr<HelixSeed> const& helix() const { return _helix; }
@@ -48,7 +48,7 @@ namespace mu2e {
     TrkFitFlag			    _status; // status of this fit
     Float_t			    _chisq; // fit chisquared value
     Float_t			    _fitcon; // fit consistency
-    UInt_t			    _nbend; // # of field corrections
+    UInt_t			    _nseg; // # of fit trajectory segments 
     //
     // contained content substructure.
     //

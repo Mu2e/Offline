@@ -7,7 +7,7 @@
 #include "BFieldGeom/inc/BFieldManager.hh"
 #include "GeometryService/inc/DetectorSystem.hh"
 // KinKal includes
-#include "KinKal/Detector/BFieldMap.hh"
+#include "KinKal/General/BFieldMap.hh"
 
 namespace mu2e 
 {
