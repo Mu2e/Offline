@@ -94,7 +94,7 @@ CosmicTrackFinderLoose : {
     UseTime : false
     UseLineFinder : false
     CosmicTrackFit :{
-        @table::CosmicTrackFit
+    @table::CosmicTrackFit
 	minNComboHits : 4
 	MaxSeedChi2DOF : 10
 	MaxDeltaChi2 : 0.5
@@ -138,12 +138,22 @@ CosmicAnalysis : {
 CosmicFitDisplay : {
     module_type : CosmicFitDisplay
     ComboHitCollection : "makePH"
-    _chtag : "makePH"
-    _tctag : TimeClusterFinderCosmics
-    _sttag : CosmicTrackFinder
+    TimeClusterCollection : TimeClusterFinderCosmics
+    CosmicTrackSeedCollection : CosmicTrackFinder
     doDisplay            : true
     TimeClusterCollection : TimeClusterFinderCosmicsr
     CosmicTrackSeedCollection : CosmicTrackFinder
+    
+}
+
+CosmicFitDisplayNew : {
+    module_type : CosmicFitDisplayNew
+    ComboHitCollection : "makePH"
+    TimeClusterCollection : TimeClusterFinderCosmics
+    CosmicTrackSeedCollection : CosmicTrackFinderTimeFit
+    doDisplay            : true
+    TimeClusterCollection : TimeClusterFinderCosmicsr
+    CosmicTrackSeedCollection : CosmicTrackFinderTimeFit
     
 }
 
@@ -186,6 +196,7 @@ CosmicTracking : {
 
 	CosmicAnalysis : @local::CosmicAnalysis
 	CosmicFitDisplay : @local::CosmicFitDisplay
+	CosmicFitDisplayNew : @local::CosmicFitDisplayNew
 	CosmicTrackDetails : @local::CosmicTrackDetails
 	CosmicTrackDiag : @local::CosmicTrackDiag
     }
@@ -196,19 +207,19 @@ CosmicTracking : {
 # 
 # define standard outputs 
 Output : {
-    Digis : [ "keep mu2e::StrawDigis_*_*_*" ]
-    Hits : [ "keep mu2e::StrawHitFlagDetailmu2e::BitMaps_FlagBkgHits_*_*",
-	     "keep mu2e::ComboHitCollection_*_*_*",
-	     "keep mu2e::StrawHits_*_*_*"	]
+  Digis : [ "keep mu2e::StrawDigis_*_*_*" ]
+  Hits : [ "keep mu2e::StrawHitFlagDetailmu2e::BitMaps_FlagBkgHits_*_*",
+  "keep mu2e::ComboHitCollection_*_*_*",
+  "keep mu2e::StrawHits_*_*_*"	]
 
-    Tracks : [ "keep mu2e::StrawHitFlagDetailmu2e::BitMaps_FlagBkgHits_StrawHits_*",
-	       "keep mu2e::ComboHitCollection_makePH_*_*",
-	       "keep mu2e::TimeClusters_*_*_*" ]
-    MCTracks : ["keep mu2e::GenParticles_*_*_*",
-		"keep mu2e::SimParticles_*_*_*" ]
-    MCDigis : ["keep mu2e::StrawDigiMCs_*_*_*"]
-    MCHits : [ "keep mu2e::StepPointMCs_*_tracker_*",
-	       "keep mu2e::StepPointMCs_*_virtualdetector_*"]
+  Tracks : [ "keep mu2e::StrawHitFlagDetailmu2e::BitMaps_FlagBkgHits_StrawHits_*",
+  "keep mu2e::ComboHitCollection_makePH_*_*",
+  "keep mu2e::TimeClusters_*_*_*" ]
+  MCTracks : ["keep mu2e::GenParticles_*_*_*",
+  "keep mu2e::SimParticles_*_*_*" ]
+  MCDigis : ["keep mu2e::StrawDigiMCs_*_*_*"]
+  MCHits : [ "keep mu2e::StepPointMCs_*_tracker_*",
+  "keep mu2e::StepPointMCs_*_virtualdetector_*"]
 
 }
 
