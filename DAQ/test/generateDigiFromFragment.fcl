@@ -29,9 +29,9 @@ physics : {
 	 @table::DAQ.producers.makeSD
       }
 
-      CaloDigiMaker:		
+      CaloHitMaker:		
       {	 
-	 @table::DAQ.producers.CaloDigiMaker
+	 @table::DAQ.producers.CaloHitMaker
       }
    }
 
@@ -47,7 +47,7 @@ physics : {
    }
 
    #  t1 : [ makeSD ] 
-   t1 : [ makeSD, CaloDigiMaker ] 
+   t1 : [ makeSD, CaloHitMaker ] 
    e1 : [ readFragments, outfile ]
 
    trigger_paths  : [t1]
@@ -69,3 +69,10 @@ outputs:  {
 }
 
 services.TFileService.fileName : "generateDigiFromFragment_test.root" 
+services.TimeTracker : {
+    dbOutput : {
+        filename : "timing.csv"
+        overwrite : true
+    }
+}
+services.scheduler.wantSummary: true
