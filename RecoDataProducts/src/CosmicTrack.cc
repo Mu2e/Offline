@@ -13,9 +13,13 @@ TrackParams::TrackParams(){
 } 
 
 TrackCov::TrackCov(){
+  sigA0A1 = 0.;
+  sigA1A0 = 0.;
   sigA0 = 0.;
   sigA1 = 0.;
   sigB0 = 0.;
+  sigB0B1 = 0.;
+  sigB1B0 = 0.;
   sigB1 = 0.;
 } 
 
@@ -54,5 +58,8 @@ namespace mu2e{
 
 	// Destructor
 	CosmicTrack::~CosmicTrack() {}
+	
+	
+	    
 
 }

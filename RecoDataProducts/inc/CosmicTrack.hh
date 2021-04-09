@@ -4,7 +4,7 @@
 #include "TMath.h"
 #include "TMatrixD.h"
 #include "DataProducts/inc/XYZVec.hh"
-#include "Mu2eUtilities/inc/PointLinePCA_XYZ.hh"
+#include "Mu2eUtilities/inc/TwoLinePCA_XYZ.hh"
 #include <vector>
 #include <bitset>
 #include <tuple>
@@ -42,8 +42,8 @@ using namespace std;
     TrackCov Covarience; //FIXME backwards compatibility
     std::vector<double> cov;
 
-	  XYZVec Direction() const { return XYZVec(A1, B1, 1).unit();};
-	  XYZVec Position() const { return XYZVec(A0, B0, 0);};
+	  XYZVec Direction() const { return XYZVec(A1, -1, B1).unit();};
+	  XYZVec Position() const { return XYZVec(A0, 0, B0);};
    };
 
    //Struct to hold Coordinate System
@@ -126,6 +126,7 @@ namespace mu2e {
       TrackCov Cov(siga0, siga0a1, siga1a0, siga1, sigb0, sigb0b1, sigb1b0, sigb1);
         this->FitParams.Covarience = Cov;
       }
+      
       void SetMinuitCoordSystem(TrackAxes coordsys){
         this->MinuitCoordSystem = coordsys;
       }
@@ -138,19 +139,11 @@ namespace mu2e {
         this->MinuitEquation = Track;
       }
 
-      std::tuple <XYZVec, double, double> GetTrackPOCAInfo() {
-        XYZVec TrackerCenter(0,0,0);//FIXME!!
-        std::tuple <XYZVec, double, double> poca_info;
-        PointLinePCA_XYZ PCA = PointLinePCA_XYZ(TrackerCenter, this->FirstHitVec, this->LastHitVec);
-        XYZVec POCA = PCA.pca();
-        double DOCA = PCA.dca();
-        double AMSIGN = copysign(1.0,PCA.pca().X());
-        poca_info = make_tuple(POCA, DOCA, AMSIGN);
-        return poca_info;
-	    }
+      std::tuple <XYZVec, double, double> GetTrackPOCAInfo();
 	    
       XYZVec Pos0() const { 
-        return XYZVec intercept(this->MinuitParams.A0, 0, this->MinuitParams.B0); 
+        XYZVec intercept(this->MinuitParams.A0, 0, this->MinuitParams.B0);
+        return intercept; 
       }
 
       XYZVec Dir() const {
@@ -176,7 +169,7 @@ namespace mu2e {
       bool converged = false;
       bool minuit_converged = false;
 
-      //-----------Fill Diag info this is legacy it will probably be removed soon----------//
+      //Fill Diag info this is legacy it will probably be removed soon: - TODO can we remove this?
       void set_finalchisq_dof(double finalchisq_dof)   { Diag.FinalChiTot = finalchisq_dof; }
       void set_finalchisq_dofX(double finalchisq_dofX) { Diag.FinalChiX = finalchisq_dofX; }
       void set_finalchisq_dofY(double finalchisq_dofY) { Diag.FinalChiY = finalchisq_dofY; }
@@ -186,6 +179,29 @@ namespace mu2e {
       void set_initchisq_dofY(double initchisq_dofY) { Diag.InitialChiY = initchisq_dofY; }
       void set_niter(int iter){ _niters= (iter);}
       
+      //function to make tuple of POCA info
+      std::tuple <double, double, double, double> KinKalTrackParams() {
+        XYZVec zpos(0.,0.,0);
+        XYZVec  zdir(0.,0.,1.);
+        XYZVec  pos0(this->MinuitParams.A0, 0, this->MinuitParams.B0);
+        XYZVec  dir(this->MinuitParams.A1, -1, this->MinuitParams.B1);
+
+        std::tuple <double,double, double, double> info;
+        TwoLinePCA_XYZ PCA = TwoLinePCA_XYZ(pos0, dir, zpos, zdir);
+        XYZVec POCA = PCA.point1()-PCA.point2();
+        double DOCA = PCA.dca();
+        double amsign = copysign(1.0, -(zdir.Cross(POCA)).Dot(dir));
+        
+        double d0  = amsign*DOCA; // dca2d and dca are the same for POCA to the Z axis 
+        double phi0 = dir.Phi(); // same as at POCA
+        double z0 = PCA.point1().Z();
+        double cost = dir.Z();
+    
+        info = make_tuple(d0,phi0,z0,cost);
+        return info;
+      }
+      
+      //Kinkal params:
       double d0(){ return d0_; }
       double z0(){ return d0_; }
       double phi0(){ return d0_; }
