@@ -39,6 +39,7 @@ using namespace std;
     double deltaT0;
     TrackParams();
     TrackParams(double a0, double a1, double  b0, double b1) : A0(a0), A1(a1), B0(b0) , B1(b1){};
+    TrackParams(double a0, double a1, double  b0, double b1, double t0) : A0(a0), A1(a1), B0(b0) , B1(b1), T0(t0) {};
     TrackCov Covarience; //FIXME backwards compatibility
     std::vector<double> cov;
 
@@ -106,12 +107,12 @@ namespace mu2e {
         this->InitParams = par;
       }
 
-      void SetMinuitParams(double par_a0, double par_a1, double par_b0, double par_b1, double par_t0 ){
+      void SetMinuitParams(double par_a0, double par_a1, double par_b0, double par_b1, double par_t0_ ){
         this->MinuitParams.A0 = par_a0;
         this->MinuitParams.A1 = par_a1;
         this->MinuitParams.B0 = par_b0;
         this->MinuitParams.B1 = par_b1;
-        this->MinuitParams.T0 = par_t0;
+        this->MinuitParams.T0 = par_t0_;
       }
       
       void SetFitCoordSystem(TrackAxes coordsys){
@@ -180,44 +181,44 @@ namespace mu2e {
       void set_niter(int iter){ niters= (iter);}
       
       //function to make tuple of kinkal params info
-      std::tuple <double, double, double, double,double> KinKalTrackParams() {
+      std::tuple <double, double, double, double, double> KinKalTrackParams() {
         XYZVec zpos(0.,0.,0);
         XYZVec  zdir(0.,0.,1.);
         XYZVec  pos0(this->MinuitParams.A0, 0, this->MinuitParams.B0);
         XYZVec  dir(this->MinuitParams.A1, -1, this->MinuitParams.B1);
 
-        std::tuple <double,double, double, double> info;
+        std::tuple <double,double, double, double, double> info;
         TwoLinePCA_XYZ PCA = TwoLinePCA_XYZ(pos0, dir, zpos, zdir);
         XYZVec POCA = PCA.point1()-PCA.point2();
         double DOCA = PCA.dca();
         double amsign = copysign(1.0, -(zdir.Cross(POCA)).Dot(dir));
         
-        this->d0  = amsign*DOCA; 
-        this->phi0 = dir.Phi(); 
-        this->z0 = PCA.point1().Z();
-        this->cost = dir.Z();
-        this->t0 = this->MinuitParams.T0;
-        info = make_tuple(this->d0,this->phi0,this->z0,this->cost, this->t0);
+        this->d0_  = amsign*DOCA; 
+        this->phi0_ = dir.Phi(); 
+        this->z0_ = PCA.point1().Z();
+        this->cost_ = dir.Z();
+        this->t0_ = this->MinuitParams.T0; //TODO
+        info = make_tuple(this->d0_,this->phi0_,this->z0_,this->cost_, this->t0_);
         return info;
       }
       
       //Kinkal params:
-      double d0(){ return d0; }
+      double d0(){ return d0_; }
       double z0(){ return z0_; }
       double phi0(){ return phi0_; }
-      double cost(){ return cost; }
-      double t0(){ return t0; }
-      double mom(){ return mom; }
+      double cost(){ return cost_; }
+      double t0(){ return t0_; }
+      double mom(){ return mom_; }
 
     private:
       int niters;
       //KinematicLine parameters:
-      double d0;
-      double z0;
-      double t0;
-      double cost;
-      double  phi0;
-      double mom;
+      double d0_;
+      double z0_;
+      double t0_;
+      double cost_;
+      double  phi0_;
+      double mom_;
 
   };
   std::ostream& operator<<(std::ostream& os, mu2e::CosmicTrack const& track);
