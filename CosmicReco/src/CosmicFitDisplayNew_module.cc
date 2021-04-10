@@ -149,7 +149,7 @@ namespace mu2e
     int window_size_x(1300);
     int window_size_y(600);
     canvas_ = tfs->make<TCanvas>(name,title,window_size_x,window_size_y);
-    canvas_->Divide(2,2);
+    canvas_->Divide(1,2);
   }
   void CosmicFitDisplayNew::analyze(const art::Event& event) {
     //Call one or more of the macros from below here, for example:   
@@ -165,22 +165,22 @@ namespace mu2e
     //find time clusters:
     unsigned  _ncosmics = _coscol->size();
     unsigned _nch = _chcol->size();
+    std::cout<<"size "<<_coscol->size()<<std::endl;
     //loop over tracks:
-    for(unsigned int i =0; i < _ncosmics; i++){
-      
+    for(unsigned int i =0; i < _ncosmics; i++){      
       CosmicTrackSeed track =(*_coscol)[i];
-      if(track._track.converged == false){continue;}
+      
+      std::cout<<track._track.MinuitParams.A0<<" "<<track._track.MinuitParams.A1<<" "<<track._track.MinuitParams.B0<<" "<<track._track.MinuitParams.B1<<std::endl;
       
       if(isnan(track._track.MinuitParams.A0) == true && isnan(track._track.MinuitParams.A1) == true && isnan(track._track.MinuitParams.B0) == true && isnan(track._track.MinuitParams.B1) == true) continue;
-
+      
       a0.push_back(track._track.MinuitParams.A0);
       a1.push_back(track._track.MinuitParams.A1);
       b0.push_back(track._track.MinuitParams.B0);
-      b1.push_back(track._track.FitParams.B1);
+      b1.push_back(track._track.MinuitParams.B1);
     }
 
-    GeomHandle<Tracker> tracker; 
-         
+    GeomHandle<Tracker> tracker;   
     // Annulus of a cylinder that bounds the tracker/straw info:
     TubsParams envelope(tracker->g4Tracker()->getInnerTrackerEnvelopeParams());
          
@@ -189,7 +189,7 @@ namespace mu2e
       std::cout << "Run: " << event.id().run()
       << "  Subrun: " << event.id().subRun()
       << "  Event: " << event.id().event()<<std::endl;
-      TLine  major_error_line, minor_error_line, out_line, fit_to_trackxprime, fit_to_trackyprime;
+      TLine  major_error_line, minor_error_line;
       TArc   arc;
       TPolyMarker poly, out;
       TBox   box;
@@ -225,42 +225,40 @@ namespace mu2e
         major_error_line.DrawLine( z1, y1,z2, y2);
         }
       
-              
-	    if(a1.size() > 0){
-          TF1 *trackline_x = new TF1("line", "[0]+[1]*x", -plotLimits, plotLimits);
-          trackline_x->SetParameter(0, b0[0]);
-          trackline_x->SetParameter(1, b1[0]);
-          trackline_x->SetLineColor(6);
-	        //trackline_x->Draw("same");
-               
-	        pad = canvas_->cd(6);
-	        pad->Clear();   
+        TF1 *trackline_x = new TF1("line", "[0]+[1]*x", -plotLimits, plotLimits);
+        trackline_x->SetParameter(0, b0[0]);
+        trackline_x->SetParameter(1, b1[0]);
+        trackline_x->SetLineColor(6);
+        trackline_x->Draw("same");
+             
+        pad = canvas_->cd(2);
+        pad->Clear();   
 
-	        auto xyplot = pad->DrawFrame(-plotLimits,-plotLimits,plotLimits,plotLimits);
-	        xyplot->GetYaxis()->SetTitleOffset(1.25);
-	        xyplot->SetTitle( "XY; X(mm);Y(mm)");
-          arc.SetFillStyle(0);
-          arc.DrawArc(0.,0., envelope.outerRadius());
-          arc.DrawArc(0.,0., envelope.innerRadius());
-          for(unsigned int i =0; i < _nch; i++){
-            ComboHit const& chit =(*_chcol)[i];
-            auto const& p = chit.pos();
-            auto const& w = chit.wdir();
-            auto const& s = chit.wireRes();	 
-            
-            double y1 = p.y()+s*w.y();
-            double y2 = p.y()-s*w.y();
-            double x1 = p.x()+s*w.x();
-            double x2 = p.x()-s*w.x();
-            major_error_line.DrawLine( x1, y1, x2, y2);
-        }
+        auto xyplot = pad->DrawFrame(-plotLimits,-plotLimits,plotLimits,plotLimits);
+        xyplot->GetYaxis()->SetTitleOffset(1.25);
+        xyplot->SetTitle( "XY; X(mm);Y(mm)");
+        arc.SetFillStyle(0);
+        arc.DrawArc(0.,0., envelope.outerRadius());
+        arc.DrawArc(0.,0., envelope.innerRadius());
+        for(unsigned int i =0; i < _nch; i++){
+          ComboHit const& chit =(*_chcol)[i];
+          auto const& p = chit.pos();
+          auto const& w = chit.wdir();
+          auto const& s = chit.wireRes();	 
+          
+          double y1 = p.y()+s*w.y();
+          double y2 = p.y()-s*w.y();
+          double x1 = p.x()+s*w.x();
+          double x2 = p.x()-s*w.x();
+          major_error_line.DrawLine( x1, y1, x2, y2);
+      }
 	        
       TF1 *trackline_y = new TF1("line", "[0]+[1]*x", -plotLimits, plotLimits);
       trackline_y->SetParameter(0,b0[0]);
       trackline_y->SetParameter(1, b1[0]);
       trackline_y->SetLineColor(6);
       trackline_y->Draw("same");
-      }
+      
       ostringstream title;
       title << "Run: " << event.id().run()
       << "  Subrun: " << event.id().subRun()
