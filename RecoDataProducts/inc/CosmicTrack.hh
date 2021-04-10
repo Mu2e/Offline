@@ -89,7 +89,7 @@ namespace mu2e {
 
       //---------------Accessors:--------------//
 
-      int get_iter(){return _niters;}
+      int get_iter(){return niters;}
 
       TrackParams GetFitParams()const{ 
         return FitParams;
@@ -177,10 +177,10 @@ namespace mu2e {
       void set_initchisq_dof(double initchisq_dof)   { Diag.InitialChiTot = initchisq_dof; }
       void set_initchisq_dofX(double initchisq_dofX) { Diag.InitialChiX = initchisq_dofX; }
       void set_initchisq_dofY(double initchisq_dofY) { Diag.InitialChiY = initchisq_dofY; }
-      void set_niter(int iter){ _niters= (iter);}
+      void set_niter(int iter){ niters= (iter);}
       
-      //function to make tuple of POCA info
-      std::tuple <double, double, double, double> KinKalTrackParams() {
+      //function to make tuple of kinkal params info
+      std::tuple <double, double, double, double,double> KinKalTrackParams() {
         XYZVec zpos(0.,0.,0);
         XYZVec  zdir(0.,0.,1.);
         XYZVec  pos0(this->MinuitParams.A0, 0, this->MinuitParams.B0);
@@ -192,32 +192,32 @@ namespace mu2e {
         double DOCA = PCA.dca();
         double amsign = copysign(1.0, -(zdir.Cross(POCA)).Dot(dir));
         
-        double d0  = amsign*DOCA; // dca2d and dca are the same for POCA to the Z axis 
-        double phi0 = dir.Phi(); // same as at POCA
-        double z0 = PCA.point1().Z();
-        double cost = dir.Z();
-    
-        info = make_tuple(d0,phi0,z0,cost);
+        this->d0  = amsign*DOCA; 
+        this->phi0 = dir.Phi(); 
+        this->z0 = PCA.point1().Z();
+        this->cost = dir.Z();
+        this->t0 = this->MinuitParams.T0;
+        info = make_tuple(this->d0,this->phi0,this->z0,this->cost, this->t0);
         return info;
       }
       
       //Kinkal params:
-      double d0(){ return d0_; }
-      double z0(){ return d0_; }
-      double phi0(){ return d0_; }
-      double cost(){ return d0_; }
-      double t0(){ return d0_; }
-      double mom(){ return mom_; }
+      double d0(){ return d0; }
+      double z0(){ return z0_; }
+      double phi0(){ return phi0_; }
+      double cost(){ return cost; }
+      double t0(){ return t0; }
+      double mom(){ return mom; }
 
     private:
-      int _niters;
+      int niters;
       //KinematicLine parameters:
-      double d0_;
-      double z0_;
-      double t0_;
-      double cost_;
-      double  phi0_;
-      double mom_;
+      double d0;
+      double z0;
+      double t0;
+      double cost;
+      double  phi0;
+      double mom;
 
   };
   std::ostream& operator<<(std::ostream& os, mu2e::CosmicTrack const& track);
