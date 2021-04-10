@@ -426,7 +426,7 @@ namespace mu2e {
       tmax = std::max(tmax,hhit.correctedTime());
     }
     TimeRange trange(tmin-tbuff_,tmax+tbuff_);
-    //auto const& scosmic = hseed.track(); //a CosmicTrack
+    auto const& scosmic = hseed.track(); //a CosmicTrack
 
     VEC3 bnom(0.0,0.0,0.0);
     // create a PKTRAJ from the CosmicTrack fit result, to seed the KinKal fit.  First, translate the parameters
