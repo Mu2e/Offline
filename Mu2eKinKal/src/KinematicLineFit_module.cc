@@ -437,7 +437,7 @@ namespace mu2e {
     pars[KTRAJ::cost_] = get<3>(info);
     pars[KTRAJ::phi0_] = get<1>(info);
     pars[KTRAJ::mom_] = 1.0; //TODO
-    pars[KTRAJ::t0_] = hseed.t0().t0(); //TODO
+    pars[KTRAJ::t0_] = get<4>(info); //TODO
 
     // create the initial trajectory
     Parameters kkpars(pars,seedcov_);
@@ -446,7 +446,7 @@ namespace mu2e {
       std::cout << "Seed Traj parameters  " << kkpars << std::endl;
     }
     //  construct the seed trajectory
-    return KTRAJ(kkpars, mass_, charge_, bnom, trange );//TODO
+    return KTRAJ(kkpars, bnom, 0.0 );//TODO
   }
 
   //Following functions are the same as for LoopHelix:
