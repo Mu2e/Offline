@@ -117,7 +117,7 @@ void MakeCrvRecoPulses::NoFitOption(const std::vector<unsigned int> &waveform, f
   {
     float ADC=waveform[i]-pedestal;
     sum+=ADC;
-    if(ADC<FWHMthreshold && !foundPulseEnd) pulseEnd=i;
+    if(ADC<FWHMthreshold && !foundPulseEnd) {pulseEnd=i; foundPulseEnd=true;}
     if(ADC<_minADCdifference) break;
   }
   if(!foundPulseEnd) pulseEnd=waveform.size()-1;
@@ -125,7 +125,7 @@ void MakeCrvRecoPulses::NoFitOption(const std::vector<unsigned int> &waveform, f
   {
     float ADC=waveform[i]-pedestal;
     sum+=ADC;
-    if(ADC<FWHMthreshold && !foundPulseStart) pulseStart=i;
+    if(ADC<FWHMthreshold && !foundPulseStart) {pulseStart=i; foundPulseStart=true;}
     if(ADC<_minADCdifference || i==0) break;
   }
   if(!foundPulseStart) pulseStart=0;

@@ -163,7 +163,7 @@ namespace mu2e
       size_t n = _makeCrvRecoPulses->GetPEs().size();
       for(size_t j=0; j<n; ++j)
       {
-        //the TDC times were recored with respect to the event window start.
+        //the TDC times were recorded with respect to the event window start.
         //need to shift the times back to the original time scale (i.e. microbunch time)
         double pulseTime   = _makeCrvRecoPulses->GetPulseTimes().at(j) + TDC0time;
         double LEtime      = _makeCrvRecoPulses->GetLEtimes().at(j) + TDC0time;
