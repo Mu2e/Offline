@@ -118,7 +118,7 @@ CaloFilters : {
 	triggerPath             : "CaloPhoton"	    
     }
   
-    caloNNFilter : {
+    caloMVANNCEFilter : {
 	module_type            : FilterEcalNNTrigger
 	caloClusterCollection  : CaloClusterFast
         caloBkgMVA             :{ MVAWeights : "CaloFilters/data/CE_NN_ReLU.weights.xml" }
@@ -392,7 +392,7 @@ CaloFilters : { @table::CaloFilters
 	#FIX ME! THIS IS JUST A PLACE HOLDER
 	caloPhoton       : [ caloPhotonEventPrescale, caloPhotonCDCountFilter, CaloClusterFast, caloPhotonFilter] 
 
-	caloPhoton       : [ caloMVANNCEEventPrescale, caloMVANNCECDCountFilter, CaloClusterFast,caloNNFilter ] 
+	caloPhoton       : [ caloMVANNCEEventPrescale, caloMVANNCECDCountFilter, CaloClusterFast,caloMVANNCEFilter ] 
 
     }
 }
