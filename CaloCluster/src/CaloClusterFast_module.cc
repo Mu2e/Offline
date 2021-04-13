@@ -88,12 +88,11 @@ namespace mu2e {
       const CaloHitCollection& caloHits(*caloHitsHandle);
       if (caloHits.empty()) return;
 
-      std::vector<int> hits(caloHits.size());
-      std::iota(hits.begin(),hits.end(),0);
-      
+      std::vector<int> hits;
+      hits.reserve(caloHits.size());
+      for (unsigned i=0;i<caloHits.size();++i) if (caloHits[i].energyDep() > EnoiseCut_) hits.emplace_back(i);      
       auto functorTime = [&caloHits](int a, int b) {return caloHits[a].time() < caloHits[b].time();};
       std::sort(hits.begin(),hits.end(),functorTime);
-      for (auto val : hits) if (caloHits[val].energyDep() < EnoiseCut_) val = -1;
 
       auto iterSeed = hits.begin();
       while (iterSeed != hits.end())
@@ -128,7 +127,7 @@ namespace mu2e {
               std::vector<int>  neighborsId = cal.crystal(visitId).neighbors();
               if (extendSearch_) std::copy(cal.nextNeighbors(visitId).begin(), cal.nextNeighbors(visitId).end(), std::back_inserter(neighborsId));
 
-              for (auto& iId : neighborsId)
+              for (const auto& iId : neighborsId)
               {
                   if (isVisited[iId]) continue;
                   isVisited[iId] = true;
