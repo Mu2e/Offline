@@ -82,7 +82,7 @@ helper.make_plugins([mainlib,
                      'canvas',
                      'MF_MessageLogger',
                      'fhiclcpp',
-                     'fhiclcpp_types'
+                     'fhiclcpp_types',
                      'tbb',
                      'cetlib',
                      'cetlib_except',
