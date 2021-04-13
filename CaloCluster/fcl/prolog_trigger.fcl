@@ -37,15 +37,15 @@ CaloTrigger : {
 }
 
 
-CaloClusterFast :
+CaloClusterTrigger:
 {
-   producers : {CaloClusterFast : @local::CaloClusterFast}   
+   producers : {
+      CaloClusterFast : @local::CaloClusterFast
+      CaloTrigger     : @local::CaloTrigger
+   }   
    Reco      : [ CaloClusterFast ]
 }
-CaloClusterTrigger :
-{
-   producers : {CaloTrigger : @local::CaloTrigger}
-}
+
 
 
 

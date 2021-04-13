@@ -50,5 +50,4 @@ CaloCluster :
    Reco : [ CaloProtoClusterMaker, CaloClusterMaker ]
 }
 
-
 END_PROLOG
