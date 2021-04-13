@@ -125,7 +125,7 @@ namespace mu2e {
      
      if (select)
      {
-        trigInfo._triggerBits.merge(TriggerFlag::caloDigis);
+        trigInfo._triggerBits.merge(TriggerFlag::caloCluster);
         trigInfo._triggerPath = trigPath_;
      }     
 

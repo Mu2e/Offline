@@ -31,7 +31,7 @@ physics: {
       @table::CaloReco.producers
       @table::CaloMC.TruthProducers
       @table::CaloClusterMC.producers	
-      @table::CaloClusterFast.producers	
+      @table::CaloClusterTrigger.producers	
   }
   
   analyzers : 
@@ -47,7 +47,7 @@ physics: {
       }
   }
   
-  p1: [FindMCPrimary, @sequence::CaloReco.Reco,@sequence::CaloClusterFast.Reco, @sequence::CaloMC.TruthMatch ]
+  p1: [FindMCPrimary, @sequence::CaloReco.Reco,@sequence::CaloClusterTrigger.Reco, @sequence::CaloMC.TruthMatch ]
 
   e1: [CaloNNDiag]
    
