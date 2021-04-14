@@ -22,22 +22,18 @@ Mu2eKinKal : {
       BFieldCorrection : 0
       AddMaterial : true
       CaloTrackerTimeOffset : -1.35
+      MetaIterationSettings : [ 
+        [ 10.0, 1.0, 10.0 ],
+        [ 2.0, 0.5, 10.0 ],
+        [ 0.0, 0.2, 20.0 ]]
     }
   
     ModuleSettings : {
       HelixFlags : [ "HelixOK" ] # why doesn't "HitsOK" work?? FIXME!
       SaveFullFit : true
-      ZSavePositions : [0.0]
+#      ZSavePositions : [-1520., 0.0, 1520.0 ]
     }
-    MetaIterationSettings : [ 
-      [ 10.0, 1.0, 10.0 ],
-      [ 2.0, 0.5, 10.0 ],
-      [ 0.0, 0.2, 20.0 ]]
-#      [ 10.0, 1.0, 10.0 ],
-#      [ 5.0, 1.0, 10.0 ],
-#      [ 2.0, 0.5, 10.0 ],
-#      [ 1.0, 0.2, 20.0 ],
-#      [ 0.0, 0.2, 20.0 ]]
+
     StrawHitUpdateSettings : [
       [ 10.0, 10.0, 1, 1 ]]
 #     [ 10.0, 5.0, 1, 2 ]
