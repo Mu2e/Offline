@@ -16,7 +16,6 @@
 #include "KinKal/Fit/Config.hh"
 #include "KinKal/Fit/Status.hh"
 #include "KinKal/Fit/Track.hh"
-#include "KinKal/Trajectory/LoopHelix.hh"
 #include "KinKal/Trajectory/ParticleTrajectory.hh"
 #include "KinKal/Trajectory/PiecewiseClosestApproach.hh"
 #include "KinKal/Trajectory/Line.hh"
@@ -206,7 +205,6 @@ namespace mu2e {
 
   template <class KTRAJ> KalSeed KKFit<KTRAJ>::createSeed(KKTRK const& kktrk,HPtr const& hptr, std::vector<float> const& zsave, bool savefull) const {
     TrkFitFlag fflag(hptr->status());
-    fflag.merge(TrkFitFlag::KKLoopHelix);
     if(kktrk.fitStatus().usable()) fflag.merge(TrkFitFlag::kalmanOK);
     if(kktrk.fitStatus().status_ == Status::converged) fflag.merge(TrkFitFlag::kalmanConverged);
     if(addmat_)fflag.merge(TrkFitFlag::MatCorr);
