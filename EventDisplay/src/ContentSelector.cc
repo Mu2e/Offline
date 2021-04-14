@@ -42,7 +42,7 @@ void ContentSelector::createNewEntries(std::vector<art::Handle<CollectionType> >
                                        const art::Event &event, const std::string &className,
                                        std::vector<entryStruct> &newEntries, int classID)
 {
-  event.getManyByType(dataVector);
+  dataVector=event.getMany<CollectionType>();
   typedef std::vector<art::Handle<CollectionType> > CollectionVector;
   typedef typename CollectionVector::const_iterator itertype;
   itertype iter;
@@ -147,7 +147,7 @@ void ContentSelector::setAvailableCollections(const art::Event& event)
   }
 
 //CRV Waveforms (not inside a menu)
-  event.getManyByType(_crvDigisVector);
+  _crvDigisVector=event.getMany<mu2e::CrvDigiCollection>();
 
 //Track Selection
   newEntries.clear();
@@ -178,8 +178,8 @@ void ContentSelector::setAvailableCollections(const art::Event& event)
     }
   }
 
-//PointTrajectories
-  event.getManyByType(_mcTrajectoryVector);
+//MCTrajectories
+  _mcTrajectoryVector=event.getMany<mu2e::MCTrajectoryCollection>();
 
 //Other
   _hasPhysicalVolumesMulti=event.getSubRun().getByLabel(_physicalVolumesMultiLabel, _physicalVolumesMulti);
