@@ -266,6 +266,7 @@ namespace mu2e {
 	  if(save || saveall_){
 	  // convert fits into KalSeeds for persistence	
 	    kkseedcol->push_back(kkfit_.createSeed(*kktrk,hptr,zsave_,savefull_));
+	    kkseedcol->back()._status.merge(TrkFitFlag::KKLoopHelix);
 	    kktrkcol->push_back(kktrk.release());
 	  }
 	}
