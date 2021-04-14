@@ -1066,8 +1066,6 @@ void DataInterface::fillEvent(boost::shared_ptr<ContentSelector> const &contentS
   double digitizationPeriod = crvPar->digitizationPeriod;
   double recoPulsePedestal  = crvPar->pedestal;
 
-//  std::vector<art::Handle<mu2e::CrvDigiCollection> > crvDigisVector;
-//  _event->getManyByType(crvDigisVector);
   const std::vector<art::Handle<mu2e::CrvDigiCollection> > &crvDigisVector = contentSelector->getSelectedCrvDigiCollection();
   for(size_t i=0; i<crvDigisVector.size(); i++)
   {
@@ -1385,6 +1383,8 @@ void DataInterface::fillEvent(boost::shared_ptr<ContentSelector> const &contentS
 
         fltLMin=segment.fmin();
         fltLMax=segment.fmax();
+/*
+//interpolation between segments doesn't seem to work anymore
         if(k>0)
         {
           double fltLMaxPrev=segments.at(k-1).fmax();
@@ -1395,6 +1395,7 @@ void DataInterface::fillEvent(boost::shared_ptr<ContentSelector> const &contentS
           double fltLMinNext=segments.at(k+1).fmin();
           fltLMax=(fltLMax+fltLMinNext)/2.0;
         }
+*/
 
         XYZVec pos1, pos2;
         segment.helix().position(fltLMin,pos1);

@@ -49,6 +49,7 @@ namespace mu2e
     std::vector<double>      _maxTimeDifferences;
     std::vector<bool>        _useFourLayers;
     bool        _usePulseOverlaps;
+    double      _minOverlapTime;
     bool        _usingPEsPulseHeight;
     double      _maxSlope;
     double      _maxSlopeDifference;
@@ -113,6 +114,7 @@ namespace mu2e
     _maxTimeDifferences(pset.get<std::vector<double> >("maxTimeDifferences")),
     _useFourLayers(pset.get<std::vector<bool> >("useFourLayers")),
     _usePulseOverlaps(pset.get<bool>("usePulseOverlaps")),
+    _minOverlapTime(pset.get<double>("minOverlapTime")),
     _usingPEsPulseHeight(pset.get<bool>("usingPEsPulseHeight")),
     _maxSlope(pset.get<double>("maxSlope")),
     _maxSlopeDifference(pset.get<double>("maxSlopeDifference")),
@@ -290,7 +292,8 @@ namespace mu2e
           }
           else
           {
-            if(std::max(iterHitAdjacent->_timePulseStart,timePulseStart)>std::min(iterHitAdjacent->_timePulseEnd,timePulseEnd)) continue; //no overlap
+            double overlapTime=std::min(iterHitAdjacent->_timePulseEnd,timePulseEnd)-std::max(iterHitAdjacent->_timePulseStart,timePulseStart);
+            if(overlapTime<_minOverlapTime) continue; //no overlap or overlap time too short
           }
 
           int counterDiff=iterHitAdjacent->_counter-counter;
@@ -339,7 +342,7 @@ namespace mu2e
             double timesPulseEnd[4]={layer0Iter->_timePulseEnd,layer1Iter->_timePulseEnd,layer2Iter->_timePulseEnd,layer3Iter->_timePulseEnd};
             double timeMaxPulseStart = *std::max_element(timesPulseStart,timesPulseStart+4);
             double timeMinPulseEnd = *std::min_element(timesPulseEnd,timesPulseEnd+4);
-            if(timeMaxPulseStart>timeMinPulseEnd) continue;  //pulses don't overlap
+            if(timeMinPulseEnd-timeMaxPulseStart<_minOverlapTime) continue;  //pulses don't overlap, or overlap time too short
           }
 
           double x[4]={layer0Iter->_x,layer1Iter->_x,layer2Iter->_x,layer3Iter->_x};
@@ -403,7 +406,7 @@ namespace mu2e
             double timesPulseEnd[3]={layer1Iter->_timePulseEnd,layer2Iter->_timePulseEnd,layer3Iter->_timePulseEnd};
             double timeMaxPulseStart = *std::max_element(timesPulseStart,timesPulseStart+3);
             double timeMinPulseEnd = *std::min_element(timesPulseEnd,timesPulseEnd+3);
-            if(timeMaxPulseStart>timeMinPulseEnd) continue;  //pulses don't overlap
+            if(timeMinPulseEnd-timeMaxPulseStart<_minOverlapTime) continue;  //pulses don't overlap, or overlap time too short
           }
 
           double x[3]={layer1Iter->_x,layer2Iter->_x,layer3Iter->_x};
@@ -463,7 +466,7 @@ namespace mu2e
               double timesPulseEnd[3]={i1->_timePulseEnd,i2->_timePulseEnd,i3->_timePulseEnd};
               double timeMaxPulseStart = *std::max_element(timesPulseStart,timesPulseStart+3);
               double timeMinPulseEnd = *std::min_element(timesPulseEnd,timesPulseEnd+3);
-              if(timeMaxPulseStart>timeMinPulseEnd) continue;  //pulses don't overlap
+              if(timeMinPulseEnd-timeMaxPulseStart<_minOverlapTime) continue;  //pulses don't overlap, or overlap time too short
             }
 
             std::set<int> counters{i1->_counter,i2->_counter,i3->_counter};
