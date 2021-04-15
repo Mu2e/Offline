@@ -26,6 +26,9 @@ Mu2eKinKal : {
         [ 10.0, 1.0, 10.0 ],
         [ 2.0, 0.5, 10.0 ],
         [ 0.0, 0.2, 20.0 ]]
+      AddHitReject : ["Dead"]
+      MaxAddDOCA : 4.0
+      MaxAddDt : 20.0
     }
   
     ModuleSettings : {
