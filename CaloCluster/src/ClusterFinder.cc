@@ -10,14 +10,16 @@
 
 namespace mu2e {
 
-	ClusterFinder::ClusterFinder(const Calorimeter& cal, const CaloHit* crystalSeed, double deltaTime, double ExpandCut, bool isOnline) : 
+	ClusterFinder::ClusterFinder(const Calorimeter& cal, const CaloHit* crystalSeed, double deltaTime, double ExpandCut, bool addSecondRing) : 
 	  cal_(&cal), crystalSeed_(crystalSeed), seedTime_(crystalSeed->time()), clusterList_(), crystalToVisit_(), isVisited_(cal.nCrystal()),
-	  deltaTime_(deltaTime), ExpandCut_(ExpandCut), isOnline_(isOnline)
+	  deltaTime_(deltaTime), ExpandCut_(ExpandCut), addSecondRing_(addSecondRing)
 	{}
        
 
 	void ClusterFinder::formCluster(std::vector<CaloCrystalList>& idHitVec)  
 	{ 
+	    std::fill(isVisited_.begin(), isVisited_.end(), false);
+
 	    clusterList_.clear();            
 	    clusterList_.push_front(crystalSeed_);
 	    crystalToVisit_.push(crystalSeed_->crystalID());  
@@ -28,17 +30,15 @@ namespace mu2e {
 	    while (!crystalToVisit_.empty())
 	    {            
 		 int visitId         = crystalToVisit_.front();
-		 isVisited_[visitId] = 1;
+		 isVisited_[visitId] = true;
 
 		 std::vector<int>  neighborsId = cal_->crystal(visitId).neighbors();
-                 
-                 //Why??? That breaks the connectivity
-                 if (isOnline_) neighborsId.insert(neighborsId.end(), cal_->nextNeighbors(visitId).begin(), cal_->nextNeighbors(visitId).end());
+                 if (addSecondRing_) neighborsId.insert(neighborsId.end(), cal_->nextNeighbors(visitId).begin(), cal_->nextNeighbors(visitId).end());
 		 
                  for (auto& iId : neighborsId)
 		 {               
 		     if (isVisited_[iId]) continue;
-		     isVisited_[iId]=1;
+		     isVisited_[iId] = true;
 		     CaloCrystalList& list = idHitVec[iId];
 		     
                      auto it=list.begin();
