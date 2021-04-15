@@ -34,6 +34,7 @@
 #include "Mu2eG4/inc/Mu2eG4PerThreadStorage.hh"
 #include "Mu2eG4/inc/Mu2eG4Config.hh"
 #include "Mu2eG4/inc/Mu2eG4IOConfigHelper.hh"
+#include "Mu2eG4/inc/writePhysicalVolumes.hh"
 #if ( defined G4VIS_USE_OPENGLX || defined G4VIS_USE_OPENGL || defined G4VIS_USE_OPENGLQT )
 #include "Mu2eG4/inc/Mu2eG4VisCommands.hh"
 #endif
@@ -103,6 +104,7 @@ namespace mu2e {
     void beginRun(art::Run &r) override;
     void endRun(art::Run &) override;
     void beginSubRun(art::SubRun &sr) override;
+    void endSubRun(art::SubRun &sr) override;
 
     Mu2eG4Config::Top conf_;
 
@@ -364,23 +366,37 @@ namespace mu2e {
 
   void Mu2eG4::beginSubRun(art::SubRun& sr)
   {
-    using Collection_t = PhysicalVolumeInfoMultiCollection;
-    auto mvi = std::make_unique<Collection_t>();
-
-    if(multiStagePars_.multiStage()) {
-      // Copy over data from the previous simulation stages
-      auto const& ih = sr.getValidHandle<Collection_t>(multiStagePars_.inputPhysVolumeMultiInfo());
-      mvi->reserve(1 + ih->size());
-      mvi->insert(mvi->begin(), ih->cbegin(), ih->cend());
+    if(multiStagePars_.simStageOverride()) {
+      simStage_ = *multiStagePars_.simStageOverride();
     }
+    else {
+      std::optional<art::InputTag> in;
+      if(multiStagePars_.multiStage()) {
+        in.emplace(multiStagePars_.inputPhysVolumeMultiInfo());
+      }
+      simStage_ = writePhysicalVolumes(sr,
+                                       in,
+                                       _physVolHelper.persistentSingleStageInfo(),
+                                       "");
+    }
+  }
 
-    // By definition simStage=0 if we start with GenParticles and not doing multiStage.
-    simStage_ = mvi->size();
 
-    // Append info for the current stage
-    mvi->emplace_back(_physVolHelper.persistentSingleStageInfo());
+  void Mu2eG4::endSubRun(art::SubRun& sr)
+  {
+    if(multiStagePars_.simStageOverride()) {
+      const unsigned pvstage =
+        writePhysicalVolumes(sr,
+                             multiStagePars_.inputPhysVolumeMultiInfo(),
+                             _physVolHelper.persistentSingleStageInfo(),
+                             "");
 
-    sr.put(std::move(mvi));
+      if(pvstage != simStage_) {
+        throw cet::exception("BADINPUT")
+          << "Mu2eG4::endSubRun() Error: inconsistent simStage: "
+          <<simStage_<<" vs "<<pvstage<<"\n";
+      }
+    }
   }
 
 
@@ -388,6 +404,20 @@ namespace mu2e {
   void Mu2eG4::produce(art::Event& event) {
 
     perThreadStore.initializeEventInfo(&event, simStage_);
+
+    if(multiStagePars_.updateEventLevelVolumeInfos()) {
+      const unsigned pvstage =
+        writePhysicalVolumes(event,
+                             multiStagePars_.updateEventLevelVolumeInfos()->input,
+                             _physVolHelper.persistentSingleStageInfo(),
+                             multiStagePars_.updateEventLevelVolumeInfos()->outInstance);
+
+      if(pvstage != simStage_) {
+        throw cet::exception("BADINPUT")
+          << "Mu2eG4::produce() Error: inconsistent simStage: "
+          <<simStage_<<" vs "<<pvstage<<"\n";
+      }
+    }
 
     // Run G4 for this event and access the completed event.
     BeamOnDoOneArtEvent( event.id().event() );
