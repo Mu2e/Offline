@@ -1,0 +1,99 @@
+# Mu2eG4 config file to test a continuation stage of a multistage job
+# in a resampling setup.
+# An input file can be prepared by running g4test_stage0.fcl
+#
+# Andrei Gaponenko, 2021
+
+#include "fcl/minimalMessageService.fcl"
+#include "fcl/standardProducers.fcl"
+#include "fcl/standardServices.fcl"
+
+# Give this job a name.
+process_name : g4mix1
+
+source : { module_type : EmptyEvent maxEvents: 10 }
+
+services : { @table::Services.Sim }
+
+physics : {
+
+   filters: {
+      rsmix: {
+         module_type: ResamplingMixer
+         fileNames: [ "sim.owner.g4test_stage0.ver.seq.art"]
+         mu2e: {
+            nSecondaries: 1
+            products: {
+               genParticleMixer: { mixingMap: [ [ "generate", "" ] ] }
+               simParticleMixer: { mixingMap: [ [ "g4run", "" ] ] }
+               stepPointMCMixer: { mixingMap: [
+                     [ "g4run:virtualdetector", ":" ],
+                     [ "g4run:ts2in", ":" ]
+                  ] }
+               volumeInfoMixer: {
+                  srInput: "g4run"
+                  evtOutInstanceName: "eventlevel"
+               }
+            }
+         }
+      }
+   }
+
+   producers: {
+      g4run : @local::g4run
+
+      # Save state of the random number engines.
+      randomsaver : @local::randomsaver
+   }
+
+   analyzers: {
+      validation : { module_type : Validation }
+   }
+
+   p1 : [rsmix, g4run]
+   e1:  [validation, fullOutput,uncompressedOutput]
+   trigger_paths: [p1]
+   end_paths: [e1]
+}
+
+outputs: {
+   fullOutput : {
+      module_type : RootOutput
+      fileName    : "sim.owner.g4test_mix1-full.ver.seq.art"
+   }
+
+   uncompressedOutput : {
+      module_type : RootOutput
+      outputCommands: [
+         "keep *_*_*_*",
+         "drop *_*_eventlevel_*",
+         "drop *_rsmix_*_*",
+         "keep mu2e::GenParticles_*_*_*",
+         "keep art::EventIDs_*_*_*"
+      ]
+      fileName    : "sim.owner.g4test_mix1-uc.ver.seq.art"
+   }
+}
+
+
+physics.producers.g4run.physics.physicsListName: "QGSP_BERT" # faster than default
+physics.producers.g4run.SDConfig.enableSD: [virtualdetector ]
+physics.producers.g4run.SimParticlePrinter: { enabled: true prefix: "Mu2eG4" }
+physics.producers.g4run.Mu2eG4CommonCut: @local::mu2eg4CutDeltaElectrons
+physics.producers.g4run.inputs: {
+   primaryType: StepPoints
+   primaryTag: "rsmix:ts2in"
+   inputMCTrajectories: ""
+
+   simStageOverride: 1
+   inputPhysVolumeMultiInfo: "rsmix"
+   updateEventLevelVolumeInfos: {
+      input: "rsmix:eventlevel"
+      outInstance: "eventlevel"
+   }
+}
+
+services.TFileService.fileName: "nts.owner.g4test_mix1.ver.seq.root"
+
+services.SeedService.baseSeed         :  8
+services.SeedService.maxUniqueEngines :  20

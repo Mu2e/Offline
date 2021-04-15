@@ -61,6 +61,12 @@ namespace mu2e {
     if (inputPhysVolTag != invalid_tag) {
       cc.consumes<PhysicalVolumeInfoMultiCollection, art::InSubRun>(inputPhysVolTag);
     }
+
+    if(inputs_.updateEventLevelVolumeInfos()) {
+      cc.consumes<PhysicalVolumeInfoMultiCollection>(inputs_.updateEventLevelVolumeInfos()->input);
+      pc.produces<PhysicalVolumeInfoMultiCollection>(inputs_.updateEventLevelVolumeInfos()->outInstance);
+    }
+
     auto const& inputMCTrajectoryTag = inputs_.inputMCTrajectories();
     if (inputMCTrajectoryTag != invalid_tag) {
       cc.consumes<MCTrajectoryCollection>(inputMCTrajectoryTag);
