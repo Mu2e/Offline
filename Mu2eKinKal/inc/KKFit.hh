@@ -5,6 +5,7 @@
 //
 #include "Mu2eKinKal/inc/KKStrawHit.hh"
 //#include "Mu2eKinKal/inc/KKPanelHit.hh"
+#include "Mu2eKinKal/inc/KKStrawXing.hh"
 #include "Mu2eKinKal/inc/KKCaloHit.hh"
 #include "Mu2eKinKal/inc/KKFitSettings.hh"
 #include "Mu2eKinKal/inc/KKBField.hh"
@@ -20,7 +21,6 @@
 #include "KinKal/Trajectory/PiecewiseClosestApproach.hh"
 #include "KinKal/Trajectory/Line.hh"
 #include "KinKal/Detector/StrawMaterial.hh"
-#include "KinKal/Detector/StrawXing.hh"
 // Other
 #include "cetlib_except/exception.h"
 #include <memory>
@@ -43,7 +43,9 @@ namespace mu2e {
       using PTCA = KinKal::PiecewiseClosestApproach<KTRAJ,Line>;
       using TCA = KinKal::ClosestApproach<KTRAJ,Line>;
       using KKHIT = KinKal::HitConstraint<KTRAJ>;
+      using KKMAT = KinKal::Material<KTRAJ>;
       using KKSTRAWHIT = KKStrawHit<KTRAJ>;
+      using KKSTRAWXING = KKStrawXing<KTRAJ>;
       using KKCALOHIT = KKCaloHit<KTRAJ>;
       //      using KKPANELHIT = KKPanelHit<KTRAJ>;
       using MEAS = KinKal::Hit<KTRAJ>;
@@ -52,7 +54,6 @@ namespace mu2e {
       using EXING = KinKal::ElementXing<KTRAJ>;
       using EXINGPTR = std::shared_ptr<EXING>;
       using EXINGCOL = std::vector<EXINGPTR>;
-      using STRAWXING = KinKal::StrawXing<KTRAJ>;
       using HPtr = art::Ptr<HelixSeed>;
       // construct from a fit configuration objects
       explicit KKFit(KKFitSettings const& fitconfig);
@@ -150,7 +151,7 @@ namespace mu2e {
       PTCA ptca(ptraj, wline, hint, config_.tprec_ );
       // create the material crossing
       if(addmat_){
-	exings.push_back(std::make_shared<STRAWXING>(ptca,smat));
+	exings.push_back(std::make_shared<KKSTRAWXING>(ptca,smat,straw.id()));
       }
       // create the hit
       hits.push_back(std::make_shared<KKSTRAWHIT>(kkbf, ptca, whstate, strawhit, straw, strawidx, strawresponse));
@@ -224,6 +225,7 @@ namespace mu2e {
     // loop over individual effects
     for(auto const& eff: kktrk.effects()) {
       const KKHIT* kkhit = dynamic_cast<const KKHIT*>(eff.get());
+      const KKMAT* kkmat = dynamic_cast<const KKMAT*>(eff.get());
       if(kkhit != 0){
 	const KKSTRAWHIT* strawhit = dynamic_cast<const KKSTRAWHIT*>(kkhit->hit().get());
 	const KKCALOHIT* calohit = dynamic_cast<const KKCALOHIT*> (kkhit->hit().get());
@@ -254,9 +256,31 @@ namespace mu2e {
 	  auto const& zpiece = fittraj.nearestPiece(ca.particleToca());
 	  fseed._segments.emplace_back(zpiece,ca.particleToca());
 	}
+      } else if(kkmat != 0){
+	auto sxing =dynamic_cast<const KKSTRAWXING*>(&(kkmat->detXing()));
+	if(sxing != 0){
+	  std::array<double,3> dmom = {0.0,0.0,0.0}, momvar = {0.0,0.0,0.0};
+	  // compute energy loss
+	  sxing->materialEffects(kkmat->refKTraj(),KinKal::TimeDir::forwards, dmom, momvar);
+	  VEC3 dm(dmom[0],dmom[1],dmom[2]);
+	  // find material crossing properties
+	  double gaspath(0.0);
+	  double radfrac(0.0);
+	  for(auto const& matxing : sxing->matXings()){
+	    if(matxing.dmat_.name().compare(5,3,"gas",3)==0)gaspath = matxing.plen_;
+	    radfrac += matxing.dmat_.radiationFraction(matxing.plen_);
+	    auto const& tpocad = sxing->closestApproach();
+	    fseed._straws.emplace_back(sxing->strawId(),
+		tpocad.doca(),
+		tpocad.particleToca(),
+		tpocad.sensorToca(),
+		gaspath,
+		radfrac,
+		dm.R(),
+		sxing->active() );
+	  }
+	}
       }
-      //      const KKMAT* kkmat = dynamic_cast<const KKMAT*>(eff.get()); TODO!!
-      //TrkUtilities::fillStraws(ktrk,fseed._straws); TODO!!
     }
     // sample the fit at the requested z positions.
     if(savefull){
