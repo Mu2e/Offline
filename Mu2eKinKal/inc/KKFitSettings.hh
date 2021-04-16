@@ -1,11 +1,12 @@
 #ifndef Mu2eKinKal_KKFitSettings_hh
 #define Mu2eKinKal_KKFitSettings_hh
 //
-//  simple struct for fit configuration (needs to be separate since untemplated)
+// Struct for configuring the Mu2e KinKal fit 
 //
 #include "fhiclcpp/types/Atom.h"
 #include "fhiclcpp/types/Sequence.h"
 #include "fhiclcpp/types/Table.h"
+#include "fhiclcpp/types/Tuple.h"
 #include "DataProducts/inc/PDGCode.hh"
 #include "RecoDataProducts/inc/TrkFitDirection.hh"
 namespace mu2e {
@@ -42,6 +43,11 @@ namespace mu2e {
       MetaIterationSettings mconfig { Name("MetaIterationSettings"), Comment("MetaIteration sequence configuration parameters, format: \n"
       " 'Temperature (dimensionless)', Delta chisquared/DOF for convergence', 'Delta chisquared/DOF for divergence'") };
     };
+    // function to turn a StrawHit into a Line object
+    class ComboHit;
+    class Straw;
+    class StrawResponse;
+    KinKal::Line hitLine(ComboHit const& ch, Straw const& straw,StrawResponse const& strawresponse);
   }
 }
 #endif
