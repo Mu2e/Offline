@@ -99,15 +99,10 @@ namespace mu2e {
       fhicl::Atom<art::InputTag>     strawHitFlagCollection {Name("StrawHitFlagCollection"), Comment("StrawHitFlag collection ") };
       fhicl::Sequence<std::string> helixFlags { Name("HelixFlags"), Comment("Flags required to be present to convert a helix seed to a KinKal track") };
       fhicl::Atom<int> printLevel { Name("PrintLevel"), Comment("Diagnostic printout Level"), 0 };
+      fhicl::Atom<bool> addHits { Name("addHits"), Comment("Add hits after initial fit"),false };
       fhicl::Atom<bool> saveAll { Name("SaveAllFits"), Comment("Save all fits, whether they suceed or not"),false };
       fhicl::Atom<bool> saveFull { Name("SaveFullFit"), Comment("Save all helix segments associated with the fit"), false};
       fhicl::Sequence<float> zsave { Name("ZSavePositions"), Comment("Z positions to sample and save the fit result helices"), std::vector<float>()};
-      fhicl::Sequence<std::string> addHitFlags { Name("AddHitFlags"), Comment("Flags required to be present to add a hit"), std::vector<std::string>() };
-      fhicl::Sequence<std::string> rejectHitFlags { Name("RejectHitFlags"), Comment("Flags required not to be present to add a hit"), std::vector<std::string>() };
-      fhicl::Atom<float> maxAddDOCA { Name("MaxAddDOCA"), Comment("Max DOCA to add a hit (mm)"), 2.75 };
-      fhicl::Atom<float> maxAddDt { Name("MaxAddDt"), Comment("Max Detla time to add a hit (ns)"), 3.0 };
-      fhicl::Atom<float> maxAddChi { Name("MaxAddChi"), Comment("Max Chi to add a hit"), 4.0 };
-      fhicl::Atom<float> maxAddDeltaU { Name("MaxAddDeltaU"), Comment("Max Delta-U to add a hit (mm)"), 10.0 };
     };
 
     struct ModuleConfig {
@@ -132,12 +127,11 @@ namespace mu2e {
     art::ProductToken<ComboHitCollection> chcol_T_;
     art::ProductToken<StrawHitFlagCollection> shfcol_T_;
     TrkFitFlag goodhelix_;
-    bool saveall_, savefull_;
+    bool addhits_, saveall_, savefull_;
     std::vector<float> zsave_;
     ProditionsHandle<StrawResponse> strawResponse_h_;
     ProditionsHandle<Tracker> alignedTracker_h_;
     int print_;
-    float maxDoca_, maxDt_, maxChi_, maxDU_;
     KKFIT kkfit_; // fit helper	
     KKMaterial kkmat_; // material helper
     DMAT seedcov_; // seed covariance matrix
@@ -150,14 +144,11 @@ namespace mu2e {
     chcol_T_(consumes<ComboHitCollection>(config().modSettings().comboHitCollection())),
     shfcol_T_(mayConsume<StrawHitFlagCollection>(config().modSettings().strawHitFlagCollection())),
     goodhelix_(config().modSettings().helixFlags()),
+    addhits_(config().modSettings().addHits()),
     saveall_(config().modSettings().saveAll()),
     savefull_(config().modSettings().saveFull()),
     zsave_(config().modSettings().zsave()),
     print_(config().modSettings().printLevel()),
-    maxDoca_(config().modSettings().maxAddDOCA()),
-    maxDt_(config().modSettings().maxAddDt()),
-    maxChi_(config().modSettings().maxAddChi()),
-    maxDU_(config().modSettings().maxAddDeltaU()),
     kkfit_(config().fitSettings()),
     kkmat_(config().matSettings())
   {
@@ -262,6 +253,9 @@ namespace mu2e {
 	    // Check fit for physical consistency; fit can succeed but the result can have the wrong charge
 	    auto const& midtraj = kktrk->fitTraj().nearestPiece(kktrk->fitTraj().range().mid());
 	    save = midtraj.Q()*midtraj.rad() > 0;
+	    if(save && addhits_) {
+	      kkfit_.addStrawHits(*kktrk, chcol, strawHitIdxs, *tracker, *strawresponse); 
+	    }
 	  }
 	  if(save || saveall_){
 	  // convert fits into KalSeeds for persistence	
