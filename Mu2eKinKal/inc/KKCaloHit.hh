@@ -30,8 +30,8 @@ namespace mu2e {
       void updateState(PKTRAJ const& pktraj, MetaIterConfig const& config) override;
       void print(std::ostream& ost=std::cout,int detail=0) const override;
       // scintHit explicit interface
-      KKCaloHit(CCPtr caloCluster, Line const& sensorAxis, double tvar, double wvar) : 
-	caloCluster_(caloCluster), saxis_(sensorAxis), tvar_(tvar), wvar_(wvar), active_(true), precision_(1e-6) {}
+      KKCaloHit(CCPtr caloCluster,  PTCA const& ptca, double tvar, double wvar) : 
+	caloCluster_(caloCluster), saxis_(ptca.sensorTraj()), tvar_(tvar), wvar_(wvar), active_(true), tpdata_(ptca.tpData()), precision_(ptca.precision()) {}
       virtual ~KKCaloHit(){}
       Residual const& timeResidual() const { return rresid_; }
       // the line encapsulates both the measurement value (through t0), and the light propagation model (through the velocity)
@@ -86,7 +86,6 @@ namespace mu2e {
 
   template <class KTRAJ> void KKCaloHit<KTRAJ>::updateState(PKTRAJ const& pktraj, MetaIterConfig const& miconfig) {
     // for now, no updates are needed.  Eventually could test for consistency, update errors, etc
-    precision_ = miconfig.tprec_;
     update(pktraj);
   }
 
@@ -95,9 +94,9 @@ namespace mu2e {
       ost<<"Active ";
     else
       ost<<"Inactive ";
-    ost << " KKCaloHit  tvar " << tvar_ << " wvar " << wvar_ << std::endl;
+    ost << " KKCaloHit time " << this->time() << " tvar " << tvar_ << " wvar " << wvar_ << std::endl;
     if(detail > 0){
-      ost << "Line ";
+      ost << "Axis ";
       saxis_.print(ost,detail);
     }
   }

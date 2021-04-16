@@ -1,0 +1,42 @@
+#ifndef Mu2eKinKal_KKMaterial_hh
+#define Mu2eKinKal_KKMaterial_hh
+//
+//  build KinKal fit configuration objects from art parameter configuration
+//
+#include "fhiclcpp/types/Atom.h"
+#include "fhiclcpp/types/Sequence.h"
+#include "fhiclcpp/types/Table.h"
+#include "fhiclcpp/types/Tuple.h"
+// KinKal
+#include "KinKal/MatEnv/MatDBInfo.hh"
+#include "KinKal/Detector/StrawMaterial.hh"
+#include "Mu2eKinKal/inc/KKFileFinder.hh"
+#include <string>
+namespace mu2e {
+  class KKMaterial {
+    public:
+      using Name    = fhicl::Name;
+      using Comment = fhicl::Comment;
+      using StrawMaterial = KinKal::StrawMaterial;
+      using MatDBInfo = MatEnv::MatDBInfo;
+      struct Settings {
+	fhicl::Atom<std::string> isotopes { Name("isotopes"), Comment("Filename for istotopes information")};
+	fhicl::Atom<std::string> elements { Name("elements"), Comment("Filename for elements information") };
+	fhicl::Atom<std::string> materials { Name("materials"), Comment("Filename for materials information") };
+	fhicl::Atom<std::string> strawGasMaterialName{ Name("strawGasMaterialName"), Comment("strawGasMaterialName") };
+	fhicl::Atom<std::string> strawWallMaterialName{ Name("strawWallMaterialName"), Comment("strawWallMaterialName") };
+	fhicl::Atom<std::string> strawWireMaterialName{ Name("strawWireMaterialName"), Comment("strawWireMaterialName") };
+	fhicl::Atom<double> dahlLynchScatteringFraction{ Name("dahlLynchScatteringFraction"), Comment("dahlLynchScatteringFraction") };
+      };
+
+      explicit KKMaterial( Settings const& matconfig);
+
+      StrawMaterial const& strawMaterial() const;
+    private:
+      KKFileFinder filefinder_; // used to find material info
+      std::string wallmatname_, gasmatname_, wirematname_;
+      mutable MatDBInfo* matdbinfo_; // material database
+      mutable std::unique_ptr<StrawMaterial> smat_; // straw material
+  };
+}
+#endif
