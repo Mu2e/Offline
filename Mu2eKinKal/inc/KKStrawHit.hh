@@ -59,8 +59,6 @@ namespace mu2e {
   }
 
   template <class KTRAJ> void KKStrawHit<KTRAJ>::updateState(PKTRAJ const& pktraj, MetaIterConfig const& miconfig) {
-    // set precision
-    WIREHIT::setPrecision(miconfig.tprec_);
     // move to the new trajectory; this updates the closest approach
     this->update(pktraj);
     // look for an updater
@@ -88,7 +86,7 @@ namespace mu2e {
   }
 
   template<class KTRAJ> void KKStrawHit<KTRAJ>::print(std::ostream& ost, int detail) const {
-    ost << " KKStrawHit";
+    ost << " KKStrawHit time " << this->time();
     WIREHIT::print(ost,detail);
     if(detail > 0)chit_.print(ost,true);
   }

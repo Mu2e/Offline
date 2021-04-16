@@ -53,7 +53,7 @@ namespace mu2e {
 
     trkinfo._chisq = kseed.chisquared();
     trkinfo._fitcon = kseed.fitConsistency();
-    trkinfo._nbend = kseed.nBend();
+    trkinfo._nseg = kseed.nTrajSegments();
 
     for(std::vector<TrkStrawHitSeed>::const_iterator ihit=kseed.hits().begin(); ihit != kseed.hits().end(); ++ihit) {
       if(ihit->flag().hasAllProperties(StrawHitFlag::active)) {
