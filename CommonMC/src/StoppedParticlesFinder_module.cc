@@ -171,41 +171,42 @@ namespace mu2e {
   //================================================================
   template<class PRINCIPAL>
   void StoppedParticlesFinder::initVols(const PRINCIPAL& p) {
-    if(!useEventLevelVolumeInfo_) {
-      const auto& ih = p.template getValidHandle<PhysicalVolumeInfoMultiCollection>(physVolInfoInput_);
-      vols_ = &*ih;
+    const auto& ih = p.template getValidHandle<PhysicalVolumeInfoMultiCollection>(physVolInfoInput_);
+    vols_ = &*ih;
 
-      if(verbosityLevel_ > 1) {
-        std::cout<<"StoppedParticlesFinder: PhysicalVolumeInfoMultiCollection dump begin"<<std::endl;
-        for(const auto& i : *vols_) {
-          std::cout<<"*********************************************************"<<std::endl;
-          std::cout<<"Ccollection size = "<<i.size()<<std::endl;
-          for(const auto& entry : i) {
-            std::cout<<entry.second<<std::endl;
-          }
+    if(verbosityLevel_ > 1) {
+      std::cout<<"StoppedParticlesFinder: PhysicalVolumeInfoMultiCollection dump begin"<<std::endl;
+      for(const auto& i : *vols_) {
+        std::cout<<"*********************************************************"<<std::endl;
+        std::cout<<"Ccollection size = "<<i.size()<<std::endl;
+        for(const auto& entry : i) {
+          std::cout<<entry.second<<std::endl;
         }
-        std::cout<<"StoppedParticlesFinder: PhysicalVolumeInfoMultiCollection dump end"<<std::endl;
       }
+      std::cout<<"StoppedParticlesFinder: PhysicalVolumeInfoMultiCollection dump end"<<std::endl;
+    }
 
-      if(!simStageThresholdConfigured_) {
-        if(vols_->empty()) {
-          throw cet::exception("BADINPUT")<<"StoppedParticlesFinder: something is wrong,"
-            " got empty PhysicalVolumeInfoMultiCollection "<<physVolInfoInput_<<std::endl;
-        }
-        simStageThreshold_ = vols_->size() - 1;  // the current simStage points to the last entry in vols_
+    if(!simStageThresholdConfigured_) {
+      if(vols_->empty()) {
+        throw cet::exception("BADINPUT")<<"StoppedParticlesFinder: something is wrong,"
+          " got empty PhysicalVolumeInfoMultiCollection "<<physVolInfoInput_<<std::endl;
       }
+      simStageThreshold_ = vols_->size() - 1;  // the current simStage points to the last entry in vols_
     }
   }
 
   //================================================================
   void StoppedParticlesFinder::beginSubRun(art::SubRun& sr) {
-    initVols(sr);
+    if(!useEventLevelVolumeInfo_) {
+      initVols(sr);
+    }
   }
 
   //================================================================
   void StoppedParticlesFinder::produce(art::Event& event) {
-
-    initVols(event);
+    if(useEventLevelVolumeInfo_) {
+      initVols(event);
+    }
 
     std::unique_ptr<SimParticlePtrCollection> output(new SimParticlePtrCollection());
 
