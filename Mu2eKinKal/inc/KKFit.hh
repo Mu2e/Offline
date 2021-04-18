@@ -249,75 +249,64 @@ namespace mu2e {
     fseed._chisq = fstatus.chisq_.chisq();
     fseed._fitcon = fstatus.chisq_.probability();
     fseed._nseg = fittraj.pieces().size();
-    if(savefull)
-      fseed._segments.reserve(fittraj.pieces().size());
-    else
-      fseed._segments.reserve(zsave.size());
-
-    // loop over individual effects
-    for(auto const& eff: kktrk.effects()) {
-      const KKHIT* kkhit = dynamic_cast<const KKHIT*>(eff.get());
-      const KKMAT* kkmat = dynamic_cast<const KKMAT*>(eff.get());
-      if(kkhit != 0){
-	const KKSTRAWHIT* strawhit = dynamic_cast<const KKSTRAWHIT*>(kkhit->hit().get());
-	const KKCALOHIT* calohit = dynamic_cast<const KKCALOHIT*> (kkhit->hit().get());
-	if(strawhit != 0) {
-	  auto const& chit = strawhit->hit();
-	  StrawHitFlag hflag = chit.flag();
-	  if(strawhit->active())hflag.merge(StrawHitFlag::active);
-	  auto const& ca = strawhit->closestApproach();
-	  TrkStrawHitSeed seedhit(strawhit->strawHitIndex(), // drift radius and drift radius error are unfilled TODO
-	      HitT0(ca.particleToca(),sqrt(ca.tocaVar())),
-	      static_cast<float>(ca.particleToca()), static_cast<float>(ca.sensorToca()),
-	      static_cast<float>(-1.0), static_cast<float>(strawhit->time()),
-	      static_cast<float>(ca.doca()), strawhit->hitState().lrambig_,static_cast<float>(-1.0), hflag, chit);
-	  fseed._hits.push_back(seedhit);
-	} else if(calohit != 0) {
-	  auto const& ca = calohit->closestApproach();
-	  StrawHitFlag hflag;
-	  if(calohit->active()){
-	    hflag.merge(StrawHitFlag::active);
-	    hflag.merge(StrawHitFlag::doca);
-	  }
-	  fseed._chit = TrkCaloHitSeed(HitT0(ca.particleToca(),sqrt(ca.tocaVar())),
-	      static_cast<float>(ca.particleToca()), static_cast<float>(ca.sensorToca()),
-	      static_cast<float>(ca.doca()),static_cast<float>(sqrt(ca.docaVar())), static_cast<float>(ca.sensorToca()),
-	      static_cast<float>(sqrt(ca.tocaVar())),hflag);
-	  fseed._chit._cluster = calohit->caloCluster();
-	}
-      } else if(kkmat != 0){
-	auto sxing =dynamic_cast<const KKSTRAWXING*>(&(kkmat->detXing()));
-	if(sxing != 0){
-	  std::array<double,3> dmom = {0.0,0.0,0.0}, momvar = {0.0,0.0,0.0};
-	  // compute energy loss
-	  sxing->materialEffects(kkmat->refKTraj(),KinKal::TimeDir::forwards, dmom, momvar);
-	  VEC3 dm(dmom[0],dmom[1],dmom[2]);
-	  // find material crossing properties
-	  double gaspath(0.0);
-	  double radfrac(0.0);
-	  for(auto const& matxing : sxing->matXings()){
-	    if(matxing.dmat_.name().compare(5,3,"gas",3)==0)gaspath = matxing.plen_;
-	    radfrac += matxing.dmat_.radiationFraction(matxing.plen_);
-	    auto const& tpocad = sxing->closestApproach();
-	    fseed._straws.emplace_back(sxing->strawId(),
-		tpocad.doca(),
-		tpocad.particleToca(),
-		tpocad.sensorToca(),
-		gaspath,
-		radfrac,
-		dm.R(),
-		sxing->active() );
-	  }
-	}
+    // loop over track components and store them
+    for(auto const& strawhit : kktrk.strawHits() ) {
+      auto const& chit = strawhit->hit();
+      StrawHitFlag hflag = chit.flag();
+      if(strawhit->active())hflag.merge(StrawHitFlag::active);
+      auto const& ca = strawhit->closestApproach();
+      TrkStrawHitSeed seedhit(strawhit->strawHitIndex(), // drift radius and drift radius error are unfilled TODO
+	  HitT0(ca.particleToca(),sqrt(ca.tocaVar())),
+	  static_cast<float>(ca.particleToca()), static_cast<float>(ca.sensorToca()),
+	  static_cast<float>(-1.0), static_cast<float>(strawhit->time()),
+	  static_cast<float>(ca.doca()), strawhit->hitState().lrambig_,static_cast<float>(-1.0), hflag, chit);
+      fseed._hits.push_back(seedhit);
+    }
+    if(kktrk.caloHits().size() > 0){
+      auto const& calohit = kktrk.caloHits().front(); // for now take the front: not sure if there will ever be >1 TODO
+      auto const& ca = calohit->closestApproach();
+      StrawHitFlag hflag;
+      if(calohit->active()){
+	hflag.merge(StrawHitFlag::active);
+	hflag.merge(StrawHitFlag::doca);
+      }
+      fseed._chit = TrkCaloHitSeed(HitT0(ca.particleToca(),sqrt(ca.tocaVar())),
+	  static_cast<float>(ca.particleToca()), static_cast<float>(ca.sensorToca()),
+	  static_cast<float>(ca.doca()),static_cast<float>(sqrt(ca.docaVar())), static_cast<float>(ca.sensorToca()),
+	  static_cast<float>(sqrt(ca.tocaVar())),hflag);
+      fseed._chit._cluster = calohit->caloCluster();
+    }
+    for(auto const& sxing : kktrk.strawXings()) {
+      std::array<double,3> dmom = {0.0,0.0,0.0}, momvar = {0.0,0.0,0.0};
+      // compute energy loss
+      sxing->materialEffects(kktrk.refTraj(),KinKal::TimeDir::forwards, dmom, momvar);
+      VEC3 dm(dmom[0],dmom[1],dmom[2]);
+      // find material crossing properties
+      double gaspath(0.0);
+      double radfrac(0.0);
+      for(auto const& matxing : sxing->matXings()){
+	if(matxing.dmat_.name().compare(5,3,"gas",3)==0)gaspath = matxing.plen_;
+	radfrac += matxing.dmat_.radiationFraction(matxing.plen_);
+	auto const& tpocad = sxing->closestApproach();
+	fseed._straws.emplace_back(sxing->strawId(),
+	    tpocad.doca(),
+	    tpocad.particleToca(),
+	    tpocad.sensorToca(),
+	    gaspath,
+	    radfrac,
+	    dm.R(),
+	    sxing->active() );
       }
     }
     // sample the fit at the requested z positions.
     if(savefull){
+      fseed._segments.reserve(fittraj.pieces().size());
       // loop over all pieces of the fit trajectory
       for (auto const& traj : fittraj.pieces() ) {
 	fseed._segments.emplace_back(traj,traj.range().mid());
       }
     } else {
+      fseed._segments.reserve(zsave.size());
       for(auto zpos : zsave ) {
 	// compute the time the trajectory crosses this plane
 	double tz = zTime(fittraj,zpos);
@@ -328,7 +317,7 @@ namespace mu2e {
       }
     }
     return fseed;
-  }
+   }
 
 }
 #endif

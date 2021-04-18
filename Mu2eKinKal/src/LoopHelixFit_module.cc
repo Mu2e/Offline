@@ -243,7 +243,7 @@ namespace mu2e {
 	  // 
 	  if(print_ > 0)
 	    std::cout << strawhits.size() << " StrawHits and " << calohits.size() << " CaloHits and " << strawxings.size() << " Straw Xings in fit" << std::endl;
-	  if(print_ > 2){
+	  if(print_ > 1){
 	    for(auto const& strawhit : strawhits) strawhit->print(std::cout,2);
 	    for(auto const& calohit : calohits) calohit->print(std::cout,2);
 	    for(auto const& strawxing :strawxings) strawxing->print(std::cout,2);
@@ -266,7 +266,7 @@ namespace mu2e {
 	      KKSTRAWXINGCOL addexings;
 	      kkfit_.addStrawHits(*tracker, *strawresponse, *kkbf_, kkmat_.strawMaterial(), *kktrk, chcol, strawHitIdxs, addhits, addexings ); 
 	      if(print_ > 0)std::cout << "Found " << addhits.size() << " StrawHits and " << addexings.size() << " Straw Xings to add " << std::endl;
-	      if(print_ > 2) {
+	      if(print_ > 1) {
 		for(auto const& strawhit : strawhits) strawhit->print(std::cout,2);
 		for(auto const& strawxing :strawxings) strawxing->print(std::cout,2);
 	      }
