@@ -7,7 +7,7 @@ namespace mu2e {
   using StrawMaterial = KinKal::StrawMaterial;
   using MatDBInfo = MatEnv::MatDBInfo;
 
-  KKMaterial::KKMaterial(KKMaterial::Settings const& matconfig) :
+  KKMaterial::KKMaterial(KKMaterial::Config const& matconfig) :
     filefinder_(matconfig.elements(),matconfig.isotopes(),matconfig.materials()),
     wallmatname_(matconfig.strawWallMaterialName()),
     gasmatname_(matconfig.strawGasMaterialName()),

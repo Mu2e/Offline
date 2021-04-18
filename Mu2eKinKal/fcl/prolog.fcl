@@ -13,33 +13,35 @@ Mu2eKinKal : {
       dahlLynchScatteringFraction : 0.995
     }
   
-    FitSettings: {
-      SeedErrors : [5.0, 5.0, 5.0, 5.0, 0.02, 25.0] # R(mm), Lambda(mm), Cx(mm), Cy(mm), phi0, t0 (ns)
+    KKFitSettings: {
       NullHitVarianceScale : 1.0
-      DeltaParams : 1e4 # chisquared
       TimeBuffer : 0.1 # ns
       UseCaloCluster : true
-      BFieldCorrection : 0
       AddMaterial : true
       CaloTrackerTimeOffset : -1.35
-      MetaIterationSettings : [ 
-        [ 10.0, 1.0, 10.0 ],
-        [ 2.0, 0.5, 10.0 ],
-        [ 0.0, 0.2, 20.0 ]]
       AddHitReject : ["Dead"]
       MaxAddDOCA : 4.0
-      MaxAddDt : 20.0
+      MaxAddDt : 25.0
+    }
+    
+    KinKalSettings : {
+      DeltaParams : 1e4 # chisquared
+      BFieldCorrection : 0
+      MetaIterationSettings : [ 
+        [ 10.0, 1.0, 10.0, 0 ],
+        [ 2.0, 0.5, 10.0, 0 ],
+        [ 0.0, 0.2, 20.0 , 0]]
     }
   
     ModuleSettings : {
+      SeedErrors : [5.0, 5.0, 5.0, 5.0, 0.02, 25.0] # R(mm), Lambda(mm), Cx(mm), Cy(mm), phi0, t0 (ns)
       HelixFlags : [ "HelixOK" ] # why doesn't "HitsOK" work?? FIXME!
       SaveFullFit : true
 #      ZSavePositions : [-1520., 0.0, 1520.0 ]
     }
 
-    StrawHitUpdateSettings : [
-      [ 10.0, 10.0, 1, 1 ]]
-#     [ 10.0, 5.0, 1, 2 ]
+#    StrawHitUpdateSettings :
+#      [ 10.0, 10.0, 1, 1 ]
   }
 }
 Mu2eKinKal : {
@@ -49,9 +51,9 @@ Mu2eKinKal : {
     KKDeMSeedFit: @local::Mu2eKinKal.KKSeedFit
   }
 }
-Mu2eKinKal.producers.KKDeMSeedFit.FitSettings.FitParticle : 11
-Mu2eKinKal.producers.KKDeMSeedFit.FitSettings.FitDirection : 0
-Mu2eKinKal.producers.KKDePSeedFit.FitSettings.FitParticle : -11
-Mu2eKinKal.producers.KKDePSeedFit.FitSettings.FitDirection : 0
+Mu2eKinKal.producers.KKDeMSeedFit.KKFitSettings.FitParticle : 11
+Mu2eKinKal.producers.KKDeMSeedFit.KKFitSettings.FitDirection : 0
+Mu2eKinKal.producers.KKDePSeedFit.KKFitSettings.FitParticle : -11
+Mu2eKinKal.producers.KKDePSeedFit.KKFitSettings.FitDirection : 0
 
 END_PROLOG 
