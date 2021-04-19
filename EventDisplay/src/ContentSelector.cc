@@ -4,14 +4,15 @@
 namespace mu2e_eventdisplay
 {
 
-ContentSelector::ContentSelector(TGComboBox *hitBox, TGComboBox *caloHitBox, TGComboBox *crvHitBox, TGListBox *trackBox, std::string const &g4ModuleLabel, std::string const &physicalVolumesMultiLabel)
+ContentSelector::ContentSelector(TGComboBox *hitBox, TGComboBox *caloHitBox, TGComboBox *crvHitBox, TGListBox *trackBox, std::string const &g4ModuleLabel, std::string const &physicalVolumesMultiLabel, std::string const &protonBunchTimeLabel)
   :
   _hitBox(hitBox),
   _caloHitBox(caloHitBox),
   _crvHitBox(crvHitBox),
   _trackBox(trackBox),
   _g4ModuleLabel(g4ModuleLabel),
-  _physicalVolumesMultiLabel(physicalVolumesMultiLabel)
+  _physicalVolumesMultiLabel(physicalVolumesMultiLabel),
+  _protonBunchTimeLabel(protonBunchTimeLabel)
   {}
 
 void ContentSelector::firstLoop()  //This is useful for now, but may be changed later
@@ -183,6 +184,7 @@ void ContentSelector::setAvailableCollections(const art::Event& event)
 
 //Other
   _hasPhysicalVolumesMulti=event.getSubRun().getByLabel(_physicalVolumesMultiLabel, _physicalVolumesMulti);
+  event.getByLabel(_protonBunchTimeLabel, _protonBunchTime);
 }
 
 bool ContentSelector::getSelectedHitsName(std::string &className,
@@ -408,6 +410,12 @@ const mu2e::PhysicalVolumeInfoMultiCollection* ContentSelector::getPhysicalVolum
 {
   if(_hasPhysicalVolumesMulti) return(_physicalVolumesMulti.product());
   else return(nullptr);
+}
+
+const double ContentSelector::getTDC0time() const
+{
+  double TDC0time = -_protonBunchTime->pbtime_;
+  return TDC0time;
 }
 
 const mu2e::MCTrajectoryCollection* ContentSelector::getMCTrajectoryCollection(const trackInfoStruct &t) const

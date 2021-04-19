@@ -70,7 +70,6 @@ BEGIN_PROLOG
       digitizationStart                     :  400.0    //400ns
       digitizationEnd                       : 1750.0    //1750ns
       crvStepMargin                         :   50.0    //50ns
-      eventWindowMarker                     : "EWMProducer"
       timeOffsets                           : [ @sequence::CommonMC.TimeMaps ]
     }
     CrvSiPMCharges:
@@ -79,7 +78,6 @@ BEGIN_PROLOG
       crvPhotonsModuleLabel        : "CrvPhotons"
       digitizationStart            :  400.0    //400ns
       digitizationEnd              : 1750.0    //1750ns
-      eventWindowMarker            : "EWMProducer"
 
       deadSiPMProbability          : 0.01
       nPixelsX                     : 40
@@ -148,7 +146,7 @@ BEGIN_PROLOG
                                         //e.g. 1.385 for a leading edge at 20% pulse height
                                         //e.g. 1.587 for a leading edge at 10% pulse height
       allowDoubleGumbel         : false //tries fitting with two Gumbel functions (needs a very small "minPulseHeightRatio", e.g. 0.01)
-      doubleGumbelThreshold     : 10.0  //Chi2/#ADCsamples (based on a single Gumble fit) 
+      doubleGumbelThreshold     : 0.05  //Chi2/#ADCsamples (based on a single Gumble fit) 
                                         //at which a fit with two Gumbel functions should be attempted
       minPEs                    : 0     //0 PEs
     }
@@ -163,6 +161,7 @@ BEGIN_PROLOG
       maxTimeDifferences            : [ 10 , 10 , 10 , 10 , 10 , 10 , 10 , 10 , 20 , 20 , 20 , 20 , 20 , 20 , 20 , 10 , 10 , 10 , 10 , 10 , 10 , 10 , 10 ] //ns
       useFourLayers                 : [false,false,false,false,false,false,false,false,true,false,false,false,true,true,true,true,true,true,true,false,false,false,false]
       usePulseOverlaps              : false
+      useNoFit                      : false
       minOverlapTime                : 40     //40ns (=at least 3 ADC samples)
       usingPEsPulseHeight           : false  //using the PEs which were calculated using the pulse height
       maxSlope                      : 7.0    //7.0mm over 1mm, which is a little bit more than 4 counters per layer

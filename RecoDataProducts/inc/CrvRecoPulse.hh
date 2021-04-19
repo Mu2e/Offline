@@ -17,11 +17,11 @@ namespace mu2e
     public:
 
     CrvRecoPulse() : _PEs(0), _PEsPulseHeight(0), _pulseTime(0), _pulseHeight(0), _pulseBeta(0), _pulseFitChi2(0), _LEtime(0), 
-                     _flags(0), _scintillatorBarIndex(0), _SiPMNumber(0) {}
+                     _flags(0), _PEsNoFit(0), _pulseTimeNoFit(0), _pulseStart(0), _pulseEnd(0), _scintillatorBarIndex(0), _SiPMNumber(0) {}
 
     CrvRecoPulse(float PEs, float PEsPulseHeight, double pulseTime, float pulseHeight, float pulseBeta, float pulseFitChi2, double LEtime, 
                  const CrvRecoPulseFlags &flags,
-                 float PEsADCvalues, double pulseTimeADCvalues, double pulseStart, double pulseEnd, 
+                 float PEsNoFit, double pulseTimeNoFit, double pulseStart, double pulseEnd, 
                  const std::vector<size_t> &waveformIndices, mu2e::CRSScintillatorBarIndex scintillatorBarIndex, int SiPMNumber) : 
                                                                             _PEs(PEs), 
                                                                             _PEsPulseHeight(PEsPulseHeight), 
@@ -31,8 +31,8 @@ namespace mu2e
                                                                             _pulseFitChi2(pulseFitChi2),
                                                                             _LEtime(LEtime),
                                                                             _flags(flags),
-                                                                            _PEsADCvalues(PEsADCvalues),
-                                                                            _pulseTimeADCvalues(pulseTimeADCvalues),
+                                                                            _PEsNoFit(PEsNoFit),
+                                                                            _pulseTimeNoFit(pulseTimeNoFit),
                                                                             _pulseStart(pulseStart),
                                                                             _pulseEnd(pulseEnd),
                                                                             _waveformIndices(waveformIndices),
@@ -49,10 +49,10 @@ namespace mu2e
     double GetLEtime() const         {return _LEtime;}
     const  CrvRecoPulseFlags &GetRecoPulseFlags() const {return _flags;}
 
-    float  GetPEsADCvalues() const      {return _PEsADCvalues;}
-    double GetPulseTimeADCvales() const {return _pulseTimeADCvalues;}
-    double GetPulseStart() const        {return _pulseStart;}
-    double GetPulseEnd() const          {return _pulseEnd;}
+    float  GetPEsNoFit() const       {return _PEsNoFit;}
+    double GetPulseTimeNoFit() const {return _pulseTimeNoFit;}
+    double GetPulseStart() const     {return _pulseStart;}
+    double GetPulseEnd() const       {return _pulseEnd;}
 
     const std::vector<size_t>    &GetWaveformIndices() const      {return _waveformIndices;}
     mu2e::CRSScintillatorBarIndex GetScintillatorBarIndex() const {return _scintillatorBarIndex;}
@@ -69,9 +69,9 @@ namespace mu2e
     double _LEtime;
     CrvRecoPulseFlags  _flags;
 
-    float   _PEsADCvalues;        //based on the sum of the pedestal-subtracted ADC values of the pulse.
-    double  _pulseTimeADCvalues;  //time of largest ADC value. 
-    double  _pulseStart;          //based on the time when the pulse starts to be above a threshold (FWHM). 
+    float   _PEsNoFit;        //based on the sum of the pedestal-subtracted ADC values of the pulse.
+    double  _pulseTimeNoFit;  //time of largest ADC value. 
+    double  _pulseStart;      //based on the time when the pulse starts to be above a threshold (FWHM). 
     double  _pulseEnd;
 
     std::vector<size_t>            _waveformIndices;  //indices in the vector of the CrvDigiCollection (which is the same as the index in the CrvDigiMCCollection)

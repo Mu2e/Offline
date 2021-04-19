@@ -17,6 +17,21 @@ namespace
     double y2=par[3]*(TMath::Exp(-(x-par[4])/par[5]-TMath::Exp(-(x-par[4])/par[5])));
     return y1+y2;
   }
+  double Chi2(TF1 &f, const TGraph &g)
+  {
+    float chi2=0;
+    double xmin,xmax;
+    f.GetRange(xmin,xmax);
+    for(int i=0; i<g.GetN(); ++i)
+    {
+      double x,y;
+      g.GetPoint(i,x,y);
+      if(x<xmin || x>xmax) continue;
+      float fy=f.Eval(x);
+      chi2+=(y-fy)*(y-fy)/(fy*fy);
+    }
+    return chi2;
+  }
 }
 
 namespace mu2eCrv
@@ -106,14 +121,14 @@ bool MakeCrvRecoPulses::FailedFit(TFitResultPtr fr, int paramStart, int paramEnd
 }
 
 void MakeCrvRecoPulses::NoFitOption(const std::vector<unsigned int> &waveform, float pedestal, 
-                                    size_t peakStart, size_t peakEnd, float &sum, size_t &pulseStart, size_t &pulseEnd)
+                                    size_t peakStart, float &sum, size_t &pulseStart, size_t &pulseEnd)
 {
   float maxADC=waveform[peakStart]-pedestal;
   float FWHMthreshold=maxADC/2.0;
   bool  foundPulseStart=false;
   bool  foundPulseEnd=false;
-  sum=(peakEnd-peakStart-1)*maxADC;
-  for(size_t i=peakEnd; i<waveform.size(); ++i)
+  sum=0;
+  for(size_t i=peakStart+1; i<waveform.size(); ++i)
   {
     float ADC=waveform[i]-pedestal;
     sum+=ADC;
@@ -143,8 +158,8 @@ void MakeCrvRecoPulses::SetWaveform(const std::vector<unsigned int> &waveform,
   _PEsPulseHeight.clear();
   _LEtimes.clear();
   _failedFits.clear();
-  _PEsADCvalues.clear();
-  _pulseTimesADCvalues.clear();
+  _PEsNoFit.clear();
+  _pulseTimesNoFit.clear();
   _pulseStart.clear();
   _pulseEnd.clear();
 
@@ -183,13 +198,14 @@ void MakeCrvRecoPulses::SetWaveform(const std::vector<unsigned int> &waveform,
     _f1.SetParLimits(2, _minBeta, _maxBeta);
 
     RangeFinderNarrow(waveform, peakStartBin, peakEndBin, fitStartBin, fitEndBin);
-    fitStartTime=(startTDC+peakStartBin)*digitizationPeriod;
-    fitEndTime=(startTDC+peakEndBin)*digitizationPeriod;
+    fitStartTime=(startTDC+fitStartBin)*digitizationPeriod;
+    fitEndTime=(startTDC+fitEndBin)*digitizationPeriod;
     _f1.SetRange(fitStartTime,fitEndTime);
 
     //do the fit
     TFitResultPtr fr = g.Fit(&_f1,"NQSR");
-    float  pulseFitChi2 = _f1.GetChisquare()/_f1.GetNumberFitPoints();
+//    float  pulseFitChi2 = _f1.GetChisquare()/_f1.GetNumberFitPoints();
+    float  pulseFitChi2 = Chi2(_f1,g)/_f1.GetNumberFitPoints();
     double fitParam0 = fr->Parameter(0);
     double fitParam1 = fr->Parameter(1);
     double fitParam2 = fr->Parameter(2);
@@ -223,8 +239,8 @@ void MakeCrvRecoPulses::SetWaveform(const std::vector<unsigned int> &waveform,
 
         size_t fitStartBin, fitEndBin;
         RangeFinder(waveform, peakStartBin, peakEndBin, fitStartBin, fitEndBin);
-        double fitStartTime=(startTDC+peakStartBin)*digitizationPeriod;
-        double fitEndTime=(startTDC+peakEndBin)*digitizationPeriod;
+        double fitStartTime=(startTDC+fitStartBin)*digitizationPeriod;
+        double fitEndTime=(startTDC+fitEndBin)*digitizationPeriod;
         _f2.SetRange(fitStartTime,fitEndTime);
       }
       else //separated double peaks (most likely due to a reflected pulse)
@@ -242,9 +258,9 @@ void MakeCrvRecoPulses::SetWaveform(const std::vector<unsigned int> &waveform,
 
         size_t fitStartBin, fitEndBin;
         RangeFinder(waveform, peakStartBin, peakEndBin, fitStartBin, fitEndBin);
-        double fitStartTime=(startTDC+peakStartBin)*digitizationPeriod;
+        double fitStartTime=(startTDC+fitStartBin)*digitizationPeriod;
         RangeFinder(waveform, peakStartBin2, peakEndBin2, fitStartBin, fitEndBin);
-        double fitEndTime=(startTDC+peakEndBin)*digitizationPeriod;
+        double fitEndTime=(startTDC+fitEndBin)*digitizationPeriod;
         _f2.SetRange(fitStartTime,fitEndTime);
 
         ++ipeak;  //this loop already looked at the next peaks, so we need to skip it in the next loop
@@ -252,7 +268,8 @@ void MakeCrvRecoPulses::SetWaveform(const std::vector<unsigned int> &waveform,
 
       //do the fit
       fr = g.Fit(&_f2,"NQSR");
-      pulseFitChi2 = _f2.GetChisquare()/_f2.GetNumberFitPoints();
+//      pulseFitChi2 = _f2.GetChisquare()/_f2.GetNumberFitPoints();
+      pulseFitChi2 = Chi2(_f2,g)/_f2.GetNumberFitPoints();
       fitParam0 = fr->Parameter(0);
       fitParam1 = fr->Parameter(1);
       fitParam2 = fr->Parameter(2);
@@ -295,11 +312,13 @@ void MakeCrvRecoPulses::SetWaveform(const std::vector<unsigned int> &waveform,
     float  sum;
     size_t pulseStartBin;
     size_t pulseEndBin;
-    NoFitOption(waveform, pedestal, peakStartBin, peakEndBin, sum, pulseStartBin, pulseEndBin);
-    _PEsADCvalues.push_back(sum*digitizationPeriod);
-    _pulseTimesADCvalues.push_back(peakTime);
+    NoFitOption(waveform, pedestal, peakStartBin, sum, pulseStartBin, pulseEndBin);
+    _PEsNoFit.push_back(sum*digitizationPeriod/calibrationFactor);
+    _pulseTimesNoFit.push_back(peakTime);
     _pulseStart.push_back((startTDC+pulseStartBin)*digitizationPeriod);
     _pulseEnd.push_back((startTDC+pulseEndBin)*digitizationPeriod);
+
+//std::cout<<_PEs.back()<<"  "<<_PEsNoFit.back()<<"          "<<_pulseStart.back()<<"  "<<_pulseTimes.back()<<" / "<<_pulseTimesNoFit.back()<<"  "<<_pulseEnd.back()<<std::endl;
 
     if(simpleFit) continue;  //no second peak
 
@@ -339,16 +358,16 @@ void MakeCrvRecoPulses::SetWaveform(const std::vector<unsigned int> &waveform,
 
     if(fittingNpeaks==2)
     {
-      NoFitOption(waveform, pedestal, peakStartBin2, peakEndBin2, sum, pulseStartBin, pulseEndBin);
-      _PEsADCvalues.push_back(sum*digitizationPeriod);
-      _pulseTimesADCvalues.push_back(peakTime2);
+      NoFitOption(waveform, pedestal, peakStartBin2, sum, pulseStartBin, pulseEndBin);
+      _PEsNoFit.push_back(sum*digitizationPeriod/calibrationFactor);
+      _pulseTimesNoFit.push_back(peakTime2);
       _pulseStart.push_back((startTDC+pulseStartBin)*digitizationPeriod);
       _pulseEnd.push_back((startTDC+pulseEndBin)*digitizationPeriod);
     }
     else
     {
-      _PEsADCvalues.push_back(0);
-      _pulseTimesADCvalues.push_back(0);
+      _PEsNoFit.push_back(0);
+      _pulseTimesNoFit.push_back(0);
       _pulseStart.push_back(0);
       _pulseEnd.push_back(0);
     }
