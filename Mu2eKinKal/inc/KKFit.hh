@@ -13,6 +13,7 @@
 #include "Mu2eKinKal/inc/KKBField.hh"
 // mu2e Includes
 #include "TrackerConditions/inc/StrawResponse.hh"
+#include "DataProducts/inc/PDGCode.hh"
 #include "TrackerGeom/inc/Tracker.hh"
 #include "RecoDataProducts/inc/HelixSeed.hh"
 #include "RecoDataProducts/inc/ComboHit.hh"
@@ -250,6 +251,7 @@ namespace mu2e {
     fseed._fitcon = fstatus.chisq_.probability();
     fseed._nseg = fittraj.pieces().size();
     // loop over track components and store them
+    fseed._hits.reserve(kktrk.strawHits().size());
     for(auto const& strawhit : kktrk.strawHits() ) {
       auto const& chit = strawhit->hit();
       StrawHitFlag hflag = chit.flag();
@@ -276,6 +278,7 @@ namespace mu2e {
 	  static_cast<float>(sqrt(ca.tocaVar())),hflag);
       fseed._chit._cluster = calohit->caloCluster();
     }
+    fseed._straws.reserve(kktrk.strawXings().size());
     for(auto const& sxing : kktrk.strawXings()) {
       std::array<double,3> dmom = {0.0,0.0,0.0}, momvar = {0.0,0.0,0.0};
       // compute energy loss
