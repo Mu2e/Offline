@@ -17,7 +17,7 @@ namespace mu2e {
 
     void constructProductionTargetMon(VolumeInfo const & parent, SimpleConfig const & _config);
 
-    void constructTargetHallPWC(VolumeInfo const & parent, SimpleConfig const & _config, std::string nameSuffix, G4ThreeVector position);
+    void constructTargetHallPWC(VolumeInfo const & parent, SimpleConfig const & _config, std::string const & nameSuffix, G4ThreeVector const & position, int const wireNumStart);
 
 } // namespace mu2e
 
