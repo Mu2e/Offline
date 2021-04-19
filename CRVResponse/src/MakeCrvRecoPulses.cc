@@ -207,7 +207,6 @@ void MakeCrvRecoPulses::SetWaveform(const std::vector<unsigned int> &waveform,
     TFitResultPtr fr = g.Fit(&_f1,"NQSR");
 //    float  pulseFitChi2 = _f1.GetChisquare()/_f1.GetNumberFitPoints();
     float  pulseFitChi2 = Chi2(_f1,g)/_f1.GetNumberFitPoints();
-std::cout<<_f1.GetChisquare()/_f1.GetNumberFitPoints()<<"  "<<pulseFitChi2<<std::endl;
     double fitParam0 = fr->Parameter(0);
     double fitParam1 = fr->Parameter(1);
     double fitParam2 = fr->Parameter(2);
