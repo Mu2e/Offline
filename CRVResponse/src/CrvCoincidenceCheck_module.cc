@@ -49,6 +49,7 @@ namespace mu2e
     std::vector<double>      _maxTimeDifferences;
     std::vector<bool>        _useFourLayers;
     bool        _usePulseOverlaps;
+    bool        _useNoFit;
     double      _minOverlapTime;
     bool        _usingPEsPulseHeight;
     double      _maxSlope;
@@ -68,14 +69,14 @@ namespace mu2e
       art::Ptr<CrvRecoPulse>        _crvRecoPulse;
       double                        _time;
       double                        _timePulseStart, _timePulseEnd;
-      int                           _PEs;
+      float                         _PEs, _PEsNoFit;
       int                           _layer, _counter;
       double                        _x, _y;
       int                           _PEthreshold;
       double                        _adjacentPulseTimeDifference;
       double                        _maxTimeDifference;
       bool                          _useFourLayers;
-      CrvHit(const art::Ptr<CrvRecoPulse> &crvRecoPulse, double time, double timePulseStart, double timePulseEnd, int PEs, 
+      CrvHit(const art::Ptr<CrvRecoPulse> &crvRecoPulse, double time, double timePulseStart, double timePulseEnd, float PEs, 
              int layer, int counter, double x, double y, int PEthreshold, double adjacentPulseTimeDifference, double maxTimeDifference, bool useFourLayers):
              _crvRecoPulse(crvRecoPulse), _time(time), _timePulseStart(timePulseStart), _timePulseEnd(timePulseEnd), _PEs(PEs),
              _layer(layer), _counter(counter), _x(x), _y(y), _PEthreshold(PEthreshold), _adjacentPulseTimeDifference(adjacentPulseTimeDifference),
@@ -114,6 +115,7 @@ namespace mu2e
     _maxTimeDifferences(pset.get<std::vector<double> >("maxTimeDifferences")),
     _useFourLayers(pset.get<std::vector<bool> >("useFourLayers")),
     _usePulseOverlaps(pset.get<bool>("usePulseOverlaps")),
+    _useNoFit(pset.get<bool>("useNoFit")),
     _minOverlapTime(pset.get<double>("minOverlapTime")),
     _usingPEsPulseHeight(pset.get<bool>("usingPEsPulseHeight")),
     _maxSlope(pset.get<double>("maxSlope")),
@@ -231,8 +233,10 @@ namespace mu2e
       double time=crvRecoPulse->GetPulseTime();
       double timePulseStart=crvRecoPulse->GetPulseStart();
       double timePulseEnd=crvRecoPulse->GetPulseEnd();
-      int    PEs =crvRecoPulse->GetPEs();
+      float  PEs =crvRecoPulse->GetPEs();
       if(_usingPEsPulseHeight) PEs=crvRecoPulse->GetPEsPulseHeight();
+      if(_useNoFit) PEs=crvRecoPulse->GetPEsNoFit();
+      if(_useNoFit) time=crvRecoPulse->GetPulseTimeNoFit();
 
       if(_verboseLevel>4)
       {
@@ -267,7 +271,7 @@ namespace mu2e
       {
         int layer=iterHit->_layer;
         int counter=iterHit->_counter;
-        int PEs=iterHit->_PEs;
+        float  PEs=iterHit->_PEs;
         double time=iterHit->_time;
         double timePulseStart=iterHit->_timePulseStart;
         double timePulseEnd=iterHit->_timePulseEnd;
@@ -276,9 +280,9 @@ namespace mu2e
         double adjacentPulseTimeDifference=iterHit->_adjacentPulseTimeDifference;
 
         //check other SiPM and the SiPMs at the adjacent counters
-        int PEs_thisCounter=PEs;
-        int PEs_adjacentCounter1=0;
-        int PEs_adjacentCounter2=0;
+        float PEs_thisCounter=PEs;
+        float PEs_adjacentCounter1=0;
+        float PEs_adjacentCounter2=0;
         std::vector<CrvHit>::const_iterator iterHitAdjacent;
         for(iterHitAdjacent=crvHitsOfSectorType.begin(); iterHitAdjacent!=crvHitsOfSectorType.end(); iterHitAdjacent++)
         {

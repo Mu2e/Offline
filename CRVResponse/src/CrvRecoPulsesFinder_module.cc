@@ -9,17 +9,15 @@
 #include "CosmicRayShieldGeom/inc/CosmicRayShield.hh"
 #include "DataProducts/inc/CRSScintillatorBarIndex.hh"
 
-#include "ConditionsService/inc/AcceleratorParams.hh"
 #include "ConditionsService/inc/CrvParams.hh"
 #include "ConditionsService/inc/ConditionsHandle.hh"
-#include "ProditionsService/inc/ProditionsHandle.hh"
-#include "DAQConditions/inc/EventTiming.hh"
 #include "GeometryService/inc/DetectorSystem.hh"
 #include "GeometryService/inc/GeomHandle.hh"
 #include "GeometryService/inc/GeometryService.hh"
 #include "RecoDataProducts/inc/CrvDigiCollection.hh"
 #include "RecoDataProducts/inc/CrvRecoPulse.hh"
 #include "RecoDataProducts/inc/CrvRecoPulseFlags.hh"
+#include "RecoDataProducts/inc/ProtonBunchTime.hh"
 
 #include "art_root_io/TFileDirectory.h"
 #include "art_root_io/TFileService.h"
@@ -62,6 +60,7 @@ namespace mu2e
       fhicl::Atom<bool> allowDoubleGumbel{Name("allowDoubleGumbel"), Comment("tries fitting with two Gumbel functions")};
       fhicl::Atom<float> doubleGumbelThreshold{Name("doubleGumbelThreshold"), Comment("Chi2/#ADCsamples (based on single Gumbel fit) at which a fit with two Gumbel functions should be attempted")};
       fhicl::Atom<float> minPEs{Name("minPEs"), Comment("minimum number of PEs")}; //0
+      fhicl::Atom<art::InputTag> protonBunchTimeTag{ Name("protonBunchTimeTag"), Comment("ProtonBunchTime producer"),"EWMProducer" };
     };
 
     typedef art::EDProducer::Table<Config> Parameters;
@@ -81,14 +80,15 @@ namespace mu2e
     float       _pedestal;           //100 ADC
     float       _calibrationFactor;  //394.6 ADC*ns/PE
     float       _calibrationFactorPulseHeight;  //11.4 ADC/PE
-    float       _microBunchPeriod;
+    art::InputTag _protonBunchTimeTag;
   };
 
 
   CrvRecoPulsesFinder::CrvRecoPulsesFinder(const Parameters& conf) :
     art::EDProducer(conf),
     _crvDigiModuleLabel(conf().crvDigiModuleLabel()),
-    _minPEs(conf().minPEs())
+    _minPEs(conf().minPEs()),
+    _protonBunchTimeTag(conf().protonBunchTimeTag())
   {
     produces<CrvRecoPulseCollection>();
     _makeCrvRecoPulses=boost::shared_ptr<mu2eCrv::MakeCrvRecoPulses>(new mu2eCrv::MakeCrvRecoPulses(conf().minADCdifference(),
@@ -113,9 +113,6 @@ namespace mu2e
 
   void CrvRecoPulsesFinder::beginRun(art::Run &run)
   {
-    mu2e::ConditionsHandle<mu2e::AcceleratorParams> accPar("ignored");
-    _microBunchPeriod = accPar->deBuncherPeriod;
-
     mu2e::ConditionsHandle<mu2e::CrvParams> crvPar("ignored");
     _digitizationPeriod = crvPar->digitizationPeriod;
     _pedestal           = crvPar->pedestal;
@@ -127,9 +124,9 @@ namespace mu2e
   {
     std::unique_ptr<CrvRecoPulseCollection> crvRecoPulseCollection(new CrvRecoPulseCollection);
 
-    ProditionsHandle<EventTiming> eventTimingHandle;
-    const EventTiming &eventTiming = eventTimingHandle.get(event.id());
-    double TDC0time = eventTiming.timeFromProtonsToDRMarker();
+    art::Handle<ProtonBunchTime> protonBunchTime;
+    event.getByLabel(_protonBunchTimeTag, protonBunchTime);
+    double TDC0time = -protonBunchTime->pbtime_;
 
     art::Handle<CrvDigiCollection> crvDigiCollection;
     event.getByLabel(_crvDigiModuleLabel,"",crvDigiCollection);
@@ -177,14 +174,14 @@ namespace mu2e
         CrvRecoPulseFlags flags;
         if(failedFit)              flags.set(CrvRecoPulseFlagEnums::failedFit);
 
-        float  PEsADCvalues      = _makeCrvRecoPulses->GetPEsADCvalues().at(j);
-        double pulseTimeADCvalues= _makeCrvRecoPulses->GetPulseTimesADCvalues().at(j) + TDC0time;
+        float  PEsNoFit          = _makeCrvRecoPulses->GetPEsNoFit().at(j);
+        double pulseTimeNoFit    = _makeCrvRecoPulses->GetPulseTimesNoFit().at(j) + TDC0time;
         double pulseStart        = _makeCrvRecoPulses->GetPulseStarts().at(j) + TDC0time;
         double pulseEnd          = _makeCrvRecoPulses->GetPulseEnds().at(j) + TDC0time;
 
         if(PEs<_minPEs) continue; 
         crvRecoPulseCollection->emplace_back(PEs, PEsPulseHeight, pulseTime, pulseHeight, pulseBeta, pulseFitChi2, LEtime, flags, 
-                                             PEsADCvalues, pulseTimeADCvalues, pulseStart, pulseEnd,
+                                             PEsNoFit, pulseTimeNoFit, pulseStart, pulseEnd,
                                              waveformIndices, barIndex, SiPM);
       }
 

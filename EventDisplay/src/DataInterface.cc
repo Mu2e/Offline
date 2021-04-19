@@ -1066,6 +1066,7 @@ void DataInterface::fillEvent(boost::shared_ptr<ContentSelector> const &contentS
   double digitizationPeriod = crvPar->digitizationPeriod;
   double recoPulsePedestal  = crvPar->pedestal;
 
+  double TDC0time = contentSelector->getTDC0time();
   const std::vector<art::Handle<mu2e::CrvDigiCollection> > &crvDigisVector = contentSelector->getSelectedCrvDigiCollection();
   for(size_t i=0; i<crvDigisVector.size(); i++)
   {
@@ -1101,7 +1102,7 @@ void DataInterface::fillEvent(boost::shared_ptr<ContentSelector> const &contentS
         graph->SetMarkerSize(2);
         for(size_t k=0; k<mu2e::CrvDigi::NSamples; k++)
         { 
-          graph->SetPoint(k,(digi.GetStartTDC()+k)*digitizationPeriod,digi.GetADCs()[k]);
+          graph->SetPoint(k,TDC0time+(digi.GetStartTDC()+k)*digitizationPeriod,digi.GetADCs()[k]);
         }
         boost::dynamic_pointer_cast<TMultiGraph>(v[multigraphIndex])->Add(graph,"p");
       }

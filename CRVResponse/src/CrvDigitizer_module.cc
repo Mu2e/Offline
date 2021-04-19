@@ -19,6 +19,7 @@
 #include "GeometryService/inc/GeomHandle.hh"
 #include "GeometryService/inc/GeometryService.hh"
 #include "MCDataProducts/inc/CrvDigiMC.hh"
+#include "MCDataProducts/inc/ProtonBunchTimeMC.hh"
 #include "RecoDataProducts/inc/CrvDigiCollection.hh"
 
 #include "canvas/Persistency/Common/Ptr.h"
@@ -54,6 +55,7 @@ namespace mu2e
     std::string _crvWaveformsModuleLabel;
     double      _digitizationStart, _digitizationEnd;
     std::string _eventWindowMarkerLabel;
+    std::string _protonBunchTimeMCLabel;
     double      _ADCconversionFactor;
     int         _pedestal;
   };
@@ -63,7 +65,8 @@ namespace mu2e
     _crvWaveformsModuleLabel(pset.get<std::string>("crvWaveformsModuleLabel")),
     _digitizationStart(pset.get<double>("digitizationStart")),       //400ns
     _digitizationEnd(pset.get<double>("digitizationEnd")),           //1750ns
-    _eventWindowMarkerLabel(pset.get<std::string>("EventWindowMarker","EWMProducer")),
+    _eventWindowMarkerLabel(pset.get<std::string>("eventWindowMarker","EWMProducer")),
+    _protonBunchTimeMCLabel(pset.get<std::string>("protonBunchTimeMC","EWMProducer")),
     _ADCconversionFactor(pset.get<double>("ADCconversionFactor")),
     _pedestal(pset.get<int>("pedestal"))
   {
@@ -91,12 +94,16 @@ namespace mu2e
     event.getByLabel(_eventWindowMarkerLabel,"",eventWindowMarker);
     EventWindowMarker::SpillType spillType = eventWindowMarker->spillType();
 
+    art::Handle<ProtonBunchTimeMC> protonBunchTimeMC;
+    event.getByLabel(_protonBunchTimeMCLabel, protonBunchTimeMC);
+    double TDC0time = -protonBunchTimeMC->pbtime_;
+
     ProditionsHandle<EventTiming> eventTimingHandle;
     const EventTiming &eventTiming = eventTimingHandle.get(event.id());
-    double TDC0time = eventTiming.timeFromProtonsToDRMarker();
+    double jitter = TDC0time - eventTiming.timeFromProtonsToDRMarker();
 
-    double digitizationStart=_digitizationStart;
-    double digitizationEnd=_digitizationEnd;
+    double digitizationStart=_digitizationStart+jitter;
+    double digitizationEnd=_digitizationEnd+jitter;
     if(spillType!=EventWindowMarker::SpillType::onspill)
     {
       double eventWindowLength = eventWindowMarker->eventLength();

@@ -16,6 +16,7 @@
 #include "MCDataProducts/inc/SimParticleCollection.hh"
 #include "MCDataProducts/inc/StepPointMCCollection.hh"
 #include "RecoDataProducts/inc/KalSeed.hh"
+#include "RecoDataProducts/inc/ProtonBunchTime.hh"
 #include "RecoDataProducts/inc/StrawHitCollection.hh"
 #include "RecoDataProducts/inc/StrawHitFlagCollection.hh"
 #include "RecoDataProducts/inc/StrawHitPositionCollection.hh"
@@ -55,6 +56,7 @@ class ContentSelector
   std::vector<art::Handle<mu2e::KalSeedCollection> > _kalSeedHitVector;
   std::vector<art::Handle<mu2e::TrkExtTrajCollection> > _trkExtTrajVector;
   art::Handle<mu2e::PhysicalVolumeInfoMultiCollection> _physicalVolumesMulti;
+  art::Handle<mu2e::ProtonBunchTime> _protonBunchTime;
   bool _hasPhysicalVolumesMulti;
 
   TGComboBox  *_hitBox;
@@ -63,6 +65,7 @@ class ContentSelector
   TGListBox   *_trackBox;
   std::string _g4ModuleLabel;
   std::string _physicalVolumesMultiLabel;
+  std::string _protonBunchTimeLabel;
 
   public:
   struct trackInfoStruct
@@ -95,7 +98,8 @@ class ContentSelector
 
   public:
   ContentSelector(TGComboBox *hitBox, TGComboBox *caloHitBox, TGComboBox *crvHitBox, TGListBox *trackBox, 
-                  std::string const &g4ModuleLabel, std::string const &physicalVolumesMultiLabel);
+                  std::string const &g4ModuleLabel, std::string const &physicalVolumesMultiLabel,
+                  std::string const &protonBunchTimeLabel);
   void firstLoop();
   void setAvailableCollections(const art::Event& event);
 
@@ -110,6 +114,7 @@ class ContentSelector
   const std::vector<art::Handle<mu2e::CrvDigiCollection> >& getSelectedCrvDigiCollection() const;
   template<typename CollectionType> std::vector<const CollectionType*> getSelectedTrackCollection(std::vector<trackInfoStruct> &v) const;
   const mu2e::PhysicalVolumeInfoMultiCollection *getPhysicalVolumeInfoMultiCollection() const;
+  const double getTDC0time() const;
   const mu2e::MCTrajectoryCollection *getMCTrajectoryCollection(const trackInfoStruct &t) const;
 
   //for filter and setup dialog

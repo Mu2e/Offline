@@ -18,6 +18,7 @@
 #include "GeometryService/inc/GeometryService.hh"
 #include "MCDataProducts/inc/CrvPhotons.hh"
 #include "MCDataProducts/inc/CrvSiPMCharges.hh"
+#include "MCDataProducts/inc/ProtonBunchTimeMC.hh"
 #include "SeedService/inc/SeedService.hh"
 
 #include "canvas/Persistency/Common/Ptr.h"
@@ -55,6 +56,7 @@ namespace mu2e
     double      _capacitance;
     double      _digitizationStart, _digitizationEnd;
     std::string _eventWindowMarkerLabel;
+    std::string _protonBunchTimeMCLabel;
 
     mu2eCrv::MakeCrvSiPMCharges::ProbabilitiesStruct _probabilities;
     std::vector<std::pair<int,int> >   _inactivePixels;
@@ -80,7 +82,8 @@ namespace mu2e
     _capacitance(pset.get<double>("capacitance")),                   //8.84e-14F (per pixel)
     _digitizationStart(pset.get<double>("digitizationStart")),       //400ns
     _digitizationEnd(pset.get<double>("digitizationEnd")),           //1750ns
-    _eventWindowMarkerLabel(pset.get<std::string>("EventWindowMarker","EWMProducer")),
+    _eventWindowMarkerLabel(pset.get<std::string>("eventWindowMarker","EWMProducer")),
+    _protonBunchTimeMCLabel(pset.get<std::string>("protonBunchTimeMC","EWMProducer")),
     _inactivePixels(pset.get<std::vector<std::pair<int,int> > >("inactivePixels")),      //{18,18},....,{21,21}
     _engine{createEngine(art::ServiceHandle<SeedService>()->getSeed())},
     _randFlat{_engine},
@@ -117,14 +120,20 @@ namespace mu2e
     event.getByLabel(_eventWindowMarkerLabel,"",eventWindowMarker);
     EventWindowMarker::SpillType spillType = eventWindowMarker->spillType();
 
-    double startTime=_digitizationStart;
-    double endTime=_digitizationEnd;
+    art::Handle<ProtonBunchTimeMC> protonBunchTimeMC;
+    event.getByLabel(_protonBunchTimeMCLabel, protonBunchTimeMC);
+    double TDC0time = -protonBunchTimeMC->pbtime_;
+
+    ProditionsHandle<EventTiming> eventTimingHandle;
+    const EventTiming &eventTiming = eventTimingHandle.get(event.id());
+    double jitter = TDC0time - eventTiming.timeFromProtonsToDRMarker();
+
+    double startTime=_digitizationStart+jitter;
+    double endTime=_digitizationEnd+jitter;
     if(spillType!=EventWindowMarker::SpillType::onspill)
     {
-      ProditionsHandle<EventTiming> eventTimingHandle;
-      const EventTiming &eventTiming = eventTimingHandle.get(event.id());
       double eventWindowLength = eventWindowMarker->eventLength();
-      startTime = eventTiming.timeFromProtonsToDRMarker();
+      startTime = TDC0time;
       endTime = startTime + eventWindowLength;
     }
 

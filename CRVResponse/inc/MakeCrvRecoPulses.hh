@@ -52,16 +52,16 @@ class MakeCrvRecoPulses
   std::vector<bool>   _failedFits;
 
   public:
-  const std::vector<float>  &GetPEsADCvalues() const        {return _PEsADCvalues;}
-  const std::vector<double> &GetPulseTimesADCvalues() const {return _pulseTimesADCvalues;}
-  const std::vector<double> &GetPulseStarts() const         {return _pulseStart;}
-  const std::vector<double> &GetPulseEnds() const           {return _pulseEnd;}
+  const std::vector<float>  &GetPEsNoFit() const        {return _PEsNoFit;}
+  const std::vector<double> &GetPulseTimesNoFit() const {return _pulseTimesNoFit;}
+  const std::vector<double> &GetPulseStarts() const     {return _pulseStart;}
+  const std::vector<double> &GetPulseEnds() const       {return _pulseEnd;}
 
   private:
   void NoFitOption(const std::vector<unsigned int> &waveform, float pedestal, 
-                   size_t peakStart, size_t peakEnd, float &sum, size_t &pulseStart, size_t &pulseEnd);
-  std::vector<float>  _PEsADCvalues;
-  std::vector<double> _pulseTimesADCvalues;
+                   size_t peakStart, float &sum, size_t &pulseStart, size_t &pulseEnd);
+  std::vector<float>  _PEsNoFit;
+  std::vector<double> _pulseTimesNoFit;
   std::vector<double> _pulseStart;
   std::vector<double> _pulseEnd;
 };

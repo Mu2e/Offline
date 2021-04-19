@@ -16,6 +16,7 @@
 #include "GeometryService/inc/GeometryService.hh"
 #include "MCDataProducts/inc/CrvStep.hh"
 #include "MCDataProducts/inc/CrvPhotons.hh"
+#include "MCDataProducts/inc/ProtonBunchTimeMC.hh"
 #include "Mu2eUtilities/inc/SimParticleTimeOffset.hh"
 #include "SeedService/inc/SeedService.hh"
 
@@ -74,7 +75,8 @@ namespace mu2e
       fhicl::Atom<double> digitizationStart{ Name("digitizationStart"), Comment("start of digitization")};
       fhicl::Atom<double> digitizationEnd{ Name("digitizationEnd"), Comment("end of digitization")};
       fhicl::Atom<double> crvStepMargin{ Name("crvStepMargin"), Comment("time window allowed for crvSteps before digitization starts")};
-      fhicl::Atom<art::InputTag> eventWindowMarkerLabel{ Name("eventWindowMarker"), Comment("EventWindowMarker producer"),"EWMProducer" };
+      fhicl::Atom<art::InputTag> eventWindowMarkerTag{ Name("eventWindowMarkerTag"), Comment("EventWindowMarker producer"),"EWMProducer" };
+      fhicl::Atom<art::InputTag> protonBunchTimeMCTag{ Name("protonBunchTimeMCTag"), Comment("ProtonBunchTimeMC producer"),"EWMProducer" };
       fhicl::Sequence<art::InputTag> timeOffsets { Name("timeOffsets"), Comment("Sim Particle Time Offset Maps")};
     };
     using Parameters = art::EDProducer::Table<Config>;
@@ -121,7 +123,8 @@ namespace mu2e
     double      _digitizationStart; //400ns
     double      _digitizationEnd;   //1750ns
     double      _crvStepMargin;     //50ns
-    art::InputTag _eventWindowMarkerLabel;
+    art::InputTag _eventWindowMarkerTag;
+    art::InputTag _protonBunchTimeMCTag;
     double      _microBunchPeriod;
 
     SimParticleTimeOffset _timeOffsets;
@@ -149,7 +152,8 @@ namespace mu2e
     _digitizationStart(conf().digitizationStart()),
     _digitizationEnd(conf().digitizationEnd()),
     _crvStepMargin(conf().crvStepMargin()),
-    _eventWindowMarkerLabel(conf().eventWindowMarkerLabel()),
+    _eventWindowMarkerTag(conf().eventWindowMarkerTag()),
+    _protonBunchTimeMCTag(conf().protonBunchTimeMCTag()),
     _timeOffsets(conf().timeOffsets()),
     _engine{createEngine(art::ServiceHandle<SeedService>()->getSeed())},
     _randFlat(_engine),
@@ -232,18 +236,25 @@ namespace mu2e
     GlobalConstantsHandle<ParticleDataTable> particleDataTable;
 
     art::Handle<EventWindowMarker> eventWindowMarker;
-    event.getByLabel(_eventWindowMarkerLabel,eventWindowMarker);
+    event.getByLabel(_eventWindowMarkerTag,eventWindowMarker);
     EventWindowMarker::SpillType spillType = eventWindowMarker->spillType();
     double eventWindowLength = eventWindowMarker->eventLength();
+
+    art::Handle<ProtonBunchTimeMC> protonBunchTimeMC;
+    event.getByLabel(_protonBunchTimeMCTag, protonBunchTimeMC);
+    double eventWindowStart = -protonBunchTimeMC->pbtime_;
+    double eventWindowEnd = eventWindowStart + eventWindowLength;
+
     ProditionsHandle<EventTiming> eventTimingHandle;
     const EventTiming &eventTiming = eventTimingHandle.get(event.id());
-    double eventWindowStart = eventTiming.timeFromProtonsToDRMarker();
-    double eventWindowEnd = eventWindowStart + eventWindowLength;
+    double jitter = eventWindowStart - eventTiming.timeFromProtonsToDRMarker();
+
+    double digitizationStart=_digitizationStart+jitter;
+    double digitizationEnd=_digitizationEnd+jitter;
 
     for(size_t j=0; j<_selectors.size(); ++j)
     {
-      std::vector<art::Handle<CrvStepCollection> > CrvStepsVector;
-      event.getMany(*(_selectors.at(j)), CrvStepsVector);
+      std::vector<art::Handle<CrvStepCollection> > CrvStepsVector = event.getMany<CrvStepCollection>(*(_selectors.at(j)));
       for(size_t i=0; i<CrvStepsVector.size(); ++i)
       {
         const art::Handle<CrvStepCollection> &CrvSteps = CrvStepsVector[i];
@@ -265,7 +276,7 @@ namespace mu2e
           //-record CrvSteps after eventwindowStart-crvStepMargin until eventWindowEnd
           if(spillType==EventWindowMarker::SpillType::onspill)
           {
-            if(t1>_digitizationEnd-_microBunchPeriod && t2<_digitizationStart-_crvStepMargin) continue;
+            if(t1>digitizationEnd-_microBunchPeriod && t2<digitizationStart-_crvStepMargin) continue;
           }
           else
           {
@@ -336,8 +347,8 @@ namespace mu2e
                 //photons before the digitization start get removed except photons 
                 //in the first 55ns which get moved to the interval between the end of 
                 //the microbunch period and the digitization end
-                if(timeTmp<_digitizationEnd-_microBunchPeriod) timeTmp+=_microBunchPeriod;  
-                if(timeTmp<_digitizationStart) continue;
+                if(timeTmp<digitizationEnd-_microBunchPeriod) timeTmp+=_microBunchPeriod;  
+                if(timeTmp<digitizationStart) continue;
               }
               else
               {              
