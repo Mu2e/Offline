@@ -13,7 +13,7 @@ Mu2eKinKal : {
       dahlLynchScatteringFraction : 0.995
     }
   
-    KKFitSettings: {
+    Mu2eFitSettings: {
       NullHitVarianceScale : 1.0
       TimeBuffer : 0.1 # ns
       UseCaloCluster : true
@@ -24,12 +24,19 @@ Mu2eKinKal : {
       MaxAddDt : 25.0
     }
     
-    KinKalSettings : {
+    KinKalFitSettings : {
       DeltaParams : 1e4 # chisquared
       BFieldCorrection : 0
       MetaIterationSettings : [ 
         [ 10.0, 1.0, 10.0, 0 ],
         [ 2.0, 0.5, 10.0, 0 ],
+        [ 0.0, 0.2, 20.0 , 0]]
+    }
+    KinKalExtensionSettings : {
+      DeltaParams : 1e4 # chisquared
+      BFieldCorrection : 0
+      MetaIterationSettings : [ 
+#        [ 1.0, 0.2, 20.0 , 0],
         [ 0.0, 0.2, 20.0 , 0]]
     }
   
@@ -51,9 +58,9 @@ Mu2eKinKal : {
     KKDeMSeedFit: @local::Mu2eKinKal.KKSeedFit
   }
 }
-Mu2eKinKal.producers.KKDeMSeedFit.KKFitSettings.FitParticle : 11
-Mu2eKinKal.producers.KKDeMSeedFit.KKFitSettings.FitDirection : 0
-Mu2eKinKal.producers.KKDePSeedFit.KKFitSettings.FitParticle : -11
-Mu2eKinKal.producers.KKDePSeedFit.KKFitSettings.FitDirection : 0
+Mu2eKinKal.producers.KKDeMSeedFit.Mu2eFitSettings.FitParticle : 11
+Mu2eKinKal.producers.KKDeMSeedFit.Mu2eFitSettings.FitDirection : 0
+Mu2eKinKal.producers.KKDePSeedFit.Mu2eFitSettings.FitParticle : -11
+Mu2eKinKal.producers.KKDePSeedFit.Mu2eFitSettings.FitDirection : 0
 
 END_PROLOG 

@@ -121,8 +121,9 @@ namespace mu2e {
 
     struct GlobalConfig {
       fhicl::Table<ModuleConfig> modSettings { Name("ModuleSettings") };
-      fhicl::Table<KKFitConfig> kkFitSettings { Name("KKFitSettings") };
-      fhicl::Table<KKConfig> kkSettings { Name("KinKalSettings") };
+      fhicl::Table<KKFitConfig> mu2eFitSettings { Name("Mu2eFitSettings") };
+      fhicl::Table<KKConfig> kkFitSettings { Name("KinKalFitSettings") };
+      fhicl::Table<KKConfig> kkExtSettings { Name("KinKalExtensionSettings") };
       fhicl::Table<KKMaterialConfig> matSettings { Name("MaterialSettings") };
 //      StrawHitUpdateSettings shuconfig { Name("StrawHitUpdateSettings"), Comment("Setting sequence for updating StrawHits, format: \n"
 //      " 'MinDoca', 'MaxDoca', First Meta-iteration', 'Last Meta-iteration'") };
@@ -166,9 +167,10 @@ namespace mu2e {
     savefull_(settings().modSettings().saveFull()),
     zsave_(settings().modSettings().zsave()),
     print_(settings().modSettings().printLevel()),
-    kkfit_(settings().kkFitSettings()),
+    kkfit_(settings().mu2eFitSettings()),
     kkmat_(settings().matSettings()),
-    config_(Mu2eKinKal::makeConfig(settings().kkSettings()))
+    config_(Mu2eKinKal::makeConfig(settings().kkFitSettings())),
+    exconfig_(Mu2eKinKal::makeConfig(settings().kkExtSettings()))
   {
     // test: only 1 of saveFull and zsave should be set
     if((savefull_ && zsave_.size() > 0) || ((!savefull_) && zsave_.size() == 0))
@@ -214,9 +216,11 @@ namespace mu2e {
     unique_ptr<KKLoopHelixCollection> kktrkcol(new KKLoopHelixCollection );
     unique_ptr<KalSeedCollection> kkseedcol(new KalSeedCollection );
     // find the helix seed collections
+    unsigned nhelix(0);
     for (auto const& hseedtag : hseedCols_) {
       auto const& hseedcol_h = event.getValidHandle<HelixSeedCollection>(hseedtag);
       auto const& hseedcol = *hseedcol_h;
+      nhelix += hseedcol.size();
       // loop over the seeds
       for(size_t iseed=0; iseed < hseedcol.size(); ++iseed) {
 	auto const& hseed = hseedcol[iseed];
@@ -227,53 +231,59 @@ namespace mu2e {
 	  KTRAJ seedtraj = makeSeedTraj(hseed);
 	  // wrap the seed traj in a Piecewise traj: needed to satisfy PTOCA interface
 	  PKTRAJ pseedtraj(seedtraj);
-	  // construct hit amd material objects from Helix hits
-	  KKSTRAWHITCOL strawhits; 
-	  KKCALOHITCOL calohits;
-	  KKSTRAWXINGCOL strawxings;
 	  // first, we need to unwind the combohits.  We use this also to find the time range
 	  StrawHitIndexCollection strawHitIdxs;
 	  auto const& hhits = hseed.hits();
 	  for(size_t ihit = 0; ihit < hhits.size(); ++ihit ){ hhits.fillStrawHitIndices(event,ihit,strawHitIdxs); }
-	  // next, build straw hits from these
+	  // next, build straw hits and materials from these
+	  KKSTRAWHITCOL strawhits; 
+	  KKSTRAWXINGCOL strawxings;
+	  strawhits.reserve(hhits.size());
+	  strawxings.reserve(hhits.size());
 	  kkfit_.makeStrawHits(*tracker, *strawresponse, *kkbf_, kkmat_.strawMaterial(), pseedtraj, chcol, strawHitIdxs, strawhits, strawxings);
 	  // optionally (and if present) add the CaloCluster hit
 	  // verify the cluster looks physically reasonable before adding it TODO!
+	  KKCALOHITCOL calohits;
 	  if (kkfit_.useCalo() && hseed.caloCluster())kkfit_.makeCaloHit(hseed.caloCluster(),*calo_h, pseedtraj, calohits);
-	  // 
-	  if(print_ > 0)
-	    std::cout << strawhits.size() << " StrawHits and " << calohits.size() << " CaloHits and " << strawxings.size() << " Straw Xings in fit" << std::endl;
-	  if(print_ > 1){
-	    for(auto const& strawhit : strawhits) strawhit->print(std::cout,2);
-	    for(auto const& calohit : calohits) calohit->print(std::cout,2);
-	    for(auto const& strawxing :strawxings) strawxing->print(std::cout,2);
-	  }
 	  // set the seed range given the hit TPOCA values
 	  seedtraj.range() = kkfit_.range(strawhits,calohits,strawxings);
-	  if(print_ > 0){
+	  // create and fit the track  
+	  auto kktrk = make_unique<KKTRK>(config_,*kkbf_,seedtraj,kkfit_.fitParticle(),strawhits,calohits,strawxings);
+	  if(print_ > 1){
 	    std::cout << "Seed Helix parameters " << hseed.helix() << std::endl;
 	    seedtraj.print(std::cout,print_);
+	    std::cout << "KKTrk fit status " << kktrk->fitStatus() << " fitting " 
+	      << strawhits.size() << " StrawHits and " << calohits.size() << " CaloHits and " << strawxings.size() << " Straw Xings in fit" << std::endl;
+	    if(print_ > 2){
+	      for(auto const& strawhit : strawhits) strawhit->print(std::cout,2);
+	      for(auto const& calohit : calohits) calohit->print(std::cout,2);
+	      for(auto const& strawxing :strawxings) strawxing->print(std::cout,2);
+	    }
 	  }
-	  // create and fit the track  
-	  auto kktrk = make_unique<KKTRK>(config_,*kkbf_,seedtraj,strawhits,calohits,strawxings);
 	  bool save(false);
 	  if(kktrk->fitStatus().usable()){
 	    // Check fit for physical consistency; fit can succeed but the result can have the wrong charge
 	    auto const& midtraj = kktrk->fitTraj().nearestPiece(kktrk->fitTraj().range().mid());
 	    save = midtraj.Q()*midtraj.rad() > 0;
 	    if(save && addhits_) {
-	      KKSTRAWHITCOL addhits;
-	      KKSTRAWXINGCOL addexings;
-	      kkfit_.addStrawHits(*tracker, *strawresponse, *kkbf_, kkmat_.strawMaterial(), *kktrk, chcol, strawHitIdxs, addhits, addexings ); 
-	      if(print_ > 0)std::cout << "Found " << addhits.size() << " StrawHits and " << addexings.size() << " Straw Xings to add " << std::endl;
-	      if(print_ > 1) {
-		for(auto const& strawhit : strawhits) strawhit->print(std::cout,2);
-		for(auto const& strawxing :strawxings) strawxing->print(std::cout,2);
+	      KKSTRAWHITCOL addstrawhits;
+	      KKCALOHITCOL addcalohits;
+	      KKSTRAWXINGCOL addstrawxings;
+	      kkfit_.addStrawHits(*tracker, *strawresponse, *kkbf_, kkmat_.strawMaterial(), *kktrk, chcol, strawHitIdxs, addstrawhits, addstrawxings );
+	      kktrk->extendTrack(exconfig_,addstrawhits,addcalohits,addstrawxings);
+	      save &= kktrk->fitStatus().usable();
+	      if(print_ > 1){
+	      	std::cout << "KKTrk fit extension status " << kktrk->fitStatus() << " from adding " 
+		  << addstrawhits.size() << " StrawHits and " << addstrawxings.size() << " Straw Xings" << std::endl;
+		if(print_ > 2) {
+		  for(auto const& strawhit : addstrawhits) strawhit->print(std::cout,2);
+		  for(auto const& strawxing :addstrawxings) strawxing->print(std::cout,2);
+		}
 	      }
 	    }
 	  }
 	  if(save || saveall_){
-	  // convert fits into KalSeeds for persistence	
+	    // convert fits into KalSeeds for persistence	
 	    kkseedcol->push_back(kkfit_.createSeed(*kktrk,hptr,zsave_,savefull_));
 	    kkseedcol->back()._status.merge(TrkFitFlag::KKLoopHelix);
 	    kktrkcol->push_back(kktrk.release());
@@ -282,6 +292,7 @@ namespace mu2e {
       }
     }
     // put the output products into the event
+  if(print_ > 0) std::cout << "Fitted " << kktrkcol->size() << " tracks from " << nhelix << " Helices" << std::endl;
     event.put(move(kktrkcol));
     event.put(move(kkseedcol));
   }
