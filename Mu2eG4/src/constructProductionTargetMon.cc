@@ -35,10 +35,10 @@ using namespace std;
 
 namespace mu2e {
 
-    // TODO: add more structure
-    // TODO: run mu2e -c Mu2eG4/fcl/gdmldump.fcl
-
-    void constructTargetHallPWC(VolumeInfo const & parent, SimpleConfig const & _config, std::string nameSuffix, G4ThreeVector positionInParent) {
+    // nameSuffix lets you give multiple PWC's unique names.
+    // wireNumStart is the first number to be used when naming the sections of
+    // gas corresponding to wires.
+    void constructTargetHallPWC(VolumeInfo const & parent, SimpleConfig const & _config, std::string const & nameSuffix, G4ThreeVector const & positionInParent, int const wireNumStart) {
         double gasLength = _config.getDouble("pTargetMon_gasLength");
         double outerPlateLength = _config.getDouble("pTargetMon_outerPlateLength");
         double windowWidth = _config.getDouble("pTargetMon_windowWidth");
@@ -47,7 +47,7 @@ namespace mu2e {
         double width = _config.getDouble("pTargetMon_width");
         double windowThick = _config.getDouble("pTargetMon_windowThick");
         double frameThick = _config.getDouble("pTargetMon_frameThick");
-        double wireSpacing = _config.getDouble("pTargetMon_wireSpacing");
+        int wiresPerPlane = _config.getInt("pTargetMon_wiresPerPlane");
         double detectorLength = gasLength + (2*outerPlateLength) + frameThick;
         std::string wireNameSuffix = nameSuffix;
         wireNameSuffix.append("_");
@@ -198,14 +198,16 @@ namespace mu2e {
                 "PTM");
         // between HV plane 1 and HV plane 2
         // TODO: treat as indiv sensitive detectors
+        // "Vert" here means it measures the vertical profile
         std::string wireGasNameVert = "pTargetMonWireVert";
         wireGasNameVert.append(wireNameSuffix);
         double gasLength2 = hv2Z - hv1Z - windowThick;
         double gasZ2 = 0.5*(hv2Z + hv1Z);
-        int numVertWires = static_cast<int>(windowHeight/wireSpacing);
-        for (int i=0; i<numVertWires; i++) {
+        double wireSpacing = windowHeight/wiresPerPlane;
+        for (int i=0; i<wiresPerPlane; i++) {
+            int wireNum = wireNumStart + i;
             std::string wireGasName = wireGasNameVert;
-            wireGasName.append(std::to_string(i));
+            wireGasName.append(std::to_string(wireNum));
             std::vector<double> gasHalfDims2;
             gasHalfDims2.push_back(windowWidth/2.);
             gasHalfDims2.push_back(wireSpacing/2.);
@@ -217,20 +219,23 @@ namespace mu2e {
                 noRotation,
                 G4ThreeVector(0.0, gasY2, gasZ2),
                 PWCContainerInfo,
-                0,
+                wireNum,
                 G4Colour::Red(),
                 "PTM");
         }
         
         // TODO: treat as indiv sensitive detectors
+        // "Horiz" here means it measures the horizontal profile
         std::string wireGasNameHoriz = "pTargetMonWireHoriz";
         wireGasNameHoriz.append(wireNameSuffix);
         double gasLength3 = hv3Z - hv2Z - windowThick;
         double gasZ3 = 0.5*(hv3Z + hv2Z);
-        int numHorizWires = static_cast<int>(windowWidth/wireSpacing);
-        for (int i=0; i<numHorizWires; i++) {
+        wireSpacing = windowWidth/wiresPerPlane;
+        int horizWireStart = wireNumStart+wiresPerPlane;
+        for (int i=0; i<wiresPerPlane; i++) {
+            int wireNum = horizWireStart + i;
             std::string wireGasName = wireGasNameHoriz;
-            wireGasName.append(std::to_string(i));
+            wireGasName.append(std::to_string(wireNum));
             std::vector<double> gasHalfDims3;
             gasHalfDims3.push_back(wireSpacing/2.);
             gasHalfDims3.push_back(windowHeight/2.);
@@ -246,7 +251,7 @@ namespace mu2e {
                 noRotation,
                 G4ThreeVector(gasX3, 0.0, gasZ3),
                 PWCContainerInfo,
-                0,
+                wireNum,
                 G4Colour::Red(),
                 "PTM");
         }
@@ -275,6 +280,7 @@ namespace mu2e {
 
 
     void constructProductionTargetMon(VolumeInfo const & parent, SimpleConfig const & _config) {
+        int wiresPerPlane = _config.getInt("pTargetMon_wiresPerPlane");
         double height = _config.getDouble("pTargetMon_height");
         double width = _config.getDouble("pTargetMon_width");
         double length = _config.getDouble("pTargetMon_length");
@@ -318,11 +324,11 @@ namespace mu2e {
         // location of one PWC:
         double z1 = (-0.5*length)+(detectorLength/2.);
         G4ThreeVector position_1 = G4ThreeVector(0.0, 0.0, z1);
-        constructTargetHallPWC(pTargetMonContainer, _config, "_1", position_1);
+        constructTargetHallPWC(pTargetMonContainer, _config, "_1", position_1, 0);
         // second PWC:
         double z2 = (0.5*length)-(detectorLength/2.);
         G4ThreeVector position_2 = G4ThreeVector(0.0, 0.0, z2);
-        constructTargetHallPWC(pTargetMonContainer, _config, "_2", position_2);
+        constructTargetHallPWC(pTargetMonContainer, _config, "_2", position_2, 2*wiresPerPlane);
 
     } // constructProductionTargetMon
 

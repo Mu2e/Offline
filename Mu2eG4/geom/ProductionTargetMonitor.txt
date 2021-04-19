@@ -12,7 +12,7 @@ double pTargetMon_gasLength = 18.898; // 12 frames, 0.062" each
 double pTargetMon_outerPlateLength = 6.35; // quarter inch
 double pTargetMon_windowThick = 0.0254; // 0.001 inch
 double pTargetMon_frameThick = 1.5748; // 0.062"
-double pTargetMon_wireSpacing = 2;
+int pTargetMon_wiresPerPlane = 48;
 
 string pTargetMon_innerGas = "StrawGas"; // in ConstructMaterials.cc
 string pTargetMon_windowMaterial = "Kapton"; // TODO: carbon kapton
