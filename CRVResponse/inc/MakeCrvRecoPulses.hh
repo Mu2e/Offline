@@ -35,6 +35,7 @@ class MakeCrvRecoPulses
   void RangeFinderNarrow(const std::vector<unsigned int> &waveform, const size_t peakStart, const size_t peakEnd, size_t &start, size_t &end);
   void RangeFinder(const std::vector<unsigned int> &waveform, const size_t peakStart, const size_t peakEnd, size_t &start, size_t &end);
   bool FailedFit(TFitResultPtr fr, int paramStart, int paramEnd);
+  double Chi2(TF1 &f, const TGraph &g);
 
   TF1    _f1, _f2;
   float  _minADCdifference;
