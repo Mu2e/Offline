@@ -146,7 +146,7 @@ BEGIN_PROLOG
                                         //e.g. 1.385 for a leading edge at 20% pulse height
                                         //e.g. 1.587 for a leading edge at 10% pulse height
       allowDoubleGumbel         : false //tries fitting with two Gumbel functions (needs a very small "minPulseHeightRatio", e.g. 0.01)
-      doubleGumbelThreshold     : 0.05  //Chi2/#ADCsamples (based on a single Gumble fit) 
+      doubleGumbelThreshold     : 2.0   //Chi2/#ADCsamples (based on a single Gumble fit) 
                                         //at which a fit with two Gumbel functions should be attempted
       minPEs                    : 0     //0 PEs
     }

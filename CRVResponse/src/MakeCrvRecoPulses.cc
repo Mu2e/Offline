@@ -17,21 +17,6 @@ namespace
     double y2=par[3]*(TMath::Exp(-(x-par[4])/par[5]-TMath::Exp(-(x-par[4])/par[5])));
     return y1+y2;
   }
-  double Chi2(TF1 &f, const TGraph &g)
-  {
-    float chi2=0;
-    double xmin,xmax;
-    f.GetRange(xmin,xmax);
-    for(int i=0; i<g.GetN(); ++i)
-    {
-      double x,y;
-      g.GetPoint(i,x,y);
-      if(x<xmin || x>xmax) continue;
-      float fy=f.Eval(x);
-      chi2+=(y-fy)*(y-fy)/(fy*fy);
-    }
-    return chi2;
-  }
 }
 
 namespace mu2eCrv
@@ -120,6 +105,22 @@ bool MakeCrvRecoPulses::FailedFit(TFitResultPtr fr, int paramStart, int paramEnd
   return false;
 }
 
+double MakeCrvRecoPulses::Chi2(TF1 &f, const TGraph &g)
+{
+  float chi2=0;
+  double xmin,xmax;
+  f.GetRange(xmin,xmax);
+  for(int i=0; i<g.GetN(); ++i)
+  {
+    double x,y;
+    g.GetPoint(i,x,y);
+    if(x<xmin || x>xmax) continue;
+    float fy=f.Eval(x);
+    chi2+=(y-fy)*(y-fy)/fy;
+  }
+  return chi2;
+}
+
 void MakeCrvRecoPulses::NoFitOption(const std::vector<unsigned int> &waveform, float pedestal, 
                                     size_t peakStart, float &sum, size_t &pulseStart, size_t &pulseEnd)
 {
@@ -206,6 +207,7 @@ void MakeCrvRecoPulses::SetWaveform(const std::vector<unsigned int> &waveform,
     TFitResultPtr fr = g.Fit(&_f1,"NQSR");
 //    float  pulseFitChi2 = _f1.GetChisquare()/_f1.GetNumberFitPoints();
     float  pulseFitChi2 = Chi2(_f1,g)/_f1.GetNumberFitPoints();
+std::cout<<_f1.GetChisquare()/_f1.GetNumberFitPoints()<<"  "<<pulseFitChi2<<std::endl;
     double fitParam0 = fr->Parameter(0);
     double fitParam1 = fr->Parameter(1);
     double fitParam2 = fr->Parameter(2);
