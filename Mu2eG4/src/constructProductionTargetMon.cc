@@ -221,6 +221,8 @@ namespace mu2e {
             int wireNum = wireNumStart + i;
             std::string wireGasName = wireGasNameVert;
             wireGasName.append(std::to_string(wireNum));
+            // wire numbering such that the lowest-numered wire is 
+            // on the bottom
             double gasY2 = (-0.5*windowHeight) + ((i+0.5)*wireSpacing);
             //G4VPhysicalVolume* pv = 
             new G4PVPlacement(noRotation,
