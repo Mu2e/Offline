@@ -88,6 +88,10 @@ void art::CaloRecoFromFragments::produce(Event& event) {
     return;
   }
   numCalFrags = calFragments->size();
+  if (diagLevel_ > 1) {
+    std::cout << "[CaloRecoFromFragments::produce] found "<< numCalFrags <<" Calorimeter fragments"
+	      << std::endl;
+  }
   for (size_t idx = 0; idx < numCalFrags; ++idx) {
     auto size = ((*calFragments)[idx]).sizeBytes(); // * sizeof(artdaq::RawDataType);
     totalSize += size;
