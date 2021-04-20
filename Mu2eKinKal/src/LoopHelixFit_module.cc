@@ -95,6 +95,7 @@ namespace mu2e {
   using KinKal::Status;
   using HPtr = art::Ptr<HelixSeed>;
   using CCPtr = art::Ptr<CaloCluster>;
+  using CCHandle = art::ValidHandle<CaloClusterCollection>;
   using StrawHitIndexCollection = std::vector<StrawHitIndex>;
   
   using KKConfig = Mu2eKinKal::KKConfig;
@@ -109,6 +110,7 @@ namespace mu2e {
     struct ModuleConfig {
       fhicl::Sequence<art::InputTag> helixSeedCollections         {Name("HelixSeedCollections"),     Comment("Helix seed fit collections to be processed ") };
       fhicl::Atom<art::InputTag>     comboHitCollection     {Name("ComboHitCollection"),     Comment("Single Straw ComboHit collection ") };
+      fhicl::Atom<art::InputTag>     caloClusterCollection     {Name("CaloClusterCollection"),     Comment("CaloCluster collection ") };
       fhicl::Atom<art::InputTag>     strawHitFlagCollection {Name("StrawHitFlagCollection"), Comment("StrawHitFlag collection ") };
       fhicl::Sequence<std::string> helixFlags { Name("HelixFlags"), Comment("Flags required to be present to convert a helix seed to a KinKal track") };
       fhicl::Atom<int> printLevel { Name("PrintLevel"), Comment("Diagnostic printout Level"), 0 };
@@ -141,6 +143,7 @@ namespace mu2e {
     // data payload
     std::vector<art::ProductToken<HelixSeedCollection>> hseedCols_;
     art::ProductToken<ComboHitCollection> chcol_T_;
+    art::ProductToken<CaloClusterCollection> cccol_T_;
     art::ProductToken<StrawHitFlagCollection> shfcol_T_;
     TrkFitFlag goodhelix_;
     bool extend_, saveall_, savefull_;
@@ -160,6 +163,7 @@ namespace mu2e {
 
   LoopHelixFit::LoopHelixFit(const GlobalSettings& settings) : art::EDProducer{settings}, 
     chcol_T_(consumes<ComboHitCollection>(settings().modSettings().comboHitCollection())),
+    cccol_T_(consumes<CaloClusterCollection>(settings().modSettings().caloClusterCollection())),
     shfcol_T_(mayConsume<StrawHitFlagCollection>(settings().modSettings().strawHitFlagCollection())),
     goodhelix_(settings().modSettings().helixFlags()),
     extend_(settings().modSettings().extend()),
@@ -210,6 +214,7 @@ namespace mu2e {
     auto const& tracker = alignedTracker_h_.getPtr(event.id()).get();
     // find input hits
     auto ch_H = event.getValidHandle<ComboHitCollection>(chcol_T_);
+    auto cc_H = event.getValidHandle<CaloClusterCollection>(cccol_T_);
     auto const& chcol = *ch_H;
     // find calo clusters TODO
     // create output
@@ -270,12 +275,15 @@ namespace mu2e {
 	      KKCALOHITCOL addcalohits;
 	      KKSTRAWXINGCOL addstrawxings;
 	      kkfit_.addStrawHits(*tracker, *strawresponse, *kkbf_, kkmat_.strawMaterial(), *kktrk, chcol, addstrawhits, addstrawxings );
+	      if(kkfit_.useCalo())kkfit_.addCaloHit(*calo_h, *kktrk, cc_H, addcalohits);
 	      if(kkfit_.addMaterial())kkfit_.addStraws(*tracker, kkmat_.strawMaterial(), *kktrk, addstrawxings);
 	      kktrk->extendTrack(exconfig_,addstrawhits,addcalohits,addstrawxings);
 	      save &= kktrk->fitStatus().usable();
 	      if(print_ > 1){
 	      	std::cout << "KKTrk fit extension status " << kktrk->fitStatus() << " from adding " 
-		  << addstrawhits.size() << " StrawHits and " << addstrawxings.size() << " Straw Xings" << std::endl;
+		  << addstrawhits.size() << " StrawHits and "
+		  << addcalohits.size() << " CaloHits and "
+		  << addstrawxings.size() << " Straw Xings" << std::endl;
 		if(print_ > 2) {
 		  for(auto const& strawhit : addstrawhits) strawhit->print(std::cout,2);
 		  for(auto const& strawxing :addstrawxings) strawxing->print(std::cout,2);
