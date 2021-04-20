@@ -37,7 +37,8 @@ namespace mu2e {
 
     // nameSuffix lets you give multiple PWC's unique names.
     // wireNumStart is the first number to be used when naming the sections of
-    // gas corresponding to wires.
+    // gas corresponding to wires. This same wire numbering is used for the
+    // copyNo argument when placing the wire gas in the geometry.
     void constructTargetHallPWC(VolumeInfo const & parent, SimpleConfig const & _config, std::string const & nameSuffix, G4ThreeVector const & positionInParent, int const wireNumStart) {
         double gasLength = _config.getDouble("pTargetMon_gasLength");
         double outerPlateLength = _config.getDouble("pTargetMon_outerPlateLength");
@@ -242,8 +243,8 @@ namespace mu2e {
             gasHalfDims3.push_back(gasLength3/2.);
             // Wire numbering is reversed, because we rotate the overall 
             // container by almost 180 degrees to be along the beam path.
-            // This puts wire 0 all the way on the left, from the oncoming
-            // beam's point of view.
+            // This puts the lowest-numbered wire all the way on the left
+            // from the oncoming beam's point of view.
             double gasX3 = (0.5*windowWidth) - ((i+0.5)*wireSpacing);
             nestBox(wireGasName,
                 gasHalfDims3,
