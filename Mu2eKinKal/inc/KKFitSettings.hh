@@ -46,6 +46,9 @@ namespace mu2e {
       fhicl::Atom<float> caloDt{ Name("CaloTrackerTimeOffset"), Comment("Time offset of calorimeter data WRT tracker (ns)"), -0.1 };
       fhicl::Atom<float> caloPosRes{ Name("CaloPositionResolution"), Comment("Transverse resolution of CaloCluster position (mm)"), 15.0 };
       fhicl::Atom<float> caloPropSpeed{ Name("CaloPropagationSpeed"), Comment("Axial speed of light in a crystal (mm/ns)"), 200.0 }; // see doc 25320
+      fhicl::Atom<float> minCaloEnergy{ Name("MinCaloClusterEnergy"), Comment("Minimum CaloCluster energy to use as a KKCaloHit (MeV)"), 10.0 };
+      fhicl::Atom<float> maxCaloDt{ Name("MaxCaloClusterDt"), Comment("Maximum CaloCluster time - track extrapolation time (ns)"), 5.0 };
+      fhicl::Atom<float> maxCaloDoca { Name("MaxCaloDOCA"), Comment("Max DOCA to add a CaloCluster (mm)"), 50.0 };
       fhicl::Sequence<std::string> addHitSelect { Name("AddHitSelect"), Comment("Flags required to be present to add a hit"), std::vector<std::string>() };
       fhicl::Sequence<std::string> addHitReject { Name("AddHitReject"), Comment("Flags required not to be present to add a hit"), std::vector<std::string>() };
       fhicl::Atom<float> maxStrawHitDOCA { Name("MaxStrawHitDOCA"), Comment("Max DOCA to add a hit (mm)"), 4.0 };
