@@ -167,8 +167,7 @@ namespace mu2e
  
     // Get all of the tracker StepPointMC collections from the event:
     // This selector will select only data products with the given instance name.
-    SPMCCHV stepsHandles;
-    event.getMany(_selector, stepsHandles);
+    SPMCCHV stepsHandles = event.getMany<StepPointMCCollection>(_selector);
 
     // Informational message on the first event.
     if(_firstEvent)
