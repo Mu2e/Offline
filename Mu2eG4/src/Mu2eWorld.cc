@@ -1237,6 +1237,25 @@ namespace mu2e {
       }//if ds.CableRun.sensitive
     }//if DSCableRun
 
+    /********************* Production target monitor *********************/
+    if(sdHelper_->enabled(StepInstanceName::PTargetMon)) {
+
+      Mu2eG4SensitiveDetector* ptMonSD =
+        new Mu2eG4SensitiveDetector( SensitiveDetectorName::PTargetMon(), _config );
+      SDman->AddNewDetector(ptMonSD);
+
+      //loop over all of the LV names and find the ones we need
+      //set the SensitiveDetectors for these
+      for(G4LogicalVolumeStore::iterator pos=store->begin(); pos!=store->end(); pos++){
+        G4String LVname = (*pos)->GetName();
+
+        //from constructProductionTargetMonitor
+        if (LVname.find("pTargetMonWire") != std::string::npos) {
+          (*pos)->SetSensitiveDetector(ptMonSD);
+        }
+      }//for
+    }//if pTargetMon
+
   }//instantiateSensitiveDetectors
 
 
