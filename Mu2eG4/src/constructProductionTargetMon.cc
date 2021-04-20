@@ -27,6 +27,8 @@
 #include "G4ThreeVector.hh"
 #include "G4Colour.hh"
 #include "G4SubtractionSolid.hh"
+#include "G4PVPlacement.hh"
+#include "G4VSolid.hh"
 
 #include "CLHEP/Units/SystemOfUnits.h"
 
@@ -109,11 +111,26 @@ namespace mu2e {
         windowHalfDims.push_back(windowWidth/2.);
         windowHalfDims.push_back(windowHeight/2.);
         windowHalfDims.push_back(windowThick/2.);
+        // G4VSolid* windowBox = new G4Box("pTargetMonWindow",
+        //                             windowWidth/2.,
+        //                             windowHeight/2.,
+        //                             windowThick/2.);
+        // G4LogicalVolume* windowLogical = new G4LogicalVolume(windowBox,
+        //                                                     windowMaterial,
+        //                                                     "pTargetMonWindow");
         // first ground plane
-        // TODO: make this a virtual detector
-        std::string ground1Name = "VirtualDetector_pTargetMonGroundIn";
+        std::string ground1Name = "pTargetMonGroundIn";
         ground1Name.append(nameSuffix);
         double ground1Z = -5.5*frameThick;
+        // //G4VPhysicalVolume* pv = 
+        // new G4PVPlacement(noRotation,
+        //                   G4ThreeVector(0.0, 0.0, ground1Z),
+        //                   windowLogical,
+        //                   ground1Name,
+        //                   PWCContainerInfo.logical,
+        //                   false,
+        //                   0,
+        //                   false);
         nestBox(ground1Name,
                 windowHalfDims,
                 windowMaterial,
@@ -198,63 +215,67 @@ namespace mu2e {
                 G4Colour::Red(),
                 "PTM");
         // between HV plane 1 and HV plane 2
-        // TODO: treat as indiv sensitive detectors
         // "Vert" here means it measures the vertical profile
         std::string wireGasNameVert = "pTargetMonWireVert";
         wireGasNameVert.append(wireNameSuffix);
         double gasLength2 = hv2Z - hv1Z - windowThick;
         double gasZ2 = 0.5*(hv2Z + hv1Z);
         double wireSpacing = windowHeight/wiresPerPlane;
+        G4VSolid* vertWireBox = new G4Box(wireGasNameVert,
+                                          windowWidth/2.,
+                                          wireSpacing/2.,
+                                          gasLength2/2.);
+        G4LogicalVolume* vertWireLogical = new G4LogicalVolume(vertWireBox,
+                                                              gasMaterial,
+                                                              wireGasNameVert);
         for (int i=0; i<wiresPerPlane; i++) {
             int wireNum = wireNumStart + i;
             std::string wireGasName = wireGasNameVert;
             wireGasName.append(std::to_string(wireNum));
-            std::vector<double> gasHalfDims2;
-            gasHalfDims2.push_back(windowWidth/2.);
-            gasHalfDims2.push_back(wireSpacing/2.);
-            gasHalfDims2.push_back(gasLength2/2.);
             double gasY2 = (-0.5*windowHeight) + ((i+0.5)*wireSpacing);
-            nestBox(wireGasName,
-                gasHalfDims2,
-                gasMaterial,
-                noRotation,
-                G4ThreeVector(0.0, gasY2, gasZ2),
-                PWCContainerInfo,
-                wireNum,
-                G4Colour::Red(),
-                "PTM");
+            //G4VPhysicalVolume* pv = 
+            new G4PVPlacement(noRotation,
+                              G4ThreeVector(0.0, gasY2, gasZ2),
+                              vertWireLogical,
+                              wireGasName,
+                              PWCContainerInfo.logical,
+                              false,
+                              wireNum,
+                              false);
         }
         
-        // TODO: treat as indiv sensitive detectors
         // "Horiz" here means it measures the horizontal profile
         std::string wireGasNameHoriz = "pTargetMonWireHoriz";
         wireGasNameHoriz.append(wireNameSuffix);
         double gasLength3 = hv3Z - hv2Z - windowThick;
         double gasZ3 = 0.5*(hv3Z + hv2Z);
         wireSpacing = windowWidth/wiresPerPlane;
+        G4VSolid* horizWireBox = new G4Box(wireGasNameHoriz,
+                                           wireSpacing/2.,
+                                           windowHeight/2.,
+                                           gasLength3/2.);
+        G4LogicalVolume* horizWireLogical = new G4LogicalVolume(horizWireBox,
+                                                                gasMaterial,
+                                                                wireGasNameHoriz);
         int horizWireStart = wireNumStart+wiresPerPlane;
         for (int i=0; i<wiresPerPlane; i++) {
             int wireNum = horizWireStart + i;
             std::string wireGasName = wireGasNameHoriz;
             wireGasName.append(std::to_string(wireNum));
-            std::vector<double> gasHalfDims3;
-            gasHalfDims3.push_back(wireSpacing/2.);
-            gasHalfDims3.push_back(windowHeight/2.);
-            gasHalfDims3.push_back(gasLength3/2.);
             // Wire numbering is reversed, because we rotate the overall 
             // container by almost 180 degrees to be along the beam path.
             // This puts the lowest-numbered wire all the way on the left
             // from the oncoming beam's point of view.
             double gasX3 = (0.5*windowWidth) - ((i+0.5)*wireSpacing);
-            nestBox(wireGasName,
-                gasHalfDims3,
-                gasMaterial,
-                noRotation,
-                G4ThreeVector(gasX3, 0.0, gasZ3),
-                PWCContainerInfo,
-                wireNum,
-                G4Colour::Red(),
-                "PTM");
+            //G4VPhysicalVolume* pv = 
+            new G4PVPlacement(noRotation,
+                              G4ThreeVector(gasX3, 0.0, gasZ3),
+                              horizWireLogical,
+                              wireGasName,
+                              PWCContainerInfo.logical,
+                              false,
+                              wireNum,
+                              false);
         }
 
         // between HV plane 3 and ground plane 2
