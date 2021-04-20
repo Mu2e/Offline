@@ -111,88 +111,77 @@ namespace mu2e {
         windowHalfDims.push_back(windowWidth/2.);
         windowHalfDims.push_back(windowHeight/2.);
         windowHalfDims.push_back(windowThick/2.);
-        // G4VSolid* windowBox = new G4Box("pTargetMonWindow",
-        //                             windowWidth/2.,
-        //                             windowHeight/2.,
-        //                             windowThick/2.);
-        // G4LogicalVolume* windowLogical = new G4LogicalVolume(windowBox,
-        //                                                     windowMaterial,
-        //                                                     "pTargetMonWindow");
+        G4VSolid* windowBox = new G4Box("pTargetMonWindow",
+                                    windowWidth/2.,
+                                    windowHeight/2.,
+                                    windowThick/2.);
+        G4LogicalVolume* windowLogical = new G4LogicalVolume(windowBox,
+                                                            windowMaterial,
+                                                            "pTargetMonWindow");
         // first ground plane
         std::string ground1Name = "pTargetMonGroundIn";
         ground1Name.append(nameSuffix);
         double ground1Z = -5.5*frameThick;
-        // //G4VPhysicalVolume* pv = 
-        // new G4PVPlacement(noRotation,
-        //                   G4ThreeVector(0.0, 0.0, ground1Z),
-        //                   windowLogical,
-        //                   ground1Name,
-        //                   PWCContainerInfo.logical,
-        //                   false,
-        //                   0,
-        //                   false);
-        nestBox(ground1Name,
-                windowHalfDims,
-                windowMaterial,
-                noRotation,
-                G4ThreeVector(0.0, 0.0, ground1Z),
-                PWCContainerInfo,
-                0,
-                G4Colour::Green(),
-                "PTM");
+        //G4VPhysicalVolume* pv = 
+        new G4PVPlacement(noRotation,
+                          G4ThreeVector(0.0, 0.0, ground1Z),
+                          windowLogical,
+                          ground1Name,
+                          PWCContainerInfo.logical,
+                          false,
+                          0,
+                          false);
         // first HV plane
         std::string hv1Name = "pTargetMonHV1";
         hv1Name.append(nameSuffix);
         double hv1Z = -3.5*frameThick;
-        nestBox(hv1Name,
-                windowHalfDims,
-                windowMaterial,
-                noRotation,
-                G4ThreeVector(0.0, 0.0, hv1Z),
-                PWCContainerInfo,
-                0,
-                G4Colour::Green(),
-                "PTM");
+        //G4VPhysicalVolume* pv = 
+        new G4PVPlacement(noRotation,
+                          G4ThreeVector(0.0, 0.0, hv1Z),
+                          windowLogical,
+                          hv1Name,
+                          PWCContainerInfo.logical,
+                          false,
+                          0,
+                          false);
         // second HV plane
         std::string hv2Name = "pTargetMonHV2";
         hv2Name.append(nameSuffix);
         double hv2Z = 0.5*frameThick;
-        nestBox(hv2Name,
-                windowHalfDims,
-                windowMaterial,
-                noRotation,
-                G4ThreeVector(0.0, 0.0, hv2Z),
-                PWCContainerInfo,
-                0,
-                G4Colour::Green(),
-                "PTM");
+        //G4VPhysicalVolume* pv = 
+        new G4PVPlacement(noRotation,
+                          G4ThreeVector(0.0, 0.0, hv2Z),
+                          windowLogical,
+                          hv2Name,
+                          PWCContainerInfo.logical,
+                          false,
+                          0,
+                          false);
         // third HV plane
         std::string hv3Name = "pTargetMonHV3";
         hv3Name.append(nameSuffix);
         double hv3Z = 4.5*frameThick;
-        nestBox(hv3Name,
-                windowHalfDims,
-                windowMaterial,
-                noRotation,
-                G4ThreeVector(0.0, 0.0, hv3Z),
-                PWCContainerInfo,
-                0,
-                G4Colour::Green(),
-                "PTM");
+        //G4VPhysicalVolume* pv = 
+        new G4PVPlacement(noRotation,
+                          G4ThreeVector(0.0, 0.0, hv3Z),
+                          windowLogical,
+                          hv3Name,
+                          PWCContainerInfo.logical,
+                          false,
+                          0,
+                          false);
         // last ground plane
         std::string ground2Name = "pTargetMonGroundOut";
         ground2Name.append(nameSuffix);
         double ground2Z = 6.5*frameThick;
-        nestBox(ground2Name,
-                windowHalfDims,
-                windowMaterial,
-                noRotation,
-                G4ThreeVector(0.0, 0.0, ground2Z),
-                PWCContainerInfo,
-                0,
-                G4Colour::Green(),
-                "PTM");
-
+        new G4PVPlacement(noRotation,
+                          G4ThreeVector(0.0, 0.0, ground2Z),
+                          windowLogical,
+                          ground2Name,
+                          PWCContainerInfo.logical,
+                          false,
+                          0,
+                          false);
         
         // gas inside PWC
         G4Material *gasMaterial = findMaterialOrThrow(_config.getString("pTargetMon_innerGas"));
