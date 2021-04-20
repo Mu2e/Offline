@@ -220,14 +220,13 @@ private:
                                  uint8_t& DTCId, uint8_t Subsys);
   void printHeader(DataBlockHeader const& headerDataBlock);
 
-  void putBlockInEvent(DTCLib::DTC_Event& currentEvent, uint8_t dtcID,
+  void putBlockInEvent(DTCLib::DTC_Event& currentEvent, uint8_t dtcID, DTCLib::DTC_Subsystem subsys,
                        DTCLib::DTC_DataBlock thisBlock) {
     auto subEvt = currentEvent.GetSubEventByDTCID(dtcID);
     if (subEvt == nullptr) {
       DTCLib::DTC_SubEvent newSubEvt;
       newSubEvt.SetEventWindowTag(currentEvent.GetEventWindowTag());
-      auto hdrPtr = newSubEvt.GetHeader();
-      hdrPtr->source_dtc_id = dtcID;
+      newSubEvt.SetSourceDTC(dtcID, subsys);
       newSubEvt.AddDataBlock(thisBlock);
       currentEvent.AddSubEvent(newSubEvt);
 
@@ -453,7 +452,7 @@ void ArtBinaryPacketsFromDigis::fillTrackerDataStream(DTCLib::DTC_Event& current
       }
     }
   }
-  putBlockInEvent(currentEvent, dtcID, thisBlock);
+  putBlockInEvent(currentEvent, dtcID, DTCLib::DTC_Subsystem_Tracker, thisBlock);
 }
 
 void ArtBinaryPacketsFromDigis::fillTrackerDMABlocks(DTCLib::DTC_Event& currentEvent,
@@ -936,7 +935,7 @@ void ArtBinaryPacketsFromDigis::fillCalorimeterDataStream(DTCLib::DTC_Event& cur
     } // end loop over the calorimeterHitReadoutPacketVector
   }
 
-  putBlockInEvent(currentEvent, dtcID, thisBlock);
+  putBlockInEvent(currentEvent, dtcID, DTCLib::DTC_Subsystem_Calorimeter, thisBlock);
 }
 
 //--------------------------------------------------------------------------------
@@ -1245,7 +1244,7 @@ void ArtBinaryPacketsFromDigis::fillCrvDataStream(DTCLib::DTC_Event& currentEven
     pos += sizeof(CRVHitReadoutPacket);
   }
 
-  putBlockInEvent(currentEvent, dtcID, thisBlock);
+  putBlockInEvent(currentEvent, dtcID, DTCLib::DTC_Subsystem_CRV, thisBlock);
 }
 
 } // namespace mu2e
