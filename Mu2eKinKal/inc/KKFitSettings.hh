@@ -48,10 +48,11 @@ namespace mu2e {
       fhicl::Atom<float> caloPropSpeed{ Name("CaloPropagationSpeed"), Comment("Axial speed of light in a crystal (mm/ns)"), 200.0 }; // see doc 25320
       fhicl::Sequence<std::string> addHitSelect { Name("AddHitSelect"), Comment("Flags required to be present to add a hit"), std::vector<std::string>() };
       fhicl::Sequence<std::string> addHitReject { Name("AddHitReject"), Comment("Flags required not to be present to add a hit"), std::vector<std::string>() };
-      fhicl::Atom<float> maxAddDOCA { Name("MaxAddDOCA"), Comment("Max DOCA to add a hit or straw (mm)"), 2.75 };
-      fhicl::Atom<float> maxAddDt { Name("MaxAddDt"), Comment("Max Detla time to add a hit (ns)"), 3.0 };
-      fhicl::Atom<float> maxAddChi { Name("MaxAddChi"), Comment("Max Chi to add a hit"), 4.0 };
-      fhicl::Atom<float> maxAddDeltaU { Name("MaxAddDeltaU"), Comment("Max Delta-U to add a straw (mm)"), 10.0 };
+      fhicl::Atom<float> maxStrawHitDOCA { Name("MaxStrawHitDOCA"), Comment("Max DOCA to add a hit (mm)"), 4.0 };
+      fhicl::Atom<float> maxStrawHitDt { Name("MaxStrawHitDt"), Comment("Max Detla time to add a hit (ns)"), 20.0 };
+      fhicl::Atom<float> maxStrawHitChi { Name("MaxStrawHitChi"), Comment("Max Chi to add a hit"), 4.0 };
+      fhicl::Atom<int> strawBuffer { Name("StrawBuffer"), Comment("Buffer to add when searching for straws"), 1 };
+      fhicl::Atom<float> maxStrawDOCA { Name("MaxStrawDOCA"), Comment("Max DOCA to add straw material (mm)"), 2.5 };
     };
   }
 }

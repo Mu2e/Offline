@@ -20,8 +20,9 @@ Mu2eKinKal : {
       AddMaterial : true
       CaloTrackerTimeOffset : -1.35
       AddHitReject : ["Dead"]
-      MaxAddDOCA : 4.0
-      MaxAddDt : 25.0
+      MaxStrawHitDOCA : 4.0
+      MaxStrawDOCA : 2.5
+      MaxStrawHitDt : 25.0
     }
     
     KinKalFitSettings : {

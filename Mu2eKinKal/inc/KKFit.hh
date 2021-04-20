@@ -73,8 +73,8 @@ namespace mu2e {
 	  PKTRAJ const& ptraj, ComboHitCollection const& chcol, StrawHitIndexCollection const& strawHitIdxs,
 	  KKSTRAWHITCOL& hits, KKSTRAWXINGCOL& exings) const;
       void addStrawHits(Tracker const& tracker,StrawResponse const& strawresponse, KKBField const& kkbf, StrawMaterial const& smat,
-	  KKTRK& kktrk, ComboHitCollection const& chcol, StrawHitIndexCollection const& oldhits,
-	  KKSTRAWHITCOL& hits, KKSTRAWXINGCOL& exings) const;
+	  KKTRK& kktrk, ComboHitCollection const& chcol, KKSTRAWHITCOL& hits, KKSTRAWXINGCOL& exings) const;
+      void addStraws(Tracker const& tracker, StrawMaterial const& smat, KKTRK& kktrk, KKSTRAWXINGCOL& exings) const;
       void makeCaloHit(CCPtr const& cluster, Calorimeter const& calo, PKTRAJ const& pktraj, KKCALOHITCOL& hits) const;
       KalSeed createSeed(KKTRK const& kktrk, HPtr const& hptr, std::vector<float> const& zsave, bool savefull) const;
       TimeRange range(KKSTRAWHITCOL const& strawhits, KKCALOHITCOL const& calohits, KKSTRAWXINGCOL const& strawxings) const; // time range from a set of hits and element Xings
@@ -83,7 +83,9 @@ namespace mu2e {
       WireHitState::Dimension nullDimension() const { return nulldim_; }
       PDGCode::type fitParticle() const { return tpart_;}
       TrkFitDirection fitDirection() const { return tdir_;}
+      bool addMaterial() const { return addmat_; }
     private:
+      void fillTrackerInfo(Tracker const& tracker) const;
       PDGCode::type tpart_;
       TrkFitDirection tdir_;
       WireHitState::Dimension nulldim_;
@@ -94,7 +96,13 @@ namespace mu2e {
       double caloPropSpeed_; // effective light propagation speed in a crystal (including reflections).  Should come from prodtions FIXME
       double tprec_; // TPOCA precision
       StrawHitFlag addsel_, addrej_;
-      float maxDoca_, maxDt_, maxChi_, maxDU_;
+      float maxStrawHitDoca_, maxStrawHitDt_, maxStrawHitChi_, maxStrawDoca_;
+      int sbuff_;
+      // cached info computed from the tracker; these should be set on construction, but the tracker doesn't exist
+      mutable double ymin_, ymax_, umax_; // panel-level info
+      mutable double rmin_, rmax_; // plane-level info
+      mutable double spitch_;
+      mutable bool needstrackerinfo_;
   };
 
   template <class KTRAJ> KKFit<KTRAJ>::KKFit(KKFitConfig const& fitconfig) :
@@ -110,10 +118,12 @@ namespace mu2e {
     tprec_(fitconfig.tpocaPrec()),
     addsel_(fitconfig.addHitSelect()),
     addrej_(fitconfig.addHitReject()),
-    maxDoca_(fitconfig.maxAddDOCA()),
-    maxDt_(fitconfig.maxAddDt()),
-    maxChi_(fitconfig.maxAddChi()),
-    maxDU_(fitconfig.maxAddDeltaU())
+    maxStrawHitDoca_(fitconfig.maxStrawHitDOCA()),
+    maxStrawHitDt_(fitconfig.maxStrawHitDt()),
+    maxStrawHitChi_(fitconfig.maxStrawHitChi()),
+    maxStrawDoca_(fitconfig.maxStrawDOCA()),
+    sbuff_(fitconfig.strawBuffer()),
+    needstrackerinfo_(true)
  {
   }
 
@@ -141,9 +151,7 @@ namespace mu2e {
       PTCA ptca(ptraj, wline, hint, tprec_ );
       
       // create the material crossing
-      if(addmat_){
-	exings.push_back(std::make_shared<KKSTRAWXING>(ptca,smat,straw.id()));
-      }
+      if(addmat_) exings.push_back(std::make_shared<KKSTRAWXING>(ptca,smat,straw.id()));
       // create the hit
       hits.push_back(std::make_shared<KKSTRAWHIT>(kkbf, ptca, whstate, strawhit, straw, strawidx, strawresponse));
     }
@@ -170,7 +178,6 @@ namespace mu2e {
 
   template <class KTRAJ> void KKFit<KTRAJ>::addStrawHits(Tracker const& tracker,StrawResponse const& strawresponse, KKBField const& kkbf, StrawMaterial const& smat,
       KKTRK& kktrk, ComboHitCollection const& chcol,
-      StrawHitIndexCollection const& oldhits,
       KKSTRAWHITCOL& hits, KKSTRAWXINGCOL& exings) const {
     // initialize hits as null (no drift).  Drift is turned on when updating
     auto const& sprop = tracker.strawProperties();
@@ -180,25 +187,120 @@ namespace mu2e {
     WireHitState whstate(WireHitState::null, nulldim_, nullvar ,nulldt); // initial wire hit state
     //
     auto const& ftraj = kktrk.fitTraj();
+    // build the set of existing hits
+    std::set<StrawHitIndex> oldhits;
+    for(auto const& strawhit : kktrk.strawHits())oldhits.insert(strawhit->strawHitIndex());
     for( size_t ich=0; ich < chcol.size();++ich){
-      if(std::find(oldhits.begin(),oldhits.end(),ich)==oldhits.end()){      // make sure this hit wasn't already found
+      if(oldhits.find(ich)==oldhits.end()){      // make sure this hit wasn't already found
 	ComboHit const& strawhit = chcol[ich];
-	if(strawhit.flag().hasAllProperties(addsel_) && (!strawhit.flag().hasAnyProperty(addrej_)) && // test flags
-	    fabs(strawhit.correctedTime()-zTime(kktrk.fitTraj(),strawhit.pos().Z())) < maxDt_) {	    // compare the measured time with the estimate from the fit
-	  const Straw& straw = tracker.getStraw(strawhit.strawId());
-	  auto wline = Mu2eKinKal::hitLine(strawhit,straw,strawresponse);
-	  double psign = wline.direction().Dot(straw.wireDirection());  // wire distance is WRT straw center, in the nominal wire direction
-	  double htime = wline.t0() - (straw.halfLength()-psign*strawhit.wireDist())/wline.speed();
-	  CAHint hint(ftraj.front().ztime(wline.position3(htime).Z()),htime);
-	  // compute PTCA between the seed trajectory and this straw
-	  PTCA ptca(ftraj, wline, hint, tprec_ );
-	  if(fabs(ptca.doca()) < maxDoca_){
-	    if(addmat_)exings.push_back(std::make_shared<KKSTRAWXING>(ptca,smat,straw.id()));
-	    hits.push_back(std::make_shared<KKSTRAWHIT>(kkbf, ptca, whstate, strawhit, straw, ich, strawresponse));
-	  } 
+	if(strawhit.flag().hasAllProperties(addsel_) && (!strawhit.flag().hasAnyProperty(addrej_))){
+	  double zt = zTime(kktrk.fitTraj(),strawhit.pos().Z());
+	  if(fabs(strawhit.correctedTime()-zt) < maxStrawHitDt_) {	    // compare the measured time with the estimate from the fit
+	    const Straw& straw = tracker.getStraw(strawhit.strawId());
+	    auto wline = Mu2eKinKal::hitLine(strawhit,straw,strawresponse);
+	    double psign = wline.direction().Dot(straw.wireDirection());  // wire distance is WRT straw center, in the nominal wire direction
+	    double htime = wline.t0() - (straw.halfLength()-psign*strawhit.wireDist())/wline.speed();
+	    CAHint hint(zt,htime);
+	    // compute PTCA between the trajectory and this straw
+	    PTCA ptca(ftraj, wline, hint, tprec_ );
+	    if(fabs(ptca.doca()) < maxStrawHitDoca_){ // add test of chi TODO
+	      if(addmat_)exings.push_back(std::make_shared<KKSTRAWXING>(ptca,smat,straw.id()));
+	      hits.push_back(std::make_shared<KKSTRAWHIT>(kkbf, ptca, whstate, strawhit, straw, ich, strawresponse));
+	    }
+	  }
 	}
       }
     }
+  }
+
+  template <class KTRAJ> void KKFit<KTRAJ>::addStraws(Tracker const& tracker, StrawMaterial const& smat, KKTRK& kktrk, KKSTRAWXINGCOL& exings) const {
+    // this algorithm assumes the track never hits the same straw twice.  That could be violated by reflecting tracks, and could be addressed
+    // by including the time of the Xing as part of its identity.  That would slow things down so it remains to be proven it's a problem  TODO
+    // build the set of existing straws
+    if(addmat_){
+      auto const& ftraj = kktrk.fitTraj();
+      // pre-compute some tracker info if needed
+      if(needstrackerinfo_)fillTrackerInfo(tracker);
+      std::set<StrawId> oldstraws;
+      for(auto const& strawxing : kktrk.strawXings())oldstraws.insert(strawxing->strawId());
+      for(auto const& strawxing : exings)oldstraws.insert(strawxing->strawId());
+      // test for the track going through a panel.  Start with planes
+      for(auto const& plane : tracker.planes()){
+	if(tracker.planeExists(plane.id())) {
+	  double plz = plane.origin().z();
+	  // find the track position in at this plane's central z.
+	  double zt = zTime(ftraj,plz);
+	  auto plpos = ftraj.position3(zt);
+	  // rough check on the point radius
+	  double rho = plpos.Rho();
+	  if(rho > rmin_ && rho < rmax_){
+	    // loop over panels in this plane
+	    for(auto panel_p : plane.panels()){
+	      auto const& panel = *panel_p;
+	      // linearly correct position for the track direction due to difference in panel-plane Z position
+	      auto tdir = ftraj.direction(zt);
+	      double dz = panel.origin().z()-plz;
+	      auto papos = plpos + (dz/tdir.Z())*tdir;
+	      // convert this position into panel coordinates
+	      CLHEP::Hep3Vector cpos(papos.X(),papos.Y(),papos.Z()); // clumsy translation
+	      auto pposv = panel.dsToPanel()*cpos;
+	      // translate the y position into a rough straw number
+	      int istraw = static_cast<int>(rint( (pposv.y()-ymin_)*spitch_));
+	      // require this be within the (integral) straw buffer
+	      if(istraw >= -sbuff_ && istraw < static_cast<int>(panel.nStraws()) + sbuff_ ){
+		unsigned istrmin = static_cast<unsigned>(std::max(istraw-sbuff_,0));
+		// largest straw is the innermost; use that to test length
+		if(fabs(pposv.x()) < panel.getStraw(istrmin).halfLength() ) {
+		  unsigned istrmax = static_cast<unsigned>(std::min(istraw+sbuff_,static_cast<int>(panel.nStraws())-1));
+		  // loop over straws
+		  for(unsigned istr = istrmin; istr <= istrmax; ++istr){
+		    auto const& straw = panel.getStraw(istr);
+		    // add strawExists test TODO
+		    // make sure we haven't already seen this straw
+		    if(oldstraws.find(straw.id()) == oldstraws.end()){
+		      auto p0 = straw.wireEnd(StrawEnd::cal);
+		      auto p1 = straw.wireEnd(StrawEnd::hv);
+		      KinKal::VEC3 vp0(p0.x(),p0.y(),p0.z());
+		      KinKal::VEC3 vp1(p1.x(),p1.y(),p1.z());
+		      KinKal::VEC3 smid = 0.5*(vp0+vp1);
+		      KinKal::Line wline(vp0,vp1,zt,CLHEP::c_light); // time is irrelevant: use speed of light as sprop
+		      CAHint hint(zt,zt);
+		      // compute PTCA between the trajectory and this straw
+		      PTCA ptca(ftraj, wline, hint, tprec_ );
+		      double du = (ptca.sensorPoca().Vect()-smid).R(); 
+		      if(fabs(ptca.doca()) < maxStrawDoca_ && du < straw.halfLength()){ // add test of chi TODO
+			exings.push_back(std::make_shared<KKSTRAWXING>(ptca,smat,straw.id()));
+		      }
+		    } // not existing straw cut
+		  } // straws loop
+		} // straw length cut
+	      } // straw index cut
+	    } // panels loop
+	  } // radius cut
+	} // plane exists cut
+      }  // planes loop
+    } // adding material
+  } // end function
+
+  template <class KTRAJ> void KKFit<KTRAJ>::fillTrackerInfo(Tracker const& tracker) const {
+    // pre-compute some info derived from the tracker
+    double strawradius = tracker.strawOuterRadius();
+    auto const& frontplane = tracker.planes().front();
+    auto const& firstpanel = frontplane.getPanel(0);
+    auto const& innerstraw = firstpanel.getStraw(0);
+    auto const& outerstraw = firstpanel.getStraw(StrawId::_nstraws-1);
+    // compute limits: add some buffer for the finite size of the straw
+    auto DStoP = firstpanel.dsToPanel();
+    auto innerstraw_origin = DStoP*innerstraw.origin();
+    auto outerstraw_origin = DStoP*outerstraw.origin();
+    ymin_ = innerstraw_origin.y();
+    ymax_ = outerstraw_origin.y();
+    umax_ = innerstraw.halfLength() + strawradius; // longest possible straw
+    // plane-level variables: these add some buffer
+    rmin_ = innerstraw_origin.y() - sbuff_*strawradius;
+    rmax_ = outerstraw.wireEnd(StrawEnd::cal).mag() + sbuff_*strawradius;
+    spitch_ = (StrawId::_nstraws-1)/(ymax_-ymin_);
+    needstrackerinfo_= false;
   }
 
   template <class KTRAJ> double KKFit<KTRAJ>::zTime(PKTRAJ const& ptraj, double zpos) const {
@@ -232,7 +334,7 @@ namespace mu2e {
     return TimeRange(tmin,tmax);
   }
 
-   template <class KTRAJ> KalSeed KKFit<KTRAJ>::createSeed(KKTRK const& kktrk,HPtr const& hptr, std::vector<float> const& zsave, bool savefull) const {
+  template <class KTRAJ> KalSeed KKFit<KTRAJ>::createSeed(KKTRK const& kktrk,HPtr const& hptr, std::vector<float> const& zsave, bool savefull) const {
     TrkFitFlag fflag(hptr->status());
     if(kktrk.fitStatus().usable()) fflag.merge(TrkFitFlag::kalmanOK);
     if(kktrk.fitStatus().status_ == Status::converged) fflag.merge(TrkFitFlag::kalmanConverged);
