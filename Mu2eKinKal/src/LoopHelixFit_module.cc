@@ -113,7 +113,7 @@ namespace mu2e {
       fhicl::Sequence<std::string> helixFlags { Name("HelixFlags"), Comment("Flags required to be present to convert a helix seed to a KinKal track") };
       fhicl::Atom<int> printLevel { Name("PrintLevel"), Comment("Diagnostic printout Level"), 0 };
       fhicl::Sequence<float> seederrors { Name("SeedErrors"), Comment("Initial value of seed parameter errors (rms, various units)") };
-      fhicl::Atom<bool> addHits { Name("addHits"), Comment("Add hits after initial fit"),false };
+      fhicl::Atom<bool> extend { Name("Extend"), Comment("Extend fit with hits and materials found after initial fit"),false };
       fhicl::Atom<bool> saveAll { Name("SaveAllFits"), Comment("Save all fits, whether they suceed or not"),false };
       fhicl::Atom<bool> saveFull { Name("SaveFullFit"), Comment("Save all helix segments associated with the fit"), false};
       fhicl::Sequence<float> zsave { Name("ZSavePositions"), Comment("Z positions to sample and save the fit result helices"), std::vector<float>()};
@@ -143,7 +143,7 @@ namespace mu2e {
     art::ProductToken<ComboHitCollection> chcol_T_;
     art::ProductToken<StrawHitFlagCollection> shfcol_T_;
     TrkFitFlag goodhelix_;
-    bool addhits_, saveall_, savefull_;
+    bool extend_, saveall_, savefull_;
     std::vector<float> zsave_;
     ProditionsHandle<StrawResponse> strawResponse_h_;
     ProditionsHandle<Tracker> alignedTracker_h_;
@@ -162,7 +162,7 @@ namespace mu2e {
     chcol_T_(consumes<ComboHitCollection>(settings().modSettings().comboHitCollection())),
     shfcol_T_(mayConsume<StrawHitFlagCollection>(settings().modSettings().strawHitFlagCollection())),
     goodhelix_(settings().modSettings().helixFlags()),
-    addhits_(settings().modSettings().addHits()),
+    extend_(settings().modSettings().extend()),
     saveall_(settings().modSettings().saveAll()),
     savefull_(settings().modSettings().saveFull()),
     zsave_(settings().modSettings().zsave()),
@@ -265,11 +265,12 @@ namespace mu2e {
 	    // Check fit for physical consistency; fit can succeed but the result can have the wrong charge
 	    auto const& midtraj = kktrk->fitTraj().nearestPiece(kktrk->fitTraj().range().mid());
 	    save = midtraj.Q()*midtraj.rad() > 0;
-	    if(save && addhits_) {
+	    if(save && extend_) {
 	      KKSTRAWHITCOL addstrawhits;
 	      KKCALOHITCOL addcalohits;
 	      KKSTRAWXINGCOL addstrawxings;
-	      kkfit_.addStrawHits(*tracker, *strawresponse, *kkbf_, kkmat_.strawMaterial(), *kktrk, chcol, strawHitIdxs, addstrawhits, addstrawxings );
+	      kkfit_.addStrawHits(*tracker, *strawresponse, *kkbf_, kkmat_.strawMaterial(), *kktrk, chcol, addstrawhits, addstrawxings );
+	      if(kkfit_.addMaterial())kkfit_.addStraws(*tracker, kkmat_.strawMaterial(), *kktrk, addstrawxings);
 	      kktrk->extendTrack(exconfig_,addstrawhits,addcalohits,addstrawxings);
 	      save &= kktrk->fitStatus().usable();
 	      if(print_ > 1){
