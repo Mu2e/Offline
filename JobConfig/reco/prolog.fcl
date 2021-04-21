@@ -100,7 +100,8 @@ Reconstruction : {
 	HelixSeedCollections : [ "MHDeM" ]
         ComboHitCollection : "makeSH"
         StrawHitFlagCollection : "FlagBkgHitss:StrawHits"
-        PrintLevel : 0
+	CaloClusterCollection : "CaloClusterMaker"
+	PrintLevel : 0
       }
     }
     KKSDeP : {
@@ -110,6 +111,7 @@ Reconstruction : {
 	HelixSeedCollections : [ "MHDeP" ]
         ComboHitCollection : "makeSH"
         StrawHitFlagCollection : "FlagBkgHitss:StrawHits"
+	CaloClusterCollection : "CaloClusterMaker"
         PrintLevel : 0
       }
     }
