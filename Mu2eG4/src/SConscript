@@ -191,13 +191,13 @@ if g4vg != 'off':
     G4GLOBALIBS.append('libvecgeom')
     G4GLOBALIBS.append('libVc')
 
+if g4_version > '4106':
+    G4GLOBALIBS.append('libG4ptl')
+
 if g4_version < '4095':
     G4LIBS = G4GRANULARLIBS
 else:
     G4LIBS = G4GLOBALIBS
-
-if g4_version > '4106':
-    G4GLOBALIBS.append('libG4ptl')
 
 # Link libraries needed to build G4 with OPENGL and possibly Qt
 #OPENGL_LIBS = [ 'GLU', 'GL' ]
