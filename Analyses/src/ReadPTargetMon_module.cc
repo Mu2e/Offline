@@ -114,7 +114,6 @@ namespace mu2e {
     // Ask the event to give us a "handle" to the requested hits.
     art::Handle<StepPointMCCollection> hits;
     event.getByLabel(_g4ModuleLabel,_ptmStepPoints,hits);
-    cout << "Found " << hits->size() << " hits." << endl;
 
     art::Handle<SimParticleCollection> simParticles;
     event.getByLabel(_g4ModuleLabel, simParticles);
@@ -174,7 +173,6 @@ namespace mu2e {
       }
 
     } // end loop over hits.
-    cout << validCount << " hits were valid." << endl;
 
   } // ReadPTargetMon::analyze
 
