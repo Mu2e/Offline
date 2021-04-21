@@ -17,6 +17,7 @@
 #include "Mu2eG4Helper/inc/Mu2eG4Helper.hh"
 #include "Mu2eG4/inc/findMaterialOrThrow.hh"
 #include "Mu2eG4/inc/finishNesting.hh"
+#include "Mu2eG4/inc/checkForOverlaps.hh"
 
 // G4 inludes
 #include "G4Material.hh"
@@ -298,9 +299,9 @@ namespace mu2e {
     double width = _config.getDouble("pTargetMon_width");
     double length = _config.getDouble("pTargetMon_length");
     std::vector<double> halfDims;
-    halfDims.push_back(width/2.);
-    halfDims.push_back(height/2.);
-    halfDims.push_back(length/2.);
+    halfDims.push_back(0.1+width/2.);
+    halfDims.push_back(0.1+height/2.);
+    halfDims.push_back(0.1+length/2.);
 
     G4double xPosInMu2e = _config.getDouble("pTargetMon_positionX");
     G4double yPosInMu2e = _config.getDouble("pTargetMon_positionY");
@@ -329,6 +330,7 @@ namespace mu2e {
                 0,
                 G4Colour::Green(),
                 "PTM");
+    checkForOverlaps( pTargetMonContainer.physical, _config, true);
 
     double gasLength = _config.getDouble("pTargetMon_gasLength");
     double outerPlateLength = _config.getDouble("pTargetMon_outerPlateLength");
