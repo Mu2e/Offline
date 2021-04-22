@@ -54,7 +54,7 @@ physics :
 	@table::TrkHitReco.producers
 	@table::Tracking.TrkTrigger.producers
 	@table::CalPatRec.producers
-	@table::CaloClusterFast.producers
+	@table::CaloClusterTrigger.producers
 
 	TTKSFDeM : @local::TTKSF
 	TTKSFDeP : @local::TTKSF

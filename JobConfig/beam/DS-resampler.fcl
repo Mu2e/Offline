@@ -27,12 +27,17 @@ physics.filters.flashResample: {
    wrapFiles: true
    mu2e: {
       products: {
-	 genParticleMixer: { mixingMap: [ [ "generate", "" ] ] }
-	 simParticleMixer: { mixingMap: [ [ "muonBeamFilter", "" ] ] }
-	 stepPointMCMixer: { mixingMap: [ 
-	       [ "muonBeamFilter:virtualdetector", ":" ],
-	       [ "muonBeamFilter:mubeam", ":" ] 
-	       ] }
+         genParticleMixer: { mixingMap: [ [ "generate", "" ] ] }
+         simParticleMixer: { mixingMap: [ [ "muonBeamFilter", "" ] ] }
+         stepPointMCMixer: { mixingMap: [
+               [ "muonBeamFilter:virtualdetector", ":" ],
+               [ "muonBeamFilter:mubeam", ":" ]
+            ] }
+
+         volumeInfoMixer: {
+            srInput: "compressPVmuonBeam"
+            evtOutInstanceName: "eventlevel"
+         }
       }
    }
 }
@@ -42,7 +47,14 @@ physics.producers.g4run.inputs: {
    primaryType: "StepPoints"
    primaryTag: "flashResample:mubeam"
    inputMCTrajectories: ""
-   inputPhysVolumeMultiInfo: "" # earlier info dropped
+
+   simStageOverride: 1
+   inputPhysVolumeMultiInfo: "flashResample"
+   updateEventLevelVolumeInfos: {
+      input: "flashResample:eventlevel"
+      outInstance: "eventlevel"
+   }
+
 }
 physics.producers.g4run.SDConfig.preSimulatedHits:  ["flashResample:virtualdetector"]
 
@@ -53,7 +65,8 @@ physics.producers.stoppedMuonFinder: {
    module_type: "StoppedParticlesFinder"
    particleInput: "g4run"
    particleTypes: [ 13 ]
-   physVolInfoInput: "g4run"
+   physVolInfoInput: "g4run:eventlevel"
+   useEventLevelVolumeInfo: true
    stoppingMaterial: "StoppingTarget_Al"
    verbosityLevel: 1
 }
@@ -107,7 +120,7 @@ physics.filters.detectorFilter: {
 }
 
 // Add genCounter and flashResample to the trigger path.
-physics.detPath: [ "genCounter", "flashResample", 
+physics.detPath: [ "genCounter", "flashResample",
    //need to remove compressPVDetector//  @sequence::physics.detPath
    "g4run",
    "g4consistent",
@@ -143,14 +156,17 @@ services.GeometryService.simulatedDetector.tool_type : "Mu2e"
 services.GeometryService.inputFile : "Mu2eG4/geom/geom_common_phase1.txt"
 
 physics.producers.g4run.Mu2eG4CommonCut:{
-   // Kill stuck e+/e-	
+   // Kill stuck e+/e-
    type: intersection
-   pars: 
+   pars:
    [
-   {type: intersection pars: [ { type: kineticEnergy cut: 1.0 }, { type: pdgId pars: [ 11, -11] }]},
-   {type: inVolume pars: [ TS2Vacuum, TS3Vacuum, TS4Vacuum, TS5Vacuum, DS2Vacuum, HallAir ]}
+      {type: intersection pars: [ { type: kineticEnergy cut: 1.0 }, { type: pdgId pars: [ 11, -11] }]},
+      {type: inVolume pars: [ TS2Vacuum, TS3Vacuum, TS4Vacuum, TS5Vacuum, DS2Vacuum, HallAir ]}
    ]
 }
 
 // Test:
-// physics.filters.flashResample.fileNames: [ "/pnfs/mu2e/tape/phy-sim/sim/mu2e/beam-g4s1-mubeam/g4-10-5/art/46/9c/sim.mu2e.beam-g4s1-mubeam.g4-10-5.002701_00002991.art" ]
+//physics.filters.flashResample.fileNames: [ "/pnfs/mu2e/tape/usr-sim/sim/gandr/PS-mubeam/0326a/art/c4/22/sim.gandr.PS-mubeam.0326a.000001_00000000.art" ]
+
+// Calo stuff is broken, get it out of the path to test PhysicalVolumeInfo handling by other modules
+//physics.detPath: [ "genCounter", "flashResample", "g4run", "g4consistent", "stoppedMuonFinder", "stoppedMuonDaughters", "flashPrefilter" ]

@@ -27,9 +27,9 @@ physics :
       module_type               : EventDisplay
       g4ModuleLabel             : "g4run"
       physicalVolumesMultiLabel : "compressPV"
-#      timeOffsets               : { inputs : [ ] }  #if the art file has no time maps
+      timeOffsets               : { inputs : [ ] }  #if the art file has no time maps
 #      timeOffsets               : { inputs : [ @sequence::CommonMC.TimeMaps ] }
-      timeOffsets               : { inputs : [ @sequence::RecoCompression.TimeMaps ] }
+#      timeOffsets               : { inputs : [ @sequence::RecoCompression.TimeMaps ] }
     }
   }
 

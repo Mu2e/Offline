@@ -15,10 +15,10 @@ namespace mu2e {
   struct TrkFitFlagDetail {
     // I need 32 bits for this class
     typedef unsigned mask_type;
-    // The first 16 describe various success conditions, the last 16 various failure modes
     enum bit_type {hitsOK=0,circleOK,phizOK,helixOK,seedOK,kalmanOK,circleInit,phizInit,
     circleConverged,phizConverged,helixConverged,seedConverged,kalmanConverged,
-    KSF=16, KFF, TPRHelix, CPRHelix, Straight};
+    BFCorr, MatCorr,
+    KSF=16, KFF, TPRHelix, CPRHelix, Straight, KKLoopHelix};
     // functions needed for the BitMap template
     static std::string const& typeName();
     static std::map<std::string,mask_type> const& bitNames();

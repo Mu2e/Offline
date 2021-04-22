@@ -291,8 +291,7 @@ namespace mu2e
 	double           vflt  = seeddef.particle().beta(mom)*CLHEP::c_light;
 	double           helt0 = hseed.t0().t0();
 
-	//	KalSeed kf(_tpart,_fdir, hseed.t0(), flt0, seedok);
-	KalSeed kf(tpart,_fdir, hseed.t0(), flt0, hseed.status());
+	KalSeed kf(PDGCode::type(tpart.particleType()),_fdir, hseed.status(), flt0 );
 	auto hsH = event.getValidHandle(_hsToken);
 	kf._helix = art::Ptr<HelixSeed>(hsH,iseed);
 	// extract the hits from the rep and put the hitseeds into the KalSeed
@@ -318,8 +317,7 @@ namespace mu2e
 	if(htraj != 0){
 	  KalSegment kseg;
 	  // sample the momentum at this point
-	  BbrVectorErr momerr;// = krep->momentumErr(krep->flt0());
-	  TrkUtilities::fillSegment(*htraj,momerr,0.0,kseg);
+	  TrkUtilities::fillSegment(*htraj,0.0,0.0,hseed.t0(),_tpart.mass(),(int)_tpart.charge(),_kfit.bField(),kseg);
 	  kf._segments.push_back(kseg);
 	} else {
 	  throw cet::exception("RECO")<<"mu2e::KalSeedFit: Can't extract helix traj from seed fit" << endl;
@@ -354,9 +352,9 @@ namespace mu2e
 	  // create a KalSeed object from this fit, recording the particle and fit direction
 	  //	  KalSeed kseed(_tpart,_fdir,_result.krep->t0(),_result.krep->flt0(),seedok);
 
-	  KalSeed kseed(_result.krep->particleType(),_fdir,_result.krep->t0(),_result.krep->flt0(),kf.status());
+	  KalSeed kseed(PDGCode::type(_result.krep->particleType().particleType()),_fdir,kf.status(), _result.krep->flt0());
 	  kseed._status.merge(_ksf);
-
+	  if(_result.krep->fitStatus().success())kseed._status.merge(TrkFitFlag::kalmanOK);
 	  // add CaloCluster if present
 	  kseed._chit._cluster = hseed.caloCluster();
 	  // fill ptr to the helix seed
@@ -378,17 +376,19 @@ namespace mu2e
 	    KalSegment kseg;
 	    // sample the momentum at this point
 	    BbrVectorErr momerr = _result.krep->momentumErr(_result.krep->flt0());
-	    TrkUtilities::fillSegment(*htraj,momerr,locflt-_result.krep->flt0(),kseg);
+	    TrkUtilities::fillSegment(*htraj,locflt,_result.krep->flt0(),_result.krep->t0(),_tpart.mass(),(int)_tpart.charge(),_kfit.bField(),kseg);
 	    // extend the segment
 	    double upflt(0.0), downflt(0.0);
 	    TrkHelixUtils::findZFltlen(*htraj,_upz,upflt);
 	    TrkHelixUtils::findZFltlen(*htraj,_downz,downflt);
+	    double tup = kseg.fltToTime(upflt); 
+	    double tdown = kseg.fltToTime(downflt); 
 	    if(_fdir == TrkFitDirection::downstream){
-	      kseg._fmin = upflt;
-	      kseg._fmax = downflt;
+	      kseg._tmin = tup;
+	      kseg._tmax = tdown;
 	    } else {
-	      kseg._fmax = upflt;
-	      kseg._fmin = downflt;
+	      kseg._tmax = tup;
+	      kseg._tmin = tdown;
 	    }
 	    kseed._segments.push_back(kseg);
 	    // push this seed into the collection

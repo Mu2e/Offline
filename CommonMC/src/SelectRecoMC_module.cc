@@ -58,18 +58,18 @@ namespace mu2e {
       fhicl::Atom<bool> saveEnergySteps         { Name("SaveEnergySteps"),	          Comment("Save all StepPoints that contributed energy to a StrawDigi"), false};
       fhicl::Atom<bool> saveUnused              { Name("SaveUnusedDigiMCs"),	          Comment("Save StrawDigiMCs from particles used in any fit"), true};
       fhicl::Atom<bool> saveAllUnused           { Name("SaveAllUnusedDigiMCs"),	          Comment("Save all StrawDigiMCs from particles used in any fit"), false};
-      fhicl::Atom<art::InputTag> PP             { Name("PrimaryParticle"),	          Comment("PrimaryParticle producer")};
-      fhicl::Atom<art::InputTag> CCC            { Name("CaloClusterCollection"),          Comment("CaloClusterCollection producer")};
-      fhicl::Atom<art::InputTag> CrvCCC         { Name("CrvCoincidenceClusterCollection"),Comment("CrvCoincidenceClusterCollection producer")};
-      fhicl::Atom<art::InputTag> SDC            { Name("StrawDigiCollection"),	          Comment("StrawDigiCollection producer")};
-      fhicl::Atom<art::InputTag> SHFC           { Name("StrawHitFlagCollection"),         Comment("StrawHitFlagCollection producer")};
+      fhicl::Atom<art::InputTag> PP             { Name("PrimaryParticle"),	          Comment("PrimaryParticle")};
+      fhicl::Atom<art::InputTag> CCC            { Name("CaloClusterCollection"),          Comment("CaloClusterCollection")};
+      fhicl::Atom<art::InputTag> CrvCCC         { Name("CrvCoincidenceClusterCollection"),Comment("CrvCoincidenceClusterCollection")};
+      fhicl::Atom<art::InputTag> SDC            { Name("StrawDigiCollection"),	          Comment("StrawDigiCollection")};
+      fhicl::Atom<art::InputTag> SHFC           { Name("StrawHitFlagCollection"),         Comment("StrawHitFlagCollection")};
       fhicl::Atom<art::InputTag> CHC            { Name("ComboHitCollection"),	          Comment("ComboHitCollection for the original StrawHits (not Panel hits)")};
-      fhicl::Atom<art::InputTag> CDC            { Name("CaloDigiCollection"),	          Comment("CaloDigiCollection producer")};
-      fhicl::Atom<art::InputTag> SDMCC          { Name("StrawDigiMCCollection"),          Comment("StrawDigiMCCollection producer")};
-      fhicl::Atom<art::InputTag> CRVDC          { Name("CrvDigiCollection"),	          Comment("CrvDigiCollection producer")};
-      fhicl::Atom<art::InputTag> CRVDMCC        { Name("CrvDigiMCCollection"),	          Comment("CrvDigiMCCollection producer")};
-      fhicl::Sequence<std::string> KFFInstances { Name("KFFInstances"),	                  Comment("KalFinalFit Module Instances")};
-      fhicl::Sequence<std::string> MHInstances  { Name("MHInstances"),	                  Comment("MergeHelices Module Instances")};
+      fhicl::Atom<art::InputTag> CDC            { Name("CaloDigiCollection"),	          Comment("CaloDigiCollection")};
+      fhicl::Atom<art::InputTag> SDMCC          { Name("StrawDigiMCCollection"),          Comment("StrawDigiMCCollection")};
+      fhicl::Atom<art::InputTag> CRVDC          { Name("CrvDigiCollection"),	          Comment("CrvDigiCollection")};
+      fhicl::Atom<art::InputTag> CRVDMCC        { Name("CrvDigiMCCollection"),	          Comment("CrvDigiMCCollection")};
+      fhicl::Sequence<std::string> KalSeeds     { Name("KalSeedCollections"),	          Comment("KalSeedCollections")};
+      fhicl::Sequence<std::string> HelixSeeds   { Name("HelixSeedCollections"),	          Comment("HelixSeedCollections")};
       fhicl::Atom<art::InputTag> VDSPC          { Name("VDSPCollection"),	          Comment("Virtual Detector StepPointMC collection")};
       fhicl::Sequence<art::InputTag> SPTO       { Name("TimeOffsets"),	                  Comment("Sim Particle Time Offset Maps")};
       fhicl::Atom<double> CCME                  { Name("CaloClusterMinE"),                Comment("Minimum energy CaloCluster to save digis (MeV)")};
@@ -94,7 +94,7 @@ namespace mu2e {
    int _debug;
    bool _saveallenergy, _saveunused, _saveallunused;
    art::InputTag _pp, _ccc, _crvccc, _sdc, _shfc, _chc, _cdc, _sdmcc, _crvdc, _crvdmcc, _vdspc;
-   std::vector<std::string> _kff, _mh;
+   std::vector<std::string> _kscs, _hscs;
    SimParticleTimeOffset _toff;
    double _ccme;
    // cache
@@ -119,8 +119,8 @@ namespace mu2e {
     _crvdc(config().CRVDC()),
     _crvdmcc(config().CRVDMCC()),
     _vdspc(config().VDSPC()),
-    _kff(config().KFFInstances()),
-    _mh(config().MHInstances()),
+    _kscs(config().KalSeeds()),
+    _hscs(config().HelixSeeds()),
     _toff(config().SPTO()),
     _ccme(config().CCME())
   {
@@ -152,10 +152,10 @@ namespace mu2e {
     if (_debug > 0)
     {
        std::cout << "Using KalSeed collections from ";
-       for (auto const& kff : _kff) std::cout << kff << " " << std::endl;
+       for (auto const& kff : _kscs) std::cout << kff << " " << std::endl;
       
-       std::cout << "Using MergeHelices collections from ";
-       for (auto const& mh : _mh) std::cout << mh << " " << std::endl;
+       std::cout << "Using HelixSeed collections from ";
+       for (auto const& hsc : _hscs) std::cout << hsc << " " << std::endl;
     }
   }
 
@@ -346,16 +346,16 @@ namespace mu2e {
     // add the MC primary SimParticles
     for(auto const& spp : pp.primarySimParticles()) simps.insert(spp);
     // loop over input KalFinalFit products
-    for (auto const& kff : _kff) {
+    for (auto const& ksc : _kscs) {
     // get all products from this
-      art::ModuleLabelSelector kffsel(kff);
+      art::ModuleLabelSelector kscsel(ksc);
       std::vector< art::Handle<KalSeedCollection> > seedhs;
-      event.getMany<KalSeedCollection>(kffsel, seedhs);
-      if(_debug > 1) std::cout << "Found " << seedhs.size() << " collections from module " << kff << std::endl;
+      event.getMany<KalSeedCollection>(kscsel, seedhs);
+      if(_debug > 1) std::cout << "Found " << seedhs.size() << " collections from module " << ksc << std::endl;
       // loop over the KalSeeds and the hits inside them
       for(auto const& seedh : seedhs) {
 	auto const& seedc = *seedh;
-	if(_debug > 1) std::cout << "Found " << seedc.size() << " seeds from collection " << kff << std::endl;
+	if(_debug > 1) std::cout << "Found " << seedc.size() << " seeds from collection " << ksc << std::endl;
 	for(auto iseed=seedc.begin(); iseed!=seedc.end(); ++iseed){
 	  auto const& seed = *iseed;
 	  // find the associated SimParticles for this KalSeed.  This ranks them by their hit count
@@ -389,16 +389,16 @@ namespace mu2e {
       }
     }
     // get straw indices from all helices too
-    for (auto const& mh : _mh) {
+    for (auto const& hsc : _hscs) {
     // get all products from this
-      art::ModuleLabelSelector mhsel(mh);
+      art::ModuleLabelSelector hscsel(hsc);
       std::vector< art::Handle<HelixSeedCollection> > seedhs;
-      event.getMany<HelixSeedCollection>(mhsel, seedhs);
-      if(_debug > 1) std::cout << "Found " << seedhs.size() << " collections from module " << mh << std::endl;
+      event.getMany<HelixSeedCollection>(hscsel, seedhs);
+      if(_debug > 1) std::cout << "Found " << seedhs.size() << " collections from module " << hsc << std::endl;
       // loop over the HelixSeeds and the hits inside them
       for(auto const& seedh : seedhs) {
 	auto const& seedc = *seedh;
-	if(_debug > 1) std::cout << "Found " << seedc.size() << " seeds from collection " << mh << std::endl;
+	if(_debug > 1) std::cout << "Found " << seedc.size() << " seeds from collection " << hsc << std::endl;
 	for(auto iseed=seedc.begin(); iseed!=seedc.end(); ++iseed){
 	  auto const& seed = *iseed;
 	  // go back to StrawHit indices (== digi indices for reco)

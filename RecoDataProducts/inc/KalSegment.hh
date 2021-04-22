@@ -10,26 +10,58 @@
 #include <Rtypes.h>
 #include "RecoDataProducts/inc/HelixVal.hh"
 #include "DataProducts/inc/XYZVec.hh"
+#include "RecoDataProducts/inc/HitT0.hh"
+#include "KinKal/General/ParticleState.hh"
+#include "KinKal/Trajectory/KinematicLine.hh"
+#include "KinKal/Trajectory/CentralHelix.hh"
+#include "KinKal/Trajectory/LoopHelix.hh"
+#include "CLHEP/Matrix/Vector.h"
 
 namespace mu2e {
   struct KalSegment {
-    KalSegment() : _fmin(0.0), _fmax(-1.0), _dflt(0.0), _mom(-1.0), _momerr(-1.0) {}
-    Float_t fmin() const { return _fmin; } // local helix flight limits
-    Float_t fmax() const { return _fmax; }
-    HelixVal const& helix() const { return _helix; }
-    HelixCov const& covar() const { return _hcov; }
-    Float_t mom() const { return _mom; }
-    Float_t momerr() const { return _momerr; }
-    void mom(float fltlen, XYZVec& momvec) const { helix().direction(fltlen,momvec); momvec *= mom(); } // momentum as a function of local flightlength
-    // translate back and forth to global and local flightlengths
-    float localFlt(float globalflt) const { return globalflt + _dflt; }
-    float globalFlt(float localflt) const { return localflt - _dflt; }
-    Float_t _fmin, _fmax; // local Flight lengths along the helix for which this segment is valid.
-    Float_t _dflt; // difference between local and global flight length
-    HelixVal _helix; // helix valid for this segment
-    HelixCov _hcov; // covariance matrix for this helix
-    Float_t _mom; // scalar momentum of this helix segment
-    Float_t _momerr; // error on the scalar momentum
+    KalSegment() : _tmin(0.0), _tmax(-1.0), _dflt(0.0) {}
+    KalSegment(KinKal::TimeRange const& trange) : _tmin(trange.begin()), _tmax(trange.end()){}
+    // construct from a kinematic trajectory
+    template <class KTRAJ> explicit KalSegment(KTRAJ const& ktraj, double time, double dflt=0.0) :
+      _tmin(ktraj.range().begin()), _tmax(ktraj.range().end()),
+      _bnom(ktraj.bnom()),
+      _pstate(ktraj.stateEstimate(time)) , _dflt(dflt) {}
+    // accessors
+    KinKal::ParticleStateEstimate const& state() const { return _pstate; }
+    // provide a few call-down functions
+    double mom() const { return _pstate.momentum(); }
+    double momerr() const { return sqrt(_pstate.momentumVariance()); }
+    KinKal::VEC3 momentum3() const { return _pstate.momentum3(); }
+    KinKal::VEC3 position3() const { return _pstate.position3(); }
+ //   void mom(float fltlen, XYZVec& momvec) const { helix().direction(fltlen,momvec); momvec *= mom(); } // momentum as a function of local flightlength
+    // convert content to a LoopHelix
+    KinKal::LoopHelix loopHelix() const { return KinKal::LoopHelix(_pstate, KKbnom(),KinKal::TimeRange(tmin(),tmax())); }
+    // convert to a CentralHelix
+    KinKal::CentralHelix centralHelix() const { return KinKal::CentralHelix(_pstate, KKbnom(),KinKal::TimeRange(tmin(),tmax())); }
+    KinKal::KinematicLine kinematicLine() const { return KinKal::KinematicLine(_pstate, KKbnom(),KinKal::TimeRange(tmin(),tmax())); }
+    Float_t tmin() const { return _tmin; }
+    Float_t tmax() const { return _tmax; }
+    auto tref() const { return _pstate.time(); }
+    // t0 = time (and error) for when particle goes through z=0; 
+    HitT0 t0() const;
+    XYZVec const& bnom() const { return _bnom; }
+    KinKal::VEC3 KKbnom() const { return KinKal::VEC3(_bnom); }
+    Float_t _tmin, _tmax; // time range
+// main payload is the particle state estimate.  this includes all the kinematic information to
+// interpret as anything else.  BField is needed to interpret geometrically
+    XYZVec _bnom; // Bfield associated with this segment, needed to reconstitute helix
+    KinKal::ParticleStateEstimate _pstate; // particle state at this sample
+ // the following are deprecated legacy functions specific to the BTrk fit and will go away eventually
+    HelixVal helix() const;
+    HelixCov covar() const;
+    void mom(double flt, XYZVec& momvec) const;
+    double fmin() const { return timeToFlt(_tmin); } // local 3D flight range
+    double fmax() const { return timeToFlt(_tmax); }
+    Float_t _dflt;    
+    double localFlt(float globalflt) const { return globalflt + _dflt; }
+    double globalFlt(float localflt) const { return localflt - _dflt; }
+    double fltToTime(double flt) const; // local flight
+    double timeToFlt(double time) const; // local flight
   };
 }
 #endif

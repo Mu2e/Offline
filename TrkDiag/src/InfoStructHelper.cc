@@ -45,7 +45,7 @@ namespace mu2e {
     else
       trkinfo._alg = -1;
 
-    trkinfo._pdg = kseed.particle().particleType();
+    trkinfo._pdg = kseed.particle();
     trkinfo._t0 = kseed.t0().t0();
     trkinfo._t0err = kseed.t0().t0Err();
 
@@ -53,7 +53,7 @@ namespace mu2e {
 
     trkinfo._chisq = kseed.chisquared();
     trkinfo._fitcon = kseed.fitConsistency();
-    trkinfo._nbend = kseed.nBend();
+    trkinfo._nseg = kseed.nTrajSegments();
 
     for(std::vector<TrkStrawHitSeed>::const_iterator ihit=kseed.hits().begin(); ihit != kseed.hits().end(); ++ihit) {
       if(ihit->flag().hasAllProperties(StrawHitFlag::active)) {
@@ -274,8 +274,6 @@ namespace mu2e {
   void InfoStructHelper::fillHelixInfo(const KalSeed& kseed, HelixInfo& hinfo) {
     // navigate down to the HelixSeed
     auto hhh = kseed.helix();
-    if(hhh.isNull() && kseed.kalSeed().isNonnull())
-      hhh = kseed.kalSeed()->helix();
     if(hhh.isNonnull()){
       // count hits, active and not
       for(size_t ihit=0;ihit < hhh->hits().size(); ihit++){

@@ -232,11 +232,11 @@ void art::StrawAndCaloDigisFromFragments::analyze_tracker_(
 
     if (diagLevel_ > 1) {
 
-      std::cout << "timestamp: " << static_cast<int>(hdr.GetTimestamp().GetTimestamp(true))
+      std::cout << "timestamp: " << static_cast<int>(hdr.GetEventWindowTag().GetEventWindowTag(true))
                 << std::endl;
       std::cout << "hdr->SubsystemID: " << static_cast<int>(hdr.GetSubsystemID()) << std::endl;
       std::cout << "dtcID: " << static_cast<int>(hdr.GetID()) << std::endl;
-      std::cout << "rocID: " << static_cast<int>(hdr.GetRingID()) << std::endl;
+      std::cout << "rocID: " << static_cast<int>(hdr.GetLinkID()) << std::endl;
       std::cout << "packetCount: " << static_cast<int>(hdr.GetPacketCount()) << std::endl;
       std::cout << "EVB mode: " << static_cast<int>(hdr.GetEVBMode()) << std::endl;
 
@@ -306,13 +306,13 @@ void art::StrawAndCaloDigisFromFragments::analyze_tracker_(
           }
           std::cout << std::endl;
 
-          std::cout << "LOOP: " << hdr.GetTimestamp().GetTimestamp(true) << " " << curBlockIdx
+          std::cout << "LOOP: " << hdr.GetEventWindowTag().GetEventWindowTag(true) << " " << curBlockIdx
                     << std::endl;
 
           // Text format: timestamp strawidx tdc0 tdc1 nsamples sample0-11
           // Example: 1 1113 36978 36829 12 1423 1390 1411 1354 2373 2392 2342 2254 1909 1611 1525
           // 1438
-          std::cout << "GREPMETRK: " << hdr.GetTimestamp().GetTimestamp(true) << " ";
+          std::cout << "GREPMETRK: " << hdr.GetEventWindowTag().GetEventWindowTag(true) << " ";
           std::cout << sid.asUint16() << " ";
           std::cout << tdc[0] << " ";
           std::cout << tdc[1] << " ";
@@ -390,10 +390,10 @@ void art::StrawAndCaloDigisFromFragments::analyze_calorimeter_(
 
     if (diagLevel_ > 1) {
 
-      std::cout << "timestamp: " << static_cast<int>(hdr.GetTimestamp().GetTimestamp(true)) << std::endl;
+      std::cout << "timestamp: " << static_cast<int>(hdr.GetEventWindowTag().GetEventWindowTag(true)) << std::endl;
       std::cout << "hdr->SubsystemID: " << static_cast<int>(hdr.GetSubsystemID()) << std::endl;
       std::cout << "dtcID: " << static_cast<int>(hdr.GetID()) << std::endl;
-      std::cout << "rocID: " << static_cast<int>(hdr.GetRingID()) << std::endl;
+      std::cout << "rocID: " << static_cast<int>(hdr.GetLinkID()) << std::endl;
       std::cout << "packetCount: " << static_cast<int>(hdr.GetPacketCount()) << std::endl;
       std::cout << "EVB mode: " << static_cast<int>(hdr.GetEVBMode()) << std::endl;
 
@@ -488,7 +488,7 @@ void art::StrawAndCaloDigisFromFragments::analyze_calorimeter_(
 
           // Text format: timestamp crystalID roID time nsamples samples...
           // Example: 1 201 402 660 18 0 0 0 0 1 17 51 81 91 83 68 60 58 52 42 33 23 16
-          std::cout << "GREPMECAL: " << hdr.GetTimestamp().GetTimestamp(true) << " ";
+          std::cout << "GREPMECAL: " << hdr.GetEventWindowTag().GetEventWindowTag(true) << " ";
           std::cout << crystalID << " ";
           std::cout << apdID << " ";
           std::cout << hits[hitIdx].first.Time << " ";

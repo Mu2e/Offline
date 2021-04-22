@@ -1,15 +1,45 @@
 #
 # run tracker and cal reco from a file of digis
 #
-
-# the main path defined includes filtering and compression
+#include "Mu2eKinKal/fcl/prolog.fcl"
 #include "JobConfig/reco/Reco.fcl"
 
+# drop trigger products from input; these are static
+source.inputCommands: ["keep *",
+  "drop mu2e::KalSeeds_*_*_*",
+  "drop mu2e::TriggerInfo_*_*_*",
+  "drop mu2e::HelixSeeds_*_*_*",
+  "drop mu2e::TimeClusters_*_*_*",
+  "drop art::TriggerResults_*_*_*"
+]
+# add KinKal fits
+#
+physics.producers : {
+  @table::physics.producers
+  @table::Mu2eKinKal.producers
+}
+#
 # only run DeM and DeP
-physics.producers.SelectRecoMC.KFFInstances : [ "KFFDeM", "KFFDeP"]
-physics.producers.SelectRecoMC.MHInstances  : ["MHDeM", "MHDeP" ]
+#
+physics.RecoPath : [
+  @sequence::Reconstruction.CaloReco,
+  @sequence::Reconstruction.TrkReco,
+  @sequence::Reconstruction.CrvReco,
+  @sequence::Reconstruction.DeReco,
+  @sequence::Reconstruction.MCReco,
+  RecoFilter
+]
+#
+physics.producers.SelectRecoMC.KalSeedCollections : [ "KFFDeM", "KFFDeP", "KKSDeM", "KKSDeP"]
+physics.producers.SelectRecoMC.HelixSeedCollections  : ["MHDeM", "MHDeP" ]
 physics.filters.RecoFilter.TrkTags : [ "KFFDeM", "KFFDeP"]
 physics.filters.RecoFilter.MomentumCutoff : [ 60.0, 60.0 ]
+physics.producers.KKDeMSeedFit.ModuleSettings.HelixSeedCollections : [ "MHDeM" ]
+physics.producers.KKDeMSeedFit.ModuleSettings.ComboHitCollection : "makeSH"
+physics.producers.KKDeMSeedFit.ModuleSettings.StrawHitFlagCollection : "FlagBkgHits:StrawHits"
+physics.producers.KKDePSeedFit.ModuleSettings.HelixSeedCollections : [ "MHDeP" ]
+physics.producers.KKDePSeedFit.ModuleSettings.ComboHitCollection : "makeSH"
+physics.producers.KKDePSeedFit.ModuleSettings.StrawHitFlagCollection : "FlagBkgHits:StrawHits"
 
 outputs: {
    Output: {
@@ -28,6 +58,7 @@ outputs: {
          "keep mu2e::CaloClusters_CaloClusterFast_*_*",
          "keep mu2e::KalSeeds_KFF*_*_*",
          "keep mu2e::KalSeeds_KSF*_*_*",
+         "keep mu2e::KalSeeds_KK*_*_*",
          "keep mu2e::HelixSeeds_MH*_*_*",
          "keep mu2e::TimeClusters_MH*_*_*",
          "keep mu2e::CaloClusters_CaloClusterMaker_*_*",

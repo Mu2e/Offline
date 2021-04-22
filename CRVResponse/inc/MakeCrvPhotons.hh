@@ -107,7 +107,6 @@ class MakeCrvPhotons
                                       double beta, double charge,
                                       double visibleEnergyDeposited,
                                       double trueStepLength,
-                                      double scintillationYieldAdjustment=0,  //allows small random variations of the scintillation yield for individual counters
                                       int reflector=0);
     int                       GetNumberOfPhotons(int SiPM);
     const std::vector<double> &GetArrivalTimes(int SiPM);
