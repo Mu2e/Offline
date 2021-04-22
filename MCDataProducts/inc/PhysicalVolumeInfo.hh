@@ -44,17 +44,10 @@ namespace mu2e {
   };
 
   // Shift left (printing) operator.
-  inline std::ostream& operator<<(std::ostream& ost,
-                                  const PhysicalVolumeInfo& vol ){
-    ost << "( "
-        << vol.name() << ", "
-        << vol.copyNo() <<", "
-        << vol.materialName()
-        << " )";
-    return ost;
-  }
+  std::ostream& operator<<(std::ostream& ost, const PhysicalVolumeInfo& vol);
 
-
+  bool operator==(const PhysicalVolumeInfo& a, const PhysicalVolumeInfo& b);
+  inline bool operator!=(const PhysicalVolumeInfo& a, const PhysicalVolumeInfo& b) { return !(a==b); }
 }
 
 #endif /* MCDataProducts_PhysicalVolumeInfo_hh */

@@ -4,14 +4,15 @@
 namespace mu2e_eventdisplay
 {
 
-ContentSelector::ContentSelector(TGComboBox *hitBox, TGComboBox *caloHitBox, TGComboBox *crvHitBox, TGListBox *trackBox, std::string const &g4ModuleLabel, std::string const &physicalVolumesMultiLabel)
+ContentSelector::ContentSelector(TGComboBox *hitBox, TGComboBox *caloHitBox, TGComboBox *crvHitBox, TGListBox *trackBox, std::string const &g4ModuleLabel, std::string const &physicalVolumesMultiLabel, std::string const &protonBunchTimeLabel)
   :
   _hitBox(hitBox),
   _caloHitBox(caloHitBox),
   _crvHitBox(crvHitBox),
   _trackBox(trackBox),
   _g4ModuleLabel(g4ModuleLabel),
-  _physicalVolumesMultiLabel(physicalVolumesMultiLabel)
+  _physicalVolumesMultiLabel(physicalVolumesMultiLabel),
+  _protonBunchTimeLabel(protonBunchTimeLabel)
   {}
 
 void ContentSelector::firstLoop()  //This is useful for now, but may be changed later
@@ -42,7 +43,7 @@ void ContentSelector::createNewEntries(std::vector<art::Handle<CollectionType> >
                                        const art::Event &event, const std::string &className,
                                        std::vector<entryStruct> &newEntries, int classID)
 {
-  event.getManyByType(dataVector);
+  dataVector=event.getMany<CollectionType>();
   typedef std::vector<art::Handle<CollectionType> > CollectionVector;
   typedef typename CollectionVector::const_iterator itertype;
   itertype iter;
@@ -147,7 +148,7 @@ void ContentSelector::setAvailableCollections(const art::Event& event)
   }
 
 //CRV Waveforms (not inside a menu)
-  event.getManyByType(_crvDigisVector);
+  _crvDigisVector=event.getMany<mu2e::CrvDigiCollection>();
 
 //Track Selection
   newEntries.clear();
@@ -178,11 +179,12 @@ void ContentSelector::setAvailableCollections(const art::Event& event)
     }
   }
 
-//PointTrajectories
-  event.getManyByType(_mcTrajectoryVector);
+//MCTrajectories
+  _mcTrajectoryVector=event.getMany<mu2e::MCTrajectoryCollection>();
 
 //Other
   _hasPhysicalVolumesMulti=event.getSubRun().getByLabel(_physicalVolumesMultiLabel, _physicalVolumesMulti);
+  event.getByLabel(_protonBunchTimeLabel, _protonBunchTime);
 }
 
 bool ContentSelector::getSelectedHitsName(std::string &className,
@@ -408,6 +410,12 @@ const mu2e::PhysicalVolumeInfoMultiCollection* ContentSelector::getPhysicalVolum
 {
   if(_hasPhysicalVolumesMulti) return(_physicalVolumesMulti.product());
   else return(nullptr);
+}
+
+const double ContentSelector::getTDC0time() const
+{
+  double TDC0time = -_protonBunchTime->pbtime_;
+  return TDC0time;
 }
 
 const mu2e::MCTrajectoryCollection* ContentSelector::getMCTrajectoryCollection(const trackInfoStruct &t) const

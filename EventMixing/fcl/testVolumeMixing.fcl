@@ -1,0 +1,60 @@
+// Test job mixing volume infos in subruns.
+//
+// Andrei Gaponenko, 2021
+
+#include "fcl/minimalMessageService.fcl"
+#include "fcl/standardServices.fcl"
+
+process_name :  volmixtest
+
+source : { module_type : EmptyEvent maxEvents: 5 }
+
+services : {
+   message               : @local::default_message
+   RandomNumberGenerator : {defaultEngineKind: "MixMaxRng" }
+   SeedService            : @local::automaticSeeds
+}
+
+physics : {
+   filters: {
+      rsmix: {
+         module_type: ResamplingMixer
+         fileNames: [
+
+            "/pnfs/mu2e/tape/usr-sim/sim/gandr/PS-mubeam/0326a/art/c4/22/sim.gandr.PS-mubeam.0326a.000001_00000000.art"
+            , "/pnfs/mu2e/tape/usr-sim/sim/gandr/PS-mubeam/0326a/art/81/34/sim.gandr.PS-mubeam.0326a.000001_00000001.art"
+            , "/pnfs/mu2e/tape/usr-sim/sim/gandr/PS-mubeam/0326a/art/7d/6b/sim.gandr.PS-mubeam.0326a.000001_00000002.art"
+
+            // // Incompatible geometry in 0331a vs the above
+            // , "/pnfs/mu2e/tape/usr-sim/sim/gandr/PS-mubeam/0331a/art/84/68/sim.gandr.PS-mubeam.0331a.000001_00000000.art"
+            // , "/pnfs/mu2e/tape/usr-sim/sim/gandr/PS-mubeam/0331a/art/2c/a9/sim.gandr.PS-mubeam.0331a.000001_00000001.art"
+            // , "/pnfs/mu2e/tape/usr-sim/sim/gandr/PS-mubeam/0331a/art/fd/d1/sim.gandr.PS-mubeam.0331a.000001_00000002.art"
+
+         ]
+         mu2e: {
+            nSecondaries: 3
+            products: {
+               volumeInfoMixer: {
+                  srInput: "compressPVmuonBeam" // "g4run"
+                  evtOutInstanceName: "eventlevel"
+               }
+            }
+         }
+      }
+   }
+
+   t1: [ rsmix ]
+   trigger_paths: [t1]
+   o1: [fullout]
+   end_paths: [o1]
+}
+
+outputs: {
+   fullout: {
+      module_type: RootOutput
+      fileName: "sim.owner.testVolumeMixing.ver.seq.art"
+   }
+}
+
+services.SeedService.baseSeed         :  8
+services.SeedService.maxUniqueEngines :  20

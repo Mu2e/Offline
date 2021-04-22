@@ -9,49 +9,7 @@ BEGIN_PROLOG
 END_PROLOG
 
 
-
-
 BEGIN_PROLOG
-
-
-
-
-CaloTrigger : {    
-    module_type           : CaloTrigger
-    caloDigiModuleLabel   : CaloDigiMaker
-    digiSampling          : @local::HitMakerDigiSampling
-    blindTime             : @local::HitMakerBlindTime   
-    endTimeBuffer         : 80                          
-    windowPeak            : 2
-    minAmplitude          : 20
-    extendSecond          : false
-    minSeedAmplitude      : 433
-    minEnergy             : 50
-    timeCorrection        : 20.0
-    adcToEnergy           : 0.0459634#0.0461333
-    diagLevel             : 0
-}
-
-
-
-CaloClusterFast :
-{ 
-    module_type           : CaloClusterFast
-    caloDigiModuleLabel   : CaloDigiMaker
-    digiSampling          : @local::HitMakerDigiSampling
-    blindTime             : @local::HitMakerBlindTime
-    endTimeBuffer         : 80
-    windowPeak            : 2
-    minAmplitude          : 20
-    extendSecond          : true
-    minSeedAmplitude      : 200
-    minEnergy             : 50
-    timeCorrection        : 20.0
-    adcToEnergy           : 0.0461333
-    diagLevel             : 0
-    includeCrystalHits    : true
-}
-
 
 CaloProtoClusterMaker :
 {
@@ -62,11 +20,11 @@ CaloProtoClusterMaker :
   EminSeed               : 10
   ExpandCut              : 1.0
   EnoiseCut              : 1.0
+  addSecondRing          : false
   timeCut                : 500
   deltaTime              : 2
   diagLevel              : 0
 }  
-
 
 CaloClusterMaker :
 {
@@ -90,17 +48,6 @@ CaloCluster :
    }
    
    Reco : [ CaloProtoClusterMaker, CaloClusterMaker ]
-}
-
-
-CaloClusterFast :
-{
-   producers : {
-       CaloClusterFast  : @local::CaloClusterFast
-       CaloTrigger      : @local::CaloTrigger
-   }
-   
-   Reco : [ CaloClusterFast ]
 }
 
 END_PROLOG
