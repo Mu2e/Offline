@@ -25,6 +25,20 @@ for target in targets:
 exe_env.AlwaysBuild(env.Alias('RELEASE', [], '#echo completed release targets'))
 Depends('RELEASE', targets)
 
+# the INCPATH target just prints the include path, for use in making dependencies
+inclist=exe_env["CPPPATH"]
+incpath="echo "
+for dd in inclist:
+    incpath=incpath+" -I"+dd
+if 'G4INCLUDE' in os.environ:
+    incpath = incpath + " -I" + os.environ['G4INCLUDE']
+    incpath = incpath + " -I" + os.environ['G4INCLUDE'] + "/Geant4"
+    incpath = incpath + " -I" + os.environ['CRYPTOPP_INC']
+if 'CRYHOME' in os.environ:
+    incpath = incpath + " -I" + os.environ['CRYHOME'] + '/src'
+
+exe_env.AlwaysBuild(env.Alias('INCPATH', [], incpath))
+
 
 # This tells emacs to view this file in python mode.
 # Local Variables:

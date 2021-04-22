@@ -43,6 +43,7 @@
 #include "RecoDataProducts/inc/TrkFitFlag.hh"
 #include "RecoDataProducts/inc/TrkExtTrajCollection.hh"
 #include "RecoDataProducts/inc/KalRepPtrCollection.hh"
+#include "RecoDataProducts/inc/KKLoopHelix.hh"
 #include "RecoDataProducts/inc/TrackSummaryRecoMap.hh"
 #include "RecoDataProducts/inc/TrackSummary.hh"
 #include "RecoDataProducts/inc/TrackCaloAssns.hh" 
@@ -52,7 +53,7 @@
 #include "RecoDataProducts/inc/RecoQual.hh"
 #include "RecoDataProducts/inc/AlgorithmID.hh"
 #include "RecoDataProducts/inc/AlgorithmIDCollection.hh"
-
+#include "KinKal/General/ParticleState.hh"
 
 // extrapolation and PID
 #include "RecoDataProducts/inc/TrkCaloIntersectCollection.hh"
@@ -65,7 +66,8 @@
 
 // CRV
 #include "RecoDataProducts/inc/CrvDigiCollection.hh"
-#include "RecoDataProducts/inc/CrvRecoPulseCollection.hh"
+#include "RecoDataProducts/inc/CrvRecoPulse.hh"
+#include "RecoDataProducts/inc/CrvRecoPulseFlags.hh"
 #include "RecoDataProducts/inc/CrvCoincidenceCollection.hh"
 #include "RecoDataProducts/inc/CrvCoincidenceClusterCollection.hh"
 #include "DataProducts/inc/CRSScintillatorBarIndex.hh"

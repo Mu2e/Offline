@@ -24,12 +24,14 @@ using namespace std;
 #include "GeometryService/inc/GeomHandle.hh"
 #include "GeometryService/inc/DetectorSystem.hh"
 #include "HepPID/ParticleName.hh"
+#include "HepPDT/ParticleData.hh"
 #include "MCDataProducts/inc/PhysicalVolumeInfoMultiCollection.hh"
 #include "MCDataProducts/inc/MCTrajectoryCollection.hh"
 #include "MCDataProducts/inc/SimParticlePtrCollection.hh"
 #include "MCDataProducts/inc/StepPointMCCollection.hh"
 #include "Mu2eUtilities/inc/PhysicalVolumeMultiHelper.hh"
 #include "ConfigTools/inc/SimpleConfig.hh"
+#include "RecoDataProducts/inc/KalSeed.hh"
 #include "RecoDataProducts/inc/CrvDigiCollection.hh"
 #include "RecoDataProducts/inc/CaloHit.hh"
 #include "RecoDataProducts/inc/StrawHitCollection.hh"
@@ -39,6 +41,7 @@ using namespace std;
 #include "RecoDataProducts/inc/TrkExtTrajCollection.hh"
 #include "StoppingTargetGeom/inc/StoppingTarget.hh"
 #include "StoppingTargetGeom/inc/TargetFoil.hh"
+#include "TrkReco/inc/TrkUtilities.hh"
 #include "TrackerGeom/inc/Tracker.hh"
 #include "art/Framework/Principal/Run.h"
 #include "cetlib/map_vector.h"
@@ -48,6 +51,7 @@ using namespace std;
 #include <TMath.h>
 #include <TView.h>
 #include <TGraphErrors.h>
+#include <TF1.h>
 
 #include <boost/shared_array.hpp>
 
@@ -780,6 +784,7 @@ void DataInterface::findBoundaryP(spaceminmax &m, double x, double y, double z)
 
 void DataInterface::fillEvent(boost::shared_ptr<ContentSelector> const &contentSelector, const mu2e::SimParticleTimeOffset &timeOffsets)
 {
+  auto const& ptable = mu2e::GlobalConstantsHandle<mu2e::ParticleDataTable>();
   removeNonGeometryComponents();
   if(!_geometrymanager) createGeometryManager();
   resetBoundaryT(_hitsTimeMinmax);
@@ -1061,8 +1066,7 @@ void DataInterface::fillEvent(boost::shared_ptr<ContentSelector> const &contentS
   double digitizationPeriod = crvPar->digitizationPeriod;
   double recoPulsePedestal  = crvPar->pedestal;
 
-//  std::vector<art::Handle<mu2e::CrvDigiCollection> > crvDigisVector;
-//  _event->getManyByType(crvDigisVector);
+  double TDC0time = contentSelector->getTDC0time();
   const std::vector<art::Handle<mu2e::CrvDigiCollection> > &crvDigisVector = contentSelector->getSelectedCrvDigiCollection();
   for(size_t i=0; i<crvDigisVector.size(); i++)
   {
@@ -1098,7 +1102,7 @@ void DataInterface::fillEvent(boost::shared_ptr<ContentSelector> const &contentS
         graph->SetMarkerSize(2);
         for(size_t k=0; k<mu2e::CrvDigi::NSamples; k++)
         { 
-          graph->SetPoint(k,(digi.GetStartTDC()+k)*digitizationPeriod,digi.GetADCs()[k]);
+          graph->SetPoint(k,TDC0time+(digi.GetStartTDC()+k)*digitizationPeriod,digi.GetADCs()[k]);
         }
         boost::dynamic_pointer_cast<TMultiGraph>(v[multigraphIndex])->Add(graph,"p");
       }
@@ -1149,21 +1153,15 @@ void DataInterface::fillEvent(boost::shared_ptr<ContentSelector> const &contentS
             double fitParam1 = recoPulse.GetPulseTime();
             double fitParam2 = recoPulse.GetPulseBeta();
 
-            double tF1=fitParam1 - 2.5*fitParam2;
-            double tF2=fitParam1 + 2.5*fitParam2;
-            int nF=(tF2-tF1)/1.0 + 1;
-            TGraph *graph = new TGraph(nF);
-            for(int iF=0; iF<nF; iF++)
-            {
-              double t   = tF1 + iF*1.0;
-              double ADC = fitParam0*TMath::Exp(-(t-fitParam1)/fitParam2-TMath::Exp(-(t-fitParam1)/fitParam2));
-              if(isnan(ADC)) ADC=0;
-              ADC += recoPulsePedestal;
-              graph->SetPoint(iF,t,ADC);
-            }
-            graph->SetLineWidth(2);
-            graph->SetLineColor(2);
-            boost::dynamic_pointer_cast<TMultiGraph>(v[k])->Add(graph,"l");
+            TList *functionList = boost::dynamic_pointer_cast<TMultiGraph>(v[k])->GetListOfFunctions();
+            if(functionList->GetSize()==0) functionList->Add(new TF1("pedestal",Form("%f",recoPulsePedestal))); //TODO: Use compiled function
+            TF1 *f = new TF1(Form("peakfitter%i",functionList->GetSize()),
+                             Form("%f*(TMath::Exp(-(x-%f)/%f-TMath::Exp(-(x-%f)/%f)))",
+                             fitParam0,fitParam1,fitParam2,fitParam1,fitParam2));  //TODO: Use compiled function
+            f->SetLineWidth(2);
+            f->SetLineColor(2);
+            if(recoPulse.GetRecoPulseFlags().test(mu2e::CrvRecoPulseFlagEnums::failedFit)) f->SetLineStyle(2);
+            functionList->Add(f);
           }
         }
       }
@@ -1353,7 +1351,7 @@ void DataInterface::fillEvent(boost::shared_ptr<ContentSelector> const &contentS
       int trackclass=trackInfos[i].classID;
       int trackclassindex=trackInfos[i].index;
       std::string trackcollection=trackInfos[i].entryText;
-      int particleid=kalseed.particle().particleType();
+      int particleid=kalseed.particle();
       std::string particlename=HepPID::particleName(particleid);
 
       const std::vector<mu2e::KalSegment> &segments = kalseed.segments();
@@ -1371,7 +1369,8 @@ void DataInterface::fillEvent(boost::shared_ptr<ContentSelector> const &contentS
 
       double t0   = kalseed.t0().t0();
       double flt0 = kalseed.flt0();
-      double v    = kalseed.particle().beta((p1+p2)/2.0)*CLHEP::c_light;
+      double mass = ptable->particle(kalseed.particle()).ref().mass().value(); 
+      double v  = mu2e::TrkUtilities::beta(mass,(p1+p2)/2.0)*CLHEP::c_light;
 
       boost::shared_ptr<ComponentInfo> info(new ComponentInfo());
       std::string c=Form("KalSeed Track %lu  %s  (%s)",j,particlename.c_str(),trackcollection.c_str());
@@ -1385,6 +1384,8 @@ void DataInterface::fillEvent(boost::shared_ptr<ContentSelector> const &contentS
 
         fltLMin=segment.fmin();
         fltLMax=segment.fmax();
+/*
+//interpolation between segments doesn't seem to work anymore
         if(k>0)
         {
           double fltLMaxPrev=segments.at(k-1).fmax();
@@ -1395,6 +1396,7 @@ void DataInterface::fillEvent(boost::shared_ptr<ContentSelector> const &contentS
           double fltLMinNext=segments.at(k+1).fmin();
           fltLMax=(fltLMax+fltLMinNext)/2.0;
         }
+*/
 
         XYZVec pos1, pos2;
         segment.helix().position(fltLMin,pos1);
@@ -1485,6 +1487,7 @@ void DataInterface::findTrajectory(boost::shared_ptr<ContentSelector> const &con
     for(traj_iter=mcTrajectories->begin(); traj_iter!=mcTrajectories->end(); traj_iter++)
     {
       if(traj_iter->first->id()==id)
+//      if(traj_iter->second.sim()->id()==id)
       {
         const auto& points = traj_iter->second.points();
         for(auto point_iter=points.begin(); point_iter!=points.end(); ++point_iter)

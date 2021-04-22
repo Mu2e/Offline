@@ -1,0 +1,135 @@
+#include "fcl/minimalMessageService.fcl"
+#include "fcl/standardServices.fcl"
+#include "JobConfig/reco/prolog.fcl"
+#include "TrkDiag/fcl/prolog.fcl"
+#include "Mu2eKinKal/fcl/prolog.fcl"
+
+process_name: Reconstruct
+source : { module_type : RootInput }
+services : @local::Services.Reco
+physics :
+{
+  producers : {
+    @table::TrkHitReco.producers
+    @table::Tracking.producers
+    @table::CalPatRec.producers
+    @table::CaloReco.producers
+    @table::CaloCluster.producers
+    @table::CaloMC.TruthProducers
+    @table::CrvResponsePackage.producers
+    @table::Reconstruction.producers
+    @table::TrkAnaReco.producers
+    @table::Mu2eKinKal.producers
+  }
+  filters : {
+    @table::CalPatRec.filters
+  }
+  RecoPath : [ 
+    @sequence::Reconstruction.CaloReco,
+    @sequence::Reconstruction.TrkReco,
+    @sequence::Reconstruction.CrvReco,
+    TimeClusterFinderDe, HelixFinderDe,
+    CalTimePeakFinder, CalHelixFinderDe,
+    MHDeM,
+#    KSFDeM,
+#    KFFDeM,
+    KKDeMSeedFit,
+    @sequence::Reconstruction.MCReco
+  ] 
+  analyzers : { 
+#      TAKSF : { @table::TrackAnalysisReco 
+#      		    candidate : @local::DeM
+#		    supplements : []
+#		  }
+#      TAKFF : { @table::TrackAnalysisReco 
+#      		    candidate : @local::DeM
+#		    supplements : []
+#		  }
+      TAKK : { @table::TrackAnalysisReco 
+      		    candidate : @local::DeM
+		    supplements : []
+		  }
+      evtprint : {
+		module_type : RunEventSubRun
+		printSam    : false
+		printRun    : false
+		printSubrun : false
+		printEvent  : true
+       }
+}
+#  EndPath : [TAKSF, TAKFF, TAKK]
+  EndPath : [TAKK,evtprint]
+}
+outputs : {   
+  Output : {
+    @table::Reconstruction.Output
+    SelectEvents : [ "RecoPath" ]
+  }
+}
+#include "JobConfig/reco/epilog.fcl"
+physics.producers.CrvCoincidenceClusterMatchMC.timeOffsets.inputs :  [ @sequence::DigiCompression.TimeMaps ]
+physics.producers.CaloHitTruthMatch.primaryParticle : "compressDigiMCs"
+physics.producers.CaloHitTruthMatch.caloShowerSimCollection : "compressDigiMCs"
+physics.filters.CalHelixFinderDe.StrawHitFlagCollectionLabel                 : "FlagBkgHits:ComboHits"
+#physics.producers.SelectRecoMC.KalSeedCollections  : ["KSFDeM", "KFFDeM", "KKDeMSeedFit"]
+physics.producers.SelectRecoMC.KalSeedCollections  : ["KKDeMSeedFit"]
+physics.producers.SelectRecoMC.HelixSeedCollections  : ["MHDeM"]
+physics.producers.SelectRecoMC.debugLevel : 0
+
+physics.producers.KKDeMSeedFit.ModuleSettings.HelixSeedCollections : [ "MHDeM" ]
+physics.producers.KKDeMSeedFit.ModuleSettings.ComboHitCollection : "makeSH"
+physics.producers.KKDeMSeedFit.ModuleSettings.StrawHitFlagCollection : "FlagBkgHits:StrawHits"
+physics.producers.KKDeMSeedFit.ModuleSettings.PrintLevel : 0
+physics.producers.KKDeMSeedFit.FitSettings.PrintLevel : 1 
+
+outputs.Output.fileName: "KKSeed.art"
+services.TFileService.fileName: "KKSeed.root"
+# Include more information (MC, full TrkQual and TrkPID branches)
+#physics.analyzers.TAKFF.candidate.options : @local::AllOpt
+#physics.analyzers.TAKFF.diagLevel : 1
+#physics.analyzers.TAKFF.FillMCInfo : true
+#physics.analyzers.TAKFF.AnalyzeCRV :false
+#physics.analyzers.TAKFF.AnalyzeCRVPulses : false
+#physics.analyzers.TAKFF.FillTriggerInfo : true
+#physics.analyzers.TAKFF.FillTrkQualInfo : false
+#physics.analyzers.TAKFF.FillTrkPIDInfo : false
+#physics.analyzers.TAKFF.FillHitInfo : true
+#physics.analyzers.TAKFF.FillTriggerInfo : false
+#physics.analyzers.TAKFF.candidate.input : "KFF" 
+##
+#physics.analyzers.TAKSF.candidate.options : @local::AllOpt
+#physics.analyzers.TAKSF.diagLevel : 1
+#physics.analyzers.TAKSF.FillMCInfo : true
+#physics.analyzers.TAKSF.AnalyzeCRV :false
+#physics.analyzers.TAKSF.AnalyzeCRVPulses : false
+#physics.analyzers.TAKSF.FillTriggerInfo : true
+#physics.analyzers.TAKSF.FillTrkQualInfo : false
+#physics.analyzers.TAKSF.FillTrkPIDInfo : false
+#physics.analyzers.TAKSF.FillHitInfo : true
+#physics.analyzers.TAKSF.FillTriggerInfo : false
+#physics.analyzers.TAKSF.candidate.input : "KSF" 
+#
+physics.analyzers.TAKK.candidate.options : @local::AllOpt
+physics.analyzers.TAKK.diagLevel : 1
+physics.analyzers.TAKK.FillMCInfo : true
+physics.analyzers.TAKK.AnalyzeCRV :false
+physics.analyzers.TAKK.AnalyzeCRVPulses : false
+physics.analyzers.TAKK.FillTriggerInfo : true
+physics.analyzers.TAKK.FillTrkQualInfo : false
+physics.analyzers.TAKK.FillTrkPIDInfo : false
+physics.analyzers.TAKK.FillHitInfo : true
+physics.analyzers.TAKK.FillTriggerInfo : false
+physics.analyzers.TAKK.candidate.input : "KK" 
+physics.analyzers.TAKK.candidate.suffix : "DeMSeedFit" 
+
+services.TimeTracker.printSummary: true
+#
+
+# drop trigger input products
+source.inputCommands: ["keep *",
+  "drop mu2e::KalSeeds_*_*_*",
+  "drop mu2e::TriggerInfo_*_*_*",
+  "drop mu2e::HelixSeeds_*_*_*",
+  "drop mu2e::TimeClusters_*_*_*",
+  "drop art::TriggerResults_*_*_*"
+]
