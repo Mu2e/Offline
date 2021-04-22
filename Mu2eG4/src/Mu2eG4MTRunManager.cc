@@ -29,8 +29,12 @@
 //G4 includes
 #include "Geant4/G4Timer.hh"
 #include "Geant4/G4VUserPhysicsList.hh"
+#if G4VERSION>4106
+#include "Geant4/G4HadronicParameters.hh"
+#else
 #include "Geant4/G4ParticleHPManager.hh"
 #include "Geant4/G4HadronicProcessStore.hh"
+#endif
 #include "Geant4/G4StateManager.hh"
 #include "Geant4/G4GeometryManager.hh"
 #include "Geant4/G4UserWorkerThreadInitialization.hh"
@@ -172,8 +176,12 @@ namespace mu2e {
 
     physicsList_->SetVerboseLevel(rmvlevel_);
     SetVerboseLevel(rmvlevel_);
+#if G4VERSION>4106
+    G4HadronicParameters::Instance()->SetVerboseLevel(rmvlevel_);
+#else
     G4ParticleHPManager::GetInstance()->SetVerboseLevel(rmvlevel_);
     G4HadronicProcessStore::Instance()->SetVerbose(rmvlevel_);
+#endif
 
     SetUserInitialization(allMu2e);
     SetUserInitialization(physicsList_);

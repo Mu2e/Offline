@@ -12,6 +12,7 @@
 
 #include <vector>
 #include <utility>
+#include <ostream>
 
 #include "cetlib/map_vector.h"
 
@@ -20,6 +21,9 @@
 namespace mu2e {
   typedef cet::map_vector<PhysicalVolumeInfo> PhysicalVolumeInfoSingleStage;
   typedef std::vector<PhysicalVolumeInfoSingleStage> PhysicalVolumeInfoMultiCollection;
+
+  std::ostream& operator<<(std::ostream&, const PhysicalVolumeInfoSingleStage&);
+  std::ostream& operator<<(std::ostream&, const PhysicalVolumeInfoMultiCollection&);
 }
 
 #endif /* MCDataProducts_PhysicalVolumeInfoMultiCollection_hh */

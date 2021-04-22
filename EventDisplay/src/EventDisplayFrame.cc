@@ -48,6 +48,7 @@ EventDisplayFrame::EventDisplayFrame(const TGWindow* p, UInt_t w, UInt_t h, fhic
   TGMainFrame(p, w, h),
   _g4ModuleLabel(pset.get<std::string>("g4ModuleLabel","g4run")),
   _physicalVolumesMultiLabel(pset.get<std::string>("physicalVolumesMultiLabel","compressPV")),
+  _protonBunchTimeLabel(pset.get<std::string>("protonBunchTimeTag","EWMProducer")),
   _timeOffsets(pset.get<fhicl::ParameterSet>("timeOffsets"))
 {
   SetCleanup(kDeepCleanup);
@@ -126,7 +127,8 @@ EventDisplayFrame::EventDisplayFrame(const TGWindow* p, UInt_t w, UInt_t h, fhic
   _subFrame->AddFrame(trackBox, lh1);
 
   _contentSelector=boost::shared_ptr<ContentSelector>(new ContentSelector(hitBox, caloHitBox, crvHitBox, trackBox,  
-                                                                          _g4ModuleLabel, _physicalVolumesMultiLabel));
+                                                                          _g4ModuleLabel, _physicalVolumesMultiLabel,
+                                                                          _protonBunchTimeLabel));
 
   TGHorizontalFrame *subFrameView1   = new TGHorizontalFrame(_subFrame,300,15);
   TGHorizontalFrame *subFrameView2   = new TGHorizontalFrame(_subFrame,300,15);

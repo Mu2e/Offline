@@ -88,7 +88,7 @@ double    ds.CableRunTrkCore.dPhiFraction    = 0.1051;
 #include "Mu2eG4/geom/calorimeter_CsI.txt"
 
 //CRV counters
-#include "Mu2eG4/geom/crv_counters_v07.txt"
+#include "Mu2eG4/geom/crv_counters_v08.txt"
 
 
 //-------------------------------------------
