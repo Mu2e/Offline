@@ -61,9 +61,6 @@ namespace mu2e {
     halfDims.push_back(height/2.);
     halfDims.push_back(detectorLength/2.);
 
-    AntiLeakRegistry& reg = art::ServiceHandle<Mu2eG4Helper>()->antiLeakRegistry();
-    G4RotationMatrix* noRotation = reg.add(new G4RotationMatrix);
-
     G4Material* baseMaterial = parent.logical->GetMaterial();
 
     // "container": box representing the location of the individual PWC
@@ -73,7 +70,7 @@ namespace mu2e {
     VolumeInfo PWCContainerInfo = nestBox(containerName,
               halfDims,
               baseMaterial,
-              noRotation,
+              nullptr,
               positionInParent,
               parent,
               0,
@@ -99,7 +96,7 @@ namespace mu2e {
     frameInfo.solid = new G4SubtractionSolid(frameName, outerBox, innerBox);
     finishNesting(frameInfo, 
           frameMaterial, 
-          noRotation, 
+          nullptr, 
           G4ThreeVector(0.0, 0.0, 0.0), 
           PWCContainerInfo.logical, 
           0, 
@@ -124,7 +121,7 @@ namespace mu2e {
     ground1Name.append(nameSuffix);
     double ground1Z = -5.5*frameThick;
     //G4VPhysicalVolume* pv = 
-    new G4PVPlacement(noRotation,
+    new G4PVPlacement(nullptr,
               G4ThreeVector(0.0, 0.0, ground1Z),
               windowLogical,
               ground1Name,
@@ -137,7 +134,7 @@ namespace mu2e {
     hv1Name.append(nameSuffix);
     double hv1Z = -3.5*frameThick;
     //G4VPhysicalVolume* pv = 
-    new G4PVPlacement(noRotation,
+    new G4PVPlacement(nullptr,
               G4ThreeVector(0.0, 0.0, hv1Z),
               windowLogical,
               hv1Name,
@@ -150,7 +147,7 @@ namespace mu2e {
     hv2Name.append(nameSuffix);
     double hv2Z = 0.5*frameThick;
     //G4VPhysicalVolume* pv = 
-    new G4PVPlacement(noRotation,
+    new G4PVPlacement(nullptr,
               G4ThreeVector(0.0, 0.0, hv2Z),
               windowLogical,
               hv2Name,
@@ -163,7 +160,7 @@ namespace mu2e {
     hv3Name.append(nameSuffix);
     double hv3Z = 4.5*frameThick;
     //G4VPhysicalVolume* pv = 
-    new G4PVPlacement(noRotation,
+    new G4PVPlacement(nullptr
               G4ThreeVector(0.0, 0.0, hv3Z),
               windowLogical,
               hv3Name,
@@ -175,7 +172,7 @@ namespace mu2e {
     std::string ground2Name = "pTargetMonGroundOut";
     ground2Name.append(nameSuffix);
     double ground2Z = 6.5*frameThick;
-    new G4PVPlacement(noRotation,
+    new G4PVPlacement(nullptr,
               G4ThreeVector(0.0, 0.0, ground2Z),
               windowLogical,
               ground2Name,
@@ -198,7 +195,7 @@ namespace mu2e {
     nestBox(gasName1,
         gasHalfDims1,
         gasMaterial,
-        noRotation,
+        nullptr,
         G4ThreeVector(0.0, 0.0, gasZ1),
         PWCContainerInfo,
         0,
@@ -226,7 +223,7 @@ namespace mu2e {
       // on the bottom
       double gasY2 = (-0.5*windowHeight) + ((i+0.5)*wireSpacing);
       //G4VPhysicalVolume* pv = 
-      new G4PVPlacement(noRotation,
+      new G4PVPlacement(nullptr,
                 G4ThreeVector(0.0, gasY2, gasZ2),
                 vertWireLogical,
                 wireGasName,
@@ -260,7 +257,7 @@ namespace mu2e {
       // from the oncoming beam's point of view.
       double gasX3 = (0.5*windowWidth) - ((i+0.5)*wireSpacing);
       //G4VPhysicalVolume* pv = 
-      new G4PVPlacement(noRotation,
+      new G4PVPlacement(nullptr,
                 G4ThreeVector(gasX3, 0.0, gasZ3),
                 horizWireLogical,
                 wireGasName,
@@ -282,7 +279,7 @@ namespace mu2e {
     nestBox(gasName4,
         gasHalfDims4,
         gasMaterial,
-        noRotation,
+        nullptr,
         G4ThreeVector(0.0, 0.0, gasZ4),
         PWCContainerInfo,
         0,
