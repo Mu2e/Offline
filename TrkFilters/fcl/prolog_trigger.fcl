@@ -1658,10 +1658,11 @@ TrkFilters : {
     # sequences for different trigger paths.  Early triggers are prescaled
     sequences : {
 	# #trkpatrec tracking
-	tprTimeClusterDeM    : [ tprTimeClusterDeMEventPrescale, tprTimeClusterDeMSDCountFilter, @sequence::CaloClusterTrigger.Reco,
+	tprTimeClusterDeM    : [ tprTimeClusterDeMEventPrescale, tprTimeClusterDeMSDCountFilter, 
+				 @sequence::CaloHitRecoTrigger.prepareHits, @sequence::CaloClusterTrigger.Reco,
 				 @sequence::TrkHitRecoTrigger.sequences.TTprepareHits, 
 				 TTtimeClusterFinder, tprTimeClusterDeMTCFilter ]
-	tprTimeClusterDeP    : [ tprTimeClusterDePEventPrescale, tprTimeClusterDePSDCountFilter, @sequence::CaloClusterTrigger.Reco,
+	tprTimeClusterDeP    : [ tprTimeClusterDePEventPrescale, tprTimeClusterDePSDCountFilter, @sequence::CaloHitRecoTrigger.prepareHits, @sequence::CaloClusterTrigger.Reco,
 				 @sequence::TrkHitRecoTrigger.sequences.TTprepareHits, 
 				 TTtimeClusterFinder, tprTimeClusterDePTCFilter ]
 
@@ -1670,99 +1671,99 @@ TrkFilters : {
 	# tprHelixDeP          : [ tprDePHelixEventPrescale, tprDePHelixSDCountFilter, @sequence::CaloClusterTrigger.Reco, @sequence::TrkHitRecoTrigger.sequences.TTprepareHits, 
 	# 			 TTtimeClusterFinder, tprHelixDePTCFilter, TThelixFinder, TTHelixMergerDeP, tprHelixDePHSFilter  ]
 
-	tprSeedDeM           : [ tprSeedDeMEventPrescale, tprSeedDeMSDCountFilter, @sequence::CaloClusterTrigger.Reco, 
+	tprSeedDeM           : [ tprSeedDeMEventPrescale, tprSeedDeMSDCountFilter, @sequence::CaloHitRecoTrigger.prepareHits, @sequence::CaloClusterTrigger.Reco, 
 				 @sequence::TrkHitRecoTrigger.sequences.TTprepareHits, 
 				 TTtimeClusterFinder, tprSeedDeMTCFilter, TThelixFinder, TTHelixMergerDeM, tprSeedDeMHSFilter, TTKSFDeM, tprSeedDeMTSFilter ]
-	tprSeedDeP           : [ tprSeedDePEventPrescale, tprSeedDePSDCountFilter, @sequence::CaloClusterTrigger.Reco, 
+	tprSeedDeP           : [ tprSeedDePEventPrescale, tprSeedDePSDCountFilter, @sequence::CaloHitRecoTrigger.prepareHits, @sequence::CaloClusterTrigger.Reco, 
 				 @sequence::TrkHitRecoTrigger.sequences.TTprepareHits, 
 				 TTtimeClusterFinder, tprSeedDePTCFilter, TThelixFinder,TTHelixMergerDeP,  tprSeedDePHSFilter, TTKSFDeP, tprSeedDePTSFilter ]
 
-	tprLowPSeedDeM       : [ tprLowPSeedDeMEventPrescale, tprLowPSeedDeMSDCountFilter, @sequence::CaloClusterTrigger.Reco, 
+	tprLowPSeedDeM       : [ tprLowPSeedDeMEventPrescale, tprLowPSeedDeMSDCountFilter, @sequence::CaloHitRecoTrigger.prepareHits,  @sequence::CaloClusterTrigger.Reco, 
 				 @sequence::TrkHitRecoTrigger.sequences.TTprepareHits, 
 				 TTtimeClusterFinder, tprLowPSeedDeMTCFilter, TThelixFinder, TTHelixMergerDeM, tprLowPSeedDeMHSFilter, TTKSFDeM, tprLowPSeedDeMTSFilter ]
-	tprLowPSeedDeP       : [ tprLowPSeedDePEventPrescale, tprLowPSeedDePSDCountFilter, @sequence::CaloClusterTrigger.Reco, 
+	tprLowPSeedDeP       : [ tprLowPSeedDePEventPrescale, tprLowPSeedDePSDCountFilter, @sequence::CaloHitRecoTrigger.prepareHits,  @sequence::CaloClusterTrigger.Reco, 
 				 @sequence::TrkHitRecoTrigger.sequences.TTprepareHits, 
 				 TTtimeClusterFinder, tprLowPSeedDePTCFilter, TThelixFinder,TTHelixMergerDeP,  tprLowPSeedDePHSFilter, TTKSFDeP, tprLowPSeedDePTSFilter ]
 
-	tprCosmicSeedDeM     : [ tprCosmicSeedDeMEventPrescale, tprCosmicSeedDeMSDCountFilter, @sequence::CaloClusterTrigger.Reco, 
+	tprCosmicSeedDeM     : [ tprCosmicSeedDeMEventPrescale, tprCosmicSeedDeMSDCountFilter, @sequence::CaloHitRecoTrigger.prepareHits,  @sequence::CaloClusterTrigger.Reco, 
 				 @sequence::TrkHitRecoTrigger.sequences.TTprepareHits, 
 				 TTtimeClusterFinder, tprCosmicSeedDeMTCFilter, TThelixFinder, TTHelixMergerDeM, tprCosmicSeedDeMHSFilter, TTKSFDeM, tprCosmicSeedDeMTSFilter ]
 	tprCosmicSeedDeP     : [ tprCosmicSeedDePEventPrescale, tprCosmicSeedDePSDCountFilter, @sequence::CaloClusterTrigger.Reco, 
 				 @sequence::TrkHitRecoTrigger.sequences.TTprepareHits, 
 				 TTtimeClusterFinder, tprCosmicSeedDePTCFilter, TThelixFinder,TTHelixMergerDeP,  tprCosmicSeedDePHSFilter, TTKSFDeP, tprCosmicSeedDePTSFilter ]
 
-	tprCosmicHelixDeM     : [ tprCosmicHelixDeMEventPrescale, tprCosmicHelixDeMSDCountFilter, @sequence::CaloClusterTrigger.Reco, 
+	tprCosmicHelixDeM     : [ tprCosmicHelixDeMEventPrescale, tprCosmicHelixDeMSDCountFilter, @sequence::CaloHitRecoTrigger.prepareHits,  @sequence::CaloClusterTrigger.Reco, 
 				 @sequence::TrkHitRecoTrigger.sequences.TTprepareHits, 
 				 TTtimeClusterFinder, tprCosmicHelixDeMTCFilter, TThelixFinder, TTHelixMergerDeM, tprCosmicHelixDeMHSFilter ]
 	tprCosmicHelixDeP     : [ tprCosmicHelixDePEventPrescale, tprCosmicHelixDePSDCountFilter, @sequence::CaloClusterTrigger.Reco, 
 				 @sequence::TrkHitRecoTrigger.sequences.TTprepareHits, 
 				 TTtimeClusterFinder, tprCosmicHelixDePTCFilter, TThelixFinder,TTHelixMergerDeP,  tprCosmicHelixDePHSFilter ]
 
-	tprCosmicHelixUeM     : [ tprCosmicHelixUeMEventPrescale, tprCosmicHelixUeMSDCountFilter, @sequence::CaloClusterTrigger.Reco, 
+	tprCosmicHelixUeM     : [ tprCosmicHelixUeMEventPrescale, tprCosmicHelixUeMSDCountFilter, @sequence::CaloHitRecoTrigger.prepareHits,  @sequence::CaloClusterTrigger.Reco, 
 				 @sequence::TrkHitRecoTrigger.sequences.TTprepareHits, 
 				 TTtimeClusterFinder, tprCosmicHelixUeMTCFilter, TThelixFinder, TTHelixMergerUeM, tprCosmicHelixUeMHSFilter ]
-	tprCosmicHelixUeP     : [ tprCosmicHelixUePEventPrescale, tprCosmicHelixUePSDCountFilter, @sequence::CaloClusterTrigger.Reco, 
+	tprCosmicHelixUeP     : [ tprCosmicHelixUePEventPrescale, tprCosmicHelixUePSDCountFilter, @sequence::CaloHitRecoTrigger.prepareHits,  @sequence::CaloClusterTrigger.Reco, 
 				 @sequence::TrkHitRecoTrigger.sequences.TTprepareHits, 
 				 TTtimeClusterFinder, tprCosmicHelixUePTCFilter, TThelixFinder,TTHelixMergerUeP,  tprCosmicHelixUePHSFilter ]
 
 
 	# sequences that use a collection of combohits filtered using the calorimeter cluster info 
-	tprSeedUCCDeM        : [ tprSeedUCCDeMEventPrescale, tprSeedUCCDeMSDCountFilter, @sequence::CaloClusterTrigger.Reco, 
+	tprSeedUCCDeM        : [ tprSeedUCCDeMEventPrescale, tprSeedUCCDeMSDCountFilter, @sequence::CaloHitRecoTrigger.prepareHits,  @sequence::CaloClusterTrigger.Reco, 
 				 @sequence::TrkHitRecoTrigger.sequences.TTprepareHitsUCC, 
 				 TTtimeClusterFinderUCC, tprSeedUCCDeMTCFilter, TThelixFinderUCC, TTHelixUCCMergerDeM, tprSeedUCCDeMHSFilter, TTKSFUCCDeM, tprSeedUCCDeMTSFilter ]
-	tprSeedUCCDeP        : [ tprSeedUCCDePEventPrescale, tprSeedUCCDePSDCountFilter, @sequence::CaloClusterTrigger.Reco, 
+	tprSeedUCCDeP        : [ tprSeedUCCDePEventPrescale, tprSeedUCCDePSDCountFilter,  @sequence::CaloHitRecoTrigger.prepareHits, @sequence::CaloClusterTrigger.Reco, 
 				 @sequence::TrkHitRecoTrigger.sequences.TTprepareHitsUCC, 
 				 TTtimeClusterFinderUCC, tprSeedUCCDePTCFilter, TThelixFinderUCC, TTHelixUCCMergerDeP, tprSeedUCCDePHSFilter, TTKSFUCCDeP, tprSeedUCCDePTSFilter ]
 
 	#   calibration with DIO-Michel form Inner Proton Absorber
-	tprHelixCalibIPADeM  : [ tprHelixCalibIPADeMEventPrescale, tprHelixCalibIPADeMSDCountFilter, @sequence::CaloClusterTrigger.Reco, 
+	tprHelixCalibIPADeM  : [ tprHelixCalibIPADeMEventPrescale, tprHelixCalibIPADeMSDCountFilter, @sequence::CaloHitRecoTrigger.prepareHits,  @sequence::CaloClusterTrigger.Reco, 
 				 @sequence::TrkHitRecoTrigger.sequences.TTprepareHits, 
 				 TTtimeClusterFinder, tprHelixCalibIPADeMTCFilter, TThelixFinder, TTHelixMergerDeM, tprHelixCalibIPADeMHSFilter  ]
 
 	#    beam monitoring using the e- from the DIO in the IPA
-	tprHelixIPADeM       : [ tprHelixIPADeMEventPrescale, tprHelixIPADeMSDCountFilter, @sequence::CaloClusterTrigger.Reco, 
+	tprHelixIPADeM       : [ tprHelixIPADeMEventPrescale, tprHelixIPADeMSDCountFilter, @sequence::CaloHitRecoTrigger.prepareHits,  @sequence::CaloClusterTrigger.Reco, 
 				 @sequence::TrkHitRecoTrigger.sequences.TTprepareHits, 
 				 TTtimeClusterFinder, tprHelixIPADeMTCFilter, TThelixFinder, TTHelixMergerDeM, tprHelixIPADeMHSFilter  ]
 	
 	#calo-seeded tracking
-	cprSeedDeM           : [ cprSeedDeMEventPrescale, cprSeedDeMSDCountFilter, @sequence::CaloClusterTrigger.Reco,
+	cprSeedDeM           : [ cprSeedDeMEventPrescale, cprSeedDeMSDCountFilter,  @sequence::CaloHitRecoTrigger.prepareHits, @sequence::CaloClusterTrigger.Reco,
 				 @sequence::TrkHitRecoTrigger.sequences.TTprepareHits,
 				 TTCalTimePeakFinder, cprSeedDeMTCFilter, TTCalHelixFinderDe, TTCalHelixMergerDeM, cprSeedDeMHSFilter,
 				 TTCalSeedFitDem, cprSeedDeMTSFilter ]
-	cprSeedDeP           : [ cprSeedDePEventPrescale, cprSeedDePSDCountFilter, @sequence::CaloClusterTrigger.Reco,
+	cprSeedDeP           : [ cprSeedDePEventPrescale, cprSeedDePSDCountFilter,  @sequence::CaloHitRecoTrigger.prepareHits, @sequence::CaloClusterTrigger.Reco,
 				 @sequence::TrkHitRecoTrigger.sequences.TTprepareHits, 
 				 TTCalTimePeakFinder, cprSeedDePTCFilter, TTCalHelixFinderDe, TTCalHelixMergerDeP, cprSeedDePHSFilter, 
 				 TTCalSeedFitDep, cprSeedDePTSFilter ]
 
-	cprLowPSeedDeM       : [ cprLowPSeedDeMEventPrescale, cprLowPSeedDeMSDCountFilter, @sequence::CaloClusterTrigger.Reco,
+	cprLowPSeedDeM       : [ cprLowPSeedDeMEventPrescale, cprLowPSeedDeMSDCountFilter, @sequence::CaloHitRecoTrigger.prepareHits,  @sequence::CaloClusterTrigger.Reco,
 				 @sequence::TrkHitRecoTrigger.sequences.TTprepareHits,
 				 TTCalTimePeakFinder, cprLowPSeedDeMTCFilter, TTCalHelixFinderDe, TTCalHelixMergerDeM, cprLowPSeedDeMHSFilter,
 				 TTCalSeedFitDem, cprLowPSeedDeMTSFilter ]
-	cprLowPSeedDeP       : [ cprLowPSeedDePEventPrescale, cprLowPSeedDePSDCountFilter, @sequence::CaloClusterTrigger.Reco,
+	cprLowPSeedDeP       : [ cprLowPSeedDePEventPrescale, cprLowPSeedDePSDCountFilter, @sequence::CaloHitRecoTrigger.prepareHits,  @sequence::CaloClusterTrigger.Reco,
 				 @sequence::TrkHitRecoTrigger.sequences.TTprepareHits, 
 				 TTCalTimePeakFinder, cprLowPSeedDePTCFilter, TTCalHelixFinderDe, TTCalHelixMergerDeP, cprLowPSeedDePHSFilter, 
 				 TTCalSeedFitDep, cprLowPSeedDePTSFilter ]
 
-	cprCosmicSeedDeM     : [ cprCosmicSeedDeMEventPrescale, cprCosmicSeedDeMSDCountFilter, @sequence::CaloClusterTrigger.Reco,
+	cprCosmicSeedDeM     : [ cprCosmicSeedDeMEventPrescale, cprCosmicSeedDeMSDCountFilter,  @sequence::CaloHitRecoTrigger.prepareHits, @sequence::CaloClusterTrigger.Reco,
 				 @sequence::TrkHitRecoTrigger.sequences.TTprepareHits,
 				 TTCalTimePeakFinder, cprCosmicSeedDeMTCFilter, TTCalHelixFinderDe, TTCalHelixMergerDeM, cprCosmicSeedDeMHSFilter,
 				 TTCalSeedFitDem, cprCosmicSeedDeMTSFilter ]
-	cprCosmicSeedDeP     : [ cprCosmicSeedDePEventPrescale, cprCosmicSeedDePSDCountFilter, @sequence::CaloClusterTrigger.Reco,
+	cprCosmicSeedDeP     : [ cprCosmicSeedDePEventPrescale, cprCosmicSeedDePSDCountFilter, @sequence::CaloHitRecoTrigger.prepareHits,  @sequence::CaloClusterTrigger.Reco,
 				 @sequence::TrkHitRecoTrigger.sequences.TTprepareHits, 
 				 TTCalTimePeakFinder, cprCosmicSeedDePTCFilter, TTCalHelixFinderDe, TTCalHelixMergerDeP, cprCosmicSeedDePHSFilter, 
 				 TTCalSeedFitDep, cprCosmicSeedDePTSFilter ]
-	cprCosmicHelixDeM     : [ cprCosmicHelixDeMEventPrescale, cprCosmicHelixDeMSDCountFilter, @sequence::CaloClusterTrigger.Reco,
+	cprCosmicHelixDeM     : [ cprCosmicHelixDeMEventPrescale, cprCosmicHelixDeMSDCountFilter, @sequence::CaloHitRecoTrigger.prepareHits,  @sequence::CaloClusterTrigger.Reco,
 				 @sequence::TrkHitRecoTrigger.sequences.TTprepareHits,
 				 TTCalTimePeakFinder, cprCosmicHelixDeMTCFilter, TTCalHelixFinderDe, TTCalHelixMergerDeM, cprCosmicHelixDeMHSFilter ]
-	cprCosmicHelixDeP     : [ cprCosmicHelixDePEventPrescale, cprCosmicHelixDePSDCountFilter, @sequence::CaloClusterTrigger.Reco,
+	cprCosmicHelixDeP     : [ cprCosmicHelixDePEventPrescale, cprCosmicHelixDePSDCountFilter,  @sequence::CaloHitRecoTrigger.prepareHits, @sequence::CaloClusterTrigger.Reco,
 				 @sequence::TrkHitRecoTrigger.sequences.TTprepareHits, 
 				 TTCalTimePeakFinder, cprCosmicHelixDePTCFilter, TTCalHelixFinderDe, TTCalHelixMergerDeP, cprCosmicHelixDePHSFilter ]
 
-	cprSeedUCCDeM        : [ cprSeedUCCDeMEventPrescale, cprSeedUCCDeMSDCountFilter, @sequence::CaloClusterTrigger.Reco,
+	cprSeedUCCDeM        : [ cprSeedUCCDeMEventPrescale, cprSeedUCCDeMSDCountFilter,  @sequence::CaloHitRecoTrigger.prepareHits, @sequence::CaloClusterTrigger.Reco,
 				 @sequence::TrkHitRecoTrigger.sequences.TTprepareHitsUCC,
 				 TTCalTimePeakFinderUCC, cprSeedUCCDeMTCFilter, TTCalHelixFinderUCCDe, TTCalHelixUCCMergerDeM, cprSeedUCCDeMHSFilter,
 				 TTCalSeedFitUCCDem, cprSeedUCCDeMTSFilter ]
-	cprSeedUCCDeP        : [ cprSeedUCCDePEventPrescale, cprSeedUCCDePSDCountFilter, @sequence::CaloClusterTrigger.Reco,
+	cprSeedUCCDeP        : [ cprSeedUCCDePEventPrescale, cprSeedUCCDePSDCountFilter, @sequence::CaloHitRecoTrigger.prepareHits,  @sequence::CaloClusterTrigger.Reco,
 				 @sequence::TrkHitRecoTrigger.sequences.TTprepareHitsUCC, 
 				 TTCalTimePeakFinderUCC, cprSeedUCCDePTCFilter, TTCalHelixFinderUCCDe, TTCalHelixUCCMergerDeP, cprSeedUCCDePHSFilter, 
 				 TTCalSeedFitUCCDep, cprSeedUCCDePTSFilter ]
@@ -1776,108 +1777,108 @@ TrkFilters : {
 
 
 	# sequences for doing timing tests
-	tprSeedDeMTiming0   : [ tprSeedDeMEventPrescale, tprSeedDeMSDCountFilter, @sequence::CaloClusterTrigger.Reco, 
+	tprSeedDeMTiming0   : [ tprSeedDeMEventPrescale, tprSeedDeMSDCountFilter,  @sequence::CaloHitRecoTrigger.prepareHits, @sequence::CaloClusterTrigger.Reco, 
 				 @sequence::TrkHitRecoTrigger.sequences.TTprepareHits, 
 				 TTtimeClusterFinder, tprSeedDeMTCFilter, TThelixFinder, TTHelixMergerDeM, tprSeedDeMHSFilter, TTKSFDeM ]
-	tprSeedDeMTiming1   : [ tprSeedDeMEventPrescale, tprSeedDeMSDCountFilter, @sequence::CaloClusterTrigger.Reco, 
+	tprSeedDeMTiming1   : [ tprSeedDeMEventPrescale, tprSeedDeMSDCountFilter,  @sequence::CaloHitRecoTrigger.prepareHits, @sequence::CaloClusterTrigger.Reco, 
 				 @sequence::TrkHitRecoTrigger.sequences.TTprepareHits, 
 				 TTtimeClusterFinder, tprSeedDeMTCFilter, TThelixFinder, TTHelixMergerDeM ]
-	tprSeedDeMTiming2   : [ tprSeedDeMEventPrescale, tprSeedDeMSDCountFilter, @sequence::CaloClusterTrigger.Reco, 
+	tprSeedDeMTiming2   : [ tprSeedDeMEventPrescale, tprSeedDeMSDCountFilter, @sequence::CaloHitRecoTrigger.prepareHits,  @sequence::CaloClusterTrigger.Reco, 
 				 @sequence::TrkHitRecoTrigger.sequences.TTprepareHits, 
 				 TTtimeClusterFinder ]
 
-	tprSeedDePTiming0   : [ tprSeedDePEventPrescale, tprSeedDePSDCountFilter, @sequence::CaloClusterTrigger.Reco, 
+	tprSeedDePTiming0   : [ tprSeedDePEventPrescale, tprSeedDePSDCountFilter, @sequence::CaloHitRecoTrigger.prepareHits,  @sequence::CaloClusterTrigger.Reco, 
 				 @sequence::TrkHitRecoTrigger.sequences.TTprepareHits, 
 				 TTtimeClusterFinder, tprSeedDePTCFilter, TThelixFinder, TTHelixMergerDeP, tprSeedDePHSFilter, TTKSFDeP ]
-	tprSeedDePTiming1   : [ tprSeedDePEventPrescale, tprSeedDePSDCountFilter, @sequence::CaloClusterTrigger.Reco, 
+	tprSeedDePTiming1   : [ tprSeedDePEventPrescale, tprSeedDePSDCountFilter,  @sequence::CaloHitRecoTrigger.prepareHits, @sequence::CaloClusterTrigger.Reco, 
 				 @sequence::TrkHitRecoTrigger.sequences.TTprepareHits, 
 				 TTtimeClusterFinder, tprSeedDePTCFilter, TThelixFinder, TTHelixMergerDeP ]
 	tprSeedDePTiming2   : [ tprSeedDePEventPrescale, tprSeedDePSDCountFilter, @sequence::CaloClusterTrigger.Reco, 
 				 @sequence::TrkHitRecoTrigger.sequences.TTprepareHits, 
 				 TTtimeClusterFinder ]
 
-	cprSeedDeMTiming0   : [ cprSeedDeMEventPrescale, cprSeedDeMSDCountFilter, @sequence::CaloClusterTrigger.Reco,
+	cprSeedDeMTiming0   : [ cprSeedDeMEventPrescale, cprSeedDeMSDCountFilter, @sequence::CaloHitRecoTrigger.prepareHits,  @sequence::CaloClusterTrigger.Reco,
 				@sequence::TrkHitRecoTrigger.sequences.TTprepareHits,
 				TTCalTimePeakFinder, cprSeedDeMTCFilter, TTCalHelixFinderDe, TTCalHelixMergerDeM, cprSeedDeMHSFilter,
 				TTCalSeedFitDem ]
-	cprSeedDeMTiming1   : [ cprSeedDeMEventPrescale, cprSeedDeMSDCountFilter, @sequence::CaloClusterTrigger.Reco,
+	cprSeedDeMTiming1   : [ cprSeedDeMEventPrescale, cprSeedDeMSDCountFilter, @sequence::CaloHitRecoTrigger.prepareHits,  @sequence::CaloClusterTrigger.Reco,
 				@sequence::TrkHitRecoTrigger.sequences.TTprepareHits,
 				TTCalTimePeakFinder, cprSeedDeMTCFilter, TTCalHelixFinderDe, TTCalHelixMergerDeM ]
 	cprSeedDeMTiming2   : [ cprSeedDeMEventPrescale, cprSeedDeMSDCountFilter, @sequence::CaloClusterTrigger.Reco,
 				@sequence::TrkHitRecoTrigger.sequences.TTprepareHits,
 				TTCalTimePeakFinder ]
 
-	cprSeedDePTiming0   : [ cprSeedDePEventPrescale, cprSeedDePSDCountFilter, @sequence::CaloClusterTrigger.Reco,
+	cprSeedDePTiming0   : [ cprSeedDePEventPrescale, cprSeedDePSDCountFilter, @sequence::CaloHitRecoTrigger.prepareHits,  @sequence::CaloClusterTrigger.Reco,
 				@sequence::TrkHitRecoTrigger.sequences.TTprepareHits, 
 				TTCalTimePeakFinder, cprSeedDePTCFilter, TTCalHelixFinderDe, TTCalHelixMergerDeP, cprSeedDePHSFilter, 
 				TTCalSeedFitDep ]
-	cprSeedDePTiming1   : [ cprSeedDePEventPrescale, cprSeedDePSDCountFilter, @sequence::CaloClusterTrigger.Reco,
+	cprSeedDePTiming1   : [ cprSeedDePEventPrescale, cprSeedDePSDCountFilter, @sequence::CaloHitRecoTrigger.prepareHits,  @sequence::CaloClusterTrigger.Reco,
 				@sequence::TrkHitRecoTrigger.sequences.TTprepareHits, 
 				TTCalTimePeakFinder, cprSeedDePTCFilter, TTCalHelixFinderDe, TTCalHelixMergerDeP ]
-	cprSeedDePTiming2   : [ cprSeedDePEventPrescale, cprSeedDePSDCountFilter, @sequence::CaloClusterTrigger.Reco,
+	cprSeedDePTiming2   : [ cprSeedDePEventPrescale, cprSeedDePSDCountFilter, @sequence::CaloHitRecoTrigger.prepareHits,  @sequence::CaloClusterTrigger.Reco,
 				@sequence::TrkHitRecoTrigger.sequences.TTprepareHits, 
 				TTCalTimePeakFinder ]
 
 
 
-	tprLowPSeedDeMTiming0      : [ tprLowPSeedDeMEventPrescale, tprLowPSeedDeMSDCountFilter, @sequence::CaloClusterTrigger.Reco, 
+	tprLowPSeedDeMTiming0      : [ tprLowPSeedDeMEventPrescale, tprLowPSeedDeMSDCountFilter, @sequence::CaloHitRecoTrigger.prepareHits,  @sequence::CaloClusterTrigger.Reco, 
 				       @sequence::TrkHitRecoTrigger.sequences.TTprepareHits, 
 				       TTtimeClusterFinder, tprLowPSeedDeMTCFilter, TThelixFinder, TTHelixMergerDeM, tprLowPSeedDeMHSFilter, 
 				       TTKSFDeM, tprLowPSeedDeMPrescale ]
 
-	tprLowPSeedDeMTiming1      : [ tprLowPSeedDeMEventPrescale, tprLowPSeedDeMSDCountFilter, @sequence::CaloClusterTrigger.Reco, 
+	tprLowPSeedDeMTiming1      : [ tprLowPSeedDeMEventPrescale, tprLowPSeedDeMSDCountFilter, @sequence::CaloHitRecoTrigger.prepareHits,  @sequence::CaloClusterTrigger.Reco, 
 				       @sequence::TrkHitRecoTrigger.sequences.TTprepareHits, 
 				       TTtimeClusterFinder, tprLowPSeedDeMTCFilter, TThelixFinder, TTHelixMergerDeM, tprLowPSeedDeMPrescale ]
 	
-	tprLowPSeedDeMTiming2      : [ tprLowPSeedDeMEventPrescale, tprLowPSeedDeMSDCountFilter, @sequence::CaloClusterTrigger.Reco, 
+	tprLowPSeedDeMTiming2      : [ tprLowPSeedDeMEventPrescale, tprLowPSeedDeMSDCountFilter, @sequence::CaloHitRecoTrigger.prepareHits,  @sequence::CaloClusterTrigger.Reco, 
 				       @sequence::TrkHitRecoTrigger.sequences.TTprepareHits, 
 				       TTtimeClusterFinder, tprLowPSeedDeMPrescale ]
 
 
-	tprLowPSeedDePTiming0      : [ tprLowPSeedDePEventPrescale, tprLowPSeedDePSDCountFilter, @sequence::CaloClusterTrigger.Reco, 
+	tprLowPSeedDePTiming0      : [ tprLowPSeedDePEventPrescale, tprLowPSeedDePSDCountFilter,  @sequence::CaloHitRecoTrigger.prepareHits, @sequence::CaloClusterTrigger.Reco, 
 				       @sequence::TrkHitRecoTrigger.sequences.TTprepareHits, 
 				       TTtimeClusterFinder, tprLowPSeedDePTCFilter, TThelixFinder, TTHelixMergerDeP, tprLowPSeedDePHSFilter, 
 				       TTKSFDeP, tprLowPSeedDePPrescale ]
 
-	tprLowPSeedDePTiming1      : [ tprLowPSeedDePEventPrescale, tprLowPSeedDePSDCountFilter, @sequence::CaloClusterTrigger.Reco, 
+	tprLowPSeedDePTiming1      : [ tprLowPSeedDePEventPrescale, tprLowPSeedDePSDCountFilter, @sequence::CaloHitRecoTrigger.prepareHits,  @sequence::CaloClusterTrigger.Reco, 
 				       @sequence::TrkHitRecoTrigger.sequences.TTprepareHits, 
 				       TTtimeClusterFinder, tprLowPSeedDePTCFilter, TThelixFinder, TTHelixMergerDeP, tprLowPSeedDePPrescale ]
 	
-	tprLowPSeedDePTiming2      : [ tprLowPSeedDePEventPrescale, tprLowPSeedDePSDCountFilter, @sequence::CaloClusterTrigger.Reco, 
+	tprLowPSeedDePTiming2      : [ tprLowPSeedDePEventPrescale, tprLowPSeedDePSDCountFilter, @sequence::CaloHitRecoTrigger.prepareHits,  @sequence::CaloClusterTrigger.Reco, 
 				       @sequence::TrkHitRecoTrigger.sequences.TTprepareHits, 
 				       TTtimeClusterFinder, tprLowPSeedDePPrescale ]
 
 
-	cprLowPSeedDeMTiming0      : [ cprLowPSeedDeMEventPrescale, cprLowPSeedDeMSDCountFilter, @sequence::CaloClusterTrigger.Reco,
+	cprLowPSeedDeMTiming0      : [ cprLowPSeedDeMEventPrescale, cprLowPSeedDeMSDCountFilter, @sequence::CaloHitRecoTrigger.prepareHits,  @sequence::CaloClusterTrigger.Reco,
 				       @sequence::TrkHitRecoTrigger.sequences.TTprepareHits,
 				       TTCalTimePeakFinder, cprLowPSeedDeMTCFilter, TTCalHelixFinderDe, TTCalHelixMergerDeM, cprLowPSeedDeMHSFilter,
 				       TTCalSeedFitDem, cprLowPSeedDeMPrescale ]
 
-	cprLowPSeedDeMTiming1      : [ cprLowPSeedDeMEventPrescale, cprLowPSeedDeMSDCountFilter, @sequence::CaloClusterTrigger.Reco,
+	cprLowPSeedDeMTiming1      : [ cprLowPSeedDeMEventPrescale, cprLowPSeedDeMSDCountFilter, @sequence::CaloHitRecoTrigger.prepareHits,  @sequence::CaloClusterTrigger.Reco,
 				       @sequence::TrkHitRecoTrigger.sequences.TTprepareHits,
 				       TTCalTimePeakFinder, cprLowPSeedDeMTCFilter, TTCalHelixFinderDe, TTCalHelixMergerDeM, cprLowPSeedDeMPrescale ]
 	
-	cprLowPSeedDeMTiming2      : [ cprLowPSeedDeMEventPrescale, cprLowPSeedDeMSDCountFilter, @sequence::CaloClusterTrigger.Reco,
+	cprLowPSeedDeMTiming2      : [ cprLowPSeedDeMEventPrescale, cprLowPSeedDeMSDCountFilter,  @sequence::CaloHitRecoTrigger.prepareHits, @sequence::CaloClusterTrigger.Reco,
 				       @sequence::TrkHitRecoTrigger.sequences.TTprepareHits,
 				       TTCalTimePeakFinder, cprLowPSeedDeMPrescale ]
 
 
-	cprLowPSeedDePTiming0      : [ cprLowPSeedDePEventPrescale, cprLowPSeedDePSDCountFilter, @sequence::CaloClusterTrigger.Reco,
+	cprLowPSeedDePTiming0      : [ cprLowPSeedDePEventPrescale, cprLowPSeedDePSDCountFilter, @sequence::CaloHitRecoTrigger.prepareHits,  @sequence::CaloClusterTrigger.Reco,
 				       @sequence::TrkHitRecoTrigger.sequences.TTprepareHits, 
 				       TTCalTimePeakFinder, cprLowPSeedDePTCFilter, TTCalHelixFinderDe, TTCalHelixMergerDeP, cprLowPSeedDePHSFilter, 
 				       TTCalSeedFitDep, cprLowPSeedDePPrescale ]
 
-	cprLowPSeedDePTiming1      : [ cprLowPSeedDePEventPrescale, cprLowPSeedDePSDCountFilter, @sequence::CaloClusterTrigger.Reco,
+	cprLowPSeedDePTiming1      : [ cprLowPSeedDePEventPrescale, cprLowPSeedDePSDCountFilter, @sequence::CaloHitRecoTrigger.prepareHits,  @sequence::CaloClusterTrigger.Reco,
 				       @sequence::TrkHitRecoTrigger.sequences.TTprepareHits, 
 				       TTCalTimePeakFinder, cprLowPSeedDePTCFilter, TTCalHelixFinderDe, TTCalHelixMergerDeP, cprLowPSeedDePPrescale ]
 	
-	cprLowPSeedDePTiming2      : [ cprLowPSeedDePEventPrescale, cprLowPSeedDePSDCountFilter, @sequence::CaloClusterTrigger.Reco,
+	cprLowPSeedDePTiming2      : [ cprLowPSeedDePEventPrescale, cprLowPSeedDePSDCountFilter, @sequence::CaloHitRecoTrigger.prepareHits,  @sequence::CaloClusterTrigger.Reco,
 				       @sequence::TrkHitRecoTrigger.sequences.TTprepareHits, 
 				       TTCalTimePeakFinder, cprLowPSeedDePPrescale ]
 
 
 	#kalman filter included
-	tprKalDeM  : [ @sequence::CaloClusterTrigger.Reco,
+	tprKalDeM  : [ @sequence::CaloHitRecoTrigger.prepareHits, @sequence::CaloClusterTrigger.Reco,
 		       @sequence::TrkHitRecoTrigger.sequences.TTprepareHits, 
 		       TTtimeClusterFinder, tprSeedDeMTCFilter, TThelixFinder, TTHelixMergerDeM, tprSeedDeMHSFilter, 
 		       TTKSFDeM, tprSeedDeMTSFilter, TTKFFDeM, tprSeedDeMKFFilter ]
