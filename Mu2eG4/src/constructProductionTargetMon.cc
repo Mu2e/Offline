@@ -68,7 +68,7 @@ namespace mu2e {
 
     // "container": box representing the location of the individual PWC
 
-    std::string containerName = "PWCContainer";
+    std::string containerName = "pTargetMonInnerContainer";
     containerName.append(nameSuffix);
     VolumeInfo PWCContainerInfo = nestBox(containerName,
               halfDims,
@@ -321,7 +321,7 @@ namespace mu2e {
     G4Material* baseMaterial = parent.logical->GetMaterial();
 
     // container: holds the 2 actual detectors
-    VolumeInfo pTargetMonContainer = nestBox("pTargetMonContainer",
+    VolumeInfo pTargetMonContainer = nestBox("pTargetMonMother",
                 halfDims,
                 baseMaterial,
                 rotation,
