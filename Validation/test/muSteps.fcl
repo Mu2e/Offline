@@ -1,0 +1,15 @@
+#include "JobConfig/pileup/mustop.fcl"
+
+source.firstRun: 1000
+source.maxEvents: 2000
+
+services.scheduler.wantSummary: true
+services.TimeTracker.printSummary: true
+
+services.SeedService.baseSeed: 8
+services.SeedService.maxUniqueEngines: 20
+
+services.GeometryService.inputFile : "Mu2eG4/geom/geom_common_current.txt"
+
+outputs.Output.fileName : "dts.owner.muSteps.dsconf.seq.art"
+
