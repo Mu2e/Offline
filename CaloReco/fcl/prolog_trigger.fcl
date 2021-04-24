@@ -32,7 +32,7 @@ FastCaloHitMaker:
 CaloHitRecoTrigger : 
 {
    producers : {
-     CaloRecoDigiMaker  : @local::FastCaloRecoDigiMaker
+     FastCaloRecoDigiMaker  : @local::FastCaloRecoDigiMaker
      CaloHitMaker       : @local::FastCaloHitMaker
    }
 
