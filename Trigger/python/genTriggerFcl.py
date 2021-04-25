@@ -29,7 +29,7 @@ def appendEpilog(trig_path, relProjectDir, outDir, srcDir, verbose, doWrite, sou
     helix_filters    = ['EventPrescale','SDCountFilter','TCFilter', 'HSFilter']
     tc_filters       = ['EventPrescale','SDCountFilter','TCFilter']
     calo_filters     = ['EventPrescale','CDCountFilter','Filter'  ]
-    unbiased_filters = ['Prescale']
+    unbiased_filters = ['EventPrescale']
     minbias_filters  = ['EventPrescale','Filter'       ]
     cst_filters      = ['EventPrescale','SDCountFilter','TCFilter', 'TSFilter']
     
@@ -79,8 +79,8 @@ def appendEpilog(trig_path, relProjectDir, outDir, srcDir, verbose, doWrite, sou
 
         subSubEpilogInputFileName = srcDir+"Trigger/data/" + trig_path + "/main_"+ filterName + '.fcl' 
         sourceFiles.append(subSubEpilogInputFileName)
-        subSubEpilogFileName = subEpilogDirName + "/main_"+ filterName + '.fcl' 
-        relSubSubEpilogFileName = relSubEpilogDirName + "/main_"+ filterName + '.fcl' 
+        subSubEpilogFileName      = subEpilogDirName + "/main_"+ filterName + '.fcl' 
+        relSubSubEpilogFileName   = relSubEpilogDirName + "/main_"+ filterName + '.fcl' 
         targetFiles.append(subSubEpilogFileName)
         if verbose:
             print("Creating {}".format(subSubEpilogFileName))
@@ -102,7 +102,20 @@ def appendEpilog(trig_path, relProjectDir, outDir, srcDir, verbose, doWrite, sou
         if doWrite :
             subEpilogFile.write(epilog)
 
-    if doWrite:
+    #now create the instance for the TriggerInfo Merger
+    trigInfoMergerName         = trig_path + "TriggerInfoMerger"
+    subSubEpilogMergerFileName = subEpilogDirName + "/main_" + trigInfoMergerName + '.fcl'
+    if verbose:
+        print("Creating {}".format(subSubEpilogMergerFileName))
+    subSubEpilogMergerFile     = open(subSubEpilogMergerFileName,"w")
+    subSubEpilogMergerFile.write("physics.producers."+trigInfoMergerName+" : { module_type : MergeTriggerInfo }");
+    subSubEpilogMergerFile.close();
+
+    relSubSubEpilogFileName    = relSubEpilogDirName + "/main_"+ trigInfoMergerName + '.fcl' 
+    epilog=("\n#include \""+relSubSubEpilogFileName +"\"")
+
+    if doWrite :
+        subEpilogFile.write(epilog)
         subEpilogFile.close()
 
     # return a line to be added to the main epilog file
