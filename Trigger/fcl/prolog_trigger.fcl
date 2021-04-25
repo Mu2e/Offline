@@ -164,19 +164,19 @@ Trigger : {
 	@table::CstTrigger.sequences
 
 	#unbiased filter. It selects the events based on their event id
-	unbiased           : [ unbiasedEventPrescale ]
+	unbiased           : [ unbiasedEventPrescale, unbiasedTriggerInfoMerger ]
 
 	#minimum bias filters. So far, a filter based on the StrawDigi occupancy
-	minimumbiasSDCount : [ minimumbiasSDCountEventPrescale, minimumbiasSDCountFilter]
+	minimumbiasSDCount : [ minimumbiasSDCountEventPrescale, minimumbiasSDCountFilter, minimumbiasSDCountTriggerInfoMerger]
 
 	#filter to select events with large occupancy in the tracker
-	largeSDCount       : [ largeSDCountEventPrescale, largeSDCountFilter]
+	largeSDCount       : [ largeSDCountEventPrescale, largeSDCountFilter, largeSDCountTriggerInfoMerger]
 	
 	#minimum bias filters. So far, a filter based on the StrawDigi occupancy
-	minimumbiasCDCount : [ minimumbiasCDCountEventPrescale, minimumbiasCDCountFilter]
+	minimumbiasCDCount : [ minimumbiasCDCountEventPrescale, minimumbiasCDCountFilter, minimumbiasCDCountTriggerInfoMerger]
 
 	#filter to select events with large occupancy in the tracker
-	largeCDCount       : [ largeCDCountEventPrescale, largeCDCountFilter]
+	largeCDCount       : [ largeCDCountEventPrescale, largeCDCountFilter, largeCDCountTriggerInfoMerger]
     }
     
     outputs: {
