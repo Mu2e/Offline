@@ -103,18 +103,18 @@ def appendEpilog(trig_path, relProjectDir, outDir, srcDir, verbose, doWrite, sou
             subEpilogFile.write(epilog)
 
     #now create the instance for the TriggerInfo Merger
-    trigInfoMergerName         = trig_path + "TriggerInfoMerger"
-    subSubEpilogMergerFileName = subEpilogDirName + "/main_" + trigInfoMergerName + '.fcl'
-    if verbose:
-        print("Creating {}".format(subSubEpilogMergerFileName))
-    subSubEpilogMergerFile     = open(subSubEpilogMergerFileName,"w")
-    subSubEpilogMergerFile.write("physics.producers."+trigInfoMergerName+" : { module_type : MergeTriggerInfo }");
-    subSubEpilogMergerFile.close();
+    if  doWrite :
+        trigInfoMergerName         = trig_path + "TriggerInfoMerger"
+        subSubEpilogMergerFileName = subEpilogDirName + "/main_" + trigInfoMergerName + '.fcl'
+        if verbose:
+            print("Creating {}".format(subSubEpilogMergerFileName))
+        subSubEpilogMergerFile     = open(subSubEpilogMergerFileName,"w+")
+        subSubEpilogMergerFile.write("physics.producers."+trigInfoMergerName+" : { module_type : MergeTriggerInfo }");
+        subSubEpilogMergerFile.close();
 
-    relSubSubEpilogFileName    = relSubEpilogDirName + "/main_"+ trigInfoMergerName + '.fcl' 
-    epilog=("\n#include \""+relSubSubEpilogFileName +"\"")
+        relSubSubEpilogFileName    = relSubEpilogDirName + "/main_"+ trigInfoMergerName + '.fcl' 
+        epilog=("\n#include \""+relSubSubEpilogFileName +"\"")
 
-    if doWrite :
         subEpilogFile.write(epilog)
         subEpilogFile.close()
 
