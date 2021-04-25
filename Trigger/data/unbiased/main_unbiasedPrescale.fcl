@@ -1,3 +1,0 @@
-physics.filters.unbiasedPrescale.nPrescale    : 10000
-physics.filters.unbiasedPrescale.useFilteredEvents : true
-physics.filters.unbiasedPrescale.triggerFlag  : ["PrescaleGoodEvents"]
