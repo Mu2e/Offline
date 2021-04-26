@@ -348,6 +348,11 @@ namespace mu2e {
       addDetector( stm.getSTMPtr() );
     }
 
+    if (_config.getBool("hasPTM",false) ){
+      std::unique_ptr<PTMon> ptmon(PTMonMaker::make(*_config));
+      addDetector(std::move(ptmon));
+    }
+
   } // preBeginRun()
 
   // Check that the configuration is self consistent.

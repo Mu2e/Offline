@@ -17,11 +17,9 @@ namespace mu2e {
                      int numVertWires,
                      int numHorizWires,
                      CLHEP::Hep3Vector const & originInParent = CLHEP::Hep3Vector(),
-                     CLHEP::HepRotation const & rotationInParent = CLHEP::HepRotation(),
                      int wireNumStart = 0) : 
     _nameSuffix(nameSuffix),
     _originInParent(originInParent),
-    _rotationInParent(rotationInParent),
     _frameHeight(frameHeight),
     _frameWidth(frameWidth),
     _frameThick(frameThick),
