@@ -1,8 +1,8 @@
-#ifndef CaloConditions_CaloDAQConditions_hh
-#define CaloConditions_CaloDAQConditions_hh
+#ifndef CaloConditions_CaloDAQMap_hh
+#define CaloConditions_CaloDAQMap_hh
 
 //
-// CaloDAQConditions stores channel maps vs detector map
+// CaloDAQMap stores channel maps vs detector map
 //
 
 // C++ includes
@@ -15,22 +15,22 @@
 
 namespace mu2e {
 
-  class CaloDAQConditions : virtual public ProditionsEntity {
+  class CaloDAQMap : virtual public ProditionsEntity {
   public:
 
-    typedef std::shared_ptr<CaloDAQConditions> ptr_t;
-    typedef std::shared_ptr<const CaloDAQConditions> cptr_t;
+    typedef std::shared_ptr<CaloDAQMap> ptr_t;
+    typedef std::shared_ptr<const CaloDAQMap> cptr_t;
 
-    //CaloDAQConditions():_name("CaloDAQConditions") {}
-    constexpr static const char* cxname = {"CaloDAQConditions"};
+    //CaloDAQMap():_name("CaloDAQMap") {}
+    constexpr static const char* cxname = {"CaloDAQMap"};
     
     // construct with constants, then some values are computed and filled below
-    CaloDAQConditions(std::vector<uint16_t> DIRAC2CaloMap, std::vector<uint16_t> Calo2DIRACMap) :
+    CaloDAQMap(std::vector<uint16_t> DIRAC2CaloMap, std::vector<uint16_t> Calo2DIRACMap) :
        ProditionsEntity(cxname),
-       // _name("CaloDAQConditions"),
+       // _name("CaloDAQMap"),
       _DIRAC2CaloMap(DIRAC2CaloMap), _Calo2DIRACMap(Calo2DIRACMap){}
 
-    virtual ~CaloDAQConditions() {}
+    virtual ~CaloDAQMap() {}
     
     //ora ..    std::string const& name() const { return _name; }
     void print(std::ostream& os) const;
