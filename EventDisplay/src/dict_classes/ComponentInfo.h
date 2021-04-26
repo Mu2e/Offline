@@ -15,6 +15,8 @@
 #include <TH1F.h>
 #include <TGraphErrors.h>
 #include <TMultiGraph.h>
+#include <TList.h>
+#include <TF1.h>
 #include <iostream>
 #include <sstream>
 #include <vector>
@@ -166,6 +168,22 @@ namespace mu2e_eventdisplay
           m->GetYaxis()->SetTitleSize(0.05);
           m->GetYaxis()->SetTitleOffset(0.8);
           m->Draw("a");
+
+          TString functionString;
+          bool failedFit=false;
+          TList *functionList = m->GetListOfFunctions();
+          for(int iFunction=0; iFunction<functionList->GetSize(); ++iFunction)
+          {
+            if(iFunction>0) functionString.Append("+");
+            TF1 *f = dynamic_cast<TF1*>(functionList->At(iFunction));
+            functionString.Append(f->GetExpFormula());
+            if(f->GetLineStyle()==2) failedFit=true;
+          }
+          TF1 *functionSum = new TF1("recoFunctionSum",functionString.Data());
+          functionSum->DrawF1(m->GetXaxis()->GetXmin(),m->GetXaxis()->GetXmax(),"csame");
+          functionSum->SetLineWidth(2);
+          functionSum->SetLineColor(2);
+          if(failedFit) functionSum->SetLineStyle(2);
 
           const string multigraphName = m->GetName();
           if(multigraphName.compare(0,8,"Waveform")==0)

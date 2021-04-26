@@ -7,6 +7,7 @@
 #include "GeometryService/inc/GeometryService.hh"
 #include "ProditionsService/inc/ProditionsService.hh"
 
+#include "DAQConditions/inc/EventTimingCache.hh"
 #include "TrackerConditions/inc/FullReadoutStrawCache.hh"
 #include "TrackerConditions/inc/TrackerStatusCache.hh"
 #include "TrackerConditions/inc/StrawDriftCache.hh"
@@ -35,6 +36,8 @@ namespace mu2e {
     // and then Geometry
     art::ServiceHandle<GeometryService> g;
 
+    auto etc = std::make_shared<mu2e::EventTimingCache>(_config.eventTiming());
+    _caches[etc->name()] = etc;
     auto frc = std::make_shared<mu2e::FullReadoutStrawCache>(_config.fullReadoutStraw());
     _caches[frc->name()] = frc;
     auto tsc = std::make_shared<mu2e::TrackerStatusCache>(_config.trackerStatus());

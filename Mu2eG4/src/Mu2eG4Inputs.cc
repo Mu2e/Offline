@@ -14,7 +14,17 @@ namespace mu2e {
     , inputMCTrajectories_{conf.inputMCTrajectories()}
     , inputPhysVolumeMultiInfo_{conf.inputPhysVolumeMultiInfo()}
     , multiStage_{ primaryType_.id() != Mu2eG4PrimaryType::GenParticles }
-  {}
+  {
+    unsigned simStage{0};
+    if(conf.simStageOverride(simStage)) {
+      simStageOverride_.emplace(simStage);
+    }
+
+    Mu2eG4Config::EventLevelVolInfos evconf;
+    if(conf.updateEventLevelVolumeInfos(evconf)) {
+      elvi_.emplace(EventLevelVolInfos{evconf.input(), evconf.outInstance()});
+    }
+  }
 
   //================================================================
   art::Handle<SimParticleCollection>

@@ -24,6 +24,7 @@
 #include "Mu2eG4/inc/SimParticlePrimaryHelper.hh"
 #include "Mu2eG4/inc/Mu2eG4Config.hh"
 #include "Mu2eG4/inc/Mu2eG4IOConfigHelper.hh"
+#include "Mu2eG4/inc/writePhysicalVolumes.hh"
 #include "Mu2eG4/inc/Mu2eG4MTRunManager.hh"
 
 // Data products that will be produced by this module.
@@ -99,6 +100,7 @@ namespace mu2e {
     void beginRun(art::Run &r, art::ProcessingFrame const& pf) override;
     void endRun(art::Run &r, art::ProcessingFrame const& pf) override;
     void beginSubRun(art::SubRun &sr, art::ProcessingFrame const& pf) override;
+    void endSubRun(art::SubRun &sr, art::ProcessingFrame const& pf) override;
 
     Mu2eG4Config::Top conf_;
     Mu2eG4ResourceLimits mu2elimits_;
@@ -236,28 +238,37 @@ namespace mu2e {
   }//Mu2eG4MT::initializeG4
 
 
-
   void Mu2eG4MT::beginSubRun(art::SubRun& sr, art::ProcessingFrame const& procFrame) {
-    using Collection_t = PhysicalVolumeInfoMultiCollection;
-    auto mvi = std::make_unique<Collection_t>();
-
-    if(multiStagePars_.multiStage()) {
-      // Copy over data from the previous simulation stages
-      auto const& ih = sr.getValidHandle<Collection_t>(multiStagePars_.inputPhysVolumeMultiInfo());
-      mvi->reserve(1 + ih->size());
-      mvi->insert(mvi->begin(), ih->cbegin(), ih->cend());
+    if(multiStagePars_.simStageOverride()) {
+      simStage_ = *multiStagePars_.simStageOverride();
     }
-
-    // By definition simStage=0 if we start with GenParticles and not doing multiStage.
-    simStage_ = mvi->size();
-
-    // Append info for the current stage
-    mvi->emplace_back(physVolHelper_.persistentSingleStageInfo());
-
-    sr.put(std::move(mvi));
+    else {
+      std::optional<art::InputTag> in;
+      if(multiStagePars_.multiStage()) {
+        in.emplace(multiStagePars_.inputPhysVolumeMultiInfo());
+      }
+      simStage_ = writePhysicalVolumes(sr,
+                                       in,
+                                       physVolHelper_.persistentSingleStageInfo(),
+                                       "");
+    }
   }
 
+  void Mu2eG4MT::endSubRun(art::SubRun& sr, art::ProcessingFrame const& procFrame) {
+    if(multiStagePars_.simStageOverride()) {
+      const unsigned pvstage =
+        writePhysicalVolumes(sr,
+                             multiStagePars_.inputPhysVolumeMultiInfo(),
+                             physVolHelper_.persistentSingleStageInfo(),
+                             "");
 
+      if(pvstage != simStage_) {
+        throw cet::exception("BADINPUT")
+          << "Mu2eG4MT::endSubRun() Error: inconsistent simStage: "
+          <<simStage_<<" vs "<<pvstage<<"\n";
+      }
+    }
+  }
 
   // Create one G4 event and copy its output to the art::event.
   void Mu2eG4MT::produce(art::Event& event, art::ProcessingFrame const& procFrame) {
@@ -310,6 +321,20 @@ namespace mu2e {
     }
     else {
       perThreadStore->putDataIntoEvent();
+
+      if(multiStagePars_.updateEventLevelVolumeInfos()) {
+        const unsigned pvstage =
+          writePhysicalVolumes(event,
+                               multiStagePars_.updateEventLevelVolumeInfos()->input,
+                               physVolHelper_.persistentSingleStageInfo(),
+                               multiStagePars_.updateEventLevelVolumeInfos()->outInstance);
+
+        if(pvstage != simStage_) {
+          throw cet::exception("BADINPUT")
+            << "Mu2eG4MT::produce() Error: inconsistent simStage: "
+            <<simStage_<<" vs "<<pvstage<<"\n";
+        }
+      }
     }
 
     scheduleWorkerRM->TerminateOneEvent();
