@@ -1,0 +1,63 @@
+#include "fcl/minimalMessageService.fcl"
+#include "fcl/standardProducers.fcl"
+#include "fcl/standardServices.fcl"
+#include "CommonMC/fcl/prolog.fcl"
+#include "Filters/fcl/prolog.fcl"
+#include "CaloCluster/fcl/prolog_trigger.fcl"
+
+process_name: g4CaloExample
+
+
+source: { 
+   module_type: RootInput
+   maxEvents : 10000
+}
+
+services : {
+  @table::Services.SimAndReco
+  TFileService : { fileName : "test.root" }
+}
+
+
+
+physics: {
+
+  producers : 
+  {      
+      FindMCPrimary : { 
+        @table::CommonMC.FindMCPrimary
+      }
+
+      @table::CaloReco.producers
+      @table::CaloMC.TruthProducers
+      @table::CaloClusterMC.producers	
+      @table::CaloClusterTrigger.producers	
+  }
+  
+  analyzers : 
+  {
+      CaloNNDiag: {
+          module_type                : CaloNNDiag
+          vdCollection               : "compressDigiMCs:virtualdetector"
+          caloHitCollection          : CaloHitMaker
+          caloClusterCollection      : CaloClusterFast
+          caloHitTruth               : CaloHitTruthMatch
+          caloClusterTruth           : CaloClusterTruthMatch
+          timeOffsets                : { inputs : [ "compressDigiMCs:protonTimeMap", "compressDigiMCs:muonTimeMap" ] }
+      }
+  }
+  
+  p1: [FindMCPrimary, @sequence::CaloReco.Reco,@sequence::CaloClusterTrigger.Reco, @sequence::CaloMC.TruthMatch ]
+
+  e1: [CaloNNDiag]
+   
+
+  trigger_paths: [p1]
+  end_paths:     [e1]
+}
+
+services.SeedService.baseSeed         :  99
+services.SeedService.maxUniqueEngines :  20
+
+physics.producers.CaloHitTruthMatch.caloShowerSimCollection    : "compressDigiMCs"
+physics.producers.CaloClusterTruthMatch.caloClusterCollection  : "CaloClusterFast"

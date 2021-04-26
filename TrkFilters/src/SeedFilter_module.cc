@@ -14,8 +14,6 @@
 #include "RecoDataProducts/inc/KalSeed.hh"
 #include "RecoDataProducts/inc/TriggerInfo.hh"
 #include "RecoDataProducts/inc/TrkFitDirection.hh"
-// BTrk
-#include "BTrk/TrkBase/TrkParticle.hh"
 
 using namespace CLHEP;
 // c++
@@ -36,7 +34,7 @@ namespace mu2e
   private:
     art::InputTag   _ksTag;
     bool            _hascc; // Calo Cluster
-    TrkParticle     _tpart; // particle type being searched for
+    PDGCode::type     _tpart; // particle type being searched for
     TrkFitDirection _fdir;  // fit direction in search
     double          _minfitcons;
     unsigned        _minnhits;
@@ -54,7 +52,7 @@ namespace mu2e
     art::EDFilter{pset},
     _ksTag     (pset.get<art::InputTag>("kalSeedCollection","KSFDeM")),
     _hascc     (pset.get<bool>("requireCaloCluster",false)),
-    _tpart     ((TrkParticle::type)(pset.get<int>("fitparticle"))),
+    _tpart     ((PDGCode::type)(pset.get<int>("fitparticle"))),
     _fdir      ((TrkFitDirection::FitDirection)(pset.get<int>("fitdirection"))),
     _minfitcons(pset.get<double>("minFitCons",-1.)),   //not used by default
     _minnhits  (pset.get<unsigned>("minNHits",15)),

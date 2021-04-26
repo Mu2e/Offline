@@ -291,7 +291,6 @@ void MakeCrvPhotons::MakePhotons(const CLHEP::Hep3Vector &stepStartTmp,   //they
                           double visibleEnergyDeposited,
                           double trueTotalStepLength,   //may be longer than stepEnd-stepStart due to scattering 
                                                         //is needed for the Cerenkov photons
-                          double scintillationYieldAdjustment,
                           int    reflector)
 {
   if(_LC.reflector!=0 && reflector==0) throw std::logic_error("Expected a lookup table without reflector.");
@@ -338,7 +337,7 @@ static int nPCerenkov=0;
     double precision=0.1; //mm
     int    nSteps=std::max(static_cast<int>(totalStepLength/precision),1);
 
-    double avgNPhotonsScintillation = (_scintillationYield+scintillationYieldAdjustment)*visibleEnergyDeposited;
+    double avgNPhotonsScintillation = _scintillationYield*visibleEnergyDeposited;
     double avgNPhotonsCerenkovInScintillator 
            = GetAverageNumberOfCerenkovPhotons(beta, charge, _LCerenkov.photonsScintillator)*trueTotalStepLength;  //use the true path, since it  may be longer due to curved paths
     double avgNPhotonsCerenkovInFiber 

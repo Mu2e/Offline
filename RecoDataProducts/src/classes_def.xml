@@ -174,7 +174,8 @@
  <class name="art::Wrapper<mu2e::KalRepPtrCollection>"/>
 
  <class name="mu2e::TrkFitDirection"/>
- <class name="TrkParticle"/>   <!-- BTrk -->
+ <class name="KinKal::ParticleState"/> <!--KinKal-->
+ <class name="KinKal::ParticleStateEstimate"/> <!--KinKal-->
  <class name="mu2e::TrkStrawHitSeed"/>
  <class name="mu2e::TrkCaloHitSeed"/>
  <class name="mu2e::TrkStraw"/>
@@ -189,6 +190,12 @@
  <class name="art::Ptr<mu2e::KalSeed>"/>
  <class name="std::vector<art::Ptr<mu2e::KalSeed> >"/>
  <class name="art::Wrapper<mu2e::KalSeedCollection>"/>
+
+<!-- KinKal products: these cannot be directly persisted -->
+
+ <class name="mu2e::KKLoopHelix"/>
+ <class name="mu2e::KKLoopHelixCollection" persistent="false"/>
+ <class name="art::Wrapper<mu2e::KKLoopHelixCollection>"/>
 
  <class name="mu2e::MVAStatus"/>
  <class name="mu2e::TrkQual"/>
@@ -280,6 +287,7 @@
  <class name="mu2e::CrvDigiCollection" />
  <class name="art::Wrapper<mu2e::CrvDigiCollection>" />
 
+ <class name="mu2e::CrvRecoPulseFlags" />
  <class name="mu2e::CrvRecoPulse" />
  <class name="art::Ptr<mu2e::CrvRecoPulse>"/>
  <class name="std::vector<mu2e::CrvRecoPulse>" />

@@ -13,7 +13,7 @@
 //Tracker Hits:
 #include "RecoDataProducts/inc/ComboHit.hh"
 //CRV:
-#include "RecoDataProducts/inc/CrvRecoPulseCollection.hh"
+#include "RecoDataProducts/inc/CrvRecoPulse.hh"
 #include "RecoDataProducts/inc/CrvCoincidenceClusterCollection.hh"
 //Art:
 #include "art/Framework/Principal/Event.h"

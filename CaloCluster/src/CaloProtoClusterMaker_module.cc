@@ -54,6 +54,7 @@ namespace mu2e {
             fhicl::Atom<double>       EminSeed              { Name("EminSeed"),               Comment("Minimum energy for a hit to be a cluster seed") }; 
             fhicl::Atom<double>       EnoiseCut             { Name("EnoiseCut"),              Comment("Minimum energy for a hit to be in a cluster") }; 
             fhicl::Atom<double>       ExpandCut             { Name("ExpandCut"),              Comment("Minimum energy for a hit to expand cluster") }; 
+            fhicl::Atom<bool>         addSecondRing         { Name("addSecondRing"),          Comment("Add secondary ring around crystal when forming clusters") }; 
             fhicl::Atom<double>       timeCut               { Name("timeCut"),                Comment("Minimum hit time to form cluster") }; 
             fhicl::Atom<double>       deltaTime             { Name("deltaTime"),              Comment("Maximum time difference between seed and hit in cluster") }; 
             fhicl::Atom<int>          diagLevel             { Name("diagLevel"),              Comment("Diag level"),0 }; 
@@ -67,6 +68,7 @@ namespace mu2e {
           EminSeed_        (config().EminSeed()),
           EnoiseCut_       (config().EnoiseCut()),
           ExpandCut_       (config().ExpandCut()),
+          addSecondRing_   (config().addSecondRing()),
           timeCut_         (config().timeCut()),
           deltaTime_       (config().deltaTime()),
           diagLevel_       (config().diagLevel())
@@ -84,6 +86,7 @@ namespace mu2e {
         double            EminSeed_;
         double            EnoiseCut_;
         double            ExpandCut_;
+	bool              addSecondRing_;
         double            timeCut_;
         double            deltaTime_;
         int               diagLevel_;
@@ -147,7 +150,7 @@ namespace mu2e {
       while( !seedList.empty() )
       {
           const CaloHit* crystalSeed = *seedList.begin();
-          ClusterFinder finder(cal, crystalSeed, deltaTime_, ExpandCut_);
+          ClusterFinder finder(cal, crystalSeed, deltaTime_, ExpandCut_, addSecondRing_);
           finder.formCluster(caloIdHitMap);
 
           mainClusterList.push_back(finder.clusterList());
@@ -169,7 +172,7 @@ namespace mu2e {
       while (!seedList.empty())
       {
           const CaloHit* crystalSeed = *seedList.begin();
-          ClusterFinder finder(cal,crystalSeed,deltaTime_, ExpandCut_);
+          ClusterFinder finder(cal,crystalSeed,deltaTime_, ExpandCut_, addSecondRing_);
 
           finder.formCluster(caloIdHitMap);
           splitClusterList.push_back(finder.clusterList());

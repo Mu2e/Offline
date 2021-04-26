@@ -5,6 +5,7 @@
 
 #include <string>
 #include <vector>
+#include <optional>
 
 #include "canvas/Utilities/InputTag.h"
 #include "Mu2eG4/inc/Mu2eG4Config.hh"
@@ -16,6 +17,11 @@
 namespace art { class Event; }
 
 namespace mu2e {
+
+  struct EventLevelVolInfos {
+    art::InputTag input;
+    std::string outInstance;
+  };
 
   class Mu2eG4Inputs {
   public:
@@ -29,7 +35,11 @@ namespace mu2e {
 
     const art::InputTag& inputMCTrajectories() const { return inputMCTrajectories_; }
 
+    std::optional<unsigned> simStageOverride() const { return simStageOverride_; }
+
     const art::InputTag& inputPhysVolumeMultiInfo() const { return inputPhysVolumeMultiInfo_; }
+
+    const std::optional<EventLevelVolInfos>& updateEventLevelVolumeInfos() const { return elvi_; }
 
     // The handle is not valid if there are no input sim particles, either for
     // initial stage jobs, or for non-filtered multistage input when the
@@ -40,8 +50,9 @@ namespace mu2e {
     Mu2eG4PrimaryType primaryType_;
     art::InputTag primaryTag_;
     art::InputTag inputMCTrajectories_;
+    std::optional<unsigned> simStageOverride_;
     art::InputTag inputPhysVolumeMultiInfo_;
-
+    std::optional<EventLevelVolInfos> elvi_;
     // derived
     bool multiStage_;
   };

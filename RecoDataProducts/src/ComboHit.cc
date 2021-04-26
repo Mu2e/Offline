@@ -223,7 +223,7 @@ namespace mu2e {
 
   void ComboHit::print( std::ostream& ost, bool doEndl) const {
     ost << " ComboHit:"
-        << " id"      << _sid
+        << " id "      << _sid
         << " time "     << _time
         << " drift time " << _dtime
         << " prop time " << _ptime
