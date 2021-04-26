@@ -54,13 +54,14 @@ namespace mu2e {
 
     const int version              = hrs->version();
 
+    AntiLeakRegistry& reg = art::ServiceHandle<Mu2eG4Helper>()->antiLeakRegistry();
     // -----------------------------
     // Put in beam pipe inlet.  David Norvil Brown, Louisville, March 2015
 
     Tube const & pssInletParams = hrs->beamInlet();
     //    G4Material* beampipeMaterial = findMaterialOrThrow(pssInletParams.materialName());
     CLHEP::Hep3Vector place = hrs->getBeamInletCenter();
-    CLHEP::HepRotation * turn = new CLHEP::HepRotation(CLHEP::HepRotation::IDENTITY);
+    CLHEP::HepRotation * turn = reg.add(CLHEP::HepRotation(CLHEP::HepRotation::IDENTITY));
     turn->rotateY(hrs->getBeamAngleY());
     turn->rotateX(hrs->getBeamAngleX());
 

@@ -1,11 +1,6 @@
 //
-// Free function to create  Production Solenoid and Production Target.
+// Free function to create Production Target.
 //
-//
-// Original author KLG based on Mu2eWorld constructPS
-//
-// Notes:
-// Construct the PS. Parent volume is the air inside of the hall.
 
 // C++ includes
 #include <iostream>
@@ -80,6 +75,9 @@ namespace mu2e {
   }
 
   void constructTargetPS(VolumeInfo const & parent, SimpleConfig const & _config) {
+
+    Mu2eG4Helper    & _helper = *(art::ServiceHandle<Mu2eG4Helper>());
+    AntiLeakRegistry & reg = _helper.antiLeakRegistry();
 
     //
     // which target am I building?
@@ -220,13 +218,13 @@ namespace mu2e {
 	CLHEP::Hep3Vector finOffset1(xMove,-rToFin,finZoff);
 	CLHEP::Hep3Vector finOffset2(rToFin*cos(M_PI/6.0)+xMove,rToFin*sin(M_PI/6.0),finZoff-1.0);
 	CLHEP::Hep3Vector finOffset3(-rToFin*cos(M_PI/6.0)+xMove-0.1,rToFin*sin(M_PI/6.0)+0.02,finZoff+0.2);
-	CLHEP::HepRotation* rotFinBase = new CLHEP::HepRotation(CLHEP::HepRotation::IDENTITY);
+	CLHEP::HepRotation* rotFinBase = reg.add(CLHEP::HepRotation(CLHEP::HepRotation::IDENTITY));
 	rotFinBase->rotateX(90.0*CLHEP::degree);
 	rotFinBase->rotateZ(90.0*CLHEP::degree);
 
-	CLHEP::HepRotation* rotFin1 = new CLHEP::HepRotation((*rotFinBase)*tgt->productionTargetRotation());
-	CLHEP::HepRotation* rotFin2 = new CLHEP::HepRotation((*rotFinBase)*tgt->productionTargetRotation());
-	CLHEP::HepRotation* rotFin3 = new CLHEP::HepRotation((*rotFinBase)*tgt->productionTargetRotation());
+	CLHEP::HepRotation* rotFin1 = reg.add(CLHEP::HepRotation((*rotFinBase)*tgt->productionTargetRotation()));
+	CLHEP::HepRotation* rotFin2 = reg.add(CLHEP::HepRotation((*rotFinBase)*tgt->productionTargetRotation()));
+	CLHEP::HepRotation* rotFin3 = reg.add(CLHEP::HepRotation((*rotFinBase)*tgt->productionTargetRotation()));
 	rotFin1->rotateX(M_PI);
 	rotFin2->rotateX(M_PI/3.0);
 	rotFin3->rotateX(5.0*M_PI/3.0);
@@ -355,7 +353,7 @@ namespace mu2e {
 	VolumeInfo iSpokeInfo   = nestTubs( iSpokeName.str(),
 					    iSpokeParams,
 					    spokeMaterial,
-					    new CLHEP::HepRotation(tmpRotAxis,rotAngle),
+					    reg.add(CLHEP::HepRotation(tmpRotAxis,rotAngle)),
 					    tmpMidPnt,
 					    prodTargetMotherInfo,
 					    0,
@@ -388,7 +386,7 @@ namespace mu2e {
 	normalaxHub.rotateZ(tmpAngle);
 	normalaxHub.transform(invTrgtRot);
 	double deepAngleHub = tmpDirVec.angle(normalaxHub);
-	//CLHEP::HepRotation *tmpSpokeRot = new CLHEP::HepRotation(tmpRotAxis,rotAngle);
+	//CLHEP::HepRotation *tmpSpokeRot = reg.add(CLHEP::HepRotation(tmpRotAxis,rotAngle));
 
 	double fixOverlapWheel = spokeRad*tan(deepAngleWheel);
 	double fixOverlapHub = spokeRad*tan(deepAngleHub);
@@ -402,7 +400,7 @@ namespace mu2e {
 	VolumeInfo iSpokeInfo   = nestTubs( iSpokeName.str(),
 					    iSpokeParams,
 					    spokeMaterial,
-					    new CLHEP::HepRotation(tmpRotAxis,rotAngle),
+					    reg.add(CLHEP::HepRotation(tmpRotAxis,rotAngle)),
 					    tmpMidPnt,
 					    prodTargetMotherInfo,
 					    0,
@@ -430,10 +428,6 @@ namespace mu2e {
       bool forceAuxEdgeVisible = geomOptions->forceAuxEdgeVisible( "ProductionTarget" );
       bool placePV             = geomOptions->placePV( "ProductionTarget" );
       bool doSurfaceCheck      = geomOptions->doSurfaceCheck( "ProductionTarget" );
-      
-      Mu2eG4Helper    & _helper = *(art::ServiceHandle<Mu2eG4Helper>());
-      AntiLeakRegistry & reg = _helper.antiLeakRegistry();
- 
       // 
 
       // begin all names with ProductionTarget so when we build sensitive detectors we can make them all 
@@ -648,7 +642,7 @@ namespace mu2e {
 	    //
 	    // these are oriented with gap radius along z.  Recall still in mother volume so this axis is OK
 	    G4RotationMatrix* tubTopRotation = reg.add(G4RotationMatrix(CLHEP::HepRotation::IDENTITY));
-	    //	    G4RotationMatrix* tubTopRotation = new G4RotationMatrix(CLHEP::HepRotation::IDENTITY);
+
 	    tubTopRotation->rotateY(M_PI/2.);
 
 	    VolumeInfo finTopWithCutoutInfo(nameTop,finTopTranslation,prodTargetMotherInfo.centerInWorld);
@@ -968,8 +962,8 @@ namespace mu2e {
             // need extra length for visualization tool and overlap avoidance
 	    G4Tubs* tubCutout = new G4Tubs("finCutout",0.,tgt->rOut(),currentHalfStartingSegment + magicOffset,dSphi,dPphi);
 
-	    CLHEP::HepRotation* rotFin = new CLHEP::HepRotation(tgt->productionTargetRotation().inverse());
-	    CLHEP::HepRotation* rotFinG4 = new CLHEP::HepRotation(tgt->productionTargetRotation());
+            CLHEP::HepRotation* rotFin = reg.add(CLHEP::HepRotation(tgt->productionTargetRotation().inverse()));
+            CLHEP::HepRotation* rotFinG4 = reg.add(CLHEP::HepRotation(tgt->productionTargetRotation()));
 	    // 
 	    // ok here I have a little confusing fix.  The fin is built along the y-axis.  But the rotation is given wrt the x axis.  Hence I need to
 	    // subtract off that 90^o 
@@ -1137,7 +1131,7 @@ namespace mu2e {
 	  std::cout << "Printing information about production target supports:\n";
 
 	const double targetAngle = tgt->rotHaymanY(); //assume target angle is only in the x-z plane for supports
-	CLHEP::HepRotation* rodRot = new CLHEP::HepRotation(CLHEP::HepRotation::IDENTITY);
+	CLHEP::HepRotation* rodRot = reg.add(CLHEP::HepRotation(CLHEP::HepRotation::IDENTITY));
 	rodRot->rotateY(-1.*targetAngle);
 	
 	for(int istream = 0; istream < 2; ++istream) {
@@ -1217,7 +1211,7 @@ namespace mu2e {
 	    CLHEP::Hep3Vector spokeCenter((wheelPos+targetPos)/2.);
 	    double spokeLength = abs((wheelPos-targetPos).mag());
 	    TubsParams spokeParams(0., tgt->spokeRadius(), 0.5*spokeLength);
-	    CLHEP::HepRotation* spokeRot = new CLHEP::HepRotation(spokeAxis.cross(zax), spokeAxis.angle(zax));
+	    CLHEP::HepRotation* spokeRot = reg.add(CLHEP::HepRotation(spokeAxis.cross(zax), spokeAxis.angle(zax)));
 	    std::stringstream spokeName;
 	    spokeName << "ProductionTargetSpokeWire_" ;
 	    if(istream == 0)

@@ -17,6 +17,7 @@
 #include "Mu2eHallGeom/inc/Mu2eHall.hh"
 #include "Mu2eG4/inc/constructHall.hh"
 #include "Mu2eG4/inc/MaterialFinder.hh"
+#include "Mu2eG4Helper/inc/Mu2eG4Helper.hh"
 #include "Mu2eG4/inc/findMaterialOrThrow.hh"
 #include "Mu2eG4/inc/finishNesting.hh"
 #include "Mu2eG4/inc/nestBox.hh"
@@ -109,6 +110,8 @@ namespace mu2e {
     const bool forceAuxEdgeVisible = geoOptions->forceAuxEdgeVisible("HallAir");
     const bool placePV             = geoOptions->placePV("HallAir");
 
+    AntiLeakRegistry& reg = art::ServiceHandle<Mu2eG4Helper>()->antiLeakRegistry();
+
     OrientationResolver* OR = new OrientationResolver();
 
     // Loop over all volumes in the map
@@ -146,7 +149,7 @@ namespace mu2e {
           G4Box* notchBox = new G4Box( notchName.str(),
                                        halfDims[0],halfDims[1],halfDims[2]);
 
-          CLHEP::HepRotation* notchRotat = new CLHEP::HepRotation(CLHEP::HepRotation::IDENTITY);
+          CLHEP::HepRotation* notchRotat = reg.add(CLHEP::HepRotation(CLHEP::HepRotation::IDENTITY));
           OR->getRotationFromOrientation( *notchRotat, tmpNotch.getOrient());
 
           if ( 0 == aSolid ) {
@@ -234,6 +237,8 @@ namespace mu2e {
     const bool forceAuxEdgeVisible = geoOptions->forceAuxEdgeVisible("HallAir");
     const bool placePV             = geoOptions->placePV("HallAir");
 
+    AntiLeakRegistry& reg = art::ServiceHandle<Mu2eG4Helper>()->antiLeakRegistry();
+
     OrientationResolver* OR = new OrientationResolver();
 
     // Loop over all volumes in the map
@@ -244,7 +249,7 @@ namespace mu2e {
 
       geoOptions->loadEntry( config, volume.getName(), volume.getName() );
       const CLHEP::HepRotation vRot = rot*volume.getRotation();
-      const G4RotationMatrix* vRotG4 = new G4RotationMatrix(vRot);
+      const G4RotationMatrix* vRotG4 = reg.add(G4RotationMatrix(vRot));
 
       if ( notchMgr.hasNotches( volName ) ) {
         // First do volumes with notches
@@ -273,7 +278,7 @@ namespace mu2e {
           G4Box* notchBox = new G4Box( notchName.str(),
                                        halfDims[0],halfDims[1],halfDims[2]);
 
-          CLHEP::HepRotation* notchRotat = new CLHEP::HepRotation(CLHEP::HepRotation::IDENTITY);
+          CLHEP::HepRotation* notchRotat = reg.add(CLHEP::HepRotation(CLHEP::HepRotation::IDENTITY));
           OR->getRotationFromOrientation( *notchRotat, tmpNotch.getOrient());
 
           if ( 0 == aSolid ) {

@@ -89,7 +89,7 @@ namespace mu2e {
        cout << __func__ << " STM verbosityLevel    : " << verbosityLevel  << endl;
     }
 
-    
+    AntiLeakRegistry& reg = art::ServiceHandle<Mu2eG4Helper>()->antiLeakRegistry();
     // Access to the Mu2eG4HelperService.
     Mu2eG4Helper* _helper = &(*(art::ServiceHandle<Mu2eG4Helper>()));
 
@@ -717,7 +717,7 @@ namespace mu2e {
     const double mstmMagnetStandLegOffsetZ = stmMagnetSupportTableHalfLengths[2] - mstmMagnetStandLegRadius - 1.0*CLHEP::cm;
 
     CLHEP::HepRotationX RXForLegs(90.0*CLHEP::degree);
-    G4RotationMatrix *rotMatrixXforLegs = new G4RotationMatrix(RXForLegs);
+    G4RotationMatrix *rotMatrixXforLegs = reg.add(G4RotationMatrix(RXForLegs));
 
     if (pSTMMagnetSupportTableParams.build()){
       VolumeInfo mstmMagnetStandInfo = nestBox("mstmMagnetStandPlatform",
@@ -859,13 +859,13 @@ namespace mu2e {
     const double xoffset_hole1 = pSTMSSCollimatorParams.hole1xOffset();
     const double angleY1 = -1.0*std::atan( (xoffset_hole1/2.0)/(z_distance_tgt_coll/2.0) );
     CLHEP::HepRotationY RYForCone1(angleY1);
-    G4RotationMatrix *rotMatrixYforCone1 = new G4RotationMatrix(RYForCone1);
+    G4RotationMatrix *rotMatrixYforCone1 = reg.add(G4RotationMatrix(RYForCone1));
     const double z_shift1 = z_distance_tgt_coll/2.0*std::sin(std::abs(angleY1)) + pSTMSSCollimatorParams.hole1RadiusDnStr()*std::sin(std::abs(angleY1));
  
     const double xoffset_hole2 = pSTMSSCollimatorParams.hole2xOffset();
     const double angleY2 = -1.0*std::atan( (xoffset_hole2/2.0)/(z_distance_tgt_coll/2.0) );
     CLHEP::HepRotationY RYForCone2(angleY2);
-    G4RotationMatrix *rotMatrixYforCone2 = new G4RotationMatrix(RYForCone2);
+    G4RotationMatrix *rotMatrixYforCone2 = reg.add(G4RotationMatrix(RYForCone2));
     const double z_shift2 = z_distance_tgt_coll/2.0*std::sin(std::abs(angleY2)) + pSTMSSCollimatorParams.hole2RadiusDnStr()*std::sin(std::abs(angleY2));
     
 //     const double z_FOVColl_downstream = stmFOVCollPositionInMu2e1.z() + stmFOVCollHalfLength1;
@@ -1001,7 +1001,7 @@ namespace mu2e {
     const double mstmDetectorStandLegOffsetZ = stmDetectorSupportTableHalfLengths[2] - mstmDetectorStandLegRadius - 1.0*CLHEP::cm;
 
     //CLHEP::HepRotationX RXForLegs(90.0*CLHEP::degree);
-    //G4RotationMatrix *rotMatrixXforLegs = new G4RotationMatrix(RXForLegs);
+    //G4RotationMatrix *rotMatrixXforLegs = reg.add(G4RotationMatrix(RXForLegs));
 
     if (pSTMDetectorSupportTableParams.build()){
       VolumeInfo mstmDetectorStandInfo = nestBox("mstmDetectorStandPlatform",

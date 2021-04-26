@@ -25,6 +25,7 @@
 #include "GeometryService/inc/WorldG4.hh"
 #include "Mu2eG4/inc/findMaterialOrThrow.hh"
 #include "Mu2eG4Helper/inc/VolumeInfo.hh"
+#include "Mu2eG4Helper/inc/Mu2eG4Helper.hh"
 #include "GeomPrimitives/inc/Tube.hh"
 #include "GeomPrimitives/inc/TubsParams.hh"
 #include "ConfigTools/inc/SimpleConfig.hh"
@@ -60,6 +61,7 @@ namespace mu2e {
 
     GeomHandle<Saddle> saddleSet;
 
+    AntiLeakRegistry& reg = art::ServiceHandle<Mu2eG4Helper>()->antiLeakRegistry();
     // Utility for converting orientations to rotations
     OrientationResolver* OR = new OrientationResolver();
 
@@ -141,7 +143,7 @@ namespace mu2e {
 	  // Make the needed rotation by parsing orientation
 	  std::string orientSAInit = orientsSA[i];
 
-	  CLHEP::HepRotation* itsSARotat = new CLHEP::HepRotation(CLHEP::HepRotation::IDENTITY);
+	  CLHEP::HepRotation* itsSARotat = reg.add(CLHEP::HepRotation(CLHEP::HepRotation::IDENTITY));
 	  OR->getRotationFromOrientation( *itsSARotat, orientSAInit );
 
 	  // ****************************************
@@ -199,7 +201,7 @@ namespace mu2e {
 					     windparams.data()[3], 
 					     windparams.data()[4]);
 	    
-	      CLHEP::HepRotation* windRotat = new CLHEP::HepRotation(CLHEP::HepRotation::IDENTITY);
+	      CLHEP::HepRotation* windRotat = reg.add(CLHEP::HepRotation(CLHEP::HepRotation::IDENTITY));
 	      OR->getRotationFromOrientation( *windRotat, holeOrientsSA[hID] );
 
 	      
@@ -248,7 +250,7 @@ namespace mu2e {
 					     tempDims[1],
 					     tempDims[2]);
 
-	      CLHEP::HepRotation* notchRotat = new CLHEP::HepRotation(CLHEP::HepRotation::IDENTITY);
+	      CLHEP::HepRotation* notchRotat(nullptr);
 
 
 	      if ( 0 == aSolid ) { 
