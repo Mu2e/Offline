@@ -34,13 +34,11 @@ namespace mu2e {
              int numVertWires,
              int numHorizWires,
              CLHEP::Hep3Vector const & originInParent = CLHEP::Hep3Vector(),
-             CLHEP::HepRotation const & rotationInParent = CLHEP::HepRotation(),
              int wireNumStart = 0);
     // default ctor
     PTMonPWC() {}
 
     CLHEP::Hep3Vector const &  originInParent()   const { return _originInParent; }
-    CLHEP::HepRotation const & rotationInParent() const { return _rotationInParent; }
     std::vector<double>        vertWireYPos()     const { return _vertWireYpos; }
     std::vector<double>        horizWireXPos()    const { return _horizWireXpos; }
 
@@ -70,14 +68,13 @@ namespace mu2e {
     double      hv3Z()               const { return _hv3Z; }
     double      gasOutZ()            const { return _gasOutZ; }
     double      ground2Z()           const { return _ground2Z; }
-    double      totalThick()         const {return _totalThick; }
+    double      totalThick()         const { return _totalThick; }
     
 
 
   private:
     std::string _nameSuffix;
     CLHEP::Hep3Vector _originInParent;
-    CLHEP::HepRotation _rotationInParent;
     double _frameHeight;
     double _frameWidth;
     double _frameThick;

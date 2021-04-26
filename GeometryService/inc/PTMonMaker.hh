@@ -1,7 +1,10 @@
 #ifndef GeometryService_PTMonMaker_hh
 #define GeometryService_PTMonMaker_hh
+
+#include "CLHEP/Vector/Rotation.h"
+#include "CLHEP/Vector/ThreeVector.h"
 //
-// construct and return a PTargetMon
+// construct and return a PTMon
 //
 // original author Helenka Casler
 //
@@ -9,18 +12,13 @@
 namespace mu2e {
 
   class SimpleConfig;
+  class PTMon;
   // TODO: class PTMon (or something)
 
   class PTMonMaker {
 
   public:
-    PTMonMaker( SimpleConfig const& config );
-
-  private:
-    // Extract info from the config file.
-    void parseConfig( const SimpleConfig& config );
-    // TODO all other methods should also return void
-    // TODO internal numbers, etc to hold config/geom data
+    static std::unique_ptr<PTMon> make(SimpleConfig const& config);
   };
 
 } // namespace mu2e
