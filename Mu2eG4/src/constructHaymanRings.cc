@@ -1,11 +1,6 @@
 //
-// Free function to create  Production Solenoid and Production Target.
+// Free function to create Production Target.
 //
-//
-// Original author KLG based on Mu2eWorld constructPS
-//
-// Notes:
-// Construct the PS. Parent volume is the air inside of the hall.
 
 // C++ includes
 #include <iostream>
@@ -18,6 +13,7 @@
 #include "GeomPrimitives/inc/Tube.hh"
 #include "GeomPrimitives/inc/Polycone.hh"
 #include "Mu2eG4Helper/inc/VolumeInfo.hh"
+#include "Mu2eG4Helper/inc/Mu2eG4Helper.hh"
 #include "GeometryService/inc/G4GeometryOptions.hh"
 #include "GeometryService/inc/GeometryService.hh"
 #include "GeometryService/inc/GeomHandle.hh"
@@ -58,6 +54,7 @@ namespace mu2e {
 
     G4ThreeVector _hallOriginInMu2e = parent.centerInMu2e();
 
+    AntiLeakRegistry& reg = art::ServiceHandle<Mu2eG4Helper>()->antiLeakRegistry();
 
     // Build the production target.
     GeomHandle<ProductionTarget> tgt;
@@ -226,22 +223,22 @@ namespace mu2e {
       G4Material* endRingsMaterial = findMaterialOrThrow("G4_W");
 
 
-     CLHEP::HepRotation* rotRingBase = new CLHEP::HepRotation(CLHEP::HepRotation::IDENTITY);
+      CLHEP::HepRotation* rotRingBase = reg.add(CLHEP::HepRotation(CLHEP::HepRotation::IDENTITY));
 
-      CLHEP::HepRotation* rotRing = new CLHEP::HepRotation((*rotRingBase)*tgt->productionTargetRotation());
+      CLHEP::HepRotation* rotRing = reg.add(CLHEP::HepRotation((*rotRingBase)*tgt->productionTargetRotation()));
 
       // std::vector<double> finDims = {tgt->finThickness()/2.0,tgt->finHeight()/2.0,finHalfLength};
       double rToFin = tgt->rOut()+tgt->finHeight()/2.0;
       std::cout << "r variables " << rToFin << " " << tgt->rOut() << " " << tgt->finHeight()/2. << std::endl;
   
  
-      CLHEP::HepRotation* rotFinBase = new CLHEP::HepRotation(CLHEP::HepRotation::IDENTITY);
+      CLHEP::HepRotation* rotFinBase = reg.add(CLHEP::HepRotation(CLHEP::HepRotation::IDENTITY));
  
       std::cout << "rotfinbase = " << *rotFinBase << std::endl;
-      CLHEP::HepRotation* rotFin1 = new CLHEP::HepRotation((*rotFinBase)*tgt->productionTargetRotation());
-      CLHEP::HepRotation* rotFin2 = new CLHEP::HepRotation((*rotFinBase)*tgt->productionTargetRotation());
-      CLHEP::HepRotation* rotFin3 = new CLHEP::HepRotation((*rotFinBase)*tgt->productionTargetRotation());
-      CLHEP::HepRotation* rotFin4 = new CLHEP::HepRotation((*rotFinBase)*tgt->productionTargetRotation());
+      CLHEP::HepRotation* rotFin1 = reg.add(CLHEP::HepRotation((*rotFinBase)*tgt->productionTargetRotation()));
+      CLHEP::HepRotation* rotFin2 = reg.add(CLHEP::HepRotation((*rotFinBase)*tgt->productionTargetRotation()));
+      CLHEP::HepRotation* rotFin3 = reg.add(CLHEP::HepRotation((*rotFinBase)*tgt->productionTargetRotation()));
+      CLHEP::HepRotation* rotFin4 = reg.add(CLHEP::HepRotation((*rotFinBase)*tgt->productionTargetRotation()));
 
 
       rotFin1->rotateZ(-M_PI/4.);
@@ -473,7 +470,7 @@ namespace mu2e {
       VolumeInfo iSpokeInfo   = nestTubs( iSpokeName.str(),
                                           iSpokeParams,
                                           spokeMaterial,
-                                          new CLHEP::HepRotation(tmpRotAxis,rotAngle),
+                                          reg.add(CLHEP::HepRotation(tmpRotAxis,rotAngle)),
                                           tmpMidPnt,
                                           prodTargetMotherInfo,
                                           0,
@@ -506,7 +503,7 @@ namespace mu2e {
       normalaxHub.rotateZ(tmpAngle);
       normalaxHub.transform(invTrgtRot);
       double deepAngleHub = tmpDirVec.angle(normalaxHub);
-      //CLHEP::HepRotation *tmpSpokeRot = new CLHEP::HepRotation(tmpRotAxis,rotAngle);
+      //CLHEP::HepRotation *tmpSpokeRot = reg.add(CLHEP::HepRotation(tmpRotAxis,rotAngle));
 
       double fixOverlapWheel = spokeRad*tan(deepAngleWheel);
       double fixOverlapHub = spokeRad*tan(deepAngleHub);
@@ -520,7 +517,7 @@ namespace mu2e {
       VolumeInfo iSpokeInfo   = nestTubs( iSpokeName.str(),
                                           iSpokeParams,
                                           spokeMaterial,
-                                          new CLHEP::HepRotation(tmpRotAxis,rotAngle),
+                                          reg.add(CLHEP::HepRotation(tmpRotAxis,rotAngle)),
                                           tmpMidPnt,
                                           prodTargetMotherInfo,
                                           0,

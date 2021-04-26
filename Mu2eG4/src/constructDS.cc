@@ -72,6 +72,7 @@ namespace mu2e {
     const bool doSurfaceCheck      = geomOptions->doSurfaceCheck("ds");
     const bool placePV             = geomOptions->placePV("ds");
 
+    AntiLeakRegistry& reg = art::ServiceHandle<Mu2eG4Helper>()->antiLeakRegistry();
 
     // Fetch parent (hall) position
     G4ThreeVector _hallOriginInMu2e = parent.centerInMu2e();
@@ -556,8 +557,8 @@ namespace mu2e {
     std::vector<double> uRailOutline = ds->uOutlineRail();
     std::vector<double> vRailOutline = ds->vOutlineRail();
 
-    CLHEP::HepRotation* nRailRotat = new CLHEP::HepRotation(CLHEP::HepRotation::IDENTITY);
-    CLHEP::HepRotation* sRailRotat = new CLHEP::HepRotation(CLHEP::HepRotation::IDENTITY);
+    CLHEP::HepRotation* nRailRotat = nullptr;
+    CLHEP::HepRotation* sRailRotat = reg.add(CLHEP::HepRotation(CLHEP::HepRotation::IDENTITY));
     sRailRotat->rotateY(180.0*CLHEP::degree);
 
     VolumeInfo RailN2 = nestExtrudedSolid
@@ -603,7 +604,7 @@ namespace mu2e {
      // First in DS2Vacuum region
      std::vector<double> uBBlockOutline = ds->uOutlineBBlock();
      std::vector<double> vBBlockOutline = ds->vOutlineBBlock();
-     CLHEP::HepRotation* BBRotat = new CLHEP::HepRotation( CLHEP::HepRotation::IDENTITY);
+     CLHEP::HepRotation* BBRotat = nullptr;
      double lenBB2 = ds->lengthBBlock2()/2.0*CLHEP::mm;
      double lenBB3 = ds->lengthBBlock3()/2.0*CLHEP::mm;
      std::vector<CLHEP::Hep3Vector> BBCenters2 = ds->BBlockCenters2();
@@ -1008,7 +1009,7 @@ namespace mu2e {
                          );
 
 	 //Add radial components of calorimeter outside cabling
-	 CLHEP::HepRotation * turn = new CLHEP::HepRotation(CLHEP::HepRotation::IDENTITY);
+	 CLHEP::HepRotation * turn = reg.add(CLHEP::HepRotation(CLHEP::HepRotation::IDENTITY));
 	 turn->rotateZ(-ds->calPhiECableRunIFB()*CLHEP::degree);
 	 //add a buffer so box doesn't go beyond the radius of the track cable ring
 	 double rend0  = ds->calR2CableRunIFB();
@@ -1050,7 +1051,7 @@ namespace mu2e {
 					"ds"
 					);
 
-	 CLHEP::HepRotation * turn2 = new CLHEP::HepRotation(CLHEP::HepRotation::IDENTITY);
+	 CLHEP::HepRotation * turn2 = reg.add(CLHEP::HepRotation(CLHEP::HepRotation::IDENTITY));
 	 turn2->rotateZ((ds->calPhiECableRunIFB()-180.)*CLHEP::degree);
 
 	 CLHEP::Hep3Vector calIFBCableRunEndLoc2( (deltar + ds->calREndCableRunIFB())/2.,
@@ -1325,7 +1326,7 @@ namespace mu2e {
                          );
 
 	 //Define radial components of Tracker cabling exiting DS
-	 CLHEP::HepRotation * turn3 = new CLHEP::HepRotation(CLHEP::HepRotation::IDENTITY);
+	 CLHEP::HepRotation * turn3 = reg.add(CLHEP::HepRotation(CLHEP::HepRotation::IDENTITY));
 	 turn3->rotateZ(-ds->trkPhiECableRunIFB()*CLHEP::degree);
 
 	 double trkIFBCableRunEnd[] = { 0.,
@@ -1366,7 +1367,7 @@ namespace mu2e {
 					"ds"
 					);
 
-	 CLHEP::HepRotation * turn4 = new CLHEP::HepRotation(CLHEP::HepRotation::IDENTITY);
+	 CLHEP::HepRotation * turn4 = reg.add(CLHEP::HepRotation(CLHEP::HepRotation::IDENTITY));
 	 turn4->rotateZ((ds->trkPhiECableRunIFB()-180.)*CLHEP::degree);
 
 	 CLHEP::Hep3Vector trkIFBCableRunEndLoc2( ds->trkREndCableRunIFB() + trkIFBCableRunEnd[0],

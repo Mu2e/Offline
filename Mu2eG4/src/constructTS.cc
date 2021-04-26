@@ -88,6 +88,7 @@ namespace mu2e {
     TransportSolenoid const * ts     ( &bl.getTS() );
     StraightSection   const * strsec (nullptr);
     TorusSection      const * torsec (nullptr);
+    AntiLeakRegistry& reg = art::ServiceHandle<Mu2eG4Helper>()->antiLeakRegistry();
 
     Mu2eG4Helper * const _helper = &(*art::ServiceHandle<Mu2eG4Helper>());
 
@@ -689,10 +690,10 @@ namespace mu2e {
       // Let's make a mother volume first for each ring.
       std::ostringstream ringMotherName;
       ringMotherName << "TSRingMother" << iRing;
-      CLHEP::HepRotation* ringRotat = new CLHEP::HepRotation(CLHEP::HepRotation::IDENTITY);
+      CLHEP::HepRotation* ringRotat = reg.add(CLHEP::HepRotation(CLHEP::HepRotation::IDENTITY));
       double ringRotTheta = thetasRing[iRing]*CLHEP::degree;
       ringRotat->rotateY(ringRotTheta);
-      CLHEP::HepRotation* noRotat = new CLHEP::HepRotation(CLHEP::HepRotation::IDENTITY);
+      CLHEP::HepRotation* noRotat (nullptr);
 
       double motherx = xr[iRing];
       double mothery = yr[iRing];
@@ -766,7 +767,7 @@ namespace mu2e {
 
 	std::ostringstream PabsSupOutName;
 	PabsSupOutName << "PabsTS3SupOut";
-	CLHEP::HepRotation* pasubRotat = new CLHEP::HepRotation(CLHEP::HepRotation::IDENTITY);
+	CLHEP::HepRotation* pasubRotat = reg.add(CLHEP::HepRotation(CLHEP::HepRotation::IDENTITY));
 	pasubRotat->rotateY(90.0*CLHEP::degree);
 	double rPabsTS3SupOut_in  = rirs;
 	double rPabsTS3SupOut_out = config.getDouble("pbar.support.outROut", rors);
@@ -990,6 +991,8 @@ namespace mu2e {
                        SimpleConfig const& config,
                        Beamline const& bl ) {
 
+    AntiLeakRegistry& reg = art::ServiceHandle<Mu2eG4Helper>()->antiLeakRegistry();
+
     const int  verbosityLevel      = config.getInt("ts.coils.verbosityLevel", 0);
 
     G4GeometryOptions* geomOptions = art::ServiceHandle<GeometryService>()->geomOptions();
@@ -1022,7 +1025,7 @@ namespace mu2e {
 	if ( iTS == TransportSolenoid::TSRegion::TS2 || 
 	     iTS == TransportSolenoid::TSRegion::TS4 ) {
 
-	  CLHEP::HepRotation* twist = new CLHEP::HepRotation(CLHEP::HepRotation::IDENTITY);
+	  CLHEP::HepRotation* twist = reg.add(CLHEP::HepRotation(CLHEP::HepRotation::IDENTITY));
 	  twist->rotateX(90.0*CLHEP::degree);
 	  twist->rotateY(-coil.getRotation()->theta());
 
@@ -1402,7 +1405,7 @@ namespace mu2e {
               );
     if(coll52HLInTS4 > 0.) {
       TubsParams coll5Param2_TS4 ( coll52.rIn(),  coll52.rOut(), coll52HLInTS4);
-      CLHEP::HepRotation* rotColl52 = new CLHEP::HepRotation(CLHEP::HepRotation::IDENTITY);
+      CLHEP::HepRotation* rotColl52 = reg.add(CLHEP::HepRotation(CLHEP::HepRotation::IDENTITY));
       rotColl52->rotateX(90.*CLHEP::degree);
       nestTubs( "Coll52InTS4",
 		coll5Param2_TS4,
@@ -1584,6 +1587,7 @@ namespace mu2e {
     G4GeometryOptions* geomOptions = art::ServiceHandle<GeometryService>()->geomOptions();
     geomOptions->loadEntry( config, "PbarAbs", "pbar" );
     
+    AntiLeakRegistry& reg = art::ServiceHandle<Mu2eG4Helper>()->antiLeakRegistry();
 
     // Throw exception if pbarwedge.build is used - way out of date!
     if ( config.hasName("pbarwedge.build") )
@@ -1746,7 +1750,7 @@ namespace mu2e {
                                               G4ThreeVector(0,
 							    config.getDouble("pbar.support.holeDisp"),0));
 
-      CLHEP::HepRotation * supportRot = new CLHEP::HepRotation(CLHEP::HepRotation::IDENTITY);
+      CLHEP::HepRotation * supportRot (nullptr);
       //      supportRot->rotateY(90.0*CLHEP::degree);
 
       finishNesting(supportInfo,
@@ -1870,7 +1874,7 @@ namespace mu2e {
 
       supportInfo.solid = support_mother;
 
-      CLHEP::HepRotation * supportRot = new CLHEP::HepRotation(CLHEP::HepRotation::IDENTITY);
+      CLHEP::HepRotation * supportRot (nullptr);
 
       finishNesting(supportInfo,
 		    findMaterialOrThrow(config.getString("pbar.support.material")),
@@ -2221,7 +2225,7 @@ namespace mu2e {
 					      pbarTS1InTabOffsetRad*std::cos(120*CLHEP::degree),
 					      pbarTS1InSupOffsetZ+pbarTS1InTabOffsetZ);
 
-	CLHEP::HepRotation* rotaTab2 = new CLHEP::HepRotation(CLHEP::HepRotation::IDENTITY);
+	CLHEP::HepRotation* rotaTab2 = reg.add(CLHEP::HepRotation(CLHEP::HepRotation::IDENTITY));
 	rotaTab2->rotateZ(-120*CLHEP::degree);
 
 	nestBox( "PbarAbsTS1InSupTab2",
@@ -2240,7 +2244,7 @@ namespace mu2e {
 					      pbarTS1InTabOffsetRad*std::cos(120*CLHEP::degree),
 					      pbarTS1InSupOffsetZ+pbarTS1InTabOffsetZ);
 
-	CLHEP::HepRotation* rotaTab3 = new CLHEP::HepRotation(CLHEP::HepRotation::IDENTITY);
+	CLHEP::HepRotation* rotaTab3 = reg.add(CLHEP::HepRotation(CLHEP::HepRotation::IDENTITY));
 	rotaTab3->rotateZ(120*CLHEP::degree);
 
 	nestBox( "PbarAbsTS1InSupTab3",
