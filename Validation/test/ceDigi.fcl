@@ -1,0 +1,16 @@
+#include "JobConfig/digitize/OnSpill.fcl"
+
+services.scheduler.wantSummary: true
+services.TimeTracker.printSummary: true
+
+services.SeedService.baseSeed: 8
+services.SeedService.maxUniqueEngines: 20
+
+services.GeometryService.inputFile : "Mu2eG4/geom/geom_common_current.txt"
+
+# file produced by ceSteps.fcl
+source.fileNames : [ "dts.owner.ceSteps.dsconf.seq.art" ]
+
+outputs.Output.fileName : "dts.owner.ceDigi.dsconf.seq.art"
+
+
