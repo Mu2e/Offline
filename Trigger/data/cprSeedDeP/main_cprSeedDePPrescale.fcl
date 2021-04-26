@@ -1,3 +1,0 @@
-physics.filters.cprSeedDePPrescale.nPrescale    : 1
-physics.filters.cprSeedDePPrescale.useFilteredEvents : true
-physics.filters.cprSeedDePPrescale.triggerFlag  : ["PrescaleGoodEvents"]

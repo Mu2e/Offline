@@ -33,10 +33,10 @@ CaloHitRecoTrigger :
 {
    producers : {
      FastCaloRecoDigiMaker  : @local::FastCaloRecoDigiMaker
-     FastCaloHitMaker       : @local::FastCaloHitMaker
+     CaloHitMaker       : @local::FastCaloHitMaker
    }
 
-   Reco : [ FastCaloRecoDigiMaker , FastCaloHitMaker ]
+   prepareHits : [ FastCaloRecoDigiMaker , CaloHitMaker ]
 }
 
 END_PROLOG
