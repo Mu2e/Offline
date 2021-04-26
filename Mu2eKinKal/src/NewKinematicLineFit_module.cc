@@ -1,7 +1,7 @@
 //
 // KinKal fit module using the KinematicLine parameterset
 //
-// Original author D. Brown (LBNL) 11/18/20
+// Original author S. Middleton (Caltech) 2021
 //
 // framework
 #include "fhiclcpp/types/Atom.h"
@@ -165,7 +165,7 @@ namespace mu2e {
     if((savefull_ && zsave_.size() > 0) || ((!savefull_) && zsave_.size() == 0))
       throw cet::exception("RECO")<<"mu2e::NewKinematicLineFit:Segment saving configuration error"<< endl;
     // collection handling
-    for(const auto& hseedtag : config().modSettings().CosmicTrackSeedCollections()) { hseedCols_.emplace_back(consumes<CosmicTrackSeedCollection>(hseedtag)); }
+    for(const auto& hseedtag : config().modSettings().cosmicTrackSeedCollections()) { hseedCols_.emplace_back(consumes<CosmicTrackSeedCollection>(hseedtag)); }
     produces<KKLineCollection>();
     produces<CosmicKalSeedCollection>();
     // construct the fit configuration object.  This controls all the global and iteration-specific aspects of the fit
@@ -174,7 +174,7 @@ namespace mu2e {
     if(seederrors.size() != KinKal::NParams()) 
       throw cet::exception("RECO")<<"mu2e::NewKinematicLineFit:Seed error configuration error"<< endl;
     for(size_t ipar=0;ipar < seederrors.size(); ++ipar){
-      seedcov_[ipar][ipar] = seederrors[ipar]*seederrors[ipar];
+      seedcov_[ipar][ipar] = seederrors[ipar]*seederrors[ipar];//TODO - how to turn covarience into this
     }
     // set the hit updating
     auto& schedule = kkfit_.config().schedule();
@@ -255,8 +255,8 @@ namespace mu2e {
           bool save(false);
           if(save || saveall_){
             // convert fits into CosmicKalSeeds for persistence	
-            kkseedcol->push_back(kkfit_.createSeed(*kktrk,hptr,zsave_,savefull_));
-            kkseedcol->back()._status.merge(TrkFitFlag::KKKinematicLine);
+            kkseedcol->push_back(kkfit_.createSeed(*kktrk,hptr,zsave_,savefull_)); //TODO
+            kkseedcol->back()._status.merge(TrkFitFlag::KKLine);
             kktrkcol->push_back(kktrk.release());
           }
         }
@@ -269,21 +269,10 @@ namespace mu2e {
 
   KTRAJ NewKinematicLineFit::makeSeedTraj(CosmicTrackSeed const& hseed) const {
     //exctract CosmicTrack (contains parameters)
-    auto const& strack = hseed.track();
-    double zmin = std::numeric_limits<float>::max();//TODO - what is this?
-    double zmax = std::numeric_limits<float>::min();
-    //extract hits
-    auto const& hits = hseed.hits();
-    //loop over hits for z position
-    for( auto const& hit : hits) {
-      double zpos = hit.pos().z();
-      zmin = std::min(zmin,zpos);
-      zmax = std::max(zmax,zpos);
-    }
-
+    auto const& scosmic = hseed.track();
     VEC3 bnom(0.0,0.0,0.0);
     // create a PKTRAJ from the CosmicTrack fit result, to seed the KinKal fit.  First, translate the parameters
-    std::tuple <double, double, double, double, double> info = scosmic.GetTrackPOCAInfo();//d0,phi0,z0,cost,t0
+    std::tuple <double, double, double, double, double> info = scosmic.KinKalTrackParams();//d0,phi0,z0,cost,t0
     DVEC pars;
     pars[KTRAJ::d0_] = get<0>(info);
     pars[KTRAJ::z0_] = get<2>(info);
@@ -292,9 +281,9 @@ namespace mu2e {
     pars[KTRAJ::mom_] = 1.0; //TODO
     pars[KTRAJ::t0_] = get<4>(info); //TODO
     // create the initial trajectory
-    Parameters kkpars(pars,seedcov_);
+    Parameters kkpars(pars,seedcov_); //TODO seedcov
     //  construct the seed trajectory (infinite initial time range)
-    return KTRAJ(kkpars, mass_, charge_, bnom, TimeRange());
+    return KTRAJ(kkpars, mass_, charge_, bnom, TimeRange()); //TODO: better constructor
   }
 }
 DEFINE_ART_MODULE(mu2e::NewKinematicLineFit);
