@@ -1,10 +1,10 @@
-#include "CaloConditions/inc/CaloDAQConditions.hh"
+#include "CaloConditions/inc/CaloDAQMap.hh"
 #include <stdexcept>
 
 using namespace std;
 namespace mu2e {
 
-  uint16_t CaloDAQConditions::packetIdTocaloRoId(uint16_t packetId) const {
+  uint16_t CaloDAQMap::packetIdTocaloRoId(uint16_t packetId) const {
     //
     // FIXME this is made up for now FF-mask for channel Number and BoardNumber
     // DiracChannel (0-19) OK in FF , DiracNumber (0-136) ok in FF 
@@ -19,31 +19,31 @@ namespace mu2e {
     uint16_t DetType      = (packetId & 0x7000) >> 13;    // last 3 bits: 0=Calo,1=Caphri,2=Pin
 
     if (DiracChannel >= 19 || DiracNumber >= 136 || DetType>8 ){
-      throw cet::exception("BADINPUTS")<<"CaloDAQConditions::packetIdTocaloRoId : packetId DiracChannel/DiracNumber out of range" << std::endl;
+      throw cet::exception("BADINPUTS")<<"CaloDAQMap::packetIdTocaloRoId : packetId DiracChannel/DiracNumber out of range" << std::endl;
     }
     
     if( DetType <=1 ){
       uint16_t DiracPoi = DiracNumber*20 + DiracChannel;
       uint16_t roId  = _DIRAC2CaloMap[DiracPoi];
       if( roId < 0 ){
-	throw cet::exception("BadRoId")<<"CaloDAQConditions::packetIdTocaloRoId : roID for Calo empty channels or Calo PINs" << std::endl; 
+	throw cet::exception("BadRoId")<<"CaloDAQMap::packetIdTocaloRoId : roID for Calo empty channels or Calo PINs" << std::endl; 
       }
       //printf(" DIRAC # %d Chan # %d -> RoId %d \n",DiracChannel,DiracNumber,roId);
       return roId;   
     }else{    
-      throw cet::exception("BadRoId")<<"CaloDAQConditions::packetIdTocaloRoId : DetType not implemented" << std::endl;
+      throw cet::exception("BadRoId")<<"CaloDAQMap::packetIdTocaloRoId : DetType not implemented" << std::endl;
     }
   }
   
-  uint16_t CaloDAQConditions::caloRoIdToPacketId(uint16_t caloRoId) const {
+  uint16_t CaloDAQMap::caloRoIdToPacketId(uint16_t caloRoId) const {
   
     if ( caloRoId >= 674*4  ){
-      throw cet::exception("BADINPUTS")<<"CaloDAQConditions::caloRoIdToPacketId : caloRoId out of range" << std::endl;
+      throw cet::exception("BADINPUTS")<<"CaloDAQMap::caloRoIdToPacketId : caloRoId out of range" << std::endl;
     }
     
     uint16_t DiracPoi  = _Calo2DIRACMap[caloRoId];
     if ( DiracPoi >= 136*20 ){
-      throw cet::exception("BADINPUTS")<<"CaloDAQConditions::caloRoIdToPacketId : return DiracPoi  out of range" << std::endl;
+      throw cet::exception("BADINPUTS")<<"CaloDAQMap::caloRoIdToPacketId : return DiracPoi  out of range" << std::endl;
     }
     
     uint16_t DiracNum = DiracPoi/20;  
@@ -63,8 +63,8 @@ namespace mu2e {
     return PacketId;
   }
 
-  void CaloDAQConditions::print(std::ostream& os) const {
-    os << endl << "CaloDAQConditions parameters: "  << std::endl;
+  void CaloDAQMap::print(std::ostream& os) const {
+    os << endl << "CaloDAQMap parameters: "  << std::endl;
     os << "DIRAC2CaloMap:" << endl;
     for (size_t i=0;i<_DIRAC2CaloMap.size(); i++)
       os << "  " << _DIRAC2CaloMap[i] << ", ";

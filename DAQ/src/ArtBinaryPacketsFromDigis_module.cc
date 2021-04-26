@@ -44,7 +44,7 @@
 #include "RecoDataProducts/inc/StrawHitCollection.hh"
 //#include "DAQDataProducts/inc/DataBlockCollection.hh"
 #include "ProditionsService/inc/ProditionsHandle.hh"
-#include "CaloConditions/inc/CaloDAQConditions.hh"
+#include "CaloConditions/inc/CaloDAQMap.hh"
 
 #include "SeedService/inc/SeedService.hh"
 
@@ -159,8 +159,8 @@ private:
 
   // -- include proditions handling
   
-  //mu2e::ProditionsHandle<mu2e::CaloDAQConditions> _calodaqconds_h;
-  ProditionsHandle<CaloDAQConditions> _calodaqconds_h;
+  //mu2e::ProditionsHandle<mu2e::CaloDAQMap> _calodaqconds_h;
+  ProditionsHandle<CaloDAQMap> _calodaqconds_h;
   // Set to 1 to save packet data to a binary file
   int _generateBinaryFile;
 
@@ -245,9 +245,9 @@ private:
   //--------------------------------------------------------------------------------
   // void fillCalorimeterDataPacket(const CaloDigi& SD, CaloDataPacket& caloData);
 
-  //void   fillCalorimeterDataPacket(mu2e::CaloDAQConditions const& calodaqconds,
+  //void   fillCalorimeterDataPacket(mu2e::CaloDAQMap const& calodaqconds,
   //				   const CaloDigi& SD, CaloDataPacket& caloData);
-  void   fillCalorimeterDataPacket(CaloDAQConditions const& calodaqconds,
+  void   fillCalorimeterDataPacket(CaloDAQMap const& calodaqconds,
 				   const CaloDigi& SD, CaloDataPacket& caloData);
   
   void addCaloHitToCaloPacket(calo_data_block_t& dataBlock, CaloDataPacket& caloData);
@@ -255,9 +255,9 @@ private:
   //void fillCalorimeterHeaderDataPacket(const CaloDigi& SD, DataBlockHeader& HeaderData,
   //                                      uint64_t& EventNum);
 
-  //void   fillCalorimeterHeaderDataPacket(mu2e::CaloDAQConditions const& calodaqconds,
+  //void   fillCalorimeterHeaderDataPacket(mu2e::CaloDAQMap const& calodaqconds,
   //					 const CaloDigi& SD, DataBlockHeader& HeaderData, uint64_t& EventNum);
-  void   fillCalorimeterHeaderDataPacket(CaloDAQConditions const& calodaqconds,
+  void   fillCalorimeterHeaderDataPacket(CaloDAQMap const& calodaqconds,
 					 const CaloDigi& SD, DataBlockHeader& HeaderData, uint64_t& EventNum);
  
   void fillEmptyCalorimeterDataPacket(CaloDataPacket& caloData);
@@ -744,8 +744,8 @@ void ArtBinaryPacketsFromDigis::processCalorimeterData(art::Event& evt, uint64_t
   for (size_t i = 0; i < hits_CD.size(); ++i) {  // Loop on Digi
     CaloDigi const& CD = hits_CD.at(i);          // Get Digi #i
 
-    //mu2e::CaloDAQConditions const& calodaqconds = _calodaqconds_h.get(evt.id()); // Get calo daq cond
-    CaloDAQConditions const& calodaqconds = _calodaqconds_h.get(evt.id()); // Get calo daq cond
+    //mu2e::CaloDAQMap const& calodaqconds = _calodaqconds_h.get(evt.id()); // Get calo daq cond
+    CaloDAQMap const& calodaqconds = _calodaqconds_h.get(evt.id()); // Get calo daq cond
     // Fill struct with info for current hit
     DataBlockHeader headerData;
     fillCalorimeterHeaderDataPacket(calodaqconds, CD, headerData, eventNum);
@@ -829,10 +829,10 @@ void ArtBinaryPacketsFromDigis::fillHeaderByteAndPacketCounts(calo_data_block_t&
 //--------------------------------------------------------------------------------
 // crate a caloPacket from the digi
 //--------------------------------------------------------------------------------
-//void ArtBinaryPacketsFromDigis::fillCalorimeterDataPacket(mu2e::CaloDAQConditions const& calodaqconds,
+//void ArtBinaryPacketsFromDigis::fillCalorimeterDataPacket(mu2e::CaloDAQMap const& calodaqconds,
 //							  const CaloDigi& CD,
 //                                                          CaloDataPacket& CaloData) {
-void ArtBinaryPacketsFromDigis::fillCalorimeterDataPacket(CaloDAQConditions const& calodaqconds,
+void ArtBinaryPacketsFromDigis::fillCalorimeterDataPacket(CaloDAQMap const& calodaqconds,
 							  const CaloDigi& CD,
                                                           CaloDataPacket& CaloData) {
   CaloData.dataPacket.NumberOfHits = 1;
@@ -1009,12 +1009,12 @@ void ArtBinaryPacketsFromDigis::fillCalorimeterDataStream(raw_data_list_t& dataS
 //--------------------------------------------------------------------------------
 // create the header for the caloPacket
 //--------------------------------------------------------------------------------
-//void ArtBinaryPacketsFromDigis::fillCalorimeterHeaderDataPacket(mu2e::CaloDAQConditions const& calodaqconds,
+//void ArtBinaryPacketsFromDigis::fillCalorimeterHeaderDataPacket(mu2e::CaloDAQMap const& calodaqconds,
 //								const CaloDigi& CD,
 //                                                                DataBlockHeader& HeaderData,
 //                                                                uint64_t& EventNum) {
 
-void ArtBinaryPacketsFromDigis::fillCalorimeterHeaderDataPacket(CaloDAQConditions const& calodaqconds,
+void ArtBinaryPacketsFromDigis::fillCalorimeterHeaderDataPacket(CaloDAQMap const& calodaqconds,
 								const CaloDigi& CD,
                                                                 DataBlockHeader& HeaderData,
                                                                 uint64_t& EventNum) { 

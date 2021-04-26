@@ -38,7 +38,7 @@ namespace mu2e {
 
     void addRow(const std::vector<std::string>& columns) override {
       _rows.emplace_back(std::stoi(columns[0]),
-			 std::stof(columns[1]) );
+			 std::stoi(columns[1]) );
     }
 
     void rowToCsv(std::ostringstream& sstream, std::size_t irow) const override {

@@ -16,7 +16,7 @@
 
 //-- insert calls to proditions ..for calodmap-----
 #include "ProditionsService/inc/ProditionsHandle.hh"
-#include "CaloConditions/inc/CaloDAQConditions.hh"
+#include "CaloConditions/inc/CaloDAQMap.hh"
 //-------------------------------------------------
 
 #include "RecoDataProducts/inc/CaloDigi.hh"
@@ -53,9 +53,9 @@ public:
 
 private:
   
-  mu2e::ProditionsHandle<mu2e::CaloDAQConditions> _calodaqconds_h;
+  mu2e::ProditionsHandle<mu2e::CaloDAQMap> _calodaqconds_h;
 
-  void analyze_calorimeter_(mu2e::CaloDAQConditions const& calodaqconds,
+  void analyze_calorimeter_(mu2e::CaloDAQMap const& calodaqconds,
 			    const artdaq::Fragment& f,
                             std::unique_ptr<mu2e::CaloDigiCollection> const& calo_digis);
 
@@ -82,7 +82,7 @@ void art::CaloRecoFromFragments::produce(Event& event) {
   // Collection of CaloDigis for the event
   std::unique_ptr<mu2e::CaloDigiCollection> calo_digis(new mu2e::CaloDigiCollection);
 
-  mu2e::CaloDAQConditions const& calodaqconds = _calodaqconds_h.get(event.id()); // Get calo daq cond
+  mu2e::CaloDAQMap const& calodaqconds = _calodaqconds_h.get(event.id()); // Get calo daq cond
   
   art::Handle<artdaq::Fragments> calFragments;
   size_t numCalFrags(0);
@@ -123,7 +123,7 @@ void art::CaloRecoFromFragments::produce(Event& event) {
 
 } // produce()
 
-void art::CaloRecoFromFragments::analyze_calorimeter_(mu2e::CaloDAQConditions const& calodaqconds,
+void art::CaloRecoFromFragments::analyze_calorimeter_(mu2e::CaloDAQMap const& calodaqconds,
     const artdaq::Fragment& f, std::unique_ptr<mu2e::CaloDigiCollection> const& calo_digis) {
 
   mu2e::CalorimeterFragment cc(f);
