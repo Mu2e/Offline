@@ -361,8 +361,11 @@ namespace mu2e {
     float pedestal = std::accumulate(adcData.begin(), wfstart, 0)*_invnpre;
 //    auto maxIter = std::max_element(wfstart,adcData.end());
     auto maxIter = wfstart;
-    while(maxIter != adcData.end() && *(maxIter+1) > *maxIter)
+    auto nextIter = maxIter; nextIter++;
+    while(nextIter != adcData.end() && *nextIter > *maxIter){
       ++maxIter;
+      ++nextIter;
+    }
     float peak = *maxIter;
     if(_diagLevel > 0)_maxiter->Fill(std::distance(wfstart,maxIter));
     return (peak-pedestal)*_invgainAvg;

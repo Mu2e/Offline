@@ -32,6 +32,10 @@ Mixing : {
 	  strawGasStepMixer: { mixingMap: [ [ "compressDetStepMCs", "" ] ] }
 	  caloShowerStepMixer: { mixingMap: [ [ "compressDetStepMCs", "" ] ] }
 	  crvStepMixer: { mixingMap: [ [ "compressDetStepMCs", "" ] ] }
+          volumeInfoMixer: {
+            srInput: "g4run"
+            evtOutInstanceName: "eventlevel"
+          }
         }
       }
     }
