@@ -4,6 +4,7 @@
 // C++ includes
 #include <vector>
 #include <string>
+#include <memory>
 
 #include "CLHEP/Vector/Rotation.h"
 #include "CLHEP/Vector/ThreeVector.h"
@@ -20,33 +21,31 @@ namespace mu2e {
 
   class PTMonPWC {
   public:
-    PTMonPWC(std::string nameSuffix,
+    PTMonPWC(std::string const& nameSuffix,
              double frameHeight, 
              double frameWidth, 
              double frameThick, 
              double outerPlateThick,
-             std::string frameMaterialName, 
+             std::string const& frameMaterialName, 
              double windowHeight,
              double windowWidth,
              double windowThick,
-             std::string windowMaterialName,
-             std::string gasMaterialName,
+             std::string const& windowMaterialName,
+             std::string const& gasMaterialName,
              int numVertWires,
              int numHorizWires,
-             CLHEP::Hep3Vector const & originInParent = CLHEP::Hep3Vector(),
-             int wireNumStart = 0);
-    // default ctor
-    PTMonPWC() {}
+             CLHEP::Hep3Vector const& originInParent,
+             int wireNumStart);
 
     CLHEP::Hep3Vector const &  originInParent()   const { return _originInParent; }
     std::vector<double>        vertWireYPos()     const { return _vertWireYpos; }
     std::vector<double>        horizWireXPos()    const { return _horizWireXpos; }
 
-    const Box*                 pwcWindow()           const { return _pwcWindow.get(); }
-    const Box*                 vertWireGasSection()  const { return _vertWireGasSection.get(); }
-    const Box*                 horizWireGasSection() const { return _horizWireGasSection.get(); }
-    const Box*                 gasSection1()         const { return _gasSection1.get(); }
-    const Box*                 gasSection4()         const { return _gasSection4.get(); }
+    const std::shared_ptr<Box> pwcWindow()           const { return _pwcWindow; }
+    const std::shared_ptr<Box> vertWireGasSection()  const { return _vertWireGasSection; }
+    const std::shared_ptr<Box> horizWireGasSection() const { return _horizWireGasSection; }
+    const std::shared_ptr<Box> gasSection1()         const { return _gasSection1; }
+    const std::shared_ptr<Box> gasSection4()         const { return _gasSection4; }
 
     std::string nameSuffix()         const { return _nameSuffix; }
     double      frameHeight()        const { return _frameHeight; }
@@ -72,6 +71,7 @@ namespace mu2e {
     
 
 
+
   private:
     std::string _nameSuffix;
     CLHEP::Hep3Vector _originInParent;
@@ -81,7 +81,7 @@ namespace mu2e {
     double _outerPlateThick;
     std::string _frameMaterialName;
 
-    std::unique_ptr<Box> _pwcWindow;
+    std::shared_ptr<Box> _pwcWindow;
     std::string _windowMaterialName;
 
     std::string _gasMaterialName;
@@ -89,18 +89,18 @@ namespace mu2e {
 
     // "Vert" wires have their long dimension in the horizontal.
     int _numVertWires; // MEASURES the vertical profile!
-    std::unique_ptr<Box> _vertWireGasSection;
+    std::shared_ptr<Box> _vertWireGasSection;
     std::vector<double> _vertWireYpos;
     double _vertWireZ;
     // "Horiz" wires have their long dimension in the vertical.
     int _numHorizWires; // MEASURES the horizontal profile!
-    std::unique_ptr<Box> _horizWireGasSection;
+    std::shared_ptr<Box> _horizWireGasSection;
     std::vector<double> _horizWireXpos;
     double _horizWireZ;
 
     // numbering below is becase gas sections 2 and 3 contain wires
-    std::unique_ptr<Box> _gasSection1;
-    std::unique_ptr<Box> _gasSection4;
+    std::shared_ptr<Box> _gasSection1;
+    std::shared_ptr<Box> _gasSection4;
 
     // positions of windows inside detector
     double _ground1Z;

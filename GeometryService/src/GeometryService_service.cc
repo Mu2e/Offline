@@ -87,6 +87,8 @@
 #include "ExtinctionMonitorFNAL/Geometry/inc/ExtMonFNALMuonID.hh"
 #include "GeometryService/inc/ExtMonFNALMuonIDMaker.hh"
 #include "ConfigTools/inc/ConfigFileLookupPolicy.hh"
+#include "GeometryService/inc/PTMonMaker.hh"
+#include "PTMonGeom/inc/PTMon.hh"
 
 using namespace std;
 
@@ -348,7 +350,7 @@ namespace mu2e {
       addDetector( stm.getSTMPtr() );
     }
 
-    if (_config.getBool("hasPTM",false) ){
+    if (_config->getBool("hasPTM",false) ){
       std::unique_ptr<PTMon> ptmon(PTMonMaker::make(*_config));
       addDetector(std::move(ptmon));
     }

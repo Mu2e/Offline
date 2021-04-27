@@ -160,7 +160,7 @@ namespace mu2e {
     hv3Name.append(nameSuffix);
     double hv3Z = 4.5*frameThick;
     //G4VPhysicalVolume* pv = 
-    new G4PVPlacement(nullptr
+    new G4PVPlacement(nullptr,
               G4ThreeVector(0.0, 0.0, hv3Z),
               windowLogical,
               hv3Name,

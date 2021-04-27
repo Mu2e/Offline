@@ -1,10 +1,13 @@
 #ifndef PTMonGeom_PTMon_hh
 #define PTMonGeom_PTMon_hh
 
+#include <memory>
+
 #include "CLHEP/Vector/Rotation.h"
 #include "CLHEP/Vector/ThreeVector.h"
 
 #include "PTMonGeom/inc/PTMonPWC.hh"
+#include "Mu2eInterfaces/inc/Detector.hh"
 
 // ProductionTarget Monitor (PTMon) Object
 //
@@ -18,8 +21,9 @@ namespace mu2e {
   public:
     PTMon(CLHEP::Hep3Vector const& originInMu2e, 
           CLHEP::HepRotation const& rotationInMu2e, 
-          PTMonPWC const& nearPWC, PTMonPWC const& farPWC,
-          double pwcSeparation); // TODO: better way to add/store these than just pointers
+          std::shared_ptr<PTMonPWC> nearPWC, 
+          std::shared_ptr<PTMonPWC> farPWC,
+          double pwcSeparation);
     PTMon() {}
 
     CLHEP::Hep3Vector const &  originInMu2e()   const { return _originInMu2e; }
@@ -34,12 +38,13 @@ namespace mu2e {
 
 
 
+
   private:
     CLHEP::Hep3Vector _originInMu2e;
     CLHEP::HepRotation _rotationInMu2e;
 
-    std::unique_ptr<PTMonPWC> _nearPWC; // TODO should these actually be unique_ptrs or something else?
-    std::unique_ptr<PTMonPWC> _farPWC;
+    std::shared_ptr<PTMonPWC> _nearPWC; // TODO should these actually be unique_ptrs or something else?
+    std::shared_ptr<PTMonPWC> _farPWC;
 
     double _totalHeight;
     double _totalWidth;
