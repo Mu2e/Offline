@@ -3,6 +3,7 @@
 //
 // BaBar definition helix parameters.  This is a mixed geometric/kinematic helix as the
 // signs include time propagation information
+// This class is deprecrated, it will be removed when we switch completely to KinKal
 //
 
 // Mu2e

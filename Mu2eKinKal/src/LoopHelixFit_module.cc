@@ -36,6 +36,7 @@
 #include "RecoDataProducts/inc/StrawHitFlag.hh"
 #include "RecoDataProducts/inc/KalSeed.hh"
 #include "RecoDataProducts/inc/HelixSeed.hh"
+#include "RecoDataProducts/inc/KalSeedAssns.hh"
 #include "RecoDataProducts/inc/CaloCluster.hh"
 #include "RecoDataProducts/inc/KKLoopHelix.hh"
 // KinKal
@@ -163,7 +164,7 @@ namespace mu2e {
 
   LoopHelixFit::LoopHelixFit(const GlobalSettings& settings) : art::EDProducer{settings}, 
     chcol_T_(consumes<ComboHitCollection>(settings().modSettings().comboHitCollection())),
-    cccol_T_(consumes<CaloClusterCollection>(settings().modSettings().caloClusterCollection())),
+    cccol_T_(mayConsume<CaloClusterCollection>(settings().modSettings().caloClusterCollection())),
     shfcol_T_(mayConsume<StrawHitFlagCollection>(settings().modSettings().strawHitFlagCollection())),
     goodhelix_(settings().modSettings().helixFlags()),
     extend_(settings().modSettings().extend()),
@@ -183,6 +184,7 @@ namespace mu2e {
     for(const auto& hseedtag : settings().modSettings().helixSeedCollections()) { hseedCols_.emplace_back(consumes<HelixSeedCollection>(hseedtag)); }
     produces<KKLoopHelixCollection>();
     produces<KalSeedCollection>();
+    produces<KalHelixAssns>();
     // build the initial seed covariance
     auto const& seederrors = settings().modSettings().seederrors();
     if(seederrors.size() != KinKal::NParams()) 
@@ -220,6 +222,9 @@ namespace mu2e {
     // create output
     unique_ptr<KKLoopHelixCollection> kktrkcol(new KKLoopHelixCollection );
     unique_ptr<KalSeedCollection> kkseedcol(new KalSeedCollection );
+    unique_ptr<KalHelixAssns> kkseedassns(new KalHelixAssns());
+    auto KalSeedCollectionPID = event.getProductID<KalSeedCollection>();
+    auto KalSeedCollectionGetter = event.productGetter(KalSeedCollectionPID);
     // find the helix seed collections
     unsigned nhelix(0);
     for (auto const& hseedtag : hseedCols_) {
@@ -292,9 +297,30 @@ namespace mu2e {
 	    }
 	  }
 	  if(save || saveall_){
-	    // convert fits into KalSeeds for persistence	
-	    kkseedcol->push_back(kkfit_.createSeed(*kktrk,hptr,zsave_,savefull_));
-	    kkseedcol->back()._status.merge(TrkFitFlag::KKLoopHelix);
+	    // convert KKTrk into KalSeeds for persistence
+	    auto const& fittraj = kktrk->fitTraj();
+	    TrkFitFlag fitflag(hptr->status());
+	    fitflag.merge(TrkFitFlag::KKLoopHelix);
+	    // Decide which segments to save
+	    std::set<double> savetimes;
+	    if(savefull_){
+	      // loop over all pieces of the fit trajectory and record their times
+	      for (auto const& traj : fittraj.pieces() ) savetimes.insert(traj.range().mid());
+	    } else {
+	      for(auto zpos : zsave_ ) {
+		// compute the time the trajectory crosses this plane
+		double tz = kkfit_.zTime(fittraj,zpos);
+		// find the explicit trajectory piece at this time, and store the midpoint time.  This enforces uniqueness (no duplicates)
+		auto const& zpiece = fittraj.nearestPiece(tz);
+		savetimes.insert(zpiece.range().mid());
+	      }
+	    }
+	    kkseedcol->push_back(kkfit_.createSeed(*kktrk,fitflag,savetimes));
+	    // fill assns with the helix seed
+	    auto hptr = art::Ptr<HelixSeed>(hseedcol_h,iseed);
+	    auto kseedptr = art::Ptr<KalSeed>(KalSeedCollectionPID,kkseedcol->size()-1,KalSeedCollectionGetter);
+	    kkseedassns->addSingle(kseedptr,hptr);
+	    // save (unpersistable) KKTrk in the event
 	    kktrkcol->push_back(kktrk.release());
 	  }
 	}
@@ -304,6 +330,7 @@ namespace mu2e {
   if(print_ > 0) std::cout << "Fitted " << kktrkcol->size() << " tracks from " << nhelix << " Helices" << std::endl;
     event.put(move(kktrkcol));
     event.put(move(kkseedcol));
+    event.put(move(kkseedassns));
   }
 
   KTRAJ LoopHelixFit::makeSeedTraj(HelixSeed const& hseed) const {
