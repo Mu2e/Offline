@@ -11,7 +11,7 @@ BEGIN_PROLOG
 CaloClusterFast:
 {
    module_type            : CaloClusterFast
-   caloCrystalModuleLabel : CaloHitMaker
+   caloCrystalModuleLabel : FastCaloHitMaker
    EminSeed               : 10
    ExpandCut              : 1.0
    EnoiseCut              : 1.0
