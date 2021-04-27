@@ -3,6 +3,7 @@
 
 #include "PTMonGeom/inc/PTMonPWC.hh"
 #include "PTMonGeom/inc/PTMon.hh"
+#include "GeometryService/inc/PTMonMaker.hh"
 //
 // construct and return a PTargetMon
 //
@@ -35,7 +36,7 @@ namespace mu2e {
     double windowThick = _config.getDouble("pTargetMon_windowThick");
     std::string windowMaterialName = _config.getString("pTargetMon_windowMaterial");
 
-    std::string gasMaterialName = _config.GetString("pTargetMon_innerGas");
+    std::string gasMaterialName = _config.getString("pTargetMon_innerGas");
     int numVertWires = _config.getInt("pTargetMon_vertWiresPerPlane");
     int numHorizWires = _config.getInt("pTargetMon_horizWiresPerPlane");
 
@@ -44,15 +45,15 @@ namespace mu2e {
 
     // "Near" PWC -- the more upstream of the two.
     CLHEP::Hep3Vector nearPWCPos = CLHEP::Hep3Vector(0.0, 0.0, -0.5*pwcSeparation);
-    PTMonPWC* nearPWC = new PTMonPWC("_1", frameHeight, frameWidth, frameThick, outerPlateThick, frameMaterialName, 
+    std::shared_ptr<PTMonPWC> nearPWC( new PTMonPWC("_1", frameHeight, frameWidth, frameThick, outerPlateThick, frameMaterialName, 
                                      windowHeight, windowWidth, windowThick, windowMaterialName,
-                                     gasMaterialName, numVertWires, numHorizWires, nearPWCPos, 0);
+                                     gasMaterialName, numVertWires, numHorizWires, nearPWCPos, 0) );
     // "Far" PWC
     CLHEP::Hep3Vector farPWCPos = CLHEP::Hep3Vector(0.0, 0.0, 0.5*pwcSeparation);
     int farWireNumStart = numHorizWires + numVertWires;
-    PTMonPWC* farPWC = new PTMonPWC("_2", frameHeight, frameWidth, frameThick, outerPlateThick, frameMaterialName, 
+    std::shared_ptr<PTMonPWC> farPWC( new PTMonPWC("_2", frameHeight, frameWidth, frameThick, outerPlateThick, frameMaterialName, 
                                      windowHeight, windowWidth, windowThick, windowMaterialName,
-                                     gasMaterialName, numVertWires, numHorizWires, farPWCPos, farWireNumStart);
+                                     gasMaterialName, numVertWires, numHorizWires, farPWCPos, farWireNumStart) );
 
     std::unique_ptr<PTMon> ptmon(new PTMon(originInMu2e, rotationInMu2e, nearPWC, farPWC, pwcSeparation));
     return ptmon;

@@ -1,8 +1,14 @@
 #ifndef GeometryService_PTMonMaker_hh
 #define GeometryService_PTMonMaker_hh
 
+#include <memory>
+
 #include "CLHEP/Vector/Rotation.h"
 #include "CLHEP/Vector/ThreeVector.h"
+
+#include "ConfigTools/inc/SimpleConfig.hh"
+#include "PTMonGeom/inc/PTMonPWC.hh"
+#include "PTMonGeom/inc/PTMon.hh"
 //
 // construct and return a PTMon
 //
@@ -11,8 +17,7 @@
 
 namespace mu2e {
 
-  class SimpleConfig;
-  class PTMon;
+  //class PTMon;
   // TODO: class PTMon (or something)
 
   class PTMonMaker {

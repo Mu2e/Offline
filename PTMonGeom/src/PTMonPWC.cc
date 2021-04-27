@@ -3,21 +3,21 @@
 
 namespace mu2e {
 
-  PTMonPWC::PTMonPWC(std::string nameSuffix,
+  PTMonPWC::PTMonPWC(std::string const& nameSuffix,
                      double frameHeight, 
                      double frameWidth, 
                      double frameThick, 
                      double outerPlateThick,
-                     std::string frameMaterialName, 
+                     std::string const& frameMaterialName, 
                      double windowHeight,
                      double windowWidth,
                      double windowThick,
-                     std::string windowMaterialName,
-                     std::string gasMaterialName,
+                     std::string const& windowMaterialName,
+                     std::string const& gasMaterialName,
                      int numVertWires,
                      int numHorizWires,
-                     CLHEP::Hep3Vector const & originInParent = CLHEP::Hep3Vector(),
-                     int wireNumStart = 0) : 
+                     CLHEP::Hep3Vector const& originInParent,
+                     int wireNumStart) : 
     _nameSuffix(nameSuffix),
     _originInParent(originInParent),
     _frameHeight(frameHeight),
@@ -27,9 +27,9 @@ namespace mu2e {
     _frameMaterialName(frameMaterialName),
     _windowMaterialName(windowMaterialName),
     _gasMaterialName(gasMaterialName),
+    _wireNumStart(wireNumStart),
     _numVertWires(numVertWires),
-    _numHorizWires(numHorizWires),
-    _wireNumStart(wireNumStart)
+    _numHorizWires(numHorizWires)
   {
     _totalThick = (13.*frameThick) + (2.*outerPlateThick);
     _ground1Z = -5.5*frameThick;

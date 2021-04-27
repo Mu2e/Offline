@@ -8,7 +8,8 @@
 namespace mu2e{
   PTMon::PTMon(CLHEP::Hep3Vector const& originInMu2e, 
           CLHEP::HepRotation const& rotationInMu2e, 
-          PTMonPWC const& nearPWC, PTMonPWC const& farPWC,
+          std::shared_ptr<PTMonPWC> nearPWC, 
+          std::shared_ptr<PTMonPWC> farPWC,
           double pwcSeparation)
           : _originInMu2e(originInMu2e),
             _rotationInMu2e(rotationInMu2e),
