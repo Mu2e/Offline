@@ -23,8 +23,10 @@
 #include "RecoDataProducts/inc/CaloCluster.hh"
 #include "RecoDataProducts/inc/StrawHitFlag.hh"
 #include "RecoDataProducts/inc/StrawHitIndex.hh"
+#include "RecoDataProducts/inc/KalSeedAssns.hh"
 // KinKal includes
 #include "KinKal/Fit/Status.hh"
+#include "KinKal/Fit/Config.hh"
 #include "KinKal/Trajectory/ParticleTrajectory.hh"
 #include "KinKal/Trajectory/PiecewiseClosestApproach.hh"
 #include "KinKal/Trajectory/Line.hh"
@@ -69,7 +71,6 @@ namespace mu2e {
       using EXING = KinKal::ElementXing<KTRAJ>;
       using EXINGPTR = std::shared_ptr<EXING>;
       using EXINGCOL = std::vector<EXINGPTR>;
-      using HPtr = art::Ptr<HelixSeed>;
       // construct from fit configuration objects
       explicit KKFit(KKFitConfig const& fitconfig);
       // helper functions used to create components of the fit
@@ -81,7 +82,7 @@ namespace mu2e {
       void addStraws(Tracker const& tracker, StrawMaterial const& smat, KKTRK& kktrk, KKSTRAWXINGCOL& exings) const;
       void makeCaloHit(CCPtr const& cluster, Calorimeter const& calo, PKTRAJ const& pktraj, KKCALOHITCOL& hits) const;
       void addCaloHit(Calorimeter const& calo, KKTRK& kktrk, CCHandle cchandle, KKCALOHITCOL& hits) const;
-      KalSeed createSeed(KKTRK const& kktrk, HPtr const& hptr, std::vector<float> const& zsave, bool savefull) const;
+      KalSeed createSeed(KKTRK const& kktrk, TrkFitFlag const& seedflag, std::set<double> const& tsave) const;
       TimeRange range(KKSTRAWHITCOL const& strawhits, KKCALOHITCOL const& calohits, KKSTRAWXINGCOL const& strawxings) const; // time range from a set of hits and element Xings
       double zTime(PKTRAJ const& trak, double zpos) const; // find the time the trajectory crosses the plane perp to z at the given z position
       bool useCalo() const { return usecalo_; }
@@ -395,12 +396,13 @@ namespace mu2e {
     return TimeRange(tmin,tmax);
   }
 
-  template <class KTRAJ> KalSeed KKFit<KTRAJ>::createSeed(KKTRK const& kktrk,HPtr const& hptr, std::vector<float> const& zsave, bool savefull) const {
-    TrkFitFlag fflag(hptr->status());
-    if(kktrk.fitStatus().usable()) fflag.merge(TrkFitFlag::kalmanOK);
+  template <class KTRAJ> KalSeed KKFit<KTRAJ>::createSeed(KKTRK const& kktrk, TrkFitFlag const& seedflag, std::set<double> const& savetimes) const {
+    TrkFitFlag fflag(seedflag);  // initialize the flag with the seed fit flag
+    if(kktrk.fitStatus().usable())fflag.merge(TrkFitFlag::kalmanOK);
     if(kktrk.fitStatus().status_ == Status::converged) fflag.merge(TrkFitFlag::kalmanConverged);
     if(addmat_)fflag.merge(TrkFitFlag::MatCorr);
-    if(kktrk.config().bfcorr_ != 0)fflag.merge(TrkFitFlag::BFCorr);
+    if(kktrk.config().bfcorr_ == KinKal::Config::fixed || kktrk.config().bfcorr_ == KinKal::Config::both )fflag.merge(TrkFitFlag::BFCorr1);
+    if(kktrk.config().bfcorr_ == KinKal::Config::variable )fflag.merge(TrkFitFlag::BFCorr2);
     // explicit T0 is needed for backwards-compatibility; sample from the appropriate trajectory piece
     auto const& fittraj = kktrk.fitTraj();
     double tz0 = zTime(fittraj,0.0);
@@ -408,7 +410,6 @@ namespace mu2e {
     HitT0 t0(t0piece.paramVal(KTRAJ::t0_), sqrt(t0piece.paramVar(KTRAJ::t0_))); 
     // create the shell for the output.  Note the (obsolete) flight length is given as t0
     KalSeed fseed(tpart_,tdir_,fflag,t0.t0());
-    fseed._helix = hptr;
     auto const& fstatus = kktrk.fitStatus();
     fseed._chisq = fstatus.chisq_.chisq();
     fseed._fitcon = fstatus.chisq_.probability();
@@ -464,26 +465,11 @@ namespace mu2e {
 	    sxing->active() );
       }
     }
-    // sample the fit at the requested z positions.
-    if(savefull){
-      fseed._segments.reserve(fittraj.pieces().size());
-      // loop over all pieces of the fit trajectory
-      for (auto const& traj : fittraj.pieces() ) {
-	fseed._segments.emplace_back(traj,traj.range().mid());
-      }
-    } else {
-      fseed._segments.reserve(zsave.size());
-      for(auto zpos : zsave ) {
-	// compute the time the trajectory crosses this plane
-	double tz = zTime(fittraj,zpos);
-	// find the explicit trajectory piece at this time
-	auto const& zpiece = fittraj.nearestPiece(tz);
-	// construct and add the segment
-	fseed._segments.emplace_back(zpiece,tz);
-      }
-    }
+    // sample the fit at the requested times and save those segments.  Uniqueness needs to be checked in the calling function
+    fseed._segments.reserve(savetimes.size());
+    for(auto time : savetimes) fseed._segments.emplace_back(fittraj.nearestPiece(time),time);
     return fseed;
-   }
+  }
 
 }
 #endif
