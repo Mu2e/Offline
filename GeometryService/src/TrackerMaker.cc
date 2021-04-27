@@ -365,6 +365,31 @@ namespace mu2e {
         _panelBaseRotations.push_back(  225.*CLHEP::degree);
         _panelBaseRotations.push_back(  255.*CLHEP::degree);
         _panelBaseRotations.push_back(  345.*CLHEP::degree);
+       } else if(_rotationPattern==6){ // as-built planes, doc 888v13
+        _panelBaseRotations.push_back(  105.*CLHEP::degree);
+        _panelBaseRotations.push_back(  195.*CLHEP::degree);
+        _panelBaseRotations.push_back(  225.*CLHEP::degree);
+        _panelBaseRotations.push_back(  315.*CLHEP::degree);
+        _panelBaseRotations.push_back(  345.*CLHEP::degree);
+        _panelBaseRotations.push_back(  435.*CLHEP::degree);
+        _panelBaseRotations.push_back(  255.*CLHEP::degree);
+        _panelBaseRotations.push_back(  165.*CLHEP::degree);
+        _panelBaseRotations.push_back(  135.*CLHEP::degree);
+        _panelBaseRotations.push_back(  405.*CLHEP::degree);
+        _panelBaseRotations.push_back(  375.*CLHEP::degree);
+        _panelBaseRotations.push_back(  285.*CLHEP::degree);
+        _panelBaseRotations.push_back(  255.*CLHEP::degree);
+        _panelBaseRotations.push_back(  165.*CLHEP::degree);
+        _panelBaseRotations.push_back(  135.*CLHEP::degree);
+        _panelBaseRotations.push_back(  405.*CLHEP::degree);
+        _panelBaseRotations.push_back(  375.*CLHEP::degree);
+        _panelBaseRotations.push_back(  285.*CLHEP::degree);
+        _panelBaseRotations.push_back(  105.*CLHEP::degree);
+        _panelBaseRotations.push_back(  195.*CLHEP::degree);
+        _panelBaseRotations.push_back(  225.*CLHEP::degree);
+        _panelBaseRotations.push_back(  315.*CLHEP::degree);
+        _panelBaseRotations.push_back(  345.*CLHEP::degree);
+        _panelBaseRotations.push_back(  435.*CLHEP::degree);
       } else {
         throw cet::exception("GEOM")
           << "Unrecognized rotation pattern in TrackerMaker. \n";
@@ -1417,7 +1442,7 @@ namespace mu2e {
 
   double
   TrackerMaker::panelRotation(int ipnl,int ipln) const {
-    if ( _rotationPattern == 5 ){
+    if ( _rotationPattern >= 5 ){
       int jplane = ipln%4;
       int jpln   = ipnl + jplane*StrawId::_npanels;
       double phi = _panelBaseRotations.at(jpln);
