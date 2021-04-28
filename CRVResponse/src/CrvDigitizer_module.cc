@@ -8,14 +8,18 @@
 
 #include "CosmicRayShieldGeom/inc/CosmicRayShield.hh"
 #include "DataProducts/inc/CRSScintillatorBarIndex.hh"
+#include "DataProducts/inc/EventWindowMarker.hh"
 
 #include "ConditionsService/inc/AcceleratorParams.hh"
 #include "ConditionsService/inc/CrvParams.hh"
 #include "ConditionsService/inc/ConditionsHandle.hh"
+#include "ProditionsService/inc/ProditionsHandle.hh"
+#include "DAQConditions/inc/EventTiming.hh"
 #include "GeometryService/inc/DetectorSystem.hh"
 #include "GeometryService/inc/GeomHandle.hh"
 #include "GeometryService/inc/GeometryService.hh"
 #include "MCDataProducts/inc/CrvDigiMC.hh"
+#include "MCDataProducts/inc/ProtonBunchTimeMC.hh"
 #include "RecoDataProducts/inc/CrvDigiCollection.hh"
 
 #include "canvas/Persistency/Common/Ptr.h"
@@ -49,6 +53,9 @@ namespace mu2e
 
     double      _digitizationPeriod;
     std::string _crvWaveformsModuleLabel;
+    double      _digitizationStart, _digitizationEnd;
+    std::string _eventWindowMarkerLabel;
+    std::string _protonBunchTimeMCLabel;
     double      _ADCconversionFactor;
     int         _pedestal;
   };
@@ -56,6 +63,10 @@ namespace mu2e
   CrvDigitizer::CrvDigitizer(fhicl::ParameterSet const& pset) :
     art::EDProducer{pset},
     _crvWaveformsModuleLabel(pset.get<std::string>("crvWaveformsModuleLabel")),
+    _digitizationStart(pset.get<double>("digitizationStart")),       //400ns
+    _digitizationEnd(pset.get<double>("digitizationEnd")),           //1750ns
+    _eventWindowMarkerLabel(pset.get<std::string>("eventWindowMarker","EWMProducer")),
+    _protonBunchTimeMCLabel(pset.get<std::string>("protonBunchTimeMC","EWMProducer")),
     _ADCconversionFactor(pset.get<double>("ADCconversionFactor")),
     _pedestal(pset.get<int>("pedestal"))
   {
@@ -79,6 +90,27 @@ namespace mu2e
 
   void CrvDigitizer::produce(art::Event& event) 
   {
+    art::Handle<EventWindowMarker> eventWindowMarker;
+    event.getByLabel(_eventWindowMarkerLabel,"",eventWindowMarker);
+    EventWindowMarker::SpillType spillType = eventWindowMarker->spillType();
+
+    art::Handle<ProtonBunchTimeMC> protonBunchTimeMC;
+    event.getByLabel(_protonBunchTimeMCLabel, protonBunchTimeMC);
+    double TDC0time = -protonBunchTimeMC->pbtime_;
+
+    ProditionsHandle<EventTiming> eventTimingHandle;
+    const EventTiming &eventTiming = eventTimingHandle.get(event.id());
+    double jitter = TDC0time - eventTiming.timeFromProtonsToDRMarker();
+
+    double digitizationStart=_digitizationStart+jitter;
+    double digitizationEnd=_digitizationEnd+jitter;
+    if(spillType!=EventWindowMarker::SpillType::onspill)
+    {
+      double eventWindowLength = eventWindowMarker->eventLength();
+      digitizationStart = TDC0time;
+      digitizationEnd = digitizationStart + eventWindowLength;
+    }
+
     std::unique_ptr<CrvDigiCollection> crvDigiCollection(new CrvDigiCollection);
 
     art::Handle<CrvDigiMCCollection> crvDigiMCCollection;
@@ -91,7 +123,14 @@ namespace mu2e
       const CRSScintillatorBarIndex &barIndex = crvDigiMC.GetScintillatorBarIndex();
       const int SiPM = crvDigiMC.GetSiPMNumber();
       const std::array<double,CrvDigiMC::NSamples> &voltages = crvDigiMC.GetVoltages();
-      const double startTime = crvDigiMC.GetStartTime();
+      double startTime = crvDigiMC.GetStartTime();
+
+      //waveform get recorded only between digitization start and end
+      if(startTime<digitizationStart || startTime>digitizationEnd) continue;
+
+      //start time gets measured with respect to the event window start
+      startTime-=TDC0time;
+      if(startTime<0) continue; //this shouldn't happen
 
       std::vector<double> voltageVector;
       for(size_t i=0; i<voltages.size(); i++) voltageVector.push_back(voltages[i]); 

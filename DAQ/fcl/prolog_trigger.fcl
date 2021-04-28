@@ -53,12 +53,12 @@ DAQ : {
 	 caloTag     : "daq:calo"
       }
 
-       CaloHitMaker:		
+       FastCaloHitMaker:		
       {
 	 module_type   : CaloHitsFromFragments
 	 diagLevel     : 0
 	 caloTag       : "daq:calo"
-	 digiSampling  : @local::HitMakerDigiSampling
+	 digiSampling  : 5
 	 deltaTPulses  : 5.
 	 pulseRatioMax : 1.1
 	 pulseRatioMin : 0.9

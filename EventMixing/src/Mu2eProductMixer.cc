@@ -41,7 +41,9 @@ namespace mu2e {
   }
 
   //----------------------------------------------------------------
-  Mu2eProductMixer::Mu2eProductMixer(const Config& conf, art::MixHelper& helper) {
+  Mu2eProductMixer::Mu2eProductMixer(const Config& conf, art::MixHelper& helper)
+    : mixVolumes_(false)
+  {
 
     for(const auto& e: conf.genParticleMixer().mixingMap()) {
       helper.declareMixOp
@@ -98,6 +100,49 @@ namespace mu2e {
         (e.inTag, e.resolvedInstanceName(), &Mu2eProductMixer::mixEventIDs, *this);
     }
 
+    //----------------------------------------------------------------
+    // VolumeInfo handling
+
+    VolumeInfoMixerConfig vmc;
+    if(conf.volumeInfoMixer(vmc)) {
+
+      mixVolumes_ = true;
+      volumesInput_ = vmc.srInput();
+      subrunVolInstanceName_ = vmc.srOutInstance();
+
+
+      helper.produces<PhysicalVolumeInfoMultiCollection, art::InSubRun>(subrunVolInstanceName_);
+
+      std::string tmp;
+      if(vmc.evtOutInstanceName(tmp)) {
+        evtVolInstanceName_.emplace(tmp);
+      }
+
+      const bool putVolsIntoEvent{evtVolInstanceName_};
+      std::string evtOutInstance = putVolsIntoEvent ? *evtVolInstanceName_ : "unused";
+      helper.declareMixOp<art::InSubRun>
+        (volumesInput_, evtOutInstance, &Mu2eProductMixer::mixVolumeInfos, *this, putVolsIntoEvent);
+    }
+    //----------------------------------------------------------------
+  }
+
+  //================================================================
+  void Mu2eProductMixer::beginSubRun(const art::SubRun&) {
+    subrunVolumes_.clear();
+  }
+
+  //----------------------------------------------------------------
+  void Mu2eProductMixer::endSubRun(art::SubRun& sr) {
+    if(mixVolumes_) {
+      auto col =  std::make_unique<PhysicalVolumeInfoMultiCollection>();
+
+      col->resize(subrunVolumes_.size());
+      for(unsigned stage=0; stage<subrunVolumes_.size(); ++stage) {
+        (*col)[stage].insert(subrunVolumes_[stage].begin(), subrunVolumes_[stage].end());
+      }
+
+      sr.put(std::move(col), subrunVolInstanceName_);
+    }
   }
 
   //----------------------------------------------------------------
@@ -303,6 +348,81 @@ namespace mu2e {
   {
     art::flattenCollections(in, out);
     return true;
+  }
+
+  //----------------------------------------------------------------
+  bool Mu2eProductMixer::mixVolumeInfos(std::vector<PhysicalVolumeInfoMultiCollection const*> const &in,
+                                        PhysicalVolumeInfoMultiCollection& out,
+                                        art::PtrRemapper const&)
+  {
+    if(!in.empty()) {
+      // We add incoming data to the smaller event-level structure that eliminates
+      // some duplicates.  Then we transfer unuque event level data into the larger
+      // subrun structure, again eliminating duplicates.
+
+      const auto numStages = in[0]->size();
+      std::vector<VolumeMap> eventInfos(numStages);
+
+      for(const auto& mcoll: in) {
+
+        if(mcoll->size() != numStages) {
+          throw cet::exception("BADINPUT")<<"Mu2eProductMixer/evt: incompatible PhysicalVolumeInfoMultiCollection inputs. "
+                                          <<"numStages="<<numStages<<" vs "<<mcoll->size()
+                                          <<std::endl;
+        }
+
+        for(unsigned stage=0; stage<numStages; ++stage) {
+          for(const auto& entry: (*mcoll)[stage]) {
+            addInfo(&eventInfos[stage], entry);
+          }
+        }
+      }
+
+      out.clear();
+      out.resize(numStages);
+      for(unsigned stage=0; stage<numStages; ++stage) {
+        out[stage].insert(eventInfos[stage].begin(), eventInfos[stage].end());
+      }
+
+
+      if(subrunVolumes_.empty()) {
+        subrunVolumes_.resize(numStages);
+      }
+      else {
+        if(subrunVolumes_.size() != numStages) {
+          throw cet::exception("BADINPUT")<<"Mu2eProductMixer/sr: incompatible PhysicalVolumeInfoMultiCollection inputs. "
+                                          <<"numStages="<<numStages<<" vs "<<subrunVolumes_.size()
+                                          <<std::endl;
+        }
+      }
+
+      for(unsigned stage=0; stage<numStages; ++stage) {
+        for(const auto& entry: eventInfos[stage]) {
+          addInfo(&subrunVolumes_[stage], entry);
+        }
+      }
+
+    }
+
+    const bool putVolsIntoEvent{evtVolInstanceName_};
+    return putVolsIntoEvent;
+  }
+
+  //----------------------------------------------------------------
+  void Mu2eProductMixer::addInfo(VolumeMap* map, const PhysicalVolumeInfoSingleStage::value_type& entry) {
+    const auto it = map->find(entry.first);
+    if(it != map->end()) {
+      if(it->second != entry.second) {
+        throw cet::exception("BADINPUT")<<"Mu2eProductMixer::addInfo(): inconsistent volume infos for index "
+                                        <<it->first.asInt()<<": "
+                                        <<"a = "<<it->second
+                                        <<", b = "<<entry.second
+                                        <<std::endl;
+      }
+    }
+    else {
+      map->insert(entry);
+    }
   }
 
   //----------------------------------------------------------------

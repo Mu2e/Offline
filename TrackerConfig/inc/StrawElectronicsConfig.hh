@@ -72,8 +72,10 @@ namespace mu2e {
       Name("electronicsTimeDelay"), Comment("nsec, Absolute time delay in electronics due to firmware signal propagation etc")};
     fhicl::Atom<double> eventWindowMarkerROCJitter {
       Name("eventWindowMarkerROCJitter"), Comment("ps (jitter per panel per microbuncH)")};
-    fhicl::Atom<double> flashEnd {
-      Name("flashEnd"), Comment("nsec, flash blanking period")};
+    fhicl::Atom<double> digitizationStart {
+      Name("digitizationStart"), Comment("nsec, nominal time after proton bunch that flash blanking ends")};
+    fhicl::Atom<double> digitizationEnd {
+      Name("digitizationEnd"), Comment("nsec, nominal time after proton bunch that digitization ends. Fixed relative to digitizationStart")};
     fhicl::Atom<int> responseBins {
       Name("responseBins"), Comment("")};
     fhicl::Atom<double> sampleRate {

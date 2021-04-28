@@ -1,3 +1,0 @@
-physics.filters.caloMVACEPrescale.nPrescale    : 1
-physics.filters.caloMVACEPrescale.useFilteredEvents : true
-physics.filters.caloMVACEPrescale.triggerFlag  : ["PrescaleGoodEvents"]
