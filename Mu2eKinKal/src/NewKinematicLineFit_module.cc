@@ -277,18 +277,19 @@ namespace mu2e {
     auto const& scosmic = hseed.track();
     VEC3 bnom(0.0,0.0,0.0);
     // create a PKTRAJ from the CosmicTrack fit result, to seed the KinKal fit.  First, translate the parameters
-    std::tuple <double, double, double, double, double> info = scosmic.KinKalTrackParams();//d0,phi0,z0,cost,t0
+    std::tuple <double, double, double, double, double, double> info = scosmic.KinKalTrackParams();//d0,phi0,z0,cost,t0,mom
     DVEC pars;
     pars[KTRAJ::d0_] = get<0>(info);
+    pars[KTRAJ::phi0_] = get<1>(info);
     pars[KTRAJ::z0_] = get<2>(info);
     pars[KTRAJ::cost_] = get<3>(info);
-    pars[KTRAJ::phi0_] = get<1>(info);
-    pars[KTRAJ::mom_] = 1.0; //TODO
     pars[KTRAJ::t0_] = get<4>(info); //TODO
+    pars[KTRAJ::mom_] = get<5>(info); //TODO
+
     // create the initial trajectory
     Parameters kkpars(pars,seedcov_); //TODO seedcov
     //  construct the seed trajectory 
-    return KTRAJ(kkpars,  TimeRange()); //TODO: better constructor
+    return KTRAJ(kkpars, mass_, charge_, bnom, TimeRange()); //TODO: better constructor
   }
 }
 DEFINE_ART_MODULE(mu2e::NewKinematicLineFit);
