@@ -28,14 +28,15 @@
 #include "GeometryService/inc/GeometryService.hh"
 #include "GeneralUtilities/inc/Angles.hh"
 #include "TrkReco/inc/TrkUtilities.hh"
-
+#include "CalorimeterGeom/inc/Calorimeter.hh"
+#include "RecoDataProducts/inc/CaloCluster.hh"
 // data
 #include "DataProducts/inc/PDGCode.hh"
 #include "DataProducts/inc/Helicity.hh"
 #include "RecoDataProducts/inc/ComboHit.hh"
 #include "RecoDataProducts/inc/StrawHitFlag.hh"
 #include "RecoDataProducts/inc/CosmicTrackSeed.hh"
-#include "RecoDataProducts/inc/CosmicKalSeed.hh"
+#include "RecoDataProducts/inc/KalSeed.hh"
 #include "RecoDataProducts/inc/KKLine.hh" 
 // KinKal
 #include "KinKal/Fit/Track.hh"
@@ -82,7 +83,8 @@ namespace mu2e {
   using KinKal::TimeRange;
   using KinKal::DMAT;
   using KinKal::Status;
-  using HPtr = art::Ptr<CosmicTrackSeed>;
+  using HPtr = art::Ptr<HelixSeed>;
+  using CCPtr = art::Ptr<CaloCluster>;
   using StrawHitIndexCollection = std::vector<StrawHitIndex>;
   
   using StrawHitUpdateSettings = fhicl::Sequence<fhicl::Tuple<float,float,unsigned,unsigned>>;
@@ -167,7 +169,7 @@ namespace mu2e {
     // collection handling
     for(const auto& hseedtag : config().modSettings().cosmicTrackSeedCollections()) { hseedCols_.emplace_back(consumes<CosmicTrackSeedCollection>(hseedtag)); }
     produces<KKLineCollection>();
-    produces<CosmicKalSeedCollection>();
+    produces<KalSeedCollection>();
     // construct the fit configuration object.  This controls all the global and iteration-specific aspects of the fit
     // build the initial seed covariance
     auto const& seederrors = config().fitSettings().seederrors();
@@ -204,6 +206,7 @@ namespace mu2e {
   }
 
   void NewKinematicLineFit::produce(art::Event& event ) {
+    GeomHandle<mu2e::Calorimeter> calo_h;
     // find current proditions
     auto const& strawresponse = strawResponse_h_.getPtr(event.id());
     auto const& tracker = alignedTracker_h_.getPtr(event.id()).get();
@@ -212,7 +215,7 @@ namespace mu2e {
     auto const& chcol = *ch_H;
     // create output
     unique_ptr<KKLineCollection> kktrkcol(new KKLineCollection );
-    unique_ptr<CosmicKalSeedCollection> kkseedcol(new CosmicKalSeedCollection );
+    unique_ptr<KalSeedCollection> kkseedcol(new KalSeedCollection ); //Needs to return a KalSeed
     // find the track seed collections
     for (auto const& hseedtag : hseedCols_) {
       auto const& hseedcol_h = event.getValidHandle<CosmicTrackSeedCollection>(hseedtag);
@@ -220,7 +223,9 @@ namespace mu2e {
       // loop over the seeds
       for(size_t iseed=0; iseed < hseedcol.size(); ++iseed) {
         auto const& hseed = hseedcol[iseed];
-        auto hptr = HPtr(hseedcol_h,iseed);
+        
+        art::Ptr<HelixSeed> hptr;
+
         // check helicity.  The test on the charge and helicity 
         if(hseed.status().hasAllProperties(goodline_) ){
           // construt the seed trajectory
@@ -236,7 +241,7 @@ namespace mu2e {
           for(size_t ihit = 0; ihit < hhits.size(); ++ihit ){ hhits.fillStrawHitIndices(event,ihit,strawHitIdxs); }
           // next, build straw hits from these
           kkfit_.makeStrawHits(*tracker, *strawresponse, *kkbf_, kkmat_.strawMaterial(), pseedtraj, chcol, strawHitIdxs, hits, exings);
-
+          if (kkfit_.useCalo() && hptr->caloCluster())kkfit_.makeCaloHit(hptr->caloCluster(),*calo_h, pseedtraj, hits);
           if(print_ > 0){
             std::cout << hits.size() << " Hits and " << exings.size() << " Material Xings in fit" << std::endl;
           }
@@ -247,7 +252,7 @@ namespace mu2e {
           // set the seed range given the hit TPOCA values
           seedtraj.range() = kkfit_.range(hits,exings);
           if(print_ > 0){
-            std::cout << "Seed line parameters " << hseed.track() << std::endl;
+            //std::cout << "Seed line parameters " << hseed.track() << std::endl;
             seedtraj.print(std::cout,print_);
           }
           // create and fit the track  
@@ -282,8 +287,8 @@ namespace mu2e {
     pars[KTRAJ::t0_] = get<4>(info); //TODO
     // create the initial trajectory
     Parameters kkpars(pars,seedcov_); //TODO seedcov
-    //  construct the seed trajectory (infinite initial time range)
-    return KTRAJ(kkpars, mass_, charge_, bnom, TimeRange()); //TODO: better constructor
+    //  construct the seed trajectory 
+    return KTRAJ(kkpars,  TimeRange()); //TODO: better constructor
   }
 }
 DEFINE_ART_MODULE(mu2e::NewKinematicLineFit);
