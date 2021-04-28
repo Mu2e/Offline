@@ -5,7 +5,7 @@
 #include "PTMonGeom/inc/PTMon.hh"
 #include "GeometryService/inc/PTMonMaker.hh"
 //
-// construct and return a PTargetMon
+// construct and return a PTMon
 //
 // original author Helenka Casler
 //
