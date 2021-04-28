@@ -25,8 +25,8 @@ TimeClusterFinder : {
   ComboHitCollection     : "makePH"
   StrawHitFlagCollection : "FlagBkgHits:ComboHits"
   CaloClusterCollection  : "CaloClusterMaker"
-  ClusterMVA             : { MVAWeights : "TrkPatRec/test/TimeCluster.weights.xml" }
-  ClusterCaloMVA         : { MVAWeights : "TrkPatRec/test/TimeClusterCalo.weights.xml" }
+  ClusterMVA             : { MVAWeights : "TrkPatRec/data/TimeCluster.weights.xml" }
+  ClusterCaloMVA         : { MVAWeights : "TrkPatRec/data/TimeClusterCalo.weights.xml" }
   HitSelectionBits       : ["EnergySelection","TimeSelection","RadiusSelection"]
   HitBackgroundBits      : ["Background"]
   UseCaloCluster : true
@@ -61,7 +61,7 @@ TimeClusterFinderNew : {
   ComboHitCollection     : "makePH"
   StrawHitFlagCollection : "FlagBkgHits:ComboHits"
   CaloClusterCollection  : "CaloClusterFromProtoCluster"
-  TimeClusterMVA         : { MVAWeights : "TrkPatRec/test/TimeCluster3.weights.xml" }
+  TimeClusterMVA         : { MVAWeights : "TrkPatRec/data/TimeCluster3.weights.xml" }
   HitSelectionBits       : ["EnergySelection","TimeSelection","RadiusSelection"]
   HitBackgroundBits      : ["Background"]
   TestFlag               : true
@@ -151,8 +151,8 @@ TimeClusterFinderUpi : {
 RobustHelixFinder : {
     module_type		: RobustHelixFinder
     ComboHitCollection     : "makePH"
-    HelixStereoHitMVA      : { MVAWeights : "TrkPatRec/test/HelixStereoHitMVA.weights.xml" }
-    HelixNonStereoHitMVA   : { MVAWeights : "TrkPatRec/test/HelixNonStereoHitMVA.weights.xml" }
+    HelixStereoHitMVA      : { MVAWeights : "TrkPatRec/data/HelixStereoHitMVA.weights.xml" }
+    HelixNonStereoHitMVA   : { MVAWeights : "TrkPatRec/data/HelixNonStereoHitMVA.weights.xml" }
     DiagPlugin : { 
 	diagLevel                    : 0
 	tool_type                    : "RobustHelixFinderDiag"
