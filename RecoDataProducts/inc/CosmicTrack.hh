@@ -180,25 +180,37 @@ namespace mu2e {
       void set_initchisq_dofY(double initchisq_dofY) { Diag.InitialChiY = initchisq_dofY; }
       void set_niter(int iter){ niters= (iter);}
       
+      void SetKinKalParams(double d0, double phi0,double z0, double cost, double t0, double mom){
+        d0_  = d0; 
+        phi0_ = phi0; 
+        z0_ = z0;
+        cost_ = cost;
+        t0_ = t0; 
+        mom_ = mom;
+      }
+      
+      
       //function to make tuple of kinkal params info
-      std::tuple <double, double, double, double, double> KinKalTrackParams() const {
+      std::tuple <double, double, double, double, double, double> KinKalTrackParams() const{
         XYZVec zpos(0.,0.,0);
         XYZVec  zdir(0.,0.,1.);
         XYZVec  pos0(this->MinuitParams.A0, 0, this->MinuitParams.B0);
         XYZVec  dir(this->MinuitParams.A1, -1, this->MinuitParams.B1);
 
-        std::tuple <double,double, double, double, double> info;
+        std::tuple <double,double, double, double, double, double> info;
         TwoLinePCA_XYZ PCA = TwoLinePCA_XYZ(pos0, dir, zpos, zdir);
         XYZVec POCA = PCA.point1()-PCA.point2();
         double DOCA = PCA.dca();
         double amsign = copysign(1.0, -(zdir.Cross(POCA)).Dot(dir));
         
-        double d0_  = amsign*DOCA; 
-        double phi0_ = dir.Phi(); 
-        double z0_ = PCA.point1().Z();
-        double cost_ = dir.Z();
-        double t0_ = this->MinuitParams.T0; //TODO
-        info = make_tuple(d0_,phi0_,z0_,cost_, t0_);
+        double d0 = amsign*DOCA; 
+        double phi0 = dir.Phi(); 
+        double z0 = PCA.point1().Z();
+        double cost = dir.Z();
+        double t0 = this->MinuitParams.T0; //TODO
+        double mom = 1.0;//TODO
+        //this->SetKinKalParams(d0_,phi0_,z0_,cost_, t0_, mom_);
+        info = make_tuple(d0,phi0,z0,cost, t0, mom);
         return info;
       }
       
