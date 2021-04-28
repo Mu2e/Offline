@@ -19,7 +19,7 @@ namespace mu2e {
              using CaloCrystalList = std::list<const CaloHit*>;
              using CaloCrystalVec  = std::vector<const CaloHit*>;
 
-             ClusterFinder(const Calorimeter&, const CaloHit*, double, double, bool isOnline = false);  
+             ClusterFinder(const Calorimeter&, const CaloHit*, double, double, bool addSecondRing);  
              
              void                   formCluster(std::vector<CaloCrystalList>&);
              const CaloCrystalList& clusterList() const {return clusterList_;}             
@@ -34,7 +34,7 @@ namespace mu2e {
              std::vector<bool>    isVisited_; 
              double               deltaTime_; 
              double               ExpandCut_;
-             bool                 isOnline_;
+             bool                 addSecondRing_;
     };
 
 

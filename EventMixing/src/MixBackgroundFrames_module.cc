@@ -121,7 +121,6 @@ namespace mu2e {
     using Parameters = art::MixFilterTable<Config>;
     explicit MixBackgroundFramesDetail(const Parameters& pars, art::MixHelper& helper);
 
-    void startEvent(const art::Event& event);
 
     size_t nSecondaries();
 
@@ -129,7 +128,10 @@ namespace mu2e {
 
     void processEventIDs(const art::EventIDSequence& seq);
 
+    void beginSubRun(const art::SubRun& sr);
+    void startEvent(const art::Event& evt);
     void finalizeEvent(art::Event& e);
+    void endSubRun(art::SubRun& sr);
 
   };
 
@@ -156,6 +158,16 @@ namespace mu2e {
         throw cet::exception("MixBackgroundFrames") << "You have specified a number of meanEventsPerProton *and* provided a sequence of simStageEfficiencyTags. Please supply on one or the other." << std::endl;
       }
     }
+  }
+
+  //================================================================
+  void MixBackgroundFramesDetail::beginSubRun(const art::SubRun& sr) {
+    spm_.beginSubRun(sr);
+  }
+
+  //================================================================
+  void MixBackgroundFramesDetail::endSubRun(art::SubRun& sr) {
+    spm_.endSubRun(sr);
   }
 
   //================================================================
@@ -246,6 +258,8 @@ namespace mu2e {
       e.put(std::move(o));
     }
   }
+
+  //================================================================
 
   //================================================================
   // This is the module class.

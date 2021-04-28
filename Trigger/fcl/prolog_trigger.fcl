@@ -28,7 +28,6 @@ Trigger : {
 	@table::CstTrigger.producers
 	@table::TprTrigger.producers
 	@table::CprTrigger.producers
-	
     }
 
     filters : {
@@ -38,7 +37,7 @@ Trigger : {
 	@table::CstTrigger.filters
 
 	#used to select 1 event out of N
-	unbiasedPrescale : {
+	unbiasedEventPrescale : {
 	    module_type : PrescaleEvent
 	    nPrescale         : 10000 
 	    triggerPath        : "unbiased"
@@ -53,14 +52,6 @@ Trigger : {
 	    triggerFlag   : ["PrescaleRandom"]	    
 	}
 	
-	minimumbiasSDCountPrescale      : {
-	    module_type : PrescaleEvent
-	    nPrescale         : 1
-	    useFilteredEvents : true
-	    triggerPath        : "minBiasStrawDigiCount"
-	    triggerFlag       : ["PrescaleGoodEvents"]	    
-	}
-
 	#prescaler for the strawDigi large-occupancy filter
 	largeSDCountEventPrescale : {
 	    module_type : PrescaleEvent
@@ -69,14 +60,6 @@ Trigger : {
 	    triggerFlag   : ["PrescaleRandom"]	    
 	}
 	
-	largeSDCountPrescale      : {
-	    module_type : PrescaleEvent
-	    nPrescale         : 1
-	    useFilteredEvents : true
-	    triggerPath        : "largeStrawDigiCount"	    
-	    triggerFlag       : ["PrescaleGoodEvents"]	    
-	}
-
 	#filters based on the strawDigi occupancy:
 
 	# LargeSDCountFilter: we need this filter to select strange events 
@@ -120,14 +103,6 @@ Trigger : {
 	    triggerFlag   : ["PrescaleRandom"]	    
 	}
 	
-	minimumbiasCDCountPrescale      : {
-	    module_type : PrescaleEvent
-	    nPrescale         : 1 
-	    useFilteredEvents : true
-	    triggerPath        : "minBiasCaloDigiCount"	    	    
-	    triggerFlag       : ["PrescaleGoodEvents"]	    
-	}
-
 	#prescaler for the strawDigi large-occupancy filter
 	largeCDCountEventPrescale : {
 	    module_type : PrescaleEvent
@@ -136,14 +111,6 @@ Trigger : {
 	    triggerFlag   : ["PrescaleRandom"]	    
 	}
 	
-	largeCDCountPrescale      : {
-	    module_type : PrescaleEvent
-	    nPrescale         : 1 
-	    useFilteredEvents : true
-	    triggerPath        : "largeCaloDigiCount"	    	    
-	    triggerFlag       : ["PrescaleGoodEvents"]	    
-	}
-
 	#filters based on the strawDigi occupancy:
 
 	# LargeCDCountFilter: we need this filter to select strange events 
@@ -197,19 +164,19 @@ Trigger : {
 	@table::CstTrigger.sequences
 
 	#unbiased filter. It selects the events based on their event id
-	unbiased           : [ unbiasedPrescale ]
+	unbiased           : [ unbiasedEventPrescale, unbiasedTriggerInfoMerger ]
 
 	#minimum bias filters. So far, a filter based on the StrawDigi occupancy
-	minimumbiasSDCount : [ minimumbiasSDCountEventPrescale, minimumbiasSDCountFilter]
+	minimumbiasSDCount : [ minimumbiasSDCountEventPrescale, minimumbiasSDCountFilter, minimumbiasSDCountTriggerInfoMerger]
 
 	#filter to select events with large occupancy in the tracker
-	largeSDCount       : [ largeSDCountEventPrescale, largeSDCountFilter]
+	largeSDCount       : [ largeSDCountEventPrescale, largeSDCountFilter, largeSDCountTriggerInfoMerger]
 	
 	#minimum bias filters. So far, a filter based on the StrawDigi occupancy
-	minimumbiasCDCount : [ minimumbiasCDCountEventPrescale, minimumbiasCDCountFilter]
+	minimumbiasCDCount : [ minimumbiasCDCountEventPrescale, minimumbiasCDCountFilter, minimumbiasCDCountTriggerInfoMerger]
 
 	#filter to select events with large occupancy in the tracker
-	largeCDCount       : [ largeCDCountEventPrescale, largeCDCountFilter]
+	largeCDCount       : [ largeCDCountEventPrescale, largeCDCountFilter, largeCDCountTriggerInfoMerger]
     }
     
     outputs: {

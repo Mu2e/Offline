@@ -32,6 +32,7 @@ using namespace std;
 #include "EventDisplay/src/dict_classes/EventDisplayViewSetup.h"
 #include "EventDisplay/src/dict_classes/ComponentInfoContainer.h"
 #include "EventDisplay/src/dict_classes/HistDraw.h"
+#include "ConfigTools/inc/ConfigFileLookupPolicy.hh"
 
 #include "TGGC.h"
 #include "TGFont.h"
@@ -47,6 +48,7 @@ EventDisplayFrame::EventDisplayFrame(const TGWindow* p, UInt_t w, UInt_t h, fhic
   TGMainFrame(p, w, h),
   _g4ModuleLabel(pset.get<std::string>("g4ModuleLabel","g4run")),
   _physicalVolumesMultiLabel(pset.get<std::string>("physicalVolumesMultiLabel","compressPV")),
+  _protonBunchTimeLabel(pset.get<std::string>("protonBunchTimeTag","EWMProducer")),
   _timeOffsets(pset.get<fhicl::ParameterSet>("timeOffsets"))
 {
   SetCleanup(kDeepCleanup);
@@ -125,7 +127,8 @@ EventDisplayFrame::EventDisplayFrame(const TGWindow* p, UInt_t w, UInt_t h, fhic
   _subFrame->AddFrame(trackBox, lh1);
 
   _contentSelector=boost::shared_ptr<ContentSelector>(new ContentSelector(hitBox, caloHitBox, crvHitBox, trackBox,  
-                                                                          _g4ModuleLabel, _physicalVolumesMultiLabel));
+                                                                          _g4ModuleLabel, _physicalVolumesMultiLabel,
+                                                                          _protonBunchTimeLabel));
 
   TGHorizontalFrame *subFrameView1   = new TGHorizontalFrame(_subFrame,300,15);
   TGHorizontalFrame *subFrameView2   = new TGHorizontalFrame(_subFrame,300,15);
@@ -397,8 +400,8 @@ EventDisplayFrame::EventDisplayFrame(const TGWindow* p, UInt_t w, UInt_t h, fhic
   applyButton->Associate(this);
   goButton->Associate(this);
 
-  std::string logoFileName=getenv("MU2E_BASE_RELEASE");
-  logoFileName.append("/EventDisplay/src/logo_small.png");
+  mu2e::ConfigFileLookupPolicy configFile;
+  std::string logoFileName = configFile("EventDisplay/src/logo_small.png");
   const TGPicture *logo = gClient->GetPicture(logoFileName.c_str());
   TGIcon *icon = new TGIcon(navigationFrame, logo, 50, 50);
   navigationFrame->AddFrame(icon, new TGLayoutHints(kLHintsLeft,20,0,0,0));

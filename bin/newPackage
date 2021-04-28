@@ -1,15 +1,10 @@
-#! /bin/sh
+#! /bin/bash
 #
 # Create new directories within the current Mu2e Offline environment.
 #
 #
 
 # Check that this request can be honoured.
-if [ "${MU2E_BASE_RELEASE}" = '' ];then
-   echo "The environment variable MU2E_BASE_RELEASE is not set."
-   echo "You must setup a base release before sourcing this script."
-   exit
-fi
 
 if [ $# != 1 ];then
    echo "Must supply the name of exactly one new package to create."
@@ -33,11 +28,18 @@ mkdir -p $1/src
 mkdir -p $1/test
 
 # A generic SConscript that should ususally work.
-cp ${MU2E_BASE_RELEASE}/Analyses/src/SConscript $1/src
+SCRIPTDIR=$( dirname $(readlink -f $BASH_SOURCE) )
+SCONSCRIPT=$SCRIPTDIR/../Analyses/src/SConscript
+if [ ! -f $SCONSCRIPT ] ; then
+   echo "Could not find example SConscript file: $SCONSCRIPT"
+   exit
+fi
+
+cp $SCONSCRIPT $1/src
 
 # Make sure there is at least one file in each of the other subdirectories.
 cat > $1/inc/Placeholder.txt <<EOF
-A placeholder file for cvs. See http://mu2e.fnal.gov/atwork/computing/cvsCheatSheet.shtml#adddir
+A placeholder file 
 EOF
 
 cp $1/inc/Placeholder.txt $1/test/Placeholder.txt

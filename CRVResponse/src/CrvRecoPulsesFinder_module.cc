@@ -9,14 +9,15 @@
 #include "CosmicRayShieldGeom/inc/CosmicRayShield.hh"
 #include "DataProducts/inc/CRSScintillatorBarIndex.hh"
 
-#include "ConditionsService/inc/AcceleratorParams.hh"
 #include "ConditionsService/inc/CrvParams.hh"
 #include "ConditionsService/inc/ConditionsHandle.hh"
 #include "GeometryService/inc/DetectorSystem.hh"
 #include "GeometryService/inc/GeomHandle.hh"
 #include "GeometryService/inc/GeometryService.hh"
 #include "RecoDataProducts/inc/CrvDigiCollection.hh"
-#include "RecoDataProducts/inc/CrvRecoPulseCollection.hh"
+#include "RecoDataProducts/inc/CrvRecoPulse.hh"
+#include "RecoDataProducts/inc/CrvRecoPulseFlags.hh"
+#include "RecoDataProducts/inc/ProtonBunchTime.hh"
 
 #include "art_root_io/TFileDirectory.h"
 #include "art_root_io/TFileService.h"
@@ -48,15 +49,18 @@ namespace mu2e
       using Name=fhicl::Name;
       using Comment=fhicl::Comment;
       fhicl::Atom<std::string> crvDigiModuleLabel{Name("crvDigiModuleLabel"), Comment("module label for CrvDigis")};
-      fhicl::Atom<double> minADCdifference{Name("minADCdifference"), Comment("minimum ADC difference above pedestal to be considered for reconstruction")};  //5.0
-      fhicl::Atom<double> defaultBeta{Name("defaultBeta"), Comment("initialization value for fit and default value for invalid fits (regular pulses: 19.0ns, dark counts for calibration: 12.0ns)")};
-      fhicl::Atom<double> minBeta{Name("minBeta"), Comment("smallest accepted beta for valid fit [ns]")};  //5.0ns
-      fhicl::Atom<double> maxBeta{Name("maxBeta"), Comment("largest accepted beta for valid fit [ns]")}; //50.0ns
-      fhicl::Atom<double> maxTimeDifference{Name("maxTimeDifference"), Comment("largest accepted difference between time of largest ADC value and fitted peak [ns]")}; //20.0ns
-      fhicl::Atom<double> minPulseHeightRatio{Name("minPulseHeightRatio"), Comment("smallest accepted ratio between largest ADC value and fitted peak")}; //0.7
-      fhicl::Atom<double> maxPulseHeightRatio{Name("maxPulseHeightRatio"), Comment("largest accepted ratio between largest ADC value and fitted peak")}; //1.5
-      fhicl::Atom<double> LEtimeFactor{Name("LEtimeFactor"), Comment("time of leading edge is peakTime-LEtimeFactor*beta (0.985,1.385,1.587 for a leading edge of 0.5,0.2,0.1 pulse height")};
-      fhicl::Atom<int> minPEs{Name("minPEs"), Comment("minimum number of PEs")}; //0
+      fhicl::Atom<float> minADCdifference{Name("minADCdifference"), Comment("minimum ADC difference above pedestal to be considered for reconstruction")};  //5.0
+      fhicl::Atom<float> defaultBeta{Name("defaultBeta"), Comment("initialization value for fit and default value for invalid fits (regular pulses: 19.0ns, dark counts for calibration: 12.0ns)")};
+      fhicl::Atom<float> minBeta{Name("minBeta"), Comment("smallest accepted beta for valid fit [ns]")};  //5.0ns
+      fhicl::Atom<float> maxBeta{Name("maxBeta"), Comment("largest accepted beta for valid fit [ns]")}; //50.0ns
+      fhicl::Atom<float> maxTimeDifference{Name("maxTimeDifference"), Comment("largest accepted difference between time of largest ADC value and fitted peak [ns]")}; //20.0ns
+      fhicl::Atom<float> minPulseHeightRatio{Name("minPulseHeightRatio"), Comment("smallest accepted ratio between largest ADC value and fitted peak")}; //0.7
+      fhicl::Atom<float> maxPulseHeightRatio{Name("maxPulseHeightRatio"), Comment("largest accepted ratio between largest ADC value and fitted peak")}; //1.5
+      fhicl::Atom<float> LEtimeFactor{Name("LEtimeFactor"), Comment("time of leading edge is peakTime-LEtimeFactor*beta (0.985,1.385,1.587 for a leading edge of 0.5,0.2,0.1 pulse height")};
+      fhicl::Atom<bool> allowDoubleGumbel{Name("allowDoubleGumbel"), Comment("tries fitting with two Gumbel functions")};
+      fhicl::Atom<float> doubleGumbelThreshold{Name("doubleGumbelThreshold"), Comment("Chi2/#ADCsamples (based on single Gumbel fit) at which a fit with two Gumbel functions should be attempted")};
+      fhicl::Atom<float> minPEs{Name("minPEs"), Comment("minimum number of PEs")}; //0
+      fhicl::Atom<art::InputTag> protonBunchTimeTag{ Name("protonBunchTimeTag"), Comment("ProtonBunchTime producer"),"EWMProducer" };
     };
 
     typedef art::EDProducer::Table<Config> Parameters;
@@ -71,19 +75,20 @@ namespace mu2e
     boost::shared_ptr<mu2eCrv::MakeCrvRecoPulses> _makeCrvRecoPulses;
 
     std::string _crvDigiModuleLabel;
-    int         _minPEs;
-    double      _digitizationPeriod;
-    double      _pedestal;           //100 ADC
-    double      _calibrationFactor;  //394.6 ADC*ns/PE
-    double      _calibrationFactorPulseHeight;  //11.4 ADC/PE
-    double      _microBunchPeriod;
+    float       _minPEs;
+    float       _digitizationPeriod;
+    float       _pedestal;           //100 ADC
+    float       _calibrationFactor;  //394.6 ADC*ns/PE
+    float       _calibrationFactorPulseHeight;  //11.4 ADC/PE
+    art::InputTag _protonBunchTimeTag;
   };
 
 
   CrvRecoPulsesFinder::CrvRecoPulsesFinder(const Parameters& conf) :
     art::EDProducer(conf),
     _crvDigiModuleLabel(conf().crvDigiModuleLabel()),
-    _minPEs(conf().minPEs())
+    _minPEs(conf().minPEs()),
+    _protonBunchTimeTag(conf().protonBunchTimeTag())
   {
     produces<CrvRecoPulseCollection>();
     _makeCrvRecoPulses=boost::shared_ptr<mu2eCrv::MakeCrvRecoPulses>(new mu2eCrv::MakeCrvRecoPulses(conf().minADCdifference(),
@@ -93,7 +98,9 @@ namespace mu2e
                                                                                                     conf().maxTimeDifference(),
                                                                                                     conf().minPulseHeightRatio(),
                                                                                                     conf().maxPulseHeightRatio(),
-                                                                                                    conf().LEtimeFactor()));
+                                                                                                    conf().LEtimeFactor(),
+                                                                                                    conf().allowDoubleGumbel(),
+                                                                                                    conf().doubleGumbelThreshold()));
   }
 
   void CrvRecoPulsesFinder::beginJob()
@@ -106,9 +113,6 @@ namespace mu2e
 
   void CrvRecoPulsesFinder::beginRun(art::Run &run)
   {
-    mu2e::ConditionsHandle<mu2e::AcceleratorParams> accPar("ignored");
-    _microBunchPeriod = accPar->deBuncherPeriod;
-
     mu2e::ConditionsHandle<mu2e::CrvParams> crvPar("ignored");
     _digitizationPeriod = crvPar->digitizationPeriod;
     _pedestal           = crvPar->pedestal;
@@ -119,6 +123,10 @@ namespace mu2e
   void CrvRecoPulsesFinder::produce(art::Event& event) 
   {
     std::unique_ptr<CrvRecoPulseCollection> crvRecoPulseCollection(new CrvRecoPulseCollection);
+
+    art::Handle<ProtonBunchTime> protonBunchTime;
+    event.getByLabel(_protonBunchTimeTag, protonBunchTime);
+    double TDC0time = -protonBunchTime->pbtime_;
 
     art::Handle<CrvDigiCollection> crvDigiCollection;
     event.getByLabel(_crvDigiModuleLabel,"",crvDigiCollection);
@@ -132,7 +140,7 @@ namespace mu2e
       unsigned int startTDC = digi.GetStartTDC();
       std::vector<unsigned int> ADCs;
       std::vector<size_t> waveformIndices;
-      for(size_t i=0; i<CrvDigi::NSamples; i++) ADCs.push_back(digi.GetADCs()[i]);
+      for(size_t i=0; i<CrvDigi::NSamples; ++i) ADCs.push_back(digi.GetADCs()[i]);
       waveformIndices.push_back(waveformIndex);
 
       //checking following digis whether they are a continuation of the current digis
@@ -143,28 +151,40 @@ namespace mu2e
         if(barIndex!=nextDigi.GetScintillatorBarIndex()) break;
         if(SiPM!=nextDigi.GetSiPMNumber()) break;
         if(startTDC+ADCs.size()!=nextDigi.GetStartTDC()) break;
-        for(size_t i=0; i<CrvDigi::NSamples; i++) ADCs.push_back(nextDigi.GetADCs()[i]);
+        for(size_t i=0; i<CrvDigi::NSamples; ++i) ADCs.push_back(nextDigi.GetADCs()[i]);
         waveformIndices.push_back(waveformIndex);
       }
 
       _makeCrvRecoPulses->SetWaveform(ADCs, startTDC, _digitizationPeriod, _pedestal, _calibrationFactor, _calibrationFactorPulseHeight);
 
-      unsigned int n = _makeCrvRecoPulses->GetNPulses();
-      for(unsigned int j=0; j<n; j++)
+      size_t n = _makeCrvRecoPulses->GetPEs().size();
+      for(size_t j=0; j<n; ++j)
       {
-        double pulseTime   = _makeCrvRecoPulses->GetPulseTime(j);
-        int    PEs         = _makeCrvRecoPulses->GetPEs(j);
-        int    PEsPulseHeight = _makeCrvRecoPulses->GetPEsPulseHeight(j);
-        double pulseHeight = _makeCrvRecoPulses->GetPulseHeight(j); 
-        double pulseBeta   = _makeCrvRecoPulses->GetPulseBeta(j);
-        double pulseFitChi2= _makeCrvRecoPulses->GetPulseFitChi2(j);
-        double LEtime      = _makeCrvRecoPulses->GetLEtime(j);
-//        if(pulseTime<0) continue;
-//        if(pulseTime>_microBunchPeriod) continue;
+        //the TDC times were recorded with respect to the event window start.
+        //need to shift the times back to the original time scale (i.e. microbunch time)
+        double pulseTime   = _makeCrvRecoPulses->GetPulseTimes().at(j) + TDC0time;
+        double LEtime      = _makeCrvRecoPulses->GetLEtimes().at(j) + TDC0time;
+        float  PEs         = _makeCrvRecoPulses->GetPEs().at(j);
+        float  PEsPulseHeight = _makeCrvRecoPulses->GetPEsPulseHeight().at(j);
+        float  pulseHeight = _makeCrvRecoPulses->GetPulseHeights().at(j); 
+        float  pulseBeta   = _makeCrvRecoPulses->GetPulseBetas().at(j);
+        float  pulseFitChi2= _makeCrvRecoPulses->GetPulseFitChi2s().at(j);
+
+        bool   failedFit              = _makeCrvRecoPulses->GetFailedFits().at(j);
+        CrvRecoPulseFlags flags;
+        if(failedFit)              flags.set(CrvRecoPulseFlagEnums::failedFit);
+
+        float  PEsNoFit          = _makeCrvRecoPulses->GetPEsNoFit().at(j);
+        double pulseTimeNoFit    = _makeCrvRecoPulses->GetPulseTimesNoFit().at(j) + TDC0time;
+        double pulseStart        = _makeCrvRecoPulses->GetPulseStarts().at(j) + TDC0time;
+        double pulseEnd          = _makeCrvRecoPulses->GetPulseEnds().at(j) + TDC0time;
+
         if(PEs<_minPEs) continue; 
-        crvRecoPulseCollection->emplace_back(PEs, PEsPulseHeight, pulseTime, pulseHeight, pulseBeta, pulseFitChi2, LEtime, 
-                                                  waveformIndices, barIndex, SiPM);
+        crvRecoPulseCollection->emplace_back(PEs, PEsPulseHeight, pulseTime, pulseHeight, pulseBeta, pulseFitChi2, LEtime, flags, 
+                                             PEsNoFit, pulseTimeNoFit, pulseStart, pulseEnd,
+                                             waveformIndices, barIndex, SiPM);
       }
+
     }
 
     event.put(std::move(crvRecoPulseCollection));

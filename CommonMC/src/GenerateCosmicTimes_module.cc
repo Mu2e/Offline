@@ -32,6 +32,8 @@
 #include "Mu2eUtilities/inc/SimParticleCollectionPrinter.hh"
 #include "GlobalConstantsService/inc/GlobalConstantsHandle.hh"
 #include "ProditionsService/inc/ProditionsHandle.hh"
+#include "ConditionsService/inc/ConditionsHandle.hh"
+#include "ConditionsService/inc/AcceleratorParams.hh"
 #include "TrackerConditions/inc/StrawElectronics.hh"
 
 namespace mu2e {
@@ -105,6 +107,9 @@ namespace mu2e {
     art::Handle<EventWindowMarker> ewMarkerHandle;
     event.getByLabel(ewMarkerTag_, ewMarkerHandle);
     const EventWindowMarker& ewMarker(*ewMarkerHandle);
+      
+    ConditionsHandle<AcceleratorParams> accPar("ignored");
+    auto mbtime = accPar->deBuncherPeriod;
 
 // find the earliest step.
 // Use this to define the earliest time, to improves the generation efficiency
@@ -134,12 +139,14 @@ namespace mu2e {
 // use a buffer to set the earliest time offset
     double tmin = -tearly - tbuff_;
 
-// adjust start time according to flashEnd for onspill; this assumes the 'flashend' won't be applied also for offspill in the digitizers FIXME!
-    if(ewMarker.spillType() == EventWindowMarker::onspill){
-      StrawElectronics const& strawele = strawele_h_.get(event.id());
-      tmin += strawele.flashEnd(); // flash end should be a Mu2e global quantity FIXME!
-    }
+// adjust start time according to digitization window start.
+// this assumes the delayed digitization start WILL be applied also for offspill in the digitizers FIXME!
+    StrawElectronics const& strawele = strawele_h_.get(event.id());
+    tmin += strawele.digitizationStart(); // flash end should be a Mu2e global quantity FIXME!
     double tmax = ewMarker.eventLength() - tearly;
+    if(ewMarker.spillType() == EventWindowMarker::onspill){
+      tmax = mbtime - tearly;
+    }
 
     if(genTmin_ > 0)
       tmin = genTmin_;

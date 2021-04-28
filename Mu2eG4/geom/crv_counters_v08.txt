@@ -1,0 +1,408 @@
+//This geometry uses the same layout as v07 (same coordinates, etc.), but it splits the CRV-R1 sector into two sectors.
+//Therefore, this geometry is backward compatible with files that were simulated using v07 (except the coincidence data products).
+//This geometry requires the use of CRVResponse/fcl/prolog_v09.fcl.
+
+
+int   crs.nSectors = 23;
+int   crs.nLayers  = 4;
+
+vector<string> crs.sectorNames = {
+                       "R1",  //0   CRV-R modules first three modules at TS
+                       "R2",  //1   CRV-R modules upstream of cryo hole (except first three modules at TS)
+                       "R3",  //2   CRV-R module above cryo hole
+                       "R4",  //3   CRV-R module below cryo hole
+                       "R5",  //4   CRV-R modules downstream of cryo hole (except endcap)
+                       "R6",  //5   CRV-R modules at endcap
+                       "L1",  //6   CRV-L modules (except endcap)
+                       "L2",  //7   CRV-L modules at endcap
+                       "T1",  //8   CRV-TS modules (three upstream modules)
+                       "T2",  //9   CRV-TS modules (two downstream modules)
+                       "T3",  //10   CRV-T modules (four upstream modules)
+                       "T4",  //11  CRV-T modules (remaining 16 downstream modules)
+                       "E1",  //12  CRV-TS-Extension upstream module
+                       "E2",  //13  CRV-TS-Extension downstream module 
+                       "U",   //14  CRV-U modules
+                       "D1",  //15  CRV-D modules above beam pipe
+                       "D2",  //16  CRV-D module at -x of beam pipe
+                       "D3",  //17  CRV-D module at +x of beam beam pipe
+                       "D4",  //18  CRV-D module below beam pipe
+                       "C1",  //19  CRV-Cryo-Inner module upstream of cryo hole
+                       "C2",  //20  CRV-Cryo-Inner module downstream of cryo hole
+                       "C3",  //21  CRV-Cryo-Outer module above of cryo hole
+                       "C4"   //22  CRV-Cryo-Outer module downstream of cryo hole
+                      };
+
+double          crs.scintillatorBarLengthR1      =  4550; //0
+double          crs.scintillatorBarLengthR2      =  4550; //1
+double          crs.scintillatorBarLengthR3      =  1045; //2
+double          crs.scintillatorBarLengthR4      =  3040; //3
+double          crs.scintillatorBarLengthR5      =  4550; //4
+double          crs.scintillatorBarLengthR6      =  3200; //5
+double          crs.scintillatorBarLengthL1      =  4550; //6
+double          crs.scintillatorBarLengthL2      =  3200; //7
+double          crs.scintillatorBarLengthT1      =  6000; //8
+double          crs.scintillatorBarLengthT2      =  6000; //9
+double          crs.scintillatorBarLengthT3      =  6000; //10
+double          crs.scintillatorBarLengthT4      =  6000; //11
+double          crs.scintillatorBarLengthE1      =  5000; //12
+double          crs.scintillatorBarLengthE2      =  5000; //13
+double          crs.scintillatorBarLengthU       =  6900; //14
+double          crs.scintillatorBarLengthD1      =  5700; //15
+double          crs.scintillatorBarLengthD2      =  2370; //16
+double          crs.scintillatorBarLengthD3      =  2370; //17
+double          crs.scintillatorBarLengthD4      =  5700; //18
+double          crs.scintillatorBarLengthC1      =   900; //19
+double          crs.scintillatorBarLengthC2      =   900; //20
+double          crs.scintillatorBarLengthC3      =  2100; //21
+double          crs.scintillatorBarLengthC4      =  1550; //22
+
+double          crs.scintillatorBarThickness     =  19.8; //mm
+double          crs.scintillatorBarWidth         =  51.3; //mm
+double          crs.layerOffset                  =  42;   //mm
+double          crs.gapLarge                     =   0.5; //mm
+double          crs.gapSmall                     =   0.0875; //mm
+double          crs.gapBetweenModules            =   3.0;    //mm
+vector<double>  crs.gapBetweenLayers             =   {9.525, 9.525, 9.525}; //mm
+double          crs.aluminumSheetThickness       =   3.175;  //mm
+double          crs.strongBackThickness          =  12.7;    //mm
+
+int             crs.nModulesR1                   =   3;  //0
+int             crs.nModulesR2                   =  15;  //1
+int             crs.nModulesR3                   =   1;  //2
+int             crs.nModulesR4                   =   1;  //3
+int             crs.nModulesR5                   =   2;  //4
+int             crs.nModulesR6                   =   4;  //5
+int             crs.nModulesL1                   =  15;  //6
+int             crs.nModulesL2                   =   4;  //7
+int             crs.nModulesT1                   =   3;  //8
+int             crs.nModulesT2                   =   2;  //9
+int             crs.nModulesT3                   =   4;  //10
+int             crs.nModulesT4                   =  16;  //11
+int             crs.nModulesE1                   =   1;  //12
+int             crs.nModulesE2                   =   1;  //13
+int             crs.nModulesU                    =   4;  //14
+int             crs.nModulesD1                   =   3;  //15
+int             crs.nModulesD2                   =   1;  //16
+int             crs.nModulesD3                   =   1;  //17
+int             crs.nModulesD4                   =   1;  //18
+int             crs.nModulesC1                   =   1;  //19
+int             crs.nModulesC2                   =   1;  //20
+int             crs.nModulesC3                   =   1;  //21
+int             crs.nModulesC4                   =   1;  //22
+
+int             crs.nCountersPerModuleR1         =   16;  //0 //per layer
+int             crs.nCountersPerModuleR2         =   16;  //1
+int             crs.nCountersPerModuleR3         =   16;  //2
+int             crs.nCountersPerModuleR4         =   16;  //3
+int             crs.nCountersPerModuleR5         =   16;  //4
+int             crs.nCountersPerModuleR6         =   16;  //5
+int             crs.nCountersPerModuleL1         =   16;  //6
+int             crs.nCountersPerModuleL2         =   16;  //7
+int             crs.nCountersPerModuleT1         =   16;  //8
+int             crs.nCountersPerModuleT2         =   16;  //9
+int             crs.nCountersPerModuleT3         =   16;  //10
+int             crs.nCountersPerModuleT4         =   16;  //11
+int             crs.nCountersPerModuleE1         =   16;  //12
+int             crs.nCountersPerModuleE2         =   16;  //13
+int             crs.nCountersPerModuleU          =   16;  //14
+int             crs.nCountersPerModuleD1         =   16;  //15
+int             crs.nCountersPerModuleD2         =   16;  //16
+int             crs.nCountersPerModuleD3         =   16;  //17
+int             crs.nCountersPerModuleD4         =   16;  //18
+int             crs.nCountersPerModuleC1         =   16;  //19
+int             crs.nCountersPerModuleC2         =   16;  //20
+int             crs.nCountersPerModuleC3         =   22;  //21  special module width!
+int             crs.nCountersPerModuleC4         =   10;  //22  special module width!
+
+//distance between two modules (incl. gaps): 828mm
+vector<double>  crs.firstCounterR1        =  {-6441.28,   275.53,  -2125.45}; //0 //in mu2e coordinates
+vector<double>  crs.firstCounterR2        =  {-6441.28,   275.53,    358.55}; //1
+vector<double>  crs.firstCounterR3        =  {-6441.28,  2028.03,  12778.55}; //2
+vector<double>  crs.firstCounterR4        =  {-6441.28,  -479.47,  12778.55}; //3
+vector<double>  crs.firstCounterR5        =  {-6441.28,   275.53,  13606.55}; //4
+vector<double>  crs.firstCounterR6        =  {-6441.28,   950.53,  15262.55}; //5
+vector<double>  crs.firstCounterL1        =  {-1366.72,   275.53,   2842.55}; //6
+vector<double>  crs.firstCounterL2        =  {-1366.72,   950.53,  15262.55}; //7
+vector<double>  crs.firstCounterT1        =  {-3904.0,   2663.21,  -2125.45}; //8
+vector<double>  crs.firstCounterT2        =  {-3904.0,   2663.21,    358.55}; //9
+vector<double>  crs.firstCounterT3        =  {-3904.0,   2663.21,   2014.55}; //10
+vector<double>  crs.firstCounterT4        =  {-3904.0,   2663.21,   5326.55}; //11
+vector<double>  crs.firstCounterE1        =  {  517.85,  2837.58,    213.20}; //12
+vector<double>  crs.firstCounterE2        =  { -310.15,  2837.58,    213.20}; //13
+vector<double>  crs.firstCounterU         =  {-3267.80,  3083.35,  -2350.06}; //14 
+vector<double>  crs.firstCounterD1        =  {-3904.0,   2935.35,  18665.76}; //15
+vector<double>  crs.firstCounterD2        =  {-5569.0,    451.35,  18665.76}; //16
+vector<double>  crs.firstCounterD3        =  {-2239.0,    451.35,  18665.76}; //17
+vector<double>  crs.firstCounterD4        =  {-3904.0,   -376.65,  18665.76}; //18
+vector<double>  crs.firstCounterC1        =  {-6591.07,  1779.88,  12428.40}; //19
+vector<double>  crs.firstCounterC2        =  {-6591.07,  1779.88,  13683.40}; //20
+vector<double>  crs.firstCounterC3        =  {-7120.21,  2584.75,  13733.40}; //21
+vector<double>  crs.firstCounterC4        =  {-7120.21,  1447.15,  14008.40}; //22
+
+string          crs.scintillatorBarMaterialName  = "G4_POLYSTYRENE";
+string          crs.absorberMaterialName         = "G4_Al";
+string          crs.aluminumSheetMaterialName    = "G4_Al";
+
+bool   crs.veto.visible    = true;
+bool   crs.veto.solid      = true;
+int    crs.verbosityLevel = 0;
+
+vector<double>  crs.layerDirectionR1  =  {-1, 0, 0}; //0
+vector<double>  crs.layerDirectionR2  =  {-1, 0, 0}; //1
+vector<double>  crs.layerDirectionR3  =  {-1, 0, 0}; //2
+vector<double>  crs.layerDirectionR4  =  {-1, 0, 0}; //3
+vector<double>  crs.layerDirectionR5  =  {-1, 0, 0}; //4
+vector<double>  crs.layerDirectionR6  =  {-1, 0, 0}; //5
+vector<double>  crs.layerDirectionL1  =  {1, 0, 0};  //6
+vector<double>  crs.layerDirectionL2  =  {1, 0, 0};  //7
+vector<double>  crs.layerDirectionT1  =  {0, 1, 0};  //8
+vector<double>  crs.layerDirectionT2  =  {0, 1, 0};  //9
+vector<double>  crs.layerDirectionT3  =  {0, 1, 0};  //10
+vector<double>  crs.layerDirectionT4  =  {0, 1, 0};  //11
+vector<double>  crs.layerDirectionE1  =  {0, 1, 0};  //12
+vector<double>  crs.layerDirectionE2  =  {0, 1, 0};  //13
+vector<double>  crs.layerDirectionU   =  {0, 0, -1}; //14
+vector<double>  crs.layerDirectionD1  =  {0, 0, 1};  //15
+vector<double>  crs.layerDirectionD2  =  {0, 0, 1};  //16
+vector<double>  crs.layerDirectionD3  =  {0, 0, 1};  //17
+vector<double>  crs.layerDirectionD4  =  {0, 0, 1};  //18
+vector<double>  crs.layerDirectionC1  =  {-1, 0, 0}; //19
+vector<double>  crs.layerDirectionC2  =  {-1, 0, 0}; //20
+vector<double>  crs.layerDirectionC3  =  {-1, 0, 0}; //21
+vector<double>  crs.layerDirectionC4  =  {-1, 0, 0}; //22
+
+vector<double>  crs.offsetDirectionR1  =  {0, 0, -1}; //0
+vector<double>  crs.offsetDirectionR2  =  {0, 0, -1}; //1
+vector<double>  crs.offsetDirectionR3  =  {0, 0, -1}; //2
+vector<double>  crs.offsetDirectionR4  =  {0, 0, -1}; //3
+vector<double>  crs.offsetDirectionR5  =  {0, 0, -1}; //4
+vector<double>  crs.offsetDirectionR6  =  {0, 0, -1}; //5
+vector<double>  crs.offsetDirectionL1  =  {0, 0, -1}; //6
+vector<double>  crs.offsetDirectionL2  =  {0, 0, -1}; //7
+vector<double>  crs.offsetDirectionT1  =  {0, 0, -1}; //8
+vector<double>  crs.offsetDirectionT2  =  {0, 0, -1}; //9
+vector<double>  crs.offsetDirectionT3  =  {0, 0, -1}; //10
+vector<double>  crs.offsetDirectionT4  =  {0, 0, -1}; //11
+vector<double>  crs.offsetDirectionE1  =  {0, 0,  0}; //12  no offset
+vector<double>  crs.offsetDirectionE2  =  {0, 0,  0}; //13  no offset
+vector<double>  crs.offsetDirectionU   =  {0, 0,  0}; //14  no offset
+vector<double>  crs.offsetDirectionD1  =  {0, 0,  0}; //15  no offset
+vector<double>  crs.offsetDirectionD2  =  {0, 0,  0}; //16  no offset
+vector<double>  crs.offsetDirectionD3  =  {0, 0,  0}; //17  no offset
+vector<double>  crs.offsetDirectionD4  =  {0, 0,  0}; //18  no offset
+vector<double>  crs.offsetDirectionC1  =  {0, 0,  0}; //19  no offset
+vector<double>  crs.offsetDirectionC2  =  {0, 0,  0}; //20  no offset
+vector<double>  crs.offsetDirectionC3  =  {0, 0,  0}; //21  no offset
+vector<double>  crs.offsetDirectionC4  =  {0, 0,  0}; //22  no offset
+
+vector<double>  crs.gapDirectionR1  =  {0,  0, 1}; //0
+vector<double>  crs.gapDirectionR2  =  {0,  0, 1}; //1
+vector<double>  crs.gapDirectionR3  =  {0,  0, 1}; //2
+vector<double>  crs.gapDirectionR4  =  {0,  0, 1}; //3
+vector<double>  crs.gapDirectionR5  =  {0,  0, 1}; //4
+vector<double>  crs.gapDirectionR6  =  {0,  0, 1}; //5
+vector<double>  crs.gapDirectionL1  =  {0,  0, 1}; //6
+vector<double>  crs.gapDirectionL2  =  {0,  0, 1}; //7
+vector<double>  crs.gapDirectionT1  =  {0,  0, 1}; //8
+vector<double>  crs.gapDirectionT2  =  {0,  0, 1}; //9
+vector<double>  crs.gapDirectionT3  =  {0,  0, 1}; //10
+vector<double>  crs.gapDirectionT4  =  {0,  0, 1}; //11
+vector<double>  crs.gapDirectionE1  =  {-1, 0, 0}; //12
+vector<double>  crs.gapDirectionE2  =  {-1, 0, 0}; //13
+vector<double>  crs.gapDirectionU   =  {0, -1, 0}; //14
+vector<double>  crs.gapDirectionD1  =  {0, -1, 0}; //15
+vector<double>  crs.gapDirectionD2  =  {0, -1, 0}; //16
+vector<double>  crs.gapDirectionD3  =  {0, -1, 0}; //17
+vector<double>  crs.gapDirectionD4  =  {0, -1, 0}; //18
+vector<double>  crs.gapDirectionC1  =  {0, -1, 0}; //19
+vector<double>  crs.gapDirectionC2  =  {0, -1, 0}; //20
+vector<double>  crs.gapDirectionC3  =  {0, -1, 0}; //21
+vector<double>  crs.gapDirectionC4  =  {0, -1, 0}; //22
+
+// virtual detectors
+bool vd.crv.build = false;
+vector<double>  crs.vdDirectionR  =  {1, 0, 0};
+vector<double>  crs.vdDirectionL  =  {-1, 0, 0};
+vector<double>  crs.vdDirectionT  =  {0, 1, 0};
+vector<double>  crs.vdDirectionD  =  {0, 0, 1};
+vector<double>  crs.vdDirectionU  =  {0, 0, -1};
+
+// counter mother boards
+double crs.CMBOffset        = 15.0;
+double crs.CMBHalfThickness =  5.0;
+string crs.CMBMaterialName  = "ElectronicsCMB";
+
+// information about the SiPMs 
+double crs.fiberSeparation = 26.0; //mm
+
+// side 0 is the negative side of the counter, i.e. the -x side of a CRV-T counter, or the -y side of a CRV-R counter
+bool crs.sipmsAtSide0R1  = true;  //0
+bool crs.sipmsAtSide0R2  = true;  //1
+bool crs.sipmsAtSide0R3  = false; //2  //CRV-R counters above the cry hole (no SiPMs at bottom side))
+bool crs.sipmsAtSide0R4  = true;  //3  //CRV-R counters below cryo hole
+bool crs.sipmsAtSide0R5  = true;  //4
+bool crs.sipmsAtSide0R6  = true;  //5
+bool crs.sipmsAtSide0L1  = true;  //6
+bool crs.sipmsAtSide0L2  = true;  //7
+bool crs.sipmsAtSide0T1  = true;  //8 
+bool crs.sipmsAtSide0T2  = true;  //9 
+bool crs.sipmsAtSide0T3  = true;  //10
+bool crs.sipmsAtSide0T4  = true;  //11
+bool crs.sipmsAtSide0E1  = false; //12 //no SiPMs at -z side
+bool crs.sipmsAtSide0E2  = false; //13 //no SiPMs at -z side
+bool crs.sipmsAtSide0U   = true;  //14
+bool crs.sipmsAtSide0D1  = true;  //15
+bool crs.sipmsAtSide0D2  = true;  //16
+bool crs.sipmsAtSide0D3  = false; //17 //no SiPMs at beam pipe
+bool crs.sipmsAtSide0D4  = true;  //18
+bool crs.sipmsAtSide0C1  = true;  //19
+bool crs.sipmsAtSide0C2  = false; //20 //CRV-Cryo-Inner (downstream) (no SiPMs at -z side)
+bool crs.sipmsAtSide0C3  = false; //21 //CRV-Cryo-Outer (top) (no SiPMs at -z side)
+bool crs.sipmsAtSide0C4  = false; //22 //CRV-Cryo-Outer (bottom) (no SiPMs at -z side)
+
+// side 1 is the positive side of the counter, i.e. the +x side of a CRV-T counter, or the +y side of a CRV-R counter
+bool crs.sipmsAtSide1R1  = true;  //0
+bool crs.sipmsAtSide1R2  = true;  //1
+bool crs.sipmsAtSide1R3  = true;  //2  //CRV-R counters above the cry hole
+bool crs.sipmsAtSide1R4  = true;  //3  //CRV-R counters below cryo hole 
+bool crs.sipmsAtSide1R5  = true;  //4
+bool crs.sipmsAtSide1R6  = true;  //5
+bool crs.sipmsAtSide1L1  = true;  //6
+bool crs.sipmsAtSide1L2  = true;  //7
+bool crs.sipmsAtSide1T1  = false; //8  //CRV-T in the TS region (no SiPMs at +x side) 
+bool crs.sipmsAtSide1T2  = false; //9  //CRV-T in the TS region (no SiPMs at +x side)
+bool crs.sipmsAtSide1T3  = true;  //10
+bool crs.sipmsAtSide1T4  = true;  //11
+bool crs.sipmsAtSide1E1  = true;  //12
+bool crs.sipmsAtSide1E2  = true;  //13
+bool crs.sipmsAtSide1U   = false; //14 //no SiPMs at +x side
+bool crs.sipmsAtSide1D1  = true;  //15
+bool crs.sipmsAtSide1D2  = false; //16 //no SiPMs at beam pipe
+bool crs.sipmsAtSide1D3  = true;  //17
+bool crs.sipmsAtSide1D4  = true;  //18
+bool crs.sipmsAtSide1C1  = false; //19 //CRV-Cryo-Inner (upstream) (no SiPMs at +z side)
+bool crs.sipmsAtSide1C2  = true;  //20
+bool crs.sipmsAtSide1C3  = true;  //21
+bool crs.sipmsAtSide1C4  = true;  //22
+
+// information about the coincidence groups
+int crs.precedingSectorForR1  = -1;  //0   //no preceding sector
+int crs.precedingSectorForR2  =  0;  //1
+int crs.precedingSectorForR3  =  1;  //2   //R counters above the cry hole (no SiPMs on lower side))
+int crs.precedingSectorForR4  =  1;  //3   //R counters below cryo hole
+int crs.precedingSectorForR5  =  3;  //4   //TODO: also sector 2
+int crs.precedingSectorForR6  =  4;  //5
+int crs.precedingSectorForL1  = -1;  //6   //no preceding sector
+int crs.precedingSectorForL2  =  5;  //7
+int crs.precedingSectorForT1  = -1;  //8   //no preceding sector
+int crs.precedingSectorForT2  =  7;  //9
+int crs.precedingSectorForT3  =  8;  //10
+int crs.precedingSectorForT4  =  9;  //11
+int crs.precedingSectorForE1  = -1;  //12
+int crs.precedingSectorForE2  = 11;  //13
+int crs.precedingSectorForU   = -1;  //14  //no preceding sector
+int crs.precedingSectorForD1  = -1;  //15  //no preceding sector
+int crs.precedingSectorForD2  = 14;  //16
+int crs.precedingSectorForD3  = 14;  //17
+int crs.precedingSectorForD4  = 15;  //18  //TODO: also sector 16
+int crs.precedingSectorForC1  = -1;  //19  //no preceding sector
+int crs.precedingSectorForC2  = -1;  //20  //no preceding sector
+int crs.precedingSectorForC3  = -1;  //21  //no preceding sector
+int crs.precedingSectorForC4  = 20;  //22
+
+int crs.sectorTypeR1  = 1;  //0
+int crs.sectorTypeR2  = 1;  //1
+int crs.sectorTypeR3  = 1;  //2
+int crs.sectorTypeR4  = 1;  //3
+int crs.sectorTypeR5  = 1;  //4
+int crs.sectorTypeR6  = 1;  //5
+int crs.sectorTypeL1  = 2;  //6
+int crs.sectorTypeL2  = 2;  //7
+int crs.sectorTypeT1  = 3;  //8
+int crs.sectorTypeT2  = 3;  //9
+int crs.sectorTypeT3  = 3;  //10
+int crs.sectorTypeT4  = 3;  //11
+int crs.sectorTypeE1  = 4;  //12
+int crs.sectorTypeE2  = 4;  //13
+int crs.sectorTypeU   = 5;  //14
+int crs.sectorTypeD1  = 6;  //15
+int crs.sectorTypeD2  = 6;  //16
+int crs.sectorTypeD3  = 6;  //17
+int crs.sectorTypeD4  = 6;  //18
+int crs.sectorTypeC1  = 7;  //19
+int crs.sectorTypeC2  = 8;  //20
+int crs.sectorTypeC3  = 9;  //21
+int crs.sectorTypeC4  = 9;  //22
+
+//information about the FEBs
+int crs.FEBBoxesAtSide0R1  = 1; //0 
+int crs.FEBBoxesAtSide0R2  = 1; //1 
+int crs.FEBBoxesAtSide0R3  = 0; //2 
+int crs.FEBBoxesAtSide0R4  = 1; //3 
+int crs.FEBBoxesAtSide0R5  = 1; //4 
+int crs.FEBBoxesAtSide0R6  = 1; //5 
+int crs.FEBBoxesAtSide0L1  = 1; //6 
+int crs.FEBBoxesAtSide0L2  = 1; //7 
+int crs.FEBBoxesAtSide0T1  = 0; //8 
+int crs.FEBBoxesAtSide0T2  = 0; //9 
+int crs.FEBBoxesAtSide0T3  = 0; //10
+int crs.FEBBoxesAtSide0T4  = 0; //11
+int crs.FEBBoxesAtSide0E1  = 0; //12
+int crs.FEBBoxesAtSide0E2  = 0; //13
+int crs.FEBBoxesAtSide0U   = 1; //14  //TODO: this is not the correct location
+int crs.FEBBoxesAtSide0D1  = 1; //15  //TODO: this is not the correct location
+int crs.FEBBoxesAtSide0D2  = 1; //16  //TODO: this is not the correct location
+int crs.FEBBoxesAtSide0D3  = 0; //17 
+int crs.FEBBoxesAtSide0D4  = 1; //18  //TODO: this is not the correct location
+int crs.FEBBoxesAtSide0C1  = 1; //19
+int crs.FEBBoxesAtSide0C2  = 0; //20
+int crs.FEBBoxesAtSide0C3  = 1; //21
+int crs.FEBBoxesAtSide0C4  = 0; //22
+
+int crs.FEBBoxesAtSide1R1  = 2; //0 
+int crs.FEBBoxesAtSide1R2  = 2; //1 
+int crs.FEBBoxesAtSide1R3  = 2; //2 
+int crs.FEBBoxesAtSide1R4  = 1; //3 
+int crs.FEBBoxesAtSide1R5  = 2; //4 
+int crs.FEBBoxesAtSide1R6  = 2; //5 
+int crs.FEBBoxesAtSide1L1  = 2; //6
+int crs.FEBBoxesAtSide1L2  = 2; //7 
+int crs.FEBBoxesAtSide1T1  = 0; //8 
+int crs.FEBBoxesAtSide1T2  = 0; //9 
+int crs.FEBBoxesAtSide1T3  = 0; //10
+int crs.FEBBoxesAtSide1T4  = 0; //11
+int crs.FEBBoxesAtSide1E1  = 1; //12  //TODO: this is not the correct location
+int crs.FEBBoxesAtSide1E2  = 1; //13  //TODO: this is not the correct location
+int crs.FEBBoxesAtSide1U   = 0; //14 
+int crs.FEBBoxesAtSide1D1  = 1; //15  //TODO: this is not the correct location
+int crs.FEBBoxesAtSide1D2  = 0; //16
+int crs.FEBBoxesAtSide1D3  = 1; //17  //TODO: this is not the correct location
+int crs.FEBBoxesAtSide1D4  = 1; //18  //TODO: this is not the correct location
+int crs.FEBBoxesAtSide1C1  = 0; //19
+int crs.FEBBoxesAtSide1C2  = 1; //20
+int crs.FEBBoxesAtSide1C3  = 1; //21
+int crs.FEBBoxesAtSide1C4  = 1; //22
+
+string         crs.FEBMaterialName     = "ElectronicsFEB";
+double         crs.FEBDistanceToModule =  50;        //between surface of 4th scintillator layer and center of 1st FEB
+double         crs.FEBDistanceToEdge   = 240.0;
+double         crs.FEBDistanceBetween2FEBsW  = 397.9;  //between two FEBs sitting next to each other
+double         crs.FEBDistanceBetween2FEBsT  =  47.7;  //between two FEBs sitting on top of each other 
+vector<double> crs.FEBHalfLengths      = {5.0, 150.0, 92.5};  //thickness, width, lengths w.r.t. counter orientation
+
+//simplified version of the top support structure
+//total area in Offline: 110.38m^2
+//total volume in CAD model: 0.8092m^3
+//--> thickness in Offline: 7.336mm
+int crs.nSupportStructures = 1;                                   //TODO: this is only a place holder so far
+vector<string> crs.supportStructureNames = {"CRV_Support_T"};
+vector<double> crs.supportStructurePosition_CRV_Support_T  = {-3904.0, 2570.0, 10617.2};
+vector<double> crs.supportStructureHalfLengths_CRV_Support_T  = {2463.8, 2.5, 7924.8};
+string         crs.supportStructureMaterialName = "G4_Fe";
+
+
+//MARS requires gdml file with unique logical volumes for the CMBs
+bool crs.forMARS = false;
+
+//FIXME: this is temporary until the GDML issue is fixed
+bool crs.hideCRVCMBs = true;

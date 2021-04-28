@@ -300,8 +300,7 @@ mu2e::DbLiveTable mu2e::DbEngine::update(int tid, uint32_t run,
   // loop over override tables
   for(size_t iover=0; iover<_override.size(); iover++) {
     auto& oltab = _override[iover];
-    int otid = _overrideTids[oltab.table().name()];
-    if(otid==tid) { // if override table is the right type
+    if(oltab.tid()==tid) { // if override table is the right type
       if(oltab.iov().inInterval(run,subrun)) { // and in valid interval
 	auto dblt = oltab;
 	if(_verbose>9) cout << "DbEngine::update table found " 
