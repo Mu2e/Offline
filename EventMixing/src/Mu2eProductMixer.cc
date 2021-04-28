@@ -42,8 +42,7 @@ namespace mu2e {
 
   //----------------------------------------------------------------
   Mu2eProductMixer::Mu2eProductMixer(const Config& conf, art::MixHelper& helper)
-    : volumesInput_(conf.volumeInfoMixer().srInput())
-    , subrunVolInstanceName_(conf.volumeInfoMixer().srOutInstance())
+    : mixVolumes_(false)
   {
 
     for(const auto& e: conf.genParticleMixer().mixingMap()) {
@@ -104,17 +103,26 @@ namespace mu2e {
     //----------------------------------------------------------------
     // VolumeInfo handling
 
-    helper.produces<PhysicalVolumeInfoMultiCollection, art::InSubRun>(subrunVolInstanceName_);
+    VolumeInfoMixerConfig vmc;
+    if(conf.volumeInfoMixer(vmc)) {
 
-    std::string tmp;
-    if(conf.volumeInfoMixer().evtOutInstanceName(tmp)) {
-      evtVolInstanceName_.emplace(tmp);
+      mixVolumes_ = true;
+      volumesInput_ = vmc.srInput();
+      subrunVolInstanceName_ = vmc.srOutInstance();
+
+
+      helper.produces<PhysicalVolumeInfoMultiCollection, art::InSubRun>(subrunVolInstanceName_);
+
+      std::string tmp;
+      if(vmc.evtOutInstanceName(tmp)) {
+        evtVolInstanceName_.emplace(tmp);
+      }
+
+      const bool putVolsIntoEvent{evtVolInstanceName_};
+      std::string evtOutInstance = putVolsIntoEvent ? *evtVolInstanceName_ : "unused";
+      helper.declareMixOp<art::InSubRun>
+        (volumesInput_, evtOutInstance, &Mu2eProductMixer::mixVolumeInfos, *this, putVolsIntoEvent);
     }
-    const bool putVolsIntoEvent{evtVolInstanceName_};
-    std::string evtOutInstance = putVolsIntoEvent ? *evtVolInstanceName_ : "unused";
-    helper.declareMixOp<art::InSubRun>
-      (volumesInput_, evtOutInstance, &Mu2eProductMixer::mixVolumeInfos, *this, putVolsIntoEvent);
-
     //----------------------------------------------------------------
   }
 
@@ -125,14 +133,16 @@ namespace mu2e {
 
   //----------------------------------------------------------------
   void Mu2eProductMixer::endSubRun(art::SubRun& sr) {
-    auto col =  std::make_unique<PhysicalVolumeInfoMultiCollection>();
+    if(mixVolumes_) {
+      auto col =  std::make_unique<PhysicalVolumeInfoMultiCollection>();
 
-    col->resize(subrunVolumes_.size());
-    for(unsigned stage=0; stage<subrunVolumes_.size(); ++stage) {
-      (*col)[stage].insert(subrunVolumes_[stage].begin(), subrunVolumes_[stage].end());
+      col->resize(subrunVolumes_.size());
+      for(unsigned stage=0; stage<subrunVolumes_.size(); ++stage) {
+        (*col)[stage].insert(subrunVolumes_[stage].begin(), subrunVolumes_[stage].end());
+      }
+
+      sr.put(std::move(col), subrunVolInstanceName_);
     }
-
-    sr.put(std::move(col), subrunVolInstanceName_);
   }
 
   //----------------------------------------------------------------
