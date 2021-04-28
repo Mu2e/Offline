@@ -181,7 +181,7 @@ namespace mu2e {
       void set_niter(int iter){ niters= (iter);}
       
       //function to make tuple of kinkal params info
-      std::tuple <double, double, double, double, double> KinKalTrackParams() {
+      std::tuple <double, double, double, double, double> KinKalTrackParams() const {
         XYZVec zpos(0.,0.,0);
         XYZVec  zdir(0.,0.,1.);
         XYZVec  pos0(this->MinuitParams.A0, 0, this->MinuitParams.B0);
@@ -193,12 +193,12 @@ namespace mu2e {
         double DOCA = PCA.dca();
         double amsign = copysign(1.0, -(zdir.Cross(POCA)).Dot(dir));
         
-        this->d0_  = amsign*DOCA; 
-        this->phi0_ = dir.Phi(); 
-        this->z0_ = PCA.point1().Z();
-        this->cost_ = dir.Z();
-        this->t0_ = this->MinuitParams.T0; //TODO
-        info = make_tuple(this->d0_,this->phi0_,this->z0_,this->cost_, this->t0_);
+        double d0_  = amsign*DOCA; 
+        double phi0_ = dir.Phi(); 
+        double z0_ = PCA.point1().Z();
+        double cost_ = dir.Z();
+        double t0_ = this->MinuitParams.T0; //TODO
+        info = make_tuple(d0_,phi0_,z0_,cost_, t0_);
         return info;
       }
       
