@@ -17,9 +17,6 @@
 
 namespace mu2e {
 
-  //class PTMon;
-  // TODO: class PTMon (or something)
-
   class PTMonMaker {
 
   public:
