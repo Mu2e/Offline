@@ -451,8 +451,8 @@ void ArtBinaryPacketsFromDigis::fillTrackerDataStream(DTCLib::DTC_Event& current
         pos += sizeof(TrackerADCPacket) * num_packets;
       }
     }
+    putBlockInEvent(currentEvent, dtcID, DTCLib::DTC_Subsystem_Tracker, thisBlock);
   }
-  putBlockInEvent(currentEvent, dtcID, DTCLib::DTC_Subsystem_Tracker, thisBlock);
 }
 
 void ArtBinaryPacketsFromDigis::fillTrackerDMABlocks(DTCLib::DTC_Event& currentEvent,
@@ -933,9 +933,8 @@ void ArtBinaryPacketsFromDigis::fillCalorimeterDataStream(DTCLib::DTC_Event& cur
              waveform_size);
       pos += waveform_size;
     } // end loop over the calorimeterHitReadoutPacketVector
+    putBlockInEvent(currentEvent, dtcID, DTCLib::DTC_Subsystem_Calorimeter, thisBlock);
   }
-
-  putBlockInEvent(currentEvent, dtcID, DTCLib::DTC_Subsystem_Calorimeter, thisBlock);
 }
 
 //--------------------------------------------------------------------------------
@@ -1244,7 +1243,9 @@ void ArtBinaryPacketsFromDigis::fillCrvDataStream(DTCLib::DTC_Event& currentEven
     pos += sizeof(CRVHitReadoutPacket);
   }
 
-  putBlockInEvent(currentEvent, dtcID, DTCLib::DTC_Subsystem_CRV, thisBlock);
+  if (hitCount > 0) {
+    putBlockInEvent(currentEvent, dtcID, DTCLib::DTC_Subsystem_CRV, thisBlock);
+  }
 }
 
 } // namespace mu2e
