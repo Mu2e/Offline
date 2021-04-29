@@ -19,17 +19,40 @@ namespace mu2e {
 
     void constructProductionTargetMon(VolumeInfo const& parent, SimpleConfig const& _config);
 
-    void constructTargetHallPWC(VolumeInfo const& motherVolume, PTMonPWC* pwc);
+    // helper methods
+    
+    void constructTargetHallPWC(VolumeInfo const& motherVolume, PTMonPWC* pwc, bool const doSurfaceCheck, int const verbosity);
 
-    void insertOuterFrame(VolumeInfo const& container, PTMonPWC* pwc);
+    void insertOuterFrame(VolumeInfo const& container, 
+                        PTMonPWC* pwc, 
+                        bool const doSurfaceCheck,
+                        int const verbosity);
 
-    void insertWindows(G4LogicalVolume* windowLogical, VolumeInfo const& container, PTMonPWC* pwc);
+    void insertWindows(G4LogicalVolume* windowLogical, 
+                     VolumeInfo const& container, 
+                     PTMonPWC* pwc, 
+                     bool const doSurfaceCheck,
+                     int const verbosity);
 
-    void insertOuterGasBlocks(VolumeInfo const& container, PTMonPWC* pwc, G4Material* gasMaterial);
+    void insertOuterGasBlocks(VolumeInfo const& container, 
+                            PTMonPWC* pwc, 
+                            G4Material* gasMaterial, 
+                            bool const doSurfaceCheck,
+                            int const verbosity);
 
-    void insertVerticalProfileWires(VolumeInfo const& container, PTMonPWC* pwc, G4Material* gasMaterial, std::string const& wireNameSuffix);
+    void insertVerticalProfileWires(VolumeInfo const& container, 
+                                  PTMonPWC* pwc, 
+                                  G4Material* gasMaterial, 
+                                  std::string const& wireNameSuffix, 
+                                  bool const doSurfaceCheck,
+                                  int const verbosity);
 
-    void insertHorizontalProfileWires(VolumeInfo const& container, PTMonPWC* pwc, G4Material* gasMaterial, std::string const& wireNameSuffix);
+    void insertHorizontalProfileWires(VolumeInfo const& container, 
+                                    PTMonPWC* pwc, 
+                                    G4Material* gasMaterial, 
+                                    std::string const& wireNameSuffix, 
+                                    bool const doSurfaceCheck,
+                                    int const verbosity);
 
 } // namespace mu2e
 
