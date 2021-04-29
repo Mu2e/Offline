@@ -33,8 +33,8 @@ physics.producers.g4run.physics.physicsListName: "Minimal"
 services.SeedService.baseSeed         :  8
 services.SeedService.maxUniqueEngines :  20
 
-physics.producers.generate.inputfile : "Mu2eG4/test/genconfig_01.txt"
+physics.producers.generate.inputfile : "EventGenerator/defaultConfigs/particleGun.txt"
 
-services.GeometryService.inputFile : "Mu2eG4/test/geom_SurfaceCheck.txt"
+services.GeometryService.inputFile : "Mu2eG4/geom/geom_SurfaceCheck.txt"
 services.TFileService.fileName     : "surfaceCheck.root"
 
