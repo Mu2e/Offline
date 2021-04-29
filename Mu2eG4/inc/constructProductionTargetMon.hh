@@ -14,10 +14,22 @@ namespace mu2e {
 
     class VolumeInfo;
     class SimpleConfig;
+    class G4LogicalVolume;
+    class PTMonPWC;
 
-    void constructProductionTargetMon(VolumeInfo const & parent, SimpleConfig const & _config);
+    void constructProductionTargetMon(VolumeInfo const& parent, SimpleConfig const& _config);
 
-    void constructTargetHallPWC(VolumeInfo const & parent, SimpleConfig const & _config, std::string const & nameSuffix, G4ThreeVector const & position, int const wireNumStart);
+    void constructTargetHallPWC(VolumeInfo const& motherVolume, PTMonPWC* pwc);
+
+    void insertOuterFrame(VolumeInfo const& container, PTMonPWC* pwc);
+
+    void insertWindows(G4LogicalVolume* windowLogical, VolumeInfo const& container, PTMonPWC* pwc);
+
+    void insertOuterGasBlocks(VolumeInfo const& container, PTMonPWC* pwc, G4Material* gasMaterial);
+
+    void insertVerticalProfileWires(VolumeInfo const& container, PTMonPWC* pwc, G4Material* gasMaterial, std::string const& wireNameSuffix);
+
+    void insertHorizontalProfileWires(VolumeInfo const& container, PTMonPWC* pwc, G4Material* gasMaterial, std::string const& wireNameSuffix);
 
 } // namespace mu2e
 
