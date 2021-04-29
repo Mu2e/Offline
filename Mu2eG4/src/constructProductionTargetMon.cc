@@ -38,58 +38,19 @@ using namespace std;
 
 namespace mu2e {
 
-  // nameSuffix lets you give multiple PWC's unique names.
-  // wireNumStart is the first number to be used when naming the sections of
-  // gas corresponding to wires. This same wire numbering is used for the
-  // copyNo argument when placing the wire gas in the geometry.
-  void constructTargetHallPWC(VolumeInfo const & parent, SimpleConfig const & _config, std::string const & nameSuffix, G4ThreeVector const & positionInParent, int const wireNumStart) {
-    double gasLength = _config.getDouble("pTargetMon_gasLength");
-    double outerPlateLength = _config.getDouble("pTargetMon_outerPlateLength");
-    double windowWidth = _config.getDouble("pTargetMon_windowWidth");
-    double windowHeight = _config.getDouble("pTargetMon_windowHeight");
-    double height = _config.getDouble("pTargetMon_height");
-    double width = _config.getDouble("pTargetMon_width");
-    double windowThick = _config.getDouble("pTargetMon_windowThick");
-    double frameThick = _config.getDouble("pTargetMon_frameThick");
-    int wiresPerPlane = _config.getInt("pTargetMon_wiresPerPlane");
-    double detectorLength = gasLength + (2*outerPlateLength) + frameThick;
-    std::string wireNameSuffix = nameSuffix;
-    wireNameSuffix.append("_");
-
-    std::vector<double> halfDims;
-    halfDims.push_back(width/2.);
-    halfDims.push_back(height/2.);
-    halfDims.push_back(detectorLength/2.);
-
-    G4Material* baseMaterial = parent.logical->GetMaterial();
-
-    // "container": box representing the location of the individual PWC
-
-    std::string containerName = "pTargetMonInnerContainer";
-    containerName.append(nameSuffix);
-    VolumeInfo PWCContainerInfo = nestBox(containerName,
-              halfDims,
-              baseMaterial,
-              nullptr,
-              positionInParent,
-              parent,
-              0,
-              G4Colour::Green(),
-              "PTM");
-
-    
-    // G10 frame of the PWC, represented as one piece here
+  void insertOuterFrame(VolumeInfo const& container, PTMonPWC* pwc) {
+    double frameInnerMargin = 0.001;
     G4Box *outerBox = new G4Box("pwcFrameOuter", 
-                height/2., 
-                width/2., 
-                detectorLength/2.);
+                pwc->frameWidth()/2., 
+                pwc->frameHeight()/2., 
+                pwc->frameTotalThick()/2.);
     G4Box *innerBox = new G4Box("pwcFrameInner", 
-                0.001+windowHeight/2., 
-                0.001+windowWidth/2., 
-                0.001+detectorLength/2.);
+                frameInnerMargin + pwc->pwcWindow()->getXhalfLength(), 
+                frameInnerMargin + pwc->pwcWindow()->getYhalfLength(), 
+                frameInnerMargin + pwc->frameTotalThick()/2.);
     std::string frameName = "pTargetMonFrame";
-    frameName.append(nameSuffix);
-    G4Material *frameMaterial = findMaterialOrThrow(_config.getString("pTargetMon_frameMaterial"));
+    frameName.append(pwc->nameSuffix());
+    G4Material *frameMaterial = findMaterialOrThrow(pwc->frameMaterialName());
 
     VolumeInfo frameInfo;
     frameInfo.name = frameName;
@@ -98,249 +59,259 @@ namespace mu2e {
           frameMaterial, 
           nullptr, 
           G4ThreeVector(0.0, 0.0, 0.0), 
-          PWCContainerInfo.logical, 
+          container.logical, 
           0, 
           G4Colour::Blue(), 
           "PTM");
 
-    // insert the windows
-    G4Material *windowMaterial = findMaterialOrThrow(_config.getString("pTargetMon_windowMaterial"));
-    std::vector<double> windowHalfDims;
-    windowHalfDims.push_back(windowWidth/2.);
-    windowHalfDims.push_back(windowHeight/2.);
-    windowHalfDims.push_back(windowThick/2.);
-    G4VSolid* windowBox = new G4Box("pTargetMonWindow",
-                  windowWidth/2.,
-                  windowHeight/2.,
-                  windowThick/2.);
-    G4LogicalVolume* windowLogical = new G4LogicalVolume(windowBox,
-                              windowMaterial,
-                              "pTargetMonWindow");
-    // first ground plane
-    std::string ground1Name = "pTargetMonGroundIn";
-    ground1Name.append(nameSuffix);
-    double ground1Z = -5.5*frameThick;
-    //G4VPhysicalVolume* pv = 
+  } // insertOuterFrame
+
+  void insertWindows(G4LogicalVolume* windowLogical, VolumeInfo const& container, PTMonPWC* pwc) {
+    std::string ground1Name = "pTargetMonGroundIn"+pwc->nameSuffix();
     new G4PVPlacement(nullptr,
-              G4ThreeVector(0.0, 0.0, ground1Z),
+              G4ThreeVector(0.0, 0.0, pwc->ground1Z()),
               windowLogical,
               ground1Name,
-              PWCContainerInfo.logical,
+              parent.logical,
               false,
               0,
               false);
-    // first HV plane
-    std::string hv1Name = "pTargetMonHV1";
-    hv1Name.append(nameSuffix);
-    double hv1Z = -3.5*frameThick;
-    //G4VPhysicalVolume* pv = 
+    std::string hv1Name = "pTargetMonHV1"+pwc->nameSuffix();
     new G4PVPlacement(nullptr,
-              G4ThreeVector(0.0, 0.0, hv1Z),
+              G4ThreeVector(0.0, 0.0, pwc->hv1Z()),
               windowLogical,
-              hv1Name,
-              PWCContainerInfo.logical,
+              ground1Name,
+              parent.logical,
               false,
               0,
               false);
-    // second HV plane
-    std::string hv2Name = "pTargetMonHV2";
-    hv2Name.append(nameSuffix);
-    double hv2Z = 0.5*frameThick;
-    //G4VPhysicalVolume* pv = 
+    std::string hv2Name = "pTargetMonHV2"+pwc->nameSuffix();
     new G4PVPlacement(nullptr,
-              G4ThreeVector(0.0, 0.0, hv2Z),
+              G4ThreeVector(0.0, 0.0, pwc->hv2Z()),
               windowLogical,
-              hv2Name,
-              PWCContainerInfo.logical,
+              ground1Name,
+              parent.logical,
               false,
               0,
               false);
-    // third HV plane
-    std::string hv3Name = "pTargetMonHV3";
-    hv3Name.append(nameSuffix);
-    double hv3Z = 4.5*frameThick;
-    //G4VPhysicalVolume* pv = 
+    std::string hv3Name = "pTargetMonHV3"+pwc->nameSuffix();
     new G4PVPlacement(nullptr,
-              G4ThreeVector(0.0, 0.0, hv3Z),
+              G4ThreeVector(0.0, 0.0, pwc->hv3Z()),
               windowLogical,
-              hv3Name,
-              PWCContainerInfo.logical,
+              ground1Name,
+              parent.logical,
               false,
               0,
               false);
-    // last ground plane
-    std::string ground2Name = "pTargetMonGroundOut";
-    ground2Name.append(nameSuffix);
-    double ground2Z = 6.5*frameThick;
+    std::string ground2Name = "pTargetMonGroundOut"+pwc->nameSuffix();
     new G4PVPlacement(nullptr,
-              G4ThreeVector(0.0, 0.0, ground2Z),
+              G4ThreeVector(0.0, 0.0, pwc->ground2Z()),
               windowLogical,
-              ground2Name,
-              PWCContainerInfo.logical,
+              ground1Name,
+              parent.logical,
               false,
               0,
               false);
-    
-    // gas inside PWC
-    G4Material *gasMaterial = findMaterialOrThrow(_config.getString("pTargetMon_innerGas"));
+
+  } // insertWindows
+
+  void insertOuterGasBlocks(VolumeInfo const& container, PTMonPWC* pwc, G4Material* gasMaterial) {
     // between ground plane 1 and HV plane 1
     std::string gasName1 = "pTargetMonGas1";
-    gasName1.append(nameSuffix);
-    double gasLength1 = hv1Z - ground1Z - windowThick;
-    double gasZ1 = 0.5*(hv1Z + ground1Z);
-    std::vector<double> gasHalfDims1;
-    gasHalfDims1.push_back(windowWidth/2.);
-    gasHalfDims1.push_back(windowHeight/2.);
-    gasHalfDims1.push_back(gasLength1/2.);
-    nestBox(gasName1,
-        gasHalfDims1,
-        gasMaterial,
-        nullptr,
-        G4ThreeVector(0.0, 0.0, gasZ1),
-        PWCContainerInfo,
-        0,
-        G4Colour::Red(),
-        "PTM");
-    // between HV plane 1 and HV plane 2
-    // "Vert" here means it measures the vertical profile
+    gasName1.append(pwc->nameSuffix());
+    double gasZ1 = -4.5*pwc->frameThick();
+    nestBox (gasName1,
+             *(pwc->gasSection1()),
+             gasMaterial,
+             nullptr,
+             G4ThreeVector(0.0, 0.0, gasZ1),
+             container,
+             0, // copyNo
+             false, // isVisible
+             G4Colour::Red(),
+             true, // forceSolid
+             false, // forceAuxEdgeVisible
+             true, // placePV
+             false); // doSurfaceCheck
+
+
+    // between HV plane 3 and ground plane 2
+    std::string gasName4 = "pTargetMonGas4";
+    gasName4.append(pwc->nameSuffix());
+    double gasHalfLength4 = pwc->gasSection4()->getZhalfLength();
+    double gasZ4 = 5.5*pwc->frameThick();
+    nestBox (gasName4,
+             *(pwc->gasSection4()),
+             gasMaterial,
+             nullptr,
+             G4ThreeVector(0.0, 0.0, gasZ4),
+             container,
+             0, // copyNo
+             false, // isVisible
+             G4Colour::Red(),
+             true, // forceSolid
+             false, // forceAuxEdgeVisible
+             true, // placePV
+             false); // doSurfaceCheck
+
+  } // insertOuterGasBlocks
+
+  void insertVerticalProfileWires(VolumeInfo const& container, PTMonPWC* pwc, G4Material* gasMaterial, std::string const& wireNameSuffix) {
+    // In the real detector wires run HORIZONTALLY, so as to measure the 
+    // VERTICAL profile.
+    // G4 geometry currently contains no actual wires.
+    // Contains gas broken into sections -- each section represents the region 
+    // of the gas that is closest to one wire in the real detector.
     std::string wireGasNameVert = "pTargetMonWireVert";
     wireGasNameVert.append(wireNameSuffix);
-    double gasLength2 = hv2Z - hv1Z - windowThick;
-    double gasZ2 = 0.5*(hv2Z + hv1Z);
-    double wireSpacing = windowHeight/wiresPerPlane;
     G4VSolid* vertWireBox = new G4Box(wireGasNameVert,
-                      windowWidth/2.,
-                      wireSpacing/2.,
-                      gasLength2/2.);
+                      pwc->vertWireGasSection()->getXhalfLength(),
+                      pwc->vertWireGasSection()->getYhalfLength(),
+                      pwc->vertWireGasSection()->getZhalfLength());
     G4LogicalVolume* vertWireLogical = new G4LogicalVolume(vertWireBox,
                                 gasMaterial,
                                 wireGasNameVert);
-    for (int i=0; i<wiresPerPlane; i++) {
-      int wireNum = wireNumStart + i;
+    for (int i=0; i < pwc->numVertWires(); i++) {
+      int wireNum = pwc->wireNumStart() + i;
       std::string wireGasName = wireGasNameVert;
       wireGasName.append(std::to_string(wireNum));
       // wire numbering such that the lowest-numered wire is 
       // on the bottom
-      double gasY2 = (-0.5*windowHeight) + ((i+0.5)*wireSpacing);
-      //G4VPhysicalVolume* pv = 
+      double gasY2 = pwc->vertWireYPos()[i];
       new G4PVPlacement(nullptr,
-                G4ThreeVector(0.0, gasY2, gasZ2),
+                G4ThreeVector(0.0, gasY2, pwc->vertWireZ()),
                 vertWireLogical,
-                wireGasName,
-                PWCContainerInfo.logical,
+                wireGasNameVert,
+                container.logical,
                 false,
                 wireNum,
                 false);
     }
-    
-    // "Horiz" here means it measures the horizontal profile
+
+  } // insertVerticalProfileWires
+
+  void insertHorizontalProfileWires(VolumeInfo const& container, PTMonPWC* pwc, G4Material* gasMaterial, std::string const& wireNameSuffix) {
+    // In the real detector wires run VERTICALLY so as to measure the 
+    // HORIZONTAL profile.
+    // G4 geometry currently contains no actual wires.
+    // Contains gas broken into sections -- each section represents the region 
+    // of the gas that is closest to one wire in the real detector.
     std::string wireGasNameHoriz = "pTargetMonWireHoriz";
     wireGasNameHoriz.append(wireNameSuffix);
-    double gasLength3 = hv3Z - hv2Z - windowThick;
-    double gasZ3 = 0.5*(hv3Z + hv2Z);
-    wireSpacing = windowWidth/wiresPerPlane;
     G4VSolid* horizWireBox = new G4Box(wireGasNameHoriz,
-                       wireSpacing/2.,
-                       windowHeight/2.,
-                       gasLength3/2.);
+                      pwc->horizWireGasSection()->getXhalfLength(),
+                      pwc->horizWireGasSection()->getYhalfLength(),
+                      pwc->horizWireGasSection()->getZhalfLength());
     G4LogicalVolume* horizWireLogical = new G4LogicalVolume(horizWireBox,
                                 gasMaterial,
                                 wireGasNameHoriz);
-    int horizWireStart = wireNumStart+wiresPerPlane;
-    for (int i=0; i<wiresPerPlane; i++) {
-      int wireNum = horizWireStart + i;
+    for (int i=0; i < pwc->numHorizWires(); i++) {
+      int wireNum = pwc->wireNumStart() + + pwc->numVertWires() + i;
       std::string wireGasName = wireGasNameHoriz;
       wireGasName.append(std::to_string(wireNum));
-      // Wire numbering is reversed, because we rotate the overall 
-      // container by almost 180 degrees to be along the beam path.
-      // This puts the lowest-numbered wire all the way on the left
-      // from the oncoming beam's point of view.
-      double gasX3 = (0.5*windowWidth) - ((i+0.5)*wireSpacing);
-      //G4VPhysicalVolume* pv = 
+      // wire numbering such that the lowest-numered wire is 
+      // on the bottom
+      double gasX3 = pwc->horizWireXPos()[i];
       new G4PVPlacement(nullptr,
-                G4ThreeVector(gasX3, 0.0, gasZ3),
+                G4ThreeVector(gasX3, 0.0, pwc->horizWireZ()),
                 horizWireLogical,
-                wireGasName,
-                PWCContainerInfo.logical,
+                wireGasNameHoriz,
+                container.logical,
                 false,
                 wireNum,
                 false);
     }
 
-    // between HV plane 3 and ground plane 2
-    std::string gasName4 = "pTargetMonGas4";
-    gasName4.append(nameSuffix);
-    double gasLength4 = ground2Z - hv3Z - windowThick;
-    double gasZ4 = 0.5*(ground2Z + hv3Z);
-    std::vector<double> gasHalfDims4;
-    gasHalfDims4.push_back(windowWidth/2.);
-    gasHalfDims4.push_back(windowHeight/2.);
-    gasHalfDims4.push_back(gasLength4/2.);
-    nestBox(gasName4,
-        gasHalfDims4,
-        gasMaterial,
-        nullptr,
-        G4ThreeVector(0.0, 0.0, gasZ4),
-        PWCContainerInfo,
-        0,
-        G4Colour::Red(),
-        "PTM");
+  } // insertHorizontalProfileWires
 
+  void constructTargetHallPWC(VolumeInfo const& motherVolume, PTMonPWC* pwc) {
     
-  } //constructTargetHallPWC
+    // "container": box representing the location of the individual PWC
+    G4Material* containerMaterial = motherVolume.logical->GetMaterial();
+    double containerMargin = 0.025;
+
+    std::vector<double> containerHalfDims;
+    containerHalfDims.push_back(containerMargin + pwc->frameWidth()/2.);
+    containerHalfDims.push_back(containerMargin + pwc->frameHeight()/2.);
+    containerHalfDims.push_back(containerMargin + pwc->frameTotalThick()/2.);
+
+    std::string containerName = "pTargetMonInnerContainer";
+    containerName.append(pwc->nameSuffix());
+    VolumeInfo pwcContainerInfo = nestBox(containerName,
+              containerHalfDims,
+              containerMaterial,
+              nullptr,
+              pwc->originInParent(),
+              motherVolume,
+              0,
+              G4Colour::Green(),
+              "PTM");
+
+    // G10 frame of the PWC, made up of two endplates, plus
+    // 13 interior boards that hold the windows and wires.
+    // Represented as a single solid piece here.
+    insertOuterFrame(pwcContainerInfo, pwc);
+
+    // insert the windows
+    // The windows are all identical, so make one logical volume and paste it repeatedly
+    G4Material *windowMaterial = findMaterialOrThrow(pwc->windowMaterialName());
+    G4VSolid* windowBox = new G4Box("pTargetMonWindow",
+                  pwc->pwcWindow()->getXhalfLength(),
+                  pwc->pwcWindow()->getYhalfLength(),
+                  pwc->pwcWindow()->getZhalfLength());
+    G4LogicalVolume* windowLogical = new G4LogicalVolume(windowBox,
+                              windowMaterial,
+                              "pTargetMonWindow");
+    insertWindows(windowLogical, pwcContainerInfo, pwc);
+
+    // the sections of gas between the outer grounded planes and the bias planes
+    // Going to use gasMaterial a few times; collect it out here so we don't do
+    // a findMaterialOrThrow several times for the same material.
+    G4Material *gasMaterial = findMaterialOrThrow(pwc->gasMaterialName());
+    insertOuterGasBlocks(pwcContainerInfo, pwc, gasMaterial);
+
+    // the wire planes
+    // Going to use the wireNameSuffix in a couple of places, so just do the 
+    // string append once out here.
+    std::string wireNameSuffix = pwc->nameSuffix();
+    wireNameSuffix.append("_");
+    insertVerticalProfileWires(pwcContainerInfo, pwc, gasMaterial, wireNameSuffix);
+    insertHorizontalProfileWires(pwcContainerInfo, pwc, gasMaterial, wireNameSuffix);
+  } // constructTargetHallPWC
 
 
-  void constructProductionTargetMon(VolumeInfo const & parent, SimpleConfig const & _config) {
-    int wiresPerPlane = _config.getInt("pTargetMon_wiresPerPlane");
-    double height = _config.getDouble("pTargetMon_height");
-    double width = _config.getDouble("pTargetMon_width");
-    double length = _config.getDouble("pTargetMon_length");
-    std::vector<double> halfDims;
-    halfDims.push_back(0.1+width/2.);
-    halfDims.push_back(0.1+height/2.);
-    halfDims.push_back(0.1+length/2.);
+  void constructProductionTargetMon(VolumeInfo const& parent, SimpleConfig const& _config) {
+    GeomHandle<PTMon> ptmon;
+    double containerMargin = 0.05;
 
-    G4double xPosInMu2e = _config.getDouble("pTargetMon_positionX");
-    G4double yPosInMu2e = _config.getDouble("pTargetMon_positionY");
-    G4double zPosInMu2e = _config.getDouble("pTargetMon_positionZ");
-    G4ThreeVector positionInMu2e = G4ThreeVector(xPosInMu2e, yPosInMu2e, zPosInMu2e);
-
-    double yRotInMu2e = _config.getDouble("pTargetMon_rotY");
-    double xRotInMu2e = _config.getDouble("pTargetMon_rotX");
+    // create and place the mother volume first
     AntiLeakRegistry& reg = art::ServiceHandle<Mu2eG4Helper>()->antiLeakRegistry();
-    G4RotationMatrix* rotation = reg.add(new G4RotationMatrix);
-    //G4RotationMatrix* rotation = new G4RotationMatrix();
-    rotation->rotateY(yRotInMu2e*CLHEP::deg);
-    rotation->rotateX(xRotInMu2e*CLHEP::deg);
+    G4ThreeVector parentPosition = parent.centerInMu2e();
+    G4RotationMatrix* parentRotationInv = parent.physical->GetObjectRotation().inverse();
+    G4ThreeVector motherPosition = ptmon->originInMu2e() - parentPosition;
+    G4RotationMatrix motherRotation = (ptmon->rotationInMu2e()) * parentRotationInv;
+    reg.add(motherRotation);
+    G4Material* motherMaterial = parent.logical->GetMaterial();
+    std::vector<double> motherHalfDims;
+    motherHalfDims.push_back(containerMargin + ptmon->totalWidth()/2.);
+    motherHalfDims.push_back(containerMargin + ptmon->totalHeight()/2.);
+    motherHalfDims.push_back(containerMargin + ptmon->totalLength()/2.);
 
-    G4ThreeVector _hallOriginInMu2e = parent.centerInMu2e();
-
-    G4Material* baseMaterial = parent.logical->GetMaterial();
-
-    // container: holds the 2 actual detectors
     VolumeInfo pTargetMonContainer = nestBox("pTargetMonMother",
-                halfDims,
-                baseMaterial,
-                rotation,
-                positionInMu2e-_hallOriginInMu2e,
+                motherHalfDims,
+                motherMaterial,
+                motherRotation,
+                motherPosition,
                 parent,
                 0,
                 G4Colour::Green(),
                 "PTM");
     checkForOverlaps( pTargetMonContainer.physical, _config, true);
 
-    double gasLength = _config.getDouble("pTargetMon_gasLength");
-    double outerPlateLength = _config.getDouble("pTargetMon_outerPlateLength");
-    double detectorLength = gasLength + (2*outerPlateLength);
-
-    // location of one PWC:
-    double z1 = (-0.5*length)+(detectorLength/2.);
-    G4ThreeVector position_1 = G4ThreeVector(0.0, 0.0, z1);
-    constructTargetHallPWC(pTargetMonContainer, _config, "_1", position_1, 0);
-    // second PWC:
-    double z2 = (0.5*length)-(detectorLength/2.);
-    G4ThreeVector position_2 = G4ThreeVector(0.0, 0.0, z2);
-    constructTargetHallPWC(pTargetMonContainer, _config, "_2", position_2, 2*wiresPerPlane);
+    // add the first PWC to the mother volume
+    constructTargetHallPWC(pTargetMonContainer, ptmon->nearPWC());
+    // and the second PWC
+    constructTargetHallPWC(pTargetMonContainer, ptmon->farPWC());
 
   } // constructProductionTargetMon
 

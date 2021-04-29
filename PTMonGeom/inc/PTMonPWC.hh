@@ -20,6 +20,10 @@
 namespace mu2e {
 
   class PTMonPWC {
+    // nameSuffix lets you give multiple PWC's unique names.
+    // wireNumStart is the first number to be used when naming the sections of
+    // gas corresponding to wires. This same wire numbering is used for the
+    // copyNo argument when placing the wire gas in the geometry.
   public:
     PTMonPWC(std::string const& nameSuffix,
              double frameHeight, 
