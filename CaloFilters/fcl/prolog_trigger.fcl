@@ -118,6 +118,15 @@ CaloFilters : {
 	triggerPath             : "CaloPhoton"	    
     }
   
+    caloMVANNCEFilter : {
+	module_type            : FilterEcalNNTrigger
+	caloClusterCollection  : CaloClusterFast
+        caloBkgMVA             :{ MVAWeights : "CaloFilters/data/CE_NN_ReLU.weights.xml" }
+        minEtoTest             : 40
+        minMVAScore            : 0.95
+        trigPath               : "CaloNewClusterTrigger"
+        diagLevel              : 0
+    }
 }
 
 CaloFilters : { @table::CaloFilters
@@ -238,6 +247,20 @@ CaloFilters : { @table::CaloFilters
 	    triggerPath         : "CaloPhoton"	    	    	    
 	}
 
+	caloMVANNCECDCountFilter     : {
+	    module_type : DigiFilter
+	    caloDigiCollection  : CaloDigiMaker
+	    strawDigiCollection : notUSed	    
+	    useStrawDigi        : false		    
+	    useCaloDigi         : true		    
+	    minNStrawDigi       : -1		    
+	    maxNStrawDigi       : -1		    
+	    minNCaloDigi        : 2		    
+	    maxNCaloDigi        : 10000		    
+	    maxCaloEnergy       : -1		    
+	    triggerPath        : "CaloMVANNCE"	    	    
+	}
+
 	caloMVACEEventPrescale : {
 	    module_type : PrescaleEvent
 	    nPrescale         : 1
@@ -317,6 +340,20 @@ CaloFilters : { @table::CaloFilters
 	    triggerFlag       : ["PrescaleGoodEvents"]	    
 	}
 
+	caloMVANNCEEventPrescale : {
+	    module_type   : PrescaleEvent
+	    nPrescale     : 1
+	    triggerPath   : "CaloMVANNCE"	    	    
+	    triggerFlag   : ["PrescaleRandom"]	    
+	}
+	
+	caloMVANNCEPrescale : {
+	    module_type       : PrescaleEvent
+	    nPrescale         : 1 
+	    useFilteredEvents : true
+	    triggerPath       : "CaloMVANNCE"	    	    
+	    triggerFlag       : ["PrescaleGoodEvents"]	    
+	}
 	
 	#FIXME! this filter will no longer be needed once we will have a standardized definition of good events
 	caloTriggerPreselect   : { @table::CaloFilters.caloTriggerPreselect  }
@@ -336,6 +373,8 @@ CaloFilters : { @table::CaloFilters
 
 	#fixme@ this is just a place holder
 	caloPhotonFilter         : { @table::CaloFilters.caloPhotonFilter        }
+
+	caloMVANNCEFilter        : { @table::CaloFilters.caloMVANNCEFilter       }
 	
     }
 
@@ -346,12 +385,14 @@ CaloFilters : { @table::CaloFilters
 	caloMVAMixedCE   : [ caloMVAMixedEventPrescale, caloMVAMixedCDCountFilter, @sequence::TrkHitRecoTrigger.sequences.TTprepareHits, 
 			     CaloTrigger, caloMVAMixedFilter ] 
 	
-	caloCalibCosmic  : [ caloCalibCosmicEventPrescale, caloCalibCosmicCDCountFilter, CaloClusterFast, caloCalibCosmicFilter] 
+	caloCalibCosmic  : [ caloCalibCosmicEventPrescale, caloCalibCosmicCDCountFilter, @sequence::CaloHitRecoTrigger.prepareHits, CaloClusterFast, caloCalibCosmicFilter] 
 
-	caloLHCE         : [ caloLHCEEventPrescale, caloLHCECDCountFilter, CaloClusterFast, caloLHCEFilter] 
+	caloLHCE         : [ caloLHCEEventPrescale, caloLHCECDCountFilter, @sequence::CaloHitRecoTrigger.prepareHits, CaloClusterFast, caloLHCEFilter] 
 
 	#FIX ME! THIS IS JUST A PLACE HOLDER
-	caloPhoton       : [ caloPhotonEventPrescale, caloPhotonCDCountFilter, CaloClusterFast, caloPhotonFilter] 
+	caloPhoton       : [ caloPhotonEventPrescale, caloPhotonCDCountFilter, @sequence::CaloHitRecoTrigger.prepareHits, CaloClusterFast, caloPhotonFilter] 
+
+	caloPhoton       : [ caloMVANNCEEventPrescale, caloMVANNCECDCountFilter, @sequence::CaloHitRecoTrigger.prepareHits, CaloClusterFast,caloMVANNCEFilter ] 
 
     }
 }

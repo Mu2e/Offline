@@ -213,7 +213,7 @@ void WLSSteppingAction::UserSteppingAction(const G4Step* theStep)
       _crvPhotons->MakePhotons(p1, p2, t1, t2,  
                             beta, charge,
                             visibleEnergyDeposited,
-                            trueStepLength,0,reflector);
+                            trueStepLength,reflector);
  
       for(int SiPM=0; SiPM<4; SiPM++)
       {

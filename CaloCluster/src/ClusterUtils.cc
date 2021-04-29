@@ -13,9 +13,14 @@ namespace mu2e {
        return hits_[0]->energyDep();
     }
 
+    double ClusterUtils::e2() const
+    {        
+       return (hits_.size()>1) ? hits_[0]->energyDep()+hits_[1]->energyDep() : hits_[0]->energyDep();
+    }
+
     double ClusterUtils::e9() const
     {        
-       const auto neighborsId = cal_.crystal(hits_[0]->crystalID()).neighbors();
+       const auto& neighborsId = cal_.crystal(hits_[0]->crystalID()).neighbors();
 
        double e9 = e1();
        for (const auto& hit : hits_)
@@ -27,7 +32,7 @@ namespace mu2e {
 
     double ClusterUtils::e25() const
     {        
-       const auto nneighborsId = cal_.crystal(hits_[0]->crystalID()).nextNeighbors();
+       const auto& nneighborsId = cal_.crystal(hits_[0]->crystalID()).nextNeighbors();
 
        double e25 = e9();
        for (const auto& hit : hits_)

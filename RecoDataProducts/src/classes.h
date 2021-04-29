@@ -67,7 +67,8 @@
 
 // CRV
 #include "RecoDataProducts/inc/CrvDigiCollection.hh"
-#include "RecoDataProducts/inc/CrvRecoPulseCollection.hh"
+#include "RecoDataProducts/inc/CrvRecoPulse.hh"
+#include "RecoDataProducts/inc/CrvRecoPulseFlags.hh"
 #include "RecoDataProducts/inc/CrvCoincidenceCollection.hh"
 #include "RecoDataProducts/inc/CrvCoincidenceClusterCollection.hh"
 #include "DataProducts/inc/CRSScintillatorBarIndex.hh"

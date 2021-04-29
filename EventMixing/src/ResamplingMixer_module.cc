@@ -68,7 +68,10 @@ namespace mu2e {
 
     void processEventIDs(const art::EventIDSequence& seq);
 
+    void beginSubRun(const art::SubRun& sr);
     void finalizeEvent(art::Event& e);
+    void endSubRun(art::SubRun& sr);
+
   };
 
   ResamplingMixerDetail::ResamplingMixerDetail(const Parameters& pars, art::MixHelper& helper)
@@ -87,12 +90,20 @@ namespace mu2e {
     }
   }
 
+  void ResamplingMixerDetail::beginSubRun(const art::SubRun& sr) {
+    spm_.beginSubRun(sr);
+  }
+
   void ResamplingMixerDetail::finalizeEvent(art::Event& e) {
     if(writeEventIDs_) {
       auto o = std::make_unique<art::EventIDSequence>();
       o->swap(idseq_);
       e.put(std::move(o));
     }
+  }
+
+  void ResamplingMixerDetail::endSubRun(art::SubRun& sr) {
+    spm_.endSubRun(sr);
   }
 
 }

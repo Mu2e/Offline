@@ -550,8 +550,9 @@ namespace mu2e {
              {
                const StepPointMC& hit = *iter;
                
-               if (hit.volumeId()<VirtualDetectorId::EMC_Disk_0_SurfIn || hit.volumeId()>VirtualDetectorId::EMC_Disk_1_EdgeOut) continue;
-
+               if ( (hit.volumeId()<VirtualDetectorId::EMC_Disk_0_SurfIn || hit.volumeId()>VirtualDetectorId::EMC_Disk_1_EdgeOut) 
+	             && hit.volumeId() != VirtualDetectorId::TT_Back) continue;
+  
                double hitTimeUnfolded = toff_.totalTimeOffset(hit.simParticle()) + hit.time();
    	       double hitTime         = fmod(hitTimeUnfolded,_mbtime);
 
@@ -564,7 +565,7 @@ namespace mu2e {
                vdPosX_[nVd_]   = VDPos.x(); //tracker frame
                vdPosY_[nVd_]   = VDPos.y();
                vdPosZ_[nVd_]   = VDPos.z();
-               vdMom_[nVd_]    = hit.momentum().rho();
+               vdMom_[nVd_]    = hit.momentum().mag();
                vdMomX_[nVd_]   = hit.momentum().x();
                vdMomY_[nVd_]   = hit.momentum().y();
                vdMomZ_[nVd_]   = hit.momentum().z();

@@ -67,6 +67,8 @@ helper.make_plugins( [ mainlib,
                        'cetlib',
                        'cetlib_except',
                        'CLHEP',
+                       'TMVA',
+                       'xerces-c',  #needed for MVA 
                        'boost_filesystem',
                        'boost_system',
                        rootlibs
