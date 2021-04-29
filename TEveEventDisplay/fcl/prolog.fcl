@@ -96,16 +96,16 @@ TEveEventDisplayCosmics : {
       CaloClusterCollection		  :  NULL
       CaloHitCollection  :  NULL
       HelixSeedCollection       :  NULL
-      KalSeedCollection         :  NULL
+      KalSeedCollection         :  []
       TrkExtTrajCollection      :  NULL
       MCTrajectoryCollection    :  "compressDigiMCs"
       addHits 			            : true
       addTracks 			          : true
-      addCrvHits			          : true
+      addCrvHits			          : false
       addCosmicSeedFit	        : false
       addClusters			          : false
       addTrkExtTrajs		        : false
-      addMCTraj				          : true 
+      addMCTraj				          : false 
    }
   }   
 
