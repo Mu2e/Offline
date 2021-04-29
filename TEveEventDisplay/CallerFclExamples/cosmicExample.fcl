@@ -8,7 +8,7 @@
 #include "TrkHitReco/fcl/prolog.fcl"
 #include "CosmicReco/fcl/prolog.fcl"
 #include "TEveEventDisplay/fcl/prolog.fcl"
-#include "JobConfig/reco/mcdigis_nocosmic.fcl"
+//#include "JobConfig/reco/mcdigis_nocosmic.fcl"
 
 source : { module_type : RootInput}
 
@@ -34,12 +34,12 @@ physics :
 	}
   filters :   { 
        @table::CosmicTracking.filters
-       @table::TEveDis.filters
+       
   }
 }
 # for MDC2018g and earlier, correct the time maps.  Comment these out for MDC2018h and beyond
 
-physics.RecoPath : [EventFilter, @sequence::TrkHitReco.PrepareHits]// @sequence::CosmicTracking.FindCosmics] 
+physics.RecoPath : [ @sequence::TrkHitReco.PrepareHits]// @sequence::CosmicTracking.FindCosmics] 
 physics.producers.TimeClusterFinderCosmics.UseCaloCluster : false
 physics.producers.TimeClusterFinderCosmics.UseCaloClusterPosition : false
 

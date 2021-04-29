@@ -8,7 +8,7 @@
 #include "TrkHitReco/fcl/prolog.fcl"
 #include "CosmicReco/fcl/prolog.fcl"
 #include "TEveEventDisplay/fcl/prolog.fcl"
-#include "JobConfig/reco/mcdigis_nocosmic.fcl"
+//#include "JobConfig/reco/mcdigis_nocosmic.fcl"
 
 source : { module_type : RootInput}
 
@@ -33,7 +33,7 @@ physics :
 	}
   filters :   { 
        @table::CosmicTracking.filters
-       @table::TEveDis.filters
+       
   }
 }
 
