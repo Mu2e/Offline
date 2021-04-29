@@ -21,6 +21,7 @@
 #include "Mu2eInterfaces/inc/ProditionsEntity.hh"
 #include "Mu2eInterfaces/inc/ProditionsCache.hh"
 
+#include "DAQConfig/inc/EventTimingConfig.hh"
 #include "TrackerConfig/inc/FullReadoutStrawConfig.hh"
 #include "TrackerConfig/inc/TrackerStatusConfig.hh"
 #include "TrackerConfig/inc/StrawDriftConfig.hh"
@@ -46,6 +47,9 @@ namespace mu2e {
       using Comment=fhicl::Comment;
       fhicl::Atom<int> verbose{Name("verbose"),
           Comment("verbosity 0 or 1"),0};
+      fhicl::Table<EventTimingConfig> eventTiming{
+          Name("eventTiming"),
+          Comment("Event timing configuration") };
       fhicl::Table<FullReadoutStrawConfig> fullReadoutStraw{
           Name("fullReadoutStraw"),
           Comment("Straws with no time window in readout") };

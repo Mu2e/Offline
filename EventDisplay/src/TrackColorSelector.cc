@@ -48,21 +48,21 @@ void TrackColorSelector::drawTrackLegend(TText **legendParticleGroup, TText **le
               drawLineAndText(1, 2, "e+, e-");
               drawLineAndText(2, 3, "mu+, mu-");
               drawLineAndText(3, 4, "gamma");
-              drawLineAndText(4, 5, "n0");
-              drawLineAndText(5, 6, "neutrinos");
+              drawLineAndText(4, 5, "neutron");
+              drawLineAndText(5, 6, "proton");
               drawLineAndText(6, 28, "other particles");
               break;
       case 2: drawGroupName(0,_trackInfos->at(0).entryText);
               drawLineAndText(1, 2, "e+, e-");
               drawLineAndText(2, 3, "mu+, mu-");
               drawLineAndText(3, 4, "gamma");
-              drawLineAndText(4, 5, "n0");
+              drawLineAndText(4, 5, "neutron");
               drawLineAndText(5, 28, "other particles");
               drawGroupName(6,_trackInfos->at(1).entryText);
               drawLineAndText(7, 7, "e+, e-");
               drawLineAndText(8, 6, "mu+, mu-");
               drawLineAndText(9, 8, "gamma");
-              drawLineAndText(10, 9, "n0");
+              drawLineAndText(10, 9, "neutron");
               drawLineAndText(11, 46, "other particles");
               break;
       case 3: drawGroupName(0,_trackInfos->at(0).entryText);
@@ -118,12 +118,7 @@ int TrackColorSelector::getColor(boost::shared_ptr<Track> track)
                 case  -13: color=3; break;   //mu+,mu-
                 case   22: color=4; break;   //gamma
                 case 2112: color=5; break;   //n0
-                case   12:
-                case  -12:
-                case   14:
-                case  -14:
-                case   16:
-                case  -16: color=6; break;   //neutrinos
+                case 2212: color=6; break;   //protons
                 default  : color=_whiteBackground?28:25;
               };
               break;

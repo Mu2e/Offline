@@ -29,7 +29,7 @@ namespace mu2e {
     // simple config common to all products
     struct Config {
       fhicl::Atom<int> verbose{ fhicl::Name("verbose"), 
-	  fhicl::Comment("verbose flag, 0 to 1 or 2"),1};
+	  fhicl::Comment("verbose flag, 0 to 1 or 2"),0};
       fhicl::Sequence<art::InputTag> inputTags { fhicl::Name("inputTags"),
 	  fhicl::Comment("tags of products to print"), 
 	  std::vector<art::InputTag>()

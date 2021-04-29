@@ -16,10 +16,13 @@
 
 #include <string>
 #include <vector>
+#include <optional>
 
 #include "fhiclcpp/types/Atom.h"
+#include "fhiclcpp/types/OptionalAtom.h"
 #include "fhiclcpp/types/Sequence.h"
 #include "fhiclcpp/types/Table.h"
+#include "fhiclcpp/types/OptionalTable.h"
 #include "fhiclcpp/types/TupleAs.h"
 #include "canvas/Utilities/InputTag.h"
 
@@ -35,7 +38,9 @@
 #include "MCDataProducts/inc/ExtMonFNALSimHitCollection.hh"
 #include "MCDataProducts/inc/ProtonBunchIntensity.hh"
 #include "MCDataProducts/inc/SimParticleTimeMap.hh"
-// add CRVSTEP FIXME!
+#include "MCDataProducts/inc/PhysicalVolumeInfoMultiCollection.hh"
+
+
 
 //================================================================
 namespace mu2e {
@@ -64,6 +69,18 @@ namespace mu2e {
           };
     };
 
+    // PhysicalVolumeInfoMultiCollection in SubRuns
+    struct VolumeInfoMixerConfig {
+      using Name = fhicl::Name;
+      using Comment = fhicl::Comment;
+      fhicl::Atom<art::InputTag> srInput{ Name("srInput"), Comment("Input volume collection in SubRun") };
+      fhicl::Atom<std::string> srOutInstance{ Name("srOutInstance"), Comment("Output instance name for SubRun outputs"), "" };
+
+      fhicl::OptionalAtom<std::string> evtOutInstanceName { fhicl::Name("evtOutInstanceName"),
+          Comment("If a value is provided, volume info  mixing will put a partial output into every event. ")
+          };
+    };
+
     // Configuration for the Mu2eProductMixing helper
     struct Config {
       fhicl::Table<CollectionMixerConfig> genParticleMixer { fhicl::Name("genParticleMixer") };
@@ -77,9 +94,14 @@ namespace mu2e {
       fhicl::Table<CollectionMixerConfig> protonBunchIntensityMixer { fhicl::Name("protonBunchIntensityMixer") };
       fhicl::Table<CollectionMixerConfig> protonTimeMapMixer { fhicl::Name("protonTimeMapMixer") };
       fhicl::Table<CollectionMixerConfig> eventIDMixer { fhicl::Name("eventIDMixer") };
+
+      fhicl::OptionalTable<VolumeInfoMixerConfig> volumeInfoMixer { fhicl::Name("volumeInfoMixer") };
     };
 
     Mu2eProductMixer(const Config& conf, art::MixHelper& helper);
+
+    void beginSubRun(const art::SubRun& sr);
+    void endSubRun(art::SubRun& sr);
 
   private:
 
@@ -127,6 +149,12 @@ namespace mu2e {
                      art::EventIDSequence& out,
                      art::PtrRemapper const& remap);
 
+
+    //----------------
+    bool mixVolumeInfos(std::vector<PhysicalVolumeInfoMultiCollection const*> const& in,
+                        PhysicalVolumeInfoMultiCollection& out,
+                        art::PtrRemapper const&);
+
     //----------------
     // If elements of a collection can be pointed to by other
     // collections, the offset array for the pointed-to collection
@@ -140,6 +168,17 @@ namespace mu2e {
     std::vector<GenOffset> genOffsets_;
 
     void updateSimParticle(SimParticle& particle, SPOffset offset, art::PtrRemapper const& remap);
+
+    typedef std::map<cet::map_vector_key,PhysicalVolumeInfo> VolumeMap;
+    typedef std::vector<VolumeMap> MultiStageMap;
+    MultiStageMap subrunVolumes_;
+    bool mixVolumes_;
+    art::InputTag volumesInput_;
+    std::string subrunVolInstanceName_;
+    std::optional<std::string> evtVolInstanceName_;
+
+    void addInfo(VolumeMap* map, const PhysicalVolumeInfoSingleStage::value_type& entry);
+
   };
 
 }

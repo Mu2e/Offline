@@ -8,13 +8,10 @@
 #include "DataProducts/inc/CRSScintillatorBarIndex.hh"
 #include "CRVResponse/inc/CrvHelper.hh"
 
-#include "ConditionsService/inc/AcceleratorParams.hh"
-#include "ConditionsService/inc/ConditionsHandle.hh"
 #include "GeometryService/inc/DetectorSystem.hh"
 #include "GeometryService/inc/GeomHandle.hh"
 #include "GeometryService/inc/GeometryService.hh"
-#include "MCDataProducts/inc/GenParticleCollection.hh"
-#include "RecoDataProducts/inc/CrvRecoPulseCollection.hh"
+#include "RecoDataProducts/inc/CrvRecoPulse.hh"
 #include "RecoDataProducts/inc/CrvCoincidenceCollection.hh"
 
 #include "canvas/Persistency/Common/Ptr.h"
@@ -51,13 +48,15 @@ namespace mu2e
     std::vector<double>      _adjacentPulseTimeDifferences;
     std::vector<double>      _maxTimeDifferences;
     std::vector<bool>        _useFourLayers;
+    bool        _usePulseOverlaps;
+    bool        _useNoFit;
+    double      _minOverlapTime;
     bool        _usingPEsPulseHeight;
     double      _maxSlope;
     double      _maxSlopeDifference;
     bool        _acceptThreeAdjacentCounters;
     double      _timeWindowStart;
     double      _timeWindowEnd;
-    double      _microBunchPeriod;
 
     //the following variable are only used to print out results and summaries
     int         _totalEvents;
@@ -65,27 +64,23 @@ namespace mu2e
     std::string _moduleLabel;  //for this instance of the CrvCoincidenceCheck module
                                //to distinguish the output from other instances of this module, if there are more than one instances
 
-    // these variables are used for efficiency checks with overlayed background, where the coincidence is accepted only, if it happens around the time of the muon
-    bool        _muonsOnly;
-    double      _muonMinTime, _muonMaxTime;
-    std::string _genParticleModuleLabel;
-
     struct CrvHit
     {
       art::Ptr<CrvRecoPulse>        _crvRecoPulse;
       double                        _time;
-      int                           _PEs;
+      double                        _timePulseStart, _timePulseEnd;
+      float                         _PEs, _PEsNoFit;
       int                           _layer, _counter;
       double                        _x, _y;
       int                           _PEthreshold;
       double                        _adjacentPulseTimeDifference;
       double                        _maxTimeDifference;
       bool                          _useFourLayers;
-      CrvHit(const art::Ptr<CrvRecoPulse> &crvRecoPulse, double time, int PEs, int layer, int counter, double x, double y,
-                                                          int PEthreshold, double adjacentPulseTimeDifference, double maxTimeDifference, bool useFourLayers):
-                                                          _crvRecoPulse(crvRecoPulse), _time(time), _PEs(PEs), _layer(layer), _counter(counter), _x(x), _y(y),
-                                                          _PEthreshold(PEthreshold), _adjacentPulseTimeDifference(adjacentPulseTimeDifference),
-                                                          _maxTimeDifference(maxTimeDifference), _useFourLayers(useFourLayers) {}
+      CrvHit(const art::Ptr<CrvRecoPulse> &crvRecoPulse, double time, double timePulseStart, double timePulseEnd, float PEs, 
+             int layer, int counter, double x, double y, int PEthreshold, double adjacentPulseTimeDifference, double maxTimeDifference, bool useFourLayers):
+             _crvRecoPulse(crvRecoPulse), _time(time), _timePulseStart(timePulseStart), _timePulseEnd(timePulseEnd), _PEs(PEs),
+             _layer(layer), _counter(counter), _x(x), _y(y), _PEthreshold(PEthreshold), _adjacentPulseTimeDifference(adjacentPulseTimeDifference),
+             _maxTimeDifference(maxTimeDifference), _useFourLayers(useFourLayers) {}
       void Print(int sectorType) const
       {
         std::cout<<"sectorType: "<<sectorType<<"   layer: "<<_layer<<"   counter: "<<_counter<<"  SiPM: "<<_crvRecoPulse->GetSiPMNumber()<<"      ";
@@ -119,23 +114,19 @@ namespace mu2e
     _adjacentPulseTimeDifferences(pset.get<std::vector<double> >("adjacentPulseTimeDifferences")),
     _maxTimeDifferences(pset.get<std::vector<double> >("maxTimeDifferences")),
     _useFourLayers(pset.get<std::vector<bool> >("useFourLayers")),
+    _usePulseOverlaps(pset.get<bool>("usePulseOverlaps")),
+    _useNoFit(pset.get<bool>("useNoFit")),
+    _minOverlapTime(pset.get<double>("minOverlapTime")),
     _usingPEsPulseHeight(pset.get<bool>("usingPEsPulseHeight")),
     _maxSlope(pset.get<double>("maxSlope")),
     _maxSlopeDifference(pset.get<double>("maxSlopeDifference")),
     _acceptThreeAdjacentCounters(pset.get<bool>("acceptThreeAdjacentCounters")),
     _timeWindowStart(pset.get<double>("timeWindowStart")),
-    _timeWindowEnd(pset.get<double>("timeWindowEnd")),
-    _muonsOnly(pset.get<bool>("muonsOnly",false))
+    _timeWindowEnd(pset.get<double>("timeWindowEnd"))
   {
     produces<CrvCoincidenceCollection>();
     _totalEvents=0;
     _totalEventsCoincidence=0;
-    if(_muonsOnly)
-    {
-      _muonMinTime=pset.get<double>("muonMinTime");
-      _muonMaxTime=pset.get<double>("muonMaxTime");
-      _genParticleModuleLabel=pset.get<std::string>("genParticleModuleLabel");
-    }
   }
 
   void CrvCoincidenceCheck::beginJob()
@@ -149,9 +140,6 @@ namespace mu2e
 
   void CrvCoincidenceCheck::beginRun(art::Run &run)
   {
-    mu2e::ConditionsHandle<mu2e::AcceleratorParams> accPar("ignored");
-    _microBunchPeriod = accPar->deBuncherPeriod;
-
     GeomHandle<CosmicRayShield> CRS;
     const std::vector<CRSScintillatorShield> &sectors = CRS->getCRSScintillatorShields();
     for(unsigned int i=0; i<sectors.size(); i++)
@@ -243,8 +231,12 @@ namespace mu2e
       if(counterSide==0) sectorType*=-1;
 
       double time=crvRecoPulse->GetPulseTime();
-      int    PEs =crvRecoPulse->GetPEs();
+      double timePulseStart=crvRecoPulse->GetPulseStart();
+      double timePulseEnd=crvRecoPulse->GetPulseEnd();
+      float  PEs =crvRecoPulse->GetPEs();
       if(_usingPEsPulseHeight) PEs=crvRecoPulse->GetPEsPulseHeight();
+      if(_useNoFit) PEs=crvRecoPulse->GetPEsNoFit();
+      if(_useNoFit) time=crvRecoPulse->GetPulseTimeNoFit();
 
       if(_verboseLevel>4)
       {
@@ -257,7 +249,7 @@ namespace mu2e
       if(crvRecoPulse->GetPulseTime()>=_timeWindowStart && crvRecoPulse->GetPulseTime()<=_timeWindowEnd)
       {
         //get the right set of hits based on the hitmap key, and insert a new hit
-        crvHits[sectorType].emplace_back(crvRecoPulse, time, PEs, layerNumber, counterNumber, x,y,
+        crvHits[sectorType].emplace_back(crvRecoPulse, time, timePulseStart, timePulseEnd, PEs, layerNumber, counterNumber, x,y,
                                          sector.PEthreshold, sector.adjacentPulseTimeDifference, sector.maxTimeDifference, sector.useFourLayers);
         if(_verboseLevel==4) crvHits[sectorType].back().Print(sectorType);
       }//loop over SiPM
@@ -279,22 +271,34 @@ namespace mu2e
       {
         int layer=iterHit->_layer;
         int counter=iterHit->_counter;
-        int PEs=iterHit->_PEs;
-        int time=iterHit->_time;
+        float  PEs=iterHit->_PEs;
+        double time=iterHit->_time;
+        double timePulseStart=iterHit->_timePulseStart;
+        double timePulseEnd=iterHit->_timePulseEnd;
 
         int    PEthreshold=iterHit->_PEthreshold;
         double adjacentPulseTimeDifference=iterHit->_adjacentPulseTimeDifference;
 
         //check other SiPM and the SiPMs at the adjacent counters
-        int PEs_thisCounter=PEs;
-        int PEs_adjacentCounter1=0;
-        int PEs_adjacentCounter2=0;
+        float PEs_thisCounter=PEs;
+        float PEs_adjacentCounter1=0;
+        float PEs_adjacentCounter2=0;
         std::vector<CrvHit>::const_iterator iterHitAdjacent;
         for(iterHitAdjacent=crvHitsOfSectorType.begin(); iterHitAdjacent!=crvHitsOfSectorType.end(); iterHitAdjacent++)
         {
           if(std::distance(iterHitAdjacent,iterHit)==0) continue;  //don't compare with itself
           if(iterHitAdjacent->_layer!=layer) continue;             //compare hits of the same layer only
-          if(fabs(iterHitAdjacent->_time-time)>adjacentPulseTimeDifference) continue; //compare hits within a certain time window only
+
+          //compare hits within a certain time window only
+          if(!_usePulseOverlaps)
+          {
+            if(fabs(iterHitAdjacent->_time-time)>adjacentPulseTimeDifference) continue;
+          }
+          else
+          {
+            double overlapTime=std::min(iterHitAdjacent->_timePulseEnd,timePulseEnd)-std::max(iterHitAdjacent->_timePulseStart,timePulseStart);
+            if(overlapTime<_minOverlapTime) continue; //no overlap or overlap time too short
+          }
 
           int counterDiff=iterHitAdjacent->_counter-counter;
           if(counterDiff==0) PEs_thisCounter+=iterHitAdjacent->_PEs;   //add PEs from the same counter (i.e. the "other" SiPM),
@@ -326,13 +330,24 @@ namespace mu2e
         for(layer2Iter=layer2Hits.begin(); layer2Iter!=layer2Hits.end(); layer2Iter++)
         for(layer3Iter=layer3Hits.begin(); layer3Iter!=layer3Hits.end(); layer3Iter++)
         {
-          double maxTimeDifferences[4]={layer0Iter->_maxTimeDifference,layer1Iter->_maxTimeDifference,layer2Iter->_maxTimeDifference,layer3Iter->_maxTimeDifference};
-          double maxTimeDifference=*std::max_element(maxTimeDifferences,maxTimeDifferences+4);
+          if(!_usePulseOverlaps)
+          {
+            double maxTimeDifferences[4]={layer0Iter->_maxTimeDifference,layer1Iter->_maxTimeDifference,layer2Iter->_maxTimeDifference,layer3Iter->_maxTimeDifference};
+            double maxTimeDifference=*std::max_element(maxTimeDifferences,maxTimeDifferences+4);
 
-          double times[4]={layer0Iter->_time,layer1Iter->_time,layer2Iter->_time,layer3Iter->_time};
-          double timeMin = *std::min_element(times,times+4);
-          double timeMax = *std::max_element(times,times+4);
-          if(timeMax-timeMin>maxTimeDifference) continue;  //hits don't fall within the time window
+            double times[4]={layer0Iter->_time,layer1Iter->_time,layer2Iter->_time,layer3Iter->_time};
+            double timeMin = *std::min_element(times,times+4);
+            double timeMax = *std::max_element(times,times+4);
+            if(timeMax-timeMin>maxTimeDifference) continue;  //hits don't fall within the time window
+          }
+          else
+          {
+            double timesPulseStart[4]={layer0Iter->_timePulseStart,layer1Iter->_timePulseStart,layer2Iter->_timePulseStart,layer3Iter->_timePulseStart};
+            double timesPulseEnd[4]={layer0Iter->_timePulseEnd,layer1Iter->_timePulseEnd,layer2Iter->_timePulseEnd,layer3Iter->_timePulseEnd};
+            double timeMaxPulseStart = *std::max_element(timesPulseStart,timesPulseStart+4);
+            double timeMinPulseEnd = *std::min_element(timesPulseEnd,timesPulseEnd+4);
+            if(timeMinPulseEnd-timeMaxPulseStart<_minOverlapTime) continue;  //pulses don't overlap, or overlap time too short
+          }
 
           double x[4]={layer0Iter->_x,layer1Iter->_x,layer2Iter->_x,layer3Iter->_x};
           double y[4]={layer0Iter->_y,layer1Iter->_y,layer2Iter->_y,layer3Iter->_y};
@@ -348,14 +363,6 @@ namespace mu2e
           if(fabs(slope[0]-slope[1])>_maxSlopeDifference) coincidenceFound=false;   //slope must not change more than 2mm over 1mm (which is a little bit more than 1 counter per layer)
           if(fabs(slope[0]-slope[2])>_maxSlopeDifference) coincidenceFound=false;   //slope must not change more than 2mm over 1mm (which is a little bit more than 1 counter per layer)
           if(fabs(slope[1]-slope[2])>_maxSlopeDifference) coincidenceFound=false;   //slope must not change more than 2mm over 1mm (which is a little bit more than 1 counter per layer)
-
-          if(_muonsOnly)   //used for efficiency checks with overlayed background: accept coincidence only, if it happens within e.g. 20ns and 120ns
-          {
-            art::Handle<GenParticleCollection> genParticleCollection;
-            event.getByLabel(_genParticleModuleLabel,"",genParticleCollection);
-            double genTime = genParticleCollection->at(0).time();
-            if(timeMax>genTime+_muonMaxTime || timeMin<genTime+_muonMinTime) coincidenceFound=false;
-          }
 
           if(coincidenceFound)
           {
@@ -385,15 +392,26 @@ namespace mu2e
         {
           if(layer1Iter->_useFourLayers && layer2Iter->_useFourLayers && layer3Iter->_useFourLayers) continue; //all hits require a four layer coincidence
 
-          double maxTimeDifferences[3]={layer1Iter->_maxTimeDifference,layer2Iter->_maxTimeDifference,layer3Iter->_maxTimeDifference};
-          double maxTimeDifference=*std::max_element(maxTimeDifferences,maxTimeDifferences+3);
+          if(_usePulseOverlaps)
+          {
+            double maxTimeDifferences[3]={layer1Iter->_maxTimeDifference,layer2Iter->_maxTimeDifference,layer3Iter->_maxTimeDifference};
+            double maxTimeDifference=*std::max_element(maxTimeDifferences,maxTimeDifferences+3);
 
-          if(fabs(layer1Iter->_time-layer2Iter->_time)>maxTimeDifference) break;  //no need to check any triplets containing the current pair of layer1 and layer2
+            if(fabs(layer1Iter->_time-layer2Iter->_time)>maxTimeDifference) break;  //no need to check any triplets containing the current pair of layer1 and layer2
 
-          double times[3]={layer1Iter->_time,layer2Iter->_time,layer3Iter->_time};
-          double timeMin = *std::min_element(times,times+3);
-          double timeMax = *std::max_element(times,times+3);
-          if(timeMax-timeMin>maxTimeDifference) continue;  //hits don't fall within the time window
+            double times[3]={layer1Iter->_time,layer2Iter->_time,layer3Iter->_time};
+            double timeMin = *std::min_element(times,times+3);
+            double timeMax = *std::max_element(times,times+3);
+            if(timeMax-timeMin>maxTimeDifference) continue;  //hits don't fall within the time window
+          }
+          else
+          {
+            double timesPulseStart[3]={layer1Iter->_timePulseStart,layer2Iter->_timePulseStart,layer3Iter->_timePulseStart};
+            double timesPulseEnd[3]={layer1Iter->_timePulseEnd,layer2Iter->_timePulseEnd,layer3Iter->_timePulseEnd};
+            double timeMaxPulseStart = *std::max_element(timesPulseStart,timesPulseStart+3);
+            double timeMinPulseEnd = *std::min_element(timesPulseEnd,timesPulseEnd+3);
+            if(timeMinPulseEnd-timeMaxPulseStart<_minOverlapTime) continue;  //pulses don't overlap, or overlap time too short
+          }
 
           double x[3]={layer1Iter->_x,layer2Iter->_x,layer3Iter->_x};
           double y[3]={layer1Iter->_y,layer2Iter->_y,layer3Iter->_y};
@@ -409,14 +427,6 @@ namespace mu2e
           if(fabs(slope[0])>_maxSlope) break;  //no need to check any triplets containing the current pair of layer1 and layer2
 
           if(fabs(slope[0]-slope[1])>_maxSlopeDifference) coincidenceFound=false;   //slope must not change more than 2mm over 1mm (which is a little bit more than 1 counter per layer)
-
-          if(_muonsOnly)   //used for efficiency checks with overlayed background: accept coincidence only, if it happens within e.g. 20ns and 120ns
-          {
-            art::Handle<GenParticleCollection> genParticleCollection;
-            event.getByLabel(_genParticleModuleLabel,"",genParticleCollection);
-            double genTime = genParticleCollection->at(0).time();
-            if(timeMax>genTime+_muonMaxTime || timeMin<genTime+_muonMinTime) coincidenceFound=false;
-          }
 
           if(coincidenceFound)
           {
@@ -443,27 +453,30 @@ namespace mu2e
           for(i2=i1+1; i2!=layerHits.end(); i2++)
           for(i3=i2+1; i3!=layerHits.end(); i3++)
           {
-            double times[3]={i1->_time,i2->_time,i3->_time};
-            double timeMin = *std::min_element(times,times+3);
-            double timeMax = *std::max_element(times,times+3);
+            if(_usePulseOverlaps)
+            {
+              double times[3]={i1->_time,i2->_time,i3->_time};
+              double timeMin = *std::min_element(times,times+3);
+              double timeMax = *std::max_element(times,times+3);
 
-            double maxTimeDifferences[3]={i1->_maxTimeDifference,i2->_maxTimeDifference,i3->_maxTimeDifference};
-            double maxTimeDifference=*std::max_element(maxTimeDifferences,maxTimeDifferences+3);
+              double maxTimeDifferences[3]={i1->_maxTimeDifference,i2->_maxTimeDifference,i3->_maxTimeDifference};
+              double maxTimeDifference=*std::max_element(maxTimeDifferences,maxTimeDifferences+3);
 
-            if(timeMax-timeMin>maxTimeDifference) continue;  //hits don't fall within the time window
+              if(timeMax-timeMin>maxTimeDifference) continue;  //hits don't fall within the time window
+            }
+            else
+            {
+              double timesPulseStart[3]={i1->_timePulseStart,i2->_timePulseStart,i3->_timePulseStart};
+              double timesPulseEnd[3]={i1->_timePulseEnd,i2->_timePulseEnd,i3->_timePulseEnd};
+              double timeMaxPulseStart = *std::max_element(timesPulseStart,timesPulseStart+3);
+              double timeMinPulseEnd = *std::min_element(timesPulseEnd,timesPulseEnd+3);
+              if(timeMinPulseEnd-timeMaxPulseStart<_minOverlapTime) continue;  //pulses don't overlap, or overlap time too short
+            }
 
             std::set<int> counters{i1->_counter,i2->_counter,i3->_counter};
             bool coincidenceFound=true;
             if(counters.size()<3) coincidenceFound=false;
             if(*counters.rbegin()-*counters.begin()!=2) coincidenceFound=false;
-
-            if(_muonsOnly)   //used for efficiency checks with overlayed background: accept coincidence only, if it happens within e.g. 20ns and 120ns
-            {
-              art::Handle<GenParticleCollection> genParticleCollection;
-              event.getByLabel(_genParticleModuleLabel,"",genParticleCollection);
-              double genTime = genParticleCollection->at(0).time();
-              if(timeMax>genTime+_muonMaxTime || timeMin<genTime+_muonMinTime) coincidenceFound=false;
-            }
 
             if(coincidenceFound)
             {

@@ -35,7 +35,7 @@
 #include "mu2e-artdaq-core/Overlays/TrackerFragment.hh"
 
 // pci_linux_kernel_module includes
-#include "dtcInterfaceLib/DTC.h"
+#include "dtcInterfaceLib/DTC_Packets.h"
 
 // Mu2e includes.
 #include "RecoDataProducts/inc/CaloDigi.hh"
@@ -72,12 +72,11 @@ struct CaloDataPacket {
 };
 
 // data struct for the tracker
-struct TrackerFullHitFormat { 
+struct TrackerFullHitFormat {
   TrackerDataPacket mainPacket;
   std::vector<TrackerADCPacket> adcPacketVec;
 };
 
-using raw_data_list_t = std::deque<std::pair<mu2e_databuff_t, size_t>>;
 using tracker_data_block_t = std::pair<DataBlockHeader, std::vector<TrackerFullHitFormat>>;
 using calo_data_block_t = std::pair<DataBlockHeader, CaloDataPacket>;
 
@@ -89,6 +88,8 @@ struct CrvDataPacket {
   DataBlockHeader header;
   CRVROCStatusPacket rocStatus;
   std::vector<CRVHitReadoutPacket> hits;
+
+  CrvDataPacket() : rocStatus(), hits() { bzero(&header, sizeof(header)); }
 };
 
 using crv_data_block_list_t = std::map<int, CrvDataPacket>; // the map key is the CRV ROC ID
@@ -219,18 +220,36 @@ private:
                                  uint8_t& DTCId, uint8_t Subsys);
   void printHeader(DataBlockHeader const& headerDataBlock);
 
+  void putBlockInEvent(DTCLib::DTC_Event& currentEvent, uint8_t dtcID,
+                       DTCLib::DTC_DataBlock thisBlock) {
+    auto subEvt = currentEvent.GetSubEventByDTCID(dtcID);
+    if (subEvt == nullptr) {
+      DTCLib::DTC_SubEvent newSubEvt;
+      newSubEvt.SetEventWindowTag(currentEvent.GetEventWindowTag());
+      auto hdrPtr = newSubEvt.GetHeader();
+      hdrPtr->source_dtc_id = dtcID;
+      newSubEvt.AddDataBlock(thisBlock);
+      currentEvent.AddSubEvent(newSubEvt);
+
+    } else {
+
+      subEvt->AddDataBlock(thisBlock);
+    }
+  }
+
   //--------------------------------------------------------------------------------
   //  methods used to process the tracker data
   //--------------------------------------------------------------------------------
-  void fillTrackerDataPacket(const StrawDigi& SD, const StrawDigiADCWaveform& SDADC, TrackerFullHitFormat& TrkData, DataBlockHeader& headerData);
+  void fillTrackerDataPacket(const StrawDigi& SD, const StrawDigiADCWaveform& SDADC,
+                             TrackerFullHitFormat& TrkData, DataBlockHeader& headerData);
 
   void processTrackerData(art::Event& evt, uint64_t& eventNum,
                           tracker_data_block_list_t& trackerData);
 
-  void fillTrackerDMABlocks(raw_data_list_t& dataStream,
+  void fillTrackerDMABlocks(DTCLib::DTC_Event& currentEvent,
                             tracker_data_block_list_t const& trackerData);
 
-  void fillTrackerDataStream(raw_data_list_t& dataStream, tracker_data_block_t const& trkData);
+  void fillTrackerDataStream(DTCLib::DTC_Event& currentEvent, tracker_data_block_t const& trkData);
 
   void printTrackerData(std::vector<TrackerFullHitFormat> const& curDataBlock);
 
@@ -243,15 +262,14 @@ private:
   void fillCalorimeterHeaderDataPacket(const CaloDigi& SD, DataBlockHeader& HeaderData,
                                        uint64_t& EventNum);
 
-  void fillEmptyCalorimeterDataPacket(CaloDataPacket& caloData);
   void fillHeaderByteAndPacketCounts(calo_data_block_t& caloData);
 
   void processCalorimeterData(art::Event& evt, uint64_t& eventNum,
                               calo_data_block_list_t& caloDataBlocks);
 
-  void fillCalorimeterDMABlocks(raw_data_list_t& dataStream, calo_data_block_list_t& caloData);
+  void fillCalorimeterDMABlocks(DTCLib::DTC_Event& currentEvent, calo_data_block_list_t& caloData);
 
-  void fillCalorimeterDataStream(raw_data_list_t& dataStream, calo_data_block_t& caloData);
+  void fillCalorimeterDataStream(DTCLib::DTC_Event& currentEvent, calo_data_block_t& caloData);
 
   void printCalorimeterData(CaloDataPacket const& curDataBlock);
 
@@ -265,52 +283,11 @@ private:
   uint8_t compressCrvDigi(int adc);
   void fillCrvDataPacket(const CrvDigi& digi, CRVHitReadoutPacket& hit, int& globalRocID);
   void fillCrvHeaderPacket(CrvDataPacket& crvData, uint8_t globalRocID, uint64_t eventNum);
-  void fillCrvDMABlocks(raw_data_list_t& dataStream, const crv_data_block_list_t& crvData);
-  void fillCrvDataStream(raw_data_list_t& dataStream, const CrvDataPacket& crvData);
+  void fillCrvDMABlocks(DTCLib::DTC_Event& currentEvent, const crv_data_block_list_t& crvData);
+  void fillCrvDataStream(DTCLib::DTC_Event& currentEvent, const CrvDataPacket& crvData);
   void printCrvData(const CrvDataPacket& curDataBlock);
 
   //--------------------------------------------------------------------------------
-
-  void flushBuffer(raw_data_list_t& buffers);
-  void closeDataBuffer(raw_data_list_t& dataStream, bool openNew = true) {
-    uint64_t sz = dataStream.back().second;
-    if (_diagLevel > 3) {
-      std::cout << "[closeDataBuffer] 1) sz = " << sz << std::endl;
-      std::cout << "[closeDataBuffer] 1a) sz = " << dataStream.back().second << std::endl;
-    }
-    if (sz < 48) {
-      if (_diagLevel > 3) {
-        std::cout << "[closeDataBuffer] dataStream.back().first = " << dataStream.back().first
-                  << std::endl;
-        std::cout << "[closeDataBuffer] dataStream.back().first[sz] = "
-                  << dataStream.back().first[sz] << std::endl;
-        std::cout << "[closeDataBuffer] &dataStream.back().first[sz] = "
-                  << &dataStream.back().first[sz] << std::endl;
-      }
-      bzero(&dataStream.back().first[sz], 48 - sz);
-      sz = 48;
-    }
-    if (_diagLevel > 3) {
-      std::cout << "[closeDataBuffer] dataStream.size = " << dataStream.size() << std::endl;
-      if (dataStream.size() > 0) {
-        std::cout << "[closeDataBuffer] dataStream.back().second = " << dataStream.back().second
-                  << std::endl;
-      }
-      std::cout << "[closeDataBuffer] 2) sz = " << sz << std::endl;
-    }
-    uint64_t ex_sz = sz - 16;
-
-    memcpy(&dataStream.back().first, &sz, sizeof(uint64_t));
-    memcpy(&dataStream.back().first[8], &ex_sz, sizeof(uint64_t));
-
-    if (openNew) {
-      dataStream.push_back(std::pair<mu2e_databuff_t, size_t>());
-      dataStream.back().second = 16; // DMA Size words
-    }
-  }
-
-  std::vector<adc_t> generateDMABlockHeader(size_t theCount) const;
-  std::vector<adc_t> generateEventByteHeader(size_t theCount) const;
 };
 
 //--------------------------------------------------------------------------------
@@ -356,19 +333,27 @@ void ArtBinaryPacketsFromDigis::printHeader(DataBlockHeader const& headerDataBlo
 
 void ArtBinaryPacketsFromDigis::printTrackerData(std::vector<TrackerFullHitFormat> const& trkData) {
   printf("[ArtBinaryPacketsFromDigis::printTrackerData] START tracker-data print \n");
-  for (size_t i=0;i<trkData.size();i++){
+  for (size_t i = 0; i < trkData.size(); i++) {
     printf("[ArtBinaryPacketsFromDigis::printTrackerData] StrawIndex    : %i \n",
-        (int)trkData[i].mainPacket.StrawIndex);
-    printf("[ArtBinaryPacketsFromDigis::printTrackerData] TDC0		: %i \n", (int)trkData[i].mainPacket.TDC0());
-    printf("[ArtBinaryPacketsFromDigis::printTrackerData] TDC1		: %i \n", (int)trkData[i].mainPacket.TDC1());
-    printf("[ArtBinaryPacketsFromDigis::printTrackerData] TOT0		: %i \n", (int)trkData[i].mainPacket.TOT0);
-    printf("[ArtBinaryPacketsFromDigis::printTrackerData] TOT1		: %i \n", (int)trkData[i].mainPacket.TOT1);
-    printf("[ArtBinaryPacketsFromDigis::printTrackerData] PMP             : %i \n", (int)trkData[i].mainPacket.PMP);
-    printf("[ArtBinaryPacketsFromDigis::printTrackerData] ADC00         : %i \n", (int)trkData[i].mainPacket.ADC00);
-    printf("[ArtBinaryPacketsFromDigis::printTrackerData] ADC01  	: %i \n", (int)trkData[i].mainPacket.ADC01());
-    printf("[ArtBinaryPacketsFromDigis::printTrackerData] ADC02  	: %i \n", (int)trkData[i].mainPacket.ADC02);
+           (int)trkData[i].mainPacket.StrawIndex);
+    printf("[ArtBinaryPacketsFromDigis::printTrackerData] TDC0		: %i \n",
+           (int)trkData[i].mainPacket.TDC0());
+    printf("[ArtBinaryPacketsFromDigis::printTrackerData] TDC1		: %i \n",
+           (int)trkData[i].mainPacket.TDC1());
+    printf("[ArtBinaryPacketsFromDigis::printTrackerData] TOT0		: %i \n",
+           (int)trkData[i].mainPacket.TOT0);
+    printf("[ArtBinaryPacketsFromDigis::printTrackerData] TOT1		: %i \n",
+           (int)trkData[i].mainPacket.TOT1);
+    printf("[ArtBinaryPacketsFromDigis::printTrackerData] PMP             : %i \n",
+           (int)trkData[i].mainPacket.PMP);
+    printf("[ArtBinaryPacketsFromDigis::printTrackerData] ADC00         : %i \n",
+           (int)trkData[i].mainPacket.ADC00);
+    printf("[ArtBinaryPacketsFromDigis::printTrackerData] ADC01  	: %i \n",
+           (int)trkData[i].mainPacket.ADC01());
+    printf("[ArtBinaryPacketsFromDigis::printTrackerData] ADC02  	: %i \n",
+           (int)trkData[i].mainPacket.ADC02);
     printf("[ArtBinaryPacketsFromDigis::printTrackerData] ErrorFlags : %i \n",
-        (int)trkData[i].mainPacket.ErrorFlags);
+           (int)trkData[i].mainPacket.ErrorFlags);
   }
 }
 
@@ -427,55 +412,51 @@ void ArtBinaryPacketsFromDigis::printCrvData(CrvDataPacket const& crvData) {
   }
 }
 
-void ArtBinaryPacketsFromDigis::fillTrackerDataStream(raw_data_list_t& dataStream,
+void ArtBinaryPacketsFromDigis::fillTrackerDataStream(DTCLib::DTC_Event& currentEvent,
                                                       tracker_data_block_t const& trackerData) {
 
   auto sz = sizeof(DataBlockHeader);
   // check that the trkDataBlock is not empty
 
   if (trackerData.first.s.PacketCount > 0) {
-    sz += sizeof(TrackerDataPacket)*trackerData.first.s.PacketCount;
+    sz += sizeof(TrackerDataPacket) * trackerData.first.s.PacketCount;
   }
 
-  if (sz + dataStream.back().second >= sizeof(mu2e_databuff_t)) {
-    closeDataBuffer(dataStream);
+  uint8_t dtcID = trackerData.first.s.DTCID;
+  DTCLib::DTC_DataBlock thisBlock(sz);
+
+  if (thisBlock.blockPointer == nullptr) {
+    throw cet::exception("MemoryAllocationError")
+        << "Unable to allocate memory for Tracker block! sz=" << sz;
   }
 
-  if (_diagLevel > 3) {
-    std::cout << "[ArtBinaryPacketsFromDigis::fillTrackerDataStream] 1) "
-                 "sizeof(dataStream.back().second) = "
-              << sizeof(dataStream.back().second) << std::endl;
-    std::cout
-        << "[ArtBinaryPacketsFromDigis::fillTrackerDataStream] 1a) dataStream.back().second = "
-        << dataStream.back().second << std::endl;
-  }
-
-  auto pos = dataStream.back().second;
-  memcpy(&dataStream.back().first[pos], &trackerData.first, sizeof(DataBlockHeader));
+  auto pos = 0;
+  memcpy(thisBlock.allocBytes->data(), &trackerData.first, sizeof(DataBlockHeader));
   pos += sizeof(DataBlockHeader);
 
   if (trackerData.first.s.PacketCount > 0) {
-    if (sizeof(TrackerDataPacket) % 16 != 0) { // Make sure that TrackerDataPacket is an even number of DataPackets!
+    if (sizeof(TrackerDataPacket) % 16 !=
+        0) { // Make sure that TrackerDataPacket is an even number of DataPackets!
       throw cet::exception("Online-RECO") << "ArtBinaryPacketsFromDigis::fillTrackerDataStream : "
-        "sizeof(TrackerDataPacket) % 16 == 0"
-        << std::endl;
+                                             "sizeof(TrackerDataPacket) % 16 == 0"
+                                          << std::endl;
     }
-    for (size_t ipkt=0;ipkt<trackerData.second.size();ipkt++){
+    for (size_t ipkt = 0; ipkt < trackerData.second.size(); ipkt++) {
       auto ptr = &(trackerData.second[ipkt]);
       size_t num_packets = ptr->mainPacket.NumADCPackets;
-      memcpy(&dataStream.back().first[pos], &(ptr->mainPacket), sizeof(TrackerDataPacket));
+      memcpy(thisBlock.allocBytes->data() + pos, &(ptr->mainPacket), sizeof(TrackerDataPacket));
       pos += sizeof(TrackerDataPacket);
-      if (trackerData.second[ipkt].adcPacketVec.size() > 0){
-        memcpy(&dataStream.back().first[pos], &(ptr->adcPacketVec[0]), sizeof(TrackerADCPacket)*num_packets);
-        pos += sizeof(TrackerADCPacket)*num_packets;
+      if (trackerData.second[ipkt].adcPacketVec.size() > 0) {
+        memcpy(thisBlock.allocBytes->data() + pos, &(ptr->adcPacketVec[0]),
+               sizeof(TrackerADCPacket) * num_packets);
+        pos += sizeof(TrackerADCPacket) * num_packets;
       }
     }
   }
-
-  dataStream.back().second = pos;
+  putBlockInEvent(currentEvent, dtcID, thisBlock);
 }
 
-void ArtBinaryPacketsFromDigis::fillTrackerDMABlocks(raw_data_list_t& dataStream,
+void ArtBinaryPacketsFromDigis::fillTrackerDMABlocks(DTCLib::DTC_Event& currentEvent,
                                                      tracker_data_block_list_t const& trkData) {
 
   auto curDTCID = trkData.front().first.s.DTCID;
@@ -486,7 +467,7 @@ void ArtBinaryPacketsFromDigis::fillTrackerDMABlocks(raw_data_list_t& dataStream
   }
   for (auto& dataBlock : trkData) {
 
-    fillTrackerDataStream(dataStream, dataBlock);
+    fillTrackerDataStream(currentEvent, dataBlock);
 
     if (_diagLevel > 1) {
       if (dataBlock.first.s.DTCID != curDTCID || first) {
@@ -499,7 +480,9 @@ void ArtBinaryPacketsFromDigis::fillTrackerDMABlocks(raw_data_list_t& dataStream
       }
       if (dataBlock.first.s.PacketCount > 0) {
         printHeader(dataBlock.first);
-        printTrackerData(dataBlock.second);
+        if (_diagLevel > 2) {
+          printTrackerData(dataBlock.second);
+        }
       }
     }
 
@@ -513,6 +496,7 @@ void ArtBinaryPacketsFromDigis::fillEmptyHeaderDataPacket(DataBlockHeader& heade
                                                           uint64_t& EventNum, uint8_t& ROCId,
                                                           uint8_t& DTCId, uint8_t Subsys) {
 
+  bzero(&headerData.s, sizeof(DataBlockHeader));
   // Fill in the byte count field of the header packet
   // Word 0
   headerData.s.TransferByteCount = sizeof(DataBlockHeader);
@@ -544,8 +528,10 @@ void ArtBinaryPacketsFromDigis::fillEmptyHeaderDataPacket(DataBlockHeader& heade
   headerData.s.EventWindowMode = evbMode;
 }
 
-void ArtBinaryPacketsFromDigis::fillTrackerDataPacket(const StrawDigi& SD, const StrawDigiADCWaveform& SDADC,
-    TrackerFullHitFormat& TrkData, DataBlockHeader& headerData) {
+void ArtBinaryPacketsFromDigis::fillTrackerDataPacket(const StrawDigi& SD,
+                                                      const StrawDigiADCWaveform& SDADC,
+                                                      TrackerFullHitFormat& TrkData,
+                                                      DataBlockHeader& headerData) {
 
   TrkData.mainPacket.StrawIndex = SD.strawId().asUint16();
   TrkData.mainPacket.SetTDC0(SD.TDC(StrawEnd::cal));
@@ -554,22 +540,22 @@ void ArtBinaryPacketsFromDigis::fillTrackerDataPacket(const StrawDigi& SD, const
   TrkData.mainPacket.TOT1 = SD.TOT(StrawEnd::hv);
   TrkData.mainPacket.EWMCounter = headerData.s.ts10 & 0xF;
   TrkData.mainPacket.PMP = SD.PMP();
-  TrkData.mainPacket.ErrorFlags = 0; //FIXME
+  TrkData.mainPacket.ErrorFlags = 0; // FIXME
   TrkData.mainPacket.unused1 = 0;
-  
+
   headerData.s.TransferByteCount += sizeof(TrackerDataPacket);
   headerData.s.PacketCount++;
 
   TrkTypes::ADCWaveform const& theWaveform = SDADC.samples();
-  size_t numADCPackets = static_cast<size_t>((theWaveform.size() - 3)/12);
+  size_t numADCPackets = static_cast<size_t>((theWaveform.size() - 3) / 12);
   TrkData.mainPacket.NumADCPackets = numADCPackets;
-  for (size_t i=0;i<3;i++){
+  for (size_t i = 0; i < 3; i++) {
     TrkData.mainPacket.SetWaveform(i, theWaveform[i]);
   }
-  for (size_t i=0;i<numADCPackets;i++){
+  for (size_t i = 0; i < numADCPackets; i++) {
     TrackerADCPacket adcPacket;
-    for (size_t j=0;j<12;j++){
-      adcPacket.SetWaveform(j, theWaveform[3 + i*12 + j]);
+    for (size_t j = 0; j < 12; j++) {
+      adcPacket.SetWaveform(j, theWaveform[3 + i * 12 + j]);
     }
     TrkData.adcPacketVec.push_back(adcPacket);
     headerData.s.TransferByteCount += sizeof(TrackerADCPacket);
@@ -578,24 +564,17 @@ void ArtBinaryPacketsFromDigis::fillTrackerDataPacket(const StrawDigi& SD, const
 }
 
 ArtBinaryPacketsFromDigis::ArtBinaryPacketsFromDigis(const art::EDProducer::Table<Config>& config) :
-    art::EDProducer{config},
-    _generateTimestampTable(config().generateTimestampTable()),
-    _tableFile(config().tableFile()),
-    _timestampOffset(config().timestampOffset()),
-    _includeTracker(config().includeTracker()),
-    _includeCalorimeter(config().includeCalorimeter()),
-    _includeCrv(config().includeCrv()),
-    _includeDMAHeaders(config().includeDMAHeaders()),
-    _generateBinaryFile(config().generateBinaryFile()),
-    _outputFile(config().outputFile()),
-    _generateTextFile(config().generateTextFile()),
-    _diagLevel(config().diagLevel()),
-    _maxFullPrint(config().maxFullPrint()),
-    _sdtoken{consumes<mu2e::StrawDigiCollection>(config().sdtoken())},
+    art::EDProducer{config}, _generateTimestampTable(config().generateTimestampTable()),
+    _tableFile(config().tableFile()), _timestampOffset(config().timestampOffset()),
+    _includeTracker(config().includeTracker()), _includeCalorimeter(config().includeCalorimeter()),
+    _includeCrv(config().includeCrv()), _includeDMAHeaders(config().includeDMAHeaders()),
+    _generateBinaryFile(config().generateBinaryFile()), _outputFile(config().outputFile()),
+    _generateTextFile(config().generateTextFile()), _diagLevel(config().diagLevel()),
+    _maxFullPrint(config().maxFullPrint()), _sdtoken{consumes<mu2e::StrawDigiCollection>(
+                                                config().sdtoken())},
     _sdadctoken{consumes<mu2e::StrawDigiADCWaveformCollection>(config().sdtoken())},
     _cdtoken{consumes<mu2e::CaloDigiCollection>(config().cdtoken())},
-    _crvtoken{consumes<mu2e::CrvDigiCollection>(config().crvtoken())},
-    _numWordsWritten(0),
+    _crvtoken{consumes<mu2e::CrvDigiCollection>(config().crvtoken())}, _numWordsWritten(0),
     _numEventsProcessed(0) {
 
   produces<timestamp>();
@@ -608,7 +587,8 @@ ArtBinaryPacketsFromDigis::ArtBinaryPacketsFromDigis(const art::EDProducer::Tabl
 void ArtBinaryPacketsFromDigis::beginJob() {
 
   if (_diagLevel > 0) {
-    std::cout << "ArtBinaryPacketsFromDigis Diaglevel: " << _diagLevel << " " << _maxFullPrint << std::endl;
+    std::cout << "ArtBinaryPacketsFromDigis Diaglevel: " << _diagLevel << " " << _maxFullPrint
+              << std::endl;
   }
 }
 
@@ -648,15 +628,6 @@ void ArtBinaryPacketsFromDigis::endJob() {
   }
 }
 
-void ArtBinaryPacketsFromDigis::flushBuffer(raw_data_list_t& buffers) {
-  closeDataBuffer(buffers, false);
-  for (size_t idx = 0; idx < buffers.size(); idx++) {
-    outputStream.write(reinterpret_cast<const char*>(&(buffers[idx].first)), buffers[idx].second);
-    _numWordsWritten += buffers[idx].second;
-  }
-  outputStream << std::flush;
-}
-
 void ArtBinaryPacketsFromDigis::produce(art::Event& evt) {
 
   // unique_ptr<DataBlockCollection> dtcPackets(new DataBlockCollection);
@@ -684,28 +655,27 @@ void ArtBinaryPacketsFromDigis::produce(art::Event& evt) {
     processCrvData(evt, ts, crvData);
   }
 
-  // Break the DataBlocks into DMABlocks and add DMABlock headers
-  raw_data_list_t dataStream;
-  dataStream.push_back(std::pair<mu2e_databuff_t, size_t>());
-  dataStream.back().second = 16;
+  DTCLib::DTC_Event thisEvent;
+  thisEvent.SetEventWindowTag(DTCLib::DTC_EventWindowTag(ts));
 
   if (_includeTracker > 0) {
 
-    fillTrackerDMABlocks(dataStream, trackerData);
+    fillTrackerDMABlocks(thisEvent, trackerData);
   }
 
   if (_includeCalorimeter > 0) {
 
-    fillCalorimeterDMABlocks(dataStream, caloData);
+    fillCalorimeterDMABlocks(thisEvent, caloData);
   }
 
   if (_includeCrv > 0) {
-    fillCrvDMABlocks(dataStream, crvData);
+    fillCrvDMABlocks(thisEvent, crvData);
   }
 
   // Write all values, including superblock header and DMA header values, to output buffer
   if (_generateBinaryFile == 1) {
-    flushBuffer(dataStream);
+    thisEvent.WriteEvent(outputStream);
+    outputStream.flush();
   }
 
   _numEventsProcessed += 1;
@@ -788,9 +758,9 @@ void ArtBinaryPacketsFromDigis::processCalorimeterData(art::Event& evt, uint64_t
 //--------------------------------------------------------------------------------
 void ArtBinaryPacketsFromDigis::fillHeaderByteAndPacketCounts(calo_data_block_t& caloData) {
   caloData.first.s.TransferByteCount = 16 /*header packet*/ + sizeof(uint16_t) /* num hits */ +
-                             sizeof(CalorimeterBoardID) +
-                             (sizeof(uint16_t) + sizeof(CalorimeterHitReadoutPacket)) *
-                                 caloData.second.hitPacketVec.size();
+                                       sizeof(CalorimeterBoardID) +
+                                       (sizeof(uint16_t) + sizeof(CalorimeterHitReadoutPacket)) *
+                                           caloData.second.hitPacketVec.size();
 
   auto idxPos = sizeof(uint16_t) + sizeof(CalorimeterBoardID) +
                 sizeof(uint16_t) * caloData.second.hitPacketVec.size();
@@ -857,13 +827,14 @@ void ArtBinaryPacketsFromDigis::addCaloHitToCaloPacket(calo_data_block_t& caloDa
   caloDataBlock.first.s.TransferByteCount +=
       sizeof(uint16_t) * (caloHit.hitPacketVec[0].NumberOfSamples + 1) +
       sizeof(CalorimeterHitReadoutPacket);
-  caloDataBlock.first.s.PacketCount = std::ceil((caloDataBlock.first.s.TransferByteCount - 16) / 16);
+  caloDataBlock.first.s.PacketCount =
+      std::ceil((caloDataBlock.first.s.TransferByteCount - 16) / 16);
 }
 
 //--------------------------------------------------------------------------------
 //
 //--------------------------------------------------------------------------------
-void ArtBinaryPacketsFromDigis::fillCalorimeterDMABlocks(raw_data_list_t& dataStream,
+void ArtBinaryPacketsFromDigis::fillCalorimeterDMABlocks(DTCLib::DTC_Event& currentEvent,
                                                          calo_data_block_list_t& caloData) {
 
   bool first = true;
@@ -873,7 +844,7 @@ void ArtBinaryPacketsFromDigis::fillCalorimeterDMABlocks(raw_data_list_t& dataSt
     // Add the current DataBlock to the current SuperBlock
     // curDataBlock.setTimestamp(ts); // Overwrite the timestamp
 
-    fillCalorimeterDataStream(dataStream, caloData[dataBlockIdx]);
+    fillCalorimeterDataStream(currentEvent, caloData[dataBlockIdx]);
 
     if (_diagLevel > 1) {
       if (first || curDTCID != caloData[dataBlockIdx].first.s.DTCID) {
@@ -886,7 +857,10 @@ void ArtBinaryPacketsFromDigis::fillCalorimeterDMABlocks(raw_data_list_t& dataSt
       }
       if (caloData[dataBlockIdx].first.s.PacketCount > 0) {
         printHeader(caloData[dataBlockIdx].first);
-        printCalorimeterData(caloData[dataBlockIdx].second);
+        if (_diagLevel > 2) {
+
+          printCalorimeterData(caloData[dataBlockIdx].second);
+        }
       }
     }
 
@@ -896,7 +870,7 @@ void ArtBinaryPacketsFromDigis::fillCalorimeterDMABlocks(raw_data_list_t& dataSt
 //--------------------------------------------------------------------------------
 //  method to fill the datastream with the calorimeter packets
 //--------------------------------------------------------------------------------
-void ArtBinaryPacketsFromDigis::fillCalorimeterDataStream(raw_data_list_t& dataStream,
+void ArtBinaryPacketsFromDigis::fillCalorimeterDataStream(DTCLib::DTC_Event& currentEvent,
                                                           calo_data_block_t& caloData) {
 
   size_t sz = sizeof(DataBlockHeader);
@@ -917,52 +891,52 @@ void ArtBinaryPacketsFromDigis::fillCalorimeterDataStream(raw_data_list_t& dataS
         << "ArtBinaryPacketsFromDigis::fillCalorimeterDataStream : sz < sizeof(mu2e_databuff_t)"
         << std::endl;
   }
-  if (dataStream.back().second + sz >= sizeof(mu2e_databuff_t)) {
-    closeDataBuffer(dataStream);
-  }
-
   if (sz != caloData.first.s.TransferByteCount) {
     throw cet::exception("Online-RECO")
         << "ArtBinaryPacketsFromDigis::fillCalorimeterDataStream : sz == caloData.first.ByteCount"
         << std::endl;
   }
 
-  auto pos = dataStream.back().second;
-  memcpy(&dataStream.back().first[pos], &caloData.first, sizeof(DataBlockHeader));
+  uint8_t dtcID = caloData.first.s.DTCID;
+  DTCLib::DTC_DataBlock thisBlock(sz);
+
+  if (thisBlock.blockPointer == nullptr) {
+    throw cet::exception("MemoryAllocationError")
+        << "Unable to allocate memory for Tracker block! sz=" << sz;
+  }
+
+  auto pos = 0;
+  memcpy(thisBlock.allocBytes->data(), &caloData.first, sizeof(DataBlockHeader));
   pos += sizeof(DataBlockHeader);
 
   if (caloData.second.hitPacketVec.size() != 0) {
-    // memcpy(&dataStream.back().first[pos], &(caloData.second.dataPacket),
-    // sizeof(CalorimeterDataPacket));//HERE!
-    //      pos += sizeof(CalorimeterDataPacket);
 
     uint16_t hitCount = caloData.second.hitPacketVec.size();
-    memcpy(&dataStream.back().first[pos], &hitCount, sizeof(uint16_t));
+    memcpy(thisBlock.allocBytes->data() + pos, &hitCount, sizeof(uint16_t));
     pos += sizeof(uint16_t);
 
-    memcpy(&dataStream.back().first[pos], &caloData.second.hitIndex[0],
+    memcpy(thisBlock.allocBytes->data() + pos, &caloData.second.hitIndex[0],
            sizeof(uint16_t) * caloData.second.hitIndex.size());
     pos += sizeof(uint16_t) * caloData.second.hitIndex.size();
 
-    memcpy(&dataStream.back().first[pos], &(caloData.second.boardID), sizeof(CalorimeterBoardID));
+    memcpy(thisBlock.allocBytes->data() + pos, &(caloData.second.boardID),
+           sizeof(CalorimeterBoardID));
     pos += sizeof(CalorimeterBoardID);
 
     for (size_t i = 0; i < caloData.second.hitPacketVec.size(); ++i) {
 
-      memcpy(&dataStream.back().first[pos], &(caloData.second.hitPacketVec[i]),
+      memcpy(thisBlock.allocBytes->data() + pos, &(caloData.second.hitPacketVec[i]),
              sizeof(CalorimeterHitReadoutPacket));
       pos += sizeof(CalorimeterHitReadoutPacket);
 
       auto waveform_size = sizeof(uint16_t) * (caloData.second.waveformVec[i].size());
-      memcpy(&dataStream.back().first[pos], &(caloData.second.waveformVec[i][0]), waveform_size);
+      memcpy(thisBlock.allocBytes->data() + pos, &(caloData.second.waveformVec[i][0]),
+             waveform_size);
       pos += waveform_size;
     } // end loop over the calorimeterHitReadoutPacketVector
   }
 
-  while (pos % 16 != 0)
-    pos++;
-
-  dataStream.back().second = pos;
+  putBlockInEvent(currentEvent, dtcID, thisBlock);
 }
 
 //--------------------------------------------------------------------------------
@@ -971,6 +945,7 @@ void ArtBinaryPacketsFromDigis::fillCalorimeterDataStream(raw_data_list_t& dataS
 void ArtBinaryPacketsFromDigis::fillCalorimeterHeaderDataPacket(const CaloDigi& CD,
                                                                 DataBlockHeader& HeaderData,
                                                                 uint64_t& EventNum) {
+  bzero(&HeaderData.s, sizeof(DataBlockHeader));
   // Word 0
   adc_t nBytes =
       sizeof(DataBlockHeader) + sizeof(CalorimeterDataPacket) +
@@ -1028,7 +1003,8 @@ void ArtBinaryPacketsFromDigis::processTrackerData(art::Event& evt, uint64_t& ev
       DataBlockHeader headerData;
       fillEmptyHeaderDataPacket(headerData, eventNum, rocID, dtcID, DTCLib::DTC_Subsystem_Tracker);
       std::vector<TrackerFullHitFormat> rocData;
-      trackerData.push_back(std::pair<DataBlockHeader, std::vector<TrackerFullHitFormat>>(headerData, rocData));
+      trackerData.push_back(
+          std::pair<DataBlockHeader, std::vector<TrackerFullHitFormat>>(headerData, rocData));
 
       // Find all hits for this event coming from the specified DTC/ROC combination
       for (size_t curHitIdx = 0; curHitIdx < hits_SD.size(); curHitIdx++) {
@@ -1042,9 +1018,10 @@ void ArtBinaryPacketsFromDigis::processTrackerData(art::Event& evt, uint64_t& ev
         //    uint8_t localROCID = panel;
         uint8_t globalROCID = (plane * 6) + panel;
         uint8_t thisDTCID = static_cast<uint8_t>(globalROCID / number_of_rocs_per_dtc);
-        if (panel == rocID && thisDTCID == dtcID){
+        if (panel == rocID && thisDTCID == dtcID) {
           trackerData.back().second.emplace_back();
-          fillTrackerDataPacket(SD, SDADC, trackerData.back().second.back(), trackerData.back().first);
+          fillTrackerDataPacket(SD, SDADC, trackerData.back().second.back(),
+                                trackerData.back().first);
         }
       }
     } // Done looping over the ROCs in a given DTC
@@ -1210,7 +1187,7 @@ void ArtBinaryPacketsFromDigis::fillCrvHeaderPacket(CrvDataPacket& crvData, uint
 //--------------------------------------------------------------------------------
 //
 //--------------------------------------------------------------------------------
-void ArtBinaryPacketsFromDigis::fillCrvDMABlocks(raw_data_list_t& dataStream,
+void ArtBinaryPacketsFromDigis::fillCrvDMABlocks(DTCLib::DTC_Event& currentEvent,
                                                  const crv_data_block_list_t& crvDataBlocks) {
   // Loop over all ROCs
   uint8_t currentDTCID = 0;
@@ -1218,7 +1195,7 @@ void ArtBinaryPacketsFromDigis::fillCrvDMABlocks(raw_data_list_t& dataStream,
     // Add the current DataBlock to the current SuperBlock
     // curDataBlock.setTimestamp(ts); // Overwrite the timestamp
     const CrvDataPacket& crvData = crvDataBlocks.at(globalRocID);
-    fillCrvDataStream(dataStream, crvData);
+    fillCrvDataStream(currentEvent, crvData);
 
     if (_diagLevel > 1) {
       if (globalRocID == 0 || currentDTCID != crvData.header.s.DTCID) {
@@ -1240,33 +1217,35 @@ void ArtBinaryPacketsFromDigis::fillCrvDMABlocks(raw_data_list_t& dataStream,
 //--------------------------------------------------------------------------------
 //  method to fill the datastream with the crv packets
 //--------------------------------------------------------------------------------
-void ArtBinaryPacketsFromDigis::fillCrvDataStream(raw_data_list_t& dataStream,
+void ArtBinaryPacketsFromDigis::fillCrvDataStream(DTCLib::DTC_Event& currentEvent,
                                                   const CrvDataPacket& crvData) {
   size_t sz =
       crvData.header.s.TransferByteCount; // byte count was increased to get full chunks of 16 bytes
 
   assert(sz < sizeof(mu2e_databuff_t));
-  if (dataStream.back().second + sz >= sizeof(mu2e_databuff_t)) {
-    closeDataBuffer(dataStream);
+
+  uint8_t dtcID = crvData.header.s.DTCID;
+  DTCLib::DTC_DataBlock thisBlock(sz);
+
+  if (thisBlock.blockPointer == nullptr) {
+    throw cet::exception("MemoryAllocationError")
+        << "Unable to allocate memory for CRV block! sz=" << sz;
   }
 
-  auto pos = dataStream.back().second;
-  memcpy(&dataStream.back().first[pos], &crvData.header, sizeof(DataBlockHeader));
+  auto pos = 0;
+  memcpy(thisBlock.allocBytes->data(), &crvData.header, sizeof(DataBlockHeader));
   pos += sizeof(DataBlockHeader);
-  memcpy(&dataStream.back().first[pos], &crvData.rocStatus, sizeof(CRVROCStatusPacket));
+  memcpy(thisBlock.allocBytes->data() + pos, &crvData.rocStatus, sizeof(CRVROCStatusPacket));
   pos += sizeof(CRVROCStatusPacket);
 
   uint16_t hitCount = crvData.hits.size();
 
   for (size_t i = 0; i < hitCount; i++) {
-    memcpy(&dataStream.back().first[pos], &(crvData.hits[i]), sizeof(CRVHitReadoutPacket));
+    memcpy(thisBlock.allocBytes->data() + pos, &(crvData.hits[i]), sizeof(CRVHitReadoutPacket));
     pos += sizeof(CRVHitReadoutPacket);
   }
 
-  while (pos % 16 != 0)
-    pos++; // move forward to get full chunks of 16 bytes
-
-  dataStream.back().second = pos;
+  putBlockInEvent(currentEvent, dtcID, thisBlock);
 }
 
 } // namespace mu2e
