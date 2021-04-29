@@ -207,7 +207,6 @@ namespace mu2e {
   void CaloDigiMaker::generateNoise(std::vector<double>& waveform, int iRO, 
                                     const ConditionsHandle<CalorimeterCalibrations>& calorimeterCalibrations)
   {     
-
        // First, find the ranges in the waveform with non-zero bins. 
        // Since we add padding, they might overlap so we need to be deal with it       
        double minAmplitude = 0.1*calorimeterCalibrations->MeV2ADC(iRO);
@@ -274,7 +273,7 @@ namespace mu2e {
 	    int sampleStop  = hitStops[ihit];
 	    int t0          = int(sampleStart*digiSampling_+ blindTime_);
 
-	    auto it1 = wf.begin()+sampleStart, it2 = wf.begin()+sampleStop+1;
+	    auto it1 = wf.begin()+sampleStart, it2 = wf.begin()+sampleStop;
             auto peakPosition = std::max_element(it1,it2) - it1;
 	    if (diagLevel_ >2) std::cout<<"[CaloDigiMaker] Start=" << sampleStart << " Stop=" << sampleStop << " peak in position " << peakPosition << std::endl; 
 

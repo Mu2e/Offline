@@ -16,100 +16,101 @@
 
 #include <iostream>
 #include <string>
-
-
-#include <iostream>
-#include <string>
    
+
 namespace mu2e {
 
   class FastCaloRecoDigiFromDigi : public art::EDProducer {
 
-  	public:
-		explicit FastCaloRecoDigiFromDigi(fhicl::ParameterSet const& pset) :
-		art::EDProducer{pset}, caloDigisToken_{consumes<CaloDigiCollection>(pset.get<std::string>("caloDigiModuleLabel"))},
-		digiSampling_       (pset.get<double>("digiSampling")),
-		minDigiE_   	    (pset.get<double> ("minDigiE")),
-		shiftTime_          (pset.get<double> ("shiftTime")),
-		diagLevel_          (pset.get<int>    ("diagLevel",0)),
-		pbtTag_(pset.get<art::InputTag>("ProtonBunchTimeLabel"))
-	     	{
-			consumes<ProtonBunchTime>(pbtTag_);
-	      		produces<CaloRecoDigiCollection>();
-		}
+      public:
+          struct Config 
+          {
+              using Name    = fhicl::Name;
+              using Comment = fhicl::Comment;
+              fhicl::Atom<art::InputTag> caloShowerCollection  { Name("caloDigiCollection"),     Comment("CaloDigi collection name") }; 
+              fhicl::Atom<art::InputTag> ProtonBunchTime       { Name("ProtonBunchTime"),        Comment("Proton bunch time collection name") }; 
+              fhicl::Atom<double>        digiSampling          { Name("digiSampling"),           Comment("Digitization time sampling") }; 
+              fhicl::Atom<double>        minDigiE              { Name("minDigiE"),               Comment("Minimum hit energy to digitize") }; 
+              fhicl::Atom<double>        shiftTime             { Name("shiftTime"),              Comment("Time correction between peak and start time ") }; 
+              fhicl::Atom<int>           diagLevel             { Name("diagLevel"),              Comment("Diag Level"),0 };
+          };
+	  
+          explicit FastCaloRecoDigiFromDigi(const art::EDProducer::Table<Config>& config) :
+             EDProducer{config},
+             caloDigisToken_    {consumes<CaloDigiCollection>(config().caloShowerCollection())},
+             pbtToken_          {consumes<ProtonBunchTime>   (config().ProtonBunchTime())},
+             digiSampling_      (config().digiSampling()),
+             minDigiE_          (config().minDigiE()),
+             shiftTime_         (config().shiftTime()),
+             diagLevel_         (config().diagLevel())
+          {
+              produces<CaloRecoDigiCollection>();
+          }
 
-    		void produce(art::Event& e) override;
 
-	private:
+          void produce(art::Event& e) override;
 
-		art::ProductToken<CaloDigiCollection> const caloDigisToken_;
-		double const digiSampling_;
-		double 	 minDigiE_ ;
-		double 	 shiftTime_ ;
-		int      diagLevel_;
-   		art::InputTag pbtTag_;// name of the module that makes eventwindowmarkers
-   
-		void extractRecoDigi(art::ValidHandle<CaloDigiCollection> const& caloDigis, CaloRecoDigiCollection& recoCaloHits, double const& pbtime);
 
-	};
+      private:
+	  void extractRecoDigi(const art::ValidHandle<CaloDigiCollection>& caloDigis, CaloRecoDigiCollection& recoCaloHits, double pbtime);
 
-	void FastCaloRecoDigiFromDigi::produce(art::Event& event)
-  	{
+	  art::ProductToken<CaloDigiCollection> caloDigisToken_;
+	  art::ProductToken<ProtonBunchTime>    pbtToken_;
+	  double digiSampling_;
+	  double minDigiE_ ;
+	  double shiftTime_ ;
+	  int    diagLevel_;
+      };
 
-		if (diagLevel_ > 0) std::cout<<"[FastRecoDigiFromDigi::produce] begin"<<std::endl;
 
-		auto const& caloDigisH = event.getValidHandle(caloDigisToken_);
-		auto recoCaloDigiColl = std::make_unique<CaloRecoDigiCollection>();
-		
-		double pbtime = 0;
-		art::Handle<ProtonBunchTime> pbtHandle;
-		if (event.getByLabel(pbtTag_, pbtHandle)){
-			const ProtonBunchTime& pbt(*pbtHandle);
-			pbtime = pbt.pbtime_;
-		}
 
-		extractRecoDigi(caloDigisH, *recoCaloDigiColl, pbtime);
+      void FastCaloRecoDigiFromDigi::produce(art::Event& event)
+      {
+	  if (diagLevel_ > 0) std::cout<<"[FastRecoDigiFromDigi::produce] begin"<<std::endl;
 
-		if ( diagLevel_ > 0 )std::cout<<"[FastCaloRecoDigiFromDigi::produce] extracted "<<recoCaloDigiColl->size()<<" RecoDigis"<<std::endl;
-		
+	  const auto& caloDigisH = event.getValidHandle(caloDigisToken_);
+	  auto recoCaloDigiColl = std::make_unique<CaloRecoDigiCollection>();
 
-		event.put(std::move(recoCaloDigiColl));
+	  const auto& pbtH = event.getValidHandle(pbtToken_);
+          const ProtonBunchTime& pbt(*pbtH);
+	  double pbtime = pbt.pbtime_;
 
-		if (diagLevel_ > 0) std::cout<<"[FastRecoDigiFromDigi::produce] end"<<std::endl;
+	  extractRecoDigi(caloDigisH, *recoCaloDigiColl, pbtime);
+	  if ( diagLevel_ > 0 )std::cout<<"[FastCaloRecoDigiFromDigi::produce] extracted "<<recoCaloDigiColl->size()<<" RecoDigis"<<std::endl;
 
-		return;
-	}
+	  event.put(std::move(recoCaloDigiColl));
+	  if (diagLevel_ > 0) std::cout<<"[FastRecoDigiFromDigi::produce] end"<<std::endl;
 
-	void FastCaloRecoDigiFromDigi::extractRecoDigi(art::ValidHandle<CaloDigiCollection> const& caloDigisHandle, CaloRecoDigiCollection &recoCaloHits, double const& protonBunchTime)
-  	{
-		ConditionsHandle<CalorimeterCalibrations> calorimeterCalibrations("ignored");
-		auto const& caloDigis = *caloDigisHandle;
-		CaloDigi const* base = &caloDigis.front(); 
+	  return;
+      }
 
-		for (const auto& caloDigi : caloDigis)
-		{
- 			int    roId     = caloDigi.SiPMID();
-			double t0       = caloDigi.t0();
-				// TODO:+ calorimeterCalibrations->timeOffset(roId);
-			double adc2MeV  = calorimeterCalibrations->Peak2MeV(roId);
-			size_t index = &caloDigi - base;
-			art::Ptr<CaloDigi> caloDigiPtr(caloDigisHandle, index);
+      void FastCaloRecoDigiFromDigi::extractRecoDigi(const art::ValidHandle<CaloDigiCollection>& caloDigisHandle, CaloRecoDigiCollection &recoCaloHits, double protonBunchTime)
+      {
+	  ConditionsHandle<CalorimeterCalibrations> calorimeterCalibrations("ignored");
+	  auto const& caloDigis = *caloDigisHandle;
+	  CaloDigi const* base  = &caloDigis.front(); 
 
-			double time = t0 + (caloDigi.peakpos()+0.5)*digiSampling_ - protonBunchTime - shiftTime_; 
-			double eDep = (caloDigi.waveform().at(caloDigi.peakpos()))*adc2MeV; 
-			if(eDep <  minDigiE_) {continue;}
-			double eDepErr =  0*adc2MeV;
-			double timeErr = 0;
+	  for (const auto& caloDigi : caloDigis)
+	  {
+ 	      int    roId     = caloDigi.SiPMID();
+	      double t0       = caloDigi.t0();
+		      // TODO:+ calorimeterCalibrations->timeOffset(roId);
+	      double adc2MeV  = calorimeterCalibrations->Peak2MeV(roId);
+	      size_t index = &caloDigi - base;
+	      art::Ptr<CaloDigi> caloDigiPtr(caloDigisHandle, index);
 
-			if (diagLevel_ > 1)
-			  {
-			    std::cout<<"[FastRecoDigiFromDigi::extractAmplitude] extracted Digi with roId =  "<<roId<<"  eDep = "<<eDep<<" time = " <<time<<std::endl;
-			  }
+	      double time = t0 + (caloDigi.peakpos()+0.5)*digiSampling_ - protonBunchTime - shiftTime_; 
+	      double eDep = (caloDigi.waveform().at(caloDigi.peakpos()))*adc2MeV; 
+	      if (eDep <  minDigiE_) continue;
+	      double eDepErr = 0*adc2MeV;
+	      double timeErr = 0;
 
-			recoCaloHits.emplace_back(CaloRecoDigi(caloDigiPtr, eDep,eDepErr,time,timeErr,0,1,false));
-			
-		}
-	}
+	      if (diagLevel_ > 1)
+		  std::cout<<"[FastRecoDigiFromDigi::extractAmplitude] extracted Digi with roId =  "<<roId<<"  eDep = "<<eDep<<" time = " <<time<<std::endl;
+
+	      recoCaloHits.emplace_back(CaloRecoDigi(caloDigiPtr, eDep,eDepErr,time,timeErr,0,1,false));
+	  }
+      }
 }
 
 DEFINE_ART_MODULE(mu2e::FastCaloRecoDigiFromDigi);
