@@ -15,9 +15,14 @@
 #include "ConfigTools/inc/SimpleConfig.hh"
 #include "Mu2eG4Helper/inc/AntiLeakRegistry.hh"
 #include "Mu2eG4Helper/inc/Mu2eG4Helper.hh"
+#include "GeometryService/inc/GeomHandle.hh"
+#include "GeometryService/inc/GeometryService.hh"
+#include "GeometryService/inc/G4GeometryOptions.hh"
 #include "Mu2eG4/inc/findMaterialOrThrow.hh"
 #include "Mu2eG4/inc/finishNesting.hh"
 #include "Mu2eG4/inc/checkForOverlaps.hh"
+#include "PTMonGeom/inc/PTMon.hh"
+#include "PTMonGeom/inc/PTMonPWC.hh"
 
 // G4 inludes
 #include "G4Material.hh"
@@ -38,7 +43,10 @@ using namespace std;
 
 namespace mu2e {
 
-  void insertOuterFrame(VolumeInfo const& container, PTMonPWC* pwc) {
+  void insertOuterFrame(VolumeInfo const& container, 
+                        PTMonPWC* pwc, 
+                        bool const doSurfaceCheck,
+                        int const verbosity) {
     double frameInnerMargin = 0.001;
     G4Box *outerBox = new G4Box("pwcFrameOuter", 
                 pwc->frameWidth()/2., 
@@ -64,10 +72,17 @@ namespace mu2e {
           G4Colour::Blue(), 
           "PTM");
 
+    if (doSurfaceCheck) checkForOverlaps( frameInfo.physical, _config, verbosity>0);
+
   } // insertOuterFrame
 
-  void insertWindows(G4LogicalVolume* windowLogical, VolumeInfo const& container, PTMonPWC* pwc) {
+  void insertWindows(G4LogicalVolume* windowLogical, 
+                     VolumeInfo const& container, 
+                     PTMonPWC* pwc, 
+                     bool const doSurfaceCheck,
+                     int const verbosity) {
     std::string ground1Name = "pTargetMonGroundIn"+pwc->nameSuffix();
+    G4VPhysicalVolume* ground1Phys =
     new G4PVPlacement(nullptr,
               G4ThreeVector(0.0, 0.0, pwc->ground1Z()),
               windowLogical,
@@ -77,6 +92,7 @@ namespace mu2e {
               0,
               false);
     std::string hv1Name = "pTargetMonHV1"+pwc->nameSuffix();
+    G4VPhysicalVolume* hv1Phys =
     new G4PVPlacement(nullptr,
               G4ThreeVector(0.0, 0.0, pwc->hv1Z()),
               windowLogical,
@@ -86,6 +102,7 @@ namespace mu2e {
               0,
               false);
     std::string hv2Name = "pTargetMonHV2"+pwc->nameSuffix();
+    G4VPhysicalVolume* hv2Phys =
     new G4PVPlacement(nullptr,
               G4ThreeVector(0.0, 0.0, pwc->hv2Z()),
               windowLogical,
@@ -95,6 +112,7 @@ namespace mu2e {
               0,
               false);
     std::string hv3Name = "pTargetMonHV3"+pwc->nameSuffix();
+    G4VPhysicalVolume* hv3Phys =
     new G4PVPlacement(nullptr,
               G4ThreeVector(0.0, 0.0, pwc->hv3Z()),
               windowLogical,
@@ -104,6 +122,7 @@ namespace mu2e {
               0,
               false);
     std::string ground2Name = "pTargetMonGroundOut"+pwc->nameSuffix();
+    G4VPhysicalVolume* ground2Phys =
     new G4PVPlacement(nullptr,
               G4ThreeVector(0.0, 0.0, pwc->ground2Z()),
               windowLogical,
@@ -113,13 +132,27 @@ namespace mu2e {
               0,
               false);
 
+    if (doSurfaceCheck){
+      checkForOverlaps( ground1Phys, _config, verbosity>0);
+      checkForOverlaps( hv1Phys, _config, verbosity>0);
+      checkForOverlaps( hv2Phys, _config, verbosity>0);
+      checkForOverlaps( hv3Phys, _config, verbosity>0);
+      checkForOverlaps( ground2Phys, _config, verbosity>0);
+    }
+    
+
   } // insertWindows
 
-  void insertOuterGasBlocks(VolumeInfo const& container, PTMonPWC* pwc, G4Material* gasMaterial) {
+  void insertOuterGasBlocks(VolumeInfo const& container, 
+                            PTMonPWC* pwc, 
+                            G4Material* gasMaterial, 
+                            bool const doSurfaceCheck,
+                            int const verbosity) {
     // between ground plane 1 and HV plane 1
     std::string gasName1 = "pTargetMonGas1";
     gasName1.append(pwc->nameSuffix());
     double gasZ1 = -4.5*pwc->frameThick();
+    VolumeInfo gas1Info =
     nestBox (gasName1,
              *(pwc->gasSection1()),
              gasMaterial,
@@ -140,6 +173,7 @@ namespace mu2e {
     gasName4.append(pwc->nameSuffix());
     double gasHalfLength4 = pwc->gasSection4()->getZhalfLength();
     double gasZ4 = 5.5*pwc->frameThick();
+    VolumeInfo gas4Info =
     nestBox (gasName4,
              *(pwc->gasSection4()),
              gasMaterial,
@@ -154,9 +188,19 @@ namespace mu2e {
              true, // placePV
              false); // doSurfaceCheck
 
+    if (doSurfaceCheck) {
+      checkForOverlaps( gas1Info.physical, _config, verbosity>0);
+      checkForOverlaps( gas4Info.physical, _config, verbosity>0);
+    }
+
   } // insertOuterGasBlocks
 
-  void insertVerticalProfileWires(VolumeInfo const& container, PTMonPWC* pwc, G4Material* gasMaterial, std::string const& wireNameSuffix) {
+  void insertVerticalProfileWires(VolumeInfo const& container, 
+                                  PTMonPWC* pwc, 
+                                  G4Material* gasMaterial, 
+                                  std::string const& wireNameSuffix, 
+                                  bool const doSurfaceCheck,
+                                  int const verbosity) {
     // In the real detector wires run HORIZONTALLY, so as to measure the 
     // VERTICAL profile.
     // G4 geometry currently contains no actual wires.
@@ -178,6 +222,7 @@ namespace mu2e {
       // wire numbering such that the lowest-numered wire is 
       // on the bottom
       double gasY2 = pwc->vertWireYPos()[i];
+      G4VPhysicalVolume* wireGas =
       new G4PVPlacement(nullptr,
                 G4ThreeVector(0.0, gasY2, pwc->vertWireZ()),
                 vertWireLogical,
@@ -186,11 +231,17 @@ namespace mu2e {
                 false,
                 wireNum,
                 false);
+      if (doSurfaceCheck) checkForOverlaps( wireGas, _config, verbosity>0);
     }
 
   } // insertVerticalProfileWires
 
-  void insertHorizontalProfileWires(VolumeInfo const& container, PTMonPWC* pwc, G4Material* gasMaterial, std::string const& wireNameSuffix) {
+  void insertHorizontalProfileWires(VolumeInfo const& container, 
+                                    PTMonPWC* pwc, 
+                                    G4Material* gasMaterial, 
+                                    std::string const& wireNameSuffix, 
+                                    bool const doSurfaceCheck,
+                                    int const verbosity) {
     // In the real detector wires run VERTICALLY so as to measure the 
     // HORIZONTAL profile.
     // G4 geometry currently contains no actual wires.
@@ -212,6 +263,7 @@ namespace mu2e {
       // wire numbering such that the lowest-numered wire is 
       // on the bottom
       double gasX3 = pwc->horizWireXPos()[i];
+      G4VPhysicalVolume* wireGas =
       new G4PVPlacement(nullptr,
                 G4ThreeVector(gasX3, 0.0, pwc->horizWireZ()),
                 horizWireLogical,
@@ -220,11 +272,12 @@ namespace mu2e {
                 false,
                 wireNum,
                 false);
+      if (doSurfaceCheck) checkForOverlaps( wireGas, _config, verbosity>0);
     }
 
   } // insertHorizontalProfileWires
 
-  void constructTargetHallPWC(VolumeInfo const& motherVolume, PTMonPWC* pwc) {
+  void constructTargetHallPWC(VolumeInfo const& motherVolume, PTMonPWC* pwc, bool const doSurfaceCheck, int const verbosity) {
     
     // "container": box representing the location of the individual PWC
     G4Material* containerMaterial = motherVolume.logical->GetMaterial();
@@ -246,6 +299,7 @@ namespace mu2e {
               0,
               G4Colour::Green(),
               "PTM");
+    if (doSurfaceCheck) checkForOverlaps( pwcContainerInfo.physical, _config, verbosity>0);
 
     // G10 frame of the PWC, made up of two endplates, plus
     // 13 interior boards that hold the windows and wires.
@@ -281,6 +335,11 @@ namespace mu2e {
 
 
   void constructProductionTargetMon(VolumeInfo const& parent, SimpleConfig const& _config) {
+    const int verbosity = _config.getInt("pTargetMon.verbosity",1);
+    const auto& geomOptions = art::ServiceHandle<GeometryService>()->geomOptions();
+    geomOptions->loadEntry( _config, "pTargetMon", "pTargetMon" );
+    const bool doSurfaceCheck = geomOptions->doSurfaceCheck("pTargetMon");
+
     GeomHandle<PTMon> ptmon;
     double containerMargin = 0.05;
 
@@ -306,7 +365,7 @@ namespace mu2e {
                 0,
                 G4Colour::Green(),
                 "PTM");
-    checkForOverlaps( pTargetMonContainer.physical, _config, true);
+    if (doSurfaceCheck) checkForOverlaps( pTargetMonContainer.physical, _config, verbosity>0);
 
     // add the first PWC to the mother volume
     constructTargetHallPWC(pTargetMonContainer, ptmon->nearPWC());

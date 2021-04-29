@@ -2,6 +2,10 @@
 // A geometry file for the downstream production target scanning detectors.
 
 int pTargetMonVersion = 1;
+
+int pTargetMon.verbosity = 1; // TODO should prob change to 0 before merging
+bool pTargetMon.surfaceCheck = true;
+
 //double pTargetMon_height = 196.85; // mm
 //double pTargetMon_width = 196.85;
 double pTargetMon_height = 1196.85; // TEMPORARY
