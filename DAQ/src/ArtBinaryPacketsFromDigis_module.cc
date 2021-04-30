@@ -222,7 +222,7 @@ private:
 
   void putBlockInEvent(DTCLib::DTC_Event& currentEvent, uint8_t dtcID, DTCLib::DTC_Subsystem subsys,
                        DTCLib::DTC_DataBlock thisBlock) {
-    auto subEvt = currentEvent.GetSubEventByDTCID(dtcID);
+    auto subEvt = currentEvent.GetSubEventByDTCID(dtcID, subsys);
     if (subEvt == nullptr) {
       DTCLib::DTC_SubEvent newSubEvt;
       newSubEvt.SetEventWindowTag(currentEvent.GetEventWindowTag());
