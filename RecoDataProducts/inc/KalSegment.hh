@@ -32,6 +32,7 @@ namespace mu2e {
     double mom() const { return _pstate.momentum(); }
     double momerr() const { return sqrt(_pstate.momentumVariance()); }
     KinKal::VEC3 momentum3() const { return _pstate.momentum3(); }
+    KinKal::VEC3 velocity() const { return _pstate.velocity(); }
     KinKal::VEC3 position3() const { return _pstate.position3(); }
  //   void mom(float fltlen, XYZVec& momvec) const { helix().direction(fltlen,momvec); momvec *= mom(); } // momentum as a function of local flightlength
     // convert content to a LoopHelix

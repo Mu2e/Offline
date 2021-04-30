@@ -99,8 +99,9 @@ Reconstruction : {
 	@table::Mu2eKinKal.producers.KKDeMSeedFit.ModuleSettings
 	HelixSeedCollections : [ "MHDeM" ]
         ComboHitCollection : "makeSH"
-        StrawHitFlagCollection : "FlagBkgHitss:StrawHits"
-        PrintLevel : 0
+        StrawHitFlagCollection : "FlagBkgHits:StrawHits"
+	CaloClusterCollection : "CaloClusterMaker"
+	PrintLevel : 0
       }
     }
     KKSDeP : {
@@ -109,7 +110,8 @@ Reconstruction : {
 	@table::Mu2eKinKal.producers.KKDePSeedFit.ModuleSettings
 	HelixSeedCollections : [ "MHDeP" ]
         ComboHitCollection : "makeSH"
-        StrawHitFlagCollection : "FlagBkgHitss:StrawHits"
+        StrawHitFlagCollection : "FlagBkgHits:StrawHits"
+	CaloClusterCollection : "CaloClusterMaker"
         PrintLevel : 0
       }
     }

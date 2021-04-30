@@ -35,7 +35,7 @@ namespace mu2e {
     Float_t	    _hitlen;	  // Length along the cluster axis to the POCA of this hit
     Float_t	    _cdoca;	  // DOCA from the track to the cluster axis, signed by the angular momentum WRT the wire
     Float_t	    _rerr;	  // intrinsic radial error
-    Float_t	    _time;	  // time of this hit 
+    Float_t	    _time;	  // time of this hit, = cluster time at the SIPM
     Float_t	    _terr;	  // time error assigned to this hit 
     StrawHitFlag    _flag;	  // flag describing the status of this hit (active, ....)
   };
