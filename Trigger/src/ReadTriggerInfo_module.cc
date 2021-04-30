@@ -1045,7 +1045,7 @@ namespace mu2e {
 
   void   ReadTriggerInfo::fillTrackTrigInfo(int TrkTrigIndex, const KalSeed*KSeed, trackInfoHist_   &Hist){
     GlobalConstantsHandle<ParticleDataTable> pdt;
-    HelixTool helTool(KSeed->helix().get(), _tracker);
+//    HelixTool helTool(KSeed->helix().get(), _tracker);
 
     int                nsh = (int)KSeed->hits().size();
     KalSegment const& fseg = KSeed->segments().front();
@@ -1057,7 +1057,7 @@ namespace mu2e {
     double     d0    = fseg.helix().d0();
     double     clE(-1.);
     if (KSeed->caloCluster()) clE = KSeed->caloCluster()->energyDep();
-    double     nLoops    = helTool.nLoops();
+//    double     nLoops    = helTool.nLoops();
 
     Hist._hTrkInfo[TrkTrigIndex][0]->Fill(p);
     Hist._hTrkInfo[TrkTrigIndex][1]->Fill(pt);
@@ -1065,7 +1065,7 @@ namespace mu2e {
     Hist._hTrkInfo[TrkTrigIndex][3]->Fill(d0);
     Hist._hTrkInfo[TrkTrigIndex][4]->Fill(chi2d);
     Hist._hTrkInfo[TrkTrigIndex][5]->Fill(clE);
-    Hist._hTrkInfo[TrkTrigIndex][6]->Fill(nLoops);
+//    Hist._hTrkInfo[TrkTrigIndex][6]->Fill(nLoops);
 
     //add the MC info if available
     if (_mcdigis) {

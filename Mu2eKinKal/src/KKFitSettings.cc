@@ -40,7 +40,6 @@ namespace mu2e {
 	KKStrawHitUpdater shupdater(mindoca,maxdoca,maxchi,ndim);
 	config.schedule_[imeta].updaters_.push_back(shupdater);
       }
-
       return config;
     }
   }
