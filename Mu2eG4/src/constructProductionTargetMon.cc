@@ -226,7 +226,7 @@ namespace mu2e {
     G4LogicalVolume* vertWireLogical = new G4LogicalVolume(vertWireBox,
                                 gasMaterial,
                                 wireGasNameVert);
-    for (int i=0; i < pwc->numVertWires(); i++) {
+    for (int i=0; i < pwc->numVertWires(); ++i) {
       int wireNum = pwc->wireNumStart() + i;
       std::string wireGasName = wireGasNameVert;
       wireGasName.append(std::to_string(wireNum));
@@ -237,7 +237,7 @@ namespace mu2e {
       new G4PVPlacement(nullptr,
                 G4ThreeVector(0.0, gasY2, pwc->vertWireZ()),
                 vertWireLogical,
-                wireGasNameVert,
+                wireGasName,
                 container.logical,
                 false,
                 wireNum,
@@ -268,8 +268,8 @@ namespace mu2e {
     G4LogicalVolume* horizWireLogical = new G4LogicalVolume(horizWireBox,
                                 gasMaterial,
                                 wireGasNameHoriz);
-    for (int i=0; i < pwc->numHorizWires(); i++) {
-      int wireNum = pwc->wireNumStart() + + pwc->numVertWires() + i;
+    for (int i=0; i < pwc->numHorizWires(); ++i) {
+      int wireNum = pwc->wireNumStart() + pwc->numVertWires() + i;
       std::string wireGasName = wireGasNameHoriz;
       wireGasName.append(std::to_string(wireNum));
       // wire numbering such that the lowest-numered wire is 
@@ -279,7 +279,7 @@ namespace mu2e {
       new G4PVPlacement(nullptr,
                 G4ThreeVector(gasX3, 0.0, pwc->horizWireZ()),
                 horizWireLogical,
-                wireGasNameHoriz,
+                wireGasName,
                 container.logical,
                 false,
                 wireNum,

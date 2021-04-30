@@ -54,9 +54,9 @@ namespace mu2e {
     double horizWireHalfThick = 0.5*(_hv3Z - _hv2Z - windowThick);
     _horizWireGasSection.reset(new Box(horizWireHalfWidth, 0.5*windowHeight, horizWireHalfThick));
     double gasInHalfThick = 0.5*(_hv1Z - _ground1Z - windowThick);
-    _gasSection1.reset(new Box(windowWidth, windowHeight, gasInHalfThick));
+    _gasSection1.reset(new Box(0.5*windowWidth, 0.5*windowHeight, gasInHalfThick));
     double gasOutHalfThick = 0.5*(_ground2Z - _hv3Z - windowThick);
-    _gasSection4.reset(new Box(windowWidth, windowHeight, gasOutHalfThick));
+    _gasSection4.reset(new Box(0.5*windowWidth, 0.5*windowHeight, gasOutHalfThick));
 
     for (int i=0; i<numVertWires; i++) {
       double gasY2 = (-0.5*windowHeight) + ((i+0.5)*2.*vertWireHalfHeight);
