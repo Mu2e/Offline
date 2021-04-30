@@ -11,5 +11,5 @@ services.SeedService.maxUniqueEngines: 20
 
 services.GeometryService.inputFile : "Mu2eG4/geom/geom_common_current.txt"
 
-outputs.Output.fileName : "dts.owner.muSteps.dsconf.seq.art"
+outputs.Output.fileName : "dts.owner.muDauSteps.dsconf.seq.art"
 
