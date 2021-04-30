@@ -3,8 +3,8 @@
 
 int pTargetMonVersion = 1;
 
-int pTargetMon.verbosity = 1; // TODO should prob change to 0 before merging
-bool pTargetMon.surfaceCheck = true;
+int pTargetMon_verbosity = 0;
+bool pTargetMon_surfaceCheck = true;
 
 //double pTargetMon_height = 196.85; // mm
 //double pTargetMon_width = 196.85;

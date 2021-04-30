@@ -32,8 +32,7 @@ namespace mu2e {
                         bool const doSurfaceCheck,
                         int const verbosity);
 
-    void insertWindows(G4LogicalVolume* windowLogical, 
-                     VolumeInfo const& container, 
+    void insertWindows(VolumeInfo const& container, 
                      const PTMonPWC* pwc, 
                      SimpleConfig const& _config,
                      bool const doSurfaceCheck,

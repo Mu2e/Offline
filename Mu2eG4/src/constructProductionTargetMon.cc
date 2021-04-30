@@ -77,17 +77,29 @@ namespace mu2e {
 
   } // insertOuterFrame
 
-  void insertWindows(G4LogicalVolume* windowLogical, 
-                     VolumeInfo const& container, 
+  void insertWindows(VolumeInfo const& container, 
                      const PTMonPWC* pwc, 
                      SimpleConfig const& _config,
                      bool const doSurfaceCheck,
                      int const verbosity) {
-    std::string ground1Name = "pTargetMonGroundIn"+pwc->nameSuffix();
+    // The windows are all identical, so make one logical volume and paste it repeatedly.
+    // The one exception is the most-upstream window, which is a virtual detector.
+    G4Material *windowMaterial = findMaterialOrThrow(pwc->windowMaterialName());
+    G4VSolid* windowBox = new G4Box("pTargetMonWindow",
+                  pwc->pwcWindow()->getXhalfLength(),
+                  pwc->pwcWindow()->getYhalfLength(),
+                  pwc->pwcWindow()->getZhalfLength());
+    G4LogicalVolume* windowLogical = new G4LogicalVolume(windowBox,
+                              windowMaterial,
+                              "pTargetMonWindow");
+    G4LogicalVolume* windowLogicalVD = new G4LogicalVolume(windowBox,
+                              windowMaterial,
+                              "VirtualDetector_pTargetMonGroundIn"+pwc->nameSuffix());
+    std::string ground1Name = "VirtualDetector_pTargetMonGroundIn"+pwc->nameSuffix();
     G4VPhysicalVolume* ground1Phys =
     new G4PVPlacement(nullptr,
               G4ThreeVector(0.0, 0.0, pwc->ground1Z()),
-              windowLogical,
+              windowLogicalVD,
               ground1Name,
               container.logical,
               false,
@@ -322,17 +334,7 @@ namespace mu2e {
     // Represented as a single solid piece here.
     insertOuterFrame(pwcContainerInfo, pwc, _config, doSurfaceCheck, verbosity);
 
-    // insert the windows
-    // The windows are all identical, so make one logical volume and paste it repeatedly
-    G4Material *windowMaterial = findMaterialOrThrow(pwc->windowMaterialName());
-    G4VSolid* windowBox = new G4Box("pTargetMonWindow",
-                  pwc->pwcWindow()->getXhalfLength(),
-                  pwc->pwcWindow()->getYhalfLength(),
-                  pwc->pwcWindow()->getZhalfLength());
-    G4LogicalVolume* windowLogical = new G4LogicalVolume(windowBox,
-                              windowMaterial,
-                              "pTargetMonWindow");
-    insertWindows(windowLogical, pwcContainerInfo, pwc, _config, doSurfaceCheck, verbosity);
+    insertWindows(pwcContainerInfo, pwc, _config, doSurfaceCheck, verbosity);
 
     // the sections of gas between the outer grounded planes and the bias planes
     // Going to use gasMaterial a few times; collect it out here so we don't do
@@ -351,10 +353,11 @@ namespace mu2e {
 
 
   void constructProductionTargetMon(VolumeInfo const& parent, SimpleConfig const& _config) {
-    const int verbosity = _config.getInt("pTargetMon.verbosity",1);
-    const auto& geomOptions = art::ServiceHandle<GeometryService>()->geomOptions();
-    geomOptions->loadEntry( _config, "pTargetMon", "pTargetMon" );
-    const bool doSurfaceCheck = geomOptions->doSurfaceCheck("pTargetMon");
+    const int verbosity = _config.getInt("pTargetMon_verbosity",1);
+    const bool doSurfaceCheck = _config.getBool("pTargetMon_surfaceCheck", false);
+    //const auto& geomOptions = art::ServiceHandle<GeometryService>()->geomOptions();
+    //geomOptions->loadEntry( _config, "pTargetMon", "pTargetMon" );
+    //const bool doSurfaceCheck = geomOptions->doSurfaceCheck("pTargetMon");
 
     GeomHandle<PTMon> ptmon;
     double containerMargin = 0.05;
