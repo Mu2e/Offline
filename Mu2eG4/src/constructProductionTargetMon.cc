@@ -44,18 +44,19 @@ using namespace std;
 namespace mu2e {
 
   void insertOuterFrame(VolumeInfo const& container, 
-                        PTMonPWC* pwc, 
+                        const PTMonPWC* pwc, 
+                        SimpleConfig const& _config,
                         bool const doSurfaceCheck,
                         int const verbosity) {
     double frameInnerMargin = 0.001;
     G4Box *outerBox = new G4Box("pwcFrameOuter", 
                 pwc->frameWidth()/2., 
                 pwc->frameHeight()/2., 
-                pwc->frameTotalThick()/2.);
+                pwc->totalThick()/2.);
     G4Box *innerBox = new G4Box("pwcFrameInner", 
                 frameInnerMargin + pwc->pwcWindow()->getXhalfLength(), 
                 frameInnerMargin + pwc->pwcWindow()->getYhalfLength(), 
-                frameInnerMargin + pwc->frameTotalThick()/2.);
+                frameInnerMargin + pwc->totalThick()/2.);
     std::string frameName = "pTargetMonFrame";
     frameName.append(pwc->nameSuffix());
     G4Material *frameMaterial = findMaterialOrThrow(pwc->frameMaterialName());
@@ -78,7 +79,8 @@ namespace mu2e {
 
   void insertWindows(G4LogicalVolume* windowLogical, 
                      VolumeInfo const& container, 
-                     PTMonPWC* pwc, 
+                     const PTMonPWC* pwc, 
+                     SimpleConfig const& _config,
                      bool const doSurfaceCheck,
                      int const verbosity) {
     std::string ground1Name = "pTargetMonGroundIn"+pwc->nameSuffix();
@@ -87,7 +89,7 @@ namespace mu2e {
               G4ThreeVector(0.0, 0.0, pwc->ground1Z()),
               windowLogical,
               ground1Name,
-              parent.logical,
+              container.logical,
               false,
               0,
               false);
@@ -97,7 +99,7 @@ namespace mu2e {
               G4ThreeVector(0.0, 0.0, pwc->hv1Z()),
               windowLogical,
               ground1Name,
-              parent.logical,
+              container.logical,
               false,
               0,
               false);
@@ -107,7 +109,7 @@ namespace mu2e {
               G4ThreeVector(0.0, 0.0, pwc->hv2Z()),
               windowLogical,
               ground1Name,
-              parent.logical,
+              container.logical,
               false,
               0,
               false);
@@ -117,7 +119,7 @@ namespace mu2e {
               G4ThreeVector(0.0, 0.0, pwc->hv3Z()),
               windowLogical,
               ground1Name,
-              parent.logical,
+              container.logical,
               false,
               0,
               false);
@@ -126,8 +128,8 @@ namespace mu2e {
     new G4PVPlacement(nullptr,
               G4ThreeVector(0.0, 0.0, pwc->ground2Z()),
               windowLogical,
-              ground1Name,
-              parent.logical,
+              ground2Name,
+              container.logical,
               false,
               0,
               false);
@@ -144,17 +146,22 @@ namespace mu2e {
   } // insertWindows
 
   void insertOuterGasBlocks(VolumeInfo const& container, 
-                            PTMonPWC* pwc, 
+                            const PTMonPWC* pwc, 
                             G4Material* gasMaterial, 
+                            SimpleConfig const& _config,
                             bool const doSurfaceCheck,
                             int const verbosity) {
     // between ground plane 1 and HV plane 1
     std::string gasName1 = "pTargetMonGas1";
     gasName1.append(pwc->nameSuffix());
     double gasZ1 = -4.5*pwc->frameThick();
+    std::vector<double> gas1HalfDims;
+    gas1HalfDims.push_back(pwc->gasSection1()->getXhalfLength());
+    gas1HalfDims.push_back(pwc->gasSection1()->getYhalfLength());
+    gas1HalfDims.push_back(pwc->gasSection1()->getZhalfLength());
     VolumeInfo gas1Info =
     nestBox (gasName1,
-             *(pwc->gasSection1()),
+             gas1HalfDims,
              gasMaterial,
              nullptr,
              G4ThreeVector(0.0, 0.0, gasZ1),
@@ -171,11 +178,14 @@ namespace mu2e {
     // between HV plane 3 and ground plane 2
     std::string gasName4 = "pTargetMonGas4";
     gasName4.append(pwc->nameSuffix());
-    double gasHalfLength4 = pwc->gasSection4()->getZhalfLength();
     double gasZ4 = 5.5*pwc->frameThick();
+    std::vector<double> gas4HalfDims;
+    gas4HalfDims.push_back(pwc->gasSection4()->getXhalfLength());
+    gas4HalfDims.push_back(pwc->gasSection4()->getYhalfLength());
+    gas4HalfDims.push_back(pwc->gasSection4()->getZhalfLength());
     VolumeInfo gas4Info =
     nestBox (gasName4,
-             *(pwc->gasSection4()),
+             gas4HalfDims,
              gasMaterial,
              nullptr,
              G4ThreeVector(0.0, 0.0, gasZ4),
@@ -196,9 +206,10 @@ namespace mu2e {
   } // insertOuterGasBlocks
 
   void insertVerticalProfileWires(VolumeInfo const& container, 
-                                  PTMonPWC* pwc, 
+                                  const PTMonPWC* pwc, 
                                   G4Material* gasMaterial, 
                                   std::string const& wireNameSuffix, 
+                                  SimpleConfig const& _config,
                                   bool const doSurfaceCheck,
                                   int const verbosity) {
     // In the real detector wires run HORIZONTALLY, so as to measure the 
@@ -237,9 +248,10 @@ namespace mu2e {
   } // insertVerticalProfileWires
 
   void insertHorizontalProfileWires(VolumeInfo const& container, 
-                                    PTMonPWC* pwc, 
+                                    const PTMonPWC* pwc, 
                                     G4Material* gasMaterial, 
                                     std::string const& wireNameSuffix, 
+                                    SimpleConfig const& _config,
                                     bool const doSurfaceCheck,
                                     int const verbosity) {
     // In the real detector wires run VERTICALLY so as to measure the 
@@ -277,7 +289,11 @@ namespace mu2e {
 
   } // insertHorizontalProfileWires
 
-  void constructTargetHallPWC(VolumeInfo const& motherVolume, PTMonPWC* pwc, bool const doSurfaceCheck, int const verbosity) {
+  void constructTargetHallPWC(VolumeInfo const& motherVolume, 
+                              const PTMonPWC* pwc, 
+                              SimpleConfig const& _config, 
+                              bool const doSurfaceCheck, 
+                              int const verbosity) {
     
     // "container": box representing the location of the individual PWC
     G4Material* containerMaterial = motherVolume.logical->GetMaterial();
@@ -286,7 +302,7 @@ namespace mu2e {
     std::vector<double> containerHalfDims;
     containerHalfDims.push_back(containerMargin + pwc->frameWidth()/2.);
     containerHalfDims.push_back(containerMargin + pwc->frameHeight()/2.);
-    containerHalfDims.push_back(containerMargin + pwc->frameTotalThick()/2.);
+    containerHalfDims.push_back(containerMargin + pwc->totalThick()/2.);
 
     std::string containerName = "pTargetMonInnerContainer";
     containerName.append(pwc->nameSuffix());
@@ -304,7 +320,7 @@ namespace mu2e {
     // G10 frame of the PWC, made up of two endplates, plus
     // 13 interior boards that hold the windows and wires.
     // Represented as a single solid piece here.
-    insertOuterFrame(pwcContainerInfo, pwc);
+    insertOuterFrame(pwcContainerInfo, pwc, _config, doSurfaceCheck, verbosity);
 
     // insert the windows
     // The windows are all identical, so make one logical volume and paste it repeatedly
@@ -316,21 +332,21 @@ namespace mu2e {
     G4LogicalVolume* windowLogical = new G4LogicalVolume(windowBox,
                               windowMaterial,
                               "pTargetMonWindow");
-    insertWindows(windowLogical, pwcContainerInfo, pwc);
+    insertWindows(windowLogical, pwcContainerInfo, pwc, _config, doSurfaceCheck, verbosity);
 
     // the sections of gas between the outer grounded planes and the bias planes
     // Going to use gasMaterial a few times; collect it out here so we don't do
     // a findMaterialOrThrow several times for the same material.
     G4Material *gasMaterial = findMaterialOrThrow(pwc->gasMaterialName());
-    insertOuterGasBlocks(pwcContainerInfo, pwc, gasMaterial);
+    insertOuterGasBlocks(pwcContainerInfo, pwc, gasMaterial, _config, doSurfaceCheck, verbosity);
 
     // the wire planes
     // Going to use the wireNameSuffix in a couple of places, so just do the 
     // string append once out here.
     std::string wireNameSuffix = pwc->nameSuffix();
     wireNameSuffix.append("_");
-    insertVerticalProfileWires(pwcContainerInfo, pwc, gasMaterial, wireNameSuffix);
-    insertHorizontalProfileWires(pwcContainerInfo, pwc, gasMaterial, wireNameSuffix);
+    insertVerticalProfileWires(pwcContainerInfo, pwc, gasMaterial, wireNameSuffix, _config, doSurfaceCheck, verbosity);
+    insertHorizontalProfileWires(pwcContainerInfo, pwc, gasMaterial, wireNameSuffix, _config, doSurfaceCheck, verbosity);
   } // constructTargetHallPWC
 
 
@@ -346,10 +362,18 @@ namespace mu2e {
     // create and place the mother volume first
     AntiLeakRegistry& reg = art::ServiceHandle<Mu2eG4Helper>()->antiLeakRegistry();
     G4ThreeVector parentPosition = parent.centerInMu2e();
-    G4RotationMatrix* parentRotationInv = parent.physical->GetObjectRotation().inverse();
+    G4RotationMatrix* parentRotation = parent.physical->GetObjectRotation();
     G4ThreeVector motherPosition = ptmon->originInMu2e() - parentPosition;
-    G4RotationMatrix motherRotation = (ptmon->rotationInMu2e()) * parentRotationInv;
-    reg.add(motherRotation);
+    // try making the rotation matrix object first, then doing the 
+    // main rotation, then un-rotating by whatever the parent's rotation is
+    G4RotationMatrix* motherRotation;
+    if (parentRotation->isIdentity()) {
+      motherRotation = reg.add(new G4RotationMatrix(ptmon->rotationInMu2e()));
+    } else {
+      motherRotation = reg.add(new G4RotationMatrix(parentRotation->inverse()));
+      motherRotation->transform(ptmon->rotationInMu2e());
+    }
+    
     G4Material* motherMaterial = parent.logical->GetMaterial();
     std::vector<double> motherHalfDims;
     motherHalfDims.push_back(containerMargin + ptmon->totalWidth()/2.);
@@ -368,9 +392,9 @@ namespace mu2e {
     if (doSurfaceCheck) checkForOverlaps( pTargetMonContainer.physical, _config, verbosity>0);
 
     // add the first PWC to the mother volume
-    constructTargetHallPWC(pTargetMonContainer, ptmon->nearPWC());
+    constructTargetHallPWC(pTargetMonContainer, ptmon->nearPWC(), _config, doSurfaceCheck, verbosity);
     // and the second PWC
-    constructTargetHallPWC(pTargetMonContainer, ptmon->farPWC());
+    constructTargetHallPWC(pTargetMonContainer, ptmon->farPWC(), _config, doSurfaceCheck, verbosity);
 
   } // constructProductionTargetMon
 
