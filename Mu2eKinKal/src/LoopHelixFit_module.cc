@@ -336,7 +336,6 @@ namespace mu2e {
     // find input hits
     auto ch_H = event.getValidHandle<ComboHitCollection>(chcol_T_);
     auto const& chcol = *ch_H;
-    // find calo clusters TODO
     // create output
     unique_ptr<KKLoopHelixCollection> kktrkcol(new KKLoopHelixCollection );
     unique_ptr<KalSeedCollection> kkseedcol(new KalSeedCollection );
@@ -361,10 +360,29 @@ namespace mu2e {
 	  StrawHitIndexCollection strawHitIdxs;
 	  auto const& hhits = hseed.hits();
 	  for(size_t ihit = 0; ihit < hhits.size(); ++ihit ){ hhits.fillStrawHitIndices(event,ihit,strawHitIdxs); }
-	  makeStrawHits(*tracker, *strawresponse, pseedtraj,chcol,strawHitIdxs,thits,exings);
-	  if (usecalo_){
-	    if(hseed.caloCluster()){
-	      makeCaloHit(hseed.caloCluster(),pseedtraj, thits);
+	  // next, build straw hits and materials from these
+	  KKSTRAWHITCOL strawhits; 
+	  KKSTRAWXINGCOL strawxings;
+	  strawhits.reserve(hhits.size());
+	  strawxings.reserve(hhits.size());
+	  kkfit_.makeStrawHits(*tracker, *strawresponse, *kkbf_, kkmat_.strawMaterial(), pseedtraj, chcol, strawHitIdxs, strawhits, strawxings);
+	  // optionally (and if present) add the CaloCluster hit
+	  // verify the cluster looks physically reasonable before adding it TODO!  Or, let the KKCaloHit updater do it
+	  KKCALOHITCOL calohits;
+	  if (kkfit_.useCalo() && hseed.caloCluster())kkfit_.makeCaloHit(hseed.caloCluster(),*calo_h, pseedtraj, calohits);
+	  // set the seed range given the hit TPOCA values
+	  seedtraj.range() = kkfit_.range(strawhits,calohits,strawxings);
+	  // create and fit the track  
+	  auto kktrk = make_unique<KKTRK>(config_,*kkbf_,seedtraj,kkfit_.fitParticle(),strawhits,calohits,strawxings);
+	  if(print_ > 1){
+	    std::cout << "Seed Helix parameters " << hseed.helix() << std::endl;
+	    seedtraj.print(std::cout,print_);
+	    std::cout << "KKTrk fit status " << kktrk->fitStatus() << " fitting " 
+	      << strawhits.size() << " StrawHits and " << calohits.size() << " CaloHits and " << strawxings.size() << " Straw Xings in fit" << std::endl;
+	    if(print_ > 2){
+	      for(auto const& strawhit : strawhits) strawhit->print(std::cout,2);
+	      for(auto const& calohit : calohits) calohit->print(std::cout,2);
+	      for(auto const& strawxing :strawxings) strawxing->print(std::cout,2);
 	    }
 	  }
 	  // reset the  seed range given the TPOCA values
