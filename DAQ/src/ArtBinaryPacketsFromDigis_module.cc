@@ -184,7 +184,7 @@ private:
   // 172 rocs * 8 crystals per roc => 1376
   // Note: the highest crystal ID in the old simulation was 1355
   const size_t number_of_calo_rocs = 172;
-  const size_t number_of_crystals_per_roc = 8;
+  const size_t number_of_crystals_per_roc = 10;
   const size_t number_of_calo_rocs_per_dtc = 6;
 
   //--------------------------------------------------------------------------------
@@ -701,7 +701,9 @@ void ArtBinaryPacketsFromDigis::processCalorimeterData(art::Event& evt, uint64_t
     fillCalorimeterHeaderDataPacket(CD, headerData, eventNum);
     CaloDataPacket caloData;
     fillCalorimeterDataPacket(CD, caloData);
-
+    if (_diagLevel > 1) {
+      printCalorimeterData(caloData);
+    }
     tmpCaloDataBlockList.push_back(
         std::pair<DataBlockHeader, CaloDataPacket>(headerData, caloData));
   }
@@ -726,6 +728,11 @@ void ArtBinaryPacketsFromDigis::processCalorimeterData(art::Event& evt, uint64_t
       for (size_t curHitIdx = 0; curHitIdx < tmpCaloDataBlockList.size(); curHitIdx++) {
         if (tmpCaloDataBlockList[curHitIdx].first.s.DTCID == dtcID &&
             tmpCaloDataBlockList[curHitIdx].first.s.LinkID == rocID) {
+
+	  if (_diagLevel > 1) {
+	    std::cout << "[ArtBinaryPacketsFromDigis::processCalorimeterData ] filling Hit from DTCID = "<< (int)dtcID 
+		      << " ROCID = " << (int)rocID << std::endl;
+	  }
           if (is_first) {
             is_first = false;
             caloDataBlocks.push_back(tmpCaloDataBlockList[curHitIdx]);
@@ -1014,7 +1021,7 @@ void ArtBinaryPacketsFromDigis::processTrackerData(art::Event& evt, uint64_t& ev
 
         // ROC ID, counting from 0 across all DTCs (for the tracker)
         //    uint8_t localROCID = panel;
-        uint8_t globalROCID = (plane * 6) + panel;
+        uint8_t globalROCID = (plane * 6) + panel;// strawId().uniquePanel() would provide the ROCID
         uint8_t thisDTCID = static_cast<uint8_t>(globalROCID / number_of_rocs_per_dtc);
         if (panel == rocID && thisDTCID == dtcID) {
           trackerData.back().second.emplace_back();
