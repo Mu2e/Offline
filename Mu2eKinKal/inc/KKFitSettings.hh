@@ -16,8 +16,6 @@ namespace mu2e {
     using Name    = fhicl::Name;
     using Comment = fhicl::Comment;
 
-    enum StrawHitUpdater { none=0, SingleStraw, Panel };
-
     // struct for defining the KinKal Config object
     struct KKConfig {
       fhicl::Atom<int> maxniter { Name("MaxNIter"), Comment("Maximum number of algebraic iteration steps in each fit meta-iteration"), 10 };
