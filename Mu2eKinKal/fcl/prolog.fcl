@@ -29,19 +29,21 @@ Mu2eKinKal : {
       DeltaParams : 1e4 # chisquared
       BFieldCorrection : 0
       MetaIterationSettings : [ 
-        [ 10.0, 1.0, 10.0, 0 ],
-        [ 2.0, 0.5, 10.0, 0 ],
-        [ 0.0, 0.2, 20.0 , 0]]
+        [ 10.0, 1.0, 10.0 ],
+        [ 2.0, 0.5, 10.0 ],
+        [ 0.0, 0.2, 20.0]]
 
       KKStrawHitUpdaterSettings : [
-        [100.0, 3.0, 10.0, 2, 3]
+        [100.0, 3.0, 10.0, 2, 2]
       ]
     }
     KinKalExtensionSettings : {
       DeltaParams : 1e4 # chisquared
       BFieldCorrection : 0
       MetaIterationSettings : [ 
-        [ 0.0, 0.2, 20.0 , 0]]
+        [ 0.0, 0.2, 20.0 ]]
+      KKStrawHitUpdaterSettings : [
+      ]
     }
   
     ModuleSettings : {
