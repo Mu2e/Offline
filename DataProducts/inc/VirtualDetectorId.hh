@@ -84,6 +84,7 @@ namespace mu2e {
       EMC_FEB_0_SurfIn, EMC_FEB_0_SurfOut, EMC_FEB_1_SurfIn, EMC_FEB_1_SurfOut,// 102,103,104,105
       EMC_FEB_0_EdgeIn, EMC_FEB_0_EdgeOut, EMC_FEB_1_EdgeIn, EMC_FEB_1_EdgeOut,// 106,107,108,109      
       Coll1_pBarCollar_In, Coll1_pBarCollar_Out, // 110, 111, Requested by Bob Bernstein for pbar studies.  Immediately upstream of the TS1 pBar Collar, and immediately downstream of VD 2, but with radius equal to the Coll1 inner radius
+      PTargetMon_1_In, PTargetMon_2_In, // 112, 113, upstream faces of the production target monitor wire chambers between the PS and the proton beam stop
       lastEnum
     };
 
@@ -131,7 +132,8 @@ namespace mu2e {
       "STM_FieldOfViewCollDnStr", "STM_SpotSizeCollUpStr",\
       "EMC_FEB_0_SurfIn", "EMC_FEB_0_SurfOut","EMC_FEB_1_SurfIn", "EMC_FEB_1_SurfOut", \
       "EMC_FEB_0_EdgeIn", "EMC_FEB_0_EdgeOut","EMC_FEB_1_EdgeIn", "EMC_FEB_1_EdgeOut", \
-      "Coll1_pBarCollar_In", "Coll1_pBarCollar_Out"
+      "Coll1_pBarCollar_In", "Coll1_pBarCollar_Out", \
+      "PTargetMon_1_In", "PTargetMon_2_In"
 
   public:
 

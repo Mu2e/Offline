@@ -23,6 +23,7 @@
 #include "Mu2eG4/inc/checkForOverlaps.hh"
 #include "PTMonGeom/inc/PTMon.hh"
 #include "PTMonGeom/inc/PTMonPWC.hh"
+#include "DataProducts/inc/VirtualDetectorId.hh"
 
 // G4 inludes
 #include "G4Material.hh"
@@ -79,6 +80,7 @@ namespace mu2e {
 
   void insertWindows(VolumeInfo const& container, 
                      const PTMonPWC* pwc, 
+                     int const vdNum,
                      SimpleConfig const& _config,
                      bool const doSurfaceCheck,
                      int const verbosity) {
@@ -103,7 +105,7 @@ namespace mu2e {
               ground1Name,
               container.logical,
               false,
-              0,
+              vdNum,
               false);
     std::string hv1Name = "pTargetMonHV1"+pwc->nameSuffix();
     G4VPhysicalVolume* hv1Phys =
@@ -303,6 +305,7 @@ namespace mu2e {
 
   void constructTargetHallPWC(VolumeInfo const& motherVolume, 
                               const PTMonPWC* pwc, 
+                              int const vdNum,
                               SimpleConfig const& _config, 
                               bool const doSurfaceCheck, 
                               int const verbosity) {
@@ -334,7 +337,7 @@ namespace mu2e {
     // Represented as a single solid piece here.
     insertOuterFrame(pwcContainerInfo, pwc, _config, doSurfaceCheck, verbosity);
 
-    insertWindows(pwcContainerInfo, pwc, _config, doSurfaceCheck, verbosity);
+    insertWindows(pwcContainerInfo, pwc, vdNum, _config, doSurfaceCheck, verbosity);
 
     // the sections of gas between the outer grounded planes and the bias planes
     // Going to use gasMaterial a few times; collect it out here so we don't do
@@ -395,9 +398,9 @@ namespace mu2e {
     if (doSurfaceCheck) checkForOverlaps( pTargetMonContainer.physical, _config, verbosity>0);
 
     // add the first PWC to the mother volume
-    constructTargetHallPWC(pTargetMonContainer, ptmon->nearPWC(), _config, doSurfaceCheck, verbosity);
+    constructTargetHallPWC(pTargetMonContainer, ptmon->nearPWC(), VirtualDetectorId::PTargetMon_1_In, _config, doSurfaceCheck, verbosity);
     // and the second PWC
-    constructTargetHallPWC(pTargetMonContainer, ptmon->farPWC(), _config, doSurfaceCheck, verbosity);
+    constructTargetHallPWC(pTargetMonContainer, ptmon->farPWC(), VirtualDetectorId::PTargetMon_2_In, _config, doSurfaceCheck, verbosity);
 
   } // constructProductionTargetMon
 
