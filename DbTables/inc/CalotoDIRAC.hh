@@ -7,6 +7,7 @@
 #include <sstream>
 #include <map>
 #include "DbTables/inc/DbTable.hh"
+#include "DataProducts/inc/CaloId.hh"
 
 namespace mu2e {
 
@@ -19,22 +20,22 @@ namespace mu2e {
     
     class Row {
     public:
-      Row(int offlineID, uint16_t dirac):_offlineID(offlineID),_dirac(dirac) {}
-      int  offlineID() const { return _offlineID;}
-      uint16_t dirac() const {return _dirac;}
+      Row(int offlineID, uint16_t diracID):_offlineID(offlineID),_diracID(diracID) {}
+      int       offlineID() const { return _offlineID;}
+      uint16_t  diracID()   const { return _diracID;}
     private:
-      int _offlineID;
-      uint16_t _dirac;
+      int      _offlineID;
+      uint16_t _diracID;
     };
     
     
     CalotoDIRAC():DbTable(cxname,"calo.calotodirac",
-			  "offlineID,dirac") {}
-    const Row& rowAt(const std::size_t index) const { return _rows.at(index);}
-    std::vector<Row> const& rows() const {return _rows;}
-    std::size_t nrow() const { return _rows.size(); };
-    virtual std::size_t nrowFix() const { return 2720; }; 
-    size_t size() const { return baseSize() + nrow()*sizeof(Row); };
+			  "offlineID,diracID") {}
+    const Row&              rowAt(const std::size_t index) const { return _rows.at(index);}
+    std::vector<Row> const& rows()    const { return _rows;}
+    std::size_t             nrow()    const { return _rows.size(); };
+    virtual std::size_t     nrowFix() const { return CaloId::_nCrystalChannel; }; 
+    size_t                  size()    const { return baseSize() + nrow()*sizeof(Row); };
     
     void addRow(const std::vector<std::string>& columns) override {
       _rows.emplace_back(std::stoi(columns[0]),
@@ -43,7 +44,7 @@ namespace mu2e {
     
     void rowToCsv(std::ostringstream& sstream, std::size_t irow) const override {
       Row const& r = _rows.at(irow);
-      sstream << r.offlineID()<<","<<r.dirac();
+      sstream << r.offlineID()<<","<<r.diracID();
     }
     
     virtual void clear() override { baseClear(); _rows.clear(); }
