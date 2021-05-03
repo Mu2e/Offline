@@ -18,7 +18,7 @@ namespace mu2e {
     uint16_t DiracChannel = (packetId & 0x1F00) >> 8;     // second 5 bits
     uint16_t DetType      = (packetId & 0x7000) >> 13;    // last 3 bits: 0=Calo,1=Caphri,2=Pin
 
-    if (DiracChannel >= 19 || DiracNumber >= 136 || DetType>8 ){
+    if (DiracChannel >= 19 || DiracNumber >= 136){
       throw cet::exception("BADINPUTS")<<"CaloDAQMap::packetIdTocaloRoId : packetId DiracChannel/DiracNumber out of range" << std::endl;
     }
     

@@ -1,7 +1,5 @@
 #include "CaloConditions/inc/CaloDAQMapMaker.hh"
-#include "GeometryService/inc/GeomHandle.hh"
-#include "CalorimeterGeom/inc/Calorimeter.hh"
-
+#include "DataProducts/inc/CaloId.hh"
 #include <vector>
 
 
@@ -28,24 +26,20 @@ namespace mu2e {
     // For calorimeter local array#1: DIRAC2Calo
     // Loops over NumCaloDIRAC*NumChanDIRAC channels
     //    
-    const Calorimeter& cal = *(GeomHandle<Calorimeter>());
-
-    int NumCaloDIRAC       = cal.caloInfo().getInt("numberOfDIRAC");
-    int NumChanDIRAC       = cal.caloInfo().getInt("numberOfChanPerDIRAC");
-    int NumDIRACTotChannel = NumCaloDIRAC*NumChanDIRAC;
+    int NumDIRACTotChannel(CaloId::_nTotChannel);
     std::vector<uint16_t> dirac2calo(NumDIRACTotChannel);
     for (int i=0;i<NumDIRACTotChannel;i++){
-      dirac2calo[i] = tdtc->rowAt(i).caloRoId();
+      dirac2calo[i] = tdtc->rowAt(i).caloRoID();
     }
     ptr->setDIRAC2CaloMap(dirac2calo);
     //
     // For Calo crystals to DIRAC: 674*2*2 values
     //
-    int NumCaloTotChannel = cal.caloInfo().getInt("numberOfCaloChannels");
+    int NumCaloTotChannel(CaloId::_nCrystalChannel);
     std::vector<uint16_t> calo2dirac(NumCaloTotChannel); 
 
     for (int i=0;i<NumCaloTotChannel;i++){
-      calo2dirac[i] = tctd->rowAt(i).dirac();
+      calo2dirac[i] = tctd->rowAt(i).diracID();
     }
     ptr->setCalo2DIRACMap(calo2dirac);
     

@@ -7,6 +7,7 @@
 #include <sstream>
 #include <map>
 #include "DbTables/inc/DbTable.hh"
+#include "DataProducts/inc/CaloId.hh"
 
 namespace mu2e {
 
@@ -19,31 +20,38 @@ namespace mu2e {
     
     class Row {
     public:
-      Row(int index, uint16_t caloRoId):_index(index),_caloRoId(caloRoId) {}
-      int  index() const { return _index;}
-      uint16_t caloRoId() const {return _caloRoId;}
+      Row(int diracID, uint16_t caloRoID):_diracID(diracID),_caloRoID(caloRoID) {}
+      int        diracID()  const { return _diracID;}
+      uint16_t   caloRoID() const { return _caloRoID;}
     private:
-      int _index;
-      uint16_t _caloRoId;
+      int      _diracID;
+      uint16_t _caloRoID;
     };
 
 
     DIRACtoCalo():DbTable(cxname,"calo.diractocalo",
-			  "index,caloRoId") {}
-    const Row& rowAt(const std::size_t index) const { return _rows.at(index);}
-    std::vector<Row> const& rows() const {return _rows;}
-    std::size_t nrow() const { return _rows.size(); };
-    virtual std::size_t nrowFix() const { return 216; }; 
-    size_t size() const { return baseSize() + nrow()*sizeof(Row); };
+			  "diracID,caloRoID") {}
+    const Row&              rowAt(const std::size_t diracID) const { return _rows.at(diracID);}
+    std::vector<Row> const& rows()    const { return _rows;}
+    std::size_t             nrow()    const { return _rows.size(); };
+    virtual std::size_t     nrowFix() const { return CaloId::_nTotChannel; }; 
+    size_t                  size()    const { return baseSize() + nrow()*sizeof(Row); };
 
     void addRow(const std::vector<std::string>& columns) override {
-      _rows.emplace_back(std::stoi(columns[0]),
+      int channel = std::stoi(columns[0]);
+      // enforce a strict sequential order - optional
+      if(channel!=int(_rows.size())) {
+	throw cet::exception("DIRACtoCalo_BAD_INDEX") 
+	  << "DIRACtoCalo::addRow found index out of order: " 
+	  << channel << " != " << _rows.back().caloRoID()+1 <<"\n";
+      }
+      _rows.emplace_back(channel,
 			 std::stoi(columns[1]) );
     }
 
     void rowToCsv(std::ostringstream& sstream, std::size_t irow) const override {
       Row const& r = _rows.at(irow);
-      sstream << r.index()<<","<<r.caloRoId();
+      sstream << r.diracID()<<","<<r.caloRoID();
     }
 
     virtual void clear() override { baseClear(); _rows.clear(); }

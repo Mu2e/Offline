@@ -9,7 +9,6 @@
 #include <vector>
 
 // Mu2e includes
-#include "CalorimeterGeom/inc/CaloInfo.hh"
 #include "Mu2eInterfaces/inc/ProditionsEntity.hh"
 #include "fhiclcpp/ParameterSet.h"
 
