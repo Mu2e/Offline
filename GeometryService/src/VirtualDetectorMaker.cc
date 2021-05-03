@@ -30,6 +30,7 @@
 #include "DetectorSolenoidGeom/inc/DetectorSolenoidShielding.hh"
 #include "TrackerGeom/inc/Tracker.hh"
 #include "DataProducts/inc/VirtualDetectorId.hh"
+#include "PTMonGeom/inc/PTMon.hh"
 
 #include "CalorimeterGeom/inc/DiskCalorimeter.hh"
 
@@ -853,6 +854,29 @@ namespace mu2e {
             cout << "               at local=" << vd->getLocal(vdId) << " global="<< vd->getGlobal(vdId) <<endl;
           }
         }
+      }
+
+      if ( c.getBool("hasPTM",false) ) {
+        GeomHandle<PTMon> ptMon;
+        // Want these vd's to report a hit at position (0,0,0) when a particle hits the wire chamber in the center
+        // first wire chamber vd position within production target monitor
+        CLHEP::Hep3Vector pwcPos1 = ptMon->nearPWC()->originInParent();
+        int groundInZ = ptMon->nearPWC()->ground1Z();
+        pwcPos1.setZ(pwcPos1.z()+groundInZ);
+        // rotate this by the overall rotation of the PTMon to get the offset in Mu2e from the PTMon center
+        pwcPos1.transform(ptMon->rotationInMu2e());
+        // now offset by the PTMon's center position in Mu2e
+        pwcPos1 = pwcPos1 + ptMon->originInMu2e();
+        vd->addVirtualDetector(VirtualDetectorId::PTargetMon_1_In, pwcPos1, &(ptMon->rotationInMu2e()), CLHEP::Hep3Vector());
+
+        CLHEP::Hep3Vector pwcPos2 = ptMon->nearPWC()->originInParent();
+        groundInZ = ptMon->farPWC()->ground1Z();
+        pwcPos2.setZ(pwcPos2.z()+groundInZ);
+        // rotate this by the overall rotation of the PTMon to get the offset in Mu2e from the PTMon center
+        pwcPos2.transform(ptMon->rotationInMu2e());
+        // now offset by the PTMon's center position in Mu2e
+        pwcPos2 = pwcPos2 + ptMon->originInMu2e();
+        vd->addVirtualDetector(VirtualDetectorId::PTargetMon_2_In, pwcPos2, &(ptMon->rotationInMu2e()), CLHEP::Hep3Vector());
       }
 
     } // if(hasVirtualDetector)
