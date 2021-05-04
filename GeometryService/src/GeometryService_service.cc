@@ -324,14 +324,19 @@ namespace mu2e {
       addDetector(ExtMonFNAL::ExtMonMaker::make(*_config, emfb));
       addDetector(ExtMonFNALMuonIDMaker::make(*_config));
     }
+
     
+    if (_config->getBool("hasPTM",false) ){
+      std::unique_ptr<PTMon> ptmon(PTMonMaker::make(*_config));
+      addDetector(std::move(ptmon));
+    }
 
 
     if(_config->getBool("hasVirtualDetector",false)){
       addDetector(VirtualDetectorMaker::make(*_config));
     }
-      
     
+
     if(_config->getBool("hasBFieldManager",false)){
       std::unique_ptr<BFieldConfig> bfc( BFieldConfigMaker(*_config, beamline).getBFieldConfig() );
       BFieldManagerMaker bfmgr(*bfc);
@@ -350,10 +355,6 @@ namespace mu2e {
       addDetector( stm.getSTMPtr() );
     }
 
-    if (_config->getBool("hasPTM",false) ){
-      std::unique_ptr<PTMon> ptmon(PTMonMaker::make(*_config));
-      addDetector(std::move(ptmon));
-    }
 
   } // preBeginRun()
 
