@@ -5,6 +5,7 @@
 #include "TMatrixD.h"
 #include "DataProducts/inc/XYZVec.hh"
 #include "Mu2eUtilities/inc/TwoLinePCA_XYZ.hh"
+#include "KinKal/General/Vectors.hh"
 #include <vector>
 #include <bitset>
 #include <tuple>
@@ -209,7 +210,7 @@ namespace mu2e {
         double cost = dir.Z();
         double t0 = this->MinuitParams.T0; //TODO
         double mom = 1.0;//TODO
-        //this->SetKinKalParams(d0_,phi0_,z0_,cost_, t0_, mom_);
+        SetKinKalParams(d0_,phi0_,z0_,cost_, t0_, mom_);
         info = make_tuple(d0,phi0,z0,cost, t0, mom);
         return info;
       }
@@ -231,6 +232,7 @@ namespace mu2e {
       double cost_;
       double  phi0_;
       double mom_;
+      DMAT KinKalCov;
 
   };
   std::ostream& operator<<(std::ostream& os, mu2e::CosmicTrack const& track);
