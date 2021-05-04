@@ -1,6 +1,7 @@
 BEGIN_PROLOG
 Mu2eKinKal : {
-# general configuration for seed fits (no drift)
+# general configuration
+# configuration for seed fits (no drift)
   KKSeedFit : {
     module_type : LoopHelixFit
     MaterialSettings : {
@@ -13,34 +14,66 @@ Mu2eKinKal : {
       dahlLynchScatteringFraction : 0.995
     }
   
-    FitSettings: {
-      SeedErrors : [5.0, 5.0, 5.0, 5.0, 0.02, 25.0] # R(mm), Lambda(mm), Cx(mm), Cy(mm), phi0, t0 (ns)
+    KKFitSettings: {
+      PrintLevel : 0
+      TimeBuffer : 0.1 # ns
+      TPOCAPrecision : 1e-4 # mm
+      NullHitDimension : 2 # constrain position or position+time
       NullHitVarianceScale : 1.0
-      DeltaParams : 1e4 # chisquared
       TimeBuffer : 0.1 # ns
       UseCaloCluster : true
-      BFieldCorrection : 0
       AddMaterial : true
-      CaloTrackerTimeOffset : -1.35
+      CaloTrackerTimeOffset : -1.35 #ns
+      CaloPositionResolution : 15.0 #mm 
+      CaloPropagationSpeed : 200.0 #mm/ns
+      MinCaloClusterEnergy : 10.0 #MeV
+      MaxCaloClusterDt : 5.0 # ns
+      MaxCaloClusterDOCA : 50.0 # mm
+      AddHitSelect : []
+      AddHitReject : ["Dead"]
+      MaxStrawHitDOCA : 4.0 # mm
+      MaxStrawHitDt : 5.0 # ns
+      MaxStrawHitChi : 4.0
+      StrawBuffer : 1 #
+      MaxStrawDOCA : 2.5 # mm
+    }
+    
+    KinKalFitSettings : {
+      PrintLevel : 0
+      MinNDOF : 5
+      MaxNIter : 10
+      Deweight : 1.0e6
+      DeltaParams : 1e4 # chisquared
+      TimeBuffer : 0.1 # ns
+      BFieldCorrection : 0
+      BCorrTolerance : 0.01 # mm
+      MetaIterationSettings : [ 
+        [ 10.0, 1.0, 10.0, 0 ],
+        [ 2.0, 0.5, 10.0, 0 ],
+        [ 0.0, 0.2, 20.0 , 0]]
+    }
+    KinKalExtensionSettings : {
+      PrintLevel : 0
+      MinNDOF : 5
+      MaxNIter : 10
+      Deweight : 1.0e6
+      DeltaParams : 1e4 # chisquared
+      TimeBuffer : 0.1 # ns
+      BFieldCorrection : 0
+      BCorrTolerance : 0.01 # mm
+      MetaIterationSettings : [ 
+        [ 0.0, 0.2, 20.0 , 0]]
     }
   
     ModuleSettings : {
+      SeedErrors : [5.0, 5.0, 5.0, 5.0, 0.02, 25.0] # R(mm), Lambda(mm), Cx(mm), Cy(mm), phi0, t0 (ns)
       HelixFlags : [ "HelixOK" ] # why doesn't "HitsOK" work?? FIXME!
       SaveFullFit : true
-      ZSavePositions : [0.0]
+#      ZSavePositions : [-1520., 0.0, 1520.0 ]
     }
-    MetaIterationSettings : [ 
-      [ 10.0, 1.0, 10.0 ],
-      [ 2.0, 0.5, 10.0 ],
-      [ 0.0, 0.2, 20.0 ]]
-#      [ 10.0, 1.0, 10.0 ],
-#      [ 5.0, 1.0, 10.0 ],
-#      [ 2.0, 0.5, 10.0 ],
-#      [ 1.0, 0.2, 20.0 ],
-#      [ 0.0, 0.2, 20.0 ]]
-    StrawHitUpdateSettings : [
-      [ 10.0, 10.0, 1, 1 ]]
-#     [ 10.0, 5.0, 1, 2 ]
+
+#    StrawHitUpdateSettings :
+#      [ 10.0, 10.0, 1, 1 ]
   }
 }
 Mu2eKinKal : {
@@ -50,9 +83,9 @@ Mu2eKinKal : {
     KKDeMSeedFit: @local::Mu2eKinKal.KKSeedFit
   }
 }
-Mu2eKinKal.producers.KKDeMSeedFit.FitSettings.FitParticle : 11
-Mu2eKinKal.producers.KKDeMSeedFit.FitSettings.FitDirection : 0
-Mu2eKinKal.producers.KKDePSeedFit.FitSettings.FitParticle : -11
-Mu2eKinKal.producers.KKDePSeedFit.FitSettings.FitDirection : 0
+Mu2eKinKal.producers.KKDeMSeedFit.KKFitSettings.FitParticle : 11
+Mu2eKinKal.producers.KKDeMSeedFit.KKFitSettings.FitDirection : 0
+Mu2eKinKal.producers.KKDePSeedFit.KKFitSettings.FitParticle : -11
+Mu2eKinKal.producers.KKDePSeedFit.KKFitSettings.FitDirection : 0
 
 END_PROLOG 
