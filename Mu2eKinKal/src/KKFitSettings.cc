@@ -5,7 +5,7 @@ namespace mu2e {
   using KinKal::Config;
   using KinKal::MetaIterConfig;
   namespace Mu2eKinKal {
-    Config makeConfig(KKConfig const& fitconfig) {
+    Config makeConfig(KinKalConfig const& fitconfig) {
       Config config;
       // fill configuration
       config.maxniter_ = fitconfig.maxniter();
