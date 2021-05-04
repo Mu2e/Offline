@@ -7,18 +7,18 @@ namespace mu2e {
   using KinKal::Config;
   using KinKal::MetaIterConfig;
   namespace Mu2eKinKal {
-    Config makeConfig(KKConfig const& fitconfig) {
+    Config makeConfig(KinKalConfig const& fitconfig) {
       Config config;
       // fill configuration
+      config.plevel_ = static_cast<Config::printLevel>(fitconfig.printLevel());
+      config.minndof_ = fitconfig.minndof();
       config.maxniter_ = fitconfig.maxniter();
       config.dwt_ = fitconfig.dwt();
       config.pdchi2_ = fitconfig.dparams();
       config.tbuff_ = fitconfig.tBuffer();
-      config.tol_ = fitconfig.btol();
-      config.minndof_ = fitconfig.minndof();
       config.bfcorr_ = static_cast<Config::BFCorr>(fitconfig.bfieldCorr());
-      config.plevel_ = static_cast<Config::printLevel>(fitconfig.printLevel());
-      // set the schedule for the meta-iterations
+      config.tol_ = fitconfig.btol();
+        // set the schedule for the meta-iterations
       unsigned nmiter(0);
       for(auto const& misetting : fitconfig.miConfig()) {
 	MetaIterConfig mconfig;
