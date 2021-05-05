@@ -56,25 +56,21 @@ namespace {
    class CaloCompressUtil 
    {
        public:
-           CaloCompressUtil() : steps_(), sims_(), procs_() {}
+           CaloCompressUtil() : steps_(), sims_() {}
 
-           const std::vector<const mu2e::StepPointMC*>& steps()        const {return steps_;}
-           const std::set<art::Ptr<mu2e::SimParticle>>& sims()         const {return sims_;}
-           const std::set<int>&                         processCodes() const {return procs_;}
+           const std::vector<const mu2e::StepPointMC*>& steps() const {return steps_;}
+           const std::set<art::Ptr<mu2e::SimParticle>>& sims()  const {return sims_;}
 
            void fill(const mu2e::StepPointMC* step, std::vector<art::Ptr<mu2e::SimParticle>> sims)
            {
                steps_.push_back(step);
-               procs_.insert(step->endProcessCode());               
                for (const auto& sim: sims) sims_.insert(sim); 
            }
 
         private:
            std::vector<const mu2e::StepPointMC*> steps_;
            std::set<art::Ptr<mu2e::SimParticle>> sims_;
-           std::set<int>                         procs_;                              
    };
-
 
    struct diagSummary
    {
@@ -275,12 +271,12 @@ namespace mu2e {
 
           diagSummary_.totalSim_ += info.sims().size();
 
-          std::map<int,std::vector<const StepPointMC*>> crystalMap;
+          std::map<unsigned,std::vector<const StepPointMC*>> crystalMap;
           for (const StepPointMC* step : info.steps()) crystalMap[step->volumeId()].push_back(step);
 
           for (const auto& iterCrystal : crystalMap)
           {
-              int crid = iterCrystal.first;
+              unsigned crid = iterCrystal.first;
               std::vector<const StepPointMC*> steps = iterCrystal.second;
               
               //Filter very small energy deposits at this stage

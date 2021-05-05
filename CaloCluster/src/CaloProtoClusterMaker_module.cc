@@ -48,23 +48,19 @@ namespace mu2e {
         {
             using Name    = fhicl::Name;
             using Comment = fhicl::Comment;
-            fhicl::Atom<std::string>  caloCrystalModuleLabel{ Name("caloCrystalModuleLabel"), Comment("Calo Crystal module label")};
-            fhicl::Atom<std::string>  mainTag               { Name("mainTag"),                Comment("Name of main cluster collection") }; 
-            fhicl::Atom<std::string>  splitTag              { Name("splitTag"),               Comment("NAme of split-off collection") }; 
-            fhicl::Atom<double>       EminSeed              { Name("EminSeed"),               Comment("Minimum energy for a hit to be a cluster seed") }; 
-            fhicl::Atom<double>       EnoiseCut             { Name("EnoiseCut"),              Comment("Minimum energy for a hit to be in a cluster") }; 
-            fhicl::Atom<double>       ExpandCut             { Name("ExpandCut"),              Comment("Minimum energy for a hit to expand cluster") }; 
-            fhicl::Atom<bool>         addSecondRing         { Name("addSecondRing"),          Comment("Add secondary ring around crystal when forming clusters") }; 
-            fhicl::Atom<double>       timeCut               { Name("timeCut"),                Comment("Minimum hit time to form cluster") }; 
-            fhicl::Atom<double>       deltaTime             { Name("deltaTime"),              Comment("Maximum time difference between seed and hit in cluster") }; 
-            fhicl::Atom<int>          diagLevel             { Name("diagLevel"),              Comment("Diag level"),0 }; 
+            fhicl::Atom<art::InputTag>  caloHitCollection  { Name("caloHitCollection"), Comment("CaloHit collection name")};
+            fhicl::Atom<double>         EminSeed           { Name("EminSeed"),          Comment("Minimum energy for a hit to be a cluster seed") }; 
+            fhicl::Atom<double>         EnoiseCut          { Name("EnoiseCut"),         Comment("Minimum energy for a hit to be in a cluster") }; 
+            fhicl::Atom<double>         ExpandCut          { Name("ExpandCut"),         Comment("Minimum energy for a hit to expand cluster") }; 
+            fhicl::Atom<bool>           addSecondRing      { Name("addSecondRing"),     Comment("Add secondary ring around crystal when forming clusters") }; 
+            fhicl::Atom<double>         timeCut            { Name("timeCut"),           Comment("Minimum hit time to form cluster") }; 
+            fhicl::Atom<double>         deltaTime          { Name("deltaTime"),         Comment("Maximum time difference between seed and hit in cluster") }; 
+            fhicl::Atom<int>            diagLevel          { Name("diagLevel"),         Comment("Diag level"),0 }; 
         };
 
         explicit CaloProtoClusterMaker(const art::EDProducer::Table<Config>& config) :
           EDProducer{config},
-          caloCrystalToken_{consumes<CaloHitCollection>(config().caloCrystalModuleLabel())},
-          mainTag_         (config().mainTag()),
-          splitTag_        (config().splitTag()),
+          caloCrystalToken_{consumes<CaloHitCollection>(config().caloHitCollection())},
           EminSeed_        (config().EminSeed()),
           EnoiseCut_       (config().EnoiseCut()),
           ExpandCut_       (config().ExpandCut()),
@@ -73,23 +69,21 @@ namespace mu2e {
           deltaTime_       (config().deltaTime()),
           diagLevel_       (config().diagLevel())
         {
-           produces<CaloProtoClusterCollection>(mainTag_);
-           produces<CaloProtoClusterCollection>(splitTag_);
+           produces<CaloProtoClusterCollection>("main");
+           produces<CaloProtoClusterCollection>("split");
         }
 
         void produce(art::Event& e) override;
 
      private:
         art::ProductToken<CaloHitCollection> caloCrystalToken_;
-        std::string       mainTag_;
-        std::string       splitTag_;
-        double            EminSeed_;
-        double            EnoiseCut_;
-        double            ExpandCut_;
-	bool              addSecondRing_;
-        double            timeCut_;
-        double            deltaTime_;
-        int               diagLevel_;
+        double                               EminSeed_;
+        double                               EnoiseCut_;
+        double                               ExpandCut_;
+	bool                                 addSecondRing_;
+        double                               timeCut_;
+        double                               deltaTime_;
+        int                                  diagLevel_;
 
         void makeProtoClusters (CaloProtoClusterCollection&,CaloProtoClusterCollection&, const art::Handle<CaloHitCollection>&);
         void filterByTime      (CaloCrystalList&, const std::vector<double>&);
@@ -113,8 +107,8 @@ namespace mu2e {
       auto caloProtoClustersSplit = std::make_unique<CaloProtoClusterCollection>();
       makeProtoClusters(*caloProtoClustersMain,*caloProtoClustersSplit,CaloHitsHandle);
 
-      event.put(std::move(caloProtoClustersMain),  mainTag_);
-      event.put(std::move(caloProtoClustersSplit), splitTag_);
+      event.put(std::move(caloProtoClustersMain),  "main");
+      event.put(std::move(caloProtoClustersSplit), "split");
   }
 
 
