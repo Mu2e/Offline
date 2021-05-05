@@ -30,9 +30,11 @@ namespace mu2e {
     explicit StrawResponse( StrawDrift::cptr_t strawDrift,
 			    StrawElectronics::cptr_t strawElectronics,
 			    StrawPhysics::cptr_t strawPhysics,
+        bool evenBins, int eBins, double eBinWidth,
         std::vector<double> edep, std::vector<double> halfvp, 
 	double central, std::vector<double> centres, 
-	std::vector<double> resslope, std::vector<double> totdtime, 
+	std::vector<double> resslope, int totTBins, double totTBinWidth,
+        int totEBins, double totEBinWidth, std::vector<double> totdtime, 
 	bool usederr, std::vector<double> derr, 
         bool usepderr, std::vector<double> parDriftDocas,
         std::vector<double> parDriftOffsets, std::vector<double> parDriftRes,
@@ -51,8 +53,11 @@ namespace mu2e {
       _strawDrift(strawDrift),
       _strawElectronics(strawElectronics),
       _strawPhysics(strawPhysics),
+      _evenBins(evenBins), _eBins(eBins), _eBinWidth(eBinWidth),
       _edep(edep), _halfvp(halfvp), _central(central), _centres(centres), 
-      _resslope(resslope), _totdtime(totdtime), _usederr(usederr), 
+      _resslope(resslope), _totTBins(totTBins), _totTBinWidth(totTBinWidth),
+      _totEBins(totEBins), _totEBinWidth(totEBinWidth),
+      _totdtime(totdtime), _usederr(usederr), 
       _derr(derr), _usepderr(usepderr), _parDriftDocas(parDriftDocas),
       _parDriftOffsets(parDriftOffsets), _parDriftRes(parDriftRes),
       _wbuf(wbuf), _slfac(slfac), _errfac(errfac), 
@@ -65,7 +70,14 @@ namespace mu2e {
       _electronicsTimeDelay(electronicsTimeDelay), 
       _gasGain(gasGain), _analognoise(analognoise), 
       _dVdI(dVdI), _vsat(vsat), _ADCped(ADCped), 
-      _pmpEnergyScaleAvg(pmpEnergyScaleAvg)  {}
+      _pmpEnergyScaleAvg(pmpEnergyScaleAvg)  {
+        if (evenBins){
+          _edep.clear();
+          for (int i=0;i<_eBins;i++)
+            _edep.push_back(_eBinWidth*i);
+        }
+      
+      }
 
     virtual ~StrawResponse() {}
 
@@ -135,11 +147,18 @@ namespace mu2e {
     // TD reconstruction uses 1/2 the propagation velocity and depends on the
     // Dependence on position and straw length still needed FIXME!
     // (reconstructed) energy deposit
+    bool _evenBins;
+    int _eBins;
+    double _eBinWidth;
     std::vector<double> _edep; // energy deposit boundaries
     std::vector<double> _halfvp; // effective 1/2 propagation velocity by edep
     double _central; // max wire distance for central wire region
     std::vector<double> _centres; // wire center resolution by edep
     std::vector<double> _resslope; // resolution slope vs position by edep
+    size_t _totTBins;
+    double _totTBinWidth;
+    size_t _totEBins;
+    double _totEBinWidth;
     std::vector<double> _totdtime;
     bool _usederr; // flag to use the doca-dependent calibration of the drift error
     std::vector<double> _derr; // parameters describing the drift error function

@@ -17,6 +17,12 @@ namespace mu2e {
       Name("verbose"), Comment("verbosity: 0 or 1")}; 
     fhicl::Atom<bool> useDb{
       Name("useDb"), Comment("use database or fcl")}; 
+    fhicl::Atom<bool> evenBins {
+      Name("useEvenBinning"), Comment("use constant size energy bins")};
+    fhicl::Atom<double> eBins {
+      Name("eBins"), Comment("Number of energy bins")};
+    fhicl::Atom<double> eBinWidth {
+      Name("eBinWidth"), Comment("Width of energy bins (KeV)")};
     fhicl::Sequence<double>  eDep {
       Name("eDep"), Comment(" KeV ")};
     fhicl::Sequence<double> halfPropVelocity {
@@ -27,6 +33,14 @@ namespace mu2e {
       Name("tdCentralRes"), Comment(" tdCentralRes ")};
     fhicl::Sequence<double> tdResSlope {
       Name("tdResSlope"), Comment(" tdResSlope ")};
+    fhicl::Atom<int> totTBins {
+      Name("totTBins"), Comment("TOT drift time t bins")};
+    fhicl::Atom<double> totTBinWidth {
+      Name("totTBinWidth"), Comment("TOT drift time t bin width")};
+    fhicl::Atom<int> totEBins {
+      Name("totEBins"), Comment("TOT drift time e bins")};
+    fhicl::Atom<double> totEBinWidth {
+      Name("totEBinWidth"), Comment("TOT drift time e bin width")};
     fhicl::Sequence<double>  totDriftTime {
       Name("totDriftTime"), Comment(" totDriftTime ")};
     fhicl::Atom<bool>  useDriftErrorCalibration {

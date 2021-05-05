@@ -88,9 +88,11 @@ namespace mu2e {
     
     auto ptr = std::make_shared<StrawResponse>(
 	 strawDrift,strawElectronics,strawPhysics,
+         _config.evenBins(), _config.eBins(), _config.eBinWidth(),
 	 _config.eDep(), _config.halfPropVelocity(), 
 	 _config.centralWirePos(), _config.tdCentralRes(), 
-	 _config.tdResSlope(), _config.totDriftTime(), 
+	 _config.tdResSlope(), _config.totTBins(), _config.totTBinWidth(),
+         _config.totEBins(), _config.totEBinWidth(), _config.totDriftTime(), 
 	 _config.useDriftErrorCalibration(), _config.driftErrorParameters(), 
          _config.useParameterizedDriftErrors(), _parDriftDocas, _parDriftOffsets, _parDriftRes,
 	 _config.wireLengthBuffer(), _config.strawLengthFactor(), 

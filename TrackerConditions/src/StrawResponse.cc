@@ -129,19 +129,37 @@ namespace mu2e {
   }
 
   double StrawResponse::halfPropV(StrawId strawId, double kedep) const {
-    return PieceLine(_edep,_halfvp,kedep);
+    if (_evenBins){
+      int bin = std::min(static_cast<int>(std::floor(kedep/_eBinWidth)),_eBins-1);
+      return _halfvp[bin] + (_halfvp[bin+1]-_halfvp[bin])*(kedep-_edep[bin])/_eBinWidth;
+    }else{
+      return PieceLine(_edep,_halfvp,kedep);
+    }
   }
 
   double StrawResponse::wpRes(double kedep,double wlen) const {
-  // central resolution depends on edep
-    double tdres = PieceLine(_edep,_centres,kedep);
-    if( wlen > _central){
-    // outside the central region the resolution depends linearly on the distance
-    // along the wire.  The slope of that also depends on edep
-      double wslope = PieceLine(_edep,_resslope,kedep);
-      tdres += (wlen-_central)*wslope;
+    if (_evenBins){
+      // central resolution depends on edep
+      int bin = std::min(static_cast<int>(std::floor(kedep/_eBinWidth)),_eBins-1);
+      double tdres = _centres[bin] + (_centres[bin+1]-_centres[bin])*(kedep-_edep[bin])/_eBinWidth;
+      if( wlen > _central){
+        // outside the central region the resolution depends linearly on the distance
+        // along the wire.  The slope of that also depends on edep
+        double wslope = _resslope[bin] + (_resslope[bin+1]-_resslope[bin-1])*(kedep-_edep[bin])/_eBinWidth;
+        tdres += (wlen-_central)*wslope;
+      }
+      return tdres;
+    }else{
+      // central resolution depends on edep
+      double tdres = PieceLine(_edep,_centres,kedep);
+      if( wlen > _central){
+        // outside the central region the resolution depends linearly on the distance
+        // along the wire.  The slope of that also depends on edep
+        double wslope = PieceLine(_edep,_resslope,kedep);
+        tdres += (wlen-_central)*wslope;
+      }
+      return tdres;
     }
-    return tdres;
   }
 
   void StrawResponse::calibrateTimes(TrkTypes::TDCValues const& tdc, 
@@ -166,13 +184,9 @@ namespace mu2e {
   double StrawResponse::driftTime(Straw const& straw, 
 			      double tot, double edep) const {
     // straw is present in case of eventual calibration
-    size_t totbin = (size_t) (tot/4.);
-    size_t ebin = (size_t) (edep/0.00025);
-    if (totbin > 15)
-      totbin = 15;
-    if (ebin > 9)
-      ebin = 9;
-    return _totdtime[totbin*10+ebin];
+    size_t totbin = min(_totTBins-1,static_cast<size_t>(tot/_totTBinWidth));
+    size_t ebin = min(_totEBins-1,static_cast<size_t>(edep/_totEBinWidth));
+    return _totdtime[totbin*_totEBins+ebin];
   }
 
   double StrawResponse::pathLength(Straw const& straw, double tot) const {
