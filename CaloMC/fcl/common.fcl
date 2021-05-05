@@ -1,0 +1,6 @@
+BEGIN_PROLOG
+  HitMakerBlindTime      : 500. 
+  HitMakerDigiSampling   : 5    
+  HitMakerMinPeakADC     : 16
+END_PROLOG
+

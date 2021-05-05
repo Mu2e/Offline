@@ -31,6 +31,7 @@ namespace mu2e {
      digiSampling_  (config.digiSampling()),
      noiseRinDark_  (config.rinNphotPerNs() + config.darkNphotPerNs()),
      noiseElec_     (config.elecNphotPerNs()),
+     minPeakADC_    (config.minPeakADC()),
      randPoisson_   (engine),
      randGauss_     (engine),
      randFlat_      (engine),
@@ -113,13 +114,13 @@ namespace mu2e {
           wf.reserve(temp.size());
           for (const auto& val : temp) wf.emplace_back(val - pedestal_);    
 
-          std::vector<unsigned> starts, stops;
+          std::vector<size_t> starts, stops;
           starts.reserve(16); stops.reserve(16);         
           wfExtractor.extract(wf,starts,stops);
           if (starts.empty()) continue;
 
           std::vector<double> fragment;
-          fragment.reserve(stops[0]-starts[0]+1);
+          fragment.reserve(stops[0]-starts[0]);
           std::copy(temp.begin()+starts[0], temp.begin()+stops[0]+1, std::back_inserter(fragment));
           digiNoise_.push_back(fragment);
 
@@ -141,8 +142,9 @@ namespace mu2e {
        if (ilength >=waveform_.size()) 
           throw cet::exception("CATEGORY")<<"[CaloNoiseSimGenerator] noise length request too long";
 
-       unsigned irandom = unsigned(randFlat_.fire(0.,waveform_.size()-ilength-1));
-       for (unsigned i=0;i<=ilength;++i) wfVector[istart+i] += waveform_[irandom+i];
+       unsigned irandom = unsigned(randFlat_.fire(0.,waveform_.size()-ilength));
+       for (unsigned i=0;i<ilength;++i) wfVector[istart+i] += waveform_[irandom+i];
+
    }
 
    //------------------------------------------------------------------------------------------------------------------
@@ -175,13 +177,21 @@ namespace mu2e {
        {
            unsigned idigi = unsigned(randFlat_.fire(0.,digiNoise_.size()));
            const std::vector<double>& digi = digiNoise_[idigi];
+           if (wfVector.size() < digi.size()) continue;
 
-           unsigned istart = unsigned(randFlat_.fire(0.,wfVector.size()-digi.size()-1));
+           unsigned istart = unsigned(randFlat_.fire(0.,wfVector.size()-digi.size()));
            for (unsigned i=0;i<digi.size();++i)
            {
-              if (wfVector[istart+i] < 0.1) wfVector[istart+i] += digi[i];
+                if (wfVector[istart+i] < minPeakADC_) wfVector[istart+i] += digi[i];
            }   
        }
+
+
+
+
+
+
+
    }
 
 

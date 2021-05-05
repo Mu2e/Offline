@@ -30,14 +30,14 @@ namespace mu2e {
        {
            using Name    = fhicl::Name;
            using Comment = fhicl::Comment;        
-           fhicl::Atom<std::string> caloDigisModuleLabel{ Name("caloDigisModuleLabel"), Comment("Calo Digi module label")};
-           fhicl::Atom<double>      time4Merge          { Name("time4Merge"),           Comment("Maximal time differnce to merge two SiPM signals (ns)")};
-           fhicl::Atom<int>         diagLevel           { Name("diagLevel"),            Comment("Diagnosis level")};
+           fhicl::Atom<art::InputTag> caloRecoDigiCollection{ Name("caloRecoDigiCollection"), Comment("Calo Digi module label")};
+           fhicl::Atom<double>        time4Merge            { Name("time4Merge"),             Comment("Maximal time differnce to merge two SiPM signals (ns)")};
+           fhicl::Atom<int>           diagLevel             { Name("diagLevel"),              Comment("Diagnosis level")};
        };
 
        explicit CaloHitMaker(const art::EDProducer::Table<Config>& config) :
          EDProducer{config},
-         caloDigisToken_ {consumes<CaloRecoDigiCollection>(config().caloDigisModuleLabel())},
+         caloDigisToken_ {consumes<CaloRecoDigiCollection>(config().caloRecoDigiCollection())},
          time4Merge_     (config().time4Merge()),
          diagLevel_      (config().diagLevel())
        {

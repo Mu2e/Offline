@@ -63,29 +63,26 @@ namespace mu2e {
    void CaloRawWFProcessor::extract(const std::vector<double> &xInput, const std::vector<double> &yInput)
    {
 
-      reset();
+       reset();
 
-      xvec_ = xInput;
-      yvec_ = yInput;
-
-
-      //find location of potential peaks
-      std::vector<int> peakLocation;
-
-      for (unsigned int iu=windowPeak_;iu<xvec_.size()-windowPeak_;++iu)
-      {
-	 auto maxp = std::max_element(&yvec_[iu-windowPeak_],&yvec_[iu+windowPeak_+1]);
-	 if (maxp == &yvec_[iu] && yvec_[iu] > minPeakAmplitude_) peakLocation.push_back(iu);
-      }
-      int nPeak = peakLocation.size();
-
-      if (diagLevel_ > 1) std::cout<<"[CaloRawWFProcessor] Peaks found : "<<nPeak<<std::endl;
+       xvec_ = xInput;
+       yvec_ = yInput;
 
 
-       nPeaks_ = nPeak;
+       //find location of potential peaks
+       std::vector<unsigned> peakLocation;
+       for (unsigned iu=windowPeak_;iu+windowPeak_<xvec_.size();++iu)
+       {
+	  if (yvec_[iu] < minPeakAmplitude_) continue;
+          if (std::max_element(yvec_.begin()+iu-windowPeak_,yvec_.begin()+iu+windowPeak_+1) == yvec_.begin()+iu) peakLocation.push_back(iu);
+       }
+       if (diagLevel_ > 1) std::cout<<"[CaloRawWFProcessor] Peaks found : "<<peakLocation.size()<<std::endl;
+
+
+       nPeaks_ = peakLocation.size();
        chi2_   = 0;
        ndf_    = 1;
-       for (int i=0;i<nPeak;++i)
+       for (size_t i=0;i<peakLocation.size();++i)
        { 
            resAmp_.push_back(scaleFactor_*yvec_[peakLocation[i]]);
 	   resAmpErr_.push_back(0);
