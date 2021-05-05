@@ -71,9 +71,6 @@ public :
    Float_t         pmom;
    Float_t         wres;
    Float_t         tres;
-   Float_t         shchisq;
-   Float_t         shdt;
-   Float_t         shdist;
  //CLHEP::Hep3Vector *mcshpos_;
    Double_t        mcshpos_dx;
    Double_t        mcshpos_dy;
@@ -148,9 +145,6 @@ public :
    TBranch        *b_pmom;   //!
    TBranch        *b_wres;   //!
    TBranch        *b_tres;   //!
-   TBranch        *b_shchisq;   //!
-   TBranch        *b_shdt;   //!
-   TBranch        *b_shdist;   //!
    TBranch        *b_mcshpos_dx;   //!
    TBranch        *b_mcshpos_dy;   //!
    TBranch        *b_mcshpos_dz;   //!
@@ -310,9 +304,6 @@ void TDCalib::Init(TTree *tree)
    fChain->SetBranchAddress("pmom", &pmom, &b_pmom);
    fChain->SetBranchAddress("wres", &wres, &b_wres);
    fChain->SetBranchAddress("tres", &tres, &b_tres);
-   fChain->SetBranchAddress("shchisq", &shchisq, &b_shchisq);
-   fChain->SetBranchAddress("shdt", &shdt, &b_shdt);
-   fChain->SetBranchAddress("shdist", &shdist, &b_shdist);
    fChain->SetBranchAddress("mcshpos.dx", &mcshpos_dx, &b_mcshpos_dx);
    fChain->SetBranchAddress("mcshpos.dy", &mcshpos_dy, &b_mcshpos_dy);
    fChain->SetBranchAddress("mcshpos.dz", &mcshpos_dz, &b_mcshpos_dz);

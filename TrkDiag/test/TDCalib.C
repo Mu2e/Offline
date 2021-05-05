@@ -159,8 +159,8 @@ void TDCalib::Loop()
 	_oedep->Fill(kedep);
       int ibin = max(0,min(int(_evec.size()-1),int(floor((kedep-_emin)/_ebin))));
       _evec[ibin]->Fill(kedep);
-      _tdevec[ibin]->Fill(time_tcal-time_thv,mcshlen);
-      _tdpevec[ibin]->Fill(time_tcal-time_thv,mcshlen);
+      _tdevec[ibin]->Fill(time_thv-time_tcal,mcshlen);
+      _tdpevec[ibin]->Fill(time_thv-time_tcal,mcshlen);
    }
 
    TCanvas* tdecan = new TCanvas("tdecan","tdecan",700,700);
@@ -179,7 +179,8 @@ void TDCalib::Loop()
        TFitResultPtr fitr = _tdpevec[iplot]->Fit(line,"QS","sames",-3.0,3.0);
        _smean.push_back(fitr->Parameter(1));
        _serr.push_back(fitr->ParError(1));
-       _emean.push_back(_evec[iplot]->GetMean());
+       _emean.push_back(_emin + (0.5+iplot)*_ebin);
+       //_emean.push_back(_evec[iplot]->GetMean());
        _eerr.push_back(_evec[iplot]->GetRMS());
      }
    }
@@ -221,7 +222,7 @@ void TDCalib::Loop()
       float kedep = 1000.0*edep;
       int ibin = min(int(_emean.size()-1),max(int(0),int(floor((kedep-_emin)/_ebin))));
       float slope = PieceLine(_emean,_smean,kedep);
-      float tdlen = (time_tcal-time_thv)*slope;
+      float tdlen = (time_thv-time_tcal)*slope;
       if(fabs(tdlen) > slen)tdlen = copysign(slen,tdlen);
       _resvec[ibin]->Fill(fabs(tdlen),tdlen-mcshlen);
       if(mcgen==2)_ceres->Fill(tdlen-mcshlen);
@@ -300,7 +301,7 @@ void TDCalib::Loop()
       nb = fChain->GetEntry(jentry);   nbytes += nb;
       float kedep = 1000.0*edep;
       float slope = PieceLine(_emean,_smean,kedep);
-      float tdlen = (time_tcal-time_thv)*slope;
+      float tdlen = (time_thv-time_tcal)*slope;
       float wlen = fabs(tdlen);
       if(wlen > slen){
 	wlen = slen;
