@@ -150,16 +150,16 @@ private:
   std::vector<std::pair<timestamp, timestamp>> tsTable;
 
   size_t _timestampOffset;
-  int _includeTracker;
-  int _includeCalorimeter;
-  int _includeCrv;
+  int    _includeTracker;
+  int    _includeCalorimeter;
+  int    _includeCrv;
 
-  int _includeDMAHeaders;
+  int    _includeDMAHeaders;
 
   // Set to 1 to save packet data to a binary file
-  int _generateBinaryFile;
+  int    _generateBinaryFile;
 
-  std::string _outputFile;
+  std::string   _outputFile;
   std::ofstream outputStream;
 
   //--------------------------------------------------------------------------------
@@ -180,11 +180,10 @@ private:
   //--------------------------------------------------------------------------------
   // CALORIEMTER ROC/DTC INFO
   //--------------------------------------------------------------------------------
-  // 6 rocs per DTC => 27 DTCs
-  // 172 rocs * 8 crystals per roc => 1376
-  // Note: the highest crystal ID in the old simulation was 1355
-  const size_t number_of_calo_rocs = 172;
-  const size_t number_of_crystals_per_roc = 10;
+  // 6 rocs per DTC => 23 DTCs
+  // 136 rocs * 10 crystals per roc => 1348
+  const size_t number_of_calo_rocs         = 136;
+  const size_t number_of_crystals_per_roc  = 10;
   const size_t number_of_calo_rocs_per_dtc = 6;
 
   //--------------------------------------------------------------------------------
@@ -375,16 +374,16 @@ void ArtBinaryPacketsFromDigis::printCalorimeterData(CaloDataPacket const& caloD
 
   for (size_t i = 0; i < nHits; ++i) {
     CalorimeterHitReadoutPacket const& hit = caloData.hitPacketVec[i];
-    printf("[ArtBinaryPacketsFromDigis::printCaloData] hit : %i \n", (int)i);
-    printf("[ArtBinaryPacketsFromDigis::printCaloData] ChannelNumber : %i \n",
+    printf("[ArtBinaryPacketsFromDigis::printCaloData]\t hit : %i \n", (int)i);
+    printf("[ArtBinaryPacketsFromDigis::printCaloData]\t ChannelNumber : %i \n",
            (int)hit.ChannelNumber);
-    printf("[ArtBinaryPacketsFromDigis::printCaloData] DIRACA        : %i \n", (int)hit.DIRACA);
-    printf("[ArtBinaryPacketsFromDigis::printCaloData] DIRACB        : %i \n", (int)hit.DIRACB);
-    printf("[ArtBinaryPacketsFromDigis::printCaloData] ErrorFlags    : %i \n", (int)hit.ErrorFlags);
-    printf("[ArtBinaryPacketsFromDigis::printCaloData] Time          : %i \n", (int)hit.Time);
-    printf("[ArtBinaryPacketsFromDigis::printCaloData] NumberOfSamples : %i \n",
+    printf("[ArtBinaryPacketsFromDigis::printCaloData]\t DIRACA        : %i \n", (int)hit.DIRACA);
+    printf("[ArtBinaryPacketsFromDigis::printCaloData]\t DIRACB        : %i \n", (int)hit.DIRACB);
+    printf("[ArtBinaryPacketsFromDigis::printCaloData]\t ErrorFlags    : %i \n", (int)hit.ErrorFlags);
+    printf("[ArtBinaryPacketsFromDigis::printCaloData]\t Time          : %i \n", (int)hit.Time);
+    printf("[ArtBinaryPacketsFromDigis::printCaloData]\t NumberOfSamples : %i \n",
            (int)hit.NumberOfSamples);
-    printf("[ArtBinaryPacketsFromDigis::printCaloData] IndexOfMaxDigitizerSample : %i \n",
+    printf("[ArtBinaryPacketsFromDigis::printCaloData]\t IndexOfMaxDigitizerSample : %i \n",
            (int)hit.IndexOfMaxDigitizerSample);
   }
 }
@@ -714,7 +713,7 @@ void ArtBinaryPacketsFromDigis::processCalorimeterData(art::Event& evt, uint64_t
               << tmpCaloDataBlockList.size() << std::endl;
   }
 
-  uint8_t max_dtc_id = number_of_calo_rocs / number_of_calo_rocs_per_dtc - 1;
+  uint8_t max_dtc_id = number_of_calo_rocs / number_of_calo_rocs_per_dtc;
   if (number_of_calo_rocs % number_of_calo_rocs_per_dtc > 0) {
     max_dtc_id += 1;
   }
@@ -731,7 +730,8 @@ void ArtBinaryPacketsFromDigis::processCalorimeterData(art::Event& evt, uint64_t
 
 	  if (_diagLevel > 1) {
 	    std::cout << "[ArtBinaryPacketsFromDigis::processCalorimeterData ] filling Hit from DTCID = "<< (int)dtcID 
-		      << " ROCID = " << (int)rocID << std::endl;
+		      << " ROCID = " << (int)rocID
+		      << std::endl;
 	  }
           if (is_first) {
             is_first = false;
@@ -792,10 +792,10 @@ void ArtBinaryPacketsFromDigis::fillCalorimeterDataPacket(const CaloDigi& CD,
 
   CalorimeterBoardID ccBoardID;
   // ROC ID, counting from 0, across all (for the calorimeter)
-  size_t crystalId = _calorimeter->caloIDMapper().crystalIDFromSiPMID(CD.SiPMID());
+  size_t crystalId   = _calorimeter->caloIDMapper().crystalIDFromSiPMID(CD.SiPMID());
   size_t globalROCID = crystalId / number_of_crystals_per_roc;
 
-  ccBoardID.BoardID = globalROCID % number_of_calo_rocs_per_dtc;
+  ccBoardID.BoardID  = globalROCID % number_of_calo_rocs_per_dtc;
   ccBoardID.ChannelStatusFlagsA = 0;
   ccBoardID.ChannelStatusFlagsB = 0;
   ccBoardID.unused = 0;
@@ -960,10 +960,10 @@ void ArtBinaryPacketsFromDigis::fillCalorimeterHeaderDataPacket(const CaloDigi& 
   HeaderData.s.PacketType = 5; // PacketType::Dataheader;
 
   // ROC ID, counting from 0, across all (for the calorimeter)
-  size_t crystalId = _calorimeter->caloIDMapper().crystalIDFromSiPMID(CD.SiPMID());
+  size_t crystalId   = _calorimeter->caloIDMapper().crystalIDFromSiPMID(CD.SiPMID());
   size_t globalROCID = crystalId / number_of_crystals_per_roc;
 
-  HeaderData.s.LinkID = globalROCID % number_of_rocs_per_dtc; // currently unknown. FIXME!
+  HeaderData.s.LinkID = globalROCID % number_of_calo_rocs_per_dtc; // currently unknown. FIXME!
   HeaderData.s.SubsystemID = DTCLib::DTC_Subsystem_Calorimeter;
   HeaderData.s.Valid = 1;
   // Word 2
@@ -979,7 +979,7 @@ void ArtBinaryPacketsFromDigis::fillCalorimeterHeaderDataPacket(const CaloDigi& 
   HeaderData.s.Status = 0; // 0 corresponds to "TimeStamp had valid data"
   HeaderData.s.Version = format_version;
   // Word 7
-  HeaderData.s.DTCID = static_cast<uint8_t>(globalROCID / number_of_rocs_per_dtc);
+  HeaderData.s.DTCID = static_cast<uint8_t>(globalROCID / number_of_calo_rocs_per_dtc);
   uint8_t evbMode = 0; // ask Eric
   HeaderData.s.EventWindowMode = evbMode;
 }
@@ -996,7 +996,7 @@ void ArtBinaryPacketsFromDigis::processTrackerData(art::Event& evt, uint64_t& ev
 
   tracker_data_block_list_t tmpTrackerData;
 
-  uint8_t max_dtc_id = number_of_rocs / number_of_rocs_per_dtc - 1;
+  uint8_t max_dtc_id = number_of_rocs / number_of_rocs_per_dtc;
   if (number_of_rocs % number_of_rocs_per_dtc > 0) {
     max_dtc_id += 1;
   }
