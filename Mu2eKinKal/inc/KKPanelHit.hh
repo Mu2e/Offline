@@ -6,6 +6,7 @@
 //
 #include "KinKal/Detector/Hit.hh"
 #include "Mu2eKinKal/inc/KKStrawHit.hh"
+#include <array>
 namespace mu2e {
   // struct for updating straw hits; 
   struct KKPanelHitUpdater {
@@ -15,47 +16,41 @@ namespace mu2e {
     double rcell_; // straw radius
     KKStrawHitUpdater(double mindoca,double maxdoca, bool nulltime) : mindoca_(mindoca), maxdoca_(maxdoca), nulltime_(nulltime) {}
   };
+
+  using KinKal::WireHitState;
   template <class KTRAJ> class PanelHit : public KinKal::Hit<KTRAJ> {
     public:
+      static constexpr MAXNHIT=4;
       using HIT = KinKal::Hit<KTRAJ>;
-      using SHCOLL = std::vector<shared_ptr<KKWireHit<KTRAJ>>;
+      using SHCOLL = std::arra<shared_ptr<KKWireHit<KTRAJ>,MAXNHIT>;
+      using PHState = std::array<WireHitState,MAXNHIT>;
 // the constraint this hit implies WRT the current reference, expressed as a weight
       Weights weight() const override;
       // hits are active if any component is active
-      bool active() const override;
+      bool active() const override { return false; } // this hit never contributes to the fit
       Chisq chisq() const override { return 0.0; } 
       Chisq chisq(Parameters const& params) const override { return 0.0; }
       double time() const override;
-      void update(PKTRAJ const& pktraj)override {;}
+      void update(PKTRAJ const& pktraj)override {;} // no POCA update for this class
       // update the internals of the hit, specific to this meta-iteraion.  This function is the reason for this class
-      void updateState(PKTRAJ const& pktraj, MetaIterConfig const& config)override {
-      EXINGPTR const& detXingPtr() const override { return 
-      bool hasMaterial() const { return false; }
+      void updateState(PKTRAJ const& pktraj, MetaIterConfig const& config)override;
       PanelHit(SHCOLL const& hits) : hits_(hits) {}
       void print(std::ostream& ost=std::cout,int detail=0) const override;
       ~KKPanelHit(){}
     private:
       // references to the individual hits in this panel.  note non-const access is needed
       SHCOLL hits_;
+      PHState pstate_; // aggregate state of this panel's hits
   };
 
-  template<class KTRAJ> bool KKPanelHit<KTRAJ>::active() const {
-    for(auto const& hit : hits_){
-      if(hit->active()){
-	return true;
-      }
-    }
-    return false;
-  }
-
-  template<class KTRAJ> double KKPanelHit<KTRAJ>::active() const {
-    // return average of avtive hits
+  template<class KTRAJ> double KKPanelHit<KTRAJ>::time() const {
+    // return average of hits
     double time(0.0);
     unsigned nactive(0);
     for(auto const& hit : hits_){
-      if(hit->active()){
-	time += hit->time();
+      if(hit && hit->active()){
 	++nactive;
+	time += hit->time();
       }
     }
     if(nactive > 0)
@@ -71,11 +66,23 @@ namespace mu2e {
   }
 
   template<class KTRAJ> void KKPanelHit<KTRAJ>::print(std::ostream& ost, int detail) const {
-    if(this->isActive())
-      ost<<"Active ";
-    else
-      ost<<"Inactive ";
-    ost << " KKPanelHit " << std::endl;
+    unsigned nhits(0), nactive(0);
+    for(auto const& hit : hits_){
+      if(hit){
+	++nhits;
+	if(hit->active()){
+	  ++nactive;
+	}
+      }
+    }
+    ost << " KKPanelHit with " << nactive << " active hits among " << nhits << " total" << std::endl;
+    if(detail > 0){
+      for(size_t ihit=0; ihit < MAXNHIT; ++ihit){
+	if(hits_[ihit]){
+	  ost << pstate_[ihit] << std::endl;
+	}
+      }
+    }
   }
 }
 #endif
