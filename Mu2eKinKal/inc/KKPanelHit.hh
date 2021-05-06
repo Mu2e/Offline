@@ -21,8 +21,8 @@ namespace mu2e {
   template <class KTRAJ> class PanelHit : public KinKal::Hit<KTRAJ> {
     public:
       static constexpr MAXNHIT=4;
-      using HIT = KinKal::Hit<KTRAJ>;
-      using SHCOLL = std::arra<shared_ptr<KKWireHit<KTRAJ>,MAXNHIT>;
+      using KKSTRAWHIT = KKStrawHit<KTRAJ>;
+      using SHCOLL = std::array<shared_ptr<KKSTRAWHIT>,MAXNHIT>;
       using PHState = std::array<WireHitState,MAXNHIT>;
 // the constraint this hit implies WRT the current reference, expressed as a weight
       Weights weight() const override;
