@@ -48,9 +48,13 @@ Mu2eKinKal : {
       BFieldCorrection : 0
       BCorrTolerance : 0.01 # mm
       MetaIterationSettings : [ 
-        [ 10.0, 1.0, 10.0, 0 ],
-        [ 2.0, 0.5, 10.0, 0 ],
-        [ 0.0, 0.2, 20.0 , 0]]
+        [ 10.0, 1.0, 10.0 ],
+        [ 2.0, 0.5, 10.0 ],
+        [ 0.0, 0.2, 20.0]]
+
+      KKStrawHitUpdaterSettings : [
+        [100.0, 3.0, 10.0, 2, 2]
+      ]
     }
     KinKalExtensionSettings : {
       PrintLevel : 0
@@ -62,7 +66,9 @@ Mu2eKinKal : {
       BFieldCorrection : 0
       BCorrTolerance : 0.01 # mm
       MetaIterationSettings : [ 
-        [ 0.0, 0.2, 20.0 , 0]]
+        [ 0.0, 0.2, 20.0 ]]
+      KKStrawHitUpdaterSettings : [
+      ]
     }
   
     ModuleSettings : {
@@ -71,9 +77,6 @@ Mu2eKinKal : {
       SaveFullFit : true
 #      ZSavePositions : [-1520., 0.0, 1520.0 ]
     }
-
-#    StrawHitUpdateSettings :
-#      [ 10.0, 10.0, 1, 1 ]
   }
 }
 Mu2eKinKal : {

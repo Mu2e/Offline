@@ -218,7 +218,6 @@ namespace mu2e {
     auto ch_H = event.getValidHandle<ComboHitCollection>(chcol_T_);
     auto cc_H = event.getValidHandle<CaloClusterCollection>(cccol_T_);
     auto const& chcol = *ch_H;
-    // find calo clusters TODO
     // create output
     unique_ptr<KKLoopHelixCollection> kktrkcol(new KKLoopHelixCollection );
     unique_ptr<KalSeedCollection> kkseedcol(new KalSeedCollection );
@@ -252,7 +251,7 @@ namespace mu2e {
 	  strawxings.reserve(hhits.size());
 	  kkfit_.makeStrawHits(*tracker, *strawresponse, *kkbf_, kkmat_.strawMaterial(), pseedtraj, chcol, strawHitIdxs, strawhits, strawxings);
 	  // optionally (and if present) add the CaloCluster hit
-	  // verify the cluster looks physically reasonable before adding it TODO!
+	  // verify the cluster looks physically reasonable before adding it TODO!  Or, let the KKCaloHit updater do it
 	  KKCALOHITCOL calohits;
 	  if (kkfit_.useCalo() && hseed.caloCluster())kkfit_.makeCaloHit(hseed.caloCluster(),*calo_h, pseedtraj, calohits);
 	  // set the seed range given the hit TPOCA values
