@@ -168,7 +168,6 @@ namespace mu2e {
     // between ground plane 1 and HV plane 1
     std::string gasName1 = "pTargetMonGas1";
     gasName1.append(pwc->nameSuffix());
-    double gasZ1 = -4.5*pwc->frameThick();
     std::vector<double> gas1HalfDims;
     gas1HalfDims.push_back(pwc->gasSection1()->getXhalfLength());
     gas1HalfDims.push_back(pwc->gasSection1()->getYhalfLength());
@@ -178,7 +177,7 @@ namespace mu2e {
              gas1HalfDims,
              gasMaterial,
              nullptr,
-             G4ThreeVector(0.0, 0.0, gasZ1),
+             G4ThreeVector(0.0, 0.0, pwc->gasInZ()),
              container,
              0, // copyNo
              false, // isVisible
@@ -192,7 +191,6 @@ namespace mu2e {
     // between HV plane 3 and ground plane 2
     std::string gasName4 = "pTargetMonGas4";
     gasName4.append(pwc->nameSuffix());
-    double gasZ4 = 5.5*pwc->frameThick();
     std::vector<double> gas4HalfDims;
     gas4HalfDims.push_back(pwc->gasSection4()->getXhalfLength());
     gas4HalfDims.push_back(pwc->gasSection4()->getYhalfLength());
@@ -202,7 +200,7 @@ namespace mu2e {
              gas4HalfDims,
              gasMaterial,
              nullptr,
-             G4ThreeVector(0.0, 0.0, gasZ4),
+             G4ThreeVector(0.0, 0.0, pwc->gasOutZ()),
              container,
              0, // copyNo
              false, // isVisible
