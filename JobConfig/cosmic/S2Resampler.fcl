@@ -9,6 +9,7 @@ physics.filters.dsResample: @local::Cosmic.dsResample
 physics.producers.g4run.inputs: @local::Cosmic.MultiStageParametersCosmicS2
 
 physics.producers.g4run.inputs.simStageOverride: 1
+physics.producers.g4run.inputs.inputPhysVolumeMultiInfo: "dsResample"
 physics.producers.g4run.inputs.updateEventLevelVolumeInfos.input: "dsResample:eventlevel"
 physics.producers.g4run.inputs.updateEventLevelVolumeInfos.outInstance: "eventlevel"
 
