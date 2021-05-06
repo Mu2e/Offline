@@ -8,6 +8,18 @@ bool hasPTM = true;
 #include "Mu2eG4/geom/geom_common.txt"
 #include "Mu2eG4/geom/ProductionTargetMonitor.txt"
 
+// THINGS YOU CHANGED TO SEE GEOMETRY STUFF
+string targetPS.supports.spokes.material = "G4_Galactic";
+string targetPS_targetCoreMaterial         = "G4_Galactic";
+string targetPS_targetFinMaterial          = "G4_Galactic";
+string targetPS_supportRingMaterial        = "G4_Galactic";
+
+// Primary beam window
+string PSEnclosure.window1.materialName = "G4_Galactic";
+
+// ExtMonFNAL window
+string PSEnclosure.window2.materialName = "G4_Galactic";
+
 // This tells emacs to view this file in c++ mode.
 // Local Variables:
 // mode:c++
