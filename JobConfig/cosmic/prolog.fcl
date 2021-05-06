@@ -89,6 +89,12 @@ Cosmic: {
       input: "g4run"
       maxAcceptedStatus: 9  #  status 10 and above means StepPointMCCollection may have non-dereferencable pointers
    }
+   compressPV : {
+      module_type: CompressPhysicalVolumes
+      volumesInput : "g4run"
+      hitInputs : []
+      particleInputs : [ "cosmicFilter" ]
+    }
    stepPointMomentumFilter: {
       module_type: FilterStepPointMomentum
       inputs : [ "g4run:crvStage1" ]
@@ -103,15 +109,19 @@ Cosmic: {
    }
    dsResample: {
       module_type: ResamplingMixer
-      fileNames: @nil  
+      fileNames: @nil
       readMode: "sequential"
       wrapFiles: true
       mu2e: {
          products: {
-	    genParticleMixer: { mixingMap: [ [ "generate", "" ] ] }
-	    simParticleMixer: { mixingMap: [ [ "cosmicFilter", ""] ] } 
-	    mcTrajectoryMixer:{ mixingMap: [ [ "cosmicFilter", ""] ] }
-	    stepPointMCMixer: { mixingMap: [ [ "cosmicFilter:crvStage1", ":" ], [ "cosmicFilter:CRV", ":" ] ] }
+            genParticleMixer: { mixingMap: [ [ "generate", "" ] ] }
+            simParticleMixer: { mixingMap: [ [ "cosmicFilter", ""] ] }
+            mcTrajectoryMixer:{ mixingMap: [ [ "cosmicFilter", ""] ] }
+            stepPointMCMixer: { mixingMap: [ [ "cosmicFilter:crvStage1", ":" ], [ "cosmicFilter:CRV", ":" ] ] }
+            volumeInfoMixer: {
+               evtOutInstanceName: "eventlevel"
+               srInput: "compressPV"
+            }
          }
       }
    }
@@ -130,7 +140,7 @@ Cosmic: {
       primaryType: StepPoints
       primaryTag: "dsResample:crvStage1"
       inputMCTrajectories: "dsResample"
-      inputPhysVolumeMultiInfo: "" 
+      inputPhysVolumeMultiInfo: ""
    }
    Mu2eG4CommonCutCosmicS1: {
       type: union

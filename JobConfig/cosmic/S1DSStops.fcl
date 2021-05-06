@@ -6,8 +6,8 @@
 
 process_name : Primary
 
-physics.TriggerPath: [generate, genCounter, g4run, g4status, stepPointMomentumFilter, cosmicFilter]
-outputs.Output.outputCommands : [@sequence::Primary.KeptProducts, "keep mu2e::GenParticles_*_*_*", "keep *_cosmicFilter_*_*"]
+physics.TriggerPath: [generate, genCounter, g4run, g4status, stepPointMomentumFilter, cosmicFilter, compressPV]
+outputs.Output.outputCommands : [@sequence::Primary.KeptProducts, "keep *_compressPV_*_*", "keep mu2e::GenParticles_*_*_*", "keep *_cosmicFilter_*_*"]
 physics.producers.g4run.TrajectoryControl: @local::mu2eg4DefaultTrajectories
 physics.producers.g4run.SDConfig.enableSD: [ CRV ]
 physics.producers.g4run.Mu2eG4CommonCut: @local::Cosmic.Mu2eG4CommonCutCosmicS1
