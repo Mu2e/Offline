@@ -985,7 +985,7 @@ void ArtBinaryPacketsFromDigis::fillCalorimeterHeaderDataPacket(CaloDAQMap const
   // ---------------------------------------------------------------
   size_t roId = CD.SiPMID();
   //    size_t globalROCID = crystalId / number_of_crystals_per_roc;
-  uint16_t packetId = calodaqconds.caloRoIdToPacketId(roId);
+  uint16_t packetId     = calodaqconds.caloRoIdToPacketId(roId);
   uint16_t globalROCID  = (packetId & (0x00FF));
   uint16_t DetType      = (packetId & (0xE000)) >> 13;
   // ----------------------------------------------------------------
