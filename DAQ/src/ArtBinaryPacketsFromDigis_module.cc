@@ -157,8 +157,7 @@ private:
   int    _includeCrv;
   int    _includeDMAHeaders;
 
-  // -- include proditions handling
-  
+  // -- include proditions handling 
   ProditionsHandle<CaloDAQMap> _calodaqconds_h;
   // Set to 1 to save packet data to a binary file
   int    _generateBinaryFile;
@@ -798,7 +797,6 @@ void ArtBinaryPacketsFromDigis::fillCalorimeterDataPacket(CaloDAQMap const& calo
   CaloData.dataPacket.NumberOfHits = 1;
 
   CalorimeterBoardID ccBoardID;
- 
   // Change # 1: get roid and cryID from Digi
   //=========================================
   
@@ -993,10 +991,9 @@ void ArtBinaryPacketsFromDigis::fillCalorimeterHeaderDataPacket(CaloDAQMap const
   // ----------------------------------------------------------------
   if( _diagLevel==1 && DetType == 1) printf(" CAPHRI !!! \n");
 
-  HeaderData.s.LinkID = globalROCID % number_of_calo_rocs_per_dtc;// from ROCID call it now LinkID
-  
+  HeaderData.s.LinkID      = globalROCID % number_of_calo_rocs_per_dtc;// from ROCID call it now LinkID
   HeaderData.s.SubsystemID = DTCLib::DTC_Subsystem_Calorimeter;
-  HeaderData.s.Valid = 1;
+  HeaderData.s.Valid       = 1;
   // Word 2
   HeaderData.s.PacketCount = 1; // NEEDS TO BE INCREASED EVERY TIME A NEW HIT IS ADDED!
   // Word 3
