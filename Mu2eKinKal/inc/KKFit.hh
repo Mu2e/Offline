@@ -179,14 +179,16 @@ namespace mu2e {
     VEC3 sipmcog = ffcog + crystalF2B;
     // create the Line trajectory from this information: signal goes towards the sipm
     Line caxis(sipmcog,ffcog,cluster->time()+caloDt_,caloPropSpeed_); 
-    CAHint hint( caxis.t0(), caxis.t0());
+    // find the time the seed traj passes the middle of the crystal
+    double zt = zTime(ptraj,0.5*(sipmcog.Z()+ffcog.Z()));
+    CAHint hint( zt, caxis.t0());
     // compute a preliminary PTCA between the seed trajectory and this straw.
     PTCA ptca(ptraj, caxis, hint, tprec_ );
     // check that this is within tolerance
     if(fabs(ptca.doca()) < maxCaloDoca_){
       // check that the sensor position is within the active position of the crystal
       auto poca = ptca.sensorPoca().Vect();
-      if((poca-ffcog).Z() > -maxCaloDoca_ &&  (poca-sipmcog).Z() < maxCaloDoca_) {
+      if((poca.Z()-ffcog.Z()) > -maxCaloDoca_ &&  (poca.Z()-sipmcog.Z()) < maxCaloDoca_) {
 	// create the hit
 	double tvar = cluster->timeErr()*cluster->timeErr();
 	double wvar = caloPosRes_*caloPosRes_;

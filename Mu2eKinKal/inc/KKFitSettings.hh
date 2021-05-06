@@ -12,6 +12,7 @@
 #include "RecoDataProducts/inc/TrkFitDirection.hh"
 namespace mu2e {
   namespace Mu2eKinKal{
+
     using Name    = fhicl::Name;
     using Comment = fhicl::Comment;
 
@@ -25,9 +26,12 @@ namespace mu2e {
       fhicl::Atom<float> tBuffer { Name("TimeBuffer"), Comment("Time buffer for final fit (ns)") };
       fhicl::Atom<int> bfieldCorr { Name("BFieldCorrection"), Comment("BField correction algorithm") };
       fhicl::Atom<float> btol { Name("BCorrTolerance"), Comment("Tolerance on BField correction accuracy (mm)") };
-      using MetaIterationSettings = fhicl::Sequence<fhicl::Tuple<float,float,float,int>>;
-      MetaIterationSettings mconfig { Name("MetaIterationSettings"), Comment("MetaIteration sequence configuration parameters, format: \n"
-      " 'Temperature (dimensionless)', Delta chisquared/DOF for convergence', 'Delta chisquared/DOF for divergence', 'Updater Flag'") };
+      using MetaIterationSettings = fhicl::Sequence<fhicl::Tuple<float,float,float>>;
+      MetaIterationSettings miConfig { Name("MetaIterationSettings"), Comment("MetaIteration sequence configuration parameters, format: \n"
+      " 'Temperature (dimensionless)', 'Delta chisquared/DOF for convergence', 'Delta chisquared/DOF for divergence'") };
+      using KKStrawHitUpdaterSettings = fhicl::Sequence<fhicl::Tuple<float,float,float,int,size_t>>;
+      KKStrawHitUpdaterSettings shuConfig{ Name("KKStrawHitUpdaterSettings"), Comment("KKStrawHitUpdater settings, format: \n"
+      " 'Minimum wire DOCA to assign L/R ambiguity and use drift'', 'Maximum wire DOCA to use hit', 'Maximum wire DOCA chito use hit', 'NullHit dimension','Meta-iteration'") };
     };
   // function to convert fhicl configuration to KinKal Config object
     KinKal::Config makeConfig(KinKalConfig const& fconfig);

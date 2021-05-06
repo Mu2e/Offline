@@ -61,23 +61,22 @@ namespace mu2e {
   template <class KTRAJ> void KKStrawHit<KTRAJ>::updateState(PKTRAJ const& pktraj, MetaIterConfig const& miconfig) {
     // move to the new trajectory; this updates the closest approach
     this->update(pktraj);
-    // look for an updater
-    const KKStrawHitUpdater* whupdater(0);
-    for(auto const& uparams : miconfig.updaters_){
-      const KKStrawHitUpdater* whu = std::any_cast<KKStrawHitUpdater>(&uparams);
-      if(whu != 0){
-	if(whupdater !=0) throw std::invalid_argument("Multiple KKStrawHitUpdaters found");
-	whupdater = whu;
+    // look for an updater in this iteration; there should be at most 1
+    bool updated(false);
+    for(auto const& updater : miconfig.updaters_){
+      const KKStrawHitUpdater* shupdater = std::any_cast<KKStrawHitUpdater>(&updater);
+      if(shupdater != 0){
+	if(updated) throw std::invalid_argument("Multiple updaters found");
+	// update the internal hit state (activity, LR ambiguity, intrinsic error, ...)
+	shupdater->update(*this);
+	// now update the cache again in case the caches changed
+	this->update(pktraj);
+	updated = true;
       }
-    }
-    if(whupdater != 0){
-      whupdater->updateState(this->hitState(), this->closestApproach());
-      // now update again in case the caches changed
-      this->update(pktraj);
     }
   }
 
-  // the purpose of this class is to allow computing the drift using calibrated quantities
+  // the purpose of this class is to allow computing the drift using calibrated quantities (StrawResponse)
   template <class KTRAJ> void KKStrawHit<KTRAJ>::distanceToTime(POL2 const& drift, DriftInfo& dinfo) const {
     dinfo.tdrift_ = sresponse_.driftDistanceToTime(chit_.strawId(),drift.R(),drift.Phi());
     dinfo.vdrift_ = sresponse_.driftInstantSpeed(chit_.strawId(),drift.R(),drift.Phi());
