@@ -184,9 +184,8 @@ private:
   //--------------------------------------------------------------------------------
   // CALORIEMTER ROC/DTC INFO
   //--------------------------------------------------------------------------------
-  // 6 rocs per DTC => 27 DTCs
-  // 172 rocs * 8 crystals per roc => 1376
-  // Note: the highest crystal ID in the old simulation was 1355
+  // 6 rocs per DTC => 23 DTCs
+  // 136 rocs * 10 crystals per roc => 1348
   const size_t number_of_calo_rocs         = 136;
   const size_t number_of_crystals_per_roc  = 10;
   const size_t number_of_calo_rocs_per_dtc = 6;
@@ -737,7 +736,8 @@ void ArtBinaryPacketsFromDigis::processCalorimeterData(art::Event& evt, uint64_t
 
 	  if (_diagLevel > 1) {
 	    std::cout << "[ArtBinaryPacketsFromDigis::processCalorimeterData ] filling Hit from DTCID = "<< (int)dtcID 
-		      << " ROCID = " << (int)rocID << std::endl;
+		      << " ROCID = " << (int)rocID
+		      << std::endl;
 	  }
           if (is_first) {
             is_first = false;
