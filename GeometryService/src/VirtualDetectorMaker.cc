@@ -858,26 +858,18 @@ namespace mu2e {
 
       if ( c.getBool("hasPTM",false) ) {
         GeomHandle<PTMon> ptMon;
-        // Want these vd's to report a hit at position (0,0,0) when a particle hits the wire chamber in the center
+        // Want these vd's to report a hit at position (0,0,0) when a particle hits the plane in the center
         // first wire chamber vd position within production target monitor
         CLHEP::Hep3Vector pwcPos1 = ptMon->nearPWC()->originInParent();
         int groundInZ = ptMon->nearPWC()->ground1Z();
         pwcPos1.setZ(pwcPos1.z()+groundInZ);
-        // rotate this by the overall rotation of the PTMon to get the offset in Mu2e from the PTMon center
-        pwcPos1.transform(ptMon->rotationInMu2e());
-        // now offset by the PTMon's center position in Mu2e
-        pwcPos1 = pwcPos1 + ptMon->originInMu2e();
-        vd->addVirtualDetector(VirtualDetectorId::PTargetMon_1_In, pwcPos1, &(ptMon->rotationInMu2e()), CLHEP::Hep3Vector());
+        vd->addVirtualDetector(VirtualDetectorId::PTargetMon_1_In, ptMon->originInMu2e(), &(ptMon->rotationInMu2e()), pwcPos1);
 
-        CLHEP::Hep3Vector pwcPos2 = ptMon->nearPWC()->originInParent();
+        CLHEP::Hep3Vector pwcPos2 = ptMon->farPWC()->originInParent();
         groundInZ = ptMon->farPWC()->ground1Z();
         pwcPos2.setZ(pwcPos2.z()+groundInZ);
-        // rotate this by the overall rotation of the PTMon to get the offset in Mu2e from the PTMon center
-        pwcPos2.transform(ptMon->rotationInMu2e());
-        // now offset by the PTMon's center position in Mu2e
-        pwcPos2 = pwcPos2 + ptMon->originInMu2e();
-        vd->addVirtualDetector(VirtualDetectorId::PTargetMon_2_In, pwcPos2, &(ptMon->rotationInMu2e()), CLHEP::Hep3Vector());
-      }
+        vd->addVirtualDetector(VirtualDetectorId::PTargetMon_2_In, ptMon->originInMu2e(), &(ptMon->rotationInMu2e()), pwcPos2);
+      } // if ( c.getBool("hasPTM",false) )
 
     } // if(hasVirtualDetector)
 
