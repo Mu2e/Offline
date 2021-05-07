@@ -199,7 +199,7 @@ void art::StrawRecoFromFragmnets::analyze_tracker_(
     if (hdr.GetPacketCount() > 0 ) {
 
       // Create the StrawDigi data products
-      auto trkDataVec = cc.GetTrackerData(curBlockIdx);
+      auto trkDataVec = cc.GetTrackerData(curBlockIdx, useTrkADC_);
       if (trkDataVec.empty()) {
         mf::LogError("StrawRecoFromFragmnets")
             << "Error retrieving Tracker data from DataBlock " << curBlockIdx
