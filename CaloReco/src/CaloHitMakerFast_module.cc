@@ -90,7 +90,7 @@ namespace mu2e {
         auto caphriHitsColl = std::make_unique<CaloHitCollection>();
         extractHits(caloDigis,*caloHitsColl,*caphriHitsColl);
 
-        event.put(std::move(caloHitsColl),"calo");
+        event.put(std::move(caloHitsColl),  "calo");
         event.put(std::move(caphriHitsColl),"caphri");
 
         if (diagLevel_ > 0) std::cout<<"[FastRecoDigiFromDigi] end"<<std::endl;
@@ -109,13 +109,13 @@ namespace mu2e {
        {
            int crystalID   = cal.caloIDMapper().crystalIDFromSiPMID(caloDigi.SiPMID());
 
-           double eDep     = caloDigi.waveform().at(caloDigi.peakpos())*calorimeterCalibrations->Peak2MeV(caloDigi.SiPMID()); 
+           double baseline = (caloDigi.waveform().at(0)+caloDigi.waveform().at(1)+caloDigi.waveform().at(2)+caloDigi.waveform().at(3))/4.0; 
+           double eDep     = (caloDigi.waveform().at(caloDigi.peakpos())-baseline)*calorimeterCalibrations->ADC2MeV(caloDigi.SiPMID()); 
            double time     = caloDigi.t0() + caloDigi.peakpos()*digiSampling_;                      //Giani's definition
            //double time     = caloDigi.t0() + (caloDigi.peakpos()+0.5)*digiSampling_ - shiftTime_; //Bertrand's definition
 
            addPulse(pulseMap, crystalID, time, eDep);
-
-           if (diagLevel_ > 1) std::cout<<"[FastRecoDigiFromDigi] extracted Digi with crystalID= "<<crystalID<<" eDep="<<eDep<<" time=" <<time<<std::endl;
+           if (diagLevel_ > 2) std::cout<<"[FastRecoDigiFromDigi] extracted Digi with crystalID="<<crystalID<<" eDep="<<eDep<<"\t time=" <<time<<std::endl;
        }
 
        for (auto& crystal : pulseMap)
@@ -124,6 +124,7 @@ namespace mu2e {
            bool isCaphri = std::find(caphriCrystalID_.begin(), caphriCrystalID_.end(), crID) != caphriCrystalID_.end();
 	   for (auto& info : crystal.second)
            {
+               if (diagLevel_ > 1) std::cout<<"[FastRecoDigiFromDigi] extracted Hit with crystalID="<<crID<<" eDep="<<info.eDep_<<"\t time=" <<info.time_<<"\t nSiPM= "<<info.nSiPM_<<std::endl;
                if (isCaphri) caphriHitsColl.emplace_back(CaloHit(crID, info.nSiPM_, info.time_,info.eDep_));
                else          caloHitsColl.emplace_back(  CaloHit(crID, info.nSiPM_, info.time_,info.eDep_)); 
 	   }

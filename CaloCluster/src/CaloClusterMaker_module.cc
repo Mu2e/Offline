@@ -81,14 +81,9 @@ namespace mu2e {
   //---------------------------------------------------------------------------------------------------------------
   void CaloClusterMaker::produce(art::Event& event)
   {
-      // Check that calorimeter geometry description exists
-      art::ServiceHandle<GeometryService> geom;
-      if( !(geom->hasElement<Calorimeter>()) ) return;
-
-      const auto& caloClustersMain = *event.getValidHandle(mainToken_);
+      const auto& caloClustersMain  = *event.getValidHandle(mainToken_);
       const auto& caloClustersSplit = *event.getValidHandle(splitToken_);
 
-      //Create a new CaloCluster collection and fill it
       auto caloClusters = std::make_unique<CaloClusterCollection>();
       makeCaloClusters(*caloClusters, caloClustersMain, caloClustersSplit);
 
