@@ -65,7 +65,7 @@ KKLineSeedFit : {
     }
   
     ModuleSettings : {
-      LineFlags : [ "HelixOK" ] //TODO
+      LineFlags : [ "HelixOK" ] //should work for cosmics too (I think)
       ZSavePositions : [-1522.0,0.0,1522.0]
     }
     MetaIterationSettings : [ 
