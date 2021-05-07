@@ -1,6 +1,6 @@
 //Author: S Middleton
-//Date: Oct 2019
-//Purpose: An improved analyzer for Cosmics
+//Date: Oct 2021
+//Purpose: For getting seed cov estimates
 
 #define _USE_MATH_DEFINES
 #include <iostream>
@@ -47,16 +47,7 @@
 #include "art_root_io/TFileService.h"
 
 // ROOT incldues
-#include "TStyle.h"
-#include "Rtypes.h"
-#include "TH1F.h"
-#include "TCanvas.h"
-#include "TH2F.h"
-#include "TLegend.h"
 #include "TTree.h"
-#include "TLatex.h"
-#include "TGraph.h"
-#include "TProfile.h"
 
 //Geom
 #include "TrackerGeom/inc/Tracker.hh"
@@ -111,7 +102,7 @@ namespace mu2e
       
       Float_t _Recod0;
       Float_t _Recoz0;
-      Float_t _Recophi0;
+      Float_t _RecoPhi0;
       Float_t _RecoCosT;
 
       Float_t _RecoErrorA0;
@@ -131,7 +122,7 @@ namespace mu2e
       
       Float_t _Trued0;
       Float_t _Truez0;
-      Float_t _Truephi0;
+      Float_t _TruePhi0;
       Float_t _TrueCosT;
 
       Int_t _evt;
@@ -146,8 +137,6 @@ namespace mu2e
 
     CosmicMCRecoDiff::CosmicMCRecoDiff(const Parameters& conf) :
       art::EDAnalyzer(conf),
-      _diag (conf().diag()),
-      _mcdiag (conf().mcdiag()),
       _chtag (conf().chtag()),
       _tctag (conf().tctag()),
       _costag (conf().costag()),
@@ -172,7 +161,7 @@ namespace mu2e
       
       _cosmic_tree->Branch("Recod0",&_Recod0,"Recod0/F");
       _cosmic_tree->Branch("Recoz0",&_Recoz0,"Recoz0/F");
-      _cosmic_tree->Branch("Recophi0",&_Recophi0,"Recophi0/F");
+      _cosmic_tree->Branch("RecoPhi0",&_RecoPhi0,"RecoPhi0/F");
       _cosmic_tree->Branch("RecoCosT",&_RecoCosT,"RecoCosT/F");
 
       _cosmic_tree->Branch("RecoErrorA0",&_RecoErrorA0,"RecoErrorA0/F");
@@ -187,7 +176,7 @@ namespace mu2e
 
       _cosmic_tree->Branch("Trued0",&_Trued0,"Trued0/F");
       _cosmic_tree->Branch("Truez0",&_Truez0,"Truez0/F");
-      _cosmic_tree->Branch("Truephi0",&_Truephi0,"Truephi0/F");
+      _cosmic_tree->Branch("TruePhi0",&_TruePhi0,"TruePhi0/F");
       _cosmic_tree->Branch("TrueCosT",&_TrueCosT,"TrueCosT/F");
       
       _cosmic_tree->Branch("TrueErrorA0",&_RecoErrorA0,"TrueErrorA0/F");
@@ -200,28 +189,19 @@ namespace mu2e
 
       void CosmicMCRecoDiff::analyze(const art::Event& event) {
 
-      const Tracker *tracker = _alignedTracker_h.getPtr(event.id()).get();
-      StrawResponse const& srep = _strawResponse_h.get(event.id());
+      //const Tracker *tracker = _alignedTracker_h.getPtr(event.id()).get();
+      //StrawResponse const& srep = _strawResponse_h.get(event.id());
 
       _evt = event.id().event();
 
       if(!findData(event))
-      throw cet::exception("RECO")<<"No Time Clusters in event"<< endl;
-
-      _ntc = _tccol->size();
-      _nch = _chcol->size();
-
-      for(unsigned itc=0; itc<_tccol->size();++itc){
-      TimeCluster tc = (*_tccol)[itc];
-      _cluster_time =  tc._t0._t0;
-
-      }
+      //throw cet::exception("RECO")<<"No Time Clusters in event"<< endl;
 
       for(unsigned ist = 0;ist < _coscol->size(); ++ist){
 
         CosmicTrackSeed sts =(*_coscol)[ist];
         CosmicTrack st = sts._track;
-        double t0 = sts._t0.t0();
+        //double t0 = sts._t0.t0();
         TrkFitFlag const& status = sts._status;
 
         if (!status.hasAllProperties(TrkFitFlag::helixOK) ){ continue; }
@@ -231,17 +211,39 @@ namespace mu2e
         _RecoA1=(st.MinuitParams.A1);
         _RecoB1=(st.MinuitParams.B1);
         _RecoB0=(st.MinuitParams.B0);
+        
+        // Get KinKal:
+        std::tuple <double, double, double, double, double, double> KinKalParams = st.KinKalTrackParams();
+        _Recod0 = get<0>(KinKalParams);
+        _Recoz0 = get<2>(KinKalParams);
+        _RecoCosT = get<3>(KinKalParams);
+        _RecoPhi0 = get<1>(KinKalParams);
 
         _RecoErrorA0=(st.MinuitParams.deltaA0);
         _RecoErrorA1=(st.MinuitParams.deltaA1);
         _RecoErrorB1=(st.MinuitParams.deltaB1);
         _RecoErrorB0=(st.MinuitParams.deltaB0);
+        
+        //const StrawDigiMCCollection*& _mcdigis;
 
-        _TrueA1=(trueinfo.TrueFitEquation.Dir.X());
-        _TrueB1=(trueinfo.TrueFitEquation.Dir.Y());
-        _TrueA0=(trueinfo.TrueFitEquation.Pos.X());
-        _TrueB0=(trueinfo.TrueFitEquation.Pos.Y());
+	      StrawDigiMC hitP1;
+	      StrawDigiMC first = (*_mcdigis)[0];
 
+	      auto const& spmcp0= first.earlyStrawGasStep();
+	      XYZVec zpos(0.,0.,0);
+        XYZVec  zdir(0.,0.,1.);
+	      XYZVec pos0(spmcp0->position().x(), spmcp0->position().y(), spmcp0->position().z());
+	      XYZVec dir(spmcp0->momentum().x(), spmcp0->momentum().y(), spmcp0->momentum().z());
+        std::tuple <double,double, double, double, double, double> info;
+        TwoLinePCA_XYZ PCA = TwoLinePCA_XYZ(pos0, dir, zpos, zdir);
+        XYZVec POCA = PCA.point1()-PCA.point2();
+        double DOCA = PCA.dca();
+        double amsign = copysign(1.0, -(zdir.Cross(POCA)).Dot(dir));
+
+        _Trued0 = amsign*DOCA;
+        _Truez0 = dir.Z();
+        _TrueCosT = PCA.point1().Z();
+        _TruePhi0 = dir.Phi();
         _cosmic_tree->Fill();
       
       }

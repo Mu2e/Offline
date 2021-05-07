@@ -1,0 +1,15 @@
+{
+    "content_status": "good",
+    "parents": [],
+    "data_tier": "cnf",
+    "dh.configuration": "v0",
+    "dh.dataset": "cnf.sophie.cosmics.v0.fcl",
+    "dh.description": "cosmics",
+    "dh.owner": "sophie",
+    "dh.sequencer": "000001_00000711",
+    "dh.sha256": "f1579a0a0a534e7a3bf007b4162c8e167d3ec0e22dfef3df12658292558f2318",
+    "file_format": "fcl",
+    "file_name": "cnf.sophie.cosmics.v0.000001_00000711.fcl",
+    "file_size": 1303,
+    "file_type": "mc"
+}
