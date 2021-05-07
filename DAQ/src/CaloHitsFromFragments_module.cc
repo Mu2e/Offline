@@ -284,7 +284,7 @@ void art::CaloHitsFromFragments::analyze_calorimeter_(
                 << std::endl;
     }
 
-    auto hits = cc.GetCalorimeterHits(curBlockIdx);
+    auto hits = cc.GetCalorimeterHitsForTrigger(curBlockIdx);
     bool err = false;
     for (size_t hitIdx = 0; hitIdx < calData->NumberOfHits; hitIdx++) {
 
@@ -314,10 +314,11 @@ void art::CaloHitsFromFragments::analyze_calorimeter_(
           caloDAQUtil_.getSiPMID(hits[hitIdx].first); // hits[hitIdx].first.DIRACB >> 12;
 
       size_t peakIndex = hits[hitIdx].first.IndexOfMaxDigitizerSample;
-      float  eDep(0);
-      if (hits[hitIdx].first.IndexOfMaxDigitizerSample < hits[hitIdx].second.size()) {
-        eDep = hits[hitIdx].second.at(peakIndex) * peakADC2MeV_[sipmID];
-      }
+      // float  eDep(0);
+      //      if (hits[hitIdx].first.IndexOfMaxDigitizerSample < hits[hitIdx].second.size()) {
+        // eDep = hits[hitIdx].second.at(peakIndex) * peakADC2MeV_[sipmID];
+      float  eDep = hits[hitIdx].second * peakADC2MeV_[sipmID];
+	//      }
       float  time = hits[hitIdx].first.Time + peakIndex * digiSampling_ + timeCalib_[sipmID];
 
       //FIX ME! WE NEED TO CHECK IF TEH PULSE IS SATURATED HERE
