@@ -30,7 +30,7 @@ namespace mu2e {
     explicit StrawResponse( StrawDrift::cptr_t strawDrift,
 			    StrawElectronics::cptr_t strawElectronics,
 			    StrawPhysics::cptr_t strawPhysics,
-        bool evenBins, int eBins, double eBinWidth,
+        int eBins, double eBinWidth,
         std::vector<double> edep, std::vector<double> halfvp, 
 	double central, std::vector<double> centres, 
 	std::vector<double> resslope, int totTBins, double totTBinWidth,
@@ -53,7 +53,7 @@ namespace mu2e {
       _strawDrift(strawDrift),
       _strawElectronics(strawElectronics),
       _strawPhysics(strawPhysics),
-      _evenBins(evenBins), _eBins(eBins), _eBinWidth(eBinWidth),
+      _eBins(eBins), _eBinWidth(eBinWidth),
       _edep(edep), _halfvp(halfvp), _central(central), _centres(centres), 
       _resslope(resslope), _totTBins(totTBins), _totTBinWidth(totTBinWidth),
       _totEBins(totEBins), _totEBinWidth(totEBinWidth),
@@ -70,14 +70,7 @@ namespace mu2e {
       _electronicsTimeDelay(electronicsTimeDelay), 
       _gasGain(gasGain), _analognoise(analognoise), 
       _dVdI(dVdI), _vsat(vsat), _ADCped(ADCped), 
-      _pmpEnergyScaleAvg(pmpEnergyScaleAvg)  {
-        if (evenBins){
-          _edep.clear();
-          for (int i=0;i<_eBins;i++)
-            _edep.push_back(_eBinWidth*i);
-        }
-      
-      }
+      _pmpEnergyScaleAvg(pmpEnergyScaleAvg)  {}
 
     virtual ~StrawResponse() {}
 

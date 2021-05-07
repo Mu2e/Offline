@@ -4,6 +4,7 @@
 #include <cmath>
 #include <algorithm>
 #include <TMath.h>
+#include "cetlib_except/exception.h"
 #include "DataProducts/inc/StrawId.hh"
 #include "TrackerConditions/inc/StrawDrift.hh"
 
@@ -86,10 +87,23 @@ namespace mu2e {
       _parDriftRes.push_back(stddev);
     }
     
+    std::vector<double> edep;
+    for (int i=0;i<_config.eBins();i++)
+      edep.push_back(_config.eBinWidth()*i);
+
+    if ((int) _config.halfPropVelocity().size() != _config.eBins() ||
+        (int) _config.tdCentralRes().size() != _config.eBins() ||
+        (int) _config.tdResSlope().size() != _config.eBins() ||
+        (int) _config.totDriftTime().size() != _config.totTBins()*_config.totEBins()){
+      throw cet::exception("BADCONFIG")
+        << "StrawResponse calibration vector lengths incorrect" << "\n";
+    }
+
+ 
+    
     auto ptr = std::make_shared<StrawResponse>(
 	 strawDrift,strawElectronics,strawPhysics,
-         _config.evenBins(), _config.eBins(), _config.eBinWidth(),
-	 _config.eDep(), _config.halfPropVelocity(), 
+         _config.eBins(), _config.eBinWidth(), edep, _config.halfPropVelocity(), 
 	 _config.centralWirePos(), _config.tdCentralRes(), 
 	 _config.tdResSlope(), _config.totTBins(), _config.totTBinWidth(),
          _config.totEBins(), _config.totEBinWidth(), _config.totDriftTime(), 
