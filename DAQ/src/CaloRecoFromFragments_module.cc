@@ -203,7 +203,7 @@ void art::CaloRecoFromFragments::analyze_calorimeter_(mu2e::CaloDAQMap const& ca
       }
 
       if (diagLevel_ > 0) {
-        std::cout << "[StrawAndCaloDigiFromFragments] NEW CALDATA: NumberOfHits "
+        std::cout << "[CaloRecoFromFragments] NEW CALDATA: NumberOfHits "
                   << calData->NumberOfHits << std::endl;
       }
 
