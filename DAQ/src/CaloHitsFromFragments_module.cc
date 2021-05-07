@@ -27,6 +27,8 @@
 #include <list>
 #include <memory>
 #include <unordered_map>
+#include <array>
+#include <vector>
 
 namespace art {
 class CaloHitsFromFragments;
@@ -132,7 +134,7 @@ void art::CaloHitsFromFragments::addPulse(uint16_t& crystalID, float& time, floa
     }
   }
   if (addNewHit) {
-    pulseMap_[crystalID].push_back(CrystalInfo(crystalID, 1, time, eDep));
+    pulseMap_[crystalID].emplace_back(mu2e::CaloHit(crystalID, 1, time, eDep));
   }
 }
 
@@ -149,6 +151,7 @@ art::CaloHitsFromFragments::CaloHitsFromFragments(const art::EDProducer::Table<C
 
 void art::CaloHitsFromFragments::produce(Event& event) {
   pulseMap_.clear();
+
   art::EventNumber_t eventNumber = event.event();
 
   // Collection of CaloHits for the event
