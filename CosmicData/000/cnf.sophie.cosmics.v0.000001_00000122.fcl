@@ -1,0 +1,33 @@
+#
+# cosmic-nofield ray muons produced at a box around the DS without field
+#
+#include "JobConfig/primary/primary.fcl"
+# set the generator
+physics.producers.generate : {
+   module_type : EventGenerator
+   inputfile   : "JobConfig/primary/genconfig_DS-cosmic.txt"
+}
+# 0 field
+services.GeometryService.inputFile: "JobConfig/common/geom_nofield.txt"
+#  Allow 'infinite' momentum
+physics.filters.DetStepFilter.MaximumPartMom : 1e7
+physics.filters.DetStepFilter.MinimumPartMom : 20.0
+## update the maximum # of particles
+physics.producers.g4run.ResourceLimits.maxSimParticleCollectionSize: 1000000
+# customize the output
+outputs.Output.fileName: "dts.owner.DS-cosmic-nofield.version.sequencer.art"
+
+#----------------------------------------------------------------
+# Code added by generate_fcl:
+source.firstRun: 1
+source.firstSubRun: 122
+source.maxEvents: 1000
+services.SeedService.policy:  autoIncrement
+services.SeedService.maxUniqueEngines: 20
+services.SeedService.baseSeed: 854484322
+outputs.Output.fileName : "dts.MU2EGRIDDSOWNER.DS-cosmic-nofield.MU2EGRIDDSCONF.000001_00000122.art"
+mu2emetadata.fcl.prologkeys: [  ]
+mu2emetadata.fcl.inkeys: [  ]
+mu2emetadata.fcl.outkeys: [ "outputs.Output.fileName" ]
+# End code added by generate_fcl:
+#----------------------------------------------------------------

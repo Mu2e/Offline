@@ -232,8 +232,7 @@ namespace mu2e {
       double cost_;
       double  phi0_;
       double mom_;
-      DMAT KinKalCov;
-
+     
   };
   std::ostream& operator<<(std::ostream& os, mu2e::CosmicTrack const& track);
 }
