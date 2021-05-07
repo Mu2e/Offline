@@ -329,8 +329,8 @@ void art::CaloHitsFromFragments::analyze_calorimeter_(
         // Until we have the final mapping, the BoardID is just a placeholder
         // adc_t BoardId    = cc.DBC_BoardID(pos,channelIdx);
 
-        caloDAQUtil_.printAllHitInfo(crystalID, sipmID, hdr, hits[hitIdx].first,
-                                     hits[hitIdx].second);
+	caloDAQUtil_.printAllHitInfo(crystalID, sipmID, hdr, hits[hitIdx].first,
+				     hits[hitIdx].second);
       } // End debug output
 
     } // End loop over readout channels in DataBlock
