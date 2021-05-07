@@ -195,7 +195,7 @@ void art::CaloRecoFromFragments::analyze_calorimeter_(
       }
 
       if (diagLevel_ > 0) {
-        std::cout << "[StrawAndCaloDigiFromFragments] NEW CALDATA: NumberOfHits "
+        std::cout << "[CaloRecoFromFragments] NEW CALDATA: NumberOfHits "
                   << calData->NumberOfHits << std::endl;
       }
 
@@ -213,25 +213,25 @@ void art::CaloRecoFromFragments::analyze_calorimeter_(
         }
 
         if (diagLevel_ > 0) {
-          std::cout << "[StrawAndCaloDigiFromFragments] calo hit " << hitIdx << std::endl;
-          std::cout << "[StrawAndCaloDigiFromFragments] \tChNumber   "
+          std::cout << "[CaloRecoFromFragments] calo hit " << hitIdx << std::endl;
+          std::cout << "[CaloRecoFromFragments] \tChNumber   "
                     << (int)hits[hitIdx].first.ChannelNumber
                     << std::endl;
-          std::cout << "[StrawAndCaloDigiFromFragments] \tDIRACA     "
+          std::cout << "[CaloRecoFromFragments] \tDIRACA     "
                     << (int)hits[hitIdx].first.DIRACA
                     << std::endl;
-          std::cout << "[StrawAndCaloDigiFromFragments] \tDIRACB     "
+          std::cout << "[CaloRecoFromFragments] \tDIRACB     "
                     << (int)hits[hitIdx].first.DIRACB
                     << std::endl;
-          std::cout << "[StrawAndCaloDigiFromFragments] \tErrorFlags "
+          std::cout << "[CaloRecoFromFragments] \tErrorFlags "
                     << (int)hits[hitIdx].first.ErrorFlags
                     << std::endl;
-          std::cout << "[StrawAndCaloDigiFromFragments] \tTime	      "
+          std::cout << "[CaloRecoFromFragments] \tTime	      "
                     << (int)hits[hitIdx].first.Time
                     << std::endl;
-          std::cout << "[StrawAndCaloDigiFromFragments] \tNSamples   "
+          std::cout << "[CaloRecoFromFragments] \tNSamples   "
                     << (int)hits[hitIdx].first.NumberOfSamples << std::endl;
-          std::cout << "[StrawAndCaloDigiFromFragments] \tIndexMax   "
+          std::cout << "[CaloRecoFromFragments] \tIndexMax   "
                     << (int)hits[hitIdx].first.IndexOfMaxDigitizerSample << std::endl;
         }
 
