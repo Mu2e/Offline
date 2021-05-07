@@ -77,13 +77,13 @@ namespace mu2e {
 
   void CaloDAQUtilities::printAllHitInfo(int CrystalID, int SiPMID, 
 					 DTCLib::DTC_DataHeaderPacket &Header, 
-					 CalorimeterFragment::CalorimeterHitReadoutPacket& Hit, std::vector<uint16_t>& Pulse){
+					 CalorimeterFragment::CalorimeterHitReadoutPacket& Hit, uint16_t& PulseMax){
     
     std::cout << "Crystal ID: " << CrystalID           << std::endl;
     std::cout << "SiPM ID: "    << SiPMID              << std::endl;
     std::cout << "Time: "       << (int)Hit.Time            << std::endl;
     std::cout << "NumSamples: " << (int)Hit.NumberOfSamples << std::endl;
-    printWaveform(Pulse);
+    //printWaveform(Pulse);
 
     // Text format: timestamp crystalID roID time nsamples samples...
     // Example: 1 201 402 660 18 0 0 0 0 1 17 51 81 91 83 68 60 58 52 42 33 23 16
@@ -91,13 +91,14 @@ namespace mu2e {
     std::cout << CrystalID      << " ";
     std::cout << SiPMID         << " ";
     std::cout << Hit.Time       << " ";
-    std::cout << Pulse.size()   << " ";
-    for (size_t i = 0; i < Pulse.size(); i++) {
-      std::cout << Pulse[i];
-      if (i < Pulse.size() - 1) {
-	std::cout << " ";
-      }
-    }
+    std::cout << PulseMax       << " ";
+    // std::cout << Pulse.size()   << " ";
+    // for (size_t i = 0; i < Pulse.size(); i++) {
+    //   std::cout << Pulse[i];
+    //   if (i < Pulse.size() - 1) {
+    // 	std::cout << " ";
+    //   }
+    // }
     std::cout << std::endl;
 
   }
