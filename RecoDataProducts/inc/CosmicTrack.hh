@@ -210,7 +210,7 @@ namespace mu2e {
         double cost = dir.Z();
         double t0 = this->MinuitParams.T0; //TODO
         double mom = 1.0;//TODO
-        SetKinKalParams(d0_,phi0_,z0_,cost_, t0_, mom_);
+        //SetKinKalParams(d0_,phi0_,z0_,cost_, t0_, mom_);
         info = make_tuple(d0,phi0,z0,cost, t0, mom);
         return info;
       }
