@@ -43,10 +43,20 @@ physics : {
 	 digisTag     : CaloDigiMaker
       }
 
+
+      readFragments : {
+	 module_type : FragmentAna
+	 diagLevel   : 0
+	 parseCAL    : 1
+	 parseTRK    : 1
+	 caloTag     : "daq:calo"
+	 trkTag      : "daq:trk"
+      }
    }
 
    t1 : [ binaryOutput ] 
-   e1 : [ readSD, readCD ]
+   #e1 : [ readSD, readCD ]
+   e1 : [  readSD, readCD, readFragments ]
 
    trigger_paths  : [t1]
    end_paths      : [e1]
@@ -57,3 +67,5 @@ physics.producers.binaryOutput.includeTracker : 1
 physics.producers.binaryOutput.includeCalorimeter : 1
 physics.producers.binaryOutput.outputFile : "DTC_packets.bin"
 services.TFileService.fileName : "generateBinaryFromDigi_test.root" 
+
+# physics.producers.binaryOutput.diagLevel : 10
