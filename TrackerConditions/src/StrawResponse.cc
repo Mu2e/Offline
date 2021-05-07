@@ -10,34 +10,13 @@ namespace mu2e {
 
   // simple line interpolation, this should be a utility function, FIXME!
   double StrawResponse::PieceLine(std::vector<double> const& xvals, std::vector<double> const& yvals, double xval){
-    double yval;
-    if(xvals.size() != yvals.size() || xvals.size() < 2)
-      std::cout << "size error " << std::endl;
-    int imax = int(xvals.size()-1);
-    // approximate constant binning to get initial guess
+    int imax = int(xvals.size()-2);
     double xbin = (xvals.back()-xvals.front())/(xvals.size()-1);
     int ibin = min(imax,max(0,int(floor((xval-xvals.front())/xbin))));
-    // scan to exact bin
-    while(ibin > 0 && xval < xvals[ibin])
-      --ibin;
-    while(ibin < imax && xval > xvals[ibin])
-      ++ibin;
-    // interpolate
-    double slope(0.0);
-    if(ibin >= 0 && ibin < imax){
-      yval = yvals[ibin];
-      int jbin = ibin+1;
-      slope = (yvals[jbin]-yvals[ibin])/(xvals[jbin]-xvals[ibin]);
-      yval += (xval-xvals[ibin])*slope;
-    } else if(ibin >= imax){ 
-      yval = yvals[imax];
-      slope = (yvals[imax]-yvals[imax-1])/(xvals[imax]-xvals[imax-1]);
-      yval += (xval-xvals[imax])*slope;
-    } else {
-      yval = yvals[0];
-      slope = (yvals[1]-yvals[0])/(xvals[1]-xvals[0]);
-      yval += (xval-xvals[0])*slope;
-    }
+    double yval = yvals[ibin];
+    int jbin = ibin+1;
+    double slope = (yvals[jbin]-yvals[ibin])/(xvals[jbin]-xvals[ibin]);
+    yval += (xval-xvals[ibin])*slope;
     return yval;
   }
 
@@ -129,37 +108,19 @@ namespace mu2e {
   }
 
   double StrawResponse::halfPropV(StrawId strawId, double kedep) const {
-    if (_evenBins){
-      int bin = std::min(static_cast<int>(std::floor(kedep/_eBinWidth)),_eBins-1);
-      return _halfvp[bin] + (_halfvp[bin+1]-_halfvp[bin])*(kedep-_edep[bin])/_eBinWidth;
-    }else{
-      return PieceLine(_edep,_halfvp,kedep);
-    }
+    return PieceLine(_edep,_halfvp,kedep);
   }
 
   double StrawResponse::wpRes(double kedep,double wlen) const {
-    if (_evenBins){
-      // central resolution depends on edep
-      int bin = std::min(static_cast<int>(std::floor(kedep/_eBinWidth)),_eBins-1);
-      double tdres = _centres[bin] + (_centres[bin+1]-_centres[bin])*(kedep-_edep[bin])/_eBinWidth;
-      if( wlen > _central){
-        // outside the central region the resolution depends linearly on the distance
-        // along the wire.  The slope of that also depends on edep
-        double wslope = _resslope[bin] + (_resslope[bin+1]-_resslope[bin-1])*(kedep-_edep[bin])/_eBinWidth;
-        tdres += (wlen-_central)*wslope;
-      }
-      return tdres;
-    }else{
-      // central resolution depends on edep
-      double tdres = PieceLine(_edep,_centres,kedep);
-      if( wlen > _central){
-        // outside the central region the resolution depends linearly on the distance
-        // along the wire.  The slope of that also depends on edep
-        double wslope = PieceLine(_edep,_resslope,kedep);
-        tdres += (wlen-_central)*wslope;
-      }
-      return tdres;
+    // central resolution depends on edep
+    double tdres = PieceLine(_edep,_centres,kedep);
+    if( wlen > _central){
+      // outside the central region the resolution depends linearly on the distance
+      // along the wire.  The slope of that also depends on edep
+      double wslope = PieceLine(_edep,_resslope,kedep);
+      tdres += (wlen-_central)*wslope;
     }
+    return tdres;
   }
 
   void StrawResponse::calibrateTimes(TrkTypes::TDCValues const& tdc, 
