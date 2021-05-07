@@ -22,7 +22,6 @@ Primary: {
     @table::TrackerMC.StepProducers
     @table::CaloMC.StepProducers
     CrvSteps : @local::CrvSteps
-    compressPV: @local::Cosmic.compressPV
 
     compressDetStepMCs : {
       module_type : CompressDetStepMCs
