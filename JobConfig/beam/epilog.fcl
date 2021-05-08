@@ -1,0 +1,8 @@
+#turn off MCTrajectories
+physics.producers.g4run.TrajectoryControl.produce : false
+# no histogram output
+services.TFileService.fileName			     : null
+# limit printout
+services.message.destinations.log.categories.ArtReport.reportEvery : 1
+services.message.destinations.log.categories.ArtReport.limit : 1
+services.message.destinations.log.categories.ArtReport.timespan : 300

@@ -1,9 +1,6 @@
 #
 # Prolog to create pileup particle steps for mixing
 #
-#include "Mu2eG4/fcl/prolog.fcl"
-#include "JobConfig/common/mu2eg4.fcl" 
-#include "fcl/standardServices.fcl"
 #include "EventGenerator/fcl/prolog.fcl"
 #include "TrackerMC/fcl/prolog.fcl"
 #include "CaloMC/fcl/prolog.fcl"
@@ -15,31 +12,9 @@ BEGIN_PROLOG
 
 Pileup: {
   producers : {
-    g4run : @local::mu2e.physics.producers.g4run.muons
-    genCounter: { module_type: GenEventCounter }
-    @table::EventGenerator.producers
-    @table::TrackerMC.StepProducers
-    @table::CaloMC.StepProducers
-    CrvSteps : @local::CrvSteps
-
-    compressDetStepMCs : {
-      module_type : CompressDetStepMCs
-      strawGasStepTag : "StrawGasStepMaker"
-      caloShowerStepTag : "CaloShowerStepMaker"
-      crvStepTag : "CrvSteps"
-      simParticleTag : "g4run"
-      stepPointMCTags : [ "g4run:virtualdetector", "g4run:protonabsorber" ]#, "g4run:stoppingtarget" ]
-      mcTrajectoryTag : "g4run"
-      debugLevel : 0
-      compressionOptions : @local::DetStepCompression.extraCompression
-    }
+  # nothing specific: all come from primary
   }
   filters : {
-# generator truncation filter; only needed for cosmic rays in principle
-    g4status: {
-      module_type: FilterStatusG4
-      input: "g4run"
-    }
 # step filter to select any detectable signal
     DetStepFilter : {
       module_type : DetectorStepFilter
@@ -57,12 +32,6 @@ Pileup: {
       MinimumCrvSteps : 1
     }
   }
-  TriggerSequence : [ generate, genCounter, g4run, g4status,  
-    @sequence::TrackerMC.StepSim,
-    @sequence::CaloMC.StepSim,
-    CrvSteps,
-    DetStepFilter,
-    compressDetStepMCs ]
 
   KeptProducts : [ "keep mu2e::StrawGasSteps_compressDetStepMCs_*_*",
 		       "keep mu2e::CaloShowerSteps_compressDetStepMCs_*_*",
@@ -73,10 +42,6 @@ Pileup: {
 		       "keep art::TriggerResults_*_*_*",
 		       "keep mu2e::GenEventCount_*_*_*" ]
 
-  analyzers: {
-    genCountLogger: { module_type: GenEventCountReader makeHistograms: false }
-  }
-
   Output : {
      module_type : RootOutput
      SelectEvents : [ TriggerPath ]
@@ -85,8 +50,61 @@ Pileup: {
   }
 # define paths
   EndPath : [ genCountLogger, Output ]
+
+# define tools
+  dioGenTool : {
+    tool_type : DIOGenerator
+    spectrum : {
+      spectrumShape : Czarnecki
+      pdgId : 11 # Czarnecki option in BinnedSpecturm needs pdgId here
+      elow : 1. #MeV
+      spectrumResolution : 0.1 #MeV
+    }
+  }
+  
+  muonCaptureProtonGenTool : {
+    tool_type : MuCapProtonGenerator
+    spectrumVariable : kineticEnergy
+    spectrum : {
+      spectrumShape : ejectedProtons
+      nbins: 1000
+    }
+  }
+  
+  muonCaptureDeuteronGenTool : {
+    tool_type : MuCapDeuteronGenerator
+    spectrumVariable : kineticEnergy
+    spectrum : {
+      spectrumShape : ejectedProtons
+      nbins: 1000
+    }
+  }
+  
+  muonCaptureNeutronGenTool : {
+    tool_type : MuCapNeutronGenerator
+    spectrumVariable: kineticEnergy
+    spectrum: {
+      spectrumShape: tabulated
+      spectrumFileName: "ConditionsService/data/neutronSpectrum.txt"
+    }
+  }
+  
+  muonCapturePhotonGenTool : {
+    tool_type : MuCapPhotonGenerator
+    spectrum : {
+      spectrumShape: flat
+      elow: 0.0 # MeV
+      ehi: 7.0  # MeV
+    }
+  }
+  
+  # An example that isn't used in this fcl
+  #muonCapture1809keVGammaGenTool : {
+  #  tool_type : MuCap1809keVGammaGenerator
+  #}
+
 }
+# define output
 Pileup.Output.outputCommands : [ "drop *_*_*_*",
 		       @sequence::Pileup.KeptProducts]
-Pileup.TriggerPath : [ @sequence::Pileup.TriggerSequence ]
 END_PROLOG
