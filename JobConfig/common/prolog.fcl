@@ -1,0 +1,49 @@
+#
+# common prolog for all production jobs.  These are mostly legacy
+#
+#include "fcl/standardServices.fcl"
+#include "Mu2eG4/fcl/prolog.fcl"
+
+BEGIN_PROLOG
+Common: {
+  services : {
+    RandomNumberGenerator : {defaultEngineKind: "MixMaxRng" }
+    GeometryService  : {
+      inputFile      : "Mu2eG4/geom/geom_common.txt"
+      simulatedDetector : { tool_type : "Mu2e" }
+    }
+    ConditionsService      : { conditionsfile : "ConditionsService/data/conditions_01.txt"      }
+    GlobalConstantsService : { inputFile      : "GlobalConstantsService/data/globalConstants_01.txt" }
+    message                : @local::default_message
+    TFileService           : { }
+    Mu2eG4Helper           : { }
+    SeedService            : @local::automaticSeeds
+    DbService : @local::DbEmpty
+    ProditionsService: @local::Proditions
+  }
+
+  producers : {
+    g4run: @local::mu2eg4runDefaultSingleStage
+    genCounter: { module_type: GenEventCounter }
+  }
+
+  filters : {
+    g4statusFilter: {
+       module_type: FilterStatusG4
+       input: "g4run"
+       maxAcceptedStatus: 1  #  status 2 and above means StepPointMCCollection may have non-dereferencable pointers
+    }
+
+    g4consistentFilter: {
+       module_type: FilterStatusG4
+       input: "g4run"
+       maxAcceptedStatus: 9  #  status 10 and above means StepPointMCCollection may have non-dereferencable pointers
+    }
+  }
+  analyzers: {
+    genCountLogger: { module_type: GenEventCountReader makeHistograms: false }
+  }
+  g4Sequence :  [ g4run, g4consistentFilter ]
+  generateSequence :  [ generate, genCounter ]
+}
+END_PROLOG

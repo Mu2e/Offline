@@ -5,7 +5,7 @@
 
 #include "JobConfig/beam/prolog.fcl"
 
-process_name: dsresampler
+process_name: DSBeamResampler
 
 source: { module_type : EmptyEvent }
 services: { @table::mu2e.services.simServices }
