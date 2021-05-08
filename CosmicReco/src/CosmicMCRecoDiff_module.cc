@@ -124,6 +124,11 @@ namespace mu2e
       Float_t _Truez0;
       Float_t _TruePhi0;
       Float_t _TrueCosT;
+      
+      Float_t _Diffd0;
+      Float_t _Diffz0;
+      Float_t _DiffPhi0;
+      Float_t _DiffCosT;
 
       Int_t _evt;
 
@@ -183,6 +188,11 @@ namespace mu2e
       _cosmic_tree->Branch("TrueErrorA1",&_RecoErrorA1,"TrueErrorA1/F");
       _cosmic_tree->Branch("TrueErrorB0",&_RecoErrorA0,"TrueErrorB0/F");
       _cosmic_tree->Branch("TrueErrorB1",&_RecoErrorA1,"TrueErrorB1/F");
+      
+      _cosmic_tree->Branch("Diffd0",&_Diffd0,"Diffd0/F");
+      _cosmic_tree->Branch("Diffz0",&_Diffz0,"Diffz0/F");
+      _cosmic_tree->Branch("DiffPhi0",&_DiffPhi0,"DiffPhi0/F");
+      _cosmic_tree->Branch("DiffCosT",&_DiffCosT,"DiffCosT/F");
     }
 
     void CosmicMCRecoDiff::beginRun(const art::Run& run){}
@@ -196,16 +206,16 @@ namespace mu2e
 
       if(!findData(event))
       //throw cet::exception("RECO")<<"No Time Clusters in event"<< endl;
-
+      std::cout<<"Size "<<_coscol->size()<<std::endl;
       for(unsigned ist = 0;ist < _coscol->size(); ++ist){
-
+        std::cout<<"Looping "<<std::endl;
         CosmicTrackSeed sts =(*_coscol)[ist];
         CosmicTrack st = sts._track;
         //double t0 = sts._t0.t0();
-        TrkFitFlag const& status = sts._status;
+        //TrkFitFlag const& status = sts._status;
 
-        if (!status.hasAllProperties(TrkFitFlag::helixOK) ){ continue; }
-        if(st.converged == false or st.minuit_converged  == false) { continue; }
+        //if (!status.hasAllProperties(TrkFitFlag::helixOK) ){ continue; }
+        //if(st.converged == false or st.minuit_converged  == false) { continue; }
 
         _RecoA0=(st.MinuitParams.A0);
         _RecoA1=(st.MinuitParams.A1);
@@ -218,7 +228,7 @@ namespace mu2e
         _Recoz0 = get<2>(KinKalParams);
         _RecoCosT = get<3>(KinKalParams);
         _RecoPhi0 = get<1>(KinKalParams);
-
+        std::cout<<_Recod0<<" "<<_Recoz0<<" "<<_RecoCosT<<" "<<_RecoPhi0<<std::endl;
         _RecoErrorA0=(st.MinuitParams.deltaA0);
         _RecoErrorA1=(st.MinuitParams.deltaA1);
         _RecoErrorB1=(st.MinuitParams.deltaB1);
@@ -244,7 +254,16 @@ namespace mu2e
         _Truez0 = dir.Z();
         _TrueCosT = PCA.point1().Z();
         _TruePhi0 = dir.Phi();
+        
+        _Diffd0 = _Recod0 - _Trued0;
+        _Diffz0 = _Recoz0 - _Truez0;
+        _DiffCosT =  _RecoCosT - _TrueCosT;
+        _DiffPhi0 =  _RecoPhi0 - _TruePhi0;
+
+
         _cosmic_tree->Fill();
+        
+        
       
       }
 
@@ -253,21 +272,16 @@ namespace mu2e
     void CosmicMCRecoDiff::endJob() {}
 
     bool CosmicMCRecoDiff::findData(const art::Event& evt){
-      _chcol = 0;
-      _tccol = 0;
+   
       _coscol = 0;
-      auto chH = evt.getValidHandle<ComboHitCollection>(_chtag);
-      _chcol = chH.product();
-      auto tcH = evt.getValidHandle<TimeClusterCollection>(_tctag);
-      _tccol =tcH.product();
       auto stH = evt.getValidHandle<CosmicTrackSeedCollection>(_costag);
       _coscol =stH.product();
-   
+      
       auto mcdH = evt.getValidHandle<StrawDigiMCCollection>(_mcdigistag);
       _mcdigis = mcdH.product();
       _toff.updateMap(evt);
 
-      return _chcol != 0 && _tccol!=0 && _coscol !=0 && _mcdigis != 0 ;
+      return  _coscol !=0 && _mcdigis != 0 ;
     }
 
 }
