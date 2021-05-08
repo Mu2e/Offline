@@ -31,16 +31,16 @@ physics: {
   }
   analyzers : @local::Common.analyzers
   # setup paths   I need to add TimeMaps and time filtering FIXME
-  tgtPath : [ genCounter, beamResampler, @sequence::Common.g4Sequence, stoppedMuonFinder, tgtStopFilter]
+  tgtPath : [ genCounter, beamResampler, @sequence::Common.g4Sequence, stoppedMuonFinder, MuTargetStopFilter]
   detPath : [ genCounter, beamResampler, @sequence::Common.g4Sequence, stoppedMuonFinder, stoppedMuonDaughters, flashPrefilter,
   @sequence::Primary.DetStepSequence ] #@sequence::CommonMC.TimeMaps, 
 
   trigger_paths: [ detPath, tgtPath ]
-  outPath : [ detectorOutput, tgtStopOutput ]
+  outPath : [ detectorOutput, MuTargetStopOutput ]
   end_paths: [outPath]
 }
 outputs: {
-  tgtStopOutput : @local::Beam.outputs.tgtStopOutput
+  MuTargetStopOutput : @local::Beam.outputs.MuTargetStopOutput
   detectorOutput : @local::Beam.outputs.detectorOutput
 }
 

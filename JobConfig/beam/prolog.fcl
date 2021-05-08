@@ -119,7 +119,7 @@ Beam: {
          vetoParticles:  [ "stoppedMuonDaughters" ]
       }
       
-      tgtStopFilter: {
+      MuTargetStopFilter: {
          module_type: FilterG4Out
          mainHitInputs: []
          extraHitInputs: [ "g4run:virtualdetector" ]
@@ -214,14 +214,14 @@ Beam: {
          ]
       }
 
-      tgtStopOutput : {
+      MuTargetStopOutput : {
         module_type : RootOutput
         SelectEvents: [tgtPath]
         outputCommands:   [ "drop *_*_*_*",
            "keep mu2e::GenParticles_*_*_*",
            "keep mu2e::GenEventCount_*_*_*",
            "keep mu2e::StatusG4_*_*_*",
-           "keep *_tgtStopFilter_*_*"
+           "keep *_MuTargetStopFilter_*_*"
         ]
         fileName    : "sim.owner.MuTargetStops.version.sequencer.art"
       }
@@ -230,7 +230,6 @@ Beam: {
          module_type: RootOutput
          SelectEvents: [detPath]
          outputCommands:   [ "drop *_*_*_*",
-            "keep mu2e::GenParticles_*_*_*",
             "keep mu2e::GenEventCount_*_*_*",
             "keep mu2e::StatusG4_*_*_*",
 	    @sequence::Pileup.KeptProducts
