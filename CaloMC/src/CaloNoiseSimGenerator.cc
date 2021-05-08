@@ -185,13 +185,6 @@ namespace mu2e {
                 if (wfVector[istart+i] < minPeakADC_) wfVector[istart+i] += digi[i];
            }   
        }
-
-
-
-
-
-
-
    }
 
 
