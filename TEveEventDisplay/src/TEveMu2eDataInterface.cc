@@ -361,16 +361,14 @@ template <typename L> void maxminCRV(L data, double &max, double &min){
       }
       
     }
-    }
+  }
     
-   void TEveMu2eDataInterface::AddHelixPieceWise3D(bool firstloop, std::tuple<std::vector<std::string>, std::vector<const KalSeedCollection*>> track_tuple, TEveMu2e2DProjection *tracker2Dproj, double min_time, double max_time, bool Redraw, bool accumulate, TEveProjectionManager *TXYMgr, TEveProjectionManager *TRZMgr, TEveScene *scene1, TEveScene *scene2){
+  void TEveMu2eDataInterface::AddHelixPieceWise3D(bool firstloop, std::tuple<std::vector<std::string>, std::vector<const KalSeedCollection*>> track_tuple, TEveMu2e2DProjection *tracker2Dproj, double min_time, double max_time, bool Redraw, bool accumulate, TEveProjectionManager *TXYMgr, TEveProjectionManager *TRZMgr, TEveScene *scene1, TEveScene *scene2){
   
     std::vector<const KalSeedCollection*> track_list = std::get<1>(track_tuple);
-
     std::vector<std::string> names = std::get<0>(track_tuple);
     std::vector<int> colour;
     for(unsigned int j=0; j< track_list.size(); j++){
-
       const KalSeedCollection* seedcol = track_list[j];
       colour.push_back(j+3);
       DataLists<const KalSeedCollection*, TEveMu2e2DProjection*>(seedcol, Redraw, accumulate, "HelixTrack", &fTrackList3D, &fTrackList2D, tracker2Dproj);
@@ -378,69 +376,59 @@ template <typename L> void maxminCRV(L data, double &max, double &min){
       TRZMgr->ImportElements(fTrackList2D, scene2); 
       if(seedcol!=0){  
         for(unsigned int k = 0; k < seedcol->size(); k = k + 20){   
-       
           KalSeed kseed = (*seedcol)[k];
           const std::vector<mu2e::KalSegment> &segments = kseed.segments();
-      size_t nSegments=segments.size();
-      if(nSegments==0) continue;
-      const mu2e::KalSegment &segmentFirst = kseed.segments().front();
-      const mu2e::KalSegment &segmentLast = kseed.segments().back();
-      double fltLMin=segmentFirst.fmin();
-      double fltLMax=segmentLast.fmax();
-    
-      TEveMu2eCustomHelix *line = new TEveMu2eCustomHelix();
-      TEveMu2eCustomHelix *line_twoD = new TEveMu2eCustomHelix();
-
-      line->fKalSeed = kseed;
-      line->SetSeedInfo(kseed);
+          size_t nSegments=segments.size();
+          if(nSegments==0) continue;
+          const mu2e::KalSegment &segmentFirst = kseed.segments().front();
+          const mu2e::KalSegment &segmentLast = kseed.segments().back();
+          double fltLMin=segmentFirst.fmin();
+          double fltLMax=segmentLast.fmax();
+          TEveMu2eCustomHelix *line = new TEveMu2eCustomHelix();
+          TEveMu2eCustomHelix *line_twoD = new TEveMu2eCustomHelix();
+          line->fKalSeed = kseed;
+          line->SetSeedInfo(kseed);
   
-      for(size_t m=0; m<nSegments; m++)
-      {
-        const mu2e::KalSegment &segment = segments.at(m);
-
-        fltLMin=segment.fmin();
-        fltLMax=segment.fmax();
-        
-        if(m>0)
-        {
-          double fltLMaxPrev=segments.at(m-1).fmax();
-          fltLMin=(fltLMin+fltLMaxPrev)/2.0;
-        }
-        if(m+1<nSegments)
-        {
-          double fltLMinNext=segments.at(m+1).fmin();
-          fltLMax=(fltLMax+fltLMinNext)/2.0;
-        }
-
-       for(double fltL=fltLMin; fltL<=fltLMax; fltL+=1.0)
-        {GeomHandle<DetectorSystem> det;
-          
-          XYZVec pos;
-          segment.helix().position(fltL,pos);
-          CLHEP::Hep3Vector p = Geom::Hep3Vec(pos);
-          CLHEP::Hep3Vector InMu2e = det->toMu2e(p);
-          line->SetPostionAndDirectionFromKalRep(pointmmTocm(InMu2e.z()));              
-          line->SetNextPoint(pointmmTocm(InMu2e.x()), pointmmTocm(InMu2e.y()), pointmmTocm(InMu2e.z()));
-          line_twoD->SetNextPoint(pointmmTocm(p.x()), pointmmTocm(p.y()), pointmmTocm(p.z()));
-        }
-      }
+          for(size_t m=0; m<nSegments; m++){
+            const mu2e::KalSegment &segment = segments.at(m);
+            fltLMin=segment.fmin();
+            fltLMax=segment.fmax();
+            if(m>0){
+              double fltLMaxPrev=segments.at(m-1).fmax();
+              fltLMin=(fltLMin+fltLMaxPrev)/2.0;
+            }
+            if(m+1<nSegments){
+              double fltLMinNext=segments.at(m+1).fmin();
+              fltLMax=(fltLMax+fltLMinNext)/2.0;
+            }
+            for(double fltL=fltLMin; fltL<=fltLMax; fltL+=1.0){
+	      GeomHandle<DetectorSystem> det;
+              XYZVec pos;
+              segment.helix().position(fltL,pos);
+              CLHEP::Hep3Vector p = Geom::Hep3Vec(pos);
+              CLHEP::Hep3Vector InMu2e = det->toMu2e(p);
+              line->SetPostionAndDirectionFromKalRep(pointmmTocm(InMu2e.z()));              
+              line->SetNextPoint(pointmmTocm(InMu2e.x()), pointmmTocm(InMu2e.y()), pointmmTocm(InMu2e.z()));
+              line_twoD->SetNextPoint(pointmmTocm(p.x()), pointmmTocm(p.y()), pointmmTocm(p.z()));
+            }
+          }
           
           line_twoD->SetLineColor(colour[j]);
           line_twoD->SetLineWidth(3);
           fTrackList2D->AddElement(line_twoD);
 
-        line->SetPickable(kTRUE);
-        const std::string title = "Helix: " + names[j] + "PDG Code = " + to_string(line->PDGcode) +", Momentum = " + to_string(line->Momentum)+ ", Time = " + to_string(line->Time);
-        line->SetTitle(Form(title.c_str()));
-        line->SetLineColor(colour[j]);
-        line->SetLineWidth(3);
-        fTrackList3D->AddElement(line);
-      }
+          line->SetPickable(kTRUE);
+          const std::string title = "Helix: " + names[j] + "PDG Code = " + to_string(line->PDGcode) +", Momentum = " + to_string(line->Momentum)+ ", Time = " + to_string(line->Time);
+          line->SetTitle(Form(title.c_str()));
+          line->SetLineColor(colour[j]);
+          line->SetLineWidth(3);
+          fTrackList3D->AddElement(line);
+        }
         
-      TXYMgr->ImportElements(fTrackList2D, scene1);
-      TRZMgr->ImportElements(fTrackList2D, scene2);
-      gEve->AddElement(fTrackList3D);
-      gEve->Redraw3D(kTRUE);
+        TXYMgr->ImportElements(fTrackList2D, scene1);
+        TRZMgr->ImportElements(fTrackList2D, scene2);
+        gEve->AddElement(fTrackList3D);
+        gEve->Redraw3D(kTRUE);
       }
       
     }
