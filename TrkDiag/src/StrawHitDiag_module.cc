@@ -228,6 +228,7 @@ namespace mu2e
       _shdiag->Branch("mcgen",&_mcgen,"mcgen/I");
       _shdiag->Branch("mcproc",&_mcproc,"mcproc/I");
       _shdiag->Branch("mcsptime",&_mcsptime,"mcsptime/D");
+      _shdiag->Branch("pbtmc",&_pbtmc,"pbtmc/F");
       _shdiag->Branch("mcwt",&_mcwt,"mcwtcal/F:mcwthv/F");
       _shdiag->Branch("mcppdg",&_mcppdg,"mcppdg/I");
       _shdiag->Branch("mcpproc",&_mcpproc,"mcpproc/I");
