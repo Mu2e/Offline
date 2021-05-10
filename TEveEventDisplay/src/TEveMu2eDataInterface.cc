@@ -382,14 +382,12 @@ template <typename L> void maxminCRV(L data, double &max, double &min){
           KalSeed kseed = (*seedcol)[k];
           const std::vector<mu2e::KalSegment> &segments = kseed.segments();
       size_t nSegments=segments.size();
-      std::cout<<"KalSegment size ="<<segments.size()<<std::endl;
       if(nSegments==0) continue;
       const mu2e::KalSegment &segmentFirst = kseed.segments().front();
       const mu2e::KalSegment &segmentLast = kseed.segments().back();
       double fltLMin=segmentFirst.fmin();
       double fltLMax=segmentLast.fmax();
-      std::cout<<"f min ="<<fltLMin<<"f max ="<<fltLMax<<std::endl;
-
+    
       TEveMu2eCustomHelix *line = new TEveMu2eCustomHelix();
       TEveMu2eCustomHelix *line_twoD = new TEveMu2eCustomHelix();
 
@@ -402,21 +400,18 @@ template <typename L> void maxminCRV(L data, double &max, double &min){
 
         fltLMin=segment.fmin();
         fltLMax=segment.fmax();
-        std::cout<<"Inside loop , fmin ="<<fltLMin<<" fmax="<<fltLMax<<std::endl;
+        
         if(m>0)
         {
           double fltLMaxPrev=segments.at(m-1).fmax();
           fltLMin=(fltLMin+fltLMaxPrev)/2.0;
-          std::cout<<"fltMaxPrev ="<<fltLMaxPrev<<"fltmin ="<<fltLMin<<std::endl;
         }
         if(m+1<nSegments)
         {
           double fltLMinNext=segments.at(m+1).fmin();
           fltLMax=(fltLMax+fltLMinNext)/2.0;
-          std::cout<<"fltMinNext ="<<fltLMinNext<<"fltMax ="<<fltLMax<<std::endl;
         }
 
-      
        for(double fltL=fltLMin; fltL<=fltLMax; fltL+=1.0)
         {GeomHandle<DetectorSystem> det;
           
