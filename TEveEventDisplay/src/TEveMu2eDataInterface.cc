@@ -8,6 +8,7 @@
 #include <algorithm>
 #include "TEveEventDisplay/src/TEveMu2e_base_classes/TEveMu2eDataInterface.h"
 #include "TEveEventDisplay/src/dict_classes/GeomUtils.h"
+#include "TrkReco/inc/TrkUtilities.hh"
 
 
 using namespace mu2e;
@@ -362,7 +363,7 @@ template <typename L> void maxminCRV(L data, double &max, double &min){
     }
     }
     
-  void TEveMu2eDataInterface::AddHelixPieceWise3D(bool firstloop, std::tuple<std::vector<std::string>, std::vector<const KalSeedCollection*>> track_tuple, TEveMu2e2DProjection *tracker2Dproj, double min_time, double max_time, bool Redraw, bool accumulate, TEveProjectionManager *TXYMgr, TEveProjectionManager *TRZMgr, TEveScene *scene1, TEveScene *scene2){
+   void TEveMu2eDataInterface::AddHelixPieceWise3D(bool firstloop, std::tuple<std::vector<std::string>, std::vector<const KalSeedCollection*>> track_tuple, TEveMu2e2DProjection *tracker2Dproj, double min_time, double max_time, bool Redraw, bool accumulate, TEveProjectionManager *TXYMgr, TEveProjectionManager *TRZMgr, TEveScene *scene1, TEveScene *scene2){
   
     std::vector<const KalSeedCollection*> track_list = std::get<1>(track_tuple);
 
@@ -376,43 +377,59 @@ template <typename L> void maxminCRV(L data, double &max, double &min){
       TXYMgr->ImportElements(fTrackList2D, scene1); 
       TRZMgr->ImportElements(fTrackList2D, scene2); 
       if(seedcol!=0){  
-        for(unsigned int k = 0; k < seedcol->size(); k = k + 20){
+        for(unsigned int k = 0; k < seedcol->size(); k = k + 20){   
+       
           KalSeed kseed = (*seedcol)[k];
-          TEveMu2eCustomHelix *line = new TEveMu2eCustomHelix();
-          TEveMu2eCustomHelix *line_twoD = new TEveMu2eCustomHelix();
-          line->fKalSeed = kseed;
-          line->SetSeedInfo(kseed);
+          const std::vector<mu2e::KalSegment> &segments = kseed.segments();
+      size_t nSegments=segments.size();
+      std::cout<<"KalSegment size ="<<segments.size()<<std::endl;
+      if(nSegments==0) continue;
+      const mu2e::KalSegment &segmentFirst = kseed.segments().front();
+      const mu2e::KalSegment &segmentLast = kseed.segments().back();
+      double fltLMin=segmentFirst.fmin();
+      double fltLMax=segmentLast.fmax();
+      std::cout<<"f min ="<<fltLMin<<"f max ="<<fltLMax<<std::endl;
 
-          unsigned int nSteps = 500;  
-          double kStepSize = 6.1;//nSteps/(TrackerLength())+70; //+ 70;///TODO CaloLength() +
-          for(unsigned int i = 0 ; i< nSteps; i++){
-            double zpos = (i*kStepSize)-TrackerLength()/2;
-            GeomHandle<DetectorSystem> det;
-            if(i==0) {
-              line->SetPostionAndDirectionFromKalRep(zpos);
-              CLHEP::Hep3Vector Pos(line->Position.x(), line->Position.y(), zpos+line->Position.z());
-              std::cout<<"track "<<Pos.x()<<" "<<Pos.y()<<" "<<Pos.z()<<std::endl;
-              double x = (Pos.x()+line->Direction.x()*line->Momentum);
-              double y = (Pos.y()+line->Direction.y()*line->Momentum);
-              double z = (Pos.z());
-              CLHEP::Hep3Vector Point(x,y,z);
-              CLHEP::Hep3Vector InMu2e = det->toMu2e(Point);
-              line->SetPoint(i,pointmmTocm(InMu2e.x()), pointmmTocm(InMu2e.y()), pointmmTocm(InMu2e.z()));
-              line_twoD->SetPoint(i,pointmmTocm(Point.x()), pointmmTocm(Point.y()), pointmmTocm(Point.z()));
-            } else {
-              line->SetPostionAndDirectionFromKalRep(zpos);
-              CLHEP::Hep3Vector Pos(line->Position.x(), line->Position.y(), zpos+line->Position.z());
-              std::cout<<Pos.x()<<" "<<Pos.y()<<" "<<Pos.z()<<std::endl;
-              double x = (Pos.x()+line->Direction.x()*line->Momentum);
-              double y = (Pos.y()+line->Direction.y()*line->Momentum);
-              double z = (Pos.z());
-              CLHEP::Hep3Vector Point(x,y,z);
-              CLHEP::Hep3Vector InMu2e = det->toMu2e(Point);
-              line->SetNextPoint(pointmmTocm(InMu2e.x()), pointmmTocm(InMu2e.y()), pointmmTocm(InMu2e.z()));
-              line_twoD->SetNextPoint(pointmmTocm(Point.x()), pointmmTocm(Point.y()), pointmmTocm(Point.z()));
-              }
-          }
-        
+      TEveMu2eCustomHelix *line = new TEveMu2eCustomHelix();
+      TEveMu2eCustomHelix *line_twoD = new TEveMu2eCustomHelix();
+
+      line->fKalSeed = kseed;
+      line->SetSeedInfo(kseed);
+  
+      for(size_t m=0; m<nSegments; m++)
+      {
+        const mu2e::KalSegment &segment = segments.at(m);
+
+        fltLMin=segment.fmin();
+        fltLMax=segment.fmax();
+        std::cout<<"Inside loop , fmin ="<<fltLMin<<" fmax="<<fltLMax<<std::endl;
+        if(m>0)
+        {
+          double fltLMaxPrev=segments.at(m-1).fmax();
+          fltLMin=(fltLMin+fltLMaxPrev)/2.0;
+          std::cout<<"fltMaxPrev ="<<fltLMaxPrev<<"fltmin ="<<fltLMin<<std::endl;
+        }
+        if(m+1<nSegments)
+        {
+          double fltLMinNext=segments.at(m+1).fmin();
+          fltLMax=(fltLMax+fltLMinNext)/2.0;
+          std::cout<<"fltMinNext ="<<fltLMinNext<<"fltMax ="<<fltLMax<<std::endl;
+        }
+
+      
+       for(double fltL=fltLMin; fltL<=fltLMax; fltL+=1.0)
+        {GeomHandle<DetectorSystem> det;
+          
+          XYZVec pos;
+          segment.helix().position(fltL,pos);
+          CLHEP::Hep3Vector p = Geom::Hep3Vec(pos);
+          CLHEP::Hep3Vector InMu2e = det->toMu2e(p);
+          line->SetPostionAndDirectionFromKalRep(pointmmTocm(InMu2e.z()));              
+          line->SetNextPoint(pointmmTocm(InMu2e.x()), pointmmTocm(InMu2e.y()), pointmmTocm(InMu2e.z()));
+          line_twoD->SetNextPoint(pointmmTocm(p.x()), pointmmTocm(p.y()), pointmmTocm(p.z()));
+        }
+      }
+          
           line_twoD->SetLineColor(colour[j]);
           line_twoD->SetLineWidth(3);
           fTrackList2D->AddElement(line_twoD);
