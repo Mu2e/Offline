@@ -56,6 +56,13 @@ mu2e.IPAMuonStops: {
     verbosityLevel        : 0
 }
 
+# Generate Event; this is legacy, should not be used
+generate: {
+    module_type          : EventGenerator
+    allowReplacement     : true
+    messageOnReplacement : true
+}
+
 # provided for consistency in some production scripts
 dummyGenerator : {
   module_type : EventGenerator
