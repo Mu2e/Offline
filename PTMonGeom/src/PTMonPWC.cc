@@ -66,6 +66,7 @@ namespace mu2e {
       double gasX3 = (0.5*windowWidth) - ((i+0.5)*2.*horizWireHalfWidth);
       _horizWireXpos.push_back(gasX3);
     }
+    _upstreamWindowSurfaceZ = _ground1Z - (0.5*windowThick);
   } // ctor
 
 } // namespace mu2e
