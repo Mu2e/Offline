@@ -1,5 +1,5 @@
-#ifndef DbTables_CalotoDIRAC_hh
-#define DbTables_CalotoDIRAC_hh
+#ifndef DbTables_CalRoIDMapOfflineToDIRAC_hh
+#define DbTables_CalRoIDMapOfflineToDIRAC_hh
 
 
 #include <string>
@@ -11,12 +11,12 @@
 
 namespace mu2e {
 
-  class CalotoDIRAC : public DbTable {
+  class CalRoIDMapOfflineToDIRAC : public DbTable {
   public:
 
-    typedef std::shared_ptr<CalotoDIRAC> ptr_t;
-    typedef std::shared_ptr<const CalotoDIRAC> cptr_t;
-    constexpr static const char* cxname = {"CalotoDIRAC"};
+    typedef std::shared_ptr<CalRoIDMapOfflineToDIRAC> ptr_t;
+    typedef std::shared_ptr<const CalRoIDMapOfflineToDIRAC> cptr_t;
+    constexpr static const char* cxname = {"CalRoIDMapOfflineToDIRAC"};
     
     class Row {
     public:
@@ -29,7 +29,7 @@ namespace mu2e {
     };
     
     
-    CalotoDIRAC():DbTable(cxname,"calo.calotodirac",
+    CalRoIDMapOfflineToDIRAC():DbTable(cxname,"cal.offlinetodirac",
 			  "offlineID,diracID") {}
     const Row&              rowAt(const std::size_t index) const { return _rows.at(index);}
     std::vector<Row> const& rows()    const { return _rows;}

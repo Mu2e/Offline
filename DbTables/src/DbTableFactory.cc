@@ -12,8 +12,8 @@
 #include "DbTables/inc/TrkAlignStraw.hh"
 #include "DbTables/inc/TrkElementStatus.hh"
 #include "DbTables/inc/AnaTrkQualDb.hh"
-#include "DbTables/inc/DIRACtoCalo.hh"
-#include "DbTables/inc/CalotoDIRAC.hh"
+#include "DbTables/inc/CalRoIDMapDIRACToOffline.hh"
+#include "DbTables/inc/CalRoIDMapOfflineToDIRAC.hh"
 
 #include "DbTables/inc/SimEfficiencies.hh"
 
@@ -52,10 +52,10 @@ mu2e::DbTable::ptr_t mu2e::DbTableFactory::newTable(std::string const& name) {
     return std::shared_ptr<mu2e::DbTable>(new mu2e::AnaTrkQualDb());
   } else if (name=="SimEfficiencies") {
     return std::shared_ptr<mu2e::DbTable>(new mu2e::SimEfficiencies());
-  } else if (name=="DIRACtoCalo") {
-    return std::shared_ptr<mu2e::DbTable>(new mu2e::DIRACtoCalo());
-  } else if (name=="CalotoDIRAC") {
-    return std::shared_ptr<mu2e::DbTable>(new mu2e::CalotoDIRAC());    
+  } else if (name=="CalRoIDMapDIRACToOffline") {
+    return std::shared_ptr<mu2e::DbTable>(new mu2e::CalRoIDMapDIRACToOffline());
+  } else if (name=="CalRoIDMapOfflineToDIRAC") {
+    return std::shared_ptr<mu2e::DbTable>(new mu2e::CalRoIDMapOfflineToDIRAC());    
   } else {
     throw cet::exception("DBFILE_BAD_TABLE_NAME")
       << "DbTableFactory::newTable call with bad table name: "+name+"\n";

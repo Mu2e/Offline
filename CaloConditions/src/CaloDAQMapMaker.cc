@@ -16,8 +16,8 @@ namespace mu2e {
 
   } // end fromFcl
 
-  ptr_t CaloDAQMapMaker::fromDb(DIRACtoCalo::cptr_t tdtc,
-				CalotoDIRAC::cptr_t tctd ) {
+  ptr_t CaloDAQMapMaker::fromDb(CalRoIDMapDIRACToOffline::cptr_t tdtc,
+				CalRoIDMapOfflineToDIRAC::cptr_t tctd ) {
 
     // initially fill from fcl to get all the constants
     auto ptr = fromFcl();
