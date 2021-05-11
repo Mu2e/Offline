@@ -99,7 +99,7 @@ namespace mu2e {
     art::ServiceHandle<art::TFileService> tfs;
 
     _ntPTargetMon = tfs->make<TNtuple>( "ntPTargetMon", "PTargetMon ntuple",
-                                "run:evt:volId:trk:pdg:time:x:y:z:px:py:pz:iedep:"
+                                "run:evt:volId:trk:pdg:time:x:y:z:px:py:pz:iedep:totedep:"
                                 "gtime");
   }
 
@@ -157,7 +157,8 @@ namespace mu2e {
       nt[10] = mom.y();
       nt[11] = mom.z();
       nt[12] = hit.ionizingEdep();
-      nt[13] = hit.properTime();
+      nt[13] = hit.totalEDep();
+      nt[14] = hit.properTime();
 
       _ntPTargetMon->Fill(nt);
       if ( _nAnalyzed < _maxPrint){
