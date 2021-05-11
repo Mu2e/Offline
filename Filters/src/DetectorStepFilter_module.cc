@@ -7,6 +7,7 @@
 
 // art includes.
 #include "fhiclcpp/ParameterSet.h"
+#include "cetlib_except/exception.h"
 #include "art/Framework/Core/EDFilter.h"
 #include "art/Framework/Principal/Event.h"
 #include "art/Framework/Principal/Run.h"
@@ -18,6 +19,7 @@
 #include "MCDataProducts/inc/CaloShowerStep.hh"
 #include "MCDataProducts/inc/CrvStep.hh"
 #include "MCDataProducts/inc/SimParticle.hh"
+#include "Mu2eUtilities/inc/SimParticleTimeOffset.hh"
 #include <map>
 namespace mu2e {
 
@@ -50,6 +52,9 @@ namespace mu2e {
 
 	fhicl::Sequence<int> keepPDG { Name("KeepPDG"), Comment("PDG particle codes to keep") };
 
+	fhicl::Atom<double> minTime { Name("MinimumTime"), Comment("Minimum time for good step (ns since POT)"), -1.0};
+	fhicl::Sequence<art::InputTag> SPTO { Name("TimeOffsets"), Comment("Sim Particle Time Offset Maps"),  std::vector<art::InputTag> () };
+
       };
 
       using Parameters = art::EDFilter::Table<Config>;
@@ -68,6 +73,8 @@ namespace mu2e {
       double minSumCaloE_;
       unsigned maxNTrk_, maxNCrv_;
       double maxSumCaloE_;
+      double minTime_;
+      SimParticleTimeOffset toff_; // time offsets
       unsigned nEvt_, nPassed_;
   };
 
@@ -86,6 +93,8 @@ namespace mu2e {
     , maxNTrk_(conf().maxNTrkSteps())
     , maxNCrv_(conf().maxNCrvSteps())
     , maxSumCaloE_(conf().maxSumCaloStepE())
+    , minTime_(conf().minTime())
+    , toff_(conf().SPTO())
     , nEvt_(0)
     , nPassed_(0)
     {
@@ -93,9 +102,14 @@ namespace mu2e {
       for(const auto& trktag : conf().trkSteps()) { trkStepCols_.emplace_back(trktag); consumes<StrawGasStepCollection>(trktag); }
       for(const auto& calotag : conf().caloSteps()) { caloStepCols_.emplace_back(calotag); consumes<CaloShowerStepCollection>(calotag); }
       for(const auto& crvtag : conf().crvSteps()) { crvStepCols_.emplace_back(crvtag);  consumes<CrvStepCollection>(crvtag); }
+
+      if(minTime_ >  -1.0 && conf().SPTO().size() ==0)
+	throw cet::exception("Filter")<<"mu2e::DetectorStepFilter: time cut requires time offsets" <<  std::endl;
     }
 
   bool DetectorStepFilter::filter(art::Event& event) {
+    if(minTime_ > -1.0)toff_.updateMap(event);
+
     bool selecttrk(false), selectcalo(false), selectcrv(false);
     ++nEvt_;
     // Count Trk step from same particle
@@ -107,7 +121,8 @@ namespace mu2e {
 	double mom = sgs.momentum().R();
 	if(sgs.ionizingEdep() > minTrkE_ && 
 	    mom > minPartM_ && mom < maxPartM_ &&
-	    goodParticle(*sgs.simParticle())){
+	    goodParticle(*sgs.simParticle()) &&
+	    (minTime_ < 0.0 || sgs.time() + toff_.totalTimeOffset(sgs.simParticle()) > minTime_)) {
 	  auto ifnd = counttrk.find(sgs.simParticle().get());
 	  if(ifnd == counttrk.end())
 	    counttrk.insert(CT::value_type(sgs.simParticle().get(),1));
@@ -131,7 +146,8 @@ namespace mu2e {
       for(const auto& css : *csscolH ) {
 	if(css.energyDepBirks() > minCaloE_ && 
 	    css.momentumIn() > minPartM_ && css.momentumIn() < maxPartM_ &&
-	    goodParticle(*css.simParticle())){
+	    goodParticle(*css.simParticle()) &&
+	    (minTime_ < 0.0 || css.time() + toff_.totalTimeOffset(css.simParticle()) > minTime_)) {
 	  auto ifnd = caloESum.find(css.simParticle().get());
 	  if(ifnd == caloESum.end())
 	    caloESum.insert(CES::value_type(css.simParticle().get(),css.energyDepBirks()));
@@ -156,7 +172,8 @@ namespace mu2e {
 	double mom = crvs.startMom().R();
 	if(crvs.visibleEDep() > minCrvE_ && 
 	    mom > minPartM_ && mom < maxPartM_ &&
-	    goodParticle(*crvs.simParticle())) {
+	    goodParticle(*crvs.simParticle()) &&
+	    (minTime_ < 0.0 || crvs.startTime() + toff_.totalTimeOffset(crvs.simParticle()) > minTime_)) {
 	  auto ifnd = countcrv.find(crvs.simParticle().get());
 	  if(ifnd == countcrv.end())
 	    countcrv.insert(CC::value_type(crvs.simParticle().get(),1));

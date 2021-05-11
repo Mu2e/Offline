@@ -1,8 +1,4 @@
 # -*- mode: tcl -*-
-#------------------------------------------------------------------------------
-# this file is included by fcl/standardProducers.fcl inside the PROLOG section
-#------------------------------------------------------------------------------
-
 BEGIN_PROLOG
 
 # define non-proton GenIDs

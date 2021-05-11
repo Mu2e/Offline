@@ -20,7 +20,7 @@ physics : {
     @table::Primary.filters 
   }
   analyzers : { @table::Primary.analyzers }
-  TriggerPath : [ @sequence::Common.generateSequence, @sequence::Common.g4Sequence,  @sequence::Primary.DetStepSequence, FindMCPrimary ]
+  TriggerPath : [ @sequence::Common.generateSequence, @sequence::Common.g4Sequence,  @sequence::Primary.DetStepSequence, @sequence::Primary.DetStepFilterSequence, FindMCPrimary ]
   EndPath : @local::Primary.EndPath
   trigger_paths : [ TriggerPath ]
   end_paths : [ EndPath ]
