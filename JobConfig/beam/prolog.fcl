@@ -151,9 +151,31 @@ Beam: {
          }
       }
 
+      crvResampler: {
+         module_type: ResamplingMixer
+         fileNames: @nil
+         readMode: "sequential"
+         wrapFiles: true
+         mu2e: {
+	    writeEventIDs : true
+            products: {
+               genParticleMixer: { mixingMap: [ [ "generate", "" ] ] }
+               simParticleMixer: { mixingMap: [ [ "CRVNeutralsFilter", "" ] ] }
+               stepPointMCMixer: { mixingMap: [
+                     [ "CRVNeutralsFilter:CRVNeutrals", ":" ]
+                  ] }
+      
+               volumeInfoMixer: {
+                  srInput: "compressPVCRVNeutrals"
+                  evtOutInstanceName: "eventlevel"
+               }
+            }
+         }
+      }
+
       EarlyPrescaleFilter : {
         module_type : PrescaleEvent
-	nPrescale         : 1
+	nPrescale         : 1000
 	triggerPath        : "earlyFlashPath"
 	triggerFlag   : ["PrescaleRandom"]      
       }
@@ -248,7 +270,6 @@ Beam: {
             "keep mu2e::SimParticleart::Ptrdoublestd::map_*_*_*",
 	    @sequence::Pileup.KeptProducts
          ]
-         fileName: "dts.owner.BeamFlash.version.sequencer.art"
       }
 
 # Sadly, I have to replicate the content of Pileup.KeptProducts below, since FCL is not a language and won't allow me to define a variable.
@@ -276,7 +297,6 @@ Beam: {
 	    "keep art::TriggerResults_*_*_*",
 	    "keep mu2e::GenEventCount_*_*_*" 
          ]
-         fileName: "dts.owner.EarlyBeamFlash.version.sequencer.art"
       }
    }
 
