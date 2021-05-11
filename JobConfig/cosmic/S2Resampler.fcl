@@ -18,12 +18,10 @@ physics.producers.g4run.Mu2eG4CommonCut: @local::Cosmic.Mu2eG4CommonCutCosmicS2
 physics.producers.g4run.SDConfig.preSimulatedHits:  ["cosmicResample:CRV"]
 physics.producers.FindMCPrimary.PrimaryGenIds: ["CosmicCRY", "CosmicCORSIKA"]
 
-resampler.mu2e.writeEventIDs : true
-
+physics.filters.cosmicResample.mu2e.writeEventIDs : true
 
 physics.TriggerPath: [cosmicResample, @sequence::Primary.TriggerSequence]
 outputs.Output.fileName        : "dts.owner.Cosmic.version.sequencer.art"
 outputs.Output.outputCommands : [@sequence::Primary.KeptProducts, "keep art::EventIDs_*_*_*"]
 
-// Test on the file with events that deposited lower than 14 MeV in CRV
-//physics.filters.cosmicResample.fileNames: ["/mu2e/app/users/srsoleti/sim.owner.CosmicDSStops.version.sequencer.art"]
+//physics.filters.cosmicResample.fileNames: ["/mu2e/app/users/srsoleti/sim.owner.CosmicDSStopsCORSIKA.version.sequencer.art"]
