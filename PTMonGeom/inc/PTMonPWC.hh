@@ -72,7 +72,7 @@ namespace mu2e {
     double      gasOutZ()            const { return _gasOutZ; }
     double      ground2Z()           const { return _ground2Z; }
     double      totalThick()         const { return _totalThick; }
-    
+    double      upstreamWindowSurfaceZ() const { return _upstreamWindowSurfaceZ; }
 
 
 
@@ -116,6 +116,8 @@ namespace mu2e {
     double _gasOutZ;
 
     double _totalThick;
+    // Z position of the upstream surface of the ground 1 plane
+    double _upstreamWindowSurfaceZ;
 
   }; // class PTMonPWC
 } // namespace mu2e
