@@ -56,14 +56,6 @@ mu2e.IPAMuonStops: {
     verbosityLevel        : 0
 }
 
-# Generate Event
-generate: {
-    module_type          : EventGenerator
-    inputfile            : "Mu2eG4/test/genconfig_02.txt"
-    allowReplacement     : true
-    messageOnReplacement : true
-}
-
 # provided for consistency in some production scripts
 dummyGenerator : {
   module_type : EventGenerator
