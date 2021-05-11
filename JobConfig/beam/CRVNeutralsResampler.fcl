@@ -1,9 +1,8 @@
 #
-# Re-sample particles entering the DS, propagate them to the detectors or stopping target, and write out the corresponding flash DetectorSteps and target mustops.
+# Re-sample (mostly neutral) particles exiting the TS or PS headed towards the CRV, and write out the corresponding flash DetectorSteps
 # Note the main flash stream has a time cut to avoid energy far outside the digitization window.  A prescaled but otherwise uncut stream is used to
 # record the flash peak
 #
-# original author: Yuri Oksuzian, 2019
 # Updated for MDC2020 (DetectorSteps): D. Brown
 
 #include "CommonMC/fcl/prolog.fcl"
@@ -37,42 +36,36 @@ physics: {
     @table::Common.analyzers
   }
   # setup paths
-  mustopPath : [ genCounter, beamResampler, @sequence::Common.g4Sequence, stoppedMuonFinder, MuTargetStopFilter]
-  flashPath : [ genCounter, beamResampler, @sequence::Common.g4Sequence, stoppedMuonFinder, stoppedMuonDaughters, FlashFilter,
-	      @sequence::Primary.DetStepSequence, protonTimeMap, @sequence::Primary.DetStepFilterSequence ]
-  earlyFlashPath : [ genCounter, beamResampler, @sequence::Common.g4Sequence, stoppedMuonFinder, stoppedMuonDaughters, FlashFilter, EarlyPrescaleFilter,
-	      @sequence::Primary.DetStepSequence, EarlyDetStepFilter, compressEarlyDetStepMCs ]
-  trigger_paths: [ flashPath, earlyFlashPath, mustopPath ]
-  outPath : [ FlashOutput, EarlyFlashOutput, MuTargetStopOutput ]
+  flashPath : [ genCounter, crvResampler, @sequence::Common.g4Sequence, @sequence::Primary.DetStepSequence, protonTimeMap, @sequence::Primary.DetStepFilterSequence ]
+  earlyFlashPath : [ genCounter, crvResampler, @sequence::Common.g4Sequence, EarlyPrescaleFilter, @sequence::Primary.DetStepSequence, EarlyDetStepFilter, compressEarlyDetStepMCs ]
+  trigger_paths: [ flashPath, earlyFlashPath ]
+  outPath : [ FlashOutput, EarlyFlashOutput ]
   end_paths: [outPath]
 }
 outputs: {
-  MuTargetStopOutput : @local::Beam.outputs.MuTargetStopOutput
   FlashOutput : {
     @table::Beam.outputs.FlashOutput
-    fileName: "dts.owner.BeamFlash.version.sequencer.art"
+    fileName: "dts.owner.CRVFlash.version.sequencer.art"
   }
   EarlyFlashOutput : {
     @table::Beam.outputs.EarlyFlashOutput
-    fileName: "dts.owner.EarlyBeamFlash.version.sequencer.art"
+    fileName: "dts.owner.EarlyCRVFlash.version.sequencer.art"
   }
 }
 
 # Point Mu2eG4 to the pre-simulated data
 physics.producers.g4run.inputs: {
    primaryType: "StepPoints"
-   primaryTag: "beamResampler:Beam"
+   primaryTag: "crvResampler:CRVNeutrals"
    inputMCTrajectories: ""
 
    simStageOverride: 1
-   inputPhysVolumeMultiInfo: "beamResampler"
+   inputPhysVolumeMultiInfo: "crvResampler"
    updateEventLevelVolumeInfos: {
-      input: "beamResampler:eventlevel"
+      input: "crvResampler:eventlevel"
       outInstance: "eventlevel"
    }
 }
-# copy over VD hits 
-physics.producers.g4run.SDConfig.preSimulatedHits:  ["beamResampler:virtualdetector"]
 # Kill stuck e+/e-
 physics.producers.g4run.Mu2eG4CommonCut:{
    type: intersection
@@ -87,18 +80,16 @@ physics.producers.g4run.Mu2eG4CommonCut:{
 physics.producers.compressEarlyDetStepMCs.stepPointMCTags : [ ]
 physics.producers.compressEarlyDetStepMCs.compressionOptions : @local::DetStepCompression.extraCompression
 physics.producers.compressEarlyDetStepMCs.mcTrajectoryTag : ""
-physics.producers.compressEarlyDetStepMCs.simParticleTag : "g4run"
-# reconfigure StepPoint producers for this job; this avoids double-counting particles
-physics.producers.StrawGasStepMaker.SkipTheseStepPoints : "g4run"
+#physics.producers.compressEarlyDetStepMCs.simParticleTag : "g4run"
 physics.producers.StrawGasStepMaker.KeepDeltasModule : ""
-physics.producers.CaloShowerStepMaker.caloStepPointCollection : ["FlashFilter:calorimeter"]
-physics.producers.CrvSteps.stepPointsModuleLabels : [ "FlashFilter" ]
+#physics.producers.CaloShowerStepMaker.caloStepPointCollection : ["g4run:calorimeter"]
+#physics.producers.CrvSteps.stepPointsModuleLabels : [ "g4run" ]
 # tweak compression for this job
-physics.producers.compressDetStepMCs.simParticleTag : "FlashFilter"
+#physics.producers.compressDetStepMCs.simParticleTag : "g4runr"
 # time cut for the main flash stream
 physics.filters.DetStepFilter.MinimumTime : 300 # select energy deposits after the peak of the flash has passed, to keep useless payload down
 physics.filters.DetStepFilter.TimeOffsets : [ "protonTimeMap" ] # only proton time map is relevant to this job
 
 # test
-physics.filters.beamResampler.fileNames: [ "sim.owner.Beam.version.sequencer.art" ]
+physics.filters.crvResampler.fileNames: [ "sim.owner.CRVNeutrals.version.sequencer.art" ]
 
