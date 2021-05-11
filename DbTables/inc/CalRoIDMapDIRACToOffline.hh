@@ -1,5 +1,5 @@
-#ifndef DbTables_DIRACtoCalo_hh
-#define DbTables_DIRACtoCalo_hh
+#ifndef DbTables_CalRoIDMapDIRACToOffline_hh
+#define DbTables_CalRoIDMapDIRACToOffline_hh
 
 
 #include <string>
@@ -11,12 +11,12 @@
 
 namespace mu2e {
 
-  class DIRACtoCalo : public DbTable {
+  class CalRoIDMapDIRACToOffline : public DbTable {
   public:
 
-    typedef std::shared_ptr<DIRACtoCalo> ptr_t;
-    typedef std::shared_ptr<const DIRACtoCalo> cptr_t;
-    constexpr static const char* cxname = {"DIRACtoCalo"};
+    typedef std::shared_ptr<CalRoIDMapDIRACToOffline> ptr_t;
+    typedef std::shared_ptr<const CalRoIDMapDIRACToOffline> cptr_t;
+    constexpr static const char* cxname = {"CalRoIDMapDIRACToOffline"};
     
     class Row {
     public:
@@ -29,7 +29,7 @@ namespace mu2e {
     };
 
 
-    DIRACtoCalo():DbTable(cxname,"calo.diractocalo",
+    CalRoIDMapDIRACToOffline():DbTable(cxname,"cal.diractooffline",
 			  "diracID,caloRoID") {}
     const Row&              rowAt(const std::size_t diracID) const { return _rows.at(diracID);}
     std::vector<Row> const& rows()    const { return _rows;}
@@ -41,8 +41,8 @@ namespace mu2e {
       int channel = std::stoi(columns[0]);
       // enforce a strict sequential order - optional
       if(channel!=int(_rows.size())) {
-	throw cet::exception("DIRACtoCalo_BAD_INDEX") 
-	  << "DIRACtoCalo::addRow found index out of order: " 
+	throw cet::exception("CalRoIDMapDIRACToOffline_BAD_INDEX") 
+	  << "CalRoIDMapDIRACToOffline::addRow found index out of order: " 
 	  << channel << " != " << _rows.back().caloRoID()+1 <<"\n";
       }
       _rows.emplace_back(channel,

@@ -4,8 +4,8 @@
 #include "Mu2eInterfaces/inc/ProditionsCache.hh"
 //#include "DbTables/inc/DbIoV.hh"
 #include "DbService/inc/DbHandle.hh"
-#include "DbTables/inc/DIRACtoCalo.hh"
-#include "DbTables/inc/CalotoDIRAC.hh"
+#include "DbTables/inc/CalRoIDMapDIRACToOffline.hh"
+#include "DbTables/inc/CalRoIDMapOfflineToDIRAC.hh"
 
 #include "CaloConditions/inc/CaloDAQMapMaker.hh"
 
@@ -19,8 +19,8 @@ namespace mu2e {
 
     void initialize() {
       if(_useDb) {
-	_tdtc_p = std::make_unique<DbHandle<DIRACtoCalo>>();
-	_tctd_p = std::make_unique<DbHandle<CalotoDIRAC>>();
+	_tdtc_p = std::make_unique<DbHandle<CalRoIDMapDIRACToOffline>>();
+	_tctd_p = std::make_unique<DbHandle<CalRoIDMapOfflineToDIRAC>>();
       }
     }
     
@@ -66,8 +66,8 @@ namespace mu2e {
 
     // these handles are not default constructed
     // so the db can be completely turned off
-    std::unique_ptr<DbHandle<DIRACtoCalo>> _tdtc_p;
-    std::unique_ptr<DbHandle<CalotoDIRAC>> _tctd_p;
+    std::unique_ptr<DbHandle<CalRoIDMapDIRACToOffline>> _tdtc_p;
+    std::unique_ptr<DbHandle<CalRoIDMapOfflineToDIRAC>> _tctd_p;
 
   };
 };
