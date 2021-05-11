@@ -9,11 +9,9 @@ bool pTargetMon_surfaceCheck = true;
 double pTargetMon_height = 196.85; // mm
 double pTargetMon_width = 196.85;
 double pTargetMon_pwcSeparation = 1000.0; // mm, center-to-center
-double pTargetMon_length = 1033;
 
 double pTargetMon_windowWidth = 96;
 double pTargetMon_windowHeight = 96;
-double pTargetMon_gasLength = 18.898; // 12 frames, 0.062" each
 double pTargetMon_outerPlateLength = 6.35; // quarter inch
 double pTargetMon_windowThick = 0.0254; // 0.001 inch
 double pTargetMon_frameThick = 1.5748; // 0.062"
