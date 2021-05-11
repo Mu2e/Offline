@@ -98,6 +98,7 @@ Primary: {
   EndSequence : [ genCountLogger ]
 # define paths
 }
+Primary.PrimarySequence : [ @sequence::Primary.DetStepSequence, @sequence::Primary.DetStepFilterSequence, FindMCPrimary ]
 Primary.EndPath : [ @sequence::Primary.EndSequence, Output ]
 Primary.Output.outputCommands : [ "drop *_*_*_*",
 		       @sequence::Primary.KeptProducts]
