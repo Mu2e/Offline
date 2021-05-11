@@ -30,6 +30,7 @@
 #include "RecoDataProducts/inc/ComboHit.hh"
 #include "RecoDataProducts/inc/StrawHitFlag.hh"
 #include "RecoDataProducts/inc/KalSeed.hh"
+#include "RecoDataProducts/inc/KalSeedAssns.hh"
 #include "RecoDataProducts/inc/KalRepCollection.hh"
 #include "RecoDataProducts/inc/KalRepPtrCollection.hh"
 #include "RecoDataProducts/inc/CaloCluster.hh"
@@ -88,6 +89,7 @@ namespace mu2e
     art::InputTag const _shfTag;
     art::ProductToken<StrawHitFlagCollection> const _shfToken;
     art::ProductToken<KalSeedCollection> const _ksToken;
+    art::ProductToken<KalHelixAssns> const _khaToken;
     art::ProductToken<CaloClusterCollection> const _clToken;
     // flags
     StrawHitFlag _addsel;
@@ -102,6 +104,7 @@ namespace mu2e
     const ComboHitCollection* _chcol;
     const StrawHitFlagCollection* _shfcol;
     const KalSeedCollection * _kscol;
+    const KalHelixAssns * _khassns;
     const CaloClusterCollection* _clCol;
     // Kalman fitter
     KalFit _kfit;
@@ -136,6 +139,7 @@ namespace mu2e
     _shfTag{pset.get<art::InputTag>("StrawHitFlagCollection", "none")},
     _shfToken{consumes<StrawHitFlagCollection>(_shfTag)},
     _ksToken{consumes<KalSeedCollection>(pset.get<art::InputTag>("SeedCollection"))},
+    _khaToken{consumes<KalHelixAssns>(pset.get<art::InputTag>("SeedCollection"))},
     _clToken{consumes<CaloClusterCollection>(pset.get<art::InputTag>("CaloClusterCollection"))},
     _addsel(pset.get<vector<string>>("AddHitSelectionBits", vector<string>{})),
     _addbkg(pset.get<vector<string>>("AddHitBackgroundBits", vector<string>{})),
@@ -153,6 +157,7 @@ namespace mu2e
     produces<KalRepPtrCollection>();
     produces<StrawHitFlagCollection>();
     produces<KalSeedCollection>();
+    produces<KalHelixAssns>();
 //-----------------------------------------------------------------------------
 // provide for interactive diagnostics
 //-----------------------------------------------------------------------------
@@ -211,9 +216,12 @@ namespace mu2e
     unique_ptr<KalRepCollection>    krcol(new KalRepCollection );
     unique_ptr<KalRepPtrCollection> krPtrcol(new KalRepPtrCollection );
     unique_ptr<KalSeedCollection> kscol(new KalSeedCollection());
+    unique_ptr<KalHelixAssns> kfhassns (new KalHelixAssns());
     unique_ptr<StrawHitFlagCollection> shfcol(new StrawHitFlagCollection());
     // lookup productID for payload saver
     art::ProductID kalRepsID(event.getProductID<KalRepCollection>());
+    auto KalSeedCollectionPID = event.getProductID<KalSeedCollection>();
+    auto KalSeedCollectionGetter = event.productGetter(KalSeedCollectionPID);
     // copy and merge hit flags
     size_t index(0);
     for(auto const& ch : *_chcol) {
@@ -242,6 +250,7 @@ namespace mu2e
     for(size_t ikseed=0; ikseed < _kscol->size(); ++ikseed) {
       KalSeed const& kseed(_kscol->at(ikseed));
       _result.kalSeed = & kseed;
+      auto hptr = (*_khassns)[ikseed].second; // Ptr to the original HelixSeed
       //      _result.tpart   = kseed.particle();
       // create a Ptr for possible added CaloCluster
       art::Ptr<CaloCluster> ccPtr;
@@ -368,8 +377,6 @@ namespace mu2e
 	    if(krep->fitStatus().success()==1) fflag.merge(TrkFitFlag::kalmanConverged);
 	    //	  KalSeed fseed(_tpart,_fdir,krep->t0(),krep->flt0(),kseed.status());
 	    KalSeed fseed(PDGCode::type(krep->particleType().particleType()),_fdir,fflag,krep->flt0());
-	    // forward link to helix 
-	    fseed._helix = kseed.helix();
 	    // fill with new information
 	    fseed._flt0 = krep->flt0();
 	    // global fit information
@@ -411,6 +418,9 @@ namespace mu2e
 	    }
 	    // save KalSeed for this track
 	    kscol->push_back(fseed);
+	    // fill assns with the helix seed
+	    auto kseedptr = art::Ptr<KalSeed>(KalSeedCollectionPID,kscol->size()-1,KalSeedCollectionGetter);
+	    kfhassns->addSingle(kseedptr,hptr);
 
 	    if (_diag > 0) _hmanager->fillHistograms(&_data);
 	  }
@@ -427,6 +437,7 @@ namespace mu2e
     event.put(move(krcol));
     event.put(move(krPtrcol));
     event.put(move(kscol));
+    event.put(move(kfhassns));
     event.put(move(shfcol));
   }
 
@@ -434,11 +445,14 @@ namespace mu2e
   bool KalFinalFit::findData(const art::Event& evt){
     _chcol = 0;
     _kscol = 0;
+    _khassns = 0;
 
     auto shH = evt.getValidHandle(_shToken);
     _chcol = shH.product();
     auto ksH = evt.getValidHandle(_ksToken);
     _kscol = ksH.product();
+    auto khaH = evt.getValidHandle(_khaToken);
+    _khassns = khaH.product();
     if(_shfTag.label() != "none"){
       auto shfH = evt.getValidHandle(_shfToken);
       _shfcol = shfH.product();
