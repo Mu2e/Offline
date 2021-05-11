@@ -49,7 +49,7 @@ Primary: {
 # default step filter for Sim Primary selection
     DetStepFilter : {
       module_type : DetectorStepFilter
-      StrawGasSteps : [ "StrawGasStepMaker" ] 
+      StrawGasSteps : [ "StrawGasStepMaker" ]
       CaloShowerSteps : [ "CaloShowerStepMaker" ]
       CrvSteps : [ ] # dont filter on CRV for primaries
       MinimumTrkStepEnergy : 1.0e-6 # 1 ev
@@ -68,7 +68,7 @@ Primary: {
     CrvSteps ]
   DetStepFilterSequence : [ DetStepFilter, compressDetStepMCs ]
 
-  KeptProducts : [ 
+  KeptProducts : [
 		       "keep mu2e::StrawGasSteps_compressDetStepMCs_*_*",
 		       "keep mu2e::CaloShowerSteps_compressDetStepMCs_*_*",
 		       "keep mu2e::CrvSteps_compressDetStepMCs_*_*",
