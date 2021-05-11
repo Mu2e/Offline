@@ -13,6 +13,8 @@ Beam: {
       genCounter: { module_type: GenEventCounter }
       g4run : @local::g4run
 
+
+
       compressPVBeam : {
          module_type: CompressPhysicalVolumes
          volumesInput : "g4run"
@@ -113,7 +115,7 @@ Beam: {
          vetoDaughters: []
       }
 
-      flashPrefilter: {
+      FlashFilter: {
          module_type: FilterG4Out
          mainHitInputs:  [ "g4run:tracker", "g4run:calorimeter", "g4run:CRV", "g4run:virtualdetector" ]
          vetoParticles:  [ "stoppedMuonDaughters" ]
@@ -132,6 +134,7 @@ Beam: {
          readMode: "sequential"
          wrapFiles: true
          mu2e: {
+	    writeEventIDs : true
             products: {
                genParticleMixer: { mixingMap: [ [ "generate", "" ] ] }
                simParticleMixer: { mixingMap: [ [ "BeamFilter", "" ] ] }
@@ -146,6 +149,13 @@ Beam: {
                }
             }
          }
+      }
+
+      EarlyPrescaleFilter : {
+        module_type : PrescaleEvent
+	nPrescale         : 1
+	triggerPath        : "earlyFlashPath"
+	triggerFlag   : ["PrescaleRandom"]      
       }
    }
 
@@ -216,30 +226,58 @@ Beam: {
 
       MuTargetStopOutput : {
         module_type : RootOutput
-        SelectEvents: [tgtPath]
+        SelectEvents: [mustopPath]
         outputCommands:   [ "drop *_*_*_*",
-           "keep mu2e::GenParticles_*_*_*",
-           "keep mu2e::GenEventCount_*_*_*",
+	  "keep art::EventIDs_*_*_*",
+	  "keep mu2e::GenParticles_*_*_*",
+	  "keep mu2e::GenEventCount_*_*_*",
            "keep mu2e::StatusG4_*_*_*",
            "keep *_MuTargetStopFilter_*_*"
         ]
         fileName    : "sim.owner.MuTargetStops.version.sequencer.art"
       }
 
-      detectorOutput : {
+      FlashOutput : {
          module_type: RootOutput
-         SelectEvents: [detPath]
+         SelectEvents: [flashPath]
+         outputCommands:   [ "keep *_*_*_*"]
          outputCommands:   [ "drop *_*_*_*",
+            "keep art::EventIDs_*_*_*",
             "keep mu2e::GenEventCount_*_*_*",
             "keep mu2e::StatusG4_*_*_*",
+            "keep mu2e::SimParticleart::Ptrdoublestd::map_*_*_*",
 	    @sequence::Pileup.KeptProducts
          ]
          fileName: "dts.owner.BeamFlash.version.sequencer.art"
-
       }
 
-
-
+# Sadly, I have to replicate the content of Pileup.KeptProducts below, since FCL is not a language and won't allow me to define a variable.
+# This will be a source of extra maintenance and likely an error sounce in the future.
+#
+      EarlyFlashOutput : {
+         module_type: RootOutput
+         SelectEvents: [earlyFlashPath]
+         outputCommands:   [ "drop *_*_*_*",
+            "keep art::EventIDs_*_*_*",
+            "keep mu2e::GenEventCount_*_*_*",
+            "keep mu2e::StatusG4_*_*_*",
+	    "keep mu2e::StrawGasSteps_compressEarlyDetStepMCs_*_*",
+	    "keep mu2e::CaloShowerSteps_compressEarlyDetStepMCs_*_*",
+	    "keep mu2e::CrvSteps_compressEarlyDetStepMCs_*_*",
+	    "keep mu2e::StepPointMCs_compressEarlyDetStepMCs_virtualdetector_*",
+	    "keep mu2e::StepPointMCs_compressEarlyDetStepMCs_protonabsorber_*",
+	    "keep mu2e::StepPointMCs_compressEarlyDetStepMCs_stoppingtarget_*",
+	    "keep mu2e::StatusG4_*_*_*",
+	    "keep mu2e::SimParticlemv_compressEarlyDetStepMCs_*_*",
+	    "keep mu2e::SimParticleart::Ptrmu2e::MCTrajectorystd::map_compressEarlyDetStepMCs_*_*",
+	    "keep mu2e::GenParticles_compressEarlyDetStepMCs_*_*",
+	    "keep mu2e::PrimaryParticle_*_*_*",
+            "keep mu2e::CosmicLivetime_*_*_*",
+	    "keep art::TriggerResults_*_*_*",
+	    "keep mu2e::GenEventCount_*_*_*" 
+         ]
+         fileName: "dts.owner.EarlyBeamFlash.version.sequencer.art"
+      }
    }
 
 # define some paths; these can be mixed and matches as art guarantees no duplicate running

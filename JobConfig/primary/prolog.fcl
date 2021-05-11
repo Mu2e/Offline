@@ -65,8 +65,8 @@ Primary: {
   DetStepSequence : [ 
     @sequence::TrackerMC.StepSim,
     @sequence::CaloMC.StepSim,
-    CrvSteps,
-    DetStepFilter, compressDetStepMCs ]
+    CrvSteps ]
+  DetStepFilterSequence : [ DetStepFilter, compressDetStepMCs ]
 
   KeptProducts : [ 
 		       "keep mu2e::StrawGasSteps_compressDetStepMCs_*_*",
