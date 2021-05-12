@@ -134,7 +134,7 @@ namespace mu2e {
 
     if (!isVisible) {
 
-      info.logical->SetVisAttributes(G4VisAttributes::Invisible);
+      info.logical->SetVisAttributes(G4VisAttributes::GetInvisible());
 
     } else {
 
