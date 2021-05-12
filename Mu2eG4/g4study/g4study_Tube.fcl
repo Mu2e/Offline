@@ -27,10 +27,10 @@ source : {
 
 services : {
   @table::Services.SimAndReco
-  TFileService          : { fileName : "g4study_MuCapture.root" }
+  TFileService          : { fileName : "g4study.root" }
   GeometryService        : { @table::Services.SimAndReco.GeometryService 
-      inputFile          : "Mu2eG4/test/g4study_MuCapture_geom.txt"
-      simulatedDetector  : { tool_type : "ConstructEnvMuCapture"}
+    inputFile            : "Mu2eG4/g4study/g4study_Tube_geom.txt"
+    simulatedDetector    : { tool_type   : "ConstructEnvTube" }
   }
 }
 
@@ -40,7 +40,7 @@ physics : {
 
     generate: {
       module_type          : EventGenerator
-      inputfile            : "Mu2eG4/test/g4studyParticleGunMuCapture.txt"
+      inputfile            : "Mu2eG4/g4study/g4studyParticleGun.txt"
       allowReplacement     : true
       messageOnReplacement : true
     }
@@ -80,7 +80,7 @@ outputs:  {
 
   outfile : {
     module_type   :   RootOutput
-    fileName      :   "g4study_MuCapture.art"
+    fileName      :   "g4study_Tube.root"
   }
 
   dumper : {

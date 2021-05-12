@@ -7,7 +7,7 @@
 
 // Units are mm, MeV
 
-#include "Mu2eG4/test/g4study_Box_geom.txt"
+#include "Mu2eG4/g4study/g4study_Box_geom.txt"
 
 // Change the name.
 string detector.name           = "g4studyCalo_01";

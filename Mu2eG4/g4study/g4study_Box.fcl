@@ -29,8 +29,8 @@ services : {
   @table::Services.SimAndReco
   TFileService          : { fileName : "g4study.root" }
   GeometryService        : { @table::Services.SimAndReco.GeometryService
-    inputFile            : "Mu2eG4/test/g4study_Tube_geom.txt"
-    simulatedDetector    : { tool_type   : "ConstructEnvTube" }
+      inputFile          : "Mu2eG4/g4study/g4study_Box_geom.txt"
+      simulatedDetector  : { tool_type      : "ConstructEnvBox" }
   }
 }
 
@@ -38,11 +38,9 @@ physics : {
 
   producers:  {
 
-#    generate : @local::generate
-    generate:
-    {
+    generate: {
       module_type          : EventGenerator
-      inputfile            : "Mu2eG4/test/g4studyParticleGun.txt"
+      inputfile            : "Mu2eG4/g4study/g4studyParticleGun.txt"
       allowReplacement     : true
       messageOnReplacement : true
     }
@@ -82,7 +80,7 @@ outputs:  {
 
   outfile : {
     module_type   :   RootOutput
-    fileName      :   "data_g4study.root"
+    fileName      :   "g4study_Box.root"
   }
 
   dumper : {
@@ -96,8 +94,6 @@ outputs:  {
 services.SeedService.baseSeed         :   8
 services.SeedService.maxUniqueEngines :  20
 #services.message.destinations.log.noTimeStamps : true
-# inform the geometry service it is not the standard Mu2e Detector
-# done via the tool_type above now
 #physics.producers.g4run.visualization.initMacro : "Mu2eG4/test/visxz.mac"
 #physics.producers.g4run.visualization.initMacro : "Mu2eG4/test/vismqt.mac"
 
