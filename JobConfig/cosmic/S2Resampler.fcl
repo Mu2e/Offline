@@ -24,4 +24,4 @@ physics.TriggerPath: [cosmicResample, @sequence::Primary.TriggerSequence]
 outputs.Output.fileName        : "dts.owner.Cosmic.version.sequencer.art"
 outputs.Output.outputCommands : [@sequence::Primary.KeptProducts, "keep art::EventIDs_*_*_*"]
 
-//physics.filters.cosmicResample.fileNames: ["/mu2e/app/users/srsoleti/sim.owner.CosmicDSStopsCORSIKA.version.sequencer.art"]
+//physics.filters.cosmicResample.fileNames: ["/pnfs/mu2e/persistent/users/srsoleti/cosmic/sim.srsoleti.CosmicDSStops.20210512.1.art"]
