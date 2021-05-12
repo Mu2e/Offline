@@ -157,9 +157,12 @@ namespace mu2e {
       ConditionsHandle<CalorimeterCalibrations> calorimeterCalibrations("ignored");
       if (calorimeter_->nCrystal()<1 || calorimeter_->caloInfo().getInt("nSiPMPerCrystal")<1 || mbtime_ < blindTime_)
          throw cet::exception("Rethrow")<< "[CaloMC/CaloDigiMaker] Nothing to digitize!!! " << std::endl;
+
+      if (mbtime_ + endTimeBuffer_ < blindTime_)
+         throw cet::exception("Rethrow")<< "[CaloMC/CaloDigiMaker] digitization size too short " << std::endl;
             
       unsigned nWaveforms   = calorimeter_->nCrystal()*calorimeter_->caloInfo().getInt("nSiPMPerCrystal");
-      unsigned waveformSize = (mbtime_ - blindTime_ + endTimeBuffer_) / digiSampling_; 
+      unsigned waveformSize = static_cast<unsigned>( (mbtime_ - blindTime_ + endTimeBuffer_) / digiSampling_ ); 
 
       for (unsigned iRO=0;iRO<nWaveforms;++iRO)
       {
@@ -201,7 +204,6 @@ namespace mu2e {
   void CaloDigiMaker::generateNoise(std::vector<double>& waveform, unsigned iRO, 
                                     const ConditionsHandle<CalorimeterCalibrations>& calorimeterCalibrations)
   {     
-
        // First, find the ranges in the waveform with non-zero bins. 
        // Since we add padding, they might overlap so we need to be deal with it       
        double minAmplitude = 0.1*calorimeterCalibrations->MeV2ADC(iRO);
@@ -271,6 +273,7 @@ namespace mu2e {
 	    size_t t0          = size_t(sampleStart*digiSampling_ + blindTime_);
 
 	    std::vector<int> wfsample{};
+            wfsample.reserve(sampleStop-sampleStart);
 	    for (size_t i=sampleStart; i<sampleStop; ++i) wfsample.push_back(std::min(int(waveform[i]),maxADCCounts_));
 
 	    size_t peakPosition(0u);
