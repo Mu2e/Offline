@@ -3,13 +3,14 @@
 #
 # original author: Dave Brown, LBNL
 #
+#include "fcl/standardServices.fcl"
 #include "JobConfig/common/prolog.fcl"
 #include "JobConfig/primary/prolog.fcl"
 #include "JobConfig/pileup/prolog.fcl"
 process_name : Pileup
 
 source: { module_type : EmptyEvent }
-services: { @table::Common.services }
+services : @local::Services.Sim
 physics: { 
   producers : { 
     @table::Common.producers 

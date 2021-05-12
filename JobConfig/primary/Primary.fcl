@@ -3,13 +3,14 @@
 #
 # original author: Dave Brown, LBNL
 #
+#include "fcl/standardServices.fcl"
 #include "JobConfig/common/prolog.fcl"
 #include "JobConfig/primary/prolog.fcl"
 # name all processes the same, to mask any provenance in ensemble creation
 process_name: Primary
 # the following will change when we read art stops
 source: { module_type : EmptyEvent }
-services: @local::Common.services
+services : @local::Services.Sim
 physics : { 
   producers : { 
     @table::Common.producers 

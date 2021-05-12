@@ -3,7 +3,6 @@
 #  1) Charged particles at the entrance to the DS at the beamline
 #  2) (mostly) neutral particles that exit the TS or otherwise reach the inside of the shielding before the CRV
 #
-#include "fcl/minimalMessageService.fcl"
 #include "fcl/standardServices.fcl"
 #include "JobConfig/common/prolog.fcl"
 #include "JobConfig/beam/prolog.fcl"
@@ -15,7 +14,7 @@ source : {
    maxEvents : @nil
 }
 
-services : @local::Common.services
+services : @local::Services.Sim
 
 physics : {
   # setup the modules
