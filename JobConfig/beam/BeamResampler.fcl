@@ -6,6 +6,7 @@
 # original author: Yuri Oksuzian, 2019
 # Updated for MDC2020 (DetectorSteps): D. Brown
 
+#include "fcl/standardServices.fcl"
 #include "CommonMC/fcl/prolog.fcl"
 #include "JobConfig/common/prolog.fcl"
 #include "JobConfig/beam/prolog.fcl"
@@ -19,7 +20,7 @@ source : {
    maxEvents : @nil
 }
 
-services : @local::Common.services
+services : @local::Services.Sim
 physics: { 
   producers : {
     @table::CommonMC.producers

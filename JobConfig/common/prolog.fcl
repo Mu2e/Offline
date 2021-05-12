@@ -1,27 +1,10 @@
 #
 # common prolog for all production jobs.  These are mostly legacy
 #
-#include "fcl/standardServices.fcl"
 #include "Mu2eG4/fcl/prolog.fcl"
 
 BEGIN_PROLOG
 Common: {
-  services : {
-    RandomNumberGenerator : {defaultEngineKind: "MixMaxRng" }
-    GeometryService  : {
-      inputFile      : "Mu2eG4/geom/geom_common.txt"
-      simulatedDetector : { tool_type : "Mu2e" }
-    }
-    ConditionsService      : { conditionsfile : "ConditionsService/data/conditions_01.txt"      }
-    GlobalConstantsService : { inputFile      : "GlobalConstantsService/data/globalConstants_01.txt" }
-    message                : @local::default_message
-    TFileService           : { }
-    Mu2eG4Helper           : { }
-    SeedService            : @local::automaticSeeds
-    DbService : @local::DbEmpty
-    ProditionsService: @local::Proditions
-  }
-
   producers : {
     g4run: @local::mu2eg4runDefaultSingleStage
     genCounter: { module_type: GenEventCounter }
