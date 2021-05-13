@@ -4,21 +4,29 @@
 //
 
 
-#ifndef RecoDataProducts_LumiInfo_hh
-#define RecoDataProducts_LumiInfo_hh
+#ifndef RecoDataProducts_IntensityInfo_hh
+#define RecoDataProducts_IntensityInfo_hh
 
 namespace mu2e {
 
-    class LumiInfo
+    class IntensityInfo
     {
         public:
-            LumiInfo(unsigned short nTrackerHits, unsigned short nCaloHits,
+            IntensityInfo() {}
+            IntensityInfo(unsigned short nTrackerHits, unsigned short nCaloHits,
                     unsigned short nProtonTCs, unsigned short caloEnergy,
                     unsigned short testVariable):
                 nTrackerHits_(nTrackerHits), nCaloHits_(nCaloHits),
                 nProtonTCs_(nProtonTCs), caloEnergy_(caloEnergy),
                 testVariable_(testVariable)
             {}
+
+	   
+            void setNTrackerHits   (unsigned short tmp) {nTrackerHits_ = tmp;}
+            void setNCaloHits      (unsigned short tmp) {nCaloHits_ = tmp;}
+            void setNProtonTCs     (unsigned short tmp) {nProtonTCs_ = tmp;}
+            void setCaloEnergy     (unsigned short tmp) {caloEnergy_ = tmp;}
+            void setTestVariable   (unsigned short tmp) {testVariable_ = tmp;} 
 
             unsigned short nTrackerHits () const { return nTrackerHits_; }
             unsigned short nCaloHits    () const { return nCaloHits_   ; }
