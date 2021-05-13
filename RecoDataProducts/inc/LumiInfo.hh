@@ -12,11 +12,6 @@ namespace mu2e {
     class LumiInfo
     {
         public:
-            LumiInfo(): nTrackerHits_(0), nCaloHits_(0),
-                        nProtonTCs_(0), caloEnergy_(0),
-                        testVariable_(0)
-            {}
-
             LumiInfo(unsigned short nTrackerHits, unsigned short nCaloHits,
                     unsigned short nProtonTCs, unsigned short caloEnergy,
                     unsigned short testVariable):
@@ -25,24 +20,18 @@ namespace mu2e {
                 testVariable_(testVariable)
             {}
 
-            void setnTrackerHits   (unsigned short tmp) {nTrackerHits_ = tmp;}
-            void setnCaloHits      (unsigned short tmp) {nCaloHits_    = tmp;}
-            void setnProtonTCs     (unsigned short tmp) {nProtonTCs_   = tmp;}
-            void setcaloEnergy     (unsigned short tmp) {caloEnergy_   = tmp;}
-            void settestVariable   (unsigned short tmp) {testVariable_ = tmp;}
-
             unsigned short nTrackerHits () const { return nTrackerHits_; }
-            unsigned short nCaloHits    () const { return nCaloHits_;    }
-            unsigned short nProtonTCs   () const { return nProtonTCs_;   }
-            unsigned short caloEnergy   () const { return caloEnergy_;   }
+            unsigned short nCaloHits    () const { return nCaloHits_   ; }
+            unsigned short nProtonTCs   () const { return nProtonTCs_  ; }
+            unsigned short caloEnergy   () const { return caloEnergy_  ; }
             unsigned short testVariable () const { return testVariable_; }
 
         private:
-            unsigned short  nTrackerHits_;
-            unsigned short  nCaloHits_;            
-            unsigned short  nProtonTCs_;        
-            unsigned short  caloEnergy_;        
-            unsigned short  testVariable_;            
+            unsigned short  nTrackerHits_ = 0;
+            unsigned short  nCaloHits_    = 0;            
+            unsigned short  nProtonTCs_   = 0;        
+            unsigned short  caloEnergy_   = 0;        
+            unsigned short  testVariable_ = 0;            
     };
 }
 
