@@ -91,7 +91,7 @@
 #include "RecoDataProducts/inc/TriggerInfo.hh"
 
 // POT / stopped muons monitoring bvitaly May 2021
-#include "RecoDataProducts/inc/LumiInfo.hh"
+#include "RecoDataProducts/inc/IntensityInfo.hh"
 
 // general reco
 #include "RecoDataProducts/inc/RecoCount.hh"

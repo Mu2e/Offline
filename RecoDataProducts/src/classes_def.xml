@@ -350,8 +350,8 @@
 
 <!--  ********* POT / stopped muons monitoring  ********* -->
 <!--  bvitali May 2021 -->
- <class name="mu2e::LumiInfo"/>
- <class name="art::Wrapper<mu2e::LumiInfo>"/>
+ <class name="mu2e::IntensityInfo"/>
+ <class name="art::Wrapper<mu2e::IntensityInfo>"/>
 
 
 <!--  ********* general reco ********* -->
