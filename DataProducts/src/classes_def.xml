@@ -23,6 +23,9 @@
  <class name="art::Wrapper<mu2e::IndexMap>"/>
  <class name="mu2e::VirtualDetectorId"/>
 
+<!--  ******* calorimeter ******** -->
+ <class name="mu2e::CaloId"/>
+
 <!--  ********* CRV  ********* -->
  <class name="mu2e::CRSScintillatorBarIndex"/>
 
