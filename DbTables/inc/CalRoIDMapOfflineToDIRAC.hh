@@ -28,8 +28,8 @@ namespace mu2e {
       uint16_t _diracID;
     };
     
-    CalRoIDMapOfflineToDIRAC():DbTable(cxname,"cal.RoIDMapOfflineToDIRAC",
-				       "offlineID,diracID") {}
+    CalRoIDMapOfflineToDIRAC():DbTable(cxname,"cal.roidmapofflinetodirac",
+				       "offlineid,diracid") {}
     const Row&              rowAt(const std::size_t index) const { return _rows.at(index);}
     std::vector<Row> const& rows()    const { return _rows;}
     std::size_t             nrow()    const { return _rows.size(); };
