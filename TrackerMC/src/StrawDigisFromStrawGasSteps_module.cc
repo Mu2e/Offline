@@ -538,8 +538,7 @@ namespace mu2e {
 	art::Event const& event, StrawClusterMap & hmap){
       // Get all of the tracker StrawGasStep collections from the event:
       typedef vector< art::Handle<StrawGasStepCollection> > HandleVector;
-      HandleVector stepsHandles;
-      event.getMany( _selector, stepsHandles);
+      HandleVector stepsHandles = event.getMany<StrawGasStepCollection>( _selector);
       // Informational message on the first event.
       if ( _firstEvent ) {
 	mf::LogInfo log(_messageCategory);

@@ -173,8 +173,7 @@ int mu2e::Validation::analyzeProduct(
     art::Event const& event) {
 
   // get all instances of products of type T
-  std::vector<art::Handle< T >> vah;
-  event.getManyByType(vah);
+  std::vector<art::Handle< T >> vah = event.getMany<T>();
 
   std::string name;
   // loop over the list of instances of products of this type

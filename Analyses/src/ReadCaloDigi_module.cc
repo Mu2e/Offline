@@ -450,10 +450,9 @@ namespace mu2e {
 
     //Handle to VD steps
     art::ProductInstanceNameSelector selector_vdhits("virtualdetector");
-    StepMCHandleVector vdStepsHandleVec;
     art::Handle<StepPointMCCollection> *vdStepsHandle;
     const StepPointMCCollection *vdHits;
-    event.getMany(selector_vdhits, vdStepsHandleVec);
+    StepMCHandleVector vdStepsHandleVec = event.getMany<StepPointMCCollection>(selector_vdhits);
 
 
     //Handle to tracks collection
