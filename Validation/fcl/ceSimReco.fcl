@@ -99,9 +99,9 @@ services.scheduler.wantSummary: true
 services.TimeTracker.printSummary: true
 
 # histogram file
-services.TFileService.fileName: "/dev/null"
+services.TFileService.fileName: "/mu2e/data2/users/macndev/val_art3_09/nts.owner.val-ceSimReco309.dsconf.seq.root"
 # art file 
-outputs.Output.fileName : "mcs.owner.val-ceSimReco.dsconf.seq.art"
+outputs.Output.fileName : "/mu2e/data2/users/macndev/val_art3_09/mcs.owner.val-ceSimReco309.dsconf.seq.art"
 
 # run 1h by default
 source.maxEvents: 5000

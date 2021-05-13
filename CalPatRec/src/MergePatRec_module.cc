@@ -268,11 +268,11 @@ namespace mu2e {
 
     if (_debugLevel > 0) ObjectDumpUtils::printEventHeader(&AnEvent,"MergePatRec::produce");
 
-    AnEvent.getByToken(_tprToken, htpr);
-    AnEvent.getByToken(_cprToken, hcpr);
+    htpr = AnEvent.getHandle<mu2e::KalRepPtrCollection>(_tprToken);
+    hcpr = AnEvent.getHandle<mu2e::KalRepPtrCollection>(_cprToken);
 
-    AnEvent.getByToken(_stprToken, hstpr);
-    AnEvent.getByToken(_scprToken, hscpr);
+    hstpr = AnEvent.getHandle<KalSeedCollection>(_stprToken);
+    hscpr = AnEvent.getHandle<KalSeedCollection>(_scprToken);
 
     _data.event = &AnEvent;
     _data.list_of_kreps_tpr = nullptr;

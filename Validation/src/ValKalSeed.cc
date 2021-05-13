@@ -190,8 +190,7 @@ double mu2e::ValKalSeed::mcTrkP(art::Event const& event) {
   // this will be the simparticle numbers which belong to the conv ele
   std::vector<mu2e::SimParticle::key_type> cea;
 
-  std::vector< art::Handle<SimParticleCollection> > vah;
-  event.getManyByType(vah);
+  std::vector< art::Handle<SimParticleCollection> > vah = event.getMany<SimParticleCollection>();
   for (auto const & ah : vah) { // loop over all SimParticle coll
     auto const& simpcoll = *ah; //SimParticleCollection
     for(auto sp : simpcoll) { // loop over SimParticles
@@ -210,8 +209,7 @@ double mu2e::ValKalSeed::mcTrkP(art::Event const& event) {
 
   CLHEP::Hep3Vector pv;
 
-  std::vector< art::Handle<StepPointMCCollection> > vah2;
-  event.getManyByType(vah2);
+  std::vector< art::Handle<StepPointMCCollection> > vah2 = event.getMany<StepPointMCCollection>();
   for (auto const & ah : vah2) { // loop over SPMC colls
     if(ah.provenance()->productInstanceName()=="virtualdetector") {
       auto const& spmccoll = *ah; //StepPointMCCollection

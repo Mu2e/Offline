@@ -134,7 +134,7 @@ void art::CaloHitsFromFragments::addPulse(uint16_t& crystalID, float& time, floa
     }
   }
   if (addNewHit) {
-    pulseMap_[crystalID].emplace_back(mu2e::CaloHit(crystalID, 1, time, eDep));
+    pulseMap_[crystalID].push_back(CrystalInfo(crystalID, 1, time, eDep));
   }
 }
 
