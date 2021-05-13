@@ -10,7 +10,6 @@ services: @local::Services.Sim
 
 physics: {
   producers : {
-    generate: @local::generate
     g4run : @local::mu2e.physics.producers.g4run.muons
     genCounter: { module_type: GenEventCounter }
     compressPV: @local::Cosmic.compressPV
