@@ -3,6 +3,7 @@
 # and simulate all the way through the detector
 # run calorimeter and tracker and CRV reco
 #
+#include "fcl/standardServices.fcl"
 #include "JobConfig/common/prolog.fcl"
 #include "JobConfig/primary/prolog.fcl"
 #include "JobConfig/digitize/prolog.fcl"
@@ -11,7 +12,7 @@
 process_name : ceSimReco
 
 source : { module_type :EmptyEvent }
-services: @local::Common.services
+services : @local::Services.Sim
 
 physics: {
   producers : {
