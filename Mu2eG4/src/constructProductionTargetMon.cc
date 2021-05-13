@@ -49,15 +49,14 @@ namespace mu2e {
                         SimpleConfig const& _config,
                         bool const doSurfaceCheck,
                         int const verbosity) {
-    double frameInnerMargin = 0.001;
     G4Box *outerBox = new G4Box("pwcFrameOuter", 
                 pwc->frameWidth()/2., 
                 pwc->frameHeight()/2., 
                 pwc->totalThick()/2.);
     G4Box *innerBox = new G4Box("pwcFrameInner", 
-                frameInnerMargin + pwc->pwcWindow()->getXhalfLength(), 
-                frameInnerMargin + pwc->pwcWindow()->getYhalfLength(), 
-                frameInnerMargin + pwc->totalThick()/2.);
+                pwc->pwcWindow()->getXhalfLength(), 
+                pwc->pwcWindow()->getYhalfLength(), 
+                pwc->totalThick()/2.);
     std::string frameName = "pTargetMonFrame";
     frameName.append(pwc->nameSuffix());
     G4Material *frameMaterial = findMaterialOrThrow(pwc->frameMaterialName());
@@ -310,12 +309,11 @@ namespace mu2e {
     
     // "container": box representing the location of the individual PWC
     G4Material* containerMaterial = motherVolume.logical->GetMaterial();
-    double containerMargin = 0.025;
 
     std::vector<double> containerHalfDims;
-    containerHalfDims.push_back(containerMargin + pwc->frameWidth()/2.);
-    containerHalfDims.push_back(containerMargin + pwc->frameHeight()/2.);
-    containerHalfDims.push_back(containerMargin + pwc->totalThick()/2.);
+    containerHalfDims.push_back(pwc->frameWidth()/2.);
+    containerHalfDims.push_back(pwc->frameHeight()/2.);
+    containerHalfDims.push_back(pwc->totalThick()/2.);
 
     std::string containerName = "pTargetMonInnerContainer";
     containerName.append(pwc->nameSuffix());
@@ -355,13 +353,11 @@ namespace mu2e {
 
   void constructProductionTargetMon(VolumeInfo const& parent, SimpleConfig const& _config) {
     const int verbosity = _config.getInt("pTargetMon_verbosity",1);
-    const bool doSurfaceCheck = _config.getBool("pTargetMon_surfaceCheck", false);
-    //const auto& geomOptions = art::ServiceHandle<GeometryService>()->geomOptions();
-    //geomOptions->loadEntry( _config, "pTargetMon", "pTargetMon" );
-    //const bool doSurfaceCheck = geomOptions->doSurfaceCheck("pTargetMon");
+    const auto& geomOptions = art::ServiceHandle<GeometryService>()->geomOptions();
+    geomOptions->loadEntry( _config, "pTargetMon", "pTargetMon" );
+    const bool doSurfaceCheck = geomOptions->doSurfaceCheck("pTargetMon");
 
     GeomHandle<PTMon> ptmon;
-    double containerMargin = 0.05;
 
     // create and place the mother volume first
     AntiLeakRegistry& reg = art::ServiceHandle<Mu2eG4Helper>()->antiLeakRegistry();
@@ -380,9 +376,9 @@ namespace mu2e {
     
     G4Material* motherMaterial = parent.logical->GetMaterial();
     std::vector<double> motherHalfDims;
-    motherHalfDims.push_back(containerMargin + ptmon->totalWidth()/2.);
-    motherHalfDims.push_back(containerMargin + ptmon->totalHeight()/2.);
-    motherHalfDims.push_back(containerMargin + ptmon->totalLength()/2.);
+    motherHalfDims.push_back(ptmon->totalWidth()/2.);
+    motherHalfDims.push_back(ptmon->totalHeight()/2.);
+    motherHalfDims.push_back(ptmon->totalLength()/2.);
 
     VolumeInfo pTargetMonContainer = nestBox("pTargetMonMother",
                 motherHalfDims,
