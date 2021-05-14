@@ -19,17 +19,19 @@ struct StrawStatusDetail {
     enum bit_type {
       absent=0, // straw (mylar + wire + gas) or panel or plane is physically absent
       nowire=1, // wire is removed or broken
-      noHV=2, // wire(s) not attached to high voltage (blown fuse, ...)
+      noHV=2, // Fuse blown (should be on both channels on this preamp) or HV problem
       noLV=3, // no low voltage (ie no electronics gain or signal)
       nogas=4, // gas flow is turned off
       lowgasgain=5, // gas gain low
-      noPreamp=6, // no signal into ADC or TDC
-      noADC=7, // ADC not functioning
-      noTDC=8, // TDC not functioning
-      sparking=9, // straw generating microsparks
-      noise=10, // straw electronics generating noise
-      pickup=11, // straw noisy due to pickup (ie adjacent noisy straw)
-      suppress=12, // suppress signals from this straw for unspecified reasons
+      noHVPreamp=6, // HV preamp not installed or not connected to wire
+      noCalPreamp=7, // Cal preamp not installed or not connected to wire
+      noADC=8, // ADC not functioning
+      noTDC=9, // TDC not functioning
+      disabled=10, // readout of channel disabled in firmware
+      sparking=11, // straw generating microsparks
+      noise=12, // straw electronics generating noise
+      pickup=13, // straw noisy due to pickup (ie adjacent noisy straw)
+      suppress=14, // suppress signals from this straw for unspecified reasons
     };
 
 // functions needed for the BitMap template
