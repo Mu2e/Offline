@@ -37,8 +37,8 @@ physics: {
     @table::Common.analyzers
   }
   # setup paths
-  flashPath : [ genCounter, crvResampler, @sequence::Common.g4Sequence, @sequence::Primary.DetStepSequence, protonTimeMap, @sequence::Primary.DetStepFilterSequence ]
-  earlyFlashPath : [ genCounter, crvResampler, @sequence::Common.g4Sequence, EarlyPrescaleFilter, @sequence::Primary.DetStepSequence, EarlyDetStepFilter, compressEarlyDetStepMCs ]
+  flashPath : [ genCounter, neutResampler, @sequence::Common.g4Sequence, @sequence::Primary.DetStepSequence, protonTimeMap, @sequence::Primary.DetStepFilterSequence ]
+  earlyFlashPath : [ genCounter, neutResampler, @sequence::Common.g4Sequence, EarlyPrescaleFilter, @sequence::Primary.DetStepSequence, EarlyDetStepFilter, compressEarlyDetStepMCs ]
   trigger_paths: [ flashPath, earlyFlashPath ]
   outPath : [ FlashOutput, EarlyFlashOutput ]
   end_paths: [outPath]
@@ -57,13 +57,13 @@ outputs: {
 # Point Mu2eG4 to the pre-simulated data
 physics.producers.g4run.inputs: {
    primaryType: "StepPoints"
-   primaryTag: "crvResampler:CRVNeutrals"
+   primaryTag: "neutResampler:Neutrals"
    inputMCTrajectories: ""
 
    simStageOverride: 1
-   inputPhysVolumeMultiInfo: "crvResampler"
+   inputPhysVolumeMultiInfo: "neutResampler"
    updateEventLevelVolumeInfos: {
-      input: "crvResampler:eventlevel"
+      input: "neutResampler:eventlevel"
       outInstance: "eventlevel"
    }
 }
@@ -92,5 +92,5 @@ physics.filters.DetStepFilter.MinimumTime : 300 # select energy deposits after t
 physics.filters.DetStepFilter.TimeOffsets : [ "protonTimeMap" ] # only proton time map is relevant to this job
 
 # test
-physics.filters.crvResampler.fileNames: [ "sim.owner.CRVNeutrals.version.sequencer.art" ]
+physics.filters.neutResampler.fileNames: [ "sim.owner.Neutrals.version.sequencer.art" ]
 

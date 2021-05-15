@@ -39,16 +39,18 @@ physics: {
   }
   # setup paths
   mustopPath : [ genCounter, beamResampler, @sequence::Common.g4Sequence, stoppedMuonFinder, MuTargetStopFilter]
+  IPAStopPath : [ genCounter, beamResampler, @sequence::Common.g4Sequence, IPAMuonFinder, IPAStopFilter]
   flashPath : [ genCounter, beamResampler, @sequence::Common.g4Sequence, stoppedMuonFinder, stoppedMuonDaughters, FlashFilter,
 	      @sequence::Primary.DetStepSequence, protonTimeMap, @sequence::Primary.DetStepFilterSequence ]
   earlyFlashPath : [ genCounter, beamResampler, @sequence::Common.g4Sequence, stoppedMuonFinder, stoppedMuonDaughters, FlashFilter, EarlyPrescaleFilter,
 	      @sequence::Primary.DetStepSequence, EarlyDetStepFilter, compressEarlyDetStepMCs ]
-  trigger_paths: [ flashPath, earlyFlashPath, mustopPath ]
+  trigger_paths: [ flashPath, earlyFlashPath, mustopPath, IPAStopPath ]
   outPath : [ FlashOutput, EarlyFlashOutput, MuTargetStopOutput ]
   end_paths: [outPath]
 }
 outputs: {
   MuTargetStopOutput : @local::Beam.outputs.MuTargetStopOutput
+  IPAStopOutput : @local::Beam.outputs.IPAStopOutput
   FlashOutput : {
     @table::Beam.outputs.FlashOutput
     fileName: "dts.owner.BeamFlash.version.sequencer.art"

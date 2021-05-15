@@ -26,23 +26,23 @@ physics : {
   analyzers : @local::Common.analyzers
   # setup the paths
   BeamPath : [ @sequence::Common.generateSequence, @sequence::Common.g4Sequence, BeamFilter, compressPVBeam]
-  CRVNeutralsPath : [ @sequence::Common.generateSequence, @sequence::Common.g4Sequence, CRVNeutralsFilter, compressPVCRVNeutrals]
-  trigger_paths  : [BeamPath, CRVNeutralsPath ]
+  NeutralsPath : [ @sequence::Common.generateSequence, @sequence::Common.g4Sequence, NeutralsFilter, compressPVNeutrals]
+  trigger_paths  : [BeamPath, NeutralsPath ]
   LogPath : [ genCountLogger ]
-  OutputPath : [BeamOutput, CRVNeutralsOutput ]
+  OutputPath : [BeamOutput, NeutralsOutput ]
   end_paths: [OutputPath, LogPath ]
 }
 # setup outputs
 outputs: {
   BeamOutput : @local::Beam.outputs.BeamOutput
-  CRVNeutralsOutput : @local::Beam.outputs.CRVNeutralsOutput
+  NeutralsOutput : @local::Beam.outputs.NeutralsOutput
 }
 # setup Mu2eG4 selection
 physics.producers.g4run.Mu2eG4CommonCut: {
   type: union
   pars: [
     @local::mu2eg4CutDeltaElectrons, # 8% speed up from killing electrons with Ek<1 MeV
-    @local::Beam.DetectorRegionCuts # defines Beam and CVRNeutrals regions
+    @local::Beam.DetectorRegionCuts # defines Beam and Neutrals regions
   ]
 }
 # tweak Mu2eG4 settings

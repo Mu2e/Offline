@@ -22,11 +22,11 @@ Beam: {
          particleInputs : [ "BeamFilter" ]
       }
 
-      compressPVCRVNeutrals : {
+      compressPVNeutrals : {
          module_type: CompressPhysicalVolumes
          volumesInput : "g4run"
          hitInputs : []
-         particleInputs : [ "CRVNeutralsFilter" ]
+         particleInputs : [ "NeutralsFilter" ]
       }
 
       compressPVextmonBeam : {
@@ -50,11 +50,11 @@ Beam: {
          particleInputs: [ "detectorFilter" ]
       }
 
-      compressPVCRV: {
+      compressPVNeutrals: {
          module_type: CompressPhysicalVolumes
          volumesInput: "g4run"
          hitInputs: []
-         particleInputs: [ "crvFilter" ]
+         particleInputs: [ "NeutralsFilter" ]
       }
 
       compressPVFull : {
@@ -64,17 +64,34 @@ Beam: {
          particleInputs : [ "g4run" ]
       }
 
+      compressPVIPAStops: {
+         module_type: CompressPhysicalVolumes
+         volumesInput : "g4run"
+         hitInputs : []
+         particleInputs : [ "IPAStopFilter" ]
+      }
+
 # below are used for stopped muon daughter selecting/vetoing
 
       stoppedMuonFinder: {
          module_type: "StoppedParticlesFinder"
          particleInput: "g4run"
-         particleTypes: [ 13 ]
+         particleTypes: [ 13, -13 ]
          physVolInfoInput: "g4run:eventlevel"
          useEventLevelVolumeInfo: true
          stoppingMaterial: "StoppingTarget_Al"
          verbosityLevel: 1
       }
+
+      IPAMuonFinder : {
+         module_type : StoppedParticlesFinder
+         particleInput : "g4run"
+         physVolInfoInput : "g4run"
+         stoppingMaterials : [ "IPAPolyethyelene" ]
+         particleTypes : [ 13, -13 ]
+         verbosityLevel: 1
+      }
+
       
       stoppedMuonDaughters: {
          module_type: SimParticleDaughterSelector
@@ -94,9 +111,9 @@ Beam: {
          vetoDaughters: []
       }
 
-      CRVNeutralsFilter: {
+      NeutralsFilter: {
          module_type: FilterG4Out
-         mainHitInputs : [ "g4run:CRVNeutrals" ]
+         mainHitInputs : [ "g4run:Neutrals" ]
          extraHitInputs : [ "g4run:virtualdetector" ]
          vetoDaughters: []
       }
@@ -114,6 +131,14 @@ Beam: {
          extraHitInputs : [ "g4run:virtualdetector" ]
          vetoDaughters: []
       }
+
+      IPAStopFilter: {
+         module_type: FilterG4Out
+         mainHitInputs: []
+         extraHitInputs: [ "g4run:virtualdetector" ]
+         mainSPPtrInputs: [ "IPAMuonFinder" ]
+      }
+
 
       FlashFilter: {
          module_type: FilterG4Out
@@ -151,7 +176,7 @@ Beam: {
          }
       }
 
-      crvResampler: {
+      neutResampler: {
          module_type: ResamplingMixer
          fileNames: @nil
          readMode: "sequential"
@@ -160,13 +185,13 @@ Beam: {
 	    writeEventIDs : true
             products: {
                genParticleMixer: { mixingMap: [ [ "generate", "" ] ] }
-               simParticleMixer: { mixingMap: [ [ "CRVNeutralsFilter", "" ] ] }
+               simParticleMixer: { mixingMap: [ [ "NeutralsFilter", "" ] ] }
                stepPointMCMixer: { mixingMap: [
-                     [ "CRVNeutralsFilter:CRVNeutrals", ":" ]
+                     [ "NeutralsFilter:Neutrals", ":" ]
                   ] }
       
                volumeInfoMixer: {
-                  srInput: "compressPVCRVNeutrals"
+                  srInput: "compressPVNeutrals"
                   evtOutInstanceName: "eventlevel"
                }
             }
@@ -196,17 +221,17 @@ Beam: {
         fileName : "sim.owner.Beam.version.sequencer.art"
       }
       
-      CRVNeutralsOutput : {
+      NeutralsOutput : {
         module_type : RootOutput
-        SelectEvents: ["CRVNeutralsPath"]
+        SelectEvents: ["NeutralsPath"]
         outputCommands:   [ "drop *_*_*_*",
           "keep mu2e::GenParticles_*_*_*",
           "keep mu2e::GenEventCount_*_*_*",
           "keep mu2e::StatusG4_*_*_*",
-          "keep *_CRVNeutralsFilter_*_*",
-          "keep *_compressPVCRVNeutrals_*_*"
+          "keep *_NeutralsFilter_*_*",
+          "keep *_compressPVNeutrals_*_*"
         ]
-        fileName : "sim.owner.CRVNeutrals.version.sequencer.art"
+        fileName : "sim.owner.Neutrals.version.sequencer.art"
       }
       
       extmonbeamOutput : {
@@ -257,6 +282,19 @@ Beam: {
            "keep *_MuTargetStopFilter_*_*"
         ]
         fileName    : "sim.owner.MuTargetStops.version.sequencer.art"
+      }
+
+      IPAStopOutput : {
+         module_type : RIPAOutput
+         SelectEvents: [IPAStopPath]
+         outputCommands:   [ "drop *_*_*_*",
+            "keep mu2e::GenParticles_*_*_*",
+            "keep mu2e::GenEventCount_*_*_*",
+            "keep mu2e::StatusG4_*_*_*",
+            "keep *_IPAStopFilter_*_*",
+            "keep *_compressPVIPAStops_*_*"
+         ]
+         fileName    : "sim.owner.MuIPAStops.version.sequencer.art"
       }
 
       FlashOutput : {
@@ -324,7 +362,7 @@ Beam: {
         {type: notInVolume pars:[TS2Vacuum, TS3Vacuum, TS4Vacuum, TS5Vacuum, Coll31, Coll32, Coll51, TS2InnerCryoShell, TS3InnerCryoShell, TS4InnerCryoShell, TS2CryoInsVac, TS3CryoInsVac, PbarAbsDisk, PbarAbsWedge, VirtualDetector_Coll31_In, VirtualDetector_Coll32_In, VirtualDetector_Coll31_Out, VirtualDetector_Coll32_Out, Coll31OutRecord, Coll32InRecord, Coll31OutRecord, VirtualDetector_TS4_Bend, VirtualDetector_Coll5_In, VirtualDetector_Coll5_Out, VirtualDetector_Coll5_OutSurf]},
   
         // This union splits the output of the above cuts
-        // into two exclusive streams; Beam (charged particles entering the DS) and CRVNeutrals ((mostly)neutral particles approaching the CRV
+        // into two exclusive streams; Beam (charged particles entering the DS) and Neutrals ((mostly)neutral particles approaching the CRV
         { type: union pars:  [
   	    {
   	       type: intersection
@@ -336,7 +374,7 @@ Beam: {
   	    },
               {  type: constant
                  value: true
-                 write: CRVNeutrals
+                 write: Neutrals
               }
            ]
         }
