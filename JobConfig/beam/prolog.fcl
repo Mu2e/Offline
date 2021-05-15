@@ -86,12 +86,12 @@ Beam: {
       IPAMuonFinder : {
          module_type : StoppedParticlesFinder
          particleInput : "g4run"
-         physVolInfoInput : "g4run"
-         stoppingMaterials : [ "IPAPolyethyelene" ]
+         useEventLevelVolumeInfo: true
+         physVolInfoInput: "g4run:eventlevel"
+         stoppingMaterial : "IPAPolyethyelene"
          particleTypes : [ 13, -13 ]
          verbosityLevel: 1
       }
-
       
       stoppedMuonDaughters: {
          module_type: SimParticleDaughterSelector
@@ -176,7 +176,7 @@ Beam: {
          }
       }
 
-      neutResampler: {
+      neutralsResampler: {
          module_type: ResamplingMixer
          fileNames: @nil
          readMode: "sequential"
@@ -200,7 +200,7 @@ Beam: {
 
       EarlyPrescaleFilter : {
         module_type : PrescaleEvent
-	nPrescale         : 1000
+	nPrescale         : 100 # test value FIXME
 	triggerPath        : "earlyFlashPath"
 	triggerFlag   : ["PrescaleRandom"]      
       }
@@ -285,7 +285,7 @@ Beam: {
       }
 
       IPAStopOutput : {
-         module_type : RIPAOutput
+         module_type : RootOutput
          SelectEvents: [IPAStopPath]
          outputCommands:   [ "drop *_*_*_*",
             "keep mu2e::GenParticles_*_*_*",

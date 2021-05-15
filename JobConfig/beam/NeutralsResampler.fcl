@@ -12,7 +12,7 @@
 #include "JobConfig/primary/prolog.fcl"
 #include "JobConfig/pileup/prolog.fcl"
 
-process_name: BeamResampler
+process_name: NeutralsResampler
 
 source : {
    module_type : EmptyEvent
@@ -25,7 +25,6 @@ physics: {
     @table::CommonMC.producers
     @table::Beam.producers
     @table::Primary.producers
-    compressEarlyDetStepMCs : @local::Primary.producers.compressDetStepMCs
   }
   filters : {
     @table::Common.filters
@@ -37,8 +36,8 @@ physics: {
     @table::Common.analyzers
   }
   # setup paths
-  flashPath : [ genCounter, neutResampler, @sequence::Common.g4Sequence, @sequence::Primary.DetStepSequence, protonTimeMap, @sequence::Primary.DetStepFilterSequence ]
-  earlyFlashPath : [ genCounter, neutResampler, @sequence::Common.g4Sequence, EarlyPrescaleFilter, @sequence::Primary.DetStepSequence, EarlyDetStepFilter, compressEarlyDetStepMCs ]
+  flashPath : [ genCounter, neutralsResampler, @sequence::Common.g4Sequence, @sequence::Primary.DetStepSequence, protonTimeMap, @sequence::Primary.DetStepFilterSequence ]
+  earlyFlashPath : [ genCounter, neutralsResampler, @sequence::Common.g4Sequence, EarlyPrescaleFilter, @sequence::Primary.DetStepSequence, EarlyDetStepFilter, compressDetStepMCs ]
   trigger_paths: [ flashPath, earlyFlashPath ]
   outPath : [ FlashOutput, EarlyFlashOutput ]
   end_paths: [outPath]
@@ -46,24 +45,24 @@ physics: {
 outputs: {
   FlashOutput : {
     @table::Beam.outputs.FlashOutput
-    fileName: "dts.owner.CRVFlash.version.sequencer.art"
+    fileName: "dts.owner.NeutralsFlash.version.sequencer.art"
   }
   EarlyFlashOutput : {
     @table::Beam.outputs.EarlyFlashOutput
-    fileName: "dts.owner.EarlyCRVFlash.version.sequencer.art"
+    fileName: "dts.owner.EarlyNeutralsFlash.version.sequencer.art"
   }
 }
 
 # Point Mu2eG4 to the pre-simulated data
 physics.producers.g4run.inputs: {
    primaryType: "StepPoints"
-   primaryTag: "neutResampler:Neutrals"
+   primaryTag: "neutralsResampler:Neutrals"
    inputMCTrajectories: ""
 
    simStageOverride: 1
-   inputPhysVolumeMultiInfo: "neutResampler"
+   inputPhysVolumeMultiInfo: "neutralsResampler"
    updateEventLevelVolumeInfos: {
-      input: "neutResampler:eventlevel"
+      input: "neutralsResampler:eventlevel"
       outInstance: "eventlevel"
    }
 }
@@ -78,19 +77,15 @@ physics.producers.g4run.Mu2eG4CommonCut:{
 }
 #include "JobConfig/common/epilog.fcl"
 #include "JobConfig/pileup/epilog.fcl"
+#everything below should be in prolog FIXME!
 physics.producers.compressEarlyDetStepMCs.stepPointMCTags : [ ]
 physics.producers.compressEarlyDetStepMCs.compressionOptions : @local::DetStepCompression.extraCompression
 physics.producers.compressEarlyDetStepMCs.mcTrajectoryTag : ""
-#physics.producers.compressEarlyDetStepMCs.simParticleTag : "g4run"
 physics.producers.StrawGasStepMaker.KeepDeltasModule : ""
-#physics.producers.CaloShowerStepMaker.caloStepPointCollection : ["g4run:calorimeter"]
-#physics.producers.CrvSteps.stepPointsModuleLabels : [ "g4run" ]
-# tweak compression for this job
-#physics.producers.compressDetStepMCs.simParticleTag : "g4runr"
 # time cut for the main flash stream
 physics.filters.DetStepFilter.MinimumTime : 300 # select energy deposits after the peak of the flash has passed, to keep useless payload down
 physics.filters.DetStepFilter.TimeOffsets : [ "protonTimeMap" ] # only proton time map is relevant to this job
 
 # test
-physics.filters.neutResampler.fileNames: [ "sim.owner.Neutrals.version.sequencer.art" ]
+physics.filters.neutralsResampler.fileNames: [ "sim.owner.Neutrals.version.sequencer.art" ]
 
