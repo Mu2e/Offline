@@ -13,8 +13,6 @@ Beam: {
       genCounter: { module_type: GenEventCounter }
       g4run : @local::g4run
 
-
-
       compressPVBeam : {
          module_type: CompressPhysicalVolumes
          volumesInput : "g4run"
@@ -43,25 +41,11 @@ Beam: {
          particleInputs : [ "extmonRegionFilter" ]
       }
 
-      compressPVDetector: {
-         module_type: CompressPhysicalVolumes
-         volumesInput: "g4run"
-         hitInputs: []
-         particleInputs: [ "detectorFilter" ]
-      }
-
-      compressPVNeutrals: {
-         module_type: CompressPhysicalVolumes
-         volumesInput: "g4run"
-         hitInputs: []
-         particleInputs: [ "NeutralsFilter" ]
-      }
-
-      compressPVFull : {
+      compressPVTargetStops: {
          module_type: CompressPhysicalVolumes
          volumesInput : "g4run"
          hitInputs : []
-         particleInputs : [ "g4run" ]
+         particleInputs : [ "TargetStopFilter" ]
       }
 
       compressPVIPAStops: {
@@ -132,6 +116,13 @@ Beam: {
          vetoDaughters: []
       }
 
+      TargetStopFilter: {
+         module_type: FilterG4Out
+         mainHitInputs: []
+         extraHitInputs: [ "g4run:virtualdetector" ]
+         mainSPPtrInputs: [ "stoppedMuonFinder" ]
+      }
+
       IPAStopFilter: {
          module_type: FilterG4Out
          mainHitInputs: []
@@ -139,19 +130,14 @@ Beam: {
          mainSPPtrInputs: [ "IPAMuonFinder" ]
       }
 
-
       FlashFilter: {
          module_type: FilterG4Out
          mainHitInputs:  [ "g4run:tracker", "g4run:calorimeter", "g4run:CRV", "g4run:virtualdetector" ]
          vetoParticles:  [ "stoppedMuonDaughters" ]
       }
       
-      MuTargetStopFilter: {
-         module_type: FilterG4Out
-         mainHitInputs: []
-         extraHitInputs: [ "g4run:virtualdetector" ]
-         mainSPPtrInputs: [ "stoppedMuonFinder" ]
-      }
+
+# resamplers
 
       beamResampler: {
          module_type: ResamplingMixer
@@ -167,7 +153,7 @@ Beam: {
                      [ "BeamFilter:virtualdetector", ":" ],
                      [ "BeamFilter:Beam", ":" ]
                   ] }
-      
+	       simTimeOffset : "protonTimeOffset"
                volumeInfoMixer: {
                   srInput: "compressPVBeam"
                   evtOutInstanceName: "eventlevel"
@@ -271,17 +257,17 @@ Beam: {
          ]
       }
 
-      MuTargetStopOutput : {
+      TargetStopOutput : {
         module_type : RootOutput
-        SelectEvents: [mustopPath]
+        SelectEvents: [targetStopPath]
         outputCommands:   [ "drop *_*_*_*",
 	  "keep art::EventIDs_*_*_*",
 	  "keep mu2e::GenParticles_*_*_*",
 	  "keep mu2e::GenEventCount_*_*_*",
            "keep mu2e::StatusG4_*_*_*",
-           "keep *_MuTargetStopFilter_*_*"
+           "keep *_TargetStopFilter_*_*"
         ]
-        fileName    : "sim.owner.MuTargetStops.version.sequencer.art"
+        fileName    : "sim.owner.TargetStops.version.sequencer.art"
       }
 
       IPAStopOutput : {
@@ -420,6 +406,10 @@ Beam: {
         }
      ]
   }
+
+  beamResamplerSequence : [genCounter, protonTimeOffset, beamResampler]
+  neutralsResamplerSequence : [genCounter, protonTimeOffset, neutralsResampler]
+
 }
 END_PROLOG
 

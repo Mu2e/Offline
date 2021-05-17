@@ -36,8 +36,8 @@ physics: {
     @table::Common.analyzers
   }
   # setup paths
-  flashPath : [ genCounter, neutralsResampler, @sequence::Common.g4Sequence, @sequence::Primary.DetStepSequence, protonTimeMap, @sequence::Primary.DetStepFilterSequence ]
-  earlyFlashPath : [ genCounter, neutralsResampler, @sequence::Common.g4Sequence, EarlyPrescaleFilter, @sequence::Primary.DetStepSequence, EarlyDetStepFilter, compressDetStepMCs ]
+  flashPath : [ @sequence::Beam.neutralsResamplerSequence, @sequence::Common.g4Sequence, @sequence::Primary.DetStepSequence, @sequence::Primary.DetStepFilterSequence ]
+  earlyFlashPath : [ @sequence::Beam.neutralsResamplerSequence, @sequence::Common.g4Sequence, EarlyPrescaleFilter, @sequence::Primary.DetStepSequence, EarlyDetStepFilter, compressDetStepMCs ]
   trigger_paths: [ flashPath, earlyFlashPath ]
   outPath : [ FlashOutput, EarlyFlashOutput ]
   end_paths: [outPath]
@@ -77,15 +77,7 @@ physics.producers.g4run.Mu2eG4CommonCut:{
 }
 #include "JobConfig/common/epilog.fcl"
 #include "JobConfig/pileup/epilog.fcl"
-#everything below should be in prolog FIXME!
-physics.producers.compressEarlyDetStepMCs.stepPointMCTags : [ ]
-physics.producers.compressEarlyDetStepMCs.compressionOptions : @local::DetStepCompression.extraCompression
-physics.producers.compressEarlyDetStepMCs.mcTrajectoryTag : ""
-physics.producers.StrawGasStepMaker.KeepDeltasModule : ""
-# time cut for the main flash stream
-physics.filters.DetStepFilter.MinimumTime : 300 # select energy deposits after the peak of the flash has passed, to keep useless payload down
-physics.filters.DetStepFilter.TimeOffsets : [ "protonTimeMap" ] # only proton time map is relevant to this job
-
+#include "JobConfig/beam/epilog.fcl"
 # test
-physics.filters.neutralsResampler.fileNames: [ "sim.owner.Neutrals.version.sequencer.art" ]
+physics.filters.neutralsresampler.filenames: [ "sim.owner.Neutrals.version.sequencer.art" ]
 

@@ -193,6 +193,7 @@ namespace mu2e {
     CLHEP::Hep3Vector const& startPosition()       const { return _startPosition;}
     CLHEP::HepLorentzVector const& startMomentum() const { return _startMomentum;}
     double      startGlobalTime()  const { return _startGlobalTime;}
+    double&     startGlobalTime()        { return _startGlobalTime;}
     double      startProperTime()  const { return _startProperTime;}
     unsigned    startVolumeIndex() const { return _startVolumeIndex;}
     unsigned    startG4Status()    const { return _startG4Status;}
@@ -209,6 +210,7 @@ namespace mu2e {
     CLHEP::Hep3Vector const& endPosition() const { return _endPosition;}
     CLHEP::HepLorentzVector const& endMomentum() const { return _endMomentum;}
     double       endGlobalTime()  const { return _endGlobalTime; }
+    double&      endGlobalTime()        { return _endGlobalTime; }
     double       endProperTime()  const { return _endProperTime; }
     unsigned     endVolumeIndex() const { return _endVolumeIndex;}
     unsigned     endG4Status()    const { return _endG4Status;   }
