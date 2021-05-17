@@ -174,6 +174,7 @@ namespace mu2e {
     CLHEP::Hep3Vector const&     momentum()         const { return _momentum;  }
     CLHEP::Hep3Vector const&     postMomentum()     const { return _postMomentum;  }
     double                       time()             const { return _time;      }
+    double&                      time()                   { return _time;      }
     double                       properTime()       const { return _proper;      }
     double                       stepLength()       const { return _stepLength;}
     ProcessCode                  endProcessCode()   const { return _endProcessCode;}

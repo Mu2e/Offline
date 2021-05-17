@@ -37,18 +37,20 @@ physics: {
     @table::Common.analyzers
   }
   # setup paths
-  mustopPath : [ genCounter, beamResampler, @sequence::Common.g4Sequence, stoppedMuonFinder, MuTargetStopFilter]
-  IPAStopPath : [ genCounter, beamResampler, @sequence::Common.g4Sequence, IPAMuonFinder, IPAStopFilter]
-  flashPath : [ genCounter, beamResampler, @sequence::Common.g4Sequence, stoppedMuonFinder, stoppedMuonDaughters, FlashFilter,
-	      @sequence::Primary.DetStepSequence, protonTimeMap, @sequence::Primary.DetStepFilterSequence ]
-  earlyFlashPath : [ genCounter, beamResampler, @sequence::Common.g4Sequence, stoppedMuonFinder, stoppedMuonDaughters, FlashFilter, EarlyPrescaleFilter,
+  targetStopPath : [ @sequence::Beam.beamResamplerSequence, @sequence::Common.g4Sequence, stoppedMuonFinder, TargetStopFilter]
+  IPAStopPath : [ @sequence::Beam.beamResamplerSequence, @sequence::Common.g4Sequence, IPAMuonFinder, IPAStopFilter]
+#  targetStopPath : [ @sequence::Beam.beamResamplerSequence, @sequence::Common.g4Sequence, stoppedMuonFinder, TargetStopFilter, compressPVTargetStops]
+#  IPAStopPath : [ @sequence::Beam.beamResamplerSequence, @sequence::Common.g4Sequence, IPAMuonFinder, IPAStopFilter, compressPVIPAStops]
+  flashPath : [ @sequence::Beam.beamResamplerSequence, @sequence::Common.g4Sequence, stoppedMuonFinder, stoppedMuonDaughters, FlashFilter,
+	      @sequence::Primary.DetStepSequence, @sequence::Primary.DetStepFilterSequence ]
+  earlyFlashPath : [ @sequence::Beam.beamResamplerSequence, @sequence::Common.g4Sequence, stoppedMuonFinder, stoppedMuonDaughters, FlashFilter, EarlyPrescaleFilter,
 	      @sequence::Primary.DetStepSequence, EarlyDetStepFilter, compressDetStepMCs ]
-  trigger_paths: [ flashPath, earlyFlashPath, mustopPath, IPAStopPath ]
-  outPath : [ FlashOutput, EarlyFlashOutput, MuTargetStopOutput, IPAStopOutput ]
+  trigger_paths: [ flashPath, earlyFlashPath, targetStopPath, IPAStopPath ]
+  outPath : [ FlashOutput, EarlyFlashOutput, TargetStopOutput, IPAStopOutput ]
   end_paths: [outPath]
 }
 outputs: {
-  MuTargetStopOutput : @local::Beam.outputs.MuTargetStopOutput
+  TargetStopOutput : @local::Beam.outputs.TargetStopOutput
   IPAStopOutput : @local::Beam.outputs.IPAStopOutput
   FlashOutput : {
     @table::Beam.outputs.FlashOutput
@@ -86,22 +88,11 @@ physics.producers.g4run.Mu2eG4CommonCut:{
 }
 #include "JobConfig/common/epilog.fcl"
 #include "JobConfig/pileup/epilog.fcl"
-#everything below should be in prolog FIXME!
-physics.producers.compressEarlyDetStepMCs.stepPointMCTags : [ ]
-physics.producers.compressEarlyDetStepMCs.compressionOptions : @local::DetStepCompression.extraCompression
-physics.producers.compressEarlyDetStepMCs.mcTrajectoryTag : ""
-physics.producers.compressEarlyDetStepMCs.simParticleTag : "g4run"
-# reconfigure StepPoint producers for this job; this avoids double-counting particles from the mustop filter deep copy
+#include "JobConfig/beam/epilog.fcl"
+# reconfigure StepPoint producers to avoid double-counting particles from the mustop filter deep copy
 physics.producers.StrawGasStepMaker.SkipTheseStepPoints : "g4run"
 physics.producers.StrawGasStepMaker.KeepDeltasModule : ""
 physics.producers.CaloShowerStepMaker.caloStepPointCollection : ["FlashFilter:calorimeter"]
 physics.producers.CrvSteps.stepPointsModuleLabels : [ "FlashFilter" ]
-# tweak compression for this job
-physics.producers.compressDetStepMCs.simParticleTag : "FlashFilter"
-physics.producers.compressDetStepMCs.simParticleTag : "FlashFilter"
-# time cut for the main flash stream
-physics.filters.DetStepFilter.MinimumTime : 300 # select energy deposits after the peak of the flash has passed, to keep useless payload down
-physics.filters.DetStepFilter.TimeOffsets : [ "protonTimeMap" ] # only proton time map is relevant to this job
-
 # test
-physics.filters.beamResampler.fileNames: [ "sim.owner.Beam.version.sequencer.art" ]
+physics.filters.neutralsresampler.filenames: [ "sim.owner.Beam.version.sequencer.art" ]
