@@ -23,7 +23,8 @@ namespace mu2e {
           CLHEP::HepRotation const& rotationInMu2e, 
           std::shared_ptr<PTMonPWC> nearPWC, 
           std::shared_ptr<PTMonPWC> farPWC,
-          double pwcSeparation);
+          double pwcSeparation,
+          double motherMargin);
     PTMon() {}
 
     CLHEP::Hep3Vector const &  originInMu2e()   const { return _originInMu2e; }

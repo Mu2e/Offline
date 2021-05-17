@@ -39,7 +39,8 @@ namespace mu2e {
              int numVertWires,
              int numHorizWires,
              CLHEP::Hep3Vector const& originInParent,
-             int wireNumStart);
+             int wireNumStart,
+             double containerMargin);
 
     CLHEP::Hep3Vector const &  originInParent()   const { return _originInParent; }
     std::vector<double>        vertWireYPos()     const { return _vertWireYpos; }
@@ -71,7 +72,10 @@ namespace mu2e {
     double      hv3Z()               const { return _hv3Z; }
     double      gasOutZ()            const { return _gasOutZ; }
     double      ground2Z()           const { return _ground2Z; }
+    double      detectorThick()      const { return _detectorThick; }
     double      totalThick()         const { return _totalThick; }
+    double      totalHeight()        const { return _totalHeight; }
+    double      totalWidth()         const { return _totalWidth; }
     double      upstreamWindowSurfaceZ() const { return _upstreamWindowSurfaceZ; }
 
 
@@ -115,7 +119,10 @@ namespace mu2e {
     double _gasInZ;
     double _gasOutZ;
 
+    double _detectorThick;
     double _totalThick;
+    double _totalHeight;
+    double _totalWidth;
     // Z position of the upstream surface of the ground 1 plane
     double _upstreamWindowSurfaceZ;
 

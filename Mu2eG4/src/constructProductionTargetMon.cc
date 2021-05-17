@@ -52,11 +52,11 @@ namespace mu2e {
     G4Box *outerBox = new G4Box("pwcFrameOuter", 
                 pwc->frameWidth()/2., 
                 pwc->frameHeight()/2., 
-                pwc->totalThick()/2.);
+                pwc->detectorThick()/2.);
     G4Box *innerBox = new G4Box("pwcFrameInner", 
                 pwc->pwcWindow()->getXhalfLength(), 
                 pwc->pwcWindow()->getYhalfLength(), 
-                pwc->totalThick()/2.);
+                pwc->detectorThick()/2.);
     std::string frameName = "pTargetMonFrame";
     frameName.append(pwc->nameSuffix());
     G4Material *frameMaterial = findMaterialOrThrow(pwc->frameMaterialName());
@@ -311,8 +311,8 @@ namespace mu2e {
     G4Material* containerMaterial = motherVolume.logical->GetMaterial();
 
     std::vector<double> containerHalfDims;
-    containerHalfDims.push_back(pwc->frameWidth()/2.);
-    containerHalfDims.push_back(pwc->frameHeight()/2.);
+    containerHalfDims.push_back(pwc->totalWidth()/2.);
+    containerHalfDims.push_back(pwc->totalHeight()/2.);
     containerHalfDims.push_back(pwc->totalThick()/2.);
 
     std::string containerName = "pTargetMonInnerContainer";
