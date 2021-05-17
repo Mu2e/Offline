@@ -9,6 +9,10 @@ bool hasPTM = true;
 #include "Mu2eG4/geom/ProductionTargetMonitor.txt"
 
 // THINGS YOU CHANGED TO SEE GEOMETRY STUFF
+double primaryProtonGun.czmin = -1;  //1;
+double primaryProtonGun.czmax = -1;  //1;
+
+
 string targetPS.supports.spokes.material = "G4_Galactic";
 string targetPS_targetCoreMaterial         = "G4_Galactic";
 string targetPS_targetFinMaterial          = "G4_Galactic";
