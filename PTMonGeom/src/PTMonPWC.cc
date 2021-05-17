@@ -21,7 +21,8 @@ namespace mu2e {
                      int numVertWires,
                      int numHorizWires,
                      CLHEP::Hep3Vector const& originInParent,
-                     int wireNumStart) : 
+                     int wireNumStart,
+                     double containerMargin) : 
     _nameSuffix(nameSuffix),
     _originInParent(originInParent),
     _frameHeight(frameHeight),
@@ -35,7 +36,10 @@ namespace mu2e {
     _numVertWires(numVertWires),
     _numHorizWires(numHorizWires)
   {
-    _totalThick = (13.*frameThick) + (2.*outerPlateThick);
+    _detectorThick = (13.*frameThick) + (2.*outerPlateThick);
+    _totalThick = (13.*frameThick) + (2.*outerPlateThick) + containerMargin;
+    _totalHeight = frameHeight + containerMargin;
+    _totalWidth = frameWidth + containerMargin;
     _ground1Z = -5.5*frameThick;
     _hv1Z = -3.5*frameThick;
     _hv2Z = 0.5*frameThick;

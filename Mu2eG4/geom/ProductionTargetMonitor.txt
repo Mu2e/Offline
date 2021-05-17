@@ -6,8 +6,8 @@ int pTargetMonVersion = 1;
 int pTargetMon_verbosity = 0;
 bool pTargetMon.doSurfaceCheck = true;
 
-double pTargetMon_height = 196.85; // mm
-double pTargetMon_width = 196.85;
+double pTargetMon_frameHeight = 196.85; // mm
+double pTargetMon_frameWidth = 196.85;
 double pTargetMon_pwcSeparation = 1000.0; // mm, center-to-center
 
 double pTargetMon_windowWidth = 96;
@@ -24,6 +24,11 @@ string pTargetMon_frameMaterial = "G10";
 
 double pTargetMon_rotY = 166.274;
 double pTargetMon_rotX = -2.272; // degree, was -2.27
+
+// mother and container volumes slightly larger than the 
+// detectors themselves
+double pTargetMon_motherMargin = 0.01;
+double pTargetMon_containerMargin = 0.005;
 
 // positions in Mu2e coordinates
 // position of UPSTREAM END of detectors: (2280, 251.9, -12796) in Mu2e coords

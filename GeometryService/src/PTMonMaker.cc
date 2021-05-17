@@ -25,8 +25,8 @@ namespace mu2e {
     rotationInMu2e.rotateY(yRotInMu2e*CLHEP::deg);
 
     double pwcSeparation = _config.getDouble("pTargetMon_pwcSeparation");
-    double frameHeight = _config.getDouble("pTargetMon_height");
-    double frameWidth = _config.getDouble("pTargetMon_width");
+    double frameHeight = _config.getDouble("pTargetMon_frameHeight");
+    double frameWidth = _config.getDouble("pTargetMon_frameWidth");
     double frameThick = _config.getDouble("pTargetMon_frameThick");
     double outerPlateThick = _config.getDouble("pTargetMon_outerPlateLength");
     std::string frameMaterialName = _config.getString("pTargetMon_frameMaterial");
@@ -40,6 +40,11 @@ namespace mu2e {
     int numVertWires = _config.getInt("pTargetMon_vertWiresPerPlane");
     int numHorizWires = _config.getInt("pTargetMon_horizWiresPerPlane");
 
+    // mother volume contains both detectors, container contains one detector
+    // each is slightly larger than all its contents
+    double motherMargin = _config.getDouble("pTargetMon_motherMargin");
+    double containerMargin = _config.getDouble("pTargetMon_containerMargin");
+
     // the PTMon is made of two identical PWC's, placed such that their center
     // lines match up.
 
@@ -47,15 +52,15 @@ namespace mu2e {
     CLHEP::Hep3Vector nearPWCPos = CLHEP::Hep3Vector(0.0, 0.0, -0.5*pwcSeparation);
     std::shared_ptr<PTMonPWC> nearPWC( new PTMonPWC("_1", frameHeight, frameWidth, frameThick, outerPlateThick, frameMaterialName, 
                                      windowHeight, windowWidth, windowThick, windowMaterialName,
-                                     gasMaterialName, numVertWires, numHorizWires, nearPWCPos, 0) );
+                                     gasMaterialName, numVertWires, numHorizWires, nearPWCPos, 0, containerMargin) );
     // "Far" PWC
     CLHEP::Hep3Vector farPWCPos = CLHEP::Hep3Vector(0.0, 0.0, 0.5*pwcSeparation);
     int farWireNumStart = numHorizWires + numVertWires;
     std::shared_ptr<PTMonPWC> farPWC( new PTMonPWC("_2", frameHeight, frameWidth, frameThick, outerPlateThick, frameMaterialName, 
                                      windowHeight, windowWidth, windowThick, windowMaterialName,
-                                     gasMaterialName, numVertWires, numHorizWires, farPWCPos, farWireNumStart) );
+                                     gasMaterialName, numVertWires, numHorizWires, farPWCPos, farWireNumStart, containerMargin) );
 
-    std::unique_ptr<PTMon> ptmon(new PTMon(originInMu2e, rotationInMu2e, nearPWC, farPWC, pwcSeparation));
+    std::unique_ptr<PTMon> ptmon(new PTMon(originInMu2e, rotationInMu2e, nearPWC, farPWC, pwcSeparation, motherMargin));
     return ptmon;
   } // PTMonMaker::make()
 
