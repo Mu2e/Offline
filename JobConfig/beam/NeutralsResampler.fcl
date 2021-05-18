@@ -20,17 +20,22 @@ source : {
 }
 
 services : @local::Services.Sim
-physics: { 
+physics: {
   producers : {
-    @table::CommonMC.producers
-    @table::Beam.producers
+    @table::Common.producers
     @table::Primary.producers
+    protonTimeOffset : @local::CommonMC.producers.protonTimeOffset 
   }
   filters : {
     @table::Common.filters
-    @table::Beam.filters
-    @table::Pileup.filters
-    EarlyDetStepFilter : @local::Pileup.filters.DetStepFilter # special instance to select flash without time cuts (prescaled)
+    EarlyPrescaleFilter : @local::Beam.filters.EarlyPrescaleFilter
+    neutralsResampler    : @local::Beam.filters.neutralsResampler
+    DetStepFilter : {
+      @table::Pileup.filters.DetStepFilter 
+      @table::Beam.filters.DetStepFilter 
+    }
+# instance to select flash without time cuts (prescaled)
+    EarlyDetStepFilter : @local::Pileup.filters.DetStepFilter
   }
   analyzers : {
     @table::Common.analyzers
@@ -44,11 +49,22 @@ physics: {
 }
 outputs: {
   FlashOutput : {
-    @table::Beam.outputs.FlashOutput
+    module_type: RootOutput
+    outputCommands:   [ "drop *_*_*_*",
+      @sequence::Beam.DtsKeptProducts,
+      @sequence::Pileup.KeptProducts
+    ]
+    SelectEvents: [flashPath]
     fileName: "dts.owner.NeutralsFlash.version.sequencer.art"
   }
+
   EarlyFlashOutput : {
-    @table::Beam.outputs.EarlyFlashOutput
+    module_type: RootOutput
+    outputCommands:   [ "drop *_*_*_*",
+      @sequence::Beam.DtsKeptProducts,
+      @sequence::Pileup.KeptProducts
+    ]
+    SelectEvents: [earlyFlashPath]
     fileName: "dts.owner.EarlyNeutralsFlash.version.sequencer.art"
   }
 }
@@ -79,5 +95,4 @@ physics.producers.g4run.Mu2eG4CommonCut:{
 #include "JobConfig/pileup/epilog.fcl"
 #include "JobConfig/beam/epilog.fcl"
 # test
-physics.filters.neutralsresampler.filenames: [ "sim.owner.Neutrals.version.sequencer.art" ]
-
+physics.filters.neutralsResampler.filenames: [ "sim.owner.Neutrals.version.sequencer.art" ]

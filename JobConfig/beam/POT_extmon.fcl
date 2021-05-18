@@ -1,45 +1,70 @@
 #
 # Script to shoot beam protons onto the production target.  Daughter particles are filtered and collected at:
-#  1) extmon beam 
+#  1) extmon beam
 #  2) extmon region
 #
-#include "fcl/minimalMessageService.fcl"
 #include "fcl/standardServices.fcl"
+#include "EventGenerator/fcl/prolog.fcl"
 #include "JobConfig/common/prolog.fcl"
 #include "JobConfig/beam/prolog.fcl"
 
-process_name :  POT
+process_name :  POTextmon
 
 source : {
    module_type : EmptyEvent
    maxEvents : @nil
 }
 
-services : @local::beam.services
+services : @local::Services.Sim
 
 physics : {
   # setup the modules
-  producers: @local::beam.producers
-  filters: @local::beam.filters
-  analyzers : @local::beam.analyzers
+  producers: {
+    @table::Common.producers
+    generate: @local::PrimaryProtonGun
+    compressPVextmonBeam : @local::Beam.producers.compressPVextmonBeam
+    compressPVextmonRegion : @local::Beam.producers.compressPVextmonRegion
+  } 
+  filters: {
+    @table::Common.filters
+    extmonBeamFilter : @local::Beam.filters.extmonBeamFilter
+    extmonRegionFilter : @local::Beam.filters.extmonRegionFilter
+  }
+  analyzers : @local::Common.analyzers
   # setup the paths
-  ExtMonBeamPath : [ @sequence::Common.generateSequence, @sequence::Common.g4Sequence, extmonBeamFilter, compressPVextmonBeam]
-  ExtMonRegionPath : [ @sequence::Common.generateSequence, @sequence::Common.g4Sequence, extmonRegionFilter, compressPVextmonRegion]
-  trigger_paths  : [ExtMonBeamPath, ExtMonRegionPath ]
+  extmonBeamPath : [ @sequence::Common.generateSequence, @sequence::Common.g4Sequence, extmonBeamFilter, compressPVextmonBeam]
+  extmonRegionPath : [ @sequence::Common.generateSequence, @sequence::Common.g4Sequence, extmonRegionFilter, compressPVextmonRegion]
+  trigger_paths  : [extmonBeamPath, extmonRegionPath ]
   LogPath : [ genCountLogger ]
-  OutputPath : [ExtMonBeamOutput, ExtMonReigionOutput ]
+  OutputPath : [extmonBeamOutput, extmonRegionOutput ]
   end_paths: [OutputPath, LogPath ]
 }
 # setup outputs
 outputs: {
-  ExtMonBeamOutput : @local::beam.outputs.ExtMonBeamOutput
-  ExtMonRegionOutput : @local::beam.outputs.ExtMonRegionOutput
+  extmonBeamOutput : {
+    module_type: RootOutput
+    SelectEvents: ["extmonBeamPath"]
+    outputCommands:   [ "drop *_*_*_*",
+      @sequence::Beam.SimKeptProducts,
+      "keep *_extmonBeamFilter_*_*",
+      "keep *_compressPVextmonBeam_*_*"
+    ]
+    fileName : "sim.owner.extmonBeam.version.sequencer.art"
+  }
+  extmonRegionOutput : {
+    module_type: RootOutput
+    SelectEvents: ["extmonRegionPath"]
+    outputCommands:   [ "drop *_*_*_*",
+      @sequence::Beam.SimKeptProducts,
+      "keep *_extmonRegionFilter_*_*",
+      "keep *_compressPVextmonRegion_*_*"
+    ]
+    fileName : "sim.owner.extmonRegion.version.sequencer.art"
+  }
 }
 # tweak Mu2eG4 settings
 physics.producers.g4run.SDConfig.enableSD: [ virtualdetector ] # only VDs are active
 physics.producers.g4run.physics.minRangeCut : 1. # mm  coarse range for this stage
 #include "JobConfig/beam/epilog.fcl"
-#
-# Output file names are defined in prolog
-
+#include "JobConfig/common/epilog.fcl"
 

@@ -1,17 +1,11 @@
 #
 #  Common config for all beam jobs
 #
-#include "Mu2eG4/fcl/prolog.fcl"
-#include "EventGenerator/fcl/prolog.fcl"
-#include "JobConfig/pileup/prolog.fcl"
 BEGIN_PROLOG
 
 Beam: {
 
    producers: {
-      generate: @local::PrimaryProtonGun
-      genCounter: { module_type: GenEventCounter }
-      g4run : @local::g4run
 
       compressPVBeam : {
          module_type: CompressPhysicalVolumes
@@ -57,7 +51,7 @@ Beam: {
 
 # below are used for stopped muon daughter selecting/vetoing
 
-      stoppedMuonFinder: {
+      TargetMuonFinder: {
          module_type: "StoppedParticlesFinder"
          particleInput: "g4run"
          particleTypes: [ 13, -13 ]
@@ -76,10 +70,10 @@ Beam: {
          particleTypes : [ 13, -13 ]
          verbosityLevel: 1
       }
-      
+
       stoppedMuonDaughters: {
          module_type: SimParticleDaughterSelector
-         particleInput: "stoppedMuonFinder"
+         particleInput: "TargetMuonFinder"
          # EMCascade should not be vetoed because we do not re-simulate it
          processes: [ "DIO", "NuclearCapture" ]
       }
@@ -120,7 +114,7 @@ Beam: {
          module_type: FilterG4Out
          mainHitInputs: []
          extraHitInputs: [ "g4run:virtualdetector" ]
-         mainSPPtrInputs: [ "stoppedMuonFinder" ]
+         mainSPPtrInputs: [ "TargetMuonFinder" ]
       }
 
       IPAStopFilter: {
@@ -135,9 +129,18 @@ Beam: {
          mainHitInputs:  [ "g4run:tracker", "g4run:calorimeter", "g4run:CRV", "g4run:virtualdetector" ]
          vetoParticles:  [ "stoppedMuonDaughters" ]
       }
-      
 
-# resamplers
+# DetectorSteFilter with time cut for the main flash stream
+# these select energy deposits after the peak of the flash has passed, to keep useless payload down
+# time cut for the main flash stream
+# Note this is a partial config, it must be combined with Pileup definition
+      DetStepFilter : {
+	TimeCut : true
+	MinimumTime : 300 # good hits are after this time
+	MaximumTime : 50 # not a type: good hits are before this time
+      }
+
+      # resamplers
 
       beamResampler: {
          module_type: ResamplingMixer
@@ -145,7 +148,7 @@ Beam: {
          readMode: "sequential"
          wrapFiles: true
          mu2e: {
-	    writeEventIDs : true
+            writeEventIDs : true
             products: {
                genParticleMixer: { mixingMap: [ [ "generate", "" ] ] }
                simParticleMixer: { mixingMap: [ [ "BeamFilter", "" ] ] }
@@ -153,7 +156,7 @@ Beam: {
                      [ "BeamFilter:virtualdetector", ":" ],
                      [ "BeamFilter:Beam", ":" ]
                   ] }
-	       simTimeOffset : "protonTimeOffset"
+               simTimeOffset : "protonTimeOffset"
                volumeInfoMixer: {
                   srInput: "compressPVBeam"
                   evtOutInstanceName: "eventlevel"
@@ -168,14 +171,14 @@ Beam: {
          readMode: "sequential"
          wrapFiles: true
          mu2e: {
-	    writeEventIDs : true
+            writeEventIDs : true
             products: {
                genParticleMixer: { mixingMap: [ [ "generate", "" ] ] }
                simParticleMixer: { mixingMap: [ [ "NeutralsFilter", "" ] ] }
                stepPointMCMixer: { mixingMap: [
                      [ "NeutralsFilter:Neutrals", ":" ]
                   ] }
-      
+
                volumeInfoMixer: {
                   srInput: "compressPVNeutrals"
                   evtOutInstanceName: "eventlevel"
@@ -193,58 +196,9 @@ Beam: {
       }
    }
 
+
    outputs: {
-   
-      BeamOutput : {
-        module_type : RootOutput
-        SelectEvents: ["BeamPath"]
-        outputCommands:   [ "drop *_*_*_*",
-          "keep mu2e::GenParticles_*_*_*",
-          "keep mu2e::GenEventCount_*_*_*",
-          "keep mu2e::StatusG4_*_*_*",
-          "keep *_BeamFilter_*_*",
-          "keep *_compressPVBeam_*_*"
-        ]
-        fileName : "sim.owner.Beam.version.sequencer.art"
-      }
-      
-      NeutralsOutput : {
-        module_type : RootOutput
-        SelectEvents: ["NeutralsPath"]
-        outputCommands:   [ "drop *_*_*_*",
-          "keep mu2e::GenParticles_*_*_*",
-          "keep mu2e::GenEventCount_*_*_*",
-          "keep mu2e::StatusG4_*_*_*",
-          "keep *_NeutralsFilter_*_*",
-          "keep *_compressPVNeutrals_*_*"
-        ]
-        fileName : "sim.owner.Neutrals.version.sequencer.art"
-      }
-      
-      extmonbeamOutput : {
-         module_type : RootOutput
-         SelectEvents: ["ExtMonBeamPath"]
-         outputCommands:   [ "drop *_*_*_*",
-            "keep mu2e::GenParticles_*_*_*",
-            "keep mu2e::GenEventCount_*_*_*",
-            "keep mu2e::StatusG4_*_*_*",
-            "keep *_extmonBeamFilter_*_*",
-            "keep *_compressPVextmonBeam_*_*"
-         ]
-      }
-   
-      extmonregionOutput : {
-         module_type : RootOutput
-         SelectEvents: ["ExtMonRegionPath"]
-         outputCommands:   [ "drop *_*_*_*",
-            "keep mu2e::GenParticles_*_*_*",
-            "keep mu2e::GenEventCount_*_*_*",
-            "keep mu2e::StatusG4_*_*_*",
-            "keep *_extmonRegionFilter_*_*",
-            "keep *_compressPVextmonRegion_*_*"
-         ]
-      }
-   
+
       TruncatedOutput : {
          module_type : RootOutput
          SelectEvents: ["g4StatusFilter"]
@@ -258,145 +212,110 @@ Beam: {
          ]
       }
 
-      TargetStopOutput : {
-        module_type : RootOutput
-        SelectEvents: [targetStopPath]
-        outputCommands:   [ "drop *_*_*_*",
-	  "keep art::EventIDs_*_*_*",
-	  "keep mu2e::GenParticles_*_*_*",
-	  "keep mu2e::GenEventCount_*_*_*",
-           "keep mu2e::StatusG4_*_*_*",
-           "keep *_TargetStopFilter_*_*"
-        ]
-        fileName    : "sim.owner.TargetStops.version.sequencer.art"
-      }
+   }
+   # define regions where particles may eventually interact with the detectors (CRV or trracker/calo), See doc 26541 for a graphical description
+   # Mu2eG4 cuts are evaluated in the listed order.
+   # The first match wins.  For the "intersection"
+   # type, the first false stops the evaluation.
+   # For the "union" type the first true stops the evaluation.
 
-      IPAStopOutput : {
-         module_type : RootOutput
-         SelectEvents: [IPAStopPath]
-         outputCommands:   [ "drop *_*_*_*",
-            "keep mu2e::GenParticles_*_*_*",
-            "keep mu2e::GenEventCount_*_*_*",
-            "keep mu2e::StatusG4_*_*_*",
-            "keep *_IPAStopFilter_*_*",
-            "keep *_compressPVIPAStops_*_*"
-         ]
-         fileName    : "sim.owner.MuIPAStops.version.sequencer.art"
-      }
+   DetectorRegionCuts: {
+      type: intersection
+      pars: [
+         // Plane on the west side, outside of the wall
+         { type: plane normal: [  0, 0, 1 ] point : [ 0, 0, -4851 ] },
 
-      FlashOutput : {
-         module_type: RootOutput
-         SelectEvents: [flashPath]
-         outputCommands:   [ "drop *_*_*_*",
-            "keep art::EventIDs_*_*_*",
-            "keep mu2e::GenEventCount_*_*_*",
-            "keep mu2e::StatusG4_*_*_*",
-            "keep mu2e::SimTimeOffset_*_*_*",
-	    "keep art::TriggerResults_*_*_*",
-	    @sequence::Pileup.KeptProducts
-         ]
-      }
+         // Yuri's e-mail 2015-04-10: x=1612. from CRV considerations.
+         // This is also large enought to enclose TS3 (its half length is 975 mm).
+         // Yuri: Moved the plane to cover all the shielding from stage 1.
+         { type: plane normal: [ -1, 0, 0 ] point : [ 2800., 0, 0 ] },
 
-      EarlyFlashOutput : {
-         module_type: RootOutput
-         SelectEvents: [earlyFlashPath]
-         outputCommands:   [ "drop *_*_*_*",
-            "keep art::EventIDs_*_*_*",
-            "keep mu2e::GenEventCount_*_*_*",
-            "keep mu2e::StatusG4_*_*_*",
-            "keep mu2e::SimTimeOffset_*_*_*",
-	    "keep art::TriggerResults_*_*_*",
-	    @sequence::Pileup.KeptProducts
-         ]
-     }
+         // Make sure the charged particle beam reaches our DS2Vacuum stopping volume
+         {type: notInVolume pars:[TS2Vacuum, TS3Vacuum, TS4Vacuum, TS5Vacuum, Coll31, Coll32, Coll51, TS2InnerCryoShell, TS3InnerCryoShell, TS4InnerCryoShell, TS2CryoInsVac, TS3CryoInsVac, PbarAbsDisk, PbarAbsWedge, VirtualDetector_Coll31_In, VirtualDetector_Coll32_In, VirtualDetector_Coll31_Out, VirtualDetector_Coll32_Out, Coll31OutRecord, Coll32InRecord, Coll31OutRecord, VirtualDetector_TS4_Bend, VirtualDetector_Coll5_In, VirtualDetector_Coll5_Out, VirtualDetector_Coll5_OutSurf]},
+
+         // This union splits the output of the above cuts
+         // into two exclusive streams; Beam (charged particles entering the DS) and Neutrals ((mostly)neutral particles approaching the CRV
+         { type: union pars:  [
+               {
+                  type: intersection
+                  pars: [
+                     { type: inVolume pars: [DS2Vacuum] },
+                     { type: isCharged }
+                  ]
+                  write: Beam
+               },
+               {  type: constant
+                  value: true
+                  write: Neutrals
+               }
+            ]
+         }
+      ]
    }
 
-# define some paths; these can be mixed and matches as art guarantees no duplicate running
+   # define extinction monitor region
+   extMonRegionCuts: {
+      type: intersection
+      pars: [
+         {
+            type: plane
+            normal: @local::mu2eg4BeamDumpNormal
+            // Dump core center: (661.90,  527.40, -19428.2)
+            // A plane 950 mm beyond the core center as measured along
+            // the "beam" direction normal to the dump face.
+            // DeltaZ = L/cos(13.72 degrees)
+            point: [ 661.90, 527.40, -20406.10 ]
+         },
+
+         // Split the output of the "plane" cut above into two exclusive streams
+         { type: union pars:  [
+
+               {  type: intersection
+                  pars: [
+                     {
+                        type: inVolume
+                        pars:
+                        [  collimator1Channel,
+                           HallAir,
+                           ExtMonFNALfilterMagnetAperture,
+                           ExtMonFNALfilterMagnetApertureMarginUp,
+                           ExtMonFNALfilterMagnetApertureMarginDn
+                        ]
+                     },
+                     { type: isCharged }
+                  ]
+                  write: extmonbeam
+               },
+
+               { type: constant  value: true       write: extmonregion }
+            ]
+         }
+      ]
+   }
+
+
+   # define some paths; these can be mixed and matches as art guarantees no duplicate running
    g4StatusPath : [generate, genCounter, g4run, "!g4statusFilter", compressPVFull ]
+#
+# define products that need to be kept
+#
+  SimKeptProducts : [
+            "keep art::EventIDs_*_*_*",
+	    "keep mu2e::GenParticles_*_*_*",
+            "keep mu2e::GenEventCount_*_*_*",
+            "keep mu2e::StatusG4_*_*_*" 
+  ]
 
-# define regions where particles may eventually interact with the detectors (CRV or trracker/calo), See doc 26541 for a graphical description 
-# Mu2eG4 cuts are evaluated in the listed order.
-# The first match wins.  For the "intersection"
-# type, the first false stops the evaluation.
-# For the "union" type the first true stops the evaluation.
+  DtsKeptProducts : [
+            "keep art::EventIDs_*_*_*",
+            "keep mu2e::GenEventCount_*_*_*",
+            "keep mu2e::StatusG4_*_*_*",
+            "keep mu2e::SimParticleart::Ptrdoublestd::map_*_*_*"
+  ]
 
-  DetectorRegionCuts: {
-    type: intersection
-    pars: [
-        // Plane on the west side, outside of the wall
-        { type: plane normal: [  0, 0, 1 ] point : [ 0, 0, -4851 ] },
-  
-        // Yuri's e-mail 2015-04-10: x=1612. from CRV considerations.
-        // This is also large enought to enclose TS3 (its half length is 975 mm).
-        // Yuri: Moved the plane to cover all the shielding from stage 1.
-       { type: plane normal: [ -1, 0, 0 ] point : [ 2800., 0, 0 ] },
-  
-        // Make sure the charged particle beam reaches our DS2Vacuum stopping volume
-        {type: notInVolume pars:[TS2Vacuum, TS3Vacuum, TS4Vacuum, TS5Vacuum, Coll31, Coll32, Coll51, TS2InnerCryoShell, TS3InnerCryoShell, TS4InnerCryoShell, TS2CryoInsVac, TS3CryoInsVac, PbarAbsDisk, PbarAbsWedge, VirtualDetector_Coll31_In, VirtualDetector_Coll32_In, VirtualDetector_Coll31_Out, VirtualDetector_Coll32_Out, Coll31OutRecord, Coll32InRecord, Coll31OutRecord, VirtualDetector_TS4_Bend, VirtualDetector_Coll5_In, VirtualDetector_Coll5_Out, VirtualDetector_Coll5_OutSurf]},
-  
-        // This union splits the output of the above cuts
-        // into two exclusive streams; Beam (charged particles entering the DS) and Neutrals ((mostly)neutral particles approaching the CRV
-        { type: union pars:  [
-  	    {
-  	       type: intersection
-  	       pars: [
-  		  { type: inVolume pars: [DS2Vacuum] },
-  		  { type: isCharged }
-  	       ]
-  	       write: Beam
-  	    },
-              {  type: constant
-                 value: true
-                 write: Neutrals
-              }
-           ]
-        }
-     ]
-  }
-
-# define extinction monitor region 
-  extMonRegionCuts: {
-     type: intersection
-     pars: [
-        {
-           type: plane
-           normal: @local::mu2eg4BeamDumpNormal
-           // Dump core center: (661.90,  527.40, -19428.2)
-  	 // A plane 950 mm beyond the core center as measured along
-  	 // the "beam" direction normal to the dump face.
-  	 // DeltaZ = L/cos(13.72 degrees)
-           point: [ 661.90, 527.40, -20406.10 ]
-        },
-  
-        // Split the output of the "plane" cut above into two exclusive streams
-        { type: union pars:  [
-  
-              {  type: intersection
-  	       pars: [
-  		  {
-  		     type: inVolume
-  		     pars:
-  		     [  collimator1Channel,
-  			HallAir,
-  			ExtMonFNALfilterMagnetAperture,
-  			ExtMonFNALfilterMagnetApertureMarginUp,
-  			ExtMonFNALfilterMagnetApertureMarginDn
-  		     ]
-  		  },
-  		  { type: isCharged }
-  	       ]
-                 write: extmonbeam
-              },
-  
-              { type: constant  value: true       write: extmonregion }
-           ]
-        }
-     ]
-  }
-
+# some commen sequences
   beamResamplerSequence : [genCounter, protonTimeOffset, beamResampler]
   neutralsResamplerSequence : [genCounter, protonTimeOffset, neutralsResampler]
 
 }
 END_PROLOG
-
