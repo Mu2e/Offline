@@ -21,7 +21,7 @@ source : {
 }
 
 services : @local::Services.Sim
-physics: { 
+physics: {
   producers : {
     @table::CommonMC.producers
     @table::Beam.producers
@@ -37,14 +37,12 @@ physics: {
     @table::Common.analyzers
   }
   # setup paths
-  targetStopPath : [ @sequence::Beam.beamResamplerSequence, @sequence::Common.g4Sequence, stoppedMuonFinder, TargetStopFilter]
-  IPAStopPath : [ @sequence::Beam.beamResamplerSequence, @sequence::Common.g4Sequence, IPAMuonFinder, IPAStopFilter]
-#  targetStopPath : [ @sequence::Beam.beamResamplerSequence, @sequence::Common.g4Sequence, stoppedMuonFinder, TargetStopFilter, compressPVTargetStops]
-#  IPAStopPath : [ @sequence::Beam.beamResamplerSequence, @sequence::Common.g4Sequence, IPAMuonFinder, IPAStopFilter, compressPVIPAStops]
+  targetStopPath : [ @sequence::Beam.beamResamplerSequence, @sequence::Common.g4Sequence, stoppedMuonFinder, TargetStopFilter, compressPVTargetStops]
+  IPAStopPath : [ @sequence::Beam.beamResamplerSequence, @sequence::Common.g4Sequence, IPAMuonFinder, IPAStopFilter, compressPVIPAStops]
   flashPath : [ @sequence::Beam.beamResamplerSequence, @sequence::Common.g4Sequence, stoppedMuonFinder, stoppedMuonDaughters, FlashFilter,
-	      @sequence::Primary.DetStepSequence, @sequence::Primary.DetStepFilterSequence ]
+              @sequence::Primary.DetStepSequence, @sequence::Primary.DetStepFilterSequence ]
   earlyFlashPath : [ @sequence::Beam.beamResamplerSequence, @sequence::Common.g4Sequence, stoppedMuonFinder, stoppedMuonDaughters, FlashFilter, EarlyPrescaleFilter,
-	      @sequence::Primary.DetStepSequence, EarlyDetStepFilter, compressDetStepMCs ]
+              @sequence::Primary.DetStepSequence, EarlyDetStepFilter, compressDetStepMCs ]
   trigger_paths: [ flashPath, earlyFlashPath, targetStopPath, IPAStopPath ]
   outPath : [ FlashOutput, EarlyFlashOutput, TargetStopOutput, IPAStopOutput ]
   end_paths: [outPath]
@@ -75,7 +73,7 @@ physics.producers.g4run.inputs: {
       outInstance: "eventlevel"
    }
 }
-# copy over VD hits 
+# copy over VD hits
 physics.producers.g4run.SDConfig.preSimulatedHits:  ["beamResampler:virtualdetector"]
 # Kill stuck e+/e-
 physics.producers.g4run.Mu2eG4CommonCut:{
