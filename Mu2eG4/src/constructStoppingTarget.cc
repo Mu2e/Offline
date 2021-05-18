@@ -197,7 +197,7 @@ namespace mu2e {
         doSurfaceCheck && checkForOverlaps( pv, config, verbosity>0);
 
         if (!stoppingTargetIsVisible) {
-          foilInfo.logical->SetVisAttributes(G4VisAttributes::Invisible);
+          foilInfo.logical->SetVisAttributes(G4VisAttributes::GetInvisible());
         } else {
           G4VisAttributes* visAtt = reg.add(G4VisAttributes(true, G4Colour::Magenta()));
           visAtt->SetForceAuxEdgeVisible(config.getBool("g4.forceAuxEdgeVisible",false));
@@ -307,7 +307,7 @@ namespace mu2e {
         doSurfaceCheck && checkForOverlaps( pv, config, verbosity>0);
 
         if (!stoppingTargetIsVisible) {
-          supportStructureInfo.logical->SetVisAttributes(G4VisAttributes::Invisible);
+          supportStructureInfo.logical->SetVisAttributes(G4VisAttributes::GetInvisible());
         } else {
           G4VisAttributes* visAtt = reg.add(G4VisAttributes(true, G4Colour::Blue()));
           visAtt->SetForceAuxEdgeVisible(config.getBool("g4.forceAuxEdgeVisible",false));

@@ -19,6 +19,9 @@
 // tracker
 #include "DataProducts/inc/Helicity.hh"
 
+// calorimeter
+#include "DataProducts/inc/CaloId.hh"
+
 // CRV
 #include "DataProducts/inc/CRSScintillatorBarIndex.hh"
 

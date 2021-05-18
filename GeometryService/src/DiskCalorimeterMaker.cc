@@ -181,6 +181,7 @@ namespace mu2e {
           calo_->geomUtil_.crystalZLength(config.getDouble("calorimeter.crystalZLength"));
 
 
+
 	  // CACHE THIS ONE FOR EFFICIENCY (REALLY NEEDED SO DON'T REMOVE)
           calo_->caloIDMapper_.nSiPMPerCrystal(config.getInt("calorimeter.readoutPerCrystal") );
 
@@ -281,6 +282,7 @@ namespace mu2e {
             thisDisk->geomInfo().backFaceCenter(backFaceCenter);
             thisDisk->geomInfo().crateDeltaZ(crateToDiskDeltaZ_);
 	    thisDisk->geomInfo().envelopeRad(dR1,dR2);
+            thisDisk->geomInfo().crystalDirection(CLHEP::Hep3Vector(0,0,1));
 
 
             //fill the full Crystal List / diskId (direct access for performance optimization)

@@ -55,7 +55,7 @@ namespace mu2e {
     void fillCaloHitInfo(const KalSeed& kseed, TrkCaloHitInfo& tchinfo );
     void fillTrkQualInfo(const TrkQual& tqual, TrkQualInfo& trkqualInfo);
     void fillTrkPIDInfo(const TrkCaloHitPID& tchp, const KalSeed& kseed, TrkPIDInfo& trkpidInfo);
-    void fillHelixInfo(const KalSeed& kseed, HelixInfo& hinfo); 
+    void fillHelixInfo(art::Ptr<HelixSeed> const& hptr, HelixInfo& hinfo); 
   };
 }
 

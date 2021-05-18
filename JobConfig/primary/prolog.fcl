@@ -2,7 +2,7 @@
 # Prolog to create primary (signal, signal-like or calibration) particles and subsequent detector steps
 #
 #include "Mu2eG4/fcl/prolog.fcl"
-#include "JobConfig/common/mu2eg4.fcl" 
+#include "JobConfig/common/mu2eg4.fcl"
 #include "fcl/standardServices.fcl"
 #include "EventGenerator/fcl/prolog.fcl"
 #include "TrackerMC/fcl/prolog.fcl"
@@ -53,7 +53,7 @@ Primary: {
 # default step filter for Sim Primary selection
     DetStepFilter : {
       module_type : DetectorStepFilter
-      StrawGasSteps : [ "StrawGasStepMaker" ] 
+      StrawGasSteps : [ "StrawGasStepMaker" ]
       CaloShowerSteps : [ "CaloShowerStepMaker" ]
       CrvSteps : [ ]
       MinimumTrkStepEnergy : 1.0e-6 # 1 ev
@@ -72,7 +72,7 @@ Primary: {
     CrvSteps,
     DetStepFilter, compressDetStepMCs, FindMCPrimary ]
 
-  KeptProducts : [ 
+  KeptProducts : [
 		       "keep mu2e::StrawGasSteps_compressDetStepMCs_*_*",
 		       "keep mu2e::CaloShowerSteps_compressDetStepMCs_*_*",
 		       "keep mu2e::CrvSteps_compressDetStepMCs_*_*",

@@ -38,6 +38,7 @@
 #include "RecoDataProducts/inc/StrawHitFlag.hh"
 #include "RecoDataProducts/inc/HelixSeed.hh"
 #include "RecoDataProducts/inc/KalSeed.hh"
+#include "RecoDataProducts/inc/KalSeedAssns.hh"
 #include "RecoDataProducts/inc/TrkFitFlag.hh"
 // Diagnostic data objects
 #include "TrkReco/inc/KalFitData.hh"
@@ -164,6 +165,7 @@ namespace mu2e
     // under the covers.
     consumesMany<ComboHitCollection>();
     produces<KalSeedCollection>();
+    produces<KalHelixAssns>();
     // check dimensions
     if(_perr.size() != HelixTraj::NHLXPRM)
       throw cet::exception("RECO")<<"mu2e::KalSeedFit: parameter error vector has wrong size"<< endl;
@@ -216,6 +218,9 @@ namespace mu2e
 
     // create output collection
     unique_ptr<KalSeedCollection> kscol(new KalSeedCollection());
+    unique_ptr<KalHelixAssns> ksha(new KalHelixAssns());
+    auto KalSeedCollectionPID = event.getProductID<KalSeedCollection>();
+    auto KalSeedCollectionGetter = event.productGetter(KalSeedCollectionPID);
     // event printout
     _iev=event.id().event();
     if(_debug > 0 && (_iev%_printfreq)==0)cout<<"KalSeedFit: event="<<_iev<<endl;
@@ -292,8 +297,6 @@ namespace mu2e
 	double           helt0 = hseed.t0().t0();
 
 	KalSeed kf(PDGCode::type(tpart.particleType()),_fdir, hseed.status(), flt0 );
-	auto hsH = event.getValidHandle(_hsToken);
-	kf._helix = art::Ptr<HelixSeed>(hsH,iseed);
 	// extract the hits from the rep and put the hitseeds into the KalSeed
 	int nsh = seeddef.strawHitIndices().size();//tclust._strawHitIdxs.size();
 	for (int i=0; i< nsh; ++i){
@@ -357,9 +360,6 @@ namespace mu2e
 	  if(_result.krep->fitStatus().success())kseed._status.merge(TrkFitFlag::kalmanOK);
 	  // add CaloCluster if present
 	  kseed._chit._cluster = hseed.caloCluster();
-	  // fill ptr to the helix seed
-          auto hsH = event.getValidHandle(_hsToken);
-	  kseed._helix = art::Ptr<HelixSeed>(hsH,iseed);
 	  // extract the hits from the rep and put the hitseeds into the KalSeed
 	  TrkUtilities::fillStrawHitSeeds(_result.krep,*_chcol,kseed._hits);
 	  if(_result.krep->fitStatus().success())kseed._status.merge(TrkFitFlag::seedOK);
@@ -393,6 +393,11 @@ namespace mu2e
 	    kseed._segments.push_back(kseg);
 	    // push this seed into the collection
 	    kscol->push_back(kseed);
+	    // fill assns with the helix seed
+	    auto hsH = event.getValidHandle(_hsToken);
+	    auto hptr = art::Ptr<HelixSeed>(hsH,iseed);
+	    auto kseedptr = art::Ptr<KalSeed>(KalSeedCollectionPID,kscol->size()-1,KalSeedCollectionGetter);
+	    ksha->addSingle(kseedptr,hptr);
 	    if(_debug > 1){
 	      cout << "Seed fit segment parameters " << endl;
 	      for(size_t ipar=0;ipar<5;++ipar) cout << kseg.helix()._pars[ipar] << " ";
@@ -412,6 +417,7 @@ namespace mu2e
     }
     // put the tracks into the event
     event.put(move(kscol));
+    event.put(move(ksha));
   }
 
 
