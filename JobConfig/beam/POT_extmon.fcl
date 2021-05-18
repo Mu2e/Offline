@@ -62,6 +62,14 @@ outputs: {
     fileName : "sim.owner.extmonRegion.version.sequencer.art"
   }
 }
+# setup Mu2eG4 selection
+physics.producers.g4run.Mu2eG4CommonCut: {
+  type: union
+  pars: [
+    @local::mu2eg4CutDeltaElectrons, # 8% speed up from killing electrons with Ek<1 MeV
+    @local::Beam.extMonRegionCuts # defines ExtMon beam and region
+  ]
+}
 # tweak Mu2eG4 settings
 physics.producers.g4run.SDConfig.enableSD: [ virtualdetector ] # only VDs are active
 physics.producers.g4run.physics.minRangeCut : 1. # mm  coarse range for this stage
