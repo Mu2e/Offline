@@ -87,6 +87,12 @@
  <class name="mu2e::SimParticleRemapping" persistent="false"/>
  <class name="art::Wrapper<mu2e::SimParticleRemapping>"/>
 
+<!--  ********* resampling ********* -->
+ <class name="mu2e::SimTimeOffset"/>
+ <class name="art::Wrapper<mu2e::SimTimeOffset>"/>
+ <class name="mu2e::SimTimeOffsetCollection"/>
+ <class name="art::Wrapper<mu2e::SimTimeOffsetCollection>"/>
+
 <!--  ********* simulation bookeeping  ********* -->
 
  <class name="mu2e::PhysicalVolumeInfo"/>

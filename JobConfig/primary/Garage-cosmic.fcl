@@ -4,7 +4,7 @@
 # original author: Ralf Ehrlich, UVA 
 # (based on Dave Brown's CeEndpoint)
 #
-#include "JobConfig/primary/primary.fcl"
+#include "JobConfig/primary/Primary.fcl"
 # set the generator
 physics.producers.generate : {
    module_type : EventGenerator

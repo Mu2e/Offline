@@ -1,7 +1,7 @@
 // Re-sample cosmics from stage-1
 // Yuri Oksuzian, 2020
 
-#include "JobConfig/primary/primary.fcl"
+#include "JobConfig/primary/Primary.fcl"
 
 // Bring in info from the previous stage
 physics.filters.cosmicResample: @local::Cosmic.cosmicResample

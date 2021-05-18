@@ -1,0 +1,16 @@
+#
+#  Add MCTrajectory to POT jobs
+#
+#include "JobConfig/beam/POT.fcl"
+
+physics.producers.g4run.TrajectoryControl: @local::mu2eg4DefaultTrajectories
+
+outputs.BeamOutput.outputCommands: [
+  @sequence::outputs.BeamOutput.outputCommands,
+  " keep mu2e::SimParticlemv_g4run_*_*",
+  "keep mu2e::SimParticleart::Ptrmu2e::MCTrajectorystd::map_*_*_*" ]
+
+outputs.NeutralsOutput.outputCommands: [
+  @sequence::outputs.NeutralsOutput.outputCommands,
+  " keep mu2e::SimParticlemv_g4run_*_*",
+  "keep mu2e::SimParticleart::Ptrmu2e::MCTrajectorystd::map_*_*_*" ]

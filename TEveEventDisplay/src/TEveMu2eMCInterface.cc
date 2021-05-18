@@ -78,7 +78,7 @@ namespace mu2e{
   
     void TEveMu2eMCInterface::AddFullMCTrajectory(bool firstloop, const MCTrajectoryCollection *trajcol, TEveMu2e2DProjection *tracker2Dproj, bool Redraw, bool accumulate, TEveProjectionManager *TXYMgr, TEveProjectionManager *TRZMgr, TEveScene *scene1, TEveScene *scene2){
 	DataLists<const MCTrajectoryCollection*, TEveMu2e2DProjection*>(trajcol, Redraw, accumulate, "MC Trajectory", &fTrackList3D, &fTrackList2D, tracker2Dproj);//TODO - remove proj
-	      std::cout<<"Adding MCTraj "<<std::endl;
+	      std::cout<<"======================= "<<std::endl;
         TXYMgr->ImportElements(fTrackList2D, scene1); 
         TRZMgr->ImportElements(fTrackList2D, scene2); 
         if(trajcol!=0){
@@ -87,6 +87,7 @@ namespace mu2e{
           TEveMu2eCustomHelix *line_twoD = new TEveMu2eCustomHelix();
           
           std::map<art::Ptr<mu2e::SimParticle>,mu2e::MCTrajectory>::const_iterator trajectoryIter;
+          unsigned int g = 0;
           for(trajectoryIter=trajcol->begin(); trajectoryIter!=trajcol->end(); trajectoryIter++)
           {
             const std::vector<MCTrajectoryPoint> &points = trajectoryIter->second.points();
@@ -113,12 +114,16 @@ namespace mu2e{
             fTrackList2D->AddElement(line_twoD);
 
             line->SetPickable(kTRUE);
-            const std::string title = "MCTrajectory "+ energy ;//PDG Code = " + pdgId + "Energy = " 
+            const std::string title = "MCTrajectory "+ energy;// + "PDG Code = " + pdgId + "Energy = " ;
             line->SetTitle(Form(title.c_str()));
-            line->SetLineColor(kRed);
+            if(abs(trajectoryIter->first->pdgId()) == 11) line->SetLineColor(kRed); //electrons
+            else if(abs(trajectoryIter->first->pdgId()) == 13) line->SetLineColor(kGreen); //muons
+            else if(abs(trajectoryIter->first->pdgId()) == 2112) line->SetLineColor(kYellow); //neutron  
+            else if(abs(trajectoryIter->first->pdgId()) == 2212) line->SetLineColor(kRed); //proton
+            else line->SetLineColor(kCyan);
             line->SetLineWidth(3);
             fTrackList3D->AddElement(line);
-            
+            g++;
           }
           TXYMgr->ImportElements(fTrackList2D, scene1);
           TRZMgr->ImportElements(fTrackList2D, scene2);

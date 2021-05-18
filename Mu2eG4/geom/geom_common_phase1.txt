@@ -1,9 +1,0 @@
-// A geometry file for using all regular concrete shielding design.
-// Most of the geometry is inherited from the existing shielding geometry, except as below.
-
-// First, the base geometry to start from...
-#include "Mu2eG4/geom/geom_common_current.txt"
-
-// External Shielding
-#include "Mu2eG4/geom/ExtShieldUpstream_v06.txt"
-#include "Mu2eG4/geom/ExtShieldDownstream_v06.txt"

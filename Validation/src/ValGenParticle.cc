@@ -25,7 +25,7 @@ int mu2e::ValGenParticle::fill(const mu2e::GenParticleCollection & coll,
   _hVer->Fill(1.0);
 
   _hN->Fill(coll.size()); 
-  for(auto sp : coll) {
+  for(auto const& sp : coll) {
     _id.fill(sp.pdgId()); 
     double p = sp.momentum().vect().mag();
     _hp->Fill(p); 
