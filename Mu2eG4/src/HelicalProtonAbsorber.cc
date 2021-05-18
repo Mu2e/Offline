@@ -118,7 +118,7 @@ HelicalProtonAbsorber::HelicalProtonAbsorber(double z_start, double length_i, do
         //creating logical and physical volumes
         pabs_logic = new G4LogicalVolume(pabs_solid, material, "helical_pabs_log");
         pabs_phys = new G4PVPlacement(0,position,pabs_logic,"helical_pabs_phys", World, false, 0);
-        pabs_logic->SetVisAttributes(G4VisAttributes::Invisible);
+        pabs_logic->SetVisAttributes(G4VisAttributes::GetInvisible());
 }
 
 HelicalProtonAbsorber::~HelicalProtonAbsorber()

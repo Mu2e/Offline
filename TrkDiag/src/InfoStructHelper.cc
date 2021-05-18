@@ -271,29 +271,28 @@ namespace mu2e {
     trkqualInfo._mvastat = tqual.status();
   }
 
-  void InfoStructHelper::fillHelixInfo(const KalSeed& kseed, HelixInfo& hinfo) {
-    // navigate down to the HelixSeed
-    auto hhh = kseed.helix();
-    if(hhh.isNonnull()){
+
+  void InfoStructHelper::fillHelixInfo(art::Ptr<HelixSeed> const& hptr, HelixInfo& hinfo) {
+    if(hptr.isNonnull()){
       // count hits, active and not
-      for(size_t ihit=0;ihit < hhh->hits().size(); ihit++){
-	auto const& hh = hhh->hits()[ihit];
+      for(size_t ihit=0;ihit < hptr->hits().size(); ihit++){
+	auto const& hh = hptr->hits()[ihit];
 	hinfo._nch++;
 	hinfo._nsh += hh.nStrawHits();
 	if(!hh.flag().hasAnyProperty(StrawHitFlag::outlier)){
 	  hinfo._ncha++;
 	  hinfo._nsha += hh.nStrawHits();
 	}
-	if( hhh->status().hasAllProperties(TrkFitFlag::TPRHelix))
+	if( hptr->status().hasAllProperties(TrkFitFlag::TPRHelix))
 	  hinfo._flag = 1;
-	else if( hhh->status().hasAllProperties(TrkFitFlag::CPRHelix))
+	else if( hptr->status().hasAllProperties(TrkFitFlag::CPRHelix))
 	  hinfo._flag = 2;
-	hinfo._t0err = hhh->t0().t0Err();
-	hinfo._mom = 0.299792*hhh->helix().momentum()*_bz0; //FIXME!
-	hinfo._chi2xy = hhh->helix().chi2dXY();
-	hinfo._chi2fz = hhh->helix().chi2dZPhi();
-	if(hhh->caloCluster().isNonnull())
-	  hinfo._ecalo  = hhh->caloCluster()->energyDep();
+	hinfo._t0err = hptr->t0().t0Err();
+	hinfo._mom = 0.299792*hptr->helix().momentum()*_bz0; //FIXME!
+	hinfo._chi2xy = hptr->helix().chi2dXY();
+	hinfo._chi2fz = hptr->helix().chi2dZPhi();
+	if(hptr->caloCluster().isNonnull())
+	  hinfo._ecalo  = hptr->caloCluster()->energyDep();
       }
     }
   }
