@@ -1,0 +1,37 @@
+#
+#  Digitization specialization for off-spill simulations
+#
+#include "JobConfig/digitize/digitize.fcl"
+# add trigger paths
+#include "gen/fcl/Trigger/OffSpillTrigMenu/OffSpillTrigMenu.fcl"
+# setthe event timing for OffSpill
+physics.producers.EWMProducer.SpillType : 0
+# set the cosmic time window WRT the detector steps
+physics.producers.cosmicTimeMap.StrawGasSteps : [ "StrawGasStepMaker" ] 
+physics.producers.cosmicTimeMap.CaloShowerSteps : [ "CaloShowerStepMaker" ]
+physics.producers.cosmicTimeMap.CrvSteps : [ "CrvSteps" ]
+
+
+#----------------------------------------------------------------
+# Code added by generate_fcl:
+services.SeedService.policy:  autoIncrement
+services.SeedService.maxUniqueEngines: 20
+services.SeedService.baseSeed: 378460248
+source.fileNames : [
+"/pnfs/mu2e/scratch/users/sophie/workflow/default/outstage/43676258/00/00289/dts.sophie.DS-cosmic-nofield.v0.000001_00000289.art",
+"/pnfs/mu2e/scratch/users/sophie/workflow/default/outstage/43676258/00/00292/dts.sophie.DS-cosmic-nofield.v0.000001_00000292.art",
+"/pnfs/mu2e/scratch/users/sophie/workflow/default/outstage/43676258/00/00297/dts.sophie.DS-cosmic-nofield.v0.000001_00000297.art",
+"/pnfs/mu2e/scratch/users/sophie/workflow/default/outstage/43676258/00/00298/dts.sophie.DS-cosmic-nofield.v0.000001_00000298.art",
+"/pnfs/mu2e/scratch/users/sophie/workflow/default/outstage/43676258/00/00300/dts.sophie.DS-cosmic-nofield.v0.000001_00000300.art",
+"/pnfs/mu2e/scratch/users/sophie/workflow/default/outstage/43676258/00/00301/dts.sophie.DS-cosmic-nofield.v0.000001_00000301.art",
+"/pnfs/mu2e/scratch/users/sophie/workflow/default/outstage/43676258/00/00302/dts.sophie.DS-cosmic-nofield.v0.000001_00000302.art",
+"/pnfs/mu2e/scratch/users/sophie/workflow/default/outstage/43676258/00/00303/dts.sophie.DS-cosmic-nofield.v0.000001_00000303.art",
+"/pnfs/mu2e/scratch/users/sophie/workflow/default/outstage/43676258/00/00304/dts.sophie.DS-cosmic-nofield.v0.000001_00000304.art",
+"/pnfs/mu2e/scratch/users/sophie/workflow/default/outstage/43676258/00/00305/dts.sophie.DS-cosmic-nofield.v0.000001_00000305.art"
+]
+outputs.Output.fileName : "dig.MU2EGRIDDSOWNER.description.MU2EGRIDDSCONF.000001_00000289.art"
+mu2emetadata.fcl.prologkeys: [  ]
+mu2emetadata.fcl.inkeys: [ "source.fileNames" ]
+mu2emetadata.fcl.outkeys: [ "outputs.Output.fileName" ]
+# End code added by generate_fcl:
+#----------------------------------------------------------------

@@ -672,9 +672,9 @@ namespace mu2e{
     _data.crvcoincol = data.crvcoincol;
     _data.cryHitcol = data.cryHitcol;
     _data.cosmiccol = data.cosmiccol;
-    std::vector<const KalSeedCollection*> track_list = std::get<1>(data.track_tuple);
-    std::cout<<"in main "<<track_list.size()<<std::endl;
-    std::vector<double> times = pass_data->getTimeRange(firstLoop, data.chcol, data.crvcoincol, data.clustercol, data.cryHitcol);
+    //std::vector<const KalSeedCollection*> track_list = std::get<1>(data.track_tuple);
+    //std::cout<<"in main "<<track_list.size()<<std::endl;
+    /*std::vector<double> times = pass_data->getTimeRange(firstLoop, data.chcol, data.crvcoincol, data.clustercol, data.cryHitcol);
 
     if(_data.crvcoincol!=0) pass_data->AddCRVInfo(firstLoop, data.crvcoincol, ftimemin, ftimemax, false, _accumulate);
     hitenergy = new vector<double>(2);
@@ -685,7 +685,7 @@ namespace mu2e{
     if(_data.clustercol!=0) *clusterenergy = pass_data->AddCaloClusters(firstLoop, data.clustercol, calo2Dproj, false, fclustmin, fclustmax, ftimemin, ftimemax, _accumulate, CfXYMgr, CfRZMgr, proj0, proj1);
     if (_data.cryHitcol!=0) pass_data->AddCrystalHits(firstLoop, data.cryHitcol, calo2Dproj, ftimemin, ftimemax, false, _accumulate, CfXYMgr, CfRZMgr, proj0, proj1);
     pass_data->AddHelixPieceWise3D(firstLoop, data.track_tuple, tracker2Dproj,  ftimemin, ftimemax, false, _accumulate, TfXYMgr, TfRZMgr, proj2, proj3);
-    if(_data.cosmiccol!=0) pass_data->AddCosmicTrack(firstLoop, data.cosmiccol, tracker2Dproj, ftimemin, ftimemax, false, _accumulate, TfXYMgr, TfRZMgr, proj2, proj3);
+    if(_data.cosmiccol!=0) pass_data->AddCosmicTrack(firstLoop, data.cosmiccol, tracker2Dproj, ftimemin, ftimemax, false, _accumulate, TfXYMgr, TfRZMgr, proj2, proj3);*/
     if(_data.mctrajcol!=0) pass_mc->AddFullMCTrajectory(firstLoop, data.mctrajcol, tracker2Dproj, false, _accumulate,  TfXYMgr, TfRZMgr, proj2, proj3);
 
     
@@ -695,7 +695,7 @@ namespace mu2e{
     gSystem->IgnoreSignal(kSigSegmentationViolation);
  
     gClient->NeedRedraw(fTeRun);
-    _clustminenergy->Clear();
+    /*_clustminenergy->Clear();
     _clustmaxenergy->Clear();
     _hitminenergy->Clear();
     _hitmaxenergy->Clear();
@@ -707,7 +707,7 @@ namespace mu2e{
     _hitminenergy->AddText(0, (to_string(hitenergy->at(0))).c_str());
     _hitmaxenergy->AddText(0, (to_string(hitenergy->at(1))).c_str());
     _hitmintime->AddText(0, (to_string(times.at(0))).c_str());
-    _hitmaxtime->AddText(0, (to_string(times.at(1))).c_str());
+    _hitmaxtime->AddText(0, (to_string(times.at(1))).c_str());*/
     gApplication->Run(true);
 
     gEve->Redraw3D(kTRUE);

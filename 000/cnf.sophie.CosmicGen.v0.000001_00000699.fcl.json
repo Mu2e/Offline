@@ -1,0 +1,26 @@
+{
+    "content_status": "good",
+    "parents": [
+        "dts.sophie.DS-cosmic-nofield.v0.000001_00000699.art",
+        "dts.sophie.DS-cosmic-nofield.v0.000001_00000700.art",
+        "dts.sophie.DS-cosmic-nofield.v0.000001_00000701.art",
+        "dts.sophie.DS-cosmic-nofield.v0.000001_00000702.art",
+        "dts.sophie.DS-cosmic-nofield.v0.000001_00000703.art",
+        "dts.sophie.DS-cosmic-nofield.v0.000001_00000704.art",
+        "dts.sophie.DS-cosmic-nofield.v0.000001_00000705.art",
+        "dts.sophie.DS-cosmic-nofield.v0.000001_00000706.art",
+        "dts.sophie.DS-cosmic-nofield.v0.000001_00000707.art",
+        "dts.sophie.DS-cosmic-nofield.v0.000001_00000708.art"
+    ],
+    "data_tier": "cnf",
+    "dh.configuration": "v0",
+    "dh.dataset": "cnf.sophie.CosmicGen.v0.fcl",
+    "dh.description": "CosmicGen",
+    "dh.owner": "sophie",
+    "dh.sequencer": "000001_00000699",
+    "dh.sha256": "329c158cdc24b90397d8c9906f7babbf4b7d1c6934d1a7dde8cafbbeb8c8a2bb",
+    "file_format": "fcl",
+    "file_name": "cnf.sophie.CosmicGen.v0.000001_00000699.fcl",
+    "file_size": 2416,
+    "file_type": "mc"
+}
