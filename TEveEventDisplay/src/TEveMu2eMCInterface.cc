@@ -87,11 +87,8 @@ namespace mu2e{
           TEveMu2eCustomHelix *line_twoD = new TEveMu2eCustomHelix();
           
           std::map<art::Ptr<mu2e::SimParticle>,mu2e::MCTrajectory>::const_iterator trajectoryIter;
-          //unsigned int o = 0;
           for(trajectoryIter=trajcol->begin(); trajectoryIter!=trajcol->end(); trajectoryIter++)
           {
-            //if(o==4) continue;
-            //o ++;
             const std::vector<MCTrajectoryPoint> &points = trajectoryIter->second.points();
             for(unsigned int i=0; i<points.size();i++){
 
