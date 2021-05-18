@@ -141,4 +141,4 @@ physics.producers.CrvSteps.stepPointsModuleLabels : [ "FlashFilter" ]
 physics.producers.compressDetStepMCs.simParticleTag : "FlashFilter"
 physics.producers.compressDetStepMCs.simParticleTag : "FlashFilter"
 # test
-physics.filters.beamResampler.filenames: [ "sim.owner.Beam.version.sequencer.art" ]
+physics.filters.beamResampler.fileNames: [ "sim.owner.Beam.version.sequencer.art" ]
