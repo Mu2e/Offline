@@ -89,6 +89,7 @@
 
 <!--  ********* resampling ********* -->
  <class name="mu2e::SimTimeOffset"/>
+ <class name="art::Wrapper<mu2e::SimTimeOffset>"/>
  <class name="mu2e::SimTimeOffsetCollection"/>
  <class name="art::Wrapper<mu2e::SimTimeOffsetCollection>"/>
 
