@@ -158,11 +158,11 @@ template <typename L> void maxminCRV(L data, double &max, double &min){
     }
 
    std::vector<double> TEveMu2eDataInterface::AddComboHits(bool firstloop, const ComboHitCollection *chcol, TEveMu2e2DProjection *tracker2Dproj, bool Redraw, double min_energy, double max_energy, double min_time, double max_time, bool accumulate, TEveProjectionManager *TXYMgr, TEveProjectionManager *TRZMgr, TEveScene *scene1, TEveScene *scene2){
-    
+
     std::vector<double> energies = {0,0};
     DataLists<const ComboHitCollection*, TEveMu2e2DProjection*>(chcol, Redraw, accumulate, "ComboHit", &fHitsList3D, &fHitsList2D, tracker2Dproj);
-	TXYMgr->ImportElements(fHitsList2D, scene1); 
-        TRZMgr->ImportElements(fHitsList2D, scene2); 
+    TXYMgr->ImportElements(fHitsList2D, scene1); 
+    TRZMgr->ImportElements(fHitsList2D, scene2); 
     if(chcol!=0){
       TEveElementList *HitList2D = new TEveElementList("ComboHits2D");
       TEveElementList *HitList3D = new TEveElementList("ComboHits3D");
@@ -257,7 +257,6 @@ template <typename L> void maxminCRV(L data, double &max, double &min){
             }
         }
       }
-      
       gEve->AddElement(fClusterList3D);
       gEve->Redraw3D(kTRUE);
     }
