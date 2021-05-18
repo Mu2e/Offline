@@ -37,10 +37,8 @@ physics: {
     @table::Common.analyzers
   }
   # setup paths
-  targetStopPath : [ @sequence::Beam.beamResamplerSequence, @sequence::Common.g4Sequence, stoppedMuonFinder, TargetStopFilter]
-  IPAStopPath : [ @sequence::Beam.beamResamplerSequence, @sequence::Common.g4Sequence, IPAMuonFinder, IPAStopFilter]
-#  targetStopPath : [ @sequence::Beam.beamResamplerSequence, @sequence::Common.g4Sequence, stoppedMuonFinder, TargetStopFilter, compressPVTargetStops]
-#  IPAStopPath : [ @sequence::Beam.beamResamplerSequence, @sequence::Common.g4Sequence, IPAMuonFinder, IPAStopFilter, compressPVIPAStops]
+  targetStopPath : [ @sequence::Beam.beamResamplerSequence, @sequence::Common.g4Sequence, stoppedMuonFinder, TargetStopFilter, compressPVTargetStops]
+  IPAStopPath : [ @sequence::Beam.beamResamplerSequence, @sequence::Common.g4Sequence, IPAMuonFinder, IPAStopFilter, compressPVIPAStops]
   flashPath : [ @sequence::Beam.beamResamplerSequence, @sequence::Common.g4Sequence, stoppedMuonFinder, stoppedMuonDaughters, FlashFilter,
 	      @sequence::Primary.DetStepSequence, @sequence::Primary.DetStepFilterSequence ]
   earlyFlashPath : [ @sequence::Beam.beamResamplerSequence, @sequence::Common.g4Sequence, stoppedMuonFinder, stoppedMuonDaughters, FlashFilter, EarlyPrescaleFilter,
