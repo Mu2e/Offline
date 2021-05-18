@@ -21,42 +21,87 @@ source : {
 }
 
 services : @local::Services.Sim
-physics: { 
+physics: {
   producers : {
-    @table::CommonMC.producers
-    @table::Beam.producers
+    @table::Common.producers
+    compressPVTargetStops : @local::Beam.producers.compressPVTargetStops
+    compressPVIPAStops : @local::Beam.producers.compressPVIPAStops
+    TargetMuonFinder : @local::Beam.producers.TargetMuonFinder
+    IPAMuonFinder : @local::Beam.producers.IPAMuonFinder
+    stoppedMuonDaughters : @local::Beam.producers.stoppedMuonDaughters 
     @table::Primary.producers
+    protonTimeOffset : @local::CommonMC.producers.protonTimeOffset 
   }
   filters : {
     @table::Common.filters
-    @table::Beam.filters
-    @table::Pileup.filters
-    EarlyDetStepFilter : @local::Pileup.filters.DetStepFilter # special instance to select flash without time cuts (prescaled)
+    EarlyPrescaleFilter : @local::Beam.filters.EarlyPrescaleFilter
+    beamResampler       : @local::Beam.filters.beamResampler
+    TargetStopFilter    : @local::Beam.filters.TargetStopFilter
+    IPAStopFilter       : @local::Beam.filters.IPAStopFilter
+    FlashFilter         : @local::Beam.filters.FlashFilter
+    DetStepFilter : {
+      @table::Pileup.filters.DetStepFilter 
+      @table::Beam.filters.DetStepFilter 
+    }
+# instance to select flash without time cuts (prescaled)
+    EarlyDetStepFilter : @local::Pileup.filters.DetStepFilter
   }
   analyzers : {
     @table::Common.analyzers
   }
   # setup paths
-  targetStopPath : [ @sequence::Beam.beamResamplerSequence, @sequence::Common.g4Sequence, stoppedMuonFinder, TargetStopFilter]
-  IPAStopPath : [ @sequence::Beam.beamResamplerSequence, @sequence::Common.g4Sequence, IPAMuonFinder, IPAStopFilter]
-  flashPath : [ @sequence::Beam.beamResamplerSequence, @sequence::Common.g4Sequence, stoppedMuonFinder, stoppedMuonDaughters, FlashFilter,
-	      @sequence::Primary.DetStepSequence, @sequence::Primary.DetStepFilterSequence ]
-  earlyFlashPath : [ @sequence::Beam.beamResamplerSequence, @sequence::Common.g4Sequence, stoppedMuonFinder, stoppedMuonDaughters, FlashFilter, EarlyPrescaleFilter,
-	      @sequence::Primary.DetStepSequence, EarlyDetStepFilter, compressDetStepMCs ]
+  targetStopPath : [ @sequence::Beam.beamResamplerSequence, @sequence::Common.g4Sequence, TargetMuonFinder, TargetStopFilter, compressPVTargetStops]
+  IPAStopPath : [ @sequence::Beam.beamResamplerSequence, @sequence::Common.g4Sequence, IPAMuonFinder, IPAStopFilter, compressPVIPAStops]
+  flashPath : [ @sequence::Beam.beamResamplerSequence, @sequence::Common.g4Sequence, TargetMuonFinder, stoppedMuonDaughters, FlashFilter,
+              @sequence::Primary.DetStepSequence, @sequence::Primary.DetStepFilterSequence ]
+  earlyFlashPath : [ @sequence::Beam.beamResamplerSequence, @sequence::Common.g4Sequence, TargetMuonFinder, stoppedMuonDaughters, FlashFilter, EarlyPrescaleFilter,
+              @sequence::Primary.DetStepSequence, EarlyDetStepFilter, compressDetStepMCs ]
   trigger_paths: [ flashPath, earlyFlashPath, targetStopPath, IPAStopPath ]
   outPath : [ FlashOutput, EarlyFlashOutput, TargetStopOutput, IPAStopOutput ]
   end_paths: [outPath]
 }
+
 outputs: {
-  TargetStopOutput : @local::Beam.outputs.TargetStopOutput
-  IPAStopOutput : @local::Beam.outputs.IPAStopOutput
-  FlashOutput : {
-    @table::Beam.outputs.FlashOutput
-    fileName: "dts.owner.BeamFlash.version.sequencer.art"
+  TargetStopOutput : {
+    module_type: RootOutput
+    outputCommands:   [ "drop *_*_*_*",
+      @sequence::Beam.SimKeptProducts,
+      "keep *_TargetStopFilter_*_*",
+      "keep *_compressPVTargetStops_*_*"
+    ]
+    SelectEvents: [targetStopPath]
+    fileName : "sim.owner.TargetStops.version.sequencer.art"
   }
+
+  IPAStopOutput : {
+    module_type: RootOutput
+    outputCommands:   [ "drop *_*_*_*",
+      @sequence::Beam.SimKeptProducts,
+      "keep *_IPAStopFilter_*_*",
+      "keep *_compressPVIPAStops_*_*"
+    ]
+    SelectEvents: [IPAStopPath]
+    fileName : "sim.owner.IPAStops.version.sequencer.art"
+  }
+
+  FlashOutput : {
+    module_type: RootOutput
+    outputCommands:   [ "drop *_*_*_*",
+      @sequence::Beam.DtsKeptProducts,
+      @sequence::Pileup.KeptProducts
+    ]
+    SelectEvents: [flashPath]
+    fileName : "dts.owner.BeamFlash.version.sequencer.art"
+  }
+
   EarlyFlashOutput : {
-    @table::Beam.outputs.EarlyFlashOutput
-    fileName: "dts.owner.EarlyBeamFlash.version.sequencer.art"
+    module_type: RootOutput
+    outputCommands:   [ "drop *_*_*_*",
+      @sequence::Beam.DtsKeptProducts,
+      @sequence::Pileup.KeptProducts
+    ]
+    SelectEvents: [earlyFlashPath]
+    fileName : "dts.owner.EarlyBeamFlash.version.sequencer.art"
   }
 }
 
@@ -73,7 +118,7 @@ physics.producers.g4run.inputs: {
       outInstance: "eventlevel"
    }
 }
-# copy over VD hits 
+# copy over VD hits
 physics.producers.g4run.SDConfig.preSimulatedHits:  ["beamResampler:virtualdetector"]
 # Kill stuck e+/e-
 physics.producers.g4run.Mu2eG4CommonCut:{
@@ -96,4 +141,4 @@ physics.producers.CrvSteps.stepPointsModuleLabels : [ "FlashFilter" ]
 physics.producers.compressDetStepMCs.simParticleTag : "FlashFilter"
 physics.producers.compressDetStepMCs.simParticleTag : "FlashFilter"
 # test
-physics.filters.neutralsresampler.filenames: [ "sim.owner.Beam.version.sequencer.art" ]
+physics.filters.beamResampler.filenames: [ "sim.owner.Beam.version.sequencer.art" ]

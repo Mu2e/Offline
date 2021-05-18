@@ -1,20 +1,6 @@
 #turn off MCTrajectories
 physics.producers.g4run.TrajectoryControl.produce : false
-# no histogram output
-services.TFileService.fileName			     : null
 # limit printout
 services.message.destinations.log.categories.ArtReport.reportEvery : 1
 services.message.destinations.log.categories.ArtReport.limit : 1
 services.message.destinations.log.categories.ArtReport.timespan : 300
-# time cut for the main flash stream
-# these select energy deposits after the peak of the flash has passed, to keep useless payload down
-# time cut for the main flash stream
-physics.filters.DetStepFilter.TimeCut : true
-physics.filters.DetStepFilter.MinimumTime : 300 # good hits are after this time
-physics.filters.DetStepFilter.MaximumTime : 50 # not a type: good hits are before this time
-# tweak detstep compression for resampling jobs
-physics.producers.compressEarlyDetStepMCs.stepPointMCTags : [ ]
-physics.producers.compressEarlyDetStepMCs.compressionOptions : @local::DetStepCompression.extraCompression
-physics.producers.compressEarlyDetStepMCs.mcTrajectoryTag : ""
-physics.producers.compressEarlyDetStepMCs.simParticleTag : "g4run"
-

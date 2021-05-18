@@ -4,6 +4,7 @@
 #  2) (mostly) neutral particles that exit the TS or otherwise reach the inside of the shielding before the CRV
 #
 #include "fcl/standardServices.fcl"
+#include "EventGenerator/fcl/prolog.fcl"
 #include "JobConfig/common/prolog.fcl"
 #include "JobConfig/beam/prolog.fcl"
 
@@ -18,10 +19,16 @@ services : @local::Services.Sim
 
 physics : {
   # setup the modules
-  producers: @local::Beam.producers
+  producers: {
+    @table::Common.producers
+    generate: @local::PrimaryProtonGun
+    compressPVBeam : @local::Beam.producers.compressPVBeam
+    compressPVNeutrals : @local::Beam.producers.compressPVNeutrals
+  } 
   filters: {
     @table::Common.filters
-    @table::Beam.filters
+    BeamFilter : @local::Beam.filters.BeamFilter
+    NeutralsFilter : @local::Beam.filters.NeutralsFilter
   }
   analyzers : @local::Common.analyzers
   # setup the paths
@@ -34,8 +41,26 @@ physics : {
 }
 # setup outputs
 outputs: {
-  BeamOutput : @local::Beam.outputs.BeamOutput
-  NeutralsOutput : @local::Beam.outputs.NeutralsOutput
+  BeamOutput : {
+    module_type: RootOutput
+    SelectEvents: ["BeamPath"]
+    outputCommands:   [ "drop *_*_*_*",
+      @sequence::Beam.SimKeptProducts,
+      "keep *_BeamFilter_*_*",
+      "keep *_compressPVBeam_*_*"
+    ]
+    fileName : "sim.owner.Beam.version.sequencer.art"
+  }
+  NeutralsOutput : {
+    module_type: RootOutput
+    SelectEvents: ["NeutralsPath"]
+    outputCommands:   [ "drop *_*_*_*",
+      @sequence::Beam.SimKeptProducts,
+      "keep *_NeutralsFilter_*_*",
+      "keep *_compressPVNeutrals_*_*"
+    ]
+    fileName : "sim.owner.Neutrals.version.sequencer.art"
+  }
 }
 # setup Mu2eG4 selection
 physics.producers.g4run.Mu2eG4CommonCut: {
@@ -50,7 +75,3 @@ physics.producers.g4run.SDConfig.enableSD: [ virtualdetector ] # only VDs are ac
 physics.producers.g4run.physics.minRangeCut : 1. # mm  coarse range for this stage
 #include "JobConfig/beam/epilog.fcl"
 #include "JobConfig/common/epilog.fcl"
-#
-# Output file names are defined in prolog
-
-
