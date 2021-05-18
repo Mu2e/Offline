@@ -265,7 +265,8 @@ Beam: {
 	  "keep mu2e::GenParticles_*_*_*",
 	  "keep mu2e::GenEventCount_*_*_*",
            "keep mu2e::StatusG4_*_*_*",
-           "keep *_TargetStopFilter_*_*"
+           "keep *_TargetStopFilter_*_*",
+           "keep *_compressPVTargetStops_*_*"
         ]
         fileName    : "sim.owner.TargetStops.version.sequencer.art"
       }
