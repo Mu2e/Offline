@@ -95,4 +95,4 @@ physics.producers.g4run.Mu2eG4CommonCut:{
 #include "JobConfig/pileup/epilog.fcl"
 #include "JobConfig/beam/epilog.fcl"
 # test
-physics.filters.neutralsResampler.filenames: [ "sim.owner.Neutrals.version.sequencer.art" ]
+physics.filters.neutralsResampler.fileNames: [ "sim.owner.Neutrals.version.sequencer.art" ]
