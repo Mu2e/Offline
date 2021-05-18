@@ -3,25 +3,34 @@
 #
 # original author: Dave Brown, LBNL
 #
+#include "fcl/standardServices.fcl"
+#include "JobConfig/common/prolog.fcl"
 #include "JobConfig/primary/prolog.fcl"
 # name all processes the same, to mask any provenance in ensemble creation
 process_name: Primary
 # the following will change when we read art stops
 source: { module_type : EmptyEvent }
-services: @local::Services.Sim
+services : @local::Services.Sim
 physics : { 
-  producers : { @table::Primary.producers }
-  filters : { @table::Primary.filters }
+  producers : { 
+    @table::Common.producers 
+    @table::Primary.producers 
+  }
+  filters : { 
+    @table::Common.filters 
+    @table::Primary.filters 
+  }
   analyzers : { @table::Primary.analyzers }
-  TriggerPath : @local::Primary.TriggerPath
+  TriggerPath : [ @sequence::Common.generateSequence, @sequence::Common.g4Sequence,  @sequence::Primary.PrimarySequence]
   EndPath : @local::Primary.EndPath
+  trigger_paths : [ TriggerPath ]
+  end_paths : [ EndPath ]
 }
 outputs : { Output :@local::Primary.Output }
 #
 # final configuration
 #
 #include "JobConfig/primary/epilog.fcl"
-physics.end_paths : [ EndPath ] # needed for generate_fcl
 # no histogram output
 services.TFileService.fileName : "/dev/null"
 # test values; these get overwritten by generate_fcl

@@ -36,11 +36,11 @@ services :
 
   ConditionsService :
   {
-    conditionsfile : "Mu2eG4/test/conditions_01.txt"
+    conditionsfile : "ConditionsService/data/conditions_01.txt"
   }
               
   GlobalConstantsService : { 
-    inputFile : "Mu2eG4/test/globalConstants_01.txt" 
+    inputFile : "GlobalConstantsService/data/globalConstants_01.txt" 
   }
   
               

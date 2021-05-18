@@ -7,6 +7,10 @@
 
 // art includes.
 #include "fhiclcpp/ParameterSet.h"
+#include "fhiclcpp/types/Atom.h"
+#include "fhiclcpp/types/Sequence.h"
+#include "fhiclcpp/types/OptionalAtom.h"
+#include "cetlib_except/exception.h"
 #include "art/Framework/Core/EDFilter.h"
 #include "art/Framework/Principal/Event.h"
 #include "art/Framework/Principal/Run.h"
@@ -18,11 +22,14 @@
 #include "MCDataProducts/inc/CaloShowerStep.hh"
 #include "MCDataProducts/inc/CrvStep.hh"
 #include "MCDataProducts/inc/SimParticle.hh"
+#include "Mu2eUtilities/inc/SimParticleTimeOffset.hh"
 #include <map>
 namespace mu2e {
 
   class DetectorStepFilter : public art::EDFilter {
     public:
+      static constexpr double maxE_ = 1.0e6; // 1 TeV
+      static constexpr unsigned maxN_ = 1000000; 
       struct Config {
 	using Name=fhicl::Name;
 	using Comment=fhicl::Comment;
@@ -31,12 +38,12 @@ namespace mu2e {
 	fhicl::Sequence<art::InputTag> caloSteps { Name("CaloShowerSteps"), Comment("CaloShowerStep collections") };
 	fhicl::Sequence<art::InputTag> crvSteps { Name("CrvSteps"), Comment("CrvStep collections") };
 
-	fhicl::Atom<double> minTrkStepEnergy { Name("MinimumTrkStepEnergy"), Comment("Minimum Trk step energy"), -std::numeric_limits<double>::max() };
-	fhicl::Atom<double> minCaloStepEnergy { Name("MinimumCaloStepEnergy"), Comment("Minimum Calo step energy"), -std::numeric_limits<double>::max() };
-	fhicl::Atom<double> minCrvStepEnergy { Name("MinimumCrvStepEnergy"), Comment("Minimum Crv step energy"), -std::numeric_limits<double>::max() };
+	fhicl::Atom<double> minTrkStepEnergy { Name("MinimumTrkStepEnergy"), Comment("Minimum Trk step energy"), 0.0 };
+	fhicl::Atom<double> minCaloStepEnergy { Name("MinimumCaloStepEnergy"), Comment("Minimum Calo step energy"), 0.0 };
+	fhicl::Atom<double> minCrvStepEnergy { Name("MinimumCrvStepEnergy"), Comment("Minimum Crv step energy"), 0.0 };
 
-	fhicl::Atom<double> minPartMom { Name("MinimumPartMom"), Comment("Minimum particle momentum"), -std::numeric_limits<double>::max() };
-	fhicl::Atom<double> maxPartMom { Name("MaximumPartMom"), Comment("Maximum particle momentum"), std::numeric_limits<double>::max() };
+	fhicl::Atom<double> minPartMom { Name("MinimumPartMom"), Comment("Minimum particle momentum"), 0.0 };
+	fhicl::Atom<double> maxPartMom { Name("MaximumPartMom"), Comment("Maximum particle momentum"), maxE_ };
 
 	fhicl::Atom<bool> orRequirements { Name("ORRequirements"), Comment("Take the logical OR of requirements, otherwise take the AND"), true };
 
@@ -44,11 +51,16 @@ namespace mu2e {
 	fhicl::Atom<double> minSumCaloStepE { Name("MinimumSumCaloStepE"), Comment("Minimum E sum of good calorimeter steps (MeV) "), 50.0 };
 	fhicl::Atom<unsigned> minNCrvSteps { Name("MinimumCrvSteps"), Comment("Minimum number of good CRV steps"), 3 };
 
-	fhicl::Atom<unsigned> maxNTrkSteps { Name("MaximumTrkSteps"), Comment("Maximum number of good tracker steps"), 1000000};
-	fhicl::Atom<double> maxSumCaloStepE { Name("MaximumSumCaloStepE"), Comment("Maximum E sum of good calorimeter steps (MeV) "), 1.0e8 };
-	fhicl::Atom<unsigned> maxNCrvSteps { Name("MaximumCrvSteps"), Comment("Maximum number of good CRV steps"), 1000000 };
+	fhicl::Atom<unsigned> maxNTrkSteps { Name("MaximumTrkSteps"), Comment("Maximum number of good tracker steps"), maxN_ };
+	fhicl::Atom<double> maxSumCaloStepE { Name("MaximumSumCaloStepE"), Comment("Maximum E sum of good calorimeter steps (MeV) "),  maxE_ };
+	fhicl::Atom<unsigned> maxNCrvSteps { Name("MaximumCrvSteps"), Comment("Maximum number of good CRV steps"), maxN_ };
 
 	fhicl::Sequence<int> keepPDG { Name("KeepPDG"), Comment("PDG particle codes to keep") };
+
+	fhicl::Atom<bool> timeCut { Name("TimeCut"), Comment("Make time for good step"), false};
+	fhicl::OptionalAtom<double> maxTime { Name("MaximumTime"), Comment("Maximum time for good step (ns since POT)")};
+	fhicl::OptionalAtom<double> minTime { Name("MinimumTime"), Comment("Minimum time for good step (ns since POT)")};
+	fhicl::Sequence<art::InputTag> SPTO { Name("TimeOffsets"), Comment("Sim Particle Time Offset Maps"),  std::vector<art::InputTag> () };
 
       };
 
@@ -58,7 +70,8 @@ namespace mu2e {
       void endJob() override;
 
     private:
-      bool goodParticle(SimParticle const& simp) const;
+      bool goodParticle(SimParticle const& simp) const; // select particles whose steps to count
+      bool flashCut(double time) const; // cut particle time outside of flash
       double minTrkE_, minCaloE_, minCrvE_;
       double minPartM_, maxPartM_;
       bool or_;
@@ -68,6 +81,9 @@ namespace mu2e {
       double minSumCaloE_;
       unsigned maxNTrk_, maxNCrv_;
       double maxSumCaloE_;
+      bool timecut_;
+      double minTime_, maxTime_;
+      SimParticleTimeOffset toff_; // time offsets
       unsigned nEvt_, nPassed_;
   };
 
@@ -86,6 +102,9 @@ namespace mu2e {
     , maxNTrk_(conf().maxNTrkSteps())
     , maxNCrv_(conf().maxNCrvSteps())
     , maxSumCaloE_(conf().maxSumCaloStepE())
+    , timecut_(conf().timeCut())
+    , minTime_(0.0), maxTime_(0.0)
+    , toff_(conf().SPTO())
     , nEvt_(0)
     , nPassed_(0)
     {
@@ -93,9 +112,19 @@ namespace mu2e {
       for(const auto& trktag : conf().trkSteps()) { trkStepCols_.emplace_back(trktag); consumes<StrawGasStepCollection>(trktag); }
       for(const auto& calotag : conf().caloSteps()) { caloStepCols_.emplace_back(calotag); consumes<CaloShowerStepCollection>(calotag); }
       for(const auto& crvtag : conf().crvSteps()) { crvStepCols_.emplace_back(crvtag);  consumes<CrvStepCollection>(crvtag); }
+
+      if( timecut_){
+	conf().minTime(minTime_);
+	conf().maxTime(maxTime_);
+      }
     }
 
+  // input must be a physical time!
+  bool DetectorStepFilter::flashCut(double ptime) const { return (!timecut_) || ptime > minTime_ || ptime < maxTime_; } 
+
   bool DetectorStepFilter::filter(art::Event& event) {
+    if(timecut_)toff_.updateMap(event);
+
     bool selecttrk(false), selectcalo(false), selectcrv(false);
     ++nEvt_;
     // Count Trk step from same particle
@@ -105,9 +134,11 @@ namespace mu2e {
       auto sgscolH = event.getValidHandle<StrawGasStepCollection>(trkcoltag);
       for(const auto& sgs : *sgscolH ) {
 	double mom = sgs.momentum().R();
+	double ptime = sgs.time() + toff_.totalTimeOffset(sgs.simParticle());
 	if(sgs.ionizingEdep() > minTrkE_ && 
 	    mom > minPartM_ && mom < maxPartM_ &&
-	    goodParticle(*sgs.simParticle())){
+	    goodParticle(*sgs.simParticle()) &&
+	    flashCut(ptime)) {
 	  auto ifnd = counttrk.find(sgs.simParticle().get());
 	  if(ifnd == counttrk.end())
 	    counttrk.insert(CT::value_type(sgs.simParticle().get(),1));
@@ -129,9 +160,11 @@ namespace mu2e {
       CES caloESum;
       auto csscolH = event.getValidHandle<CaloShowerStepCollection>(calocoltag);
       for(const auto& css : *csscolH ) {
+	double ptime = css.time() + toff_.totalTimeOffset(css.simParticle());
 	if(css.energyDepBirks() > minCaloE_ && 
 	    css.momentumIn() > minPartM_ && css.momentumIn() < maxPartM_ &&
-	    goodParticle(*css.simParticle())){
+	    goodParticle(*css.simParticle()) &&
+	    flashCut(ptime)) {
 	  auto ifnd = caloESum.find(css.simParticle().get());
 	  if(ifnd == caloESum.end())
 	    caloESum.insert(CES::value_type(css.simParticle().get(),css.energyDepBirks()));
@@ -154,9 +187,11 @@ namespace mu2e {
       auto crvscolH = event.getValidHandle<CrvStepCollection>(crvcoltag);
       for(const auto& crvs : *crvscolH ) {
 	double mom = crvs.startMom().R();
+	double ptime = crvs.startTime() + toff_.totalTimeOffset(crvs.simParticle());
 	if(crvs.visibleEDep() > minCrvE_ && 
 	    mom > minPartM_ && mom < maxPartM_ &&
-	    goodParticle(*crvs.simParticle())) {
+	    goodParticle(*crvs.simParticle()) &&
+	    flashCut(ptime)) {
 	  auto ifnd = countcrv.find(crvs.simParticle().get());
 	  if(ifnd == countcrv.end())
 	    countcrv.insert(CC::value_type(crvs.simParticle().get(),1));
@@ -172,6 +207,7 @@ namespace mu2e {
       }
       if(selectcrv)break;
     }
+    // global selection
     bool retval =( (or_ && (selecttrk || selectcalo || selectcrv)) ||
 	((!or_) && ( selecttrk && selectcalo && selectcrv)) );
     if(retval)nPassed_++;

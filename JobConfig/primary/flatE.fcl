@@ -1,6 +1,6 @@
 # generate flat particles from stopped muons and produce digis.  this is WITHOUT MIXING
 
-#include "JobConfig/primary/primary.fcl"
+#include "JobConfig/primary/Primary.fcl"
 # set the generator
 physics.producers.generate : {
   module_type: StoppedParticleReactionGun

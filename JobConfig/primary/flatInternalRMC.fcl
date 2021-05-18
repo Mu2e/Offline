@@ -1,7 +1,7 @@
 #
 # internal RMC with a flat virtual photon energy spectrum
 #
-#include "JobConfig/primary/primary.fcl"
+#include "JobConfig/primary/Primary.fcl"
 # set the generator
 physics.producers.generate : @local::EventGenerator.producers.RMCGun
 # set the stops.  This should go away with art-based muon stops FIXME!

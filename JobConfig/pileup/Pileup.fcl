@@ -1,0 +1,33 @@
+#
+# generate and produce Detector Steps from pileup 
+#
+# original author: Dave Brown, LBNL
+#
+#include "fcl/standardServices.fcl"
+#include "JobConfig/common/prolog.fcl"
+#include "JobConfig/primary/prolog.fcl"
+#include "JobConfig/pileup/prolog.fcl"
+process_name : Pileup
+
+source: { module_type : EmptyEvent }
+services : @local::Services.Sim
+physics: { 
+  producers : { 
+    @table::Common.producers 
+    @table::Primary.producers 
+    @table::Pileup.producers 
+  }
+  filters : { 
+    @table::Common.filters
+    @table::Pileup.filters
+  }
+  analyzers : { @table::Common.analyzers }
+  TriggerPath : [ @sequence::Common.generateSequence, @sequence::Common.g4Sequence, @sequence::Primary.DetStepSequence, @sequence::Primary.DetStepFilterSequence ]
+  EndPath : @local::Pileup.EndPath
+  trigger_paths : [ TriggerPath ]
+  end_paths : [ EndPath ]
+}
+outputs: { Output : @local::Pileup.Output }
+#include "JobConfig/common/epilog.fcl"
+#include "JobConfig/primary/epilog.fcl"
+#include "JobConfig/pileup/epilog.fcl"

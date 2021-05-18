@@ -1,11 +1,10 @@
 #
 # generate conversion electrons from stopped muon file
 # and simulate all the way through the detector
-# run calorimeter and tracker reco
+# run calorimeter and tracker and CRV reco
 #
-
-#include "fcl/minimalMessageService.fcl"
 #include "fcl/standardServices.fcl"
+#include "JobConfig/common/prolog.fcl"
 #include "JobConfig/primary/prolog.fcl"
 #include "JobConfig/digitize/prolog.fcl"
 #include "JobConfig/reco/prolog.fcl"
@@ -13,31 +12,33 @@
 process_name : ceSimReco
 
 source : { module_type :EmptyEvent }
-services: @local::Services.SimAndReco
+services : @local::Services.Sim
 
 physics: {
   producers : {
+    @table::Common.producers
     @table::Primary.producers
     @table::Digitize.producers
     @table::Reconstruction.producers
-#    @table::Trigger.producers 
     generate : @local::CeEndpointGun
   }
   filters : { 
+    @table::Common.filters
     @table::Primary.filters
     @table::Digitize.filters 
     @table::Reconstruction.filters
-#    @table::Trigger.filters
   }
   analyzers: {
+    @table::Common.analyzers
     @table::Primary.analyzers
     @table::Digitize.analyzers
     @table::Reconstruction.analyzers
-#    @table::Trigger.analyzers
   }
 
   TriggerPath : [
-    @sequence::Primary.TriggerPath,
+    @sequence::Common.generateSequence,
+    @sequence::Common.g4Sequence,
+    @sequence::Primary.PrimarySequence,
     @sequence::Digitize.TriggerPath,
     @sequence::Reconstruction.CaloReco,
     @sequence::Reconstruction.TrkReco,
@@ -52,6 +53,8 @@ physics: {
     @sequence::Reconstruction.EndSequence,
     Output
   ]
+  trigger_paths : [ TriggerPath ]
+  end_paths : [ EndPath ]
 }
 
 outputs : { 

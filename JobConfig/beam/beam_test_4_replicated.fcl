@@ -19,7 +19,7 @@ services : {
    message                : @local::default_message
 //   TFileService           : { fileName : "beam_test_4_replicated.root" }
    GeometryService        : { inputFile      : "JobConfig/common/geom_baseline.txt" }
-   GlobalConstantsService : { inputFile      : "Mu2eG4/test/globalConstants_01.txt" }
+   GlobalConstantsService : { inputFile      : "GlobalConstantsService/data/globalConstants_01.txt" }
    SeedService            : @local::automaticSeeds
    RandomNumberGenerator : {defaultEngineKind: "MixMaxRng" }
 }
