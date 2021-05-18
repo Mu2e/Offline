@@ -13,8 +13,6 @@ physics.filters.DetStepFilter.TimeCut : true
 physics.filters.DetStepFilter.MinimumTime : 300 # good hits are after this time
 physics.filters.DetStepFilter.MaximumTime : 50 # not a type: good hits are before this time
 # tweak detstep compression for resampling jobs
-physics.producers.compressDetStepMCs.simParticleTag : "FlashFilter"
-physics.producers.compressDetStepMCs.simParticleTag : "FlashFilter"
 physics.producers.compressEarlyDetStepMCs.stepPointMCTags : [ ]
 physics.producers.compressEarlyDetStepMCs.compressionOptions : @local::DetStepCompression.extraCompression
 physics.producers.compressEarlyDetStepMCs.mcTrajectoryTag : ""

@@ -94,5 +94,8 @@ physics.producers.StrawGasStepMaker.SkipTheseStepPoints : "g4run"
 physics.producers.StrawGasStepMaker.KeepDeltasModule : ""
 physics.producers.CaloShowerStepMaker.caloStepPointCollection : ["FlashFilter:calorimeter"]
 physics.producers.CrvSteps.stepPointsModuleLabels : [ "FlashFilter" ]
+# tweak compression to use the FlashFilter deep copy too
+physics.producers.compressDetStepMCs.simParticleTag : "FlashFilter"
+physics.producers.compressDetStepMCs.simParticleTag : "FlashFilter"
 # test
 physics.filters.neutralsresampler.filenames: [ "sim.owner.Beam.version.sequencer.art" ]
