@@ -385,14 +385,14 @@ CaloFilters : { @table::CaloFilters
 	caloMVAMixedCE   : [ caloMVAMixedEventPrescale, caloMVAMixedCDCountFilter, @sequence::TrkHitRecoTrigger.sequences.TTprepareHits, 
 			     CaloTrigger, caloMVAMixedFilter ] 
 	
-	caloCalibCosmic  : [ caloCalibCosmicEventPrescale, caloCalibCosmicCDCountFilter, CaloClusterFast, caloCalibCosmicFilter] 
+	caloCalibCosmic  : [ caloCalibCosmicEventPrescale, caloCalibCosmicCDCountFilter, @sequence::CaloHitRecoTrigger.prepareHits, CaloClusterFast, caloCalibCosmicFilter] 
 
-	caloLHCE         : [ caloLHCEEventPrescale, caloLHCECDCountFilter, CaloClusterFast, caloLHCEFilter] 
+	caloLHCE         : [ caloLHCEEventPrescale, caloLHCECDCountFilter, @sequence::CaloHitRecoTrigger.prepareHits, CaloClusterFast, caloLHCEFilter] 
 
 	#FIX ME! THIS IS JUST A PLACE HOLDER
-	caloPhoton       : [ caloPhotonEventPrescale, caloPhotonCDCountFilter, CaloClusterFast, caloPhotonFilter] 
+	caloPhoton       : [ caloPhotonEventPrescale, caloPhotonCDCountFilter, @sequence::CaloHitRecoTrigger.prepareHits, CaloClusterFast, caloPhotonFilter] 
 
-	caloPhoton       : [ caloMVANNCEEventPrescale, caloMVANNCECDCountFilter, CaloClusterFast,caloMVANNCEFilter ] 
+	caloPhoton       : [ caloMVANNCEEventPrescale, caloMVANNCECDCountFilter, @sequence::CaloHitRecoTrigger.prepareHits, CaloClusterFast,caloMVANNCEFilter ] 
 
     }
 }

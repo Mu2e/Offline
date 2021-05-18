@@ -12,7 +12,12 @@
 
 #include "art/Framework/Principal/Handle.h"
 #include "mu2e-artdaq-core/Overlays/CalorimeterFragment.hh"
-#include "mu2e-artdaq-core/Overlays/FragmentType.hh"
+ #include "mu2e-artdaq-core/Overlays/FragmentType.hh"
+
+//-- insert calls to proditions ..for calodmap-----
+#include "ProditionsService/inc/ProditionsHandle.hh"
+#include "CaloConditions/inc/CaloDAQMap.hh"
+//-------------------------------------------------
 
 #include "RecoDataProducts/inc/CaloDigi.hh"
 #include "DAQ/inc/CaloDAQUtilities.hh"
@@ -47,7 +52,11 @@ public:
   virtual void produce(Event&);
 
 private:
-  void analyze_calorimeter_(const artdaq::Fragment& f,
+  
+  mu2e::ProditionsHandle<mu2e::CaloDAQMap> _calodaqconds_h;
+
+  void analyze_calorimeter_(mu2e::CaloDAQMap const& calodaqconds,
+			    const artdaq::Fragment& f,
                             std::unique_ptr<mu2e::CaloDigiCollection> const& calo_digis);
 
   int                        diagLevel_;
@@ -58,9 +67,7 @@ private:
   const int                 hexShiftPrint = 7;
 
 }; // CaloRecoFromFragments
-
 // ======================================================================
-
 art::CaloRecoFromFragments::CaloRecoFromFragments(const art::EDProducer::Table<Config>& config) :
   art::EDProducer{config},
   diagLevel_(config().diagLevel()), 
@@ -68,15 +75,15 @@ art::CaloRecoFromFragments::CaloRecoFromFragments(const art::EDProducer::Table<C
   caloDAQUtil_("CaloRecoFromFragments") {
     produces<mu2e::CaloDigiCollection>();
   }
-
 // ----------------------------------------------------------------------
-
 void art::CaloRecoFromFragments::produce(Event& event) {
   art::EventNumber_t eventNumber = event.event();
-
+  
   // Collection of CaloDigis for the event
   std::unique_ptr<mu2e::CaloDigiCollection> calo_digis(new mu2e::CaloDigiCollection);
 
+  mu2e::CaloDAQMap const& calodaqconds = _calodaqconds_h.get(event.id()); // Get calo daq cond
+  
   art::Handle<artdaq::Fragments> calFragments;
   size_t numCalFrags(0);
   size_t totalSize = 0;
@@ -87,6 +94,7 @@ void art::CaloRecoFromFragments::produce(Event& event) {
     event.put(std::move(calo_digis));
     return;
   }
+  
   numCalFrags = calFragments->size();
   if (diagLevel_ > 1) {
     std::cout << "[CaloRecoFromFragments::produce] found "<< numCalFrags <<" Calorimeter fragments"
@@ -95,7 +103,7 @@ void art::CaloRecoFromFragments::produce(Event& event) {
   for (size_t idx = 0; idx < numCalFrags; ++idx) {
     auto size = ((*calFragments)[idx]).sizeBytes(); // * sizeof(artdaq::RawDataType);
     totalSize += size;
-    analyze_calorimeter_((*calFragments)[idx], calo_digis);
+    analyze_calorimeter_(calodaqconds, (*calFragments)[idx], calo_digis);
     //      std::cout << "\tCAL Fragment " << idx << " has size " << size << std::endl;
   }
   
@@ -119,7 +127,7 @@ void art::CaloRecoFromFragments::produce(Event& event) {
 
 } // produce()
 
-void art::CaloRecoFromFragments::analyze_calorimeter_(
+void art::CaloRecoFromFragments::analyze_calorimeter_(mu2e::CaloDAQMap const& calodaqconds,
     const artdaq::Fragment& f, std::unique_ptr<mu2e::CaloDigiCollection> const& calo_digis) {
 
   mu2e::CalorimeterFragment cc(f);
@@ -238,26 +246,30 @@ void art::CaloRecoFromFragments::analyze_calorimeter_(
         // IMPORTANT NOTE: we don't have a final
         // mapping yet so for the moment, the BoardID field (described in docdb 4914) is just a
         // placeholder. Because we still need to know which crystal a hit belongs to, we are
-        // temporarily storing the 4-bit sipmID and 12-bit crystalID in the Reserved DIRAC A slot.
+        // temporarily storing the 4-bit roID and 12-bit crystalID in the Reserved DIRAC A slot.
         // Also, note that until we have an actual map, channel index does not actually correspond
         // to the physical readout channel on a ROC.
-        uint16_t crystalID = caloDAQUtil_.getCrystalID(hits[hitIdx].first); //hits[hitIdx].first.DIRACB & 0x0FFF;
-        uint16_t sipmID    = caloDAQUtil_.getSiPMID   (hits[hitIdx].first); //hits[hitIdx].first.DIRACB >> 12;
+        //uint16_t crystalID = hits[hitIdx].first.DIRACB & 0x0FFF;
+        //uint16_t roID = hits[hitIdx].first.DIRACB >> 12;
 
+	uint16_t packetid = hits[hitIdx].first.DIRACA;
+	uint16_t roID = calodaqconds.packetIdTocaloRoId(packetid);	
+	//uint16_t dettype = (packetId & 0x7000) >> 13;
+							
         // FIXME: Can we match vector types here?
         std::vector<int> caloHits;
 	caloHits.reserve(hits[hitIdx].second.size());
         std::copy(hits[hitIdx].second.begin(), hits[hitIdx].second.end(), std::back_inserter(caloHits));
 
-        calo_digis->emplace_back((sipmID), hits[hitIdx].first.Time, caloHits,
+        calo_digis->emplace_back(roID, hits[hitIdx].first.Time, caloHits,
                                  hits[hitIdx].first.IndexOfMaxDigitizerSample);
 
         if (diagLevel_ > 1) {
           // Until we have the final mapping, the BoardID is just a placeholder
           // adc_t BoardId    = cc.DBC_BoardID(pos,channelIdx);
-
+	  uint16_t crystalID = roID/2;
           std::cout << "Crystal ID: " << (int)crystalID << std::endl;
-          std::cout << "SiPM ID: " << (int)sipmID << std::endl;
+          std::cout << "SiPM ID: " << (int)roID << std::endl;
           std::cout << "Time: " << (int)hits[hitIdx].first.Time << std::endl;
           std::cout << "NumSamples: " << (int)hits[hitIdx].first.NumberOfSamples << std::endl;
           std::cout << "Waveform: {";
@@ -273,7 +285,7 @@ void art::CaloRecoFromFragments::analyze_calorimeter_(
           // Example: 1 201 402 660 18 0 0 0 0 1 17 51 81 91 83 68 60 58 52 42 33 23 16
           std::cout << "GREPMECAL: " << hdr.GetEventWindowTag().GetEventWindowTag(true) << " ";
           std::cout << crystalID << " ";
-          std::cout << sipmID << " ";
+          std::cout << roID << " ";
           std::cout << hits[hitIdx].first.Time << " ";
           std::cout << hits[hitIdx].second.size() << " ";
           for (size_t i = 0; i < hits[hitIdx].second.size(); i++) {

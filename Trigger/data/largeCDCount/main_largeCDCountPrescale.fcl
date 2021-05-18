@@ -1,3 +1,0 @@
-physics.filters.largeCDCountPrescale.nPrescale    : 10000
-physics.filters.largeCDCountPrescale.useFilteredEvents : true
-physics.filters.largeCDCountPrescale.triggerFlag  : ["PrescaleGoodEvents"]

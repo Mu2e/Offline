@@ -14,7 +14,7 @@
 #include "RecoDataProducts/inc/StrawDigiCollection.hh"
 #include "RecoDataProducts/inc/CaloDigi.hh"
 #include "RecoDataProducts/inc/CaloDigi.hh"
-#include "RecoDataProducts/inc/TriggerInfo.hh"
+// #include "RecoDataProducts/inc/TriggerInfo.hh"
 // c++
 #include <iostream>
 #include <memory>
@@ -36,7 +36,7 @@ namespace mu2e
     art::InputTag   _cdTag;
     bool            _useSD;   //flag for using the StrawDigi
     bool            _useCD;   //flag for using the CaloDigi
-    std::string     _trigPath;
+    // std::string     _trigPath;
 
     //list of the parameters used to perform the filtering
     int             _minnsd;  //minimum number of StrawDigi required
@@ -56,7 +56,7 @@ namespace mu2e
     _cdTag    (pset.get<art::InputTag>("caloDigiCollection")),
     _useSD    (pset.get<bool>("useStrawDigi")),
     _useCD    (pset.get<bool>("useCaloDigi")),
-    _trigPath (pset.get<std::string>("triggerPath")),
+    // _trigPath (pset.get<std::string>("triggerPath")),
     _minnsd   (pset.get<int>("minNStrawDigi")),
     _maxnsd   (pset.get<int>("maxNStrawDigi")),
     _minncd   (pset.get<int>("minNCaloDigi")),
@@ -65,12 +65,12 @@ namespace mu2e
     _debug    (pset.get<int>("debugLevel",0)),
     _nevt(0), _npass(0)
   {
-    produces<TriggerInfo>();
+    // produces<TriggerInfo>();
   }
 
   bool DigiFilter::filter(art::Event& event){
     // create output
-    unique_ptr<TriggerInfo> triginfo(new TriggerInfo);
+    // unique_ptr<TriggerInfo> triginfo(new TriggerInfo);
     ++_nevt;
     bool retval(false), retvalSD(false), retvalCD(false); // preset to fail
     // find the collection
@@ -117,16 +117,16 @@ namespace mu2e
     if (retval){
       ++_npass;
       
-      if (retvalSD) triginfo->_triggerBits.merge(TriggerFlag::strawDigis);
-      if (retvalCD) triginfo->_triggerBits.merge(TriggerFlag::caloDigis );
-      triginfo->_triggerPath = _trigPath;
+      // if (retvalSD) triginfo->_triggerBits.merge(TriggerFlag::strawDigis);
+      // if (retvalCD) triginfo->_triggerBits.merge(TriggerFlag::caloDigis );
+      // triginfo->_triggerPath = _trigPath;
 
       if(_debug > 1){
 	cout << moduleDescription().moduleLabel() << " passed event " << event.id() << endl;
       }
     }
     
-    event.put(std::move(triginfo));
+    // event.put(std::move(triginfo));
     return retval;
   }
 

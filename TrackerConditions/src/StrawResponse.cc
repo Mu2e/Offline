@@ -10,34 +10,13 @@ namespace mu2e {
 
   // simple line interpolation, this should be a utility function, FIXME!
   double StrawResponse::PieceLine(std::vector<double> const& xvals, std::vector<double> const& yvals, double xval){
-    double yval;
-    if(xvals.size() != yvals.size() || xvals.size() < 2)
-      std::cout << "size error " << std::endl;
-    int imax = int(xvals.size()-1);
-    // approximate constant binning to get initial guess
+    int imax = int(xvals.size()-2);
     double xbin = (xvals.back()-xvals.front())/(xvals.size()-1);
     int ibin = min(imax,max(0,int(floor((xval-xvals.front())/xbin))));
-    // scan to exact bin
-    while(ibin > 0 && xval < xvals[ibin])
-      --ibin;
-    while(ibin < imax && xval > xvals[ibin])
-      ++ibin;
-    // interpolate
-    double slope(0.0);
-    if(ibin >= 0 && ibin < imax){
-      yval = yvals[ibin];
-      int jbin = ibin+1;
-      slope = (yvals[jbin]-yvals[ibin])/(xvals[jbin]-xvals[ibin]);
-      yval += (xval-xvals[ibin])*slope;
-    } else if(ibin >= imax){ 
-      yval = yvals[imax];
-      slope = (yvals[imax]-yvals[imax-1])/(xvals[imax]-xvals[imax-1]);
-      yval += (xval-xvals[imax])*slope;
-    } else {
-      yval = yvals[0];
-      slope = (yvals[1]-yvals[0])/(xvals[1]-xvals[0]);
-      yval += (xval-xvals[0])*slope;
-    }
+    double yval = yvals[ibin];
+    int jbin = ibin+1;
+    double slope = (yvals[jbin]-yvals[ibin])/(xvals[jbin]-xvals[ibin]);
+    yval += (xval-xvals[ibin])*slope;
     return yval;
   }
 
@@ -133,11 +112,11 @@ namespace mu2e {
   }
 
   double StrawResponse::wpRes(double kedep,double wlen) const {
-  // central resolution depends on edep
+    // central resolution depends on edep
     double tdres = PieceLine(_edep,_centres,kedep);
     if( wlen > _central){
-    // outside the central region the resolution depends linearly on the distance
-    // along the wire.  The slope of that also depends on edep
+      // outside the central region the resolution depends linearly on the distance
+      // along the wire.  The slope of that also depends on edep
       double wslope = PieceLine(_edep,_resslope,kedep);
       tdres += (wlen-_central)*wslope;
     }
@@ -166,13 +145,9 @@ namespace mu2e {
   double StrawResponse::driftTime(Straw const& straw, 
 			      double tot, double edep) const {
     // straw is present in case of eventual calibration
-    size_t totbin = (size_t) (tot/4.);
-    size_t ebin = (size_t) (edep/0.00025);
-    if (totbin > 15)
-      totbin = 15;
-    if (ebin > 9)
-      ebin = 9;
-    return _totdtime[totbin*10+ebin];
+    size_t totbin = min(_totTBins-1,static_cast<size_t>(tot/_totTBinWidth));
+    size_t ebin = min(_totEBins-1,static_cast<size_t>(edep/_totEBinWidth));
+    return _totdtime[totbin*_totEBins+ebin];
   }
 
   double StrawResponse::pathLength(Straw const& straw, double tot) const {

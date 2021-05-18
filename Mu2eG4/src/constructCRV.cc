@@ -94,7 +94,7 @@ namespace mu2e
       // visibility attributes
       if (!scintillatorShieldVisible) 
       {
-        scintillatorBarLogical->SetVisAttributes(G4VisAttributes::Invisible);
+        scintillatorBarLogical->SetVisAttributes(G4VisAttributes::GetInvisible());
       }
       else 
       {
@@ -124,7 +124,7 @@ namespace mu2e
       // visibility attributes
       if (!scintillatorShieldVisible) 
       {
-        CMBLogical->SetVisAttributes(G4VisAttributes::Invisible);
+        CMBLogical->SetVisAttributes(G4VisAttributes::GetInvisible());
       }
       else 
       {
@@ -257,7 +257,7 @@ if(!_config.getBool("crs.hideCRVCMBs"))
 
           if(!scintillatorShieldVisible) 
           {
-            absorberLogical->SetVisAttributes(G4VisAttributes::Invisible);
+            absorberLogical->SetVisAttributes(G4VisAttributes::GetInvisible());
           }
           else 
           {
@@ -307,7 +307,7 @@ if(!_config.getBool("crs.hideCRVCMBs"))
 
           if(!scintillatorShieldVisible) 
           {
-            aluminumSheetLogical->SetVisAttributes(G4VisAttributes::Invisible);
+            aluminumSheetLogical->SetVisAttributes(G4VisAttributes::GetInvisible());
           }
           else 
           {
@@ -357,7 +357,7 @@ if(!_config.getBool("crs.hideCRVCMBs"))
 
           if(!scintillatorShieldVisible) 
           {
-            FEBLogical->SetVisAttributes(G4VisAttributes::Invisible);
+            FEBLogical->SetVisAttributes(G4VisAttributes::GetInvisible());
           }
           else 
           {
@@ -410,7 +410,7 @@ if(!_config.getBool("crs.hideCRVCMBs"))
 
       if(!scintillatorShieldVisible) 
       {
-        supportStructureLogical->SetVisAttributes(G4VisAttributes::Invisible);
+        supportStructureLogical->SetVisAttributes(G4VisAttributes::GetInvisible());
       }
       else 
       {

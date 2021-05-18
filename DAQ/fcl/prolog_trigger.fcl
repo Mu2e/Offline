@@ -61,7 +61,7 @@ DAQ : {
 	 caloTag     : "daq:calo"
       }
 
-       CaloHitMaker:		
+       FastCaloHitMaker:		
       {
 	 module_type   : CaloHitsFromFragments
 	 diagLevel     : 0

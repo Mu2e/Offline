@@ -274,7 +274,7 @@ namespace mu2e {
 	    int sampleStop  = hitStops[ihit];
 	    int t0          = int(sampleStart*digiSampling_+ blindTime_);
 
-	    auto it1 = wf.begin()+sampleStart, it2 = wf.begin()+sampleStop+1;
+	    auto it1 = wf.begin()+sampleStart, it2 = wf.begin()+sampleStop;
             auto peakPosition = std::max_element(it1,it2) - it1;
 	    if (diagLevel_ >2) std::cout<<"[CaloDigiMaker] Start=" << sampleStart << " Stop=" << sampleStop << " peak in position " << peakPosition << std::endl; 
 

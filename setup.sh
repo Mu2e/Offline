@@ -132,7 +132,7 @@ else
 fi
 
 # Get access to raw data formats.
-setup -B mu2e_artdaq_core v1_05_10 -q${MU2E_UPS_QUALIFIERS}:+${MU2E_ART_SQUALIFIER}
+setup -B mu2e_artdaq_core v1_05_09_01 -q${MU2E_UPS_QUALIFIERS}:+${MU2E_ART_SQUALIFIER}
 
 setup -B heppdt   v03_04_02 -q${MU2E_UPS_QUALIFIERS}
 setup cetpkgsupport

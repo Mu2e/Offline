@@ -546,11 +546,11 @@ namespace mu2e {
       }
     }
     // folllow down the reco chain
-    auto hsP = ks.helix();
-    if(hsP.isNonnull()){
-      fillHelixSeed(spp,*hsP);
-    } else
-      std::cout << "No helix seed found in kal seed!" << std::endl;
+//    auto hsP = ks.helix();
+//    if(hsP.isNonnull()){
+//      fillHelixSeed(spp,*hsP);
+//    } else
+//      std::cout << "No helix seed found in kal seed!" << std::endl;
   }
 
   void TrkRecoDiag::fillHelixSeed(SPP const& spp,HelixSeed const& hs) {

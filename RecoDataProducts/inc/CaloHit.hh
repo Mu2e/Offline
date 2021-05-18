@@ -27,16 +27,20 @@ namespace mu2e {
 	    eDepErr_(0),timeErr_(0)
           {}
 
-          int                                          crystalID      () const { return crystalId_; }
-          int                                          nSiPMs         () const { return nSiPMs_;}
-          float                                        time           () const { return time_;}
-          float                                        timeErr        () const { return timeErr_;}
-          float                                        energyDep      () const { return eDep_;} 
-          float                                        energyDepErr   () const { return eDepErr_;} 
-          float                                        energyDepTot   () const { return eDep_*nSiPMs_;}
+          int                                          crystalID      () const { return crystalId_; }	  
+          int                                          nSiPMs         () const { return nSiPMs_;}	  
+          float                                        time           () const { return time_;}		  
+          float                                        timeErr        () const { return timeErr_;}	  
+          float                                        energyDep      () const { return eDep_;} 	  
+          float                                        energyDepErr   () const { return eDepErr_;} 	  
+          float                                        energyDepTot   () const { return eDep_*nSiPMs_;}	  
           float                                        energyDepTotErr() const { return eDepErr_*nSiPMs_;}
           const std::vector<art::Ptr<CaloRecoDigi>>&   recoCaloDigis  () const { return recoCaloDigis_;}
 
+          void     setCrystalID      (int  ID) { crystalId_ = ID; }	  
+          void     setNSiPMs         (int   N) { nSiPMs_    = N;  }	  
+          void     setTime           (float T) { time_      = T;  }		  
+          void     setEDep           (float E) { eDep_      = E;  }  	  
 
         private:
           int    crystalId_;
