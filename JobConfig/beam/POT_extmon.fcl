@@ -1,6 +1,6 @@
 #
 # Script to shoot beam protons onto the production target.  Daughter particles are filtered and collected at:
-#  1) extmon beam 
+#  1) extmon beam
 #  2) extmon region
 #
 #include "fcl/minimalMessageService.fcl"
@@ -41,5 +41,3 @@ physics.producers.g4run.physics.minRangeCut : 1. # mm  coarse range for this sta
 #include "JobConfig/beam/epilog.fcl"
 #
 # Output file names are defined in prolog
-
-

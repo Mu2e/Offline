@@ -52,5 +52,3 @@ physics.producers.g4run.physics.minRangeCut : 1. # mm  coarse range for this sta
 #include "JobConfig/common/epilog.fcl"
 #
 # Output file names are defined in prolog
-
-

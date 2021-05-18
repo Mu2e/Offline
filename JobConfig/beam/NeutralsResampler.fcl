@@ -20,7 +20,7 @@ source : {
 }
 
 services : @local::Services.Sim
-physics: { 
+physics: {
   producers : {
     @table::CommonMC.producers
     @table::Beam.producers
@@ -80,4 +80,3 @@ physics.producers.g4run.Mu2eG4CommonCut:{
 #include "JobConfig/beam/epilog.fcl"
 # test
 physics.filters.neutralsresampler.filenames: [ "sim.owner.Neutrals.version.sequencer.art" ]
-
