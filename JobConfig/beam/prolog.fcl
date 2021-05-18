@@ -186,7 +186,8 @@ Beam: {
 
       EarlyPrescaleFilter : {
         module_type : PrescaleEvent
-	nPrescale         : 100 # test value FIXME
+	nPrescale         : 100
+	nPrescale         : 1 # test value FIXME
 	triggerPath        : "earlyFlashPath"
 	triggerFlag   : ["PrescaleRandom"]      
       }
@@ -286,19 +287,16 @@ Beam: {
       FlashOutput : {
          module_type: RootOutput
          SelectEvents: [flashPath]
-         outputCommands:   [ "keep *_*_*_*"]
          outputCommands:   [ "drop *_*_*_*",
             "keep art::EventIDs_*_*_*",
             "keep mu2e::GenEventCount_*_*_*",
             "keep mu2e::StatusG4_*_*_*",
-            "keep mu2e::SimParticleart::Ptrdoublestd::map_*_*_*",
+            "keep mu2e::SimTimeOffset_*_*_*",
+	    "keep art::TriggerResults_*_*_*",
 	    @sequence::Pileup.KeptProducts
          ]
       }
 
-# Sadly, I have to replicate the content of Pileup.KeptProducts below, since FCL is not a language and won't allow me to define a variable.
-# This will be a source of extra maintenance and likely an error sounce in the future.
-#
       EarlyFlashOutput : {
          module_type: RootOutput
          SelectEvents: [earlyFlashPath]
@@ -306,22 +304,11 @@ Beam: {
             "keep art::EventIDs_*_*_*",
             "keep mu2e::GenEventCount_*_*_*",
             "keep mu2e::StatusG4_*_*_*",
-	    "keep mu2e::StrawGasSteps_compressEarlyDetStepMCs_*_*",
-	    "keep mu2e::CaloShowerSteps_compressEarlyDetStepMCs_*_*",
-	    "keep mu2e::CrvSteps_compressEarlyDetStepMCs_*_*",
-	    "keep mu2e::StepPointMCs_compressEarlyDetStepMCs_virtualdetector_*",
-	    "keep mu2e::StepPointMCs_compressEarlyDetStepMCs_protonabsorber_*",
-	    "keep mu2e::StepPointMCs_compressEarlyDetStepMCs_stoppingtarget_*",
-	    "keep mu2e::StatusG4_*_*_*",
-	    "keep mu2e::SimParticlemv_compressEarlyDetStepMCs_*_*",
-	    "keep mu2e::SimParticleart::Ptrmu2e::MCTrajectorystd::map_compressEarlyDetStepMCs_*_*",
-	    "keep mu2e::GenParticles_compressEarlyDetStepMCs_*_*",
-	    "keep mu2e::PrimaryParticle_*_*_*",
-            "keep mu2e::CosmicLivetime_*_*_*",
+            "keep mu2e::SimTimeOffset_*_*_*",
 	    "keep art::TriggerResults_*_*_*",
-	    "keep mu2e::GenEventCount_*_*_*" 
+	    @sequence::Pileup.KeptProducts
          ]
-      }
+     }
    }
 
 # define some paths; these can be mixed and matches as art guarantees no duplicate running
