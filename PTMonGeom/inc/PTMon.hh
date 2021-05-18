@@ -44,7 +44,7 @@ namespace mu2e {
     CLHEP::Hep3Vector _originInMu2e;
     CLHEP::HepRotation _rotationInMu2e;
 
-    std::shared_ptr<PTMonPWC> _nearPWC; // TODO should these actually be unique_ptrs or something else?
+    std::shared_ptr<PTMonPWC> _nearPWC;
     std::shared_ptr<PTMonPWC> _farPWC;
 
     double _totalHeight;
