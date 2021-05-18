@@ -1,6 +1,23 @@
 #include "RecoDataProducts/inc/KalSeed.hh"
 #include <limits>
 namespace mu2e {
+  std::vector<KalSegment>::const_iterator KalSeed::nearestSeg(double time)  const {
+    auto retval = segments().end();
+    float dmin(std::numeric_limits<float>::max());
+    for(auto ikseg = segments().begin(); ikseg !=segments().end(); ikseg++) {
+      if(ikseg->tmin() < time && ikseg->tmax() > time) {
+	retval = ikseg;
+	break;
+      }
+      float dist = std::min(fabs(ikseg->tmin()-time),fabs(ikseg->tmax()-time));
+      if(dist < dmin){
+	dmin = dist;
+	retval = ikseg;
+      }
+    }
+    return retval;
+  }
+
   std::vector<KalSegment>::const_iterator KalSeed::nearestSegment(float fltlen)  const {
     auto retval = segments().end();
     float dmin(std::numeric_limits<float>::max());

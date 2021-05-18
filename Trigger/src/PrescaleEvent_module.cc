@@ -16,7 +16,7 @@
 #include "canvas/Utilities/InputTag.h"
 #include "fhiclcpp/ParameterSet.h"
 #include "messagefacility/MessageLogger/MessageLogger.h"
-#include "RecoDataProducts/inc/TriggerInfo.hh"
+// #include "RecoDataProducts/inc/TriggerInfo.hh"
 
 #include <memory>
 #include <iostream>
@@ -47,7 +47,7 @@ namespace mu2e
     uint32_t     nPrescale_;
     bool         useFilteredEvts_;
     int          _debug;
-    TriggerFlag  _trigFlag;
+    //    TriggerFlag  _trigFlag;
     std::string  _trigPath;
     unsigned     _nevt, _npass;
 
@@ -58,16 +58,15 @@ namespace mu2e
       nPrescale_      (p.get<uint32_t>("nPrescale")),
       useFilteredEvts_(p.get<bool>    ("useFilteredEvents",false)),
       _debug          (p.get<int>     ("debugLevel",0)),
-      _trigFlag       (p.get<std::vector<std::string> >("triggerFlag")),
+      //      _trigFlag       (p.get<std::vector<std::string> >("triggerFlag")),
       _trigPath       (p.get<std::string>("triggerPath")),
       _nevt(0), _npass(0)
   {
-    produces<TriggerInfo>();
+    // produces<TriggerInfo>();
   }
 
   inline bool PrescaleEvent::filter(art::Event & e)
   {
-    std::unique_ptr<TriggerInfo> trigInfo(new TriggerInfo);
     ++_nevt;
     bool retval(false);
     bool condition = e.event() % nPrescale_ == 0;
@@ -75,12 +74,11 @@ namespace mu2e
 
     if(condition) {
       ++_npass;
-      //      trigInfo->_triggerBits.merge(TriggerFlag::prescaleRandom);
-      trigInfo->_triggerBits.merge(_trigFlag);
-      trigInfo->_triggerPath = _trigPath;
+      // trigInfo->_triggerBits.merge(_trigFlag);
+      // trigInfo->_triggerPath = _trigPath;
       retval = true;
     }
-    e.put(std::move(trigInfo));
+    // e.put(std::move(trigInfo));
     return retval;
   }
 

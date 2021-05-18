@@ -48,6 +48,7 @@
 #include "RecoDataProducts/inc/TrackSummary.hh"
 #include "RecoDataProducts/inc/TrackCaloAssns.hh" 
 #include "RecoDataProducts/inc/KalSeed.hh"
+#include "RecoDataProducts/inc/KalSeedAssns.hh"
 #include "RecoDataProducts/inc/TrkCaloHitPID.hh"
 #include "RecoDataProducts/inc/TrkQual.hh"
 #include "RecoDataProducts/inc/RecoQual.hh"
@@ -88,6 +89,9 @@
 // trigger
 #include "RecoDataProducts/inc/TriggerFlag.hh"
 #include "RecoDataProducts/inc/TriggerInfo.hh"
+
+// POT / stopped muons monitoring bvitaly May 2021
+#include "RecoDataProducts/inc/IntensityInfo.hh"
 
 // general reco
 #include "RecoDataProducts/inc/RecoCount.hh"

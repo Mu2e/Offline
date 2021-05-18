@@ -22,6 +22,7 @@
 #include "fhiclcpp/types/OptionalAtom.h"
 #include "fhiclcpp/types/Sequence.h"
 #include "fhiclcpp/types/Table.h"
+#include "fhiclcpp/types/OptionalTable.h"
 #include "fhiclcpp/types/TupleAs.h"
 #include "canvas/Utilities/InputTag.h"
 
@@ -94,7 +95,7 @@ namespace mu2e {
       fhicl::Table<CollectionMixerConfig> protonTimeMapMixer { fhicl::Name("protonTimeMapMixer") };
       fhicl::Table<CollectionMixerConfig> eventIDMixer { fhicl::Name("eventIDMixer") };
 
-      fhicl::Table<VolumeInfoMixerConfig> volumeInfoMixer { fhicl::Name("volumeInfoMixer") };
+      fhicl::OptionalTable<VolumeInfoMixerConfig> volumeInfoMixer { fhicl::Name("volumeInfoMixer") };
     };
 
     Mu2eProductMixer(const Config& conf, art::MixHelper& helper);
@@ -171,6 +172,7 @@ namespace mu2e {
     typedef std::map<cet::map_vector_key,PhysicalVolumeInfo> VolumeMap;
     typedef std::vector<VolumeMap> MultiStageMap;
     MultiStageMap subrunVolumes_;
+    bool mixVolumes_;
     art::InputTag volumesInput_;
     std::string subrunVolInstanceName_;
     std::optional<std::string> evtVolInstanceName_;

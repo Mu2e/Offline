@@ -31,6 +31,7 @@
 #include "TrackerConfig/inc/AlignedTrackerConfig.hh"
 #include "TrackerConfig/inc/Mu2eMaterialConfig.hh"
 #include "TrackerConfig/inc/Mu2eDetectorConfig.hh"
+#include "CaloConfig/inc/CaloDAQMapConfig.hh"
 
 #include "AnalysisConfig/inc/MVACatalogConfig.hh"
 
@@ -77,6 +78,9 @@ namespace mu2e {
       fhicl::Table<Mu2eDetectorConfig> mu2eDetector{
           Name("mu2eDetector"),
           Comment("Mu2e detector model for BTrk") };
+      fhicl::Table<CaloDAQMapConfig> caloDAQConditions{
+          Name("caloDAQConditions"),
+          Comment("DAQ channel maps for calorimeter") }; 	  
       fhicl::Table<MVACatalogConfig> trkQualCatalog{
           Name("trkQualCatalog"),
           Comment("Catalog of TrkQual trainings") };

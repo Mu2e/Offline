@@ -1195,7 +1195,7 @@ namespace mu2e {
      {
         G4LogicalVolume* logical = new G4LogicalVolume(solid, mat, name);
         G4VisAttributes* visAtt = new G4VisAttributes(isVisible, color);
-        if (!isVisible) logical->SetVisAttributes(G4VisAttributes::Invisible);
+        if (!isVisible) logical->SetVisAttributes(G4VisAttributes::GetInvisible());
         else 
         {
           visAtt->SetForceSolid(isSolid);
