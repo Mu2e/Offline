@@ -67,7 +67,7 @@ namespace mu2e{
             data.track_list.push_back(data.kalseedcol);
 
             std::string name = TurnNameToString(tag);
-            std::cout<<"adding "<<name<<" size "<<data.track_list.size()<<std::endl;
+            std::cout<<"Plotting KalSeed Instance: "<<name<<std::endl;
             data.track_labels.push_back(name);
             
           }
@@ -86,7 +86,6 @@ namespace mu2e{
 
   void Collection_Filler::FillMCCollections(const art::Event& evt, Data_Collections &data, MCDataProductName CollectionName){
     if(FillAll_ or MCOnly_ or (addMCTraj_ and CollectionName == MCTrajectories)){ 
-      std::cout<<" Filling MC Traj "<<std::endl;
       auto chH = evt.getValidHandle<mu2e::MCTrajectoryCollection>(mctrajTag_);
       data.mctrajcol = chH.product();
     }

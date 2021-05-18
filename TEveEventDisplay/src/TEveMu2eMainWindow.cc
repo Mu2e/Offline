@@ -657,7 +657,7 @@ namespace mu2e{
   return kTRUE;
   }
 
-  void TEveMu2eMainWindow::setEvent(const art::Event& event, bool firstLoop, Data_Collections &data, double time, bool accumulate, int &runn, int &eventn, bool &eventSelected)
+  void TEveMu2eMainWindow::setEvent(const art::Event& event, bool firstLoop, Data_Collections &data, double time, bool accumulate, int &runn, int &eventn, bool &eventSelected, bool isMCOnly)
   {
     _event=event.id().event();
     _subrun=event.id().subRun();
@@ -672,20 +672,25 @@ namespace mu2e{
     _data.crvcoincol = data.crvcoincol;
     _data.cryHitcol = data.cryHitcol;
     _data.cosmiccol = data.cosmiccol;
-    //std::vector<const KalSeedCollection*> track_list = std::get<1>(data.track_tuple);
-    //std::cout<<"in main "<<track_list.size()<<std::endl;
-    /*std::vector<double> times = pass_data->getTimeRange(firstLoop, data.chcol, data.crvcoincol, data.clustercol, data.cryHitcol);
+    if(!isMCOnly){
+      std::vector<const KalSeedCollection*> track_list = std::get<1>(data.track_tuple);
+      std::vector<double> times = pass_data->getTimeRange(firstLoop, data.chcol, data.crvcoincol, data.clustercol, data.cryHitcol);
 
-    if(_data.crvcoincol!=0) pass_data->AddCRVInfo(firstLoop, data.crvcoincol, ftimemin, ftimemax, false, _accumulate);
-    hitenergy = new vector<double>(2);
-    if(_data.chcol!=0) *hitenergy = pass_data->AddComboHits(firstLoop, data.chcol, tracker2Dproj, false, fhitmin, fhitmax,ftimemin, ftimemax, _accumulate, TfXYMgr, TfRZMgr, proj2, proj3);
+      if(_data.crvcoincol!=0) pass_data->AddCRVInfo(firstLoop, data.crvcoincol, ftimemin, ftimemax, false, _accumulate);
+      hitenergy = new vector<double>(2);
+      
+      if(_data.chcol!=0) *hitenergy = pass_data->AddComboHits(firstLoop, data.chcol, tracker2Dproj, false, fhitmin, fhitmax,ftimemin, ftimemax, _accumulate, TfXYMgr, TfRZMgr, proj2, proj3);
 
-    clusterenergy = new std::vector<double>(2);
+      clusterenergy = new std::vector<double>(2);
 
-    if(_data.clustercol!=0) *clusterenergy = pass_data->AddCaloClusters(firstLoop, data.clustercol, calo2Dproj, false, fclustmin, fclustmax, ftimemin, ftimemax, _accumulate, CfXYMgr, CfRZMgr, proj0, proj1);
-    if (_data.cryHitcol!=0) pass_data->AddCrystalHits(firstLoop, data.cryHitcol, calo2Dproj, ftimemin, ftimemax, false, _accumulate, CfXYMgr, CfRZMgr, proj0, proj1);
-    pass_data->AddHelixPieceWise3D(firstLoop, data.track_tuple, tracker2Dproj,  ftimemin, ftimemax, false, _accumulate, TfXYMgr, TfRZMgr, proj2, proj3);
-    if(_data.cosmiccol!=0) pass_data->AddCosmicTrack(firstLoop, data.cosmiccol, tracker2Dproj, ftimemin, ftimemax, false, _accumulate, TfXYMgr, TfRZMgr, proj2, proj3);*/
+      if(_data.clustercol!=0) *clusterenergy = pass_data->AddCaloClusters(firstLoop, data.clustercol, calo2Dproj, false, fclustmin, fclustmax, ftimemin, ftimemax, _accumulate, CfXYMgr, CfRZMgr, proj0, proj1);
+      
+      if (_data.cryHitcol!=0) pass_data->AddCrystalHits(firstLoop, data.cryHitcol, calo2Dproj, ftimemin, ftimemax, false, _accumulate, CfXYMgr, CfRZMgr, proj0, proj1);
+      
+      if (_data.cryHitcol!=0) pass_data->AddHelixPieceWise3D(firstLoop, data.track_tuple, tracker2Dproj,  ftimemin, ftimemax, false, _accumulate, TfXYMgr, TfRZMgr, proj2, proj3);
+      
+      if(track_list.size() !=0) pass_data->AddCosmicTrack(firstLoop, data.cosmiccol, tracker2Dproj, ftimemin, ftimemax, false, _accumulate, TfXYMgr, TfRZMgr, proj2, proj3);
+    }
     if(_data.mctrajcol!=0) pass_mc->AddFullMCTrajectory(firstLoop, data.mctrajcol, tracker2Dproj, false, _accumulate,  TfXYMgr, TfRZMgr, proj2, proj3);
 
     
