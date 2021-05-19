@@ -20,19 +20,28 @@
 #include "TEveEventDisplay/src/dict_classes/GeomUtils.h"
 namespace mu2e{
     class TEveMu2eMCInterface {
-    public:
-      #ifndef __CINT__
-      TEveMu2eMCInterface() : fTrackList2D(0),fTrackList3D(0){};
-      TEveMu2eMCInterface(const TEveMu2eMCInterface &);
-      TEveMu2eMCInterface& operator=(const TEveMu2eMCInterface &);
-      virtual ~TEveMu2eMCInterface(){};
-      void AddSimpleMCTrajectory(bool firstloop, const MCTrajectoryCollection *trajcol, TEveMu2e2DProjection *tracker2Dproj, bool Redraw, bool accumulate, TEveProjectionManager *TXYMgr, TEveProjectionManager *TRZMgr, TEveScene *scene1, TEveScene *scene2);
-      void AddFullMCTrajectory(bool firstloop, const MCTrajectoryCollection *trajcol, TEveMu2e2DProjection *tracker2Dproj, bool Redraw, bool accumulate, TEveProjectionManager *TXYMgr, TEveProjectionManager *TRZMgr, TEveScene *scene1, TEveScene *scene2);
-      #endif
-      TEveElementList *fTrackList2D;
-      TEveElementList *fTrackList3D;
+      public:
 
-      ClassDef(TEveMu2eMCInterface,0);
+        struct Config{
+          using Name=fhicl::Name;
+          using Comment=fhicl::Comment;
+          fhicl::Sequence<int>particleIds{Name("particleIds"),Comment("PDGcodes to plot")};
+        };
+
+        #ifndef __CINT__
+        explicit TEveMu2eMCInterface(const Config& conf);
+        TEveMu2eMCInterface() : fTrackList2D(0),fTrackList3D(0){};
+        TEveMu2eMCInterface(const TEveMu2eMCInterface &);
+        TEveMu2eMCInterface& operator=(const TEveMu2eMCInterface &);
+        virtual ~TEveMu2eMCInterface(){};
+        void AddSimpleMCTrajectory(bool firstloop, const MCTrajectoryCollection *trajcol, TEveMu2e2DProjection *tracker2Dproj, bool Redraw, bool accumulate, TEveProjectionManager *TXYMgr, TEveProjectionManager *TRZMgr, TEveScene *scene1, TEveScene *scene2);
+        bool Contains(std::vector<int> list, int x);
+        void AddFullMCTrajectory(bool firstloop, const MCTrajectoryCollection *trajcol, TEveMu2e2DProjection *tracker2Dproj, bool Redraw, bool accumulate, TEveProjectionManager *TXYMgr, TEveProjectionManager *TRZMgr, TEveScene *scene1, TEveScene *scene2);
+        #endif
+        TEveElementList *fTrackList2D;
+        TEveElementList *fTrackList3D;
+        std::vector<int> particleIds_;
+        ClassDef(TEveMu2eMCInterface,0);
 
   }; //end class def
 

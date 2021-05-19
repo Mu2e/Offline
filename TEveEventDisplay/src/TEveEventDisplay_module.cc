@@ -40,6 +40,7 @@ namespace mu2e
         fhicl::Atom<bool> isMCOnly{Name("isMCOnly"), Comment(""),false};  
         fhicl::Atom<bool> accumulate{Name("accumulate"), Comment(""),false};      
         fhicl::Table<Collection_Filler::Config> filler{Name("filler"),Comment("fill collections")};
+        fhicl::Table<TEveMu2eMCInterface::Config> particles{Name("particles"),Comment("particles to plot")};
       };
 
       typedef art::EDAnalyzer::Table<Config> Parameters;
