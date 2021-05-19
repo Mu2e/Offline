@@ -34,7 +34,9 @@
  <class name="mu2e::FixedTimeMap"/>
  <class name="art::Wrapper<mu2e::FixedTimeMap>" />
 
-
+ <class name="mu2e::StageParticle"/>
+ <class name="mu2e::StageParticleCollection"/>
+ <class name="art::Wrapper<mu2e::StageParticleCollection>"/>
 
 <!--  ********* simulation  ********* -->
  <class name="mu2e::StatusG4"/>
