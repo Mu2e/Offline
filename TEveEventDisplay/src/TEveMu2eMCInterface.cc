@@ -101,7 +101,7 @@ namespace mu2e{
           for(trajectoryIter=trajcol->begin(); trajectoryIter!=trajcol->end(); trajectoryIter++)
           {
             //if(!Contains(particleIds_,abs(trajectoryIter->first->pdgId()))) { continue;}
-            if(g > 5) continue;
+
             const std::vector<MCTrajectoryPoint> &points = trajectoryIter->second.points();
             for(unsigned int i=0; i<points.size();i++){
 
@@ -126,7 +126,7 @@ namespace mu2e{
             fTrackList2D->AddElement(line_twoD);
 
             line->SetPickable(kTRUE);
-            const std::string title = "MCTrajectory "+ energy;// + "PDG Code = " + pdgId + "Energy = " ;
+            const std::string title = " MCTrajectory "+ energy;// + "PDG Code = " + pdgId + "Energy = " ;
             line->SetTitle(Form(title.c_str()));
             if(abs(trajectoryIter->first->pdgId()) == 11) line->SetLineColor(kRed); //electrons
             else if(abs(trajectoryIter->first->pdgId()) == 13) line->SetLineColor(kGreen); //muons
