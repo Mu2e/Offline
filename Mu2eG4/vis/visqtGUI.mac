@@ -15,7 +15,7 @@
 #
 # Start Here Menu/Button
 /gui/addMenu start "Start Here"
-/gui/addButton start "Start by clicking Here Once" "/control/execute Mu2eG4/test/vismqtm.mac"
+/gui/addButton start "Start by clicking Here Once" "/control/execute Mu2eG4/vis/vismqtm.mac"
 #
 # Viewer menu :
 /gui/addMenu viewer Viewer
@@ -36,7 +36,7 @@
 
 # Vis menu :
 /gui/addMenu vis Vis
-#/gui/addButton vis "Create Viewer and Draw Event" "/control/execute Mu2eG4/test/visqtGUI_00.mac"
+#/gui/addButton vis "Create Viewer and Draw Event" "/control/execute Mu2eG4/vis/visqtGUI_00.mac"
 /gui/addButton vis "Draw Current Event" "/vis/sceneHandler/drawEvent !"
 /gui/addButton vis "Create Viewer for current handler" "/vis/viewer/create ! ! !"
 /gui/addButton vis "Select viewer-0" "/vis/viewer/select viewer-0"
