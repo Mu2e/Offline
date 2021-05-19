@@ -100,8 +100,8 @@ namespace mu2e{
           unsigned int g = 0;
           for(trajectoryIter=trajcol->begin(); trajectoryIter!=trajcol->end(); trajectoryIter++)
           {
-            if(!Contains(particleIds_,abs(trajectoryIter->first->pdgId()))) { continue;}
-            
+            //if(!Contains(particleIds_,abs(trajectoryIter->first->pdgId()))) { continue;}
+            if(g > 5) continue;
             const std::vector<MCTrajectoryPoint> &points = trajectoryIter->second.points();
             for(unsigned int i=0; i<points.size();i++){
 
@@ -120,7 +120,7 @@ namespace mu2e{
             
             string energy = to_string(points[0].kineticEnergy());
             //string pdgId= to_string(trajectoryIter->first->pdgId());
-
+            std::cout<<g<<" "<<trajectoryIter->first->pdgId()<<std::endl;
             line_twoD->SetLineColor(kRed);
             line_twoD->SetLineWidth(3);
             fTrackList2D->AddElement(line_twoD);
@@ -132,7 +132,7 @@ namespace mu2e{
             else if(abs(trajectoryIter->first->pdgId()) == 13) line->SetLineColor(kGreen); //muons
             else if(abs(trajectoryIter->first->pdgId()) == 2112) line->SetLineColor(kYellow); //neutron  
             else if(abs(trajectoryIter->first->pdgId()) == 2212) line->SetLineColor(kRed); //proton
-            else line->SetLineColor(kCyan);
+            else line->SetLineColor(kCyan); //nuceli
             line->SetLineWidth(3);
             fTrackList3D->AddElement(line);
             g++;

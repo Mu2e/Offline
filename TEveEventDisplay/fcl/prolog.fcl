@@ -35,7 +35,9 @@ TEveEventDisplayBase : {
       addMCTraj				          : true 
 
     }
-     particles : [11,13,2212,2112,211,22,212]
+     particles : {
+      particleIds :  [11,13,2212,2112,211,22,212]
+    }
   }  
   
 TEveEventDisplayUpstream : {
@@ -60,7 +62,9 @@ TEveEventDisplayUpstream : {
       addCosmicSeedFit	          : false
       addMCTraj				            : true
    }
-    particles : [11,13,2212,2112,211,22,212]
+    particles : {
+      particleIds :  [11,13,2212,2112,211,22,212]
+    }
   }  
   
 TEveEventDisplayHelix : {
@@ -89,7 +93,9 @@ TEveEventDisplayHelix : {
         addTrkExtTrajs		  : false
         addMCTraj		  : true
       }
-       particles : [11,13,2212,2112,211,22,212]
+       particles : {
+      particleIds :  [11,13,2212,2112,211,22,212]
+    }
   }   
 
 TEveEventDisplayCosmics : {
@@ -113,7 +119,9 @@ TEveEventDisplayCosmics : {
       addTrkExtTrajs		        : false
       addMCTraj				          : false 
    }
-   particles : [11,13,2212,2112,211,22,212]
+   particles : {
+      particleIds :  [11,13,2212,2112,211,22,212]
+    }
   }   
 
 
