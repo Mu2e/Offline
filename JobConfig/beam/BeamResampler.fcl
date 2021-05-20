@@ -53,7 +53,7 @@ physics: {
   targetStopPath : [ @sequence::Beam.beamResamplerSequence, @sequence::Common.g4Sequence, TargetMuonFinder, TargetStopFilter, compressPVTargetStops]
   IPAStopPath : [ @sequence::Beam.beamResamplerSequence, @sequence::Common.g4Sequence, IPAMuonFinder, IPAStopFilter, compressPVIPAStops]
   flashPath : [ @sequence::Beam.beamResamplerSequence, @sequence::Common.g4Sequence, TargetMuonFinder, stoppedMuonDaughters, FlashFilter,
-              @sequence::Primary.DetStepSequence, @sequence::Primary.DetStepFilterSequence ]
+              @sequence::Primary.DetStepSequence, DetStepFilter, compressDetStepMCs ]
   earlyFlashPath : [ @sequence::Beam.beamResamplerSequence, @sequence::Common.g4Sequence, TargetMuonFinder, stoppedMuonDaughters, FlashFilter, EarlyPrescaleFilter,
               @sequence::Primary.DetStepSequence, EarlyDetStepFilter, compressDetStepMCs ]
   trigger_paths: [ flashPath, earlyFlashPath, targetStopPath, IPAStopPath ]

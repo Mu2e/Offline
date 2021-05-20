@@ -41,7 +41,7 @@ physics: {
     @table::Common.analyzers
   }
   # setup paths
-  flashPath : [ @sequence::Beam.neutralsResamplerSequence, @sequence::Common.g4Sequence, @sequence::Primary.DetStepSequence, @sequence::Primary.DetStepFilterSequence ]
+  flashPath : [ @sequence::Beam.neutralsResamplerSequence, @sequence::Common.g4Sequence, @sequence::Primary.DetStepSequence, DetStepFilter, compressDetStepMCs ]
   earlyFlashPath : [ @sequence::Beam.neutralsResamplerSequence, @sequence::Common.g4Sequence, EarlyPrescaleFilter, @sequence::Primary.DetStepSequence, EarlyDetStepFilter, compressDetStepMCs ]
   trigger_paths: [ flashPath, earlyFlashPath ]
   outPath : [ FlashOutput, EarlyFlashOutput ]

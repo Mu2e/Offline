@@ -137,7 +137,7 @@ Beam: {
       DetStepFilter : {
 	TimeCut : true
 	MinimumTime : 300 # good hits are after this time
-	MaximumTime : 50 # not a type: good hits are before this time
+	MaximumTime : 10 # not a typo: good hits are before this time
       }
 
       # resamplers
@@ -189,7 +189,6 @@ Beam: {
 
       EarlyPrescaleFilter : {
         module_type : PrescaleEvent
-	nPrescale         : 100
 	nPrescale         : 100 
 	triggerPath        : "earlyFlashPath"
 	triggerFlag   : ["PrescaleRandom"]      
