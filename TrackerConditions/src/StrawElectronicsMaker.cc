@@ -16,6 +16,8 @@ namespace mu2e {
 
   StrawElectronics::ptr_t StrawElectronicsMaker::fromFcl(EventTiming::cptr_t eventTiming) {
 
+    unsigned maxTDC = pow(2,_config.numTDCbits());
+
     // creat this at the beginning since it must be used,
     // partially constructed, to complete the construction
     auto ptr = std::make_shared<StrawElectronics>(_config.deadTimeAnalog(), 
@@ -23,7 +25,7 @@ namespace mu2e {
        _config.ADCLSB(), _config.maxADC(), _config.nADCPackets(), _config.nADCPresamples(),
        _config.ADCPeriod(), _config.ADCOffset(), 
        _config.maxThreshTimeSeparation(), _config.tCoince(),
-       _config.TDCLSB(), _config.maxTDC(), _config.TOTLSB(), 
+       _config.TDCLSB(), maxTDC, _config.TOTLSB(), 
        _config.maxTOT(), _config.TDCResolution(), 
        _config.electronicsTimeDelay(), _config.eventWindowMarkerROCJitter(), 
        _config.digitizationStart(),
