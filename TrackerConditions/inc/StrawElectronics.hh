@@ -107,9 +107,7 @@ namespace mu2e {
       _clusterLookbackTime(clusterLookbackTime), 
       _timeOffsetPanel(timeOffsetPanel), 
       _timeOffsetStrawHV(timeOffsetStrawHV), 
-      _timeOffsetStrawCal(timeOffsetStrawCal) {
-        std::cout << "MAXIMUM TDC IS " << _maxTDC << std::endl; 
-      }
+      _timeOffsetStrawCal(timeOffsetStrawCal) {}
 
     virtual ~StrawElectronics() {}
     
