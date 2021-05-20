@@ -30,21 +30,16 @@ physics: {
     @table::Common.filters
     EarlyPrescaleFilter : @local::Beam.filters.EarlyPrescaleFilter
     neutralsResampler    : @local::Beam.filters.neutralsResampler
-    DetStepFilter : {
-      @table::Pileup.filters.DetStepFilter 
-      @table::Beam.filters.DetStepFilter 
-    }
-# instance to select flash without time cuts (prescaled)
-    EarlyDetStepFilter : @local::Pileup.filters.DetStepFilter
+# Time cuts are ineffective against neutrals; don't apply them
+    DetStepFilter : @local::Pileup.filters.DetStepFilter
   }
   analyzers : {
     @table::Common.analyzers
   }
   # setup paths
-  flashPath : [ @sequence::Beam.neutralsResamplerSequence, @sequence::Common.g4Sequence, @sequence::Primary.DetStepSequence, @sequence::Primary.DetStepFilterSequence ]
-  earlyFlashPath : [ @sequence::Beam.neutralsResamplerSequence, @sequence::Common.g4Sequence, EarlyPrescaleFilter, @sequence::Primary.DetStepSequence, EarlyDetStepFilter, compressDetStepMCs ]
-  trigger_paths: [ flashPath, earlyFlashPath ]
-  outPath : [ FlashOutput, EarlyFlashOutput ]
+  flashPath : [ @sequence::Beam.neutralsResamplerSequence, @sequence::Common.g4Sequence, @sequence::Primary.DetStepSequence, DetStepFilter, compressDetStepMCs ]
+  trigger_paths: [ flashPath ]
+  outPath : [ FlashOutput ]
   end_paths: [outPath]
 }
 outputs: {
@@ -56,16 +51,6 @@ outputs: {
     ]
     SelectEvents: [flashPath]
     fileName: "dts.owner.NeutralsFlash.version.sequencer.art"
-  }
-
-  EarlyFlashOutput : {
-    module_type: RootOutput
-    outputCommands:   [ "drop *_*_*_*",
-      @sequence::Beam.DtsKeptProducts,
-      @sequence::Pileup.KeptProducts
-    ]
-    SelectEvents: [earlyFlashPath]
-    fileName: "dts.owner.EarlyNeutralsFlash.version.sequencer.art"
   }
 }
 
