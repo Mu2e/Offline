@@ -35,6 +35,13 @@ Beam: {
          particleInputs : [ "extmonRegionFilter" ]
       }
 
+      compressPVFull : {
+         module_type: CompressPhysicalVolumes
+         volumesInput : "g4run"
+         hitInputs : []
+         particleInputs : [ "g4run" ]
+      }
+
       compressPVTargetStops: {
          module_type: CompressPhysicalVolumes
          volumesInput : "g4run"
@@ -195,23 +202,6 @@ Beam: {
       }
    }
 
-
-   outputs: {
-
-      TruncatedOutput : {
-         module_type : RootOutput
-         SelectEvents: ["g4StatusFilter"]
-         outputCommands:   [ "drop *_*_*_*",
-            "keep mu2e::GenParticles_*_*_*",
-            "keep mu2e::GenEventCount_*_*_*",
-            "keep mu2e::StatusG4_*_*_*",
-            "keep *_g4run_*_*",
-            "drop uintmu2e::PhysicalVolumeInfomvstd::pairs_g4run_*_*",
-            "keep *_compressPVFull_*_*"
-         ]
-      }
-
-   }
    # define regions where particles may eventually interact with the detectors (CRV or trracker/calo), See doc 26541 for a graphical description
    # Mu2eG4 cuts are evaluated in the listed order.
    # The first match wins.  For the "intersection"
@@ -291,10 +281,6 @@ Beam: {
          }
       ]
    }
-
-
-   # define some paths; these can be mixed and matches as art guarantees no duplicate running
-   g4StatusPath : [generate, genCounter, g4run, "!g4statusFilter", compressPVFull ]
 #
 # define products that need to be kept
 #
