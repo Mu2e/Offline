@@ -52,7 +52,7 @@ TEveEventDisplayUpstream : {
       CrvRecoPulseCollection		  : NULL
       CaloClusterCollection		    : NULL
       CaloHitCollection    : NULL
-      MCTrajectoryCollection      : "g4run"
+      MCTrajectoryCollection      : "BeamFilter" #"g4run"
       HelixSeedCollection         : NULL
       KalSeedCollection           : [NULL]
       TrkExtTrajCollection        : NULL
