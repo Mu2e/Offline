@@ -16,7 +16,7 @@ namespace mu2e {
 
   StrawElectronics::ptr_t StrawElectronicsMaker::fromFcl(EventTiming::cptr_t eventTiming) {
 
-    unsigned maxTDC = pow(2,_config.numTDCbits());
+    unsigned maxTDC = (0x1<<_config.numTDCbits())-1; 
 
     // creat this at the beginning since it must be used,
     // partially constructed, to complete the construction
