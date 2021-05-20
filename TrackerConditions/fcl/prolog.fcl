@@ -110,7 +110,7 @@ StrawElectronics : {
    maxThreshTimeSeparation : 2
    tCoince : 0
    TDCLSB : 0.01953125
-   maxTDC : 16777215
+   numTDCbits : 24
    TOTLSB : 5.0
    maxTOT : 15
    TDCResolution : 0.1
