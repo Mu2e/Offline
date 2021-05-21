@@ -22,7 +22,14 @@ namespace mu2e {
                      int numHorizWires,
                      CLHEP::Hep3Vector const& originInParent,
                      int wireNumStart,
-                     double containerMargin) : 
+                     double containerMargin,
+                     int framesInDetector,
+                     int outerPlatesInDetector,
+                     double ground1Zframes,
+                     double hv1Zframes,
+                     double hv2Zframes,
+                     double hv3Zframes,
+                     double ground2Zframes) : 
     _nameSuffix(nameSuffix),
     _originInParent(originInParent),
     _frameHeight(frameHeight),
@@ -36,15 +43,15 @@ namespace mu2e {
     _numVertWires(numVertWires),
     _numHorizWires(numHorizWires)
   {
-    _detectorThick = (13.*frameThick) + (2.*outerPlateThick);
-    _totalThick = (13.*frameThick) + (2.*outerPlateThick) + containerMargin;
+    _detectorThick = (framesInDetector*frameThick) + (outerPlatesInDetector*outerPlateThick);
+    _totalThick = _detectorThick + containerMargin;
     _totalHeight = frameHeight + containerMargin;
     _totalWidth = frameWidth + containerMargin;
-    _ground1Z = -5.5*frameThick;
-    _hv1Z = -3.5*frameThick;
-    _hv2Z = 0.5*frameThick;
-    _hv3Z = 4.5*frameThick;
-    _ground2Z = 6.5*frameThick;
+    _ground1Z = ground1Zframes*frameThick;
+    _hv1Z = hv1Zframes*frameThick;
+    _hv2Z = hv2Zframes*frameThick;
+    _hv3Z = hv3Zframes*frameThick;
+    _ground2Z = ground2Zframes*frameThick;
     _gasInZ = 0.5*(_hv1Z + _ground1Z);
     _vertWireZ = 0.5*(_hv2Z + _hv1Z);
     _horizWireZ = 0.5*(_hv3Z + _hv2Z);
