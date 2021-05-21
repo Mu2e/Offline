@@ -56,7 +56,7 @@ namespace mu2e {
     G4Box *innerBox = new G4Box("pwcFrameInner", 
                 pwc->pwcWindow()->getXhalfLength(), 
                 pwc->pwcWindow()->getYhalfLength(), 
-                pwc->detectorThick()/2.);
+                pwc->totalThick()/2.);
     std::string frameName = "pTargetMonFrame";
     frameName.append(pwc->nameSuffix());
     G4Material *frameMaterial = findMaterialOrThrow(pwc->frameMaterialName());
