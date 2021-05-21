@@ -18,6 +18,20 @@ double pTargetMon_frameThick = 1.5748; // 0.062"
 int pTargetMon_vertWiresPerPlane = 48;
 int pTargetMon_horizWiresPerPlane = 48;
 
+int pTargetMon_framesInDetector = 13;
+int pTargetMon_outerPlatesInDetector = 2;
+
+// Window / conducting plane positions:
+// The following position values are in units of frame thicknesses from the 
+// center of the detector. Each window is epoxied to the downstream side of its
+// frame. The detector is centered on the middle FRAME, not the middle window.
+// This means these window positions are all integer + 0.5 from the center.
+double pTargetMon_ground1Zframes = -5.5;
+double pTargetMon_hv1Zframes = -3.5;
+double pTargetMon_hv2Zframes = 0.5;
+double pTargetMon_hv3Zframes = 4.5;
+double pTargetMon_ground2Zframes = 6.5;
+
 string pTargetMon_innerGas = "StrawGas"; // in ConstructMaterials.cc
 string pTargetMon_windowMaterial = "Kapton"; // TODO: carbon kapton
 string pTargetMon_frameMaterial = "G10";

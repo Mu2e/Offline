@@ -40,7 +40,14 @@ namespace mu2e {
              int numHorizWires,
              CLHEP::Hep3Vector const& originInParent,
              int wireNumStart,
-             double containerMargin);
+             double containerMargin,
+             int framesInDetector,
+             int outerPlatesInDetector,
+             double ground1Zframes,
+             double hv1Zframes,
+             double hv2Zframes,
+             double hv3Zframes,
+             double ground2Zframes);
 
     CLHEP::Hep3Vector const &  originInParent()   const { return _originInParent; }
     std::vector<double>        vertWireYPos()     const { return _vertWireYpos; }
