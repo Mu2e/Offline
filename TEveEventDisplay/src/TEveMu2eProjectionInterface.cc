@@ -2,6 +2,8 @@
 
 using namespace mu2e;
 namespace mu2e{
+
+    /*------------Function to add CRV 2D projection to Display:-------------*/
    void TEveMu2eProjectionInterface::CreateCRVProjection(TEveMu2e2DProjection *CRV2Dproj){
       // Create detector and event scenes for ortho views
       CRV2Dproj->fDetXYScene = gEve->SpawnNewScene("CRV Top", "");
@@ -32,7 +34,7 @@ namespace mu2e{
   }
 
 
-
+  /*------------Function to add calo 2D projection to display:-------------*/
   void TEveMu2eProjectionInterface::CreateCaloProjection(TEveMu2e2DProjection *calo2Dproj){
     // Create detector and event scenes for ortho views
     calo2Dproj->fDetXYScene = gEve->SpawnNewScene("Calo XY D0 Scene", "");
@@ -78,7 +80,8 @@ namespace mu2e{
     
    // gEve->GetBrowser()->GetTabRight()->SetTab(0);
   }
-
+  
+  /*------------Function to add tracker 2D projection to display:-------------*/
   void TEveMu2eProjectionInterface::CreateTrackerProjection(TEveMu2e2DProjection *tracker2Dproj){
     // Create detector and event scenes for ortho views
     tracker2Dproj->fDetXYScene = gEve->SpawnNewScene("Tracker Det XY Scene", "");

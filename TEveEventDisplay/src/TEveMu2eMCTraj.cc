@@ -5,6 +5,7 @@ namespace mu2e{
 
   TEveMu2eMCTraj::TEveMu2eMCTraj(){};
   
+  /*------------Function to make track title:-------------*/
   std::string TEveMu2eMCTraj::DataTitle(const std::string &pstr, Int_t n){
     std::string dstr = "";
     if (n != -1){dstr=" hit#" + std::to_string(n) + "\nLayer: ";}
@@ -12,6 +13,7 @@ namespace mu2e{
     return (strlab);
   }
   
+  /*------------Function to draw 3D line:-------------*/
   void TEveMu2eMCTraj::DrawHit3D(const std::string &pstr, Int_t n, CLHEP::Hep3Vector pointInMu2e, TEveElementList *HitList)
   {
     this->SetTitle((DataTitle(pstr, n)).c_str());
@@ -23,6 +25,7 @@ namespace mu2e{
     HitList->AddElement(this);
   }
 
+  /*------------Function to draw straight line:-------------*/
  void TEveMu2eMCTraj::DrawSimpleLine(const std::string &pstr,  CLHEP::Hep3Vector Start, CLHEP::Hep3Vector End, TEveElementList *HitList)
   {//For straight lines only
     
@@ -43,6 +46,7 @@ namespace mu2e{
     HitList->AddElement(this);
   }
   
+    /*------------Function to draw full trajectory:-------------*/
    void TEveMu2eMCTraj::DrawFullLine(const std::string &pstr,  CLHEP::Hep3Vector Start, CLHEP::Hep3Vector End, TEveElementList *HitList)
   {
     std::cout<<"Drawing Line"<<std::endl;

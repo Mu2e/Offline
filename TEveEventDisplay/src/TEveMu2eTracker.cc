@@ -4,7 +4,8 @@ using namespace mu2e;
 namespace mu2e{
 
     TEveMu2eTracker::TEveMu2eTracker(){};
-
+    
+     /*------------Function to construct Tracker (for 2D only):-------------*/
     void TEveMu2eTracker::DrawTrackerDetector(art::Run const& run, TGeoVolume* topvol, TEveElementList *orthodet){
       GeomHandle<Tracker> trkr;
 
