@@ -40,7 +40,8 @@ namespace mu2e
         fhicl::Atom<bool> isMCOnly{Name("isMCOnly"), Comment(""),false};  
         fhicl::Atom<bool> accumulate{Name("accumulate"), Comment(""),false};      
         fhicl::Table<Collection_Filler::Config> filler{Name("filler"),Comment("fill collections")};
-        fhicl::Table<TEveMu2eMCInterface::Config> particles{Name("particles"),Comment("particles to plot")};
+        //fhicl::Table<TEveMu2eMCInterface::Config> particles{Name("particles"),Comment("particles to plot")};
+        fhicl::Sequence<int>particles{Name("particles"),Comment("PDGcodes to plot")};
       };
 
       typedef art::EDAnalyzer::Table<Config> Parameters;
@@ -62,6 +63,7 @@ namespace mu2e
       TApplication* application_;
       TDirectory*   directory_ = nullptr;   
       Collection_Filler _filler;
+      std::vector<int> _particles;
       TEveMu2eMainWindow *_frame;
       fhicl::ParameterSet _pset;
       bool foundEvent = false;
@@ -82,7 +84,8 @@ namespace mu2e
   _showEvent(conf().showEvent()),
   _isMCOnly(conf().isMCOnly()),
   _accumulate(conf().accumulate()),
-  _filler(conf().filler())
+  _filler(conf().filler()),
+  _particles(conf().particles())
 	{}
 
 
@@ -98,6 +101,7 @@ namespace mu2e
     }
     _frame = new TEveMu2eMainWindow(gClient->GetRoot(), 1000,600, _pset);
     _frame->StartProjectionTabs();
+    _frame->SetParticleOpts(_particles);
   
   }
 

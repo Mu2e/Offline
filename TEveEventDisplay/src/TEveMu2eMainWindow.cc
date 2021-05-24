@@ -532,7 +532,7 @@ namespace mu2e{
       if(_data.cosmiccol!=0){pass_data->AddCosmicTrack(_firstLoop, _emptydata.cosmiccol, tracker2Dproj, ftimemin, ftimemax, true, _accumulate, TfXYMgr, TfRZMgr, proj2, proj3);}
     }
     if (type == "MC Trajectories"){
-      if(_data.mctrajcol!=0){pass_mc->AddFullMCTrajectory(_firstLoop, _emptydata.mctrajcol, tracker2Dproj, true, _accumulate, TfXYMgr, TfRZMgr, proj2, proj3);}
+      if(_data.mctrajcol!=0){pass_mc->AddFullMCTrajectory(_firstLoop, _emptydata.mctrajcol, tracker2Dproj, true, _accumulate, TfXYMgr, TfRZMgr, proj2, proj3, particles);}
     }
     gSystem->ProcessEvents();
     gClient->NeedRedraw(fTeRun);
@@ -547,9 +547,6 @@ namespace mu2e{
     case kC_TEXTENTRY:
     switch (GET_SUBMSG(msg)){
       case kTE_TEXTCHANGED:
-      if (param1 == 1700){
-        fTHSlid->SetPosition(atof(fTbh1->GetString()));
-      }	
       if (param1 == 1701){
         fclustmin = atof(_clustminenergy->GetString());
         fclustmax = atof(_clustmaxenergy->GetString());
@@ -624,7 +621,7 @@ namespace mu2e{
       }
       if(param1==1205){
         if(mctrajcheck->IsDown()){
-          pass_mc->AddFullMCTrajectory(_firstLoop, _data.mctrajcol, tracker2Dproj, false, _accumulate, TfXYMgr, TfRZMgr, proj2, proj3);	
+          pass_mc->AddFullMCTrajectory(_firstLoop, _data.mctrajcol, tracker2Dproj, false, _accumulate, TfXYMgr, TfRZMgr, proj2, proj3, particles);	
         }
         if(!mctrajcheck->IsDown()){RedrawDataProducts("MC Trajectories");}
       }
@@ -691,7 +688,7 @@ namespace mu2e{
       
       if(track_list.size() !=0) pass_data->AddCosmicTrack(firstLoop, data.cosmiccol, tracker2Dproj, ftimemin, ftimemax, false, _accumulate, TfXYMgr, TfRZMgr, proj2, proj3);
     }
-    if(_data.mctrajcol!=0) pass_mc->AddFullMCTrajectory(firstLoop, data.mctrajcol, tracker2Dproj, false, _accumulate,  TfXYMgr, TfRZMgr, proj2, proj3);
+    if(_data.mctrajcol!=0) pass_mc->AddFullMCTrajectory(firstLoop, data.mctrajcol, tracker2Dproj, false, _accumulate,  TfXYMgr, TfRZMgr, proj2, proj3, particles);
 
     
     gSystem->ProcessEvents();
