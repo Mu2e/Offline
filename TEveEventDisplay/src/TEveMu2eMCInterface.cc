@@ -7,10 +7,10 @@
 using namespace mu2e;
 namespace mu2e{
 
-  TEveMu2eMCInterface::TEveMu2eMCInterface(const Config& conf) :
+ /* TEveMu2eMCInterface::TEveMu2eMCInterface(const Config& conf) :
    particleIds_(conf.particleIds())
   {}
-  
+*/  
   
   template <typename T, typename U> void DataLists(T data, bool Redraw, bool accumulate, string title, TEveElementList **List3D, TEveElementList **List2D = 0, U projection = 0){	
       if(data == 0 && Redraw){
@@ -81,14 +81,13 @@ namespace mu2e{
   
   }
   
-  bool TEveMu2eMCInterface::Contains(std::vector<int> list, int x)
+  int TEveMu2eMCInterface::Contains(std::vector<int> v, int x)
   {
-	  return std::find(list.begin(), list.end(), x) != list.end();
+    return std::count(v.begin(), v.end(), x);
   }
   
-    void TEveMu2eMCInterface::AddFullMCTrajectory(bool firstloop, const MCTrajectoryCollection *trajcol, TEveMu2e2DProjection *tracker2Dproj, bool Redraw, bool accumulate, TEveProjectionManager *TXYMgr, TEveProjectionManager *TRZMgr, TEveScene *scene1, TEveScene *scene2){
+    void TEveMu2eMCInterface::AddFullMCTrajectory(bool firstloop, const MCTrajectoryCollection *trajcol, TEveMu2e2DProjection *tracker2Dproj, bool Redraw, bool accumulate, TEveProjectionManager *TXYMgr, TEveProjectionManager *TRZMgr, TEveScene *scene1, TEveScene *scene2, std::vector<int> particleIds){
 	DataLists<const MCTrajectoryCollection*, TEveMu2e2DProjection*>(trajcol, Redraw, accumulate, "MC Trajectory", &fTrackList3D, &fTrackList2D, tracker2Dproj);//TODO - remove proj
-	      std::cout<<"======================= "<<std::endl;
         TXYMgr->ImportElements(fTrackList2D, scene1); 
         TRZMgr->ImportElements(fTrackList2D, scene2); 
         if(trajcol!=0){
@@ -101,7 +100,7 @@ namespace mu2e{
           for(trajectoryIter=trajcol->begin(); trajectoryIter!=trajcol->end(); trajectoryIter++)
           {
             //if(!Contains(particleIds_,abs(trajectoryIter->first->pdgId()))) { continue;}
-
+            std::cout<<"Id's "<<particleIds.size()<<std::endl;
             const std::vector<MCTrajectoryPoint> &points = trajectoryIter->second.points();
             for(unsigned int i=0; i<points.size();i++){
 

@@ -22,21 +22,21 @@ namespace mu2e{
     class TEveMu2eMCInterface {
       public:
 
-        struct Config{
+        /*struct Config{
           using Name=fhicl::Name;
           using Comment=fhicl::Comment;
           fhicl::Sequence<int>particleIds{Name("particleIds"),Comment("PDGcodes to plot")};
         };
-
+      */
         #ifndef __CINT__
-        explicit TEveMu2eMCInterface(const Config& conf);
+        //explicit TEveMu2eMCInterface(const Config& conf);
         TEveMu2eMCInterface() : fTrackList2D(0),fTrackList3D(0){};
         TEveMu2eMCInterface(const TEveMu2eMCInterface &);
         TEveMu2eMCInterface& operator=(const TEveMu2eMCInterface &);
         virtual ~TEveMu2eMCInterface(){};
         void AddSimpleMCTrajectory(bool firstloop, const MCTrajectoryCollection *trajcol, TEveMu2e2DProjection *tracker2Dproj, bool Redraw, bool accumulate, TEveProjectionManager *TXYMgr, TEveProjectionManager *TRZMgr, TEveScene *scene1, TEveScene *scene2);
-        bool Contains(std::vector<int> list, int x);
-        void AddFullMCTrajectory(bool firstloop, const MCTrajectoryCollection *trajcol, TEveMu2e2DProjection *tracker2Dproj, bool Redraw, bool accumulate, TEveProjectionManager *TXYMgr, TEveProjectionManager *TRZMgr, TEveScene *scene1, TEveScene *scene2);
+        int Contains(std::vector<int> list, int x);
+        void AddFullMCTrajectory(bool firstloop, const MCTrajectoryCollection *trajcol, TEveMu2e2DProjection *tracker2Dproj, bool Redraw, bool accumulate, TEveProjectionManager *TXYMgr, TEveProjectionManager *TRZMgr, TEveScene *scene1, TEveScene *scene2, std::vector<int> ids);
         #endif
         TEveElementList *fTrackList2D;
         TEveElementList *fTrackList3D;
