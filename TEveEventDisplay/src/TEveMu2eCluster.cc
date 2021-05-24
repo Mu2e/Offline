@@ -5,12 +5,14 @@ namespace mu2e{
 
   TEveMu2eCluster::TEveMu2eCluster(){}
   
+  /*------------Function to make object title:-------------*/
   std::string TEveMu2eCluster::DataTitle(const std::string &pstr, double edep){
         std::string dstr= "\nLayer: ";
         std::string strlst=pstr+dstr+std::to_string(edep);
         return(strlst);
   }
 
+  /*------------Function to draw cluster and optional hits:-------------*/
   void TEveMu2eCluster::DrawCluster(const std::string &pstr,  CLHEP::Hep3Vector cog, int energylevel, TEveElementList *ClusterList,  std::vector<CLHEP::Hep3Vector> hits, bool addHits)
   {
     double edep = fCaloCluster.energyDep();
@@ -39,7 +41,7 @@ namespace mu2e{
    
     ClusterList->AddElement(this);
   }
-  
+  /*------------Function to draw hits:-------------*/
   void TEveMu2eCluster::DrawCrystalHits(const std::string &pstr, CLHEP::Hep3Vector cog, TEveElementList *ClusterList){
     hep3vectorTocm(cog);
     Int_t mSize = 2;

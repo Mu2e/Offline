@@ -25,7 +25,7 @@ namespace mu2e{
   {}
 
 
-
+  /*------------Function to turn InputTag to string for track labels:-------------*/
   template <typename T>
   std::string TurnNameToString( const T& value )
   {
@@ -33,7 +33,9 @@ namespace mu2e{
     ss << value;
     return ss.str();
   }
-
+  
+  
+  /*------------Function to fill RecoDataProduct lists:-------------*/
   void Collection_Filler::FillRecoCollections(const art::Event& evt, Data_Collections &data, RecoDataProductName CollectionName){
     if(FillAll_ or RecoOnly_ or (addHits_ and CollectionName == ComboHits)){ 
       auto chH = evt.getValidHandle<mu2e::ComboHitCollection>(chTag_);
@@ -79,7 +81,7 @@ namespace mu2e{
     }
   }
 
-
+  /*------------Function to fill MCDataProduct lists:-------------*/
   void Collection_Filler::FillMCCollections(const art::Event& evt, Data_Collections &data, MCDataProductName CollectionName){
     if(FillAll_ or MCOnly_ or (addMCTraj_ and CollectionName == MCTrajectories)){ 
       auto chH = evt.getValidHandle<mu2e::MCTrajectoryCollection>(mctrajTag_);
