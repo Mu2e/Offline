@@ -10,6 +10,7 @@
 //Mu2e General:
 #include "GeometryService/inc/GeomHandle.hh"
 #include "GeometryService/inc/DetectorSystem.hh"
+#include "TEveEventDisplay/src/dict_classes/GeomUtils.h"
 namespace mu2e {
   class TEveMu2eHit : public TEvePointSet {
     public:

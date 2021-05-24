@@ -27,7 +27,6 @@ namespace mu2e{
     this->SetPickable(kTRUE);
 
     if(addHits){
-      
        TEvePointSet *teve_hit2D = new TEvePointSet();
        for(unsigned int h =0 ; h < hits.size();h++) {
         teve_hit2D->SetNextPoint(hits[h].x(), hits[h].y(), hits[h].z());
@@ -37,10 +36,10 @@ namespace mu2e{
         ClusterList->AddElement(teve_hit2D);
       }
     }
-    
-   
+
     ClusterList->AddElement(this);
   }
+  
   /*------------Function to draw hits:-------------*/
   void TEveMu2eCluster::DrawCrystalHits(const std::string &pstr, CLHEP::Hep3Vector cog, TEveElementList *ClusterList){
     hep3vectorTocm(cog);
