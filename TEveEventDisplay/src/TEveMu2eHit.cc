@@ -20,13 +20,13 @@ namespace mu2e{
     this->SetNextPoint(pointInMu2e.x(), pointInMu2e.y(), pointInMu2e.z()); 
     int colors[] = {-7, 3, -6, -1, 9, 0, -4, 10, 1};
     this->SetMarkerColor(kSpring + colors[energylevel]);
-    this->SetMarkerSize(3);
+    this->SetMarkerSize(mSize_);
     this->SetPickable(kTRUE);
-    if(AddErrorBar){ 
+    if(AddErrorBar_){ 
       TEveLine *error = new TEveLine();
-      auto const& p = fComboHit.pos();
-      auto const& w = fComboHit.wdir();
-      auto const& s = fComboHit.wireRes();
+      auto const& p = fComboHit_.pos();
+      auto const& w = fComboHit_.wdir();
+      auto const& s = fComboHit_.wireRes();
       double x1 = (p.x()+s*w.x());
       double x2 = (p.x()-s*w.x());
       double z1 = (p.z()+s*w.z());
@@ -42,7 +42,7 @@ namespace mu2e{
       Hep3Vector inDet2 = det->toMu2e(vec2);
       error->SetPoint(0, pointmmTocm(inDet1.x()),pointmmTocm(inDet1.y()),pointmmTocm(inDet1.z()));
       error->SetNextPoint(pointmmTocm(inDet2.x()), pointmmTocm(inDet2.y()),pointmmTocm(inDet2.z()));
-      error->SetLineColor(kRed);
+      error->SetLineColor(kSpring);
       error->SetPickable(kTRUE);
       HitList->AddElement(error);
     }
@@ -57,14 +57,14 @@ namespace mu2e{
     this->SetNextPoint(pointInMu2e.x(), pointInMu2e.y(), pointInMu2e.z()); 
     int colors[] = {-7, 3, -6, -1, 9, 0, -4, 10, 1};
     this->SetMarkerColor(kSpring + colors[energylevel]);
-    this->SetMarkerSize(mSize);
+    this->SetMarkerSize(mSize_);
     this->SetPickable(kTRUE);
 
-    if(AddErrorBar){ 
+    if(AddErrorBar_){ 
       TEveLine *error = new TEveLine();
-      auto const& p = fComboHit.pos();
-      auto const& w = fComboHit.wdir();
-      auto const& s = fComboHit.wireRes();
+      auto const& p = fComboHit_.pos();
+      auto const& w = fComboHit_.wdir();
+      auto const& s = fComboHit_.wireRes();
       double x1 = (p.x()+s*w.x());
       double x2 = (p.x()-s*w.x());
       double z1 = (p.z()+s*w.z());

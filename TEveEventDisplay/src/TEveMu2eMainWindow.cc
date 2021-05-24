@@ -656,29 +656,30 @@ namespace mu2e{
       if (_data.cryHitcol!=0) pass_data->AddHelixPieceWise3D(firstLoop, data.track_tuple, tracker2Dproj,  ftimemin, ftimemax, false, _accumulate, TfXYMgr, TfRZMgr, proj2, proj3);
       
       if(track_list.size() !=0) pass_data->AddCosmicTrack(firstLoop, data.cosmiccol, tracker2Dproj, ftimemin, ftimemax, false, _accumulate, TfXYMgr, TfRZMgr, proj2, proj3);
+      
+      _clustminenergy->Clear();
+      _clustmaxenergy->Clear();
+      _hitminenergy->Clear();
+      _hitmaxenergy->Clear();
+      _hitmintime->Clear();
+      _hitmaxtime->Clear();
+      _clustminenergy->AddText(0, (to_string(clusterenergy->at(0))).c_str());
+      _clustmaxenergy->AddText(0, (to_string(clusterenergy->at(1))).c_str());
+
+      _hitminenergy->AddText(0, (to_string(hitenergy->at(0))).c_str());
+      _hitmaxenergy->AddText(0, (to_string(hitenergy->at(1))).c_str());
+      _hitmintime->AddText(0, (to_string(times.at(0))).c_str());
+      _hitmaxtime->AddText(0, (to_string(times.at(1))).c_str());
     }
     if(_data.mctrajcol!=0) pass_mc->AddFullMCTrajectory(firstLoop, data.mctrajcol, tracker2Dproj, false, _accumulate,  TfXYMgr, TfRZMgr, proj2, proj3, particles);
 
-    
     gSystem->ProcessEvents();
     gSystem->IgnoreInterrupt();
     gSystem->IgnoreSignal(kSigTermination);
     gSystem->IgnoreSignal(kSigSegmentationViolation);
  
     gClient->NeedRedraw(fTeRun);
-    _clustminenergy->Clear();
-    _clustmaxenergy->Clear();
-    _hitminenergy->Clear();
-    _hitmaxenergy->Clear();
-    _hitmintime->Clear();
-    _hitmaxtime->Clear();
-    _clustminenergy->AddText(0, (to_string(clusterenergy->at(0))).c_str());
-    _clustmaxenergy->AddText(0, (to_string(clusterenergy->at(1))).c_str());
-
-    _hitminenergy->AddText(0, (to_string(hitenergy->at(0))).c_str());
-    _hitmaxenergy->AddText(0, (to_string(hitenergy->at(1))).c_str());
-    _hitmintime->AddText(0, (to_string(times.at(0))).c_str());
-    _hitmaxtime->AddText(0, (to_string(times.at(1))).c_str());
+    
     gApplication->Run(true);
 
     gEve->Redraw3D(kTRUE);

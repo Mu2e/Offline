@@ -15,7 +15,7 @@ namespace mu2e{
   /*------------Function to draw cluster and optional hits:-------------*/
   void TEveMu2eCluster::DrawCluster(const std::string &pstr,  CLHEP::Hep3Vector cog, int energylevel, TEveElementList *ClusterList,  std::vector<CLHEP::Hep3Vector> hits, bool addHits)
   {
-    double edep = fCaloCluster.energyDep();
+    double edep = fCaloCluster_.energyDep();
     this->SetTitle((DataTitle(pstr, edep)).c_str());
     hep3vectorTocm(cog);
     Int_t mSize = 3;
@@ -36,7 +36,6 @@ namespace mu2e{
         ClusterList->AddElement(teve_hit2D);
       }
     }
-
     ClusterList->AddElement(this);
   }
   
