@@ -1,16 +1,18 @@
 #include "TEveEventDisplay/src/TEveMu2e_base_classes/TEveMu2eHit.h"
-#include "TEveEventDisplay/src/dict_classes/GeomUtils.h"
+
 using namespace mu2e;
 namespace mu2e{
 
   TEveMu2eHit::TEveMu2eHit(){}
   
+  /*------------Function to build title:-------------*/
   std::string TEveMu2eHit::DataTitle(const std::string &pstr, int n){
         std::string dstr=" hit#" + std::to_string(n) + "\nLayer: ";
         std::string strlab=pstr+dstr;
         return (strlab);
   }
 
+  /*------------Function to 3D draw hits:-------------*/
   void TEveMu2eHit::DrawHit3D(const std::string &pstr, Int_t n, CLHEP::Hep3Vector pointInMu2e, int energylevel, TEveElementList *HitList)
   {
     this->SetTitle((DataTitle(pstr, n)).c_str());
@@ -47,6 +49,7 @@ namespace mu2e{
     HitList->AddElement(this);
   }
 
+  /*------------Function to 2D draw hits:-------------*/
   void TEveMu2eHit::DrawHit2D(const std::string &pstr, Int_t n, CLHEP::Hep3Vector pointInMu2e, int energylevel, TEveElementList *HitList)
   {
     this->SetTitle((DataTitle(pstr, n)).c_str());
