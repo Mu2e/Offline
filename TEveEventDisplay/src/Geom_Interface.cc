@@ -1,24 +1,4 @@
-#include <TObject.h>
-#include <TSystem.h>
-// ... libRIO
-#include <TFile.h>
-#include "art/Framework/Principal/Event.h"
-#include "art/Framework/Principal/Run.h"
-//Geom:
-#include "GeometryService/inc/GeomHandle.hh"
-#include "GeometryService/inc/DetectorSystem.hh"
-#include "GeometryService/inc/WorldG4.hh"
-#include "GeometryService/inc/WorldG4Maker.hh"
-#include "GeometryService/inc/TrackerMaker.hh"
-#include "GeometryService/inc/Mu2eHallMaker.hh"
-#include "GeometryService/inc/G4GeometryOptions.hh"
-//Mu2e Tracker Geom:
-#include "TrackerGeom/inc/Tracker.hh"
-#include "GeometryService/inc/Mu2eCoordTransform.hh"
-#include "BFieldGeom/inc/BFieldManager.hh"
-#include "Mu2eUtilities/inc/SimParticleTimeOffset.hh"
-#include "TrkDiag/inc/TrkMCTools.hh"
-//TEve
+
 #include "TEveEventDisplay/src/dict_classes/Geom_Interface.h"
 
 using namespace mu2e;
@@ -132,7 +112,7 @@ namespace mu2e{
   void Geom_Interface::TrackerVolumeHeirarchy( TGeoNode * node, std::vector<CLHEP::Hep3Vector> &TransformList ){
     std::string _name = (node->GetVolume()->GetName());
     if( _name == "HallAir") {
-      cout<<"HallAir Origin IS "<<node->GetMotherVolume()->GetName();
+      std::cout<<"HallAir Origin IS "<<node->GetMotherVolume()->GetName();
       TGeoVolume *vol = node->GetVolume();
       TGeoBBox *shape = (TGeoBBox*)vol->GetShape();
       Double_t master[3];
@@ -144,7 +124,7 @@ namespace mu2e{
       }
     }
     if( _name == "DS3Vacuum") {
-      cout<<"DS3 Origin IS "<<node->GetMotherVolume()->GetName();
+      std::cout<<"DS3 Origin IS "<<node->GetMotherVolume()->GetName();
       TGeoVolume *vol = node->GetVolume();
       TGeoBBox *shape = (TGeoBBox*)vol->GetShape();
       Double_t master[3];
@@ -156,7 +136,7 @@ namespace mu2e{
       }
     }
     if( _name == "TrackerMother") {
-      cout<<"Tracker Origin IS "<<node->GetMotherVolume()->GetName();
+      std::cout<<"Tracker Origin IS "<<node->GetMotherVolume()->GetName();
       TGeoVolume *vol = node->GetVolume();
       TGeoBBox *shape = (TGeoBBox*)vol->GetShape();
       Double_t master[3];

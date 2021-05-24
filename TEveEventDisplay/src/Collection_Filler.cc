@@ -1,9 +1,5 @@
-#include <TObject.h>
-#include <TSystem.h>
-#include <TFile.h>
-#include "TEveEventDisplay/src/dict_classes/Collection_Filler.h"
-#include "art/Framework/Principal/SubRun.h"
 
+#include "TEveEventDisplay/src/dict_classes/Collection_Filler.h"
 using namespace mu2e;
 namespace mu2e{
 

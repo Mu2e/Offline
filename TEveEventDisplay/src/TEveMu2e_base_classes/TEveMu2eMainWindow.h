@@ -1,33 +1,57 @@
 #ifndef TEveMu2eMainWindow_h
 #define TEveMu2eMainWindow_h
 
+
+// ... libRIO
+#include <TFile.h>
+#include <TObject.h>
+#include <TSystem.h>
+#include <TText.h>
+#include <TCanvas.h>
+// ... libGui
+#include <TGIcon.h>
+#include <TGButton.h>
+#include <TGButtonGroup.h>
+#include <TGString.h>
+#include <TGTextView.h>
+#include <TGLayout.h>
+#include <TGTab.h>
+#include <TG3DLine.h>
+#include <TGLViewer.h>
+#include <TGLEmbeddedViewer.h>
+#include <TGMsgBox.h>
+#include <TGSplitFrame.h>
+// ... libRGL
+#include <TGLViewer.h>
+#include <TVirtualX.h>
 #include <TGLabel.h>
 #include <TGTextEntry.h>
-#include <TText.h>
-#include <TGScrollBar.h>
-#include <TGSlider.h>
-#include <TCanvas.h>
 #include <TQObject.h>
+// ... libEve
+#include <TEvePad.h>
+#include <TEveManager.h>
+#include <TEveEventManager.h>
+#include <TEveBrowser.h>
+#include <TEveGeoNode.h>
+#include <TEveViewer.h>
+#include <TEveScene.h>
+#include <TEveParamList.h>
+#include <TEveProjectionManager.h>
+#include <TEveProjectionAxes.h>
+#include <TEveStraightLineSet.h>
 //libGeom
 #include <TGeoManager.h>
-#include <TBox.h>
-#include <TGeoBBox.h>
-//TEve
-#include <TEveTrack.h>
-#include <TEveManager.h>
-//fcl:
-#include "fhiclcpp/types/Atom.h"
-#include "fhiclcpp/types/Sequence.h"
-#include "fhiclcpp/types/Table.h"
 //Mu2e:
 #include "art/Framework/Principal/Event.h"
 #include "art/Framework/Principal/Run.h"
 #include "ConfigTools/inc/SimpleConfig.hh"
 #include "GeometryService/inc/GeomHandle.hh"
-#include "RecoDataProducts/inc/ComboHit.hh"
-//TEveMu2e
+//...TEveMu2e
+#include "TEveEventDisplay/src/TEveMu2e_base_classes/TEveMu2eHit.h"
+#include "TEveEventDisplay/src/TEveMu2e_base_classes/TEveMu2eCluster.h"
+#include "TEveEventDisplay/src/TEveMu2e_base_classes/TEveMu2eCustomHelix.h"
+#include "TEveEventDisplay/src/TEveMu2e_base_classes/TEveMu2eCRVEvent.h"
 #include "TEveEventDisplay/src/dict_classes/Geom_Interface.h"
-#include "TEveEventDisplay/src/dict_classes/Collection_Filler.h"
 #include "TEveEventDisplay/src/TEveMu2e_base_classes/TEveMu2e2DProjection.h"
 #include "TEveEventDisplay/src/shape_classes/TEveMu2eCalorimeter.h"
 #include "TEveEventDisplay/src/shape_classes/TEveMu2eTracker.h"
@@ -75,7 +99,6 @@ namespace mu2e{
       int   getEventToFind(bool &findEvent) const;
       
       //List of parameters:
-      
       TGeoManager* geom = new TGeoManager("geom","Geom");
       Geom_Interface *mu2e_geom	=new Geom_Interface(); 
       TEveMu2eDataInterface *pass_data	= new TEveMu2eDataInterface(); 
@@ -87,8 +110,6 @@ namespace mu2e{
       std::vector<double> *hitenergy = 0;
       std::vector<double> times;
 
-      int eventToFind, runToFind;
-      bool usereventSelected = false;
       TEvePad *fPad;
       TGSplitFrame *fSplitFrame;
       TGSplitFrame *frm;
@@ -117,16 +138,18 @@ namespace mu2e{
       TEveScene *proj1 = 0;
       TEveScene *proj2 = 0;
       TEveScene *proj3 = 0;
-      //TEveScene *fdetXY = 0;
-      //TEveScene *fevtXY = 0;
+
+      
+      bool usereventSelected = false;
       TGTextEntry     *fTeRun,*fTeEvt, *fTTEvt, *fTeh1, *fTeh2, *fTeh3, *cminenergy, *cmaxenergy, *hminenergy, *hmaxenergy, *hmintime, *hmaxtime;    
       TGLabel         *fTlRun,*fTlEvt, *fTlTEvt, *fTlHSlid, *celabel, *helabel,*timelabel, *spacer, *spacer1;
       TGButtonGroup	  *br;
       TGCheckButton	  *clusterscheck, *hitscheck, *trackscheck, *cosmicscheck, *cosmictrkscheck, *mctrajcheck;
 
-      TGTextBuffer *_eventNumber, *_subrunNumber, *_runNumber, *_time, *fTbh1, *fTbh2, *fTbh3, *_clustminenergy, *_clustmaxenergy, *_hitminenergy, *_hitmaxenergy, *_hitmintime, *_hitmaxtime;
+      TGTextBuffer *_eventNumber, *_subrunNumber, *_runNumber, *_time,  *_clustminenergy, *_clustmaxenergy, *_hitminenergy, *_hitmaxenergy, *_hitmintime, *_hitmaxtime;
       
-      int  _eventToFind = 0; ///TODO - this or one above>?
+      int eventToFind, runToFind;
+      int  _eventToFind = 0; 
 
       bool _isClosed = false;
       bool _findEvent = true;
@@ -155,7 +178,7 @@ namespace mu2e{
       
       std::vector<int> particles;
       #endif
-     ClassDef(TEveMu2eMainWindow,0);
+      ClassDef(TEveMu2eMainWindow,0);
 
     }; //end class def
 

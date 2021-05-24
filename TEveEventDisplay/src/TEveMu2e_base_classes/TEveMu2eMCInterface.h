@@ -1,7 +1,10 @@
 #ifndef TEveMu2eMCInterface_h
 #define TEveMu2eMCInterface_h
-
-//libGeom
+//ROOT
+#include <TApplication.h>
+#include <TEvePad.h>
+#include <TObject.h>
+#include <TSystem.h>
 #include <TGeoManager.h>
 //TEve
 #include <TEveManager.h>

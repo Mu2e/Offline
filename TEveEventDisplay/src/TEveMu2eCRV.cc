@@ -1,8 +1,5 @@
 #include "TEveEventDisplay/src/shape_classes/TEveMu2eCRV.h"
-#include "TEveEventDisplay/src/dict_classes/GeomUtils.h"
 
-#include <TBox.h>
-#include <TGeoBBox.h>
 using namespace mu2e;
 namespace mu2e{
 	TEveMu2eCRV::TEveMu2eCRV(){};
