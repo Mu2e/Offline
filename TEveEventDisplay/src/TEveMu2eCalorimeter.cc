@@ -1,8 +1,5 @@
 #include "TEveEventDisplay/src/shape_classes/TEveMu2eCalorimeter.h"
-#include "TEveEventDisplay/src/dict_classes/GeomUtils.h"
-#include "GeometryService/inc/DetectorSystem.hh"
-#include <TBox.h>
-#include <TGeoBBox.h>
+
 using namespace mu2e;
 namespace mu2e{
 

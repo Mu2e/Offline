@@ -1,7 +1,5 @@
 #include "TEveEventDisplay/src/shape_classes/TEveMu2eTracker.h"
-#include "TEveEventDisplay/src/dict_classes/GeomUtils.h"
-#include <TBox.h>
-#include <TGeoBBox.h>
+
 using namespace mu2e;
 namespace mu2e{
 

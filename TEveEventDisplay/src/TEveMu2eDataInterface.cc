@@ -1,14 +1,5 @@
-#include <TApplication.h>
-#include <TEvePad.h>
-#include <TObject.h>
-#include <TSystem.h>
-#include <limits>
-#include <vector>
-#include <tuple>
-#include <algorithm>
-#include "TEveEventDisplay/src/TEveMu2e_base_classes/TEveMu2eDataInterface.h"
-#include "TEveEventDisplay/src/dict_classes/GeomUtils.h"
 
+#include "TEveEventDisplay/src/TEveMu2e_base_classes/TEveMu2eDataInterface.h"
 
 using namespace mu2e;
 namespace mu2e{

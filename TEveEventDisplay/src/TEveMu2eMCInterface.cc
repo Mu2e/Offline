@@ -1,7 +1,4 @@
-#include <TApplication.h>
-#include <TEvePad.h>
-#include <TObject.h>
-#include <TSystem.h>
+
 #include "TEveEventDisplay/src/TEveMu2e_base_classes/TEveMu2eMCInterface.h"
 
 using namespace mu2e;

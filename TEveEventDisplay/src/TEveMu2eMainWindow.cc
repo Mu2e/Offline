@@ -1,43 +1,5 @@
-#include<TEvePad.h>
-#include <TObject.h>
-#include <TSystem.h>
-// ... libRIO
-#include <TFile.h>
-// ... libGui
-#include <TGIcon.h>
-#include <TGButton.h>
-#include <TGButtonGroup.h>
-#include <TGString.h>
-#include <TGTextView.h>
-#include <TGLayout.h>
-#include <TGTab.h>
-#include <TG3DLine.h>
-#include<TGLViewer.h>
-#include<TGLEmbeddedViewer.h>
-#include <TGMsgBox.h>
-#include<TPolyLine3D.h>
-#include <TGSplitFrame.h>
-// ... libRGL
-#include <TGLViewer.h>
-#include <TVirtualX.h>
-// ... libEve
-#include <TEveManager.h>
-#include <TEveEventManager.h>
-#include <TEveBrowser.h>
-#include <TEveGeoNode.h>
-#include <TEveViewer.h>
-#include <TEveScene.h>
-#include <TEveParamList.h>
-#include <TEveProjectionManager.h>
-#include <TEveProjectionAxes.h>
-#include <TEveStraightLineSet.h>
 //TEveMu2e:
 #include "TEveEventDisplay/src/TEveMu2e_base_classes/TEveMu2eMainWindow.h"
-#include "TEveEventDisplay/src/TEveMu2e_base_classes/TEveMu2eHit.h"
-#include "TEveEventDisplay/src/TEveMu2e_base_classes/TEveMu2eCluster.h"
-#include "TEveEventDisplay/src/TEveMu2e_base_classes/TEveMu2eCustomHelix.h"
-#include "TEveEventDisplay/src/TEveMu2e_base_classes/TEveMu2eCRVEvent.h"
-#include "TEveEventDisplay/src/TEveMu2e_base_classes/TEveMu2eBField.h"
 
 namespace fhicl
 {
@@ -370,10 +332,10 @@ namespace mu2e{
 
 }
 
-   void TEveMu2eMainWindow::StartProjectionTabs(){
-	//pass_proj->CreateCRVProjection(CRV2Dproj);
-	pass_proj->CreateCaloProjection(calo2Dproj);
-	pass_proj->CreateTrackerProjection(tracker2Dproj);
+  void TEveMu2eMainWindow::StartProjectionTabs(){
+	  //pass_proj->CreateCRVProjection(CRV2Dproj);
+	  pass_proj->CreateCaloProjection(calo2Dproj);
+	  pass_proj->CreateTrackerProjection(tracker2Dproj);
   }
 
 
@@ -523,7 +485,6 @@ namespace mu2e{
     }
     if (type == "Tracks"){
       pass_data->AddHelixPieceWise3D(_firstLoop, _emptydata.track_tuple, tracker2Dproj, ftimemin, ftimemax, true,  _accumulate, TfXYMgr, TfRZMgr, proj2, proj3);
-
     }
     if (type == "Cosmics"){
       if(_data.crvcoincol!= 0){pass_data->AddCRVInfo(_firstLoop, _emptydata.crvcoincol, ftimemin, ftimemax, true,  _accumulate);}

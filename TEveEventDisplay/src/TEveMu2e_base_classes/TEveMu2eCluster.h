@@ -2,12 +2,14 @@
 #define TEveMu2eCluster_h
 
 #include <TObject.h>
-#include "RecoDataProducts/inc/CaloCluster.hh"
-#include "TEveEventDisplay/src/TEveMu2e_base_classes/TEveMu2eHit.h"
-#include <string.h>
-#include <string>
 #include <TEvePointSet.h>
 #include <TEveCalo.h>
+#include "RecoDataProducts/inc/CaloCluster.hh"
+#include "TEveEventDisplay/src/TEveMu2e_base_classes/TEveMu2eHit.h"
+#include "TEveEventDisplay/src/dict_classes/GeomUtils.h"
+#include <string.h>
+#include <string>
+
 
 namespace mu2e {
   class TEveMu2eCluster: public TEvePointSet{
