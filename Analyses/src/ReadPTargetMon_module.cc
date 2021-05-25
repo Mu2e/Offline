@@ -1,5 +1,5 @@
 //
-// simple module to read stepPoints in PTMon
+// simple module to read stepPoints in PTargetMon
 //
 
 #include "CLHEP/Units/SystemOfUnits.h"
@@ -50,7 +50,7 @@ namespace mu2e {
 
       Vint const & pdg_ids = pset.get<Vint>("savePDG", Vint());
       if( pdg_ids.size()>0 ) {
-        cout << "ReadPPTargetMon: save following particle types in the ntuple: ";
+        cout << "ReadPTargetMon: save following particle types in the ntuple: ";
         for( size_t i=0; i<pdg_ids.size(); ++i ) {
           pdg_save.insert(pdg_ids[i]);
           cout << pdg_ids[i] << ", ";
@@ -162,7 +162,7 @@ namespace mu2e {
 
       _ntPTargetMon->Fill(nt);
       if ( _nAnalyzed < _maxPrint){
-        cout << "PTM hit: "
+        cout << "PTargetMon hit: "
              << event.id().run()   << " | "
              << event.id().event() << " | "
              << hit.volumeId()     << " "
