@@ -20,8 +20,6 @@
 #include "Mu2eG4/inc/checkConfigRelics.hh"
 #include "Mu2eG4/inc/Mu2eG4WorkerRunManager.hh"
 #include "Mu2eG4/inc/MTMasterThread.hh"
-#include "Mu2eG4/inc/SimParticleHelper.hh"
-#include "Mu2eG4/inc/SimParticlePrimaryHelper.hh"
 #include "Mu2eG4/inc/Mu2eG4Config.hh"
 #include "Mu2eG4/inc/Mu2eG4IOConfigHelper.hh"
 #include "Mu2eG4/inc/writePhysicalVolumes.hh"
