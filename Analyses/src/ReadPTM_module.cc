@@ -1,5 +1,5 @@
 //
-// simple module to read stepPoints in PTargetMon
+// simple module to read stepPoints in PTM
 //
 
 #include "CLHEP/Units/SystemOfUnits.h"
@@ -32,15 +32,15 @@ using CLHEP::keV;
 
 namespace mu2e {
 
-  class ReadPTargetMon : public art::EDAnalyzer {
+  class ReadPTM : public art::EDAnalyzer {
     public:
 
       typedef vector<int> Vint;
       typedef SimParticleCollection::key_type key_type;
 
-      explicit ReadPTargetMon(fhicl::ParameterSet const& pset) :
+      explicit ReadPTM(fhicl::ParameterSet const& pset) :
       art::EDAnalyzer(pset),
-      _ptmStepPoints(pset.get<string>("ptmStepPoints","PTargetMon")),
+      _ptmStepPoints(pset.get<string>("ptmStepPoints","PTM")),
       _nAnalyzed(0),
       _maxPrint(pset.get<int>("maxPrint",0)),
       _ntPTargetMon(0),
@@ -50,7 +50,7 @@ namespace mu2e {
 
       Vint const & pdg_ids = pset.get<Vint>("savePDG", Vint());
       if( pdg_ids.size()>0 ) {
-        cout << "ReadPTargetMon: save following particle types in the ntuple: ";
+        cout << "ReadPTM: save following particle types in the ntuple: ";
         for( size_t i=0; i<pdg_ids.size(); ++i ) {
           pdg_save.insert(pdg_ids[i]);
           cout << pdg_ids[i] << ", ";
@@ -60,9 +60,9 @@ namespace mu2e {
 
       nt = new float[1000];
 
-    } // explicit ReadPTargetMon()
+    } // explicit ReadPTM()
 
-    virtual ~ReadPTargetMon() { }
+    virtual ~ReadPTM() { }
 
     virtual void beginJob();
     virtual void beginRun(art::Run const&);
@@ -90,24 +90,24 @@ namespace mu2e {
 
     // Module label of the g4 module that made the hits.
     std::string _g4ModuleLabel;
-  }; // class ReadPTargetMon
+  }; // class ReadPTM
 
-  void ReadPTargetMon::beginJob(){
+  void ReadPTM::beginJob(){
 
     // Get access to the TFile service.
 
     art::ServiceHandle<art::TFileService> tfs;
 
-    _ntPTargetMon = tfs->make<TNtuple>( "ntPTargetMon", "PTargetMon ntuple",
+    _ntPTargetMon = tfs->make<TNtuple>( "ntPTM", "PTM ntuple",
                                 "run:evt:volId:trk:pdg:time:x:y:z:px:py:pz:iedep:totedep:"
                                 "gtime");
   }
 
-  void ReadPTargetMon::beginRun(art::Run const& run){
+  void ReadPTM::beginRun(art::Run const& run){
 
   }
 
-  void ReadPTargetMon::analyze(const art::Event& event) {
+  void ReadPTM::analyze(const art::Event& event) {
 
     ++_nAnalyzed;
 
@@ -162,7 +162,7 @@ namespace mu2e {
 
       _ntPTargetMon->Fill(nt);
       if ( _nAnalyzed < _maxPrint){
-        cout << "PTargetMon hit: "
+        cout << "PTM hit: "
              << event.id().run()   << " | "
              << event.id().event() << " | "
              << hit.volumeId()     << " "
@@ -175,9 +175,9 @@ namespace mu2e {
 
     } // end loop over hits.
 
-  } // ReadPTargetMon::analyze
+  } // ReadPTM::analyze
 
 } // namespace mu2e
 
-//using mu2e::ReadPTargetMon;
-DEFINE_ART_MODULE(mu2e::ReadPTargetMon);
+//using mu2e::ReadPTM;
+DEFINE_ART_MODULE(mu2e::ReadPTM);
