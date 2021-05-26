@@ -35,30 +35,30 @@ namespace mu2e {
       using Comment = fhicl::Comment;
 
       fhicl::Table<Mu2eProductMixer::Config> products { Name("products"),
-	Comment("A table specifying products to be mixed.  For each supported data type\n"
-	    "there is a mixingMap sequence that defines mapping of inputs to outputs.\n"
-	    "Each entry in the top-level mixingMap sequence is a sequence of two strings:\n"
-	    "    [ \"InputTag\", \"outputInstanceName\" ]\n"
-	    "The output instance name colon \":\" is special: it means take instance name from the input tag.\n"
-	    "For example, with this config:\n"
-	    "   mixingMap: [ [ \"detectorFilter:tracker\", \"tracker\" ], [ \"detectorFilter:virtualdetector\", \":\" ] ]\n"
-	    "the outputs will be named \"tracker\" and \"virtualdetector\"\n"
-	    )
-      };
+          Comment("A table specifying products to be mixed.  For each supported data type\n"
+                  "there is a mixingMap sequence that defines mapping of inputs to outputs.\n"
+                  "Each entry in the top-level mixingMap sequence is a sequence of two strings:\n"
+                  "    [ \"InputTag\", \"outputInstanceName\" ]\n"
+                  "The output instance name colon \":\" is special: it means take instance name from the input tag.\n"
+                  "For example, with this config:\n"
+                  "   mixingMap: [ [ \"detectorFilter:tracker\", \"tracker\" ], [ \"detectorFilter:virtualdetector\", \":\" ] ]\n"
+                  "the outputs will be named \"tracker\" and \"virtualdetector\"\n"
+                  )
+          };
 
 
-    fhicl::Atom<unsigned> nSecondaries { Name("nSecondaries"),
-      Comment("Number of secondary events per single primary, a positive integer."),
-      1u };
+      fhicl::Atom<unsigned> nSecondaries { Name("nSecondaries"),
+          Comment("Number of secondary events per single primary, a positive integer."),
+          1u };
 
-    fhicl::Atom<bool> writeEventIDs { Name("writeEventIDs"),
-      Comment("Write out IDs of events on the secondary input stream."),
-      true
+      fhicl::Atom<bool> writeEventIDs { Name("writeEventIDs"),
+          Comment("Write out IDs of events on the secondary input stream."),
+          true
+          };
     };
-  };
 
-  struct Config {
-    fhicl::Table<Mu2eConfig> mu2e { fhicl::Name("mu2e") };
+    struct Config {
+      fhicl::Table<Mu2eConfig> mu2e { fhicl::Name("mu2e") };
     };
 
     using Parameters = art::MixFilterTable<Config>;
@@ -67,7 +67,7 @@ namespace mu2e {
     size_t nSecondaries() const { return nSecondaries_; }
 
     void processEventIDs(const art::EventIDSequence& seq);
-    
+
     void beginSubRun(const art::SubRun& sr);
     void startEvent(art::Event const& e);
     void finalizeEvent(art::Event& e);
@@ -81,9 +81,9 @@ namespace mu2e {
     , writeEventIDs_{ pars().mu2e().writeEventIDs() }
     {
       if(writeEventIDs_) {
-      helper.produces<art::EventIDSequence>();
+        helper.produces<art::EventIDSequence>();
+      }
     }
-  }
 
   void ResamplingMixerDetail::processEventIDs(const art::EventIDSequence& seq) {
     if(writeEventIDs_) {
