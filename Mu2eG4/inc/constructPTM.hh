@@ -1,5 +1,5 @@
-#ifndef Mu2eG4_constructProductionTargetMon_hh
-#define Mu2eG4_constructProductionTargetMon_hh
+#ifndef Mu2eG4_constructPTM_hh
+#define Mu2eG4_constructPTM_hh
 
 //
 // Free function. Approach borrowed from constructPS
@@ -14,39 +14,39 @@
 namespace mu2e {
 
     class SimpleConfig;
-    class PTMonPWC;
+    class PTMPWC;
 
-    void constructProductionTargetMon(VolumeInfo const& parent, SimpleConfig const& _config);
+    void constructPTM(VolumeInfo const& parent, SimpleConfig const& _config);
 
     // helper methods
 
     void constructTargetHallPWC(VolumeInfo const& motherVolume, 
-                              const PTMonPWC* pwc, 
+                              const PTMPWC* pwc, 
                               SimpleConfig const& _config, 
                               bool const doSurfaceCheck, 
                               int const verbosity);
 
     void insertOuterFrame(VolumeInfo const& container, 
-                        const PTMonPWC* pwc, 
+                        const PTMPWC* pwc, 
                         SimpleConfig const& _config,
                         bool const doSurfaceCheck,
                         int const verbosity);
 
     void insertWindows(VolumeInfo const& container, 
-                     const PTMonPWC* pwc, 
+                     const PTMPWC* pwc, 
                      SimpleConfig const& _config,
                      bool const doSurfaceCheck,
                      int const verbosity);
 
     void insertOuterGasBlocks(VolumeInfo const& container, 
-                            const PTMonPWC* pwc, 
+                            const PTMPWC* pwc, 
                             G4Material* gasMaterial, 
                             SimpleConfig const& _config,
                             bool const doSurfaceCheck,
                             int const verbosity);
 
     void insertVerticalProfileWires(VolumeInfo const& container, 
-                                  const PTMonPWC* pwc, 
+                                  const PTMPWC* pwc, 
                                   G4Material* gasMaterial, 
                                   std::string const& wireNameSuffix, 
                                   SimpleConfig const& _config,
@@ -54,7 +54,7 @@ namespace mu2e {
                                   int const verbosity);
 
     void insertHorizontalProfileWires(VolumeInfo const& container, 
-                                    const PTMonPWC* pwc, 
+                                    const PTMPWC* pwc, 
                                     G4Material* gasMaterial, 
                                     std::string const& wireNameSuffix, 
                                     SimpleConfig const& _config,
@@ -64,4 +64,4 @@ namespace mu2e {
 } // namespace mu2e
 
 
-#endif /* Mu2eG4_constructProductionTargetMon_hh */
+#endif /* Mu2eG4_constructPTM_hh */

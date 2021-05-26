@@ -118,8 +118,8 @@ namespace mu2e {
       return StepInstanceName::name(StepInstanceName::DSCableRun).c_str();
     }
 
-    static char const * PTargetMon() {
-      return StepInstanceName::name(StepInstanceName::PTargetMon).c_str();
+    static char const * PTM() {
+      return StepInstanceName::name(StepInstanceName::PTM).c_str();
     }
 
   };

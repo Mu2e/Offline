@@ -1,5 +1,5 @@
-#ifndef PTMonGeom_PTMonPWC_hh
-#define PTMonGeom_PTMonPWC_hh
+#ifndef PTMGeom_PTMPWC_hh
+#define PTMGeom_PTMPWC_hh
 
 // C++ includes
 #include <vector>
@@ -12,20 +12,20 @@
 #include "GeomPrimitives/inc/Box.hh"
 
 // Proportional Wire Chamber object, part of the 
-// production target monitor (PTMon)
+// production target monitor (PTM)
 //
 // Author: Helenka Casler
 //
 
 namespace mu2e {
 
-  class PTMonPWC {
+  class PTMPWC {
     // nameSuffix lets you give multiple PWC's unique names.
     // wireNumStart is the first number to be used when naming the sections of
     // gas corresponding to wires. This same wire numbering is used for the
     // copyNo argument when placing the wire gas in the geometry.
   public:
-    PTMonPWC(std::string const& nameSuffix,
+    PTMPWC(std::string const& nameSuffix,
              double frameHeight, 
              double frameWidth, 
              double frameThick, 
@@ -133,7 +133,7 @@ namespace mu2e {
     // Z position of the upstream surface of the ground 1 plane
     double _upstreamWindowSurfaceZ;
 
-  }; // class PTMonPWC
+  }; // class PTMPWC
 } // namespace mu2e
 
 

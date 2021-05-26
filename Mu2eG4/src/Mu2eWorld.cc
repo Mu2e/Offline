@@ -89,7 +89,7 @@
 #include "Mu2eG4/inc/SensitiveDetectorHelper.hh"
 #include "TrackerGeom/inc/Tracker.hh"
 #include "ExtinctionMonitorFNAL/Geometry/inc/ExtMonFNAL.hh"
-#include "Mu2eG4/inc/constructProductionTargetMon.hh"
+#include "Mu2eG4/inc/constructPTM.hh"
 
 // G4 includes
 #include "Geant4/G4Threading.hh"
@@ -253,7 +253,7 @@ namespace mu2e {
     }
 
     if (_config.getBool("hasPTM",false) ){
-      constructProductionTargetMon(hallInfo, _config);
+      constructPTM(hallInfo, _config);
     }
 
     // _geom is member data of Mu2eG4Universe, from which this inherits
@@ -1238,10 +1238,10 @@ namespace mu2e {
     }//if DSCableRun
 
     /********************* Production target monitor *********************/
-    if(sdHelper_->enabled(StepInstanceName::PTargetMon)) {
+    if(sdHelper_->enabled(StepInstanceName::PTM)) {
 
       Mu2eG4SensitiveDetector* ptMonSD =
-        new Mu2eG4SensitiveDetector( SensitiveDetectorName::PTargetMon(), _config );
+        new Mu2eG4SensitiveDetector( SensitiveDetectorName::PTM(), _config );
       SDman->AddNewDetector(ptMonSD);
 
       //loop over all of the LV names and find the ones we need
@@ -1249,8 +1249,8 @@ namespace mu2e {
       for(G4LogicalVolumeStore::iterator pos=store->begin(); pos!=store->end(); pos++){
         G4String LVname = (*pos)->GetName();
 
-        //from constructProductionTargetMonitor
-        if (LVname.find("pTargetMonWire") != std::string::npos) {
+        //from constructPTM
+        if (LVname.find("PTMWire") != std::string::npos) {
           (*pos)->SetSensitiveDetector(ptMonSD);
         }
       }//for

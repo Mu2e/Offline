@@ -1,5 +1,5 @@
-#ifndef GeometryService_PTMonMaker_hh
-#define GeometryService_PTMonMaker_hh
+#ifndef GeometryService_PTMMaker_hh
+#define GeometryService_PTMMaker_hh
 
 #include <memory>
 
@@ -7,8 +7,8 @@
 #include "CLHEP/Vector/ThreeVector.h"
 
 #include "ConfigTools/inc/SimpleConfig.hh"
-#include "PTMonGeom/inc/PTMonPWC.hh"
-#include "PTMonGeom/inc/PTMon.hh"
+#include "PTMGeom/inc/PTMPWC.hh"
+#include "PTMGeom/inc/PTM.hh"
 //
 // construct and return a PTMon
 //
@@ -17,10 +17,10 @@
 
 namespace mu2e {
 
-  class PTMonMaker {
+  class PTMMaker {
 
   public:
-    static std::unique_ptr<PTMon> make(SimpleConfig const& config);
+    static std::unique_ptr<PTM> make(SimpleConfig const& config);
   };
 
 } // namespace mu2e

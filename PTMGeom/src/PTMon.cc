@@ -1,15 +1,15 @@
-#include "PTMonGeom/inc/PTMon.hh"
+#include "PTMGeom/inc/PTM.hh"
 
-// ProductionTarget Monitor (PTMon) Object
+// ProductionTarget Monitor (PTM) Object
 //
 // Author: Helenka Casler
 //
 
 namespace mu2e{
-  PTMon::PTMon(CLHEP::Hep3Vector const& originInMu2e, 
+  PTM::PTM(CLHEP::Hep3Vector const& originInMu2e, 
           CLHEP::HepRotation const& rotationInMu2e, 
-          std::shared_ptr<PTMonPWC> nearPWC, 
-          std::shared_ptr<PTMonPWC> farPWC,
+          std::shared_ptr<PTMPWC> nearPWC, 
+          std::shared_ptr<PTMPWC> farPWC,
           double pwcSeparation,
           double motherMargin)
           : _originInMu2e(originInMu2e),

@@ -1,37 +1,37 @@
-#ifndef PTMonGeom_PTMon_hh
-#define PTMonGeom_PTMon_hh
+#ifndef PTMGeom_PTM_hh
+#define PTMGeom_PTM_hh
 
 #include <memory>
 
 #include "CLHEP/Vector/Rotation.h"
 #include "CLHEP/Vector/ThreeVector.h"
 
-#include "PTMonGeom/inc/PTMonPWC.hh"
+#include "PTMGeom/inc/PTMPWC.hh"
 #include "Mu2eInterfaces/inc/Detector.hh"
 
-// ProductionTarget Monitor (PTMon) Object
+// ProductionTarget Monitor (PTM) Object
 //
 // Author: Helenka Casler
 //
 
 namespace mu2e {
 
-  class PTMon : virtual public Detector {
+  class PTM : virtual public Detector {
 
   public:
-    PTMon(CLHEP::Hep3Vector const& originInMu2e, 
+    PTM(CLHEP::Hep3Vector const& originInMu2e, 
           CLHEP::HepRotation const& rotationInMu2e, 
-          std::shared_ptr<PTMonPWC> nearPWC, 
-          std::shared_ptr<PTMonPWC> farPWC,
+          std::shared_ptr<PTMPWC> nearPWC, 
+          std::shared_ptr<PTMPWC> farPWC,
           double pwcSeparation,
           double motherMargin);
-    PTMon() {}
+    PTM() {}
 
     CLHEP::Hep3Vector const &  originInMu2e()   const { return _originInMu2e; }
     CLHEP::HepRotation const & rotationInMu2e() const { return _rotationInMu2e; }
 
-    const PTMonPWC* nearPWC() const { return _nearPWC.get(); }
-    const PTMonPWC* farPWC()  const { return _farPWC.get(); }
+    const PTMPWC* nearPWC() const { return _nearPWC.get(); }
+    const PTMPWC* farPWC()  const { return _farPWC.get(); }
 
     double totalHeight() const { return _totalHeight; }
     double totalWidth()  const { return _totalWidth; }
@@ -44,8 +44,8 @@ namespace mu2e {
     CLHEP::Hep3Vector _originInMu2e;
     CLHEP::HepRotation _rotationInMu2e;
 
-    std::shared_ptr<PTMonPWC> _nearPWC;
-    std::shared_ptr<PTMonPWC> _farPWC;
+    std::shared_ptr<PTMPWC> _nearPWC;
+    std::shared_ptr<PTMPWC> _farPWC;
 
     double _totalHeight;
     double _totalWidth;
@@ -53,7 +53,7 @@ namespace mu2e {
 
 
 
-  }; // class PTMon
+  }; // class PTM
 
 } // namespace mu2e
 
