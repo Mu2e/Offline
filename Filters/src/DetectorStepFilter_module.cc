@@ -10,6 +10,7 @@
 #include "fhiclcpp/types/Atom.h"
 #include "fhiclcpp/types/Sequence.h"
 #include "fhiclcpp/types/OptionalAtom.h"
+#include "fhiclcpp/types/OptionalTable.h"
 #include "cetlib_except/exception.h"
 #include "art/Framework/Core/EDFilter.h"
 #include "art/Framework/Principal/Event.h"
@@ -29,7 +30,16 @@ namespace mu2e {
   class DetectorStepFilter : public art::EDFilter {
     public:
       static constexpr double maxE_ = 1.0e6; // 1 TeV
-      static constexpr unsigned maxN_ = 1000000; 
+      static constexpr unsigned maxN_ = 1000000;
+
+      struct TimeCutConfig {
+	using Name=fhicl::Name;
+	using Comment=fhicl::Comment;
+
+	fhicl::OptionalAtom<double> maxTime { Name("MaximumTime"), Comment("Maximum time for good step (ns since POT)")};
+	fhicl::OptionalAtom<double> minTime { Name("MinimumTime"), Comment("Minimum time for good step (ns since POT)")};
+      };
+
       struct Config {
 	using Name=fhicl::Name;
 	using Comment=fhicl::Comment;
@@ -57,9 +67,9 @@ namespace mu2e {
 
 	fhicl::Sequence<int> keepPDG { Name("KeepPDG"), Comment("PDG particle codes to keep") };
 
-	fhicl::Atom<bool> timeCut { Name("TimeCut"), Comment("Make time for good step"), false};
-	fhicl::OptionalAtom<double> maxTime { Name("MaximumTime"), Comment("Maximum time for good step (ns since POT)")};
-	fhicl::OptionalAtom<double> minTime { Name("MinimumTime"), Comment("Minimum time for good step (ns since POT)")};
+	fhicl::OptionalTable<TimeCutConfig> timeCutConfig { fhicl::Name("TimeCutConfig") };
+
+	// the following should not be needed soon
 	fhicl::Sequence<art::InputTag> SPTO { Name("TimeOffsets"), Comment("Sim Particle Time Offset Maps"),  std::vector<art::InputTag> () };
 
       };
@@ -102,7 +112,7 @@ namespace mu2e {
     , maxNTrk_(conf().maxNTrkSteps())
     , maxNCrv_(conf().maxNCrvSteps())
     , maxSumCaloE_(conf().maxSumCaloStepE())
-    , timecut_(conf().timeCut())
+    , timecut_(false)
     , minTime_(0.0), maxTime_(0.0)
     , toff_(conf().SPTO())
     , nEvt_(0)
@@ -112,10 +122,11 @@ namespace mu2e {
       for(const auto& trktag : conf().trkSteps()) { trkStepCols_.emplace_back(trktag); consumes<StrawGasStepCollection>(trktag); }
       for(const auto& calotag : conf().caloSteps()) { caloStepCols_.emplace_back(calotag); consumes<CaloShowerStepCollection>(calotag); }
       for(const auto& crvtag : conf().crvSteps()) { crvStepCols_.emplace_back(crvtag);  consumes<CrvStepCollection>(crvtag); }
-
-      if( timecut_){
-	conf().minTime(minTime_);
-	conf().maxTime(maxTime_);
+      TimeCutConfig tc;
+      if(conf().timeCutConfig(tc)) {
+	 timecut_ = true;
+	 tc.minTime(minTime_);
+	 tc.maxTime(maxTime_);
       }
     }
 

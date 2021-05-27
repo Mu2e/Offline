@@ -1,44 +1,35 @@
 #
 # Prolog to create pileup particle steps for mixing
 #
-#include "EventGenerator/fcl/prolog.fcl"
-#include "TrackerMC/fcl/prolog.fcl"
-#include "CaloMC/fcl/prolog.fcl"
-#include "CRVResponse/fcl/prolog.fcl"
-#include "Filters/fcl/prolog.fcl"
-#include "Compression/fcl/prolog.fcl"
-#
 BEGIN_PROLOG
 
 Pileup: {
   producers : {
-  # nothing specific: all come from primary
+  # override compression to be more selective
+    compressDetStepMCs: {
+      stepPointMCTags : [ ] # turn off VD hits for pileup
+      compressionOptions : @local::DetStepCompression.extraCompression # remove some intermediate genealogy steps
+      mcTrajectoryTag : "" # no MC Trajectories
+    }
   }
   filters : {
-# step filter to select any detectable signal
+# override step filter to select any detectable signal
     DetStepFilter : {
-      module_type : DetectorStepFilter
-      StrawGasSteps : [ "StrawGasStepMaker" ] 
-      CaloShowerSteps : [ "CaloShowerStepMaker" ]
-      CrvSteps : [ "CrvSteps" ]
-      MinimumTrkStepEnergy : 1.0e-6 # 1 ev
-      MinimumCaloStepEnergy : 0.0 
-      MinimumCrvStepEnergy : 1.0e-6 # get a real value from CRV experts FIXME!
+      CrvSteps : [ "CrvSteps" ] # include CRV steps for pileup
+      # lower all the thresholds for saving an event
       MinimumPartMom : 0.0 # MeV/c
-      MaximumPartMom : 1e6 # MeV/c
-      KeepPDG : [ ] # all particles accepted
       MinimumTrkSteps : 1
-      MinimumSumCaloStepE : 0.01 # check this threshold TODO!
+      MinimumSumCaloStepE : 0.01
       MinimumCrvSteps : 1
     }
   }
-
+# define products needed to run mixing
   KeptProducts : [ "keep mu2e::StrawGasSteps_compressDetStepMCs_*_*",
 		       "keep mu2e::CaloShowerSteps_compressDetStepMCs_*_*",
 		       "keep mu2e::CrvSteps_compressDetStepMCs_*_*",
-		       "keep mu2e::StatusG4_*_*_*",
 		       "keep mu2e::SimParticlemv_compressDetStepMCs_*_*",
 		       "keep mu2e::GenParticles_compressDetStepMCs_*_*",
+		       "keep mu2e::StatusG4_*_*_*",
 		       "keep mu2e::GenEventCount_*_*_*" ]
 
   Output : {
@@ -50,7 +41,7 @@ Pileup: {
 # define paths
   EndPath : [ genCountLogger, Output ]
 
-# define tools
+# define tools used in mustop daughter generation
   dioGenTool : {
     tool_type : DIOGenerator
     spectrum : {
