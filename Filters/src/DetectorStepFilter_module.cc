@@ -9,7 +9,6 @@
 #include "fhiclcpp/ParameterSet.h"
 #include "fhiclcpp/types/Atom.h"
 #include "fhiclcpp/types/Sequence.h"
-#include "fhiclcpp/types/OptionalAtom.h"
 #include "fhiclcpp/types/OptionalTable.h"
 #include "cetlib_except/exception.h"
 #include "art/Framework/Core/EDFilter.h"
@@ -36,8 +35,8 @@ namespace mu2e {
 	using Name=fhicl::Name;
 	using Comment=fhicl::Comment;
 
-	fhicl::OptionalAtom<double> maxTime { Name("MaximumTime"), Comment("Maximum time for good step (ns since POT)")};
-	fhicl::OptionalAtom<double> minTime { Name("MinimumTime"), Comment("Minimum time for good step (ns since POT)")};
+	fhicl::Atom<double> maxTime { Name("MaximumTime"), Comment("Maximum time for good step (ns since POT)")};
+	fhicl::Atom<double> minTime { Name("MinimumTime"), Comment("Minimum time for good step (ns since POT)")};
       };
 
       struct Config {
@@ -125,8 +124,8 @@ namespace mu2e {
       TimeCutConfig tc;
       if(conf().timeCutConfig(tc)) {
 	 timecut_ = true;
-	 tc.minTime(minTime_);
-	 tc.maxTime(maxTime_);
+	 minTime_ = tc.minTime();
+	 maxTime_ = tc.maxTime();
       }
     }
 
