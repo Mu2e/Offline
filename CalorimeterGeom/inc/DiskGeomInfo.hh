@@ -26,6 +26,7 @@ namespace mu2e {
 	     rotation_(CLHEP::HepRotation::IDENTITY),
 	     inverseRotation_(CLHEP::HepRotation::IDENTITY),
 	     originToCrystalOrigin_(CLHEP::Hep3Vector(0,0,0)),
+             crystalDirection_(CLHEP::Hep3Vector(0,0,0)),
 	     frontFaceCenter_(CLHEP::Hep3Vector(0,0,0)),
 	     backFaceCenter_(CLHEP::Hep3Vector(0,0,0)),
 	     innerEnvelope_(0),
@@ -39,6 +40,7 @@ namespace mu2e {
 	   const CLHEP::Hep3Vector&  origin()                  const {return origin_;}
            const CLHEP::Hep3Vector&  originLocal()             const {return originLocal_; }
 	   const CLHEP::Hep3Vector&  originToCrystalOrigin()   const {return originToCrystalOrigin_;}
+	   const CLHEP::Hep3Vector&  crystalDirection()        const {return crystalDirection_;}
 	   const CLHEP::HepRotation& rotation()                const {return rotation_;}
 	   const CLHEP::HepRotation& inverseRotation()         const {return inverseRotation_;}
            const CLHEP::Hep3Vector&  frontFaceCenter()         const {return frontFaceCenter_; }
@@ -52,7 +54,8 @@ namespace mu2e {
 	   void size(const CLHEP::Hep3Vector& size)                 {size_ = size;}
  	   void origin(const CLHEP::Hep3Vector& orig)               {origin_ = orig;}
            void originLocal(const CLHEP::Hep3Vector& orig)          {originLocal_ = orig;}
-           void originToCrystalOrigin (const CLHEP::Hep3Vector& vec){originToCrystalOrigin_ = vec;}
+           void originToCrystalOrigin(const CLHEP::Hep3Vector& vec) {originToCrystalOrigin_ = vec;}
+           void crystalDirection(const CLHEP::Hep3Vector& vec)      {crystalDirection_ = vec;}
            void rotation(const CLHEP::HepRotation& rot)             {rotation_ = rot; inverseRotation_ = rot.inverse();}
            void frontFaceCenter(const CLHEP::Hep3Vector& pos)       {frontFaceCenter_ = pos;}
            void backFaceCenter(const CLHEP::Hep3Vector& pos)        {backFaceCenter_ = pos;}
@@ -70,6 +73,7 @@ namespace mu2e {
 	   CLHEP::HepRotation   inverseRotation_;
 
 	   CLHEP::Hep3Vector    originToCrystalOrigin_;
+           CLHEP::Hep3Vector    crystalDirection_;
 	   CLHEP::Hep3Vector    frontFaceCenter_;
 	   CLHEP::Hep3Vector    backFaceCenter_;
 

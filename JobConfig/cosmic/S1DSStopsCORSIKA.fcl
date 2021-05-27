@@ -20,15 +20,7 @@ source: {
 }
 
 
-physics.producers.generate.module_type  : CORSIKAEventGenerator
-physics.producers.generate.corsikaModuleLabel: "FromCorsikaBinary"
-physics.producers.generate.refPointChoice: "UNDEFINED"
-physics.producers.generate.projectToTargetBox : true
-physics.producers.generate.targetBoxYmax : 5000
-physics.producers.generate.intDist: -1
-
-physics.producers.generate.inputFile    : @erase
-physics.producers.generate.stashSize    : @erase
+physics.producers.generate : @local::Cosmic.generateCORSIKA
 
 services.GeometryService.inputFile : "JobConfig/cosmic/geom_cosmic.txt"
 services.GeometryService.simulatedDetector : { tool_type: "Mu2e" }

@@ -349,6 +349,13 @@
  <class name="art::Wrapper<mu2e::TriggerInfo>"/>
  <class name="art::Wrapper<mu2e::TriggerInfoCollection>"/>
 
+
+<!--  ********* POT / stopped muons monitoring  ********* -->
+<!--  bvitali May 2021 -->
+ <class name="mu2e::IntensityInfo"/>
+ <class name="art::Wrapper<mu2e::IntensityInfo>"/>
+
+
 <!--  ********* general reco ********* -->
 
  <class name="mu2e::AHist<uint16_t,70>"/>
