@@ -1,9 +1,3 @@
-# don't need to keep StepPointMC info
-physics.producers.compressDetStepMCs.stepPointMCTags : [ ]
-# remove some intermediate genealogy steps
-physics.producers.compressDetStepMCs.compressionOptions : @local::DetStepCompression.extraCompression
-# no MC Trajectories
-physics.producers.compressDetStepMCs.mcTrajectoryTag : ""
 # don't create MCTrajectories
 physics.producers.g4run.TrajectoryControl.produce : false
 # only detector SDs

@@ -24,27 +24,36 @@ services : @local::Services.Sim
 physics: {
   producers : {
     @table::Common.producers
+    @table::Primary.producers
+    compressDetStepMCs : {
+      @table::Primary.producers.compressDetStepMCs
+      @table::Pileup.producers.compressDetStepMCs
+    }
     compressPVTargetStops : @local::Beam.producers.compressPVTargetStops
     compressPVIPAStops : @local::Beam.producers.compressPVIPAStops
     TargetMuonFinder : @local::Beam.producers.TargetMuonFinder
     IPAMuonFinder : @local::Beam.producers.IPAMuonFinder
     stoppedMuonDaughters : @local::Beam.producers.stoppedMuonDaughters 
-    @table::Primary.producers
     protonTimeOffset : @local::CommonMC.producers.protonTimeOffset 
   }
   filters : {
     @table::Common.filters
+    @table::Primary.filters
     EarlyPrescaleFilter : @local::Beam.filters.EarlyPrescaleFilter
     beamResampler       : @local::Beam.filters.beamResampler
     TargetStopFilter    : @local::Beam.filters.TargetStopFilter
     IPAStopFilter       : @local::Beam.filters.IPAStopFilter
     FlashFilter         : @local::Beam.filters.FlashFilter
     DetStepFilter : {
+      @table::Primary.filters.DetStepFilter 
       @table::Pileup.filters.DetStepFilter 
       @table::Beam.filters.DetStepFilter 
     }
 # instance to select flash without time cuts (prescaled)
-    EarlyDetStepFilter : @local::Pileup.filters.DetStepFilter
+    EarlyDetStepFilter : {
+      @table::Primary.filters.DetStepFilter 
+      @table::Pileup.filters.DetStepFilter 
+    }
   }
   analyzers : {
     @table::Common.analyzers
