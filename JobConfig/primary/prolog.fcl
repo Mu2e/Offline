@@ -1,9 +1,6 @@
 #
 # Prolog to create primary (signal, signal-like or calibration) particles and subsequent detector steps
 #
-#include "Mu2eG4/fcl/prolog.fcl"
-#include "fcl/standardServices.fcl"
-#include "EventGenerator/fcl/prolog.fcl"
 #include "TrackerMC/fcl/prolog.fcl"
 #include "CaloMC/fcl/prolog.fcl"
 #include "CRVResponse/fcl/prolog.fcl"
@@ -14,14 +11,12 @@ BEGIN_PROLOG
 
 Primary: {
   producers : {
-    @table::EventGenerator.producers
     @table::TrackerMC.StepProducers
     @table::CaloMC.StepProducers
     CrvSteps :{
       @table::CrvSteps
       stepPointsModuleLabels : ["g4run"]
     }
-
     compressDetStepMCs : {
       module_type : CompressDetStepMCs
       strawGasStepTag : "StrawGasStepMaker"
@@ -34,7 +29,6 @@ Primary: {
       stepPointMCTags : [ "g4run:virtualdetector", "g4run:protonabsorber", "g4run:stoppingtarget" ]
       compressionOptions : @local::DetStepCompression.standardCompression
     }
-    # the following should be reconfigured to run after step compression once that is working
     FindMCPrimary : {
       module_type : FindMCPrimary
       SinglePrimary : true
@@ -75,13 +69,13 @@ Primary: {
 		       "keep mu2e::StepPointMCs_compressDetStepMCs_virtualdetector_*",
 		       "keep mu2e::StepPointMCs_compressDetStepMCs_protonabsorber_*",
 		       "keep mu2e::StepPointMCs_compressDetStepMCs_stoppingtarget_*",
-		       "keep mu2e::StatusG4_*_*_*",
 		       "keep mu2e::SimParticlemv_compressDetStepMCs_*_*",
 		       "keep mu2e::SimParticleart::Ptrmu2e::MCTrajectorystd::map_compressDetStepMCs_*_*",
 		       "keep mu2e::GenParticles_compressDetStepMCs_*_*",
 		       "keep mu2e::PrimaryParticle_*_*_*",
                        "keep mu2e::CosmicLivetime_*_*_*",
 		       "keep art::TriggerResults_*_*_*",
+		       "keep mu2e::StatusG4_*_*_*",
 		       "keep mu2e::GenEventCount_*_*_*" ]
 
   analyzers: {

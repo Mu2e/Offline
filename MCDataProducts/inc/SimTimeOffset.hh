@@ -10,6 +10,5 @@ namespace mu2e {
     SimTimeOffset(double toff=0.0) : timeOffset_(toff) {}
     double timeOffset_; // global event time offset
   };
-  typedef std::vector<SimTimeOffset> SimTimeOffsetCollection;
 }
 #endif

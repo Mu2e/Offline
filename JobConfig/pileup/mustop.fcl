@@ -2,6 +2,7 @@
 # Generate all muon stop emission products
 #
 # Andy Edmonds, 2020
+#include "EventGenerator/fcl/prolog.fcl"
 #include "JobConfig/pileup/Pileup.fcl"
 physics.producers.generate: {
    module_type: MuStopProductsGun
