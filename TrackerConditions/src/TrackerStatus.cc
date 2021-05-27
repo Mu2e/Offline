@@ -53,7 +53,9 @@ namespace mu2e {
       StrawStatus(StrawStatus::noLV) | 
       StrawStatus(StrawStatus::nogas) | 
       StrawStatus(StrawStatus::lowgasgain) | 
-      StrawStatus(StrawStatus::noPreamp);
+      StrawStatus(StrawStatus::noHVPreamp) |
+      StrawStatus(StrawStatus::noCalPreamp) |
+      StrawStatus(StrawStatus::disabled);
     StrawStatus status = strawStatus(sid);
     return status.hasAnyProperty(mask);
   }

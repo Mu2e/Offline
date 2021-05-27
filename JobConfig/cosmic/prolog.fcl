@@ -128,6 +128,18 @@ Cosmic: {
          }
       }
    }
+   generateCRY: {
+       module_type: CRYEventGenerator
+       inputFile    : "EventGenerator/defaultConfigs/defaultCRYconfig.txt"
+   }
+   generateCORSIKA: {
+       module_type  : CORSIKAEventGenerator
+       corsikaModuleLabel: "FromCorsikaBinary"
+       refPointChoice: "UNDEFINED"
+       projectToTargetBox : true
+       targetBoxYmax : 5000
+       intDist: -1
+   }
    Mu2eG4CommonCutCosmicS2:{
       type: union
       pars:
