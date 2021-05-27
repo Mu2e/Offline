@@ -25,7 +25,6 @@ namespace mu2e {
   class ResamplingMixerDetail {
     Mu2eProductMixer spm_;
     const unsigned eventsToSkip_;
-    const unsigned nSecondaries_;
     bool writeEventIDs_;
     art::EventIDSequence idseq_;
 
@@ -47,15 +46,10 @@ namespace mu2e {
                   )
           };
 
-
       fhicl::Atom<unsigned> eventsToSkip { Name("eventsToSkip"),
           Comment("Number of events to skip at the beginning of each secondary input file in sequential readMode.\n"
                   "Do not use this, try readMode:randomReplace instead."),
           0u };
-
-      fhicl::Atom<unsigned> nSecondaries { Name("nSecondaries"),
-          Comment("Number of secondary events per single primary, a positive integer."),
-          1u };
 
       fhicl::Atom<bool> writeEventIDs { Name("writeEventIDs"),
           Comment("Write out IDs of events on the secondary input stream."),
@@ -71,7 +65,7 @@ namespace mu2e {
     ResamplingMixerDetail(const Parameters& pset, art::MixHelper &helper);
 
     size_t eventsToSkip() const { return eventsToSkip_; }
-    size_t nSecondaries() const { return nSecondaries_; }
+    size_t nSecondaries() const { return (size_t) 1; }
 
     void processEventIDs(const art::EventIDSequence& seq);
 
@@ -85,7 +79,6 @@ namespace mu2e {
   ResamplingMixerDetail::ResamplingMixerDetail(const Parameters& pars, art::MixHelper& helper)
     : spm_{ pars().mu2e().products(), helper }
     , eventsToSkip_{ pars().mu2e().eventsToSkip() }
-    , nSecondaries_{ pars().mu2e().nSecondaries() }
     , writeEventIDs_{ pars().mu2e().writeEventIDs() }
     {
       if(writeEventIDs_) {

@@ -4,6 +4,7 @@
 # original author: Dave Brown, LBNL
 #
 #include "fcl/standardServices.fcl"
+#include "EventGenerator/fcl/prolog.fcl"
 #include "JobConfig/common/prolog.fcl"
 #include "JobConfig/primary/prolog.fcl"
 # name all processes the same, to mask any provenance in ensemble creation
