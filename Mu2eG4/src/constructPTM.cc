@@ -108,7 +108,7 @@ namespace mu2e {
     new G4PVPlacement(nullptr,
               G4ThreeVector(0.0, 0.0, pwc->hv1Z()),
               windowLogical,
-              ground1Name,
+              hv1Name,
               container.logical,
               false,
               0,
@@ -118,7 +118,7 @@ namespace mu2e {
     new G4PVPlacement(nullptr,
               G4ThreeVector(0.0, 0.0, pwc->hv2Z()),
               windowLogical,
-              ground1Name,
+              hv2Name,
               container.logical,
               false,
               0,
@@ -128,7 +128,7 @@ namespace mu2e {
     new G4PVPlacement(nullptr,
               G4ThreeVector(0.0, 0.0, pwc->hv3Z()),
               windowLogical,
-              ground1Name,
+              hv3Name,
               container.logical,
               false,
               0,
@@ -262,7 +262,7 @@ namespace mu2e {
       std::string wireGasName = wireGasNameHoriz;
       wireGasName.append(std::to_string(wireNum));
       // wire numbering such that the lowest-numered wire is 
-      // on the bottom
+      // on the left, from the point of view of the oncoming beam.
       double gasX3 = pwc->horizWireXPos()[i];
       G4VPhysicalVolume* wireGas =
       new G4PVPlacement(nullptr,
@@ -347,8 +347,8 @@ namespace mu2e {
     if (parentRotation->isIdentity()) {
       motherRotation = reg.add(new G4RotationMatrix(ptmon->rotationInMu2e()));
     } else {
-      motherRotation = reg.add(new G4RotationMatrix(parentRotation->inverse()));
-      motherRotation->transform(ptmon->rotationInMu2e());
+      motherRotation = reg.add(new G4RotationMatrix(ptmon->rotationInMu2e()));
+      motherRotation->transform(parentRotation->inverse());
     }
     
     G4Material* motherMaterial = parent.logical->GetMaterial();
