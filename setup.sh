@@ -101,7 +101,7 @@ build=$($MU2E_BASE_RELEASE/buildopts --build)
 # and is therefore different from the value shown in
 # SETUP_<productname> environment vars, or by the "ups active" command.
 export MU2E_UPS_QUALIFIERS=+e20:+${build}
-export MU2E_ART_SQUALIFIER=s108
+export MU2E_ART_SQUALIFIER=s109
 
 MU2E_G4_GRAPHICS_QUALIFIER=''
 if [[ $($MU2E_BASE_RELEASE/buildopts --g4vis) == qt ]]; then
@@ -121,8 +121,8 @@ fi
 export MU2E_G4_EXTRA_QUALIFIER=''
 
 # Setup the framework and its dependent products
-setup -B art v3_09_00 -q${MU2E_UPS_QUALIFIERS}
-setup -B art_root_io v1_08_00 -q${MU2E_UPS_QUALIFIERS}
+setup -B art v3_09_01 -q${MU2E_UPS_QUALIFIERS}
+setup -B art_root_io v1_08_01 -q${MU2E_UPS_QUALIFIERS}
 
 # Geant4 and its cross-section files.
 if [[ $($MU2E_BASE_RELEASE/buildopts --trigger) == "off" ]]; then
@@ -132,12 +132,12 @@ else
 fi
 
 # Get access to raw data formats.
-setup -B mu2e_artdaq_core v1_05_09_01 -q${MU2E_UPS_QUALIFIERS}:+${MU2E_ART_SQUALIFIER}
+setup -B mu2e_artdaq_core v1_06_01 -q${MU2E_UPS_QUALIFIERS}:+${MU2E_ART_SQUALIFIER}
 
 setup -B heppdt   v03_04_02 -q${MU2E_UPS_QUALIFIERS}
 setup cetpkgsupport
-setup -B KinKal   v00_01_06a  -q${MU2E_UPS_QUALIFIERS}:p392
-setup -B BTrk   v1_02_31  -q${MU2E_UPS_QUALIFIERS}:p392
+setup -B KinKal   v00_01_06b  -q${MU2E_UPS_QUALIFIERS}:p392
+setup -B BTrk   v1_02_32  -q${MU2E_UPS_QUALIFIERS}:p392
 setup -B cry   v1_7n  -q${MU2E_UPS_QUALIFIERS}
 setup -B gsl v2_6a
 setup curl v7_64_1
