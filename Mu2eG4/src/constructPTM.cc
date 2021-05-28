@@ -1,7 +1,7 @@
 //
 // Free function. Approach borrowed from constructPS
 // Constructs the downstream production target scanning monitor.
-// Parent volume is the air in the target hall. Probably?
+// Parent volume is the air in the target hall.
 //
 
 // C++ includes
@@ -78,17 +78,10 @@ namespace mu2e {
                      SimpleConfig const& _config,
                      bool const doSurfaceCheck,
                      int const verbosity) {
-    // The windows are all identical, so make one logical volume and paste it repeatedly.
-    // The one exception is the most-upstream window, which is a virtual detector.
     G4Material *windowMaterial = findMaterialOrThrow(pwc->windowMaterialName());
-    G4VSolid* windowBox = new G4Box("PTMWindow",
-                  pwc->pwcWindow()->getXhalfLength(),
-                  pwc->pwcWindow()->getYhalfLength(),
-                  pwc->pwcWindow()->getZhalfLength());
-    G4LogicalVolume* windowLogical = new G4LogicalVolume(windowBox,
-                              windowMaterial,
-                              "PTMWindow");
+    // most-upstream ground plane is a virtual detector
     std::string ground1Name = "VirtualDetector_PTMGroundIn"+pwc->nameSuffix();
+    std::vector<double> windowHalfDims;
     windowHalfDims.push_back(pwc->pwcWindow()->getXhalfLength());
     windowHalfDims.push_back(pwc->pwcWindow()->getYhalfLength());
     windowHalfDims.push_back(pwc->pwcWindow()->getZhalfLength());
@@ -96,11 +89,20 @@ namespace mu2e {
              windowHalfDims,
              windowMaterial,
              nullptr,
-             G4ThreeVector(0.0, 0.0, pwc->ground1Z())
+             G4ThreeVector(0.0, 0.0, pwc->ground1Z()),
              container,
              vdNum, // copyNo
              G4Colour::Blue(),
              "PTM"); // lookup token for doSurfaceCheck, etc
+    // The remaining windows are all identical, so make one logical volume and
+    // paste it repeatedly.
+    G4VSolid* windowBox = new G4Box("PTMWindow",
+                  pwc->pwcWindow()->getXhalfLength(),
+                  pwc->pwcWindow()->getYhalfLength(),
+                  pwc->pwcWindow()->getZhalfLength());
+    G4LogicalVolume* windowLogical = new G4LogicalVolume(windowBox,
+                              windowMaterial,
+                              "PTMWindow");
     std::string hv1Name = "PTMHV1"+pwc->nameSuffix();
     G4VPhysicalVolume* hv1Phys =
     new G4PVPlacement(nullptr,
