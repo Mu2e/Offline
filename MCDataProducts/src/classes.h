@@ -32,6 +32,7 @@
 #include "MCDataProducts/inc/SimParticleRemapping.hh"
 #include "MCDataProducts/inc/VisibleGenElTrackCollection.hh"
 #include "MCDataProducts/inc/CosmicLivetime.hh"
+#include "MCDataProducts/inc/SimTimeOffset.hh"
 
 // simulation bookeeping
 #include "MCDataProducts/inc/PhysicalVolumeInfo.hh"

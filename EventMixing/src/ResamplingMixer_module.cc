@@ -24,8 +24,7 @@ namespace mu2e {
   // Our "detail" class for art/Framework/Modules/MixFilter.h
   class ResamplingMixerDetail {
     Mu2eProductMixer spm_;
-    const unsigned nSecondaries_;
-
+    const unsigned eventsToSkip_;
     bool writeEventIDs_;
     art::EventIDSequence idseq_;
 
@@ -47,9 +46,10 @@ namespace mu2e {
                   )
           };
 
-      fhicl::Atom<unsigned> nSecondaries { Name("nSecondaries"),
-          Comment("Number of secondary events per single primary, a positive integer."),
-          1u };
+      fhicl::Atom<unsigned> eventsToSkip { Name("eventsToSkip"),
+          Comment("Number of events to skip at the beginning of each secondary input file in sequential readMode.\n"
+                  "Do not use this, try readMode:randomReplace instead."),
+          0u };
 
       fhicl::Atom<bool> writeEventIDs { Name("writeEventIDs"),
           Comment("Write out IDs of events on the secondary input stream."),
@@ -64,11 +64,13 @@ namespace mu2e {
     using Parameters = art::MixFilterTable<Config>;
     ResamplingMixerDetail(const Parameters& pset, art::MixHelper &helper);
 
-    size_t nSecondaries() const { return nSecondaries_; }
+    size_t eventsToSkip() const { return eventsToSkip_; }
+    size_t nSecondaries() const { return (size_t) 1; }
 
     void processEventIDs(const art::EventIDSequence& seq);
 
     void beginSubRun(const art::SubRun& sr);
+    void startEvent(art::Event const& e);
     void finalizeEvent(art::Event& e);
     void endSubRun(art::SubRun& sr);
 
@@ -76,13 +78,13 @@ namespace mu2e {
 
   ResamplingMixerDetail::ResamplingMixerDetail(const Parameters& pars, art::MixHelper& helper)
     : spm_{ pars().mu2e().products(), helper }
-    , nSecondaries_{ pars().mu2e().nSecondaries() }
+    , eventsToSkip_{ pars().mu2e().eventsToSkip() }
     , writeEventIDs_{ pars().mu2e().writeEventIDs() }
-  {
-    if(writeEventIDs_) {
-      helper.produces<art::EventIDSequence>();
+    {
+      if(writeEventIDs_) {
+        helper.produces<art::EventIDSequence>();
+      }
     }
-  }
 
   void ResamplingMixerDetail::processEventIDs(const art::EventIDSequence& seq) {
     if(writeEventIDs_) {
@@ -92,6 +94,10 @@ namespace mu2e {
 
   void ResamplingMixerDetail::beginSubRun(const art::SubRun& sr) {
     spm_.beginSubRun(sr);
+  }
+
+  void ResamplingMixerDetail::startEvent(art::Event const& e) {
+    spm_.startEvent(e);
   }
 
   void ResamplingMixerDetail::finalizeEvent(art::Event& e) {
