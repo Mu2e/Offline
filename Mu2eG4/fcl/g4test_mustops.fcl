@@ -21,7 +21,6 @@ physics : {
          module_type: ResamplingMixer
          fileNames: [ "mustops/sim.brownd.TargetStops.MDC2020c.001202_00000000.art" ]
          mu2e: {
-            nSecondaries: 1
             products: {
                genParticleMixer: { mixingMap: [ [ "beamResampler", "" ] ] }
                simParticleMixer: { mixingMap: [ [ "TargetStopFilter", "" ] ] }
