@@ -11,6 +11,8 @@
 #include <TGeoBBox.h>
 #include <TGeoTube.h>
 #include <TGeoMatrix.h>
+#include <TBox.h>
+#include <TGeoBBox.h>
 // ... libRIO
 #include <TFile.h>
 //Calorimeter:
@@ -23,7 +25,9 @@
 #include "CalorimeterGeom/inc/Disk.hh"
 //TEveMu2e:
 #include "TEveEventDisplay/src/TEveMu2e_base_classes/TEveMu2e2DProjection.h"
-
+#include "TEveEventDisplay/src/dict_classes/GeomUtils.h"
+//Mu2e:
+#include "GeometryService/inc/DetectorSystem.hh"
 namespace mu2e{
 	class TEveMu2eCalorimeter
 	{

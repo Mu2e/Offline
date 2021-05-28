@@ -25,10 +25,27 @@
 #include <TEveScene.h>
 #include <TEveProjectionManager.h>
 #include <TEveProjectionAxes.h>
-
+/*//Mu2e Calo Geom:
 #include "ConfigTools/inc/SimpleConfig.hh"
 #include "CalorimeterGeom/inc/Calorimeter.hh"
+//Mu2e Tracker Geom:
+#include "TrackerGeom/inc/Tracker.hh"
+#include "GeometryService/inc/Mu2eCoordTransform.hh"
+#include "BFieldGeom/inc/BFieldManager.hh"
+#include "Mu2eUtilities/inc/SimParticleTimeOffset.hh"
+#include "TrkDiag/inc/TrkMCTools.hh"*/
+//ART
+#include "art/Framework/Principal/Event.h"
+#include "art/Framework/Principal/Run.h"
+//Geom:
 #include "GeometryService/inc/GeomHandle.hh"
+#include "GeometryService/inc/DetectorSystem.hh"
+#include "GeometryService/inc/WorldG4.hh"
+#include "GeometryService/inc/WorldG4Maker.hh"
+#include "GeometryService/inc/TrackerMaker.hh"
+#include "GeometryService/inc/Mu2eHallMaker.hh"
+#include "GeometryService/inc/G4GeometryOptions.hh"
+
 
 namespace mu2e{
 	class Geom_Interface {

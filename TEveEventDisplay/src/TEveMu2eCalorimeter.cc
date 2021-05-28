@@ -1,13 +1,11 @@
 #include "TEveEventDisplay/src/shape_classes/TEveMu2eCalorimeter.h"
-#include "TEveEventDisplay/src/dict_classes/GeomUtils.h"
-#include "GeometryService/inc/DetectorSystem.hh"
-#include <TBox.h>
-#include <TGeoBBox.h>
+
 using namespace mu2e;
 namespace mu2e{
 
     TEveMu2eCalorimeter::TEveMu2eCalorimeter(){};
-
+    
+     /*------------Function to construct calorimeter (for 2D only):-------------*/
     void TEveMu2eCalorimeter::DrawCaloDetector(art::Run const& run, TGeoVolume* topvol, TEveElementList *orthodet0, TEveElementList *orthodet1){
       TGeoMaterial *mat = new TGeoMaterial("CsI", 28.085,14,2.33);
       TGeoMedium *CsI = new TGeoMedium("CsI",2, mat);

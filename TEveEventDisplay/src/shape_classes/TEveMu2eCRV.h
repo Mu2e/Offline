@@ -11,7 +11,8 @@
 #include <TGeoBBox.h>
 #include <TGeoTube.h>
 #include <TGeoMatrix.h>
-// ... libRIO
+#include <TBox.h>
+//ROOT
 #include <TFile.h>
 //CRV/CRS:
 #include "GeometryService/inc/GeomHandle.hh"
@@ -20,6 +21,7 @@
 #include "CosmicRayShieldGeom/inc/CRSScintillatorModule.hh"
 //TEveMu2e:
 #include "TEveEventDisplay/src/TEveMu2e_base_classes/TEveMu2e2DProjection.h"
+#include "TEveEventDisplay/src/dict_classes/GeomUtils.h"
 
 namespace mu2e{
 	class TEveMu2eCRV 
