@@ -139,12 +139,12 @@ Beam: {
 
 # DetectorSteFilter with time cut for the main flash stream
 # these select energy deposits after the peak of the flash has passed, to keep useless payload down
-# time cut for the main flash stream
 # Note this is a partial config, it must be combined with Pileup definition
       DetStepFilter : {
-	TimeCut : true
-	MinimumTime : 300 # good hits are after this time
-	MaximumTime : 10 # not a typo: good hits are before this time
+	TimeCutConfig : {
+	  MinimumTime : 300 # good hits are after this time
+	  MaximumTime : 10 # not a typo: good hits are before this time
+	}
       }
 
       # resamplers

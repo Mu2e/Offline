@@ -4,6 +4,7 @@
 # run calorimeter and tracker and CRV reco
 #
 #include "fcl/standardServices.fcl"
+#include "EventGenerator/fcl/prolog.fcl"
 #include "JobConfig/common/prolog.fcl"
 #include "JobConfig/primary/prolog.fcl"
 #include "JobConfig/digitize/prolog.fcl"

@@ -80,7 +80,7 @@ outputs: {
       "keep *_extmonBeamFilter_*_*",
       "keep *_compressPVextmonBeam_*_*"
     ]
-    fileName : "sim.owner.extmonBeam.version.sequencer.art"
+    fileName : "sim.owner.ExtMonBeam.version.sequencer.art"
   }
   extmonRegionOutput : {
     module_type: RootOutput
@@ -90,7 +90,7 @@ outputs: {
       "keep *_extmonRegionFilter_*_*",
       "keep *_compressPVextmonRegion_*_*"
     ]
-    fileName : "sim.owner.extmonRegion.version.sequencer.art"
+    fileName : "sim.owner.ExtmMonRegion.version.sequencer.art"
   }
   truncatedOutput : {
     module_type : RootOutput
@@ -103,7 +103,7 @@ outputs: {
        "drop uintmu2e::PhysicalVolumeInfomvstd::pairs_g4run_*_*",
        "keep *_compressPVFull_*_*"
     ]
-    fileName : "sim.owner.truncated.version.sequencer.art"
+    fileName : "sim.owner.Truncated.version.sequencer.art"
   }
 
 }

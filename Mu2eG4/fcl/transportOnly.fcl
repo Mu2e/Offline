@@ -116,7 +116,7 @@ physics.producers.makeSH.diagLevel     : 0
 physics.producers.makeSH.maxFullPrint  : 5
 physics.producers.makeSH.minimumEnergy : 0
 
-#physics.producers.g4run.visualization.initMacro : "Mu2eG4/test/vismqt.mac"
+#physics.producers.g4run.visualization.initMacro : "Mu2eG4/vis/vismqt.mac"
 #physics.producers.CaloShowerStepMaker.physVolInfoInput : "g4run"
 physics.producers.g4run.debug.diagLevel : 1
 #physics.producers.g4run.debug.worldVerbosityLevel : 1

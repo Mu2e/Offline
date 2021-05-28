@@ -24,6 +24,10 @@ physics: {
   producers : {
     @table::Common.producers
     @table::Primary.producers
+    compressDetStepMCs : {
+      @table::Primary.producers.compressDetStepMCs
+      @table::Pileup.producers.compressDetStepMCs
+    }
     protonTimeOffset : @local::CommonMC.producers.protonTimeOffset 
   }
   filters : {
@@ -31,7 +35,10 @@ physics: {
     EarlyPrescaleFilter : @local::Beam.filters.EarlyPrescaleFilter
     neutralsResampler    : @local::Beam.filters.neutralsResampler
 # Time cuts are ineffective against neutrals; don't apply them
-    DetStepFilter : @local::Pileup.filters.DetStepFilter
+    DetStepFilter : {
+      @table::Primary.filters.DetStepFilter 
+      @table::Pileup.filters.DetStepFilter 
+    }
   }
   analyzers : {
     @table::Common.analyzers
