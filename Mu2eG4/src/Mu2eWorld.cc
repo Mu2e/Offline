@@ -966,7 +966,7 @@ namespace mu2e {
 
 
     /************************** ExtMonFNALPixelSD **************************/
-    if(true) { // this SD does not derive from Mu2eG4SensitiveDetector as it does not produce StepPointMCCollection
+    if(  sdHelper_->extMonPixelsEnabled() ) {
       GeomHandle<mu2e::ExtMonFNAL::ExtMon> extmon;
       //SDman->AddNewDetector(new ExtMonFNALPixelSD(_config, *extmon));
 
