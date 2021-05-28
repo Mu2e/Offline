@@ -88,19 +88,19 @@ namespace mu2e {
     G4LogicalVolume* windowLogical = new G4LogicalVolume(windowBox,
                               windowMaterial,
                               "PTMWindow");
-    G4LogicalVolume* windowLogicalVD = new G4LogicalVolume(windowBox,
-                              windowMaterial,
-                              "VirtualDetector_PTMGroundIn"+pwc->nameSuffix());
     std::string ground1Name = "VirtualDetector_PTMGroundIn"+pwc->nameSuffix();
-    G4VPhysicalVolume* ground1Phys =
-    new G4PVPlacement(nullptr,
-              G4ThreeVector(0.0, 0.0, pwc->ground1Z()),
-              windowLogicalVD,
-              ground1Name,
-              container.logical,
-              false,
-              vdNum,
-              false);
+    windowHalfDims.push_back(pwc->pwcWindow()->getXhalfLength());
+    windowHalfDims.push_back(pwc->pwcWindow()->getYhalfLength());
+    windowHalfDims.push_back(pwc->pwcWindow()->getZhalfLength());
+    nestBox (ground1Name,
+             windowHalfDims,
+             windowMaterial,
+             nullptr,
+             G4ThreeVector(0.0, 0.0, pwc->ground1Z())
+             container,
+             vdNum, // copyNo
+             G4Colour::Blue(),
+             "PTM"); // lookup token for doSurfaceCheck, etc
     std::string hv1Name = "PTMHV1"+pwc->nameSuffix();
     G4VPhysicalVolume* hv1Phys =
     new G4PVPlacement(nullptr,
@@ -143,7 +143,6 @@ namespace mu2e {
               false);
 
     if (doSurfaceCheck){
-      checkForOverlaps( ground1Phys, _config, verbosity>0);
       checkForOverlaps( hv1Phys, _config, verbosity>0);
       checkForOverlaps( hv2Phys, _config, verbosity>0);
       checkForOverlaps( hv3Phys, _config, verbosity>0);
