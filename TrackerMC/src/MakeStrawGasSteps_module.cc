@@ -54,12 +54,6 @@ namespace mu2e {
 	  Comment("Compress short delta-rays into the primary step"),true};
 	fhicl::Atom<float> maxDeltaLength{ Name("MaxDeltaLength"),
 	  Comment("Maximum step length for a delta ray to be compressed (mm)"),0.5};
-	fhicl::Atom<float> radiusTolerance{ Name("RadiusTolerance"),
-	  Comment("Tolerance to accept a point outside the straw radius (mm) "),0.5};
-	fhicl::Atom<float> parabolicRotation{ Name("parabolicRotation"),
-	  Comment("Maximum bending rotation to use parabolic end estimation (radians)"),0.15};
-	fhicl::Atom<float> curlRotation{ Name("curlRotation"),
-	  Comment("Minimum bending rotation to use curl end estimation (radians)"),2.0};
 	fhicl::Atom<float> minionBG{ Name("minionBetaGamma"),
 	  Comment("Minimum beta*gamma to consider a particle minimmum-ionizing"),0.5};
 	fhicl::Atom<float> minionKE{ Name("minionKineticEnergy"),
@@ -68,8 +62,6 @@ namespace mu2e {
 	  Comment("Maximum bend radius to straw radius ratio to consider a particle a curler"),1.0};
 	fhicl::Atom<float> lineRatio{ Name("LineRatio"),
 	  Comment("Minimum bend radius to straw radius ratio to consider a particle path a line (mm)"),10.0};
-	fhicl::Atom<unsigned> csize{ Name("OutputCollectionSize"),
-	  Comment("Estimated size of output collection"), 2000};
 	fhicl::Atom<string> trackerSteps { Name("trackerStepPoints"),
 	  Comment("Tracker StepPointMC Instance name"),"tracker"};
 	fhicl::Atom<string> stepsToSkip { Name("SkipTheseStepPoints"),
@@ -103,11 +95,11 @@ namespace mu2e {
       void fillStepDiag(Straw const& straw, StrawGasStep const& sgs, SPMCPV const& spmcptrs);
       int _debug, _diag;
       bool _combineDeltas, _allAssns;
-      float _maxDeltaLen, _radtol, _parrot, _curlrot;
+      float _maxDeltaLen;
       float _minionBG, _minionKE;
       float _curlfac, _linefac;
       float _curlmom, _linemom;
-      unsigned _csize, _ssize;
+      unsigned _ssize;
       string _keepDeltas;
       // StepPointMC selector
       // This selector will select only data products with the given instance name.
@@ -134,14 +126,10 @@ namespace mu2e {
     _combineDeltas(config().combineDeltas()),
     _allAssns(config().allStepsAssns()),
     _maxDeltaLen(config().maxDeltaLength()),
-    _radtol(config().radiusTolerance()),
-    _parrot(config().parabolicRotation()),
-    _curlrot(config().curlRotation()),
     _minionBG(config().minionBG()),
     _minionKE(config().minionKE()),
     _curlfac(config().curlRatio()),
     _linefac(config().lineRatio()),
-    _csize(config().csize()),
     _ssize(config().startSize()),
     _keepDeltas(config().keepDeltas()),
     _selector{art::ProductInstanceNameSelector(config().trackerSteps()) &&
@@ -208,7 +196,6 @@ namespace mu2e {
     TrackerStatus const& trackerStatus = _trackerStatus_h.get(event.id());
     // create output
     unique_ptr<StrawGasStepCollection> sgsc(new StrawGasStepCollection);
-    sgsc->reserve(_csize);
     unique_ptr<StrawGasStepAssns> sgsa(new StrawGasStepAssns);
     // needed for making Ptrs
     auto StrawGasStepCollectionPID = event.getProductID<StrawGasStepCollection>();
@@ -231,12 +218,15 @@ namespace mu2e {
     if(stepsHandles.empty()){
       throw cet::exception("SIM")<<"mu2e::MakeStrawGasSteps: No StepPointMC collections found for tracker" << endl;
     }
-    // diagnostic counters
-    unsigned nspmcs(0), nspss(0);
-    // Loop over StepPointMC collections
+    // set initial container size
+    unsigned nspss(0), nspmcs(0);
     for( auto const& handle : stepsHandles) {
       StepPointMCCollection const& steps(*handle);
       nspmcs += steps.size();
+    }
+    sgsc->reserve(nspmcs);
+    // Loop over StepPointMC collections
+    for( auto const& handle : stepsHandles) {
       // see if we should compress deltas from this collection
       bool dcomp = _combineDeltas && (handle.provenance()->moduleLabel() != _keepDeltas);
       if(_debug > 1){

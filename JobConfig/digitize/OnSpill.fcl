@@ -1,7 +1,7 @@
 #
 #  Digitization specialization for on-spill simulations
 #
-#include "JobConfig/digitize/digitize.fcl"
+#include "JobConfig/digitize/Digitize.fcl"
 # add trigger paths
 #include "gen/fcl/Trigger/OnSpillTrigMenu/OnSpillTrigMenu.fcl"
 # set the event timing for Onspill

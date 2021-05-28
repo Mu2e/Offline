@@ -25,7 +25,8 @@
 #include "fhiclcpp/types/OptionalTable.h"
 #include "fhiclcpp/types/TupleAs.h"
 #include "canvas/Utilities/InputTag.h"
-
+#include "art/Framework/Principal/Event.h"
+#include "art/Framework/Principal/SubRun.h"
 #include "art/Framework/IO/ProductMix/MixHelper.h"
 
 #include "MCDataProducts/inc/GenParticleCollection.hh"
@@ -38,6 +39,7 @@
 #include "MCDataProducts/inc/ExtMonFNALSimHitCollection.hh"
 #include "MCDataProducts/inc/ProtonBunchIntensity.hh"
 #include "MCDataProducts/inc/SimParticleTimeMap.hh"
+#include "MCDataProducts/inc/SimTimeOffset.hh"
 #include "MCDataProducts/inc/PhysicalVolumeInfoMultiCollection.hh"
 
 
@@ -94,12 +96,13 @@ namespace mu2e {
       fhicl::Table<CollectionMixerConfig> protonBunchIntensityMixer { fhicl::Name("protonBunchIntensityMixer") };
       fhicl::Table<CollectionMixerConfig> protonTimeMapMixer { fhicl::Name("protonTimeMapMixer") };
       fhicl::Table<CollectionMixerConfig> eventIDMixer { fhicl::Name("eventIDMixer") };
-
       fhicl::OptionalTable<VolumeInfoMixerConfig> volumeInfoMixer { fhicl::Name("volumeInfoMixer") };
+      fhicl::Atom<art::InputTag> simTimeOffset { fhicl::Name("simTimeOffset"), fhicl::Comment("Simulation time offset to apply (optional)"), art::InputTag() };
     };
 
     Mu2eProductMixer(const Config& conf, art::MixHelper& helper);
 
+    void startEvent(art::Event const& e);
     void beginSubRun(const art::SubRun& sr);
     void endSubRun(art::SubRun& sr);
 
@@ -176,6 +179,9 @@ namespace mu2e {
     art::InputTag volumesInput_;
     std::string subrunVolInstanceName_;
     std::optional<std::string> evtVolInstanceName_;
+    bool applyTimeOffset_;
+    art::InputTag timeOffsetTag_;
+    SimTimeOffset stoff_; // time offset for SimParticles and StepPointMCs
 
     void addInfo(VolumeMap* map, const PhysicalVolumeInfoSingleStage::value_type& entry);
 

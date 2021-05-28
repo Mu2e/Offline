@@ -56,7 +56,7 @@ mu2e.IPAMuonStops: {
     verbosityLevel        : 0
 }
 
-# Generate Event
+# Generate Event; this is legacy, should not be used
 generate: {
     module_type          : EventGenerator
     inputfile            : "Mu2eG4/test/genconfig_02.txt"
