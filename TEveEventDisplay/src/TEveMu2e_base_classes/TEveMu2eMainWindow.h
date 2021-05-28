@@ -1,33 +1,57 @@
 #ifndef TEveMu2eMainWindow_h
 #define TEveMu2eMainWindow_h
 
+
+// ... libRIO
+#include <TFile.h>
+#include <TObject.h>
+#include <TSystem.h>
+#include <TText.h>
+#include <TCanvas.h>
+// ... libGui
+#include <TGIcon.h>
+#include <TGButton.h>
+#include <TGButtonGroup.h>
+#include <TGString.h>
+#include <TGTextView.h>
+#include <TGLayout.h>
+#include <TGTab.h>
+#include <TG3DLine.h>
+#include <TGLViewer.h>
+#include <TGLEmbeddedViewer.h>
+#include <TGMsgBox.h>
+#include <TGSplitFrame.h>
+// ... libRGL
+#include <TGLViewer.h>
+#include <TVirtualX.h>
 #include <TGLabel.h>
 #include <TGTextEntry.h>
-#include <TText.h>
-#include <TGScrollBar.h>
-#include <TGSlider.h>
-#include <TCanvas.h>
 #include <TQObject.h>
+// ... libEve
+#include <TEvePad.h>
+#include <TEveManager.h>
+#include <TEveEventManager.h>
+#include <TEveBrowser.h>
+#include <TEveGeoNode.h>
+#include <TEveViewer.h>
+#include <TEveScene.h>
+#include <TEveParamList.h>
+#include <TEveProjectionManager.h>
+#include <TEveProjectionAxes.h>
+#include <TEveStraightLineSet.h>
 //libGeom
 #include <TGeoManager.h>
-#include <TBox.h>
-#include <TGeoBBox.h>
-//TEve
-#include <TEveTrack.h>
-#include <TEveManager.h>
-//fcl:
-#include "fhiclcpp/types/Atom.h"
-#include "fhiclcpp/types/Sequence.h"
-#include "fhiclcpp/types/Table.h"
 //Mu2e:
 #include "art/Framework/Principal/Event.h"
 #include "art/Framework/Principal/Run.h"
 #include "ConfigTools/inc/SimpleConfig.hh"
 #include "GeometryService/inc/GeomHandle.hh"
-#include "RecoDataProducts/inc/ComboHit.hh"
-//TEveMu2e
+//...TEveMu2e
+#include "TEveEventDisplay/src/TEveMu2e_base_classes/TEveMu2eHit.h"
+#include "TEveEventDisplay/src/TEveMu2e_base_classes/TEveMu2eCluster.h"
+#include "TEveEventDisplay/src/TEveMu2e_base_classes/TEveMu2eCustomHelix.h"
+#include "TEveEventDisplay/src/TEveMu2e_base_classes/TEveMu2eCRVEvent.h"
 #include "TEveEventDisplay/src/dict_classes/Geom_Interface.h"
-#include "TEveEventDisplay/src/dict_classes/Collection_Filler.h"
 #include "TEveEventDisplay/src/TEveMu2e_base_classes/TEveMu2e2DProjection.h"
 #include "TEveEventDisplay/src/shape_classes/TEveMu2eCalorimeter.h"
 #include "TEveEventDisplay/src/shape_classes/TEveMu2eTracker.h"
@@ -59,32 +83,33 @@ namespace mu2e{
       void CreateMultiViews();
 
       void PrepareTrackerProjectionTab(const art::Run& run);
-
       void PrepareCaloProjectionTab(const art::Run& run);
-
       void PrepareCRVProjectionTab(const art::Run& run);
+      void SetParticleOpts(std::vector<int> particles_) { particles = particles_;}
+      
       void CreateGUI();
       void SetRunGeometry(const art::Run& run, int _diagLevel, bool _showBuilding, bool _showDSOnly, bool _showCRV);
       void RedrawDataProducts(std::string type);
+      
       Bool_t ProcessMessage(Long_t msg, Long_t param1, Long_t param2);
-      void  setEvent(const art::Event& event, bool firstLoop, Data_Collections &data, double time, bool accumulate, int& runn, int& eventn, bool& update);
+      
+      void  setEvent(const art::Event& event, bool firstLoop, Data_Collections &data, double time, bool accumulate, int& runn, int& eventn, bool& update, bool isMCOnly);
       void  fillEvent(bool firstLoop=false);
       bool  isClosed() const;
       int   getEventToFind(bool &findEvent) const;
-      double texttime = -1;
-      std::vector<double> *clusterenergy = 0;
-      std::vector<double> *hitenergy = 0;
-      std::vector<double> times;
-      #endif
-
+      
+      //List of parameters:
       TGeoManager* geom = new TGeoManager("geom","Geom");
       Geom_Interface *mu2e_geom	=new Geom_Interface(); 
       TEveMu2eDataInterface *pass_data	= new TEveMu2eDataInterface(); 
       TEveMu2eMCInterface *pass_mc	= new TEveMu2eMCInterface(); 
       TEveMu2eProjectionInterface *pass_proj = new TEveMu2eProjectionInterface();
-      int eventToFind, runToFind;
-      bool usereventSelected = false;
-      TEveViewer *v;
+      
+      double texttime = -1;
+      std::vector<double> *clusterenergy = 0;
+      std::vector<double> *hitenergy = 0;
+      std::vector<double> times;
+
       TEvePad *fPad;
       TGSplitFrame *fSplitFrame;
       TGSplitFrame *frm;
@@ -93,10 +118,9 @@ namespace mu2e{
       TGLEmbeddedViewer *fViewer2;
       TGLEmbeddedViewer *fViewer3;
       TGLEmbeddedViewer *fViewer4;
-      TGLEmbeddedViewer *fActViewer;
-      TGTab *tab;
+
       Bool_t fIsEmbedded;
-      TGCompositeFrame *test;
+
       TEveViewer *fViewer[5];
       TEveProjectionManager *fRPhiMgr;
       TEveProjectionManager *fRhoZMgr;
@@ -114,32 +138,28 @@ namespace mu2e{
       TEveScene *proj1 = 0;
       TEveScene *proj2 = 0;
       TEveScene *proj3 = 0;
-      TEveScene *fdetXY = 0;
-      TEveScene *fevtXY = 0;
-      TGLOverlayButton *but1, *but2, *but3, *but4, *but5, *but6;
+
+      
+      bool usereventSelected = false;
       TGTextEntry     *fTeRun,*fTeEvt, *fTTEvt, *fTeh1, *fTeh2, *fTeh3, *cminenergy, *cmaxenergy, *hminenergy, *hmaxenergy, *hmintime, *hmaxtime;    
-      TGHSlider       *fTHSlid;
       TGLabel         *fTlRun,*fTlEvt, *fTlTEvt, *fTlHSlid, *celabel, *helabel,*timelabel, *spacer, *spacer1;
-      TGButtonGroup	*br;
-      TGCheckButton	*clusterscheck, *hitscheck, *trackscheck, *cosmicscheck, *cosmictrkscheck, *mctrajcheck;
-      Double_t        hitMarkerSize_;
-      Double_t        trkMaxR_;
-      Double_t        trkMaxZ_;
-      Double_t        trkMaxStepSize_;
-      Double_t        camRotateCenterH_;
-      Double_t        camRotateCenterV_;
-      Double_t        camDollyDelta_;
-      Int_t	      HSId1;
-      TGTextBuffer *_eventNumber, *_subrunNumber, *_runNumber, *_time, *fTbh1, *fTbh2, *fTbh3, *_clustminenergy, *_clustmaxenergy, *_hitminenergy, *_hitmaxenergy, *_hitmintime, *_hitmaxtime;
-      int  _eventToFind = 0; ///TODO - this or one above>?
+      TGButtonGroup	  *br;
+      TGCheckButton	  *clusterscheck, *hitscheck, *trackscheck, *cosmicscheck, *cosmictrkscheck, *mctrajcheck;
+
+      TGTextBuffer *_eventNumber, *_subrunNumber, *_runNumber, *_time,  *_clustminenergy, *_clustmaxenergy, *_hitminenergy, *_hitmaxenergy, *_hitmintime, *_hitmaxtime;
+      
+      int eventToFind, runToFind;
+      int  _eventToFind = 0; 
 
       bool _isClosed = false;
       bool _findEvent = true;
       bool _firstLoop = true;
       bool _accumulate = false;
+      
       TEveMu2e2DProjection *tracker2Dproj = new TEveMu2e2DProjection();
       TEveMu2e2DProjection *calo2Dproj = new TEveMu2e2DProjection();
       TEveMu2e2DProjection *CRV2Dproj = new TEveMu2e2DProjection();
+      
       TEveMu2eCalorimeter *Mu2eCalo = new TEveMu2eCalorimeter();
       TEveMu2eTracker *Mu2eTracker  = new TEveMu2eTracker();
       TEveMu2eCRV *Mu2eCRV = new TEveMu2eCRV();
@@ -155,8 +175,10 @@ namespace mu2e{
       double fhitmax = -1;
       double ftimemin = -1;
       double ftimemax = -1;
-
-     ClassDef(TEveMu2eMainWindow,0);
+      
+      std::vector<int> particles;
+      #endif
+      ClassDef(TEveMu2eMainWindow,0);
 
     }; //end class def
 

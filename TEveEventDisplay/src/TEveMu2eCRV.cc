@@ -1,12 +1,10 @@
 #include "TEveEventDisplay/src/shape_classes/TEveMu2eCRV.h"
-#include "TEveEventDisplay/src/dict_classes/GeomUtils.h"
 
-#include <TBox.h>
-#include <TGeoBBox.h>
 using namespace mu2e;
 namespace mu2e{
 	TEveMu2eCRV::TEveMu2eCRV(){};
 
+  /*------------Function to draw CRV geometry in 2D:-------------*/
   void TEveMu2eCRV::DrawCRVDetector(art::Run const& run, TGeoVolume* topvol, TEveElementList *orthodetlist[]){
     TGeoMaterial *matSi = new TGeoMaterial("Si", 28.085,14,2.33);
     TGeoMedium *Si = new TGeoMedium("Silicon",2, matSi);

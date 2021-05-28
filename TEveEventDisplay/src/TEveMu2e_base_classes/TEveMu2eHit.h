@@ -10,23 +10,24 @@
 //Mu2e General:
 #include "GeometryService/inc/GeomHandle.hh"
 #include "GeometryService/inc/DetectorSystem.hh"
+#include "TEveEventDisplay/src/dict_classes/GeomUtils.h"
 namespace mu2e {
   class TEveMu2eHit : public TEvePointSet {
     public:
       #ifndef __CINT__
       explicit TEveMu2eHit();
-      TEveMu2eHit(ComboHit chit) : fComboHit(chit){};
+      TEveMu2eHit(ComboHit chit) : fComboHit_(chit){};
       virtual ~TEveMu2eHit(){};
 
-      ComboHit fComboHit; 
-      Int_t mSize= 1; 
-      bool AddErrorBar = false;
+      ComboHit fComboHit_; 
+      Int_t mSize_ = 3; 
+      bool AddErrorBar_ = false;
 
       void DrawHit2D(const std::string &pstr, Int_t b,CLHEP::Hep3Vector HitPos, int energylevel, TEveElementList *list); 
       void DrawHit3D(const std::string &pstr, Int_t b,CLHEP::Hep3Vector HitPos, int energylevel, TEveElementList *list); 
       void DrawHitCollection(const std::string &pstr, size_t i, std::vector<CLHEP::Hep3Vector> HitPos, int energylevel, TEveElementList *list); 
-      XYZVec const GetPosition() { return fComboHit.pos();}
-      double GetEnergy(){ return fComboHit.energyDep();}
+      XYZVec const GetPosition() { return fComboHit_.pos();}
+      double GetEnergy(){ return fComboHit_.energyDep();}
       std::string DataTitle(const std::string &pstr, int n);
       #endif
       ClassDef(TEveMu2eHit, 0);
