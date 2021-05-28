@@ -45,10 +45,7 @@ using namespace std;
 namespace mu2e {
 
   void insertOuterFrame(VolumeInfo const& container, 
-                        const PTMPWC* pwc, 
-                        SimpleConfig const& _config,
-                        bool const doSurfaceCheck,
-                        int const verbosity) {
+                        const PTMPWC* pwc) {
     G4Box *outerBox = new G4Box("pwcFrameOuter", 
                 pwc->frameWidth()/2., 
                 pwc->frameHeight()/2., 
@@ -72,8 +69,6 @@ namespace mu2e {
           0, 
           G4Colour::Blue(), 
           "PTM");
-
-    if (doSurfaceCheck) checkForOverlaps( frameInfo.physical, _config, verbosity>0);
 
   } // insertOuterFrame
 
@@ -160,10 +155,7 @@ namespace mu2e {
 
   void insertOuterGasBlocks(VolumeInfo const& container, 
                             const PTMPWC* pwc, 
-                            G4Material* gasMaterial, 
-                            SimpleConfig const& _config,
-                            bool const doSurfaceCheck,
-                            int const verbosity) {
+                            G4Material* gasMaterial) {
     // between ground plane 1 and HV plane 1
     std::string gasName1 = "PTMGas1";
     gasName1.append(pwc->nameSuffix());
@@ -171,7 +163,6 @@ namespace mu2e {
     gas1HalfDims.push_back(pwc->gasSection1()->getXhalfLength());
     gas1HalfDims.push_back(pwc->gasSection1()->getYhalfLength());
     gas1HalfDims.push_back(pwc->gasSection1()->getZhalfLength());
-    VolumeInfo gas1Info =
     nestBox (gasName1,
              gas1HalfDims,
              gasMaterial,
@@ -179,12 +170,8 @@ namespace mu2e {
              G4ThreeVector(0.0, 0.0, pwc->gasInZ()),
              container,
              0, // copyNo
-             false, // isVisible
              G4Colour::Red(),
-             true, // forceSolid
-             false, // forceAuxEdgeVisible
-             true, // placePV
-             false); // doSurfaceCheck
+             "PTM"); // lookup token for doSurfaceCheck, etc
 
 
     // between HV plane 3 and ground plane 2
@@ -194,7 +181,6 @@ namespace mu2e {
     gas4HalfDims.push_back(pwc->gasSection4()->getXhalfLength());
     gas4HalfDims.push_back(pwc->gasSection4()->getYhalfLength());
     gas4HalfDims.push_back(pwc->gasSection4()->getZhalfLength());
-    VolumeInfo gas4Info =
     nestBox (gasName4,
              gas4HalfDims,
              gasMaterial,
@@ -202,17 +188,8 @@ namespace mu2e {
              G4ThreeVector(0.0, 0.0, pwc->gasOutZ()),
              container,
              0, // copyNo
-             false, // isVisible
              G4Colour::Red(),
-             true, // forceSolid
-             false, // forceAuxEdgeVisible
-             true, // placePV
-             false); // doSurfaceCheck
-
-    if (doSurfaceCheck) {
-      checkForOverlaps( gas1Info.physical, _config, verbosity>0);
-      checkForOverlaps( gas4Info.physical, _config, verbosity>0);
-    }
+             "PTM"); 
 
   } // insertOuterGasBlocks
 
@@ -326,12 +303,11 @@ namespace mu2e {
               0,
               G4Colour::Green(),
               "PTM");
-    if (doSurfaceCheck) checkForOverlaps( pwcContainerInfo.physical, _config, verbosity>0);
 
     // G10 frame of the PWC, made up of two endplates, plus
     // 13 interior boards that hold the windows and wires.
     // Represented as a single solid piece here.
-    insertOuterFrame(pwcContainerInfo, pwc, _config, doSurfaceCheck, verbosity);
+    insertOuterFrame(pwcContainerInfo, pwc);
 
     insertWindows(pwcContainerInfo, pwc, vdNum, _config, doSurfaceCheck, verbosity);
 
@@ -339,7 +315,7 @@ namespace mu2e {
     // Going to use gasMaterial a few times; collect it out here so we don't do
     // a findMaterialOrThrow several times for the same material.
     G4Material *gasMaterial = findMaterialOrThrow(pwc->gasMaterialName());
-    insertOuterGasBlocks(pwcContainerInfo, pwc, gasMaterial, _config, doSurfaceCheck, verbosity);
+    insertOuterGasBlocks(pwcContainerInfo, pwc, gasMaterial);
 
     // the wire planes
     // Going to use the wireNameSuffix in a couple of places, so just do the 
@@ -389,7 +365,6 @@ namespace mu2e {
                 0,
                 G4Colour::Green(),
                 "PTM");
-    if (doSurfaceCheck) checkForOverlaps( pTargetMonContainer.physical, _config, verbosity>0);
 
     // add the first PWC to the mother volume
     constructTargetHallPWC(pTargetMonContainer, ptmon->nearPWC(), VirtualDetectorId::PTM_1_In, _config, doSurfaceCheck, verbosity);
