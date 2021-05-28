@@ -1,7 +1,7 @@
 #
 # cosmic-nofield ray muons produced at a box around the DS without field
 #
-#include "JobConfig/primary/primary.fcl"
+#include "JobConfig/primary/Primary.fcl"
 # set the generator
 physics.producers.generate : {
    module_type : EventGenerator

@@ -43,11 +43,14 @@ namespace mu2e {
   //----------------------------------------------------------------
   Mu2eProductMixer::Mu2eProductMixer(const Config& conf, art::MixHelper& helper)
     : mixVolumes_(false)
+      , applyTimeOffset_{! conf.simTimeOffset().empty() }
+      , timeOffsetTag_{ conf.simTimeOffset() }
+      , stoff_(0.0)
   {
 
     for(const auto& e: conf.genParticleMixer().mixingMap()) {
       helper.declareMixOp
-        (e.inTag, e.resolvedInstanceName(), &Mu2eProductMixer::mixGenParticles, *this);
+	(e.inTag, e.resolvedInstanceName(), &Mu2eProductMixer::mixGenParticles, *this);
     }
 
     for(const auto& e: conf.simParticleMixer().mixingMap()) {
@@ -126,6 +129,15 @@ namespace mu2e {
     //----------------------------------------------------------------
   }
 
+  void Mu2eProductMixer::startEvent(art::Event const& e) {
+    if(applyTimeOffset_){
+    // find the time offset in the event, and copy it locally
+      const auto& stoH = e.getValidHandle<SimTimeOffset>(timeOffsetTag_);
+      stoff_ = *stoH;
+    }
+  }
+
+
   //================================================================
   void Mu2eProductMixer::beginSubRun(const art::SubRun&) {
     subrunVolumes_.clear();
@@ -151,6 +163,14 @@ namespace mu2e {
                                          art::PtrRemapper const& remap)
   {
     art::flattenCollections(in, out, genOffsets_);
+    if(applyTimeOffset_){
+      for(auto& particle : out){
+	particle.time() += stoff_.timeOffset_;
+	// proper times are WRT the particles own internal clock, can't shift them
+      }
+    }
+
+
     return true;
   }
 
@@ -198,6 +218,12 @@ namespace mu2e {
       sim.genParticle() = remap( sim.genParticle(), genOffsets_[inputEventIndex]);
     }
 
+    if(applyTimeOffset_){
+      sim.startGlobalTime() += stoff_.timeOffset_;
+      sim.endGlobalTime() += stoff_.timeOffset_;
+      // proper times are WRT the particles own internal clock, can't shift them
+    }
+
   }
 
   //----------------------------------------------------------------
@@ -212,8 +238,10 @@ namespace mu2e {
       auto ie = getInputEventIndex(i, stepOffsets);
       auto& step = out[i];
       step.simParticle() = remap(step.simParticle(), simOffsets_[ie]);
+      if(applyTimeOffset_){
+	step.time() += stoff_.timeOffset_;
+      }
     }
-
     return true;
   }
 
@@ -223,22 +251,29 @@ namespace mu2e {
                                            art::PtrRemapper const& remap)
   {
     // flattenCollections() does not seem to preserve enough info to remap ptrs in the output map.
-    // Follow the pattern, including the nullptr checks, but add custom remapping code.
-
+    // Follow the pattern, including the nullptr checks, but add custom remapping code
+    std::pair<MCTrajectoryCollection::iterator,bool> res;
     for(std::vector<MCTrajectoryCollection const*>::size_type ieIndex = 0; ieIndex < in.size(); ++ieIndex) {
       if (in[ieIndex] != nullptr) {
         for(const auto & orig : *in[ieIndex]) {
-          auto res = out.insert(std::make_pair(remap(orig.first, simOffsets_[ieIndex]),
-                                               MCTrajectory(remap(orig.second.sim(), simOffsets_[ieIndex]),
-                                                            orig.second.points())
-                                               ));
-
-          if(!res.second) {
-            throw cet::exception("BUG")<<"mixMCTrajectories(): failed to insert an entry, ieIndex="<<ieIndex
-                                       <<", orig ptr = "<<orig.first
-                                       <<std::endl;
-          }
-        }
+	  if(!applyTimeOffset_) {
+	    res = out.insert(std::make_pair(remap(orig.first, simOffsets_[ieIndex]),
+		  MCTrajectory(remap(orig.second.sim(), simOffsets_[ieIndex]), orig.second.points())));
+	  } else {
+	    // make a deep copy of the points with shifted time
+	    std::vector<MCTrajectoryPoint> newpoints;
+	    newpoints.reserve(orig.second.points().size());
+	    for(auto const& mcpt : orig.second.points())
+	      newpoints.emplace_back(mcpt.pos(),mcpt.t()+stoff_.timeOffset_,mcpt.kineticEnergy());
+	    res = out.insert(std::make_pair(remap(orig.first, simOffsets_[ieIndex]),
+		  MCTrajectory(remap(orig.second.sim(), simOffsets_[ieIndex]), newpoints)));
+	  }
+	  if(!res.second) {
+	    throw cet::exception("BUG")<<"mixMCTrajectories(): failed to insert an entry, ieIndex="<<ieIndex
+	      <<", orig ptr = "<<orig.first
+	      <<std::endl;
+	  }
+	}
       }
     }
 
