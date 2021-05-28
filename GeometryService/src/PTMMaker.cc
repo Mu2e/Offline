@@ -13,45 +13,45 @@
 using namespace std;
 namespace mu2e {
   std::unique_ptr<PTM> PTMMaker::make(SimpleConfig const& _config) {
-    double xPosInMu2e = _config.getDouble("PTM_positionX");
-    double yPosInMu2e = _config.getDouble("PTM_positionY");
-    double zPosInMu2e = _config.getDouble("PTM_positionZ");
+    double xPosInMu2e = _config.getDouble("PTM.positionX");
+    double yPosInMu2e = _config.getDouble("PTM.positionY");
+    double zPosInMu2e = _config.getDouble("PTM.positionZ");
     CLHEP::Hep3Vector originInMu2e = CLHEP::Hep3Vector(xPosInMu2e, yPosInMu2e, zPosInMu2e);
 
-    double yRotInMu2e = _config.getDouble("PTM_rotY");
-    double xRotInMu2e = _config.getDouble("PTM_rotX");
+    double yRotInMu2e = _config.getDouble("PTM.rotY");
+    double xRotInMu2e = _config.getDouble("PTM.rotX");
     CLHEP::HepRotation rotationInMu2e = CLHEP::HepRotation();
     rotationInMu2e.rotateX(xRotInMu2e*CLHEP::deg);
     rotationInMu2e.rotateY(yRotInMu2e*CLHEP::deg);
 
-    double pwcSeparation = _config.getDouble("PTM_pwcSeparation");
-    double frameHeight = _config.getDouble("PTM_frameHeight");
-    double frameWidth = _config.getDouble("PTM_frameWidth");
-    double frameThick = _config.getDouble("PTM_frameThick");
-    double outerPlateThick = _config.getDouble("PTM_outerPlateLength");
-    std::string frameMaterialName = _config.getString("PTM_frameMaterial");
+    double pwcSeparation = _config.getDouble("PTM.pwcSeparation");
+    double frameHeight = _config.getDouble("PTM.frameHeight");
+    double frameWidth = _config.getDouble("PTM.frameWidth");
+    double frameThick = _config.getDouble("PTM.frameThick");
+    double outerPlateThick = _config.getDouble("PTM.outerPlateLength");
+    std::string frameMaterialName = _config.getString("PTM.frameMaterial");
 
-    int framesInDetector = _config.getInt("PTM_framesInDetector");
-    int outerPlatesInDetector = _config.getInt("PTM_outerPlatesInDetector");
-    double ground1Zframes = _config.getDouble("PTM_ground1Zframes");
-    double hv1Zframes = _config.getDouble("PTM_hv1Zframes");
-    double hv2Zframes = _config.getDouble("PTM_hv2Zframes");
-    double hv3Zframes = _config.getDouble("PTM_hv3Zframes");
-    double ground2Zframes = _config.getDouble("PTM_ground2Zframes");
+    int framesInDetector = _config.getInt("PTM.framesInDetector");
+    int outerPlatesInDetector = _config.getInt("PTM.outerPlatesInDetector");
+    double ground1Zframes = _config.getDouble("PTM.ground1Zframes");
+    double hv1Zframes = _config.getDouble("PTM.hv1Zframes");
+    double hv2Zframes = _config.getDouble("PTM.hv2Zframes");
+    double hv3Zframes = _config.getDouble("PTM.hv3Zframes");
+    double ground2Zframes = _config.getDouble("PTM.ground2Zframes");
 
-    double windowHeight = _config.getDouble("PTM_windowHeight");
-    double windowWidth = _config.getDouble("PTM_windowWidth");
-    double windowThick = _config.getDouble("PTM_windowThick");
-    std::string windowMaterialName = _config.getString("PTM_windowMaterial");
+    double windowHeight = _config.getDouble("PTM.windowHeight");
+    double windowWidth = _config.getDouble("PTM.windowWidth");
+    double windowThick = _config.getDouble("PTM.windowThick");
+    std::string windowMaterialName = _config.getString("PTM.windowMaterial");
 
-    std::string gasMaterialName = _config.getString("PTM_innerGas");
-    int numVertWires = _config.getInt("PTM_vertWiresPerPlane");
-    int numHorizWires = _config.getInt("PTM_horizWiresPerPlane");
+    std::string gasMaterialName = _config.getString("PTM.innerGas");
+    int numVertWires = _config.getInt("PTM.vertWiresPerPlane");
+    int numHorizWires = _config.getInt("PTM.horizWiresPerPlane");
 
     // mother volume contains both detectors, container contains one detector
     // each is slightly larger than all its contents
-    double motherMargin = _config.getDouble("PTM_motherMargin");
-    double containerMargin = _config.getDouble("PTM_containerMargin");
+    double motherMargin = _config.getDouble("PTM.motherMargin");
+    double containerMargin = _config.getDouble("PTM.containerMargin");
 
     // the PTM is made of two identical PWC's, placed such that their center
     // lines match up.

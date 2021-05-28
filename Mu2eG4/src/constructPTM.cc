@@ -329,7 +329,7 @@ namespace mu2e {
 
 
   void constructPTM(VolumeInfo const& parent, SimpleConfig const& _config) {
-    const int verbosity = _config.getInt("PTM_verbosity",1);
+    const int verbosity = _config.getInt("PTM.verbosityLevel",1);
     const auto& geomOptions = art::ServiceHandle<GeometryService>()->geomOptions();
     geomOptions->loadEntry( _config, "PTM", "PTM" );
     const bool doSurfaceCheck = geomOptions->doSurfaceCheck("PTM");
