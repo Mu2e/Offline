@@ -85,12 +85,12 @@ namespace mu2e {
   class TrkStrawStatusShort : public TrkElementStatus {
     public:
       constexpr static const char* cxname = "TrkStrawStatusShort";
-      TrkStrawStatusShort() : TrkElementStatus(cxname,"trk.strawstatusshort", StrawIdMask("uniquestraw"), StrawStatus("Sparking:Suppress:Noise:Pickup")) {}
+      TrkStrawStatusShort() : TrkElementStatus(cxname,"trk.strawstatusshort", StrawIdMask("uniquestraw"), StrawStatus("Sparking:Suppress:Noise:Pickup:Disabled")) {}
   };
   class TrkStrawStatusLong : public TrkElementStatus {
     public:
       constexpr static const char* cxname = "TrkStrawStatusLong";
-      TrkStrawStatusLong() : TrkElementStatus(cxname,"trk.strawstatuslong", StrawIdMask("uniquestraw"), StrawStatus("Absent:NoWire:NoHV:NoPreamp:NoADC:NoTDC")) {}
+      TrkStrawStatusLong() : TrkElementStatus(cxname,"trk.strawstatuslong", StrawIdMask("uniquestraw"), StrawStatus("Absent:NoWire:NoHV:NoHVPreamp:NoCalPreamp:NoADC:NoTDC")) {}
   };
   
 };

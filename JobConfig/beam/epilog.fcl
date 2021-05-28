@@ -1,5 +1,3 @@
-#turn off MCTrajectories
-physics.producers.g4run.TrajectoryControl.produce : false
 # limit printout
 services.message.destinations.log.categories.ArtReport.reportEvery : 1
 services.message.destinations.log.categories.ArtReport.limit : 1

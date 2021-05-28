@@ -60,8 +60,8 @@ namespace mu2e {
       Name("tCoince"), Comment("maxing threshold xing pair time separation to create a digi, in number of ADC clock cycles")};
     fhicl::Atom<double> TDCLSB {
       Name("TDCLSB"), Comment("nsec, least-significant bit of TDC")};
-    fhicl::Atom<unsigned> maxTDC {
-      Name("maxTDC"), Comment("16 bits, maximum TDC value")};
+    fhicl::Atom<unsigned> numTDCbits {
+      Name("numTDCbits"), Comment("Number of TDC bits, defining maximum TDC value")};
     fhicl::Atom<double>  TOTLSB {
       Name("TOTLSB"), Comment("ns, least-significant bit of TOT")};
     fhicl::Atom<unsigned> maxTOT {
