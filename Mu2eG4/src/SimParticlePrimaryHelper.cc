@@ -8,7 +8,12 @@
 
 #include "cetlib_except/exception.h"
 
+#include <iostream>
+#define AGDEBUG(stuff) std::cerr<<"AG: "<<__FILE__<<", line "<<__LINE__<<": "<<stuff<<std::endl;
+
 namespace mu2e {
+
+  //================================================================
   SimParticlePrimaryHelper::SimParticlePrimaryHelper(const art::Event* event,
                                                      const art::ProductID& simProdID,
                                                      const art::EDProductGetter* sim_prod_getter):
@@ -17,6 +22,7 @@ namespace mu2e {
     simProductGetter_(sim_prod_getter)
   {}
 
+  //================================================================
   art::Ptr<GenParticle> SimParticlePrimaryHelper::genParticlePtr(int g4TrkID) const {
     art::Ptr<GenParticle> res;
     auto pgen = std::get_if<art::Ptr<GenParticle> >(&entries_.at(g4TrkID - 1));
@@ -26,6 +32,7 @@ namespace mu2e {
     return res;
   }
 
+  //================================================================
   art::Ptr<SimParticle>  SimParticlePrimaryHelper::simParticlePrimaryPtr(int g4TrkID) const {
     auto& v = entries_.at(g4TrkID - 1);
 
@@ -56,5 +63,13 @@ namespace mu2e {
       return art::Ptr<SimParticle>(simProdID_, id.asUint(), simProductGetter_);
     }
   }
+
+  //================================================================
+  SimParticlePrimaryHelper::InputParticle SimParticlePrimaryHelper::getEntry(int g4TrkID) const {
+    AGDEBUG("size = "<<entries_.size()<<", g4TrkID = "<<g4TrkID);
+    return entries_.at(g4TrkID-1);
+  }
+
+  //================================================================
 
 }

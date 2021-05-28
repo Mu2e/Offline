@@ -30,6 +30,14 @@ namespace mu2e {
 
   class SimParticlePrimaryHelper {
   public:
+    // We need to keep the original art::Ptr just for GenParticles.
+    // For other cases a Ptr to the new collection will have to be created anyway, so do not bother.
+    typedef std::variant<art::Ptr<GenParticle>,
+                         const SimParticle*,
+                         const StepPointMC*,
+                         const StageParticle*>
+    InputParticle;
+
 
     SimParticlePrimaryHelper(const art::Event* event,
                              const art::ProductID& simProdID,
@@ -38,19 +46,14 @@ namespace mu2e {
     art::Ptr<GenParticle> genParticlePtr(int g4TrkID) const;
     art::Ptr<SimParticle> simParticlePrimaryPtr(int g4TrkID) const;
 
+
+    InputParticle getEntry(int g4TrkID) const;
+
     template<class T> void addEntry(T t) {
       entries_.emplace_back(t);
     }
 
   private:
-
-    // We need to keep the original art::Ptr just for GenParticles.
-    // For other cases a Ptr to the new collection will have to be created anyway, so do not bother.
-    typedef std::variant<art::Ptr<GenParticle>,
-                         const SimParticle*,
-                         const StepPointMC*,
-                         const StageParticle*>
-    InputParticle;
 
     typedef std::vector<InputParticle> Entries;
     Entries entries_;
