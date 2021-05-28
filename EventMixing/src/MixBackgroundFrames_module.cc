@@ -172,6 +172,9 @@ namespace mu2e {
 
   //================================================================
   void MixBackgroundFramesDetail::startEvent(const art::Event& event) {
+  // call down to product mixer 
+    spm_.startEvent(event);
+
     pbi_ = *event.getValidHandle<ProtonBunchIntensity>(pbiTag_);
     if(debugLevel_ > 0)std::cout << " Starting event mixing, Intensity = " << pbi_.intensity() << std::endl;
 

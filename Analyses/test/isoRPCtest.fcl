@@ -45,10 +45,10 @@ services :
 
   ConditionsService :
   {
-    conditionsfile : "Mu2eG4/test/conditions_01.txt"
+    conditionsfile : "ConditionsService/data/conditions_01.txt"
   }
 
-  GlobalConstantsService : { inputFile : "Mu2eG4/test/globalConstants_01.txt" }
+  GlobalConstantsService : { inputFile : "GlobalConstantsService/data/globalConstants_01.txt" }
 } # close of services block
 
 physics :
@@ -67,7 +67,7 @@ physics :
     {
       module_type          : G4
       generatorModuleLabel : generate
-      # visMacro           : "Mu2eG4/test/visyz.mac"
+      # visMacro           : "Mu2eG4/vis/visyz.mac"
       stepsSizeLimit       : 10000                   # StepPoint
       particlesSizeLimit   : 10000                   # SimParticle
       seed                 : [9877]

@@ -1,0 +1,153 @@
+#
+# Re-sample particles entering the DS, propagate them to the detectors or stopping target, and write out the corresponding flash DetectorSteps and target mustops.
+# Note the main flash stream has a time cut to avoid energy far outside the digitization window.  A prescaled but otherwise uncut stream is used to
+# record the flash peak
+#
+# original author: Yuri Oksuzian, 2019
+# Updated for MDC2020 (DetectorSteps): D. Brown
+
+#include "fcl/standardServices.fcl"
+#include "CommonMC/fcl/prolog.fcl"
+#include "JobConfig/common/prolog.fcl"
+#include "JobConfig/beam/prolog.fcl"
+#include "JobConfig/primary/prolog.fcl"
+#include "JobConfig/pileup/prolog.fcl"
+
+process_name: BeamResampler
+
+source : {
+   module_type : EmptyEvent
+   maxEvents : @nil
+}
+
+services : @local::Services.Sim
+physics: {
+  producers : {
+    @table::Common.producers
+    @table::Primary.producers
+    compressDetStepMCs : {
+      @table::Primary.producers.compressDetStepMCs
+      @table::Pileup.producers.compressDetStepMCs
+    }
+    compressPVTargetStops : @local::Beam.producers.compressPVTargetStops
+    compressPVIPAStops : @local::Beam.producers.compressPVIPAStops
+    TargetMuonFinder : @local::Beam.producers.TargetMuonFinder
+    IPAMuonFinder : @local::Beam.producers.IPAMuonFinder
+    stoppedMuonDaughters : @local::Beam.producers.stoppedMuonDaughters 
+    protonTimeOffset : @local::CommonMC.producers.protonTimeOffset 
+  }
+  filters : {
+    @table::Common.filters
+    @table::Primary.filters
+    EarlyPrescaleFilter : @local::Beam.filters.EarlyPrescaleFilter
+    beamResampler       : @local::Beam.filters.beamResampler
+    TargetStopFilter    : @local::Beam.filters.TargetStopFilter
+    IPAStopFilter       : @local::Beam.filters.IPAStopFilter
+    FlashFilter         : @local::Beam.filters.FlashFilter
+    DetStepFilter : {
+      @table::Primary.filters.DetStepFilter 
+      @table::Pileup.filters.DetStepFilter 
+      @table::Beam.filters.DetStepFilter 
+    }
+# instance to select flash without time cuts (prescaled)
+    EarlyDetStepFilter : {
+      @table::Primary.filters.DetStepFilter 
+      @table::Pileup.filters.DetStepFilter 
+    }
+  }
+  analyzers : {
+    @table::Common.analyzers
+  }
+  # setup paths
+  targetStopPath : [ @sequence::Beam.beamResamplerSequence, @sequence::Common.g4Sequence, TargetMuonFinder, TargetStopFilter, compressPVTargetStops]
+  IPAStopPath : [ @sequence::Beam.beamResamplerSequence, @sequence::Common.g4Sequence, IPAMuonFinder, IPAStopFilter, compressPVIPAStops]
+  flashPath : [ @sequence::Beam.beamResamplerSequence, @sequence::Common.g4Sequence, TargetMuonFinder, stoppedMuonDaughters, FlashFilter,
+              @sequence::Primary.DetStepSequence, DetStepFilter, compressDetStepMCs ]
+  earlyFlashPath : [ @sequence::Beam.beamResamplerSequence, @sequence::Common.g4Sequence, TargetMuonFinder, stoppedMuonDaughters, FlashFilter, EarlyPrescaleFilter,
+              @sequence::Primary.DetStepSequence, EarlyDetStepFilter, compressDetStepMCs ]
+  trigger_paths: [ flashPath, earlyFlashPath, targetStopPath, IPAStopPath ]
+  outPath : [ FlashOutput, EarlyFlashOutput, TargetStopOutput, IPAStopOutput ]
+  end_paths: [outPath]
+}
+
+outputs: {
+  TargetStopOutput : {
+    module_type: RootOutput
+    outputCommands:   [ "drop *_*_*_*",
+      @sequence::Beam.SimKeptProducts,
+      "keep *_TargetStopFilter_*_*",
+      "keep *_compressPVTargetStops_*_*"
+    ]
+    SelectEvents: [targetStopPath]
+    fileName : "sim.owner.TargetStops.version.sequencer.art"
+  }
+
+  IPAStopOutput : {
+    module_type: RootOutput
+    outputCommands:   [ "drop *_*_*_*",
+      @sequence::Beam.SimKeptProducts,
+      "keep *_IPAStopFilter_*_*",
+      "keep *_compressPVIPAStops_*_*"
+    ]
+    SelectEvents: [IPAStopPath]
+    fileName : "sim.owner.IPAStops.version.sequencer.art"
+  }
+
+  FlashOutput : {
+    module_type: RootOutput
+    outputCommands:   [ "drop *_*_*_*",
+      @sequence::Beam.DtsKeptProducts,
+      @sequence::Pileup.KeptProducts
+    ]
+    SelectEvents: [flashPath]
+    fileName : "dts.owner.BeamFlash.version.sequencer.art"
+  }
+
+  EarlyFlashOutput : {
+    module_type: RootOutput
+    outputCommands:   [ "drop *_*_*_*",
+      @sequence::Beam.DtsKeptProducts,
+      @sequence::Pileup.KeptProducts
+    ]
+    SelectEvents: [earlyFlashPath]
+    fileName : "dts.owner.EarlyBeamFlash.version.sequencer.art"
+  }
+}
+
+# Point Mu2eG4 to the pre-simulated data
+physics.producers.g4run.inputs: {
+   primaryType: "StepPoints"
+   primaryTag: "beamResampler:Beam"
+   inputMCTrajectories: ""
+
+   simStageOverride: 1
+   inputPhysVolumeMultiInfo: "beamResampler"
+   updateEventLevelVolumeInfos: {
+      input: "beamResampler:eventlevel"
+      outInstance: "eventlevel"
+   }
+}
+# copy over VD hits
+physics.producers.g4run.SDConfig.preSimulatedHits:  ["beamResampler:virtualdetector"]
+# Kill stuck e+/e-
+physics.producers.g4run.Mu2eG4CommonCut:{
+   type: intersection
+   pars:
+   [
+      {type: intersection pars: [ { type: kineticEnergy cut: 1.0 }, { type: pdgId pars: [ 11, -11] }]},
+      {type: inVolume pars: [ TS2Vacuum, TS3Vacuum, TS4Vacuum, TS5Vacuum, DS2Vacuum, HallAir ]}
+   ]
+}
+#include "JobConfig/common/epilog.fcl"
+#include "JobConfig/pileup/epilog.fcl"
+#include "JobConfig/beam/epilog.fcl"
+# reconfigure StepPoint producers to avoid double-counting particles from the mustop filter deep copy
+physics.producers.StrawGasStepMaker.SkipTheseStepPoints : "g4run"
+physics.producers.StrawGasStepMaker.KeepDeltasModule : ""
+physics.producers.CaloShowerStepMaker.caloStepPointCollection : ["FlashFilter:calorimeter"]
+physics.producers.CrvSteps.stepPointsModuleLabels : [ "FlashFilter" ]
+# tweak compression to use the FlashFilter deep copy too
+physics.producers.compressDetStepMCs.simParticleTag : "FlashFilter"
+physics.producers.compressDetStepMCs.simParticleTag : "FlashFilter"
+# test
+physics.filters.beamResampler.fileNames: [ "sim.owner.Beam.version.sequencer.art" ]

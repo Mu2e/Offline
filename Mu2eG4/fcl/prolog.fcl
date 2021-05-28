@@ -71,7 +71,7 @@ mu2eg4DefaultResourceLimits: {
 #----------------
 mu2eg4NoVisualization: {
     initMacro : ""
-    GUIMacro : "Mu2eG4/test/visqtGUI.mac"
+    GUIMacro : "Mu2eG4/vis/visqtGUI.mac"
 }
 #----------------
 mu2eg4NoTrajectories: {
@@ -156,7 +156,7 @@ mu2eg4runDefaultSingleStage: {
         verbosityLevel : 0
         enableAllSDs : false  # this would activate all SDs listed in StepInstanceName enum
         # activate minimal set of sensitive detectors used by everybody
-        enableSD : [ tracker, calorimeter, calorimeterRO, CRV, virtualdetector ]
+        enableSD : [ tracker, calorimeter, CRV, virtualdetector ]
         # in the including fcl file set e.g. physics.producers.g4run.SDConfig.enableSD : @erase
         # whan setting enableAllSDs : true
         TimeVD: { times: [] }
