@@ -27,10 +27,7 @@ namespace mu2e {
                               int const verbosity);
 
     void insertOuterFrame(VolumeInfo const& container, 
-                        const PTMPWC* pwc, 
-                        SimpleConfig const& _config,
-                        bool const doSurfaceCheck,
-                        int const verbosity);
+                        const PTMPWC* pwc);
 
     void insertWindows(VolumeInfo const& container, 
                      const PTMPWC* pwc, 
@@ -40,10 +37,7 @@ namespace mu2e {
 
     void insertOuterGasBlocks(VolumeInfo const& container, 
                             const PTMPWC* pwc, 
-                            G4Material* gasMaterial, 
-                            SimpleConfig const& _config,
-                            bool const doSurfaceCheck,
-                            int const verbosity);
+                            G4Material* gasMaterial);
 
     void insertVerticalProfileWires(VolumeInfo const& container, 
                                   const PTMPWC* pwc, 
