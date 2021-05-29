@@ -21,8 +21,6 @@
 #include "MCDataProducts/inc/GenParticle.hh"
 #include "MCDataProducts/inc/SimParticle.hh"
 
-namespace art { class Event; }
-
 namespace mu2e {
 
   class StepPointMC;
@@ -39,8 +37,7 @@ namespace mu2e {
     InputParticle;
 
 
-    SimParticlePrimaryHelper(const art::Event* event,
-                             const art::ProductID& simProdID,
+    SimParticlePrimaryHelper(const art::ProductID& simProdID,
                              const art::EDProductGetter* sim_prod_getter);
 
     art::Ptr<GenParticle> genParticlePtr(int g4TrkID) const;
@@ -60,7 +57,6 @@ namespace mu2e {
 
     // need these to create art::Ptr to the new SimParticles
     art::ProductID simProdID_;
-    const art::Event* event_;
     const art::EDProductGetter* simProductGetter_;
   };
 }
