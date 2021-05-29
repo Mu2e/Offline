@@ -59,8 +59,7 @@ namespace mu2e {
   void GenEventCountReader::endSubRun(const art::SubRun& sr) {
 
     // We expect exactly one object of type GenEventCount per SubRun.
-    std::vector<art::Handle<GenEventCount> > hh;
-    sr.getManyByType(hh);
+    std::vector<art::Handle<GenEventCount> > hh = sr.getMany<GenEventCount>();
     if(hh.size() > 1) {
       std::ostringstream os;
       os<<"GenEventCountReader: multiple GenEventCount objects found in "

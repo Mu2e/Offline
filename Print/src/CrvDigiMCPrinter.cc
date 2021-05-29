@@ -10,8 +10,7 @@ mu2e::CrvDigiMCPrinter::Print(art::Event const& event,
   if(verbose()<1) return;
   if(tags().empty()) {
     // if a list of instances not specified, print all instances
-    std::vector< art::Handle<CrvDigiMCCollection> > vah;
-    event.getManyByType(vah);
+    std::vector< art::Handle<CrvDigiMCCollection> > vah = event.getMany<CrvDigiMCCollection>();
     for (auto const & ah : vah) Print(ah);
   } else {
     // print requested instances

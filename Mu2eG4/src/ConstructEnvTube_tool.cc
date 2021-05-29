@@ -11,6 +11,7 @@
 //
 
 #include "art/Utilities/ToolMacros.h"
+#include "art/Framework/Services/Registry/ServiceDefinitionMacros.h"
 
 // Mu2e includes.
 

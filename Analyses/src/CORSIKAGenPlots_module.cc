@@ -15,6 +15,7 @@
 #include "art/Framework/Principal/SubRun.h"
 #include "art_root_io/TFileService.h"
 #include "art/Framework/Services/Registry/ServiceHandle.h"
+#include "art/Framework/Services/Registry/ServiceDefinitionMacros.h"
 
 #include "canvas/Utilities/InputTag.h"
 #include "fhiclcpp/ParameterSet.h"

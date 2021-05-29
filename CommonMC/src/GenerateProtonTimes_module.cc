@@ -162,8 +162,7 @@ namespace mu2e {
       res->insert(inmap->begin(),inmap->end());
     }
 
-    std::vector<art::Handle<SimParticleCollection> > colls;
-    event.getManyByType(colls);
+    std::vector<art::Handle<SimParticleCollection> > colls = event.getMany<SimParticleCollection>();
     art::Handle<FixedTimeMap> ftmHandle;
     if (!fixedTime_.empty())
       event.getByLabel(fixedTime_, ftmHandle);

@@ -33,6 +33,7 @@
 
 // art includes.
 #include "fhiclcpp/types/OptionalSequence.h"
+#include "messagefacility/MessageLogger/MessageLogger.h"
 
 #include "art/Framework/Core/EDFilter.h"
 #include "art/Framework/Principal/Event.h"
