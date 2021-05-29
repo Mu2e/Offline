@@ -71,8 +71,7 @@ namespace mu2e {
 
   void CaloClusterFast::produce(art::Event& event)
   {
-      art::Handle<CaloHitCollection> caloHitsHandle;
-      event.getByToken(caloCrystalToken_, caloHitsHandle);
+      art::Handle<CaloHitCollection> caloHitsHandle = event.getHandle<CaloHitCollection>(caloCrystalToken_);
       
       auto caloClusters = std::make_unique<CaloClusterCollection>();
       makeClusters(*caloClusters,caloHitsHandle);

@@ -29,6 +29,7 @@
 // Framework includes
 #include "cetlib_except/exception.h"
 #include "messagefacility/MessageLogger/MessageLogger.h"
+#include "art/Framework/Services/Registry/ServiceDefinitionMacros.h"
 
 // Mu2e includes
 #include "Mu2eG4Helper/inc/Mu2eG4Helper.hh"

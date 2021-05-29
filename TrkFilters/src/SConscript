@@ -30,20 +30,21 @@ mainlib = helper.make_mainlib ( [
     'art_Framework_Core',
     'art_Framework_Principal',
     'art_Framework_Services_Registry',
-    'art_root_io_TFileService_service',
+    'art_root_io_TFileService',
     'art_root_io_tfile_support',
     'art_Persistency_Provenance',
     'art_Persistency_Common',
     'art_Utilities',
     'canvas',
     'fhiclcpp',
+    'fhiclcpp_types',
+    'tbb',
     'cetlib',
     'cetlib_except',
     rootlibs,
     'CLHEP',
     'HepPDT',
     'xerces-c',
-    'boost_system',
     ] )
 
 # Fixme: split into link lists for each module.
@@ -66,7 +67,7 @@ helper.make_plugins( [
    'art_Framework_Principal',
    'art_Framework_Services_Registry',
    'art_root_io_tfile_support',
-   'art_root_io_TFileService_service',
+   'art_root_io_TFileService',
    'art_Framework_Services_Optional_RandomNumberGenerator_service',
    'art_Persistency_Common',
    'art_Persistency_Provenance',
@@ -82,7 +83,6 @@ helper.make_plugins( [
    'General',
    rootlibs,
    'boost_filesystem',
-   'boost_system',
     ] )
 
 

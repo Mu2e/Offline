@@ -149,8 +149,7 @@ namespace mu2e {
   //================================================================
   void PointerCheck::analyze(art::Event const& event) {
 
-    std::vector< art::Handle<SimParticleCollection> > vah_sp;
-    event.getManyByType(vah_sp);
+    std::vector< art::Handle<SimParticleCollection> > vah_sp = event.getMany<SimParticleCollection>();
     for (auto const & ah : vah_sp) {
       if(!excludedCollection(*ah.provenance(),_SPtags)) {
 	printProvenance(*ah.provenance());
@@ -158,8 +157,7 @@ namespace mu2e {
       } // endif excluded
     } // loop over handles
 
-    std::vector< art::Handle<StepPointMCCollection> > vah_st;
-    event.getManyByType(vah_st);
+    std::vector< art::Handle<StepPointMCCollection> > vah_st = event.getMany<StepPointMCCollection>();
     for (auto const & ah : vah_st) {
       if(!excludedCollection(*ah.provenance(),_SPMCtags)) {
 	printProvenance(*ah.provenance());
@@ -167,8 +165,7 @@ namespace mu2e {
       } // endif excluded
     } // loop over handles
 
-    std::vector< art::Handle<MCTrajectoryCollection> > vah_tr;
-    event.getManyByType(vah_tr);
+    std::vector< art::Handle<MCTrajectoryCollection> > vah_tr = event.getMany<MCTrajectoryCollection>();
     for (auto const & ah : vah_tr) {
       if(!excludedCollection(*ah.provenance(),_trajtags)) {
 	printProvenance(*ah.provenance());
@@ -176,8 +173,7 @@ namespace mu2e {
       } // endif excluded
     } // loop over handles
 
-    std::vector< art::Handle<SimParticlePtrCollection> > vah_pp;
-    event.getManyByType(vah_pp);
+    std::vector< art::Handle<SimParticlePtrCollection> > vah_pp = event.getMany<SimParticlePtrCollection>();
     for (auto const & ah : vah_pp) {
       if(!excludedCollection(*ah.provenance(),_trajtags)) {
 	printProvenance(*ah.provenance());
@@ -185,8 +181,7 @@ namespace mu2e {
       } // endif excluded
     } // loop over handles
 
-    std::vector< art::Handle<StrawDigiMCCollection> > vah_sd;
-    event.getManyByType(vah_sd);
+    std::vector< art::Handle<StrawDigiMCCollection> > vah_sd = event.getMany<StrawDigiMCCollection>();
     for (auto const & ah : vah_sd) {
       if(!excludedCollection(*ah.provenance(),_trkDMCtags)) {
 	printProvenance(*ah.provenance());
@@ -194,8 +189,7 @@ namespace mu2e {
       } // endif excluded
     } // loop over handles
 
-    std::vector< art::Handle<CaloHitMCCollection> > vah_cd;
-    event.getManyByType(vah_cd);
+    std::vector< art::Handle<CaloHitMCCollection> > vah_cd = event.getMany<CaloHitMCCollection>();
     for (auto const & ah : vah_cd) {
       if(!excludedCollection(*ah.provenance(),_calDMCtags)) {
 	printProvenance(*ah.provenance());
@@ -203,8 +197,7 @@ namespace mu2e {
       } // endif excluded
     } // loop over handles
     std::cout << "Startgin shower steps" << std::endl;
-    std::vector< art::Handle<CaloShowerStepCollection> > vah_cs;
-    event.getManyByType(vah_cs);
+    std::vector< art::Handle<CaloShowerStepCollection> > vah_cs = event.getMany<CaloShowerStepCollection>();
     for (auto const & ah : vah_cs) {
       if(!excludedCollection(*ah.provenance(),_calCSStags)) {
 	printProvenance(*ah.provenance());
@@ -213,8 +206,7 @@ namespace mu2e {
     } // loop over handles
 
     std::cout << "Starting crvMC" << std::endl;
-    std::vector< art::Handle<CrvDigiMCCollection> > vah_cm;
-    event.getManyByType(vah_cm);
+    std::vector< art::Handle<CrvDigiMCCollection> > vah_cm = event.getMany<CrvDigiMCCollection>();
     for (auto const & ah : vah_cm) {
       if(!excludedCollection(*ah.provenance(),_crvDMCtags)) {
 	printProvenance(*ah.provenance());

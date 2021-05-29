@@ -39,7 +39,7 @@
 #include "TH1F.h"
 
 #include <memory>
-
+#include <numeric>
 
 
 namespace mu2e {

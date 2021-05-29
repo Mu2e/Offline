@@ -11,6 +11,7 @@
 
 // Framework include files
 #include "messagefacility/MessageLogger/MessageLogger.h"
+#include "art/Framework/Services/Registry/ServiceDefinitionMacros.h"
 
 // Mu2e include files
 #include "ConditionsService/inc/ConditionsService.hh"
@@ -105,3 +106,4 @@ namespace mu2e {
 } // end namespace mu2e
 
 DEFINE_ART_SERVICE(mu2e::ConditionsService);
+
