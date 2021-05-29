@@ -1,7 +1,6 @@
 // Andrei Gaponenko, 2013
 
 #include "Mu2eG4/inc/SimParticlePrimaryHelper.hh"
-#include "art/Framework/Principal/Event.h"
 
 #include "MCDataProducts/inc/StepPointMC.hh"
 #include "MCDataProducts/inc/StageParticle.hh"
@@ -14,11 +13,9 @@
 namespace mu2e {
 
   //================================================================
-  SimParticlePrimaryHelper::SimParticlePrimaryHelper(const art::Event* event,
-                                                     const art::ProductID& simProdID,
+  SimParticlePrimaryHelper::SimParticlePrimaryHelper(const art::ProductID& simProdID,
                                                      const art::EDProductGetter* sim_prod_getter):
     simProdID_(simProdID),
-    event_(event),
     simProductGetter_(sim_prod_getter)
   {}
 
