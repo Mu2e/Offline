@@ -16,6 +16,7 @@
 #include "CLHEP/Units/PhysicalConstants.h"
 
 #include "fhiclcpp/types/Atom.h"
+#include "messagefacility/MessageLogger/MessageLogger.h"
 
 #include "art/Framework/Core/EDFilter.h"
 #include "art/Framework/Core/ModuleMacros.h"
