@@ -9,6 +9,7 @@
 //TEve
 #include <TEveManager.h>
 #include <TEveStraightLineSet.h>
+#include <TEveText.h>
 //Mu2e General:
 #include "GeometryService/inc/GeomHandle.hh"
 #include "GeometryService/inc/DetectorSystem.hh"

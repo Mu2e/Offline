@@ -13,7 +13,7 @@ namespace mu2e{
       if (*List2D != 0){
           (*List2D)->DestroyElements();
         }
-	projection->fXYMgr->ImportElements(*List2D, projection->fDetXYScene); 
+	      projection->fXYMgr->ImportElements(*List2D, projection->fDetXYScene); 
         projection->fRZMgr->ImportElements(*List2D, projection->fDetRZScene);
       
       gEve->AddElement(*List3D);
@@ -39,8 +39,10 @@ namespace mu2e{
 
   /*------------Function to get max and min energy in an event from the colour scheme:-------------*/
   template <typename L> void maxminE(L data, double &max, double &min){
+     
       auto order = std::minmax_element(data->begin(), data->end(),
            [] (auto const& lhs, auto const& rhs) { return lhs.energyDep() < rhs.energyDep(); });
+
       int min_pos = order.first - data->begin();
       int max_pos = order.second - data->begin();
       min = data->at(min_pos).energyDep();
@@ -48,12 +50,16 @@ namespace mu2e{
     }
   /*------------Function to get max and min time for time selection:-------------*/
   template <typename L> void maxminT(L data, double &max, double &min){
+
       auto order = std::minmax_element(data->begin(), data->end(),
          [] (auto const& lhs, auto const& rhs) { return lhs.time() < rhs.time(); });
+      
       int min_pos = order.first - data->begin();
       int max_pos = order.second - data->begin();
+
       min = data->at(min_pos).time();
       max = data->at(max_pos).time();
+            
     }
   /*------------Function to get CRV information since the words are different:-------------*/
   template <typename L> void maxminCRV(L data, double &max, double &min){
@@ -91,36 +97,40 @@ namespace mu2e{
 	  std::vector <double> time = {-1, -1};
     double max, min;
     std::vector<double> alltime;
+
     if (crvcoincol != 0){
       maxminCRV(crvcoincol, max, min);
       alltime.push_back(max);
       alltime.push_back(min);
     }
-    
+
     if (chcol != 0){
       maxminT(chcol, max, min);
       alltime.push_back(max);
       alltime.push_back(min);
     }
-
-    if (clustercol != 0){
+ 
+    if (clustercol->size() != 0){
       maxminT(clustercol, max, min);
       alltime.push_back(max);
       alltime.push_back(min);
     }
-
     if (cryHitcol != 0){
       maxminT(cryHitcol, max, min);
       alltime.push_back(max);
       alltime.push_back(min);
     }
-    auto order = std::minmax_element(alltime.begin(), alltime.end(),
-       [] (auto const& lhs, auto const& rhs) { return lhs < rhs; });
-    int min_pos = order.first - alltime.begin();
-    int max_pos = order.second - alltime.begin();
-    time.at(0) = alltime.at(min_pos);
-    time.at(1) = alltime.at(max_pos);
-    
+    if(alltime.size() !=0){
+      auto order = std::minmax_element(alltime.begin(), alltime.end(),
+         [] (auto const& lhs, auto const& rhs) { return lhs < rhs; });
+
+      int min_pos = order.first - alltime.begin();
+      int max_pos = order.second - alltime.begin();
+     
+      time.at(0) = alltime.at(min_pos);
+      time.at(1) = alltime.at(max_pos);
+    }
+ 
     if (time.at(0) == -1){time.at(0) = 0;}
     if (time.at(1) == -1){time.at(1) = 100;} 
     return time;
@@ -158,8 +168,9 @@ namespace mu2e{
 
     std::vector<double> energies = {0,0};
     DataLists<const ComboHitCollection*, TEveMu2e2DProjection*>(chcol, Redraw, accumulate, "ComboHit", &fHitsList3D, &fHitsList2D, tracker2Dproj);
+    /*
     TXYMgr->ImportElements(fHitsList2D, scene1); 
-    TRZMgr->ImportElements(fHitsList2D, scene2); 
+    TRZMgr->ImportElements(fHitsList2D, scene2); */
     if(chcol!=0){
       TEveElementList *HitList2D = new TEveElementList("ComboHits2D");
       TEveElementList *HitList3D = new TEveElementList("ComboHits3D");
@@ -186,9 +197,10 @@ namespace mu2e{
           fHitsList3D->AddElement(HitList3D); 
         }
       }
-
-      TXYMgr->ImportElements(fHitsList2D, scene1);
-      TRZMgr->ImportElements(fHitsList2D, scene2);
+      tracker2Dproj->fXYMgr->ImportElements(fHitsList2D, tracker2Dproj->fDetXYScene); 
+      tracker2Dproj->fRZMgr->ImportElements(fHitsList2D, tracker2Dproj->fDetRZScene);
+      /*TXYMgr->ImportElements(fHitsList2D, scene1);
+      TRZMgr->ImportElements(fHitsList2D, scene2);*/
       gEve->AddElement(HitList3D);
       gEve->Redraw3D(kTRUE); 
     }
@@ -201,8 +213,8 @@ namespace mu2e{
 
     DataLists<const CaloClusterCollection*, TEveMu2e2DProjection*>(clustercol, Redraw, accumulate, "CaloCluster", &fClusterList3D, &fClusterList2D_disk0, calo2Dproj);
     DataLists<const CaloClusterCollection*, TEveMu2e2DProjection*>(clustercol, Redraw, accumulate, "CaloCluster", &fClusterList3D, &fClusterList2D_disk1, calo2Dproj);
-    CfXYMgr->ImportElements(fClusterList2D_disk0, scene1); 
-    CfRZMgr->ImportElements(fClusterList2D_disk1, scene2); 
+    //CfXYMgr->ImportElements(fClusterList2D_disk0, scene1); 
+    //CfRZMgr->ImportElements(fClusterList2D_disk1, scene2); 
 
     if(clustercol!=0){ 
       TEveElementList *ClusterList3D = new TEveElementList("CaloClusters3D");
@@ -243,14 +255,14 @@ namespace mu2e{
               teve_cluster2D->DrawCluster("CaloCluster3D, Cluster #" + to_string(i + 1) + ", Position =" + pos2D + ", Energy = " + to_string(cluster.energyDep()) + ", Time = " + to_string(cluster.time()), pointInMu2e,energylevels[i], ClusterList2D_disk0, hits, addHits); 
               fClusterList2D_disk0->AddElement(ClusterList2D_disk0); 
               calo2Dproj->fXYMgr->ImportElements(fClusterList2D_disk0, calo2Dproj->fDetXYScene); 
-              CfXYMgr->ImportElements(fClusterList2D_disk0, scene1); 
+              //CfXYMgr->ImportElements(fClusterList2D_disk0, scene1); For Multiview
+             
             }
             if(cluster.diskID()==1){
              teve_cluster2D->DrawCluster("CaloCluster3D, Cluster #" + to_string(i + 1) + ", Position =" + pos2D + ", Energy = " + to_string(cluster.energyDep()) + ", Time = " + to_string(cluster.time()), pointInMu2e,energylevels[i], ClusterList2D_disk1, hits, addHits); 
              fClusterList2D_disk1->AddElement(ClusterList2D_disk1); 
              calo2Dproj->fRZMgr->ImportElements(fClusterList2D_disk1, calo2Dproj->fDetRZScene); 
-             
-             CfRZMgr->ImportElements(fClusterList2D_disk1, scene2); 
+             //CfRZMgr->ImportElements(fClusterList2D_disk1, scene2); For MultiView
             }
         }
       }
@@ -265,8 +277,8 @@ namespace mu2e{
     vector <double> energies = {0, 0};
     Calorimeter const &cal = *(GeomHandle<Calorimeter>());
     DataLists<const CaloHitCollection*, TEveMu2e2DProjection*>(cryHitcol, Redraw, accumulate, "CrystalHit", &fHitsList3D, &fHitsList2D, calo2Dproj);
-    CfXYMgr->ImportElements(fClusterList2D_disk0, scene1); 
-    CfRZMgr->ImportElements(fClusterList2D_disk1, scene2); 
+    /*CfXYMgr->ImportElements(fClusterList2D_disk0, scene1); 
+    CfRZMgr->ImportElements(fClusterList2D_disk1, scene2); */
     if(cryHitcol!=0){
 
       TEveElementList *HitList = new TEveElementList("CrystalHits");
@@ -285,8 +297,8 @@ namespace mu2e{
           fCrystalHitList->AddElement(HitList);    
         }
       }
-    CfXYMgr->ImportElements(fClusterList2D_disk0, scene1); 
-    CfRZMgr->ImportElements(fClusterList2D_disk1, scene2); 
+    /*CfXYMgr->ImportElements(fClusterList2D_disk0, scene1); 
+    CfRZMgr->ImportElements(fClusterList2D_disk1, scene2); */
     gEve->AddElement(fCrystalHitList);
     gEve->Redraw3D(kTRUE);  
     }
@@ -302,8 +314,9 @@ namespace mu2e{
       const KalSeedCollection* seedcol = track_list[j];
       colour.push_back(j+3);
       DataLists<const KalSeedCollection*, TEveMu2e2DProjection*>(seedcol, Redraw, accumulate, "HelixTrack", &fTrackList3D, &fTrackList2D, tracker2Dproj);
-      TXYMgr->ImportElements(fTrackList2D, scene1); 
-      TRZMgr->ImportElements(fTrackList2D, scene2); 
+
+      /*TXYMgr->ImportElements(fTrackList2D, scene1); 
+      TRZMgr->ImportElements(fTrackList2D, scene2); */
       if(seedcol!=0){  
         for(unsigned int k = 0; k < seedcol->size(); k = k + 20){   
           KalSeed kseed = (*seedcol)[k];
@@ -355,8 +368,10 @@ namespace mu2e{
           fTrackList3D->AddElement(line);
         }
         
-        TXYMgr->ImportElements(fTrackList2D, scene1);
-        TRZMgr->ImportElements(fTrackList2D, scene2);
+        /*TXYMgr->ImportElements(fTrackList2D, scene1);
+        TRZMgr->ImportElements(fTrackList2D, scene2);*/
+        tracker2Dproj->fXYMgr->ImportElements(fTrackList2D, tracker2Dproj->fDetXYScene);
+        tracker2Dproj->fRZMgr->ImportElements(fTrackList2D, tracker2Dproj->fDetRZScene);
         gEve->AddElement(fTrackList3D);
         gEve->Redraw3D(kTRUE);
       }
