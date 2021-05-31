@@ -81,9 +81,7 @@ namespace mu2e{
     return std::count(v.begin(), v.end(), x);
   }
   
-  /*------------
-  Function to display MCTracjories of any shape, these are made up of a series of TEveLines, in the same way as Reco Helices:      
-  -------------*/
+
     /*void TEveMu2eMCInterface::AddFullMCTrajectory(bool firstloop, const MCTrajectoryCollection *trajcol, TEveMu2e2DProjection *tracker2Dproj, bool Redraw, bool accumulate, TEveProjectionManager *TXYMgr, TEveProjectionManager *TRZMgr, TEveScene *scene1, TEveScene *scene2, std::vector<int> particleIds){
 	DataLists<const MCTrajectoryCollection*, TEveMu2e2DProjection*>(trajcol, Redraw, accumulate, "MC Trajectory", &fTrackList3D, &fTrackList2D, tracker2Dproj);
 	      std::cout<<"Full 1 "<<std::endl;
@@ -146,8 +144,80 @@ namespace mu2e{
                
       }
     }*/
+    /*------------Function to make label :-------------*/
+    TEveText *TEveMu2eMCInterface::GetLabel(int PDGCode, TEveMu2eCustomHelix *line, TEveMu2eCustomHelix *line_twoD){
+      const char* pid = "pid";
+      auto t = new TEveText(pid);
+      t->SetFontSize(15);
+      if(PDGCode == -11){ 
+        line->SetLineColor(kRed);//electrons
+        line_twoD->SetLineColor(kRed);
+        pid = "electron -";
+        t->SetText(pid);
+        t->SetMainColor(kRed);
+        t->RefMainTrans().SetPos(0.0,400.0,3000.0);
+      }
+      else if(PDGCode == +11){
+        line->SetLineColor(kYellow);//positrons
+        line_twoD->SetLineColor(kYellow);
+        pid = "positron +";
+        t->SetText(pid);
+        t->SetMainColor(kYellow);
+        t->RefMainTrans().SetPos(0.0,550.0,3000.0);
+      }
+      else if(PDGCode == -13){
+        line->SetLineColor(kGreen);//muons
+        line_twoD->SetLineColor(kGreen);
+        pid = "muon - ";
+        t->SetText(pid);
+        t->SetMainColor(kGreen);
+        t->RefMainTrans().SetPos(0.0,650.0,3000.0);
+      }
+      else if(PDGCode == +13){
+        line->SetLineColor(kOrange);//anti-muons
+        line_twoD->SetLineColor(kOrange);
+        pid = "muon + ";
+        t->SetText(pid);
+        t->SetMainColor(kOrange);
+        t->RefMainTrans().SetPos(0.0,650.0,3000.0);
+      }
+      else if(PDGCode == -211){
+        line->SetLineColor(kMagenta);//pion -
+        line_twoD->SetLineColor(kMagenta);
+        pid = "pion -";
+        t->SetText(pid);
+        t->SetMainColor(kMagenta);
+        t->RefMainTrans().SetPos(0.0,750.0,3000.0);
+      }else if(PDGCode == +211){
+        line->SetLineColor(kViolet);//pion +
+        line_twoD->SetLineColor(kViolet);
+        pid = "pion +";
+        t->SetText(pid);
+        t->SetMainColor(kViolet);
+        t->RefMainTrans().SetPos(0.0,750.0,3000.0);
+      }
+      else if(PDGCode == 2212){
+        line->SetLineColor(kBlue); //proton
+        line_twoD->SetLineColor(kBlue);
+        pid = "proton";
+        t->SetText(pid);
+        t->SetMainColor(kBlue);
+        t->RefMainTrans().SetPos(0.0,850.0,3000.0);
+      }else if(PDGCode == 22){
+        line->SetLineColor(kSpring-10);//photon
+        line_twoD->SetLineColor(kSpring-10);
+        pid = "pion -";
+        t->SetText(pid);
+        t->SetMainColor(kSpring-10);
+        t->RefMainTrans().SetPos(0.0,950.0,3000.0);
+      }
+      else line->SetLineColor(kCyan); //nuceli
+      return t;
+    }
     
-      
+      /*------------
+  Function to display MCTracjories of any shape, these are made up of a series of TEveLines, in the same way as Reco Helices:      
+  -------------*/
     void TEveMu2eMCInterface::AddFullMCTrajectory(bool firstloop, const MCTrajectoryCollection *trajcol, TEveMu2e2DProjection *tracker2Dproj, bool Redraw, bool accumulate, TEveProjectionManager *TXYMgr, TEveProjectionManager *TRZMgr, TEveScene *scene1, TEveScene *scene2, std::vector<int> particleIds){
 	DataLists<const MCTrajectoryCollection*, TEveMu2e2DProjection*>(trajcol, Redraw, accumulate, "MC Trajectory", &fTrackList3D, &fTrackList2D, tracker2Dproj);
 
@@ -158,7 +228,7 @@ namespace mu2e{
           for(trajectoryIter=trajcol->begin(); trajectoryIter!=trajcol->end(); trajectoryIter++)
           { 
             TEveMu2eCustomHelix *line = new TEveMu2eCustomHelix();
-            
+            //check user defined list of particles to plot:
             int x = Contains(particleIds,trajectoryIter->first->pdgId()); 
             if(x == 1){
               const std::vector<MCTrajectoryPoint> &points = trajectoryIter->second.points();
@@ -178,56 +248,23 @@ namespace mu2e{
               
               string energy = to_string(points[0].kineticEnergy());
               //string pdgId= to_string(trajectoryIter->first->pdgId());
-              const char* pid = "pid";
-              auto t = new TEveText(pid);
-              t->SetFontSize(15);
-              line_twoD->SetLineColor(kRed);
-              line_twoD->SetLineWidth(3);
-              fTrackList2D->AddElement(line_twoD);
+              
+              //line_twoD->SetLineColor(kRed);
+              
 
               const std::string title = " MCTrajectory "+ energy;// + "PDG Code = " + pdgId;
               line->SetTitle(Form(title.c_str()));
-              if(trajectoryIter->first->pdgId() == 11){
-                      line->SetLineColor(kRed);//electrons
-                      pid = "electron -";
-                      t->SetText(pid);
-                      t->SetMainColor(kRed);
-                      t->RefMainTrans().SetPos(0.0,400.0,3000.0);
-              }
-              else if(trajectoryIter->first->pdgId() == -11){
-                           line->SetLineColor(kYellow);//positrons
-                           pid = "positron +";
-                           t->SetText(pid);
-                           t->SetMainColor(kYellow);
-                           t->RefMainTrans().SetPos(0.0,550.0,3000.0);
-              }
-              else if(trajectoryIter->first->pdgId() == 13){
-                           line->SetLineColor(kGreen);//muons
-                           pid = "muon - ";
-                           t->SetText(pid);
-                           t->SetMainColor(kGreen);
-                           t->RefMainTrans().SetPos(0.0,650.0,3000.0);
-              }
-              else if(trajectoryIter->first->pdgId() == -211){
-                           line->SetLineColor(kMagenta);//pion
-                           pid = "pion -";
-                           t->SetText(pid);
-                           t->SetMainColor(kMagenta);
-                           t->RefMainTrans().SetPos(0.0,750.0,3000.0);
-              }
-              else if(trajectoryIter->first->pdgId() == 2212){
-                           line->SetLineColor(kBlue); //proton
-                           pid = "proton";
-                           t->SetText(pid);
-                           t->SetMainColor(kBlue);
-                           t->RefMainTrans().SetPos(0.0,850.0,3000.0);
-              }
-              else line->SetLineColor(kCyan); //nuceli
+              
+              //Get PID label:
+              TEveText *t = GetLabel(trajectoryIter->first->pdgId(), line, line_twoD);
               line->SetLineWidth(3);
+              line_twoD->SetLineWidth(3);
+              fTrackList2D->AddElement(line_twoD);
               fTrackList3D->AddElement(line);
               fTrackList3D->AddElement(t);
               }
-             else std::cout<<"Not a user selected particle"<<std::endl;
+              
+             else std::cout<<"Warning: No Particles of Specified Type In File "<<std::endl;
             }
             tracker2Dproj->fXYMgr->ImportElements(fTrackList2D, tracker2Dproj->fDetXYScene); 
             tracker2Dproj->fRZMgr->ImportElements(fTrackList2D, tracker2Dproj->fDetRZScene);
