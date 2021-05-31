@@ -5,6 +5,9 @@
 // Original author KLG based on Mu2eWorld constructDirt
 // Updated by Andrei Gaponenko.
 
+// art includes
+#include "art/Framework/Services/Registry/ServiceDefinitionMacros.h"
+
 // Mu2e includes.
 #include "Mu2eG4/inc/constructWorldVolume.hh"
 #include "Mu2eG4Helper/inc/VolumeInfo.hh"

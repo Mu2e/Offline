@@ -72,8 +72,7 @@ namespace mu2e {
 
   bool FilterEcalNNTrigger::filter(art::Event& event)
   {
-      art::Handle<CaloClusterCollection> caloClustersHandle;
-      event.getByToken(caloClusterToken_, caloClustersHandle);
+      art::Handle<CaloClusterCollection> caloClustersHandle = event.getHandle<CaloClusterCollection>(caloClusterToken_);
       
       auto trigInfo = std::make_unique<TriggerInfo>();
       bool retval   = filterClusters(caloClustersHandle, *trigInfo);

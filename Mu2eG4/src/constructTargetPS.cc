@@ -7,6 +7,9 @@
 #include <sstream>
 #include <cmath>
 
+// art includes
+#include "art/Framework/Services/Registry/ServiceDefinitionMacros.h"
+
 // Mu2e includes.
 #include "BeamlineGeom/inc/Beamline.hh"
 #include "ProductionSolenoidGeom/inc/ProductionSolenoid.hh"

@@ -7,6 +7,9 @@
 #include "fcl/minimalMessageService.fcl"
 #include "fcl/standardServices.fcl"
 #include "DAQ/fcl/prolog_trigger.fcl"
+
+#include "CaloCluster/fcl/prolog_trigger.fcl"
+
 process_name : FragmentToDigi
 
 source : {
@@ -24,15 +27,38 @@ services : @local::Services.Reco
 physics : {
 
    producers : {
+      fetchData:
+      {
+	  module_type : PrefetchDAQData
+	  debugLevel             : 0
+	  fetchCaloDigis         : 0
+	  fetchStrawDigis        : 0
+	  fetchCaloFragments     : 1
+	  fetchTrkFragments      : 1
+	  caloDigiCollectionTag  : "notNow"
+	  strawDigiCollectionTag : "notNow"
+	  caloFragmentTag        : "daq:calo"
+	  trkFragmentTag         : "daq:trk"
+      }
+
       makeSD:
       {
 	 @table::DAQ.producers.makeSD
       }
 
+       CaloDigiMaker:
+       {
+	 @table::DAQ.producers.CaloDigiMaker
+       }
+
       CaloHitMaker:		
       {	 
 	 @table::DAQ.producers.CaloHitMaker
       }
+       CaloClusterFast:
+       {
+	   @table::CaloClusterTrigger.producers.CaloClusterFast
+       }
    }
 
    analyzers  : {
@@ -47,8 +73,10 @@ physics : {
    }
 
    #  t1 : [ makeSD ] 
-   t1 : [ makeSD, CaloHitMaker ] 
-   e1 : [ readFragments, outfile ]
+   #   t1 : [ fetchData, makeSD , CaloDigiMaker, CaloHitMaker, CaloClusterFast] 
+   t1 : [ fetchData, makeSD , CaloHitMaker, CaloClusterFast] 
+   #e1 : [ outfile, readFragments]
+   e1 : []
 
    trigger_paths  : [t1]
    end_paths      : [e1]
@@ -76,3 +104,6 @@ services.TimeTracker : {
     }
 }
 services.scheduler.wantSummary: true
+physics.producers.makeSD.useTrkADC : 0
+#physics.producers.makeSD.diagLevel : 10
+#physics.producers.CaloDigiMaker.diagLevel : 10

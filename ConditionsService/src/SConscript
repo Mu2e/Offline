@@ -36,11 +36,12 @@ helper.make_plugins( [ mainlib,
                        'canvas',
                        'MF_MessageLogger',
                        'fhiclcpp',
+                       'fhiclcpp_types',
+                       'tbb',
                        'canvas',
                        'cetlib',
                        'cetlib_except',
                        'boost_filesystem',
-                       'boost_system',
                        ] )
 
 

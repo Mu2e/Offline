@@ -105,9 +105,8 @@ namespace mu2e {
       if( !(geom->hasElement<Calorimeter>()) ) return;
 
       // Get handles to calorimeter crystal hits
-      art::Handle<CaloHitCollection> CaloHitsHandle;
-      bool const success = event.getByToken(caloCrystalToken_, CaloHitsHandle);
-      if (!success) return;
+      art::Handle<CaloHitCollection> CaloHitsHandle = event.getHandle<CaloHitCollection>(caloCrystalToken_);
+      if ( ! CaloHitsHandle ) return;
 
       // Create a new CaloCluster collection and fill it
       auto caloProtoClustersMain = std::make_unique<CaloProtoClusterCollection>();

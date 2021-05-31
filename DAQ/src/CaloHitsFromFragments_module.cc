@@ -27,6 +27,8 @@
 #include <list>
 #include <memory>
 #include <unordered_map>
+#include <array>
+#include <vector>
 
 namespace art {
 class CaloHitsFromFragments;
@@ -63,6 +65,9 @@ public:
         fhicl::Name("pulseRatioMin"),
         fhicl::Comment("Min of the ratio between two SiPM pulses coupled to the same crystal "
                        "within the time-gate")};
+    fhicl::Atom<float> hitEDepMax{
+        fhicl::Name("hitEDepMax"),
+        fhicl::Comment("Maximum hit energy in MeV (to reject saturated pulses)")};
   };
 
   // --- C'tor/d'tor:
@@ -79,22 +84,24 @@ private:
                             std::unique_ptr<mu2e::CaloHitCollection> const& calo_hits,
                             std::unique_ptr<mu2e::CaloHitCollection> const& caphri_hits);
 
-  void addPulse(uint16_t& crystalID, float& time, float& eDep);
+  void addPulse(uint16_t& crystalID, float& time, float& eDep, 
+		std::unique_ptr<mu2e::CaloHitCollection>const& hits_calo,
+		std::unique_ptr<mu2e::CaloHitCollection>const& hits_caphri);
 
   int diagLevel_;
 
   art::InputTag caloFragmentsTag_;
   float digiSampling_;
-  float deltaTPulses_, pulseRatioMax_, pulseRatioMin_;
+  float deltaTPulses_, pulseRatioMax_, pulseRatioMin_, hitEDepMax_;
 
   const int hexShiftPrint = 7;
 
-  std::unordered_map<uint16_t, std::list<CrystalInfo>>
-      pulseMap_; // Temporary hack until the Calorimeter channel map is finialized
+  std::unordered_map<uint16_t, std::list<mu2e::CaloHit>> pulseMap_; // Temporary hack until the Calorimeter channel map is finialized
   mu2e::CaloDAQUtilities caloDAQUtil_;
 
   std::array<float, 674 * 4> peakADC2MeV_;
-  std::array<int, 4> caphriCrystalID_;
+  std::array<float, 674 * 4> timeCalib_;
+  std::array<int, 4>         caphriCrystalID_;
 };
 
 // ======================================================================
@@ -108,6 +115,7 @@ void art::CaloHitsFromFragments::beginRun(art::Run& Run) {
   // NOW FILLING THE ARRAY WITH A DUMMY VALUE
   for (size_t i = 0; i < peakADC2MeV_.size(); ++i) {
     peakADC2MeV_[i] = 0.0461333;
+    timeCalib_  [i] = 0.;
   }
 
   // FIX ME!
@@ -116,39 +124,64 @@ void art::CaloHitsFromFragments::beginRun(art::Run& Run) {
   caphriCrystalID_ = {623, 624, 595, 596};
 }
 
-void art::CaloHitsFromFragments::addPulse(uint16_t& crystalID, float& time, float& eDep) {
+void art::CaloHitsFromFragments::addPulse(uint16_t& crystalID, float& time, float& eDep, 
+					  std::unique_ptr<mu2e::CaloHitCollection>const & hits_calo,
+					  std::unique_ptr<mu2e::CaloHitCollection>const & hits_caphri) {
 
   bool addNewHit(true);
+  bool isCaphri = std::find(caphriCrystalID_.begin(), caphriCrystalID_.end(), crystalID) !=
+    caphriCrystalID_.end();
+  size_t counter(0);
   for (auto& pulse : pulseMap_[crystalID]) {
-    // search if there is a hit matching in time and eDep
-    if ((std::fabs(pulse._time - time) < deltaTPulses_) && (eDep / pulse._eDep <= pulseRatioMax_) &&
-        (eDep / pulse._eDep >= pulseRatioMin_)) {
-      // combine the pulses
-      pulse._time = (pulse._time + time) / 2.;
-      pulse._eDep = (pulse._eDep + eDep) / 2.;
-      pulse._nSiPM += 1;
-      addNewHit = false;
+    ++counter;
+    if (std::fabs(pulse.time() - time) < deltaTPulses_){
+      if( (eDep / pulse.energyDep() <= pulseRatioMax_) &&
+	  (eDep / pulse.energyDep() >= pulseRatioMin_) ) {
+	// combine the pulses
+	pulse.setTime  ( (pulse.time() + time) / 2.);//probably not necessary
+	pulse.setEDep  ( (pulse.energyDep() + eDep) / 2.);
+	pulse.setNSiPMs( pulse.nSiPMs()+ 1);
+	addNewHit = false;
+      }else if (eDep > pulse.energyDep()) {
+	pulse.setTime  (time);//probably not necessary
+	pulse.setEDep  (eDep);
+	addNewHit = false;
+      }
+
+      //move the pulse in the final collection
+      if (isCaphri){
+	hits_caphri->emplace_back(std::move(pulse));
+      }else{
+	hits_calo->emplace_back(std::move(pulse));
+      }
       break;
     }
   }
   if (addNewHit) {
-    pulseMap_[crystalID].push_back(CrystalInfo(crystalID, 1, time, eDep));
+    pulseMap_[crystalID].emplace_back(mu2e::CaloHit(crystalID, 1, time, eDep));
   }
 }
 
 art::CaloHitsFromFragments::CaloHitsFromFragments(const art::EDProducer::Table<Config>& config) :
-    art::EDProducer{config}, diagLevel_(config().diagLevel()),
-    caloFragmentsTag_(config().caloTag()), digiSampling_(config().digiSampling()),
-    deltaTPulses_(config().deltaTPulses()), pulseRatioMax_(config().pulseRatioMax()),
-    pulseRatioMin_(config().pulseRatioMin()), caloDAQUtil_("CaloHitsFromFragments") {
-  produces<mu2e::CaloHitCollection>();
-  produces<mu2e::CaloHitCollection>("caphri");
-}
+  art::EDProducer{config}, diagLevel_(config().diagLevel()),
+  caloFragmentsTag_(config().caloTag()), 
+  digiSampling_    (config().digiSampling()),
+  deltaTPulses_    (config().deltaTPulses()), 
+  pulseRatioMax_   (config().pulseRatioMax()),
+  pulseRatioMin_   (config().pulseRatioMin()), 
+  hitEDepMax_      (config().hitEDepMax()), 
+  caloDAQUtil_     ("CaloHitsFromFragments") 
+  {
+    pulseMap_.reserve(4000);
+    produces<mu2e::CaloHitCollection>();
+    produces<mu2e::CaloHitCollection>("caphri");
+  }
 
 // ----------------------------------------------------------------------
 
 void art::CaloHitsFromFragments::produce(Event& event) {
   pulseMap_.clear();
+
   art::EventNumber_t eventNumber = event.event();
 
   // Collection of CaloHits for the event
@@ -251,7 +284,7 @@ void art::CaloHitsFromFragments::analyze_calorimeter_(
                 << std::endl;
     }
 
-    auto hits = cc.GetCalorimeterHits(curBlockIdx);
+    auto hits = cc.GetCalorimeterHitsForTrigger(curBlockIdx);
     bool err = false;
     for (size_t hitIdx = 0; hitIdx < calData->NumberOfHits; hitIdx++) {
 
@@ -281,38 +314,26 @@ void art::CaloHitsFromFragments::analyze_calorimeter_(
           caloDAQUtil_.getSiPMID(hits[hitIdx].first); // hits[hitIdx].first.DIRACB >> 12;
 
       size_t peakIndex = hits[hitIdx].first.IndexOfMaxDigitizerSample;
-      float eDep(0);
-      if (hits[hitIdx].first.IndexOfMaxDigitizerSample < hits[hitIdx].second.size()) {
-        eDep = hits[hitIdx].second.at(peakIndex) * peakADC2MeV_[sipmID];
+      // float  eDep(0);
+      //      if (hits[hitIdx].first.IndexOfMaxDigitizerSample < hits[hitIdx].second.size()) {
+        // eDep = hits[hitIdx].second.at(peakIndex) * peakADC2MeV_[sipmID];
+      float  eDep = hits[hitIdx].second * peakADC2MeV_[sipmID];
+	//      }
+      float  time = hits[hitIdx].first.Time + peakIndex * digiSampling_ + timeCalib_[sipmID];
+
+      //FIX ME! WE NEED TO CHECK IF TEH PULSE IS SATURATED HERE
+      if (eDep < hitEDepMax_){
+	addPulse(crystalID, time, eDep, calo_hits, caphri_hits);
       }
-      float time = hits[hitIdx].first.Time + peakIndex * digiSampling_;
-
-      addPulse(crystalID, time, eDep);
-
       if (diagLevel_ > 1) {
         // Until we have the final mapping, the BoardID is just a placeholder
         // adc_t BoardId    = cc.DBC_BoardID(pos,channelIdx);
 
-        caloDAQUtil_.printAllHitInfo(crystalID, sipmID, hdr, hits[hitIdx].first,
-                                     hits[hitIdx].second);
+	caloDAQUtil_.printAllHitInfo(crystalID, sipmID, hdr, hits[hitIdx].first,
+				     hits[hitIdx].second);
       } // End debug output
 
     } // End loop over readout channels in DataBlock
-
-    // now create the CaloHitCollection
-    for (auto& crystal : pulseMap_) {
-      bool isCaphri = std::find(caphriCrystalID_.begin(), caphriCrystalID_.end(), crystal.first) !=
-                      caphriCrystalID_.end();
-      for (auto& crystalInfo : crystal.second) {
-        if (isCaphri) {
-          caphri_hits->emplace_back(crystal.first, crystalInfo._nSiPM, crystalInfo._time,
-                                    crystalInfo._eDep);
-        } else {
-          calo_hits->emplace_back(crystal.first, crystalInfo._nSiPM, crystalInfo._time,
-                                  crystalInfo._eDep);
-        }
-      }
-    }
 
     if (err)
       continue;

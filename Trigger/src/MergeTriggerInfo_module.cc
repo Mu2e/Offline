@@ -53,13 +53,13 @@ namespace mu2e {
     //			   art::ModuleLabelSelector(""));// && 
     //                           art::ProcessNameSelector("*"));
     std::vector<art::Handle<TriggerInfo> > list_of_triggerInfo; 
-    event.getMany(selector, list_of_triggerInfo);
+    event.getMany<TriggerInfo>(selector);
 
     if(_debug > 0){
       std::cout << "["<<moduleDescription().moduleLabel() << "] number of TriggerInfo found in the is: "<< list_of_triggerInfo.size() << std::endl;
     }
     
-    for (auto trigInfoH: list_of_triggerInfo){
+    for (auto & trigInfoH: list_of_triggerInfo){
       TriggerInfo trigInfo(*trigInfoH.product());
       tiCol->push_back(trigInfo);
     }

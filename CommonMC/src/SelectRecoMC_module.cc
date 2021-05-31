@@ -349,8 +349,7 @@ namespace mu2e {
     for (auto const& ksc : _kscs) {
     // get all products from this
       art::ModuleLabelSelector kscsel(ksc);
-      std::vector< art::Handle<KalSeedCollection> > seedhs;
-      event.getMany<KalSeedCollection>(kscsel, seedhs);
+      std::vector< art::Handle<KalSeedCollection> > seedhs = event.getMany<KalSeedCollection>(kscsel);
       if(_debug > 1) std::cout << "Found " << seedhs.size() << " collections from module " << ksc << std::endl;
       // loop over the KalSeeds and the hits inside them
       for(auto const& seedh : seedhs) {
@@ -392,8 +391,7 @@ namespace mu2e {
     for (auto const& hsc : _hscs) {
     // get all products from this
       art::ModuleLabelSelector hscsel(hsc);
-      std::vector< art::Handle<HelixSeedCollection> > seedhs;
-      event.getMany<HelixSeedCollection>(hscsel, seedhs);
+      std::vector< art::Handle<HelixSeedCollection> > seedhs = event.getMany<HelixSeedCollection>(hscsel);
       if(_debug > 1) std::cout << "Found " << seedhs.size() << " collections from module " << hsc << std::endl;
       // loop over the HelixSeeds and the hits inside them
       for(auto const& seedh : seedhs) {
