@@ -35,7 +35,7 @@ TEveEventDisplayBase : {
       addMCTraj				          : true 
 
     }
-  particles :   [11,13,2212,2112,211,22,212]
+  particles :   [-11,11,13,-13,2212,2112,211,22,212]
   }  
   
 TEveEventDisplayUpstream : {
@@ -60,7 +60,7 @@ TEveEventDisplayUpstream : {
       addCosmicSeedFit	          : false
       addMCTraj				            : true
    }
-    particles :   [11,13,2212,2112,211,22,212]
+    particles :   [-11,11,13,-13,2212,2112,211,22,212]
     
   }  
   
@@ -83,7 +83,7 @@ TEveEventDisplayHelix : {
         TrkExtTrajCollection      :  NULL
         MCTrajectoryCollection    :  "compressRecoMCs"
         addHits 		  : false
-        addTracks 		  : false
+        addTracks 		  : true
         addCrvHits		  : false
         addCosmicSeedFit	  : false
         addClusters		  : true
@@ -114,7 +114,7 @@ TEveEventDisplayCosmics : {
       addTrkExtTrajs		        : false
       addMCTraj				          : false 
    }
-   particles :   [11,13,2212,2112,211,22,212]
+   particles :   [13,-13]
   }   
 
 
