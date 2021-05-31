@@ -208,8 +208,7 @@ namespace mu2e {
   void CaloNeutron::endSubRun(const art::SubRun& sr)
   {
 
-    std::vector<art::Handle<GenEventCount> > hh;
-    sr.getManyByType(hh);
+    std::vector<art::Handle<GenEventCount> > hh = sr.getMany<GenEventCount>();
 
     if(hh.size() > 1) 
     {
@@ -268,10 +267,10 @@ namespace mu2e {
 
       // Get the StepPointMCs from the event.
       HandleVector crystalStepsHandles, ROStepsHandles,ROCardStepsHandles,CrateStepsHandles;
-      event.getMany( getCrystalSteps, crystalStepsHandles);
-      event.getMany( getROSteps, ROStepsHandles);
-      event.getMany( getROCardSteps, ROCardStepsHandles);
-      event.getMany( getCrateSteps, CrateStepsHandles);
+      crystalStepsHandles = event.getMany<StepPointMCCollection>(getCrystalSteps);
+      ROStepsHandles = event.getMany<StepPointMCCollection>(getROSteps);
+      ROCardStepsHandles = event.getMany<StepPointMCCollection>(getROCardSteps);
+      CrateStepsHandles = event.getMany<StepPointMCCollection>(getCrateSteps);
 
 
 

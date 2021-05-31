@@ -96,6 +96,10 @@ void art::CaloRecoFromFragments::produce(Event& event) {
   }
   
   numCalFrags = calFragments->size();
+  if (diagLevel_ > 1) {
+    std::cout << "[CaloRecoFromFragments::produce] found "<< numCalFrags <<" Calorimeter fragments"
+	      << std::endl;
+  }
   for (size_t idx = 0; idx < numCalFrags; ++idx) {
     auto size = ((*calFragments)[idx]).sizeBytes(); // * sizeof(artdaq::RawDataType);
     totalSize += size;
@@ -199,7 +203,7 @@ void art::CaloRecoFromFragments::analyze_calorimeter_(mu2e::CaloDAQMap const& ca
       }
 
       if (diagLevel_ > 0) {
-        std::cout << "[StrawAndCaloDigiFromFragments] NEW CALDATA: NumberOfHits "
+        std::cout << "[CaloRecoFromFragments] NEW CALDATA: NumberOfHits "
                   << calData->NumberOfHits << std::endl;
       }
 
