@@ -197,8 +197,8 @@ namespace mu2e{
           fHitsList3D->AddElement(HitList3D); 
         }
       }
-      tracker2Dproj->fXYMgr->ImportElements(fHitsList2D, tracker2Dproj->fDetXYScene); 
-      tracker2Dproj->fRZMgr->ImportElements(fHitsList2D, tracker2Dproj->fDetRZScene);
+      tracker2Dproj->fXYMgr->ImportElements(fHitsList2D, tracker2Dproj->fEvtXYScene); 
+      tracker2Dproj->fRZMgr->ImportElements(fHitsList2D, tracker2Dproj->fEvtRZScene);
       /*TXYMgr->ImportElements(fHitsList2D, scene1);
       TRZMgr->ImportElements(fHitsList2D, scene2);*/
       gEve->AddElement(HitList3D);
@@ -254,14 +254,14 @@ namespace mu2e{
             if(cluster.diskID()==0){
               teve_cluster2D->DrawCluster("CaloCluster3D, Cluster #" + to_string(i + 1) + ", Position =" + pos2D + ", Energy = " + to_string(cluster.energyDep()) + ", Time = " + to_string(cluster.time()), pointInMu2e,energylevels[i], ClusterList2D_disk0, hits, addHits); 
               fClusterList2D_disk0->AddElement(ClusterList2D_disk0); 
-              calo2Dproj->fXYMgr->ImportElements(fClusterList2D_disk0, calo2Dproj->fDetXYScene); 
+              calo2Dproj->fXYMgr->ImportElements(fClusterList2D_disk0, calo2Dproj->fEvtXYScene); 
               //CfXYMgr->ImportElements(fClusterList2D_disk0, scene1); For Multiview
              
             }
             if(cluster.diskID()==1){
              teve_cluster2D->DrawCluster("CaloCluster3D, Cluster #" + to_string(i + 1) + ", Position =" + pos2D + ", Energy = " + to_string(cluster.energyDep()) + ", Time = " + to_string(cluster.time()), pointInMu2e,energylevels[i], ClusterList2D_disk1, hits, addHits); 
              fClusterList2D_disk1->AddElement(ClusterList2D_disk1); 
-             calo2Dproj->fRZMgr->ImportElements(fClusterList2D_disk1, calo2Dproj->fDetRZScene); 
+             calo2Dproj->fRZMgr->ImportElements(fClusterList2D_disk1, calo2Dproj->fEvtRZScene); 
              //CfRZMgr->ImportElements(fClusterList2D_disk1, scene2); For MultiView
             }
         }
@@ -370,8 +370,8 @@ namespace mu2e{
         
         /*TXYMgr->ImportElements(fTrackList2D, scene1);
         TRZMgr->ImportElements(fTrackList2D, scene2);*/
-        tracker2Dproj->fXYMgr->ImportElements(fTrackList2D, tracker2Dproj->fDetXYScene);
-        tracker2Dproj->fRZMgr->ImportElements(fTrackList2D, tracker2Dproj->fDetRZScene);
+        tracker2Dproj->fXYMgr->ImportElements(fTrackList2D, tracker2Dproj->fEvtXYScene);
+        tracker2Dproj->fRZMgr->ImportElements(fTrackList2D, tracker2Dproj->fEvtRZScene);
         gEve->AddElement(fTrackList3D);
         gEve->Redraw3D(kTRUE);
       }
@@ -424,8 +424,8 @@ namespace mu2e{
 
     }
 
-    tracker2Dproj->fXYMgr->ImportElements(fTrackList2D, tracker2Dproj->fDetXYScene);
-    tracker2Dproj->fRZMgr->ImportElements(fTrackList2D, tracker2Dproj->fDetRZScene);
+    tracker2Dproj->fXYMgr->ImportElements(fTrackList2D, tracker2Dproj->fEvtXYScene);
+    tracker2Dproj->fRZMgr->ImportElements(fTrackList2D, tracker2Dproj->fEvtRZScene);
 
     TXYMgr->ImportElements(fTrackList2D, scene1);
     TRZMgr->ImportElements(fTrackList2D, scene2);
