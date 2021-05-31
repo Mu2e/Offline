@@ -12,6 +12,9 @@
 #include "CLHEP/Vector/ThreeVector.h"
 #include "CLHEP/Units/PhysicalConstants.h"
 
+// art includes
+#include "art/Framework/Services/Registry/ServiceDefinitionMacros.h"
+
 // Mu2e includes.
 
 #include "Mu2eG4/inc/constructSTM.hh"

@@ -22,10 +22,11 @@ helper.make_plugins( [ mainlib,
                        'art_Utilities',
                        'canvas',
                        'fhiclcpp',
+                       'fhiclcpp_types',
+                       'tbb',
                        'cetlib',
                        'cetlib_except',
                        'boost_filesystem',
-                       'boost_system',
                        'Core',
                      ] )
 

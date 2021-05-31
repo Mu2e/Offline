@@ -80,8 +80,7 @@ namespace mu2e {
 
   void SimParticleCheck00::analyze(const art::Event& event) {
     typedef std::vector< art::Handle<SimParticleCollection> > HandleVector;
-    HandleVector allSims;
-    event.getManyByType(allSims);
+    HandleVector allSims = event.getMany<SimParticleCollection>();
 
     _hNCollections->Fill(allSims.size());
 

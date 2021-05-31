@@ -36,11 +36,12 @@ mainlib = helper.make_mainlib ( [
                                   'art_Utilities',
                                   'canvas',
                                   'fhiclcpp',
+                                  'fhiclcpp_types',
+                                  'tbb',
                                   'cetlib',
                                   'cetlib_except',
                                   'CLHEP',
                                   'MathCore',
-                                  'boost_system',
                                   rootlibs
                                 ] )
 

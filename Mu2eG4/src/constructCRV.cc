@@ -6,6 +6,8 @@
 //
 // Notes:
 
+// art includes
+#include "art/Framework/Services/Registry/ServiceDefinitionMacros.h"
 
 // clhep includes
 #include "CLHEP/Vector/ThreeVector.h"

@@ -27,16 +27,19 @@ common = [ 'mu2e_MCDataProducts',
            'art_Utilities',
            'canvas',
            'fhiclcpp',
+           'fhiclcpp_types',
+           'tbb',
            'cetlib',
            'cetlib_except',
            'CLHEP',
            'Core',
            'boost_filesystem',
-           'boost_system',
     ]
 
 
-mainlib = helper.make_mainlib ( [ 'MF_MessageLogger'
+mainlib = helper.make_mainlib ( [ 'MF_MessageLogger',
+                                  'fhiclcpp_types',
+                                  'tbb',
                                 ] )
 
 # Each service requires a custom link list so make them one at a time.
@@ -62,12 +65,13 @@ helper.make_plugins( [ mainlib,
                        'art_Utilities',
                        'canvas',
                        'fhiclcpp',
+                       'fhiclcpp_types',
+                       'tbb',
                        'cetlib',
                        'cetlib_except',
                        'CLHEP',
                        'Core',
                        'boost_filesystem',
-                       'boost_system',
                      ]
                      )
 

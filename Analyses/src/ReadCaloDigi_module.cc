@@ -26,6 +26,7 @@
 #include "art_root_io/TFileDirectory.h"
 #include "messagefacility/MessageLogger/MessageLogger.h"
 #include "art/Framework/Services/Optional/RandomNumberGenerator.h"
+#include "art/Framework/Services/Registry/ServiceDefinitionMacros.h"
 
 // Mu2e includes.
 #include "CalorimeterGeom/inc/Calorimeter.hh"
@@ -449,10 +450,9 @@ namespace mu2e {
 
     //Handle to VD steps
     art::ProductInstanceNameSelector selector_vdhits("virtualdetector");
-    StepMCHandleVector vdStepsHandleVec;
     art::Handle<StepPointMCCollection> *vdStepsHandle;
     const StepPointMCCollection *vdHits;
-    event.getMany(selector_vdhits, vdStepsHandleVec);
+    StepMCHandleVector vdStepsHandleVec = event.getMany<StepPointMCCollection>(selector_vdhits);
 
 
     //Handle to tracks collection

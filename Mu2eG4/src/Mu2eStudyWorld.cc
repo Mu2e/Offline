@@ -18,6 +18,7 @@
 #include "messagefacility/MessageLogger/MessageLogger.h"
 #include "cetlib_except/exception.h"
 #include "art/Utilities/make_tool.h"
+#include "art/Framework/Services/Registry/ServiceDefinitionMacros.h"
 
 // Mu2e includes
 #include "Mu2eG4Helper/inc/Mu2eG4Helper.hh"

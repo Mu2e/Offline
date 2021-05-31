@@ -27,6 +27,7 @@
 // Framework includes
 #include "messagefacility/MessageLogger/MessageLogger.h"
 #include "cetlib_except/exception.h"
+#include "art/Framework/Services/Registry/ServiceDefinitionMacros.h"
 
 // Mu2e includes
 #include "ConfigTools/inc/checkForStale.hh"
@@ -966,7 +967,7 @@ namespace mu2e {
 
 
     /************************** ExtMonFNALPixelSD **************************/
-    if(true) { // this SD does not derive from Mu2eG4SensitiveDetector as it does not produce StepPointMCCollection
+    if(  sdHelper_->extMonPixelsEnabled() ) {
       GeomHandle<mu2e::ExtMonFNAL::ExtMon> extmon;
       //SDman->AddNewDetector(new ExtMonFNALPixelSD(_config, *extmon));
 
