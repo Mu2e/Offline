@@ -44,6 +44,7 @@
 #include "art/Framework/Services/Registry/ServiceHandle.h"
 #include "canvas/Utilities/InputTag.h"
 #include "art/Utilities/Globals.h"
+#include "messagefacility/MessageLogger/MessageLogger.h"
 
 // Geant4 includes
 #include "Geant4/G4Run.hh"
@@ -72,7 +73,7 @@ namespace {
 
 namespace tbb {
   template<>
-  struct tbb_hash_compare<std::thread::id> {
+  struct tbb::detail::d1::tbb_hash_compare<std::thread::id> {
     tbb_hash_compare() {}
     static size_t hash(std::thread::id tid) {
       std::ostringstream oss;

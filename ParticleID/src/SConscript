@@ -29,7 +29,7 @@ libs =  [
     'art_Framework_Principal',
     'art_Framework_Services_Registry',
     'art_root_io_tfile_support',
-    'art_root_io_TFileService_service',
+    'art_root_io_TFileService',
     'art_Framework_Services_Optional_RandomNumberGenerator_service',
     'art_Persistency_Common',
     'art_Persistency_Provenance',
@@ -37,13 +37,14 @@ libs =  [
     'canvas',
     'MF_MessageLogger',
     'fhiclcpp',
+    'fhiclcpp_types',
+    'tbb',
     'cetlib',
     'cetlib_except',
     'CLHEP',
     rootlibs,
     'Minuit',
     'boost_filesystem',
-    'boost_system',
     'pthread'
     ]
 

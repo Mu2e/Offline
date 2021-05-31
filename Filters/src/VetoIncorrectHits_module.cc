@@ -14,6 +14,7 @@
 #include "art/Framework/Core/ModuleMacros.h"
 
 #include "CLHEP/Units/SystemOfUnits.h"
+#include "messagefacility/MessageLogger/MessageLogger.h"
 #include "Mu2eUtilities/inc/TwoLinePCA.hh"
 #include "TrackerGeom/inc/Tracker.hh"
 #include "MCDataProducts/inc/StepPointMCCollection.hh"

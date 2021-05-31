@@ -26,7 +26,6 @@ mainlib = helper.make_mainlib ( [ 'mu2e_GeometryService',
                                   'cetlib',
                                   'cetlib_except',
                                   'CLHEP',
-                                  'boost_system',
                                   'Core'
                                 ] )
 

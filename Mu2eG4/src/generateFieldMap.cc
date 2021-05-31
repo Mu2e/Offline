@@ -18,6 +18,7 @@
 
 #include "art_root_io/TFileService.h"
 #include "art/Framework/Principal/Handle.h"
+#include "art/Framework/Services/Registry/ServiceDefinitionMacros.h"
 
 // G4 includes
 #include "Geant4/G4TransportationManager.hh"

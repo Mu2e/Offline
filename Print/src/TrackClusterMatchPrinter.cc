@@ -10,8 +10,7 @@ mu2e::TrackClusterMatchPrinter::Print(art::Event const& event,
   if(verbose()<1) return;
   if(tags().empty()) {
     // if a list of instances not specified, print all instances
-    std::vector< art::Handle<TrackClusterMatchCollection> > vah;
-    event.getManyByType(vah);
+    std::vector< art::Handle<TrackClusterMatchCollection> > vah = event.getMany<TrackClusterMatchCollection>();
     for (auto const & ah : vah) Print(ah);
   } else {
     // print requested instances

@@ -44,16 +44,14 @@ namespace mu2e {
       if(stepPointMap_.empty()) { // need to load the associations
 
         typedef std::vector<art::Handle<GenParticleSPMHistory> > StepPointHandles;
-        StepPointHandles stepPointResults;
-        evt_->getManyByType(stepPointResults);
+        StepPointHandles stepPointResults = evt_->getMany<GenParticleSPMHistory>();
 
 	if (stepPointResults.empty() ) { //no associations with StepPoints. Trying with simparticle end points
 
 	  if (simParticleMap_.empty()) { //need to load the associations
 
 	    typedef std::vector<art::Handle<GenSimParticleLink> > SimParticleHandles;
-	    SimParticleHandles simParticleResults;
-	    evt_->getManyByType(simParticleResults);
+	    SimParticleHandles simParticleResults = evt_->getMany<GenSimParticleLink>();
 
 	    for(SimParticleHandles::const_iterator h = simParticleResults.begin(); h != simParticleResults.end(); ++h) {
 	      AGDEBUG("In loop over simParticleHandles");

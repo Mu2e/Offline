@@ -383,8 +383,7 @@ namespace mu2e {
 
      // These selectors will select data products with the given instance name, and ignore all other fields of the product ID.
      art::ProductInstanceNameSelector getCrystalSteps(_calorimeterStepPoints);
-     HandleVector crystalStepsHandles;
-     event.getMany( getCrystalSteps, crystalStepsHandles);
+     HandleVector crystalStepsHandles = event.getMany<StepPointMCCollection>(getCrystalSteps);
 
      //Calorimeter shower MC
      art::Handle<CaloShowerSimCollection> caloShowerSimHandle;
