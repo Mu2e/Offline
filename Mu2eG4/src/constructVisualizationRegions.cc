@@ -21,6 +21,8 @@
 
 #include "cetlib_except/exception.h"
 
+#include "art/Framework/Services/Registry/ServiceDefinitionMacros.h"
+
 #include "BFieldGeom/inc/BFieldManager.hh"
 #include "GeometryService/inc/GeomHandle.hh"
 #include "GeometryService/inc/WorldG4.hh"

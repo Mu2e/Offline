@@ -1,0 +1,4 @@
+#include "Mu2eG4/fcl/g4test_mix1ST.fcl"
+physics.producers.g4run.module_type : "Mu2eG4MT"
+services.scheduler.num_schedules : 5
+services.scheduler.num_threads   : 5

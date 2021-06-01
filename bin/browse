@@ -7,8 +7,6 @@
 # Contact person Rob Kutschke
 #
 
-basename $0 2>/dev/null
-
 # Need to exit/return depending if this is source or executed.
 wasSourced=1
 if [ "`basename $0 2>/dev/null`" = "browse" ];then 
@@ -24,5 +22,5 @@ if [ ! $# == 1 ]; then
   fi
   exit
 fi
-
-root -l ${MU2E_BASE_RELEASE}/bin/browse.cint\(\"$1\"\)
+SCRIPTDIR=$( dirname $(readlink -f $BASH_SOURCE) )
+root -l $SCRIPTDIR/browse.cint\(\"$1\"\)

@@ -1,19 +1,21 @@
 #include "TEveEventDisplay/src/TEveMu2e_base_classes/TEveMu2eCluster.h"
-#include "TEveEventDisplay/src/dict_classes/GeomUtils.h"
+
 using namespace mu2e;
 namespace mu2e{
 
   TEveMu2eCluster::TEveMu2eCluster(){}
   
+  /*------------Function to make object title:-------------*/
   std::string TEveMu2eCluster::DataTitle(const std::string &pstr, double edep){
         std::string dstr= "\nLayer: ";
         std::string strlst=pstr+dstr+std::to_string(edep);
         return(strlst);
   }
 
+  /*------------Function to draw cluster and optional hits:-------------*/
   void TEveMu2eCluster::DrawCluster(const std::string &pstr,  CLHEP::Hep3Vector cog, int energylevel, TEveElementList *ClusterList,  std::vector<CLHEP::Hep3Vector> hits, bool addHits)
   {
-    double edep = fCaloCluster.energyDep();
+    double edep = fCaloCluster_.energyDep();
     this->SetTitle((DataTitle(pstr, edep)).c_str());
     hep3vectorTocm(cog);
     Int_t mSize = 3;
@@ -25,7 +27,6 @@ namespace mu2e{
     this->SetPickable(kTRUE);
 
     if(addHits){
-      
        TEvePointSet *teve_hit2D = new TEvePointSet();
        for(unsigned int h =0 ; h < hits.size();h++) {
         teve_hit2D->SetNextPoint(hits[h].x(), hits[h].y(), hits[h].z());
@@ -35,11 +36,10 @@ namespace mu2e{
         ClusterList->AddElement(teve_hit2D);
       }
     }
-    
-   
     ClusterList->AddElement(this);
   }
   
+  /*------------Function to draw hits:-------------*/
   void TEveMu2eCluster::DrawCrystalHits(const std::string &pstr, CLHEP::Hep3Vector cog, TEveElementList *ClusterList){
     hep3vectorTocm(cog);
     Int_t mSize = 2;

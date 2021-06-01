@@ -19,7 +19,7 @@ namespace mu2e {
       using Comment = fhicl::Comment;
       using StrawMaterial = KinKal::StrawMaterial;
       using MatDBInfo = MatEnv::MatDBInfo;
-      struct Settings {
+      struct Config {
 	fhicl::Atom<std::string> isotopes { Name("isotopes"), Comment("Filename for istotopes information")};
 	fhicl::Atom<std::string> elements { Name("elements"), Comment("Filename for elements information") };
 	fhicl::Atom<std::string> materials { Name("materials"), Comment("Filename for materials information") };
@@ -29,7 +29,7 @@ namespace mu2e {
 	fhicl::Atom<double> dahlLynchScatteringFraction{ Name("dahlLynchScatteringFraction"), Comment("dahlLynchScatteringFraction") };
       };
 
-      explicit KKMaterial( Settings const& matconfig);
+      explicit KKMaterial( Config const& config);
 
       StrawMaterial const& strawMaterial() const;
     private:

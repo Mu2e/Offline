@@ -11,6 +11,7 @@
 
 #include "canvas/Persistency/Provenance/RunID.h"
 #include "art/Framework/Services/Registry/ServiceHandle.h"
+#include "art/Framework/Services/Registry/ServiceDefinitionMacros.h"
 
 #include "cetlib_except/exception.h"
 

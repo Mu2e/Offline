@@ -24,7 +24,7 @@
 #include "MCDataProducts/inc/StepPointMCCollection.hh"
 #include "RecoDataProducts/inc/ComboHit.hh"
 #include "DataProducts/inc/XYZVec.hh"
-
+#include "Mu2eUtilities/inc/TwoLinePCA.hh"
 //Utilities
 #include "Mu2eUtilities/inc/SimParticleTimeOffset.hh"
 #include "TrkDiag/inc/TrkMCTools.hh"
@@ -131,13 +131,13 @@ namespace mu2e
       Float_t _DiffCosT;
 
       Int_t _evt;
-
+       
       ProditionsHandle<Tracker> _alignedTracker_h;
       ProditionsHandle<StrawResponse> _strawResponse_h;
       Int_t _strawid;
       vector<ComboHitInfoMC> _chinfomc;
       bool findData(const art::Event& evt);
-
+      std::tuple <double,double, double, double, double> GetMCTrack(const art::Event& event, const StrawDigiMCCollection& mccol);
     };
 
     CosmicMCRecoDiff::CosmicMCRecoDiff(const Parameters& conf) :
@@ -199,9 +199,7 @@ namespace mu2e
 
       void CosmicMCRecoDiff::analyze(const art::Event& event) {
 
-      //const Tracker *tracker = _alignedTracker_h.getPtr(event.id()).get();
-      //StrawResponse const& srep = _strawResponse_h.get(event.id());
-
+      
       _evt = event.id().event();
 
       if(!findData(event))
@@ -233,23 +231,26 @@ namespace mu2e
         _RecoErrorA1=(st.MinuitParams.deltaA1);
         _RecoErrorB1=(st.MinuitParams.deltaB1);
         _RecoErrorB0=(st.MinuitParams.deltaB0);
-        
-        //const StrawDigiMCCollection*& _mcdigis;
+       
+	      //StrawDigiMC hitP1;
+	      //StrawDigiMC first = (*_mcdigis)[0];
 
-	      StrawDigiMC hitP1;
-	      StrawDigiMC first = (*_mcdigis)[0];
-
-	      auto const& spmcp0= first.earlyStrawGasStep();
 	      XYZVec zpos(0.,0.,0);
         XYZVec  zdir(0.,0.,1.);
-	      XYZVec pos0(spmcp0->position().x(), spmcp0->position().y(), spmcp0->position().z());
-	      XYZVec dir(spmcp0->momentum().x(), spmcp0->momentum().y(), spmcp0->momentum().z());
-        std::tuple <double,double, double, double, double, double> info;
+        std::tuple <double,double, double, double, double> info = GetMCTrack(event, *_mcdigis);
+	      XYZVec pos0(get<0>(info),0, get<2>(info));//a0,0,b0
+	      XYZVec dir(get<1>(info), -1, get<3>(info));//a1,-1,b1
+       
         TwoLinePCA_XYZ PCA = TwoLinePCA_XYZ(pos0, dir, zpos, zdir);
         XYZVec POCA = PCA.point1()-PCA.point2();
         double DOCA = PCA.dca();
         double amsign = copysign(1.0, -(zdir.Cross(POCA)).Dot(dir));
 
+        _TrueA0 = get<0>(info);
+        _TrueA1 = get<1>(info);
+        _TrueB0 = get<2>(info);
+        _TrueB1 = get<3>(info);
+        
         _Trued0 = amsign*DOCA;
         _Truez0 = dir.Z();
         _TrueCosT = PCA.point1().Z();
@@ -260,13 +261,104 @@ namespace mu2e
         _DiffCosT =  _RecoCosT - _TrueCosT;
         _DiffPhi0 =  _RecoPhi0 - _TruePhi0;
 
-
         _cosmic_tree->Fill();
-        
-        
-      
+ 
       }
 
+    }
+    
+ std::tuple <double,double, double, double, double> CosmicMCRecoDiff::GetMCTrack(const art::Event& event, const StrawDigiMCCollection& mccol) {
+    // get all possible directions
+    double _mca0 = 0;
+    double _mca1 = 0;
+    double _mcb0 = 0;
+    double _mcb1 = 0;
+    double _mct0 = 0;
+    CLHEP::Hep3Vector _mcpos, _mcdir;
+    std::vector<CLHEP::Hep3Vector> pppos;
+    std::vector<CLHEP::Hep3Vector> ppdir;
+    const Tracker *tracker = _alignedTracker_h.getPtr(event.id()).get();
+    //StrawResponse const& srep = _strawResponse_h.get(event.id());
+
+    for (size_t i=0;i<mccol.size();i++){
+      StrawDigiMC mcdigi = mccol[i]; 
+      auto const& sgsptr = mcdigi.earlyStrawGasStep();
+      auto const& sgs = *sgsptr;
+      auto const& sp = *sgs.simParticle();
+      auto posi = Geom::Hep3Vec(sgs.startPosition());
+      if ((sp.pdgId() == 13 || sp.pdgId() == -13) && sp.creationCode() == 56){
+        for (size_t j=i+1; j<mccol.size();j++){
+          StrawDigiMC jmcdigi = mccol[j]; 
+          auto const& jsgsptr = jmcdigi.earlyStrawGasStep();
+          auto const& jsgs = *jsgsptr;
+          auto const& jsp = *jsgs.simParticle();
+          auto posj = Geom::Hep3Vec(jsgs.startPosition());
+          if ((jsp.pdgId() == 13 || jsp.pdgId() == -13) && jsp.creationCode() == 56){
+            pppos.push_back(posi);
+            ppdir.push_back((posi-posj).unit());
+          } 
+        }
+      }
+    }
+
+    // get the one that has the most hits within 500 microns
+    int max = 0;
+    for (size_t j=0;j<pppos.size();j++){
+      int count = 0;
+      double avg_t0 = 0;
+      CLHEP::Hep3Vector ppintercept(0,0,0);
+      CLHEP::Hep3Vector ppdirection(0,1,0);
+      for (size_t i=0;i<mccol.size();i++){
+        StrawDigiMC mcdigi = mccol[i]; 
+
+        const Straw& straw = tracker->getStraw( mcdigi.strawId() );
+        auto const& sgsptr = mcdigi.earlyStrawGasStep();
+        auto const& sgs = *sgsptr;
+        auto const& sp = *sgs.simParticle();
+
+        if ((sp.pdgId() == 13 || sp.pdgId() == -13) && sp.creationCode() == 56){
+          TwoLinePCA pca( straw.getMidPoint(), straw.getDirection(),
+              Geom::Hep3Vec(sgs.startPosition()), Geom::Hep3Vec(sgs.endPosition()-sgs.startPosition()) );
+          double true_doca = pca.dca(); 
+
+          TwoLinePCA pca2( straw.getMidPoint(), straw.getDirection(),
+              pppos[j], ppdir[j]);
+
+          double mctrack_doca = pca2.dca(); 
+          if (fabs(true_doca - mctrack_doca) < 0.5){
+            count++;
+            ppintercept = pppos[j] - ppdir[j]*pppos[j].y()/ppdir[j].y();
+            ppdirection = ppdir[j];
+            if (ppdirection.y() > 0)
+              ppdirection *= -1;
+            double mctime = sgs.time() + _toff.totalTimeOffset(sgs.simParticle());// - _ewMarkerOffset;
+            double trajtime = (pca2.point2()-ppintercept).dot(ppdirection.unit())/299.9;
+            mctime -= trajtime;
+            avg_t0 += mctime;
+          }
+        }
+      }
+      if (count > max){
+        max = count;
+        _mcpos = ppintercept;
+        _mcdir = ppdirection;
+        if (ppdirection.y() != 0){
+          ppdirection /= -1*ppdirection.y();
+          ppintercept -= ppdirection*ppintercept.y()/ppdirection.y();
+        }
+        _mca0 = ppintercept.x();
+        _mcb0 = ppintercept.z();
+        _mca1 = ppdirection.x();
+        _mcb1 = ppdirection.z();
+        _mct0 = avg_t0/count;
+      }
+    }
+    if (_mcdir.y() > 0){
+      _mcdir *= -1;
+    }
+    std::tuple <double, double, double, double, double> info;
+    info = make_tuple(_mca0, _mca1, _mcb0, _mcb1, _mct0);
+    return info;
     }
 
     void CosmicMCRecoDiff::endJob() {}

@@ -184,11 +184,11 @@ void art::StrawRecoFromFragmnets::analyze_tracker_(
 
     if (diagLevel_ > 1) {
 
-      std::cout << "timestamp: " << static_cast<int>(hdr.GetTimestamp().GetTimestamp(true))
+      std::cout << "timestamp: " << static_cast<int>(hdr.GetEventWindowTag().GetEventWindowTag(true))
                 << std::endl;
       std::cout << "hdr->SubsystemID: " << static_cast<int>(hdr.GetSubsystemID()) << std::endl;
       std::cout << "dtcID: " << static_cast<int>(hdr.GetID()) << std::endl;
-      std::cout << "rocID: " << static_cast<int>(hdr.GetRingID()) << std::endl;
+      std::cout << "rocID: " << static_cast<int>(hdr.GetLinkID()) << std::endl;
       std::cout << "packetCount: " << static_cast<int>(hdr.GetPacketCount()) << std::endl;
       std::cout << "EVB mode: " << static_cast<int>(hdr.GetEVBMode()) << std::endl;
 
@@ -199,7 +199,7 @@ void art::StrawRecoFromFragmnets::analyze_tracker_(
     if (hdr.GetPacketCount() > 0 ) {
 
       // Create the StrawDigi data products
-      auto trkDataVec = cc.GetTrackerData(curBlockIdx);
+      auto trkDataVec = cc.GetTrackerData(curBlockIdx, useTrkADC_);
       if (trkDataVec.empty()) {
         mf::LogError("StrawRecoFromFragmnets")
             << "Error retrieving Tracker data from DataBlock " << curBlockIdx
@@ -212,7 +212,7 @@ void art::StrawRecoFromFragmnets::analyze_tracker_(
         mu2e::StrawId sid(trkDataPair.first->StrawIndex);
         mu2e::TrkTypes::TDCValues tdc = {trkDataPair.first->TDC0(), trkDataPair.first->TDC1()};
         mu2e::TrkTypes::TOTValues tot = {trkDataPair.first->TOT0, trkDataPair.first->TOT1};
-        mu2e::TrkTypes::ADCValue pmp = trkDataPair.first->PMP;
+        mu2e::TrkTypes::ADCValue  pmp = trkDataPair.first->PMP;
 
         // Fill the StrawDigiCollection
         straw_digis->emplace_back(sid, tdc, tot, pmp);
@@ -258,13 +258,13 @@ void art::StrawRecoFromFragmnets::analyze_tracker_(
           }
           std::cout << std::endl;
 
-          std::cout << "LOOP: " << hdr.GetTimestamp().GetTimestamp(true) << " " << curBlockIdx
+          std::cout << "LOOP: " << hdr.GetEventWindowTag().GetEventWindowTag(true) << " " << curBlockIdx
                     << std::endl;
 
           // Text format: timestamp strawidx tdc0 tdc1 nsamples sample0-11
           // Example: 1 1113 36978 36829 12 1423 1390 1411 1354 2373 2392 2342 2254 1909 1611 1525
           // 1438
-          std::cout << "GREPMETRK: " << hdr.GetTimestamp().GetTimestamp(true) << " ";
+          std::cout << "GREPMETRK: " << hdr.GetEventWindowTag().GetEventWindowTag(true) << " ";
           std::cout << sid.asUint16() << " ";
           std::cout << tdc[0] << " ";
           std::cout << tdc[1] << " ";

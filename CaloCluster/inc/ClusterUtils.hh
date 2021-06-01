@@ -25,6 +25,7 @@ namespace mu2e {
             CLHEP::Hep3Vector cog3Vector  () const;
             double            secondMoment() const;
             double            e1          () const;
+            double            e2          () const;
             double            e9          () const;
             double            e25         () const;
 

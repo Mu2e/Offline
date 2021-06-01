@@ -19,6 +19,8 @@
 #include "Mu2eG4/inc/Mu2eStudyWorld.hh"
 #include "Mu2eG4/inc/Mu2eWorld.hh"
 
+#include "art/Framework/Services/Registry/ServiceDefinitionMacros.h"
+
 #include <iostream>
 
 

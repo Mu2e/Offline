@@ -40,7 +40,6 @@ mainlib = helper.make_mainlib ( [ 'CLHEP',
                                   'art_Persistency_Provenance',
                                   'art_Utilities',
                                   'canvas',
-                                  'boost_system',
                                   'cetlib',
                                   'cetlib_except',
                                   'Core']

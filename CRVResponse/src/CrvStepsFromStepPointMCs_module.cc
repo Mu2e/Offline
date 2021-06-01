@@ -12,6 +12,7 @@
 #include "fhiclcpp/types/Atom.h"
 #include "fhiclcpp/types/Sequence.h"
 #include "canvas/Utilities/InputTag.h"
+#include "messagefacility/MessageLogger/MessageLogger.h"
 
 #include "CLHEP/Units/GlobalPhysicalConstants.h"
 #include "GeometryService/inc/GeomHandle.hh"
@@ -167,8 +168,7 @@ namespace mu2e
  
     // Get all of the tracker StepPointMC collections from the event:
     // This selector will select only data products with the given instance name.
-    SPMCCHV stepsHandles;
-    event.getMany(_selector, stepsHandles);
+    SPMCCHV stepsHandles = event.getMany<StepPointMCCollection>(_selector);
 
     // Informational message on the first event.
     if(_firstEvent)

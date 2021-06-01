@@ -1,0 +1,62 @@
+Active ups products:
+art               v3_06_03        -f Linux64bit+3.10-2.17 -q e20:prof        -z /cvmfs/mu2e.opensciencegrid.org/artexternals
+artdaq_core       v3_06_07        -f Linux64bit+3.10-2.17 -q e20:prof:s105   -z /cvmfs/mu2e.opensciencegrid.org/artexternals
+art_root_io       v1_05_01        -f Linux64bit+3.10-2.17 -q e20:prof        -z /cvmfs/mu2e.opensciencegrid.org/artexternals
+boost             v1_73_0         -f Linux64bit+3.10-2.17 -q e20:prof        -z /cvmfs/mu2e.opensciencegrid.org/artexternals
+BTrk              v1_02_30        -f Linux64bit+3.10-2.17 -q e20:p383b:prof  -z /cvmfs/mu2e.opensciencegrid.org/artexternals
+canvas            v3_10_02        -f Linux64bit+3.10-2.17 -q e20:prof        -z /cvmfs/mu2e.opensciencegrid.org/artexternals
+canvas_root_io    v1_07_01        -f Linux64bit+3.10-2.17 -q e20:prof        -z /cvmfs/mu2e.opensciencegrid.org/artexternals
+cetbuildtools     v7_17_01        -f NULL                                    -z /cvmfs/mu2e.opensciencegrid.org/artexternals
+cetlib            v3_11_01        -f Linux64bit+3.10-2.17 -q e20:prof        -z /cvmfs/mu2e.opensciencegrid.org/artexternals
+cetlib_except     v1_05_00        -f Linux64bit+3.10-2.17 -q e20:prof        -z /cvmfs/mu2e.opensciencegrid.org/artexternals
+cetpkgsupport     v1_14_01        -f NULL                                    -z /cvmfs/mu2e.opensciencegrid.org/artexternals
+clhep             v2_4_1_3a       -f Linux64bit+3.10-2.17 -q e20:prof        -z /cvmfs/mu2e.opensciencegrid.org/artexternals
+cmake             v3_17_3         -f Linux64bit+3.10-2.17                    -z /cvmfs/mu2e.opensciencegrid.org/artexternals
+cppunit           v1_15_1a        -f Linux64bit+3.10-2.17 -q e20:prof        -z /cvmfs/mu2e.opensciencegrid.org/artexternals
+cry               v1_7n           -f Linux64bit+3.10-2.17 -q e20:prof        -z /cvmfs/mu2e.opensciencegrid.org/artexternals
+cryptopp          v08_02_00       -f Linux64bit+3.10-2.17 -q e20:prof        -z /cvmfs/mu2e.opensciencegrid.org/artexternals
+curl              v7_64_1         -f Linux64bit+3.10-2.17                    -z /cvmfs/fermilab.opensciencegrid.org/products/common/db
+fftw              v3_3_8a         -f Linux64bit+3.10-2.17 -q prof            -z /cvmfs/mu2e.opensciencegrid.org/artexternals
+fhiclcpp          v4_12_02        -f Linux64bit+3.10-2.17 -q e20:prof        -z /cvmfs/mu2e.opensciencegrid.org/artexternals
+g4abla            v3_1            -f NULL                                    -z /cvmfs/mu2e.opensciencegrid.org/artexternals
+g4emlow           v7_9_1          -f NULL                                    -z /cvmfs/mu2e.opensciencegrid.org/artexternals
+g4incl            v1_0            -f NULL                                    -z /cvmfs/mu2e.opensciencegrid.org/artexternals
+g4neutron         v4_6            -f NULL                                    -z /cvmfs/mu2e.opensciencegrid.org/artexternals
+g4nucleonxs       v2_0            -f NULL                                    -z /cvmfs/mu2e.opensciencegrid.org/artexternals
+g4nuclide         v2_2            -f NULL                                    -z /cvmfs/mu2e.opensciencegrid.org/artexternals
+g4particlexs      v2_1            -f NULL                                    -z /cvmfs/mu2e.opensciencegrid.org/artexternals
+g4photon          v5_5            -f NULL                                    -z /cvmfs/mu2e.opensciencegrid.org/artexternals
+g4pii             v1_3            -f NULL                                    -z /cvmfs/mu2e.opensciencegrid.org/artexternals
+g4radiative       v5_4            -f NULL                                    -z /cvmfs/mu2e.opensciencegrid.org/artexternals
+g4surface         v2_1_1          -f NULL                                    -z /cvmfs/mu2e.opensciencegrid.org/artexternals
+g4tendl           v1_3_2          -f NULL                                    -z /cvmfs/mu2e.opensciencegrid.org/artexternals
+gallery           v1_16_01        -f Linux64bit+3.10-2.17 -q e20:prof        -z /cvmfs/mu2e.opensciencegrid.org/artexternals
+gcc               v9_3_0          -f Linux64bit+3.10-2.17                    -z /cvmfs/mu2e.opensciencegrid.org/artexternals
+gdb               v9_2            -f Linux64bit+3.10-2.17                    -z /cvmfs/mu2e.opensciencegrid.org/artexternals
+geant4            v4_10_6_p02b    -f Linux64bit+3.10-2.17 -q e20:mt:prof     -z /cvmfs/mu2e.opensciencegrid.org/artexternals
+git               v2_31_1         -f Linux64bit+3.10-2.17                    -z /cvmfs/mu2e.opensciencegrid.org/artexternals
+gsl               v2_6a           -f Linux64bit+3.10-2.17                    -z /cvmfs/mu2e.opensciencegrid.org/artexternals
+hep_concurrency   v1_05_00        -f Linux64bit+3.10-2.17 -q e20:prof        -z /cvmfs/mu2e.opensciencegrid.org/artexternals
+heppdt            v03_04_02       -f Linux64bit+3.10-2.17 -q e20:prof        -z /cvmfs/mu2e.opensciencegrid.org/artexternals
+KinKal            v00_01_06       -f Linux64bit+3.10-2.17 -q e20:p383b:prof  -z /mu2e/app/users/sophie/Musev2/artexternals
+libxml2           v2_9_10a        -f Linux64bit+3.10-2.17                    -z /cvmfs/mu2e.opensciencegrid.org/artexternals
+messagefacility   v2_07_02        -f Linux64bit+3.10-2.17 -q e20:prof        -z /cvmfs/mu2e.opensciencegrid.org/artexternals
+mu2e_artdaq_core  v1_05_04        -f Linux64bit+3.10-2.17 -q e20:offline:prof:s105 -z /cvmfs/mu2e.opensciencegrid.org/artexternals
+muse              v2_04_01        -f NULL                                    -z /cvmfs/mu2e.opensciencegrid.org/artexternals
+mysql_client      v8_0_20         -f Linux64bit+3.10-2.17 -q e20             -z /cvmfs/mu2e.opensciencegrid.org/artexternals
+numpy             v1_19_0b        -f Linux64bit+3.10-2.17 -q e20:p383b       -z /cvmfs/mu2e.opensciencegrid.org/artexternals
+openblas          v0_3_10a        -f Linux64bit+3.10-2.17 -q e20             -z /cvmfs/mu2e.opensciencegrid.org/artexternals
+pcie_linux_kernel_module  v2_03_11        -f Linux64bit+3.10-2.17 -q e20:prof:s105   -z /cvmfs/mu2e.opensciencegrid.org/artexternals
+postgresql        v12_3b          -f Linux64bit+3.10-2.17 -q p383b           -z /cvmfs/mu2e.opensciencegrid.org/artexternals
+pythia            v6_4_28r        -f Linux64bit+3.10-2.17 -q gcc930:prof     -z /cvmfs/mu2e.opensciencegrid.org/artexternals
+python            v3_8_3b         -f Linux64bit+3.10-2.17                    -z /cvmfs/mu2e.opensciencegrid.org/artexternals
+range             v3_0_10_0b      -f NULL                                    -z /cvmfs/mu2e.opensciencegrid.org/artexternals
+root              v6_22_06        -f Linux64bit+3.10-2.17 -q e20:p383b:prof  -z /cvmfs/mu2e.opensciencegrid.org/artexternals
+scons             v3_1_2          -f NULL                 -q p383b           -z /cvmfs/mu2e.opensciencegrid.org/artexternals
+sqlite            v3_32_03_00     -f Linux64bit+3.10-2.17                    -z /cvmfs/mu2e.opensciencegrid.org/artexternals
+tbb               v2020_2a        -f Linux64bit+3.10-2.17 -q e20:prof        -z /cvmfs/mu2e.opensciencegrid.org/artexternals
+TRACE             v3_16_02        -f Linux64bit+3.10-2.17                    -z /cvmfs/mu2e.opensciencegrid.org/artexternals
+ups               v6_0_8          -f Linux64bit+3.10-2.17                    -z /cvmfs/mu2e.opensciencegrid.org/artexternals
+valgrind          v3_16_1         -f Linux64bit+3.10-2.17                    -z /cvmfs/mu2e.opensciencegrid.org/artexternals
+xerces_c          v3_2_3          -f Linux64bit+3.10-2.17 -q e20:prof        -z /cvmfs/mu2e.opensciencegrid.org/artexternals
+xrootd            v4_12_3b        -f Linux64bit+3.10-2.17 -q e20:p383b:prof  -z /cvmfs/mu2e.opensciencegrid.org/artexternals

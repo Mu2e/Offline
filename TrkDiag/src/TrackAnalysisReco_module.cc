@@ -18,6 +18,8 @@
 #include "MCDataProducts/inc/KalSeedMC.hh"
 #include "MCDataProducts/inc/CaloClusterMC.hh"
 #include "RecoDataProducts/inc/CaloHit.hh"
+#include "RecoDataProducts/inc/KalSeed.hh"
+#include "RecoDataProducts/inc/KalSeedAssns.hh"
 #include "RecoDataProducts/inc/TrkCaloHitPID.hh"
 #include "TrkReco/inc/TrkUtilities.hh"
 #include "CalorimeterGeom/inc/DiskCalorimeter.hh"
@@ -413,18 +415,24 @@ namespace mu2e {
     _wtHandles = createSpecialBranch(event, "evtwt", eventWeightHandles, _wtinfo);
 
     std::string process = "Digitize"; // Digitization process is where the trigger is run
-    // Get the KalSeedCollections for both the candidate and all supplements
+  /// Get the KalSeedCollections for both the candidate and all supplements
     _allKSCHs.clear();
     _allRQCHs.clear();
     _allTQCHs.clear();
     _allTCHPCHs.clear();
+    // get Helix Assns
+     art::Handle<KalHelixAssns> khaH;
+    if(_conf.helices()){ // find associated Helices
+      BranchConfig i_branchConfig = _allBranches.at(0);
+      art::InputTag kalSeedInputTag = i_branchConfig.input() + i_branchConfig.suffix();
+      event.getByLabel(kalSeedInputTag,khaH);
+    }
     for (size_t i_branch = 0; i_branch < _allBranches.size(); ++i_branch) {
       BranchConfig i_branchConfig = _allBranches.at(i_branch);
       art::Handle<KalSeedCollection> kalSeedCollHandle;
       art::InputTag kalSeedInputTag = i_branchConfig.input() + i_branchConfig.suffix();
       event.getByLabel(kalSeedInputTag,kalSeedCollHandle);
       _allKSCHs.push_back(kalSeedCollHandle);
-
       // also create the reco qual branches
       std::vector<art::Handle<RecoQualCollection> > recoQualCollHandles;
       std::vector<art::Handle<RecoQualCollection> > selectedRQCHs;
@@ -506,6 +514,12 @@ namespace mu2e {
 
       auto const& candidateKS = candidateKSC.at(i_kseed);
       fillAllInfos(candidateKSCH, _candidateIndex, i_kseed); // fill the info structs for the candidate
+      if(_conf.helices()){
+	auto const& khassns = khaH.product();
+      // find the associated HelixSeed to this KalSeed using the assns.
+	auto hptr = (*khassns)[i_kseed].second;
+	_infoStructHelper.fillHelixInfo(hptr, _hinfo);
+      }
 
       // Now loop through all the branches (both candidate + supplements)...
       for (size_t i_branch = 0; i_branch < _allBranches.size(); ++i_branch) {
@@ -682,9 +696,6 @@ namespace mu2e {
       _infoStructHelper.fillHitInfo(kseed, _allTSHIs.at(i_branch));
       _infoStructHelper.fillMatInfo(kseed, _allTSMIs.at(i_branch));
     }
-    if(_conf.helices()){
-      _infoStructHelper.fillHelixInfo(kseed, _hinfo);
-    }
 
 // calorimeter info
     if (kseed.hasCaloCluster()) {
@@ -765,8 +776,7 @@ namespace mu2e {
   template <typename T, typename TI>
   std::vector<art::Handle<T> >  TrackAnalysisReco::createSpecialBranch(const art::Event& event, const std::string& branchname, 
 								       std::vector<art::Handle<T> >& handles, TI& infostruct, const std::string& selection) {
-    std::vector<art::Handle<T> > outputHandles;
-    event.getManyByType(handles);
+    std::vector<art::Handle<T> > outputHandles = event.getMany<T>();
     if (handles.size()>0) {
       std::vector<std::string> labels;
       for (const auto& i_handle : handles) {
