@@ -1,0 +1,90 @@
+#
+# Re-sample (mostly neutral) particles exiting the TS or PS headed towards the CRV, and write out the corresponding flash DetectorSteps
+# Note the main flash stream has a time cut to avoid energy far outside the digitization window.  A prescaled but otherwise uncut stream is used to
+# record the flash peak
+#
+# Updated for MDC2020 (DetectorSteps): D. Brown
+
+#include "fcl/standardServices.fcl"
+#include "CommonMC/fcl/prolog.fcl"
+#include "JobConfig/common/prolog.fcl"
+#include "JobConfig/beam/prolog.fcl"
+#include "JobConfig/primary/prolog.fcl"
+#include "JobConfig/pileup/prolog.fcl"
+
+process_name: NeutralsResampler
+
+source : {
+   module_type : EmptyEvent
+   maxEvents : @nil
+}
+
+services : @local::Services.Sim
+physics: {
+  producers : {
+    @table::Common.producers
+    @table::Primary.producers
+    compressDetStepMCs : {
+      @table::Primary.producers.compressDetStepMCs
+      @table::Pileup.producers.compressDetStepMCs
+    }
+    protonTimeOffset : @local::CommonMC.producers.protonTimeOffset 
+  }
+  filters : {
+    @table::Common.filters
+    EarlyPrescaleFilter : @local::Beam.filters.EarlyPrescaleFilter
+    neutralsResampler    : @local::Beam.filters.neutralsResampler
+# Time cuts are ineffective against neutrals; don't apply them
+    DetStepFilter : {
+      @table::Primary.filters.DetStepFilter 
+      @table::Pileup.filters.DetStepFilter 
+    }
+  }
+  analyzers : {
+    @table::Common.analyzers
+  }
+  # setup paths
+  flashPath : [ @sequence::Beam.neutralsResamplerSequence, @sequence::Common.g4Sequence, @sequence::Primary.DetStepSequence, DetStepFilter, compressDetStepMCs ]
+  trigger_paths: [ flashPath ]
+  outPath : [ FlashOutput ]
+  end_paths: [outPath]
+}
+outputs: {
+  FlashOutput : {
+    module_type: RootOutput
+    outputCommands:   [ "drop *_*_*_*",
+      @sequence::Beam.DtsKeptProducts,
+      @sequence::Pileup.KeptProducts
+    ]
+    SelectEvents: [flashPath]
+    fileName: "dts.owner.NeutralsFlash.version.sequencer.art"
+  }
+}
+
+# Point Mu2eG4 to the pre-simulated data
+physics.producers.g4run.inputs: {
+   primaryType: "StepPoints"
+   primaryTag: "neutralsResampler:Neutrals"
+   inputMCTrajectories: ""
+
+   simStageOverride: 1
+   inputPhysVolumeMultiInfo: "neutralsResampler"
+   updateEventLevelVolumeInfos: {
+      input: "neutralsResampler:eventlevel"
+      outInstance: "eventlevel"
+   }
+}
+# Kill stuck e+/e-
+physics.producers.g4run.Mu2eG4CommonCut:{
+   type: intersection
+   pars:
+   [
+      {type: intersection pars: [ { type: kineticEnergy cut: 1.0 }, { type: pdgId pars: [ 11, -11] }]},
+      {type: inVolume pars: [ TS2Vacuum, TS3Vacuum, TS4Vacuum, TS5Vacuum, DS2Vacuum, HallAir ]}
+   ]
+}
+#include "JobConfig/common/epilog.fcl"
+#include "JobConfig/pileup/epilog.fcl"
+#include "JobConfig/beam/epilog.fcl"
+# test
+physics.filters.neutralsResampler.fileNames: [ "sim.owner.Neutrals.version.sequencer.art" ]

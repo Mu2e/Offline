@@ -9,8 +9,7 @@ mu2e::TrackSummaryPrinter::Print(art::Event const& event,
   if(verbose()<1) return;
   if(tags().empty()) {
     // if a list of instances not specified, print all instances
-    std::vector< art::Handle<TrackSummaryCollection> > vah;
-    event.getManyByType(vah);
+    std::vector< art::Handle<TrackSummaryCollection> > vah = event.getMany<TrackSummaryCollection>();
     for (auto const & ah : vah) Print(ah);
   } else {
     // print requested instances

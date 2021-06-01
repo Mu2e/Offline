@@ -1,52 +1,48 @@
 #include "TEveEventDisplay/src/TEveMu2e_base_classes/TEveMu2eCustomHelix.h"
-#include "GlobalConstantsService/inc/GlobalConstantsHandle.hh"
-#include "GlobalConstantsService/inc/ParticleDataTable.hh"
 
 using namespace mu2e;
 namespace mu2e{
 
   TEveMu2eCustomHelix::TEveMu2eCustomHelix(){};
- 
-  TEveMu2eCustomHelix::TEveMu2eCustomHelix(HelixSeed hseed){fHelixSeed = hseed;};
-  TEveMu2eCustomHelix::TEveMu2eCustomHelix(KalSeed kseed){
-    fKalSeed = kseed;
-    this->Momentum = fKalSeed.helix()->helix().momentum();
-    this->PDGcode = fKalSeed.particle();
-    auto const& ptable = mu2e::GlobalConstantsHandle<mu2e::ParticleDataTable>();
-    this->Charge = ptable->particle(fKalSeed.particle()).ref().charge();
-    this->Mass = ptable->particle(fKalSeed.particle()).ref().mass().value();
-    this->Radius = fKalSeed.helix()->helix().radius();
-    this->Time = fKalSeed.t0().t0();
-  };
 
+  /*------------Function to build Infor after contruction:-------------*/
   void TEveMu2eCustomHelix::SetSeedInfo(KalSeed seed) { 
-    fKalSeed = seed;
-    this->Momentum = fKalSeed.helix()->helix().momentum();
-    this->PDGcode = fKalSeed.particle();
+    fKalSeed_ = seed; 
+    auto const& fseg = fKalSeed_.segments().front();
+    this->Momentum_ = fseg.mom();
+    this->PDGcode_ = fKalSeed_.particle();
     auto const& ptable = mu2e::GlobalConstantsHandle<mu2e::ParticleDataTable>();
-    this->Charge = ptable->particle(fKalSeed.particle()).ref().charge();
-    this->Mass = ptable->particle(fKalSeed.particle()).ref().mass().value();
-    this->Time = fKalSeed.t0().t0();
-    this->Radius = fKalSeed.helix()->helix().radius();
+    this->Charge_ = ptable->particle(fKalSeed_.particle()).ref().charge();
+    this->Mass_ = ptable->particle(fKalSeed_.particle()).ref().mass().value();
+    this->Radius_ = fabs(1.0/fseg.helix().omega());
+    this->Time_ = fKalSeed_.t0().t0();
   }
 
-  void TEveMu2eCustomHelix::SetPostionAndDirectionFromHelixSeed(double zpos){
-    fHelixSeed.helix().position(Position);
-    fHelixSeed.helix().direction(zpos, Direction);
-  }
-
+  /*------------Function tobuild position and direction based on Kal output:-------------*/
   void TEveMu2eCustomHelix::SetPostionAndDirectionFromKalRep(double zpos){
-    fKalSeed.helix()->helix().position(Position);
-    fKalSeed.helix()->helix().direction(zpos, Direction);
+    auto const& fseg = fKalSeed_.segments().front();  // find the segment nearest zpos.  This should be iterative FIXME
+    auto pos = fseg.position3();
+    auto vel = fseg.velocity();
+    double tz = fseg.tref() + (zpos-pos.Z())/vel.Z();
+    auto zseg = fKalSeed_.nearestSeg(tz);
+    pos = zseg->position3();
+    vel = zseg->velocity();
+    tz = zseg->tref() + (zpos-pos.Z())/vel.Z();
+    this->Momentum_ = zseg->mom();
+    // these next assume a helix FIXME
+    auto hel = zseg->centralHelix();
+    Position_ = hel.position3(tz); 
+    Direction_ = hel.direction(tz); 
+
   }
   
-  void TEveMu2eCustomHelix::SetMomentumExt(){
-    this->Momentum = fTrkExtTraj.front().momentum().mag();
+  /*void TEveMu2eCustomHelix::SetMomentumExt(){
+    this->Momentum_ = fTrkExtTraj.front().momentum().mag(); // Not sure what this is supposed to do FIXME
   }
 
   void TEveMu2eCustomHelix::SetParticleExt(){
-    this->PDGcode = 11; 
+    this->PDGcode_ = 11; 
  
-  }
+  }*/
   
 }

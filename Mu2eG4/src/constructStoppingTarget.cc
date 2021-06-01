@@ -17,6 +17,7 @@
 // Framework includes
 #include "messagefacility/MessageLogger/MessageLogger.h"
 #include "cetlib_except/exception.h"
+#include "art/Framework/Services/Registry/ServiceDefinitionMacros.h"
 
 // Mu2e includes
 #include "Mu2eG4/inc/constructStoppingTarget.hh"
@@ -197,7 +198,7 @@ namespace mu2e {
         doSurfaceCheck && checkForOverlaps( pv, config, verbosity>0);
 
         if (!stoppingTargetIsVisible) {
-          foilInfo.logical->SetVisAttributes(G4VisAttributes::Invisible);
+          foilInfo.logical->SetVisAttributes(G4VisAttributes::GetInvisible());
         } else {
           G4VisAttributes* visAtt = reg.add(G4VisAttributes(true, G4Colour::Magenta()));
           visAtt->SetForceAuxEdgeVisible(config.getBool("g4.forceAuxEdgeVisible",false));
@@ -307,7 +308,7 @@ namespace mu2e {
         doSurfaceCheck && checkForOverlaps( pv, config, verbosity>0);
 
         if (!stoppingTargetIsVisible) {
-          supportStructureInfo.logical->SetVisAttributes(G4VisAttributes::Invisible);
+          supportStructureInfo.logical->SetVisAttributes(G4VisAttributes::GetInvisible());
         } else {
           G4VisAttributes* visAtt = reg.add(G4VisAttributes(true, G4Colour::Blue()));
           visAtt->SetForceAuxEdgeVisible(config.getBool("g4.forceAuxEdgeVisible",false));

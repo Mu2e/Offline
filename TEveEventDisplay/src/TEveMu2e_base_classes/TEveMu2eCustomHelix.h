@@ -7,6 +7,8 @@
 #include "RecoDataProducts/inc/HelixSeed.hh"
 #include "RecoDataProducts/inc/KalSeed.hh"
 #include "RecoDataProducts/inc/TrkExtTraj.hh"
+#include "GlobalConstantsService/inc/GlobalConstantsHandle.hh"
+#include "GlobalConstantsService/inc/ParticleDataTable.hh"
 
 using namespace mu2e;
 
@@ -16,14 +18,12 @@ namespace mu2e {
       #ifndef __CINT__
       explicit  TEveMu2eCustomHelix();
       TEveMu2eCustomHelix(const TEveMu2eCustomHelix &helix);
-      TEveMu2eCustomHelix(HelixSeed hseed);
-      TEveMu2eCustomHelix(KalSeed kseed);
       virtual ~TEveMu2eCustomHelix(){};
       #endif
       
-      KalSeed fKalSeed; 
-      HelixSeed fHelixSeed;
-      TrkExtTraj fTrkExtTraj;
+      KalSeed fKalSeed_; 
+      HelixSeed fHelixSeed_;
+      TrkExtTraj fTrkExtTraj_;
 
       void DrawHelixTrack();
       void Draw2DProjection();
@@ -34,15 +34,14 @@ namespace mu2e {
       void SetMomentumExt();
       void SetParticleExt();
 
-      XYZVec Direction;
-      XYZVec Position;
-      double Momentum;
-      int PDGcode;
-      double Charge;
-      double Mass;
-      double Time;
-      double Radius;
-      bool _trajectory;
+      XYZVec Direction_;
+      XYZVec Position_;
+      double Momentum_;
+      int PDGcode_;
+      double Charge_;
+      double Mass_;
+      double Time_;
+      double Radius_;
       ClassDef( TEveMu2eCustomHelix, 0);
     };
 }

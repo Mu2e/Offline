@@ -16,7 +16,7 @@
 #include "MCDataProducts/inc/CrvPhotons.hh"
 #include "MCDataProducts/inc/CrvSiPMCharges.hh"
 #include "RecoDataProducts/inc/CrvDigiCollection.hh"
-#include "RecoDataProducts/inc/CrvRecoPulseCollection.hh"
+#include "RecoDataProducts/inc/CrvRecoPulse.hh"
 
 #include "canvas/Persistency/Common/Ptr.h"
 #include "art/Framework/Principal/Event.h"

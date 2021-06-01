@@ -24,7 +24,6 @@ mainlib = helper.make_mainlib ( [
     'cetlib',
     'cetlib_except',
     'CLHEP',
-    'boost_system',
 ] )
 
 

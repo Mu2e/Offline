@@ -34,7 +34,7 @@ DAQ : {
 #	 bufferSize      : 1000
       }
       
-      makeSD:
+      makeSDOld:
       {
 	 module_type: StrawAndCaloDigisFromFragments
 	 diagLevel: 0
@@ -46,6 +46,14 @@ DAQ : {
 	 caloTag : "daq:calo"
       }
 
+      makeSD:
+      {
+	 module_type: StrawRecoFromFragments
+	 diagLevel : 0
+         useTrkADC : 0
+	 trkTag    : "daq:trk"
+      }
+
       CaloDigiMaker:		
       {
 	 module_type : CaloRecoFromFragments
@@ -53,15 +61,17 @@ DAQ : {
 	 caloTag     : "daq:calo"
       }
 
-       CaloHitMaker:		
+       FastCaloHitMaker:		
       {
 	 module_type   : CaloHitsFromFragments
 	 diagLevel     : 0
 	 caloTag       : "daq:calo"
-	 digiSampling  : @local::HitMakerDigiSampling
+	 digiSampling  : 5
 	 deltaTPulses  : 5.
 	 pulseRatioMax : 1.1
 	 pulseRatioMin : 0.9
+	 # hitEDepMax    : 80.
+	 hitEDepMax    : 1000. # for testing
       }
 
       CrvDigi:

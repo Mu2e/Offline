@@ -1,1 +1,6 @@
-
+# don't create MCTrajectories
+physics.producers.g4run.TrajectoryControl.produce : false
+# only detector SDs
+physics.producers.g4run.SDConfig.enableSD: [@sequence::physics.producers.g4run.SDConfig.enableSD ]
+# no special deltas treatment for pileup
+physics.producers.StrawGasStepMaker.KeepDeltasModule : ""

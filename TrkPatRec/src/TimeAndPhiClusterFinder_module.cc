@@ -28,7 +28,7 @@
 #include "TrkPatRec/inc/TimeAndPhiClusterFinder_types.hh"
 
 #include <algorithm>
-
+#include <numeric>
 
 
 namespace
@@ -221,7 +221,7 @@ namespace mu2e {
       chcol_ = chH.product();
 
       art::Handle<CaloClusterCollection> ccH{}; 
-      if (usecc_) {event.getByToken(ccToken_, ccH);}
+      if (usecc_) {ccH = event.getHandle<CaloClusterCollection>(ccToken_);}
 
       if (testflag_)
       {

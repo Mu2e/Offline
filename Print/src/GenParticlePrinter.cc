@@ -10,8 +10,7 @@ mu2e::GenParticlePrinter::Print(art::Event const& event,
   if(verbose()<1) return;
   if(tags().empty()) {
     // if a list of instances not specified, print all instances
-    std::vector< art::Handle<GenParticleCollection> > vah;
-    event.getManyByType(vah);
+    std::vector< art::Handle<GenParticleCollection> > vah = event.getMany<GenParticleCollection>();
     for (auto const & ah : vah) Print(ah);
   } else {
     // print requested instances

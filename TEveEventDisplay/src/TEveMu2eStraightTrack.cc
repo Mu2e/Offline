@@ -5,7 +5,8 @@ namespace mu2e{
 
   TEveMu2eStraightTrack::TEveMu2eStraightTrack(){};
   
-  XYZVec TEveMu2eStraightTrack::GetPositon(){ return fCosmicTrackSeed->_track.MinuitEquation.Pos; } ;
-  XYZVec TEveMu2eStraightTrack::GetDirection(){ return fCosmicTrackSeed->_track.MinuitEquation.Dir; };
+  /*------------Function to access position and direction:-------------*/
+  XYZVec TEveMu2eStraightTrack::GetPositon(){ return fCosmicTrackSeed_->_track.MinuitEquation.Pos; } ;
+  XYZVec TEveMu2eStraightTrack::GetDirection(){ return fCosmicTrackSeed_->_track.MinuitEquation.Dir; };
   
 }

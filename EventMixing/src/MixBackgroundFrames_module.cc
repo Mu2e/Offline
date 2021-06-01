@@ -121,7 +121,6 @@ namespace mu2e {
     using Parameters = art::MixFilterTable<Config>;
     explicit MixBackgroundFramesDetail(const Parameters& pars, art::MixHelper& helper);
 
-    void startEvent(const art::Event& event);
 
     size_t nSecondaries();
 
@@ -129,7 +128,10 @@ namespace mu2e {
 
     void processEventIDs(const art::EventIDSequence& seq);
 
+    void beginSubRun(const art::SubRun& sr);
+    void startEvent(const art::Event& evt);
     void finalizeEvent(art::Event& e);
+    void endSubRun(art::SubRun& sr);
 
   };
 
@@ -159,7 +161,20 @@ namespace mu2e {
   }
 
   //================================================================
+  void MixBackgroundFramesDetail::beginSubRun(const art::SubRun& sr) {
+    spm_.beginSubRun(sr);
+  }
+
+  //================================================================
+  void MixBackgroundFramesDetail::endSubRun(art::SubRun& sr) {
+    spm_.endSubRun(sr);
+  }
+
+  //================================================================
   void MixBackgroundFramesDetail::startEvent(const art::Event& event) {
+  // call down to product mixer 
+    spm_.startEvent(event);
+
     pbi_ = *event.getValidHandle<ProtonBunchIntensity>(pbiTag_);
     if(debugLevel_ > 0)std::cout << " Starting event mixing, Intensity = " << pbi_.intensity() << std::endl;
 
@@ -246,6 +261,8 @@ namespace mu2e {
       e.put(std::move(o));
     }
   }
+
+  //================================================================
 
   //================================================================
   // This is the module class.

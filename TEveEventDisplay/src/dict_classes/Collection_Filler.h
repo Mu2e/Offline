@@ -1,5 +1,14 @@
 #ifndef Collection_Filler_h
 #define Collection_Filler_h
+//ROOT
+#include <TObject.h>
+#include <TROOT.h>
+#include <TGComboBox.h>
+#include <TGListBox.h>
+#include <iostream>
+#include <vector>
+#include <TSystem.h>
+#include <TFile.h>
 //Cosmics:
 #include "RecoDataProducts/inc/CosmicTrackSeed.hh"
 //Calo:
@@ -13,21 +22,17 @@
 //Tracker Hits:
 #include "RecoDataProducts/inc/ComboHit.hh"
 //CRV:
-#include "RecoDataProducts/inc/CrvRecoPulseCollection.hh"
+#include "RecoDataProducts/inc/CrvRecoPulse.hh"
 #include "RecoDataProducts/inc/CrvCoincidenceClusterCollection.hh"
 //Art:
 #include "art/Framework/Principal/Event.h"
 #include "art/Framework/Principal/Run.h"
+#include "art/Framework/Principal/SubRun.h"
 #include "fhiclcpp/types/Atom.h"
 #include "fhiclcpp/types/Sequence.h"
 #include "fhiclcpp/types/Table.h"
-
-#include <TObject.h>
-#include <TROOT.h>
-#include <TGComboBox.h>
-#include <TGListBox.h>
-#include <iostream>
-#include <vector>
+//TEVeMu2e
+#include "TEveEventDisplay/src/dict_classes/Collection_Filler.h"
 
 using namespace CLHEP;
 

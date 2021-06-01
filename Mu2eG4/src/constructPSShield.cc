@@ -19,6 +19,8 @@
 #include "Mu2eG4Helper/inc/AntiLeakRegistry.hh"
 #include "Mu2eG4Helper/inc/VolumeInfo.hh"
 
+#include "art/Framework/Services/Registry/ServiceDefinitionMacros.h"
+
 #include "Mu2eG4/inc/findMaterialOrThrow.hh"
 #include "Mu2eG4/inc/finishNesting.hh"
 #include "Mu2eG4/inc/nestPolycone.hh"
@@ -54,13 +56,14 @@ namespace mu2e {
 
     const int version              = hrs->version();
 
+    AntiLeakRegistry& reg = art::ServiceHandle<Mu2eG4Helper>()->antiLeakRegistry();
     // -----------------------------
     // Put in beam pipe inlet.  David Norvil Brown, Louisville, March 2015
 
     Tube const & pssInletParams = hrs->beamInlet();
     //    G4Material* beampipeMaterial = findMaterialOrThrow(pssInletParams.materialName());
     CLHEP::Hep3Vector place = hrs->getBeamInletCenter();
-    CLHEP::HepRotation * turn = new CLHEP::HepRotation(CLHEP::HepRotation::IDENTITY);
+    CLHEP::HepRotation * turn = reg.add(CLHEP::HepRotation(CLHEP::HepRotation::IDENTITY));
     turn->rotateY(hrs->getBeamAngleY());
     turn->rotateX(hrs->getBeamAngleX());
 
@@ -131,54 +134,54 @@ namespace mu2e {
     // Treat the extra water and stainless sheath as end rings.
     if ( version > 1 ) {
       for(unsigned iER=0; iER < hrs->endRings().size(); ++iER) {
-	std::ostringstream osnum;
-	osnum << iER + 1;
+        std::ostringstream osnum;
+        osnum << iER + 1;
 
-	const Polycone& eRing = hrs->endRings()[iER];
-	G4VSolid *psersolid = new G4Polycone("PSShieldEndRing"+osnum.str(),
-					    0, 2*M_PI,
-					    eRing.numZPlanes(),
-					    &eRing.zPlanes()[0],
-					    &eRing.rInner()[0],
-					    &eRing.rOuter()[0]
-					    );
+        const Polycone& eRing = hrs->endRings()[iER];
+        G4VSolid *psersolid = new G4Polycone("PSShieldEndRing"+osnum.str(),
+                                            0, 2*M_PI,
+                                            eRing.numZPlanes(),
+                                            &eRing.zPlanes()[0],
+                                            &eRing.rInner()[0],
+                                            &eRing.rOuter()[0]
+                                            );
 
-	VolumeInfo pser("PSShieldEndRing"+osnum.str(),
-		       eRing.originInMu2e() - parent.centerInMu2e(),
-		       parent.centerInWorld);
-	//	std::cout << "endring = " << eRing.originInMu2e() << " " << parent.centerInMu2e() << std::endl;
-	G4VSolid *aSolid = 0;
-	if ( 1 == iER ) {
-	  // downstream - beam inlet tube penetrates
-	  aSolid = new G4SubtractionSolid ( pser.name,
-					    psersolid,
-					    beamPassTub,
-					    turn,
-					    place-eRing.originInMu2e());
-	} else {
-	  // upstream - beam inlet tube does not penetrate
-	  // Same for extra water and stainless sheath.
-	  aSolid = psersolid;
-	}
+        VolumeInfo pser("PSShieldEndRing"+osnum.str(),
+                       eRing.originInMu2e() - parent.centerInMu2e(),
+                       parent.centerInWorld);
+        //      std::cout << "endring = " << eRing.originInMu2e() << " " << parent.centerInMu2e() << std::endl;
+        G4VSolid *aSolid = 0;
+        if ( 1 == iER ) {
+          // downstream - beam inlet tube penetrates
+          aSolid = new G4SubtractionSolid ( pser.name,
+                                            psersolid,
+                                            beamPassTub,
+                                            turn,
+                                            place-eRing.originInMu2e());
+        } else {
+          // upstream - beam inlet tube does not penetrate
+          // Same for extra water and stainless sheath.
+          aSolid = psersolid;
+        }
 
-	pser.solid = aSolid;
-	pser.solid->SetName(pser.name);
+        pser.solid = aSolid;
+        pser.solid->SetName(pser.name);
 
-	finishNesting(pser,
-		      findMaterialOrThrow(eRing.materialName()),
-		      0,
-		      pser.centerInParent,
-		      parent.logical,
-		      0,
-		      isVisible,
-		      G4Colour(config.getHep3Vector("PSShield.endRing.color")),
-		      isSolid,
-		      forceAuxEdgeVisible,
-		      placePV,
-		      doSurfaceCheck
-		      );
+        finishNesting(pser,
+                      findMaterialOrThrow(eRing.materialName()),
+                      0,
+                      pser.centerInParent,
+                      parent.logical,
+                      0,
+                      isVisible,
+                      G4Colour(config.getHep3Vector("PSShield.endRing.color")),
+                      isSolid,
+                      forceAuxEdgeVisible,
+                      placePV,
+                      doSurfaceCheck
+                      );
       }
-	    
+
     } // end if ( version > 1)...  (putting in endRings)
 
 

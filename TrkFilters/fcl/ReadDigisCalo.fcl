@@ -29,8 +29,8 @@ services : {
     #   Timing                : { }
 
     GeometryService        : { inputFile      : "Mu2eG4/geom/geom_common.txt"          }
-    ConditionsService      : { conditionsfile : "Mu2eG4/test/conditions_01.txt"        }
-    GlobalConstantsService : { inputFile      : "Mu2eG4/test/globalConstants_01.txt"   }
+    ConditionsService      : { conditionsfile : "ConditionsService/data/conditions_01.txt"        }
+    GlobalConstantsService : { inputFile      : "GlobalConstantsService/data/globalConstants_01.txt"   }
     Mu2eG4Helper           : { }
     BTrkHelper             : @local::BTrkHelperDefault
     SeedService            : { @table::automaticSeeds
@@ -54,7 +54,7 @@ physics :
 	@table::TrkHitReco.producers
 	@table::Tracking.TrkTrigger.producers
 	@table::CalPatRec.producers
-	@table::CaloClusterFast.producers
+	@table::CaloClusterTrigger.producers
 
 	TTKSFDeM : @local::TTKSF
 	TTKSFDeP : @local::TTKSF

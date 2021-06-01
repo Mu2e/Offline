@@ -40,12 +40,12 @@ mainlib = helper.make_mainlib ( [
     'canvas',
     'MF_MessageLogger',
     'fhiclcpp',
+    'fhiclcpp_types',
     'cetlib',
     'cetlib_except',
     'CLHEP',
     'boost_iostreams',
     'boost_regex',
-    'boost_system',
     'Core'
     ] )
 
@@ -70,12 +70,13 @@ helper.make_plugins( [
     'canvas',
     'MF_MessageLogger',
     'fhiclcpp',
+    'fhiclcpp_types',
+    'tbb',
     'cetlib',
     'cetlib_except',
     'CLHEP',
     'Core',
     'boost_filesystem',
-    'boost_system',
     ] )
 
 helper.make_dict_and_map( [

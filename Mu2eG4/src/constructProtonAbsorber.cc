@@ -16,6 +16,7 @@
 
 // Framework includes
 #include "messagefacility/MessageLogger/MessageLogger.h"
+#include "art/Framework/Services/Registry/ServiceDefinitionMacros.h"
 
 // Mu2e includes.
 #include "Mu2eG4/inc/constructProtonAbsorber.hh"
@@ -67,6 +68,7 @@ namespace mu2e {
 
     // Access to the Mu2eG4HelperService.
     Mu2eG4Helper* _helper = &(*(art::ServiceHandle<Mu2eG4Helper>()));
+    AntiLeakRegistry & reg = _helper->antiLeakRegistry();
 
     const bool inGaragePosition = _config.getBool("inGaragePosition",false); //offset detector train elements for extracted position
     const bool OPA_IPA_ST_Extracted = (inGaragePosition) ? _config.getBool("garage.extractOPA_IPA_ST") : false;
@@ -139,7 +141,6 @@ namespace mu2e {
       }
 
       if ( _config.getBool("protonabsorber.visible",true) ) {
-        AntiLeakRegistry & reg = _helper->antiLeakRegistry();
         hpabs->SetVisibility( _config.getBool("protonabsorber.solid",true),
                               forceAuxEdgeVisible,
                               G4Color::Green(), reg);
@@ -522,7 +523,7 @@ namespace mu2e {
                                     pabs3SlotWidth/2.0,
                                     400*CLHEP::mm, pabs3SlotLength/2.0 );
 
-          CLHEP::HepRotation* slot1Rotat = new CLHEP::HepRotation(CLHEP::HepRotation::IDENTITY);
+          CLHEP::HepRotation* slot1Rotat = reg.add(CLHEP::HepRotation(CLHEP::HepRotation::IDENTITY));
           slot1Rotat->rotateZ(120.0*CLHEP::degree);
 
           CLHEP::Hep3Vector slot1spot(300.0*CLHEP::mm*sin(120.0*CLHEP::degree),
@@ -535,7 +536,7 @@ namespace mu2e {
                                                                slot1Rotat,
                                                                slot1spot );
 
-          CLHEP::HepRotation* slot2Rotat = new CLHEP::HepRotation(CLHEP::HepRotation::IDENTITY);
+          CLHEP::HepRotation* slot2Rotat (nullptr);
 
           CLHEP::Hep3Vector slot2spot(0., 300.0*CLHEP::mm, pabs3SlotOffset*CLHEP::mm );
 
@@ -545,7 +546,7 @@ namespace mu2e {
                                                                slot2Rotat,
                                                                slot2spot );
 
-          CLHEP::HepRotation* slot3Rotat = new CLHEP::HepRotation(CLHEP::HepRotation::IDENTITY);
+          CLHEP::HepRotation* slot3Rotat = reg.add(CLHEP::HepRotation(CLHEP::HepRotation::IDENTITY));
           slot3Rotat->rotateZ(240.0*CLHEP::degree);
 
           CLHEP::Hep3Vector slot3spot(300.0*CLHEP::mm*sin(240.0*CLHEP::degree),
@@ -743,7 +744,7 @@ namespace mu2e {
             G4Box* notch = new G4Box("notch", notchWidth/2.*CLHEP::mm,
                                      (notchHeight+notchExtension)/2.*CLHEP::mm, hl*1.1 );
 
-            CLHEP::HepRotation* notch1Rotat = new CLHEP::HepRotation(CLHEP::HepRotation::IDENTITY);
+            CLHEP::HepRotation* notch1Rotat (nullptr);
             double notchOffset = notchHeight/2.;
             notchOffset -= notchExtension/2.; //so the extension is only on the bottom
             if(opaVersion < 3) notchOffset = 22.; //adding for backwards compatibility
@@ -755,7 +756,7 @@ namespace mu2e {
                                                                 notch1Rotat,
                                                                 notch1Locat);
 
-            CLHEP::HepRotation* notch2Rotat = new CLHEP::HepRotation(CLHEP::HepRotation::IDENTITY);
+            CLHEP::HepRotation* notch2Rotat = reg.add(CLHEP::HepRotation(CLHEP::HepRotation::IDENTITY));
             notch2Rotat->rotateZ(120.0*CLHEP::degree);
 
             CLHEP::Hep3Vector notch2Locat((rin+notchOffset)*CLHEP::mm*sin(120.0*CLHEP::degree),
@@ -768,7 +769,7 @@ namespace mu2e {
                                                                 notch2Rotat,
                                                                 notch2Locat);
 
-            CLHEP::HepRotation* notch3Rotat = new CLHEP::HepRotation(CLHEP::HepRotation::IDENTITY);
+            CLHEP::HepRotation* notch3Rotat = reg.add(CLHEP::HepRotation(CLHEP::HepRotation::IDENTITY));
             notch3Rotat->rotateZ(240.0*CLHEP::degree);
 
             CLHEP::Hep3Vector notch3Locat((rin+notchOffset)*CLHEP::mm*sin(240.0*CLHEP::degree),
@@ -852,7 +853,7 @@ namespace mu2e {
                     cout << " iSlat = " << iSlat << endl;
                   const double slatAngle = pabs->slatAngles().at(iSlat)*CLHEP::degree; //taken in as degrees
 
-                  CLHEP::HepRotation* slatRotat = new CLHEP::HepRotation(CLHEP::HepRotation::IDENTITY);
+                  CLHEP::HepRotation* slatRotat = reg.add(CLHEP::HepRotation(CLHEP::HepRotation::IDENTITY));
                   slatRotat->rotateZ(slatAngle);
                   const int slatIndex = pabs->slatTypes().at(iSlat); //get the type of slat
                   const double sHigh = pabs->slatHeights().at(slatIndex);
@@ -1214,7 +1215,7 @@ namespace mu2e {
             const double xMother = radius*sin(phi*CLHEP::degree) + parent1Info.centerInMu2e().x();
             const double yMother = radius*cos(phi*CLHEP::degree) + parent1Info.centerInMu2e().y();
             CLHEP::Hep3Vector motherBoxLoc(xMother,yMother,zMother);
-            CLHEP::HepRotation* motherBoxRot = new CLHEP::HepRotation(CLHEP::HepRotation::IDENTITY);
+            CLHEP::HepRotation* motherBoxRot = reg.add(CLHEP::HepRotation(CLHEP::HepRotation::IDENTITY));
             motherBoxRot->rotateZ(phi*CLHEP::degree);
             ostringstream motherBoxName;
             motherBoxName << "OPA_CrossSupportMother_" << iCross+1;
@@ -1311,9 +1312,9 @@ namespace mu2e {
             crossBarLength -= 1.; //remove mm to ensure no overlaps of corners
             CLHEP::Hep3Vector crossBar1Loc(0., 0., 0.);
             CLHEP::Hep3Vector crossBar2Loc(0., 0., 0.); //wrt bar 1
-            CLHEP::HepRotation* crossBar1Rot = new CLHEP::HepRotation(CLHEP::HepRotation::IDENTITY);
+            CLHEP::HepRotation* crossBar1Rot = reg.add(CLHEP::HepRotation(CLHEP::HepRotation::IDENTITY));
             crossBar1Rot->rotateY(crossBarAngle);
-            CLHEP::HepRotation* crossBar2Rot = new CLHEP::HepRotation(CLHEP::HepRotation::IDENTITY);
+            CLHEP::HepRotation* crossBar2Rot = reg.add(CLHEP::HepRotation(CLHEP::HepRotation::IDENTITY));
             crossBar2Rot->rotateY(-2.*crossBarAngle); //double to account for rotation wrt bar 1
             ostringstream crossBarName;
             crossBarName << "OPA_CrossSupport_" << iCross+1 << "_CrossBar";
@@ -1350,7 +1351,7 @@ namespace mu2e {
       //***************************
 
       if ( pabs->degraderBuild() ) {
-        CLHEP::HepRotation* degraderRot = new CLHEP::HepRotation(CLHEP::HepRotation::IDENTITY);
+        CLHEP::HepRotation* degraderRot = reg.add(CLHEP::HepRotation(CLHEP::HepRotation::IDENTITY));
         degraderRot->rotateZ(pabs->degraderRotation()*CLHEP::degree);
 
         // Make Frame
@@ -1464,7 +1465,7 @@ namespace mu2e {
 
 
         // Now put counterweight in DS2Vacuum
-        CLHEP::HepRotation* cwtRot = new CLHEP::HepRotation(CLHEP::HepRotation::IDENTITY);
+        CLHEP::HepRotation* cwtRot = reg.add(CLHEP::HepRotation(CLHEP::HepRotation::IDENTITY));
         cwtRot->rotateY(90.0*CLHEP::degree);
         cwtRot->rotateX(pabs->degraderRotation()*CLHEP::degree);
 
