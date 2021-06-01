@@ -29,6 +29,16 @@ namespace mu2e {
     void insertOuterFrame(VolumeInfo const& container, 
                         const PTMPWC* pwc);
 
+    void placeLogical(VolumeInfo container, 
+                      G4LogicalVolume* windowLogical, 
+                      G4VSolid* solid,
+                      G4ThreeVector position, 
+                      std::string const& name,
+                      int copyNo,
+                      SimpleConfig const& _config,
+                      bool const doSurfaceCheck,
+                      int const verbosity);
+
     void insertWindows(VolumeInfo const& container, 
                      const PTMPWC* pwc, 
                      SimpleConfig const& _config,
