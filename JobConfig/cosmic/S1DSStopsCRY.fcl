@@ -1,4 +1,0 @@
-#include "JobConfig/cosmic/S1DSStops.fcl"
-
-physics.producers.generate : @local::Cosmic.generateCRY
-outputs.Output.fileName : "sim.owner.CosmicDSStopsCRY.version.sequencer.art"
