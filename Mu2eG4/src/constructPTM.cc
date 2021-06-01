@@ -72,6 +72,36 @@ namespace mu2e {
 
   } // insertOuterFrame
 
+  void placeLogical(VolumeInfo container, 
+                    G4LogicalVolume* windowLogical, 
+                    G4VSolid* solid,
+                    G4ThreeVector position, 
+                    std::string const& name,
+                    int copyNo,
+                    SimpleConfig const& _config,
+                    bool const doSurfaceCheck,
+                    int const verbosity) {
+    Mu2eG4Helper& _helper = *(art::ServiceHandle<Mu2eG4Helper>());
+    VolumeInfo info;
+    info.name = name;
+    info.solid = solid;
+    info.logical = windowLogical;
+    info.physical = new G4PVPlacement(nullptr,
+              position,
+              windowLogical,
+              name,
+              container.logical,
+              false,
+              copyNo,
+              false);
+    info.centerInParent = position;
+    info.centerInWorld = container.centerInWorld + info.centerInParent;
+    if ( doSurfaceCheck ) {
+      checkForOverlaps( info.physical, _config, verbosity>0);
+    }
+    _helper.addVolInfo(info);
+  }
+
   void insertWindows(VolumeInfo const& container, 
                      const PTMPWC* pwc, 
                      int const vdNum,
@@ -96,6 +126,7 @@ namespace mu2e {
              "PTM"); // lookup token for doSurfaceCheck, etc
     // The remaining windows are all identical, so make one logical volume and
     // paste it repeatedly.
+
     G4VSolid* windowBox = new G4Box("PTMWindow",
                   pwc->pwcWindow()->getXhalfLength(),
                   pwc->pwcWindow()->getYhalfLength(),
@@ -104,53 +135,48 @@ namespace mu2e {
                               windowMaterial,
                               "PTMWindow");
     std::string hv1Name = "PTMHV1"+pwc->nameSuffix();
-    G4VPhysicalVolume* hv1Phys =
-    new G4PVPlacement(nullptr,
-              G4ThreeVector(0.0, 0.0, pwc->hv1Z()),
-              windowLogical,
-              hv1Name,
-              container.logical,
-              false,
-              0,
-              false);
-    std::string hv2Name = "PTMHV2"+pwc->nameSuffix();
-    G4VPhysicalVolume* hv2Phys =
-    new G4PVPlacement(nullptr,
-              G4ThreeVector(0.0, 0.0, pwc->hv2Z()),
-              windowLogical,
-              hv2Name,
-              container.logical,
-              false,
-              0,
-              false);
-    std::string hv3Name = "PTMHV3"+pwc->nameSuffix();
-    G4VPhysicalVolume* hv3Phys =
-    new G4PVPlacement(nullptr,
-              G4ThreeVector(0.0, 0.0, pwc->hv3Z()),
-              windowLogical,
-              hv3Name,
-              container.logical,
-              false,
-              0,
-              false);
-    std::string ground2Name = "PTMGroundOut"+pwc->nameSuffix();
-    G4VPhysicalVolume* ground2Phys =
-    new G4PVPlacement(nullptr,
-              G4ThreeVector(0.0, 0.0, pwc->ground2Z()),
-              windowLogical,
-              ground2Name,
-              container.logical,
-              false,
-              0,
-              false);
-
-    if (doSurfaceCheck){
-      checkForOverlaps( hv1Phys, _config, verbosity>0);
-      checkForOverlaps( hv2Phys, _config, verbosity>0);
-      checkForOverlaps( hv3Phys, _config, verbosity>0);
-      checkForOverlaps( ground2Phys, _config, verbosity>0);
-    }
+    placeLogical(container, 
+                 windowLogical, 
+                 windowBox,
+                 G4ThreeVector(0.0, 0.0, pwc->hv1Z()), 
+                 hv1Name,
+                 0,
+                 _config,
+                 doSurfaceCheck, 
+                 verbosity);
     
+    std::string hv2Name = "PTMHV2"+pwc->nameSuffix();
+    placeLogical(container, 
+                 windowLogical, 
+                 windowBox,
+                 G4ThreeVector(0.0, 0.0, pwc->hv2Z()), 
+                 hv2Name,
+                 0,
+                 _config,
+                 doSurfaceCheck, 
+                 verbosity);
+
+    std::string hv3Name = "PTMHV3"+pwc->nameSuffix();
+    placeLogical(container, 
+                 windowLogical, 
+                 windowBox,
+                 G4ThreeVector(0.0, 0.0, pwc->hv3Z()), 
+                 hv3Name,
+                 0,
+                 _config,
+                 doSurfaceCheck, 
+                 verbosity);
+
+    std::string ground2Name = "PTMGroundOut"+pwc->nameSuffix();
+    placeLogical(container, 
+                 windowLogical, 
+                 windowBox,
+                 G4ThreeVector(0.0, 0.0, pwc->ground2Z()), 
+                 ground2Name,
+                 0,
+                 _config,
+                 doSurfaceCheck, 
+                 verbosity);    
 
   } // insertWindows
 
@@ -222,16 +248,15 @@ namespace mu2e {
       // wire numbering such that the lowest-numered wire is 
       // on the bottom
       double gasY2 = pwc->vertWireYPos()[i];
-      G4VPhysicalVolume* wireGas =
-      new G4PVPlacement(nullptr,
-                G4ThreeVector(0.0, gasY2, pwc->vertWireZ()),
-                vertWireLogical,
-                wireGasName,
-                container.logical,
-                false,
-                wireNum,
-                false);
-      if (doSurfaceCheck) checkForOverlaps( wireGas, _config, verbosity>0);
+      placeLogical(container, 
+                   vertWireLogical, 
+                   vertWireBox,
+                   G4ThreeVector(0.0, gasY2, pwc->vertWireZ()), 
+                   wireGasName,
+                   wireNum,
+                   _config,
+                   doSurfaceCheck, 
+                   verbosity);
     }
 
   } // insertVerticalProfileWires
@@ -264,16 +289,15 @@ namespace mu2e {
       // wire numbering such that the lowest-numered wire is 
       // on the left, from the point of view of the oncoming beam.
       double gasX3 = pwc->horizWireXPos()[i];
-      G4VPhysicalVolume* wireGas =
-      new G4PVPlacement(nullptr,
-                G4ThreeVector(gasX3, 0.0, pwc->horizWireZ()),
-                horizWireLogical,
-                wireGasName,
-                container.logical,
-                false,
-                wireNum,
-                false);
-      if (doSurfaceCheck) checkForOverlaps( wireGas, _config, verbosity>0);
+      placeLogical(container, 
+                   horizWireLogical, 
+                   horizWireBox,
+                   G4ThreeVector(gasX3, 0.0, pwc->horizWireZ()), 
+                   wireGasName,
+                   wireNum,
+                   _config,
+                   doSurfaceCheck, 
+                   verbosity);
     }
 
   } // insertHorizontalProfileWires
