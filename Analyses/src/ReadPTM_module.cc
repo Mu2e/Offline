@@ -60,7 +60,7 @@ namespace mu2e {
 
       nt = new float[1000];
 
-    } // explicit ReadPTM()
+    } // ReadPTM()
 
     virtual ~ReadPTM() { }
 
