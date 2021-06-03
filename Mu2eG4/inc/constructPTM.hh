@@ -22,9 +22,7 @@ namespace mu2e {
 
     void constructTargetHallPWC(VolumeInfo const& motherVolume, 
                               const PTMPWC* pwc, 
-                              SimpleConfig const& _config, 
-                              bool const doSurfaceCheck, 
-                              int const verbosity);
+                              SimpleConfig const& _config);
 
     void insertOuterFrame(VolumeInfo const& container, 
                         const PTMPWC* pwc);
@@ -36,12 +34,14 @@ namespace mu2e {
                       std::string const& name,
                       int copyNo,
                       SimpleConfig const& _config,
+                      bool const placePV,
                       bool const doSurfaceCheck,
                       int const verbosity);
 
     void insertWindows(VolumeInfo const& container, 
                      const PTMPWC* pwc, 
                      SimpleConfig const& _config,
+                     bool const placePV,
                      bool const doSurfaceCheck,
                      int const verbosity);
 
@@ -54,6 +54,7 @@ namespace mu2e {
                                   G4Material* gasMaterial, 
                                   std::string const& wireNameSuffix, 
                                   SimpleConfig const& _config,
+                                  bool const placePV,
                                   bool const doSurfaceCheck,
                                   int const verbosity);
 
@@ -62,6 +63,7 @@ namespace mu2e {
                                     G4Material* gasMaterial, 
                                     std::string const& wireNameSuffix, 
                                     SimpleConfig const& _config,
+                                    bool const placePV,
                                     bool const doSurfaceCheck,
                                     int const verbosity);
 

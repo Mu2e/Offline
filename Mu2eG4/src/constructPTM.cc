@@ -79,6 +79,7 @@ namespace mu2e {
                     std::string const& name,
                     int copyNo,
                     SimpleConfig const& _config,
+                    bool const placePV,
                     bool const doSurfaceCheck,
                     int const verbosity) {
     Mu2eG4Helper& _helper = *(art::ServiceHandle<Mu2eG4Helper>());
@@ -86,19 +87,25 @@ namespace mu2e {
     info.name = name;
     info.solid = solid;
     info.logical = windowLogical;
-    info.physical = new G4PVPlacement(nullptr,
-              position,
-              windowLogical,
-              name,
-              container.logical,
-              false,
-              copyNo,
-              false);
+    if (placePV) {
+      info.physical = new G4PVPlacement(nullptr,
+                          position,
+                          windowLogical,
+                          name,
+                          container.logical,
+                          false,
+                          copyNo,
+                          false);
+    } else {
+      info.physical = 0x0;
+    }
+    
     info.centerInParent = position;
     info.centerInWorld = container.centerInWorld + info.centerInParent;
-    if ( doSurfaceCheck ) {
+    if ( info.physical != 0x0 && doSurfaceCheck ) {
       checkForOverlaps( info.physical, _config, verbosity>0);
     }
+
     _helper.addVolInfo(info);
   }
 
@@ -106,6 +113,7 @@ namespace mu2e {
                      const PTMPWC* pwc, 
                      int const vdNum,
                      SimpleConfig const& _config,
+                     bool const placePV,
                      bool const doSurfaceCheck,
                      int const verbosity) {
     G4Material *windowMaterial = findMaterialOrThrow(pwc->windowMaterialName());
@@ -133,7 +141,7 @@ namespace mu2e {
                   pwc->pwcWindow()->getZhalfLength());
     G4LogicalVolume* windowLogical = new G4LogicalVolume(windowBox,
                               windowMaterial,
-                              "PTMWindow");
+                              "PTMWindow"+pwc->nameSuffix());
     std::string hv1Name = "PTMHV1"+pwc->nameSuffix();
     placeLogical(container, 
                  windowLogical, 
@@ -142,6 +150,7 @@ namespace mu2e {
                  hv1Name,
                  0,
                  _config,
+                 placePV,
                  doSurfaceCheck, 
                  verbosity);
     
@@ -153,6 +162,7 @@ namespace mu2e {
                  hv2Name,
                  0,
                  _config,
+                 placePV,
                  doSurfaceCheck, 
                  verbosity);
 
@@ -164,6 +174,7 @@ namespace mu2e {
                  hv3Name,
                  0,
                  _config,
+                 placePV,
                  doSurfaceCheck, 
                  verbosity);
 
@@ -175,6 +186,7 @@ namespace mu2e {
                  ground2Name,
                  0,
                  _config,
+                 placePV,
                  doSurfaceCheck, 
                  verbosity);    
 
@@ -225,6 +237,7 @@ namespace mu2e {
                                   G4Material* gasMaterial, 
                                   std::string const& wireNameSuffix, 
                                   SimpleConfig const& _config,
+                                  bool const placePV,
                                   bool const doSurfaceCheck,
                                   int const verbosity) {
     // In the real detector wires run HORIZONTALLY, so as to measure the 
@@ -255,6 +268,7 @@ namespace mu2e {
                    wireGasName,
                    wireNum,
                    _config,
+                   placePV,
                    doSurfaceCheck, 
                    verbosity);
     }
@@ -266,6 +280,7 @@ namespace mu2e {
                                     G4Material* gasMaterial, 
                                     std::string const& wireNameSuffix, 
                                     SimpleConfig const& _config,
+                                    bool const placePV,
                                     bool const doSurfaceCheck,
                                     int const verbosity) {
     // In the real detector wires run VERTICALLY so as to measure the 
@@ -296,6 +311,7 @@ namespace mu2e {
                    wireGasName,
                    wireNum,
                    _config,
+                   placePV,
                    doSurfaceCheck, 
                    verbosity);
     }
@@ -305,10 +321,14 @@ namespace mu2e {
   void constructTargetHallPWC(VolumeInfo const& motherVolume, 
                               const PTMPWC* pwc, 
                               int const vdNum,
-                              SimpleConfig const& _config, 
-                              bool const doSurfaceCheck, 
-                              int const verbosity) {
-    
+                              SimpleConfig const& _config) {
+
+    // collect geomOptions to be used in helper methods
+    const int verbosity = _config.getInt("PTM.verbosityLevel",1);
+    const auto& geomOptions = art::ServiceHandle<GeometryService>()->geomOptions();
+    geomOptions->loadEntry( _config, "PTM", "PTM" );
+    const bool doSurfaceCheck = geomOptions->doSurfaceCheck("PTM");
+    bool placePV = geomOptions->placePV("PTM");
     // "container": box representing the location of the individual PWC
     G4Material* containerMaterial = motherVolume.logical->GetMaterial();
 
@@ -334,7 +354,7 @@ namespace mu2e {
     // Represented as a single solid piece here.
     insertOuterFrame(pwcContainerInfo, pwc);
 
-    insertWindows(pwcContainerInfo, pwc, vdNum, _config, doSurfaceCheck, verbosity);
+    insertWindows(pwcContainerInfo, pwc, vdNum, _config, placePV, doSurfaceCheck, verbosity);
 
     // the sections of gas between the outer grounded planes and the bias planes
     // Going to use gasMaterial a few times; collect it out here so we don't do
@@ -347,16 +367,12 @@ namespace mu2e {
     // string append once out here.
     std::string wireNameSuffix = pwc->nameSuffix();
     wireNameSuffix.append("_");
-    insertVerticalProfileWires(pwcContainerInfo, pwc, gasMaterial, wireNameSuffix, _config, doSurfaceCheck, verbosity);
-    insertHorizontalProfileWires(pwcContainerInfo, pwc, gasMaterial, wireNameSuffix, _config, doSurfaceCheck, verbosity);
+    insertVerticalProfileWires(pwcContainerInfo, pwc, gasMaterial, wireNameSuffix, _config, placePV, doSurfaceCheck, verbosity);
+    insertHorizontalProfileWires(pwcContainerInfo, pwc, gasMaterial, wireNameSuffix, _config, placePV, doSurfaceCheck, verbosity);
   } // constructTargetHallPWC
 
 
   void constructPTM(VolumeInfo const& parent, SimpleConfig const& _config) {
-    const int verbosity = _config.getInt("PTM.verbosityLevel",1);
-    const auto& geomOptions = art::ServiceHandle<GeometryService>()->geomOptions();
-    geomOptions->loadEntry( _config, "PTM", "PTM" );
-    const bool doSurfaceCheck = geomOptions->doSurfaceCheck("PTM");
 
     GeomHandle<PTM> ptmon;
 
@@ -392,9 +408,9 @@ namespace mu2e {
                 "PTM");
 
     // add the first PWC to the mother volume
-    constructTargetHallPWC(pTargetMonContainer, ptmon->nearPWC(), VirtualDetectorId::PTM_1_In, _config, doSurfaceCheck, verbosity);
+    constructTargetHallPWC(pTargetMonContainer, ptmon->nearPWC(), VirtualDetectorId::PTM_1_In, _config);
     // and the second PWC
-    constructTargetHallPWC(pTargetMonContainer, ptmon->farPWC(), VirtualDetectorId::PTM_2_In, _config, doSurfaceCheck, verbosity);
+    constructTargetHallPWC(pTargetMonContainer, ptmon->farPWC(), VirtualDetectorId::PTM_2_In, _config);
 
   } // constructPTM
 
