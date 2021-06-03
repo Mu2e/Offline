@@ -102,7 +102,7 @@ namespace mu2e
     //construct GUI:
     _frame = new TEveMu2eMainWindow(gClient->GetRoot(), 1000,600, _pset);
     //build 2D geometries:
-    //_frame->CreateCaloProjection();
+    _frame->CreateCaloProjection();
     _frame->CreateTrackerProjection();//StartProjectionTabs();
     //send list of particles to viewer:
     _frame->SetParticleOpts(_particles);
@@ -113,8 +113,8 @@ namespace mu2e
     //import 3D GDML geom:
     _frame->SetRunGeometry(run, _diagLevel, _showBuilding, _showDSOnly, _showCRV);
     //make 2D tracker and calo:
+    _frame->PrepareCaloProjectionTab(run);
     _frame->PrepareTrackerProjectionTab(run);
-    //_frame->PrepareCaloProjectionTab(run);
     std::cout<<" end begin Run "<<std::endl;
   }
 
