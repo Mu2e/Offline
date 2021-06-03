@@ -3,20 +3,13 @@
 # this file is included by fcl/standardProducers.fcl inside the PROLOG section
 #------------------------------------------------------------------------------
 
-BEGIN_PROLOG
-  HitMakerBlindTime      : 500. # ns
-  HitMakerDigiSampling   : 5    # ns
-END_PROLOG
-
 
 BEGIN_PROLOG
 
 CaloProtoClusterMaker :
 {
   module_type            : CaloProtoClusterMaker
-  caloCrystalModuleLabel : CaloHitMaker
-  mainTag                : mainCluster
-  splitTag               : splitCluster
+  caloHitCollection      : CaloHitMaker
   EminSeed               : 10
   ExpandCut              : 1.0
   EnoiseCut              : 1.0
@@ -28,15 +21,14 @@ CaloProtoClusterMaker :
 
 CaloClusterMaker :
 {
-  module_type            : CaloClusterMaker
-  caloClusterModuleLabel : CaloProtoClusterMaker
-  mainTag                : mainCluster
-  splitTag               : splitCluster
-  deltaTime              : 2
-  maxDistSplit           : 150
-  maxDistMain            : 150
-  strategy               : 0
-  diagLevel              : 0
+  module_type                : CaloClusterMaker
+  caloClusterMainCollection  : "CaloProtoClusterMaker:main"
+  caloClusterSplitCollection : "CaloProtoClusterMaker:split"
+  deltaTime                  : 2
+  maxDistSplit               : 150
+  maxDistMain                : 150
+  strategy                   : 0
+  diagLevel                  : 0
 }  
 
 

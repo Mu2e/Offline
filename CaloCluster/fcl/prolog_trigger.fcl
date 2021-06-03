@@ -1,17 +1,15 @@
 # -*- mode: tcl -*-
 #------------------------------------------------------------------------------
 #------------------------------------------------------------------------------
-BEGIN_PROLOG
-  HitMakerBlindTime      : 500. # ns
-  HitMakerDigiSampling   : 5    # ns
-END_PROLOG
+#include "CaloMC/fcl/common.fcl"
+
 
 BEGIN_PROLOG
 
 CaloClusterFast:
 {
    module_type            : CaloClusterFast
-   caloCrystalModuleLabel : FastCaloHitMaker
+   caloHitCollection      : "CaloHitMakerFast:calo"
    EminSeed               : 10
    ExpandCut              : 1.0
    EnoiseCut              : 1.0
@@ -43,10 +41,9 @@ CaloClusterTrigger:
       CaloClusterFast : @local::CaloClusterFast
       CaloTrigger     : @local::CaloTrigger
    }   
-   Reco      : [ CaloClusterFast ]
+   
+   Reco : [ CaloClusterFast ]
 }
-
-
 
 
 END_PROLOG

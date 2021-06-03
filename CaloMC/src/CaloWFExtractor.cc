@@ -1,23 +1,26 @@
 #include "CaloMC/inc/CaloWFExtractor.hh"
 #include <algorithm>
+#include <iostream>
 
 namespace mu2e {
 
-   void CaloWFExtractor::extract(const std::vector<int>& wf, std::vector<unsigned>& starts, std::vector<unsigned>& stops) const
+   void CaloWFExtractor::extract(const std::vector<int>& wf, std::vector<size_t>& starts, std::vector<size_t>& stops) const
    {
-        unsigned timeSample(nBinsPeak_);
+        size_t timeSample(nBinsPeak_);
         while (timeSample+nBinsPeak_ < wf.size()) 
         {
-	    // find the local maximum over threshold
+	    // find starting point
 	    if (wf[timeSample] < minPeakADC_) {++timeSample; continue;}
 
-            auto it1 =  wf.begin()+timeSample-nBinsPeak_, it2=wf.begin()+timeSample+nBinsPeak_+1;
-            if (std::max_element(it1,it2) != wf.begin()+timeSample) {++timeSample; continue;}
+            size_t imax(timeSample-nBinsPeak_);
+            for (auto i = timeSample-nBinsPeak_; i<=timeSample+nBinsPeak_;++i) {if (wf[i]>wf[imax]) imax=i;}
+            if (timeSample != imax)  {++timeSample; continue;}
 
-	    // find the starting / stopping point of the peak (stop = first value under threshold)
-            auto     stopIter    = std::find_if(wf.begin()+timeSample, wf.end(),[this](const auto& a){return a < this->minPeakADC_;}); 
-            unsigned sampleStop  = std::distance(wf.begin(),stopIter);
-            unsigned sampleStart = (timeSample > bufferDigi_) ? timeSample - bufferDigi_ : 0;
+            // find the starting / stopping point of the peak (stop = first value under threshold)
+            size_t sampleStart = (timeSample > bufferDigi_) ? timeSample - bufferDigi_ : 0;
+            size_t sampleStop(timeSample);
+            ++sampleStop; 
+            while (sampleStop < wf.size() && wf[sampleStop] >= minPeakADC_) ++sampleStop; 
 
 	    starts.push_back(sampleStart);
 	    stops.push_back(sampleStop);
@@ -26,20 +29,19 @@ namespace mu2e {
 	    timeSample = sampleStop+1;   
         }
 
-        // Concatenate peaks
-        unsigned iprev(0), icurrent(1);
+
+        // Concatenate peaks and remove unused values (flag value to remove past wf.size() since the latter is a legitimate value)
+        size_t iprev(0), icurrent(1);
         while (icurrent < starts.size())
         {
-            if (stops[iprev] > starts[icurrent]) {stops[iprev]=stops[icurrent]; starts[icurrent]=stops[icurrent]=wf.size()+10;}
-            else                                       {iprev = icurrent;}
+            if (stops[iprev] >= starts[icurrent]) {stops[iprev]=stops[icurrent]; starts[icurrent]=stops[icurrent]=wf.size()+1;}
+            else                                  {iprev = icurrent;}
             ++icurrent;
         }
 
-        auto pred = [&wf](const unsigned a) {return a>wf.size();};
+        auto pred = [&wf](const auto a) {return a>wf.size();};
         starts.erase(std::remove_if(starts.begin(),starts.end(),pred),starts.end());
         stops.erase(std::remove_if(stops.begin(), stops.end(), pred),stops.end());
    }
 }
-
-
 
