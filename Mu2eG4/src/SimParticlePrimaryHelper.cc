@@ -7,9 +7,6 @@
 
 #include "cetlib_except/exception.h"
 
-#include <iostream>
-#define AGDEBUG(stuff) std::cerr<<"AG: "<<__FILE__<<", line "<<__LINE__<<": "<<stuff<<std::endl;
-
 namespace mu2e {
 
   //================================================================
@@ -63,7 +60,6 @@ namespace mu2e {
 
   //================================================================
   SimParticlePrimaryHelper::InputParticle SimParticlePrimaryHelper::getEntry(int g4TrkID) const {
-    AGDEBUG("size = "<<entries_.size()<<", g4TrkID = "<<g4TrkID);
     return entries_.at(g4TrkID-1);
   }
 
