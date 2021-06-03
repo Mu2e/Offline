@@ -33,7 +33,7 @@ namespace mu2e {
            using Comment = fhicl::Comment;        
            fhicl::Table<mu2e::CaloRawWFProcessor::Config>      proc_raw_conf       { Name("RawProcessor"),        Comment("Raw processor config") };
            fhicl::Table<mu2e::CaloTemplateWFProcessor::Config> proc_templ_conf     { Name("TemplateProcessor"),   Comment("Log normal fit processor config") };                    
-           fhicl::Atom<std::string>                            caloDigiModuleLabel { Name("caloDigiModuleLabel"), Comment("Calo Digi module label") };
+           fhicl::Atom<art::InputTag>                          caloDigiCollection  { Name("caloDigiCollection"),  Comment("Calo Digi module label") };
            fhicl::Atom<std::string>                            processorStrategy   { Name("processorStrategy"),   Comment("Digi reco processor name") };
            fhicl::Atom<double>                                 digiSampling        { Name("digiSampling"),        Comment("Calo ADC sampling time (ns)") };
            fhicl::Atom<double>                                 maxChi2Cut          { Name("maxChi2Cut"),          Comment("Chi2 cut for keeping reco digi") };
@@ -43,7 +43,7 @@ namespace mu2e {
 
         explicit CaloRecoDigiMaker(const art::EDProducer::Table<Config>& config) :
            EDProducer{config},
-           caloDigisToken_    {consumes<CaloDigiCollection>(config().caloDigiModuleLabel())},
+           caloDigisToken_    {consumes<CaloDigiCollection>(config().caloDigiCollection())},
            processorStrategy_ (config().processorStrategy()),
            digiSampling_      (config().digiSampling()),
            maxChi2Cut_        (config().maxChi2Cut()),
