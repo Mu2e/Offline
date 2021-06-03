@@ -49,15 +49,14 @@ namespace mu2e{
       orthodetXZ->AddElement(lower);
         
       // ... Create tracker using the composite shape defined above
-      /*TGeoMaterial *mat = new TGeoMaterial("Mylar", 12,6,1.4);
+      TGeoMaterial *mat = new TGeoMaterial("Mylar", 12,6,1.4);
       TGeoMedium *My = new TGeoMedium("Mylar",2, mat);
       CLHEP::Hep3Vector trackerCentrMu2e = GetTrackerCenter();
       TGeoShape *gs = new TGeoTube("Straw Tracker",rmin,rmax,dz); 
       TGeoVolume *tracker = new TGeoVolume("straw Tracker ",gs, My);
       tracker->SetVisLeaves(kFALSE);
       tracker->SetInvisible();
-      topvol->AddNode(tracker, 1, new TGeoTranslation(-390.4,+1000,1017.1)); */
+      topvol->AddNode(tracker, 1, new TGeoTranslation(-390.4,+1000,1017.1)); 
 
-      
   }
 }
