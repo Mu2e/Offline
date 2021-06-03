@@ -115,8 +115,7 @@ namespace mu2e {
       res->insert(inmap->begin(),inmap->end());
     }
 
-    std::vector<art::Handle<SimParticleCollection> > colls;
-    event.getManyByType(colls);
+    std::vector<art::Handle<SimParticleCollection> > colls = event.getMany<SimParticleCollection>();
 
     // Generate and record offsets for all primaries
     for(const auto& ih : colls) {

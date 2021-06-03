@@ -161,8 +161,7 @@ namespace mu2e {
 
 
     // Generate and record offsets for all primaries
-    std::vector<art::Handle<SimParticleCollection> > colls;
-    event.getManyByType(colls);
+    std::vector<art::Handle<SimParticleCollection> > colls = event.getMany<SimParticleCollection>();
     for(const auto& ih : colls) {
       for(const auto& iter : *ih) {
         if(iter.second.isPrimary()) {

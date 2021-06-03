@@ -11,6 +11,7 @@
 #include "cetlib_except/exception.h"
 #include "fhiclcpp/types/Atom.h"
 #include "canvas/Utilities/InputTag.h"
+#include "messagefacility/MessageLogger/MessageLogger.h"
 
 #include "TrackerGeom/inc/Tracker.hh"
 #include "GeometryService/inc/GeomHandle.hh"
@@ -201,8 +202,7 @@ namespace mu2e {
     auto StrawGasStepCollectionGetter = event.productGetter(StrawGasStepCollectionPID);
     // Get all of the tracker StepPointMC collections from the event:
     // This selector will select only data products with the given instance name.
-    SPMCCHV stepsHandles;
-    event.getMany( _selector, stepsHandles);
+    SPMCCHV stepsHandles = event.getMany<StepPointMCCollection>( _selector);
     //    const Tracker& tracker = *GeomHandle<Tracker>();
     // Informational message on the first event.
     if ( _firstEvent && _debug>0 ) {

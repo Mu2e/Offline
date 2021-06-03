@@ -236,8 +236,7 @@ namespace mu2e {
 
   void DiskCal00::simCheck(const art::Event& event) {
     typedef std::vector< art::Handle<SimParticleCollection> > HandleVector;
-    HandleVector allSims;
-    event.getManyByType(allSims);
+    HandleVector allSims = event.getMany<SimParticleCollection>();
     cout << "Size: " << allSims.size() << endl;
 
     for ( HandleVector::const_iterator i=allSims.begin(), e=allSims.end(); i != e; ++i ){

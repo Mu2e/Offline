@@ -224,7 +224,7 @@ namespace mu2e {
 
     art::Handle<CaloClusterCollection> ccH{}; // need to cache for later Ptr creation 
     if(_usecc){
-      event.getByToken(_ccToken, ccH);
+      ccH = event.getHandle<CaloClusterCollection>(_ccToken);
       _cccol = ccH.product();
     }
 

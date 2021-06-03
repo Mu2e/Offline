@@ -13,6 +13,8 @@
 #include "Geant4/G4ExtrudedSolid.hh"
 #include "Mu2eG4Helper/inc/AntiLeakRegistry.hh"
 
+#include "art/Framework/Services/Registry/ServiceDefinitionMacros.h"
+
 #include "GeometryService/inc/GeomHandle.hh"
 #include "GeometryService/inc/G4GeometryOptions.hh"
 #include "ProtonBeamDumpGeom/inc/ProtonBeamDump.hh"

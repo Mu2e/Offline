@@ -22,6 +22,7 @@
 
 // Framework includes
 #include "cetlib_except/exception.h"
+#include "art/Framework/Services/Registry/ServiceDefinitionMacros.h"
 
 // Mu2e includes.
 #include "BeamlineGeom/inc/Collimator_TS1.hh"

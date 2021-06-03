@@ -4,6 +4,8 @@
 
 #include "CLHEP/Vector/ThreeVector.h"
 
+#include "art/Framework/Services/Registry/ServiceDefinitionMacros.h"
+
 #include "ProductionSolenoidGeom/inc/PSEnclosure.hh"
 #include "ProductionSolenoidGeom/inc/PSVacuum.hh"
 #include "GeometryService/inc/GeometryService.hh"

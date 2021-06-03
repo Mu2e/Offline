@@ -19,13 +19,14 @@ mainlib = helper.make_mainlib ( [ 'mu2e_ExtinctionMonitorFNAL_Geometry',
                                   'art_Utilities',
                                   'canvas',
                                   'fhiclcpp',
+                                  'fhiclcpp_types',
+                                  'tbb',
                                   'cetlib',
                                   'cetlib_except',
                                   'CLHEP',
                                   'HepPDT',
                                   'HepPID',
                                   'Core',
-                                  'boost_system'
                                   ] )
 
 # This tells emacs to view this file in python mode.

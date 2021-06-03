@@ -39,9 +39,6 @@
 
 #include <iostream>
 #include <string>
-#include <sstream>
-#include <cmath>
-#include <map>
 #include <vector>
 #include <numeric>
 
@@ -57,32 +54,30 @@ namespace mu2e {
              using Name    = fhicl::Name;
              using Comment = fhicl::Comment;
              using CNG     = mu2e::CaloNoiseSimGenerator::Config;
-             fhicl::Table<CNG>          noise_gen_conf       { Name("NoiseGenerator"),         Comment("Noise generator config") };
-             fhicl::Atom<art::InputTag> caloShowerCollection { Name("caloShowerROCollection"), Comment("CaloShowerRO collection name") }; 
-             fhicl::Atom<double>        blindTime            { Name("blindTime"),              Comment("Microbunch blind time") }; 
-             fhicl::Atom<bool>          addNoise             { Name("addNoise"),               Comment("Add noise to waveform") }; 
-             fhicl::Atom<bool>          generateSpotNoise    { Name("generateSpotNoise"),      Comment("Only generate noise near energy deposits") }; 
-             fhicl::Atom<double>        digiSampling         { Name("digiSampling"),           Comment("Digitization time sampling") }; 
-             fhicl::Atom<int>           nBits                { Name("nBits"),                  Comment("ADC Number of bits") }; 
-             fhicl::Atom<unsigned>      nBinsPeak            { Name("nBinsPeak"),              Comment("Window size for finding local maximum to digitize wf") }; 
-             fhicl::Atom<int>           minPeakADC           { Name("minPeakADC"),             Comment("Minimum ADC hits of local peak to digitize") }; 
-             fhicl::Atom<double>        endTimeBuffer        { Name("endTimeBuffer"),          Comment("Number of extra timestamps after end of pulse") }; 
-             fhicl::Atom<unsigned>      bufferDigi           { Name("bufferDigi"),             Comment("Number of timeStamps for the buffer digi") }; 
-             fhicl::Atom<int>           pulseIntegralSteps   { Name("pulseIntegralSteps"),     Comment("Numer of time sub-division for CaloPulseChape") }; 
-             fhicl::Atom<int>           diagLevel            { Name("diagLevel"),              Comment("Diag Level"),0 };
+             fhicl::Table<CNG>          noise_gen_conf         { Name("NoiseGenerator"),         Comment("Noise generator config") };
+             fhicl::Atom<art::InputTag> caloShowerROCollection { Name("caloShowerROCollection"), Comment("CaloShowerRO collection name") }; 
+             fhicl::Atom<double>        blindTime              { Name("blindTime"),              Comment("Microbunch blind time") }; 
+             fhicl::Atom<bool>          addNoise               { Name("addNoise"),               Comment("Add noise to waveform") }; 
+             fhicl::Atom<bool>          generateSpotNoise      { Name("generateSpotNoise"),      Comment("Only generate noise near energy deposits") }; 
+             fhicl::Atom<double>        digiSampling           { Name("digiSampling"),           Comment("Digitization time sampling") }; 
+             fhicl::Atom<int>           nBits                  { Name("nBits"),                  Comment("ADC Number of bits") }; 
+             fhicl::Atom<unsigned>      nBinsPeak              { Name("nBinsPeak"),              Comment("Window size for finding local maximum to digitize wf") }; 
+             fhicl::Atom<int>           minPeakADC             { Name("minPeakADC"),             Comment("Minimum ADC hits of local peak to digitize") }; 
+             fhicl::Atom<double>        endTimeBuffer          { Name("endTimeBuffer"),          Comment("Number of extra timestamps after end of pulse") }; 
+             fhicl::Atom<unsigned>      bufferDigi             { Name("bufferDigi"),             Comment("Number of timeStamps for the buffer digi") }; 
+             fhicl::Atom<int>           diagLevel              { Name("diagLevel"),              Comment("Diag Level"),0 };
          };
          
          explicit CaloDigiMaker(const art::EDProducer::Table<Config>& config) :
             EDProducer{config},
-            caloShowerToken_{consumes<CaloShowerROCollection>(config().caloShowerCollection())},
+            caloShowerToken_{consumes<CaloShowerROCollection>(config().caloShowerROCollection())},
             blindTime_         (config().blindTime()),
             digiSampling_      (config().digiSampling()),
             bufferDigi_        (config().bufferDigi()),
             endTimeBuffer_     (config().endTimeBuffer()),
             maxADCCounts_      (1 << config().nBits()),
-            pulseIntegralSteps_(config().pulseIntegralSteps()),
             pulseShape_        (CaloPulseShape(config().digiSampling())),
-            wfExtractor_       (config().bufferDigi(),config().minPeakADC(),config().nBinsPeak()),
+            wfExtractor_       (config().bufferDigi(),config().nBinsPeak(),config().minPeakADC()),
             engine_            (createEngine(art::ServiceHandle<SeedService>()->getSeed())),
             addNoise_          (config().addNoise()),
             generateSpotNoise_ (config().generateSpotNoise()),
@@ -97,11 +92,11 @@ namespace mu2e {
 
     private:       
        void makeDigitization  (const CaloShowerROCollection&, CaloDigiCollection&);
-       void fillROHits        (int iRO, std::vector<double>& waveform, const CaloShowerROCollection&, const ConditionsHandle<CalorimeterCalibrations>&);
-       void generateNoise     (std::vector<double>& waveform, int iRO, const ConditionsHandle<CalorimeterCalibrations>&);
-       void buildOutputDigi   (int iRO, std::vector<double>& waveform, int pedestal, CaloDigiCollection&);
-       void diag0             (int, const std::vector<int>&);
-       void diag1             (int, double, size_t, const std::vector<int>&, int);
+       void fillROHits        (unsigned iRO, std::vector<double>& waveform, const CaloShowerROCollection&, const ConditionsHandle<CalorimeterCalibrations>&);
+       void generateNoise     (std::vector<double>& waveform, unsigned iRO, const ConditionsHandle<CalorimeterCalibrations>&);
+       void buildOutputDigi   (unsigned iRO, std::vector<double>& waveform, int pedestal, CaloDigiCollection&);
+       void diag0             (unsigned, const std::vector<int>&);
+       void diag1             (unsigned, double, size_t, const std::vector<int>&, int);
        void plotWF            (const std::vector<int>& waveform,    const std::string& pname, int pedestal);
        void plotWF            (const std::vector<double>& waveform, const std::string& pname, int pedestal);
        
@@ -112,7 +107,6 @@ namespace mu2e {
        unsigned                bufferDigi_;
        double                  endTimeBuffer_;
        int                     maxADCCounts_;
-       int                     pulseIntegralSteps_;
        CaloPulseShape          pulseShape_;
        CaloWFExtractor         wfExtractor_;
        CLHEP::HepRandomEngine& engine_;
@@ -161,12 +155,16 @@ namespace mu2e {
       calorimeter_ = ch.get();
 
       ConditionsHandle<CalorimeterCalibrations> calorimeterCalibrations("ignored");
-      if (calorimeter_->nCrystal()<1 || calorimeter_->caloInfo().getInt("nSiPMPerCrystal")<1) return;
-      
-      int nWaveforms   = calorimeter_->nCrystal()*calorimeter_->caloInfo().getInt("nSiPMPerCrystal");
-      int waveformSize = (mbtime_ - blindTime_ + endTimeBuffer_) / digiSampling_; 
-      
-      for (int iRO=0;iRO<nWaveforms;++iRO)
+      if (calorimeter_->nCrystal()<1 || calorimeter_->caloInfo().getInt("nSiPMPerCrystal")<1 || mbtime_ < blindTime_)
+         throw cet::exception("Rethrow")<< "[CaloMC/CaloDigiMaker] Nothing to digitize!!! " << std::endl;
+
+      if (mbtime_ + endTimeBuffer_ < blindTime_)
+         throw cet::exception("Rethrow")<< "[CaloMC/CaloDigiMaker] digitization size too short " << std::endl;
+            
+      unsigned nWaveforms   = calorimeter_->nCrystal()*calorimeter_->caloInfo().getInt("nSiPMPerCrystal");
+      unsigned waveformSize = static_cast<unsigned>( (mbtime_ - blindTime_ + endTimeBuffer_) / digiSampling_ ); 
+
+      for (unsigned iRO=0;iRO<nWaveforms;++iRO)
       {
           std::vector<double> waveform(waveformSize,0.0);
           fillROHits(iRO, waveform, CaloShowerROs, calorimeterCalibrations);
@@ -177,26 +175,25 @@ namespace mu2e {
   }
 
 
-  // Note: If all CaloShowerRO are ordered by SiPM ID -> loop can be more efficient by storing the counter value
-  // Not sure if this is the case with the bkg mixing
-  //----------------------------------------------------------------------------------------------------------
-  void CaloDigiMaker::fillROHits(int iRO, std::vector<double>& waveform, const CaloShowerROCollection& CaloShowerROs,
+  // Note: Loop could be optimized if all CaloShowerRO are ordered by SiPM ID 
+  //--------------------------------------------------------------------------
+  void CaloDigiMaker::fillROHits(unsigned iRO, std::vector<double>& waveform, const CaloShowerROCollection& CaloShowerROs,
                                  const ConditionsHandle<CalorimeterCalibrations>& calorimeterCalibrations)
   {
       double scaleFactor = calorimeterCalibrations->MeV2ADC(iRO)/calorimeterCalibrations->peMeV(iRO);
 
       for (const auto& CaloShowerRO : CaloShowerROs)
       {
-          int SiPMID = CaloShowerRO.SiPMID();
+          unsigned SiPMID = CaloShowerRO.SiPMID();
           if (SiPMID != iRO) continue;
           for (const float PEtime : CaloShowerRO.PETime())
           {        
               float       time           = PEtime - blindTime_;         
-              int         startSample    = time/digiSampling_;
+              unsigned    startSample    = std::max(0u,unsigned(time/digiSampling_));
               const auto& pulse          = pulseShape_.digitizedPulse(time);
-              int         stopSample     = std::min(startSample+pulse.size(), waveform.size());
+              unsigned    stopSample     = std::min(startSample+pulse.size(), waveform.size());
               
-              for (int timeSample = startSample; timeSample < stopSample; ++timeSample) 
+              for (size_t timeSample = startSample; timeSample < stopSample; ++timeSample) 
                  waveform.at(timeSample) += pulse.at(timeSample - startSample)*scaleFactor;              
           }
       }
@@ -204,47 +201,44 @@ namespace mu2e {
 
 
   //----------------------------------------------------------------------------------------------------------
-  void CaloDigiMaker::generateNoise(std::vector<double>& waveform, int iRO, 
+  void CaloDigiMaker::generateNoise(std::vector<double>& waveform, unsigned iRO, 
                                     const ConditionsHandle<CalorimeterCalibrations>& calorimeterCalibrations)
   {     
-
        // First, find the ranges in the waveform with non-zero bins. 
        // Since we add padding, they might overlap so we need to be deal with it       
        double minAmplitude = 0.1*calorimeterCalibrations->MeV2ADC(iRO);
 
-       unsigned timeSample(0);
-       std::vector<unsigned> hitStarts{}, hitStops{};
+       size_t timeSample(0);
+       std::vector<size_t> hitStarts{}, hitStops{};
        hitStarts.reserve(16);hitStops.reserve(16);
 
        while (timeSample < waveform.size())
        {
 	   if (waveform[timeSample] < minAmplitude) {++timeSample; continue;}
-	   
-           auto     stopIter    = std::find_if(waveform.begin()+timeSample, waveform.end(),[&minAmplitude](const auto& a){return a<minAmplitude;}); 
-           unsigned stopIdx     = std::distance(waveform.begin(),stopIter);
-           unsigned sampleStop  = (stopIdx < waveform.size()) ? stopIdx : waveform.size()-1;
-           unsigned sampleStart = (timeSample > bufferDigi_) ? timeSample - bufferDigi_ : 0;
+
+           size_t sampleStart = (timeSample > bufferDigi_) ? timeSample - bufferDigi_ : 0;
+           size_t sampleStop(timeSample);
+           while (sampleStop < waveform.size() && waveform[sampleStop] > minAmplitude) ++sampleStop; 
 
            hitStarts.push_back(sampleStart);
 	   hitStops.push_back(sampleStop);
 	   timeSample = sampleStop+1;   
        }
 
-       unsigned iprev(0), icurrent(1);
+       size_t iprev(0), icurrent(1);
        while (icurrent < hitStarts.size())
        {
-           if (hitStops[iprev] > hitStarts[icurrent]) {hitStops[iprev]=hitStops[icurrent]; hitStarts[icurrent]=hitStops[icurrent]=waveform.size()+1;}
-           else                                       {iprev = icurrent;}
+           if (hitStops[iprev] >= hitStarts[icurrent]) {hitStops[iprev]=hitStops[icurrent]; hitStarts[icurrent]=hitStops[icurrent]=waveform.size()+1;}
+           else                                        {iprev = icurrent;}
            ++icurrent;
        }
-       auto pred = [&waveform](const unsigned a) {return a>waveform.size();};
+       auto pred = [&waveform](const auto a) {return a>waveform.size();};
        hitStarts.erase(std::remove_if(hitStarts.begin(),hitStarts.end(),pred),hitStarts.end());
        hitStops.erase(std::remove_if(hitStops.begin(), hitStops.end(), pred),hitStops.end());
 
        //Now take a random part of the noise waveform and add it to the waveform content
-       for (unsigned ihit=0; ihit<hitStarts.size(); ++ihit)
+       for (size_t ihit=0; ihit<hitStarts.size(); ++ihit)
        {
-            
             noiseGenerator_.addSampleNoise(waveform,hitStarts[ihit],hitStops[ihit]-hitStarts[ihit]);
        }      
 
@@ -254,32 +248,37 @@ namespace mu2e {
 
 
   //-------------------------------------------------------------------------------------------------------------------
-  void CaloDigiMaker::buildOutputDigi(int iRO, std::vector<double>& waveform, int pedestal, CaloDigiCollection& caloDigiColl)
+  void CaloDigiMaker::buildOutputDigi(unsigned iRO, std::vector<double>& waveform, int pedestal, CaloDigiCollection& caloDigiColl)
   {
-       // round the waveform into integers and apply maxADC cut
+       // round the waveform into non-null integers and apply maxADC cut
        std::vector<int> wf;
        wf.reserve(waveform.size());
-       for (const auto& val : waveform) wf.emplace_back( std::min(maxADCCounts_,int(val) - pedestal) );
+       for (const auto& val : waveform)
+       { 
+          if (val < pedestal) wf.emplace_back(0);
+          else                wf.emplace_back(std::min(maxADCCounts_, int(val - pedestal)) );
+       }
        if (diagLevel_ > 2) diag0(iRO, wf);
 
        //extract hits start / stop times
-       std::vector<unsigned> hitStarts, hitStops;
+       std::vector<size_t> hitStarts, hitStops;
        hitStarts.reserve(16);hitStops.reserve(16);
        wfExtractor_.extract(wf,hitStarts,hitStops);
 
        // Build digi for concatenated hits   
-       for (unsigned ihit=0;ihit<hitStarts.size();++ihit)
+       for (size_t ihit=0;ihit<hitStarts.size();++ihit)
        {
-	    int sampleStart = hitStarts[ihit];
-	    int sampleStop  = hitStops[ihit];
-	    int t0          = int(sampleStart*digiSampling_+ blindTime_);
-
-	    auto it1 = wf.begin()+sampleStart, it2 = wf.begin()+sampleStop;
-            auto peakPosition = std::max_element(it1,it2) - it1;
-	    if (diagLevel_ >2) std::cout<<"[CaloDigiMaker] Start=" << sampleStart << " Stop=" << sampleStop << " peak in position " << peakPosition << std::endl; 
+	    size_t sampleStart = hitStarts[ihit];
+	    size_t sampleStop  = hitStops[ihit];
+	    size_t t0          = size_t(sampleStart*digiSampling_ + blindTime_);
 
 	    std::vector<int> wfsample{};
-	    for (int i=sampleStart; i<sampleStop; ++i) wfsample.push_back(std::min(int(waveform[i]),maxADCCounts_));
+            wfsample.reserve(sampleStop-sampleStart);
+	    for (size_t i=sampleStart; i<sampleStop; ++i) wfsample.push_back(std::min(int(waveform[i]),maxADCCounts_));
+
+	    size_t peakPosition(0u);
+            for (auto i = 0u; i<wfsample.size();++i) {if (wfsample[i]>=wfsample[peakPosition]) peakPosition=i;}
+	    if (diagLevel_ >2) std::cout<<"[CaloDigiMaker] Start=" << sampleStart << " Stop=" << sampleStop << " peak in position " << peakPosition << std::endl; 
 
 	    caloDigiColl.emplace_back(CaloDigi(iRO,t0,wfsample,peakPosition) );
 	    if (diagLevel_ > 2) diag1(iRO, t0, peakPosition, wfsample, pedestal);
@@ -291,14 +290,14 @@ namespace mu2e {
 
 
   //-------------------------------------------------------------------------------------------------------------------
-  void CaloDigiMaker::diag0(int iSiPM, const std::vector<int>& wf)
+  void CaloDigiMaker::diag0(unsigned iSiPM, const std::vector<int>& wf)
   {
       if (*std::max_element(wf.begin(),wf.end())<1) return;
       std::cout<<"CaloDigiMaker::fillOutoutRO] Waveform content for readout "<<iSiPM<<std::endl;
-      for (unsigned i=0;i<wf.size();++i) {if (i%10==0 && i>0) std::cout<<"- "; std::cout<<wf[i]<<" ";}
+      for (size_t i=0;i<wf.size();++i) {if (i%10==0 && i>0) std::cout<<"- "; std::cout<<wf[i]<<" ";}
       std::cout<<std::endl;
   }
-  void CaloDigiMaker::diag1(int iSiPM, double time, size_t peakP, const std::vector<int>& wf, int ped)
+  void CaloDigiMaker::diag1(unsigned iSiPM, double time, size_t peakP, const std::vector<int>& wf, int ped)
   {
       std::cout<<"Created caloDigi with SiPM = "<<iSiPM<<"  t0="<<time<<" peak="<<peakP<<" and content ";
       for (const auto  &v : wf) std::cout<<v-ped<<" ";
@@ -312,7 +311,7 @@ namespace mu2e {
   void CaloDigiMaker::plotWF(const std::vector<int>& waveform, const std::string& pname, int pedestal)
   {      
       TH1F h("h","Waveform",waveform.size(),blindTime_,waveform.size()*digiSampling_+blindTime_);
-      for (unsigned i=1;i<=waveform.size();++i) h.SetBinContent(i,waveform[i-1]);
+      for (size_t i=1;i<=waveform.size();++i) h.SetBinContent(i,waveform[i-1]);
       TLine line;
       line.SetLineStyle(2);
       TLine line2;
@@ -329,7 +328,7 @@ namespace mu2e {
   void CaloDigiMaker::plotWF(const std::vector<double>& waveform, const std::string& pname, int pedestal)
   {      
       std::vector<int> v;
-      for (unsigned i=0;i<waveform.size();++i) v.push_back(int(waveform[i]));
+      for (size_t i=0;i<waveform.size();++i) v.push_back(int(waveform[i]));
       plotWF(v,pname, pedestal);  
   }
  

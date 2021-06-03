@@ -53,8 +53,7 @@ namespace mu2e {
     // The intention is to have at most one object of type
     // GenEventCount per SubRun.  Throw here if such an
     // object is already in SubRun.
-    std::vector<art::Handle<GenEventCount> > hh;
-    sr.getManyByType(hh);
+    std::vector<art::Handle<GenEventCount> > hh = sr.getMany<GenEventCount>();
     if(!hh.empty()) {
       std::ostringstream os;
       os<<"GenEventCounter: refusing to write event count in "

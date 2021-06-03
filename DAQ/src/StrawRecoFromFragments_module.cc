@@ -199,7 +199,7 @@ void art::StrawRecoFromFragmnets::analyze_tracker_(
     if (hdr.GetPacketCount() > 0 ) {
 
       // Create the StrawDigi data products
-      auto trkDataVec = cc.GetTrackerData(curBlockIdx);
+      auto trkDataVec = cc.GetTrackerData(curBlockIdx, useTrkADC_);
       if (trkDataVec.empty()) {
         mf::LogError("StrawRecoFromFragmnets")
             << "Error retrieving Tracker data from DataBlock " << curBlockIdx
@@ -212,7 +212,7 @@ void art::StrawRecoFromFragmnets::analyze_tracker_(
         mu2e::StrawId sid(trkDataPair.first->StrawIndex);
         mu2e::TrkTypes::TDCValues tdc = {trkDataPair.first->TDC0(), trkDataPair.first->TDC1()};
         mu2e::TrkTypes::TOTValues tot = {trkDataPair.first->TOT0, trkDataPair.first->TOT1};
-        mu2e::TrkTypes::ADCValue pmp = trkDataPair.first->PMP;
+        mu2e::TrkTypes::ADCValue  pmp = trkDataPair.first->PMP;
 
         // Fill the StrawDigiCollection
         straw_digis->emplace_back(sid, tdc, tot, pmp);
