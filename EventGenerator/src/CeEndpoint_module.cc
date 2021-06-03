@@ -1,6 +1,6 @@
 // Generates electron at the endpoint energy that will be attached to a mu- in
-// the input SimParticleCollection.   If no suitable muon is found, the
-// filter does not pass the event.
+// the input SimParticleCollection.
+// This module throws an exception if no suitable muon is found.
 //
 // Andrei Gaponenko, 2021
 
@@ -18,7 +18,7 @@
 #include "fhiclcpp/types/Atom.h"
 #include "messagefacility/MessageLogger/MessageLogger.h"
 
-#include "art/Framework/Core/EDFilter.h"
+#include "art/Framework/Core/EDProducer.h"
 #include "art/Framework/Core/ModuleMacros.h"
 #include "art/Framework/Principal/Event.h"
 #include "art/Framework/Services/Registry/ServiceHandle.h"
@@ -34,7 +34,7 @@
 namespace mu2e {
 
   //================================================================
-  class CeEndpoint : public art::EDFilter {
+  class CeEndpoint : public art::EDProducer {
   public:
     struct Config {
       using Name=fhicl::Name;
@@ -48,10 +48,10 @@ namespace mu2e {
       fhicl::Atom<unsigned> verbosity{Name("verbosity"),0};
     };
 
-    using Parameters= art::EDFilter::Table<Config>;
+    using Parameters= art::EDProducer::Table<Config>;
     explicit CeEndpoint(const Parameters& conf);
 
-    virtual bool filter(art::Event& event) override;
+    virtual void produce(art::Event& event) override;
 
     //----------------------------------------------------------------
   private:
@@ -72,7 +72,7 @@ namespace mu2e {
 
   //================================================================
   CeEndpoint::CeEndpoint(const Parameters& conf)
-    : EDFilter{conf}
+    : EDProducer{conf}
     , electronMass_(GlobalConstantsHandle<ParticleDataTable>()->particle(electronId_).ref().mass().value())
     , endPointEnergy_{GlobalConstantsHandle<PhysicsParams>()->getEndpointEnergy(conf().stoppingTargetMaterial())}
     , endPointMomentum_{ endPointEnergy_*sqrt(1 - std::pow(electronMass_/endPointEnergy_,2)) }
@@ -94,7 +94,7 @@ namespace mu2e {
   }
 
   //================================================================
-  bool CeEndpoint::filter(art::Event& event) {
+  void CeEndpoint::produce(art::Event& event) {
     auto output{std::make_unique<StageParticleCollection>()};
 
     const auto simh = event.getValidHandle<SimParticleCollection>(simsToken_);
@@ -131,7 +131,11 @@ namespace mu2e {
 
     const bool passed = !output->empty();
     event.put(std::move(output));
-    return passed;
+    if(!passed) {
+      throw   cet::exception("BADINPUT")
+        <<"CeEndpoint::produce(): no suitable stopped mu- in the input SimParticleCollection\n";
+
+    }
   }
 
   //================================================================

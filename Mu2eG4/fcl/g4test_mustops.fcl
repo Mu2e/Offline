@@ -34,15 +34,15 @@ physics : {
             }
          }
       }
+   }
 
+   producers: {
       generate: {
          module_type: CeEndpoint
          inputSimParticles: "rsmix"
          verbosity: 1
       }
-   }
 
-   producers: {
       g4run : @local::g4run
 
       # Save state of the random number engines.
