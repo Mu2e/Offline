@@ -19,7 +19,8 @@ namespace mu2e {
   //================================================================
   art::Ptr<GenParticle> SimParticlePrimaryHelper::genParticlePtr(int g4TrkID) const {
     art::Ptr<GenParticle> res;
-    auto pgen = std::get_if<art::Ptr<GenParticle> >(&entries_.at(g4TrkID - 1));
+    auto orig = getEntry(g4TrkID);
+    auto pgen = std::get_if<art::Ptr<GenParticle> >(&orig);
     if(pgen) {
       res = *pgen;
     }
@@ -28,25 +29,25 @@ namespace mu2e {
 
   //================================================================
   art::Ptr<SimParticle>  SimParticlePrimaryHelper::simParticlePrimaryPtr(int g4TrkID) const {
-    auto& v = entries_.at(g4TrkID - 1);
+    auto orig = getEntry(g4TrkID);
 
-    if(std::holds_alternative<art::Ptr<GenParticle>>(v)) {
+    if(std::holds_alternative<art::Ptr<GenParticle>>(orig)) {
       return art::Ptr<SimParticle>();
     }
     else {
 
       SimParticle::key_type id;
-      if(std::holds_alternative<const SimParticle*>(v)) {
+      if(std::holds_alternative<const SimParticle*>(orig)) {
         std::cout<<"simParticlePrimaryPtr from SimParticle*"<<std::endl;
-        id = std::get<const SimParticle*>(v)->id();
+        id = std::get<const SimParticle*>(orig)->id();
       }
-      else if(std::holds_alternative<const  StepPointMC*>(v)) {
+      else if(std::holds_alternative<const  StepPointMC*>(orig)) {
         std::cout<<"simParticlePrimaryPtr from StepPointMC*"<<std::endl;
-        id = std::get<const StepPointMC*>(v)->simParticle()->id();
+        id = std::get<const StepPointMC*>(orig)->simParticle()->id();
       }
-      else if(std::holds_alternative<const StageParticle*>(v)) {
+      else if(std::holds_alternative<const StageParticle*>(orig)) {
         std::cout<<"simParticlePrimaryPtr from StageParticle*"<<std::endl;
-        id = std::get<const StageParticle*>(v)->parent()->id();
+        id = std::get<const StageParticle*>(orig)->parent()->id();
       }
 
       try { id.ensure_valid(); }
