@@ -15,7 +15,6 @@ mainlib = helper.make_mainlib ( [ 'mu2e_DataProducts',
                                   'mu2e_Mu2eInterfaces',
                                   'cetlib_except',
                                   'CLHEP',
-                                  'boost_system',
                                   'Core'
                                 ] )
 

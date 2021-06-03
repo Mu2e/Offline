@@ -17,7 +17,7 @@
 
 // Framework include files
 #include "art/Framework/Services/Registry/ServiceHandle.h"
-#include "art/Framework/Services/Registry/ServiceMacros.h"
+#include "art/Framework/Services/Registry/ServiceDeclarationMacros.h"
 
 #include "boost/regex.hpp"
 

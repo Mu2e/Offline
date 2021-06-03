@@ -21,6 +21,9 @@
 // At the time of the latter modification, version 4 is default.  Once 
 // the design of the CRV and STM are finalized, version 5 will be default.
 
+// art includes
+#include "art/Framework/Services/Registry/ServiceDefinitionMacros.h"
+
 // clhep includes
 #include "CLHEP/Vector/ThreeVector.h"
 #include "CLHEP/Units/PhysicalConstants.h"

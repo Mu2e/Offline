@@ -11,6 +11,7 @@
 #include <string> 
 #include <iostream>
 #include <vector>
+#include <numeric>
 
 namespace mu2e {
 

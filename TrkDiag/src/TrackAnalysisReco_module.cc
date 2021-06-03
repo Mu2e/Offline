@@ -776,8 +776,7 @@ namespace mu2e {
   template <typename T, typename TI>
   std::vector<art::Handle<T> >  TrackAnalysisReco::createSpecialBranch(const art::Event& event, const std::string& branchname, 
 								       std::vector<art::Handle<T> >& handles, TI& infostruct, const std::string& selection) {
-    std::vector<art::Handle<T> > outputHandles;
-    event.getManyByType(handles);
+    std::vector<art::Handle<T> > outputHandles = event.getMany<T>();
     if (handles.size()>0) {
       std::vector<std::string> labels;
       for (const auto& i_handle : handles) {

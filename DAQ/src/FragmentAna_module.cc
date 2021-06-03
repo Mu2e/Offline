@@ -325,6 +325,7 @@ void FragmentAna::analyze_calorimeter_(const artdaq::Fragment& f) {
         // temporarily storing the 4-bit apdID and 12-bit crystalID in the Reserved DIRAC A slot.
         // Also, note that until we have an actual map, channel index does not actually correspond
         // to the physical readout channel on a ROC.
+
         uint16_t crystalID = hit.first.DIRACB & 0x0FFF;
         uint16_t roId = hit.first.DIRACB >> 12;
         _hCalROId->Fill(crystalID * 2 + roId);

@@ -5,6 +5,7 @@
 #include <array>
 #include <vector>
 #include <algorithm>
+#include <numeric>
 
 #include "cetlib_except/exception.h"
 #include "fhiclcpp/ParameterSet.h"

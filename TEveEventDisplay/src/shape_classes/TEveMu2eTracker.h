@@ -10,6 +10,8 @@
 #include <TGeoVolume.h>
 #include <TGeoTube.h>
 #include <TGeoMatrix.h>
+#include <TBox.h>
+#include <TGeoBBox.h>
 // ... libRIO
 #include <TFile.h>
 //Tracker
@@ -17,6 +19,7 @@
 #include "GeometryService/inc/GeomHandle.hh"
 //TEveMu2e:
 #include "TEveEventDisplay/src/TEveMu2e_base_classes/TEveMu2e2DProjection.h"
+#include "TEveEventDisplay/src/dict_classes/GeomUtils.h"
 
 namespace mu2e {
 	

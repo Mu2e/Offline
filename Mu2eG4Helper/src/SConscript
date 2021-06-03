@@ -19,7 +19,6 @@ mainlib = helper.make_mainlib ( [ 'mu2e_GeometryService',
                                   'cetlib',
                                   'cetlib_except',
                                   'Core',
-                                  'boost_system'
                                   ] )
 
 helper.make_plugins( [ mainlib,
@@ -29,11 +28,12 @@ helper.make_plugins( [ mainlib,
                        'art_Utilities',
                        'canvas',
                        'fhiclcpp',
+                       'fhiclcpp_types',
+                       'tbb',
                        'cetlib',
                        'cetlib_except',
                        'boost_filesystem',
                        'boost_regex',
-                       'boost_system',
                        'Core',
                        ] )
 

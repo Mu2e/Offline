@@ -5,6 +5,7 @@
 #include <sstream>
 #include <algorithm>
 #include <cmath>
+#include <numeric>
 
 #include "fhiclcpp/types/Table.h"
 

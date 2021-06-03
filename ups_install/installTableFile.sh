@@ -15,6 +15,7 @@ destination_file=$1
 art_ver=`ups active | awk '$1 == "art" {print $2}'`
 heppdt_ver=`ups active | awk '$1 == "heppdt" {print $2}'`
 btrk_ver=`ups active | awk '$1 == "BTrk" {print $2}'`
+kinkal_ver=`ups active | awk '$1 == "KinKal" {print $2}'`
 xerces_ver=`ups active | awk '$1 == "xerces_c" {print $2}'`
 mu2e_artdaq_core_ver=`ups active | awk '$1 == "mu2e_artdaq_core" {print $2}'`
 
@@ -57,6 +58,7 @@ Qualifiers = "${qualifiers_value}:debug"
       envSet (MU2E_UPS_QUALIFIERS, +${mu2e_ups_qualifiers}:+debug )
       setupRequired( art  ${art_ver} -q +${mu2e_ups_qualifiers}:+debug )
       setupRequired( BTrk  ${btrk_ver} -q +${mu2e_ups_qualifiers}:+debug:+p383b )
+      setupRequired( KinKal  ${kinkal_ver} -q +${mu2e_ups_qualifiers}:+debug:+p383b )
       setupRequired( heppdt  ${heppdt_ver} -q +${mu2e_ups_qualifiers}:+debug )
       setupRequired( xerces_c  ${xerces_ver} -q +${mu2e_ups_qualifiers}:+debug )
 
@@ -71,6 +73,7 @@ Qualifiers = "${qualifiers_value}:prof"
       envSet (MU2E_UPS_QUALIFIERS, +\${mu2e_ups_qualifiers}:+prof )
       setupRequired( art  ${art_ver} -q +${mu2e_ups_qualifiers}:+prof )
       setupRequired( BTrk  ${btrk_ver} -q +${mu2e_ups_qualifiers}:+prof:+p383b )
+      setupRequired( KinKal  ${kinkal_ver} -q +${mu2e_ups_qualifiers}:+prof:+p383b )
       setupRequired( heppdt  ${heppdt_ver} -q +${mu2e_ups_qualifiers}:+prof )
       setupRequired( xerces_c  ${xerces_ver} -q +${mu2e_ups_qualifiers}:+prof )
 
@@ -85,6 +88,7 @@ Qualifiers = "${qualifiers_value}:trig:debug"
       envSet (MU2E_UPS_QUALIFIERS, +${mu2e_ups_qualifiers}:+debug )
       setupRequired( art  ${art_ver} -q +${mu2e_ups_qualifiers}:+debug )
       setupRequired( BTrk  ${btrk_ver} -q +${mu2e_ups_qualifiers}:+debug:+p383b )
+      setupRequired( KinKal  ${kinkal_ver} -q +${mu2e_ups_qualifiers}:+debug:+p383b )
       setupRequired( heppdt  ${heppdt_ver} -q +${mu2e_ups_qualifiers}:+debug )
       setupRequired( xerces_c  ${xerces_ver} -q +${mu2e_ups_qualifiers}:+debug )
       setupRequired( mu2e_artdaq_core ${mu2e_artdaq_core_ver} -q ${mu2e_ups_qualifiers}:+${MU2E_ART_SQUALIFIER}:+debug )
@@ -100,6 +104,7 @@ Qualifiers = "${qualifiers_value}:trig:prof"
       envSet (MU2E_UPS_QUALIFIERS, +\${mu2e_ups_qualifiers}:+prof )
       setupRequired( art  ${art_ver} -q +${mu2e_ups_qualifiers}:+prof )
       setupRequired( BTrk  ${btrk_ver} -q +${mu2e_ups_qualifiers}:+prof:+p383b )
+      setupRequired( KinKal  ${kinkal_ver} -q +${mu2e_ups_qualifiers}:+prof:+p383b )
       setupRequired( heppdt  ${heppdt_ver} -q +${mu2e_ups_qualifiers}:+prof )
       setupRequired( xerces_c  ${xerces_ver} -q +${mu2e_ups_qualifiers}:+prof )
       setupRequired( mu2e_artdaq_core ${mu2e_artdaq_core_ver} -q ${mu2e_ups_qualifiers}:+${MU2E_ART_SQUALIFIER}:+prof )
@@ -133,6 +138,7 @@ EOF
 unset art_ver
 unset heppdt_ver
 unset btrk_ver
+unset kinkal_ver
 unset xerces_ver
 unset mu2e_artdaq_core_ver
 unset qualifiers_value

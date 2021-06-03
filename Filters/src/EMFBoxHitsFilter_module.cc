@@ -18,6 +18,7 @@
 #include "art/Framework/Core/ModuleMacros.h"
 #include "canvas/Persistency/Common/FindManyP.h"
 #include "art_root_io/TFileService.h"
+#include "messagefacility/MessageLogger/MessageLogger.h"
 
 #include "RecoDataProducts/inc/ExtMonFNALRawHitCollection.hh"
 #include "MCDataProducts/inc/ExtMonFNALHitTruthAssn.hh"

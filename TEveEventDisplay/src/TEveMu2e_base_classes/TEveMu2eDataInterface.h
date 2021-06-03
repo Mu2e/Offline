@@ -1,6 +1,10 @@
 #ifndef TEveMu2eDataInterface_h
 #define TEveMu2eDataInterface_h
-
+//ROOT
+#include <TApplication.h>
+#include <TEvePad.h>
+#include <TObject.h>
+#include <TSystem.h>
 //libGeom
 #include <TGeoManager.h>
 //TEve
@@ -21,8 +25,12 @@
 #include "TEveEventDisplay/src/TEveMu2e_base_classes/TEveMu2eCustomHelix.h"
 #include "TEveEventDisplay/src/TEveMu2e_base_classes/TEveMu2eStraightTrack.h"
 #include "TEveEventDisplay/src/dict_classes/GeomUtils.h"
+//C++
+#include <limits>
+#include <vector>
+#include <tuple>
+#include <algorithm>
 
-	
 namespace mu2e{
     class TEveMu2eDataInterface {
     public:
