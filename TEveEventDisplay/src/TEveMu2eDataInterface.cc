@@ -244,6 +244,7 @@ namespace mu2e{
         
         CLHEP::Hep3Vector pointInMu2e = PointToCalo(COG,cluster.diskID());
        
+        std::cout<<"Position "<<pointInMu2e.x()<<" "<<pointInMu2e.y()<<" "<<pointInMu2e.z()<<std::endl;
         string pos3D = "(" + to_string((double)pointInMu2e.x()) + ", " + to_string((double)pointInMu2e.y()) + ", " + to_string((double)pointInMu2e.z()) + ")";
         string pos2D = "(" + to_string((double)COG.x()) + ", " + to_string((double)COG.y()) + ", " + to_string((double)COG.z()) + ")";
 
@@ -350,9 +351,9 @@ namespace mu2e{
               segment.helix().position(fltL,pos);
               CLHEP::Hep3Vector p = Geom::Hep3Vec(pos);
               CLHEP::Hep3Vector InMu2e = det->toMu2e(p);
-              line->SetPostionAndDirectionFromKalRep(pointmmTocm(InMu2e.z()));              
-              line->SetNextPoint(pointmmTocm(InMu2e.x()), pointmmTocm(InMu2e.y()), pointmmTocm(InMu2e.z()));
-              line_twoD->SetNextPoint(pointmmTocm(p.x()), pointmmTocm(p.y()), pointmmTocm(p.z()));
+              line->SetPostionAndDirectionFromKalRep((InMu2e.z()));              
+              line->SetNextPoint((InMu2e.x()), (InMu2e.y()), (InMu2e.z()));
+              line_twoD->SetNextPoint((p.x()), (p.y()), (p.z()));
             }
           }
           
@@ -406,7 +407,7 @@ namespace mu2e{
       Float_t tx2 = st.MinuitParams.A0  - st.MinuitParams.A1*ty2;
       Float_t tz1 = st.MinuitParams.B0  - st.MinuitParams.B1*ty1;
       Float_t tz2 = st.MinuitParams.B0  - st.MinuitParams.B1*ty2; 	
-      line->AddLine(pointmmTocm(tx1-3904), pointmmTocm(ty1), pointmmTocm(tz1+10171), pointmmTocm(tx2-3904), pointmmTocm(ty2), pointmmTocm(tz2+10171));
+      line->AddLine((tx1-3904), (ty1), (tz1+10171), (tx2-3904), (ty2), (tz2+10171));
       const std::string title = "CosmicTrack #" + to_string(ist + 1) + ", Parameters: A0:" + to_string(st.MinuitParams.A0) + ", A1:" + to_string(st.MinuitParams.A1) + ", B0:" + to_string(st.MinuitParams.B0) + ", B1:" + to_string(st.MinuitParams.B1);
       line->SetTitle(Form(title.c_str()));
 

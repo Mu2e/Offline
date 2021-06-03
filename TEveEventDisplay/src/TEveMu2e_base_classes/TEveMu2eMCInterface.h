@@ -27,7 +27,7 @@ namespace mu2e{
     
       public:
         #ifndef __CINT__
-        TEveMu2eMCInterface() : fTrackList2D(0),fTrackList3D(0){};
+        TEveMu2eMCInterface() : fTrackList2DXY(0),fTrackList2DXZ(0),fTrackList3D(0){};
         TEveMu2eMCInterface(const TEveMu2eMCInterface &);
         TEveMu2eMCInterface& operator=(const TEveMu2eMCInterface &);
         virtual ~TEveMu2eMCInterface(){};
@@ -36,7 +36,8 @@ namespace mu2e{
         TEveText *GetLabel(int PDGCode, TEveMu2eCustomHelix *line, TEveMu2eCustomHelix *line_twoD);
         void AddFullMCTrajectory(bool firstloop, const MCTrajectoryCollection *trajcol, TEveMu2e2DProjection *tracker2Dproj, bool Redraw, bool accumulate, TEveProjectionManager *TXYMgr, TEveProjectionManager *TRZMgr, TEveScene *scene1, TEveScene *scene2, std::vector<int> ids);
         #endif
-        TEveElementList *fTrackList2D;
+        TEveElementList *fTrackList2DXY;
+        TEveElementList *fTrackList2DXZ;
         TEveElementList *fTrackList3D;
         std::vector<int> particleIds_;
         ClassDef(TEveMu2eMCInterface,0);

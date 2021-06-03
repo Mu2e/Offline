@@ -49,7 +49,6 @@ namespace mu2e{
       GeomHandle<Tracker> trkr;
       TubsParams envelope(trkr->g4Tracker()->getInnerTrackerEnvelopeParams());
       double dz{(envelope.zHalfLength())};
-      std::cout<<"Length "<<dz*2<<std::endl;
       return (dz*2);
     }
     
