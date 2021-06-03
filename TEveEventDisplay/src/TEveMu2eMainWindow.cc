@@ -735,11 +735,11 @@ namespace mu2e{
     _data.crvcoincol = data.crvcoincol;
     _data.cryHitcol = data.cryHitcol;
     _data.cosmiccol = data.cosmiccol;
-    std::cout<<"Event 1"<<std::endl;
+
     if(!isMCOnly){
       std::vector<const KalSeedCollection*> track_list = std::get<1>(data.track_tuple);
       std::vector<double> times = pass_data->getTimeRange(firstLoop, data.chcol, data.crvcoincol, data.clustercol, data.cryHitcol);
-      std::cout<<"Event 2"<<std::endl;
+    
       if(_data.crvcoincol->size()!=0 or _data.crvcoincol !=0) pass_data->AddCRVInfo(firstLoop, data.crvcoincol, ftimemin, ftimemax, false, _accumulate);
       hitenergy = new vector<double>(2);
       
@@ -769,9 +769,9 @@ std::cout<<"Event 3"<<std::endl;
       _hitmintime->AddText(0, (to_string(times.at(0))).c_str());
       _hitmaxtime->AddText(0, (to_string(times.at(1))).c_str());
     }
-    std::cout<<"Event 4"<<std::endl;
+    
     if(_data.mctrajcol!=0) pass_mc->AddFullMCTrajectory(firstLoop, data.mctrajcol, tracker2Dproj, false, _accumulate,  TfXYMgr, TfRZMgr, proj2, proj3, particles);
-  std::cout<<"Event 5"<<std::endl;
+
     gSystem->ProcessEvents();
     gSystem->IgnoreInterrupt();
     gSystem->IgnoreSignal(kSigTermination);
