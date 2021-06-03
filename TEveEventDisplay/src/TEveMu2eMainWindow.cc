@@ -401,12 +401,14 @@ namespace mu2e{
     tracker2Dproj->fXYMgr = new TEveProjectionManager(TEveProjection::kPT_RPhi);
     TEveProjectionAxes* axes_xy = new TEveProjectionAxes(tracker2Dproj->fXYMgr);
     tracker2Dproj->fDetXYScene->AddElement(axes_xy);
+    tracker2Dproj->fEvtXYScene->AddElement(axes_xy);
     gEve->AddToListTree(axes_xy,kTRUE);
     gEve->AddToListTree(tracker2Dproj->fXYMgr,kTRUE);
 
     tracker2Dproj->fRZMgr = new TEveProjectionManager(TEveProjection::kPT_RhoZ);
     TEveProjectionAxes* axes_rz = new TEveProjectionAxes(tracker2Dproj->fRZMgr);
     tracker2Dproj->fDetRZScene->AddElement(axes_rz);
+    tracker2Dproj->fEvtRZScene->AddElement(axes_rz);
     gEve->AddToListTree(axes_rz,kTRUE);
     gEve->AddToListTree(tracker2Dproj->fRZMgr,kTRUE);
 
@@ -471,31 +473,33 @@ namespace mu2e{
     tracker2Dproj->fDetXYScene->DestroyElements();
     tracker2Dproj->fDetRZScene->DestroyElements();
     //fdetXY->DestroyElements();
-
-    TEveElementList *orthodet = new TEveElementList("OrthoDet");
+    std::cout<<"Tracker 1 "<<std::endl;
+    TEveElementList *orthodetXY = new TEveElementList("OrthoDetXY");
+    TEveElementList *orthodetXZ = new TEveElementList("OrthoDetXZ");
     //TEveElementList *orthodetsplit = new TEveElementList("OrthoDet");
+    std::cout<<"Tracker 2 "<<std::endl;
     TGeoVolume* topvol = geom->GetTopVolume();
-    Mu2eTracker->DrawTrackerDetector(run, topvol, orthodet);
+    Mu2eTracker->DrawTrackerDetector(topvol, orthodetXZ, orthodetXY);
     //Mu2eTracker->DrawTrackerDetector(run, topvol, orthodetsplit);
-
-    gEve->AddGlobalElement(orthodet);
-    
+    std::cout<<"Tracker 3 "<<std::endl;
+    gEve->AddGlobalElement(orthodetXY);
+    gEve->AddGlobalElement(orthodetXZ);
+    std::cout<<"Tracker 4 "<<std::endl;
     // ... Import elements of the list into the projected views
     //TfXYMgr->ImportElements(orthodetsplit);
     //TfRZMgr->ImportElements(orthodetsplit);
 
-    tracker2Dproj->fXYMgr->ImportElements(orthodet, tracker2Dproj->fDetXYScene);	
-    tracker2Dproj->fRZMgr->ImportElements(orthodet, tracker2Dproj->fDetRZScene);
-
-
+    tracker2Dproj->fXYMgr->ImportElements(orthodetXY, tracker2Dproj->fDetXYScene);	
+    tracker2Dproj->fRZMgr->ImportElements(orthodetXZ, tracker2Dproj->fDetRZScene);
+    std::cout<<"Tracker 5 "<<std::endl;
     // ... Turn OFF rendering of duplicate detector in main 3D view
-    gEve->GetGlobalScene()->FindChild("OrthoDet")->SetRnrState(kFALSE);
-
+    //gEve->GetGlobalScene()->FindChild("OrthoDetXY")->SetRnrState(kFALSE);
 
     //fdetXY->FindChild("OrthoDet [P]")->SetRnrState(kTRUE);
     // ... Turn ON rendering of detector in RPhi and RZ views
-    tracker2Dproj->fDetXYScene->FindChild("OrthoDet [P]")->SetRnrState(kTRUE);
-    tracker2Dproj->fDetRZScene->FindChild("OrthoDet [P]")->SetRnrState(kTRUE);
+    tracker2Dproj->fDetXYScene->FindChild("OrthoDetXY [P]")->SetRnrState(kTRUE);
+    tracker2Dproj->fDetRZScene->FindChild("OrthoDetXZ [P]")->SetRnrState(kTRUE);
+    std::cout<<"Tracker 6 "<<std::endl;
   }
 
   /*------------Function to create CRV tab:-------------*/
@@ -730,11 +734,11 @@ namespace mu2e{
     _data.crvcoincol = data.crvcoincol;
     _data.cryHitcol = data.cryHitcol;
     _data.cosmiccol = data.cosmiccol;
-    
+    std::cout<<"Event 1"<<std::endl;
     if(!isMCOnly){
       std::vector<const KalSeedCollection*> track_list = std::get<1>(data.track_tuple);
       std::vector<double> times = pass_data->getTimeRange(firstLoop, data.chcol, data.crvcoincol, data.clustercol, data.cryHitcol);
-
+      std::cout<<"Event 2"<<std::endl;
       if(_data.crvcoincol->size()!=0 or _data.crvcoincol !=0) pass_data->AddCRVInfo(firstLoop, data.crvcoincol, ftimemin, ftimemax, false, _accumulate);
       hitenergy = new vector<double>(2);
       
@@ -749,7 +753,7 @@ namespace mu2e{
       if (track_list.size() !=0) pass_data->AddHelixPieceWise3D(firstLoop, data.track_tuple, tracker2Dproj,  ftimemin, ftimemax, false, _accumulate, TfXYMgr, TfRZMgr, proj2, proj3);
 
       if(_data.cosmiccol->size() != 0 or _data.cosmiccol != 0) pass_data->AddCosmicTrack(firstLoop, data.cosmiccol, tracker2Dproj, ftimemin, ftimemax, false, _accumulate, TfXYMgr, TfRZMgr, proj2, proj3);
-
+std::cout<<"Event 3"<<std::endl;
       _clustminenergy->Clear();
       _clustmaxenergy->Clear();
       _hitminenergy->Clear();
@@ -764,8 +768,9 @@ namespace mu2e{
       _hitmintime->AddText(0, (to_string(times.at(0))).c_str());
       _hitmaxtime->AddText(0, (to_string(times.at(1))).c_str());
     }
+    std::cout<<"Event 4"<<std::endl;
     if(_data.mctrajcol!=0) pass_mc->AddFullMCTrajectory(firstLoop, data.mctrajcol, tracker2Dproj, false, _accumulate,  TfXYMgr, TfRZMgr, proj2, proj3, particles);
-
+  std::cout<<"Event 5"<<std::endl;
     gSystem->ProcessEvents();
     gSystem->IgnoreInterrupt();
     gSystem->IgnoreSignal(kSigTermination);

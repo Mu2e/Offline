@@ -71,7 +71,7 @@ TEveEventDisplayHelix : {
       showBuilding : false  
       showDSOnly : true 
       showEvent : true
-      isMCOnly : false
+      isMCOnly : true
       filler : {
         ComboHitCollection 	  : "makeSH"
         CrvRecoPulseCollection	  :  NULL
@@ -86,7 +86,7 @@ TEveEventDisplayHelix : {
         addTracks 		  : false
         addCrvHits		  : false
         addCosmicSeedFit	  : false
-        addClusters		  : true
+        addClusters		  : false
         addTrkExtTrajs		  : false
         addMCTraj		  : true
       }
