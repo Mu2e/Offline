@@ -25,7 +25,7 @@ namespace mu2e{
       //upper
       Double_t origin_upper[3];
       TEveGeoShape *upper = new TEveGeoShape();
-      CLHEP::Hep3Vector Pos_upper(0,1000,0);
+      CLHEP::Hep3Vector Pos_upper(0,1000+rmin+dr/2,0);
 
       origin_upper [0] = Pos_upper.x();
       origin_upper [1] = Pos_upper.y();
@@ -38,7 +38,7 @@ namespace mu2e{
       //lower
       Double_t origin_lower[3];
       TEveGeoShape *lower = new TEveGeoShape();
-      CLHEP::Hep3Vector Pos_lower(0,1000-2*rmin-dr,0);
+      CLHEP::Hep3Vector Pos_lower(0,1000-rmin-dr/2,0);
 
       origin_lower [0] = Pos_lower.x();
       origin_lower [1] = Pos_lower.y();
