@@ -242,29 +242,30 @@ namespace mu2e{
        
         CLHEP::Hep3Vector COG(cluster.cog3Vector().x(),cluster.cog3Vector().y(), cluster.cog3Vector().z());
         
-        CLHEP::Hep3Vector pointInMu2e = PointToCalo(COG,cluster.diskID());
+        CLHEP::Hep3Vector pointInMu2e2D = PointToCalo(COG,cluster.diskID());
+        CLHEP::Hep3Vector pointInMu2e3D = PointToCaloCM(COG,cluster.diskID());
        
-        std::cout<<"Position "<<pointInMu2e.x()<<" "<<pointInMu2e.y()<<" "<<pointInMu2e.z()<<std::endl;
-        string pos3D = "(" + to_string((double)pointInMu2e.x()) + ", " + to_string((double)pointInMu2e.y()) + ", " + to_string((double)pointInMu2e.z()) + ")";
+        string pos3D = "(" + to_string((double)pointInMu2e3D.x()) + ", " + to_string((double)pointInMu2e3D.y()) + ", " + to_string((double)pointInMu2e3D.z()) + ")";
         string pos2D = "(" + to_string((double)COG.x()) + ", " + to_string((double)COG.y()) + ", " + to_string((double)COG.z()) + ")";
 
         if (((min_time == -1 && max_time == -1) || (cluster.time() > min_time &&  cluster.time() < max_time )) && ((cluster.energyDep() >= min_energy && cluster.energyDep() <= max_energy) || (min_energy == -1 && max_energy == -1))){
-          teve_cluster3D->DrawCluster("CaloCluster3D, Cluster #" + to_string(i + 1) + ", Position =" + pos3D + ", Energy = " + to_string(cluster.energyDep()) + ", Time = " + to_string(cluster.time()), pointInMu2e, energylevels[i], ClusterList3D, hits, addHits);
-            fClusterList3D->AddElement(ClusterList3D); 
-            
-            if(cluster.diskID()==0){
-              teve_cluster2D->DrawCluster("CaloCluster3D, Cluster #" + to_string(i + 1) + ", Position =" + pos2D + ", Energy = " + to_string(cluster.energyDep()) + ", Time = " + to_string(cluster.time()), pointInMu2e,energylevels[i], ClusterList2D_disk0, hits, addHits); 
-              fClusterList2D_disk0->AddElement(ClusterList2D_disk0); 
-              calo2Dproj->fXYMgr->ImportElements(fClusterList2D_disk0, calo2Dproj->fEvtXYScene); 
-              //CfXYMgr->ImportElements(fClusterList2D_disk0, scene1); For Multiview
-             
-            }
-            if(cluster.diskID()==1){
-             teve_cluster2D->DrawCluster("CaloCluster3D, Cluster #" + to_string(i + 1) + ", Position =" + pos2D + ", Energy = " + to_string(cluster.energyDep()) + ", Time = " + to_string(cluster.time()), pointInMu2e,energylevels[i], ClusterList2D_disk1, hits, addHits); 
-             fClusterList2D_disk1->AddElement(ClusterList2D_disk1); 
-             calo2Dproj->fRZMgr->ImportElements(fClusterList2D_disk1, calo2Dproj->fEvtRZScene); 
-             //CfRZMgr->ImportElements(fClusterList2D_disk1, scene2); For MultiView
-            }
+          teve_cluster3D->DrawCluster("CaloCluster3D, Cluster #" + to_string(i + 1) + ", Position =" + pos3D + ", Energy = " + to_string(cluster.energyDep()) + ", Time = " + to_string(cluster.time()), pointInMu2e3D, energylevels[i], ClusterList3D, hits, addHits);
+          fClusterList3D->AddElement(ClusterList3D); 
+          
+          if(cluster.diskID()==0){
+            teve_cluster2D->DrawCluster("CaloCluster3D, Cluster #" + to_string(i + 1) + ", Position =" + pos2D + ", Energy = " + to_string(cluster.energyDep()) + ", Time = " + to_string(cluster.time()), pointInMu2e2D,energylevels[i], ClusterList2D_disk0, hits, addHits); 
+            fClusterList2D_disk0->AddElement(ClusterList2D_disk0); 
+            calo2Dproj->fXYMgr->ImportElements(fClusterList2D_disk0, calo2Dproj->fDetXYScene); 
+            //CfXYMgr->ImportElements(fClusterList2D_disk0, scene1); For Multiview
+
+          }
+          if(cluster.diskID()==1){
+            teve_cluster2D->DrawCluster("CaloCluster3D, Cluster #" + to_string(i + 1) + ", Position =" + pos2D + ", Energy = " + to_string(cluster.energyDep()) + ", Time = " + to_string(cluster.time()), pointInMu2e2D,energylevels[i], ClusterList2D_disk1, hits, addHits); 
+            fClusterList2D_disk1->AddElement(ClusterList2D_disk1); 
+            calo2Dproj->fRZMgr->ImportElements(fClusterList2D_disk1, calo2Dproj->fDetRZScene); 
+            //CfRZMgr->ImportElements(fClusterList2D_disk1, scene2); For MultiView
+          }
+           
         }
       }
       gEve->AddElement(fClusterList3D);
