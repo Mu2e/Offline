@@ -1,0 +1,32 @@
+//
+// Variant of the bfield maps without the DS.
+//
+// Used to save memory in production running of G4 jobs
+// in which the DS is hidden by stopping rules in G4.
+// An example is stage 1 POT jobs.
+//
+// Warning:
+//  There are multiple points of maintenance when you change bfield.innerMaps
+//    - bfgeom_v01.txt       ( the base geometry  )
+//    - bfgeom_no_ds_v01.txt ( DS map removed     )
+//    - bfgeom_reco_v01.txt  ( only maps needed for reconstruction )
+//
+//  If more variants are added, update the comments in all relevant files.
+
+#include "Mu2eG4/geom/bfgeom_v01.txt"
+
+vector<string> bfield.innerMaps = {
+  "BFieldMaps/Mau13/PSMap.header",
+  "BFieldMaps/Mau13/TSuMap_fix.header",
+  "BFieldMaps/Mau13/TSdMap.header",
+  "BFieldMaps/Mau13/PStoDumpAreaMap.header",
+  "BFieldMaps/Mau13/ProtonDumpAreaMap.header",
+  "BFieldMaps/Mau13/DSExtension.header"
+};
+
+
+//
+// This tells emacs to view this file in c++ mode.
+// Local Variables:
+// mode:c++
+// End:
