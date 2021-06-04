@@ -13,7 +13,7 @@
 #include "Mu2eG4/geom/bfgeom_v01.txt"
 
 vector<string> bfield.innerMaps = {
-  "BFieldMaps/Mau13/DSMap.header",
+  "BFieldMaps/Mau13/DSMap.header"
 };
 
 vector<string> bfield.outerMaps = {};
