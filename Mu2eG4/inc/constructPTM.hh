@@ -4,7 +4,7 @@
 //
 // Free function. Approach borrowed from constructPS
 // Constructs the downstream production target scanning monitor.
-// Parent volume is the air in the target hall. Probably?
+// Parent volume is the air in the target hall.
 //
 
 //Mu2e includes
@@ -27,20 +27,12 @@ namespace mu2e {
     void insertOuterFrame(VolumeInfo const& container, 
                         const PTMPWC* pwc);
 
-    void placeLogical(VolumeInfo container, 
-                      G4LogicalVolume* windowLogical, 
-                      G4VSolid* solid,
-                      G4ThreeVector position, 
-                      std::string const& name,
-                      int copyNo,
-                      SimpleConfig const& _config,
-                      bool const placePV,
-                      bool const doSurfaceCheck,
-                      int const verbosity);
-
     void insertWindows(VolumeInfo const& container, 
                      const PTMPWC* pwc, 
                      SimpleConfig const& _config,
+                     bool const visible,
+                     bool const forceSolid,
+                     bool const forceAuxEdgeVisible,
                      bool const placePV,
                      bool const doSurfaceCheck,
                      int const verbosity);
@@ -54,6 +46,9 @@ namespace mu2e {
                                   G4Material* gasMaterial, 
                                   std::string const& wireNameSuffix, 
                                   SimpleConfig const& _config,
+                                  bool const visible,
+                                  bool const forceSolid,
+                                  bool const forceAuxEdgeVisible,
                                   bool const placePV,
                                   bool const doSurfaceCheck,
                                   int const verbosity);
@@ -63,6 +58,9 @@ namespace mu2e {
                                     G4Material* gasMaterial, 
                                     std::string const& wireNameSuffix, 
                                     SimpleConfig const& _config,
+                                    bool const visible,
+                                    bool const forceSolid,
+                                    bool const forceAuxEdgeVisible,
                                     bool const placePV,
                                     bool const doSurfaceCheck,
                                     int const verbosity);
