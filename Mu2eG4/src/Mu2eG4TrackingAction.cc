@@ -37,6 +37,7 @@
 #include "Mu2eG4/inc/Mu2eG4TrajectoryControl.hh"
 #include "Mu2eG4/inc/Mu2eG4PerThreadStorage.hh"
 #include "MCDataProducts/inc/SimParticleCollection.hh"
+#include "MCDataProducts/inc/StageParticle.hh"
 #include "MCDataProducts/inc/ProcessCode.hh"
 #include "Mu2eUtilities/inc/compressSimParticleCollection.hh"
 
@@ -318,45 +319,62 @@ namespace mu2e {
 
     art::Ptr<GenParticle> genPtr;
     art::Ptr<SimParticle> parentPtr;
+    ProcessCode creationCode{ProcessCode::unknown};
 
     if(parentId == 0) { // primary
-      genPtr = perThreadObjects_->simParticlePrimaryHelper->genParticlePtr(trk->GetTrackID());
-      parentPtr = perThreadObjects_->simParticlePrimaryHelper->simParticlePrimaryPtr(trk->GetTrackID());
+      const auto g4TrkID = trk->GetTrackID();
+      genPtr = perThreadObjects_->simParticlePrimaryHelper->genParticlePtr(g4TrkID);
+      parentPtr = perThreadObjects_->simParticlePrimaryHelper->simParticlePrimaryPtr(g4TrkID);
+
+      const auto orig = perThreadObjects_->simParticlePrimaryHelper->getEntry(g4TrkID);
+      // A particle that is a continuation of a particle from an earlier stage
+      // in Mu2eG4 multistage jobs gets mu2ePrimary creation code.
+      // The StageParticle case is different, it is treated more like
+      // a custom physics process with a set of dedicated creation codes.
+
+      if(auto stpart = std::get_if<const StageParticle*>(&orig)) {
+        creationCode = (*stpart)->creationCode();
+      }
+      else {
+        creationCode = ProcessCode::mu2ePrimary;
+      }
+
     }
     else { // not a primary
       parentPtr = perThreadObjects_->simParticleHelper->particlePtrFromG4TrackID(parentId);
-    }
 
-    // Find the physics process that created this track.
-    ProcessCode creationCode = Mu2eG4UserHelpers::findCreationCode(trk);
-    // we shall replace creationCode with muCapCode from Mu2eG4UserTrackInformation if needed/present
+      // Find the physics process that created this track.
+      creationCode = Mu2eG4UserHelpers::findCreationCode(trk);
+      // we shall replace creationCode with muCapCode from Mu2eG4UserTrackInformation if needed/present
 
-    if (creationCode==ProcessCode(ProcessCode::muMinusCaptureAtRest)) {
+      if (creationCode==ProcessCode(ProcessCode::muMinusCaptureAtRest)) {
 
-      if ( trackingVerbosityLevel > 0 ) {
-        G4cout << __func__
-               << " particle created by " << creationCode.name()
-               << " will try to replace the creation code "
-               << G4endl;
-
-        G4VUserTrackInformation* tui = trk->GetUserInformation();
-        if (tui) {
+        if ( trackingVerbosityLevel > 0 ) {
           G4cout << __func__
-                 << " the track is labeled as " << tui->GetType()
+                 << " particle created by " << creationCode.name()
+                 << " will try to replace the creation code "
                  << G4endl;
-          G4cout << __func__
-                 << " muCapCode is: "
-                 << (dynamic_cast<Mu2eG4UserTrackInformation*>(tui))->muCapCode()
-                 << G4endl;
+
+          G4VUserTrackInformation* tui = trk->GetUserInformation();
+          if (tui) {
+            G4cout << __func__
+                   << " the track is labeled as " << tui->GetType()
+                   << G4endl;
+            G4cout << __func__
+                   << " muCapCode is: "
+                   << (dynamic_cast<Mu2eG4UserTrackInformation*>(tui))->muCapCode()
+                   << G4endl;
+          }
+        }
+
+        ProcessCode utic =
+          (dynamic_cast<Mu2eG4UserTrackInformation*>(trk->GetUserInformation()))->muCapCode();
+        if (utic!=ProcessCode(ProcessCode::unknown)) {
+          creationCode=utic;
         }
       }
+    } // else - not a primary
 
-      ProcessCode utic =
-        (dynamic_cast<Mu2eG4UserTrackInformation*>(trk->GetUserInformation()))->muCapCode();
-      if (utic!=ProcessCode(ProcessCode::unknown)) {
-        creationCode=utic;
-      }
-    }
 
     if ( trackingVerbosityLevel > 0 ) {
       G4cout << __func__
