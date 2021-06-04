@@ -83,7 +83,7 @@ TEveEventDisplayHelix : {
         TrkExtTrajCollection      :  NULL
         MCTrajectoryCollection    :  "compressRecoMCs"
         addHits 		  : false
-        addTracks 		  : false
+        addTracks 		  : true
         addCrvHits		  : false
         addCosmicSeedFit	  : false
         addClusters		  : true

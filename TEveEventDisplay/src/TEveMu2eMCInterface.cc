@@ -96,13 +96,14 @@ namespace mu2e{
   
 
     /*------------Function to make label :-------------*/
-    TEveText *TEveMu2eMCInterface::GetLabel(int PDGCode, TEveMu2eCustomHelix *line, TEveMu2eCustomHelix *line_twoD){
+    TEveText *TEveMu2eMCInterface::GetLabel(int PDGCode, TEveMu2eCustomHelix *line, TEveMu2eCustomHelix *line_twoDXY, TEveMu2eCustomHelix *line_twoDXZ){
       const char* pid = "pid";
       auto t = new TEveText(pid);
       t->SetFontSize(15);
       if(PDGCode == +11){ 
         line->SetLineColor(kRed);//electrons
-        line_twoD->SetLineColor(kRed);
+        line_twoDXZ->SetLineColor(kRed);
+        line_twoDXY->SetLineColor(kRed);
         pid = "electron -";
         t->SetText(pid);
         t->SetMainColor(kRed);
@@ -110,7 +111,8 @@ namespace mu2e{
       }
       else if(PDGCode == -11){
         line->SetLineColor(kYellow);//positrons
-        line_twoD->SetLineColor(kYellow);
+        line_twoDXZ->SetLineColor(kYellow);
+        line_twoDXY->SetLineColor(kYellow);
         pid = "positron +";
         t->SetText(pid);
         t->SetMainColor(kYellow);
@@ -118,7 +120,8 @@ namespace mu2e{
       }
       else if(PDGCode == +13){
         line->SetLineColor(kGreen);//muons
-        line_twoD->SetLineColor(kGreen);
+        line_twoDXY->SetLineColor(kGreen);
+        line_twoDXZ->SetLineColor(kGreen);
         pid = "muon - ";
         t->SetText(pid);
         t->SetMainColor(kGreen);
@@ -126,7 +129,8 @@ namespace mu2e{
       }
       else if(PDGCode == -13){
         line->SetLineColor(kOrange);//anti-muons
-        line_twoD->SetLineColor(kOrange);
+        line_twoDXY->SetLineColor(kOrange);
+        line_twoDXZ->SetLineColor(kOrange);
         pid = "muon + ";
         t->SetText(pid);
         t->SetMainColor(kOrange);
@@ -134,14 +138,16 @@ namespace mu2e{
       }
       else if(PDGCode == -211){
         line->SetLineColor(kMagenta);//pion -
-        line_twoD->SetLineColor(kMagenta);
+        line_twoDXY->SetLineColor(kMagenta);
+        line_twoDXZ->SetLineColor(kMagenta);
         pid = "pion -";
         t->SetText(pid);
         t->SetMainColor(kMagenta);
         t->RefMainTrans().SetPos(0.0,750.0,30000.0);
       }else if(PDGCode == +211){
         line->SetLineColor(kViolet);//pion +
-        line_twoD->SetLineColor(kViolet);
+        line_twoDXY->SetLineColor(kViolet);
+        line_twoDXZ->SetLineColor(kViolet);
         pid = "pion +";
         t->SetText(pid);
         t->SetMainColor(kViolet);
@@ -149,20 +155,30 @@ namespace mu2e{
       }
       else if(PDGCode == 2212){
         line->SetLineColor(kBlue); //proton
-        line_twoD->SetLineColor(kBlue);
+        line_twoDXY->SetLineColor(kBlue);
+        line_twoDXZ->SetLineColor(kBlue);
         pid = "proton";
         t->SetText(pid);
         t->SetMainColor(kBlue);
         t->RefMainTrans().SetPos(0.0,850.0,30000.0);
       }else if(PDGCode == 22){
         line->SetLineColor(kSpring-10);//photon
-        line_twoD->SetLineColor(kSpring-10);
+        line_twoDXY->SetLineColor(kSpring-10);
+        line_twoDXZ->SetLineColor(kSpring-10);
         pid = "gamma";
         t->SetText(pid);
         t->SetMainColor(kSpring-10);
         t->RefMainTrans().SetPos(0.0,950.0,30000.0);
       }
-      else line->SetLineColor(kCyan); //nuceli
+      else {
+         line->SetLineColor(kCyan);//nuceli/others
+        line_twoDXY->SetLineColor(kCyan);
+        line_twoDXZ->SetLineColor(kCyan);
+        pid = "other";
+        t->SetText(pid);
+        t->SetMainColor(kCyan);
+        t->RefMainTrans().SetPos(0.0,950.0,30000.0);
+      }
       return t;
     }
     
@@ -208,11 +224,13 @@ namespace mu2e{
               line->SetTitle(Form(title.c_str()));
               
               //Get PID label:
-              TEveText *t = GetLabel(trajectoryIter->first->pdgId(), line, line_twoDXZ);
+              TEveText *t = GetLabel(trajectoryIter->first->pdgId(), line, line_twoDXZ, line_twoDXY);
               line->SetLineWidth(3);
+              line->SetPickable(kTRUE);
               line_twoDXZ->SetLineWidth(3);
+              line_twoDXZ->SetPickable(kTRUE);
               line_twoDXY->SetLineWidth(3);
-              line_twoDXY->SetMainColor(kRed);
+              line_twoDXY->SetPickable(kTRUE);
               fTrackList2DXZ->AddElement(line_twoDXZ);
               fTrackList2DXY->AddElement(line_twoDXY);
               fTrackList3D->AddElement(line);

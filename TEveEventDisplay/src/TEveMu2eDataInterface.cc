@@ -5,36 +5,48 @@ using namespace mu2e;
 namespace mu2e{
 
   /*------------Function delete previous event from display:-------------*/
-  template <typename T, typename U> void DataLists(T data, bool Redraw, bool accumulate, std::string title, TEveElementList **List3D, TEveElementList **List2D = 0, U projection = 0){	
+  template <typename T, typename U> void DataLists(T data, bool Redraw, bool accumulate, std::string title, TEveElementList **List3D, TEveElementList **List2DXY = 0, TEveElementList **List2DXZ = 0 , U projection = 0){	
     if(data == 0 && Redraw){
-      if (*List3D != 0){
-        (*List3D)->DestroyElements();
-      }
-      if (*List2D != 0){
-          (*List2D)->DestroyElements();
+        if (*List3D != 0){
+          (*List3D)->DestroyElements();
         }
-	      projection->fXYMgr->ImportElements(*List2D, projection->fDetXYScene); 
-        projection->fRZMgr->ImportElements(*List2D, projection->fDetRZScene);
-      
-      gEve->AddElement(*List3D);
-      gEve->Redraw3D(kTRUE); 
-    }
-    if(data!=0){
-      if (*List3D==0) {
-        *List3D = new TEveElementList((title + "3D").c_str());
-        (*List3D)->IncDenyDestroy();     
+
+        if (*List2DXY != 0){
+          (*List2DXY)->DestroyElements();
+
+          projection->fXYMgr->ImportElements(*List2DXY, projection->fDetXYScene); 
+
+        }if (*List2DXZ != 0){
+          (*List2DXZ)->DestroyElements();
+
+          projection->fRZMgr->ImportElements(*List2DXZ, projection->fDetRZScene);
+        }
+        gEve->AddElement(*List3D);
+        gEve->Redraw3D(kTRUE); 
+      } 
+      if(data!=0){
+        if (*List3D== 0) {
+          *List3D = new TEveElementList((title + "3D").c_str());
+          if(!accumulate){(*List3D)->DestroyElements();} if(!accumulate){(*List3D)->DestroyElements();}     
+        }
+        else {
+          (*List3D)->DestroyElements();  
+        }
+        if (*List2DXY== 0) {
+          *List2DXY = new TEveElementList((title + "2D").c_str());
+          (*List2DXY)->IncDenyDestroy();     
+        }
+        else {
+          if (!accumulate){(*List2DXY)->DestroyElements();}    
+        }
+      }
+      if (*List2DXZ== 0) {
+        *List2DXZ = new TEveElementList((title + "2D").c_str());
+        (*List2DXZ)->IncDenyDestroy();     
       }
       else {
-        if (!accumulate){(*List3D)->DestroyElements();}   
+        if (!accumulate){(*List2DXZ)->DestroyElements();}    
       }
-      if (*List2D== 0) {
-        *List2D = new TEveElementList((title + "2D").c_str());
-        (*List2D)->IncDenyDestroy();     
-      }
-      else {
-        if (!accumulate){(*List2D)->DestroyElements();}   
-      }
-    }
   }
 
   /*------------Function to get max and min energy in an event from the colour scheme:-------------*/
@@ -138,9 +150,11 @@ namespace mu2e{
   
   /*------------Function to add CRV information to the display:-------------*/
   void TEveMu2eDataInterface::AddCRVInfo(bool firstloop, const CrvRecoPulseCollection *crvcoincol,  double min_time, double max_time, bool Redraw, bool accumulate){
-      DataLists<const CrvRecoPulseCollection*, TEveMu2e2DProjection*>(crvcoincol, Redraw, accumulate,  "CRVRecoPulse", &fCrvList3D, &fCrvList2D);
+      
 
         if(crvcoincol!=0){
+          std::cout<<"CRV"<<std::endl;
+          DataLists<const CrvRecoPulseCollection*, TEveMu2e2DProjection*>(crvcoincol, Redraw, accumulate,  "CRVRecoPulse", &fCrvList3D, &fCrvList2D,&fCrvList2D);
           TEveElementList *CrvList3D = new TEveElementList("CrvData3D");
           GeomHandle<CosmicRayShield> CRS;
           for(unsigned int i=0; i <crvcoincol->size(); i++)
@@ -167,7 +181,7 @@ namespace mu2e{
   std::vector<double> TEveMu2eDataInterface::AddComboHits(bool firstloop, const ComboHitCollection *chcol, TEveMu2e2DProjection *tracker2Dproj, bool Redraw, double min_energy, double max_energy, double min_time, double max_time, bool accumulate, TEveProjectionManager *TXYMgr, TEveProjectionManager *TRZMgr, TEveScene *scene1, TEveScene *scene2){
 
     std::vector<double> energies = {0,0};
-    DataLists<const ComboHitCollection*, TEveMu2e2DProjection*>(chcol, Redraw, accumulate, "ComboHit", &fHitsList3D, &fHitsList2D, tracker2Dproj);
+    DataLists<const ComboHitCollection*, TEveMu2e2DProjection*>(chcol, Redraw, accumulate, "ComboHit", &fHitsList3D, &fHitsList2D,&fHitsList2D, tracker2Dproj);
     /*
     TXYMgr->ImportElements(fHitsList2D, scene1); 
     TRZMgr->ImportElements(fHitsList2D, scene2); */
@@ -211,8 +225,8 @@ namespace mu2e{
   std::vector<double> TEveMu2eDataInterface::AddCaloClusters(bool firstloop, const CaloClusterCollection *clustercol, TEveMu2e2DProjection *calo2Dproj, bool Redraw, double min_energy, double max_energy, double min_time, double max_time, bool accumulate, TEveProjectionManager *CfXYMgr, TEveProjectionManager *CfRZMgr, TEveScene *scene1, TEveScene *scene2){
     vector <double> energies = {0, 0};
 
-    DataLists<const CaloClusterCollection*, TEveMu2e2DProjection*>(clustercol, Redraw, accumulate, "CaloCluster", &fClusterList3D, &fClusterList2D_disk0, calo2Dproj);
-    DataLists<const CaloClusterCollection*, TEveMu2e2DProjection*>(clustercol, Redraw, accumulate, "CaloCluster", &fClusterList3D, &fClusterList2D_disk1, calo2Dproj);
+    DataLists<const CaloClusterCollection*, TEveMu2e2DProjection*>(clustercol, Redraw, accumulate, "CaloCluster", &fClusterList3D, &fClusterList2D_disk0, &fClusterList2D_disk0,calo2Dproj);
+    DataLists<const CaloClusterCollection*, TEveMu2e2DProjection*>(clustercol, Redraw, accumulate, "CaloCluster", &fClusterList3D, &fClusterList2D_disk1, &fClusterList2D_disk1,calo2Dproj);
     //CfXYMgr->ImportElements(fClusterList2D_disk0, scene1); 
     //CfRZMgr->ImportElements(fClusterList2D_disk1, scene2); 
 
@@ -278,7 +292,7 @@ namespace mu2e{
   void TEveMu2eDataInterface::AddCrystalHits(bool firstloop, const CaloHitCollection *cryHitcol, TEveMu2e2DProjection *calo2Dproj, double min_time, double max_time, bool Redraw, bool accumulate, TEveProjectionManager *CfXYMgr, TEveProjectionManager *CfRZMgr, TEveScene *scene1, TEveScene *scene2){
     vector <double> energies = {0, 0};
     Calorimeter const &cal = *(GeomHandle<Calorimeter>());
-    DataLists<const CaloHitCollection*, TEveMu2e2DProjection*>(cryHitcol, Redraw, accumulate, "CrystalHit", &fHitsList3D, &fHitsList2D, calo2Dproj);
+    DataLists<const CaloHitCollection*, TEveMu2e2DProjection*>(cryHitcol, Redraw, accumulate, "CrystalHit", &fHitsList3D, &fHitsList2D,&fHitsList2D, calo2Dproj);
     /*CfXYMgr->ImportElements(fClusterList2D_disk0, scene1); 
     CfRZMgr->ImportElements(fClusterList2D_disk1, scene2); */
     if(cryHitcol!=0){
@@ -315,7 +329,7 @@ namespace mu2e{
     for(unsigned int j=0; j< track_list.size(); j++){
       const KalSeedCollection* seedcol = track_list[j];
       colour.push_back(j+3);
-      DataLists<const KalSeedCollection*, TEveMu2e2DProjection*>(seedcol, Redraw, accumulate, "HelixTrack", &fTrackList3D, &fTrackList2D, tracker2Dproj);
+      DataLists<const KalSeedCollection*, TEveMu2e2DProjection*>(seedcol, Redraw, accumulate, "HelixTrack", &fTrackList3D, &fTrackList2DXY,&fTrackList2DXZ, tracker2Dproj);
 
       /*TXYMgr->ImportElements(fTrackList2D, scene1); 
       TRZMgr->ImportElements(fTrackList2D, scene2); */
@@ -330,7 +344,8 @@ namespace mu2e{
           double fltLMin=segmentFirst.fmin();
           double fltLMax=segmentLast.fmax();
           TEveMu2eCustomHelix *line = new TEveMu2eCustomHelix();
-          TEveMu2eCustomHelix *line_twoD = new TEveMu2eCustomHelix();
+          TEveMu2eCustomHelix *line_twoDXY = new TEveMu2eCustomHelix();
+          TEveMu2eCustomHelix *line_twoDXZ = new TEveMu2eCustomHelix();
           line->fKalSeed_ = kseed;
           line->SetSeedInfo(kseed);
   
@@ -354,13 +369,18 @@ namespace mu2e{
               CLHEP::Hep3Vector InMu2e = det->toMu2e(p);
               line->SetPostionAndDirectionFromKalRep((InMu2e.z()));              
               line->SetNextPoint((InMu2e.x()), (InMu2e.y()), (InMu2e.z()));
-              line_twoD->SetNextPoint((p.x()), (p.y()), (p.z()));
+              line_twoDXY->SetNextPoint(pointmmTocm(p.x()), pointmmTocm(p.y()), pointmmTocm(p.z()));
+              line_twoDXZ->SetNextPoint(pointmmTocm(p.x()), pointmmTocm(p.y())+1000, pointmmTocm(p.z()));
             }
           }
           
-          line_twoD->SetLineColor(colour[j]);
-          line_twoD->SetLineWidth(3);
-          fTrackList2D->AddElement(line_twoD);
+          line_twoDXY->SetLineColor(colour[j]);
+          line_twoDXY->SetLineWidth(3);
+          fTrackList2DXY->AddElement(line_twoDXY);
+          
+          line_twoDXZ->SetLineColor(colour[j]);
+          line_twoDXZ->SetLineWidth(3);
+          fTrackList2DXZ->AddElement(line_twoDXZ);
 
           line->SetPickable(kTRUE);
           const std::string title = "Helix: " + names[j] + "PDG Code = " + to_string(line->PDGcode_) +", Momentum = " + to_string(line->Momentum_)+ ", Time = " + to_string(line->Time_);
@@ -372,8 +392,8 @@ namespace mu2e{
         
         /*TXYMgr->ImportElements(fTrackList2D, scene1);
         TRZMgr->ImportElements(fTrackList2D, scene2);*/
-        tracker2Dproj->fXYMgr->ImportElements(fTrackList2D, tracker2Dproj->fEvtXYScene);
-        tracker2Dproj->fRZMgr->ImportElements(fTrackList2D, tracker2Dproj->fEvtRZScene);
+        tracker2Dproj->fXYMgr->ImportElements(fTrackList2DXY, tracker2Dproj->fEvtXYScene);
+        tracker2Dproj->fRZMgr->ImportElements(fTrackList2DXZ, tracker2Dproj->fEvtRZScene);
         gEve->AddElement(fTrackList3D);
         gEve->Redraw3D(kTRUE);
       }
@@ -384,11 +404,12 @@ namespace mu2e{
   /*------------Function to add No Field cosmic track fit to 2D and 3D display:-------------*/
   void TEveMu2eDataInterface::AddCosmicTrack(bool firstloop, const CosmicTrackSeedCollection *cosmiccol, TEveMu2e2DProjection *tracker2Dproj, double min_time, double max_time, bool Redraw, bool accumulate,  TEveProjectionManager *TXYMgr, TEveProjectionManager *TRZMgr, TEveScene *scene1, TEveScene *scene2){
   if(cosmiccol !=0){
-    DataLists<const CosmicTrackSeedCollection*, TEveMu2e2DProjection*>(cosmiccol, Redraw, accumulate,"CosmicTrack", &fTrackList3D, &fTrackList2D, tracker2Dproj);
-    TXYMgr->ImportElements(fTrackList2D, scene1); 
-    TRZMgr->ImportElements(fTrackList2D, scene2); 
+    DataLists<const CosmicTrackSeedCollection*, TEveMu2e2DProjection*>(cosmiccol, Redraw, accumulate,"CosmicTrack", &fTrackList3D, &fTrackList2DXY,&fTrackList2DXZ, tracker2Dproj);
+    /*TXYMgr->ImportElements(fTrackList2D, scene1); 
+    TRZMgr->ImportElements(fTrackList2D, scene2);*/ 
     TEveMu2eStraightTrack *line = new TEveMu2eStraightTrack();
-    TEveMu2eStraightTrack *line2D = new TEveMu2eStraightTrack();
+    TEveMu2eStraightTrack *line2DXY = new TEveMu2eStraightTrack();
+    TEveMu2eStraightTrack *line2DXZ = new TEveMu2eStraightTrack();
     for(unsigned int ist = 0; ist < cosmiccol->size(); ++ist){
 
       CosmicTrackSeed sts =(*cosmiccol)[ist];
@@ -412,25 +433,30 @@ namespace mu2e{
       const std::string title = "CosmicTrack #" + to_string(ist + 1) + ", Parameters: A0:" + to_string(st.MinuitParams.A0) + ", A1:" + to_string(st.MinuitParams.A1) + ", B0:" + to_string(st.MinuitParams.B0) + ", B1:" + to_string(st.MinuitParams.B1);
       line->SetTitle(Form(title.c_str()));
 
-      line2D->AddLine(tx1, ty1, tz1, tx2, ty2, tz2);	
-      line2D->SetPickable(kTRUE);
-      line2D->SetLineColor(kGreen);
-      line2D->SetLineWidth(3);
-      fTrackList2D->AddElement(line2D);
+      line2DXY->AddLine(tx1, ty1, tz1, tx2, ty2, tz2);	
+      line2DXY->SetPickable(kTRUE);
+      line2DXY->SetLineColor(kGreen);
+      line2DXY->SetLineWidth(3);
+      fTrackList2DXY->AddElement(line2DXY);
+      
+      line2DXZ->AddLine(tx1, ty1+1000, tz1, tx2, ty2+1000, tz2);	
+      line2DXZ->SetPickable(kTRUE);
+      line2DXZ->SetLineColor(kGreen);
+      line2DXZ->SetLineWidth(3);
+      fTrackList2DXZ->AddElement(line2DXZ);
 
       line->SetPickable(kTRUE);
-
       line->SetLineColor(kGreen);
       line->SetLineWidth(3);
       fTrackList3D->AddElement(line);
 
     }
 
-    tracker2Dproj->fXYMgr->ImportElements(fTrackList2D, tracker2Dproj->fEvtXYScene);
-    tracker2Dproj->fRZMgr->ImportElements(fTrackList2D, tracker2Dproj->fEvtRZScene);
+    tracker2Dproj->fXYMgr->ImportElements(fTrackList2DXY, tracker2Dproj->fEvtXYScene);
+    tracker2Dproj->fRZMgr->ImportElements(fTrackList2DXZ, tracker2Dproj->fEvtRZScene);
 
-    TXYMgr->ImportElements(fTrackList2D, scene1);
-    TRZMgr->ImportElements(fTrackList2D, scene2);
+    /*TXYMgr->ImportElements(fTrackList2D, scene1);
+    TRZMgr->ImportElements(fTrackList2D, scene2);*/
     gEve->AddElement(fTrackList3D);
     gEve->Redraw3D(kTRUE);
     }

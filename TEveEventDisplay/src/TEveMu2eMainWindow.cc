@@ -754,7 +754,7 @@ namespace mu2e{
       if (track_list.size() !=0) pass_data->AddHelixPieceWise3D(firstLoop, data.track_tuple, tracker2Dproj,  ftimemin, ftimemax, false, _accumulate, TfXYMgr, TfRZMgr, proj2, proj3);
 
       if(_data.cosmiccol->size() != 0 or _data.cosmiccol != 0) pass_data->AddCosmicTrack(firstLoop, data.cosmiccol, tracker2Dproj, ftimemin, ftimemax, false, _accumulate, TfXYMgr, TfRZMgr, proj2, proj3);
-std::cout<<"Event 3"<<std::endl;
+
       _clustminenergy->Clear();
       _clustmaxenergy->Clear();
       _hitminenergy->Clear();
