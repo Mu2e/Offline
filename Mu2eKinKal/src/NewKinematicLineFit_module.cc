@@ -65,10 +65,18 @@
 using namespace std;
 //using namespace KinKal;
 namespace mu2e {
-
   using KTRAJ= KinKal::KinematicLine;
   using PKTRAJ = KinKal::ParticleTrajectory<KTRAJ>;
-  using KKTRK = KinKal::Track<KTRAJ>;
+  using KKTRK = KKTrack<KTRAJ>;
+  using KKSTRAWHIT = KKStrawHit<KTRAJ>;
+  using KKSTRAWHITPTR = std::shared_ptr<KKSTRAWHIT>;
+  using KKSTRAWHITCOL = std::vector<KKSTRAWHITPTR>;
+  using KKSTRAWXING = KKStrawXing<KTRAJ>;
+  using KKSTRAWXINGPTR = std::shared_ptr<KKSTRAWXING>;
+  using KKSTRAWXINGCOL = std::vector<KKSTRAWXINGPTR>;
+  using KKCALOHIT = KKCaloHit<KTRAJ>;
+  using KKCALOHITPTR = std::shared_ptr<KKCALOHIT>;
+  using KKCALOHITCOL = std::vector<KKCALOHITPTR>;
   using MEAS = KinKal::Hit<KTRAJ>;
   using MEASPTR = std::shared_ptr<MEAS>;
   using MEASCOL = std::vector<MEASPTR>;
@@ -85,44 +93,43 @@ namespace mu2e {
   using KinKal::Status;
   using HPtr = art::Ptr<HelixSeed>;
   using CCPtr = art::Ptr<CaloCluster>;
+  using CCHandle = art::ValidHandle<CaloClusterCollection>;
   using StrawHitIndexCollection = std::vector<StrawHitIndex>;
   
-  using StrawHitUpdateSettings = fhicl::Sequence<fhicl::Tuple<float,float,unsigned,unsigned>>;
-  using KKFitSettings = Mu2eKinKal::FitSettings;
-  using KKMaterialSettings = KKMaterial::Settings;
-
+  using KKConfig = Mu2eKinKal::KinKalConfig;
+  using KKFitConfig = Mu2eKinKal::KKFitConfig;
+  using KKMaterialConfig = KKMaterial::Config;
+  
   class NewKinematicLineFit : public art::EDProducer {
     using Name    = fhicl::Name;
     using Comment = fhicl::Comment;
-     
-    struct ModuleSettings {
+
+    struct ModuleConfig {
       fhicl::Sequence<art::InputTag> cosmicTrackSeedCollections         {Name("CosmicTrackSeedCollections"),     Comment("Cosmic seed fit collections to be processed ") };
       fhicl::Atom<art::InputTag>     comboHitCollection     {Name("ComboHitCollection"),     Comment("Single Straw ComboHit collection ") };
       fhicl::Atom<art::InputTag>     strawHitFlagCollection {Name("StrawHitFlagCollection"), Comment("StrawHitFlag collection ") };
       fhicl::Sequence<std::string> lineFlags { Name("LineFlags"), Comment("Flags required to be present to convert a cosmic track seed to a KinKal track") };
       fhicl::Atom<int> printLevel { Name("PrintLevel"), Comment("Diagnostic printout Level"), 0 };
+      fhicl::Sequence<float> seederrors { Name("SeedErrors"), Comment("Initial value of seed parameter errors (rms, various units)") };
       fhicl::Atom<bool> saveAll { Name("SaveAllFits"), Comment("Save all fits, whether they suceed or not"),false };
       fhicl::Atom<bool> saveFull { Name("SaveFullFit"), Comment("Save all track segments associated with the fit"), false};
       fhicl::Sequence<float> zsave { Name("ZSavePositions"), Comment("Z positions to sample and save the fit result helices"), std::vector<float>()};
       fhicl::Sequence<std::string> addHitFlags { Name("AddHitFlags"), Comment("Flags required to be present to add a hit"), std::vector<std::string>() };
-      fhicl::Sequence<std::string> rejectHitFlags { Name("RejectHitFlags"), Comment("Flags required not to be present to add a hit"), std::vector<std::string>() };
-      fhicl::Atom<float> maxAddDOCA { Name("MaxAddDOCA"), Comment("Max DOCA to add a hit (mm)"), 2.75 };
-      fhicl::Atom<float> maxAddDt { Name("MaxAddDt"), Comment("Max Detla time to add a hit (ns)"), 3.0 };
-      fhicl::Atom<float> maxAddChi { Name("MaxAddChi"), Comment("Max Chi to add a hit"), 4.0 };
-      fhicl::Atom<float> maxAddDeltaU { Name("MaxAddDeltaU"), Comment("Max Delta-U to add a hit (mm)"), 10.0 };
     };
 
-    struct ModuleConfig {
-      fhicl::Table<ModuleSettings> modSettings { Name("ModuleSettings") };
-      fhicl::Table<KKFitSettings> fitSettings { Name("FitSettings") };
-      fhicl::Table<KKMaterialSettings> matSettings { Name("MaterialSettings") };
-      StrawHitUpdateSettings shuconfig { Name("StrawHitUpdateSettings"), Comment("Setting sequence for updating StrawHits, format: \n"
-      " 'MinDoca', 'MaxDoca', First Meta-iteration', 'Last Meta-iteration'") };
+    struct GlobalConfig {
+      fhicl::Table<ModuleConfig> modSettings { Name("ModuleSettings") };
+      fhicl::Table<KKFitConfig> mu2eFitSettings { Name("KKFitSettings") };
+      fhicl::Table<KKConfig> kkFitSettings { Name("KinKalFitSettings") };
+      fhicl::Table<KKConfig> kkExtSettings { Name("KinKalExtensionSettings") };
+      fhicl::Table<KKMaterialConfig> matSettings { Name("MaterialSettings") };
+//      StrawHitUpdateSettings shuconfig { Name("StrawHitUpdateSettings"), Comment("Setting sequence for updating StrawHits, format: \n"
+//      " 'MinDoca', 'MaxDoca', First Meta-iteration', 'Last Meta-iteration'") };
     };
-    using ModuleParams = art::EDProducer::Table<ModuleConfig>;
+    using GlobalSettings = art::EDProducer::Table<GlobalConfig>;
 
     public:
-    explicit NewKinematicLineFit(const ModuleParams& config);
+    explicit NewKinematicLineFit(const GlobalSettings& settings);
     virtual ~NewKinematicLineFit();
     void beginRun(art::Run& run) override;
     void produce(art::Event& event) override;
@@ -146,50 +153,43 @@ namespace mu2e {
     double mass_; // particle mass
     int charge_; // particle charge
     std::unique_ptr<KKBField> kkbf_;
+    Config config_; // initial fit configuration object
+    Config exconfig_; // extension configuration object
   };
 
-  NewKinematicLineFit::NewKinematicLineFit(const ModuleParams& config) : art::EDProducer{config}, 
-    chcol_T_(consumes<ComboHitCollection>(config().modSettings().comboHitCollection())),
-    shfcol_T_(mayConsume<StrawHitFlagCollection>(config().modSettings().strawHitFlagCollection())),
-    goodline_(config().modSettings().lineFlags()),
-    saveall_(config().modSettings().saveAll()),
-    savefull_(config().modSettings().saveFull()),
-    zsave_(config().modSettings().zsave()),
-    print_(config().modSettings().printLevel()),
-    maxDoca_(config().modSettings().maxAddDOCA()),
-    maxDt_(config().modSettings().maxAddDt()),
-    maxChi_(config().modSettings().maxAddChi()),
-    maxDU_(config().modSettings().maxAddDeltaU()),
-    kkfit_(config().fitSettings()),
-    kkmat_(config().matSettings())
+  NewKinematicLineFit::NewKinematicLineFit(const GlobalSettings& settings) : art::EDProducer{settings}, 
+    chcol_T_(consumes<ComboHitCollection>(settings().modSettings().comboHitCollection())),
+    shfcol_T_(mayConsume<StrawHitFlagCollection>(settings().modSettings().strawHitFlagCollection())),
+    goodline_(settings().modSettings().lineFlags()),
+    saveall_(settings().modSettings().saveAll()),
+    savefull_(settings().modSettings().saveFull()),
+    zsave_(settings().modSettings().zsave()),
+    print_(settings().modSettings().printLevel()),
+    kkfit_(settings().mu2eFitSettings()),
+    kkmat_(settings().matSettings()),
+    config_(Mu2eKinKal::makeConfig(settings().kkFitSettings())),
+    exconfig_(Mu2eKinKal::makeConfig(settings().kkExtSettings())) 
   {
-    // test: only 1 of saveFull and zsave should be set
+  
+  
+  // test: only 1 of saveFull and zsave should be set
     if((savefull_ && zsave_.size() > 0) || ((!savefull_) && zsave_.size() == 0))
-      throw cet::exception("RECO")<<"mu2e::NewKinematicLineFit:Segment saving configuration error"<< endl;
+      throw cet::exception("RECO")<<"mu2e::KinematicLineFit:Segment saving configuration error"<< endl;
     // collection handling
-    for(const auto& hseedtag : config().modSettings().cosmicTrackSeedCollections()) { hseedCols_.emplace_back(consumes<CosmicTrackSeedCollection>(hseedtag)); }
+    for(const auto& hseedtag : settings().modSettings().cosmicTrackSeedCollections()) { hseedCols_.emplace_back(consumes<CosmicTrackSeedCollection>(hseedtag)); }
     produces<KKLineCollection>();
     produces<KalSeedCollection>();
-    // construct the fit configuration object.  This controls all the global and iteration-specific aspects of the fit
+    produces<KalHelixAssns>();
     // build the initial seed covariance
-    auto const& seederrors = config().fitSettings().seederrors();
+    auto const& seederrors = settings().modSettings().seederrors();
     if(seederrors.size() != KinKal::NParams()) 
-      throw cet::exception("RECO")<<"mu2e::NewKinematicLineFit:Seed error configuration error"<< endl;
+      throw cet::exception("RECO")<<"mu2e::KinematicLineFit:Seed error configuration error"<< endl;
     for(size_t ipar=0;ipar < seederrors.size(); ++ipar){
-      seedcov_[ipar][ipar] = seederrors[ipar]*seederrors[ipar];//TODO - how to turn covarience into this
+      seedcov_[ipar][ipar] = seederrors[ipar]*seederrors[ipar];
     }
-    // set the hit updating
-    auto& schedule = kkfit_.config().schedule();
-    for(auto const& shusetting : config().shuconfig() ) {
-      KKStrawHitUpdater shupdater(std::get<0>(shusetting), std::get<1>(shusetting), kkfit_.nullDimension());
-      unsigned minmeta = std::get<2>(shusetting);
-      unsigned maxmeta = std::get<3>(shusetting);
-      if(maxmeta < minmeta || schedule.size() < maxmeta)
-	throw cet::exception("RECO")<<"mu2e::NewKinematicLineFit: Hit updater configuration error"<< endl;
-      for(unsigned imeta=minmeta; imeta<=maxmeta; imeta++)
-	schedule[imeta].updaters_.push_back(shupdater);
-    }
-    if(print_ > 0) std::cout << kkfit_.config();
+    if(print_ > 0) std::cout << config_;
+    
+    
   }
 
   NewKinematicLineFit::~NewKinematicLineFit(){}
@@ -216,6 +216,9 @@ namespace mu2e {
     // create output
     unique_ptr<KKLineCollection> kktrkcol(new KKLineCollection );
     unique_ptr<KalSeedCollection> kkseedcol(new KalSeedCollection ); //Needs to return a KalSeed
+    unique_ptr<KalLineAssns> kkseedassns(new KalLineAssns());
+    auto KalSeedCollectionPID = event.getProductID<KalSeedCollection>();
+    auto KalSeedCollectionGetter = event.productGetter(KalSeedCollectionPID);
     // find the track seed collections
     for (auto const& hseedtag : hseedCols_) {
       auto const& hseedcol_h = event.getValidHandle<CosmicTrackSeedCollection>(hseedtag);
@@ -232,37 +235,64 @@ namespace mu2e {
           KTRAJ seedtraj = makeSeedTraj(hseed);
           // wrap the seed traj in a Piecewise traj: needed to satisfy PTOCA interface
           PKTRAJ pseedtraj(seedtraj);
-          // construct hit amd material objects from Helix hits
-          MEASCOL hits; // polymorphic container of hits
-          EXINGCOL exings; // polymorphic container of detector element crossings
           // first, we need to unwind the combohits.  We use this also to find the time range
-          StrawHitIndexCollection strawHitIdxs;
-          auto const& hhits = hseed.hits();
-          for(size_t ihit = 0; ihit < hhits.size(); ++ihit ){ hhits.fillStrawHitIndices(event,ihit,strawHitIdxs); }
-          // next, build straw hits from these
-          kkfit_.makeStrawHits(*tracker, *strawresponse, *kkbf_, kkmat_.strawMaterial(), pseedtraj, chcol, strawHitIdxs, hits, exings);
-          if (kkfit_.useCalo() && hptr->caloCluster())kkfit_.makeCaloHit(hptr->caloCluster(),*calo_h, pseedtraj, hits);
-          if(print_ > 0){
-            std::cout << hits.size() << " Hits and " << exings.size() << " Material Xings in fit" << std::endl;
-          }
+	        StrawHitIndexCollection strawHitIdxs;
+	        auto const& hhits = hseed.hits();
+	        for(size_t ihit = 0; ihit < hhits.size(); ++ihit ){ hhits.fillStrawHitIndices(event,ihit,strawHitIdxs); }
+	        // next, build straw hits and materials from these
+	        KKSTRAWHITCOL strawhits; 
+	        KKSTRAWXINGCOL strawxings;
+	        strawhits.reserve(hhits.size());
+	        strawxings.reserve(hhits.size());
+	        kkfit_.makeStrawHits(*tracker, *strawresponse, *kkbf_, kkmat_.strawMaterial(), pseedtraj, chcol, strawHitIdxs, strawhits, strawxings);
+	  
+	        //here
+	        KKCALOHITCOL calohits;
+          if (kkfit_.useCalo()) kkfit_.makeCaloHit(hptr->caloCluster(),*calo_h, pseedtraj, calohits);
+
           if(print_ > 2){
-            for(auto const& thit : hits) thit->print(std::cout,2);
-            for(auto const& exing :exings) exing->print(std::cout,1);
+            for(auto const& strawhit : strawhits) strawhit->print(std::cout,2);
+	          for(auto const& calohit : calohits) calohit->print(std::cout,2);
+	          for(auto const& strawxing :strawxings) strawxing->print(std::cout,2);
           }
           // set the seed range given the hit TPOCA values
-          seedtraj.range() = kkfit_.range(hits,exings);
+          seedtraj.range() = kkfit_.range(strawhits,calohits, strawxings);
           if(print_ > 0){
             //std::cout << "Seed line parameters " << hseed.track() << std::endl;
             seedtraj.print(std::cout,print_);
           }
           // create and fit the track  
-          auto kktrk = make_unique<KKTRK>(kkfit_.config(),*kkbf_,seedtraj,hits,exings); //TODO - check on this
-          bool save(false);
+          auto kktrk = make_unique<KKTRK>(config_,*kkbf_,seedtraj,kkfit_.fitParticle(),strawhits,calohits,strawxings); //TODO - check on this
+          bool save(true);//TODO - when would we like not to save?
           if(save || saveall_){
+            // convert KKTrk into KalSeeds for persistence
+            auto const& fittraj = kktrk->fitTraj();
             // convert fits into CosmicKalSeeds for persistence	
-            kkseedcol->push_back(kkfit_.createSeed(*kktrk,hptr,zsave_,savefull_)); //TODO
-            kkseedcol->back()._status.merge(TrkFitFlag::KKLine);
+            TrkFitFlag fitflag(hptr->status());
+	          fitflag.merge(TrkFitFlag::KKLine);
+            // Decide which segments to save
+            std::set<double> savetimes;
+            if(savefull_){
+              // loop over all pieces of the fit trajectory and record their times
+              for (auto const& traj : fittraj.pieces() ) savetimes.insert(traj.range().mid());
+            } else {
+            for(auto zpos : zsave_ ) {
+              // compute the time the trajectory crosses this plane
+              double tz = kkfit_.zTime(fittraj,zpos);
+              // find the explicit trajectory piece at this time, and store the midpoint time.  This enforces uniqueness (no duplicates)
+              auto const& zpiece = fittraj.nearestPiece(tz);
+              savetimes.insert(zpiece.range().mid());
+            }
+            }
+            
+            kkseedcol->push_back(kkfit_.createSeed(*kktrk,fitflag,savetimes));
+            //kkseedcol->back()._status.merge(TrkFitFlag::KKLine);
             kktrkcol->push_back(kktrk.release());
+            // fill assns with the helix seed
+	          auto hptr = art::Ptr<CosmicTrackSeed>(hseedcol_h,iseed);
+	          auto kseedptr = art::Ptr<KalSeed>(KalSeedCollectionPID,kkseedcol->size()-1,KalSeedCollectionGetter);
+	          kkseedassns->addSingle(kseedptr,hptr);
+	          // save (unpersistable) KKTrk in the event
           }
         }
       }
