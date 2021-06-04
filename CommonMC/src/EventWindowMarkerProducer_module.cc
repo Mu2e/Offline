@@ -38,6 +38,8 @@ namespace mu2e {
         fhicl::Atom<unsigned> spillType { Name( "SpillType"), Comment("Whether simulating on or off spill")};
         fhicl::Atom<bool> recoFromMCTruth{ Name("RecoFromMCTruth"), Comment("Create reco PBT from MC truth"),false};
         fhicl::Atom<float> recoFromMCTruthErr{ Name("RecoFromMCTruthErr"), Comment("If creating reco PBT from MC truth, smear by this amount in ns"),0};
+        fhicl::Atom<bool> fixInitialPhase{ Name("FixInitialPhase"), Comment("If false will randomize phase every run"),false};
+        fhicl::Atom<float> initialPhaseShift{ Name("InitialPhaseShift"), Comment("Initial phase shift between beam and detector clocks in fraction of one clock tick."),0};
       };
 
       using Parameters = art::EDProducer::Table<Config>;
@@ -51,11 +53,12 @@ namespace mu2e {
       EventWindowMarker::SpillType _spillType;
       bool _recoFromMCTruth;
       float _recoFromMCTruthErr;
+      bool _fixInitialPhase;
+      double _initialPhaseShift;
       art::RandomNumberGenerator::base_engine_t& _engine;
       CLHEP::RandGaussQ _randgauss;
       CLHEP::RandFlat _randflat;
 
-      double _initialPhaseShift;
 	
       ProditionsHandle<EventTiming> _eventTiming_h;
   };
@@ -65,6 +68,8 @@ namespace mu2e {
     _spillType(static_cast<EventWindowMarker::SpillType>( config().spillType())),
     _recoFromMCTruth( config().recoFromMCTruth()),
     _recoFromMCTruthErr( config().recoFromMCTruthErr()),
+    _fixInitialPhase( config().fixInitialPhase()),
+    _initialPhaseShift( config().initialPhaseShift()),
     _engine(createEngine( art::ServiceHandle<SeedService>()->getSeed())),
     _randgauss( _engine ),
     _randflat( _engine )
@@ -76,7 +81,9 @@ namespace mu2e {
 
   void EventWindowMarkerProducer::beginJob() {
     // Proton bunch is 0 to 25 ns before event window marker
-    _initialPhaseShift = -1*_randflat.fire(1);
+    if (!_fixInitialPhase){
+      _initialPhaseShift = -1*_randflat.fire(1);
+    }
   }
 
   void EventWindowMarkerProducer::beginRun(art::Run& run) {
@@ -103,7 +110,7 @@ namespace mu2e {
         // determine phase for this event
         // each microbunch the proton bunch gets shifted back 5 ns from the event window
         double shiftPer = -1*period/eventTiming.onSpillBins();
-        double phaseShift = (_initialPhaseShift/period + bin*shiftPer);
+        double phaseShift = (_initialPhaseShift*period + bin*shiftPer);
         if (phaseShift < -1*period)
           phaseShift += period;
         // when phase shift would be > than one clock period by next microbunch
