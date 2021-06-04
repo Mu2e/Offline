@@ -4,12 +4,7 @@
 
 #include "TFile.h"
 #include "TH2F.h"
-#include "TF1.h"
-
-#include <string>
 #include <vector>
-#include <iostream>
-#include <algorithm>
 
 
 namespace mu2e {
