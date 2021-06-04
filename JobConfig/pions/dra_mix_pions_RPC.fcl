@@ -1,2 +1,0 @@
-#include "JobConfig/pions/dra_mix_pions_defs.fclinc"
-services.TFileService.fileName: "nts.owner.dra-mix-pions-ExtConv.ver.seq.root"
