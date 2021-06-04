@@ -13,6 +13,7 @@
 #include "fhiclcpp/ParameterSet.h"
 
 #include "art/Framework/Principal/Handle.h"
+#include "fhiclcpp/types/OptionalAtom.h"
 
 #include "MCDataProducts/inc/ProtonBunchTimeMC.hh"
 #include "RecoDataProducts/inc/ProtonBunchTime.hh"
@@ -38,8 +39,7 @@ namespace mu2e {
         fhicl::Atom<unsigned> spillType { Name( "SpillType"), Comment("Whether simulating on or off spill")};
         fhicl::Atom<bool> recoFromMCTruth{ Name("RecoFromMCTruth"), Comment("Create reco PBT from MC truth"),false};
         fhicl::Atom<float> recoFromMCTruthErr{ Name("RecoFromMCTruthErr"), Comment("If creating reco PBT from MC truth, smear by this amount in ns"),0};
-        fhicl::Atom<bool> fixInitialPhase{ Name("FixInitialPhase"), Comment("If false will randomize phase every run"),false};
-        fhicl::Atom<float> initialPhaseShift{ Name("InitialPhaseShift"), Comment("Initial phase shift between beam and detector clocks in fraction of one clock tick."),0};
+        fhicl::OptionalAtom<float> initialPhaseShift{ Name("InitialPhaseShift"), Comment("Initial phase shift between beam and detector clocks in fraction of one clock tick. By default is randomized each run.")};
       };
 
       using Parameters = art::EDProducer::Table<Config>;
@@ -54,7 +54,7 @@ namespace mu2e {
       bool _recoFromMCTruth;
       float _recoFromMCTruthErr;
       bool _fixInitialPhase;
-      double _initialPhaseShift;
+      float _initialPhaseShift;
       art::RandomNumberGenerator::base_engine_t& _engine;
       CLHEP::RandGaussQ _randgauss;
       CLHEP::RandFlat _randflat;
@@ -68,12 +68,13 @@ namespace mu2e {
     _spillType(static_cast<EventWindowMarker::SpillType>( config().spillType())),
     _recoFromMCTruth( config().recoFromMCTruth()),
     _recoFromMCTruthErr( config().recoFromMCTruthErr()),
-    _fixInitialPhase( config().fixInitialPhase()),
-    _initialPhaseShift( config().initialPhaseShift()),
+    _fixInitialPhase( false),
+    _initialPhaseShift( 0),
     _engine(createEngine( art::ServiceHandle<SeedService>()->getSeed())),
     _randgauss( _engine ),
     _randflat( _engine )
   {
+    _fixInitialPhase = config().initialPhaseShift(_initialPhaseShift);
     produces<EventWindowMarker>();
     produces<ProtonBunchTimeMC>();
     produces<ProtonBunchTime>();
