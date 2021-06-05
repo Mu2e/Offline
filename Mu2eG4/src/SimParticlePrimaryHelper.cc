@@ -38,15 +38,12 @@ namespace mu2e {
 
       SimParticle::key_type id;
       if(std::holds_alternative<const SimParticle*>(orig)) {
-        std::cout<<"simParticlePrimaryPtr from SimParticle*"<<std::endl;
         id = std::get<const SimParticle*>(orig)->id();
       }
       else if(std::holds_alternative<const  StepPointMC*>(orig)) {
-        std::cout<<"simParticlePrimaryPtr from StepPointMC*"<<std::endl;
         id = std::get<const StepPointMC*>(orig)->simParticle()->id();
       }
       else if(std::holds_alternative<const StageParticle*>(orig)) {
-        std::cout<<"simParticlePrimaryPtr from StageParticle*"<<std::endl;
         id = std::get<const StageParticle*>(orig)->parent()->id();
       }
 
