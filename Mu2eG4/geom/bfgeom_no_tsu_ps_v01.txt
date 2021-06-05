@@ -1,6 +1,10 @@
 //
-// Variant of the B field maps used for reconstruction.  All B field maps
-// not needed for reconstruction have been removed.
+// Variant of the bfield maps without the PS and TSu maps.
+//
+// Used to save memory in production running of G4 jobs
+// when it is safe to do so.  We will use this in MDC2020
+// for resampling jobs, both from the stopping planes in stage
+// 1 and from stops in the DS.
 //
 // Warning:
 //  There are multiple points of maintenance when you change bfield.innerMaps
@@ -14,10 +18,12 @@
 #include "Mu2eG4/geom/bfgeom_v01.txt"
 
 vector<string> bfield.innerMaps = {
-  "BFieldMaps/Mau13/DSMap.header"
+  "BFieldMaps/Mau13/DSMap.header",
+  "BFieldMaps/Mau13/TSdMap.header",
+  "BFieldMaps/Mau13/PStoDumpAreaMap.header",
+  "BFieldMaps/Mau13/ProtonDumpAreaMap.header",
+  "BFieldMaps/Mau13/DSExtension.header"
 };
-
-vector<string> bfield.outerMaps = {};
 
 
 //
