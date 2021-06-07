@@ -5,21 +5,25 @@ using namespace mu2e;
 namespace mu2e{
 
   /*------------Function to clear lists for new events:-------------*/
-  template <typename T, typename U> void DataLists(T data, bool Redraw, bool accumulate, string title, TEveElementList **List3D, TEveElementList **List2D = 0, U projection = 0){	
+  template <typename T, typename U> void DataLists(T data, bool Redraw, bool accumulate, string title, TEveElementList **List3D, TEveElementList **List2DXY = 0, TEveElementList **List2DXZ = 0, U projection = 0){	
       if(data == 0 && Redraw){
         if (*List3D != 0){
           (*List3D)->DestroyElements();
         }
-        
-          if (*List2D != 0){
-            (*List2D)->DestroyElements();
-          
-          projection->fXYMgr->ImportElements(*List2D, projection->fDetXYScene); 
-          projection->fRZMgr->ImportElements(*List2D, projection->fDetRZScene);
+
+        if (*List2DXY != 0){
+          (*List2DXY)->DestroyElements();
+
+          projection->fXYMgr->ImportElements(*List2DXY, projection->fDetXYScene); 
+
+        }if (*List2DXZ != 0){
+          (*List2DXZ)->DestroyElements();
+
+          projection->fRZMgr->ImportElements(*List2DXZ, projection->fDetRZScene);
         }
         gEve->AddElement(*List3D);
         gEve->Redraw3D(kTRUE); 
-       } 
+      } 
       if(data!=0){
         if (*List3D== 0) {
           *List3D = new TEveElementList((title + "3D").c_str());
@@ -28,19 +32,28 @@ namespace mu2e{
         else {
           (*List3D)->DestroyElements();  
         }
-        if (*List2D== 0) {
-          *List2D = new TEveElementList((title + "2D").c_str());
-          (*List2D)->IncDenyDestroy();     
+        if (*List2DXY== 0) {
+          *List2DXY = new TEveElementList((title + "2D").c_str());
+          (*List2DXY)->IncDenyDestroy();     
         }
         else {
-          if (!accumulate){(*List2D)->DestroyElements();}    
+          if (!accumulate){(*List2DXY)->DestroyElements();}    
         }
-    }
+      }
+      if (*List2DXZ== 0) {
+        *List2DXZ = new TEveElementList((title + "2D").c_str());
+        (*List2DXZ)->IncDenyDestroy();     
+      }
+      else {
+        if (!accumulate){(*List2DXZ)->DestroyElements();}    
+      }
+    
   }
+  
 
   /*------------Function to add straight line MC Trajectory i.e. for Comsics in No field:-------------*/
   void TEveMu2eMCInterface::AddSimpleMCTrajectory(bool firstloop, const MCTrajectoryCollection *trajcol, TEveMu2e2DProjection *tracker2Dproj, bool Redraw, bool accumulate, TEveProjectionManager *TXYMgr, TEveProjectionManager *TRZMgr, TEveScene *scene1, TEveScene *scene2){    
-        DataLists<const MCTrajectoryCollection*, TEveMu2e2DProjection*>(trajcol, Redraw, accumulate, "MC Trajectory", &fTrackList3D, &fTrackList2D, tracker2Dproj);
+        DataLists<const MCTrajectoryCollection*, TEveMu2e2DProjection*>(trajcol, Redraw, accumulate, "MC Trajectory", &fTrackList3D, &fTrackList2DXY,&fTrackList2DXZ, tracker2Dproj);
     if(trajcol!=0){
       TEveElementList *HitList3D = new TEveElementList("MCtraj3D");
       TEveElementList *HitList2D = new TEveElementList("MCtraj2D");
@@ -62,12 +75,12 @@ namespace mu2e{
         EndHitPos = det->toMu2e(EndHitPos);
         TEveMu2eMCTraj *teve_hit2D = new TEveMu2eMCTraj();
         teve_hit2D->DrawSimpleLine("MCTraj PDG " + pdgId + "Energy = " + energy + ", ", StartHitPos, EndHitPos, HitList2D);
-        fTrackList2D->AddElement(HitList2D); 
+        fTrackList2DXZ->AddElement(HitList2D); 
 
       }
       
-        tracker2Dproj->fXYMgr->ImportElements(fTrackList2D, tracker2Dproj->fDetXYScene); //TODO
-        tracker2Dproj->fRZMgr->ImportElements(fTrackList2D, tracker2Dproj->fDetRZScene);
+      tracker2Dproj->fXYMgr->ImportElements(fTrackList2DXZ, tracker2Dproj->fEvtXYScene); 
+      tracker2Dproj->fRZMgr->ImportElements(fTrackList2DXZ, tracker2Dproj->fEvtRZScene);
       
       gEve->AddElement(fTrackList3D);
       gEve->Redraw3D(kTRUE);
@@ -81,63 +94,155 @@ namespace mu2e{
     return std::count(v.begin(), v.end(), x);
   }
   
-  /*------------
+
+    /*------------Function to make label :-------------*/
+    TEveText *TEveMu2eMCInterface::GetLabel(int PDGCode, TEveMu2eCustomHelix *line, TEveMu2eCustomHelix *line_twoDXY, TEveMu2eCustomHelix *line_twoDXZ){
+      const char* pid = "pid";
+      auto t = new TEveText(pid);
+      t->SetFontSize(15);
+      if(PDGCode == +11){ 
+        line->SetLineColor(kRed);//electrons
+        line_twoDXZ->SetLineColor(kRed);
+        line_twoDXY->SetLineColor(kRed);
+        pid = "electron -";
+        t->SetText(pid);
+        t->SetMainColor(kRed);
+        t->RefMainTrans().SetPos(0.0,400.0,30000.0);
+      }
+      else if(PDGCode == -11){
+        line->SetLineColor(kYellow);//positrons
+        line_twoDXZ->SetLineColor(kYellow);
+        line_twoDXY->SetLineColor(kYellow);
+        pid = "positron +";
+        t->SetText(pid);
+        t->SetMainColor(kYellow);
+        t->RefMainTrans().SetPos(0.0,550.0,30000.0);
+      }
+      else if(PDGCode == +13){
+        line->SetLineColor(kGreen);//muons
+        line_twoDXY->SetLineColor(kGreen);
+        line_twoDXZ->SetLineColor(kGreen);
+        pid = "muon - ";
+        t->SetText(pid);
+        t->SetMainColor(kGreen);
+        t->RefMainTrans().SetPos(0.0,650.0,30000.0);
+      }
+      else if(PDGCode == -13){
+        line->SetLineColor(kOrange);//anti-muons
+        line_twoDXY->SetLineColor(kOrange);
+        line_twoDXZ->SetLineColor(kOrange);
+        pid = "muon + ";
+        t->SetText(pid);
+        t->SetMainColor(kOrange);
+        t->RefMainTrans().SetPos(0.0,650.0,3000.0);
+      }
+      else if(PDGCode == -211){
+        line->SetLineColor(kMagenta);//pion -
+        line_twoDXY->SetLineColor(kMagenta);
+        line_twoDXZ->SetLineColor(kMagenta);
+        pid = "pion -";
+        t->SetText(pid);
+        t->SetMainColor(kMagenta);
+        t->RefMainTrans().SetPos(0.0,750.0,30000.0);
+      }else if(PDGCode == +211){
+        line->SetLineColor(kViolet);//pion +
+        line_twoDXY->SetLineColor(kViolet);
+        line_twoDXZ->SetLineColor(kViolet);
+        pid = "pion +";
+        t->SetText(pid);
+        t->SetMainColor(kViolet);
+        t->RefMainTrans().SetPos(0.0,750.0,30000.0);
+      }
+      else if(PDGCode == 2212){
+        line->SetLineColor(kBlue); //proton
+        line_twoDXY->SetLineColor(kBlue);
+        line_twoDXZ->SetLineColor(kBlue);
+        pid = "proton";
+        t->SetText(pid);
+        t->SetMainColor(kBlue);
+        t->RefMainTrans().SetPos(0.0,850.0,30000.0);
+      }else if(PDGCode == 22){
+        line->SetLineColor(kSpring-10);//photon
+        line_twoDXY->SetLineColor(kSpring-10);
+        line_twoDXZ->SetLineColor(kSpring-10);
+        pid = "gamma";
+        t->SetText(pid);
+        t->SetMainColor(kSpring-10);
+        t->RefMainTrans().SetPos(0.0,950.0,30000.0);
+      }
+      else {
+         line->SetLineColor(kCyan);//nuceli/others
+        line_twoDXY->SetLineColor(kCyan);
+        line_twoDXZ->SetLineColor(kCyan);
+        pid = "other";
+        t->SetText(pid);
+        t->SetMainColor(kCyan);
+        t->RefMainTrans().SetPos(0.0,950.0,30000.0);
+      }
+      return t;
+    }
+    
+      /*------------
   Function to display MCTracjories of any shape, these are made up of a series of TEveLines, in the same way as Reco Helices:      
   -------------*/
     void TEveMu2eMCInterface::AddFullMCTrajectory(bool firstloop, const MCTrajectoryCollection *trajcol, TEveMu2e2DProjection *tracker2Dproj, bool Redraw, bool accumulate, TEveProjectionManager *TXYMgr, TEveProjectionManager *TRZMgr, TEveScene *scene1, TEveScene *scene2, std::vector<int> particleIds){
-	DataLists<const MCTrajectoryCollection*, TEveMu2e2DProjection*>(trajcol, Redraw, accumulate, "MC Trajectory", &fTrackList3D, &fTrackList2D, tracker2Dproj);//TODO - remove proj
-        TXYMgr->ImportElements(fTrackList2D, scene1); 
-        TRZMgr->ImportElements(fTrackList2D, scene2); 
+
         if(trajcol!=0){
-
-          TEveMu2eCustomHelix *line = new TEveMu2eCustomHelix();
-          TEveMu2eCustomHelix *line_twoD = new TEveMu2eCustomHelix();
-          
+          DataLists<const MCTrajectoryCollection*, TEveMu2e2DProjection*>(trajcol, Redraw, accumulate, "MC Trajectory", &fTrackList3D, &fTrackList2DXZ, &fTrackList2DXY, tracker2Dproj);
           std::map<art::Ptr<mu2e::SimParticle>,mu2e::MCTrajectory>::const_iterator trajectoryIter;
-          unsigned int g = 0;
           for(trajectoryIter=trajcol->begin(); trajectoryIter!=trajcol->end(); trajectoryIter++)
-          {
-            //if(!Contains(particleIds_,abs(trajectoryIter->first->pdgId()))) { continue;}
-            std::cout<<"Id's "<<particleIds.size()<<std::endl;
-            const std::vector<MCTrajectoryPoint> &points = trajectoryIter->second.points();
-            for(unsigned int i=0; i<points.size();i++){
-
-              CLHEP::Hep3Vector Pos(points[i].x(), points[i].y(), points[i].z());
-              GeomHandle<DetectorSystem> det;
-              CLHEP::Hep3Vector HitPos2D = det->toDetector(Pos);
-
-              if(i==0) {
-                    line->SetPoint(i,pointmmTocm(Pos.x()), pointmmTocm(Pos.y()),pointmmTocm(Pos.z()));
-                    line_twoD->SetPoint(i,pointmmTocm(HitPos2D.x()), pointmmTocm(HitPos2D.y()),pointmmTocm(HitPos2D.z()));
+          { 
+            TEveMu2eCustomHelix *line = new TEveMu2eCustomHelix();
+            TEveMu2eCustomHelix *line_twoDXZ = new TEveMu2eCustomHelix();
+            TEveMu2eCustomHelix *line_twoDXY = new TEveMu2eCustomHelix();
+            //check user defined list of particles to plot:
+            int x = Contains(particleIds,trajectoryIter->first->pdgId()); 
+            if(x == 1){
+              
+              const std::vector<MCTrajectoryPoint> &points = trajectoryIter->second.points();
+              
+              for(unsigned int i=0; i<points.size();i++){
+                CLHEP::Hep3Vector Pos(points[i].x(), points[i].y(), points[i].z());
+                GeomHandle<DetectorSystem> det;
+                CLHEP::Hep3Vector HitPos2D = det->toDetector(Pos);
+                                      
+                if(i==0) {
+                      line->SetPoint(i,(Pos.x()), (Pos.y()),(Pos.z())); 
+                      line_twoDXZ->SetPoint(i,pointmmTocm(HitPos2D.x()), pointmmTocm(HitPos2D.y())+1000,pointmmTocm(HitPos2D.z()));
+                      line_twoDXY->SetPoint(i,pointmmTocm(HitPos2D.x()), pointmmTocm(HitPos2D.y()),pointmmTocm(HitPos2D.z()));      
+                      
                 } else {
-                    line->SetNextPoint(pointmmTocm(Pos.x()), pointmmTocm(Pos.y()),pointmmTocm(Pos.z()));
-                    line_twoD->SetNextPoint(pointmmTocm(HitPos2D.x()), pointmmTocm(HitPos2D.y()),pointmmTocm(HitPos2D.z()));
+                    line->SetNextPoint((Pos.x()),(Pos.y()),(Pos.z()));
+                    line_twoDXZ->SetNextPoint(pointmmTocm(HitPos2D.x()), pointmmTocm(HitPos2D.y())+1000,pointmmTocm(HitPos2D.z()));
+                    line_twoDXY->SetNextPoint(pointmmTocm(HitPos2D.x()), pointmmTocm(HitPos2D.y()),pointmmTocm(HitPos2D.z()));
+                }
               }
+              
+              string energy = to_string(points[0].kineticEnergy());
+   
+              const std::string title = " MCTrajectory "+ energy;// + "PDG Code = " + pdgId;
+              line->SetTitle(Form(title.c_str()));
+              
+              //Get PID label:
+              TEveText *t = GetLabel(trajectoryIter->first->pdgId(), line, line_twoDXZ, line_twoDXY);
+              line->SetLineWidth(3);
+              line->SetPickable(kTRUE);
+              line_twoDXZ->SetLineWidth(3);
+              line_twoDXZ->SetPickable(kTRUE);
+              line_twoDXY->SetLineWidth(3);
+              line_twoDXY->SetPickable(kTRUE);
+              fTrackList2DXZ->AddElement(line_twoDXZ);
+              fTrackList2DXY->AddElement(line_twoDXY);
+              fTrackList3D->AddElement(line);
+              fTrackList3D->AddElement(t);
+              }
+              
+             else std::cout<<"Warning: No Particles of User-Specified Type In File "<<std::endl;
             }
-            
-            string energy = to_string(points[0].kineticEnergy());
-            //string pdgId= to_string(trajectoryIter->first->pdgId());
-            std::cout<<g<<" "<<trajectoryIter->first->pdgId()<<std::endl;
-            line_twoD->SetLineColor(kRed);
-            line_twoD->SetLineWidth(3);
-            fTrackList2D->AddElement(line_twoD);
-
-            line->SetPickable(kTRUE);
-            const std::string title = " MCTrajectory "+ energy;// + "PDG Code = " + pdgId + "Energy = " ;
-            line->SetTitle(Form(title.c_str()));
-            if(abs(trajectoryIter->first->pdgId()) == 11) line->SetLineColor(kRed); //electrons
-            else if(abs(trajectoryIter->first->pdgId()) == 13) line->SetLineColor(kGreen); //muons
-            else if(abs(trajectoryIter->first->pdgId()) == 2112) line->SetLineColor(kYellow); //neutron  
-            else if(abs(trajectoryIter->first->pdgId()) == 2212) line->SetLineColor(kRed); //proton
-            else line->SetLineColor(kCyan); //nuceli
-            line->SetLineWidth(3);
-            fTrackList3D->AddElement(line);
-            g++;
-          }
-          TXYMgr->ImportElements(fTrackList2D, scene1);
-          TRZMgr->ImportElements(fTrackList2D, scene2);
-          gEve->AddElement(fTrackList3D);
-          gEve->Redraw3D(kTRUE);        
-      }
+            tracker2Dproj->fXYMgr->ImportElements(fTrackList2DXY, tracker2Dproj->fEvtXYScene); 
+            tracker2Dproj->fRZMgr->ImportElements(fTrackList2DXZ, tracker2Dproj->fEvtRZScene);
+            gEve->AddElement(fTrackList3D);
+            gEve->Redraw3D(kTRUE);
+        }
     }
 }
