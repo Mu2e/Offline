@@ -1,4 +1,6 @@
 #include "TEveEventDisplay/src/shape_classes/TEveMu2eTracker.h"
+#include "StoppingTargetGeom/inc/StoppingTarget.hh"
+#include "StoppingTargetGeom/inc/TargetFoil.hh"
 
 using namespace mu2e;
 namespace mu2e{
@@ -57,6 +59,34 @@ namespace mu2e{
       tracker->SetVisLeaves(kFALSE);
       tracker->SetInvisible();
       topvol->AddNode(tracker, 1, new TGeoTranslation(-390.4,+1000,1017.1)); 
+      
+      // Addition of Stopping Target geometry
+      GeomHandle<StoppingTarget> target;
+      unsigned int n=target->nFoils();
+      double j =0.0; //To set the gap between the foils
+      for(unsigned int i=0; i<n; i++)
+        {
+        const mu2e::TargetFoil &foil=target->foil(i);
+        double halfThickness = foil.halfThickness();
+        double r = foil.rOut() - foil.rIn();
+        CLHEP::Hep3Vector foilposition(0,1000,-587.1+j); // Stopping Target Location 
+        Double_t foilpos[3];
+        foilpos [0] = foilposition.x();
+        foilpos [1] = foilposition.y();
+        foilpos [2] = foilposition.z();
+      
+        TEveGeoShape *stXZ = new TEveGeoShape();
+        stXZ->SetShape(new TGeoBBox("foil",pointmmTocm(r),pointmmTocm(r),pointmmTocm(halfThickness), foilpos));
+        stXZ->SetMainTransparency(100);
+        orthodetXZ->AddElement(stXZ);
+      
+        TEveGeoShape *stXY = new TEveGeoShape();
+        stXY->SetShape(new TGeoTube(pointmmTocm(foil.rIn()),pointmmTocm(foil.rOut()),pointmmTocm(halfThickness)));
+        stXY->SetMainTransparency(100);
+        orthodetXY->AddElement(stXY);
+        j = j+2.21;
+        }
+
 
   }
 }
