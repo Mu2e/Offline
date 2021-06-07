@@ -58,8 +58,8 @@ namespace mu2e {
       ios::fmtflags oldfl = cout.flags();
       int const oldpr = cout.precision();
       int const oldwdth = cout.width();
-      static int const newpr   = 18;
-      static int const newwdth = 28;
+      constexpr int newpr   = 18;
+      constexpr int newwdth = 28;
 
       cout.setf(ios::right,ios::adjustfield);
       cout.precision(newpr);
@@ -117,8 +117,8 @@ namespace mu2e {
       cout.flags(oldfl);
 
     }
-
-    info.logical  = new G4LogicalVolume( info.solid, material, info.name);
+    // if logical volume does not already exist, create it
+    info.logical  = info.logical ? info.logical : new G4LogicalVolume( info.solid, material, info.name);
 
     // G4 did not get const-ness correctly, thus the const_cast
     info.physical  =  placePV ? new G4PVPlacement( const_cast<G4RotationMatrix*>(rot),
