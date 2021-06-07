@@ -100,36 +100,82 @@ namespace mu2e {
     // The remaining windows are all identical, so make one logical volume and
     // paste it repeatedly.
     std::string windowName = "PTMWindow"+pwc->nameSuffix();
-    VolumeInfo windowVolInfo = nestBox(windowName,
-                                       windowHalfDims,
-                                       windowMaterial,
-                                       nullptr, // no rotation
-                                       G4ThreeVector(0, 0, 0), // offset doesn't matter since we're not placing now
-                                       nullptr, // parent doesn't matter, sicne we're not placing now
-                                       0, // copyNo
-                                       visible, // visible
-                                       G4Colour::Blue(),
-                                       forceSolid, // forceSolid
-                                       forceAuxEdgeVisible, // forceAuxEdgeVisible
-                                       false, // placePV is false for now
-                                       false); // no place, no surface check either way
-    // now put them in. Loop over window locations.
-    if (placePV) {
-      std::array<double, 4> windowZs = {pwc->hv1Z(), pwc->hv2Z(), pwc->hv3Z(), pwc->ground2Z()};
-      for (auto& windowZ : windowZs) {
-        G4VPhysicalVolume* physVol = new G4PVPlacement(nullptr,
-                                    G4ThreeVector(0.0, 0.0, windowZ),
-                                    windowVolInfo.logical,
-                                    windowName,
-                                    container.logical,
-                                    false,
-                                    0,
-                                    false); // don't do surface check here
-        if ( doSurfaceCheck ) {
-          checkForOverlaps( physVol, _config, verbosity>0);
-        }
-      }
-    }
+    G4VSolid *windowBox = new G4Box(windowName, 
+                            pwc->pwcWindow()->getXhalfLength(), 
+                            pwc->pwcWindow()->getYhalfLength(), 
+                            pwc->pwcWindow()->getZhalfLength());
+    G4LogicalVolume *windowLogical = new G4LogicalVolume(windowBox, windowMaterial, windowName);
+    // 3 high-voltage planes
+    VolumeInfo HV1Info;
+    HV1Info.solid = windowBox;
+    HV1Info.logical = windowLogical;
+    HV1Info.name = "PTMHV1"+pwc->nameSuffix();
+    finishNesting(HV1Info, 
+                  windowMaterial, // probably unnecessary, since we made the logical already
+                  nullptr, // no rotation
+                  G4ThreeVector(0, 0, pwc->hv1Z()),
+                  container.logical,
+                  0,
+                  visible, // visible
+                  G4Colour::Blue(),
+                  forceSolid, // forceSolid
+                  forceAuxEdgeVisible, // forceAuxEdgeVisible
+                  placePV,
+                  doSurfaceCheck,
+                  verbosity>0);
+    VolumeInfo HV2Info;
+    HV2Info.solid = windowBox;
+    HV2Info.logical = windowLogical;
+    HV2Info.name = "PTMHV2"+pwc->nameSuffix();
+    finishNesting(HV2Info, 
+                  windowMaterial, // probably unnecessary, since we made the logical already
+                  nullptr, // no rotation
+                  G4ThreeVector(0, 0, pwc->hv2Z()),
+                  container.logical,
+                  0,
+                  visible, // visible
+                  G4Colour::Blue(),
+                  forceSolid, // forceSolid
+                  forceAuxEdgeVisible, // forceAuxEdgeVisible
+                  placePV,
+                  doSurfaceCheck,
+                  verbosity>0);
+    VolumeInfo HV3Info;
+    HV3Info.solid = windowBox;
+    HV3Info.logical = windowLogical;
+    HV3Info.name = "PTMHV3"+pwc->nameSuffix();
+    finishNesting(HV3Info, 
+                  windowMaterial, // probably unnecessary, since we made the logical already
+                  nullptr, // no rotation
+                  G4ThreeVector(0, 0, pwc->hv3Z()),
+                  container.logical,
+                  0,
+                  visible, // visible
+                  G4Colour::Blue(),
+                  forceSolid, // forceSolid
+                  forceAuxEdgeVisible, // forceAuxEdgeVisible
+                  placePV,
+                  doSurfaceCheck,
+                  verbosity>0);
+    // downstream ground plane
+    VolumeInfo ground2Info;
+    ground2Info.solid = windowBox;
+    ground2Info.logical = windowLogical;
+    ground2Info.name = "PTMGround2"+pwc->nameSuffix();
+    finishNesting(ground2Info, 
+                  windowMaterial, // probably unnecessary, since we made the logical already
+                  nullptr, // no rotation
+                  G4ThreeVector(0, 0, pwc->ground2Z()),
+                  container.logical,
+                  0,
+                  visible, // visible
+                  G4Colour::Blue(),
+                  forceSolid, // forceSolid
+                  forceAuxEdgeVisible, // forceAuxEdgeVisible
+                  placePV,
+                  doSurfaceCheck,
+                  verbosity>0);
+
   } // insertWindows
 
   void insertOuterGasBlocks(VolumeInfo const& container, 
@@ -190,45 +236,37 @@ namespace mu2e {
     // of the gas that is closest to one wire in the real detector.
     std::string wireGasNameVert = "PTMWireVert";
     wireGasNameVert.append(wireNameSuffix);
-    double vertWireHalfDims[] = {pwc->vertWireGasSection()->getXhalfLength(), 
-                                  pwc->vertWireGasSection()->getYhalfLength(), 
-                                  pwc->vertWireGasSection()->getZhalfLength()};
-    // make but do not place the logical volume
-    VolumeInfo vertWireVolInfo = nestBox(wireGasNameVert,
-                                         vertWireHalfDims,
-                                         gasMaterial,
-                                         nullptr, // no rotation
-                                         G4ThreeVector(0, 0, 0), // offset doesn't matter since we're not placing now
-                                         nullptr, // parent doesn't matter, sicne we're not placing now
-                                         0, // copyNo
-                                         visible, // visible
-                                         G4Colour::Blue(),
-                                         forceSolid, // forceSolid
-                                         forceAuxEdgeVisible, // forceAuxEdgeVisible
-                                         false, // placePV is false for now
-                                         false); // no place, no surface check either way
-    // place them 
-    if (placePV){
-      for (int i=0; i < pwc->numVertWires(); ++i) {
-        int wireNum = pwc->wireNumStart() + i;
-        std::string wireGasName = wireGasNameVert;
-        wireGasName.append(std::to_string(wireNum));
-        // wire numbering such that the lowest-numered wire is 
-        // on the bottom
-        double gasY2 = pwc->vertWireYPos()[i];
-        G4VPhysicalVolume* physVol = new G4PVPlacement(nullptr,
-                                    G4ThreeVector(0.0, gasY2, pwc->vertWireZ()),
-                                    vertWireVolInfo.logical,
-                                    wireGasName,
-                                    container.logical,
-                                    false,
-                                    wireNum,
-                                    false); // don't do surface check here
-        if ( doSurfaceCheck ) {
-          checkForOverlaps( physVol, _config, verbosity>0);
-        }
-      }
+    G4VSolid *vertWireBox = new G4Box(wireGasNameVert, 
+                                    pwc->vertWireGasSection()->getXhalfLength(), 
+                                    pwc->vertWireGasSection()->getYhalfLength(), 
+                                    pwc->vertWireGasSection()->getZhalfLength());
+    G4LogicalVolume *vertWireLogical = new G4LogicalVolume(vertWireBox, gasMaterial, wireGasNameVert);
+    for (int i=0; i < pwc->numVertWires(); ++i) {
+      int wireNum = pwc->wireNumStart() + i;
+      std::string wireGasName = wireGasNameVert;
+      wireGasName.append(std::to_string(wireNum));
+      // wire numbering such that the lowest-numered wire is 
+      // on the bottom
+      double gasY2 = pwc->vertWireYPos()[i];
+      VolumeInfo vertWireInfo;
+      vertWireInfo.solid = vertWireBox;
+      vertWireInfo.logical = vertWireLogical;
+      vertWireInfo.name = wireGasName;
+      finishNesting(vertWireInfo,
+                    gasMaterial,
+                    nullptr,
+                    G4ThreeVector(0.0, gasY2, pwc->vertWireZ()),
+                    container.logical,
+                    wireNum,
+                    visible, // visible
+                    G4Colour::Blue(),
+                    forceSolid, // forceSolid
+                    forceAuxEdgeVisible, // forceAuxEdgeVisible
+                    placePV,
+                    doSurfaceCheck,
+                    verbosity>0);
     }
+    
   } // insertVerticalProfileWires
 
   void insertHorizontalProfileWires(VolumeInfo const& container, 
@@ -249,43 +287,35 @@ namespace mu2e {
     // of the gas that is closest to one wire in the real detector.
     std::string wireGasNameHoriz = "PTMWireHoriz";
     wireGasNameHoriz.append(wireNameSuffix);
-    double horizWireHalfDims[] = {pwc->horizWireGasSection()->getXhalfLength(), 
-                                   pwc->horizWireGasSection()->getYhalfLength(), 
-                                   pwc->horizWireGasSection()->getZhalfLength()};
-    // make but do not place the logical volume
-    VolumeInfo horizWireVolInfo = nestBox(wireGasNameHoriz,
-                                          horizWireHalfDims,
-                                          gasMaterial,
-                                          nullptr, // no rotation
-                                          G4ThreeVector(0, 0, 0), // offset doesn't matter since we're not placing now
-                                          nullptr, // parent doesn't matter, sicne we're not placing now
-                                          0, // copyNo
-                                          visible, // visible
-                                          G4Colour::Blue(),
-                                          forceSolid, // forceSolid
-                                          forceAuxEdgeVisible, // forceAuxEdgeVisible
-                                          false, // placePV is false for now
-                                          false); // no place, no surface check either way
-    if (placePV) {
-      for (int i=0; i < pwc->numHorizWires(); ++i) {
-        int wireNum = pwc->wireNumStart() + pwc->numVertWires() + i;
-        std::string wireGasName = wireGasNameHoriz;
-        wireGasName.append(std::to_string(wireNum));
-        // wire numbering such that the lowest-numered wire is 
-        // on the left, from the point of view of the oncoming beam.
-        double gasX3 = pwc->horizWireXPos()[i];
-        G4VPhysicalVolume* physVol = new G4PVPlacement(nullptr,
-                                      G4ThreeVector(gasX3, 0.0, pwc->horizWireZ()),
-                                      horizWireVolInfo.logical,
-                                      wireGasName,
-                                      container.logical,
-                                      false,
-                                      wireNum,
-                                      false); // don't do surface check here
-        if ( doSurfaceCheck ) {
-          checkForOverlaps( physVol, _config, verbosity>0);
-        }
-      }
+    G4VSolid *horizWireBox = new G4Box(wireGasNameHoriz, 
+                                     pwc->horizWireGasSection()->getXhalfLength(), 
+                                     pwc->horizWireGasSection()->getYhalfLength(), 
+                                     pwc->horizWireGasSection()->getZhalfLength());
+    G4LogicalVolume *horizWireLogical = new G4LogicalVolume(horizWireBox, gasMaterial, wireGasNameHoriz);
+    for (int i=0; i < pwc->numVertWires(); ++i) {
+      int wireNum = pwc->wireNumStart() + pwc->numVertWires() + i;
+      std::string wireGasName = wireGasNameHoriz;
+      wireGasName.append(std::to_string(wireNum));
+      // wire numbering such that the lowest-numered wire is 
+      // on the left, from the point of view of the oncoming beam.
+      double gasX3 = pwc->horizWireXPos()[i];
+      VolumeInfo horizWireInfo;
+      horizWireInfo.solid = horizWireBox;
+      horizWireInfo.logical = horizWireLogical;
+      horizWireInfo.name = wireGasName;
+      finishNesting(horizWireInfo,
+                    gasMaterial,
+                    nullptr,
+                    G4ThreeVector(gasX3, 0.0, pwc->horizWireZ()),
+                    container.logical,
+                    wireNum,
+                    visible, // visible
+                    G4Colour::Blue(),
+                    forceSolid, // forceSolid
+                    forceAuxEdgeVisible, // forceAuxEdgeVisible
+                    placePV,
+                    doSurfaceCheck,
+                    verbosity>0);
     }
   } // insertHorizontalProfileWires
 
