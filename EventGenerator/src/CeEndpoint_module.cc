@@ -30,6 +30,7 @@
 #include "Mu2eUtilities/inc/RandomUnitSphere.hh"
 #include "DataProducts/inc/PDGCode.hh"
 #include "MCDataProducts/inc/StageParticle.hh"
+#include "Mu2eUtilities/inc/stoppedMuonList.hh"
 
 namespace mu2e {
 
@@ -98,44 +99,30 @@ namespace mu2e {
     auto output{std::make_unique<StageParticleCollection>()};
 
     const auto simh = event.getValidHandle<SimParticleCollection>(simsToken_);
+    const auto mus = stoppedMuonList(simh);
 
-    const auto& sims = *simh;
-    if(!sims.empty()) {
-      const auto stage = sims.back().second.simStage();
-
-      // We want to find a single stopped muon.   Even if an event contains multiple
-      // mu stops, we should not create multiple conversion electrons per event.
-      art::Ptr<SimParticle> mustop;
-
-      for(auto i = sims.rbegin(); i != sims.rend(); ++i) {
-        const auto& inpart = i->second;
-        if((inpart.simStage() == stage) &&
-           (inpart.pdgId() == PDGCode::mu_minus) &&
-           (inpart.stoppingCode() == ProcessCode::muMinusCaptureAtRest)) // G4 sets this code for both decay and capture cases
-          {
-            mustop = art::Ptr<SimParticle>(simh, i->first.asInt());
-            break;
-          }
-      }
-
-      if(mustop) {
-        output->emplace_back(mustop,
-                             ProcessCode::muMinusConversionAtRest,
-                             PDGCode::e_minus,
-                             mustop->endPosition(),
-                             CLHEP::HepLorentzVector{randomUnitSphere_.fire(endPointMomentum_), endPointEnergy_},
-                             mustop->endGlobalTime() + randExp_.fire(muonLifeTime_)
-                             );
-      }
-    }
-
-    const bool passed = !output->empty();
-    event.put(std::move(output));
-    if(!passed) {
+    if(mus.empty()) {
       throw   cet::exception("BADINPUT")
         <<"CeEndpoint::produce(): no suitable stopped mu- in the input SimParticleCollection\n";
 
     }
+
+    // Normally we have exactly one mu stop, but it is not impossible to get more.
+    // Pick one of them; we don't want more than one CE per event.
+    // Note that Rmue normalization is per muon, not per primary proton.
+
+    const auto mustop = mus.at(eng_.operator unsigned int() % mus.size());
+
+    output->emplace_back(mustop,
+                         ProcessCode::muMinusConversionAtRest,
+                         PDGCode::e_minus,
+                         mustop->endPosition(),
+                         CLHEP::HepLorentzVector{randomUnitSphere_.fire(endPointMomentum_), endPointEnergy_},
+                         mustop->endGlobalTime() + randExp_.fire(muonLifeTime_)
+                         );
+
+
+    event.put(std::move(output));
   }
 
   //================================================================
