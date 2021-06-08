@@ -9,7 +9,7 @@ source: { module_type: RootInput }
 services: @local::Services.Sim
 
 physics : {
-   filters: {
+   producers: {
       generate: {
          module_type: CeEndpoint
          inputSimParticles: "TargetStopFilter"
