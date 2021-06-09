@@ -87,6 +87,8 @@
 #include "ExtinctionMonitorFNAL/Geometry/inc/ExtMonFNALMuonID.hh"
 #include "GeometryService/inc/ExtMonFNALMuonIDMaker.hh"
 #include "ConfigTools/inc/ConfigFileLookupPolicy.hh"
+#include "GeometryService/inc/PTMMaker.hh"
+#include "PTMGeom/inc/PTM.hh"
 
 using namespace std;
 
@@ -322,14 +324,19 @@ namespace mu2e {
       addDetector(ExtMonFNAL::ExtMonMaker::make(*_config, emfb));
       addDetector(ExtMonFNALMuonIDMaker::make(*_config));
     }
+
     
+    if (_config->getBool("hasPTM",false) ){
+      std::unique_ptr<PTM> ptmon(PTMMaker::make(*_config));
+      addDetector(std::move(ptmon));
+    }
 
 
     if(_config->getBool("hasVirtualDetector",false)){
       addDetector(VirtualDetectorMaker::make(*_config));
     }
-      
     
+
     if(_config->getBool("hasBFieldManager",false)){
       std::unique_ptr<BFieldConfig> bfc( BFieldConfigMaker(*_config, beamline).getBFieldConfig() );
       BFieldManagerMaker bfmgr(*bfc);
@@ -347,6 +354,7 @@ namespace mu2e {
       STMMaker stm( *_config, beamline.solenoidOffset() );
       addDetector( stm.getSTMPtr() );
     }
+
 
   } // preBeginRun()
 
