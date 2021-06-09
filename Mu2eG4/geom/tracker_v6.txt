@@ -12,7 +12,7 @@ int TrackerVersion   = 5;
 bool TrackerHasBrassRings = true;
 
 int    tracker.verbosityLevel     =    0;
-bool   tracker.doSurfaceCheck     = false;
+// bool   tracker.doSurfaceCheck     = false;
 // Mother to hold all straws and supports.
 double tracker.mother.rIn         =    376.9; // mm
 double tracker.mother.rOut        =    850.1; // mm
