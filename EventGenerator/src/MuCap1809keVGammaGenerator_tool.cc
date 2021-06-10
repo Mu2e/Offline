@@ -23,17 +23,15 @@ namespace mu2e {
 
     explicit MuCap1809keVGammaGenerator(Parameters const& conf) :
       _pdgId(PDGCode::gamma),
-      _mass(GlobalConstantsHandle<ParticleDataTable>()->particle(_pdgId).ref().mass().value()),
-      _energy(GlobalConstantsHandle<PhysicsParams>()->get1809keVGammaEnergy()),
-      _intensity(GlobalConstantsHandle<PhysicsParams>()->get1809keVGammaIntensity())
-    {
-
-    }
+      _mass(GlobalConstantsHandle<ParticleDataTable>()->particle(_pdgId).ref().mass().value())
+    {}
 
     std::vector<ParticleGeneratorTool::Kinematic> generate() override;
     void generate(std::unique_ptr<GenParticleCollection>& out, const IO::StoppedParticleF& stop) override;
 
-    void setEngine(art::RandomNumberGenerator::base_engine_t& eng) {
+    void finishInitialization(art::RandomNumberGenerator::base_engine_t& eng, const std::string& material) override {
+      _energy = GlobalConstantsHandle<PhysicsParams>()->get1809keVGammaEnergy(material);
+      _intensity = GlobalConstantsHandle<PhysicsParams>()->get1809keVGammaIntensity(material);
       _randomUnitSphere = new RandomUnitSphere(eng);
       _randFlat = new CLHEP::RandFlat(eng);
     }
@@ -41,8 +39,8 @@ namespace mu2e {
   private:
     PDGCode::type _pdgId;
     double _mass;
-    double _energy;
-    double _intensity;
+    double _energy = 0.;
+    double _intensity = 0.;
 
     RandomUnitSphere*   _randomUnitSphere;
     CLHEP::RandFlat* _randFlat;

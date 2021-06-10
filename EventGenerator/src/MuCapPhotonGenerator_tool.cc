@@ -27,23 +27,21 @@ namespace mu2e {
     typedef art::ToolConfigTable<PhysConfig> Parameters;
 
     explicit MuCapPhotonGenerator(Parameters const& conf) :
-      _rate(GlobalConstantsHandle<PhysicsParams>()->getCapturePhotonRate()),
       _spectrum(BinnedSpectrum(conf().spectrum.get<fhicl::ParameterSet>()))
-    {
-
-    }
+    {}
 
     std::vector<ParticleGeneratorTool::Kinematic> generate() override;
     void generate(std::unique_ptr<GenParticleCollection>& out, const IO::StoppedParticleF& stop) override;
 
-    void setEngine(art::RandomNumberGenerator::base_engine_t& eng) {
+    void finishInitialization(art::RandomNumberGenerator::base_engine_t& eng, const std::string& material) override {
+      _rate = GlobalConstantsHandle<PhysicsParams>()->getCapturePhotonRate(material);
       _randomUnitSphere = new RandomUnitSphere(eng);
       _randomPoissonQ = new CLHEP::RandPoissonQ(eng, _rate);
       _randSpectrum = new CLHEP::RandGeneral(eng, _spectrum.getPDF(), _spectrum.getNbins());
     }
 
   private:
-    double _rate;
+    double _rate = 0.;
 
     BinnedSpectrum    _spectrum;
 
