@@ -30,14 +30,15 @@ namespace mu2e {
     explicit MuCapNeutronGenerator(Parameters const& conf) :
       _pdgId(PDGCode::n0),
       _mass(GlobalConstantsHandle<ParticleDataTable>()->particle(_pdgId).ref().mass().value()),
-      _genId(GenId::MuCapNeutronGenTool),
       _rate(GlobalConstantsHandle<PhysicsParams>()->getCaptureNeutronRate()),
       _spectrum(BinnedSpectrum(conf().spectrum.get<fhicl::ParameterSet>())),
       _spectrumVariable(parseSpectrumVar(conf().spectrumVariable()))
     {
 
     }
-      void generate(std::unique_ptr<GenParticleCollection>& out, const IO::StoppedParticleF& stop) override;
+
+    std::vector<ParticleGeneratorTool::Kinematic> generate() override;
+    void generate(std::unique_ptr<GenParticleCollection>& out, const IO::StoppedParticleF& stop) override;
 
     void setEngine(art::RandomNumberGenerator::base_engine_t& eng) {
       _randomUnitSphere = new RandomUnitSphere(eng);
@@ -48,7 +49,6 @@ namespace mu2e {
   private:
     PDGCode::type _pdgId;
     double _mass;
-    GenId _genId;
     double _rate;
 
     BinnedSpectrum    _spectrum;
@@ -59,8 +59,8 @@ namespace mu2e {
     CLHEP::RandGeneral* _randSpectrum;
   };
 
-  void MuCapNeutronGenerator::generate(std::unique_ptr<GenParticleCollection>& out, const IO::StoppedParticleF& stop) {
-    const CLHEP::Hep3Vector pos(stop.x, stop.y, stop.z);
+  std::vector<ParticleGeneratorTool::Kinematic> MuCapNeutronGenerator::generate() {
+    std::vector<ParticleGeneratorTool::Kinematic>  res;
 
     int n_gen = _randomPoissonQ->fire();
     for (int i_gen = 0; i_gen < n_gen; ++i_gen) {
@@ -75,10 +75,21 @@ namespace mu2e {
       const double p = energy * sqrt(1 - std::pow(_mass/energy,2));
       CLHEP::Hep3Vector p3 = _randomUnitSphere->fire(p);
       CLHEP::HepLorentzVector fourmom(p3, energy);
-      out->emplace_back(_pdgId,
-                        _genId,
+      ParticleGeneratorTool::Kinematic k{_pdgId, ProcessCode::mu2eMuonCaptureAtRest, fourmom};
+      res.emplace_back(k);
+    }
+
+    return res;
+  }
+
+  void MuCapNeutronGenerator::generate(std::unique_ptr<GenParticleCollection>& out, const IO::StoppedParticleF& stop) {
+    const CLHEP::Hep3Vector pos(stop.x, stop.y, stop.z);
+    const auto daughters = generate();
+    for(const auto& d: daughters) {
+      out->emplace_back(d.pdgId,
+                        GenId::MuCapNeutronGenTool,
                         pos,
-                        fourmom,
+                        d.fourmom,
                         stop.t);
     }
   }
