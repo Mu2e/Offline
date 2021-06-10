@@ -67,13 +67,15 @@ namespace mu2e{
       double stoppingtargetz = target->centerInMu2e().z() - _detSysOrigin.z();
       double startz = stoppingtargetz - stoppingtargetlength*0.5;
       unsigned int n=target->nFoils();
-      double j =0.0; //To set the gap between the foils
+      double j =0.0; 
       for(unsigned int i=0; i<n; i++)
         {
+        if(i > 0) j = j+abs(target->foil(i-1).centerInMu2e().z() - target->foil(i).centerInMu2e().z());
         const mu2e::TargetFoil &foil=target->foil(i);
         double halfThickness = foil.halfThickness();
         double r = foil.rOut() - foil.rIn();
-        CLHEP::Hep3Vector foilposition(0,1000,startz/10+j); // Stopping Target Location 
+        CLHEP::Hep3Vector center = foil.centerInDetectorSystem();
+        CLHEP::Hep3Vector foilposition(center.x() ,1000+center.y(),startz/10+j/10); // Stopping Target Location 
         Double_t foilpos[3];
         foilpos [0] = foilposition.x();
         foilpos [1] = foilposition.y();
@@ -88,7 +90,8 @@ namespace mu2e{
         stXY->SetShape(new TGeoTube(pointmmTocm(foil.rIn()),pointmmTocm(foil.rOut()),pointmmTocm(halfThickness)));
         stXY->SetMainTransparency(100);
         orthodetXY->AddElement(stXY);
-        j = j+2.21;
+
+        
         }
 
 
