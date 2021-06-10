@@ -181,12 +181,13 @@ namespace mu2e{
   std::vector<double> TEveMu2eDataInterface::AddComboHits(bool firstloop, const ComboHitCollection *chcol, TEveMu2e2DProjection *tracker2Dproj, bool Redraw, double min_energy, double max_energy, double min_time, double max_time, bool accumulate, TEveProjectionManager *TXYMgr, TEveProjectionManager *TRZMgr, TEveScene *scene1, TEveScene *scene2){
 
     std::vector<double> energies = {0,0};
-    DataLists<const ComboHitCollection*, TEveMu2e2DProjection*>(chcol, Redraw, accumulate, "ComboHit", &fHitsList3D, &fHitsList2D,&fHitsList2D, tracker2Dproj);
+    DataLists<const ComboHitCollection*, TEveMu2e2DProjection*>(chcol, Redraw, accumulate, "ComboHit", &fHitsList3D, &fHitsList2DXY, &fHitsList2DXZ, tracker2Dproj);
     /*
     TXYMgr->ImportElements(fHitsList2D, scene1); 
     TRZMgr->ImportElements(fHitsList2D, scene2); */
     if(chcol!=0){
-      TEveElementList *HitList2D = new TEveElementList("ComboHits2D");
+      TEveElementList *HitList2DXY = new TEveElementList("ComboHits2DXY");
+      TEveElementList *HitList2DXZ = new TEveElementList("ComboHits2DXZ");
       TEveElementList *HitList3D = new TEveElementList("ComboHits3D");
 
       int *energylevels = new int[chcol->size()];
@@ -205,14 +206,15 @@ namespace mu2e{
         string pos2D = "(" + to_string((double)hit.pos().x()) + ", " + to_string((double)hit.pos().y()) + ", " + to_string((double)hit.pos().z()) + ")";
         if (((min_time == -1 && max_time== -1) || (hit.time() > min_time && hit.time() < max_time)) && ((hit.energyDep() >= min_energy && hit.energyDep() <= max_energy) || (min_energy == -1 && max_energy == -1))){
           teve_hit3D->DrawHit3D("ComboHits3D, Position = " + pos3D + ", Energy = " + energy + ", Time = " + to_string(hit.time()) + ", ", i + 1,  pointInMu2e, energylevels[i], HitList3D);
-          teve_hit2D->DrawHit2D("ComboHits2D, Position = " + pos2D + ", Energy = " + energy + ", Time = " + to_string(hit.time()) + ", ", i + 1, HitPos,energylevels[i], HitList2D);
+          teve_hit2D->DrawHit2D("ComboHits2D, Position = " + pos2D + ", Energy = " + energy + ", Time = " + to_string(hit.time()) + ", ", i + 1, HitPos,energylevels[i], HitList2DXY, HitList2DXZ);
 
-          fHitsList2D->AddElement(HitList2D); 
+          fHitsList2DXY->AddElement(HitList2DXY);
+          fHitsList2DXZ->AddElement(HitList2DXZ); 
           fHitsList3D->AddElement(HitList3D); 
         }
       }
-      tracker2Dproj->fXYMgr->ImportElements(fHitsList2D, tracker2Dproj->fEvtXYScene); 
-      tracker2Dproj->fRZMgr->ImportElements(fHitsList2D, tracker2Dproj->fEvtRZScene);
+      tracker2Dproj->fXYMgr->ImportElements(fHitsList2DXY, tracker2Dproj->fEvtXYScene); 
+      tracker2Dproj->fRZMgr->ImportElements(fHitsList2DXZ, tracker2Dproj->fEvtRZScene);
       /*TXYMgr->ImportElements(fHitsList2D, scene1);
       TRZMgr->ImportElements(fHitsList2D, scene2);*/
       gEve->AddElement(HitList3D);
