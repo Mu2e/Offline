@@ -16,6 +16,7 @@
 #include "MCDataProducts/inc/SimParticle.hh"
 
 #include <vector>
+#include <ostream>
 
 namespace mu2e {
 
@@ -55,6 +56,9 @@ namespace mu2e {
   };
 
   typedef std::vector<mu2e::StageParticle> StageParticleCollection;
+
+  std::ostream& operator<<(std::ostream& os, const StageParticle& s);
+  std::ostream& operator<<(std::ostream& os, const StageParticleCollection& c);
 }
 
 #endif /* MCDataProducts_StageParticle_hh */
