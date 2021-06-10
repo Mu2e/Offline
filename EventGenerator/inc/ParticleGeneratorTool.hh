@@ -3,6 +3,7 @@
 
 #include <memory>
 #include <vector>
+#include <string>
 
 #include "CLHEP/Vector/LorentzVector.h"
 
@@ -26,7 +27,7 @@ namespace mu2e {
       CLHEP::HepLorentzVector fourmom;
     };
 
-    virtual void setEngine(art::RandomNumberGenerator::base_engine_t& eng) = 0;
+    virtual void finishInitialization(art::RandomNumberGenerator::base_engine_t& eng, const std::string& materialName) = 0;
 
     virtual std::vector<Kinematic> generate() = 0;
 

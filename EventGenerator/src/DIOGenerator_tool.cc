@@ -29,16 +29,13 @@ namespace mu2e {
     explicit DIOGenerator(Parameters const& conf) :
       _pdgId(PDGCode::e_minus),
       _mass(GlobalConstantsHandle<ParticleDataTable>()->particle(_pdgId).ref().mass().value()),
-
       _spectrum(BinnedSpectrum(conf().spectrum.get<fhicl::ParameterSet>()))
-    {
-
-    }
+    {}
 
     std::vector<ParticleGeneratorTool::Kinematic> generate() override;
     void generate(std::unique_ptr<GenParticleCollection>& out, const IO::StoppedParticleF& stop) override;
 
-    void setEngine(art::RandomNumberGenerator::base_engine_t& eng) {
+    void finishInitialization(art::RandomNumberGenerator::base_engine_t& eng, const std::string&) override {
       _randomUnitSphere = new RandomUnitSphere(eng);
       _randSpectrum = new CLHEP::RandGeneral(eng, _spectrum.getPDF(), _spectrum.getNbins());
     }
