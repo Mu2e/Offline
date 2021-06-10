@@ -82,7 +82,7 @@ TEveEventDisplayHelix : {
         KalSeedCollection         :  ["KFFDeM"]#, "KFFDeMHPar", "KFFDeMHDar" ]
         TrkExtTrajCollection      :  NULL
         MCTrajectoryCollection    :  "compressRecoMCs"
-        addHits 		  : false
+        addHits 		  : true
         addTracks 		  : true
         addCrvHits		  : false
         addCosmicSeedFit	  : false
