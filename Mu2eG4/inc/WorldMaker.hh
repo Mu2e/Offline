@@ -25,6 +25,10 @@
 #include "Mu2eG4/inc/ConstructMaterials.hh"
 
 // G4 includes
+#include "Geant4/G4GeometryManager.hh"
+#include "Geant4/G4PhysicalVolumeStore.hh"
+#include "Geant4/G4LogicalVolumeStore.hh"
+#include "Geant4/G4SolidStore.hh"
 #include "Geant4/G4VUserDetectorConstruction.hh"
 
 
@@ -61,6 +65,8 @@ namespace mu2e {
 
   private:
 
+    // Clean old geometry, if any.
+    void Clean();
     std::unique_ptr<MaterialsType> _materials;
     std::unique_ptr<WorldType>     _world;
 

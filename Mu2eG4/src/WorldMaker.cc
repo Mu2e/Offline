@@ -29,6 +29,8 @@ namespace mu2e {
   // Construct() is called by G4 and just returns world physical volume
   template <typename WorldType, typename MaterialsType>
   G4VPhysicalVolume* WorldMaker<WorldType, MaterialsType>::Construct(){
+    // Clean old geometry, if any
+    Clean();
 
     _materials->construct();
     return _world->construct();
@@ -40,6 +42,18 @@ namespace mu2e {
 
     _world->constructSDandField();
   }
+
+
+  // Clean old geometry, if any.
+  template <typename WorldType, typename MaterialsType>
+  void WorldMaker<WorldType, MaterialsType>::Clean(){
+
+    G4GeometryManager::GetInstance()->OpenGeometry();
+    G4PhysicalVolumeStore::GetInstance()->Clean();
+    G4LogicalVolumeStore::GetInstance()->Clean();
+    G4SolidStore::GetInstance()->Clean();
+  }
+
 
   template class WorldMaker<Mu2eStudyWorld,ConstructMaterials>;
   template class WorldMaker<Mu2eWorld,ConstructMaterials>;
