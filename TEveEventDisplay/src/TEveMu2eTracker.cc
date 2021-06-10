@@ -18,6 +18,26 @@ namespace mu2e{
       Double_t rmax{pointmmTocm(envelope.outerRadius())};
       Double_t dr = rmax - rmin;
       
+      //Tracker Planes in XZ 
+      //int npanel = trkr->getPlane(0).nPanels();
+      double p = 0.0;
+      for(int i =0;i<20;i++) 
+        { 
+        Double_t panelpos[3];
+        Double_t zpanel{pointmmTocm(2*trkr->g4Tracker()->getPanelEnvelopeParams().zHalfLength())};
+        TEveGeoShape *panel = new TEveGeoShape();
+        CLHEP::Hep3Vector Pos_panel(0,1000,p-dz+zpanel);
+      
+        panelpos [0] = Pos_panel.x();
+        panelpos [1] = Pos_panel.y();
+        panelpos [2] = Pos_panel.z();
+      
+        panel->SetShape(new TGeoBBox("panel",rmax+rmin/2,rmax+rmin/2,zpanel,panelpos));
+        panel->SetMainTransparency(100);
+        orthodetXZ->AddElement(panel);
+        p = p + 15.568;
+        }
+      
       //XY:
       TEveGeoShape *tr = new TEveGeoShape();
       tr->SetShape(new TGeoTube(rmin, rmax, dz));
