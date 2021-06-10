@@ -62,6 +62,10 @@ namespace mu2e{
       
       // Addition of Stopping Target geometry
       GeomHandle<StoppingTarget> target;
+      CLHEP::Hep3Vector _detSysOrigin = mu2e::GeomHandle<mu2e::DetectorSystem>()->getOrigin();
+      double stoppingtargetlength=target->cylinderLength();
+      double stoppingtargetz = target->centerInMu2e().z() - _detSysOrigin.z();
+      double startz = stoppingtargetz - stoppingtargetlength*0.5;
       unsigned int n=target->nFoils();
       double j =0.0; //To set the gap between the foils
       for(unsigned int i=0; i<n; i++)
@@ -69,7 +73,7 @@ namespace mu2e{
         const mu2e::TargetFoil &foil=target->foil(i);
         double halfThickness = foil.halfThickness();
         double r = foil.rOut() - foil.rIn();
-        CLHEP::Hep3Vector foilposition(0,1000,-587.1+j); // Stopping Target Location 
+        CLHEP::Hep3Vector foilposition(0,1000,startz/10+j); // Stopping Target Location 
         Double_t foilpos[3];
         foilpos [0] = foilposition.x();
         foilpos [1] = foilposition.y();
