@@ -127,7 +127,7 @@ namespace mu2e {
 
     void DoVisualizationFromMacro();
 
-    std::unique_ptr<G4RunManager> _runManager;
+    G4RunManager* _runManager;
 
     // Do we issue warnings about multiple runs?
     bool _warnEveryNewRun;
@@ -194,7 +194,7 @@ namespace mu2e {
     trajectoryControl_(pars().TrajectoryControl()),
     multiStagePars_(pars().inputs()),
     simStage_(-1u),
-    _runManager(std::make_unique<G4RunManager>()),
+    _runManager(new G4RunManager()),
     _warnEveryNewRun(pars().debug().warnEveryNewRun()),
     _exportPDTStart(pars().debug().exportPDTStart()),
     _exportPDTEnd(pars().debug().exportPDTEnd()),
@@ -451,9 +451,9 @@ namespace mu2e {
 
 
   void Mu2eG4::endJob(){
-
     if ( _exportPDTEnd ) exportG4PDT( "End:" );
     _physVolHelper.endRun();
+    delete _runManager;
   }
 
 
