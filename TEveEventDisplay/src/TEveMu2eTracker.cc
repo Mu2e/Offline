@@ -19,22 +19,23 @@ namespace mu2e{
       Double_t dr = rmax - rmin;
       
       //Tracker Planes in XZ 
-      //int npanel = trkr->getPlane(0).nPanels();
+      //int nplane = trkr->getPlane(0).nplanes();
+      unsigned int nplanes = trkr->nPlanes();
       double p = 0.0;
-      for(int i =0;i<20;i++) 
+      for(int i =0;i<nplanes;i++) 
         { 
-        Double_t panelpos[3];
-        Double_t zpanel{pointmmTocm(2*trkr->g4Tracker()->getPanelEnvelopeParams().zHalfLength())};
-        TEveGeoShape *panel = new TEveGeoShape();
-        CLHEP::Hep3Vector Pos_panel(0,1000,p-dz+zpanel);
+        Double_t planepos[3];
+        Double_t zplane{pointmmTocm(2*trkr->g4Tracker()->getplaneEnvelopeParams().zHalfLength())};
+        TEveGeoShape *plane = new TEveGeoShape();
+        CLHEP::Hep3Vector Pos_plane(0,1000,p-dz+zplane);
       
-        panelpos [0] = Pos_panel.x();
-        panelpos [1] = Pos_panel.y();
-        panelpos [2] = Pos_panel.z();
+        planepos [0] = Pos_plane.x();
+        planepos [1] = Pos_plane.y();
+        planepos [2] = Pos_plane.z();
       
-        panel->SetShape(new TGeoBBox("panel",rmax+rmin/2,rmax+rmin/2,zpanel,panelpos));
-        panel->SetMainTransparency(100);
-        orthodetXZ->AddElement(panel);
+        plane->SetShape(new TGeoBBox("plane",rmax+rmin/2,rmax+rmin/2,zplane,planepos));
+        plane->SetMainTransparency(100);
+        orthodetXZ->AddElement(plane);
         p = p + 15.568;
         }
       
