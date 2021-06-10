@@ -9,6 +9,7 @@
 #include "MCDataProducts/inc/GenId.hh"
 #include "Mu2eUtilities/inc/RandomUnitSphere.hh"
 #include "Mu2eUtilities/inc/BinnedSpectrum.hh"
+#include "Mu2eUtilities/inc/SpectrumVar.hh"
 #include "GlobalConstantsService/inc/GlobalConstantsHandle.hh"
 #include "GlobalConstantsService/inc/ParticleDataTable.hh"
 #include "GlobalConstantsService/inc/PhysicsParams.hh"
