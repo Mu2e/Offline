@@ -81,7 +81,8 @@ namespace mu2e{
       enum ETestComandIdentifiers{HId1, HId2, HId3};
       void StartProjectionTabs();
       void CreateMultiViews();
-
+      void CreateCaloProjection();
+      void CreateTrackerProjection();
       void PrepareTrackerProjectionTab(const art::Run& run);
       void PrepareCaloProjectionTab(const art::Run& run);
       void PrepareCRVProjectionTab(const art::Run& run);

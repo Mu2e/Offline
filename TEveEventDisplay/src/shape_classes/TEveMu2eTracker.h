@@ -31,7 +31,7 @@ class TEveMu2eTracker{
     TEveMu2eTracker& operator=(const TEveMu2eTracker &);
     virtual ~TEveMu2eTracker(){};
     TEveMu2e2DProjection *tracker2Dproj = new TEveMu2e2DProjection();
-    void DrawTrackerDetector(art::Run const& run, TGeoVolume* topvol , TEveElementList *orthodet);
+    void DrawTrackerDetector(TGeoVolume* topvol , TEveElementList *orthodetXZ, TEveElementList *orthodetXY);
     #endif
   ClassDef(TEveMu2eTracker, 0);
   };
