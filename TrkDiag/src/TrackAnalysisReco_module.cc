@@ -776,10 +776,11 @@ namespace mu2e {
   template <typename T, typename TI>
   std::vector<art::Handle<T> >  TrackAnalysisReco::createSpecialBranch(const art::Event& event, const std::string& branchname, 
 								       std::vector<art::Handle<T> >& handles, TI& infostruct, const std::string& selection) {
-    std::vector<art::Handle<T> > outputHandles = event.getMany<T>();
-    if (handles.size()>0) {
+    std::vector<art::Handle<T> > outputHandles;
+    std::vector<art::Handle<T> > inputHandles = event.getMany<T>();
+    if (inputHandles.size()>0) {
       std::vector<std::string> labels;
-      for (const auto& i_handle : handles) {
+      for (const auto& i_handle : inputHandles) {
 	std::string moduleLabel = i_handle.provenance()->moduleLabel();
 	// event.getMany() doesn't have a way to wildcard part of the ModuleLabel, do it ourselves here
 	size_t pos;
