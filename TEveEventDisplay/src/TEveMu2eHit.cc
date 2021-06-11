@@ -16,7 +16,7 @@ namespace mu2e{
   void TEveMu2eHit::DrawHit3D(const std::string &pstr, Int_t n, CLHEP::Hep3Vector pointInMu2e, int energylevel, TEveElementList *HitList)
   {
     this->SetTitle((DataTitle(pstr, n)).c_str());
-    hep3vectorTocm(pointInMu2e);
+    //hep3vectorTocm(pointInMu2e);
     this->SetNextPoint(pointInMu2e.x(), pointInMu2e.y(), pointInMu2e.z()); 
     int colors[] = {-7, 3, -6, -1, 9, 0, -4, 10, 1};
     this->SetMarkerColor(kSpring + colors[energylevel]);
@@ -50,14 +50,55 @@ namespace mu2e{
   }
 
   /*------------Function to 2D draw hits:-------------*/
-  void TEveMu2eHit::DrawHit2D(const std::string &pstr, Int_t n, CLHEP::Hep3Vector pointInMu2e, int energylevel, TEveElementList *HitList)
-  {
+  void TEveMu2eHit::DrawHit2D(const std::string &pstr, Int_t n, CLHEP::Hep3Vector pointInMu2e, int energylevel, TEveElementList *HitList2DXY, TEveElementList *HitList2DXZ)
+  { 
+    mu2e::GeomHandle<mu2e::Tracker> tracker;
+    const auto& allStraws = tracker->getStraws();
+    for (size_t i = 0; i<tracker->nStraws(); i++)
+      {
+      const mu2e::Straw& s = allStraws[i];
+      const CLHEP::Hep3Vector& p = s.getMidPoint();
+      const CLHEP::Hep3Vector& d = s.getDirection();
+      double x = p.x();
+      double y = p.y();
+      double z = p.z();
+      double theta = d.theta();
+      double phi = d.phi();
+      double l = s.halfLength();
+      double st=sin(theta);
+      double ct=cos(theta);
+      double sp=sin(phi+TMath::Pi()/2.0);   
+      double cp=cos(phi+TMath::Pi()/2.0);
+      double x1=x+l*st*sp;
+      double y1=y-l*st*cp;
+      double z1=z+l*ct;  
+      double x2=x-l*st*sp;
+      double y2=y+l*st*cp;
+      double z2=z-l*ct;
+      int a = x1*(y2-pointInMu2e.y()) + x2*(pointInMu2e.y()-y1) + pointInMu2e.x()*(y1-y2);
+      if(a == 0)
+        {
+        TEveMu2eCustomHelix *line_twoDstrawXY = new TEveMu2eCustomHelix();
+        line_twoDstrawXY->SetLineWidth(1);
+        line_twoDstrawXY->SetPoint(0,pointmmTocm(x1),pointmmTocm(y1),pointmmTocm(z1));
+        line_twoDstrawXY->SetNextPoint(pointmmTocm(x2),pointmmTocm(y2),pointmmTocm(z2));
+        line_twoDstrawXY->SetLineColor(kRed);
+        HitList2DXY->AddElement(line_twoDstrawXY);
+        
+        TEveMu2eCustomHelix *line_twoDstrawXZ = new TEveMu2eCustomHelix();
+        line_twoDstrawXZ->SetLineWidth(1);
+        line_twoDstrawXZ->SetPoint(0,pointmmTocm(x1),pointmmTocm(y1)+ 1000,pointmmTocm(z1));
+        line_twoDstrawXZ->SetNextPoint(pointmmTocm(x2),pointmmTocm(y2)+ 1000,pointmmTocm(z2));
+        line_twoDstrawXZ->SetLineColor(kRed);
+        HitList2DXZ->AddElement(line_twoDstrawXZ);
+        }
+      }
     this->SetTitle((DataTitle(pstr, n)).c_str());
     hep3vectorTocm(pointInMu2e);
     this->SetNextPoint(pointInMu2e.x(), pointInMu2e.y(), pointInMu2e.z()); 
     int colors[] = {-7, 3, -6, -1, 9, 0, -4, 10, 1};
     this->SetMarkerColor(kSpring + colors[energylevel]);
-    this->SetMarkerSize(mSize_);
+    //this->SetMarkerSize(mSize_);
     this->SetPickable(kTRUE);
 
     if(AddErrorBar_){ 
@@ -78,8 +119,9 @@ namespace mu2e{
       error->SetNextPoint(pointmmTocm(x2),pointmmTocm(y2),pointmmTocm(z2));
       error->SetLineColor(kRed);
       error->SetPickable(kTRUE);
-      HitList->AddElement(error);
+      HitList2DXY->AddElement(error);
     }
-    HitList->AddElement(this);
+    HitList2DXY->AddElement(this);
+    HitList2DXZ->AddElement(this);
     }
   }

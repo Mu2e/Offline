@@ -23,7 +23,7 @@
 #include "RecoDataProducts/inc/ComboHit.hh"
 //CRV:
 #include "RecoDataProducts/inc/CrvRecoPulse.hh"
-#include "RecoDataProducts/inc/CrvCoincidenceClusterCollection.hh"
+//#include "RecoDataProducts/inc/CrvCoincidenceClusterCollection.hh"
 //Art:
 #include "art/Framework/Principal/Event.h"
 #include "art/Framework/Principal/Run.h"
@@ -31,8 +31,6 @@
 #include "fhiclcpp/types/Atom.h"
 #include "fhiclcpp/types/Sequence.h"
 #include "fhiclcpp/types/Table.h"
-//TEVeMu2e
-#include "TEveEventDisplay/src/dict_classes/Collection_Filler.h"
 
 using namespace CLHEP;
 
