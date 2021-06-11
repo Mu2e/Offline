@@ -1,3 +1,8 @@
+// Test the CeEndpoint module.  No need to setup mixing, just point art at a suitable mustop file
+// as the primary input stream.
+//
+// Andrei Gaponenko, 2021
+
 #include "fcl/minimalMessageService.fcl"
 #include "fcl/standardProducers.fcl"
 #include "fcl/standardServices.fcl"
@@ -9,7 +14,7 @@ source: { module_type: RootInput }
 services: @local::Services.Sim
 
 physics : {
-   filters: {
+   producers: {
       generate: {
          module_type: CeEndpoint
          inputSimParticles: "TargetStopFilter"
