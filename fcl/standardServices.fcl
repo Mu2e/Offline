@@ -12,7 +12,7 @@ BEGIN_PROLOG
 automaticSeeds : {
     policy            : "autoIncrement"
     baseSeed          : @nil
-    maxUniqueEngines  : @nil
+    maxUniqueEngines  : 100
 
     # verbosity         : 2
     # endOfJobSummary   : true
