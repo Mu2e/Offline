@@ -454,6 +454,7 @@ namespace mu2e {
 
     if ( _exportPDTEnd ) exportG4PDT( "End:" );
     _physVolHelper.endRun();
+    _runManager.reset();
   }
 
 
