@@ -35,7 +35,7 @@
 #include "GlobalConstantsService/inc/PhysicsParams.hh"
 #include "DataProducts/inc/PDGCode.hh"
 #include "MCDataProducts/inc/StageParticle.hh"
-#include "Mu2eUtilities/inc/stoppedMuonList.hh"
+#include "Mu2eUtilities/inc/simParticleList.hh"
 #include "EventGenerator/inc/ParticleGeneratorTool.hh"
 
 namespace mu2e {
@@ -127,7 +127,7 @@ namespace mu2e {
     auto output{std::make_unique<StageParticleCollection>()};
 
     const auto simh = event.getValidHandle<SimParticleCollection>(simsToken_);
-    const auto mus = stoppedMuonList(simh);
+    const auto mus = stoppedMuMinusList(simh);
 
     for(const auto& mustop: mus) {
 
