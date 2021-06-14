@@ -57,21 +57,21 @@ class art::StrawHitRecoFromFragments : public art::EDProducer {
     using Name=fhicl::Name;
     using Comment=fhicl::Comment;
     struct Config {
-      fhicl::Atom<int> diag{ Name("diagLevel"), Comment("Diag level"), 0};
-      fhicl::Atom<int> print{ Name("printLevel"), Comment("Print level"), 0};
+      fhicl::Atom<int> diag{ Name("diagLevel"), Comment("Diag level")};
+      fhicl::Atom<int> print{ Name("printLevel"), Comment("Print level")};
       fhicl::Atom<int> fittype { Name( "FitType"), Comment("Waveform Fit Type")};//, TrkHitReco::FitType::firmwarepmp;
-      fhicl::Atom<bool> usecc{ Name("UseCalorimeter"), Comment("Use Calo cluster times to filter" ),false};
-      fhicl::Atom<float>clusterDt{ Name("clusterDt"), Comment("Calo cluster time 1/2 window"),100};
-      fhicl::Atom<float>minE{ Name("minimumEnergy"), Comment("Minimum straw energy deposit (MeV)"),0.0};
-      fhicl::Atom<float>maxE{ Name("maximumEnergy"), Comment("Maximum straw energy deposit (MeV)"),0.0035};
-      fhicl::Atom<float>ctE{ Name("crossTalkEnergy"), Comment("Energy to filter cross-talk in adajcent straws (MeV)"),0.007};
-      fhicl::Atom<float>ctMinT{ Name("crossTalkMinimumTime"), Comment("Earliest time for cross-talk filter (nsec)"),-1};
-      fhicl::Atom<float>ctMaxT{ Name("crossTalkMaximumTime"), Comment("Latest time for cross-talk filter (nsec)"),100};
-      fhicl::Atom<float>minT{ Name("minimumTime"), Comment("Earliest StrawDigi time to process (nsec)"),500};
-      fhicl::Atom<float>maxT{ Name("maximumTime"), Comment("Latest StrawDigi time to process (nsec)"),2000};
+      fhicl::Atom<bool> usecc{ Name("UseCalorimeter"), Comment("Use Calo cluster times to filter" )};
+      fhicl::Atom<float>clusterDt{ Name("clusterDt"), Comment("Calo cluster time 1/2 window")};
+      fhicl::Atom<float>minE{ Name("minimumEnergy"), Comment("Minimum straw energy deposit (MeV)")};
+      fhicl::Atom<float>maxE{ Name("maximumEnergy"), Comment("Maximum straw energy deposit (MeV)")};
+      fhicl::Atom<float>ctE{ Name("crossTalkEnergy"), Comment("Energy to filter cross-talk in adajcent straws (MeV)")};
+      fhicl::Atom<float>ctMinT{ Name("crossTalkMinimumTime"), Comment("Earliest time for cross-talk filter (nsec)")};
+      fhicl::Atom<float>ctMaxT{ Name("crossTalkMaximumTime"), Comment("Latest time for cross-talk filter (nsec)")};
+      fhicl::Atom<float>minT{ Name("minimumTime"), Comment("Earliest StrawDigi time to process (nsec)")};
+      fhicl::Atom<float>maxT{ Name("maximumTime"), Comment("Latest StrawDigi time to process (nsec)")};
       fhicl::Atom<bool>filter{ Name("FilterHits"), Comment("Filter hits (alternative is to just flag)") };
       fhicl::Atom<bool>writesh{ Name("WriteStrawHitCollection"), Comment("Save StrawHitCollection")};
-      fhicl::Atom<bool>flagXT{ Name("FlagCrossTalk"), Comment("Search for cross-talk"),false};
+      fhicl::Atom<bool>flagXT{ Name("FlagCrossTalk"), Comment("Search for cross-talk")};
       fhicl::Atom<art::InputTag> cccTag{ Name("CaloClusterCollectionTag"), Comment("CaloClusterCollection producer")};
       fhicl::Atom<art::InputTag> pbttoken{ Name("ProtonBunchTimeTag"), Comment("ProtonBunchTime producer")};
       fhicl::Atom<art::InputTag> tfTag{ Name("TrackerFragmentTag"), Comment("StrawDigiCollection producer")};
@@ -278,26 +278,6 @@ void art::StrawHitRecoFromFragments::analyze_tracker_(
   }
 
   for (size_t curBlockIdx = 0; curBlockIdx < cc.block_count(); curBlockIdx++) {
-#if 0 // TODO: Review this code and update as necessary
-    if (_diagLevel > 1) {
-      // Print binary contents the first 3 packets starting at the current position
-      // In the case of the tracker simulation, this will be the whole tracker
-      // DataBlock. In the case of the calorimeter, the number of data packets
-      // following the header packet is variable.
-      cc.printPacketAtByte(cc.blockIndexBytes(0) + 16 * (0 + 3 * curBlockIdx));
-      cc.printPacketAtByte(cc.blockIndexBytes(0) + 16 * (1 + 3 * curBlockIdx));
-      cc.printPacketAtByte(cc.blockIndexBytes(0) + 16 * (2 + 3 * curBlockIdx));
-
-      // Print out decimal values of 16 bit chunks of packet data
-      for (int i = hexShiftPrint; i >= 0; i--) {
-	std::cout << "0x" << std::hex << std::setw(4) << std::setfill('0') << (adc_t) * (pos + i)
-	  << std::dec << std::setw(0);
-	std::cout << " ";
-      }
-      std::cout << std::endl;
-    }
-#endif
-
     auto block = cc.dataAtBlockIndex(curBlockIdx);
     if (block == nullptr) {
       mf::LogError("StrawAndCaloDigisFromFragments")
