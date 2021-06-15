@@ -13,6 +13,7 @@
 #include "art/Framework/Principal/Handle.h"
 #include "mu2e-artdaq-core/Overlays/FragmentType.hh"
 #include "mu2e-artdaq-core/Overlays/TrackerFragment.hh"
+#include "mu2e-artdaq-core/Overlays/Mu2eEventFragment.hh"
 
 #include "DataProducts/inc/TrkTypes.hh"
 #include "RecoDataProducts/inc/StrawDigiCollection.hh"
@@ -93,19 +94,15 @@ void art::StrawRecoFromFragmnets::produce(Event& event) {
     
   size_t totalSize = 0;
   size_t numTrkFrags = 0;
-  std::vector<art::Handle<artdaq::Fragments>> fragmentHandles;
-#if ART_HEX_VERSION < 0x30900
-  evt.getManyByType(fragmentHandles);
-#else
-  fragmentHandles = evt.getMany<std::vector<artdaq::Fragment>>();
-#endif
+  std::vector<art::Handle<artdaq::Fragments>> fragmentHandles =
+      event.getMany<std::vector<artdaq::Fragment>>();
 
   for (const auto& handle : fragmentHandles) {
     if (!handle.isValid() || handle->empty()) {
       continue;
     }
 
-    if (handle->front().type() == detail::FragmentType::MU2EEVENT) {
+    if (handle->front().type() == mu2e::detail::FragmentType::MU2EEVENT) {
       for (const auto& cont : *handle) {
         mu2e::Mu2eEventFragment mef(cont);
         for (size_t ii = 0; ii < mef.tracker_block_count(); ++ii) {
@@ -118,7 +115,7 @@ void art::StrawRecoFromFragmnets::produce(Event& event) {
         }
       }
     } else {
-      if (handle->front().type() == detail::FragmentType::TRK) {
+      if (handle->front().type() == mu2e::detail::FragmentType::TRK) {
         for (auto frag : *handle) {
           mu2e::TrackerFragment cc(frag.dataBegin(), frag.dataSizeBytes());
           analyze_tracker_(cc, straw_digis, straw_digi_adcs);
@@ -210,19 +207,19 @@ void art::StrawRecoFromFragmnets::analyze_tracker_(
 
     if (diagLevel_ > 1) {
 
-      std::cout << "timestamp: " << static_cast<int>(hdr.GetEventWindowTag().GetEventWindowTag(true))
+      std::cout << "timestamp: " << static_cast<int>(hdr->GetEventWindowTag().GetEventWindowTag(true))
                 << std::endl;
-      std::cout << "hdr->SubsystemID: " << static_cast<int>(hdr.GetSubsystemID()) << std::endl;
-      std::cout << "dtcID: " << static_cast<int>(hdr.GetID()) << std::endl;
-      std::cout << "rocID: " << static_cast<int>(hdr.GetLinkID()) << std::endl;
-      std::cout << "packetCount: " << static_cast<int>(hdr.GetPacketCount()) << std::endl;
-      std::cout << "EVB mode: " << static_cast<int>(hdr.GetEVBMode()) << std::endl;
+      std::cout << "hdr->SubsystemID: " << static_cast<int>(hdr->GetSubsystemID()) << std::endl;
+      std::cout << "dtcID: " << static_cast<int>(hdr->GetID()) << std::endl;
+      std::cout << "rocID: " << static_cast<int>(hdr->GetLinkID()) << std::endl;
+      std::cout << "packetCount: " << static_cast<int>(hdr->GetPacketCount()) << std::endl;
+      std::cout << "EVB mode: " << static_cast<int>(hdr->GetEVBMode()) << std::endl;
 
       std::cout << std::endl;
     }
 
     // Parse phyiscs information from TRK packets
-    if (hdr.GetPacketCount() > 0 ) {
+    if (hdr->GetPacketCount() > 0) {
 
       // Create the StrawDigi data products
       auto trkDataVec = cc.GetTrackerData(curBlockIdx, useTrkADC_);
@@ -284,13 +281,14 @@ void art::StrawRecoFromFragmnets::analyze_tracker_(
           }
           std::cout << std::endl;
 
-          std::cout << "LOOP: " << hdr.GetEventWindowTag().GetEventWindowTag(true) << " " << curBlockIdx
+          std::cout << "LOOP: " << hdr->GetEventWindowTag().GetEventWindowTag(true) << " "
+                    << curBlockIdx
                     << std::endl;
 
           // Text format: timestamp strawidx tdc0 tdc1 nsamples sample0-11
           // Example: 1 1113 36978 36829 12 1423 1390 1411 1354 2373 2392 2342 2254 1909 1611 1525
           // 1438
-          std::cout << "GREPMETRK: " << hdr.GetEventWindowTag().GetEventWindowTag(true) << " ";
+          std::cout << "GREPMETRK: " << hdr->GetEventWindowTag().GetEventWindowTag(true) << " ";
           std::cout << sid.asUint16() << " ";
           std::cout << tdc[0] << " ";
           std::cout << tdc[1] << " ";
@@ -310,7 +308,7 @@ void art::StrawRecoFromFragmnets::analyze_tracker_(
     }
   }
 
-  cc.ClearUpgradedPackets();
+  //cc.ClearUpgradedPackets();
 }
 
 

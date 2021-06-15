@@ -12,6 +12,7 @@
 
 #include "art/Framework/Principal/Handle.h"
 #include "mu2e-artdaq-core/Overlays/CalorimeterFragment.hh"
+#include "mu2e-artdaq-core/Overlays/Mu2eEventFragment.hh"
 #include "mu2e-artdaq-core/Overlays/FragmentType.hh"
 
 //-- insert calls to proditions ..for calodmap-----
@@ -83,19 +84,14 @@ void art::CaloRecoFromFragments::produce(Event& event) {
 
   size_t totalSize = 0;
   size_t numCalFrags = 0;
-  std::vector<art::Handle<artdaq::Fragments>> fragmentHandles;
-#if ART_HEX_VERSION < 0x30900
-  evt.getManyByType(fragmentHandles);
-#else
-  fragmentHandles = evt.getMany<std::vector<artdaq::Fragment>>();
-#endif
+  std::vector<art::Handle<artdaq::Fragments>> fragmentHandles = event.getMany<std::vector<artdaq::Fragment>>();
 
   for (const auto& handle : fragmentHandles) {
     if (!handle.isValid() || handle->empty()) {
       continue;
     }
 
-    if (handle->front().type() == detail::FragmentType::MU2EEVENT) {
+    if (handle->front().type() == mu2e::detail::FragmentType::MU2EEVENT) {
       for (const auto& cont : *handle) {
         mu2e::Mu2eEventFragment mef(cont);
         for (size_t ii = 0; ii < mef.calorimeter_block_count(); ++ii) {
@@ -108,7 +104,7 @@ void art::CaloRecoFromFragments::produce(Event& event) {
         }
       }
     } else {
-      if (handle->front().type() == detail::FragmentType::CAL) {
+      if (handle->front().type() == mu2e::detail::FragmentType::CAL) {
         for (auto frag : *handle) {
           mu2e::CalorimeterFragment cc(frag.dataBegin(), frag.dataSizeBytes());
           analyze_calorimeter_(calodaqconds, cc, calo_digis);
@@ -198,17 +194,17 @@ void art::CaloRecoFromFragments::analyze_calorimeter_(
     if (diagLevel_ > 1) {
 
       std::cout << "timestamp: "
-                << static_cast<int>(hdr.GetEventWindowTag().GetEventWindowTag(true)) << std::endl;
-      std::cout << "hdr->SubsystemID: " << static_cast<int>(hdr.GetSubsystemID()) << std::endl;
-      std::cout << "dtcID: " << static_cast<int>(hdr.GetID()) << std::endl;
-      std::cout << "rocID: " << static_cast<int>(hdr.GetLinkID()) << std::endl;
-      std::cout << "packetCount: " << static_cast<int>(hdr.GetPacketCount()) << std::endl;
-      std::cout << "EVB mode: " << static_cast<int>(hdr.GetEVBMode()) << std::endl;
+                << static_cast<int>(hdr->GetEventWindowTag().GetEventWindowTag(true)) << std::endl;
+      std::cout << "hdr->SubsystemID: " << static_cast<int>(hdr->GetSubsystemID()) << std::endl;
+      std::cout << "dtcID: " << static_cast<int>(hdr->GetID()) << std::endl;
+      std::cout << "rocID: " << static_cast<int>(hdr->GetLinkID()) << std::endl;
+      std::cout << "packetCount: " << static_cast<int>(hdr->GetPacketCount()) << std::endl;
+      std::cout << "EVB mode: " << static_cast<int>(hdr->GetEVBMode()) << std::endl;
 
       std::cout << std::endl;
     }
 
-    if (hdr.GetPacketCount() > 0) { // Parse phyiscs information from CAL packets
+    if (hdr->GetPacketCount() > 0) { // Parse phyiscs information from CAL packets
 
       auto calData = cc.GetCalorimeterData(curBlockIdx);
       if (calData == nullptr) {
@@ -295,7 +291,7 @@ void art::CaloRecoFromFragments::analyze_calorimeter_(
 
           // Text format: timestamp crystalID roID time nsamples samples...
           // Example: 1 201 402 660 18 0 0 0 0 1 17 51 81 91 83 68 60 58 52 42 33 23 16
-          std::cout << "GREPMECAL: " << hdr.GetEventWindowTag().GetEventWindowTag(true) << " ";
+          std::cout << "GREPMECAL: " << hdr->GetEventWindowTag().GetEventWindowTag(true) << " ";
           std::cout << crystalID << " ";
           std::cout << roID << " ";
           std::cout << hits[hitIdx].first.Time << " ";

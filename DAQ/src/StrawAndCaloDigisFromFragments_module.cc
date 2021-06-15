@@ -13,6 +13,7 @@
 #include "art/Framework/Principal/Handle.h"
 #include "mu2e-artdaq-core/Overlays/CalorimeterFragment.hh"
 #include "mu2e-artdaq-core/Overlays/FragmentType.hh"
+#include "mu2e-artdaq-core/Overlays/Mu2eEventFragment.hh"
 #include "mu2e-artdaq-core/Overlays/TrackerFragment.hh"
 
 #include "DataProducts/inc/TrkTypes.hh"
@@ -56,10 +57,10 @@ public:
 
 private:
   void
-  analyze_tracker_(const artdaq::Fragment& f,
+  analyze_tracker_(const mu2e::TrackerFragment& cc,
                    std::unique_ptr<mu2e::StrawDigiCollection> const& straw_digis,
                    std::unique_ptr<mu2e::StrawDigiADCWaveformCollection> const& straw_digi_adcs);
-  void analyze_calorimeter_(const artdaq::Fragment& f,
+  void analyze_calorimeter_(const mu2e::CalorimeterFragment& cc,
                             std::unique_ptr<mu2e::CaloDigiCollection> const& calo_digis);
 
   int diagLevel_;
@@ -118,19 +119,15 @@ void art::StrawAndCaloDigisFromFragments::produce(Event& event) {
   size_t totalSize = 0;
   size_t numTrkFrags = 0;
   size_t numCalFrags = 0;
-  std::vector<art::Handle<artdaq::Fragments>> fragmentHandles;
-#if ART_HEX_VERSION < 0x30900
-  evt.getManyByType(fragmentHandles);
-#else
-  fragmentHandles = evt.getMany<std::vector<artdaq::Fragment>>();
-#endif
+  std::vector<art::Handle<artdaq::Fragments>> fragmentHandles =
+      event.getMany<std::vector<artdaq::Fragment>>();
 
   for (const auto& handle : fragmentHandles) {
     if (!handle.isValid() || handle->empty()) {
       continue;
     }
 
-    if (handle->front().type() == detail::FragmentType::MU2EEVENT) {
+    if (handle->front().type() == mu2e::detail::FragmentType::MU2EEVENT) {
       for (const auto& cont : *handle) {
         mu2e::Mu2eEventFragment mef(cont);
         if (parseTRK_) {
@@ -146,7 +143,7 @@ void art::StrawAndCaloDigisFromFragments::produce(Event& event) {
         if (parseCAL_) {
           for (size_t ii = 0; ii < mef.calorimeter_block_count(); ++ii) {
             auto pair = mef.calorimeterAtPtr(ii);
-            mu2e::TrackerFragment cc(pair);
+            mu2e::CalorimeterFragment cc(pair);
             analyze_calorimeter_(cc, calo_digis);
 
             totalSize += pair.second;
@@ -155,7 +152,7 @@ void art::StrawAndCaloDigisFromFragments::produce(Event& event) {
         }
       }
     } else {
-      if (handle->front().type() == detail::FragmentType::TRK && parseTRK_) {
+      if (handle->front().type() == mu2e::detail::FragmentType::TRK && parseTRK_) {
         for (auto frag : *handle) {
           mu2e::TrackerFragment cc(frag.dataBegin(), frag.dataSizeBytes());
           analyze_tracker_(cc, straw_digis, straw_digi_adcs);
@@ -163,12 +160,14 @@ void art::StrawAndCaloDigisFromFragments::produce(Event& event) {
           totalSize += frag.dataSizeBytes();
           numTrkFrags++;
         }
-      } else if (handle->front().type() == detail::FragmentType::CAL && parseCAL_) {
-        mu2e::CalorimeterFragment cc(frag.dataBegin(), frag.dataSizeBytes());
-        analyze_calorimeter_(cc, calo_digis);
+      } else if (handle->front().type() == mu2e::detail::FragmentType::CAL && parseCAL_) {
+        for (auto frag : *handle) {
+          mu2e::CalorimeterFragment cc(frag.dataBegin(), frag.dataSizeBytes());
+          analyze_calorimeter_(cc, calo_digis);
 
-        totalSize += frag.dataSizeBytes();
-        numCalFrags++;
+          totalSize += frag.dataSizeBytes();
+          numCalFrags++;
+        }
       }
     }
   }
@@ -201,16 +200,13 @@ void art::StrawAndCaloDigisFromFragments::produce(Event& event) {
 } // produce()
 
 void art::StrawAndCaloDigisFromFragments::analyze_tracker_(
-    const artdaq::Fragment& f, std::unique_ptr<mu2e::StrawDigiCollection> const& straw_digis,
+    const mu2e::TrackerFragment& cc, std::unique_ptr<mu2e::StrawDigiCollection> const& straw_digis,
     std::unique_ptr<mu2e::StrawDigiADCWaveformCollection> const& straw_digi_adcs) {
-
-  mu2e::TrackerFragment cc(f);
 
   if (diagLevel_ > 1) {
     std::cout << std::endl;
     std::cout << "TrackerFragment: ";
     std::cout << "\tBlock Count: " << std::dec << cc.block_count() << std::endl;
-    std::cout << "\tByte Count: " << f.dataSizeBytes() << std::endl;
     std::cout << std::endl;
     std::cout << "\t"
               << "====== Example Block Sizes ======" << std::endl;
@@ -255,18 +251,18 @@ void art::StrawAndCaloDigisFromFragments::analyze_tracker_(
     if (diagLevel_ > 1) {
 
       std::cout << "timestamp: "
-                << static_cast<int>(hdr.GetEventWindowTag().GetEventWindowTag(true)) << std::endl;
-      std::cout << "hdr->SubsystemID: " << static_cast<int>(hdr.GetSubsystemID()) << std::endl;
-      std::cout << "dtcID: " << static_cast<int>(hdr.GetID()) << std::endl;
-      std::cout << "rocID: " << static_cast<int>(hdr.GetLinkID()) << std::endl;
-      std::cout << "packetCount: " << static_cast<int>(hdr.GetPacketCount()) << std::endl;
-      std::cout << "EVB mode: " << static_cast<int>(hdr.GetEVBMode()) << std::endl;
+                << static_cast<int>(hdr->GetEventWindowTag().GetEventWindowTag(true)) << std::endl;
+      std::cout << "hdr->SubsystemID: " << static_cast<int>(hdr->GetSubsystemID()) << std::endl;
+      std::cout << "dtcID: " << static_cast<int>(hdr->GetID()) << std::endl;
+      std::cout << "rocID: " << static_cast<int>(hdr->GetLinkID()) << std::endl;
+      std::cout << "packetCount: " << static_cast<int>(hdr->GetPacketCount()) << std::endl;
+      std::cout << "EVB mode: " << static_cast<int>(hdr->GetEVBMode()) << std::endl;
 
       std::cout << std::endl;
     }
 
     // Parse phyiscs information from TRK packets
-    if (hdr.GetPacketCount() > 0 && parseTRK_ > 0) {
+    if (hdr->GetPacketCount() > 0 && parseTRK_ > 0) {
 
       // Create the StrawDigi data products
       auto trkDataVec = cc.GetTrackerData(curBlockIdx);
@@ -328,13 +324,13 @@ void art::StrawAndCaloDigisFromFragments::analyze_tracker_(
           }
           std::cout << std::endl;
 
-          std::cout << "LOOP: " << hdr.GetEventWindowTag().GetEventWindowTag(true) << " "
+          std::cout << "LOOP: " << hdr->GetEventWindowTag().GetEventWindowTag(true) << " "
                     << curBlockIdx << std::endl;
 
           // Text format: timestamp strawidx tdc0 tdc1 nsamples sample0-11
           // Example: 1 1113 36978 36829 12 1423 1390 1411 1354 2373 2392 2342 2254 1909 1611 1525
           // 1438
-          std::cout << "GREPMETRK: " << hdr.GetEventWindowTag().GetEventWindowTag(true) << " ";
+          std::cout << "GREPMETRK: " << hdr->GetEventWindowTag().GetEventWindowTag(true) << " ";
           std::cout << sid.asUint16() << " ";
           std::cout << tdc[0] << " ";
           std::cout << tdc[1] << " ";
@@ -354,19 +350,17 @@ void art::StrawAndCaloDigisFromFragments::analyze_tracker_(
     }
   }
 
-  cc.ClearUpgradedPackets();
+  //cc.ClearUpgradedPackets();
 }
 
 void art::StrawAndCaloDigisFromFragments::analyze_calorimeter_(
-    const artdaq::Fragment& f, std::unique_ptr<mu2e::CaloDigiCollection> const& calo_digis) {
-
-  mu2e::CalorimeterFragment cc(f);
+    const mu2e::CalorimeterFragment& cc,
+    std::unique_ptr<mu2e::CaloDigiCollection> const& calo_digis) {
 
   if (diagLevel_ > 1) {
     std::cout << std::endl;
     std::cout << "ArtFragmentReader: ";
     std::cout << "\tBlock Count: " << std::dec << cc.block_count() << std::endl;
-    std::cout << "\tByte Count: " << f.dataSizeBytes() << std::endl;
     std::cout << std::endl;
     std::cout << "\t"
               << "====== Example Block Sizes ======" << std::endl;
@@ -412,17 +406,17 @@ void art::StrawAndCaloDigisFromFragments::analyze_calorimeter_(
     if (diagLevel_ > 1) {
 
       std::cout << "timestamp: "
-                << static_cast<int>(hdr.GetEventWindowTag().GetEventWindowTag(true)) << std::endl;
-      std::cout << "hdr->SubsystemID: " << static_cast<int>(hdr.GetSubsystemID()) << std::endl;
-      std::cout << "dtcID: " << static_cast<int>(hdr.GetID()) << std::endl;
-      std::cout << "rocID: " << static_cast<int>(hdr.GetLinkID()) << std::endl;
-      std::cout << "packetCount: " << static_cast<int>(hdr.GetPacketCount()) << std::endl;
-      std::cout << "EVB mode: " << static_cast<int>(hdr.GetEVBMode()) << std::endl;
+                << static_cast<int>(hdr->GetEventWindowTag().GetEventWindowTag(true)) << std::endl;
+      std::cout << "hdr->SubsystemID: " << static_cast<int>(hdr->GetSubsystemID()) << std::endl;
+      std::cout << "dtcID: " << static_cast<int>(hdr->GetID()) << std::endl;
+      std::cout << "rocID: " << static_cast<int>(hdr->GetLinkID()) << std::endl;
+      std::cout << "packetCount: " << static_cast<int>(hdr->GetPacketCount()) << std::endl;
+      std::cout << "EVB mode: " << static_cast<int>(hdr->GetEVBMode()) << std::endl;
 
       std::cout << std::endl;
     }
 
-    if (hdr.GetPacketCount() > 0 && parseCAL_ > 0) { // Parse phyiscs information from CAL packets
+    if (hdr->GetPacketCount() > 0 && parseCAL_ > 0) { // Parse phyiscs information from CAL packets
 
       auto calData = cc.GetCalorimeterData(curBlockIdx);
       if (calData == nullptr) {
@@ -505,7 +499,7 @@ void art::StrawAndCaloDigisFromFragments::analyze_calorimeter_(
 
           // Text format: timestamp crystalID roID time nsamples samples...
           // Example: 1 201 402 660 18 0 0 0 0 1 17 51 81 91 83 68 60 58 52 42 33 23 16
-          std::cout << "GREPMECAL: " << hdr.GetEventWindowTag().GetEventWindowTag(true) << " ";
+          std::cout << "GREPMECAL: " << hdr->GetEventWindowTag().GetEventWindowTag(true) << " ";
           std::cout << crystalID << " ";
           std::cout << apdID << " ";
           std::cout << hits[hitIdx].first.Time << " ";
