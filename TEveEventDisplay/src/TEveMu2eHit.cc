@@ -103,15 +103,15 @@ namespace mu2e{
     if(sposi.x()!=0){
       TEveMu2eCustomHelix *line_twoDstrawXY = new TEveMu2eCustomHelix();
       line_twoDstrawXY->SetLineWidth(1);
-      line_twoDstrawXY->SetPoint(0,pointmmTocm(sposi.x()),pointmmTocm(sposi.y()),pointmmTocm(sposi.z());
-      line_twoDstrawXY->SetNextPoint(pointmmTocm(sposf.x()),pointmmTocm(sposf.y()),pointmmTocm(sposf.z());
+      line_twoDstrawXY->SetPoint(0,pointmmTocm(sposi.x()),pointmmTocm(sposi.y()),pointmmTocm(sposi.z()));
+      line_twoDstrawXY->SetNextPoint(pointmmTocm(sposf.x()),pointmmTocm(sposf.y()),pointmmTocm(sposf.z()));
       line_twoDstrawXY->SetLineColor(kRed);
       HitList2DXY->AddElement(line_twoDstrawXY);
       
       TEveMu2eCustomHelix *line_twoDstrawXZ = new TEveMu2eCustomHelix();
       line_twoDstrawXZ->SetLineWidth(1);
-      line_twoDstrawXZ->SetPoint(0,pointmmTocm(sposi.x()),pointmmTocm(sposi.y())+ 1000,pointmmTocm(sposi.z());
-      line_twoDstrawXZ->SetNextPoint(pointmmTocm(sposf.x()),pointmmTocm(sposf.y())+ 1000,pointmmTocm(sposf.z());
+      line_twoDstrawXZ->SetPoint(0,pointmmTocm(sposi.x()),pointmmTocm(sposi.y())+ 1000,pointmmTocm(sposi.z()));
+      line_twoDstrawXZ->SetNextPoint(pointmmTocm(sposf.x()),pointmmTocm(sposf.y())+ 1000,pointmmTocm(sposf.z()));
       line_twoDstrawXZ->SetLineColor(kRed);
       HitList2DXZ->AddElement(line_twoDstrawXZ);
     }
