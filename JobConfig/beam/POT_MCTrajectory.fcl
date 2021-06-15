@@ -1,9 +1,0 @@
-#
-#  Add MCTrajectory to POT jobs
-#
-#include "JobConfig/beam/POT.fcl"
-
-physics.producers.g4run.TrajectoryControl: @local::mu2eg4DefaultTrajectories
-
-physics.filters.BeamFilter.mcTrajectoryInputs : ["g4run"]
-physics.filters.NeutralsFilter.mcTrajectoryInputs : ["g4run"]

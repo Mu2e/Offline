@@ -10,6 +10,7 @@ CommonMC: {
 #
 # time offsets
     protonTimeOffset : { module_type: ProtonTimeOffset }
+    cosmicTimeOffset : { module_type: CosmicTimeOffset }
 # time maps
     protonTimeMap: { module_type : GenerateProtonTimes
       # Exclude particles not generated from primary protons
@@ -21,7 +22,7 @@ CommonMC: {
     cosmicTimeMap:
     {
         module_type : GenerateCosmicTimes
-	StrawGasSteps : [  ] 
+	StrawGasSteps : [  ]
 	CaloShowerSteps : [ ]
 	CrvSteps : [ ]
     }

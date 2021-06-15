@@ -34,6 +34,7 @@ namespace mu2e {
       resTimeErr_      ()
    {	                 
        if (diagLevel_ > 1) initHistos();
+       if (windowPeak_ < 1) windowPeak_=1;
    }       
 
    
@@ -121,14 +122,15 @@ namespace mu2e {
         std::vector<double> parInit{},yvec(yvecOrig);
                
 	//estimate the noise level with the first few bins 
-	float noise= std::accumulate(yvec.begin(),yvec.begin()+numNoiseBins_,0)/float(numNoiseBins_);
+	if (yvec.size() <= numNoiseBins_) return; 
+        float noise= std::accumulate(yvec.begin(),yvec.begin()+numNoiseBins_,0)/float(numNoiseBins_);
         parInit.push_back(noise);
         for (auto& val : yvec) val -= noise;   
         
         if (diagLevel_>1) std::cout<<"[CaloTemplateWFProcessor] Noise level "<<noise<<std::endl;
 
 	std::vector<double> ywork(yvec);
-	for (auto i=windowPeak_;i<int(xvec.size())-windowPeak_;++i)
+	for (auto i=windowPeak_;i+windowPeak_<xvec.size();++i)
         {
             if (std::max_element(ywork.begin()+i-windowPeak_,ywork.begin()+i+windowPeak_+1) != ywork.begin()+i) continue;
             if (ywork[i-1] < minPeakAmplitude_ || ywork[i] < minPeakAmplitude_ || ywork[i+1] < minPeakAmplitude_) continue;
@@ -146,13 +148,13 @@ namespace mu2e {
         if (fmutil_.nPeaks()==0) 
         {
             unsigned ipeak(0);
-            while (ipeak < ywork.size()) {if (ywork[ipeak] >= minPeakAmplitude_ && ywork[ipeak+1] >= 0.8*ywork[ipeak]) break; ++ipeak;}
-            if (ipeak < ywork.size())
+            while (ipeak+1 < ywork.size()) {if (ywork[ipeak] >= minPeakAmplitude_ && ywork[ipeak+1] >= 0.8*ywork[ipeak]) break; ++ipeak;}
+            if (ipeak+1 < ywork.size())
             { 
                 parInit.push_back(ywork[ipeak]); 
                 parInit.push_back(xvec[ipeak]);	     
                 fmutil_.setPar(parInit);
-                if (diagLevel_>1) std::cout<<"[CaloTemplateWFProcessor] Found primary peak "<<xvec[ipeak] <<std::endl;
+                if (diagLevel_>1) std::cout<<"[CaloTemplateWFProcessor] Found primary peak alt "<<xvec[ipeak] <<std::endl;
             }
         }
         
@@ -182,7 +184,7 @@ namespace mu2e {
 	    parInit.push_back(ymaxEstimate); 
             parInit.push_back(xmaxEstimate);	     
             	    
-	    if (diagLevel_ > 2) std::cout<<"[CaloTemplateWFProcessor] Found primary peak "<<xmaxEstimate<<std::endl;
+	    if (diagLevel_ > 2) std::cout<<"[CaloTemplateWFProcessor] Found primary peak bis "<<xmaxEstimate<<std::endl;
 
 	    fmutil_.setPar(parInit);
 	    for (unsigned j=0;j<xvec.size();++j) ywork[j] -= fmutil_.eval_logn(xvec[j],parInit.size()-fmutil_.nParFcn());

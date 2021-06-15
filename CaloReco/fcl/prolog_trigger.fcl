@@ -1,42 +1,31 @@
 # -*- mode: tcl -*-
 #------------------------------------------------------------------------------
 #------------------------------------------------------------------------------
-BEGIN_PROLOG
-  HitMakerBlindTime      : 500. # ns
-  HitMakerDigiSampling   : 5    # ns
-END_PROLOG
+#include "CaloMC/fcl/common.fcl"
+
 
 BEGIN_PROLOG
 
-
-FastCaloRecoDigiMaker :
+CaloHitMakerFast :
 { 
-    module_type            : FastCaloRecoDigiFromDigi
-    caloDigiModuleLabel    : CaloDigiMaker
+    module_type            : CaloHitMakerFast
+    caloDigiCollection     : CaloDigiMaker
     digiSampling           : @local::HitMakerDigiSampling
     diagLevel              : 0
-    minDigiE 	  	   : 1 
-    shiftTime         	   : 19.90
-    ProtonBunchTimeLabel : "EWMProducer"
+    deltaTPulses           : 5
+    pulseRatioMin          : 0.9
+    pulseRatioMax          : 1.1
+    caphriCrystalID        : [623, 624, 595, 596]
 }
 
-
-FastCaloHitMaker:
-{
-    module_type           : CaloHitMaker
-    caloDigisModuleLabel  : FastCaloRecoDigiMaker	    	    
-    time4Merge            : 5.01   #ns
-    diagLevel             : 0
-}
 
 CaloHitRecoTrigger : 
 {
    producers : {
-     FastCaloRecoDigiMaker  : @local::FastCaloRecoDigiMaker
-     FastCaloHitMaker       : @local::FastCaloHitMaker
+     CaloHitMakerFast : @local::CaloHitMakerFast
    }
 
-   prepareHits : [ FastCaloRecoDigiMaker , FastCaloHitMaker ]
+   prepareHits : [ CaloHitMakerFast ]
 }
 
 END_PROLOG

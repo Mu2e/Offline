@@ -1,3 +1,0 @@
-# MT version of ProtonsOnTarget
-#include "JobConfig/beam/ProtonsOnTarget.fcl"
-#include "JobConfig/common/epilog_MT.fcl"

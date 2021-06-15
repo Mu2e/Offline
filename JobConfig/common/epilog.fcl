@@ -1,5 +1,0 @@
-# test values; these get overwritten by generate_fcl
-services.SeedService.baseSeed         :  773651
-services.SeedService.maxUniqueEngines :  20
-# by default, turn off histogram output
-services.TFileService.fileName : "/dev/null"

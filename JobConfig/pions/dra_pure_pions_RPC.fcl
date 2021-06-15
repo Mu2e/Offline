@@ -1,2 +1,0 @@
-#include "JobConfig/pions/dra_pure_pions_defs.fclinc"
-services.TFileService.fileName: "nts.owner.dra-pure-pions-RPC.ver.seq.root"

@@ -99,16 +99,23 @@ namespace mu2e
       char** tmp_argv(0);
       application_ = new TApplication( "noapplication", &tmp_argc, tmp_argv );
     }
+    //construct GUI:
     _frame = new TEveMu2eMainWindow(gClient->GetRoot(), 1000,600, _pset);
-    _frame->StartProjectionTabs();
+    //build 2D geometries:
+    _frame->CreateCaloProjection();
+    _frame->CreateTrackerProjection();//StartProjectionTabs();
+    //send list of particles to viewer:
     _frame->SetParticleOpts(_particles);
   
   }
 
   void TEveEventDisplay::beginRun(const art::Run& run){
+    //import 3D GDML geom:
     _frame->SetRunGeometry(run, _diagLevel, _showBuilding, _showDSOnly, _showCRV);
-    _frame->PrepareTrackerProjectionTab(run);
+    //make 2D tracker and calo:
     _frame->PrepareCaloProjectionTab(run);
+    _frame->PrepareTrackerProjectionTab(run);
+    std::cout<<" end begin Run "<<std::endl;
   }
 
   void TEveEventDisplay::analyze(const art::Event& event){
