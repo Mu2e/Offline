@@ -11,7 +11,7 @@ export ${MU2E_SETUP_BUILDOPTS}
 export DEBUG_LEVEL=${build}
 export PACKAGE_NAME=offline
 export PACKAGE_SOURCE=${MU2E_BASE_RELEASE}
-export PACKAGE_VERSION=v09_11_03
+export PACKAGE_VERSION=v10_00_00
 
 # Check that the installation directoy has been defined.
 if [ "${PRODUCTS_INSTALL}" = '' ];then
