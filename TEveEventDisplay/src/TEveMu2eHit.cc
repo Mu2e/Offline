@@ -11,10 +11,58 @@ namespace mu2e{
         std::string strlab=pstr+dstr;
         return (strlab);
   }
+  
+    std::tuple<CLHEP::Hep3Vector, CLHEP::Hep3Vector> TEveMu2eHit::DrawStraw()
+  {
+     mu2e::GeomHandle<mu2e::Tracker> tracker;
+     const auto& allStraws = tracker->getStraws();
+     CLHEP::Hep3Vector sposi(0.0,0.0,0.0), sposf(0.0,0.0,0.0);
 
+     for (size_t i = 0; i<tracker->nStraws(); i++)
+      {
+      const mu2e::Straw& s = allStraws[i];
+      if(s.id().asUint16()==fComboHit_._sid.asUint16())
+      {
+        const CLHEP::Hep3Vector& p = s.getMidPoint();
+        const CLHEP::Hep3Vector& d = s.getDirection();
+      double x = p.x();
+      double y = p.y();
+      double z = p.z();
+      double theta = d.theta();
+      double phi = d.phi();
+      double l = s.halfLength();
+      double st=sin(theta);
+      double ct=cos(theta);
+      double sp=sin(phi+TMath::Pi()/2.0);
+      double cp=cos(phi+TMath::Pi()/2.0);
+      double x1=x+l*st*sp;
+      double y1=y-l*st*cp;
+      double z1=z+l*ct;
+      double x2=x-l*st*sp;
+      double y2=y+l*st*cp;
+      double z2=z-l*ct;
+      sposi.set(x1, y1, z1);
+      sposf.set(x2, y2, z2);
+      }
+    }
+     return {sposi, sposf};
+    }
   /*------------Function to 3D draw hits:-------------*/
   void TEveMu2eHit::DrawHit3D(const std::string &pstr, Int_t n, CLHEP::Hep3Vector pointInMu2e, int energylevel, TEveElementList *HitList)
-  {
+  {   auto [sposi, sposf] = DrawStraw();
+      if ( sposi.x()!=0)
+     {
+        GeomHandle<DetectorSystem> det;
+        CLHEP::Hep3Vector sposin = det->toMu2e(sposi);
+        CLHEP::Hep3Vector sposfn = det->toMu2e(sposf);
+        TEveMu2eCustomHelix *line = new TEveMu2eCustomHelix();
+        line->SetLineWidth(1);
+        line->SetPoint(0,sposin.x(),sposin.y(),sposin.z());
+        line->SetNextPoint(sposfn.x(),sposfn.y(),sposfn.z());
+        line->SetLineColor(kRed);
+        HitList->AddElement(line);
+      }
+
     this->SetTitle((DataTitle(pstr, n)).c_str());
     //hep3vectorTocm(pointInMu2e);
     this->SetNextPoint(pointInMu2e.x(), pointInMu2e.y(), pointInMu2e.z()); 
@@ -51,47 +99,23 @@ namespace mu2e{
 
   /*------------Function to 2D draw hits:-------------*/
   void TEveMu2eHit::DrawHit2D(const std::string &pstr, Int_t n, CLHEP::Hep3Vector pointInMu2e, int energylevel, TEveElementList *HitList2DXY, TEveElementList *HitList2DXZ)
-  { 
-    mu2e::GeomHandle<mu2e::Tracker> tracker;
-    const auto& allStraws = tracker->getStraws();
-    for (size_t i = 0; i<tracker->nStraws(); i++)
-      {
-      const mu2e::Straw& s = allStraws[i];
-      const CLHEP::Hep3Vector& p = s.getMidPoint();
-      const CLHEP::Hep3Vector& d = s.getDirection();
-      double x = p.x();
-      double y = p.y();
-      double z = p.z();
-      double theta = d.theta();
-      double phi = d.phi();
-      double l = s.halfLength();
-      double st=sin(theta);
-      double ct=cos(theta);
-      double sp=sin(phi+TMath::Pi()/2.0);   
-      double cp=cos(phi+TMath::Pi()/2.0);
-      double x1=x+l*st*sp;
-      double y1=y-l*st*cp;
-      double z1=z+l*ct;  
-      double x2=x-l*st*sp;
-      double y2=y+l*st*cp;
-      double z2=z-l*ct;
-      int a = x1*(y2-pointInMu2e.y()) + x2*(pointInMu2e.y()-y1) + pointInMu2e.x()*(y1-y2);
-      if(a == 0)
+  {     auto [sposi, sposf] = DrawStraw();
+      if ( sposi.x()!=0)
         {
         TEveMu2eCustomHelix *line_twoDstrawXY = new TEveMu2eCustomHelix();
         line_twoDstrawXY->SetLineWidth(1);
-        line_twoDstrawXY->SetPoint(0,pointmmTocm(x1),pointmmTocm(y1),pointmmTocm(z1));
-        line_twoDstrawXY->SetNextPoint(pointmmTocm(x2),pointmmTocm(y2),pointmmTocm(z2));
+        line_twoDstrawXY->SetPoint(0,pointmmTocm(sposi.x()),pointmmTocm(sposi.y()),pointmmTocm(sposi.z());
+        line_twoDstrawXY->SetNextPoint(pointmmTocm(sposf.x()),pointmmTocm(sposf.y()),pointmmTocm(sposf.z());
         line_twoDstrawXY->SetLineColor(kRed);
         HitList2DXY->AddElement(line_twoDstrawXY);
         
         TEveMu2eCustomHelix *line_twoDstrawXZ = new TEveMu2eCustomHelix();
         line_twoDstrawXZ->SetLineWidth(1);
-        line_twoDstrawXZ->SetPoint(0,pointmmTocm(x1),pointmmTocm(y1)+ 1000,pointmmTocm(z1));
-        line_twoDstrawXZ->SetNextPoint(pointmmTocm(x2),pointmmTocm(y2)+ 1000,pointmmTocm(z2));
+        line_twoDstrawXZ->SetPoint(0,pointmmTocm(sposi.x()),pointmmTocm(sposi.y())+ 1000,pointmmTocm(sposi.z());
+        line_twoDstrawXZ->SetNextPoint(pointmmTocm(sposf.x()),pointmmTocm(sposf.y())+ 1000,pointmmTocm(sposf.z());
         line_twoDstrawXZ->SetLineColor(kRed);
         HitList2DXZ->AddElement(line_twoDstrawXZ);
-        }
+        
       }
     this->SetTitle((DataTitle(pstr, n)).c_str());
     hep3vectorTocm(pointInMu2e);
