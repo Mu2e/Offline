@@ -176,18 +176,16 @@ void FragmentAna::analyze(const art::Event& event) {
   // Loop over the TRK and CAL fragments
   for (size_t idx = 0; idx < numTrkFrags + numCalFrags; ++idx) {
 
-    auto curHandle = trkFragments;
     size_t curIdx = idx;
-    if (idx >= numTrkFrags) {
-      curIdx = idx - numTrkFrags;
-      curHandle = calFragments;
-    }
-    const auto& fragment((*curHandle)[curIdx]);
-
     if (idx < numTrkFrags) {
-      analyze_tracker_(fragment);
+      mu2e::TrackerFragment cc(trkFragments->at(curIdx).dataBegin(),
+                               trkFragments->at(curIdx).dataSizeBytes());
+      analyze_tracker_(cc);
     } else {
-      analyze_calorimeter_(fragment);
+      curIdx = idx - numTrkFrags;
+      mu2e::CalorimeterFragment cc(calFragments->at(curIdx).dataBegin(),
+                                   calFragments->at(curIdx).dataSizeBytes());
+      analyze_calorimeter_(cc);
     }
   }
   if (diagLevel_ > 0) {
@@ -196,8 +194,7 @@ void FragmentAna::analyze(const art::Event& event) {
   }
 }
 
-void FragmentAna::analyze_tracker_(const artdaq::Fragment& f) {
-  mu2e::TrackerFragment cc(f);
+void FragmentAna::analyze_tracker_(const mu2e::TrackerFragment& cc) {
 
   if (diagLevel_ > 1) {
     std::cout << std::endl;
@@ -267,8 +264,7 @@ void FragmentAna::analyze_tracker_(const artdaq::Fragment& f) {
   cc.ClearUpgradedPackets();
 }
 
-void FragmentAna::analyze_calorimeter_(const artdaq::Fragment& f) {
-  mu2e::CalorimeterFragment cc(f);
+void FragmentAna::analyze_calorimeter_(const mu2e::CalorimeterFragment& cc) {
 
   if (diagLevel_ > 1) {
     std::cout << std::endl;
