@@ -33,8 +33,8 @@ namespace mu2e {
       double _normalization;
       double _sigma;
       double _t0;
-      std::vector<double> _tmax[StrawElectronics::npaths]; // time at which value is maximum
-      std::vector<double> _linmax[StrawElectronics::npaths]; // linear response to unit charge at max
+      std::array<double, StrawId::_nstraws> _tmax[StrawElectronics::npaths]; // time at which value is maximum
+      std::array<double, StrawId::_nstraws> _linmax[StrawElectronics::npaths]; // linear response to unit charge at max
       std::vector<double> _currentPulse;
       std::vector<double> _preampResponse;
       std::vector<double> _adcResponse;
@@ -54,7 +54,7 @@ namespace mu2e {
     StrawElectronics( double tdeadAnalog, double tdeadDigital, double vsat, 
 		      double snoise, double ADCLSB, int maxADC, unsigned nADCPackets, unsigned nADCpre, 
 		      double ADCPeriod, double ADCOffset, 
-		      unsigned maxtsep, unsigned tCoince, 
+		      unsigned maxtsep, 
 		      double TDCLSB, unsigned maxTDC, double TOTLSB, unsigned maxTOT, 
 		      double tdcResolution, double electronicsTimeDelay, 
 		      double ewMarkerROCJitter, 
@@ -77,15 +77,12 @@ namespace mu2e {
                       double reflectionALength,
                       double reflectionFrac,
                       double triggerHysteresis,
-		      double clusterLookbackTime, 
-		      std::vector<double> timeOffsetPanel, 
-		      std::vector<double> timeOffsetStrawHV, 
-		      std::vector<double> timeOffsetStrawCal) :
+		      double clusterLookbackTime) : 
       ProditionsEntity(cxname),
       _tdeadAnalog(tdeadAnalog), _tdeadDigital(tdeadDigital), _vsat(vsat), 
       _snoise(snoise), _ADCLSB(ADCLSB), _maxADC(maxADC), _nADCPackets(nADCPackets), 
       _nADCpre(nADCpre), _ADCPeriod(ADCPeriod), _ADCOffset(ADCOffset), 
-      _maxtsep(maxtsep), _TCoince(tCoince), 
+      _maxtsep(maxtsep),  
       _TDCLSB(TDCLSB), _maxTDC(maxTDC), _TOTLSB(TOTLSB), _maxTOT(maxTOT), 
       _tdcResolution(tdcResolution), _electronicsTimeDelay(electronicsTimeDelay), 
       _ewMarkerROCJitter(ewMarkerROCJitter), 
@@ -104,10 +101,7 @@ namespace mu2e {
       _reflectionALength(reflectionALength),
       _reflectionFrac(reflectionFrac),
       _triggerHysteresis(triggerHysteresis),
-      _clusterLookbackTime(clusterLookbackTime), 
-      _timeOffsetPanel(timeOffsetPanel), 
-      _timeOffsetStrawHV(timeOffsetStrawHV), 
-      _timeOffsetStrawCal(timeOffsetStrawCal) {}
+      _clusterLookbackTime(clusterLookbackTime) {} 
 
     virtual ~StrawElectronics() {}
     
@@ -137,7 +131,7 @@ namespace mu2e {
     uint16_t maxADC() const { return _maxADC; }
     uint16_t maxTDC() const { return _maxTDC; }
     uint16_t maxTOT() const { return _maxTOT; }
-    uint16_t ADCPedestal(StrawId sid) const { return _ADCped[sid.getStraw()]; };
+    uint16_t ADCPedestal(StrawId sid) const { return _ADCped[sid.uniqueStraw()]; };
     size_t nADCSamples() const { return TrkTypes::NADC_MIN + _nADCPackets*TrkTypes::NADC_PERPACKET; }
     size_t nADCPackets() const { return _nADCPackets; }
     size_t nADCPreSamples() const { return _nADCpre; }
@@ -149,7 +143,7 @@ namespace mu2e {
     double digitizationEndFromMarker() const { return _digitizationEnd - _timeFromProtonsToDRMarker; }
     void adcTimes(double time, TrkTypes::ADCTimes& adctimes) const; // given crossing time, fill sampling times of ADC CHECK THIS IS CORRECT IN DRAC FIXME!
     double saturationVoltage() const { return _vsat; }
-    double threshold(StrawId const &sid, StrawEnd::End iend) const { return _vthresh[sid.getStraw()*2 + iend]; }
+    double threshold(StrawId const &sid, StrawEnd::End iend) const { return _vthresh[sid.uniqueStraw()*2 + iend]; }
     double analogNoise(Path ipath) const { return _analognoise[ipath]; }  // incoherent noise
     double strawNoise() const { return _snoise;} // coherent part of threshold circuit noise
     double deadTimeAnalog() const { return _tdeadAnalog; }
@@ -159,10 +153,8 @@ namespace mu2e {
     double eventWindowMarkerROCJitter() const { return _ewMarkerROCJitter; }
     double triggerHysteresis() const { return _triggerHysteresis; }
     
-    double currentToVoltage(StrawId sid, Path ipath) const { return _dVdI[ipath][sid.getStraw()]; }
+    double currentToVoltage(StrawId sid, Path ipath) const { return _dVdI[ipath][sid.uniqueStraw()]; }
     double maxLinearResponse(StrawId sid, Path ipath,double distance,double charge=1.0) const;
-    double normalization(Path ipath) const { return 1.;} //FIXME
-    double fallTime(Path ipath) const { return 22.;} //FIXME
     double clusterLookbackTime() const { return _clusterLookbackTime;}
     
     double truncationTime(Path ipath) const { return _ttrunc[ipath];}
@@ -174,13 +166,16 @@ namespace mu2e {
     void print(std::ostream& os) const;
     void printVector(std::ostream& os, std::string const& name, 
 		    std::vector<double> const& a) const;
+    template<typename T, size_t SIZE>
+      void printArray(std::ostream& os, std::string const& name,
+          std::array<T,SIZE> const& a) const ;
 
 
     // all of these must be called to fill this object
-    void setdVdI(std::array<std::vector<double>,npaths> dVdI) { _dVdI = dVdI; }
+    void setdVdI(std::array<double, StrawId::_nustraws> dVdI, size_t path) { _dVdI[path] = dVdI; }
     void setAnalogNoise(std::array<double,npaths> analognoise) 
               { _analognoise = analognoise; }
-    void setvthresh(std::vector<double> vthresh) { _vthresh = vthresh;}
+    void setvthresh(std::array<double, StrawId::_nustrawends> vthresh) { _vthresh = vthresh;}
     void setDigitizationStartTDC( double digitizationStartTDC) {
       _digitizationStartTDC = digitizationStartTDC;
     }
@@ -190,7 +185,7 @@ namespace mu2e {
     void setTimeFromProtonsToDRMarker( double timeFromProtonsToDRMarker) {
       _timeFromProtonsToDRMarker = timeFromProtonsToDRMarker;
     }
-    void setADCPed( std::vector<uint16_t> ADCped) { _ADCped = ADCped; }
+    void setADCPed( std::array<uint16_t, StrawId::_nustraws> ADCped) { _ADCped = ADCped; }
     void setttrunc(std::array<double,npaths> ttrunc) { _ttrunc = ttrunc; }
     void setCurrentImpulse(std::vector<double> currentImpulse) {
       _currentImpulse = currentImpulse;
@@ -203,9 +198,9 @@ namespace mu2e {
     }
 
     // this is used to update values from the database
-    void setOffsets( std::vector<double> timeOffsetPanel,
-		     std::vector<double> timeOffsetStrawHV,
-		     std::vector<double> timeOffsetStrawCal ) {
+    void setOffsets( std::array<double, StrawId::_nupanels> timeOffsetPanel,
+		     std::array<double, StrawId::_nustraws> timeOffsetStrawHV,
+		     std::array<double, StrawId::_nustraws> timeOffsetStrawCal ) {
       _timeOffsetPanel = timeOffsetPanel;
       _timeOffsetStrawHV = timeOffsetStrawHV;
       _timeOffsetStrawCal = timeOffsetStrawCal;
@@ -214,25 +209,24 @@ namespace mu2e {
   private:
 
     // generic waveform parameters
-    std::array<std::vector<double>,npaths> _dVdI; // scale factor between charge and voltage (milliVolts/picoCoulombs)
+    std::array<std::array<double, StrawId::_nustraws>,npaths> _dVdI; // scale factor between charge and voltage (milliVolts/picoCoulombs)
     std::array<double,npaths> _ttrunc; // time to truncate signal to 0
     // threshold path parameters
     double _tdeadAnalog; // electronics dead time
     double _tdeadDigital; // electronics readout dead time
     // scale factor between current and voltage (milliVolts per microAmps)
     double _vsat; // saturation parameters.  _vmax is maximum output, _vsat is where saturation starts
-    std::vector<double> _vthresh; // threshold voltage for electronics discriminator (mVolt)
+    std::array<double, StrawId::_nustrawends> _vthresh; // threshold voltage for electronics discriminator (mVolt)
     double _snoise; // straw noise at threshold
     std::array<double,npaths> _analognoise; //noise (mVolt) from the straw itself
     double _ADCLSB; // least-significant bit of ADC (mVolts)
     TrkTypes::ADCValue _maxADC; // maximum ADC value
-    std::vector<uint16_t> _ADCped; // ADC pedestal (reading for 0 volts)
+    std::array<uint16_t, StrawId::_nustraws> _ADCped; // ADC pedestal (reading for 0 volts)
     size_t _nADCPackets; // number of ADC packets with 12 samples each
     size_t _nADCpre; // Number of ADC presamples
     double _ADCPeriod; // ADC period in nsec
     double _ADCOffset; // Offset of 1st ADC sample WRT threshold crossing (nsec)
     unsigned _maxtsep; // maximum # of ADC clock ticks between straw end threshold crossings to form a digi
-    unsigned _TCoince; // maxing threshold xing pair time separation to create a digi, in number of ADC clock cycles
     double _TDCLSB; // least-significant bit of TDC (nsecs)
     TrkTypes::TDCValue _maxTDC; // maximum TDC value
     double _TOTLSB; // least-significant bit of TOT (nsecs)
@@ -279,9 +273,9 @@ namespace mu2e {
     
     double _clusterLookbackTime;
     
-    std::vector<double> _timeOffsetPanel;
-    std::vector<double> _timeOffsetStrawHV;
-    std::vector<double> _timeOffsetStrawCal;
+    std::array<double, StrawId::_nupanels> _timeOffsetPanel;
+    std::array<double, StrawId::_nustraws> _timeOffsetStrawHV;
+    std::array<double, StrawId::_nustraws> _timeOffsetStrawCal;
 
     double _timeFromProtonsToDRMarker;
 
