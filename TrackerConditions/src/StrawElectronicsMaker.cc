@@ -24,7 +24,7 @@ namespace mu2e {
        _config.deadTimeDigital(), _config.saturationVoltage(), _config.strawNoise(), 
        _config.ADCLSB(), _config.maxADC(), _config.nADCPackets(), _config.nADCPresamples(),
        _config.ADCPeriod(), _config.ADCOffset(), 
-       _config.maxThreshTimeSeparation(), _config.tCoince(),
+       _config.maxThreshTimeSeparation(),
        _config.TDCLSB(), maxTDC, _config.TOTLSB(), 
        _config.maxTOT(), _config.TDCResolution(), 
        _config.electronicsTimeDelay(), _config.eventWindowMarkerROCJitter(), 
@@ -41,33 +41,56 @@ namespace mu2e {
        _config.currentT0s(), _config.reflectionTimeShift(),
        _config.reflectionVelocity(), _config.reflectionALength(),
        _config.reflectionFrac(), _config.triggerHysteresis(),
-       _config.clusterLookbackTime(), 
-       _config.timeOffsetPanel(), _config.timeOffsetStrawHV(), 
-       _config.timeOffsetStrawCal() );
+       _config.clusterLookbackTime());
 
-    std::array<vector<double>,StrawElectronics::npaths> dVdI;
+    std::array<double, StrawId::_nupanels> timeOffsetPanel;
+    std::array<double, StrawId::_nustraws> timeOffsetStrawHV, timeOffsetStrawCal;
+    if (_config.timeOffsetPanel().size() > 0){
+      for (size_t i=0;i<timeOffsetPanel.size();i++)
+        timeOffsetPanel[i] = _config.timeOffsetPanel()[i];
+    }else{
+      timeOffsetPanel.fill(0);
+    }
+    if (_config.timeOffsetStrawHV().size() > 0){
+    for(size_t i=0;i<timeOffsetStrawHV.size();i++){
+      timeOffsetStrawHV[i] = _config.timeOffsetStrawHV()[i];
+      timeOffsetStrawCal[i] = _config.timeOffsetStrawCal()[i];
+    }
+    }else{
+      timeOffsetStrawHV.fill(0);
+      timeOffsetStrawCal.fill(0);
+    }
+    ptr->setOffsets( timeOffsetPanel,
+		     timeOffsetStrawHV,
+		     timeOffsetStrawCal );
+
+    std::array<std::array<double, StrawId::_nustraws>,StrawElectronics::npaths> dVdI;
     if(_config.thresholddVdI().size()>0) {
-      dVdI[StrawElectronics::thresh] = _config.thresholddVdI();
+      for (size_t i=0;i<dVdI[StrawElectronics::thresh].size();i++)
+        dVdI[StrawElectronics::thresh][i] = _config.thresholddVdI()[i];
     } else {
-      dVdI[StrawElectronics::thresh] = vector<double>(96,_config.defaultThresholddVdI());
+      dVdI[StrawElectronics::thresh].fill(_config.defaultThresholddVdI());
     }
     if(_config.adcdVdI().size()>0) {
-      dVdI[StrawElectronics::adc] = _config.adcdVdI();
+      for (size_t i=0;i<dVdI[StrawElectronics::adc].size();i++)
+        dVdI[StrawElectronics::adc][i] = _config.adcdVdI()[i];
     } else {
-      dVdI[StrawElectronics::adc] = vector<double>(96,_config.defaultAdcdVdI());
+      dVdI[StrawElectronics::adc].fill(_config.defaultAdcdVdI());
     }
-    ptr->setdVdI(dVdI);
+    ptr->setdVdI(dVdI[StrawElectronics::thresh],StrawElectronics::thresh);
+    ptr->setdVdI(dVdI[StrawElectronics::adc],StrawElectronics::adc);
 
     std::array<double,StrawElectronics::npaths> analognoise;
     analognoise[StrawElectronics::thresh] = _config.thresholdAnalogNoise();
     analognoise[StrawElectronics::adc]    = _config.adcAnalogNoise();
     ptr->setAnalogNoise(analognoise);
     
-    vector<double> vthresh;
+    std::array<double, StrawId::_nustrawends> vthresh;
     if(_config.discriminatorThreshold().size()>0) {
-      vthresh = _config.discriminatorThreshold();
+      for (size_t i=0;i<vthresh.size();i++)
+        vthresh[i] = _config.discriminatorThreshold()[i];
     } else {
-      vthresh = vector<double>(192,_config.defaultDiscriminatorThreshold());
+      vthresh.fill(_config.defaultDiscriminatorThreshold());
     }
     ptr->setvthresh(vthresh);
 
@@ -76,8 +99,8 @@ namespace mu2e {
     ptr->setDigitizationEndTDC( ptr->tdcResponse( _config.digitizationEnd() - _config.electronicsTimeDelay() - eventTiming->timeFromProtonsToDRMarker()  ));
     ptr->setTimeFromProtonsToDRMarker(eventTiming->timeFromProtonsToDRMarker());
 
-    std::vector<uint16_t> ADCped(96,0);
-    for (int i=0;i<96;i++){
+    std::array<uint16_t, StrawId::_nustraws> ADCped;
+    for (size_t i=0;i<ADCped.size();i++){
       double avgThresh = ( vthresh[i*2+0] +  vthresh[i*2+1])/2.;
       ADCped[i] = (ADCValue) ((_config.maxADC()+1)/2. - avgThresh/_config.ADCLSB() * 20);
     }
@@ -205,57 +228,66 @@ namespace mu2e {
           for (int k=start;k<end;k++){
             double time = k/(double)sampleRate;
             double resp = ptr->linearResponse(straw,static_cast<StrawElectronics::Path>(ipath),time,1e-9,wPoints[ipoint]._distance,false);
+            resp /= dVdI[ipath][sid.uniqueStraw()]; // linmax should be normalized to dVdI = 1
             if (resp > linmax){
               linmax = resp;
               tmax = time;
             }
           }
-          wPoints[ipoint]._tmax[ipath].push_back(tmax);
-          wPoints[ipoint]._linmax[ipath].push_back(linmax*1e9);
+          wPoints[ipoint]._tmax[ipath][is] = tmax;
+          wPoints[ipoint]._linmax[ipath][is] = linmax*1e9;
         }
       }
     }
     
     ptr->setwPoints(wPoints);
-
     return ptr;
 
   } // end fromFcl
 
   StrawElectronics::ptr_t StrawElectronicsMaker::fromDb(
 				   TrkDelayPanel::cptr_t tdp,
-				   TrkPreampRStraw::cptr_t tprs,
+				   TrkDelayPreamp::cptr_t tdpp,
 				   TrkPreampStraw::cptr_t tps,
-				   TrkThresholdRStraw::cptr_t ttrs,
                                    EventTiming::cptr_t eventTiming ) {
     // initially fill from fcl to get all the constants
     auto ptr = fromFcl(eventTiming);
 
     // now overwrite with db values
 
-    vector<double> vthresh(2*StrawId::_nstraws);
-    for(size_t i=0; i<StrawId::_nstraws; i++) {
-      vthresh[2*i+StrawEnd::cal] = ttrs->rowAt(i).thresholdCal();
-      vthresh[2*i+StrawEnd::hv] = ttrs->rowAt(i).thresholdHv();
+    std::array<double, StrawId::_nustrawends> vthresh;
+    for(size_t i=0; i<StrawId::_nustraws; i++) {
+      vthresh[2*i+StrawEnd::cal] = tps->rowAt(i).thresholdCal();
+      vthresh[2*i+StrawEnd::hv] = tps->rowAt(i).thresholdHv();
     }
 
     ptr->setvthresh(vthresh);
 
 
-    std::vector<double> timeOffsetPanel(StrawId::_nupanels);
-    std::vector<double> timeOffsetStrawHV(StrawId::_nstraws);
-    std::vector<double> timeOffsetStrawCal(StrawId::_nstraws);
+    std::array<double, StrawId::_nupanels> timeOffsetPanel;
+    std::array<double, StrawId::_nustraws> timeOffsetStrawHV;
+    std::array<double, StrawId::_nustraws> timeOffsetStrawCal;
     for(size_t i=0; i<StrawId::_nupanels; i++) {
       timeOffsetPanel[i] = tdp->rowAt(i).delay();
     }
-    for(size_t i=0; i<StrawId::_nstraws; i++) {
-      timeOffsetStrawHV[i] = tprs->rowAt(i).delayHv();
-      timeOffsetStrawCal[i] = tprs->rowAt(i).delayCal();
+    for(size_t i=0; i<StrawId::_nustraws; i++) {
+      size_t istraw = i % StrawId::_nstraws;
+      timeOffsetStrawHV[i] = tdpp->rowAt(istraw).delayHv() + tps->rowAt(i).delayHv();
+      timeOffsetStrawCal[i] = tdpp->rowAt(istraw).delayCal() + tps->rowAt(i).delayCal();
     }
 
     ptr->setOffsets( timeOffsetPanel,
 		     timeOffsetStrawHV,
 		     timeOffsetStrawCal );
+
+    std::array<double, StrawId::_nustraws> adcdVdI;
+    for (size_t i=0;i<StrawId::_nustraws;i++) {
+      adcdVdI[i] = tps->rowAt(i).gain();
+    }
+    ptr->setdVdI(adcdVdI,StrawElectronics::adc);
+
+    if (_config.verbose())
+      ptr->print(std::cout);
 
     return ptr;
 

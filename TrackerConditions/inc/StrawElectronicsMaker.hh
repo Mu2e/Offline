@@ -10,9 +10,8 @@
 #include "TrackerConfig/inc/StrawElectronicsConfig.hh"
 #include "DAQConditions/inc/EventTiming.hh"
 #include "DbTables/inc/TrkDelayPanel.hh"
-#include "DbTables/inc/TrkPreampRStraw.hh"
+#include "DbTables/inc/TrkDelayPreamp.hh"
 #include "DbTables/inc/TrkPreampStraw.hh"
-#include "DbTables/inc/TrkThresholdRStraw.hh"
 
 
 namespace mu2e {
@@ -22,9 +21,8 @@ namespace mu2e {
     StrawElectronicsMaker(StrawElectronicsConfig const& config):_config(config) {}
     StrawElectronics::ptr_t fromFcl(EventTiming::cptr_t eventTiming);
     StrawElectronics::ptr_t fromDb(TrkDelayPanel::cptr_t tdp,
-				   TrkPreampRStraw::cptr_t tprs,
+				   TrkDelayPreamp::cptr_t tdpp,
 				   TrkPreampStraw::cptr_t tps,
-				   TrkThresholdRStraw::cptr_t ttrs,
                                    EventTiming::cptr_t eventTiming);
   
   private:
