@@ -1,0 +1,27 @@
+//
+// Variant of the B field maps used for reconstruction.  All B field maps
+// not needed for reconstruction have been removed.
+//
+// Warning:
+//  There are multiple points of maintenance when you change bfield.innerMaps
+//    - bfgeom_v01.txt           ( the base geometry  )
+//    - bfgeom_no_ds_v01.txt     ( DS map removed     )
+//    - bfgeom_reco_v01.txt      ( only maps needed for reconstruction )
+//    - bfgeom_no_tsu_ps_v01.txt ( PS and TSu maps removed.
+//
+//  If more variants are added, update the comments in all relevant files.
+
+#include "Mu2eG4/geom/bfgeom_v01.txt"
+
+vector<string> bfield.innerMaps = {
+  "BFieldMaps/Mau13/DSMap.header"
+};
+
+vector<string> bfield.outerMaps = {};
+
+
+//
+// This tells emacs to view this file in c++ mode.
+// Local Variables:
+// mode:c++
+// End:

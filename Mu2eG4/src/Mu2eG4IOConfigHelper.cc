@@ -11,6 +11,7 @@
 #include "MCDataProducts/inc/SimParticleCollection.hh"
 #include "MCDataProducts/inc/SimParticleRemapping.hh"
 #include "MCDataProducts/inc/StepPointMCCollection.hh"
+#include "MCDataProducts/inc/StageParticle.hh"
 #include "MCDataProducts/inc/MCTrajectoryCollection.hh"
 #include "MCDataProducts/inc/PhysicalVolumeInfoMultiCollection.hh"
 
@@ -51,6 +52,10 @@ namespace mu2e {
 
     case Mu2eG4PrimaryType::SimParticleLeaves:
       cc.consumes<SimParticleCollection>(inputs_.primaryTag());
+      break;
+
+    case Mu2eG4PrimaryType::StageParticles:
+      cc.consumes<StageParticleCollection>(inputs_.primaryTag());
       break;
     }
 

@@ -6,6 +6,7 @@
 #include "art/Framework/Principal/Event.h"
 
 #include "MCDataProducts/inc/StepPointMCCollection.hh"
+#include "MCDataProducts/inc/StageParticle.hh"
 
 namespace mu2e {
   Mu2eG4Inputs::Mu2eG4Inputs(const Mu2eG4Config::Inputs_& conf)
@@ -88,6 +89,44 @@ namespace mu2e {
 
     }
       break; // SimParticles
+
+    case Mu2eG4PrimaryType::StageParticles: {
+      std::optional<art::ProductID> simid;
+
+      auto const h = evt.getValidHandle<StageParticleCollection>(primaryTag_);
+      for(const auto& s : *h) {
+        if(!simid) {
+          simid = s.parent().id();
+
+          // We have to read the pointed-to product into memory by hand
+          // for the get(ProductID, &handle) call below to work.
+          // See Kyle's e-mail on the art-users list on 2021-03-10.
+          *s.parent();
+        }
+        else {
+          if(*simid != s.parent().id()) {
+            throw cet::exception("BADINPUT")
+              <<"Mu2eG4Inputs::inputSimParticles(): inconsistent SimParticleCollection product ID "
+              <<"in input StageParticleCollection "
+              <<primaryTag_
+              <<std::endl;
+          }
+        }
+      }
+
+      if(simid) { // nothing to retrieve if primary inputs are emtpy
+        evt.get(*simid, res);
+        if(!res.isValid()) {
+          throw cet::exception("BADINPUT")
+            <<"Mu2eG4Inputs::inputSimParticles(): could not get SimParticleCollection "
+            <<"pointed to by StageParticles in "
+            <<primaryTag_
+            <<std::endl;
+        }
+      }
+    }
+      break; // StageParticles
+
     }
 
     return res;

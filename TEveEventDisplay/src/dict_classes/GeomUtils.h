@@ -39,9 +39,15 @@ namespace mu2e{
     }
 
 
+    inline CLHEP::Hep3Vector PointToCaloCM( CLHEP::Hep3Vector point, int nDisk){
+      CLHEP::Hep3Vector Mu2eCaloOrigin = GetCaloCenter(nDisk);
+      CLHEP::Hep3Vector PointToCalo(10*(point.x() + Mu2eCaloOrigin.x()), 10*(point.y()+Mu2eCaloOrigin.y()), 10*(point.z() + Mu2eCaloOrigin.z()));
+      return  PointToCalo;
+    }
+    
     inline CLHEP::Hep3Vector PointToCalo( CLHEP::Hep3Vector point, int nDisk){
       CLHEP::Hep3Vector Mu2eCaloOrigin = GetCaloCenter(nDisk);
-      CLHEP::Hep3Vector PointToCalo(point.x() + Mu2eCaloOrigin.x(), point.y()+Mu2eCaloOrigin.y(), point.z() + Mu2eCaloOrigin.z());
+      CLHEP::Hep3Vector PointToCalo((point.x() + Mu2eCaloOrigin.x()), (point.y()+Mu2eCaloOrigin.y()), (point.z() + Mu2eCaloOrigin.z()));
       return  PointToCalo;
     }
 
@@ -49,7 +55,6 @@ namespace mu2e{
       GeomHandle<Tracker> trkr;
       TubsParams envelope(trkr->g4Tracker()->getInnerTrackerEnvelopeParams());
       double dz{(envelope.zHalfLength())};
-      std::cout<<"Length "<<dz*2<<std::endl;
       return (dz*2);
     }
     

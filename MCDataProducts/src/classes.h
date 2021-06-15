@@ -20,6 +20,7 @@
 #include "MCDataProducts/inc/GenSimParticleLink.hh"
 #include "MCDataProducts/inc/GenEventCount.hh"
 #include "MCDataProducts/inc/FixedTimeMap.hh"
+#include "MCDataProducts/inc/StageParticle.hh"
 
 // simulation
 #include "MCDataProducts/inc/StatusG4.hh"

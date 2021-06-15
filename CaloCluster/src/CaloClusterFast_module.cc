@@ -28,24 +28,24 @@ namespace mu2e {
         {
             using Name    = fhicl::Name;
             using Comment = fhicl::Comment;
-            fhicl::Atom<std::string>  caloCrystalModuleLabel{ Name("caloCrystalModuleLabel"), Comment("Calo Crystal module label")};
-            fhicl::Atom<double>       EminSeed              { Name("EminSeed"),               Comment("Minimum energy for a hit to be a cluster seed") }; 
-            fhicl::Atom<double>       EnoiseCut             { Name("EnoiseCut"),              Comment("Minimum energy for a hit to be in a cluster") }; 
-            fhicl::Atom<double>       ExpandCut             { Name("ExpandCut"),              Comment("Minimum energy for a hit to expand cluster") }; 
-            fhicl::Atom<double>       deltaTime             { Name("deltaTime"),              Comment("Maximum time difference between seed and hit in cluster") }; 
-            fhicl::Atom<bool>         extendSearch          { Name("extendSearch"),           Comment("Search next-next neighbors for clustering") }; 
-            fhicl::Atom<int>          diagLevel             { Name("diagLevel"),              Comment("Diag level"),0 }; 
+            fhicl::Atom<art::InputTag>  caloHitCollection { Name("caloHitCollection"), Comment("Calo Hit collection")};
+            fhicl::Atom<double>         EminSeed          { Name("EminSeed"),          Comment("Minimum energy for a hit to be a cluster seed") }; 
+            fhicl::Atom<double>         EnoiseCut         { Name("EnoiseCut"),         Comment("Minimum energy for a hit to be in a cluster") }; 
+            fhicl::Atom<double>         ExpandCut         { Name("ExpandCut"),         Comment("Minimum energy for a hit to expand cluster") }; 
+            fhicl::Atom<double>         deltaTime         { Name("deltaTime"),         Comment("Maximum time difference between seed and hit in cluster") }; 
+            fhicl::Atom<bool>           extendSearch      { Name("extendSearch"),      Comment("Search next-next neighbors for clustering") }; 
+            fhicl::Atom<int>            diagLevel         { Name("diagLevel"),         Comment("Diag level"),0 }; 
         };
 
         explicit CaloClusterFast(const art::EDProducer::Table<Config>& config) :
           EDProducer{config},
-          caloCrystalToken_{consumes<CaloHitCollection>(config().caloCrystalModuleLabel())},
-          EminSeed_        (config().EminSeed()),
-          EnoiseCut_       (config().EnoiseCut()),
-          ExpandCut_       (config().ExpandCut()),
-          deltaTime_       (config().deltaTime()),
-          extendSearch_    (config().extendSearch()),
-          diagLevel_       (config().diagLevel())
+          caloHitToken_  {consumes<CaloHitCollection>(config().caloHitCollection())},
+          EminSeed_      (config().EminSeed()),
+          EnoiseCut_     (config().EnoiseCut()),
+          ExpandCut_     (config().ExpandCut()),
+          deltaTime_     (config().deltaTime()),
+          extendSearch_  (config().extendSearch()),
+          diagLevel_     (config().diagLevel())
         {
            produces<CaloClusterCollection>();
         }
@@ -54,7 +54,7 @@ namespace mu2e {
 
 
      private:
-        art::ProductToken<CaloHitCollection> caloCrystalToken_;
+        art::ProductToken<CaloHitCollection> caloHitToken_;
         double            EminSeed_;
         double            EnoiseCut_;
         double            ExpandCut_;
@@ -71,7 +71,7 @@ namespace mu2e {
 
   void CaloClusterFast::produce(art::Event& event)
   {
-      art::Handle<CaloHitCollection> caloHitsHandle = event.getHandle<CaloHitCollection>(caloCrystalToken_);
+      art::Handle<CaloHitCollection> caloHitsHandle = event.getHandle<CaloHitCollection>(caloHitToken_);
       
       auto caloClusters = std::make_unique<CaloClusterCollection>();
       makeClusters(*caloClusters,caloHitsHandle);

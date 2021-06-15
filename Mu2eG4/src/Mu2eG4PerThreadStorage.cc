@@ -29,7 +29,7 @@ namespace mu2e {
     art::EDProductGetter const* simProductGetter = evt->productGetter(simPartId);
 
     simParticleHelper.emplace(simStage, ioconf.inputs(), simPartId, evt, simProductGetter);
-    simParticlePrimaryHelper.emplace(evt, simPartId, simProductGetter);
+    simParticlePrimaryHelper.emplace(simPartId, simProductGetter);
 
     // Output collections
     simPartCollection = std::unique_ptr<SimParticleCollection>( new SimParticleCollection );

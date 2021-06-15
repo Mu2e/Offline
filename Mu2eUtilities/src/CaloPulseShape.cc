@@ -4,13 +4,7 @@
 
 #include "TFile.h"
 #include "TH2F.h"
-#include "TF1.h"
-//#include "TSpline.h"
-
-#include <string>
 #include <vector>
-#include <iostream>
-#include <algorithm>
 
 
 namespace mu2e {
@@ -43,19 +37,6 @@ namespace mu2e {
        for (int i=1;i<nbins;++i) pulseShape.SetBinContent(i,pshape->Interpolate(pulseShape.GetBinCenter(i)+pshape->GetXaxis()->GetXmin()));
        pulseShape.Scale(1.0/pulseShape.GetMaximum(),"nosw2");
 
-       // Fit the top of the pulse shape to smooth small wiggles -> speed up fit convergence (wiggles = local minima = huge pain)
-       // adjust the fitted bounds to get a smooth transition between shape and fit
-       const float fitlevel(0.75);
-       int istart(pulseShape.GetMaximumBin()),iend(pulseShape.GetMaximumBin());
-       while(istart>0)                    {if (pulseShape.GetBinContent(istart)<fitlevel) break; --istart;}
-       while(iend<pulseShape.GetNbinsX()) {if (pulseShape.GetBinContent(iend)  <fitlevel) break; ++iend;}
-
-       pulseShape.Fit("pol6","q0","",pulseShape.GetBinCenter(istart), pulseShape.GetBinCenter(iend));
-       TF1 *funPeak = pulseShape.GetFunction("pol6");
-       while (istart < iend) {if (fabs(pulseShape.GetBinContent(istart)-funPeak->Eval(pulseShape.GetBinCenter(istart))) < 0.001) break; ++istart;}
-       while (iend > istart) {if (fabs(pulseShape.GetBinContent(iend)-funPeak->Eval(pulseShape.GetBinCenter(iend))) < 0.001) break; --iend;}
-       for (int i=istart; i<iend;++i) pulseShape.SetBinContent(i,funPeak->Eval(pulseShape.GetBinCenter(i)));
-
        // Cache histogram content into vector and shift waveform (see note), 
        // calculate the number of bins for the digitized waveform
        for (int j=1;j<nbins-1;++j)pulseVec_.push_back((j>nSteps_) ? pulseShape.GetBinContent(j-nSteps_) : 0.0);
@@ -65,9 +46,6 @@ namespace mu2e {
        // find difference between peak time and t0 for digitized waveform. 
        for (int i=1;i<nBinShape_;++i) {if (pulseVec_[(i+1)*nSteps_] < pulseVec_[i*nSteps_]) break; deltaT_ +=nSteps_*digiStep_;}
      
-       // create a final spline - a continuous function with continuous derivatives will help the waveform fit
-       //spl_ = TSpline3(&pulseShape);
-       
    }
 
    //----------------------------------------------------------------------------
@@ -82,10 +60,6 @@ namespace mu2e {
    //----------------------------------------------------------------------------
    double CaloPulseShape::evaluate(double tDifference) const
    {
-       ///double t = tDifference+deltaT_+0.5*digiStep_;  
-       ///if (t<spl_.GetXmin() || t > spl_.GetXmax()) return 0.0;       
-       ///return spl_.Eval(t);
-
        double t = tDifference+deltaT_;          
        int ibin = nSteps_ + int(t*nSteps_/digiStep_/nSteps_);
 

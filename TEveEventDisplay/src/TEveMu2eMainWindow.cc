@@ -49,7 +49,7 @@ namespace mu2e{
       //Build GUI (function below)
       CreateGUI();
       //Build Multiple View Window:
-      CreateMultiViews();
+      //CreateMultiViews();
       //Add your Event:
       gEve->AddEvent(new TEveEventManager("Event", "Empty Event"));
 
@@ -158,7 +158,7 @@ namespace mu2e{
    fViewer[3]->IncDenyDestroy();
    if (fIsEmbedded && gEve) {
      gEve->GetViewers()->AddElement(fViewer[3]);
-     proj3 = gEve->SpawnNewScene("Tracker XY Scene");
+     proj3 = gEve->SpawnNewScene("Tracker RZ Scene");
      //fViewer[1]->AddScene(fdetXY);
      TfRZMgr = new TEveProjectionManager(TEveProjection::kPT_RhoZ);
      proj3->AddElement(TfRZMgr);
@@ -342,36 +342,131 @@ namespace mu2e{
 	  pass_proj->CreateCaloProjection(calo2Dproj);
 	  pass_proj->CreateTrackerProjection(tracker2Dproj);
   }
+  
+    /*------------Function to add calo 2D projection to display:-------------*/
+  void TEveMu2eMainWindow::CreateCaloProjection(){
+    // Create detector and event scenes for ortho views
+    calo2Dproj->fDetXYScene = gEve->SpawnNewScene("Calo XY D0 Scene", "");
+    calo2Dproj->fDetRZScene = gEve->SpawnNewScene("Calo XY D1 Scene", "");
+    calo2Dproj->fEvtXYScene = gEve->SpawnNewScene("Calo Evt XY D0 Scene", "");
+    calo2Dproj->fEvtRZScene = gEve->SpawnNewScene("Calo Evt XY D1 Scene", "");
+
+    // Create XY/RZ calo2Dprojection mgrs, draw projected axes, & add them to scenes
+    calo2Dproj->fXYMgr = new TEveProjectionManager(TEveProjection::kPT_RPhi);
+    TEveProjectionAxes* axes_xy = new TEveProjectionAxes(calo2Dproj->fXYMgr);
+    calo2Dproj->fDetXYScene->AddElement(axes_xy);
+    gEve->AddToListTree(axes_xy,kTRUE);
+    gEve->AddToListTree(calo2Dproj->fXYMgr,kTRUE);
+
+    calo2Dproj->fRZMgr = new TEveProjectionManager(TEveProjection::kPT_RPhi);
+    TEveProjectionAxes* axes_rz = new TEveProjectionAxes(calo2Dproj->fRZMgr);
+    calo2Dproj->fDetRZScene->AddElement(axes_rz);
+    gEve->AddToListTree(axes_rz,kTRUE);
+    gEve->AddToListTree(calo2Dproj->fRZMgr,kTRUE);
+
+    // Create side-by-side ortho D1, D2 views in new tab & add det/evt scenes
+    TEveWindowSlot *slot = 0;
+    TEveWindowPack *pack = 0;
+
+    slot = TEveWindow::CreateWindowInTab(gEve->GetBrowser()->GetTabRight());
+    pack = slot->MakePack();
+    pack->SetElementName("Calo Views");
+    pack->SetHorizontal();
+    pack->SetShowTitleBar(kFALSE);
+
+    pack->NewSlot()->MakeCurrent();
+    calo2Dproj->fXYView = gEve->SpawnNewViewer("Disk0 View", "");
+    calo2Dproj->fXYView->GetGLViewer()->SetCurrentCamera(TGLViewer::kCameraOrthoXOY);
+    calo2Dproj->fXYView->AddScene(calo2Dproj->fDetXYScene);
+    calo2Dproj->fXYView->AddScene(calo2Dproj->fEvtXYScene);
+
+    pack->NewSlot()->MakeCurrent();
+    calo2Dproj->fRZView = gEve->SpawnNewViewer("Disk1 View", "");
+    calo2Dproj->fRZView->GetGLViewer()->SetCurrentCamera(TGLViewer::kCameraOrthoXOY);
+    calo2Dproj->fRZView->AddScene(calo2Dproj->fDetRZScene);
+    calo2Dproj->fRZView->AddScene(calo2Dproj->fEvtRZScene);
+
+    gEve->GetBrowser()->GetTabRight()->SetTab(0);
+  }
+  
+  /*------------Function to add tracker 2D projection to display:-------------*/
+  void TEveMu2eMainWindow::CreateTrackerProjection(){
+    // Create detector and event scenes for ortho views
+    tracker2Dproj->fDetXYScene = gEve->SpawnNewScene("Tracker Det XY Scene", "");
+    tracker2Dproj->fDetRZScene = gEve->SpawnNewScene("Tracker Det RZ Scene", "");
+    tracker2Dproj->fEvtXYScene = gEve->SpawnNewScene("Tracker Evt XY Scene", "");
+    tracker2Dproj->fEvtRZScene = gEve->SpawnNewScene("Tracker Evt RZ Scene", "");
+
+    // Create XY/RZ tracker2Dprojection mgrs, draw projected axes, & add them to scenes
+    tracker2Dproj->fXYMgr = new TEveProjectionManager(TEveProjection::kPT_RPhi);
+    TEveProjectionAxes* axes_xy = new TEveProjectionAxes(tracker2Dproj->fXYMgr);
+    tracker2Dproj->fDetXYScene->AddElement(axes_xy);
+    tracker2Dproj->fEvtXYScene->AddElement(axes_xy);
+    gEve->AddToListTree(axes_xy,kTRUE);
+    gEve->AddToListTree(tracker2Dproj->fXYMgr,kTRUE);
+
+    tracker2Dproj->fRZMgr = new TEveProjectionManager(TEveProjection::kPT_RhoZ);
+    TEveProjectionAxes* axes_rz = new TEveProjectionAxes(tracker2Dproj->fRZMgr);
+    tracker2Dproj->fDetRZScene->AddElement(axes_rz);
+    tracker2Dproj->fEvtRZScene->AddElement(axes_rz);
+    gEve->AddToListTree(axes_rz,kTRUE);
+    gEve->AddToListTree(tracker2Dproj->fRZMgr,kTRUE);
+
+    // Create side-by-side ortho XY & RZ views in new tab & add det/evt scenes
+    TEveWindowSlot *slot = 0;
+    TEveWindowPack *pack = 0;
+
+    slot = TEveWindow::CreateWindowInTab(gEve->GetBrowser()->GetTabRight());
+    pack = slot->MakePack();
+    pack->SetElementName("Tracker Views");
+    pack->SetHorizontal();
+    pack->SetShowTitleBar(kFALSE);
+
+    pack->NewSlot()->MakeCurrent();
+    tracker2Dproj->fXYView = gEve->SpawnNewViewer("Tracker XY View", "");
+    tracker2Dproj->fXYView->GetGLViewer()->SetCurrentCamera(TGLViewer::kCameraOrthoXOY);
+    tracker2Dproj->fXYView->AddScene(tracker2Dproj->fDetXYScene);
+    tracker2Dproj->fXYView->AddScene(tracker2Dproj->fEvtXYScene);
+
+    pack->NewSlot()->MakeCurrent();
+    tracker2Dproj->fRZView = gEve->SpawnNewViewer("Tracker RZ View", "");
+    tracker2Dproj->fRZView->GetGLViewer()->SetCurrentCamera(TGLViewer::kCameraOrthoXOY);
+    tracker2Dproj->fRZView->AddScene(tracker2Dproj->fDetRZScene);
+    tracker2Dproj->fRZView->AddScene(tracker2Dproj->fEvtRZScene);
+
+    gEve->GetBrowser()->GetTabRight()->SetTab(0);
+
+  }
 
   /*------------Function to create Calo 2D tab:-------------*/
   void TEveMu2eMainWindow::PrepareCaloProjectionTab(const art::Run& run){
     calo2Dproj->fDetXYScene->DestroyElements();
     calo2Dproj->fDetRZScene->DestroyElements();
-
+    
     TEveElementList *orthodet0 = new TEveElementList("CaloOrthoDet0");
     TEveElementList *orthodet1 = new TEveElementList("CaloOrthoDet1");
     TGeoVolume* topvol = geom->GetTopVolume(); 
     Mu2eCalo->DrawCaloDetector(run, topvol,orthodet0,orthodet1);
-
+  
     gEve->AddGlobalElement(orthodet0);
     gEve->AddGlobalElement(orthodet1);
-
-
-    CfXYMgr->ImportElements(orthodet0);
-    CfRZMgr->ImportElements(orthodet1);
+    
+    //CfXYMgr->ImportElements(orthodet0);
+    //CfRZMgr->ImportElements(orthodet1);
+    
     // ... Import elements of the list into the projected views
     calo2Dproj->fXYMgr->ImportElements(orthodet0, calo2Dproj->fDetXYScene);
     calo2Dproj->fRZMgr->ImportElements(orthodet1, calo2Dproj->fDetRZScene);
 
     //fXYMgr->ImportElements(orthodet0, fdetXY);
     // ... Turn OFF rendering of duplicate detector in main 3D view
-    gEve->GetGlobalScene()->FindChild("OrthoDet")->SetRnrState(kFALSE);
+    gEve->GetGlobalScene()->FindChild("CaloOrthoDet0")->SetRnrState(kFALSE);
+    gEve->GetGlobalScene()->FindChild("CaloOrthoDet1")->SetRnrState(kFALSE);
 
     // ... Turn ON rendering of detector in RPhi and RZ views
     calo2Dproj->fDetXYScene->FindChild("CaloOrthoDet0 [P]")->SetRnrState(kTRUE);
     calo2Dproj->fDetRZScene->FindChild("CaloOrthoDet1 [P]")->SetRnrState(kTRUE);
-
-
+    
   }
   
   /*------------Function to create Tracker 2D tab:-------------*/
@@ -380,30 +475,32 @@ namespace mu2e{
     tracker2Dproj->fDetRZScene->DestroyElements();
     //fdetXY->DestroyElements();
 
-    TEveElementList *orthodet = new TEveElementList("OrthoDet");
-    TEveElementList *orthodetsplit = new TEveElementList("OrthoDet");
-    TGeoVolume* topvol = geom->GetTopVolume();
-    Mu2eTracker->DrawTrackerDetector(run, topvol, orthodet);
-    Mu2eTracker->DrawTrackerDetector(run, topvol, orthodetsplit);
+    TEveElementList *orthodetXY = new TEveElementList("OrthoDetXY");
+    TEveElementList *orthodetXZ = new TEveElementList("OrthoDetXZ");
+    //TEveElementList *orthodetsplit = new TEveElementList("OrthoDet");
 
-    gEve->AddGlobalElement(orthodet);
+    TGeoVolume* topvol = geom->GetTopVolume();
+    Mu2eTracker->DrawTrackerDetector(topvol, orthodetXZ, orthodetXY);
+    //Mu2eTracker->DrawTrackerDetector(run, topvol, orthodetsplit);
+    
+    gEve->AddGlobalElement(orthodetXY);
+    gEve->AddGlobalElement(orthodetXZ);
     
     // ... Import elements of the list into the projected views
-    TfXYMgr->ImportElements(orthodetsplit);
-    TfRZMgr->ImportElements(orthodetsplit);
+    //TfXYMgr->ImportElements(orthodetsplit);
+    //TfRZMgr->ImportElements(orthodetsplit);
 
-    tracker2Dproj->fXYMgr->ImportElements(orthodet, tracker2Dproj->fDetXYScene);	
-    tracker2Dproj->fRZMgr->ImportElements(orthodet, tracker2Dproj->fDetRZScene);
-
-
+    tracker2Dproj->fXYMgr->ImportElements(orthodetXY, tracker2Dproj->fDetXYScene);	
+    tracker2Dproj->fRZMgr->ImportElements(orthodetXZ, tracker2Dproj->fDetRZScene);
+   
     // ... Turn OFF rendering of duplicate detector in main 3D view
-    gEve->GetGlobalScene()->FindChild("OrthoDet")->SetRnrState(kFALSE);
-
-
+    gEve->GetGlobalScene()->FindChild("OrthoDetXY")->SetRnrState(kFALSE);
+    gEve->GetGlobalScene()->FindChild("OrthoDetXZ")->SetRnrState(kFALSE);
     //fdetXY->FindChild("OrthoDet [P]")->SetRnrState(kTRUE);
     // ... Turn ON rendering of detector in RPhi and RZ views
-    tracker2Dproj->fDetXYScene->FindChild("OrthoDet [P]")->SetRnrState(kTRUE);
-    tracker2Dproj->fDetRZScene->FindChild("OrthoDet [P]")->SetRnrState(kTRUE);
+    tracker2Dproj->fDetXYScene->FindChild("OrthoDetXY [P]")->SetRnrState(kTRUE);
+    tracker2Dproj->fDetRZScene->FindChild("OrthoDetXZ [P]")->SetRnrState(kTRUE);
+
   }
 
   /*------------Function to create CRV tab:-------------*/
@@ -638,39 +735,41 @@ namespace mu2e{
     _data.crvcoincol = data.crvcoincol;
     _data.cryHitcol = data.cryHitcol;
     _data.cosmiccol = data.cosmiccol;
+
     if(!isMCOnly){
       std::vector<const KalSeedCollection*> track_list = std::get<1>(data.track_tuple);
       std::vector<double> times = pass_data->getTimeRange(firstLoop, data.chcol, data.crvcoincol, data.clustercol, data.cryHitcol);
-
-      if(_data.crvcoincol!=0) pass_data->AddCRVInfo(firstLoop, data.crvcoincol, ftimemin, ftimemax, false, _accumulate);
+    
+      if(_data.crvcoincol->size()!=0 or _data.crvcoincol !=0) pass_data->AddCRVInfo(firstLoop, data.crvcoincol, ftimemin, ftimemax, false, _accumulate);
       hitenergy = new vector<double>(2);
       
-      if(_data.chcol!=0) *hitenergy = pass_data->AddComboHits(firstLoop, data.chcol, tracker2Dproj, false, fhitmin, fhitmax,ftimemin, ftimemax, _accumulate, TfXYMgr, TfRZMgr, proj2, proj3);
+      if(_data.chcol->size()!=0 or _data.chcol !=0) *hitenergy = pass_data->AddComboHits(firstLoop, data.chcol, tracker2Dproj, false, fhitmin, fhitmax,ftimemin, ftimemax, _accumulate, TfXYMgr, TfRZMgr, proj2, proj3);
 
       clusterenergy = new std::vector<double>(2);
 
-      if(_data.clustercol!=0) *clusterenergy = pass_data->AddCaloClusters(firstLoop, data.clustercol, calo2Dproj, false, fclustmin, fclustmax, ftimemin, ftimemax, _accumulate, CfXYMgr, CfRZMgr, proj0, proj1);
+      if(_data.clustercol->size() !=0 ) *clusterenergy = pass_data->AddCaloClusters(firstLoop, data.clustercol, calo2Dproj, false, fclustmin, fclustmax, ftimemin, ftimemax, _accumulate, CfXYMgr, CfRZMgr, proj0, proj1);
       
-      if (_data.cryHitcol!=0) pass_data->AddCrystalHits(firstLoop, data.cryHitcol, calo2Dproj, ftimemin, ftimemax, false, _accumulate, CfXYMgr, CfRZMgr, proj0, proj1);
+      if (_data.cryHitcol->size()!=0 or  _data.cryHitcol!=0) pass_data->AddCrystalHits(firstLoop, data.cryHitcol, calo2Dproj, ftimemin, ftimemax, false, _accumulate, CfXYMgr, CfRZMgr, proj0, proj1);
       
-      if (_data.cryHitcol!=0) pass_data->AddHelixPieceWise3D(firstLoop, data.track_tuple, tracker2Dproj,  ftimemin, ftimemax, false, _accumulate, TfXYMgr, TfRZMgr, proj2, proj3);
-      
-      if(track_list.size() !=0) pass_data->AddCosmicTrack(firstLoop, data.cosmiccol, tracker2Dproj, ftimemin, ftimemax, false, _accumulate, TfXYMgr, TfRZMgr, proj2, proj3);
-      
+      if (track_list.size() !=0) pass_data->AddHelixPieceWise3D(firstLoop, data.track_tuple, tracker2Dproj,  ftimemin, ftimemax, false, _accumulate, TfXYMgr, TfRZMgr, proj2, proj3);
+
+      if(_data.cosmiccol->size() != 0 or _data.cosmiccol != 0) pass_data->AddCosmicTrack(firstLoop, data.cosmiccol, tracker2Dproj, ftimemin, ftimemax, false, _accumulate, TfXYMgr, TfRZMgr, proj2, proj3);
+
       _clustminenergy->Clear();
       _clustmaxenergy->Clear();
       _hitminenergy->Clear();
       _hitmaxenergy->Clear();
       _hitmintime->Clear();
       _hitmaxtime->Clear();
+
       _clustminenergy->AddText(0, (to_string(clusterenergy->at(0))).c_str());
       _clustmaxenergy->AddText(0, (to_string(clusterenergy->at(1))).c_str());
-
       _hitminenergy->AddText(0, (to_string(hitenergy->at(0))).c_str());
       _hitmaxenergy->AddText(0, (to_string(hitenergy->at(1))).c_str());
       _hitmintime->AddText(0, (to_string(times.at(0))).c_str());
       _hitmaxtime->AddText(0, (to_string(times.at(1))).c_str());
     }
+    
     if(_data.mctrajcol!=0) pass_mc->AddFullMCTrajectory(firstLoop, data.mctrajcol, tracker2Dproj, false, _accumulate,  TfXYMgr, TfRZMgr, proj2, proj3, particles);
 
     gSystem->ProcessEvents();
