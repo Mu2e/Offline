@@ -189,19 +189,14 @@ void art::CaloHitsFromFragments::produce(Event& event) {
 
   size_t totalSize = 0;
   size_t numCalFrags = 0;
-  std::vector<art::Handle<artdaq::Fragments>> fragmentHandles;
-#if ART_HEX_VERSION < 0x30900
-  evt.getManyByType(fragmentHandles);
-#else
-  fragmentHandles = evt.getMany<std::vector<artdaq::Fragment>>();
-#endif
+  std::vector<art::Handle<artdaq::Fragments>> fragmentHandles = event.getMany<std::vector<artdaq::Fragment>>();
 
   for (const auto& handle : fragmentHandles) {
     if (!handle.isValid() || handle->empty()) {
       continue;
     }
 
-    if (handle->front().type() == detail::FragmentType::MU2EEVENT) {
+    if (handle->front().type() == mu2e::detail::FragmentType::MU2EEVENT) {
       for (const auto& cont : *handle) {
         mu2e::Mu2eEventFragment mef(cont);
         for (size_t ii = 0; ii < mef.calorimeter_block_count(); ++ii) {
@@ -214,7 +209,7 @@ void art::CaloHitsFromFragments::produce(Event& event) {
         }
       }
     } else {
-      if (handle->front().type() == detail::FragmentType::CAL) {
+      if (handle->front().type() == mu2e::detail::FragmentType::CAL) {
         for (auto frag : *handle) {
           mu2e::CalorimeterFragment cc(frag.dataBegin(), frag.dataSizeBytes());
           analyze_calorimeter_(cc, calo_hits, caphri_hits);
@@ -257,7 +252,7 @@ void art::CaloHitsFromFragments::analyze_calorimeter_(
     std::unique_ptr<mu2e::CaloHitCollection> const& caphri_hits) {
 
   if (diagLevel_ > 1) {
-    caloDAQUtil_.printCaloFragmentInfo(f, cc);
+    caloDAQUtil_.printCaloFragmentInfo(cc);
   }
 
   for (size_t curBlockIdx = 0; curBlockIdx < cc.block_count(); curBlockIdx++) {
@@ -294,7 +289,7 @@ void art::CaloHitsFromFragments::analyze_calorimeter_(
       caloDAQUtil_.printCaloFragmentHeader(hdr);
     }
 
-    if (hdr.GetPacketCount() == 0)
+    if (hdr->GetPacketCount() == 0)
       continue;
 
     auto calData = cc.GetCalorimeterData(curBlockIdx);

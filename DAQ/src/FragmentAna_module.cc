@@ -18,6 +18,7 @@
 #include "fhiclcpp/ParameterSet.h"
 #include "mu2e-artdaq-core/Overlays/CalorimeterFragment.hh"
 #include "mu2e-artdaq-core/Overlays/FragmentType.hh"
+#include "mu2e-artdaq-core/Overlays/Mu2eEventFragment.hh"
 #include "mu2e-artdaq-core/Overlays/TrackerFragment.hh"
 
 #include <artdaq-core/Data/Fragment.hh>
@@ -53,8 +54,8 @@ public:
   virtual void analyze(const art::Event& e) override;
 
 private:
-  void analyze_tracker_(const artdaq::Fragment& f);
-  void analyze_calorimeter_(const artdaq::Fragment& f);
+  void analyze_tracker_(const mu2e::TrackerFragment& cc);
+  void analyze_calorimeter_(const mu2e::CalorimeterFragment& cc);
 
   int diagLevel_;
 
@@ -134,19 +135,15 @@ void FragmentAna::analyze(const art::Event& event) {
   size_t totalSize = 0;
   size_t numTrkFrags = 0;
   size_t numCalFrags = 0;
-  std::vector<art::Handle<artdaq::Fragments>> fragmentHandles;
-#if ART_HEX_VERSION < 0x30900
-  evt.getManyByType(fragmentHandles);
-#else
-  fragmentHandles = evt.getMany<std::vector<artdaq::Fragment>>();
-#endif
+  std::vector<art::Handle<artdaq::Fragments>> fragmentHandles =
+      event.getMany<std::vector<artdaq::Fragment>>();
 
   for (const auto& handle : fragmentHandles) {
     if (!handle.isValid() || handle->empty()) {
       continue;
     }
 
-    if (handle->front().type() == detail::FragmentType::MU2EEVENT) {
+    if (handle->front().type() == mu2e::detail::FragmentType::MU2EEVENT) {
       for (const auto& cont : *handle) {
         mu2e::Mu2eEventFragment mef(cont);
         if (parseTRK_) {
@@ -162,7 +159,7 @@ void FragmentAna::analyze(const art::Event& event) {
         if (parseCAL_) {
           for (size_t ii = 0; ii < mef.calorimeter_block_count(); ++ii) {
             auto pair = mef.calorimeterAtPtr(ii);
-            mu2e::TrackerFragment cc(pair);
+            mu2e::CalorimeterFragment cc(pair);
             analyze_calorimeter_(cc);
 
             totalSize += pair.second;
@@ -171,20 +168,22 @@ void FragmentAna::analyze(const art::Event& event) {
         }
       }
     } else {
-      if (handle->front().type() == detail::FragmentType::TRK && parseTRK_) {
+      if (handle->front().type() == mu2e::detail::FragmentType::TRK && parseTRK_) {
         for (auto frag : *handle) {
           mu2e::TrackerFragment cc(frag.dataBegin(), frag.dataSizeBytes());
-          analyze_tracker_(cc );
+          analyze_tracker_(cc);
 
           totalSize += frag.dataSizeBytes();
           numTrkFrags++;
         }
-      } else if (handle->front().type() == detail::FragmentType::CAL && parseCAL_) {
-        mu2e::CalorimeterFragment cc(frag.dataBegin(), frag.dataSizeBytes());
-        analyze_calorimeter_(cc);
+      } else if (handle->front().type() == mu2e::detail::FragmentType::CAL && parseCAL_) {
+        for (auto frag : *handle) {
+          mu2e::CalorimeterFragment cc(frag.dataBegin(), frag.dataSizeBytes());
+          analyze_calorimeter_(cc);
 
-        totalSize += frag.dataSizeBytes();
-        numCalFrags++;
+          totalSize += frag.dataSizeBytes();
+          numCalFrags++;
+        }
       }
     }
   }
@@ -217,7 +216,6 @@ void FragmentAna::analyze_tracker_(const mu2e::TrackerFragment& cc) {
     std::cout << std::endl;
     std::cout << "ArtFragment: ";
     std::cout << "\tBlock Count: " << std::dec << cc.block_count() << std::endl;
-    std::cout << "\tByte Count: " << f.dataSizeBytes() << std::endl;
     std::cout << std::endl;
     std::cout << "\t"
               << "====== Example Block Sizes ======" << std::endl;
@@ -241,7 +239,7 @@ void FragmentAna::analyze_tracker_(const mu2e::TrackerFragment& cc) {
     auto hdr = block->GetHeader();
 
     // Parse phyiscs information from TRK packets
-    if (hdr.GetPacketCount() > 0 && parseTRK_ > 0) {
+    if (hdr->GetPacketCount() > 0 && parseTRK_ > 0) {
 
       // Create the StrawDigi data products
       auto trkDataVec = cc.GetTrackerData(curBlockIdx);
@@ -278,7 +276,7 @@ void FragmentAna::analyze_tracker_(const mu2e::TrackerFragment& cc) {
     }
   }
 
-  cc.ClearUpgradedPackets();
+  // cc.ClearUpgradedPackets();
 }
 
 void FragmentAna::analyze_calorimeter_(const mu2e::CalorimeterFragment& cc) {
@@ -287,7 +285,6 @@ void FragmentAna::analyze_calorimeter_(const mu2e::CalorimeterFragment& cc) {
     std::cout << std::endl;
     std::cout << "ArtFragment: ";
     std::cout << "\tBlock Count: " << std::dec << cc.block_count() << std::endl;
-    std::cout << "\tByte Count: " << f.dataSizeBytes() << std::endl;
     std::cout << std::endl;
     std::cout << "\t"
               << "====== Example Block Sizes ======" << std::endl;
@@ -310,7 +307,7 @@ void FragmentAna::analyze_calorimeter_(const mu2e::CalorimeterFragment& cc) {
     }
     auto hdr = block->GetHeader();
 
-    if (hdr.GetPacketCount() > 0 && parseCAL_ > 0) { // Parse phyiscs information from CAL packets
+    if (hdr->GetPacketCount() > 0 && parseCAL_ > 0) { // Parse phyiscs information from CAL packets
 
       auto calData = cc.GetCalorimeterData(curBlockIdx);
       if (calData == nullptr) {
