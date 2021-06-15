@@ -49,7 +49,7 @@ public:
   virtual void produce(Event&);
 
 private:
-  void analyze_tracker_(const artdaq::Fragment& f,
+  void analyze_tracker_(const mu2e::TrackerFragment& cc,
                         std::unique_ptr<mu2e::StrawDigiCollection> const& straw_digis,
                         std::unique_ptr<mu2e::StrawDigiADCWaveformCollection> const& straw_digi_adcs);
   int diagLevel_;
@@ -90,23 +90,51 @@ void art::StrawRecoFromFragmnets::produce(Event& event) {
   pbt->pbtime_ = 0;
   pbt->pbterr_ = 0;
   event.put(std::move(pbt));
-
-  art::Handle<artdaq::Fragments> trkFragments;
-  size_t numTrkFrags(0);
+    
   size_t totalSize = 0;
-  event.getByLabel(trkFragmentsTag_, trkFragments);
-  if (!trkFragments.isValid()) {
+  size_t numTrkFrags = 0;
+  std::vector<art::Handle<artdaq::Fragments>> fragmentHandles;
+#if ART_HEX_VERSION < 0x30900
+  evt.getManyByType(fragmentHandles);
+#else
+  fragmentHandles = evt.getMany<std::vector<artdaq::Fragment>>();
+#endif
+
+  for (const auto& handle : fragmentHandles) {
+    if (!handle.isValid() || handle->empty()) {
+      continue;
+    }
+
+    if (handle->front().type() == detail::FragmentType::MU2EEVENT) {
+      for (const auto& cont : *handle) {
+        mu2e::Mu2eEventFragment mef(cont);
+        for (size_t ii = 0; ii < mef.tracker_block_count(); ++ii) {
+          auto pair = mef.trackerAtPtr(ii);
+          mu2e::TrackerFragment cc(pair);
+          analyze_tracker_(cc, straw_digis, straw_digi_adcs);
+
+          totalSize += pair.second;
+          numTrkFrags++;
+        }
+      }
+    } else {
+      if (handle->front().type() == detail::FragmentType::TRK) {
+        for (auto frag : *handle) {
+          mu2e::TrackerFragment cc(frag.dataBegin(), frag.dataSizeBytes());
+          analyze_tracker_(cc, straw_digis, straw_digi_adcs);
+
+          totalSize += frag.dataSizeBytes();
+          numTrkFrags++;
+        }
+      }
+    }
+  }
+
+  if (numTrkFrags == 0) {
     std::cout << "[StrawRecoFromFragmnets::produce] found no Tracker fragments!"
 	      << std::endl;
     event.put(std::move(straw_digis));
     return;
-  }
-  numTrkFrags = trkFragments->size();
-  for (size_t idx = 0; idx < numTrkFrags; ++idx) {
-    auto size = ((*trkFragments)[idx]).sizeBytes(); // * sizeof(artdaq::RawDataType);
-    totalSize += size;
-    analyze_tracker_((*trkFragments)[idx], straw_digis, straw_digi_adcs);
-    //      std::cout << "\tTRK Fragment " << idx << " has size " << size << std::endl;
   }
   
   if (diagLevel_ > 1) {
@@ -131,16 +159,14 @@ void art::StrawRecoFromFragmnets::produce(Event& event) {
 } // produce()
 
 void art::StrawRecoFromFragmnets::analyze_tracker_(
-    const artdaq::Fragment& f, std::unique_ptr<mu2e::StrawDigiCollection> const& straw_digis,
+    const mu2e::TrackerFragment& cc, std::unique_ptr<mu2e::StrawDigiCollection> const& straw_digis,
     std::unique_ptr<mu2e::StrawDigiADCWaveformCollection> const& straw_digi_adcs) {
 
-  mu2e::TrackerFragment cc(f);
 
   if (diagLevel_ > 1) {
     std::cout << std::endl;
     std::cout << "TrackerFragment: ";
     std::cout << "\tBlock Count: " << std::dec << cc.block_count() << std::endl;
-    std::cout << "\tByte Count: " << f.dataSizeBytes() << std::endl;
     std::cout << std::endl;
     std::cout << "\t"
               << "====== Example Block Sizes ======" << std::endl;
