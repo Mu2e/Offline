@@ -341,9 +341,6 @@
  <class name="art::Wrapper<mu2e::ExtMonFNALTrkFitCollection>" />
 
 <!--  ********* trigger  ********* -->
-
- <class name="mu2e::TriggerFlagDetail"/>
- <class name="mu2e::TriggerFlag"/>
  <class name="mu2e::TriggerInfo"/>
  <class name="mu2e::TriggerInfoCollection" /> 
  <class name="art::Wrapper<mu2e::TriggerInfo>"/>
