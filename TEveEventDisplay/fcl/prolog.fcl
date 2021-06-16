@@ -82,7 +82,7 @@ TEveEventDisplayHelix : {
         KalSeedCollection         :  ["KFFDeM"]#, "KFFDeMHPar", "KFFDeMHDar" ]
         TrkExtTrajCollection      :  NULL
         MCTrajectoryCollection    :  "compressRecoMCs"
-        addHits 		  : false
+        addHits 		  : true
         addTracks 		  : true
         addCrvHits		  : false
         addCosmicSeedFit	  : false
@@ -90,7 +90,7 @@ TEveEventDisplayHelix : {
         addTrkExtTrajs		  : false
         addMCTraj		  : true
       }
-      particles :   [11,13,2212,2112,211,22,212]
+      particles :   [-11,11,13,-13,2212,2112,211,22,212]
   }   
 
 TEveEventDisplayCosmics : {

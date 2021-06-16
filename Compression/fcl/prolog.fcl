@@ -46,7 +46,7 @@ DigiCompressionTags : {
 }
 
 DigiCompression : {
-    TimeMaps : [ "compressDigiMCs:protonTimeMap", "compressDigiMCs:muonTimeMap", "compressDigiMCs:cosmicTimeMap" ]
+    TimeMaps : [ ]
 }
 DigiCompression : {
   @table::DigiCompression
@@ -54,8 +54,8 @@ DigiCompression : {
 	module_type : CompressDigiMCsCheck
 	oldStrawDigiMCTag : @local::DigiCompressionTags.commonStrawDigiMCTag
 	newStrawDigiMCTag : "compressDigiMCs"
-	OldTimeOffsets : { inputs : [ @sequence::CommonMC.TimeMaps  ] }
-	NewTimeOffsets : { inputs : [ @sequence::DigiCompression.TimeMaps ] }
+	OldTimeOffsets : { inputs : [ ] }
+	NewTimeOffsets : { inputs : [ ] }
 	oldCaloShowerSimTag : @local::DigiCompressionTags.commonCaloShowerSimTag
 	newCaloShowerSimTag : "compressDigiMCs"
 	oldCrvDigiMCTag : @local::DigiCompressionTags.commonCrvDigiMCTag
@@ -69,7 +69,7 @@ DigiCompression : {
 }
 
 RecoCompression : {
-    TimeMaps : [ "compressRecoMCs:protonTimeMap", "compressRecoMCs:muonTimeMap", "compressRecoMCs:cosmicTimeMap" ]
+    TimeMaps : [ ]
 }
 RecoCompression: {
   @table::RecoCompression
@@ -77,8 +77,8 @@ RecoCompression: {
       module_type : CompressDigiMCsCheck
       oldStrawDigiMCTag : "compressDigiMCs"
       newStrawDigiMCTag : "compressRecoMCs"
-      OldTimeOffsets : { inputs : [ @sequence::DigiCompression.TimeMaps ] }
-      NewTimeOffsets : { inputs : [ @sequence::RecoCompression.TimeMaps ] }
+      OldTimeOffsets : { inputs : [ ] }
+      NewTimeOffsets : { inputs : [ ] }
       strawDigiMCIndexMapTag : "SelectRecoMC:StrawDigiMap"
       oldCrvDigiMCTag : "compressDigiMCs"
       newCrvDigiMCTag : "compressRecoMCs"

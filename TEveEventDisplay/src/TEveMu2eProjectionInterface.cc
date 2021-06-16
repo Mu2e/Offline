@@ -77,7 +77,6 @@ namespace mu2e{
     calo2Dproj->fRZView->AddScene(calo2Dproj->fDetRZScene);
     calo2Dproj->fRZView->AddScene(calo2Dproj->fEvtRZScene);
 
-    
    // gEve->GetBrowser()->GetTabRight()->SetTab(0);
   }
   

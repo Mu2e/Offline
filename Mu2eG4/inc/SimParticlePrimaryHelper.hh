@@ -1,5 +1,5 @@
 // A G4 primary can be created from a GenParticle or from a
-// StepPointMC from a previous simulation stage.  This is a
+// supported object from a previous simulation stage.  This is a
 // bookkeeping helper to provide GenParticle and parent Ptrs for
 // SimParticles that are primary in the current simulation stage.
 // PrimaryGeneratorAction puts information in, and TrackingAction
@@ -7,64 +7,57 @@
 // to an existing collection, while SimParticle Ptrs point to the
 // one which is being produced by the current G4 job.
 //
-// Andrei Gaponenko, 2013
+// Andrei Gaponenko, 2013, 2021
 
 #ifndef Mu2eG4_inc_SimParticlePrimaryHelper
 #define Mu2eG4_inc_SimParticlePrimaryHelper
 
 #include <vector>
+#include <variant>
 
 #include "canvas/Persistency/Common/Ptr.h"
 #include "art/Framework/Principal/Handle.h"
 
 #include "MCDataProducts/inc/GenParticle.hh"
-#include "MCDataProducts/inc/GenParticleCollection.hh"
 #include "MCDataProducts/inc/SimParticle.hh"
-#include "MCDataProducts/inc/SimParticleCollection.hh"
-
-namespace art { class Event; }
 
 namespace mu2e {
 
+  class StepPointMC;
+  class StageParticle;
+
   class SimParticlePrimaryHelper {
   public:
+    // We need to keep the original art::Ptr just for GenParticles.
+    // For other cases a Ptr to the new collection will have to be created anyway, so do not bother.
+    typedef std::variant<art::Ptr<GenParticle>,
+                         const SimParticle*,
+                         const StepPointMC*,
+                         const StageParticle*>
+    InputParticle;
 
-    SimParticlePrimaryHelper(const art::Event* event,
-                             const art::ProductID& simProdID,
+
+    SimParticlePrimaryHelper(const art::ProductID& simProdID,
                              const art::EDProductGetter* sim_prod_getter);
 
-    unsigned numPrimaries() const { return entries_.size(); }
+    art::Ptr<GenParticle> genParticlePtr(int g4TrkID) const;
+    art::Ptr<SimParticle> simParticlePrimaryPtr(int g4TrkID) const;
 
-    const art::Ptr<GenParticle>& genParticlePtr(int g4TrkID) const {
-      return entries_.at(g4TrkID - 1).genParticlePtr;
+
+    InputParticle getEntry(int g4TrkID) const;
+
+    template<class T> void addEntry(T t) {
+      entries_.emplace_back(t);
     }
-
-    const art::Ptr<SimParticle>& simParticlePrimaryPtr(int g4TrkID) const {
-      return entries_.at(g4TrkID - 1).simParticlePrimaryPtr;
-    }
-
-    void addEntryFromGenParticle(const art::ValidHandle<GenParticleCollection>& gensHandle, unsigned genId);
-
-    void addEntryFromSimParticleId (SimParticleCollection::key_type simId);
 
   private:
 
-    struct Entry {
-      art::Ptr<GenParticle> genParticlePtr;
-      art::Ptr<SimParticle> simParticlePrimaryPtr;
-      Entry(const art::Ptr<GenParticle>& g, const art::Ptr<SimParticle>& p)
-        : genParticlePtr(g), simParticlePrimaryPtr(p)
-      {}
-    };
-
-    typedef std::vector<Entry> Entries;
+    typedef std::vector<InputParticle> Entries;
     Entries entries_;
 
-    // need these to create art::Ptr to SimParticles
+    // need these to create art::Ptr to the new SimParticles
     art::ProductID simProdID_;
-    const art::Event* event_;
     const art::EDProductGetter* simProductGetter_;
-
   };
 }
 

@@ -14,7 +14,7 @@ if 'MUSE_WORK_DIR' in env:
     command = "Offline/"+command
 
 # each of these generates a useful file or runs a test
-targets = ["DEPS","GDML","ROVERLAPS","TEST03","GITPACK","RMSO","VAL0"]
+targets = ["DEPS","GDML","ROVERLAPS","TEST03","GITPACK","RMSO"]
 
 for target in targets:
     exe_env.AlwaysBuild(exe_env.Alias(target, [], 

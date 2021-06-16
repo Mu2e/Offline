@@ -138,16 +138,6 @@ elif [ "$COMMAND" == "RMSO" ]; then
 	find . -name "*.o"  -delete
     fi
     rm -f .sconsign.dblite
-elif [ "$COMMAND" == "VAL0" ]; then
-    mkdir -p ${OUT}gen/val
-    mu2e -n 5 -c ${IN}Validation/fcl/ceSimReco.fcl -o ceSimReco.art -T /dev/null
-    [ $? -ne 0 ] && RC=1
-    mu2e -s ceSimReco.art -T ${OUT}gen/val/ceSimReco_5000.root -c ${IN}Validation/fcl/val.fcl
-    [ $? -ne 0 ] && RC=1
-    rm -f ceSimReco.art
-else
-  echo "[$(date)] procs.sh did not parse argument: $@"
-  exit 1
 fi
 
 if [ $RC -ne 0 ]; then

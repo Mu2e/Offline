@@ -27,25 +27,21 @@ namespace mu2e {
     typedef art::ToolConfigTable<PhysConfig> Parameters;
 
     explicit MuCapPhotonGenerator(Parameters const& conf) :
-      _pdgId(PDGCode::gamma),
-      _genId(GenId::MuCapPhotonGenTool),
-      _rate(GlobalConstantsHandle<PhysicsParams>()->getCapturePhotonRate()),
       _spectrum(BinnedSpectrum(conf().spectrum.get<fhicl::ParameterSet>()))
-    {
+    {}
 
-    }
-      void generate(std::unique_ptr<GenParticleCollection>& out, const IO::StoppedParticleF& stop) override;
+    std::vector<ParticleGeneratorTool::Kinematic> generate() override;
+    void generate(std::unique_ptr<GenParticleCollection>& out, const IO::StoppedParticleF& stop) override;
 
-    void setEngine(art::RandomNumberGenerator::base_engine_t& eng) {
+    void finishInitialization(art::RandomNumberGenerator::base_engine_t& eng, const std::string& material) override {
+      _rate = GlobalConstantsHandle<PhysicsParams>()->getCapturePhotonRate(material);
       _randomUnitSphere = new RandomUnitSphere(eng);
       _randomPoissonQ = new CLHEP::RandPoissonQ(eng, _rate);
       _randSpectrum = new CLHEP::RandGeneral(eng, _spectrum.getPDF(), _spectrum.getNbins());
     }
 
   private:
-    PDGCode::type _pdgId;
-    GenId _genId;
-    double _rate;
+    double _rate = 0.;
 
     BinnedSpectrum    _spectrum;
 
@@ -55,20 +51,31 @@ namespace mu2e {
     CLHEP::RandGeneral* _randSpectrum;
   };
 
-  void MuCapPhotonGenerator::generate(std::unique_ptr<GenParticleCollection>& out, const IO::StoppedParticleF& stop) {
-    const CLHEP::Hep3Vector pos(stop.x, stop.y, stop.z);
+
+  std::vector<ParticleGeneratorTool::Kinematic> MuCapPhotonGenerator::generate() {
+    std::vector<ParticleGeneratorTool::Kinematic>  res;
 
     int n_gen = _randomPoissonQ->fire();
     for (int i_gen = 0; i_gen < n_gen; ++i_gen) {
       double energy = _spectrum.sample(_randSpectrum->fire());
-
       const double p = energy;
       CLHEP::Hep3Vector p3 = _randomUnitSphere->fire(p);
       CLHEP::HepLorentzVector fourmom(p3, energy);
-      out->emplace_back(_pdgId,
-                        _genId,
+      ParticleGeneratorTool::Kinematic k{PDGCode::gamma, ProcessCode::mu2eMuonCaptureAtRest, fourmom};
+      res.emplace_back(k);
+    }
+
+    return res;
+  }
+
+  void MuCapPhotonGenerator::generate(std::unique_ptr<GenParticleCollection>& out, const IO::StoppedParticleF& stop) {
+    const CLHEP::Hep3Vector pos(stop.x, stop.y, stop.z);
+    const auto daughters = generate();
+    for(const auto& d: daughters) {
+      out->emplace_back(d.pdgId,
+                        GenId::MuCapPhotonGenTool,
                         pos,
-                        fourmom,
+                        d.fourmom,
                         stop.t);
     }
   }
