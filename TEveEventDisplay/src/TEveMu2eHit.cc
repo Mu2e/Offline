@@ -4,25 +4,33 @@ using namespace mu2e;
 namespace mu2e{
 
   TEveMu2eHit::TEveMu2eHit(){}
-  
+
   /*------------Function to build title:-------------*/
   std::string TEveMu2eHit::DataTitle(const std::string &pstr, int n){
         std::string dstr=" hit#" + std::to_string(n) + "\nLayer: ";
         std::string strlab=pstr+dstr;
         return (strlab);
   }
-  
+
   /*------------Function to display straws which are hit-------*/
-  std::tuple<CLHEP::Hep3Vector, CLHEP::Hep3Vector> TEveMu2eHit::DrawStraw(){
+  std::tuple<CLHEP::Hep3Vector, CLHEP::Hep3Vector, std::string, int> TEveMu2eHit::DrawStraw(){
         mu2e::GeomHandle<mu2e::Tracker> tracker;
         const auto& allStraws = tracker->getStraws();
         CLHEP::Hep3Vector sposi(0.0,0.0,0.0), sposf(0.0,0.0,0.0);
+        std::string strawtitle;
+        int colorid = 0;
         for (size_t i = 0; i<tracker->nStraws(); i++){
           const mu2e::Straw& s = allStraws[i];
           if(s.id().asUint16()==fComboHit_._sid.asUint16())
           {
           const CLHEP::Hep3Vector& p = s.getMidPoint();
           const CLHEP::Hep3Vector& d = s.getDirection();
+          int idStraw =  s.id().getStraw();
+          int idPanel =  s.id().getPanel();
+          int idPlane =  s.id().getPlane();
+          colorid = idPlane + idPanel;
+          strawtitle =Form("Straw %i Panel %i  Plane %i",idStraw,idPanel,idPlane);
+          std::cout<<idPanel<<" "<<idPlane<<std::endl;
           double x = p.x();
           double y = p.y();
           double z = p.z();
@@ -43,13 +51,13 @@ namespace mu2e{
           sposf.set(x2, y2, z2);
           }
         }
-        return {sposi, sposf};
+        return {sposi, sposf, strawtitle, colorid};
   }
   
   /*------------Function to 3D draw hits:-------------*/
   void TEveMu2eHit::DrawHit3D(const std::string &pstr, Int_t n, CLHEP::Hep3Vector pointInMu2e, int energylevel, TEveElementList *HitList)
-  {   
-    auto [sposi, sposf] = DrawStraw();
+  {
+    auto [sposi, sposf, title, colorid] = DrawStraw();
     if(sposi.x()!=0){
       GeomHandle<DetectorSystem> det;
       CLHEP::Hep3Vector sposin = det->toMu2e(sposi);
@@ -58,22 +66,19 @@ namespace mu2e{
       line->SetLineWidth(1);
       line->SetPoint(0,sposin.x(),sposin.y(),sposin.z());
       line->SetNextPoint(sposfn.x(),sposfn.y(),sposfn.z());
-      line->SetLineColor(kRed);
-      //string energy = to_string(points[0].kineticEnergy());
-   
-              const std::string title = " Straw hit";
-              line->SetTitle(Form(title.c_str()));
+      line->SetLineColor(colorid);
+      line->SetTitle(Form(title.c_str()));
       HitList->AddElement(line);
     }
-
+  
     this->SetTitle((DataTitle(pstr, n)).c_str());
     //hep3vectorTocm(pointInMu2e);
-    this->SetNextPoint(pointInMu2e.x(), pointInMu2e.y(), pointInMu2e.z()); 
+    this->SetNextPoint(pointInMu2e.x(), pointInMu2e.y(), pointInMu2e.z());
     int colors[] = {-7, 3, -6, -1, 9, 0, -4, 10, 1};
     this->SetMarkerColor(kSpring + colors[energylevel]);
     //this->SetMarkerSize(mSize_);
     this->SetPickable(kTRUE);
-    if(AddErrorBar_){ 
+    if(AddErrorBar_){
       TEveLine *error = new TEveLine();
       auto const& p = fComboHit_.pos();
       auto const& w = fComboHit_.wdir();
@@ -84,7 +89,7 @@ namespace mu2e{
       double z2 = (p.z()-s*w.z());
       double y1 = (p.y()+s*w.y());
       double y2 = (p.y()-s*w.y());
-      std::string errorbar = "ErrorBar Length: %d, %d, %d"; 
+      std::string errorbar = "ErrorBar Length: %d, %d, %d";
       error->SetTitle(Form(errorbar.c_str(), (x1 - x2), (y1 - y2), (z1 - z2)));
       GeomHandle<DetectorSystem> det;
       Hep3Vector vec1(x1, y1, z1);
@@ -101,33 +106,35 @@ namespace mu2e{
   }
 
   /*------------Function to 2D draw hits:-------------*/
-  void TEveMu2eHit::DrawHit2D(const std::string &pstr, Int_t n, CLHEP::Hep3Vector pointInMu2e, int energylevel, TEveElementList *HitList2DXY, TEveElementList *HitList2DXZ)
-  {     
-    auto [sposi, sposf] = DrawStraw();
+ void TEveMu2eHit::DrawHit2D(const std::string &pstr, Int_t n, CLHEP::Hep3Vector pointInMu2e, int energylevel, TEveElementList *HitList2DXY, TEveElementList *HitList2DXZ)
+  {
+    auto [sposi, sposf, title, colorid] = DrawStraw();
     if(sposi.x()!=0){
       TEveMu2eCustomHelix *line_twoDstrawXY = new TEveMu2eCustomHelix();
       line_twoDstrawXY->SetLineWidth(1);
       line_twoDstrawXY->SetPoint(0,pointmmTocm(sposi.x()),pointmmTocm(sposi.y()),pointmmTocm(sposi.z()));
       line_twoDstrawXY->SetNextPoint(pointmmTocm(sposf.x()),pointmmTocm(sposf.y()),pointmmTocm(sposf.z()));
-      line_twoDstrawXY->SetLineColor(kRed);
+      line_twoDstrawXY->SetLineColor(colorid);
+      line_twoDstrawXY->SetTitle(Form(title.c_str()));
       HitList2DXY->AddElement(line_twoDstrawXY);
       
       TEveMu2eCustomHelix *line_twoDstrawXZ = new TEveMu2eCustomHelix();
       line_twoDstrawXZ->SetLineWidth(1);
       line_twoDstrawXZ->SetPoint(0,pointmmTocm(sposi.x()),pointmmTocm(sposi.y())+ 1000,pointmmTocm(sposi.z()));
       line_twoDstrawXZ->SetNextPoint(pointmmTocm(sposf.x()),pointmmTocm(sposf.y())+ 1000,pointmmTocm(sposf.z()));
-      line_twoDstrawXZ->SetLineColor(kRed);
+      line_twoDstrawXZ->SetLineColor(colorid);
+      line_twoDstrawXZ->SetTitle(Form(title.c_str()));
       HitList2DXZ->AddElement(line_twoDstrawXZ);
     }
     this->SetTitle((DataTitle(pstr, n)).c_str());
     hep3vectorTocm(pointInMu2e);
-    this->SetNextPoint(pointInMu2e.x(), pointInMu2e.y(), pointInMu2e.z()); 
+    this->SetNextPoint(pointInMu2e.x(), pointInMu2e.y(), pointInMu2e.z());
     int colors[] = {-7, 3, -6, -1, 9, 0, -4, 10, 1};
     this->SetMarkerColor(kSpring + colors[energylevel]);
     //this->SetMarkerSize(mSize_);
     this->SetPickable(kTRUE);
-
-    if(AddErrorBar_){ 
+      
+    if(AddErrorBar_){
       TEveLine *error = new TEveLine();
       auto const& p = fComboHit_.pos();
       auto const& w = fComboHit_.wdir();
@@ -138,16 +145,17 @@ namespace mu2e{
       double z2 = (p.z()-s*w.z());
       double y1 = (p.y()+s*w.y());
       double y2 = (p.y()-s*w.y());
-      
-      std::string errorbar = "ErrorBar Length: %d, %d, %d"; 
+    
+      std::string errorbar = "ErrorBar Length: %d, %d, %d";
       error->SetTitle(Form(errorbar.c_str(), (x1 - x2), (y1 - y2), (z1 - z2)));
       error->SetPoint(0, pointmmTocm(x1),pointmmTocm(y1),pointmmTocm(z1));
       error->SetNextPoint(pointmmTocm(x2),pointmmTocm(y2),pointmmTocm(z2));
       error->SetLineColor(kRed);
       error->SetPickable(kTRUE);
       HitList2DXY->AddElement(error);
-    }
+    } 
     HitList2DXY->AddElement(this);
     HitList2DXZ->AddElement(this);
     }
   }
+  
