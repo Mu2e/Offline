@@ -29,6 +29,7 @@
 #include "Mu2eUtilities/inc/ThreeVectorUtil.hh"
 #include "MCDataProducts/inc/GenParticleCollection.hh"
 #include "MCDataProducts/inc/StepPointMCCollection.hh"
+#include "MCDataProducts/inc/StageParticle.hh"
 #include "GeometryService/inc/GeomHandle.hh"
 #include "GeometryService/inc/WorldG4.hh"
 #include "DataProducts/inc/PDGCode.hh"
@@ -89,7 +90,7 @@ namespace mu2e {
                       genpart.properTime(),
                       genpart.momentum());
 
-        perThreadObjects_->simParticlePrimaryHelper->addEntryFromGenParticle(h, i);
+        perThreadObjects_->simParticlePrimaryHelper->addEntry(art::Ptr<GenParticle>(h, i));
       }
     }
       break; // GenParticles
@@ -107,7 +108,7 @@ namespace mu2e {
                       hit.properTime(),
                       hit.momentum());
 
-        perThreadObjects_->simParticlePrimaryHelper->addEntryFromSimParticleId(hit.simParticle()->id());
+        perThreadObjects_->simParticlePrimaryHelper->addEntry(&hit);
       }
     }
       break; // StepPoints
@@ -129,8 +130,28 @@ namespace mu2e {
                         particle.endProperTime(),
                         particle.endMomentum());
 
-          perThreadObjects_->simParticlePrimaryHelper->addEntryFromSimParticleId(particle.id());
+          perThreadObjects_->simParticlePrimaryHelper->addEntry(&particle);
         }
+      }
+    }
+      break; // SimParticles
+
+    case Mu2eG4PrimaryType::StageParticles: {
+      auto const h = artEvent->getValidHandle<StageParticleCollection>(inputs.primaryTag());
+      for(const auto& s : *h) {
+        addG4Particle(event,
+                      s.pdgId(),
+
+                      0.0, // no excited ions here
+                      0,
+
+                      // Transform into G4 world coordinate system
+                      s.position() + mu2eOrigin,
+                      s.time(),
+                      0, //proper
+                      s.momentum());
+
+        perThreadObjects_->simParticlePrimaryHelper->addEntry(&s);
       }
     }
       break; // SimParticles

@@ -1,8 +1,0 @@
-#
-#  epilog to transform a serial Mu2eG4 job into a Mu2eG4MT job
-#  content from Lisa Goodenough
-#
-physics.producers.g4run.module_type : "Mu2eG4MT"
-physics.producers.g4run.maxEventsToSeed              : 20000
-services.scheduler.num_schedules : 5
-services.scheduler.num_threads   : 5

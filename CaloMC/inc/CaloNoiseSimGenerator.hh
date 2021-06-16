@@ -36,6 +36,7 @@ namespace mu2e {
             fhicl::Atom<bool>     enableAR       { Name("enableAR"),       Comment("Enable AR noise generation ") }; 
             fhicl::Atom<double>   nparAR         { Name("nParAR"),         Comment("Number parameters for AR fit ") }; 
             fhicl::Atom<unsigned> nMaxFragment   { Name("nMaxFragment"),   Comment("maximum number of wf generated for extracting noise fragments ") }; 
+            fhicl::Atom<int>      minPeakADC     { Name("minPeakADC"),     Comment("Minimum ADC hits of local peak to digitize") }; 
             fhicl::Atom<int>      diagLevel      { Name("diagLevel"),      Comment("Diag Level"),0 };
         };
 
@@ -69,6 +70,7 @@ namespace mu2e {
         double                digiSampling_;
         double                noiseRinDark_;
         double                noiseElec_;
+        double                minPeakADC_;
         CLHEP::RandPoissonQ   randPoisson_;
         CLHEP::RandGaussQ     randGauss_;
         CLHEP::RandFlat       randFlat_;

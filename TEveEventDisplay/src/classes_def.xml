@@ -17,6 +17,6 @@
   <class name="mu2e::TEveMu2eCalorimeter"/>
   <class name="mu2e::TEveMu2eCRV"/>
   <class name="mu2e::TEveMu2eMCTraj"/>
-
+  
 </lcgdict>
 

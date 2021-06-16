@@ -33,7 +33,7 @@ TemplateProcessor :
 CaloRecoDigiMaker :
 { 
     module_type         : CaloRecoDigiMaker
-    caloDigiModuleLabel : CaloDigiMaker
+    caloDigiCollection  : CaloDigiMaker
     RawProcessor        : { @table::RawProcessor }
     TemplateProcessor   : { @table::TemplateProcessor }
     processorStrategy   : "TemplateFit"     
@@ -46,10 +46,10 @@ CaloRecoDigiMaker :
 
 CaloHitMaker:
 {
-    module_type          : CaloHitMaker
-    caloDigisModuleLabel : CaloRecoDigiMaker	    	    
-    time4Merge           : 6.0   #ns
-    diagLevel            : 0
+    module_type            : CaloHitMaker
+    caloRecoDigiCollection : CaloRecoDigiMaker	    	    
+    time4Merge             : 6.0   #ns
+    diagLevel              : 0
 }
 
 

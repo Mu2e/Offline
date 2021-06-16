@@ -1688,14 +1688,14 @@ TrkFilters : {
 	tprCosmicSeedDeM     : [ tprCosmicSeedDeMEventPrescale, @sequence::CaloHitRecoTrigger.prepareHits,  @sequence::CaloClusterTrigger.Reco, 
 				 @sequence::TrkHitRecoTrigger.sequences.TTprepareHits, 
 				 TTtimeClusterFinder, tprCosmicSeedDeMTCFilter, TThelixFinder, TTHelixMergerDeM, tprCosmicSeedDeMHSFilter, TTKSFDeM, tprCosmicSeedDeMTSFilter, tprCosmicSeedDeMTriggerInfoMerger ]
-	tprCosmicSeedDeP     : [ tprCosmicSeedDePEventPrescale, @sequence::CaloClusterTrigger.Reco, 
+	tprCosmicSeedDeP     : [ tprCosmicSeedDePEventPrescale, @sequence::CaloHitRecoTrigger.prepareHits,  @sequence::CaloClusterTrigger.Reco, 
 				 @sequence::TrkHitRecoTrigger.sequences.TTprepareHits, 
 				 TTtimeClusterFinder, tprCosmicSeedDePTCFilter, TThelixFinder,TTHelixMergerDeP,  tprCosmicSeedDePHSFilter, TTKSFDeP, tprCosmicSeedDePTSFilter, tprCosmicSeedDePTriggerInfoMerger ]
 
 	tprCosmicHelixDeM     : [ tprCosmicHelixDeMEventPrescale, @sequence::CaloHitRecoTrigger.prepareHits,  @sequence::CaloClusterTrigger.Reco, 
 				 @sequence::TrkHitRecoTrigger.sequences.TTprepareHits, 
 				 TTtimeClusterFinder, tprCosmicHelixDeMTCFilter, TThelixFinder, TTHelixMergerDeM, tprCosmicHelixDeMHSFilter, tprCosmicHelixDeMTriggerInfoMerger ]
-	tprCosmicHelixDeP     : [ tprCosmicHelixDePEventPrescale, @sequence::CaloClusterTrigger.Reco, 
+	tprCosmicHelixDeP     : [ tprCosmicHelixDePEventPrescale, @sequence::CaloHitRecoTrigger.prepareHits, @sequence::CaloClusterTrigger.Reco, 
 				 @sequence::TrkHitRecoTrigger.sequences.TTprepareHits, 
 				 TTtimeClusterFinder, tprCosmicHelixDePTCFilter, TThelixFinder,TTHelixMergerDeP,  tprCosmicHelixDePHSFilter, tprCosmicHelixDePTriggerInfoMerger ]
 

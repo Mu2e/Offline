@@ -8,27 +8,13 @@ muLifeGenIds : [ "StoppedParticleReactionGun", "dioTail", "ExternalRMC", "Intern
 CommonMC: {
   producers: {
 #
-# time offsets
+# time offset producers
     protonTimeOffset : { module_type: ProtonTimeOffset }
-# time maps
-    protonTimeMap: { module_type : GenerateProtonTimes
-      # Exclude particles not generated from primary protons
-      ignoredGenIds : [@sequence::nonProtonGenIds ]
-    }
-    muonTimeMap:   { module_type : GenerateMuonLife
-      applyToGenIds : [@sequence::muLifeGenIds]
-    }
-    cosmicTimeMap:
-    {
-        module_type : GenerateCosmicTimes
-	StrawGasSteps : [  ] 
-	CaloShowerSteps : [ ]
-	CrvSteps : [ ]
-    }
+    cosmicTimeOffset : { module_type: CosmicTimeOffset }
 # Event window marker
     EWMProducer : { module_type : EventWindowMarkerProducer }
   }
-  TimeMaps : [ protonTimeMap, muonTimeMap, cosmicTimeMap ]
+  TimeMaps : [ ]
   FindMCPrimary : {
     module_type : FindMCPrimary
     debugLevel : 0
@@ -42,9 +28,8 @@ CommonMC: {
     module_type : SelectRecoMC
     debugLevel : 0
   }
+  DigiSim : [ EWMProducer  ]
 }
-CommonMC.DigiSim : [ EWMProducer,  @sequence::CommonMC.TimeMaps ]
-
 #------------------------------------------------------------------------------
 
 END_PROLOG

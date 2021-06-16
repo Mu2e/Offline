@@ -32,6 +32,7 @@
   X( GenParticles )                                  \
   X( StepPoints )                                    \
   X( SimParticleLeaves )                             \
+  X( StageParticles )                                \
   /**/
 
 namespace mu2e {
