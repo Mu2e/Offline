@@ -80,6 +80,29 @@ DAQ : {
 	 diagLevel: 0
 	 crvTag   : "daq:crv"
       }
+
+      FastMakeSH:
+      {
+         module_type : StrawHitRecoFromFragments
+         diagLevel : 0
+         printLevel : 0
+         FitType : 5
+         UseCalorimeter : false 
+         clusterDt : 100
+         minimumEnergy : 0.0
+         maximumEnergy : 0.0035
+         crossTalkEnergy : 0.007
+         crossTalkMinimumTime : -1
+         crossTalkMaximumTime : 100
+         minimumTime : 500
+         maximumTime : 2000
+         FilterHits : true
+         WriteStrawHitCollection : false
+         FlagCrossTalk : false
+         CaloClusterCollectionTag : "CaloClusterFast"
+         ProtonBunchTimeTag : "EWMProducer"
+         TrackerFragmentTag : "daq:trk"        
+      }
    }
 }
 END_PROLOG
