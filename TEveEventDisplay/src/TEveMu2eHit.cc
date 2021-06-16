@@ -59,6 +59,10 @@ namespace mu2e{
       line->SetPoint(0,sposin.x(),sposin.y(),sposin.z());
       line->SetNextPoint(sposfn.x(),sposfn.y(),sposfn.z());
       line->SetLineColor(kRed);
+      //string energy = to_string(points[0].kineticEnergy());
+   
+              const std::string title = " Straw hit";
+              line->SetTitle(Form(title.c_str()));
       HitList->AddElement(line);
     }
 
