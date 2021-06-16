@@ -50,8 +50,6 @@ namespace mu2e {
     // create the selector
     art::Selector selector(art::ProductInstanceNameSelector("") &&
 			   art::ProcessNameSelector("*")); 
-    //			   art::ModuleLabelSelector(""));// && 
-    //                           art::ProcessNameSelector("*"));
     std::vector<art::Handle<TriggerInfo> > list_of_triggerInfo; 
     event.getMany<TriggerInfo>(selector);
 

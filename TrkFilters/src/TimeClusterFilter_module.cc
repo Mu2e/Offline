@@ -30,7 +30,6 @@ namespace mu2e
     bool          _hascc; // Calo Cluster
     unsigned      _minnhits;
     double        _mintime, _maxtime;
-    std::string   _trigPath;
     int           _debug;
     // counters
     unsigned _nevt, _npass;
@@ -43,7 +42,6 @@ namespace mu2e
     _minnhits(pset.get<unsigned>("minNHits",11)),
     _mintime(pset.get<double>("minTime",500.0)),
     _maxtime(pset.get<double>("maxTime",1695.0)) ,
-    _trigPath(pset.get<std::string>("triggerPath")),
     _debug(pset.get<int>("debugLevel",0)),
     _nevt(0), _npass(0)
   {
@@ -58,7 +56,6 @@ namespace mu2e
     // find the collection
     auto tcH = evt.getValidHandle<TimeClusterCollection>(_tcTag);
     const TimeClusterCollection* tccol = tcH.product();
-    size_t trig_ind(0);
     // loop over the collection: if any pass the selection, pass this event
     for(auto itc = tccol->begin();itc != tccol->end(); ++itc) {
       auto const& tc = *itc;
@@ -71,15 +68,10 @@ namespace mu2e
         retval = true;
         ++_npass;
         // Fill the trigger info object
-        if (trig_ind == 0){
-	  triginfo->_triggerBits.merge(TriggerFlag::hitCluster);
-	  triginfo->_triggerPath = _trigPath;
-	}
         // associate to the hit cluster which triggers.  Note there may be other hit clusters which also pass the filter
         // but filtering is by event!
         size_t index = std::distance(tccol->begin(),itc);
 	triginfo->_hitClusters.push_back(art::Ptr<TimeCluster>(tcH,index));
-	++trig_ind;
         if(_debug > 1){
           std::cout << moduleDescription().moduleLabel() << " passed event " << evt.id() << std::endl;
         }
