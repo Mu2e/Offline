@@ -91,7 +91,6 @@ namespace mu2e {
   private:
 
     int _diagLevel;
-    std::string    _trigPath;
 
     std::string _MVAMethodLabel;
     std::string _caloTrigSeedModuleLabel;
@@ -239,7 +238,6 @@ namespace mu2e {
   FilterEcalMixedTrigger::FilterEcalMixedTrigger(fhicl::ParameterSet const& pset):
     art::EDFilter{pset},
     _diagLevel(pset.get<int>("diagLevel",0)),
-    _trigPath(pset.get<std::string>("triggerPath")),
     _MVAMethodLabel(pset.get<std::string>("MVAMethod","BDT")), 
     _caloTrigSeedModuleLabel(pset.get<std::string>("caloTrigSeedModuleLabel")), 
     _ecalweightsfile               (pset.get<std::string>("ecalweightsfile")),
@@ -735,10 +733,7 @@ namespace mu2e {
 	}
 	if (_rpeak>_MVArpivot){
 	  if (_mixedMVA>_mixedMVAlowcut[peak.disk]) {
-	    //FIX ME!!!!
-	    triginfo->_triggerBits.merge(TriggerFlag::caloTrigSeed);
-	    triginfo->_triggerBits.merge(TriggerFlag::hitCluster);	    
-	    triginfo->_triggerPath = _trigPath;
+	    //FIX ME!
 	    event.put(std::move(triginfo));
     	    return true;
 	  }
@@ -747,9 +742,6 @@ namespace mu2e {
 	  mixedMVAcut=_mixedMVAcutA[peak.disk]+_mixedMVAcutB[peak.disk]*_rpeak;
 	  if (_mixedMVA>mixedMVAcut) {
 	    //FIX ME!!!!
-	    triginfo->_triggerBits.merge(TriggerFlag::caloTrigSeed);
-	    triginfo->_triggerBits.merge(TriggerFlag::hitCluster);	    
-	    triginfo->_triggerPath = _trigPath;
 	    event.put(std::move(triginfo));	    
 	    return true;
 	  }

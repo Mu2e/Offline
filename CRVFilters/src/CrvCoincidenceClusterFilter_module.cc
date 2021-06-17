@@ -62,8 +62,6 @@ namespace mu2e {
 	Comment("CrvCoincidenceClusterFinder producer")};
       fhicl::Atom<size_t> minNCC{ Name("MinNCC"),
 	Comment("Minimum number of cluster of coincidences")};
-      fhicl::Atom<std::string> trgPath{ Name("triggerPath"),
-	Comment("label of the given trigger-path")};
     };
 
     virtual ~CrvCoincidenceClusterFilter() { }
@@ -83,8 +81,6 @@ namespace mu2e {
     int                     _nPass;
     art::InputTag           _clTag;
     size_t                  _minNCC;
-    std::string             _trigPath;
-    
   };
 
 
@@ -94,9 +90,7 @@ namespace mu2e {
     _nProcess                    (0),		     
     _nPass                       (0),		     
     _clTag                       (config().CRVCCF()),
-    _minNCC                      (config().minNCC()),
-    _trigPath                    (config().trgPath()){
-
+    _minNCC                      (config().minNCC()){
     produces<TriggerInfo>();
   }
 
