@@ -16,8 +16,6 @@
 #include "ProditionsService/inc/ProditionsHandle.hh"
 #include "Mu2eUtilities/inc/MVATools.hh"
 #include "AnalysisConditions/inc/TrkQualCatalog.hh"
-#include "TrkDiag/inc/InfoStructHelper.hh"
-#include "TrkDiag/inc/TrkInfo.hh"
 #include "GlobalConstantsService/inc/GlobalConstantsHandle.hh"
 #include "GlobalConstantsService/inc/ParticleDataTable.hh"
 // data
@@ -63,7 +61,6 @@ namespace mu2e
 
     mu2e::ProditionsHandle<mu2e::TrkQualCatalog> _trkQualCatalogH;
 
-    InfoStructHelper _infoStructHelper;
   };
 
   TrackQuality::TrackQuality(const Parameters& conf) :
@@ -102,14 +99,44 @@ namespace mu2e
       if (i_kalSeed.status().hasAllProperties(goodfit)) {
 
         // fill the hit count variables
-        TrkInfo tinfo;
-        _infoStructHelper.fillTrkInfoHits(i_kalSeed, tinfo);
-        _infoStructHelper.fillTrkInfoStraws(i_kalSeed, tinfo);
-        trkqual[TrkQual::nactive] = tinfo._nactive;
-        trkqual[TrkQual::factive] = (double) tinfo._nactive / tinfo._nhits;
-        trkqual[TrkQual::fdouble] = (double) tinfo._ndactive / tinfo._nactive;
-        trkqual[TrkQual::fnullambig] = (double) tinfo._nnullambig / tinfo._nactive;
-        trkqual[TrkQual::fstraws] = (double)tinfo._nmatactive / tinfo._nactive;
+        int nhits = 0; int nactive = 0; int ndouble = 0; int ndactive = 0; int nnullambig = 0;
+        static StrawHitFlag active(StrawHitFlag::active);
+        for (auto ihit = i_kalSeed.hits().begin(); ihit != i_kalSeed.hits().end(); ++ihit) {
+          ++nhits;
+          if (ihit->flag().hasAllProperties(active)) {
+            ++nactive;
+            if (ihit->ambig()==0) {
+              ++nnullambig;
+            }
+          }
+          auto jhit = ihit; jhit++;
+          if(jhit != i_kalSeed.hits().end() && ihit->strawId().uniquePanel() ==
+             jhit->strawId().uniquePanel()){
+            ++ndouble;
+            if(ihit->flag().hasAllProperties(active)) { ++ndactive; }
+          }
+        }
+
+        int ndof = nactive -5;
+        if (i_kalSeed.hasCaloCluster()) {
+          ++ndof;
+        }
+
+        int nmat = 0; int nmatactive = 0; int radlen = 0.0;
+        for (std::vector<TrkStraw>::const_iterator i_straw = i_kalSeed.straws().begin(); i_straw != i_kalSeed.straws().end(); ++i_straw) {
+          ++nmat;
+          if (i_straw->active()) {
+            ++nmatactive;
+            radlen += i_straw->radLen();
+          }
+        }
+
+
+        trkqual[TrkQual::nactive] = nactive;
+        trkqual[TrkQual::factive] = (double) nactive / nhits;
+        trkqual[TrkQual::fdouble] = (double) ndactive / nactive;
+        trkqual[TrkQual::fnullambig] = (double) nnullambig / nactive;
+        trkqual[TrkQual::fstraws] = (double)nmatactive / nactive;
 
         // fill fit consistency and t0 variables
         if (i_kalSeed.fitConsistency() > FLT_MIN) {
