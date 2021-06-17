@@ -43,9 +43,6 @@ int  bfield.verbosityLevel =  0;
 bool bfield.writeG4BLBinaries     =  false;
 
 vector<string> bfield.outerMaps = {
-  "BFieldMaps/Mau9/ExtMonUCIInternal1AreaMap.header",
-  "BFieldMaps/Mau9/ExtMonUCIInternal2AreaMap.header",
-  "BFieldMaps/Mau9/ExtMonUCIAreaMap.header",
   "BFieldMaps/Mau13/PSAreaMap.header",
   "BFieldMaps/Mau13/WorldMap.header"
 };
