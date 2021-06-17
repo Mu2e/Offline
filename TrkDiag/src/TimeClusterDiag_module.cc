@@ -24,7 +24,6 @@
 // TrkDiag
 #include "TrkDiag/inc/TimeClusterInfo.hh"
 #include "TrkDiag/inc/TrkMCTools.hh"
-#include "TrkDiag/inc/KalDiag.hh"
 // data
 #include "RecoDataProducts/inc/ComboHit.hh"
 #include "RecoDataProducts/inc/StrawHitFlag.hh"
