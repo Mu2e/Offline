@@ -72,6 +72,8 @@ namespace mu2e {
                           <<" events for "<<sr.id()<<"\n";
 
     sr.put(std::unique_ptr<GenEventCount>(new GenEventCount(seenEvents_)));
+
+    seenEvents_ = 0; // in case the job has more than one subrun
   }
 
   //================================================================
