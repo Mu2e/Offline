@@ -18,7 +18,6 @@
 #include "canvas/Utilities/InputTag.h"
 // utilities
 #include "Mu2eUtilities/inc/MVATools.hh"
-#include "TrkDiag/inc/InfoStructHelper.hh"
 // data
 #include "RecoDataProducts/inc/KalSeed.hh"
 #include "RecoDataProducts/inc/TrkCaloHitPID.hh"
