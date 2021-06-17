@@ -143,7 +143,7 @@ namespace mu2e {
     double digitizationEndFromMarker() const { return _digitizationEnd - _timeFromProtonsToDRMarker; }
     void adcTimes(double time, TrkTypes::ADCTimes& adctimes) const; // given crossing time, fill sampling times of ADC CHECK THIS IS CORRECT IN DRAC FIXME!
     double saturationVoltage() const { return _vsat; }
-    double threshold(StrawId const &sid, StrawEnd::End iend) const { return _vthresh[sid.uniqueStraw()*2 + iend]; }
+    double threshold(StrawId const &sid, StrawEnd::End iend) const { return _vthresh[sid.uniqueStrawEnd(iend)]; }
     double analogNoise(Path ipath) const { return _analognoise[ipath]; }  // incoherent noise
     double strawNoise() const { return _snoise;} // coherent part of threshold circuit noise
     double deadTimeAnalog() const { return _tdeadAnalog; }
@@ -205,6 +205,10 @@ namespace mu2e {
       _timeOffsetStrawHV = timeOffsetStrawHV;
       _timeOffsetStrawCal = timeOffsetStrawCal;
     }
+
+    double getTimeOffsetPanel(size_t ipanel) const { return _timeOffsetPanel[ipanel]; }
+    double getTimeOffsetStrawHV(size_t istraw) const { return _timeOffsetStrawHV[istraw]; }
+    double getTimeOffsetStrawCal(size_t istraw)const { return _timeOffsetStrawCal[istraw]; }
 
   private:
 
