@@ -48,7 +48,6 @@ namespace mu2e
     bool         useFilteredEvts_;
     int          _debug;
     //    TriggerFlag  _trigFlag;
-    std::string  _trigPath;
     unsigned     _nevt, _npass;
 
   };
@@ -58,8 +57,6 @@ namespace mu2e
       nPrescale_      (p.get<uint32_t>("nPrescale")),
       useFilteredEvts_(p.get<bool>    ("useFilteredEvents",false)),
       _debug          (p.get<int>     ("debugLevel",0)),
-      //      _trigFlag       (p.get<std::vector<std::string> >("triggerFlag")),
-      _trigPath       (p.get<std::string>("triggerPath")),
       _nevt(0), _npass(0)
   {
     // produces<TriggerInfo>();
@@ -74,11 +71,8 @@ namespace mu2e
 
     if(condition) {
       ++_npass;
-      // trigInfo->_triggerBits.merge(_trigFlag);
-      // trigInfo->_triggerPath = _trigPath;
       retval = true;
     }
-    // e.put(std::move(trigInfo));
     return retval;
   }
 

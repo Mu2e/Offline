@@ -66,8 +66,6 @@ namespace mu2e {
 	  Comment("Minimum energy deposit in a calo cluster")};
       fhicl::Atom<int> minNCl{ Name("MinNCl"),
 	  Comment("Minimum number of calo cluster")};
-      fhicl::Atom<std::string> trgPath{ Name("triggerPath"),
-	  Comment("label of the given trigger-path")};
     };
 
     virtual ~CaloClusterCounter() { }
@@ -88,7 +86,6 @@ namespace mu2e {
     art::InputTag           _clTag;
     double                  _minClEnergy;
     int                     _minNCl;
-    std::string             _trigPath;
     
   };
 
@@ -100,8 +97,7 @@ namespace mu2e {
     _nPass                       (0),		     
     _clTag                       (config().CCTag()),
     _minClEnergy                 (config().minNClE()),
-    _minNCl                      (config().minNCl()),
-    _trigPath                    (config().trgPath()){
+    _minNCl                      (config().minNCl()){
       
       produces<TriggerInfo>();
     }
