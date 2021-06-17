@@ -9,6 +9,8 @@
 #include <string>
 #include <math.h>
 
+#include "DataProducts/inc/StrawEnd.hh" 
+
 namespace mu2e {
 
   class StrawId{
@@ -151,6 +153,10 @@ namespace mu2e {
     // compact unique integer
       uint16_t uniqueStraw() const{
 	return uniquePanel()*_nstraws + straw();
+      }
+
+      uint16_t uniqueStrawEnd(StrawEnd::End iend) const{
+        return uniqueStraw()*2 + iend;
       }
 
       // logical comparators

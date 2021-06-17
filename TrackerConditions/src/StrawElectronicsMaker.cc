@@ -247,7 +247,7 @@ namespace mu2e {
 
   StrawElectronics::ptr_t StrawElectronicsMaker::fromDb(
 				   TrkDelayPanel::cptr_t tdp,
-				   TrkDelayPreamp::cptr_t tdpp,
+				   TrkDelayRStraw::cptr_t tdrs,
 				   TrkPreampStraw::cptr_t tps,
                                    EventTiming::cptr_t eventTiming ) {
     // initially fill from fcl to get all the constants
@@ -272,8 +272,8 @@ namespace mu2e {
     }
     for(size_t i=0; i<StrawId::_nustraws; i++) {
       size_t istraw = i % StrawId::_nstraws;
-      timeOffsetStrawHV[i] = tdpp->rowAt(istraw).delayHv() + tps->rowAt(i).delayHv();
-      timeOffsetStrawCal[i] = tdpp->rowAt(istraw).delayCal() + tps->rowAt(i).delayCal();
+      timeOffsetStrawHV[i] = tdrs->rowAt(istraw).delayHv() + tps->rowAt(i).delayHv();
+      timeOffsetStrawCal[i] = tdrs->rowAt(istraw).delayCal() + tps->rowAt(i).delayCal();
     }
 
     ptr->setOffsets( timeOffsetPanel,

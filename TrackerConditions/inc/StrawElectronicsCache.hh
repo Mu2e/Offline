@@ -5,7 +5,7 @@
 #include "DbTables/inc/DbIoV.hh"
 #include "DbService/inc/DbHandle.hh"
 #include "DbTables/inc/TrkDelayPanel.hh"
-#include "DbTables/inc/TrkDelayPreamp.hh"
+#include "DbTables/inc/TrkDelayRStraw.hh"
 #include "DbTables/inc/TrkPreampStraw.hh"
 #include "ProditionsService/inc/ProditionsHandle.hh"
 
@@ -23,7 +23,7 @@ namespace mu2e {
       _eventTiming_p = std::make_unique<ProditionsHandle<EventTiming> >();
       if(_useDb) {
 	_tdp_p  = std::make_unique<DbHandle<TrkDelayPanel>>();
-	_tdpp_p = std::make_unique<DbHandle<TrkDelayPreamp>>();
+	_tdrs_p = std::make_unique<DbHandle<TrkDelayRStraw>>();
 	_tps_p  = std::make_unique<DbHandle<TrkPreampStraw>>();
       }
     }
@@ -34,11 +34,11 @@ namespace mu2e {
       if(_useDb) { // use fcl config, overwrite part from DB
 	// get the tables up to date
 	_tdp_p->get(eid);
-	_tdpp_p->get(eid);
+	_tdrs_p->get(eid);
 	_tps_p->get(eid);
 	// save which data goes into this instance of the service
 	cids.insert(_tdp_p->cid());
-	cids.insert(_tdpp_p->cid());
+	cids.insert(_tdrs_p->cid());
 	cids.insert(_tps_p->cid());
       }
       return cids;
@@ -50,11 +50,11 @@ namespace mu2e {
       if(_useDb) { // use fcl config, overwrite part from DB
 	// get the tables up to date
 	_tdp_p->get(eid);
-	_tdpp_p->get(eid);
+	_tdrs_p->get(eid);
 	_tps_p->get(eid);
 	// restrict the valid range ot the overlap
 	iov.overlap(_tdp_p->iov());
-	iov.overlap(_tdpp_p->iov());
+	iov.overlap(_tdrs_p->iov());
 	iov.overlap(_tps_p->iov());
       }
       return iov;
@@ -64,7 +64,7 @@ namespace mu2e {
       auto et = _eventTiming_p->getPtr(eid);
       if(_useDb) {
 	return _maker.fromDb( _tdp_p->getPtr(eid),
-			      _tdpp_p->getPtr(eid), 
+			      _tdrs_p->getPtr(eid), 
 			      _tps_p->getPtr(eid),
                               et);
       } else {
@@ -83,7 +83,7 @@ namespace mu2e {
     // these handles are not default constructed
     // so the db can be completely turned off
     std::unique_ptr<DbHandle<TrkDelayPanel>> _tdp_p;
-    std::unique_ptr<DbHandle<TrkDelayPreamp>> _tdpp_p;
+    std::unique_ptr<DbHandle<TrkDelayRStraw>> _tdrs_p;
     std::unique_ptr<DbHandle<TrkPreampStraw>> _tps_p;
 
   };

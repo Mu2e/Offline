@@ -5,7 +5,7 @@
 #include "DbTables/inc/TstCalib2.hh"
 #include "DbTables/inc/TstCalib3.hh"
 #include "DbTables/inc/TrkDelayPanel.hh"
-#include "DbTables/inc/TrkDelayPreamp.hh"
+#include "DbTables/inc/TrkDelayRStraw.hh"
 #include "DbTables/inc/TrkPreampStraw.hh"
 #include "DbTables/inc/TrkAlignElement.hh"
 #include "DbTables/inc/TrkAlignStraw.hh"
@@ -25,8 +25,8 @@ mu2e::DbTable::ptr_t mu2e::DbTableFactory::newTable(std::string const& name) {
     return std::shared_ptr<mu2e::DbTable>(new mu2e::TstCalib3());
   } else if (name=="TrkDelayPanel") {
     return std::shared_ptr<mu2e::DbTable>(new mu2e::TrkDelayPanel());
-  } else if (name=="TrkDelayPreamp") {
-    return std::shared_ptr<mu2e::DbTable>(new mu2e::TrkDelayPreamp());
+  } else if (name=="TrkDelayRStraw") {
+    return std::shared_ptr<mu2e::DbTable>(new mu2e::TrkDelayRStraw());
   } else if (name=="TrkPreampStraw") {
     return std::shared_ptr<mu2e::DbTable>(new mu2e::TrkPreampStraw());
   } else if (name=="TrkAlignTracker") {
