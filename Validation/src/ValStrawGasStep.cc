@@ -1,4 +1,3 @@
-
 #include "Validation/inc/ValStrawGasStep.hh"
 #include "GeometryService/inc/GeomHandle.hh"
 #include "TrackerGeom/inc/Tracker.hh"
@@ -10,6 +9,7 @@ int mu2e::ValStrawGasStep::declare(art::TFileDirectory tfs) {
   _ht = tfs.make<TH1D>( "t", "time", 100, -100.0, 2000.0);
   _hE = tfs.make<TH1D>( "E", "Energy",50, 0.0, 0.01);
   _hlen = tfs.make<TH1D>( "Length", "steplength",100, 0.0, 10.0);
+  _pmom = tfs.make<TH1D>( "log10(pmom)", "Particle momentum",100, -5,5);
   _hz = tfs.make<TH1D>( "Z", "Z",100, -1600.0, 1600.0);
   _hSI = tfs.make<TH1D>( "Straw", "Unique Straw",100, -0.5, StrawId::_nustraws-0.5);
 
@@ -29,6 +29,7 @@ int mu2e::ValStrawGasStep::fill(const mu2e::StrawGasStepCollection & coll,
     _ht->Fill(gs.time());
     _hE->Fill(gs.ionizingEdep());
     _hlen->Fill(gs.stepLength());
+    _pmom->Fill(log10(gs.momentum().R()));
     _hz->Fill(gs.startPosition().z());
     _hSI->Fill(gs.strawId().uniqueStraw());
   }
