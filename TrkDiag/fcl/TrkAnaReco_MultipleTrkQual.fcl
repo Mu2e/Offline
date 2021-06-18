@@ -1,7 +1,0 @@
-#include "TrkDiag/fcl/TrkAnaReco.fcl"
-# Add another TrkQual module with a different training
-# (NB to be read out by TrkAna it must have the same suffix)
-physics.producers.TrkQualNewDeP : @local::TrkQualDeP
-physics.producers.TrkQualNewDeP.TrainingName : "TrkQualPosNew"
-physics.TrkAnaTrigPath : [ @sequence::TrkAnaReco.TrigSequence, TrkQualNewDeP ]
-
