@@ -172,7 +172,7 @@ art::CaloHitsFromFragments::CaloHitsFromFragments(const art::EDProducer::Table<C
     pulseRatioMin_(config().pulseRatioMin()), hitEDepMax_(config().hitEDepMax()),
     caloDAQUtil_("CaloHitsFromFragments") {
   pulseMap_.reserve(4000);
-  produces<mu2e::CaloHitCollection>();
+  produces<mu2e::CaloHitCollection>("calo");
   produces<mu2e::CaloHitCollection>("caphri");
 }
 
@@ -196,6 +196,9 @@ void art::CaloHitsFromFragments::produce(Event& event) {
       continue;
     }
 
+    if (diagLevel_ > 1) {
+      std::cout << "[CaloHitsFromFragments::produce] Fragment type of first Fragment in handle: " << static_cast<int>(handle->front().type()) << std::endl;
+    }
     if (handle->front().type() == mu2e::detail::FragmentType::MU2EEVENT) {
       for (const auto& cont : *handle) {
         mu2e::Mu2eEventFragment mef(cont);
@@ -223,8 +226,8 @@ void art::CaloHitsFromFragments::produce(Event& event) {
 
   if (numCalFrags == 0) {
     std::cout << "[CaloHitsFromFragments::produce] found no Calorimeter fragments!" << std::endl;
-    event.put(std::move(calo_hits));
-    event.put(std::move(caphri_hits));
+    event.put(std::move(calo_hits), "calo");
+    event.put(std::move(caphri_hits), "caphri");
     return;
   }
 
@@ -242,7 +245,7 @@ void art::CaloHitsFromFragments::produce(Event& event) {
   }
 
   // Store the calo hits in the event
-  event.put(std::move(calo_hits));
+  event.put(std::move(calo_hits), "calo");
   event.put(std::move(caphri_hits), "caphri");
 
 } // produce()

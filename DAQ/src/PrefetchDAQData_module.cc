@@ -41,7 +41,7 @@ namespace mu2e {
     int   _fetchStrawDigis;
     int   _fetchCaloFragments;
     int   _fetchTrkFragments;
-    int _fetchAllFragments;
+    int   _fetchAllFragments;
 
     art::InputTag                  _cdTag;
     art::InputTag                  _sdTag;
@@ -63,7 +63,7 @@ namespace mu2e {
     _fetchStrawDigis   (pset.get<int>        ("fetchStrawDigis")),
     _fetchCaloFragments(pset.get<int>        ("fetchCaloFragments")),
     _fetchTrkFragments (pset.get<int>        ("fetchTrkFragments")),
-      _fetchAllFragments(pset.get<int>("fetchAllFragments")),
+    _fetchAllFragments (pset.get<int>        ("fetchAllFragments")),
     _cdTag             (pset.get<std::string>("caloDigiCollectionTag")),
     _sdTag             (pset.get<std::string>("strawDigiCollectionTag")),
     _cfTag             (pset.get<std::string>("caloFragmentTag")),
