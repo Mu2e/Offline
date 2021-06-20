@@ -835,7 +835,7 @@ namespace mu2e {
       for (int k=0; k<nLabels; ++k){
        	label_ref = VecLabels.at(k).c_str();
 	for (int j=0; j<nbins; ++j){
-	  if (j == i)      break;
+	  //if (j == i)      break;
 	  label =   _sumHist._h2DTrigInfo[1]->GetYaxis()->GetBinLabel(j+1);
 	  if (std::strcmp(label_ref, label) != 0)        continue;
 	  NCorrelated += _sumHist._h2DTrigInfo[1]->GetBinContent(i+1, j+1);
