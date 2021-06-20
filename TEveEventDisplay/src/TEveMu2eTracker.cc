@@ -1,6 +1,8 @@
 #include "TEveEventDisplay/src/shape_classes/TEveMu2eTracker.h"
 #include "StoppingTargetGeom/inc/StoppingTarget.hh"
 #include "StoppingTargetGeom/inc/TargetFoil.hh"
+#include "CalorimeterGeom/inc/DiskCalorimeter.hh"
+#include "CalorimeterGeom/inc/Calorimeter.hh"
 
 using namespace mu2e;
 namespace mu2e{
@@ -136,6 +138,26 @@ namespace mu2e{
 
         
         }
+        
+        //Addition of Calo disk in the Tracker XZ display window
+        mu2e::GeomHandle<mu2e::DiskCalorimeter> calo;
+
+       double diskCaseDZLength      = calo->caloInfo().getDouble("diskCaseZLength")/2.0;
+       double diskInnerRingIn       = calo->caloInfo().getDouble("diskInnerRingIn");
+       double diskOuterRingOut      = calo->caloInfo().getDouble("diskOuterRingOut");
+       double diskOuterRailOut      = diskOuterRingOut + calo->caloInfo().getDouble("diskOutRingEdgeRLength");
+       std::cout<<"Calo Disk info "<<diskCaseDZLength<<" "<<diskOuterRingOut <<" "<<diskOuterRailOut<<std::endl;
+       Double_t origin_disk[3];
+       CLHEP::Hep3Vector Pos_disk(0,1200,0);
+
+      origin_disk[0] = Pos_disk.x();
+      origin_disk [1] = Pos_disk.y();
+      origin_disk [2] = Pos_disk.z();
+       TEveGeoShape *cdXZ = new TEveGeoShape();
+        cdXZ->SetShape(new TGeoBBox("CaloDisk",pointmmTocm(diskOuterRingOut),pointmmTocm(diskOuterRingOut),pointmmTocm(diskCaseDZLength), origin_disk));
+        cdXZ->SetMainTransparency(100);
+        orthodetXZ->AddElement(cdXZ);
+
 
 
   }
