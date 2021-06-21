@@ -32,9 +32,11 @@ namespace mu2e {
 
       struct ParticleCodeSelector {
 	PDGCode::type pdgCode_;
-	ProcessCode creationCode_, terminationCode_;
+	int creationCode_, terminationCode_;
 	bool select(SimParticle const& part) const {
-	  return part.pdgId() == pdgCode_ && part.creationCode() == creationCode_ && part.stoppingCode() == terminationCode_;
+	  return part.pdgId() == pdgCode_
+	    && ( creationCode_ < 0 || part.creationCode() == creationCode_) 
+	    && ( terminationCode_ < 0 || part.stoppingCode() == terminationCode_);
 	}
       };
 
@@ -54,8 +56,8 @@ namespace mu2e {
     for(auto const& pconfig : conf().codeConfig()) {
       ParticleCodeSelector pselector;
       pselector.pdgCode_ = static_cast<PDGCode::type>(std::get<0>(pconfig));
-      pselector.creationCode_ = ProcessCode(static_cast<ProcessCode::enum_type>(std::get<1>(pconfig)));
-      pselector.terminationCode_ = ProcessCode(static_cast<ProcessCode::enum_type>(std::get<2>(pconfig)));
+      pselector.creationCode_ = std::get<1>(pconfig);
+      pselector.terminationCode_ = std::get<2>(pconfig);
       if(printLevel_ > 0) std::cout << "Creating selector of PDGcode " << pselector.pdgCode_ 
       << " creation code " << pselector.creationCode_
       << " termination code " << pselector.terminationCode_ << std::endl;
