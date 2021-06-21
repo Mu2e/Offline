@@ -43,7 +43,6 @@ namespace mu2e
       fhicl::Atom<int>          minncrystalhits  { Name("MinNCrystalHits"),        Comment("Minimum Number of crystal hits") }; 
       fhicl::Atom<double>       minenergy        { Name("MinEnergy"),              Comment("Minimum Energy for the clusters") }; 
       fhicl::Atom<double>       maxenergy        { Name("MaxEnergy"),              Comment("Maximum Energy for the clusters") }; 
-      fhicl::Atom<std::string>  trigPath         { Name("triggerPath"),            Comment("Name of the trigger path") }; 
       fhicl::Atom<int>          debug            { Name("debugLevel"),             Comment("Debug Level") }; 
       fhicl::Atom<int>          mincelinout      { Name("MinNumCelinout"),         Comment("Minimum Number of crystals for IN-OUT algo") }; 
       fhicl::Atom<int>          minceldiag       { Name("MinNumCeldiagver"),       Comment("Minimum Number of crystals for DIAG-VER algo") }; 
@@ -64,7 +63,6 @@ namespace mu2e
     art::InputTag _cltag;
     int           _minncrystalhits;
     double        _minenergy, _maxenergy;
-    std::string   _trigPath;
     int           _debug;
     int           _mincelinout;
     int           _minceldiag;
@@ -86,7 +84,6 @@ namespace mu2e
     _minncrystalhits(config().minncrystalhits()),      
     _minenergy      (config().minenergy()),
     _maxenergy      (config().maxenergy()),
-    _trigPath       (config().trigPath()),
     _debug          (config().debug()),
     _mincelinout    (config().mincelinout()),
     _minceldiag     (config().minceldiag()),
@@ -117,7 +114,6 @@ namespace mu2e
     // find the collection
     auto clH = evt.getValidHandle<CaloClusterCollection>(_cltag);
     const CaloClusterCollection* clcol = clH.product();
-    size_t trig_ind(0);
     
     const CaloHit* hitcalo(0);
     const CaloHitPtrVector* caloClusterHits(0);
@@ -210,16 +206,10 @@ namespace mu2e
 	  retval = true;
 	  ++_npass;
 	  // Fill the trigger info object
-	  if (trig_ind == 0){
-	    triginfo->_triggerBits.merge(TriggerFlag::caloCalib);
-	    triginfo->_triggerPath = _trigPath;
-	  }
-	  //
 	  // associate to the caloClusters which trigger
 	  //
 	  size_t index = std::distance(clcol->begin(),icl);
 	  triginfo->_caloClusters.push_back(art::Ptr<CaloCluster>(clH,index));   
-	  ++trig_ind;
 	  
 	  if(_debug > 1){
 	    std::cout << moduleDescription().moduleLabel() << " passed event " << evt.id() << std::endl;

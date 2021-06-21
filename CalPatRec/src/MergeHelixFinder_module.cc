@@ -35,7 +35,6 @@
 
 #include "ConfigTools/inc/ConfigFileLookupPolicy.hh"
 
-#include "TrkDiag/inc/KalDiag.hh"
 #include "BTrkData/inc/Doublet.hh"
 #include "TrkReco/inc/DoubletAmbigResolver.hh"
 

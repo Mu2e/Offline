@@ -6,7 +6,7 @@
 // An example is stage 1 POT jobs.
 //
 // Warning:
-//  There are multiple points of maintenance when you change bfield.innerMaps
+//  There are multiple points of maintenance when you change any bfield maps.
 //    - bfgeom_v01.txt           ( the base geometry  )
 //    - bfgeom_no_ds_v01.txt     ( DS map removed     )
 //    - bfgeom_reco_v01.txt      ( only maps needed for reconstruction )
@@ -21,8 +21,7 @@ vector<string> bfield.innerMaps = {
   "BFieldMaps/Mau13/TSuMap_fix.header",
   "BFieldMaps/Mau13/TSdMap.header",
   "BFieldMaps/Mau13/PStoDumpAreaMap.header",
-  "BFieldMaps/Mau13/ProtonDumpAreaMap.header",
-  "BFieldMaps/Mau13/DSExtension.header"
+  "BFieldMaps/Mau13/ProtonDumpAreaMap.header"
 };
 
 

@@ -87,7 +87,6 @@
 #include "RecoDataProducts/inc/ExtMonFNALTrkFitCollection.hh"
 
 // trigger
-#include "RecoDataProducts/inc/TriggerFlag.hh"
 #include "RecoDataProducts/inc/TriggerInfo.hh"
 
 // POT / stopped muons monitoring bvitaly May 2021

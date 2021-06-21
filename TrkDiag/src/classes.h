@@ -1,12 +1,6 @@
 #include "TrkDiag/inc/StrawHitInfo.hh"
-#include "TrkDiag/inc/TrkStrawHitInfoMC.hh"
-#include "TrkDiag/inc/TrkStrawHitInfo.hh"
-#include "TrkDiag/inc/TrkStrawMatInfo.hh"
 #include "TrkDiag/inc/TrkCaloInfo.hh"
 #include "TrkDiag/inc/TrkHitShare.hh"
-#include "TrkDiag/inc/EventInfo.hh"
-#include "TrkDiag/inc/HitCount.hh"
-#include "TrkDiag/inc/TrkCount.hh"
 #include "TrkDiag/inc/TimeClusterInfo.hh"
 #include "TrkDiag/inc/HitInfoMC.hh"
 #include "TrkDiag/inc/HelixHitInfo.hh"
@@ -19,10 +13,5 @@
 #include "CRVAnalysis/inc/CrvSummaryMC.hh"
 #include "CRVAnalysis/inc/CrvPulseInfoReco.hh"
 #include "CRVAnalysis/inc/CrvWaveformInfo.hh"
-#include "TrkDiag/inc/TrkInfo.hh"
-#include "TrkDiag/inc/TrkCaloHitInfo.hh"
-#include "TrkDiag/inc/TrkQualInfo.hh"
-#include "TrkDiag/inc/EventWeightInfo.hh"
-#include "TrkDiag/inc/RecoQualInfo.hh"
 #include <map>
 #include <vector>
