@@ -258,7 +258,7 @@ namespace mu2e {
 
     mat = uniqueMaterialOrThrow( "IPAPolyethylene");
     {
-      G4Material* IPAPolyethylene = new G4Material( mat.name, 0.96*CLHEP::g/CLHEP::cm3, 2);
+      G4Material* IPAPolyethylene = new G4Material( mat.name, 0.90*CLHEP::g/CLHEP::cm3, 2);
       IPAPolyethylene->AddMaterial( findMaterialOrThrow("G4_H"), 0.14);
       IPAPolyethylene->AddMaterial( findMaterialOrThrow("G4_C"), 0.86);
     }

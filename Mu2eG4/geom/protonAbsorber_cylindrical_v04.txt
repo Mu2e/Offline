@@ -18,7 +18,7 @@ int protonabsorber.verbosityLevel = 0;
 
 //IPA updates
 
-string protonabsorber.materialName = "Polyethylene090";
+string protonabsorber.materialName = "IPAPolyethylene";
 double protonabsorber.OutRadius1   =  300.5; //design is 300 mm inner radius, so add thickness to outer here
 double protonabsorber.OutRadius0   =  300.5;
 double protonabsorber.thickness    =    0.5;
