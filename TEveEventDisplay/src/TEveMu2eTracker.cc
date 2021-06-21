@@ -39,7 +39,6 @@ namespace mu2e{
         p = p + 15.568;
         }
 
-
       /*//Tracker Planes in XZ
       //int nplane = trkr->getPlane(0).nplanes();
       unsigned int nplanes = trkr->nPlanes();
@@ -59,30 +58,8 @@ namespace mu2e{
         panel->SetMainTransparency(100);
         orthodetXZ->AddElement(panel);
         p = p + 15.568;
-        }
-      
-      
-      /*//Tracker Planes in XZ   
-      //int nplane = trkr->getPlane(0).nplanes();
-      unsigned int nplanes = trkr->nPlanes();
-      double p = 0.0;
-      for(int i =0;i<nplanes;i++)
-        {
-        Double_t planepos[3];
-        Double_t zplane{pointmmTocm(2*trkr->g4Tracker()->getplaneEnvelopeParams().zHalfLength())};
-        TEveGeoShape *plane = new TEveGeoShape();
-        CLHEP::Hep3Vector Pos_plane(0,1000,p-dz+zplane);
+        }*/
         
-        planepos [0] = Pos_plane.x();
-        planepos [1] = Pos_plane.y(); 
-        planepos [2] = Pos_plane.z(); 
-        
-        plane->SetShape(new TGeoBBox("plane",rmax+rmin/2,rmax+rmin/2,zplane,planepos));
-        plane->SetMainTransparency(100);
-        orthodetXZ->AddElement(plane);
-        p = p + 15.568;
-        }
-      */
       //XY:
       TEveGeoShape *tr = new TEveGeoShape();
       tr->SetShape(new TGeoTube(rmin, rmax, dz));
