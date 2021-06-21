@@ -18,8 +18,7 @@ namespace mu2e{
       Double_t dz{pointmmTocm(envelope.zHalfLength())};
       Double_t rmin{pointmmTocm(envelope.innerRadius())};
       Double_t rmax{pointmmTocm(envelope.outerRadius())};
-      Double_t dr = rmax - rmin;
-
+        
       //Tracker Planes in XZ
       double p = 0.0;
       for(int i =0;i<20;i++)
@@ -76,7 +75,7 @@ namespace mu2e{
       tracker->SetInvisible();
       topvol->AddNode(tracker, 1, new TGeoTranslation(-390.4,+1000,1017.1));
      
-      // Addition of Stopping Target geometry
+      //Stopping Target 
       GeomHandle<StoppingTarget> target;
       CLHEP::Hep3Vector _detSysOrigin = mu2e::GeomHandle<mu2e::DetectorSystem>()->getOrigin();
       double stoppingtargetlength=target->cylinderLength();
@@ -110,10 +109,9 @@ namespace mu2e{
         orthodetXY->AddElement(stXY);
         }
         
-        // Addition of Calo disks in the Tracker XZ display window
+        //Calo disks in the Tracker XZ display window
         GeomHandle<DiskCalorimeter> calo;   
        
-        double diskCaseDZLength = calo->caloInfo().getDouble("diskCaseZLength")/2.0;
         double diskInnerRingIn = calo->caloInfo().getDouble("diskInnerRingIn");
         double diskOuterRingOut = calo->caloInfo().getDouble("diskOuterRingOut");
         double diskOuterRailOut = diskOuterRingOut + calo->caloInfo().getDouble("diskOutRingEdgeRLength");
