@@ -72,6 +72,8 @@ namespace mu2e {
       Name("minT0DOCA"), Comment("FIXME should be moved to a reconstruction configuration ")};
     fhicl::Atom<double> t0shift {
       Name("t0shift"), Comment("FIXME should be average slewing?")};
+    fhicl::Atom<double> defaultPeakMinusPedestalEnergyScale {
+      Name("defaultPeakMinusPedestalEnergyScale"), Comment("default constant value for pmp energy method calibration")};
     fhicl::Sequence<double> peakMinusPedestalEnergyScale {
       Name("peakMinusPedestalEnergyScale"), Comment(" fudge factor for peak minus pedestal energy method ")};
     fhicl::Sequence<double> timeOffsetPanel {
