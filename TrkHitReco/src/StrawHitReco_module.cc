@@ -28,6 +28,7 @@
 #include "TrkHitReco/inc/PeakFitRoot.hh"
 #include "TrkHitReco/inc/PeakFitFunction.hh"
 #include "TrkHitReco/inc/ComboPeakFitRoot.hh"
+#include "TrkHitReco/inc/StrawHitRecoUtils.hh"
 
 #include "RecoDataProducts/inc/ProtonBunchTime.hh"
 #include "DataProducts/inc/StrawEnd.hh"
@@ -35,6 +36,7 @@
 #include "RecoDataProducts/inc/StrawDigi.hh"
 #include "RecoDataProducts/inc/ComboHit.hh"
 #include "RecoDataProducts/inc/StrawHit.hh"
+
 
 #include "TH1F.h"
 
@@ -108,9 +110,6 @@ namespace mu2e {
       // diagnostic
       TH1F* _maxiter;
       // helper function
-      float peakMinusPedAvg(TrkTypes::ADCWaveform const& adcData) const;
-      float peakMinusPed(StrawId id, TrkTypes::ADCWaveform const& adcData) const;
-      float peakMinusPedFirmware(StrawId id, TrkTypes::ADCValue const& pmp) const;
       ProditionsHandle<StrawResponse> _strawResponse_h;
       ProditionsHandle<TrackerStatus> _trackerStatus_h;
       ProditionsHandle<Tracker> _alignedTracker_h;
@@ -189,6 +188,7 @@ namespace mu2e {
         auto sdawH = event.getValidHandle(_sdadctoken);
         sdadccol = sdawH.product();
       }
+      StrawDigiADCWaveform adcwaveform;
 
       const CaloClusterCollection* caloClusters(0);
       if(_usecc){
@@ -210,184 +210,31 @@ namespace mu2e {
       std::unique_ptr<ComboHitCollection> chCol(new ComboHitCollection());
       chCol->reserve(sdcol.size());
 
-      std::vector<std::vector<size_t> > hits_by_panel(nplanes*npanels,std::vector<size_t>());
-      std::vector<size_t> largeHits, largeHitPanels;
-      largeHits.reserve(sdcol.size());
-      largeHitPanels.reserve(sdcol.size());
+
 
       TrackerStatus const& trackerStatus = _trackerStatus_h.get(event.id());
 
+      mu2e::StrawHitRecoUtils shrUtils(pbtOffset, _fittype, _npre, _invnpre, _invgainAvg, _invgain,
+          _diagLevel, _maxiter, _mask, nplanes, npanels, _writesh, _minT, _maxT, _minE, _maxE, _filter, _flagXT,
+          _ctE, _ctMinT, _ctMaxT, _usecc, _clusterDt, sdcol.size());
+
       for (size_t isd=0;isd<sdcol.size();++isd) {
 	const StrawDigi& digi = sdcol[isd];
-	// flag digis that shouldn't be here or we don't want
-	StrawHitFlag flag;
-	if (trackerStatus.noSignal(digi.strawId()) || trackerStatus.suppress(digi.strawId())) {
-	  flag.merge(StrawHitFlag::dead);
-	}
 
-	// start by reconstructing the times
-	TDCTimes times;
-	srep.calibrateTimes(digi.TDC(),times,digi.strawId());
-	// find the end with the earliest time
-	StrawEnd eend(StrawEnd::cal);
-	if(times[StrawEnd::hv] < times[StrawEnd::cal])
-	  eend = StrawEnd(StrawEnd::hv);
-	// take the earliest of the 2 end times
-	float time = times[eend.end()] - pbtOffset;
-	if (time < _minT || time > _maxT ){
-	  if(_filter)continue;
-	} else
-	  flag.merge(StrawHitFlag::timesel);
+        if (_fittype != TrkHitReco::FitType::firmwarepmp)
+          adcwaveform = sdadccol->at(isd);
 
-	//calorimeter filtering
-	if (_usecc && caloClusters) {
-	  bool outsideCaloTime(true);
-	  for (const auto& cluster : *caloClusters)
-	    if (std::abs(time-cluster.time())<_clusterDt) {outsideCaloTime=false; break;}
-	  if (outsideCaloTime){
-	    if(_filter)continue;
-	  } else
-	    flag.merge(StrawHitFlag::calosel);
-	}
-	// filter based on waveform shape (xtalk, undershoot, etc).  FIXME!
-	//extract energy from waveform
-	float energy(0.0);
-	if (_fittype == TrkHitReco::FitType::peakminuspedavg){
-          auto adcwaveform = sdadccol->at(isd);
-	  float charge = peakMinusPedAvg(adcwaveform.samples());
-	  energy = srep.ionizationEnergy(charge);
-	} else if (_fittype == TrkHitReco::FitType::peakminusped){
-          auto adcwaveform = sdadccol->at(isd);
-	  float charge = peakMinusPed(digi.strawId(),adcwaveform.samples());
-	  energy = srep.ionizationEnergy(charge);
-	} else if (_fittype == TrkHitReco::FitType::firmwarepmp){
-          float charge = peakMinusPedFirmware(digi.strawId(), digi.PMP());
-          energy = srep.ionizationEnergy(charge);
-        } else {
-          auto adcwaveform = sdadccol->at(isd);
-	  TrkHitReco::PeakFitParams params;
-	  _pfit->process(adcwaveform.samples(),params);
-	  energy = srep.ionizationEnergy(params._charge/srep.strawGain());
-	  if (_printLevel > 1) std::cout << "Fit status = " << params._status << " NDF = " << params._ndf << " chisquared " << params._chi2
-	    << " Fit charge = " << params._charge << " Fit time = " << params._time << std::endl;
-	}
-	// energy selection
-	if( energy > _maxE || energy < _minE ) {
-	  if(_filter) continue;
-	} else
-	  flag.merge(StrawHitFlag::energysel);
-	// time-over-threshold
-	TOTTimes tots{0.0,0.0};
-	for(size_t iend=0;iend<2;++iend){
-	  tots[iend] = digi.TOT(_end[iend])*srep.totLSB();
-	}
-	// choose earliest end TOT: maybe average later?
-	float tot = tots[eend.end()];
-	// filter on specific ionization FIXME!
-	// filter based on composite e/P separation FIXME!
-	const Straw& straw  = tt.getStraw( digi.strawId() );
-	double dw, dwerr;
-	double dt = times[StrawEnd::hv] - times[StrawEnd::cal];
-        double halfpv;
-	// get distance along wire from the straw center and it's estimated error
-	bool td = srep.wireDistance(straw,energy,dt, dw,dwerr,halfpv);
-        float propd = straw.halfLength()+dw;
-        if (eend == StrawEnd(StrawEnd::cal))
-          propd = straw.halfLength()-dw;
-	XYZVec pos = Geom::toXYZVec(straw.getMidPoint()+dw*straw.getDirection());
-	// create combo hit
-	static const XYZVec _zdir(0.0,0.0,1.0);
-	ComboHit ch;
-	ch._nsh = 1; // 'combo' of 1 hit
-	ch._pos = pos;
-	ch._wdir = straw.getDirection();
-	ch._sdir = _zdir.Cross(ch._wdir);
-	ch._wdist = dw;
-	ch._wres = dwerr;
-	ch._time = time;
-	ch._edep = energy;
-	ch._sid = straw.id();
-	ch._dtime = srep.driftTime(straw,tot,energy);
-        ch._ptime = propd/(2*halfpv);
-	ch._pathlength = srep.pathLength(straw,tot);
-	ch.addIndex(isd); // reference the digi; this allows MC truth matching to work
-	// crude initial estimate of the transverse error
-	static const float invsqrt12 = 1.0/sqrt(12.0);
-	ch._tres = tt.strawOuterRadius()*invsqrt12;
-	// set flags
-	ch._mask = _mask;
-	ch._flag = flag;
-	if (td) ch._flag.merge(StrawHitFlag::tdiv);
-	ch._tend = eend;
-	if(!_filter && _flagXT){
-	  //buffer large hit for cross-talk analysis
-	  size_t iplane       = straw.id().getPlane();
-	  size_t ipnl         = straw.id().getPanel();
-	  size_t global_panel = ipnl + iplane*npanels;
-	  hits_by_panel[global_panel].push_back(shCol->size());
-	  if (energy >= _ctE) {largeHits.push_back(shCol->size()); largeHitPanels.push_back(global_panel);}
-	}
-	chCol->push_back(std::move(ch));
-	// optionally create legacy straw hit (for diagnostics and calibration)
-	if(_writesh){
-	  StrawHit hit(digi.strawId(),times,tots,energy);
-	  shCol->push_back(std::move(hit));
-	}
+        shrUtils.createComboHit(chCol, shCol, caloClusters, digi.strawId(), digi.TDC(), digi.TOT(), digi.PMP(), adcwaveform.samples(),
+          trackerStatus,  srep, tt);
       }
       //flag straw and electronic cross-talk
       if(!_filter && _flagXT){
-	for (size_t ilarge=0; ilarge < largeHits.size();++ilarge)
-	{
-	  const StrawHit& sh = (*shCol)[largeHits[ilarge]];
-	  for (size_t jsh : hits_by_panel[largeHitPanels[ilarge]])
-	  {
-            if (jsh==largeHits[ilarge]) continue;
-            const StrawHit& sh2 = (*shCol)[jsh];
-            if (sh2.time()-sh.time() > _ctMinT && sh2.time()-sh.time() < _ctMaxT)
-            {
-              if (sh.strawId().samePreamp(sh2.strawId())) (*chCol)[jsh]._flag.merge(StrawHitFlag::elecxtalk);
-              if (sh.strawId().nearestNeighbor(sh2.strawId())) (*chCol)[jsh]._flag.merge(StrawHitFlag::strawxtalk);
-            }
-          }
-        }
+        shrUtils.flagCrossTalk(shCol, chCol);
       }
 
       if(_writesh)event.put(std::move(shCol));
       event.put(std::move(chCol));
   }
-
-  float StrawHitReco::peakMinusPedAvg(TrkTypes::ADCWaveform const& adcData) const {
-    auto wfstart = adcData.begin() + _npre;
-    float pedestal = std::accumulate(adcData.begin(), wfstart, 0)*_invnpre;
-//    auto maxIter = std::max_element(wfstart,adcData.end());
-    auto maxIter = wfstart;
-    auto nextIter = maxIter; nextIter++;
-    while(nextIter != adcData.end() && *nextIter > *maxIter){
-      ++maxIter;
-      ++nextIter;
-    }
-    float peak = *maxIter;
-    if(_diagLevel > 0)_maxiter->Fill(std::distance(wfstart,maxIter));
-    return (peak-pedestal)*_invgainAvg;
-  }
-
-  float StrawHitReco::peakMinusPed(StrawId id, TrkTypes::ADCWaveform const& adcData) const {
-    auto wfstart = adcData.begin() + _npre;
-    float pedestal = std::accumulate(adcData.begin(), wfstart, 0)*_invnpre;
-//    auto maxIter = std::max_element(wfstart,adcData.end());
-    auto maxIter = wfstart;
-    while(maxIter != adcData.end() && *(maxIter+1) > *maxIter)
-      ++maxIter;
-    float peak = *maxIter;
-    if(_diagLevel > 0)_maxiter->Fill(std::distance(wfstart,maxIter));
-    return (peak-pedestal)*_invgain[id.getStraw()];
-  }
-
-  float StrawHitReco::peakMinusPedFirmware(StrawId id, TrkTypes::ADCValue const& pmp) const {
-    return pmp*_invgain[id.getStraw()];
-  }
-
-
 
 }
 

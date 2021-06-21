@@ -31,7 +31,6 @@ namespace mu2e {
             fhicl::Table<MVATools::Config> caloBkgMVA            { Name("caloBkgMVA"),             Comment("MVA Configuration") };
             fhicl::Atom<float>             minEtoTest            { Name("minEtoTest"),             Comment("Minimum Energy to run the MVA") };
             fhicl::Atom<float>             minMVAScore           { Name("minMVAScore"),            Comment("MVA cut for signal") };
-            fhicl::Atom<std::string>       trigPath              { Name("trigPath"),               Comment("Trigger path name") };
             fhicl::Atom<int>               diagLevel             { Name("diagLevel"),              Comment("Diag Level"),0 };
         };
 
@@ -41,7 +40,6 @@ namespace mu2e {
           caloBkgMVA_      (config().caloBkgMVA()),
           minEtoTest_      (config().minEtoTest()),
           minMVAScore_     (config().minMVAScore()),
-          trigPath_        (config().trigPath()),
           diagLevel_       (config().diagLevel())
         {
            produces<TriggerInfo>();
@@ -56,7 +54,6 @@ namespace mu2e {
         MVATools          caloBkgMVA_;
         float             minEtoTest_;
         float             minMVAScore_;
-        std::string       trigPath_;
         int               diagLevel_;
 
         bool filterClusters(const art::Handle<CaloClusterCollection>& caloClustersHandle, TriggerInfo& trigInfo);
@@ -122,12 +119,6 @@ namespace mu2e {
           trigInfo._caloClusters.push_back(art::Ptr<CaloCluster>(caloClustersHandle,index));
      }
      
-     if (select)
-     {
-        trigInfo._triggerBits.merge(TriggerFlag::caloCluster);
-        trigInfo._triggerPath = trigPath_;
-     }     
-
      return select;
   }
 

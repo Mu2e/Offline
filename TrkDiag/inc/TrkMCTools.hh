@@ -10,10 +10,6 @@
 #include "MCDataProducts/inc/StepPointMCCollection.hh"
 
 #include "RecoDataProducts/inc/KalSeed.hh"
-#include "TrkDiag/inc/TrkInfo.hh"
-#include "TrkDiag/inc/GenInfo.hh"
-#include "TrkDiag/inc/TrkStrawHitInfoMC.hh"
-#include "TrkDiag/inc/CaloClusterInfoMC.hh"
 #include "MCDataProducts/inc/KalSeedMC.hh"
 #include "BTrk/BbrGeom/HepPoint.h"
 #include "MCDataProducts/inc/PrimaryParticle.hh"
