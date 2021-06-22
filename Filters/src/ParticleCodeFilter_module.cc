@@ -27,7 +27,8 @@ namespace mu2e {
 	using Comment=fhicl::Comment;
 	fhicl::Atom<int> printLevel { Name("PrintLevel"), Comment ("Printout Level"), 0 };
 	fhicl::Atom<art::InputTag> simParticles { Name("SimParticles"), Comment("SimParticle collection") };
-	ParticleCodeConfig codeConfig { fhicl::Name("ParticleCodes"), Comment("particle code to select: PDG, and optionally creation or termination code") };
+	ParticleCodeConfig codeConfig { Name("ParticleCodes"), Comment("particle code to select: PDG, creation, and termination code \n"
+	"(select 'unknown' to disable testing creation and/or termination codes)") };
       };
 
       struct ParticleCodeSelector {
