@@ -258,9 +258,9 @@ namespace mu2e {
 
     mat = uniqueMaterialOrThrow( "IPAPolyethylene");
     {
-      G4Material* IPAPolyethylene = new G4Material( mat.name, 0.96*CLHEP::g/CLHEP::cm3, 2);
-      IPAPolyethylene->AddMaterial( findMaterialOrThrow("G4_H"), 0.12);
-      IPAPolyethylene->AddMaterial( findMaterialOrThrow("G4_C"), 0.88);
+      G4Material* IPAPolyethylene = new G4Material( mat.name, 0.954*CLHEP::g/CLHEP::cm3, 2);
+      IPAPolyethylene->AddMaterial( findMaterialOrThrow("G4_H"), 0.11);
+      IPAPolyethylene->AddMaterial( findMaterialOrThrow("G4_C"), 0.89); // Carbon doped Polytehylene, additional carbon 2-5% from MDS (DeWal DW 402B),  density measured by S. Krave 6/22/2021
     }
 
     mat = uniqueMaterialOrThrow( "Polyethylene096");
