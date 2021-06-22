@@ -27,16 +27,16 @@ namespace mu2e {
 	using Comment=fhicl::Comment;
 	fhicl::Atom<int> printLevel { Name("PrintLevel"), Comment ("Printout Level"), 0 };
 	fhicl::Atom<art::InputTag> simParticles { Name("SimParticles"), Comment("SimParticle collection") };
-	ParticleCodeConfig codeConfig { fhicl::Name("ParticleCodes") };
+	ParticleCodeConfig codeConfig { fhicl::Name("ParticleCodes"), Comment("particle code to select: PDG, and optionally creation or termination code") };
       };
 
       struct ParticleCodeSelector {
 	PDGCode::type pdgCode_;
-	int creationCode_, terminationCode_;
+	ProcessCode::enum_type creationCode_, terminationCode_;
 	bool select(SimParticle const& part) const {
 	  return part.pdgId() == pdgCode_
-	    && ( creationCode_ < 0 || part.creationCode() == creationCode_) 
-	    && ( terminationCode_ < 0 || part.stoppingCode() == terminationCode_);
+	    && ( creationCode_ == ProcessCode::unknown || part.creationCode() == creationCode_) 
+	    && ( terminationCode_ == ProcessCode::unknown || part.stoppingCode() == terminationCode_);
 	}
       };
 
@@ -56,8 +56,8 @@ namespace mu2e {
     for(auto const& pconfig : conf().codeConfig()) {
       ParticleCodeSelector pselector;
       pselector.pdgCode_ = static_cast<PDGCode::type>(std::get<0>(pconfig));
-      pselector.creationCode_ = std::get<1>(pconfig);
-      pselector.terminationCode_ = std::get<2>(pconfig);
+      pselector.creationCode_ = static_cast<ProcessCode::enum_type>(std::get<1>(pconfig));
+      pselector.terminationCode_ = static_cast<ProcessCode::enum_type>(std::get<2>(pconfig));
       if(printLevel_ > 0) std::cout << "Creating selector of PDGcode " << pselector.pdgCode_ 
       << " creation code " << pselector.creationCode_
       << " termination code " << pselector.terminationCode_ << std::endl;
