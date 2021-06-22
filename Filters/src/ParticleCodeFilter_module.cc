@@ -16,11 +16,12 @@
 #include "fhiclcpp/types/Sequence.h"
 #include "DataProducts/inc/PDGCode.hh"
 #include "MCDataProducts/inc/ProcessCode.hh"
+#include <string>
 
 namespace mu2e {
   class ParticleCodeFilter : public art::EDFilter {
     public: 
-      using ParticleCodeConfig = fhicl::Sequence<fhicl::Tuple<int,int,int>>;
+      using ParticleCodeConfig = fhicl::Sequence<fhicl::Tuple<int,std::string,std::string>>;
 
       struct ModuleConfig {
 	using Name=fhicl::Name;
@@ -57,8 +58,8 @@ namespace mu2e {
     for(auto const& pconfig : conf().codeConfig()) {
       ParticleCodeSelector pselector;
       pselector.pdgCode_ = static_cast<PDGCode::type>(std::get<0>(pconfig));
-      pselector.creationCode_ = static_cast<ProcessCode::enum_type>(std::get<1>(pconfig));
-      pselector.terminationCode_ = static_cast<ProcessCode::enum_type>(std::get<2>(pconfig));
+      pselector.creationCode_ = ProcessCode::findByName(std::get<1>(pconfig));
+      pselector.terminationCode_ = ProcessCode::findByName(std::get<2>(pconfig));
       if(printLevel_ > 0) std::cout << "Creating selector of PDGcode " << pselector.pdgCode_ 
       << " creation code " << pselector.creationCode_
       << " termination code " << pselector.terminationCode_ << std::endl;
