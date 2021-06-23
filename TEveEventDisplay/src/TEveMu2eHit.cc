@@ -30,7 +30,7 @@ namespace mu2e{
           int idPlane =  s.id().getPlane();
           colorid = idPlane + idPanel;
           strawtitle =Form("Straw %i Panel %i  Plane %i",idStraw,idPanel,idPlane);
-          std::cout<<idPanel<<" "<<idPlane<<std::endl;
+          //std::cout<<idPanel<<" "<<idPlane<<std::endl;
           double x = p.x();
           double y = p.y();
           double z = p.z();
