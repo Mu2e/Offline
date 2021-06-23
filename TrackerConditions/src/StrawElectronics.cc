@@ -131,8 +131,8 @@ namespace mu2e {
       distIndex = i;
     }
     double distFrac = 1 - (distance - _wPoints[distIndex]._distance)/(_wPoints[distIndex+1]._distance - _wPoints[distIndex]._distance);
-    double p0 = _wPoints[distIndex]._tmax[ipath][sid.uniqueStraw()];
-    double p1 = _wPoints[distIndex + 1]._tmax[ipath][sid.uniqueStraw()];
+    double p0 = _wPoints[distIndex]._tmax[ipath][sid.getStraw()];
+    double p1 = _wPoints[distIndex + 1]._tmax[ipath][sid.getStraw()];
     
     return p0 * distFrac + p1 * (1 - distFrac);
   }
@@ -145,8 +145,8 @@ namespace mu2e {
       distIndex = i;
     }
     double distFrac = 1 - (distance - _wPoints[distIndex]._distance)/(_wPoints[distIndex+1]._distance - _wPoints[distIndex]._distance);
-    double p0 = _wPoints[distIndex]._linmax[ipath][sid.uniqueStraw()];
-    double p1 = _wPoints[distIndex + 1]._linmax[ipath][sid.uniqueStraw()];
+    double p0 = _wPoints[distIndex]._linmax[ipath][sid.getStraw()];
+    double p1 = _wPoints[distIndex + 1]._linmax[ipath][sid.getStraw()];
  
     return charge * (p0 * distFrac + p1 * (1 - distFrac)) * _dVdI[ipath][sid.uniqueStraw()];
   }
