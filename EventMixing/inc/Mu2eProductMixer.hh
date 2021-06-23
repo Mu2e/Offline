@@ -37,7 +37,7 @@
 #include "MCDataProducts/inc/StrawGasStep.hh"
 #include "MCDataProducts/inc/CrvStep.hh"
 #include "MCDataProducts/inc/ExtMonFNALSimHitCollection.hh"
-#include "MCDataProducts/inc/ProtonBunchIntensity.hh"
+#include "MCDataProducts/inc/CosmicLivetime.hh"
 #include "MCDataProducts/inc/SimParticleTimeMap.hh"
 #include "MCDataProducts/inc/SimTimeOffset.hh"
 #include "MCDataProducts/inc/PhysicalVolumeInfoMultiCollection.hh"
@@ -93,8 +93,7 @@ namespace mu2e {
       fhicl::Table<CollectionMixerConfig> strawGasStepMixer { fhicl::Name("strawGasStepMixer") };
       fhicl::Table<CollectionMixerConfig> crvStepMixer { fhicl::Name("crvStepMixer") };
       fhicl::Table<CollectionMixerConfig> extMonSimHitMixer { fhicl::Name("extMonSimHitMixer") };
-      fhicl::Table<CollectionMixerConfig> protonBunchIntensityMixer { fhicl::Name("protonBunchIntensityMixer") };
-      fhicl::Table<CollectionMixerConfig> protonTimeMapMixer { fhicl::Name("protonTimeMapMixer") };
+      fhicl::Table<CollectionMixerConfig> cosmicLivetimeMixer { fhicl::Name("cosmicLivetimeMixer") };
       fhicl::Table<CollectionMixerConfig> eventIDMixer { fhicl::Name("eventIDMixer") };
       fhicl::OptionalTable<VolumeInfoMixerConfig> volumeInfoMixer { fhicl::Name("volumeInfoMixer") };
       fhicl::Atom<art::InputTag> simTimeOffset { fhicl::Name("simTimeOffset"), fhicl::Comment("Simulation time offset to apply (optional)"), art::InputTag() };
@@ -140,13 +139,9 @@ namespace mu2e {
                           ExtMonFNALSimHitCollection& out,
                           art::PtrRemapper const& remap);
 
-    bool mixProtonBunchIntensity(std::vector<mu2e::ProtonBunchIntensity const*> const &in,
-                                 mu2e::ProtonBunchIntensity& out,
+    bool mixCosmicLivetime(std::vector<mu2e::CosmicLivetime const*> const &in,
+                                 mu2e::CosmicLivetime& out,
                                  art::PtrRemapper const& remap);
-
-    bool mixProtonTimeMap(std::vector<mu2e::SimParticleTimeMap const*> const &in,
-                                mu2e::SimParticleTimeMap& out,
-                                art::PtrRemapper const& remap);
 
     bool mixEventIDs(std::vector<art::EventIDSequence const*> const &in,
                      art::EventIDSequence& out,
