@@ -4,7 +4,6 @@
 //  Define the primary particle
 // Original author: David Brown (LBNL) Jan 2019
 //
-#include "MCDataProducts/inc/GenParticle.hh"
 #include "MCDataProducts/inc/SimParticle.hh"
 #include <vector>
 namespace mu2e {
@@ -12,22 +11,27 @@ namespace mu2e {
     public:
       typedef std::vector<art::Ptr<SimParticle> > SPPV;
       PrimaryParticle() {}
-      PrimaryParticle(PrimaryParticle const& other ) : _genp(other._genp), _simps(other._simps)
-      {}
-      PrimaryParticle(GenParticle const& genp,SPPV const& simps) :
-	_genp(genp), _simps(simps) {}
-      GenParticle const& primary () const { return _genp; }
+      PrimaryParticle(PrimaryParticle const& other ) : _simps(other._simps)
+      { // check these all have the same creation code
+	auto isimp = _simps.begin()++;
+	while(isimp != _simps.end()){
+	  if((*isimp)->creationCode() != _simps.front()->creationCode())
+	    throw cet::exception("Simulation")<<"PrimaryParticle: creation codes don't match" << std::endl;
+	  ++isimp;
+	}
+	_pcode = _simps.front()->creationCode().id();
+      }
+      PrimaryParticle(SPPV const& simps) : _simps(simps) {}
       SPPV const& primarySimParticles() const { return _simps; }
-      SPPV& modifySimParticles() { return _simps; }
-
+      ProcessCode const& primaryProcess() const { return _pcode; }
+      SPPV& modifySimParticles() { return _simps; } // needed for compression
     private:
-      GenParticle _genp; // primary particle 
-      SPPV _simps; // associated SimParticles (can be >1)
-// should also record the VD steps associated with the primaries TODO
+      SPPV _simps; // associated SimParticles (can be >1).  All must have the same creation code
+      ProcessCode _pcode; // process code of this primary
   };
 
   inline std::ostream& operator<<(std::ostream& ost, const PrimaryParticle& pp ){
-    ost << pp.primary();
+    ost << "Primary process " << pp.primaryProcess();
     return ost;
   }
  
