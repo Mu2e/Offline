@@ -89,6 +89,15 @@ namespace mu2e {
     }
     // if no primary was found, throw
     if(sims.size() == 0)throw cet::exception("Simulation") << " No Primary particle found " << std::endl;
+    // check these all have the same creation code
+    if(sims.size() > 1){
+      auto isim = sims.begin()++;
+      while(isim != sims.end()){
+	if((*isim)->creationCode() != sims.front()->creationCode())
+	  throw cet::exception("Simulation")<<"PrimaryParticle: creation codes don't match" << std::endl;
+	++isim;
+      }
+    }
     // create output object; this checks for consistency
     PrimaryParticle pp(sims);
     event.put(std::make_unique<PrimaryParticle>(pp));
