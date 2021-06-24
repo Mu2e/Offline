@@ -95,7 +95,7 @@ namespace mu2e {
 	  fhicl::Atom<bool> xtalkhist{ Name("CrossTalkHist"), Comment("Histogram of cross-talk"), false};
 	  fhicl::Atom<int> minnxinghist{ Name("MinNXingHist"), Comment("Minimum # of crossings to histogram waveform"),1};
 	  fhicl::Atom<float> tstep { Name("WaveformStep"), Comment("WaveformStep (nsec)"),0.1 };
-	  fhicl::Atom<float> nfall{ Name("WaveformTail"), Comment("# of decay lambda past last signal to record waveform"),10.0};
+	  fhicl::Atom<float> tfall{ Name("WaveformTail"), Comment("Time past last signal to record waveform (ns)"),220.0};
 	  fhicl::Atom<unsigned> maxnclu{ Name("MaxNClusters"), Comment("Maximum number of clusters for non-minion steps"), 20};
 	  fhicl::Atom<bool> addXtalk{ Name("addCrossTalk"), Comment("Should we add cross talk hits?"),false };
 	  fhicl::Atom<bool> drift1e{ Name("DriftSingleElectrons"), Comment("Always drift single electrons"),false };
@@ -143,7 +143,7 @@ namespace mu2e {
 	unsigned _maxhist;
 	bool  _xtalkhist;
 	unsigned _minnxinghist;
-	double _tstep, _nfall;
+	double _tstep, _tfall;
 	// Parameters
 	bool   _addXtalk, _drift1e, _randrad;
 	double _ctMinCharge;
@@ -278,7 +278,7 @@ namespace mu2e {
       _xtalkhist(config().xtalkhist()),
       _minnxinghist(config().minnxinghist()),
       _tstep(config().tstep()),
-      _nfall(config().nfall()),
+      _tfall(config().tfall()),
       _addXtalk(config().addXtalk()),
       _drift1e(config().drift1e()),
       _randrad(config().randrad()),
@@ -1080,8 +1080,7 @@ namespace mu2e {
 	if(icl != clist.end() && nhist < _maxhist && xings.size() >= _minnxinghist &&
 	    ( ((!_xtalkhist) && wfs[iend].xtalk().self()) || (_xtalkhist && !wfs[iend].xtalk().self()) ) ) {
 	  double tstart = icl->time()-_tstep;
-	  double tfall = strawele.fallTime(_diagpath);
-	  double tend = clist.rbegin()->time() + _nfall*tfall;
+	  double tend = clist.rbegin()->time() + _tfall;
 	  ADCTimes times;
 	  ADCVoltages volts;
 	  times.reserve(size_t(ceil(tend-tstart)/_tstep));
