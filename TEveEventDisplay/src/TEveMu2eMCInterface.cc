@@ -110,7 +110,6 @@ namespace mu2e{
               posy = 1400.0;
               break;
           case -11:
-          std::cout<<"in -11 "<<std::endl;
               color = 5;
               pid = "positron +";
               posy = 1500.0;
