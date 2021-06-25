@@ -114,7 +114,7 @@ namespace mu2e {
     const auto mustop = mus.at(eng_.operator unsigned int() % mus.size());
 
     output->emplace_back(mustop,
-                         ProcessCode::muMinusConversionAtRest,
+                         ProcessCode::mu2eCeMinusEndpoint,
                          PDGCode::e_minus,
                          mustop->endPosition(),
                          CLHEP::HepLorentzVector{randomUnitSphere_.fire(endPointMomentum_), endPointEnergy_},

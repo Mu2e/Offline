@@ -1,7 +1,7 @@
 #include <cmath>
 #include "Validation/inc/ValKalSeed.hh"
-#include "MCDataProducts/inc/SimParticleCollection.hh"
-#include "MCDataProducts/inc/StepPointMCCollection.hh"
+#include "MCDataProducts/inc/SimParticle.hh"
+#include "MCDataProducts/inc/StepPointMC.hh"
 
 int mu2e::ValKalSeed::declare(art::TFileDirectory tfs) {
   _hVer = tfs.make<TH1D>( "Ver", "Version Number", 101, -0.5, 100.0);
@@ -183,6 +183,7 @@ int mu2e::ValKalSeed::fill(const mu2e::KalSeedCollection & coll,
 }
 
 double mu2e::ValKalSeed::mcTrkP(art::Event const& event) {
+// note: a better way to do this is to use the PrimaryParticle class  FIXME
   //find the true momentum of the conversion electron
   //by finding the relevant steppoint at the entrance of the tracker
   double p = -1;
@@ -195,12 +196,9 @@ double mu2e::ValKalSeed::mcTrkP(art::Event const& event) {
     auto const& simpcoll = *ah; //SimParticleCollection
     for(auto sp : simpcoll) { // loop over SimParticles
       auto const& part = sp.second; // mu2e::SimParticle
-      // the earliest stage this simparticle appears
-      auto const& opart = part.originParticle(); //mu2e::SimParticle
-      auto const& gptr = opart.genParticle(); //art::Ptr<GenParticle> 
-      // e- associated with a GenParticle
-      if(part.pdgId()==11 && gptr.isNonnull()) { 
+      if(part.pdgId()==11 && part.creationCode() == ProcessCode::mu2eCeMinusEndpoint) {
 	cea.push_back(sp.first);
+	break;
       }
     }
   }
