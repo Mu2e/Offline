@@ -5,6 +5,7 @@
 //
 #include "fhiclcpp/types/Atom.h"
 #include "fhiclcpp/types/OptionalAtom.h"
+#include "fhiclcpp/types/OptionalSequence.h"
 #include "canvas/Utilities/InputTag.h"
 #include "canvas/Persistency/Common/Ptr.h"
 #include "art/Framework/Core/EDProducer.h"
@@ -30,7 +31,7 @@ namespace mu2e {
 	fhicl::Atom<int> debug{ Name("debugLevel"), Comment("Debug Level"), 0};
 	fhicl::Atom<art::InputTag> simPC{  Name("SimParticles"), Comment("SimParticle collection")};
 	fhicl::OptionalAtom<std::string> primaryProcess{ Name("PrimaryProcess"), Comment("Process code that produced the primary physics particle") };
-	fhicl::OptionalAtom<std::string> primaryGenerator{ Name("PrimaryGenerator"), Comment("Generator code that produced the primary physics particle") };
+	fhicl::OptionalSequence<std::string> primaryGenIds{ Name("PrimaryGenIds"), Comment("Generator codes that produced the primary physics particle") };
       };
       using Parameters = art::EDProducer::Table<Config>;
       explicit FindMCPrimary(const Parameters& conf);
@@ -39,31 +40,38 @@ namespace mu2e {
       int _debug;
       art::InputTag _spc;
       ProcessCode _pcode; 
-      GenId _gcode; 
+      std::vector<GenId> _gcodes; 
   };
 
   FindMCPrimary::FindMCPrimary(const Parameters& config )  : 
     art::EDProducer{config},
     _debug(config().debug()),
     _spc(config().simPC()),
-    _pcode(ProcessCode::unknown),
-    _gcode(GenId::unknown)
+    _pcode(ProcessCode::unknown)
  {
-   std::string pcode, gcode;
+   std::string pcode;
+   std::vector<std::string> gcodes;
     if( config().primaryProcess(pcode)) _pcode = ProcessCode::findByName(pcode);
-    if( config().primaryGenerator(gcode)) _gcode = GenId::findByName(gcode);
-    if(_pcode != ProcessCode::unknown && _gcode != GenId::unknown)
+    if( config().primaryGenerators(gcodes)){
+      for(auto const& gcodename : gcodes) {
+	_gcodes.emplace_back(GenId::findByName(gcodename));
+      }
+    }
+    if(_pcode != ProcessCode::unknown && _gcodes.size() > 0 )
       throw cet::exception("Configuration") << "Both process and gen codes specified " << std::endl;
-    else if(_pcode == ProcessCode::unknown && _gcode == GenId::unknown)
+    else if(_pcode == ProcessCode::unknown && _gcodes.size() == 0)
       throw cet::exception("Configuration") << "Neither process or gen codes specified " << std::endl;
     consumes<SimParticleCollection>(_spc);
     produces <PrimaryParticle>();
     if(_debug > 0){
       if(_pcode != ProcessCode::unknown)
 	std::cout << "Looking for primary SimParticles with code " << _pcode << std::endl;
-      else if(_gcode != GenId::unknown) std::cout << "Looking for primary GenParticles with code " << _gcode << std::endl;
-      else
-	std::cout << "Will not look for primary particles" << std::endl;
+      else if(_gcodes.size() > 0){
+	std::cout << "Looking for primary GenParticles with code: " << std::endl;
+	for( auto const& gcode : _gcodes) {
+	  std::cout << gcode << std::endl;
+	}
+      }
     }
   }
 
@@ -81,9 +89,11 @@ namespace mu2e {
       }
       // then, by creation code
       if(isp->second.genParticle().isNonnull()){
-	if(isp->second.genParticle()->generatorId() == _gcode){
-	  sims.emplace_back(spch, isp->first.asInt());
-	  if(_debug > 1)std::cout << "found primary GenParticle, code " << _gcode << std::endl;
+	for(auto const& gcode : _gcodes) {
+	  if(isp->second.genParticle()->generatorId() == gcode){
+	    sims.emplace_back(spch, isp->first.asInt());
+	    if(_debug > 1)std::cout << "found primary GenParticle, code " << gcode << std::endl;
+	  }
 	}
       }
     }
