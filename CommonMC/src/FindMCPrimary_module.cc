@@ -52,7 +52,7 @@ namespace mu2e {
    std::string pcode;
    std::vector<std::string> gcodes;
     if( config().primaryProcess(pcode)) _pcode = ProcessCode::findByName(pcode);
-    if( config().primaryGenerators(gcodes)){
+    if( config().primaryGenIds(gcodes)){
       for(auto const& gcodename : gcodes) {
 	_gcodes.emplace_back(GenId::findByName(gcodename));
       }
