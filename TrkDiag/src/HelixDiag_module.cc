@@ -261,7 +261,7 @@ namespace mu2e {
 	  if(_nprimary >= _minnprimary){
 	    _pdg = pspp->pdgId();
 	    _proc = pspp->originParticle().creationCode();
-	    _gen = _primary->primary().generatorId().id();
+	    _gen = _primary->primaryProcess();
 	    _nptot = TrkMCTools::countDigis(pspp,_mcdigis);
 	    _prel = mcrel.relationship();
 	    // fill MC true helix parameters
