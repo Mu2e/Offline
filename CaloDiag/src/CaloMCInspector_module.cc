@@ -47,7 +47,7 @@ namespace mu2e {
      private:
        std::string caloCrystalModuleLabel_;
        std::string caloShowerSimModuleLabel_;
-       std::string caloDigiTruthModuleLabel_;
+       std::string caloHitTruthModuleLabel_;
        int diagLevel_;
 
        TH1F *hcryMatchE_,*hcryNoMatchE_,*hsimMatchT_,*hsimMatchE_,*hsimNoMatchE_,*hsimNoMatchT_,*hsimMatchELT_;
@@ -62,7 +62,7 @@ namespace mu2e {
     art::EDAnalyzer(pset),
     caloCrystalModuleLabel_     (pset.get<std::string>("caloCrystalModuleLabel")),
     caloShowerSimModuleLabel_   (pset.get<std::string>("caloShowerSimModuleLabel")),
-    caloDigiTruthModuleLabel_   (pset.get<std::string>("caloDigiTruthModuleLabel")),
+    caloHitTruthModuleLabel_    (pset.get<std::string>("caloHitTruthModuleLabel")),
     diagLevel_                  (pset.get<int>("diagLevel",0))
   {}
 
@@ -104,23 +104,22 @@ namespace mu2e {
       event.getByLabel(caloShowerSimModuleLabel_, caloShowerSimHandle);
       const CaloShowerSimCollection& caloShowerSims(*caloShowerSimHandle);
       
-      //Calorimeter digi truth assignment
-      art::Handle<CaloHitMCTruthAssn> caloDigiTruthHandle;
-      event.getByLabel(caloDigiTruthModuleLabel_, caloDigiTruthHandle);
-      const CaloHitMCTruthAssn& caloDigiTruth(*caloDigiTruthHandle);
+      //Calorimeter Hit truth assignment
+      art::Handle<CaloHitMCTruthAssn> caloHitTruthHandle;
+      event.getByLabel(caloHitTruthModuleLabel_, caloHitTruthHandle);
+      const CaloHitMCTruthAssn& caloHitTruth(*caloHitTruthHandle);
 
 
       for (const auto& hit :CaloHits )
       {
-          //Find the caloDigiMC in the truth map          
-          auto itMC = caloDigiTruth.begin();
-          while (itMC != caloDigiTruth.end()) {if (itMC->first.get() == &hit) break; ++itMC;}
-          unsigned nCrySims = (itMC != caloDigiTruth.end()) ? itMC->second->nParticles() : 0;
+          //Find the caloHitMC in the truth map          
+          auto itMC = caloHitTruth.begin();
+          while (itMC != caloHitTruth.end()) {if (itMC->first.get() == &hit) break; ++itMC;}
+          unsigned nCrySims = (itMC != caloHitTruth.end()) ? itMC->second->nParticles() : 0;
           
           if (nCrySims>0) hcryMatchE_->Fill(hit.energyDep());
           else            hcryNoMatchE_->Fill(hit.energyDep());          
           if (diagLevel_ > 0) std::cout<<"Crystal "<<hit.crystalID()<<" "<<hit.energyDep()<<" "<<hit.time()<<" "<<nCrySims<<std::endl;
-
 
           for (unsigned i=0;i< nCrySims;++i)
 	  {	                      
@@ -161,7 +160,7 @@ namespace mu2e {
 
       // set of all sims matched to reco hits
       std::set<int> simMatch;
-      for (const auto& kv :caloDigiTruth ) 
+      for (const auto& kv :caloHitTruth ) 
       {
          for (const auto& edep : kv.second->energyDeposits()) simMatch.insert(edep.sim()->id().asInt());
       }
@@ -193,7 +192,12 @@ namespace mu2e {
          if (!isMatched) sumEno += showerSim.energyDep();
       }
       hSimNoMatchCE_->Fill(sumEno);
-  }
+   }
+
+
+   
+
+
 
 }  
 

@@ -30,14 +30,14 @@ namespace mu2e {
              using Name    = fhicl::Name;
              using Comment = fhicl::Comment;
              fhicl::Atom<art::InputTag>  caloClusterCollection { Name("caloClusterCollection"), Comment("Name of calo cluster Collection") };
-             fhicl::Atom<art::InputTag>  caloDigiMCTruthAssn   { Name("caloDigiMCTruthAssn"),   Comment("Name of caloHit - caloDigiMC Assn") };
+             fhicl::Atom<art::InputTag>  caloHitMCTruthAssn    { Name("caloHitMCTruthAssn"),    Comment("Name of caloHit - CaloHitMC Assn") };
              fhicl::Atom<int>            diagLevel             { Name("diagLevel"),             Comment("Diag Level"),0 };
          };
 
         explicit CaloClusterTruthMatch(const art::EDProducer::Table<Config>& config) :
            EDProducer{config},
            caloClusterToken_    {consumes<CaloClusterCollection>(config().caloClusterCollection())},
-           caloDigiMCTruthToken_{consumes<CaloHitMCTruthAssn>  (config().caloDigiMCTruthAssn())},
+           caloHitMCTruthToken_ {consumes<CaloHitMCTruthAssn>   (config().caloHitMCTruthAssn())},
            diagLevel_           (config().diagLevel())
         {
            produces<CaloClusterMCCollection>();    
@@ -51,7 +51,7 @@ namespace mu2e {
 	void makeTruthMatch(art::Event&, CaloClusterMCCollection&,CaloClusterMCTruthAssn&);
         
         const art::ProductToken<CaloClusterCollection>  caloClusterToken_;
-        const art::ProductToken<CaloHitMCTruthAssn>    caloDigiMCTruthToken_;
+        const art::ProductToken<CaloHitMCTruthAssn>     caloHitMCTruthToken_;
 	int                                             diagLevel_;
   };
 
@@ -62,18 +62,18 @@ namespace mu2e {
   //--------------------------------------------------------------------
   void CaloClusterTruthMatch::produce(art::Event& event)
   {
-      std::unique_ptr<CaloClusterMCCollection> CaloClusterMCs(new CaloClusterMCCollection);
+      std::unique_ptr<CaloClusterMCCollection> caloClusterMCs(new CaloClusterMCCollection);
       std::unique_ptr<CaloClusterMCTruthAssn>  CaloClusterMCTruth(new CaloClusterMCTruthAssn);
    
-      makeTruthMatch(event, *CaloClusterMCs, *CaloClusterMCTruth);
+      makeTruthMatch(event, *caloClusterMCs, *CaloClusterMCTruth);
 
       event.put(std::move(CaloClusterMCTruth));
-      event.put(std::move(CaloClusterMCs));
+      event.put(std::move(caloClusterMCs));
   } 
 
   
   //--------------------------------------------------------------------
-  void CaloClusterTruthMatch::makeTruthMatch(art::Event& event, CaloClusterMCCollection& CaloClusterMCs, 
+  void CaloClusterTruthMatch::makeTruthMatch(art::Event& event, CaloClusterMCCollection& caloClusterMCs, 
                                              CaloClusterMCTruthAssn& caloClusterTruthMatch)
   {
         
@@ -84,8 +84,8 @@ namespace mu2e {
       const auto& caloClusters(*caloClusterHandle);
       const auto* caloClusterBase = &caloClusters.front();
 
-      const auto  caloDigiMCHandle = event.getValidHandle(caloDigiMCTruthToken_);
-      const auto& caloHitTruth(*caloDigiMCHandle);
+      const auto  CaloHitMCHandle = event.getValidHandle(caloHitMCTruthToken_);
+      const auto& caloHitTruth(*CaloHitMCHandle);
 
       double totalEnergyMatched(0);
       int nMatched(0);
@@ -107,14 +107,13 @@ namespace mu2e {
                 const auto& digiMC = i->second;
                 digis.push_back(digiMC);
 
-                if (diagLevel_ > 1) std::cout<<"[CaloClusterTruthMatch] found hit in map "<<digiMC->nParticles()<<" "<<digiMC->time()<<std::endl;
+                if (diagLevel_ > 1 && digiMC->nParticles()>0) std::cout<<"[CaloClusterTruthMatch] found hit in map "<<digiMC->nParticles()<<" "<<digiMC->time()<<std::endl;
            } 
-           if (digis.empty()) continue;
            
            std::sort(digis.begin(),digis.end(),[](const auto& a, const auto& b){return a->totalEnergyDep() > b->totalEnergyDep();});
-           CaloClusterMCs.emplace_back(CaloClusterMC(std::move(digis)));
+           caloClusterMCs.emplace_back(CaloClusterMC(std::move(digis)));
 
-           art::Ptr<CaloClusterMC> clusterMCPtr = art::Ptr<CaloClusterMC>(clusterMCProductID, CaloClusterMCs.size()-1, clusterMCProductGetter);             
+           art::Ptr<CaloClusterMC> clusterMCPtr = art::Ptr<CaloClusterMC>(clusterMCProductID, caloClusterMCs.size()-1, clusterMCProductGetter);             
            caloClusterTruthMatch.addSingle(clusterPtr,clusterMCPtr);
            
            totalEnergyMatched += clusterPtr->energyDep();
