@@ -302,7 +302,7 @@ namespace mu2e {
          bool isConversion(false); 
          for (auto& edep : eDepMCs)
          {
-            if (edep.sim()->creationCode() == ProcessCode::mu2ePrimary)  isConversion=true;
+            if (edep.sim()->creationCode() == ProcessCode::mu2eCeMinusEndpoint)  isConversion=true;
          }    		          
 
          constexpr float invalid(999.0);
@@ -392,7 +392,7 @@ namespace mu2e {
          bool isConversion(false); 
          for (auto& edep : eDepMCs)
          {
-            if (edep.sim()->creationCode() == ProcessCode::mu2ePrimary)  isConversion=true;
+            if (edep.sim()->creationCode() == ProcessCode::mu2eCeMinusEndpoint)  isConversion=true;
          }    		          
 
          cluEnergy_[nCluster_]    = cluster.energyDep();
