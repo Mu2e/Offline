@@ -23,16 +23,6 @@ double building.tsArea.hatchblock.southTop.offsetFromFloorSurface.y = 7080.25;
 bool pbar.build = false;
 
 ///////////////////////////////////////
-//     Add TS primary absorber       //
-///////////////////////////////////////
-bool   beamline.tspa.build       = false;
-double beamline.tspa.rin         =   0.;
-double beamline.tspa.rout        = 200.;
-double beamline.tspa.halflength4 = 10.;
-double beamline.tspa.offset      =  0.;
-string beamline.tspa.material    = "G4_Be";
-
-///////////////////////////////////////
 //     Change production target      //
 ///////////////////////////////////////
 //Carbon conveyor target
