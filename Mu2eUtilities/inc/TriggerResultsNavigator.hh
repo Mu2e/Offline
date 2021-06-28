@@ -24,11 +24,13 @@ namespace mu2e {
       return _trigPathsNames.size();
     }
     
-    std::vector<std::string> const& getTrigPaths() const  { return _trigPathsNames; }
-    std::string              const& getTrigPath(unsigned int const i) const { return _trigPathsNames.at(i); }
+    std::vector<std::string> const& getTrigPaths   () const  { return _trigPathsNames; }
+    std::string              const& getTrigPath    (unsigned int const i) const { return _trigPathsNames.at(i); }
+    std::string              const  getTrigPathName(unsigned int const i) const;
 
     size_t    findTrigPath(std::string const& name) const;
     size_t    find(std::map<std::string, unsigned int> const& posmap, std::string const& name) const;
+    size_t    findTrigPathID(std::string const& name) const;
 
     // Has ith path accepted the event?
     bool      accepted(std::string const& name) const;
@@ -48,6 +50,7 @@ namespace mu2e {
     const art::TriggerResults*           _trigResults;
     std::vector<std::string>             _trigPathsNames;
     std::map<std::string, unsigned int>  _trigMap;
+    std::map<std::string, unsigned int>  _trigPathMap;
   };
   
   
