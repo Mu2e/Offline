@@ -240,7 +240,7 @@ def generate(configFileText="allPaths", verbose=True, doWrite=True):
     #
 
     configFile = open(configFileName, "r")
-
+    pathID     = 100 #we start the Reco paths from 100
     for line in configFile:
 
         line = line.strip() # strip whitespace
@@ -270,7 +270,8 @@ def generate(configFileText="allPaths", verbose=True, doWrite=True):
 
             digi_path = "@sequence::Trigger.PrepareDigis, "
             
-            new_path = ("\nphysics."+pathName+"_trigger"+" : [ "+ digi_path +"@sequence::Trigger.paths."+pathName+" ] \n")
+            new_path = ("\nphysics."+pathName+"_trigger"+" : [ "+ digi_path +"@sequence::Trigger.paths."+pathName+" ] \nphysics.trigger_paths["+str(pathID)+"] : "+pathName+"_trigger \n")
+            pathID   += 1
             timing_paths = []
             if "Seed" in pathName:
                 nFilters = 3

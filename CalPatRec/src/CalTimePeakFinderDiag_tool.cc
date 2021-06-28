@@ -121,7 +121,7 @@ namespace mu2e {
     Hist->nseeds = Dir->make<TH1F>("nseeds0", "number of track candidates"  , 21, -0.5, 20.5);
     Hist->ncl    = Dir->make<TH1F>("ncl"    , "N(calorimeter clusters)"     , 500, 0, 500);
     Hist->ncl50  = Dir->make<TH1F>("ncl50"  , "N(calorimeter clusters) E>50", 100, 0, 100);
-    Hist->dt     = Dir->make<TH1F>("dt"     , "hit dt"                      , 200, -100, 100);
+    Hist->dt     = Dir->make<TH1F>("dt"     , "hit dt; #Delta t = t_{cl} - (t_{ch}+TOF-<t_{drift}>) [ns]", 200, -100, 100);
     return 0;
   }
     

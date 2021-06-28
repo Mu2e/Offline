@@ -41,9 +41,24 @@ namespace mu2e {
     }  
 
     //loop over trigResults to fill the map <string, unsigned int)
+    std::string   delimeter=":";
     for (unsigned int i=0; i< _trigPathsNames.size(); ++i){
-      _trigMap.insert(std::pair<std::string, unsigned int>(_trigPathsNames[i], i));
+      size_t       pos      = _trigPathsNames[i].find(delimeter);
+      unsigned int bit      = std::stoi(_trigPathsNames[i].substr(0, pos));
+      std::string  pathName = _trigPathsNames[i].substr(pos+1, _trigPathsNames[i].length());
+      _trigMap.insert(std::pair<std::string, unsigned int>(pathName, i));
+      _trigPathMap.insert(std::pair<std::string, unsigned int>(pathName, bit));
     }
+  }
+
+
+  std::string const
+  TriggerResultsNavigator::getTrigPathName(unsigned int const i) const
+  {
+    std::string   delimeter =":";
+    size_t        pos       = _trigPathsNames[i].find(delimeter);
+    if (pos > _trigPathsNames[i].length()) return "TRIG PATH NOT FOUND";
+    return _trigPathsNames[i].substr(pos+1, _trigPathsNames[i].length());
   }
 
   size_t
@@ -61,6 +76,12 @@ namespace mu2e {
     } else {
       return pos->second;
     }
+  }
+
+  size_t
+  TriggerResultsNavigator::findTrigPathID(std::string const& name) const
+  {
+    return find(_trigPathMap, name);
   }
 
   // Has ith path accepted the event?
