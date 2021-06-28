@@ -99,86 +99,64 @@ namespace mu2e{
     TEveText *TEveMu2eMCInterface::GetLabel(int PDGCode, TEveMu2eCustomHelix *line, TEveMu2eCustomHelix *line_twoDXY, TEveMu2eCustomHelix *line_twoDXZ){
       const char* pid = "pid";
       auto t = new TEveText(pid);
+      Color_t color;
+      double posy = 0;
+      double posz = 3000.0;
       t->SetFontSize(15);
-      if(PDGCode == +11){ 
-        line->SetLineColor(kRed);//electrons
-        line_twoDXZ->SetLineColor(kRed);
-        line_twoDXY->SetLineColor(kRed);
-        pid = "electron -";
-        t->SetText(pid);
-        t->SetMainColor(kRed);
-        t->RefMainTrans().SetPos(0.0,400.0,30000.0);
-      }
-      else if(PDGCode == -11){
-        line->SetLineColor(kYellow);//positrons
-        line_twoDXZ->SetLineColor(kYellow);
-        line_twoDXY->SetLineColor(kYellow);
-        pid = "positron +";
-        t->SetText(pid);
-        t->SetMainColor(kYellow);
-        t->RefMainTrans().SetPos(0.0,550.0,30000.0);
-      }
-      else if(PDGCode == +13){
-        line->SetLineColor(kGreen);//muons
-        line_twoDXY->SetLineColor(kGreen);
-        line_twoDXZ->SetLineColor(kGreen);
-        pid = "muon - ";
-        t->SetText(pid);
-        t->SetMainColor(kGreen);
-        t->RefMainTrans().SetPos(0.0,650.0,30000.0);
-      }
-      else if(PDGCode == -13){
-        line->SetLineColor(kOrange);//anti-muons
-        line_twoDXY->SetLineColor(kOrange);
-        line_twoDXZ->SetLineColor(kOrange);
-        pid = "muon + ";
-        t->SetText(pid);
-        t->SetMainColor(kOrange);
-        t->RefMainTrans().SetPos(0.0,650.0,3000.0);
-      }
-      else if(PDGCode == -211){
-        line->SetLineColor(kMagenta);//pion -
-        line_twoDXY->SetLineColor(kMagenta);
-        line_twoDXZ->SetLineColor(kMagenta);
-        pid = "pion -";
-        t->SetText(pid);
-        t->SetMainColor(kMagenta);
-        t->RefMainTrans().SetPos(0.0,750.0,30000.0);
-      }else if(PDGCode == +211){
-        line->SetLineColor(kViolet);//pion +
-        line_twoDXY->SetLineColor(kViolet);
-        line_twoDXZ->SetLineColor(kViolet);
-        pid = "pion +";
-        t->SetText(pid);
-        t->SetMainColor(kViolet);
-        t->RefMainTrans().SetPos(0.0,750.0,30000.0);
-      }
-      else if(PDGCode == 2212){
-        line->SetLineColor(kBlue); //proton
-        line_twoDXY->SetLineColor(kBlue);
-        line_twoDXZ->SetLineColor(kBlue);
-        pid = "proton";
-        t->SetText(pid);
-        t->SetMainColor(kBlue);
-        t->RefMainTrans().SetPos(0.0,850.0,30000.0);
-      }else if(PDGCode == 22){
-        line->SetLineColor(kSpring-10);//photon
-        line_twoDXY->SetLineColor(kSpring-10);
-        line_twoDXZ->SetLineColor(kSpring-10);
-        pid = "gamma";
-        t->SetText(pid);
-        t->SetMainColor(kSpring-10);
-        t->RefMainTrans().SetPos(0.0,950.0,30000.0);
-      }
-      else {
-         line->SetLineColor(kCyan);//nuceli/others
-        line_twoDXY->SetLineColor(kCyan);
-        line_twoDXZ->SetLineColor(kCyan);
-        pid = "other";
-        t->SetText(pid);
-        t->SetMainColor(kCyan);
-        t->RefMainTrans().SetPos(0.0,950.0,30000.0);
-      }
+      switch(PDGCode) {
+          case 11:
+              color = 2;
+              pid = "electron -";
+              posy = 1400.0;
+              break;
+          case -11:
+              color = 5;
+              pid = "positron +";
+              posy = 1500.0;
+              break;
+          case 13:
+              color = 3;
+              pid = "muon - ";
+              posy = 1600.0;
+              break;
+          case -13:
+              color = 46;
+              pid = "muon + ";
+              posy = 1700.0;
+              break;
+          case -211:
+              color = 6;
+              pid = "pion -";
+              posy = 1800.0;
+              break;
+          case 211:
+              color = 9;
+              pid = "pion +";
+              posy = 1900.0;
+              break;
+          case 2212:
+              color = 4;
+              pid = "proton";
+              posy = 2000.0;
+              break;
+          case 22:
+              color = 8;
+              pid = "gamma";
+              posy = 2100.0;
+              break;
+          default:
+              color = 7;
+              pid = "other";
+              posy = 2200.0;
+              break;
+          }
+      t->SetText(pid);
+      t->SetMainColor(color);
+      line->SetLineColor(color);
+      line_twoDXZ->SetLineColor(color);
+      line_twoDXY->SetLineColor(color);
+      t->RefMainTrans().SetPos(0.0,posy,posz);
+      
       return t;
     }
     
@@ -220,11 +198,13 @@ namespace mu2e{
               
               string energy = to_string(points[0].kineticEnergy());
    
-              const std::string title = " MCTrajectory "+ energy;// + "PDG Code = " + pdgId;
+              const std::string title = " MCTrajectory "+ energy + " Creation code = " + to_string(trajectoryIter->first->creationCode()) + "Stopping code = " + to_string(trajectoryIter->first->stoppingCode()) + " End Global Time = " + to_string(trajectoryIter->first->endGlobalTime())  ;
               line->SetTitle(Form(title.c_str()));
               
               //Get PID label:
               TEveText *t = GetLabel(trajectoryIter->first->pdgId(), line, line_twoDXZ, line_twoDXY);
+              line_twoDXZ->SetTitle(Form(title.c_str()));
+              line_twoDXY->SetTitle(Form(title.c_str()));
               line->SetLineWidth(3);
               line->SetPickable(kTRUE);
               line_twoDXZ->SetLineWidth(3);

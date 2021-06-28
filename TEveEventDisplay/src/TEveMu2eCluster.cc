@@ -25,7 +25,7 @@ namespace mu2e{
     this->SetMarkerStyle(9);
     this->SetMarkerSize(mSize);
     this->SetPickable(kTRUE);
-
+    
     if(addHits){
        TEvePointSet *teve_hit2D = new TEvePointSet();
        for(unsigned int h =0 ; h < hits.size();h++) {

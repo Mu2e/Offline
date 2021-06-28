@@ -224,7 +224,7 @@ namespace mu2e{
   }
 
   /*------------Function to add Calo Clusters to 3D and 2D display:-------------*/
-  std::vector<double> TEveMu2eDataInterface::AddCaloClusters(bool firstloop, const CaloClusterCollection *clustercol, TEveMu2e2DProjection *calo2Dproj, bool Redraw, double min_energy, double max_energy, double min_time, double max_time, bool accumulate, TEveProjectionManager *CfXYMgr, TEveProjectionManager *CfRZMgr, TEveScene *scene1, TEveScene *scene2){
+  std::vector<double> TEveMu2eDataInterface::AddCaloClusters(bool firstloop, const CaloClusterCollection *clustercol, TEveMu2e2DProjection *calo2Dproj, bool Redraw, double min_energy, double max_energy, double min_time, double max_time, bool accumulate, TEveProjectionManager *CfXYMgr, TEveProjectionManager *CfRZMgr, TEveScene *scene1, TEveScene *scene2) {
     vector <double> energies = {0, 0};
 
     DataLists<const CaloClusterCollection*, TEveMu2e2DProjection*>(clustercol, Redraw, accumulate, "CaloCluster", &fClusterList3D, &fClusterList2D_disk0, &fClusterList2D_disk0,calo2Dproj);
@@ -240,9 +240,53 @@ namespace mu2e{
       energies = Energies<const CaloClusterCollection*>(clustercol, &energylevels);
       Calorimeter const &cal = *(GeomHandle<Calorimeter>());
       std::vector<CLHEP::Hep3Vector> hits;
-      bool addHits = false;
+      bool addHits = false; //To add crystal hits 
+      bool addCrystals = true; // To highlight the crystals included in a give cluster
       for(unsigned int i=0; i<clustercol->size();i++){
         CaloCluster const  &cluster= (*clustercol)[i];
+        TEveMu2eCluster *teve_cluster3D = new TEveMu2eCluster(cluster);
+        TEveMu2eCluster *teve_cluster2D = new TEveMu2eCluster(cluster);
+        
+        if(addCrystals){
+          for(unsigned h =0 ; h < cluster.caloHitsPtrVector().size();h++)     {
+            TEvePointSet *crystals2D = new TEvePointSet();
+            art::Ptr<CaloHit>  crystalhit = cluster.caloHitsPtrVector()[h];
+            int cryID = crystalhit->crystalID();
+            
+            int diskID = cal.crystal(crystalhit->crystalID()).diskID();
+            Crystal const &crystal = cal.crystal(cryID);
+            double crystalXLen = pointmmTocm(crystal.size().x());
+            double crystalYLen = pointmmTocm(crystal.size().y());
+            double crystalZLen = pointmmTocm(crystal.size().z());
+
+            CLHEP::Hep3Vector crystalPos   = cal.geomUtil().mu2eToDiskFF(0,crystal.position());
+            Double_t origin[3];
+            crystals2D ->SetMarkerStyle(9);
+            crystals2D ->SetMarkerSize(1);
+            crystals2D ->SetMarkerColor(kRed);
+            crystalPos = PointToCalo(crystalPos, diskID);
+            hep3vectorTocm(crystalPos);
+            origin [0] = crystalPos.x();
+            origin [1] = crystalPos.y();
+            origin [2] = crystalPos.z();
+            TEveGeoShape *crystalShape   = new TEveGeoShape();
+            crystalShape->SetFillColor(kRed);
+            crystalShape->SetShape(new TGeoBBox("cryHit", (crystalXLen/2), (crystalYLen/2), (crystalZLen/2)/10, origin));
+            crystals2D->SetNextPoint(origin [0],origin [1],origin [2]);
+            if(diskID == 0){
+              fClusterList2D_disk0->AddElement(crystals2D);
+              crystals2D->SetPickable(kTRUE);
+              std::string info = "Crystal Id: "+to_string(cryID)+" Disk Id: "+to_string(diskID)+" Energy Dep: "+to_string(crystalhit->energyDep()) + "+/-"+to_string(crystalhit->energyDepErr())+" time: "+to_string(crystalhit->time())+" +/- "+to_string(crystalhit->timeErr());
+              crystals2D->SetTitle((info).c_str());
+            } 
+            if(diskID == 1){
+              fClusterList2D_disk1->AddElement(crystals2D);
+              crystals2D->SetPickable(kTRUE);
+              std::string info = "Crystal Id: "+to_string(cryID)+" Disk Id: "+to_string(diskID)+" Energy Dep: "+to_string(crystalhit->energyDep()) + "+/-"+to_string(crystalhit->energyDepErr())+" time: "+to_string(crystalhit->time())+" +/- "+to_string(crystalhit->timeErr());
+              crystals2D->SetTitle((info).c_str());
+            }
+          }
+        }
         if(addHits){
           for(unsigned h =0 ; h < cluster.caloHitsPtrVector().size();h++)     {
             art::Ptr<CaloHit>  crystalhit = cluster.caloHitsPtrVector()[h];
@@ -253,30 +297,28 @@ namespace mu2e{
             hits.push_back(hit);
           }
         }
-        TEveMu2eCluster *teve_cluster3D = new TEveMu2eCluster(cluster);
-        TEveMu2eCluster *teve_cluster2D = new TEveMu2eCluster(cluster);
-       
+        
         CLHEP::Hep3Vector COG(cluster.cog3Vector().x(),cluster.cog3Vector().y(), cluster.cog3Vector().z());
         
         CLHEP::Hep3Vector pointInMu2e2D = PointToCalo(COG,cluster.diskID());
         CLHEP::Hep3Vector pointInMu2e3D = PointToCaloCM(COG,cluster.diskID());
        
-        string pos3D = "(" + to_string((double)pointInMu2e3D.x()) + ", " + to_string((double)pointInMu2e3D.y()) + ", " + to_string((double)pointInMu2e3D.z()) + ")";
+        string pos3D = "(" + to_string((double)pointInMu2e3D.x()/10) + ", " + to_string((double)pointInMu2e3D.y()/10) + ", " + to_string((double)pointInMu2e3D.z()/10) + ")";
         string pos2D = "(" + to_string((double)COG.x()) + ", " + to_string((double)COG.y()) + ", " + to_string((double)COG.z()) + ")";
 
         if (((min_time == -1 && max_time == -1) || (cluster.time() > min_time &&  cluster.time() < max_time )) && ((cluster.energyDep() >= min_energy && cluster.energyDep() <= max_energy) || (min_energy == -1 && max_energy == -1))){
-          teve_cluster3D->DrawCluster("CaloCluster3D, Cluster #" + to_string(i + 1) + ", Position =" + pos3D + ", Energy = " + to_string(cluster.energyDep()) + ", Time = " + to_string(cluster.time()), pointInMu2e3D, energylevels[i], ClusterList3D, hits, addHits);
+          teve_cluster3D->DrawCluster("CaloCluster3D, Cluster #" + to_string(i + 1) + ", Position =" + pos3D + ", Energy = " + to_string(cluster.energyDep()) + "+/- " + to_string(cluster.energyDepErr()) + ", Time = " + to_string(cluster.time()) + " +/- " + to_string(cluster.timeErr()),pointInMu2e3D, energylevels[i], ClusterList3D, hits, addHits);
           fClusterList3D->AddElement(ClusterList3D); 
           
           if(cluster.diskID()==0){
-            teve_cluster2D->DrawCluster("CaloCluster3D, Cluster #" + to_string(i + 1) + ", Position =" + pos2D + ", Energy = " + to_string(cluster.energyDep()) + ", Time = " + to_string(cluster.time()), pointInMu2e2D,energylevels[i], ClusterList2D_disk0, hits, addHits); 
+            teve_cluster2D->DrawCluster("CaloCluster3D, Cluster #" + to_string(i + 1) + ", Position =" + pos2D + ", Energy = " + to_string(cluster.energyDep()) + "+/- " + to_string(cluster.energyDepErr()) +  ", Time = " + to_string(cluster.time()) + " +/- " + to_string(cluster.timeErr()), pointInMu2e2D,energylevels[i], ClusterList2D_disk0, hits, addHits); 
             fClusterList2D_disk0->AddElement(ClusterList2D_disk0); 
             calo2Dproj->fXYMgr->ImportElements(fClusterList2D_disk0, calo2Dproj->fDetXYScene); 
             //CfXYMgr->ImportElements(fClusterList2D_disk0, scene1); For Multiview
 
           }
           if(cluster.diskID()==1){
-            teve_cluster2D->DrawCluster("CaloCluster3D, Cluster #" + to_string(i + 1) + ", Position =" + pos2D + ", Energy = " + to_string(cluster.energyDep()) + ", Time = " + to_string(cluster.time()), pointInMu2e2D,energylevels[i], ClusterList2D_disk1, hits, addHits); 
+            teve_cluster2D->DrawCluster("CaloCluster3D, Cluster #" + to_string(i + 1) + ", Position =" + pos2D + ", Energy = " + to_string(cluster.energyDep()) + "+/- " + to_string(cluster.energyDepErr()) + ", Time = " + to_string(cluster.time())+ " +/- " + to_string(cluster.timeErr()), pointInMu2e2D,energylevels[i], ClusterList2D_disk1, hits, addHits); 
             fClusterList2D_disk1->AddElement(ClusterList2D_disk1); 
             calo2Dproj->fRZMgr->ImportElements(fClusterList2D_disk1, calo2Dproj->fDetRZScene); 
             //CfRZMgr->ImportElements(fClusterList2D_disk1, scene2); For MultiView
