@@ -37,10 +37,10 @@ physics.producers.g4run.SDConfig.enableSD: []
 physics.producers.g4run.TrajectoryControl.perVolumeMinDistance: {}
 
 physics.producers.g4run.inputs: {
-   primaryType: StepPoints
+   primaryType: SimParticleLeaves
    primaryTag:  "generate"
+   inputPhysVolumeMultiInfo: "generate"
    inputMCTrajectories: ""
-   inputPhysVolumeMultiInfo: ""
 }
 
 services.SeedService.baseSeed         :  8
