@@ -25,13 +25,13 @@ from codecs import open
 
 def appendEpilog(trig_path, relProjectDir, outDir, srcDir, verbose, doWrite, sourceFiles, targetFiles):
 
-    trk_filters      = ['EventPrescale','SDCountFilter','TCFilter', 'HSFilter', 'TSFilter']
-    helix_filters    = ['EventPrescale','SDCountFilter','TCFilter', 'HSFilter']
-    tc_filters       = ['EventPrescale','SDCountFilter','TCFilter']
-    calo_filters     = ['EventPrescale','CDCountFilter','Filter'  ]
+    trk_filters      = ['EventPrescale','TCFilter', 'HSFilter', 'TSFilter']
+    helix_filters    = ['EventPrescale','TCFilter', 'HSFilter']
+    tc_filters       = ['EventPrescale','TCFilter']
+    calo_filters     = ['EventPrescale','Filter'  ]
     unbiased_filters = ['EventPrescale']
     minbias_filters  = ['EventPrescale','Filter'       ]
-    cst_filters      = ['EventPrescale','SDCountFilter','TCFilter', 'TSFilter']
+    cst_filters      = ['EventPrescale','TCFilter', 'TSFilter']
     
     filters     = []
 
