@@ -304,7 +304,7 @@ namespace mu2e {
     _sdTag         (pset.get<art::InputTag>("strawDigiCollection"  , "makeSD")),
     _chTag         (pset.get<art::InputTag>("comboHitCollection"   , "TTmakeSH")),
     _cdTag         (pset.get<art::InputTag>("caloDigiCollection"   , "CaloDigiFromShower")),
-    _evtWeightTag  (pset.get<art::InputTag>("protonBunchIntensity" , "PBIsim")),
+    _evtWeightTag  (pset.get<art::InputTag>("protonBunchIntensity" , "PBISim")),
     _hsCprTag      (pset.get<art::InputTag>("cprHelixSeedCollection", "CalHelixFinderDe:Positive")), // , "KFFDeMHPar")),
     _hsTprTag      (pset.get<art::InputTag>("tprHelixSeedCollection", "HelixFinderDe:Positive")), // , "KFFDeMHPar")),
     _ksTag         (pset.get<art::InputTag>("kalSeedCollection"  , "KFFDeMHPar")),

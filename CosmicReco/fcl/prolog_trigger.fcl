@@ -43,15 +43,11 @@ CstTrigger : {
 	cstSeedEventPrescale : {
 	    module_type 	: PrescaleEvent
 	    nPrescale         	: 1
-	    triggerPath         : "cstSeed"	    	    
-	    triggerFlag   	: ["PrescaleRandom"]	    
 	}
 
 	cstTimeClusterEventPrescale : {
 	    module_type 	: PrescaleEvent
 	    nPrescale         	: 1
-	    triggerPath         : "cstTimeCluster"	    	    
-	    triggerFlag   	: ["PrescaleRandom"]	    
 	}
 	
 	cstSeedSDCountFilter     : { 
@@ -65,7 +61,6 @@ CstTrigger : {
 	    minNCaloDigi        : -1
 	    maxNCaloDigi        : -1
 	    maxCaloEnergy       : -1
-	    triggerPath         : "cstSeed"	    	    	    
 	}
 
 	cstTimeClusterSDCountFilter     : { 
@@ -79,7 +74,6 @@ CstTrigger : {
 	    minNCaloDigi        : -1
 	    maxNCaloDigi        : -1
 	    maxCaloEnergy       : -1
-	    triggerPath         : "cstTimeCluster"	    	    	    
 	}
 
 
@@ -87,14 +81,12 @@ CstTrigger : {
 	    module_type : TimeClusterFilter
 	    timeClusterCollection  : "CstSimpleTimeCluster"
 	    minNHits               : 8
-	    triggerPath            : "cstTimeCluster"	    
 	}
 
 	cstTimeClusterTCFilter : {
 	    module_type : TimeClusterFilter
 	    timeClusterCollection  : "CstSimpleTimeCluster"
 	    minNHits               : 8
-	    triggerPath            : "cstTimeCluster"	    
 	}
 
 	#From Filter, only by hits currently: 
@@ -104,7 +96,6 @@ CstTrigger : {
 	    cosmicseedFitFlag          : ["HelixOK","HelixConverged"]
 	    minnsh                     : 8	      
 	    debugLevel                 : 0	      
-	    triggerPath                : "cstSeed"	
 	}
     }
 
