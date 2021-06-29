@@ -38,7 +38,6 @@ CaloFilters : {
 	MVApivotcut1            : 0.1						    
 	MVAlowcut1              : 0.0						    
 	downscale500factor      : 1						    
-	triggerPath              : "CaloMVACE"	                                    
     }
 
     caloMVAMixedFilter         : {
@@ -65,7 +64,6 @@ CaloFilters : {
 	mixedMVAlowcut1        : -0.1
 	downscale500factor     : 1
 	step                   : 10
-	triggerPath             : "CaloMVAMixedCE"	    
     }  
     
     
@@ -77,7 +75,6 @@ CaloFilters : {
 	MinNCrystalHits        : 0	      
 	MinEnergy              : 10.0    #MeV
 	MaxEnergy              : 600.0    #MeV
-	triggerPath            : "CaloCalibCosmic"
 	MinNumCelinout         : 6 
 	MinNumCeldiagver       : 6
 	MinCelEneCut           : 15.0   # MeV
@@ -100,7 +97,6 @@ CaloFilters : {
 	MinClusterRadialDist   : 350.  # mm				   
 	ClusterRadialDistStep  : 50.   # mm				   
 	MinLikelihoodCut       : [ 41.44, 10.36]                           
-	triggerPath             : "CaloLHCE"	    
     }
 
     #fixme! this is just a place holder for the photon filter
@@ -115,7 +111,6 @@ CaloFilters : {
 	MinClusterRadialDist   : 350.  # mm				   
 	ClusterRadialDistStep  : 50.   # mm				   
 	MinLikelihoodCut       : [ 41.44, 10.36]                           
-	triggerPath             : "CaloPhoton"	    
     }
   
     caloMVANNCEFilter : {
@@ -188,7 +183,6 @@ CaloFilters : { @table::CaloFilters
 	    minNCaloDigi        : 2		    
 	    maxNCaloDigi        : 10000		    
 	    maxCaloEnergy       : -1		    
-	    triggerPath        : "CaloMVACE"	    	    
 	}
 
 	caloMVAMixedCDCountFilter     : {
@@ -202,7 +196,6 @@ CaloFilters : { @table::CaloFilters
 	    minNCaloDigi        : 2
 	    maxNCaloDigi        : 10000
 	    maxCaloEnergy       : -1
-	    triggerPath        : "CaloMVAMixedCE"	    	    	    
 	}
 
 	caloCalibCosmicCDCountFilter     : {
@@ -216,7 +209,6 @@ CaloFilters : { @table::CaloFilters
 	    minNCaloDigi        : 2
 	    maxNCaloDigi        : 10000
 	    maxCaloEnergy       : -1
-	    triggerPath         : "CaloCalibCosmic"	    	    	    
 	}
 
 	caloLHCECDCountFilter     : {
@@ -230,7 +222,6 @@ CaloFilters : { @table::CaloFilters
 	    minNCaloDigi        : 2
 	    maxNCaloDigi        : 10000
 	    maxCaloEnergy       : -1
-	    triggerPath         : "CaloLHCE"	    	    	    
 	}
 
 	caloPhotonCDCountFilter     : {
@@ -244,7 +235,6 @@ CaloFilters : { @table::CaloFilters
 	    minNCaloDigi        : 2
 	    maxNCaloDigi        : 10000
 	    maxCaloEnergy       : -1
-	    triggerPath         : "CaloPhoton"	    	    	    
 	}
 
 	caloMVANNCECDCountFilter     : {
@@ -258,30 +248,23 @@ CaloFilters : { @table::CaloFilters
 	    minNCaloDigi        : 2		    
 	    maxNCaloDigi        : 10000		    
 	    maxCaloEnergy       : -1		    
-	    triggerPath        : "CaloMVANNCE"	    	    
 	}
 
 	caloMVACEEventPrescale : {
 	    module_type : PrescaleEvent
 	    nPrescale         : 1
-	    triggerPath        : "CaloMVACE"	    	    
-	    triggerFlag   : ["PrescaleRandom"]	    
 	}
 	
 	caloMVACEPrescale : {
 	    module_type : PrescaleEvent
 	    nPrescale         : 1 
 	    useFilteredEvents : true
-	    triggerPath        : "CaloMVACE"	    	    
-	    triggerFlag       : ["PrescaleGoodEvents"]	    
 	}
 	
 	caloMVAMixedEventPrescale : {
 	    module_type : PrescaleEvent
 	    nPrescale         : 1
 #	    nPrescale         : @local::caloMixed_evt_sf
-	    triggerPath        : "CaloMVAMixedCE"	    	    
-	    triggerFlag   : ["PrescaleRandom"]	    
 	}
 	
 	caloMVAMixedPrescale : {
@@ -289,31 +272,23 @@ CaloFilters : { @table::CaloFilters
 	    nPrescale         : 1
 #	    nPrescale         : @local::caloMixed_sf
 	    useFilteredEvents : true
-	    triggerPath        : "CaloMVAMixedCE"	    	    
-	    triggerFlag       : ["PrescaleGoodEvents"]	    
 	}
 	
 	caloCalibCosmicEventPrescale : {
 	    module_type : PrescaleEvent
 	    nPrescale         : 1 
-	    triggerPath        : "CaloCalibCosmic"	    	    
-	    triggerFlag   : ["PrescaleRandom"]	    
 	}
 	
 	caloCalibCosmicPrescale : {
 	    module_type : PrescaleEvent
 	    nPrescale         : 1 
 	    useFilteredEvents : true
-	    triggerPath        : "CaloCalibCosmic"	    	    
-	    triggerFlag       : ["PrescaleGoodEvents"]	    
 	}
 
 	caloLHCEEventPrescale : {
 	    module_type : PrescaleEvent
 #	    nPrescale         : @local::caloLHCE_evt_sf
 	    nPrescale         : 1
-	    triggerFlag   : ["PrescaleRandom"]	    
-	    triggerPath        : "CaloLHCE"	    	    
 	}
 	
 	caloLHCEPrescale : {
@@ -321,38 +296,28 @@ CaloFilters : { @table::CaloFilters
 #	    nPrescale         : @local::caloLHCE_sf
 	    nPrescale         : 1 
 	    useFilteredEvents : true
-	    triggerPath        : "CaloLHCE"	    	    
-	    triggerFlag       : ["PrescaleGoodEvents"]	    
 	}
 
 	caloPhotonEventPrescale : {
 	    module_type : PrescaleEvent
 	    nPrescale         : 1
-	    triggerFlag   : ["PrescaleRandom"]	    
-	    triggerPath        : "CaloPhoton"	    	    
 	}
 	
 	caloPhotonPrescale : {
 	    module_type : PrescaleEvent
 	    nPrescale         : 1 
 	    useFilteredEvents : true
-	    triggerPath        : "CaloPhoton"	    	    
-	    triggerFlag       : ["PrescaleGoodEvents"]	    
 	}
 
 	caloMVANNCEEventPrescale : {
 	    module_type   : PrescaleEvent
 	    nPrescale     : 1
-	    triggerPath   : "CaloMVANNCE"	    	    
-	    triggerFlag   : ["PrescaleRandom"]	    
 	}
 	
 	caloMVANNCEPrescale : {
 	    module_type       : PrescaleEvent
 	    nPrescale         : 1 
 	    useFilteredEvents : true
-	    triggerPath       : "CaloMVANNCE"	    	    
-	    triggerFlag       : ["PrescaleGoodEvents"]	    
 	}
 	
 	#FIXME! this filter will no longer be needed once we will have a standardized definition of good events

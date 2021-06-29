@@ -92,9 +92,7 @@ def appendEpilog(trig_path, relProjectDir, outDir, srcDir, verbose, doWrite, sou
         # then open it and append one line
         if  doWrite :
             subSubEpilogFile = open(subSubEpilogFileName,"a")
-        trigAlgLine    = ("\nphysics.filters."+filterName+".triggerPath        " + " : " + "\""+trig_path+"_trigger\" \n")
         if doWrite :
-            subSubEpilogFile.write(trigAlgLine)
             subSubEpilogFile.close()
 
         epilog=("\n#include \""+relSubSubEpilogFileName +"\"")
