@@ -20,7 +20,7 @@
 
 #include "DataProducts/inc/PDGCode.hh"
 #include "MCDataProducts/inc/SimParticleCollection.hh"
-#include "MCDataProducts/inc/StepPointMCCollection.hh"
+#include "MCDataProducts/inc/PhysicalVolumeInfoMultiCollection.hh"
 
 #include "Geant4/G4IonTable.hh"
 
@@ -50,7 +50,8 @@ namespace mu2e {
     using Parameters = art::EDProducer::Table<Config>;
     explicit IonProducer(const Parameters& conf);
 
-    virtual void produce(art::Event& event);
+    virtual void produce(art::Event& event) override;
+    virtual void beginSubRun(art::SubRun& sr) override;
   };
 
   //================================================================
@@ -63,7 +64,7 @@ namespace mu2e {
     , mom_(conf().momentum())
   {
     produces<mu2e::SimParticleCollection>();
-    produces<mu2e::StepPointMCCollection>();
+    produces<PhysicalVolumeInfoMultiCollection,art::InSubRun>();
 
     if (pdgId_ <= PDGCode::G4Threshold) {
       throw cet::exception("BADCONFIG") << "IonProducer: pdgId = "<<" is to small for an ion " << std::endl;
@@ -72,11 +73,21 @@ namespace mu2e {
   }
 
   //================================================================
+  void IonProducer::beginSubRun(art::SubRun& sr) {
+    using Collection_t = PhysicalVolumeInfoMultiCollection;
+    auto mvi = std::make_unique<Collection_t>();
+
+    // Create an entry for one stage.  We do not need volume info
+    // content for the ion test use, but we still need a stage count.
+    mvi->resize(1);
+
+    sr.put(std::move(mvi));
+  }
+
+  //================================================================
   void IonProducer::produce(art::Event& event) {
 
     auto particles = std::make_unique<SimParticleCollection>();
-    auto points = std::make_unique<StepPointMCCollection>();
-
 
     // get A & A based on pdgId
     G4int ZZ,AA, lvl;
@@ -121,27 +132,7 @@ namespace mu2e {
 
     particles->insert(std::make_pair(one, sp));
 
-    // Create a StepPointMC to be used as Mu2eG4 input
-    // Need to build a ptr to the parent particle
-    auto SPpid = event.getProductID<SimParticleCollection>();
-    auto SPpg  = event.productGetter(SPpid);
-    art::Ptr<SimParticle> spptr(SPpid, one.asInt(), SPpg);
-
-    points->emplace_back(spptr,
-                         0, // volume id
-                         0., 0., 0., // energy deposits
-                         0., // time
-                         0., // proper time
-                         pos_,
-                         pos_, // making post position the same as pre
-                         mom_,
-                         mom_, // making post momentum the same as pre
-                         0., // stepLength
-                         ProcessCode::mu2ePrimary
-                         );
-
     event.put(std::move(particles));
-    event.put(std::move(points));
   }
 
   //================================================================
