@@ -69,7 +69,7 @@ BEGIN_PROLOG
       scintillationYieldVariationCutoffHigh : 1.2   //the scintillation yield variation is cut off at 120% above the mean
       digitizationStart                     :  400.0    //400ns
       digitizationEnd                       : 1750.0    //1750ns
-      digitizationStartMargin               :   50.0    //50ns
+      crvStepMargin                         :   50.0    //50ns
       timeOffsets                           : [ @sequence::CommonMC.TimeMaps ]
     }
     CrvSiPMCharges:
@@ -78,7 +78,6 @@ BEGIN_PROLOG
       crvPhotonsModuleLabel        : "CrvPhotons"
       digitizationStart            :  400.0    //400ns
       digitizationEnd              : 1750.0    //1750ns
-      digitizationStartMargin      :   50.0    //50ns
 
       deadSiPMProbability          : 0.01
       nPixelsX                     : 40
@@ -108,8 +107,6 @@ BEGIN_PROLOG
     {
       module_type                  : CrvWaveformsGenerator
       crvSiPMChargesModuleLabel    : "CrvSiPMCharges"
-      digitizationStart            :  400.0    //400ns
-      digitizationEnd              : 1750.0    //1750ns
       singlePEWaveformFileName     : "CRVResponse/fcl/singlePEWaveform_v3.txt"
       singlePEWaveformPrecision    : 0.5    //0.5 ns
       singlePEWaveformStretchFactor: 1.047  //1.047 for singlePEWaveform_v3.txt //from comparison with testbeam data
@@ -124,6 +121,8 @@ BEGIN_PROLOG
     {
       module_type                  : CrvDigitizer
       crvWaveformsModuleLabel      : "CrvWaveforms"
+      digitizationStart            :  400.0    //400ns
+      digitizationEnd              : 1750.0    //1750ns
       ADCconversionFactor          : 2300      //2300 ADC/V
       pedestal                     : 100       //ADC
     }
@@ -161,14 +160,12 @@ BEGIN_PROLOG
       adjacentPulseTimeDifferences  : [ 10 , 10 , 10 , 10 , 10 , 10 , 10 , 10 , 10 , 10 , 20 , 20 , 10 , 10 , 10 , 10 , 10 , 10 , 10 , 10 , 10 , 10 , 10 ] //ns
       maxTimeDifferences            : [ 10 , 10 , 10 , 10 , 10 , 10 , 10 , 10 , 20 , 20 , 20 , 20 , 20 , 20 , 20 , 10 , 10 , 10 , 10 , 10 , 10 , 10 , 10 ] //ns
       useFourLayers                 : [false,false,false,false,false,false,false,false,true,false,false,false,true,true,true,true,true,true,true,false,false,false,false]
-#      usePulseOverlaps              : false
-#      useNoFit                      : false
-      usePulseOverlaps              : true
-      useNoFit                      : true
-      minOverlapTime                : 30     //30ns (=at least 2 ADC samples)
+      usePulseOverlaps              : false
+      useNoFit                      : false
+      minOverlapTime                : 40     //40ns (=at least 3 ADC samples)
       usingPEsPulseHeight           : false  //using the PEs which were calculated using the pulse height
-      maxSlope                      : 11.0   //11.0mm over 1mm, which is a little bit more than 6 counters per layer
-      maxSlopeDifference            : 4.0    //
+      maxSlope                      : 7.0    //7.0mm over 1mm, which is a little bit more than 4 counters per layer
+      maxSlopeDifference            : 2.0    //
       acceptThreeAdjacentCounters   : false  //use hits in three adjacent counters in one layer to form a coincidence
       timeWindowStart               : 400    //ns
       timeWindowEnd                 : 1750   //ns

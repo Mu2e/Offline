@@ -54,7 +54,7 @@ namespace mu2e
     double      _overvoltage;
     double      _timeConstant;
     double      _capacitance;
-    double      _digitizationStart, _digitizationEnd, _digitizationStartMargin;
+    double      _digitizationStart, _digitizationEnd;
     std::string _eventWindowMarkerLabel;
     std::string _protonBunchTimeMCLabel;
 
@@ -82,7 +82,6 @@ namespace mu2e
     _capacitance(pset.get<double>("capacitance")),                   //8.84e-14F (per pixel)
     _digitizationStart(pset.get<double>("digitizationStart")),       //400ns
     _digitizationEnd(pset.get<double>("digitizationEnd")),           //1750ns
-    _digitizationStartMargin(pset.get<double>("digitizationStartMargin")),  //50ns
     _eventWindowMarkerLabel(pset.get<std::string>("eventWindowMarker","EWMProducer")),
     _protonBunchTimeMCLabel(pset.get<std::string>("protonBunchTimeMC","EWMProducer")),
     _inactivePixels(pset.get<std::vector<std::pair<int,int> > >("inactivePixels")),      //{18,18},....,{21,21}
@@ -137,7 +136,6 @@ namespace mu2e
       startTime = TDC0time;
       endTime = startTime + eventWindowLength;
     }
-    startTime -= _digitizationStartMargin;
 
     GeomHandle<CosmicRayShield> CRS;
     const std::vector<std::shared_ptr<CRSScintillatorBar> > &counters = CRS->getAllCRSScintillatorBars();
@@ -165,7 +163,6 @@ namespace mu2e
             const std::vector<CrvPhotons::SinglePhoton> &photonTimes = crvPhotons->GetPhotons();
             for(size_t iphoton=0; iphoton<photonTimes.size(); iphoton++)
             {
-              //No check whether photons are within startTime and endTime
               double time = photonTimes[iphoton]._time;
               photonTimesNew.emplace_back(time,iphoton);
             }

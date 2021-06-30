@@ -19,13 +19,12 @@ namespace mu2e
 
     CrvDigiMC() {}
     CrvDigiMC(const std::array<double,NSamples> &voltages, const std::vector<art::Ptr<CrvStep> > &steps, 
-              art::Ptr<SimParticle> simParticle, double startTime, double TDC0Time, 
+              art::Ptr<SimParticle> simParticle, double startTime, 
               mu2e::CRSScintillatorBarIndex scintillatorBarIndex, int SiPMNumber) :
                           _voltages(voltages), 
                           _steps(steps),
                           _simParticle(simParticle),
                           _startTime(startTime),
-                          _TDC0Time(TDC0Time),
                           _scintillatorBarIndex(scintillatorBarIndex),
                           _SiPMNumber(SiPMNumber) {}
 
@@ -33,7 +32,6 @@ namespace mu2e
     const std::vector<art::Ptr<CrvStep> >     &GetCrvSteps() const        {return _steps;}
     const art::Ptr<SimParticle>               &GetSimParticle() const     {return _simParticle;}
     const double                              &GetStartTime() const       {return _startTime;}
-    const double                              &GetTDC0Time() const        {return _TDC0Time;}
 
     mu2e::CRSScintillatorBarIndex GetScintillatorBarIndex() const {return _scintillatorBarIndex;}
     int                           GetSiPMNumber() const           {return _SiPMNumber;}
@@ -47,7 +45,6 @@ namespace mu2e
     std::vector<art::Ptr<CrvStep> >     _steps;        //crv steps responsible for this waveform
     art::Ptr<SimParticle>               _simParticle;  //most likely sim particle responsible for this waveform
     double                              _startTime;
-    double                              _TDC0Time;
 
     mu2e::CRSScintillatorBarIndex  _scintillatorBarIndex;
     int                            _SiPMNumber; 

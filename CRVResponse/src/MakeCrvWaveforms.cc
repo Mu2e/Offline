@@ -63,15 +63,14 @@ void MakeCrvWaveforms::MakeWaveform(const std::vector<double> &times,
   {
     double timeOfCharge=*iterTime;  //the time when the charge happened
     double charge=*iterCharge/_singlePEReferenceCharge;  //scale it to the 1PE reference charge used for the single PE waveform
-    if(timeOfCharge<startTime) continue; //this shouldn't happen
-    size_t waveformIndex = ceil((timeOfCharge-startTime)/digitizationPrecision);  //waveform index of the first digitization point for this particular charge
+    unsigned int waveformIndex = (timeOfCharge>startTime ? ceil((timeOfCharge-startTime)/digitizationPrecision) : 0);  //waveform index of the first digitization point for this particular charge
     double waveformTime = waveformIndex*digitizationPrecision + startTime;  //the time for this waveform index
 
     for(; ; waveformIndex++, waveformTime+=digitizationPrecision)
     {
       double singlePEWaveformTime = waveformTime - timeOfCharge;
       if(singlePEWaveformTime<0) continue;  //this shouldn't happen
-      size_t singlePEwaveformIndex=static_cast<size_t>(lrint(singlePEWaveformTime/_singlePEWaveformPrecision));
+      unsigned int singlePEwaveformIndex=static_cast<unsigned int>(lrint(singlePEWaveformTime/_singlePEWaveformPrecision));
       if(singlePEwaveformIndex>=_singlePEWaveform.size()) break; 
 
       if(waveform.size()<waveformIndex+1) waveform.resize(waveformIndex+1,0);  //new vector elements are set to 0
