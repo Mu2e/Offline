@@ -453,7 +453,7 @@ namespace mu2e {
     for(auto const& crvcc: crvccc) {
       std::vector<art::Ptr<CrvRecoPulse>> pulses;
       for(auto const& crvrp : crvcc.GetCrvRecoPulses()){
-      // deep-copy the pulses used in coincidences: we do NOT update the digi indies,
+      // deep-copy the pulses used in coincidences: the digi indices are updated later
       // the map must be used to connect them
 	scrvrpc->push_back(*crvrp);
 	auto crvrpp = art::Ptr<CrvRecoPulse>(CrvRecoPulseCollectionPID,scrvrpc->size()-1,CrvRecoPulseCollectionGetter);
@@ -482,6 +482,13 @@ namespace mu2e {
       crvdmcim->addElement(crvindex,crvcount++);
       // deep-copy the selected CrvDigis
       scrvdc->push_back(crvdc.at(crvindex));
+    }
+    // update digi indices in the pulses
+    for(auto& crvrp : *scrvrpc) {
+      auto& indices = crvrp.GetWaveformIndices();
+      for(size_t iindex=0; iindex < indices.size(); ++iindex){
+	indices[iindex] = crvdmcim->getCondensedIndex(indices[iindex]);
+      }
     }
     // update reco count
     nrec._ncrvdigi = crvdc.size();
