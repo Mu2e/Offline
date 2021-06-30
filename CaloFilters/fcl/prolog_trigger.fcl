@@ -119,7 +119,6 @@ CaloFilters : {
         caloBkgMVA             :{ MVAWeights : "CaloFilters/data/CE_NN_ReLU.weights.xml" }
         minEtoTest             : 40
         minMVAScore            : 0.95
-        trigPath               : "CaloNewClusterTrigger"
         diagLevel              : 0
     }
 }
@@ -337,15 +336,15 @@ CaloFilters : { @table::CaloFilters
 	caloLHCEFilter         : { @table::CaloFilters.caloLHCEFilter        }
 
 	#fixme@ this is just a place holder
-	caloPhotonFilter         : { @table::CaloFilters.caloPhotonFilter        }
+	caloPhotonFilter       : { @table::CaloFilters.caloPhotonFilter        }
 
-	caloMVANNCEFilter        : { @table::CaloFilters.caloMVANNCEFilter       }
+	caloMVANNCEFilter      : { @table::CaloFilters.caloMVANNCEFilter       }
 	
     }
 
     sequences   : {
 	
-	caloMVACE        : [ caloMVACEEventPrescale, caloMVACECDCountFilter, CaloTrigger, caloMVACEFilter ]
+	caloMVANNCE      : [ caloMVANNCEEventPrescale, @sequence::CaloHitRecoTrigger.prepareHits, @sequence::CaloClusterTrigger.Reco, caloMVANNCEFilter]
 	
 	caloMVAMixedCE   : [ caloMVAMixedEventPrescale, caloMVAMixedCDCountFilter, @sequence::TrkHitRecoTrigger.sequences.TTprepareHits, 
 			     CaloTrigger, caloMVAMixedFilter ] 
