@@ -46,12 +46,13 @@ namespace mu2e {
 
      private:
        std::string caloCrystalModuleLabel_;
+       std::string caloDigiModuleLabel_;
        std::string caloShowerSimModuleLabel_;
        std::string caloHitTruthModuleLabel_;
        int diagLevel_;
 
        TH1F *hcryMatchE_,*hcryNoMatchE_,*hsimMatchT_,*hsimMatchE_,*hsimNoMatchE_,*hsimNoMatchT_,*hsimMatchELT_;
-       TH1F *hSimNoMatchCE_;
+       TH1F *hSimNoMatchCE_,*hDigiSize_;
        
        TH2F *hETimeErr_,*hETimePull_,*hEEnerErr_,*hEEnerPull_;
        TH1F *hTimePull_[5],*hEnerPull_[5];
@@ -61,6 +62,7 @@ namespace mu2e {
   CaloMCInspector::CaloMCInspector(fhicl::ParameterSet const& pset) :
     art::EDAnalyzer(pset),
     caloCrystalModuleLabel_     (pset.get<std::string>("caloCrystalModuleLabel")),
+    caloDigiModuleLabel_        (pset.get<std::string>("caloDigiModuleLabel")),
     caloShowerSimModuleLabel_   (pset.get<std::string>("caloShowerSimModuleLabel")),
     caloHitTruthModuleLabel_    (pset.get<std::string>("caloHitTruthModuleLabel")),
     diagLevel_                  (pset.get<int>("diagLevel",0))
@@ -78,6 +80,7 @@ namespace mu2e {
        hsimNoMatchE_    = tfs->make<TH1F>("hsimNoMatchE",  "sim Edep NO match;Edep (MeV);Entries",       100,0,100);
        hsimNoMatchT_    = tfs->make<TH1F>("hsimNoMatchT",  "sim Time match;time (ns);Entries",           100,0,2000);
        hSimNoMatchCE_   = tfs->make<TH1F>("hSimNoMatchCE", "sim E no match Ce match;Edep (MeV);Entries", 100,0,100);
+       hDigiSize_       = tfs->make<TH1F>("hDigiSize",     "Digi size;size;Entries",                     100,0,100);
        
        hETimeErr_       = tfs->make<TH2F>("hETimeErr",     "Reco time error;Edep (MeV);#Deltat (ns)",      100,0,100,100,0,3);
        hETimePull_      = tfs->make<TH2F>("hETimePull",    "Reco time pull;Edep (MeV);(t-t_{mc})/#Deltat", 100,0,100,100,-10,10);
@@ -108,6 +111,14 @@ namespace mu2e {
       art::Handle<CaloHitMCTruthAssn> caloHitTruthHandle;
       event.getByLabel(caloHitTruthModuleLabel_, caloHitTruthHandle);
       const CaloHitMCTruthAssn& caloHitTruth(*caloHitTruthHandle);
+ 
+     //Calorimeter Hit truth assignment
+      art::Handle<CaloDigiCollection> caloDigiHandle;
+      event.getByLabel(caloDigiModuleLabel_, caloDigiHandle);
+      const CaloDigiCollection& caloDigis(*caloDigiHandle);
+      
+
+      for (const auto& digi : caloDigis) hDigiSize_->Fill(digi.waveform().size());
 
 
       for (const auto& hit :CaloHits )

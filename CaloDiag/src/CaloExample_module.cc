@@ -341,26 +341,26 @@ namespace mu2e {
 	 {	       
 	     const auto& eDepMC = eDepMCs[i];	       
 
-              auto parent(eDepMC.sim());
-              while (parent->hasParent()) parent = parent->parent();               
-              int genId=-1;
-              if (parent->genParticle()) genId = parent->genParticle()->generatorId().id();
+             auto parent(eDepMC.sim());
+             while (parent->hasParent()) parent = parent->parent();               
+             int genId=-1;
+             if (parent->genParticle()) genId = parent->genParticle()->generatorId().id();
 
-	      crySimId_[nSimHit_]      = eDepMC.sim()->id().asInt();
-              crySimPdgId_[nSimHit_]   = eDepMC.sim()->pdgId();
-              crySimCrCode_[nSimHit_]  = eDepMC.sim()->creationCode();
-       	      crySimTime_[nSimHit_]    = eDepMC.time();
-              crySimEdep_[nSimHit_]    = eDepMC.energyDep();	                      
-              crySimMom_[nSimHit_]     = eDepMC.momentumIn();	       
-	      crySimStartX_[nSimHit_]  = parent->startPosition().x();
-	      crySimStartY_[nSimHit_]  = parent->startPosition().y();
-	      crySimStartZ_[nSimHit_]  = parent->startPosition().z();
-	      crySimStartT_[nSimHit_]  = parent->startGlobalTime();
-	      crySimGenIdx_[nSimHit_]  = genId;
-	      ++nSimHit_;
+	     crySimId_[nSimHit_]      = eDepMC.sim()->id().asInt();
+             crySimPdgId_[nSimHit_]   = eDepMC.sim()->pdgId();
+             crySimCrCode_[nSimHit_]  = eDepMC.sim()->creationCode();
+       	     crySimTime_[nSimHit_]    = eDepMC.time();
+             crySimEdep_[nSimHit_]    = eDepMC.energyDep();	                      
+             crySimMom_[nSimHit_]     = eDepMC.momentumIn();	       
+	     crySimStartX_[nSimHit_]  = parent->startPosition().x();
+	     crySimStartY_[nSimHit_]  = parent->startPosition().y();
+	     crySimStartZ_[nSimHit_]  = parent->startPosition().z();
+	     crySimStartT_[nSimHit_]  = parent->startGlobalTime();
+	     crySimGenIdx_[nSimHit_]  = genId;
+	     ++nSimHit_;
 
-              sumEdepMC += eDepMC.energyDep();
-              if (edepTime<1) edepTime = eDepMC.time();
+             sumEdepMC += eDepMC.energyDep();
+             if (edepTime<1) edepTime = eDepMC.time();
           }
           ++nHits_;
 
