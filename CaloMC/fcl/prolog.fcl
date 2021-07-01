@@ -30,7 +30,6 @@ CaloShowerROMaker :
     caloShowerStepCollection : ["CaloShowerStepMaker"]
     eventWindowMarker        : EWMProducer
     protonBunchTimeMC        : EWMProducer
-    timeOffsets              : { inputs : [ @sequence::CommonMC.TimeMaps ] }
     blindTime                : @local::HitMakerBlindTime
     LRUCorrection            : true
     BirksCorrection          : true
