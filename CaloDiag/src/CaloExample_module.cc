@@ -20,7 +20,6 @@
 #include "GlobalConstantsService/inc/unknownPDGIdName.hh"
 #include "ConditionsService/inc/AcceleratorParams.hh"
 #include "ConditionsService/inc/ConditionsHandle.hh"
-#include "Mu2eUtilities/inc/SimParticleTimeOffset.hh"
 
 #include "CalorimeterGeom/inc/Calorimeter.hh"
 #include "CalorimeterGeom/inc/DiskCalorimeter.hh"
@@ -60,7 +59,6 @@ namespace mu2e {
          {
              using Name    = fhicl::Name;
              using Comment = fhicl::Comment;
-             using SPTO    = SimParticleTimeOffset::Config;
              fhicl::Atom<art::InputTag>     vdCollection          { Name("vdCollection"),           Comment("Virtual detector collection name") }; 
              fhicl::Atom<art::InputTag>     caloHitCollection     { Name("caloHitCollection"),      Comment("Calo Hit collection name") }; 
              fhicl::Atom<art::InputTag>     caloClusterCollection { Name("caloClusterCollection"),  Comment("Calo cluster collection name") }; 
