@@ -16,7 +16,6 @@ CaloShowerStepMaker  :
     deltaTime               : 0.2
     caloStepPointCollection : ["g4run:calorimeter"]
     usePhysVolInfo          : false
-    #physVolInfoInput       : "compressPVDetector"
     physVolInfoInput        : "g4run"
     caloMaterial            : ["G4_CESIUM_IODIDE", "Polyethylene092","CarbonFiber"]
     compressData            : true
@@ -31,7 +30,6 @@ CaloShowerROMaker :
     caloShowerStepCollection : ["CaloShowerStepMaker"]
     eventWindowMarker        : EWMProducer
     protonBunchTimeMC        : EWMProducer
-    timeOffsets              : { inputs : [ @sequence::CommonMC.TimeMaps ] }
     blindTime                : @local::HitMakerBlindTime
     LRUCorrection            : true
     BirksCorrection          : true
@@ -63,6 +61,7 @@ CaloDigiMaker :
     blindTime               : @local::HitMakerBlindTime
     addNoise                : true
     generateSpotNoise       : true
+    addRandomNoise          : false
     NoiseGenerator          : { @table::NoiseGenerator  }
     digiSampling            : @local::HitMakerDigiSampling
     nBits                   : 12
@@ -72,7 +71,6 @@ CaloDigiMaker :
     bufferDigi              : 16 
     diagLevel               : 0
 }
-
 
 CaloHitTruthMatch:
 {
@@ -85,13 +83,15 @@ CaloHitTruthMatch:
     fillDetailedMC            : false
     diagLevel                 : 0
 }
+
 CaloClusterTruthMatch:
 {
     module_type           : CaloClusterTruthMatch
     caloClusterCollection : CaloClusterMaker
-    caloDigiMCTruthAssn   : CaloHitTruthMatch
+    caloHitMCTruthAssn    : CaloHitTruthMatch
     diagLevel             : 0
 }
+
 
 
 CaloMC : 
@@ -99,25 +99,25 @@ CaloMC :
    StepProducers : {
      CaloShowerStepMaker  : @local::CaloShowerStepMaker
    }
-   StepSim     : [ CaloShowerStepMaker]
+   StepSim : [ CaloShowerStepMaker]
 
    DigiProducers : {
      CaloShowerROMaker    : @local::CaloShowerROMaker
      CaloDigiMaker        : @local::CaloDigiMaker
    }
-   DigiSim     : [ CaloShowerROMaker, CaloDigiMaker]
+   DigiSim : [ CaloShowerROMaker, CaloDigiMaker]
 
    TruthProducers : {
      CaloHitTruthMatch : @local::CaloHitTruthMatch
      CaloClusterTruthMatch : @local::CaloClusterTruthMatch
    }
-   TruthMatch  : [ CaloHitTruthMatch, CaloClusterTruthMatch ]
+   TruthMatch : [ CaloHitTruthMatch, CaloClusterTruthMatch ]
 }
 
 CaloClusterMC : 
 {
-   producers   : { CaloClusterTruthMatch : @local::CaloClusterTruthMatch }
-   TruthMatch  : [ CaloClusterTruthMatch ]
+   producers  : { CaloClusterTruthMatch : @local::CaloClusterTruthMatch }
+   TruthMatch : [ CaloClusterTruthMatch ]
 }
 
 # legacy

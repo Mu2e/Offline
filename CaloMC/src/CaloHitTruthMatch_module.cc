@@ -1,5 +1,5 @@
 //
-// An EDProducer Module to match CaloHits to MC info
+// An EDProducer Module to match caloHits to MC info
 //
 #include "art/Framework/Core/EDProducer.h"
 #include "art/Framework/Core/ModuleMacros.h"
@@ -73,7 +73,8 @@ namespace mu2e {
          using SimParticlePtr = art::Ptr<SimParticle>;
 
          void makeTruthMatch (art::Event&, CaloHitMCCollection&, CaloHitMCTruthAssn&, CaloShowerMCTruthAssn&, const PrimaryParticle&);
-         void diag           (const CaloShowerSim*, const CaloHit* );
+         void fillEdeps      (const PrimaryParticle& primaryParticle, std::vector<CaloEDepMC>& edeps, const CaloShowerSim* showerSim);
+         void diag           (const CaloShowerSim*, const CaloHit& );
 
 
          const art::ProductToken<CaloShowerSimCollection> caloShowerSimToken_;
@@ -84,6 +85,7 @@ namespace mu2e {
          double                                           minAmplitude_;
          bool                                             fillDetailedMC_;
          std::vector<double>                              wf_;
+         size_t                                           wfBinMax_;
          int                                              diagLevel_;
 
          //some diagnostic histograms
@@ -129,6 +131,7 @@ namespace mu2e {
 
       wf_ = cps.digitizedPulse(0);
       for (auto& v : wf_) v *= MeVToADC;
+      wfBinMax_ = std::distance(wf_.begin(),std::max_element(wf_.begin(),wf_.end()));         
   }
 
 
@@ -151,168 +154,151 @@ namespace mu2e {
 
   
   
-  // first, sort the CaloShowers/ CaloHits into vector for each crystalId
-  // next, for each crystal, sort the corresponding vectors by time;
-  // finally, perform the association with the following rules:
-  //   MCtime must be inside the window [recoTime-deltaTimeMinus, recoTime+deltaTimePlus] to be associated to RecoHit
-  //   MCtime must not already be in the window of the next hit, in which case it is associate to this one
-  //
+  // perform the association with the following rules:
+  //   MCtime must be inside the window [recoTime-deltaTimeMinus, recoTime+deltaTimePlus] to be associated to RecoHit _unless_
+  //   MCtime is already in the window of the next hit, in which case it is associate to this one.
   //--------------------------------------------------------------------
   void CaloHitTruthMatch::makeTruthMatch(art::Event& event, CaloHitMCCollection& caloHitMCs,
                                          CaloHitMCTruthAssn& CaloHitTruthMatch, CaloShowerMCTruthAssn& caloShowerTruthMatch, 
                                          const PrimaryParticle& primaryParticle)
   {
         
-      art::ProductID hitMCProductID(event.getProductID<CaloHitMCCollection>());
-      const art::EDProductGetter* hitMCProductGetter = event.productGetter(hitMCProductID);
-
-      const auto CaloHitHandle = event.getValidHandle(caloHitToken_);
-      const auto& CaloHits(*CaloHitHandle);
-      const auto caloShowerSimHandle = event.getValidHandle(caloShowerSimToken_);
-      const auto& caloShowerSims(*caloShowerSimHandle);
-     
-      
-      std::map<int, std::vector<const CaloHit*>> caloHitMap;
-      std::map<int,std::vector<const CaloShowerSim*>>   caloShowerSimsMap;
-      for (auto const& CaloHit: CaloHits) caloHitMap[CaloHit.crystalID()].push_back(&CaloHit);
-      for (auto const& caloShowerSim: caloShowerSims)   caloShowerSimsMap[caloShowerSim.crystalID()].push_back(&caloShowerSim);
-      
-      int wfBinMax = std::distance(wf_.begin(),std::max_element(wf_.begin(),wf_.end())); 
-      
       int nMatched(0);
       double totalEnergyMatched(0);
-      
-      
-      for (auto &kv : caloHitMap)
-      {
-          int crystalId = kv.first;
 
-          std::vector<const CaloHit*> &caloHits = kv.second;          
-          std::sort(caloHits.begin(),caloHits.end(), [](auto const a, auto const b){return a->time() < b->time();});
-          
-          std::vector<const CaloShowerSim*>& caloSims = caloShowerSimsMap[crystalId];
-          std::sort(caloSims.begin(),caloSims.end(), [](auto const a, auto const b){return a->time() < b->time();});
+      // access collections of CaloHits and caloShowerHits, need art::ProductID for creating art::Ptr
+      art::ProductID hitMCProductID(event.getProductID<CaloHitMCCollection>());
+      const art::EDProductGetter* hitMCProductGetter = event.productGetter(hitMCProductID);
+      const auto  caloHitHandle       = event.getValidHandle(caloHitToken_);
+      const auto  caloShowerSimHandle = event.getValidHandle(caloShowerSimToken_);
+      const auto& caloHits(*caloHitHandle);
+      const auto& caloShowerSims(*caloShowerSimHandle);
+
+      // sort the caloHits and caloShowerSim per crystal and then per time for each crystal to help with the matching algorithm. 
+      std::map<int, std::vector<const CaloHit*>>       caloHitMap;
+      std::map<int, std::vector<const CaloShowerSim*>> caloShowerSimsMap;
+      for (const auto& caloHit: caloHits) caloHitMap[caloHit.crystalID()].push_back(&caloHit);
+      for (const auto& caloShowerSim: caloShowerSims) caloShowerSimsMap[caloShowerSim.crystalID()].push_back(&caloShowerSim);
+      
+      for (auto &kv : caloHitMap)        std::sort(kv.second.begin(),kv.second.end(), [](auto const a, auto const b){return a->time() < b->time();});
+      for (auto &kv : caloShowerSimsMap) std::sort(kv.second.begin(),kv.second.end(), [](auto const a, auto const b){return a->time() < b->time();});
+
+
+      // do the matching for a given calo hit
+      for (size_t ihit=0; ihit < caloHits.size(); ++ihit)
+      {
+          const auto& hit        = caloHits[ihit];
+          const auto sortedHits  = caloHitMap[hit.crystalID()];
+          const auto sortedSims  = caloShowerSimsMap[hit.crystalID()];
+          auto hitIt             = std::find(sortedHits.begin(),sortedHits.end(),&hit);
+          auto hitNextIt         = std::next(hitIt);
+          auto hitPtr            = art::Ptr<CaloHit>(caloHitHandle,ihit);
+          auto showerIt          = sortedSims.begin();
+          auto showerItEnd       = sortedSims.end();
           
           if (diagLevel_ > 2) 
-             for (const auto& shower : caloSims) 
-                 std::cout<<"[CaloHitTruthMatch] Sim shower  id/energy/time="<<shower->crystalID()<<" / "<<shower->energyDep()<<" / "<<shower->time()<<std::endl;
-          
+             for (const auto& shower : sortedSims) std::cout<<"[CaloHitTruthMatch] Sim shower  id/time/energy="<<shower->crystalID()
+                                                          <<" / "<<shower->time()<<" / "<<shower->energyDep()<<std::endl;
 
-          auto showerIt    = caloSims.begin();
-          auto showerItEnd = caloSims.end();
-          auto hitIt       = caloHits.begin();
-          auto hitItEnd    = caloHits.end();
+          // Maximum time difference for a MChit to be associated to the reco hit given the reco hit amplitude and time of the next reco hit
+          unsigned nbin(wfBinMax_);
+          while (nbin < wf_.size()) {if (wf_[nbin]*hit.energyDep()<minAmplitude_) break; ++nbin;} 
+          double deltaTimePlus(nbin*digiSampling_);
 
-          while (hitIt != hitItEnd)
-          {            
-             std::vector<CaloEDepMC> edeps; 
-
-             auto hitNextIt = std::next(hitIt);
-             bool hitIsMatched(false);
-             
-             // make art Ptr to CaloHit collection
-             const CaloHit* hit = *hitIt;
-             size_t idxHit(0); 
-             while (idxHit < CaloHits.size()) {if (&CaloHits[idxHit]==hit) break; ++idxHit;}
-             auto hitPtr = art::Ptr<CaloHit>(CaloHitHandle,idxHit);               
-             
-             //calculate the length of the pulse
-             unsigned nbin(wfBinMax);
-             while (nbin < wf_.size()) {if (wf_[nbin]*hit->energyDep()<minAmplitude_) break; ++nbin;} 
-             double deltaTimePlus(nbin*digiSampling_);
+          if (hitNextIt != sortedHits.end() && (*hitNextIt)->time()- (*hitIt)->time() - 2*digiSampling_ < deltaTimePlus )
+          {
+             deltaTimePlus = (*hitNextIt)->time()- (*hitIt)->time() - 2*digiSampling_;
+          }
+          if (diagLevel_ > 2) std::cout<<"[CaloHitTruthMatch]  inspect hit id/time/energy/length "<<hit.crystalID()
+                                       <<" / "<<hit.time()<<" / "<<hit.energyDep()<<" "<<nbin*digiSampling_<<" "<<deltaTimePlus<<std::endl;
 
 
-             if (diagLevel_ > 2) std::cout<<"[CaloHitTruthMatch]  inspect hit id/time/energy/length "<<hit->crystalID()<<" / "<<hit->time()<<" / "<<hit->energyDep()<<" "<<nbin*digiSampling_<<std::endl;
-                                      
-             //forward until we reach the recoHit time;
-             while (showerIt != showerItEnd && ( (*showerIt)->time() < (*hitIt)->time() - digiSampling_) ) ++showerIt; 
-                          
-             //loop as long as the shower time is witthin the recoTime window
-             while (showerIt != showerItEnd && ( (*showerIt)->time() < (*hitIt)->time() + deltaTimePlus) )
-             {
-                 //check if we're already inside the next hit time window
-                 if (hitNextIt != hitItEnd && ( (*showerIt)->time() > (*hitNextIt)->time() - digiSampling_) ) break;
-                 
-                 //calculate the ratio between the hit energy and MC hit energy
-                 //double dt  = std::max(0.0,(*hitIt)->time() - (*showerIt)->time());
-                 //int    idx = int(dt/digiSampling_)+wfBinMax; 
-                 //double AmplitudeAtNextMax = (idx < int(wf_.size())) ? (*hitIt)->energyDep()*wf_[idx] : 0;
-                 //if (dt > 3*digiSampling_ && AmplitudeAtNextMax/(*showerIt)->energyDep()>0.5) {++showerIt; continue;}
-                 
-                 hitIsMatched = true;
-                                  
-                 size_t idxShower(0); 
-                 while (idxShower < caloShowerSims.size()) {if (&caloShowerSims[idxShower]==*showerIt) break; ++idxShower;}
-                 auto  ShowerSimPtr = art::Ptr<CaloShowerSim>(caloShowerSimHandle,idxShower);
-                 
-                 const CaloShowerSim* showerSim(*showerIt);                 
-                 const auto& sim    = showerSim->sim();
-                 float edep         = showerSim->energyDep();
-                 float edepG4       = showerSim->energyDepG4();
-                 float time         = showerSim->time();
-                 float pIn          = showerSim->momentumIn();
-                 
-                 //add shower to CaloEDepMC list
-                 auto it = edeps.begin();
-                 while (it != edeps.end()) {if (it->sim() == sim) break;  ++it;}
+          //forward until we reach the recoHit time, then loop as long as the shower time is witthin the recoTime window
+          bool hitIsMatched(false);
+          std::vector<CaloEDepMC> edeps; 
+          while (showerIt != showerItEnd && ( (*showerIt)->time() < (*hitIt)->time() - 2*digiSampling_) ) ++showerIt;                           
+          while (showerIt != showerItEnd && ( (*showerIt)->time() < (*hitIt)->time() + deltaTimePlus) )
+          {
+              hitIsMatched = true;
+              const CaloShowerSim* showerSim = *showerIt;
+              fillEdeps(primaryParticle, edeps, showerSim);
+              
+              if (fillDetailedMC_)
+              {
+                  size_t idxShower(0); 
+                  while (idxShower < caloShowerSims.size()) {if (&caloShowerSims[idxShower]==*showerIt) break; ++idxShower;}
+                  auto  ShowerSimPtr = art::Ptr<CaloShowerSim>(caloShowerSimHandle,idxShower);
+                  caloShowerTruthMatch.addSingle(hitPtr, showerSim->sim(), ShowerSimPtr);
+              }
 
-                 if (it!= edeps.end())
-                 { 
-                     it->addEDep(edep);
-                     it->addEDepG4(edepG4);
-                     it->addTime(time);
-                     it->addMom(pIn);
-                 }
-                 else 
-                 {                                     
-                     MCRelationship mcrel;                     
-                     for (const auto& spp : primaryParticle.primarySimParticles())
-                     {
-                         MCRelationship mcr(spp,sim);
-                         if (mcr > mcrel) mcrel = mcr;
-                     }
-                     edeps.emplace_back(CaloEDepMC(sim,edep,edepG4,time,pIn,mcrel));
-                 }
-                 
-                 // add shower to the detailed truthMatch
-                 if (fillDetailedMC_) caloShowerTruthMatch.addSingle(hitPtr, showerSim->sim(), ShowerSimPtr);
-                                 
-                                                  
-                 if (diagLevel_ > 1) diag(showerSim,hit);
-                 if (diagLevel_ > 2) std::cout<<"[CaloHitTruthMatch]  matched shower id/time/energyDep()= "<<showerSim->crystalID()
-                                              <<" / "<<showerSim->time()<<" / "<<showerSim->energyDep()<<std::endl;
-                 ++showerIt;                
-             }
-             
-             //sort CaloEDepMC by decreasing energy
-             std::sort(edeps.begin(),edeps.end(),[](const auto& a, const auto& b){return a.energyDep() > b.energyDep();});
-             caloHitMCs.emplace_back(CaloHitMC(std::move(edeps)));
+              if (diagLevel_ > 1) diag(showerSim,hit);
+              if (diagLevel_ > 2) std::cout<<"[CaloHitTruthMatch]  matched shower id/time/energyDep()= "<<showerSim->crystalID()
+                                           <<" / "<<showerSim->time()<<" / "<<showerSim->energyDep()<<std::endl;
+              ++showerIt;
+          }
 
-             art::Ptr<CaloHitMC> hitMCPtr = art::Ptr<CaloHitMC>(hitMCProductID, caloHitMCs.size()-1, hitMCProductGetter);             
-             CaloHitTruthMatch.addSingle(hitPtr,hitMCPtr);
-                          
-             if (hitIsMatched) {totalEnergyMatched += (*hitIt)->energyDep();++nMatched;}
-             ++hitIt;
-          }      
-      }      
+          //sort CaloEDepMC by decreasing energy, create caloHit and keep track of hit -> MChit association
+          std::sort(edeps.begin(),edeps.end(),[](const auto& a, const auto& b){return a.energyDep() > b.energyDep();});
+          caloHitMCs.emplace_back(CaloHitMC(std::move(edeps)));
+
+          art::Ptr<CaloHitMC> hitMCPtr = art::Ptr<CaloHitMC>(hitMCProductID, caloHitMCs.size()-1, hitMCProductGetter);             
+          CaloHitTruthMatch.addSingle(hitPtr,hitMCPtr);
+
+          if (hitIsMatched) {totalEnergyMatched += (*hitIt)->energyDep();++nMatched;}
+          ++hitIt;
+
+          if (diagLevel_ > 2 && !hitIsMatched) std::cout<<"[CaloHitTruthMatch] hit not matched"<<std::endl; 
+
+      }    
        
       if (diagLevel_ > 0) std::cout<<"[CaloHitTruthMatch]  total particles / energy matched = "<<nMatched<<" / "<<totalEnergyMatched<<std::endl;
   } 
   
 
-  void CaloHitTruthMatch::diag(const CaloShowerSim* shower, const CaloHit* hit)
+  //--------------------------------------------------------------------
+  void CaloHitTruthMatch::fillEdeps(const PrimaryParticle& primaryParticle, std::vector<CaloEDepMC>& edeps, const CaloShowerSim* showerSim)
   {
-      hTime_->Fill(shower->time()-hit->time());
-      hEnerTime_->Fill(shower->energyDep(),shower->time()-hit->time());
-      hTime2d_->Fill(shower->time(),hit->time());
-      hEner2d_->Fill(shower->energyDep(),hit->energyDep());
-      hdEdT_->Fill(hit->energyDep()-shower->energyDep(),shower->time()-hit->time());
+      // check if there is already a caloEdep object with same caloShowerSim's SimParticle 
+      auto it = edeps.begin();
+      while (it != edeps.end()) {if (it->sim() == showerSim->sim()) break;  ++it;}
 
-      if (shower->energyDep() > 5) hTime2_->Fill(shower->time()-hit->time()); 
+      // if found the add caloShowerSim to matching caloEdep object, otherwise create new caloEdep
+      if (it!= edeps.end())
+      { 
+          it->addEDep(showerSim->energyDep());
+          it->addEDepG4(showerSim->energyDepG4());
+          it->addTime(showerSim->time());
+          it->addMom(showerSim->momentumIn());
+      }
+      else 
+      {                                     
+          MCRelationship mcrel;                     
+          for (const auto& spp : primaryParticle.primarySimParticles())
+          {
+              MCRelationship mcr(spp,showerSim->sim());
+              if (mcr > mcrel) mcrel = mcr;
+          }
+          edeps.emplace_back(CaloEDepMC(showerSim->sim(),showerSim->energyDep(),showerSim->energyDepG4(),
+                                        showerSim->time(),showerSim->momentumIn(),mcrel));
+      }
+  }
 
-      double deltaE = std::abs(shower->energyDep()-hit->energyDep());
+
+
+  //--------------------------------------------------------------------
+  void CaloHitTruthMatch::diag(const CaloShowerSim* shower, const CaloHit& hit)
+  {
+      hTime_->Fill(shower->time()-hit.time());
+      hEnerTime_->Fill(shower->energyDep(),shower->time()-hit.time());
+      hTime2d_->Fill(shower->time(),hit.time());
+      hEner2d_->Fill(shower->energyDep(),hit.energyDep());
+      hdEdT_->Fill(hit.energyDep()-shower->energyDep(),shower->time()-hit.time());
+
+      if (shower->energyDep() > 5) hTime2_->Fill(shower->time()-hit.time()); 
+
+      double deltaE = std::abs(shower->energyDep()-hit.energyDep());
       if (deltaE > 5 && shower->energyDep() > 5)
-      hChi2_->Fill(hit->recoCaloDigis().at(0)->chi2()/hit->recoCaloDigis().at(0)->ndf());		   
+      if (!hit.recoCaloDigis().empty()) hChi2_->Fill(hit.recoCaloDigis().at(0)->chi2()/hit.recoCaloDigis().at(0)->ndf());		   
   }
 
 
