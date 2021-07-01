@@ -238,7 +238,8 @@ namespace mu2e {
 
               // Time folding and filtering, see doc-db 3425 + talks from D. Brown for explanation
               double mbLength        = (ewMarker.spillType() == EventWindowMarker::SpillType::onspill) ? mbtime_ : ewMarker.eventLength();
-              double hitTime         = fmod(istep->time() + pbtmc.pbtime_ + mbLength, mbLength);
+              //double hitTime         = fmod(istep->time() + pbtmc.pbtime_ + mbLength, mbLength);
+              double hitTime         = fmod(istep->time() + mbLength, mbLength);
               
               if (hitTime < blindTime_) continue;
 
