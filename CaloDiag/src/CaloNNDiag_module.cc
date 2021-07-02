@@ -249,14 +249,14 @@ namespace mu2e {
       event.getByLabel(virtualDetectorTag_,vdhits);
 
       //Calo digi truth assignment
-      art::Handle<CaloHitMCTruthAssn> caloDigiTruthHandle;
-      event.getByLabel(caloHitTruthTag_, caloDigiTruthHandle);
-      const CaloHitMCTruthAssn& caloDigiTruth(*caloDigiTruthHandle);
+      art::Handle<CaloHitMCCollection> caloHitMCHandle;
+      event.getByLabel(caloHitTruthTag_, caloHitMCHandle);
+      const CaloHitMCCollection& caloHitTruth(*caloHitMCHandle);
       
       //Calo cluster truth assignment
-      art::Handle<CaloClusterMCTruthAssn> caloClusterTruthHandle;
-      event.getByLabel(caloClusterTruthTag_, caloClusterTruthHandle);
-      const CaloClusterMCTruthAssn& caloClusterTruth(*caloClusterTruthHandle);
+      art::Handle<CaloClusterMCCollection> caloClusterMCHandle;
+      event.getByLabel(caloClusterTruthTag_, caloClusterMCHandle);
+      const CaloClusterMCCollection& caloClusterTruth(*caloClusterMCHandle);
 
 
 
@@ -268,8 +268,8 @@ namespace mu2e {
          {
             const StepPointMC& hit = *iter;
             if (hit.volumeId()<VirtualDetectorId::EMC_Disk_0_SurfIn || hit.volumeId()>VirtualDetectorId::EMC_Disk_1_EdgeOut) continue;
-	    vdMap[hit.simParticle()] = &hit;
-	 }
+            vdMap[hit.simParticle()] = &hit;
+         }
       }
 
 
@@ -287,24 +287,17 @@ namespace mu2e {
        for (unsigned int ic=0; ic<CaloHits.size();++ic)
        {
            const CaloHit& hit            = CaloHits.at(ic);
-	   int diskId                    = cal.crystal(hit.crystalID()).diskID();
+           int diskId                    = cal.crystal(hit.crystalID()).diskID();
            CLHEP::Hep3Vector crystalPos  = cal.geomUtil().mu2eToDiskFF(diskId,cal.crystal(hit.crystalID()).position());  //in disk FF frame
             
            //Find the caloDigiMC in the truth map          
-           auto itMC = caloDigiTruth.begin();
-           while (itMC != caloDigiTruth.end()) {if (itMC->first.get() == &hit) break; ++itMC;}
-           unsigned nCrySims = (itMC != caloDigiTruth.end()) ? itMC->second->nParticles() : 0;
-           
-           bool isConversion(false);
-           if (nCrySims>0) 
+           const auto eDepMCs =  caloHitTruth[ic].energyDeposits();
+          
+           bool isConversion(false); 
+           for (auto& edep : eDepMCs)
            {
-              for (auto& edep : itMC->second->energyDeposits())
-              {
-                 auto parent(edep.sim());
-                 while (parent->hasParent()) parent = parent->parent();                     
-	         if (parent->genParticle() && parent->genParticle()->generatorId().isConversion() ) isConversion=true;
-              }    		          
-           }
+              if (edep.sim()->creationCode() == ProcessCode::mu2eCeMinusEndpoint)  isConversion=true;
+           }                              
  
            constexpr float invalid(999.0);
            float cryT1(invalid),cryT2(invalid),cryT1Err(invalid),cryT2Err(invalid);
@@ -334,29 +327,29 @@ namespace mu2e {
            cryConv_[nHits_]      = isConversion ? 1 : 0;
           
            crySimIdx_[nHits_]    = nSimHit_;
-           crySimLen_[nHits_]    = nCrySims;
+           crySimLen_[nHits_]    = eDepMCs.size();
            
-           for (unsigned i=0;i< nCrySims;++i)
-	   {	                      
-	       const auto& eDepMC = itMC->second->energyDeposit(i);
+           for (unsigned i=0;i< eDepMCs.size();++i)
+           {                              
                
+               const auto& eDepMC = eDepMCs[i];               
                auto parent(eDepMC.sim());
                while (parent->hasParent()) parent = parent->parent();               
                int genId=-1;
                if (parent->genParticle()) genId = parent->genParticle()->generatorId().id();
               
-	       crySimId_[nSimHit_]      = eDepMC.sim()->id().asInt();
+               crySimId_[nSimHit_]      = eDepMC.sim()->id().asInt();
                crySimPdgId_[nSimHit_]   = eDepMC.sim()->pdgId();
                crySimCrCode_[nSimHit_]  = eDepMC.sim()->creationCode();
-       	       crySimTime_[nSimHit_]    = eDepMC.time();
-               crySimEdep_[nSimHit_]    = eDepMC.energyDep();	                      
-               crySimMom_[nSimHit_]     = eDepMC.momentumIn();	       
-	       crySimStartX_[nSimHit_]  = parent->startPosition().x();
-	       crySimStartY_[nSimHit_]  = parent->startPosition().y();
-	       crySimStartZ_[nSimHit_]  = parent->startPosition().z();
-	       crySimStartT_[nSimHit_]  = parent->startGlobalTime();
-	       crySimGenIdx_[nSimHit_]  = genId;
-	       ++nSimHit_;
+               crySimTime_[nSimHit_]    = eDepMC.time();
+               crySimEdep_[nSimHit_]    = eDepMC.energyDep();                              
+               crySimMom_[nSimHit_]     = eDepMC.momentumIn();               
+               crySimStartX_[nSimHit_]  = parent->startPosition().x();
+               crySimStartY_[nSimHit_]  = parent->startPosition().y();
+               crySimStartZ_[nSimHit_]  = parent->startPosition().z();
+               crySimStartT_[nSimHit_]  = parent->startGlobalTime();
+               crySimGenIdx_[nSimHit_]  = genId;
+               ++nSimHit_;
            }
            ++nHits_;            
        }
@@ -370,25 +363,18 @@ namespace mu2e {
        unsigned icMCIdx(-1); double convEnergy(0);
        for (unsigned  ic=0; ic<caloClusters.size();++ic)
        {
-           const CaloCluster& cluster = caloClusters.at(ic);
-           auto itMC = caloClusterTruth.begin();
-           while (itMC != caloClusterTruth.end()) {if (itMC->first.get() == &cluster) break; ++itMC;}
+           const auto& cluster = caloClusters.at(ic);
+           const auto& eDepMCs = caloClusterTruth[ic].energyDeposits();
 
-           if (itMC != caloClusterTruth.end()) 
+           for (auto& edep : eDepMCs)
            {
-               for (auto& edep : itMC->second->energyDeposits())
+               if (edep.sim()->creationCode() == ProcessCode::mu2eCeMinusEndpoint && cluster.energyDep() > convEnergy) 
                {
-                   auto parent(edep.sim());
-                   while (parent->hasParent()) parent = parent->parent();                     
-	           if (parent->genParticle() && parent->genParticle()->generatorId().isConversion() && cluster.energyDep() > convEnergy)
-		   {
-		      convEnergy = cluster.energyDep();
-		      icMCIdx = ic;
-		   } 
-               }    		          
+                  convEnergy = cluster.energyDep();
+                  icMCIdx = ic;
+               } 
            }
        }
-
 
 
        for (unsigned  ic=0; ic<caloClusters.size();++ic)
@@ -400,22 +386,20 @@ namespace mu2e {
           ClusterUtils cluUtil(cal, cluster);
           auto cog = cluUtil.cog3Vector();
 
-          auto itMC = caloClusterTruth.begin();
-          while (itMC != caloClusterTruth.end()) {if (itMC->first.get() == &cluster) break; ++itMC;}
-          const auto eDepMCs = (itMC != caloClusterTruth.end()) ? itMC->second->energyDeposits() : std::vector<CaloEDepMC>{};
+          const auto& eDepMCs =  caloClusterTruth[ic].energyDeposits();
           
-	  const CaloHit& seedHit    = CaloHits.at(cryList[0]);
+          const CaloHit& seedHit    = CaloHits.at(cryList[0]);
           CLHEP::Hep3Vector seedPos = cal.geomUtil().mu2eToDiskFF(cluster.diskID(),cal.crystal(seedHit.crystalID()).position());
 
           double dr(0);
           if (cryList.size()>1) 
-	  {
+          {
               const CaloHit& hit    = CaloHits.at(cryList[1]);
               CLHEP::Hep3Vector hitPos = cal.geomUtil().mu2eToDiskFF(cluster.diskID(),cal.crystal(hit.crystalID()).position());
-	      double dx = hitPos.x()-seedPos.x();
+              double dx = hitPos.x()-seedPos.x();
               double dy = hitPos.y()-seedPos.y();
-              dr = sqrt(dx*dx+dy*dy);	     
-	  }
+              dr = sqrt(dx*dx+dy*dy);             
+          }
 
 
           cluDisk_[nCluster_]      = cluster.diskID();
@@ -442,11 +426,11 @@ namespace mu2e {
           cluSimLen_[nCluster_] = eDepMCs.size();
 
           for (unsigned i=0;i< eDepMCs.size();++i)
-	  {	       
-	      const auto& eDepMC = eDepMCs[i];	       
+          {               
+              const auto& eDepMC = eDepMCs[i];               
               art::Ptr<SimParticle> sim = eDepMC.sim();
 
-	      art::Ptr<SimParticle> smother(sim);
+              art::Ptr<SimParticle> smother(sim);
               while (smother->hasParent() && !smother->genParticle() ) smother = smother->parent();
               int genId=-1;
               if (smother->genParticle()) genId = smother->genParticle()->generatorId().id();
@@ -454,20 +438,20 @@ namespace mu2e {
               if (smother->genParticle()) genPdg = smother->genParticle()->pdgId();
 
 
-	      double simMom(-1);
-	      CLHEP::Hep3Vector simPos(0,0,0);
-	      auto vdMapEntry = vdMap.find(sim);
-	      if (vdMapEntry != vdMap.end())
-	      {
-	         simMom = vdMapEntry->second->momentum().mag();
-		 CLHEP::Hep3Vector simPos = cal.geomUtil().mu2eToDiskFF(cluster.diskID(), vdMapEntry->second->position());		  
-	      } 
+              double simMom(-1);
+              CLHEP::Hep3Vector simPos(0,0,0);
+              auto vdMapEntry = vdMap.find(sim);
+              if (vdMapEntry != vdMap.end())
+              {
+                 simMom = vdMapEntry->second->momentum().mag();
+                 CLHEP::Hep3Vector simPos = cal.geomUtil().mu2eToDiskFF(cluster.diskID(), vdMapEntry->second->position());                  
+              } 
 
               cluSimId_[nCluSim_]     = sim->id().asInt();
               cluSimPdgId_[nCluSim_]  = sim->pdgId();
               cluSimCrCode_[nCluSim_] = sim->creationCode();
               cluSimGenId_[nCluSim_]  = genId;
-	      cluSimGenPdg_[nCluSim_] = genPdg;
+              cluSimGenPdg_[nCluSim_] = genPdg;
               cluSimTime_[nCluSim_]   = eDepMC.time();
               cluSimEdep_[nCluSim_]   = eDepMC.energyDep();
               cluSimMom_[nCluSim_]    = eDepMC.momentumIn();
@@ -496,10 +480,10 @@ namespace mu2e {
                const StepPointMC& hit = *iter;
                
                if ( (hit.volumeId()<VirtualDetectorId::EMC_Disk_0_SurfIn || hit.volumeId()>VirtualDetectorId::EMC_Disk_1_EdgeOut) 
-	             && hit.volumeId() != VirtualDetectorId::TT_Back) continue;
+                     && hit.volumeId() != VirtualDetectorId::TT_Back) continue;
   
                double hitTimeUnfolded = toff_.totalTimeOffset(hit.simParticle()) + hit.time();
-   	       double hitTime         = fmod(hitTimeUnfolded,_mbtime);
+               double hitTime         = fmod(hitTimeUnfolded,_mbtime);
 
                CLHEP::Hep3Vector VDPos = cal.geomUtil().mu2eToTracker(hit.position());
 

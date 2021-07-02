@@ -37,9 +37,9 @@ namespace mu2e {
             using Comment = fhicl::Comment;
             fhicl::Atom<art::InputTag> caloDigiCollection { Name("caloDigiCollection"), Comment("CaloDigi collection name") }; 
             fhicl::Atom<double>        digiSampling       { Name("digiSampling"),       Comment("Digitization time sampling") }; 
-            fhicl::Atom<double>        deltaTPulses       { Name("deltaTPulses"),       Comment("Maximum time difference between two signals ") }; 
-            fhicl::Atom<double>        pulseRatioMin      { Name("pulseRatioMin"),      Comment("Min value of energy ratio between pulses ") }; 
-            fhicl::Atom<double>        pulseRatioMax      { Name("pulseRatioMax"),      Comment("Max value of energy ratio between pulses ") }; 
+            fhicl::Atom<double>        deltaTPulses       { Name("deltaTPulses"),       Comment("Maximum time difference between two signals") }; 
+            fhicl::Atom<double>        deltaEPulse        { Name("deltaEPulses"),       Comment("Min value of energy ratio between pulses") }; 
+            fhicl::Atom<bool>          saveOnlyCombined   { Name("saveOnlyCombined"),   Comment("Save only hits with hits in two SiPMs") }; 
             fhicl::Sequence<double>    caphriCrystalID    { Name("caphriCrystalID"),    Comment("List of caphri crystal ID") }; 
             fhicl::Atom<int>           diagLevel          { Name("diagLevel"),          Comment("Diag Level"),0 };
         };
@@ -49,8 +49,8 @@ namespace mu2e {
            caloDigisToken_    {consumes<CaloDigiCollection>(config().caloDigiCollection())},
            digiSampling_      (config().digiSampling()),
            deltaTPulses_      (config().deltaTPulses()),
-           pulseRatioMin_     (config().pulseRatioMin()),
-           pulseRatioMax_     (config().pulseRatioMax()),
+           deltaEPulse_       (config().deltaEPulse()),
+           saveOnlyCombined_  (config().saveOnlyCombined()),
            caphriCrystalID_   (config().caphriCrystalID()),
            diagLevel_         (config().diagLevel())
         {
@@ -70,8 +70,8 @@ namespace mu2e {
         art::ProductToken<CaloDigiCollection> caloDigisToken_;
         double              digiSampling_;
         double              deltaTPulses_;
-        double              pulseRatioMin_;
-        double              pulseRatioMax_;
+        double              deltaEPulse_;
+        bool                saveOnlyCombined_;
         std::vector<double> caphriCrystalID_;
         int                 diagLevel_;
     };
@@ -108,25 +108,24 @@ namespace mu2e {
        for (const auto& caloDigi : caloDigis)
        {
            int crystalID   = cal.caloIDMapper().crystalIDFromSiPMID(caloDigi.SiPMID());
-	   size_t nSamPed  = caloDigi.peakpos() > 3 ? 4 : std::max(caloDigi.peakpos()-1, 1);
-           double baseline(0);
-	   for (size_t i=0; i<nSamPed; ++i){ baseline += caloDigi.waveform().at(i);}
-	   baseline /= nSamPed;
-           double eDep     = (caloDigi.waveform().at(caloDigi.peakpos())-baseline)*calorimeterCalibrations->ADC2MeV(caloDigi.SiPMID());//FIXME! we should use the function ::Peak2MeV, I also think that we should: (i) discard the hit if eDep is <0 (noise/stange pulse), (ii) require a minimum pulse length. gianipez 
+
+           double baseline = (caloDigi.waveform().at(0)+caloDigi.waveform().at(1)+caloDigi.waveform().at(2)+caloDigi.waveform().at(3))/4.0; 
+           double eDep     = (caloDigi.waveform().at(caloDigi.peakpos())-baseline)*calorimeterCalibrations->ADC2MeV(caloDigi.SiPMID()); 
            double time     = caloDigi.t0() + caloDigi.peakpos()*digiSampling_;                      //Giani's definition
            //double time     = caloDigi.t0() + (caloDigi.peakpos()+0.5)*digiSampling_ - shiftTime_; //Bertrand's definition
 
            addPulse(pulseMap, crystalID, time, eDep);
-           if (diagLevel_ > 2) std::cout<<"[CaloHitMakerFast] extracted Digi with crystalID="<<crystalID<<" eDep="<<eDep<<"\t time=" <<time<<std::endl;
+           if (diagLevel_ > 2) std::cout<<"[FastRecoDigiFromDigi] extracted Digi with crystalID="<<crystalID<<" eDep="<<eDep<<"\t time=" <<time<<std::endl;
        }
 
        for (auto& crystal : pulseMap)
        {
-	   int  crID     = crystal.first;
+	   int crID = crystal.first;
            bool isCaphri = std::find(caphriCrystalID_.begin(), caphriCrystalID_.end(), crID) != caphriCrystalID_.end();
 	   for (auto& info : crystal.second)
            {
-               if (diagLevel_ > 1) std::cout<<"[CaloHitMakerFast] extracted Hit with crystalID="<<crID<<" eDep="<<info.eDep_<<"\t time=" <<info.time_<<"\t nSiPM= "<<info.nSiPM_<<std::endl;
+               if (saveOnlyCombined_ && info.nSiPM_==1) continue; 
+               if (diagLevel_ > 1) std::cout<<"[FastRecoDigiFromDigi] extracted Hit with crystalID="<<crID<<" eDep="<<info.eDep_<<"\t time=" <<info.time_<<"\t nSiPM= "<<info.nSiPM_<<std::endl;
                if (isCaphri) caphriHitsColl.emplace_back(CaloHit(crID, info.nSiPM_, info.time_,info.eDep_));
                else          caloHitsColl.emplace_back(  CaloHit(crID, info.nSiPM_, info.time_,info.eDep_)); 
 	   }
@@ -144,8 +143,7 @@ namespace mu2e {
        bool addNewHit(true);
        for (auto& pulse : pulseMap[crystalID])
        {
-	   double pulseRatio = eDep / pulse.eDep_;
-	   if ( pulseRatio < pulseRatioMax_ && pulseRatio > pulseRatioMin_  && std::fabs(pulse.time_ - time) < deltaTPulses_)
+	   if ( std::fabs(eDep-pulse.eDep_) < deltaEPulse_  && std::fabs(pulse.time_ - time) < deltaTPulses_)
 	   {
               pulse.add(time,eDep); 
               addNewHit = false;

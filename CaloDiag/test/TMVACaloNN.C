@@ -5,7 +5,7 @@
 void TMVACaloNN(const char* files="bkgfiles.txt", std::string basedir="caloNN")
 {
 
-    TChain* mytree = new TChain("CaloNNDiag/Calo");
+    TChain* mytree = new TChain("CaloExample/Calo");
 
     std::ifstream fs(files,std::ifstream::in);
     char file[100];

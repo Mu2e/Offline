@@ -12,9 +12,9 @@ CaloHitMakerFast :
     caloDigiCollection     : CaloDigiMaker
     digiSampling           : @local::HitMakerDigiSampling
     diagLevel              : 0
-    deltaTPulses           : 5
-    pulseRatioMin          : 0.9
-    pulseRatioMax          : 1.1
+    deltaTPulses           : 11
+    deltaEPulses           : 5
+    saveOnlyCombined       : true
     caphriCrystalID        : [623, 624, 595, 596]
 }
 
