@@ -92,7 +92,7 @@ namespace mu2e {
 
       std::vector<int> hits;
       hits.reserve(caloHits.size());
-      for (unsigned i=0;i<caloHits.size();++i) if (caloHits[i].energyDep() > EnoiseCut_ ** caloHits[i].nSiPMs() >= minNSiPM_) hits.emplace_back(i);      
+      for (unsigned i=0;i<caloHits.size();++i) if (caloHits[i].energyDep() > EnoiseCut_ && caloHits[i].nSiPMs() >= minNSiPM_) hits.emplace_back(i);      
       auto functorTime = [&caloHits](int a, int b) {return caloHits[a].time() < caloHits[b].time();};
       std::sort(hits.begin(),hits.end(),functorTime);
 
