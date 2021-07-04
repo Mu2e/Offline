@@ -14,7 +14,6 @@ CaloHitMakerFast :
     diagLevel              : 0
     deltaTPulses           : 11
     deltaEPulses           : 5
-    saveOnlyCombined       : true
     caphriCrystalID        : [623, 624, 595, 596]
 }
 

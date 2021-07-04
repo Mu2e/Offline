@@ -39,7 +39,6 @@ namespace mu2e {
             fhicl::Atom<double>        digiSampling       { Name("digiSampling"),       Comment("Digitization time sampling") }; 
             fhicl::Atom<double>        deltaTPulses       { Name("deltaTPulses"),       Comment("Maximum time difference between two signals") }; 
             fhicl::Atom<double>        deltaEPulse        { Name("deltaEPulses"),       Comment("Min value of energy ratio between pulses") }; 
-            fhicl::Atom<bool>          saveOnlyCombined   { Name("saveOnlyCombined"),   Comment("Save only hits with hits in two SiPMs") }; 
             fhicl::Sequence<double>    caphriCrystalID    { Name("caphriCrystalID"),    Comment("List of caphri crystal ID") }; 
             fhicl::Atom<int>           diagLevel          { Name("diagLevel"),          Comment("Diag Level"),0 };
         };
@@ -50,7 +49,6 @@ namespace mu2e {
            digiSampling_      (config().digiSampling()),
            deltaTPulses_      (config().deltaTPulses()),
            deltaEPulse_       (config().deltaEPulse()),
-           saveOnlyCombined_  (config().saveOnlyCombined()),
            caphriCrystalID_   (config().caphriCrystalID()),
            diagLevel_         (config().diagLevel())
         {
@@ -124,7 +122,6 @@ namespace mu2e {
            bool isCaphri = std::find(caphriCrystalID_.begin(), caphriCrystalID_.end(), crID) != caphriCrystalID_.end();
 	   for (auto& info : crystal.second)
            {
-               if (saveOnlyCombined_ && info.nSiPM_==1) continue; 
                if (diagLevel_ > 1) std::cout<<"[FastRecoDigiFromDigi] extracted Hit with crystalID="<<crID<<" eDep="<<info.eDep_<<"\t time=" <<info.time_<<"\t nSiPM= "<<info.nSiPM_<<std::endl;
                if (isCaphri) caphriHitsColl.emplace_back(CaloHit(crID, info.nSiPM_, info.time_,info.eDep_));
                else          caloHitsColl.emplace_back(  CaloHit(crID, info.nSiPM_, info.time_,info.eDep_)); 
