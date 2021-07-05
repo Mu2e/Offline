@@ -736,18 +736,17 @@ namespace mu2e{
     _data.cryHitcol = data.cryHitcol;
     _data.cosmiccol = data.cosmiccol;
 	  
-       string evno = to_string(_event);
-       string rno = to_string(_run);
-       string srno = to_string(_subrun);
-       const std::string eveinfo = " Event : "+ evno + " Run :" + rno + " Subrun : " + srno;
-       const char* eventinfo = "Event";
-      auto t = new TEveText(eventinfo);
-      double posy = 0.0;
-      double posz = 3000.0;
-      t->SetFontSize(20);
-      t->SetText(eveinfo.c_str());
-      t->SetMainColor(kRed);
-      t->RefMainTrans().SetPos(posy,posy,posz);
+      const std::string eveinfo = " Event : "+ to_string(_event) + " Run : " + to_string(_run) + " Subrun : " + to_string(_subrun);
+      const char* eventinfo = "Event";
+      auto evinfo = new TEveText(eventinfo);
+      double posy = -1400.0;
+      double posz = 0.0; 
+      eventinfo = eveinfo.c_str();
+      evinfo->SetFontSize(20);  
+      evinfo->SetText(eventinfo);
+      evinfo->SetMainColor(kRed);
+      evinfo->RefMainTrans().SetPos(posz,posy,posz);
+      gEve->AddElement(evinfo);
 
     if(!isMCOnly){
       std::vector<const KalSeedCollection*> track_list = std::get<1>(data.track_tuple);
@@ -795,65 +794,11 @@ namespace mu2e{
     gApplication->Run(true);
 
     gEve->Redraw3D(kTRUE);
-    gEve->AddElement(t);
     if(usereventSelected == true){
       eventn = eventToFind;
       runn = runToFind;
       eventSelected = true;
     }
-
-    /*stringstream sEvent;
-    sEvent << eventn;
-    //const char* tEvent = " Event : ";
-    const char* eventlabel = sEvent.str().c_str();
-    auto t = new TEveText(eventlabel);
-    t->SetFontSize(15);
-    t->SetText(eventlabel);
-    t->SetMainColor(kRed);
-    t->RefMainTrans().SetPos(0.0,200.0,3000.0);
-    pass_data->fTrackList3D->AddElement(t); */
-  }
-
-  /*------------Function to fill event selection:-------------*/
-  void TEveMu2eMainWindow::fillEvent(bool firstLoop)
-   {
-    std::string eventInfoText;
-    eventInfoText=Form("Event #: %i",_event);
-    if(_eventNumberText==nullptr) 
-    {
-      _eventNumberText = new TText(0.6,-0.8, eventInfoText.c_str());
-      _eventNumberText->SetTextColor(5);
-      _eventNumberText->SetTextSize(0.025);
-      _eventNumberText->Draw("same");
-    }
-    else _eventNumberText->SetTitle(eventInfoText.c_str());
-    eventInfoText=Form("Sub Run #: %i",_subrun);
-    if(_subrunNumberText==nullptr)
-    {
-      _subrunNumberText = new TText(0.6,-0.75,eventInfoText.c_str());
-      _subrunNumberText->SetTextColor(5);
-      _subrunNumberText->SetTextSize(0.025);
-      _subrunNumberText->Draw("same");
-    }
-    else _subrunNumberText->SetTitle(eventInfoText.c_str());
-    eventInfoText=Form("Run #: %i",_run);
-    if(_runNumberText==nullptr)
-    {
-      _runNumberText = new TText(0.6,-0.7,eventInfoText.c_str());
-      _runNumberText->SetTextColor(5);
-      _runNumberText->SetTextSize(0.025);
-      _runNumberText->Draw("same");
-    }
-    else _runNumberText->SetTitle(eventInfoText.c_str());
-    if(_timeText==nullptr)
-    {
-      _timeText = new TText(0.6,-0.7,eventInfoText.c_str());
-      _timeText->SetTextColor(5);
-      _timeText->SetTextSize(0.025);
-      _timeText->Draw("same");
-    }
-    else _timeText->SetTitle(eventInfoText.c_str());
-    this->Layout();
   }
 
   /*------------Function to find event:-------------*/
