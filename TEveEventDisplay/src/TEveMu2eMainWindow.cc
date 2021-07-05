@@ -742,7 +742,7 @@ namespace mu2e{
       double posy = -1400.0;
       double posz = 0.0; 
       eventinfo = eveinfo.c_str();
-      evinfo->SetFontSize(20);  
+      evinfo->SetFontSize(15);  
       evinfo->SetText(eventinfo);
       evinfo->SetMainColor(kRed);
       evinfo->RefMainTrans().SetPos(posz,posy,posz);
