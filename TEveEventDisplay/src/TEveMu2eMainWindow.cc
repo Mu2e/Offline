@@ -735,6 +735,19 @@ namespace mu2e{
     _data.crvcoincol = data.crvcoincol;
     _data.cryHitcol = data.cryHitcol;
     _data.cosmiccol = data.cosmiccol;
+	  
+       string evno = to_string(_event);
+       string rno = to_string(_run);
+       string srno = to_string(_subrun);
+       const std::string eveinfo = " Event : "+ evno + " Run :" + rno + " Subrun : " + srno;
+       const char* eventinfo = "Event";
+      auto t = new TEveText(pid);
+      double posy = 0.0;
+      double posz = 3000.0;
+      t->SetFontSize(20);
+      t->SetText(eveinfno.c_str());
+      t->SetMainColor(color);
+      t->RefMainTrans().SetPos(posy,posy,posz);
 
     if(!isMCOnly){
       std::vector<const KalSeedCollection*> track_list = std::get<1>(data.track_tuple);
@@ -782,6 +795,7 @@ namespace mu2e{
     gApplication->Run(true);
 
     gEve->Redraw3D(kTRUE);
+    gEve->AddElement(t);
     if(usereventSelected == true){
       eventn = eventToFind;
       runn = runToFind;
