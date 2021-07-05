@@ -39,6 +39,7 @@
 #include <TEveProjectionManager.h>
 #include <TEveProjectionAxes.h>
 #include <TEveStraightLineSet.h>
+#include <TEveText.h>
 //libGeom
 #include <TGeoManager.h>
 //Mu2e:
