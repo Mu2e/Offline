@@ -39,6 +39,7 @@
 #include <TEveProjectionManager.h>
 #include <TEveProjectionAxes.h>
 #include <TEveStraightLineSet.h>
+#include <TEveText.h>
 //libGeom
 #include <TGeoManager.h>
 //Mu2e:
@@ -95,7 +96,6 @@ namespace mu2e{
       Bool_t ProcessMessage(Long_t msg, Long_t param1, Long_t param2);
       
       void  setEvent(const art::Event& event, bool firstLoop, Data_Collections &data, double time, bool accumulate, int& runn, int& eventn, bool& update, bool isMCOnly);
-      void  fillEvent(bool firstLoop=false);
       bool  isClosed() const;
       int   getEventToFind(bool &findEvent) const;
       
@@ -165,7 +165,6 @@ namespace mu2e{
       TEveMu2eTracker *Mu2eTracker  = new TEveMu2eTracker();
       TEveMu2eCRV *Mu2eCRV = new TEveMu2eCRV();
 
-      TText  *_eventNumberText, *_subrunNumberText, *_runNumberText, *_timeText, *_cminenergy;
       int _event, _subrun, _run;
       Data_Collections _data;
       Data_Collections _emptydata;
