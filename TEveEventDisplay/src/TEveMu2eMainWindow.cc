@@ -741,12 +741,12 @@ namespace mu2e{
        string srno = to_string(_subrun);
        const std::string eveinfo = " Event : "+ evno + " Run :" + rno + " Subrun : " + srno;
        const char* eventinfo = "Event";
-      auto t = new TEveText(pid);
+      auto t = new TEveText(eventinfo);
       double posy = 0.0;
       double posz = 3000.0;
       t->SetFontSize(20);
-      t->SetText(eveinfno.c_str());
-      t->SetMainColor(color);
+      t->SetText(eveinfo.c_str());
+      t->SetMainColor(kRed);
       t->RefMainTrans().SetPos(posy,posy,posz);
 
     if(!isMCOnly){
