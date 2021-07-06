@@ -3,6 +3,8 @@
 // reduces combinatoric for downstream modules.
 //  Original Author: David Brown, LBNL
 //
+// Modified by B. Echenard (Caltech), assumes that the hits are ordered by panels
+// Dave Brown confirmed this is the case
 
 #include "Offline/RecoDataProducts/inc/ComboHit.hh"
 #include "canvas/Persistency/Common/Ptr.h"
