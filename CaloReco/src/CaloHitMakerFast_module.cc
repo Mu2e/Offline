@@ -69,7 +69,6 @@ namespace mu2e {
         double              digiSampling_;
         double              deltaTPulses_;
         double              deltaEPulse_;
-        bool                saveOnlyCombined_;
         std::vector<double> caphriCrystalID_;
         int                 diagLevel_;
     };
