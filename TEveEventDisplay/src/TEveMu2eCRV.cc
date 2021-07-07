@@ -5,20 +5,21 @@ namespace mu2e{
 	TEveMu2eCRV::TEveMu2eCRV(){};
 
   /*------------Function to draw CRV geometry in 2D:-------------*/
-  void TEveMu2eCRV::DrawCRVDetector(art::Run const& run, TGeoVolume* topvol, TEveElementList *orthodetlist[]){
+  void TEveMu2eCRV::DrawCRVDetector(art::Run const& run, TGeoVolume* topvol, TEveElementList *orthodetT1, TEveElementList *orthodetT2){
     TGeoMaterial *matSi = new TGeoMaterial("Si", 28.085,14,2.33);
     TGeoMedium *Si = new TGeoMedium("Silicon",2, matSi);
     std::vector<double> halflen;
     CLHEP::Hep3Vector position;
     CosmicRayShield const &CRS = *(GeomHandle<CosmicRayShield>());
     const std::string TopSectorNames[] = {"T1", "T2", "T3", "T4"};
-    for (unsigned int i=0; i<4; i++){
+    for (unsigned int i=0; i<2; i++){
       halflen = CRS.getSectorHalfLengths(TopSectorNames[i]);
       position = CRS.getSectorPosition(TopSectorNames[i]);
       TEveGeoShape *sectorshape = new TEveGeoShape();
       sectorshape->SetShape(new TGeoBBox(pointmmTocm(2*halflen[0]), pointmmTocm(2*halflen[2]), pointmmTocm(2*halflen[1])));
       sectorshape->SetMainTransparency(100);
-      orthodetlist[i]->AddElement(sectorshape);
+      
+      //orthodetlist[i]->AddElement(sectorshape);
       TGeoShape *g = new TGeoBBox("CRV Sector",pointmmTocm(2*halflen[0]), pointmmTocm(2*halflen[2]), pointmmTocm(2*halflen[1])); 
       TGeoVolume *crv0= new TGeoVolume("CRV Sector",g, Si);
       crv0->SetVisLeaves(kFALSE);
@@ -27,8 +28,8 @@ namespace mu2e{
       std::string filename("Mu2eG4/geom/crv_counters_v07.txt");
       SimpleConfig Config(filename);
       std::vector<double> Center;
-      if(i==0)  Config.getVectorDouble("crs.firstCounterT1", Center);
-      if(i==1)  Config.getVectorDouble ("crs.firstCounterT2",Center);
+      if(i==0)  {Config.getVectorDouble("crs.firstCounterT1", Center);orthodetT1->AddElement(sectorshape);}
+      if(i==1)  {Config.getVectorDouble ("crs.firstCounterT2",Center);orthodetT2->AddElement(sectorshape);}
       if(i==2)  Config.getVectorDouble("crs.firstCounterT3", Center);
       if(i==3)  Config.getVectorDouble("crs.firstCounterT4", Center) ;  
       
