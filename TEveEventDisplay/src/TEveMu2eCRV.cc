@@ -12,13 +12,19 @@ namespace mu2e{
     CLHEP::Hep3Vector position;
     CosmicRayShield const &CRS = *(GeomHandle<CosmicRayShield>());
     const std::string TopSectorNames[] = {"T1", "T2", "T3", "T4"};
-    for (unsigned int i=0; i<2; i++){
+    for (unsigned int i=0; i<4; i++){
+	    Double_t panelpos[3];
       halflen = CRS.getSectorHalfLengths(TopSectorNames[i]);
       position = CRS.getSectorPosition(TopSectorNames[i]);
+	 
+        panelpos [0] = position.x();
+        panelpos [1] = position.y();
+        panelpos [2] = position.z();    
+	   
       TEveGeoShape *sectorshape = new TEveGeoShape();
-      sectorshape->SetShape(new TGeoBBox(pointmmTocm(2*halflen[0]), pointmmTocm(2*halflen[2]), pointmmTocm(2*halflen[1])));
+      sectorshape->SetShape(new TGeoBBox("sectorshape",pointmmTocm(2*halflen[0]), pointmmTocm(2*halflen[2]), pointmmTocm(2*halflen[1]),panelpos));
       sectorshape->SetMainTransparency(100);
-      
+      std::cout<<"sector : "<<i<<" "<<halflen[0]<<" "<<position.x()<<std::endl;
       //orthodetlist[i]->AddElement(sectorshape);
       TGeoShape *g = new TGeoBBox("CRV Sector",pointmmTocm(2*halflen[0]), pointmmTocm(2*halflen[2]), pointmmTocm(2*halflen[1])); 
       TGeoVolume *crv0= new TGeoVolume("CRV Sector",g, Si);
@@ -28,11 +34,11 @@ namespace mu2e{
       std::string filename("Mu2eG4/geom/crv_counters_v07.txt");
       SimpleConfig Config(filename);
       std::vector<double> Center;
-      if(i==0)  {Config.getVectorDouble("crs.firstCounterT1", Center);orthodetT1->AddElement(sectorshape);}
-      if(i==1)  {Config.getVectorDouble ("crs.firstCounterT2",Center);orthodetT2->AddElement(sectorshape);}
+      if(i==0)  {Config.getVectorDouble("crs.firstCounterT1", Center); orthodetT1->AddElement(sectorshape);}
+      if(i==1)  {Config.getVectorDouble ("crs.firstCounterT2",Center); orthodetT2->AddElement(sectorshape);}
       if(i==2)  Config.getVectorDouble("crs.firstCounterT3", Center);
       if(i==3)  Config.getVectorDouble("crs.firstCounterT4", Center) ;  
-      
+      std::cout<<"CRV "<<std::endl;
       topvol->AddNode(crv0, 1, new TGeoTranslation(pointmmTocm(Center[0]),pointmmTocm(Center[1]),pointmmTocm(Center[2]/10)));
     }
   }
