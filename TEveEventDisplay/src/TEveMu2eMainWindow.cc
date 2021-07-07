@@ -188,20 +188,20 @@ namespace mu2e{
    fViewer0C->SetCurrentCamera(TGLViewer::kCameraOrthoXOY);
    // connect signal we are interested to
 
-   fViewerC[0] = new TEveViewer("SplitGLViewer[0]");
-   fViewerC[0]->SetGLViewer(fViewer0C, fViewer0C->GetFrame());
-   fViewerC[0]->IncDenyDestroy();
+   fViewer[4] = new TEveViewer("SplitGLViewer[4]");
+   fViewer[4]->SetGLViewer(fViewer0C, fViewer0C->GetFrame());
+   fViewer[4]->IncDenyDestroy();
    if (fIsEmbedded && gEve) {
-     gEve->GetViewers()->AddElement(fViewerC[0]);
-     proj0C = gEve->SpawnNewScene("CRV XY Scene");
+     gEve->GetViewers()->AddElement(fViewer[4]);
+     proj4 = gEve->SpawnNewScene("CRV XY Scene");
      //fViewer[1]->AddScene(fdetXY);
      CfXYMgr = new TEveProjectionManager(TEveProjection::kPT_RPhi);
      proj0C->AddElement(CfXYMgr);
      TEveProjectionAxes* axes_xy = new TEveProjectionAxes(CfXYMgr);
-     proj0C->AddElement(axes_xy);
+     proj4->AddElement(axes_xy);
      gEve->AddToListTree(axes_xy,kTRUE);
      gEve->AddToListTree(CfXYMgr,kTRUE);
-     fViewerC[0]->AddScene(proj0C);
+     fViewer[4]->AddScene(proj4);
   }
 	
    Resize(GetDefaultSize());
@@ -508,14 +508,14 @@ namespace mu2e{
     pack->NewSlot()->MakeCurrent();
     CRV2Dproj->fXYView = gEve->SpawnNewViewer("CRV XY View", "");
     CRV2Dproj->fXYView->GetGLViewer()->SetCurrentCamera(TGLViewer::kCameraOrthoXOY);
-    CRV2Dproj->fXYView->AddScene(tracker2Dproj->fDetXYScene);
-    CRV2Dproj->fXYView->AddScene(tracker2Dproj->fEvtXYScene);
+    CRV2Dproj->fXYView->AddScene(CRV2Dproj->fDetXYScene);
+    CRV2Dproj->fXYView->AddScene(CRV2Dproj->fEvtXYScene);
 
     pack->NewSlot()->MakeCurrent();
     CRV2Dproj->fRZView = gEve->SpawnNewViewer("CRV RZ View", "");
     CRV2Dproj->fRZView->GetGLViewer()->SetCurrentCamera(TGLViewer::kCameraOrthoXOY);
-    CRV2Dproj->fRZView->AddScene(tracker2Dproj->fDetRZScene);
-    CRV2Dproj->fRZView->AddScene(tracker2Dproj->fEvtRZScene);
+    CRV2Dproj->fRZView->AddScene(CRV2Dproj->fDetRZScene);
+    CRV2Dproj->fRZView->AddScene(CRV2Dproj->fEvtRZScene);
 
     gEve->GetBrowser()->GetTabRight()->SetTab(0);
 
@@ -615,8 +615,8 @@ namespace mu2e{
   gEve->GetGlobalScene()->FindChild("OrthoDet")->SetRnrState(kFALSE);
 
   // ... Turn ON rendering of detector in RPhi and RZ views
-  //CRV2Dproj->fDetXYScene->FindChild("OrthoDet [P]")->SetRnrState(kTRUE);
-  //CRV2Dproj->fDetRZScene->FindChild("OrthoDets0 [P]")->SetRnrState(kTRUE);
+  CRV2Dproj->fDetXYScene->FindChild("OrthoDet [P]")->SetRnrState(kTRUE);
+  CRV2Dproj->fDetRZScene->FindChild("OrthoDets0 [P]")->SetRnrState(kTRUE);
 
   }
 
