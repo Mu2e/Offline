@@ -597,19 +597,21 @@ namespace mu2e{
 
   TEveElementList *orthodetT1 = new TEveElementList("CRVT1OrthoDet");
   TEveElementList *orthodetT2 = new TEveElementList("CRVT2OrthoDet");
-  TEveElementList *orthodetT3 = new TEveElementList("CRVT3OrthoDet");
-  TEveElementList *orthodetT4 = new TEveElementList("CRVT4OrthoDet");
-  TEveElementList *orthodetlist[] = {orthodetT1, orthodetT2, orthodetT3, orthodetT4};
+  //TEveElementList *orthodetT3 = new TEveElementList("CRVT3OrthoDet");
+  //TEveElementList *orthodetT4 = new TEveElementList("CRVT4OrthoDet");
+ // TEveElementList *orthodetlist[] = {orthodetT1, orthodetT2, orthodetT3, orthodetT4};
 
-  Mu2eCRV->DrawCRVDetector(run, topvol, orthodetlist);
+  Mu2eCRV->DrawCRVDetector(run, topvol, orthodetT1, orthodetT2);
 
-  for (unsigned int i=0; i<2; i++){
-    gEve->AddGlobalElement(orthodetlist[i]);
-  }
+  //for (unsigned int i=0; i<2; i++){
+    gEve->AddGlobalElement(orthodetT1);
+	  gEve->AddGlobalElement(orthodetT2);
+ // }
 
-  for (unsigned int i=0; i<2; i++){
-    CRV2Dproj->fXYMgr->ImportElements(orthodetlist[i], CRV2Dproj->fDetXYScene);
-  }
+  //for (unsigned int i=0; i<2; i++){
+    CRV2Dproj->fXYMgr->ImportElements(orthodetT1, CRV2Dproj->fDetXYScene);
+	   CRV2Dproj->fXYMgr->ImportElements(orthodetT2, CRV2Dproj->fDetXYScene);
+ // }
 
   // ... Turn OFF rendering of duplicate detector in main 3D view
   gEve->GetGlobalScene()->FindChild("CRVT1OrthoDet")->SetRnrState(kFALSE);
