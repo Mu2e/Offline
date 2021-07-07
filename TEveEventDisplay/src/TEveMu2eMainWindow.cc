@@ -195,12 +195,12 @@ namespace mu2e{
      gEve->GetViewers()->AddElement(fViewer[4]);
      proj4 = gEve->SpawnNewScene("CRV XY Scene");
      //fViewer[1]->AddScene(fdetXY);
-     CfXYMgr = new TEveProjectionManager(TEveProjection::kPT_RPhi);
-     proj4->AddElement(CfXYMgr);
-     TEveProjectionAxes* axes_xy = new TEveProjectionAxes(CfXYMgr);
+     CrfXYMgr = new TEveProjectionManager(TEveProjection::kPT_RPhi);
+     proj4->AddElement(CrfXYMgr);
+     TEveProjectionAxes* axes_xy = new TEveProjectionAxes(CrfXYMgr);
      proj4->AddElement(axes_xy);
      gEve->AddToListTree(axes_xy,kTRUE);
-     gEve->AddToListTree(CfXYMgr,kTRUE);
+     gEve->AddToListTree(CrfXYMgr,kTRUE);
      fViewer[4]->AddScene(proj4);
   }
 	
@@ -612,11 +612,12 @@ namespace mu2e{
   }
 
   // ... Turn OFF rendering of duplicate detector in main 3D view
-  gEve->GetGlobalScene()->FindChild("OrthoDet")->SetRnrState(kFALSE);
+  gEve->GetGlobalScene()->FindChild("CRVT1OrthoDet")->SetRnrState(kFALSE);
+  gEve->GetGlobalScene()->FindChild("CRVT2OrthoDet")->SetRnrState(kFALSE);
 
   // ... Turn ON rendering of detector in RPhi and RZ views
-  CRV2Dproj->fDetXYScene->FindChild("OrthoDet [P]")->SetRnrState(kTRUE);
-  CRV2Dproj->fDetRZScene->FindChild("OrthoDets0 [P]")->SetRnrState(kTRUE);
+  CRV2Dproj->fDetXYScene->FindChild("CRVT1OrthoDet [P]")->SetRnrState(kTRUE);
+  CRV2Dproj->fDetRZScene->FindChild("CRVT2OrthoDet [P]")->SetRnrState(kTRUE);
 
   }
 
