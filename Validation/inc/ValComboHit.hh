@@ -3,8 +3,8 @@
 #define ValComboHit_HH_
 
 #include "art/Framework/Principal/Event.h"
-#include "RecoDataProducts/inc/ComboHit.hh"
-#include "Validation/inc/ValId.hh"
+#include "Offline/RecoDataProducts/inc/ComboHit.hh"
+#include "Offline/Validation/inc/ValId.hh"
 #include "TH1D.h"
 #include <string>
 

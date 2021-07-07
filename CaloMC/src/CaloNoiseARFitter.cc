@@ -1,6 +1,6 @@
-#include "CaloMC/inc/CaloNoiseARFitter.hh"
+#include "Offline/CaloMC/inc/CaloNoiseARFitter.hh"
 #include "art/Framework/Services/Optional/RandomNumberGenerator.h"
-#include "SeedService/inc/SeedService.hh"
+#include "Offline/SeedService/inc/SeedService.hh"
 
 #include "TMinuit.h"
 #include <string> 

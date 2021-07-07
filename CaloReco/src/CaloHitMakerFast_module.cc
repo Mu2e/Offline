@@ -1,15 +1,15 @@
 #include "art/Framework/Core/EDProducer.h"
 #include "art/Framework/Principal/Event.h"
 #include "art/Framework/Core/ModuleMacros.h"
-#include "GeneralUtilities/inc/ParameterSetHelpers.hh"
+#include "Offline/GeneralUtilities/inc/ParameterSetHelpers.hh"
 #include "art/Framework/Principal/Handle.h"
 
-#include "CalorimeterGeom/inc/Calorimeter.hh"
-#include "ConditionsService/inc/ConditionsHandle.hh"
-#include "ConditionsService/inc/CalorimeterCalibrations.hh"
-#include "GeometryService/inc/GeomHandle.hh"
-#include "RecoDataProducts/inc/CaloDigi.hh"
-#include "RecoDataProducts/inc/CaloHit.hh"
+#include "Offline/CalorimeterGeom/inc/Calorimeter.hh"
+#include "Offline/ConditionsService/inc/ConditionsHandle.hh"
+#include "Offline/ConditionsService/inc/CalorimeterCalibrations.hh"
+#include "Offline/GeometryService/inc/GeomHandle.hh"
+#include "Offline/RecoDataProducts/inc/CaloDigi.hh"
+#include "Offline/RecoDataProducts/inc/CaloHit.hh"
 
    
 namespace

@@ -1,8 +1,8 @@
 
-#include "TrackerConditions/inc/StrawElectronicsMaker.hh"
-#include "GeneralUtilities/inc/DigitalFiltering.hh"
-#include "GeometryService/inc/GeomHandle.hh"
-#include "TrackerGeom/inc/Tracker.hh"
+#include "Offline/TrackerConditions/inc/StrawElectronicsMaker.hh"
+#include "Offline/GeneralUtilities/inc/DigitalFiltering.hh"
+#include "Offline/GeometryService/inc/GeomHandle.hh"
+#include "Offline/TrackerGeom/inc/Tracker.hh"
 #include "cetlib_except/exception.h"
 #include "TMath.h"
 #include <cmath>

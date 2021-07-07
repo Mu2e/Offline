@@ -9,7 +9,7 @@
 // Original author Rob Kutschke
 
 // Mu2e includes
-#include "MCDataProducts/inc/StepPointMC.hh"
+#include "Offline/MCDataProducts/inc/StepPointMC.hh"
 
 using namespace std;
 

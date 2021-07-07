@@ -27,8 +27,8 @@
      a) edit geom_01.txt, comment out #include ttracker_v2.txt and replace it with
         and include of ttracker_v3.txt
      b) Make a new geometry file with two lines
-        #include "Mu2eG4/test/geom_01.txt"
-        #include "Mu2eG4/test/ttracker_v3.txt"
+        #include "Offline/Mu2eG4/test/geom_01.txt"
+        #include "Offline/Mu2eG4/test/ttracker_v3.txt"
 
    There remains one todo item: the staves are solid Al; that is, the cutout for the services
    has not been implemented.

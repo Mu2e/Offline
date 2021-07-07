@@ -3,12 +3,12 @@
 #
 #  > mu2e --config TrkFilters/fcl/ReadDigis.fcl --source "your digis file" --TFile ReadDigis.root --nevts=100
 #
-#include "fcl/minimalMessageService.fcl"
-#include "fcl/standardServices.fcl"
-#include "fcl/standardProducers.fcl"
-#include "CaloCluster/fcl/prolog_trigger.fcl"
-#include "TrkHitReco/fcl/prolog.fcl"
-#include "TrkPatRec/fcl/prolog.fcl"
+#include "Offline/fcl/minimalMessageService.fcl"
+#include "Offline/fcl/standardServices.fcl"
+#include "Offline/fcl/standardProducers.fcl"
+#include "Offline/CaloCluster/fcl/prolog_trigger.fcl"
+#include "Offline/TrkHitReco/fcl/prolog.fcl"
+#include "Offline/TrkPatRec/fcl/prolog.fcl"
 
 
 BEGIN_PROLOG
@@ -28,10 +28,10 @@ cprDePSeed_evt_sf : 1
 cprDePSeed_sf     : 1
 END_PROLOG
 
-#include "TrkHitReco/fcl/prolog_trigger.fcl"
-#include "TrkPatRec/fcl/prolog_trigger.fcl"
-#include "TrkFilters/fcl/prolog_trigger.fcl"
-#include "TrkDiag/fcl/prolog.fcl"
+#include "Offline/TrkHitReco/fcl/prolog_trigger.fcl"
+#include "Offline/TrkPatRec/fcl/prolog_trigger.fcl"
+#include "Offline/TrkFilters/fcl/prolog_trigger.fcl"
+#include "Offline/TrkDiag/fcl/prolog.fcl"
 
 process_name : ReadDigis
 

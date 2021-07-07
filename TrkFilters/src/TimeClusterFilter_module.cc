@@ -10,8 +10,8 @@
 #include "fhiclcpp/ParameterSet.h"
 // mu2e
 // data
-#include "RecoDataProducts/inc/TimeCluster.hh"
-#include "RecoDataProducts/inc/TriggerInfo.hh"
+#include "Offline/RecoDataProducts/inc/TimeCluster.hh"
+#include "Offline/RecoDataProducts/inc/TriggerInfo.hh"
 // c++
 #include <iostream>
 #include <memory>

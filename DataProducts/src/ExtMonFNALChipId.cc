@@ -1,4 +1,4 @@
-#include "DataProducts/inc/ExtMonFNALChipId.hh"
+#include "Offline/DataProducts/inc/ExtMonFNALChipId.hh"
 
 namespace mu2e {
   ExtMonFNALChipId::ExtMonFNALChipId(const ExtMonFNALModuleId& module,

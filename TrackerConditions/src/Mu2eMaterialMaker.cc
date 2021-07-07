@@ -1,8 +1,8 @@
 
 #include <iostream>
 
-#include "TrackerConditions/inc/Mu2eMaterial.hh"
-#include "TrackerConditions/inc/Mu2eMaterialMaker.hh"
+#include "Offline/TrackerConditions/inc/Mu2eMaterial.hh"
+#include "Offline/TrackerConditions/inc/Mu2eMaterialMaker.hh"
 #include "BTrk/BaBar/ExternalInfo.hh"
 
 

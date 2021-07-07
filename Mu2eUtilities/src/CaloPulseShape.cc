@@ -1,6 +1,6 @@
-#include "Mu2eUtilities/inc/CaloPulseShape.hh"
-#include "ConditionsService/inc/CalorimeterCalibrations.hh"
-#include "ConditionsService/inc/ConditionsHandle.hh"
+#include "Offline/Mu2eUtilities/inc/CaloPulseShape.hh"
+#include "Offline/ConditionsService/inc/CalorimeterCalibrations.hh"
+#include "Offline/ConditionsService/inc/ConditionsHandle.hh"
 
 #include "TFile.h"
 #include "TH2F.h"

@@ -6,8 +6,8 @@
 //
 
 // Mu2e includes.
-#include "GeometryService/src/DetectorSystemMaker.hh"
-#include "ConfigTools/inc/SimpleConfig.hh"
+#include "Offline/GeometryService/src/DetectorSystemMaker.hh"
+#include "Offline/ConfigTools/inc/SimpleConfig.hh"
 
 namespace mu2e{
 

@@ -32,32 +32,32 @@
 #include "TDirectory.h"
 #include "TROOT.h"
 
-#include "RecoDataProducts/inc/KalRepPtrCollection.hh"
+#include "Offline/RecoDataProducts/inc/KalRepPtrCollection.hh"
 #include "BTrk/TrkBase/TrkHit.hh"
 #include "BTrk/TrkBase/TrkParticle.hh"
 #include "BTrk/TrkBase/TrkPoca.hh"
 #include "BTrk/KalmanTrack/KalRep.hh"
 #include "BTrk/KalmanTrack/KalHit.hh"
-#include "BTrkData/inc/TrkStrawHit.hh"
-#include "RecoDataProducts/inc/StrawHitCollection.hh"
-#include "RecoDataProducts/inc/StrawHit.hh"
-#include "RecoDataProducts/inc/PIDProduct.hh"
-#include "RecoDataProducts/inc/PIDProductCollection.hh"
-#include "BTrkData/inc/Doublet.hh"
+#include "Offline/BTrkData/inc/TrkStrawHit.hh"
+#include "Offline/RecoDataProducts/inc/StrawHitCollection.hh"
+#include "Offline/RecoDataProducts/inc/StrawHit.hh"
+#include "Offline/RecoDataProducts/inc/PIDProduct.hh"
+#include "Offline/RecoDataProducts/inc/PIDProductCollection.hh"
+#include "Offline/BTrkData/inc/Doublet.hh"
 
-#include "ConfigTools/inc/ConfigFileLookupPolicy.hh"
+#include "Offline/ConfigTools/inc/ConfigFileLookupPolicy.hh"
 
-#include "RecoDataProducts/inc/TrkFitDirection.hh"
+#include "Offline/RecoDataProducts/inc/TrkFitDirection.hh"
 
-#include "ParticleID/inc/PIDUtilities.hh"
-#include "RecoDataProducts/inc/AvikPIDNewProductCollection.hh"
+#include "Offline/ParticleID/inc/PIDUtilities.hh"
+#include "Offline/RecoDataProducts/inc/AvikPIDNewProductCollection.hh"
 
-#include "ProditionsService/inc/ProditionsHandle.hh"
-#include "TrackerConditions/inc/Mu2eDetector.hh"
+#include "Offline/ProditionsService/inc/ProditionsHandle.hh"
+#include "Offline/TrackerConditions/inc/Mu2eDetector.hh"
 
-#include "TrkReco/inc/DoubletAmbigResolver.hh"
-#include "ConditionsService/inc/ConditionsHandle.hh"
-#include "GeometryService/inc/GeomHandle.hh"
+#include "Offline/TrkReco/inc/DoubletAmbigResolver.hh"
+#include "Offline/ConditionsService/inc/ConditionsHandle.hh"
+#include "Offline/GeometryService/inc/GeomHandle.hh"
 
 using CLHEP::Hep3Vector;
 

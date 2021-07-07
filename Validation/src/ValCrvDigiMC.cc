@@ -1,5 +1,5 @@
 
-#include "Validation/inc/ValCrvDigiMC.hh"
+#include "Offline/Validation/inc/ValCrvDigiMC.hh"
 
 
 int mu2e::ValCrvDigiMC::declare(art::TFileDirectory tfs) {

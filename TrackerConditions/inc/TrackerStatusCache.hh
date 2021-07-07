@@ -1,10 +1,10 @@
 #ifndef TrackerConditions_TrackerStatusCache_hh
 #define TrackerConditions_TrackerStatusCache_hh
 
-#include "Mu2eInterfaces/inc/ProditionsCache.hh"
-#include "DbService/inc/DbHandle.hh"
-#include "DbTables/inc/TrkElementStatus.hh"
-#include "TrackerConditions/inc/TrackerStatusMaker.hh"
+#include "Offline/Mu2eInterfaces/inc/ProditionsCache.hh"
+#include "Offline/DbService/inc/DbHandle.hh"
+#include "Offline/DbTables/inc/TrkElementStatus.hh"
+#include "Offline/TrackerConditions/inc/TrackerStatusMaker.hh"
 
 
 namespace mu2e {

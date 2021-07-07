@@ -7,7 +7,7 @@
 
 #include <iostream>
 
-#include "Mu2eUtilities/test/makeIt.hh"
+#include "Offline/Mu2eUtilities/test/makeIt.hh"
 
 using namespace std;
 

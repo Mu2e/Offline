@@ -4,7 +4,7 @@
 // See the implementation of usage() for the documentation.
 //
 
-#include "Print/artProductSizes/Arguments.hh"
+#include "Offline/Print/artProductSizes/Arguments.hh"
 #include <sstream>
 
 using namespace std;

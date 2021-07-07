@@ -30,7 +30,7 @@
 #include <type_traits>
 #include <utility>
 
-#include "Mu2eUtilities/inc/TrackPatRecType.hh"
+#include "Offline/Mu2eUtilities/inc/TrackPatRecType.hh"
 
 namespace mu2e {
 

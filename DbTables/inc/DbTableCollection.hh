@@ -3,7 +3,7 @@
 
 #include <iostream>
 #include <iomanip>
-#include "DbTables/inc/DbLiveTable.hh"
+#include "Offline/DbTables/inc/DbLiveTable.hh"
 
 namespace mu2e {
     typedef std::vector<mu2e::DbLiveTable> DbTableCollection;

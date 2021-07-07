@@ -5,7 +5,7 @@
 #include <TGLabel.h>
 #include <TGButton.h>
 #include <TGTextEntry.h>
-#include "EventDisplay/src/EventDisplayFrame.h"
+#include "Offline/EventDisplay/src/EventDisplayFrame.h"
 
 namespace mu2e_eventdisplay
 {

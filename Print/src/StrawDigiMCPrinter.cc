@@ -1,5 +1,5 @@
 
-#include "Print/inc/StrawDigiMCPrinter.hh"
+#include "Offline/Print/inc/StrawDigiMCPrinter.hh"
 #include "art/Framework/Principal/Provenance.h"
 #include <string>
 #include <iomanip>

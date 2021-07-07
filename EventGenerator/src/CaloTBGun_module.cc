@@ -16,15 +16,15 @@
 #include "art/Framework/Services/Registry/ServiceHandle.h"
 
 // Mu2e includes
-#include "ConfigTools/inc/ConfigFileLookupPolicy.hh"
-#include "SeedService/inc/SeedService.hh"
-#include "GlobalConstantsService/inc/GlobalConstantsHandle.hh"
-#include "DataProducts/inc/PDGCode.hh"
-#include "MCDataProducts/inc/GenParticle.hh"
-#include "MCDataProducts/inc/GenParticleCollection.hh"
-#include "GeometryService/inc/GeomHandle.hh"
-#include "GeometryService/inc/DetectorSystem.hh"
-#include "CalorimeterGeom/inc/DiskCalorimeter.hh"
+#include "Offline/ConfigTools/inc/ConfigFileLookupPolicy.hh"
+#include "Offline/SeedService/inc/SeedService.hh"
+#include "Offline/GlobalConstantsService/inc/GlobalConstantsHandle.hh"
+#include "Offline/DataProducts/inc/PDGCode.hh"
+#include "Offline/MCDataProducts/inc/GenParticle.hh"
+#include "Offline/MCDataProducts/inc/GenParticleCollection.hh"
+#include "Offline/GeometryService/inc/GeomHandle.hh"
+#include "Offline/GeometryService/inc/DetectorSystem.hh"
+#include "Offline/CalorimeterGeom/inc/DiskCalorimeter.hh"
 
 
 namespace mu2e {

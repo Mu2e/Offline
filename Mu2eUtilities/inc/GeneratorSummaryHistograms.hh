@@ -9,8 +9,8 @@
 
 #include <string>
 
-#include "MCDataProducts/inc/GenParticle.hh"
-#include "MCDataProducts/inc/GenParticleCollection.hh"
+#include "Offline/MCDataProducts/inc/GenParticle.hh"
+#include "Offline/MCDataProducts/inc/GenParticleCollection.hh"
 #include "art_root_io/TFileDirectory.h"
 
 namespace art { class TFileDirectory; }

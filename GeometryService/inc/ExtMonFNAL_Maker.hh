@@ -5,7 +5,7 @@
 #include <memory>
 #include <string>
 
-#include "ExtinctionMonitorFNAL/Geometry/inc/ExtMonFNALPlaneStack.hh"
+#include "Offline/ExtinctionMonitorFNAL/Geometry/inc/ExtMonFNALPlaneStack.hh"
 
 namespace mu2e { class SimpleConfig; }
 namespace mu2e { namespace ExtMonFNAL { class ExtMon; } }

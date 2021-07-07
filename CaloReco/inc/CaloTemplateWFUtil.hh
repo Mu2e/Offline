@@ -1,7 +1,7 @@
 #ifndef CaloTemplateWFUtil_HH
 #define CaloTemplateWFUtil_HH
 
-#include "Mu2eUtilities/inc/CaloPulseShape.hh"
+#include "Offline/Mu2eUtilities/inc/CaloPulseShape.hh"
 #include <vector>
 #include <string>
 

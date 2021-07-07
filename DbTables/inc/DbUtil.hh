@@ -2,7 +2,7 @@
 #define DbTables_DbUtil_hh
 
 #include <string>
-#include "DbTables/inc/DbTableCollection.hh"
+#include "Offline/DbTables/inc/DbTableCollection.hh"
 
 namespace mu2e {
 

@@ -4,7 +4,7 @@
 //
 // Original author David Brown, LBNL
 //
-#include "RecoDataProducts/inc/TrkFitDirection.hh"
+#include "Offline/RecoDataProducts/inc/TrkFitDirection.hh"
 
 namespace mu2e 
 {

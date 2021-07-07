@@ -3,8 +3,8 @@
 #include <cstdio>
 #include <cmath>
 #include<exception>
-#include "DataProducts/inc/XYZVec.hh"
-#include "Mu2eUtilities/inc/BuildLinearFitMatrixSums.hh"
+#include "Offline/DataProducts/inc/XYZVec.hh"
+#include "Offline/Mu2eUtilities/inc/BuildLinearFitMatrixSums.hh"
 
 BuildLinearFitMatrixSums::BuildLinearFitMatrixSums() {
   clear();

@@ -25,13 +25,13 @@
 #include "art_root_io/TFileService.h"
 #include "art_root_io/TFileDirectory.h"
 
-#include "MCDataProducts/inc/StepPointMC.hh"
-#include "MCDataProducts/inc/StepPointMCCollection.hh"
+#include "Offline/MCDataProducts/inc/StepPointMC.hh"
+#include "Offline/MCDataProducts/inc/StepPointMCCollection.hh"
 
-#include "GlobalConstantsService/inc/GlobalConstantsHandle.hh"
-#include "GlobalConstantsService/inc/ParticleDataTable.hh"
-#include "Mu2eUtilities/inc/SimParticleTimeOffset.hh"
-#include "Mu2eUtilities/inc/SimParticleGetTau.hh"
+#include "Offline/GlobalConstantsService/inc/GlobalConstantsHandle.hh"
+#include "Offline/GlobalConstantsService/inc/ParticleDataTable.hh"
+#include "Offline/Mu2eUtilities/inc/SimParticleTimeOffset.hh"
+#include "Offline/Mu2eUtilities/inc/SimParticleGetTau.hh"
 
 
 #include "art/Framework/Principal/Run.h"
@@ -39,13 +39,13 @@
 #include "messagefacility/MessageLogger/MessageLogger.h"
 
 // Mu2e includes
-#include "DataProducts/inc/PDGCode.hh"
-#include "ConfigTools/inc/SimpleConfig.hh"
-#include "GlobalConstantsService/inc/GlobalConstantsHandle.hh"
-#include "GlobalConstantsService/inc/ParticleDataTable.hh"
-#include "GlobalConstantsService/inc/PhysicsParams.hh"
-#include "GeometryService/inc/GeomHandle.hh"
-#include "ProductionTargetGeom/inc/ProductionTarget.hh"
+#include "Offline/DataProducts/inc/PDGCode.hh"
+#include "Offline/ConfigTools/inc/SimpleConfig.hh"
+#include "Offline/GlobalConstantsService/inc/GlobalConstantsHandle.hh"
+#include "Offline/GlobalConstantsService/inc/ParticleDataTable.hh"
+#include "Offline/GlobalConstantsService/inc/PhysicsParams.hh"
+#include "Offline/GeometryService/inc/GeomHandle.hh"
+#include "Offline/ProductionTargetGeom/inc/ProductionTarget.hh"
 
 // CLHEP includes.
 #include "CLHEP/Units/PhysicalConstants.h"

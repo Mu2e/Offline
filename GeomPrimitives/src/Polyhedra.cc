@@ -7,7 +7,7 @@
 // Original author KLG
 //
 
-#include "GeomPrimitives/inc/Polyhedra.hh"
+#include "Offline/GeomPrimitives/inc/Polyhedra.hh"
 
 #include <iterator>
 #include <algorithm>

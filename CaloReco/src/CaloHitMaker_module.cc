@@ -6,10 +6,10 @@
 #include "fhiclcpp/types/Atom.h"
 #include "fhiclcpp/types/Sequence.h"
 
-#include "CalorimeterGeom/inc/Calorimeter.hh"
-#include "GeometryService/inc/GeomHandle.hh"
-#include "RecoDataProducts/inc/CaloHit.hh"
-#include "RecoDataProducts/inc/CaloRecoDigi.hh"
+#include "Offline/CalorimeterGeom/inc/Calorimeter.hh"
+#include "Offline/GeometryService/inc/GeomHandle.hh"
+#include "Offline/RecoDataProducts/inc/CaloHit.hh"
+#include "Offline/RecoDataProducts/inc/CaloRecoDigi.hh"
 
 #include "TH1F.h"
 #include "TH2F.h"

@@ -1,6 +1,6 @@
 // Andrei Gaponenko, 2012
 
-#include "ExtinctionMonitorFNAL/Geometry/inc/ExtMonFNALPixelChip.hh"
+#include "Offline/ExtinctionMonitorFNAL/Geometry/inc/ExtMonFNALPixelChip.hh"
 #include "CLHEP/Units/SystemOfUnits.h"
 
 namespace mu2e {

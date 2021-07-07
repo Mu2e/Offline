@@ -1,5 +1,5 @@
-#include "TEveEventDisplay/src/TEveMu2e_base_classes/TEveMu2eCRVEvent.h"
-#include "TEveEventDisplay/src/dict_classes/GeomUtils.h"
+#include "Offline/TEveEventDisplay/src/TEveMu2e_base_classes/TEveMu2eCRVEvent.h"
+#include "Offline/TEveEventDisplay/src/dict_classes/GeomUtils.h"
 using namespace mu2e;
 namespace mu2e{
 

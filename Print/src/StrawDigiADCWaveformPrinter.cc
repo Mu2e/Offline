@@ -1,5 +1,5 @@
 
-#include "Print/inc/StrawDigiADCWaveformPrinter.hh"
+#include "Offline/Print/inc/StrawDigiADCWaveformPrinter.hh"
 #include "art/Framework/Principal/Provenance.h"
 #include <string>
 #include <iomanip>

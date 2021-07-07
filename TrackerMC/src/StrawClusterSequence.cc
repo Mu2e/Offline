@@ -4,7 +4,7 @@
 // Original author David Brown, LBNL
 //
 // mu2e includes
-#include "TrackerMC/inc/StrawClusterSequence.hh"
+#include "Offline/TrackerMC/inc/StrawClusterSequence.hh"
 #include "cetlib_except/exception.h"
 
 using namespace std;

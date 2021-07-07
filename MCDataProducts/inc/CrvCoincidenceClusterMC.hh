@@ -5,7 +5,7 @@
 // Contact person Ralf Ehrlich
 //
 
-#include "MCDataProducts/inc/SimParticle.hh"
+#include "Offline/MCDataProducts/inc/SimParticle.hh"
 #include "canvas/Persistency/Common/Ptr.h"
 #include "CLHEP/Vector/ThreeVector.h"
 

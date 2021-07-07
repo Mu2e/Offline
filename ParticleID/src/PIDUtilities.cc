@@ -4,7 +4,7 @@
 #include <string>
 #include <sstream>
 
-#include "ParticleID/inc/PIDUtilities.hh"
+#include "Offline/ParticleID/inc/PIDUtilities.hh"
 
 using namespace std;
 

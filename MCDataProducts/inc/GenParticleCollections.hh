@@ -10,7 +10,7 @@
 
 #include <vector>
 
-#include "MCDataProducts/inc/GenParticleCollection.hh"
+#include "Offline/MCDataProducts/inc/GenParticleCollection.hh"
 
 namespace mu2e {
   typedef std::vector<mu2e::GenParticleCollection> GenParticleCollections;

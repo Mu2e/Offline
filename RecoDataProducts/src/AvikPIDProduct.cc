@@ -3,7 +3,7 @@
 //  cloned from RecoDataProducts/src/PIDProduct.cc by Vadim Rusu
 //
 
-#include "RecoDataProducts/inc/AvikPIDProduct.hh"
+#include "Offline/RecoDataProducts/inc/AvikPIDProduct.hh"
 
 using namespace std;
 

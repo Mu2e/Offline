@@ -3,9 +3,9 @@
 #
 # Original author Gianni Onorato.
 
-#include "fcl/minimalMessageService.fcl"
-#include "fcl/standardProducers.fcl"
-#include "fcl/standardServices.fcl"
+#include "Offline/fcl/minimalMessageService.fcl"
+#include "Offline/fcl/standardProducers.fcl"
+#include "Offline/fcl/standardServices.fcl"
 
 # Give this process a name.
 process_name : TestTO
@@ -30,15 +30,15 @@ services :
 
   GeometryService :
   {
-    inputFile : "Mu2eG4/geom/geom_common_v42_lght_1.txt"
+    inputFile : "Offline/Mu2eG4/geom/geom_common_v42_lght_1.txt"
   }
 
   ConditionsService :
   {
-    conditionsfile : "Mu2eG4/test/conditions_01_it.txt"
+    conditionsfile : "Offline/Mu2eG4/test/conditions_01_it.txt"
   }
 
-  GlobalConstantsService : { inputFile : "GlobalConstantsService/data/globalConstants_01.txt" }
+  GlobalConstantsService : { inputFile : "Offline/GlobalConstantsService/data/globalConstants_01.txt" }
 
   Mu2eG4Helper : { }
 

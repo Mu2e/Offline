@@ -22,9 +22,9 @@
 
 #include "CLHEP/Vector/LorentzVector.h"
 #include "CLHEP/Vector/ThreeVector.h"
-#include "MCDataProducts/inc/GenParticle.hh"
-#include "MCDataProducts/inc/ProcessCode.hh"
-#include "DataProducts/inc/PDGCode.hh"
+#include "Offline/MCDataProducts/inc/GenParticle.hh"
+#include "Offline/MCDataProducts/inc/ProcessCode.hh"
+#include "Offline/DataProducts/inc/PDGCode.hh"
 
 #include "canvas/Persistency/Common/Ptr.h"
 

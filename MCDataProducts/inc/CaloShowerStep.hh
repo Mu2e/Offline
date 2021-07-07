@@ -1,7 +1,7 @@
 #ifndef MCDataProducts_CaloShowerStep_hh
 #define MCDataProducts_CaloShowerStep_hh
 
-#include "MCDataProducts/inc/SimParticle.hh"
+#include "Offline/MCDataProducts/inc/SimParticle.hh"
 #include "CLHEP/Vector/ThreeVector.h"
 #include "CLHEP/Matrix/SymMatrix.h"
 #include <iostream>

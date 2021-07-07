@@ -3,7 +3,7 @@
 // Andrei Gaponenko, 2012
 
 
-#include "ExtinctionMonitorFNAL/Digitization/inc/PixelNoise.hh"
+#include "Offline/ExtinctionMonitorFNAL/Digitization/inc/PixelNoise.hh"
 
 #include <iostream>
 #include <sstream>
@@ -12,15 +12,15 @@
 
 #include "cetlib_except/exception.h"
 
-#include "DataProducts/inc/ExtMonFNALPixelId.hh"
-#include "DataProducts/inc/ExtMonFNALPixelDenseId.hh"
-#include "ExtinctionMonitorFNAL/Geometry/inc/ExtMonFNALPixelIdConverter.hh"
+#include "Offline/DataProducts/inc/ExtMonFNALPixelId.hh"
+#include "Offline/DataProducts/inc/ExtMonFNALPixelDenseId.hh"
+#include "Offline/ExtinctionMonitorFNAL/Geometry/inc/ExtMonFNALPixelIdConverter.hh"
 
-#include "RecoDataProducts/inc/ExtMonFNALRawHit.hh"
+#include "Offline/RecoDataProducts/inc/ExtMonFNALRawHit.hh"
 
-#include "ExtinctionMonitorFNAL/Geometry/inc/ExtMonFNAL.hh"
-#include "GeometryService/inc/GeomHandle.hh"
-#include "ConditionsService/inc/ExtMonFNALConditions.hh"
+#include "Offline/ExtinctionMonitorFNAL/Geometry/inc/ExtMonFNAL.hh"
+#include "Offline/GeometryService/inc/GeomHandle.hh"
+#include "Offline/ConditionsService/inc/ExtMonFNALConditions.hh"
 
 //#define AGDEBUG(stuff) do { std::cerr<<"AG: "<<__FILE__<<", line "<<__LINE__<<", func "<<__func__<<": "<<stuff<<std::endl; } while(0)
 #define AGDEBUG(stuff)

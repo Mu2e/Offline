@@ -71,7 +71,7 @@
 //    It is possible to create an invalid value by casting an arbitrary int into a bit_type.
 //
 
-#include "GeneralUtilities/inc/toHex.hh"
+#include "Offline/GeneralUtilities/inc/toHex.hh"
 
 #include <string>
 #include <vector>

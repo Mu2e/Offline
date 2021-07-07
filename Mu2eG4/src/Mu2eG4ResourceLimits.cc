@@ -1,4 +1,4 @@
-#include "Mu2eG4/inc/Mu2eG4ResourceLimits.hh"
+#include "Offline/Mu2eG4/inc/Mu2eG4ResourceLimits.hh"
 
 namespace mu2e {
   Mu2eG4ResourceLimits::Mu2eG4ResourceLimits(const Mu2eG4Config::Limits& lim)

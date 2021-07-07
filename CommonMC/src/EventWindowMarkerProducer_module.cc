@@ -9,18 +9,18 @@
 #include "art/Framework/Principal/Event.h"
 #include "art/Framework/Core/ModuleMacros.h"
 #include "art/Framework/Services/Registry/ServiceHandle.h"
-#include "SeedService/inc/SeedService.hh"
+#include "Offline/SeedService/inc/SeedService.hh"
 #include "fhiclcpp/ParameterSet.h"
 
 #include "art/Framework/Principal/Handle.h"
 #include "fhiclcpp/types/OptionalAtom.h"
 
-#include "MCDataProducts/inc/ProtonBunchTimeMC.hh"
-#include "RecoDataProducts/inc/ProtonBunchTime.hh"
-#include "DataProducts/inc/EventWindowMarker.hh"
+#include "Offline/MCDataProducts/inc/ProtonBunchTimeMC.hh"
+#include "Offline/RecoDataProducts/inc/ProtonBunchTime.hh"
+#include "Offline/DataProducts/inc/EventWindowMarker.hh"
 
-#include "ProditionsService/inc/ProditionsHandle.hh"
-#include "DAQConditions/inc/EventTiming.hh"
+#include "Offline/ProditionsService/inc/ProditionsHandle.hh"
+#include "Offline/DAQConditions/inc/EventTiming.hh"
 
 #include "CLHEP/Random/RandFlat.h"
 #include "CLHEP/Random/RandGaussQ.h"

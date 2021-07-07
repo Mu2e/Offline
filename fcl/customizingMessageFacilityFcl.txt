@@ -6,7 +6,7 @@ Example 1: We want INFO level of messages (we will select interactive)
 	   annoyingly often; we wish to set a limit of zero so as to 
 	   completely throttle all instances of "chatter" messages.
 	   
-#include "fcl/messageService.fcl"
+#include "Offline/fcl/messageService.fcl"
 
 services :
 {
@@ -23,7 +23,7 @@ Example 2: We want the functionallity of the batch choice, but prefer that
 	   warning.log.  We still want the statistics to go to the same 
 	   file as the messages.
 	   
-#include "fcl/messageService.fcl"
+#include "Offline/fcl/messageService.fcl"
 
 services :
 {
@@ -39,7 +39,7 @@ services :
 Example 3: We want the debugging choice, but only want LogDebug output from
            two modules, module_A and module_B.
 	   
-#include "fcl/messageService.fcl"
+#include "Offline/fcl/messageService.fcl"
 
 services :
 {
@@ -54,7 +54,7 @@ services :
 Example 4: We want the debugging choice, with all the LogDebug output 
 	   **except** those LogDebug messages coming from from module_X.
 	   
-#include "fcl/messageService.fcl"
+#include "Offline/fcl/messageService.fcl"
 
 services :
 {
@@ -71,7 +71,7 @@ Example 5: We want two separate log files, one with only the LogError level
 	   to cout, exactly as if choosing the interactive configuration.  
 	   That is, we just wish to have one additoinal (standard) destination. 
 	   
-#include "fcl/messageService.fcl"
+#include "Offline/fcl/messageService.fcl"
 
 services :
 {
@@ -90,7 +90,7 @@ Example 6: We want two separate log files, one with only the LogError level
 	   And we want the message statistics to go only into the more 
 	   verbose file info.log.
 	   
-#include "fcl/messageService.fcl"
+#include "Offline/fcl/messageService.fcl"
 
 services :
 {

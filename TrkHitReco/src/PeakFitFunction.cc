@@ -1,5 +1,5 @@
 #include "TF1.h"
-#include "TrkHitReco/inc/PeakFitFunction.hh"
+#include "Offline/TrkHitReco/inc/PeakFitFunction.hh"
 #include <algorithm>
 #include <iostream>
 

@@ -12,7 +12,7 @@
 #include "CLHEP/Vector/ThreeVector.h"
 
 
-#include "Mu2eUtilities/inc/TwoLinePCA.hh"
+#include "Offline/Mu2eUtilities/inc/TwoLinePCA.hh"
 
 using namespace std;
 

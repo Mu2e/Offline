@@ -5,10 +5,10 @@
 //
 
 // Mu2e includes
-#include "DataProducts/inc/StrawId.hh"
-#include "DataProducts/inc/StrawIdMask.hh"
-#include "DataProducts/inc/StrawStatus.hh"
-#include "Mu2eInterfaces/inc/ProditionsEntity.hh"
+#include "Offline/DataProducts/inc/StrawId.hh"
+#include "Offline/DataProducts/inc/StrawIdMask.hh"
+#include "Offline/DataProducts/inc/StrawStatus.hh"
+#include "Offline/Mu2eInterfaces/inc/ProditionsEntity.hh"
 #include "fhiclcpp/type_traits.h"
 
 // C++ includes

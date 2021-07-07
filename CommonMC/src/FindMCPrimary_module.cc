@@ -13,10 +13,10 @@
 #include "art/Framework/Principal/Event.h"
 #include "art/Framework/Principal/Handle.h"
 // mu2e 
-#include "MCDataProducts/inc/PrimaryParticle.hh"
-#include "MCDataProducts/inc/ProcessCode.hh"
-#include "MCDataProducts/inc/GenParticle.hh"
-#include "MCDataProducts/inc/SimParticle.hh"
+#include "Offline/MCDataProducts/inc/PrimaryParticle.hh"
+#include "Offline/MCDataProducts/inc/ProcessCode.hh"
+#include "Offline/MCDataProducts/inc/GenParticle.hh"
+#include "Offline/MCDataProducts/inc/SimParticle.hh"
 #include <vector>
 #include <iostream>
 #include <string>

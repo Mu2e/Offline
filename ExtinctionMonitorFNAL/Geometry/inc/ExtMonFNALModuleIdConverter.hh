@@ -4,12 +4,12 @@
 
 #ifndef EXTMONFNALMODULEIDCONVERTER_HH
 #define EXTMONFNALMODULEIDCONVERTER_HH
-#include "ExtinctionMonitorFNAL/Geometry/inc/ExtMonFNAL.hh"
+#include "Offline/ExtinctionMonitorFNAL/Geometry/inc/ExtMonFNAL.hh"
 
-#include "DataProducts/inc/ExtMonFNALModuleId.hh"
-#include "DataProducts/inc/ExtMonFNALModuleDenseId.hh"
+#include "Offline/DataProducts/inc/ExtMonFNALModuleId.hh"
+#include "Offline/DataProducts/inc/ExtMonFNALModuleDenseId.hh"
 
-#include "ExtinctionMonitorFNAL/Geometry/inc/ExtMonFNALModule.hh"
+#include "Offline/ExtinctionMonitorFNAL/Geometry/inc/ExtMonFNALModule.hh"
 
 namespace mu2e {
 

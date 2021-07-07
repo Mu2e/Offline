@@ -3,7 +3,7 @@
 //////////////////////////////////////////////////////////////////////////////
 
 
-#include "CalPatRec/inc/DeltaFinder_types.hh"
+#include "Offline/CalPatRec/inc/DeltaFinder_types.hh"
 
 namespace mu2e {
   namespace DeltaFinderTypes {

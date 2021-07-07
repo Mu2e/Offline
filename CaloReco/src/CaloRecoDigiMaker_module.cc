@@ -7,13 +7,13 @@
 #include "fhiclcpp/types/Atom.h"
 #include "fhiclcpp/types/Sequence.h"
 
-#include "ConditionsService/inc/ConditionsHandle.hh"
-#include "ConditionsService/inc/CalorimeterCalibrations.hh"
-#include "RecoDataProducts/inc/CaloDigi.hh"
-#include "RecoDataProducts/inc/CaloRecoDigi.hh"
-#include "CaloReco/inc/CaloWaveformProcessor.hh"
-#include "CaloReco/inc/CaloTemplateWFProcessor.hh"
-#include "CaloReco/inc/CaloRawWFProcessor.hh"
+#include "Offline/ConditionsService/inc/ConditionsHandle.hh"
+#include "Offline/ConditionsService/inc/CalorimeterCalibrations.hh"
+#include "Offline/RecoDataProducts/inc/CaloDigi.hh"
+#include "Offline/RecoDataProducts/inc/CaloRecoDigi.hh"
+#include "Offline/CaloReco/inc/CaloWaveformProcessor.hh"
+#include "Offline/CaloReco/inc/CaloTemplateWFProcessor.hh"
+#include "Offline/CaloReco/inc/CaloRawWFProcessor.hh"
 
 #include <iostream>
 #include <string>

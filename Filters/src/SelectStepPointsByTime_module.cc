@@ -20,8 +20,8 @@
 #include "canvas/Utilities/InputTag.h"
 #include "messagefacility/MessageLogger/MessageLogger.h"
 
-#include "MCDataProducts/inc/StepPointMC.hh"
-#include "MCDataProducts/inc/StepPointMCCollection.hh"
+#include "Offline/MCDataProducts/inc/StepPointMC.hh"
+#include "Offline/MCDataProducts/inc/StepPointMCCollection.hh"
 
 namespace mu2e {
 

@@ -6,13 +6,13 @@
 #ifndef CalorimeterGeom_Calorimeter_hh
 #define CalorimeterGeom_Calorimeter_hh
 
-#include "Mu2eInterfaces/inc/Detector.hh"
-#include "CalorimeterGeom/inc/Calorimeter.hh"
-#include "CalorimeterGeom/inc/CaloGeomUtil.hh"
-#include "CalorimeterGeom/inc/CaloInfo.hh"
-#include "CalorimeterGeom/inc/CaloIDMapper.hh"
-#include "CalorimeterGeom/inc/Disk.hh"
-#include "CalorimeterGeom/inc/Crystal.hh"
+#include "Offline/Mu2eInterfaces/inc/Detector.hh"
+#include "Offline/CalorimeterGeom/inc/Calorimeter.hh"
+#include "Offline/CalorimeterGeom/inc/CaloGeomUtil.hh"
+#include "Offline/CalorimeterGeom/inc/CaloInfo.hh"
+#include "Offline/CalorimeterGeom/inc/CaloIDMapper.hh"
+#include "Offline/CalorimeterGeom/inc/Disk.hh"
+#include "Offline/CalorimeterGeom/inc/Crystal.hh"
 
 #include "CLHEP/Vector/ThreeVector.h"
 #include <vector>

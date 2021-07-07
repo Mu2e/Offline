@@ -5,11 +5,11 @@
 // Original author: Andrei Gaponenko
 
 // Mu2e include files
-#include "ConfigTools/inc/SimpleConfig.hh"
-#include "GeometryService/inc/G4GeometryOptions.hh"
-#include "GeometryService/inc/Mu2eEnvelope.hh"
-#include "GeometryService/inc/Mu2eHallMaker.hh"
-#include "Mu2eHallGeom/inc/Mu2eHall.hh"
+#include "Offline/ConfigTools/inc/SimpleConfig.hh"
+#include "Offline/GeometryService/inc/G4GeometryOptions.hh"
+#include "Offline/GeometryService/inc/Mu2eEnvelope.hh"
+#include "Offline/GeometryService/inc/Mu2eHallMaker.hh"
+#include "Offline/Mu2eHallGeom/inc/Mu2eHall.hh"
 
 // C++ include files
 #include <sstream>

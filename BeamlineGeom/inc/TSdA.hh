@@ -7,7 +7,7 @@
 
 #include "CLHEP/Vector/ThreeVector.h"
 
-#include "Mu2eInterfaces/inc/Detector.hh"
+#include "Offline/Mu2eInterfaces/inc/Detector.hh"
 
 namespace mu2e {
 
