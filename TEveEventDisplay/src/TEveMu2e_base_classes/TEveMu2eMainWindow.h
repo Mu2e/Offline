@@ -112,14 +112,18 @@ namespace mu2e{
       std::vector<double> *hitenergy = 0;
       std::vector<double> times;
 
-      TEvePad *fPad, *fPadCRV;
-      TGSplitFrame *fSplitFrame, *fSplitFrameCRV;
-      TGSplitFrame *frm, *frmCRV;
+      TEvePad *fPad;
+	TEvePad	*fPadCRV;
+      TGSplitFrame *fSplitFrame;
+	 TGSplitFrame *fSplitFrameCRV;
+      TGSplitFrame *frm; 
+	TGSplitFrame *frmCRV;
       TGLEmbeddedViewer *fViewer0;
       TGLEmbeddedViewer *fViewer1;
       TGLEmbeddedViewer *fViewer2;
       TGLEmbeddedViewer *fViewer3;
       TGLEmbeddedViewer *fViewer4;
+      TGLEmbeddedViewer *fViewer0C;
 
       Bool_t fIsEmbedded;
 
@@ -140,6 +144,7 @@ namespace mu2e{
       TEveScene *proj1 = 0;
       TEveScene *proj2 = 0;
       TEveScene *proj3 = 0;
+		TEveScene *proj0C = 0;
 
       
       bool usereventSelected = false;
