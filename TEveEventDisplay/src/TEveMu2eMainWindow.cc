@@ -181,22 +181,22 @@ namespace mu2e{
   // get top (main) split frame
    frmCRV = fSplitFrameCRV->GetFirst()->GetFirst();
    frmCRV->SetName("CRV_XY_View");
-   fViewer0C = new TGLEmbeddedViewer(frmCRV, fPadCRV);
-   frmCRV->AddFrame(fViewer0C->GetFrame(), new TGLayoutHints(kLHintsExpandX |
+   fViewer4 = new TGLEmbeddedViewer(frmCRV, fPadCRV);
+   frmCRV->AddFrame(fViewer4->GetFrame(), new TGLayoutHints(kLHintsExpandX |
                  kLHintsExpandY));
    // set the camera to perspective (XOZ) for this viewer
-   fViewer0C->SetCurrentCamera(TGLViewer::kCameraOrthoXOY);
+   fViewer4->SetCurrentCamera(TGLViewer::kCameraOrthoXOY);
    // connect signal we are interested to
 
    fViewer[4] = new TEveViewer("SplitGLViewer[4]");
-   fViewer[4]->SetGLViewer(fViewer0C, fViewer0C->GetFrame());
+   fViewer[4]->SetGLViewer(fViewer4, fViewer4->GetFrame());
    fViewer[4]->IncDenyDestroy();
    if (fIsEmbedded && gEve) {
      gEve->GetViewers()->AddElement(fViewer[4]);
      proj4 = gEve->SpawnNewScene("CRV XY Scene");
      //fViewer[1]->AddScene(fdetXY);
      CfXYMgr = new TEveProjectionManager(TEveProjection::kPT_RPhi);
-     proj0C->AddElement(CfXYMgr);
+     proj4->AddElement(CfXYMgr);
      TEveProjectionAxes* axes_xy = new TEveProjectionAxes(CfXYMgr);
      proj4->AddElement(axes_xy);
      gEve->AddToListTree(axes_xy,kTRUE);
