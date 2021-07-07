@@ -123,10 +123,10 @@ namespace mu2e{
       TGLEmbeddedViewer *fViewer2;
       TGLEmbeddedViewer *fViewer3;
       TGLEmbeddedViewer *fViewer4;
-     
+      TGLEmbeddedViewer *fViewer5;
       Bool_t fIsEmbedded;
 
-      TEveViewer *fViewer[5];
+      TEveViewer *fViewer[6];
       TEveProjectionManager *fRPhiMgr;
       TEveProjectionManager *fRhoZMgr;
       TEveProjectionManager *fXYMgr;
@@ -136,6 +136,8 @@ namespace mu2e{
       TEveProjectionManager *TfRZMgr = 0;
       TEveProjectionManager *CfXYMgr = 0;
       TEveProjectionManager *CfRZMgr = 0;
+		 TEveProjectionManager *CrfXYMgr = 0;
+      TEveProjectionManager *CrfRZMgr = 0;
       TGMainFrame* frmMain;
       TEveBrowser* browser;
       TEveScene *s = 0;
@@ -144,6 +146,7 @@ namespace mu2e{
       TEveScene *proj2 = 0;
       TEveScene *proj3 = 0;
 		TEveScene *proj4 = 0;
+		TEveScene *proj5 = 0;
 
       
       bool usereventSelected = false;
