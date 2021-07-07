@@ -84,6 +84,7 @@ namespace mu2e{
       void CreateMultiViews();
       void CreateCaloProjection();
       void CreateTrackerProjection();
+		void CreateCRVProjection();
       void PrepareTrackerProjectionTab(const art::Run& run);
       void PrepareCaloProjectionTab(const art::Run& run);
       void PrepareCRVProjectionTab(const art::Run& run);
@@ -111,9 +112,9 @@ namespace mu2e{
       std::vector<double> *hitenergy = 0;
       std::vector<double> times;
 
-      TEvePad *fPad;
-      TGSplitFrame *fSplitFrame;
-      TGSplitFrame *frm;
+      TEvePad *fPad, *fPadCRV;
+      TGSplitFrame *fSplitFrame, *fSplitFrameCRV;
+      TGSplitFrame *frm, *frmCRV;
       TGLEmbeddedViewer *fViewer0;
       TGLEmbeddedViewer *fViewer1;
       TGLEmbeddedViewer *fViewer2;
