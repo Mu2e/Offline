@@ -15,10 +15,10 @@
 #include "art/Framework/Principal/Handle.h"
 
 // Mu2e includes.
-#include "RecoDataProducts/inc/TrkQual.hh"
-#include "Mu2eUtilities/inc/MVATools.hh"
-#include "ProditionsService/inc/ProditionsHandle.hh"
-#include "AnalysisConditions/inc/TrkQualCatalog.hh"
+#include "Offline/RecoDataProducts/inc/TrkQual.hh"
+#include "Offline/Mu2eUtilities/inc/MVATools.hh"
+#include "Offline/ProditionsService/inc/ProditionsHandle.hh"
+#include "Offline/AnalysisConditions/inc/TrkQualCatalog.hh"
 
 #include <iostream>
 #include <string>

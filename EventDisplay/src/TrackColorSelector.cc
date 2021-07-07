@@ -1,5 +1,5 @@
 using namespace std;
-#include "EventDisplay/src/TrackColorSelector.h"
+#include "Offline/EventDisplay/src/TrackColorSelector.h"
 
 namespace mu2e_eventdisplay
 {

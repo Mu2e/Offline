@@ -2,8 +2,8 @@
 # print products in a verbose form
 #
 
-#include "fcl/minimalMessageService.fcl"
-#include "fcl/standardServices.fcl"
+#include "Offline/fcl/minimalMessageService.fcl"
+#include "Offline/fcl/standardServices.fcl"
 
 process_name : print
 

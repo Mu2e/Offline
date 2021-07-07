@@ -16,7 +16,7 @@
 #include "CLHEP/Vector/ThreeVector.h"
 
 // Mu2e includes.
-#include "RecoDataProducts/inc/StrawHit.hh"
+#include "Offline/RecoDataProducts/inc/StrawHit.hh"
 #include "canvas/Persistency/Common/Ptr.h"
 
 namespace mu2e {

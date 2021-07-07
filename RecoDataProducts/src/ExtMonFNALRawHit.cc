@@ -1,4 +1,4 @@
-#include "RecoDataProducts/inc/ExtMonFNALRawHit.hh"
+#include "Offline/RecoDataProducts/inc/ExtMonFNALRawHit.hh"
 
 namespace mu2e {
 

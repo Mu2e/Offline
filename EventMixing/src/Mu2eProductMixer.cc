@@ -1,6 +1,6 @@
 // Andrei Gaponenko, 2018
 
-#include "EventMixing/inc/Mu2eProductMixer.hh"
+#include "Offline/EventMixing/inc/Mu2eProductMixer.hh"
 
 #include <utility>
 #include <algorithm>

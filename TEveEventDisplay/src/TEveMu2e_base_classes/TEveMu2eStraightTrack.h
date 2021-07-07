@@ -2,8 +2,8 @@
 #define TEveMu2eStraightTrack_h
 
 #include <TObject.h>
-#include "RecoDataProducts/inc/CosmicTrackSeed.hh"
-#include "DataProducts/inc/XYZVec.hh"
+#include "Offline/RecoDataProducts/inc/CosmicTrackSeed.hh"
+#include "Offline/DataProducts/inc/XYZVec.hh"
 #include <TEveStraightLineSet.h>
 
 namespace mu2e {

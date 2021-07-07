@@ -1,4 +1,4 @@
-#include "Mu2eG4/inc/checkParticleCodeForG4.hh"
+#include "Offline/Mu2eG4/inc/checkParticleCodeForG4.hh"
 
 #include "Geant4/G4ParticleTable.hh"
 

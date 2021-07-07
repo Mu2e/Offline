@@ -1,5 +1,5 @@
 
-#include "Validation/inc/ValCaloDigi.hh"
+#include "Offline/Validation/inc/ValCaloDigi.hh"
 
 
 int mu2e::ValCaloDigi::declare(art::TFileDirectory tfs) {

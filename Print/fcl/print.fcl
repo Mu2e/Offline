@@ -2,8 +2,8 @@
 #  print products with a moderate amount of output - includes cuts on energy
 #
 
-#include "fcl/minimalMessageService.fcl"
-#include "fcl/standardServices.fcl"
+#include "Offline/fcl/minimalMessageService.fcl"
+#include "Offline/fcl/standardServices.fcl"
 
 process_name : print
 

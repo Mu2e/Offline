@@ -4,7 +4,7 @@
 // Andrei Gaponenko, 2012
 
 
-#include "ExtinctionMonitorFNAL/Digitization/inc/ProtonPulseShape.hh"
+#include "Offline/ExtinctionMonitorFNAL/Digitization/inc/ProtonPulseShape.hh"
 
 #include <iostream>
 #include <cmath>
@@ -18,10 +18,10 @@
 #include "canvas/Utilities/InputTag.h"
 #include "canvas/Persistency/Common/FindOne.h"
 
-#include "MCDataProducts/inc/SimParticle.hh"
-#include "MCDataProducts/inc/MARSInfo.hh"
+#include "Offline/MCDataProducts/inc/SimParticle.hh"
+#include "Offline/MCDataProducts/inc/MARSInfo.hh"
 
-#include "Mu2eUtilities/inc/SimParticleParentGetter.hh"
+#include "Offline/Mu2eUtilities/inc/SimParticleParentGetter.hh"
 
 //#define AGDEBUG(stuff) do { std::cerr<<"AG: "<<__FILE__<<", line "<<__LINE__<<", func "<<__func__<<": "<<stuff<<std::endl; } while(0)
 #define AGDEBUG(stuff)

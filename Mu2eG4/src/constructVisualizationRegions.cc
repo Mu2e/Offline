@@ -1,6 +1,6 @@
 // Andrei Gaponenko, 2011
 
-#include "Mu2eG4/inc/constructVisualizationRegions.hh"
+#include "Offline/Mu2eG4/inc/constructVisualizationRegions.hh"
 
 #include <algorithm>
 #include <cmath>
@@ -23,18 +23,18 @@
 
 #include "art/Framework/Services/Registry/ServiceDefinitionMacros.h"
 
-#include "BFieldGeom/inc/BFieldManager.hh"
-#include "GeometryService/inc/GeomHandle.hh"
-#include "GeometryService/inc/WorldG4.hh"
-#include "GeometryService/inc/G4GeometryOptions.hh"
+#include "Offline/BFieldGeom/inc/BFieldManager.hh"
+#include "Offline/GeometryService/inc/GeomHandle.hh"
+#include "Offline/GeometryService/inc/WorldG4.hh"
+#include "Offline/GeometryService/inc/G4GeometryOptions.hh"
 
-#include "Mu2eG4Helper/inc/AntiLeakRegistry.hh"
-#include "Mu2eG4Helper/inc/Mu2eG4Helper.hh"
-#include "Mu2eG4Helper/inc/VolumeInfo.hh"
+#include "Offline/Mu2eG4Helper/inc/AntiLeakRegistry.hh"
+#include "Offline/Mu2eG4Helper/inc/Mu2eG4Helper.hh"
+#include "Offline/Mu2eG4Helper/inc/VolumeInfo.hh"
 
-#include "ConfigTools/inc/SimpleConfig.hh"
-#include "Mu2eG4/inc/findMaterialOrThrow.hh"
-#include "Mu2eG4/inc/nestBox.hh"
+#include "Offline/ConfigTools/inc/SimpleConfig.hh"
+#include "Offline/Mu2eG4/inc/findMaterialOrThrow.hh"
+#include "Offline/Mu2eG4/inc/nestBox.hh"
 
 #define AGDEBUG(stuff) \
     std::cerr << "AG: " << __FILE__ << ", line " << __LINE__ << ": " << stuff << std::endl;

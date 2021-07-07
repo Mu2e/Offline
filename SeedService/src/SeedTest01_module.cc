@@ -6,7 +6,7 @@
 //
 
 //
-#include "SeedService/inc/SeedService.hh"
+#include "Offline/SeedService/inc/SeedService.hh"
 
 // Framework includes.
 #include "art/Framework/Core/EDAnalyzer.h"

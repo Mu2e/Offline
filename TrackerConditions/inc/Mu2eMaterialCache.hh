@@ -6,8 +6,8 @@
 // because Mu2eMaterial has pointers to BTrk singletons
 //
 
-#include "Mu2eInterfaces/inc/ProditionsCache.hh"
-#include "TrackerConditions/inc/Mu2eMaterialMaker.hh"
+#include "Offline/Mu2eInterfaces/inc/ProditionsCache.hh"
+#include "Offline/TrackerConditions/inc/Mu2eMaterialMaker.hh"
 
 
 namespace mu2e {

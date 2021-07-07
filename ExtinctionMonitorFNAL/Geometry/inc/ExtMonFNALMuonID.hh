@@ -6,7 +6,7 @@
 #ifndef EXTMONFNALMUONID_HH
 #define EXTMONFNALMUONID_HH
 
-#include "Mu2eInterfaces/inc/Detector.hh"
+#include "Offline/Mu2eInterfaces/inc/Detector.hh"
 
 #include <ostream>
 #include <memory>

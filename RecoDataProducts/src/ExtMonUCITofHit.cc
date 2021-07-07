@@ -4,7 +4,7 @@
 //
 
 // Mu2e includes
-#include "RecoDataProducts/inc/ExtMonUCITofHit.hh"
+#include "Offline/RecoDataProducts/inc/ExtMonUCITofHit.hh"
 
 using namespace std;
 

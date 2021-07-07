@@ -1,4 +1,4 @@
-#include "MCDataProducts/inc/CrvDigiMC.hh"
+#include "Offline/MCDataProducts/inc/CrvDigiMC.hh"
 
 namespace mu2e 
 {

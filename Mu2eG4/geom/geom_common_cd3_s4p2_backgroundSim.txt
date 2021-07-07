@@ -13,7 +13,7 @@
 // ignore StepPointMCs from the missing stations.
 //
 
-#include "Mu2eG4/geom/geom_common_cd3_s4p2.txt"
+#include "Offline/Mu2eG4/geom/geom_common_cd3_s4p2.txt"
 
 vector<int> tracker.nonExistingPlanes = {};
 

@@ -6,7 +6,7 @@
 //
 #ifndef RecoDataProducts_TrkStraw_HH
 #define RecoDataProducts_TrkStraw_HH
-#include "DataProducts/inc/StrawId.hh"
+#include "Offline/DataProducts/inc/StrawId.hh"
 namespace mu2e {
   struct TrkStraw {
     TrkStraw() : _doca(-1.0), _trklen(0.0), _wirelen(0.0), _slen(0.0), _radlen(0.0)  {}

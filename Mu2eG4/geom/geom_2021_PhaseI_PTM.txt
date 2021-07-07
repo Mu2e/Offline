@@ -1,9 +1,9 @@
 // Updated to include production target monitor, based off Mu2eG4/geom/geom_2021_PhaseI.txt
 
-#include "Mu2eG4/geom/geom_2021_PhaseI.txt"
+#include "Offline/Mu2eG4/geom/geom_2021_PhaseI.txt"
 
 // Production target beam-scanning detectors
-#include "Mu2eG4/geom/PTM.txt"
+#include "Offline/Mu2eG4/geom/PTM.txt"
 bool hasPTM = true;
 
 

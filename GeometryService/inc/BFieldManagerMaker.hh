@@ -11,14 +11,14 @@
 // Includes from CLHEP
 #include "CLHEP/Vector/ThreeVector.h"
 
-#include "ConfigTools/inc/ConfigFileLookupPolicy.hh"
+#include "Offline/ConfigTools/inc/ConfigFileLookupPolicy.hh"
 
-#include "BFieldGeom/inc/BFGridMap.hh"
-#include "BFieldGeom/inc/BFInterpolationStyle.hh"
-#include "BFieldGeom/inc/BFMap.hh"
-#include "BFieldGeom/inc/BFParamMap.hh"
-#include "BFieldGeom/inc/BFieldConfig.hh"
-#include "BFieldGeom/inc/BFieldManager.hh"
+#include "Offline/BFieldGeom/inc/BFGridMap.hh"
+#include "Offline/BFieldGeom/inc/BFInterpolationStyle.hh"
+#include "Offline/BFieldGeom/inc/BFMap.hh"
+#include "Offline/BFieldGeom/inc/BFParamMap.hh"
+#include "Offline/BFieldGeom/inc/BFieldConfig.hh"
+#include "Offline/BFieldGeom/inc/BFieldManager.hh"
 
 namespace mu2e {
 

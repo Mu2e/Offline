@@ -11,8 +11,8 @@
 #include "Geant4/G4ThreeVector.hh"
 
 // Mu2eG4 includes
-#include "Mu2eG4/inc/Mu2eG4Config.hh"
-#include "DataProducts/inc/PDGCode.hh"
+#include "Offline/Mu2eG4/inc/Mu2eG4Config.hh"
+#include "Offline/DataProducts/inc/PDGCode.hh"
 
 class G4Event;
 

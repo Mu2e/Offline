@@ -1,7 +1,7 @@
 #include <cmath>
-#include "Validation/inc/ValKalSeed.hh"
-#include "MCDataProducts/inc/SimParticle.hh"
-#include "MCDataProducts/inc/StepPointMC.hh"
+#include "Offline/Validation/inc/ValKalSeed.hh"
+#include "Offline/MCDataProducts/inc/SimParticle.hh"
+#include "Offline/MCDataProducts/inc/StepPointMC.hh"
 
 int mu2e::ValKalSeed::declare(art::TFileDirectory tfs) {
   _hVer = tfs.make<TH1D>( "Ver", "Version Number", 101, -0.5, 100.0);

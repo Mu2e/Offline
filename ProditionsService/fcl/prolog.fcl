@@ -1,8 +1,8 @@
-#include "DAQConditions/fcl/prolog.fcl"
-#include "TrackerConditions/fcl/prolog.fcl"
-#include "AnalysisConditions/fcl/prolog.fcl"
-#include "SimulationConditions/fcl/prolog.fcl"
-#include "CaloConditions/fcl/prolog.fcl"
+#include "Offline/DAQConditions/fcl/prolog.fcl"
+#include "Offline/TrackerConditions/fcl/prolog.fcl"
+#include "Offline/AnalysisConditions/fcl/prolog.fcl"
+#include "Offline/SimulationConditions/fcl/prolog.fcl"
+#include "Offline/CaloConditions/fcl/prolog.fcl"
 
 BEGIN_PROLOG
 

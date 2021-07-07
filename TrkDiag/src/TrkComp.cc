@@ -1,11 +1,11 @@
 //
 // Functor Class to compare tracks and find overlaps (2 tracks sharing a substantial number of hits)
 // Dave Brown, LBNL 7/8/2016
-#include "TrkDiag/inc/TrkComp.hh"
+#include "Offline/TrkDiag/inc/TrkComp.hh"
 // BaBar
 #include "BTrk/BaBar/BaBar.hh"
 #include "BTrk/KalmanTrack/KalRep.hh"
-#include "BTrkData/inc/TrkStrawHit.hh"
+#include "Offline/BTrkData/inc/TrkStrawHit.hh"
 #include <functional>
 
 namespace mu2e {

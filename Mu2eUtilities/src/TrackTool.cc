@@ -12,7 +12,7 @@
 #include "CLHEP/Vector/ThreeVector.h"
 
 
-#include "Mu2eUtilities/inc/TrackTool.hh"
+#include "Offline/Mu2eUtilities/inc/TrackTool.hh"
 
 using namespace std;
 //using CLHEP::Hep3Vector;

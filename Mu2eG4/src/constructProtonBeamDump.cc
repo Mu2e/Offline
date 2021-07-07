@@ -1,8 +1,8 @@
 // Andrei Gaponenko, 2011
 
-#include "Mu2eG4/inc/constructProtonBeamDump.hh"
-#include "Mu2eG4/inc/constructExtMonFNAL.hh"
-#include "Mu2eG4Helper/inc/AntiLeakRegistry.hh"
+#include "Offline/Mu2eG4/inc/constructProtonBeamDump.hh"
+#include "Offline/Mu2eG4/inc/constructExtMonFNAL.hh"
+#include "Offline/Mu2eG4Helper/inc/AntiLeakRegistry.hh"
 
 #include <iostream>
 #include <cmath>
@@ -33,24 +33,24 @@
 
 #include "art/Framework/Services/Registry/ServiceDefinitionMacros.h"
 
-#include "GeometryService/inc/G4GeometryOptions.hh"
-#include "GeometryService/inc/GeomHandle.hh"
-#include "ProtonBeamDumpGeom/inc/ProtonBeamDump.hh"
-#include "ExtinctionMonitorFNAL/Geometry/inc/ExtMonFNALBuilding.hh"
-#include "GeometryService/inc/WorldG4.hh"
-#include "GeometryService/inc/Mu2eEnvelope.hh"
+#include "Offline/GeometryService/inc/G4GeometryOptions.hh"
+#include "Offline/GeometryService/inc/GeomHandle.hh"
+#include "Offline/ProtonBeamDumpGeom/inc/ProtonBeamDump.hh"
+#include "Offline/ExtinctionMonitorFNAL/Geometry/inc/ExtMonFNALBuilding.hh"
+#include "Offline/GeometryService/inc/WorldG4.hh"
+#include "Offline/GeometryService/inc/Mu2eEnvelope.hh"
 
-#include "Mu2eG4Helper/inc/Mu2eG4Helper.hh"
-#include "Mu2eG4Helper/inc/VolumeInfo.hh"
-#include "Mu2eG4Helper/inc/AntiLeakRegistry.hh"
-#include "ConfigTools/inc/SimpleConfig.hh"
-#include "Mu2eG4/inc/nestBox.hh"
-#include "Mu2eG4/inc/MaterialFinder.hh"
-#include "Mu2eG4/inc/findMaterialOrThrow.hh"
-#include "Mu2eG4/inc/FieldMgr.hh"
+#include "Offline/Mu2eG4Helper/inc/Mu2eG4Helper.hh"
+#include "Offline/Mu2eG4Helper/inc/VolumeInfo.hh"
+#include "Offline/Mu2eG4Helper/inc/AntiLeakRegistry.hh"
+#include "Offline/ConfigTools/inc/SimpleConfig.hh"
+#include "Offline/Mu2eG4/inc/nestBox.hh"
+#include "Offline/Mu2eG4/inc/MaterialFinder.hh"
+#include "Offline/Mu2eG4/inc/findMaterialOrThrow.hh"
+#include "Offline/Mu2eG4/inc/FieldMgr.hh"
 
-#include "Mu2eG4/inc/finishNesting.hh"
-#include "Mu2eG4Helper/inc/VolumeInfo.hh"
+#include "Offline/Mu2eG4/inc/finishNesting.hh"
+#include "Offline/Mu2eG4Helper/inc/VolumeInfo.hh"
 
 //#define AGDEBUG(stuff) std::cerr<<"AG: "<<__FILE__<<", line "<<__LINE__<<": "<<stuff<<std::endl;
 #define AGDEBUG(stuff)

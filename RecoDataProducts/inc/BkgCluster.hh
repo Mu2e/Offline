@@ -5,8 +5,8 @@
 #ifndef RecoDataProducts_BkgCluster_hh
 #define RecoDataProducts_BkgCluster_hh
 
-#include "RecoDataProducts/inc/ComboHit.hh"
-#include "RecoDataProducts/inc/BkgClusterFlag.hh"
+#include "Offline/RecoDataProducts/inc/ComboHit.hh"
+#include "Offline/RecoDataProducts/inc/BkgClusterFlag.hh"
 #include <vector>
 
 namespace mu2e 

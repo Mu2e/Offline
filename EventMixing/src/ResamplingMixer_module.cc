@@ -15,9 +15,9 @@
 #include "fhiclcpp/types/TupleAs.h"
 #include "canvas/Utilities/InputTag.h"
 
-#include "SeedService/inc/SeedService.hh"
-#include "EventMixing/inc/Mu2eProductMixer.hh"
-#include "Mu2eUtilities/inc/artURBG.hh"
+#include "Offline/SeedService/inc/SeedService.hh"
+#include "Offline/EventMixing/inc/Mu2eProductMixer.hh"
+#include "Offline/Mu2eUtilities/inc/artURBG.hh"
 #include <random>
 
 //================================================================

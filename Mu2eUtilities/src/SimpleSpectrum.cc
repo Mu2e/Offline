@@ -10,7 +10,7 @@
 #include "cetlib_except/exception.h"
 
 // Mu2e includes
-#include "Mu2eUtilities/inc/SimpleSpectrum.hh"
+#include "Offline/Mu2eUtilities/inc/SimpleSpectrum.hh"
 
 using namespace std;
 

@@ -5,7 +5,7 @@
 // Class to represent the collimators. Position is relative to
 // the corresponding TS straight section
 //
-#include "BeamlineGeom/inc/Collimator.hh"
+#include "Offline/BeamlineGeom/inc/Collimator.hh"
 #include "CLHEP/Vector/ThreeVector.h"
 
 namespace mu2e {

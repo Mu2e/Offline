@@ -3,8 +3,8 @@
 ////S. Middleton, Feb 2019 - Cosmic track class, main purpose id to store diagnostics.
 #include "TMath.h"
 #include "TMatrixD.h"
-#include "DataProducts/inc/XYZVec.hh"
-#include "Mu2eUtilities/inc/PointLinePCA_XYZ.hh"
+#include "Offline/DataProducts/inc/XYZVec.hh"
+#include "Offline/Mu2eUtilities/inc/PointLinePCA_XYZ.hh"
 #include<vector>
 #include<bitset>
 

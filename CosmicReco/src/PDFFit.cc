@@ -5,7 +5,7 @@
 // ROOT:
 #include "Math/Math.h"
 #include "Math/VectorUtil.h"
-#include "RecoDataProducts/inc/ComboHit.hh"
+#include "Offline/RecoDataProducts/inc/ComboHit.hh"
 #include "TMath.h"
 #include <TObjString.h>
 #include <TROOT.h>
@@ -20,17 +20,17 @@
 #include "BTrk/ProbTools/ChisqConsistency.hh"
 #include "BTrk/TrkBase/TrkMomCalculator.hh"
 #include "BTrk/TrkBase/TrkPoca.hh"
-#include "BTrkData/inc/TrkStrawHit.hh"
+#include "Offline/BTrkData/inc/TrkStrawHit.hh"
 
 // Tracker Details:
-#include "TrackerConditions/inc/StrawDrift.hh"
-#include "TrackerConditions/inc/StrawResponse.hh"
-#include "TrackerGeom/inc/Tracker.hh"
+#include "Offline/TrackerConditions/inc/StrawDrift.hh"
+#include "Offline/TrackerConditions/inc/StrawResponse.hh"
+#include "Offline/TrackerGeom/inc/Tracker.hh"
 
 // Utilities:
-#include "CosmicReco/inc/DriftFitUtils.hh"
-#include "CosmicReco/inc/PDFFit.hh"
-#include "Mu2eUtilities/inc/TwoLinePCA.hh"
+#include "Offline/CosmicReco/inc/DriftFitUtils.hh"
+#include "Offline/CosmicReco/inc/PDFFit.hh"
+#include "Offline/Mu2eUtilities/inc/TwoLinePCA.hh"
 
 // Minuit
 #include <Minuit2/FCNBase.h>

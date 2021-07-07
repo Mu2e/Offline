@@ -15,7 +15,7 @@
 // up in Y by 0.52 mm. There is no correction for that in this config.
 //
 
-#include "Mu2eG4/test/geom_01.txt"
+#include "Offline/Mu2eG4/test/geom_01.txt"
 
 //----------------------------------------------------------------
 // The top of the room floor is assumed to be at the same level as the

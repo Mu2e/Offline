@@ -6,7 +6,7 @@
 //
 // Original author: Andrei Gaponenko, 2012
 
-#include "Sources/inc/ExtMonFNALMARSUtils.hh"
+#include "Offline/Sources/inc/ExtMonFNALMARSUtils.hh"
 
 #include <iostream>
 #include <fstream>
@@ -33,11 +33,11 @@
 #include "canvas/Persistency/Provenance/ProductID.h"
 #include "canvas/Persistency/Provenance/canonicalProductName.h"
 
-#include "MCDataProducts/inc/GenParticle.hh"
-#include "MCDataProducts/inc/GenParticleCollection.hh"
-#include "MCDataProducts/inc/MARSInfo.hh"
-#include "MCDataProducts/inc/MARSInfoCollection.hh"
-#include "MCDataProducts/inc/GenParticleMARSAssns.hh"
+#include "Offline/MCDataProducts/inc/GenParticle.hh"
+#include "Offline/MCDataProducts/inc/GenParticleCollection.hh"
+#include "Offline/MCDataProducts/inc/MARSInfo.hh"
+#include "Offline/MCDataProducts/inc/MARSInfoCollection.hh"
+#include "Offline/MCDataProducts/inc/GenParticleMARSAssns.hh"
 
 namespace mu2e {
   namespace ExtMonFNAL {

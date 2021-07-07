@@ -3,7 +3,7 @@
 
 #include <vector>
 #include "canvas/Persistency/Common/Ptr.h"
-#include "MCDataProducts/inc/SimParticleCollection.hh"
+#include "Offline/MCDataProducts/inc/SimParticleCollection.hh"
 
 namespace mu2e {
   typedef std::vector<art::Ptr<mu2e::SimParticle> > SimParticlePtrCollection;

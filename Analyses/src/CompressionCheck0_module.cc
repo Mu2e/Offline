@@ -18,10 +18,10 @@
 #include "art/Framework/Core/ModuleMacros.h"
 
 // Mu2e includes.
-#include "MCDataProducts/inc/StepPointMCCollection.hh"
-#include "RecoDataProducts/inc/StrawHitCollection.hh"
-#include "MCDataProducts/inc/StepInstanceName.hh"
-#include "GeneralUtilities/inc/Binning.hh"
+#include "Offline/MCDataProducts/inc/StepPointMCCollection.hh"
+#include "Offline/RecoDataProducts/inc/StrawHitCollection.hh"
+#include "Offline/MCDataProducts/inc/StepInstanceName.hh"
+#include "Offline/GeneralUtilities/inc/Binning.hh"
 
 // Root includes.
 #include "TH1F.h"

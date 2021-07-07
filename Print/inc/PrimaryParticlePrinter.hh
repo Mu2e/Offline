@@ -8,10 +8,10 @@
 #include <cstring>
 #include <iostream>
 
-#include "Print/inc/ProductPrinter.hh"
-#include "MCDataProducts/inc/PrimaryParticle.hh"
-#include "Print/inc/GenParticlePrinter.hh"
-#include "Print/inc/SimParticlePrinter.hh"
+#include "Offline/Print/inc/ProductPrinter.hh"
+#include "Offline/MCDataProducts/inc/PrimaryParticle.hh"
+#include "Offline/Print/inc/GenParticlePrinter.hh"
+#include "Offline/Print/inc/SimParticlePrinter.hh"
 #include "art/Framework/Principal/Handle.h"
 
 namespace mu2e {

@@ -19,7 +19,7 @@
 #include "art/Framework/Principal/Handle.h"
 #include "art/Framework/Principal/Provenance.h"
 
-#include "MCDataProducts/inc/GenEventCount.hh"
+#include "Offline/MCDataProducts/inc/GenEventCount.hh"
 
 namespace mu2e {
 

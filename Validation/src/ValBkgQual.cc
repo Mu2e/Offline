@@ -1,5 +1,5 @@
 
-#include "Validation/inc/ValBkgQual.hh"
+#include "Offline/Validation/inc/ValBkgQual.hh"
 
 
 int mu2e::ValBkgQual::declare(art::TFileDirectory tfs) {

@@ -10,7 +10,7 @@
 #include "fhiclcpp/ParameterSet.h"
 #include "art/Framework/Core/EDProducer.h"
 #include "art/Framework/Core/ModuleMacros.h"
-#include "RecoDataProducts/inc/StrawDigi.hh"
+#include "Offline/RecoDataProducts/inc/StrawDigi.hh"
 #include <iostream>
 
 namespace mu2e {

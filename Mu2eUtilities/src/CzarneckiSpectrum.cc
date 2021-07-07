@@ -10,20 +10,20 @@
 #include <string>
 #include <utility>
 
-#include "ConfigTools/inc/ConfigFileLookupPolicy.hh"
+#include "Offline/ConfigTools/inc/ConfigFileLookupPolicy.hh"
 // Mu2e includes
-#include "GlobalConstantsService/inc/GlobalConstantsHandle.hh"
-#include "GlobalConstantsService/inc/PhysicsParams.hh"
+#include "Offline/GlobalConstantsService/inc/GlobalConstantsHandle.hh"
+#include "Offline/GlobalConstantsService/inc/PhysicsParams.hh"
 // Framework includes
 #include "cetlib/pow.h"
 
-#include "Mu2eUtilities/inc/CzarneckiSpectrum.hh"
-#include "Mu2eUtilities/inc/Table.hh"
+#include "Offline/Mu2eUtilities/inc/CzarneckiSpectrum.hh"
+#include "Offline/Mu2eUtilities/inc/Table.hh"
 
 namespace mu2e {
 
   CzarneckiSpectrum::CzarneckiSpectrum() :
-    _table ( loadTable<2>( ConfigFileLookupPolicy()( "ConditionsService/data/czarnecki_"+
+    _table ( loadTable<2>( ConfigFileLookupPolicy()( "Offline/ConditionsService/data/czarnecki_"+
                                                      GlobalConstantsHandle<PhysicsParams>()->getStoppingTargetMaterial()+".tbl" ) ) )
   {
     _halfBinWidth = (_table.getRow(1).first - _table.getRow(0).first)/2.;

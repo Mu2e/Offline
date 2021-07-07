@@ -8,9 +8,9 @@
 #ifndef EventDisplay_src_Hexagon_h
 #define EventDisplay_src_Hexagon_h
 
-#include "EventDisplay/src/VirtualShape.h"
-#include "EventDisplay/src/dict_classes/EventDisplayGeoVolumePgon.h"
-#include "EventDisplay/src/dict_classes/EventDisplayPolyLine3D.h"
+#include "Offline/EventDisplay/src/VirtualShape.h"
+#include "Offline/EventDisplay/src/dict_classes/EventDisplayGeoVolumePgon.h"
+#include "Offline/EventDisplay/src/dict_classes/EventDisplayPolyLine3D.h"
 #include <TPad.h>
 #include <TMath.h>
 #include <iostream>

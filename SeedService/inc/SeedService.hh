@@ -92,8 +92,8 @@
 //
 
 // Some helper classes.
-#include "SeedService/inc/ArtState.hh"
-#include "SeedService/inc/EngineId.hh"
+#include "Offline/SeedService/inc/ArtState.hh"
+#include "Offline/SeedService/inc/EngineId.hh"
 
 // From art and its tool chain.
 #include "art/Framework/Core/detail/EngineCreator.h"

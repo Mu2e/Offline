@@ -1,4 +1,4 @@
-#include "CosmicReco/inc/CosmicTrackMCInfo.hh"
+#include "Offline/CosmicReco/inc/CosmicTrackMCInfo.hh"
 
 CosmicTrackMCInfo::CosmicTrackMCInfo(){
      

@@ -15,9 +15,9 @@
 #include "art/Framework/Principal/Handle.h"
 
 // Mu2e includes.
-#include "MCDataProducts/inc/GenId.hh"
-#include "DataProducts/inc/PDGCode.hh"
-#include "MCDataProducts/inc/GenParticleCollection.hh"
+#include "Offline/MCDataProducts/inc/GenId.hh"
+#include "Offline/DataProducts/inc/PDGCode.hh"
+#include "Offline/MCDataProducts/inc/GenParticleCollection.hh"
 
 
 

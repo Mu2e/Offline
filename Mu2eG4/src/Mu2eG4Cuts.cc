@@ -20,16 +20,16 @@
 #include "Geant4/G4Step.hh"
 #include "Geant4/G4VProcess.hh"
 
-#include "Mu2eG4/inc/IMu2eG4Cut.hh"
-#include "Mu2eG4/inc/Mu2eG4ResourceLimits.hh"
-#include "MCDataProducts/inc/ProcessCode.hh"
-#include "Mu2eG4/inc/SimParticleHelper.hh"
-#include "MCDataProducts/inc/StepPointMCCollection.hh"
-#include "Mu2eG4/inc/getPhysicalVolumeOrThrow.hh"
-#include "DataProducts/inc/PDGCode.hh"
+#include "Offline/Mu2eG4/inc/IMu2eG4Cut.hh"
+#include "Offline/Mu2eG4/inc/Mu2eG4ResourceLimits.hh"
+#include "Offline/MCDataProducts/inc/ProcessCode.hh"
+#include "Offline/Mu2eG4/inc/SimParticleHelper.hh"
+#include "Offline/MCDataProducts/inc/StepPointMCCollection.hh"
+#include "Offline/Mu2eG4/inc/getPhysicalVolumeOrThrow.hh"
+#include "Offline/DataProducts/inc/PDGCode.hh"
 
-#include "GlobalConstantsService/inc/GlobalConstantsHandle.hh"
-#include "GlobalConstantsService/inc/ParticleDataTable.hh"
+#include "Offline/GlobalConstantsService/inc/GlobalConstantsHandle.hh"
+#include "Offline/GlobalConstantsService/inc/ParticleDataTable.hh"
 
 namespace mu2e {
   namespace Mu2eG4Cuts {

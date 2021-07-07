@@ -2,7 +2,7 @@
 #define Mu2eKinKal_KKFileFinder_hh
 
 #include "KinKal/MatEnv/FileFinderInterface.hh"
-#include "ConfigTools/inc/ConfigFileLookupPolicy.hh"
+#include "Offline/ConfigTools/inc/ConfigFileLookupPolicy.hh"
 #include <string>
 
 namespace mu2e {

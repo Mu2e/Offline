@@ -32,8 +32,8 @@
 #include "messagefacility/MessageLogger/MessageLogger.h"
 
 // Mu2e includes.
-#include "GeometryService/inc/GeometryService.hh"
-#include "GeometryService/inc/GeomHandle.hh"
+#include "Offline/GeometryService/inc/GeometryService.hh"
+#include "Offline/GeometryService/inc/GeomHandle.hh"
 
 
 //CLHEP includes
@@ -43,15 +43,15 @@
 
 // calorimeter, tracker  and data
 #include "BTrk/BaBar/Constants.hh"
-#include "CalorimeterGeom/inc/Calorimeter.hh"
-#include "CalorimeterGeom/inc/DiskCalorimeter.hh"
-#include "RecoDataProducts/inc/KalRepPtrCollection.hh"
+#include "Offline/CalorimeterGeom/inc/Calorimeter.hh"
+#include "Offline/CalorimeterGeom/inc/DiskCalorimeter.hh"
+#include "Offline/RecoDataProducts/inc/KalRepPtrCollection.hh"
 #include "BTrk/KalmanTrack/KalRep.hh"
 #include "BTrk/TrkBase/HelixParams.hh"
 #include "BTrk/TrkBase/HelixTraj.hh"
 #include "BTrk/TrkBase/TrkRep.hh"
-#include "RecoDataProducts/inc/TrkCaloIntersectCollection.hh"
-#include "RecoDataProducts/inc/TrkFitDirection.hh"
+#include "Offline/RecoDataProducts/inc/TrkCaloIntersectCollection.hh"
+#include "Offline/RecoDataProducts/inc/TrkFitDirection.hh"
 
 
 // Other includes.

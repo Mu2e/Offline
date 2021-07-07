@@ -9,12 +9,12 @@ namespace fhicl {
   class ParameterSet;
 };
 
-#include "DataProducts/inc/StrawId.hh"
-#include "RecoDataProducts/inc/StereoHit.hh"
-#include "RecoDataProducts/inc/ComboHit.hh"
-#include "RecoDataProducts/inc/TimeCluster.hh"
-#include "TrackerGeom/inc/Straw.hh"
-#include "TrackerGeom/inc/Tracker.hh"
+#include "Offline/DataProducts/inc/StrawId.hh"
+#include "Offline/RecoDataProducts/inc/StereoHit.hh"
+#include "Offline/RecoDataProducts/inc/ComboHit.hh"
+#include "Offline/RecoDataProducts/inc/TimeCluster.hh"
+#include "Offline/TrackerGeom/inc/Straw.hh"
+#include "Offline/TrackerGeom/inc/Tracker.hh"
 
 namespace mu2e {
   class Panel;

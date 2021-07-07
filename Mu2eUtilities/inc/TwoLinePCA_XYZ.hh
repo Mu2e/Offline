@@ -25,7 +25,7 @@
 //
 //
 
-#include "DataProducts/inc/XYZVec.hh"
+#include "Offline/DataProducts/inc/XYZVec.hh"
 
 namespace mu2e {
 

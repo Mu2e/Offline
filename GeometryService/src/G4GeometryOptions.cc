@@ -3,8 +3,8 @@
 //
 // Original author: Kyle Knoepfel, modified by B. Echenard
 
-#include "ConfigTools/inc/SimpleConfig.hh"
-#include "GeometryService/inc/G4GeometryOptions.hh"
+#include "Offline/ConfigTools/inc/SimpleConfig.hh"
+#include "Offline/GeometryService/inc/G4GeometryOptions.hh"
 #include "cetlib_except/exception.h"
 
 #include "boost/algorithm/string/replace.hpp"

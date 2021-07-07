@@ -13,9 +13,9 @@ filterModule : {
 }
 END_PROLOG
 
-#include "fcl/minimalMessageService.fcl"
-#include "fcl/standardProducers.fcl"
-#include "fcl/standardServices.fcl"
+#include "Offline/fcl/minimalMessageService.fcl"
+#include "Offline/fcl/standardProducers.fcl"
+#include "Offline/fcl/standardServices.fcl"
 
 services : {
     message: @local::default_message
@@ -28,13 +28,13 @@ services : {
     }
 
     ConditionsService: {
-        conditionsfile : "ConditionsService/data/conditions_01.txt"
+        conditionsfile : "Offline/ConditionsService/data/conditions_01.txt"
         printConfig : true
         configStatsVerbosity : 0
     }
 
     GlobalConstantsService: {
-        inputFile : "GlobalConstantsService/data/globalConstants_01.txt"
+        inputFile : "Offline/GlobalConstantsService/data/globalConstants_01.txt"
         printConfig : true
         configStatsVerbosity : 0
     }

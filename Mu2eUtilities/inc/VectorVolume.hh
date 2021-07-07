@@ -14,7 +14,7 @@
 // CLHEP includes
 #include "CLHEP/Vector/ThreeVector.h"
 #include <vector>
-#include "GeneralUtilities/inc/safeSqrt.hh"
+#include "Offline/GeneralUtilities/inc/safeSqrt.hh"
 using namespace std;
 
 namespace mu2e {

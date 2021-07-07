@@ -2,15 +2,15 @@
 #------------------------------------------------------------------------------
 # this file is included by fcl/standardProducers.fcl inside the PROLOG section
 #------------------------------------------------------------------------------
-#include "fcl/TrkCaloDt.fcl"
+#include "Offline/fcl/TrkCaloDt.fcl"
 
 BEGIN_PROLOG
 
 # time clustering is the 1st stage of track finding 
 TimeClusterFinder : {
     module_type  : TimeClusterFinder
-    ClusterMVA : { MVAWeights : "TrkPatRec/data/TimeCluster.weights.xml" }
-    ClusterCaloMVA : { MVAWeights : "TrkPatRec/data/TimeClusterCalo.weights.xml" }
+    ClusterMVA : { MVAWeights : "Offline/TrkPatRec/data/TimeCluster.weights.xml" }
+    ClusterCaloMVA : { MVAWeights : "Offline/TrkPatRec/data/TimeClusterCalo.weights.xml" }
     ComboHitCollection : "makePH"
     StrawHitFlagCollection : "FlagBkgHits:ComboHits"
     CaloClusterCollection : "CaloClusterMaker"

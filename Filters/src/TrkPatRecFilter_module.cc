@@ -3,12 +3,12 @@
 #include "art/Framework/Core/ModuleMacros.h"
 #include "art/Framework/Principal/Event.h"
 #include "art/Framework/Principal/Handle.h"
-#include "MCDataProducts/inc/StrawDigiMCCollection.hh"
+#include "Offline/MCDataProducts/inc/StrawDigiMCCollection.hh"
 #include "fhiclcpp/ParameterSet.h"
 
 using namespace CLHEP;
 #include "BTrk/KalmanTrack/KalRep.hh"
-#include "RecoDataProducts/inc/KalRepPtrCollection.hh"
+#include "Offline/RecoDataProducts/inc/KalRepPtrCollection.hh"
 
 #include <string>
 #include <vector>

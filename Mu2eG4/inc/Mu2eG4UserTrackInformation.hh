@@ -8,7 +8,7 @@
 //
 
 // Mu2e includes
-#include "MCDataProducts/inc/ProcessCode.hh"
+#include "Offline/MCDataProducts/inc/ProcessCode.hh"
 
 // Geant4 includes
 #include "Geant4/G4VUserTrackInformation.hh"

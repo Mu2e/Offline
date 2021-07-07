@@ -9,7 +9,7 @@
 //
 
 // Mu2e includes
-#include "Mu2eUtilities/inc/Table.hh"
+#include "Offline/Mu2eUtilities/inc/Table.hh"
 
 // C++ includes
 #include <utility>

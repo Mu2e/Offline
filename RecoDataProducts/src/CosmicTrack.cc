@@ -1,5 +1,5 @@
 //S. Middleton, Aug 2019
-#include "RecoDataProducts/inc/CosmicTrack.hh"
+#include "Offline/RecoDataProducts/inc/CosmicTrack.hh"
 #include <vector>
 
 using namespace std;

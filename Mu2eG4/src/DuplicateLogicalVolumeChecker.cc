@@ -4,7 +4,7 @@
 //
 
 // Mu2e includes
-#include "Mu2eG4/inc/DuplicateLogicalVolumeChecker.hh"
+#include "Offline/Mu2eG4/inc/DuplicateLogicalVolumeChecker.hh"
 
 #include "Geant4/G4LogicalVolumeStore.hh"
 #include "Geant4/G4LogicalVolume.hh"

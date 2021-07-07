@@ -14,12 +14,12 @@
 #include "CLHEP/Units/SystemOfUnits.h"
 
 // random number includes
-#include "SeedService/inc/SeedService.hh"
+#include "Offline/SeedService/inc/SeedService.hh"
 #include "CLHEP/Random/RandomEngine.h"
 #include "CLHEP/Random/RandPoissonQ.h"
 #include "CLHEP/Random/RandGeneral.h"
 #include "CLHEP/Random/RandFlat.h"
-#include "Mu2eUtilities/inc/RandomUnitSphere.hh"
+#include "Offline/Mu2eUtilities/inc/RandomUnitSphere.hh"
 #include "CLHEP/Random/RandGaussQ.h"
 
 // Framework includes
@@ -33,35 +33,35 @@
 #include "art/Framework/Principal/Event.h"
 #include "art/Framework/Services/Registry/ServiceHandle.h"
 #include "fhiclcpp/ParameterSet.h"
-#include "ConfigTools/inc/ConfigFileLookupPolicy.hh"
+#include "Offline/ConfigTools/inc/ConfigFileLookupPolicy.hh"
 
 
 // Mu2e includes
-#include "ConditionsService/inc/AcceleratorParams.hh"
-#include "ConditionsService/inc/ConditionsHandle.hh"
-#include "GlobalConstantsService/inc/GlobalConstantsHandle.hh"
-#include "GlobalConstantsService/inc/PhysicsParams.hh"
-#include "GlobalConstantsService/inc/ParticleDataTable.hh"
-#include "GeometryService/inc/GeomHandle.hh"
-#include "DataProducts/inc/PDGCode.hh"
-#include "ConfigTools/inc/SimpleConfig.hh"
-#include "GeneralUtilities/inc/safeSqrt.hh"
-#include "Mu2eUtilities/inc/SimpleSpectrum.hh"
-#include "Mu2eUtilities/inc/BinnedSpectrum.hh"
+#include "Offline/ConditionsService/inc/AcceleratorParams.hh"
+#include "Offline/ConditionsService/inc/ConditionsHandle.hh"
+#include "Offline/GlobalConstantsService/inc/GlobalConstantsHandle.hh"
+#include "Offline/GlobalConstantsService/inc/PhysicsParams.hh"
+#include "Offline/GlobalConstantsService/inc/ParticleDataTable.hh"
+#include "Offline/GeometryService/inc/GeomHandle.hh"
+#include "Offline/DataProducts/inc/PDGCode.hh"
+#include "Offline/ConfigTools/inc/SimpleConfig.hh"
+#include "Offline/GeneralUtilities/inc/safeSqrt.hh"
+#include "Offline/Mu2eUtilities/inc/SimpleSpectrum.hh"
+#include "Offline/Mu2eUtilities/inc/BinnedSpectrum.hh"
 #include "art_root_io/TFileService.h"
 
 
-#include "GeometryService/inc/GeomHandle.hh"
-#include "ProductionTargetGeom/inc/ProductionTarget.hh"
+#include "Offline/GeometryService/inc/GeomHandle.hh"
+#include "Offline/ProductionTargetGeom/inc/ProductionTarget.hh"
 
-#include "MCDataProducts/inc/GenParticle.hh"
-#include "MCDataProducts/inc/GenParticleCollection.hh"
-#include "MCDataProducts/inc/ProcessCode.hh"
+#include "Offline/MCDataProducts/inc/GenParticle.hh"
+#include "Offline/MCDataProducts/inc/GenParticleCollection.hh"
+#include "Offline/MCDataProducts/inc/ProcessCode.hh"
 
 
-#include "MCDataProducts/inc/SimParticleCollection.hh"
-#include "Mu2eUtilities/inc/copySimParticleCollection.hh"
-#include "MCDataProducts/inc/StepPointMCCollection.hh"
+#include "Offline/MCDataProducts/inc/SimParticleCollection.hh"
+#include "Offline/Mu2eUtilities/inc/copySimParticleCollection.hh"
+#include "Offline/MCDataProducts/inc/StepPointMCCollection.hh"
 
 
 // ROOT includes

@@ -9,8 +9,8 @@
 
 #include <vector>
 
-#include "EventGenerator/inc/GeneratorBase.hh"
-#include "EventGenerator/inc/DYBGenerator.hh"
+#include "Offline/EventGenerator/inc/GeneratorBase.hh"
+#include "Offline/EventGenerator/inc/DYBGenerator.hh"
 
 #include "CLHEP/Random/RandFlat.h"
 #include "CLHEP/Random/RandPoissonQ.h"

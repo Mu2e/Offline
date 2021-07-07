@@ -8,16 +8,16 @@
 // C++ includes
 #include <iostream>
 
-#include "DataProducts/inc/PDGCode.hh"
-#include "GlobalConstantsService/inc/GlobalConstantsHandle.hh"
-#include "GlobalConstantsService/inc/ParticleDataTable.hh"
+#include "Offline/DataProducts/inc/PDGCode.hh"
+#include "Offline/GlobalConstantsService/inc/GlobalConstantsHandle.hh"
+#include "Offline/GlobalConstantsService/inc/ParticleDataTable.hh"
 #include "HepPDT/Measurement.hh"
 
 #include "HepPDT/ParticleData.hh"
 #include "gsl/gsl_integration.h"
 #include "gsl/gsl_math.h"
 
-#include "Mu2eUtilities/inc/ConversionSpectrum.hh"
+#include "Offline/Mu2eUtilities/inc/ConversionSpectrum.hh"
 
 using namespace std;
 

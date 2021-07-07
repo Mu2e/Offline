@@ -4,7 +4,7 @@
 //
 //
 
-#include "CosmicRayShieldGeom/inc/CRSFEB.hh"
+#include "Offline/CosmicRayShieldGeom/inc/CRSFEB.hh"
 
 namespace mu2e 
 {

@@ -11,11 +11,11 @@
 #include "BTrk/TrkBase/TrkHit.hh"
 #include "BTrk/TrkBase/TrkT0.hh"
 // Mu2e
-#include "RecoDataProducts/inc/ComboHit.hh"
-#include "RecoDataProducts/inc/StrawHitIndex.hh"
-#include "TrackerGeom/inc/Tracker.hh"
-#include "TrackerGeom/inc/Straw.hh"
-#include "TrackerConditions/inc/StrawResponse.hh"
+#include "Offline/RecoDataProducts/inc/ComboHit.hh"
+#include "Offline/RecoDataProducts/inc/StrawHitIndex.hh"
+#include "Offline/TrackerGeom/inc/Tracker.hh"
+#include "Offline/TrackerGeom/inc/Straw.hh"
+#include "Offline/TrackerConditions/inc/StrawResponse.hh"
 // CLHEP
 #include "CLHEP/Vector/ThreeVector.h"
 // c++

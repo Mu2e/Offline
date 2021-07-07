@@ -1,4 +1,4 @@
-#include "CaloMC/inc/ShowerStepUtil.hh"
+#include "Offline/CaloMC/inc/ShowerStepUtil.hh"
 #include "cetlib_except/exception.h"
 
 #include "CLHEP/Vector/ThreeVector.h"

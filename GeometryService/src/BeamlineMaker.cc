@@ -18,15 +18,15 @@
 #include "messagefacility/MessageLogger/MessageLogger.h"
 
 // Mu2e includes
-#include "BeamlineGeom/inc/Beamline.hh"
-#include "BeamlineGeom/inc/TransportSolenoid.hh"
-#include "BeamlineGeom/inc/Collimator_TS1.hh"
-#include "BeamlineGeom/inc/Collimator_TS3.hh"
-#include "BeamlineGeom/inc/Collimator_TS5.hh"
-#include "GeometryService/inc/BeamlineMaker.hh"
-#include "GeomPrimitives/inc/Torus.hh"
-#include "GeomPrimitives/inc/Tube.hh"
-#include "ConfigTools/inc/SimpleConfig.hh"
+#include "Offline/BeamlineGeom/inc/Beamline.hh"
+#include "Offline/BeamlineGeom/inc/TransportSolenoid.hh"
+#include "Offline/BeamlineGeom/inc/Collimator_TS1.hh"
+#include "Offline/BeamlineGeom/inc/Collimator_TS3.hh"
+#include "Offline/BeamlineGeom/inc/Collimator_TS5.hh"
+#include "Offline/GeometryService/inc/BeamlineMaker.hh"
+#include "Offline/GeomPrimitives/inc/Torus.hh"
+#include "Offline/GeomPrimitives/inc/Tube.hh"
+#include "Offline/ConfigTools/inc/SimpleConfig.hh"
 
 // CLHEP
 #include "CLHEP/Units/SystemOfUnits.h"

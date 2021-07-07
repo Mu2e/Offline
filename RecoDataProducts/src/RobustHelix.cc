@@ -1,4 +1,4 @@
-#include "RecoDataProducts/inc/RobustHelix.hh"
+#include "Offline/RecoDataProducts/inc/RobustHelix.hh"
 namespace mu2e {
   std::ostream& operator<<(std::ostream& os, mu2e::RobustHelix const& helix) {
     os << " RobustHelix Center Radius = " << helix.rcent() << " Center Azimuth " << helix.fcent()

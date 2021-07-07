@@ -1,7 +1,7 @@
 #ifndef MCDataProducts_CaloShowerROStep_hh
 #define MCDataProducts_CaloShowerROStep_hh
 
-#include "MCDataProducts/inc/CaloShowerStep.hh"
+#include "Offline/MCDataProducts/inc/CaloShowerStep.hh"
 #include <vector>
 
 namespace mu2e {

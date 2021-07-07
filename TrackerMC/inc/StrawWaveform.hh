@@ -15,13 +15,13 @@
 #include <utility>
 
 // Mu2e includes
-#include "DataProducts/inc/StrawEnd.hh"
-#include "DataProducts/inc/StrawId.hh"
-#include "ConditionsService/inc/ConditionsHandle.hh"
-#include "TrackerConditions/inc/StrawElectronics.hh"
-#include "DataProducts/inc/TrkTypes.hh"
-#include "TrackerGeom/inc/Straw.hh"
-#include "TrackerMC/inc/StrawClusterSequence.hh"
+#include "Offline/DataProducts/inc/StrawEnd.hh"
+#include "Offline/DataProducts/inc/StrawId.hh"
+#include "Offline/ConditionsService/inc/ConditionsHandle.hh"
+#include "Offline/TrackerConditions/inc/StrawElectronics.hh"
+#include "Offline/DataProducts/inc/TrkTypes.hh"
+#include "Offline/TrackerGeom/inc/Straw.hh"
+#include "Offline/TrackerMC/inc/StrawClusterSequence.hh"
 
 namespace mu2e {
   namespace TrackerMC {

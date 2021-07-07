@@ -4,7 +4,7 @@
 # Contact person Rob Kutschke
 #
 
-#include "Analyses/test/genReco.fcl"
+#include "Offline/Analyses/test/genReco.fcl"
 
 physics.analyzers.printTRFDeM : {
     module_type    : KalRepsPrinter

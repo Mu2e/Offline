@@ -1,4 +1,4 @@
-#include "RecoDataProducts/inc/CrvDigi.hh"
+#include "Offline/RecoDataProducts/inc/CrvDigi.hh"
 
 namespace mu2e 
 {

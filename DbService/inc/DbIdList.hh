@@ -12,7 +12,7 @@
 
 #include <string>
 #include <vector>
-#include "DbTables/inc/DbId.hh"
+#include "Offline/DbTables/inc/DbId.hh"
 
 namespace mu2e {
 

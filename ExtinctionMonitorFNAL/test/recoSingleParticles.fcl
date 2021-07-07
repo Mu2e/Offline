@@ -1,6 +1,6 @@
 // Andrei Gaponenko, 2012
 
-#include "ExtinctionMonitorFNAL/test/recoDefsCommon.fcl"
+#include "Offline/ExtinctionMonitorFNAL/test/recoDefsCommon.fcl"
 
 process_name : recoSingleParticles
 outputs.FullOutput.fileName    : "dataRecoSingleParticles.art"

@@ -3,12 +3,12 @@
 
 // Mu2e includes
 #include "BTrk/TrkBase/TrkT0.hh"
-#include "TrackerGeom/inc/Tracker.hh"
-#include "RecoDataProducts/inc/ComboHit.hh"
-#include "RecoDataProducts/inc/TrkStrawHitSeed.hh"
-#include "RecoDataProducts/inc/CosmicTrack.hh"
-#include "RecoDataProducts/inc/TimeCluster.hh"
-#include "RecoDataProducts/inc/TrkFitFlag.hh"
+#include "Offline/TrackerGeom/inc/Tracker.hh"
+#include "Offline/RecoDataProducts/inc/ComboHit.hh"
+#include "Offline/RecoDataProducts/inc/TrkStrawHitSeed.hh"
+#include "Offline/RecoDataProducts/inc/CosmicTrack.hh"
+#include "Offline/RecoDataProducts/inc/TimeCluster.hh"
+#include "Offline/RecoDataProducts/inc/TrkFitFlag.hh"
 #include "canvas/Persistency/Common/Ptr.h"
 #include <vector>
 

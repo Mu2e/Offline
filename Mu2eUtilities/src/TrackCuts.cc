@@ -4,13 +4,13 @@
 
 #include "CLHEP/Vector/ThreeVector.h"
 
-#include "RecoDataProducts/inc/TrackSummary.hh"
+#include "Offline/RecoDataProducts/inc/TrackSummary.hh"
 #include "TH1.h"
 #include "cetlib_except/exception.h"
 #include "fhiclcpp/ParameterSet.h"
 #include "fhiclcpp/exception.h"
 
-#include "Mu2eUtilities/inc/TrackCuts.hh"
+#include "Offline/Mu2eUtilities/inc/TrackCuts.hh"
 
 namespace mu2e {
 

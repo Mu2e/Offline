@@ -5,8 +5,8 @@
 // Contact person Ralf Ehrlich
 //
 
-#include "DataProducts/inc/CRSScintillatorBarIndex.hh"
-#include "RecoDataProducts/inc/CrvRecoPulseFlags.hh"
+#include "Offline/DataProducts/inc/CRSScintillatorBarIndex.hh"
+#include "Offline/RecoDataProducts/inc/CrvRecoPulseFlags.hh"
 
 #include <vector>
 

@@ -9,9 +9,9 @@
 #
 # Original author Gianni Onorato.
 
-#include "fcl/minimalMessageService.fcl"
-#include "fcl/standardProducers.fcl"
-#include "fcl/standardServices.fcl"
+#include "Offline/fcl/minimalMessageService.fcl"
+#include "Offline/fcl/standardProducers.fcl"
+#include "Offline/fcl/standardServices.fcl"
 
 # Give this process a name.
 process_name : ConvElInfo
@@ -108,7 +108,7 @@ outputs:
 
 physics.producers.makeSH.diagLevel : -1
 physics.producers.makeSH.maxFullPrint : 0
-physics.producers.generate.inputfile : "Analyses/test/genconfig_Bkg.txt"
+physics.producers.generate.inputfile : "Offline/Analyses/test/genconfig_Bkg.txt"
 services.TFileService.fileName : "CEH.root"
 services.SeedService.baseSeed         :  8
 services.SeedService.maxUniqueEngines :  20
