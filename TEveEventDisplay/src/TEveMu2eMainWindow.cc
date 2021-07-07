@@ -203,6 +203,31 @@ namespace mu2e{
      gEve->AddToListTree(CrfXYMgr,kTRUE);
      fViewer[4]->AddScene(proj4);
   }
+	  
+	  frmCRV = fSplitFrameCRV->GetFirst()->GetSecond();
+   frmCRV->SetName("CRV_RZ_View");
+   fViewer5 = new TGLEmbeddedViewer(frmCRV, fPadCRV);
+   frmCRV->AddFrame(fViewer5->GetFrame(), new TGLayoutHints(kLHintsExpandX |
+                 kLHintsExpandY));
+   // set the camera to perspective (XOZ) for this viewer
+   fViewer5->SetCurrentCamera(TGLViewer::kCameraOrthoXOY);
+   // connect signal we are interested to
+
+   fViewer[5] = new TEveViewer("SplitGLViewer[5]");
+   fViewer[5]->SetGLViewer(fViewer5, fViewer5->GetFrame());
+   fViewer[5]->IncDenyDestroy();
+   if (fIsEmbedded && gEve) {
+     gEve->GetViewers()->AddElement(fViewer[5]);
+     proj5 = gEve->SpawnNewScene("CRV RZ Scene");
+     //fViewer[1]->AddScene(fdetXY);
+     CrfRZMgr = new TEveProjectionManager(TEveProjection::kPT_RhoZ);
+     proj5->AddElement(CrfRZMgr);
+     TEveProjectionAxes* axes_xytracker = new TEveProjectionAxes(CrfRZMgr);
+     proj5->AddElement(axes_xytracker);
+     gEve->AddToListTree(axes_xytracker,kTRUE);
+     gEve->AddToListTree(CrfRZMgr,kTRUE);
+     fViewer[5]->AddScene(proj5);
+}
 	
    Resize(GetDefaultSize());
    MapSubwindows();
@@ -610,7 +635,7 @@ namespace mu2e{
 
   //for (unsigned int i=0; i<2; i++){
     CRV2Dproj->fXYMgr->ImportElements(orthodetT1, CRV2Dproj->fDetXYScene);
-	   CRV2Dproj->fXYMgr->ImportElements(orthodetT2, CRV2Dproj->fDetXYScene);
+	   CRV2Dproj->fRZMgr->ImportElements(orthodetT2, CRV2Dproj->fDetRZScene);
  // }
 
   // ... Turn OFF rendering of duplicate detector in main 3D view
