@@ -123,8 +123,7 @@ namespace mu2e{
       TGLEmbeddedViewer *fViewer2;
       TGLEmbeddedViewer *fViewer3;
       TGLEmbeddedViewer *fViewer4;
-      TGLEmbeddedViewer *fViewer0C;
-
+     
       Bool_t fIsEmbedded;
 
       TEveViewer *fViewer[5];
@@ -144,7 +143,7 @@ namespace mu2e{
       TEveScene *proj1 = 0;
       TEveScene *proj2 = 0;
       TEveScene *proj3 = 0;
-		TEveScene *proj0C = 0;
+		TEveScene *proj4 = 0;
 
       
       bool usereventSelected = false;
