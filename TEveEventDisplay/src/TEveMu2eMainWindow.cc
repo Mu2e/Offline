@@ -168,6 +168,41 @@ namespace mu2e{
      gEve->AddToListTree(TfRZMgr,kTRUE);
      fViewer[3]->AddScene(proj3);
 }
+	  // create the split frames
+	  fPadCRV = new TEvePad();
+   fPadCRV->SetFillColor(kBlack);
+   
+   fSplitFrameCRV = new TGSplitFrame(this, 900, 1300);
+   AddFrame(fSplitFrameCRV, new TGLayoutHints(kLHintsExpandX | kLHintsExpandY));
+   // split it once
+   fSplitFrameCRV->HSplit(350);
+   fSplitFrameCRV->GetFirst()->VSplit(410);
+   //fSplitFrameCRV->GetSecond()->VSplit(410);
+  // get top (main) split frame
+   frmCRV = fSplitFrameCRV->GetFirst()->GetFirst();
+   frmCRV->SetName("CRV_XY_View");
+   fViewer0 = new TGLEmbeddedViewer(frmCRV, fPadCRV);
+   frmCRV->AddFrame(fViewer0->GetFrame(), new TGLayoutHints(kLHintsExpandX |
+                 kLHintsExpandY));
+   // set the camera to perspective (XOZ) for this viewer
+   fViewer0->SetCurrentCamera(TGLViewer::kCameraOrthoXOY);
+   // connect signal we are interested to
+
+   fViewer[0] = new TEveViewer("SplitGLViewer[0]");
+   fViewer[0]->SetGLViewer(fViewer0, fViewer0->GetFrame());
+   fViewer[0]->IncDenyDestroy();
+   if (fIsEmbedded && gEve) {
+     gEve->GetViewers()->AddElement(fViewer[0]);
+     proj0 = gEve->SpawnNewScene("CRV XY Scene");
+     //fViewer[1]->AddScene(fdetXY);
+     CfXYMgr = new TEveProjectionManager(TEveProjection::kPT_RPhi);
+     proj0->AddElement(CfXYMgr);
+     TEveProjectionAxes* axes_xy = new TEveProjectionAxes(CfXYMgr);
+     proj0->AddElement(axes_xy);
+     gEve->AddToListTree(axes_xy,kTRUE);
+     gEve->AddToListTree(CfXYMgr,kTRUE);
+     fViewer[0]->AddScene(proj0);
+  }
 	
    Resize(GetDefaultSize());
    MapSubwindows();
@@ -338,7 +373,7 @@ namespace mu2e{
 
   /*------------Function to create 2D Tabs:-------------*/
   void TEveMu2eMainWindow::StartProjectionTabs(){
-	  //pass_proj->CreateCRVProjection(CRV2Dproj);
+	  pass_proj->CreateCRVProjection(CRV2Dproj);
 	  pass_proj->CreateCaloProjection(calo2Dproj);
 	  pass_proj->CreateTrackerProjection(tracker2Dproj);
   }
@@ -437,6 +472,55 @@ namespace mu2e{
     gEve->GetBrowser()->GetTabRight()->SetTab(0);
 
   }
+	 /*------------Function to add CRV 2D projection to display:-------------*/
+  void TEveMu2eMainWindow::CreateCRVProjection(){
+    // Create detector and event scenes for ortho views
+    CRV2Dproj->fDetXYScene = gEve->SpawnNewScene("CRV Det XY Scene", "");
+    CRV2Dproj->fDetRZScene = gEve->SpawnNewScene("CRV Det RZ Scene", "");
+    CRV2Dproj->fEvtXYScene = gEve->SpawnNewScene("CRV Evt XY Scene", "");
+    CRV2Dproj->fEvtRZScene = gEve->SpawnNewScene("CRV Evt RZ Scene", "");
+
+    // Create XY/RZ CRV2Dprojection mgrs, draw projected axes, & add them to scenes
+    CRV2Dproj->fXYMgr = new TEveProjectionManager(TEveProjection::kPT_RPhi);
+    TEveProjectionAxes* axes_xy = new TEveProjectionAxes(CRV2Dproj->fXYMgr);
+    CRV2Dproj->fDetXYScene->AddElement(axes_xy);
+    CRV2Dproj->fEvtXYScene->AddElement(axes_xy);
+    gEve->AddToListTree(axes_xy,kTRUE);
+    gEve->AddToListTree(CRV2Dproj->fXYMgr,kTRUE);
+
+    CRV2Dproj->fRZMgr = new TEveProjectionManager(TEveProjection::kPT_RhoZ);
+    TEveProjectionAxes* axes_rz = new TEveProjectionAxes(CRV2Dproj->fRZMgr);
+    CRV2Dproj->fDetRZScene->AddElement(axes_rz);
+    CRV2Dproj->fEvtRZScene->AddElement(axes_rz);
+    gEve->AddToListTree(axes_rz,kTRUE);
+    gEve->AddToListTree(CRV2Dproj->fRZMgr,kTRUE);
+
+    // Create side-by-side ortho XY & RZ views in new tab & add det/evt scenes
+    TEveWindowSlot *slot = 0;
+    TEveWindowPack *pack = 0;
+
+    slot = TEveWindow::CreateWindowInTab(gEve->GetBrowser()->GetTabRight());
+    pack = slot->MakePack();
+    pack->SetElementName("CRV Views");
+    pack->SetHorizontal();
+    pack->SetShowTitleBar(kFALSE);
+
+    pack->NewSlot()->MakeCurrent();
+    CRV2Dproj->fXYView = gEve->SpawnNewViewer("CRV XY View", "");
+    CRV2Dproj->fXYView->GetGLViewer()->SetCurrentCamera(TGLViewer::kCameraOrthoXOY);
+    CRV2Dproj->fXYView->AddScene(tracker2Dproj->fDetXYScene);
+    CRV2Dproj->fXYView->AddScene(tracker2Dproj->fEvtXYScene);
+
+    pack->NewSlot()->MakeCurrent();
+    CRV2Dproj->fRZView = gEve->SpawnNewViewer("CRV RZ View", "");
+    CRV2Dproj->fRZView->GetGLViewer()->SetCurrentCamera(TGLViewer::kCameraOrthoXOY);
+    CRV2Dproj->fRZView->AddScene(tracker2Dproj->fDetRZScene);
+    CRV2Dproj->fRZView->AddScene(tracker2Dproj->fEvtRZScene);
+
+    gEve->GetBrowser()->GetTabRight()->SetTab(0);
+
+  }
+
 
   /*------------Function to create Calo 2D tab:-------------*/
   void TEveMu2eMainWindow::PrepareCaloProjectionTab(const art::Run& run){
@@ -519,11 +603,11 @@ namespace mu2e{
 
   Mu2eCRV->DrawCRVDetector(run, topvol, orthodetlist);
 
-  for (unsigned int i=0; i<4; i++){
+  for (unsigned int i=0; i<2; i++){
     gEve->AddGlobalElement(orthodetlist[i]);
   }
 
-  for (unsigned int i=0; i<4; i++){
+  for (unsigned int i=0; i<2; i++){
     CRV2Dproj->fXYMgr->ImportElements(orthodetlist[i], CRV2Dproj->fDetXYScene);
   }
 
