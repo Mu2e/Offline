@@ -562,10 +562,11 @@ namespace mu2e {
     //and in the pipe, and pipe gas, that goes through the magnet
     //Note the local values for the stepper etc...
     //Geant4 should take ownership of the objects created here
-
+    double stmMagnetFieldZHalfLength = pSTMMagnetParams.zHalfLength();
+    if(pSTMMagnetParams.hasLiner()) stmMagnetFieldZHalfLength -= pSTMShieldPipeParams.linerWidth();
     const double stmMagnetFieldHalfLengths[3] = {pSTMMagnetParams.xHoleHalfLength(),
                                                  pSTMMagnetParams.yHoleHalfLength(),
-                                                 pSTMMagnetParams.zHalfLength()-pSTMMagnetParams.hasLiner()*pSTMShieldPipeParams.linerWidth()};
+                                                 stmMagnetFieldZHalfLength};
 
     VolumeInfo stmMagneticFieldBoxInfo;
     stmMagneticFieldBoxInfo.name = "stmMagneticField";
