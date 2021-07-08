@@ -52,7 +52,10 @@ namespace mu2e {
     double       _magnetHoleHalfLength;
     double       _magnetHoleHalfWidth;
     double       _magnetHoleHalfHeight;
+    double       _magnetHoleXOffset;
+    double       _magnetHoleYOffset;
     std::string  _magnetMaterial;
+    bool         _magnetHasLiner;
     double       _magnetField;
     bool         _magnetFieldVisible;
     
@@ -166,15 +169,23 @@ namespace mu2e {
     
     bool         _shieldBuild;
     double       _shieldRadiusIn;
+    bool         _shieldHasLiner;
     double       _shieldLinerWidth;
     double       _shieldRadiusOut;
     double       _shieldPipeHalfLength;
     std::string  _shieldMaterialLiner;
     std::string  _shieldMaterial;
+    bool         _shieldMatchPipeBlock;
     double       _shieldUpStrSpace;
     double       _shieldDnStrSpace;
     double       _shieldDnStrWallHalfLength;
-    
+    double       _shieldDnStrWallHoleRadius;
+    double       _shieldDnStrWallHalfHeight;
+    double       _shieldDnStrWallHalfWidth;
+    double       _shieldDnStrWallGap;
+    double       _shieldUpStrWallGap;
+    std::string  _shieldDnStrWallMaterial;
+
   };
 
 }  //namespace mu2e
