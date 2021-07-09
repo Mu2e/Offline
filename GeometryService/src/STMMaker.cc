@@ -60,12 +60,19 @@ namespace mu2e {
     CLHEP::Hep3Vector   crvd_position    = CRS->getSectorPosition("D");
     const double z_crv_max = crvd_position.z() + crvd_halfLengths[2];
     //const double z_crv_max = 20000.0;
-    
+
     //Create a reference position (most things in the STM geometry will be defined w.r.t. this position)
     // Our reference z is the downstream edge of the CRV-D
     const CLHEP::Hep3Vector _STMMOffsetInMu2e(dsP.x(), 0.0, z_crv_max );
     const CLHEP::HepRotation _magnetRotation = CLHEP::HepRotation::IDENTITY;
-    const CLHEP::Hep3Vector _magnetOffsetInMu2e  = _STMMOffsetInMu2e + CLHEP::Hep3Vector(0.0,0.,_magnetUpStrSpace+_magnetHalfLength);
+    double magnetZOffset = _magnetUpStrSpace+_magnetHalfLength;
+    //calculate the magnet position assuming the shield pipe is flush to the wall
+    if(_config.getBool("stm.magnet.usePipeAsOrigin", false)) {
+      magnetZOffset = _magnetHalfLength + _shieldDnStrWallGap + 2.*_shieldPipeHalfLength + _shieldUpStrWallGap;
+      if(!_shieldMatchPipeBlock) magnetZOffset += 2.*_shieldDnStrWallHalfLength;
+    }
+    const CLHEP::Hep3Vector _magnetOffsetInMu2e  = _STMMOffsetInMu2e + CLHEP::Hep3Vector(0.0,0.,magnetZOffset);
+    const CLHEP::Hep3Vector _magnetHoleOffset  = CLHEP::Hep3Vector(_magnetHoleXOffset,_magnetHoleYOffset, 0.);
     //if (_magnetBuild){
       stm._pSTMMagnetParams = std::unique_ptr<PermanentMagnet>
         (new PermanentMagnet(_magnetBuild,
@@ -76,7 +83,9 @@ namespace mu2e {
                              _magnetHoleHalfHeight,
                              _magnetOffsetInMu2e,
                              _magnetRotation,
+                             _magnetHoleOffset,
                              _magnetMaterial,
+                             _magnetHasLiner,
                              _magnetField,
                              _magnetFieldVisible
                             ));
@@ -84,7 +93,7 @@ namespace mu2e {
 
     
     const CLHEP::HepRotation _FOVCollimatorRotation     = CLHEP::HepRotation::IDENTITY;
-    const CLHEP::Hep3Vector  _FOVCollimatorOffsetInMu2e = _STMMOffsetInMu2e + CLHEP::Hep3Vector(0.0,0.,_magnetUpStrSpace+2.0*_magnetHalfLength+2.0*_pipeDnStrHalfLength+_FOVCollimatorUpStrSpace+_FOVCollimatorHalfLength);    
+    const CLHEP::Hep3Vector  _FOVCollimatorOffsetInMu2e = _magnetOffsetInMu2e + CLHEP::Hep3Vector(0.0,0.,_magnetHalfLength + _FOVCollimatorUpStrSpace + _FOVCollimatorHalfLength);
     //if (_FOVCollimatorBuild){
       stm._pSTMFOVCollimatorParams = std::unique_ptr<STMCollimator>
         (new STMCollimator(_FOVCollimatorBuild,           
@@ -278,14 +287,21 @@ namespace mu2e {
       stm._pSTMShieldPipeParams = std::unique_ptr<ShieldPipe>
         (new ShieldPipe(_shieldBuild,
                         _shieldRadiusIn,
+                        _shieldHasLiner,
                         _shieldLinerWidth,
                         _shieldRadiusOut,
                         _shieldPipeHalfLength,
                         _shieldMaterialLiner,
                         _shieldMaterial,
+                        _shieldMatchPipeBlock,
                         _shieldUpStrSpace,
                         _shieldDnStrSpace,
                         _shieldDnStrWallHalfLength,
+                        _shieldDnStrWallHoleRadius,
+                        _shieldDnStrWallHalfHeight,
+                        _shieldDnStrWallHalfWidth,
+                        _shieldDnStrWallGap,
+                        _shieldDnStrWallMaterial,
                         _shieldOffsetInMu2e, //This is upstream edge of FOV collimator for now.
                         _shieldRotation
                        ));
@@ -310,7 +326,10 @@ namespace mu2e {
     _magnetHalfHeight          = _config.getDouble("stm.magnet.halfHeight");
     _magnetHoleHalfWidth       = _config.getDouble("stm.magnet.holeHalfWidth");
     _magnetHoleHalfHeight      = _config.getDouble("stm.magnet.holeHalfHeight");    
+    _magnetHoleXOffset         = _config.getDouble("stm.magnet.holeXOffset", 0.);
+    _magnetHoleYOffset         = _config.getDouble("stm.magnet.holeYOffset", 0.);
     _magnetMaterial            = _config.getString("stm.magnet.material");
+    _magnetHasLiner            = _config.getBool("stm.magnet.hasLiner", true);
     _magnetField               = _config.getDouble("stm.magnet.field");
     //_magnetFieldVisible        = _config.getBool(  "stm.magnet.fieldVisible",false);
     _magnetFieldVisible        = geomOptions->isVisible("stmMagnetField");
@@ -422,19 +441,26 @@ namespace mu2e {
     _detector2CanUpStrWindowMaterial   = _config.getString("stm.det2.can.UpStrWindowMaterial"); 
     _detector2CanUpStrWindowHalfLength = _config.getDouble("stm.det2.can.UpStrWindowHalfLength");
     _detector2CanGasMaterial           = _config.getString("stm.det2.can.gas"); 
-    
+
     _shieldBuild                = _config.getBool(  "stm.shield.build",false);
     _shieldRadiusIn             = _config.getDouble("stm.shield.rIn");
+    _shieldHasLiner             = _config.getBool(  "stm.shield.hasLiner", true /*true default for backwards compatibility*/);
     _shieldLinerWidth           = _config.getDouble("stm.shield.widthLiner");
     _shieldRadiusOut            = _config.getDouble("stm.shield.rOut");
     _shieldPipeHalfLength       = _config.getDouble("stm.shield.pipe.halfLength");
     _shieldMaterialLiner        = _config.getString("stm.shield.materialLiner");
-    _shieldMaterial             = _config.getString("stm.shield.material"); 
+    _shieldMaterial             = _config.getString("stm.shield.material");
+    _shieldMatchPipeBlock       = _config.getBool  ("stm.shield.matchPipeBlock", false);
     _shieldUpStrSpace           = _config.getDouble("stm.shield.UpStrSpace");
     _shieldDnStrSpace           = _config.getDouble("stm.shield.DnStrSpace");
     _shieldDnStrWallHalfLength  = _config.getDouble("stm.shield.DnStrWall.halfLength");
+    _shieldDnStrWallHoleRadius  = _config.getDouble("stm.shield.DnStrWall.holeRadius", -1.);
+    _shieldDnStrWallHalfHeight  = _config.getDouble("stm.shield.DnStrWall.halfHeight", -1.);
+    _shieldDnStrWallHalfWidth   = _config.getDouble("stm.shield.DnStrWall.halfWidth", -1.);
+    _shieldDnStrWallGap         = _config.getDouble("stm.shield.DnStrWall.gap", 0.);
+    _shieldUpStrWallGap         = _config.getDouble("stm.shield.UpStrWall.gap", 0.); //only if using pipe as origin
+    _shieldDnStrWallMaterial    = _config.getString("stm.shield.DnStrWall.material", _shieldMaterial);
 
-    
   }
 
 } // namespace mu2e

@@ -480,7 +480,8 @@ namespace mu2e {
       dss->getVPSPendFlange()->zEnd(),
       dss->getIFBmain()->zEnd(),
       dss->getIFBendPlug()->zBegin(),
-      dss->getIFBendPlug()->zEnd() };
+      dss->getIFBendPlug()->zEnd()
+    };
 
     vector<double> tmp_rOuterDs3  = {
       ds->rIn1(),
@@ -495,8 +496,6 @@ namespace mu2e {
       dss->getIFBmain()->outerRadius(),
       dss->getIFBendPlug()->outerRadius(),
       dss->getIFBendPlug()->outerRadius()
-      // (ds->cableRunVersion() > 2) ? ds->calR2CableRunIFB() : dss->getIFBendPlug()->outerRadius(),
-      // (ds->cableRunVersion() > 2) ? ds->calR2CableRunIFB() : dss->getIFBendPlug()->outerRadius()
     };
 
     assert( tmp_zPlanesDs3.size() == tmp_rOuterDs3.size() );
