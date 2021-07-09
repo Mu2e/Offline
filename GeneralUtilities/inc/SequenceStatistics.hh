@@ -9,8 +9,8 @@
 // Contact person Rob Kutschke
 //
 
-#include "GeneralUtilities/inc/MinMax.hh"
-#include "GeneralUtilities/inc/RMS.hh"
+#include "Offline/GeneralUtilities/inc/MinMax.hh"
+#include "Offline/GeneralUtilities/inc/RMS.hh"
 
 #include <iostream>
 

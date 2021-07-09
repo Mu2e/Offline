@@ -1,4 +1,4 @@
-#include "RecoDataProducts/inc/KalSegment.hh"
+#include "Offline/RecoDataProducts/inc/KalSegment.hh"
 
 namespace mu2e {
   HelixVal KalSegment::helix() const {

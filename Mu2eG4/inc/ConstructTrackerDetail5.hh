@@ -8,10 +8,10 @@
 // This implementation by David N. Brown (Louisville), November 2017
 //
 
-#include "Mu2eG4Helper/inc/VolumeInfo.hh"
+#include "Offline/Mu2eG4Helper/inc/VolumeInfo.hh"
 #include "Geant4/G4RotationMatrix.hh"
-#include "GeomPrimitives/inc/TubsParams.hh"
-#include "DataProducts/inc/StrawId.hh"
+#include "Offline/GeomPrimitives/inc/TubsParams.hh"
+#include "Offline/DataProducts/inc/StrawId.hh"
 
 #include <vector>
 

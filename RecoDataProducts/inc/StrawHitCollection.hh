@@ -8,6 +8,6 @@
 // Original author Rob Kutschke
 //
 
-#include "RecoDataProducts/inc/StrawHit.hh"
+#include "Offline/RecoDataProducts/inc/StrawHit.hh"
 
 #endif /* RecoDataProducts_StrawHitCollection_hh */

@@ -1,7 +1,7 @@
-#include "Mu2eKinKal/inc/KKMaterial.hh"
-#include "GeometryService/inc/GeomHandle.hh"
-#include "TrackerGeom/inc/Tracker.hh"
-#include "GeometryService/inc/GeometryService.hh"
+#include "Offline/Mu2eKinKal/inc/KKMaterial.hh"
+#include "Offline/GeometryService/inc/GeomHandle.hh"
+#include "Offline/TrackerGeom/inc/Tracker.hh"
+#include "Offline/GeometryService/inc/GeometryService.hh"
 
 namespace mu2e {
   using StrawMaterial = KinKal::StrawMaterial;

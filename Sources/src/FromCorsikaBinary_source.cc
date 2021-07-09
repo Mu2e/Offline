@@ -31,12 +31,12 @@
 #include "art/Framework/Core/ModuleMacros.h"
 #include "art/Framework/Principal/Event.h"
 #include "art/Framework/Services/Registry/ServiceHandle.h"
-#include "MCDataProducts/inc/GenParticle.hh"
-#include "MCDataProducts/inc/GenParticleCollection.hh"
-#include "MCDataProducts/inc/CosmicLivetime.hh"
+#include "Offline/MCDataProducts/inc/GenParticle.hh"
+#include "Offline/MCDataProducts/inc/GenParticleCollection.hh"
+#include "Offline/MCDataProducts/inc/CosmicLivetime.hh"
 
-#include "Sources/inc/CosmicCORSIKA.hh"
-#include "SeedService/inc/SeedService.hh"
+#include "Offline/Sources/inc/CosmicCORSIKA.hh"
+#include "Offline/SeedService/inc/SeedService.hh"
 
 using CLHEP::Hep3Vector;
 using CLHEP::HepLorentzVector;

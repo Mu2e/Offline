@@ -9,7 +9,7 @@
 //
 //
 
-#include "Mu2eG4/inc/findMaterialOrThrow.hh"
+#include "Offline/Mu2eG4/inc/findMaterialOrThrow.hh"
 
 // Framework includes
 #include "cetlib_except/exception.h"

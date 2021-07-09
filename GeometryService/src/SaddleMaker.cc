@@ -11,10 +11,10 @@
 #include "CLHEP/Vector/ThreeVector.h"
 #include "CLHEP/Units/SystemOfUnits.h"
 
-#include "GeometryService/inc/SaddleMaker.hh"
-#include "ExternalShieldingGeom/inc/Saddle.hh"
+#include "Offline/GeometryService/inc/SaddleMaker.hh"
+#include "Offline/ExternalShieldingGeom/inc/Saddle.hh"
 
-#include "ConfigTools/inc/SimpleConfig.hh"
+#include "Offline/ConfigTools/inc/SimpleConfig.hh"
 
 namespace mu2e {
 

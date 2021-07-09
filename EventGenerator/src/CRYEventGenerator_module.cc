@@ -1,14 +1,14 @@
 // Mu2e includes.
-#include "ConfigTools/inc/SimpleConfig.hh"
-#include "ConfigTools/inc/requireUniqueKey.hh"
-#include "MCDataProducts/inc/GenId.hh"
-#include "MCDataProducts/inc/GenParticleCollection.hh"
-#include "MCDataProducts/inc/G4BeamlineInfoCollection.hh"
-#include "GlobalConstantsService/inc/GlobalConstantsHandle.hh"
-#include "GlobalConstantsService/inc/ParticleDataTable.hh"
+#include "Offline/ConfigTools/inc/SimpleConfig.hh"
+#include "Offline/ConfigTools/inc/requireUniqueKey.hh"
+#include "Offline/MCDataProducts/inc/GenId.hh"
+#include "Offline/MCDataProducts/inc/GenParticleCollection.hh"
+#include "Offline/MCDataProducts/inc/G4BeamlineInfoCollection.hh"
+#include "Offline/GlobalConstantsService/inc/GlobalConstantsHandle.hh"
+#include "Offline/GlobalConstantsService/inc/ParticleDataTable.hh"
 
 // Particular generators that this code knows about.
-#include "SeedService/inc/SeedService.hh"
+#include "Offline/SeedService/inc/SeedService.hh"
 
 // Includes from art and its toolchain.
 #include "art/Framework/Core/EDProducer.h"
@@ -26,7 +26,7 @@
 #include <vector>
 #include <memory>
 
-#include "EventGenerator/inc/CosmicCRY.hh"
+#include "Offline/EventGenerator/inc/CosmicCRY.hh"
 
 namespace mu2e {
 

@@ -3,6 +3,6 @@
 
 // deprecated: use SimParticle.hh instead
 
-#include "MCDataProducts/inc/SimParticle.hh"
+#include "Offline/MCDataProducts/inc/SimParticle.hh"
 
 #endif /* MCDataProducts_SimParticleCollection_hh */

@@ -8,7 +8,7 @@
 // 
 #ifndef TrkCaloInfo_HH
 #define TrkCaloInfo_HH
-#include "DataProducts/inc/XYZVec.hh"
+#include "Offline/DataProducts/inc/XYZVec.hh"
 #include "Rtypes.h"
 #include <string>
 namespace mu2e

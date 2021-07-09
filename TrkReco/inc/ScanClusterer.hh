@@ -8,8 +8,8 @@
 
 #include "fhiclcpp/types/Atom.h"
 #include "fhiclcpp/types/Sequence.h"
-#include "RecoDataProducts/inc/StrawDigiCollection.hh"
-#include "TrkReco/inc/BkgClusterer.hh"
+#include "Offline/RecoDataProducts/inc/StrawDigiCollection.hh"
+#include "Offline/TrkReco/inc/BkgClusterer.hh"
 
 
 namespace mu2e {

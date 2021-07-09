@@ -4,7 +4,7 @@
 //
 //
 
-#include "Mu2eG4/test/geom_01.txt"
+#include "Offline/Mu2eG4/test/geom_01.txt"
 
 bool crs.vetoVisible         = false;
 bool protonabsorber.visible  = false;

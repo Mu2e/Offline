@@ -9,11 +9,11 @@
 #define EventDisplay_src_DataInterface_h
 
 #include "CLHEP/Vector/ThreeVector.h"
-#include "EventDisplay/src/ContentSelector.h"
-#include "MCDataProducts/inc/SimParticleCollection.hh"
-#include "RecoDataProducts/inc/StrawHitFlag.hh"
-#include "Mu2eBTrk/inc/ParticleInfo.hh"
-#include "Mu2eUtilities/inc/SimParticleTimeOffset.hh"
+#include "Offline/EventDisplay/src/ContentSelector.h"
+#include "Offline/MCDataProducts/inc/SimParticleCollection.hh"
+#include "Offline/RecoDataProducts/inc/StrawHitFlag.hh"
+#include "Offline/Mu2eBTrk/inc/ParticleInfo.hh"
+#include "Offline/Mu2eUtilities/inc/SimParticleTimeOffset.hh"
 #include "art/Framework/Principal/Event.h"
 #include "boost/shared_ptr.hpp"
 #include <TObject.h>

@@ -9,7 +9,7 @@
 #include "cetlib_except/exception.h"
 
 // Mu2e includes
-#include "MCDataProducts/inc/CosmicLivetime.hh"
+#include "Offline/MCDataProducts/inc/CosmicLivetime.hh"
 
 using namespace std;
 

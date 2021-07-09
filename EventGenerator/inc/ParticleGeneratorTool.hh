@@ -10,11 +10,11 @@
 #include "art/Utilities/ToolConfigTable.h"
 #include "art/Framework/Services/Optional/RandomNumberGenerator.h"
 
-#include "DataProducts/inc/PDGCode.hh"
-#include "MCDataProducts/inc/ProcessCode.hh"
-#include "MCDataProducts/inc/GenParticle.hh"
+#include "Offline/DataProducts/inc/PDGCode.hh"
+#include "Offline/MCDataProducts/inc/ProcessCode.hh"
+#include "Offline/MCDataProducts/inc/GenParticle.hh"
 
-#include "GeneralUtilities/inc/RSNTIO.hh"
+#include "Offline/GeneralUtilities/inc/RSNTIO.hh"
 
 namespace mu2e {
 

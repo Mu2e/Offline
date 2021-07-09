@@ -12,8 +12,8 @@
 #include "canvas/Utilities/Exception.h"
 
 // Mu2e includes
-#include "ConfigTools/inc/requireUniqueKey.hh"
-#include "ConfigTools/inc/SimpleConfig.hh"
+#include "Offline/ConfigTools/inc/requireUniqueKey.hh"
+#include "Offline/ConfigTools/inc/SimpleConfig.hh"
 
 using namespace std;
 

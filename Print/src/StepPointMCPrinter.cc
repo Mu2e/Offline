@@ -1,5 +1,5 @@
 
-#include "Print/inc/StepPointMCPrinter.hh"
+#include "Offline/Print/inc/StepPointMCPrinter.hh"
 #include "art/Framework/Principal/Provenance.h"
 #include <string>
 #include <iomanip>

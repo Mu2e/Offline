@@ -1,4 +1,4 @@
-#include "MCDataProducts/inc/SimParticle.hh"
+#include "Offline/MCDataProducts/inc/SimParticle.hh"
 
 namespace mu2e {
   std::vector<SimParticle::key_type>  SimParticle::daughterIds() const {

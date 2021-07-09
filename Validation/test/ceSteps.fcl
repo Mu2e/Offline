@@ -1,4 +1,4 @@
-#include "JobConfig/primary/CeEndpoint.fcl"
+#include "Production/JobConfig/primary/CeEndpoint.fcl"
 
 source.firstRun: 1000
 source.maxEvents: 1000
@@ -9,7 +9,7 @@ services.TimeTracker.printSummary: true
 services.SeedService.baseSeed: 8
 services.SeedService.maxUniqueEngines: 20
 
-services.GeometryService.inputFile : "Mu2eG4/geom/geom_common_current.txt"
+services.GeometryService.inputFile : "Offline/Mu2eG4/geom/geom_common_current.txt"
 
 
 outputs.Output.fileName : "dts.owner.ceSteps.dsconf.seq.art"

@@ -9,8 +9,8 @@
 
 #include <vector>
 
-#include "CosmicRayShieldGeom/inc/CRSScintillatorLayerId.hh"
-#include "CosmicRayShieldGeom/inc/CRSScintillatorBar.hh"
+#include "Offline/CosmicRayShieldGeom/inc/CRSScintillatorLayerId.hh"
+#include "Offline/CosmicRayShieldGeom/inc/CRSScintillatorBar.hh"
 
 #include "CLHEP/Vector/ThreeVector.h"
 

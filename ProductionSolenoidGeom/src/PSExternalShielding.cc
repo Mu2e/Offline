@@ -1,4 +1,4 @@
-#include "ProductionSolenoidGeom/inc/PSExternalShielding.hh"
+#include "Offline/ProductionSolenoidGeom/inc/PSExternalShielding.hh"
 
 namespace mu2e {
 

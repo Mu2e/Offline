@@ -9,9 +9,9 @@
 #include <iomanip>
 #include <sstream>
 #include <map>
-#include "DataProducts/inc/StrawId.hh"
-#include "DbTables/inc/DbTable.hh"
-#include "DbTables/inc/TrkAlignParams.hh"
+#include "Offline/DataProducts/inc/StrawId.hh"
+#include "Offline/DbTables/inc/DbTable.hh"
+#include "Offline/DbTables/inc/TrkAlignParams.hh"
 
 namespace mu2e {
 

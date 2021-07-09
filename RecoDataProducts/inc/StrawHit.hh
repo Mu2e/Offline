@@ -10,11 +10,11 @@
 // C++ includes
 #include <iostream>
 #include <vector>
-#include "DataProducts/inc/TrkTypes.hh"
+#include "Offline/DataProducts/inc/TrkTypes.hh"
 
 // Mu2e includes
-#include "DataProducts/inc/StrawId.hh"
-#include "DataProducts/inc/StrawEnd.hh"
+#include "Offline/DataProducts/inc/StrawId.hh"
+#include "Offline/DataProducts/inc/StrawEnd.hh"
 
 namespace mu2e {
 

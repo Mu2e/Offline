@@ -8,6 +8,6 @@
 // Original author David Brown 
 //
 
-#include "RecoDataProducts/inc/StrawDigi.hh"
+#include "Offline/RecoDataProducts/inc/StrawDigi.hh"
 
 #endif /* DataProducts_StrawDigiCollection_hh */

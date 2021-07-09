@@ -1,4 +1,4 @@
-#include "MCDataProducts/inc/MARSInfo.hh"
+#include "Offline/MCDataProducts/inc/MARSInfo.hh"
 
 namespace mu2e {
   std::ostream& operator<<(std::ostream& os, const MARSInfo& mi) {

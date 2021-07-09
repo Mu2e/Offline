@@ -14,17 +14,17 @@
 #include "art/Framework/Services/Registry/ServiceDefinitionMacros.h"
 
 // Mu2e include files
-#include "ConditionsService/inc/ConditionsService.hh"
-#include "GeometryService/inc/GeometryService.hh"
+#include "Offline/ConditionsService/inc/ConditionsService.hh"
+#include "Offline/GeometryService/inc/GeometryService.hh"
 
 // Calibration entities.
 // Would like to break the coupling to these.
-#include "ConditionsService/inc/AcceleratorParams.hh"
-#include "ConditionsService/inc/CrvParams.hh"
-#include "ConditionsService/inc/DAQParams.hh"
-#include "ConditionsService/inc/CalorimeterCalibrations.hh"
-#include "ConditionsService/inc/CalorimeterPhysicalConstants.hh"
-#include "ConditionsService/inc/ExtMonFNALConditions.hh"
+#include "Offline/ConditionsService/inc/AcceleratorParams.hh"
+#include "Offline/ConditionsService/inc/CrvParams.hh"
+#include "Offline/ConditionsService/inc/DAQParams.hh"
+#include "Offline/ConditionsService/inc/CalorimeterCalibrations.hh"
+#include "Offline/ConditionsService/inc/CalorimeterPhysicalConstants.hh"
+#include "Offline/ConditionsService/inc/ExtMonFNALConditions.hh"
 
 using namespace std;
 

@@ -7,8 +7,8 @@
 
 // #include "art/Persistency/Common/Wrapper.h"
 
-#include "GeomPrimitives/inc/Tube.hh"
-#include "Mu2eInterfaces/inc/Detector.hh"
+#include "Offline/GeomPrimitives/inc/Tube.hh"
+#include "Offline/Mu2eInterfaces/inc/Detector.hh"
 
 #include <memory>
 #include <vector>

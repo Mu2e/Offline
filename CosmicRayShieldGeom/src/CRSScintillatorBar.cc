@@ -6,8 +6,8 @@
 //
 
 #include <sstream>
-#include "CosmicRayShieldGeom/inc/CRSScintillatorBar.hh"
-#include "CosmicRayShieldGeom/inc/CosmicRayShield.hh"
+#include "Offline/CosmicRayShieldGeom/inc/CRSScintillatorBar.hh"
+#include "Offline/CosmicRayShieldGeom/inc/CosmicRayShield.hh"
 
 namespace mu2e 
 {

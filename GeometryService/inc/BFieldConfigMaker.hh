@@ -10,7 +10,7 @@
 #include <memory>
 
 // Forward declaration is not sufficient b/c of potential ~unique_ptr in a client code.
-#include "BFieldGeom/inc/BFieldConfig.hh"
+#include "Offline/BFieldGeom/inc/BFieldConfig.hh"
 
 namespace mu2e {
 

@@ -7,12 +7,12 @@
 
 #include "canvas/Persistency/Common/Wrapper.h"
 
-#include "ExtinctionMonitorFNAL/Geometry/inc/ExtMonFNALModule.hh"
-#include "ExtinctionMonitorFNAL/Geometry/inc/ExtMonFNALPixelChip.hh"
-#include "DataProducts/inc/ExtMonFNALModuleId.hh"
-#include "DataProducts/inc/ExtMonFNALModuleDenseId.hh"
-#include "DataProducts/inc/ExtMonFNALPixelId.hh"
-#include "DataProducts/inc/ExtMonFNALPlaneId.hh"
+#include "Offline/ExtinctionMonitorFNAL/Geometry/inc/ExtMonFNALModule.hh"
+#include "Offline/ExtinctionMonitorFNAL/Geometry/inc/ExtMonFNALPixelChip.hh"
+#include "Offline/DataProducts/inc/ExtMonFNALModuleId.hh"
+#include "Offline/DataProducts/inc/ExtMonFNALModuleDenseId.hh"
+#include "Offline/DataProducts/inc/ExtMonFNALPixelId.hh"
+#include "Offline/DataProducts/inc/ExtMonFNALPlaneId.hh"
 
 #include <vector>
 #include "CLHEP/Vector/ThreeVector.h"

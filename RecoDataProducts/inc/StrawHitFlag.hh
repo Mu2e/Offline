@@ -7,7 +7,7 @@
 // Original author David Brown
 //
 // Mu2e includes
-#include "GeneralUtilities/inc/BitMap.hh"
+#include "Offline/GeneralUtilities/inc/BitMap.hh"
 #include <string>
 #include <map>
 namespace mu2e {

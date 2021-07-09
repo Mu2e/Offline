@@ -5,7 +5,7 @@
 /// \author Stefano Roberto Soleti roberto@lbl.gov
 ////////////////////////////////////////////////////////////////////////
 
-#include "Sources/inc/CosmicCORSIKA.hh"
+#include "Offline/Sources/inc/CosmicCORSIKA.hh"
 
 using CLHEP::Hep3Vector;
 using CLHEP::HepLorentzVector;

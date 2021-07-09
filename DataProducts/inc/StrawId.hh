@@ -9,7 +9,7 @@
 #include <string>
 #include <math.h>
 
-#include "DataProducts/inc/StrawEnd.hh" 
+#include "Offline/DataProducts/inc/StrawEnd.hh" 
 
 namespace mu2e {
 

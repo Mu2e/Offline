@@ -8,10 +8,10 @@
 // Initialized with Mu2eMaterialMaker
 //
 
-#include "Mu2eInterfaces/inc/ProditionsEntity.hh"
-#include "Mu2eBTrk/inc/FileFinder.hh"
-#include "Mu2eBTrk/inc/ParticleInfo.hh"
-#include "Mu2eBTrk/inc/DetStrawType.hh"
+#include "Offline/Mu2eInterfaces/inc/ProditionsEntity.hh"
+#include "Offline/Mu2eBTrk/inc/FileFinder.hh"
+#include "Offline/Mu2eBTrk/inc/ParticleInfo.hh"
+#include "Offline/Mu2eBTrk/inc/DetStrawType.hh"
 #include "BTrk/MatEnv/MatDBInfo.hh"
 #include <memory>
 

@@ -4,23 +4,23 @@
 // 
 // Original Author: Ralf Ehrlich
 
-#include "CRVResponse/inc/MakeCrvDigis.hh"
+#include "Offline/CRVResponse/inc/MakeCrvDigis.hh"
 
-#include "CosmicRayShieldGeom/inc/CosmicRayShield.hh"
-#include "DataProducts/inc/CRSScintillatorBarIndex.hh"
-#include "DataProducts/inc/EventWindowMarker.hh"
+#include "Offline/CosmicRayShieldGeom/inc/CosmicRayShield.hh"
+#include "Offline/DataProducts/inc/CRSScintillatorBarIndex.hh"
+#include "Offline/DataProducts/inc/EventWindowMarker.hh"
 
-#include "ConditionsService/inc/AcceleratorParams.hh"
-#include "ConditionsService/inc/CrvParams.hh"
-#include "ConditionsService/inc/ConditionsHandle.hh"
-#include "ProditionsService/inc/ProditionsHandle.hh"
-#include "DAQConditions/inc/EventTiming.hh"
-#include "GeometryService/inc/DetectorSystem.hh"
-#include "GeometryService/inc/GeomHandle.hh"
-#include "GeometryService/inc/GeometryService.hh"
-#include "MCDataProducts/inc/CrvDigiMC.hh"
-#include "MCDataProducts/inc/ProtonBunchTimeMC.hh"
-#include "RecoDataProducts/inc/CrvDigiCollection.hh"
+#include "Offline/ConditionsService/inc/AcceleratorParams.hh"
+#include "Offline/ConditionsService/inc/CrvParams.hh"
+#include "Offline/ConditionsService/inc/ConditionsHandle.hh"
+#include "Offline/ProditionsService/inc/ProditionsHandle.hh"
+#include "Offline/DAQConditions/inc/EventTiming.hh"
+#include "Offline/GeometryService/inc/DetectorSystem.hh"
+#include "Offline/GeometryService/inc/GeomHandle.hh"
+#include "Offline/GeometryService/inc/GeometryService.hh"
+#include "Offline/MCDataProducts/inc/CrvDigiMC.hh"
+#include "Offline/MCDataProducts/inc/ProtonBunchTimeMC.hh"
+#include "Offline/RecoDataProducts/inc/CrvDigiCollection.hh"
 
 #include "canvas/Persistency/Common/Ptr.h"
 #include "art/Framework/Core/EDProducer.h"

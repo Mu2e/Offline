@@ -14,9 +14,9 @@
 #include "mu2e-artdaq-core/Overlays/FragmentType.hh"
 #include "mu2e-artdaq-core/Overlays/TrackerFragment.hh"
 
-#include "DataProducts/inc/TrkTypes.hh"
-#include "RecoDataProducts/inc/StrawDigiCollection.hh"
-#include "RecoDataProducts/inc/ProtonBunchTime.hh"
+#include "Offline/DataProducts/inc/TrkTypes.hh"
+#include "Offline/RecoDataProducts/inc/StrawDigiCollection.hh"
+#include "Offline/RecoDataProducts/inc/ProtonBunchTime.hh"
 
 #include <artdaq-core/Data/Fragment.hh>
 

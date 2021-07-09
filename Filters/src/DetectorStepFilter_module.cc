@@ -16,14 +16,14 @@
 #include "art/Framework/Principal/Run.h"
 #include "art/Framework/Principal/Handle.h"
 #include "art/Framework/Core/ModuleMacros.h"
-#include "DataProducts/inc/PDGCode.hh"
+#include "Offline/DataProducts/inc/PDGCode.hh"
 #include "messagefacility/MessageLogger/MessageLogger.h"
-#include "MCDataProducts/inc/StepPointMC.hh"
-#include "MCDataProducts/inc/StrawGasStep.hh"
-#include "MCDataProducts/inc/CaloShowerStep.hh"
-#include "MCDataProducts/inc/CrvStep.hh"
-#include "MCDataProducts/inc/SimParticle.hh"
-#include "Mu2eUtilities/inc/SimParticleTimeOffset.hh"
+#include "Offline/MCDataProducts/inc/StepPointMC.hh"
+#include "Offline/MCDataProducts/inc/StrawGasStep.hh"
+#include "Offline/MCDataProducts/inc/CaloShowerStep.hh"
+#include "Offline/MCDataProducts/inc/CrvStep.hh"
+#include "Offline/MCDataProducts/inc/SimParticle.hh"
+#include "Offline/Mu2eUtilities/inc/SimParticleTimeOffset.hh"
 #include <map>
 namespace mu2e {
 

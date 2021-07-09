@@ -7,7 +7,7 @@
 
 #include <string>
 
-#include "GeomPrimitives/inc/Tube.hh"
+#include "Offline/GeomPrimitives/inc/Tube.hh"
 
 namespace mu2e {
 

@@ -6,8 +6,8 @@
 #ifndef BkgClusterer_HH
 #define BkgClusterer_HH
 
-#include "RecoDataProducts/inc/BkgCluster.hh"
-#include "RecoDataProducts/inc/ComboHit.hh"
+#include "Offline/RecoDataProducts/inc/BkgCluster.hh"
+#include "Offline/RecoDataProducts/inc/ComboHit.hh"
 
 namespace mu2e 
 {

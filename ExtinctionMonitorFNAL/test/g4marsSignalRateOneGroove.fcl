@@ -1,4 +1,4 @@
-#include "ExtinctionMonitorFNAL/test/extMonFNALDefsCommon.fcl"
+#include "Offline/ExtinctionMonitorFNAL/test/extMonFNALDefsCommon.fcl"
 
 process_name : g4marsSignalRateOneGroove
 
@@ -21,7 +21,7 @@ physics.filters.fvd35.acceptedVids: [35]
 physics.gm : [geoms2]
 physics.trigFilter : [ randomsaver, g4run, fvd35 ]
 
-services.GeometryService.inputFile : "ExtinctionMonitorFNAL/test/geom_marsOneGroove.txt"
+services.GeometryService.inputFile : "Offline/ExtinctionMonitorFNAL/test/geom_marsOneGroove.txt"
 services.TFileService.fileName : "hg4smarsOneGroove.root"
 outputs.outVDFiltered.fileName : "vdg4smarsOneGroove.root"
 

@@ -4,8 +4,8 @@
 //  Wrapper to Mu2e BField map for KinKal
 //
 // Mu2e includes 
-#include "BFieldGeom/inc/BFieldManager.hh"
-#include "GeometryService/inc/DetectorSystem.hh"
+#include "Offline/BFieldGeom/inc/BFieldManager.hh"
+#include "Offline/GeometryService/inc/DetectorSystem.hh"
 // KinKal includes
 #include "KinKal/General/BFieldMap.hh"
 

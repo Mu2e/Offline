@@ -5,6 +5,6 @@
 // Deprecated file, use StepPointMC instead.
 //
 
-#include "MCDataProducts/inc/StepPointMC.hh"
+#include "Offline/MCDataProducts/inc/StepPointMC.hh"
 
 #endif /* MCDataProducts_StepPointMCCollection_hh */

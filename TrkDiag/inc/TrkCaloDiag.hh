@@ -8,14 +8,14 @@
 #include "art/Framework/Principal/Event.h"
 #include "art/Framework/Principal/Handle.h"
 // mu2e tracking
-#include "RecoDataProducts/inc/TrkFitDirection.hh"
+#include "Offline/RecoDataProducts/inc/TrkFitDirection.hh"
 // Track Calo matching
-#include "RecoDataProducts/inc/TrackClusterMatch.hh"
-#include "TrkDiag/inc/TrkCaloInfo.hh"
+#include "Offline/RecoDataProducts/inc/TrackClusterMatch.hh"
+#include "Offline/TrkDiag/inc/TrkCaloInfo.hh"
 // particleId
-#include "ParticleID/inc/PIDLogLRatio.hh"
-#include "ParticleID/inc/PIDLogL1D.hh"
-#include "ParticleID/inc/PIDLogLEp.hh"
+#include "Offline/ParticleID/inc/PIDLogLRatio.hh"
+#include "Offline/ParticleID/inc/PIDLogL1D.hh"
+#include "Offline/ParticleID/inc/PIDLogLEp.hh"
 // ROOT incldues
 #include "TTree.h"
 #include "Rtypes.h"

@@ -19,7 +19,7 @@
 #include "CLHEP/Vector/ThreeVector.h"
 #include "CLHEP/Units/PhysicalConstants.h"
 
-#include "GeomPrimitives/inc/PolyhedraParams.hh"
+#include "Offline/GeomPrimitives/inc/PolyhedraParams.hh"
 
 namespace mu2e {
 

@@ -4,7 +4,7 @@
 //  Define the primary particle
 // Original author: David Brown (LBNL) Jan 2019
 //
-#include "MCDataProducts/inc/SimParticle.hh"
+#include "Offline/MCDataProducts/inc/SimParticle.hh"
 #include <vector>
 namespace mu2e {
   class PrimaryParticle {

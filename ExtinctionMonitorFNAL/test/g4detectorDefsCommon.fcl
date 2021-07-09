@@ -17,9 +17,9 @@ defaultGunPars : {
 }
 END_PROLOG
 
-#include "fcl/minimalMessageService.fcl"
-#include "fcl/standardProducers.fcl"
-#include "fcl/standardServices.fcl"
+#include "Offline/fcl/minimalMessageService.fcl"
+#include "Offline/fcl/standardProducers.fcl"
+#include "Offline/fcl/standardServices.fcl"
 
 
 
@@ -36,8 +36,8 @@ services : {
     RandomNumberGenerator: {defaultEngineKind: "MixMaxRng"}
 
    GeometryService: {@table::Services.Core.GeometryService}
-   ConditionsService: { conditionsfile : "ConditionsService/data/conditions_01.txt" }
-   GlobalConstantsService: { inputFile : "GlobalConstantsService/data/globalConstants_01.txt" }
+   ConditionsService: { conditionsfile : "Offline/ConditionsService/data/conditions_01.txt" }
+   GlobalConstantsService: { inputFile : "Offline/GlobalConstantsService/data/globalConstants_01.txt" }
    SeedService: @local::automaticSeeds
    Mu2eG4Helper: { }
 }

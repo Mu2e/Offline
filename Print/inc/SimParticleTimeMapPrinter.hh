@@ -7,8 +7,8 @@
 #include <cstring>
 #include <iostream>
 
-#include "Print/inc/ProductPrinter.hh"
-#include "MCDataProducts/inc/SimParticleTimeMap.hh"
+#include "Offline/Print/inc/ProductPrinter.hh"
+#include "Offline/MCDataProducts/inc/SimParticleTimeMap.hh"
 #include "art/Framework/Principal/Handle.h"
 #include "canvas/Persistency/Common/Ptr.h"
 

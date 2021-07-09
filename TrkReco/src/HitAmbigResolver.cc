@@ -3,8 +3,8 @@
 // fit as input
 //
 //
-#include "TrkReco/inc/HitAmbigResolver.hh"
-#include "BTrkData/inc/TrkStrawHit.hh"
+#include "Offline/TrkReco/inc/HitAmbigResolver.hh"
+#include "Offline/BTrkData/inc/TrkStrawHit.hh"
 #include "BTrk/KalmanTrack/KalRep.hh"
 #include "BTrk/KalmanTrack/KalSite.hh"
 #include "BTrk/KalmanTrack/KalHit.hh"

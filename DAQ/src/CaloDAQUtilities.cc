@@ -3,7 +3,7 @@
 #include "mu2e-artdaq-core/Overlays/FragmentType.hh"
 #include <artdaq-core/Data/Fragment.hh>
 
-#include "DAQ/inc/CaloDAQUtilities.hh"
+#include "Offline/DAQ/inc/CaloDAQUtilities.hh"
 #include <iostream>
 
 namespace mu2e {

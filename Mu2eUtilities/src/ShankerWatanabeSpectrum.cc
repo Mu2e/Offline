@@ -11,27 +11,27 @@
 #include <utility>
 #include <vector>
 
-#include "ConfigTools/inc/ConfigFileLookupPolicy.hh"
-#include "DataProducts/inc/PDGCode.hh"
-#include "GlobalConstantsService/inc/GlobalConstantsHandle.hh"
+#include "Offline/ConfigTools/inc/ConfigFileLookupPolicy.hh"
+#include "Offline/DataProducts/inc/PDGCode.hh"
+#include "Offline/GlobalConstantsService/inc/GlobalConstantsHandle.hh"
 // Mu2e includes
-#include "GlobalConstantsService/inc/ParticleDataTable.hh"
-#include "GlobalConstantsService/inc/PhysicsParams.hh"
+#include "Offline/GlobalConstantsService/inc/ParticleDataTable.hh"
+#include "Offline/GlobalConstantsService/inc/PhysicsParams.hh"
 #include "HepPDT/Measurement.hh"
 
 #include "HepPDT/ParticleData.hh"
 // Framework includes
 #include "cetlib/pow.h"
 
-#include "Mu2eUtilities/inc/ShankerWatanabeSpectrum.hh"
-#include "Mu2eUtilities/inc/Table.hh"
+#include "Offline/Mu2eUtilities/inc/ShankerWatanabeSpectrum.hh"
+#include "Offline/Mu2eUtilities/inc/Table.hh"
 
 using namespace std;
 
 namespace mu2e {
 
   ShankerWatanabeSpectrum::ShankerWatanabeSpectrum() :
-    _table ( loadTable<2,false>( ConfigFileLookupPolicy()("ConditionsService/data/watanabe.tbl" ) ) )
+    _table ( loadTable<2,false>( ConfigFileLookupPolicy()("Offline/ConditionsService/data/watanabe.tbl" ) ) )
   {
     _wanaEndPoint    = _table(0,0);
     _wanaEndPointVal = _table(0,1);

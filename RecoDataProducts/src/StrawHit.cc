@@ -12,7 +12,7 @@
 #include "cetlib_except/exception.h"
 
 // Mu2e includes
-#include "RecoDataProducts/inc/StrawHit.hh"
+#include "Offline/RecoDataProducts/inc/StrawHit.hh"
 
 using namespace std;
 

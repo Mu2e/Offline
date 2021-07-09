@@ -1,5 +1,5 @@
-#include "CaloConditions/inc/CaloDAQMapMaker.hh"
-#include "DataProducts/inc/CaloId.hh"
+#include "Offline/CaloConditions/inc/CaloDAQMapMaker.hh"
+#include "Offline/DataProducts/inc/CaloId.hh"
 #include <vector>
 
 

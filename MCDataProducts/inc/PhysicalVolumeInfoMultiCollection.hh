@@ -16,7 +16,7 @@
 
 #include "cetlib/map_vector.h"
 
-#include "MCDataProducts/inc/PhysicalVolumeInfo.hh"
+#include "Offline/MCDataProducts/inc/PhysicalVolumeInfo.hh"
 
 namespace mu2e {
   typedef cet::map_vector<PhysicalVolumeInfo> PhysicalVolumeInfoSingleStage;

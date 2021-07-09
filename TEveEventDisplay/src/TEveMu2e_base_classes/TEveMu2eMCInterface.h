@@ -11,17 +11,17 @@
 #include <TEveStraightLineSet.h>
 #include <TEveText.h>
 //Mu2e General:
-#include "GeometryService/inc/GeomHandle.hh"
-#include "GeometryService/inc/DetectorSystem.hh"
-#include "MCDataProducts/inc/MCTrajectoryPoint.hh"
+#include "Offline/GeometryService/inc/GeomHandle.hh"
+#include "Offline/GeometryService/inc/DetectorSystem.hh"
+#include "Offline/MCDataProducts/inc/MCTrajectoryPoint.hh"
 //TEveMu2e
-#include "TEveEventDisplay/src/dict_classes/Collection_Filler.h"
-#include "TEveEventDisplay/src/TEveMu2e_base_classes/TEveMu2e2DProjection.h"
-#include "TEveEventDisplay/src/shape_classes/TEveMu2eCalorimeter.h"
-#include "TEveEventDisplay/src/shape_classes/TEveMu2eTracker.h"
-#include "TEveEventDisplay/src/TEveMu2e_base_classes/TEveMu2eMCTraj.h"
-#include "TEveEventDisplay/src/TEveMu2e_base_classes/TEveMu2eCustomHelix.h"
-#include "TEveEventDisplay/src/dict_classes/GeomUtils.h"
+#include "Offline/TEveEventDisplay/src/dict_classes/Collection_Filler.h"
+#include "Offline/TEveEventDisplay/src/TEveMu2e_base_classes/TEveMu2e2DProjection.h"
+#include "Offline/TEveEventDisplay/src/shape_classes/TEveMu2eCalorimeter.h"
+#include "Offline/TEveEventDisplay/src/shape_classes/TEveMu2eTracker.h"
+#include "Offline/TEveEventDisplay/src/TEveMu2e_base_classes/TEveMu2eMCTraj.h"
+#include "Offline/TEveEventDisplay/src/TEveMu2e_base_classes/TEveMu2eCustomHelix.h"
+#include "Offline/TEveEventDisplay/src/dict_classes/GeomUtils.h"
 namespace mu2e{
     class TEveMu2eMCInterface {
     

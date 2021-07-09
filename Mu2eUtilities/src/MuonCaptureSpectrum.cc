@@ -15,17 +15,17 @@
 
 #include "CLHEP/Vector/ThreeVector.h"
 
-#include "DataProducts/inc/PDGCode.hh"
-#include "GlobalConstantsService/inc/GlobalConstantsHandle.hh"
-#include "GlobalConstantsService/inc/ParticleDataTable.hh"
-#include "GlobalConstantsService/inc/PhysicsParams.hh"
+#include "Offline/DataProducts/inc/PDGCode.hh"
+#include "Offline/GlobalConstantsService/inc/GlobalConstantsHandle.hh"
+#include "Offline/GlobalConstantsService/inc/ParticleDataTable.hh"
+#include "Offline/GlobalConstantsService/inc/PhysicsParams.hh"
 #include "HepPDT/Measurement.hh"
 
 #include "HepPDT/ParticleData.hh"
 #include "cetlib/pow.h"
 
-#include "Mu2eUtilities/inc/MuonCaptureSpectrum.hh"
-#include "Mu2eUtilities/inc/RandomUnitSphere.hh"
+#include "Offline/Mu2eUtilities/inc/MuonCaptureSpectrum.hh"
+#include "Offline/Mu2eUtilities/inc/RandomUnitSphere.hh"
 
 using namespace std;
 

@@ -8,8 +8,8 @@
 
 
 
-#include "Mu2eUtilities/inc/RandomUnitSphere.hh"
-#include "Mu2eUtilities/inc/ThreeVectorUtil.hh"
+#include "Offline/Mu2eUtilities/inc/RandomUnitSphere.hh"
+#include "Offline/Mu2eUtilities/inc/ThreeVectorUtil.hh"
 
 namespace CLHEP { class HepRandomEngine; }
 

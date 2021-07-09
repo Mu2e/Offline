@@ -1,5 +1,5 @@
 
-#include "Print/inc/GenParticlePrinter.hh"
+#include "Offline/Print/inc/GenParticlePrinter.hh"
 #include "art/Framework/Principal/Provenance.h"
 #include <string>
 #include <iomanip>

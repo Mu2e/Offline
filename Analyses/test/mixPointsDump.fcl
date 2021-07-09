@@ -1,5 +1,5 @@
-#include "fcl/minimalMessageService.fcl"
-#include "fcl/standardServices.fcl"
+#include "Offline/fcl/minimalMessageService.fcl"
+#include "Offline/fcl/standardServices.fcl"
 
 process_name : stepPointsDump
 
@@ -11,8 +11,8 @@ services: {
     TFileService: { fileName: "stepPoints.root" }
     message: @local::default_message
     RandomNumberGenerator: {defaultEngineKind: "MixMaxRng" }
-    ConditionsService      : { conditionsfile : "ConditionsService/data/conditions_01.txt"      }
-    GlobalConstantsService: { inputFile : "GlobalConstantsService/data/globalConstants_01.txt" }
+    ConditionsService      : { conditionsfile : "Offline/ConditionsService/data/conditions_01.txt"      }
+    GlobalConstantsService: { inputFile : "Offline/GlobalConstantsService/data/globalConstants_01.txt" }
     SeedService: @local::automaticSeeds
 }
 

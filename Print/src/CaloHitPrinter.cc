@@ -1,5 +1,5 @@
 
-#include "Print/inc/CaloHitPrinter.hh"
+#include "Offline/Print/inc/CaloHitPrinter.hh"
 #include "art/Framework/Principal/Provenance.h"
 #include <string>
 #include <iomanip>

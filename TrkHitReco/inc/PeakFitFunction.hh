@@ -3,8 +3,8 @@
 
 // Class holding functions which describe the ideal waveforms.  These are used to construct fits.
 
-#include "TrkHitReco/inc/PeakFitParams.hh"
-#include "TrackerConditions/inc/StrawResponse.hh"
+#include "Offline/TrkHitReco/inc/PeakFitParams.hh"
+#include "Offline/TrackerConditions/inc/StrawResponse.hh"
 #include <functional>
 #include "Rtypes.h"
 #include "Math/ParamFunctor.h"

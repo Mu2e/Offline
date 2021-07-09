@@ -11,8 +11,8 @@
 //    all methods callbacks that are called be G4.
 
 // Mu2e includes
-#include "Mu2eG4/inc/Mu2eG4StepLimiterPhysicsConstructor.hh"
-#include "Mu2eG4/inc/addStepLimiter.hh"
+#include "Offline/Mu2eG4/inc/Mu2eG4StepLimiterPhysicsConstructor.hh"
+#include "Offline/Mu2eG4/inc/addStepLimiter.hh"
 
 using namespace std;
 

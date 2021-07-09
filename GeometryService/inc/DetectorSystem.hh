@@ -9,7 +9,7 @@
 //
 
 // Mu2e includes.
-#include "Mu2eInterfaces/inc/Detector.hh"
+#include "Offline/Mu2eInterfaces/inc/Detector.hh"
 
 // CLHEP includes
 #include "CLHEP/Vector/ThreeVector.h"

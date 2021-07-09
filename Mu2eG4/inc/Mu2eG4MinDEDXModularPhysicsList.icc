@@ -37,7 +37,7 @@
 
 //#include "Geant4/G4DataQuestionaire.hh"
 
-#include "Mu2eG4/inc/Mu2eG4MinDEDXPhysicsConstructor.hh"
+#include "Offline/Mu2eG4/inc/Mu2eG4MinDEDXPhysicsConstructor.hh"
 
 template<class T> TMu2eG4MinDEDXModularPhysicsList<T>::TMu2eG4MinDEDXModularPhysicsList(G4int ver):  T()
 {

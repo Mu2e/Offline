@@ -6,10 +6,10 @@
 #include "TString.h"
 #include "TFile.h"
 #include "TObjArray.h"
-#include "Validation/inc/TValPar.hh"
-#include "Validation/inc/TValHistH.hh"
-#include "Validation/inc/TValHistP.hh"
-#include "Validation/inc/TValHistE.hh"
+#include "Offline/Validation/inc/TValPar.hh"
+#include "Offline/Validation/inc/TValHistH.hh"
+#include "Offline/Validation/inc/TValHistP.hh"
+#include "Offline/Validation/inc/TValHistE.hh"
 
 
 class TValCompare: public TObject {

@@ -22,26 +22,26 @@
 #include "BTrk/TrkBase/TrkPoca.hh"
 #include "BTrk/TrkBase/HelixParams.hh"
 
-#include "GeometryService/inc/GeometryService.hh"
-#include "GeometryService/inc/GeomHandle.hh"
-#include "GeometryService/inc/DetectorSystem.hh"
+#include "Offline/GeometryService/inc/GeometryService.hh"
+#include "Offline/GeometryService/inc/GeomHandle.hh"
+#include "Offline/GeometryService/inc/DetectorSystem.hh"
 
-#include "CalorimeterGeom/inc/Calorimeter.hh"
+#include "Offline/CalorimeterGeom/inc/Calorimeter.hh"
 
 #include "TVector2.h"
 
-#include "RecoDataProducts/inc/HelixSeed.hh"
-#include "RecoDataProducts/inc/HelixHit.hh"
+#include "Offline/RecoDataProducts/inc/HelixSeed.hh"
+#include "Offline/RecoDataProducts/inc/HelixHit.hh"
 
-#include "ConfigTools/inc/ConfigFileLookupPolicy.hh"
+#include "Offline/ConfigTools/inc/ConfigFileLookupPolicy.hh"
 
-#include "BTrkData/inc/Doublet.hh"
-#include "TrkReco/inc/DoubletAmbigResolver.hh"
+#include "Offline/BTrkData/inc/Doublet.hh"
+#include "Offline/TrkReco/inc/DoubletAmbigResolver.hh"
 
-#include "Mu2eUtilities/inc/LsqSums4.hh"
-#include "CalPatRec/inc/ObjectDumpUtils.hh"
+#include "Offline/Mu2eUtilities/inc/LsqSums4.hh"
+#include "Offline/CalPatRec/inc/ObjectDumpUtils.hh"
 
-#include "RecoDataProducts/inc/AlgorithmIDCollection.hh"
+#include "Offline/RecoDataProducts/inc/AlgorithmIDCollection.hh"
 
 //CLHEP
 #include "CLHEP/Units/PhysicalConstants.h"

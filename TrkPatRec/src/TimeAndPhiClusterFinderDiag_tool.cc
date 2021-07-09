@@ -5,12 +5,12 @@
 #include "art/Utilities/make_tool.h"
 #include "fhiclcpp/ParameterSet.h"
 
-#include "MCDataProducts/inc/StrawDigiMC.hh"
-#include "MCDataProducts/inc/MCRelationship.hh"
-#include "MCDataProducts/inc/SimParticle.hh"
-#include "Mu2eUtilities/inc/ModuleHistToolBase.hh"
-#include "TrkPatRec/inc/TimeAndPhiClusterFinder_types.hh"
-#include "RecoDataProducts/inc/ComboHit.hh"
+#include "Offline/MCDataProducts/inc/StrawDigiMC.hh"
+#include "Offline/MCDataProducts/inc/MCRelationship.hh"
+#include "Offline/MCDataProducts/inc/SimParticle.hh"
+#include "Offline/Mu2eUtilities/inc/ModuleHistToolBase.hh"
+#include "Offline/TrkPatRec/inc/TimeAndPhiClusterFinder_types.hh"
+#include "Offline/RecoDataProducts/inc/ComboHit.hh"
 
 #include "TTree.h"
 
@@ -18,9 +18,9 @@
 #include "art/Framework/Principal/Event.h"
 #include "fhiclcpp/ParameterSet.h"
 #include "art/Framework/Principal/Handle.h"
-#include "GeometryService/inc/GeomHandle.hh"
+#include "Offline/GeometryService/inc/GeomHandle.hh"
 #include "art/Framework/Core/EDAnalyzer.h"
-#include "GeometryService/inc/DetectorSystem.hh"
+#include "Offline/GeometryService/inc/DetectorSystem.hh"
 #include "art/Framework/Core/ModuleMacros.h"
 
 

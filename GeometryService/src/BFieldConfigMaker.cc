@@ -1,4 +1,4 @@
-#include "GeometryService/inc/BFieldConfigMaker.hh"
+#include "Offline/GeometryService/inc/BFieldConfigMaker.hh"
 
 #include <iostream>
 #include <set>
@@ -6,11 +6,11 @@
 
 #include "cetlib_except/exception.h"
 
-#include "ConfigTools/inc/SimpleConfig.hh"
+#include "Offline/ConfigTools/inc/SimpleConfig.hh"
 
-#include "BFieldGeom/inc/BFieldConfig.hh"
-#include "BeamlineGeom/inc/Beamline.hh"
-#include "ConfigTools/inc/ConfigFileLookupPolicy.hh"
+#include "Offline/BFieldGeom/inc/BFieldConfig.hh"
+#include "Offline/BeamlineGeom/inc/Beamline.hh"
+#include "Offline/ConfigTools/inc/ConfigFileLookupPolicy.hh"
 
 // CLHEP includes
 #include "CLHEP/Units/SystemOfUnits.h"

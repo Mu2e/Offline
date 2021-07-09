@@ -1,3 +1,3 @@
 //
 // obsolete FIXME!
-#include "RecoDataProducts/inc/CrvCoincidenceCluster.hh"
+#include "Offline/RecoDataProducts/inc/CrvCoincidenceCluster.hh"

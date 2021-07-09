@@ -8,9 +8,9 @@
 #include <string>
 
 // Mu2e includes
-#include "GeomPrimitives/inc/Box.hh"
-#include "Mu2eG4/inc/nestBox.hh"
-#include "Mu2eG4/inc/finishNesting.hh"
+#include "Offline/GeomPrimitives/inc/Box.hh"
+#include "Offline/Mu2eG4/inc/nestBox.hh"
+#include "Offline/Mu2eG4/inc/finishNesting.hh"
 
 // G4 includes
 #include "Geant4/G4Box.hh"

@@ -9,7 +9,7 @@
 // Original author Rob Kutschke
 //
 
-#include "GeometryService/inc/GeometryService.hh"
+#include "Offline/GeometryService/inc/GeometryService.hh"
 
 namespace mu2e {
   template <typename DET>

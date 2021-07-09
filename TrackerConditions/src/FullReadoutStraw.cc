@@ -4,8 +4,8 @@
 
 
 #include <iostream>
-#include "TrackerConditions/inc/FullReadoutStraw.hh"
-#include "DataProducts/inc/StrawId.hh"
+#include "Offline/TrackerConditions/inc/FullReadoutStraw.hh"
+#include "Offline/DataProducts/inc/StrawId.hh"
 #include <iostream>
 
 using namespace std;

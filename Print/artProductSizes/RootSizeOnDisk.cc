@@ -10,8 +10,8 @@
 #include <algorithm>
 #include <set>
 
-#include "Print/artProductSizes/RootSizeOnDisk.hh"
-#include "Print/artProductSizes/rootFileSizeTools.hh"
+#include "Offline/Print/artProductSizes/RootSizeOnDisk.hh"
+#include "Offline/Print/artProductSizes/rootFileSizeTools.hh"
 
 #include "TFile.h"
 #include "TList.h"

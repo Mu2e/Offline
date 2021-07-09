@@ -9,9 +9,9 @@
 // Initialized with Mu2eDetectorMaker
 //
 
-#include "Mu2eInterfaces/inc/ProditionsEntity.hh"
-#include "TrackerGeom/inc/Straw.hh"
-#include "Mu2eBTrk/inc/DetStrawElem.hh"
+#include "Offline/Mu2eInterfaces/inc/ProditionsEntity.hh"
+#include "Offline/TrackerGeom/inc/Straw.hh"
+#include "Offline/Mu2eBTrk/inc/DetStrawElem.hh"
 #include <memory>
 #include <map>
 

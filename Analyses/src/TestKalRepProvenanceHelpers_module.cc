@@ -6,14 +6,14 @@
 // Original author Rob Kutschke
 //
 
-#include "Mu2eUtilities/inc/decodeTrackPatRecType.hh"
-#include "Mu2eUtilities/inc/KalRepCollectionInfo.hh"
-#include "Mu2eUtilities/inc/TrackPatRecType.hh"
-#include "Mu2eUtilities/inc/TrkSpecies.hh"
+#include "Offline/Mu2eUtilities/inc/decodeTrackPatRecType.hh"
+#include "Offline/Mu2eUtilities/inc/KalRepCollectionInfo.hh"
+#include "Offline/Mu2eUtilities/inc/TrackPatRecType.hh"
+#include "Offline/Mu2eUtilities/inc/TrkSpecies.hh"
 
-#include "RecoDataProducts/inc/KalRepPtrCollection.hh"
-#include "RecoDataProducts/inc/KalRepCollection.hh"
-#include "RecoDataProducts/inc/TrkFitDirection.hh"
+#include "Offline/RecoDataProducts/inc/KalRepPtrCollection.hh"
+#include "Offline/RecoDataProducts/inc/KalRepCollection.hh"
+#include "Offline/RecoDataProducts/inc/TrkFitDirection.hh"
 
 #include "art/Framework/Core/EDAnalyzer.h"
 #include "art/Framework/Principal/Event.h"

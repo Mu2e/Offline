@@ -1,5 +1,5 @@
-#include "Mu2eBTrk/inc/ParticleInfo.hh"
-#include "DataProducts/inc/PDGCode.hh"
+#include "Offline/Mu2eBTrk/inc/ParticleInfo.hh"
+#include "Offline/DataProducts/inc/PDGCode.hh"
 
 mu2e::ParticleInfo::ParticleInfo():pdt_(){
 }
