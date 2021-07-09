@@ -1,7 +1,7 @@
 // (Muon) Stoping Target Monitor (STM)
 // v05 Updates: increase shielding outer radius
 
-#include "Mu2eG4/geom/STM_v04.txt"
+#include "Offline/Mu2eG4/geom/STM_v04.txt"
 
 string stm.magnet.material             = "StainlessSteel"; //FIXME: Should be just steel, need new material
 double stm.magnet.halfLength           =  584.2;
