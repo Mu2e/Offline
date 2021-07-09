@@ -1,5 +1,5 @@
-#include "Mu2eKinKal/inc/KKFitSettings.hh"
-#include "Mu2eKinKal/inc/KKStrawHitUpdater.hh"
+#include "Offline/Mu2eKinKal/inc/KKFitSettings.hh"
+#include "Offline/Mu2eKinKal/inc/KKStrawHitUpdater.hh"
 #include "KinKal/Detector/WireHitStructs.hh"
 #include <iostream>
 

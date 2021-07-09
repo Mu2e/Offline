@@ -6,8 +6,8 @@
 // from fcl or database
 //
 
-#include "TrackerConditions/inc/StrawResponse.hh"
-#include "TrackerConfig/inc/StrawResponseConfig.hh"
+#include "Offline/TrackerConditions/inc/StrawResponse.hh"
+#include "Offline/TrackerConfig/inc/StrawResponseConfig.hh"
 
 
 namespace mu2e {

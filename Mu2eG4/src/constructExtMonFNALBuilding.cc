@@ -1,6 +1,6 @@
 // Andrei Gaponenko, 2012
 
-#include "Mu2eG4/inc/constructExtMonFNAL.hh"
+#include "Offline/Mu2eG4/inc/constructExtMonFNAL.hh"
 
 #include <iostream>
 #include <iterator>
@@ -34,26 +34,26 @@
 
 #include "art/Framework/Services/Registry/ServiceDefinitionMacros.h"
 
-#include "GeometryService/inc/GeomHandle.hh"
-#include "ProtonBeamDumpGeom/inc/ProtonBeamDump.hh"
-#include "ExtinctionMonitorFNAL/Geometry/inc/ExtMonFNALBuilding.hh"
+#include "Offline/GeometryService/inc/GeomHandle.hh"
+#include "Offline/ProtonBeamDumpGeom/inc/ProtonBeamDump.hh"
+#include "Offline/ExtinctionMonitorFNAL/Geometry/inc/ExtMonFNALBuilding.hh"
 
-#include "Mu2eG4Helper/inc/VolumeInfo.hh"
-#include "Mu2eG4Helper/inc/Mu2eG4Helper.hh"
-#include "Mu2eG4Helper/inc/AntiLeakRegistry.hh"
-#include "ConfigTools/inc/SimpleConfig.hh"
-#include "Mu2eG4/inc/nestBox.hh"
-#include "Mu2eG4/inc/finishNesting.hh"
-#include "Mu2eG4/inc/MaterialFinder.hh"
-#include "Mu2eG4/inc/findMaterialOrThrow.hh"
-#include "Mu2eG4/inc/nestBox.hh"
-#include "Mu2eG4/inc/MaterialFinder.hh"
-#include "Mu2eG4/inc/findMaterialOrThrow.hh"
-#include "Mu2eG4/inc/SensitiveDetectorName.hh"
-#include "Mu2eG4/inc/FieldMgr.hh"
+#include "Offline/Mu2eG4Helper/inc/VolumeInfo.hh"
+#include "Offline/Mu2eG4Helper/inc/Mu2eG4Helper.hh"
+#include "Offline/Mu2eG4Helper/inc/AntiLeakRegistry.hh"
+#include "Offline/ConfigTools/inc/SimpleConfig.hh"
+#include "Offline/Mu2eG4/inc/nestBox.hh"
+#include "Offline/Mu2eG4/inc/finishNesting.hh"
+#include "Offline/Mu2eG4/inc/MaterialFinder.hh"
+#include "Offline/Mu2eG4/inc/findMaterialOrThrow.hh"
+#include "Offline/Mu2eG4/inc/nestBox.hh"
+#include "Offline/Mu2eG4/inc/MaterialFinder.hh"
+#include "Offline/Mu2eG4/inc/findMaterialOrThrow.hh"
+#include "Offline/Mu2eG4/inc/SensitiveDetectorName.hh"
+#include "Offline/Mu2eG4/inc/FieldMgr.hh"
 
 // FIXME: should not need that
-#include "GeometryService/inc/WorldG4.hh"
+#include "Offline/GeometryService/inc/WorldG4.hh"
 
 //#define AGDEBUG(stuff) std::cerr<<"AG: "<<__FILE__<<", line "<<__LINE__<<": "<<stuff<<std::endl;
 #define AGDEBUG(stuff)

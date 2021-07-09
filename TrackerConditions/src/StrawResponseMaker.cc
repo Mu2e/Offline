@@ -1,17 +1,17 @@
 
-#include "TrackerConditions/inc/StrawResponseMaker.hh"
+#include "Offline/TrackerConditions/inc/StrawResponseMaker.hh"
 // data products
 #include <cmath>
 #include <algorithm>
 #include <TMath.h>
 #include "cetlib_except/exception.h"
-#include "DataProducts/inc/StrawId.hh"
-#include "TrackerConditions/inc/StrawDrift.hh"
+#include "Offline/DataProducts/inc/StrawId.hh"
+#include "Offline/TrackerConditions/inc/StrawDrift.hh"
 
-#include "BFieldGeom/inc/BFieldManager.hh"
+#include "Offline/BFieldGeom/inc/BFieldManager.hh"
 #include "BTrk/BField/BField.hh"
-#include "GeometryService/inc/DetectorSystem.hh"
-#include "GeometryService/inc/GeomHandle.hh"
+#include "Offline/GeometryService/inc/DetectorSystem.hh"
+#include "Offline/GeometryService/inc/GeomHandle.hh"
 #include "CLHEP/Matrix/Vector.h"
 
 

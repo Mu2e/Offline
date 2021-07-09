@@ -7,11 +7,11 @@
 //
 
 #include "Geant4/G4VSensitiveDetector.hh"
-#include "ExtinctionMonitorFNAL/Geometry/inc/ExtMonFNAL.hh"
+#include "Offline/ExtinctionMonitorFNAL/Geometry/inc/ExtMonFNAL.hh"
 #include "canvas/Persistency/Provenance/ProductID.h"
 #include "art/Framework/Principal/Event.h"
 
-#include "MCDataProducts/inc/ExtMonFNALSimHitCollection.hh"
+#include "Offline/MCDataProducts/inc/ExtMonFNALSimHitCollection.hh"
 
 namespace mu2e {
 

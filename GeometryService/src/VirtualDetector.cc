@@ -1,8 +1,8 @@
 //
 //
 
-#include "GeometryService/inc/VirtualDetector.hh"
-#include "DataProducts/inc/VirtualDetectorId.hh"
+#include "Offline/GeometryService/inc/VirtualDetector.hh"
+#include "Offline/DataProducts/inc/VirtualDetectorId.hh"
 
 namespace mu2e {
 

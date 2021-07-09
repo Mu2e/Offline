@@ -5,12 +5,12 @@
 // Original author Ivan Logashenko
 //
 
-#include "GeometryService/inc/GeomHandle.hh"
-#include "GlobalConstantsService/inc/GlobalConstantsHandle.hh"
-#include "GlobalConstantsService/inc/ParticleDataTable.hh"
-#include "MCDataProducts/inc/StepPointMCCollection.hh"
-#include "MCDataProducts/inc/StepInstanceName.hh"
-#include "GeometryService/inc/VirtualDetector.hh"
+#include "Offline/GeometryService/inc/GeomHandle.hh"
+#include "Offline/GlobalConstantsService/inc/GlobalConstantsHandle.hh"
+#include "Offline/GlobalConstantsService/inc/ParticleDataTable.hh"
+#include "Offline/MCDataProducts/inc/StepPointMCCollection.hh"
+#include "Offline/MCDataProducts/inc/StepInstanceName.hh"
+#include "Offline/GeometryService/inc/VirtualDetector.hh"
 #include "art/Framework/Core/EDAnalyzer.h"
 #include "art/Framework/Principal/Event.h"
 #include "art/Framework/Principal/Run.h"

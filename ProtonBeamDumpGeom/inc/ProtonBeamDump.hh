@@ -12,8 +12,8 @@
 
 #include "canvas/Persistency/Common/Wrapper.h"
 
-#include "Mu2eInterfaces/inc/Detector.hh"
-#include "Mu2eHallGeom/inc/Mu2eHall.hh"
+#include "Offline/Mu2eInterfaces/inc/Detector.hh"
+#include "Offline/Mu2eHallGeom/inc/Mu2eHall.hh"
 
 namespace mu2e {
 

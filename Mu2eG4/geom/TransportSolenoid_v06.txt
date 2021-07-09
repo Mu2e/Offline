@@ -1,5 +1,5 @@
 // Correct the pbar window used in TS_v05 and improve TS modeling, including initial thermal shielding implementation
-#include "Mu2eG4/geom/TransportSolenoid_v05.txt"
+#include "Offline/Mu2eG4/geom/TransportSolenoid_v05.txt"
 
 //TS3 Pbar Absorber
 //Window

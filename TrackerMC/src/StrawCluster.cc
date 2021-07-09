@@ -4,7 +4,7 @@
 // Original author David Brown, LBNL
 //
 // mu2e includes
-#include "TrackerMC/inc/StrawCluster.hh"
+#include "Offline/TrackerMC/inc/StrawCluster.hh"
 // general includes
 
 using namespace std;

@@ -8,8 +8,8 @@
 #ifndef EventDisplay_src_TrackColorSelector_h
 #define EventDisplay_src_TrackColorSelector_h
 
-#include "EventDisplay/src/ContentSelector.h"
-#include "EventDisplay/src/Track.h"
+#include "Offline/EventDisplay/src/ContentSelector.h"
+#include "Offline/EventDisplay/src/Track.h"
 #include <TText.h>
 #include <TPolyLine.h>
 

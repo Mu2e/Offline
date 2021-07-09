@@ -1,6 +1,6 @@
 #include <iostream>
-#include "DbTables/inc/DbTable.hh"
-#include "DbTables/inc/DbUtil.hh"
+#include "Offline/DbTables/inc/DbTable.hh"
+#include "Offline/DbTables/inc/DbUtil.hh"
 #include "cetlib_except/exception.h"
 #include <boost/algorithm/string/split.hpp>
 

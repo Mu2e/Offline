@@ -5,11 +5,11 @@
 #include <algorithm>
 
 // Mu2e includes.
-#include "MCDataProducts/inc/StatusG4.hh"
-#include "MCDataProducts/inc/StepPointMC.hh"
-#include "MCDataProducts/inc/StepPointMCCollection.hh"
+#include "Offline/MCDataProducts/inc/StatusG4.hh"
+#include "Offline/MCDataProducts/inc/StepPointMC.hh"
+#include "Offline/MCDataProducts/inc/StepPointMCCollection.hh"
 
-#include "Mu2eUtilities/inc/compressSimParticleCollection.hh"
+#include "Offline/Mu2eUtilities/inc/compressSimParticleCollection.hh"
 
 // art includes.
 #include "fhiclcpp/ParameterSet.h"

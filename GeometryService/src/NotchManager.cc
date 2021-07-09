@@ -3,8 +3,8 @@
 // unobtrusive way to add notches/holes to Mu2e building geometry objects.
 // David Norvil Brown, U. Louisville, December 2017
 
-#include "GeometryService/inc/NotchManager.hh"
-#include "GeomPrimitives/inc/Notch.hh"
+#include "Offline/GeometryService/inc/NotchManager.hh"
+#include "Offline/GeomPrimitives/inc/Notch.hh"
 #include <sstream>
 
 void mu2e::NotchManager::loadNotches( const SimpleConfig& config ) {

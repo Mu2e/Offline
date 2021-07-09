@@ -1,7 +1,7 @@
 // fit waveform using root TF1
 //
 // The member variables of PeakFitRoot need to be protected not private
-#include "TrkHitReco/inc/ComboPeakFitRoot.hh"
+#include "Offline/TrkHitReco/inc/ComboPeakFitRoot.hh"
 #include "TMath.h"
 #include "TGraphErrors.h"
 #include "TF1.h"

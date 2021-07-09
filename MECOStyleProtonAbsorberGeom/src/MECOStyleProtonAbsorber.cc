@@ -6,7 +6,7 @@
 
 #include <iostream>
 
-#include "MECOStyleProtonAbsorberGeom/inc/MECOStyleProtonAbsorber.hh"
+#include "Offline/MECOStyleProtonAbsorberGeom/inc/MECOStyleProtonAbsorber.hh"
 
 namespace mu2e {
 

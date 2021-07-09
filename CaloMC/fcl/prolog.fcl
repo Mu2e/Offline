@@ -2,8 +2,8 @@
 #------------------------------------------------------------------------------
 # this file is included by fcl/standardProducers.fcl inside the PROLOG section
 #------------------------------------------------------------------------------
-#include "CaloMC/fcl/common.fcl"
-#include "CommonMC/fcl/prolog.fcl"
+#include "Offline/CaloMC/fcl/common.fcl"
+#include "Offline/CommonMC/fcl/prolog.fcl"
 
 
 

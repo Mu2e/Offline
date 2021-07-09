@@ -6,10 +6,10 @@
 // and update them when needed
 //
 
-#include "Mu2eInterfaces/inc/ProditionsCache.hh"
-#include "TrackerGeom/inc/Tracker.hh"
-#include "TrackerConditions/inc/Mu2eDetectorMaker.hh"
-#include "ProditionsService/inc/ProditionsHandle.hh"
+#include "Offline/Mu2eInterfaces/inc/ProditionsCache.hh"
+#include "Offline/TrackerGeom/inc/Tracker.hh"
+#include "Offline/TrackerConditions/inc/Mu2eDetectorMaker.hh"
+#include "Offline/ProditionsService/inc/ProditionsHandle.hh"
 
 namespace mu2e {
   class Mu2eDetectorCache : public ProditionsCache {

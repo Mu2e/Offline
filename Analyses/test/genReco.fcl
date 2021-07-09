@@ -11,12 +11,12 @@
 #  mu2e -c Analyses/test/genReco.fcl -n 1000 >| results/2014-12-19-Analyses_test_genReco.log 2>&1 &
 #------------------------------------------------------------------------------
 
-#include "fcl/minimalMessageService.fcl"
-#include "fcl/standardProducers.fcl"
-#include "fcl/standardServices.fcl"
-#include "TrkDiag/fcl/prolog.fcl"
-#include "CaloCluster/fcl/prolog.fcl"
-#include "Analyses/fcl/prolog.fcl"
+#include "Offline/fcl/minimalMessageService.fcl"
+#include "Offline/fcl/standardProducers.fcl"
+#include "Offline/fcl/standardServices.fcl"
+#include "Offline/TrkDiag/fcl/prolog.fcl"
+#include "Offline/CaloCluster/fcl/prolog.fcl"
+#include "Offline/Analyses/fcl/prolog.fcl"
 
 #------------------------------------------------------------------------------
 # define module sequences 

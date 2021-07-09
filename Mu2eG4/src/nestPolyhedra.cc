@@ -10,10 +10,10 @@
 #include <string>
 
 // Mu2e includes
-#include "GeomPrimitives/inc/PolyhedraParams.hh"
-#include "Mu2eG4/inc/findMaterialOrThrow.hh"
-#include "Mu2eG4/inc/nestPolyhedra.hh"
-#include "Mu2eG4/inc/finishNesting.hh"
+#include "Offline/GeomPrimitives/inc/PolyhedraParams.hh"
+#include "Offline/Mu2eG4/inc/findMaterialOrThrow.hh"
+#include "Offline/Mu2eG4/inc/nestPolyhedra.hh"
+#include "Offline/Mu2eG4/inc/finishNesting.hh"
 
 // G4 includes
 #include "Geant4/G4Polyhedra.hh"

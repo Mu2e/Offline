@@ -7,21 +7,21 @@
 #include "art/Framework/Core/ModuleMacros.h"
 #include "art/Framework/Principal/Event.h"
 #include "art/Framework/Principal/Handle.h"
-#include "RecoDataProducts/inc/TrkFitFlag.hh"
-#include "RecoDataProducts/inc/TriggerInfo.hh"
+#include "Offline/RecoDataProducts/inc/TrkFitFlag.hh"
+#include "Offline/RecoDataProducts/inc/TriggerInfo.hh"
 #include "fhiclcpp/ParameterSet.h"
-#include "BFieldGeom/inc/BFieldManager.hh"
-#include "GeometryService/inc/GeomHandle.hh"
-#include "GeometryService/inc/DetectorSystem.hh"
-#include "TrackerGeom/inc/Tracker.hh"
+#include "Offline/BFieldGeom/inc/BFieldManager.hh"
+#include "Offline/GeometryService/inc/GeomHandle.hh"
+#include "Offline/GeometryService/inc/DetectorSystem.hh"
+#include "Offline/TrackerGeom/inc/Tracker.hh"
 // data
-#include "RecoDataProducts/inc/HelixSeed.hh"
-#include "DataProducts/inc/Helicity.hh"
+#include "Offline/RecoDataProducts/inc/HelixSeed.hh"
+#include "Offline/DataProducts/inc/Helicity.hh"
 // mu2e
-#include "Mu2eUtilities/inc/HelixTool.hh"
+#include "Offline/Mu2eUtilities/inc/HelixTool.hh"
 // helper function
-#include "GeneralUtilities/inc/PhiPrescalingParams.hh"
-#include "GeneralUtilities/inc/ParameterSetHelpers.hh"
+#include "Offline/GeneralUtilities/inc/PhiPrescalingParams.hh"
+#include "Offline/GeneralUtilities/inc/ParameterSetHelpers.hh"
 //#include "TrkFilters/inc/TrkFiltersHelpers.hh"
 
 using namespace CLHEP;

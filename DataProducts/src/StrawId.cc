@@ -4,8 +4,8 @@
 // art includes
 #include "cetlib_except/exception.h"
 // Mu2e includes
-#include "DataProducts/inc/StrawId.hh"
-#include "GeneralUtilities/inc/splitLine.hh"
+#include "Offline/DataProducts/inc/StrawId.hh"
+#include "Offline/GeneralUtilities/inc/splitLine.hh"
 
 using namespace std;
 

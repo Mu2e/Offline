@@ -4,9 +4,9 @@
 //
 // Define a type for storing KinKal Tracks based on LoopHelix
 //
-#include "Mu2eKinKal/inc/KKTrack.hh"
+#include "Offline/Mu2eKinKal/inc/KKTrack.hh"
 #include "KinKal/Trajectory/LoopHelix.hh"
-#include "GeneralUtilities/inc/OwningPointerCollection.hh"
+#include "Offline/GeneralUtilities/inc/OwningPointerCollection.hh"
 
 namespace mu2e {
   using KKLoopHelix = KKTrack<KinKal::LoopHelix>;

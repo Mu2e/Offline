@@ -6,9 +6,9 @@
 #include <memory>
 #include <vector>
 
-#include "GeneralUtilities/inc/splitLine.hh"
+#include "Offline/GeneralUtilities/inc/splitLine.hh"
 
-#include "Mu2eUtilities/inc/CoordinateString.hh"
+#include "Offline/Mu2eUtilities/inc/CoordinateString.hh"
 
 namespace mu2e {
 

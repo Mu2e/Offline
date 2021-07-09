@@ -9,10 +9,10 @@
 #
 # David Brown, 13 Nov, 2015
 #
-#include "fcl/minimalMessageService.fcl"
-#include "fcl/standardProducers.fcl"
-#include "fcl/standardServices.fcl"
-#include "TrkDiag/fcl/prolog.fcl"
+#include "Offline/fcl/minimalMessageService.fcl"
+#include "Offline/fcl/standardProducers.fcl"
+#include "Offline/fcl/standardServices.fcl"
+#include "Offline/TrkDiag/fcl/prolog.fcl"
 process_name : BkgDiag
 
 source :
@@ -57,4 +57,4 @@ physics.producers.FlagBkgHits.SaveBkgClusters : true
 # on the grid with mu2eart and do not need to be removed.
 services.SeedService.baseSeed         :  773651
 services.SeedService.maxUniqueEngines :  20
-#include "EventMixing/fcl/epilog.fcl"
+#include "Offline/EventMixing/fcl/epilog.fcl"

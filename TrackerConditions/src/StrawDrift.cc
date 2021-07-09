@@ -7,7 +7,7 @@
 #include <algorithm>
 #include "TMath.h"
 
-#include "TrackerConditions/inc/StrawDrift.hh"
+#include "Offline/TrackerConditions/inc/StrawDrift.hh"
 #include "messagefacility/MessageLogger/MessageLogger.h"
 #include "cetlib_except/exception.h"
 

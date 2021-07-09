@@ -1,6 +1,6 @@
 // Andrei Gaponenko, 2015
 
-#include "Mu2eG4/inc/Mu2eG4StackingAction.hh"
+#include "Offline/Mu2eG4/inc/Mu2eG4StackingAction.hh"
 
 #include <vector>
 #include <string>

@@ -1,6 +1,6 @@
 // Andrei Gaponenko, 2012
 
-#include "GeneralUtilities/inc/ParameterSetHelpers.hh"
+#include "Offline/GeneralUtilities/inc/ParameterSetHelpers.hh"
 
 #include <iostream>
 #include <sstream>
@@ -9,8 +9,8 @@
 #include <vector>
 #include "CLHEP/Vector/ThreeVector.h"
 
-#include "GeneralUtilities/inc/Binning.hh"
-#include "GeneralUtilities/inc/PhiPrescalingParams.hh"
+#include "Offline/GeneralUtilities/inc/Binning.hh"
+#include "Offline/GeneralUtilities/inc/PhiPrescalingParams.hh"
 
 #include "canvas/Utilities/InputTag.h"
 

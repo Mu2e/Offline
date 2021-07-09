@@ -28,11 +28,11 @@
 #include "art_root_io/TFileService.h"
 
 // Mu2e includes
-#include "ConfigTools/inc/ConfigFileLookupPolicy.hh"
-#include "SeedService/inc/SeedService.hh"
-#include "MCDataProducts/inc/GenParticle.hh"
-#include "MCDataProducts/inc/GenParticleCollection.hh"
-#include "MCDataProducts/inc/EventWeight.hh"
+#include "Offline/ConfigTools/inc/ConfigFileLookupPolicy.hh"
+#include "Offline/SeedService/inc/SeedService.hh"
+#include "Offline/MCDataProducts/inc/GenParticle.hh"
+#include "Offline/MCDataProducts/inc/GenParticleCollection.hh"
+#include "Offline/MCDataProducts/inc/EventWeight.hh"
 
 #include "TF1.h"
 

@@ -1,6 +1,6 @@
 // Muon Beam Dump/Stop
 
-#include "Mu2eG4/geom/muonBeamStop_v07.txt"
+#include "Offline/Mu2eG4/geom/muonBeamStop_v07.txt"
 //increment version number
 int    mbs.Version            = 8;
 

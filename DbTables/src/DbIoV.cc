@@ -2,7 +2,7 @@
 #include <boost/algorithm/string.hpp>
 #include <boost/algorithm/string/split.hpp>
 #include "cetlib_except/exception.h"
-#include "DbTables/inc/DbIoV.hh"
+#include "Offline/DbTables/inc/DbIoV.hh"
 
 void mu2e::DbIoV::subtract(DbIoV const& iov, uint32_t run, uint32_t subrun) {
 

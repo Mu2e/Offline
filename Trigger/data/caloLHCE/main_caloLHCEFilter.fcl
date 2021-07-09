@@ -1,5 +1,5 @@
-physics.filters.caloLHCEFilter.SignalTemplates        : "CaloFilters/data/v7_1_5/caloLH_ce.root"  		    
-physics.filters.caloLHCEFilter.BackgroundTemplates    : "CaloFilters/data/v7_1_5/caloLH_bkg.root" 		    
+physics.filters.caloLHCEFilter.SignalTemplates        : "Offline/CaloFilters/data/v7_1_5/caloLH_ce.root"  		    
+physics.filters.caloLHCEFilter.BackgroundTemplates    : "Offline/CaloFilters/data/v7_1_5/caloLH_bkg.root" 		    
 physics.filters.caloLHCEFilter.DropSecondDisk         : false					  		    
 physics.filters.caloLHCEFilter.MinClusterEnergy       : 50.   			  		    
 physics.filters.caloLHCEFilter.ClusterEnergyStep      : 10.        			  		      

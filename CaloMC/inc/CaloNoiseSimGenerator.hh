@@ -6,11 +6,11 @@
 #include "fhiclcpp/types/Atom.h"
 #include "fhiclcpp/types/Sequence.h"
 #include "art/Framework/Services/Optional/RandomNumberGenerator.h"
-#include "SeedService/inc/SeedService.hh"
+#include "Offline/SeedService/inc/SeedService.hh"
 
-#include "CaloMC/inc/CaloWFExtractor.hh"
-#include "CaloMC/inc/CaloNoiseARFitter.hh"
-#include "Mu2eUtilities/inc/CaloPulseShape.hh"
+#include "Offline/CaloMC/inc/CaloWFExtractor.hh"
+#include "Offline/CaloMC/inc/CaloNoiseARFitter.hh"
+#include "Offline/Mu2eUtilities/inc/CaloPulseShape.hh"
 
 #include "CLHEP/Random/RandPoissonQ.h"
 #include "CLHEP/Random/RandGaussQ.h"

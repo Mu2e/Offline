@@ -1,7 +1,7 @@
 #ifndef CalorimeterGeom_SqaureShiftMapper_hh
 #define CalorimeterGeom_SqaureShiftMapper_hh
 
-#include "CalorimeterGeom/inc/CrystalMapper.hh"
+#include "Offline/CalorimeterGeom/inc/CrystalMapper.hh"
 #include "CLHEP/Vector/TwoVector.h"
 #include "CLHEP/Vector/ThreeVector.h"
 #include <vector>

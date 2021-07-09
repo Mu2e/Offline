@@ -3,6 +3,6 @@
 
 // this file is deprecated, please include StrawHitPosition instead
 
-#include "RecoDataProducts/inc/StrawHitPosition.hh"
+#include "Offline/RecoDataProducts/inc/StrawHitPosition.hh"
 
 #endif /* RecoDataProducts_StrawHitPositionCollection_hh */

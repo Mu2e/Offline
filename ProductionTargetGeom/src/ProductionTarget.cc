@@ -1,4 +1,4 @@
-#include "ProductionTargetGeom/inc/ProductionTarget.hh"
+#include "Offline/ProductionTargetGeom/inc/ProductionTarget.hh"
 
 namespace mu2e {
   ProductionTarget::ProductionTarget(std::string tier1TargetType, int version, double rOut, 

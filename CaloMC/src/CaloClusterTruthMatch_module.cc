@@ -6,12 +6,12 @@
 #include "art/Framework/Core/ModuleMacros.h"
 #include "art/Framework/Principal/Event.h"
 
-#include "MCDataProducts/inc/CaloEDepMC.hh"
-#include "MCDataProducts/inc/SimParticle.hh"
-#include "MCDataProducts/inc/CaloMCTruthAssns.hh"
-#include "MCDataProducts/inc/CaloHitMC.hh"
-#include "MCDataProducts/inc/CaloClusterMC.hh"
-#include "RecoDataProducts/inc/CaloCluster.hh"
+#include "Offline/MCDataProducts/inc/CaloEDepMC.hh"
+#include "Offline/MCDataProducts/inc/SimParticle.hh"
+#include "Offline/MCDataProducts/inc/CaloMCTruthAssns.hh"
+#include "Offline/MCDataProducts/inc/CaloHitMC.hh"
+#include "Offline/MCDataProducts/inc/CaloClusterMC.hh"
+#include "Offline/RecoDataProducts/inc/CaloCluster.hh"
 
 #include <iostream>
 #include <string>

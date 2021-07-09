@@ -1,4 +1,4 @@
-#include "MCDataProducts/inc/StageParticle.hh"
+#include "Offline/MCDataProducts/inc/StageParticle.hh"
 
 namespace mu2e {
 

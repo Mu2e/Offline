@@ -11,11 +11,11 @@
 
 #include <vector>
 
-#include "CosmicRayShieldGeom/inc/CRSScintillatorModuleId.hh"
-#include "CosmicRayShieldGeom/inc/CRSScintillatorLayer.hh"
-#include "CosmicRayShieldGeom/inc/CRSAbsorberLayer.hh"
-#include "CosmicRayShieldGeom/inc/CRSAluminumSheet.hh"
-#include "CosmicRayShieldGeom/inc/CRSFEB.hh"
+#include "Offline/CosmicRayShieldGeom/inc/CRSScintillatorModuleId.hh"
+#include "Offline/CosmicRayShieldGeom/inc/CRSScintillatorLayer.hh"
+#include "Offline/CosmicRayShieldGeom/inc/CRSAbsorberLayer.hh"
+#include "Offline/CosmicRayShieldGeom/inc/CRSAluminumSheet.hh"
+#include "Offline/CosmicRayShieldGeom/inc/CRSFEB.hh"
 
 
 namespace mu2e 

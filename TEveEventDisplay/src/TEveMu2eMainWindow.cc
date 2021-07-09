@@ -1,5 +1,5 @@
 //TEveMu2e:
-#include "TEveEventDisplay/src/TEveMu2e_base_classes/TEveMu2eMainWindow.h"
+#include "Offline/TEveEventDisplay/src/TEveMu2e_base_classes/TEveMu2eMainWindow.h"
 
 namespace fhicl
 {

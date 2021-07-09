@@ -5,9 +5,9 @@
 
 #include <string>
 
-#include "Mu2eG4/inc/nestTorus.hh"
-#include "Mu2eG4/inc/finishNesting.hh"
-#include "GeomPrimitives/inc/TorusParams.hh"
+#include "Offline/Mu2eG4/inc/nestTorus.hh"
+#include "Offline/Mu2eG4/inc/finishNesting.hh"
+#include "Offline/GeomPrimitives/inc/TorusParams.hh"
 
 #include "Geant4/G4Torus.hh"
 #include "Geant4/G4LogicalVolume.hh"

@@ -19,8 +19,8 @@
 #include "art/Framework/Core/ModuleMacros.h"
 #include "art_root_io/TFileService.h"
 
-#include "MCDataProducts/inc/SimParticle.hh"
-#include "MCDataProducts/inc/SimParticleCollection.hh"
+#include "Offline/MCDataProducts/inc/SimParticle.hh"
+#include "Offline/MCDataProducts/inc/SimParticleCollection.hh"
 
 namespace mu2e {
 

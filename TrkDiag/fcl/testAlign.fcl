@@ -1,4 +1,4 @@
-#include "fcl/standardServices.fcl"
+#include "Offline/fcl/standardServices.fcl"
 process_name : TestTrkAlign
 
 source : {
@@ -22,8 +22,8 @@ physics : {
 services.ProditionsService.alignedTracker.useDb: true
 services.ProditionsService.alignedTracker.verbose: 2
 # select nominal (perfect) alignment or a misaligned file
-#services.DbService.textFile : ["TrackerConditions/data/NoMisalignTracker.txt"]
-services.DbService.textFile : ["TrackerConditions/data/MisalignTracker.txt"]
+#services.DbService.textFile : ["Offline/TrackerConditions/data/NoMisalignTracker.txt"]
+services.DbService.textFile : ["Offline/TrackerConditions/data/MisalignTracker.txt"]
 # services.DbService.verbose: 2
 
 services.TFileService.fileName: "testAlign.root"

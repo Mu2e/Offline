@@ -20,14 +20,14 @@
 #include "cetlib_except/exception.h"
 
 // Mu2e includes
-#include "GeometryService/inc/STMMaker.hh"
-#include "STMGeom/inc/STM.hh"
-#include "GeometryService/inc/GeomHandle.hh"
-#include "DetectorSolenoidGeom/inc/DetectorSolenoid.hh"
-#include "CosmicRayShieldGeom/inc/CosmicRayShield.hh"
-#include "Mu2eHallGeom/inc/Mu2eHall.hh"
-#include "ConfigTools/inc/SimpleConfig.hh"
-#include "GeometryService/inc/G4GeometryOptions.hh"
+#include "Offline/GeometryService/inc/STMMaker.hh"
+#include "Offline/STMGeom/inc/STM.hh"
+#include "Offline/GeometryService/inc/GeomHandle.hh"
+#include "Offline/DetectorSolenoidGeom/inc/DetectorSolenoid.hh"
+#include "Offline/CosmicRayShieldGeom/inc/CosmicRayShield.hh"
+#include "Offline/Mu2eHallGeom/inc/Mu2eHall.hh"
+#include "Offline/ConfigTools/inc/SimpleConfig.hh"
+#include "Offline/GeometryService/inc/G4GeometryOptions.hh"
 
 using namespace std;
 

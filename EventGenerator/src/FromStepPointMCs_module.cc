@@ -16,13 +16,13 @@
 #include "art/Framework/Services/Registry/ServiceHandle.h"
 #include "canvas/Persistency/Common/Assns.h"
 
-#include "GlobalConstantsService/inc/GlobalConstantsHandle.hh"
-#include "GlobalConstantsService/inc/ParticleDataTable.hh"
-#include "MCDataProducts/inc/GenParticle.hh"
-#include "MCDataProducts/inc/GenParticleCollection.hh"
-#include "MCDataProducts/inc/StepPointMC.hh"
-#include "MCDataProducts/inc/StepPointMCCollection.hh"
-#include "MCDataProducts/inc/GenParticleSPMHistory.hh"
+#include "Offline/GlobalConstantsService/inc/GlobalConstantsHandle.hh"
+#include "Offline/GlobalConstantsService/inc/ParticleDataTable.hh"
+#include "Offline/MCDataProducts/inc/GenParticle.hh"
+#include "Offline/MCDataProducts/inc/GenParticleCollection.hh"
+#include "Offline/MCDataProducts/inc/StepPointMC.hh"
+#include "Offline/MCDataProducts/inc/StepPointMCCollection.hh"
+#include "Offline/MCDataProducts/inc/GenParticleSPMHistory.hh"
 
 namespace mu2e {
 

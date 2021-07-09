@@ -42,8 +42,8 @@
 #include <iostream>
 
 // Mu2e include files.
-#include "Sandbox/inc/BarService.hh"
-#include "Sandbox/inc/FooService.hh"
+#include "Offline/Sandbox/inc/BarService.hh"
+#include "Offline/Sandbox/inc/FooService.hh"
 
 // Framework include files
 #include "canvas/Persistency/Provenance/RunID.h"

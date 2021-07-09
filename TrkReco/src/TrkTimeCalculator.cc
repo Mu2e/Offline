@@ -1,8 +1,8 @@
 #include "BTrk/BaBar/BaBar.hh"
-#include "TrkReco/inc/TrkTimeCalculator.hh"
+#include "Offline/TrkReco/inc/TrkTimeCalculator.hh"
 #include "CLHEP/Units/PhysicalConstants.h"
-#include "GeometryService/inc/GeomHandle.hh"
-#include "CalorimeterGeom/inc/Calorimeter.hh"
+#include "Offline/GeometryService/inc/GeomHandle.hh"
+#include "Offline/CalorimeterGeom/inc/Calorimeter.hh"
 
 namespace mu2e
 {

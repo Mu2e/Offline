@@ -4,7 +4,7 @@
 // Dave Brown
 #ifndef mu2e_PanelAmbig_PanelStateIterator_HH
 #define mu2e_PanelAmbig_PanelStateIterator_HH
-#include "TrkReco/inc/PanelAmbigStructs.hh"
+#include "Offline/TrkReco/inc/PanelAmbigStructs.hh"
 
 namespace mu2e {
   namespace PanelAmbig {

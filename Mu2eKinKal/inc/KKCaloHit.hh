@@ -7,7 +7,7 @@
 #include "KinKal/Trajectory/Line.hh"
 #include "KinKal/Trajectory/PiecewiseClosestApproach.hh"
 // mu2e includes
-#include "RecoDataProducts/inc/CaloCluster.hh"
+#include "Offline/RecoDataProducts/inc/CaloCluster.hh"
 // art includes
 #include "canvas/Persistency/Common/Ptr.h"
 #include <stdexcept>

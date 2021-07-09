@@ -27,11 +27,11 @@
 #define TrkExtDiag_HH
 
 #include "art/Framework/Principal/fwd.h"
-#include "RecoDataProducts/inc/TrkExtTraj.hh"
+#include "Offline/RecoDataProducts/inc/TrkExtTraj.hh"
 #include "BTrk/KalmanTrack/KalRep.hh"
 #include "TTree.h"
 #include "Rtypes.h"
-#include "BFieldGeom/inc/BFieldManager.hh"
+#include "Offline/BFieldGeom/inc/BFieldManager.hh"
 #include "CLHEP/Matrix/Vector.h"
 #include "CLHEP/Vector/ThreeVector.h"
 

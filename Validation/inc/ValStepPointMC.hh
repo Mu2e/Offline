@@ -3,8 +3,8 @@
 #define ValStepPointMC_HH_
 
 #include "art/Framework/Principal/Event.h"
-#include "MCDataProducts/inc/StepPointMCCollection.hh"
-#include "Validation/inc/ValId.hh"
+#include "Offline/MCDataProducts/inc/StepPointMCCollection.hh"
+#include "Offline/Validation/inc/ValId.hh"
 #include "TH1D.h"
 #include <string>
 

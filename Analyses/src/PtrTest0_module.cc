@@ -17,8 +17,8 @@
 #include "canvas/Persistency/Common/Ptr.h"
 
 // Mu2e includes.
-#include "MCDataProducts/inc/GenParticleCollection.hh"
-#include "MCDataProducts/inc/SimParticleCollection.hh"
+#include "Offline/MCDataProducts/inc/GenParticleCollection.hh"
+#include "Offline/MCDataProducts/inc/SimParticleCollection.hh"
 
 using namespace std;
 

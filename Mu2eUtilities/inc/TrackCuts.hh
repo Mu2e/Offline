@@ -11,7 +11,7 @@
 
 #include "art_root_io/TFileDirectory.h"
 
-#include "Mu2eUtilities/inc/HistTrackSum.hh"
+#include "Offline/Mu2eUtilities/inc/HistTrackSum.hh"
 
 namespace fhicl { class ParameterSet; }
 class TH1;

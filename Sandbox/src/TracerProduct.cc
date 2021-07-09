@@ -5,7 +5,7 @@
 // Original author Rob Kutschke
 //
 
-#include "Sandbox/inc/TracerProduct.hh"
+#include "Offline/Sandbox/inc/TracerProduct.hh"
 
 #include "messagefacility/MessageLogger/MessageLogger.h"
 

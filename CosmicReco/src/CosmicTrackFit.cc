@@ -3,18 +3,18 @@
 // Purpose: Holds functions for the fitting of Cosmic Tracks in tracker
 
 // Mu2e Cosmics:
-#include "CosmicReco/inc/CosmicTrackFit.hh"
-#include "RecoDataProducts/inc/CosmicTrack.hh"
+#include "Offline/CosmicReco/inc/CosmicTrackFit.hh"
+#include "Offline/RecoDataProducts/inc/CosmicTrack.hh"
 
 // art
 #include "canvas/Persistency/Common/Ptr.h"
 
 //Mu2e General:
-#include "GeometryService/inc/GeomHandle.hh"
-#include "GeometryService/inc/DetectorSystem.hh"
-#include "RecoDataProducts/inc/TrkFitFlag.hh"
-#include "TrackerGeom/inc/Tracker.hh"
-#include "RecoDataProducts/inc/TimeCluster.hh"
+#include "Offline/GeometryService/inc/GeomHandle.hh"
+#include "Offline/GeometryService/inc/DetectorSystem.hh"
+#include "Offline/RecoDataProducts/inc/TrkFitFlag.hh"
+#include "Offline/TrackerGeom/inc/Tracker.hh"
+#include "Offline/RecoDataProducts/inc/TimeCluster.hh"
 
 //For Drift:
 #include "BTrk/BaBar/BaBar.hh"
@@ -22,18 +22,18 @@
 #include "BTrk/KalmanTrack/KalRep.hh"
 #include "BTrk/BbrGeom/HepPoint.h"
 #include "BTrk/TrkBase/TrkPoca.hh"
-#include "BTrkData/inc/TrkStrawHit.hh"
+#include "Offline/BTrkData/inc/TrkStrawHit.hh"
 #include "BTrk/BbrGeom/BbrVectorErr.hh"
 #include "BTrk/TrkBase/TrkPoca.hh"
 #include "BTrk/ProbTools/ChisqConsistency.hh"
 #include "BTrk/TrkBase/TrkMomCalculator.hh"
 
 //Fitting
-#include "Mu2eUtilities/inc/ParametricFit.hh"
-#include "Mu2eUtilities/inc/BuildLinearFitMatrixSums.hh"
-#include "CosmicReco/inc/MinuitDriftFitter.hh"
-#include "CosmicReco/inc/DriftFitUtils.hh"
-#include "DataProducts/inc/XYZVec.hh"
+#include "Offline/Mu2eUtilities/inc/ParametricFit.hh"
+#include "Offline/Mu2eUtilities/inc/BuildLinearFitMatrixSums.hh"
+#include "Offline/CosmicReco/inc/MinuitDriftFitter.hh"
+#include "Offline/CosmicReco/inc/DriftFitUtils.hh"
+#include "Offline/DataProducts/inc/XYZVec.hh"
 
 //ROOT:
 #include "TMatrixD.h"

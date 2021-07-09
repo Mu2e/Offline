@@ -1,8 +1,8 @@
-#include "TEveEventDisplay/src/shape_classes/TEveMu2eTracker.h"
-#include "StoppingTargetGeom/inc/StoppingTarget.hh"
-#include "StoppingTargetGeom/inc/TargetFoil.hh"
-#include "CalorimeterGeom/inc/DiskCalorimeter.hh"
-#include "CalorimeterGeom/inc/Calorimeter.hh"
+#include "Offline/TEveEventDisplay/src/shape_classes/TEveMu2eTracker.h"
+#include "Offline/StoppingTargetGeom/inc/StoppingTarget.hh"
+#include "Offline/StoppingTargetGeom/inc/TargetFoil.hh"
+#include "Offline/CalorimeterGeom/inc/DiskCalorimeter.hh"
+#include "Offline/CalorimeterGeom/inc/Calorimeter.hh"
 
 using namespace mu2e;
 namespace mu2e{

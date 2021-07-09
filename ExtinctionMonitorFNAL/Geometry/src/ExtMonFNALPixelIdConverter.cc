@@ -1,10 +1,10 @@
 // Andrei Gaponenko, 2012
 
-#include "ExtinctionMonitorFNAL/Geometry/inc/ExtMonFNALPixelIdConverter.hh"
+#include "Offline/ExtinctionMonitorFNAL/Geometry/inc/ExtMonFNALPixelIdConverter.hh"
 
 #include <cassert>
 
-#include "ExtinctionMonitorFNAL/Geometry/inc/ExtMonFNALPixelChip.hh"
+#include "Offline/ExtinctionMonitorFNAL/Geometry/inc/ExtMonFNALPixelChip.hh"
 
 namespace mu2e {
 

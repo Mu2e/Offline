@@ -11,7 +11,7 @@
 #include "art_root_io/TFileService.h"
 #include "art/Framework/Services/Registry/ServiceHandle.h"
 
-#include "MCDataProducts/inc/ProtonBunchIntensity.hh"
+#include "Offline/MCDataProducts/inc/ProtonBunchIntensity.hh"
 
 #include "TH1.h"
 
