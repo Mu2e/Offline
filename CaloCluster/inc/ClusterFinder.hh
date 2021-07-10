@@ -3,8 +3,8 @@
 //
 // Class to find cluster of simply connected crystals
 // 
-#include "RecoDataProducts/inc/CaloHit.hh"
-#include "CalorimeterGeom/inc/Calorimeter.hh"
+#include "Offline/RecoDataProducts/inc/CaloHit.hh"
+#include "Offline/CalorimeterGeom/inc/Calorimeter.hh"
 
 #include <vector>
 #include <queue>

@@ -2,13 +2,13 @@
 //
 // Andrei Gaponenko, 2012
 
-#include "RecoDataProducts/inc/ExtMonFNALRecoCluster.hh"
-#include "RecoDataProducts/inc/ExtMonFNALRecoClusterCollection.hh"
+#include "Offline/RecoDataProducts/inc/ExtMonFNALRecoCluster.hh"
+#include "Offline/RecoDataProducts/inc/ExtMonFNALRecoClusterCollection.hh"
 
 
 #include "art/Framework/Core/ModuleMacros.h"
 
-#include "ExtinctionMonitorFNAL/Analyses/inc/GenericCollectionPrinter.hh"
+#include "Offline/ExtinctionMonitorFNAL/Analyses/inc/GenericCollectionPrinter.hh"
 
 namespace mu2e {
 

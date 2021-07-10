@@ -5,9 +5,9 @@
 // Note that this test is not meant to be used for a real production job, but only to test if ions can be restored properly
 // Use it with iontest_g4s2.fcl
 
-#include "fcl/minimalMessageService.fcl"
-#include "fcl/standardProducers.fcl"
-#include "fcl/standardServices.fcl"
+#include "Offline/fcl/minimalMessageService.fcl"
+#include "Offline/fcl/standardProducers.fcl"
+#include "Offline/fcl/standardServices.fcl"
 
 BEGIN_PROLOG
 

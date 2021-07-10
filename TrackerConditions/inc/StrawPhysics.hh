@@ -15,10 +15,10 @@
 #include "CLHEP/Random/RandGaussQ.h"
 #include "CLHEP/Random/RandFlat.h"
 // Mu2e includes
-#include "Mu2eInterfaces/inc/ProditionsEntity.hh"
+#include "Offline/Mu2eInterfaces/inc/ProditionsEntity.hh"
 #include "fhiclcpp/ParameterSet.h"
 
-#include "TrackerConditions/inc/StrawDrift.hh"
+#include "Offline/TrackerConditions/inc/StrawDrift.hh"
 
 namespace mu2e {
   class StrawPhysics : virtual public ProditionsEntity {

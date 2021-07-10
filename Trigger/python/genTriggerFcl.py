@@ -95,7 +95,7 @@ def appendEpilog(trig_path, relProjectDir, outDir, srcDir, verbose, doWrite, sou
         if doWrite :
             subSubEpilogFile.close()
 
-        epilog=("\n#include \""+relSubSubEpilogFileName +"\"")
+        epilog=("\n#include \"Offline/"+relSubSubEpilogFileName +"\"")
 
         if doWrite :
             subEpilogFile.write(epilog)
@@ -111,14 +111,14 @@ def appendEpilog(trig_path, relProjectDir, outDir, srcDir, verbose, doWrite, sou
         subSubEpilogMergerFile.close();
 
         relSubSubEpilogFileName    = relSubEpilogDirName + "/main_"+ trigInfoMergerName + '.fcl' 
-        epilog=("\n#include \""+relSubSubEpilogFileName +"\"")
+        epilog=("\n#include \"Offline/"+relSubSubEpilogFileName +"\"")
 
         subEpilogFile.write(epilog)
         subEpilogFile.close()
 
     # return a line to be added to the main epilog file
     # so it can include the files we just wrote
-    subEpilogInclude=("\n#include \""+relSubEpilogName+"\"")
+    subEpilogInclude=("\n#include \"Offline/"+relSubEpilogName+"\"")
 
     return subEpilogInclude
 
@@ -321,7 +321,7 @@ def generate(configFileText="allPaths", verbose=True, doWrite=True):
 
     # include the main epilog file, which includes the others, in main fcl
     if doWrite :
-        mainFclFile.write("\n#include \""+relProjectDir+"/{}.fcl\"\n".format(configFileBaseName))
+        mainFclFile.write("\n#include \"Offline/"+relProjectDir+"/{}.fcl\"\n".format(configFileBaseName))
         mainFclFile.close()
 
     if verbose :

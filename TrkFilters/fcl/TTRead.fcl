@@ -3,11 +3,11 @@
 #
 #  > mu2e --config TrkFilters/fcl/TTRead.fcl --source-list (your files) --TFile TTRead.root --nevts=100
 #
-#include "fcl/minimalMessageService.fcl"
-#include "fcl/standardProducers.fcl"
-#include "fcl/standardServices.fcl"
-#include "TrkFilters/fcl/prolog.fcl"
-#include "TrkDiag/fcl/prolog.fcl"
+#include "Offline/fcl/minimalMessageService.fcl"
+#include "Offline/fcl/standardProducers.fcl"
+#include "Offline/fcl/standardServices.fcl"
+#include "Offline/TrkFilters/fcl/prolog.fcl"
+#include "Offline/TrkDiag/fcl/prolog.fcl"
 
 process_name : TTRead
 

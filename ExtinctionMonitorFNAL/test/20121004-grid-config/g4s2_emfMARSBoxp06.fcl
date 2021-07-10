@@ -1,4 +1,4 @@
-#include "ExtinctionMonitorFNAL/test/g4s2_emfMARSBox.fcl"
+#include "Offline/ExtinctionMonitorFNAL/test/g4s2_emfMARSBox.fcl"
 
 physics.producers.generate.microbunchScaling : 0.0016157
 

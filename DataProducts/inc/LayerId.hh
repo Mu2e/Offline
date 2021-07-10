@@ -8,7 +8,7 @@
 // Original author Rob Kutschke
 //
 
-#include "DataProducts/inc/StrawId.hh"
+#include "Offline/DataProducts/inc/StrawId.hh"
 
 namespace mu2e {
 

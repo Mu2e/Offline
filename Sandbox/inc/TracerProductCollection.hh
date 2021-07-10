@@ -7,8 +7,8 @@
 // Original author Rob Kutschke
 //
 
-#include "GeneralUtilities/inc/OwningPointerCollection.hh"
-#include "Sandbox/inc/TracerProduct.hh"
+#include "Offline/GeneralUtilities/inc/OwningPointerCollection.hh"
+#include "Offline/Sandbox/inc/TracerProduct.hh"
 
 namespace mu2e {
 

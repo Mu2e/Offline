@@ -39,9 +39,9 @@
 #include "cetlib_except/exception.h"
 
 // Mu2e includes
-#include "Mu2eG4/inc/Mu2eRecorderProcess.hh"
+#include "Offline/Mu2eG4/inc/Mu2eRecorderProcess.hh"
 
-#include "Mu2eG4/inc/toggleProcesses.hh"
+#include "Offline/Mu2eG4/inc/toggleProcesses.hh"
 
 namespace mu2e{
 

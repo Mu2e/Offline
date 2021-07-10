@@ -55,7 +55,7 @@
 #include "art/Framework/Core/ModuleMacros.h"
 
 // Mu2e includes.
-#include "MCDataProducts/inc/StepPointMCCollection.hh"
+#include "Offline/MCDataProducts/inc/StepPointMCCollection.hh"
 
 // Root includes.
 #include "TApplication.h"

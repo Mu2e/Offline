@@ -8,7 +8,7 @@
 
 #include <string>
 
-#include "GeneralUtilities/inc/trimInPlace.hh"
+#include "Offline/GeneralUtilities/inc/trimInPlace.hh"
 
 using namespace std;
 

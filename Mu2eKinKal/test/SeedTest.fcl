@@ -1,8 +1,8 @@
-#include "fcl/minimalMessageService.fcl"
-#include "fcl/standardServices.fcl"
-#include "JobConfig/reco/prolog.fcl"
-#include "TrkDiag/fcl/prolog.fcl"
-#include "Mu2eKinKal/fcl/prolog.fcl"
+#include "Offline/fcl/minimalMessageService.fcl"
+#include "Offline/fcl/standardServices.fcl"
+#include "Production/JobConfig/reco/prolog.fcl"
+#include "Offline/TrkDiag/fcl/prolog.fcl"
+#include "Offline/Mu2eKinKal/fcl/prolog.fcl"
 
 process_name: Reconstruct
 source : { module_type : RootInput }
@@ -66,7 +66,7 @@ outputs : {
     SelectEvents : [ "RecoPath" ]
   }
 }
-#include "JobConfig/reco/epilog.fcl"
+#include "Production/JobConfig/reco/epilog.fcl"
 physics.producers.CrvCoincidenceClusterMatchMC.timeOffsets.inputs :  [ @sequence::DigiCompression.TimeMaps ]
 physics.producers.CaloHitTruthMatch.primaryParticle : "compressDigiMCs"
 physics.producers.CaloHitTruthMatch.caloShowerSimCollection : "compressDigiMCs"

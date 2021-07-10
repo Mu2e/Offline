@@ -4,17 +4,17 @@
 #include <iostream>
 #include <iomanip>
 #include <vector>
-#include "DbTables/inc/ValTables.hh"
-#include "DbTables/inc/ValCalibrations.hh"
-#include "DbTables/inc/ValIovs.hh"
-#include "DbTables/inc/ValGroups.hh"
-#include "DbTables/inc/ValGroupLists.hh"
-#include "DbTables/inc/ValPurposes.hh"
-#include "DbTables/inc/ValLists.hh"
-#include "DbTables/inc/ValTableLists.hh"
-#include "DbTables/inc/ValVersions.hh"
-#include "DbTables/inc/ValExtensions.hh"
-#include "DbTables/inc/ValExtensionLists.hh"
+#include "Offline/DbTables/inc/ValTables.hh"
+#include "Offline/DbTables/inc/ValCalibrations.hh"
+#include "Offline/DbTables/inc/ValIovs.hh"
+#include "Offline/DbTables/inc/ValGroups.hh"
+#include "Offline/DbTables/inc/ValGroupLists.hh"
+#include "Offline/DbTables/inc/ValPurposes.hh"
+#include "Offline/DbTables/inc/ValLists.hh"
+#include "Offline/DbTables/inc/ValTableLists.hh"
+#include "Offline/DbTables/inc/ValVersions.hh"
+#include "Offline/DbTables/inc/ValExtensions.hh"
+#include "Offline/DbTables/inc/ValExtensionLists.hh"
 
 namespace mu2e {
 

@@ -9,9 +9,9 @@
 #include <TFile.h>
 
 //TEveEventDisplay Headers:
-#include  "TEveEventDisplay/src/TEveMu2e_base_classes/TEveMu2eMainWindow.h"
-#include  "TEveEventDisplay/src/dict_classes/Collection_Filler.h"
-#include  "TEveEventDisplay/src/dict_classes/Data_Collections.h"
+#include  "Offline/TEveEventDisplay/src/TEveMu2e_base_classes/TEveMu2eMainWindow.h"
+#include  "Offline/TEveEventDisplay/src/dict_classes/Collection_Filler.h"
+#include  "Offline/TEveEventDisplay/src/dict_classes/Data_Collections.h"
 
 // Framework includes.
 #include "art/Framework/Core/EDAnalyzer.h"

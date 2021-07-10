@@ -1,8 +1,8 @@
 # A quick way to dump the default geometry into a GDML file.
 
-#include "fcl/minimalMessageService.fcl"
-#include "fcl/standardProducers.fcl"
-#include "fcl/standardServices.fcl"
+#include "Offline/fcl/minimalMessageService.fcl"
+#include "Offline/fcl/standardProducers.fcl"
+#include "Offline/fcl/standardServices.fcl"
 
 process_name : gdmldump
 
@@ -24,7 +24,7 @@ physics : {
    trigger_paths  : [p1]
 }
 
-services.GeometryService.inputFile : "Mu2eG4/geom/geom_common.txt"
+services.GeometryService.inputFile : "Offline/Mu2eG4/geom/geom_common.txt"
 
 // Disable all physics except transport.
 physics.producers.g4run.physics.physicsListName: "Minimal"

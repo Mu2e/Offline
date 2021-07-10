@@ -10,8 +10,8 @@
 #include "CLHEP/Units/SystemOfUnits.h"
 
 // Geant4 includes
-#include "Mu2eG4/inc/Mu2eG4MinimalModularPhysicsList.hh"
-#include "Mu2eG4/inc/addStepLimiter.hh"
+#include "Offline/Mu2eG4/inc/Mu2eG4MinimalModularPhysicsList.hh"
+#include "Offline/Mu2eG4/inc/addStepLimiter.hh"
 
 #include "Geant4/G4ParticleTypes.hh"
 #include "Geant4/G4ProcessManager.hh"

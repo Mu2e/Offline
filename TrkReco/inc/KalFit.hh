@@ -13,25 +13,25 @@
 #endif/*__GCCXML__*/
 
 // data
-#include "RecoDataProducts/inc/ComboHit.hh"
+#include "Offline/RecoDataProducts/inc/ComboHit.hh"
 // tracker
-#include "TrackerGeom/inc/Tracker.hh"
-#include "TrackerGeom/inc/Straw.hh"
+#include "Offline/TrackerGeom/inc/Tracker.hh"
+#include "Offline/TrackerGeom/inc/Straw.hh"
 // BaBar
 #include "BTrk/BaBar/BaBar.hh"
 #include "BTrk/KalmanTrack/KalContext.hh"
 #include "BTrk/KalmanTrack/KalRep.hh"
 #include "BTrk/BField/BField.hh"
 // Mu2e objects
-#include "BTrkData/inc/TrkStrawHit.hh"
-#include "BTrkData/inc/TrkCaloHit.hh"
-#include "RecoDataProducts/inc/KalSeed.hh"
-#include "TrkReco/inc/AmbigResolver.hh"
-#include "TrkReco/inc/KalFitData.hh"
-#include "TrkReco/inc/TrkTimeCalculator.hh"
-#include "TrackerConditions/inc/StrawResponse.hh"
-#include "TrackerConditions/inc/Mu2eDetector.hh"
-#include "TrkReco/inc/TrkPrintUtils.hh"
+#include "Offline/BTrkData/inc/TrkStrawHit.hh"
+#include "Offline/BTrkData/inc/TrkCaloHit.hh"
+#include "Offline/RecoDataProducts/inc/KalSeed.hh"
+#include "Offline/TrkReco/inc/AmbigResolver.hh"
+#include "Offline/TrkReco/inc/KalFitData.hh"
+#include "Offline/TrkReco/inc/TrkTimeCalculator.hh"
+#include "Offline/TrackerConditions/inc/StrawResponse.hh"
+#include "Offline/TrackerConditions/inc/Mu2eDetector.hh"
+#include "Offline/TrkReco/inc/TrkPrintUtils.hh"
 
 //CLHEP
 #include "CLHEP/Units/PhysicalConstants.h"

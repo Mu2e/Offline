@@ -2,9 +2,9 @@
 #------------------------------------------------------------------------------
 # this file is included by fcl/standardProducers.fcl inside the PROLOG section
 #------------------------------------------------------------------------------
-#include "TrkPatRec/fcl/Particle.fcl"
-#include "TrkPatRec/fcl/PanelAmbigResolver.fcl" 
-#include "TrkPatRec/fcl/prolog.fcl"
+#include "Offline/TrkPatRec/fcl/Particle.fcl"
+#include "Offline/TrkPatRec/fcl/PanelAmbigResolver.fcl" 
+#include "Offline/TrkPatRec/fcl/prolog.fcl"
 
 BEGIN_PROLOG
 

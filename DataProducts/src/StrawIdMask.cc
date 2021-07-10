@@ -1,4 +1,4 @@
-#include "DataProducts/inc/StrawIdMask.hh"
+#include "Offline/DataProducts/inc/StrawIdMask.hh"
 #include "cetlib_except/exception.h"
 
 namespace mu2e {

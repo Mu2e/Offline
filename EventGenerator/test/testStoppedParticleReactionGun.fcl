@@ -4,9 +4,9 @@
 #for more info DocDB 20844
 #------------------------------------------------------------------------------
 
-#include "fcl/minimalMessageService.fcl"
-#include "fcl/standardProducers.fcl"
-#include "fcl/standardServices.fcl"
+#include "Offline/fcl/minimalMessageService.fcl"
+#include "Offline/fcl/standardProducers.fcl"
+#include "Offline/fcl/standardServices.fcl"
 
 
 process_name : StoppedParticleReactionGunTest
@@ -92,7 +92,7 @@ physics : {
 }
    
 services.TFileService.fileName            : "nts._USER_.testStoppedParticleReactionGun.xxx.000001.root"
-services.GeometryService.inputFile : "JobConfig/common/geom_baseline.txt"
+services.GeometryService.inputFile : "Production/JobConfig/common/geom_baseline.txt"
 services.SeedService.baseSeed : 8
 services.SeedService.maxUniqueEngines : 20
 services.scheduler.wantSummary: true

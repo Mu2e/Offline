@@ -9,7 +9,7 @@
 #include "CLHEP/Vector/ThreeVector.h"
 #include "CLHEP/Matrix/Matrix.h"
 #include "CLHEP/Matrix/Vector.h"
-#include "GeneralUtilities/inc/safeSqrt.hh"
+#include "Offline/GeneralUtilities/inc/safeSqrt.hh"
 
 namespace mu2e {
 

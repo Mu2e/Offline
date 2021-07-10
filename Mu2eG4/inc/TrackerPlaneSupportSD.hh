@@ -8,9 +8,9 @@
 //
 
 // Mu2e includes
-#include "Mu2eG4/inc/EventNumberList.hh"
-#include "MCDataProducts/inc/StepPointMCCollection.hh"
-#include "Mu2eG4/inc/Mu2eG4SensitiveDetector.hh"
+#include "Offline/Mu2eG4/inc/EventNumberList.hh"
+#include "Offline/MCDataProducts/inc/StepPointMCCollection.hh"
+#include "Offline/Mu2eG4/inc/Mu2eG4SensitiveDetector.hh"
 
 // Art includes
 #include "canvas/Persistency/Provenance/ProductID.h"

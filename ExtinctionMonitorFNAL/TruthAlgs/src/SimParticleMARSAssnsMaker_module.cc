@@ -22,15 +22,15 @@
 #include "canvas/Persistency/Common/FindOne.h"
 #include "canvas/Utilities/InputTag.h"
 
-#include "MCDataProducts/inc/GenParticle.hh"
-#include "MCDataProducts/inc/GenParticleCollection.hh"
-#include "MCDataProducts/inc/SimParticle.hh"
-#include "MCDataProducts/inc/SimParticleCollection.hh"
-#include "MCDataProducts/inc/MARSInfo.hh"
-#include "MCDataProducts/inc/MARSInfoCollection.hh"
-#include "MCDataProducts/inc/SimParticleMARSAssns.hh"
+#include "Offline/MCDataProducts/inc/GenParticle.hh"
+#include "Offline/MCDataProducts/inc/GenParticleCollection.hh"
+#include "Offline/MCDataProducts/inc/SimParticle.hh"
+#include "Offline/MCDataProducts/inc/SimParticleCollection.hh"
+#include "Offline/MCDataProducts/inc/MARSInfo.hh"
+#include "Offline/MCDataProducts/inc/MARSInfoCollection.hh"
+#include "Offline/MCDataProducts/inc/SimParticleMARSAssns.hh"
 
-#include "Mu2eUtilities/inc/SimParticleParentGetter.hh"
+#include "Offline/Mu2eUtilities/inc/SimParticleParentGetter.hh"
 
 namespace mu2e {
   namespace ExtMonFNAL {

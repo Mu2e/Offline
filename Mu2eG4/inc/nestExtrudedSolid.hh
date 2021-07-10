@@ -8,7 +8,7 @@
 #include <string>
 #include <vector>
 
-#include "Mu2eG4Helper/inc/VolumeInfo.hh"
+#include "Offline/Mu2eG4Helper/inc/VolumeInfo.hh"
 
 class G4Material;
 class G4LogicalVolume;

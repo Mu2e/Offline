@@ -1,4 +1,4 @@
-#include "ServicesGeom/inc/ElectronicRack.hh"
+#include "Offline/ServicesGeom/inc/ElectronicRack.hh"
 
 namespace mu2e {
 

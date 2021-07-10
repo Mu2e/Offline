@@ -6,8 +6,8 @@
 #include <memory>
 #include <string>
 
-#include "Mu2eHallGeom/inc/Mu2eHall.hh"
-#include "ExtinctionMonitorFNAL/Geometry/inc/ExtMonFNALBuilding.hh"
+#include "Offline/Mu2eHallGeom/inc/Mu2eHall.hh"
+#include "Offline/ExtinctionMonitorFNAL/Geometry/inc/ExtMonFNALBuilding.hh"
 
 namespace mu2e {
   class SimpleConfig;

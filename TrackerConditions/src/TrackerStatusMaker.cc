@@ -8,7 +8,7 @@
 #include <memory>
 
 // Mu2e includes
-#include "TrackerConditions/inc/TrackerStatusMaker.hh"
+#include "Offline/TrackerConditions/inc/TrackerStatusMaker.hh"
 #include "cetlib_except/exception.h"
 
 using namespace std;

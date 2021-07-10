@@ -9,7 +9,7 @@
 // Original author KLG somewhat based on Rob Kutschke's StrawId
 //
 #include <ostream>
-#include "CosmicRayShieldGeom/inc/CRSScintillatorLayerId.hh"
+#include "Offline/CosmicRayShieldGeom/inc/CRSScintillatorLayerId.hh"
 
 namespace mu2e 
 {

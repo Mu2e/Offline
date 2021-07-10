@@ -1,2 +1,2 @@
 // redirection: FIXME!
-#include "MCDataProducts/inc/GenParticle.hh"
+#include "Offline/MCDataProducts/inc/GenParticle.hh"

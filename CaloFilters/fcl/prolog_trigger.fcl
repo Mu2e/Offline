@@ -27,7 +27,7 @@ CaloFilters : {
 	caloTrigSeedModuleLabel : CaloTrigger					    
 	diagLevel               : 0						    
 	MVAMethod               : BDT						    
-	weightsfile             : "CaloFilters/data/ce_bkg_ecal_20_BDT.weights.xml" 
+	weightsfile             : "Offline/CaloFilters/data/ce_bkg_ecal_20_BDT.weights.xml" 
 	TimeOFFSET              : 22.5						    
 	MVAhighcut0             : 0.1						    
 	MVArpivot0              : 445 # mm					    
@@ -45,8 +45,8 @@ CaloFilters : {
 	diagLevel              : 0
 	MVAMethod              : BDT
 	caloTrigSeedModuleLabel     : CaloTrigger
-	ecalweightsfile        : "CaloFilters/data/ce_bkg_ecal_20_BDT.weights.xml"
-	mixedweightsfile            : "CaloFilters/data/ce_bkg_20_BDT.weights.xml"
+	ecalweightsfile        : "Offline/CaloFilters/data/ce_bkg_ecal_20_BDT.weights.xml"
+	mixedweightsfile            : "Offline/CaloFilters/data/ce_bkg_20_BDT.weights.xml"
 	StrawHitCollectionTag  : "TTmakePH"
 	TimeOFFSET             : 22.5
 	MVArpivot              : 445 # mm
@@ -89,8 +89,8 @@ CaloFilters : {
     caloLHCEFilter : {
 	module_type            : CaloLikelihood
 	CaloClusterModuleLabel : CaloClusterFast
-	SignalTemplates        : "CaloFilters/data/v7_1_5/caloLH_ce.root"  
-	BackgroundTemplates    : "CaloFilters/data/v7_1_5/caloLH_bkg.root" 
+	SignalTemplates        : "Offline/CaloFilters/data/v7_1_5/caloLH_ce.root"  
+	BackgroundTemplates    : "Offline/CaloFilters/data/v7_1_5/caloLH_bkg.root" 
 	DropSecondDisk         : false					   
 	MinClusterEnergy       : 50.   # MeV				   
 	ClusterEnergyStep      : 10.   # MeV          			   
@@ -103,8 +103,8 @@ CaloFilters : {
     caloPhotonFilter : {
 	module_type            : CaloLikelihood
 	CaloClusterModuleLabel : CaloClusterFast
-	SignalTemplates        : "CaloFilters/data/v7_1_5/caloLH_ce.root"  
-	BackgroundTemplates    : "CaloFilters/data/v7_1_5/caloLH_bkg.root" 
+	SignalTemplates        : "Offline/CaloFilters/data/v7_1_5/caloLH_ce.root"  
+	BackgroundTemplates    : "Offline/CaloFilters/data/v7_1_5/caloLH_bkg.root" 
 	DropSecondDisk         : false					   
 	MinClusterEnergy       : 50.   # MeV				   
 	ClusterEnergyStep      : 10.   # MeV          			   
@@ -116,7 +116,7 @@ CaloFilters : {
     caloMVANNCEFilter : {
 	module_type            : FilterEcalNNTrigger
 	caloClusterCollection  : CaloClusterFast
-        caloBkgMVA             :{ MVAWeights : "CaloFilters/data/CE_NN_ReLU.weights.xml" }
+        caloBkgMVA             :{ MVAWeights : "Offline/CaloFilters/data/CE_NN_ReLU.weights.xml" }
         minEtoTest             : 40
         minMVAScore            : 0.95
         diagLevel              : 0

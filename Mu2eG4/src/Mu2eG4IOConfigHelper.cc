@@ -1,19 +1,19 @@
 // Andrei Gaponenko, 2021
 
-#include "Mu2eG4/inc/Mu2eG4IOConfigHelper.hh"
+#include "Offline/Mu2eG4/inc/Mu2eG4IOConfigHelper.hh"
 
-#include "Mu2eG4/inc/Mu2eG4Config.hh"
-#include "Mu2eG4/inc/SensitiveDetectorHelper.hh"
-#include "Mu2eG4/inc/Mu2eG4ResourceLimits.hh"
-#include "Mu2eG4/inc/IMu2eG4Cut.hh"
+#include "Offline/Mu2eG4/inc/Mu2eG4Config.hh"
+#include "Offline/Mu2eG4/inc/SensitiveDetectorHelper.hh"
+#include "Offline/Mu2eG4/inc/Mu2eG4ResourceLimits.hh"
+#include "Offline/Mu2eG4/inc/IMu2eG4Cut.hh"
 
-#include "MCDataProducts/inc/StatusG4.hh"
-#include "MCDataProducts/inc/SimParticleCollection.hh"
-#include "MCDataProducts/inc/SimParticleRemapping.hh"
-#include "MCDataProducts/inc/StepPointMCCollection.hh"
-#include "MCDataProducts/inc/StageParticle.hh"
-#include "MCDataProducts/inc/MCTrajectoryCollection.hh"
-#include "MCDataProducts/inc/PhysicalVolumeInfoMultiCollection.hh"
+#include "Offline/MCDataProducts/inc/StatusG4.hh"
+#include "Offline/MCDataProducts/inc/SimParticleCollection.hh"
+#include "Offline/MCDataProducts/inc/SimParticleRemapping.hh"
+#include "Offline/MCDataProducts/inc/StepPointMCCollection.hh"
+#include "Offline/MCDataProducts/inc/StageParticle.hh"
+#include "Offline/MCDataProducts/inc/MCTrajectoryCollection.hh"
+#include "Offline/MCDataProducts/inc/PhysicalVolumeInfoMultiCollection.hh"
 
 #include "art/Framework/Core/ProducesCollector.h"
 #include "art/Framework/Core/ConsumesCollector.h"

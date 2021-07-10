@@ -2,7 +2,7 @@
 //
 // Andrei Gaponenko, 2012
 
-#include "ExtinctionMonitorFNAL/Reconstruction/inc/PixelHitLookup.hh"
+#include "Offline/ExtinctionMonitorFNAL/Reconstruction/inc/PixelHitLookup.hh"
 
 #include <utility>
 

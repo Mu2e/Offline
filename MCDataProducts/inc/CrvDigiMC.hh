@@ -5,8 +5,8 @@
 // Contact person Ralf Ehrlich
 //
 
-#include "MCDataProducts/inc/CrvStep.hh"
-#include "DataProducts/inc/CRSScintillatorBarIndex.hh"
+#include "Offline/MCDataProducts/inc/CrvStep.hh"
+#include "Offline/DataProducts/inc/CRSScintillatorBarIndex.hh"
 #include <vector>
 
 namespace mu2e 

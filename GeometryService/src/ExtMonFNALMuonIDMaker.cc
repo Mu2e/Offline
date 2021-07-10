@@ -2,10 +2,10 @@
 //Maker source file for Muon ID detector geometry
 
 // Mu2e includes
-#include "ConfigTools/inc/SimpleConfig.hh"
-#include "ExtinctionMonitorFNAL/Geometry/inc/ExtMonFNAL.hh"
-#include "ExtinctionMonitorFNAL/Geometry/inc/ExtMonFNALMuonID.hh"
-#include "GeometryService/inc/ExtMonFNALMuonIDMaker.hh"
+#include "Offline/ConfigTools/inc/SimpleConfig.hh"
+#include "Offline/ExtinctionMonitorFNAL/Geometry/inc/ExtMonFNAL.hh"
+#include "Offline/ExtinctionMonitorFNAL/Geometry/inc/ExtMonFNALMuonID.hh"
+#include "Offline/GeometryService/inc/ExtMonFNALMuonIDMaker.hh"
 
 // C++ includes
 #include <algorithm>

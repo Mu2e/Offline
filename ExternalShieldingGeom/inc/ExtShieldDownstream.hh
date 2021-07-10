@@ -20,7 +20,7 @@
 
 #include "CLHEP/Vector/ThreeVector.h"
 
-#include "Mu2eInterfaces/inc/Detector.hh"
+#include "Offline/Mu2eInterfaces/inc/Detector.hh"
 
 #include "canvas/Persistency/Common/Wrapper.h"
 

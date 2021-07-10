@@ -6,7 +6,7 @@
 //
 
 #include <list>
-#include "Mu2eUtilities/test/makeIt.hh"
+#include "Offline/Mu2eUtilities/test/makeIt.hh"
 
 
 // A cache to make sure all of the test objects live until

@@ -1,5 +1,5 @@
 // Detail class used to implement the MVAStruct for TrkCaloHitPID
-#include "RecoDataProducts/inc/TrkCaloHitPID.hh"
+#include "Offline/RecoDataProducts/inc/TrkCaloHitPID.hh"
 #include <stdexcept>
 #include <iostream>
 #include <stdio.h>

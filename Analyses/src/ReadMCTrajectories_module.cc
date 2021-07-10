@@ -16,8 +16,8 @@
 #include "art/Framework/Core/ModuleMacros.h"
 
 // Mu2e includes.
-#include "MCDataProducts/inc/SimParticle.hh"
-#include "MCDataProducts/inc/MCTrajectoryCollection.hh"
+#include "Offline/MCDataProducts/inc/SimParticle.hh"
+#include "Offline/MCDataProducts/inc/MCTrajectoryCollection.hh"
 
 #include "TH1F.h"
 #include "TNtuple.h"

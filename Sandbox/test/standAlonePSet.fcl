@@ -2,7 +2,7 @@
 #
 #
 
-#include "fcl/minimalMessageService.fcl"
+#include "Offline/fcl/minimalMessageService.fcl"
 
 process_name : standAlonePSet
 
@@ -20,7 +20,7 @@ physics : {
   analyzers : {
     pSetTest : {
       module_type : StandAloneParameterSet
-      psetFile    : "Sandbox/test/example.fcl"
+      psetFile    : "Offline/Sandbox/test/example.fcl"
     }
   }
 

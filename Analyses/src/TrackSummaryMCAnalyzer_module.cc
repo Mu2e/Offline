@@ -27,14 +27,14 @@
 #include "art/Framework/Services/Registry/ServiceHandle.h"
 #include "canvas/Persistency/Common/FindOneP.h"
 
-#include "RecoDataProducts/inc/TrackSummary.hh"
-#include "MCDataProducts/inc/TrackSummaryTruthAssns.hh"
-#include "MCDataProducts/inc/SimParticle.hh"
-#include "MCDataProducts/inc/SimParticleCollection.hh"
-#include "MCDataProducts/inc/EventWeight.hh"
+#include "Offline/RecoDataProducts/inc/TrackSummary.hh"
+#include "Offline/MCDataProducts/inc/TrackSummaryTruthAssns.hh"
+#include "Offline/MCDataProducts/inc/SimParticle.hh"
+#include "Offline/MCDataProducts/inc/SimParticleCollection.hh"
+#include "Offline/MCDataProducts/inc/EventWeight.hh"
 
-#include "Mu2eUtilities/inc/HistTrackSum.hh"
-#include "Mu2eUtilities/inc/TrackCuts.hh"
+#include "Offline/Mu2eUtilities/inc/HistTrackSum.hh"
+#include "Offline/Mu2eUtilities/inc/TrackCuts.hh"
 
 #include "TH1.h"
 

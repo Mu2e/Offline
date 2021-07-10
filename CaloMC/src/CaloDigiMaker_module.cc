@@ -14,18 +14,18 @@
 #include "art_root_io/TFileService.h"
 #include "art_root_io/TFileDirectory.h"
 
-#include "Mu2eUtilities/inc/CaloPulseShape.hh"
-#include "CalorimeterGeom/inc/Calorimeter.hh"
-#include "CaloMC/inc/CaloNoiseSimGenerator.hh"
-#include "CaloMC/inc/CaloWFExtractor.hh"
-#include "ConditionsService/inc/ConditionsHandle.hh"
-#include "ConditionsService/inc/CalorimeterCalibrations.hh"
-#include "ConditionsService/inc/AcceleratorParams.hh"
-#include "DataProducts/inc/EventWindowMarker.hh"
-#include "GeometryService/inc/GeomHandle.hh"
-#include "MCDataProducts/inc/CaloShowerRO.hh"
-#include "RecoDataProducts/inc/CaloDigi.hh"
-#include "SeedService/inc/SeedService.hh"
+#include "Offline/Mu2eUtilities/inc/CaloPulseShape.hh"
+#include "Offline/CalorimeterGeom/inc/Calorimeter.hh"
+#include "Offline/CaloMC/inc/CaloNoiseSimGenerator.hh"
+#include "Offline/CaloMC/inc/CaloWFExtractor.hh"
+#include "Offline/ConditionsService/inc/ConditionsHandle.hh"
+#include "Offline/ConditionsService/inc/CalorimeterCalibrations.hh"
+#include "Offline/ConditionsService/inc/AcceleratorParams.hh"
+#include "Offline/DataProducts/inc/EventWindowMarker.hh"
+#include "Offline/GeometryService/inc/GeomHandle.hh"
+#include "Offline/MCDataProducts/inc/CaloShowerRO.hh"
+#include "Offline/RecoDataProducts/inc/CaloDigi.hh"
+#include "Offline/SeedService/inc/SeedService.hh"
 
 #include "CLHEP/Vector/ThreeVector.h"
 #include "CLHEP/Random/RandPoissonQ.h"
@@ -55,13 +55,13 @@ namespace mu2e {
              using Name    = fhicl::Name;
              using Comment = fhicl::Comment;
              using CNG     = mu2e::CaloNoiseSimGenerator::Config;
-
              fhicl::Table<CNG>          noise_gen_conf       { Name("NoiseGenerator"),         Comment("Noise generator config") };
              fhicl::Atom<art::InputTag> caloShowerCollection { Name("caloShowerROCollection"), Comment("CaloShowerRO collection name") }; 
              fhicl::Atom<art::InputTag> ewMarkerTag          { Name("eventWindowMarker"),      Comment("EventWindowMarker producer") };
              fhicl::Atom<double>        blindTime            { Name("blindTime"),              Comment("Microbunch blind time") }; 
              fhicl::Atom<bool>          addNoise             { Name("addNoise"),               Comment("Add noise to waveform") }; 
              fhicl::Atom<bool>          generateSpotNoise    { Name("generateSpotNoise"),      Comment("Only generate noise near energy deposits") }; 
+             fhicl::Atom<bool>          addRandomNoise       { Name("addRandomNoise"),         Comment("Add random salt and pepper noise") }; 
              fhicl::Atom<double>        digiSampling         { Name("digiSampling"),           Comment("Digitization time sampling") }; 
              fhicl::Atom<int>           nBits                { Name("nBits"),                  Comment("ADC Number of bits") }; 
              fhicl::Atom<unsigned>      nBinsPeak            { Name("nBinsPeak"),              Comment("Window size for finding local maximum to digitize wf") }; 
@@ -78,19 +78,24 @@ namespace mu2e {
             blindTime_         (config().blindTime()),
             digiSampling_      (config().digiSampling()),
             bufferDigi_        (config().bufferDigi()),
+            startTimeBuffer_   (config().digiSampling()*config().bufferDigi()),
             endTimeBuffer_     (config().endTimeBuffer()),
             maxADCCounts_      (1 << config().nBits()),
             pulseShape_        (CaloPulseShape(config().digiSampling())),
-            wfExtractor_       (config().bufferDigi(),config().nBinsPeak(),config().minPeakADC()),
+            wfExtractor_       (config().bufferDigi(),config().nBinsPeak(),config().minPeakADC(),config().bufferDigi()),
             engine_            (createEngine(art::ServiceHandle<SeedService>()->getSeed())),
             addNoise_          (config().addNoise()),
             generateSpotNoise_ (config().generateSpotNoise()),
             noiseGenerator_    (config().noise_gen_conf(), engine_, 0),
+            addRandomNoise_    (config().addRandomNoise()),
             diagLevel_         (config().diagLevel())
          {
 	     consumes<EventWindowMarker>(ewMarkerTag_);
              produces<CaloDigiCollection>();
-         }
+
+             //check that StartTimeBuffer is shorter than BlindTime_
+             if (startTimeBuffer_ > blindTime_) throw cet::exception("CATEGORY")<< "CaloDigiMaker: blindTime is too small to accommodate start time buffer";
+          }
          
          void produce(art::Event& e)   override;
          void beginRun(art::Run& aRun) override;
@@ -110,6 +115,7 @@ namespace mu2e {
        double                  blindTime_;
        double                  digiSampling_;
        unsigned                bufferDigi_;
+       double                  startTimeBuffer_;
        double                  endTimeBuffer_;
        int                     maxADCCounts_;
        CaloPulseShape          pulseShape_;
@@ -118,6 +124,7 @@ namespace mu2e {
        bool                    addNoise_;
        bool                    generateSpotNoise_;
        CaloNoiseSimGenerator   noiseGenerator_;
+       bool                    addRandomNoise_;
        const Calorimeter*      calorimeter_;
        int                     diagLevel_;
   };
@@ -164,7 +171,6 @@ namespace mu2e {
       ConditionsHandle<AcceleratorParams> accPar("ignored");
       ConditionsHandle<CalorimeterCalibrations> calorimeterCalibrations("ignored");
 
-            
       if (calorimeter_->nCrystal()<1 || calorimeter_->caloInfo().getInt("nSiPMPerCrystal")<1) return;
  
       double mbtime    = (ewMarker.spillType() == EventWindowMarker::SpillType::onspill) ?  accPar->deBuncherPeriod : ewMarker.eventLength();      
@@ -197,7 +203,7 @@ namespace mu2e {
           if (SiPMID != iRO) continue;
           for (const float PEtime : CaloShowerRO.PETime())
           {        
-              float       time           = PEtime - blindTime_;         
+              float       time           = PEtime - blindTime_ + startTimeBuffer_;         
               unsigned    startSample    = std::max(0u,unsigned(time/digiSampling_));
               const auto& pulse          = pulseShape_.digitizedPulse(time);
               unsigned    stopSample     = std::min(startSample+pulse.size(), waveform.size());
@@ -213,14 +219,13 @@ namespace mu2e {
   void CaloDigiMaker::generateNoise(std::vector<double>& waveform, unsigned iRO, 
                                     const ConditionsHandle<CalorimeterCalibrations>& calorimeterCalibrations)
   {     
-       // First, find the ranges in the waveform with non-zero bins. 
-       // Since we add padding, they might overlap so we need to be deal with it       
        double minAmplitude = 0.1*calorimeterCalibrations->MeV2ADC(iRO);
 
        size_t timeSample(0);
        std::vector<size_t> hitStarts{}, hitStops{};
        hitStarts.reserve(16);hitStops.reserve(16);
 
+       // First, find the ranges in the waveform with non-zero bins. 
        while (timeSample < waveform.size())
        {
 	   if (waveform[timeSample] < minAmplitude) {++timeSample; continue;}
@@ -234,6 +239,7 @@ namespace mu2e {
 	   timeSample = sampleStop+1;   
        }
 
+       // Since we add padding, they might overlap so we need to be deal with it 
        size_t iprev(0), icurrent(1);
        while (icurrent < hitStarts.size())
        {
@@ -252,7 +258,7 @@ namespace mu2e {
        }      
 
        //Finally add salt and pepper noise
-       noiseGenerator_.addSaltAndPepper(waveform);
+       if (addRandomNoise_) noiseGenerator_.addSaltAndPepper(waveform);
   }
 
 
@@ -277,20 +283,24 @@ namespace mu2e {
        // Build digi for concatenated hits   
        for (size_t ihit=0;ihit<hitStarts.size();++ihit)
        {
-	    size_t sampleStart = hitStarts[ihit];
-	    size_t sampleStop  = hitStops[ihit];
-	    size_t t0          = size_t(sampleStart*digiSampling_ + blindTime_);
+	   size_t sampleStart = hitStarts[ihit];
+	   size_t sampleStop  = hitStops[ihit];
+	   size_t t0          = size_t(sampleStart*digiSampling_ + blindTime_ - startTimeBuffer_);
 
-	    std::vector<int> wfsample{};
-            wfsample.reserve(sampleStop-sampleStart);
-	    for (size_t i=sampleStart; i<sampleStop; ++i) wfsample.push_back(std::min(int(waveform[i]),maxADCCounts_));
+	   std::vector<int> wfsample{};
+           wfsample.reserve(sampleStop-sampleStart);
+	   for (size_t i=sampleStart; i<sampleStop; ++i) wfsample.push_back(std::min(int(waveform[i]),maxADCCounts_));
 
-	    size_t peakPosition(0u);
-            for (auto i = 0u; i<wfsample.size();++i) {if (wfsample[i]>=wfsample[peakPosition]) peakPosition=i;}
-	    if (diagLevel_ >2) std::cout<<"[CaloDigiMaker] Start=" << sampleStart << " Stop=" << sampleStop << " peak in position " << peakPosition << std::endl; 
+	   // only consider hits above blindTime
+           size_t peakPosition(0u);
+           for (auto i = 0u; i<wfsample.size();++i) {
+              if (t0+i*digiSampling_ >= blindTime_ && wfsample[i]>=wfsample[peakPosition]) peakPosition=i;
+           }
+	   if (diagLevel_ >2) std::cout<<"[CaloDigiMaker] Start=" << sampleStart << " Stop=" << sampleStop 
+                                       << " peak in position " << peakPosition << std::endl; 
 
-	    caloDigiColl.emplace_back(CaloDigi(iRO,t0,wfsample,peakPosition) );
-	    if (diagLevel_ > 2) diag1(iRO, t0, peakPosition, wfsample, pedestal);
+	   caloDigiColl.emplace_back(CaloDigi(iRO,t0,wfsample,peakPosition) );
+	   if (diagLevel_ > 2) diag1(iRO, t0, peakPosition, wfsample, pedestal);
        }      
   }
 
@@ -319,7 +329,8 @@ namespace mu2e {
   //-------------------------------------------------------------------------------------------------------------------
   void CaloDigiMaker::plotWF(const std::vector<int>& waveform, const std::string& pname, int pedestal)
   {      
-      TH1F h("h","Waveform",waveform.size(),blindTime_,waveform.size()*digiSampling_+blindTime_);
+      double startTime = blindTime_ - startTimeBuffer_;
+      TH1F h("h","Waveform",waveform.size(),startTime,waveform.size()*digiSampling_+startTime);
       for (size_t i=1;i<=waveform.size();++i) h.SetBinContent(i,waveform[i-1]);
       TLine line;
       line.SetLineStyle(2);
@@ -329,8 +340,8 @@ namespace mu2e {
       gStyle->SetOptStat(0);
       TCanvas c1("c1","c1");
       h.Draw();
-      line.DrawLine(blindTime_,pedestal,waveform.size()*digiSampling_+blindTime_,pedestal);
-      line2.DrawLine(blindTime_,pedestal+16,waveform.size()*digiSampling_+blindTime_,pedestal+16);
+      line.DrawLine(startTime,pedestal,waveform.size()*digiSampling_+startTime,pedestal);
+      line2.DrawLine(startTime,pedestal+16,waveform.size()*digiSampling_+startTime,pedestal+16);
       c1.SaveAs(pname.c_str());
   }
   

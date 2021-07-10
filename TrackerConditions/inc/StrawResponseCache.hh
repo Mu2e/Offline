@@ -1,9 +1,9 @@
 #ifndef TrackerConditions_StrawResponseCache_hh
 #define TrackerConditions_StrawResponseCache_hh
 
-#include "Mu2eInterfaces/inc/ProditionsCache.hh"
-#include "TrackerConditions/inc/StrawResponseMaker.hh"
-#include "ProditionsService/inc/ProditionsHandle.hh"
+#include "Offline/Mu2eInterfaces/inc/ProditionsCache.hh"
+#include "Offline/TrackerConditions/inc/StrawResponseMaker.hh"
+#include "Offline/ProditionsService/inc/ProditionsHandle.hh"
 
 
 namespace mu2e {

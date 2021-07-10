@@ -22,14 +22,14 @@
 #include "canvas/Persistency/Common/FindManyP.h"
 #include "canvas/Utilities/InputTag.h"
 
-#include "MCDataProducts/inc/SimParticle.hh"
-#include "RecoDataProducts/inc/ExtMonFNALRecoCluster.hh"
-#include "RecoDataProducts/inc/ExtMonFNALRecoClusterCollection.hh"
-#include "RecoDataProducts/inc/ExtMonFNALTrkFit.hh"
-#include "RecoDataProducts/inc/ExtMonFNALTrkFitCollection.hh"
+#include "Offline/MCDataProducts/inc/SimParticle.hh"
+#include "Offline/RecoDataProducts/inc/ExtMonFNALRecoCluster.hh"
+#include "Offline/RecoDataProducts/inc/ExtMonFNALRecoClusterCollection.hh"
+#include "Offline/RecoDataProducts/inc/ExtMonFNALTrkFit.hh"
+#include "Offline/RecoDataProducts/inc/ExtMonFNALTrkFitCollection.hh"
 
-#include "MCDataProducts/inc/ExtMonFNALRecoClusterTruthAssn.hh"
-#include "MCDataProducts/inc/ExtMonFNALPatRecTruthAssns.hh"
+#include "Offline/MCDataProducts/inc/ExtMonFNALRecoClusterTruthAssn.hh"
+#include "Offline/MCDataProducts/inc/ExtMonFNALPatRecTruthAssns.hh"
 
 namespace mu2e {
   namespace ExtMonFNAL {

@@ -22,10 +22,10 @@
 #include <vector>
 
 // Mu2e includes.
-#include "Mu2eInterfaces/inc/ConditionsEntity.hh"
+#include "Offline/Mu2eInterfaces/inc/ConditionsEntity.hh"
 
 // The use of this header  does not introduce a library dependency.
-#include "DataProducts/inc/PDGCode.hh"
+#include "Offline/DataProducts/inc/PDGCode.hh"
 
 // Framework includes
 #include "cetlib_except/exception.h"

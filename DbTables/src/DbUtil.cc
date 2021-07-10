@@ -8,9 +8,9 @@
 #include <boost/algorithm/string/classification.hpp>
 #include <boost/algorithm/string/split.hpp>
 #include "cetlib_except/exception.h"
-#include "DbTables/inc/DbUtil.hh"
-#include "DbTables/inc/DbIoV.hh"
-#include "DbTables/inc/DbTableFactory.hh"
+#include "Offline/DbTables/inc/DbUtil.hh"
+#include "Offline/DbTables/inc/DbIoV.hh"
+#include "Offline/DbTables/inc/DbTableFactory.hh"
 
 // ****************************************************************
 //   read a set of calibration tables from a file

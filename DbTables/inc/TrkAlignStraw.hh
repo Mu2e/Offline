@@ -5,8 +5,8 @@
 #include <iomanip>
 #include <sstream>
 #include <map>
-#include "DbTables/inc/DbTable.hh"
-#include "DbTables/inc/TrkStrawEndAlign.hh"
+#include "Offline/DbTables/inc/DbTable.hh"
+#include "Offline/DbTables/inc/TrkStrawEndAlign.hh"
 #include "CLHEP/Vector/ThreeVector.h"
 
 namespace mu2e {

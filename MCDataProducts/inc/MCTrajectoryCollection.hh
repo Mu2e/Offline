@@ -8,8 +8,8 @@
 // Contact person Rob Kutschke
 //
 
-#include "MCDataProducts/inc/MCTrajectory.hh"
-#include "MCDataProducts/inc/SimParticle.hh"
+#include "Offline/MCDataProducts/inc/MCTrajectory.hh"
+#include "Offline/MCDataProducts/inc/SimParticle.hh"
 
 #include <map>
 

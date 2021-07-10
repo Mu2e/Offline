@@ -6,22 +6,22 @@
 #define CalHelixFinderAlg_HH
 
 // data
-#include "RecoDataProducts/inc/StrawHitPositionCollection.hh"
-#include "RecoDataProducts/inc/StrawHitCollection.hh"
-#include "RecoDataProducts/inc/StrawHitFlag.hh"
-#include "RecoDataProducts/inc/TimeCluster.hh"
-#include "RecoDataProducts/inc/ComboHit.hh"
+#include "Offline/RecoDataProducts/inc/StrawHitPositionCollection.hh"
+#include "Offline/RecoDataProducts/inc/StrawHitCollection.hh"
+#include "Offline/RecoDataProducts/inc/StrawHitFlag.hh"
+#include "Offline/RecoDataProducts/inc/TimeCluster.hh"
+#include "Offline/RecoDataProducts/inc/ComboHit.hh"
 
 // BaBar
 #include "BTrk/TrkBase/TrkErrCode.hh"
 //root
 //#include "TString.h"
 
-#include "Mu2eUtilities/inc/LsqSums2.hh"
-#include "Mu2eUtilities/inc/LsqSums4.hh"
+#include "Offline/Mu2eUtilities/inc/LsqSums2.hh"
+#include "Offline/Mu2eUtilities/inc/LsqSums4.hh"
 // #include "CalPatRec/inc/CalTimePeak.hh"
 //#include "CalPatRec/inc/CalHelixPoint.hh"
-#include "CalPatRec/inc/CalHelixFinderData.hh"
+#include "Offline/CalPatRec/inc/CalHelixFinderData.hh"
 
 class TH1F;
 

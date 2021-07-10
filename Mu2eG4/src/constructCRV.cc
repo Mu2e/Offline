@@ -14,16 +14,16 @@
 
 // Mu2e includes.
 
-#include "Mu2eG4/inc/constructCRV.hh"
-#include "GeometryService/inc/GeomHandle.hh"
-#include "GeometryService/inc/GeometryService.hh"
-#include "GeometryService/inc/G4GeometryOptions.hh"
-#include "Mu2eG4Helper/inc/Mu2eG4Helper.hh"
-#include "CosmicRayShieldGeom/inc/CosmicRayShield.hh"
-#include "CosmicRayShieldGeom/inc/CRSScintillatorShield.hh"
-#include "Mu2eG4/inc/findMaterialOrThrow.hh"
-#include "Mu2eG4/inc/checkForOverlaps.hh"
-#include "Mu2eG4/inc/nestBox.hh"
+#include "Offline/Mu2eG4/inc/constructCRV.hh"
+#include "Offline/GeometryService/inc/GeomHandle.hh"
+#include "Offline/GeometryService/inc/GeometryService.hh"
+#include "Offline/GeometryService/inc/G4GeometryOptions.hh"
+#include "Offline/Mu2eG4Helper/inc/Mu2eG4Helper.hh"
+#include "Offline/CosmicRayShieldGeom/inc/CosmicRayShield.hh"
+#include "Offline/CosmicRayShieldGeom/inc/CRSScintillatorShield.hh"
+#include "Offline/Mu2eG4/inc/findMaterialOrThrow.hh"
+#include "Offline/Mu2eG4/inc/checkForOverlaps.hh"
+#include "Offline/Mu2eG4/inc/nestBox.hh"
 
 // G4 includes
 

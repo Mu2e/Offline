@@ -10,7 +10,7 @@
 
 #include <string>
 
-#include "ConditionsService/inc/ConditionsService.hh"
+#include "Offline/ConditionsService/inc/ConditionsService.hh"
 
 namespace mu2e {
   template <typename ENTITY>

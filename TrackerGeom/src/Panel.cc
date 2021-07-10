@@ -4,7 +4,7 @@
 // Original author Rob Kutschke
 //
 
-#include "TrackerGeom/inc/Panel.hh"
+#include "Offline/TrackerGeom/inc/Panel.hh"
 #include "cetlib_except/exception.h"
 #include <sstream>
 

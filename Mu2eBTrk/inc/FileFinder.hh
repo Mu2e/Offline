@@ -2,7 +2,7 @@
 #define BTrkHelper_FileFinder_hh
 
 #include "BTrk/BaBar/FileFinderInterface.hh"
-#include "ConfigTools/inc/ConfigFileLookupPolicy.hh"
+#include "Offline/ConfigTools/inc/ConfigFileLookupPolicy.hh"
 
 #include "fhiclcpp/ParameterSet.h"
 

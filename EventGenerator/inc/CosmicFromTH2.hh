@@ -9,7 +9,7 @@
 
 #include <vector>
 
-#include "EventGenerator/inc/GeneratorBase.hh"
+#include "Offline/EventGenerator/inc/GeneratorBase.hh"
 
 #include "CLHEP/Random/RandFlat.h"
 

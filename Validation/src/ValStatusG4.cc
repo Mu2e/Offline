@@ -1,5 +1,5 @@
 
-#include "Validation/inc/ValStatusG4.hh"
+#include "Offline/Validation/inc/ValStatusG4.hh"
 
 
 int mu2e::ValStatusG4::declare(art::TFileDirectory tfs) {

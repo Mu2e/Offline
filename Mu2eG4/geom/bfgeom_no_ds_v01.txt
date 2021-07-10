@@ -14,7 +14,7 @@
 //
 //  If more variants are added, update the comments in all relevant files.
 
-#include "Mu2eG4/geom/bfgeom_v01.txt"
+#include "Offline/Mu2eG4/geom/bfgeom_v01.txt"
 
 vector<string> bfield.innerMaps = {
   "BFieldMaps/Mau13/PSMap.header",

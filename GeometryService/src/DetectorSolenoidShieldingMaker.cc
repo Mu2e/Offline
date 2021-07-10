@@ -1,9 +1,9 @@
 // Mu2e includes
-#include "ConfigTools/inc/SimpleConfig.hh"
-#include "DetectorSolenoidGeom/inc/DetectorSolenoid.hh"
-#include "GeometryService/inc/DetectorSolenoidShieldingMaker.hh"
-#include "DetectorSolenoidGeom/inc/DetectorSolenoidShielding.hh"
-#include "GeomPrimitives/inc/Tube.hh"
+#include "Offline/ConfigTools/inc/SimpleConfig.hh"
+#include "Offline/DetectorSolenoidGeom/inc/DetectorSolenoid.hh"
+#include "Offline/GeometryService/inc/DetectorSolenoidShieldingMaker.hh"
+#include "Offline/DetectorSolenoidGeom/inc/DetectorSolenoidShielding.hh"
+#include "Offline/GeomPrimitives/inc/Tube.hh"
 
 // C++ includes
 #include <iostream>

@@ -7,21 +7,21 @@
 #include "fhiclcpp/types/Atom.h"
 #include "fhiclcpp/types/Sequence.h"
 
-#include "ConditionsService/inc/ConditionsHandle.hh"
-#include "ConfigTools/inc/ConfigFileLookupPolicy.hh"
-#include "ConditionsService/inc/AcceleratorParams.hh"
+#include "Offline/ConditionsService/inc/ConditionsHandle.hh"
+#include "Offline/ConfigTools/inc/ConfigFileLookupPolicy.hh"
+#include "Offline/ConditionsService/inc/AcceleratorParams.hh"
 
-#include "MCDataProducts/inc/StrawDigiMCCollection.hh"
-#include "RecoDataProducts/inc/StrawHit.hh"
-#include "RecoDataProducts/inc/StrawHitFlag.hh"
-#include "RecoDataProducts/inc/ComboHit.hh"
-#include "RecoDataProducts/inc/BkgCluster.hh"
-#include "RecoDataProducts/inc/BkgClusterHit.hh"
-#include "RecoDataProducts/inc/BkgQual.hh"
+#include "Offline/MCDataProducts/inc/StrawDigiMCCollection.hh"
+#include "Offline/RecoDataProducts/inc/StrawHit.hh"
+#include "Offline/RecoDataProducts/inc/StrawHitFlag.hh"
+#include "Offline/RecoDataProducts/inc/ComboHit.hh"
+#include "Offline/RecoDataProducts/inc/BkgCluster.hh"
+#include "Offline/RecoDataProducts/inc/BkgClusterHit.hh"
+#include "Offline/RecoDataProducts/inc/BkgQual.hh"
 
-#include "Mu2eUtilities/inc/MVATools.hh"
-#include "TrkReco/inc/TNTClusterer.hh"
-#include "TrkReco/inc/ScanClusterer.hh"
+#include "Offline/Mu2eUtilities/inc/MVATools.hh"
+#include "Offline/TrkReco/inc/TNTClusterer.hh"
+#include "Offline/TrkReco/inc/ScanClusterer.hh"
 
 #include <string>
 #include <vector>

@@ -5,9 +5,9 @@
 // Original author Rob Kutschke
 //
 
-#include "MCDataProducts/inc/SimParticleCollection.hh"
-#include "DataProducts/inc/PDGCode.hh"
-#include "MCDataProducts/inc/ProcessCode.hh"
+#include "Offline/MCDataProducts/inc/SimParticleCollection.hh"
+#include "Offline/DataProducts/inc/PDGCode.hh"
+#include "Offline/MCDataProducts/inc/ProcessCode.hh"
 
 #include "art/Framework/Core/EDAnalyzer.h"
 #include "art/Framework/Principal/Event.h"

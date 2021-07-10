@@ -13,8 +13,8 @@
 
 #include "canvas/Persistency/Common/Wrapper.h"
 
-#include "Mu2eInterfaces/inc/Detector.hh"
-#include "ExtinctionMonitorFNAL/Geometry/inc/ExtMonFNALMagnet.hh"
+#include "Offline/Mu2eInterfaces/inc/Detector.hh"
+#include "Offline/ExtinctionMonitorFNAL/Geometry/inc/ExtMonFNALMagnet.hh"
 
 namespace mu2e {
 

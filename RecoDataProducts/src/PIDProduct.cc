@@ -3,7 +3,7 @@
 //  Original author Vadim Rusu
 //
 
-#include "RecoDataProducts/inc/PIDProduct.hh"
+#include "Offline/RecoDataProducts/inc/PIDProduct.hh"
 
 using namespace std;
 

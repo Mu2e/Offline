@@ -10,19 +10,19 @@
 #include <TSystem.h>
 #include <TFile.h>
 //Cosmics:
-#include "RecoDataProducts/inc/CosmicTrackSeed.hh"
+#include "Offline/RecoDataProducts/inc/CosmicTrackSeed.hh"
 //Calo:
-#include "RecoDataProducts/inc/CaloHit.hh"
+#include "Offline/RecoDataProducts/inc/CaloHit.hh"
 //MC Products:
-#include "MCDataProducts/inc/MCTrajectoryCollection.hh"
+#include "Offline/MCDataProducts/inc/MCTrajectoryCollection.hh"
 //Kalman Tracks
-#include "RecoDataProducts/inc/KalSeed.hh"
-#include "RecoDataProducts/inc/KalRepCollection.hh"
-#include "RecoDataProducts/inc/TrkExtTrajCollection.hh"
+#include "Offline/RecoDataProducts/inc/KalSeed.hh"
+#include "Offline/RecoDataProducts/inc/KalRepCollection.hh"
+#include "Offline/RecoDataProducts/inc/TrkExtTrajCollection.hh"
 //Tracker Hits:
-#include "RecoDataProducts/inc/ComboHit.hh"
+#include "Offline/RecoDataProducts/inc/ComboHit.hh"
 //CRV:
-#include "RecoDataProducts/inc/CrvRecoPulse.hh"
+#include "Offline/RecoDataProducts/inc/CrvRecoPulse.hh"
 //#include "RecoDataProducts/inc/CrvCoincidenceClusterCollection.hh"
 //Art:
 #include "art/Framework/Principal/Event.h"
@@ -34,7 +34,7 @@
 
 using namespace CLHEP;
 
-#include "TEveEventDisplay/src/dict_classes/Data_Collections.h"
+#include "Offline/TEveEventDisplay/src/dict_classes/Data_Collections.h"
 
 namespace mu2e{
 

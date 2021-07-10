@@ -5,7 +5,7 @@
 # Original author Rob Kutschke
 #
 
-#include "fcl/minimalMessageService.fcl"
+#include "Offline/fcl/minimalMessageService.fcl"
 
 # Give this job a name.  
 process_name : tracerProduct00

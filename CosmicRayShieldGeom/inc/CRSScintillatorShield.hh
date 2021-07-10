@@ -11,8 +11,8 @@
 #include <vector>
 
 // Mu2e includes
-#include "CosmicRayShieldGeom/inc/CRSScintillatorShieldId.hh"
-#include "CosmicRayShieldGeom/inc/CRSScintillatorModule.hh"
+#include "Offline/CosmicRayShieldGeom/inc/CRSScintillatorShieldId.hh"
+#include "Offline/CosmicRayShieldGeom/inc/CRSScintillatorModule.hh"
 
 
 namespace mu2e 

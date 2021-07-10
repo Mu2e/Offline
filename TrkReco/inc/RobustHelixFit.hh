@@ -7,17 +7,17 @@
 
 #include "fhiclcpp/types/Atom.h"
 #include "fhiclcpp/types/Sequence.h"
-#include "DataProducts/inc/Helicity.hh"
-#include "RecoDataProducts/inc/ComboHit.hh"
-#include "RecoDataProducts/inc/HelixSeed.hh"
+#include "Offline/DataProducts/inc/Helicity.hh"
+#include "Offline/RecoDataProducts/inc/ComboHit.hh"
+#include "Offline/RecoDataProducts/inc/HelixSeed.hh"
 #include "BTrk/TrkBase/TrkErrCode.hh"
 #include "TH1F.h"
 #include "Math/VectorUtil.h"
 #include "Math/Vector2D.h"
 //#include "Mu2eUtilities/inc/LsqSums4.hh"
-#include "TrkReco/inc/RobustHelixFinderData.hh"
+#include "Offline/TrkReco/inc/RobustHelixFinderData.hh"
 
-#include "Mu2eUtilities/inc/MedianCalculator.hh"
+#include "Offline/Mu2eUtilities/inc/MedianCalculator.hh"
 
 //using namespace ROOT::Math::VectorUtil;
 

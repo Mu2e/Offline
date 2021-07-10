@@ -38,7 +38,7 @@
 // 1) The services section of the staves is not yet described and for now is left as solid Al.
 //
 
-#include "Mu2eG4/geom/tracker_v0.txt"
+#include "Offline/Mu2eG4/geom/tracker_v0.txt"
 
 // Tell the Tracker object that we using the detailed support structure.
 string trackerSupport.model = "detailedv0";

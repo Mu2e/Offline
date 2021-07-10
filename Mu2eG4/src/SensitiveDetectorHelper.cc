@@ -19,13 +19,13 @@
 //
 
 // From Mu2e
-#include "Mu2eG4/inc/SensitiveDetectorHelper.hh"
-#include "MCDataProducts/inc/StepPointMCCollection.hh"
-#include "MCDataProducts/inc/ExtMonFNALSimHitCollection.hh"
-#include "Mu2eG4/inc/SensitiveDetectorName.hh"
-#include "Mu2eG4Helper/inc/Mu2eG4Helper.hh"
-#include "Mu2eG4/inc/Mu2eG4PerThreadStorage.hh"
-#include "GeometryService/inc/GeometryService.hh"
+#include "Offline/Mu2eG4/inc/SensitiveDetectorHelper.hh"
+#include "Offline/MCDataProducts/inc/StepPointMCCollection.hh"
+#include "Offline/MCDataProducts/inc/ExtMonFNALSimHitCollection.hh"
+#include "Offline/Mu2eG4/inc/SensitiveDetectorName.hh"
+#include "Offline/Mu2eG4Helper/inc/Mu2eG4Helper.hh"
+#include "Offline/Mu2eG4/inc/Mu2eG4PerThreadStorage.hh"
+#include "Offline/GeometryService/inc/GeometryService.hh"
 
 // From art and its tool chain
 #include "art/Framework/Principal/Event.h"

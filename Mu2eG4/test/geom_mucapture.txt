@@ -5,7 +5,7 @@
 // Original author KLG
 //
 
-#include "Mu2eG4/test/geom_01.txt"
+#include "Offline/Mu2eG4/test/geom_01.txt"
 
 // Choose a PhysicsList and set related parameters.
 string g4.physicsListName = "QGSP_BERT_HP_MU2E00";

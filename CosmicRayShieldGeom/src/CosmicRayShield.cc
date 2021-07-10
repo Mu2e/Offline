@@ -5,7 +5,7 @@
 // Original author KLG
 //
 
-#include "CosmicRayShieldGeom/inc/CosmicRayShield.hh"
+#include "Offline/CosmicRayShieldGeom/inc/CosmicRayShield.hh"
 
 namespace mu2e 
 {

@@ -1,5 +1,5 @@
-#include "CaloReco/inc/CaloTemplateWFUtil.hh"
-#include "Mu2eUtilities/inc/CaloPulseShape.hh"
+#include "Offline/CaloReco/inc/CaloTemplateWFUtil.hh"
+#include "Offline/Mu2eUtilities/inc/CaloPulseShape.hh"
 
 #include "TMinuit.h"
 #include "TF1.h"

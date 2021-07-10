@@ -3,7 +3,7 @@
 //  Original author Pavel Murat
 //
 
-#include "RecoDataProducts/inc/AlgorithmID.hh"
+#include "Offline/RecoDataProducts/inc/AlgorithmID.hh"
 
 using namespace std;
 

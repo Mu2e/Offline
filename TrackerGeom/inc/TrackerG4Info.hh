@@ -4,13 +4,13 @@
 // Tracker geometry content specific to building the G4 model
 // Extracted from the original Tracker
 //
-#include "GeomPrimitives/inc/TubsParams.hh"
-#include "GeomPrimitives/inc/PlacedTubs.hh"
-#include "TrackerGeom/inc/PanelEB.hh"
-#include "TrackerGeom/inc/Manifold.hh"
-#include "TrackerGeom/inc/Support.hh"
-#include "TrackerGeom/inc/SupportModel.hh"
-#include "TrackerGeom/inc/SupportStructure.hh"
+#include "Offline/GeomPrimitives/inc/TubsParams.hh"
+#include "Offline/GeomPrimitives/inc/PlacedTubs.hh"
+#include "Offline/TrackerGeom/inc/PanelEB.hh"
+#include "Offline/TrackerGeom/inc/Manifold.hh"
+#include "Offline/TrackerGeom/inc/Support.hh"
+#include "Offline/TrackerGeom/inc/SupportModel.hh"
+#include "Offline/TrackerGeom/inc/SupportStructure.hh"
 
 namespace mu2e {
   class TrackerG4Info {

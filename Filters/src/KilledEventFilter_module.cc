@@ -5,7 +5,7 @@
 //
 
 // Mu2e includes.
-#include "MCDataProducts/inc/StatusG4.hh"
+#include "Offline/MCDataProducts/inc/StatusG4.hh"
 
 // Framework includes.
 #include "art/Framework/Core/EDFilter.h"

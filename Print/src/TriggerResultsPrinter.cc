@@ -1,7 +1,7 @@
 
-#include "Print/inc/TriggerResultsPrinter.hh"
+#include "Offline/Print/inc/TriggerResultsPrinter.hh"
 #include "art/Framework/Principal/Provenance.h"
-#include "Mu2eUtilities/inc/TriggerResultsNavigator.hh"
+#include "Offline/Mu2eUtilities/inc/TriggerResultsNavigator.hh"
 #include <vector>
 #include <string>
 #include <iomanip>

@@ -13,9 +13,9 @@
 
 #include "art/Framework/Services/Optional/RandomNumberGenerator.h"
 
-#include "ExtinctionMonitorFNAL/Digitization/inc/PixelCharge.hh"
-#include "MCDataProducts/inc/MARSInfo.hh"
-#include "ExtinctionMonitorFNAL/Utilities/inc/EMFBoxIO.hh"
+#include "Offline/ExtinctionMonitorFNAL/Digitization/inc/PixelCharge.hh"
+#include "Offline/MCDataProducts/inc/MARSInfo.hh"
+#include "Offline/ExtinctionMonitorFNAL/Utilities/inc/EMFBoxIO.hh"
 
 namespace fhicl { class ParameterSet; }
 namespace art   { class Event; }
