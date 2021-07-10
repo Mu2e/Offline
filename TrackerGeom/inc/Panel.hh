@@ -9,11 +9,11 @@
 #include <array>
 
 #include "cetlib_except/exception.h"
-#include "TrackerGeom/inc/Straw.hh"
-#include "DataProducts/inc/StrawId.hh"
-#include "DataProducts/inc/StrawIdMask.hh"
+#include "Offline/TrackerGeom/inc/Straw.hh"
+#include "Offline/DataProducts/inc/StrawId.hh"
+#include "Offline/DataProducts/inc/StrawIdMask.hh"
 #include "CLHEP/Vector/ThreeVector.h"
-#include "GeneralUtilities/inc/HepTransform.hh"
+#include "Offline/GeneralUtilities/inc/HepTransform.hh"
 
 namespace mu2e {
 

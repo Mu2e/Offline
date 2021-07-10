@@ -19,13 +19,13 @@
 
 #include "cetlib_except/exception.h"
 
-#include "Mu2eInterfaces/inc/Detector.hh"
-#include "Mu2eInterfaces/inc/ProditionsEntity.hh"
+#include "Offline/Mu2eInterfaces/inc/Detector.hh"
+#include "Offline/Mu2eInterfaces/inc/ProditionsEntity.hh"
 
-#include "TrackerGeom/inc/Plane.hh"
-#include "TrackerGeom/inc/Panel.hh"
-#include "TrackerGeom/inc/StrawProperties.hh"
-#include "TrackerGeom/inc/TrackerG4Info.hh"
+#include "Offline/TrackerGeom/inc/Plane.hh"
+#include "Offline/TrackerGeom/inc/Panel.hh"
+#include "Offline/TrackerGeom/inc/StrawProperties.hh"
+#include "Offline/TrackerGeom/inc/TrackerG4Info.hh"
 
 namespace mu2e {
   class Tracker : public Detector, public ProditionsEntity {

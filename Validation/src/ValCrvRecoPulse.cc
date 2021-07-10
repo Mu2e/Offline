@@ -1,5 +1,5 @@
 
-#include "Validation/inc/ValCrvRecoPulse.hh"
+#include "Offline/Validation/inc/ValCrvRecoPulse.hh"
 
 
 int mu2e::ValCrvRecoPulse::declare(art::TFileDirectory tfs) {

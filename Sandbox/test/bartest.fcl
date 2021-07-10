@@ -6,7 +6,7 @@
 # If it is false then the BarService is called first.
 #
 
-#include "fcl/minimalMessageService.fcl"
+#include "Offline/fcl/minimalMessageService.fcl"
 
 process_name : BarTest
 

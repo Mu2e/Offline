@@ -3,7 +3,7 @@
 
 #include <ostream>
 
-#include "DataProducts/inc/PanelId.hh"
+#include "Offline/DataProducts/inc/PanelId.hh"
 
 namespace mu2e {
 

@@ -5,7 +5,7 @@
 #ifndef RecoDataProducts_BkgClusterHit_hh
 #define RecoDataProducts_BkgClusterHit_hh
 
-#include "RecoDataProducts/inc/StrawHitFlag.hh"
+#include "Offline/RecoDataProducts/inc/StrawHitFlag.hh"
 #include <vector>
 
 namespace mu2e 

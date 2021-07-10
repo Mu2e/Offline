@@ -7,7 +7,7 @@
 
 #include <vector>
 
-#include "MCDataProducts/inc/ExtMonFNALSimHit.hh"
+#include "Offline/MCDataProducts/inc/ExtMonFNALSimHit.hh"
 
 namespace mu2e {
   typedef std::vector<mu2e::ExtMonFNALSimHit> ExtMonFNALSimHitCollection;

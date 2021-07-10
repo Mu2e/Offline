@@ -12,9 +12,9 @@
 #include "Geant4/G4WorkerRunManager.hh"
 
 //Mu2e includes
-#include "Mu2eG4/inc/Mu2eG4Config.hh"
-#include "Mu2eG4/inc/PhysicsProcessInfo.hh"
-#include "Mu2eG4/inc/SensitiveDetectorHelper.hh"
+#include "Offline/Mu2eG4/inc/Mu2eG4Config.hh"
+#include "Offline/Mu2eG4/inc/PhysicsProcessInfo.hh"
+#include "Offline/Mu2eG4/inc/SensitiveDetectorHelper.hh"
 
 // C++ includes
 #include <thread>

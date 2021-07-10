@@ -1,5 +1,5 @@
 // Mu2e includes
-#include "SimulationConditions/inc/SimBookkeeper.hh"
+#include "Offline/SimulationConditions/inc/SimBookkeeper.hh"
 
 namespace mu2e {
 

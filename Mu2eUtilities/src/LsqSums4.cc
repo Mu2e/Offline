@@ -3,7 +3,7 @@
 //-----------------------------------------------------------------------------
 #include <cmath>
 
-#include "Mu2eUtilities/inc/LsqSums4.hh"
+#include "Offline/Mu2eUtilities/inc/LsqSums4.hh"
 
 
 LsqSums4::LsqSums4() {

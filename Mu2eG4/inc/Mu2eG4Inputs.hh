@@ -8,11 +8,11 @@
 #include <optional>
 
 #include "canvas/Utilities/InputTag.h"
-#include "Mu2eG4/inc/Mu2eG4Config.hh"
-#include "Mu2eG4/inc/Mu2eG4PrimaryType.hh"
+#include "Offline/Mu2eG4/inc/Mu2eG4Config.hh"
+#include "Offline/Mu2eG4/inc/Mu2eG4PrimaryType.hh"
 
 #include "art/Framework/Principal/Handle.h"
-#include "MCDataProducts/inc/SimParticleCollection.hh"
+#include "Offline/MCDataProducts/inc/SimParticleCollection.hh"
 
 namespace art { class Event; }
 

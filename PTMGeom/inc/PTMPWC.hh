@@ -9,7 +9,7 @@
 #include "CLHEP/Vector/Rotation.h"
 #include "CLHEP/Vector/ThreeVector.h"
 
-#include "GeomPrimitives/inc/Box.hh"
+#include "Offline/GeomPrimitives/inc/Box.hh"
 
 // Proportional Wire Chamber object, part of the 
 // production target monitor (PTM)

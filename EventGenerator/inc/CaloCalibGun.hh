@@ -20,9 +20,9 @@
 #include "art/Framework/Principal/Run.h"
 
 // Mu2e includes
-#include "EventGenerator/inc/GeneratorBase.hh"
-#include "CalorimeterGeom/inc/DiskCalorimeter.hh"
-#include "Mu2eUtilities/inc/RandomUnitSphere.hh"
+#include "Offline/EventGenerator/inc/GeneratorBase.hh"
+#include "Offline/CalorimeterGeom/inc/DiskCalorimeter.hh"
+#include "Offline/Mu2eUtilities/inc/RandomUnitSphere.hh"
 
 // CLHEP includes
 #include "CLHEP/Random/RandPoissonQ.h"

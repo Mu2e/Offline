@@ -10,12 +10,12 @@
 #include<vector>
 
 // Mu2e includes
-#include "MCDataProducts/inc/GenParticle.hh"
+#include "Offline/MCDataProducts/inc/GenParticle.hh"
 
 
 #include "CLHEP/Random/RandFlat.h"
 #include "CLHEP/Random/RandGeneral.h"
-#include "Mu2eUtilities/inc/RandomUnitSphere.hh"
+#include "Offline/Mu2eUtilities/inc/RandomUnitSphere.hh"
 
 namespace mu2e {
 

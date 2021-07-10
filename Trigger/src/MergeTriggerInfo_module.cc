@@ -11,7 +11,7 @@
 #include "art/Framework/Principal/Event.h"
 #include "art/Framework/Principal/Handle.h"
 // mu2e data products
-#include "RecoDataProducts/inc/TriggerInfo.hh"
+#include "Offline/RecoDataProducts/inc/TriggerInfo.hh"
 // C++
 #include <vector>
 #include <memory>

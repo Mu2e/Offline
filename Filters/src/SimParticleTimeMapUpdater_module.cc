@@ -15,10 +15,10 @@
 #include "art/Framework/Principal/Handle.h"
 #include "canvas/Utilities/InputTag.h"
 
-#include "MCDataProducts/inc/SimParticle.hh"
-#include "MCDataProducts/inc/SimParticleCollection.hh"
-#include "MCDataProducts/inc/SimParticleTimeMap.hh"
-#include "MCDataProducts/inc/SimParticleRemapping.hh"
+#include "Offline/MCDataProducts/inc/SimParticle.hh"
+#include "Offline/MCDataProducts/inc/SimParticleCollection.hh"
+#include "Offline/MCDataProducts/inc/SimParticleTimeMap.hh"
+#include "Offline/MCDataProducts/inc/SimParticleRemapping.hh"
 
 namespace mu2e {
 

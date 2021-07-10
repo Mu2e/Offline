@@ -1,7 +1,7 @@
 # Look at the provenance of a data product.
 #
 
-#include "fcl/minimalMessageService.fcl"
+#include "Offline/fcl/minimalMessageService.fcl"
 
 process_name : ViewProvenance
 

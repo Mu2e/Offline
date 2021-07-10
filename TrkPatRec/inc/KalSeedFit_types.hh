@@ -15,7 +15,7 @@ namespace fhicl {
   class ParameterSet;
 };
 
-#include "RecoDataProducts/inc/KalSeed.hh"
+#include "Offline/RecoDataProducts/inc/KalSeed.hh"
 
 namespace mu2e {
 

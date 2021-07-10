@@ -3,8 +3,8 @@
 //  Original author MyeongJae Lee
 //
 
-#include "RecoDataProducts/inc/TrkExtTraj.hh"
-#include "RecoDataProducts/inc/TrkExtTrajPoint.hh"
+#include "Offline/RecoDataProducts/inc/TrkExtTraj.hh"
+#include "Offline/RecoDataProducts/inc/TrkExtTrajPoint.hh"
 #include "CLHEP/Vector/ThreeVector.h"
 #include "cetlib_except/exception.h"
 #include <utility>

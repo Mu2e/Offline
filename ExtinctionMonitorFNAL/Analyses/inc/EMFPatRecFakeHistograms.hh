@@ -13,9 +13,9 @@
 
 #include "boost/noncopyable.hpp"
 
-#include "RecoDataProducts/inc/ExtMonFNALTrkFit.hh"
-#include "RecoDataProducts/inc/ExtMonFNALTrkFitCollection.hh"
-#include "MCDataProducts/inc/ExtMonFNALPatRecTruthAssns.hh"
+#include "Offline/RecoDataProducts/inc/ExtMonFNALTrkFit.hh"
+#include "Offline/RecoDataProducts/inc/ExtMonFNALTrkFitCollection.hh"
+#include "Offline/MCDataProducts/inc/ExtMonFNALPatRecTruthAssns.hh"
 
 #include "art/Framework/Principal/Handle.h"
 

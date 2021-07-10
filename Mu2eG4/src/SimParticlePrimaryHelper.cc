@@ -1,9 +1,9 @@
 // Andrei Gaponenko, 2013
 
-#include "Mu2eG4/inc/SimParticlePrimaryHelper.hh"
+#include "Offline/Mu2eG4/inc/SimParticlePrimaryHelper.hh"
 
-#include "MCDataProducts/inc/StepPointMC.hh"
-#include "MCDataProducts/inc/StageParticle.hh"
+#include "Offline/MCDataProducts/inc/StepPointMC.hh"
+#include "Offline/MCDataProducts/inc/StageParticle.hh"
 
 #include "cetlib_except/exception.h"
 

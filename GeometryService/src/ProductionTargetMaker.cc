@@ -1,8 +1,8 @@
-#include "GeometryService/inc/ProductionTargetMaker.hh"
+#include "Offline/GeometryService/inc/ProductionTargetMaker.hh"
 #include "cetlib_except/exception.h"
 #include "CLHEP/Units/SystemOfUnits.h"
-#include "ConfigTools/inc/SimpleConfig.hh"
-#include "ProductionTargetGeom/inc/ProductionTarget.hh"
+#include "Offline/ConfigTools/inc/SimpleConfig.hh"
+#include "Offline/ProductionTargetGeom/inc/ProductionTarget.hh"
 #include <iostream>
 #include <algorithm>
 

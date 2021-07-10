@@ -2,8 +2,8 @@
 #define DbService_DbSql_hh
 
 #include <string>
-#include "DbTables/inc/DbId.hh"
-#include "DbTables/inc/DbTable.hh"
+#include "Offline/DbTables/inc/DbId.hh"
+#include "Offline/DbTables/inc/DbTable.hh"
 #include <libpq-fe.h>
 
 namespace mu2e {

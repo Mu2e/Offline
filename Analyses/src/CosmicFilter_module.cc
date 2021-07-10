@@ -22,15 +22,15 @@
 #include "art_root_io/TFileService.h"
 //#include <boost/shared_ptr.hpp>
 #include "fhiclcpp/ParameterSet.h"
-#include "CalorimeterGeom/inc/DiskCalorimeter.hh"
-#include "GeometryService/inc/GeomHandle.hh"
-#include "GeometryService/inc/GeometryService.hh"
-#include "MCDataProducts/inc/GenParticleCollection.hh"
-#include "RecoDataProducts/inc/StrawHitCollection.hh"
-#include "TrackerGeom/inc/Tracker.hh"
+#include "Offline/CalorimeterGeom/inc/DiskCalorimeter.hh"
+#include "Offline/GeometryService/inc/GeomHandle.hh"
+#include "Offline/GeometryService/inc/GeometryService.hh"
+#include "Offline/MCDataProducts/inc/GenParticleCollection.hh"
+#include "Offline/RecoDataProducts/inc/StrawHitCollection.hh"
+#include "Offline/TrackerGeom/inc/Tracker.hh"
 
 #include "BTrk/TrkBase/HelixParams.hh"
-#include "RecoDataProducts/inc/KalRepPtrCollection.hh"
+#include "Offline/RecoDataProducts/inc/KalRepPtrCollection.hh"
 
 using namespace std;
 

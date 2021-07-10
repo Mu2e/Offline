@@ -1,13 +1,13 @@
 //
 
-#include "TrkPatRec/inc/KalSeedFit_types.hh"
-#include "Mu2eUtilities/inc/McUtilsToolBase.hh"
-#include "Mu2eUtilities/inc/ModuleHistToolBase.hh"
-#include "TrkReco/inc/KalFitData.hh"
+#include "Offline/TrkPatRec/inc/KalSeedFit_types.hh"
+#include "Offline/Mu2eUtilities/inc/McUtilsToolBase.hh"
+#include "Offline/Mu2eUtilities/inc/ModuleHistToolBase.hh"
+#include "Offline/TrkReco/inc/KalFitData.hh"
 
 #include "BTrk/KalmanTrack/KalHit.hh"
 #include "BTrk/KalmanTrack/KalRep.hh"
-#include "BTrkData/inc/TrkStrawHit.hh"
+#include "Offline/BTrkData/inc/TrkStrawHit.hh"
 
 #include "art/Utilities/ToolMacros.h"
 #include "art/Utilities/make_tool.h"

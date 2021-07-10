@@ -10,9 +10,9 @@
 #include "art_root_io/TFileService.h"
 #include "art/Framework/Core/EDAnalyzer.h"
 #include "art/Framework/Core/ModuleMacros.h"
-#include "RecoDataProducts/inc/ProtonBunchTime.hh"
-#include "MCDataProducts/inc/ProtonBunchTimeMC.hh"
-#include "DataProducts/inc/EventWindowMarker.hh"
+#include "Offline/RecoDataProducts/inc/ProtonBunchTime.hh"
+#include "Offline/MCDataProducts/inc/ProtonBunchTimeMC.hh"
+#include "Offline/DataProducts/inc/EventWindowMarker.hh"
 #include "TTree.h"
 
 namespace mu2e {

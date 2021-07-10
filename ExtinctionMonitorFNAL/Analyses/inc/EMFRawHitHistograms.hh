@@ -13,8 +13,8 @@
 
 #include "art_root_io/TFileDirectory.h"
 
-#include "DataProducts/inc/ExtMonFNALChipId.hh"
-#include "RecoDataProducts/inc/ExtMonFNALRawHitCollection.hh"
+#include "Offline/DataProducts/inc/ExtMonFNALChipId.hh"
+#include "Offline/RecoDataProducts/inc/ExtMonFNALRawHitCollection.hh"
 
 class TH1D;
 class TH2D;

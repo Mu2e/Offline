@@ -1,4 +1,4 @@
-#include "TrkReco/fcl/prolog.fcl"
+#include "Offline/TrkReco/fcl/prolog.fcl"
 BEGIN_PROLOG
 
 TrkRecoTrigger : { 

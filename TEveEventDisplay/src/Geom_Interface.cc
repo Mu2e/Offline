@@ -1,5 +1,5 @@
 
-#include "TEveEventDisplay/src/dict_classes/Geom_Interface.h"
+#include "Offline/TEveEventDisplay/src/dict_classes/Geom_Interface.h"
 
 using namespace mu2e;
 namespace mu2e{

@@ -16,8 +16,8 @@
 #include "art/Framework/Services/Registry/ServiceDefinitionMacros.h"
 
 #include "fhiclcpp/ParameterSet.h"
-#include "DbService/inc/DbHandle.hh"
-#include "DbTables/inc/TstCalib1.hh"
+#include "Offline/DbService/inc/DbHandle.hh"
+#include "Offline/DbTables/inc/TstCalib1.hh"
 
 namespace mu2e {
 

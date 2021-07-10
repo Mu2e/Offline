@@ -6,7 +6,7 @@
 // Note: The size is set independently of the CaloHitPtrVector to work with fast clustering algorithm
 //
 #include "canvas/Persistency/Common/Ptr.h"
-#include "RecoDataProducts/inc/CaloHit.hh"
+#include "Offline/RecoDataProducts/inc/CaloHit.hh"
 
 #include "CLHEP/Vector/ThreeVector.h"
 #include "CLHEP/Units/PhysicalConstants.h"

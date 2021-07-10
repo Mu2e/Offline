@@ -1,5 +1,5 @@
-#include "Mu2eG4/inc/Mu2eG4Config.hh"
-#include "Mu2eG4/inc/Mu2eG4PrimaryType.hh"
+#include "Offline/Mu2eG4/inc/Mu2eG4Config.hh"
+#include "Offline/Mu2eG4/inc/Mu2eG4PrimaryType.hh"
 
 namespace mu2e {
   namespace Mu2eG4Config {

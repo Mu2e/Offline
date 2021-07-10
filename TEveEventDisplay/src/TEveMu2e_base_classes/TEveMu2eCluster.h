@@ -4,9 +4,9 @@
 #include <TObject.h>
 #include <TEvePointSet.h>
 #include <TEveCalo.h>
-#include "RecoDataProducts/inc/CaloCluster.hh"
-#include "TEveEventDisplay/src/TEveMu2e_base_classes/TEveMu2eHit.h"
-#include "TEveEventDisplay/src/dict_classes/GeomUtils.h"
+#include "Offline/RecoDataProducts/inc/CaloCluster.hh"
+#include "Offline/TEveEventDisplay/src/TEveMu2e_base_classes/TEveMu2eHit.h"
+#include "Offline/TEveEventDisplay/src/dict_classes/GeomUtils.h"
 #include <string.h>
 #include <string>
 

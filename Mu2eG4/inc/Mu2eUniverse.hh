@@ -15,9 +15,9 @@
 
 
 // Mu2e includes
-#include "Mu2eG4Helper/inc/Mu2eG4Helper.hh"
-#include "GeometryService/inc/GeometryService.hh"
-#include "Mu2eG4/inc/Mu2eG4Config.hh"
+#include "Offline/Mu2eG4Helper/inc/Mu2eG4Helper.hh"
+#include "Offline/GeometryService/inc/GeometryService.hh"
+#include "Offline/Mu2eG4/inc/Mu2eG4Config.hh"
 
 // G4 includes
 #include "Geant4/G4Types.hh"

@@ -1,7 +1,7 @@
 #ifndef ExtinctionMonitorFNAL_Utilities_inc_EMFBoxIO_hh
 #define ExtinctionMonitorFNAL_Utilities_inc_EMFBoxIO_hh
 
-#include "MCDataProducts/inc/MARSInfo.hh"
+#include "Offline/MCDataProducts/inc/MARSInfo.hh"
 
 namespace mu2e {
   namespace ExtMonFNAL {

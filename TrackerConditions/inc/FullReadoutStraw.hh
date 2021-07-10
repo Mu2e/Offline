@@ -6,9 +6,9 @@
 //
 
 // Mu2e includes
-#include "DataProducts/inc/StrawId.hh"
-#include "TrackerGeom/inc/Straw.hh"
-#include "Mu2eInterfaces/inc/ProditionsEntity.hh"
+#include "Offline/DataProducts/inc/StrawId.hh"
+#include "Offline/TrackerGeom/inc/Straw.hh"
+#include "Offline/Mu2eInterfaces/inc/ProditionsEntity.hh"
 
 // C++ includes
 #include <set>

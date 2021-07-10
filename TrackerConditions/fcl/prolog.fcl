@@ -2,9 +2,9 @@ BEGIN_PROLOG
 Mu2eMaterial : {
    verbose : 0
    #  Location of dictionary files for the material model.
-   elements  : "TrackerConditions/data/ElementsList.data"
-   isotopes  : "TrackerConditions/data/IsotopesList.data"
-   materials : "TrackerConditions/data/MaterialsList.data"
+   elements  : "Offline/TrackerConditions/data/ElementsList.data"
+   isotopes  : "Offline/TrackerConditions/data/IsotopesList.data"
+   materials : "Offline/TrackerConditions/data/MaterialsList.data"
    strawGasMaterialName  : "straw-gas"
    strawWallMaterialName : "straw-wall"
    strawWireMaterialName : "straw-wire"

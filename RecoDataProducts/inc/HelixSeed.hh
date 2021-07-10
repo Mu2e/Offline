@@ -7,10 +7,10 @@
 
 // Mu2e includes
 #include "BTrk/TrkBase/TrkT0.hh"
-#include "RecoDataProducts/inc/ComboHit.hh"
-#include "RecoDataProducts/inc/RobustHelix.hh"
-#include "RecoDataProducts/inc/TimeCluster.hh"
-#include "RecoDataProducts/inc/TrkFitFlag.hh"
+#include "Offline/RecoDataProducts/inc/ComboHit.hh"
+#include "Offline/RecoDataProducts/inc/RobustHelix.hh"
+#include "Offline/RecoDataProducts/inc/TimeCluster.hh"
+#include "Offline/RecoDataProducts/inc/TrkFitFlag.hh"
 #include "canvas/Persistency/Common/Ptr.h"
 #include <vector>
 

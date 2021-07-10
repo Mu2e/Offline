@@ -6,8 +6,8 @@
 //
 
 // Mu2e includes
-#include "AnalysisConditions/inc/MVACatalog.hh"
-#include "RecoDataProducts/inc/TrkQual.hh"
+#include "Offline/AnalysisConditions/inc/MVACatalog.hh"
+#include "Offline/RecoDataProducts/inc/TrkQual.hh"
 
 namespace mu2e {
 

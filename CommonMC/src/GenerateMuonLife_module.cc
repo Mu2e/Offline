@@ -22,14 +22,14 @@
 #include "art/Framework/Principal/Handle.h"
 #include "canvas/Utilities/InputTag.h"
 
-#include "MCDataProducts/inc/SimParticle.hh"
-#include "MCDataProducts/inc/SimParticleCollection.hh"
-#include "MCDataProducts/inc/SimParticleTimeMap.hh"
-#include "MCDataProducts/inc/GenId.hh"
-#include "SeedService/inc/SeedService.hh"
-#include "Mu2eUtilities/inc/SimParticleCollectionPrinter.hh"
-#include "GlobalConstantsService/inc/GlobalConstantsHandle.hh"
-#include "GlobalConstantsService/inc/PhysicsParams.hh"
+#include "Offline/MCDataProducts/inc/SimParticle.hh"
+#include "Offline/MCDataProducts/inc/SimParticleCollection.hh"
+#include "Offline/MCDataProducts/inc/SimParticleTimeMap.hh"
+#include "Offline/MCDataProducts/inc/GenId.hh"
+#include "Offline/SeedService/inc/SeedService.hh"
+#include "Offline/Mu2eUtilities/inc/SimParticleCollectionPrinter.hh"
+#include "Offline/GlobalConstantsService/inc/GlobalConstantsHandle.hh"
+#include "Offline/GlobalConstantsService/inc/PhysicsParams.hh"
 
 namespace mu2e {
 

@@ -6,7 +6,7 @@
 
 #include <vector>
 
-#include "RecoDataProducts/inc/ExtMonFNALTrkFit.hh"
+#include "Offline/RecoDataProducts/inc/ExtMonFNALTrkFit.hh"
 
 namespace mu2e {
   typedef std::vector<ExtMonFNALTrkFit> ExtMonFNALTrkFitCollection;

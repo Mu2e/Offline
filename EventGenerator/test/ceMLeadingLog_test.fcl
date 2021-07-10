@@ -3,9 +3,9 @@
 # generate 104.97 MeV electrons with radative Correction included
 # for more info DocDB 20844
 #------------------------------------------------------------------------------
-#include "fcl/minimalMessageService.fcl"
-#include "fcl/standardProducers.fcl"
-#include "fcl/standardServices.fcl"
+#include "Offline/fcl/minimalMessageService.fcl"
+#include "Offline/fcl/standardProducers.fcl"
+#include "Offline/fcl/standardServices.fcl"
 
 process_name : CeMLeadingLogTest
 
@@ -16,9 +16,9 @@ services : {
     TFileService          : { fileName        : "nts.user.ceMLeadingLog_test.xxx.000001.root" }
     RandomNumberGenerator : {defaultEngineKind: "MixMaxRng" }
 
-    GeometryService        : { inputFile      : "JobConfig/common/geom_baseline.txt"  }
-    ConditionsService      : { conditionsfile : "ConditionsService/data/conditions_01.txt"       }
-    GlobalConstantsService : { inputFile      : "GlobalConstantsService/data/globalConstants_01.txt"  }
+    GeometryService        : { inputFile      : "Production/JobConfig/common/geom_baseline.txt"  }
+    ConditionsService      : { conditionsfile : "Offline/ConditionsService/data/conditions_01.txt"       }
+    GlobalConstantsService : { inputFile      : "Offline/GlobalConstantsService/data/globalConstants_01.txt"  }
     BTrkHelper             : @local::BTrkHelperDefault
     Mu2eG4Helper           : { }
     SeedService            : { @table::automaticSeeds

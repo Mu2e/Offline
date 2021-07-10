@@ -14,8 +14,8 @@
 
 #include "CLHEP/Vector/ThreeVector.h"
 #include "CLHEP/Matrix/Vector.h"
-#include "TrkExt/inc/TrkExtMaterial.hh"
-#include "GeneralUtilities/inc/safeSqrt.hh"
+#include "Offline/TrkExt/inc/TrkExtMaterial.hh"
+#include "Offline/GeneralUtilities/inc/safeSqrt.hh"
 
 using namespace CLHEP;
 

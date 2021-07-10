@@ -25,10 +25,10 @@
 #include "messagefacility/MessageLogger/MessageLogger.h"
 
 // Mu2e includes
-#include "ConfigTools/inc/ConfigFileLookupPolicy.hh"
-#include "ConfigTools/inc/SimpleConfig.hh"
-#include "ConfigTools/src/SimpleConfigRecord.hh"
-#include "GeneralUtilities/inc/trimInPlace.hh"
+#include "Offline/ConfigTools/inc/ConfigFileLookupPolicy.hh"
+#include "Offline/ConfigTools/inc/SimpleConfig.hh"
+#include "Offline/ConfigTools/src/SimpleConfigRecord.hh"
+#include "Offline/GeneralUtilities/inc/trimInPlace.hh"
 
 using namespace std;
 

@@ -31,7 +31,7 @@
 #include "cetlib_except/exception.h"
 
 // Mu2e includes
-#include "Mu2eG4/inc/PhysicalVolumeHelper.hh"
+#include "Offline/Mu2eG4/inc/PhysicalVolumeHelper.hh"
 
 // G4 includes
 #include "Geant4/G4PhysicalVolumeStore.hh"

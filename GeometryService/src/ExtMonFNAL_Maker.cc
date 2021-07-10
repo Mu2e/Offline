@@ -1,18 +1,18 @@
 // Andrei Gaponenko, 2011
 
-#include "GeometryService/inc/ExtMonFNAL_Maker.hh"
-#include "GeometryService/inc/ExtMonFNALMagnetMaker.hh"
-#include "GeometryService/inc/ExtMonFNALMuonIDMaker.hh"
+#include "Offline/GeometryService/inc/ExtMonFNAL_Maker.hh"
+#include "Offline/GeometryService/inc/ExtMonFNALMagnetMaker.hh"
+#include "Offline/GeometryService/inc/ExtMonFNALMuonIDMaker.hh"
 
-#include "ExtinctionMonitorFNAL/Geometry/inc/ExtMonFNAL.hh"
-#include "ExtinctionMonitorFNAL/Geometry/inc/ExtMonFNALBuilding.hh"
+#include "Offline/ExtinctionMonitorFNAL/Geometry/inc/ExtMonFNAL.hh"
+#include "Offline/ExtinctionMonitorFNAL/Geometry/inc/ExtMonFNALBuilding.hh"
 
 #include "cetlib_except/exception.h"
 #include "boost/range/algorithm_ext/is_sorted.hpp"
 
 #include "CLHEP/Units/SystemOfUnits.h"
 
-#include "ConfigTools/inc/SimpleConfig.hh"
+#include "Offline/ConfigTools/inc/SimpleConfig.hh"
 
 //#define AGDEBUG(stuff) std::cerr<<"AG: "<<__FILE__<<", line "<<__LINE__<<": "<<stuff<<std::endl;
 #define AGDEBUG(stuff)

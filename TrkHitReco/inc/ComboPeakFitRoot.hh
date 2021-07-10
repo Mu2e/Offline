@@ -4,7 +4,7 @@
 // base class for controlling peak fits
 // Virtual class providing structure for extracting charge from ADC waveforms
 //
-#include "TrkHitReco/inc/PeakFitRoot.hh"
+#include "Offline/TrkHitReco/inc/PeakFitRoot.hh"
 #include "TGraphErrors.h"
 #include <vector>
 

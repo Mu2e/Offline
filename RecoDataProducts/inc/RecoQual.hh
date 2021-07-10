@@ -6,7 +6,7 @@
 #define RecoDataProducts_RecoQual_hh
 #include <Rtypes.h>
 #include <vector>
-#include "GeneralUtilities/inc/MVAStatus.hh"
+#include "Offline/GeneralUtilities/inc/MVAStatus.hh"
 namespace mu2e {
   struct RecoQual {
     RecoQual() : _status(MVAStatus::unset), _value(-1.0), _calib(0.0) {} 

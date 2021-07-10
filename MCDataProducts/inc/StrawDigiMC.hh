@@ -6,11 +6,11 @@
 // Original author David Brown, LBNL
 //
 // Mu2e includes
-#include "DataProducts/inc/StrawId.hh"
-#include "DataProducts/inc/StrawEnd.hh"
-#include "DataProducts/inc/XYZVec.hh"
-#include "MCDataProducts/inc/StrawGasStep.hh"
-#include "MCDataProducts/inc/StepPointMC.hh"
+#include "Offline/DataProducts/inc/StrawId.hh"
+#include "Offline/DataProducts/inc/StrawEnd.hh"
+#include "Offline/DataProducts/inc/XYZVec.hh"
+#include "Offline/MCDataProducts/inc/StrawGasStep.hh"
+#include "Offline/MCDataProducts/inc/StepPointMC.hh"
 // CLHEP includes
 #include "CLHEP/Vector/LorentzVector.h"
 #include "CLHEP/Vector/ThreeVector.h"

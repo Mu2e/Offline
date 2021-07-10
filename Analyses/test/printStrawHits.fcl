@@ -3,9 +3,9 @@
 #
 #
 
-#include "fcl/minimalMessageService.fcl"
-#include "fcl/standardProducers.fcl"
-#include "Analyses/fcl/prolog.fcl"
+#include "Offline/fcl/minimalMessageService.fcl"
+#include "Offline/fcl/standardProducers.fcl"
+#include "Offline/Analyses/fcl/prolog.fcl"
 
 process_name : Print
 
@@ -17,9 +17,9 @@ source : {
 services : {
   message : @local::default_message
 
-  GeometryService        : { inputFile      : "Mu2eG4/geom/geom_common.txt"            }
-  ConditionsService      : { conditionsfile : "ConditionsService/data/conditions_01.txt"      }
-  GlobalConstantsService : { inputFile      : "GlobalConstantsService/data/globalConstants_01.txt" }
+  GeometryService        : { inputFile      : "Offline/Mu2eG4/geom/geom_common.txt"            }
+  ConditionsService      : { conditionsfile : "Offline/ConditionsService/data/conditions_01.txt"      }
+  GlobalConstantsService : { inputFile      : "Offline/GlobalConstantsService/data/globalConstants_01.txt" }
 
 }
 

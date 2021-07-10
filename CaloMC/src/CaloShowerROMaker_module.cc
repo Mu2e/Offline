@@ -10,21 +10,20 @@
 #include "art_root_io/TFileService.h"
 #include "art_root_io/TFileDirectory.h"
 
-#include "CaloMC/inc/CaloPhotonPropagation.hh"
-#include "CalorimeterGeom/inc/Calorimeter.hh"
-#include "ConditionsService/inc/ConditionsHandle.hh"
-#include "ConditionsService/inc/CalorimeterCalibrations.hh"
-#include "ConditionsService/inc/AcceleratorParams.hh"
-#include "DataProducts/inc/EventWindowMarker.hh"
-#include "GeometryService/inc/GeomHandle.hh"
-#include "GlobalConstantsService/inc/GlobalConstantsHandle.hh"
-#include "GlobalConstantsService/inc/ParticleDataTable.hh"
-#include "MCDataProducts/inc/CaloShowerStep.hh"
-#include "MCDataProducts/inc/CaloShowerRO.hh"
-#include "MCDataProducts/inc/CaloShowerSim.hh"
-#include "MCDataProducts/inc/ProtonBunchTimeMC.hh"
-#include "Mu2eUtilities/inc/SimParticleTimeOffset.hh"
-#include "SeedService/inc/SeedService.hh"
+#include "Offline/CaloMC/inc/CaloPhotonPropagation.hh"
+#include "Offline/CalorimeterGeom/inc/Calorimeter.hh"
+#include "Offline/ConditionsService/inc/ConditionsHandle.hh"
+#include "Offline/ConditionsService/inc/CalorimeterCalibrations.hh"
+#include "Offline/ConditionsService/inc/AcceleratorParams.hh"
+#include "Offline/DataProducts/inc/EventWindowMarker.hh"
+#include "Offline/GeometryService/inc/GeomHandle.hh"
+#include "Offline/GlobalConstantsService/inc/GlobalConstantsHandle.hh"
+#include "Offline/GlobalConstantsService/inc/ParticleDataTable.hh"
+#include "Offline/MCDataProducts/inc/CaloShowerStep.hh"
+#include "Offline/MCDataProducts/inc/CaloShowerRO.hh"
+#include "Offline/MCDataProducts/inc/CaloShowerSim.hh"
+#include "Offline/MCDataProducts/inc/ProtonBunchTimeMC.hh"
+#include "Offline/SeedService/inc/SeedService.hh"
 #include "CLHEP/Random/RandPoissonQ.h"
 #include "CLHEP/Random/RandFlat.h"
 
@@ -87,11 +86,9 @@ namespace mu2e {
          {
              using Name    = fhicl::Name;
              using Comment = fhicl::Comment;
-             using SPTO    = SimParticleTimeOffset::Config;
              fhicl::Sequence<art::InputTag>  caloShowerStepCollection { Name("caloShowerStepCollection"), Comment("Compressed shower inputs for calo crystals") };
              fhicl::Atom<art::InputTag>      ewMarkerTag              { Name("eventWindowMarker"),        Comment("EventWindowMarker producer") };
              fhicl::Atom<art::InputTag>      pbtmcTag                 { Name("protonBunchTimeMC"),        Comment("ProtonBunchTimeMC producer") };
-             fhicl::Table<SPTO>              timeOffsets              { Name("timeOffsets"),              Comment("Time maps to apply to sim particles before digitization.") };
              fhicl::Atom<float>              blindTime                { Name("blindTime"),                Comment("Minimum time of hit to be digitized") };
              fhicl::Atom<bool>               LRUCorrection            { Name("LRUCorrection"),            Comment("Include LRU corrections") };
              fhicl::Atom<bool>               BirksCorrection          { Name("BirksCorrection"),          Comment("Include Birks corrections") };
@@ -104,7 +101,6 @@ namespace mu2e {
             EDProducer{config},
             ewMarkerTag_      (config().ewMarkerTag()),
             pbtmcTag_         (config().pbtmcTag()),
-            toff_             (config().timeOffsets()),
             blindTime_        (config().blindTime()),
             LRUCorrection_    (config().LRUCorrection()),
             BirksCorrection_  (config().BirksCorrection()),
@@ -117,7 +113,6 @@ namespace mu2e {
          {
              // the following consumes statements are necessary because SimParticleTimeOffset::updateMap calls getValidHandle.
              for (auto const& tag : config().caloShowerStepCollection()) crystalShowerTokens_.push_back(consumes<CaloShowerStepCollection>(tag));
-             for (auto const& tag : config().timeOffsets().inputs()) consumes<SimParticleTimeMap>(tag);
 	     consumes<EventWindowMarker>(ewMarkerTag_);
 	     consumes<ProtonBunchTimeMC>(pbtmcTag_);
              
@@ -140,7 +135,6 @@ namespace mu2e {
          std::vector<art::ProductToken<CaloShowerStepCollection>> crystalShowerTokens_;
          art::InputTag           ewMarkerTag_;
          art::InputTag           pbtmcTag_;
-         SimParticleTimeOffset   toff_;
          float                   blindTime_;
          float                   mbtime_;
          bool                    LRUCorrection_;
@@ -187,7 +181,6 @@ namespace mu2e {
       //update condition cache
       ConditionsHandle<AcceleratorParams> accPar("ignored");
       mbtime_ = accPar->deBuncherPeriod;
-      toff_.updateMap(event);
  
       //get Event window and bunch timing info
       art::Handle<EventWindowMarker> ewMarkerHandle;
@@ -244,9 +237,9 @@ namespace mu2e {
               const CaloShowerStep& step = *istep;
 
               // Time folding and filtering, see doc-db 3425 + talks from D. Brown for explanation
-              double hitTimeUnfolded = toff_.totalTimeOffset(istep->simParticle())+istep->time();
               double mbLength        = (ewMarker.spillType() == EventWindowMarker::SpillType::onspill) ? mbtime_ : ewMarker.eventLength();
-              double hitTime         = fmod(hitTimeUnfolded + pbtmc.pbtime_ + mbLength, mbLength);
+              //double hitTime         = fmod(istep->time() + pbtmc.pbtime_ + mbLength, mbLength);
+              double hitTime         = fmod(istep->time() + mbLength, mbLength);
               
               if (hitTime < blindTime_) continue;
 

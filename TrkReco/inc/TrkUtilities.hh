@@ -9,7 +9,7 @@
 #include "CLHEP/Matrix/Vector.h"
 #include "BTrk/TrkBase/TrkT0.hh"
 #include "BTrk/BField/BField.hh"
-#include "RecoDataProducts/inc/StrawHitIndex.hh"
+#include "Offline/RecoDataProducts/inc/StrawHitIndex.hh"
 #include <vector>
 
 class HelixTraj;

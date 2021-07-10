@@ -6,12 +6,12 @@
 // from fcl or database
 //
 
-#include "TrackerConditions/inc/StrawElectronics.hh"
-#include "TrackerConfig/inc/StrawElectronicsConfig.hh"
-#include "DAQConditions/inc/EventTiming.hh"
-#include "DbTables/inc/TrkDelayPanel.hh"
-#include "DbTables/inc/TrkDelayRStraw.hh"
-#include "DbTables/inc/TrkPreampStraw.hh"
+#include "Offline/TrackerConditions/inc/StrawElectronics.hh"
+#include "Offline/TrackerConfig/inc/StrawElectronicsConfig.hh"
+#include "Offline/DAQConditions/inc/EventTiming.hh"
+#include "Offline/DbTables/inc/TrkDelayPanel.hh"
+#include "Offline/DbTables/inc/TrkDelayRStraw.hh"
+#include "Offline/DbTables/inc/TrkPreampStraw.hh"
 
 
 namespace mu2e {

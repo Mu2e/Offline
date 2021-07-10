@@ -1,6 +1,6 @@
 // Andrei Gaponenko, 2012
 
-#include "ExtinctionMonitorFNAL/Reconstruction/inc/TrackExtrapolator.hh"
+#include "Offline/ExtinctionMonitorFNAL/Reconstruction/inc/TrackExtrapolator.hh"
 #include <iostream>
 #include <cstdlib>
 
@@ -13,9 +13,9 @@
 #include "canvas/Persistency/Common/FindManyP.h"
 #include "canvas/Persistency/Common/Ptr.h"
 
-#include "RecoDataProducts/inc/ExtMonFNALTrkParam.hh"
-#include "ExtinctionMonitorFNAL/Geometry/inc/ExtMonFNAL.hh"
-#include "GeometryService/inc/GeomHandle.hh"
+#include "Offline/RecoDataProducts/inc/ExtMonFNALTrkParam.hh"
+#include "Offline/ExtinctionMonitorFNAL/Geometry/inc/ExtMonFNAL.hh"
+#include "Offline/GeometryService/inc/GeomHandle.hh"
 
 namespace mu2e {
   namespace ExtMonFNAL {

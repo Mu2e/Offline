@@ -1,4 +1,4 @@
-#include "RecoDataProducts/inc/ExtMonFNALRawCluster.hh"
+#include "Offline/RecoDataProducts/inc/ExtMonFNALRawCluster.hh"
 
 namespace mu2e {
 

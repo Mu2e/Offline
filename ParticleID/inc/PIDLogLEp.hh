@@ -15,8 +15,8 @@
 
 #include "fhiclcpp/ParameterSet.h"
 
-#include "GeneralUtilities/inc/Binning.hh"
-#include "GeneralUtilities/inc/NUBinning.hh"
+#include "Offline/GeneralUtilities/inc/Binning.hh"
+#include "Offline/GeneralUtilities/inc/NUBinning.hh"
 
 namespace mu2e {
 

@@ -13,10 +13,10 @@
 #include "art/Framework/Services/Registry/ServiceDefinitionMacros.h"
 
 // Mu2e includes
-#include "Mu2eG4/inc/finishNesting.hh"
-#include "Mu2eG4Helper/inc/Mu2eG4Helper.hh"
-#include "ConfigTools/inc/SimpleConfig.hh"
-#include "Mu2eG4/inc/checkForOverlaps.hh"
+#include "Offline/Mu2eG4/inc/finishNesting.hh"
+#include "Offline/Mu2eG4Helper/inc/Mu2eG4Helper.hh"
+#include "Offline/ConfigTools/inc/SimpleConfig.hh"
+#include "Offline/Mu2eG4/inc/checkForOverlaps.hh"
 
 // G4 includes
 #include "Geant4/G4LogicalVolume.hh"

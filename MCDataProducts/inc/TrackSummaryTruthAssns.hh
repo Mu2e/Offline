@@ -9,8 +9,8 @@
 
 #include "canvas/Persistency/Common/Assns.h"
 
-#include "MCDataProducts/inc/SimParticle.hh"
-#include "RecoDataProducts/inc/TrackSummary.hh"
+#include "Offline/MCDataProducts/inc/SimParticle.hh"
+#include "Offline/RecoDataProducts/inc/TrackSummary.hh"
 
 namespace mu2e {
 

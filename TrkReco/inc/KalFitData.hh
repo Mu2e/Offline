@@ -5,18 +5,18 @@
 #ifndef KalFitData_HH
 #define KalFitData_HH
 
-#include "RecoDataProducts/inc/StrawHitPositionCollection.hh"
-#include "RecoDataProducts/inc/StrawHitFlagCollection.hh"
-#include "RecoDataProducts/inc/StrawHitCollection.hh"
-#include "RecoDataProducts/inc/TrkFitDirection.hh"
-#include "RecoDataProducts/inc/HelixSeed.hh"
-#include "RecoDataProducts/inc/KalSeed.hh"
-#include "BTrkData/inc/Doublet.hh"
+#include "Offline/RecoDataProducts/inc/StrawHitPositionCollection.hh"
+#include "Offline/RecoDataProducts/inc/StrawHitFlagCollection.hh"
+#include "Offline/RecoDataProducts/inc/StrawHitCollection.hh"
+#include "Offline/RecoDataProducts/inc/TrkFitDirection.hh"
+#include "Offline/RecoDataProducts/inc/HelixSeed.hh"
+#include "Offline/RecoDataProducts/inc/KalSeed.hh"
+#include "Offline/BTrkData/inc/Doublet.hh"
 
 #include "BTrk/TrkBase/TrkT0.hh"
 #include "BTrk/BaBar/BaBar.hh"
 
-#include "BTrkData/inc/TrkStrawHit.hh"
+#include "Offline/BTrkData/inc/TrkStrawHit.hh"
 #include "BTrk/KalmanTrack/KalRep.hh"
 #include "BTrk/TrkBase/TrkParticle.hh"
 #include "BTrk/TrkBase/HelixTraj.hh"

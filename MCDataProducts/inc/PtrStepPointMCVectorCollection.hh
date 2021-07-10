@@ -6,7 +6,7 @@
 // Original author Ivan Logashenko
 //
 
-#include "MCDataProducts/inc/PtrStepPointMCVector.hh"
+#include "Offline/MCDataProducts/inc/PtrStepPointMCVector.hh"
 #include "canvas/Persistency/Common/Ptr.h"
 
 #include <vector>
