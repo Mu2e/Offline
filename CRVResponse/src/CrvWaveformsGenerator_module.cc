@@ -142,7 +142,7 @@ namespace mu2e
     _timeShiftFEBsSide0.clear();
     _timeShiftFEBsSide1.clear();
     unsigned int nCounters = CRS->getAllCRSScintillatorBars().size();
-    unsigned int nFEBs = ceil(nCounters/32.0);
+    unsigned int nFEBs = rint(ceil(nCounters/32.0));
     for(unsigned int i=0; i<nFEBs; ++i)
     {
       //the closest digitization point with respect to a certain time 
