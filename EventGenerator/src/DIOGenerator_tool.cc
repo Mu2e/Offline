@@ -29,15 +29,13 @@ namespace mu2e {
     explicit DIOGenerator(Parameters const& conf) :
       _pdgId(PDGCode::e_minus),
       _mass(GlobalConstantsHandle<ParticleDataTable>()->particle(_pdgId).ref().mass().value()),
-      _genId(GenId::DIOGenTool),
       _spectrum(BinnedSpectrum(conf().spectrum.get<fhicl::ParameterSet>()))
-    {
+    {}
 
-    }
-
+    std::vector<ParticleGeneratorTool::Kinematic> generate() override;
     void generate(std::unique_ptr<GenParticleCollection>& out, const IO::StoppedParticleF& stop) override;
 
-    void setEngine(art::RandomNumberGenerator::base_engine_t& eng) {
+    void finishInitialization(art::RandomNumberGenerator::base_engine_t& eng, const std::string&) override {
       _randomUnitSphere = new RandomUnitSphere(eng);
       _randSpectrum = new CLHEP::RandGeneral(eng, _spectrum.getPDF(), _spectrum.getNbins());
     }
@@ -45,7 +43,6 @@ namespace mu2e {
   private:
     PDGCode::type _pdgId;
     double _mass;
-    GenId _genId;
 
     BinnedSpectrum    _spectrum;
 
@@ -53,19 +50,33 @@ namespace mu2e {
     CLHEP::RandGeneral* _randSpectrum;
   };
 
-  void DIOGenerator::generate(std::unique_ptr<GenParticleCollection>& out, const IO::StoppedParticleF& stop) {
-    const CLHEP::Hep3Vector pos(stop.x, stop.y, stop.z);
+
+  std::vector<ParticleGeneratorTool::Kinematic> DIOGenerator::generate() {
+    std::vector<ParticleGeneratorTool::Kinematic>  res;
 
     double energy = _spectrum.sample(_randSpectrum->fire());
 
     const double p = energy * sqrt(1 - std::pow(_mass/energy,2));
     CLHEP::Hep3Vector p3 = _randomUnitSphere->fire(p);
     CLHEP::HepLorentzVector fourmom(p3, energy);
-    out->emplace_back(_pdgId,
-                      _genId,
-                      pos,
-                      fourmom,
-                      stop.t);
+
+    ParticleGeneratorTool::Kinematic k{_pdgId, ProcessCode::mu2eMuonDecayAtRest, fourmom};
+    res.emplace_back(k);
+
+    return res;
   }
+
+  void DIOGenerator::generate(std::unique_ptr<GenParticleCollection>& out, const IO::StoppedParticleF& stop) {
+    const CLHEP::Hep3Vector pos(stop.x, stop.y, stop.z);
+    const auto daughters = generate();
+    for(const auto& d: daughters) {
+      out->emplace_back(d.pdgId,
+                        GenId::DIOGenTool,
+                        pos,
+                        d.fourmom,
+                        stop.t);
+    }
+  }
+
 }
 DEFINE_ART_CLASS_TOOL(mu2e::DIOGenerator)
