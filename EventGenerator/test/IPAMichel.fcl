@@ -1,0 +1,27 @@
+// S Middleton, 2021
+
+#include "fcl/minimalMessageService.fcl"
+#include "fcl/standardProducers.fcl"
+#include "fcl/standardServices.fcl"
+
+process_name: IPAMichel
+
+source: { module_type: RootInput }
+
+services: @local::Services.Sim
+
+physics : {
+   producers: {
+      generate: {
+         module_type: IPAMichel
+         inputSimParticles: "IPAStopFilter"
+         verbosity: 1
+      }
+   }
+
+   p1: [ generate ]
+   trigger_paths : [ p1 ]
+}
+
+services.SeedService.maxUniqueEngines: 20
+services.SeedService.baseSeed: 1

@@ -38,25 +38,28 @@ namespace mu2e{
         p = p + 15.568;
         }
 
-      /*//Tracker Planes in XZ
+      //Tracker Planes in XZ //TODO - I have rewritten som of the above, probably needs more work but OK for now
       //int nplane = trkr->getPlane(0).nplanes();
-      unsigned int nplanes = trkr->nPlanes();
+      /*unsigned int nplanes = trkr->nPlanes();
       double p = 0.0;
-       for(int i =0;i<20;i++)
+       for(unsigned int i =0;i<nplanes;i++)
         {
-        Double_t panelpos[3];
-        Double_t zpanel{pointmmTocm(2*trkr->g4Tracker()->getPanelEnvelopeParams().zHalfLength())};
-        TEveGeoShape *panel = new TEveGeoShape();
-        CLHEP::Hep3Vector Pos_panel(0,1000,p-dz+zpanel);
+        const Plane trkplane = trkr->getPlane(i);
         
-        panelpos [0] = Pos_panel.x();
-        panelpos [1] = Pos_panel.y();
-        panelpos [2] = Pos_panel.z();   
+        //Double_t zplane{pointmmTocm(2*trkr->g4Tracker()->getPanelEnvelopeParams().zHalfLength())};
+        double dplane_z = pointmmTocm(trkplane.origin().z() - trkr->getPlane(i+1).origin().z());
+        TEveGeoShape *plane = new TEveGeoShape();
+        CLHEP::Hep3Vector Pos_plane(0,1000,pointmmTocm(trkplane.origin().z()));//p-dz+zplane);
+        Double_t planepos[3];
+        planepos [0] = Pos_plane.x();
+        planepos [1] = Pos_plane.y();
+        planepos [2] = Pos_plane.z();   
         
-        panel->SetShape(new TGeoBBox("panel",rmax+rmin/2,rmax+rmin/2,zpanel,panelpos));
-        panel->SetMainTransparency(100);
-        orthodetXZ->AddElement(panel);
-        p = p + 15.568;
+        plane->SetShape(new TGeoBBox("plane",rmax+rmin/2,rmax+rmin/2,dplane_z,planepos));
+        plane->SetMainTransparency(100);
+        orthodetXZ->AddElement(plane);
+        std::cout<<"dz ===== "<<dplane_z<<std::endl;
+        p = p + dplane_z; //TODO - you need to check where this hard coded number comes from and extract it correctly (15.568)
         }*/
         
       //XY:
