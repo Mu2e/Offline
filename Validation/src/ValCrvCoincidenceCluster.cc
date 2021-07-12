@@ -1,5 +1,5 @@
 
-#include "Validation/inc/ValCrvCoincidenceCluster.hh"
+#include "Offline/Validation/inc/ValCrvCoincidenceCluster.hh"
 
 
 int mu2e::ValCrvCoincidenceCluster::declare(art::TFileDirectory tfs) {

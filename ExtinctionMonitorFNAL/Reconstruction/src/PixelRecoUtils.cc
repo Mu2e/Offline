@@ -1,5 +1,5 @@
-#include "ExtinctionMonitorFNAL/Reconstruction/inc/PixelRecoUtils.hh"
-#include "RecoDataProducts/inc/ExtMonFNALRecoClusterCollection.hh"
+#include "Offline/ExtinctionMonitorFNAL/Reconstruction/inc/PixelRecoUtils.hh"
+#include "Offline/RecoDataProducts/inc/ExtMonFNALRecoClusterCollection.hh"
 
 //================================================================
 bool mu2e::ExtMonFNAL::perfectSingleParticleEvent(const ExtMonFNALRecoClusterCollection& coll, unsigned nExtMonPlanes) {

@@ -9,6 +9,8 @@
 #include <string>
 #include <math.h>
 
+#include "Offline/DataProducts/inc/StrawEnd.hh" 
+
 namespace mu2e {
 
   class StrawId{
@@ -40,6 +42,7 @@ namespace mu2e {
       constexpr static uint16_t _nstations = _nplanes/2; // number of stations
       constexpr static uint16_t _nupanels = _npanels * _nplanes; // number of unique panels
       constexpr static uint16_t _nustraws = _nupanels* _nstraws; // number of unique straws
+      constexpr static uint16_t _nustrawends = _nustraws*2; // number of unique straw ends
       constexpr static uint16_t _ntotalfaces = StrawId::_nfaces*StrawId::_nplanes;
       constexpr static uint16_t _maxval = ((_nplanes -1) << _planesft) + ((_npanels -1) << _panelsft) + _nstraws; // maximum Id as uint16 value
 
@@ -150,6 +153,10 @@ namespace mu2e {
     // compact unique integer
       uint16_t uniqueStraw() const{
 	return uniquePanel()*_nstraws + straw();
+      }
+
+      uint16_t uniqueStrawEnd(StrawEnd::End iend) const{
+        return uniqueStraw()*2 + iend;
       }
 
       // logical comparators

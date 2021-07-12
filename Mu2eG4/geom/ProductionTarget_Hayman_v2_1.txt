@@ -1,5 +1,5 @@
 
-#include "Mu2eG4/geom/ProductionTarget_Hayman_v2_0.txt"
+#include "Offline/Mu2eG4/geom/ProductionTarget_Hayman_v2_0.txt"
 int PSHayman.verbosityLevel = 0;
 
 //update the target's segmentation

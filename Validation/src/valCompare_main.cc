@@ -11,7 +11,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <unistd.h>
-#include "Validation/inc/TValCompare.hh"
+#include "Offline/Validation/inc/TValCompare.hh"
 
 void valCompare_usage() {
 

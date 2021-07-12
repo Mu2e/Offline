@@ -15,7 +15,7 @@
 #include "CLHEP/Vector/ThreeVector.h"
 #include "CLHEP/Units/PhysicalConstants.h"
 
-#include "GeomPrimitives/inc/PolyconsParams.hh"
+#include "Offline/GeomPrimitives/inc/PolyconsParams.hh"
 
 namespace mu2e {
 

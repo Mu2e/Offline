@@ -41,9 +41,9 @@
 //#include "CLHEP/Vector/ThreeVector.h"
 //#include "CLHEP/Vector/TwoVector.h"
 
-#include "GeomPrimitives/inc/ExtrudedSolid.hh"
-#include "GeomPrimitives/inc/GenericTrap.hh"
-#include "Mu2eInterfaces/inc/Detector.hh"
+#include "Offline/GeomPrimitives/inc/ExtrudedSolid.hh"
+#include "Offline/GeomPrimitives/inc/GenericTrap.hh"
+#include "Offline/Mu2eInterfaces/inc/Detector.hh"
 
 #include "canvas/Persistency/Common/Wrapper.h"
 

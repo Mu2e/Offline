@@ -7,8 +7,8 @@
 #include <array>
 #include <string>
 
-#include "GeomPrimitives/inc/Torus.hh"
-#include "BeamlineGeom/inc/TSSection.hh"
+#include "Offline/GeomPrimitives/inc/Torus.hh"
+#include "Offline/BeamlineGeom/inc/TSSection.hh"
 
 #include "CLHEP/Vector/Rotation.h"
 #include "CLHEP/Vector/ThreeVector.h"

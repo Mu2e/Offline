@@ -3,7 +3,7 @@
 //
 // Original author David Brown, LBNL
 //
-#include "BTrkData/inc/TrkStrawHit.hh"
+#include "Offline/BTrkData/inc/TrkStrawHit.hh"
 // BTrk
 #include "BTrk/BaBar/BaBar.hh"
 #include "BTrk/TrkBase/TrkErrCode.hh"

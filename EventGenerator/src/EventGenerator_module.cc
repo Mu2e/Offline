@@ -27,19 +27,19 @@
 */
 
 // Mu2e includes.
-#include "ConfigTools/inc/SimpleConfig.hh"
-#include "ConfigTools/inc/requireUniqueKey.hh"
-#include "MCDataProducts/inc/GenId.hh"
-#include "MCDataProducts/inc/GenParticleCollection.hh"
-#include "MCDataProducts/inc/G4BeamlineInfoCollection.hh"
+#include "Offline/ConfigTools/inc/SimpleConfig.hh"
+#include "Offline/ConfigTools/inc/requireUniqueKey.hh"
+#include "Offline/MCDataProducts/inc/GenId.hh"
+#include "Offline/MCDataProducts/inc/GenParticleCollection.hh"
+#include "Offline/MCDataProducts/inc/G4BeamlineInfoCollection.hh"
 
 // Particular generators that this code knows about.
-#include "EventGenerator/inc/CosmicDYB.hh"
-#include "EventGenerator/inc/CosmicFromTH2.hh"
-#include "EventGenerator/inc/FromG4BLFile.hh"
-#include "EventGenerator/inc/ParticleGun.hh"
-#include "EventGenerator/inc/CaloCalibGun.hh"
-#include "SeedService/inc/SeedService.hh"
+#include "Offline/EventGenerator/inc/CosmicDYB.hh"
+#include "Offline/EventGenerator/inc/CosmicFromTH2.hh"
+#include "Offline/EventGenerator/inc/FromG4BLFile.hh"
+#include "Offline/EventGenerator/inc/ParticleGun.hh"
+#include "Offline/EventGenerator/inc/CaloCalibGun.hh"
+#include "Offline/SeedService/inc/SeedService.hh"
 
 // Includes from art and its toolchain.
 #include "art/Framework/Core/EDProducer.h"

@@ -1,6 +1,6 @@
 //
 // Minor updates to proton absorber parameters
-#include "Mu2eG4/geom/protonAbsorber_cylindrical_v02.txt"
+#include "Offline/Mu2eG4/geom/protonAbsorber_cylindrical_v02.txt"
 
 //Increment version number
 int protonabsorber.version = 3;

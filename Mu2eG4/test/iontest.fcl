@@ -1,6 +1,6 @@
-#include "fcl/minimalMessageService.fcl"
-#include "fcl/standardProducers.fcl"
-#include "fcl/standardServices.fcl"
+#include "Offline/fcl/minimalMessageService.fcl"
+#include "Offline/fcl/standardProducers.fcl"
+#include "Offline/fcl/standardServices.fcl"
 
 process_name : iontest
 
@@ -31,16 +31,16 @@ physics : {
 
 outputs: { full: { module_type : RootOutput } }
 
-services.GeometryService.inputFile:  "Mu2eG4/g4study/g4study_Tube_geom.txt"
+services.GeometryService.inputFile:  "Offline/Mu2eG4/g4study/g4study_Tube_geom.txt"
 services.GeometryService.simulatedDetector.tool_type: "ConstructEnvTube"
 physics.producers.g4run.SDConfig.enableSD: []
 physics.producers.g4run.TrajectoryControl.perVolumeMinDistance: {}
 
 physics.producers.g4run.inputs: {
-   primaryType: StepPoints
+   primaryType: SimParticleLeaves
    primaryTag:  "generate"
+   inputPhysVolumeMultiInfo: "generate"
    inputMCTrajectories: ""
-   inputPhysVolumeMultiInfo: ""
 }
 
 services.SeedService.baseSeed         :  8

@@ -15,7 +15,7 @@
 #include "art/Framework/Core/ModuleMacros.h"
 #include "art_root_io/TFileService.h"
 
-#include "MCDataProducts/inc/StatusG4.hh"
+#include "Offline/MCDataProducts/inc/StatusG4.hh"
 
 namespace mu2e {
 

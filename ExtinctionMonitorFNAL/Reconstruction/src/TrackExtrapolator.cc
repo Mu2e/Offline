@@ -1,9 +1,9 @@
-#include "ExtinctionMonitorFNAL/Reconstruction/inc/TrackExtrapolator.hh"
+#include "Offline/ExtinctionMonitorFNAL/Reconstruction/inc/TrackExtrapolator.hh"
 
-#include "ExtinctionMonitorFNAL/Geometry/inc/ExtMonFNAL.hh"
-#include "ExtinctionMonitorFNAL/Geometry/inc/ExtMonFNALMagnet.hh"
+#include "Offline/ExtinctionMonitorFNAL/Geometry/inc/ExtMonFNAL.hh"
+#include "Offline/ExtinctionMonitorFNAL/Geometry/inc/ExtMonFNALMagnet.hh"
 
-#include "RecoDataProducts/inc/ExtMonFNALTrkParam.hh"
+#include "Offline/RecoDataProducts/inc/ExtMonFNALTrkParam.hh"
 
 #include <cassert>
 #include <iostream>

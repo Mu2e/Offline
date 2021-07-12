@@ -1,14 +1,14 @@
 # -*- mode: tcl -*-
 # this file depends on analysis through KalDiag and so needs the following
 # This depedency is deprecated and should be removed FIXME!!
-#include "TrkDiag/fcl/KalDiag.fcl"
+#include "Offline/TrkDiag/fcl/KalDiag.fcl"
 #------------------------------------------------------------------------------
 # this file is included by fcl/standardProducers.fcl inside the PROLOG section
 # CalPatRec: calorimeter-seeded track finding
 # CalPatRec uses its own instance of the hit flags
 # DoubletAmbigResolver is defined in TrkReco/fcl/prolog.fcl
 #------------------------------------------------------------------------------
-#include "fcl/TrkCaloDt.fcl"
+#include "Offline/fcl/TrkCaloDt.fcl"
 BEGIN_PROLOG
 #------------------------------------------------------------------------------
 # there seems to be a circular dependence between MakeStrawHitPositions and 
@@ -342,36 +342,6 @@ CalPatRec : { @table::CalPatRec
 	}
 
 #------------------------------------------------------------------------------
-# is not used any more, ignore
-#------------------------------------------------------------------------------
-	MergePatRec : { module_type:MergePatRec
-	    diagLevel                    : 0
-	    debugLevel                   : 0
-	    trkPatRecModuleLabel         : KFFDeM
-	    calPatRecModuleLabel         : CalTrkFit
-	    KalDiag                      : { @table::KalDiagDirect
-		FillMCInfo               : false
-	    }  # clone from  TrkRecFit
-
-	    DoubletAmbigResolver         : { @table::TrkReco.DoubletAmbigResolver }
-#------------------------------------------------------------------------------
-# distributions for the ANN training variable
-#------------------------------------------------------------------------------
-	    trkPatRecMVA                 : {
-		MVAWeights               : "CalPatRec/data/v5_7_7/MLP_weights_logfcons_1_lin.xml"
-		MVAType                  : 0
-		trkQualHist              : "CalPatRec/data/v5_7_7/tpr_qual_logfcons_2_exp.tab"
-		minTrkQual               : 0.4
-	    }
-
-	    calPatRecMVA                 : {
-		MVAWeights               : "CalPatRec/data/v5_7_7/MLP_weights_logfcons_1_lin.xml"
-		MVAType                  : 0
-		trkQualHist              : "CalPatRec/data/v5_7_7/cpr_qual_logfcons_1_lin.tab"
-		minTrkQual               : 0.65
-	    }
-	}
-#------------------------------------------------------------------------------
 	DeltaFinder : { module_type:DeltaFinder
 	    comboHitCollectionTag         : makePH                # input coll
 	    strawHitCollectionTag         : makeSH                # input coll
@@ -537,25 +507,6 @@ CalPatRec : { @table::CalPatRec
 	    tprHelixCollTag : MHFinderTprDmu
 	    cprHelixCollTag : MHFinderCprDmu
 	}
-
-	MergePatRecCpr : { @table::CalPatRec.producers.MergePatRec trkPatRecModuleLabel: none    calPatRecModuleLabel: CalTrkFit    }
-	MergePatRecTpr : { @table::CalPatRec.producers.MergePatRec trkPatRecModuleLabel: KFFDeM  calPatRecModuleLabel: none         }
-
-	MergePatRecCprDem : { @table::CalPatRec.producers.MergePatRec trkPatRecModuleLabel: none    calPatRecModuleLabel: CalTrkFitDem }
-	MergePatRecTprDem : { @table::CalPatRec.producers.MergePatRec trkPatRecModuleLabel: KFFDeM  calPatRecModuleLabel: none         }
-
-	MergePatRecCprDep : { @table::CalPatRec.producers.MergePatRec trkPatRecModuleLabel: none    calPatRecModuleLabel: CalTrkFitDep }
-	MergePatRecTprDep : { @table::CalPatRec.producers.MergePatRec trkPatRecModuleLabel: KFFDeP  calPatRecModuleLabel: none         }
-
-	MergePatRecDem : { @table::CalPatRec.producers.MergePatRec trkPatRecModuleLabel: KFFDeM  calPatRecModuleLabel: CalTrkFitDem }
-	MergePatRecDpp : { @table::CalPatRec.producers.MergePatRec trkPatRecModuleLabel: KFFDpP  calPatRecModuleLabel: none         }
-	MergePatRecDmm : { @table::CalPatRec.producers.MergePatRec trkPatRecModuleLabel: KFFDmuM calPatRecModuleLabel: CalTrkFitDmm }
-	MergePatRecDep : { @table::CalPatRec.producers.MergePatRec trkPatRecModuleLabel: KFFDeP  calPatRecModuleLabel: CalTrkFitDep }
-	MergePatRecDmp : { @table::CalPatRec.producers.MergePatRec trkPatRecModuleLabel: KFFDmuP calPatRecModuleLabel: none         }
-	MergePatRecUem : { @table::CalPatRec.producers.MergePatRec trkPatRecModuleLabel: KFFUeM  calPatRecModuleLabel: none         }
-	MergePatRecUmm : { @table::CalPatRec.producers.MergePatRec trkPatRecModuleLabel: KFFUmuM calPatRecModuleLabel: none         }
-	MergePatRecUep : { @table::CalPatRec.producers.MergePatRec trkPatRecModuleLabel: KFFUeP  calPatRecModuleLabel: none         }
-	MergePatRecUmp : { @table::CalPatRec.producers.MergePatRec trkPatRecModuleLabel: KFFUmuP calPatRecModuleLabel: none         }
     }
 
     filters : { 

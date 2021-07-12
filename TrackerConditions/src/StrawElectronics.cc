@@ -5,8 +5,8 @@
 //
 // Original author David Brown, LBNL
 //
-#include "TrackerConditions/inc/StrawElectronics.hh"
-#include "GeneralUtilities/inc/DigitalFiltering.hh"
+#include "Offline/TrackerConditions/inc/StrawElectronics.hh"
+#include "Offline/GeneralUtilities/inc/DigitalFiltering.hh"
 #include "cetlib_except/exception.h"
 #include "TMath.h"
 #include <cmath>
@@ -104,7 +104,7 @@ namespace mu2e {
       p0 = _wPoints[distIndex]._adcResponse[index]      + _wPoints[distIndex]._adcResponse[index_refl]*reflection_scale;
       p1 = _wPoints[distIndex + 1]._adcResponse[index]  + _wPoints[distIndex + 1]._adcResponse[index_refl]*reflection_scale;
     }
-    return charge * ( p0 * distFrac + p1 * (1 - distFrac)) * _dVdI[ipath][straw.id().getStraw()];
+    return charge * ( p0 * distFrac + p1 * (1 - distFrac)) * _dVdI[ipath][straw.id().uniqueStraw()];
   }
 
   double StrawElectronics::adcImpulseResponse(StrawId sid, double time, double charge) const {
@@ -113,7 +113,7 @@ namespace mu2e {
       index = _responseBins-1;
     if (index < 0)
       index = 0;
-    return charge * _preampToAdc2Response[index] * _saturationSampleFactor * _dVdI[adc][sid.getStraw()]/_dVdI[thresh][sid.getStraw()];
+    return charge * _preampToAdc2Response[index] * _saturationSampleFactor * _dVdI[adc][sid.uniqueStraw()]/_dVdI[thresh][sid.uniqueStraw()];
   }
  
   double StrawElectronics::saturatedResponse(double vlin) const {
@@ -148,11 +148,11 @@ namespace mu2e {
     double p0 = _wPoints[distIndex]._linmax[ipath][sid.getStraw()];
     double p1 = _wPoints[distIndex + 1]._linmax[ipath][sid.getStraw()];
  
-    return charge * (p0 * distFrac + p1 * (1 - distFrac)) * _dVdI[ipath][sid.getStraw()];
+    return charge * (p0 * distFrac + p1 * (1 - distFrac)) * _dVdI[ipath][sid.uniqueStraw()];
   }
 
   ADCValue StrawElectronics::adcResponse(StrawId sid, double mvolts) const {
-    return min(static_cast<ADCValue>(max(static_cast<int>(floor(mvolts/_ADCLSB)+_ADCped[sid.getStraw()]),0)),_maxADC);
+    return min(static_cast<ADCValue>(max(static_cast<int>(floor(mvolts/_ADCLSB)+_ADCped[sid.uniqueStraw()]),0)),_maxADC);
   }
 
   TDCValue StrawElectronics::tdcResponse(double time) const {
@@ -222,17 +222,17 @@ namespace mu2e {
   }
 
   void StrawElectronics::uncalibrateTimes(TrkTypes::TDCTimes &times, const StrawId &id) const {
-    times[StrawEnd::hv] -= _timeOffsetPanel[id.getPanel()] + _timeOffsetStrawHV[id.getStraw()];
-    times[StrawEnd::cal] -= _timeOffsetPanel[id.getPanel()] + _timeOffsetStrawCal[id.getStraw()];
+    times[StrawEnd::hv] -= _timeOffsetPanel[id.getPanel()] + _timeOffsetStrawHV[id.uniqueStraw()];
+    times[StrawEnd::cal] -= _timeOffsetPanel[id.getPanel()] + _timeOffsetStrawCal[id.uniqueStraw()];
   }
 
   double StrawElectronics::adcVoltage(StrawId sid, ADCValue adcval) const {
-    return (adcval-_ADCped[sid.getStraw()])*_ADCLSB;
+    return (adcval-_ADCped[sid.uniqueStraw()])*_ADCLSB;
   }
 
   double StrawElectronics::adcCurrent(StrawId sid, ADCValue adcval) const {
   // this includes the effects from normalization of the pulse shape
-    return adcVoltage(sid,adcval)/_dVdI[adc][sid.getStraw()];
+    return adcVoltage(sid,adcval)/_dVdI[adc][sid.uniqueStraw()];
   }
 
   double StrawElectronics::mypow(double val,unsigned n) {
@@ -257,7 +257,7 @@ namespace mu2e {
     for(size_t i=0; i<_dVdI.size(); i++) {
       auto const& aa = _dVdI[i];
       string ss = string("dVdI[") + to_string(i) + string("]");
-      printVector(os,ss,aa);
+      printArray(os,ss,aa);
     }
 
     os << "ttrunc["<<_ttrunc.size()<<"] = ";
@@ -267,7 +267,7 @@ namespace mu2e {
     os << "tdeadAnalog = " << _tdeadAnalog << endl;
     os << "tdeadDigital = " << _tdeadDigital << endl;
     os << "vsat = " << _vsat << endl;
-    printVector(os,"vthresh",_vthresh);
+    printArray(os,"vthresh",_vthresh);
     os << "snoise = " << _snoise << endl;
 
     os << "analognoise["<<_analognoise.size()<<"] = ";
@@ -285,7 +285,6 @@ namespace mu2e {
     os << "ADCPeriod = " << _ADCPeriod << endl;
     os << "ADCOffset = " << _ADCOffset << endl;
     os << "maxtsep = " << _maxtsep << endl;
-    os << "TCoince = " << _TCoince << endl;
     os << "maxTDC = " << _maxTDC << endl;
     os << "maxTOT = " << _maxTOT << endl;
     os << "tdcResolution = " << _tdcResolution << endl;
@@ -327,9 +326,9 @@ namespace mu2e {
       printVector(os,"   preampToAdc1Response",_wPoints[i]._preampToAdc1Response);
     }
     os << "clusterLookbackTime = " << _clusterLookbackTime << endl;
-    printVector(os,"timeOffsetPanel",_timeOffsetPanel);
-    printVector(os,"timeOffsetStrawHV",_timeOffsetStrawHV);
-    printVector(os,"timeOffsetStrawCal",_timeOffsetStrawCal);
+    printArray(os,"timeOffsetPanel",_timeOffsetPanel);
+    printArray(os,"timeOffsetStrawHV",_timeOffsetStrawHV);
+    printArray(os,"timeOffsetStrawCal",_timeOffsetStrawCal);
 
   }
 
@@ -346,5 +345,21 @@ namespace mu2e {
 	 << a[n-2] << " " << a[n-1] << endl;
     }
   }
+
+  template<typename T, size_t SIZE>
+    void StrawElectronics::printArray(std::ostream& os, std::string const& name,
+        std::array<T,SIZE> const& a) const {
+      size_t n = a.size();
+      if(n<=4) {
+        os << name << " ("<<n<<") = ";
+        for(auto x : a) os << x << " ";
+        os << endl;
+      } else {
+        os << name <<" ("<<n<<") = " 
+          << a[0] << " " << a[1] << " ... " 
+          << a[n-2] << " " << a[n-1] << endl;
+      }
+
+    }
 
 }

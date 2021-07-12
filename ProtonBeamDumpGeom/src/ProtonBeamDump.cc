@@ -1,4 +1,4 @@
-#include "ProtonBeamDumpGeom/inc/ProtonBeamDump.hh"
+#include "Offline/ProtonBeamDumpGeom/inc/ProtonBeamDump.hh"
 
 namespace mu2e {
 

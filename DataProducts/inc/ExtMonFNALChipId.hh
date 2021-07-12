@@ -8,7 +8,7 @@
 
 #include <ostream>
 
-#include "DataProducts/inc/ExtMonFNALModuleId.hh"
+#include "Offline/DataProducts/inc/ExtMonFNALModuleId.hh"
 
 namespace mu2e {
 

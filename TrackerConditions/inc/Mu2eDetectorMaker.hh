@@ -4,9 +4,9 @@
 // Make Mu2eDetector from fcl or (eventually) database
 //
 
-#include "TrackerConditions/inc/Mu2eMaterial.hh"
-#include "TrackerConditions/inc/Mu2eDetector.hh"
-#include "TrackerConfig/inc/Mu2eDetectorConfig.hh"
+#include "Offline/TrackerConditions/inc/Mu2eMaterial.hh"
+#include "Offline/TrackerConditions/inc/Mu2eDetector.hh"
+#include "Offline/TrackerConfig/inc/Mu2eDetectorConfig.hh"
 
 namespace mu2e {
   class Mu2eDetectorMaker {

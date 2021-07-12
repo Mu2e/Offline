@@ -6,15 +6,15 @@
 //
 
 // Mu2e includes
-#include "Mu2eG4/inc/Mu2eG4EventAction.hh"
-#include "Mu2eG4/inc/Mu2eG4TrackingAction.hh"
-#include "Mu2eG4/inc/Mu2eG4SteppingAction.hh"
-#include "Mu2eG4/inc/SensitiveDetectorHelper.hh"
-#include "Mu2eG4/inc/SimParticleHelper.hh"
-#include "MCDataProducts/inc/ExtMonFNALSimHitCollection.hh"
-#include "MCDataProducts/inc/SimParticleRemapping.hh"
-#include "Mu2eG4/inc/IMu2eG4Cut.hh"
-#include "MCDataProducts/inc/StatusG4.hh"
+#include "Offline/Mu2eG4/inc/Mu2eG4EventAction.hh"
+#include "Offline/Mu2eG4/inc/Mu2eG4TrackingAction.hh"
+#include "Offline/Mu2eG4/inc/Mu2eG4SteppingAction.hh"
+#include "Offline/Mu2eG4/inc/SensitiveDetectorHelper.hh"
+#include "Offline/Mu2eG4/inc/SimParticleHelper.hh"
+#include "Offline/MCDataProducts/inc/ExtMonFNALSimHitCollection.hh"
+#include "Offline/MCDataProducts/inc/SimParticleRemapping.hh"
+#include "Offline/Mu2eG4/inc/IMu2eG4Cut.hh"
+#include "Offline/MCDataProducts/inc/StatusG4.hh"
 
 //G4 includes
 #include "Geant4/G4Timer.hh"

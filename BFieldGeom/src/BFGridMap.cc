@@ -16,8 +16,8 @@
 #include "messagefacility/MessageLogger/MessageLogger.h"
 
 // Mu2e includes
-#include "BFieldGeom/inc/BFGridMap.hh"
-#include "BFieldGeom/inc/BFMap.hh"
+#include "Offline/BFieldGeom/inc/BFGridMap.hh"
+#include "Offline/BFieldGeom/inc/BFMap.hh"
 
 // Other includes
 #include "CLHEP/Vector/ThreeVector.h"

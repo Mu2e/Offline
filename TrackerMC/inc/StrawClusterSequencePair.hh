@@ -3,7 +3,7 @@
 // Define ClusterSequencePair, ie the clust sequence from both ends of a straw
 //
 // Original author David Brown, LBNL
-#include "TrackerMC/inc/StrawClusterSequence.hh"
+#include "Offline/TrackerMC/inc/StrawClusterSequence.hh"
 #include <utility>
 namespace mu2e {
   namespace TrackerMC {

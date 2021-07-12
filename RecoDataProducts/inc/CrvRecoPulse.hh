@@ -5,8 +5,8 @@
 // Contact person Ralf Ehrlich
 //
 
-#include "DataProducts/inc/CRSScintillatorBarIndex.hh"
-#include "RecoDataProducts/inc/CrvRecoPulseFlags.hh"
+#include "Offline/DataProducts/inc/CRSScintillatorBarIndex.hh"
+#include "Offline/RecoDataProducts/inc/CrvRecoPulseFlags.hh"
 
 #include <vector>
 
@@ -55,6 +55,7 @@ namespace mu2e
     double GetPulseEnd() const       {return _pulseEnd;}
 
     const std::vector<size_t>    &GetWaveformIndices() const      {return _waveformIndices;}
+    std::vector<size_t>    &GetWaveformIndices() {return _waveformIndices;} // used in reco compression
     mu2e::CRSScintillatorBarIndex GetScintillatorBarIndex() const {return _scintillatorBarIndex;}
     int                           GetSiPMNumber() const           {return _SiPMNumber;}
 

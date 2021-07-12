@@ -5,9 +5,9 @@
 // Makes the SimBookkeeper ProditionsEntitiy
 //
 
-#include "SimulationConditions/inc/SimBookkeeper.hh"
-#include "SimulationConfig/inc/SimBookkeeperConfig.hh"
-#include "DbTables/inc/SimEfficiencies.hh"
+#include "Offline/SimulationConditions/inc/SimBookkeeper.hh"
+#include "Offline/SimulationConfig/inc/SimBookkeeperConfig.hh"
+#include "Offline/DbTables/inc/SimEfficiencies.hh"
 
 namespace mu2e {
 

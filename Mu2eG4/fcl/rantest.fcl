@@ -1,8 +1,8 @@
 # Configuration file for G4Test01
 #
 
-#include "fcl/minimalMessageService.fcl"
-#include "fcl/standardProducers.fcl"
+#include "Offline/fcl/minimalMessageService.fcl"
+#include "Offline/fcl/standardProducers.fcl"
 
 # Give this job a name.
 process_name : G4Test01
@@ -28,15 +28,15 @@ services :
   GeometryService :
 
   {
-    inputfile : "Mu2eG4/geom/geom_common.txt"
+    inputfile : "Offline/Mu2eG4/geom/geom_common.txt"
   }
 
   ConditionsService :
   {
-    conditionsfile : "ConditionsService/data/conditions_01.txt"
+    conditionsfile : "Offline/ConditionsService/data/conditions_01.txt"
   }
 
-  GlobalConstantsService : { inputFile : "GlobalConstantsService/data/globalConstants_01.txt" }
+  GlobalConstantsService : { inputFile : "Offline/GlobalConstantsService/data/globalConstants_01.txt" }
 
   #Mu2eG4Helper : { }
 
@@ -52,7 +52,7 @@ physics :
     {
      # module_type   : EventGenerator
       module_type   : RanTest
-      inputfile     : "Mu2eG4/test/genconfig_01.txt"
+      inputfile     : "Offline/Mu2eG4/test/genconfig_01.txt"
     }
 
     # Run G4 and add hits to the event

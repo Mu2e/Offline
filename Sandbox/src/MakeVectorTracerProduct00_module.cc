@@ -14,7 +14,7 @@
 #include "messagefacility/MessageLogger/MessageLogger.h"
 
 // Mu2e includes.
-#include "Sandbox/inc/TracerProduct.hh"
+#include "Offline/Sandbox/inc/TracerProduct.hh"
 
 // C++ includes
 #include <vector>

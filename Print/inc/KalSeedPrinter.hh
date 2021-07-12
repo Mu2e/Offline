@@ -9,8 +9,8 @@
 
 #include "CLHEP/Vector/ThreeVector.h"
 
-#include "Print/inc/ProductPrinter.hh"
-#include "RecoDataProducts/inc/KalSeed.hh"
+#include "Offline/Print/inc/ProductPrinter.hh"
+#include "Offline/RecoDataProducts/inc/KalSeed.hh"
 #include "art/Framework/Principal/Handle.h"
 #include "canvas/Persistency/Common/Ptr.h"
 

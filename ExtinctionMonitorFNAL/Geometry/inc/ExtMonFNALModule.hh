@@ -5,9 +5,9 @@
 
 #include "canvas/Persistency/Common/Wrapper.h"
 
-#include "ExtinctionMonitorFNAL/Geometry/inc/ExtMonFNALPixelChip.hh"
-#include "DataProducts/inc/ExtMonFNALPixelId.hh"
-#include "DataProducts/inc/ExtMonFNALModuleId.hh"
+#include "Offline/ExtinctionMonitorFNAL/Geometry/inc/ExtMonFNALPixelChip.hh"
+#include "Offline/DataProducts/inc/ExtMonFNALPixelId.hh"
+#include "Offline/DataProducts/inc/ExtMonFNALModuleId.hh"
 #include "CLHEP/Vector/TwoVector.h"
 
 namespace mu2e {

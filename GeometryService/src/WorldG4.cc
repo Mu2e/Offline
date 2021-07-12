@@ -2,7 +2,7 @@
 //
 // Rob Kutschke, 2011
 
-#include "GeometryService/inc/WorldG4.hh"
+#include "Offline/GeometryService/inc/WorldG4.hh"
 
 #include <limits>
 #include <algorithm>

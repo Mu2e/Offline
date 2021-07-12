@@ -5,7 +5,7 @@
 // Contact person Rob Kutschke
 //
 
-#include "GeneralUtilities/inc/sqrtOrThrow.hh"
+#include "Offline/GeneralUtilities/inc/sqrtOrThrow.hh"
 
 #include <stdexcept>
 #include <sstream>

@@ -4,7 +4,7 @@
 #include <memory>
 #include <typeinfo>
 
-#include "MCDataProducts/inc/EventWeight.hh"
+#include "Offline/MCDataProducts/inc/EventWeight.hh"
 #include "TH1.h"
 #include "art/Framework/Principal/Event.h"
 #include "art/Framework/Principal/Handle.h"
@@ -13,7 +13,7 @@
 #include "fhiclcpp/coding.h"
 #include "fhiclcpp/exception.h"
 
-#include "Mu2eUtilities/inc/EventWeightHelper.hh"
+#include "Offline/Mu2eUtilities/inc/EventWeightHelper.hh"
 
 namespace mu2e {
 

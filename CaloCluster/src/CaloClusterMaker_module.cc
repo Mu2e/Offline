@@ -15,13 +15,13 @@
 #include "cetlib_except/exception.h"
 #include "fhiclcpp/types/Atom.h"
 
-#include "CalorimeterGeom/inc/Calorimeter.hh"
-#include "CaloCluster/inc/ClusterAssociator.hh"
-#include "CaloCluster/inc/ClusterUtils.hh"
-#include "GeometryService/inc/GeomHandle.hh"
-#include "RecoDataProducts/inc/CaloHit.hh"
-#include "RecoDataProducts/inc/CaloCluster.hh"
-#include "RecoDataProducts/inc/CaloProtoCluster.hh"
+#include "Offline/CalorimeterGeom/inc/Calorimeter.hh"
+#include "Offline/CaloCluster/inc/ClusterAssociator.hh"
+#include "Offline/CaloCluster/inc/ClusterUtils.hh"
+#include "Offline/GeometryService/inc/GeomHandle.hh"
+#include "Offline/RecoDataProducts/inc/CaloHit.hh"
+#include "Offline/RecoDataProducts/inc/CaloCluster.hh"
+#include "Offline/RecoDataProducts/inc/CaloProtoCluster.hh"
 
 #include <iostream>
 #include <string>

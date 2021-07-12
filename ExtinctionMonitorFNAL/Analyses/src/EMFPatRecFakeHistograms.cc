@@ -2,7 +2,7 @@
 //
 // Andrei Gaponenko
 
-#include "ExtinctionMonitorFNAL/Analyses/inc/EMFPatRecFakeHistograms.hh"
+#include "Offline/ExtinctionMonitorFNAL/Analyses/inc/EMFPatRecFakeHistograms.hh"
 
 #include <sstream>
 
@@ -15,7 +15,7 @@
 #include "TH2D.h"
 #include "TEfficiency.h"
 
-#include "ExtinctionMonitorFNAL/Geometry/inc/ExtMonFNAL.hh"
+#include "Offline/ExtinctionMonitorFNAL/Geometry/inc/ExtMonFNAL.hh"
 
 #define AGDEBUG(stuff) do { std::cerr<<"AG: "<<__FILE__<<", line "<<__LINE__<<", func "<<__func__<<": "<<stuff<<std::endl; } while(0)
 //#define AGDEBUG(stuff)

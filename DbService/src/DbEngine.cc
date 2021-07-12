@@ -1,8 +1,8 @@
 #include <iostream>
 #include <chrono>
 #include "cetlib_except/exception.h"
-#include "DbService/inc/DbEngine.hh"
-#include "DbTables/inc/DbTableFactory.hh"
+#include "Offline/DbService/inc/DbEngine.hh"
+#include "Offline/DbTables/inc/DbTableFactory.hh"
 
 using namespace std;
 

@@ -21,9 +21,9 @@
 #include "art_root_io/TFileService.h"
 #include "art/Framework/Services/Registry/ServiceHandle.h"
 
-#include "RecoDataProducts/inc/TrackSummary.hh"
-#include "MCDataProducts/inc/TrackSummaryTruthAssns.hh"
-#include "MCDataProducts/inc/SimParticleCollection.hh"
+#include "Offline/RecoDataProducts/inc/TrackSummary.hh"
+#include "Offline/MCDataProducts/inc/TrackSummaryTruthAssns.hh"
+#include "Offline/MCDataProducts/inc/SimParticleCollection.hh"
 
 #include "TH1.h"
 #include "TH2.h"

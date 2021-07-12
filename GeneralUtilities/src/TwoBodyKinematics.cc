@@ -4,7 +4,7 @@
 //
 // Original author Rob Kutschke
 
-#include "GeneralUtilities/inc/TwoBodyKinematics.hh"
+#include "Offline/GeneralUtilities/inc/TwoBodyKinematics.hh"
 
 #include "cetlib/pow.h"
 #include <cmath>

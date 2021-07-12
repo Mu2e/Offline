@@ -15,7 +15,7 @@
 #include "cetlib_except/exception.h"
 
 // Mu2e includes
-#include "Mu2eG4/inc/getPhysicalVolumeOrThrow.hh"
+#include "Offline/Mu2eG4/inc/getPhysicalVolumeOrThrow.hh"
 
 // G4 includes
 #include "Geant4/G4String.hh"

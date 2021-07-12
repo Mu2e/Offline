@@ -8,8 +8,8 @@
 
 #include <sstream>
 
-#include "CosmicRayShieldGeom/inc/CRSScintillatorLayer.hh"
-#include "CosmicRayShieldGeom/inc/CosmicRayShield.hh"
+#include "Offline/CosmicRayShieldGeom/inc/CRSScintillatorLayer.hh"
+#include "Offline/CosmicRayShieldGeom/inc/CosmicRayShield.hh"
 
 #ifndef __CINT__
 

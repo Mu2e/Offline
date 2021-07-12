@@ -25,13 +25,13 @@ from codecs import open
 
 def appendEpilog(trig_path, relProjectDir, outDir, srcDir, verbose, doWrite, sourceFiles, targetFiles):
 
-    trk_filters      = ['EventPrescale','SDCountFilter','TCFilter', 'HSFilter', 'TSFilter']
-    helix_filters    = ['EventPrescale','SDCountFilter','TCFilter', 'HSFilter']
-    tc_filters       = ['EventPrescale','SDCountFilter','TCFilter']
-    calo_filters     = ['EventPrescale','CDCountFilter','Filter'  ]
+    trk_filters      = ['EventPrescale','TCFilter', 'HSFilter', 'TSFilter']
+    helix_filters    = ['EventPrescale','TCFilter', 'HSFilter']
+    tc_filters       = ['EventPrescale','TCFilter']
+    calo_filters     = ['EventPrescale','Filter'  ]
     unbiased_filters = ['EventPrescale']
     minbias_filters  = ['EventPrescale','Filter'       ]
-    cst_filters      = ['EventPrescale','SDCountFilter','TCFilter', 'TSFilter']
+    cst_filters      = ['EventPrescale','TCFilter', 'TSFilter']
     
     filters     = []
 
@@ -92,12 +92,10 @@ def appendEpilog(trig_path, relProjectDir, outDir, srcDir, verbose, doWrite, sou
         # then open it and append one line
         if  doWrite :
             subSubEpilogFile = open(subSubEpilogFileName,"a")
-        trigAlgLine    = ("\nphysics.filters."+filterName+".triggerPath        " + " : " + "\""+trig_path+"_trigger\" \n")
         if doWrite :
-            subSubEpilogFile.write(trigAlgLine)
             subSubEpilogFile.close()
 
-        epilog=("\n#include \""+relSubSubEpilogFileName +"\"")
+        epilog=("\n#include \"Offline/"+relSubSubEpilogFileName +"\"")
 
         if doWrite :
             subEpilogFile.write(epilog)
@@ -113,14 +111,14 @@ def appendEpilog(trig_path, relProjectDir, outDir, srcDir, verbose, doWrite, sou
         subSubEpilogMergerFile.close();
 
         relSubSubEpilogFileName    = relSubEpilogDirName + "/main_"+ trigInfoMergerName + '.fcl' 
-        epilog=("\n#include \""+relSubSubEpilogFileName +"\"")
+        epilog=("\n#include \"Offline/"+relSubSubEpilogFileName +"\"")
 
         subEpilogFile.write(epilog)
         subEpilogFile.close()
 
     # return a line to be added to the main epilog file
     # so it can include the files we just wrote
-    subEpilogInclude=("\n#include \""+relSubEpilogName+"\"")
+    subEpilogInclude=("\n#include \"Offline/"+relSubEpilogName+"\"")
 
     return subEpilogInclude
 
@@ -240,7 +238,6 @@ def generate(configFileText="allPaths", verbose=True, doWrite=True):
     #
 
     configFile = open(configFileName, "r")
-
     for line in configFile:
 
         line = line.strip() # strip whitespace
@@ -248,9 +245,9 @@ def generate(configFileText="allPaths", verbose=True, doWrite=True):
             continue  # skip empty lines
 
         # parse line: path [prescale] [prescale]
-        words = line.split()
-        pathName = words[0]
-
+        words    = line.split()
+        pathName = words[0].split(":")[0]
+        pathID   = words[0].split(":")[1]
         if pathName != "triggerOutput":
 
             # check if the name of the path is present in the prolog_trigger files
@@ -270,7 +267,7 @@ def generate(configFileText="allPaths", verbose=True, doWrite=True):
 
             digi_path = "@sequence::Trigger.PrepareDigis, "
             
-            new_path = ("\nphysics."+pathName+"_trigger"+" : [ "+ digi_path +"@sequence::Trigger.paths."+pathName+" ] \n")
+            new_path = ("\nphysics."+pathName+"_trigger"+" : [ "+ digi_path +"@sequence::Trigger.paths."+pathName+" ] \nphysics.trigger_paths["+str(pathID)+"] : "+pathName+"_trigger \n")
             timing_paths = []
             if "Seed" in pathName:
                 nFilters = 3
@@ -324,7 +321,7 @@ def generate(configFileText="allPaths", verbose=True, doWrite=True):
 
     # include the main epilog file, which includes the others, in main fcl
     if doWrite :
-        mainFclFile.write("\n#include \""+relProjectDir+"/{}.fcl\"\n".format(configFileBaseName))
+        mainFclFile.write("\n#include \"Offline/"+relProjectDir+"/{}.fcl\"\n".format(configFileBaseName))
         mainFclFile.close()
 
     if verbose :

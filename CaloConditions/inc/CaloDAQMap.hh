@@ -9,7 +9,7 @@
 #include <vector>
 
 // Mu2e includes
-#include "Mu2eInterfaces/inc/ProditionsEntity.hh"
+#include "Offline/Mu2eInterfaces/inc/ProditionsEntity.hh"
 #include "fhiclcpp/ParameterSet.h"
 
 namespace mu2e {

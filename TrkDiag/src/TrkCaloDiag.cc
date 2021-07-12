@@ -2,7 +2,7 @@
 // Diagnostics for track-calo matching
 //
 
-#include "TrkDiag/inc/TrkCaloDiag.hh"
+#include "Offline/TrkDiag/inc/TrkCaloDiag.hh"
 namespace mu2e 
 {  
 

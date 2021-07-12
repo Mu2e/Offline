@@ -1,5 +1,5 @@
-#include "ExtinctionMonitorFNAL/test/marsInputs_monfnal3w1.fcl"
-#include "ExtinctionMonitorFNAL/test/extMonFNALDefsCommon.fcl"
+#include "Offline/ExtinctionMonitorFNAL/test/marsInputs_monfnal3w1.fcl"
+#include "Offline/ExtinctionMonitorFNAL/test/extMonFNALDefsCommon.fcl"
 
 source : {
     module_type : EmptyEvent
@@ -62,7 +62,7 @@ process_name : g4s1EMFMARSRoom
 
 services.Timing : {}
 
-services.GeometryService.inputFile : "ExtinctionMonitorFNAL/test/geom_s1EMFMARSRoom.txt"
+services.GeometryService.inputFile : "Offline/ExtinctionMonitorFNAL/test/geom_s1EMFMARSRoom.txt"
 
 services.TFileService.fileName : "hg4s1EMFMARSRoom.root"
 

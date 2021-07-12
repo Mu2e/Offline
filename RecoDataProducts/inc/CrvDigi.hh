@@ -5,7 +5,7 @@
 // Contact person Ralf Ehrlich
 //
 
-#include "DataProducts/inc/CRSScintillatorBarIndex.hh"
+#include "Offline/DataProducts/inc/CRSScintillatorBarIndex.hh"
 #include <array>
 #include <vector>
 

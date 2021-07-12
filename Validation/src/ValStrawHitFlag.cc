@@ -1,5 +1,5 @@
 
-#include "Validation/inc/ValStrawHitFlag.hh"
+#include "Offline/Validation/inc/ValStrawHitFlag.hh"
 #include <cmath>
 
 int mu2e::ValStrawHitFlag::declare(art::TFileDirectory tfs) {

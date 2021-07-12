@@ -14,10 +14,10 @@
 #include <iostream>
 
 // Mu2e includes
-#include "DataProducts/inc/StrawId.hh"
-#include "DataProducts/inc/StrawEnd.hh"
-#include "TrackerMC/inc/StrawPosition.hh"
-#include "MCDataProducts/inc/StrawGasStep.hh"
+#include "Offline/DataProducts/inc/StrawId.hh"
+#include "Offline/DataProducts/inc/StrawEnd.hh"
+#include "Offline/TrackerMC/inc/StrawPosition.hh"
+#include "Offline/MCDataProducts/inc/StrawGasStep.hh"
 // toolkit includes
 #include "canvas/Persistency/Common/Ptr.h"
 

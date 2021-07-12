@@ -1,8 +1,8 @@
 
-#include "Print/inc/KalSeedPrinter.hh"
+#include "Offline/Print/inc/KalSeedPrinter.hh"
 #include "art/Framework/Principal/Provenance.h"
-#include "GlobalConstantsService/inc/GlobalConstantsHandle.hh"
-#include "GlobalConstantsService/inc/ParticleDataTable.hh"
+#include "Offline/GlobalConstantsService/inc/GlobalConstantsHandle.hh"
+#include "Offline/GlobalConstantsService/inc/ParticleDataTable.hh"
 #include <string>
 
 void 

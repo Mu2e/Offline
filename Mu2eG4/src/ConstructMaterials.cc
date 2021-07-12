@@ -24,15 +24,15 @@
 #include "cetlib_except/exception.h"
 
 // Mu2e includes
-#include "Mu2eG4/inc/ConstructMaterials.hh"
-#include "Mu2eG4/inc/findMaterialOrThrow.hh"
-#include "Mu2eG4/inc/setBirksConstant.hh"
-#include "DetectorSolenoidGeom/inc/DetectorSolenoid.hh"
-#include "ProductionSolenoidGeom/inc/PSVacuum.hh"
-#include "GeometryService/inc/GeometryService.hh"
-#include "GeometryService/inc/GeomHandle.hh"
-#include "GlobalConstantsService/inc/GlobalConstantsHandle.hh"
-#include "GlobalConstantsService/inc/PhysicsParams.hh"
+#include "Offline/Mu2eG4/inc/ConstructMaterials.hh"
+#include "Offline/Mu2eG4/inc/findMaterialOrThrow.hh"
+#include "Offline/Mu2eG4/inc/setBirksConstant.hh"
+#include "Offline/DetectorSolenoidGeom/inc/DetectorSolenoid.hh"
+#include "Offline/ProductionSolenoidGeom/inc/PSVacuum.hh"
+#include "Offline/GeometryService/inc/GeometryService.hh"
+#include "Offline/GeometryService/inc/GeomHandle.hh"
+#include "Offline/GlobalConstantsService/inc/GlobalConstantsHandle.hh"
+#include "Offline/GlobalConstantsService/inc/PhysicsParams.hh"
 
 // CLHEP includes
 #include "CLHEP/Units/PhysicalConstants.h"
@@ -258,9 +258,9 @@ namespace mu2e {
 
     mat = uniqueMaterialOrThrow( "IPAPolyethylene");
     {
-      G4Material* IPAPolyethylene = new G4Material( mat.name, 0.96*CLHEP::g/CLHEP::cm3, 2);
-      IPAPolyethylene->AddMaterial( findMaterialOrThrow("G4_H"), 0.14);
-      IPAPolyethylene->AddMaterial( findMaterialOrThrow("G4_C"), 0.86);
+      G4Material* IPAPolyethylene = new G4Material( mat.name, 0.954*CLHEP::g/CLHEP::cm3, 2);
+      IPAPolyethylene->AddMaterial( findMaterialOrThrow("G4_H"), 0.11);
+      IPAPolyethylene->AddMaterial( findMaterialOrThrow("G4_C"), 0.89); // Carbon doped Polytehylene, additional carbon 2-5% from MDS (DeWal DW 402B),  density measured by S. Krave 6/22/2021
     }
 
     mat = uniqueMaterialOrThrow( "Polyethylene096");

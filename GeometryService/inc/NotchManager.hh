@@ -10,8 +10,8 @@
 // There is no reason this NotchManager couldn't also be used to track notches
 // used in other geometry elements, such as the external shielding.
 
-#include "GeomPrimitives/inc/Notch.hh"
-#include "ConfigTools/inc/SimpleConfig.hh"
+#include "Offline/GeomPrimitives/inc/Notch.hh"
+#include "Offline/ConfigTools/inc/SimpleConfig.hh"
 #include <vector>
 #include <string>
 #include <unordered_map>

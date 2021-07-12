@@ -3,7 +3,7 @@
 //
 //
 
-#include "Mu2eG4/test/geom_01.txt"
+#include "Offline/Mu2eG4/test/geom_01.txt"
 
 vector<string> bfield.innerMaps = {
  "BFieldMaps/Mau7_NegativeGradient_v1/Mu2e_DSMap.header"

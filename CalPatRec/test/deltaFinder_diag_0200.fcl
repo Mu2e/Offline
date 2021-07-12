@@ -1,6 +1,6 @@
 # -*- mode:tcl -*-
 
-#include "CalPatRec/test/deltaFinder_test.fcl"
+#include "Offline/CalPatRec/test/deltaFinder_test.fcl"
 
 physics.producers.DeltaFinder.diagLevel            : 1
 physics.producers.DeltaFinder.maxElectronHitEnergy : 0.0200

@@ -6,8 +6,8 @@
 #include "CLHEP/Vector/Rotation.h"
 #include "CLHEP/Vector/ThreeVector.h"
 
-#include "PTMGeom/inc/PTMPWC.hh"
-#include "Mu2eInterfaces/inc/Detector.hh"
+#include "Offline/PTMGeom/inc/PTMPWC.hh"
+#include "Offline/Mu2eInterfaces/inc/Detector.hh"
 
 // ProductionTarget Monitor (PTM) Object
 //

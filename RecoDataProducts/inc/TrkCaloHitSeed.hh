@@ -5,9 +5,9 @@
 //
 #ifndef RecoDataProducts_TrkCaloHitSeed_HH
 #define RecoDataProducts_TrkCaloHitSeed_HH
-#include "RecoDataProducts/inc/HitT0.hh"
-#include "RecoDataProducts/inc/CaloCluster.hh"
-#include "RecoDataProducts/inc/StrawHitFlag.hh"
+#include "Offline/RecoDataProducts/inc/HitT0.hh"
+#include "Offline/RecoDataProducts/inc/CaloCluster.hh"
+#include "Offline/RecoDataProducts/inc/StrawHitFlag.hh"
 #include "canvas/Persistency/Common/Ptr.h"
 #include <Rtypes.h>
 namespace mu2e {

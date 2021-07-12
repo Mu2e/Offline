@@ -7,7 +7,7 @@
 #define RecoDataProducts_ExtMonFNALRawClusterCollection_hh
 
 #include <vector>
-#include "RecoDataProducts/inc/ExtMonFNALRawCluster.hh"
+#include "Offline/RecoDataProducts/inc/ExtMonFNALRawCluster.hh"
 
 namespace mu2e {
 

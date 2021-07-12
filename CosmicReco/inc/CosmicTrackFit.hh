@@ -9,17 +9,17 @@
 #endif/*__GCCXML__*/
 
 //Mu2e Cosmics:
-#include "RecoDataProducts/inc/CosmicTrackSeed.hh"
+#include "Offline/RecoDataProducts/inc/CosmicTrackSeed.hh"
 
 // Products
-#include "RecoDataProducts/inc/ComboHit.hh"
-#include "RecoDataProducts/inc/StrawHit.hh"
-#include "RecoDataProducts/inc/CosmicTrack.hh"
+#include "Offline/RecoDataProducts/inc/ComboHit.hh"
+#include "Offline/RecoDataProducts/inc/StrawHit.hh"
+#include "Offline/RecoDataProducts/inc/CosmicTrack.hh"
 
 //Drift:
-#include "TrackerConditions/inc/StrawResponse.hh"
-#include "TrackerConditions/inc/StrawPhysics.hh"
-#include "TrackerConditions/inc/StrawDrift.hh"
+#include "Offline/TrackerConditions/inc/StrawResponse.hh"
+#include "Offline/TrackerConditions/inc/StrawPhysics.hh"
+#include "Offline/TrackerConditions/inc/StrawDrift.hh"
 
 // Math
 #include "Math/VectorUtil.h"

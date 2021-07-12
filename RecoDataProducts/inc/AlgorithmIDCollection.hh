@@ -10,7 +10,7 @@
 
 #include <vector>
 
-#include "RecoDataProducts/inc/AlgorithmID.hh"
+#include "Offline/RecoDataProducts/inc/AlgorithmID.hh"
 
 namespace mu2e {
    typedef std::vector<mu2e::AlgorithmID> AlgorithmIDCollection;

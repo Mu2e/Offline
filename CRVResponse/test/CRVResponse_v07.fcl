@@ -1,6 +1,6 @@
-#include "fcl/minimalMessageService.fcl"
-#include "fcl/standardServices.fcl"
-#include "CRVResponse/fcl/prolog_v07.fcl"
+#include "Offline/fcl/minimalMessageService.fcl"
+#include "Offline/fcl/standardServices.fcl"
+#include "Offline/CRVResponse/fcl/prolog_v07.fcl"
 
 process_name : CRVResponse
 
@@ -15,9 +15,9 @@ source :
 services :
 {
   RandomNumberGenerator: {defaultEngineKind: "MixMaxRng" }
-  GeometryService        : { inputFile : "Mu2eG4/geom/geom_common_crv_v07.txt" }
-  ConditionsService      : { conditionsfile : "ConditionsService/data/conditions_01.txt" }
-  GlobalConstantsService : { inputFile : "GlobalConstantsService/data/globalConstants_01.txt" }
+  GeometryService        : { inputFile : "Offline/Mu2eG4/geom/geom_common_crv_v07.txt" }
+  ConditionsService      : { conditionsfile : "Offline/ConditionsService/data/conditions_01.txt" }
+  GlobalConstantsService : { inputFile : "Offline/GlobalConstantsService/data/globalConstants_01.txt" }
   SeedService            : @local::automaticSeeds
 }
 

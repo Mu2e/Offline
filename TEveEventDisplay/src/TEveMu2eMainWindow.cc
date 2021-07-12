@@ -1,5 +1,5 @@
 //TEveMu2e:
-#include "TEveEventDisplay/src/TEveMu2e_base_classes/TEveMu2eMainWindow.h"
+#include "Offline/TEveEventDisplay/src/TEveMu2e_base_classes/TEveMu2eMainWindow.h"
 
 namespace fhicl
 {
@@ -787,6 +787,17 @@ namespace mu2e{
       runn = runToFind;
       eventSelected = true;
     }
+
+    /*stringstream sEvent;
+    sEvent << eventn;
+    //const char* tEvent = " Event : ";
+    const char* eventlabel = sEvent.str().c_str();
+    auto t = new TEveText(eventlabel);
+    t->SetFontSize(15);
+    t->SetText(eventlabel);
+    t->SetMainColor(kRed);
+    t->RefMainTrans().SetPos(0.0,200.0,3000.0);
+    pass_data->fTrackList3D->AddElement(t); */
   }
 
   /*------------Function to fill event selection:-------------*/

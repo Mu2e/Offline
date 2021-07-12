@@ -8,7 +8,7 @@
 
 #include <vector>
 
-#include "MCDataProducts/inc/VisibleGenElTrack.hh"
+#include "Offline/MCDataProducts/inc/VisibleGenElTrack.hh"
 
 namespace mu2e {
    typedef std::vector<mu2e::VisibleGenElTrack> VisibleGenElTrackCollection;

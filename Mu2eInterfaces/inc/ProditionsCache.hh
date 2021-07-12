@@ -9,8 +9,8 @@
 #include <chrono>
 
 #include "canvas/Persistency/Provenance/EventID.h"
-#include "DbTables/inc/DbIoV.hh"
-#include "Mu2eInterfaces/inc/ProditionsEntity.hh"
+#include "Offline/DbTables/inc/DbIoV.hh"
+#include "Offline/Mu2eInterfaces/inc/ProditionsEntity.hh"
 
 namespace mu2e {
   class ProditionsCache {

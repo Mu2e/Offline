@@ -10,7 +10,7 @@
 #define DetStrawElem_hh
 
 #include "BTrk/DetectorModel/DetElem.hh"
-#include "DataProducts/inc/StrawId.hh"
+#include "Offline/DataProducts/inc/StrawId.hh"
 #include <string>
 
 namespace mu2e {

@@ -6,7 +6,7 @@
 //
 // Original author KLG
 
-#include "MCDataProducts/inc/StepInstanceName.hh"
+#include "Offline/MCDataProducts/inc/StepInstanceName.hh"
 
 namespace mu2e {
 

@@ -12,29 +12,33 @@
 
 #include "art/Framework/Core/ModuleMacros.h"
 #include "messagefacility/MessageLogger/MessageLogger.h"
-#include "MCDataProducts/inc/SimParticle.hh"
+#include "Offline/MCDataProducts/inc/SimParticle.hh"
 #include "fhiclcpp/types/Sequence.h"
-#include "DataProducts/inc/PDGCode.hh"
-#include "MCDataProducts/inc/ProcessCode.hh"
+#include "Offline/DataProducts/inc/PDGCode.hh"
+#include "Offline/MCDataProducts/inc/ProcessCode.hh"
+#include <string>
 
 namespace mu2e {
   class ParticleCodeFilter : public art::EDFilter {
     public: 
-      using ParticleCodeConfig = fhicl::Sequence<fhicl::Tuple<int,int,int>>;
+      using ParticleCodeConfig = fhicl::Sequence<fhicl::Tuple<int,std::string,std::string>>;
 
       struct ModuleConfig {
 	using Name=fhicl::Name;
 	using Comment=fhicl::Comment;
 	fhicl::Atom<int> printLevel { Name("PrintLevel"), Comment ("Printout Level"), 0 };
 	fhicl::Atom<art::InputTag> simParticles { Name("SimParticles"), Comment("SimParticle collection") };
-	ParticleCodeConfig codeConfig { fhicl::Name("ParticleCodes") };
+	ParticleCodeConfig codeConfig { Name("ParticleCodes"), Comment("particle code to select: PDG, creation, and termination code \n"
+	"(select 'unknown' to disable testing creation and/or termination codes)") };
       };
 
       struct ParticleCodeSelector {
 	PDGCode::type pdgCode_;
-	ProcessCode creationCode_, terminationCode_;
+	ProcessCode::enum_type creationCode_, terminationCode_;
 	bool select(SimParticle const& part) const {
-	  return part.pdgId() == pdgCode_ && part.creationCode() == creationCode_ && part.stoppingCode() == terminationCode_;
+	  return part.pdgId() == pdgCode_
+	    && ( creationCode_ == ProcessCode::unknown || part.creationCode() == creationCode_) 
+	    && ( terminationCode_ == ProcessCode::unknown || part.stoppingCode() == terminationCode_);
 	}
       };
 
@@ -54,8 +58,8 @@ namespace mu2e {
     for(auto const& pconfig : conf().codeConfig()) {
       ParticleCodeSelector pselector;
       pselector.pdgCode_ = static_cast<PDGCode::type>(std::get<0>(pconfig));
-      pselector.creationCode_ = ProcessCode(static_cast<ProcessCode::enum_type>(std::get<1>(pconfig)));
-      pselector.terminationCode_ = ProcessCode(static_cast<ProcessCode::enum_type>(std::get<2>(pconfig)));
+      pselector.creationCode_ = ProcessCode::findByName(std::get<1>(pconfig));
+      pselector.terminationCode_ = ProcessCode::findByName(std::get<2>(pconfig));
       if(printLevel_ > 0) std::cout << "Creating selector of PDGcode " << pselector.pdgCode_ 
       << " creation code " << pselector.creationCode_
       << " termination code " << pselector.terminationCode_ << std::endl;

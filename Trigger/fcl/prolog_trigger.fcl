@@ -3,17 +3,17 @@
 # this file includes all the prolog needed to run the reconstruction 
 # at the trigger level and the filters used to make the trigger decision
 #------------------------------------------------------------------------------
-#include "TrkReco/fcl/prolog_trigger.fcl"
-#include "TrkPatRec/fcl/prolog_trigger.fcl"
-#include "CalPatRec/fcl/prolog.fcl"
-#include "CalPatRec/fcl/prolog_trigger.fcl"
-#include "CaloReco/fcl/prolog_trigger.fcl"
-#include "CaloCluster/fcl/prolog_trigger.fcl"
-#include "TrkHitReco/fcl/prolog_trigger.fcl"
-#include "TrkFilters/fcl/prolog_trigger.fcl"
-#include "CosmicReco/fcl/prolog.fcl"
-#include "CosmicReco/fcl/prolog_trigger.fcl"
-#include "CaloFilters/fcl/prolog_trigger.fcl"
+#include "Offline/TrkReco/fcl/prolog_trigger.fcl"
+#include "Offline/TrkPatRec/fcl/prolog_trigger.fcl"
+#include "Offline/CalPatRec/fcl/prolog.fcl"
+#include "Offline/CalPatRec/fcl/prolog_trigger.fcl"
+#include "Offline/CaloReco/fcl/prolog_trigger.fcl"
+#include "Offline/CaloCluster/fcl/prolog_trigger.fcl"
+#include "Offline/TrkHitReco/fcl/prolog_trigger.fcl"
+#include "Offline/TrkFilters/fcl/prolog_trigger.fcl"
+#include "Offline/CosmicReco/fcl/prolog.fcl"
+#include "Offline/CosmicReco/fcl/prolog_trigger.fcl"
+#include "Offline/CaloFilters/fcl/prolog_trigger.fcl"
 
 BEGIN_PROLOG
 Trigger : {

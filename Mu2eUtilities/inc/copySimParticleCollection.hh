@@ -17,7 +17,7 @@
 // 
 
 #include <memory>
-#include "MCDataProducts/inc/SimParticleCollection.hh"
+#include "Offline/MCDataProducts/inc/SimParticleCollection.hh"
 #include "canvas/Persistency/Provenance/ProductID.h"
 #include "canvas/Persistency/Common/EDProductGetter.h"
 
