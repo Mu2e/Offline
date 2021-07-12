@@ -23,16 +23,15 @@ namespace mu2e {
 
     explicit MuCap1809keVGammaGenerator(Parameters const& conf) :
       _pdgId(PDGCode::gamma),
-      _mass(GlobalConstantsHandle<ParticleDataTable>()->particle(_pdgId).ref().mass().value()),
-      _genId(GenId::MuCapGammaRayGenTool),
-      _energy(GlobalConstantsHandle<PhysicsParams>()->get1809keVGammaEnergy()),
-      _intensity(GlobalConstantsHandle<PhysicsParams>()->get1809keVGammaIntensity())
-    {
+      _mass(GlobalConstantsHandle<ParticleDataTable>()->particle(_pdgId).ref().mass().value())
+    {}
 
-    }
-      void generate(std::unique_ptr<GenParticleCollection>& out, const IO::StoppedParticleF& stop) override;
+    std::vector<ParticleGeneratorTool::Kinematic> generate() override;
+    void generate(std::unique_ptr<GenParticleCollection>& out, const IO::StoppedParticleF& stop) override;
 
-    void setEngine(art::RandomNumberGenerator::base_engine_t& eng) {
+    void finishInitialization(art::RandomNumberGenerator::base_engine_t& eng, const std::string& material) override {
+      _energy = GlobalConstantsHandle<PhysicsParams>()->get1809keVGammaEnergy(material);
+      _intensity = GlobalConstantsHandle<PhysicsParams>()->get1809keVGammaIntensity(material);
       _randomUnitSphere = new RandomUnitSphere(eng);
       _randFlat = new CLHEP::RandFlat(eng);
     }
@@ -40,29 +39,39 @@ namespace mu2e {
   private:
     PDGCode::type _pdgId;
     double _mass;
-    GenId _genId;
-    double _energy;
-    double _intensity;
+    double _energy = 0.;
+    double _intensity = 0.;
 
     RandomUnitSphere*   _randomUnitSphere;
     CLHEP::RandFlat* _randFlat;
   };
 
-  void MuCap1809keVGammaGenerator::generate(std::unique_ptr<GenParticleCollection>& out, const IO::StoppedParticleF& stop) {
-    const CLHEP::Hep3Vector pos(stop.x, stop.y, stop.z);
+  std::vector<ParticleGeneratorTool::Kinematic> MuCap1809keVGammaGenerator::generate() {
+    std::vector<ParticleGeneratorTool::Kinematic>  res;
 
     double rand = _randFlat->fire();
     if (rand < _intensity) {
-      double energy = _energy;
-      const double p = energy * sqrt(1 - std::pow(_mass/energy,2));
-      CLHEP::Hep3Vector p3 = _randomUnitSphere->fire(p);
-      CLHEP::HepLorentzVector fourmom(p3, energy);
-      out->emplace_back(_pdgId,
-                        _genId,
+      const double momentum = _energy * sqrt(1 - std::pow(_mass/_energy,2));
+      CLHEP::Hep3Vector p3 = _randomUnitSphere->fire(momentum);
+      CLHEP::HepLorentzVector fourmom(p3, _energy);
+      ParticleGeneratorTool::Kinematic k{_pdgId, ProcessCode::mu2eMuonCaptureAtRest, fourmom};
+      res.emplace_back(k);
+    }
+
+    return res;
+  }
+
+  void MuCap1809keVGammaGenerator::generate(std::unique_ptr<GenParticleCollection>& out, const IO::StoppedParticleF& stop) {
+    const CLHEP::Hep3Vector pos(stop.x, stop.y, stop.z);
+    const auto daughters = generate();
+    for(const auto& d: daughters) {
+      out->emplace_back(d.pdgId,
+                        GenId::MuCapGammaRayGenTool,
                         pos,
-                        fourmom,
+                        d.fourmom,
                         stop.t);
     }
   }
+
 }
 DEFINE_ART_CLASS_TOOL(mu2e::MuCap1809keVGammaGenerator)
