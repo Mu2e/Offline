@@ -3,8 +3,8 @@
 #  1) Charged particles at the entrance to the DS at the beamline
 #  2) (mostly) neutral particles that exit the TS or otherwise reach the inside of the shielding before the CRV
 #
-#include "fcl/standardServices.fcl"
-#include "EventGenerator/fcl/prolog.fcl"
+#include "Offline/fcl/standardServices.fcl"
+#include "Offline/EventGenerator/fcl/prolog.fcl"
 #include "Production/JobConfig/common/prolog.fcl"
 #include "Offline/JobConfig/beam/prolog.fcl"
 
@@ -73,8 +73,8 @@ physics.producers.g4run.Mu2eG4CommonCut: {
 # tweak Mu2eG4 settings
 physics.producers.g4run.SDConfig.enableSD: [ virtualdetector ] # only VDs are active
 physics.producers.g4run.physics.minRangeCut : 1. # mm  coarse range for this stage
-#include "JobConfig/beam/epilog.fcl"
-#include "JobConfig/common/epilog.fcl"
+#include "Production/JobConfig/beam/epilog.fcl"
+#include "Production/JobConfig/common/epilog.fcl"
 services.GeometryService.inputFile      : "Offline/JobConfig/common/geom_baseline.txt"
 # the following is overwritten by generate_fcl
 services.SeedService.baseSeed          : 8
