@@ -1,0 +1,52 @@
+# -*- mode: tcl -*-
+#------------------------------------------------------------------------------
+# this FCL file is used to produce photon conversion ntuple from muon stop ntuple
+#------------------------------------------------------------------------------
+#include "JobConfig/primary/RMC_flat_external.fcl"
+process_name: RMCConversionMap
+
+physics.filters.conversionwriter : {@table::Mu2eG4Filters.filters.ConversionWriter }
+
+####################
+## Generator info ##
+####################
+
+physics.producers.generate.physics.elow                  : 85 #MeV
+physics.producers.generate.physics.ehi                   : 93 #MeV
+#print histograms for helpful debugging/understanding generator spectra
+physics.producers.generate.doHistograms : true
+ #define our own spectrum shape, so don't use physics spectrum
+physics.producers.generate.physics.spectrumShape         : "flat" #just not RMC
+physics.producers.generate.doEnergyWeights               : true #increase statistics near 90 MeV
+physics.producers.generate.energyFuncString              : "1/((90.-x)^4 + 0.1)"
+# cos(theta) spectrum to generate photons with, a triangle on top of a flat spectrum
+physics.producers.generate.doCosWeights                  : true #increase statistics near cos = 0
+physics.producers.generate.czFuncString                  : "max(100*(0.1-abs(x)), 0.1)"
+
+##################
+## Geant config ##
+##################
+
+#make it so the event often fails and will quit after the conversion in geant4
+physics.producers.g4run.physics.gammaFilterMinDaughterEnergy : 84.5 // MeV below this E < 90 MeV contribute
+physics.producers.g4run.physics.gammaFilterKillAfterConvert : true //no reason to continue after found
+
+################################
+## Conversion map writer info ##
+################################
+
+physics.filters.conversionwriter.rMin : -1. // no cut
+physics.filters.conversionwriter.rMax : 500. // mm, beyond IPA
+physics.filters.conversionwriter.zMin : 5000. // mm include target and IPA
+physics.filters.conversionwriter.zMax : 8000. // mm
+
+#No reason to use better nuclear lists if only watching EM effects, use more sophisticated EM list
+physics.producers.g4run.physics.physicsListName : "QGSP_BERT_EMZ" // _EMZ is ~20% slower, uses BetheHeitler5D conversion model
+
+physics.p1 : [ generate, g4run, conversionwriter]
+physics.e1 : [ ]
+physics.trigger_paths : [ p1 ]
+physics.end_paths : [ e1 ]
+
+services.TFileService.fileName : "nts.owner.photon_conversion_map.version.sequencer.root"
+outputs.defaultOutput.fileName : "dig.owner.photon_conversion_map.version.sequencer.art"

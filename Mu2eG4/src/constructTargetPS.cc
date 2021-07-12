@@ -22,12 +22,14 @@
 #include "Offline/GeometryService/inc/GeometryService.hh"
 #include "Offline/GeometryService/inc/GeomHandle.hh"
 #include "Offline/ProductionTargetGeom/inc/ProductionTarget.hh"
+#include "Offline/ProductionTargetGeom/inc/ProductionTargetMu2eII.hh"
 #include "Offline/Mu2eG4/inc/findMaterialOrThrow.hh"
 #include "Offline/Mu2eG4/inc/constructTargetPS.hh"
 #include "Offline/Mu2eG4/inc/nestTubs.hh"
 #include "Offline/Mu2eG4/inc/nestBox.hh"
 #include "Offline/Mu2eG4/inc/nestPolycone.hh"
 #include "Offline/Mu2eG4/inc/finishNesting.hh"
+
 //#include "Mu2eG4/inc/SensitiveDetectorName.hh"
 #include "Offline/GeometryService/inc/ProductionTargetMaker.hh"
 #include "Offline/ProductionSolenoidGeom/inc/PSVacuum.hh"
@@ -42,15 +44,18 @@
 #include "Geant4/G4Trd.hh"
 #include "CLHEP/Units/SystemOfUnits.h"
 #include "CLHEP/GenericFunctions/ASin.hh"
-#include "Geant4/G4Box.hh"
-#include "Geant4/G4SubtractionSolid.hh"
-#include "Geant4/G4VSolid.hh"
-#include "Geant4/G4Tubs.hh"
-#include "Geant4/G4VPhysicalVolume.hh"
-#include "Geant4/G4PVPlacement.hh"
 
-#include "Geant4/G4UnionSolid.hh"
-#include "Geant4/G4IntersectionSolid.hh"
+#include "G4Box.hh"
+#include "G4SubtractionSolid.hh"
+#include "G4VSolid.hh"
+#include "G4Tubs.hh"
+#include "G4VPhysicalVolume.hh"
+#include "G4PVPlacement.hh"
+#include "G4Sphere.hh"
+
+#include "G4UnionSolid.hh"
+#include "G4IntersectionSolid.hh"
+
 #include <cmath>
 using namespace std;
 
@@ -76,6 +81,88 @@ namespace mu2e {
     boxWithTubsCutoutInfo.solid = new G4SubtractionSolid(name,boxCutout,tubsCutout, rotOverall, offset);
     finishNesting(boxWithTubsCutoutInfo,material,rotAngle,translation,parent.logical,copyNo,color,lookupToken,verbose);
   }
+  
+  //construct a conveyor of balls for a Mu2e-II type production target
+  void constructMu2eIIConveyor(VolumeInfo const & parent, SimpleConfig const & _config) {
+    
+    if(_config.getInt("targetPS_version") != ProductionTargetMaker::mu2eii_conveyor)
+      throw cet::exception("CONFIG") << "Calling " << __func__ << " without the corresponding target version!";
+
+    int verbosityLevel                  = _config.getInt("PS.verbosityLevel");
+    verbosityLevel >0 &&
+      cout << __PRETTY_FUNCTION__ << " verbosityLevel: " << verbosityLevel  << endl;
+
+    G4ThreeVector _parentOriginInMu2e = parent.centerInMu2e();
+
+
+    // Build the production target.
+    GeomHandle<ProductionTargetMu2eII> target;
+    const double ballRadius = target->conveyorBallRadius();
+    const int    nBalls     = target->conveyorNBalls();
+    const std::vector<double> ballXs = target->conveyorBallXs();
+    const std::vector<double> ballYs = target->conveyorBallYs();
+    const std::vector<double> ballZs = target->conveyorBallZs();
+    double xmin(ballXs[0]), xmax(ballXs[0]), ymin(ballYs[0]), ymax(ballYs[0]), zmin(ballZs[0]), zmax(ballZs[0]);
+    for(int ball = 1; ball < nBalls; ++ball) {
+      if(ballXs[ball] < xmin) xmin = ballXs[ball];
+      else if(ballXs[ball] > xmax) xmax = ballXs[ball];
+      if(ballYs[ball] < ymin) ymin = ballYs[ball];
+      else if(ballYs[ball] > ymax) ymax = ballYs[ball];
+      if(ballZs[ball] < zmin) zmin = ballZs[ball];
+      else if(ballZs[ball] > zmax) zmax = ballZs[ball];
+    }
+    double motherLength = (zmax-zmin) + ballRadius*2.;
+    double motherRadius = sqrt((xmax-xmin)*(xmax-xmin) + (ymax-ymin)*(ymax-ymin)) + ballRadius*2.;
+    CLHEP::Hep3Vector targetCenter((xmax+xmin)/2., (ymax+ymin)/2., (zmax+zmin)/2.);
+    TubsParams prodTargetMotherParams( 0., motherRadius, motherLength/2.);
+    if(verbosityLevel > 0)
+      std::cout << "Target center = " << targetCenter << ", parent center = " << parent.centerInMu2e() << std::endl;
+    VolumeInfo prodTargetMotherInfo   = nestTubs( "ProductionTargetMother",
+						    prodTargetMotherParams,
+						    parent.logical->GetMaterial(),
+						    0,
+						    targetCenter - parent.centerInMu2e(),
+						    parent,
+						    0,
+						    G4Colour::Blue(),
+						    "PS"
+						    );
+    //add the balls to the model
+    G4Material* ballMaterial = findMaterialOrThrow(target->conveyorBallMaterial());    
+    for(int ball = 0; ball < nBalls; ++ball) {
+      VolumeInfo ballInfo;
+      ballInfo.name = "ProductionTarget_ball_" + std::to_string(ball);
+      ballInfo.solid = new G4Sphere(ballInfo.name, 0., ballRadius, 0., CLHEP::twopi, 0., CLHEP::pi);
+      finishNesting(ballInfo,
+		    ballMaterial,
+		    nullptr,
+		    CLHEP::Hep3Vector(ballXs[ball], ballYs[ball], ballZs[ball]) - targetCenter,
+		    prodTargetMotherInfo.logical,
+		    0,
+		    G4Colour::Blue(),
+		    "PS"
+		    );
+    }
+    
+  }
+
+  //construct a rotating target for a Mu2e-II type production target
+  void constructMu2eIIRotating(VolumeInfo const & parent, SimpleConfig const & _config) {
+    
+    if(_config.getInt("targetPS_version") != ProductionTargetMaker::mu2eii_rotating)
+      throw cet::exception("CONFIG") << "Calling " << __func__ << " without the corresponding target version!";
+
+    int verbosityLevel = _config.getInt("PS.verbosityLevel");
+    verbosityLevel >0 &&
+      cout << __PRETTY_FUNCTION__ << " verbosityLevel                   : " << verbosityLevel  << endl;
+
+    G4ThreeVector _hallOriginInMu2e = parent.centerInMu2e();
+    
+
+    // Build the production target.
+    GeomHandle<ProductionTargetMu2eII> tgt;
+    
+  }
 
   void constructTargetPS(VolumeInfo const & parent, SimpleConfig const & _config) {
 
@@ -84,7 +171,13 @@ namespace mu2e {
 
     //
     // which target am I building?
-    if (_config.getInt("targetPS_version") == ProductionTargetMaker::tier1){
+    if(_config.getInt("targetPS_version") == ProductionTargetMaker::mu2eii_conveyor) {
+      constructMu2eIIConveyor(parent, _config);
+      return;
+    } else if(_config.getInt("targetPS_version") == ProductionTargetMaker::mu2eii_rotating) {
+      constructMu2eIIRotating(parent, _config);
+      return;
+    } else if (_config.getInt("targetPS_version") == ProductionTargetMaker::tier1){
       int verbosityLevel                  = _config.getInt("PS.verbosityLevel");
 
       //G4Material* psVacVesselMaterial = findMaterialOrThrow(psVacVesselInnerParams.materialName());
@@ -94,7 +187,7 @@ namespace mu2e {
 
       //bool psVacuumSensitive = _config.getBool("PS.Vacuum.Sensitive", false);
 
-      G4ThreeVector _hallOriginInMu2e = parent.centerInMu2e();
+      G4ThreeVector _hallOriginInMu2e = parent.centerInMu2e(); //NOTE: parent != hall here, but production solenoid
 
 
       // Build the production target.

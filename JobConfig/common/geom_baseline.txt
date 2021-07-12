@@ -1,0 +1,6 @@
+#include "Offline/JobConfig/common/geom_mu2eii.txt"
+
+// This tells emacs to view this file in c++ mode.
+// Local Variables:
+// mode:c++
+// End:

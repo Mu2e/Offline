@@ -316,7 +316,11 @@ namespace mu2e {
     } else if (targetPS_model == "Hayman_v_2_0"){
       verbosityLevel> 0 && std::cout << __func__ << "Hayman 2.0 target" << std::endl;
       constructTargetPS(psVacuumInfo, _config );
-    } else{
+    } else if(targetPS_model == "Conveyor" || targetPS_model == "Rotating") { //Mu2e-II target designs
+      verbosityLevel> 0 && std::cout << __func__ << " " << targetPS_model.c_str() 
+				     << " target" << std::endl;
+      constructTargetPS(psVacuumInfo, _config );
+    } else {
       throw cet::exception("CONFIG")
         << "In constructPS.cc unrecognized production target model name: "
         << targetPS_model

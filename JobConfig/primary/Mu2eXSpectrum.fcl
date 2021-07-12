@@ -1,0 +1,11 @@
+#
+# generates the Mu(-) --> e(-) + X where X is a light boson. Spectrum based on Spectrum based on arXiv: 1110.2874
+#
+#include "Production/JobConfig/primary/Primary.fcl"
+process_name: Mu2eX
+
+physics.producers.generate : @local::EventGenerator.producers.muXSpectrum
+# customize the output
+physics.producers.FindMCPrimary.PrimaryGenIds : ["Mu2eX"]
+#services.TFileService.fileName: "nts.owner.muXSpectrum.version.sequencer.root"
+outputs.Output.fileName: "dig.owner.muXSpectrum.version.sequencer.art"

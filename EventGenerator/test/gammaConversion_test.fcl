@@ -1,0 +1,69 @@
+# -*- mode:tcl -*-
+#include "fcl/minimalMessageService.fcl"
+#include "fcl/standardProducers.fcl"
+#include "fcl/standardServices.fcl"
+
+process_name: conversionsampler
+
+source       : { module_type : EmptyEvent   }
+services : @local::Services.Sim
+services.TimeTracker : {
+	printSummary : true
+	dbOutput : {
+	    filename  : ""
+	    overwrite : false
+	}
+    }
+services.scheduler.wantSummary: true
+
+physics : {
+    producers : { 
+	generate: { 
+	    module_type: GammaConversionGun
+	    verbosityLevel : 0	  
+	    doHistograms   : true
+	    gammaStops: @local::mu2e.gammaStops
+	    # pMax             : 90.1 // MeV, maximum photon energy
+	    # pMin             : 84.489 // MeV, minimum daughter energy
+	    # czMin            : -0.2 // minimum photon cos(theta)
+	    # czMax            :  0.2 // maximum photon cos(theta)
+	    testE            : 90   // MeV, test photon energy to use
+	    defaultMaterialZ : 13 // test stopping material to use
+	    # xMin             : -490 // mm, photon vertex cuts
+	    # xMax             : -290 // mm, photon vertex cuts
+	    # yMin             : -100 // mm, photon vertex cuts
+	    # yMax             :  100 // mm, photon vertex cuts
+	    # zMin             :  350 // mm, photon vertex cuts
+	    # zMax             :  800 // mm, photon vertex cuts
+	    # rMin             :  0   // mm, photon vertex cuts
+	    # rMax             :  500 // mm, photon vertex cuts
+	    # requireCharge    : 1 //require positron passes the cuts (only pMin applies)
+	    # useCorrelatedAngleOverKE : true //whether or not to use cos/KE correlation
+	}
+    }
+    filters :   { 
+	genfilter: {  module_type: GammaConversionFilter //filtering in a separate module is 1000x slower to generate
+	    doHistograms   : true
+	    # pMax            : 90.1 // MeV, maximum photon energy
+	    # pMin            : 88.5 // MeV, minimum daughter energy
+	    # xMin            : -4004// mm, photon vertex cuts 
+	    # xMax            : -3804// mm, photon vertex cuts 
+	    # yMin            : -100 // mm, photon vertex cuts 
+	    # yMax            :  100 // mm, photon vertex cuts 
+	    # zMin            :  350 // mm, photon vertex cuts 
+	    # zMax            :  800 // mm, photon vertex cuts 
+	    # rMin            :  0   // mm, photon vertex cuts 
+	    # rMax            :  500 // mm, photon vertex cuts 	    
+	}
+	
+    }
+    e1 : [ ] 
+    p1 : [ generate ] 
+    trigger_paths : [ p1 ]
+    end_paths : [ e1 ]
+}
+# test values
+services.SeedService.baseSeed         :  773651
+services.SeedService.maxUniqueEngines :  20
+services.TFileService.fileName: "nts.owner.conversionsampler.version.sequencer.root"
+outputs.Output.fileName:        "dig.owner.conversionsampler.version.sequencer.art"

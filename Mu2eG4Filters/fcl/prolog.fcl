@@ -1,0 +1,19 @@
+# -*- mode: tcl -*-
+BEGIN_PROLOG
+Mu2eG4Filters: {
+    filters : { 
+	ConversionWriter : {
+	    module_type        : GammaConversionPoints
+	    g4ModuleLabel      : "g4run"
+	    generatorLabel     : "generate"
+	    # g4ModuleLabel      : "compressDigiMCs"
+	    # defaultMat         : "StoppingTarget_Al"
+	    # rMin               : -1.
+	    # rMax               : 500
+	    # zMin               : 5000
+	    # zMax               : 8000
+	}
+    }
+}
+
+END_PROLOG

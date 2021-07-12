@@ -763,7 +763,9 @@ namespace mu2e {
     // Build outer portion of support for TS3 antiproton stopping window
     // Will model for now as solid tubes
 
-    int pbarAbsTS3Version = config.getInt("pbar.version",1);
+    bool buildPbar = config.getBool("pbar.build", true);
+    if(buildPbar) {
+      int pbarAbsTS3Version = config.getInt("pbar.version",1);
       if ( pbarAbsTS3Version > 1 ) {
 
         std::ostringstream PabsSupOutName;
@@ -807,7 +809,7 @@ namespace mu2e {
                   );
 
       } //end of " if pbarAbsTS3Version..."
-
+    } //end if buildPbar
 
 
 
@@ -1584,6 +1586,9 @@ namespace mu2e {
     //   "stairstep" structure.
     // ******* In Version 4, do the same as version 3 except allow the steps to have different
     //   thicknesses.  This will allow us to implement the geometry of doc-db 17519 p. 34
+
+    bool buildPbar = config.getBool("pbar.build", true);
+    if(!buildPbar) return;
 
     G4GeometryOptions* geomOptions = art::ServiceHandle<GeometryService>()->geomOptions();
     geomOptions->loadEntry( config, "PbarAbs", "pbar" );

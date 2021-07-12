@@ -34,6 +34,8 @@ namespace mu2e {
   class Mu2eG4Study;
   class Mu2eHall;
   class G4GeometryOptions;
+  class ProductionTarget;
+  class ProductionTargetMu2eII;
 
   class GeometryService {
 public:

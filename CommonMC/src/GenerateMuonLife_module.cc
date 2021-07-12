@@ -127,10 +127,7 @@ namespace mu2e {
             const auto genId = part->genParticle()->generatorId();
 
             // do just explicitly listed GenIds
-            bool apply= applyToGenIds_.find(genId.id()) != applyToGenIds_.end();
-            if (!apply && genId.isConversion()) { // also want to anything that is isConversion
-              apply = true;
-            }
+            bool apply= applyToGenIds_.find(genId.id()) != applyToGenIds_.end() || genId.isConversion();
             if (apply)
               {
                 (*res)[part] = rexp_.fire(mean_);

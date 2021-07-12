@@ -107,6 +107,10 @@ double physicsParams.Al.capture.photonRate = 2.0;
 double physicsParams.Al.capture.photon.1809keV.energy = 1.809;
 double physicsParams.Al.capture.photon.1809keV.intensity = 0.51;
 
+//Mu2eII_SM21 Specific configuration
+//WARNING do not merge into master!
+#include "Mu2eG4/test/globalConstants_mu2eii.txt"
+
 // This tells emacs to view this file in c++ mode.
 // Local Variables:
 // mode:c++

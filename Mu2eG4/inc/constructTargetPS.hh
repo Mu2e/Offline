@@ -17,7 +17,8 @@ namespace mu2e {
   class SimpleConfig;
 
   void constructTargetPS(VolumeInfo const & parent, SimpleConfig const & _config);
-
+  void constructMu2eIIConveyor(VolumeInfo const & parent, SimpleConfig const & _config);
+  void constructMu2eIIRotating(VolumeInfo const & parent, SimpleConfig const & _config);
 }
 
 #endif /* Mu2eG4_constructTargetPS_hh */

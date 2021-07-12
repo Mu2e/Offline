@@ -3,7 +3,7 @@ BEGIN_PROLOG
 
 # define non-proton GenIDs
 nonProtonGenIds : ["unknown", "particleGun", "cosmicToy", "cosmicDYB", "cosmic", "CosmicCRY", "pbarFlat", "CosmicCORSIKA"]
-muLifeGenIds : [ "StoppedParticleReactionGun", "dioTail", "ExternalRMC", "InternalRMC",
+muLifeGenIds : [ "StoppedParticleReactionGun", "dioTail", "ExternalRMC", "InternalRMC", "gammaPairProduction",
                  "MuCapProtonGenTool", "MuCapDeuteronGenTool", "DIOGenTool", "MuCapNeutronGenTool", "MuCapPhotonGenTool", "MuCapGammaRayGenTool" ]
 CommonMC: {
   producers: {
@@ -21,8 +21,8 @@ CommonMC: {
     GenParticles : "compressDigiMCs"
     SimParticles : "compressDigiMCs"
     PrimaryGenIds : ["CeEndpoint", "CeLeadingLog", "dioTail",
-        "cosmicDYB", "CosmicCRY", "CosmicCORSIKA",
-        "InternalRPC" , "InternalRMC", "ExternalRPC", "ExternalRMC"  ]
+	"cosmicDYB", "CosmicCRY", "CosmicCORSIKA", 
+ 	"InternalRPC" , "InternalRMC", "ExternalRPC", "ExternalRMC", "gammaPairProduction"  ]
   }
   SelectRecoMC : {
     module_type : SelectRecoMC
@@ -30,6 +30,8 @@ CommonMC: {
   }
   DigiSim : [ EWMProducer  ]
 }
+CommonMC.DigiSim : [ @sequence::CommonMC.TimeMaps, EWMProducer ]
+CommonMC.PrimaryDigiSim : [ @sequence::CommonMC.TimeMaps, EWMProducer ]
 #------------------------------------------------------------------------------
 
 END_PROLOG

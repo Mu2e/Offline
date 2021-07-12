@@ -1,0 +1,42 @@
+// Updated to be used in the 2020 Mu2e-II studes, starting from the 2020 CRY campaign geometry
+// Important differences:
+// No pbar absorber elements
+// Alternate production target
+
+#include "Mu2eG4/geom/geom_2021_PhaseI.txt"
+#include "Mu2eG4/geom/ExtShieldUpstream_v07.txt"
+#include "Mu2eG4/geom/ExtShieldDownstream_v07.txt"
+
+
+/////////////////////////////////////////////
+// Restore hatch blocks to original design //
+/////////////////////////////////////////////
+
+double building.dsArea.hatchblock.yHalfThickness                    = 914.4; //6ft thick
+double building.dsArea.hatchblock.offsetFromFloorSurface.y          = 6858.0;
+double building.tsArea.hatchblock.southTop.yHalfThickness           = 692.15; //match to north TS hatch block
+double building.tsArea.hatchblock.southTop.offsetFromFloorSurface.y = 7080.25;
+
+///////////////////////////////////////
+//     Turn off pbar elements        //
+///////////////////////////////////////
+bool pbar.build = false;
+
+///////////////////////////////////////
+//     Change production target      //
+///////////////////////////////////////
+//Carbon conveyor target
+#include "Mu2eG4/geom/ProductionTarget_Mu2eII_Conveyor_v01.txt"
+
+//
+//
+// End notes:
+//
+// 1) Sources of information:
+//
+//
+//
+// This tells emacs to view this file in c++ mode.
+// Local Variables:
+// mode:c++
+// End:

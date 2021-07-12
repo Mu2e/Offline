@@ -1,0 +1,11 @@
+// Changes back the global constants for Mu2e-I specific running
+
+#include "Mu2eG4/test/globalConstants_01.txt"
+
+// Proton Kinetic Energy
+double physicsParams.protonKE = 8000.; // - in MeV
+
+// This tells emacs to view this file in c++ mode.
+// Local Variables:
+// mode:c++
+// End:

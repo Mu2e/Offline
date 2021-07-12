@@ -180,6 +180,7 @@ Mu2eG4: {
     producers : {
         g4run : { @table::mu2eg4runDefaultSingleStage }
     }
+    filters : {    }
 }
 
 #----------------------------------------------------------------

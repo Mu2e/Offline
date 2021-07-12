@@ -3,6 +3,7 @@
 # this file is included by fcl/standardProducers.fcl inside the PROLOG section
 #------------------------------------------------------------------------------
 BEGIN_PROLOG
+GEN_ID : @nil # to be redefined
 #------------------------------------------------------------------------------
 # "muonStops" is a TDR config, deprecated for CD3:
 muonStops : {
@@ -52,6 +53,17 @@ mu2e.IPAMuonStops: {
     inputFiles            : @nil
     averageNumRecordsToUse: 1000000
     treeName              : "IPAstops/stops"
+    branchName            : "stops"
+    verbosityLevel        : 0
+}
+
+# Photon conversion points
+mergedGamma_tgtRegionStops_su2020_1  : [ "xroot://fndca1.fnal.gov/pnfs/fnal.gov/usr/mu2e/persistent/users/mu2epro/su2020/gammastops/nts.mu2e.su2020.rmce0s00b0.001000_10000000.root" ]
+
+mu2e.gammaStops : {
+    inputFiles            : @local::mergedGamma_tgtRegionStops_su2020_1
+    averageNumRecordsToUse: 1000000
+    treeName              : "conversionwriter/gammaStops/conversions"
     branchName            : "stops"
     verbosityLevel        : 0
 }
@@ -109,7 +121,7 @@ PrimaryProtonGun: {
     shape             : "gaus"
     rmax              : 100.
     mean              : -1.
-
+    mu2eii            : true
 }
 
 
@@ -163,6 +175,7 @@ EventGenerator : { @table::EventGenerator
 # new implementation from Eleonora, doesn't require tabulations of LL spectra
 # conversion e- and e+ on Al27
 #------------------------------------------------------------------------------
+
         CeMEndpoint              : {   module_type: StoppedParticleReactionGun
             physics: { @table::StoppedParticleReactionGun.physics
                 genId                 : CeEndpoint
@@ -190,6 +203,70 @@ EventGenerator : { @table::EventGenerator
             }
             doHistograms              : true
         }
+	
+	#--------------Table of mu-->e+X-------------#
+	mueXTable : { 
+	    @table::StoppedParticleReactionGun # Mu-->e+X
+	    physics : { @table::StoppedParticleReactionGun.physics
+		pdgId            :  11
+		spectrumVariable : "totalEnergy"
+		spectrumShape    : "tabulated"
+		spectrumFileName : "ConditionsService/data/mueX.tbl"
+	    }
+	}
+	
+	#--------------Table of mu-->e+X (from arXiv-2005.07894)-------------#
+	mu2eXS0 : { 
+	    @table::StoppedParticleReactionGun # Mu-->e+X
+	    physics : { @table::StoppedParticleReactionGun.physics
+		pdgId            :  11
+		spectrumVariable : "totalEnergy"
+		spectrumShape    : "tabulated"
+		spectrumFileName : "ConditionsService/data/mu2eXS0.tbl"
+		ehi                   : 104.97
+		elow                  : 100.
+	    }
+	}
+	mu2eXS1 : { 
+	    @table::StoppedParticleReactionGun # Mu-->e+X
+	    physics : { @table::StoppedParticleReactionGun.physics
+		pdgId            :  11
+		spectrumVariable : "totalEnergy"
+		spectrumShape    : "tabulated"
+		spectrumFileName : "ConditionsService/data/mu2eXS1.tbl"
+		ehi                   : 104.97
+		elow                  : 100.
+	    }
+	}
+	
+	mu2eXV1 : { 
+	    @table::StoppedParticleReactionGun # Mu-->e+X
+	    physics : { @table::StoppedParticleReactionGun.physics
+		pdgId            :  11
+		spectrumVariable : "totalEnergy"
+		spectrumShape    : "tabulated"
+		spectrumFileName : "ConditionsService/data/mu2eXV1.tbl"
+		ehi                   : 104.97
+		elow                  : 100.
+	    }
+	}
+	#------------ Spectrum for mu-->e+X--------#
+	muXSpectrum : {
+	    module_type: StoppedParticleReactionGun
+	    physics: { @table::StoppedParticleReactionGun.physics
+		genId                 : Mu2eX 
+		pdgId                 : 11
+		spectrumShape         : "mueX"     # could also be "flat" or "CeEndpoint"
+		spectrumVariable      : "totalEnergy"      # could be  "kineticEnergy" or "momentum" or "totalEnergy"
+		spectrumResolution    : 0.1                # MeV
+		ehi                   : 104.97
+		elow                  : 100.
+	    } 
+	    muonStops            : { @table::mu2e.tgtMuonStops
+		inputFiles       : @local::mergedMuon_tgtStops_mdc2018_1
+	    }
+	    doHistograms              : true
+	}
 
         CeMLeadingLog              : {   module_type: StoppedParticleReactionGun
             physics: { @table::StoppedParticleReactionGun.physics
@@ -313,19 +390,19 @@ EventGenerator : { @table::EventGenerator
             pionStops                 : { @table::EventGenerator.pionStops }
         }
 
-        RMCGun : {
-            module_type    : RMCGun
-            verbosityLevel : 0
-            doHistograms   : false
-            physics : {
-                generateIntConversion : 0
-                spectrumShape         : "flat"
-                elow                  : 60
-                ehi                   : 110
-                spectrumResolution    : 0.1
-            }
-            muonStops      : { @table::EventGenerator.muonStops }
-        }
+        
+        RMCGun : { module_type    : RMCGun
+	    verbosityLevel : 0
+	    doHistograms   : false
+	    physics : {
+		genId                 : @local::GEN_ID  #  InternalRMC or ExternalRMC, defines the generated process
+		spectrumShape         : "flat"
+		elow                  : 57.             # reported RMC BR's are measured for Egamam > 57 MeV
+		ehi                   : 102.            # kinematic limit for RMC on Al is at 101.87
+		spectrumResolution    : 0.1
+	    }
+	    muonStops      : { @table::EventGenerator.muonStops }
+	}
 
         StoppedParticleRMCGun : {
             module_type    : StoppedMuonRMCGun
@@ -344,6 +421,11 @@ EventGenerator : { @table::EventGenerator
 
         CaloTBGun : {
 	    module_type    : CaloTBGun
+	}
+	GammaConversionGun : { module_type: GammaConversionGun
+	    verbosityLevel : 0	  
+	    doHistograms   : true
+	    gammaStops: @local::mu2e.gammaStops
 	}
     }
 }

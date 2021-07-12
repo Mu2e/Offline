@@ -59,7 +59,7 @@ namespace mu2e {
 
   bool StrawDigiMCFilter::filter(art::Event& evt) {
     std::unique_ptr<SimParticlePtrCollection> output(new SimParticlePtrCollection());
-    bool retval(false);
+    bool retval(minndigi_==0); //passes by default if none required
     auto mcdH = evt.getValidHandle<StrawDigiMCCollection>(_mcdigisTag);
     const StrawDigiMCCollection *mcdigis = mcdH.product();
     // keep count of digis produced by specific particle
