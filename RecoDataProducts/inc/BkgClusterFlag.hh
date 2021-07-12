@@ -4,7 +4,7 @@
 #ifndef RecoDataProducts_BkgClusterFlag_hh
 #define RecoDataProducts_BkgClusterFlag_hh
 
-#include "GeneralUtilities/inc/BitMap.hh"
+#include "Offline/GeneralUtilities/inc/BitMap.hh"
 #include <string>
 #include <map>
 

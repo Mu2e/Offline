@@ -1,12 +1,12 @@
 //
 
 
-#include "Mu2eUtilities/inc/McUtilsToolBase.hh"
-#include "TrkReco/inc/TrkPrintUtils.hh"
-#include "RecoDataProducts/inc/ComboHit.hh"
+#include "Offline/Mu2eUtilities/inc/McUtilsToolBase.hh"
+#include "Offline/TrkReco/inc/TrkPrintUtils.hh"
+#include "Offline/RecoDataProducts/inc/ComboHit.hh"
 
-#include "BTrkData/inc/TrkStrawHit.hh"
-#include "BTrkData/inc/TrkCaloHit.hh"
+#include "Offline/BTrkData/inc/TrkStrawHit.hh"
+#include "Offline/BTrkData/inc/TrkCaloHit.hh"
 
 #include "BTrk/KalmanTrack/KalHit.hh"
 #include "BTrk/TrkBase/HelixParams.hh"

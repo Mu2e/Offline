@@ -7,7 +7,7 @@
 // Original author Rob Kutschke
 //
 
-#include "DataProducts/inc/PDGCode.hh"
+#include "Offline/DataProducts/inc/PDGCode.hh"
 
 // C++ includes.
 #include <iostream>

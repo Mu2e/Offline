@@ -3,8 +3,8 @@
 # Configuration file for CosmicFilter
 #
 
-#include "fcl/minimalMessageService.fcl"
-#include "fcl/standardProducers.fcl"
+#include "Offline/fcl/minimalMessageService.fcl"
+#include "Offline/fcl/standardProducers.fcl"
 
 # Give this process a name.
 process_name : CosmicFilter
@@ -30,14 +30,14 @@ services : {
   }
 
   GeometryService : {
-    inputFile : "Mu2eG4/geom/geom_common.txt"
+    inputFile : "Offline/Mu2eG4/geom/geom_common.txt"
   }
   
   ConditionsService : {
-    conditionsfile : "ConditionsService/data/conditions_01.txt"
+    conditionsfile : "Offline/ConditionsService/data/conditions_01.txt"
   }
   
-  GlobalConstantsService : { inputFile : "GlobalConstantsService/data/globalConstants_01.txt" }
+  GlobalConstantsService : { inputFile : "Offline/GlobalConstantsService/data/globalConstants_01.txt" }
   BTrkHelper : @local::BTrkHelperDefault
   Mu2eG4Helper   : { }
 

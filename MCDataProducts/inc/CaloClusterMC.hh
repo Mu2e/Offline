@@ -9,8 +9,8 @@
 #ifndef MCDataProducts_CaloClusterMC_hh
 #define MCDataProducts_CaloClusterMC_hh
 
-#include "MCDataProducts/inc/CaloHitMC.hh"
-#include "MCDataProducts/inc/CaloEDepMC.hh"
+#include "Offline/MCDataProducts/inc/CaloHitMC.hh"
+#include "Offline/MCDataProducts/inc/CaloEDepMC.hh"
 #include <vector>
 
 namespace mu2e

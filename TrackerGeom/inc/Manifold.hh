@@ -4,7 +4,7 @@
 #include <vector>
 //#include <string>
 
-#include "TrackerGeom/inc/ManifoldId.hh"
+#include "Offline/TrackerGeom/inc/ManifoldId.hh"
 
 #include "CLHEP/Vector/ThreeVector.h"
 

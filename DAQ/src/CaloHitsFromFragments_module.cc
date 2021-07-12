@@ -15,11 +15,11 @@
 #include "mu2e-artdaq-core/Overlays/FragmentType.hh"
 #include "mu2e-artdaq-core/Overlays/Mu2eEventFragment.hh"
 
-#include "RecoDataProducts/inc/CaloHit.hh"
+#include "Offline/RecoDataProducts/inc/CaloHit.hh"
 
 #include <artdaq-core/Data/Fragment.hh>
 
-#include "DAQ/inc/CaloDAQUtilities.hh"
+#include "Offline/DAQ/inc/CaloDAQUtilities.hh"
 
 #include <iostream>
 

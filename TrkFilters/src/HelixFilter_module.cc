@@ -7,21 +7,21 @@
 #include "art/Framework/Core/ModuleMacros.h"
 #include "art/Framework/Principal/Event.h"
 #include "art/Framework/Principal/Handle.h"
-#include "RecoDataProducts/inc/TrkFitFlag.hh"
-#include "RecoDataProducts/inc/TriggerInfo.hh"
+#include "Offline/RecoDataProducts/inc/TrkFitFlag.hh"
+#include "Offline/RecoDataProducts/inc/TriggerInfo.hh"
 #include "fhiclcpp/ParameterSet.h"
-#include "BFieldGeom/inc/BFieldManager.hh"
-#include "GeometryService/inc/GeomHandle.hh"
-#include "GeometryService/inc/DetectorSystem.hh"
-#include "TrackerGeom/inc/Tracker.hh"
+#include "Offline/BFieldGeom/inc/BFieldManager.hh"
+#include "Offline/GeometryService/inc/GeomHandle.hh"
+#include "Offline/GeometryService/inc/DetectorSystem.hh"
+#include "Offline/TrackerGeom/inc/Tracker.hh"
 // data
-#include "RecoDataProducts/inc/HelixSeed.hh"
-#include "DataProducts/inc/Helicity.hh"
+#include "Offline/RecoDataProducts/inc/HelixSeed.hh"
+#include "Offline/DataProducts/inc/Helicity.hh"
 // mu2e
-#include "Mu2eUtilities/inc/HelixTool.hh"
+#include "Offline/Mu2eUtilities/inc/HelixTool.hh"
 // helper function
-#include "GeneralUtilities/inc/PhiPrescalingParams.hh"
-#include "GeneralUtilities/inc/ParameterSetHelpers.hh"
+#include "Offline/GeneralUtilities/inc/PhiPrescalingParams.hh"
+#include "Offline/GeneralUtilities/inc/ParameterSetHelpers.hh"
 //#include "TrkFilters/inc/TrkFiltersHelpers.hh"
 
 using namespace CLHEP;
@@ -92,7 +92,6 @@ namespace mu2e
     _maxnloops         (pset.get<double>("maxNLoops",30.)),
     _minnloops         (pset.get<double>("minNLoops",0.)),
     _goodh             (pset.get<std::vector<std::string> >("helixFitFlag",std::vector<std::string>{"HelixOK"})),
-    _trigPath          (pset.get<std::string>("triggerPath")),
     _prescaleUsingD0Phi(pset.get<bool>  ("prescaleUsingD0Phi",false)),
     _debug             (pset.get<int>   ("debugLevel",0)),
     _nevt(0), _npass(0)
@@ -131,7 +130,6 @@ namespace mu2e
     auto hsH = evt.getValidHandle<HelixSeedCollection>(_hsTag);
     const HelixSeedCollection* hscol = hsH.product();
     float mm2MeV = 3./10.*_bz0;
-    size_t trig_ind(0);
     // loop over the collection: if any pass the selection, pass this event
     for(auto ihs = hscol->begin();ihs != hscol->end(); ++ihs) {
       auto const& hs = *ihs;
@@ -179,15 +177,10 @@ namespace mu2e
         retval = true;
         ++_npass;
         // Fill the trigger info object
-        if (trig_ind == 0){
-	  triginfo->_triggerBits.merge(TriggerFlag::helix);
-	  triginfo->_triggerPath = _trigPath;
-	}
         // associate to the helix which triggers.  Note there may be other helices which also pass the filter
         // but filtering is by event!
         size_t index = std::distance(hscol->begin(),ihs);
 	triginfo->_helixes.push_back(art::Ptr<HelixSeed>(hsH,index));
-	++trig_ind;
 	if(_debug > 1){
 	  std::cout << moduleDescription().moduleLabel() << " passed event " << evt.id() << std::endl;
         }

@@ -4,7 +4,7 @@
 //
 // Original author G.F. Tassielli
 
-#include "EventGenerator/defaultConfigs/conversionGun.txt"
+#include "Offline/EventGenerator/defaultConfigs/conversionGun.txt"
 
 //#include "EventGenerator/defaultConfigs/decayInOrbitGun.txt"
 

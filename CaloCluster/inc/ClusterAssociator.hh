@@ -7,9 +7,9 @@
 //    that are linked together are regrouped into one cluster (i.e. A is linked to B, 
 //    and B to C, then ABC are grouped together)
 
-#include "CalorimeterGeom/inc/Calorimeter.hh"
-#include "RecoDataProducts/inc/CaloHit.hh"
-#include "RecoDataProducts/inc/CaloProtoCluster.hh"
+#include "Offline/CalorimeterGeom/inc/Calorimeter.hh"
+#include "Offline/RecoDataProducts/inc/CaloHit.hh"
+#include "Offline/RecoDataProducts/inc/CaloProtoCluster.hh"
 
 #include <unordered_map>
 #include <map>

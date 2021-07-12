@@ -7,8 +7,8 @@
 
 #include <string>
 
-#include "Mu2eG4/inc/nestTrp.hh"
-#include "Mu2eG4/inc/finishNesting.hh"
+#include "Offline/Mu2eG4/inc/nestTrp.hh"
+#include "Offline/Mu2eG4/inc/finishNesting.hh"
 
 #include "Geant4/G4Trd.hh"
 #include "Geant4/G4LogicalVolume.hh"

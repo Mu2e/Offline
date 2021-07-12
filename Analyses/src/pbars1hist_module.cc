@@ -19,12 +19,12 @@
 #include "CLHEP/Vector/ThreeVector.h"
 #include "CLHEP/Units/SystemOfUnits.h"
 
-#include "ProductionTargetGeom/inc/ProductionTarget.hh"
-#include "MCDataProducts/inc/SimParticleCollection.hh"
+#include "Offline/ProductionTargetGeom/inc/ProductionTarget.hh"
+#include "Offline/MCDataProducts/inc/SimParticleCollection.hh"
 
-#include "GeometryService/inc/GeomHandle.hh"
-#include "GlobalConstantsService/inc/GlobalConstantsHandle.hh"
-#include "GlobalConstantsService/inc/ParticleDataTable.hh"
+#include "Offline/GeometryService/inc/GeomHandle.hh"
+#include "Offline/GlobalConstantsService/inc/GlobalConstantsHandle.hh"
+#include "Offline/GlobalConstantsService/inc/ParticleDataTable.hh"
 
 namespace mu2e {
 

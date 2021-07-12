@@ -12,12 +12,12 @@
 #include <array>
 
 // Mu2e includes
-#include "DataProducts/inc/StrawId.hh"
-#include "DataProducts/inc/StrawEnd.hh"
-#include "DataProducts/inc/TrkTypes.hh"
-#include "TrackerGeom/inc/Straw.hh"
-#include "TrackerGeom/inc/Tracker.hh"
-#include "Mu2eInterfaces/inc/ProditionsEntity.hh"
+#include "Offline/DataProducts/inc/StrawId.hh"
+#include "Offline/DataProducts/inc/StrawEnd.hh"
+#include "Offline/DataProducts/inc/TrkTypes.hh"
+#include "Offline/TrackerGeom/inc/Straw.hh"
+#include "Offline/TrackerGeom/inc/Tracker.hh"
+#include "Offline/Mu2eInterfaces/inc/ProditionsEntity.hh"
 #include "fhiclcpp/ParameterSet.h"
 
 namespace mu2e {

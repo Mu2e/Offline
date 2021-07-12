@@ -27,8 +27,8 @@
 #include "cetlib_except/exception.h"
 
 // Mu2e include files.
-#include "ConfigTools/inc/SimpleConfig.hh"
-#include "Mu2eInterfaces/inc/ConditionsEntity.hh"
+#include "Offline/ConfigTools/inc/SimpleConfig.hh"
+#include "Offline/Mu2eInterfaces/inc/ConditionsEntity.hh"
 
 // Other external include files.
 #include "boost/shared_ptr.hpp"

@@ -1,12 +1,12 @@
-#include "ConditionsService/inc/ExtMonFNALConditions.hh"
+#include "Offline/ConditionsService/inc/ExtMonFNALConditions.hh"
 
 #include "cetlib_except/exception.h"
 
 #include "CLHEP/Units/SystemOfUnits.h"
 
-#include "ConfigTools/inc/SimpleConfig.hh"
+#include "Offline/ConfigTools/inc/SimpleConfig.hh"
 
-#include "ConditionsService/inc/AcceleratorParams.hh"
+#include "Offline/ConditionsService/inc/AcceleratorParams.hh"
 
 namespace mu2e {
 

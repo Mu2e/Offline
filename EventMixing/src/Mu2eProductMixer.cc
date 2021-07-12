@@ -1,6 +1,6 @@
 // Andrei Gaponenko, 2018
 
-#include "EventMixing/inc/Mu2eProductMixer.hh"
+#include "Offline/EventMixing/inc/Mu2eProductMixer.hh"
 
 #include <utility>
 #include <algorithm>
@@ -47,6 +47,9 @@ namespace mu2e {
       , timeOffsetTag_{ conf.simTimeOffset() }
       , stoff_(0.0)
   {
+    if(applyTimeOffset_){
+      std::cout << "Mu2eProductMixer: Applying time offsets from " << timeOffsetTag_ << std::endl;
+    }
 
     for(const auto& e: conf.genParticleMixer().mixingMap()) {
       helper.declareMixOp
@@ -88,14 +91,9 @@ namespace mu2e {
         (e.inTag, e.resolvedInstanceName(), &Mu2eProductMixer::mixExtMonSimHits, *this);
     }
 
-    for(const auto& e: conf.protonBunchIntensityMixer().mixingMap()) {
+    for(const auto& e: conf.cosmicLivetimeMixer().mixingMap()) {
       helper.declareMixOp
-        (e.inTag, e.resolvedInstanceName(), &Mu2eProductMixer::mixProtonBunchIntensity, *this);
-    }
-
-    for(const auto& e: conf.protonTimeMapMixer().mixingMap()) {
-      helper.declareMixOp
-        (e.inTag, e.resolvedInstanceName(), &Mu2eProductMixer::mixProtonTimeMap, *this);
+        (e.inTag, e.resolvedInstanceName(), &Mu2eProductMixer::mixCosmicLivetime, *this);
     }
 
     for(const auto& e: conf.eventIDMixer().mixingMap()) {
@@ -348,29 +346,14 @@ namespace mu2e {
   }
 
   //----------------------------------------------------------------
-  bool Mu2eProductMixer::mixProtonBunchIntensity(std::vector<ProtonBunchIntensity const*> const& in,
-                                                 ProtonBunchIntensity& out,
+  bool Mu2eProductMixer::mixCosmicLivetime(std::vector<CosmicLivetime const*> const& in,
+                                                 CosmicLivetime& out,
                                                  art::PtrRemapper const& remap)
   {
+    if(in.size() > 1)
+      throw cet::exception("BADINPUT")<<"Mu2eProductMixer/evt: can't mix CosmicLiveTime" << std::endl; 
     for(const auto& x: in) {
-      out.add(*x);
-    }
-
-    return true;
-  }
-
-  bool Mu2eProductMixer::mixProtonTimeMap(std::vector<SimParticleTimeMap const*> const& in,
-                                          SimParticleTimeMap& out,
-                                          art::PtrRemapper const& remap)
-  {
-    for(size_t incount = 0; incount < in.size(); ++incount) {
-      auto const& timemap = *in[incount];
-      //std::cout << "Mixing time map " << incount << " size " << timemap.size() << std::endl;
-      for(auto & imap : timemap) {
-        auto newptr = remap(imap.first, simOffsets_[incount]);
-        out[newptr] = imap.second;
-        // do I need to go down the chain?  I think not
-      }
+      out = *x;
     }
 
     return true;

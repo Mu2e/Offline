@@ -8,9 +8,9 @@
 #ifndef mu2e_PanelAmbig_PanelAmbigResolver_HH
 #define mu2e_PanelAmbig_PanelAmbigResolver_HH
 #include "BTrk/BaBar/BaBar.hh"
-#include "TrkReco/inc/AmbigResolver.hh"
-#include "TrkReco/inc/PanelAmbigStructs.hh"
-#include "DataProducts/inc/PanelId.hh"
+#include "Offline/TrkReco/inc/AmbigResolver.hh"
+#include "Offline/TrkReco/inc/PanelAmbigStructs.hh"
+#include "Offline/DataProducts/inc/PanelId.hh"
 #ifndef __GCCXML__
 #include "fhiclcpp/ParameterSet.h"
 #endif/*__GCCXML__*/

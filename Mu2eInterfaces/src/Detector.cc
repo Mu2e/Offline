@@ -5,7 +5,7 @@
 // Original author Rob Kutschke
 //
 
-#include "Mu2eInterfaces/inc/Detector.hh"
+#include "Offline/Mu2eInterfaces/inc/Detector.hh"
 
 namespace mu2e
 {

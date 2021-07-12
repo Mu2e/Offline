@@ -1,7 +1,7 @@
 // case checks: just one energy deposit, or two bins. 
 // refit the rising peak
 
-#include "CaloReco/inc/CaloRawWFProcessor.hh"
+#include "Offline/CaloReco/inc/CaloRawWFProcessor.hh"
 #include "art_root_io/TFileService.h"
 #include "art_root_io/TFileDirectory.h"
 

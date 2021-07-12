@@ -2,47 +2,47 @@
 // Data : March 2019
 // Purpose: Cosmic Track finder- module calls seed fitting routine to begin cosmic track analysis. The module can call the seed fit and drift fit. Producing a "CosmicTrackSeed" list.
 
-#include "CosmicReco/inc/CosmicTrackFit.hh"
-#include "RecoDataProducts/inc/CosmicTrackSeed.hh"
+#include "Offline/CosmicReco/inc/CosmicTrackFit.hh"
+#include "Offline/RecoDataProducts/inc/CosmicTrackSeed.hh"
 
 //Mu2e General:
-#include "GeometryService/inc/GeomHandle.hh"
-#include "GeometryService/inc/DetectorSystem.hh"
-#include "TrackerGeom/inc/Tracker.hh"
+#include "Offline/GeometryService/inc/GeomHandle.hh"
+#include "Offline/GeometryService/inc/DetectorSystem.hh"
+#include "Offline/TrackerGeom/inc/Tracker.hh"
 
 // ART:
 #include "fhiclcpp/ParameterSet.h"
 #include "art/Framework/Principal/Event.h"
-#include "GeometryService/inc/GeomHandle.hh"
+#include "Offline/GeometryService/inc/GeomHandle.hh"
 #include "fhiclcpp/ParameterSet.h"
 #include "art/Framework/Principal/Handle.h"
 #include "art/Framework/Core/EDProducer.h"
 #include "art/Framework/Core/ModuleMacros.h"
 #include "art_root_io/TFileService.h"
-#include "GeneralUtilities/inc/Angles.hh"
+#include "Offline/GeneralUtilities/inc/Angles.hh"
 #include "art/Utilities/make_tool.h"
 #include "canvas/Persistency/Common/Ptr.h"
 
 //MU2E:
-#include "RecoDataProducts/inc/StrawHitCollection.hh"
-#include "RecoDataProducts/inc/StrawHitPositionCollection.hh"
-#include "RecoDataProducts/inc/StrawHitFlagCollection.hh"
-#include "RecoDataProducts/inc/TimeCluster.hh"
-#include "RecoDataProducts/inc/TrkFitFlag.hh"
-#include "TrkReco/inc/TrkTimeCalculator.hh"
-#include "ProditionsService/inc/ProditionsHandle.hh"
-#include "CosmicReco/inc/MinuitDriftFitter.hh"
+#include "Offline/RecoDataProducts/inc/StrawHitCollection.hh"
+#include "Offline/RecoDataProducts/inc/StrawHitPositionCollection.hh"
+#include "Offline/RecoDataProducts/inc/StrawHitFlagCollection.hh"
+#include "Offline/RecoDataProducts/inc/TimeCluster.hh"
+#include "Offline/RecoDataProducts/inc/TrkFitFlag.hh"
+#include "Offline/TrkReco/inc/TrkTimeCalculator.hh"
+#include "Offline/ProditionsService/inc/ProditionsHandle.hh"
+#include "Offline/CosmicReco/inc/MinuitDriftFitter.hh"
 
 //utils:
-#include "Mu2eUtilities/inc/ParametricFit.hh"
+#include "Offline/Mu2eUtilities/inc/ParametricFit.hh"
 
 //For Drift:
-#include "TrkReco/inc/PanelAmbigResolver.hh"
-#include "TrkReco/inc/PanelStateIterator.hh"
-#include "TrkReco/inc/TrkFaceData.hh"
+#include "Offline/TrkReco/inc/PanelAmbigResolver.hh"
+#include "Offline/TrkReco/inc/PanelStateIterator.hh"
+#include "Offline/TrkReco/inc/TrkFaceData.hh"
 
 // Mu2e BaBar
-#include "BTrkData/inc/TrkStrawHit.hh"
+#include "Offline/BTrkData/inc/TrkStrawHit.hh"
 
 //CLHEP:
 #include "CLHEP/Units/PhysicalConstants.h"

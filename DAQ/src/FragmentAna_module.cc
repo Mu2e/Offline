@@ -24,8 +24,8 @@
 #include <artdaq-core/Data/Fragment.hh>
 
 // Mu2e includes
-#include "DataProducts/inc/StrawId.hh"
-#include "DataProducts/inc/TrkTypes.hh"
+#include "Offline/DataProducts/inc/StrawId.hh"
+#include "Offline/DataProducts/inc/TrkTypes.hh"
 
 #include <iostream>
 #include <memory>

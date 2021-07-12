@@ -3,8 +3,8 @@
 int    physicsParams.verbosityLevel = 0;
 
 // Primary particle data table and the auxillary table.
-string particleDataTable.filename          = "GlobalConstantsService/data/particle.tbl";
-string particleDataTable.auxillaryFilename = "GlobalConstantsService/data/mass_width_2008.mc";
+string particleDataTable.filename          = "Offline/GlobalConstantsService/data/particle.tbl";
+string particleDataTable.auxillaryFilename = "Offline/GlobalConstantsService/data/mass_width_2008.mc";
 
 // Physical constants
 double physicsParams.invFineStructureConstant = 137.0359991; // PDG value (2010 CODATA)

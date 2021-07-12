@@ -1,8 +1,8 @@
 
 #include "art_root_io/TFileDirectory.h"
-#include "Validation/inc/ValTrackSummary.hh"
-#include "MCDataProducts/inc/SimParticleCollection.hh"
-#include "MCDataProducts/inc/StepPointMCCollection.hh"
+#include "Offline/Validation/inc/ValTrackSummary.hh"
+#include "Offline/MCDataProducts/inc/SimParticleCollection.hh"
+#include "Offline/MCDataProducts/inc/StepPointMCCollection.hh"
 #include "TMath.h"
 
 int mu2e::ValTrackSummary::declare(art::TFileDirectory tfs) {

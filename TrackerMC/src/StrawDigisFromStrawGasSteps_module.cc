@@ -8,43 +8,43 @@
 #include "art/Framework/Principal/Event.h"
 #include "fhiclcpp/ParameterSet.h"
 #include "art/Framework/Principal/Handle.h"
-#include "GeometryService/inc/GeomHandle.hh"
+#include "Offline/GeometryService/inc/GeomHandle.hh"
 #include "art/Framework/Core/EDProducer.h"
-#include "GeometryService/inc/DetectorSystem.hh"
+#include "Offline/GeometryService/inc/DetectorSystem.hh"
 #include "art/Framework/Core/ModuleMacros.h"
 #include "art_root_io/TFileService.h"
-#include "SeedService/inc/SeedService.hh"
+#include "Offline/SeedService/inc/SeedService.hh"
 #include "cetlib_except/exception.h"
 #include "messagefacility/MessageLogger/MessageLogger.h"
 // conditions
-#include "ProditionsService/inc/ProditionsHandle.hh"
-#include "ConditionsService/inc/ConditionsHandle.hh"
-#include "ConditionsService/inc/AcceleratorParams.hh"
-#include "TrackerGeom/inc/Tracker.hh"
-#include "ConfigTools/inc/ConfigFileLookupPolicy.hh"
-#include "TrackerConditions/inc/StrawElectronics.hh"
-#include "TrackerConditions/inc/StrawPhysics.hh"
-#include "GeometryService/inc/DetectorSystem.hh"
-#include "BFieldGeom/inc/BFieldManager.hh"
+#include "Offline/ProditionsService/inc/ProditionsHandle.hh"
+#include "Offline/ConditionsService/inc/ConditionsHandle.hh"
+#include "Offline/ConditionsService/inc/AcceleratorParams.hh"
+#include "Offline/TrackerGeom/inc/Tracker.hh"
+#include "Offline/ConfigTools/inc/ConfigFileLookupPolicy.hh"
+#include "Offline/TrackerConditions/inc/StrawElectronics.hh"
+#include "Offline/TrackerConditions/inc/StrawPhysics.hh"
+#include "Offline/GeometryService/inc/DetectorSystem.hh"
+#include "Offline/BFieldGeom/inc/BFieldManager.hh"
 #include "BTrk/BField/BField.hh"
-#include "GlobalConstantsService/inc/GlobalConstantsHandle.hh"
-#include "GlobalConstantsService/inc/ParticleDataTable.hh"
+#include "Offline/GlobalConstantsService/inc/GlobalConstantsHandle.hh"
+#include "Offline/GlobalConstantsService/inc/ParticleDataTable.hh"
 // utiliities
-#include "Mu2eUtilities/inc/TwoLinePCA.hh"
-#include "Mu2eUtilities/inc/SimParticleTimeOffset.hh"
-#include "DataProducts/inc/TrkTypes.hh"
+#include "Offline/Mu2eUtilities/inc/TwoLinePCA.hh"
+#include "Offline/Mu2eUtilities/inc/SimParticleTimeOffset.hh"
+#include "Offline/DataProducts/inc/TrkTypes.hh"
 // persistent data
-#include "DataProducts/inc/EventWindowMarker.hh"
-#include "MCDataProducts/inc/ProtonBunchTimeMC.hh"
-#include "DataProducts/inc/StrawId.hh"
-#include "RecoDataProducts/inc/StrawDigi.hh"
-#include "MCDataProducts/inc/StrawGasStep.hh"
-#include "MCDataProducts/inc/StrawDigiMC.hh"
+#include "Offline/DataProducts/inc/EventWindowMarker.hh"
+#include "Offline/MCDataProducts/inc/ProtonBunchTimeMC.hh"
+#include "Offline/DataProducts/inc/StrawId.hh"
+#include "Offline/RecoDataProducts/inc/StrawDigi.hh"
+#include "Offline/MCDataProducts/inc/StrawGasStep.hh"
+#include "Offline/MCDataProducts/inc/StrawDigiMC.hh"
 // temporary MC structures
-#include "TrackerMC/inc/StrawClusterSequencePair.hh"
-#include "TrackerMC/inc/StrawWaveform.hh"
-#include "TrackerMC/inc/IonCluster.hh"
-#include "TrackerMC/inc/StrawPosition.hh"
+#include "Offline/TrackerMC/inc/StrawClusterSequencePair.hh"
+#include "Offline/TrackerMC/inc/StrawWaveform.hh"
+#include "Offline/TrackerMC/inc/IonCluster.hh"
+#include "Offline/TrackerMC/inc/StrawPosition.hh"
 //CLHEP
 #include "CLHEP/Random/RandGaussQ.h"
 #include "CLHEP/Random/RandFlat.h"
@@ -95,7 +95,7 @@ namespace mu2e {
 	  fhicl::Atom<bool> xtalkhist{ Name("CrossTalkHist"), Comment("Histogram of cross-talk"), false};
 	  fhicl::Atom<int> minnxinghist{ Name("MinNXingHist"), Comment("Minimum # of crossings to histogram waveform"),1};
 	  fhicl::Atom<float> tstep { Name("WaveformStep"), Comment("WaveformStep (nsec)"),0.1 };
-	  fhicl::Atom<float> nfall{ Name("WaveformTail"), Comment("# of decay lambda past last signal to record waveform"),10.0};
+	  fhicl::Atom<float> tfall{ Name("WaveformTail"), Comment("Time past last signal to record waveform (ns)"),220.0};
 	  fhicl::Atom<unsigned> maxnclu{ Name("MaxNClusters"), Comment("Maximum number of clusters for non-minion steps"), 20};
 	  fhicl::Atom<bool> addXtalk{ Name("addCrossTalk"), Comment("Should we add cross talk hits?"),false };
 	  fhicl::Atom<bool> drift1e{ Name("DriftSingleElectrons"), Comment("Always drift single electrons"),false };
@@ -143,7 +143,7 @@ namespace mu2e {
 	unsigned _maxhist;
 	bool  _xtalkhist;
 	unsigned _minnxinghist;
-	double _tstep, _nfall;
+	double _tstep, _tfall;
 	// Parameters
 	bool   _addXtalk, _drift1e, _randrad;
 	double _ctMinCharge;
@@ -278,7 +278,7 @@ namespace mu2e {
       _xtalkhist(config().xtalkhist()),
       _minnxinghist(config().minnxinghist()),
       _tstep(config().tstep()),
-      _nfall(config().nfall()),
+      _tfall(config().tfall()),
       _addXtalk(config().addXtalk()),
       _drift1e(config().drift1e()),
       _randrad(config().randrad()),
@@ -1080,8 +1080,7 @@ namespace mu2e {
 	if(icl != clist.end() && nhist < _maxhist && xings.size() >= _minnxinghist &&
 	    ( ((!_xtalkhist) && wfs[iend].xtalk().self()) || (_xtalkhist && !wfs[iend].xtalk().self()) ) ) {
 	  double tstart = icl->time()-_tstep;
-	  double tfall = strawele.fallTime(_diagpath);
-	  double tend = clist.rbegin()->time() + _nfall*tfall;
+	  double tend = clist.rbegin()->time() + _tfall;
 	  ADCTimes times;
 	  ADCVoltages volts;
 	  times.reserve(size_t(ceil(tend-tstart)/_tstep));

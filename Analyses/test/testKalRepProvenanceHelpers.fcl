@@ -5,7 +5,7 @@
 # Contact person Rob Kutschke
 #
 
-#include "Analyses/test/genReco.fcl"
+#include "Offline/Analyses/test/genReco.fcl"
 
 physics.analyzers.testTrkPatRecType0 : {
     module_type : TestKalRepProvenanceHelpers

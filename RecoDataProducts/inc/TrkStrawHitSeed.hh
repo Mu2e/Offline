@@ -5,10 +5,10 @@
 //
 #ifndef RecoDataProducts_TrkStrawHitSeed_HH
 #define RecoDataProducts_TrkStrawHitSeed_HH
-#include "RecoDataProducts/inc/HitT0.hh"
-#include "RecoDataProducts/inc/StrawHitFlag.hh"
-#include "RecoDataProducts/inc/ComboHit.hh"
-#include "DataProducts/inc/StrawId.hh"
+#include "Offline/RecoDataProducts/inc/HitT0.hh"
+#include "Offline/RecoDataProducts/inc/StrawHitFlag.hh"
+#include "Offline/RecoDataProducts/inc/ComboHit.hh"
+#include "Offline/DataProducts/inc/StrawId.hh"
 #include <Rtypes.h>
 #include <functional>
 namespace mu2e {

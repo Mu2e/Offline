@@ -2,7 +2,7 @@
 // BaBar definition helix parameters.  This is a mixed geometric/kinematic helix as the
 // signs include time propagation information
 //
-#include "RecoDataProducts/inc/HelixVal.hh"
+#include "Offline/RecoDataProducts/inc/HelixVal.hh"
 using CLHEP::HepVector;
 using CLHEP::HepSymMatrix;
 

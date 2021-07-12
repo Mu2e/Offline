@@ -1,7 +1,7 @@
 #
 # Configuration file for G4Test03MT
 #
-#include "Mu2eG4/fcl/g4test_03.fcl"
+#include "Offline/Mu2eG4/fcl/g4test_03.fcl"
 
 # Note that all parameters except the following should mostly be
 # set in the non MT file included above (which includes prolog files)

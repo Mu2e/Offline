@@ -10,7 +10,7 @@
 
 #include <vector>
 
-#include "RecoDataProducts/inc/TrkExtTraj.hh"
+#include "Offline/RecoDataProducts/inc/TrkExtTraj.hh"
 
 namespace mu2e {
    typedef std::vector<mu2e::TrkExtTraj> TrkExtTrajCollection;

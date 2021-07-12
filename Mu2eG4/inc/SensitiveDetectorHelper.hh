@@ -8,11 +8,11 @@
 //
 
 // From Mu2e
-#include "Mu2eG4/inc/Mu2eG4SensitiveDetector.hh"
-#include "MCDataProducts/inc/StepPointMCCollection.hh"
-#include "MCDataProducts/inc/StepInstanceName.hh"
-#include "Mu2eG4/inc/ExtMonFNALPixelSD.hh"
-#include "Mu2eG4/inc/Mu2eG4Config.hh"
+#include "Offline/Mu2eG4/inc/Mu2eG4SensitiveDetector.hh"
+#include "Offline/MCDataProducts/inc/StepPointMCCollection.hh"
+#include "Offline/MCDataProducts/inc/StepInstanceName.hh"
+#include "Offline/Mu2eG4/inc/ExtMonFNALPixelSD.hh"
+#include "Offline/Mu2eG4/inc/Mu2eG4Config.hh"
 
 // From the art tool chain
 #include "cetlib/maybe_ref.h"

@@ -1,6 +1,6 @@
 // Andrei Gaponenko, following GeneratorSummaryHistograms by Rob Kutschke
 
-#include "ExtinctionMonitorFNAL/Analyses/inc/EMFPatRecEffHistograms.hh"
+#include "Offline/ExtinctionMonitorFNAL/Analyses/inc/EMFPatRecEffHistograms.hh"
 
 #include <sstream>
 
@@ -13,7 +13,7 @@
 #include "TH2D.h"
 #include "TEfficiency.h"
 
-#include "ExtinctionMonitorFNAL/Geometry/inc/ExtMonFNAL.hh"
+#include "Offline/ExtinctionMonitorFNAL/Geometry/inc/ExtMonFNAL.hh"
 
 namespace mu2e {
   namespace ExtMonFNAL {

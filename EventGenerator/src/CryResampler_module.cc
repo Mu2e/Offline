@@ -18,17 +18,17 @@
 #include "art/Framework/Principal/Handle.h"
 #include "art/Framework/Services/Registry/ServiceHandle.h"
 
-#include "SeedService/inc/SeedService.hh"
-#include "GlobalConstantsService/inc/GlobalConstantsHandle.hh"
-#include "GlobalConstantsService/inc/ParticleDataTable.hh"
-#include "MCDataProducts/inc/GenParticle.hh"
-#include "MCDataProducts/inc/GenParticleCollection.hh"
-#include "GeneralUtilities/inc/RSNTIO.hh"
+#include "Offline/SeedService/inc/SeedService.hh"
+#include "Offline/GlobalConstantsService/inc/GlobalConstantsHandle.hh"
+#include "Offline/GlobalConstantsService/inc/ParticleDataTable.hh"
+#include "Offline/MCDataProducts/inc/GenParticle.hh"
+#include "Offline/MCDataProducts/inc/GenParticleCollection.hh"
+#include "Offline/GeneralUtilities/inc/RSNTIO.hh"
 
 #include "TTree.h"
 #include "TFile.h"
 #include "art_root_io/TFileService.h"
-#include "ConfigTools/inc/ConfigFileLookupPolicy.hh"
+#include "Offline/ConfigTools/inc/ConfigFileLookupPolicy.hh"
 
 namespace mu2e {
   class CryResampler : public art::EDProducer {

@@ -12,9 +12,9 @@
 //    2 - geometry file
 
 // Mu2e includes.
-#include "CalorimeterGeom/inc/DiskCalorimeter.hh"
-#include "Mu2eG4Helper/inc/VolumeInfo.hh"
-#include "Mu2eG4/inc/MaterialFinder.hh"
+#include "Offline/CalorimeterGeom/inc/DiskCalorimeter.hh"
+#include "Offline/Mu2eG4Helper/inc/VolumeInfo.hh"
+#include "Offline/Mu2eG4/inc/MaterialFinder.hh"
 #include "Geant4/G4String.hh"
 #include "Geant4/G4VSolid.hh"
 #include "Geant4/G4Material.hh"

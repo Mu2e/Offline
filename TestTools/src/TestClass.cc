@@ -9,7 +9,7 @@
 #include <iostream>
 #include <iomanip>
 
-#include "TestTools/inc/TestClass.hh"
+#include "Offline/TestTools/inc/TestClass.hh"
 
 using namespace std;
 

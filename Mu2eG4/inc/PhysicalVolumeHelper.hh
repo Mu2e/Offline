@@ -14,8 +14,8 @@
 //    it points is only guaranteed to be defined during a run.  The implementation
 //    protects against trying to use this object outside of a run.
 
-#include "MCDataProducts/inc/PhysicalVolumeInfoMultiCollection.hh"
-#include "Mu2eG4/inc/VolMapType.hh"
+#include "Offline/MCDataProducts/inc/PhysicalVolumeInfoMultiCollection.hh"
+#include "Offline/Mu2eG4/inc/VolMapType.hh"
 
 class G4Track;
 class G4VPhysicalVolume;

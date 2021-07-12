@@ -8,12 +8,12 @@
 #ifndef MCDataProducts_StageParticle_hh
 #define MCDataProducts_StageParticle_hh
 
-#include "DataProducts/inc/PDGCode.hh"
+#include "Offline/DataProducts/inc/PDGCode.hh"
 #include "CLHEP/Vector/LorentzVector.h"
 #include "CLHEP/Vector/ThreeVector.h"
 
 #include "canvas/Persistency/Common/Ptr.h"
-#include "MCDataProducts/inc/SimParticle.hh"
+#include "Offline/MCDataProducts/inc/SimParticle.hh"
 
 #include <vector>
 #include <ostream>

@@ -11,7 +11,7 @@
 // Framework includes.
 
 #include "CLHEP/Vector/ThreeVector.h"
-#include "TrkExt/inc/TrkExtDetectors.hh"
+#include "Offline/TrkExt/inc/TrkExtDetectors.hh"
 
 using namespace CLHEP;
 

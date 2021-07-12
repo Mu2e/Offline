@@ -3,8 +3,8 @@
 # Readback the output of ????.py; make histograms and printout.
 #
 
-#include "fcl/minimalMessageService.fcl"
-#include "fcl/standardProducers.fcl"
+#include "Offline/fcl/minimalMessageService.fcl"
+#include "Offline/fcl/standardProducers.fcl"
 
 # Give this job a name.  
 process_name : ReadBackPis01
@@ -30,15 +30,15 @@ services :
 
   GeometryService :
   {
-    inputFile : "Mu2eG4/geom/geom_common.txt"
+    inputFile : "Offline/Mu2eG4/geom/geom_common.txt"
   }  
 
   ConditionsService :
   {
-    conditionsfile : "ConditionsService/data/conditions_01.txt"
+    conditionsfile : "Offline/ConditionsService/data/conditions_01.txt"
   }  
 
-  GlobalConstantsService : {inputFile : "GlobalConstantsService/data/globalConstants_01.txt"}
+  GlobalConstantsService : {inputFile : "Offline/GlobalConstantsService/data/globalConstants_01.txt"}
 
 }
 

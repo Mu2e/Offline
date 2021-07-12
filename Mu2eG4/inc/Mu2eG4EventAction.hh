@@ -12,15 +12,15 @@
 #include "Geant4/G4Threading.hh"
 
 //Mu2e includes
-#include "MCDataProducts/inc/SimParticleCollection.hh"
-#include "MCDataProducts/inc/StepPointMCCollection.hh"
-#include "MCDataProducts/inc/MCTrajectoryCollection.hh"
-#include "MCDataProducts/inc/ExtMonFNALSimHitCollection.hh"
-#include "Mu2eG4/inc/Mu2eG4Config.hh"
-#include "Mu2eG4/inc/Mu2eG4TrajectoryControl.hh"
-#include "Mu2eUtilities/inc/SimParticleCollectionPrinter.hh"
-#include "MCDataProducts/inc/StepInstanceName.hh"
-#include "Mu2eG4/inc/Mu2eG4PerThreadStorage.hh"
+#include "Offline/MCDataProducts/inc/SimParticleCollection.hh"
+#include "Offline/MCDataProducts/inc/StepPointMCCollection.hh"
+#include "Offline/MCDataProducts/inc/MCTrajectoryCollection.hh"
+#include "Offline/MCDataProducts/inc/ExtMonFNALSimHitCollection.hh"
+#include "Offline/Mu2eG4/inc/Mu2eG4Config.hh"
+#include "Offline/Mu2eG4/inc/Mu2eG4TrajectoryControl.hh"
+#include "Offline/Mu2eUtilities/inc/SimParticleCollectionPrinter.hh"
+#include "Offline/MCDataProducts/inc/StepInstanceName.hh"
+#include "Offline/Mu2eG4/inc/Mu2eG4PerThreadStorage.hh"
 
 //art includes
 #include "art/Framework/Principal/Handle.h"

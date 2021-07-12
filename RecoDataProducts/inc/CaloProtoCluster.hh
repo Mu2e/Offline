@@ -2,7 +2,7 @@
 #define RecoDataProducts_CaloProtoCluster_hh
 
 #include "canvas/Persistency/Common/Ptr.h"
-#include "RecoDataProducts/inc/CaloHit.hh"
+#include "Offline/RecoDataProducts/inc/CaloHit.hh"
 #include <vector>
 
 namespace mu2e {

@@ -8,9 +8,9 @@
 #ifndef Mu2eUtilities_inc_particleEnteringG4Volume_hh
 #define Mu2eUtilities_inc_particleEnteringG4Volume_hh
 
-#include "MCDataProducts/inc/SimParticle.hh"
-#include "MCDataProducts/inc/StepPointMC.hh"
-#include "MCDataProducts/inc/StrawGasStep.hh"
+#include "Offline/MCDataProducts/inc/SimParticle.hh"
+#include "Offline/MCDataProducts/inc/StepPointMC.hh"
+#include "Offline/MCDataProducts/inc/StrawGasStep.hh"
 #include "canvas/Persistency/Common/Ptr.h"
 
 namespace mu2e{

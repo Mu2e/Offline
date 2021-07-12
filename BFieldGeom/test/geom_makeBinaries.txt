@@ -3,7 +3,7 @@
 //
 //
 
-#include "Mu2eG4/test/geom_01.txt"
+#include "Offline/Mu2eG4/test/geom_01.txt"
 
 // Enable writing of binaries.
 bool bfield.writeG4BLBinaries =  true;

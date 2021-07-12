@@ -5,8 +5,8 @@
 // #include <iostream>
 
 // Mu2e includes
-#include "Mu2eG4/inc/Mu2eG4UserTrackInformation.hh"
-#include "Mu2eG4/inc/Mu2eRecorderProcess.hh"
+#include "Offline/Mu2eG4/inc/Mu2eG4UserTrackInformation.hh"
+#include "Offline/Mu2eG4/inc/Mu2eRecorderProcess.hh"
 
 // G4 includes
 #include "Geant4/G4ios.hh"

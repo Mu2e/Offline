@@ -23,10 +23,10 @@
 #include "art/Framework/Core/ModuleMacros.h"
 #include "art_root_io/TFileService.h"
 
-#include "MCDataProducts/inc/GenParticle.hh"
-#include "MCDataProducts/inc/GenParticleCollection.hh"
-#include "GeometryService/inc/GeomHandle.hh"
-#include "ProtonBeamDumpGeom/inc/ProtonBeamDump.hh"
+#include "Offline/MCDataProducts/inc/GenParticle.hh"
+#include "Offline/MCDataProducts/inc/GenParticleCollection.hh"
+#include "Offline/GeometryService/inc/GeomHandle.hh"
+#include "Offline/ProtonBeamDumpGeom/inc/ProtonBeamDump.hh"
 
 #include "TDirectory.h"
 #include "TH1.h"

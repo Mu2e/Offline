@@ -2,7 +2,7 @@
 # print run, event subrun summaries for a file
 #
 
-#include "fcl/minimalMessageService.fcl"
+#include "Offline/fcl/minimalMessageService.fcl"
 
 process_name : runEventSubrun
 

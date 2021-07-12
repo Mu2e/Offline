@@ -1,4 +1,4 @@
-#include "TEveEventDisplay/src/shape_classes/TEveMu2eCRV.h"
+#include "Offline/TEveEventDisplay/src/shape_classes/TEveMu2eCRV.h"
 
 using namespace mu2e;
 namespace mu2e{

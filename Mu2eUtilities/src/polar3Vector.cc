@@ -10,10 +10,10 @@
 
 #include "CLHEP/Vector/ThreeVector.h"
 
-#include "GeneralUtilities/inc/safeSqrt.hh"
-#include "GeneralUtilities/inc/sqrtOrThrow.hh"
+#include "Offline/GeneralUtilities/inc/safeSqrt.hh"
+#include "Offline/GeneralUtilities/inc/sqrtOrThrow.hh"
 
-#include "Mu2eUtilities/inc/ThreeVectorUtil.hh"
+#include "Offline/Mu2eUtilities/inc/ThreeVectorUtil.hh"
 
 using CLHEP::Hep3Vector;
 

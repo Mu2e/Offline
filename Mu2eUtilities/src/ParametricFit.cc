@@ -8,10 +8,10 @@
 
 #include "Math/GenVector/Cartesian3D.h"
 #include "Math/GenVector/DisplacementVector3D.h"
-#include "RecoDataProducts/inc/ComboHit.hh"
-#include "RecoDataProducts/inc/CosmicTrack.hh"
+#include "Offline/RecoDataProducts/inc/ComboHit.hh"
+#include "Offline/RecoDataProducts/inc/CosmicTrack.hh"
 
-#include "Mu2eUtilities/inc/ParametricFit.hh"
+#include "Offline/Mu2eUtilities/inc/ParametricFit.hh"
 
 using namespace std;
 using namespace mu2e;

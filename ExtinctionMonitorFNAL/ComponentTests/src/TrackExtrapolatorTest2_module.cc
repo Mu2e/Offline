@@ -19,17 +19,17 @@
 #include "art/Framework/Core/ModuleMacros.h"
 #include "canvas/Utilities/InputTag.h"
 
-#include "RecoDataProducts/inc/ExtMonFNALRecoCluster.hh"
-#include "RecoDataProducts/inc/ExtMonFNALRecoClusterCollection.hh"
-#include "MCDataProducts/inc/SimParticle.hh"
-#include "MCDataProducts/inc/SimParticleCollection.hh"
-#include "RecoDataProducts/inc/ExtMonFNALTrkParam.hh"
+#include "Offline/RecoDataProducts/inc/ExtMonFNALRecoCluster.hh"
+#include "Offline/RecoDataProducts/inc/ExtMonFNALRecoClusterCollection.hh"
+#include "Offline/MCDataProducts/inc/SimParticle.hh"
+#include "Offline/MCDataProducts/inc/SimParticleCollection.hh"
+#include "Offline/RecoDataProducts/inc/ExtMonFNALTrkParam.hh"
 
-#include "ExtinctionMonitorFNAL/Geometry/inc/ExtMonFNAL.hh"
-#include "ExtinctionMonitorFNAL/Geometry/inc/ExtMonFNALMagnet.hh"
-#include "GeometryService/inc/GeomHandle.hh"
+#include "Offline/ExtinctionMonitorFNAL/Geometry/inc/ExtMonFNAL.hh"
+#include "Offline/ExtinctionMonitorFNAL/Geometry/inc/ExtMonFNALMagnet.hh"
+#include "Offline/GeometryService/inc/GeomHandle.hh"
 
-#include "ExtinctionMonitorFNAL/Reconstruction/inc/TrackExtrapolator.hh"
+#include "Offline/ExtinctionMonitorFNAL/Reconstruction/inc/TrackExtrapolator.hh"
 
 #include "art_root_io/TFileService.h"
 #include "art/Framework/Services/Registry/ServiceHandle.h"

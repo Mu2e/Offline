@@ -8,7 +8,7 @@
 // Contact person, Rob Kutschke
 //
 
-#include "GeneralUtilities/inc/EnumToStringSparse.hh"
+#include "Offline/GeneralUtilities/inc/EnumToStringSparse.hh"
 
 namespace mu2e {
 

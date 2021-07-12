@@ -16,9 +16,9 @@
 // not available at c'to time or beginJob time.
 //
 
-#include "BFieldGeom/inc/BFieldManager.hh"
-#include "GeometryService/inc/GeomHandle.hh"
-#include "SeedService/inc/SeedService.hh"
+#include "Offline/BFieldGeom/inc/BFieldManager.hh"
+#include "Offline/GeometryService/inc/GeomHandle.hh"
+#include "Offline/SeedService/inc/SeedService.hh"
 
 #include "art/Framework/Core/EDAnalyzer.h"
 #include "art/Framework/Core/ModuleMacros.h"

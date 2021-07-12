@@ -13,16 +13,16 @@
 #include "art/Utilities/make_tool.h"
 #include "canvas/Persistency/Common/Ptr.h"
 
-#include "ProditionsService/inc/ProditionsHandle.hh"
+#include "Offline/ProditionsService/inc/ProditionsHandle.hh"
 
-#include "GeometryService/inc/GeomHandle.hh"
-#include "GeometryService/inc/DetectorSystem.hh"
-#include "TrackerGeom/inc/Tracker.hh"
-#include "Mu2eUtilities/inc/TwoLinePCA.hh"
+#include "Offline/GeometryService/inc/GeomHandle.hh"
+#include "Offline/GeometryService/inc/DetectorSystem.hh"
+#include "Offline/TrackerGeom/inc/Tracker.hh"
+#include "Offline/Mu2eUtilities/inc/TwoLinePCA.hh"
 
-#include "RecoDataProducts/inc/ComboHit.hh"
-#include "RecoDataProducts/inc/TimeCluster.hh"
-#include "RecoDataProducts/inc/CosmicTrackSeed.hh"
+#include "Offline/RecoDataProducts/inc/ComboHit.hh"
+#include "Offline/RecoDataProducts/inc/TimeCluster.hh"
+#include "Offline/RecoDataProducts/inc/CosmicTrackSeed.hh"
 
 #include "CLHEP/Units/PhysicalConstants.h"
 #include "CLHEP/Matrix/Vector.h"

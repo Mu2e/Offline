@@ -8,35 +8,35 @@
 #include <cmath>
 
 // Cosmic Tracks:
-#include "CosmicReco/inc/CosmicTrackFit.hh"
-#include "RecoDataProducts/inc/CosmicTrack.hh"
-#include "RecoDataProducts/inc/CosmicTrackSeed.hh"
-#include "CosmicReco/inc/CosmicTrackMCInfo.hh"
-#include "ProditionsService/inc/ProditionsHandle.hh"
+#include "Offline/CosmicReco/inc/CosmicTrackFit.hh"
+#include "Offline/RecoDataProducts/inc/CosmicTrack.hh"
+#include "Offline/RecoDataProducts/inc/CosmicTrackSeed.hh"
+#include "Offline/CosmicReco/inc/CosmicTrackMCInfo.hh"
+#include "Offline/ProditionsService/inc/ProditionsHandle.hh"
 
 //Mu2e Data Prods:
-#include "RecoDataProducts/inc/StrawHitFlagCollection.hh"
-#include "RecoDataProducts/inc/StrawHit.hh"
-#include "RecoDataProducts/inc/StrawHitFlag.hh"
-#include "MCDataProducts/inc/StrawDigiMC.hh"
-#include "MCDataProducts/inc/MCRelationship.hh"
-#include "MCDataProducts/inc/SimParticleCollection.hh"
-#include "MCDataProducts/inc/StepPointMCCollection.hh"
-#include "RecoDataProducts/inc/ComboHit.hh"
-#include "DataProducts/inc/XYZVec.hh"
+#include "Offline/RecoDataProducts/inc/StrawHitFlagCollection.hh"
+#include "Offline/RecoDataProducts/inc/StrawHit.hh"
+#include "Offline/RecoDataProducts/inc/StrawHitFlag.hh"
+#include "Offline/MCDataProducts/inc/StrawDigiMC.hh"
+#include "Offline/MCDataProducts/inc/MCRelationship.hh"
+#include "Offline/MCDataProducts/inc/SimParticleCollection.hh"
+#include "Offline/MCDataProducts/inc/StepPointMCCollection.hh"
+#include "Offline/RecoDataProducts/inc/ComboHit.hh"
+#include "Offline/DataProducts/inc/XYZVec.hh"
 
 //Utilities
-#include "Mu2eUtilities/inc/SimParticleTimeOffset.hh"
-#include "TrkDiag/inc/TrkMCTools.hh"
-#include "CosmicReco/inc/DriftFitUtils.hh"
-#include "Mu2eUtilities/inc/ParametricFit.hh"
-#include "Mu2eUtilities/inc/BuildLinearFitMatrixSums.hh"
+#include "Offline/Mu2eUtilities/inc/SimParticleTimeOffset.hh"
+#include "Offline/TrkDiag/inc/TrkMCTools.hh"
+#include "Offline/CosmicReco/inc/DriftFitUtils.hh"
+#include "Offline/Mu2eUtilities/inc/ParametricFit.hh"
+#include "Offline/Mu2eUtilities/inc/BuildLinearFitMatrixSums.hh"
 
 // Mu2e diagnostics
-#include "TrkDiag/inc/ComboHitInfo.hh"
-#include "GeneralUtilities/inc/ParameterSetHelpers.hh"
-#include "GeometryService/inc/GeomHandle.hh"
-#include "GeometryService/inc/DetectorSystem.hh"
+#include "Offline/TrkDiag/inc/ComboHitInfo.hh"
+#include "Offline/GeneralUtilities/inc/ParameterSetHelpers.hh"
+#include "Offline/GeometryService/inc/GeomHandle.hh"
+#include "Offline/GeometryService/inc/DetectorSystem.hh"
 
 // Framework includes.
 #include "art/Framework/Core/EDAnalyzer.h"

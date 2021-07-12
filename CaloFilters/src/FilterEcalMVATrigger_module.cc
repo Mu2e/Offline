@@ -11,22 +11,22 @@
 #include "messagefacility/MessageLogger/MessageLogger.h"
 #include "canvas/Utilities/InputTag.h"
 
-#include "ConditionsService/inc/AcceleratorParams.hh"
-#include "ConditionsService/inc/ConditionsHandle.hh"
-#include "ConditionsService/inc/CalorimeterCalibrations.hh"
+#include "Offline/ConditionsService/inc/AcceleratorParams.hh"
+#include "Offline/ConditionsService/inc/ConditionsHandle.hh"
+#include "Offline/ConditionsService/inc/CalorimeterCalibrations.hh"
 
 // #include "MCDataProducts/inc/SimParticleCollection.hh"
 // #include "Mu2eUtilities/inc/SimParticleTimeOffset.hh"
 
-#include "CalorimeterGeom/inc/Calorimeter.hh"
+#include "Offline/CalorimeterGeom/inc/Calorimeter.hh"
 
-#include "GeometryService/inc/GeomHandle.hh"
-#include "GeometryService/inc/GeometryService.hh"
+#include "Offline/GeometryService/inc/GeomHandle.hh"
+#include "Offline/GeometryService/inc/GeometryService.hh"
 
-#include "RecoDataProducts/inc/CaloTrigSeed.hh"
-#include "RecoDataProducts/inc/TriggerInfo.hh"
+#include "Offline/RecoDataProducts/inc/CaloTrigSeed.hh"
+#include "Offline/RecoDataProducts/inc/TriggerInfo.hh"
 
-#include "ConfigTools/inc/ConfigFileLookupPolicy.hh"
+#include "Offline/ConfigTools/inc/ConfigFileLookupPolicy.hh"
 
 // Root includes
 #include "TDirectory.h"
@@ -58,7 +58,6 @@ namespace mu2e {
   private:
 
     int _diagLevel;
-    std::string    _trigPath;
 
     std::string                _MVAMethodLabel;
     std::string _caloTrigSeedModuleLabel;
@@ -104,7 +103,6 @@ namespace mu2e {
   FilterEcalMVATrigger::FilterEcalMVATrigger(fhicl::ParameterSet const& pset):
     art::EDFilter{pset},
     _diagLevel                  (pset.get<int>("diagLevel",0)),
-    _trigPath                   (pset.get<std::string>("triggerPath")),
     _MVAMethodLabel             (pset.get<std::string>("MVAMethod","BDT")), 
     _caloTrigSeedModuleLabel    (pset.get<std::string>("caloTrigSeedModuleLabel")),  
     _weightsfile                (pset.get<string>("weightsfile")),
@@ -181,7 +179,6 @@ namespace mu2e {
       event.put(std::move(triginfo));      
       return false;    
     }
-    size_t trig_ind(0);
     for (CaloTrigSeedCollection::const_iterator seedIt = caloTrigSeeds.begin(); seedIt != caloTrigSeeds.end(); ++seedIt){
       disk= cal.crystal((int)seedIt->crystalid()).diskID();
       _fdiskpeak   = (float) disk;
@@ -208,26 +205,16 @@ namespace mu2e {
 	if (_rpeak>_MVArpivot[disk]){
 	  if (_MVA>_MVAlowcut[disk]) {
 	    retval = true;
-	    if (trig_ind == 0){
-	      triginfo->_triggerBits.merge(TriggerFlag::caloTrigSeed);
-	      triginfo->_triggerPath = _trigPath;
-	    }
 	    size_t index = std::distance(caloTrigSeeds.begin(),seedIt);
 	    triginfo->_caloTrigSeeds.push_back(art::Ptr<CaloTrigSeed>(caloTrigSeedsHandle,index));
-	    ++trig_ind;
 	  }
 	}
 	else{
 	  MVAcut=_MVAcutA[disk]+_MVAcutB[disk]*_rpeak;
 	  if (_MVA>MVAcut) {
 	    retval = true;
-	    if (trig_ind == 0){
-	      triginfo->_triggerBits.merge(TriggerFlag::caloTrigSeed);
-	      triginfo->_triggerPath = _trigPath;
-	    }
 	    size_t index = std::distance(caloTrigSeeds.begin(),seedIt);
 	    triginfo->_caloTrigSeeds.push_back(art::Ptr<CaloTrigSeed>(caloTrigSeedsHandle,index));
-	    ++trig_ind;
 	  }
 	}
       }

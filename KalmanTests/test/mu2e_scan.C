@@ -11,7 +11,7 @@
 #include "TVectorF.h"
 #include <iostream>
 #include "math.h"
-#include "KalmanTests/test/DIOCZ.h"
+#include "Offline/KalmanTests/test/DIOCZ.h"
 using namespace std;
 
 void mu2e_scan(TTree* dio, TTree* con, double diogenrange, double ndio, double ncon,double momlow,double momhigh, double cnom=0.0, bool weightdio=true,const char* suffix=".png") {

@@ -8,7 +8,7 @@
 #include <sstream>
 #include <stdexcept>
 
-#include "CosmicRayShieldGeom/inc/CRSScintillatorBarDetail.hh"
+#include "Offline/CosmicRayShieldGeom/inc/CRSScintillatorBarDetail.hh"
 
 using namespace std;
 

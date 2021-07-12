@@ -3,7 +3,7 @@
 #define ValTrackSummary_HH_
 
 #include "art/Framework/Principal/Event.h"
-#include "RecoDataProducts/inc/TrackSummary.hh"
+#include "Offline/RecoDataProducts/inc/TrackSummary.hh"
 #include "TH1D.h"
 #include <string>
 

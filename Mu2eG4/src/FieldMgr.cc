@@ -13,8 +13,8 @@
 #include "Geant4/G4FieldManager.hh"
 
 // Mu2e includes
-#include "Mu2eG4/inc/FieldMgr.hh"
-#include "Mu2eG4/inc/Mu2eG4DSGradientMagneticField.hh"
+#include "Offline/Mu2eG4/inc/FieldMgr.hh"
+#include "Offline/Mu2eG4/inc/Mu2eG4DSGradientMagneticField.hh"
 
 using namespace std;
 

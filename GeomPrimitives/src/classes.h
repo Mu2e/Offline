@@ -4,7 +4,7 @@
 
 #include <vector>
 
-#include "GeomPrimitives/inc/Polycone.hh"
-#include "GeomPrimitives/inc/Tube.hh"
-#include "GeomPrimitives/inc/TubsParams.hh"
-#include "GeomPrimitives/inc/PolyconsParams.hh"
+#include "Offline/GeomPrimitives/inc/Polycone.hh"
+#include "Offline/GeomPrimitives/inc/Tube.hh"
+#include "Offline/GeomPrimitives/inc/TubsParams.hh"
+#include "Offline/GeomPrimitives/inc/PolyconsParams.hh"

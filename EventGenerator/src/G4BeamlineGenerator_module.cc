@@ -10,11 +10,11 @@
 */
 
 // Mu2e includes.
-#include "ConfigTools/inc/SimpleConfig.hh"
-#include "MCDataProducts/inc/G4BeamlineInfoCollection.hh"
-#include "MCDataProducts/inc/GenId.hh"
-#include "MCDataProducts/inc/GenParticleCollection.hh"
-#include "SeedService/inc/SeedService.hh"
+#include "Offline/ConfigTools/inc/SimpleConfig.hh"
+#include "Offline/MCDataProducts/inc/G4BeamlineInfoCollection.hh"
+#include "Offline/MCDataProducts/inc/GenId.hh"
+#include "Offline/MCDataProducts/inc/GenParticleCollection.hh"
+#include "Offline/SeedService/inc/SeedService.hh"
 
 // Includes from art and its toolchain.
 #include "art/Framework/Core/EDProducer.h"
@@ -26,7 +26,7 @@
 #include "messagefacility/MessageLogger/MessageLogger.h"
 
 // Particular generators that this code knows about.
-#include "EventGenerator/inc/FromG4BLFile.hh"
+#include "Offline/EventGenerator/inc/FromG4BLFile.hh"
 
 // Other external includes.
 #include <boost/shared_ptr.hpp>

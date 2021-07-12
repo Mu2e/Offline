@@ -14,32 +14,32 @@
 #include "art/Framework/Principal/Event.h"
 #include "art/Framework/Principal/Handle.h"
 // mu2e data products
-#include "DataProducts/inc/VirtualDetectorId.hh"
-#include "DataProducts/inc/IndexMap.hh"
-#include "MCDataProducts/inc/PrimaryParticle.hh"
-#include "MCDataProducts/inc/StrawDigiMC.hh"
-#include "MCDataProducts/inc/CaloShowerSim.hh"
-#include "MCDataProducts/inc/CrvDigiMC.hh"
-#include "MCDataProducts/inc/KalSeedMC.hh"
-#include "MCDataProducts/inc/CaloClusterMC.hh"
-#include "MCDataProducts/inc/CaloMCTruthAssns.hh"
-#include "MCDataProducts/inc/StepPointMC.hh"
-#include "RecoDataProducts/inc/KalSeed.hh"
-#include "RecoDataProducts/inc/CaloCluster.hh"
-#include "RecoDataProducts/inc/CaloDigi.hh"
-#include "RecoDataProducts/inc/StrawDigi.hh"
-#include "RecoDataProducts/inc/CrvDigi.hh"
-#include "RecoDataProducts/inc/StrawHitFlag.hh"
-#include "RecoDataProducts/inc/ComboHit.hh"
-#include "RecoDataProducts/inc/CrvCoincidenceCluster.hh"
-#include "RecoDataProducts/inc/RecoCount.hh"
+#include "Offline/DataProducts/inc/VirtualDetectorId.hh"
+#include "Offline/DataProducts/inc/IndexMap.hh"
+#include "Offline/MCDataProducts/inc/PrimaryParticle.hh"
+#include "Offline/MCDataProducts/inc/StrawDigiMC.hh"
+#include "Offline/MCDataProducts/inc/CaloShowerSim.hh"
+#include "Offline/MCDataProducts/inc/CrvDigiMC.hh"
+#include "Offline/MCDataProducts/inc/KalSeedMC.hh"
+#include "Offline/MCDataProducts/inc/CaloClusterMC.hh"
+#include "Offline/MCDataProducts/inc/CaloMCTruthAssns.hh"
+#include "Offline/MCDataProducts/inc/StepPointMC.hh"
+#include "Offline/RecoDataProducts/inc/KalSeed.hh"
+#include "Offline/RecoDataProducts/inc/CaloCluster.hh"
+#include "Offline/RecoDataProducts/inc/CaloDigi.hh"
+#include "Offline/RecoDataProducts/inc/StrawDigi.hh"
+#include "Offline/RecoDataProducts/inc/CrvDigi.hh"
+#include "Offline/RecoDataProducts/inc/StrawHitFlag.hh"
+#include "Offline/RecoDataProducts/inc/ComboHit.hh"
+#include "Offline/RecoDataProducts/inc/CrvCoincidenceCluster.hh"
+#include "Offline/RecoDataProducts/inc/RecoCount.hh"
 // Utilities
-#include "Mu2eUtilities/inc/SimParticleTimeOffset.hh"
-#include "TrkDiag/inc/TrkMCTools.hh"
-#include "GeometryService/inc/GeomHandle.hh"
-#include "GeometryService/inc/DetectorSystem.hh"
-#include "ConditionsService/inc/ConditionsHandle.hh"
-#include "ConditionsService/inc/AcceleratorParams.hh"
+#include "Offline/Mu2eUtilities/inc/SimParticleTimeOffset.hh"
+#include "Offline/TrkDiag/inc/TrkMCTools.hh"
+#include "Offline/GeometryService/inc/GeomHandle.hh"
+#include "Offline/GeometryService/inc/DetectorSystem.hh"
+#include "Offline/ConditionsService/inc/ConditionsHandle.hh"
+#include "Offline/ConditionsService/inc/AcceleratorParams.hh"
 
 // C++
 #include <vector>
@@ -453,7 +453,7 @@ namespace mu2e {
     for(auto const& crvcc: crvccc) {
       std::vector<art::Ptr<CrvRecoPulse>> pulses;
       for(auto const& crvrp : crvcc.GetCrvRecoPulses()){
-      // deep-copy the pulses used in coincidences: we do NOT update the digi indies,
+      // deep-copy the pulses used in coincidences: the digi indices are updated later
       // the map must be used to connect them
 	scrvrpc->push_back(*crvrp);
 	auto crvrpp = art::Ptr<CrvRecoPulse>(CrvRecoPulseCollectionPID,scrvrpc->size()-1,CrvRecoPulseCollectionGetter);
@@ -482,6 +482,13 @@ namespace mu2e {
       crvdmcim->addElement(crvindex,crvcount++);
       // deep-copy the selected CrvDigis
       scrvdc->push_back(crvdc.at(crvindex));
+    }
+    // update digi indices in the pulses
+    for(auto& crvrp : *scrvrpc) {
+      auto& indices = crvrp.GetWaveformIndices();
+      for(size_t iindex=0; iindex < indices.size(); ++iindex){
+	indices[iindex] = crvdmcim->getCondensedIndex(indices[iindex]);
+      }
     }
     // update reco count
     nrec._ncrvdigi = crvdc.size();

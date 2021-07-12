@@ -10,9 +10,9 @@
 #include <iostream>
 
 // Mu2e includes.
-#include "Mu2eG4/inc/Mu2eG4GlobalMagneticField.hh"
-#include "GeometryService/inc/GeomHandle.hh"
-#include "BFieldGeom/inc/BFieldManager.hh"
+#include "Offline/Mu2eG4/inc/Mu2eG4GlobalMagneticField.hh"
+#include "Offline/GeometryService/inc/GeomHandle.hh"
+#include "Offline/BFieldGeom/inc/BFieldManager.hh"
 
 // CLHEP includes
 #include "CLHEP/Units/SystemOfUnits.h"

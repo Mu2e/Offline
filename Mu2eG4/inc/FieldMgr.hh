@@ -52,7 +52,7 @@
 #include "Geant4/G4Mag_EqRhs.hh"
 #include "Geant4/G4Mag_UsualEqRhs.hh"
 #include "Geant4/G4MagneticField.hh"
-#include "Mu2eG4/inc/Mu2eG4GlobalMagneticField.hh"
+#include "Offline/Mu2eG4/inc/Mu2eG4GlobalMagneticField.hh"
 
 namespace mu2e {
 

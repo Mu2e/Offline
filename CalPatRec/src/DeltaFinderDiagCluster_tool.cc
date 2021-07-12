@@ -6,7 +6,7 @@
 
 #include <string.h>
 
-#include "CalPatRec/inc/DeltaFinder2_types.hh"
+#include "Offline/CalPatRec/inc/DeltaFinder2_types.hh"
 
 #include "art/Framework/Services/Registry/ServiceHandle.h"
 #include "art_root_io/TFileService.h"
@@ -17,10 +17,10 @@
 
 #include "fhiclcpp/ParameterSet.h"
 
-#include "Mu2eUtilities/inc/ModuleHistToolBase.hh"
-#include "Mu2eUtilities/inc/McUtilsToolBase.hh"
-#include "RecoDataProducts/inc/StrawHitPosition.hh"
-#include "TrackerGeom/inc/Tracker.hh"
+#include "Offline/Mu2eUtilities/inc/ModuleHistToolBase.hh"
+#include "Offline/Mu2eUtilities/inc/McUtilsToolBase.hh"
+#include "Offline/RecoDataProducts/inc/StrawHitPosition.hh"
+#include "Offline/TrackerGeom/inc/Tracker.hh"
 
 using namespace std;
 

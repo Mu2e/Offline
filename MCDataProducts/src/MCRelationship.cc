@@ -2,7 +2,7 @@
 // MC relationships of some objects.  Extracted from KalDiag
 // Dave Brown, LBNL, 20 Jun 2016
 //
-#include "MCDataProducts/inc/MCRelationship.hh"
+#include "Offline/MCDataProducts/inc/MCRelationship.hh"
 #include <vector>
 namespace mu2e
 {

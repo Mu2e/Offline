@@ -17,8 +17,8 @@
 #include "cetlib_except/exception.h"
 
 // Mu2e includes
-#include "Mu2eG4/inc/checkConfigRelics.hh"
-#include "ConfigTools/inc/SimpleConfig.hh"
+#include "Offline/Mu2eG4/inc/checkConfigRelics.hh"
+#include "Offline/ConfigTools/inc/SimpleConfig.hh"
 
 namespace mu2e {
     

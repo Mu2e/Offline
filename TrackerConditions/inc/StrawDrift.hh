@@ -11,8 +11,8 @@
 #include <iostream>
 #include <vector>
 #include <string>
-#include "DataProducts/inc/TrkTypes.hh"
-#include "Mu2eInterfaces/inc/ProditionsEntity.hh"
+#include "Offline/DataProducts/inc/TrkTypes.hh"
+#include "Offline/Mu2eInterfaces/inc/ProditionsEntity.hh"
 
 
 namespace mu2e {

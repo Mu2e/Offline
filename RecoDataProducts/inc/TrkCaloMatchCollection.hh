@@ -10,7 +10,7 @@
 
 
 #include <vector>
-#include "RecoDataProducts/inc/TrkCaloMatch.hh"
+#include "Offline/RecoDataProducts/inc/TrkCaloMatch.hh"
 
 
 namespace mu2e {

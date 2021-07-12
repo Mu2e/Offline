@@ -2,8 +2,8 @@
 #ifndef TrkFaceData_HH
 #define TrkFaceData_HH
 
-#include "RecoDataProducts/inc/StrawHitIndex.hh"
-#include "RecoDataProducts/inc/ComboHit.hh"
+#include "Offline/RecoDataProducts/inc/StrawHitIndex.hh"
+#include "Offline/RecoDataProducts/inc/ComboHit.hh"
 
 #include <array>
 #include <ostream>

@@ -7,7 +7,7 @@
 // Contact person Rob Kutschke
 //
 
-#include "MCDataProducts/inc/StepInstanceName.hh"
+#include "Offline/MCDataProducts/inc/StepInstanceName.hh"
 
 #include <iostream>
 #include <iomanip>

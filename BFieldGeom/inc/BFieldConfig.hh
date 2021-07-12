@@ -11,9 +11,9 @@
 
 #include "CLHEP/Vector/ThreeVector.h"
 
-#include "BFieldGeom/inc/BFInterpolationStyle.hh"
-#include "BFieldGeom/inc/BFMapType.hh"
-#include "Mu2eInterfaces/inc/Detector.hh"
+#include "Offline/BFieldGeom/inc/BFInterpolationStyle.hh"
+#include "Offline/BFieldGeom/inc/BFMapType.hh"
+#include "Offline/Mu2eInterfaces/inc/Detector.hh"
 
 namespace mu2e {
 

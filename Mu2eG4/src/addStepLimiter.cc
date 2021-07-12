@@ -14,7 +14,7 @@
 #include <string>
 
 // Mu2e includes
-#include "Mu2eG4/inc/addStepLimiter.hh"
+#include "Offline/Mu2eG4/inc/addStepLimiter.hh"
 
 // G4 includes
 #include "Geant4/G4ParticleTable.hh"

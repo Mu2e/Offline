@@ -3,11 +3,11 @@
 # performs the calorimeter and track reconstruciton
 #------------------------------------------------------------------------------
 #  > mu2e --config CaloFilters/fcl/runCaloOnlyFilter.fcl --source "your digis file" --TFile CaloOnlyFilter.root --nevts=100
-#include "fcl/minimalMessageService.fcl"
-#include "fcl/standardServices.fcl"
-#include "fcl/standardProducers.fcl"
-#include "TrkHitReco/fcl/prolog_trigger.fcl"
-#include "CaloCluster/fcl/prolog_trigger.fcl"
+#include "Offline/fcl/minimalMessageService.fcl"
+#include "Offline/fcl/standardServices.fcl"
+#include "Offline/fcl/standardProducers.fcl"
+#include "Offline/TrkHitReco/fcl/prolog_trigger.fcl"
+#include "Offline/CaloCluster/fcl/prolog_trigger.fcl"
 
 BEGIN_PROLOG
 #prescale factors for the calorimeter-only trigger
@@ -24,7 +24,7 @@ largeCDCount_evt_sf    : 500
 largeCDCount_sf        : 1
 END_PROLOG
 
-#include "CaloFilters/fcl/prolog_trigger.fcl"
+#include "Offline/CaloFilters/fcl/prolog_trigger.fcl"
 
 process_name : caloOnlyFilter
 

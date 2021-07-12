@@ -1,6 +1,6 @@
 // Andrei Gaponenko, 2021
 
-#include "Mu2eG4/inc/writePhysicalVolumes.hh"
+#include "Offline/Mu2eG4/inc/writePhysicalVolumes.hh"
 
 #include <memory>
 

@@ -16,12 +16,12 @@
 #include "messagefacility/MessageLogger/MessageLogger.h"
 
 // Mu2e includes.
-#include "Mu2eG4Helper/inc/VolumeInfo.hh"
+#include "Offline/Mu2eG4Helper/inc/VolumeInfo.hh"
 //#include "GeometryService/inc/GeometryService.hh"
 //#include "GeometryService/inc/GeomHandle.hh"
 //#include "GeometryService/inc/VirtualDetector.hh"
-#include "Mu2eG4Helper/inc/Mu2eG4Helper.hh"
-#include "Mu2eG4/inc/MaterialFinder.hh"
+#include "Offline/Mu2eG4Helper/inc/Mu2eG4Helper.hh"
+#include "Offline/Mu2eG4/inc/MaterialFinder.hh"
 //#include "Mu2eG4/inc/nestCons.hh"
 
 // G4 includes

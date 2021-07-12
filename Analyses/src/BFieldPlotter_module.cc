@@ -5,8 +5,8 @@
 //
 
 // Mu2e includes
-#include "BFieldGeom/inc/BFieldManager.hh"
-#include "GeometryService/inc/GeomHandle.hh"
+#include "Offline/BFieldGeom/inc/BFieldManager.hh"
+#include "Offline/GeometryService/inc/GeomHandle.hh"
 
 // art includes
 #include "art/Framework/Core/EDAnalyzer.h"

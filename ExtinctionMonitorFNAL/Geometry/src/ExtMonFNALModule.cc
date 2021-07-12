@@ -1,6 +1,6 @@
 // Evan Schiewe, 2013
 
-#include "ExtinctionMonitorFNAL/Geometry/inc/ExtMonFNALModule.hh"
+#include "Offline/ExtinctionMonitorFNAL/Geometry/inc/ExtMonFNALModule.hh"
 
 #include <iostream>
 #include <cmath>

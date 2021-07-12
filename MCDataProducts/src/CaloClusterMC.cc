@@ -1,5 +1,5 @@
-#include "MCDataProducts/inc/CaloClusterMC.hh"
-#include "MCDataProducts/inc/CaloEDepMC.hh"
+#include "Offline/MCDataProducts/inc/CaloClusterMC.hh"
+#include "Offline/MCDataProducts/inc/CaloEDepMC.hh"
 #include <numeric>
 
 namespace mu2e {

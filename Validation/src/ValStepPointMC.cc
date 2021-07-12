@@ -1,5 +1,5 @@
 
-#include "Validation/inc/ValStepPointMC.hh"
+#include "Offline/Validation/inc/ValStepPointMC.hh"
 
 
 int mu2e::ValStepPointMC::declare(art::TFileDirectory tfs) {

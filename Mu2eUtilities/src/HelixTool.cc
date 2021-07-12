@@ -5,18 +5,18 @@
 
 #include "CLHEP/Vector/ThreeVector.h"
 
-#include "DataProducts/inc/XYZVec.hh"
-#include "GeomPrimitives/inc/TubsParams.hh"
-#include "RecoDataProducts/inc/ComboHit.hh"
-#include "RecoDataProducts/inc/HelixSeed.hh"
-#include "RecoDataProducts/inc/RobustHelix.hh"
-#include "RecoDataProducts/inc/StrawHitFlag.hh"
-#include "TrackerGeom/inc/Panel.hh"
-#include "TrackerGeom/inc/Plane.hh"
-#include "TrackerGeom/inc/Straw.hh"
-#include "TrackerGeom/inc/Tracker.hh"
+#include "Offline/DataProducts/inc/XYZVec.hh"
+#include "Offline/GeomPrimitives/inc/TubsParams.hh"
+#include "Offline/RecoDataProducts/inc/ComboHit.hh"
+#include "Offline/RecoDataProducts/inc/HelixSeed.hh"
+#include "Offline/RecoDataProducts/inc/RobustHelix.hh"
+#include "Offline/RecoDataProducts/inc/StrawHitFlag.hh"
+#include "Offline/TrackerGeom/inc/Panel.hh"
+#include "Offline/TrackerGeom/inc/Plane.hh"
+#include "Offline/TrackerGeom/inc/Straw.hh"
+#include "Offline/TrackerGeom/inc/Tracker.hh"
 
-#include "Mu2eUtilities/inc/HelixTool.hh"
+#include "Offline/Mu2eUtilities/inc/HelixTool.hh"
 
 
 namespace mu2e {
