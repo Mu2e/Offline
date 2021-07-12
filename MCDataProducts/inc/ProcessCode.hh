@@ -81,7 +81,7 @@ namespace mu2e {
       anti_xi_b_MinusInelastic, anti_xi_b0Inelastic,   anti_xi_c_PlusInelastic, anti_xi_c0Inelastic, // 155
       lambda_bInelastic,      lambda_c_PlusInelastic,  omega_b_MinusInelastic, omega_c0Inelastic, // 159
       xi_b_MinusInelastic,    xi_b0Inelastic,          xi_c_PlusInelastic,  xi_c0Inelastic, truncated, // 164
-      mu2eMuonCaptureAtRest,  mu2eMuonDecayAtRest, 
+      mu2eMuonCaptureAtRest,  mu2eMuonDecayAtRest, IPAMicheleminus,
       lastEnum,
       // An alias for backward compatibility
       mu2eHallAir = mu2eKillerVolume

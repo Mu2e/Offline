@@ -92,7 +92,7 @@ namespace mu2e {
     const auto mustop = mus.at(eng_.operator unsigned int() % mus.size());
 
     output->emplace_back(mustop,
-                         ProcessCode::mu2eMuonDecayAtRest, //process code for DIO (TODO - unique code for IPAMichel?)
+                         ProcessCode::IPAMicheleminus, //process code for DIO (TODO - unique code for IPAMichel?)
                          PDGCode::e_minus,
                          mustop->endPosition(), //final position of stop
                          CLHEP::HepLorentzVector{randomUnitSphere_.fire(endPointMomentum_), endPointEnergy_}, //random choice of momentum/energy 
