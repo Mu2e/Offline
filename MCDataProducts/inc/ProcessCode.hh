@@ -131,7 +131,7 @@ namespace mu2e {
     "anti_xi_b-Inelastic",    "anti_xi_b0Inelastic",     "anti_xi_c+Inelastic", "anti_xi_c0Inelastic", \
     "lambda_bInelastic",      "lambda_c+Inelastic",      "omega_b-Inelastic",   "omega_c0Inelastic", \
       "xi_b-Inelastic",         "xi_b0Inelastic",          "xi_c+Inelastic",      "xi_c0Inelastic", "truncated", \
-      "mu2eMuonCaptureAtRest", "mu2eMuonDecayAtRest"
+      "mu2eMuonCaptureAtRest", "mu2eMuonDecayAtRest","IPAMicheleminus"
 
   public:
 
