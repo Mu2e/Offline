@@ -69,7 +69,6 @@ dummyGenerator : {
   module_type : EventGenerator
 }
 
-
 CeEndpointGun: {
     module_type    : StoppedParticleReactionGun
     physics: {
