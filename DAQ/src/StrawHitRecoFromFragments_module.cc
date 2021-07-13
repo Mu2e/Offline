@@ -288,13 +288,13 @@ void art::StrawHitRecoFromFragments::analyze_tracker_(
 
     if (_diagLevel > 1) {
 
-      std::cout << "timestamp: " << static_cast<int>(hdr.GetEventWindowTag().GetEventWindowTag(true))
+      std::cout << "timestamp: " << static_cast<int>(hdr->GetEventWindowTag().GetEventWindowTag(true))
 	<< std::endl;
-      std::cout << "hdr->SubsystemID: " << static_cast<int>(hdr.GetSubsystemID()) << std::endl;
-      std::cout << "dtcID: " << static_cast<int>(hdr.GetID()) << std::endl;
-      std::cout << "rocID: " << static_cast<int>(hdr.GetLinkID()) << std::endl;
-      std::cout << "packetCount: " << static_cast<int>(hdr.GetPacketCount()) << std::endl;
-      std::cout << "EVB mode: " << static_cast<int>(hdr.GetEVBMode()) << std::endl;
+      std::cout << "hdr->SubsystemID: " << static_cast<int>(hdr->GetSubsystemID()) << std::endl;
+      std::cout << "dtcID: " << static_cast<int>(hdr->GetID()) << std::endl;
+      std::cout << "rocID: " << static_cast<int>(hdr->GetLinkID()) << std::endl;
+      std::cout << "packetCount: " << static_cast<int>(hdr->GetPacketCount()) << std::endl;
+      std::cout << "EVB mode: " << static_cast<int>(hdr->GetEVBMode()) << std::endl;
 
       std::cout << std::endl;
     }
@@ -303,7 +303,7 @@ void art::StrawHitRecoFromFragments::analyze_tracker_(
     if (_fittype != mu2e::TrkHitReco::FitType::firmwarepmp)  getADC = true;
 
     // Parse phyiscs information from TRK packets
-    if (hdr.GetPacketCount() > 0) {
+    if (hdr->GetPacketCount() > 0) {
 
       // Create the StrawDigi data products
       auto trkDataVec = cc.GetTrackerData(curBlockIdx,getADC);
