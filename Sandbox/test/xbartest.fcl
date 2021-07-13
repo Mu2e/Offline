@@ -2,7 +2,7 @@
 # does not depend on the value of the pokeFoo parameter.
 #
 
-#include "fcl/minimalMessageService.fcl"
+#include "Offline/fcl/minimalMessageService.fcl"
 
 process_name : XBarTest
 

@@ -10,10 +10,10 @@
 
 #include <string>
 #include "CLHEP/Vector/ThreeVector.h"
-#include "TrkExt/inc/TrkExtShape.hh"
-#include "TrkExt/inc/TrkExtToyDS.hh"
-#include "TrkExt/inc/TrkExtProtonAbsorber.hh"
-#include "TrkExt/inc/TrkExtStoppingTarget.hh"
+#include "Offline/TrkExt/inc/TrkExtShape.hh"
+#include "Offline/TrkExt/inc/TrkExtToyDS.hh"
+#include "Offline/TrkExt/inc/TrkExtProtonAbsorber.hh"
+#include "Offline/TrkExt/inc/TrkExtStoppingTarget.hh"
 
 namespace mu2e {
 

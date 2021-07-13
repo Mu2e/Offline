@@ -2,12 +2,12 @@
 #define MCDataProducts_CaloMCTruthAssns_hh
 
 #include "canvas/Persistency/Common/Assns.h"
-#include "RecoDataProducts/inc/CaloHit.hh"
-#include "RecoDataProducts/inc/CaloCluster.hh"
-#include "MCDataProducts/inc/CaloShowerSim.hh"
-#include "MCDataProducts/inc/SimParticle.hh"
-#include "MCDataProducts/inc/CaloHitMC.hh"
-#include "MCDataProducts/inc/CaloClusterMC.hh"
+#include "Offline/RecoDataProducts/inc/CaloHit.hh"
+#include "Offline/RecoDataProducts/inc/CaloCluster.hh"
+#include "Offline/MCDataProducts/inc/CaloShowerSim.hh"
+#include "Offline/MCDataProducts/inc/SimParticle.hh"
+#include "Offline/MCDataProducts/inc/CaloHitMC.hh"
+#include "Offline/MCDataProducts/inc/CaloClusterMC.hh"
 
 namespace mu2e
 {

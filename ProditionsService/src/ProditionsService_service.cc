@@ -4,25 +4,25 @@
 #include <iostream>
 #include <typeinfo>
 #include "art/Framework/Services/Registry/ServiceDefinitionMacros.h"
-#include "DbService/inc/DbService.hh"
-#include "GeometryService/inc/GeometryService.hh"
-#include "ProditionsService/inc/ProditionsService.hh"
+#include "Offline/DbService/inc/DbService.hh"
+#include "Offline/GeometryService/inc/GeometryService.hh"
+#include "Offline/ProditionsService/inc/ProditionsService.hh"
 
-#include "DAQConditions/inc/EventTimingCache.hh"
-#include "TrackerConditions/inc/FullReadoutStrawCache.hh"
-#include "TrackerConditions/inc/TrackerStatusCache.hh"
-#include "TrackerConditions/inc/StrawDriftCache.hh"
-#include "TrackerConditions/inc/StrawPhysicsCache.hh"
-#include "TrackerConditions/inc/StrawElectronicsCache.hh"
-#include "TrackerConditions/inc/StrawResponseCache.hh"
-#include "TrackerConditions/inc/AlignedTrackerCache.hh"
-#include "TrackerConditions/inc/Mu2eMaterialCache.hh"
-#include "TrackerConditions/inc/Mu2eDetectorCache.hh"
-#include "CaloConditions/inc/CaloDAQMapCache.hh"
+#include "Offline/DAQConditions/inc/EventTimingCache.hh"
+#include "Offline/TrackerConditions/inc/FullReadoutStrawCache.hh"
+#include "Offline/TrackerConditions/inc/TrackerStatusCache.hh"
+#include "Offline/TrackerConditions/inc/StrawDriftCache.hh"
+#include "Offline/TrackerConditions/inc/StrawPhysicsCache.hh"
+#include "Offline/TrackerConditions/inc/StrawElectronicsCache.hh"
+#include "Offline/TrackerConditions/inc/StrawResponseCache.hh"
+#include "Offline/TrackerConditions/inc/AlignedTrackerCache.hh"
+#include "Offline/TrackerConditions/inc/Mu2eMaterialCache.hh"
+#include "Offline/TrackerConditions/inc/Mu2eDetectorCache.hh"
+#include "Offline/CaloConditions/inc/CaloDAQMapCache.hh"
 
-#include "AnalysisConditions/inc/TrkQualCatalogCache.hh"
+#include "Offline/AnalysisConditions/inc/TrkQualCatalogCache.hh"
 
-#include "SimulationConditions/inc/SimBookkeeperCache.hh"
+#include "Offline/SimulationConditions/inc/SimBookkeeperCache.hh"
 
 using namespace std;
 

@@ -4,7 +4,7 @@
 //
 //
 
-#include "CosmicRayShieldGeom/inc/CRSSupportStructure.hh"
+#include "Offline/CosmicRayShieldGeom/inc/CRSSupportStructure.hh"
 
 namespace mu2e 
 {

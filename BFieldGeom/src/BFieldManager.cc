@@ -11,7 +11,7 @@
 #include "cetlib_except/exception.h"
 
 // Includes from Mu2e
-#include "BFieldGeom/inc/BFieldManager.hh"
+#include "Offline/BFieldGeom/inc/BFieldManager.hh"
 
 using namespace std;
 

@@ -28,8 +28,8 @@
 #include "art_root_io/TFileService.h"
 
 // Mu2e includes
-#include "MCDataProducts/inc/EventWeight.hh"
-#include "MCDataProducts/inc/ProtonBunchIntensity.hh"
+#include "Offline/MCDataProducts/inc/EventWeight.hh"
+#include "Offline/MCDataProducts/inc/ProtonBunchIntensity.hh"
 
 namespace mu2e {
 

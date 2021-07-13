@@ -1,5 +1,5 @@
 
-#include "Print/inc/ComboHitPrinter.hh"
+#include "Offline/Print/inc/ComboHitPrinter.hh"
 #include "art/Framework/Principal/Provenance.h"
 #include <string>
 #include <iomanip>

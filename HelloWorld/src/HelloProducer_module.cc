@@ -14,7 +14,7 @@
 #include "art/Framework/Principal/Event.h"
 
 // Mu2e includes.
-#include "MCDataProducts/inc/GenParticleCollection.hh"
+#include "Offline/MCDataProducts/inc/GenParticleCollection.hh"
 
 using namespace std;
 

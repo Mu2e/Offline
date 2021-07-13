@@ -4,8 +4,8 @@
 //
 
 // Mu2e include files
-#include "ConditionsService/inc/CalorimeterPhysicalConstants.hh"
-#include "ConfigTools/inc/SimpleConfig.hh"
+#include "Offline/ConditionsService/inc/CalorimeterPhysicalConstants.hh"
+#include "Offline/ConfigTools/inc/SimpleConfig.hh"
 
 #include "CLHEP/Units/SystemOfUnits.h"
 

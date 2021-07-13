@@ -6,8 +6,8 @@
 // 2018/03/12
 //
 
-#include "Mu2eG4/inc/constructVirtualDetectorSDs.hh"
-#include "Mu2eG4/inc/Mu2eG4SensitiveDetector.hh"
+#include "Offline/Mu2eG4/inc/constructVirtualDetectorSDs.hh"
+#include "Offline/Mu2eG4/inc/Mu2eG4SensitiveDetector.hh"
 #include "Geant4/G4LogicalVolumeStore.hh"
 
 using namespace std;

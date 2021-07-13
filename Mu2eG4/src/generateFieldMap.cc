@@ -8,13 +8,13 @@
 #include <cmath>
 
 // Mu2e includes.
-#include "Mu2eG4/inc/generateFieldMap.hh"
-#include "BeamlineGeom/inc/Beamline.hh"
-#include "BeamlineGeom/inc/StraightSection.hh"
-#include "Mu2eG4Helper/inc/VolumeInfo.hh"
-#include "GeometryService/inc/GeomHandle.hh"
-#include "GeometryService/inc/GeometryService.hh"
-#include "Mu2eG4Helper/inc/Mu2eG4Helper.hh"
+#include "Offline/Mu2eG4/inc/generateFieldMap.hh"
+#include "Offline/BeamlineGeom/inc/Beamline.hh"
+#include "Offline/BeamlineGeom/inc/StraightSection.hh"
+#include "Offline/Mu2eG4Helper/inc/VolumeInfo.hh"
+#include "Offline/GeometryService/inc/GeomHandle.hh"
+#include "Offline/GeometryService/inc/GeometryService.hh"
+#include "Offline/Mu2eG4Helper/inc/Mu2eG4Helper.hh"
 
 #include "art_root_io/TFileService.h"
 #include "art/Framework/Principal/Handle.h"

@@ -8,8 +8,8 @@
 #ifndef MCDataProducts_CaloHitMC_hh
 #define MCDataProducts_CaloHitMC_hh
 
-#include "MCDataProducts/inc/CaloEDepMC.hh"
-#include "MCDataProducts/inc/SimParticleRemapping.hh"
+#include "Offline/MCDataProducts/inc/CaloEDepMC.hh"
+#include "Offline/MCDataProducts/inc/SimParticleRemapping.hh"
 #include <vector>
 
 namespace mu2e

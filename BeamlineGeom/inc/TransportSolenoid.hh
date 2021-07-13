@@ -4,17 +4,17 @@
 //
 // Class to represent the transport solenoid
 //
-#include "BeamlineGeom/inc/StraightSection.hh"
-#include "BeamlineGeom/inc/Coil.hh"
-#include "BeamlineGeom/inc/Collimator_TS1.hh"
-#include "BeamlineGeom/inc/Collimator_TS3.hh"
-#include "BeamlineGeom/inc/Collimator_TS5.hh"
-#include "BeamlineGeom/inc/PbarWindow.hh"
-#include "BeamlineGeom/inc/TorusSection.hh"
-#include "BeamlineGeom/inc/ConeSection.hh"
-#include "BeamlineGeom/inc/TSSection.hh"
+#include "Offline/BeamlineGeom/inc/StraightSection.hh"
+#include "Offline/BeamlineGeom/inc/Coil.hh"
+#include "Offline/BeamlineGeom/inc/Collimator_TS1.hh"
+#include "Offline/BeamlineGeom/inc/Collimator_TS3.hh"
+#include "Offline/BeamlineGeom/inc/Collimator_TS5.hh"
+#include "Offline/BeamlineGeom/inc/PbarWindow.hh"
+#include "Offline/BeamlineGeom/inc/TorusSection.hh"
+#include "Offline/BeamlineGeom/inc/ConeSection.hh"
+#include "Offline/BeamlineGeom/inc/TSSection.hh"
 
-#include "GeneralUtilities/inc/EnumToStringSparse.hh"
+#include "Offline/GeneralUtilities/inc/EnumToStringSparse.hh"
 
 // C++ includes
 #include <map>

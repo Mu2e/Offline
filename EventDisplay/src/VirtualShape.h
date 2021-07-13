@@ -10,8 +10,8 @@
 #define EventDisplay_src_VirtualShape_h
 
 #include "boost/shared_ptr.hpp"
-#include "EventDisplay/src/EventDisplayFrame.h"
-#include "EventDisplay/src/dict_classes/ComponentInfo.h"
+#include "Offline/EventDisplay/src/EventDisplayFrame.h"
+#include "Offline/EventDisplay/src/dict_classes/ComponentInfo.h"
 #include <TGeoManager.h>
 #include <TGeoMatrix.h>
 #include <TGeoVolume.h>

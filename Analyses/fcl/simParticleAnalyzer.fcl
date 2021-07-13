@@ -1,16 +1,16 @@
 # Original author KLGenser
 
-#include "fcl/minimalMessageService.fcl"
-#include "fcl/standardServices.fcl"
+#include "Offline/fcl/minimalMessageService.fcl"
+#include "Offline/fcl/standardServices.fcl"
 
 # Give this job a name.  
 process_name : SimParticleAnalyzer
 
 services : {
    message : @local::default_message
-   GeometryService : { inputFile : "Mu2eG4/geom/geom_common.txt" }  
-   ConditionsService :{ conditionsfile : "ConditionsService/data/conditions_01.txt" } 
-   GlobalConstantsService : { inputFile : "GlobalConstantsService/data/globalConstants_01.txt" }
+   GeometryService : { inputFile : "Offline/Mu2eG4/geom/geom_common.txt" }  
+   ConditionsService :{ conditionsfile : "Offline/ConditionsService/data/conditions_01.txt" } 
+   GlobalConstantsService : { inputFile : "Offline/GlobalConstantsService/data/globalConstants_01.txt" }
 }
 
 physics :

@@ -1,6 +1,6 @@
 // Andrei Gaponenko, 2012
 
-#include "BFieldGeom/inc/BFCacheManager.hh"
+#include "Offline/BFieldGeom/inc/BFCacheManager.hh"
 
 namespace mu2e {
 

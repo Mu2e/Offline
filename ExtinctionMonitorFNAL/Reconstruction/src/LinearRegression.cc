@@ -4,16 +4,16 @@
 //
 // Andrei Gaponenko, 2012
 
-#include "ExtinctionMonitorFNAL/Reconstruction/inc/LinearRegression.hh"
+#include "Offline/ExtinctionMonitorFNAL/Reconstruction/inc/LinearRegression.hh"
 
 #include <cmath>
 
 #include "cetlib_except/exception.h"
 
-#include "ExtinctionMonitorFNAL/Reconstruction/inc/Tracklet.hh"
-#include "RecoDataProducts/inc/ExtMonFNALRecoCluster.hh"
-#include "RecoDataProducts/inc/ExtMonFNALTrkParam.hh"
-#include "ExtinctionMonitorFNAL/Geometry/inc/ExtMonFNAL.hh"
+#include "Offline/ExtinctionMonitorFNAL/Reconstruction/inc/Tracklet.hh"
+#include "Offline/RecoDataProducts/inc/ExtMonFNALRecoCluster.hh"
+#include "Offline/RecoDataProducts/inc/ExtMonFNALTrkParam.hh"
+#include "Offline/ExtinctionMonitorFNAL/Geometry/inc/ExtMonFNAL.hh"
 
 namespace mu2e {
   namespace ExtMonFNAL {

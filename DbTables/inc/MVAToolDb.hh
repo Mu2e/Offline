@@ -7,7 +7,7 @@
 #include <sstream>
 #include <map>
 #include "cetlib_except/exception.h"
-#include "DbTables/inc/DbTable.hh"
+#include "Offline/DbTables/inc/DbTable.hh"
 
 namespace mu2e {
 

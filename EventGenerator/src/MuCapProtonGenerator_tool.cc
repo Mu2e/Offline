@@ -3,16 +3,16 @@
 #include "CLHEP/Random/RandPoissonQ.h"
 #include "CLHEP/Random/RandGeneral.h"
 
-#include "EventGenerator/inc/ParticleGeneratorTool.hh"
+#include "Offline/EventGenerator/inc/ParticleGeneratorTool.hh"
 
-#include "DataProducts/inc/PDGCode.hh"
-#include "MCDataProducts/inc/GenId.hh"
-#include "Mu2eUtilities/inc/RandomUnitSphere.hh"
-#include "Mu2eUtilities/inc/BinnedSpectrum.hh"
-#include "Mu2eUtilities/inc/SpectrumVar.hh"
-#include "GlobalConstantsService/inc/GlobalConstantsHandle.hh"
-#include "GlobalConstantsService/inc/ParticleDataTable.hh"
-#include "GlobalConstantsService/inc/PhysicsParams.hh"
+#include "Offline/DataProducts/inc/PDGCode.hh"
+#include "Offline/MCDataProducts/inc/GenId.hh"
+#include "Offline/Mu2eUtilities/inc/RandomUnitSphere.hh"
+#include "Offline/Mu2eUtilities/inc/BinnedSpectrum.hh"
+#include "Offline/Mu2eUtilities/inc/SpectrumVar.hh"
+#include "Offline/GlobalConstantsService/inc/GlobalConstantsHandle.hh"
+#include "Offline/GlobalConstantsService/inc/ParticleDataTable.hh"
+#include "Offline/GlobalConstantsService/inc/PhysicsParams.hh"
 
 #include "fhiclcpp/types/DelegatedParameter.h"
 

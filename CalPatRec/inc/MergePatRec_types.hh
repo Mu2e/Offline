@@ -1,8 +1,8 @@
 #ifndef __CalPatRec_MergePatRec_types_hh__
 #define __CalPatRec_MergePatRec_types_hh__
 
-#include "RecoDataProducts/inc/KalRepPtrCollection.hh"
-#include "RecoDataProducts/inc/KalSeed.hh"
+#include "Offline/RecoDataProducts/inc/KalRepPtrCollection.hh"
+#include "Offline/RecoDataProducts/inc/KalSeed.hh"
 
 namespace art {
   class Event;

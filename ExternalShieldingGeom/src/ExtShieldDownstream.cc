@@ -1,4 +1,4 @@
-#include "ExternalShieldingGeom/inc/ExtShieldDownstream.hh"
+#include "Offline/ExternalShieldingGeom/inc/ExtShieldDownstream.hh"
 
 namespace mu2e {
 

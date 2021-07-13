@@ -9,8 +9,8 @@
 #include "art/Framework/Principal/Event.h"
 #include "canvas/Utilities/InputTag.h"
 
-#include "MCDataProducts/inc/StepPointMCCollection.hh"
-#include "MCDataProducts/inc/StepPointMC.hh"
+#include "Offline/MCDataProducts/inc/StepPointMCCollection.hh"
+#include "Offline/MCDataProducts/inc/StepPointMC.hh"
 
 //#include <iostream>
 using namespace std;

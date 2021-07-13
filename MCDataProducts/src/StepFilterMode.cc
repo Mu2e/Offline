@@ -6,7 +6,7 @@
 // Contact person Rob Kutschke
 //
 
-#include "MCDataProducts/inc/StepFilterMode.hh"
+#include "Offline/MCDataProducts/inc/StepFilterMode.hh"
 
 #include <boost/static_assert.hpp>
 

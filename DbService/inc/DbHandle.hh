@@ -4,8 +4,8 @@
 #include <memory>
 #include <iostream>
 #include "canvas/Persistency/Provenance/EventID.h"
-#include "DbService/inc/DbService.hh"
-#include "DbTables/inc/DbLiveTable.hh"
+#include "Offline/DbService/inc/DbService.hh"
+#include "Offline/DbTables/inc/DbLiveTable.hh"
 #include "cetlib_except/exception.h"
 
 namespace mu2e {

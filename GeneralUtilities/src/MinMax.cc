@@ -8,7 +8,7 @@
 #include <limits>
 #include <cmath>
 
-#include "GeneralUtilities/inc/MinMax.hh"
+#include "Offline/GeneralUtilities/inc/MinMax.hh"
 
 using namespace std;
 

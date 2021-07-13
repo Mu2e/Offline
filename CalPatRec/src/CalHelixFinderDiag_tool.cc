@@ -12,12 +12,12 @@
 
 #include "fhiclcpp/ParameterSet.h"
 
-#include "CalPatRec/inc/CalHelixFinder_types.hh"
-#include "Mu2eUtilities/inc/ModuleHistToolBase.hh"
+#include "Offline/CalPatRec/inc/CalHelixFinder_types.hh"
+#include "Offline/Mu2eUtilities/inc/ModuleHistToolBase.hh"
 
-#include "MCDataProducts/inc/StepPointMCCollection.hh"
+#include "Offline/MCDataProducts/inc/StepPointMCCollection.hh"
 
-#include "Mu2eUtilities/inc/SimParticleTimeOffset.hh"
+#include "Offline/Mu2eUtilities/inc/SimParticleTimeOffset.hh"
 
 namespace mu2e {
 

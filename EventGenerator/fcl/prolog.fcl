@@ -59,7 +59,7 @@ mu2e.IPAMuonStops: {
 # Generate Event; this is legacy, should not be used
 generate: {
     module_type          : EventGenerator
-    inputfile            : "Mu2eG4/test/genconfig_02.txt"
+    inputfile            : "Offline/Mu2eG4/test/genconfig_02.txt"
     allowReplacement     : true
     messageOnReplacement : true
 }
@@ -259,7 +259,7 @@ EventGenerator : { @table::EventGenerator
                 pdgId            :  11
                 spectrumVariable : "totalEnergy"
                 spectrumShape    : "tabulated"
-                spectrumFileName : "ConditionsService/data/czarnecki_Al.tbl"
+                spectrumFileName : "Offline/ConditionsService/data/czarnecki_Al.tbl"
             }
         }
 #------------------------------------------------------------------------------
@@ -271,7 +271,7 @@ EventGenerator : { @table::EventGenerator
                 pdgId            :  11
                 spectrumVariable : "totalEnergy"
                 spectrumShape    : "tabulated"
-                spectrumFileName : "ConditionsService/data/czarnecki_szafron_Al_2016.tbl"
+                spectrumFileName : "Offline/ConditionsService/data/czarnecki_szafron_Al_2016.tbl"
             }
         }
 #------------------------------------------------------------------------------

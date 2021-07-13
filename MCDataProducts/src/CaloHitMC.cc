@@ -1,4 +1,4 @@
-#include "MCDataProducts/inc/CaloHitMC.hh"
+#include "Offline/MCDataProducts/inc/CaloHitMC.hh"
 #include <numeric>
 
 namespace mu2e {

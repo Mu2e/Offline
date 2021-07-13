@@ -7,7 +7,7 @@
 #include <iomanip>
 #include <iostream>
 
-#include "MCDataProducts/inc/GenId.hh"
+#include "Offline/MCDataProducts/inc/GenId.hh"
 
 #include <boost/static_assert.hpp>
 

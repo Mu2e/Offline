@@ -5,7 +5,7 @@
 // Contact person Ralf Ehrlich
 //
 
-#include "RecoDataProducts/inc/CrvRecoPulse.hh"
+#include "Offline/RecoDataProducts/inc/CrvRecoPulse.hh"
 #include "canvas/Persistency/Common/Ptr.h"
 #include <vector>
 

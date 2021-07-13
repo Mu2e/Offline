@@ -22,16 +22,16 @@
 #include "canvas/Persistency/Common/FindManyP.h"
 #include "canvas/Utilities/InputTag.h"
 
-#include "RecoDataProducts/inc/ExtMonFNALRawHit.hh"
-#include "RecoDataProducts/inc/ExtMonFNALRawHitCollection.hh"
-#include "RecoDataProducts/inc/ExtMonFNALRawCluster.hh"
-#include "RecoDataProducts/inc/ExtMonFNALRawClusterCollection.hh"
-#include "RecoDataProducts/inc/ExtMonFNALRecoCluster.hh"
-#include "RecoDataProducts/inc/ExtMonFNALRecoClusterCollection.hh"
-#include "MCDataProducts/inc/ExtMonFNALHitTruthAssn.hh"
-#include "MCDataProducts/inc/ExtMonFNALRecoClusterTruthAssn.hh"
+#include "Offline/RecoDataProducts/inc/ExtMonFNALRawHit.hh"
+#include "Offline/RecoDataProducts/inc/ExtMonFNALRawHitCollection.hh"
+#include "Offline/RecoDataProducts/inc/ExtMonFNALRawCluster.hh"
+#include "Offline/RecoDataProducts/inc/ExtMonFNALRawClusterCollection.hh"
+#include "Offline/RecoDataProducts/inc/ExtMonFNALRecoCluster.hh"
+#include "Offline/RecoDataProducts/inc/ExtMonFNALRecoClusterCollection.hh"
+#include "Offline/MCDataProducts/inc/ExtMonFNALHitTruthAssn.hh"
+#include "Offline/MCDataProducts/inc/ExtMonFNALRecoClusterTruthAssn.hh"
 
-#include "MCDataProducts/inc/SimParticle.hh"
+#include "Offline/MCDataProducts/inc/SimParticle.hh"
 
 namespace mu2e {
   namespace ExtMonFNAL {

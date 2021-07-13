@@ -17,7 +17,7 @@
 //
 // Original author Rob Kutschke
 
-#include "GeneralUtilities/inc/Binning.hh"
+#include "Offline/GeneralUtilities/inc/Binning.hh"
 
 namespace mu2e {
 

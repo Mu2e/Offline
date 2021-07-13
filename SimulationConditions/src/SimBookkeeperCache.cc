@@ -4,7 +4,7 @@
 
 #include "art/Framework/Services/Registry/ServiceDefinitionMacros.h"
 
-#include "SimulationConditions/inc/SimBookkeeperCache.hh"
+#include "Offline/SimulationConditions/inc/SimBookkeeperCache.hh"
 
 namespace mu2e {
 

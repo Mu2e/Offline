@@ -12,7 +12,7 @@
 
 #include "art_root_io/TFileDirectory.h"
 
-#include "RecoDataProducts/inc/ExtMonFNALRecoClusterCollection.hh"
+#include "Offline/RecoDataProducts/inc/ExtMonFNALRecoClusterCollection.hh"
 
 class TH1D;
 class TH2D;

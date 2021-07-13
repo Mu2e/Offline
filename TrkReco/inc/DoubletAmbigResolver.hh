@@ -8,7 +8,7 @@
 #define DoubletAmbigResolver_HH
 
 #include "BTrk/BaBar/BaBar.hh"
-#include "TrkReco/inc/AmbigResolver.hh"
+#include "Offline/TrkReco/inc/AmbigResolver.hh"
 
 #ifndef __GCCXML__
 #include "fhiclcpp/ParameterSet.h"
@@ -21,7 +21,7 @@
 class TrkDifTraj;
 class KalRep;
 
-#include "BTrkData/inc/Doublet.hh"
+#include "Offline/BTrkData/inc/Doublet.hh"
 
 namespace mu2e {
 

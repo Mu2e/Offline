@@ -23,16 +23,16 @@
 #include "messagefacility/MessageLogger/MessageLogger.h"
 
 // Mu2e includes
-#include "GeometryService/inc/CosmicRayShieldMaker.hh"
-#include "CosmicRayShieldGeom/inc/CosmicRayShield.hh"
+#include "Offline/GeometryService/inc/CosmicRayShieldMaker.hh"
+#include "Offline/CosmicRayShieldGeom/inc/CosmicRayShield.hh"
 
-#include "CosmicRayShieldGeom/inc/CRSScintillatorShield.hh"
-#include "CosmicRayShieldGeom/inc/CRSScintillatorModule.hh"
-#include "CosmicRayShieldGeom/inc/CRSScintillatorLayer.hh"
+#include "Offline/CosmicRayShieldGeom/inc/CRSScintillatorShield.hh"
+#include "Offline/CosmicRayShieldGeom/inc/CRSScintillatorModule.hh"
+#include "Offline/CosmicRayShieldGeom/inc/CRSScintillatorLayer.hh"
 
-#include "ConfigTools/inc/SimpleConfig.hh"
+#include "Offline/ConfigTools/inc/SimpleConfig.hh"
 
-#include "MBSGeom/inc/MBS.hh"
+#include "Offline/MBSGeom/inc/MBS.hh"
 
 using namespace std;
 

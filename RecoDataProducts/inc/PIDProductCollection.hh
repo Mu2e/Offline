@@ -10,7 +10,7 @@
 
 #include <vector>
 
-#include "RecoDataProducts/inc/PIDProduct.hh"
+#include "Offline/RecoDataProducts/inc/PIDProduct.hh"
 
 namespace mu2e {
    typedef std::vector<mu2e::PIDProduct> PIDProductCollection;

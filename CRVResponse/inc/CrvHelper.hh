@@ -6,14 +6,14 @@
 //
 // Original Author: Ralf Ehrlich
 
-#include "MCDataProducts/inc/CrvDigiMC.hh"
-#include "RecoDataProducts/inc/CrvRecoPulse.hh"
-#include "Mu2eUtilities/inc/SimParticleTimeOffset.hh"
+#include "Offline/MCDataProducts/inc/CrvDigiMC.hh"
+#include "Offline/RecoDataProducts/inc/CrvRecoPulse.hh"
+#include "Offline/Mu2eUtilities/inc/SimParticleTimeOffset.hh"
 #include "art/Framework/Principal/Handle.h"
 
-#include "CosmicRayShieldGeom/inc/CosmicRayShield.hh"
-#include "DataProducts/inc/CRSScintillatorBarIndex.hh"
-#include "GeometryService/inc/GeomHandle.hh"
+#include "Offline/CosmicRayShieldGeom/inc/CosmicRayShield.hh"
+#include "Offline/DataProducts/inc/CRSScintillatorBarIndex.hh"
+#include "Offline/GeometryService/inc/GeomHandle.hh"
 
 namespace mu2e
 {

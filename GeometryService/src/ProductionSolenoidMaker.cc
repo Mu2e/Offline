@@ -18,10 +18,10 @@
 #include "messagefacility/MessageLogger/MessageLogger.h"
 
 // Mu2e includes
-#include "GeometryService/inc/ProductionSolenoidMaker.hh"
-#include "ProductionSolenoidGeom/inc/ProductionSolenoid.hh"
+#include "Offline/GeometryService/inc/ProductionSolenoidMaker.hh"
+#include "Offline/ProductionSolenoidGeom/inc/ProductionSolenoid.hh"
 
-#include "ConfigTools/inc/SimpleConfig.hh"
+#include "Offline/ConfigTools/inc/SimpleConfig.hh"
 
 using namespace std;
 

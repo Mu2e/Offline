@@ -12,9 +12,9 @@
 #include <vector>
 #include <ostream>
 
-#include "GeomPrimitives/inc/Cone.hh"
-#include "GeomPrimitives/inc/Tube.hh"
-#include "Mu2eInterfaces/inc/Detector.hh"
+#include "Offline/GeomPrimitives/inc/Cone.hh"
+#include "Offline/GeomPrimitives/inc/Tube.hh"
+#include "Offline/Mu2eInterfaces/inc/Detector.hh"
 
 #include "canvas/Persistency/Common/Wrapper.h"
 

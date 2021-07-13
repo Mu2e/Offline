@@ -3,9 +3,9 @@
 // fit as input
 //
 //
-#include "TrkReco/inc/FixedAmbigResolver.hh"
+#include "Offline/TrkReco/inc/FixedAmbigResolver.hh"
 #include "BTrk/KalmanTrack/KalRep.hh"
-#include "BTrkData/inc/TrkStrawHit.hh"
+#include "Offline/BTrkData/inc/TrkStrawHit.hh"
 
 namespace mu2e {
 

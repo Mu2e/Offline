@@ -8,7 +8,7 @@
 
 
 // Base description
-#include "Mu2eG4/test/geom_01.txt"
+#include "Offline/Mu2eG4/test/geom_01.txt"
 
 // Modifications for this job//
 string hall.insideMaterialName = "G4_Fe";

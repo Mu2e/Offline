@@ -8,7 +8,7 @@
 #include <iostream>
 
 // Mu2e includes
-#include "Mu2eG4/inc/Mu2eG4UserTrackInformation.hh"
+#include "Offline/Mu2eG4/inc/Mu2eG4UserTrackInformation.hh"
 
 using namespace std;
 

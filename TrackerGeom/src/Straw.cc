@@ -5,7 +5,7 @@
 //
 
 #include <sstream>
-#include "TrackerGeom/inc/Straw.hh"
+#include "Offline/TrackerGeom/inc/Straw.hh"
 
 using std::vector;
 

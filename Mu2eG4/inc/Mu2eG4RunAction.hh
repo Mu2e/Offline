@@ -15,7 +15,7 @@
 #include "Geant4/G4Run.hh"
 #include "Geant4/G4SDManager.hh"
 
-#include "Mu2eG4/inc/Mu2eG4Config.hh"
+#include "Offline/Mu2eG4/inc/Mu2eG4Config.hh"
 
 namespace CLHEP { class Hep3Vector; }
 

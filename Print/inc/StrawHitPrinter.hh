@@ -7,8 +7,8 @@
 #include <cstring>
 #include <iostream>
 
-#include "Print/inc/ProductPrinter.hh"
-#include "RecoDataProducts/inc/StrawHitCollection.hh"
+#include "Offline/Print/inc/ProductPrinter.hh"
+#include "Offline/RecoDataProducts/inc/StrawHitCollection.hh"
 #include "art/Framework/Principal/Handle.h"
 #include "canvas/Persistency/Common/Ptr.h"
 

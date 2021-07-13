@@ -9,18 +9,18 @@
 #include "art_root_io/TFileService.h"
 
 // data
-#include "RecoDataProducts/inc/CaloHit.hh"
-#include "RecoDataProducts/inc/CaloCluster.hh"
-#include "RecoDataProducts/inc/HelixVal.hh"
-#include "RecoDataProducts/inc/TimeCluster.hh"
-#include "RecoDataProducts/inc/HelixSeed.hh"
+#include "Offline/RecoDataProducts/inc/CaloHit.hh"
+#include "Offline/RecoDataProducts/inc/CaloCluster.hh"
+#include "Offline/RecoDataProducts/inc/HelixVal.hh"
+#include "Offline/RecoDataProducts/inc/TimeCluster.hh"
+#include "Offline/RecoDataProducts/inc/HelixSeed.hh"
 
-#include "RecoDataProducts/inc/StrawHitPositionCollection.hh"
-#include "RecoDataProducts/inc/StereoHit.hh"
-#include "RecoDataProducts/inc/StrawHitFlag.hh"
-#include "RecoDataProducts/inc/StrawHit.hh"
+#include "Offline/RecoDataProducts/inc/StrawHitPositionCollection.hh"
+#include "Offline/RecoDataProducts/inc/StereoHit.hh"
+#include "Offline/RecoDataProducts/inc/StrawHitFlag.hh"
+#include "Offline/RecoDataProducts/inc/StrawHit.hh"
 
-#include "DataProducts/inc/Helicity.hh"
+#include "Offline/DataProducts/inc/Helicity.hh"
 
 // BaBar
 #include "BTrk/BaBar/BaBar.hh"
@@ -29,16 +29,16 @@
 #include "BTrk/ProbTools/ChisqConsistency.hh"
 #include "BTrk/BbrGeom/BbrVectorErr.hh"
 #include "BTrk/BaBar/BbrStringUtils.hh"
-#include "BTrkData/inc/TrkStrawHit.hh"
+#include "Offline/BTrkData/inc/TrkStrawHit.hh"
 #include "BTrk/TrkBase/HelixParams.hh"
 #include "BTrk/TrkBase/TrkPoca.hh"
 #include "BTrk/TrkBase/TrkMomCalculator.hh"
 
-#include "BFieldGeom/inc/BFieldConfig.hh"
+#include "Offline/BFieldGeom/inc/BFieldConfig.hh"
 
-#include "CalPatRec/inc/CalHelixFinder_types.hh"
-#include "CalPatRec/inc/CalHelixFinderAlg.hh"
-#include "CalPatRec/inc/CalHelixFinderData.hh"
+#include "Offline/CalPatRec/inc/CalHelixFinder_types.hh"
+#include "Offline/CalPatRec/inc/CalHelixFinderAlg.hh"
+#include "Offline/CalPatRec/inc/CalHelixFinderData.hh"
 
 //CLHEP
 #include "CLHEP/Units/PhysicalConstants.h"

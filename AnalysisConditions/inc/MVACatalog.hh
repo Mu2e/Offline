@@ -8,8 +8,8 @@
 //
 
 // Mu2e includes
-#include "Mu2eInterfaces/inc/ProditionsEntity.hh"
-#include "Mu2eUtilities/inc/MVATools.hh"
+#include "Offline/Mu2eInterfaces/inc/ProditionsEntity.hh"
+#include "Offline/Mu2eUtilities/inc/MVATools.hh"
 #include "fhiclcpp/ParameterSet.h"
 
 namespace mu2e {

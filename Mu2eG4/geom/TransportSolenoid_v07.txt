@@ -1,6 +1,6 @@
 
 //titanium pbar window and updated wedge to match
-#include "Mu2eG4/geom/TransportSolenoid_v06.txt"
+#include "Offline/Mu2eG4/geom/TransportSolenoid_v06.txt"
 
 // Pbar Absorber
 double pbar.halfLength     = 0.0254; //thin

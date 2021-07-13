@@ -6,7 +6,7 @@
 // Contact person Ralf Ehrlich
 //
 
-#include "MCDataProducts/inc/CrvCoincidenceClusterMC.hh"
+#include "Offline/MCDataProducts/inc/CrvCoincidenceClusterMC.hh"
 
 #include <vector>
 

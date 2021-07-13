@@ -6,7 +6,7 @@
 // Original author Rob Kutschke
 //
 
-#include "GeneralUtilities/inc/LinePointPCA.hh"
+#include "Offline/GeneralUtilities/inc/LinePointPCA.hh"
 
 using namespace std;
 

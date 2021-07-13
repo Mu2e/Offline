@@ -1,4 +1,4 @@
-#include "CaloMC/inc/CaloWFExtractor.hh"
+#include "Offline/CaloMC/inc/CaloWFExtractor.hh"
 #include <algorithm>
 #include <iostream>
 
@@ -6,7 +6,7 @@ namespace mu2e {
 
    void CaloWFExtractor::extract(const std::vector<int>& wf, std::vector<size_t>& starts, std::vector<size_t>& stops) const
    {
-        size_t timeSample(nBinsPeak_);
+        size_t timeSample(nBinsPeak_+startOffset_);
         while (timeSample+nBinsPeak_ < wf.size()) 
         {
 	    // find starting point

@@ -9,11 +9,11 @@
 //  which looks for more information and is slower.
 //
 
-#include "RecoDataProducts/inc/KalRepPtrCollection.hh"
+#include "Offline/RecoDataProducts/inc/KalRepPtrCollection.hh"
 #include "art/Framework/Principal/Event.h"
 #include "fhiclcpp/ParameterSet.h"
 
-#include "Mu2eUtilities/inc/TrackPatRecType.hh"
+#include "Offline/Mu2eUtilities/inc/TrackPatRecType.hh"
 
 namespace art { class Event; }
 

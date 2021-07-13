@@ -1,7 +1,7 @@
 //
 // Original author Andrei Gaponenko
 
-#include "Mu2eG4/inc/ExtMonFNALPixelSD.hh"
+#include "Offline/Mu2eG4/inc/ExtMonFNALPixelSD.hh"
 
 #include <sstream>
 
@@ -12,13 +12,13 @@
 
 #include "messagefacility/MessageLogger/MessageLogger.h"
 
-#include "ConfigTools/inc/SimpleConfig.hh"
-#include "Mu2eG4/inc/SensitiveDetectorName.hh"
-#include "Mu2eG4/inc/SimParticleHelper.hh"
-#include "MCDataProducts/inc/ExtMonFNALSimHitCollection.hh"
+#include "Offline/ConfigTools/inc/SimpleConfig.hh"
+#include "Offline/Mu2eG4/inc/SensitiveDetectorName.hh"
+#include "Offline/Mu2eG4/inc/SimParticleHelper.hh"
+#include "Offline/MCDataProducts/inc/ExtMonFNALSimHitCollection.hh"
 
-#include "ExtinctionMonitorFNAL/Geometry/inc/ExtMonFNALModuleIdConverter.hh"
-#include "DataProducts/inc/ExtMonFNALModuleDenseId.hh"
+#include "Offline/ExtinctionMonitorFNAL/Geometry/inc/ExtMonFNALModuleIdConverter.hh"
+#include "Offline/DataProducts/inc/ExtMonFNALModuleDenseId.hh"
 namespace mu2e {
 
   //================================================================

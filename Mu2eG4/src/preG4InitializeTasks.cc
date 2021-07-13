@@ -6,7 +6,7 @@
 //
 
 
-#include "Mu2eG4/inc/preG4InitializeTasks.hh"
+#include "Offline/Mu2eG4/inc/preG4InitializeTasks.hh"
 //#include "Mu2eG4/inc/setBirksConstant.hh"
 
 namespace mu2e{

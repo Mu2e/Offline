@@ -33,13 +33,13 @@ class G4Mag_UsualEqRhs;
 class G4UserLimits;
 
 // Mu2e includes
-#include "Mu2eG4/inc/Mu2eUniverse.hh"
-#include "Mu2eG4/inc/Mu2eG4Config.hh"
-#include "Mu2eG4Helper/inc/VolumeInfo.hh"
-#include "Mu2eG4/inc/FieldMgr.hh"
-#include "Mu2eG4Helper/inc/Mu2eG4Helper.hh"
-#include "GeomPrimitives/inc/TubsParams.hh"
-#include "BFieldGeom/inc/BFieldConfig.hh"
+#include "Offline/Mu2eG4/inc/Mu2eUniverse.hh"
+#include "Offline/Mu2eG4/inc/Mu2eG4Config.hh"
+#include "Offline/Mu2eG4Helper/inc/VolumeInfo.hh"
+#include "Offline/Mu2eG4/inc/FieldMgr.hh"
+#include "Offline/Mu2eG4Helper/inc/Mu2eG4Helper.hh"
+#include "Offline/GeomPrimitives/inc/TubsParams.hh"
+#include "Offline/BFieldGeom/inc/BFieldConfig.hh"
 
 
 //G4 includes

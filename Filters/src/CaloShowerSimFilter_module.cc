@@ -6,8 +6,8 @@
 //
 
 // Mu2e includes.
-#include "MCDataProducts/inc/CaloShowerSim.hh"
-#include "MCDataProducts/inc/SimParticlePtrCollection.hh"
+#include "Offline/MCDataProducts/inc/CaloShowerSim.hh"
+#include "Offline/MCDataProducts/inc/SimParticlePtrCollection.hh"
 // Framework includes.
 #include "art/Framework/Core/EDFilter.h"
 #include "art/Framework/Principal/Event.h"

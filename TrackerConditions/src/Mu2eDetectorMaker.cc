@@ -1,10 +1,10 @@
 
 #include <iostream>
 
-#include "GeometryService/inc/GeomHandle.hh"
-#include "TrackerGeom/inc/Tracker.hh"
-#include "TrackerConditions/inc/Mu2eDetector.hh"
-#include "TrackerConditions/inc/Mu2eDetectorMaker.hh"
+#include "Offline/GeometryService/inc/GeomHandle.hh"
+#include "Offline/TrackerGeom/inc/Tracker.hh"
+#include "Offline/TrackerConditions/inc/Mu2eDetector.hh"
+#include "Offline/TrackerConditions/inc/Mu2eDetectorMaker.hh"
 
 using namespace std;
 

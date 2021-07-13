@@ -3,7 +3,7 @@
 //
 // Original author David Brown, LBNL
 //
-#include "RecoDataProducts/inc/StrawDigi.hh"
+#include "Offline/RecoDataProducts/inc/StrawDigi.hh"
 
 namespace mu2e {
   StrawDigi::StrawDigi(StrawId sid, TrkTypes::TDCValues tdc, TrkTypes::TOTValues tot, TrkTypes::ADCValue pmp) : 
