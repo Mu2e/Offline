@@ -155,7 +155,7 @@ namespace mu2e {
 	    counttrk.insert(CT::value_type(sgs.simParticle().get(),1));
 	  else
 	    ifnd->second++;
-	}
+	} else {std::cout<<"Particle too low energy "<<std::endl;
       }
       for(auto itrk=counttrk.begin();itrk != counttrk.end();itrk++){
 	if(itrk->second >= minNTrk_ && itrk->second <= maxNTrk_ ){

@@ -85,7 +85,7 @@ namespace mu2e {
 // stopped-muon physics processes, specific to Mu2e
       mu2eCeMinusEndpoint,    mu2eCeMinusLeadingLog,   mu2eCePlusEndpoint,  mu2eDIOLeadingLog, // 170
       mu2eInternalRMC,        mu2eExternalRMC,         mu2eFlateMinus,      mu2eFlatePlus, // 174
-      mu2eFlatPhoton, IPAMicheleminus,// 176
+      mu2eFlatPhoton, // 175
       lastEnum,
       // An alias for backward compatibility
       mu2eHallAir = mu2eKillerVolume
@@ -138,7 +138,7 @@ namespace mu2e {
       "mu2eMuonCaptureAtRest", "mu2eMuonDecayAtRest", \
       "mu2eCeMinusEndpoint",    "mu2eCeMinusLeadingLog",   "mu2eCePlusEndpoint",  "mu2eDIOLeadingLog", \
       "mu2eInternalRMC",        "mu2eExternalRMC",         "mu2eFlateMinus",      "mu2eFlatePlus", \
-      "mu2eFlatPhoton","IPAMicheleminus"
+      "mu2eFlatPhoton"
 
   public:
 
