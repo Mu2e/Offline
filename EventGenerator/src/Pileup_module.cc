@@ -39,7 +39,6 @@
 #include "Offline/EventGenerator/inc/ParticleGeneratorTool.hh"
 
 namespace mu2e {
-
   //================================================================
   class Pileup : public art::EDProducer {
   public:
