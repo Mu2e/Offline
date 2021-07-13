@@ -1,5 +1,5 @@
 
-#include "Validation/inc/ValSimParticle.hh"
+#include "Offline/Validation/inc/ValSimParticle.hh"
 #include <vector>
 
 int mu2e::ValSimParticle::declare(art::TFileDirectory tfs) {

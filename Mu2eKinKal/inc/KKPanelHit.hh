@@ -5,7 +5,7 @@
 //  the fit, it is used just to coherently upcate the hits, using correlations to improve the accuracy of ambiguity setting.
 //
 #include "KinKal/Detector/Hit.hh"
-#include "Mu2eKinKal/inc/KKStrawHit.hh"
+#include "Offline/Mu2eKinKal/inc/KKStrawHit.hh"
 #include <array>
 namespace mu2e {
   // struct for updating straw hits; 

@@ -5,13 +5,13 @@
 #ifndef EXTMONFNALPIXELIDCONVERTER_HH
 #define EXTMONFNALPIXELIDCONVERTER_HH
 
-#include "DataProducts/inc/ExtMonFNALPixelId.hh"
-#include "DataProducts/inc/ExtMonFNALPixelDenseId.hh"
-#include "DataProducts/inc/ExtMonFNALModuleDenseId.hh"
+#include "Offline/DataProducts/inc/ExtMonFNALPixelId.hh"
+#include "Offline/DataProducts/inc/ExtMonFNALPixelDenseId.hh"
+#include "Offline/DataProducts/inc/ExtMonFNALModuleDenseId.hh"
 
-#include "ExtinctionMonitorFNAL/Geometry/inc/ExtMonFNALPixelChip.hh"
-#include "ExtinctionMonitorFNAL/Geometry/inc/ExtMonFNALModule.hh"
-#include "ExtinctionMonitorFNAL/Geometry/inc/ExtMonFNALModuleIdConverter.hh"
+#include "Offline/ExtinctionMonitorFNAL/Geometry/inc/ExtMonFNALPixelChip.hh"
+#include "Offline/ExtinctionMonitorFNAL/Geometry/inc/ExtMonFNALModule.hh"
+#include "Offline/ExtinctionMonitorFNAL/Geometry/inc/ExtMonFNALModuleIdConverter.hh"
 
 namespace mu2e {
 

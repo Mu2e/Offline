@@ -19,10 +19,10 @@ namespace art {
 
 class KalRep;
 
-#include "MCDataProducts/inc/StrawDigiMCCollection.hh"
-#include "Mu2eUtilities/inc/SimParticleTimeOffset.hh"
-#include "RecoDataProducts/inc/KalRepPtrCollection.hh"
-#include "RecoDataProducts/inc/CaloProtoCluster.hh"
+#include "Offline/MCDataProducts/inc/StrawDigiMCCollection.hh"
+#include "Offline/Mu2eUtilities/inc/SimParticleTimeOffset.hh"
+#include "Offline/RecoDataProducts/inc/KalRepPtrCollection.hh"
+#include "Offline/RecoDataProducts/inc/CaloProtoCluster.hh"
 
 namespace mu2e {
   class StrawHit;

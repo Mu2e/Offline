@@ -14,7 +14,7 @@
 
 #include "CLHEP/Vector/ThreeVector.h"
 
-#include "BFieldGeom/inc/BFMap.hh"
+#include "Offline/BFieldGeom/inc/BFMap.hh"
 
 namespace mu2e {
 

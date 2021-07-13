@@ -22,12 +22,12 @@
 #include <iostream>
 #include <string>
 
-#include "RecoDataProducts/inc/PIDProduct.hh"
-#include "RecoDataProducts/inc/PIDProductCollection.hh"
+#include "Offline/RecoDataProducts/inc/PIDProduct.hh"
+#include "Offline/RecoDataProducts/inc/PIDProductCollection.hh"
 
 #include "BTrk/TrkBase/TrkParticle.hh"
 // mu2e tracking
-#include "RecoDataProducts/inc/TrkFitDirection.hh"
+#include "Offline/RecoDataProducts/inc/TrkFitDirection.hh"
 
 
 //ROOT

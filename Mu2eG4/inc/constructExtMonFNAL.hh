@@ -5,8 +5,8 @@
 
 #include <string>
 
-#include "Mu2eG4Helper/inc/VolumeInfo.hh"
-#include "ExtinctionMonitorFNAL/Geometry/inc/ExtMonFNALPlaneStack.hh"
+#include "Offline/Mu2eG4Helper/inc/VolumeInfo.hh"
+#include "Offline/ExtinctionMonitorFNAL/Geometry/inc/ExtMonFNALPlaneStack.hh"
 #include "Geant4/G4ThreeVector.hh"
 
 namespace CLHEP { class HepRotation; }

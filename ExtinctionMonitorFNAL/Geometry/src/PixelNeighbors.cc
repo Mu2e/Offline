@@ -1,6 +1,6 @@
 // Andrei Gaponenko, 2012
 
-#include "ExtinctionMonitorFNAL/Geometry/inc/PixelNeighbors.hh"
+#include "Offline/ExtinctionMonitorFNAL/Geometry/inc/PixelNeighbors.hh"
 
 namespace mu2e {
 

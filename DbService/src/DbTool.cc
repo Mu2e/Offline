@@ -5,9 +5,9 @@
 #include <fstream>
 #include <iterator>
 #include "cetlib_except/exception.h"
-#include "DbService/inc/DbTool.hh"
-#include "DbService/inc/DbIdList.hh"
-#include "DbTables/inc/DbTableFactory.hh"
+#include "Offline/DbService/inc/DbTool.hh"
+#include "Offline/DbService/inc/DbIdList.hh"
+#include "Offline/DbTables/inc/DbTableFactory.hh"
 
 mu2e::DbTool::DbTool():_verbose(0),_pretty(false),_admin(false) {
 }

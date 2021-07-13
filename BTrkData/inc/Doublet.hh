@@ -6,13 +6,13 @@
 #ifndef __CalPatRec_Doublet_hh__
 #define __CalPatRec_Doublet_hh__
 
-#include "RecoDataProducts/inc/CaloCluster.hh"
-#include "RecoDataProducts/inc/StrawHit.hh"
-#include "RecoDataProducts/inc/StrawHitCollection.hh"
-#include "RecoDataProducts/inc/StrawHitFlag.hh"
+#include "Offline/RecoDataProducts/inc/CaloCluster.hh"
+#include "Offline/RecoDataProducts/inc/StrawHit.hh"
+#include "Offline/RecoDataProducts/inc/StrawHitCollection.hh"
+#include "Offline/RecoDataProducts/inc/StrawHitFlag.hh"
 
 #include "BTrk/KalmanTrack/KalRep.hh"
-#include "BTrkData/inc/TrkStrawHit.hh"
+#include "Offline/BTrkData/inc/TrkStrawHit.hh"
 #include "BTrk/TrkBase/HelixParams.hh"
 
 // C++

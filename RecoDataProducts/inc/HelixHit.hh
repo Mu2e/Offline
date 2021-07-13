@@ -6,7 +6,7 @@
 // Original author David Brown
 //
 // Mu2e includes
-#include "RecoDataProducts/inc/ComboHit.hh"
+#include "Offline/RecoDataProducts/inc/ComboHit.hh"
 
 namespace mu2e {
 

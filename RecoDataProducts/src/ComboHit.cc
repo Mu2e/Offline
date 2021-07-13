@@ -4,7 +4,7 @@
 // Original author David Brown
 //
 // Mu2e includes
-#include "RecoDataProducts/inc/ComboHit.hh"
+#include "Offline/RecoDataProducts/inc/ComboHit.hh"
 // art includes
 #include "cetlib_except/exception.h"
 // c++ includes

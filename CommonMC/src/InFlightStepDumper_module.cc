@@ -14,11 +14,11 @@
 #include "canvas/Utilities/InputTag.h"
 #include "art_root_io/TFileService.h"
 
-#include "MCDataProducts/inc/SimParticleCollection.hh"
-#include "MCDataProducts/inc/StepPointMC.hh"
-#include "MCDataProducts/inc/StepPointMCCollection.hh"
+#include "Offline/MCDataProducts/inc/SimParticleCollection.hh"
+#include "Offline/MCDataProducts/inc/StepPointMC.hh"
+#include "Offline/MCDataProducts/inc/StepPointMCCollection.hh"
 
-#include "GeneralUtilities/inc/RSNTIO.hh"
+#include "Offline/GeneralUtilities/inc/RSNTIO.hh"
 
 #include "TTree.h"
 

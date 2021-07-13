@@ -12,7 +12,7 @@
 #include <string>
 #include <vector>
 
-#include "GeomPrimitives/inc/PlacedTubs.hh"
+#include "Offline/GeomPrimitives/inc/PlacedTubs.hh"
 
 namespace mu2e {
 

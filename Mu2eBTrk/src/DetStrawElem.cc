@@ -5,10 +5,10 @@
 // Author List:
 //      Dave Brown 27 May 2011
 //------------------------------------------------------------------------
-#include "Mu2eBTrk/inc/DetStrawElem.hh"
-#include "Mu2eBTrk/inc/DetStrawType.hh"
-#include "TrackerGeom/inc/Tracker.hh"
-#include "TrackerGeom/inc/Straw.hh"
+#include "Offline/Mu2eBTrk/inc/DetStrawElem.hh"
+#include "Offline/Mu2eBTrk/inc/DetStrawType.hh"
+#include "Offline/TrackerGeom/inc/Tracker.hh"
+#include "Offline/TrackerGeom/inc/Straw.hh"
 #include "BTrk/TrkBase/TrkHit.hh"
 #include "BTrk/TrkBase/TrkPoca.hh"
 #include "BTrk/DetectorModel/DetIntersection.hh"

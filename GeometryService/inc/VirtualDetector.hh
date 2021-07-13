@@ -11,7 +11,7 @@
 #include <string>
 
 // Includes from Mu2e
-#include "Mu2eInterfaces/inc/Detector.hh"
+#include "Offline/Mu2eInterfaces/inc/Detector.hh"
 
 #include "CLHEP/Vector/Rotation.h"
 #include "CLHEP/Vector/ThreeVector.h"

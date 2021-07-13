@@ -13,7 +13,7 @@
 #include <sstream>
 #include <stdexcept>
 
-#include "Compression/inc/CompressionLevel.hh"
+#include "Offline/Compression/inc/CompressionLevel.hh"
 
 #include <boost/static_assert.hpp>
 

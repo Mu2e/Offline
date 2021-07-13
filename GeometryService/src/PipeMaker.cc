@@ -11,10 +11,10 @@
 #include "CLHEP/Vector/ThreeVector.h"
 #include "CLHEP/Units/SystemOfUnits.h"
 
-#include "GeometryService/inc/PipeMaker.hh"
-#include "ServicesGeom/inc/Pipe.hh"
+#include "Offline/GeometryService/inc/PipeMaker.hh"
+#include "Offline/ServicesGeom/inc/Pipe.hh"
 
-#include "ConfigTools/inc/SimpleConfig.hh"
+#include "Offline/ConfigTools/inc/SimpleConfig.hh"
 
 namespace mu2e {
 

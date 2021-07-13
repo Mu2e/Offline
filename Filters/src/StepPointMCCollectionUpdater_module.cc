@@ -14,8 +14,8 @@
 #include "art/Framework/Principal/Event.h"
 #include "art/Framework/Principal/Handle.h"
 
-#include "MCDataProducts/inc/SimParticleRemapping.hh"
-#include "MCDataProducts/inc/StepPointMCCollection.hh"
+#include "Offline/MCDataProducts/inc/SimParticleRemapping.hh"
+#include "Offline/MCDataProducts/inc/StepPointMCCollection.hh"
 
 namespace mu2e {
 

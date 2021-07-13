@@ -10,9 +10,9 @@
 //
 
 // Mu2e includes
-#include "ConditionsService/inc/AcceleratorParams.hh"
-#include "GeneralUtilities/inc/EnumToStringSparse.hh"
-#include "Mu2eUtilities/inc/Table.hh"
+#include "Offline/ConditionsService/inc/AcceleratorParams.hh"
+#include "Offline/GeneralUtilities/inc/EnumToStringSparse.hh"
+#include "Offline/Mu2eUtilities/inc/Table.hh"
 
 // CLHEP includes
 #include "CLHEP/Random/RandGeneral.h"

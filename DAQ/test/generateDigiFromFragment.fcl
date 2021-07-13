@@ -4,11 +4,11 @@
 #
 #
 # Contact person G. Pezzullo
-#include "fcl/minimalMessageService.fcl"
-#include "fcl/standardServices.fcl"
-#include "DAQ/fcl/prolog_trigger.fcl"
+#include "Offline/fcl/minimalMessageService.fcl"
+#include "Offline/fcl/standardServices.fcl"
+#include "Offline/DAQ/fcl/prolog_trigger.fcl"
 
-#include "CaloCluster/fcl/prolog_trigger.fcl"
+#include "Offline/CaloCluster/fcl/prolog_trigger.fcl"
 
 process_name : FragmentToDigi
 

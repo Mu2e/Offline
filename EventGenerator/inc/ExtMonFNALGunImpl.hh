@@ -16,8 +16,8 @@
 #include "fhiclcpp/types/OptionalAtom.h"
 #include "fhiclcpp/types/TupleAs.h"
 
-#include "EventGenerator/inc/ParticleGunImpl.hh"
-#include "MCDataProducts/inc/GenParticle.hh"
+#include "Offline/EventGenerator/inc/ParticleGunImpl.hh"
+#include "Offline/MCDataProducts/inc/GenParticle.hh"
 
 #include "CLHEP/Vector/Rotation.h"
 #include "CLHEP/Vector/ThreeVector.h"

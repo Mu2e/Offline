@@ -12,9 +12,9 @@
 #include <fstream>
 
 // Mu2e includes
-#include "EventGenerator/inc/GeneratorBase.hh"
-#include "DataProducts/inc/PDGCode.hh"
-#include "MCDataProducts/inc/G4BeamlineInfoCollection.hh"
+#include "Offline/EventGenerator/inc/GeneratorBase.hh"
+#include "Offline/DataProducts/inc/PDGCode.hh"
+#include "Offline/MCDataProducts/inc/G4BeamlineInfoCollection.hh"
 
 // External includes
 #include "CLHEP/Random/RandPoissonQ.h"

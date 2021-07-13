@@ -11,7 +11,7 @@
 #include <TPad.h>
 #include <TRootEmbeddedCanvas.h>
 #include <TGCanvas.h>
-#include "EventDisplay/src/dict_classes/ComponentInfoContainer.h"
+#include "Offline/EventDisplay/src/dict_classes/ComponentInfoContainer.h"
 
 namespace mu2e_eventdisplay
 {

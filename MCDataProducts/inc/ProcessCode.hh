@@ -54,7 +54,7 @@ namespace mu2e {
       PositronNuclear,        ProtonInelastic,         SigmaMinusInelastic, SigmaPlusInelastic, // 47
       StepLimiter,            Transportation,          TritonInelastic,     XiMinusInelastic, // 51
       XiZeroInelastic,        mu2eLowEKine,            mu2eKillerVolume,    mu2eMaxSteps,  // 55
-      mu2ePrimary,            muMinusConversionAtRest, hadElastic,          CoulombScat, // 59
+      mu2ePrimary,            unused001,               hadElastic,          CoulombScat, // 59
       nuclearStopping,        mu2eMaxGlobalTime,       TNuclearCapture,     muMinusAtomicCapture, // 63
       MuAtomDecay,            Rayl,                    ionInelastic,        He3Inelastic, // 67
       alphaInelastic,         AntiHe3InelasticProcess, AntiAlphaInelasticProcess, AntiDeuteronInelastic, // 71
@@ -81,7 +81,11 @@ namespace mu2e {
       anti_xi_b_MinusInelastic, anti_xi_b0Inelastic,   anti_xi_c_PlusInelastic, anti_xi_c0Inelastic, // 155
       lambda_bInelastic,      lambda_c_PlusInelastic,  omega_b_MinusInelastic, omega_c0Inelastic, // 159
       xi_b_MinusInelastic,    xi_b0Inelastic,          xi_c_PlusInelastic,  xi_c0Inelastic, truncated, // 164
-      mu2eMuonCaptureAtRest,  mu2eMuonDecayAtRest, IPAMicheleminus,
+      mu2eMuonCaptureAtRest,  mu2eMuonDecayAtRest, // 166
+// stopped-muon physics processes, specific to Mu2e
+      mu2eCeMinusEndpoint,    mu2eCeMinusLeadingLog,   mu2eCePlusEndpoint,  mu2eDIOLeadingLog, // 170
+      mu2eInternalRMC,        mu2eExternalRMC,         mu2eFlateMinus,      mu2eFlatePlus, // 174
+      mu2eFlatPhoton, IPAMicheleminus,// 176
       lastEnum,
       // An alias for backward compatibility
       mu2eHallAir = mu2eKillerVolume
@@ -104,7 +108,7 @@ namespace mu2e {
     "PositronNuclear",        "ProtonInelastic",         "SigmaMinusInelastic", "SigmaPlusInelastic",        \
     "StepLimiter",            "Transportation",          "TritonInelastic",     "XiMinusInelastic",          \
     "XiZeroInelastic",        "mu2eLowEKine",            "mu2eKillerVolume",    "mu2eMaxSteps",              \
-    "mu2ePrimary",            "muMinusConversionAtRest", "hadElastic",          "CoulombScat",               \
+    "mu2ePrimary",            "unused001",		 "hadElastic",          "CoulombScat",               \
     "nuclearStopping",        "mu2eMaxGlobalTime",       "TNuclearCapture",     "muMinusAtomicCapture",      \
     "MuAtomDecay",            "Rayl",                    "ionInelastic",        "He3Inelastic",              \
     "alphaInelastic",         "AntiHe3InelasticProcess", "AntiAlphaInelasticProcess", "AntiDeuteronInelastic", \
@@ -131,7 +135,10 @@ namespace mu2e {
     "anti_xi_b-Inelastic",    "anti_xi_b0Inelastic",     "anti_xi_c+Inelastic", "anti_xi_c0Inelastic", \
     "lambda_bInelastic",      "lambda_c+Inelastic",      "omega_b-Inelastic",   "omega_c0Inelastic", \
       "xi_b-Inelastic",         "xi_b0Inelastic",          "xi_c+Inelastic",      "xi_c0Inelastic", "truncated", \
-      "mu2eMuonCaptureAtRest", "mu2eMuonDecayAtRest","IPAMicheleminus"
+      "mu2eMuonCaptureAtRest", "mu2eMuonDecayAtRest", \
+      "mu2eCeMinusEndpoint",    "mu2eCeMinusLeadingLog",   "mu2eCePlusEndpoint",  "mu2eDIOLeadingLog", \
+      "mu2eInternalRMC",        "mu2eExternalRMC",         "mu2eFlateMinus",      "mu2eFlatePlus", \
+      "mu2eFlatPhoton","IPAMicheleminus"
 
   public:
 

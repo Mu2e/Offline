@@ -11,7 +11,7 @@
 
 #include <string>
 
-#include "GeomPrimitives/inc/TubsParams.hh"
+#include "Offline/GeomPrimitives/inc/TubsParams.hh"
 
 namespace mu2e {
 

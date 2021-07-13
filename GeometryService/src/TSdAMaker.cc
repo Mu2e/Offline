@@ -1,9 +1,9 @@
 // Mu2e includes
-#include "ConfigTools/inc/SimpleConfig.hh"
-#include "ConfigTools/inc/checkForStale.hh"
-#include "DetectorSolenoidGeom/inc/DetectorSolenoid.hh"
-#include "BeamlineGeom/inc/TSdA.hh"
-#include "GeometryService/inc/TSdAMaker.hh"
+#include "Offline/ConfigTools/inc/SimpleConfig.hh"
+#include "Offline/ConfigTools/inc/checkForStale.hh"
+#include "Offline/DetectorSolenoidGeom/inc/DetectorSolenoid.hh"
+#include "Offline/BeamlineGeom/inc/TSdA.hh"
+#include "Offline/GeometryService/inc/TSdAMaker.hh"
 
 // C++ includes
 #include <algorithm>

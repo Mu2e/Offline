@@ -2,20 +2,20 @@
 // Date : 2019
 // Purpose : Stores functions associted with Cosmic Drift Fit
 
-#include "DataProducts/inc/XYZVec.hh"
-#include "Mu2eUtilities/inc/TwoLinePCA_XYZ.hh"
+#include "Offline/DataProducts/inc/XYZVec.hh"
+#include "Offline/Mu2eUtilities/inc/TwoLinePCA_XYZ.hh"
 #include "Math/VectorUtil.h"
 #include "TMath.h"
 #include "Math/Math.h"
 #include "TMatrixD.h"
 
 //Tracker Drift Conditions:
-#include "TrackerGeom/inc/Tracker.hh"
-#include "GeometryService/inc/GeomHandle.hh"
-#include "TrackerConditions/inc/StrawResponse.hh"
-#include "TrackerConditions/inc/StrawPhysics.hh"
-#include "TrackerConditions/inc/StrawDrift.hh"
-#include "CosmicReco/inc/DriftFitUtils.hh"
+#include "Offline/TrackerGeom/inc/Tracker.hh"
+#include "Offline/GeometryService/inc/GeomHandle.hh"
+#include "Offline/TrackerConditions/inc/StrawResponse.hh"
+#include "Offline/TrackerConditions/inc/StrawPhysics.hh"
+#include "Offline/TrackerConditions/inc/StrawDrift.hh"
+#include "Offline/CosmicReco/inc/DriftFitUtils.hh"
 
 //For Drift:
 #include "BTrk/BaBar/BaBar.hh"
@@ -23,7 +23,7 @@
 #include "BTrk/KalmanTrack/KalRep.hh"
 #include "BTrk/BbrGeom/HepPoint.h"
 #include "BTrk/TrkBase/TrkPoca.hh"
-#include "BTrkData/inc/TrkStrawHit.hh"
+#include "Offline/BTrkData/inc/TrkStrawHit.hh"
 #include "BTrk/BbrGeom/BbrVectorErr.hh"
 #include "BTrk/TrkBase/TrkPoca.hh"
 #include "BTrk/ProbTools/ChisqConsistency.hh"

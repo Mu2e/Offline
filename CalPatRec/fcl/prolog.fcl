@@ -1,14 +1,14 @@
 # -*- mode: tcl -*-
 # this file depends on analysis through KalDiag and so needs the following
 # This depedency is deprecated and should be removed FIXME!!
-#include "TrkDiag/fcl/KalDiag.fcl"
+#include "Offline/TrkDiag/fcl/KalDiag.fcl"
 #------------------------------------------------------------------------------
 # this file is included by fcl/standardProducers.fcl inside the PROLOG section
 # CalPatRec: calorimeter-seeded track finding
 # CalPatRec uses its own instance of the hit flags
 # DoubletAmbigResolver is defined in TrkReco/fcl/prolog.fcl
 #------------------------------------------------------------------------------
-#include "fcl/TrkCaloDt.fcl"
+#include "Offline/fcl/TrkCaloDt.fcl"
 BEGIN_PROLOG
 #------------------------------------------------------------------------------
 # there seems to be a circular dependence between MakeStrawHitPositions and 

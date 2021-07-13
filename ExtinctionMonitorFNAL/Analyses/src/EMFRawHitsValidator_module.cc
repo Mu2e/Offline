@@ -10,13 +10,13 @@
 #include "art/Framework/Principal/Event.h"
 #include "art/Framework/Principal/Run.h"
 
-#include "RecoDataProducts/inc/ExtMonFNALRawHit.hh"
-#include "RecoDataProducts/inc/ExtMonFNALRawHitCollection.hh"
+#include "Offline/RecoDataProducts/inc/ExtMonFNALRawHit.hh"
+#include "Offline/RecoDataProducts/inc/ExtMonFNALRawHitCollection.hh"
 
-#include "GeometryService/inc/GeomHandle.hh"
-#include "ExtinctionMonitorFNAL/Geometry/inc/ExtMonFNAL.hh"
-#include "ExtinctionMonitorFNAL/Geometry/inc/ExtMonFNALModule.hh"
-#include "ExtinctionMonitorFNAL/Geometry/inc/ExtMonFNALPixelChip.hh"
+#include "Offline/GeometryService/inc/GeomHandle.hh"
+#include "Offline/ExtinctionMonitorFNAL/Geometry/inc/ExtMonFNAL.hh"
+#include "Offline/ExtinctionMonitorFNAL/Geometry/inc/ExtMonFNALModule.hh"
+#include "Offline/ExtinctionMonitorFNAL/Geometry/inc/ExtMonFNALPixelChip.hh"
 
 #include "art/Framework/Core/ModuleMacros.h"
 

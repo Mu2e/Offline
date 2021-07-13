@@ -7,13 +7,13 @@
 #include "art/Framework/Core/ModuleMacros.h"
 #include "art/Framework/Principal/Event.h"
 #include "art/Framework/Principal/Handle.h"
-#include "RecoDataProducts/inc/TrkFitFlag.hh"
+#include "Offline/RecoDataProducts/inc/TrkFitFlag.hh"
 #include "fhiclcpp/ParameterSet.h"
 // mu2e
 // data
-#include "RecoDataProducts/inc/KalSeed.hh"
-#include "RecoDataProducts/inc/TriggerInfo.hh"
-#include "RecoDataProducts/inc/TrkFitDirection.hh"
+#include "Offline/RecoDataProducts/inc/KalSeed.hh"
+#include "Offline/RecoDataProducts/inc/TriggerInfo.hh"
+#include "Offline/RecoDataProducts/inc/TrkFitDirection.hh"
 
 using namespace CLHEP;
 // c++

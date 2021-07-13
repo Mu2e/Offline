@@ -46,16 +46,16 @@
 #include "messagefacility/MessageLogger/MessageLogger.h"
 
 // Mu2e includes
-#include "GlobalConstantsService/inc/GlobalConstantsHandle.hh"
-#include "GlobalConstantsService/inc/ParticleDataTable.hh"
-#include "EventGenerator/inc/FromG4BLFile.hh"
-#include "GeometryService/inc/GeomHandle.hh"
-#include "GeometryService/inc/WorldG4.hh"
-#include "ConfigTools/inc/ConfigFileLookupPolicy.hh"
-#include "DataProducts/inc/PDGCode.hh"
-#include "ConfigTools/inc/SimpleConfig.hh"
-#include "MCDataProducts/inc/G4BeamlineInfoCollection.hh"
-#include "ProductionTargetGeom/inc/ProductionTarget.hh"
+#include "Offline/GlobalConstantsService/inc/GlobalConstantsHandle.hh"
+#include "Offline/GlobalConstantsService/inc/ParticleDataTable.hh"
+#include "Offline/EventGenerator/inc/FromG4BLFile.hh"
+#include "Offline/GeometryService/inc/GeomHandle.hh"
+#include "Offline/GeometryService/inc/WorldG4.hh"
+#include "Offline/ConfigTools/inc/ConfigFileLookupPolicy.hh"
+#include "Offline/DataProducts/inc/PDGCode.hh"
+#include "Offline/ConfigTools/inc/SimpleConfig.hh"
+#include "Offline/MCDataProducts/inc/G4BeamlineInfoCollection.hh"
+#include "Offline/ProductionTargetGeom/inc/ProductionTarget.hh"
 
 // Root includes
 #include "TH1F.h"

@@ -3,8 +3,8 @@
 int    physicsParams.verbosityLevel = 0;
 
 // Primary particle data table and the auxillary table.
-string particleDataTable.filename          = "GlobalConstantsService/data/particle.tbl";
-string particleDataTable.auxillaryFilename = "GlobalConstantsService/data/mass_width_2008.mc";
+string particleDataTable.filename          = "Offline/GlobalConstantsService/data/particle.tbl";
+string particleDataTable.auxillaryFilename = "Offline/GlobalConstantsService/data/mass_width_2008.mc";
 
 // Physical constants
 double physicsParams.invFineStructureConstant = 137.0359991; // PDG value (2010 CODATA)
@@ -69,8 +69,8 @@ double physicsParams.IPA.atomicMass      = 12.0107; // NIST value as of ""
 // - m_muon - E_binding
 double physicsParams.Al.muonEnergy     = 105.194; // Phys. Rev. D 84, 013006 (2011)
 double physicsParams.Ti.muonEnergy     = 104.394; // ""
-double physicsParams.C.muonEnergy      = 105.4; //TODO
-double physicsParams.IPA.muonEnergy      = 105.4; //TODO
+double physicsParams.C.muonEnergy      = 105.059;  //From Julian Heeck et al
+double physicsParams.IPA.muonEnergy      = 105.059; //From Julian Heeck et al
 
 // Czarnecki coefficients - Phys. Rev. D 84, 013006 (2011)
 // - Poly. 5 approximation
@@ -80,8 +80,8 @@ double physicsParams.Cu.czarneckiCoefficient = 1.14e-15;
 double physicsParams.Se.czarneckiCoefficient = 1.62e-15;
 double physicsParams.Sb.czarneckiCoefficient = 3.57e-15;
 double physicsParams.Au.czarneckiCoefficient = 4.69e-15;
-double physicsParams.C.czarneckiCoefficient  = 1e-18; //TODO - I made this up!
-double physicsParams.IPA.czarneckiCoefficient  = 1e-18; //TODO - I made this up!
+double physicsParams.C.czarneckiCoefficient  =  3.55e-18; //From Julian Heeck et al
+double physicsParams.IPA.czarneckiCoefficient  =  3.55e-18;  //From Julian Heeck et al
 
 // - Poly. 5-8 approximation
 vector<double> physicsParams.Al.czarneckiCoefficients =

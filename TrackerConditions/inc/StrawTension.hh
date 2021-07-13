@@ -6,8 +6,8 @@
 // Original author David Brown (7/2020)
 //
 // Mu2e includes
-#include "DataProducts/inc/StrawId.hh"
-#include "DataProducts/inc/StrawEnd.hh"
+#include "Offline/DataProducts/inc/StrawId.hh"
+#include "Offline/DataProducts/inc/StrawEnd.hh"
 #include "canvas/Persistency/Provenance/Timestamp.h"
 namespace mu2e {
   struct StrawTension {

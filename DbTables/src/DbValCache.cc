@@ -1,7 +1,7 @@
 #include <iostream>
 #include <algorithm>
 #include "cetlib_except/exception.h"
-#include "DbTables/inc/DbValCache.hh"
+#include "Offline/DbTables/inc/DbValCache.hh"
 
 mu2e::DbTable const& mu2e::DbValCache::asTable(std::string const& tableName) const {
   if(tableName=="ValTables") return _tables;

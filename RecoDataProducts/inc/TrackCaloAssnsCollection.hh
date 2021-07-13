@@ -10,7 +10,7 @@
 
 #include <vector>
 
-#include "RecoDataProducts/inc/TrackCaloAssns.hh"
+#include "Offline/RecoDataProducts/inc/TrackCaloAssns.hh"
 
 namespace mu2e {
    typedef std::vector<mu2e::TrackCaloMatchInfo> TrackCaloAssnsCollection;

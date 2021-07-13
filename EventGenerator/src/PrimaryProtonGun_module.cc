@@ -12,12 +12,12 @@
 */
 
 // Mu2e includes.
-#include "MCDataProducts/inc/GenId.hh"
-#include "MCDataProducts/inc/GenParticleCollection.hh"
+#include "Offline/MCDataProducts/inc/GenId.hh"
+#include "Offline/MCDataProducts/inc/GenParticleCollection.hh"
 
 // Particular generators that this code knows about.
-#include "EventGenerator/inc/PrimaryProtonGunImpl.hh"
-#include "SeedService/inc/SeedService.hh"
+#include "Offline/EventGenerator/inc/PrimaryProtonGunImpl.hh"
+#include "Offline/SeedService/inc/SeedService.hh"
 
 // Includes from art and its toolchain.
 #include "art/Framework/Core/ReplicatedProducer.h"

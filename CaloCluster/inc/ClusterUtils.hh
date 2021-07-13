@@ -1,8 +1,8 @@
 #ifndef CaloCluster_ClusterUtils_HH_
 #define CaloCluster_ClusterUtils_HH_
 
-#include "RecoDataProducts/inc/CaloCluster.hh"
-#include "CalorimeterGeom/inc/Calorimeter.hh"
+#include "Offline/RecoDataProducts/inc/CaloCluster.hh"
+#include "Offline/CalorimeterGeom/inc/Calorimeter.hh"
 
 #include <iostream>
 #include <list>

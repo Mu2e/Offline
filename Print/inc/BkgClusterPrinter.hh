@@ -7,9 +7,9 @@
 #include <cstring>
 #include <iostream>
 
-#include "Print/inc/ProductPrinter.hh"
-#include "RecoDataProducts/inc/BkgCluster.hh"
-#include "RecoDataProducts/inc/BkgClusterHit.hh"
+#include "Offline/Print/inc/ProductPrinter.hh"
+#include "Offline/RecoDataProducts/inc/BkgCluster.hh"
+#include "Offline/RecoDataProducts/inc/BkgClusterHit.hh"
 #include "art/Framework/Principal/Handle.h"
 #include "canvas/Persistency/Common/Ptr.h"
 

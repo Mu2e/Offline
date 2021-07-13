@@ -5,7 +5,7 @@
 // Original author KLG
 //
 
-#include "GeomPrimitives/inc/Polycone.hh"
+#include "Offline/GeomPrimitives/inc/Polycone.hh"
 
 #include <iterator>
 #include <algorithm>

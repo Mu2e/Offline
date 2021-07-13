@@ -3,13 +3,13 @@
 
 #include <vector>
 #include "TH1F.h"
-#include "RecoDataProducts/inc/CaloCluster.hh"
-#include "RecoDataProducts/inc/StrawHit.hh"
-#include "RecoDataProducts/inc/ComboHit.hh"
-#include "DataProducts/inc/StrawId.hh"
-#include "TrackerGeom/inc/Tracker.hh"
-#include "TrackerConditions/inc/StrawResponse.hh"
-#include "TrackerConditions/inc/TrackerStatus.hh"
+#include "Offline/RecoDataProducts/inc/CaloCluster.hh"
+#include "Offline/RecoDataProducts/inc/StrawHit.hh"
+#include "Offline/RecoDataProducts/inc/ComboHit.hh"
+#include "Offline/DataProducts/inc/StrawId.hh"
+#include "Offline/TrackerGeom/inc/Tracker.hh"
+#include "Offline/TrackerConditions/inc/StrawResponse.hh"
+#include "Offline/TrackerConditions/inc/TrackerStatus.hh"
 
 namespace mu2e {
   class StrawHitRecoUtils {

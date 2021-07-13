@@ -8,9 +8,9 @@
 #
 # Original author Gianni Onorato.
 
-#include "fcl/minimalMessageService.fcl"
-#include "fcl/standardProducers.fcl"
-#include "fcl/standardServices.fcl"
+#include "Offline/fcl/minimalMessageService.fcl"
+#include "Offline/fcl/standardProducers.fcl"
+#include "Offline/fcl/standardServices.fcl"
 
 # Give this process a name.
 process_name : TrackerSig
@@ -116,9 +116,9 @@ outputs:
 
 physics.producers.makeSH.diagLevel : -1
 physics.producers.makeSH.maxFullPrint : 0
-physics.producers.generate.inputfile : "Mu2eG4/test/genconfig_01.txt"
+physics.producers.generate.inputfile : "Offline/Mu2eG4/test/genconfig_01.txt"
 physics.producers.g4run.diagLevel : 2
-//physics.producers.g4run.visMacro: "Mu2eG4/test/visVols.mac"
+//physics.producers.g4run.visMacro: "Offline/Mu2eG4/test/visVols.mac"
 services.TFileService.fileName : "TSig.root"
 services.GeometryService.inputFile : "myConfigsTT/geom_tt3.txt"
 services.SeedService.baseSeed         :  8

@@ -9,7 +9,7 @@
 
 #include "CLHEP/Vector/ThreeVector.h"
 
-#include "Print/inc/ProductPrinter.hh"
+#include "Offline/Print/inc/ProductPrinter.hh"
 #include "canvas/Persistency/Common/TriggerResults.h"
 #include "art/Framework/Principal/Handle.h"
 #include "canvas/Persistency/Common/Ptr.h"

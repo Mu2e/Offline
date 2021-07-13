@@ -15,7 +15,7 @@
 #include <cmath>
 
 // Mu2e includes.
-#include "Mu2eG4/inc/HelicalProtonAbsorber.hh"
+#include "Offline/Mu2eG4/inc/HelicalProtonAbsorber.hh"
 
 // G4 includes
 #include "Geant4/G4VPhysicalVolume.hh"

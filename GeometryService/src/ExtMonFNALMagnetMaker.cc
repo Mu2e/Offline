@@ -1,6 +1,6 @@
 // Andrei Gaponenko, 2011
 
-#include "GeometryService/inc/ExtMonFNALMagnetMaker.hh"
+#include "Offline/GeometryService/inc/ExtMonFNALMagnetMaker.hh"
 
 #include <algorithm>
 #include <iterator>
@@ -13,7 +13,7 @@
 #include "CLHEP/Vector/Rotation.h"
 #include "CLHEP/Units/SystemOfUnits.h"
 
-#include "ConfigTools/inc/SimpleConfig.hh"
+#include "Offline/ConfigTools/inc/SimpleConfig.hh"
 
 //#define AGDEBUG(stuff) std::cerr<<"AG: "<<__FILE__<<", line "<<__LINE__<<": "<<stuff<<std::endl;
 #define AGDEBUG(stuff)

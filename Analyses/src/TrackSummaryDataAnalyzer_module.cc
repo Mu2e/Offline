@@ -24,9 +24,9 @@
 #include "art_root_io/TFileService.h"
 #include "art/Framework/Services/Registry/ServiceHandle.h"
 
-#include "RecoDataProducts/inc/TrackSummary.hh"
-#include "Mu2eUtilities/inc/HistTrackSum.hh"
-#include "Mu2eUtilities/inc/TrackCuts.hh"
+#include "Offline/RecoDataProducts/inc/TrackSummary.hh"
+#include "Offline/Mu2eUtilities/inc/HistTrackSum.hh"
+#include "Offline/Mu2eUtilities/inc/TrackCuts.hh"
 
 #include "TH1.h"
 

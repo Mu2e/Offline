@@ -7,12 +7,12 @@
 //
 
 
-#include "GeometryService/inc/GeomHandle.hh"
-#include "StoppingTargetGeom/inc/StoppingTarget.hh"
-#include "TrackerGeom/inc/Tracker.hh"
-#include "CosmicRayShieldGeom/inc/CosmicRayShield.hh"
-#include "DetectorSolenoidGeom/inc/DetectorSolenoid.hh"
-#include "STMGeom/inc/STM.hh"
+#include "Offline/GeometryService/inc/GeomHandle.hh"
+#include "Offline/StoppingTargetGeom/inc/StoppingTarget.hh"
+#include "Offline/TrackerGeom/inc/Tracker.hh"
+#include "Offline/CosmicRayShieldGeom/inc/CosmicRayShield.hh"
+#include "Offline/DetectorSolenoidGeom/inc/DetectorSolenoid.hh"
+#include "Offline/STMGeom/inc/STM.hh"
 
 #include "art/Framework/Core/EDAnalyzer.h"
 #include "art/Framework/Principal/Event.h"

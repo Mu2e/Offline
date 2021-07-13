@@ -7,7 +7,7 @@
 // The intial release is just a copy of the G4 Novice N02 example.
 //
 
-#include "Mu2eG4/inc/Mu2eG4SteppingVerbose.hh"
+#include "Offline/Mu2eG4/inc/Mu2eG4SteppingVerbose.hh"
 
 #include "Geant4/G4SteppingManager.hh"
 #include "Geant4/G4UnitsTable.hh"

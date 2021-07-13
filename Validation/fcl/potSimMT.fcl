@@ -1,7 +1,7 @@
 #
 # generate protons on target and simulate through the detector
 #
-#include "Validation/fcl/potSim.fcl"
+#include "Offline/Validation/fcl/potSim.fcl"
 
 # Note that all parameters except the following should mostly be
 # set in the non MT file included above (which includes prolog files)

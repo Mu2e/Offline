@@ -1,6 +1,6 @@
 // Andrei Gaponenko, 2011
 
-#include "ExtinctionMonitorFNAL/Geometry/inc/ExtMonFNAL.hh"
+#include "Offline/ExtinctionMonitorFNAL/Geometry/inc/ExtMonFNAL.hh"
 
 #include <iostream>
 

@@ -8,7 +8,7 @@
 //
 
 // Mu2e includes.
-#include "Mu2eG4Helper/inc/VolumeInfo.hh"
+#include "Offline/Mu2eG4Helper/inc/VolumeInfo.hh"
 
 namespace mu2e {
 

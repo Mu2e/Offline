@@ -4,7 +4,7 @@
 # track extrapolation to the calorimeter
 # TrackCaloMatching.DtOffset is defined in fcl/TrkCaloDt.fcl
 #------------------------------------------------------------------------------
-#include "fcl/TrkCaloDt.fcl"
+#include "Offline/fcl/TrkCaloDt.fcl"
 BEGIN_PROLOG
 
 TrackCaloMatching : {  @table::TrackCaloMatching  # general namespace for everything defined in this file
@@ -406,8 +406,8 @@ TrkCaloMatcherMVADeM :
   module_type             : TrackCaloMatchingMVA
   caloClusterModuleLabel  : CaloClusterMaker
   trkIntersectModuleLabel : TrackCaloIntersectionDeM
-  BDTWeightsX             : "TrackCaloMatching/test/TMVARegression_BDTGXEl.weights.xml"
-  BDTWeightsY             : "TrackCaloMatching/test/TMVARegression_BDTGYEl.weights.xml"
+  BDTWeightsX             : "Offline/TrackCaloMatching/test/TMVARegression_BDTGXEl.weights.xml"
+  BDTWeightsY             : "Offline/TrackCaloMatching/test/TMVARegression_BDTGYEl.weights.xml"
   diagLevel               : 0
   dtOffset                : -2.072
   sigmaT                  : 0.8
@@ -435,8 +435,8 @@ TrkCaloMatcherMVADmuM :
   module_type             : TrackCaloMatchingMVA
   caloClusterModuleLabel  : CaloClusterMaker
   trkIntersectModuleLabel : TrackCaloIntersectionDmuM
-  BDTWeightsX             : "TrackCaloMatching/test/TMVARegression_BDTGXMu.weights.xml"
-  BDTWeightsY             : "TrackCaloMatching/test/TMVARegression_BDTGYMu.weights.xml"
+  BDTWeightsX             : "Offline/TrackCaloMatching/test/TMVARegression_BDTGXMu.weights.xml"
+  BDTWeightsY             : "Offline/TrackCaloMatching/test/TMVARegression_BDTGYMu.weights.xml"
   diagLevel               : 0
   dtOffset                : -2.072
   sigmaT                  : 0.8

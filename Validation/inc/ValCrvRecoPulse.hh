@@ -4,7 +4,7 @@
 
 #include "art/Framework/Principal/Event.h"
 #include "art_root_io/TFileDirectory.h"
-#include "RecoDataProducts/inc/CrvRecoPulse.hh"
+#include "Offline/RecoDataProducts/inc/CrvRecoPulse.hh"
 #include "TH1D.h"
 #include <string>
 

@@ -24,13 +24,13 @@
 #include "art/Framework/Principal/Handle.h"
 #include "art/Framework/Services/Registry/ServiceHandle.h"
 
-#include "SeedService/inc/SeedService.hh"
-#include "GlobalConstantsService/inc/GlobalConstantsHandle.hh"
-#include "GlobalConstantsService/inc/ParticleDataTable.hh"
-#include "MCDataProducts/inc/GenParticle.hh"
-#include "MCDataProducts/inc/GenParticleCollection.hh"
-#include "Mu2eUtilities/inc/RootTreeSampler.hh"
-#include "GeneralUtilities/inc/RSNTIO.hh"
+#include "Offline/SeedService/inc/SeedService.hh"
+#include "Offline/GlobalConstantsService/inc/GlobalConstantsHandle.hh"
+#include "Offline/GlobalConstantsService/inc/ParticleDataTable.hh"
+#include "Offline/MCDataProducts/inc/GenParticle.hh"
+#include "Offline/MCDataProducts/inc/GenParticleCollection.hh"
+#include "Offline/Mu2eUtilities/inc/RootTreeSampler.hh"
+#include "Offline/GeneralUtilities/inc/RSNTIO.hh"
 
 namespace mu2e {
 

@@ -1,5 +1,5 @@
 
-#include "Validation/inc/ValComboHit.hh"
+#include "Offline/Validation/inc/ValComboHit.hh"
 
 int mu2e::ValComboHit::declare(art::TFileDirectory tfs) {
   _hVer = tfs.make<TH1D>( "Ver", "Version Number", 101, -0.5, 100.0);

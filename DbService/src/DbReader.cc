@@ -2,9 +2,9 @@
 #include <iostream>
 #include <iomanip>
 #include "cetlib_except/exception.h"
-#include "DbService/inc/DbReader.hh"
-#include "DbService/inc/DbCurl.hh"
-#include "DbTables/inc/DbUtil.hh"
+#include "Offline/DbService/inc/DbReader.hh"
+#include "Offline/DbService/inc/DbCurl.hh"
+#include "Offline/DbTables/inc/DbUtil.hh"
 
 
 using namespace std;

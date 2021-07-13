@@ -29,14 +29,14 @@
 #include "art/Framework/Services/Registry/ServiceHandle.h"
 #include "art/Utilities/make_tool.h"
 
-#include "SeedService/inc/SeedService.hh"
-#include "GlobalConstantsService/inc/GlobalConstantsHandle.hh"
-#include "GlobalConstantsService/inc/ParticleDataTable.hh"
-#include "GlobalConstantsService/inc/PhysicsParams.hh"
-#include "DataProducts/inc/PDGCode.hh"
-#include "MCDataProducts/inc/StageParticle.hh"
-#include "Mu2eUtilities/inc/simParticleList.hh"
-#include "EventGenerator/inc/ParticleGeneratorTool.hh"
+#include "Offline/SeedService/inc/SeedService.hh"
+#include "Offline/GlobalConstantsService/inc/GlobalConstantsHandle.hh"
+#include "Offline/GlobalConstantsService/inc/ParticleDataTable.hh"
+#include "Offline/GlobalConstantsService/inc/PhysicsParams.hh"
+#include "Offline/DataProducts/inc/PDGCode.hh"
+#include "Offline/MCDataProducts/inc/StageParticle.hh"
+#include "Offline/Mu2eUtilities/inc/simParticleList.hh"
+#include "Offline/EventGenerator/inc/ParticleGeneratorTool.hh"
 
 namespace mu2e {
 

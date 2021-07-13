@@ -11,15 +11,15 @@
 // Framework includes.
 
 #include "CLHEP/Vector/ThreeVector.h"
-#include "TrkExt/inc/TrkExtToyDS.hh"
-#include "GeometryService/inc/GeometryService.hh"
-#include "GeometryService/inc/GeomHandle.hh"
-#include "GeometryService/inc/DetectorSystem.hh"
-#include "DetectorSolenoidGeom/inc/DetectorSolenoid.hh"
-#include "StoppingTargetGeom/inc/StoppingTarget.hh"
-#include "StoppingTargetGeom/inc/TargetFoil.hh"
-#include "ConfigTools/inc/SimpleConfig.hh"
-#include "GeneralUtilities/inc/safeSqrt.hh"
+#include "Offline/TrkExt/inc/TrkExtToyDS.hh"
+#include "Offline/GeometryService/inc/GeometryService.hh"
+#include "Offline/GeometryService/inc/GeomHandle.hh"
+#include "Offline/GeometryService/inc/DetectorSystem.hh"
+#include "Offline/DetectorSolenoidGeom/inc/DetectorSolenoid.hh"
+#include "Offline/StoppingTargetGeom/inc/StoppingTarget.hh"
+#include "Offline/StoppingTargetGeom/inc/TargetFoil.hh"
+#include "Offline/ConfigTools/inc/SimpleConfig.hh"
+#include "Offline/GeneralUtilities/inc/safeSqrt.hh"
 
 using namespace CLHEP;
 

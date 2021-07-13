@@ -3,10 +3,10 @@
 //
 #ifndef MCEvtData_HH
 #define MCEvtData_HH
-#include "MCDataProducts/inc/PtrStepPointMCVectorCollection.hh"
-#include "MCDataProducts/inc/StepPointMCCollection.hh"
-#include "MCDataProducts/inc/StrawDigiMCCollection.hh"
-#include "MCDataProducts/inc/SimParticleCollection.hh"
+#include "Offline/MCDataProducts/inc/PtrStepPointMCVectorCollection.hh"
+#include "Offline/MCDataProducts/inc/StepPointMCCollection.hh"
+#include "Offline/MCDataProducts/inc/StrawDigiMCCollection.hh"
+#include "Offline/MCDataProducts/inc/SimParticleCollection.hh"
 #include "art/Framework/Principal/Handle.h"
 
 namespace mu2e 

@@ -7,7 +7,7 @@
 //
 
 //#include "Mu2eG4/geom/geom_common_DOE_review_2017.txt"
-#include "Mu2eG4/geom/geom_common.txt"
+#include "Offline/Mu2eG4/geom/geom_common.txt"
 
 bool g4.doSurfaceCheck    = false;
 

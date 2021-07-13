@@ -15,11 +15,11 @@
 // ... libRIO
 #include <TFile.h>
 //Tracker
-#include "TrackerGeom/inc/Tracker.hh"
-#include "GeometryService/inc/GeomHandle.hh"
+#include "Offline/TrackerGeom/inc/Tracker.hh"
+#include "Offline/GeometryService/inc/GeomHandle.hh"
 //TEveMu2e:
-#include "TEveEventDisplay/src/TEveMu2e_base_classes/TEveMu2e2DProjection.h"
-#include "TEveEventDisplay/src/dict_classes/GeomUtils.h"
+#include "Offline/TEveEventDisplay/src/TEveMu2e_base_classes/TEveMu2e2DProjection.h"
+#include "Offline/TEveEventDisplay/src/dict_classes/GeomUtils.h"
 
 namespace mu2e {
 	

@@ -11,10 +11,10 @@
 #include <vector>
 #include <array>
 
-#include "TrackerGeom/inc/Tracker.hh"
-#include "DataProducts/inc/StrawId.hh"
-#include "TrackerGeom/inc/Panel.hh"
-#include "TrackerGeom/inc/Plane.hh"
+#include "Offline/TrackerGeom/inc/Tracker.hh"
+#include "Offline/DataProducts/inc/StrawId.hh"
+#include "Offline/TrackerGeom/inc/Panel.hh"
+#include "Offline/TrackerGeom/inc/Plane.hh"
 
 #include "CLHEP/Vector/ThreeVector.h"
 

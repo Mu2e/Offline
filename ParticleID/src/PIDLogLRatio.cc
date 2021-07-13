@@ -1,10 +1,10 @@
-#include "ParticleID/inc/PIDLogLRatio.hh"
+#include "Offline/ParticleID/inc/PIDLogLRatio.hh"
 
 #include <set>
 #include <string>
 
-#include "ParticleID/inc/PIDLogL1D.hh"
-#include "ParticleID/inc/PIDLogLEp.hh"
+#include "Offline/ParticleID/inc/PIDLogL1D.hh"
+#include "Offline/ParticleID/inc/PIDLogLEp.hh"
 
 namespace mu2e {
   template<class LogL>

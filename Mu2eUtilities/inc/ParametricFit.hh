@@ -3,11 +3,11 @@
 
 #include <vector>
 
-#include "DataProducts/inc/StrawEnd.hh"
-#include "DataProducts/inc/XYZVec.hh"
+#include "Offline/DataProducts/inc/StrawEnd.hh"
+#include "Offline/DataProducts/inc/XYZVec.hh"
 #include "Math/VectorUtil.h"
-#include "RecoDataProducts/inc/ComboHit.hh"
-#include "RecoDataProducts/inc/CosmicTrack.hh"
+#include "Offline/RecoDataProducts/inc/ComboHit.hh"
+#include "Offline/RecoDataProducts/inc/CosmicTrack.hh"
 #include "TMatrix.h"
 
 namespace mu2e { struct ComboHit; }

@@ -11,11 +11,11 @@
 #include "cetlib_except/exception.h"
 
 // Mu2e includes
-#include "EventGenerator/inc/PiCaptureEffects.hh"
-#include "DataProducts/inc/PDGCode.hh"
-#include "GlobalConstantsService/inc/ParticleDataTable.hh"
-#include "GlobalConstantsService/inc/GlobalConstantsHandle.hh"
-#include "GeneralUtilities/inc/safeSqrt.hh"
+#include "Offline/EventGenerator/inc/PiCaptureEffects.hh"
+#include "Offline/DataProducts/inc/PDGCode.hh"
+#include "Offline/GlobalConstantsService/inc/ParticleDataTable.hh"
+#include "Offline/GlobalConstantsService/inc/GlobalConstantsHandle.hh"
+#include "Offline/GeneralUtilities/inc/safeSqrt.hh"
 #include "art/Framework/Services/Optional/RandomNumberGenerator.h"
 
 using namespace std;
