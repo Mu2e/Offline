@@ -33,7 +33,7 @@ double physicsParams.Se.decayTime      = 164.;
 double physicsParams.Sb.decayTime      =  92.;
 double physicsParams.Au.decayTime      =  73.;
 double physicsParams.C.decayTime       =  2050;
-double physicsParams.IPA.decayTime       =  2050;
+double physicsParams.IPA.decayTime     =  2050; //Assume Carbon for now
 
 // Decay fractions
 double physicsParams.Al.decayFraction  = 0.39;
@@ -43,7 +43,7 @@ double physicsParams.Se.decayFraction  = 0.07;
 double physicsParams.Sb.decayFraction  = 0.04;
 double physicsParams.Au.decayFraction  = 0.03;
 double physicsParams.C.decayFraction  = 0.86;
-double physicsParams.IPA.decayFraction  = 1.0;
+double physicsParams.IPA.decayFraction  = 1.0; 
 
 // - Atomic numbers
 int    physicsParams.Al.atomicNumber   = 13;
@@ -53,7 +53,7 @@ int    physicsParams.Se.atomicNumber   = 34;
 int    physicsParams.Sb.atomicNumber   = 51;
 int    physicsParams.Au.atomicNumber   = 79;
 int    physicsParams.C.atomicNumber    = 6;
-int    physicsParams.IPA.atomicNumber    = 6;
+int    physicsParams.IPA.atomicNumber  = 6; //Assume Carbon
 
 // - Standard atomic weights in amu
 double physicsParams.Al.atomicMass     = 26.981539; // NIST value as of 2013 July 10
