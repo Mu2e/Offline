@@ -104,7 +104,7 @@ namespace mu2e {
          <<std::endl;
     }
 
-    if(conf().stoppingTargetMaterial() != "Al") {
+    if(conf().stoppingTargetMaterial() != "Al" and conf().stoppingTargetMaterial() != "IPA" ) {
       throw   cet::exception("NOT_IMPLEMENTED")
         <<"Pileup_module: emisson spectra for other than Al target are not impelmented\n";
     }
