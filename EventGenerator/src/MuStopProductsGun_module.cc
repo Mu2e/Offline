@@ -57,7 +57,6 @@ namespace mu2e {
       fhicl::DelegatedParameter decayProducts{Name("decayProducts"), Comment("Products coincident with decayed muon)")};
       fhicl::Atom<int> verbosityLevel{Name("verbosityLevel"), Comment("Verbosity Level (default = 0)"), 0};
       fhicl::Atom<std::string> material{Name("material"), Comment("Material in which muon is stopped"), "Al"};
-      //fhicl::Atom<bool> userDecayFract{Name("userDecayFract"), Comment("to overide decay fraction from constants file"), false};
       fhicl::Table<RTS::Config> stops{Name("stops"), Comment("Stops ntuple config")};
     };
     typedef art::EDProducer::Table<Config> Parameters;
