@@ -33,7 +33,7 @@ double physicsParams.Se.decayTime      = 164.;
 double physicsParams.Sb.decayTime      =  92.;
 double physicsParams.Au.decayTime      =  73.;
 double physicsParams.C.decayTime       =  2050;
-double physicsParams.IPA.decayTime     =  2050; //Assume Carbon for now
+double physicsParams.IPA.decayTime     =  2050; //TODO Assumes Carbon for now
 
 // Decay fractions
 double physicsParams.Al.decayFraction  = 0.39;
@@ -43,7 +43,7 @@ double physicsParams.Se.decayFraction  = 0.07;
 double physicsParams.Sb.decayFraction  = 0.04;
 double physicsParams.Au.decayFraction  = 0.03;
 double physicsParams.C.decayFraction  = 0.86;
-double physicsParams.IPA.decayFraction  = 1.0; 
+double physicsParams.IPA.decayFraction  = 0.86; //TODO Assumes Carbon for now
 
 // - Atomic numbers
 int    physicsParams.Al.atomicNumber   = 13;
@@ -53,7 +53,7 @@ int    physicsParams.Se.atomicNumber   = 34;
 int    physicsParams.Sb.atomicNumber   = 51;
 int    physicsParams.Au.atomicNumber   = 79;
 int    physicsParams.C.atomicNumber    = 6;
-int    physicsParams.IPA.atomicNumber  = 6; //Assume Carbon
+int    physicsParams.IPA.atomicNumber  = 6; //TODO Assumes Carbon for now
 
 // - Standard atomic weights in amu
 double physicsParams.Al.atomicMass     = 26.981539; // NIST value as of 2013 July 10
@@ -63,14 +63,14 @@ double physicsParams.Se.atomicMass     = 78.96    ; // NIST value as of ""
 double physicsParams.Sb.atomicMass     = 126.9045 ; // NIST value as of ""
 double physicsParams.Au.atomicMass     = 196.96657; // NIST value as of ""
 double physicsParams.C.atomicMass      = 12.0107; // NIST value as of ""
-double physicsParams.IPA.atomicMass      = 12.0107; // NIST value as of ""
+double physicsParams.IPA.atomicMass    = 12.0107; // NIST value as of ""
 
 // Energy info (rel. for DIOs/CEs)
 // - m_muon - E_binding
 double physicsParams.Al.muonEnergy     = 105.194; // Phys. Rev. D 84, 013006 (2011)
 double physicsParams.Ti.muonEnergy     = 104.394; // ""
 double physicsParams.C.muonEnergy      = 105.059;  //From Julian Heeck et al
-double physicsParams.IPA.muonEnergy      = 105.059; //From Julian Heeck et al
+double physicsParams.IPA.muonEnergy    = 105.059; //From Julian Heeck et al
 
 // Czarnecki coefficients - Phys. Rev. D 84, 013006 (2011)
 // - Poly. 5 approximation
