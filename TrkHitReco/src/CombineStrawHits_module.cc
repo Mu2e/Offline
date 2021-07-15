@@ -7,6 +7,10 @@
 // Dave Brown confirmed this is the case
 
 #include "Offline/RecoDataProducts/inc/ComboHit.hh"
+#include "fhiclcpp/types/Atom.h"
+#include "fhiclcpp/types/Sequence.h"
+#include "fhiclcpp/types/Table.h"
+#include "RecoDataProducts/inc/ComboHit.hh"
 #include "canvas/Persistency/Common/Ptr.h"
 #include "art/Framework/Core/EDProducer.h"
 #include "art/Framework/Core/ModuleMacros.h"
@@ -22,7 +26,27 @@ namespace mu2e {
   class CombineStrawHits : public art::EDProducer {
 
      public:
-       explicit CombineStrawHits(fhicl::ParameterSet const& pset);
+       struct Config
+       {
+	   using Name    = fhicl::Name;
+	   using Comment = fhicl::Comment;
+	   fhicl::Atom<int>              debug   { Name("debugLevel"),            Comment("Diagnosis level"),0 }; 
+	   fhicl::Atom<art::InputTag>    chTag   { Name("ComboHitCollection"),    Comment(" ") }; 
+	   fhicl::Atom<bool>             testflag{ Name("TestFlag"),              Comment("test flag or not") }; 
+	   fhicl::Atom<bool>             testrad { Name("TestRadius"),            Comment("test position radius") }; 
+	   fhicl::Sequence<std::string>  shsel   { Name("StrawHitSelectionBits"), Comment("flag selection") }; 
+	   fhicl::Sequence<std::string>  shmask  { Name("StrawHitMask"),          Comment("flag anti-selection") }; 
+	   fhicl::Atom<float>            maxdt   { Name("MaxDt"),                 Comment("maximum time separation between hits in ns") }; 
+	   fhicl::Atom<bool>             useTOT  { Name("UseTOT"),                Comment("use tot to estimate drift time") }; 
+	   fhicl::Atom<float>            maxwdchi{ Name("MaxWireDistDiffPull"),   Comment("maximum wire distance separation chi") }; 
+	   fhicl::Atom<float>            werr    { Name("WireError"),             Comment("intrinsic error on wire distance squared") }; 
+	   fhicl::Atom<float>            terr    { Name("TransError"),            Comment("intrinsic error transverse to wire (per straw)") }; 
+	   fhicl::Atom<float>            minR    { Name("MinimumRadius"),         Comment("Minimum transverse radius squared") }; 
+	   fhicl::Atom<float>            maxR    { Name("MaximumRadius"),         Comment("Maximum transverseradius squared") }; 
+	   fhicl::Atom<int>              maxds   { Name("MaxDS"),                 Comment("maximum straw number difference") }; 
+       };
+
+       explicit CombineStrawHits(const art::EDProducer::Table<Config>& config);
        void produce( art::Event& e);
 
      private:
@@ -31,45 +55,41 @@ namespace mu2e {
 
        int           _debug;
        art::InputTag _chTag;
-       bool          _testflag;      // test flag or not
-       bool          _testrad;       // test position radius
-       StrawHitFlag  _shsel;         // flag selection
-       StrawHitFlag  _shmask;        // flag anti-selection
-       float         _maxdt;         // maximum time separation between hits
-       bool          _useTOT;        // use tot to estimate drift time
-       float         _maxwdchi;      // maximum wire distance separation chi
-       float         _werr2;         // intrinsic error on wire distance squared
-       float         _terr;          // intrinsic error transverse to wire (per straw)
-       float         _minR2, _maxR2; // transverse radius (squared)
-       int           _maxds;         // maximum straw number difference
+       bool          _testflag;      
+       bool          _testrad;       
+       StrawHitFlag  _shsel;         
+       StrawHitFlag  _shmask;        
+       float         _maxdt;         
+       bool          _useTOT;        
+       float         _maxwdchi;      
+       float         _werr2;         
+       float         _terr;          
+       float         _minR2; 
+       float         _maxR2; 
+       int           _maxds;         
        StrawIdMask   _mask;
   };
 
-
-
-  CombineStrawHits::CombineStrawHits(fhicl::ParameterSet const& pset) :
-    art::EDProducer{pset},
-    _debug(     pset.get<int>("debugLevel",0)),
-    _chTag(     pset.get<art::InputTag>("ComboHitCollection")),
-    _testflag(  pset.get<bool>("TestFlag")),
-    _testrad(   pset.get<bool>("TestRadius")),
-    _shsel(     pset.get<std::vector<std::string>> ("StrawHitSelectionBits",std::vector<std::string>{"EnergySelection","TimeSelection"} )),
-    _shmask(    pset.get<std::vector<std::string>>("StrawHitMask",std::vector<std::string>{} )),
-    _maxdt(     pset.get<float>("MaxDt",40.0)), // nsec 
-    _useTOT(    pset.get<bool>("UseTOT",false)), // use TOT corrected time
-    _maxwdchi(  pset.get<float>("MaxWireDistDiffPull",4.0)), //units of resolution sigma
-    _terr(      pset.get<float>("TransError",8.0)), //mm
-    _maxds(     pset.get<int>("MaxDS",3)), // how far away 2 straws can be, in 0-95 numbering (including layers!!)
-    _mask("uniquepanel")// define the mask: ComboHits are made from straws in the same unique panel
+  CombineStrawHits::CombineStrawHits(const art::EDProducer::Table<Config>& config) :
+    EDProducer{config},
+    _debug(     config().debug()),
+    _chTag(     config().chTag()),
+    _testflag(  config().testflag()),
+    _testrad(   config().testrad()),
+    _shsel(     config().shsel()),
+    _shmask(    config().shmask()),
+    _maxdt(     config().maxdt()),
+    _useTOT(    config().useTOT()),
+    _maxwdchi(  config().maxwdchi()),
+    _werr2(     config().werr()*config().werr()),
+    _terr(      config().terr()),
+    _minR2(     config().minR()*config().minR()),
+    _maxR2(     config().maxR()*config().maxR()),
+    _maxds(     config().maxds()),
+    _mask(      "uniquepanel")     // define the mask: ComboHits are made from straws in the same unique panel
   {
-      float werr = pset.get<float>("WireError",10.0); // mm
-      _werr2 = werr*werr;
-      float minR = pset.get<float>("minimumRadius",395); // mm
-      _minR2 = minR*minR;
-      float maxR = pset.get<float>("maximumRadius",650); // mm
-      _maxR2 = maxR*maxR;
-      consumes<ComboHitCollection>(_chTag);
-      produces<ComboHitCollection>();
+     consumes<ComboHitCollection>(_chTag);
+     produces<ComboHitCollection>();
   }
 
   void CombineStrawHits::produce(art::Event& event)
@@ -85,6 +105,9 @@ namespace mu2e {
       chcolNew->setParent(chH);
 
       combine(chcolOrig, *chcolNew);
+std::cout<<"CH "<<chcolNew->size()<<std::endl;
+for (auto& ch : *chcolNew) std::cout<<ch.time()<<" "<<ch.pos()<<std::endl; 
+
       event.put(std::move(chcolNew));
   }
 
