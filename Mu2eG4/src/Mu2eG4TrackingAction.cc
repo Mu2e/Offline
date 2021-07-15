@@ -77,7 +77,9 @@ namespace mu2e {
     _saveTrajectoryMomentumCut(pts->ioconf.trajectoryControl().saveTrajectoryMomentumCut()),
     _mcTrajectoryMinSteps(pts->ioconf.trajectoryControl().mcTrajectoryMinSteps()),
     _nKilledByFieldPropagator(0),
+    _numKilledTracks(0),
     _rangeToIgnore(conf.physics().rangeToIgnore()),
+    _mu2elimits(pts->ioconf.mu2elimits()),
     _steppingAction(steppingAction),
     _processInfo(0),
     _printTrackTiming(conf.debug().printTrackTiming()),
@@ -283,6 +285,7 @@ namespace mu2e {
     _currentSize          = 0;
     _overflowSimParticles = false;
     _nKilledByFieldPropagator = 0;
+    _numKilledTracks = 0;
 
   }//beginEvent
 
@@ -533,6 +536,22 @@ namespace mu2e {
         // count non electrons/protons or electrons/protons which have a range which is likely to make them travel
         ++_nKilledByFieldPropagator;
       }
+
+    }
+
+    if ( pname == "Mu2eSpecialCutsProcess"
+         && trk->GetCurrentStepNumber() >= static_cast<int>(_mu2elimits.maxStepsPerTrack())) {
+      if ( _stepLimitKillerVerbose ) {
+        G4cout << __func__ << " WARNING: kill particle in "
+               << trk->GetStep()->GetPreStepPoint()->
+          GetPhysicalVolume()->GetLogicalVolume()->GetName()
+               << " due to large number of steps." << G4endl;
+        Mu2eG4UserHelpers::printKilledTrackInfo(trk);
+      }
+      ++_numKilledTracks;
+
+      // Changing the pname to the old name used in such cases
+      pname = G4String("mu2eMaxSteps");
 
     }
 

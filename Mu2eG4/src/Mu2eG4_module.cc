@@ -309,7 +309,7 @@ namespace mu2e {
 
     _runManager->SetUserInitialization(allMu2e);
 
-    physicsList_ = physicsListDecider(conf_.physics(), conf_.debug());
+    physicsList_ = physicsListDecider(conf_.physics(), conf_.debug(), mu2elimits_);
     physicsList_->SetVerboseLevel(_rmvlevel);
 
 #if G4VERSION>4106
