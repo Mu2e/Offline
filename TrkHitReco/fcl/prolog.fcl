@@ -20,10 +20,20 @@ makeSH : {
 
 # combine hits in a panel
 makePH : {
-  module_type        : CombineStrawHits
-  TestFlag           : true
-  TestRadius         : true
-  ComboHitCollection : "makeSH"
+  module_type           : CombineStrawHits
+  TestFlag              : true
+  TestRadius            : true
+  ComboHitCollection    : makeSH
+  StrawHitSelectionBits : ["EnergySelection","TimeSelection"] 
+  StrawHitMask          : []
+  MaxDt                 : 40
+  UseTOT                : false
+  MaxWireDistDiffPull   : 4.0
+  TransError            : 8.0
+  MaxDS                 : 3
+  WireError             : 10.0
+  MinimumRadius         : 395.0
+  MaximumRadius         : 650.0
 }
 
 # combine panel hits in a station
