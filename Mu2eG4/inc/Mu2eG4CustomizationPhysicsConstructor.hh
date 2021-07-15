@@ -7,6 +7,7 @@
 
 #include "Geant4/G4VPhysicsConstructor.hh"
 #include "Offline/Mu2eG4/inc/Mu2eG4Config.hh"
+#include "Offline/Mu2eG4/inc/Mu2eG4ResourceLimits.hh"
 
 
 namespace mu2e {
@@ -15,7 +16,10 @@ namespace mu2e {
   {
   public:
 
-    explicit Mu2eG4CustomizationPhysicsConstructor(const Mu2eG4Config::Physics* phys, const Mu2eG4Config::Debug *debug);
+    Mu2eG4CustomizationPhysicsConstructor(const Mu2eG4Config::Physics* phys
+                                          , const Mu2eG4Config::Debug* debug
+                                          , const Mu2eG4ResourceLimits* lim
+                                          );
 
     Mu2eG4CustomizationPhysicsConstructor();
 
@@ -33,6 +37,7 @@ namespace mu2e {
     // can't be ref due to the default constructor factory requirement
     const Mu2eG4Config::Physics* phys_;
     const Mu2eG4Config::Debug* debug_;
+    const Mu2eG4ResourceLimits* mu2elimits_;
 
   };
 
