@@ -395,7 +395,7 @@ EventGenerator : { @table::EventGenerator
 	    verbosityLevel : 0
 	    doHistograms   : false
 	    physics : {
-		genId                 : @local::GEN_ID  #  InternalRMC or ExternalRMC, defines the generated process
+		genId                 : "ExternalRMC"   #  InternalRMC or ExternalRMC, defines the generated process
 		spectrumShape         : "flat"
 		elow                  : 57.             # reported RMC BR's are measured for Egamam > 57 MeV
 		ehi                   : 102.            # kinematic limit for RMC on Al is at 101.87
