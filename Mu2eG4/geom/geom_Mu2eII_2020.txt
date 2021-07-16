@@ -3,9 +3,9 @@
 // No pbar absorber elements
 // Alternate production target
 
-#include "Mu2eG4/geom/geom_2021_PhaseI.txt"
-#include "Mu2eG4/geom/ExtShieldUpstream_v07.txt"
-#include "Mu2eG4/geom/ExtShieldDownstream_v07.txt"
+#include "Offline/Mu2eG4/geom/geom_2021_PhaseI.txt"
+#include "Offline/Mu2eG4/geom/ExtShieldUpstream_v07.txt"
+#include "Offline/Mu2eG4/geom/ExtShieldDownstream_v07.txt"
 
 
 /////////////////////////////////////////////
@@ -26,7 +26,7 @@ bool pbar.build = false;
 //     Change production target      //
 ///////////////////////////////////////
 //Carbon conveyor target
-#include "Mu2eG4/geom/ProductionTarget_Mu2eII_Conveyor_v01.txt"
+#include "Offline/Mu2eG4/geom/ProductionTarget_Mu2eII_Conveyor_v01.txt"
 
 //
 //
