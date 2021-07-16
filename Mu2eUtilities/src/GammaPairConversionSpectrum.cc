@@ -1,8 +1,8 @@
-#include "Mu2eUtilities/inc/GammaPairConversionSpectrum.hh"
+#include "Offline/Mu2eUtilities/inc/GammaPairConversionSpectrum.hh"
 // Mu2e includes
-#include "GlobalConstantsService/inc/GlobalConstantsHandle.hh"
-#include "GlobalConstantsService/inc/PhysicsParams.hh"
-#include "GlobalConstantsService/inc/ParticleDataTable.hh"
+#include "Offline/GlobalConstantsService/inc/GlobalConstantsHandle.hh"
+#include "Offline/GlobalConstantsService/inc/PhysicsParams.hh"
+#include "Offline/GlobalConstantsService/inc/ParticleDataTable.hh"
 
 // Framework includes
 #include "art/Framework/Services/Optional/RandomNumberGenerator.h"

@@ -2,8 +2,8 @@
 //
 
 // Mu2e includes.
-#include "MCDataProducts/inc/SimParticleCollection.hh"
-#include "MCDataProducts/inc/ProcessCode.hh"
+#include "Offline/MCDataProducts/inc/SimParticleCollection.hh"
+#include "Offline/MCDataProducts/inc/ProcessCode.hh"
 // Framework includes.
 #include "art/Framework/Core/EDFilter.h"
 #include "art/Framework/Principal/Event.h"
