@@ -133,21 +133,22 @@ namespace mu2e {
       spectrum_.print();
     }
 
+    art::ServiceHandle<art::TFileService> tfs;
     if ( doHistograms_ ) {
-      art::ServiceHandle<art::TFileService> tfs;
       //      art::TFileDirectory tfdir = tfs->mkdir( "StoppedParticleReactionGun");
       _hEnergy = tfs->make<TH1F>("hEnergy", "Energy"      , 2400,   0.0,  120);
       _hGenId  = tfs->make<TH1F>("hGenId" , "Generator ID",  100,   0.0,  100);
       _hPdgId  = tfs->make<TH1F>("hPdgId" , "PDG ID"      ,  500,  -250, 250);
       _hTime   = tfs->make<TH1F>("hTime"  , "Time"        ,  400,   0.0, 2000.);
       _hZ      = tfs->make<TH1F>("hZ"     , "Z"           ,  500,  5400, 6400);
-	    _Ntup  = tfs->make<TTree>("GenTree", "GenTree");
-	    _Ntup->Branch("nEv", &_nEv , "_nEv/I");	    
-	    _Ntup->Branch("TMom", &_TMom , "TMom/F");
-	    _Ntup->Branch("Tx", &_Tx, "Tx/F");
-	    _Ntup->Branch("Ty", &_Ty, "Ty/F");
-	    _Ntup->Branch("Tz", &_Tz, "Tz/F");
     }
+    _Ntup  = tfs->make<TTree>("GenTree", "GenTree");
+    _Ntup->Branch("nEv", &_nEv , "_nEv/I");
+    _Ntup->Branch("TMom", &_TMom , "TMom/F");
+    _Ntup->Branch("Tx", &_Tx, "Tx/F");
+    _Ntup->Branch("Ty", &_Ty, "Ty/F");
+    _Ntup->Branch("Tz", &_Tz, "Tz/F");
+    
   }
 
 
@@ -196,7 +197,7 @@ namespace mu2e {
       _Tz = pos.z();
     }
     _Ntup->Fill();
-	  _nEv++;
+    _nEv++;
   }
 
 //-----------------------------------------------------------------------------
