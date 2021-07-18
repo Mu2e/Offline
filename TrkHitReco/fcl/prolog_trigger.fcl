@@ -25,6 +25,16 @@ TTmakePH : {
     TestFlag                : false
     TestRadius              : true
     ComboHitCollection      : "TTmakeSH"
+    StrawHitSelectionBits : ["EnergySelection","TimeSelection"] 
+    StrawHitMask          : []
+    MaxDt                 : 40
+    UseTOT                : false
+    MaxWireDistDiffPull   : 4.0
+    TransError            : 8.0
+    MaxDS                 : 3
+    WireError             : 10.0
+    MinimumRadius         : 395.0
+    MaximumRadius         : 650.0
 }
 TTmakeSHUCC : {
     module_type             : StrawHitReco
@@ -43,6 +53,16 @@ TTmakePHUCC : {
     TestFlag                : false
     TestRadius              : true
     ComboHitCollection      : "TTmakeSHUCC"
+    StrawHitSelectionBits : ["EnergySelection","TimeSelection"] 
+    StrawHitMask          : []
+    MaxDt                 : 40
+    UseTOT                : false
+    MaxWireDistDiffPull   : 4.0
+    TransError            : 8.0
+    MaxDS                 : 3
+    WireError             : 10.0
+    MinimumRadius         : 395.0
+    MaximumRadius         : 650.0
 }
 # stereo version: defer the radius test
 TTSmakePH : {
