@@ -104,9 +104,6 @@ namespace mu2e {
       chcolNew->setParent(chH);
 
       combine(chcolOrig, *chcolNew);
-std::cout<<"CH "<<chcolNew->size()<<std::endl;
-for (auto& ch : *chcolNew) std::cout<<ch.time()<<" "<<ch.pos()<<std::endl; 
-
       event.put(std::move(chcolNew));
   }
 
