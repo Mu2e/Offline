@@ -16,10 +16,10 @@
 #include "mu2e-artdaq-core/Overlays/Mu2eEventFragment.hh"
 #include "mu2e-artdaq-core/Overlays/TrackerFragment.hh"
 
-#include "DataProducts/inc/TrkTypes.hh"
-#include "RecoDataProducts/inc/CaloDigi.hh"
-#include "RecoDataProducts/inc/ProtonBunchTime.hh"
-#include "RecoDataProducts/inc/StrawDigiCollection.hh"
+#include "Offline/DataProducts/inc/TrkTypes.hh"
+#include "Offline/RecoDataProducts/inc/CaloDigi.hh"
+#include "Offline/RecoDataProducts/inc/ProtonBunchTime.hh"
+#include "Offline/RecoDataProducts/inc/StrawDigiCollection.hh"
 
 #include <artdaq-core/Data/Fragment.hh>
 
