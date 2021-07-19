@@ -16,12 +16,12 @@
 #include "mu2e-artdaq-core/Overlays/FragmentType.hh"
 
 //-- insert calls to proditions ..for calodmap-----
-#include "CaloConditions/inc/CaloDAQMap.hh"
-#include "ProditionsService/inc/ProditionsHandle.hh"
+#include "Offline/CaloConditions/inc/CaloDAQMap.hh"
+#include "Offline/ProditionsService/inc/ProditionsHandle.hh"
 //-------------------------------------------------
 
-#include "DAQ/inc/CaloDAQUtilities.hh"
-#include "RecoDataProducts/inc/CaloDigi.hh"
+#include "Offline/DAQ/inc/CaloDAQUtilities.hh"
+#include "Offline/RecoDataProducts/inc/CaloDigi.hh"
 
 #include <artdaq-core/Data/Fragment.hh>
 
