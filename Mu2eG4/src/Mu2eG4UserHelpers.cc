@@ -176,6 +176,14 @@ namespace mu2e {
       G4VProcess const* const process = theStep->GetPostStepPoint()->GetProcessDefinedStep();
       if (process) {
         if ( process->GetProcessName() == "Transportation" ) {
+          if (trVerbosity>2) {
+            cout << __func__ << " checking if particle was killed by the Field Propagator in "
+                 << theStep->GetPreStepPoint()->GetPhysicalVolume()->GetLogicalVolume()->GetName()
+                 <<", "
+                 << theStep->GetPostStepPoint()->GetPhysicalVolume()->GetLogicalVolume()->GetName()
+                 << endl;
+            printKilledTrackInfo(trk);
+          }
           if (theStep->GetPreStepPoint()->GetPhysicalVolume()==
               theStep->GetPostStepPoint()->GetPhysicalVolume()) {
             // the two volumes should not be the same in standard cases
@@ -183,6 +191,10 @@ namespace mu2e {
             if (trVerbosity>0) {
               cout << __func__ << " WARNING: particle killed by the Field Propagator in "
                    << theStep->GetPreStepPoint()->GetPhysicalVolume()->GetLogicalVolume()->GetName()
+                   <<", "
+                   << theStep->GetPreStepPoint()->GetPhysicalVolume()
+                   <<", "
+                   << theStep->GetPostStepPoint()->GetPhysicalVolume()
                    << endl;
               printKilledTrackInfo(trk);
             }

@@ -50,9 +50,10 @@ namespace mu2e {
 
   // If the c'tor is called a second time, the c'tor of base will
   // generate an exception.
-  Mu2eG4MTRunManager::Mu2eG4MTRunManager(const Mu2eG4Config::Top& conf):
+  Mu2eG4MTRunManager::Mu2eG4MTRunManager(const Mu2eG4Config::Top& conf, const Mu2eG4ResourceLimits& lim):
     G4MTRunManager(),
     conf_(conf),
+    mu2elimits_(lim),
     m_managerInitialized(false),
     m_runTerminated(false),
     physVolHelper_(nullptr),
@@ -172,7 +173,7 @@ namespace mu2e {
 
     preG4InitializeTasks(conf_);
 
-    physicsList_ = physicsListDecider(conf_.physics(), conf_.debug());
+    physicsList_ = physicsListDecider(conf_.physics(), conf_.debug(), mu2elimits_);
 
     physicsList_->SetVerboseLevel(rmvlevel_);
     SetVerboseLevel(rmvlevel_);

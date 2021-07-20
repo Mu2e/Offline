@@ -151,7 +151,7 @@ namespace mu2e {
       float cpuTime  = _timer->GetSystemElapsed() + _timer->GetUserElapsed();
 
       int status(0);
-      if ( _steppingAction->nKilledStepLimit() > 0 ||
+      if ( _trackingAction->nKilledStepLimit() > 0 ||
            _trackingAction->nKilledByFieldPropagator() > 0 ) {
         status =  1;
       }
@@ -160,7 +160,7 @@ namespace mu2e {
       perThreadObjects_->statG4 = std::make_unique<StatusG4>(status,
                                                              _trackingAction->nG4Tracks(),
                                                              _trackingAction->overflowSimParticles(),
-                                                             _steppingAction->nKilledStepLimit(),
+                                                             _trackingAction->nKilledStepLimit(),
                                                              _trackingAction->nKilledByFieldPropagator(),
                                                              cpuTime,
                                                              _timer->GetRealElapsed()

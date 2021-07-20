@@ -160,7 +160,7 @@ namespace mu2e {
     multiStagePars_(pars().inputs()),
     simStage_(-1u),
 
-    masterThread(std::make_unique<MTMasterThread>(pars())),
+    masterThread(std::make_unique<MTMasterThread>(pars(),mu2elimits_ )),
 
     _warnEveryNewRun(pars().debug().warnEveryNewRun()),
     _exportPDTStart(pars().debug().exportPDTStart()),

@@ -55,7 +55,9 @@ using namespace std;
 
 namespace mu2e{
 
-  G4VUserPhysicsList* physicsListDecider(const Mu2eG4Config::Physics& phys, const Mu2eG4Config::Debug& debug) {
+  G4VUserPhysicsList* physicsListDecider(const Mu2eG4Config::Physics& phys
+                                         , const Mu2eG4Config::Debug& debug
+                                         , const Mu2eG4ResourceLimits& lim) {
 
     G4VModularPhysicsList* tmpPL(nullptr);
 
@@ -99,7 +101,7 @@ namespace mu2e{
     tmpPL->RegisterPhysics( new Mu2eG4StepLimiterPhysicsConstructor() );
 
     // Mu2e Customizations
-    tmpPL->RegisterPhysics( new Mu2eG4CustomizationPhysicsConstructor(&phys, &debug));
+    tmpPL->RegisterPhysics( new Mu2eG4CustomizationPhysicsConstructor(&phys, &debug, &lim));
 
     if (phys.turnOffRadioactiveDecay()) {
       tmpPL->RemovePhysics("G4RadioactiveDecay");
