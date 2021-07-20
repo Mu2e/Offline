@@ -201,8 +201,8 @@ namespace mu2e{
     // and special cuts process
     if (diagLevel>0) {
       G4cout << __func__
-             << " adding Mu2eRecorderProcess and "
-             << " adding Mu2eSpecialCutsProcess to all G4ParticleTable particles" << G4endl;
+             << " adding mu2eRecorderProcess and "
+             << " adding mu2eSpecialCutsProcess to all G4ParticleTable particles" << G4endl;
     }
 
     Mu2eRecorderProcess* rmp = new Mu2eRecorderProcess();

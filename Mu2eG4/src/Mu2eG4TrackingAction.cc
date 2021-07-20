@@ -526,7 +526,7 @@ namespace mu2e {
 
     if (pname == "Transportation" &&
         Mu2eG4UserHelpers::isTrackKilledByFieldPropagator(trk, trVerbosity)) {
-      pname = G4String("FieldPropagator");
+      pname = G4String("mu2eFieldPropagator");
       if ( !(trk->GetDefinition()->GetPDGEncoding() == 11 || // electron & proton codes hardcoded for now
              trk->GetDefinition()->GetPDGEncoding() == 2212 ) ||
            G4LossTableManager::Instance()->
