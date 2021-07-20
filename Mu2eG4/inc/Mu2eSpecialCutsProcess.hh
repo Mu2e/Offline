@@ -23,7 +23,7 @@ namespace mu2e {
 
     explicit Mu2eSpecialCutsProcess(
                                     const Mu2eG4ResourceLimits& lim,
-                                    const G4String& processName ="Mu2eSpecialCutsProcess"
+                                    const G4String& processName ="mu2eSpecialCutsProcess"
                                     );
 
     virtual ~Mu2eSpecialCutsProcess();

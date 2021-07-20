@@ -539,7 +539,7 @@ namespace mu2e {
 
     }
 
-    if ( pname == "Mu2eSpecialCutsProcess"
+    if ( pname == "mu2eSpecialCutsProcess"
          && trk->GetCurrentStepNumber() >= static_cast<int>(_mu2elimits.maxStepsPerTrack())) {
       if ( _stepLimitKillerVerbose ) {
         G4cout << __func__ << " WARNING: kill particle in "
