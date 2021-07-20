@@ -72,7 +72,7 @@ namespace mu2e {
       muonNuclear,            GammaToMuPair,           AnnihiToMuPair,      ee2hadr, // 119
       G4MinEkineCuts,         G4MaxTimeCuts,           OpAbsorption,        OpBoundary, // 123
       Scintillation,          inelastic,               G4ErrorEnergyLoss,   G4ErrorStepLengthLimit, // 127
-      G4ErrorMagFieldLimit,   ePairProd,               FieldPropagator,     Mu2eRecorderProcess,  // 131
+      G4ErrorMagFieldLimit,   ePairProd,               mu2eFieldPropagator, mu2eRecorderProcess,  // 131
       mu2eProtonInelastic,    RadioactiveDecayBase,    B_PlusInelastic,     B_MinusInelastic, // 135
       B0Inelastic,            Bc_PlusInelastic,        Bc_MinusInelastic,   Bs0Inelastic, // 139
       D_PlusInelastic,        D_MinusInelastic,        D0Inelastic,         Ds_PlusInelastic, // 143
@@ -126,7 +126,7 @@ namespace mu2e {
     "muonNuclear",            "GammaToMuPair",           "AnnihiToMuPair",         "ee2hadr", \
     "G4MinEkineCuts",         "G4MaxTimeCuts",           "OpAbsorption",           "OpBoundary", \
     "Scintillation",          "inelastic",               "G4ErrorEnergyLoss",      "G4ErrorStepLengthLimit", \
-    "G4ErrorMagFieldLimit",   "ePairProd",               "FieldPropagator",        "Mu2eRecorderProcess", \
+    "G4ErrorMagFieldLimit",   "ePairProd",               "mu2eFieldPropagator",    "mu2eRecorderProcess", \
     "mu2eProtonInelastic",    "RadioactiveDecayBase",      "B+Inelastic",         "B-Inelastic", \
     "B0Inelastic",            "Bc+Inelastic",            "Bc-Inelastic",        "Bs0Inelastic", \
     "D+Inelastic",            "D-Inelastic",             "D0Inelastic",         "Ds+Inelastic", \
