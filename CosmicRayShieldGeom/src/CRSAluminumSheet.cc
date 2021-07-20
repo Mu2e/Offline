@@ -4,7 +4,7 @@
 //
 //
 
-#include "CosmicRayShieldGeom/inc/CRSAluminumSheet.hh"
+#include "Offline/CosmicRayShieldGeom/inc/CRSAluminumSheet.hh"
 
 namespace mu2e 
 {

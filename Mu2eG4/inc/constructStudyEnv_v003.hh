@@ -9,7 +9,7 @@
 
 #include <vector>
 #include <string>
-#include "G4Colour.hh"
+#include "Geant4/G4Colour.hh"
 
 namespace mu2e {
 

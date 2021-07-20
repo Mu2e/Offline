@@ -4,10 +4,10 @@
 //
 
 // Mu2e includes
-#include "Mu2eG4/inc/DuplicateLogicalVolumeChecker.hh"
+#include "Offline/Mu2eG4/inc/DuplicateLogicalVolumeChecker.hh"
 
-#include "G4LogicalVolumeStore.hh"
-#include "G4LogicalVolume.hh"
+#include "Geant4/G4LogicalVolumeStore.hh"
+#include "Geant4/G4LogicalVolume.hh"
 
 #include "cetlib_except/exception.h"
 

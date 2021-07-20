@@ -14,13 +14,14 @@
 // Framework includes
 #include "art/Framework/Services/Registry/ServiceHandle.h"
 #include "cetlib_except/exception.h"
+#include "art/Framework/Services/Registry/ServiceDefinitionMacros.h"
 
 // Mu2e includes
-#include "G4Helper/inc/G4Helper.hh"
-#include "Mu2eG4/inc/Mu2eUniverse.hh"
+#include "Offline/Mu2eG4Helper/inc/Mu2eG4Helper.hh"
+#include "Offline/Mu2eG4/inc/Mu2eUniverse.hh"
 
 // G4 includes
-#include "G4PhysicalVolumeStore.hh"
+#include "Geant4/G4PhysicalVolumeStore.hh"
 
 using namespace std;
 
@@ -29,7 +30,7 @@ namespace mu2e {
   Mu2eUniverse::Mu2eUniverse(const Mu2eG4Config::Debug& debug):
     _geom(*(art::ServiceHandle<GeometryService>())),
     _config(_geom.config()),
-    _helper(&(*(art::ServiceHandle<G4Helper>()))),
+    _helper(&(*(art::ServiceHandle<Mu2eG4Helper>()))),
     _verbosityLevel(debug.worldVerbosityLevel()),
     _g4VerbosityLevel(debug.diagLevel())
   {} // beware of the order of initialization/declarations

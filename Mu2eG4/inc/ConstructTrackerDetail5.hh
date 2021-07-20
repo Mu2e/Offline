@@ -8,16 +8,17 @@
 // This implementation by David N. Brown (Louisville), November 2017
 //
 
-#include "G4Helper/inc/VolumeInfo.hh"
-
-#include "G4RotationMatrix.hh"
+#include "Offline/Mu2eG4Helper/inc/VolumeInfo.hh"
+#include "Geant4/G4RotationMatrix.hh"
+#include "Offline/GeomPrimitives/inc/TubsParams.hh"
+#include "Offline/DataProducts/inc/StrawId.hh"
 
 #include <vector>
 
 namespace mu2e {
 
   class SimpleConfig;
-  class G4Helper;
+  class Mu2eG4Helper;
   class AntiLeakRegistry;
   class Tracker;
 
@@ -28,6 +29,16 @@ namespace mu2e {
                               SimpleConfig const& config );
 
     VolumeInfo motherInfo() { return _motherInfo; }
+
+    // Return G4TUBS parameters for straws, includes
+    // wire, gas and straw materials.
+    TubsParams strawOuterTubsParams(StrawId const& id , Tracker const& tracker) const;
+    TubsParams strawWallMother(StrawId const& id , Tracker const& tracker) const;
+    TubsParams strawWallOuterMetal(StrawId const& id , Tracker const& tracker)  const;
+    TubsParams strawWallInnerMetal1(StrawId const& id , Tracker const& tracker) const;
+    TubsParams strawWallInnerMetal2(StrawId const& id , Tracker const& tracker) const;
+    TubsParams strawWireMother(StrawId const& id , Tracker const& tracker) const;
+    TubsParams strawWirePlate(StrawId const& id , Tracker const& tracker) const;
 
 
   private:
@@ -80,7 +91,7 @@ namespace mu2e {
     VolumeInfo   const& _ds3Vac;
     SimpleConfig const& _config;
 
-    G4Helper&          _helper;
+    Mu2eG4Helper&          _helper;
     AntiLeakRegistry & _reg;
 
     Tracker const& _tracker;

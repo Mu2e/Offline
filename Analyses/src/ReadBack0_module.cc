@@ -19,10 +19,9 @@
 #include "art/Framework/Core/ModuleMacros.h"
 
 // Mu2e includes.
-#include "GeometryService/inc/GeomHandle.hh"
-#include "TrackerGeom/inc/Tracker.hh"
-#include "MCDataProducts/inc/StepPointMCCollection.hh"
-#include "RecoDataProducts/inc/CaloHitCollection.hh"
+#include "Offline/GeometryService/inc/GeomHandle.hh"
+#include "Offline/TrackerGeom/inc/Tracker.hh"
+#include "Offline/MCDataProducts/inc/StepPointMCCollection.hh"
 
 // Root includes.
 #include "TH1F.h"

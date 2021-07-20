@@ -20,8 +20,10 @@ namespace mu2e {
 
     // Default c'tor.
     explicit CRSScintillatorBarIndex():
-      _idx(-1){
+      _idx(_invalid){
     }
+
+    constexpr static int _invalid = -1; // invalid index
 
     // No automatic conversion of int to CRSScintillatorBarIndex.
     explicit CRSScintillatorBarIndex(int idx):
@@ -30,6 +32,8 @@ namespace mu2e {
 
     // Compiler generated versions are OK for:
     // copy c'tor, destructor, operator=
+
+    bool     isValid() const {return _idx!=_invalid;}
 
     // Return the value as an int or as an unsigned in
     // Do not want automatic conversion to an int.

@@ -9,7 +9,7 @@
 #include <string>
 #include <memory>
 
-#include "Mu2eG4/inc/Mu2eG4Config.hh"
+#include "Offline/Mu2eG4/inc/Mu2eG4Config.hh"
 
 // Forward references in global namespace.
 class G4Box;
@@ -17,7 +17,7 @@ class G4LogicalVolume;
 class G4VPhysicalVolume;
 class G4Element;
 
-#include "G4String.hh"
+#include "Geant4/G4String.hh"
 
 namespace mu2e {
 

@@ -10,7 +10,7 @@
 #include "CLHEP/Vector/ThreeVector.h"
 
 
-#include "Mu2eUtilities/inc/SortedStepPoints.hh"
+#include "Offline/Mu2eUtilities/inc/SortedStepPoints.hh"
 //#include "MCDataProducts/inc/StepPointMCCollection.hh"
 
 using namespace std;

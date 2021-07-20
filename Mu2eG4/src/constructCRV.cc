@@ -6,38 +6,40 @@
 //
 // Notes:
 
+// art includes
+#include "art/Framework/Services/Registry/ServiceDefinitionMacros.h"
 
 // clhep includes
 #include "CLHEP/Vector/ThreeVector.h"
 
 // Mu2e includes.
 
-#include "Mu2eG4/inc/constructCRV.hh"
-#include "GeometryService/inc/GeomHandle.hh"
-#include "GeometryService/inc/GeometryService.hh"
-#include "GeometryService/inc/G4GeometryOptions.hh"
-#include "G4Helper/inc/G4Helper.hh"
-#include "CosmicRayShieldGeom/inc/CosmicRayShield.hh"
-#include "CosmicRayShieldGeom/inc/CRSScintillatorShield.hh"
-#include "Mu2eG4/inc/findMaterialOrThrow.hh"
-#include "Mu2eG4/inc/checkForOverlaps.hh"
-#include "Mu2eG4/inc/nestBox.hh"
+#include "Offline/Mu2eG4/inc/constructCRV.hh"
+#include "Offline/GeometryService/inc/GeomHandle.hh"
+#include "Offline/GeometryService/inc/GeometryService.hh"
+#include "Offline/GeometryService/inc/G4GeometryOptions.hh"
+#include "Offline/Mu2eG4Helper/inc/Mu2eG4Helper.hh"
+#include "Offline/CosmicRayShieldGeom/inc/CosmicRayShield.hh"
+#include "Offline/CosmicRayShieldGeom/inc/CRSScintillatorShield.hh"
+#include "Offline/Mu2eG4/inc/findMaterialOrThrow.hh"
+#include "Offline/Mu2eG4/inc/checkForOverlaps.hh"
+#include "Offline/Mu2eG4/inc/nestBox.hh"
 
 // G4 includes
 
-#include "G4Material.hh"
-#include "G4Color.hh"
-#include "G4Box.hh"
+#include "Geant4/G4Material.hh"
+#include "Geant4/G4Color.hh"
+#include "Geant4/G4Box.hh"
 
-#include "G4VSolid.hh"
-#include "G4LogicalVolume.hh"
-#include "G4PVPlacement.hh"
+#include "Geant4/G4VSolid.hh"
+#include "Geant4/G4LogicalVolume.hh"
+#include "Geant4/G4PVPlacement.hh"
 
-#include "G4VisAttributes.hh"
+#include "Geant4/G4VisAttributes.hh"
 
-#include "G4RotationMatrix.hh"
+#include "Geant4/G4RotationMatrix.hh"
 
-#include "G4SDManager.hh"
+#include "Geant4/G4SDManager.hh"
 
 using namespace std;
 
@@ -47,7 +49,7 @@ namespace mu2e
   {
     GeomHandle<CosmicRayShield> CosmicRayShieldGeomHandle;
 
-    G4Helper& _helper       = *(art::ServiceHandle<G4Helper>());
+    Mu2eG4Helper& _helper       = *(art::ServiceHandle<Mu2eG4Helper>());
     AntiLeakRegistry& reg   = _helper.antiLeakRegistry();
     const auto& geomOptions = art::ServiceHandle<GeometryService>()->geomOptions();
     
@@ -92,7 +94,7 @@ namespace mu2e
       // visibility attributes
       if (!scintillatorShieldVisible) 
       {
-        scintillatorBarLogical->SetVisAttributes(G4VisAttributes::Invisible);
+        scintillatorBarLogical->SetVisAttributes(G4VisAttributes::GetInvisible());
       }
       else 
       {
@@ -122,7 +124,7 @@ namespace mu2e
       // visibility attributes
       if (!scintillatorShieldVisible) 
       {
-        CMBLogical->SetVisAttributes(G4VisAttributes::Invisible);
+        CMBLogical->SetVisAttributes(G4VisAttributes::GetInvisible());
       }
       else 
       {
@@ -255,7 +257,7 @@ if(!_config.getBool("crs.hideCRVCMBs"))
 
           if(!scintillatorShieldVisible) 
           {
-            absorberLogical->SetVisAttributes(G4VisAttributes::Invisible);
+            absorberLogical->SetVisAttributes(G4VisAttributes::GetInvisible());
           }
           else 
           {
@@ -305,7 +307,7 @@ if(!_config.getBool("crs.hideCRVCMBs"))
 
           if(!scintillatorShieldVisible) 
           {
-            aluminumSheetLogical->SetVisAttributes(G4VisAttributes::Invisible);
+            aluminumSheetLogical->SetVisAttributes(G4VisAttributes::GetInvisible());
           }
           else 
           {
@@ -355,7 +357,7 @@ if(!_config.getBool("crs.hideCRVCMBs"))
 
           if(!scintillatorShieldVisible) 
           {
-            FEBLogical->SetVisAttributes(G4VisAttributes::Invisible);
+            FEBLogical->SetVisAttributes(G4VisAttributes::GetInvisible());
           }
           else 
           {
@@ -408,7 +410,7 @@ if(!_config.getBool("crs.hideCRVCMBs"))
 
       if(!scintillatorShieldVisible) 
       {
-        supportStructureLogical->SetVisAttributes(G4VisAttributes::Invisible);
+        supportStructureLogical->SetVisAttributes(G4VisAttributes::GetInvisible());
       }
       else 
       {

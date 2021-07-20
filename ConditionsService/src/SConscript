@@ -36,16 +36,13 @@ helper.make_plugins( [ mainlib,
                        'canvas',
                        'MF_MessageLogger',
                        'fhiclcpp',
+                       'fhiclcpp_types',
+                       'tbb',
                        'canvas',
                        'cetlib',
                        'cetlib_except',
                        'boost_filesystem',
-                       'boost_system',
                        ] )
-
-
-helper.make_dict_and_map( [ mainlib,
-                            ] )
 
 
 # This tells emacs to view this file in python mode.

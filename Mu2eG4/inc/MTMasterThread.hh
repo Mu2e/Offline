@@ -17,7 +17,7 @@
 #include <mutex>
 #include <condition_variable>
 
-#include "Mu2eG4/inc/Mu2eG4Config.hh"
+#include "Offline/Mu2eG4/inc/Mu2eG4Config.hh"
 
 namespace art { class Run; }
 

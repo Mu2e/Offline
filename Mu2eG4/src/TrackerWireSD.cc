@@ -7,16 +7,16 @@
 #include "cetlib_except/exception.h"
 
 // Mu2e includes
-#include "Mu2eG4/inc/TrackerWireSD.hh"
-#include "Mu2eG4/inc/Mu2eG4UserHelpers.hh"
-#include "Mu2eG4/inc/PhysicsProcessInfo.hh"
-#include "Mu2eG4/inc/SimParticleHelper.hh"
+#include "Offline/Mu2eG4/inc/TrackerWireSD.hh"
+#include "Offline/Mu2eG4/inc/Mu2eG4UserHelpers.hh"
+#include "Offline/Mu2eG4/inc/PhysicsProcessInfo.hh"
+#include "Offline/Mu2eG4/inc/SimParticleHelper.hh"
 
 // G4 includes
-#include "G4ThreeVector.hh"
-#include "G4RunManager.hh"
-#include "G4Step.hh"
-#include "G4ios.hh"
+#include "Geant4/G4ThreeVector.hh"
+#include "Geant4/G4RunManager.hh"
+#include "Geant4/G4Step.hh"
+#include "Geant4/G4ios.hh"
 
 using namespace std;
 
@@ -25,7 +25,7 @@ namespace mu2e {
   G4ThreeVector TrackerWireSD::_mu2eDetCenter;
 
   TrackerWireSD::TrackerWireSD(G4String name, const SimpleConfig& config) :
-                  Mu2eSensitiveDetector(name,config) { }
+                  Mu2eG4SensitiveDetector(name,config) { }
 
   TrackerWireSD::~TrackerWireSD(){ }
 
@@ -80,6 +80,7 @@ namespace mu2e {
                             preStepPoint->GetPosition() - _mu2eDetCenter,
                             aStep->GetPostStepPoint()->GetPosition() - _mu2eDetCenter,
                             preStepPoint->GetMomentum(),
+                            aStep->GetPostStepPoint()->GetMomentum(),
                             stepL,
                             endCode
                             ));

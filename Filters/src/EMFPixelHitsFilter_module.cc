@@ -15,12 +15,13 @@
 #include "art/Framework/Core/ModuleMacros.h"
 #include "canvas/Persistency/Common/FindManyP.h"
 #include "art_root_io/TFileService.h"
+#include "messagefacility/MessageLogger/MessageLogger.h"
 
-#include "RecoDataProducts/inc/ExtMonFNALRawHitCollection.hh"
-#include "MCDataProducts/inc/ExtMonFNALHitTruthAssn.hh"
+#include "Offline/RecoDataProducts/inc/ExtMonFNALRawHitCollection.hh"
+#include "Offline/MCDataProducts/inc/ExtMonFNALHitTruthAssn.hh"
 
-#include "Mu2eUtilities/inc/compressSimParticleCollection.hh"
-#include "Mu2eUtilities/inc/SimParticleParentGetter.hh"
+#include "Offline/Mu2eUtilities/inc/compressSimParticleCollection.hh"
+#include "Offline/Mu2eUtilities/inc/SimParticleParentGetter.hh"
 
 namespace mu2e {
   namespace ExtMonFNAL {

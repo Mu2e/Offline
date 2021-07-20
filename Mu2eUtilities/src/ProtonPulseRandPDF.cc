@@ -14,18 +14,18 @@
 
 #include "CLHEP/Random/RandGeneral.h"
 
-#include "ConditionsService/inc/AcceleratorParams.hh"
+#include "Offline/ConditionsService/inc/AcceleratorParams.hh"
 // Mu2e includes
-#include "ConditionsService/inc/ConditionsHandle.hh"
-#include "ConfigTools/inc/ConfigFileLookupPolicy.hh"
+#include "Offline/ConditionsService/inc/ConditionsHandle.hh"
+#include "Offline/ConfigTools/inc/ConfigFileLookupPolicy.hh"
 #include "art/Framework/Services/Optional/RandomNumberGenerator.h"
 #include "fhiclcpp/ParameterSet.h"
 #include "fhiclcpp/exception.h"
 #include "fhiclcpp/types/Atom.h"
 #include "fhiclcpp/types/OptionalAtom.h"
 
-#include "Mu2eUtilities/inc/ProtonPulseRandPDF.hh"
-#include "Mu2eUtilities/inc/Table.hh"
+#include "Offline/Mu2eUtilities/inc/ProtonPulseRandPDF.hh"
+#include "Offline/Mu2eUtilities/inc/Table.hh"
 
 // The following defines the proton pulse shape parameters (pdf width,
 // pdf step and differential distribution).  Please note that it is

@@ -9,8 +9,8 @@
 
 #include "CLHEP/Vector/ThreeVector.h"
 
-#include "Print/inc/ProductPrinter.hh"
-#include "MCDataProducts/inc/PhysicalVolumeInfoMultiCollection.hh"
+#include "Offline/Print/inc/ProductPrinter.hh"
+#include "Offline/MCDataProducts/inc/PhysicalVolumeInfoMultiCollection.hh"
 #include "art/Framework/Principal/Handle.h"
 #include "canvas/Persistency/Common/Ptr.h"
 
@@ -33,7 +33,7 @@ namespace mu2e {
 	       std::ostream& os = std::cout);
     void Print(const PhysicalVolumeInfoMultiCollection& coll, 
 	       std::ostream& os = std::cout);
-    void Print(const std::pair<unsigned int, PhysicalVolumeInfoSingleStage>& obj,
+    void Print(const PhysicalVolumeInfoSingleStage& obj,
 	       int ind = -1, std::ostream& os = std::cout);
     void Print(const std::pair<cet::map_vector_key, mu2e::PhysicalVolumeInfo>& obj, 
 	       int ind = -1, std::ostream& os = std::cout);

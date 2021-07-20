@@ -30,32 +30,25 @@
 #include "messagefacility/MessageLogger/MessageLogger.h"
 
 // Mu2e includes
-#include "Mu2eG4/inc/physicsListDecider.hh"
-#include "Mu2eG4/inc/DecayMuonsWithSpin.hh"
-#include "Mu2eG4/inc/MinimalPhysicsList.hh"
-#include "Mu2eG4/inc/MinDEDXPhysicsList.hh"
-#if G4VERSION>4103
-#include "Mu2eG4/inc/Mu2eEmStandardPhysics_option4.hh"
-#include "Mu2eG4/inc/Mu2eEmStandardPhysics.hh"
-#endif
-#include "Mu2eG4/inc/StepLimiterPhysConstructor.hh"
-#include "Mu2eG4/inc/Mu2eG4CustomizationPhysicsConstructor.hh"
+#include "Offline/Mu2eG4/inc/physicsListDecider.hh"
+#include "Offline/Mu2eG4/inc/Mu2eG4DecayMuonsWithSpinPhysicsConstructor.hh"
+#include "Offline/Mu2eG4/inc/Mu2eG4MinimalModularPhysicsList.hh"
+#include "Offline/Mu2eG4/inc/Mu2eG4MinDEDXModularPhysicsList.hh"
+#include "Offline/Mu2eG4/inc/Mu2eG4StepLimiterPhysicsConstructor.hh"
+#include "Offline/Mu2eG4/inc/Mu2eG4CustomizationPhysicsConstructor.hh"
 
 // CLHEP includes
 #include "CLHEP/Units/SystemOfUnits.h"
 
 // G4 includes
-#include "G4PhysListFactory.hh"
-#include "G4VUserPhysicsList.hh"
-#include "G4RadioactiveDecayPhysics.hh"
-#include "G4ErrorPhysicsList.hh"
-#include "G4EmStandardPhysics_option4.hh"
+#include "Geant4/G4PhysListFactory.hh"
+#include "Geant4/G4VUserPhysicsList.hh"
+#include "Geant4/G4RadioactiveDecayPhysics.hh"
+#include "Geant4/G4ErrorPhysicsList.hh"
+#include "Geant4/G4EmStandardPhysics_option4.hh"
 
 #if G4VERSION>4103
-#include "G4EmParameters.hh"
-#endif
-#if G4VERSION<4099
-#include "QGSP.hh"
+#include "Geant4/G4EmParameters.hh"
 #endif
 
 using namespace std;
@@ -72,11 +65,11 @@ namespace mu2e{
 
     // special cases
     if ( name  == "Minimal" ) {
-      return new MinimalPhysicsList();
+      return new Mu2eG4MinimalModularPhysicsList();
     }
 
     else if ( name  == "MinDEDX" ) {
-      return new MinDEDXPhysicsList(); // limited EM Processes
+      return new Mu2eG4MinDEDXModularPhysicsList(); // limited EM Processes
     }
 
     else if ( name  == "ErrorPhysicsList" ) {
@@ -102,8 +95,8 @@ namespace mu2e{
         << "\n";
     }
 
-    // The modular physics list takes ownership of the StepLimiterPhysConstructor.
-    tmpPL->RegisterPhysics( new StepLimiterPhysConstructor() );
+    // The modular physics list takes ownership of the Mu2eG4StepLimiterPhysicsConstructor.
+    tmpPL->RegisterPhysics( new Mu2eG4StepLimiterPhysicsConstructor() );
 
     // Mu2e Customizations
     tmpPL->RegisterPhysics( new Mu2eG4CustomizationPhysicsConstructor(&phys, &debug));
@@ -122,36 +115,32 @@ namespace mu2e{
       tmpPL->RegisterPhysics(new G4RadioactiveDecayPhysics(debug.diagLevel()));
     }
 
-#if G4VERSION>4103
-    // for version 4105 it will need to be rplaced with
-    // emParams->SetMscEnergyLimit(115.0*CLHEP::MeV);
-    if ( phys.modifyEMOption4() && (name.find("_EMZ") != std::string::npos) ) {
-      tmpPL->RemovePhysics(("G4EmStandard_opt4"));
-      if (debug.diagLevel()>0) {
-        G4cout << __func__ << " Registering Mu2eEmStandardPhysics_option4" << G4endl;
+#if G4VERSION>4104
+
+    // Changing MSC model transition energy if requested
+    { double mscModelTransitionEnergy(std::numeric_limits<double>::max());  // initializing
+      // to something distinct before fetching the requested value if present and only using it then
+      if (phys.mscModelTransitionEnergy(mscModelTransitionEnergy)) {
+        if (debug.diagLevel()>0) {
+          G4cout << __func__
+                 << " Changing MscEnergyLimit to "
+                 << mscModelTransitionEnergy << " MeV" << G4endl;
+        }
+        G4EmParameters* emParams = G4EmParameters::Instance();
+        emParams->SetMscEnergyLimit(mscModelTransitionEnergy*CLHEP::MeV);
       }
-      tmpPL->RegisterPhysics( new Mu2eEmStandardPhysics_option4(debug.diagLevel()));
     }
 
     if ( phys.useEmOption4InTracker() && (name.find("_EMZ") == std::string::npos) ) {
-      // assign Mu2eEmStandard_opt4 to the tracker
+      // assign EmStandard_opt4 to the tracker
       if (debug.diagLevel()>0) {
         G4cout << __func__
                << " Assigning EmStandardPhysics_option4 to the TrackerMother" << G4endl;
       }
       G4EmParameters* emParams = G4EmParameters::Instance();
-      // fixme: get the value from fhicl and key on modifyEMOption once using 4105
-      // emParams->SetMscEnergyLimit(115.0*CLHEP::MeV);
       emParams->AddPhysics("TrackerMother", "G4EmStandard_opt4");
     }
 
-    if ( phys.modifyEMOption0() && (name.find("_EM") == std::string::npos) ) {
-      tmpPL->RemovePhysics(("G4EmStandard"));
-      if (debug.diagLevel()>0) {
-        G4cout << __func__ << " Registering Mu2eEmStandardPhysics" << G4endl;
-      }
-      tmpPL->RegisterPhysics( new Mu2eEmStandardPhysics(debug.diagLevel()));
-    }
 #endif
 
     // Muon Spin and Radiative decays plus pion muons with spin
@@ -161,11 +150,11 @@ namespace mu2e{
       if ( phys.stepper() != "G4ClassicalRK4WSpin" &&
            phys.stepper() != "G4DormandPrince745WSpin" ) {
         mf::LogError("Config") << "Inconsistent config";
-        G4cout << "Error: DecayMuonsWithSpin requires enabling spin tracking" << G4endl;
-        throw cet::exception("BADINPUT")<<" DecayMuonsWithSpin requires enabling spin tracking\n";
+        G4cout << "Error: Mu2eG4DecayMuonsWithSpinPhysicsConstructor requires enabling spin tracking" << G4endl;
+        throw cet::exception("BADINPUT")<<" Mu2eG4DecayMuonsWithSpinPhysicsConstructor requires enabling spin tracking\n";
       }
 
-      tmpPL->RegisterPhysics( new DecayMuonsWithSpin(debug.diagLevel()));
+      tmpPL->RegisterPhysics( new Mu2eG4DecayMuonsWithSpinPhysicsConstructor(debug.diagLevel()));
     }
 
     G4double productionCut = phys.minRangeCut();

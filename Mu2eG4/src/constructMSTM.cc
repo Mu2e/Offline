@@ -10,43 +10,46 @@
 //
 
 // Mu2e includes.
-#include "DetectorSolenoidGeom/inc/DetectorSolenoid.hh"
-#include "DetectorSolenoidGeom/inc/DetectorSolenoidShielding.hh"
-#include "G4Helper/inc/G4Helper.hh"
-#include "G4Helper/inc/VolumeInfo.hh"
-#include "GeometryService/inc/GeomHandle.hh"
-#include "GeometryService/inc/GeometryService.hh"
-#include "GeometryService/inc/G4GeometryOptions.hh"
-#include "GeomPrimitives/inc/PolyconsParams.hh"
-#include "Mu2eG4/inc/findMaterialOrThrow.hh"
-#include "Mu2eG4/inc/constructMSTM.hh"
-#include "Mu2eG4/inc/nestTubs.hh"
-#include "Mu2eG4/inc/nestBox.hh"
-#include "Mu2eG4/inc/finishNesting.hh"
-#include "Mu2eG4/inc/MaterialFinder.hh"
-#include "GeometryService/inc/VirtualDetector.hh"
-#include "GeometryService/inc/Mu2eEnvelope.hh"
+#include "Offline/DetectorSolenoidGeom/inc/DetectorSolenoid.hh"
+#include "Offline/DetectorSolenoidGeom/inc/DetectorSolenoidShielding.hh"
+#include "Offline/Mu2eG4Helper/inc/Mu2eG4Helper.hh"
+#include "Offline/Mu2eG4Helper/inc/VolumeInfo.hh"
+#include "Offline/GeometryService/inc/GeomHandle.hh"
+#include "Offline/GeometryService/inc/GeometryService.hh"
+#include "Offline/GeometryService/inc/G4GeometryOptions.hh"
+#include "Offline/GeomPrimitives/inc/PolyconsParams.hh"
+#include "Offline/Mu2eG4/inc/findMaterialOrThrow.hh"
+#include "Offline/Mu2eG4/inc/constructMSTM.hh"
+#include "Offline/Mu2eG4/inc/nestTubs.hh"
+#include "Offline/Mu2eG4/inc/nestBox.hh"
+#include "Offline/Mu2eG4/inc/finishNesting.hh"
+#include "Offline/Mu2eG4/inc/MaterialFinder.hh"
+#include "Offline/GeometryService/inc/VirtualDetector.hh"
+#include "Offline/GeometryService/inc/Mu2eEnvelope.hh"
 
 // G4 includes
-#include "G4ThreeVector.hh"
-#include "G4Material.hh"
-#include "G4Color.hh"
-#include "G4Box.hh"
-#include "G4Tubs.hh"
-#include "G4LogicalVolume.hh"
-#include "G4SubtractionSolid.hh"
-#include "G4UniformMagField.hh"
-#include "G4Mag_UsualEqRhs.hh"
-#include "G4ExactHelixStepper.hh"
-#include "G4ChordFinder.hh"
-#include "G4FieldManager.hh"
+#include "Geant4/G4ThreeVector.hh"
+#include "Geant4/G4Material.hh"
+#include "Geant4/G4Color.hh"
+#include "Geant4/G4Box.hh"
+#include "Geant4/G4Tubs.hh"
+#include "Geant4/G4LogicalVolume.hh"
+#include "Geant4/G4SubtractionSolid.hh"
+#include "Geant4/G4UniformMagField.hh"
+#include "Geant4/G4Mag_UsualEqRhs.hh"
+#include "Geant4/G4ExactHelixStepper.hh"
+#include "Geant4/G4ChordFinder.hh"
+#include "Geant4/G4FieldManager.hh"
 
-#include "G4UserLimits.hh"
+#include "Geant4/G4UserLimits.hh"
 
-#include "G4SDManager.hh"
+#include "Geant4/G4SDManager.hh"
 
 // CLHEP includes
 #include "CLHEP/Vector/ThreeVector.h"
+
+// art includes
+#include "art/Framework/Services/Registry/ServiceDefinitionMacros.h"
 
 #include <cmath>
 #include <vector>

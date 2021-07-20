@@ -2,15 +2,15 @@
 //Purpose : to help select muons for cosmic study based on momentum and other info.
 //This also provides  the MC truth information for the cosmic muon diagnostics
 
-#include "DataProducts/inc/PDGCode.hh"
-#include "DataProducts/inc/StrawEnd.hh"
-#include "MCDataProducts/inc/SimParticleCollection.hh"
-#include "MCDataProducts/inc/StepPointMCCollection.hh"
-#include "MCDataProducts/inc/StrawDigiMCCollection.hh"
-#include "RecoDataProducts/inc/CaloDigiCollection.hh"
-#include "RecoDataProducts/inc/ComboHit.hh"
-#include "RecoDataProducts/inc/StrawDigiCollection.hh"
-#include "RecoDataProducts/inc/StrawHitCollection.hh"
+#include "Offline/DataProducts/inc/PDGCode.hh"
+#include "Offline/DataProducts/inc/StrawEnd.hh"
+#include "Offline/MCDataProducts/inc/SimParticleCollection.hh"
+#include "Offline/MCDataProducts/inc/StepPointMCCollection.hh"
+#include "Offline/MCDataProducts/inc/StrawDigiMCCollection.hh"
+#include "Offline/RecoDataProducts/inc/CaloDigi.hh"
+#include "Offline/RecoDataProducts/inc/ComboHit.hh"
+#include "Offline/RecoDataProducts/inc/StrawDigiCollection.hh"
+#include "Offline/RecoDataProducts/inc/StrawHitCollection.hh"
 
 // Framework includes
 #include "art/Framework/Core/EDFilter.h"

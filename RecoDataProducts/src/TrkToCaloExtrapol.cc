@@ -7,7 +7,7 @@
 #include <ostream>
 
 // Mu2e includes
-#include "RecoDataProducts/inc/TrkToCaloExtrapol.hh"
+#include "Offline/RecoDataProducts/inc/TrkToCaloExtrapol.hh"
 #include "BTrk/BbrGeom/BbrPointErr.hh"
 #include "BTrk/BbrGeom/BbrVectorErr.hh"
 #include "BTrk/ProbTools/ChisqConsistency.hh"

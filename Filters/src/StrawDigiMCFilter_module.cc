@@ -6,8 +6,8 @@
 //
 
 // Mu2e includes.
-#include "MCDataProducts/inc/StrawDigiMC.hh"
-#include "MCDataProducts/inc/SimParticlePtrCollection.hh"
+#include "Offline/MCDataProducts/inc/StrawDigiMC.hh"
+#include "Offline/MCDataProducts/inc/SimParticlePtrCollection.hh"
 // Framework includes.
 #include "art/Framework/Core/EDFilter.h"
 #include "art/Framework/Principal/Event.h"

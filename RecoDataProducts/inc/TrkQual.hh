@@ -9,7 +9,7 @@
 // Original author David Brown
 //
 // Mu2e includes
-#include "GeneralUtilities/inc/MVAStruct.hh"
+#include "Offline/GeneralUtilities/inc/MVAStruct.hh"
 #include <string>
 #include <map>
 #include <vector>
@@ -24,6 +24,7 @@ namespace mu2e {
     static std::string const& typeName();
     static std::map<std::string,MVA_varindex> const& varNames();
     static std::string varName(MVA_varindex vindex);
+    constexpr static const char* cxname = "TrkQualCatalog";
   };
   // define the types
   typedef MVAStruct<TrkQualDetail> TrkQual;

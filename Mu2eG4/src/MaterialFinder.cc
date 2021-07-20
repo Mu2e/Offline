@@ -6,12 +6,12 @@
 // Original author Rob Kutschke
 //
 
-#include "Mu2eG4/inc/MaterialFinder.hh"
-#include "Mu2eG4/inc/findMaterialOrThrow.hh"
-#include "ConfigTools/inc/SimpleConfig.hh"
-#include "GeometryService/inc/GeomHandle.hh"
+#include "Offline/Mu2eG4/inc/MaterialFinder.hh"
+#include "Offline/Mu2eG4/inc/findMaterialOrThrow.hh"
+#include "Offline/ConfigTools/inc/SimpleConfig.hh"
+#include "Offline/GeometryService/inc/GeomHandle.hh"
 
-#include "G4Material.hh"
+#include "Geant4/G4Material.hh"
 
 using namespace std;
 

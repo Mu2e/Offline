@@ -6,26 +6,26 @@
 ///////////////////////////////////////////////////////////////////////////////
 #include "fhiclcpp/ParameterSet.h"
 
-#include "CalPatRec/inc/CalHelixFinder_module.hh"
+#include "Offline/CalPatRec/inc/CalHelixFinder_module.hh"
 
 // framework
 #include "art/Framework/Principal/Handle.h"
-#include "GeometryService/inc/GeomHandle.hh"
-#include "GeometryService/inc/DetectorSystem.hh"
+#include "Offline/GeometryService/inc/GeomHandle.hh"
+#include "Offline/GeometryService/inc/DetectorSystem.hh"
 #include "art/Framework/Core/ModuleMacros.h"
 #include "art_root_io/TFileService.h"
 
 // conditions
-#include "ConditionsService/inc/AcceleratorParams.hh"
-#include "ConditionsService/inc/ConditionsHandle.hh"
-#include "TrackerGeom/inc/Tracker.hh"
-#include "BFieldGeom/inc/BFieldManager.hh"
-#include "GeometryService/inc/DetectorSystem.hh"
-#include "CalorimeterGeom/inc/DiskCalorimeter.hh"
-#include "ConfigTools/inc/ConfigFileLookupPolicy.hh"
+#include "Offline/ConditionsService/inc/AcceleratorParams.hh"
+#include "Offline/ConditionsService/inc/ConditionsHandle.hh"
+#include "Offline/TrackerGeom/inc/Tracker.hh"
+#include "Offline/BFieldGeom/inc/BFieldManager.hh"
+#include "Offline/GeometryService/inc/DetectorSystem.hh"
+#include "Offline/CalorimeterGeom/inc/DiskCalorimeter.hh"
+#include "Offline/ConfigTools/inc/ConfigFileLookupPolicy.hh"
 // #include "CalPatRec/inc/KalFitResult.hh"
-#include "RecoDataProducts/inc/StrawHitIndex.hh"
-#include "RecoDataProducts/inc/HelixHit.hh"
+#include "Offline/RecoDataProducts/inc/StrawHitIndex.hh"
+#include "Offline/RecoDataProducts/inc/HelixHit.hh"
 
 #include <boost/accumulators/accumulators.hpp>
 #include <boost/accumulators/statistics/median.hpp>
@@ -33,11 +33,11 @@
 #include <boost/accumulators/statistics/moment.hpp>
 #include <boost/algorithm/string.hpp>
 
-#include "CalPatRec/inc/CalHelixFinderData.hh"
+#include "Offline/CalPatRec/inc/CalHelixFinderData.hh"
 
-#include "Mu2eUtilities/inc/ModuleHistToolBase.hh"
+#include "Offline/Mu2eUtilities/inc/ModuleHistToolBase.hh"
 #include "art/Utilities/make_tool.h"
-#include "Mu2eUtilities/inc/polyAtan2.hh"
+#include "Offline/Mu2eUtilities/inc/polyAtan2.hh"
 
 #include "TVector2.h"
 #include "TSystem.h"
@@ -122,9 +122,9 @@ namespace mu2e {
 
     ChannelID cx, co;
     int       nPlanesPerStation(2);
-    for (int ipl=0; ipl<_tracker->nPlanes(); ipl++) {
+    for (size_t ipl=0; ipl<_tracker->nPlanes(); ipl++) {
       const Plane*  pln = &_tracker->getPlane(ipl);
-      for (int ipn=0; ipn<pln->nPanels(); ipn++) {
+      for (size_t ipn=0; ipn<pln->nPanels(); ipn++) {
 	const Panel* panel = &pln->getPanel(ipn);
 	int face;
 	if (panel->id().getPanel() % 2 == 0) face = 0;
@@ -484,7 +484,7 @@ namespace mu2e {
     double   tandip        = hel->tanDip();
     double   mom           = helixRadius*mm2MeV/std::cos( std::atan(tandip));
     double   beta          = _tpart.beta(mom);
-    CLHEP::Hep3Vector        gpos = _hfinder._calorimeter->geomUtil().diskToMu2e(HfResult._timeClusterPtr->caloCluster()->diskId(),
+    CLHEP::Hep3Vector        gpos = _hfinder._calorimeter->geomUtil().diskToMu2e(HfResult._timeClusterPtr->caloCluster()->diskID(),
                                                                         HfResult._timeClusterPtr->caloCluster()->cog3Vector());
     CLHEP::Hep3Vector        tpos = _hfinder._calorimeter->geomUtil().mu2eToTracker(gpos);
     double   pitchAngle    = M_PI/2. - atan(tandip);

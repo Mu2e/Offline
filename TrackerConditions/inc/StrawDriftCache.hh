@@ -1,16 +1,16 @@
 #ifndef TrackerConditions_StrawDriftCache_hh
 #define TrackerConditions_StrawDriftCache_hh
 
-#include "Mu2eInterfaces/inc/ProditionsCache.hh"
+#include "Offline/Mu2eInterfaces/inc/ProditionsCache.hh"
 //#include "DbService/inc/DbHandle.hh"
-#include "TrackerConditions/inc/StrawDriftMaker.hh"
+#include "Offline/TrackerConditions/inc/StrawDriftMaker.hh"
 
 
 namespace mu2e {
   class StrawDriftCache : public ProditionsCache {
   public: 
     StrawDriftCache(StrawDriftConfig const& config):
-      ProditionsCache("StrawDrift",config.verbose()),
+      ProditionsCache(StrawDrift::cxname,config.verbose()),
       _useDb(config.useDb()),_maker(config) {}
 
 

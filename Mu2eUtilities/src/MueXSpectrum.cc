@@ -1,10 +1,10 @@
 // Spectrum based on arXiv: 1110.2874
 // Mu2e includes
-#include "GlobalConstantsService/inc/GlobalConstantsHandle.hh"
-#include "GlobalConstantsService/inc/PhysicsParams.hh"
-#include "GlobalConstantsService/inc/ParticleDataTable.hh"
-#include "Mu2eUtilities/inc/MueXSpectrum.hh"
-#include "Mu2eUtilities/inc/RandomUnitSphere.hh"
+#include "Offline/GlobalConstantsService/inc/GlobalConstantsHandle.hh"
+#include "Offline/GlobalConstantsService/inc/PhysicsParams.hh"
+#include "Offline/GlobalConstantsService/inc/ParticleDataTable.hh"
+#include "Offline/Mu2eUtilities/inc/MueXSpectrum.hh"
+#include "Offline/Mu2eUtilities/inc/RandomUnitSphere.hh"
 
 // Framework includes
 #include "cetlib/pow.h"

@@ -1,7 +1,7 @@
-#include "fcl/minimalMessageService.fcl"
-#include "fcl/standardProducers.fcl"
-#include "fcl/standardServices.fcl"
-#include "CommonMC/fcl/prolog.fcl"
+#include "Offline/fcl/minimalMessageService.fcl"
+#include "Offline/fcl/standardProducers.fcl"
+#include "Offline/fcl/standardServices.fcl"
+#include "Offline/CommonMC/fcl/prolog.fcl"
 
 process_name : EventDisplay
 
@@ -27,9 +27,9 @@ physics :
       module_type               : EventDisplay
       g4ModuleLabel             : "g4run"
       physicalVolumesMultiLabel : "compressPV"
-#      timeOffsets               : { inputs : [ ] }  #if the art file has no time maps
+      timeOffsets               : { inputs : [ ] }  #if the art file has no time maps
 #      timeOffsets               : { inputs : [ @sequence::CommonMC.TimeMaps ] }
-      timeOffsets               : { inputs : [ @sequence::RecoCompression.TimeMaps ] }
+#      timeOffsets               : { inputs : [ @sequence::RecoCompression.TimeMaps ] }
     }
   }
 

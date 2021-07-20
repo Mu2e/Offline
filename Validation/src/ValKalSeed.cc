@@ -1,7 +1,7 @@
 #include <cmath>
-#include "Validation/inc/ValKalSeed.hh"
-#include "MCDataProducts/inc/SimParticleCollection.hh"
-#include "MCDataProducts/inc/StepPointMCCollection.hh"
+#include "Offline/Validation/inc/ValKalSeed.hh"
+#include "Offline/MCDataProducts/inc/SimParticle.hh"
+#include "Offline/MCDataProducts/inc/StepPointMC.hh"
 
 int mu2e::ValKalSeed::declare(art::TFileDirectory tfs) {
   _hVer = tfs.make<TH1D>( "Ver", "Version Number", 101, -0.5, 100.0);
@@ -148,7 +148,7 @@ int mu2e::ValKalSeed::fill(const mu2e::KalSeedCollection & coll,
     // associated cluster info
     if(ks.hasCaloCluster()){
       auto const& chs = ks.caloHit();
-      _hCCdisk->Fill(chs.caloCluster()->diskId());
+      _hCCdisk->Fill(chs.caloCluster()->diskID());
     // get momentum from the last segment
       auto const& ss = ks.segments().back(); //KalSegment
       double p = ss.mom();
@@ -183,6 +183,7 @@ int mu2e::ValKalSeed::fill(const mu2e::KalSeedCollection & coll,
 }
 
 double mu2e::ValKalSeed::mcTrkP(art::Event const& event) {
+// note: a better way to do this is to use the PrimaryParticle class  FIXME
   //find the true momentum of the conversion electron
   //by finding the relevant steppoint at the entrance of the tracker
   double p = -1;
@@ -190,18 +191,14 @@ double mu2e::ValKalSeed::mcTrkP(art::Event const& event) {
   // this will be the simparticle numbers which belong to the conv ele
   std::vector<mu2e::SimParticle::key_type> cea;
 
-  std::vector< art::Handle<SimParticleCollection> > vah;
-  event.getManyByType(vah);
+  std::vector< art::Handle<SimParticleCollection> > vah = event.getMany<SimParticleCollection>();
   for (auto const & ah : vah) { // loop over all SimParticle coll
     auto const& simpcoll = *ah; //SimParticleCollection
     for(auto sp : simpcoll) { // loop over SimParticles
       auto const& part = sp.second; // mu2e::SimParticle
-      // the earliest stage this simparticle appears
-      auto const& opart = part.originParticle(); //mu2e::SimParticle
-      auto const& gptr = opart.genParticle(); //art::Ptr<GenParticle> 
-      // e- associated with a GenParticle
-      if(part.pdgId()==11 && gptr.isNonnull()) { 
+      if(part.pdgId()==11 && part.creationCode() == ProcessCode::mu2eCeMinusEndpoint) {
 	cea.push_back(sp.first);
+	break;
       }
     }
   }
@@ -210,8 +207,7 @@ double mu2e::ValKalSeed::mcTrkP(art::Event const& event) {
 
   CLHEP::Hep3Vector pv;
 
-  std::vector< art::Handle<StepPointMCCollection> > vah2;
-  event.getManyByType(vah2);
+  std::vector< art::Handle<StepPointMCCollection> > vah2 = event.getMany<StepPointMCCollection>();
   for (auto const & ah : vah2) { // loop over SPMC colls
     if(ah.provenance()->productInstanceName()=="virtualdetector") {
       auto const& spmccoll = *ah; //StepPointMCCollection

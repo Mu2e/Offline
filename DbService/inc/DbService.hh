@@ -9,9 +9,9 @@
 #include "fhiclcpp/types/OptionalSequence.h"
 #include "art/Framework/Services/Registry/ServiceTable.h" 
 #include "art/Framework/Services/Registry/ActivityRegistry.h"
-#include "art/Framework/Services/Registry/ServiceMacros.h"
+#include "art/Framework/Services/Registry/ServiceDeclarationMacros.h"
 #include "cetlib_except/exception.h"
-#include "DbService/inc/DbEngine.hh"
+#include "Offline/DbService/inc/DbEngine.hh"
 
 
 
@@ -33,6 +33,8 @@ namespace mu2e {
 	  Comment("list of text files containing override table data")};
       fhicl::Atom<int> verbose{Name("verbose"), 
 	  Comment("verbose flag, 0 to 10"),0};
+      fhicl::Atom<bool> saveCsv{Name("saveCsv"), 
+	  Comment("save csv content in tables, default false"),false};
       fhicl::OptionalAtom<bool> fastStart{Name("fastStart"), 
 	  Comment("read the DB immedatiately, not on first use")};
       fhicl::OptionalAtom<int> cacheLifetime{Name("cacheLifetime"), 

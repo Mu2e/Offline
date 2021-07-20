@@ -1,5 +1,5 @@
 
-#include "Validation/inc/TValHistH.hh"
+#include "Offline/Validation/inc/TValHistH.hh"
 #include "TLatex.h"
 #include "TStyle.h"
 #include "TMath.h"
@@ -92,6 +92,7 @@ Int_t TValHistH::Analyze(Option_t* Opt) {
     if (TMath::Abs(s1-s2) > maxDiff) maxDiff = TMath::Abs(s1-s2);
   }
   fFrProb = 1.0 - maxDiff/s1; // 1 is the standard
+  if(fFrProb<0.0) fFrProb = 0.0;
 
   TString qual;
   if(fPar.GetUnder()==0) qual.Append("U");

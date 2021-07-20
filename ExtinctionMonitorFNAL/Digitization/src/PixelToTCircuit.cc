@@ -2,7 +2,7 @@
 //
 // Andrei Gaponenko, 2012
 
-#include "ExtinctionMonitorFNAL/Digitization/inc/PixelToTCircuit.hh"
+#include "Offline/ExtinctionMonitorFNAL/Digitization/inc/PixelToTCircuit.hh"
 
 #include <algorithm>
 

@@ -9,11 +9,12 @@
 #include <memory>
 #include <string>
 #include <vector>
+#include <array>
 
-#include "TrackerGeom/inc/Tracker.hh"
-#include "DataProducts/inc/LayerId.hh"
-#include "TrackerGeom/inc/Panel.hh"
-#include "TrackerGeom/inc/Plane.hh"
+#include "Offline/TrackerGeom/inc/Tracker.hh"
+#include "Offline/DataProducts/inc/StrawId.hh"
+#include "Offline/TrackerGeom/inc/Panel.hh"
+#include "Offline/TrackerGeom/inc/Plane.hh"
 
 #include "CLHEP/Vector/ThreeVector.h"
 
@@ -29,9 +30,10 @@ namespace mu2e {
     TrackerMaker( SimpleConfig const& config );
 
     // Use compiler-generated copy c'tor, copy assignment, and d'tor
-
+// why use unique_ptr and then expose the bare tracker pointer????
     std::unique_ptr<Tracker> getTrackerPtr() { return std::move(_tt); }
 
+    using StrawCollection = std::array<Straw,StrawId::_nustraws>;
   private:
 
     // Extract info from the config file.
@@ -41,9 +43,12 @@ namespace mu2e {
     void makeDetails();
 
     void makeMother();
-    void makePlane( PlaneId planeId );
-    void makePanel( const PanelId& panelId, Plane& plane );
-    void makeLayer ( const LayerId& layId,  Panel& panel );
+    // old functions: these are mostly just full of diagnostics, but some G4 stuff too
+    void makePlane( const StrawId& planeId );
+    void makePanel( const StrawId& panelId );
+// these functions create the straw objects: the use of Layer is deprecated FIXME
+    void makeLayer ( const StrawId& layId,CLHEP::Hep3Vector const& planeorigin, StrawCollection& straws);
+    void makeStraws(StrawCollection& straws); 
 
     void computeStrawHalfLengths();
     void computeLayerSpacingAndShift();

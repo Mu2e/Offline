@@ -4,14 +4,14 @@
 //
 // Andrei Gaponenko, 2012
 
-#include "ExtinctionMonitorFNAL/Reconstruction/inc/ClusterOnTrackPrecisionTool.hh"
+#include "Offline/ExtinctionMonitorFNAL/Reconstruction/inc/ClusterOnTrackPrecisionTool.hh"
 
 #include <cmath>
 
-#include "RecoDataProducts/inc/ExtMonFNALRecoCluster.hh"
-#include "ExtinctionMonitorFNAL/Geometry/inc/ExtMonFNAL.hh"
-#include "ExtinctionMonitorFNAL/Geometry/inc/ExtMonFNALPlaneStack.hh"
-#include "ExtinctionMonitorFNAL/Geometry/inc/ExtMonFNALPixelChip.hh"
+#include "Offline/RecoDataProducts/inc/ExtMonFNALRecoCluster.hh"
+#include "Offline/ExtinctionMonitorFNAL/Geometry/inc/ExtMonFNAL.hh"
+#include "Offline/ExtinctionMonitorFNAL/Geometry/inc/ExtMonFNALPlaneStack.hh"
+#include "Offline/ExtinctionMonitorFNAL/Geometry/inc/ExtMonFNALPixelChip.hh"
 
 namespace mu2e {
   namespace ExtMonFNAL {

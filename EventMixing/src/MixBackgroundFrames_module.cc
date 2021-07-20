@@ -25,11 +25,12 @@
 #include "fhiclcpp/types/TupleAs.h"
 #include "canvas/Utilities/InputTag.h"
 
-#include "EventMixing/inc/Mu2eProductMixer.hh"
-#include "Mu2eUtilities/inc/artURBG.hh"
-#include "SeedService/inc/SeedService.hh"
-#include "MCDataProducts/inc/ProtonBunchIntensity.hh"
-
+#include "Offline/EventMixing/inc/Mu2eProductMixer.hh"
+#include "Offline/Mu2eUtilities/inc/artURBG.hh"
+#include "Offline/SeedService/inc/SeedService.hh"
+#include "Offline/MCDataProducts/inc/ProtonBunchIntensity.hh"
+#include "Offline/ProditionsService/inc/ProditionsHandle.hh"
+#include "Offline/SimulationConditions/inc/SimBookkeeper.hh"
 //================================================================
 namespace mu2e {
 
@@ -38,7 +39,7 @@ namespace mu2e {
   class MixBackgroundFramesDetail {
     Mu2eProductMixer spm_;
     art::InputTag pbiTag_;
-    const double meanEventsPerProton_;
+    double meanEventsPerProton_;
     const int debugLevel_;
     art::RandomNumberGenerator::base_engine_t& engine_;
     artURBG urbg_;
@@ -50,6 +51,12 @@ namespace mu2e {
     bool writeEventIDs_;
     art::EventIDSequence idseq_;
 
+    std::vector<std::string> simStageEfficiencyTags_;
+    std::vector<double> meanEventsPerPOTFactors_;
+    double eff_;
+
+    mu2e::ProditionsHandle<mu2e::SimBookkeeper> _simbookkeeperH;
+    bool mixingMeanOverride_;
   public:
 
     struct Mu2eConfig {
@@ -72,12 +79,11 @@ namespace mu2e {
           Comment("InputTag of a ProtonBunchIntensity product representing beam fluctuations.")
           };
 
-      fhicl::Atom<double> meanEventsPerProton { Name("meanEventsPerProton"),
+      fhicl::OptionalAtom<double> meanEventsPerProton { Name("meanEventsPerProton"),
           Comment("The mean number of secondary events to mix per proton on target. "
                   "The number of protons on target for each output microbunch-event will be taken "
                   "from the protonBunchIntensity input."
-                  ),
-          1u
+                  )
           };
       fhicl::Atom<int> debugLevel { Name("debugLevel"),
           Comment("control the level of debug output"),
@@ -92,6 +98,16 @@ namespace mu2e {
           Comment("Write out IDs of events on the secondary input stream."),
           false
           };
+
+      fhicl::Sequence<std::string> simStageEfficiencyTags{ Name("simStageEfficiencyTags"),
+          Comment("Sequence of strings for all the previous simulation stage efficiencies that need to be included"),
+          std::vector<std::string>()
+          };
+
+      fhicl::Sequence<double> meanEventsPerPOTFactors{ Name("meanEventsPerPOTFactors"),
+          Comment("Sequence of double for extra numerical factors that goes into the mean events per POT"),
+          std::vector<double>()
+          };
     };
 
     // The ".mu2e" in FHICL parameters like
@@ -105,7 +121,6 @@ namespace mu2e {
     using Parameters = art::MixFilterTable<Config>;
     explicit MixBackgroundFramesDetail(const Parameters& pars, art::MixHelper& helper);
 
-    void startEvent(const art::Event& event);
 
     size_t nSecondaries();
 
@@ -113,7 +128,10 @@ namespace mu2e {
 
     void processEventIDs(const art::EventIDSequence& seq);
 
+    void beginSubRun(const art::SubRun& sr);
+    void startEvent(const art::Event& evt);
     void finalizeEvent(art::Event& e);
+    void endSubRun(art::SubRun& sr);
 
   };
 
@@ -121,28 +139,77 @@ namespace mu2e {
   MixBackgroundFramesDetail::MixBackgroundFramesDetail(const Parameters& pars, art::MixHelper& helper)
     : spm_{ pars().mu2e().products(), helper }
     , pbiTag_{ pars().mu2e().protonBunchIntensityTag() }
-    , meanEventsPerProton_{ pars().mu2e().meanEventsPerProton() }
     , debugLevel_{ pars().mu2e().debugLevel() }
     , engine_{helper.createEngine(art::ServiceHandle<SeedService>()->getSeed())}
     , urbg_{ engine_ }
     , totalBkgCount_(0)
     , skipFactor_{ pars().mu2e().skipFactor() }
     , writeEventIDs_{ pars().mu2e().writeEventIDs() }
+    , simStageEfficiencyTags_{ pars().mu2e().simStageEfficiencyTags() }
+    , meanEventsPerPOTFactors_{ pars().mu2e().meanEventsPerPOTFactors() }
+    , mixingMeanOverride_(false)
   {
     if(writeEventIDs_) {
       helper.produces<art::EventIDSequence>();
     }
+    if (pars().mu2e().meanEventsPerProton(meanEventsPerProton_)) {
+      mixingMeanOverride_ = true;
+      if (!simStageEfficiencyTags_.empty()) {
+        throw cet::exception("MixBackgroundFrames") << "You have specified a number of meanEventsPerProton *and* provided a sequence of simStageEfficiencyTags. Please supply on one or the other." << std::endl;
+      }
+    }
+  }
+
+  //================================================================
+  void MixBackgroundFramesDetail::beginSubRun(const art::SubRun& sr) {
+    spm_.beginSubRun(sr);
+  }
+
+  //================================================================
+  void MixBackgroundFramesDetail::endSubRun(art::SubRun& sr) {
+    spm_.endSubRun(sr);
   }
 
   //================================================================
   void MixBackgroundFramesDetail::startEvent(const art::Event& event) {
+  // call down to product mixer 
+    spm_.startEvent(event);
+
     pbi_ = *event.getValidHandle<ProtonBunchIntensity>(pbiTag_);
     if(debugLevel_ > 0)std::cout << " Starting event mixing, Intensity = " << pbi_.intensity() << std::endl;
+
+    eff_ = 1;
+
+    if (!mixingMeanOverride_) {
+      SimBookkeeper const& simbookkeeper = _simbookkeeperH.get(event.id());
+      for (const auto& i_simStageEff : simStageEfficiencyTags_) {
+        double this_eff = simbookkeeper.getEff(i_simStageEff);
+        eff_ *= this_eff;
+
+        if (debugLevel_ > 1 && !mixingMeanOverride_) {
+          std::cout << " Sim Stage Efficiency (" << i_simStageEff << ") = " << this_eff << std::endl;
+          std::cout << " Cumulative Total Eff = " << eff_ << std::endl;
+        }
+      }
+      for (const auto& i_extraFactor : meanEventsPerPOTFactors_) {
+        eff_ *= i_extraFactor;
+        if (debugLevel_ > 1 && !mixingMeanOverride_) {
+          std::cout << " Extra meanEventsPerPOT Factor = " << i_extraFactor << std::endl;
+          std::cout << " Cumulative Total Eff = " << eff_ << std::endl;
+        }
+      }
+    }
   }
 
   //================================================================
   size_t MixBackgroundFramesDetail::nSecondaries() {
-    double mean = meanEventsPerProton_ * pbi_.intensity();
+    double mean = pbi_.intensity();
+    if(mixingMeanOverride_) {
+      mean *= meanEventsPerProton_;
+    }
+    else {
+      mean *= eff_;
+    }
     std::poisson_distribution<size_t> poisson(mean);
     auto res = poisson(urbg_);
     if(debugLevel_ > 0)std::cout << " Mixing " << res  << " Secondaries " << std::endl;
@@ -152,7 +219,14 @@ namespace mu2e {
   //================================================================
   size_t MixBackgroundFramesDetail::eventsToSkip() {
     //FIXME: Ideally, we would know the number of events in the secondary input file
-    std::uniform_int_distribution<size_t> uniform(0, skipFactor_*meanEventsPerProton_*pbi_.intensity());
+    double skipFactor = skipFactor_*pbi_.intensity();
+    if(mixingMeanOverride_) {
+      skipFactor *= meanEventsPerProton_;
+    }
+    else {
+      skipFactor *= eff_;
+    }
+    std::uniform_int_distribution<size_t> uniform(0, skipFactor);
     size_t result = uniform(urbg_);
     if(debugLevel_ > 0) {
       std::cout << " Skipping " << result << " Secondaries " << std::endl;
@@ -187,6 +261,8 @@ namespace mu2e {
       e.put(std::move(o));
     }
   }
+
+  //================================================================
 
   //================================================================
   // This is the module class.

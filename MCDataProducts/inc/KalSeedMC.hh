@@ -6,15 +6,14 @@
 //
 #include "canvas/Persistency/Common/Assns.h"
 #include "canvas/Persistency/Common/Ptr.h"
-#include "DataProducts/inc/PDGCode.hh"
-#include "DataProducts/inc/XYZVec.hh"
-#include "RecoDataProducts/inc/KalSeed.hh"
-#include "MCDataProducts/inc/SimParticle.hh"
-#include "MCDataProducts/inc/ProcessCode.hh"
-#include "MCDataProducts/inc/GenId.hh"
-#include "MCDataProducts/inc/MCRelationship.hh"
-#include "MCDataProducts/inc/StepPointMC.hh"
-#include "MCDataProducts/inc/CaloClusterMC.hh"
+#include "Offline/DataProducts/inc/PDGCode.hh"
+#include "Offline/DataProducts/inc/XYZVec.hh"
+#include "Offline/RecoDataProducts/inc/KalSeed.hh"
+#include "Offline/MCDataProducts/inc/SimParticle.hh"
+#include "Offline/MCDataProducts/inc/ProcessCode.hh"
+#include "Offline/MCDataProducts/inc/GenId.hh"
+#include "Offline/MCDataProducts/inc/MCRelationship.hh"
+#include "Offline/MCDataProducts/inc/CaloClusterMC.hh"
 #include "art/Framework/Principal/Handle.h"
 #include "cetlib/map_vector.h"
 #include <Rtypes.h>
@@ -59,7 +58,6 @@ namespace mu2e {
     VirtualDetectorId _vdid;
     VDStep() : _time(0.0) {}
     VDStep(CLHEP::Hep3Vector const& pos,CLHEP::Hep3Vector const& mom, double time, VirtualDetectorId const& vdid) :
-      
       _pos(Geom::toXYZVec(pos)),
     _mom(Geom::toXYZVec(mom)),
     _time(time),

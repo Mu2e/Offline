@@ -15,7 +15,7 @@
 #include "Math/SpecFunc.h"
 
 //Mu2e includes
-#include "Mu2eUtilities/inc/PeakedSpectrum.hh"
+#include "Offline/Mu2eUtilities/inc/PeakedSpectrum.hh"
 
 using cet::pow;
 using cet::square;

@@ -10,10 +10,10 @@
 
 #include "fhiclcpp/ParameterSet.h"
 #include "art/Framework/Services/Registry/ActivityRegistry.h"
-#include "art/Framework/Services/Registry/ServiceMacros.h"
+#include "art/Framework/Services/Registry/ServiceDeclarationMacros.h"
 
-#include "ConfigTools/inc/SimpleConfig.hh"
-#include "Mu2eInterfaces/inc/ConditionsEntity.hh"
+#include "Offline/ConfigTools/inc/SimpleConfig.hh"
+#include "Offline/Mu2eInterfaces/inc/ConditionsEntity.hh"
 
 namespace mu2e {
 

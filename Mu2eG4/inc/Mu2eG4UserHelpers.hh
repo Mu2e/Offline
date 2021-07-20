@@ -19,11 +19,11 @@
 #include "cetlib/cpu_timer.h"
 
 // G4 includes
-#include "globals.hh"
+#include "Geant4/globals.hh"
 
 // Mu2e includes
 
-#include "MCDataProducts/inc/SimParticleCollection.hh"
+#include "Offline/MCDataProducts/inc/SimParticleCollection.hh"
 
 class G4Track;
 class G4Step;

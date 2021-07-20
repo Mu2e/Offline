@@ -7,7 +7,7 @@
 
 int protonabsorber.version = 2;
 
-string protonabsorber.materialName = "Polyethylene096";
+string protonabsorber.materialName = "IPAPolyethylene";
 double protonabsorber.OutRadius1   =  300.0;
 double protonabsorber.OutRadius0   =  300.0;
 double protonabsorber.thickness    =    0.5;

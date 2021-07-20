@@ -5,9 +5,9 @@
 # for 105 MeV/c electron : E = 105.00124           MeV
 # for 105 MeV/c muon     : E = 148.9584269653785   MeV
 #------------------------------------------------------------------------------
-#include "fcl/minimalMessageService.fcl"
-#include "fcl/standardProducers.fcl"
-#include "fcl/standardServices.fcl"
+#include "Offline/fcl/minimalMessageService.fcl"
+#include "Offline/fcl/standardProducers.fcl"
+#include "Offline/fcl/standardServices.fcl"
 
 #include "Stntuple/fcl/prolog.fcl"
 

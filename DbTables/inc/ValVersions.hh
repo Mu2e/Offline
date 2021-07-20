@@ -6,7 +6,7 @@
 #include <iomanip>
 #include <sstream>
 #include <map>
-#include "DbTables/inc/DbTable.hh"
+#include "Offline/DbTables/inc/DbTable.hh"
 
 namespace mu2e {
 
@@ -40,27 +40,30 @@ namespace mu2e {
       std::string _create_user;
     };
 
+    constexpr static const char* cxname = "ValVersions";
 
-    ValVersions():DbTable("ValVersions","val.versions",
+    ValVersions():DbTable(cxname,"val.versions",
       	  "vid,pid,lid,major,minor,comment,create_time,create_user") {}
 
     const Row& rowAt(const std::size_t index) const { return _rows.at(index);}
+    const Row& row(const int vid) const { return _rows.at(_index.at(vid)); }
     std::vector<Row> const& rows() const {return _rows;}
-    std::size_t nrow() const { return _rows.size(); };
-    size_t size() const {
-      size_t b = sizeof(this) + _csv.capacity() + nrow()*60;
+    std::size_t nrow() const override { return _rows.size(); };
+    size_t size() const override {
+      size_t b = baseSize() + sizeof(this) + nrow()*60;
       for (auto const& r : _rows) b += r.comment().capacity();
       return b;
     };
 
-    void addRow(const std::vector<std::string>& columns) {
+    void addRow(const std::vector<std::string>& columns) override {
       _rows.emplace_back(std::stoi(columns[0]),std::stoi(columns[1]),
 			 std::stoi(columns[2]),std::stoi(columns[3]),
 			 std::stoi(columns[4]),columns[5],
 			 columns[6],columns[7]);
+      _index[_rows.back().vid()] = _rows.size()-1;
     }
 
-    void rowToCsv(std::ostringstream& sstream, std::size_t irow) const {
+    void rowToCsv(std::ostringstream& sstream, std::size_t irow) const override {
       Row const& r = _rows.at(irow);
       sstream << r.vid()<<",";
       sstream << r.pid()<<",";
@@ -72,11 +75,12 @@ namespace mu2e {
       sstream << r.create_user();
     }
 
-    virtual void clear() { _csv.clear(); _rows.clear(); }
+    virtual void clear() override { baseClear(); _rows.clear(); }
 
   private:
     std::vector<Row> _rows;
-  };
+    std::map<int,std::size_t> _index;
+ };
   
 };
 #endif

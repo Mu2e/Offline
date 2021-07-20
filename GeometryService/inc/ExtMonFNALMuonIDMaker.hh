@@ -8,8 +8,8 @@
 #include <memory>
 #include <string>
 
-#include "ExtinctionMonitorFNAL/Geometry/inc/ExtMonFNAL.hh"
-#include "ExtinctionMonitorFNAL/Geometry/inc/ExtMonFNALMuonID.hh"
+#include "Offline/ExtinctionMonitorFNAL/Geometry/inc/ExtMonFNAL.hh"
+#include "Offline/ExtinctionMonitorFNAL/Geometry/inc/ExtMonFNALMuonID.hh"
 
 namespace CLHEP { class Hep3Vector; }
 namespace CLHEP { class HepRotation; }

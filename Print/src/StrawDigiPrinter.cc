@@ -1,5 +1,5 @@
 
-#include "Print/inc/StrawDigiPrinter.hh"
+#include "Offline/Print/inc/StrawDigiPrinter.hh"
 #include "art/Framework/Principal/Provenance.h"
 #include <string>
 #include <iomanip>
@@ -10,8 +10,7 @@ mu2e::StrawDigiPrinter::Print(art::Event const& event,
   if(verbose()<1) return;
   if(tags().empty()) {
     // if a list of instances not specified, print all instances
-    std::vector< art::Handle<StrawDigiCollection> > vah;
-    event.getManyByType(vah);
+    std::vector< art::Handle<StrawDigiCollection> > vah = event.getMany<StrawDigiCollection>();
     for (auto const & ah : vah) Print(ah);
   } else {
     // print requested instances
@@ -71,11 +70,14 @@ mu2e::StrawDigiPrinter::Print(const mu2e::StrawDigi& obj, int ind, std::ostream&
     << " " 
     << " " << std::setw(6) << obj.TDC()[0]
     << " " << std::setw(6) << obj.TDC()[1]
-    << " " << std::setw(6) << obj.adcWaveform().size()
+    << " " << std::setw(6) << (int) obj.TOT()[0]
+    << " " << std::setw(6) << (int) obj.TOT()[1]
+    << " " << std::setw(6) << obj.PMP()
+    //<< " " << std::setw(6) << obj.adcWaveform().size()
     << " " ;
-  for(auto& i: obj.adcWaveform()) {
-    os << " " << std::setw(4) << i;
-  }
+  //for(auto& i: obj.adcWaveform()) {
+  //  os << " " << std::setw(4) << i;
+  //}
   os << std::endl;
 
 }
@@ -89,7 +91,7 @@ mu2e::StrawDigiPrinter::PrintHeader(const std::string& tag, std::ostream& os) {
 void 
 mu2e::StrawDigiPrinter::PrintListHeader(std::ostream& os) {
   if(verbose()<1) return;
-  os << " ind StrwInd TDC0   TDC1    NADC  ADC\n";
+  os << " ind StrwInd TDC0   TDC1    PMP\n";
 
 }
 

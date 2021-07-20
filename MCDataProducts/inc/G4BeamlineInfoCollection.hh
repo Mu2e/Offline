@@ -7,7 +7,7 @@
 
 #include <vector>
 
-#include "MCDataProducts/inc/G4BeamlineInfo.hh"
+#include "Offline/MCDataProducts/inc/G4BeamlineInfo.hh"
 
 namespace mu2e {
    typedef std::vector<mu2e::G4BeamlineInfo> G4BeamlineInfoCollection;

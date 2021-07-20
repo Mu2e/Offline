@@ -5,8 +5,8 @@
 
 // David Norvil Brown (UofL) August 2017
 
-#include "GeometryService/inc/Mu2eCoordTransform.hh"
-#include "ConfigTools/inc/SimpleConfig.hh"
+#include "Offline/GeometryService/inc/Mu2eCoordTransform.hh"
+#include "Offline/ConfigTools/inc/SimpleConfig.hh"
 #include "CLHEP/Vector/ThreeVector.h"
 
 namespace mu2e {

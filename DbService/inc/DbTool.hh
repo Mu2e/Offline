@@ -14,14 +14,14 @@
 //
 
 #include <map>
-#include "DbService/inc/DbReader.hh"
-#include "DbService/inc/DbSql.hh"
-#include "DbService/inc/DbEngine.hh"
-#include "DbTables/inc/DbId.hh"
-#include "DbTables/inc/DbUtil.hh"
-#include "DbTables/inc/DbTableCollection.hh"
-#include "DbTables/inc/DbVersion.hh"
-#include "DbTables/inc/DbValCache.hh"
+#include "Offline/DbService/inc/DbReader.hh"
+#include "Offline/DbService/inc/DbSql.hh"
+#include "Offline/DbService/inc/DbEngine.hh"
+#include "Offline/DbTables/inc/DbId.hh"
+#include "Offline/DbTables/inc/DbUtil.hh"
+#include "Offline/DbTables/inc/DbTableCollection.hh"
+#include "Offline/DbTables/inc/DbVersion.hh"
+#include "Offline/DbTables/inc/DbValCache.hh"
 
 
 namespace mu2e {
@@ -38,13 +38,23 @@ namespace mu2e {
     int run();
     int init();
 
-    int printTable(std::string name="", 
-		   std::vector<int> cids=std::vector<int>());
+    int printCalibration();
+    int printTable();
+    int printIov();
+    int printGroup();
+    int printExtension();
+    int printVersions();
+    int printPurposes();
     int printTables();
     int printLists();
-    int printPurposes();
-    int printVersions(bool details=false);
-    int printSet();
+
+    int printCIDLine(int cid, int indent=0);
+    int printIOVLine(int iov, int details=0, int indent=0);
+    int printGIDLine(int gid, int details=0, int indent=0);
+    int printEIDLine(int eid, int details=0, int indent=0);
+    int printVIDLine(int vid, int details=0, int indent=0);
+    int printPIDLine(int pid, int details=0, int indent=0);
+
     int commitCalibration();
     int commitCalibrationTable(DbTable::cptr_t const& ptr, 
 			       bool qdr=false, bool admin=false);
@@ -58,6 +68,7 @@ namespace mu2e {
     int commitPurpose();
     int commitVersion();
 
+    int findPidVid(std::string purpose, std::string version, int& pid, int& vid);
     int testUrl();
 
     int prettyTable(std::string title, std::string csv);

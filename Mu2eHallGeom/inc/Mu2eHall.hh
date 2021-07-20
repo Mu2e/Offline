@@ -41,38 +41,32 @@
 //#include "CLHEP/Vector/ThreeVector.h"
 //#include "CLHEP/Vector/TwoVector.h"
 
-#include "GeomPrimitives/inc/ExtrudedSolid.hh"
-#include "GeomPrimitives/inc/GenericTrap.hh"
-#include "Mu2eInterfaces/inc/Detector.hh"
+#include "Offline/GeomPrimitives/inc/ExtrudedSolid.hh"
+#include "Offline/GeomPrimitives/inc/GenericTrap.hh"
+#include "Offline/Mu2eInterfaces/inc/Detector.hh"
 
 #include "canvas/Persistency/Common/Wrapper.h"
 
 namespace mu2e {
 
   class Mu2eHallMaker;
-  
+
   class Mu2eHall : virtual public Detector {
   public:
-    
+
     const std::map<std::string,ExtrudedSolid>& getBldgSolids()      const { return bldgSolids_; }
     const std::map<std::string,ExtrudedSolid>& getDirtSolids()      const { return dirtSolids_; }
     const std::map<std::string,GenericTrap>&   getDirtTrapSolids()  const { return dirtTrapSolids_; }
-    
-    const ExtrudedSolid& 
-    getBldgSolid( const std::string& str ) const {
-      return bldgSolids_.find( str )->second;
-    }
 
-    const ExtrudedSolid& 
-    getDirtSolid( const std::string& str ) const {
-      return dirtSolids_.find( str )->second;
-    }
+    const ExtrudedSolid&
+    getBldgSolid( const std::string& str ) const;
 
-    const GenericTrap& 
-    getDirtTrapSolid( const std::string& str ) const {
-      return dirtTrapSolids_.find( str )->second;
-    }
- 
+    const ExtrudedSolid&
+    getDirtSolid( const std::string& str ) const;
+
+    const GenericTrap&
+    getDirtTrapSolid( const std::string& str ) const;
+
     double getWallExtentz( const std::string& , const int  ) const;
 
     //----------------------------------------------------------------

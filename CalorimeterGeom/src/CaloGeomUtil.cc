@@ -5,9 +5,9 @@
 //
 
 
-#include "CalorimeterGeom/inc/CaloGeomUtil.hh"
-#include "CalorimeterGeom/inc/Disk.hh"
-#include "CalorimeterGeom/inc/Crystal.hh"
+#include "Offline/CalorimeterGeom/inc/CaloGeomUtil.hh"
+#include "Offline/CalorimeterGeom/inc/Disk.hh"
+#include "Offline/CalorimeterGeom/inc/Crystal.hh"
 
 #include "CLHEP/Vector/Rotation.h"
 #include "CLHEP/Vector/ThreeVector.h"
@@ -28,7 +28,7 @@ namespace mu2e {
 
     CLHEP::Hep3Vector CaloGeomUtil::mu2eToCrystal(int crystalId, const CLHEP::Hep3Vector& pos) const 
     {   
-        const Disk& thisDisk = disk( fullCrystalList_.at(crystalId)->diskId());
+        const Disk& thisDisk = disk( fullCrystalList_.at(crystalId)->diskID());
         CLHEP::Hep3Vector crysLocalPos = fullCrystalList_.at(crystalId)->localPosition();
         return thisDisk.geomInfo().rotation()*(pos-thisDisk.geomInfo().origin())-crysLocalPos;  
     }
@@ -53,7 +53,7 @@ namespace mu2e {
 
     CLHEP::Hep3Vector CaloGeomUtil::crystalToMu2e(int crystalId, const CLHEP::Hep3Vector& pos) const 
     {   
-        const Disk& thisDisk = disk( fullCrystalList_.at(crystalId)->diskId() );
+        const Disk& thisDisk = disk( fullCrystalList_.at(crystalId)->diskID() );
         CLHEP::Hep3Vector crysLocalPos = fullCrystalList_.at(crystalId)->localPosition();
         return thisDisk.geomInfo().inverseRotation()*(pos+crysLocalPos) + thisDisk.geomInfo().origin();  
     }

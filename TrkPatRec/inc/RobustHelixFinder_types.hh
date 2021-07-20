@@ -3,6 +3,8 @@
 
 #include "TObject.h"
 #include <vector>
+#include "fhiclcpp/types/Atom.h"
+#include "fhiclcpp/types/Sequence.h"
 
 class TH1F;
 class TH2F;
@@ -22,6 +24,12 @@ namespace mu2e {
   class RobustHelixFit;
 
   namespace RobustHelixFinderTypes {
+
+    struct Config {
+      fhicl::Atom<int> diagLevel{fhicl::Name("diagLevel"), fhicl::Comment("diagnostic level")};
+      fhicl::Atom<std::string> tool_type{fhicl::Name("tool_type"), fhicl::Comment("tool type: Robust Helix Finder Diag")};
+      fhicl::Atom<int> mcTruth{fhicl::Name("mcTruth"), fhicl::Comment("MC truth")};
+    };
   
     struct Data_t {
       const art::Event*               event;

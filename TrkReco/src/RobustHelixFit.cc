@@ -1,17 +1,20 @@
 //
 // Object to perform helix fit to straw hits
 //
+// $Id: HelixFit.cc,v 1.12 2014/07/10 14:47:26 brownd Exp $
+// $Author: brownd $
+// $Date: 2014/07/10 14:47:26 $
 //
 // mu2e
-#include "TrkReco/inc/RobustHelixFit.hh"
-#include "GeometryService/inc/GeomHandle.hh"
-#include "CalorimeterGeom/inc/Calorimeter.hh"
+#include "Offline/TrkReco/inc/RobustHelixFit.hh"
+#include "Offline/GeometryService/inc/GeomHandle.hh"
+#include "Offline/CalorimeterGeom/inc/Calorimeter.hh"
 #include "CLHEP/Units/PhysicalConstants.h"
-#include "TrackerGeom/inc/Tracker.hh"
+#include "Offline/TrackerGeom/inc/Tracker.hh"
 
-#include "RecoDataProducts/inc/CaloCluster.hh"
+#include "Offline/RecoDataProducts/inc/CaloCluster.hh"
 
-#include "Mu2eUtilities/inc/polyAtan2.hh"
+#include "Offline/Mu2eUtilities/inc/polyAtan2.hh"
 
 // root
 // #include "TH1F.h"
@@ -32,71 +35,71 @@ namespace mu2e
  
   typedef std::pair<float,float> WVal;
 
-  RobustHelixFit::RobustHelixFit(fhicl::ParameterSet const& pset) :
-    _diag(pset.get<int>("diagLevel",0)),
-    _debug(pset.get<int>("debugLevel",0)),
-    _cinit(static_cast<CircleFit>(pset.get<int>("CircleInitType",median))),
-    _cfit(static_cast<CircleFit>(pset.get<int>("CircleFitType",median))),
-    _dontuseflag(pset.get<std::vector<std::string>>("DontUseFlag",vector<string>{"Outlier"})),
-    _minnsh(pset.get<unsigned>("minNStrawHits",10)),
-    _minnhit(pset.get<unsigned>("minNHit",5)),
-    _minxyresid(pset.get<float>("minXYResid",5.)),
-    _lambda0(pset.get<float>("lambda0",0.1)),
-    _lstep(pset.get<float>("lstep",0.01)),
-    _minlambda(pset.get<float>("minlambda",0.001)),
-    _mindfdz(pset.get<float>("minDfDz",0.002)),
-    _maxdfdz(pset.get<float>("maxDfDz",0.01)),
-    _nLoopsdfdz(pset.get<int>("nLoopsdfdz",2)),
-    _nphibins(pset.get<unsigned>("NPhiHistBins",25)),
-    _phifactor(pset.get<float>("PhiHistRangeFactor",1.2)),
-    _minnphi(pset.get<unsigned>("MinNPhi",2)),//5)),//FIXME!
-    _maxniter(pset.get<unsigned>("maxniter",100)),
-    _minzsep(pset.get<float>("minzsep",100.0)),
-    _maxzsep(pset.get<float>("maxzsep",500.0)),
-    _mindphi(pset.get<float>("mindphi",0.5)),
-    _maxdphi(pset.get<float>("maxdphi",2.5)),
-    _sigmaPhi(pset.get<float>("sigmaPhi",0.49)),//1636)),// rad
-    _mindist(pset.get<float>("mindist",100.0)), // mm
-    _maxdist(pset.get<float>("maxdist",500.0)), // mm
-    _maxdxy(pset.get<float>("maxdxy",100.0)),
-    _maxXDPhi(pset.get<float>("maxXDPhi",5.0)), 
-    _rmin(pset.get<float>("minR",160.0)), // mm
-    _rmax(pset.get<float>("maxR",320.0)), // mm
-    _rcmin(pset.get<float>("minCenterR",140.0)), // mm
-    _rcmax(pset.get<float>("maxCenterR",410.0)), // mm
+  RobustHelixFit::RobustHelixFit(const Config& config) :
+    _diag(config.diagLevel()),
+    _debug(config.debugLevel()),
+    _cinit(static_cast<CircleFit>(config.CircleInitType())),
+    _cfit(static_cast<CircleFit>(config.CircleFitType())),
+    _dontuseflag(config.DontUseFlag()),
+    _minnsh(config.minNStrawHits()),
+    _minnhit(config.minNHit()),
+    _minxyresid(config.minXYResid()),
+    _lambda0(config.lambda0()),
+    _lstep(config.lstep()),
+    _minlambda(config.minlambda()),
+    _mindfdz(config.minDfDz()),
+    _maxdfdz(config.maxDfDz()),
+    _nLoopsdfdz(config.nLoopsdfdz()),
+    _nphibins(config.NPhiHistBins()),
+    _phifactor(config.PhiHistRangeFactor()),
+    _minnphi(config.MinNPhi()),//5)),//FIXME!
+    _maxniter(config.maxniter()),
+    _minzsep(config.minzsep()),
+    _maxzsep(config.maxzsep()),
+    _mindphi(config.mindphi()),
+    _sigmaPhi(config.sigmaPhi()),//1636)),// rad
+    _mindist(config.mindist()), // mm
+    _maxdist(config.maxdist()), // mm
+    _maxdxy(config.maxdxy()),
+    _maxXDPhi(config.maxXDPhi()), 
+    _rmin(config.minR()), // mm
+    _rmax(config.maxR()), // mm
+    _rcmin(config.minCenterR()), // mm
+    _rcmax(config.maxCenterR()), // mm
     //    _mindelta(pset.get<float>("minDelta",500.0)),
-    _lmin(pset.get<float>("minAbsLambda",130.0)), 
-    _lmax(pset.get<float>("maxAbsLambda",320.0)),
+    _lmin(config.minAbsLambda()), 
+    _lmax(config.maxAbsLambda()),
     //    _targetcon(pset.get<bool>("targetconsistent",true)),
-    _targetinter(pset.get<bool>("targetintersect",false)),
-    _tripler(pset.get<bool>("TripleRadius",false)),
-    _errrwt(pset.get<bool>("HitErrorWeight",false)),
-    _usecc(pset.get<bool>("UseCaloCluster",false)),
-    _ccwt(pset.get<float>("CaloClusterWeight",10.0)), // Cluster weight in units of non-stereo hits
-    _targetradius(pset.get<float>("targetradius",100.0)), // effective target radius (mm)
-    _trackerradius(pset.get<float>("trackerradius",700.0)), // tracker out radius; (mm)
-    _rwind(pset.get<float>("RadiusWindow",10.0)), // window for calling a point to be 'on' the helix in the AGG fit (mm)
+    _targetinter(config.targetintersect()),
+    _tripler(config.TripleRadius()),
+    _errrwt(config.HitErrorWeight()),
+    _usecc(config.UseCaloCluster()),
+    _ccwt(config.CaloClusterWeight()), // Cluster weight in units of non-stereo hits
+    _targetradius(config.targetradius()), // effective target radius (mm)
+    _trackerradius(config.trackerradius()), // tracker out radius; (mm)
+    _rwind(config.RadiusWindow()), // window for calling a point to be 'on' the helix in the AGG fit (mm)
     _hphi("hphi","phi value",_nphibins,-_phifactor*CLHEP::pi,_phifactor*CLHEP::pi),
-    _ntripleMin(pset.get<unsigned>("ntripleMin",5)),
-    _ntripleMax(pset.get<unsigned>("ntripleMax",500)),
-    _use_initFZ_from_dzFrequency(pset.get<bool>("use_initFZ_from_dzFrequency",false)),
-    _initFZMinL(pset.get<float>("initFZMinLambda",30.)),
-    _initFZMaxL(pset.get<float>("initFZMaxLambda",530.)),
-    _initFZStepL(pset.get<float>("initFZStepLambda",20.)),
-    _fitFZMinL(pset.get<float>("fitFZMinLambda",10.)),
-    _fitFZMaxL(pset.get<float>("fitFZMaxLambda",510.)),
-    _fitFZStepL(pset.get<float>("fitFZStepLambda",4.))
-  {
-    float minarea(pset.get<float>("minArea",5000.0));
+    _ntripleMin(config.ntripleMin()),
+    _ntripleMax(config.ntripleMax()),
+    _use_initFZ_from_dzFrequency(config.use_initFZ_from_dzFrequency()),
+    _initFZMinL(config.initFZMinLambda()),
+    _initFZMaxL(config.initFZMaxLambda()),
+    _initFZStepL(config.initFZStepLambda()),
+    _fitFZMinL(config.fitFZMinLambda()),
+    _fitFZMaxL(config.fitFZMaxLambda()),
+    _fitFZStepL(config.fitFZStepLambda())
+  { 
+    _maxdphi=_minzsep/_initFZMinL;
+    float minarea(config.minArea());
     _minarea2    = minarea*minarea;
     _initFZNBins = (int)((_initFZMaxL - _initFZMinL)/_initFZStepL);
     _fitFZNBins  = (int)((_fitFZMaxL - _fitFZMinL)/_fitFZStepL);
     if (_use_initFZ_from_dzFrequency){
-      _initFZFrequencyNSigma          = pset.get<float>("initFZFrequencyNSigma", 3);
-      _initFZFrequencyBinsToIntegrate = pset.get<int>  ("initFZFrequencyBinsToIntegrate", 10);
-      _initFZFrequencyArraySize       = pset.get<int>  ("initFZFrequencyArraySize", 200);
-      _initFZFrequencyNMaxPeaks       = pset.get<int>  ("initFZFrequencyNMaxPeaks", 10);
-      _initFZFrequencyTolerance       = pset.get<float>("initFZFrequencyTolerance", 2.);
+      _initFZFrequencyNSigma          = config.initFZFrequencyNSigma();
+      _initFZFrequencyBinsToIntegrate = config.initFZFrequencyBinsToIntegrate();
+      _initFZFrequencyArraySize       = config.initFZFrequencyArraySize();
+      _initFZFrequencyNMaxPeaks       = config.initFZFrequencyNMaxPeaks();
+      _initFZFrequencyTolerance       = config.initFZFrequencyTolerance();
     }
   }
 
@@ -1270,7 +1273,7 @@ namespace mu2e
       {
 	// mu2e::GeomHandle<mu2e::Calorimeter> ch;
 	// const Calorimeter* calo = ch.get();
-	XYZVec cog = Geom::toXYZVec(_calorimeter->geomUtil().mu2eToTracker(_calorimeter->geomUtil().diskFFToMu2e(HelixData._hseed.caloCluster()->diskId(),HelixData._hseed.caloCluster()->cog3Vector())));
+	XYZVec cog = Geom::toXYZVec(_calorimeter->geomUtil().mu2eToTracker(_calorimeter->geomUtil().diskFFToMu2e(HelixData._hseed.caloCluster()->diskID(),HelixData._hseed.caloCluster()->cog3Vector())));
 	float rad = sqrtf(XYZVec(cog - center).perp2());
 	radii.push_back(make_pair(rad,_ccwt));
       }

@@ -1,14 +1,14 @@
 #include <string>
 
-#include "CRVAnalysis/inc/CrvHitInfoReco.hh"
-#include "CRVAnalysis/inc/CrvHitInfoMC.hh"
-#include "CRVAnalysis/inc/CrvWaveformInfo.hh"
-#include "CRVAnalysis/inc/CrvSummaryReco.hh"
-#include "CRVAnalysis/inc/CrvSummaryMC.hh"
-#include "CRVAnalysis/inc/CrvPlaneInfoMC.hh"
-#include "MCDataProducts/inc/SimParticle.hh"
-#include "Mu2eUtilities/inc/SimParticleTimeOffset.hh"
-#include "CRVAnalysis/inc/CrvPulseInfoReco.hh"
+#include "Offline/CRVAnalysis/inc/CrvHitInfoReco.hh"
+#include "Offline/CRVAnalysis/inc/CrvHitInfoMC.hh"
+#include "Offline/CRVAnalysis/inc/CrvWaveformInfo.hh"
+#include "Offline/CRVAnalysis/inc/CrvSummaryReco.hh"
+#include "Offline/CRVAnalysis/inc/CrvSummaryMC.hh"
+#include "Offline/CRVAnalysis/inc/CrvPlaneInfoMC.hh"
+#include "Offline/MCDataProducts/inc/SimParticle.hh"
+#include "Offline/Mu2eUtilities/inc/SimParticleTimeOffset.hh"
+#include "Offline/CRVAnalysis/inc/CrvPulseInfoReco.hh"
 #include "art/Framework/Principal/Event.h"
 
 namespace mu2e
@@ -22,7 +22,7 @@ namespace mu2e
     static void FillCrvHitInfoCollections(const std::string &crvCoincidenceClusterModuleLabel,
                                           const std::string &crvCoincidenceClusterMCModuleLabel,
                                           const std::string &crvRecoPulseLabel,
-                                          const std::string &crvStepPointMCLabel,
+                                          const std::string &crvStepLabel,
                                           const std::string &simParticleLabel,
                                           const std::string &mcTrajectoryLabel,
                                           const art::Event& event, CrvHitInfoRecoCollection &recoInfo, CrvHitInfoMCCollection &MCInfo,

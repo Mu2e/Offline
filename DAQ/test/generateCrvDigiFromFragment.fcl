@@ -5,7 +5,7 @@
 #
 # Contact person G. Pezzullo, R. Ehrlich
 
-#include "DAQ/fcl/prolog_trigger.fcl"
+#include "Offline/DAQ/fcl/prolog_trigger.fcl"
 
 process_name : FragmentToDigi
 
@@ -46,7 +46,7 @@ outputs:  {
 
 #    outputCommands: [ "drop *",
 #		       "keep mu2e::StrawDigis_makeSD_*_*",
-#		       "keep mu2e::CaloDigis_CaloDigiFromShower_*_*",
+#		       "keep mu2e::CaloDigis_CaloDigiMaker_*_*",
 #                      "keep mu2e::DataBlocks_TrackerPacketProducer_*_*",
 #                      "keep mu2e::DataBlocks_CalorimeterPacketProducer_*_*",
 #                      "keep mu2e::DataBlocks_CosmicRayVetoPacketProducer_*_*"

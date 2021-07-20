@@ -1,17 +1,18 @@
-#include "EventDisplay/src/ContentSelector.h"
+#include "Offline/EventDisplay/src/ContentSelector.h"
 #include "art/Framework/Principal/SubRun.h"
 
 namespace mu2e_eventdisplay
 {
 
-ContentSelector::ContentSelector(TGComboBox *hitBox, TGComboBox *caloHitBox, TGComboBox *crvHitBox, TGListBox *trackBox, std::string const &g4ModuleLabel, std::string const &physicalVolumesMultiLabel)
+ContentSelector::ContentSelector(TGComboBox *hitBox, TGComboBox *caloHitBox, TGComboBox *crvHitBox, TGListBox *trackBox, std::string const &g4ModuleLabel, std::string const &physicalVolumesMultiLabel, std::string const &protonBunchTimeLabel)
   :
   _hitBox(hitBox),
   _caloHitBox(caloHitBox),
   _crvHitBox(crvHitBox),
   _trackBox(trackBox),
   _g4ModuleLabel(g4ModuleLabel),
-  _physicalVolumesMultiLabel(physicalVolumesMultiLabel)
+  _physicalVolumesMultiLabel(physicalVolumesMultiLabel),
+  _protonBunchTimeLabel(protonBunchTimeLabel)
   {}
 
 void ContentSelector::firstLoop()  //This is useful for now, but may be changed later
@@ -23,7 +24,7 @@ void ContentSelector::firstLoop()  //This is useful for now, but may be changed 
   if(entry==nullptr) entry=_hitBox->FindEntry("KalRep:TrkPatRec:DownstreameMinus");
   if(entry!=nullptr) _hitBox->Select(entry->EntryId());
 
-  entry=_caloHitBox->FindEntry("CaloCrystalHit:CaloCrystalHitsMaker:");
+  entry=_caloHitBox->FindEntry("CaloHit:CaloHitsMaker:");
   if(entry!=nullptr) _caloHitBox->Select(entry->EntryId());
 
   entry=_trackBox->FindEntry("TrkExtTraj:TrkExt:");
@@ -42,7 +43,7 @@ void ContentSelector::createNewEntries(std::vector<art::Handle<CollectionType> >
                                        const art::Event &event, const std::string &className,
                                        std::vector<entryStruct> &newEntries, int classID)
 {
-  event.getManyByType(dataVector);
+  dataVector=event.getMany<CollectionType>();
   typedef std::vector<art::Handle<CollectionType> > CollectionVector;
   typedef typename CollectionVector::const_iterator itertype;
   itertype iter;
@@ -107,7 +108,6 @@ void ContentSelector::setAvailableCollections(const art::Event& event)
   newEntries.clear();
   newEntries.push_back(nothingSelected);
   createNewEntries<mu2e::StepPointMCCollection>(_caloStepPointMCVector, event, "StepPointMC", newEntries, 1);
-  createNewEntries<mu2e::CaloCrystalHitCollection>(_caloCrystalHitVector, event, "CaloCrystalHit", newEntries, 2);
   createNewEntries<mu2e::CaloHitCollection>(_caloHitVector, event, "CaloHit", newEntries, 3);
 
   if(newEntries!=_caloHitEntries)
@@ -148,7 +148,7 @@ void ContentSelector::setAvailableCollections(const art::Event& event)
   }
 
 //CRV Waveforms (not inside a menu)
-  event.getManyByType(_crvDigisVector);
+  _crvDigisVector=event.getMany<mu2e::CrvDigiCollection>();
 
 //Track Selection
   newEntries.clear();
@@ -168,6 +168,7 @@ void ContentSelector::setAvailableCollections(const art::Event& event)
       std::string selectedEntry=(dynamic_cast<TGTextLBEntry*>(selections.At(i)))->GetText()->GetString();
       oldSelections.push_back(selectedEntry);
     }
+    selections.RemoveAll();
     _trackBox->RemoveAll();
     for(unsigned int i=0; i<newEntries.size(); i++)
     {
@@ -178,11 +179,12 @@ void ContentSelector::setAvailableCollections(const art::Event& event)
     }
   }
 
-//PointTrajectories
-  event.getManyByType(_mcTrajectoryVector);
+//MCTrajectories
+  _mcTrajectoryVector=event.getMany<mu2e::MCTrajectoryCollection>();
 
 //Other
   _hasPhysicalVolumesMulti=event.getSubRun().getByLabel(_physicalVolumesMultiLabel, _physicalVolumesMulti);
+  event.getByLabel(_protonBunchTimeLabel, _protonBunchTime);
 }
 
 bool ContentSelector::getSelectedHitsName(std::string &className,
@@ -299,17 +301,13 @@ const CollectionType* ContentSelector::getSelectedCaloHitCollection() const
     case 1 : if(typeid(CollectionType)!=typeid(mu2e::StepPointMCCollection)) return(nullptr);
              if(index>=static_cast<int>(_caloStepPointMCVector.size())) return(nullptr);
              return(reinterpret_cast<const CollectionType*>(_caloStepPointMCVector[index].product()));
-    case 2 : if(typeid(CollectionType)!=typeid(mu2e::CaloCrystalHitCollection)) return(nullptr);
-             if(index>=static_cast<int>(_caloCrystalHitVector.size())) return(nullptr);
-             return(reinterpret_cast<const CollectionType*>(_caloCrystalHitVector[index].product()));
-    case 3 : if(typeid(CollectionType)!=typeid(mu2e::CaloHitCollection)) return(nullptr);
+    case 2 : if(typeid(CollectionType)!=typeid(mu2e::CaloHitCollection)) return(nullptr);
              if(index>=static_cast<int>(_caloHitVector.size())) return(nullptr);
              return(reinterpret_cast<const CollectionType*>(_caloHitVector[index].product()));
   };
   return(nullptr);
 }
 template const mu2e::StepPointMCCollection* ContentSelector::getSelectedCaloHitCollection<mu2e::StepPointMCCollection>() const;
-template const mu2e::CaloCrystalHitCollection* ContentSelector::getSelectedCaloHitCollection<mu2e::CaloCrystalHitCollection>() const;
 template const mu2e::CaloHitCollection*    ContentSelector::getSelectedCaloHitCollection<mu2e::CaloHitCollection>() const;
 
 
@@ -412,6 +410,12 @@ const mu2e::PhysicalVolumeInfoMultiCollection* ContentSelector::getPhysicalVolum
 {
   if(_hasPhysicalVolumesMulti) return(_physicalVolumesMulti.product());
   else return(nullptr);
+}
+
+const double ContentSelector::getTDC0time() const
+{
+  double TDC0time = -_protonBunchTime->pbtime_;
+  return TDC0time;
 }
 
 const mu2e::MCTrajectoryCollection* ContentSelector::getMCTrajectoryCollection(const trackInfoStruct &t) const

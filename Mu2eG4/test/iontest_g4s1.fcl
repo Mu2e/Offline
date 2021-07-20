@@ -1,0 +1,112 @@
+// Andrei Gaponenko, 2013
+// Jake Colston & Joseph Brock, 2015 (edit for cd3)
+// KLG 2020 to test ion store/restore
+
+// Note that this test is not meant to be used for a real production job, but only to test if ions can be restored properly
+// Use it with iontest_g4s2.fcl
+
+#include "Offline/fcl/minimalMessageService.fcl"
+#include "Offline/fcl/standardProducers.fcl"
+#include "Offline/fcl/standardServices.fcl"
+
+BEGIN_PROLOG
+
+CutSomeIons : {
+   type: pdgId
+   pars: [
+      1000661549, 1000260589, 1000260569, 1000260579, 1000270579, 1000751829,
+      1000591349, 1000731739, 1000661529, 1000010020, 1000601419, 1000591410,
+      1000741840, 1000280580, 1000290630
+   ]
+   write : someions
+}
+
+END_PROLOG
+
+process_name : iontestg4s1
+
+source: { module_type: EmptyEvent maxEvents: 5 }
+
+services: @local::Services.Sim
+
+physics : {
+
+   producers : {
+
+      generate: @local::PrimaryProtonGun
+
+      genCounter : { module_type : GenEventCounter }
+
+      g4run : @local::g4run
+
+      compressPV : {
+         module_type    : CompressPhysicalVolumes
+         volumesInput   : "g4run"
+         hitInputs      : []
+         particleInputs : [ "ionfilter" ]
+      }
+
+   } // producers
+
+   filters : {
+      g4consistent: {
+         module_type: FilterStatusG4
+         input: "g4run"
+         maxAcceptedStatus: 9  //  status 10 and above means StepPointMCCollection may have non-dereferencable pointers
+      }
+
+      ionfilter : {
+         module_type               : FilterG4Out
+         mainHitInputs             : [ "g4run:someions" ]
+         extraHitInputs            : [ "g4run:virtualdetector" ]
+         vetoDaughters             : []
+      }
+   } // filters
+
+   analyzers : {
+      genCountLogger : { module_type : GenEventCountReader }
+   } // analyzers
+
+   trigFilter    : [ generate, genCounter, g4run, g4consistent, ionfilter, compressPV ]
+   trigger_paths : [ trigFilter ]
+
+   e1        : [ filteredOutput ]
+   end_paths : [ e1 ]
+} // physics
+
+outputs : {
+   fullOutput: {
+      module_type : RootOutput
+      fileName    : "sim.owner.iontest-g4s1-full.version.sequencer.art"
+   }
+
+   filteredOutput : {
+      module_type    : RootOutput
+      SelectEvents   : ["trigFilter"]
+      outputCommands : [ "drop *_*_*_*",
+         "keep mu2e::GenParticles_*_*_*",
+         "keep mu2e::GenEventCount_*_*_*",
+         "keep mu2e::StatusG4_*_*_*",
+         "keep *_ionfilter_*_*",
+         "keep *_compressPV_*_*"
+      ]
+      fileName       : "sim.owner.iontest-g4s1.version.sequencer.art"
+   }
+}
+
+//================================================================
+physics.producers.g4run.Mu2eG4SteppingOnlyCut: {
+   type: union
+   pars: [
+      @local::CutSomeIons, @local::mu2eg4CutDeltaElectrons
+   ]
+}
+
+physics.producers.g4run.physics.minRangeCut : 1.0 // mm
+
+//physics.producers.g4run.SimParticlePrinter.enabled: true
+//physics.producers.g4run.debug.trackingVerbosityLevel : 1
+//physics.producers.g4run.debug.diagLevel : 1
+
+services.TFileService.fileName: "/dev/null"
+services.SeedService.baseSeed          : 8

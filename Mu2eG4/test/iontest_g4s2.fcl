@@ -1,0 +1,44 @@
+// Andrei Gaponenko, 2013
+// Jake Colston & Joseph Brock, 2015 (edit for cd3)
+// KLG 2020 to test ion store/restore
+
+// Note that this test is not meant to be used for a real production job, but only to test if ions can be restored properly
+// Run iontest_g4s1.fcl first to prepare an input file.
+
+
+#include "Offline/fcl/minimalMessageService.fcl"
+#include "Offline/fcl/standardProducers.fcl"
+#include "Offline/fcl/standardServices.fcl"
+
+process_name : iontestg4s2
+
+source : {
+   module_type : RootInput
+   fileNames: [ "sim.owner.iontest-g4s1.version.sequencer.art" ]
+}
+
+services: @local::Services.Sim
+
+physics : {
+    producers : {
+      g4run : @local::g4run
+    }
+   p1: [ g4run ]
+   trigger_paths : [ p1 ]
+}
+
+//================================================================
+physics.producers.g4run.inputs: {
+   primaryType: StepPoints
+   primaryTag: "ionfilter:someions"
+   inputPhysVolumeMultiInfo: compressPV
+   inputMCTrajectories: ""
+}
+
+physics.producers.g4run.SimParticlePrinter.enabled: true
+services.TFileService.fileName: "/dev/null"
+
+//physics.producers.g4run.debug.diagLevel : 1
+//physics.producers.g4run.debug.trackingVerbosityLevel : 1
+
+services.SeedService.baseSeed          : 8

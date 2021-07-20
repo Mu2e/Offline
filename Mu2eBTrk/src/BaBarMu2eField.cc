@@ -1,10 +1,10 @@
 //
 // BaBar includes
 #include "BTrk/BaBar/BaBar.hh"
-#include "Mu2eBTrk/inc/BaBarMu2eField.hh"
-#include "GeometryService/inc/GeomHandle.hh"
-#include "BFieldGeom/inc/BFieldManager.hh"
-#include "GeometryService/inc/DetectorSystem.hh"
+#include "Offline/Mu2eBTrk/inc/BaBarMu2eField.hh"
+#include "Offline/GeometryService/inc/GeomHandle.hh"
+#include "Offline/BFieldGeom/inc/BFieldManager.hh"
+#include "Offline/GeometryService/inc/DetectorSystem.hh"
 
 namespace mu2e
 {

@@ -4,9 +4,9 @@
 #
 #
 # Contact person G. Pezzullo
-#include "fcl/minimalMessageService.fcl"
-#include "fcl/standardServices.fcl"
-#include "DAQ/fcl/prolog_trigger.fcl"
+#include "Offline/fcl/minimalMessageService.fcl"
+#include "Offline/fcl/standardServices.fcl"
+#include "Offline/DAQ/fcl/prolog_trigger.fcl"
 process_name : inspectTDAQFile
 
 source : {
@@ -34,7 +34,7 @@ physics : {
       readCD : 
       {
 	 module_type : CaloDigiAna
-	 digisTag     : CaloDigiFromShower
+	 digisTag     : CaloDigiMaker
       }
 
 

@@ -1,8 +1,8 @@
 #include "BTrk/BaBar/BaBar.hh"
-#include "TrkReco/inc/TrkTimeCalculator.hh"
+#include "Offline/TrkReco/inc/TrkTimeCalculator.hh"
 #include "CLHEP/Units/PhysicalConstants.h"
-#include "GeometryService/inc/GeomHandle.hh"
-#include "CalorimeterGeom/inc/Calorimeter.hh"
+#include "Offline/GeometryService/inc/GeomHandle.hh"
+#include "Offline/CalorimeterGeom/inc/Calorimeter.hh"
 
 namespace mu2e
 {
@@ -16,8 +16,8 @@ namespace mu2e
      _beta(pset.get<double>("StrawHitBeta",1.)),
      _shErr(pset.get<double>("StrawHitTimeErr",9.7)), // ns effective hit time res. without TOT
      _caloZOffset(pset.get<double>("CaloClusterZOffset",-120.0)), // WRT downstream face (mm)
-     _caloT0Offset(pset.get<double>("TrkToCaloTimeOffset",-0.4)), // nanoseconds
-     _caloT0Err(pset.get<double>("CaloTimeErr",0.5)) // nanoseconds
+     _caloTimeOffset(pset.get<double>("TrkToCaloTimeOffset",-0.4)), // nanoseconds
+     _caloTimeErr(pset.get<double>("CaloTimeErr",0.5)) // nanoseconds
      { }
 
    TrkTimeCalculator::TrkTimeCalculator(const Config& config) : 
@@ -29,8 +29,8 @@ namespace mu2e
      _beta(          config.beta()),
      _shErr(         config.shErr()),
      _caloZOffset(   config.caloZOffset()),
-     _caloT0Offset(  config.caloT0Offset()),
-     _caloT0Err(     config.caloT0Err())
+     _caloTimeOffset(  config.caloTimeOffset()),
+     _caloTimeErr(     config.caloTimeErr())
    {}
 
 
@@ -51,7 +51,7 @@ namespace mu2e
    double TrkTimeCalculator::caloClusterTime(CaloCluster const& cc,double pitch) const 
    {
       mu2e::GeomHandle<mu2e::Calorimeter> ch;
-      CLHEP::Hep3Vector cog = ch->geomUtil().mu2eToTracker(ch->geomUtil().diskToMu2e( cc.diskId(), cc.cog3Vector())); 
+      CLHEP::Hep3Vector cog = ch->geomUtil().mu2eToTracker(ch->geomUtil().diskToMu2e( cc.diskID(), cc.cog3Vector())); 
       return cc.time() - timeOfFlightTimeOffset(cog.z()+_caloZOffset,pitch) + trkToCaloTimeOffset();
    }
 

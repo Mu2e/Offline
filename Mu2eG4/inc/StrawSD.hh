@@ -7,13 +7,13 @@
 //
 
 // Mu2e includes
-#include "Mu2eG4/inc/Mu2eSensitiveDetector.hh"
-#include "TrackerGeom/inc/SupportModel.hh"
+#include "Offline/Mu2eG4/inc/Mu2eG4SensitiveDetector.hh"
+#include "Offline/TrackerGeom/inc/SupportModel.hh"
 
 
 namespace mu2e {
 
-  class StrawSD : public Mu2eSensitiveDetector{
+  class StrawSD : public Mu2eG4SensitiveDetector{
 
   public:
     StrawSD(const G4String, SimpleConfig const & config);

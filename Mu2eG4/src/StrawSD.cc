@@ -19,24 +19,24 @@
 #include "cetlib_except/exception.h"
 
 // Mu2e includes
-#include "Mu2eG4/inc/StrawSD.hh"
-#include "Mu2eG4/inc/Mu2eG4UserHelpers.hh"
-#include "Mu2eG4/inc/SimParticleHelper.hh"
-#include "Mu2eG4/inc/EventNumberList.hh"
-#include "Mu2eG4/inc/PhysicsProcessInfo.hh"
-#include "TrackerGeom/inc/Tracker.hh"
-#include "GeometryService/inc/GeometryService.hh"
-#include "GeometryService/inc/GeomHandle.hh"
-#include "GeometryService/inc/DetectorSystem.hh"
-#include "Mu2eUtilities/inc/TwoLinePCA.hh"
-#include "GeneralUtilities/inc/LinePointPCA.hh"
-#include "ConfigTools/inc/SimpleConfig.hh"
+#include "Offline/Mu2eG4/inc/StrawSD.hh"
+#include "Offline/Mu2eG4/inc/Mu2eG4UserHelpers.hh"
+#include "Offline/Mu2eG4/inc/SimParticleHelper.hh"
+#include "Offline/Mu2eG4/inc/EventNumberList.hh"
+#include "Offline/Mu2eG4/inc/PhysicsProcessInfo.hh"
+#include "Offline/TrackerGeom/inc/Tracker.hh"
+#include "Offline/GeometryService/inc/GeometryService.hh"
+#include "Offline/GeometryService/inc/GeomHandle.hh"
+#include "Offline/GeometryService/inc/DetectorSystem.hh"
+#include "Offline/Mu2eUtilities/inc/TwoLinePCA.hh"
+#include "Offline/GeneralUtilities/inc/LinePointPCA.hh"
+#include "Offline/ConfigTools/inc/SimpleConfig.hh"
 
 // G4 includes
-#include "G4RunManager.hh"
-#include "G4Step.hh"
-#include "G4ThreeVector.hh"
-#include "G4ios.hh"
+#include "Geant4/G4RunManager.hh"
+#include "Geant4/G4Step.hh"
+#include "Geant4/G4ThreeVector.hh"
+#include "Geant4/G4ios.hh"
 
 //
 // Outstanding questions:
@@ -49,7 +49,7 @@ using namespace std;
 namespace mu2e {
 
   StrawSD::StrawSD(G4String name, SimpleConfig const & config ):
-    Mu2eSensitiveDetector(name,config),
+    Mu2eG4SensitiveDetector(name,config),
     _nStrawsPerPlane(0),
     _nStrawsPerPanel(0),
     _TrackerVersion(0),
@@ -81,7 +81,7 @@ namespace mu2e {
       _planesft = StrawId::_planesft;
 
       _verbosityLevel = max(verboseLevel,config.getInt("tracker.verbosityLevel",0)); // Geant4 SD verboseLevel
-      _supportModel   = tracker->getSupportModel();
+      _supportModel   = tracker->g4Tracker()->getSupportModel();
 
       if ( _TrackerVersion < 3 ) {
         throw cet::exception("StrawSD")
@@ -251,6 +251,7 @@ namespace mu2e {
                                         prePosTracker,
                                         postPosTracker,
                                         preMomWorld,
+                                        aStep->GetPostStepPoint()->GetMomentum(),
                                         stepL,
                                         endCode
                                         ));
@@ -279,7 +280,7 @@ namespace mu2e {
       if ( _verbosityLevel>4 || diffMag>tolerance) {
 
         const Plane& plane = tracker->getPlane(straw.id().getPlane());
-        const Panel& panel = plane.getPanel(straw.id().getPanel());
+//        const Panel& panel = plane.getPanel(straw.id().getPanel());
 
         G4cout << __func__ << " straw info: event track panel plane straw id: " <<
           setw(4) << en << " " <<
@@ -296,7 +297,7 @@ namespace mu2e {
           ", straw.MidPoint "   << straw.getMidPoint() <<
           //          ", panel.boxOffset " << panel.boxOffset() <<
           ", plane.origin "    << plane.origin() <<
-          ", panel.boxRzAngle " << panel.boxRzAngle()/M_PI*180. <<
+//          ", panel.boxRzAngle " << panel.boxRzAngle()/M_PI*180. <<
           G4endl;
 
         G4cout << __func__ << " straw pos G4  "

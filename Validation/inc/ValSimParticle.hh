@@ -5,8 +5,8 @@
 #include "art/Framework/Principal/Event.h"
 #include "art/Framework/Principal/SubRun.h"
 #include "canvas/Utilities/InputTag.h"
-#include "MCDataProducts/inc/SimParticleCollection.hh"
-#include "Validation/inc/ValId.hh"
+#include "Offline/MCDataProducts/inc/SimParticleCollection.hh"
+#include "Offline/Validation/inc/ValId.hh"
 #include "TH1D.h"
 #include <string>
 
@@ -79,6 +79,7 @@ namespace mu2e {
     TH1D* _tgtmux;
     TH1D* _tgtmuy;
     TH1D* _tgtmuz;
+    TH1D* _tgtmut;
 
 
   };

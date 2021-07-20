@@ -15,16 +15,17 @@
 #include "art/Framework/Principal/SubRun.h"
 #include "art_root_io/TFileService.h"
 #include "art/Framework/Services/Registry/ServiceHandle.h"
+#include "art/Framework/Services/Registry/ServiceDefinitionMacros.h"
 
 #include "canvas/Utilities/InputTag.h"
 #include "fhiclcpp/ParameterSet.h"
 #include "messagefacility/MessageLogger/MessageLogger.h"
 
-#include "GlobalConstantsService/inc/GlobalConstantsHandle.hh"
-#include "GlobalConstantsService/inc/PhysicsParams.hh"
-#include "GlobalConstantsService/inc/ParticleDataTable.hh"
-#include "MCDataProducts/inc/GenParticleCollection.hh"
-#include "Mu2eUtilities/inc/TwoLinePCA.hh"
+#include "Offline/GlobalConstantsService/inc/GlobalConstantsHandle.hh"
+#include "Offline/GlobalConstantsService/inc/PhysicsParams.hh"
+#include "Offline/GlobalConstantsService/inc/ParticleDataTable.hh"
+#include "Offline/MCDataProducts/inc/GenParticleCollection.hh"
+#include "Offline/Mu2eUtilities/inc/TwoLinePCA.hh"
 
 #include "TH1F.h"
 #include "TH2F.h"

@@ -14,12 +14,12 @@
 #include <string>
 
 // Mu2e includes
-#include "Mu2eG4/inc/addStepLimiter.hh"
+#include "Offline/Mu2eG4/inc/addStepLimiter.hh"
 
 // G4 includes
-#include "G4ParticleTable.hh"
-#include "G4ProcessManager.hh"
-#include "G4StepLimiter.hh"
+#include "Geant4/G4ParticleTable.hh"
+#include "Geant4/G4ProcessManager.hh"
+#include "Geant4/G4StepLimiter.hh"
 
 using namespace std;
 

@@ -41,9 +41,11 @@ namespace mu2e {
       MARS, StoppedParticleReactionGun, bremElectronGun, muonicXRayGun, //30
       fromSimParticleStartPoint, fromSimParticleCompact, StoppedParticleG4Gun, //33
       CaloCalib, InFlightParticleSampler, muplusDecayGun, StoppedMuonXRayGammaRayGun, //37
-      cosmicCRY,  pbarFlat, fromAscii, ExternalRMC, InternalRMC, CeLeadingLog, cosmicCORSIKA, //44
-      gammaPairProduction, Mu2eX,//46
-      lastEnum //47
+      cosmicCRY,  pbarFlat, fromAscii, ExternalRMC, InternalRMC, CeLeadingLog, cosmicCORSIKA, //42
+      MuCapProtonGenTool, MuCapDeuteronGenTool, DIOGenTool, MuCapNeutronGenTool, // 48
+      MuCapPhotonGenTool, MuCapGammaRayGenTool, // 50
+      gammaPairProduction, Mu2eX,//52
+      lastEnum //53
     };
 
     // Keep this in sync with the enum. Used in GenId.cc
@@ -59,7 +61,9 @@ namespace mu2e {
       "fromSimParticleStartPoint", "fromSimParticleCompact", "StoppedParticleG4Gun", \
       "CaloCalib", "InFlightParticleSampler","muplusDecayGun", "StoppedMuonXRayGammaRayGun", \
       "CosmicCRY", "pbarFlat","fromAscii","ExternalRMC","InternalRMC","CeLeadingLog", "CosmicCORSIKA", \
-      "gammaPairProduction", "Mu2eX",
+      "MuCapProtonGenTool", "MuCapDeuteronGenTool", "DIOGenTool", "MuCapNeutronGenTool", \
+      "MuCapPhotonGenTool", "MuCapGammaRayGenTool", \
+      "gammaPairProduction", "Mu2eX"
 
   public:
 
@@ -101,7 +105,7 @@ namespace mu2e {
       return (_id == cosmicToy || _id == cosmicDYB || _id == cosmic);
     }
 
-    bool isConversion() const { 
+    bool isConversion() const {
       return _id == GenId::CeEndpoint || _id == GenId::CeLeadingLog;
     }
 

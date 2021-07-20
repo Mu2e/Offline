@@ -14,13 +14,13 @@
 #include "messagefacility/MessageLogger/MessageLogger.h"
 
 // Mu2e includes
-#include "EventGenerator/inc/PrimaryProtonGunImpl.hh"
-#include "DataProducts/inc/PDGCode.hh"
-#include "GlobalConstantsService/inc/GlobalConstantsHandle.hh"
-#include "GlobalConstantsService/inc/ParticleDataTable.hh"
-#include "GeometryService/inc/GeomHandle.hh"
-#include "ProductionTargetGeom/inc/ProductionTarget.hh"
-#include "ProductionTargetGeom/inc/ProductionTargetMu2eII.hh"
+#include "Offline/EventGenerator/inc/PrimaryProtonGunImpl.hh"
+#include "Offline/DataProducts/inc/PDGCode.hh"
+#include "Offline/GlobalConstantsService/inc/GlobalConstantsHandle.hh"
+#include "Offline/GlobalConstantsService/inc/ParticleDataTable.hh"
+#include "Offline/GeometryService/inc/GeomHandle.hh"
+#include "Offline/ProductionTargetGeom/inc/ProductionTarget.hh"
+#include "Offline/ProductionTargetGeom/inc/ProductionTargetMu2eII.hh"
 
 // CLHEP includes.
 #include "CLHEP/Vector/Rotation.h"

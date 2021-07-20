@@ -1,4 +1,4 @@
-#include "Mu2eG4/geom/geom_2019_PhaseI_hayman_v2.txt"
+#include "Offline/Mu2eG4/geom/geom_2019_PhaseI_hayman_v2.txt"
 
 // This tells emacs to view this file in c++ mode.
 // Local Variables:

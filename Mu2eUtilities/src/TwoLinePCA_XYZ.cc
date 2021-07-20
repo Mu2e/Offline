@@ -9,11 +9,11 @@
 
 #include <iostream>
 
-#include "DataProducts/inc/XYZVec.hh"
+#include "Offline/DataProducts/inc/XYZVec.hh"
 #include "Math/GenVector/Cartesian3D.h"
 #include "Math/GenVector/DisplacementVector3D.h"
 
-#include "Mu2eUtilities/inc/TwoLinePCA_XYZ.hh"
+#include "Offline/Mu2eUtilities/inc/TwoLinePCA_XYZ.hh"
 
 using namespace std;
 

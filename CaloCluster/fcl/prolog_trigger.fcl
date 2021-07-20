@@ -1,16 +1,26 @@
 # -*- mode: tcl -*-
 #------------------------------------------------------------------------------
 #------------------------------------------------------------------------------
-BEGIN_PROLOG
-  HitMakerBlindTime      : 500. # ns
-  HitMakerDigiSampling   : 5    # ns
-END_PROLOG
+#include "Offline/CaloMC/fcl/common.fcl"
+
 
 BEGIN_PROLOG
+
+CaloClusterFast:
+{
+   module_type            : CaloClusterFast
+   caloHitCollection      : "CaloHitMakerFast:calo"
+   EminSeed               : 10
+   ExpandCut              : 1.0
+   EnoiseCut              : 1.0
+   deltaTime              : 10
+   extendSearch           : true
+   diagLevel              : 0
+}  
 
 CaloTrigger : {    
     module_type           : CaloTrigger
-    caloDigiModuleLabel   : CaloDigiFromShower
+    caloDigiModuleLabel   : CaloDigiMaker
     digiSampling          : @local::HitMakerDigiSampling
     blindTime             : @local::HitMakerBlindTime   
     endTimeBuffer         : 80                          
@@ -25,50 +35,15 @@ CaloTrigger : {
 }
 
 
-CaloClusterFast :
-{ 
-    module_type           : CaloClusterFast
-    caloDigiModuleLabel   : CaloDigiFromShower
-    digiSampling          : @local::HitMakerDigiSampling
-    blindTime             : @local::HitMakerBlindTime
-    endTimeBuffer         : 80
-    windowPeak            : 2
-    minAmplitude          : 20
-    extendSecond          : true
-    minSeedAmplitude      : 200
-    minEnergy             : 50
-    timeCorrection        : 20.0
-    adcToEnergy           : 0.0461333
-    diagLevel             : 0
-    includeCrystalHits    : true
-}
-
-NewCaloClusterFast :
-{
-  module_type            : CaloClusterOnline
-  caloCrystalModuleLabel : FastCaloCrystalHitFromHit
-  minClusterEnergy       : 50
-  EminSeed               : 20 
-  ExpandCut              : 1 
-  EnoiseCut              : 1
-  timeCut                : @local::HitMakerBlindTime   
-  deltaTime              : 5.01
-  diagLevel              : 0
-}  
-
-
-CaloClusterTrigger :
+CaloClusterTrigger:
 {
    producers : {
-       NewCaloClusterFast  : @local::NewCaloClusterFast
-       CaloTrigger         : @local::CaloTrigger
-       CaloClusterFast     : @local::CaloClusterFast
-   }
-
-   OldReco : [ OldCaloClusterFast ]
-   Reco    : [ CaloClusterFast ]
+      CaloClusterFast : @local::CaloClusterFast
+      CaloTrigger     : @local::CaloTrigger
+   }   
+   
+   Reco : [ CaloClusterFast ]
 }
-
 
 
 END_PROLOG

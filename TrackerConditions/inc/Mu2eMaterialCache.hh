@@ -6,15 +6,15 @@
 // because Mu2eMaterial has pointers to BTrk singletons
 //
 
-#include "Mu2eInterfaces/inc/ProditionsCache.hh"
-#include "TrackerConditions/inc/Mu2eMaterialMaker.hh"
+#include "Offline/Mu2eInterfaces/inc/ProditionsCache.hh"
+#include "Offline/TrackerConditions/inc/Mu2eMaterialMaker.hh"
 
 
 namespace mu2e {
   class Mu2eMaterialCache : public ProditionsCache {
   public: 
     Mu2eMaterialCache(Mu2eMaterialConfig const& config):
-      ProditionsCache("Mu2eMaterial",config.verbose()),
+      ProditionsCache(Mu2eMaterial::cxname,config.verbose()),
       _maker(config) {
       // force a fake update so BTrk TrkParticle 
       // is working when modules are created

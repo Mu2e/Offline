@@ -7,18 +7,18 @@
 // For an example use see AnalysisConditions/inc/TrkQualCatalogCache.hh
 //
 
-#include "Mu2eInterfaces/inc/ProditionsCache.hh"
-#include "DbTables/inc/DbIoV.hh"
-#include "DbService/inc/DbHandle.hh"
-#include "DbTables/inc/MVAToolDb.hh"
-#include "AnalysisConditions/inc/MVACatalogMaker.hh"
+#include "Offline/Mu2eInterfaces/inc/ProditionsCache.hh"
+#include "Offline/DbTables/inc/DbIoV.hh"
+#include "Offline/DbService/inc/DbHandle.hh"
+#include "Offline/DbTables/inc/MVAToolDb.hh"
+#include "Offline/AnalysisConditions/inc/MVACatalogMaker.hh"
 
 namespace mu2e {
   template <class T, class DB>
   class MVACatalogCache : public ProditionsCache {
   public: 
-    MVACatalogCache(std::string name, MVACatalogConfig const& config):
-      ProditionsCache(name,config.verbose()),
+    MVACatalogCache(MVACatalogConfig const& config):
+      ProditionsCache(T::cxname,config.verbose()),
       _useDb(config.useDb()),_maker(config) {}
 
     void initialize() {

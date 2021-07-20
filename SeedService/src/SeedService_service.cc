@@ -12,12 +12,13 @@
 
 
 // Mu2e include files
-#include "SeedService/inc/SeedService.hh"
+#include "Offline/SeedService/inc/SeedService.hh"
 
 // Art include files
 #include "art/Framework/Principal/Run.h"
 #include "art/Framework/Principal/SubRun.h"
 #include "art/Framework/Services/Registry/ActivityRegistry.h"
+#include "art/Framework/Services/Registry/ServiceDefinitionMacros.h"
 #include "art/Persistency/Provenance/ModuleContext.h"
 #include "art/Persistency/Provenance/ModuleDescription.h"
 #include "canvas/Persistency/Provenance/EventID.h"

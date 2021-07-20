@@ -1,5 +1,5 @@
 
-#include "Validation/inc/ValCaloCluster.hh"
+#include "Offline/Validation/inc/ValCaloCluster.hh"
 
 
 int mu2e::ValCaloCluster::declare(art::TFileDirectory tfs) {
@@ -8,7 +8,6 @@ int mu2e::ValCaloCluster::declare(art::TFileDirectory tfs) {
   _ht = tfs.make<TH1D>( "t", "time", 100, 0.0, 2000.0);
   _hE = tfs.make<TH1D>( "E", "Energy",50, 0.0, 200.0);
   _hR = tfs.make<TH1D>( "R", "Radius",50, 340.0, 650.0);
-  _hA = tfs.make<TH1D>( "A", "angle", 50, 0.0, 3.1416);
 
   return 0;
 }
@@ -25,7 +24,6 @@ int mu2e::ValCaloCluster::fill(const mu2e::CaloClusterCollection & coll,
     _ht->Fill(sp.time());
     _hE->Fill(sp.energyDep());
     _hR->Fill(sp.cog3Vector().perp());
-    _hA->Fill(sp.angle());
   }
   return 0;
 }

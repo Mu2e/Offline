@@ -5,12 +5,13 @@
 // Contact person Rob Kutschke
 //
 
-#include "Sandbox/inc/BarService.hh"
+#include "Offline/Sandbox/inc/BarService.hh"
 
 // Framework includes.
 #include "art/Framework/Core/EDAnalyzer.h"
 #include "art/Framework/Core/ModuleMacros.h"
 #include "art/Framework/Principal/Event.h"
+#include "art/Framework/Services/Registry/ServiceDefinitionMacros.h"
 
 // C++ includes.
 #include <iostream>

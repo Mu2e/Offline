@@ -3,12 +3,12 @@
 #  about the FHiCL language, please look at
 #  cdcvs.fnal.gov/redmine/documents/327 , the "FHiCL Quick Start Guide"
 
-#include "fcl/minimalMessageService.fcl"
-#include "fcl/standardServices.fcl"
-#include "fcl/standardProducers.fcl"
-#include "TrkDiag/fcl/prolog.fcl"
+#include "Offline/fcl/minimalMessageService.fcl"
+#include "Offline/fcl/standardServices.fcl"
+#include "Offline/fcl/standardProducers.fcl"
+#include "Offline/TrkDiag/fcl/prolog.fcl"
 
-#include "Trigger/fcl/templates.fcl"
+#include "Offline/Trigger/fcl/prolog_trigger.fcl"
 
 
 events_to_generate: 5
@@ -77,7 +77,7 @@ physics:
 	    parseTRK: 1
 	}
 	
-	CaloDigiFromShower:
+	CaloDigiMaker:
 	{
 	    module_type: Mu2eProducer
 	    diagLevel: 0
@@ -104,7 +104,7 @@ physics:
     }
     
     
-#    prod_sequence : [ makeSD, CaloDigiFromShower ]
+#    prod_sequence : [ makeSD, CaloDigiMaker ]
     
     #unbiased trigger path
     unbiased_path                : [ @sequence::paths.unbiased                       ]
@@ -116,18 +116,18 @@ physics:
     largeSDCount_path            : [ @sequence::paths.largeSDCount                   ]
     
     #path for the calorimeter only trigger
-    caloMVACE_path               : [ CaloDigiFromShower, @sequence::paths.caloMVACE   ]
+    caloMVACE_path               : [ CaloDigiMaker, @sequence::paths.caloMVACE   ]
  
     #path for calorimeter cosmic muon calibration
-    caloCosmicMuon_path          : [ CaloDigiFromShower, @sequence::paths.caloCalibCosmic   ]
+    caloCosmicMuon_path          : [ CaloDigiMaker, @sequence::paths.caloCalibCosmic   ]
 
     #paths for TrkPatRec downstream e- and e+
     tprSeedDeM_path                 : [ makeSD,  @sequence::paths.tprSeedDeM                          ]
     tprSeedDeP_path                 : [ makeSD,  @sequence::paths.tprSeedDeP                          ]
 
     #paths for CalPatRec downstream e- and e+
-    cprSeedDeM_path                 : [ makeSD, CaloDigiFromShower, @sequence::paths.cprSeedDeM       ]
-    cprSeedDeP_path                 : [ makeSD, CaloDigiFromShower, @sequence::paths.cprSeedDeP       ]
+    cprSeedDeM_path                 : [ makeSD, CaloDigiMaker, @sequence::paths.cprSeedDeM       ]
+    cprSeedDeP_path                 : [ makeSD, CaloDigiMaker, @sequence::paths.cprSeedDeP       ]
     
     
 

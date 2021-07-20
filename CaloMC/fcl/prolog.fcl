@@ -2,92 +2,130 @@
 #------------------------------------------------------------------------------
 # this file is included by fcl/standardProducers.fcl inside the PROLOG section
 #------------------------------------------------------------------------------
-#include "CommonMC/fcl/prolog.fcl"
-
-BEGIN_PROLOG
-  HitMakerBlindTime      : 500. # ns
-  HitMakerDigiSampling   : 5    # ns
-END_PROLOG
+#include "Offline/CaloMC/fcl/common.fcl"
+#include "Offline/CommonMC/fcl/prolog.fcl"
 
 
 
 BEGIN_PROLOG
 
-
-CaloShowerStepFromStepPt  : 
+CaloShowerStepMaker  : 
 {
-    module_type             : CaloShowerStepFromStepPt
+    module_type             : CaloShowerStepMaker
     numZSlices              : 20
     deltaTime               : 0.2
-    calorimeterStepPoints   : calorimeter
-    calorimeterROStepPoints : calorimeterRO
+    caloStepPointCollection : ["g4run:calorimeter"]
     usePhysVolInfo          : false
-    physVolInfoInput        : "compressPVDetector"
-    caloMaterial            : ["G4_CESIUM_IODIDE", "Polyethylene092"]
-    compressMuons           : false 
+    physVolInfoInput        : "g4run"
+    caloMaterial            : ["G4_CESIUM_IODIDE", "Polyethylene092","CarbonFiber"]
+    compressData            : true
+    eDepThreshold           : 0 
     diagLevel               : 0
 }
 
 
-CaloShowerStepROFromShowerStep : 
+CaloShowerROMaker : 
 {
-    module_type                 : CaloShowerStepROFromShowerStep
-    caloCrystalShowerInputs     : [ "CaloShowerStepFromStepPt:calorimeter" ]
-    TimeOffsets                 : { inputs : [ @sequence::CommonMC.TimeMaps ] }
-    blindTime                   : @local::HitMakerBlindTime
-    caloLRUCorrection           : true
-    caloBirksCorrection         : true
-    caloPEStatCorrection        : true
-    addTravelTime               : true	    
-    diagLevel                   : 0
+    module_type              : CaloShowerROMaker
+    caloShowerStepCollection : ["CaloShowerStepMaker"]
+    eventWindowMarker        : EWMProducer
+    protonBunchTimeMC        : EWMProducer
+    blindTime                : @local::HitMakerBlindTime
+    LRUCorrection            : true
+    BirksCorrection          : true
+    PEStatCorrection         : true
+    addTravelTime            : true	    
+    diagLevel                : 0
 }
 
-
-CaloDigiFromShower : 
+#See doc-db 35519 for noise level discussion
+NoiseGenerator : 
 {
-    module_type           : CaloDigiFromShower
-    caloShowerModuleLabel : CaloShowerStepROFromShowerStep
-
-    blindTime             : @local::HitMakerBlindTime
-    addNoise              : true
-    noise                 : 2       # mV equivalent to 150 keV of Noise               
-
-    thresholdVoltage      : 5.0  
-    thresholdAmplitude    : 10 
-    energyScale           : 60 
-    digiSampling          : @local::HitMakerDigiSampling
-    nBits                 : 12
-    dynamicRange          : 2000 
-    endTimeBuffer         : 80
-    bufferDigi            : 5  
-    pulseIntegralSteps    : 50
-    nBinsPeak		  : 3 #needs optimizing/checking
-    diagLevel             : 0
+    noiseWFSize             : 10000
+    elecNphotPerNs          : 0.18
+    rinNphotPerNs           : 0.36
+    darkNphotPerNs          : 0.60
+    digiSampling            : @local::HitMakerDigiSampling
+    enableAR                : true
+    nParAR                  : 5
+    nMaxFragment            : 1000
+    minPeakADC              : @local::HitMakerMinPeakADC
+    diagLevel               : 0
 }
 
+CaloDigiMaker : 
+{
+    module_type             : CaloDigiMaker
+    caloShowerROCollection  : CaloShowerROMaker
+    eventWindowMarker       : EWMProducer
+    blindTime               : @local::HitMakerBlindTime
+    addNoise                : true
+    generateSpotNoise       : true
+    addRandomNoise          : false
+    NoiseGenerator          : { @table::NoiseGenerator  }
+    digiSampling            : @local::HitMakerDigiSampling
+    nBits                   : 12
+    minPeakADC              : @local::HitMakerMinPeakADC
+    nBinsPeak		    : 2 
+    endTimeBuffer           : 80
+    bufferDigi              : 16 
+    diagLevel               : 0
+}
 
 CaloHitTruthMatch:
 {
     module_type               : CaloHitTruthMatch
-    caloShowerSimModuleLabel  : CaloShowerStepROFromShowerStep
-    caloCrystalHitModuleLabel : CaloCrystalHitFromHit
-    deltaTimeMinus            : 4.0    #ns
-    deltaTimePlus             : 150.0  #ns
+    caloShowerSimCollection   : CaloShowerROMaker
+    caloHitCollection         : CaloHitMaker
+    primaryParticle           : FindMCPrimary
+    digiSampling              : @local::HitMakerDigiSampling
+    minAmplitude              : 32
+    fillDetailedMC            : false
     diagLevel                 : 0
 }
 
-CaloDigiMC : 
+CaloClusterTruthMatch:
 {
-   producers : {
-     CaloShowerStepFromStepPt       : @local::CaloShowerStepFromStepPt
-     CaloShowerStepROFromShowerStep : @local::CaloShowerStepROFromShowerStep
-     CaloDigiFromShower            : @local::CaloDigiFromShower
-   }
-   producersMC : {
-     CaloHitTruthMatch : @local::CaloHitTruthMatch
-   }
-   DigiSim    : [ CaloShowerStepFromStepPt, CaloShowerStepROFromShowerStep, CaloDigiFromShower]
-   TruthMatch : [ CaloHitTruthMatch ]
+    module_type           : CaloClusterTruthMatch
+    caloClusterCollection : CaloClusterMaker
+    caloHitMCTruthAssn    : CaloHitTruthMatch
+    diagLevel             : 0
 }
+
+
+
+CaloMC : 
+{
+   StepProducers : {
+     CaloShowerStepMaker  : @local::CaloShowerStepMaker
+   }
+   StepSim : [ CaloShowerStepMaker]
+
+   DigiProducers : {
+     CaloShowerROMaker    : @local::CaloShowerROMaker
+     CaloDigiMaker        : @local::CaloDigiMaker
+   }
+   DigiSim : [ CaloShowerROMaker, CaloDigiMaker]
+
+   TruthProducers : {
+     CaloHitTruthMatch : @local::CaloHitTruthMatch
+     CaloClusterTruthMatch : @local::CaloClusterTruthMatch
+   }
+   TruthMatch : [ CaloHitTruthMatch, CaloClusterTruthMatch ]
+}
+
+CaloClusterMC : 
+{
+   producers  : { CaloClusterTruthMatch : @local::CaloClusterTruthMatch }
+   TruthMatch : [ CaloClusterTruthMatch ]
+}
+
+# legacy
+CaloMC.producers : {
+  @table::CaloMC.StepProducers
+  @table::CaloMC.DigiProducers
+}
+
+CaloMC.StepAndDigiSim : [@sequence::CaloMC.StepSim, @sequence::CaloMC.DigiSim]
 
 END_PROLOG

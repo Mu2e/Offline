@@ -5,18 +5,18 @@
 
 #include "CLHEP/Vector/ThreeVector.h"
 
-#include "DataProducts/inc/XYZVec.hh"
-#include "GeomPrimitives/inc/TubsParams.hh"
-#include "RecoDataProducts/inc/ComboHit.hh"
-#include "RecoDataProducts/inc/HelixSeed.hh"
-#include "RecoDataProducts/inc/RobustHelix.hh"
-#include "RecoDataProducts/inc/StrawHitFlag.hh"
-#include "TrackerGeom/inc/Panel.hh"
-#include "TrackerGeom/inc/Plane.hh"
-#include "TrackerGeom/inc/Straw.hh"
-#include "TrackerGeom/inc/Tracker.hh"
+#include "Offline/DataProducts/inc/XYZVec.hh"
+#include "Offline/GeomPrimitives/inc/TubsParams.hh"
+#include "Offline/RecoDataProducts/inc/ComboHit.hh"
+#include "Offline/RecoDataProducts/inc/HelixSeed.hh"
+#include "Offline/RecoDataProducts/inc/RobustHelix.hh"
+#include "Offline/RecoDataProducts/inc/StrawHitFlag.hh"
+#include "Offline/TrackerGeom/inc/Panel.hh"
+#include "Offline/TrackerGeom/inc/Plane.hh"
+#include "Offline/TrackerGeom/inc/Straw.hh"
+#include "Offline/TrackerGeom/inc/Tracker.hh"
 
-#include "Mu2eUtilities/inc/HelixTool.hh"
+#include "Offline/Mu2eUtilities/inc/HelixTool.hh"
 
 
 namespace mu2e {
@@ -24,8 +24,8 @@ namespace mu2e {
   HelixTool::HelixTool(const HelixSeed *Helix, const mu2e::Tracker*MyTracker) :
     _tracker(MyTracker) {
     _hel = Helix;
-    _trackerRIn    = _tracker->getInnerTrackerEnvelopeParams().innerRadius();
-    _trackerROut   = _tracker->getInnerTrackerEnvelopeParams().outerRadius();
+    _trackerRIn    = _tracker->g4Tracker()->getInnerTrackerEnvelopeParams().innerRadius();
+    _trackerROut   = _tracker->g4Tracker()->getInnerTrackerEnvelopeParams().outerRadius();
 
     //initialize
     _meanHitRadialDist = 0.;
@@ -70,7 +70,7 @@ namespace mu2e {
     // we now estiamte the ratio of the number of measured hits to the number of the expected ones
     // we make a few assumptions and appriximations:
     float    expected_faces(1e-6);
-    for (int planeId=0; planeId<_tracker->nPlanes(); planeId++) {
+    for (size_t planeId=0; planeId<_tracker->nPlanes(); planeId++) {
       const Plane* pln = &_tracker->getPlane(planeId);
       int   nPanels = pln->nPanels();
       if (nPanels == 0 )         continue;

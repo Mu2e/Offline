@@ -1,15 +1,15 @@
 
-#include "Print/inc/KalRepPrinter.hh"
+#include "Offline/Print/inc/KalRepPrinter.hh"
 #include "BTrk/KalmanTrack/KalHit.hh"
 #include "BTrk/TrkBase/TrkHelixUtils.hh"
 #include "BTrk/BbrGeom/BbrVectorErr.hh"
-#include "RecoDataProducts/inc/TrackSummary.hh"
+#include "Offline/RecoDataProducts/inc/TrackSummary.hh"
 #include "art/Framework/Principal/Provenance.h"
-#include "GeometryService/inc/GeomHandle.hh"
-#include "GeometryService/inc/DetectorSystem.hh"
-#include "GeometryService/inc/VirtualDetector.hh"
-#include "DataProducts/inc/VirtualDetectorId.hh"
-#include "Mu2eUtilities/inc/toHepPoint.hh"
+#include "Offline/GeometryService/inc/GeomHandle.hh"
+#include "Offline/GeometryService/inc/DetectorSystem.hh"
+#include "Offline/GeometryService/inc/VirtualDetector.hh"
+#include "Offline/DataProducts/inc/VirtualDetectorId.hh"
+#include "Offline/Mu2eUtilities/inc/toHepPoint.hh"
 
 #include <string>
 
@@ -19,8 +19,7 @@ mu2e::KalRepPrinter::Print(art::Event const& event,
   if(verbose()<1) return;
   if(tags().empty()) {
     // if a list of instances not specified, print all instances
-    std::vector< art::Handle<KalRepPtrCollection> > vah;
-    event.getManyByType(vah);
+    std::vector< art::Handle<KalRepPtrCollection> > vah = event.getMany<KalRepPtrCollection>();
     for (auto const & ah : vah) Print(ah);
   } else {
     // print requested instances

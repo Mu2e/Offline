@@ -2,8 +2,8 @@
 #  print products with a moderate amount of output - includes cuts on energy
 #
 
-#include "fcl/minimalMessageService.fcl"
-#include "fcl/standardServices.fcl"
+#include "Offline/fcl/minimalMessageService.fcl"
+#include "Offline/fcl/standardServices.fcl"
 
 process_name : print
 
@@ -16,89 +16,36 @@ physics :{
 
     printModule : {
       module_type : PrintModule
-
-      statusG4Printer : {
-        verbose : 0
-      }
       genParticlePrinter : {
         verbose : 1
       }
 
       simParticlePrinter : {
+        verbose : 1
         pCut : 10.0
       }
-      simParticlePtrPrinter : {
-        verbose : 0
-      }
+      
       simParticleTimeMapPrinter : {
         verbose : 1
       }
       stepPointMCPrinter : {
+        verbose : 1
         pCut : 10.0
       }
 
-      caloShowerStepPrinter : {
-        verbose: 0
-      }
-      caloHitPrinter : {
-        verbose: 0
-      }
-      caloDigiPrinter : {
-        verbose: 0
-      }
       caloRecoDigiPrinter : {
         verbose: 1
       }
-      caloCrystalHitPrinter : {
-        verbose: 0
-      }
       caloClusterPrinter : {
+        verbose : 1
         eCut :  10.0
       }
 
-      crvDigiPrinter : {
-        verbose: 0
-      }
-      crvDigiMCPrinter : {
-        verbose: 0
-      }
       crvRecoPulsePrinter : {
         verbose: 1
       }
       crvCoincidenceClusterPrinter : {
         verbose: 1
-      }
-
-      strawDigiPrinter : {
-        verbose: 0
-      }
-      strawDigiMCPrinter : {
-        verbose: 0
-      }
-      strawHitPrinter : {
-        verbose: 0
-      }
-      strawHitFlagPrinter : {
-        verbose: 0
-      }
-      bkgClusterPrinter : {
-        verbose: 0
-      }
-      bkgQualPrinter : {
-        verbose: 0
-      }
-      comboHitPrinter : {
-        verbose: 0
-      }
-
-      timeClusterPrinter : {
-        verbose: 0
-      }
-      trackClusterMatchPrinter : {
-        verbose: 0
-      }
-      trkCaloIntersectPrinter : {
-        verbose: 0
       }
 
       trackSummaryPrinter : {
@@ -132,8 +79,6 @@ physics :{
 outputs: {
   printProductList : {
     module_type : DataProductDump
-    # temporary patch for crash until art 2_10 or 2_11
-    wantResolvedOnly: true
   }
 }
 

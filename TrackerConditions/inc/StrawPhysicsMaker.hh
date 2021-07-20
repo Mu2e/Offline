@@ -10,8 +10,8 @@
 #include <iostream>
 #include <vector>
 #include <string>
-#include "TrackerConditions/inc/StrawPhysics.hh"
-#include "TrackerConfig/inc/StrawPhysicsConfig.hh"
+#include "Offline/TrackerConditions/inc/StrawPhysics.hh"
+#include "Offline/TrackerConfig/inc/StrawPhysicsConfig.hh"
 
 
 namespace mu2e {

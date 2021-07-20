@@ -1,46 +1,48 @@
 //
 //
 using namespace std;
-#include "EventDisplay/src/DataInterface.h"
+#include "Offline/EventDisplay/src/DataInterface.h"
 
 #include "CLHEP/Vector/LorentzVector.h"
 #include "CLHEP/Vector/Rotation.h"
-#include "CalorimeterGeom/inc/DiskCalorimeter.hh"
-#include "CalorimeterGeom/inc/Calorimeter.hh"
-#include "ConditionsService/inc/CrvParams.hh"
-#include "ConditionsService/inc/ConditionsHandle.hh"
-#include "CosmicRayShieldGeom/inc/CosmicRayShield.hh"
-#include "DetectorSolenoidGeom/inc/DetectorSolenoid.hh"
-#include "EventDisplay/src/Cube.h"
-#include "EventDisplay/src/Cylinder.h"
-#include "EventDisplay/src/Cone.h"
-#include "EventDisplay/src/EventDisplayFrame.h"
-#include "EventDisplay/src/Hexagon.h"
-#include "EventDisplay/src/Straw.h"
-#include "EventDisplay/src/Track.h"
-#include "EventDisplay/src/TrackColorSelector.h"
-#include "EventDisplay/src/dict_classes/ComponentInfo.h"
-#include "EventDisplay/src/dict_classes/EventDisplayViewSetup.h"
-#include "GeometryService/inc/GeomHandle.hh"
-#include "GeometryService/inc/DetectorSystem.hh"
+#include "Offline/CalorimeterGeom/inc/DiskCalorimeter.hh"
+#include "Offline/CalorimeterGeom/inc/Calorimeter.hh"
+#include "Offline/ConditionsService/inc/CrvParams.hh"
+#include "Offline/ConditionsService/inc/ConditionsHandle.hh"
+#include "Offline/CosmicRayShieldGeom/inc/CosmicRayShield.hh"
+#include "Offline/DetectorSolenoidGeom/inc/DetectorSolenoid.hh"
+#include "Offline/EventDisplay/src/Cube.h"
+#include "Offline/EventDisplay/src/Cylinder.h"
+#include "Offline/EventDisplay/src/Cone.h"
+#include "Offline/EventDisplay/src/EventDisplayFrame.h"
+#include "Offline/EventDisplay/src/Hexagon.h"
+#include "Offline/EventDisplay/src/Straw.h"
+#include "Offline/EventDisplay/src/Track.h"
+#include "Offline/EventDisplay/src/TrackColorSelector.h"
+#include "Offline/EventDisplay/src/dict_classes/ComponentInfo.h"
+#include "Offline/EventDisplay/src/dict_classes/EventDisplayViewSetup.h"
+#include "Offline/GeometryService/inc/GeomHandle.hh"
+#include "Offline/GeometryService/inc/DetectorSystem.hh"
 #include "HepPID/ParticleName.hh"
-#include "MCDataProducts/inc/PhysicalVolumeInfoMultiCollection.hh"
-#include "MCDataProducts/inc/MCTrajectoryCollection.hh"
-#include "MCDataProducts/inc/SimParticlePtrCollection.hh"
-#include "MCDataProducts/inc/StepPointMCCollection.hh"
-#include "Mu2eUtilities/inc/PhysicalVolumeMultiHelper.hh"
-#include "ConfigTools/inc/SimpleConfig.hh"
-#include "RecoDataProducts/inc/CrvDigiCollection.hh"
-#include "RecoDataProducts/inc/CaloCrystalHitCollection.hh"
-#include "RecoDataProducts/inc/CaloHitCollection.hh"
-#include "RecoDataProducts/inc/StrawHitCollection.hh"
-#include "RecoDataProducts/inc/StrawHitFlagCollection.hh"
-#include "RecoDataProducts/inc/TrkExtTrajCollection.hh"
-#include "RecoDataProducts/inc/TrkExtTraj.hh"
-#include "RecoDataProducts/inc/TrkExtTrajCollection.hh"
-#include "StoppingTargetGeom/inc/StoppingTarget.hh"
-#include "StoppingTargetGeom/inc/TargetFoil.hh"
-#include "TrackerGeom/inc/Tracker.hh"
+#include "HepPDT/ParticleData.hh"
+#include "Offline/MCDataProducts/inc/PhysicalVolumeInfoMultiCollection.hh"
+#include "Offline/MCDataProducts/inc/MCTrajectoryCollection.hh"
+#include "Offline/MCDataProducts/inc/SimParticlePtrCollection.hh"
+#include "Offline/MCDataProducts/inc/StepPointMCCollection.hh"
+#include "Offline/Mu2eUtilities/inc/PhysicalVolumeMultiHelper.hh"
+#include "Offline/ConfigTools/inc/SimpleConfig.hh"
+#include "Offline/RecoDataProducts/inc/KalSeed.hh"
+#include "Offline/RecoDataProducts/inc/CrvDigiCollection.hh"
+#include "Offline/RecoDataProducts/inc/CaloHit.hh"
+#include "Offline/RecoDataProducts/inc/StrawHitCollection.hh"
+#include "Offline/RecoDataProducts/inc/StrawHitFlagCollection.hh"
+#include "Offline/RecoDataProducts/inc/TrkExtTrajCollection.hh"
+#include "Offline/RecoDataProducts/inc/TrkExtTraj.hh"
+#include "Offline/RecoDataProducts/inc/TrkExtTrajCollection.hh"
+#include "Offline/StoppingTargetGeom/inc/StoppingTarget.hh"
+#include "Offline/StoppingTargetGeom/inc/TargetFoil.hh"
+#include "Offline/TrkReco/inc/TrkUtilities.hh"
+#include "Offline/TrackerGeom/inc/Tracker.hh"
 #include "art/Framework/Principal/Run.h"
 #include "cetlib/map_vector.h"
 #include <TAxis3D.h>
@@ -49,12 +51,13 @@ using namespace std;
 #include <TMath.h>
 #include <TView.h>
 #include <TGraphErrors.h>
+#include <TF1.h>
 
 #include <boost/shared_array.hpp>
 
 using namespace CLHEP;
-#include "RecoDataProducts/inc/KalRepCollection.hh"
-#include "BTrkData/inc/TrkStrawHit.hh"
+#include "Offline/RecoDataProducts/inc/KalRepCollection.hh"
+#include "Offline/BTrkData/inc/TrkStrawHit.hh"
 #include "BTrk/KalmanTrack/KalRep.hh"
 #include "BTrk/BaBar/ExternalInfo.hh"
 
@@ -247,7 +250,6 @@ void DataInterface::fillGeometry()
       double z = p.z();
       double theta = d.theta();
       double phi = d.phi();
-//      double r = s.getRadius();
       double l = s.halfLength();
       int idStraw =  s.id().getStraw();
       int idLayer =  s.id().getLayer();
@@ -266,9 +268,9 @@ void DataInterface::fillGeometry()
     }
 
 //Support Structure
-    double innerRadius=tracker->getSupportParams().innerRadius();
-    double outerRadius=tracker->getSupportParams().outerRadius();
-    double zHalfLength=tracker->getInnerTrackerEnvelopeParams().zHalfLength();
+    double innerRadius=tracker->g4Tracker()->getSupportParams().innerRadius();
+    double outerRadius=tracker->g4Tracker()->getSupportParams().outerRadius();
+    double zHalfLength=tracker->g4Tracker()->getInnerTrackerEnvelopeParams().zHalfLength();
     findBoundaryP(_trackerMinmax, outerRadius, outerRadius, zHalfLength);
     findBoundaryP(_trackerMinmax, -outerRadius, -outerRadius, -zHalfLength);
 
@@ -286,9 +288,9 @@ void DataInterface::fillGeometry()
     _supportstructures.push_back(shape);
 
 //Envelope
-    innerRadius=tracker->getInnerTrackerEnvelopeParams().innerRadius();
-    outerRadius=tracker->getInnerTrackerEnvelopeParams().outerRadius();
-    zHalfLength=tracker->getInnerTrackerEnvelopeParams().zHalfLength();
+    innerRadius=tracker->g4Tracker()->getInnerTrackerEnvelopeParams().innerRadius();
+    outerRadius=tracker->g4Tracker()->getInnerTrackerEnvelopeParams().outerRadius();
+    zHalfLength=tracker->g4Tracker()->getInnerTrackerEnvelopeParams().zHalfLength();
 
     boost::shared_ptr<ComponentInfo> infoEnvelope(new ComponentInfo());
     infoEnvelope->setName("Tracker Envelope");
@@ -782,6 +784,7 @@ void DataInterface::findBoundaryP(spaceminmax &m, double x, double y, double z)
 
 void DataInterface::fillEvent(boost::shared_ptr<ContentSelector> const &contentSelector, const mu2e::SimParticleTimeOffset &timeOffsets)
 {
+  auto const& ptable = mu2e::GlobalConstantsHandle<mu2e::ParticleDataTable>();
   removeNonGeometryComponents();
   if(!_geometrymanager) createGeometryManager();
   resetBoundaryT(_hitsTimeMinmax);
@@ -1011,38 +1014,6 @@ void DataInterface::fillEvent(boost::shared_ptr<ContentSelector> const &contentS
     }
   }
 
-  const mu2e::CaloCrystalHitCollection *calocrystalhits=contentSelector->getSelectedCaloHitCollection<mu2e::CaloCrystalHitCollection>();
-  if(calocrystalhits!=nullptr)
-  {
-    _numberCrystalHits=calocrystalhits->size();
-    std::vector<mu2e::CaloCrystalHit>::const_iterator iter;
-    for(iter=calocrystalhits->begin(); iter!=calocrystalhits->end(); iter++)
-    {
-      const mu2e::CaloCrystalHit& calohit = *iter;
-      int crystalid = calohit.id();
-      double time = calohit.time();
-      double energy = calohit.energyDep();
-      std::map<int,boost::shared_ptr<VirtualShape> >::iterator crystal=_crystals.find(crystalid);
-      if(crystal!=_crystals.end() && !std::isnan(time))
-      {
-        double previousStartTime=crystal->second->getStartTime();
-        if(std::isnan(previousStartTime))
-        {
-          findBoundaryT(_hitsTimeMinmax, time);  //is it Ok to exclude all following hits from the time window?
-          crystal->second->setStartTime(time);
-          crystal->second->getComponentInfo()->setText(2,Form("hit time(s): %gns",time/CLHEP::ns));
-          crystal->second->getComponentInfo()->setText(3,Form("deposited energy(s): %geV",energy/CLHEP::eV));
-          _crystalhits.push_back(crystal->second);
-        }
-        else
-        {
-          crystal->second->getComponentInfo()->expandLine(2,Form("%gns",time/CLHEP::ns));
-          crystal->second->getComponentInfo()->expandLine(3,Form("%geV",energy/CLHEP::eV));
-        }
-      }
-    }
-  }
-
   const mu2e::CaloHitCollection *calohits=contentSelector->getSelectedCaloHitCollection<mu2e::CaloHitCollection>();
   art::ServiceHandle<mu2e::GeometryService> geoservice;
   if(calohits!=nullptr && (geoservice->hasElement<mu2e::DiskCalorimeter>()))
@@ -1052,13 +1023,13 @@ void DataInterface::fillEvent(boost::shared_ptr<ContentSelector> const &contentS
     for(iter=calohits->begin(); iter!=calohits->end(); iter++)
     {
       const mu2e::CaloHit& calohit = *iter;
-      int roid = calohit.id();
+      int roid = calohit.crystalID();
       int crystalid=0;
 
       if(geoservice->hasElement<mu2e::DiskCalorimeter>())
       {
         mu2e::GeomHandle<mu2e::DiskCalorimeter> diskCalo;
-        crystalid=diskCalo->caloInfo().crystalByRO(roid);
+        crystalid=diskCalo->caloIDMapper().crystalIDFromSiPMID(roid);
       }
       double time = calohit.time();
       double energy = calohit.energyDep();
@@ -1095,8 +1066,7 @@ void DataInterface::fillEvent(boost::shared_ptr<ContentSelector> const &contentS
   double digitizationPeriod = crvPar->digitizationPeriod;
   double recoPulsePedestal  = crvPar->pedestal;
 
-//  std::vector<art::Handle<mu2e::CrvDigiCollection> > crvDigisVector;
-//  _event->getManyByType(crvDigisVector);
+  double TDC0time = contentSelector->getTDC0time();
   const std::vector<art::Handle<mu2e::CrvDigiCollection> > &crvDigisVector = contentSelector->getSelectedCrvDigiCollection();
   for(size_t i=0; i<crvDigisVector.size(); i++)
   {
@@ -1132,7 +1102,7 @@ void DataInterface::fillEvent(boost::shared_ptr<ContentSelector> const &contentS
         graph->SetMarkerSize(2);
         for(size_t k=0; k<mu2e::CrvDigi::NSamples; k++)
         { 
-          graph->SetPoint(k,(digi.GetStartTDC()+k)*digitizationPeriod,digi.GetADCs()[k]);
+          graph->SetPoint(k,TDC0time+(digi.GetStartTDC()+k)*digitizationPeriod,digi.GetADCs()[k]);
         }
         boost::dynamic_pointer_cast<TMultiGraph>(v[multigraphIndex])->Add(graph,"p");
       }
@@ -1183,21 +1153,15 @@ void DataInterface::fillEvent(boost::shared_ptr<ContentSelector> const &contentS
             double fitParam1 = recoPulse.GetPulseTime();
             double fitParam2 = recoPulse.GetPulseBeta();
 
-            double tF1=fitParam1 - 2.5*fitParam2;
-            double tF2=fitParam1 + 2.5*fitParam2;
-            int nF=(tF2-tF1)/1.0 + 1;
-            TGraph *graph = new TGraph(nF);
-            for(int iF=0; iF<nF; iF++)
-            {
-              double t   = tF1 + iF*1.0;
-              double ADC = fitParam0*TMath::Exp(-(t-fitParam1)/fitParam2-TMath::Exp(-(t-fitParam1)/fitParam2));
-              if(isnan(ADC)) ADC=0;
-              ADC += recoPulsePedestal;
-              graph->SetPoint(iF,t,ADC);
-            }
-            graph->SetLineWidth(2);
-            graph->SetLineColor(2);
-            boost::dynamic_pointer_cast<TMultiGraph>(v[k])->Add(graph,"l");
+            TList *functionList = boost::dynamic_pointer_cast<TMultiGraph>(v[k])->GetListOfFunctions();
+            if(functionList->GetSize()==0) functionList->Add(new TF1("pedestal",Form("%f",recoPulsePedestal))); //TODO: Use compiled function
+            TF1 *f = new TF1(Form("peakfitter%i",functionList->GetSize()),
+                             Form("%f*(TMath::Exp(-(x-%f)/%f-TMath::Exp(-(x-%f)/%f)))",
+                             fitParam0,fitParam1,fitParam2,fitParam1,fitParam2));  //TODO: Use compiled function
+            f->SetLineWidth(2);
+            f->SetLineColor(2);
+            if(recoPulse.GetRecoPulseFlags().test(mu2e::CrvRecoPulseFlagEnums::failedFit)) f->SetLineStyle(2);
+            functionList->Add(f);
           }
         }
       }
@@ -1387,7 +1351,7 @@ void DataInterface::fillEvent(boost::shared_ptr<ContentSelector> const &contentS
       int trackclass=trackInfos[i].classID;
       int trackclassindex=trackInfos[i].index;
       std::string trackcollection=trackInfos[i].entryText;
-      int particleid=kalseed.particle().particleType();
+      int particleid=kalseed.particle();
       std::string particlename=HepPID::particleName(particleid);
 
       const std::vector<mu2e::KalSegment> &segments = kalseed.segments();
@@ -1405,7 +1369,8 @@ void DataInterface::fillEvent(boost::shared_ptr<ContentSelector> const &contentS
 
       double t0   = kalseed.t0().t0();
       double flt0 = kalseed.flt0();
-      double v    = kalseed.particle().beta((p1+p2)/2.0)*CLHEP::c_light;
+      double mass = ptable->particle(kalseed.particle()).ref().mass().value(); 
+      double v  = mu2e::TrkUtilities::beta(mass,(p1+p2)/2.0)*CLHEP::c_light;
 
       boost::shared_ptr<ComponentInfo> info(new ComponentInfo());
       std::string c=Form("KalSeed Track %lu  %s  (%s)",j,particlename.c_str(),trackcollection.c_str());
@@ -1419,6 +1384,8 @@ void DataInterface::fillEvent(boost::shared_ptr<ContentSelector> const &contentS
 
         fltLMin=segment.fmin();
         fltLMax=segment.fmax();
+/*
+//interpolation between segments doesn't seem to work anymore
         if(k>0)
         {
           double fltLMaxPrev=segments.at(k-1).fmax();
@@ -1429,6 +1396,7 @@ void DataInterface::fillEvent(boost::shared_ptr<ContentSelector> const &contentS
           double fltLMinNext=segments.at(k+1).fmin();
           fltLMax=(fltLMax+fltLMinNext)/2.0;
         }
+*/
 
         XYZVec pos1, pos2;
         segment.helix().position(fltLMin,pos1);
@@ -1519,6 +1487,7 @@ void DataInterface::findTrajectory(boost::shared_ptr<ContentSelector> const &con
     for(traj_iter=mcTrajectories->begin(); traj_iter!=mcTrajectories->end(); traj_iter++)
     {
       if(traj_iter->first->id()==id)
+//      if(traj_iter->second.sim()->id()==id)
       {
         const auto& points = traj_iter->second.points();
         for(auto point_iter=points.begin(); point_iter!=points.end(); ++point_iter)

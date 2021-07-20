@@ -1,9 +1,10 @@
-#include "GeometryService/inc/ProductionTargetMaker.hh"
+#include "Offline/GeometryService/inc/ProductionTargetMaker.hh"
 #include "cetlib_except/exception.h"
 #include "CLHEP/Units/SystemOfUnits.h"
-#include "ConfigTools/inc/SimpleConfig.hh"
-#include "ProductionTargetGeom/inc/ProductionTarget.hh"
-#include "ProductionTargetGeom/inc/ProductionTargetMu2eII.hh"
+#include "Offline/ConfigTools/inc/SimpleConfig.hh"
+#include "Offline/ProductionTargetGeom/inc/ProductionTarget.hh"
+#include "Offline/ProductionTargetGeom/inc/ProductionTargetMu2eII.hh"
+
 #include <iostream>
 #include <algorithm>
 
@@ -13,14 +14,14 @@ namespace mu2e {
 
     std::string model = c.getString("targetPS_model");
     if ( model == "MDC2018")
-      return std::move(makeTier1(c, solenoidOffset));
+      return makeTier1(c, solenoidOffset);
     else if (model == "Hayman_v_2_0")
-      return std::move(makeHayman_v_2_0(c, solenoidOffset));
-    
-    throw cet::exception("GEOM") << " illegal production target version specified = " 
-				 << model.c_str() << " version = " 
-				 << c.getInt("targetPS_version")  << std::endl;
-    return nullptr;
+      return makeHayman_v_2_0(c, solenoidOffset);
+    else
+      throw cet::exception("GEOM") << " illegal production target version specified = "
+                                   << model.c_str() << " version = "
+                                   << c.getInt("targetPS_version")  << std::endl;
+    return 0;
   }
 
   std::unique_ptr<ProductionTargetMu2eII> ProductionTargetMaker::makeMu2eII(const SimpleConfig& c, double solenoidOffset) {
@@ -30,10 +31,10 @@ namespace mu2e {
       return std::move(makeMu2eIIConveyor(c, solenoidOffset));
     else if (model == "Rotating")
       return std::move(makeMu2eIIRotating(c, solenoidOffset));
-    
-    throw cet::exception("GEOM") << " illegal (Mu2eII) production target version specified = " 
-				 << model.c_str() << " version = " 
-				 << c.getInt("targetPS_version")  << std::endl;
+
+    throw cet::exception("GEOM") << " illegal (Mu2eII) production target version specified = "
+                                 << model.c_str() << " version = "
+                                 << c.getInt("targetPS_version")  << std::endl;
     return nullptr;
   }
 
@@ -312,7 +313,7 @@ namespace mu2e {
                       c.getString("targetPS_Hub_materialName"));
 
 
-    return std::move(tgtPS);
+    return tgtPS;
   }
 
   std::unique_ptr<ProductionTarget> ProductionTargetMaker::makeHayman_v_2_0(const SimpleConfig& c, double solenoidOffset){
@@ -400,7 +401,7 @@ namespace mu2e {
       //override old format of the material if new syntax is found
       tgtPS->_spokeMaterial = c.getString("targetPS.supports.spokes.material", tgtPS->_spokeMaterial);
     }
-    return std::move(tgtPS);
+    return tgtPS;
   }
  
   //make a Conveyor Mu2e-II type target

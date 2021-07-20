@@ -9,8 +9,8 @@
 #include <chrono>
 
 #include "canvas/Persistency/Provenance/EventID.h"
-#include "DbTables/inc/DbIoV.hh"
-#include "Mu2eInterfaces/inc/ProditionsEntity.hh"
+#include "Offline/DbTables/inc/DbIoV.hh"
+#include "Offline/Mu2eInterfaces/inc/ProditionsEntity.hh"
 
 namespace mu2e {
   class ProditionsCache {
@@ -37,7 +37,7 @@ namespace mu2e {
     // the following are provided by the 
     // concrete class
     //virtual std::string const& name() const =0 ;
-    std::string const& name() { return _name;}
+    std::string const& name() const { return _name;}
     // create pointers to services on demand
     // this allows lazy intialization and prevents
     // service dependence loops

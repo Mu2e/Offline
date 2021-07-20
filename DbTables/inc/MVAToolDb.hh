@@ -7,7 +7,7 @@
 #include <sstream>
 #include <map>
 #include "cetlib_except/exception.h"
-#include "DbTables/inc/DbTable.hh"
+#include "Offline/DbTables/inc/DbTable.hh"
 
 namespace mu2e {
 
@@ -36,8 +36,9 @@ namespace mu2e {
       int _calibrated;
     };
 
+    constexpr static const char* cxname = "MVAToolDb";
 
-    MVAToolDb():DbTable("MVAToolDb","MVATool.db","idx,mvaname,xmlfilename,calibrated") {
+    MVAToolDb():DbTable(cxname,"MVATool.db","idx,mvaname,xmlfilename,calibrated") {
       throw cet::exception("MVAToolDb") << "Shouldn't be creating a bare MVAToolDb table" << std::endl;
     }
 
@@ -46,13 +47,11 @@ namespace mu2e {
     const Row& rowAt(const std::size_t index) const { return _rows.at(index);}
     const Row& row(const int idx) const { return _rows.at(idx); }
     std::vector<Row> const& rows() const {return _rows;}
-    std::size_t nrow() const { return _rows.size(); };
-    //this table should always be 3 rows
-    //    virtual std::size_t nrowFix() const { return 3; }; 
-    size_t size() const { return _csv.capacity() + 
+    std::size_t nrow() const override { return _rows.size(); };
+    size_t size() const override { return baseSize() + 
 	+ nrow()*nrow()/2 + nrow()*sizeof(Row); };
 
-    void addRow(const std::vector<std::string>& columns) {
+    void addRow(const std::vector<std::string>& columns) override {
       int idx = std::stoi(columns[0]);
       // enforce a strict sequential order - optional
       if(idx!=int(_rows.size())) {
@@ -69,13 +68,9 @@ namespace mu2e {
 			 columns[1],
 			 columns[2],
 			 calibrated);
-      // // calibrate if we can
-      // if (calibrated == 1) {
-      // 	_rows.back().setCalib();
-      // }
-    }
+     }
 
-    void rowToCsv(std::ostringstream& sstream, std::size_t irow) const {
+    void rowToCsv(std::ostringstream& sstream, std::size_t irow) const override {
       Row const& r = _rows.at(irow);
       sstream << r.idx()<<",";
       sstream << r.mvaname()<<",";
@@ -83,15 +78,7 @@ namespace mu2e {
       sstream << r.calibrated();
     }
 
-
-    // const std::map<float, float>& getCalib(const int idx) const {
-    //   if (row(idx).calibrated()!=1) {
-    // 	throw cet::exception("MVATOOLDB_BAD_GETCALIB") << "MVAToolDb::getCalib tried to get calibration when \"calibrated = " << row(idx).calibrated() << "\"" << std::endl;
-    //   }
-    //   return row(idx).effCalib();
-    // }
-
-    virtual void clear() { _csv.clear(); _rows.clear();}
+    virtual void clear() override { baseClear(); _rows.clear();}
 
   private:
     std::vector<Row> _rows;

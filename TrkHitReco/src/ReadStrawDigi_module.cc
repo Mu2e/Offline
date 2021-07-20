@@ -10,7 +10,7 @@
 #include "fhiclcpp/ParameterSet.h"
 #include "art/Framework/Core/EDProducer.h"
 #include "art/Framework/Core/ModuleMacros.h"
-#include "RecoDataProducts/inc/StrawDigi.hh"
+#include "Offline/RecoDataProducts/inc/StrawDigi.hh"
 #include <iostream>
 
 namespace mu2e {
@@ -44,7 +44,7 @@ namespace mu2e {
       if(digi.strawId().asUint16() == 0xffff ||
 	digi.TDC()[0] == 0xffff ||
 	digi.TOT()[0] == 0xffff ||
-	digi.adcWaveform()[0] == 0xffff)
+        digi.PMP() == 0xffff)
 	std::cout << "error " << std::endl;
     }
   }

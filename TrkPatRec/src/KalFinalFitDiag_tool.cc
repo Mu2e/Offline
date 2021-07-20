@@ -14,19 +14,19 @@
 #include "BTrk/BbrGeom/HepPoint.h"
 #include "BTrk/KalmanTrack/KalRep.hh"
 
-#include "BTrkData/inc/TrkStrawHit.hh"
+#include "Offline/BTrkData/inc/TrkStrawHit.hh"
 
-#include "BTrkData/inc/Doublet.hh"
+#include "Offline/BTrkData/inc/Doublet.hh"
 #include "BTrk/KalmanTrack/KalHit.hh"
 
-#include "TrkPatRec/inc/KalFinalFit_types.hh"
-#include "Mu2eUtilities/inc/McUtilsToolBase.hh"
-#include "Mu2eUtilities/inc/ModuleHistToolBase.hh"
-#include "TrkReco/inc/KalFitData.hh"
-#include "TrkReco/inc/DoubletAmbigResolver.hh"
+#include "Offline/TrkPatRec/inc/KalFinalFit_types.hh"
+#include "Offline/Mu2eUtilities/inc/McUtilsToolBase.hh"
+#include "Offline/Mu2eUtilities/inc/ModuleHistToolBase.hh"
+#include "Offline/TrkReco/inc/KalFitData.hh"
+#include "Offline/TrkReco/inc/DoubletAmbigResolver.hh"
 
-#include "TrackerGeom/inc/Tracker.hh"
-#include "CalorimeterGeom/inc/DiskCalorimeter.hh"
+#include "Offline/TrackerGeom/inc/Tracker.hh"
+#include "Offline/CalorimeterGeom/inc/DiskCalorimeter.hh"
 
 #include "art/Utilities/ToolMacros.h"
 #include "art/Utilities/make_tool.h"
@@ -385,7 +385,7 @@ namespace mu2e {
       const CaloCluster* cluster = _data->kscol->at(i).caloCluster().get();
 
       if (cluster != 0)  {
-	CLHEP::Hep3Vector gpos        = _data->calorimeter->geomUtil().diskToMu2e(cluster->diskId(),cluster->cog3Vector());
+	CLHEP::Hep3Vector gpos        = _data->calorimeter->geomUtil().diskToMu2e(cluster->diskID(),cluster->cog3Vector());
 	CLHEP::Hep3Vector cog_cluster = _data->calorimeter->geomUtil().mu2eToTracker(gpos);
 
 	z_cls    = cog_cluster.z(); // z-coordinate of the cluster in the tracker coordinate frame

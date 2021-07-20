@@ -1,0 +1,45 @@
+//
+// Variant of the bfield maps without the PS and TSu maps.
+// Also remove the maps between the PS and the ExtMon
+//
+// innerMaps removed:
+//    "BFieldMaps/Mau13/PSMap.header",
+//    "BFieldMaps/Mau13/TSuMap_fix.header",
+//    "BFieldMaps/Mau13/PStoDumpAreaMap.header",
+//    "BFieldMaps/Mau13/ProtonDumpAreaMap.header",
+//
+// outerMaps removed:
+//   "BFieldMaps/Mau13/PSAreaMap.header",
+//
+// Used to save memory in production running of G4 jobs
+// when it is safe to do so.  We will use this in MDC2020
+// for resampling jobs, both from the stopping planes in stage
+// 1 and from stops in the DS.
+//
+// Warning:
+//  There are multiple points of maintenance when you change any bfield maps.
+//    - bfgeom_v01.txt           ( the base geometry  )
+//    - bfgeom_no_ds_v01.txt     ( DS map removed     )
+//    - bfgeom_reco_v01.txt      ( only maps needed for reconstruction )
+//    - bfgeom_no_tsu_ps_v01.txt ( PS and TSu maps removed.
+//
+//  If more variants are added, update the comments in all relevant files.
+
+#include "Offline/Mu2eG4/geom/bfgeom_v01.txt"
+
+vector<string> bfield.innerMaps = {
+  "BFieldMaps/Mau13/DSMap.header",
+  "BFieldMaps/Mau13/TSdMap.header",
+  "BFieldMaps/Mau13/DSExtension.header"
+};
+
+vector<string> bfield.outerMaps = {
+  "BFieldMaps/Mau13/WorldMap.header"
+};
+
+
+//
+// This tells emacs to view this file in c++ mode.
+// Local Variables:
+// mode:c++
+// End:

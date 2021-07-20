@@ -27,16 +27,19 @@ common = [ 'mu2e_MCDataProducts',
            'art_Utilities',
            'canvas',
            'fhiclcpp',
+           'fhiclcpp_types',
+           'tbb',
            'cetlib',
            'cetlib_except',
            'CLHEP',
            'Core',
            'boost_filesystem',
-           'boost_system',
     ]
 
 
-mainlib = helper.make_mainlib ( [ 'MF_MessageLogger'
+mainlib = helper.make_mainlib ( [ 'MF_MessageLogger',
+                                  'fhiclcpp_types',
+                                  'tbb',
                                 ] )
 
 # Each service requires a custom link list so make them one at a time.
@@ -62,24 +65,16 @@ helper.make_plugins( [ mainlib,
                        'art_Utilities',
                        'canvas',
                        'fhiclcpp',
+                       'fhiclcpp_types',
+                       'tbb',
                        'cetlib',
                        'cetlib_except',
                        'CLHEP',
                        'Core',
                        'boost_filesystem',
-                       'boost_system',
                      ]
                      )
 
-helper.make_dict_and_map( [ mainlib,
-                           'mu2e_GeneralUtilities',
-                           'art_Persistency_Common',
-                           'art_Utilities',
-                           'canvas',
-                           'cetlib',
-                           'cetlib_except',
-                           'Core'
-                            ] )
 
 # This tells emacs to view this file in python mode.
 # Local Variables:

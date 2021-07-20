@@ -1,6 +1,6 @@
-#include "CalorimeterGeom/inc/DiskCalorimeter.hh"
-#include "CalorimeterGeom/inc/Disk.hh"
-#include "CalorimeterGeom/inc/CaloGeomUtil.hh"
+#include "Offline/CalorimeterGeom/inc/DiskCalorimeter.hh"
+#include "Offline/CalorimeterGeom/inc/Disk.hh"
+#include "Offline/CalorimeterGeom/inc/CaloGeomUtil.hh"
 
 #include "CLHEP/Vector/ThreeVector.h"
 
@@ -22,7 +22,7 @@ namespace mu2e {
 
     std::vector<int> DiskCalorimeter::neighborsByLevel(int crystalId, int level, bool rawMap)  const
     {
-        int iv = fullCrystalList_.at(crystalId)->diskId();
+        int iv = fullCrystalList_.at(crystalId)->diskID();
 	int offset = disk(iv).crystalOffset();
 
         std::vector<int> list = disk(iv).findLocalNeighbors(fullCrystalList_.at(crystalId)->localId(),level,rawMap);

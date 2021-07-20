@@ -3,8 +3,8 @@
 // Original author M. MacKenzie
 
 // Mu2e includes
-#include "Mu2eG4/inc/Mu2eGammaDaughterCut.hh"
-#include "Mu2eG4/inc/Mu2eG4UserHelpers.hh"
+#include "Offline/Mu2eG4/inc/Mu2eGammaDaughterCut.hh"
+#include "Offline/Mu2eG4/inc/Mu2eG4UserHelpers.hh"
 
 // G4 includes
 #include "G4ios.hh"

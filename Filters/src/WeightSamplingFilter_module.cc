@@ -10,7 +10,7 @@
 #include "art/Framework/Principal/Event.h"
 #include "art/Framework/Core/ModuleMacros.h"
 #include "art/Framework/Services/Registry/ServiceHandle.h"
-#include "SeedService/inc/SeedService.hh"
+#include "Offline/SeedService/inc/SeedService.hh"
 #include "fhiclcpp/ParameterSet.h"
 
 #include "art/Framework/Principal/Handle.h"
@@ -18,10 +18,10 @@
 #include "CLHEP/Random/RandFlat.h"
 
 // Mu2e includes.
-#include "MCDataProducts/inc/EventWeight.hh"
-#include "MCDataProducts/inc/GenId.hh"
-#include "DataProducts/inc/PDGCode.hh"
-#include "MCDataProducts/inc/GenParticleCollection.hh"
+#include "Offline/MCDataProducts/inc/EventWeight.hh"
+#include "Offline/MCDataProducts/inc/GenId.hh"
+#include "Offline/DataProducts/inc/PDGCode.hh"
+#include "Offline/MCDataProducts/inc/GenParticleCollection.hh"
 
 
 

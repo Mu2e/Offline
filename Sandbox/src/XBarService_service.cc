@@ -10,12 +10,13 @@
 // C++ include files
 #include <iostream>
 
-#include "Sandbox/inc/XBarService.hh"
-#include "Sandbox/inc/FooService.hh"
+#include "Offline/Sandbox/inc/XBarService.hh"
+#include "Offline/Sandbox/inc/FooService.hh"
 
 // Framework include files
 #include "canvas/Persistency/Provenance/RunID.h"
 #include "art/Framework/Services/Registry/ServiceHandle.h"
+#include "art/Framework/Services/Registry/ServiceDefinitionMacros.h"
 
 using namespace std;
 

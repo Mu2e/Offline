@@ -3,11 +3,11 @@
 # performs the calorimeter and track reconstruciton
 #------------------------------------------------------------------------------
 #  > mu2e --config CaloFilters/fcl/runGlobalFilter.fcl --source "your digis file" --TFile globalFilter.root --nevts=100
-#include "fcl/minimalMessageService.fcl"
-#include "fcl/standardServices.fcl"
-#include "fcl/standardProducers.fcl"
+#include "Offline/fcl/minimalMessageService.fcl"
+#include "Offline/fcl/standardServices.fcl"
+#include "Offline/fcl/standardProducers.fcl"
 
-#include "Trigger/fcl/templates.fcl"
+#include "Offline/Trigger/fcl/prolog_trigger.fcl"
 
 process_name : globalTrigger
 

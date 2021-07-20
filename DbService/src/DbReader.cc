@@ -2,17 +2,17 @@
 #include <iostream>
 #include <iomanip>
 #include "cetlib_except/exception.h"
-#include "DbService/inc/DbReader.hh"
-#include "DbService/inc/DbCurl.hh"
-#include "DbTables/inc/DbUtil.hh"
+#include "Offline/DbService/inc/DbReader.hh"
+#include "Offline/DbService/inc/DbCurl.hh"
+#include "Offline/DbTables/inc/DbUtil.hh"
 
 
 using namespace std;
 
-mu2e::DbReader::DbReader(const DbId& id):_id(id),_curl_handle(nullptr),
+mu2e::DbReader::DbReader():_curl_handle(nullptr),
 		_timeout(3600),_totalTime(0),_removeHeader(true),
 	        _abortOnFail(true),_useCache(true),_cacheLifetime(0),
-		_verbose(0),_timeVerbose(0) {
+					 _verbose(0),_timeVerbose(0),_saveCsv(true) {
 
   // allocates memory for curl
   curl_global_init(CURL_GLOBAL_ALL);
@@ -75,7 +75,7 @@ int mu2e::DbReader::fillTableByCid(DbTable::ptr_t ptr, int cid) {
   std::string where="cid:eq:"+std::to_string(cid);
   int rc = query(csv,ptr->query(),ptr->dbname(),where);
   if(rc!=0) return rc;
-  ptr->fill(csv);
+  ptr->fill(csv,_saveCsv);
   return 0;
 }
 
@@ -129,37 +129,37 @@ int mu2e::DbReader::fillValTables(DbValCache& vcache) {
   rc = multiQuery(qfv);
   if(rc!=0) return rc;
 
-  tables.fill(qfv[0].csv);
+  tables.fill(qfv[0].csv,_saveCsv);
   vcache.setValTables(tables);
   
-  calibrations.fill(qfv[1].csv);
+  calibrations.fill(qfv[1].csv,_saveCsv);
   vcache.setValCalibrations(calibrations);
 
-  iovs.fill(qfv[2].csv);
+  iovs.fill(qfv[2].csv,_saveCsv);
   vcache.setValIovs(iovs);
 
-  groups.fill(qfv[3].csv);
+  groups.fill(qfv[3].csv,_saveCsv);
   vcache.setValGroups(groups);
 
-  grouplists.fill(qfv[4].csv);
+  grouplists.fill(qfv[4].csv,_saveCsv);
   vcache.setValGroupLists(grouplists);
 
-  purposes.fill(qfv[5].csv);
+  purposes.fill(qfv[5].csv,_saveCsv);
   vcache.setValPurposes(purposes);
 
-  lists.fill(qfv[6].csv);
+  lists.fill(qfv[6].csv,_saveCsv);
   vcache.setValLists(lists);
 
-  tablelists.fill(qfv[7].csv);
+  tablelists.fill(qfv[7].csv,_saveCsv);
   vcache.setValTableLists(tablelists);
 
-  versions.fill(qfv[8].csv);
+  versions.fill(qfv[8].csv,_saveCsv);
   vcache.setValVersions(versions);
 
-  extensions.fill(qfv[9].csv);
+  extensions.fill(qfv[9].csv,_saveCsv);
   vcache.setValExtensions(extensions);
 
-  extensionlists.fill(qfv[10].csv);
+  extensionlists.fill(qfv[10].csv,_saveCsv);
   vcache.setValExtensionLists(extensionlists);
 
   auto end_time = std::chrono::high_resolution_clock::now();
@@ -181,6 +181,11 @@ int mu2e::DbReader::fillValTables(DbValCache& vcache) {
 }
 
 int mu2e::DbReader::openHandle() {
+
+  if(_id.name().empty()) {
+      throw cet::exception("DBREADER_DBID NOT_SET") 
+	<< "DbReader found the DbId was not set\n";
+  }
 
   _curl_handle = curl_easy_init();
 

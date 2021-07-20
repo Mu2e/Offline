@@ -5,11 +5,11 @@
 //
 
 // Mu2e includes.
-#include "GeometryService/inc/GeomHandle.hh"
-#include "TrackerGeom/inc/Tracker.hh"
-#include "RecoDataProducts/inc/StrawHitCollection.hh"
-#include "ProditionsService/inc/ProditionsHandle.hh"
-#include "TrackerConditions/inc/StrawResponse.hh"
+#include "Offline/GeometryService/inc/GeomHandle.hh"
+#include "Offline/TrackerGeom/inc/Tracker.hh"
+#include "Offline/RecoDataProducts/inc/StrawHitCollection.hh"
+#include "Offline/ProditionsService/inc/ProditionsHandle.hh"
+#include "Offline/TrackerConditions/inc/StrawResponse.hh"
 
 #include "canvas/Utilities/InputTag.h"
 #include "canvas/Utilities/Exception.h"
@@ -21,6 +21,7 @@
 #include "art/Framework/Services/Registry/ServiceHandle.h"
 #include "art_root_io/TFileService.h"
 #include "art/Framework/Principal/Provenance.h"
+#include "art/Framework/Services/Registry/ServiceDefinitionMacros.h"
 
 #include "fhiclcpp/ParameterSet.h"
 

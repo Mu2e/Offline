@@ -9,35 +9,38 @@
 // David Norvil Brown (the other one):  rename to TSdA for consistency
 // with TDR, and update - May 2015.
 
+// art includes
+#include "art/Framework/Services/Registry/ServiceDefinitionMacros.h"
+
 // clhep includes
 #include "CLHEP/Vector/ThreeVector.h"
 #include "CLHEP/Units/PhysicalConstants.h"
 
 // Mu2e includes.
 
-#include "Mu2eG4/inc/constructTSdA.hh"
-#include "BeamlineGeom/inc/Beamline.hh"
-#include "BeamlineGeom/inc/StraightSection.hh"
-#include "G4Helper/inc/VolumeInfo.hh"
-#include "GeometryService/inc/GeomHandle.hh"
-#include "GeometryService/inc/GeometryService.hh"
-#include "GeometryService/inc/G4GeometryOptions.hh"
-#include "G4Helper/inc/G4Helper.hh"
-#include "DetectorSolenoidGeom/inc/DetectorSolenoid.hh"
-#include "BeamlineGeom/inc/TSdA.hh"
-#include "Mu2eG4/inc/findMaterialOrThrow.hh"
-#include "Mu2eG4/inc/nestBox.hh"
-#include "Mu2eG4/inc/nestTubs.hh"
-#include "Mu2eG4/inc/finishNesting.hh"
+#include "Offline/Mu2eG4/inc/constructTSdA.hh"
+#include "Offline/BeamlineGeom/inc/Beamline.hh"
+#include "Offline/BeamlineGeom/inc/StraightSection.hh"
+#include "Offline/Mu2eG4Helper/inc/VolumeInfo.hh"
+#include "Offline/GeometryService/inc/GeomHandle.hh"
+#include "Offline/GeometryService/inc/GeometryService.hh"
+#include "Offline/GeometryService/inc/G4GeometryOptions.hh"
+#include "Offline/Mu2eG4Helper/inc/Mu2eG4Helper.hh"
+#include "Offline/DetectorSolenoidGeom/inc/DetectorSolenoid.hh"
+#include "Offline/BeamlineGeom/inc/TSdA.hh"
+#include "Offline/Mu2eG4/inc/findMaterialOrThrow.hh"
+#include "Offline/Mu2eG4/inc/nestBox.hh"
+#include "Offline/Mu2eG4/inc/nestTubs.hh"
+#include "Offline/Mu2eG4/inc/finishNesting.hh"
 
 // G4 includes
-#include "G4Material.hh"
-#include "G4Color.hh"
-#include "G4VSolid.hh"
-#include "G4Tubs.hh"
-#include "G4Cons.hh"
-#include "G4Polycone.hh"
-#include "G4VPhysicalVolume.hh"
+#include "Geant4/G4Material.hh"
+#include "Geant4/G4Color.hh"
+#include "Geant4/G4VSolid.hh"
+#include "Geant4/G4Tubs.hh"
+#include "Geant4/G4Cons.hh"
+#include "Geant4/G4Polycone.hh"
+#include "Geant4/G4VPhysicalVolume.hh"
 
 using namespace std;
 
@@ -58,8 +61,8 @@ namespace mu2e {
     const bool forceAuxEdgeVisible = geomOptions->forceAuxEdgeVisible("tsda"); 
     const bool placePV             = geomOptions->placePV("tsda");  
  
-    // Access to the G4HelperService.
-    G4Helper* _helper = &(*(art::ServiceHandle<G4Helper>()));
+    // Access to the Mu2eG4HelperService.
+    Mu2eG4Helper* _helper = &(*(art::ServiceHandle<Mu2eG4Helper>()));
 
     // now constructing the internal neutron absorber
     // it is placed inside DS2Vacuum & DS3Vacuum like the protonabs1 & 2

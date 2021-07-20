@@ -15,9 +15,9 @@
 #include "art/Framework/Core/ModuleMacros.h"
 #include "art/Framework/Principal/Event.h"
 
-#include "SeedService/inc/SeedService.hh"
-#include "MCDataProducts/inc/ProtonBunchIntensity.hh"
-#include "Mu2eUtilities/inc/artURBG.hh"
+#include "Offline/SeedService/inc/SeedService.hh"
+#include "Offline/MCDataProducts/inc/ProtonBunchIntensity.hh"
+#include "Offline/Mu2eUtilities/inc/artURBG.hh"
 
 #include <random>
 

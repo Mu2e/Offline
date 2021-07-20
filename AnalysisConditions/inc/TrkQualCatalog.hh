@@ -6,8 +6,8 @@
 //
 
 // Mu2e includes
-#include "AnalysisConditions/inc/MVACatalog.hh"
-#include "RecoDataProducts/inc/TrkQual.hh"
+#include "Offline/AnalysisConditions/inc/MVACatalog.hh"
+#include "Offline/RecoDataProducts/inc/TrkQual.hh"
 
 namespace mu2e {
 
@@ -15,11 +15,6 @@ namespace mu2e {
   typedef MVAEntries<TrkQual> TrkQualEntries;
   typedef MVACatalog<TrkQual> TrkQualCatalog;
 
-  template<>
-  MVACatalog<TrkQual>::MVACatalog() : _name("TrkQualCatalog") { }
-
-  template<>
-  MVACatalog<TrkQual>::MVACatalog(TrkQualEntries entries) : _name("TrkQualCatalog"), _entries(entries) { }
 }
 
 #endif

@@ -13,15 +13,15 @@
 #include "art/Framework/Principal/Event.h"
 #include "art/Framework/Principal/Handle.h"
 
-#include "RecoDataProducts/inc/StrawDigi.hh"
-#include "MCDataProducts/inc/StrawDigiMC.hh"
-#include "MCDataProducts/inc/StrawDigiMCCollection.hh"
-#include "RecoDataProducts/inc/TrackSummaryRecoMap.hh"
-#include "BTrkData/inc/TrkStrawHit.hh"
-#include "MCDataProducts/inc/TrackSummaryTruthAssns.hh"
-#include "MCDataProducts/inc/SimParticlePtrCollection.hh"
+#include "Offline/RecoDataProducts/inc/StrawDigi.hh"
+#include "Offline/MCDataProducts/inc/StrawDigiMC.hh"
+#include "Offline/MCDataProducts/inc/StrawDigiMCCollection.hh"
+#include "Offline/RecoDataProducts/inc/TrackSummaryRecoMap.hh"
+#include "Offline/BTrkData/inc/TrkStrawHit.hh"
+#include "Offline/MCDataProducts/inc/TrackSummaryTruthAssns.hh"
+#include "Offline/MCDataProducts/inc/SimParticlePtrCollection.hh"
 
-#include "Mu2eUtilities/inc/particleEnteringG4Volume.hh"
+#include "Offline/Mu2eUtilities/inc/particleEnteringG4Volume.hh"
 
 namespace mu2e {
 

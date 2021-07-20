@@ -1,9 +1,9 @@
 #ifndef RecoDataProducts_inc_TrackCaloAssns_hh
 #define RecoDataProducts_inc_TrackCaloAssns_hh
 
-#include "RecoDataProducts/inc/KalRepCollection.hh"
-#include "RecoDataProducts/inc/KalRepPtrCollection.hh"
-#include "RecoDataProducts/inc/CaloClusterCollection.hh"
+#include "Offline/RecoDataProducts/inc/KalRepCollection.hh"
+#include "Offline/RecoDataProducts/inc/KalRepPtrCollection.hh"
+#include "Offline/RecoDataProducts/inc/CaloCluster.hh"
 #include "canvas/Persistency/Common/Ptr.h"
 #include "canvas/Persistency/Common/Assns.h"
 

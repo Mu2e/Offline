@@ -4,17 +4,17 @@
 // C++ includes
 
 // Mu2e includes
-#include "Mu2eG4/inc/Mu2eG4CustomizationPhysicsConstructor.hh"
-#include "Mu2eG4/inc/customizeChargedPionDecay.hh"
-#include "Mu2eG4/inc/toggleProcesses.hh"
+#include "Offline/Mu2eG4/inc/Mu2eG4CustomizationPhysicsConstructor.hh"
+#include "Offline/Mu2eG4/inc/customizeChargedPionDecay.hh"
+#include "Offline/Mu2eG4/inc/toggleProcesses.hh"
 
 // G4 includes
-#include "G4BuilderType.hh"
-#include "G4Threading.hh"
-#include "G4EmParameters.hh"
+#include "Geant4/G4BuilderType.hh"
+#include "Geant4/G4Threading.hh"
+#include "Geant4/G4EmParameters.hh"
 
 // factory
-#include "G4PhysicsConstructorFactory.hh"
+#include "Geant4/G4PhysicsConstructorFactory.hh"
 //
 
 namespace mu2e {

@@ -16,8 +16,8 @@
 #include "art/Framework/Core/ModuleMacros.h"
 #include "art_root_io/TFileService.h"
 
-#include "MCDataProducts/inc/StepPointMCCollection.hh"
-#include "MCDataProducts/inc/SimParticleCollection.hh"
+#include "Offline/MCDataProducts/inc/StepPointMCCollection.hh"
+#include "Offline/MCDataProducts/inc/SimParticleCollection.hh"
 
 namespace mu2e {
 
@@ -113,8 +113,7 @@ namespace mu2e {
 
   //================================================================
   void CollectionSizeAnalyzer::doStepPoints(const art::Event& event) {
-    std::vector<art::Handle<StepPointMCCollection> > stepHandles;
-    event.getManyByType(stepHandles);
+    std::vector<art::Handle<StepPointMCCollection> > stepHandles = event.getMany<StepPointMCCollection>();
     for(const auto& c: stepHandles) {
       const std::string cn = getCollectionName(c);
       hStepPointSize_->Fill(cn.c_str(), double(c->size()));
@@ -126,8 +125,7 @@ namespace mu2e {
 
   //================================================================
   void CollectionSizeAnalyzer::doSimParticles(const art::Event& event) {
-    std::vector<art::Handle<SimParticleCollection> > stepHandles;
-    event.getManyByType(stepHandles);
+    std::vector<art::Handle<SimParticleCollection> > stepHandles = event.getMany<SimParticleCollection>();
     for(const auto& c: stepHandles) {
       const std::string cn = getCollectionName(c);
       hSimParticleDistLin_->Fill(cn.c_str(), double(c->size()), 1.);

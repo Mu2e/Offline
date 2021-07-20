@@ -1,4 +1,4 @@
-#include "ProductionTargetGeom/inc/ProductionTargetMu2eII.hh"
+#include "Offline/ProductionTargetGeom/inc/ProductionTargetMu2eII.hh"
 
 namespace mu2e {
   ProductionTargetMu2eII::ProductionTargetMu2eII(std::string type, int version)

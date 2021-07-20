@@ -1,5 +1,5 @@
 
-#include "Print/inc/CaloShowerStepPrinter.hh"
+#include "Offline/Print/inc/CaloShowerStepPrinter.hh"
 #include "art/Framework/Principal/Provenance.h"
 #include <string>
 #include <iomanip>
@@ -10,8 +10,7 @@ mu2e::CaloShowerStepPrinter::Print(art::Event const& event,
   if(verbose()<1) return;
   if(tags().empty()) {
     // if a list of instances not specified, print all instances
-    std::vector< art::Handle<CaloShowerStepCollection> > vah;
-    event.getManyByType(vah);
+    std::vector< art::Handle<CaloShowerStepCollection> > vah = event.getMany<CaloShowerStepCollection>();
     for (auto const & ah : vah) Print(ah);
   } else {
     // print requested instances
@@ -63,7 +62,7 @@ void
 mu2e::CaloShowerStepPrinter::Print(const mu2e::CaloShowerStep& obj, int ind, std::ostream& os) {
   if(verbose()<1) return;
 
-  if( obj.energyMC() < _eCut ) return;
+  if( obj.energyDepG4() < _eCut ) return;
 
   os << std::setiosflags(std::ios::fixed | std::ios::right);
   if(ind>=0) os << std::setw(4) << ind;
@@ -71,10 +70,10 @@ mu2e::CaloShowerStepPrinter::Print(const mu2e::CaloShowerStep& obj, int ind, std
   const CLHEP::Hep3Vector& pos = obj.position();
   if(verbose()==1) {
     os 
-      << " " << std::setw(5) << obj.volumeId()
+      << " " << std::setw(5) << obj.volumeG4ID()
       << " " << std::setw(12) << obj.simParticle().key()
-      << " " << std::setw(8) << std::setprecision(2) << obj.energyMC()
-      << " " << std::setw(8) << std::setprecision(1) << obj.timeStepMC() 
+      << " " << std::setw(8) << std::setprecision(2) << obj.energyDepG4()
+      << " " << std::setw(8) << std::setprecision(1) << obj.time() 
       << "  " 
       << " " << std::setw(8) << std::setprecision(2) << pos.x()
       << " " << std::setw(8) << std::setprecision(2) << pos.y()

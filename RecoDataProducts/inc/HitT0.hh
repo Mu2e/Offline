@@ -16,6 +16,7 @@ namespace mu2e {
     HitT0() : _t0(0.0), _t0err(0.0) {}
     // conversion with TrkT0
     HitT0(TrkT0 const& trkt0) : _t0(trkt0.t0()), _t0err(trkt0.t0Err()) {}
+    HitT0(double t0, double t0err) : _t0(t0), _t0err(t0err) {}
     HitT0& operator =(TrkT0 const& trkt0) { _t0 = trkt0.t0(); _t0err = trkt0.t0Err(); return *this; }
     operator TrkT0() const { return TrkT0(_t0,_t0err); }
   };

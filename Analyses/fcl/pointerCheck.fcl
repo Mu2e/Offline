@@ -2,7 +2,7 @@
 #  check that art::Ptr's are valid in certain products 
 #
 
-#include "fcl/minimalMessageService.fcl"
+#include "Offline/fcl/minimalMessageService.fcl"
 
 process_name : pointerCheck
 
@@ -25,7 +25,7 @@ physics :{
          #skipStepPointMC     : []
          #skipMCTracjectory   : []
          #skipStrawDigiMC     : []
-         #skipCaloDigiMC      : []
+         #skipCaloMC      : []
          #skipCaloShowerStep  : []
          #skipCrvDigiMC       : []
     }

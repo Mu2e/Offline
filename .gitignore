@@ -33,6 +33,7 @@ gen
 *.pdf
 *.pyc
 *.orig
+*.swp
 BaBar/include
 EMFCAnalysis
 .tup

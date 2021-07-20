@@ -5,32 +5,32 @@
 //
 
 #include "CLHEP/Units/SystemOfUnits.h"
-#include "GlobalConstantsService/inc/GlobalConstantsHandle.hh"
-#include "GlobalConstantsService/inc/ParticleDataTable.hh"
-#include "CosmicRayShieldGeom/inc/CRSScintillatorBar.hh"
-#include "CosmicRayShieldGeom/inc/CRSScintillatorBarDetail.hh"
-#include "CosmicRayShieldGeom/inc/CosmicRayShield.hh"
-#include "GeometryService/inc/GeomHandle.hh"
-#include "GeometryService/inc/GeometryService.hh"
-#include "MCDataProducts/inc/GenParticleCollection.hh"
-#include "MCDataProducts/inc/PhysicalVolumeInfoMultiCollection.hh"
-#include "MCDataProducts/inc/SimParticleCollection.hh"
-#include "MCDataProducts/inc/StatusG4.hh"
-#include "MCDataProducts/inc/StepPointMCCollection.hh"
-#include "MCDataProducts/inc/PtrStepPointMCVectorCollection.hh"
-#include "MCDataProducts/inc/MCTrajectoryCollection.hh"
-#include "MCDataProducts/inc/CaloShowerStepCollection.hh"
-#include "MCDataProducts/inc/CaloShowerSimCollection.hh"
-#include "CaloMC/inc/CrystalContentMC.hh"
-#include "Mu2eUtilities/inc/TwoLinePCA.hh"
-#include "RecoDataProducts/inc/CaloCrystalHitCollection.hh"
-#include "RecoDataProducts/inc/CaloHitCollection.hh"
+#include "Offline/GlobalConstantsService/inc/GlobalConstantsHandle.hh"
+#include "Offline/GlobalConstantsService/inc/ParticleDataTable.hh"
+#include "Offline/CosmicRayShieldGeom/inc/CRSScintillatorBar.hh"
+#include "Offline/CosmicRayShieldGeom/inc/CRSScintillatorBarDetail.hh"
+#include "Offline/CosmicRayShieldGeom/inc/CosmicRayShield.hh"
+#include "Offline/GeometryService/inc/GeomHandle.hh"
+#include "Offline/GeometryService/inc/GeometryService.hh"
+#include "Offline/CalorimeterGeom/inc/Calorimeter.hh"
+#include "Offline/CalorimeterGeom/inc/DiskCalorimeter.hh"
+#include "Offline/MCDataProducts/inc/GenParticleCollection.hh"
+#include "Offline/MCDataProducts/inc/PhysicalVolumeInfoMultiCollection.hh"
+#include "Offline/MCDataProducts/inc/SimParticleCollection.hh"
+#include "Offline/MCDataProducts/inc/StatusG4.hh"
+#include "Offline/MCDataProducts/inc/StepPointMCCollection.hh"
+#include "Offline/MCDataProducts/inc/PtrStepPointMCVectorCollection.hh"
+#include "Offline/MCDataProducts/inc/MCTrajectoryCollection.hh"
+#include "Offline/MCDataProducts/inc/CaloShowerStep.hh"
+#include "Offline/MCDataProducts/inc/CaloShowerSim.hh"
+#include "Offline/Mu2eUtilities/inc/TwoLinePCA.hh"
+#include "Offline/RecoDataProducts/inc/CaloHit.hh"
 #include "TDirectory.h"
 #include "TGraph.h"
 #include "TH1F.h"
 #include "TH2F.h"
 #include "TNtuple.h"
-#include "TrackerGeom/inc/Tracker.hh"
+#include "Offline/TrackerGeom/inc/Tracker.hh"
 #include "art/Framework/Core/EDAnalyzer.h"
 #include "art/Framework/Principal/Event.h"
 #include "art/Framework/Principal/Run.h"
@@ -91,7 +91,7 @@ namespace mu2e {
     // Module which made the MC CaloShowers
     std::string _caloShowerSimModuleLabel;
 
-    // Module which made the CaloCrystalHits
+    // Module which made the CaloHits
     std::string _caloCrystalModuleLabel;
 
     // Name of the stopping target StepPoint collection
@@ -187,8 +187,8 @@ namespace mu2e {
     _generatorModuleLabel(pset.get<string>("generatorModuleLabel")),
     _trackerStepPoints(pset.get<string>("trackerStepPoints","tracker")),
     _calorimeterStepPoints(pset.get<string>("calorimeterStepPoints","calorimeter")),
-    _caloShowerSimModuleLabel(pset.get<string>("caloShowerSimModuleLabel","CaloShowerStepROFromShowerStep")),
-    _caloCrystalModuleLabel(pset.get<string>("caloCrystalModuleLabel","CaloCrystalHitFromHit")),
+    _caloShowerSimModuleLabel(pset.get<string>("caloShowerSimModuleLabel","CaloShowerROMaker")),
+    _caloCrystalModuleLabel(pset.get<string>("caloCrystalModuleLabel","CaloHitMaker")),
     _targetStepPoints(pset.get<string>("targetStepPoints","stoppingtarget")),
     _crvStepPoints(pset.get<string>("CRVStepPoints","CRV")),
     _minimumEnergy(pset.get<double>("minimumEnergy")),
@@ -383,8 +383,7 @@ namespace mu2e {
 
      // These selectors will select data products with the given instance name, and ignore all other fields of the product ID.
      art::ProductInstanceNameSelector getCrystalSteps(_calorimeterStepPoints);
-     HandleVector crystalStepsHandles;
-     event.getMany( getCrystalSteps, crystalStepsHandles);
+     HandleVector crystalStepsHandles = event.getMany<StepPointMCCollection>(getCrystalSteps);
 
      //Calorimeter shower MC
      art::Handle<CaloShowerSimCollection> caloShowerSimHandle;
@@ -392,9 +391,9 @@ namespace mu2e {
      const CaloShowerSimCollection& caloShowerSims(*caloShowerSimHandle);
 
      //Crystal hits (average from readouts)
-     art::Handle<CaloCrystalHitCollection> caloCrystalHitsHandle;
-     event.getByLabel(_caloCrystalModuleLabel, caloCrystalHitsHandle);
-     CaloCrystalHitCollection const& caloCrystalHits(*caloCrystalHitsHandle);
+     art::Handle<CaloHitCollection> CaloHitsHandle;
+     event.getByLabel(_caloCrystalModuleLabel, CaloHitsHandle);
+     CaloHitCollection const& CaloHits(*CaloHitsHandle);
 
 
 
@@ -434,12 +433,12 @@ namespace mu2e {
      map<int,int> showerMap2;
      for (const auto& showerSim : caloShowerSims)
      {
-         showerMap[showerSim.crystalId()] += showerSim.energy();
-         for (const auto& step : showerSim.caloShowerSteps()) showerMap2[showerSim.crystalId()] += step->nCompress();
+         showerMap[showerSim.crystalID()] += showerSim.energyDep();
+         for (const auto& step : showerSim.caloShowerSteps()) showerMap2[showerSim.crystalID()] += step->nCompress();
          _hCaTime->Fill(showerSim.time());
 
          if ( _diagLevel > 1 && _nAnalyzed < _maxFullPrint )
-	   std::cout<<"Readback: caloshower in crystal "<< showerSim.crystalId()<<" eDep = "<<showerSim.energy()
+	   std::cout<<"Readback: caloshower in crystal "<< showerSim.crystalID()<<" eDep = "<<showerSim.energyDep()
 	            <<" time = "<<showerSim.time()<<std::endl;
      }
 
@@ -448,20 +447,20 @@ namespace mu2e {
 
 
      //look at reconstructed hits
-     if (!caloCrystalHitsHandle.isValid()) return;
+     if (!CaloHitsHandle.isValid()) return;
 
      double totalEdep = 0.0;
      set<int> hit_crystals;
 
-     for (unsigned int ic=0; ic<caloCrystalHits.size();++ic)
+     for (unsigned int ic=0; ic<CaloHits.size();++ic)
      {
-         const CaloCrystalHit &hit     = caloCrystalHits.at(ic);
+         const CaloHit &hit     = CaloHits.at(ic);
 
          totalEdep += hit.energyDep();
-         hit_crystals.insert(hit.id());
+         hit_crystals.insert(hit.crystalID());
 
 	 if ( _diagLevel > 1 && _nAnalyzed < _maxFullPrint )
-	   cout<<"Readback: caloHit id = "<<hit.id()<<" "<<"energy = "<<hit.energyDep()<<" time= "<<hit.time()<<endl;
+	   cout<<"Readback: caloHit id = "<<hit.crystalID()<<" "<<"energy = "<<hit.energyDep()<<" time= "<<hit.time()<<endl;
      }
 
      _hCaEdep->Fill(totalEdep);
@@ -494,7 +493,7 @@ namespace mu2e {
     bool haveSimPart = ( simParticles.isValid() && volsHandle.isValid() );
 
     PhysicalVolumeInfoSingleStage const* vols = (volsHandle.isValid() && !volsHandle->empty()) ?
-      &volsHandle->at(0).second : nullptr;
+      &volsHandle->at(0) : nullptr;
 
     // Other files might have empty collections.
     if ( haveSimPart ){
@@ -762,14 +761,11 @@ namespace mu2e {
                                     art::Handle<StepPointMCCollection>& hits ){
 
     int count(0);
-    for ( auto id : straw.nearestNeighboursById() ){
-      for ( auto const& step : *hits ){
-        if ( step.strawId() == id ){
-          ++count;
-          break;
-        }
-      }
 
+    for ( auto const& step : *hits ){
+      if ( step.strawId().nearestNeighbor(straw.id()) ){
+	++count;
+      }
     }
     return count;
   }  // end countHitNeighbours

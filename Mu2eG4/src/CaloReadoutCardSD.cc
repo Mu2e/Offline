@@ -11,24 +11,24 @@
 #include "cetlib_except/exception.h"
 
 // Mu2e includes
-#include "Mu2eG4/inc/CaloReadoutCardSD.hh"
-#include "Mu2eG4/inc/Mu2eG4UserHelpers.hh"
-#include "Mu2eG4/inc/SimParticleHelper.hh"
-#include "Mu2eG4/inc/PhysicsProcessInfo.hh"
-#include "GeometryService/inc/GeomHandle.hh"
-#include "CalorimeterGeom/inc/Calorimeter.hh"
+#include "Offline/Mu2eG4/inc/CaloReadoutCardSD.hh"
+#include "Offline/Mu2eG4/inc/Mu2eG4UserHelpers.hh"
+#include "Offline/Mu2eG4/inc/SimParticleHelper.hh"
+#include "Offline/Mu2eG4/inc/PhysicsProcessInfo.hh"
+#include "Offline/GeometryService/inc/GeomHandle.hh"
+#include "Offline/CalorimeterGeom/inc/Calorimeter.hh"
 
 // G4 includes
-#include "G4Step.hh"
+#include "Geant4/G4Step.hh"
 
 
 namespace mu2e {
 
   CaloReadoutCardSD::CaloReadoutCardSD(G4String name, SimpleConfig const & config ):
-    Mu2eSensitiveDetector(name,config),_nro(0)
+    Mu2eG4SensitiveDetector(name,config),_nro(0)
   {
     GeomHandle<Calorimeter> cg;
-    _nro  = cg->caloInfo().nROPerCrystal();
+    _nro  = cg->caloInfo().getInt("nSiPMPerCrystal");
   }
 
   G4bool CaloReadoutCardSD::ProcessHits(G4Step* aStep,G4TouchableHistory*)
@@ -64,6 +64,7 @@ namespace mu2e {
                                        aStep->GetPreStepPoint()->GetPosition() - _mu2eOrigin,
                                        aStep->GetPostStepPoint()->GetPosition() - _mu2eOrigin,
                                        aStep->GetPreStepPoint()->GetMomentum(),
+                                       aStep->GetPostStepPoint()->GetMomentum(),
                                        aStep->GetStepLength(),
                                        endCode
                                        ) );

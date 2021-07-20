@@ -15,7 +15,10 @@
 #include "fhiclcpp/types/TupleAs.h"
 #include "canvas/Utilities/InputTag.h"
 
-#include "EventMixing/inc/Mu2eProductMixer.hh"
+#include "Offline/SeedService/inc/SeedService.hh"
+#include "Offline/EventMixing/inc/Mu2eProductMixer.hh"
+#include "Offline/Mu2eUtilities/inc/artURBG.hh"
+#include <random>
 
 //================================================================
 namespace mu2e {
@@ -24,10 +27,12 @@ namespace mu2e {
   // Our "detail" class for art/Framework/Modules/MixFilter.h
   class ResamplingMixerDetail {
     Mu2eProductMixer spm_;
-    const unsigned nSecondaries_;
-
+    const int debugLevel_;
+    const unsigned maxEventsToSkip_;
     bool writeEventIDs_;
     art::EventIDSequence idseq_;
+    art::RandomNumberGenerator::base_engine_t& engine_;
+    artURBG urbg_;
 
   public:
 
@@ -47,15 +52,19 @@ namespace mu2e {
                   )
           };
 
-      fhicl::Atom<unsigned> nSecondaries { Name("nSecondaries"),
-          Comment("Number of secondary events per single primary, a positive integer."),
-          1u };
+      fhicl::Atom<unsigned> maxEventsToSkip { Name("MaxEventsToSkip"),
+          Comment("Maximum number of events to skip at the beginning of the first secondary input file in sequential readMode.\n"),
+          0u };
 
       fhicl::Atom<bool> writeEventIDs { Name("writeEventIDs"),
           Comment("Write out IDs of events on the secondary input stream."),
           true
           };
-    };
+      fhicl::Atom<int> debugLevel { Name("debugLevel"),
+          Comment("control the level of debug output"),
+          0u
+          };
+     };
 
     struct Config {
       fhicl::Table<Mu2eConfig> mu2e { fhicl::Name("mu2e") };
@@ -64,27 +73,55 @@ namespace mu2e {
     using Parameters = art::MixFilterTable<Config>;
     ResamplingMixerDetail(const Parameters& pset, art::MixHelper &helper);
 
-    size_t nSecondaries() const { return nSecondaries_; }
+    size_t eventsToSkip() { 
+      static bool first(true);
+      size_t result(0);
+      if(first) {
+	first = false;
+	std::uniform_int_distribution<size_t> uniform(0, maxEventsToSkip_);
+	result = uniform(urbg_);
+      }
+      if(debugLevel_ > 0) {
+	std::cout << " Skipping " << result << " Secondaries " << std::endl;
+      }
+      return result;
+    }
+    size_t nSecondaries() const { return (size_t) 1; }
 
     void processEventIDs(const art::EventIDSequence& seq);
 
+    void beginSubRun(const art::SubRun& sr);
+    void startEvent(art::Event const& e);
     void finalizeEvent(art::Event& e);
+    void endSubRun(art::SubRun& sr);
+
   };
 
   ResamplingMixerDetail::ResamplingMixerDetail(const Parameters& pars, art::MixHelper& helper)
     : spm_{ pars().mu2e().products(), helper }
-    , nSecondaries_{ pars().mu2e().nSecondaries() }
+    , debugLevel_{ pars().mu2e().debugLevel() }
+    , maxEventsToSkip_{ pars().mu2e().maxEventsToSkip() }
     , writeEventIDs_{ pars().mu2e().writeEventIDs() }
-  {
-    if(writeEventIDs_) {
-      helper.produces<art::EventIDSequence>();
+    , engine_{helper.createEngine(art::ServiceHandle<SeedService>()->getSeed())}
+    , urbg_{ engine_ }
+    {
+      if(writeEventIDs_) {
+        helper.produces<art::EventIDSequence>();
+      }
     }
-  }
 
   void ResamplingMixerDetail::processEventIDs(const art::EventIDSequence& seq) {
     if(writeEventIDs_) {
       idseq_ = seq;
     }
+  }
+
+  void ResamplingMixerDetail::beginSubRun(const art::SubRun& sr) {
+    spm_.beginSubRun(sr);
+  }
+
+  void ResamplingMixerDetail::startEvent(art::Event const& e) {
+    spm_.startEvent(e);
   }
 
   void ResamplingMixerDetail::finalizeEvent(art::Event& e) {
@@ -93,6 +130,10 @@ namespace mu2e {
       o->swap(idseq_);
       e.put(std::move(o));
     }
+  }
+
+  void ResamplingMixerDetail::endSubRun(art::SubRun& sr) {
+    spm_.endSubRun(sr);
   }
 
 }

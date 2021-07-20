@@ -9,12 +9,12 @@
 
 
 // Included from Geant4
-#include "G4MTRunManager.hh"
+#include "Geant4/G4MTRunManager.hh"
 
 //Mu2e includes
-#include "Mu2eG4/inc/Mu2eG4Config.hh"
-#include "Mu2eG4/inc/PhysicalVolumeHelper.hh"
-#include "Mu2eG4/inc/SensitiveDetectorHelper.hh"
+#include "Offline/Mu2eG4/inc/Mu2eG4Config.hh"
+#include "Offline/Mu2eG4/inc/PhysicalVolumeHelper.hh"
+#include "Offline/Mu2eG4/inc/SensitiveDetectorHelper.hh"
 
 namespace G4 {class G4VUserPhysicsList;}
 
@@ -37,10 +37,7 @@ namespace mu2e {
     void initializeMasterRunAction();
     void stopG4();
     void terminateRun();
-    
-    G4bool SetUpAnEvent(G4Event* evt,
-                        long& s1, long& s2, long& s3,
-                        G4bool reseedRequired);
+    G4bool SetUpEvent();
 
     inline G4VUserPhysicsList* getMasterPhysicsList() {return physicsList_;}
 

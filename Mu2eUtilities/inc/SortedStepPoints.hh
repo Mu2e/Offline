@@ -9,10 +9,10 @@
 #include <vector>
 
 #include "CLHEP/Vector/ThreeVector.h"
-#include "MCDataProducts/inc/SimParticle.hh"
-#include "MCDataProducts/inc/SimParticleCollection.hh"
-#include "MCDataProducts/inc/StepPointMC.hh"
-#include "MCDataProducts/inc/StepPointMCCollection.hh"
+#include "Offline/MCDataProducts/inc/SimParticle.hh"
+#include "Offline/MCDataProducts/inc/SimParticleCollection.hh"
+#include "Offline/MCDataProducts/inc/StepPointMC.hh"
+#include "Offline/MCDataProducts/inc/StepPointMCCollection.hh"
 
 namespace mu2e {
 

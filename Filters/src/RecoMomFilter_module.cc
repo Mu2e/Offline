@@ -15,7 +15,7 @@
 #include "art/Framework/Principal/Handle.h"
 
 // Mu2e includes.
-#include "RecoDataProducts/inc/KalSeed.hh"
+#include "Offline/RecoDataProducts/inc/KalSeed.hh"
 
 
 
@@ -59,8 +59,7 @@ namespace mu2e {
 
   bool RecoMomFilter::filter(art::Event& event) {
 
-    std::vector<art::Handle<KalSeedCollection> > colls;
-    event.getManyByType(colls);
+    std::vector<art::Handle<KalSeedCollection> > colls = event.getMany<KalSeedCollection>();
 
     std::vector<std::string> moduleNames;
     for (size_t i=0;i<_trkTags.size();i++){

@@ -1,6 +1,6 @@
 // Andrei Gaponenko, 2014
 
-#include "RecoDataProducts/inc/TrackSummary.hh"
+#include "Offline/RecoDataProducts/inc/TrackSummary.hh"
 
 #include <cmath>
 
@@ -9,8 +9,6 @@
 // BaBar
 #include "BTrk/BaBar/BaBar.hh"
 #include "BTrk/TrkBase/HelixTraj.hh"
-#include "BTrk/TrkBase/TrkParticle.hh"
-#include "BTrk/TrkBase/TrkT0.hh"
 #include "BTrk/ProbTools/ChisqConsistency.hh"
 
 namespace mu2e {

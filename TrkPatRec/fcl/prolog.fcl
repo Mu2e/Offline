@@ -2,8 +2,9 @@
 #------------------------------------------------------------------------------
 # this file is included by fcl/standardProducers.fcl inside the PROLOG section
 #------------------------------------------------------------------------------
-#include "TrkPatRec/fcl/Particle.fcl"
-#include "TrkPatRec/fcl/PanelAmbigResolver.fcl" 
+#include "Offline/TrkPatRec/fcl/Particle.fcl"
+#include "Offline/TrkPatRec/fcl/PanelAmbigResolver.fcl" 
+#include "Offline/fcl/TrkCaloDt.fcl"
 BEGIN_PROLOG
 
 # this should go in a general file FIXME!!
@@ -23,12 +24,12 @@ TimeClusterFinder : {
   
   ComboHitCollection     : "makePH"
   StrawHitFlagCollection : "FlagBkgHits:ComboHits"
-  CaloClusterCollection  : "CaloClusterFromProtoCluster"
-  ClusterMVA             : { MVAWeights : "TrkPatRec/test/TimeCluster.weights.xml" }
-  ClusterCaloMVA         : { MVAWeights : "TrkPatRec/test/TimeClusterCalo.weights.xml" }
+  CaloClusterCollection  : "CaloClusterMaker"
+  ClusterMVA             : { MVAWeights : "Offline/TrkPatRec/data/TimeCluster.weights.xml" }
+  ClusterCaloMVA         : { MVAWeights : "Offline/TrkPatRec/data/TimeClusterCalo.weights.xml" }
   HitSelectionBits       : ["EnergySelection","TimeSelection","RadiusSelection"]
   HitBackgroundBits      : ["Background"]
-  UseCaloCluster         : true
+  UseCaloCluster : true
   UseCaloClusterPosition : true
   CaloClusterWeight      : 10.0
   TestFlag               : true
@@ -60,7 +61,7 @@ TimeClusterFinderNew : {
   ComboHitCollection     : "makePH"
   StrawHitFlagCollection : "FlagBkgHits:ComboHits"
   CaloClusterCollection  : "CaloClusterFromProtoCluster"
-  TimeClusterMVA         : { MVAWeights : "TrkPatRec/test/TimeCluster3.weights.xml" }
+  TimeClusterMVA         : { MVAWeights : "Offline/TrkPatRec/data/TimeCluster3.weights.xml" }
   HitSelectionBits       : ["EnergySelection","TimeSelection","RadiusSelection"]
   HitBackgroundBits      : ["Background"]
   TestFlag               : true
@@ -150,13 +151,50 @@ TimeClusterFinderUpi : {
 RobustHelixFinder : {
     module_type		: RobustHelixFinder
     ComboHitCollection     : "makePH"
-    ComboHitFlagCollection : "FlagBkgHits:ComboHits"
-    HelixStereoHitMVA      : { MVAWeights : "TrkPatRec/test/HelixStereoHitMVA.weights.xml" }
-    HelixNonStereoHitMVA   : { MVAWeights : "TrkPatRec/test/HelixNonStereoHitMVA.weights.xml" }
-    diagPlugin : { tool_type                    : "RobustHelixFinderDiag"
-	mcTruth                                 : 0
+    HelixStereoHitMVA      : { MVAWeights : "Offline/TrkPatRec/data/HelixStereoHitMVA.weights.xml" }
+    HelixNonStereoHitMVA   : { MVAWeights : "Offline/TrkPatRec/data/HelixNonStereoHitMVA.weights.xml" }
+    DiagPlugin : { 
+	diagLevel                    : 0
+	tool_type                    : "RobustHelixFinderDiag"
+	mcTruth                      : 0
     }
+    TimeClusterCollection : "TimeClusterFinder"
     T0Calculator : @local::TimeCalculator
+    HelixFitter : @local::TrkReco.RobustHelixFit
+    DiagLevel : 0
+    DebugLevel : 0
+    PrintFrequency : 101
+    PrefilterHits : true
+    UpdateStereoHits : false
+    MinNStrawHits : 10
+    AveragePitch : 0.6
+    MaxChi2dXY : 5.0
+    MaxChi2dZPhi : 5.0
+    MaxHitPhiChi2 : 25.0
+    MaxRadiusDiff : 100.0
+    MaxRPull : 5.0
+    targetconsistent_init : false
+    targetconsistent : false
+    RPullScaleF : 1.414
+    MaxPhiHitSeparation : 1.0
+    SaveHelixFlag : ["HelixOK"]
+    MaxIterations : 10
+    CentralRadialResolution : 20.0
+    CentralPerpResolution : 12.0
+    MaxWireDistance : 200.0
+    MaxTransDistance : 80.0
+    MaxChisquared : 25.
+    MaxRWDot : 1.0
+    MinRadiusErr : 20.0
+    UseHitMVA : false
+    MinMVA : 0.1
+    UseTripletArea : false
+    UpdateStereo : false
+    HitSelectionBits : ["TimeDivision"]
+    HitBackgroundBits : ["Background"]
+    Helicities : [-1,1]
+    
+    
 }
 RobustHelixFinderDe : {
   @table::RobustHelixFinder
@@ -305,7 +343,7 @@ KFF : {
   module_type                 : KalFinalFit
   ComboHitCollection	      : "makeSH"
   StrawHitFlagCollection      : "FlagBkgHits:StrawHits"
-  CaloClusterCollection       : "CaloClusterFromProtoCluster"
+  CaloClusterCollection       : "CaloClusterMaker"
   KalFit		      : @local::KFFinal
   GoodKallSeedFitBits	      : ["SeedOK"]
   AddHitSelectionBits	      : []

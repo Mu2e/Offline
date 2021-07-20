@@ -1,8 +1,8 @@
 # Same as replayAll.py, except skip the first 10 events.
 #
 
-#include "fcl/minimalMessageService.fcl"
-#include "fcl/standardProducers.fcl"
+#include "Offline/fcl/minimalMessageService.fcl"
+#include "Offline/fcl/standardProducers.fcl"
 
 # Give this job a name.
 process_name : replayAll
@@ -35,17 +35,17 @@ services :
 
   GeometryService :
   {
-    inputFile : "Mu2eG4/geom/geom_common"
+    inputFile : "Offline/Mu2eG4/geom/geom_common"
   }
 
   ConditionsService :
   {
-    conditionsfile : "Mu2eG4/test/conditions_01.txt"
+    conditionsfile : "Offline/ConditionsService/data/conditions_01.txt"
   }
 
-  GlobalConstantsService : { inputFile : "Mu2eG4/test/globalConstants_01.txt" }
+  GlobalConstantsService : { inputFile : "Offline/GlobalConstantsService/data/globalConstants_01.txt" }
 
-  G4Helper : { }
+  Mu2eG4Helper : { }
 
 }
 
@@ -58,7 +58,7 @@ physics :
     generate:
     {
       module_type   : EventGenerator
-      inputfile     : "Mu2eG4/test/genconfig_02.txt"
+      inputfile     : "Offline/Mu2eG4/test/genconfig_02.txt"
     }
 
     # Run G4 and add hits to the event

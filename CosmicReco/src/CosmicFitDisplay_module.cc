@@ -12,33 +12,33 @@
 #include <cmath>
 
 //Mu2e Data Prods:
-#include "MCDataProducts/inc/ProtonBunchIntensity.hh"
-#include "MCDataProducts/inc/EventWeight.hh"
-#include "RecoDataProducts/inc/StrawHitFlagCollection.hh"
+#include "Offline/MCDataProducts/inc/ProtonBunchIntensity.hh"
+#include "Offline/MCDataProducts/inc/EventWeight.hh"
+#include "Offline/RecoDataProducts/inc/StrawHitFlagCollection.hh"
 
-#include "RecoDataProducts/inc/StrawHit.hh"
-#include "RecoDataProducts/inc/StrawHitFlag.hh"
-#include "RecoDataProducts/inc/ComboHit.hh"
+#include "Offline/RecoDataProducts/inc/StrawHit.hh"
+#include "Offline/RecoDataProducts/inc/StrawHitFlag.hh"
+#include "Offline/RecoDataProducts/inc/ComboHit.hh"
 
-#include "MCDataProducts/inc/StrawDigiMC.hh"
-#include "MCDataProducts/inc/MCRelationship.hh"
+#include "Offline/MCDataProducts/inc/StrawDigiMC.hh"
+#include "Offline/MCDataProducts/inc/MCRelationship.hh"
 // Mu2e Utilities
-#include "GeometryService/inc/GeomHandle.hh"
-#include "Mu2eUtilities/inc/SimParticleTimeOffset.hh"
-#include "TrkDiag/inc/TrkMCTools.hh"
-#include "Mu2eUtilities/inc/ParametricFit.hh"
+#include "Offline/GeometryService/inc/GeomHandle.hh"
+#include "Offline/Mu2eUtilities/inc/SimParticleTimeOffset.hh"
+#include "Offline/TrkDiag/inc/TrkMCTools.hh"
+#include "Offline/Mu2eUtilities/inc/ParametricFit.hh"
 
 //Mu2e Tracker Geom:
-#include "TrackerGeom/inc/Tracker.hh"
-#include "TrackerGeom/inc/Straw.hh"
+#include "Offline/TrackerGeom/inc/Tracker.hh"
+#include "Offline/TrackerGeom/inc/Straw.hh"
 
 // Mu2e diagnostics
-#include "TrkDiag/inc/ComboHitInfo.hh"
-#include "GeneralUtilities/inc/ParameterSetHelpers.hh"
+#include "Offline/TrkDiag/inc/ComboHitInfo.hh"
+#include "Offline/GeneralUtilities/inc/ParameterSetHelpers.hh"
 
 //Cosmics:
-#include "RecoDataProducts/inc/CosmicTrack.hh"
-#include "RecoDataProducts/inc/CosmicTrackSeed.hh"
+#include "Offline/RecoDataProducts/inc/CosmicTrack.hh"
+#include "Offline/RecoDataProducts/inc/CosmicTrackSeed.hh"
 
 // Framework includes.
 #include "art/Framework/Core/EDAnalyzer.h"
@@ -238,7 +238,7 @@ Below here are a series of macros -  they are not glamorous but they produce use
 		      
         	      GeomHandle<Tracker> th; 
 		      const Tracker* tracker = th.get(); 
-        	      TubsParams envelope(tracker->getInnerTrackerEnvelopeParams());
+        	      TubsParams envelope(tracker->g4Tracker()->getInnerTrackerEnvelopeParams());
 		      //double zlimit{envelope.zHalfLength()};
         	      if (doDisplay_) {
               
@@ -567,12 +567,10 @@ Below here are a series of macros -  they are not glamorous but they produce use
       
         GeomHandle<Tracker> tracker; 
         GeomHandle<Straw> straw; 
-        //Straw& straw_details = tracker->getStraw(id);
-	//double const straw_radius = straw_details.at(0).getRadius();; 
         GeomHandle<Plane> plane;     
         GeomHandle<Panel> panel;     
         // Annulus of a cylinder that bounds the tracker/straw info:
-        TubsParams envelope(tracker->getInnerTrackerEnvelopeParams());
+        TubsParams envelope(tracker->g4Tracker()->getInnerTrackerEnvelopeParams());
          
         if (doDisplay_) {
               
@@ -992,13 +990,8 @@ Below here are a series of macros -  they are not glamorous but they produce use
             double maxy = *std::max_element(y.begin(), y.end());
        	    GeomHandle<Tracker> th;
        	    const Tracker* tracker = th.get(); 
-            //GeomHandle<Straw> straw; 
-            //Straw& straw_details = tracker->getStraw(id);
-	    //double const straw_radius = straw_details.at(0).getRadius();; 
-            //GeomHandle<Plane> plane;     
-            //GeomHandle<Panel> panel;     
             // Annulus of a cylinder that bounds the tracker/straw info:
-            TubsParams envelope(tracker->getInnerTrackerEnvelopeParams());
+            TubsParams envelope(tracker->g4Tracker()->getInnerTrackerEnvelopeParams());
             if (doDisplay_) {
                 TPolyMarker poly, wirecentre;
 	      	TBox   box;
@@ -1034,12 +1027,12 @@ Below here are a series of macros -  they are not glamorous but they produce use
 			double y2 = p.y()-s*w.y();
 			double z1 = p.z()+s*w.z();
 			double z2 = p.z()-s*w.z();
-		        Straw const&  straw = tracker->getStraw(chit.strawId());
-	                double const straw_radius = straw.getRadius();
+	                double const straw_radius = tracker->strawOuterRadius();
 	                cout<<straw_radius<<endl;
-			const CLHEP::Hep3Vector& spos = straw.getMidPoint();
-      			const CLHEP::Hep3Vector& sdir = straw.getDirection();
-      		        CLHEP::Hep3Vector wpos = spos + chit.wireDist()*sdir;
+			Straw const&  straw = tracker->getStraw(chit.strawId());
+			auto spos = straw.getMidPoint();
+      			auto sdir = straw.getDirection();
+      		        auto wpos = spos + chit.wireDist()*sdir;
  		        
  		        wirecentre.SetMarkerColor(ihit);   
  		        double y0wire{wpos.y()} ;
@@ -1085,7 +1078,7 @@ Below here are a series of macros -  they are not glamorous but they produce use
         GeomHandle<Tracker> tracker;
 
         // Annulus of a cylinder that bounds the tracker
-        TubsParams envelope(tracker->getInnerTrackerEnvelopeParams());
+        TubsParams envelope(tracker->g4Tracker()->getInnerTrackerEnvelopeParams());
 
 	std::vector<double> x, y, z, a0, a1, b0, b1;
 	std::vector<XYZVec> xprimes, yprimes, zprimes, initial_track_direction;
@@ -1230,7 +1223,7 @@ Below here are a series of macros -  they are not glamorous but they produce use
         GeomHandle<Tracker> tracker;
 
         // Annulus of a cylinder that bounds the tracker
-        TubsParams envelope(tracker->getInnerTrackerEnvelopeParams());
+        TubsParams envelope(tracker->g4Tracker()->getInnerTrackerEnvelopeParams());
 
 	std::vector<double> x, y, z, a0, a1, b0, b1;
 	std::vector<XYZVec> xprimes, yprimes, zprimes, initial_track_direction;
@@ -1387,7 +1380,7 @@ Below here are a series of macros -  they are not glamorous but they produce use
           GeomHandle<Tracker> tracker;
  
           // Annulus of a cylinder that bounds the tracker
-          TubsParams envelope(tracker->getInnerTrackerEnvelopeParams());
+          TubsParams envelope(tracker->g4Tracker()->getInnerTrackerEnvelopeParams());
           
 	  // Draw the frame for the cylinders in plot:
           double zlimit{envelope.zHalfLength()};

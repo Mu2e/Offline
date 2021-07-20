@@ -1,4 +1,4 @@
-#include "fcl/minimalMessageService.fcl"
+#include "Offline/fcl/minimalMessageService.fcl"
 
 process_name: leaktest
 

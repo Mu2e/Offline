@@ -24,10 +24,10 @@
 
 
 // Mu2e includes
-#include "EventGenerator/inc/GeneratorBase.hh"
-#include "Mu2eUtilities/inc/RandomUnitSphere.hh"
-#include "GlobalConstantsService/inc/GlobalConstantsHandle.hh"
-#include "GlobalConstantsService/inc/PhysicsParams.hh"
+#include "Offline/EventGenerator/inc/GeneratorBase.hh"
+#include "Offline/Mu2eUtilities/inc/RandomUnitSphere.hh"
+#include "Offline/GlobalConstantsService/inc/GlobalConstantsHandle.hh"
+#include "Offline/GlobalConstantsService/inc/PhysicsParams.hh"
 
 // Framework Includes
 #include "fhiclcpp/types/Atom.h"

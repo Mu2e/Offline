@@ -27,111 +27,113 @@
 // Framework includes
 #include "messagefacility/MessageLogger/MessageLogger.h"
 #include "cetlib_except/exception.h"
+#include "art/Framework/Services/Registry/ServiceDefinitionMacros.h"
 
 // Mu2e includes
-#include "ConfigTools/inc/checkForStale.hh"
-#include "G4Helper/inc/G4Helper.hh"
-#include "Mu2eG4/inc/SensitiveDetectorName.hh"
-#include "Mu2eG4/inc/Mu2eWorld.hh"
-#include "Mu2eG4/inc/constructWorldVolume.hh"
-#include "Mu2eG4/inc/constructHall.hh"
-#include "Mu2eG4/inc/constructProtonBeamDump.hh"
-#include "Mu2eG4/inc/constructProtonAbsorber.hh"
-#include "Mu2eG4/inc/constructCRV.hh"
-#include "Mu2eG4/inc/constructExternalShielding.hh"
-#include "Mu2eG4/inc/constructSaddles.hh"
-#include "Mu2eG4/inc/constructServicesGeom.hh"
-#include "Mu2eG4/inc/constructTSdA.hh"
-#include "Mu2eG4/inc/constructMBS.hh"
-#include "Mu2eG4/inc/constructVirtualDetectors.hh"
-#include "Mu2eG4/inc/constructVirtualDetectorSDs.hh"
-#include "Mu2eG4/inc/constructVisualizationRegions.hh"
-#include "Mu2eG4/inc/constructDS.hh"
-#include "Mu2eG4/inc/constructMSTM.hh"
-#include "Mu2eG4/inc/constructSTM.hh"
-#include "Mu2eG4/inc/constructTS.hh"
-#include "Mu2eG4/inc/constructPS.hh"
-#include "Mu2eG4/inc/constructPSEnclosure.hh"
-#include "Mu2eG4/inc/MaterialFinder.hh"
-#include "Mu2eG4/inc/CaloCrystalSD.hh"
-#include "Mu2eG4/inc/CaloReadoutSD.hh"
-#include "Mu2eG4/inc/CaloReadoutCardSD.hh"
-#include "Mu2eG4/inc/CaloCrateSD.hh"
-#include "Mu2eG4/inc/ExtMonFNALPixelSD.hh"
-#include "Mu2eG4/inc/TrackerWireSD.hh"
-#include "Mu2eG4/inc/Mu2eSensitiveDetector.hh"
-#include "Mu2eG4/inc/CRVSD.hh"
-#include "Mu2eG4/inc/StrawSD.hh"
-#include "Mu2eG4/inc/TrackerPlaneSupportSD.hh"
-#include "Mu2eG4/inc/findMaterialOrThrow.hh"
-#include "Mu2eG4/inc/nestTubs.hh"
-#include "Mu2eG4/inc/nestTorus.hh"
-#include "Mu2eG4/inc/nestBox.hh"
-#include "Mu2eG4/inc/nestCons.hh"
-#include "Mu2eG4/inc/finishNesting.hh"
-#include "GeometryService/inc/GeometryService.hh"
-#include "GeometryService/inc/GeomHandle.hh"
-#include "GeometryService/inc/WorldG4.hh"
-#include "GeometryService/inc/DetectorSystem.hh"
-#include "BFieldGeom/inc/BFieldManager.hh"
-#include "CalorimeterGeom/inc/Calorimeter.hh"
-#include "CalorimeterGeom/inc/DiskCalorimeter.hh"
-#include "CosmicRayShieldGeom/inc/CosmicRayShield.hh"
-#include "StoppingTargetGeom/inc/StoppingTarget.hh"
-#include "BeamlineGeom/inc/Beamline.hh"
-#include "BeamlineGeom/inc/TransportSolenoid.hh"
-#include "GeometryService/inc/VirtualDetector.hh"
-#include "Mu2eG4/inc/constructTracker.hh"
-#include "Mu2eG4/inc/constructStoppingTarget.hh"
-#include "Mu2eG4/inc/constructDummyStoppingTarget.hh"
-#include "Mu2eG4/inc/constructDiskCalorimeter.hh"
-#include "Mu2eG4/inc/SensitiveDetectorHelper.hh"
-#include "TrackerGeom/inc/Tracker.hh"
-#include "ExtinctionMonitorFNAL/Geometry/inc/ExtMonFNAL.hh"
+#include "Offline/ConfigTools/inc/checkForStale.hh"
+#include "Offline/Mu2eG4Helper/inc/Mu2eG4Helper.hh"
+#include "Offline/Mu2eG4/inc/SensitiveDetectorName.hh"
+#include "Offline/Mu2eG4/inc/Mu2eWorld.hh"
+#include "Offline/Mu2eG4/inc/constructWorldVolume.hh"
+#include "Offline/Mu2eG4/inc/constructHall.hh"
+#include "Offline/Mu2eG4/inc/constructProtonBeamDump.hh"
+#include "Offline/Mu2eG4/inc/constructProtonAbsorber.hh"
+#include "Offline/Mu2eG4/inc/constructCRV.hh"
+#include "Offline/Mu2eG4/inc/constructExternalShielding.hh"
+#include "Offline/Mu2eG4/inc/constructSaddles.hh"
+#include "Offline/Mu2eG4/inc/constructServicesGeom.hh"
+#include "Offline/Mu2eG4/inc/constructTSdA.hh"
+#include "Offline/Mu2eG4/inc/constructMBS.hh"
+#include "Offline/Mu2eG4/inc/constructVirtualDetectors.hh"
+#include "Offline/Mu2eG4/inc/constructVirtualDetectorSDs.hh"
+#include "Offline/Mu2eG4/inc/constructVisualizationRegions.hh"
+#include "Offline/Mu2eG4/inc/constructDS.hh"
+#include "Offline/Mu2eG4/inc/constructMSTM.hh"
+#include "Offline/Mu2eG4/inc/constructSTM.hh"
+#include "Offline/Mu2eG4/inc/constructTS.hh"
+#include "Offline/Mu2eG4/inc/constructPS.hh"
+#include "Offline/Mu2eG4/inc/constructPSEnclosure.hh"
+#include "Offline/Mu2eG4/inc/MaterialFinder.hh"
+#include "Offline/Mu2eG4/inc/CaloCrystalSD.hh"
+#include "Offline/Mu2eG4/inc/CaloReadoutSD.hh"
+#include "Offline/Mu2eG4/inc/CaloReadoutCardSD.hh"
+#include "Offline/Mu2eG4/inc/CaloCrateSD.hh"
+#include "Offline/Mu2eG4/inc/ExtMonFNALPixelSD.hh"
+#include "Offline/Mu2eG4/inc/TrackerWireSD.hh"
+#include "Offline/Mu2eG4/inc/Mu2eG4SensitiveDetector.hh"
+#include "Offline/Mu2eG4/inc/CRVSD.hh"
+#include "Offline/Mu2eG4/inc/StrawSD.hh"
+#include "Offline/Mu2eG4/inc/TrackerPlaneSupportSD.hh"
+#include "Offline/Mu2eG4/inc/findMaterialOrThrow.hh"
+#include "Offline/Mu2eG4/inc/nestTubs.hh"
+#include "Offline/Mu2eG4/inc/nestTorus.hh"
+#include "Offline/Mu2eG4/inc/nestBox.hh"
+#include "Offline/Mu2eG4/inc/nestCons.hh"
+#include "Offline/Mu2eG4/inc/finishNesting.hh"
+#include "Offline/GeometryService/inc/GeometryService.hh"
+#include "Offline/GeometryService/inc/GeomHandle.hh"
+#include "Offline/GeometryService/inc/WorldG4.hh"
+#include "Offline/GeometryService/inc/DetectorSystem.hh"
+#include "Offline/BFieldGeom/inc/BFieldManager.hh"
+#include "Offline/CalorimeterGeom/inc/Calorimeter.hh"
+#include "Offline/CalorimeterGeom/inc/DiskCalorimeter.hh"
+#include "Offline/CosmicRayShieldGeom/inc/CosmicRayShield.hh"
+#include "Offline/StoppingTargetGeom/inc/StoppingTarget.hh"
+#include "Offline/BeamlineGeom/inc/Beamline.hh"
+#include "Offline/BeamlineGeom/inc/TransportSolenoid.hh"
+#include "Offline/GeometryService/inc/VirtualDetector.hh"
+#include "Offline/Mu2eG4/inc/constructTracker.hh"
+#include "Offline/Mu2eG4/inc/constructStoppingTarget.hh"
+#include "Offline/Mu2eG4/inc/constructDummyStoppingTarget.hh"
+#include "Offline/Mu2eG4/inc/constructDiskCalorimeter.hh"
+#include "Offline/Mu2eG4/inc/SensitiveDetectorHelper.hh"
+#include "Offline/TrackerGeom/inc/Tracker.hh"
+#include "Offline/ExtinctionMonitorFNAL/Geometry/inc/ExtMonFNAL.hh"
+#include "Offline/Mu2eG4/inc/constructPTM.hh"
 
 // G4 includes
-#include "G4Threading.hh"
-#include "G4SDManager.hh"
-#include "G4GeometryManager.hh"
-#include "G4PhysicalVolumeStore.hh"
-#include "G4LogicalVolumeStore.hh"
-#include "G4Material.hh"
-#include "G4Box.hh"
-#include "G4Paraboloid.hh"
-#include "G4Colour.hh"
-#include "G4Tubs.hh"
-#include "G4IntersectionSolid.hh"
-#include "G4SubtractionSolid.hh"
-#include "G4LogicalVolume.hh"
-#include "G4TwoVector.hh"
-#include "G4ThreeVector.hh"
-#include "globals.hh"
-#include "G4UniformMagField.hh"
-#include "G4FieldManager.hh"
-#include "G4Mag_UsualEqRhs.hh"
-#include "G4Mag_SpinEqRhs.hh"
-#include "G4ExactHelixStepper.hh"
-#include "G4ChordFinder.hh"
-#include "G4TransportationManager.hh"
-#include "G4PropagatorInField.hh"
-#include "G4MagIntegratorDriver.hh"
-#include "G4UserLimits.hh"
-#include "G4ClassicalRK4.hh"
-#include "G4ImplicitEuler.hh"
-#include "G4ExplicitEuler.hh"
-#include "G4SimpleRunge.hh"
-#include "G4SimpleHeum.hh"
-#include "G4HelixImplicitEuler.hh"
-#include "G4HelixSimpleRunge.hh"
+#include "Geant4/G4Threading.hh"
+#include "Geant4/G4SDManager.hh"
+#include "Geant4/G4GeometryManager.hh"
+#include "Geant4/G4PhysicalVolumeStore.hh"
+#include "Geant4/G4LogicalVolumeStore.hh"
+#include "Geant4/G4Material.hh"
+#include "Geant4/G4Box.hh"
+#include "Geant4/G4Paraboloid.hh"
+#include "Geant4/G4Colour.hh"
+#include "Geant4/G4Tubs.hh"
+#include "Geant4/G4IntersectionSolid.hh"
+#include "Geant4/G4SubtractionSolid.hh"
+#include "Geant4/G4LogicalVolume.hh"
+#include "Geant4/G4TwoVector.hh"
+#include "Geant4/G4ThreeVector.hh"
+#include "Geant4/globals.hh"
+#include "Geant4/G4UniformMagField.hh"
+#include "Geant4/G4FieldManager.hh"
+#include "Geant4/G4Mag_UsualEqRhs.hh"
+#include "Geant4/G4Mag_SpinEqRhs.hh"
+#include "Geant4/G4ExactHelixStepper.hh"
+#include "Geant4/G4ChordFinder.hh"
+#include "Geant4/G4TransportationManager.hh"
+#include "Geant4/G4PropagatorInField.hh"
+#include "Geant4/G4MagIntegratorDriver.hh"
+#include "Geant4/G4UserLimits.hh"
+#include "Geant4/G4ClassicalRK4.hh"
+#include "Geant4/G4ImplicitEuler.hh"
+#include "Geant4/G4ExplicitEuler.hh"
+#include "Geant4/G4SimpleRunge.hh"
+#include "Geant4/G4SimpleHeum.hh"
+#include "Geant4/G4HelixImplicitEuler.hh"
+#include "Geant4/G4HelixSimpleRunge.hh"
 #if G4VERSION>4103
-#include "G4DormandPrince745.hh"
-#include "G4BogackiShampine23.hh"
+#include "Geant4/G4DormandPrince745.hh"
+#include "Geant4/G4BogackiShampine23.hh"
 #endif
-#include "G4GDMLParser.hh"
-#include "G4ProductionCuts.hh"
-#include "G4Region.hh"
+#include "Geant4/G4GDMLParser.hh"
+#include "Geant4/G4ProductionCuts.hh"
+#include "Geant4/G4Region.hh"
 
-#include "Mu2eG4/inc/Mu2eGlobalField.hh"
+#include "Offline/Mu2eG4/inc/Mu2eG4GlobalMagneticField.hh"
 
 #include "boost/regex.hpp"
 
@@ -250,6 +252,10 @@ namespace mu2e {
       constructSTM(_config);
     }
 
+    if (_config.getBool("hasPTM",false) ){
+      constructPTM(hallInfo, _config);
+    }
+
     // _geom is member data of Mu2eG4Universe, from which this inherits
     // it is a ref to a const GeometryService object
     if (  const_cast<GeometryService&>(_geom).hasElement<CosmicRayShield>() ) {
@@ -359,7 +365,13 @@ namespace mu2e {
   VolumeInfo Mu2eWorld::constructTarget(){
 
     // The target is built inside this volume.
-    VolumeInfo const & detSolUpstreamVacInfo   = ( _config.getBool("isDumbbell",false) ) ? _helper->locateVolInfo("DS3Vacuum") : _helper->locateVolInfo("DS2Vacuum");//DS3Vacuum to move the targets
+    std::string theDS3("DS3Vacuum");
+    std::string theDS2("DS2Vacuum");
+    if ( _config.getBool("inGaragePosition",false) && _config.getBool("garage.extractOPA_IPA_ST")) {
+      theDS3 = "garageFakeDS3Vacuum";
+      theDS2 = "garageFakeDS2Vacuum";
+    }
+    VolumeInfo const & detSolUpstreamVacInfo   = ( _config.getBool("isDumbbell",false) ) ? _helper->locateVolInfo(theDS3) : _helper->locateVolInfo(theDS2);//DS3Vacuum to move the targets
 
     if ( _verbosityLevel > 0) {
       G4cout << __func__ << "detSolUpstreamVacInfo.centerInWorld.z()=" << detSolUpstreamVacInfo.centerInWorld.z() << G4endl;
@@ -421,7 +433,7 @@ namespace mu2e {
 
     // Create global field managers; don't use FieldMgr here to avoid problem with ownership
 
-    G4MagneticField * _field = new Mu2eGlobalField(worldGeom->mu2eOriginInWorld());
+    G4MagneticField * _field = new Mu2eG4GlobalMagneticField(worldGeom->mu2eOriginInWorld());
     G4Mag_EqRhs * _rhs  = new G4Mag_UsualEqRhs(_field);
     G4MagIntegratorStepper * _stepper;
     if ( _g4VerbosityLevel > 0 ) G4cout << __func__ << " Setting up " << g4stepperName_ << " stepper" << G4endl;
@@ -464,10 +476,10 @@ namespace mu2e {
     } else if ( g4stepperName_  == "G4SimpleRunge" ) {
       _stepper = new G4SimpleRunge(_rhs);
     } else {
-        throw cet::exception("GEOM")
-          << "Unrecognized stepper : "
-          << g4stepperName_
-          << "\n";
+      throw cet::exception("GEOM")
+        << "Unrecognized stepper : "
+        << g4stepperName_
+        << "\n";
     }
 
     G4ChordFinder * _chordFinder = new G4ChordFinder(_field,g4StepMinimum_,_stepper);
@@ -546,7 +558,7 @@ namespace mu2e {
   void Mu2eWorld::stepLimiterHelper ( std::string const& regexp, G4UserLimits* stepLimit ) {
     boost::regex expression(regexp.c_str());
     std::vector<mu2e::VolumeInfo const*> vols =
-      art::ServiceHandle<mu2e::G4Helper>()->locateVolInfo(expression);
+      art::ServiceHandle<mu2e::Mu2eG4Helper>()->locateVolInfo(expression);
     for ( auto v : vols ){
       v->logical->SetUserLimits( stepLimit );
       if(_g4VerbosityLevel > 0)  {
@@ -622,7 +634,7 @@ namespace mu2e {
     // We may make separate G4UserLimits objects per logical volume but we choose not to.
     // At some it might be interesting to make several step limiters, each with different
     // limits.  For now that is not necessary.
-    AntiLeakRegistry& reg = art::ServiceHandle<G4Helper>()->antiLeakRegistry();
+    AntiLeakRegistry& reg = art::ServiceHandle<Mu2eG4Helper>()->antiLeakRegistry();
     G4UserLimits* stepLimit = reg.add( G4UserLimits(bfieldMaxStep_) );
     if(_g4VerbosityLevel > 0) {
       G4cout << __func__ << " Using step limit = "<<bfieldMaxStep_/CLHEP::mm<<" mm"<<G4endl;
@@ -820,8 +832,8 @@ namespace mu2e {
     //done
     if(sdHelper_->enabled(StepInstanceName::virtualdetector)) {
 
-      Mu2eSensitiveDetector* vdSD =
-        new Mu2eSensitiveDetector( SensitiveDetectorName::VirtualDetector(), _config );
+      Mu2eG4SensitiveDetector* vdSD =
+        new Mu2eG4SensitiveDetector( SensitiveDetectorName::VirtualDetector(), _config );
       SDman->AddNewDetector(vdSD);
 
       constructVirtualDetectorSDs(_config, vdSD);
@@ -960,7 +972,7 @@ namespace mu2e {
 
 
     /************************** ExtMonFNALPixelSD **************************/
-    if(true) { // this SD does not derive from Mu2eSensitiveDetector as it does not produce StepPointMCCollection
+    if(  sdHelper_->extMonPixelsEnabled() ) {
       GeomHandle<mu2e::ExtMonFNAL::ExtMon> extmon;
       //SDman->AddNewDetector(new ExtMonFNALPixelSD(_config, *extmon));
 
@@ -982,8 +994,8 @@ namespace mu2e {
     //done
     if(sdHelper_->enabled(StepInstanceName::stoppingtarget)) {
 
-      Mu2eSensitiveDetector* stSD =
-        new Mu2eSensitiveDetector( SensitiveDetectorName::StoppingTarget(), _config );
+      Mu2eG4SensitiveDetector* stSD =
+        new Mu2eG4SensitiveDetector( SensitiveDetectorName::StoppingTarget(), _config );
       SDman->AddNewDetector(stSD);
 
       //loop over all of the LV names to find ones we need
@@ -1007,97 +1019,97 @@ namespace mu2e {
 
 
     if(sdHelper_->enabled(StepInstanceName::ProductionTargetCoreSection)) {
-        Mu2eSensitiveDetector* prodtargcoreSD =
-        new Mu2eSensitiveDetector( SensitiveDetectorName::ProductionTargetCoreSection(), _config );
-        SDman->AddNewDetector(prodtargcoreSD);
-        for(G4LogicalVolumeStore::iterator pos=store->begin(); pos!=store->end(); pos++){
-            G4String LVname = (*pos)->GetName();
-            if (LVname.find("ProductionTargetCoreSection") != std::string::npos) {
-              (*pos)->SetSensitiveDetector(prodtargcoreSD);
-            }
+      Mu2eG4SensitiveDetector* prodtargcoreSD =
+        new Mu2eG4SensitiveDetector( SensitiveDetectorName::ProductionTargetCoreSection(), _config );
+      SDman->AddNewDetector(prodtargcoreSD);
+      for(G4LogicalVolumeStore::iterator pos=store->begin(); pos!=store->end(); pos++){
+        G4String LVname = (*pos)->GetName();
+        if (LVname.find("ProductionTargetCoreSection") != std::string::npos) {
+          (*pos)->SetSensitiveDetector(prodtargcoreSD);
         }
+      }
     }
     if(sdHelper_->enabled(StepInstanceName::ProductionTargetStartingCoreSection)) {
-        Mu2eSensitiveDetector* prodtargstartingcoreSD =
-        new Mu2eSensitiveDetector( SensitiveDetectorName::ProductionTargetStartingCoreSection(), _config );
-        SDman->AddNewDetector(prodtargstartingcoreSD);
-        for(G4LogicalVolumeStore::iterator pos=store->begin(); pos!=store->end(); pos++){
-            G4String LVname = (*pos)->GetName();
-            if (LVname.find("ProductionTargetStartingCoreSection") != std::string::npos) {
-              (*pos)->SetSensitiveDetector(prodtargstartingcoreSD);
-            }
+      Mu2eG4SensitiveDetector* prodtargstartingcoreSD =
+        new Mu2eG4SensitiveDetector( SensitiveDetectorName::ProductionTargetStartingCoreSection(), _config );
+      SDman->AddNewDetector(prodtargstartingcoreSD);
+      for(G4LogicalVolumeStore::iterator pos=store->begin(); pos!=store->end(); pos++){
+        G4String LVname = (*pos)->GetName();
+        if (LVname.find("ProductionTargetStartingCoreSection") != std::string::npos) {
+          (*pos)->SetSensitiveDetector(prodtargstartingcoreSD);
         }
+      }
     }
     if(sdHelper_->enabled(StepInstanceName::ProductionTargetFinStartingSection)) {
-        Mu2eSensitiveDetector* prodtargfinstartingSD =
-        new Mu2eSensitiveDetector( SensitiveDetectorName::ProductionTargetFinStartingSection(), _config );
-        SDman->AddNewDetector(prodtargfinstartingSD);
-        for(G4LogicalVolumeStore::iterator pos=store->begin(); pos!=store->end(); pos++){
-            G4String LVname = (*pos)->GetName();
-            if (LVname.find("ProductionTargetFinStartingSection") != std::string::npos) {
-              (*pos)->SetSensitiveDetector(prodtargfinstartingSD);
-            }
+      Mu2eG4SensitiveDetector* prodtargfinstartingSD =
+        new Mu2eG4SensitiveDetector( SensitiveDetectorName::ProductionTargetFinStartingSection(), _config );
+      SDman->AddNewDetector(prodtargfinstartingSD);
+      for(G4LogicalVolumeStore::iterator pos=store->begin(); pos!=store->end(); pos++){
+        G4String LVname = (*pos)->GetName();
+        if (LVname.find("ProductionTargetFinStartingSection") != std::string::npos) {
+          (*pos)->SetSensitiveDetector(prodtargfinstartingSD);
         }
+      }
     }
     if(sdHelper_->enabled(StepInstanceName::ProductionTargetNegativeEndRing)) {
-        Mu2eSensitiveDetector* prodtargnegativeendringSD =
-        new Mu2eSensitiveDetector( SensitiveDetectorName::ProductionTargetNegativeEndRing(), _config );
-        SDman->AddNewDetector(prodtargnegativeendringSD);
-        for(G4LogicalVolumeStore::iterator pos=store->begin(); pos!=store->end(); pos++){
-            G4String LVname = (*pos)->GetName();
-            if (LVname.find("ProductionTargetNegativeEndRing") != std::string::npos) {
-              (*pos)->SetSensitiveDetector(prodtargnegativeendringSD);
-            }
+      Mu2eG4SensitiveDetector* prodtargnegativeendringSD =
+        new Mu2eG4SensitiveDetector( SensitiveDetectorName::ProductionTargetNegativeEndRing(), _config );
+      SDman->AddNewDetector(prodtargnegativeendringSD);
+      for(G4LogicalVolumeStore::iterator pos=store->begin(); pos!=store->end(); pos++){
+        G4String LVname = (*pos)->GetName();
+        if (LVname.find("ProductionTargetNegativeEndRing") != std::string::npos) {
+          (*pos)->SetSensitiveDetector(prodtargnegativeendringSD);
         }
+      }
     }
     if(sdHelper_->enabled(StepInstanceName::ProductionTargetPositiveEndRing)) {
-        Mu2eSensitiveDetector* prodtargpositiveendringSD =
-        new Mu2eSensitiveDetector( SensitiveDetectorName::ProductionTargetPositiveEndRing(), _config );
-        SDman->AddNewDetector(prodtargpositiveendringSD);
-        for(G4LogicalVolumeStore::iterator pos=store->begin(); pos!=store->end(); pos++){
-            G4String LVname = (*pos)->GetName();
-            if (LVname.find("ProductionTargetPositiveEndRing") != std::string::npos) {
-              (*pos)->SetSensitiveDetector(prodtargpositiveendringSD);
-            }
+      Mu2eG4SensitiveDetector* prodtargpositiveendringSD =
+        new Mu2eG4SensitiveDetector( SensitiveDetectorName::ProductionTargetPositiveEndRing(), _config );
+      SDman->AddNewDetector(prodtargpositiveendringSD);
+      for(G4LogicalVolumeStore::iterator pos=store->begin(); pos!=store->end(); pos++){
+        G4String LVname = (*pos)->GetName();
+        if (LVname.find("ProductionTargetPositiveEndRing") != std::string::npos) {
+          (*pos)->SetSensitiveDetector(prodtargpositiveendringSD);
         }
+      }
     }
-   if(sdHelper_->enabled(StepInstanceName::ProductionTargetFinSection)) {
-        Mu2eSensitiveDetector* prodtargfinsectionSD =
-        new Mu2eSensitiveDetector( SensitiveDetectorName::ProductionTargetFinSection(), _config );
-        SDman->AddNewDetector(prodtargfinsectionSD);
-        for(G4LogicalVolumeStore::iterator pos=store->begin(); pos!=store->end(); pos++){
-            G4String LVname = (*pos)->GetName();
-            if (LVname.find("ProductionTargetFinSection") != std::string::npos) {
-              (*pos)->SetSensitiveDetector(prodtargfinsectionSD);
-            }
+    if(sdHelper_->enabled(StepInstanceName::ProductionTargetFinSection)) {
+      Mu2eG4SensitiveDetector* prodtargfinsectionSD =
+        new Mu2eG4SensitiveDetector( SensitiveDetectorName::ProductionTargetFinSection(), _config );
+      SDman->AddNewDetector(prodtargfinsectionSD);
+      for(G4LogicalVolumeStore::iterator pos=store->begin(); pos!=store->end(); pos++){
+        G4String LVname = (*pos)->GetName();
+        if (LVname.find("ProductionTargetFinSection") != std::string::npos) {
+          (*pos)->SetSensitiveDetector(prodtargfinsectionSD);
         }
-    }
-
-   if(sdHelper_->enabled(StepInstanceName::ProductionTargetFinTopSection)) {
-        Mu2eSensitiveDetector* prodtargfintopsectionSD =
-        new Mu2eSensitiveDetector( SensitiveDetectorName::ProductionTargetFinTopSection(), _config );
-        SDman->AddNewDetector(prodtargfintopsectionSD);
-        for(G4LogicalVolumeStore::iterator pos=store->begin(); pos!=store->end(); pos++){
-            G4String LVname = (*pos)->GetName();
-            if (LVname.find("ProductionTargetFinTopSection") != std::string::npos) {
-              (*pos)->SetSensitiveDetector(prodtargfintopsectionSD);
-            }
-        }
+      }
     }
 
-   if(sdHelper_->enabled(StepInstanceName::ProductionTargetFinTopStartingSection)) {
-        Mu2eSensitiveDetector* prodtargfintopstartingsectionSD =
-        new Mu2eSensitiveDetector( SensitiveDetectorName::ProductionTargetFinTopStartingSection(), _config );
-        SDman->AddNewDetector(prodtargfintopstartingsectionSD);
-        for(G4LogicalVolumeStore::iterator pos=store->begin(); pos!=store->end(); pos++){
-            G4String LVname = (*pos)->GetName();
-            if (LVname.find("ProductionTargetFinTopStartingSection") != std::string::npos) {
-              (*pos)->SetSensitiveDetector(prodtargfintopstartingsectionSD);
-            }
+    if(sdHelper_->enabled(StepInstanceName::ProductionTargetFinTopSection)) {
+      Mu2eG4SensitiveDetector* prodtargfintopsectionSD =
+        new Mu2eG4SensitiveDetector( SensitiveDetectorName::ProductionTargetFinTopSection(), _config );
+      SDman->AddNewDetector(prodtargfintopsectionSD);
+      for(G4LogicalVolumeStore::iterator pos=store->begin(); pos!=store->end(); pos++){
+        G4String LVname = (*pos)->GetName();
+        if (LVname.find("ProductionTargetFinTopSection") != std::string::npos) {
+          (*pos)->SetSensitiveDetector(prodtargfintopsectionSD);
         }
+      }
     }
 
-   /************************** CRV **************************/
+    if(sdHelper_->enabled(StepInstanceName::ProductionTargetFinTopStartingSection)) {
+      Mu2eG4SensitiveDetector* prodtargfintopstartingsectionSD =
+        new Mu2eG4SensitiveDetector( SensitiveDetectorName::ProductionTargetFinTopStartingSection(), _config );
+      SDman->AddNewDetector(prodtargfintopstartingsectionSD);
+      for(G4LogicalVolumeStore::iterator pos=store->begin(); pos!=store->end(); pos++){
+        G4String LVname = (*pos)->GetName();
+        if (LVname.find("ProductionTargetFinTopStartingSection") != std::string::npos) {
+          (*pos)->SetSensitiveDetector(prodtargfintopstartingsectionSD);
+        }
+      }
+    }
+
+    /************************** CRV **************************/
     if(sdHelper_->enabled(StepInstanceName::CRV)) {
 
       CRVSD* sbSD =
@@ -1119,8 +1131,8 @@ namespace mu2e {
 
     /************************** ProtonAbsorber **************************/
     if(sdHelper_->enabled(StepInstanceName::protonabsorber)) {
-      Mu2eSensitiveDetector* paSD =
-        new Mu2eSensitiveDetector( SensitiveDetectorName::ProtonAbsorber(),  _config );
+      Mu2eG4SensitiveDetector* paSD =
+        new Mu2eG4SensitiveDetector( SensitiveDetectorName::ProtonAbsorber(),  _config );
       SDman->AddNewDetector(paSD);
 
       for(G4LogicalVolumeStore::iterator pos=store->begin(); pos!=store->end(); pos++){
@@ -1145,8 +1157,8 @@ namespace mu2e {
     //done
     if(sdHelper_->enabled(StepInstanceName::PSVacuum)) {
 
-      Mu2eSensitiveDetector* psVacuumSD =
-        new Mu2eSensitiveDetector( SensitiveDetectorName::PSVacuum(), _config );
+      Mu2eG4SensitiveDetector* psVacuumSD =
+        new Mu2eG4SensitiveDetector( SensitiveDetectorName::PSVacuum(), _config );
       SDman->AddNewDetector(psVacuumSD);
 
       if( _config.getBool("PS.Vacuum.Sensitive", false) ) {
@@ -1158,8 +1170,8 @@ namespace mu2e {
     /************************** STMDet **************************/
     //done
     if(sdHelper_->enabled(StepInstanceName::STMDet)) {
-      Mu2eSensitiveDetector* STMDetSD =
-        new Mu2eSensitiveDetector( SensitiveDetectorName::STMDet(), _config );
+      Mu2eG4SensitiveDetector* STMDetSD =
+        new Mu2eG4SensitiveDetector( SensitiveDetectorName::STMDet(), _config );
       SDman->AddNewDetector(STMDetSD);
 
       for(G4LogicalVolumeStore::iterator pos=store->begin(); pos!=store->end(); pos++){
@@ -1174,8 +1186,8 @@ namespace mu2e {
 
     /************************** panelEBKey **************************/
     if(sdHelper_->enabled(StepInstanceName::panelEBKey)) {
-      Mu2eSensitiveDetector* EBKeySD =
-        new Mu2eSensitiveDetector( SensitiveDetectorName::panelEBKey(), _config );
+      Mu2eG4SensitiveDetector* EBKeySD =
+        new Mu2eG4SensitiveDetector( SensitiveDetectorName::panelEBKey(), _config );
       SDman->AddNewDetector(EBKeySD);
 
       for(G4LogicalVolumeStore::iterator pos=store->begin(); pos!=store->end(); pos++) {
@@ -1193,8 +1205,8 @@ namespace mu2e {
     /************************** DSCableRun **************************/
     //if ( cableRunSensitive && sdHelper.enabled(StepInstanceName::DSCableRun) )
     if(sdHelper_->enabled(StepInstanceName::DSCableRun)) {
-      Mu2eSensitiveDetector* cableRunSD =
-        new Mu2eSensitiveDetector( SensitiveDetectorName::DSCableRun(), _config );
+      Mu2eG4SensitiveDetector* cableRunSD =
+        new Mu2eG4SensitiveDetector( SensitiveDetectorName::DSCableRun(), _config );
       SDman->AddNewDetector(cableRunSD);
 
       //NOTE: THIS 'if' test seems redundant to me, but I am just copying the format from constructDS.cc
@@ -1224,6 +1236,25 @@ namespace mu2e {
         }//for
       }//if ds.CableRun.sensitive
     }//if DSCableRun
+
+    /********************* Production target monitor *********************/
+    if(sdHelper_->enabled(StepInstanceName::PTM)) {
+
+      Mu2eG4SensitiveDetector* ptMonSD =
+        new Mu2eG4SensitiveDetector( SensitiveDetectorName::PTM(), _config );
+      SDman->AddNewDetector(ptMonSD);
+
+      //loop over all of the LV names and find the ones we need
+      //set the SensitiveDetectors for these
+      for(G4LogicalVolumeStore::iterator pos=store->begin(); pos!=store->end(); pos++){
+        G4String LVname = (*pos)->GetName();
+
+        //from constructPTM
+        if (LVname.find("PTMWire") != std::string::npos) {
+          (*pos)->SetSensitiveDetector(ptMonSD);
+        }
+      }//for
+    }//if pTargetMon
 
   }//instantiateSensitiveDetectors
 

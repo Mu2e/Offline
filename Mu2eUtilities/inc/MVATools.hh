@@ -3,7 +3,7 @@
 
 #include "fhiclcpp/ParameterSet.h"
 #include "fhiclcpp/types/Atom.h"
-#include "DataProducts/inc/MVAMask.hh"
+#include "Offline/DataProducts/inc/MVAMask.hh"
 
 #include <xercesc/util/PlatformUtils.hpp>
 #include <xercesc/parsers/XercesDOMParser.hpp>

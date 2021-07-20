@@ -2,9 +2,9 @@
 # This file defines some standard configurations for services
 #
 
-#include "fcl/minimalMessageService.fcl"
-#include "DbService/fcl/prolog.fcl"
-#include "ProditionsService/fcl/prolog.fcl"
+#include "Offline/fcl/minimalMessageService.fcl"
+#include "Offline/DbService/fcl/prolog.fcl"
+#include "Offline/ProditionsService/fcl/prolog.fcl"
 
 BEGIN_PROLOG
 
@@ -12,7 +12,7 @@ BEGIN_PROLOG
 automaticSeeds : {
     policy            : "autoIncrement"
     baseSeed          : @nil
-    maxUniqueEngines  : @nil
+    maxUniqueEngines  : 100
 
     # verbosity         : 2
     # endOfJobSummary   : true
@@ -38,11 +38,11 @@ Services : {
 # a complete job
   Core	    : {
     message		    : @local::default_message
-    GeometryService	    : { inputFile      : "Mu2eG4/geom/geom_common.txt" 
+    GeometryService	    : { inputFile      : "Offline/Mu2eG4/geom/geom_common.txt" 
 	simulatedDetector   : { tool_type: "Mu2e" }
     }
-    ConditionsService	    : { conditionsfile : "Mu2eG4/test/conditions_01.txt"      }
-    GlobalConstantsService  : { inputFile      : "Mu2eG4/test/globalConstants_01.txt" }
+    ConditionsService	    : { conditionsfile : "Offline/ConditionsService/data/conditions_01.txt"      }
+    GlobalConstantsService  : { inputFile      : "Offline/GlobalConstantsService/data/globalConstants_01.txt" }
     DbService : @local::DbEmpty
     ProditionsService: @local::Proditions
   }
@@ -50,7 +50,7 @@ Services : {
   SimOnly   : {
     RandomNumberGenerator   : { defaultEngineKind: "MixMaxRng" }
     SeedService		    : @local::automaticSeeds
-    G4Helper: {}
+    Mu2eG4Helper: {}
   }
 
   #RecoOnly : {

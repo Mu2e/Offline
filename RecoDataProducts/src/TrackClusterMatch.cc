@@ -10,7 +10,7 @@
 #include "cetlib_except/exception.h"
 
 // Mu2e includes
-#include "RecoDataProducts/inc/TrackClusterMatch.hh"
+#include "Offline/RecoDataProducts/inc/TrackClusterMatch.hh"
 
 using namespace std;
 

@@ -5,8 +5,8 @@
 #ifndef Mu2eG4CustomizationPhysicsConstructor_h
 #define Mu2eG4CustomizationPhysicsConstructor_h 1
 
-#include "G4VPhysicsConstructor.hh"
-#include "Mu2eG4/inc/Mu2eG4Config.hh"
+#include "Geant4/G4VPhysicsConstructor.hh"
+#include "Offline/Mu2eG4/inc/Mu2eG4Config.hh"
 
 
 namespace mu2e {

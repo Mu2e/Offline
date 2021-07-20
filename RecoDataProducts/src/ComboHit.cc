@@ -4,7 +4,7 @@
 // Original author David Brown
 //
 // Mu2e includes
-#include "RecoDataProducts/inc/ComboHit.hh"
+#include "Offline/RecoDataProducts/inc/ComboHit.hh"
 // art includes
 #include "cetlib_except/exception.h"
 // c++ includes
@@ -58,9 +58,8 @@ namespace mu2e {
   void ComboHitCollection::setParentHandle(art::Event const& event, art::Handle<ComboHitCollection>& phandle) const  {
     // set the handle to an invalid state in case we find no such
     phandle = art::Handle<ComboHitCollection>();
-    vector<art::Handle<ComboHitCollection> > all_handles;
+    vector<art::Handle<ComboHitCollection> > all_handles =  event.getMany<ComboHitCollection>();
     // exhaustive search is fast enough
-    event.getManyByType(all_handles);
     for (auto const& handle : all_handles) {
       if(_parent == handle.id()){
 	phandle = handle;
@@ -223,7 +222,7 @@ namespace mu2e {
 
   void ComboHit::print( std::ostream& ost, bool doEndl) const {
     ost << " ComboHit:"
-        << " id"      << _sid
+        << " id "      << _sid
         << " time "     << _time
         << " drift time " << _dtime
         << " prop time " << _ptime

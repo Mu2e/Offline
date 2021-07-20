@@ -1,0 +1,75 @@
+//
+// Input file for the prototype conditions system.
+//
+//
+
+// Times in ns
+double DAQParams.t0 = 700.;
+
+// Accelerator parameters
+double acceleratorParams.deBuncherPeriod   = 1695. ; // ns
+//double acceleratorParams.intrinsicExt      = 1.64e-5; // S. Werkema, docdb-4044-v1  No longer used!  comes from pulses below
+double acceleratorParams.limitingHalfWidth = 125.  ; // ns, "" 
+
+string acceleratorParams.potPulse  = "Offline/ConditionsService/data/potTimingDistribution_20160511.txt";
+string acceleratorParams.acDipole  = "Offline/ConditionsService/data/acDipoleTransmissionFunction_20160511.txt";
+
+// ExtMonFNAL clock timing.  1694/68 = 24.9118
+int extMonFNAL.numClockTicksPerDebuncherPeriod = 68;
+
+double extMonFNAL.temperature = 273; // Kelvin
+double extMonFNAL.biasVoltage = -150; // Volts
+
+
+
+//Calorimeter calibration information
+
+// Longitudinal non-uniformity response, see Mu2e doc ... 
+double CrystalNonUniformity_0 = 1.05; 
+
+//Birks correction for neutrons
+double BirkCorrHadron = 4.0;
+
+//APD photo-statistic number
+double ROphotostatistic = 30.0;//p.e / MeV
+
+//conversion factor from ADC counts to MeV
+//double ADC2MeVConversionFactor =  1.6e-03;
+double ADC2MeVConversionFactor =  0.0625;
+
+
+//conversion factor from ADC counts to MeV
+//double Peak2MeVConversionFactor =  0.0459634;
+double Peak2MeVConversionFactor =  0.022981700;
+
+//value of the sigma used to do the Gaussian smearing due to the electronic noise,
+//this is the quadratic sum of all APDs.....
+double ReadOutElectronicNoise = 0.15;//MeV
+
+double calorimeter.radiationLengthCsI = 1.860;   // cm
+double calorimeter.criticalEnergyPosCsI = 11.17; //MeV
+double calorimeter.criticalEnergyNegCsI = 10.80; //MeV
+double calorimeter.densityCsI           = 4.51; // gm/cc
+
+//string calorimeter.pulseFileName = "/nfs/home/echenard/Experiments/Mu2e/Simulation/Offline/ConditionsService/data/CsI-waveform-2016-07-12.root";
+//string calorimeter.pulseFileName = "Offline/ConditionsService/data/CsI-waveform-2016-07-12.root";
+string calorimeter.pulseFileName = "Offline/ConditionsService/data/CsI-waveform-2020-02-12.root";
+string calorimeter.pulseHistName = "h_waveform";
+string calorimeter.propagFileName = "Offline/ConditionsService/data/CsI-propag-2020-07-29.root";
+string calorimeter.propagHistName = "h_zposTime";
+
+
+//CRV digi parameters
+double crv.digitizationPeriod = 12.55; //ns
+
+//CRV calibration parameters 
+//This is only a placeholder. In the future, these values need to be a function of time and SiPM number.
+double crv.pedestal           = 100;    //ADC
+double crv.calibrationFactor  = 394.6;  //ADC*ns/PE
+double crv.calibrationFactorPulseHeight  = 11.4;  //ADC/PE (calibration factor using pulse height)
+
+
+// This tells emacs to view this file in c++ mode.
+// Local Variables:
+// mode:c++
+// End:

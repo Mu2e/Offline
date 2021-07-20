@@ -1,16 +1,17 @@
-#include "ParticleID/inc/PIDLogL1D.hh"
+#include "Offline/ParticleID/inc/PIDLogL1D.hh"
 
 #include <set>
 #include <fstream>
 #include <sstream>
 #include <algorithm>
 #include <cmath>
+#include <numeric>
 
 #include "fhiclcpp/types/Table.h"
 
 #include <stdexcept>
 
-#include "ConfigTools/inc/ConfigFileLookupPolicy.hh"
+#include "Offline/ConfigTools/inc/ConfigFileLookupPolicy.hh"
 
 namespace mu2e {
 

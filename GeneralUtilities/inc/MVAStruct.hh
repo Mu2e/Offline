@@ -28,7 +28,7 @@
 #include <iostream>
 #include <iomanip>
 #include <Rtypes.h>
-#include "GeneralUtilities/inc/MVAStatus.hh"
+#include "Offline/GeneralUtilities/inc/MVAStatus.hh"
 namespace mu2e {
 
   template < class DETAIL > class MVAStruct : public DETAIL {
@@ -37,6 +37,7 @@ namespace mu2e {
     typedef typename DETAIL::MVA_varindex MVA_varindex;
     typedef typename DETAIL::map_type map_type;
     typedef std::vector<Float_t> vcoll_type;
+    constexpr static const char* cxname = DETAIL::cxname;
 
     // default Constructor 
     explicit MVAStruct() : _values(DETAIL::n_vars,0.0){

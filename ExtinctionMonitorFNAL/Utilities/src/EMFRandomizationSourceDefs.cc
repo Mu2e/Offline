@@ -1,6 +1,6 @@
 // Andrei Gaponenko, 2012
 
-#include "ExtinctionMonitorFNAL/Utilities/inc/EMFRandomizationSourceDefs.hh"
+#include "Offline/ExtinctionMonitorFNAL/Utilities/inc/EMFRandomizationSourceDefs.hh"
 
 #include <cmath>
 #include <cstdlib>
@@ -10,8 +10,8 @@
 #include "fhiclcpp/ParameterSet.h"
 
 #include "CLHEP/Vector/ThreeVector.h"
-#include "ExtinctionMonitorFNAL/Geometry/inc/ExtMonFNAL.hh"
-#include "ProtonBeamDumpGeom/inc/ProtonBeamDump.hh"
+#include "Offline/ExtinctionMonitorFNAL/Geometry/inc/ExtMonFNAL.hh"
+#include "Offline/ProtonBeamDumpGeom/inc/ProtonBeamDump.hh"
 
 namespace mu2e {
   namespace ExtMonFNAL {

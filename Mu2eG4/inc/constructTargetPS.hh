@@ -8,8 +8,8 @@
 //
 
 // G4 includes
-#include "G4ThreeVector.hh"
-#include "G4RotationMatrix.hh"
+#include "Geant4/G4ThreeVector.hh"
+#include "Geant4/G4RotationMatrix.hh"
 
 namespace mu2e {
 

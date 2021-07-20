@@ -17,20 +17,18 @@ namespace art {
 #endif
 
 // data
-#include "RecoDataProducts/inc/CaloCrystalHitCollection.hh"
-#include "RecoDataProducts/inc/CaloHitCollection.hh"
-#include "RecoDataProducts/inc/CaloHit.hh"
-#include "RecoDataProducts/inc/CaloCluster.hh"
-#include "RecoDataProducts/inc/CaloClusterCollection.hh"
-#include "RecoDataProducts/inc/HelixVal.hh"
+#include "Offline/RecoDataProducts/inc/CaloHit.hh"
+#include "Offline/RecoDataProducts/inc/CaloCluster.hh"
+#include "Offline/RecoDataProducts/inc/CaloCluster.hh"
+#include "Offline/RecoDataProducts/inc/HelixVal.hh"
 
-#include "RecoDataProducts/inc/ComboHit.hh"
-#include "RecoDataProducts/inc/StrawHitFlag.hh"
-#include "RecoDataProducts/inc/StrawHit.hh"
+#include "Offline/RecoDataProducts/inc/ComboHit.hh"
+#include "Offline/RecoDataProducts/inc/StrawHitFlag.hh"
+#include "Offline/RecoDataProducts/inc/StrawHit.hh"
 
-#include "RecoDataProducts/inc/KalRepCollection.hh"
-#include "RecoDataProducts/inc/KalRepPtrCollection.hh"
-#include "BTrkData/inc/Doublet.hh"
+#include "Offline/RecoDataProducts/inc/KalRepCollection.hh"
+#include "Offline/RecoDataProducts/inc/KalRepPtrCollection.hh"
+#include "Offline/BTrkData/inc/Doublet.hh"
 
 // BaBar
 #include "BTrk/BaBar/BaBar.hh"
@@ -38,16 +36,16 @@ namespace art {
 #include "BTrk/BField/BFieldFixed.hh"
 #include "BTrk/ProbTools/ChisqConsistency.hh"
 #include "BTrk/BbrGeom/BbrVectorErr.hh"
-#include "BFieldGeom/inc/BFieldConfig.hh"
+#include "Offline/BFieldGeom/inc/BFieldConfig.hh"
 #include "BTrk/BaBar/BbrStringUtils.hh"
-#include "BTrkData/inc/TrkStrawHit.hh"
+#include "Offline/BTrkData/inc/TrkStrawHit.hh"
 #include "BTrk/TrkBase/HelixParams.hh"
 #include "BTrk/TrkBase/TrkPoca.hh"
-#include "TrkPatRec/inc/TrkHitFilter.hh"
+#include "Offline/TrkPatRec/inc/TrkHitFilter.hh"
 #include "BTrk/TrkBase/TrkMomCalculator.hh"
 
 // #include "CalPatRec/inc/CalTimePeak.hh"
-#include "CalPatRec/inc/CalTimePeakFinder_types.hh"
+#include "Offline/CalPatRec/inc/CalTimePeakFinder_types.hh"
 
 // Mu2e
 

@@ -20,29 +20,29 @@
 #include <cmath>
 
 // Geant4 includes
-#include "G4ParticleTable.hh"
-#include "G4VRestProcess.hh"
-#include "G4ProcessManager.hh"
+#include "Geant4/G4ParticleTable.hh"
+#include "Geant4/G4VRestProcess.hh"
+#include "Geant4/G4ProcessManager.hh"
 
-#include "G4EmParameters.hh"
+#include "Geant4/G4EmParameters.hh"
 
-#include "G4MuonMinus.hh"
-#include "G4MuonMinusCapture.hh"
-#include "G4MuMinusCapturePrecompound.hh"
+#include "Geant4/G4MuonMinus.hh"
+#include "Geant4/G4MuonMinusCapture.hh"
+#include "Geant4/G4MuMinusCapturePrecompound.hh"
 
-#include "G4PhysicsListHelper.hh"
-#include "G4GammaConversionToMuons.hh"
-#include "G4AnnihiToMuPair.hh"
-#include "G4eeToHadrons.hh"
+#include "Geant4/G4PhysicsListHelper.hh"
+#include "Geant4/G4GammaConversionToMuons.hh"
+#include "Geant4/G4AnnihiToMuPair.hh"
+#include "Geant4/G4eeToHadrons.hh"
 
 // Framework includes
 #include "cetlib_except/exception.h"
 
 // Mu2e includes
-#include "Mu2eG4/inc/Mu2eRecorderProcess.hh"
-#include "Mu2eG4/inc/Mu2eGammaDaughterCut.hh"
+#include "Offline/Mu2eG4/inc/Mu2eRecorderProcess.hh"
+#include "Offline/Mu2eG4/inc/Mu2eGammaDaughterCut.hh"
 
-#include "Mu2eG4/inc/toggleProcesses.hh"
+#include "Offline/Mu2eG4/inc/toggleProcesses.hh"
 
 namespace mu2e{
 

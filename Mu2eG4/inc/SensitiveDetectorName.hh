@@ -6,7 +6,7 @@
 //
 // Original author KLG
 
-#include "MCDataProducts/inc/StepInstanceName.hh"
+#include "Offline/MCDataProducts/inc/StepInstanceName.hh"
 
 namespace mu2e {
 
@@ -116,6 +116,10 @@ namespace mu2e {
 
     static char const * DSCableRun() {
       return StepInstanceName::name(StepInstanceName::DSCableRun).c_str();
+    }
+
+    static char const * PTM() {
+      return StepInstanceName::name(StepInstanceName::PTM).c_str();
     }
 
   };

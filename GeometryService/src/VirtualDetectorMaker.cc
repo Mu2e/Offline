@@ -11,30 +11,31 @@
 #include "messagefacility/MessageLogger/MessageLogger.h"
 
 // Mu2e includes
-#include "GeometryService/inc/VirtualDetectorMaker.hh"
-#include "GeometryService/inc/VirtualDetector.hh"
-#include "ConfigTools/inc/SimpleConfig.hh"
-#include "CosmicRayShieldGeom/inc/CosmicRayShield.hh"
-#include "GeometryService/inc/GeomHandle.hh"
-#include "GeometryService/inc/GeometryService.hh"
-#include "GeometryService/inc/Mu2eEnvelope.hh"
-#include "ProtonBeamDumpGeom/inc/ProtonBeamDump.hh"
-#include "BeamlineGeom/inc/Beamline.hh"
-#include "BeamlineGeom/inc/Collimator_TS1.hh"
-#include "ProductionSolenoidGeom/inc/PSVacuum.hh"
-#include "DetectorSolenoidGeom/inc/DetectorSolenoid.hh"
-#include "ExtinctionMonitorFNAL/Geometry/inc/ExtMonFNALBuilding.hh"
-#include "ExtinctionMonitorFNAL/Geometry/inc/ExtMonFNAL.hh"
-#include "StoppingTargetGeom/inc/StoppingTarget.hh"
-#include "ProductionTargetGeom/inc/ProductionTarget.hh"
-#include "DetectorSolenoidGeom/inc/DetectorSolenoidShielding.hh"
-#include "TrackerGeom/inc/Tracker.hh"
-#include "DataProducts/inc/VirtualDetectorId.hh"
+#include "Offline/GeometryService/inc/VirtualDetectorMaker.hh"
+#include "Offline/GeometryService/inc/VirtualDetector.hh"
+#include "Offline/ConfigTools/inc/SimpleConfig.hh"
+#include "Offline/CosmicRayShieldGeom/inc/CosmicRayShield.hh"
+#include "Offline/GeometryService/inc/GeomHandle.hh"
+#include "Offline/GeometryService/inc/GeometryService.hh"
+#include "Offline/GeometryService/inc/Mu2eEnvelope.hh"
+#include "Offline/ProtonBeamDumpGeom/inc/ProtonBeamDump.hh"
+#include "Offline/BeamlineGeom/inc/Beamline.hh"
+#include "Offline/BeamlineGeom/inc/Collimator_TS1.hh"
+#include "Offline/ProductionSolenoidGeom/inc/PSVacuum.hh"
+#include "Offline/DetectorSolenoidGeom/inc/DetectorSolenoid.hh"
+#include "Offline/ExtinctionMonitorFNAL/Geometry/inc/ExtMonFNALBuilding.hh"
+#include "Offline/ExtinctionMonitorFNAL/Geometry/inc/ExtMonFNAL.hh"
+#include "Offline/StoppingTargetGeom/inc/StoppingTarget.hh"
+#include "Offline/ProductionTargetGeom/inc/ProductionTarget.hh"
+#include "Offline/DetectorSolenoidGeom/inc/DetectorSolenoidShielding.hh"
+#include "Offline/TrackerGeom/inc/Tracker.hh"
+#include "Offline/DataProducts/inc/VirtualDetectorId.hh"
+#include "Offline/PTMGeom/inc/PTM.hh"
 
-#include "CalorimeterGeom/inc/DiskCalorimeter.hh"
+#include "Offline/CalorimeterGeom/inc/DiskCalorimeter.hh"
 
-//#include "G4Helper/inc/G4Helper.hh"
-//#include "G4Helper/inc/VolumeInfo.hh"
+//#include "Mu2eG4Helper/inc/Mu2eG4Helper.hh"
+//#include "Mu2eG4Helper/inc/VolumeInfo.hh"
 
 using namespace std;
 using namespace CLHEP;
@@ -206,7 +207,7 @@ namespace mu2e {
         }
 
         Tracker const & tracker = *(GeomHandle<Tracker>());
-        Hep3Vector ttOffset(-solenoidOffset,0.,tracker.z0());
+        Hep3Vector ttOffset(-solenoidOffset,0.,tracker.g4Tracker()->z0());
 
         // VD TT_Mid is placed inside the tracker mother volume in the
         // middle of the tracker shifted by the half length of vd
@@ -236,10 +237,10 @@ namespace mu2e {
         //       }
 
         // Global position is in Mu2e coordinates; local position in the detector system.
-        double zFrontGlobal = tracker.mother().position().z()-tracker.mother().tubsParams().zHalfLength()-vdHL;
-        double zBackGlobal  = tracker.mother().position().z()+tracker.mother().tubsParams().zHalfLength()+vdHL;
-        double zFrontLocal  = zFrontGlobal - tracker.z0();
-        double zBackLocal   = zBackGlobal  - tracker.z0();
+        double zFrontGlobal = tracker.g4Tracker()->mother().position().z()-tracker.g4Tracker()->mother().tubsParams().zHalfLength()-vdHL;
+        double zBackGlobal  = tracker.g4Tracker()->mother().position().z()+tracker.g4Tracker()->mother().tubsParams().zHalfLength()+vdHL;
+        double zFrontLocal  = zFrontGlobal - tracker.g4Tracker()->z0();
+        double zBackLocal   = zBackGlobal  - tracker.g4Tracker()->z0();
 
         Hep3Vector vdTTFrontOffset(0.,
                                    0.,
@@ -282,7 +283,7 @@ namespace mu2e {
         // these next two detectors are also thin, but they are not disks but cylinders
         // placed on the inner and outer surface of the tracker envelope
 
-        Hep3Vector vdTTOutSurfOffset(0.,0.,tracker.mother().position().z()-tracker.z0());
+        Hep3Vector vdTTOutSurfOffset(0.,0.,tracker.g4Tracker()->mother().position().z()-tracker.g4Tracker()->z0());
 
         vd->addVirtualDetector( VirtualDetectorId::TT_OutSurf,
                                  ttOffset, 0, vdTTOutSurfOffset);
@@ -854,6 +855,21 @@ namespace mu2e {
           }
         }
       }
+
+      if ( c.getBool("hasPTM",false) ) {
+        GeomHandle<PTM> ptMon;
+        // Want these vd's to report a hit at position (0,0,0) when a particle hits the plane in the center
+        // first wire chamber vd position within production target monitor
+        CLHEP::Hep3Vector pwcPos1 = ptMon->nearPWC()->originInParent();
+        double groundInZ = ptMon->nearPWC()->upstreamWindowSurfaceZ();
+        pwcPos1.setZ(pwcPos1.z()+groundInZ);
+        vd->addVirtualDetector(VirtualDetectorId::PTM_1_In, ptMon->originInMu2e(), &(ptMon->rotationInMu2e()), pwcPos1);
+
+        CLHEP::Hep3Vector pwcPos2 = ptMon->farPWC()->originInParent();
+        groundInZ = ptMon->farPWC()->upstreamWindowSurfaceZ();
+        pwcPos2.setZ(pwcPos2.z()+groundInZ);
+        vd->addVirtualDetector(VirtualDetectorId::PTM_2_In, ptMon->originInMu2e(), &(ptMon->rotationInMu2e()), pwcPos2);
+      } // if ( c.getBool("hasPTM",false) )
 
     } // if(hasVirtualDetector)
 

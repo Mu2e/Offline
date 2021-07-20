@@ -20,7 +20,6 @@ rootlibs = env['ROOTLIBS']
 
 mainlib = helper.make_mainlib ( [ 'mu2e_ConditionsService',
                                   'mu2e_GeometryService',
-                                  'mu2e_MCDataProducts',
                                   'mu2e_RecoDataProducts',
                                   'mu2e_CalorimeterGeom',
                                   'mu2e_GlobalConstantsService',
@@ -31,18 +30,19 @@ mainlib = helper.make_mainlib ( [ 'mu2e_ConditionsService',
                                   'art_Persistency_Provenance',
                                   'canvas',
                                   'art_Framework_Services_Optional_RandomNumberGenerator_service',
-                                  'art_root_io_TFileService_service',
+                                  'art_root_io_TFileService',
                                   'art_Framework_Services_Registry',
                                   'art_root_io_tfile_support',
                                   'art_Framework_Principal',
                                   'art_Framework_Core',
                                   'art_Utilities',
                                   'fhiclcpp',
+                                  'fhiclcpp_types',
+                                  'tbb',
                                   'cetlib',
                                   'cetlib_except',
                                   'CLHEP',
                                   rootlibs,
-                                  'boost_system'
                                 ] )
 
 helper.make_plugins( [ mainlib,
@@ -51,7 +51,6 @@ helper.make_plugins( [ mainlib,
                        'mu2e_GeometryService',
                        'mu2e_SeedService_SeedService_service',
                        'mu2e_CalorimeterGeom',
-                       'mu2e_MCDataProducts',
                        'mu2e_RecoDataProducts',
                        'mu2e_DataProducts',
                        'mu2e_Mu2eInterfaces',
@@ -59,29 +58,24 @@ helper.make_plugins( [ mainlib,
                        'art_Framework_Principal',
                        'art_Framework_Services_Registry',
                        'art_root_io_tfile_support',
-                       'art_root_io_TFileService_service',
+                       'art_root_io_TFileService',
                        'art_Framework_Services_Optional_RandomNumberGenerator_service',
                        'art_Persistency_Common',
                        'art_Persistency_Provenance',
                        'art_Utilities',
                        'canvas',
                        'fhiclcpp',
+                       'fhiclcpp_types',
+                       'tbb',
                        'cetlib',
                        'cetlib_except',
                        'CLHEP',
+                       'TMVA',
+                       'xerces-c',  #needed for MVA 
                        'boost_filesystem',
-                       'boost_system',
                        rootlibs
                      ],
                      )
-
-helper.make_dict_and_map( [
-    mainlib,
-    'art_Utilities',
-    'art_Persistency_Common',
-    'canvas',
-    'Core'
-    ] )
 
 
 # This tells emacs to view this file in python mode.

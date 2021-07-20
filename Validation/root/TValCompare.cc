@@ -6,7 +6,7 @@
 #include "TPDF.h"
 #include "TApplication.h"
 #include "TROOT.h"
-#include "Validation/inc/TValCompare.hh"
+#include "Offline/Validation/inc/TValCompare.hh"
 
 //ClassImp(TValCompare)
 
@@ -24,41 +24,52 @@ void TValCompare::Delete(Option_t* Opt) {
   }
   //fPar.Clear();
   fList.Delete();
+  fDirs.Delete();
 }
 
 //_____________________________________________________________________________
-Int_t TValCompare::Analyze(Option_t* Opt) {
+Int_t TValCompare::GetDirs() {
 
-  Delete(); // remove any previous analysis
 
-  fFile1 = TFile::Open(fFileN1.Data());
-  fFile2 = TFile::Open(fFileN2.Data());
-  if( !( fFile1 && fFile2 ) ) {
-    printf("Error opening one of the files\n");
+
+  fFile1 = TFile::Open(fFileN1.Data(),"READ");
+  if( !fFile1 ) {
+    printf("Error opening one file 1\n");
     return 1;
   }
-  if( !( fFile1->IsOpen() && fFile2->IsOpen() ) ) {
-    printf("Error opening one of the files\n");
+  if( !fFile1->IsOpen() ) {
+    printf("Error opening file 1\n");
     return 1;
   }
+  if(fFileN2.Length()>0) {
+    fFile2 = TFile::Open(fFileN2.Data(),"READ");
+    if( !fFile2 ) {
+      printf("Error opening file 2\n");
+      return 1;
+    }
+    if( !fFile2->IsOpen() ) {
+      printf("Error opening file 2\n");
+      return 1;
+    }
+  }
+
 
   // don't create objects in the file
   gROOT->cd();
 
   // scan the first file, make a list of directories
-  TObjArray dirs;  // list of pointers to TDirectory
 
   TObjArray todo; // temp list of directotires to check for subdirectories
   todo.Add(fFile1); // prime with the top of file1
 
   int itodo = 0;
-  TObject *oo,*o1,*o2;
+  TObject *oo;
   TKey* kk;
 
   while(itodo < todo.GetEntries()) {
     TDirectory* dd = (TDirectory*) todo[itodo];
     if(fVerbose>9) printf("scanning %s\n",dd->GetName());
-    dirs.AddLast((TObject*)dd);
+    fDirs.AddLast((TObject*)dd);
 
     // look in this directory for subdirectories
     TIter it(dd->GetListOfKeys());
@@ -73,19 +84,83 @@ Int_t TValCompare::Analyze(Option_t* Opt) {
   }
 
   // List the directories, if requested
-  TDirectory *di,*dj;
-  TIter itd = TIter(&dirs);
+  TIter itd = TIter(&fDirs);
   if( fVerbose > 5 ) {
-    printf("List of %d directories in file 1:\n",dirs.GetEntries());
-    itd = TIter(&dirs);
+    printf("List of %d directories in file 1:\n",fDirs.GetEntries());
+    itd = TIter(&fDirs);
     TDirectory* di;
     while ( (di = (TDirectoryFile*) itd.Next()) ) {      
       printf("%s\n",di->GetPath());
      }
   }
 
+  return 0;
+}
+
+
+//_____________________________________________________________________________
+Int_t TValCompare::OneFile(Option_t* Opt) {
+
+  Delete(); // remove any previous analysis
+
+  // traverse the first file and get subdirectories
+  int rc = GetDirs();
+  if(rc!=0) return rc;
+
   // now process all objects in the list of directories
-  itd = TIter(&dirs);
+  TDirectory *di;
+  TObject *hh;
+  TKey* kk;
+  TString path,combo;
+
+  TIter itd = TIter(&fDirs);
+  while ( (di = (TDirectory*) itd.Next()) ) {
+    path = di->GetPath();
+    int ind = path.Index(":"); // strip leading file name
+    path = path(ind+2,path.Length()); 
+    if(fVerbose > 1) printf("Processing %s\n",path.Data());
+
+    // look in this directory for histograms
+    TIter ith(di->GetListOfKeys());
+    while ( (kk = (TKey*) ith.Next()) ) {
+      hh = di->Get(kk->GetName());
+
+      if(hh->ClassName() == TString("TH1F") ||
+	 hh->ClassName() == TString("TH1D") ||
+	 hh->ClassName() == TString("TProfile") ||
+	 hh->ClassName() == TString("TEfficiency") ) {
+	// have to pack path and name together
+	combo=path+"/"+TString(hh->GetName());
+	((TNamed*)hh)->SetName(combo);
+	  fList.Add(hh);
+      }
+    }
+    
+  
+  } // end loop over list of directories in file 1
+
+
+
+
+  return 0;
+
+}
+
+//_____________________________________________________________________________
+Int_t TValCompare::Analyze(Option_t* Opt) {
+
+  Delete(); // remove any previous analysis
+
+  // traverse the first file and get subdirectories
+  int rc = GetDirs();
+  if(rc!=0) return rc;
+
+  // now process all objects in the list of directories
+  TDirectory *di,*dj;
+  TObject *o1,*o2;
+  TKey* kk;
+
+  TIter itd = TIter(&fDirs);
   while ( (di = (TDirectory*) itd.Next()) ) {
     TString path = di->GetPath();
     int ind = path.Index(":"); // strip leading file name
@@ -453,6 +528,143 @@ void TValCompare::SaveAs(const char *filename, Option_t *option) const {
 
 }
 
+
+//_____________________________________________________________________________
+void TValCompare::SaveAs1(const char *filename, Option_t *option) const {
+
+  TString file(filename);
+  TString opt(option);
+  opt.ToUpper();
+
+  bool qPDF = file.EndsWith("pdf");
+  bool qWeb = file.EndsWith("html");
+  if( !(qPDF || qWeb) ) {
+    printf("ERRR - SaveAs1 file does not end with pdf or html");
+    return;
+  }
+
+
+  /*  only in ValHist
+  TH1* hh;
+  TIter it(&fList);
+  while ( (hh = (TH1*) it.Next()) ) hh->SetFontScale(sf);
+  */
+
+  TCanvas* ccc = nullptr;
+
+  Bool_t qBatch = gROOT->IsBatch();
+  gROOT->SetBatch(kTRUE);
+
+
+
+  if(qPDF) {
+
+    bool q12 = opt.Contains("1X2");
+    bool q22 = opt.Contains("2X2");
+
+    int cx = 700; // canvas size
+    int cy = 500;
+
+    int clim = 1;  // plots per page
+    if(qPDF && !q22) q12 = true;
+    if(q12) clim = 2;
+    if(q22) clim = 4;
+    
+    if(q12) {
+      cy = (11.0/8.5)*cx;
+    } else if(q22) {
+      cx = 800;
+      cy = cx;
+    }
+
+    TH1* hh;
+
+    ccc = new TCanvas("ccc-p","TValCompare-pdf",cx,cy);
+    TPDF* pdf =new TPDF(file);
+    TIter it(&fList);
+    int ind = 0;
+    while ( (hh = (TH1*) it.Next()) ) {      
+      if((ind%clim)==0) {
+	ccc->Clear();
+	if(q12) ccc->Divide(1,2);
+	if(q22) ccc->Divide(2,2);
+      }
+      ccc->cd(ind%clim+1);
+      ccc->Update();
+      hh->Draw();
+      ind++;
+    }    
+    //ccc->Destructor();
+    delete ccc;
+    ccc = nullptr;
+    pdf->Close();
+  }
+
+
+  if(qWeb) {
+    std::ofstream inf;
+    inf.open(file);
+    if(!inf.is_open()) {
+      printf("ERROR - could not open web file %s\n",file.Data());
+      return;
+    }
+    TString dir("./");
+    int c = int(file.Last('/'));
+    if(c>=0) dir = file(0,c+1);
+
+    inf <<"<html>\n<body>\n ";
+    inf <<"<title>valCompare one file</title>\n";
+    inf << "<BR><BR>\n";
+    inf <<"<h2>"<< fFileN1 << " &nbsp&nbsp </h2> <BR>";
+
+    inf << "<TABLE>\n";
+    inf << "<TD align=center>Name</TD>\n";
+    inf << "<TD align=center>Title</TD>\n";
+    inf << "</TR>\n";
+
+    ccc = new TCanvas("ccc-w","TValCompare",700,500);
+    TIter it(&fList);
+    TString color;
+    TString gifFile,gifName;
+    TString gifFileLog,gifNameLog;
+    TH1* hh;
+    while ( (hh = (TH1*) it.Next()) ) {
+      // TEfficiency does not handle log scale well 
+      bool qDoLog = (hh->ClassName()!=TString("TEfficiency"));
+      hh->Draw();
+      //gifName = hh->GetTag()+"/"+hh->GetName();
+      gifName = hh->GetName();
+      gifName.ReplaceAll("/","_");
+      gifNameLog = gifName;
+      gifName.Append(".gif");
+      gifNameLog.Append("_log.gif");
+      gifFile = dir+gifName;
+      gifFileLog = dir+gifNameLog;
+      ccc->SaveAs(gifFile);
+      if(qDoLog) {
+	gPad->SetLogy(1);
+	ccc->SaveAs(gifFileLog);
+	gPad->SetLogy(0);
+      }
+      
+      inf << "<TR><TD>";
+      
+      inf<< "<a href=\""<<gifName << "\">" <<  hh->GetName() <<"</a> ";
+      if(qDoLog) {
+	inf<< " &nbsp <a href=\""<<gifNameLog << "\">log</a> ";
+      }
+      inf << "</TD><TD>";
+      inf << hh->GetTitle();
+      inf << "</TD></TR>\n";
+      
+    } // hist loop
+    delete ccc;
+    ccc = nullptr;
+  }
+  
+  gROOT->SetBatch(qBatch);
+
+}
 
 
 //_____________________________________________________________________________

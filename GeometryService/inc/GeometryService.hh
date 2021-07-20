@@ -15,11 +15,11 @@
 #include "fhiclcpp/ParameterSet.h"
 #include "art/Framework/Services/Registry/ActivityRegistry.h"
 #include "art/Framework/Services/Registry/ServiceHandle.h"
-#include "art/Framework/Services/Registry/ServiceMacros.h"
+#include "art/Framework/Services/Registry/ServiceDeclarationMacros.h"
 #include "cetlib_except/exception.h"
 
-#include "ConfigTools/inc/SimpleConfig.hh"
-#include "Mu2eInterfaces/inc/Detector.hh"
+#include "Offline/ConfigTools/inc/SimpleConfig.hh"
+#include "Offline/Mu2eInterfaces/inc/Detector.hh"
 #include "boost/shared_ptr.hpp"
 
 // FIXME: Make a backdoor to geom svc to instantiate detector by hand. - call from G4_Module::beginRun.

@@ -58,8 +58,6 @@ namespace mu2eCrv
     int    _nPixelsX;
     int    _nPixelsY;
     double _overvoltage;      //in V  (operating overvoltage = bias voltage - breakdown voltage)
-    double _blindTime;        //in ns
-    double _microBunchPeriod; //in ns
     double _timeConstant;     //in ns
     double _capacitance;      //in F
 
@@ -91,7 +89,7 @@ namespace mu2eCrv
     double GetAvalancheProbability(double v);
     double GenerateAvalanche(Pixel &pixel, const std::pair<int,int> &pixelId, double time, size_t photonIndex, bool darkNoise);
     double GetVoltage(const Pixel &pixel, double time);
-    void   FillPhotonQueue(const std::vector<std::pair<double,size_t> > &photons);
+    void   FillQueue(const std::vector<std::pair<double,size_t> > &photons, double startTime, double endTime);
 
     CLHEP::RandFlat     &_randFlat;
     CLHEP::RandPoissonQ &_randPoissonQ;
@@ -105,12 +103,11 @@ namespace mu2eCrv
     MakeCrvSiPMCharges(CLHEP::RandFlat &randFlat, CLHEP::RandPoissonQ &randPoissonQ, const std::string &photonMapFileName);
     ~MakeCrvSiPMCharges() {_photonMapFile->Close();}
 
-    void SetSiPMConstants(int nPixelsX, int nPixelsY, double overvoltage, 
-                          double blindTime, double microBunchPeriod, double timeConstant, 
+    void SetSiPMConstants(int nPixelsX, int nPixelsY, double overvoltage, double timeConstant, 
                           double capacitance, ProbabilitiesStruct probabilities,
                           const std::vector<std::pair<int,int> > &inactivePixels);
     void Simulate(const std::vector<std::pair<double,size_t> > &photons, 
-                  std::vector<SiPMresponse> &SiPMresponseVector);
+                  std::vector<SiPMresponse> &SiPMresponseVector, double startTime, double endTime);
   };
 
 }

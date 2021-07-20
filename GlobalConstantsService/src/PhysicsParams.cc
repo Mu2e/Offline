@@ -10,8 +10,8 @@
 #include "CLHEP/Units/PhysicalConstants.h"
 
 // Mu2e include files
-#include "GlobalConstantsService/inc/PhysicsParams.hh"
-#include "ConfigTools/inc/SimpleConfig.hh"
+#include "Offline/GlobalConstantsService/inc/PhysicsParams.hh"
+#include "Offline/ConfigTools/inc/SimpleConfig.hh"
 
 // Framework includes
 #include "cetlib/pow.h"
@@ -26,7 +26,7 @@ namespace mu2e {
   {
 
     const int verbosity = config.getInt("physicsParams.verbosityLevel",0);
-    
+
     // Load physics constants
     const double alpha    = 1/config.getDouble("physicsParams.invFineStructureConstant");
     const double muonMass = config.getDouble("physicsParams.muonMass");
@@ -66,27 +66,27 @@ namespace mu2e {
 
     // Loop over available data to fill maps
     for ( const auto& material : _allowedTargetMaterials ) {
-      
+
       // Load relevant atomic constants
       _atomicMass[material]     = config.getDouble("physicsParams."+material+".atomicMass")*CLHEP::amu_c2;
       _atomicNumber[material]   = config.getInt   ("physicsParams."+material+".atomicNumber");
       _decayTime[material]      = config.getDouble("physicsParams."+material+".decayTime" );
       _decayFraction[material]  = config.getDouble("physicsParams."+material+".decayFraction" );
-      
+
       // Calculate approx. binding energy
       _approxBindingEnergy[material] = muonMass*cet::square(alpha*_atomicNumber[material])/2.;
-      
+
       // Load muon energy; default to "mumass - Eb(approx.)" if not available
       const std::string muonEnergyString = "physicsParams."+material+".muonEnergy";
       const bool approxRequired = !config.hasName( muonEnergyString );
       _muonEnergy[material]     = config.getDouble( muonEnergyString , muonMass-_approxBindingEnergy[material] );
-      
+
       // Calculate actual binding energy if available
       if ( !approxRequired ) _bindingEnergy[material] = muonMass - _muonEnergy[material];
-      
+
       // Calculate endpoint energy
       _endpointEnergy[material] = _muonEnergy[material] -cet::square(_muonEnergy[material])/(2*_atomicMass[material]);
-      
+
       if ( verbosity > 0 ) {
         std::cout << " Stopping target parameters: " << material << std::endl
                   << "       - Muon Energy    : " << _muonEnergy[material] ;
@@ -99,6 +99,15 @@ namespace mu2e {
     _czarneckiCoefficient[material] = config.getDouble("physicsParams."+material+".czarneckiCoefficient" );
     config.getVectorDouble("physicsParams."+material+".czarneckiCoefficients",_czarneckiCoefficients[material],std::vector<double>());
 
+    // Load capture product rates
+    _captureProtonRate[material] = config.getDouble("physicsParams."+material+".capture.protonRate", 0);
+    _captureDeuteronRate[material] = config.getDouble("physicsParams."+material+".capture.deuteronRate", 0);
+    _captureNeutronRate[material] = config.getDouble("physicsParams."+material+".capture.neutronRate", 0);
+    _capturePhotonRate[material] = config.getDouble("physicsParams."+material+".capture.photonRate", 0);
+
+    // Load capture gamma rays
+    _1809keVGammaEnergy[material] = config.getDouble("physicsParams."+material+".capture.photon.1809keV.energy", 0);
+    _1809keVGammaIntensity[material] = config.getDouble("physicsParams."+material+".capture.photon.1809keV.intensity", 0);
     }
 
     // Load Shanker constants

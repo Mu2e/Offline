@@ -20,7 +20,7 @@
 #include "art/Framework/Core/ModuleMacros.h"
 
 // Mu2e includes.
-#include "MCDataProducts/inc/SimParticleCollection.hh"
+#include "Offline/MCDataProducts/inc/SimParticleCollection.hh"
 
 // Root includes.
 #include "TH1F.h"
@@ -80,8 +80,7 @@ namespace mu2e {
 
   void SimParticleCheck00::analyze(const art::Event& event) {
     typedef std::vector< art::Handle<SimParticleCollection> > HandleVector;
-    HandleVector allSims;
-    event.getManyByType(allSims);
+    HandleVector allSims = event.getMany<SimParticleCollection>();
 
     _hNCollections->Fill(allSims.size());
 

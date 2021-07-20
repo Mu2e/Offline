@@ -6,15 +6,15 @@
 //
 
 // G4 includes.
-#include "G4UniformMagField.hh"
-#include "G4Mag_UsualEqRhs.hh"
-#include "G4ExactHelixStepper.hh"
-#include "G4ChordFinder.hh"
-#include "G4FieldManager.hh"
+#include "Geant4/G4UniformMagField.hh"
+#include "Geant4/G4Mag_UsualEqRhs.hh"
+#include "Geant4/G4ExactHelixStepper.hh"
+#include "Geant4/G4ChordFinder.hh"
+#include "Geant4/G4FieldManager.hh"
 
 // Mu2e includes
-#include "Mu2eG4/inc/FieldMgr.hh"
-#include "Mu2eG4/inc/DSGradientField.hh"
+#include "Offline/Mu2eG4/inc/FieldMgr.hh"
+#include "Offline/Mu2eG4/inc/Mu2eG4DSGradientMagneticField.hh"
 
 using namespace std;
 
@@ -36,7 +36,7 @@ namespace mu2e {
     mgr->_manager     = std::unique_ptr<G4FieldManager>         (new G4FieldManager      ( mgr->field(),
                                                                                            mgr->chordFinder(),
                                                                                            true ));
-    return std::move(mgr);
+    return mgr;
   }
 
   // Factory method to construct a manager for a gradient magnetic field (in DS3).
@@ -47,7 +47,7 @@ namespace mu2e {
 
     unique_ptr<FieldMgr> mgr(new FieldMgr() );
 
-    mgr->_field = std::unique_ptr<G4MagneticField>(new DSGradientField( "DS3Grad",
+    mgr->_field = std::unique_ptr<G4MagneticField>(new Mu2eG4DSGradientMagneticField( "DS3Grad",
                                                                         fieldOrigin,
                                                                         gradient,
                                                                         fieldValue
@@ -61,7 +61,7 @@ namespace mu2e {
     mgr->_manager     = std::unique_ptr<G4FieldManager>         (new G4FieldManager      ( mgr->field(),
                                                                                            mgr->chordFinder(),
                                                                                            true ));
-    return std::move(mgr);
+    return mgr;
   }
 
   // Release all of the objects that this class owns.

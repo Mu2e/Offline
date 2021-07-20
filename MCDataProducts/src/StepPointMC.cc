@@ -9,7 +9,7 @@
 // Original author Rob Kutschke
 
 // Mu2e includes
-#include "MCDataProducts/inc/StepPointMC.hh"
+#include "Offline/MCDataProducts/inc/StepPointMC.hh"
 
 using namespace std;
 
@@ -33,6 +33,7 @@ namespace mu2e {
         << "  position: "                       << _position
         << "  postPosition: "                   << _postPosition
         << "  momentum: "                       << _momentum
+        << "  postMomentum: "                   << _postMomentum
         << "  time: "                           << _time
         << "  proper time: "                    << _proper
         << "  step length: "                    << _stepLength

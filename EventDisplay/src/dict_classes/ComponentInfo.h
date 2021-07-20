@@ -15,9 +15,12 @@
 #include <TH1F.h>
 #include <TGraphErrors.h>
 #include <TMultiGraph.h>
+#include <TList.h>
+#include <TF1.h>
 #include <iostream>
 #include <sstream>
 #include <vector>
+#include <fstream>
 #ifndef __CINT__
 #include "boost/shared_ptr.hpp"
 #endif
@@ -166,15 +169,40 @@ namespace mu2e_eventdisplay
           m->GetYaxis()->SetTitleOffset(0.8);
           m->Draw("a");
 
+          TString functionString;
+          bool failedFit=false;
+          TList *functionList = m->GetListOfFunctions();
+          for(int iFunction=0; iFunction<functionList->GetSize(); ++iFunction)
+          {
+            if(iFunction>0) functionString.Append("+");
+            TF1 *f = dynamic_cast<TF1*>(functionList->At(iFunction));
+            functionString.Append(f->GetExpFormula());
+            if(f->GetLineStyle()==2) failedFit=true;
+          }
+          TF1 *functionSum = new TF1("recoFunctionSum",functionString.Data());
+          functionSum->DrawF1(m->GetXaxis()->GetXmin(),m->GetXaxis()->GetXmax(),"csame");
+          functionSum->SetLineWidth(2);
+          functionSum->SetLineColor(2);
+          if(failedFit) functionSum->SetLineStyle(2);
+
           const string multigraphName = m->GetName();
           if(multigraphName.compare(0,8,"Waveform")==0)
           {
             TText *t[3];
             t[0] = new TText(.12,.95,_name->c_str());
             t[1] = new TText(.12,.90,multigraphName.c_str());
-            int sipm=atoi(&multigraphName.back())+3;
-            const string s = _text[sipm]->GetTitle();
-            t[2] = new TText(.12,.85,Form("Reco pulse(s) %s",s.substr(17).c_str()));
+            t[2] = new TText(.12,.85,"No Reco pulses");
+            int sipm=atoi(&multigraphName.back());
+            for(size_t itext=0; itext<_text.size(); itext++)
+            {
+              const string s = _text[itext]->GetTitle();
+              size_t spos = s.find(Form("SiPM%i",sipm));
+              if(spos!=string::npos && spos+5<s.size())
+              {
+                t[2]->SetTitle(Form("Reco pulse(s) %s",s.substr(spos+5).c_str()));
+                break;
+              }
+            }
             for(int j=0; j<3; j++)
             {
               t[j]->SetNDC();

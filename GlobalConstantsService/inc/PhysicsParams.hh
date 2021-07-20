@@ -22,10 +22,10 @@
 #include <vector>
 
 // Mu2e includes.
-#include "Mu2eInterfaces/inc/ConditionsEntity.hh"
+#include "Offline/Mu2eInterfaces/inc/ConditionsEntity.hh"
 
 // The use of this header  does not introduce a library dependency.
-#include "DataProducts/inc/PDGCode.hh"
+#include "Offline/DataProducts/inc/PDGCode.hh"
 
 // Framework includes
 #include "cetlib_except/exception.h"
@@ -109,6 +109,32 @@ namespace mu2e
     const std::vector<double>& getShankerEcoefficients() const { return _shankerEcoefficients; }
     const std::vector<double>& getShankerFcoefficients() const { return _shankerFcoefficients; }
 
+    double   getCaptureProtonRate     (targetMat material = "") const {
+      const std::string allowedMaterial = checkMaterial( material );
+      return _captureProtonRate.find(allowedMaterial)->second;
+    }
+    double   getCaptureDeuteronRate     (targetMat material = "") const {
+      const std::string allowedMaterial = checkMaterial( material );
+      return _captureDeuteronRate.find(allowedMaterial)->second;
+    }
+    double   getCaptureNeutronRate     (targetMat material = "") const {
+      const std::string allowedMaterial = checkMaterial( material );
+      return _captureNeutronRate.find(allowedMaterial)->second;
+    }
+    double   getCapturePhotonRate     (targetMat material = "") const {
+      const std::string allowedMaterial = checkMaterial( material );
+      return _capturePhotonRate.find(allowedMaterial)->second;
+    }
+
+    double   get1809keVGammaEnergy     (targetMat material = "") const {
+      const std::string allowedMaterial = checkMaterial( material );
+      return _1809keVGammaEnergy.find(allowedMaterial)->second;
+    }
+    double   get1809keVGammaIntensity     (targetMat material = "") const {
+      const std::string allowedMaterial = checkMaterial( material );
+      return _1809keVGammaIntensity.find(allowedMaterial)->second;
+    }
+
     PhysicsParams( SimpleConfig const& config );
 
     // Accept compiler generated:
@@ -145,6 +171,14 @@ namespace mu2e
     std::vector<double> _shankerDcoefficients;
     std::vector<double> _shankerEcoefficients;
     std::vector<double> _shankerFcoefficients;
+
+    std::map<targetMat, double> _captureProtonRate;
+    std::map<targetMat, double> _captureDeuteronRate;
+    std::map<targetMat, double> _captureNeutronRate;
+    std::map<targetMat, double> _capturePhotonRate;
+
+    std::map<targetMat, double> _1809keVGammaEnergy;
+    std::map<targetMat, double> _1809keVGammaIntensity;
 
     inline targetMat checkMaterial( const targetMat& material ) const {
       if ( material.empty() ) return _chosenStoppingTargetMaterial;

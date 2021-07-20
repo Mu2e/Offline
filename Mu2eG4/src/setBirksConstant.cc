@@ -3,14 +3,14 @@
 //
 
 
-#include "Mu2eG4/inc/setBirksConstant.hh"
+#include "Offline/Mu2eG4/inc/setBirksConstant.hh"
 #include "fhiclcpp/ParameterSet.h"
-#include "Mu2eG4/inc/findMaterialOrThrow.hh"
+#include "Offline/Mu2eG4/inc/findMaterialOrThrow.hh"
 
 #include "messagefacility/MessageLogger/MessageLogger.h"
 
 // Geant4 includes
-#include "G4Material.hh"
+#include "Geant4/G4Material.hh"
 
 // C++ includes
 

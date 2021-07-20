@@ -1,7 +1,7 @@
 # List run/subrun/event numbers found in a file
 #
 
-#include "fcl/minimalMessageService.fcl"
+#include "Offline/fcl/minimalMessageService.fcl"
 
 process_name : eventLister
 

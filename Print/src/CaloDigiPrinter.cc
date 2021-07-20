@@ -1,5 +1,5 @@
 
-#include "Print/inc/CaloDigiPrinter.hh"
+#include "Offline/Print/inc/CaloDigiPrinter.hh"
 #include "art/Framework/Principal/Provenance.h"
 #include <string>
 #include <iomanip>
@@ -10,8 +10,7 @@ mu2e::CaloDigiPrinter::Print(art::Event const& event,
   if(verbose()<1) return;
   if(tags().empty()) {
     // if a list of instances not specified, print all instances
-    std::vector< art::Handle<CaloDigiCollection> > vah;
-    event.getManyByType(vah);
+    std::vector< art::Handle<CaloDigiCollection> > vah = event.getMany<CaloDigiCollection>();
     for (auto const & ah : vah) Print(ah);
   } else {
     // print requested instances
@@ -67,7 +66,7 @@ mu2e::CaloDigiPrinter::Print(const mu2e::CaloDigi& obj, int ind, std::ostream& o
   if(ind>=0) os << std::setw(4) << ind;
 
   os 
-    << " " << std::setw(5) << obj.roId()
+    << " " << std::setw(5) << obj.SiPMID()
     << " " << std::setw(5) << obj.t0()
     << " ";
   for(auto i: obj.waveform()) {

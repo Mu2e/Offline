@@ -1,4 +1,4 @@
-#include "RecoDataProducts/inc/ExtMonFNALTrkFitQuality.hh"
+#include "Offline/RecoDataProducts/inc/ExtMonFNALTrkFitQuality.hh"
 
 namespace mu2e {
   std::ostream& operator<<(std::ostream&os, const ExtMonFNALTrkFitQuality& q) {

@@ -6,6 +6,10 @@
 import os, re
 Import('env')
 
+# if building for the trigger exe, don't build this lib
+if env['TRIGGER'] == 'on':
+    Return()
+
 Import('mu2e_helper')
 
 helper=mu2e_helper(env)
@@ -16,10 +20,13 @@ helper=mu2e_helper(env)
 # 2) Construct G4GRANULARLIBS using shell() on the g4 command that makes
 #    the granular lib string.
 #
-
+# th fisrt line below has to stay due to PTL/Types.hh included in the native Geant4 files
 g4inc    = os.environ['G4INCLUDE'] + '/Geant4'
+g4inc2   = os.environ['G4INCLUDE']
 g4libdir = os.environ['G4LIB']
-g4LibInc = [ '-L'+g4libdir, '-I'+g4inc ]
+cryptoppinc = os.environ['CRYPTOPP_INC']
+cryptopplibdir = os.environ['CRYPTOPP_LIB']
+g4LibInc = [ '-L'+g4libdir, '-I'+g4inc, '-I'+g4inc2, '-L'+cryptopplibdir, '-I'+cryptoppinc ]
 g4_version = os.environ['GEANT4_VERSION']
 g4_version=g4_version.replace('_','')
 if g4_version[2] == '9':
@@ -184,6 +191,9 @@ if g4vg != 'off':
     G4GLOBALIBS.append('libvecgeom')
     G4GLOBALIBS.append('libVc')
 
+if g4_version > '4106':
+    G4GLOBALIBS.append('libG4ptl')
+
 if g4_version < '4095':
     G4LIBS = G4GRANULARLIBS
 else:
@@ -206,8 +216,8 @@ XERCESC_LIBS = [ 'xerces-c' ]
 
 
 mainlib = helper.make_mainlib ( [
-        'mu2e_G4Helper_G4Helper_service',
-        'mu2e_G4Helper',
+        'mu2e_Mu2eG4Helper_Mu2eG4Helper_service',
+        'mu2e_Mu2eG4Helper',
         'mu2e_SeedService_SeedService_service',
         'mu2e_Mu2eUtilities',
         'mu2e_GeometryService',
@@ -235,13 +245,14 @@ mainlib = helper.make_mainlib ( [
         'art_Persistency_Provenance',
         'art_Persistency_Common',
         'art_Framework_Services_Registry',
-        'art_root_io_TFileService_service',
+        'art_root_io_TFileService',
         'art_root_io_tfile_support',
         'art_Framework_Principal',
         'art_Framework_Core',
         'art_Utilities',
         'canvas',
         'fhiclcpp',
+        'fhiclcpp_types',
         'MF_MessageLogger',
         'cetlib',
         'cetlib_except',
@@ -252,9 +263,9 @@ mainlib = helper.make_mainlib ( [
         'CLHEP',
         'Hist', 'Tree', 'Core',
         'boost_regex',
-        'boost_system',
         'tbb',
         'pthread',
+        'libcryptopp',
     ],
                                 [  G4CPPFLAGS, G4GS_CPPFLAGS, G4GV_CPPFLAGS ],
                                 [ g4LibInc, vgcLibInc ]
@@ -274,7 +285,7 @@ helper.make_plugins( [
     'art_Framework_Principal',
     'art_Framework_Services_Registry',
     'art_root_io_tfile_support',
-    'art_root_io_TFileService_service',
+    'art_root_io_TFileService',
     'art_Framework_Services_Optional_RandomNumberGenerator_service',
     'art_Persistency_Common',
     'art_Persistency_Provenance',
@@ -282,6 +293,8 @@ helper.make_plugins( [
     'canvas',
     'MF_MessageLogger',
     'fhiclcpp',
+    'fhiclcpp_types',
+    'tbb',
     'cetlib',
     'cetlib_except',
     G4LIBS,
@@ -290,9 +303,9 @@ helper.make_plugins( [
     'CLHEP',
     'Tree', 'Core',
     'boost_filesystem',
-    'boost_system',
     'tbb',
     'pthread',
+    'libcryptopp',
     ],
                      [],
                      [ G4CPPFLAGS, G4GS_CPPFLAGS, G4GV_CPPFLAGS ],

@@ -1,4 +1,4 @@
-#include "TrkDiag/test/TrainPID.C+"
+#include "Offline/TrkDiag/test/TrainPID.C+"
 #include "TFile.h"
 #include "TTree.h"
 #include "TChain.h"

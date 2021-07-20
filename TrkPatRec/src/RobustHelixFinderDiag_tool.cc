@@ -1,23 +1,25 @@
 #ifndef __TrkPatRec_RobustHelixFinderDiag_hh__
 #define __TrkPatRec_RobustHelixFinderDiag_hh__
 
-#include "TrkPatRec/inc/RobustHelixFinder_types.hh"
-#include "Mu2eUtilities/inc/ModuleHistToolBase.hh"
-#include "TrkReco/inc/RobustHelixFit.hh"
+#include "Offline/TrkPatRec/inc/RobustHelixFinder_types.hh"
+#include "Offline/Mu2eUtilities/inc/ModuleHistToolBase.hh"
+#include "Offline/TrkReco/inc/RobustHelixFit.hh"
 
 #include "BTrk/KalmanTrack/KalHit.hh"
 #include "BTrk/KalmanTrack/KalRep.hh"
-#include "BTrkData/inc/TrkStrawHit.hh"
+#include "Offline/BTrkData/inc/TrkStrawHit.hh"
 
 #include "art/Utilities/ToolMacros.h"
 #include "art/Utilities/make_tool.h"
-#include "fhiclcpp/ParameterSet.h"
+#include "fhiclcpp/types/Atom.h"
+#include "fhiclcpp/types/Sequence.h"
 
 #include "TH1F.h"
 
 namespace mu2e {
 
   using namespace RobustHelixFinderTypes;
+  using RobustHelixFinderTypes::Config;
   
   class RobustHelixFinderDiag : public mu2e::ModuleHistToolBase {
   public:
@@ -104,7 +106,8 @@ namespace mu2e {
 
   public:
 
-    RobustHelixFinderDiag(const fhicl::ParameterSet& PSet);
+    explicit RobustHelixFinderDiag(const Config& config);
+    explicit RobustHelixFinderDiag(const fhicl::ParameterSet& PSet);
     ~RobustHelixFinderDiag();
 
   private:
@@ -113,6 +116,11 @@ namespace mu2e {
     virtual int fillHistograms(void* Data, int Mode = -1) override ;
   };
 
+
+//-----------------------------------------------------------------------------
+  RobustHelixFinderDiag::RobustHelixFinderDiag(const Config& config) {
+    printf(" RobustHelixFinderDiag::RobustHelixFinderDiag : HOORAY! \n");
+  }
 
 //-----------------------------------------------------------------------------
   RobustHelixFinderDiag::RobustHelixFinderDiag(const fhicl::ParameterSet& PSet) {

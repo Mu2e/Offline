@@ -1,4 +1,4 @@
-// Geometry of the Mu2e-II production target. 
+// Geometry of the Mu2e-II production target.
 // This also defines the proton beam direction.
 //
 // Based on Andrei Gaponenko, 2011 ProductionTarget.hh
@@ -15,8 +15,8 @@
 #include "CLHEP/Vector/ThreeVector.h"
 #include "CLHEP/Vector/Rotation.h"
 
-#include "GeomPrimitives/inc/Polycone.hh"
-#include "Mu2eInterfaces/inc/Detector.hh"
+#include "Offline/GeomPrimitives/inc/Polycone.hh"
+#include "Offline/Mu2eInterfaces/inc/Detector.hh"
 
 namespace mu2e {
 

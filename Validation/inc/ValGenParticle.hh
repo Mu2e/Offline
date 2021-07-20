@@ -4,8 +4,8 @@
 
 #include "art/Framework/Principal/Event.h"
 #include "art_root_io/TFileDirectory.h"
-#include "MCDataProducts/inc/GenParticleCollection.hh"
-#include "Validation/inc/ValId.hh"
+#include "Offline/MCDataProducts/inc/GenParticleCollection.hh"
+#include "Offline/Validation/inc/ValId.hh"
 #include "TH1D.h"
 #include <string>
 
@@ -33,6 +33,8 @@ namespace mu2e {
     TH1D* _hyt;
     TH1D* _hz;
     TH1D* _hzt;
+    TH1D* _t;
+    TH1D* _t2;
 
   };
 }

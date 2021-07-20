@@ -4,8 +4,8 @@
 // Original author Rob Kutschke
 //
 
-#include "GeometryService/inc/GeomHandle.hh"
-#include "TrackerGeom/inc/Tracker.hh"
+#include "Offline/GeometryService/inc/GeomHandle.hh"
+#include "Offline/TrackerGeom/inc/Tracker.hh"
 
 #include "art/Framework/Core/EDAnalyzer.h"
 #include "art/Framework/Principal/Event.h"
@@ -89,9 +89,6 @@ namespace mu2e {
                << n++ << " "
                << sid.asUint16() << " "
                << sid  << "  | ";
-          for ( auto nid : straw.nearestNeighboursById() ){
-            cout << " " << nid;
-          }
           cout << " "
                << straw.getMidPoint() << " "
                << straw.direction()

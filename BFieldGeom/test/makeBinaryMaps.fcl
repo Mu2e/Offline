@@ -3,9 +3,9 @@
 # Create lots of text output for comparison with output from readBinaryMaps.fcl.
 #
 
-#include "fcl/minimalMessageService.fcl"
-#include "fcl/standardProducers.fcl"
-#include "fcl/standardServices.fcl"
+#include "Offline/fcl/minimalMessageService.fcl"
+#include "Offline/fcl/standardProducers.fcl"
+#include "Offline/fcl/standardServices.fcl"
 
 process_name : MakeBinaryMaps
 
@@ -20,10 +20,10 @@ services : {
   TFileService          : { fileName : "makeBinaryMaps.root" }
   RandomNumberGenerator : {defaultEngineKind: "MixMaxRng" }
 
-  GeometryService        : { inputFile      : "BFieldGeom/test/geom_makeBinaries.txt" }
-  ConditionsService      : { conditionsfile : "Mu2eG4/test/conditions_01.txt"         }
-  GlobalConstantsService : { inputFile      : "Mu2eG4/test/globalConstants_01.txt"    }
-  G4Helper               : {}
+  GeometryService        : { inputFile      : "Offline/BFieldGeom/test/geom_makeBinaries.txt" }
+  ConditionsService      : { conditionsfile : "Offline/ConditionsService/data/conditions_01.txt"         }
+  GlobalConstantsService : { inputFile      : "Offline/GlobalConstantsService/data/globalConstants_01.txt"    }
+  Mu2eG4Helper           : {}
   SeedService            : @local::automaticSeeds
 
 }
@@ -50,7 +50,7 @@ physics : {
       module_type            : ReadBack
       generatorModuleLabel   : generate
       g4ModuleLabel          : g4run
-      caloReadoutModuleLabel : CaloCrystalHitFromHit
+      caloReadoutModuleLabel : CaloHitMaker
       diagLevel              : 0
       minimumEnergy          : 0.000
       maxFullPrint           : 201

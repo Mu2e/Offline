@@ -1,12 +1,12 @@
 // Function to build G4 rep of saddles for cryostats.
-// 
-// 
+//
+//
 // David Norvil Brown, University of Louisville, 02 June 2017, based
 // on constructExternalShielding, written November 2014
 //
-// 
+//
 
-#include "Mu2eG4/inc/constructSaddles.hh"
+#include "Offline/Mu2eG4/inc/constructSaddles.hh"
 
 #include "CLHEP/Vector/TwoVector.h"
 #include "CLHEP/Vector/ThreeVector.h"
@@ -15,36 +15,37 @@
 #include "cetlib_except/exception.h"
 
 
-#include "ExternalShieldingGeom/inc/Saddle.hh"
+#include "Offline/ExternalShieldingGeom/inc/Saddle.hh"
 
 // etc...
-#include "GeometryService/inc/GeomHandle.hh"
-#include "GeometryService/inc/GeometryService.hh"
-#include "GeometryService/inc/G4GeometryOptions.hh"
-#include "DetectorSolenoidGeom/inc/DetectorSolenoid.hh"
-#include "GeometryService/inc/WorldG4.hh"
-#include "Mu2eG4/inc/findMaterialOrThrow.hh"
-#include "G4Helper/inc/VolumeInfo.hh"
-#include "GeomPrimitives/inc/Tube.hh"
-#include "GeomPrimitives/inc/TubsParams.hh"
-#include "ConfigTools/inc/SimpleConfig.hh"
-#include "Mu2eG4/inc/nestBox.hh"
-#include "Mu2eG4/inc/nestTubs.hh"
-#include "Mu2eG4/inc/finishNesting.hh"
-#include "GeneralUtilities/inc/OrientationResolver.hh"
+#include "Offline/GeometryService/inc/GeomHandle.hh"
+#include "Offline/GeometryService/inc/GeometryService.hh"
+#include "Offline/GeometryService/inc/G4GeometryOptions.hh"
+#include "Offline/DetectorSolenoidGeom/inc/DetectorSolenoid.hh"
+#include "Offline/GeometryService/inc/WorldG4.hh"
+#include "Offline/Mu2eG4/inc/findMaterialOrThrow.hh"
+#include "Offline/Mu2eG4Helper/inc/VolumeInfo.hh"
+#include "Offline/Mu2eG4Helper/inc/Mu2eG4Helper.hh"
+#include "Offline/GeomPrimitives/inc/Tube.hh"
+#include "Offline/GeomPrimitives/inc/TubsParams.hh"
+#include "Offline/ConfigTools/inc/SimpleConfig.hh"
+#include "Offline/Mu2eG4/inc/nestBox.hh"
+#include "Offline/Mu2eG4/inc/nestTubs.hh"
+#include "Offline/Mu2eG4/inc/finishNesting.hh"
+#include "Offline/GeneralUtilities/inc/OrientationResolver.hh"
 
 // G4 includes
-#include "G4Material.hh"
-#include "G4Color.hh"
-#include "G4ExtrudedSolid.hh"
-#include "G4Orb.hh"
-#include "G4Box.hh"
-#include "G4Tubs.hh"
-#include "G4TwoVector.hh"
-#include "G4NistManager.hh"
+#include "Geant4/G4Material.hh"
+#include "Geant4/G4Color.hh"
+#include "Geant4/G4ExtrudedSolid.hh"
+#include "Geant4/G4Orb.hh"
+#include "Geant4/G4Box.hh"
+#include "Geant4/G4Tubs.hh"
+#include "Geant4/G4TwoVector.hh"
+#include "Geant4/G4NistManager.hh"
 
-#include "G4SubtractionSolid.hh"
-#include "G4LogicalVolume.hh"
+#include "Geant4/G4SubtractionSolid.hh"
+#include "Geant4/G4LogicalVolume.hh"
 
 #include <vector>
 #include <sstream>
@@ -60,6 +61,7 @@ namespace mu2e {
 
     GeomHandle<Saddle> saddleSet;
 
+    AntiLeakRegistry& reg = art::ServiceHandle<Mu2eG4Helper>()->antiLeakRegistry();
     // Utility for converting orientations to rotations
     OrientationResolver* OR = new OrientationResolver();
 
@@ -67,13 +69,13 @@ namespace mu2e {
     const auto geomOptions = art::ServiceHandle<GeometryService>()->geomOptions();
     geomOptions->loadEntry( config, "saddle", "saddle");
 
-    const bool saddleIsVisible     = geomOptions->isVisible("saddle"); 
-    const bool saddleIsSolid       = geomOptions->isSolid("saddle");     
-    const bool forceAuxEdgeVisible = geomOptions->forceAuxEdgeVisible("saddle"); 
-    const bool doSurfaceCheck      = geomOptions->doSurfaceCheck("saddle"); 
-    const bool placePV             = geomOptions->placePV("saddle"); 
-    
-  
+    const bool saddleIsVisible     = geomOptions->isVisible("saddle");
+    const bool saddleIsSolid       = geomOptions->isSolid("saddle");
+    const bool forceAuxEdgeVisible = geomOptions->forceAuxEdgeVisible("saddle");
+    const bool doSurfaceCheck      = geomOptions->doSurfaceCheck("saddle");
+    const bool placePV             = geomOptions->placePV("saddle");
+
+
     //================================================================
     // OK, so in version 1, Saddles were just extruded boxes that,
     // when taken as a whole, looked like a bunch of saddles and
@@ -81,7 +83,7 @@ namespace mu2e {
     // In version 2,3, Saddles are logical structures, each of which looks
     // like an individual saddle or stand.  Each saddle contains
     // an extruded box with holes and/or notches.
-    //================================================================    
+    //================================================================
 
     if ( saddleSet->getVersion() <= 3 ) {
       //----------------------------------------------------------------
@@ -109,216 +111,215 @@ namespace mu2e {
       int nBox = outlSA.size();
 
       for(int i = 0; i < nBox; i++)
-	{
-	  // combine the tolerances with the outline dimensions.
-	  std::vector<G4TwoVector> itsOutline;
-	  std::vector<std::vector<double> > vertices = outlSA[i];
-	  double du = tolsSA[i][0];
-	  double dv = tolsSA[i][1];
-	  double dw = tolsSA[i][2];
-	  double hlen = lengSA[i];
+        {
+          // combine the tolerances with the outline dimensions.
+          std::vector<G4TwoVector> itsOutline;
+          std::vector<std::vector<double> > vertices = outlSA[i];
+          double du = tolsSA[i][0];
+          double dv = tolsSA[i][1];
+          double dw = tolsSA[i][2];
+          double hlen = lengSA[i];
 
-	  for ( unsigned int idim = 0; idim < vertices.size(); idim++ ) {
-	    if ( vertices[idim][0] > -10.0 * CLHEP::mm) {
-	      vertices[idim][0] += du;
-	    } else {
-	      vertices[idim][0] -= du;
-	    }
-	    if (vertices[idim][1] > -10.0 * CLHEP::mm ) {
-	      vertices[idim][1] += dv;
-	    } else {
-	      vertices[idim][1] -= dv;
-	    }
-	    G4TwoVector vertex( vertices[idim][0], vertices[idim][1] );
-	    itsOutline.push_back(vertex);
-	  }
-	  hlen += dw;
-	  
-	  //  Make the name of the box
-	  std::ostringstream name;
-	  name << "SaddleBox_" << i+1 ;
+          for ( unsigned int idim = 0; idim < vertices.size(); idim++ ) {
+            if ( vertices[idim][0] > -10.0 * CLHEP::mm) {
+              vertices[idim][0] += du;
+            } else {
+              vertices[idim][0] -= du;
+            }
+            if (vertices[idim][1] > -10.0 * CLHEP::mm ) {
+              vertices[idim][1] += dv;
+            } else {
+              vertices[idim][1] -= dv;
+            }
+            G4TwoVector vertex( vertices[idim][0], vertices[idim][1] );
+            itsOutline.push_back(vertex);
+          }
+          hlen += dw;
 
-	  // Make the needed rotation by parsing orientation
-	  std::string orientSAInit = orientsSA[i];
+          //  Make the name of the box
+          std::ostringstream name;
+          name << "SaddleBox_" << i+1 ;
 
-	  CLHEP::HepRotation* itsSARotat = new CLHEP::HepRotation(CLHEP::HepRotation::IDENTITY);
-	  OR->getRotationFromOrientation( *itsSARotat, orientSAInit );
+          // Make the needed rotation by parsing orientation
+          std::string orientSAInit = orientsSA[i];
 
-	  // ****************************************
-	  // Now add holes and notches
-	  // ***************************************
-	  if ( nHolesSA[i] + nNotchesSA[i] > 0 ) {
-	    
-	    // This box has at least one window or notch.  
-	    // Each is implemented as a
-	    // G4SubtractionSolid to allow for another volume placement
-	    // through it.  First go ahead and make the extrusion for the block.
-	    std::ostringstream name1;
-	    name1 << "SaddleBox_sub_" << i+1;
+          CLHEP::HepRotation* itsSARotat = reg.add(CLHEP::HepRotation(CLHEP::HepRotation::IDENTITY));
+          OR->getRotationFromOrientation( *itsSARotat, orientSAInit );
 
-	    G4ExtrudedSolid* block = new G4ExtrudedSolid( name1.str(),
-							  itsOutline,
-							  hlen,
-							  G4TwoVector(0,0), 1.,
-							  G4TwoVector(0,0), 1.);
-	  
-	    // Now create the volume for the block
-	    VolumeInfo extShieldVol(name.str(),
-				    sitesSA[i]-parent.centerInMu2e(),
-				    parent.centerInWorld);
+          // ****************************************
+          // Now add holes and notches
+          // ***************************************
+          if ( nHolesSA[i] + nNotchesSA[i] > 0 ) {
 
-	  
-	    // Create a subtraction solid that will become the solid for the 
-	    // volume.
+            // This box has at least one window or notch.
+            // Each is implemented as a
+            // G4SubtractionSolid to allow for another volume placement
+            // through it.  First go ahead and make the extrusion for the block.
+            std::ostringstream name1;
+            name1 << "SaddleBox_sub_" << i+1;
 
-	    G4SubtractionSolid* aSolid = 0;
+            G4ExtrudedSolid* block = new G4ExtrudedSolid( name1.str(),
+                                                          itsOutline,
+                                                          hlen,
+                                                          G4TwoVector(0,0), 1.,
+                                                          G4TwoVector(0,0), 1.);
 
-	    // Find the index of the first hole, for accessing info lists...
-	    int hID = holeIDSA[i];
-
-	    // Now loop over the holes and make them.
-	    for ( int jHole = 0; jHole < nHolesSA[i]; jHole++ ) {
-	      // Now make the window (AKA "Hole")
-	      name << "h" << jHole+1;
-	      //	    std::cout << __func__ << " making " << name.str() << std::endl;
-
-	      int thisHID = hID + jHole; // get pointer for right hole
-	      
-	      const TubsParams windparams(0.0,  //inner radius
-					  holeRadSA[thisHID], // outer
-					  holeLenSA[thisHID]  //obvious?
-					  );
-
-	      std::ostringstream name2;
-	      name2 << "SaddleBox" << i+1 << "hole" << jHole+1;
-
-	      G4Tubs* aWindTub = new G4Tubs( name2.str(), 
-					     windparams.data()[0], 
-					     windparams.data()[1], 
-					     windparams.data()[2]+2.,// to satisfy a G4SubtractionSolid feature
-					     windparams.data()[3], 
-					     windparams.data()[4]);
-	    
-	      CLHEP::HepRotation* windRotat = new CLHEP::HepRotation(CLHEP::HepRotation::IDENTITY);
-	      OR->getRotationFromOrientation( *windRotat, holeOrientsSA[hID] );
-
-	      
-	      if ( 0 == aSolid ) { 
-		aSolid = new G4SubtractionSolid( extShieldVol.name,
-						 block,
-						 aWindTub,
-						 windRotat,
-						 holeLocSA[thisHID]);
-	      } else {
-		G4SubtractionSolid * bSolid = new G4SubtractionSolid 
-		  ( extShieldVol.name,
-		    aSolid,
-		    aWindTub,
-		    windRotat,
-		    holeLocSA[thisHID]);
-		aSolid = bSolid;
-	      }
-	    } // End of loop over holes. Now loop over notches.
+            // Now create the volume for the block
+            VolumeInfo extShieldVol(name.str(),
+                                    sitesSA[i]-parent.centerInMu2e(),
+                                    parent.centerInWorld);
 
 
-	    // Find the index of the first notch, for accessing info lists...
-	    int notchID = notchIDSA[i];
-	    
-	    for ( int jNotch = 0; jNotch < nNotchesSA[i]; jNotch++ ) {
-	      int thisNID = notchID + jNotch; //index for this notch
+            // Create a subtraction solid that will become the solid for the
+            // volume.
 
-	      // Put notch(es) into box now
+            G4SubtractionSolid* aSolid = 0;
 
-	      // Each notch is implemented as a
-	      // G4SubtractionSolid to allow for another volume placement
-	      // through it
+            // Find the index of the first hole, for accessing info lists...
+            int hID = holeIDSA[i];
 
-	      // Now make the notch 
-	      name << "n" << jNotch+1;
+            // Now loop over the holes and make them.
+            for ( int jHole = 0; jHole < nHolesSA[i]; jHole++ ) {
+              // Now make the window (AKA "Hole")
+              name << "h" << jHole+1;
+              //            std::cout << __func__ << " making " << name.str() << std::endl;
 
+              int thisHID = hID + jHole; // get pointer for right hole
 
-	      // Get dimensions of this box
-	      std::vector<double>tempDims = notchDimSA[thisNID];
-	      
-	      std::ostringstream name2;
-	      name2 << "SaddleBox" << i+1 << "Notch" << jNotch+1;
+              const TubsParams windparams(0.0,  //inner radius
+                                          holeRadSA[thisHID], // outer
+                                          holeLenSA[thisHID]  //obvious?
+                                          );
 
-	      G4Box* aNotchBox = new G4Box(  name2.str(), 
-					     tempDims[0],
-					     tempDims[1],
-					     tempDims[2]);
+              std::ostringstream name2;
+              name2 << "SaddleBox" << i+1 << "hole" << jHole+1;
 
-	      CLHEP::HepRotation* notchRotat = new CLHEP::HepRotation(CLHEP::HepRotation::IDENTITY);
+              G4Tubs* aWindTub = new G4Tubs( name2.str(),
+                                             windparams.data()[0],
+                                             windparams.data()[1],
+                                             windparams.data()[2]+2.,// to satisfy a G4SubtractionSolid feature
+                                             windparams.data()[3],
+                                             windparams.data()[4]);
 
-
-	      if ( 0 == aSolid ) { 
-		aSolid = new G4SubtractionSolid( extShieldVol.name,
-						 block,
-						 aNotchBox,
-						 notchRotat,
-						 notchLocSA[thisNID]);
-	      } else {
-		G4SubtractionSolid * bSolid = new G4SubtractionSolid 
-		  ( extShieldVol.name,
-		    aSolid,
-		    aNotchBox,
-		    notchRotat,
-		    notchLocSA[thisNID]);
-		aSolid = bSolid;
-	      }
-	    } // End of loop over notches
-
-	    extShieldVol.solid = aSolid;
-
-	    finishNesting(extShieldVol,
-			  findMaterialOrThrow(matsSA[i]),
-			  itsSARotat,
-			  extShieldVol.centerInParent,
-			  parent.logical,
-			  0,
-			  saddleIsVisible,
-			  G4Colour::Magenta(),
-			  saddleIsSolid,
-			  forceAuxEdgeVisible,
-			  placePV,
-			  doSurfaceCheck);
-	  } else {
-
-	    // Build each normal box here.  Normal means no holes or notches.
-
-	    VolumeInfo extShieldVol(name.str(),
-				    sitesSA[i]-parent.centerInMu2e(),
-				    parent.centerInWorld);
-
-	    extShieldVol.solid = new G4ExtrudedSolid( extShieldVol.name,
-						      itsOutline,
-						      hlen,
-						      G4TwoVector(0,0), 1.,
-						      G4TwoVector(0,0), 1.);
+              CLHEP::HepRotation* windRotat = reg.add(CLHEP::HepRotation(CLHEP::HepRotation::IDENTITY));
+              OR->getRotationFromOrientation( *windRotat, holeOrientsSA[hID] );
 
 
-	    finishNesting(extShieldVol,
-			  findMaterialOrThrow(matsSA[i]),
-			  itsSARotat,
-			  extShieldVol.centerInParent,
-			  parent.logical,
-			  0,
-			  saddleIsVisible,
-			  G4Colour::Magenta(),
-			  saddleIsSolid,
-			  forceAuxEdgeVisible,
-			  placePV,
-			  doSurfaceCheck);
-	  
-	  } // end of if...else...
-	
-	} // end of for loop over saddles
-    
+              if ( 0 == aSolid ) {
+                aSolid = new G4SubtractionSolid( extShieldVol.name,
+                                                 block,
+                                                 aWindTub,
+                                                 windRotat,
+                                                 holeLocSA[thisHID]);
+              } else {
+                G4SubtractionSolid * bSolid = new G4SubtractionSolid
+                  ( extShieldVol.name,
+                    aSolid,
+                    aWindTub,
+                    windRotat,
+                    holeLocSA[thisHID]);
+                aSolid = bSolid;
+              }
+            } // End of loop over holes. Now loop over notches.
+
+
+            // Find the index of the first notch, for accessing info lists...
+            int notchID = notchIDSA[i];
+
+            for ( int jNotch = 0; jNotch < nNotchesSA[i]; jNotch++ ) {
+              int thisNID = notchID + jNotch; //index for this notch
+
+              // Put notch(es) into box now
+
+              // Each notch is implemented as a
+              // G4SubtractionSolid to allow for another volume placement
+              // through it
+
+              // Now make the notch
+              name << "n" << jNotch+1;
+
+
+              // Get dimensions of this box
+              std::vector<double>tempDims = notchDimSA[thisNID];
+
+              std::ostringstream name2;
+              name2 << "SaddleBox" << i+1 << "Notch" << jNotch+1;
+
+              G4Box* aNotchBox = new G4Box(  name2.str(),
+                                             tempDims[0],
+                                             tempDims[1],
+                                             tempDims[2]);
+
+              CLHEP::HepRotation* notchRotat(nullptr);
+
+
+              if ( 0 == aSolid ) {
+                aSolid = new G4SubtractionSolid( extShieldVol.name,
+                                                 block,
+                                                 aNotchBox,
+                                                 notchRotat,
+                                                 notchLocSA[thisNID]);
+              } else {
+                G4SubtractionSolid * bSolid = new G4SubtractionSolid
+                  ( extShieldVol.name,
+                    aSolid,
+                    aNotchBox,
+                    notchRotat,
+                    notchLocSA[thisNID]);
+                aSolid = bSolid;
+              }
+            } // End of loop over notches
+
+            extShieldVol.solid = aSolid;
+
+            finishNesting(extShieldVol,
+                          findMaterialOrThrow(matsSA[i]),
+                          itsSARotat,
+                          extShieldVol.centerInParent,
+                          parent.logical,
+                          0,
+                          saddleIsVisible,
+                          G4Colour::Magenta(),
+                          saddleIsSolid,
+                          forceAuxEdgeVisible,
+                          placePV,
+                          doSurfaceCheck);
+          } else {
+
+            // Build each normal box here.  Normal means no holes or notches.
+
+            VolumeInfo extShieldVol(name.str(),
+                                    sitesSA[i]-parent.centerInMu2e(),
+                                    parent.centerInWorld);
+
+            extShieldVol.solid = new G4ExtrudedSolid( extShieldVol.name,
+                                                      itsOutline,
+                                                      hlen,
+                                                      G4TwoVector(0,0), 1.,
+                                                      G4TwoVector(0,0), 1.);
+
+
+            finishNesting(extShieldVol,
+                          findMaterialOrThrow(matsSA[i]),
+                          itsSARotat,
+                          extShieldVol.centerInParent,
+                          parent.logical,
+                          0,
+                          saddleIsVisible,
+                          G4Colour::Magenta(),
+                          saddleIsSolid,
+                          forceAuxEdgeVisible,
+                          placePV,
+                          doSurfaceCheck);
+
+          } // end of if...else...
+
+        } // end of for loop over saddles
+
     } else { // end of version 1, 2, 3.  At this time, other versions are not
       // implemented.
       std::cout << "Requested Saddle version " << saddleSet->getVersion() << ".  Only versions 1 and 2 currently supported." << std::endl;
-    }  
+    }
   } // end of constructSaddles fn
 
 } // namespace mu2e
-

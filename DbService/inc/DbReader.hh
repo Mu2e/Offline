@@ -14,8 +14,8 @@
 #include <string>
 #include <chrono>
 #include <curl/curl.h>
-#include "DbTables/inc/DbId.hh"
-#include "DbTables/inc/DbValCache.hh"
+#include "Offline/DbTables/inc/DbId.hh"
+#include "Offline/DbTables/inc/DbValCache.hh"
 
 
 namespace mu2e {
@@ -30,8 +30,9 @@ namespace mu2e {
       std::string order;
     };
 
-    DbReader(const DbId& id = DbId());
+    DbReader();
     ~DbReader();
+
     const DbId& id() const { return _id; }
 
     // run query url, answer returned in csv
@@ -51,7 +52,7 @@ namespace mu2e {
     double lastTime() { return _lastTime.count()*1.0e-6; } // seconds
     double totalTime() { return _totalTime.count()*1.0e-6; } // seconds
 
-    void setDbId(DbId id) { _id = id; }
+    void setDbId(const DbId& id) { _id = id; }
     // time to keep retrying to read data from the web server
     void setTimeout(float timeout=3600) { _timeout = timeout; }
     // stop on errors, set false to handle errors in caller
@@ -63,6 +64,7 @@ namespace mu2e {
     void setCacheLifetime(int clt=0) { _cacheLifetime = clt; }
     void setVerbose(int verbose) { _verbose = verbose; }
     void setTimeVerbose(int timeVerbose) { _timeVerbose = timeVerbose; }
+    void setSaveCsv(bool saveCsv) { _saveCsv = saveCsv; }
 
   private:
 
@@ -92,6 +94,7 @@ namespace mu2e {
     int _cacheLifetime;
     int _verbose;
     int _timeVerbose;
+    bool _saveCsv;
   };
 }
 #endif

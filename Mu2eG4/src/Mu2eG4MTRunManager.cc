@@ -11,32 +11,36 @@
 
 //Framework includes
 #include "cetlib_except/exception.h"
+#include "art/Framework/Services/Registry/ServiceDefinitionMacros.h"
 
 //Mu2e includes
-#include "Mu2eG4/inc/Mu2eG4MTRunManager.hh"
-#include "SeedService/inc/SeedService.hh"
-#include "GeometryService/inc/GeometryService.hh"
-#include "GeometryService/inc/GeomHandle.hh"
-#include "Mu2eHallGeom/inc/Mu2eHall.hh"
-#include "GeometryService/inc/WorldG4.hh"
-#include "Mu2eG4/inc/WorldMaker.hh"
-#include "Mu2eG4/inc/Mu2eWorld.hh"
-#include "Mu2eG4/inc/physicsListDecider.hh"
-#include "Mu2eG4/inc/preG4InitializeTasks.hh"
-#include "Mu2eG4/inc/ActionInitialization.hh"
-#include "Mu2eG4/inc/Mu2eG4MasterRunAction.hh"
+#include "Offline/Mu2eG4/inc/Mu2eG4MTRunManager.hh"
+#include "Offline/SeedService/inc/SeedService.hh"
+#include "Offline/GeometryService/inc/GeometryService.hh"
+#include "Offline/GeometryService/inc/GeomHandle.hh"
+#include "Offline/Mu2eHallGeom/inc/Mu2eHall.hh"
+#include "Offline/GeometryService/inc/WorldG4.hh"
+#include "Offline/Mu2eG4/inc/WorldMaker.hh"
+#include "Offline/Mu2eG4/inc/Mu2eWorld.hh"
+#include "Offline/Mu2eG4/inc/physicsListDecider.hh"
+#include "Offline/Mu2eG4/inc/preG4InitializeTasks.hh"
+#include "Offline/Mu2eG4/inc/Mu2eG4MasterRunAction.hh"
 
 //G4 includes
-#include "G4Timer.hh"
-#include "G4VUserPhysicsList.hh"
-#include "G4ParticleHPManager.hh"
-#include "G4HadronicProcessStore.hh"
-#include "G4StateManager.hh"
-#include "G4GeometryManager.hh"
-#include "G4UserWorkerThreadInitialization.hh"
-#include "G4MTRunManagerKernel.hh"
-#include "G4VUserPhysicsList.hh"
-#include "G4SDManager.hh"
+#include "Geant4/G4Timer.hh"
+#include "Geant4/G4VUserPhysicsList.hh"
+#if G4VERSION>4106
+#include "Geant4/G4HadronicParameters.hh"
+#else
+#include "Geant4/G4ParticleHPManager.hh"
+#include "Geant4/G4HadronicProcessStore.hh"
+#endif
+#include "Geant4/G4StateManager.hh"
+#include "Geant4/G4GeometryManager.hh"
+#include "Geant4/G4UserWorkerThreadInitialization.hh"
+#include "Geant4/G4MTRunManagerKernel.hh"
+#include "Geant4/G4VUserPhysicsList.hh"
+#include "Geant4/G4SDManager.hh"
 
 using namespace std;
 
@@ -116,49 +120,13 @@ namespace mu2e {
       StoreRNGStatus(fileN);
     }
 
-    /////////////////////////////////////////////////////////////////////////////////////
-    //RANDOM NUMBER SEEDING
     SetEventModulo(1);//this sets eventModuloDef
-    int seedbunchsize = 10000;
-    int numworkers = 1;
     numberOfEventToBeProcessed = std::numeric_limits<int>::max();
     numberOfEventProcessed = 0;
-
-    nSeedsUsed = 0;
-    nSeedsFilled = 0;
 
     if(verboseLevel>0)
       { timer->Start(); }
 
-    //if we are using G4's seed filling scheme
-    if ( InitializeSeeds(seedbunchsize) == false && seedbunchsize>0 ) {
-
-      G4RNGHelper* helper = G4RNGHelper::GetInstance();
-      switch(seedOncePerCommunication)
-        {
-        case 0://default value
-          nSeedsFilled = seedbunchsize;
-          break;
-        case 1:
-          nSeedsFilled = numworkers;
-          break;
-        case 2:
-          nSeedsFilled = seedbunchsize/eventModulo + 1;
-          break;
-        default:
-          G4ExceptionDescription msgd;
-          msgd << "Parameter value <" << seedOncePerCommunication
-               << "> of seedOncePerCommunication is invalid. It is reset to 0." ;
-          G4Exception("G4MTRunManager::InitializeEventLoop()", "Run10036", JustWarning, msgd);
-          seedOncePerCommunication = 0;
-          nSeedsFilled = seedbunchsize;
-        }
-
-      // Generates up to nSeedsMax seed pairs only.
-      if(nSeedsFilled>nSeedsMax) nSeedsFilled=nSeedsMax;
-      const_cast<CLHEP::HepRandomEngine*>(getMasterRandomEngine())->flatArray(nSeedsPerEvent*nSeedsFilled,randDbl);
-      helper->Fill(randDbl,nSeedsFilled,seedbunchsize,nSeedsPerEvent);
-    }
   }//Mu2eG4MTRunManager::initializeG4
 
 
@@ -167,8 +135,7 @@ namespace mu2e {
   void Mu2eG4MTRunManager::initializeKernelAndRM()
   {
     G4RunManager::Initialize();
-    G4MTRunManager::GetMTMasterRunManagerKernel()->SetUpDecayChannels();//note, this is usually done in
-    //InitializeEventLoop
+    G4MTRunManager::GetMTMasterRunManagerKernel()->SetUpDecayChannels();//usually done in //InitializeEventLoop
 
     if ( userWorkerThreadInitialization == 0 )
       { userWorkerThreadInitialization = new G4UserWorkerThreadInitialization(); }
@@ -209,8 +176,12 @@ namespace mu2e {
 
     physicsList_->SetVerboseLevel(rmvlevel_);
     SetVerboseLevel(rmvlevel_);
+#if G4VERSION>4106
+    G4HadronicParameters::Instance()->SetVerboseLevel(rmvlevel_);
+#else
     G4ParticleHPManager::GetInstance()->SetVerboseLevel(rmvlevel_);
     G4HadronicProcessStore::Instance()->SetVerbose(rmvlevel_);
+#endif
 
     SetUserInitialization(allMu2e);
     SetUserInitialization(physicsList_);
@@ -248,30 +219,13 @@ namespace mu2e {
     m_runTerminated = true;
   }
 
-  G4bool Mu2eG4MTRunManager::SetUpAnEvent(G4Event* evt, long& s1, long& s2, long& s3,
-                                          G4bool reseedRequired) {
-
-    G4AutoLock l(&setUpEventMutex);
-
+  G4bool Mu2eG4MTRunManager::SetUpEvent() {
+    
     if( numberOfEventProcessed < numberOfEventToBeProcessed ) {
-
-      if(reseedRequired) {
-        G4RNGHelper* helper = G4RNGHelper::GetInstance();
-        G4int idx_rndm = nSeedsPerEvent*(evt->GetEventID()-1);
-        s1 = helper->GetSeed(idx_rndm);
-        s2 = helper->GetSeed(idx_rndm+1);
-        if(nSeedsPerEvent==3) s3 = helper->GetSeed(idx_rndm+2);
-        nSeedsUsed++;
-        //G4cout << "nSeedsUsed = " << nSeedsUsed << ", nSeedsFilled = " << nSeedsFilled << "\n";
-        if(nSeedsUsed==nSeedsFilled) {
-          RefillSeeds();
-          //G4cout << "Refilling Seeds\n";
-        }
-      }
       numberOfEventProcessed++;
       return true;
     }
-
+    
     return false;
   }
 

@@ -17,14 +17,13 @@
 #include "fhiclcpp/types/Atom.h"
 #include "canvas/Utilities/InputTag.h"
 // utilities
-#include "Mu2eUtilities/inc/MVATools.hh"
-#include "TrkDiag/inc/InfoStructHelper.hh"
+#include "Offline/Mu2eUtilities/inc/MVATools.hh"
 // data
-#include "RecoDataProducts/inc/KalSeed.hh"
-#include "RecoDataProducts/inc/TrkCaloHitPID.hh"
-#include "RecoDataProducts/inc/RecoQual.hh"
-#include "GeometryService/inc/GeomHandle.hh"
-#include "CalorimeterGeom/inc/DiskCalorimeter.hh"
+#include "Offline/RecoDataProducts/inc/KalSeed.hh"
+#include "Offline/RecoDataProducts/inc/TrkCaloHitPID.hh"
+#include "Offline/RecoDataProducts/inc/RecoQual.hh"
+#include "Offline/GeometryService/inc/GeomHandle.hh"
+#include "Offline/CalorimeterGeom/inc/DiskCalorimeter.hh"
 // C++
 #include <iostream>
 #include <fstream>
@@ -108,7 +107,7 @@ namespace mu2e {
 	  tchpid[TrkCaloHitPID::DeltaE] = cc->energyDep() - sqrt(trkmom.Mag2());
 	  tchpid[TrkCaloHitPID::ClusterLen] = tchs.hitLen();
 	  // move into detector coordinates.  Yikes!!
-	  XYZVec cpos = Geom::toXYZVec(calo->geomUtil().mu2eToTracker(calo->geomUtil().diskFFToMu2e( cc->diskId(), cc->cog3Vector())));
+	  XYZVec cpos = Geom::toXYZVec(calo->geomUtil().mu2eToTracker(calo->geomUtil().diskFFToMu2e( cc->diskID(), cc->cog3Vector())));
 	  tchpid[TrkCaloHitPID::RPOCA] = sqrt(cpos.Perp2());
 	  // compute transverse direction WRT position
 	  cpos.SetZ(0.0);

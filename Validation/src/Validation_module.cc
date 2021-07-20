@@ -10,33 +10,35 @@
 #include "fhiclcpp/types/Atom.h"
 #include "art/Framework/Core/ModuleMacros.h"
 #include "art_root_io/TFileService.h"
-#include "Validation/inc/ValStatusG4.hh"
-#include "Validation/inc/ValGenParticle.hh"
-#include "Validation/inc/ValSimParticle.hh"
-#include "Validation/inc/ValStepPointMC.hh"
-#include "Validation/inc/ValCaloCrystalHit.hh"
-#include "Validation/inc/ValCaloShowerStep.hh"
-#include "Validation/inc/ValCaloDigi.hh"
-#include "Validation/inc/ValCaloRecoDigi.hh"
-#include "Validation/inc/ValCaloCluster.hh"
-#include "Validation/inc/ValCrvDigi.hh"
-#include "Validation/inc/ValCrvDigiMC.hh"
-#include "Validation/inc/ValCrvRecoPulse.hh"
-#include "Validation/inc/ValCrvCoincidenceCluster.hh"
-#include "Validation/inc/ValStrawDigi.hh"
-#include "Validation/inc/ValStrawDigiMC.hh"
-#include "Validation/inc/ValStrawHit.hh"
-#include "Validation/inc/ValBkgCluster.hh"
-#include "Validation/inc/ValBkgQual.hh"
-#include "Validation/inc/ValTrackSummary.hh"
-#include "Validation/inc/ValTrackClusterMatch.hh"
-#include "Validation/inc/ValHelixSeed.hh"
-#include "Validation/inc/ValKalSeed.hh"
-#include "Validation/inc/ValStrawHitFlag.hh"
-#include "Validation/inc/ValSimParticleTimeMap.hh"
-#include "Validation/inc/ValTimeCluster.hh"
-#include "Validation/inc/ValComboHit.hh"
-#include "Validation/inc/ValTriggerResults.hh"
+#include "Offline/Validation/inc/ValStatusG4.hh"
+#include "Offline/Validation/inc/ValGenParticle.hh"
+#include "Offline/Validation/inc/ValSimParticle.hh"
+#include "Offline/Validation/inc/ValStepPointMC.hh"
+#include "Offline/Validation/inc/ValCaloShowerStep.hh"
+#include "Offline/Validation/inc/ValCaloDigi.hh"
+#include "Offline/Validation/inc/ValCaloRecoDigi.hh"
+#include "Offline/Validation/inc/ValCaloHit.hh"
+#include "Offline/Validation/inc/ValCaloCluster.hh"
+#include "Offline/Validation/inc/ValCrvStep.hh"
+#include "Offline/Validation/inc/ValCrvDigi.hh"
+#include "Offline/Validation/inc/ValCrvDigiMC.hh"
+#include "Offline/Validation/inc/ValCrvRecoPulse.hh"
+#include "Offline/Validation/inc/ValCrvCoincidenceCluster.hh"
+#include "Offline/Validation/inc/ValStrawGasStep.hh"
+#include "Offline/Validation/inc/ValStrawDigi.hh"
+#include "Offline/Validation/inc/ValStrawDigiMC.hh"
+#include "Offline/Validation/inc/ValStrawHit.hh"
+#include "Offline/Validation/inc/ValBkgCluster.hh"
+#include "Offline/Validation/inc/ValBkgQual.hh"
+#include "Offline/Validation/inc/ValTrackSummary.hh"
+#include "Offline/Validation/inc/ValTrackClusterMatch.hh"
+#include "Offline/Validation/inc/ValHelixSeed.hh"
+#include "Offline/Validation/inc/ValKalSeed.hh"
+#include "Offline/Validation/inc/ValStrawHitFlag.hh"
+#include "Offline/Validation/inc/ValSimParticleTimeMap.hh"
+#include "Offline/Validation/inc/ValTimeCluster.hh"
+#include "Offline/Validation/inc/ValComboHit.hh"
+#include "Offline/Validation/inc/ValTriggerResults.hh"
 
 namespace mu2e {
 
@@ -74,15 +76,17 @@ namespace mu2e {
     std::vector<std::shared_ptr<ValGenParticle>>       _genp;
     std::vector<std::shared_ptr<ValSimParticle>>       _simp;
     std::vector<std::shared_ptr<ValStepPointMC>>       _spmc;
-    std::vector<std::shared_ptr<ValCaloCrystalHit>>    _calh;
     std::vector<std::shared_ptr<ValCaloShowerStep>>    _cals;
     std::vector<std::shared_ptr<ValCaloDigi>>          _cald;
     std::vector<std::shared_ptr<ValCaloRecoDigi>>      _calr;
+    std::vector<std::shared_ptr<ValCaloHit>>            _calh;
     std::vector<std::shared_ptr<ValCaloCluster>>       _ccls;
+    std::vector<std::shared_ptr<ValCrvStep>>           _cvst;
     std::vector<std::shared_ptr<ValCrvDigi>>           _cvdg;
     std::vector<std::shared_ptr<ValCrvDigiMC>>         _cmdg;
     std::vector<std::shared_ptr<ValCrvRecoPulse>>      _cvrp;
     std::vector<std::shared_ptr<ValCrvCoincidenceCluster>> _cvcc;
+    std::vector<std::shared_ptr<ValStrawGasStep>>      _stgs;
     std::vector<std::shared_ptr<ValStrawDigi>>         _stdg;
     std::vector<std::shared_ptr<ValStrawDigiMC>>       _stdm;
     std::vector<std::shared_ptr<ValStrawHit>>          _stwh;
@@ -127,15 +131,17 @@ void mu2e::Validation::analyze(art::Event const& event){
   analyzeProduct<SimParticleCollection,ValSimParticle>        (_simp,event);
   analyzeProduct<SimParticleTimeMap,ValSimParticleTimeMap>    (_sptm,event);
   analyzeProduct<StepPointMCCollection,ValStepPointMC>        (_spmc,event);
-  analyzeProduct<CaloCrystalHitCollection,ValCaloCrystalHit>  (_calh,event);
   analyzeProduct<CaloShowerStepCollection,ValCaloShowerStep>  (_cals,event);
   analyzeProduct<CaloDigiCollection,ValCaloDigi>              (_cald,event);
   analyzeProduct<CaloRecoDigiCollection,ValCaloRecoDigi>      (_calr,event);
+  analyzeProduct<CaloHitCollection,ValCaloHit>                 (_calh,event);
   analyzeProduct<CaloClusterCollection,ValCaloCluster>        (_ccls,event);
+  analyzeProduct<CrvStepCollection,ValCrvStep>                (_cvst,event);
   analyzeProduct<CrvDigiCollection,ValCrvDigi>                (_cvdg,event);
   analyzeProduct<CrvDigiMCCollection,ValCrvDigiMC>            (_cmdg,event);
   analyzeProduct<CrvRecoPulseCollection,ValCrvRecoPulse>      (_cvrp,event);
   analyzeProduct<CrvCoincidenceClusterCollection,ValCrvCoincidenceCluster>      (_cvcc,event);
+  analyzeProduct<StrawGasStepCollection,ValStrawGasStep>            (_stgs,event);
   analyzeProduct<StrawDigiCollection,ValStrawDigi>            (_stdg,event);
   analyzeProduct<StrawDigiMCCollection,ValStrawDigiMC>        (_stdm,event);
   analyzeProduct<StrawHitCollection,ValStrawHit>              (_stwh,event);
@@ -167,8 +173,7 @@ int mu2e::Validation::analyzeProduct(
     art::Event const& event) {
 
   // get all instances of products of type T
-  std::vector<art::Handle< T >> vah;
-  event.getManyByType(vah);
+  std::vector<art::Handle< T >> vah = event.getMany<T>();
 
   std::string name;
   // loop over the list of instances of products of this type

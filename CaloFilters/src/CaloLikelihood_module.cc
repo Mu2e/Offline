@@ -6,25 +6,21 @@
 //
 
 #include "CLHEP/Units/SystemOfUnits.h"
-#include "GlobalConstantsService/inc/GlobalConstantsHandle.hh"
+#include "Offline/GlobalConstantsService/inc/GlobalConstantsHandle.hh"
 
-#include "ConfigTools/inc/ConfigFileLookupPolicy.hh"
+#include "Offline/ConfigTools/inc/ConfigFileLookupPolicy.hh"
 
-#include "CalorimeterGeom/inc/Calorimeter.hh"
-#include "CalorimeterGeom/inc/DiskCalorimeter.hh"
+#include "Offline/CalorimeterGeom/inc/Calorimeter.hh"
+#include "Offline/CalorimeterGeom/inc/DiskCalorimeter.hh"
+#include "Offline/CaloCluster/inc/ClusterUtils.hh"
 
-#include "GeometryService/inc/GeomHandle.hh"
-#include "GeometryService/inc/GeometryService.hh"
+#include "Offline/GeometryService/inc/GeomHandle.hh"
+#include "Offline/GeometryService/inc/GeometryService.hh"
 
-#include "CaloCluster/inc/ClusterMoments.hh"
-
-#include "RecoDataProducts/inc/CaloCrystalHitCollection.hh"
-#include "RecoDataProducts/inc/CaloHitCollection.hh"
-#include "RecoDataProducts/inc/CaloHit.hh"
-#include "RecoDataProducts/inc/CaloCluster.hh"
-#include "RecoDataProducts/inc/CaloClusterCollection.hh"
-#include "RecoDataProducts/inc/TrkFitFlag.hh"
-#include "RecoDataProducts/inc/TriggerInfo.hh"
+#include "Offline/RecoDataProducts/inc/CaloHit.hh"
+#include "Offline/RecoDataProducts/inc/CaloCluster.hh"
+#include "Offline/RecoDataProducts/inc/TrkFitFlag.hh"
+#include "Offline/RecoDataProducts/inc/TriggerInfo.hh"
 
 // #include "art/Framework/Core/EDAnalyzer.h"
 #include "art/Framework/Core/EDFilter.h"
@@ -76,12 +72,12 @@ namespace mu2e {
 
   private:
        
-    typedef art::Ptr< CaloCrystalHit> CaloCrystalHitPtr;
+    typedef art::Ptr< CaloHit> CaloHitPtr;
 
     int                     _diagLevel;
     int                     _nProcess;
     int                     _nPass;
-    ClusterMoments::cogtype _cogType;
+    ClusterUtils::Cogtype   _cogType;
     art::InputTag           _clTag;
     std::string             _signalTemplateFile;
     std::string             _bkgTemplateFile;
@@ -90,8 +86,7 @@ namespace mu2e {
     std::string             _bkgTemplates;
     double                  _minClEnergy, _clEStep;
     double                  _minRDist   , _rDistStep;
-    std::vector<double>          _minLH;
-    std::string             _trigPath;
+    std::vector<double>     _minLH;
 
   //Histograms need to load the templates for the signal and background hypothesis
     TH1F*       _signalHist1D[2][kN1DVar];
@@ -116,7 +111,7 @@ namespace mu2e {
     _diagLevel                   (pset.get<int>("diagLevel",0)),
     _nProcess                    (0),
     _nPass                       (0),
-    _cogType                     (ClusterMoments::Linear),                
+    _cogType                     (ClusterUtils::Linear),                
     _clTag                       (pset.get<art::InputTag> ("CaloClusterModuleLabel")),
     _signalTemplateFile          (pset.get<std::string>   ("SignalTemplates")),
     _bkgTemplateFile             (pset.get<std::string>   ("BackgroundTemplates")),
@@ -125,8 +120,7 @@ namespace mu2e {
     _clEStep                     (pset.get<double>        ("ClusterEnergyStep"    ,   10.)),   // MeV
     _minRDist                    (pset.get<double>        ("MinClusterRadialDist" ,  350.)),   // mm
     _rDistStep                   (pset.get<double>        ("ClusterRadialDistStep",   50.)),   // mm
-    _minLH                       (pset.get<std::vector<double>>("MinLikelihoodCut"     , std::vector<double>{1.,1.})),   // likelihood threshold
-    _trigPath                    (pset.get<std::string>("triggerPath")){
+    _minLH                       (pset.get<std::vector<double>>("MinLikelihoodCut"     , std::vector<double>{1.,1.})){   // likelihood threshold
 
     produces<TriggerInfo>();
 
@@ -291,29 +285,27 @@ namespace mu2e {
     auto  clH = event.getValidHandle<CaloClusterCollection>(_clTag);
     const CaloClusterCollection*  caloClusters = clH.product();
 
-    const CaloCrystalHit* crystalHit(0);
-    const CaloCluster::CaloCrystalHitPtrVector* caloClusterHits(0);
+    const CaloHit* crystalHit(0);
+    const mu2e::CaloHitPtrVector* caloClusterHits(0);
     
-    size_t trig_ind(0);
     //for loop over the clusters in the calorimeter
     for(auto icl = caloClusters->begin();icl != caloClusters->end(); ++icl){
       auto const& cluster = *icl;
       
-      int clSection = cluster.diskId();
+      int clSection = cluster.diskID();
       if (_dropSecondDisk && (clSection == 1))        continue;
-      
-      ClusterMoments cogCalculator(cal, cluster,clSection);
-      cogCalculator.calculate(_cogType);
-
-      double                   clEnergy = cluster.energyDep();
+ 
+      double clEnergy = cluster.energyDep();
       if ( clEnergy < _minClEnergy)                   continue;
 
-      const CLHEP::Hep3Vector& cog      = cluster.cog3Vector();
+      ClusterUtils cluUtil(cal,cluster,_cogType); 
+      const auto cog = cluUtil.cog3Vector();
+
       double                   xpos     = cog(0);
       double                   ypos     = cog(1);
       double                   rDist    = sqrt(xpos*xpos+ypos*ypos);
 
-      caloClusterHits = &cluster.caloCrystalHitsPtrVector();
+      caloClusterHits = &cluster.caloHitsPtrVector();
 
       int       nCrystalHits = caloClusterHits->size();
       double    maxECrystal(0);
@@ -419,15 +411,10 @@ namespace mu2e {
 	retval = true;
 	++_nPass;
         // Fill the trigger info object
-        if (trig_ind == 0){
-	  triginfo->_triggerBits.merge(TriggerFlag::caloCluster);
-	  triginfo->_triggerPath = _trigPath;
-	}
         // associate to the caloCluster which triggers.  Note there may be other caloClusters which also pass the filter
         // but filtering is by event!
         size_t index = std::distance(caloClusters->begin(), icl);
 	triginfo->_caloClusters.push_back(art::Ptr<CaloCluster>(clH, index));
-	++trig_ind;
 	if(_diagLevel > 1){
           std::cout << moduleDescription().moduleLabel() << " passed event " << event.id() << std::endl;
         }

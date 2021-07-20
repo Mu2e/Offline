@@ -12,36 +12,37 @@
 #include "fhiclcpp/ParameterSet.h"
 #include "art/Framework/Principal/Handle.h"
 #include "art/Framework/Core/EDProducer.h"
-#include "GeometryService/inc/DetectorSystem.hh"
+#include "Offline/GeometryService/inc/DetectorSystem.hh"
 #include "art/Framework/Core/ModuleMacros.h"
 #include "art_root_io/TFileService.h"
 #include "art/Utilities/make_tool.h"
 // conditions
-#include "ConditionsService/inc/ConditionsHandle.hh"
-#include "TrackerGeom/inc/Tracker.hh"
-#include "GeometryService/inc/GeometryService.hh"
-#include "GeometryService/inc/GeomHandle.hh"
-#include "BFieldGeom/inc/BFieldManager.hh"
-#include "GeometryService/inc/DetectorSystem.hh"
-#include "ProditionsService/inc/ProditionsHandle.hh"
-#include "TrackerConditions/inc/StrawResponse.hh"
-#include "TrackerConditions/inc/Mu2eMaterial.hh"
-#include "TrackerConditions/inc/Mu2eDetector.hh"
+#include "Offline/ConditionsService/inc/ConditionsHandle.hh"
+#include "Offline/TrackerGeom/inc/Tracker.hh"
+#include "Offline/GeometryService/inc/GeometryService.hh"
+#include "Offline/GeometryService/inc/GeomHandle.hh"
+#include "Offline/BFieldGeom/inc/BFieldManager.hh"
+#include "Offline/GeometryService/inc/DetectorSystem.hh"
+#include "Offline/ProditionsService/inc/ProditionsHandle.hh"
+#include "Offline/TrackerConditions/inc/StrawResponse.hh"
+#include "Offline/TrackerConditions/inc/Mu2eMaterial.hh"
+#include "Offline/TrackerConditions/inc/Mu2eDetector.hh"
 // utiliites
-#include "GeneralUtilities/inc/Angles.hh"
-#include "TrkReco/inc/TrkUtilities.hh"
-#include "TrkReco/inc/TrkDef.hh"
-#include "Mu2eUtilities/inc/ModuleHistToolBase.hh"
+#include "Offline/GeneralUtilities/inc/Angles.hh"
+#include "Offline/TrkReco/inc/TrkUtilities.hh"
+#include "Offline/TrkReco/inc/TrkDef.hh"
+#include "Offline/Mu2eUtilities/inc/ModuleHistToolBase.hh"
 // data
-#include "DataProducts/inc/Helicity.hh"
-#include "RecoDataProducts/inc/ComboHit.hh"
-#include "RecoDataProducts/inc/StrawHitFlag.hh"
-#include "RecoDataProducts/inc/HelixSeed.hh"
-#include "RecoDataProducts/inc/KalSeed.hh"
-#include "RecoDataProducts/inc/TrkFitFlag.hh"
+#include "Offline/DataProducts/inc/Helicity.hh"
+#include "Offline/RecoDataProducts/inc/ComboHit.hh"
+#include "Offline/RecoDataProducts/inc/StrawHitFlag.hh"
+#include "Offline/RecoDataProducts/inc/HelixSeed.hh"
+#include "Offline/RecoDataProducts/inc/KalSeed.hh"
+#include "Offline/RecoDataProducts/inc/KalSeedAssns.hh"
+#include "Offline/RecoDataProducts/inc/TrkFitFlag.hh"
 // Diagnostic data objects
-#include "TrkReco/inc/KalFitData.hh"
-#include "TrkPatRec/inc/KalSeedFit_types.hh"
+#include "Offline/TrkReco/inc/KalFitData.hh"
+#include "Offline/TrkPatRec/inc/KalSeedFit_types.hh"
 // BaBar
 #include "BTrk/BbrGeom/BbrVectorErr.hh"
 #include "BTrk/TrkBase/TrkPoca.hh"
@@ -49,8 +50,8 @@
 #include "BTrk/ProbTools/ChisqConsistency.hh"
 #include "BTrk/TrkBase/TrkMomCalculator.hh"
 // Mu2e BaBar
-#include "BTrkData/inc/TrkStrawHit.hh"
-#include "TrkReco/inc/KalFit.hh"
+#include "Offline/BTrkData/inc/TrkStrawHit.hh"
+#include "Offline/TrkReco/inc/KalFit.hh"
 //CLHEP
 #include "CLHEP/Units/PhysicalConstants.h"
 #include "CLHEP/Matrix/Vector.h"
@@ -164,6 +165,7 @@ namespace mu2e
     // under the covers.
     consumesMany<ComboHitCollection>();
     produces<KalSeedCollection>();
+    produces<KalHelixAssns>();
     // check dimensions
     if(_perr.size() != HelixTraj::NHLXPRM)
       throw cet::exception("RECO")<<"mu2e::KalSeedFit: parameter error vector has wrong size"<< endl;
@@ -216,6 +218,9 @@ namespace mu2e
 
     // create output collection
     unique_ptr<KalSeedCollection> kscol(new KalSeedCollection());
+    unique_ptr<KalHelixAssns> ksha(new KalHelixAssns());
+    auto KalSeedCollectionPID = event.getProductID<KalSeedCollection>();
+    auto KalSeedCollectionGetter = event.productGetter(KalSeedCollectionPID);
     // event printout
     _iev=event.id().event();
     if(_debug > 0 && (_iev%_printfreq)==0)cout<<"KalSeedFit: event="<<_iev<<endl;
@@ -291,10 +296,7 @@ namespace mu2e
 	double           vflt  = seeddef.particle().beta(mom)*CLHEP::c_light;
 	double           helt0 = hseed.t0().t0();
 
-	//	KalSeed kf(_tpart,_fdir, hseed.t0(), flt0, seedok);
-	KalSeed kf(tpart,_fdir, hseed.t0(), flt0, hseed.status());
-	auto hsH = event.getValidHandle(_hsToken);
-	kf._helix = art::Ptr<HelixSeed>(hsH,iseed);
+	KalSeed kf(PDGCode::type(tpart.particleType()),_fdir, hseed.status(), flt0 );
 	// extract the hits from the rep and put the hitseeds into the KalSeed
 	int nsh = seeddef.strawHitIndices().size();//tclust._strawHitIdxs.size();
 	for (int i=0; i< nsh; ++i){
@@ -318,8 +320,7 @@ namespace mu2e
 	if(htraj != 0){
 	  KalSegment kseg;
 	  // sample the momentum at this point
-	  BbrVectorErr momerr;// = krep->momentumErr(krep->flt0());
-	  TrkUtilities::fillSegment(*htraj,momerr,0.0,kseg);
+	  TrkUtilities::fillSegment(*htraj,0.0,0.0,hseed.t0(),_tpart.mass(),(int)_tpart.charge(),_kfit.bField(),kseg);
 	  kf._segments.push_back(kseg);
 	} else {
 	  throw cet::exception("RECO")<<"mu2e::KalSeedFit: Can't extract helix traj from seed fit" << endl;
@@ -354,14 +355,11 @@ namespace mu2e
 	  // create a KalSeed object from this fit, recording the particle and fit direction
 	  //	  KalSeed kseed(_tpart,_fdir,_result.krep->t0(),_result.krep->flt0(),seedok);
 
-	  KalSeed kseed(_result.krep->particleType(),_fdir,_result.krep->t0(),_result.krep->flt0(),kf.status());
+	  KalSeed kseed(PDGCode::type(_result.krep->particleType().particleType()),_fdir,kf.status(), _result.krep->flt0());
 	  kseed._status.merge(_ksf);
-
+	  if(_result.krep->fitStatus().success())kseed._status.merge(TrkFitFlag::kalmanOK);
 	  // add CaloCluster if present
 	  kseed._chit._cluster = hseed.caloCluster();
-	  // fill ptr to the helix seed
-          auto hsH = event.getValidHandle(_hsToken);
-	  kseed._helix = art::Ptr<HelixSeed>(hsH,iseed);
 	  // extract the hits from the rep and put the hitseeds into the KalSeed
 	  TrkUtilities::fillStrawHitSeeds(_result.krep,*_chcol,kseed._hits);
 	  if(_result.krep->fitStatus().success())kseed._status.merge(TrkFitFlag::seedOK);
@@ -378,21 +376,28 @@ namespace mu2e
 	    KalSegment kseg;
 	    // sample the momentum at this point
 	    BbrVectorErr momerr = _result.krep->momentumErr(_result.krep->flt0());
-	    TrkUtilities::fillSegment(*htraj,momerr,locflt-_result.krep->flt0(),kseg);
+	    TrkUtilities::fillSegment(*htraj,locflt,_result.krep->flt0(),_result.krep->t0(),_tpart.mass(),(int)_tpart.charge(),_kfit.bField(),kseg);
 	    // extend the segment
 	    double upflt(0.0), downflt(0.0);
 	    TrkHelixUtils::findZFltlen(*htraj,_upz,upflt);
 	    TrkHelixUtils::findZFltlen(*htraj,_downz,downflt);
+	    double tup = kseg.fltToTime(upflt); 
+	    double tdown = kseg.fltToTime(downflt); 
 	    if(_fdir == TrkFitDirection::downstream){
-	      kseg._fmin = upflt;
-	      kseg._fmax = downflt;
+	      kseg._tmin = tup;
+	      kseg._tmax = tdown;
 	    } else {
-	      kseg._fmax = upflt;
-	      kseg._fmin = downflt;
+	      kseg._tmax = tup;
+	      kseg._tmin = tdown;
 	    }
 	    kseed._segments.push_back(kseg);
 	    // push this seed into the collection
 	    kscol->push_back(kseed);
+	    // fill assns with the helix seed
+	    auto hsH = event.getValidHandle(_hsToken);
+	    auto hptr = art::Ptr<HelixSeed>(hsH,iseed);
+	    auto kseedptr = art::Ptr<KalSeed>(KalSeedCollectionPID,kscol->size()-1,KalSeedCollectionGetter);
+	    ksha->addSingle(kseedptr,hptr);
 	    if(_debug > 1){
 	      cout << "Seed fit segment parameters " << endl;
 	      for(size_t ipar=0;ipar<5;++ipar) cout << kseg.helix()._pars[ipar] << " ";
@@ -412,6 +417,7 @@ namespace mu2e
     }
     // put the tracks into the event
     event.put(move(kscol));
+    event.put(move(ksha));
   }
 
 

@@ -6,19 +6,18 @@
 // and update them when needed
 //
 
-#include "Mu2eInterfaces/inc/ProditionsCache.hh"
-#include "DbService/inc/DbHandle.hh"
-#include "DbTables/inc/TrkAlignTracker.hh"
-#include "DbTables/inc/TrkAlignPlane.hh"
-#include "DbTables/inc/TrkAlignPanel.hh"
-#include "TrackerConditions/inc/AlignedTrackerMaker.hh"
+#include "Offline/Mu2eInterfaces/inc/ProditionsCache.hh"
+#include "Offline/DbService/inc/DbHandle.hh"
+#include "Offline/DbTables/inc/TrkAlignElement.hh"
+#include "Offline/DbTables/inc/TrkAlignStraw.hh"
+#include "Offline/TrackerConditions/inc/AlignedTrackerMaker.hh"
 
 
 namespace mu2e {
   class AlignedTrackerCache : public ProditionsCache {
   public: 
     AlignedTrackerCache(AlignedTrackerConfig const& config):
-      ProditionsCache("AlignedTracker",config.verbose()),
+      ProditionsCache(Tracker::cxname,config.verbose()),
       _useDb(config.useDb()),_maker(config) {}
 
     void initialize() {
@@ -26,6 +25,7 @@ namespace mu2e {
 	_tatr_p = std::make_unique<DbHandle<TrkAlignTracker>>();
 	_tapl_p = std::make_unique<DbHandle<TrkAlignPlane>>();
 	_tapa_p = std::make_unique<DbHandle<TrkAlignPanel>>();
+	_tast_p = std::make_unique<DbHandle<TrkAlignStraw>>();
       }
     }
 
@@ -36,9 +36,11 @@ namespace mu2e {
 	_tatr_p->get(eid);
 	_tapl_p->get(eid);
 	_tapa_p->get(eid);
+	_tast_p->get(eid);
 	cids.insert(_tatr_p->cid());
 	cids.insert(_tapl_p->cid());
 	cids.insert(_tapa_p->cid());
+	cids.insert(_tast_p->cid());
       }
       return cids;
     }
@@ -50,6 +52,7 @@ namespace mu2e {
 	iov.overlap(_tatr_p->iov());
 	iov.overlap(_tapl_p->iov());
 	iov.overlap(_tapa_p->iov());
+	iov.overlap(_tast_p->iov());
       }
       return iov;
     }
@@ -58,7 +61,8 @@ namespace mu2e {
       if(_useDb) {
 	return _maker.fromDb( _tatr_p->getPtr(eid),
 			   _tapl_p->getPtr(eid), 
-			   _tapa_p->getPtr(eid) );
+			   _tapa_p->getPtr(eid),
+			   _tast_p->getPtr(eid) );
       } else {
 	return _maker.fromFcl();
       }
@@ -71,6 +75,7 @@ namespace mu2e {
     std::unique_ptr<DbHandle<TrkAlignTracker>> _tatr_p;
     std::unique_ptr<DbHandle<TrkAlignPlane>>   _tapl_p;
     std::unique_ptr<DbHandle<TrkAlignPanel>>   _tapa_p;
+    std::unique_ptr<DbHandle<TrkAlignStraw>>   _tast_p;
 
   };
 };

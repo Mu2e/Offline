@@ -23,12 +23,12 @@
 #include "fhiclcpp/ParameterSet.h"
 #include "art/Framework/Services/Registry/ActivityRegistry.h"
 #include "art/Framework/Services/Registry/ServiceHandle.h"
-#include "art/Framework/Services/Registry/ServiceMacros.h"
+#include "art/Framework/Services/Registry/ServiceDeclarationMacros.h"
 #include "cetlib_except/exception.h"
 
 // Mu2e include files.
-#include "ConfigTools/inc/SimpleConfig.hh"
-#include "Mu2eInterfaces/inc/ConditionsEntity.hh"
+#include "Offline/ConfigTools/inc/SimpleConfig.hh"
+#include "Offline/Mu2eInterfaces/inc/ConditionsEntity.hh"
 
 // Other external include files.
 #include "boost/shared_ptr.hpp"

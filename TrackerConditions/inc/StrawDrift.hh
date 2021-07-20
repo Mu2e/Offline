@@ -11,8 +11,8 @@
 #include <iostream>
 #include <vector>
 #include <string>
-#include "DataProducts/inc/TrkTypes.hh"
-#include "Mu2eInterfaces/inc/ProditionsEntity.hh"
+#include "Offline/DataProducts/inc/TrkTypes.hh"
+#include "Offline/Mu2eInterfaces/inc/ProditionsEntity.hh"
 
 
 namespace mu2e {
@@ -30,10 +30,11 @@ namespace mu2e {
 
     typedef std::shared_ptr<StrawDrift> ptr_t;
     typedef std::shared_ptr<const StrawDrift> cptr_t;
+    constexpr static const char* cxname = {"StrawDrift"};
 
-    StrawDrift():_name("StrawDrift") {}
     StrawDrift( int phiBins, double deltaD, std::vector<double> distances_dbins, std::vector<double> instantSpeed_dbins, std::vector<double> times_dbins,
-        double deltaT, std::vector<double> distances_tbins, std::vector<double> times_tbins) : _name("StrawDrift"),
+        double deltaT, std::vector<double> distances_tbins, std::vector<double> times_tbins) : 
+      ProditionsEntity(cxname),
       _phiBins(phiBins), _deltaD(deltaD), _distances_dbins(distances_dbins),
       _instantSpeed_dbins(instantSpeed_dbins), _times_dbins(times_dbins),
       _deltaT(deltaT), _distances_tbins(distances_tbins), _times_tbins(times_tbins) {}
@@ -47,10 +48,8 @@ namespace mu2e {
     double T2D(double time, double phi) const;
 
     void print(std::ostream& os) const;
-    std::string const& name() const { return _name; }
 
   private:
-    std::string _name;
 
     // fold into first quadrant assuming the function
     // has x-z and y-z plane symmetry

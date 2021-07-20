@@ -2,7 +2,7 @@
 #------------------------------------------------------------------------------
 # this file is included by fcl/standardProducers.fcl inside the PROLOG section
 #------------------------------------------------------------------------------
-#include "CommonMC/fcl/prolog.fcl"
+#include "Offline/CommonMC/fcl/prolog.fcl"
 BEGIN_PROLOG
 #------------------------------------------------------------------------------
 # Reject events with no hits from signal-like tracks in the detectors.  
@@ -21,7 +21,7 @@ g4status: { module_type: FilterStatusG4
 
 FilterStepPointMomentum : {
     module_type    : FilterStepPointMomentum
-    inputs         : [ "g4run:tracker", "g4run:calorimeter", "g4run:calorimeterRO"]
+    inputs         : [ "g4run:tracker", "g4run:calorimeter"]
     cutMomentumMin : 10. # MeV/c
 }
 
@@ -45,134 +45,5 @@ VetoIncorrectHits: {
     crvStepPoints        : CRV
     crvPositionTolerance : 0.01
 }
-
-DigiCompressionTags : {
-    
-    commonStrawDigiMCTag : "makeSD"
-    commonExtraStepPointMCTags : [ "g4run:virtualdetector", "g4run:protonabsorber" ]
-    commonCaloShowerSimTag : "CaloShowerStepROFromShowerStep"
-    commonCaloShowerStepROTag : "CaloShowerStepROFromShowerStep"
-    commonCrvDigiMCTag : "CrvWaveforms"
-
-    primarySimParticleTag : "g4run"
-    primaryCaloShowerStepTags : [ "CaloShowerStepFromStepPt:calorimeter", "CaloShowerStepFromStepPt:calorimeterRO" ]
-}
-
-DigiCompression : {
-  # redefine TimeMaps
-    TimeMaps : [ "compressDigiMCs:protonTimeMap", "compressDigiMCs:muonTimeMap", "compressDigiMCs:cosmicTimeMap" ]
-    # for legacy data sets
-    NoCosmicTimeMaps : [ "compressDigiMCs:protonTimeMap", "compressDigiMCs:muonTimeMap" ]
-}
-
-RecoCompression : {
-    TimeMaps : [ "compressRecoMCs:protonTimeMap", "compressRecoMCs:muonTimeMap", "compressRecoMCs:cosmicTimeMap" ]
-    NoCosmicTimeMaps : [ "compressRecoMCs:protonTimeMap", "compressRecoMCs:muonTimeMap" ]
-}
-
-DigiCompression : {
-  @table::DigiCompression
-
-    # for primary only jobs
-    Primary : {
-	module_type : CompressDigiMCs
-	strawDigiMCTag : @local::DigiCompressionTags.commonStrawDigiMCTag
-	crvDigiMCTag : @local::DigiCompressionTags.commonCrvDigiMCTag
-	simParticleTags : [ @local::DigiCompressionTags.primarySimParticleTag ] 
-	mcTrajectoryTag : @local::DigiCompressionTags.primarySimParticleTag
-	extraStepPointMCTags : @local::DigiCompressionTags.commonExtraStepPointMCTags
-	timeMapTags : [ @sequence::CommonMC.TimeMaps ]
-	caloShowerStepTags : @local::DigiCompressionTags.primaryCaloShowerStepTags
-	caloShowerSimTag : @local::DigiCompressionTags.commonCaloShowerSimTag
-	caloShowerStepROTag : @local::DigiCompressionTags.commonCaloShowerStepROTag
-	keptProducts : [ "keep *_compressDigiMCs_*_*"                      ,
-			 "keep    mu2e::EventWeight_*_*_*"                 ,
-			 "keep    mu2e::GenEventCount_*_*_*"               ,
-			 "keep    mu2e::GenParticles_generate_photon_*"
-			]
-
-    }
-
-    # for mixing jobs
-    Mixing : {
-	module_type : CompressDigiMCs
-	strawDigiMCTag : @local::DigiCompressionTags.commonStrawDigiMCTag
-	crvDigiMCTag : @local::DigiCompressionTags.commonCrvDigiMCTag
-	simParticleTags : @nil
-	mcTrajectoryTag : @local::DigiCompressionTags.primarySimParticleTag
-	extraStepPointMCTags : [ @sequence::DigiCompressionTags.commonExtraStepPointMCTags ]
-	timeMapTags : [ @sequence::CommonMC.TimeMaps ]
-	caloShowerStepTags : @nil
-	caloShowerSimTag : @local::DigiCompressionTags.commonCaloShowerSimTag
-	caloShowerStepROTag : @local::DigiCompressionTags.commonCaloShowerStepROTag
-	keptProducts : [ "keep mu2e::StrawDigis_*_*_*",
-			 "keep mu2e::CaloDigis_*_*_*",
-			 "keep mu2e::CrvDigis_*_*_*",
-			 "keep mu2e::StatusG4_*_*_*",
-			 "keep art::TriggerResults_*_*_*",
-			 "keep mu2e::EventWindowMarker_*_*_*",
-			 "keep *_genCounter_*_*",
-			 "keep mu2e::EventWeight_*_*_*",
-			 "keep mu2e::ProtonBunchIntensity_*_*_*"]
-    }
-
-    Check : {
-	module_type : CompressDigiMCsCheck
-	oldStrawDigiMCTag : @local::DigiCompressionTags.commonStrawDigiMCTag
-	newStrawDigiMCTag : "compressDigiMCs"
-	OldTimeOffsets : { inputs : [ @sequence::CommonMC.TimeMaps  ] }
-	NewTimeOffsets : { inputs : [ @sequence::DigiCompression.TimeMaps ] }
-	oldCaloShowerSimTag : @local::DigiCompressionTags.commonCaloShowerSimTag
-	newCaloShowerSimTag : "compressDigiMCs"
-	oldCrvDigiMCTag : @local::DigiCompressionTags.commonCrvDigiMCTag
-	newCrvDigiMCTag : "compressDigiMCs"
-    }
-
-    CaloFix : {
-	module_type : FixCaloShowerStepPtrs
-	caloShowerStepTags : [ "" ]
-	caloShowerSimTag : ""
-	caloShowerStepROTag : ""
-    }
-
-    TrackerFix : {
-	module_type : FixTrackerStepPointMCs
-	trackerSteps : ""
-    }
-
-
-    Reco : {
-      module_type : CompressDigiMCs
-      strawDigiMCTag : ""
-      crvDigiMCTag : ""
-      simParticleTags : [ "" ]
-      extraStepPointMCTags : [ "" ]
-      timeMapTags : [ "" ]
-      caloShowerStepTags : [ "" ]
-      caloShowerSimTag : ""
-      caloShowerStepROTag : ""
-      strawDigiMCIndexMapTag : ""
-      crvDigiMCIndexMapTag : ""
-    }
-
-    RecoCheck : {
-      module_type : CompressDigiMCsCheck
-      oldStrawDigiMCTag : ""
-      newStrawDigiMCTag : ""
-      OldTimeOffsets : { inputs : [ "" ] }
-      NewTimeOffsets : { inputs : [ "" ] }
-      strawDigiMCIndexMapTag : ""
-      oldCrvDigiMCTag : ""
-      newCrvDigiMCTag : ""
-      crvDigiMCIndexMapTag : ""
-      oldCaloShowerSimTag : ""
-      newCaloShowerSimTag : ""
-    }
-}
-
-DigiCompression.OutputCommands : [ "drop *_*_*_*",
-		       @sequence::DigiCompression.Primary.keptProducts,
-		       @sequence::DigiCompression.Mixing.keptProducts
-		     ]
 
 END_PROLOG

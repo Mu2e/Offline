@@ -46,6 +46,8 @@ namespace mu2e {
       Name("ADCLSB"), Comment("mVolt")};
     fhicl::Atom<int> maxADC {
       Name("maxADC"), Comment("maxADC")};
+    fhicl::Atom<unsigned> nADCPackets {
+      Name("nADCPackets"), Comment("Number of adc packets (12 samples each)")};
     fhicl::Atom<unsigned> nADCPresamples {
       Name("nADCPresamples"), Comment("nADCPresamples")};
     fhicl::Atom<double> ADCPeriod {
@@ -54,12 +56,10 @@ namespace mu2e {
       Name("ADCOffset"), Comment("nsec")};
     fhicl::Atom<unsigned> maxThreshTimeSeparation {
       Name("maxThreshTimeSeparation"), Comment("ADC clock ticks")};
-    fhicl::Atom<unsigned> tCoince {
-      Name("tCoince"), Comment("maxing threshold xing pair time separation to create a digi, in number of ADC clock cycles")};
     fhicl::Atom<double> TDCLSB {
       Name("TDCLSB"), Comment("nsec, least-significant bit of TDC")};
-    fhicl::Atom<unsigned> maxTDC {
-      Name("maxTDC"), Comment("16 bits, maximum TDC value")};
+    fhicl::Atom<unsigned> numTDCbits {
+      Name("numTDCbits"), Comment("Number of TDC bits, defining maximum TDC value")};
     fhicl::Atom<double>  TOTLSB {
       Name("TOTLSB"), Comment("ns, least-significant bit of TOT")};
     fhicl::Atom<unsigned> maxTOT {
@@ -70,12 +70,10 @@ namespace mu2e {
       Name("electronicsTimeDelay"), Comment("nsec, Absolute time delay in electronics due to firmware signal propagation etc")};
     fhicl::Atom<double> eventWindowMarkerROCJitter {
       Name("eventWindowMarkerROCJitter"), Comment("ps (jitter per panel per microbuncH)")};
-    fhicl::Atom<double> flashStart {
-      Name("flashStart"), Comment("nsec, flash blanking period")};
-    fhicl::Atom<double> flashEnd {
-      Name("flashEnd"), Comment("nsec, flash blanking period")};
-    fhicl::Atom<double> flashClockSpeed {
-      Name("flashClockSpeed"), Comment("nsec")};
+    fhicl::Atom<double> digitizationStart {
+      Name("digitizationStart"), Comment("nsec, nominal time after proton bunch that flash blanking ends")};
+    fhicl::Atom<double> digitizationEnd {
+      Name("digitizationEnd"), Comment("nsec, nominal time after proton bunch that digitization ends. Fixed relative to digitizationStart")};
     fhicl::Atom<int> responseBins {
       Name("responseBins"), Comment("")};
     fhicl::Atom<double> sampleRate {

@@ -3,7 +3,7 @@
 // Read a .fcl file and form a parameter set object.
 //
 
-#include "GeneralUtilities/inc/ParameterSetFromFile.hh"
+#include "Offline/GeneralUtilities/inc/ParameterSetFromFile.hh"
 
 #include "fhiclcpp/intermediate_table.h"
 #include "fhiclcpp/parse.h"
@@ -20,9 +20,8 @@ ParameterSetFromFile( std::string const& fileName ):
 {
 
   cet::filepath_lookup policy("FHICL_FILE_PATH");
-  fhicl::intermediate_table tbl;
-  fhicl::parse_document(_fileName, policy, tbl);
-  fhicl::make_ParameterSet(tbl, _pSet);
+  fhicl::intermediate_table tbl = fhicl::parse_document(_fileName, policy);
+  _pSet = fhicl::ParameterSet::make(tbl);
 
 }
 

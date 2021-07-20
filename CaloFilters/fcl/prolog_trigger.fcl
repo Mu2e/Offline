@@ -10,7 +10,7 @@ CaloFilters : {
 	module_type            : EcalTriggerPreselect
 	trkPatRecModuleLabel   : MergePatRec
 	trkQualTag             : MergePatRec
-	caloClusterModuleLabel : CaloClusterFromProtoCluster
+	caloClusterModuleLabel : CaloClusterMaker
 	trackClusterMatchModuleLabel : TrackCaloMatching
 	fitparticle            : 11
 	fitdirection           : 0 
@@ -27,7 +27,7 @@ CaloFilters : {
 	caloTrigSeedModuleLabel : CaloTrigger					    
 	diagLevel               : 0						    
 	MVAMethod               : BDT						    
-	weightsfile             : "CaloFilters/data/ce_bkg_ecal_20_BDT.weights.xml" 
+	weightsfile             : "Offline/CaloFilters/data/ce_bkg_ecal_20_BDT.weights.xml" 
 	TimeOFFSET              : 22.5						    
 	MVAhighcut0             : 0.1						    
 	MVArpivot0              : 445 # mm					    
@@ -38,7 +38,6 @@ CaloFilters : {
 	MVApivotcut1            : 0.1						    
 	MVAlowcut1              : 0.0						    
 	downscale500factor      : 1						    
-	triggerPath              : "CaloMVACE"	                                    
     }
 
     caloMVAMixedFilter         : {
@@ -46,8 +45,8 @@ CaloFilters : {
 	diagLevel              : 0
 	MVAMethod              : BDT
 	caloTrigSeedModuleLabel     : CaloTrigger
-	ecalweightsfile        : "CaloFilters/data/ce_bkg_ecal_20_BDT.weights.xml"
-	mixedweightsfile            : "CaloFilters/data/ce_bkg_20_BDT.weights.xml"
+	ecalweightsfile        : "Offline/CaloFilters/data/ce_bkg_ecal_20_BDT.weights.xml"
+	mixedweightsfile            : "Offline/CaloFilters/data/ce_bkg_20_BDT.weights.xml"
 	StrawHitCollectionTag  : "TTmakePH"
 	TimeOFFSET             : 22.5
 	MVArpivot              : 445 # mm
@@ -65,51 +64,63 @@ CaloFilters : {
 	mixedMVAlowcut1        : -0.1
 	downscale500factor     : 1
 	step                   : 10
-	triggerPath             : "CaloMVAMixedCE"	    
     }  
     
     
 #skelethon for a cosmic muon calibration
     caloCalibCosmicFilter : {
 	module_type            : CaloCosmicCalib
-	CaloClusterCollection  : "CaloClusterFast"
+	CaloClusterModuleLabel : "CaloClusterFast"
 	debugLevel             : 0	      
-	MinNCrystalHits        : 7	      
-	MinEnergy              : 150.0    #MeV
+	MinNCrystalHits        : 0	      
+	MinEnergy              : 10.0    #MeV
 	MaxEnergy              : 600.0    #MeV
-	triggerPath             : "CaloCalibCosmic"	    
+	MinNumCelinout         : 6 
+	MinNumCeldiagver       : 6
+	MinCelEneCut           : 15.0   # MeV
+	OutRadius              : 580   # mm
+	InnerRadius            : 460   # mm
+	diagminval             : 1.5   # slope min
+	diagmaxval             : 2.5   # slope max
+	dyminval               : 140   # mm
     }
  
     
     caloLHCEFilter : {
 	module_type            : CaloLikelihood
 	CaloClusterModuleLabel : CaloClusterFast
-	SignalTemplates        : "CaloFilters/data/v7_1_5/caloLH_ce.root"  
-	BackgroundTemplates    : "CaloFilters/data/v7_1_5/caloLH_bkg.root" 
+	SignalTemplates        : "Offline/CaloFilters/data/v7_1_5/caloLH_ce.root"  
+	BackgroundTemplates    : "Offline/CaloFilters/data/v7_1_5/caloLH_bkg.root" 
 	DropSecondDisk         : false					   
 	MinClusterEnergy       : 50.   # MeV				   
 	ClusterEnergyStep      : 10.   # MeV          			   
 	MinClusterRadialDist   : 350.  # mm				   
 	ClusterRadialDistStep  : 50.   # mm				   
 	MinLikelihoodCut       : [ 41.44, 10.36]                           
-	triggerPath             : "CaloLHCE"	    
     }
 
     #fixme! this is just a place holder for the photon filter
     caloPhotonFilter : {
 	module_type            : CaloLikelihood
 	CaloClusterModuleLabel : CaloClusterFast
-	SignalTemplates        : "CaloFilters/data/v7_1_5/caloLH_ce.root"  
-	BackgroundTemplates    : "CaloFilters/data/v7_1_5/caloLH_bkg.root" 
+	SignalTemplates        : "Offline/CaloFilters/data/v7_1_5/caloLH_ce.root"  
+	BackgroundTemplates    : "Offline/CaloFilters/data/v7_1_5/caloLH_bkg.root" 
 	DropSecondDisk         : false					   
 	MinClusterEnergy       : 50.   # MeV				   
 	ClusterEnergyStep      : 10.   # MeV          			   
 	MinClusterRadialDist   : 350.  # mm				   
 	ClusterRadialDistStep  : 50.   # mm				   
 	MinLikelihoodCut       : [ 41.44, 10.36]                           
-	triggerPath             : "CaloPhoton"	    
     }
   
+    caloMVANNCEFilter : {
+	module_type            : FilterEcalNNTrigger
+	caloClusterCollection  : CaloClusterFast
+        caloBkgMVA             :{ MVAWeights : "Offline/CaloFilters/data/CE_NN_ReLU.weights.xml" }
+        minEtoTest             : 40
+        minMVAScore            : 0.95
+        diagLevel              : 0
+    }
 }
 
 CaloFilters : { @table::CaloFilters
@@ -126,7 +137,7 @@ CaloFilters : { @table::CaloFilters
 	    fetchStrawHitPositions        : 0
 	    fetchComboHits                : 0
 
-	    caloDigiCollectionTag         : CaloDigiFromShower
+	    caloDigiCollectionTag         : CaloDigiMaker
 	    strawDigiCollection           : makeSD
 	    strawHitCollectionTag         : TTmakeSH
 	    strawHitPositionCollectionTag : TTmakeSH
@@ -145,7 +156,7 @@ CaloFilters : { @table::CaloFilters
 	    fetchStrawHitPositions        : 0
 	    fetchComboHits                : 0
 
-	    caloDigiCollectionTag         : CaloDigiFromShower
+	    caloDigiCollectionTag         : CaloDigiMaker
 	    strawDigiCollection           : makeSD
 	    strawHitCollectionTag         : TTmakeSH
 	    strawHitPositionCollectionTag : TTmakeSH
@@ -162,7 +173,7 @@ CaloFilters : { @table::CaloFilters
 	#TODO: add also a path for the selection of failed events
 	caloMVACECDCountFilter     : {
 	    module_type : DigiFilter
-	    caloDigiCollection  : CaloDigiFromShower
+	    caloDigiCollection  : CaloDigiMaker
 	    strawDigiCollection : notUSed	    
 	    useStrawDigi        : false		    
 	    useCaloDigi         : true		    
@@ -171,13 +182,12 @@ CaloFilters : { @table::CaloFilters
 	    minNCaloDigi        : 2		    
 	    maxNCaloDigi        : 10000		    
 	    maxCaloEnergy       : -1		    
-	    triggerPath        : "CaloMVACE"	    	    
 	}
 
-	caloMVAMixedCECDCountFilter     : {
+	caloMVAMixedCDCountFilter     : {
 	    module_type : DigiFilter
 	    strawDigiCollection : notUSed
-	    caloDigiCollection  : CaloDigiFromShower
+	    caloDigiCollection  : CaloDigiMaker
 	    useStrawDigi        : false
 	    useCaloDigi         : true
 	    minNStrawDigi       : -1
@@ -185,13 +195,12 @@ CaloFilters : { @table::CaloFilters
 	    minNCaloDigi        : 2
 	    maxNCaloDigi        : 10000
 	    maxCaloEnergy       : -1
-	    triggerPath        : "CaloMVAMixedCE"	    	    	    
 	}
 
 	caloCalibCosmicCDCountFilter     : {
 	    module_type : DigiFilter
 	    strawDigiCollection : notUSed
-	    caloDigiCollection  : CaloDigiFromShower
+	    caloDigiCollection  : CaloDigiMaker
 	    useStrawDigi        : false
 	    useCaloDigi         : true
 	    minNStrawDigi       : -1
@@ -199,13 +208,12 @@ CaloFilters : { @table::CaloFilters
 	    minNCaloDigi        : 2
 	    maxNCaloDigi        : 10000
 	    maxCaloEnergy       : -1
-	    triggerPath         : "CaloCalibCosmic"	    	    	    
 	}
 
 	caloLHCECDCountFilter     : {
 	    module_type : DigiFilter
 	    strawDigiCollection : notUSed
-	    caloDigiCollection  : CaloDigiFromShower
+	    caloDigiCollection  : CaloDigiMaker
 	    useStrawDigi        : false
 	    useCaloDigi         : true
 	    minNStrawDigi       : -1
@@ -213,13 +221,12 @@ CaloFilters : { @table::CaloFilters
 	    minNCaloDigi        : 2
 	    maxNCaloDigi        : 10000
 	    maxCaloEnergy       : -1
-	    triggerPath         : "CaloLHCE"	    	    	    
 	}
 
 	caloPhotonCDCountFilter     : {
 	    module_type : DigiFilter
 	    strawDigiCollection : notUSed
-	    caloDigiCollection  : CaloDigiFromShower
+	    caloDigiCollection  : CaloDigiMaker
 	    useStrawDigi        : false
 	    useCaloDigi         : true
 	    minNStrawDigi       : -1
@@ -227,62 +234,60 @@ CaloFilters : { @table::CaloFilters
 	    minNCaloDigi        : 2
 	    maxNCaloDigi        : 10000
 	    maxCaloEnergy       : -1
-	    triggerPath         : "CaloPhoton"	    	    	    
+	}
+
+	caloMVANNCECDCountFilter     : {
+	    module_type : DigiFilter
+	    caloDigiCollection  : CaloDigiMaker
+	    strawDigiCollection : notUSed	    
+	    useStrawDigi        : false		    
+	    useCaloDigi         : true		    
+	    minNStrawDigi       : -1		    
+	    maxNStrawDigi       : -1		    
+	    minNCaloDigi        : 2		    
+	    maxNCaloDigi        : 10000		    
+	    maxCaloEnergy       : -1		    
 	}
 
 	caloMVACEEventPrescale : {
 	    module_type : PrescaleEvent
 	    nPrescale         : 1
-	    triggerPath        : "CaloMVACE"	    	    
-	    triggerFlag   : ["PrescaleRandom"]	    
 	}
 	
 	caloMVACEPrescale : {
 	    module_type : PrescaleEvent
 	    nPrescale         : 1 
 	    useFilteredEvents : true
-	    triggerPath        : "CaloMVACE"	    	    
-	    triggerFlag       : ["PrescaleGoodEvents"]	    
 	}
 	
-	caloMixedEventPrescale : {
+	caloMVAMixedEventPrescale : {
 	    module_type : PrescaleEvent
 	    nPrescale         : 1
 #	    nPrescale         : @local::caloMixed_evt_sf
-	    triggerPath        : "CaloMVAMixedCE"	    	    
-	    triggerFlag   : ["PrescaleRandom"]	    
 	}
 	
-	caloMixedPrescale : {
+	caloMVAMixedPrescale : {
 	    module_type : PrescaleEvent
 	    nPrescale         : 1
 #	    nPrescale         : @local::caloMixed_sf
 	    useFilteredEvents : true
-	    triggerPath        : "CaloMVAMixedCE"	    	    
-	    triggerFlag       : ["PrescaleGoodEvents"]	    
 	}
 	
 	caloCalibCosmicEventPrescale : {
 	    module_type : PrescaleEvent
 	    nPrescale         : 1 
-	    triggerPath        : "CaloCalibCosmic"	    	    
-	    triggerFlag   : ["PrescaleRandom"]	    
 	}
 	
 	caloCalibCosmicPrescale : {
 	    module_type : PrescaleEvent
 	    nPrescale         : 1 
 	    useFilteredEvents : true
-	    triggerPath        : "CaloCalibCosmic"	    	    
-	    triggerFlag       : ["PrescaleGoodEvents"]	    
 	}
 
 	caloLHCEEventPrescale : {
 	    module_type : PrescaleEvent
 #	    nPrescale         : @local::caloLHCE_evt_sf
 	    nPrescale         : 1
-	    triggerFlag   : ["PrescaleRandom"]	    
-	    triggerPath        : "CaloLHCE"	    	    
 	}
 	
 	caloLHCEPrescale : {
@@ -290,25 +295,29 @@ CaloFilters : { @table::CaloFilters
 #	    nPrescale         : @local::caloLHCE_sf
 	    nPrescale         : 1 
 	    useFilteredEvents : true
-	    triggerPath        : "CaloLHCE"	    	    
-	    triggerFlag       : ["PrescaleGoodEvents"]	    
 	}
 
 	caloPhotonEventPrescale : {
 	    module_type : PrescaleEvent
 	    nPrescale         : 1
-	    triggerFlag   : ["PrescaleRandom"]	    
-	    triggerPath        : "CaloPhoton"	    	    
 	}
 	
 	caloPhotonPrescale : {
 	    module_type : PrescaleEvent
 	    nPrescale         : 1 
 	    useFilteredEvents : true
-	    triggerPath        : "CaloPhoton"	    	    
-	    triggerFlag       : ["PrescaleGoodEvents"]	    
 	}
 
+	caloMVANNCEEventPrescale : {
+	    module_type   : PrescaleEvent
+	    nPrescale     : 1
+	}
+	
+	caloMVANNCEPrescale : {
+	    module_type       : PrescaleEvent
+	    nPrescale         : 1 
+	    useFilteredEvents : true
+	}
 	
 	#FIXME! this filter will no longer be needed once we will have a standardized definition of good events
 	caloTriggerPreselect   : { @table::CaloFilters.caloTriggerPreselect  }
@@ -327,23 +336,27 @@ CaloFilters : { @table::CaloFilters
 	caloLHCEFilter         : { @table::CaloFilters.caloLHCEFilter        }
 
 	#fixme@ this is just a place holder
-	caloPhotonFilter         : { @table::CaloFilters.caloPhotonFilter        }
+	caloPhotonFilter       : { @table::CaloFilters.caloPhotonFilter        }
+
+	caloMVANNCEFilter      : { @table::CaloFilters.caloMVANNCEFilter       }
 	
     }
 
     sequences   : {
 	
-	caloMVACE        : [ caloMVACEEventPrescale, caloMVACECDCountFilter, CaloTrigger, caloMVACEFilter, caloMVACEPrescale ]
+	caloMVANNCE      : [ caloMVANNCEEventPrescale, @sequence::CaloHitRecoTrigger.prepareHits, @sequence::CaloClusterTrigger.Reco, caloMVANNCEFilter]
 	
 	caloMVAMixedCE   : [ caloMVAMixedEventPrescale, caloMVAMixedCDCountFilter, @sequence::TrkHitRecoTrigger.sequences.TTprepareHits, 
-			     CaloTrigger, caloMVAMixedFilter, caloMVAMixedPrescale ] 
+			     CaloTrigger, caloMVAMixedFilter ] 
 	
-	caloCalibCosmic  : [ caloCalibCosmicEventPrescale, caloCalibCosmicCDCountFilter, CaloClusterFast, caloCalibCosmicFilter, caloCalibCosmicPrescale] 
+	caloCalibCosmic  : [ caloCalibCosmicEventPrescale, @sequence::CaloHitRecoTrigger.prepareHits, @sequence::CaloClusterTrigger.Reco, caloCalibCosmicFilter] 
 
-	caloLHCE         : [ caloLHCEEventPrescale, caloLHCECDCountFilter, CaloClusterFast, caloLHCEFilter, caloLHCEPrescale] 
+	caloLHCE         : [ caloLHCEEventPrescale, caloLHCECDCountFilter, @sequence::CaloHitRecoTrigger.prepareHits, @sequence::CaloClusterTrigger.Reco, caloLHCEFilter] 
 
 	#FIX ME! THIS IS JUST A PLACE HOLDER
-	caloPhoton       : [ caloPhotonEventPrescale, caloPhotonCDCountFilter, CaloClusterFast, caloPhotonFilter, caloPhotonPrescale] 
+	caloPhoton       : [ caloPhotonEventPrescale, @sequence::CaloHitRecoTrigger.prepareHits, @sequence::CaloClusterTrigger.Reco, caloPhotonFilter] 
+
+	# caloPhoton       : [ caloMVANNCEEventPrescale, sequence::CaloHitRecoTrigger.prepareHits, CaloClusterFast,caloMVANNCEFilter ] 
 
     }
 }

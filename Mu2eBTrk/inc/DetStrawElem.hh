@@ -10,16 +10,18 @@
 #define DetStrawElem_hh
 
 #include "BTrk/DetectorModel/DetElem.hh"
+#include "Offline/DataProducts/inc/StrawId.hh"
 #include <string>
 
 namespace mu2e {
   class Straw;
+  class Tracker;
   class DetStrawType;
 // element class  
   class DetStrawElem : public DetElem {
   public:
 // construct from a Straw
-    DetStrawElem(DetStrawType* strawtype, Straw const* straw);
+    DetStrawElem(DetStrawType* strawtype, Tracker const& tracker, StrawId const& id);
     virtual ~DetStrawElem();
 // DetElem interface; intersect just calls down to reintersect.  Note that the entrance
 // flag of the DetIntersection defines what parts of the material to model
@@ -44,6 +46,7 @@ namespace mu2e {
   private:
     virtual HepPoint coordToPoint( const TypeCoord* aCoord ) const { return HepPoint(0.0,0.0,0.0); }
     const Straw* _straw;
+    double _rstraw, _wthick; // cached from Tracker
     Trajectory* _wtraj; // wire trajectory, owned by this object;  This should be in the straw, FIXME!
     // remember the fully-typed type
     const DetStrawType* _stype;

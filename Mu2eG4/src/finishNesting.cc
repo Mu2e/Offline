@@ -9,21 +9,24 @@
 #include <iostream>
 #include <iomanip>
 
+// art includes
+#include "art/Framework/Services/Registry/ServiceDefinitionMacros.h"
+
 // Mu2e includes
-#include "Mu2eG4/inc/finishNesting.hh"
-#include "G4Helper/inc/G4Helper.hh"
-#include "ConfigTools/inc/SimpleConfig.hh"
-#include "Mu2eG4/inc/checkForOverlaps.hh"
+#include "Offline/Mu2eG4/inc/finishNesting.hh"
+#include "Offline/Mu2eG4Helper/inc/Mu2eG4Helper.hh"
+#include "Offline/ConfigTools/inc/SimpleConfig.hh"
+#include "Offline/Mu2eG4/inc/checkForOverlaps.hh"
 
 // G4 includes
-#include "G4LogicalVolume.hh"
-#include "G4PVPlacement.hh"
-#include "G4VisAttributes.hh"
+#include "Geant4/G4LogicalVolume.hh"
+#include "Geant4/G4PVPlacement.hh"
+#include "Geant4/G4VisAttributes.hh"
 
 // if using cout << *info.solid etc...
-#include "G4VSolid.hh"
-#include "G4RotationMatrix.hh"
-#include "G4ThreeVector.hh"
+#include "Geant4/G4VSolid.hh"
+#include "Geant4/G4RotationMatrix.hh"
+#include "Geant4/G4ThreeVector.hh"
 
 using namespace std;
 
@@ -44,7 +47,7 @@ namespace mu2e {
                      bool const verbose
                      ) {
 
-    G4Helper    & _helper = *(art::ServiceHandle<G4Helper>());
+    Mu2eG4Helper    & _helper = *(art::ServiceHandle<Mu2eG4Helper>());
     AntiLeakRegistry & reg = _helper.antiLeakRegistry();
     GeometryService const& _geom(*(art::ServiceHandle<GeometryService>()));
     SimpleConfig    const& _config(_geom.config());
@@ -55,8 +58,8 @@ namespace mu2e {
       ios::fmtflags oldfl = cout.flags();
       int const oldpr = cout.precision();
       int const oldwdth = cout.width();
-      static int const newpr   = 18;
-      static int const newwdth = 28;
+      constexpr int newpr   = 18;
+      constexpr int newwdth = 28;
 
       cout.setf(ios::right,ios::adjustfield);
       cout.precision(newpr);
@@ -114,8 +117,8 @@ namespace mu2e {
       cout.flags(oldfl);
 
     }
-
-    info.logical  = new G4LogicalVolume( info.solid, material, info.name);
+    // if logical volume does not already exist, create it
+    info.logical  = info.logical ? info.logical : new G4LogicalVolume( info.solid, material, info.name);
 
     // G4 did not get const-ness correctly, thus the const_cast
     info.physical  =  placePV ? new G4PVPlacement( const_cast<G4RotationMatrix*>(rot),
@@ -134,7 +137,7 @@ namespace mu2e {
 
     if (!isVisible) {
 
-      info.logical->SetVisAttributes(G4VisAttributes::Invisible);
+      info.logical->SetVisAttributes(G4VisAttributes::GetInvisible());
 
     } else {
 

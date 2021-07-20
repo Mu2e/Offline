@@ -5,9 +5,9 @@
 // Makes the MVACatalog ProditionsEntitiy
 //
 
-#include "AnalysisConditions/inc/MVACatalog.hh"
-#include "AnalysisConfig/inc/MVACatalogConfig.hh"
-#include "DbTables/inc/MVAToolDb.hh"
+#include "Offline/AnalysisConditions/inc/MVACatalog.hh"
+#include "Offline/AnalysisConfig/inc/MVACatalogConfig.hh"
+#include "Offline/DbTables/inc/MVAToolDb.hh"
 
 namespace mu2e {
 
@@ -18,9 +18,9 @@ namespace mu2e {
 
     typename MVACatalog<T>::ptr_t fillEntries() {
       MVAEntries<T> mvaEntries;
-      mvaEntries.reserve(_config.mvaConfigs().size()); // need this to avoid a segfault....
+      //      mvaEntries.reserve(_config.mvaConfigs().size()); // need this to avoid a segfault....
       for (const auto& i_entryConf : _config.mvaConfigs()) {
-	mvaEntries.push_back(MVAEntry<T>(i_entryConf.trainName(), i_entryConf.xmlFileName(), i_entryConf.calibrated()));
+        mvaEntries.push_back(MVAEntry<T>(i_entryConf.trainName(), i_entryConf.xmlFileName(), i_entryConf.calibrated()));
       }
 
       auto ptr = std::make_shared<MVACatalog<T> >(mvaEntries);
@@ -31,10 +31,10 @@ namespace mu2e {
     void initializeMVAs(typename MVACatalog<T>::ptr_t ptr) {
       // Now initialize the MVAs
       for (auto& i_mvaEntry : ptr->modifiableEntries()) {
-	i_mvaEntry.initializeMVA();
+        i_mvaEntry.initializeMVA();
       }
       if (_config.verbose() > 0) {
-	ptr->print(std::cout);
+        ptr->print(std::cout);
       }
     }
 
@@ -50,22 +50,22 @@ namespace mu2e {
 
       // Change or add entries to the configuration before we create all the MVATools pointers
       for (const auto& i_row : tqDb->rows()) {
-	for (auto& i_mvaEntry : ptr->modifiableEntries()) {
-	  if (i_row.mvaname() == i_mvaEntry._trainName) {
-	    i_mvaEntry._xmlFileName = i_row.xmlfilename();
-	    i_mvaEntry._calibrated = i_row.calibrated();
-	    break; // break from inner for loop since this entry alread exists
-	  }
-	}
-	// if we get here, then we need to add a new entry
-	ptr->modifiableEntries().push_back(MVAEntry<T>(i_row.mvaname(), i_row.xmlfilename(), i_row.calibrated()));
+        for (auto& i_mvaEntry : ptr->modifiableEntries()) {
+          if (i_row.mvaname() == i_mvaEntry._trainName) {
+            i_mvaEntry._xmlFileName = i_row.xmlfilename();
+            i_mvaEntry._calibrated = i_row.calibrated();
+            break; // break from inner for loop since this entry alread exists
+          }
+        }
+        // if we get here, then we need to add a new entry
+        ptr->modifiableEntries().push_back(MVAEntry<T>(i_row.mvaname(), i_row.xmlfilename(), i_row.calibrated()));
       }
       initializeMVAs(ptr);
       return ptr;
     }
 
   private:
-    // this object needs to be thread safe, 
+    // this object needs to be thread safe,
     // _config should only be initialized once
     const MVACatalogConfig _config;
   };

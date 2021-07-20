@@ -1,14 +1,14 @@
 #
 # Prolog specific to creating primary (signal, signal-like or calibration) particles
 #
-#include "JobConfig/beam/prolog.fcl"
-#include "EventGenerator/fcl/prolog.fcl"
-#include "CommonMC/fcl/prolog.fcl"
-#include "TrackerMC/fcl/prolog.fcl"
-#include "CaloMC/fcl/prolog.fcl"
-#include "CRVResponse/fcl/prolog.fcl"
-#include "Filters/fcl/prolog.fcl"
-#include "Mu2eG4Filters/fcl/prolog.fcl"
+#include "Production/JobConfig/beam/prolog.fcl"
+#include "Offline/EventGenerator/fcl/prolog.fcl"
+#include "Offline/CommonMC/fcl/prolog.fcl"
+#include "Offline/TrackerMC/fcl/prolog.fcl"
+#include "Offline/CaloMC/fcl/prolog.fcl"
+#include "Offline/CRVResponse/fcl/prolog.fcl"
+#include "Offline/Filters/fcl/prolog.fcl"
+#include "Offline/Mu2eG4Filters/fcl/prolog.fcl"
 #
 BEGIN_PROLOG
 

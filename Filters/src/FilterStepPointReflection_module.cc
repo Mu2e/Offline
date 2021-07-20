@@ -16,10 +16,11 @@
 #include "art/Framework/Principal/Handle.h"
 #include "canvas/Utilities/InputTag.h"
 #include "art/Framework/Core/ModuleMacros.h"
-#include "MCDataProducts/inc/StepPointMC.hh"
-#include "MCDataProducts/inc/StepPointMCCollection.hh"
-#include "DataProducts/inc/VirtualDetectorId.hh"
-#include "GeometryService/inc/GeomHandle.hh"
+#include "messagefacility/MessageLogger/MessageLogger.h"
+#include "Offline/MCDataProducts/inc/StepPointMC.hh"
+#include "Offline/MCDataProducts/inc/StepPointMCCollection.hh"
+#include "Offline/DataProducts/inc/VirtualDetectorId.hh"
+#include "Offline/GeometryService/inc/GeomHandle.hh"
 
 namespace mu2e {
 

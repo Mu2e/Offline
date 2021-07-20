@@ -4,15 +4,21 @@
 #include <boost/algorithm/string/classification.hpp>
 #include <boost/algorithm/string/split.hpp>
 #include "cetlib_except/exception.h"
-#include "DbService/inc/DbSql.hh"
-#include "DbTables/inc/DbUtil.hh"
+#include "Offline/DbService/inc/DbSql.hh"
+#include "Offline/DbTables/inc/DbUtil.hh"
 
-mu2e::DbSql::DbSql(const DbId& id):_id(id),_conn(nullptr),_verbose(0) {
+mu2e::DbSql::DbSql():_conn(nullptr),_verbose(0) {
 }
 
 //*********************************************************
 
 int mu2e::DbSql::connect() {
+
+  if(_id.name().empty()) {
+      throw cet::exception("DBSQL_DBID NOT_SET") 
+	<< "DbSql found the DbId was not set\n";
+  }
+
   std::string command;
   command.append(" host="+_id.host());
   command.append(" port="+_id.port());

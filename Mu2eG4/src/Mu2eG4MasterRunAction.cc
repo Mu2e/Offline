@@ -6,12 +6,12 @@
 //
 
 //G4 includes
-#include "G4VUserPhysicsList.hh"
-#include "G4RunManager.hh"
+#include "Geant4/G4VUserPhysicsList.hh"
+#include "Geant4/G4RunManager.hh"
 
 //Mu2e includes
-#include "Mu2eG4/inc/Mu2eG4MasterRunAction.hh"
-#include "Mu2eG4/inc/PhysicalVolumeHelper.hh"
+#include "Offline/Mu2eG4/inc/Mu2eG4MasterRunAction.hh"
+#include "Offline/Mu2eG4/inc/PhysicalVolumeHelper.hh"
 
 using namespace std;
 

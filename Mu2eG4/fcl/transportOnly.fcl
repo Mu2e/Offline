@@ -1,9 +1,9 @@
 # Variant of g4test_03 but with transport only.
 #
 
-#include "fcl/minimalMessageService.fcl"
-#include "fcl/standardProducers.fcl"
-#include "fcl/standardServices.fcl"
+#include "Offline/fcl/minimalMessageService.fcl"
+#include "Offline/fcl/standardProducers.fcl"
+#include "Offline/fcl/standardServices.fcl"
 
 # Give this job a name.
 process_name : transportOnly
@@ -34,7 +34,7 @@ physics : {
     @table::TrackerMC.producers
 
     # Calorimeter sequence
-    @table::CaloDigiMC.producers
+    @table::CaloMC.producers
     @table::CaloReco.producers
 
     # Save state of the random number engines.
@@ -68,7 +68,7 @@ physics : {
 
   }
 
-  p1 : [generate , g4run, @sequence::CommonMC.DigiSim, @sequence::TrackerMC.DigiSim, @sequence::CaloDigiMC.DigiSim, @sequence::CaloReco.Reco,randomsaver ]
+  p1 : [generate , g4run, @sequence::CommonMC.DigiSim, @sequence::TrackerMC.StepAndDigiSim, @sequence::CaloMC.StepAndDigiSim, @sequence::CaloReco.Reco,randomsaver ]
 #  e1 : [readGens, checkhits, readvd, outfile, dump]
   e1 : [readGens, checkhits, readvd, outfile]
 
@@ -92,6 +92,7 @@ outputs:  {
 #  }
 
 }
+physics.producers.EWMProducer.SpillType : 1
 
 // Initialze seeding of random engines: do not put these lines in base .fcl files for grid jobs.
 services.SeedService.baseSeed         :   8
@@ -115,7 +116,7 @@ physics.producers.makeSH.diagLevel     : 0
 physics.producers.makeSH.maxFullPrint  : 5
 physics.producers.makeSH.minimumEnergy : 0
 
-#physics.producers.g4run.visualization.initMacro : "Mu2eG4/test/vismqt.mac"
-#physics.producers.CaloShowerStepFromStepPt.physVolInfoInput : "g4run"
+#physics.producers.g4run.visualization.initMacro : "Mu2eG4/vis/vismqt.mac"
+#physics.producers.CaloShowerStepMaker.physVolInfoInput : "g4run"
 physics.producers.g4run.debug.diagLevel : 1
 #physics.producers.g4run.debug.worldVerbosityLevel : 1

@@ -7,6 +7,11 @@
 <lcgdict>
 
  <class name="std::vector<std::pair<unsigned int, unsigned int> >"/>
+
+<!--  ********* beam  ********* -->
+ <class name="mu2e::ProtonBunchTime"/>
+ <class name="art::Wrapper<mu2e::ProtonBunchTime>"/>
+
 <!--  ********* cosmics  ********* -->
  <class name="TrackParams"/>
  <class name="TrackCov"/>
@@ -35,20 +40,14 @@
  <class name="art::Wrapper<mu2e::CaloRecoDigiCollection>"/>
 
  <class name="mu2e::CaloHit"/>
+ <class name="art::Ptr<mu2e::CaloHit>"/>
  <class name="std::vector<art::Ptr<mu2e::CaloHit> >"/>
  <class name="mu2e::CaloHitCollection"/>
- <class name="art::Ptr<mu2e::CaloHit>"/>
+ <class name="std::pair<art::Ptr<mu2e::CaloHit>, art::Ptr<mu2e::CaloHit> >"/>
+ <class name="std::map<art::Ptr<mu2e::CaloHit>, art::Ptr<mu2e::CaloHit> >"/> 
+ <class name="mu2e::CaloHitRemapping"/>
  <class name="art::Wrapper<mu2e::CaloHitCollection>"/>
-
- <class name="mu2e::CaloCrystalHit"/>
- <class name="art::Ptr<mu2e::CaloCrystalHit>"/>
- <class name="std::vector<art::Ptr<mu2e::CaloCrystalHit> >"/>
- <class name="mu2e::CaloCrystalHitCollection"/>
- <class name="std::pair<art::Ptr<mu2e::CaloCrystalHit>, art::Ptr<mu2e::CaloCrystalHit> >"/>
- <class name="std::map<art::Ptr<mu2e::CaloCrystalHit>, art::Ptr<mu2e::CaloCrystalHit> >"/> 
- <class name="mu2e::CaloCrystalHitRemapping"/>
- <class name="art::Wrapper<mu2e::CaloCrystalHitCollection>"/>
- <class name="art::Wrapper<mu2e::CaloCrystalHitRemapping>"/>
+ <class name="art::Wrapper<mu2e::CaloHitRemapping>"/>
 
  <class name="mu2e::CaloProtoCluster"/>
  <class name="art::Ptr<mu2e::CaloProtoCluster>"/>
@@ -97,6 +96,11 @@
  <class name="mu2e::StrawDigiFlag"/>
  <class name="mu2e::StrawDigiFlagDetail"/>
 
+ <class name="mu2e::StrawDigiADCWaveform"/>
+ <class name="mu2e::StrawDigiADCWaveformCollection"/>
+ <class name="std::vector<art::Ptr<mu2e::StrawDigiADCWaveform> >"/>
+ <class name="art::Ptr<mu2e::StrawDigiADCWaveform>"/>
+ <class name="art::Wrapper<mu2e::StrawDigiADCWaveformCollection>"/>
  <class name="mu2e::StrawDigi"/>
  <class name="mu2e::StrawDigiCollection"/>
  <class name="std::vector<art::Ptr<mu2e::StrawDigi> >"/>
@@ -170,7 +174,8 @@
  <class name="art::Wrapper<mu2e::KalRepPtrCollection>"/>
 
  <class name="mu2e::TrkFitDirection"/>
- <class name="TrkParticle"/>   <!-- BTrk -->
+ <class name="KinKal::ParticleState"/> <!--KinKal-->
+ <class name="KinKal::ParticleStateEstimate"/> <!--KinKal-->
  <class name="mu2e::TrkStrawHitSeed"/>
  <class name="mu2e::TrkCaloHitSeed"/>
  <class name="mu2e::TrkStraw"/>
@@ -185,6 +190,15 @@
  <class name="art::Ptr<mu2e::KalSeed>"/>
  <class name="std::vector<art::Ptr<mu2e::KalSeed> >"/>
  <class name="art::Wrapper<mu2e::KalSeedCollection>"/>
+ <class name="mu2e::KalHelixAssns" />
+ <class name="art::Wrapper<mu2e::KalHelixAssns>"/>
+ <class name="art::Assns<mu2e::HelixSeed,mu2e::KalSeed,void>"/>
+ <class name="art::Wrapper<art::Assns<mu2e::HelixSeed,mu2e::KalSeed,void> >"/>
+<!-- KinKal products: these cannot be directly persisted -->
+
+ <class name="mu2e::KKLoopHelix"/>
+ <class name="mu2e::KKLoopHelixCollection" persistent="false"/>
+ <class name="art::Wrapper<mu2e::KKLoopHelixCollection>"/>
 
  <class name="mu2e::MVAStatus"/>
  <class name="mu2e::TrkQual"/>
@@ -276,6 +290,7 @@
  <class name="mu2e::CrvDigiCollection" />
  <class name="art::Wrapper<mu2e::CrvDigiCollection>" />
 
+ <class name="mu2e::CrvRecoPulseFlags" />
  <class name="mu2e::CrvRecoPulse" />
  <class name="art::Ptr<mu2e::CrvRecoPulse>"/>
  <class name="std::vector<mu2e::CrvRecoPulse>" />
@@ -326,13 +341,17 @@
  <class name="art::Wrapper<mu2e::ExtMonFNALTrkFitCollection>" />
 
 <!--  ********* trigger  ********* -->
-
- <class name="mu2e::TriggerFlagDetail"/>
- <class name="mu2e::TriggerFlag"/>
  <class name="mu2e::TriggerInfo"/>
  <class name="mu2e::TriggerInfoCollection" /> 
  <class name="art::Wrapper<mu2e::TriggerInfo>"/>
  <class name="art::Wrapper<mu2e::TriggerInfoCollection>"/>
+
+
+<!--  ********* POT / stopped muons monitoring  ********* -->
+<!--  bvitali May 2021 -->
+ <class name="mu2e::IntensityInfo"/>
+ <class name="art::Wrapper<mu2e::IntensityInfo>"/>
+
 
 <!--  ********* general reco ********* -->
 

@@ -2,47 +2,47 @@
 // Data : March 2019
 // Purpose: Cosmic Track finder- module calls seed fitting routine to begin cosmic track analysis. The module can call the seed fit and drift fit. Producing a "CosmicTrackSeed" list.
 
-#include "CosmicReco/inc/CosmicTrackFit.hh"
-#include "RecoDataProducts/inc/CosmicTrackSeed.hh"
+#include "Offline/CosmicReco/inc/CosmicTrackFit.hh"
+#include "Offline/RecoDataProducts/inc/CosmicTrackSeed.hh"
 
 //Mu2e General:
-#include "GeometryService/inc/GeomHandle.hh"
-#include "GeometryService/inc/DetectorSystem.hh"
-#include "TrackerGeom/inc/Tracker.hh"
+#include "Offline/GeometryService/inc/GeomHandle.hh"
+#include "Offline/GeometryService/inc/DetectorSystem.hh"
+#include "Offline/TrackerGeom/inc/Tracker.hh"
 
 // ART:
 #include "fhiclcpp/ParameterSet.h"
 #include "art/Framework/Principal/Event.h"
-#include "GeometryService/inc/GeomHandle.hh"
+#include "Offline/GeometryService/inc/GeomHandle.hh"
 #include "fhiclcpp/ParameterSet.h"
 #include "art/Framework/Principal/Handle.h"
 #include "art/Framework/Core/EDProducer.h"
 #include "art/Framework/Core/ModuleMacros.h"
 #include "art_root_io/TFileService.h"
-#include "GeneralUtilities/inc/Angles.hh"
+#include "Offline/GeneralUtilities/inc/Angles.hh"
 #include "art/Utilities/make_tool.h"
 #include "canvas/Persistency/Common/Ptr.h"
 
 //MU2E:
-#include "RecoDataProducts/inc/StrawHitCollection.hh"
-#include "RecoDataProducts/inc/StrawHitPositionCollection.hh"
-#include "RecoDataProducts/inc/StrawHitFlagCollection.hh"
-#include "RecoDataProducts/inc/TimeCluster.hh"
-#include "RecoDataProducts/inc/TrkFitFlag.hh"
-#include "TrkReco/inc/TrkTimeCalculator.hh"
-#include "ProditionsService/inc/ProditionsHandle.hh"
-#include "CosmicReco/inc/MinuitDriftFitter.hh"
+#include "Offline/RecoDataProducts/inc/StrawHitCollection.hh"
+#include "Offline/RecoDataProducts/inc/StrawHitPositionCollection.hh"
+#include "Offline/RecoDataProducts/inc/StrawHitFlagCollection.hh"
+#include "Offline/RecoDataProducts/inc/TimeCluster.hh"
+#include "Offline/RecoDataProducts/inc/TrkFitFlag.hh"
+#include "Offline/TrkReco/inc/TrkTimeCalculator.hh"
+#include "Offline/ProditionsService/inc/ProditionsHandle.hh"
+#include "Offline/CosmicReco/inc/MinuitDriftFitter.hh"
 
 //utils:
-#include "Mu2eUtilities/inc/ParametricFit.hh"
+#include "Offline/Mu2eUtilities/inc/ParametricFit.hh"
 
 //For Drift:
-#include "TrkReco/inc/PanelAmbigResolver.hh"
-#include "TrkReco/inc/PanelStateIterator.hh"
-#include "TrkReco/inc/TrkFaceData.hh"
+#include "Offline/TrkReco/inc/PanelAmbigResolver.hh"
+#include "Offline/TrkReco/inc/PanelStateIterator.hh"
+#include "Offline/TrkReco/inc/TrkFaceData.hh"
 
 // Mu2e BaBar
-#include "BTrkData/inc/TrkStrawHit.hh"
+#include "Offline/BTrkData/inc/TrkStrawHit.hh"
 
 //CLHEP:
 #include "CLHEP/Units/PhysicalConstants.h"
@@ -77,20 +77,20 @@ public:
 	struct Config {
     using Name=fhicl::Name;
     using Comment=fhicl::Comment;
-    fhicl::Atom<int> debug{Name("debugLevel"), Comment("set to 1 for debug prints"),1};
-    fhicl::Atom<int> minnsh {Name("minNStrawHits"), Comment("minimum number of straw hits "),2};
-    fhicl::Atom<int> minnch {Name("minNComboHits"), Comment("number of combohits allowed"),8};
-    fhicl::Atom<TrkFitFlag> saveflag {Name("SaveTrackFlag"),Comment("if set to OK then save the track"), TrkFitFlag::helixOK};
-    fhicl::Atom<int> minNHitsTimeCluster{Name("minNHitsTimeCluster"),Comment("minium allowed time cluster"), 1 };
-    fhicl::Atom<art::InputTag> chToken{Name("ComboHitCollection"),Comment("tag for combo hit collection")};
-    fhicl::Atom<art::InputTag> tcToken{Name("TimeClusterCollection"),Comment("tag for time cluster collection")};
-    fhicl::Atom<bool> UseLineFinder{Name("UseLineFinder"),Comment("use line finder for seeding drift fit")};
-    fhicl::Atom<bool> UseChiFit{Name("UseChiFit"),Comment("use chi fit to improve seed"),true};
-    fhicl::Atom<art::InputTag> lfToken{Name("LineFinderTag"),Comment("tag for line finder seed"),"LineFinder"};
-    fhicl::Atom<bool> DoDrift{Name("DoDrift"),Comment("turn on for drift fit")};
-    fhicl::Atom<bool> UseTime{Name("UseTime"),Comment("use time for drift fit")};
-    fhicl::Atom<double> mnTolerance{Name("MinuitTolerance"),Comment("Tolerance for minuit convergence"),0.1};
-    fhicl::Atom<double> mnPrecision{Name("MinuitPrecision"),Comment("Effective precision for likelihood function"),-1};
+    fhicl::Atom<int>                     debug{Name("debugLevel"), Comment("set to 1 for debug prints"),0};
+    fhicl::Atom<int>                     minnsh {Name("minNStrawHits"), Comment("minimum number of straw hits ")};
+    fhicl::Atom<int>                     minnch {Name("minNComboHits"), Comment("number of combohits allowed")};
+    fhicl::Atom<TrkFitFlag>              saveflag {Name("SaveTrackFlag"),Comment("if set to OK then save the track"),TrkFitFlag::helixOK};
+    fhicl::Atom<int>                     minNHitsTimeCluster{Name("minNHitsTimeCluster"),Comment("minium allowed time cluster")};
+    fhicl::Atom<art::InputTag>           chToken{Name("ComboHitCollection"),Comment("tag for combo hit collection")};
+    fhicl::Atom<art::InputTag>           tcToken{Name("TimeClusterCollection"),Comment("tag for time cluster collection")};
+    fhicl::Atom<bool>                    UseLineFinder{Name("UseLineFinder"),Comment("use line finder for seeding drift fit")};
+    fhicl::Atom<bool>                    UseChiFit{Name("UseChiFit"),Comment("use chi fit to improve seed")};
+    fhicl::Atom<art::InputTag>           lfToken{Name("LineFinderTag"),Comment("tag for line finder seed")};
+    fhicl::Atom<bool>                    DoDrift{Name("DoDrift"),Comment("turn on for drift fit")};
+    fhicl::Atom<bool>                    UseTime{Name("UseTime"),Comment("use time for drift fit")};
+    fhicl::Atom<double>                  mnTolerance{Name("MinuitTolerance"),Comment("Tolerance for minuit convergence")};
+    fhicl::Atom<double>                  mnPrecision{Name("MinuitPrecision"),Comment("Effective precision for likelihood function")};
     fhicl::Table<CosmicTrackFit::Config> tfit{Name("CosmicTrackFit"), Comment("fit")};
 	};
 	typedef art::EDProducer::Table<Config> Parameters;

@@ -7,7 +7,7 @@
 #include <sstream>
 #include <map>
 #include "cetlib_except/exception.h"
-#include "DbTables/inc/MVAToolDb.hh"
+#include "Offline/DbTables/inc/MVAToolDb.hh"
 
 namespace mu2e {
   
@@ -16,7 +16,9 @@ namespace mu2e {
     typedef std::shared_ptr<AnaTrkQualDb> ptr_t;
     typedef std::shared_ptr<const AnaTrkQualDb> cptr_t;
 
-    AnaTrkQualDb():MVAToolDb("AnaTrkQualDb", "ana.trkqualdb") {
+     constexpr static const char* cxname = "TrkThresholdRStraw";
+
+    AnaTrkQualDb():MVAToolDb(cxname, "ana.trkqualdb") {
     }
   };
 };

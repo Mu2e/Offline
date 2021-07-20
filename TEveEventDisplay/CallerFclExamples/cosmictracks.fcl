@@ -1,0 +1,41 @@
+# Sophie Middleton test fcl @sequence::TrkAna.EndSequence
+#include "Offline/fcl/minimalMessageService.fcl"
+#include "Offline/fcl/standardProducers.fcl"
+#include "Offline/fcl/standardServices.fcl"
+#include "Offline/TrkDiag/fcl/prolog.fcl"
+#include "Offline/TrkPatRec/fcl/prolog.fcl"
+#include "Offline/TrackerConditions/fcl/prolog.fcl"
+#include "Offline/TrkHitReco/fcl/prolog.fcl"
+#include "Offline/CosmicReco/fcl/prolog.fcl"
+#include "Offline/TEveEventDisplay/fcl/prolog.fcl"
+//#include "JobConfig/reco/mcdigis_nocosmic.fcl"
+
+source : { module_type : RootInput}
+
+services : @local::Services.Reco
+
+process_name : HelixED
+
+StrawPhysics.useNonLinearDrift: false
+StrawDrift.phiBins: 20
+StrawResponse.linearDriftVelocity: 0.0625
+
+physics :
+{
+  
+  producers : { @table::CosmicTracking.producers
+		@table::TrkHitReco.producers
+		TimeClusterFinderCosmics : @local::TimeClusterFinderCosmics
+		CosmicTrackFinder : @local::CosmicTrackFinder} 
+  analyzers : { 
+       @table::CosmicTracking.analyzers
+		   @table::TEveDis.analyzers
+	}
+  filters :   { 
+       @table::CosmicTracking.filters
+       
+  }
+}
+
+physics.EndPath : [  @sequence::TEveDis.seqCosmics] 
+

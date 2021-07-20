@@ -14,22 +14,21 @@
 #include "fhiclcpp/types/Sequence.h"
 #include "fhiclcpp/types/Table.h"
 
-#include "GeneralUtilities/inc/Angles.hh"
-#include "Mu2eUtilities/inc/polyAtan2.hh"
-#include "Mu2eUtilities/inc/ModuleHistToolBase.hh"
-#include "Mu2eUtilities/inc/MVATools.hh"
-#include "RecoDataProducts/inc/CaloCluster.hh"
-#include "RecoDataProducts/inc/ComboHit.hh"
-#include "RecoDataProducts/inc/StrawHitIndex.hh"
-#include "RecoDataProducts/inc/StrawHitFlag.hh"
-#include "RecoDataProducts/inc/TimeCluster.hh"
-#include "RecoDataProducts/inc/CaloClusterCollection.hh"
-#include "TrkReco/inc/TrkUtilities.hh"
-#include "TrkReco/inc/TrkTimeCalculator.hh"
-#include "TrkPatRec/inc/TimeAndPhiClusterFinder_types.hh"
+#include "Offline/GeneralUtilities/inc/Angles.hh"
+#include "Offline/Mu2eUtilities/inc/polyAtan2.hh"
+#include "Offline/Mu2eUtilities/inc/ModuleHistToolBase.hh"
+#include "Offline/Mu2eUtilities/inc/MVATools.hh"
+#include "Offline/RecoDataProducts/inc/CaloCluster.hh"
+#include "Offline/RecoDataProducts/inc/ComboHit.hh"
+#include "Offline/RecoDataProducts/inc/StrawHitIndex.hh"
+#include "Offline/RecoDataProducts/inc/StrawHitFlag.hh"
+#include "Offline/RecoDataProducts/inc/TimeCluster.hh"
+#include "Offline/TrkReco/inc/TrkUtilities.hh"
+#include "Offline/TrkReco/inc/TrkTimeCalculator.hh"
+#include "Offline/TrkPatRec/inc/TimeAndPhiClusterFinder_types.hh"
 
 #include <algorithm>
-
+#include <numeric>
 
 
 namespace
@@ -222,7 +221,7 @@ namespace mu2e {
       chcol_ = chH.product();
 
       art::Handle<CaloClusterCollection> ccH{}; 
-      if (usecc_) {event.getByToken(ccToken_, ccH);}
+      if (usecc_) {ccH = event.getHandle<CaloClusterCollection>(ccToken_);}
 
       if (testflag_)
       {

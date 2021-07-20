@@ -8,24 +8,27 @@
 // Notes:
 // Construct the Helical Proton Absorber
 
+// art includes
+#include "art/Framework/Services/Registry/ServiceDefinitionMacros.h"
+
 // C++ includes
 #include <cmath>
 
 // Mu2e includes.
-#include "Mu2eG4/inc/HelicalProtonAbsorber.hh"
+#include "Offline/Mu2eG4/inc/HelicalProtonAbsorber.hh"
 
 // G4 includes
-#include "G4VPhysicalVolume.hh"
-#include "G4LogicalVolume.hh"
-//#include "G4Material.hh"
-#include "G4PVPlacement.hh"
-#include "G4QuadrangularFacet.hh"
-#include "G4TriangularFacet.hh"
-#include "G4VisAttributes.hh"
+#include "Geant4/G4VPhysicalVolume.hh"
+#include "Geant4/G4LogicalVolume.hh"
+//#include "Geant4/G4Material.hh"
+#include "Geant4/G4PVPlacement.hh"
+#include "Geant4/G4QuadrangularFacet.hh"
+#include "Geant4/G4TriangularFacet.hh"
+#include "Geant4/G4VisAttributes.hh"
 
-//#include "G4RunManager.hh"
+//#include "Geant4/G4RunManager.hh"
 //#include "PAbsSD.hh"
-//#include "G4SDManager.hh"
+//#include "Geant4/G4SDManager.hh"
 
 // I have created some comments on the files to generate the helical proton absorber geometry.
 // We might have used a different notation than used in Fermilab. If there is any problem reading
@@ -118,7 +121,7 @@ HelicalProtonAbsorber::HelicalProtonAbsorber(double z_start, double length_i, do
         //creating logical and physical volumes
         pabs_logic = new G4LogicalVolume(pabs_solid, material, "helical_pabs_log");
         pabs_phys = new G4PVPlacement(0,position,pabs_logic,"helical_pabs_phys", World, false, 0);
-        pabs_logic->SetVisAttributes(G4VisAttributes::Invisible);
+        pabs_logic->SetVisAttributes(G4VisAttributes::GetInvisible());
 }
 
 HelicalProtonAbsorber::~HelicalProtonAbsorber()

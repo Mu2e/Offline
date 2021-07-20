@@ -8,8 +8,8 @@
 ///////////////////////////////////////////////////////////////////////////////
 #include "fhiclcpp/ParameterSet.h"
 
-#include "Mu2eUtilities/inc/ModuleHistToolBase.hh"
-#include "CalPatRec/inc/CalTimePeakFinder_module.hh"
+#include "Offline/Mu2eUtilities/inc/ModuleHistToolBase.hh"
+#include "Offline/CalPatRec/inc/CalTimePeakFinder_module.hh"
 
 // framework
 #include "art/Framework/Principal/Handle.h"
@@ -18,21 +18,21 @@
 #include "art/Utilities/make_tool.h"
 
 // conditions
-#include "ConditionsService/inc/AcceleratorParams.hh"
-#include "ConditionsService/inc/ConditionsHandle.hh"
+#include "Offline/ConditionsService/inc/AcceleratorParams.hh"
+#include "Offline/ConditionsService/inc/ConditionsHandle.hh"
 
-#include "GeometryService/inc/GeomHandle.hh"
-#include "GeometryService/inc/DetectorSystem.hh"
+#include "Offline/GeometryService/inc/GeomHandle.hh"
+#include "Offline/GeometryService/inc/DetectorSystem.hh"
 
-#include "TrackerGeom/inc/Tracker.hh"
-#include "CalorimeterGeom/inc/DiskCalorimeter.hh"
+#include "Offline/TrackerGeom/inc/Tracker.hh"
+#include "Offline/CalorimeterGeom/inc/DiskCalorimeter.hh"
 
-#include "ConfigTools/inc/ConfigFileLookupPolicy.hh"
+#include "Offline/ConfigTools/inc/ConfigFileLookupPolicy.hh"
 
-#include "RecoDataProducts/inc/StrawHitIndex.hh"
-#include "RecoDataProducts/inc/TimeCluster.hh"
+#include "Offline/RecoDataProducts/inc/StrawHitIndex.hh"
+#include "Offline/RecoDataProducts/inc/TimeCluster.hh"
 
-#include "Mu2eUtilities/inc/polyAtan2.hh"
+#include "Offline/Mu2eUtilities/inc/polyAtan2.hh"
 
 using namespace std;
 
@@ -211,6 +211,7 @@ namespace mu2e {
     for (int ic=0; ic<ncl; ic++) {
       cl      = &_data.ccCollection->at(ic);
       int   nsh(0);
+      if (_debugLevel > 0) printf("[CalTimePeakFinder::findTimePeaks] E=%6.3f Time=%6.3f nHits=%u\n",  cl->energyDep(), cl->time(), cl->size());
 
       if ( cl->energyDep() >= _minClusterEnergy) {
 
@@ -221,19 +222,24 @@ namespace mu2e {
 // convert cluster coordinates defined in the disk frame to the detector
 // coordinate system
 //-----------------------------------------------------------------------------
-          gpos = _calorimeter->geomUtil().diskToMu2e(cl->diskId(),cl->cog3Vector());
+          gpos = _calorimeter->geomUtil().diskToMu2e(cl->diskID(),cl->cog3Vector());
           tpos = _calorimeter->geomUtil().mu2eToTracker(gpos);
 
           xcl     = tpos.x();
           ycl     = tpos.y();
           zcl     = tpos.z();
           mphi    = polyAtan2(ycl, xcl);
+	  if (_debugLevel > 0) printf("[CalTimePeakFinder::findTimePeaks] x_cl=%6.3f y_cl=%6.3f z_cl=%6.3f\n",  xcl, ycl, zcl);
 
           // create time peak
           TimeCluster tpeak;
 //-----------------------------------------------------------------------------
 // record hits in time with each peak, and accept them if they have a minimum # of hits
 //-----------------------------------------------------------------------------
+	  if (_debugLevel > 0){
+	    printf("[CalTimePeakFinder::findTimePeaks] nComboHits=%i\n",  nch);
+	    printf("[CalTimePeakFinder::findTimePeaks]     TOF      Dt\n");
+	  }
           for(int istr=0; istr<nch;++istr) {
 
             hit    = &_data.chcol->at(istr);
@@ -245,6 +251,7 @@ namespace mu2e {
 //-----------------------------------------------------------------------------
             tof = (zcl-zstraw)/_sinPitch/(CLHEP::c_light*_beta);
             dt  = cl_time-(time+tof-meanDriftTime);
+	    if (_debugLevel > 0) printf("[CalTimePeakFinder::findTimePeaks] %10.3f %10.3f\n",  tof, dt);
 //--------------------------------------------------------------------------------
 // check the angular distance from the calorimeter cluster
 //--------------------------------------------------------------------------------

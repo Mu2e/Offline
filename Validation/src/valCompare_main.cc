@@ -11,7 +11,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <unistd.h>
-#include "Validation/inc/TValCompare.hh"
+#include "Offline/Validation/inc/TValCompare.hh"
 
 void valCompare_usage() {
 
@@ -40,6 +40,9 @@ void valCompare_usage() {
 "    - put all comparisons into a pdf file with 2x2 on a page\n"
 "    valCompare -2 -p result.pdf FILE1 FILE2\n"
 "  \n"
+"  The command can also be run with one file on the command line.\n"
+"  In this case, the web output switch must be on, and simple plots will be made. \n"
+"  \n"
 "  -h print help\n"
 "  -v INT verbose level (default=1)\n"
 "  -l INT  select plots to show - lower limit to status (0-11)\n"
@@ -60,7 +63,8 @@ void valCompare_usage() {
 "  -u ignore underflows in comparison\n"
 "  -o ignore overflows in comparison\n"
 "  -p FILE  PDF file output like dir/results.pdf\n"
-"  -w FILE  web page output like dir/dir/results.html\n"
+"  -w FILE  web page output like dir/dir/result.html\n"
+"          if only one file is given on the command line, make histgram plots\n"
 	 << std::endl;
   return;
 }
@@ -163,11 +167,37 @@ int main (int argc, char **argv)
         return 1;
       }
 
-  if( optind >= argc ) {
-    printf("ERROR - need two histogram file names on the command line\n");
+  std::string opt;
+  if(q12) {
+    opt.append("1X2");
+  } else if (q22) {
+    opt.append("2X2");
+  }
+
+  int nFile = argc-optind;
+
+  if( nFile <= 0 ) {
+    printf("ERROR - no histogram files on the command line\n");
     valCompare_usage();
     return 1;
+  } else if( nFile == 1 ) {
+    if(!webPage && !pdfFile) {
+      printf("ERROR - one histogram file specified, but no output requested\n");
+      valCompare_usage();
+      return 1;
+    }
+
+    TValCompare pp;
+    pp.SetVerbose(verbose);
+    pp.SetFile1(argv[optind]);
+    pp.OneFile();
+    if(pdfFile) pp.SaveAs(pdfFile,opt.c_str());
+    if(webPage) pp.SaveAs1(webPage);
+    return 0;
   }
+
+  // 2-file comparison mode
+
   TValCompare pp;
   pp.SetVerbose(verbose);
   pp.SetFile1(argv[optind]);
@@ -190,12 +220,6 @@ int main (int argc, char **argv)
   pp.Analyze();
   if(qReport) pp.Report();
   if(qSummary) pp.Summary();
-  std::string opt;
-  if(q12) {
-    opt.append("1X2");
-  } else if (q22) {
-    opt.append("2X2");
-  }
   if(qBrowse) pp.Display(opt.c_str());
   if(pdfFile) pp.SaveAs(pdfFile,opt.c_str());
   if(webPage) pp.SaveAs(webPage,opt.c_str());

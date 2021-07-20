@@ -24,33 +24,33 @@
 #include "cetlib_except/exception.h"
 
 // Mu2e includes
-#include "Mu2eG4/inc/ConstructMaterials.hh"
-#include "Mu2eG4/inc/findMaterialOrThrow.hh"
-#include "Mu2eG4/inc/setBirksConstant.hh"
-#include "DetectorSolenoidGeom/inc/DetectorSolenoid.hh"
-#include "ProductionSolenoidGeom/inc/PSVacuum.hh"
-#include "GeometryService/inc/GeometryService.hh"
-#include "GeometryService/inc/GeomHandle.hh"
-#include "GlobalConstantsService/inc/GlobalConstantsHandle.hh"
-#include "GlobalConstantsService/inc/PhysicsParams.hh"
+#include "Offline/Mu2eG4/inc/ConstructMaterials.hh"
+#include "Offline/Mu2eG4/inc/findMaterialOrThrow.hh"
+#include "Offline/Mu2eG4/inc/setBirksConstant.hh"
+#include "Offline/DetectorSolenoidGeom/inc/DetectorSolenoid.hh"
+#include "Offline/ProductionSolenoidGeom/inc/PSVacuum.hh"
+#include "Offline/GeometryService/inc/GeometryService.hh"
+#include "Offline/GeometryService/inc/GeomHandle.hh"
+#include "Offline/GlobalConstantsService/inc/GlobalConstantsHandle.hh"
+#include "Offline/GlobalConstantsService/inc/PhysicsParams.hh"
 
 // CLHEP includes
 #include "CLHEP/Units/PhysicalConstants.h"
 
 // G4 includes
-#include "G4GeometryManager.hh"
-#include "G4PhysicalVolumeStore.hh"
-#include "G4LogicalVolumeStore.hh"
-#include "G4SolidStore.hh"
+#include "Geant4/G4GeometryManager.hh"
+#include "Geant4/G4PhysicalVolumeStore.hh"
+#include "Geant4/G4LogicalVolumeStore.hh"
+#include "Geant4/G4SolidStore.hh"
 
-#include "G4Material.hh"
-#include "G4Box.hh"
-#include "G4Tubs.hh"
-#include "G4LogicalVolume.hh"
-#include "G4ThreeVector.hh"
-#include "globals.hh"
-#include "G4NistManager.hh"
-#include "G4VisAttributes.hh"
+#include "Geant4/G4Material.hh"
+#include "Geant4/G4Box.hh"
+#include "Geant4/G4Tubs.hh"
+#include "Geant4/G4LogicalVolume.hh"
+#include "Geant4/G4ThreeVector.hh"
+#include "Geant4/globals.hh"
+#include "Geant4/G4NistManager.hh"
+#include "Geant4/G4VisAttributes.hh"
 
 using namespace std;
 
@@ -254,6 +254,13 @@ namespace mu2e {
       G4Material* Polyethylene0956 = new G4Material( mat.name, 0.956*CLHEP::g/CLHEP::cm3, 2);
       Polyethylene0956->AddMaterial( findMaterialOrThrow("G4_H"), 0.143711);
       Polyethylene0956->AddMaterial( findMaterialOrThrow("G4_C"), 0.856289);
+    }
+
+    mat = uniqueMaterialOrThrow( "IPAPolyethylene");
+    {
+      G4Material* IPAPolyethylene = new G4Material( mat.name, 0.954*CLHEP::g/CLHEP::cm3, 2);
+      IPAPolyethylene->AddMaterial( findMaterialOrThrow("G4_H"), 0.11);
+      IPAPolyethylene->AddMaterial( findMaterialOrThrow("G4_C"), 0.89); // Carbon doped Polytehylene, additional carbon 2-5% from MDS (DeWal DW 402B),  density measured by S. Krave 6/22/2021
     }
 
     mat = uniqueMaterialOrThrow( "Polyethylene096");

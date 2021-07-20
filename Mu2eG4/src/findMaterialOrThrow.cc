@@ -9,14 +9,14 @@
 //
 //
 
-#include "Mu2eG4/inc/findMaterialOrThrow.hh"
+#include "Offline/Mu2eG4/inc/findMaterialOrThrow.hh"
 
 // Framework includes
 #include "cetlib_except/exception.h"
 
 // G4 includes
-#include "G4String.hh"
-#include "G4NistManager.hh"
+#include "Geant4/G4String.hh"
+#include "Geant4/G4NistManager.hh"
 
 namespace mu2e {
   G4Material* findMaterialOrThrow( G4String const& name){

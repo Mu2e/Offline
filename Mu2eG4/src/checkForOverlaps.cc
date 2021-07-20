@@ -13,13 +13,13 @@
 #include "cetlib/cpu_timer.h"
 
 // Mu2e includes
-#include "Mu2eG4/inc/checkForOverlaps.hh"
-#include "ConfigTools/inc/SimpleConfig.hh"
+#include "Offline/Mu2eG4/inc/checkForOverlaps.hh"
+#include "Offline/ConfigTools/inc/SimpleConfig.hh"
 
 // G4 includes
-#include "G4VPhysicalVolume.hh"
-#include "G4LogicalVolume.hh"
-#include "G4VSolid.hh"
+#include "Geant4/G4VPhysicalVolume.hh"
+#include "Geant4/G4LogicalVolume.hh"
+#include "Geant4/G4VSolid.hh"
 
 namespace mu2e{
 

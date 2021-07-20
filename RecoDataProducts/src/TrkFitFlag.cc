@@ -5,7 +5,7 @@
 // Original author David Brown
 //
 // Mu2e includes
-#include "RecoDataProducts/inc/TrkFitFlag.hh"
+#include "Offline/RecoDataProducts/inc/TrkFitFlag.hh"
 #include <stdexcept>
 #include <iostream>
 #include <stdio.h>
@@ -33,11 +33,15 @@ namespace mu2e {
       bitnames[std::string("HelixConverged")]           = bit_to_mask(helixConverged);
       bitnames[std::string("SeedConverged")]              = bit_to_mask(seedConverged);
       bitnames[std::string("KalmanConverged")]              = bit_to_mask(kalmanConverged);
+      bitnames[std::string("MaterialCorrection")]              = bit_to_mask(MatCorr);
+      bitnames[std::string("IntegralBFieldCorrection")]              = bit_to_mask(BFCorr1);
+      bitnames[std::string("VariableBFieldCorrection")]              = bit_to_mask(BFCorr2);
       bitnames[std::string("KalSeedFit")]              = bit_to_mask(KSF);
       bitnames[std::string("KalFinalFit")]              = bit_to_mask(KFF);
       bitnames[std::string("TrkPatRecHelix")]              = bit_to_mask(TPRHelix);
       bitnames[std::string("CalPatRecHelix")]              = bit_to_mask(CPRHelix);
       bitnames[std::string("Straight")]              = bit_to_mask(Straight);
+      bitnames[std::string("KKLoopHelix")]              = bit_to_mask(KKLoopHelix);
     }
     return bitnames;
   }

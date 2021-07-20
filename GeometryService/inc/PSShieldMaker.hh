@@ -8,7 +8,7 @@
 //
 
 #include <memory>
-#include "ProductionSolenoidGeom/inc/PSShield.hh"
+#include "Offline/ProductionSolenoidGeom/inc/PSShield.hh"
 
 namespace CLHEP { class Hep3Vector; }
 

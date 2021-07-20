@@ -4,21 +4,21 @@
 #include <shared_mutex>
 #include <chrono>
 
-#include "DbService/inc/DbReader.hh"
-#include "DbTables/inc/DbId.hh"
-#include "DbTables/inc/DbTable.hh"
-#include "DbTables/inc/DbVersion.hh"
-#include "DbTables/inc/DbTableCollection.hh"
-#include "DbTables/inc/DbCache.hh"
-#include "DbTables/inc/DbValCache.hh"
-#include "DbTables/inc/DbLiveTable.hh"
+#include "Offline/DbService/inc/DbReader.hh"
+#include "Offline/DbTables/inc/DbId.hh"
+#include "Offline/DbTables/inc/DbTable.hh"
+#include "Offline/DbTables/inc/DbVersion.hh"
+#include "Offline/DbTables/inc/DbTableCollection.hh"
+#include "Offline/DbTables/inc/DbCache.hh"
+#include "Offline/DbTables/inc/DbValCache.hh"
+#include "Offline/DbTables/inc/DbLiveTable.hh"
 
 
 namespace mu2e {
   class DbEngine {
   public:
 
-    DbEngine():_verbose(0),_initialized(false),
+    DbEngine():_verbose(0),_saveCsv(true),_initialized(false),
 	       _lockWaitTime(0),_lockTime(0) {}
     // the big read of the IOV structure is done in beginJob
     int beginJob();
@@ -31,6 +31,8 @@ namespace mu2e {
     // add tables directly - optionally set before beginJob
     void addOverride(DbTableCollection const& coll);
     void setVerbose(int verbose = 0) { _verbose = verbose; }
+    // whether to save the csv text content when loading a table
+    void setSaveCsv(bool saveCsv) { _saveCsv = saveCsv; }
     // these should only be called in single-threaded startup
     std::shared_ptr<DbValCache>& valCache() {return _vcache;}
     std::vector<int> gids() { return _gids; }
@@ -64,6 +66,7 @@ namespace mu2e {
     DbReader _reader;
     DbVersion _version;
     int _verbose;
+    bool _saveCsv;
     DbTableCollection _override;
     DbCache _cache;
     std::shared_ptr<DbValCache> _vcache;

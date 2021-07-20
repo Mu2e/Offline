@@ -4,7 +4,7 @@
 
 #include "art/Framework/Principal/Event.h"
 #include "art_root_io/TFileDirectory.h"
-#include "MCDataProducts/inc/SimParticleTimeMap.hh"
+#include "Offline/MCDataProducts/inc/SimParticleTimeMap.hh"
 #include "TH1D.h"
 #include <string>
 

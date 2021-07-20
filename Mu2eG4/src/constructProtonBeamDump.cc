@@ -1,29 +1,29 @@
 // Andrei Gaponenko, 2011
 
-#include "Mu2eG4/inc/constructProtonBeamDump.hh"
-#include "Mu2eG4/inc/constructExtMonFNAL.hh"
-#include "G4Helper/inc/AntiLeakRegistry.hh"
+#include "Offline/Mu2eG4/inc/constructProtonBeamDump.hh"
+#include "Offline/Mu2eG4/inc/constructExtMonFNAL.hh"
+#include "Offline/Mu2eG4Helper/inc/AntiLeakRegistry.hh"
 
 #include <iostream>
 #include <cmath>
 
-#include "G4Color.hh"
-#include "G4LogicalVolume.hh"
-#include "G4Trap.hh"
-#include "G4Orb.hh"
-#include "G4Box.hh"
-#include "G4Polycone.hh"
-#include "G4ExtrudedSolid.hh"
-#include "G4IntersectionSolid.hh"
-#include "G4TwoVector.hh"
-#include "G4SDManager.hh"
+#include "Geant4/G4Color.hh"
+#include "Geant4/G4LogicalVolume.hh"
+#include "Geant4/G4Trap.hh"
+#include "Geant4/G4Orb.hh"
+#include "Geant4/G4Box.hh"
+#include "Geant4/G4Polycone.hh"
+#include "Geant4/G4ExtrudedSolid.hh"
+#include "Geant4/G4IntersectionSolid.hh"
+#include "Geant4/G4TwoVector.hh"
+#include "Geant4/G4SDManager.hh"
 
-#include "G4UniformMagField.hh"
-#include "G4Mag_UsualEqRhs.hh"
-#include "G4ExactHelixStepper.hh"
-//#include "G4NystromRK4.hh"
-#include "G4ChordFinder.hh"
-#include "G4FieldManager.hh"
+#include "Geant4/G4UniformMagField.hh"
+#include "Geant4/G4Mag_UsualEqRhs.hh"
+#include "Geant4/G4ExactHelixStepper.hh"
+//#include "Geant4/G4NystromRK4.hh"
+#include "Geant4/G4ChordFinder.hh"
+#include "Geant4/G4FieldManager.hh"
 
 #include "CLHEP/Vector/ThreeVector.h"
 #include "CLHEP/Vector/Rotation.h"
@@ -31,24 +31,26 @@
 
 #include "cetlib_except/exception.h"
 
-#include "GeometryService/inc/G4GeometryOptions.hh"
-#include "GeometryService/inc/GeomHandle.hh"
-#include "ProtonBeamDumpGeom/inc/ProtonBeamDump.hh"
-#include "ExtinctionMonitorFNAL/Geometry/inc/ExtMonFNALBuilding.hh"
-#include "GeometryService/inc/WorldG4.hh"
-#include "GeometryService/inc/Mu2eEnvelope.hh"
+#include "art/Framework/Services/Registry/ServiceDefinitionMacros.h"
 
-#include "G4Helper/inc/G4Helper.hh"
-#include "G4Helper/inc/VolumeInfo.hh"
-#include "G4Helper/inc/AntiLeakRegistry.hh"
-#include "ConfigTools/inc/SimpleConfig.hh"
-#include "Mu2eG4/inc/nestBox.hh"
-#include "Mu2eG4/inc/MaterialFinder.hh"
-#include "Mu2eG4/inc/findMaterialOrThrow.hh"
-#include "Mu2eG4/inc/FieldMgr.hh"
+#include "Offline/GeometryService/inc/G4GeometryOptions.hh"
+#include "Offline/GeometryService/inc/GeomHandle.hh"
+#include "Offline/ProtonBeamDumpGeom/inc/ProtonBeamDump.hh"
+#include "Offline/ExtinctionMonitorFNAL/Geometry/inc/ExtMonFNALBuilding.hh"
+#include "Offline/GeometryService/inc/WorldG4.hh"
+#include "Offline/GeometryService/inc/Mu2eEnvelope.hh"
 
-#include "Mu2eG4/inc/finishNesting.hh"
-#include "G4Helper/inc/VolumeInfo.hh"
+#include "Offline/Mu2eG4Helper/inc/Mu2eG4Helper.hh"
+#include "Offline/Mu2eG4Helper/inc/VolumeInfo.hh"
+#include "Offline/Mu2eG4Helper/inc/AntiLeakRegistry.hh"
+#include "Offline/ConfigTools/inc/SimpleConfig.hh"
+#include "Offline/Mu2eG4/inc/nestBox.hh"
+#include "Offline/Mu2eG4/inc/MaterialFinder.hh"
+#include "Offline/Mu2eG4/inc/findMaterialOrThrow.hh"
+#include "Offline/Mu2eG4/inc/FieldMgr.hh"
+
+#include "Offline/Mu2eG4/inc/finishNesting.hh"
+#include "Offline/Mu2eG4Helper/inc/VolumeInfo.hh"
 
 //#define AGDEBUG(stuff) std::cerr<<"AG: "<<__FILE__<<", line "<<__LINE__<<": "<<stuff<<std::endl;
 #define AGDEBUG(stuff)
@@ -72,7 +74,7 @@ namespace mu2e {
     geomOptions->loadEntry( config, "ProtonBeamDumpCore"     , "protonBeamDump.core"       );
     geomOptions->loadEntry( config, "ProtonBeamDumpMouth"    , "protonBeamDump.mouth"      );
     geomOptions->loadEntry( config, "ProtonBeamNeutronCave"  , "protonBeamDump.neutronCave");
-  
+
 
     static CLHEP::HepRotation shieldingRot(CLHEP::HepRotation::IDENTITY);
     shieldingRot.rotateX( 90*CLHEP::degree);
@@ -86,8 +88,8 @@ namespace mu2e {
     beamDumpFront.solid = new G4ExtrudedSolid(beamDumpFront.name, dump->frontShieldingOutline(),
                                               dump->frontShieldingHalfSize()[1],
                                               G4TwoVector(0,0), 1., G4TwoVector(0,0), 1.);
-    
-    
+
+
     finishNesting(beamDumpFront,
                   materialFinder.get("protonBeamDump.material.shielding"),
                   &shieldingRot,
@@ -126,16 +128,16 @@ namespace mu2e {
                   );
 
     static const CLHEP::HepRotation rotationInShield( (shieldingRot*dump->coreRotationInMu2e()).inverse() );
-    CLHEP::Hep3Vector coreAirPositionInShield( shieldingRot * (dump->coreAirCenterInMu2e() - beamDumpFront.centerInMu2e())); 
+    CLHEP::Hep3Vector coreAirPositionInShield( shieldingRot * (dump->coreAirCenterInMu2e() - beamDumpFront.centerInMu2e()));
     VolumeInfo  beamDumpCoreAir = nestBox("ProtonBeamDumpCoreAir",
-            dump->coreAirHalfSize(),
-            materialFinder.get("protonBeamDump.material.air"),
-            &rotationInShield,
-            coreAirPositionInShield,
-            beamDumpFront, 0,
-            G4Colour::Cyan()
-            );
-    
+                                          dump->coreAirHalfSize(),
+                                          materialFinder.get("protonBeamDump.material.air"),
+                                          &rotationInShield,
+                                          coreAirPositionInShield,
+                                          beamDumpFront, 0,
+                                          G4Colour::Cyan()
+                                          );
+
     CLHEP::Hep3Vector corePositionInCoreAir( dump->coreCenterInMu2e()-dump->coreAirCenterInMu2e() );
     nestBox("ProtonBeamDumpCore",
             dump->coreHalfSize(),

@@ -1,4 +1,4 @@
-#include "CRVResponse/inc/MakeCrvPhotons.hh"
+#include "Offline/CRVResponse/inc/MakeCrvPhotons.hh"
 
 #include <sstream>
 
@@ -242,6 +242,10 @@ void LookupBin::Read(std::ifstream &lookupfile, const unsigned int &i)
   lookupfile.read(reinterpret_cast<char*>(&arrivalProbability),sizeof(float));
   ReadVector(timeDelays, lookupfile);
   ReadVector(fiberEmissions, lookupfile);
+  probabilityScaleTimeDelays=0;
+  probabilityScaleFiberEmissions=0;
+  for(size_t j=0; j<timeDelays.size(); ++j) probabilityScaleTimeDelays+=timeDelays[j];
+  for(size_t j=0; j<fiberEmissions.size(); ++j) probabilityScaleFiberEmissions+=fiberEmissions[j];
   if(i!=binNumber) throw std::logic_error("Corrupt lookup table.");
 }
 
@@ -283,12 +287,10 @@ MakeCrvPhotons::~MakeCrvPhotons()
 void MakeCrvPhotons::MakePhotons(const CLHEP::Hep3Vector &stepStartTmp,   //they need to be points
                           const CLHEP::Hep3Vector &stepEndTmp,            //local to the CRV bar
                           double timeStart, double timeEnd,
-                          int PDGcode, double beta, double charge,
-                          double energyDepositedTotal,
-                          double energyDepositedNonIonizing,
+                          double beta, double charge,
+                          double visibleEnergyDeposited,
                           double trueTotalStepLength,   //may be longer than stepEnd-stepStart due to scattering 
-                                                        //is needed for the visible energy adjustment, and for the Cerenkov photons
-                          double scintillationYieldAdjustment,
+                                                        //is needed for the Cerenkov photons
                           int    reflector)
 {
   if(_LC.reflector!=0 && reflector==0) throw std::logic_error("Expected a lookup table without reflector.");
@@ -320,6 +322,9 @@ void MakeCrvPhotons::MakePhotons(const CLHEP::Hep3Vector &stepStartTmp,   //they
   stepEnd[3].setZ(-stepEnd[3].z());
   stepEnd[3].setY(-stepEnd[3].y());
 
+static int nPScintillation=0;
+static int nPCerenkov=0;
+
   for(int SiPM=0; SiPM<4; SiPM++)
   {
     //there are only lookup tables without reflector or with reflector on the +z side (i.e. at SiPMs #1 and #3)
@@ -332,12 +337,11 @@ void MakeCrvPhotons::MakePhotons(const CLHEP::Hep3Vector &stepStartTmp,   //they
     double precision=0.1; //mm
     int    nSteps=std::max(static_cast<int>(totalStepLength/precision),1);
 
-    double energy = VisibleEnergyDeposition(PDGcode, trueTotalStepLength, energyDepositedTotal, energyDepositedNonIonizing);
-    double avgNPhotonsScintillation = (_scintillationYield+scintillationYieldAdjustment)*energy;
+    double avgNPhotonsScintillation = _scintillationYield*visibleEnergyDeposited;
     double avgNPhotonsCerenkovInScintillator 
-           = GetAverageNumberOfCerenkovPhotons(beta, charge, _LCerenkov.photonsScintillator)*trueTotalStepLength;  //use the true path, since it  may be longer due to scattering
+           = GetAverageNumberOfCerenkovPhotons(beta, charge, _LCerenkov.photonsScintillator)*trueTotalStepLength;  //use the true path, since it  may be longer due to curved paths
     double avgNPhotonsCerenkovInFiber 
-           = GetAverageNumberOfCerenkovPhotons(beta, charge, _LCerenkov.photonsFiber)*trueTotalStepLength;  //use the true path, since it  may be longer due to scattering
+           = GetAverageNumberOfCerenkovPhotons(beta, charge, _LCerenkov.photonsFiber)*trueTotalStepLength;  //use the true path, since it  may be longer due to curved paths
 
     int nPhotonsScintillationPerStep          = GetNumberOfPhotonsFromAverage(avgNPhotonsScintillation,nSteps);
     int nPhotonsCerenkovInScintillatorPerStep = GetNumberOfPhotonsFromAverage(avgNPhotonsCerenkovInScintillator,nSteps);
@@ -384,6 +388,9 @@ void MakeCrvPhotons::MakePhotons(const CLHEP::Hep3Vector &stepStartTmp,   //they
         }
       }
 
+nPScintillation+=nPhotonsScintillation;
+nPCerenkov+=nPhotonsCerenkov;
+
       //loop over all photons created at this point
       int nPhotons = nPhotonsScintillation + nPhotonsCerenkov;
       for(int i=0; i<nPhotons; i++)
@@ -401,14 +408,11 @@ void MakeCrvPhotons::MakePhotons(const CLHEP::Hep3Vector &stepStartTmp,   //they
           double arrivalTime = t;
 
           //add fiber decay times depending on the number of emissions
-          bool overflow=false;
-          int nEmissions = GetRandomFiberEmissions(theBin,overflow);
-          if(overflow) continue;  //don't include photons which arrive very late. they are spread out, and can be ignored
+          int nEmissions = GetRandomFiberEmissions(theBin);
           for(int iEmission=0; iEmission<nEmissions; iEmission++) arrivalTime+=-_LC.WLSfiberDecayTime*log(_randFlat.fire());
 
           //add additional time delay due to the photons bouncing around
-          arrivalTime+=GetRandomTime(theBin,overflow);
-          if(overflow) continue;  //don't include photons which arrive very late. they are spread out, and can be ignored
+          arrivalTime+=GetRandomTime(theBin);
 
           if(reflector!=-1) _arrivalTimes[SiPM].push_back(arrivalTime);
           else _arrivalTimes[SiPM+1].push_back(arrivalTime);
@@ -417,6 +421,9 @@ void MakeCrvPhotons::MakePhotons(const CLHEP::Hep3Vector &stepStartTmp,   //they
       }//loop over all SiPMs
     }//loop over all photons at this point
   }//loop over all points along the track
+
+//std::cout<<"Lookup tables:  total scintillation: "<<nPScintillation<<"  total Cerenkov: "<<nPCerenkov<<std::endl;
+
 }
 
 bool MakeCrvPhotons::IsInsideScintillator(const CLHEP::Hep3Vector &p)
@@ -469,40 +476,42 @@ bool MakeCrvPhotons::IsInsideFiber(const CLHEP::Hep3Vector &p, const CLHEP::Hep3
   return true;
 }
 
-double MakeCrvPhotons::GetRandomTime(const LookupBin *theBin, bool &overflow)
+double MakeCrvPhotons::GetRandomTime(const LookupBin *theBin)
 {
-  //the lookup tables encodes probabilities as probability*probabilityScale(10000), 
-  //so that the probabilities can be stored as integers.
-  //therefore, the probability of 1 is stored as 10000.
-  double rand=_randFlat.fire()*LookupBin::probabilityScale;
-  double sumProb=0;
+  //The lookup tables encodes probabilities as probability*mu2eCrv::LookupBin::probabilityScale(255), 
+  //so that the probabilities can be stored as integers. For example, the probability of 1 is stored as 255.
+  //Due to rounding issues, the sum of all entries for this bin may not be 255.
+  //This bin-specifc sum is the probabilityScaleTimeDelays.
+
   size_t timeDelay=0;
+  double rand=_randFlat.fire()*theBin->probabilityScaleTimeDelays;
+  double sumProb=0;
   size_t maxTimeDelay=theBin->timeDelays.size();
-  for(; timeDelay<maxTimeDelay; timeDelay++)
+  for(timeDelay=0; timeDelay<maxTimeDelay; ++timeDelay)
   {
     sumProb+=theBin->timeDelays[timeDelay];
     if(rand<=sumProb) break;
   }
-  if(rand>sumProb) overflow=true; else overflow=false;
 
-  return timeDelay;
+  return static_cast<double>(timeDelay);
 }
 
-int MakeCrvPhotons::GetRandomFiberEmissions(const LookupBin *theBin, bool &overflow)
+int MakeCrvPhotons::GetRandomFiberEmissions(const LookupBin *theBin)
 {
-  //the lookup tables encodes probabilities as probability*probabilityScale(10000), 
-  //so that the probabilities can be stored as integers.
-  //therefore, the probability of 1 is stored as 10000.
-  double rand=_randFlat.fire()*LookupBin::probabilityScale;
-  double sumProb=0;
+  //The lookup tables encodes probabilities as probability*mu2eCrv::LookupBin::probabilityScale(255), 
+  //so that the probabilities can be stored as integers. For example, the probability of 1 is stored as 255.
+  //Due to rounding issues, the sum of all entries for this bin may not be 255.
+  //This bin-specifc sum is the probabilityScaleFiberEmissions.
+
   size_t emissions=0;
+  double rand=_randFlat.fire()*theBin->probabilityScaleFiberEmissions;
+  double sumProb=0;
   size_t maxEmissions=theBin->fiberEmissions.size();
-  for(; emissions<maxEmissions; emissions++)
+  for(emissions=0; emissions<maxEmissions; ++emissions)
   {
     sumProb+=theBin->fiberEmissions[emissions];
     if(rand<=sumProb) break;
   }
-  if(rand>sumProb) overflow=true; else overflow=false;
 
   return emissions;
 }
@@ -559,100 +568,5 @@ double MakeCrvPhotons::GetAverageNumberOfCerenkovPhotons(double beta, double cha
   }
   return photons.rbegin()->second*fabs(charge/eplus); //this shouldn't happen
 } 
-
-
-//this mimics G4EmSaturation::VisibleEnergyDeposition
-//but assumes that nloss/(protonRange/chargesq) is small enough so that it can be approximated as 0
-//and uses a lookup table for the energyDepositedTotal/electronRange values obtained specifically for Polystyrene
-double MakeCrvPhotons::VisibleEnergyDeposition(int PDGcode, double stepLength,
-                                            double energyDepositedTotal,
-                                            double energyDepositedNonIonizing)
-{
-  if(energyDepositedTotal <= 0.0) { return 0.0; }
-
-  double evis = energyDepositedTotal;
-
-  if(PDGcode==22)
-  {
-    if(evis>0)
-    {
-      double correctionFactor=FindVisibleEnergyAdjustmentFactor(energyDepositedTotal);
-      evis /= (1.0 + _LC.scintillatorBirksConstant*correctionFactor);
-    }
-  }
-  else 
-  {
-    // protections
-    double nloss = energyDepositedNonIonizing;
-    if(nloss < 0.0) nloss = 0.0;
-    double eloss = energyDepositedTotal - nloss;
-
-    // neutrons
-    if(PDGcode==2112 || eloss < 0.0 || stepLength <= 0.0) 
-    {
-      nloss = energyDepositedTotal;
-      eloss = 0.0;
-    }
-
-    // continues energy loss
-    if(eloss > 0.0) 
-    { 
-      eloss /= (1.0 + _LC.scintillatorBirksConstant*eloss/stepLength); 
-    }
-
-    evis = eloss + nloss;
-  }
-
-/*
-  std::cout<<"PDGcode: "<<PDGcode<<std::endl;
-  std::cout<<"Original Energy Deposition (manual): "<<energyDepositedTotal<<std::endl;
-  std::cout<<"Original Nonionizing Energy Deposition (manual): "<<energyDepositedNonIonizing<<std::endl;
-  std::cout<<"Visible Energy Deposition (manual): "<<evis<<std::endl;
-*/
-
-  return evis;
-}
-
-void MakeCrvPhotons::LoadVisibleEnergyAdjustmentTable(const std::string &filename)
-{
-  std::ifstream visibleEnergyAdjustmentFile(filename);
-  if(!visibleEnergyAdjustmentFile.good()) throw std::logic_error("Could not open visible energy correction table file "+filename);
-  double lnEnergy, factor;
-  while(visibleEnergyAdjustmentFile >> lnEnergy >> factor)
-  {
-    _visibleEnergyAdjustmentTable[lnEnergy]=factor;
-  } 
-  visibleEnergyAdjustmentFile.close();
-}
-
-double MakeCrvPhotons::FindVisibleEnergyAdjustmentFactor(double energy)
-{
-  if(_visibleEnergyAdjustmentTable.size()==0) throw std::logic_error("Found no visible energy correction table.");
-
-  double lnEnergy=log(energy);
-  double correctionFactor=(--_visibleEnergyAdjustmentTable.end())->second;
-
-  std::map<double,double>::const_iterator iter=_visibleEnergyAdjustmentTable.begin();
-  if(lnEnergy<iter->first) correctionFactor=iter->second;
-  else
-  {
-    double prevLnEnergy=iter->first;
-    double prevFactor=iter->second;
-    iter++;
-    for(; iter!=_visibleEnergyAdjustmentTable.end(); iter++)
-    {
-      if(lnEnergy<iter->first)
-      {
-        double r=(lnEnergy-prevLnEnergy)/(iter->first-prevLnEnergy);
-        correctionFactor=(iter->second-prevFactor)*r + prevFactor;
-        break;
-      } 
-      prevLnEnergy=iter->first;
-      prevFactor=iter->second;
-    }
-  }
-
-  return correctionFactor;
-}
 
 } //namespace mu2e

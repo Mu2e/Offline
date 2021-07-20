@@ -1,5 +1,5 @@
 
-#include "Validation/inc/ValTriggerResults.hh"
+#include "Offline/Validation/inc/ValTriggerResults.hh"
 
 
 int mu2e::ValTriggerResults::declare(art::TFileDirectory tfs) {

@@ -81,11 +81,11 @@
 #include "canvas/Persistency/Common/Ptr.h"
 #include "cetlib/map_vector.h"
 
-#include "MCDataProducts/inc/ProcessCode.hh"
-#include "MCDataProducts/inc/SimParticleCollection.hh"
-#include "DataProducts/inc/VirtualDetectorId.hh"
-#include "DataProducts/inc/StrawId.hh"
-#include "DataProducts/inc/CRSScintillatorBarIndex.hh"
+#include "Offline/MCDataProducts/inc/ProcessCode.hh"
+#include "Offline/MCDataProducts/inc/SimParticleCollection.hh"
+#include "Offline/DataProducts/inc/VirtualDetectorId.hh"
+#include "Offline/DataProducts/inc/StrawId.hh"
+#include "Offline/DataProducts/inc/CRSScintillatorBarIndex.hh"
 
 #include "CLHEP/Vector/ThreeVector.h"
 
@@ -110,6 +110,7 @@ namespace mu2e {
       _position(),
       _postPosition(),
       _momentum(),
+      _postMomentum(),
       _time(0.),
       _proper(0.),
       _stepLength(0.),
@@ -126,6 +127,7 @@ namespace mu2e {
                  CLHEP::Hep3Vector const&     position,
                  CLHEP::Hep3Vector const&     postPosition,
                  CLHEP::Hep3Vector const&     momentum,
+                 CLHEP::Hep3Vector const&     postMomentum,
                  double                       stepLength,
                  ProcessCode                  endProcessCode
                  ):
@@ -137,6 +139,7 @@ namespace mu2e {
       _position(position),
       _postPosition(postPosition),
       _momentum(momentum),
+      _postMomentum(postMomentum),
       _time(time),
       _proper(proper),
       _stepLength(stepLength),
@@ -169,7 +172,9 @@ namespace mu2e {
     CLHEP::Hep3Vector const&     position()         const { return _position;  }
     CLHEP::Hep3Vector const&     postPosition()     const { return _postPosition;  }
     CLHEP::Hep3Vector const&     momentum()         const { return _momentum;  }
+    CLHEP::Hep3Vector const&     postMomentum()     const { return _postMomentum;  }
     double                       time()             const { return _time;      }
+    double&                      time()                   { return _time;      }
     double                       properTime()       const { return _proper;      }
     double                       stepLength()       const { return _stepLength;}
     ProcessCode                  endProcessCode()   const { return _endProcessCode;}
@@ -204,6 +209,7 @@ namespace mu2e {
     CLHEP::Hep3Vector     _position;
     CLHEP::Hep3Vector     _postPosition;
     CLHEP::Hep3Vector     _momentum;
+    CLHEP::Hep3Vector     _postMomentum;
     double                _time;
     double                _proper;
     float                 _stepLength;

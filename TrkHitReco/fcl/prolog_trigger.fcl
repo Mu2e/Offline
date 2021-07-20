@@ -1,14 +1,23 @@
+#include "Offline/TrkHitReco/fcl/prolog.fcl"
 BEGIN_PROLOG
 # Normal reco seqence module: this produces a hit for every digi, and uses
 # flags to keep track of which hits to use
 # Reconstruct hits: this produces StrawHits and ComboHits
 
 # now trigger-specific versions; these make deep copies
+TTPBTFSD : {
+  module_type             : ProtonBunchTimeFromStrawDigis
+}
+
 TTmakeSH : {
     module_type             : StrawHitReco
+    FitType                 : 5
     FilterHits              : true
     WriteStrawHitCollection : false
-    EventWindowMarkerLabel  : "EWMProducer"
+    ProtonBunchTimeTag      : "EWMProducer"
+    StrawDigiCollectionTag  : "makeSD"
+    CaloClusterCollectionTag  : "CaloClusterFast"
+    StrawDigiADCWaveformCollectionTag : "notUsed"
 }
 # combine hits in a panel
 TTmakePH : {
@@ -19,10 +28,14 @@ TTmakePH : {
 }
 TTmakeSHUCC : {
     module_type             : StrawHitReco
+    FitType                 : 5
     UseCalorimeter          : true
     FilterHits              : true
     WriteStrawHitCollection : false
-    EventWindowMarkerLabel  : "EWMProducer"
+    ProtonBunchTimeTag      : "EWMProducer"
+    StrawDigiCollectionTag  : "makeSD"
+    StrawDigiADCWaveformCollectionTag : "makeSD"
+    CaloClusterCollectionTag  : "CaloClusterFast"
 }
 # combine hits in a panel
 TTmakePHUCC : {
@@ -60,6 +73,7 @@ TTSflagBkgHits : {
 # combine together
 TrkHitRecoTrigger : { 
     producers : { 
+	TTPBTFSD            : { @table::TTPBTFSD             }
 	TTmakeSH            : { @table::TTmakeSH             }
 	TTmakePH            : { @table::TTmakePH             }
 	TTmakeSHUCC         : { @table::TTmakeSHUCC          }

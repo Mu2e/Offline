@@ -1,5 +1,5 @@
 
-#include "Print/inc/CaloRecoDigiPrinter.hh"
+#include "Offline/Print/inc/CaloRecoDigiPrinter.hh"
 #include "art/Framework/Principal/Provenance.h"
 #include <string>
 #include <iomanip>
@@ -10,8 +10,7 @@ mu2e::CaloRecoDigiPrinter::Print(art::Event const& event,
   if(verbose()<1) return;
   if(tags().empty()) {
     // if a list of instances not specified, print all instances
-    std::vector< art::Handle<CaloRecoDigiCollection> > vah;
-    event.getManyByType(vah);
+    std::vector< art::Handle<CaloRecoDigiCollection> > vah = event.getMany<CaloRecoDigiCollection>();
     for (auto const & ah : vah) Print(ah);
   } else {
     // print requested instances
@@ -67,7 +66,7 @@ mu2e::CaloRecoDigiPrinter::Print(const mu2e::CaloRecoDigi& obj, int ind, std::os
   if(ind>=0) os << std::setw(4) << ind;
 
   os 
-    << " " << std::setw(5) << obj.ROid()
+    << " " << std::setw(5) << obj.SiPMID()
     << " " 
     << " " << std::setw(8) << std::setprecision(1) << obj.energyDep()
     << " " << std::setw(8) << std::setprecision(1) << obj.energyDepErr()
@@ -89,7 +88,7 @@ mu2e::CaloRecoDigiPrinter::PrintHeader(const std::string& tag, std::ostream& os)
 void 
 mu2e::CaloRecoDigiPrinter::PrintListHeader(std::ostream& os) {
   if(verbose()<1) return;
-  os << "ind   ROid     energy   e_err    time     t_err     chi2   ndf  pileup\n";
+  os << "ind   SiPMID     energy   e_err    time     t_err     chi2   ndf  pileup\n";
 
 }
 

@@ -5,8 +5,8 @@
 //
 
 // Mu2e includes
-#include "BFieldGeom/inc/BFieldManager.hh"
-#include "GeometryService/inc/GeomHandle.hh"
+#include "Offline/BFieldGeom/inc/BFieldManager.hh"
+#include "Offline/GeometryService/inc/GeomHandle.hh"
 
 // art includes
 #include "art/Framework/Core/EDAnalyzer.h"
@@ -14,6 +14,7 @@
 #include "art/Framework/Principal/Handle.h"
 #include "art/Framework/Core/ModuleMacros.h"
 #include "art_root_io/TFileService.h"
+#include "art/Framework/Services/Registry/ServiceDefinitionMacros.h"
 
 // ROOT includes
 #include "TFile.h"

@@ -22,9 +22,9 @@
 
 #include "CLHEP/Vector/LorentzVector.h"
 #include "CLHEP/Vector/ThreeVector.h"
-#include "MCDataProducts/inc/GenParticle.hh"
-#include "MCDataProducts/inc/ProcessCode.hh"
-#include "DataProducts/inc/PDGCode.hh"
+#include "Offline/MCDataProducts/inc/GenParticle.hh"
+#include "Offline/MCDataProducts/inc/ProcessCode.hh"
+#include "Offline/DataProducts/inc/PDGCode.hh"
 
 #include "canvas/Persistency/Common/Ptr.h"
 
@@ -51,7 +51,7 @@ namespace mu2e {
     // A default c'tor is required for ROOT.
     SimParticle():
       _id(),
-      _stageOffset(),
+      _simStage(-1u),
       _parentSim(),
       _pdgId(),
       _genParticle(),
@@ -79,7 +79,7 @@ namespace mu2e {
     }
 
     SimParticle( key_type                       aid,
-                 unsigned                       stageOffset,
+                 unsigned                       simStage,
                  art::Ptr<SimParticle> const&   aparentSim,
                  PDGCode::type                  apdgId,
                  art::Ptr<GenParticle> const&   agenParticle,
@@ -93,7 +93,7 @@ namespace mu2e {
                  IonDetail             const&   ion = IonDetail()
                  ):
       _id(aid),
-      _stageOffset(stageOffset),
+      _simStage(simStage),
       _parentSim(aparentSim),
       _pdgId(apdgId),
       _genParticle(agenParticle),
@@ -157,7 +157,7 @@ namespace mu2e {
     key_type  id() const {return _id;}
     key_type& id()       { return _id;}
 
-    unsigned stageOffset() const { return _stageOffset; }
+    unsigned simStage() const { return _simStage; }
 
     // The parent of this track; may be null.
     art::Ptr<SimParticle> const& parent() const { return _parentSim; }
@@ -193,10 +193,13 @@ namespace mu2e {
     CLHEP::Hep3Vector const& startPosition()       const { return _startPosition;}
     CLHEP::HepLorentzVector const& startMomentum() const { return _startMomentum;}
     double      startGlobalTime()  const { return _startGlobalTime;}
+    double&     startGlobalTime()        { return _startGlobalTime;}
     double      startProperTime()  const { return _startProperTime;}
     unsigned    startVolumeIndex() const { return _startVolumeIndex;}
     unsigned    startG4Status()    const { return _startG4Status;}
     ProcessCode creationCode()     const { return _creationCode;   }
+    void setCreationCode(ProcessCode newCode) { _creationCode = newCode;   }
+    bool isTruncated() { return (_creationCode == ProcessCode::truncated);}
 
     // the following is for excited ions
     IonDetail const& ion()                      const { return _ion; }
@@ -207,6 +210,7 @@ namespace mu2e {
     CLHEP::Hep3Vector const& endPosition() const { return _endPosition;}
     CLHEP::HepLorentzVector const& endMomentum() const { return _endMomentum;}
     double       endGlobalTime()  const { return _endGlobalTime; }
+    double&      endGlobalTime()        { return _endGlobalTime; }
     double       endProperTime()  const { return _endProperTime; }
     unsigned     endVolumeIndex() const { return _endVolumeIndex;}
     unsigned     endG4Status()    const { return _endG4Status;   }
@@ -252,10 +256,10 @@ namespace mu2e {
     // See notes 1 and 2.
     key_type _id;
 
-    // The offset between G4 track number and _id above, which
-    // uniquely identifies the Mu2eG4 simulation stage that produced
-    // this particle
-    unsigned _stageOffset;
+    // The sequential simulation stage number.
+    // Simulations starting with GenParticles get simStage=0,
+    // each next stage increments the number by one.
+    unsigned _simStage;
 
     art::Ptr<SimParticle> _parentSim;
 

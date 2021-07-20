@@ -16,8 +16,8 @@
 //
 
 // Mu2e includes
-#include "DataProducts/inc/PDGCode.hh"
-#include "MCDataProducts/inc/GenId.hh"
+#include "Offline/DataProducts/inc/PDGCode.hh"
+#include "Offline/MCDataProducts/inc/GenId.hh"
 
 // Includes from external packages.
 #include "CLHEP/Vector/LorentzVector.h"
@@ -71,6 +71,7 @@ namespace mu2e {
     PDGCode::type pdgId()       const { return _pdgId; }
     GenId         generatorId() const { return _generatorId; }
     double        time()        const { return _time;}
+    double&       time()              { return _time;}
 
     // This is for multi-stage jobs, when we want to restart a
     // particle recorded in a previous job that already had non-zero

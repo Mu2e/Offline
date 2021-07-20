@@ -11,7 +11,7 @@
 #include <type_traits>
 #include <utility>
 
-#include "Mu2eUtilities/inc/TrkSpecies.hh"
+#include "Offline/Mu2eUtilities/inc/TrkSpecies.hh"
 
 namespace mu2e {
 

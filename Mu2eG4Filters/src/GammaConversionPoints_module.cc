@@ -4,17 +4,17 @@
 // Writes conversion point x, y, z, t, px, py, pz, material (z, zeff, and fraction) , event weight, and gen energy
 
 // Mu2e includes.
-#include "MCDataProducts/inc/GenParticleCollection.hh"
-#include "MCDataProducts/inc/StatusG4.hh"
-#include "MCDataProducts/inc/StepPointMCCollection.hh"
-#include "MCDataProducts/inc/SimParticleCollection.hh"
-#include "MCDataProducts/inc/SimParticle.hh"
-#include "MCDataProducts/inc/SimParticleTimeMap.hh"
-#include "MCDataProducts/inc/EventWeight.hh"
-#include "MCDataProducts/inc/PhysicalVolumeInfoMultiCollection.hh"
-#include "Mu2eUtilities/inc/PhysicalVolumeMultiHelper.hh"
-#include "Mu2eG4/inc/findMaterialOrThrow.hh"
-#include "GeneralUtilities/inc/RSNTIO.hh"
+#include "Offline/MCDataProducts/inc/GenParticleCollection.hh"
+#include "Offline/MCDataProducts/inc/StatusG4.hh"
+#include "Offline/MCDataProducts/inc/StepPointMCCollection.hh"
+#include "Offline/MCDataProducts/inc/SimParticleCollection.hh"
+#include "Offline/MCDataProducts/inc/SimParticle.hh"
+#include "Offline/MCDataProducts/inc/SimParticleTimeMap.hh"
+#include "Offline/MCDataProducts/inc/EventWeight.hh"
+#include "Offline/MCDataProducts/inc/PhysicalVolumeInfoMultiCollection.hh"
+#include "Offline/Mu2eUtilities/inc/PhysicalVolumeMultiHelper.hh"
+#include "Offline/Mu2eG4/inc/findMaterialOrThrow.hh"
+#include "Offline/GeneralUtilities/inc/RSNTIO.hh"
 
 // G4 includes.
 #include "G4Material.hh"
@@ -27,7 +27,10 @@
 #include "art/Framework/Principal/Event.h"
 #include "art/Framework/Principal/Run.h"
 #include "art/Framework/Core/ModuleMacros.h"
+#include "art/Framework/Services/Registry/ServiceHandle.h"
+#include "art/Framework/Services/Registry/ServiceDefinitionMacros.h"
 #include "art_root_io/TFileService.h"
+#include "messagefacility/MessageLogger/MessageLogger.h"
 
 // Root includes
 #include "TH1F.h"
@@ -35,7 +38,6 @@
 #include "TTree.h"
 
 // Other includes
-#include "messagefacility/MessageLogger/MessageLogger.h"
 
 // C++ includes
 #include <iostream>

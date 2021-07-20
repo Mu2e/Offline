@@ -28,17 +28,17 @@
 
 #include "TTree.h"
 
-#include "MCDataProducts/inc/StepPointMCCollection.hh"
-#include "MCDataProducts/inc/CaloShowerStepCollection.hh"
-#include "MCDataProducts/inc/SimParticleCollection.hh"
-#include "Mu2eUtilities/inc/compressSimParticleCollection.hh"
-#include "MCDataProducts/inc/GenParticleCollection.hh"
-#include "MCDataProducts/inc/SimParticleTimeMap.hh"
-#include "MCDataProducts/inc/SimParticlePtrCollection.hh"
-#include "Mu2eUtilities/inc/SimParticleTimeOffset.hh"
+#include "Offline/MCDataProducts/inc/StepPointMCCollection.hh"
+#include "Offline/MCDataProducts/inc/CaloShowerStep.hh"
+#include "Offline/MCDataProducts/inc/SimParticleCollection.hh"
+#include "Offline/Mu2eUtilities/inc/compressSimParticleCollection.hh"
+#include "Offline/MCDataProducts/inc/GenParticleCollection.hh"
+#include "Offline/MCDataProducts/inc/SimParticleTimeMap.hh"
+#include "Offline/MCDataProducts/inc/SimParticlePtrCollection.hh"
+#include "Offline/Mu2eUtilities/inc/SimParticleTimeOffset.hh"
 
-#include "ConditionsService/inc/ConditionsHandle.hh"
-#include "ConditionsService/inc/AcceleratorParams.hh"
+#include "Offline/ConditionsService/inc/ConditionsHandle.hh"
+#include "Offline/ConditionsService/inc/AcceleratorParams.hh"
 
 namespace mu2e {
   class CompressStepPointMCs;
@@ -287,10 +287,10 @@ bool mu2e::CompressStepPointMCs::filter(art::Event & event)
     const auto& caloShowerSteps = *_caloShowerStepsHandle;
     for (const auto& i_caloShowerStep : caloShowerSteps) {
 
-      double i_edep = i_caloShowerStep.energyMC();
+      double i_edep = i_caloShowerStep.energyDepG4();
       double i_time;
       if (i_caloShowerStep.simParticle().get()) { // see note below in copyCaloShowerStep
-	i_time = std::fmod(i_caloShowerStep.timeStepMC()+_toff.totalTimeOffset(i_caloShowerStep.simParticle()), _mbtime);
+	i_time = std::fmod(i_caloShowerStep.time()+_toff.totalTimeOffset(i_caloShowerStep.simParticle()), _mbtime);
       }
       else {
 	continue;
@@ -303,7 +303,7 @@ bool mu2e::CompressStepPointMCs::filter(art::Event & event)
 
       if (_diagLevel > 0) {
 	_caloStepDiag._eventid = event.id().event();
-	_caloStepDiag._stepRawTime = i_caloShowerStep.timeStepMC();
+	_caloStepDiag._stepRawTime = i_caloShowerStep.time();
 	_caloStepDiag._stepTime = i_time;
 	_caloStepDiag._stepEdep = i_edep;
 	_caloStepDiag._filtered = 0;
@@ -429,7 +429,7 @@ art::Ptr<mu2e::CaloShowerStep> mu2e::CompressStepPointMCs::copyCaloShowerStep(co
       ++_caloStepDiag._nSimGenerations;
     }
     
-    CaloShowerStep new_step(old_step.volumeId(), newSimPtr, old_step.nCompress(), old_step.timeStepMC(), old_step.energyMC(), old_step.momentumIn(), old_step.positionIn(), old_step.position(), old_step.covPosition());
+    CaloShowerStep new_step(old_step.volumeG4ID(), newSimPtr, old_step.nCompress(), old_step.time(), old_step.energyDepG4(), old_step.energyDepBirks(), old_step.momentumIn(), old_step.position());
     
     _newCaloShowerSteps.back()->push_back(new_step);
     

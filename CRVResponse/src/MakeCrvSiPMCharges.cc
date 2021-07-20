@@ -3,7 +3,7 @@ Author: Ralf Ehrlich
 Based on Paul Rubinov's C# code
 */
 
-#include "CRVResponse/inc/MakeCrvSiPMCharges.hh"
+#include "Offline/CRVResponse/inc/MakeCrvSiPMCharges.hh"
 
 #include <cmath>
 #include <iostream>
@@ -124,16 +124,13 @@ double MakeCrvSiPMCharges::GetVoltage(const Pixel &pixel, double time)
   return v;
 }
 
-void MakeCrvSiPMCharges::SetSiPMConstants(int nPixelsX, int nPixelsY, double overvoltage,  
-                                            double blindTime, double microBunchPeriod, double timeConstant, 
+void MakeCrvSiPMCharges::SetSiPMConstants(int nPixelsX, int nPixelsY, double overvoltage, double timeConstant, 
                                             double capacitance, ProbabilitiesStruct probabilities, 
                                             const std::vector<std::pair<int,int> > &inactivePixels)
 {
   _nPixelsX = nPixelsX;
   _nPixelsY = nPixelsY;
   _overvoltage = overvoltage;   //operating overvoltage = bias voltage - breakdown voltage
-  _blindTime = blindTime;
-  _microBunchPeriod = microBunchPeriod;
   _timeConstant = timeConstant;
   _capacitance = capacitance;  //capacitance per pixel
   _probabilities = probabilities;
@@ -142,10 +139,9 @@ void MakeCrvSiPMCharges::SetSiPMConstants(int nPixelsX, int nPixelsY, double ove
   _avalancheProbFullyChargedPixel = GetAvalancheProbability(overvoltage);
 }
 
-void MakeCrvSiPMCharges::FillPhotonQueue(const std::vector<std::pair<double,size_t> > &photons)
+void MakeCrvSiPMCharges::FillQueue(const std::vector<std::pair<double,size_t> > &photons, double startTime, double endTime)
 {
 //schedule charges caused by the CRV counter photons
-//no check whether time>=_blindTime && time<_mircoBunchPeriod, since this should be done in the calling method
   for(size_t i=0; i<photons.size(); i++)
   {
     std::pair<int,int> pixelId = FindFiberPhotonsPixelId();  //only pixels at fiber
@@ -153,11 +149,12 @@ void MakeCrvSiPMCharges::FillPhotonQueue(const std::vector<std::pair<double,size
   }
 
 //schedule random thermal charges
-  double timeWindow = _microBunchPeriod - _blindTime;
+  double timeWindow = endTime-startTime;
 
   //for the dark noise simulation, it is assumed that all pixels are fully charged (for simplicity)
 
-  //the actual thermal production rate gets scaled down by the avalanche probability, i.e. only a fraction of the thermaly created charges lead to a dark noise pulse
+  //the actual thermal production rate gets scaled down by the avalanche probability, 
+  //i.e. only a fraction of the thermaly created charges lead to a dark noise pulse
   //thermal production rate * avalanche probability = thermal rate
   double thermalProductionRate = _probabilities._thermalRate/_avalancheProbFullyChargedPixel;
 
@@ -166,17 +163,17 @@ void MakeCrvSiPMCharges::FillPhotonQueue(const std::vector<std::pair<double,size
   for(int i=0; i<numberThermalCharges; i++)
   {
     std::pair<int,int> pixelId = FindThermalNoisePixelId();  //all pixels
-    double time = _blindTime + timeWindow * _randFlat.fire();
+    double time = startTime + timeWindow * _randFlat.fire();
     _scheduledCharges.emplace(pixelId, time, 0, true);
   }
 }
 
 void MakeCrvSiPMCharges::Simulate(const std::vector<std::pair<double,size_t> > &photons,   //pair of photon time and index in the original photon vector
-                                   std::vector<SiPMresponse> &SiPMresponseVector)
+                                   std::vector<SiPMresponse> &SiPMresponseVector, double startTime, double endTime)
 {
   _pixels.clear();
   _scheduledCharges.clear();
-  FillPhotonQueue(photons);
+  FillQueue(photons, startTime, endTime);
 
   while(1)
   {
@@ -191,7 +188,7 @@ void MakeCrvSiPMCharges::Simulate(const std::vector<std::pair<double,size_t> > &
 
     if(IsInactivePixelId(pixelId)) continue;
 
-    if(time>_microBunchPeriod) continue; //this is relevant for afterpulses
+    if(time>endTime) continue; //this is relevant for afterpulses
 
     //find pixel with pixelId, create a fully charged pixel if it doesn't exist
     std::map<std::pair<int,int>,Pixel>::iterator p = _pixels.find(pixelId);

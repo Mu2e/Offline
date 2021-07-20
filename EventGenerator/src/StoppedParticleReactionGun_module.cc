@@ -21,23 +21,23 @@
 #include "art/Framework/Principal/Handle.h"
 #include "art/Framework/Services/Registry/ServiceHandle.h"
 
-#include "ConfigTools/inc/ConfigFileLookupPolicy.hh"
-#include "SeedService/inc/SeedService.hh"
-#include "GlobalConstantsService/inc/GlobalConstantsHandle.hh"
-#include "GlobalConstantsService/inc/ParticleDataTable.hh"
-#include "GlobalConstantsService/inc/PhysicsParams.hh"
-#include "DataProducts/inc/PDGCode.hh"
-#include "MCDataProducts/inc/GenParticle.hh"
-#include "MCDataProducts/inc/GenParticleCollection.hh"
-#include "Mu2eUtilities/inc/RandomUnitSphere.hh"
-#include "Mu2eUtilities/inc/CzarneckiSpectrum.hh"
-#include "Mu2eUtilities/inc/ConversionSpectrum.hh"
-#include "Mu2eUtilities/inc/SimpleSpectrum.hh"
-#include "Mu2eUtilities/inc/EjectedProtonSpectrum.hh"
-#include "Mu2eUtilities/inc/BinnedSpectrum.hh"
-#include "Mu2eUtilities/inc/Table.hh"
-#include "Mu2eUtilities/inc/RootTreeSampler.hh"
-#include "GeneralUtilities/inc/RSNTIO.hh"
+#include "Offline/ConfigTools/inc/ConfigFileLookupPolicy.hh"
+#include "Offline/SeedService/inc/SeedService.hh"
+#include "Offline/GlobalConstantsService/inc/GlobalConstantsHandle.hh"
+#include "Offline/GlobalConstantsService/inc/ParticleDataTable.hh"
+#include "Offline/GlobalConstantsService/inc/PhysicsParams.hh"
+#include "Offline/DataProducts/inc/PDGCode.hh"
+#include "Offline/MCDataProducts/inc/GenParticle.hh"
+#include "Offline/MCDataProducts/inc/GenParticleCollection.hh"
+#include "Offline/Mu2eUtilities/inc/RandomUnitSphere.hh"
+#include "Offline/Mu2eUtilities/inc/CzarneckiSpectrum.hh"
+#include "Offline/Mu2eUtilities/inc/ConversionSpectrum.hh"
+#include "Offline/Mu2eUtilities/inc/SimpleSpectrum.hh"
+#include "Offline/Mu2eUtilities/inc/EjectedProtonSpectrum.hh"
+#include "Offline/Mu2eUtilities/inc/BinnedSpectrum.hh"
+#include "Offline/Mu2eUtilities/inc/Table.hh"
+#include "Offline/Mu2eUtilities/inc/RootTreeSampler.hh"
+#include "Offline/GeneralUtilities/inc/RSNTIO.hh"
 
 #include "TH1.h"
 
@@ -101,7 +101,7 @@ namespace mu2e {
     , randSpectrum_(eng_, spectrum_.getPDF(), spectrum_.getNbins())
     , randomUnitSphere_(eng_)
     , stops_(eng_, pset.get<fhicl::ParameterSet>("muonStops"))
-    , doHistograms_       (pset.get<bool>("doHistograms",true ) )
+    , doHistograms_       (pset.get<bool>("doHistograms",false ) )
   {
     produces<mu2e::GenParticleCollection>();
 
@@ -133,21 +133,22 @@ namespace mu2e {
       spectrum_.print();
     }
 
+    art::ServiceHandle<art::TFileService> tfs;
     if ( doHistograms_ ) {
-      art::ServiceHandle<art::TFileService> tfs;
       //      art::TFileDirectory tfdir = tfs->mkdir( "StoppedParticleReactionGun");
       _hEnergy = tfs->make<TH1F>("hEnergy", "Energy"      , 2400,   0.0,  120);
       _hGenId  = tfs->make<TH1F>("hGenId" , "Generator ID",  100,   0.0,  100);
       _hPdgId  = tfs->make<TH1F>("hPdgId" , "PDG ID"      ,  500,  -250, 250);
       _hTime   = tfs->make<TH1F>("hTime"  , "Time"        ,  400,   0.0, 2000.);
       _hZ      = tfs->make<TH1F>("hZ"     , "Z"           ,  500,  5400, 6400);
-	    _Ntup  = tfs->make<TTree>("GenTree", "GenTree");
-	    _Ntup->Branch("nEv", &_nEv , "_nEv/I");	    
-	    _Ntup->Branch("TMom", &_TMom , "TMom/F");
-	    _Ntup->Branch("Tx", &_Tx, "Tx/F");
-	    _Ntup->Branch("Ty", &_Ty, "Ty/F");
-	    _Ntup->Branch("Tz", &_Tz, "Tz/F");
     }
+    _Ntup  = tfs->make<TTree>("GenTree", "GenTree");
+    _Ntup->Branch("nEv", &_nEv , "_nEv/I");
+    _Ntup->Branch("TMom", &_TMom , "TMom/F");
+    _Ntup->Branch("Tx", &_Tx, "Tx/F");
+    _Ntup->Branch("Ty", &_Ty, "Ty/F");
+    _Ntup->Branch("Tz", &_Tz, "Tz/F");
+    
   }
 
 
@@ -196,7 +197,7 @@ namespace mu2e {
       _Tz = pos.z();
     }
     _Ntup->Fill();
-	  _nEv++;
+    _nEv++;
   }
 
 //-----------------------------------------------------------------------------

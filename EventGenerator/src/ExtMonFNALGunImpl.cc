@@ -1,10 +1,10 @@
-#include "EventGenerator/inc/ExtMonFNALGunImpl.hh"
+#include "Offline/EventGenerator/inc/ExtMonFNALGunImpl.hh"
 
-#include "GeometryService/inc/GeomHandle.hh"
-#include "ExtinctionMonitorFNAL/Geometry/inc/ExtMonFNALBuilding.hh"
-#include "ExtinctionMonitorFNAL/Geometry/inc/ExtMonFNAL.hh"
-#include "ProductionTargetGeom/inc/ProductionTarget.hh"
-#include "DataProducts/inc/PDGCode.hh"
+#include "Offline/GeometryService/inc/GeomHandle.hh"
+#include "Offline/ExtinctionMonitorFNAL/Geometry/inc/ExtMonFNALBuilding.hh"
+#include "Offline/ExtinctionMonitorFNAL/Geometry/inc/ExtMonFNAL.hh"
+#include "Offline/ProductionTargetGeom/inc/ProductionTarget.hh"
+#include "Offline/DataProducts/inc/PDGCode.hh"
 
 #include "CLHEP/Units/PhysicalConstants.h"
 #include "cetlib_except/exception.h"

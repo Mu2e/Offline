@@ -8,40 +8,43 @@
 #include <iostream>
 #include <string>
 
-// Mu2e includes.
-#include "Mu2eG4/inc/constructVirtualDetectors.hh"
+// art includes
+#include "art/Framework/Services/Registry/ServiceDefinitionMacros.h"
 
-#include "BeamlineGeom/inc/Beamline.hh"
-#include "CalorimeterGeom/inc/DiskCalorimeter.hh"
-#include "CosmicRayShieldGeom/inc/CosmicRayShield.hh"
-#include "DetectorSolenoidGeom/inc/DetectorSolenoid.hh"
-#include "G4Helper/inc/G4Helper.hh"
-#include "G4Helper/inc/VolumeInfo.hh"
-#include "GeomPrimitives/inc/Tube.hh"
-#include "GeometryService/inc/GeomHandle.hh"
-#include "GeometryService/inc/GeometryService.hh"
-#include "GeometryService/inc/G4GeometryOptions.hh"
-#include "GeometryService/inc/VirtualDetector.hh"
-#include "DataProducts/inc/VirtualDetectorId.hh"
-#include "MECOStyleProtonAbsorberGeom/inc/MECOStyleProtonAbsorber.hh"
-#include "Mu2eG4/inc/checkForOverlaps.hh"
-#include "Mu2eG4/inc/findMaterialOrThrow.hh"
-#include "Mu2eG4/inc/finishNesting.hh"
-#include "Mu2eG4/inc/nestTubs.hh"
-#include "Mu2eG4/inc/nestBox.hh"
-#include "ProductionSolenoidGeom/inc/PSVacuum.hh"
-#include "ProtonBeamDumpGeom/inc/ProtonBeamDump.hh"
-#include "ProductionTargetGeom/inc/ProductionTarget.hh"
-#include "TrackerGeom/inc/Tracker.hh"
+// Mu2e includes.
+#include "Offline/Mu2eG4/inc/constructVirtualDetectors.hh"
+
+#include "Offline/BeamlineGeom/inc/Beamline.hh"
+#include "Offline/CalorimeterGeom/inc/DiskCalorimeter.hh"
+#include "Offline/CosmicRayShieldGeom/inc/CosmicRayShield.hh"
+#include "Offline/DetectorSolenoidGeom/inc/DetectorSolenoid.hh"
+#include "Offline/Mu2eG4Helper/inc/Mu2eG4Helper.hh"
+#include "Offline/Mu2eG4Helper/inc/VolumeInfo.hh"
+#include "Offline/GeomPrimitives/inc/Tube.hh"
+#include "Offline/GeometryService/inc/GeomHandle.hh"
+#include "Offline/GeometryService/inc/GeometryService.hh"
+#include "Offline/GeometryService/inc/G4GeometryOptions.hh"
+#include "Offline/GeometryService/inc/VirtualDetector.hh"
+#include "Offline/DataProducts/inc/VirtualDetectorId.hh"
+#include "Offline/MECOStyleProtonAbsorberGeom/inc/MECOStyleProtonAbsorber.hh"
+#include "Offline/Mu2eG4/inc/checkForOverlaps.hh"
+#include "Offline/Mu2eG4/inc/findMaterialOrThrow.hh"
+#include "Offline/Mu2eG4/inc/finishNesting.hh"
+#include "Offline/Mu2eG4/inc/nestTubs.hh"
+#include "Offline/Mu2eG4/inc/nestBox.hh"
+#include "Offline/ProductionSolenoidGeom/inc/PSVacuum.hh"
+#include "Offline/ProtonBeamDumpGeom/inc/ProtonBeamDump.hh"
+#include "Offline/ProductionTargetGeom/inc/ProductionTarget.hh"
+#include "Offline/TrackerGeom/inc/Tracker.hh"
 
 // G4 includes
-#include "G4Material.hh"
-#include "G4SDManager.hh"
-#include "G4Color.hh"
-#include "G4Tubs.hh"
-#include "G4Cons.hh"
-#include "G4SubtractionSolid.hh"
-#include "G4IntersectionSolid.hh"
+#include "Geant4/G4Material.hh"
+#include "Geant4/G4SDManager.hh"
+#include "Geant4/G4Color.hh"
+#include "Geant4/G4Tubs.hh"
+#include "Geant4/G4Cons.hh"
+#include "Geant4/G4SubtractionSolid.hh"
+#include "Geant4/G4IntersectionSolid.hh"
 
 using namespace std;
 
@@ -80,7 +83,7 @@ namespace mu2e {
 
     // Virtual Detectors Coll1_In, COll1_Out are placed inside TS1
 
-    G4Helper* _helper = &(*(art::ServiceHandle<G4Helper>()));
+    Mu2eG4Helper* _helper = &(*(art::ServiceHandle<Mu2eG4Helper>()));
 
     if(verbosityLevel>0) {
       VirtualDetectorId::printAll();
@@ -431,11 +434,11 @@ namespace mu2e {
 
         // the radius of tracker mother
         Tracker const & tracker = *(GeomHandle<Tracker>());
-        double orvd = tracker.mother().tubsParams().outerRadius();
-        double irvd = tracker.mother().tubsParams().innerRadius();
+        double orvd = tracker.g4Tracker()->mother().tubsParams().outerRadius();
+        double irvd = tracker.g4Tracker()->mother().tubsParams().innerRadius();
 
-        if ( tracker.getSupportModel() == SupportModel::detailedv0 ) {
-          auto const& beams =  tracker.getSupportStructure().beamBody();
+        if ( tracker.g4Tracker()->getSupportModel() == SupportModel::detailedv0 ) {
+          auto const& beams =  tracker.g4Tracker()->getSupportStructure().beamBody();
           if ( beams.empty() ){
             throw cet::exception("GEOM")
               << "Cannot create virtual detector " << VirtualDetectorId(vdId).name()
@@ -541,7 +544,7 @@ namespace mu2e {
 
           // the radius of tracker mother
           Tracker const & tracker = *(GeomHandle<Tracker>());
-          double orvd = tracker.mother().tubsParams().outerRadius();
+          double orvd = tracker.g4Tracker()->mother().tubsParams().outerRadius();
           double vdZ  = vdg->getGlobal(vdId).z();
 
           if ( verbosityLevel > 0) {
@@ -767,7 +770,7 @@ namespace mu2e {
 
           // the radius of tracker mother
           Tracker const & tracker = *(GeomHandle<Tracker>());
-          double orvd = tracker.mother().tubsParams().outerRadius();
+          double orvd = tracker.g4Tracker()->mother().tubsParams().outerRadius();
           double vdZ  = vdg->getGlobal(vdId).z();
 
           if ( verbosityLevel > 0) {
@@ -813,7 +816,7 @@ namespace mu2e {
         }
         // the radius of tracker mother
         Tracker const & tracker = *(GeomHandle<Tracker>());
-        double orvd = tracker.mother().tubsParams().outerRadius();
+        double orvd = tracker.g4Tracker()->mother().tubsParams().outerRadius();
         double vdZ  = vdg->getGlobal(vdId).z();
 
         if ( verbosityLevel > 0) {
@@ -859,7 +862,7 @@ namespace mu2e {
 
         // the radius of tracker mother
         Tracker const & tracker = *(GeomHandle<Tracker>());
-        TubsParams const& motherParams = tracker.mother().tubsParams();
+        TubsParams const& motherParams = tracker.g4Tracker()->mother().tubsParams();
         double orvd = motherParams.outerRadius();
         double vdZ  = vdg->getGlobal(vdId).z();
 
@@ -908,7 +911,7 @@ namespace mu2e {
 
         // the radius of tracker mother
         Tracker const & tracker = *(GeomHandle<Tracker>());
-        TubsParams const& motherParams = tracker.mother().tubsParams();
+        TubsParams const& motherParams = tracker.g4Tracker()->mother().tubsParams();
         double irvd = motherParams.innerRadius();
         double vdZ  = vdg->getGlobal(vdId).z();
 

@@ -8,7 +8,7 @@
 //
 // Notes:
 
-#include "G4Helper/inc/VolumeInfo.hh"
+#include "Offline/Mu2eG4Helper/inc/VolumeInfo.hh"
 
 namespace mu2e{
 

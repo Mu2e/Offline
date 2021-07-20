@@ -13,29 +13,30 @@
 #include "art_root_io/TFileService.h"
 #include "art/Utilities/make_tool.h"
 // conditions
-#include "ProditionsService/inc/ProditionsHandle.hh"
-#include "TrackerConditions/inc/StrawResponse.hh"
-#include "TrackerConditions/inc/Mu2eDetector.hh"
+#include "Offline/ProditionsService/inc/ProditionsHandle.hh"
+#include "Offline/TrackerConditions/inc/StrawResponse.hh"
+#include "Offline/TrackerConditions/inc/Mu2eDetector.hh"
 
-#include "GeometryService/inc/GeomHandle.hh"
-#include "TrackerGeom/inc/Tracker.hh"
-#include "GeometryService/inc/GeometryService.hh"
+#include "Offline/GeometryService/inc/GeomHandle.hh"
+#include "Offline/TrackerGeom/inc/Tracker.hh"
+#include "Offline/GeometryService/inc/GeometryService.hh"
 // utiliites
-#include "GeneralUtilities/inc/Angles.hh"
-#include "TrkReco/inc/TrkUtilities.hh"
-#include "Mu2eUtilities/inc/ModuleHistToolBase.hh"
-#include "CalorimeterGeom/inc/Calorimeter.hh"
+#include "Offline/GeneralUtilities/inc/Angles.hh"
+#include "Offline/TrkReco/inc/TrkUtilities.hh"
+#include "Offline/Mu2eUtilities/inc/ModuleHistToolBase.hh"
+#include "Offline/CalorimeterGeom/inc/Calorimeter.hh"
 // data
-#include "DataProducts/inc/Helicity.hh"
-#include "RecoDataProducts/inc/ComboHit.hh"
-#include "RecoDataProducts/inc/StrawHitFlag.hh"
-#include "RecoDataProducts/inc/KalSeed.hh"
-#include "RecoDataProducts/inc/KalRepCollection.hh"
-#include "RecoDataProducts/inc/KalRepPtrCollection.hh"
-#include "RecoDataProducts/inc/CaloClusterCollection.hh"
-#include "TrkReco/inc/KalFitData.hh"
-#include "TrkPatRec/inc/KalFinalFit_types.hh"
-#include "TrkReco/inc/DoubletAmbigResolver.hh"
+#include "Offline/DataProducts/inc/Helicity.hh"
+#include "Offline/RecoDataProducts/inc/ComboHit.hh"
+#include "Offline/RecoDataProducts/inc/StrawHitFlag.hh"
+#include "Offline/RecoDataProducts/inc/KalSeed.hh"
+#include "Offline/RecoDataProducts/inc/KalSeedAssns.hh"
+#include "Offline/RecoDataProducts/inc/KalRepCollection.hh"
+#include "Offline/RecoDataProducts/inc/KalRepPtrCollection.hh"
+#include "Offline/RecoDataProducts/inc/CaloCluster.hh"
+#include "Offline/TrkReco/inc/KalFitData.hh"
+#include "Offline/TrkPatRec/inc/KalFinalFit_types.hh"
+#include "Offline/TrkReco/inc/DoubletAmbigResolver.hh"
 // BaBar
 #include "BTrk/BaBar/BaBar.hh"
 #include "BTrk/TrkBase/TrkPoca.hh"
@@ -43,8 +44,8 @@
 #include "BTrk/BbrGeom/BbrVectorErr.hh"
 #include "BTrk/ProbTools/ChisqConsistency.hh"
 // Mu2e BaBar
-#include "BTrkData/inc/TrkStrawHit.hh"
-#include "TrkReco/inc/KalFit.hh"
+#include "Offline/BTrkData/inc/TrkStrawHit.hh"
+#include "Offline/TrkReco/inc/KalFit.hh"
 //CLHEP
 #include "CLHEP/Units/PhysicalConstants.h"
 #include "CLHEP/Matrix/Vector.h"
@@ -88,6 +89,7 @@ namespace mu2e
     art::InputTag const _shfTag;
     art::ProductToken<StrawHitFlagCollection> const _shfToken;
     art::ProductToken<KalSeedCollection> const _ksToken;
+    art::ProductToken<KalHelixAssns> const _khaToken;
     art::ProductToken<CaloClusterCollection> const _clToken;
     // flags
     StrawHitFlag _addsel;
@@ -102,6 +104,7 @@ namespace mu2e
     const ComboHitCollection* _chcol;
     const StrawHitFlagCollection* _shfcol;
     const KalSeedCollection * _kscol;
+    const KalHelixAssns * _khassns;
     const CaloClusterCollection* _clCol;
     // Kalman fitter
     KalFit _kfit;
@@ -136,6 +139,7 @@ namespace mu2e
     _shfTag{pset.get<art::InputTag>("StrawHitFlagCollection", "none")},
     _shfToken{consumes<StrawHitFlagCollection>(_shfTag)},
     _ksToken{consumes<KalSeedCollection>(pset.get<art::InputTag>("SeedCollection"))},
+    _khaToken{consumes<KalHelixAssns>(pset.get<art::InputTag>("SeedCollection"))},
     _clToken{consumes<CaloClusterCollection>(pset.get<art::InputTag>("CaloClusterCollection"))},
     _addsel(pset.get<vector<string>>("AddHitSelectionBits", vector<string>{})),
     _addbkg(pset.get<vector<string>>("AddHitBackgroundBits", vector<string>{})),
@@ -153,6 +157,7 @@ namespace mu2e
     produces<KalRepPtrCollection>();
     produces<StrawHitFlagCollection>();
     produces<KalSeedCollection>();
+    produces<KalHelixAssns>();
 //-----------------------------------------------------------------------------
 // provide for interactive diagnostics
 //-----------------------------------------------------------------------------
@@ -211,9 +216,12 @@ namespace mu2e
     unique_ptr<KalRepCollection>    krcol(new KalRepCollection );
     unique_ptr<KalRepPtrCollection> krPtrcol(new KalRepPtrCollection );
     unique_ptr<KalSeedCollection> kscol(new KalSeedCollection());
+    unique_ptr<KalHelixAssns> kfhassns (new KalHelixAssns());
     unique_ptr<StrawHitFlagCollection> shfcol(new StrawHitFlagCollection());
     // lookup productID for payload saver
     art::ProductID kalRepsID(event.getProductID<KalRepCollection>());
+    auto KalSeedCollectionPID = event.getProductID<KalSeedCollection>();
+    auto KalSeedCollectionGetter = event.productGetter(KalSeedCollectionPID);
     // copy and merge hit flags
     size_t index(0);
     for(auto const& ch : *_chcol) {
@@ -242,6 +250,7 @@ namespace mu2e
     for(size_t ikseed=0; ikseed < _kscol->size(); ++ikseed) {
       KalSeed const& kseed(_kscol->at(ikseed));
       _result.kalSeed = & kseed;
+      auto hptr = (*_khassns)[ikseed].second; // Ptr to the original HelixSeed
       //      _result.tpart   = kseed.particle();
       // create a Ptr for possible added CaloCluster
       art::Ptr<CaloCluster> ccPtr;
@@ -367,20 +376,14 @@ namespace mu2e
 	    if(krep->fitStatus().success()) fflag.merge(TrkFitFlag::kalmanOK);
 	    if(krep->fitStatus().success()==1) fflag.merge(TrkFitFlag::kalmanConverged);
 	    //	  KalSeed fseed(_tpart,_fdir,krep->t0(),krep->flt0(),kseed.status());
-	    KalSeed fseed(krep->particleType(),_fdir,krep->t0(),krep->flt0(),fflag);
-	    // reference the seed fit in this fit
-	    auto ksH = event.getValidHandle<KalSeedCollection>(_ksToken);
-	    fseed._kal = art::Ptr<KalSeed>(ksH,ikseed);
-	    // redundant but possibly useful
-	    fseed._helix = kseed.helix();
+	    KalSeed fseed(PDGCode::type(krep->particleType().particleType()),_fdir,fflag,krep->flt0());
 	    // fill with new information
-	    fseed._t0 = krep->t0();
 	    fseed._flt0 = krep->flt0();
 	    // global fit information
 	    fseed._chisq = krep->chisq();
 	    // compute the fit consistency.  Note our fit has effectively 6 parameters as t0 is allowed to float and its error is propagated to the chisquared
 	    fseed._fitcon =  TrkUtilities::chisqConsistency(krep);
-	    fseed._nbend = TrkUtilities::countBends(krep);
+	    fseed._nseg = krep->pieceTraj().localTrajectory().size();
 	    TrkUtilities::fillStrawHitSeeds(krep,*_chcol,fseed._hits);
 	    TrkUtilities::fillStraws(krep,fseed._straws);
 	    // sample the fit at the requested z positions.  Need options here to define a set of
@@ -395,7 +398,7 @@ namespace mu2e
 	      const HelixTraj* htraj = dynamic_cast<const HelixTraj*>(krep->localTrajectory(fltlen,locflt));
 	      // fill the segment
 	      KalSegment kseg;
-	      TrkUtilities::fillSegment(*htraj,momerr,locflt-fltlen,kseg);
+	      TrkUtilities::fillSegment(*htraj,locflt,fltlen,krep->t0(),_tpart.mass(),(int)_tpart.charge(),_kfit.bField(),kseg);
 	      fseed._segments.push_back(kseg);
 	    }
 	    // see if there's a TrkCaloHit
@@ -410,11 +413,14 @@ namespace mu2e
 	      BbrVectorErr momerr = krep->momentumErr(tch->fltLen());
 	      double locflt(0.0);
 	      const HelixTraj* htraj = dynamic_cast<const HelixTraj*>(krep->localTrajectory(tch->fltLen(),locflt));
-	      TrkUtilities::fillSegment(*htraj,momerr,locflt-tch->fltLen(),kseg);
+	      TrkUtilities::fillSegment(*htraj,locflt,tch->fltLen(),krep->t0(),_tpart.mass(),(int)_tpart.charge(),_kfit.bField(),kseg);
 	      fseed._segments.push_back(kseg);
 	    }
 	    // save KalSeed for this track
 	    kscol->push_back(fseed);
+	    // fill assns with the helix seed
+	    auto kseedptr = art::Ptr<KalSeed>(KalSeedCollectionPID,kscol->size()-1,KalSeedCollectionGetter);
+	    kfhassns->addSingle(kseedptr,hptr);
 
 	    if (_diag > 0) _hmanager->fillHistograms(&_data);
 	  }
@@ -431,6 +437,7 @@ namespace mu2e
     event.put(move(krcol));
     event.put(move(krPtrcol));
     event.put(move(kscol));
+    event.put(move(kfhassns));
     event.put(move(shfcol));
   }
 
@@ -438,11 +445,14 @@ namespace mu2e
   bool KalFinalFit::findData(const art::Event& evt){
     _chcol = 0;
     _kscol = 0;
+    _khassns = 0;
 
     auto shH = evt.getValidHandle(_shToken);
     _chcol = shH.product();
     auto ksH = evt.getValidHandle(_ksToken);
     _kscol = ksH.product();
+    auto khaH = evt.getValidHandle(_khaToken);
+    _khassns = khaH.product();
     if(_shfTag.label() != "none"){
       auto shfH = evt.getValidHandle(_shfToken);
       _shfcol = shfH.product();
@@ -561,7 +571,7 @@ namespace mu2e
 
 	  double      rdrift;//, hit_error(0.2);
 
-	  TrkStrawHit hit(srep,sh,straw,istr,hitt0,hflt,1.,1.);//hit_error,1.,_maxadddoca,1.);
+	  TrkStrawHit hit(srep,sh,*_data.tracker,istr,hitt0,hflt,1.,1.);//hit_error,1.,_maxadddoca,1.);
 
 	  double tdrift=hit.time()-hit.hitT0()._t0;
 

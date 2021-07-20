@@ -1,9 +1,9 @@
 //
-// Redirection to the current Mu2e top level geometry file.
+// Redirection to the current stable Mu2e top level geometry file.
 // The file that is included will be time dependent.
 //
 
-#include "Mu2eG4/geom/geom_Mu2eII_2020.txt"
+#include "Offline/Mu2eG4/geom/geom_Mu2eII_2020.txt"
 
 // This tells emacs to view this file in c++ mode.
 // Local Variables:

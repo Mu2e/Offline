@@ -6,14 +6,14 @@
 //
 
 #include "CLHEP/Units/SystemOfUnits.h"
-#include "ConditionsService/inc/ConditionsHandle.hh"
-#include "GeometryService/inc/GeomHandle.hh"
-#include "GlobalConstantsService/inc/GlobalConstantsHandle.hh"
-#include "GlobalConstantsService/inc/ParticleDataTable.hh"
-#include "MCDataProducts/inc/GenParticleCollection.hh"
-#include "MCDataProducts/inc/PhysicalVolumeInfoMultiCollection.hh"
-#include "MCDataProducts/inc/SimParticleCollection.hh"
-#include "MCDataProducts/inc/StepPointMCCollection.hh"
+#include "Offline/ConditionsService/inc/ConditionsHandle.hh"
+#include "Offline/GeometryService/inc/GeomHandle.hh"
+#include "Offline/GlobalConstantsService/inc/GlobalConstantsHandle.hh"
+#include "Offline/GlobalConstantsService/inc/ParticleDataTable.hh"
+#include "Offline/MCDataProducts/inc/GenParticleCollection.hh"
+#include "Offline/MCDataProducts/inc/PhysicalVolumeInfoMultiCollection.hh"
+#include "Offline/MCDataProducts/inc/SimParticleCollection.hh"
+#include "Offline/MCDataProducts/inc/StepPointMCCollection.hh"
 #include "TH1F.h"
 #include "TNtuple.h"
 #include "TTree.h"
@@ -235,10 +235,10 @@ namespace mu2e {
         std::cout<<"PhysicalVolumeInfoMultiCollection dump begin"<<std::endl;
         for(const auto& i : *vols_) {
           std::cout<<"*********************************************************"<<std::endl;
-          std::cout<<"SimParticleNumberOffset = "<<i.first<<", collection size = "<<i.second.size()<<std::endl;
+          std::cout<<"Collection size = "<<i.size()<<std::endl;
           // register all volumes
           size_t ii=0;
-          for(const auto& entry : i.second) {
+          for(const auto& entry : i) {
             vid_stop[ii] = (entry.second).copyNo();
             std::cout<<entry.second<<" "<<ii<<std::endl;
             ++ii;

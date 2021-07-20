@@ -5,14 +5,14 @@
 
 #include <string>
 
-#include "Mu2eG4/inc/nestTorus.hh"
-#include "Mu2eG4/inc/finishNesting.hh"
-#include "GeomPrimitives/inc/TorusParams.hh"
+#include "Offline/Mu2eG4/inc/nestTorus.hh"
+#include "Offline/Mu2eG4/inc/finishNesting.hh"
+#include "Offline/GeomPrimitives/inc/TorusParams.hh"
 
-#include "G4Torus.hh"
-#include "G4LogicalVolume.hh"
-#include "G4Material.hh"
-#include "G4ThreeVector.hh"
+#include "Geant4/G4Torus.hh"
+#include "Geant4/G4LogicalVolume.hh"
+#include "Geant4/G4Material.hh"
+#include "Geant4/G4ThreeVector.hh"
 
 using namespace std;
 

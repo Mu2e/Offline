@@ -2,7 +2,7 @@
 // Original author Andrei Gaponenko
 //
 
-#include "ProductionSolenoidGeom/inc/PSVacuum.hh"
-#include "ProductionSolenoidGeom/inc/PSShield.hh"
-#include "ProductionSolenoidGeom/inc/PSEnclosure.hh"
+#include "Offline/ProductionSolenoidGeom/inc/PSVacuum.hh"
+#include "Offline/ProductionSolenoidGeom/inc/PSShield.hh"
+#include "Offline/ProductionSolenoidGeom/inc/PSEnclosure.hh"
 #include "canvas/Persistency/Common/Wrapper.h"

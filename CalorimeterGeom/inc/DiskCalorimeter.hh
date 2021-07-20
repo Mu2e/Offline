@@ -8,11 +8,12 @@
 // Note 1: conversion of crystal <-> readout id
 //         readout_id = crystal_id*nRoPerCrystal ... crystal_id*nRoPerCrystal + nRoPerCrystal-1		 
 
-#include "CalorimeterGeom/inc/Calorimeter.hh"
-#include "CalorimeterGeom/inc/CaloInfo.hh"
-#include "CalorimeterGeom/inc/CaloGeomUtil.hh"
-#include "CalorimeterGeom/inc/Disk.hh"
-#include "CalorimeterGeom/inc/Crystal.hh"
+#include "Offline/CalorimeterGeom/inc/Calorimeter.hh"
+#include "Offline/CalorimeterGeom/inc/CaloInfo.hh"
+#include "Offline/CalorimeterGeom/inc/CaloIDMapper.hh"
+#include "Offline/CalorimeterGeom/inc/CaloGeomUtil.hh"
+#include "Offline/CalorimeterGeom/inc/Disk.hh"
+#include "Offline/CalorimeterGeom/inc/Crystal.hh"
 
 #include "CLHEP/Vector/ThreeVector.h"
 
@@ -26,9 +27,7 @@ namespace mu2e {
 
     class DiskCalorimeter: public Calorimeter {
 
-
 	friend class DiskCalorimeterMaker;
-
 	
         public:
 
@@ -36,22 +35,23 @@ namespace mu2e {
             virtual ~DiskCalorimeter() {}
 
 
-            // calo sections
+            // calo section
 	    virtual unsigned                  nDisk()     const  {return nDisks_;}
 	    virtual const Disk&               disk(int i) const  {return *disks_.at(i);}
 
             	    
-  	    // crystal / readout section
-	    virtual int                       nRO()          const  {return fullCrystalList_.size()*caloInfo_.nROPerCrystal();}
+  	    // crystal section
             virtual int                       nCrystal()     const  {return fullCrystalList_.size();}
             virtual const Crystal&            crystal(int i) const  {return *fullCrystalList_.at(i);}
 	            
 
             // calorimeter geometry information 
-	    virtual const CaloInfo&           caloInfo() const  {return caloInfo_;} 
-	    virtual const CaloGeomUtil&       geomUtil() const  {return geomUtil_;} 
-	                  CaloInfo&           caloInfo()        {return caloInfo_;} 
-	                  CaloGeomUtil&       geomUtil()        {return geomUtil_;} 
+	    virtual const CaloInfo&           caloInfo()     const  {return caloInfo_;} 
+	    virtual const CaloIDMapper&       caloIDMapper() const  {return caloIDMapper_;} 
+	    virtual const CaloGeomUtil&       geomUtil()     const  {return geomUtil_;} 
+	                  CaloInfo&           caloInfo()            {return caloInfo_;} 
+	                  CaloIDMapper&       caloIDMapper()        {return caloIDMapper_;} 
+	                  CaloGeomUtil&       geomUtil()            {return geomUtil_;} 
            
 
 
@@ -66,15 +66,13 @@ namespace mu2e {
             // get to know me!
             virtual void                     print(std::ostream &os = std::cout) const;
 
-            
 
-	private:
-            
+	private:            
+	    using  DiskPtr = std::shared_ptr<Disk>;
+
             double deltaZ(const CLHEP::Hep3Vector& p1, const CLHEP::Hep3Vector& p2) const;
             double deltaPerp(int ic, const CLHEP::Hep3Vector& pos) const;
             
-
-	    typedef std::shared_ptr<Disk> DiskPtr;
 	    int                           nDisks_;
             int                           nCrates_;
             int                           nBoards_;
@@ -82,6 +80,7 @@ namespace mu2e {
             
 	    std::vector<const Crystal*>   fullCrystalList_; //non-owning crystal pointers
             CaloInfo                      caloInfo_;
+            CaloIDMapper                  caloIDMapper_;
 	    CaloGeomUtil                  geomUtil_;
      };
 

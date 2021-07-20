@@ -1,30 +1,30 @@
 // Andrei Gaponenko, 2012
 
-#include "Mu2eG4/inc/constructExtMonFNAL.hh"
+#include "Offline/Mu2eG4/inc/constructExtMonFNAL.hh"
 
 #include <iostream>
 #include <iterator>
 #include <algorithm>
 #include <cmath>
 
-#include "G4Color.hh"
-#include "G4RotationMatrix.hh"
-#include "G4LogicalVolume.hh"
-#include "G4ExtrudedSolid.hh"
-#include "G4Trap.hh"
-#include "G4Orb.hh"
-#include "G4Box.hh"
-#include "G4Tubs.hh"
-#include "G4Polycone.hh"
-#include "G4ExtrudedSolid.hh"
-#include "G4IntersectionSolid.hh"
-#include "G4TwoVector.hh"
-#include "G4UniformMagField.hh"
-#include "G4Mag_UsualEqRhs.hh"
-#include "G4ExactHelixStepper.hh"
-//#include "G4NystromRK4.hh"
-#include "G4ChordFinder.hh"
-#include "G4FieldManager.hh"
+#include "Geant4/G4Color.hh"
+#include "Geant4/G4RotationMatrix.hh"
+#include "Geant4/G4LogicalVolume.hh"
+#include "Geant4/G4ExtrudedSolid.hh"
+#include "Geant4/G4Trap.hh"
+#include "Geant4/G4Orb.hh"
+#include "Geant4/G4Box.hh"
+#include "Geant4/G4Tubs.hh"
+#include "Geant4/G4Polycone.hh"
+#include "Geant4/G4ExtrudedSolid.hh"
+#include "Geant4/G4IntersectionSolid.hh"
+#include "Geant4/G4TwoVector.hh"
+#include "Geant4/G4UniformMagField.hh"
+#include "Geant4/G4Mag_UsualEqRhs.hh"
+#include "Geant4/G4ExactHelixStepper.hh"
+//#include "Geant4/G4NystromRK4.hh"
+#include "Geant4/G4ChordFinder.hh"
+#include "Geant4/G4FieldManager.hh"
 
 #include "CLHEP/Vector/ThreeVector.h"
 #include "CLHEP/Vector/Rotation.h"
@@ -32,26 +32,28 @@
 
 #include "cetlib_except/exception.h"
 
-#include "GeometryService/inc/GeomHandle.hh"
-#include "ProtonBeamDumpGeom/inc/ProtonBeamDump.hh"
-#include "ExtinctionMonitorFNAL/Geometry/inc/ExtMonFNALBuilding.hh"
+#include "art/Framework/Services/Registry/ServiceDefinitionMacros.h"
 
-#include "G4Helper/inc/VolumeInfo.hh"
-#include "G4Helper/inc/G4Helper.hh"
-#include "G4Helper/inc/AntiLeakRegistry.hh"
-#include "ConfigTools/inc/SimpleConfig.hh"
-#include "Mu2eG4/inc/nestBox.hh"
-#include "Mu2eG4/inc/finishNesting.hh"
-#include "Mu2eG4/inc/MaterialFinder.hh"
-#include "Mu2eG4/inc/findMaterialOrThrow.hh"
-#include "Mu2eG4/inc/nestBox.hh"
-#include "Mu2eG4/inc/MaterialFinder.hh"
-#include "Mu2eG4/inc/findMaterialOrThrow.hh"
-#include "Mu2eG4/inc/SensitiveDetectorName.hh"
-#include "Mu2eG4/inc/FieldMgr.hh"
+#include "Offline/GeometryService/inc/GeomHandle.hh"
+#include "Offline/ProtonBeamDumpGeom/inc/ProtonBeamDump.hh"
+#include "Offline/ExtinctionMonitorFNAL/Geometry/inc/ExtMonFNALBuilding.hh"
+
+#include "Offline/Mu2eG4Helper/inc/VolumeInfo.hh"
+#include "Offline/Mu2eG4Helper/inc/Mu2eG4Helper.hh"
+#include "Offline/Mu2eG4Helper/inc/AntiLeakRegistry.hh"
+#include "Offline/ConfigTools/inc/SimpleConfig.hh"
+#include "Offline/Mu2eG4/inc/nestBox.hh"
+#include "Offline/Mu2eG4/inc/finishNesting.hh"
+#include "Offline/Mu2eG4/inc/MaterialFinder.hh"
+#include "Offline/Mu2eG4/inc/findMaterialOrThrow.hh"
+#include "Offline/Mu2eG4/inc/nestBox.hh"
+#include "Offline/Mu2eG4/inc/MaterialFinder.hh"
+#include "Offline/Mu2eG4/inc/findMaterialOrThrow.hh"
+#include "Offline/Mu2eG4/inc/SensitiveDetectorName.hh"
+#include "Offline/Mu2eG4/inc/FieldMgr.hh"
 
 // FIXME: should not need that
-#include "GeometryService/inc/WorldG4.hh"
+#include "Offline/GeometryService/inc/WorldG4.hh"
 
 //#define AGDEBUG(stuff) std::cerr<<"AG: "<<__FILE__<<", line "<<__LINE__<<": "<<stuff<<std::endl;
 #define AGDEBUG(stuff)
@@ -69,17 +71,17 @@ namespace mu2e {
     GeomHandle<ExtMonFNALBuilding> emfb;
 
     MaterialFinder materialFinder(config);
-    AntiLeakRegistry& reg = art::ServiceHandle<G4Helper>()->antiLeakRegistry();
+    AntiLeakRegistry& reg = art::ServiceHandle<Mu2eG4Helper>()->antiLeakRegistry();
 
     const auto geomOptions = art::ServiceHandle<GeometryService>()->geomOptions();
-    geomOptions->loadEntry( config, "extMonFNAL", "extMonFNAL" );    
-    geomOptions->loadEntry( config, "extMonFNAL"+collimator.name()+"alignmentHole", "extMonFNAL."+collimator.name()+".alignmentHole" );    
-    geomOptions->loadEntry( config, "extMonFNAL"+collimator.name()+"alignmentPlug", "extMonFNAL."+collimator.name()+".alignmentPlug" );    
-    geomOptions->loadEntry( config, "extMonFNAL"+collimator.name()+"channel",       "extMonFNAL."+collimator.name()+".channel" );    
-    
-    const bool forceAuxEdgeVisible  = geomOptions->forceAuxEdgeVisible("extMonFNAL"); 
-    const bool doSurfaceCheck       = geomOptions->doSurfaceCheck("extMonFNAL"); 
-    const bool placePV              = geomOptions->placePV("extMonFNAL"); 
+    geomOptions->loadEntry( config, "extMonFNAL", "extMonFNAL" );
+    geomOptions->loadEntry( config, "extMonFNAL"+collimator.name()+"alignmentHole", "extMonFNAL."+collimator.name()+".alignmentHole" );
+    geomOptions->loadEntry( config, "extMonFNAL"+collimator.name()+"alignmentPlug", "extMonFNAL."+collimator.name()+".alignmentPlug" );
+    geomOptions->loadEntry( config, "extMonFNAL"+collimator.name()+"channel",       "extMonFNAL."+collimator.name()+".channel" );
+
+    const bool forceAuxEdgeVisible  = geomOptions->forceAuxEdgeVisible("extMonFNAL");
+    const bool doSurfaceCheck       = geomOptions->doSurfaceCheck("extMonFNAL");
+    const bool placePV              = geomOptions->placePV("extMonFNAL");
 
 
     // The G4 interface we use through finishNesting() applies
@@ -238,16 +240,16 @@ namespace mu2e {
     MaterialFinder materialFinder(config);
 
     const auto geomOptions = art::ServiceHandle<GeometryService>()->geomOptions();
-    geomOptions->loadEntry( config, "extMonFNAL", "extMonFNAL" );    
-    geomOptions->loadEntry( config, "extMonFNAL"+volNameSuffix+"magnetIron",     "extMonFNAL."+volNameSuffix+".magnet.iron" );  
-    geomOptions->loadEntry( config, "extMonFNAL"+volNameSuffix+"magnetAperture", "extMonFNAL."+volNameSuffix+".magnet.aperture" );  
-    
-    const bool forceAuxEdgeVisible  = geomOptions->forceAuxEdgeVisible("extMonFNAL"); 
-    const bool doSurfaceCheck       = geomOptions->doSurfaceCheck("extMonFNAL"); 
-    const bool placePV              = geomOptions->placePV("extMonFNAL"); 
+    geomOptions->loadEntry( config, "extMonFNAL", "extMonFNAL" );
+    geomOptions->loadEntry( config, "extMonFNAL"+volNameSuffix+"magnetIron",     "extMonFNAL."+volNameSuffix+".magnet.iron" );
+    geomOptions->loadEntry( config, "extMonFNAL"+volNameSuffix+"magnetAperture", "extMonFNAL."+volNameSuffix+".magnet.aperture" );
 
-    AntiLeakRegistry& reg = art::ServiceHandle<G4Helper>()->antiLeakRegistry();
-    
+    const bool forceAuxEdgeVisible  = geomOptions->forceAuxEdgeVisible("extMonFNAL");
+    const bool doSurfaceCheck       = geomOptions->doSurfaceCheck("extMonFNAL");
+    const bool placePV              = geomOptions->placePV("extMonFNAL");
+
+    AntiLeakRegistry& reg = art::ServiceHandle<Mu2eG4Helper>()->antiLeakRegistry();
+
     //----------------------------------------------------------------
     // finishNesting() uses the backwards interpretation of rotations
     CLHEP::HepRotation *magnetRotationInParentInv =
@@ -330,7 +332,7 @@ namespace mu2e {
               doSurfaceCheck
               );
 
-    VolumeInfo apertureMarginDn = 
+    VolumeInfo apertureMarginDn =
       nestBox("ExtMonFNAL"+volNameSuffix+"MagnetApertureMarginDn",
               apertureMarginHalfSize,
               materialFinder.get("hall.insideMaterialName"),
@@ -390,25 +392,25 @@ namespace mu2e {
 
   //================================================================
   void constructExtMonFNALBuilding(const VolumeInfo& collimator1Parent,
-                                         const CLHEP::HepRotation& collimator1ParentRotationInMu2e,
-                                         const VolumeInfo& mainParent,
-                                         const CLHEP::HepRotation& mainParentRotationInMu2e,
-                                         const SimpleConfig& config)
+                                   const CLHEP::HepRotation& collimator1ParentRotationInMu2e,
+                                   const VolumeInfo& mainParent,
+                                   const CLHEP::HepRotation& mainParentRotationInMu2e,
+                                   const SimpleConfig& config)
   {
     const auto geomOptions = art::ServiceHandle<GeometryService>()->geomOptions();
-    geomOptions->loadEntry( config, "extMonFNAL", "extMonFNAL" );    
-    geomOptions->loadEntry( config, "coll2Shielding",         "extMonFNAL.collimator2.shielding" );  
-    geomOptions->loadEntry( config, "coll2ShieldingHVACduct", "extMonFNAL.collimator2.shieldingHVACduct" );  
-    
-    const bool forceAuxEdgeVisible  = geomOptions->forceAuxEdgeVisible("extMonFNAL"); 
-    const bool doSurfaceCheck       = geomOptions->doSurfaceCheck("extMonFNAL"); 
+    geomOptions->loadEntry( config, "extMonFNAL", "extMonFNAL" );
+    geomOptions->loadEntry( config, "coll2Shielding",         "extMonFNAL.collimator2.shielding" );
+    geomOptions->loadEntry( config, "coll2ShieldingHVACduct", "extMonFNAL.collimator2.shieldingHVACduct" );
+
+    const bool forceAuxEdgeVisible  = geomOptions->forceAuxEdgeVisible("extMonFNAL");
+    const bool doSurfaceCheck       = geomOptions->doSurfaceCheck("extMonFNAL");
     const bool placePV              = geomOptions->placePV("extMonFNAL");
 
     MaterialFinder materialFinder(config);
 
     GeomHandle<ProtonBeamDump> dump;
     GeomHandle<ExtMonFNALBuilding> emfb;
-    
+
 
     static CLHEP::HepRotation shieldingRotationInMu2e = emfb->shieldingRotationInMu2e();
     const CLHEP::Hep3Vector offset(0.0,2*emfb->shieldingNHalfSize()[1],0.0);
@@ -484,7 +486,7 @@ namespace mu2e {
 
     static const CLHEP::HepRotation HVACductRotInParent( collimator2ParentRotationInMu2e*emfb->shieldingRotationInMu2e().inverse() );
 
-    AntiLeakRegistry& reg = art::ServiceHandle<G4Helper>()->antiLeakRegistry();
+    AntiLeakRegistry& reg = art::ServiceHandle<Mu2eG4Helper>()->antiLeakRegistry();
     CLHEP::HepRotation *ductrot = reg.add(HVACductRotInParent.inverse());
 
     G4Tubs *holeCylinder = new G4Tubs( "holeCylinder", 0.0, emfb->HVACductRadius(), emfb->HVACductHalfLength(), 0.0, CLHEP::twopi );
@@ -536,7 +538,7 @@ namespace mu2e {
 
     // Test
     if (false) {
-      G4Helper* _helper = &(*(art::ServiceHandle<G4Helper>()));
+      Mu2eG4Helper* _helper = &(*(art::ServiceHandle<Mu2eG4Helper>()));
       const VolumeInfo& hall = _helper->locateVolInfo("HallAir");
       VolumeInfo test("emfMagnettest", emfb->filterMagnet().geometricCenterInMu2e() - hall.centerInMu2e(), hall.centerInWorld);
       test.solid = new G4Orb(test.name, 500.);

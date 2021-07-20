@@ -5,8 +5,8 @@
 #
 # Original author Rob Kutschke
 
-#include "fcl/minimalMessageService.fcl"
-#include "fcl/standardProducers.fcl"
+#include "Offline/fcl/minimalMessageService.fcl"
+#include "Offline/fcl/standardProducers.fcl"
 
 # Give this process a name.
 process_name : RadiativePiTest
@@ -40,15 +40,15 @@ services :
 
   GeometryService :
   {
-    inputFile : "Mu2eG4/geom/geom_common.txt"
+    inputFile : "Offline/Mu2eG4/geom/geom_common.txt"
   }
 
   ConditionsService :
   {
-    conditionsfile : "Mu2eG4/test/conditions_01.txt"
+    conditionsfile : "Offline/ConditionsService/data/conditions_01.txt"
   }
 
-  GlobalConstantsService : { inputFile : "Mu2eG4/test/globalConstants_01.txt" }
+  GlobalConstantsService : { inputFile : "Offline/GlobalConstantsService/data/globalConstants_01.txt" }
 } # close of services block
 
 physics :
@@ -59,7 +59,7 @@ physics :
     generate:
     {
       module_type   : EventGenerator
-      inputfile     : "Analyses/test/RPCconfig.txt"
+      inputfile     : "Offline/Analyses/test/RPCconfig.txt"
       seed          : [7789]
     }
     # Run G4 and add its hits to the event.
@@ -67,7 +67,7 @@ physics :
     {
       module_type          : G4
       generatorModuleLabel : generate
-      # visMacro           : "Mu2eG4/test/visyz.mac"
+      # visMacro           : "Mu2eG4/vis/visyz.mac"
       stepsSizeLimit       : 10000                   # StepPoint
       particlesSizeLimit   : 10000                   # SimParticle
       seed                 : [9877]

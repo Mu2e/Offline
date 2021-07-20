@@ -6,30 +6,26 @@
 //
 
 #include "CLHEP/Units/SystemOfUnits.h"
-#include "GlobalConstantsService/inc/GlobalConstantsHandle.hh"
-#include "GlobalConstantsService/inc/ParticleDataTable.hh"
-#include "GlobalConstantsService/inc/unknownPDGIdName.hh"
+#include "Offline/GlobalConstantsService/inc/GlobalConstantsHandle.hh"
+#include "Offline/GlobalConstantsService/inc/ParticleDataTable.hh"
+#include "Offline/GlobalConstantsService/inc/unknownPDGIdName.hh"
 
-#include "CalorimeterGeom/inc/Calorimeter.hh"
+#include "Offline/CalorimeterGeom/inc/Calorimeter.hh"
 
-#include "GeometryService/inc/GeomHandle.hh"
-#include "GeometryService/inc/GeometryService.hh"
+#include "Offline/GeometryService/inc/GeomHandle.hh"
+#include "Offline/GeometryService/inc/GeometryService.hh"
 
-#include "RecoDataProducts/inc/KalRepCollection.hh"
-#include "RecoDataProducts/inc/TrkFitDirection.hh"
+#include "Offline/RecoDataProducts/inc/KalRepCollection.hh"
+#include "Offline/RecoDataProducts/inc/TrkFitDirection.hh"
 #include "BTrk/KalmanTrack/KalRep.hh"
-#include "RecoDataProducts/inc/KalRepPtrCollection.hh"
+#include "Offline/RecoDataProducts/inc/KalRepPtrCollection.hh"
 
 
-#include "RecoDataProducts/inc/CaloCrystalHitCollection.hh"
-#include "RecoDataProducts/inc/CaloHitCollection.hh"
-#include "RecoDataProducts/inc/CaloHit.hh"
-#include "RecoDataProducts/inc/CaloCluster.hh"
-#include "RecoDataProducts/inc/CaloClusterCollection.hh"
-#include "RecoDataProducts/inc/CaloClusterCollection.hh"
-#include "RecoDataProducts/inc/TrkCaloIntersectCollection.hh"
-#include "RecoDataProducts/inc/TrkCaloMatchCollection.hh"
-#include "MCDataProducts/inc/StepPointMCCollection.hh"
+#include "Offline/RecoDataProducts/inc/CaloHit.hh"
+#include "Offline/RecoDataProducts/inc/CaloCluster.hh"
+#include "Offline/RecoDataProducts/inc/TrkCaloIntersectCollection.hh"
+#include "Offline/RecoDataProducts/inc/TrkCaloMatchCollection.hh"
+#include "Offline/MCDataProducts/inc/StepPointMCCollection.hh"
 
 #include "art/Framework/Core/EDAnalyzer.h"
 #include "art/Framework/Core/ModuleMacros.h"
@@ -39,6 +35,7 @@
 #include "art/Framework/Principal/Handle.h"
 #include "art/Framework/Principal/Selector.h"
 #include "art/Framework/Principal/Provenance.h"
+#include "art/Framework/Services/Registry/ServiceDefinitionMacros.h"
 #include "cetlib_except/exception.h"
 #include "fhiclcpp/ParameterSet.h"
 #include "messagefacility/MessageLogger/MessageLogger.h"
@@ -208,9 +205,9 @@ namespace mu2e {
   
 
       // Get crystal hits
-      art::Handle<CaloCrystalHitCollection> caloCrystalHitsHandle;
-      event.getByLabel(_caloCrystalModuleLabel, caloCrystalHitsHandle);
-      CaloCrystalHitCollection const& caloCrystalHits(*caloCrystalHitsHandle);
+      art::Handle<CaloHitCollection> CaloHitsHandle;
+      event.getByLabel(_caloCrystalModuleLabel, CaloHitsHandle);
+      CaloHitCollection const& CaloHits(*CaloHitsHandle);
 
       // Get tracks
       art::Handle<KalRepPtrCollection> trksHandle;
@@ -246,18 +243,18 @@ namespace mu2e {
        //--------------------------  Do calorimeter hits --------------------------------
       
        _nHits = 0;
-       for (unsigned int ic=0; ic<caloCrystalHits.size();++ic) 
+       for (unsigned int ic=0; ic<CaloHits.size();++ic) 
        {	   
-	   CaloCrystalHit const& hit    = caloCrystalHits.at(ic);
-	   CLHEP::Hep3Vector crystalPos = cal.crystal(hit.id()).position();
+	   CaloHit const& hit    = CaloHits.at(ic);
+	   CLHEP::Hep3Vector crystalPos = cal.crystal(hit.crystalID()).position();
 
 	   _cryTime[_nHits]      = hit.time();
 	   _cryEdep[_nHits]      = hit.energyDep();
 	   _cryPosX[_nHits]      = crystalPos.x();
 	   _cryPosY[_nHits]      = crystalPos.y();
 	   _cryPosZ[_nHits]      = crystalPos.z();
-	   _cryId[_nHits]        = hit.id();
-	   _crySectionId[_nHits] = cal.crystal(hit.id()).diskId();
+	   _cryId[_nHits]        = hit.crystalID();
+	   _crySectionId[_nHits] = cal.crystal(hit.crystalID()).diskID();
            ++_nHits;
        }
       
@@ -268,7 +265,7 @@ namespace mu2e {
        {
 	  std::vector<int> _list;
 	  for (int i=0;i<clusterIt->size();++i) 
-	     _list.push_back( int(clusterIt->caloCrystalHitsPtrVector().at(i).get()- &caloCrystalHits.at(0)) );	    
+	     _list.push_back( int(clusterIt->caloHitsPtrVector().at(i).get()- &CaloHits.at(0)) );	    
 
 	  _cluEnergy[_nCluster] = clusterIt->energyDep();
 	  _cluTime[_nCluster]   = clusterIt->time();

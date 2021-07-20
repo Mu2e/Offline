@@ -4,16 +4,16 @@
 #include <utility>
 #include <vector>
 
-#include "MCDataProducts/inc/GenParticleSPMHistory.hh"
-#include "MCDataProducts/inc/GenSimParticleLink.hh"
-#include "MCDataProducts/inc/SimParticle.hh"
-#include "MCDataProducts/inc/StepPointMC.hh"
+#include "Offline/MCDataProducts/inc/GenParticleSPMHistory.hh"
+#include "Offline/MCDataProducts/inc/GenSimParticleLink.hh"
+#include "Offline/MCDataProducts/inc/SimParticle.hh"
+#include "Offline/MCDataProducts/inc/StepPointMC.hh"
 #include "art/Framework/Principal/Event.h"
 #include "art/Framework/Principal/Handle.h"
 #include "canvas/Persistency/Common/Assns.h"
 #include "cetlib_except/exception.h"
 
-#include "Mu2eUtilities/inc/SimParticleParentGetter.hh"
+#include "Offline/Mu2eUtilities/inc/SimParticleParentGetter.hh"
 
 namespace mu2e { class GenParticle; }
 
@@ -44,16 +44,14 @@ namespace mu2e {
       if(stepPointMap_.empty()) { // need to load the associations
 
         typedef std::vector<art::Handle<GenParticleSPMHistory> > StepPointHandles;
-        StepPointHandles stepPointResults;
-        evt_->getManyByType(stepPointResults);
+        StepPointHandles stepPointResults = evt_->getMany<GenParticleSPMHistory>();
 
 	if (stepPointResults.empty() ) { //no associations with StepPoints. Trying with simparticle end points
 
 	  if (simParticleMap_.empty()) { //need to load the associations
 
 	    typedef std::vector<art::Handle<GenSimParticleLink> > SimParticleHandles;
-	    SimParticleHandles simParticleResults;
-	    evt_->getManyByType(simParticleResults);
+	    SimParticleHandles simParticleResults = evt_->getMany<GenSimParticleLink>();
 
 	    for(SimParticleHandles::const_iterator h = simParticleResults.begin(); h != simParticleResults.end(); ++h) {
 	      AGDEBUG("In loop over simParticleHandles");

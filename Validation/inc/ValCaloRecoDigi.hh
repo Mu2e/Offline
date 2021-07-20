@@ -4,7 +4,7 @@
 
 #include "art/Framework/Principal/Event.h"
 #include "art_root_io/TFileDirectory.h"
-#include "RecoDataProducts/inc/CaloRecoDigiCollection.hh"
+#include "Offline/RecoDataProducts/inc/CaloRecoDigi.hh"
 #include "TH1D.h"
 #include <string>
 

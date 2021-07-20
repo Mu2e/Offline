@@ -4,7 +4,7 @@
 #include "art/Framework/Principal/Event.h"
 #include "art/Framework/Principal/Handle.h"
 #include "fhiclcpp/ParameterSet.h"
-#include "MCDataProducts/inc/StepPointMCCollection.hh"
+#include "Offline/MCDataProducts/inc/StepPointMCCollection.hh"
 
 using namespace CLHEP;
 

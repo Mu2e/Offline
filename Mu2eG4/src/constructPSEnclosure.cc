@@ -1,25 +1,27 @@
  // Andrei Gaponenko, 2012
 
-#include "Mu2eG4/inc/constructPSEnclosure.hh"
+#include "Offline/Mu2eG4/inc/constructPSEnclosure.hh"
 
 #include "CLHEP/Vector/ThreeVector.h"
 
-#include "ProductionSolenoidGeom/inc/PSEnclosure.hh"
-#include "ProductionSolenoidGeom/inc/PSVacuum.hh"
-#include "GeometryService/inc/GeometryService.hh"
-#include "GeometryService/inc/GeomHandle.hh"
-#include "GeometryService/inc/G4GeometryOptions.hh"
-#include "GeomPrimitives/inc/Tube.hh"
-#include "GeomPrimitives/inc/Cone.hh"
-#include "GeomPrimitives/inc/TubsParams.hh"
-#include "Mu2eG4/inc/findMaterialOrThrow.hh"
-#include "Mu2eG4/inc/nestTubs.hh"
-#include "Mu2eG4/inc/nestCons.hh"
-#include "G4Helper/inc/VolumeInfo.hh"
-#include "ConfigTools/inc/SimpleConfig.hh"
-#include "G4Helper/inc/G4Helper.hh"
+#include "art/Framework/Services/Registry/ServiceDefinitionMacros.h"
 
-#include "G4LogicalVolume.hh"
+#include "Offline/ProductionSolenoidGeom/inc/PSEnclosure.hh"
+#include "Offline/ProductionSolenoidGeom/inc/PSVacuum.hh"
+#include "Offline/GeometryService/inc/GeometryService.hh"
+#include "Offline/GeometryService/inc/GeomHandle.hh"
+#include "Offline/GeometryService/inc/G4GeometryOptions.hh"
+#include "Offline/GeomPrimitives/inc/Tube.hh"
+#include "Offline/GeomPrimitives/inc/Cone.hh"
+#include "Offline/GeomPrimitives/inc/TubsParams.hh"
+#include "Offline/Mu2eG4/inc/findMaterialOrThrow.hh"
+#include "Offline/Mu2eG4/inc/nestTubs.hh"
+#include "Offline/Mu2eG4/inc/nestCons.hh"
+#include "Offline/Mu2eG4Helper/inc/VolumeInfo.hh"
+#include "Offline/ConfigTools/inc/SimpleConfig.hh"
+#include "Offline/Mu2eG4Helper/inc/Mu2eG4Helper.hh"
+
+#include "Geant4/G4LogicalVolume.hh"
 
 namespace mu2e {
 
@@ -92,7 +94,7 @@ namespace mu2e {
     }
 
     // get the mass of the Shell
-    G4Helper* _helper = &(*art::ServiceHandle<G4Helper>());
+    Mu2eG4Helper* _helper = &(*art::ServiceHandle<Mu2eG4Helper>());
     verbosityLevel 
       && std::cout << __func__ << " " << sName << " Mass in kg: " 
                    << _helper->locateVolInfo(sName).logical->GetMass()/CLHEP::kg 

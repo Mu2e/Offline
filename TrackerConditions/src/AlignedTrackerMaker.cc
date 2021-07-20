@@ -1,134 +1,104 @@
 
-#include <iostream>
-
-#include "TrackerGeom/inc/Tracker.hh"
-#include "TrackerConditions/inc/AlignedTrackerMaker.hh"
-#include "GeometryService/inc/GeomHandle.hh"
+#include "Offline/TrackerConditions/inc/AlignedTrackerMaker.hh"
+#include "Offline/TrackerGeom/inc/Tracker.hh"
+#include "Offline/GeometryService/inc/GeomHandle.hh"
 #include "CLHEP/Vector/ThreeVector.h"
 #include "cetlib_except/exception.h"
+#include "Offline/GeneralUtilities/inc/HepTransform.hh"
+#include <iostream>
 
 using namespace std;
 using namespace CLHEP;
 
 namespace mu2e {
 
+  typedef std::shared_ptr<Tracker> ptr_t;
+  using xyzVec = CLHEP::Hep3Vector; // switch to XYZVec TODO
 
-  Tracker::ptr_t AlignedTrackerMaker::fromFcl() {
-
+  ptr_t AlignedTrackerMaker::fromFcl() {
+  // this creates a deep copy of the nominal geometry
     GeomHandle<Tracker> trk_h;
+    ptr_t  ptr = std::make_shared<Tracker>(*trk_h);
+    if ( _config.verbose() > 0 ) cout << "AlignedTrackerMaker::fromFcl made Tracker with nStraws = " << ptr->nStraws() << endl; 
+    return ptr;
+  }
+
+  ptr_t AlignedTrackerMaker::fromDb(
+      TrkAlignTracker::cptr_t tatr_p,
+      TrkAlignPlane::cptr_t   tapl_p,
+      TrkAlignPanel::cptr_t   tapa_p,
+      TrkAlignStraw::cptr_t   tast_p ) {
+
+
+    // get default geometry
+    auto ptr = fromFcl();
+    Tracker& tracker = *ptr;
 
     // make shared_ptr to a copy of the GeomHandle Tracker object
     // made via copy constructor.  AlignedTracker leaves the
     // nominal Geometry untouched.
-    Tracker::ptr_t  ptr = std::make_shared<Tracker>(*trk_h);
 
     if ( _config.verbose() > 0 ) {
       cout << "AlignedTrackerMaker::fromFcl made Tracker with nStraws = "
-     << ptr->nStraws() << endl;
+	<< ptr->nStraws() << endl;
     }
-
-    return ptr;
-  }
-
-  Tracker::ptr_t AlignedTrackerMaker::fromDb(
-        TrkAlignTracker::cptr_t tatr_p,
-        TrkAlignPlane::cptr_t   tapl_p,
-        TrkAlignPanel::cptr_t   tapa_p ) {
-
-
-
-    // get standard geometry
-    auto ptr = fromFcl();
-    Tracker& tracker = *ptr;
 
     if ( _config.verbose() > 0 ) {
       cout << "AlignedTrackerMaker::fromDb now aligning Tracker " << endl;
     }
 
-    // the whole tracker has nominal center on 0,0,0
-    auto const& rowtr = tatr_p->rowAt(0);
-    HepTransform align_tracker(rowtr.dx(),rowtr.dy(),rowtr.dz(),
-             rowtr.rx(),rowtr.ry(),rowtr.rz());
+    // the tracker global transform in DS coordinates
+    auto const& tracker_align = tatr_p->rowAt(0); // exactly 1 row in this table
+    HepRotation nullrot;
 
     for(auto& plane : tracker.getPlanes()) {
-
-      auto const& rowpl = tapl_p->rowAt( plane.id().plane() );
-      HepTransform align_plane(rowpl.dx(),rowpl.dy(),rowpl.dz(),
-             rowpl.rx(),rowpl.ry(),rowpl.rz());
-
-
-      if ( _config.verbose() > 0 ) {
-        cout << "AlignedTrackerMaker::fromDb plane ID " << plane.id().plane() << " alignment constants: " << align_plane << endl;
-      }
-      // how to place the plane in the tracker
-      HepTransform plane_to_tracker(0.0,0.0,plane.origin().z(),0.0,0.0,0.0);
-
-      // make an intermediate multiplication
-      HepTransform plane_temp = align_tracker
-        * (plane_to_tracker * align_plane);
-
+      // plane alignment
+      auto const& plane_align = tapl_p->rowAt( plane.id().plane() );
+      if ( _config.verbose() > 0 ) cout << "AlignedTrackerMaker::fromDb plane ID " << plane.id() << " alignment transform: " << plane_align.transform() << endl;
+      // chain to transform plane coordinates into tracker, includering alignment
+      auto aligned_plane_to_ds = tracker_align.transform() * (plane.planeToDS() * plane_align.transform());
+      // cache the inverse nominal transform
+      auto ds_to_plane = plane.dsToPlane();
       for(auto panel_p : plane.getPanels()) {
-        auto& panel = *panel_p;
-        auto const& rowpa = tapa_p->rowAt( panel.id().uniquePanel() );
-        HepTransform align_panel(rowpa.dx(),rowpa.dy(),rowpa.dz(),
-              rowpa.rx(),rowpa.ry(),rowpa.rz());
-
-        // how to place the panel in the plane
-        Hep3Vector dv = panel.straw0MidPoint()
-          - plane_to_tracker.displacement();
-        double rz = dv.phi();
-
-        HepTransform panel_to_plane(dv.x(),dv.y(),dv.z(),0.0,0.0,rz);
-
-        // make an intermediate multiplication
-        HepTransform panel_temp = plane_temp * (panel_to_plane * align_panel);
-
-
-        for(size_t istr=0; istr< StrawId::_nstraws; istr++) {
-          Straw &straw = tracker.getStraw(panel.getStraw(istr).id());
-
-          // how to place the straw in the panel
-          double dx = straw.getMidPoint().perp()
-            - panel.straw0MidPoint().perp();
-          double dz = ( straw.getMidPoint()
-            - panel.straw0MidPoint() ).z();
-
-          Hep3Vector straw_to_panel = Hep3Vector(dx,0.0,dz);
-          Hep3Vector straw_dir = Hep3Vector(0.0,1.0,0.0);
-
-          Hep3Vector aligned_straw = panel_temp*straw_to_panel;
-          Hep3Vector aligned_straw_dir = panel_temp.rotation()*straw_dir;
-
-          // aligned straw position inserted in the Tracker object
-
-          Hep3Vector pdif = aligned_straw - straw.getMidPoint();
-          Hep3Vector ddif = aligned_straw_dir - straw.getDirection();
-
-          straw._c = aligned_straw;
-          straw._w = aligned_straw_dir;
-        } // straw loop
-
-        Hep3Vector aligned_straw0MidPoint;
-        for ( uint16_t ilay=0; ilay < StrawId::_nlayers; ++ilay ) {
-          const Straw& strw = tracker.getStraw(StrawId(panel.id().asUint16() + ilay));
-          aligned_straw0MidPoint += strw.getMidPoint();
-        }
-        aligned_straw0MidPoint /= StrawId::_nlayers;
-
-        // now set the aligned straw0 midpoint and direction, and set new aligned panel origin
-        panel._straw0Direction = panel.getStraw(0).getDirection();
-        panel._straw0MidPoint = aligned_straw0MidPoint;
-
-        panel._origin = ((plane_temp * panel_to_plane) * Hep3Vector(0,0,0));
-
+	auto& panel = *panel_p;
+	auto const& panel_align = tapa_p->rowAt( panel.id().uniquePanel() );
+	if ( _config.verbose() > 0 ) cout << "AlignedTrackerMaker::fromDb panel ID " << panel.id() << " alignment transform: " << panel_align.transform() << endl;
+	// separate just the panel->plane transform
+	auto panel_to_plane = ds_to_plane*panel.panelToDS();
+	// cache the nominal inverse
+	auto ds_to_panel = panel.dsToPanel();
+	// chain to transform panel coordinates into global (tracker), including alignment
+	HepTransform aligned_panel_to_ds = aligned_plane_to_ds * (panel_to_plane * panel_align.transform());
+	// loop over straws
+	for(size_t istr=0; istr< StrawId::_nstraws; istr++) {
+	  Straw &straw = tracker.getStraw(panel.getStraw(istr).id());
+	  auto const& straw_align = tast_p->rowAt( straw.id().uniqueStraw() );
+	  // transform straw and wire ends from nominal XYZ to Panel UVW and correct for end alignment
+	  std::array<xyzVec,2> wireends, strawends;
+	  for(int iend=0;iend < StrawEnd::nends; iend++){
+	    auto end = static_cast<StrawEnd::End>(iend);
+	    auto wireend_UVW = ds_to_panel*straw.wireEnd(end) + straw_align.wireDeltaUVW(end);
+	    auto strawend_UVW = ds_to_panel*straw.strawEnd(end) + straw_align.strawDeltaUVW(end);
+	  // Transform back to global coordinates, including all the alignment corrections
+	    wireends[iend] = aligned_panel_to_ds*wireend_UVW;
+	    strawends[iend] = aligned_panel_to_ds*strawend_UVW;
+	    // diagnostics
+	    StrawEnd stend = StrawEnd(end);
+	    if ( _config.verbose() > 2 || (_config.verbose() > 1 && (wireends[iend]-straw.wireEnd(end)).mag() > 1e-5)){
+	      std::cout << "Straw " << straw.id() << " wire " << stend << " aligned " << wireends[iend]  << " nominal " << straw.wireEnd(end) << std::endl;
+	    }
+	    if ( _config.verbose() > 2 || (_config.verbose() > 1 && (strawends[iend]-straw.strawEnd(end)).mag() > 1e-5)){
+	      std::cout << "Straw " << straw.id() << " straw " << stend << " aligned " << strawends[iend] << " nominal " << straw.strawEnd(end) << std::endl;
+	    } 
+	  }
+	  // overwrite straw content with aligned information
+	  straw = Straw(straw.id(),
+	      wireends[StrawEnd::cal], wireends[StrawEnd::hv],
+	      strawends[StrawEnd::cal], strawends[StrawEnd::hv]);
+	} // straw loop
       } // panel loop
-
-
-      // set the aligned plane origin
-      // because we're a friend of Tracker, we can access the non-const Plane object
-      tracker._planes.at(plane.id().getPlane())._origin = plane_temp * Hep3Vector(0,0,0);
     } // plane loop
-
+    // should update tracker, plane and panel origins FIXME!
     return ptr;
   }
 

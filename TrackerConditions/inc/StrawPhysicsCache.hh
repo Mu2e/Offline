@@ -1,17 +1,17 @@
 #ifndef TrackerConditions_StrawPhysicsCache_hh
 #define TrackerConditions_StrawPhysicsCache_hh
 
-#include "Mu2eInterfaces/inc/ProditionsCache.hh"
-#include "ProditionsService/inc/ProditionsHandle.hh"
-#include "TrackerConditions/inc/StrawDrift.hh"
-#include "TrackerConditions/inc/StrawPhysicsMaker.hh"
+#include "Offline/Mu2eInterfaces/inc/ProditionsCache.hh"
+#include "Offline/ProditionsService/inc/ProditionsHandle.hh"
+#include "Offline/TrackerConditions/inc/StrawDrift.hh"
+#include "Offline/TrackerConditions/inc/StrawPhysicsMaker.hh"
 
 
 namespace mu2e {
   class StrawPhysicsCache : public ProditionsCache {
   public: 
     StrawPhysicsCache(StrawPhysicsConfig const& config):
-      ProditionsCache("StrawPhysics",config.verbose()),
+      ProditionsCache(StrawPhysics::cxname,config.verbose()),
       _useDb(config.useDb()),_maker(config) {}
 
     //    std::string const& name() const { return _name; }

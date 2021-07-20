@@ -12,22 +12,22 @@
 #include "messagefacility/MessageLogger/MessageLogger.h"
 
 // Mu2e includes
-#include "Mu2eG4/inc/CRVSD.hh"
-#include "Mu2eG4/inc/Mu2eG4UserHelpers.hh"
-#include "Mu2eG4/inc/SimParticleHelper.hh"
-#include "Mu2eG4/inc/PhysicsProcessInfo.hh"
-#include "ConfigTools/inc/SimpleConfig.hh"
+#include "Offline/Mu2eG4/inc/CRVSD.hh"
+#include "Offline/Mu2eG4/inc/Mu2eG4UserHelpers.hh"
+#include "Offline/Mu2eG4/inc/SimParticleHelper.hh"
+#include "Offline/Mu2eG4/inc/PhysicsProcessInfo.hh"
+#include "Offline/ConfigTools/inc/SimpleConfig.hh"
 
 // G4 includes
-#include "G4LossTableManager.hh"
-#include "G4Step.hh"
+#include "Geant4/G4LossTableManager.hh"
+#include "Geant4/G4Step.hh"
 
 using namespace std;
 
 namespace mu2e {
 
   CRVSD::CRVSD(G4String name, SimpleConfig const & config ):
-    Mu2eSensitiveDetector(name,config)
+    Mu2eG4SensitiveDetector(name,config)
   {}
 
   G4bool CRVSD::ProcessHits(G4Step* aStep,G4TouchableHistory*){
@@ -68,6 +68,7 @@ namespace mu2e {
                             aStep->GetPreStepPoint()->GetPosition() - _mu2eOrigin,
                             aStep->GetPostStepPoint()->GetPosition() - _mu2eOrigin,
                             aStep->GetPreStepPoint()->GetMomentum(),
+                            aStep->GetPostStepPoint()->GetMomentum(),
                             aStep->GetStepLength(),
                             endCode
                             ));

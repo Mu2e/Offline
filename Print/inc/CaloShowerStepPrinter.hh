@@ -7,8 +7,8 @@
 #include <cstring>
 #include <iostream>
 
-#include "Print/inc/ProductPrinter.hh"
-#include "MCDataProducts/inc/CaloShowerStepCollection.hh"
+#include "Offline/Print/inc/ProductPrinter.hh"
+#include "Offline/MCDataProducts/inc/CaloShowerStep.hh"
 #include "art/Framework/Principal/Handle.h"
 #include "canvas/Persistency/Common/Ptr.h"
 

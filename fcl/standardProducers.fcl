@@ -1,36 +1,27 @@
 # -*- mode: tcl -*-
-
-BEGIN_PROLOG
-#------------------------------------------------------------------------------
-# unfortunately, in the present scheme can't do it differently : 
-# CalPatRec needs DtOffset as well and the DtOffset declaration 
-# has to go before the CalPatRec prolog
-#------------------------------------------------------------------------------
-TrackCaloMatching : { 
-#    DtOffset : -0.4 # v6_3: was 2.9  # track-cluster offset, ns v5_7_6 # 1.2  # 1.4   
-    DtOffset : 0.2 # from TrkCaloHit matching
-}
-END_PROLOG
-
-#include "EventGenerator/fcl/prolog.fcl"
-#include "Filters/fcl/prolog.fcl"
-#include "Mu2eG4/fcl/prolog.fcl"
-#include "TrackerMC/fcl/prolog.fcl"
-#include "CaloCluster/fcl/prolog.fcl"
-#include "ExtinctionMonitorFNAL/fcl/prolog.fcl"
-#include "TrkHitReco/fcl/prolog.fcl"
-#include "TrkReco/fcl/prolog.fcl"
-#include "TrkPatRec/fcl/prolog.fcl"
-#include "CalPatRec/fcl/prolog.fcl"
-#include "CalPatRec/fcl/prolog_common.fcl"
-#include "TrackCaloMatching/fcl/prolog.fcl"
-#include "ParticleID/fcl/prolog.fcl"
-#include "EventMixing/fcl/prolog.fcl"
-#include "CaloMC/fcl/prolog.fcl"
-#include "CaloReco/fcl/prolog.fcl"
-#include "CRVResponse/fcl/prolog.fcl"
-#include "CommonMC/fcl/prolog.fcl"
-
+#
+# this file is deprecated: please include the individual producers you need from the appropriate specific prologs below
+#
+#include "Offline/fcl/TrkCaloDt.fcl"
+#include "Offline/EventGenerator/fcl/prolog.fcl"
+#include "Offline/Filters/fcl/prolog.fcl"
+#include "Offline/Compression/fcl/prolog.fcl"
+#include "Offline/Mu2eG4/fcl/prolog.fcl"
+#include "Offline/TrackerMC/fcl/prolog.fcl"
+#include "Offline/CaloCluster/fcl/prolog.fcl"
+#include "Offline/ExtinctionMonitorFNAL/fcl/prolog.fcl"
+#include "Offline/TrkHitReco/fcl/prolog.fcl"
+#include "Offline/TrkReco/fcl/prolog.fcl"
+#include "Offline/TrkPatRec/fcl/prolog.fcl"
+#include "Offline/CalPatRec/fcl/prolog.fcl"
+#include "Offline/CalPatRec/fcl/prolog_common.fcl"
+#include "Offline/TrackCaloMatching/fcl/prolog.fcl"
+#include "Offline/ParticleID/fcl/prolog.fcl"
+#include "Offline/EventMixing/fcl/prolog.fcl"
+#include "Offline/CaloMC/fcl/prolog.fcl"
+#include "Offline/CaloReco/fcl/prolog.fcl"
+#include "Offline/CRVResponse/fcl/prolog.fcl"
+#include "Offline/CommonMC/fcl/prolog.fcl"
 
 BEGIN_PROLOG
 

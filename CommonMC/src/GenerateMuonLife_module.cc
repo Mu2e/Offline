@@ -22,14 +22,14 @@
 #include "art/Framework/Principal/Handle.h"
 #include "canvas/Utilities/InputTag.h"
 
-#include "MCDataProducts/inc/SimParticle.hh"
-#include "MCDataProducts/inc/SimParticleCollection.hh"
-#include "MCDataProducts/inc/SimParticleTimeMap.hh"
-#include "MCDataProducts/inc/GenId.hh"
-#include "SeedService/inc/SeedService.hh"
-#include "Mu2eUtilities/inc/SimParticleCollectionPrinter.hh"
-#include "GlobalConstantsService/inc/GlobalConstantsHandle.hh"
-#include "GlobalConstantsService/inc/PhysicsParams.hh"
+#include "Offline/MCDataProducts/inc/SimParticle.hh"
+#include "Offline/MCDataProducts/inc/SimParticleCollection.hh"
+#include "Offline/MCDataProducts/inc/SimParticleTimeMap.hh"
+#include "Offline/MCDataProducts/inc/GenId.hh"
+#include "Offline/SeedService/inc/SeedService.hh"
+#include "Offline/Mu2eUtilities/inc/SimParticleCollectionPrinter.hh"
+#include "Offline/GlobalConstantsService/inc/GlobalConstantsHandle.hh"
+#include "Offline/GlobalConstantsService/inc/PhysicsParams.hh"
 
 namespace mu2e {
 
@@ -56,6 +56,12 @@ namespace mu2e {
           };
 
       fhicl::Atom<int> verbosityLevel{ Name("verbosityLevel"), Comment("Levels 0, 1, and 11 increase the number of printouts.."), 0 };
+
+      fhicl::Sequence<std::string> applyToGenIds {
+        Name("applyToGenIds"),
+          Comment("The whitelist mode: assign time offsets just to particles made by one of the\n"
+                  "listed generators.\n")
+          };
     };
 
     using Parameters = art::EDProducer::Table<Config>;
@@ -68,6 +74,9 @@ namespace mu2e {
     double mean_;
     int  verbosityLevel_;
     std::vector<art::ProductToken<SimParticleTimeMap> > inmaps_; // optional input maps
+
+    typedef std::set<GenId::enum_type> GenIdSet;
+    GenIdSet applyToGenIds_;
   };
 
   //================================================================
@@ -91,6 +100,10 @@ namespace mu2e {
       if(verbosityLevel_ > 0) {
         std::cout<<"GenerateMuonLife initialized with meanLife = "<<mean_<<std::endl;
       }
+
+      for(const auto i: conf().applyToGenIds()) {
+        applyToGenIds_.insert(GenId::findByName(i).id());
+      }
     }
 
   //================================================================
@@ -102,8 +115,7 @@ namespace mu2e {
       res->insert(inmap->begin(),inmap->end());
     }
 
-    std::vector<art::Handle<SimParticleCollection> > colls;
-    event.getManyByType(colls);
+    std::vector<art::Handle<SimParticleCollection> > colls = event.getMany<SimParticleCollection>();
 
     // Generate and record offsets for all primaries
     for(const auto& ih : colls) {
@@ -112,14 +124,11 @@ namespace mu2e {
           art::Ptr<SimParticle> part(ih, iter.first.asUint());
           // don't re-simulate if particle is already present.  This can happen if there is an input map
           if(res->find(part) == res->end()){
+            const auto genId = part->genParticle()->generatorId();
 
-            if(part->genParticle()->generatorId() == GenId::StoppedParticleReactionGun    ||
-               part->genParticle()->generatorId() == GenId::dioTail                       ||
-               part->genParticle()->generatorId().isConversion()  ||
-               part->genParticle()->generatorId() == GenId::ExternalRMC          ||
-               part->genParticle()->generatorId() == GenId::InternalRMC          ||
-               part->genParticle()->generatorId() == GenId::gammaPairProduction )
-
+            // do just explicitly listed GenIds
+            bool apply= applyToGenIds_.find(genId.id()) != applyToGenIds_.end() || genId.isConversion();
+            if (apply)
               {
                 (*res)[part] = rexp_.fire(mean_);
               }

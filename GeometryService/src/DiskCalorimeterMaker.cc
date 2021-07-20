@@ -34,11 +34,11 @@
 // For reference, git tag (ef94504f51edbbfeb54a5e63651856bdf5c0a60d) has generic placement of the disk origin.
 
 #include "cetlib_except/exception.h"
-#include "CalorimeterGeom/inc/DiskCalorimeter.hh"
-#include "CalorimeterGeom/inc/Calorimeter.hh"
-#include "CalorimeterGeom/inc/Disk.hh"
-#include "CalorimeterGeom/inc/Crystal.hh"
-#include "GeometryService/inc/DiskCalorimeterMaker.hh"
+#include "Offline/CalorimeterGeom/inc/DiskCalorimeter.hh"
+#include "Offline/CalorimeterGeom/inc/Calorimeter.hh"
+#include "Offline/CalorimeterGeom/inc/Disk.hh"
+#include "Offline/CalorimeterGeom/inc/Crystal.hh"
+#include "Offline/GeometryService/inc/DiskCalorimeterMaker.hh"
 
 #include "CLHEP/Vector/ThreeVector.h"
 #include "CLHEP/Vector/RotationX.h"
@@ -96,6 +96,7 @@ namespace mu2e {
 	  calo_->caloInfo_.set("readoutXLength",         config.getDouble("calorimeter.readoutXLength") );
 	  calo_->caloInfo_.set("readoutYLength",         config.getDouble("calorimeter.readoutYLength") );
 	  calo_->caloInfo_.set("readoutZLength",         config.getDouble("calorimeter.readoutZLength") );
+          calo_->caloInfo_.set("nSiPMPerCrystal",        config.getInt(   "calorimeter.readoutPerCrystal") );
 	            
           calo_->caloInfo_.set("FEEXLength",             config.getDouble("calorimeter.FEEXLength") );
 	  calo_->caloInfo_.set("FEEYLength",             config.getDouble("calorimeter.FEEYLength") );
@@ -161,11 +162,11 @@ namespace mu2e {
           
           if (calo_->caloInfo_.getInt("readoutPerCrystal")==0)
           {
-	      calo_->caloInfo_.set("FEEZLength",0.0 );
- 	      calo_->caloInfo_.set("BPStripThickness",0.0 );
-	      calo_->caloInfo_.set("FEEBoxThickness",0.0 );
-	      calo_->caloInfo_.set("BPHoleZLength",0.0 );
- 	      calo_->caloInfo_.set("readoutZLength",0.0 );
+	     calo_->caloInfo_.set("FEEZLength",0.0 );
+ 	     calo_->caloInfo_.set("BPStripThickness",0.0 );
+	     calo_->caloInfo_.set("FEEBoxThickness",0.0 );
+	     calo_->caloInfo_.set("BPHoleZLength",0.0 );
+ 	     calo_->caloInfo_.set("readoutZLength",0.0 );
           }
 
           
@@ -180,8 +181,9 @@ namespace mu2e {
           calo_->geomUtil_.crystalZLength(config.getDouble("calorimeter.crystalZLength"));
 
 
+
 	  // CACHE THIS ONE FOR EFFICIENCY (REALLY NEEDED SO DON'T REMOVE)
-          calo_->caloInfo_.nROPerCrystal( config.getInt(   "calorimeter.readoutPerCrystal") );
+          calo_->caloIDMapper_.nSiPMPerCrystal(config.getInt("calorimeter.readoutPerCrystal") );
 
 
 
@@ -280,6 +282,7 @@ namespace mu2e {
             thisDisk->geomInfo().backFaceCenter(backFaceCenter);
             thisDisk->geomInfo().crateDeltaZ(crateToDiskDeltaZ_);
 	    thisDisk->geomInfo().envelopeRad(dR1,dR2);
+            thisDisk->geomInfo().crystalDirection(CLHEP::Hep3Vector(0,0,1));
 
 
             //fill the full Crystal List / diskId (direct access for performance optimization)

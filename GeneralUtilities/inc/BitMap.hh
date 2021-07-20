@@ -71,7 +71,7 @@
 //    It is possible to create an invalid value by casting an arbitrary int into a bit_type.
 //
 
-#include "GeneralUtilities/inc/toHex.hh"
+#include "Offline/GeneralUtilities/inc/toHex.hh"
 
 #include <string>
 #include <vector>
@@ -80,6 +80,7 @@
 #include <stdexcept>
 #include <iostream>
 #include <iomanip>
+#include <regex>
 
 namespace mu2e {
 
@@ -132,6 +133,11 @@ namespace mu2e {
 
     void merge( BitMap arg){
       _value = static_cast<mask_type>( _value | arg._value);
+    }
+
+    BitMap& operator | (BitMap const& other) {
+      merge(other);
+      return *this;
     }
 
     void clear( bit_type bitNumber) {
@@ -266,15 +272,38 @@ namespace mu2e {
     }
 
     mask_type findMaskByNameOrThrow( std::string const& name ){
-
-      typename map_type::const_iterator j = bitNames().find(name);
-      if ( j == bitNames().end() ){
-        std::ostringstream os;
-        os << DETAIL::typeName() << " invalid mask name : " << name;
-        throw std::out_of_range( os.str() );
+      mask_type mask(0);
+      bool invalid(false);
+      const std::regex separator("[^\\s,:]+"); // begining or separator
+      auto sbegin = std::sregex_iterator(name.begin(), name.end(), separator);
+      auto send = std::sregex_iterator();
+      for (std::sregex_iterator match = sbegin; match != send; ++match) {
+	std::string subname = match->str();
+	typename map_type::const_iterator j = bitNames().find(subname);
+	if ( j == bitNames().end() ){
+	  invalid = true;
+	  break;
+	}
+	mask |= j->second;
       }
-      return j->second;
-
+      if(invalid){
+      // try to interpret as a (text) hex string; make sure to edit out spaces first!
+	std::string cname(name);
+	cname.erase(cname.begin(), std::find_if(cname.begin(), cname.end(), std::not1(std::ptr_fun<int, int>(std::isspace))));
+	if(cname.compare(0,2,"0x") == 0 || cname.compare(0,2,"0X") == 0){
+	  mask = std::stoul(name,0,16);
+	  if((isValid(mask)) && mask != 0){
+	    invalid = false;
+	  }
+	}
+	// if it's still invalid, throw
+	if(invalid){
+	  std::ostringstream os;
+	  os << DETAIL::typeName() << " invalid mask name : " << name;
+	  throw std::out_of_range( os.str() );
+	}
+      }
+      return mask;
     }
 
     // Compute a mask in which all bits defined in the detail class are set.
@@ -288,7 +317,6 @@ namespace mu2e {
       }
       return tmp;
     }
-
   };
 
   template < class DETAIL >

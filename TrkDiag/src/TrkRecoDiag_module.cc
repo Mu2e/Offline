@@ -12,29 +12,29 @@
 #include "art/Framework/Core/ModuleMacros.h"
 #include "art_root_io/TFileService.h"
 // mu2e
-#include "GeneralUtilities/inc/Angles.hh"
-#include "Mu2eUtilities/inc/MVATools.hh"
-#include "GeometryService/inc/VirtualDetector.hh"
-#include "GeometryService/inc/GeomHandle.hh"
-#include "BFieldGeom/inc/BFieldManager.hh"
-#include "GeometryService/inc/DetectorSystem.hh"
-#include "GlobalConstantsService/inc/GlobalConstantsHandle.hh"
-#include "GlobalConstantsService/inc/ParticleDataTable.hh"
-#include "Mu2eUtilities/inc/SimParticleTimeOffset.hh"
+#include "Offline/GeneralUtilities/inc/Angles.hh"
+#include "Offline/Mu2eUtilities/inc/MVATools.hh"
+#include "Offline/GeometryService/inc/VirtualDetector.hh"
+#include "Offline/GeometryService/inc/GeomHandle.hh"
+#include "Offline/BFieldGeom/inc/BFieldManager.hh"
+#include "Offline/GeometryService/inc/DetectorSystem.hh"
+#include "Offline/GlobalConstantsService/inc/GlobalConstantsHandle.hh"
+#include "Offline/GlobalConstantsService/inc/ParticleDataTable.hh"
+#include "Offline/Mu2eUtilities/inc/SimParticleTimeOffset.hh"
 // diagnostics
-#include "TrkDiag/inc/TrkMCTools.hh"
-#include "TrkReco/inc/TrkUtilities.hh"
+#include "Offline/TrkDiag/inc/TrkMCTools.hh"
+#include "Offline/TrkReco/inc/TrkUtilities.hh"
 // data
-#include "RecoDataProducts/inc/TimeCluster.hh"
-#include "RecoDataProducts/inc/StrawHitCollection.hh"
-#include "RecoDataProducts/inc/StrawHitPositionCollection.hh"
-#include "RecoDataProducts/inc/StrawHitFlagCollection.hh"
-#include "RecoDataProducts/inc/HelixSeed.hh"
-#include "RecoDataProducts/inc/TrkQual.hh"
-#include "RecoDataProducts/inc/KalSeed.hh"
-#include "MCDataProducts/inc/StrawDigiMCCollection.hh"
-#include "MCDataProducts/inc/StepPointMCCollection.hh"
-#include "MCDataProducts/inc/EventWeight.hh"
+#include "Offline/RecoDataProducts/inc/TimeCluster.hh"
+#include "Offline/RecoDataProducts/inc/StrawHitCollection.hh"
+#include "Offline/RecoDataProducts/inc/StrawHitPositionCollection.hh"
+#include "Offline/RecoDataProducts/inc/StrawHitFlagCollection.hh"
+#include "Offline/RecoDataProducts/inc/HelixSeed.hh"
+#include "Offline/RecoDataProducts/inc/TrkQual.hh"
+#include "Offline/RecoDataProducts/inc/KalSeed.hh"
+#include "Offline/MCDataProducts/inc/StrawDigiMCCollection.hh"
+#include "Offline/MCDataProducts/inc/StepPointMCCollection.hh"
+#include "Offline/MCDataProducts/inc/EventWeight.hh"
 // root
 #include "TGraph.h"
 #include "TH2F.h"
@@ -419,9 +419,9 @@ namespace mu2e {
     // should add quality info testing FIXME!
     double maxmom(0.0);
     for(auto iks = ksc.begin(); iks != ksc.end(); ++iks) {
-      if(iks->status().hasAllProperties(goodreco) &&
-	  iks->segments().front()._mom > maxmom){
-	maxmom = iks->segments().front()._mom;
+      double mom = iks->segments().front().mom();
+      if(iks->status().hasAllProperties(goodreco) && mom > maxmom){
+	maxmom = mom; 
 	retval = iks;
       }
     }
@@ -519,12 +519,6 @@ namespace mu2e {
     }
     // count straws
     _kfns = kf.straws().size();
-    // follow down the reco chain
-    auto ksP = kf.kalSeed();
-    if(ksP.isNonnull()){
-      fillKalSeed(spp,*ksP);
-    } else
-      std::cout << "No kal seed found in kal final!" << std::endl;
   }
 
   void TrkRecoDiag::fillKalSeed(SPP const& spp,KalSeed const& ks) {
@@ -552,11 +546,11 @@ namespace mu2e {
       }
     }
     // folllow down the reco chain
-    auto hsP = ks.helix();
-    if(hsP.isNonnull()){
-      fillHelixSeed(spp,*hsP);
-    } else
-      std::cout << "No helix seed found in kal seed!" << std::endl;
+//    auto hsP = ks.helix();
+//    if(hsP.isNonnull()){
+//      fillHelixSeed(spp,*hsP);
+//    } else
+//      std::cout << "No helix seed found in kal seed!" << std::endl;
   }
 
   void TrkRecoDiag::fillHelixSeed(SPP const& spp,HelixSeed const& hs) {

@@ -9,9 +9,9 @@
 // Initialized with Mu2eDetectorMaker
 //
 
-#include "Mu2eInterfaces/inc/ProditionsEntity.hh"
-#include "TrackerGeom/inc/Straw.hh"
-#include "Mu2eBTrk/inc/DetStrawElem.hh"
+#include "Offline/Mu2eInterfaces/inc/ProditionsEntity.hh"
+#include "Offline/TrackerGeom/inc/Straw.hh"
+#include "Offline/Mu2eBTrk/inc/DetStrawElem.hh"
 #include <memory>
 #include <map>
 
@@ -24,8 +24,9 @@ namespace mu2e {
     typedef std::shared_ptr<Mu2eDetector> ptr_t;
     typedef std::shared_ptr<const Mu2eDetector> cptr_t;
     friend class Mu2eDetectorMaker;
+    constexpr static const char* cxname = {"Mu2eDetector"};
 
-    Mu2eDetector(): _name("Mu2eDetector") {}
+    Mu2eDetector(): ProditionsEntity(cxname) {}
     virtual ~Mu2eDetector();
 
     const DetStrawElem* strawElem(Straw const& straw) const {
@@ -33,11 +34,9 @@ namespace mu2e {
     }
     const DetStrawElem* strawElem(StrawId const& strawid) const;
 
-    std::string const& name() const { return _name; }
     void print( std::ostream& ) const;
 
   private:
-    std::string _name;
 
     // map between straw index and detector elements 
     std::map<StrawId,DetStrawElem*> _strawmap;

@@ -1,0 +1,79 @@
+// Test the Pileup module.  No need to setup mixing, just point art at a suitable mustop file
+// as the primary input stream.
+//
+// Andrei Gaponenko, 2021
+
+#include "Offline/fcl/minimalMessageService.fcl"
+#include "Offline/fcl/standardProducers.fcl"
+#include "Offline/fcl/standardServices.fcl"
+
+process_name: CeEndpoint
+
+source: { module_type: RootInput }
+
+services: @local::Services.Sim
+
+physics : {
+   producers: {
+      generate: {
+         module_type: Pileup
+         inputSimParticles: "TargetStopFilter"
+         verbosity: 99
+
+         captureProducts: [
+            {
+               spectrum: {
+                  nbins: 1000
+                  spectrumShape: "ejectedProtons"
+               }
+               spectrumVariable: "kineticEnergy"
+               tool_type: "MuCapProtonGenerator"
+            },
+            {
+               spectrum: {
+                  nbins: 1000
+                  spectrumShape: "ejectedProtons"
+               }
+               spectrumVariable: "kineticEnergy"
+               tool_type: "MuCapDeuteronGenerator"
+            },
+            {
+               spectrum: {
+                  spectrumFileName: "Offline/ConditionsService/data/neutronSpectrum.txt"
+                  spectrumShape: "tabulated"
+               }
+               spectrumVariable: "kineticEnergy"
+               tool_type: "MuCapNeutronGenerator"
+            },
+            {
+               spectrum: {
+                  ehi: 7
+                  elow: 0
+                  spectrumShape: "flat"
+               }
+               tool_type: "MuCapPhotonGenerator"
+            }
+         ]
+
+         decayProducts: [
+            {
+               spectrum: {
+                  elow: 1
+                  pdgId: 11
+                  spectrumResolution: 1e-1
+                  spectrumShape: "Czarnecki"
+               }
+               tool_type: "DIOGenerator"
+            }
+         ]
+
+
+      }
+   }
+
+   p1: [ generate ]
+   trigger_paths : [ p1 ]
+}
+
+services.SeedService.maxUniqueEngines: 20
+services.SeedService.baseSeed: 1

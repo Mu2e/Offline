@@ -34,10 +34,10 @@
 #include "cetlib_except/exception.h"
 
 // Mu2e include files
-#include "GlobalConstantsService/inc/ParticleDataTable.hh"
-#include "ConfigTools/inc/ConfigFileLookupPolicy.hh"
-#include "ConfigTools/inc/SimpleConfig.hh"
-#include "DataProducts/inc/PDGCode.hh"
+#include "Offline/GlobalConstantsService/inc/ParticleDataTable.hh"
+#include "Offline/ConfigTools/inc/ConfigFileLookupPolicy.hh"
+#include "Offline/ConfigTools/inc/SimpleConfig.hh"
+#include "Offline/DataProducts/inc/PDGCode.hh"
 
 // External include files.
 #include "HepPDT/TableBuilder.hh"
@@ -72,17 +72,17 @@ namespace mu2e {
     ConfigFileLookupPolicy findConfig;
 
     _tableFilename = findConfig(config.getString("particleDataTable.filename",
-                                                 "ConditionsService/data/particle.tbl"));
+                                                 "Offline/ConditionsService/data/particle.tbl"));
     if( _tableFilename.empty() )
       throw "ParticleDataTable c'tor: find_file failure!";  // TODO: improve exception
 
     _auxillaryFilename = findConfig(config.getString("particleDataTable.auxillaryFilename",
-                                                     "ConditionsService/data/mass_width_2008.mc"));
+                                                     "Offline/ConditionsService/data/mass_width_2008.mc"));
     if( _auxillaryFilename.empty() )
       throw "ParticleDataTable c'tor: find_file failure!";  // TODO: improve exception
 
     _geant4PDTFilename = findConfig(config.getString("particleDataTable.geant4PDTFilename",
-                                                     "ConditionsService/data/g4nuclei.tbl"));
+                                                     "Offline/ConditionsService/data/g4nuclei.tbl"));
     if( _geant4PDTFilename.empty() )
       throw "ParticleDataTable c'tor: find_file failure!";  // TODO: improve exception
 

@@ -1,6 +1,8 @@
 
-#include "Print/inc/KalSeedPrinter.hh"
+#include "Offline/Print/inc/KalSeedPrinter.hh"
 #include "art/Framework/Principal/Provenance.h"
+#include "Offline/GlobalConstantsService/inc/GlobalConstantsHandle.hh"
+#include "Offline/GlobalConstantsService/inc/ParticleDataTable.hh"
 #include <string>
 
 void 
@@ -9,8 +11,7 @@ mu2e::KalSeedPrinter::Print(art::Event const& event,
   if(verbose()<1) return;
   if(tags().empty()) {
     // if a list of instances not specified, print all instances
-    std::vector< art::Handle<KalSeedCollection> > vah;
-    event.getManyByType(vah);
+    std::vector< art::Handle<KalSeedCollection> > vah = event.getMany<KalSeedCollection>();
     for (auto const & ah : vah) Print(ah);
   } else {
     // print requested instances
@@ -67,12 +68,8 @@ mu2e::KalSeedPrinter::Print(const mu2e::KalSeed& obj, int ind, std::ostream& os)
 
 
   KalSegment seg;  // this will be filled with 0's and -1's
-  // use the middle segment, which should be at the center 
-  // of the tracker by default, later there will be proper selectors
-  if( obj.segments().size()>0 ) {
-    std::size_t i = obj.segments().size()/2 +1;
-    seg = obj.segments()[i];
-  }
+  // use the first segment, at the front of the tracker
+  if( obj.segments().size()>0 ) seg = obj.segments()[0];
 
   const mu2e::HelixVal& hh = seg.helix();
 
@@ -89,11 +86,13 @@ mu2e::KalSeedPrinter::Print(const mu2e::KalSeed& obj, int ind, std::ostream& os)
       << " " << std::setw(7) << std::setprecision(4) << obj.hits().size()
       << std::endl;
   } else if(verbose()>=2) {
+    auto const& ptable = GlobalConstantsHandle<ParticleDataTable>();
+
     os 
       << " fitStatus: " << std::setw(3) << obj.status()
       << "\n";
     os 
-      << " part: " << obj.particle().name()
+      << " part: " << 	 ptable->particle(obj.particle()).ref().name()
       << " dir: " << obj.fitDirection().name()
       << "  flt0: " <<  std::setw(7) << std::setprecision(1) << obj.flt0()
       << "  t0: " <<  std::setw(7) << std::setprecision(1) << obj.t0().t0()

@@ -1,8 +1,8 @@
 #
 
-#include "fcl/minimalMessageService.fcl"
-#include "fcl/standardProducers.fcl"
-#include "fcl/standardServices.fcl"
+#include "Offline/fcl/minimalMessageService.fcl"
+#include "Offline/fcl/standardProducers.fcl"
+#include "Offline/fcl/standardServices.fcl"
 
 # Give this job a name.
 process_name : trkExtrapol
@@ -22,15 +22,15 @@ services :
 
   RandomNumberGenerator : {defaultEngineKind: "MixMaxRng" }
 
-  GeometryService : { inputFile : "Mu2eG4/geom/geom_common.txt" }
+  GeometryService : { inputFile : "Offline/Mu2eG4/geom/geom_common.txt" }
 
-  ConditionsService : { conditionsfile : "Mu2eG4/test/conditions_01.txt" }
+  ConditionsService : { conditionsfile : "Offline/ConditionsService/data/conditions_01.txt" }
 
-  GlobalConstantsService : { inputFile : "Mu2eG4/test/globalConstants_01.txt" }
+  GlobalConstantsService : { inputFile : "Offline/GlobalConstantsService/data/globalConstants_01.txt" }
 
   BTrkHelper             : @local::BTrkHelperDefault
 
-  G4Helper : { }
+  Mu2eG4Helper : { }
 
   SeedService : @local::automaticSeeds
 
@@ -104,9 +104,9 @@ outputs:
 
 # Override some of the default values.
 #physics.producers.generate.inputfile  : "Scripts/genconfig_Conversion.txt"
-physics.producers.generate.inputfile  : "CaloCluster/test/genconfig_giani.txt"
+physics.producers.generate.inputfile  : "Offline/CaloCluster/test/genconfig_giani.txt"
 #services.GeometryService.inputFile : "Scripts/geom_nohp.txt"
-services.GeometryService.inputFile : "Mu2eG4/geom/geom_common.txt"
+services.GeometryService.inputFile : "Offline/Mu2eG4/geom/geom_common.txt"
 physics.producers.makeSH.diagLevel    : 0
 physics.producers.makeSH.maxFullPrint : 2
 source.firstRun                            :  1 

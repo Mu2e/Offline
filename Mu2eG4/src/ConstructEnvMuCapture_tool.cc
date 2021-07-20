@@ -11,22 +11,23 @@
 //
 
 #include "art/Utilities/ToolMacros.h"
+#include "art/Framework/Services/Registry/ServiceDefinitionMacros.h"
 
 // Mu2e includes.
 
-#include "Mu2eG4/inc/MaterialFinder.hh"
-#include "Mu2eG4/inc/InitEnvToolBase.hh"
-#include "Mu2eG4/inc/nestTubs.hh"
-#include "G4Helper/inc/VolumeInfo.hh"
-#include "ConfigTools/inc/SimpleConfig.hh"
+#include "Offline/Mu2eG4/inc/MaterialFinder.hh"
+#include "Offline/Mu2eG4/inc/InitEnvToolBase.hh"
+#include "Offline/Mu2eG4/inc/nestTubs.hh"
+#include "Offline/Mu2eG4Helper/inc/VolumeInfo.hh"
+#include "Offline/ConfigTools/inc/SimpleConfig.hh"
 
 // G4 includes
-#include "G4ThreeVector.hh"
-#include "G4Material.hh"
-#include "G4Color.hh"
-#include "G4Tubs.hh"
-#include "G4RotationMatrix.hh"
-#include "G4Helper/inc/G4Helper.hh"
+#include "Geant4/G4ThreeVector.hh"
+#include "Geant4/G4Material.hh"
+#include "Geant4/G4Color.hh"
+#include "Geant4/G4Tubs.hh"
+#include "Geant4/G4RotationMatrix.hh"
+#include "Offline/Mu2eG4Helper/inc/Mu2eG4Helper.hh"
 #include "CLHEP/Units/SystemOfUnits.h"
 
 using namespace std;
@@ -80,7 +81,7 @@ namespace mu2e {
 
     double sgn(_config.getDouble("tube.sign"));
 
-    G4Helper& helper(*art::ServiceHandle<G4Helper>());
+    Mu2eG4Helper& helper(*art::ServiceHandle<Mu2eG4Helper>());
     AntiLeakRegistry& reg(helper.antiLeakRegistry());
 
     CLHEP::HepRotationZ rotZ(_config.getDouble("tube.phiRotZ")*CLHEP::degree);

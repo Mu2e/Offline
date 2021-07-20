@@ -3,115 +3,43 @@
 # this file is included by fcl/standardProducers.fcl inside the PROLOG section
 #------------------------------------------------------------------------------
 
-BEGIN_PROLOG
-  HitMakerBlindTime      : 500. # ns
-  HitMakerDigiSampling   : 5    # ns
-END_PROLOG
-
-
-
 
 BEGIN_PROLOG
 
-
-
-
-CaloTrigger : {    
-    module_type           : CaloTrigger
-    caloDigiModuleLabel   : CaloDigiFromShower
-    digiSampling          : @local::HitMakerDigiSampling
-    blindTime             : @local::HitMakerBlindTime   
-    endTimeBuffer         : 80                          
-    windowPeak            : 2
-    minAmplitude          : 20
-    extendSecond          : false
-    minSeedAmplitude      : 433
-    minEnergy             : 50
-    timeCorrection        : 20.0
-    adcToEnergy           : 0.0459634#0.0461333
-    diagLevel             : 0
-}
-
-
-
-CaloClusterFast :
-{ 
-    module_type           : CaloClusterFast
-    caloDigiModuleLabel   : CaloDigiFromShower
-    digiSampling          : @local::HitMakerDigiSampling
-    blindTime             : @local::HitMakerBlindTime
-    endTimeBuffer         : 80
-    windowPeak            : 2
-    minAmplitude          : 20
-    extendSecond          : true
-    minSeedAmplitude      : 200
-    minEnergy             : 50
-    timeCorrection        : 20.0
-    adcToEnergy           : 0.0461333
-    diagLevel             : 0
-    includeCrystalHits    : true
-}
-
-
-CaloProtoClusterFromCrystalHit :
+CaloProtoClusterMaker :
 {
-  module_type            : CaloProtoClusterFromCrystalHit
-  caloCrystalModuleLabel : CaloCrystalHitFromHit
-  mainClusterCollName    : mainCluster
-  splitClusterCollName   : splitCluster
-  minClusterEnergy	 : 0
+  module_type            : CaloProtoClusterMaker
+  caloHitCollection      : CaloHitMaker
   EminSeed               : 10
   ExpandCut              : 1.0
   EnoiseCut              : 1.0
+  addSecondRing          : false
   timeCut                : 500
   deltaTime              : 2
   diagLevel              : 0
 }  
 
-
-
-CaloClusterFromProtoCluster :
+CaloClusterMaker :
 {
-  module_type            : CaloClusterFromProtoCluster
-  caloClusterModuleLabel : CaloProtoClusterFromCrystalHit
-  mainClusterCollName    : mainCluster
-  splitClusterCollName   : splitCluster
-  deltaTime              : 2
-  maxDistSplit           : 150
-  maxDistMain            : 150
-  cogTypeName            : Linear
-  diagLevel              : 0
+  module_type                : CaloClusterMaker
+  caloClusterMainCollection  : "CaloProtoClusterMaker:main"
+  caloClusterSplitCollection : "CaloProtoClusterMaker:split"
+  deltaTime                  : 2
+  maxDistSplit               : 150
+  maxDistMain                : 150
+  strategy                   : 0
+  diagLevel                  : 0
 }  
 
-CaloClusterTruthMatch:
-{
-    module_type               : CaloClusterTruthMatch
-    caloClusterModuleLabel    : CaloClusterFromProtoCluster
-    caloHitTruthModuleLabel   : CaloHitTruthMatch
-    diagLevel                 : 0
-}
 
 CaloCluster : 
 {
    producers : {
-     CaloProtoClusterFromCrystalHit  : @local::CaloProtoClusterFromCrystalHit
-     CaloClusterFromProtoCluster : @local::CaloClusterFromProtoCluster
+      CaloProtoClusterMaker  : @local::CaloProtoClusterMaker
+      CaloClusterMaker       : @local::CaloClusterMaker
    }
-   producersMC : {
-     CaloClusterTruthMatch : @local::CaloClusterTruthMatch
-   }
-   Reco       : [ CaloProtoClusterFromCrystalHit, CaloClusterFromProtoCluster ]
-   TruthMatch : [ CaloClusterTruthMatch ]
-}
-
-
-CaloClusterFast :
-{
-   producers : {
-       CaloClusterFast  : @local::CaloClusterFast
-       CaloTrigger      : @local::CaloTrigger
-   }
-   Reco : [ CaloClusterFast ]
+   
+   Reco : [ CaloProtoClusterMaker, CaloClusterMaker ]
 }
 
 END_PROLOG

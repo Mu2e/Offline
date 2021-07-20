@@ -3,7 +3,7 @@
 // root 
 #include "Rtypes.h"
 class KalRep;
-#include "RecoDataProducts/inc/KalSeed.hh"
+#include "Offline/RecoDataProducts/inc/KalSeed.hh"
 //
 // Functor Class to compare tracks and find overlaps (2 tracks sharing a substantial number of hits)
 // Dave Brown, LBNL 7/8/2016

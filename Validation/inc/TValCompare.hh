@@ -6,10 +6,10 @@
 #include "TString.h"
 #include "TFile.h"
 #include "TObjArray.h"
-#include "Validation/inc/TValPar.hh"
-#include "Validation/inc/TValHistH.hh"
-#include "Validation/inc/TValHistP.hh"
-#include "Validation/inc/TValHistE.hh"
+#include "Offline/Validation/inc/TValPar.hh"
+#include "Offline/Validation/inc/TValHistH.hh"
+#include "Offline/Validation/inc/TValHistP.hh"
+#include "Offline/Validation/inc/TValHistE.hh"
 
 
 class TValCompare: public TObject {
@@ -36,6 +36,9 @@ public:
   void SetFile1(TString x) { fFileN1 = x; }
   void SetFile2(TString x) { fFileN2 = x; }
 
+  // open and traverse the first file
+  virtual Int_t GetDirs();
+  virtual Int_t OneFile(Option_t* Opt="");
   virtual Int_t Analyze(Option_t* Opt="");
   // get a histogram based on searching name, path and title
   TValHist* GetHist(TString str);
@@ -43,8 +46,8 @@ public:
   virtual void Summary(Option_t* Opt="");
   virtual void Display(Option_t* Opt="");
   virtual void SaveAs(const char *filename="",Option_t *option="") const;
-  //Int_t Write(const char *name=0, Int_t option=0, Int_t bufsize=0);
-  //Int_t Write(const char *name=0, Int_t option=0, Int_t bufsize=0) const;
+  // save for one file option
+  virtual void SaveAs1(const char *filename="",Option_t *option="") const;
 
   virtual void  Delete(Option_t* Opt="");
   void SetVerbose(Int_t x) { fVerbose = x; }
@@ -59,6 +62,7 @@ protected:
   TValPar fPar;
 
   TObjArray fList; // list of histogram objects being compared
+  TObjArray fDirs; // list of directories to analyze
 
   Int_t fVerbose;
   Int_t fMinStat;

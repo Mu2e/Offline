@@ -1,31 +1,66 @@
 // Andrei Gaponenko, 2013
 
-#include "Mu2eG4/inc/SimParticlePrimaryHelper.hh"
-#include "art/Framework/Principal/Event.h"
+#include "Offline/Mu2eG4/inc/SimParticlePrimaryHelper.hh"
+
+#include "Offline/MCDataProducts/inc/StepPointMC.hh"
+#include "Offline/MCDataProducts/inc/StageParticle.hh"
+
+#include "cetlib_except/exception.h"
 
 namespace mu2e {
-  SimParticlePrimaryHelper::SimParticlePrimaryHelper(const art::Event* event,
-                                                     const art::ProductID& simProdID,
-                                                     const art::Handle<GenParticleCollection>& gensHandle,
+
+  //================================================================
+  SimParticlePrimaryHelper::SimParticlePrimaryHelper(const art::ProductID& simProdID,
                                                      const art::EDProductGetter* sim_prod_getter):
-    gensHandle_(gensHandle),
     simProdID_(simProdID),
-    event_(event),
     simProductGetter_(sim_prod_getter)
   {}
-    
-    void SimParticlePrimaryHelper::addEntryFromGenParticle(unsigned genId)
-    {        
-        entries_.emplace_back(art::Ptr<GenParticle>(gensHandle_, genId),
-                              art::Ptr<SimParticle>(simProdID_) );
+
+  //================================================================
+  art::Ptr<GenParticle> SimParticlePrimaryHelper::genParticlePtr(int g4TrkID) const {
+    art::Ptr<GenParticle> res;
+    auto orig = getEntry(g4TrkID);
+    auto pgen = std::get_if<art::Ptr<GenParticle> >(&orig);
+    if(pgen) {
+      res = *pgen;
     }
-    
-    
-    void SimParticlePrimaryHelper::addEntryFromStepPointMC(SimParticleCollection::key_type simId)
-    {
-        entries_.emplace_back(art::Ptr<GenParticle>(gensHandle_.id()),
-                              art::Ptr<SimParticle>(simProdID_,
-                                                    simId.asUint(),
-                                                    simProductGetter_));
+    return res;
+  }
+
+  //================================================================
+  art::Ptr<SimParticle>  SimParticlePrimaryHelper::simParticlePrimaryPtr(int g4TrkID) const {
+    auto orig = getEntry(g4TrkID);
+
+    if(std::holds_alternative<art::Ptr<GenParticle>>(orig)) {
+      return art::Ptr<SimParticle>();
     }
+    else {
+
+      SimParticle::key_type id;
+      if(std::holds_alternative<const SimParticle*>(orig)) {
+        id = std::get<const SimParticle*>(orig)->id();
+      }
+      else if(std::holds_alternative<const  StepPointMC*>(orig)) {
+        id = std::get<const StepPointMC*>(orig)->simParticle()->id();
+      }
+      else if(std::holds_alternative<const StageParticle*>(orig)) {
+        id = std::get<const StageParticle*>(orig)->parent()->id();
+      }
+
+      try { id.ensure_valid(); }
+      catch(cet::exception& e) {
+        throw cet::exception("ImplementationError", "SimParticlePrimaryHelper::simParticlePrimaryPtr(int) missed a variant alternative", e);
+      }
+
+      return art::Ptr<SimParticle>(simProdID_, id.asUint(), simProductGetter_);
+    }
+  }
+
+  //================================================================
+  SimParticlePrimaryHelper::InputParticle SimParticlePrimaryHelper::getEntry(int g4TrkID) const {
+    return entries_.at(g4TrkID-1);
+  }
+
+  //================================================================
+
 }

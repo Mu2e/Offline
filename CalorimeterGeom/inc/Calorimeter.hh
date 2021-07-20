@@ -6,11 +6,13 @@
 #ifndef CalorimeterGeom_Calorimeter_hh
 #define CalorimeterGeom_Calorimeter_hh
 
-#include "Mu2eInterfaces/inc/Detector.hh"
-#include "CalorimeterGeom/inc/Calorimeter.hh"
-#include "CalorimeterGeom/inc/CaloGeomUtil.hh"
-#include "CalorimeterGeom/inc/Disk.hh"
-#include "CalorimeterGeom/inc/Crystal.hh"
+#include "Offline/Mu2eInterfaces/inc/Detector.hh"
+#include "Offline/CalorimeterGeom/inc/Calorimeter.hh"
+#include "Offline/CalorimeterGeom/inc/CaloGeomUtil.hh"
+#include "Offline/CalorimeterGeom/inc/CaloInfo.hh"
+#include "Offline/CalorimeterGeom/inc/CaloIDMapper.hh"
+#include "Offline/CalorimeterGeom/inc/Disk.hh"
+#include "Offline/CalorimeterGeom/inc/Crystal.hh"
 
 #include "CLHEP/Vector/ThreeVector.h"
 #include <vector>
@@ -26,20 +28,20 @@ namespace mu2e {
 	   virtual ~Calorimeter(){};
 
 
-           // calo sections
+           // calo section
 	   virtual unsigned                      nDisk()     const = 0;  
 	   virtual const Disk&                   disk(int i) const = 0;  
 
 
-  	   // crystal / readout section
-	   virtual int                           nRO()          const = 0; 
+  	   // crystal section - fast access
            virtual int                           nCrystal()     const = 0; 
            virtual const Crystal&                crystal(int i) const = 0; 
            
 
            // calorimeter geometry information 
-	   virtual const CaloInfo&               caloInfo() const = 0;
-	   virtual const CaloGeomUtil&           geomUtil() const = 0; 
+	   virtual const CaloInfo&               caloInfo()     const = 0;
+	   virtual const CaloIDMapper&           caloIDMapper() const = 0;
+	   virtual const CaloGeomUtil&           geomUtil()     const = 0; 
 
 
   	   // neighbors, indexing 

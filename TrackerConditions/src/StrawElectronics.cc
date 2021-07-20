@@ -5,8 +5,8 @@
 //
 // Original author David Brown, LBNL
 //
-#include "TrackerConditions/inc/StrawElectronics.hh"
-#include "GeneralUtilities/inc/DigitalFiltering.hh"
+#include "Offline/TrackerConditions/inc/StrawElectronics.hh"
+#include "Offline/GeneralUtilities/inc/DigitalFiltering.hh"
 #include "cetlib_except/exception.h"
 #include "TMath.h"
 #include <cmath>
@@ -104,7 +104,7 @@ namespace mu2e {
       p0 = _wPoints[distIndex]._adcResponse[index]      + _wPoints[distIndex]._adcResponse[index_refl]*reflection_scale;
       p1 = _wPoints[distIndex + 1]._adcResponse[index]  + _wPoints[distIndex + 1]._adcResponse[index_refl]*reflection_scale;
     }
-    return charge * ( p0 * distFrac + p1 * (1 - distFrac)) * _dVdI[ipath][straw.id().getStraw()];
+    return charge * ( p0 * distFrac + p1 * (1 - distFrac)) * _dVdI[ipath][straw.id().uniqueStraw()];
   }
 
   double StrawElectronics::adcImpulseResponse(StrawId sid, double time, double charge) const {
@@ -113,7 +113,7 @@ namespace mu2e {
       index = _responseBins-1;
     if (index < 0)
       index = 0;
-    return charge * _preampToAdc2Response[index] * _saturationSampleFactor * _dVdI[adc][sid.getStraw()]/_dVdI[thresh][sid.getStraw()];
+    return charge * _preampToAdc2Response[index] * _saturationSampleFactor * _dVdI[adc][sid.uniqueStraw()]/_dVdI[thresh][sid.uniqueStraw()];
   }
  
   double StrawElectronics::saturatedResponse(double vlin) const {
@@ -148,11 +148,11 @@ namespace mu2e {
     double p0 = _wPoints[distIndex]._linmax[ipath][sid.getStraw()];
     double p1 = _wPoints[distIndex + 1]._linmax[ipath][sid.getStraw()];
  
-    return charge * (p0 * distFrac + p1 * (1 - distFrac)) * _dVdI[ipath][sid.getStraw()];
+    return charge * (p0 * distFrac + p1 * (1 - distFrac)) * _dVdI[ipath][sid.uniqueStraw()];
   }
 
   ADCValue StrawElectronics::adcResponse(StrawId sid, double mvolts) const {
-    return min(static_cast<ADCValue>(max(static_cast<int>(floor(mvolts/_ADCLSB)+_ADCped[sid.getStraw()]),0)),_maxADC);
+    return min(static_cast<ADCValue>(max(static_cast<int>(floor(mvolts/_ADCLSB)+_ADCped[sid.uniqueStraw()]),0)),_maxADC);
   }
 
   TDCValue StrawElectronics::tdcResponse(double time) const {
@@ -163,36 +163,42 @@ namespace mu2e {
   }
 
   
-  void StrawElectronics::digitizeWaveform(StrawId sid, ADCVoltages const& wf, ADCWaveform& adc) const{
-    if(wf.size() != adc.size()){
-      throw cet::exception("SIM") 
-	<< "mu2e::StrawElectronics: wrong number of voltages to digitize" 
-	<< endl;
+  void StrawElectronics::digitizeWaveform(StrawId sid, ADCVoltages const& wf, ADCWaveform& adc, ADCValue& pmp) const{
+    adc.reserve(wf.size());
+    ADCValue peak = 0;
+    ADCValue pedestal = 0;
+    for(size_t iadc=0;iadc<wf.size();++iadc){
+      adc.push_back(adcResponse(sid, wf[iadc]));
+      if (iadc <_nADCpre)
+        pedestal += adc.at(iadc);
+      peak = max(adc.at(iadc),peak);
     }
-    for(size_t iadc=0;iadc<adc.size();++iadc){
-      adc.at(iadc) = adcResponse(sid, wf[iadc]);
-    }
+    pmp = peak - (pedestal/(int)_nADCpre);
   }
 
-  bool StrawElectronics::digitizeAllTimes(TDCTimes const& times,double mbtime, TDCValues& tdcs) const {
+  bool StrawElectronics::digitizeAllTimes(TDCTimes const& times, TDCValues& tdcs, TDCValue eventWindowEndTDC) const {
     for(size_t itime=0;itime<2;++itime)
       tdcs[itime] = tdcResponse(times[itime]);
-    // test these times against time wrapping.  This calculation should be done at construction or init,
-    // FIXME!
+    // test these times against time wrapping.
+      
     bool notwrap(true);
-    for(auto tdc : tdcs){
-      notwrap &= tdc > tdcResponse(_flashStart - mbtime) && tdc < _flashStartTDC;
-    }
+    for(size_t itime=0;itime<2;++itime)
+      notwrap &= times[itime]+_electronicsTimeDelay > 0 && tdcs[itime] < eventWindowEndTDC;
     return notwrap;
   }
 
-  bool StrawElectronics::digitizeTimes(TDCTimes const& times,TDCValues& tdcs) const {
+  bool StrawElectronics::digitizeTimes(TDCTimes const& times, TDCValues& tdcs, bool onspill, TDCValue eventWindowEndTDC) const {
     for(size_t itime=0;itime<2;++itime)
       tdcs[itime] = tdcResponse(times[itime]);
     // test bothe these times against the flash blanking. 
+    TDCValue upperLimit;
+    if (onspill)
+      upperLimit = _digitizationEndTDC;
+    else
+      upperLimit = eventWindowEndTDC;
     bool notflash(true);
     for(auto tdc : tdcs){
-      notflash &= tdc > _flashEndTDC && tdc < _flashStartTDC;
+      notflash &= tdc > _digitizationStartTDC && tdc < upperLimit;
     }
     return notflash;
   }
@@ -200,10 +206,10 @@ namespace mu2e {
   void StrawElectronics::adcTimes(double time, ADCTimes& adctimes) const {
 // clock has a fixed phase; Assume we digitize with a fixed delay relative to the leading edge
     adctimes.clear();
-    adctimes.reserve(TrkTypes::NADC);
+    adctimes.reserve(nADCSamples());
 // find the phase immediately proceeding this time.  Subtract presamples
     size_t phase = std::max((int)0,int(ceil(time/_ADCPeriod))-(int)_nADCpre);
-    for(unsigned itime=0;itime<TrkTypes::NADC;++itime){
+    for(unsigned itime=0;itime<nADCSamples();++itime){
       adctimes.push_back((phase+itime)*_ADCPeriod+_ADCOffset);
     }
   }
@@ -216,17 +222,17 @@ namespace mu2e {
   }
 
   void StrawElectronics::uncalibrateTimes(TrkTypes::TDCTimes &times, const StrawId &id) const {
-    times[StrawEnd::hv] -= _timeOffsetPanel[id.getPanel()] + _timeOffsetStrawHV[id.getStraw()];
-    times[StrawEnd::cal] -= _timeOffsetPanel[id.getPanel()] + _timeOffsetStrawCal[id.getStraw()];
+    times[StrawEnd::hv] -= _timeOffsetPanel[id.getPanel()] + _timeOffsetStrawHV[id.uniqueStraw()];
+    times[StrawEnd::cal] -= _timeOffsetPanel[id.getPanel()] + _timeOffsetStrawCal[id.uniqueStraw()];
   }
 
   double StrawElectronics::adcVoltage(StrawId sid, ADCValue adcval) const {
-    return (adcval-_ADCped[sid.getStraw()])*_ADCLSB;
+    return (adcval-_ADCped[sid.uniqueStraw()])*_ADCLSB;
   }
 
   double StrawElectronics::adcCurrent(StrawId sid, ADCValue adcval) const {
   // this includes the effects from normalization of the pulse shape
-    return adcVoltage(sid,adcval)/_dVdI[adc][sid.getStraw()];
+    return adcVoltage(sid,adcval)/_dVdI[adc][sid.uniqueStraw()];
   }
 
   double StrawElectronics::mypow(double val,unsigned n) {
@@ -251,7 +257,7 @@ namespace mu2e {
     for(size_t i=0; i<_dVdI.size(); i++) {
       auto const& aa = _dVdI[i];
       string ss = string("dVdI[") + to_string(i) + string("]");
-      printVector(os,ss,aa);
+      printArray(os,ss,aa);
     }
 
     os << "ttrunc["<<_ttrunc.size()<<"] = ";
@@ -261,7 +267,7 @@ namespace mu2e {
     os << "tdeadAnalog = " << _tdeadAnalog << endl;
     os << "tdeadDigital = " << _tdeadDigital << endl;
     os << "vsat = " << _vsat << endl;
-    printVector(os,"vthresh",_vthresh);
+    printArray(os,"vthresh",_vthresh);
     os << "snoise = " << _snoise << endl;
 
     os << "analognoise["<<_analognoise.size()<<"] = ";
@@ -279,17 +285,15 @@ namespace mu2e {
     os << "ADCPeriod = " << _ADCPeriod << endl;
     os << "ADCOffset = " << _ADCOffset << endl;
     os << "maxtsep = " << _maxtsep << endl;
-    os << "TCoince = " << _TCoince << endl;
     os << "maxTDC = " << _maxTDC << endl;
     os << "maxTOT = " << _maxTOT << endl;
     os << "tdcResolution = " << _tdcResolution << endl;
     os << "electronicsTimeDelay = " << _electronicsTimeDelay << endl;
     os << "ewMarkerROCJitter = " << _ewMarkerROCJitter << endl;
-    os << "flashStart = " << _flashStart << endl;
-    os << "flashEnd = " << _flashEnd << endl;
-    os << "flashClockSpeed = " << _flashClockSpeed << endl;
-    os << "flashStartTDC = " << _flashStartTDC << endl;
-    os << "flashEndTDC = " << _flashEndTDC << endl;
+    os << "digitizationStart = " << _digitizationStart << endl;
+    os << "digitizationStartTDC = " << _digitizationStartTDC << endl;
+    os << "digitizationEnd = " << _digitizationEnd << endl;
+    os << "digitizationEndTDC = " << _digitizationEndTDC << endl;
     os << "responseBins = " << _responseBins << endl;
     os << "sampleRate = " << _sampleRate << endl;
     os << "saturationSampleFactor = " << _saturationSampleFactor << endl;
@@ -322,9 +326,9 @@ namespace mu2e {
       printVector(os,"   preampToAdc1Response",_wPoints[i]._preampToAdc1Response);
     }
     os << "clusterLookbackTime = " << _clusterLookbackTime << endl;
-    printVector(os,"timeOffsetPanel",_timeOffsetPanel);
-    printVector(os,"timeOffsetStrawHV",_timeOffsetStrawHV);
-    printVector(os,"timeOffsetStrawCal",_timeOffsetStrawCal);
+    printArray(os,"timeOffsetPanel",_timeOffsetPanel);
+    printArray(os,"timeOffsetStrawHV",_timeOffsetStrawHV);
+    printArray(os,"timeOffsetStrawCal",_timeOffsetStrawCal);
 
   }
 
@@ -341,5 +345,21 @@ namespace mu2e {
 	 << a[n-2] << " " << a[n-1] << endl;
     }
   }
+
+  template<typename T, size_t SIZE>
+    void StrawElectronics::printArray(std::ostream& os, std::string const& name,
+        std::array<T,SIZE> const& a) const {
+      size_t n = a.size();
+      if(n<=4) {
+        os << name << " ("<<n<<") = ";
+        for(auto x : a) os << x << " ";
+        os << endl;
+      } else {
+        os << name <<" ("<<n<<") = " 
+          << a[0] << " " << a[1] << " ... " 
+          << a[n-2] << " " << a[n-1] << endl;
+      }
+
+    }
 
 }

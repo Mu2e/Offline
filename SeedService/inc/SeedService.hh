@@ -92,13 +92,13 @@
 //
 
 // Some helper classes.
-#include "SeedService/inc/ArtState.hh"
-#include "SeedService/inc/EngineId.hh"
+#include "Offline/SeedService/inc/ArtState.hh"
+#include "Offline/SeedService/inc/EngineId.hh"
 
 // From art and its tool chain.
 #include "art/Framework/Core/detail/EngineCreator.h"
 #include "art/Framework/Services/Optional/RandomNumberGenerator.h"
-#include "art/Framework/Services/Registry/ServiceMacros.h"
+#include "art/Framework/Services/Registry/ServiceDeclarationMacros.h"
 #include "fhiclcpp/ParameterSet.h"
 
 #include <string>

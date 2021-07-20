@@ -16,9 +16,9 @@
 
 //
 //Mu2e includes
-#include "CalorimeterGeom/inc/DiskCalorimeter.hh"
-#include "CalorimeterGeom/inc/Disk.hh"
-#include "ConfigTools/inc/SimpleConfig.hh"
+#include "Offline/CalorimeterGeom/inc/DiskCalorimeter.hh"
+#include "Offline/CalorimeterGeom/inc/Disk.hh"
+#include "Offline/ConfigTools/inc/SimpleConfig.hh"
 
 
 namespace mu2e{

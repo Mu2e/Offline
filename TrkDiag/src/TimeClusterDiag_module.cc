@@ -12,26 +12,25 @@
 #include "art/Framework/Core/ModuleMacros.h"
 #include "art_root_io/TFileService.h"
 // mu2e
-#include "GeneralUtilities/inc/Angles.hh"
-#include "Mu2eUtilities/inc/MVATools.hh"
-#include "GeometryService/inc/GeomHandle.hh"
-#include "CalorimeterGeom/inc/DiskCalorimeter.hh"
-#include "Mu2eUtilities/inc/SimParticleTimeOffset.hh"
-#include "MCDataProducts/inc/MCRelationship.hh"
+#include "Offline/GeneralUtilities/inc/Angles.hh"
+#include "Offline/Mu2eUtilities/inc/MVATools.hh"
+#include "Offline/GeometryService/inc/GeomHandle.hh"
+#include "Offline/CalorimeterGeom/inc/DiskCalorimeter.hh"
+#include "Offline/Mu2eUtilities/inc/SimParticleTimeOffset.hh"
+#include "Offline/MCDataProducts/inc/MCRelationship.hh"
 // tracking
-#include "TrkReco/inc/TrkTimeCalculator.hh"
-#include "TrkReco/inc/TrkUtilities.hh"
+#include "Offline/TrkReco/inc/TrkTimeCalculator.hh"
+#include "Offline/TrkReco/inc/TrkUtilities.hh"
 // TrkDiag
-#include "TrkDiag/inc/TimeClusterInfo.hh"
-#include "TrkDiag/inc/TrkMCTools.hh"
-#include "TrkDiag/inc/KalDiag.hh"
+#include "Offline/TrkDiag/inc/TimeClusterInfo.hh"
+#include "Offline/TrkDiag/inc/TrkMCTools.hh"
 // data
-#include "RecoDataProducts/inc/ComboHit.hh"
-#include "RecoDataProducts/inc/StrawHitFlag.hh"
-#include "RecoDataProducts/inc/TimeCluster.hh"
-#include "RecoDataProducts/inc/CaloClusterCollection.hh"
-#include "MCDataProducts/inc/StrawDigiMC.hh"
-#include "MCDataProducts/inc/StepPointMCCollection.hh"
+#include "Offline/RecoDataProducts/inc/ComboHit.hh"
+#include "Offline/RecoDataProducts/inc/StrawHitFlag.hh"
+#include "Offline/RecoDataProducts/inc/TimeCluster.hh"
+#include "Offline/RecoDataProducts/inc/CaloCluster.hh"
+#include "Offline/MCDataProducts/inc/StrawDigiMC.hh"
+#include "Offline/MCDataProducts/inc/StepPointMCCollection.hh"
 // root
 #include "TH1F.h"
 #include "TTree.h"
@@ -564,7 +563,7 @@ art::Ptr<SimParticle> const& primary, art::Event const& evt);
       tcinfo._tcalo = _ttcalc.caloClusterTime(*tc._caloCluster,_pitch);
       tcinfo._dtcalo = _ttcalc.caloClusterTime(*tc._caloCluster,_pitch) - tc._t0._t0;
       // calculate the cluster position.  Currently the Z is in disk coordinates and must be translated, FIXME!
-      XYZVec cog = Geom::toXYZVec(calo->geomUtil().mu2eToTracker(calo->geomUtil().diskFFToMu2e(tc._caloCluster->diskId(),tc._caloCluster->cog3Vector())));
+      XYZVec cog = Geom::toXYZVec(calo->geomUtil().mu2eToTracker(calo->geomUtil().diskFFToMu2e(tc._caloCluster->diskID(),tc._caloCluster->cog3Vector())));
       tcinfo._cog = cog;
     }
     // mc info

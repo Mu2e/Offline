@@ -18,17 +18,18 @@
 #include "art/Framework/Core/ModuleMacros.h"
 #include "canvas/Persistency/Common/FindManyP.h"
 #include "art_root_io/TFileService.h"
+#include "messagefacility/MessageLogger/MessageLogger.h"
 
-#include "RecoDataProducts/inc/ExtMonFNALRawHitCollection.hh"
-#include "MCDataProducts/inc/ExtMonFNALHitTruthAssn.hh"
-#include "GeometryService/inc/GeomHandle.hh"
-#include "ExtinctionMonitorFNAL/Geometry/inc/ExtMonFNAL.hh"
+#include "Offline/RecoDataProducts/inc/ExtMonFNALRawHitCollection.hh"
+#include "Offline/MCDataProducts/inc/ExtMonFNALHitTruthAssn.hh"
+#include "Offline/GeometryService/inc/GeomHandle.hh"
+#include "Offline/ExtinctionMonitorFNAL/Geometry/inc/ExtMonFNAL.hh"
 
-#include "MCDataProducts/inc/StepPointMC.hh"
-#include "MCDataProducts/inc/StepPointMCCollection.hh"
+#include "Offline/MCDataProducts/inc/StepPointMC.hh"
+#include "Offline/MCDataProducts/inc/StepPointMCCollection.hh"
 
-#include "Mu2eUtilities/inc/compressSimParticleCollection.hh"
-#include "Mu2eUtilities/inc/SimParticleParentGetter.hh"
+#include "Offline/Mu2eUtilities/inc/compressSimParticleCollection.hh"
+#include "Offline/Mu2eUtilities/inc/SimParticleParentGetter.hh"
 
 namespace mu2e {
   namespace ExtMonFNAL {

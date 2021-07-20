@@ -8,8 +8,8 @@
 #include <vector>
 
 namespace mu2e { class SimpleConfig; }
-namespace mu2e { 
-  class ProductionTarget; 
+namespace mu2e {
+  class ProductionTarget;
   class ProductionTargetMu2eII;
 }
 
@@ -25,7 +25,7 @@ namespace mu2e {
     static const int hayman_v_2_0{3};
     //enums for identifying Mu2eII target configurations, starting from hayman_v_2_0
     enum {mu2eii_conveyor = 4, mu2eii_rotating = 5};
- 
+
     static std::unique_ptr<ProductionTarget> makeTier1(const SimpleConfig& config, double solenoidOffset);
     static std::unique_ptr<ProductionTarget> makeHayman_v_2_0(const SimpleConfig& config, double solenoidOffset);
 

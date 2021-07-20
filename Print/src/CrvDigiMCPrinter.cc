@@ -1,5 +1,5 @@
 
-#include "Print/inc/CrvDigiMCPrinter.hh"
+#include "Offline/Print/inc/CrvDigiMCPrinter.hh"
 #include "art/Framework/Principal/Provenance.h"
 #include <string>
 #include <iomanip>
@@ -10,8 +10,7 @@ mu2e::CrvDigiMCPrinter::Print(art::Event const& event,
   if(verbose()<1) return;
   if(tags().empty()) {
     // if a list of instances not specified, print all instances
-    std::vector< art::Handle<CrvDigiMCCollection> > vah;
-    event.getManyByType(vah);
+    std::vector< art::Handle<CrvDigiMCCollection> > vah = event.getMany<CrvDigiMCCollection>();
     for (auto const & ah : vah) Print(ah);
   } else {
     // print requested instances
@@ -75,7 +74,7 @@ mu2e::CrvDigiMCPrinter::Print(const mu2e::CrvDigiMC& obj, int ind, std::ostream&
     << " " << std::setw(5) << obj.GetScintillatorBarIndex()
     << " " << std::setw(5) << obj.GetSiPMNumber()
     << " " << std::setw(5) << simp 
-    << " " << std::setw(5) << obj.GetStepPoints().size()
+    << " " << std::setw(5) << obj.GetCrvSteps().size()
     << "   " << std::setw(8) << std::setprecision(3) << obj.GetStartTime();
   os << std::endl;
 

@@ -1,5 +1,5 @@
 
-#include "Print/inc/CrvRecoPulsePrinter.hh"
+#include "Offline/Print/inc/CrvRecoPulsePrinter.hh"
 #include "art/Framework/Principal/Provenance.h"
 #include <string>
 #include <iomanip>
@@ -10,8 +10,7 @@ mu2e::CrvRecoPulsePrinter::Print(art::Event const& event,
   if(verbose()<1) return;
   if(tags().empty()) {
     // if a list of instances not specified, print all instances
-    std::vector< art::Handle<CrvRecoPulseCollection> > vah;
-    event.getManyByType(vah);
+    std::vector< art::Handle<CrvRecoPulseCollection> > vah = event.getMany<CrvRecoPulseCollection>();
     for (auto const & ah : vah) Print(ah);
   } else {
     // print requested instances

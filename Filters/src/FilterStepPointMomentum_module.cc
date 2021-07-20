@@ -13,8 +13,9 @@
 #include "art/Framework/Principal/Run.h"
 #include "art/Framework/Principal/Handle.h"
 #include "art/Framework/Core/ModuleMacros.h"
-#include "MCDataProducts/inc/StepPointMC.hh"
-#include "MCDataProducts/inc/StepPointMCCollection.hh"
+#include "messagefacility/MessageLogger/MessageLogger.h"
+#include "Offline/MCDataProducts/inc/StepPointMC.hh"
+#include "Offline/MCDataProducts/inc/StepPointMCCollection.hh"
 
 namespace mu2e {
 

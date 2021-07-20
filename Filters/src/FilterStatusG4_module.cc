@@ -14,7 +14,8 @@
 #include "art/Framework/Principal/Run.h"
 #include "art/Framework/Principal/Handle.h"
 #include "art/Framework/Core/ModuleMacros.h"
-#include "MCDataProducts/inc/StatusG4.hh"
+#include "messagefacility/MessageLogger/MessageLogger.h"
+#include "Offline/MCDataProducts/inc/StatusG4.hh"
 
 namespace mu2e {
 

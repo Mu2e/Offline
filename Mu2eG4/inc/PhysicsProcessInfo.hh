@@ -12,9 +12,9 @@
 #include <map>
 #include <string>
 
-#include "MCDataProducts/inc/ProcessCode.hh"
+#include "Offline/MCDataProducts/inc/ProcessCode.hh"
 
-#include "G4String.hh"
+#include "Geant4/G4String.hh"
 
 namespace mu2e {
 

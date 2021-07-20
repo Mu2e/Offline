@@ -1,8 +1,8 @@
 # Run the data product inspector on a file of unmixed events.
 #
 
-#include "fcl/minimalMessageService.fcl"
-#include "fcl/standardProducers.fcl"
+#include "Offline/fcl/minimalMessageService.fcl"
+#include "Offline/fcl/standardProducers.fcl"
 
 # Give this job a name.  
 process_name : InspectDataProducts
@@ -26,15 +26,15 @@ services :
 
   GeometryService :
   {
-    inputFile : "Mu2eG4/geom/geom_common.txt"
+    inputFile : "Offline/Mu2eG4/geom/geom_common.txt"
   }  
 
   ConditionsService :
   {
-    conditionsfile : "Mu2eG4/test/conditions_01.txt"
+    conditionsfile : "Offline/ConditionsService/data/conditions_01.txt"
   }  
 
-  GlobalConstantsService : { inputFile : "Mu2eG4/test/globalConstants_01.txt" }
+  GlobalConstantsService : { inputFile : "Offline/GlobalConstantsService/data/globalConstants_01.txt" }
 
 
 }

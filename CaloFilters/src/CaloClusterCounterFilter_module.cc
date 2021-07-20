@@ -6,25 +6,19 @@
 //
 
 #include "CLHEP/Units/SystemOfUnits.h"
-#include "GlobalConstantsService/inc/GlobalConstantsHandle.hh"
+#include "Offline/GlobalConstantsService/inc/GlobalConstantsHandle.hh"
 
-#include "ConfigTools/inc/ConfigFileLookupPolicy.hh"
+#include "Offline/ConfigTools/inc/ConfigFileLookupPolicy.hh"
 
-#include "CalorimeterGeom/inc/Calorimeter.hh"
-#include "CalorimeterGeom/inc/DiskCalorimeter.hh"
+#include "Offline/CalorimeterGeom/inc/Calorimeter.hh"
+#include "Offline/CalorimeterGeom/inc/DiskCalorimeter.hh"
 
-#include "GeometryService/inc/GeomHandle.hh"
-#include "GeometryService/inc/GeometryService.hh"
+#include "Offline/GeometryService/inc/GeomHandle.hh"
+#include "Offline/GeometryService/inc/GeometryService.hh"
 
-#include "CaloCluster/inc/ClusterMoments.hh"
-
-#include "RecoDataProducts/inc/CaloCrystalHitCollection.hh"
-#include "RecoDataProducts/inc/CaloHitCollection.hh"
-#include "RecoDataProducts/inc/CaloHit.hh"
-#include "RecoDataProducts/inc/CaloCluster.hh"
-#include "RecoDataProducts/inc/CaloClusterCollection.hh"
-#include "RecoDataProducts/inc/TrkFitFlag.hh"
-#include "RecoDataProducts/inc/TriggerInfo.hh"
+#include "Offline/RecoDataProducts/inc/CaloCluster.hh"
+#include "Offline/RecoDataProducts/inc/TrkFitFlag.hh"
+#include "Offline/RecoDataProducts/inc/TriggerInfo.hh"
 
 // #include "art/Framework/Core/EDAnalyzer.h"
 #include "art/Framework/Core/EDFilter.h"
@@ -72,8 +66,6 @@ namespace mu2e {
 	  Comment("Minimum energy deposit in a calo cluster")};
       fhicl::Atom<int> minNCl{ Name("MinNCl"),
 	  Comment("Minimum number of calo cluster")};
-      fhicl::Atom<std::string> trgPath{ Name("triggerPath"),
-	  Comment("label of the given trigger-path")};
     };
 
     virtual ~CaloClusterCounter() { }
@@ -88,15 +80,12 @@ namespace mu2e {
 
   private:
        
-    typedef art::Ptr< CaloCrystalHit> CaloCrystalHitPtr;
-
     int                     _diagLevel;
     int                     _nProcess;
     int                     _nPass;
     art::InputTag           _clTag;
     double                  _minClEnergy;
     int                     _minNCl;
-    std::string             _trigPath;
     
   };
 
@@ -108,8 +97,7 @@ namespace mu2e {
     _nPass                       (0),		     
     _clTag                       (config().CCTag()),
     _minClEnergy                 (config().minNClE()),
-    _minNCl                      (config().minNCl()),
-    _trigPath                    (config().trgPath()){
+    _minNCl                      (config().minNCl()){
       
       produces<TriggerInfo>();
     }

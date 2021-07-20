@@ -1,6 +1,6 @@
 # -*- mode: tcl -*-
 # flat range of photons from muon stops to study external RMC background
-#include "JobConfig/primary/flatE.fcl"
+#include "Offline/JobConfig/primary/flatE.fcl"
 process_name: RMCFlatExternal
 services.TimeTracker : {
     printSummary : true

@@ -19,7 +19,7 @@
 #include "art/Framework/Principal/Handle.h"
 #include "art/Framework/Principal/Provenance.h"
 
-#include "MCDataProducts/inc/GenEventCount.hh"
+#include "Offline/MCDataProducts/inc/GenEventCount.hh"
 
 namespace mu2e {
 
@@ -53,8 +53,7 @@ namespace mu2e {
     // The intention is to have at most one object of type
     // GenEventCount per SubRun.  Throw here if such an
     // object is already in SubRun.
-    std::vector<art::Handle<GenEventCount> > hh;
-    sr.getManyByType(hh);
+    std::vector<art::Handle<GenEventCount> > hh = sr.getMany<GenEventCount>();
     if(!hh.empty()) {
       std::ostringstream os;
       os<<"GenEventCounter: refusing to write event count in "
@@ -73,6 +72,8 @@ namespace mu2e {
                           <<" events for "<<sr.id()<<"\n";
 
     sr.put(std::unique_ptr<GenEventCount>(new GenEventCount(seenEvents_)));
+
+    seenEvents_ = 0; // in case the job has more than one subrun
   }
 
   //================================================================

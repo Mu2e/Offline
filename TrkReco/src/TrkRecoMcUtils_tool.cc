@@ -11,25 +11,25 @@
 #include "BTrk/TrkBase/HelixTraj.hh"
 #include "BTrk/TrkBase/TrkPoca.hh"
 
-#include "BTrkData/inc/TrkStrawHit.hh"
+#include "Offline/BTrkData/inc/TrkStrawHit.hh"
 
-#include "ConditionsService/inc/AcceleratorParams.hh"
-#include "ConditionsService/inc/ConditionsHandle.hh"
+#include "Offline/ConditionsService/inc/AcceleratorParams.hh"
+#include "Offline/ConditionsService/inc/ConditionsHandle.hh"
 
 #include "CLHEP/Matrix/Vector.h"
 
-#include "MCDataProducts/inc/StrawDigiMC.hh"
-#include "MCDataProducts/inc/StrawDigiMCCollection.hh"
+#include "Offline/MCDataProducts/inc/StrawDigiMC.hh"
+#include "Offline/MCDataProducts/inc/StrawDigiMCCollection.hh"
 
-#include "MCDataProducts/inc/StepPointMC.hh"
-#include "MCDataProducts/inc/StepPointMCCollection.hh"
-#include "Mu2eUtilities/inc/SimParticleTimeOffset.hh"
+#include "Offline/MCDataProducts/inc/StepPointMC.hh"
+#include "Offline/MCDataProducts/inc/StepPointMCCollection.hh"
+#include "Offline/Mu2eUtilities/inc/SimParticleTimeOffset.hh"
 
-#include "RecoDataProducts/inc/ComboHit.hh"
+#include "Offline/RecoDataProducts/inc/ComboHit.hh"
 
-#include "TrackerGeom/inc/Straw.hh"
+#include "Offline/TrackerGeom/inc/Straw.hh"
 
-#include "Mu2eUtilities/inc/McUtilsToolBase.hh"
+#include "Offline/Mu2eUtilities/inc/McUtilsToolBase.hh"
 
 namespace mu2e {
 
@@ -131,8 +131,8 @@ namespace mu2e {
     const ComboHit* ch    = &StrawHit->comboHit();
     const Straw*    straw = &StrawHit->straw();
 
-    const CLHEP::Hep3Vector* v1 = &straw->getMidPoint();
-    HepPoint p1(v1->x(),v1->y(),v1->z());
+    CLHEP::Hep3Vector v1 = straw->getMidPoint();
+    HepPoint p1(v1.x(),v1.y(),v1.z());
 
     int hitIndex = ch-&_chColl->at(0);
     

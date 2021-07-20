@@ -3,11 +3,12 @@
 //
 // BaBar definition helix parameters.  This is a mixed geometric/kinematic helix as the
 // signs include time propagation information
+// This class is deprecrated, it will be removed when we switch completely to KinKal
 //
 
 // Mu2e
-#include "DataProducts/inc/Helicity.hh"
-#include "DataProducts/inc/XYZVec.hh"
+#include "Offline/DataProducts/inc/Helicity.hh"
+#include "Offline/DataProducts/inc/XYZVec.hh"
 // BTrk
 #include "BTrk/TrkBase/HelixParams.hh"
 // CLHEP

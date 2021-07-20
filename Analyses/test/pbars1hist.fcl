@@ -1,0 +1,29 @@
+#include "Offline/fcl/minimalMessageService.fcl"
+#include "Offline/fcl/standardServices.fcl"
+
+process_name : pbars1hist
+
+source: { module_type: RootInput }
+
+services: {
+   message: @local::default_message
+   TFileService: { fileName: "pbars1hist.root" }
+   ConditionsService      : { conditionsfile : "Offline/ConditionsService/data/conditions_01.txt"      }
+   GlobalConstantsService: { inputFile : "Offline/GlobalConstantsService/data/globalConstants_01.txt" }
+   GeometryService        : { inputFile      : "Production/JobConfig/common/geom_baseline.txt" }
+}
+
+physics: {
+   analyzers: {
+      genCountLogger: {
+         module_type: GenEventCountReader
+      }
+      pbars1hist: {
+         module_type: pbars1hist
+         particles: "g4filter"
+      }
+   }
+
+   e1: [ genCountLogger,pbars1hist]
+   end_paths: [e1]
+}

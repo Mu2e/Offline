@@ -30,8 +30,8 @@
 #include "art/Framework/Principal/Event.h"
 #include "art/Framework/Principal/Run.h"
 
-#include "BFieldGeom/inc/BFieldManager.hh"
-#include "GeometryService/inc/GeomHandle.hh"
+#include "Offline/BFieldGeom/inc/BFieldManager.hh"
+#include "Offline/GeometryService/inc/GeomHandle.hh"
 
 #include "CLHEP/Units/SystemOfUnits.h"
 #include "CLHEP/Vector/ThreeVector.h"
@@ -40,7 +40,7 @@
 #include <iostream>
 #include <vector>
 
-#include "GeneralUtilities/inc/csv.hh"
+#include "Offline/GeneralUtilities/inc/csv.hh"
 
 namespace {
 

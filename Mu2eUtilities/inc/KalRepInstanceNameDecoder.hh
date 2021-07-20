@@ -6,8 +6,8 @@
 //
 // Contact person, Rob Kutschke
 //
-#include "RecoDataProducts/inc/TrkFitDirection.hh"
-#include "Mu2eUtilities/inc/TrkSpecies.hh"
+#include "Offline/RecoDataProducts/inc/TrkFitDirection.hh"
+#include "Offline/Mu2eUtilities/inc/TrkSpecies.hh"
 
 #include <string>
 

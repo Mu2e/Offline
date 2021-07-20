@@ -17,19 +17,19 @@
 #include "fhiclcpp/ParameterSet.h"
 
 // conditions
-#include "GeometryService/inc/GeometryService.hh"
-#include "GeometryService/inc/GeomHandle.hh"
-#include "ConditionsService/inc/ConditionsHandle.hh"
+#include "Offline/GeometryService/inc/GeometryService.hh"
+#include "Offline/GeometryService/inc/GeomHandle.hh"
+#include "Offline/ConditionsService/inc/ConditionsHandle.hh"
 
-#include "RecoDataProducts/inc/KalRepPtrCollection.hh"
-#include "RecoDataProducts/inc/TrkFitDirection.hh"
+#include "Offline/RecoDataProducts/inc/KalRepPtrCollection.hh"
+#include "Offline/RecoDataProducts/inc/TrkFitDirection.hh"
 
-#include "RecoDataProducts/inc/TrkCaloIntersectCollection.hh"
-#include "RecoDataProducts/inc/TrackClusterMatch.hh"
+#include "Offline/RecoDataProducts/inc/TrkCaloIntersectCollection.hh"
+#include "Offline/RecoDataProducts/inc/TrackClusterMatch.hh"
 
-#include "RecoDataProducts/inc/CaloClusterCollection.hh"
+#include "Offline/RecoDataProducts/inc/CaloCluster.hh"
 
-#include "CalorimeterGeom/inc/Calorimeter.hh"
+#include "Offline/CalorimeterGeom/inc/Calorimeter.hh"
 
 #include "BTrk/TrkBase/HelixParams.hh"
 
@@ -353,7 +353,7 @@ namespace mu2e {
         // move peak to zero
         dt      = trk_time-cl_time-_dtOffset;
 
-        if (cl->diskId() != idisk           )            goto NEXT_CLUSTER;
+        if (cl->diskID() != idisk           )            goto NEXT_CLUSTER;
         if (cl->energyDep() < _minClusterEnergy)            goto NEXT_CLUSTER;
         if (std::fabs(dt)   > _maxDeltaT       )            goto NEXT_CLUSTER;
         //------------------------------------------------------------------------------

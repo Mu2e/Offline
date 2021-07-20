@@ -1,11 +1,6 @@
 //
-// Free function to create  Production Solenoid and Production Target.
+// Free function to create Production Target.
 //
-//
-// Original author KLG based on Mu2eWorld constructPS
-//
-// Notes:
-// Construct the PS. Parent volume is the air inside of the hall.
 
 // C++ includes
 #include <iostream>
@@ -13,34 +8,35 @@
 #include <cmath>
 
 // Mu2e includes.
-#include "BeamlineGeom/inc/Beamline.hh"
-#include "ProductionSolenoidGeom/inc/ProductionSolenoid.hh"
-#include "GeomPrimitives/inc/Tube.hh"
-#include "GeomPrimitives/inc/Polycone.hh"
-#include "G4Helper/inc/VolumeInfo.hh"
-#include "GeometryService/inc/G4GeometryOptions.hh"
-#include "GeometryService/inc/GeometryService.hh"
-#include "GeometryService/inc/GeomHandle.hh"
-#include "ProductionTargetGeom/inc/ProductionTarget.hh"
-#include "Mu2eG4/inc/findMaterialOrThrow.hh"
-#include "Mu2eG4/inc/constructHaymanRings.hh"
-#include "Mu2eG4/inc/nestTubs.hh"
-#include "Mu2eG4/inc/nestBox.hh"
-#include "Mu2eG4/inc/nestPolycone.hh"
-#include "Mu2eG4/inc/finishNesting.hh"
+#include "Offline/BeamlineGeom/inc/Beamline.hh"
+#include "Offline/ProductionSolenoidGeom/inc/ProductionSolenoid.hh"
+#include "Offline/GeomPrimitives/inc/Tube.hh"
+#include "Offline/GeomPrimitives/inc/Polycone.hh"
+#include "Offline/Mu2eG4Helper/inc/VolumeInfo.hh"
+#include "Offline/Mu2eG4Helper/inc/Mu2eG4Helper.hh"
+#include "Offline/GeometryService/inc/G4GeometryOptions.hh"
+#include "Offline/GeometryService/inc/GeometryService.hh"
+#include "Offline/GeometryService/inc/GeomHandle.hh"
+#include "Offline/ProductionTargetGeom/inc/ProductionTarget.hh"
+#include "Offline/Mu2eG4/inc/findMaterialOrThrow.hh"
+#include "Offline/Mu2eG4/inc/constructHaymanRings.hh"
+#include "Offline/Mu2eG4/inc/nestTubs.hh"
+#include "Offline/Mu2eG4/inc/nestBox.hh"
+#include "Offline/Mu2eG4/inc/nestPolycone.hh"
+#include "Offline/Mu2eG4/inc/finishNesting.hh"
 
-#include "ProductionSolenoidGeom/inc/PSVacuum.hh"
+#include "Offline/ProductionSolenoidGeom/inc/PSVacuum.hh"
 
 // G4 includes
-#include "G4ThreeVector.hh"
-#include "G4Material.hh"
-#include "G4Color.hh"
-#include "G4Polycone.hh"
-#include "G4SDManager.hh"
-#include "G4Trd.hh"
+#include "Geant4/G4ThreeVector.hh"
+#include "Geant4/G4Material.hh"
+#include "Geant4/G4Color.hh"
+#include "Geant4/G4Polycone.hh"
+#include "Geant4/G4SDManager.hh"
+#include "Geant4/G4Trd.hh"
 #include "CLHEP/Units/SystemOfUnits.h"
-#include "G4Tubs.hh"
-#include "G4RotationMatrix.hh"
+#include "Geant4/G4Tubs.hh"
+#include "Geant4/G4RotationMatrix.hh"
 using namespace std;
 
 namespace mu2e {
@@ -58,6 +54,7 @@ namespace mu2e {
 
     G4ThreeVector _hallOriginInMu2e = parent.centerInMu2e();
 
+    AntiLeakRegistry& reg = art::ServiceHandle<Mu2eG4Helper>()->antiLeakRegistry();
 
     // Build the production target.
     GeomHandle<ProductionTarget> tgt;
@@ -146,7 +143,7 @@ namespace mu2e {
 
     //
     // this extra Core word because in making a sensitive detector, the code sees "ProductionTarget" in
-    // "ProductionTarget*" and screws up.  Need something unique.  easier than fixing LV.name function 
+    // "ProductionTarget*" and screws up.  Need something unique.  easier than fixing LV.name function
     VolumeInfo prodTargetInfo   = nestTubs( "ProductionTargetCore",
                                             prodTargetParams,
                                             prodTargetMaterial,
@@ -177,24 +174,24 @@ namespace mu2e {
     CLHEP::Hep3Vector SupportRingFarTSOffset (+0., 0., +0.);
     CLHEP::Hep3Vector SupportRingNearTSOffset(+0., 0., +0.);
     VolumeInfo supportRingsFarTSInfo = nestTubs("SupportRingsFarTS",
-						supportRingsParams,
-						supportRingsMaterial,
-						&tgt->productionTargetRotation(),
-						_loclCenter+SupportRingFarTSOffset,
-						prodTargetMotherInfo,
-						0,
-						G4Colour::Yellow()
-						);
+                                                supportRingsParams,
+                                                supportRingsMaterial,
+                                                &tgt->productionTargetRotation(),
+                                                _loclCenter+SupportRingFarTSOffset,
+                                                prodTargetMotherInfo,
+                                                0,
+                                                G4Colour::Yellow()
+                                                );
 
     VolumeInfo supportRingsNearTSInfo = nestTubs("SupportRingsNearTS",
-						 supportRingsParams,
-						 supportRingsMaterial,
-						 &tgt->productionTargetRotation(),
-						 _loclCenter+SupportRingNearTSOffset,
-						 prodTargetMotherInfo,
-						 0,
-						 G4Colour::Yellow()
-						 );
+                                                 supportRingsParams,
+                                                 supportRingsMaterial,
+                                                 &tgt->productionTargetRotation(),
+                                                 _loclCenter+SupportRingNearTSOffset,
+                                                 prodTargetMotherInfo,
+                                                 0,
+                                                 G4Colour::Yellow()
+                                                 );
     std::cout << "local center = " << _loclCenter << std::endl;
    std::cout << "local center far = " << SupportRingFarTSOffset << std::endl;
    std::cout << "local center near = " << SupportRingNearTSOffset << std::endl;
@@ -206,42 +203,42 @@ namespace mu2e {
       double finHalfLength = tgt->halfLength();
       //
       // in hayman, there are no hubs and in space no one can hear you scream.  Leave the code in for hooks later
-      
+
       G4Trd * myTrd = new G4Trd("FinTrapezoid",
-				//				finHalfLength, finHalfLengthOut,
-				tgt->finThickness()/2.0, tgt->finThickness()/2.0,
-				tgt->finHeight()/2.0,tgt->finHeight()/2.0,
-				finHalfLength);
+                                //                              finHalfLength, finHalfLengthOut,
+                                tgt->finThickness()/2.0, tgt->finThickness()/2.0,
+                                tgt->finHeight()/2.0,tgt->finHeight()/2.0,
+                                finHalfLength);
 
 
       G4Tubs* targetEndRingNearTS = new G4Tubs("targetEndRingFarTS",
-					    innerRadiusRing,outerRadiusRing,halfLengthRing,0.,2.*M_PI);
+                                            innerRadiusRing,outerRadiusRing,halfLengthRing,0.,2.*M_PI);
       G4Tubs* targetEndRingFarTS = new G4Tubs("targetEndRingNearTS",
-					    innerRadiusRing,outerRadiusRing,halfLengthRing,0.,2.*M_PI);
+                                            innerRadiusRing,outerRadiusRing,halfLengthRing,0.,2.*M_PI);
 
       VolumeInfo targetEndRingNearTSVol("targetEndRingNearTS",
-					   _loclCenter,prodTargetMotherInfo.centerInWorld);
-      VolumeInfo targetEndRingFarTSVol("targetEndRingFarTS", 
-					   _loclCenter,prodTargetMotherInfo.centerInWorld);
+                                           _loclCenter,prodTargetMotherInfo.centerInWorld);
+      VolumeInfo targetEndRingFarTSVol("targetEndRingFarTS",
+                                           _loclCenter,prodTargetMotherInfo.centerInWorld);
       G4Material* endRingsMaterial = findMaterialOrThrow("G4_W");
 
 
-     CLHEP::HepRotation* rotRingBase = new CLHEP::HepRotation(CLHEP::HepRotation::IDENTITY);
+      CLHEP::HepRotation* rotRingBase = reg.add(CLHEP::HepRotation(CLHEP::HepRotation::IDENTITY));
 
-      CLHEP::HepRotation* rotRing = new CLHEP::HepRotation((*rotRingBase)*tgt->productionTargetRotation());
+      CLHEP::HepRotation* rotRing = reg.add(CLHEP::HepRotation((*rotRingBase)*tgt->productionTargetRotation()));
 
       // std::vector<double> finDims = {tgt->finThickness()/2.0,tgt->finHeight()/2.0,finHalfLength};
       double rToFin = tgt->rOut()+tgt->finHeight()/2.0;
       std::cout << "r variables " << rToFin << " " << tgt->rOut() << " " << tgt->finHeight()/2. << std::endl;
-  
- 
-      CLHEP::HepRotation* rotFinBase = new CLHEP::HepRotation(CLHEP::HepRotation::IDENTITY);
- 
+
+
+      CLHEP::HepRotation* rotFinBase = reg.add(CLHEP::HepRotation(CLHEP::HepRotation::IDENTITY));
+
       std::cout << "rotfinbase = " << *rotFinBase << std::endl;
-      CLHEP::HepRotation* rotFin1 = new CLHEP::HepRotation((*rotFinBase)*tgt->productionTargetRotation());
-      CLHEP::HepRotation* rotFin2 = new CLHEP::HepRotation((*rotFinBase)*tgt->productionTargetRotation());
-      CLHEP::HepRotation* rotFin3 = new CLHEP::HepRotation((*rotFinBase)*tgt->productionTargetRotation());
-      CLHEP::HepRotation* rotFin4 = new CLHEP::HepRotation((*rotFinBase)*tgt->productionTargetRotation());
+      CLHEP::HepRotation* rotFin1 = reg.add(CLHEP::HepRotation((*rotFinBase)*tgt->productionTargetRotation()));
+      CLHEP::HepRotation* rotFin2 = reg.add(CLHEP::HepRotation((*rotFinBase)*tgt->productionTargetRotation()));
+      CLHEP::HepRotation* rotFin3 = reg.add(CLHEP::HepRotation((*rotFinBase)*tgt->productionTargetRotation()));
+      CLHEP::HepRotation* rotFin4 = reg.add(CLHEP::HepRotation((*rotFinBase)*tgt->productionTargetRotation()));
 
 
       rotFin1->rotateZ(-M_PI/4.);
@@ -253,14 +250,14 @@ namespace mu2e {
       CLHEP::Hep3Vector finOffset2(-rToFin/sqrt(2.),-rToFin/sqrt(2.),0.);
       CLHEP::Hep3Vector finOffset3(rToFin/sqrt(2.),rToFin/sqrt(2.),0.);
       CLHEP::Hep3Vector finOffset4(-rToFin/sqrt(2.),rToFin/sqrt(2.),0.);
- 
+
       // These are shifts in the unrotated frame in x and y.  But then when I apply
       // the rotation, since the fins are not centered on the z-axis, they pick up a z-shift that I must
       // take out.  rather than calculate it for the special case I'll do the matrix. If life gets more complicated
       // in the future (target rotated along and y) it's straightforward if tedious.
       //
-      // it's complicated because the "finishNesting", rotates then shifts by what you give it; the above is wrong once the frame is 
-      // rotated... 
+      // it's complicated because the "finishNesting", rotates then shifts by what you give it; the above is wrong once the frame is
+      // rotated...
       CLHEP::Hep3Vector fin1Shift(rToFin/sqrt(2.),-rToFin/sqrt(2.),0.);
       CLHEP::Hep3Vector fin2Shift(-rToFin/sqrt(2.),-rToFin/sqrt(2.),0.);
       CLHEP::Hep3Vector fin3Shift(rToFin/sqrt(2.),rToFin/sqrt(2.),0.);
@@ -286,20 +283,20 @@ namespace mu2e {
       finOffset4 += CLHEP::Hep3Vector(0.,0.,-fin4Shift.z());
 
       VolumeInfo fin1Vol("ProductionTargetFin1",
-			 _loclCenter,
-			 prodTargetMotherInfo.centerInWorld);
+                         _loclCenter,
+                         prodTargetMotherInfo.centerInWorld);
 
       VolumeInfo fin2Vol("ProductionTargetFin2",
-			 _loclCenter,
-			 prodTargetMotherInfo.centerInWorld);
+                         _loclCenter,
+                         prodTargetMotherInfo.centerInWorld);
 
       VolumeInfo fin3Vol("ProductionTargetFin3",
-			 _loclCenter,
-			 prodTargetMotherInfo.centerInWorld);
+                         _loclCenter,
+                         prodTargetMotherInfo.centerInWorld);
 
       VolumeInfo fin4Vol("ProductionTargetFin4",
-			 _loclCenter,
-			 prodTargetMotherInfo.centerInWorld);
+                         _loclCenter,
+                         prodTargetMotherInfo.centerInWorld);
 
       fin1Vol.solid = myTrd;
       fin2Vol.solid = myTrd;
@@ -307,46 +304,46 @@ namespace mu2e {
       fin4Vol.solid = myTrd;
 
       finishNesting( fin1Vol,
-		     prodTargetMaterial,
-		     rotFin1,
-		     finOffset1,
-		     prodTargetMotherInfo.logical,
-		     0,
-		     G4Colour::Magenta(),
-		     "PS"
-		     );
+                     prodTargetMaterial,
+                     rotFin1,
+                     finOffset1,
+                     prodTargetMotherInfo.logical,
+                     0,
+                     G4Colour::Magenta(),
+                     "PS"
+                     );
 
       finishNesting( fin2Vol,
-		     prodTargetMaterial,
-		     rotFin2,
-		     finOffset2,
-		     prodTargetMotherInfo.logical,
-		     0,
-		     G4Colour::Magenta(),
-		     "PS"
-		     );
+                     prodTargetMaterial,
+                     rotFin2,
+                     finOffset2,
+                     prodTargetMotherInfo.logical,
+                     0,
+                     G4Colour::Magenta(),
+                     "PS"
+                     );
 
       finishNesting( fin3Vol,
-		     prodTargetMaterial,
-		     rotFin3,
-		     finOffset3,
-		     prodTargetMotherInfo.logical,
-		     0,
-		     G4Colour::Magenta(),
-		     "PS"
-		     );
-		    
+                     prodTargetMaterial,
+                     rotFin3,
+                     finOffset3,
+                     prodTargetMotherInfo.logical,
+                     0,
+                     G4Colour::Magenta(),
+                     "PS"
+                     );
+
 
       finishNesting( fin4Vol,
-		     prodTargetMaterial,
-		     rotFin4,
-		     finOffset4,
-		     prodTargetMotherInfo.logical,
-		     0,
-		     G4Colour::Magenta(),
-		     "PS"
-		     );
- 
+                     prodTargetMaterial,
+                     rotFin4,
+                     finOffset4,
+                     prodTargetMotherInfo.logical,
+                     0,
+                     G4Colour::Magenta(),
+                     "PS"
+                     );
+
 
       targetEndRingNearTSVol.solid = targetEndRingNearTS;
       targetEndRingFarTSVol.solid = targetEndRingFarTS;
@@ -355,7 +352,7 @@ namespace mu2e {
       // put these just past edge of target in z, and shift them in x because target rotated about y axis.
       // rotation is about y, and xprime  = x cos - z sin, zprime = z cos + x sin.  x is zero, z is L/2 + whatever I need to push past core
       //but also recall 14deg from z-axis, not from x-axis...
-      double lengthToEnd = tgt->halfLength()+(4.); //4. being half length of ring.  
+      double lengthToEnd = tgt->halfLength()+(4.); //4. being half length of ring.
       double deltaXRing =  sin(tgt->productionTargetRotation().getTheta());
       double deltaZRing =  cos(tgt->productionTargetRotation().getTheta());
       //
@@ -366,27 +363,27 @@ namespace mu2e {
       //std::cout << "length to end = " << lengthToEnd << std::endl;
       //std::cout << "ring offsets x,z = " << deltaXRing << " \n " << deltaZRing << std::endl;
      finishNesting(targetEndRingFarTSVol,
-		    endRingsMaterial,
-		    rotRing,
-		    farTSRingOffset,
-		    prodTargetMotherInfo.logical,
-		    0,
-		    G4Colour::Magenta(),
-		    "PS"
-		    );
+                    endRingsMaterial,
+                    rotRing,
+                    farTSRingOffset,
+                    prodTargetMotherInfo.logical,
+                    0,
+                    G4Colour::Magenta(),
+                    "PS"
+                    );
 
       finishNesting(targetEndRingNearTSVol,
-		    endRingsMaterial,
-		    rotRing,
-		    nearTSRingOffset,
-		    prodTargetMotherInfo.logical,
-		    0,
-		    G4Colour::Magenta(),
-		    "PS"
-		    );
+                    endRingsMaterial,
+                    rotRing,
+                    nearTSRingOffset,
+                    prodTargetMotherInfo.logical,
+                    0,
+                    G4Colour::Magenta(),
+                    "PS"
+                    );
 
 
-		    
+
     }
 
 
@@ -394,9 +391,9 @@ namespace mu2e {
     // Using the old terms "right" and "left" to mean "downstream" (DS)
     // and "upstream" (US), respectively.
 
-    // 
-    //hayman has no hubs.  In this approximation the spokes will hang in space.  
-    
+    //
+    //hayman has no hubs.  In this approximation the spokes will hang in space.
+
     /*
     Polycone const & pHubRgtParams = *tgt->getHubsRgtPtr();
     VolumeInfo prodTargetHubRgtInfo  = nestPolycone("ProductionTargetHubRgt",
@@ -421,7 +418,7 @@ namespace mu2e {
                                                     G4Colour::Magenta(),
                                                     "ProductionTarget"
                                                     );
-    
+
     */
     CLHEP::Hep3Vector zax(0,0,1);
     double spokeRad = 0.5*_config.getDouble("targetPS_Spoke_diameter");
@@ -469,11 +466,11 @@ namespace mu2e {
       iSpokeName<<"ProductionTargetSpokeRgt_"<<iSpk;
 
 
-       
+
       VolumeInfo iSpokeInfo   = nestTubs( iSpokeName.str(),
                                           iSpokeParams,
                                           spokeMaterial,
-                                          new CLHEP::HepRotation(tmpRotAxis,rotAngle),
+                                          reg.add(CLHEP::HepRotation(tmpRotAxis,rotAngle)),
                                           tmpMidPnt,
                                           prodTargetMotherInfo,
                                           0,
@@ -484,7 +481,7 @@ namespace mu2e {
                                           placePV,
                                           doSurfaceCheck
                                           );
-      
+
       ++iSpk;
     }
 
@@ -506,7 +503,7 @@ namespace mu2e {
       normalaxHub.rotateZ(tmpAngle);
       normalaxHub.transform(invTrgtRot);
       double deepAngleHub = tmpDirVec.angle(normalaxHub);
-      //CLHEP::HepRotation *tmpSpokeRot = new CLHEP::HepRotation(tmpRotAxis,rotAngle);
+      //CLHEP::HepRotation *tmpSpokeRot = reg.add(CLHEP::HepRotation(tmpRotAxis,rotAngle));
 
       double fixOverlapWheel = spokeRad*tan(deepAngleWheel);
       double fixOverlapHub = spokeRad*tan(deepAngleHub);
@@ -516,11 +513,11 @@ namespace mu2e {
       TubsParams iSpokeParams( 0.0, spokeRad, 0.5*tmpSpokeLength);
       std::stringstream iSpokeName;
       iSpokeName<<"ProductionTargetSpokeLft_"<<iSpk;
-      
+
       VolumeInfo iSpokeInfo   = nestTubs( iSpokeName.str(),
                                           iSpokeParams,
                                           spokeMaterial,
-                                          new CLHEP::HepRotation(tmpRotAxis,rotAngle),
+                                          reg.add(CLHEP::HepRotation(tmpRotAxis,rotAngle)),
                                           tmpMidPnt,
                                           prodTargetMotherInfo,
                                           0,
@@ -531,7 +528,7 @@ namespace mu2e {
                                           placePV,
                                           doSurfaceCheck
                                           );
-      
+
       ++iSpk;
     }
 

@@ -11,22 +11,22 @@
 ///////////////////////////////////////////////////////////////////////////////
 #include "BTrk/BaBar/BaBar.hh"
 #include "BTrk/TrkBase/HelixTraj.hh"
-#include "CalPatRec/inc/CalHelixFinderAlg.hh"
-#include "ConditionsService/inc/ConditionsHandle.hh"
+#include "Offline/CalPatRec/inc/CalHelixFinderAlg.hh"
+#include "Offline/ConditionsService/inc/ConditionsHandle.hh"
 #include "art_root_io/TFileService.h"
-#include "TrackerGeom/inc/Tracker.hh"
-#include "CalorimeterGeom/inc/Calorimeter.hh"
-#include "RecoDataProducts/inc/StrawHit.hh"
-#include "RecoDataProducts/inc/ComboHit.hh"
-#include "RecoDataProducts/inc/StrawHitIndex.hh"
-#include "RecoDataProducts/inc/CaloCluster.hh"
-#include "TrackerGeom/inc/Straw.hh"
-#include "GeometryService/inc/GeometryService.hh"
-#include "GeometryService/inc/GeomHandle.hh"
-#include "BFieldGeom/inc/BFieldConfig.hh"
-#include "GeometryService/inc/GeomHandle.hh"
-#include "BFieldGeom/inc/BFieldManager.hh"
-#include "GeometryService/inc/DetectorSystem.hh"
+#include "Offline/TrackerGeom/inc/Tracker.hh"
+#include "Offline/CalorimeterGeom/inc/Calorimeter.hh"
+#include "Offline/RecoDataProducts/inc/StrawHit.hh"
+#include "Offline/RecoDataProducts/inc/ComboHit.hh"
+#include "Offline/RecoDataProducts/inc/StrawHitIndex.hh"
+#include "Offline/RecoDataProducts/inc/CaloCluster.hh"
+#include "Offline/TrackerGeom/inc/Straw.hh"
+#include "Offline/GeometryService/inc/GeometryService.hh"
+#include "Offline/GeometryService/inc/GeomHandle.hh"
+#include "Offline/BFieldGeom/inc/BFieldConfig.hh"
+#include "Offline/GeometryService/inc/GeomHandle.hh"
+#include "Offline/BFieldGeom/inc/BFieldManager.hh"
+#include "Offline/GeometryService/inc/DetectorSystem.hh"
 // framework
 #include "fhiclcpp/ParameterSet.h"
 //CLHEP
@@ -50,8 +50,8 @@
 #include <string>
 #include <algorithm>
 
-#include "CalPatRec/inc/CalHelixFinderAlg.hh"
-#include "Mu2eUtilities/inc/polyAtan2.hh"
+#include "Offline/CalPatRec/inc/CalHelixFinderAlg.hh"
+#include "Offline/Mu2eUtilities/inc/polyAtan2.hh"
 
 using CLHEP::HepVector;
 using CLHEP::Hep3Vector;
@@ -219,7 +219,7 @@ namespace mu2e {
       return;
     }
     //fill the calorimeter cluster info
-    Hep3Vector  gpos = _calorimeter->geomUtil().diskToMu2e(cl->diskId(),cl->cog3Vector());
+    Hep3Vector  gpos = _calorimeter->geomUtil().diskToMu2e(cl->diskID(),cl->cog3Vector());
     Hep3Vector  tpos = _calorimeter->geomUtil().mu2eToTracker(gpos);
     fCaloTime        = cl->time();
     fCaloX           = tpos.x();
@@ -240,7 +240,7 @@ namespace mu2e {
     // if (cl == NULL)   return false;
 
     // //fill the calorimeter cluster info
-    // Hep3Vector         gpos = _calorimeter->geomUtil().diskToMu2e(cl->diskId(),cl->cog3Vector());
+    // Hep3Vector         gpos = _calorimeter->geomUtil().diskToMu2e(cl->diskID(),cl->cog3Vector());
     // Hep3Vector         tpos = _calorimeter->geomUtil().mu2eToTracker(gpos);
     // fCaloTime = cl->time();
     // fCaloX    = tpos.x();

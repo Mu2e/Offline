@@ -26,42 +26,37 @@
 #include "art_root_io/TFileDirectory.h"
 #include "messagefacility/MessageLogger/MessageLogger.h"
 #include "art/Framework/Services/Optional/RandomNumberGenerator.h"
+#include "art/Framework/Services/Registry/ServiceDefinitionMacros.h"
 
 // Mu2e includes.
-#include "CalorimeterGeom/inc/Calorimeter.hh"
-#include "ConditionsService/inc/ConditionsHandle.hh"
-#include "GlobalConstantsService/inc/GlobalConstantsHandle.hh"
-#include "GlobalConstantsService/inc/ParticleDataTable.hh"
-#include "ConditionsService/inc/CalorimeterCalibrations.hh"
-#include "ConditionsService/inc/AcceleratorParams.hh"
-#include "GeometryService/inc/GeometryService.hh"
-#include "GeometryService/inc/GeomHandle.hh"
-#include "RecoDataProducts/inc/CaloHitCollection.hh"
-#include "RecoDataProducts/inc/CaloCrystalHitCollection.hh"
-#include "SeedService/inc/SeedService.hh"
-#include "Mu2eUtilities/inc/SimParticleTimeOffset.hh"
+#include "Offline/CalorimeterGeom/inc/Calorimeter.hh"
+#include "Offline/ConditionsService/inc/ConditionsHandle.hh"
+#include "Offline/GlobalConstantsService/inc/GlobalConstantsHandle.hh"
+#include "Offline/GlobalConstantsService/inc/ParticleDataTable.hh"
+#include "Offline/ConditionsService/inc/CalorimeterCalibrations.hh"
+#include "Offline/ConditionsService/inc/AcceleratorParams.hh"
+#include "Offline/GeometryService/inc/GeometryService.hh"
+#include "Offline/GeometryService/inc/GeomHandle.hh"
+#include "Offline/RecoDataProducts/inc/CaloHit.hh"
+#include "Offline/SeedService/inc/SeedService.hh"
+#include "Offline/Mu2eUtilities/inc/SimParticleTimeOffset.hh"
 
 
-#include "RecoDataProducts/inc/CaloHitCollection.hh"
-#include "RecoDataProducts/inc/CaloRecoDigi.hh"
-#include "RecoDataProducts/inc/CaloRecoDigiCollection.hh"
-#include "RecoDataProducts/inc/CaloCluster.hh"
-#include "RecoDataProducts/inc/CaloClusterCollection.hh"
-#include "RecoDataProducts/inc/KalRepCollection.hh"
+#include "Offline/RecoDataProducts/inc/CaloRecoDigi.hh"
+#include "Offline/RecoDataProducts/inc/CaloCluster.hh"
+#include "Offline/RecoDataProducts/inc/KalRepCollection.hh"
 
-#include "MCDataProducts/inc/GenParticleCollection.hh"
-#include "MCDataProducts/inc/SimParticleCollection.hh"
-#include "MCDataProducts/inc/StatusG4.hh"
-#include "MCDataProducts/inc/StepPointMC.hh"
-#include "MCDataProducts/inc/StepPointMCCollection.hh"
-#include "MCDataProducts/inc/PtrStepPointMCVectorCollection.hh"
-#include "MCDataProducts/inc/GenId.hh"
-#include "MCDataProducts/inc/CaloDigiMCCollection.hh"
-#include "MCDataProducts/inc/CaloDigiMC.hh"
-#include "MCDataProducts/inc/PtrStepPointMCVectorCollection.hh"
+#include "Offline/MCDataProducts/inc/GenParticleCollection.hh"
+#include "Offline/MCDataProducts/inc/SimParticleCollection.hh"
+#include "Offline/MCDataProducts/inc/StatusG4.hh"
+#include "Offline/MCDataProducts/inc/StepPointMC.hh"
+#include "Offline/MCDataProducts/inc/StepPointMCCollection.hh"
+#include "Offline/MCDataProducts/inc/PtrStepPointMCVectorCollection.hh"
+#include "Offline/MCDataProducts/inc/GenId.hh"
+#include "Offline/MCDataProducts/inc/CaloHitMC.hh"
+#include "Offline/MCDataProducts/inc/PtrStepPointMCVectorCollection.hh"
 
-#include "MCDataProducts/inc/CaloHitSimPartMCCollection.hh"
-#include "DataProducts/inc/PDGCode.hh"
+#include "Offline/DataProducts/inc/PDGCode.hh"
 
 #include "CLHEP/Random/RandPoisson.h"
 #include "CLHEP/Random/RandGaussQ.h"
@@ -85,8 +80,8 @@
 #include "BTrk/KalmanTrack/KalHit.hh"
 
 //#include "TrkReco/inc/TrkStrawHit.hh"
-#include "RecoDataProducts/inc/KalRepCollection.hh"
-#include "RecoDataProducts/inc/TrkFitDirection.hh"
+#include "Offline/RecoDataProducts/inc/KalRepCollection.hh"
+#include "Offline/RecoDataProducts/inc/TrkFitDirection.hh"
 
 #include "BTrk/TrkBase/HelixParams.hh"
 #include "BTrk/ProbTools/ChisqConsistency.hh"
@@ -130,7 +125,7 @@ namespace mu2e {
   private:
 
     typedef std::vector< art::Handle<mu2e::StepPointMCCollection> > StepMCHandleVector;
-    typedef art::Ptr<mu2e::CaloCrystalHit>                          CaloCrystalHitPtr;
+    typedef art::Ptr<mu2e::CaloHit>                          CaloHitPtr;
 
     void             initVHits     ();
 
@@ -190,8 +185,7 @@ namespace mu2e {
 
     float                      _cryPosX[16384],_cryPosY[16384],_cryPosZ[16384], _cryPosR[16384];
 
-    float                      _cluEnergy[2048], _cluCrysE[2048], _cluMeanTime[2048],
-      _cluTime[2048], _cluMCTime[2048], _cluMCMeanTime[2048];
+    float                      _cluEnergy[2048], _cluCrysE[2048], _cluMeanTime[2048],_cluTime[2048], _cluMCTime[2048], _cluMCMeanTime[2048];
     float                      _cluCogX[2048],_cluCogY[2048],_cluCogZ[2048], _cluCogR[2048];
 
     int                        _cluConv[2048];
@@ -408,14 +402,14 @@ namespace mu2e {
     _toff.updateMap(event);
 
     //data about hits in the calorimeter crystals
-    art::Handle<CaloDigiMCCollection> caloDigiMCHandle;
+    art::Handle<CaloHitMCCollection> caloDigiMCHandle;
     event.getByLabel(_caloDigisModuleLabel, caloDigiMCHandle);
 
-    const     CaloDigiMCCollection*       caloDigiMCCol(0);
-    int       nCaloDigiMC(0);
+    const     CaloHitMCCollection*       caloDigiMCCol(0);
+    int       nCaloHitMC(0);
     if (caloDigiMCHandle.isValid()){
        caloDigiMCCol = caloDigiMCHandle.product();
-       nCaloDigiMC   = caloDigiMCCol->size();
+       nCaloHitMC   = caloDigiMCCol->size();
     }
 
     art::Handle<CaloRecoDigiCollection>   recoCaloDigiHandle;
@@ -430,15 +424,15 @@ namespace mu2e {
 
 
     int         nCaloCrystals(0);
-    const     CaloCrystalHitCollection*  caloCrystalHits(0);
-    art::Handle<CaloCrystalHitCollection> caloCrystalHitsHandle;
-    event.getByLabel(_caloCrystalModuleLabel, caloCrystalHitsHandle);
-    if (!caloCrystalHitsHandle.isValid()){
-      //      printf("[ReadCaloDigi::analyze] no CaloCrystalHitCollection: BAILS OUT \n");
+    const     CaloHitCollection*  CaloHits(0);
+    art::Handle<CaloHitCollection> CaloHitsHandle;
+    event.getByLabel(_caloCrystalModuleLabel, CaloHitsHandle);
+    if (!CaloHitsHandle.isValid()){
+      //      printf("[ReadCaloDigi::analyze] no CaloHitCollection: BAILS OUT \n");
       nCaloCrystals = 0;
     }else {
-     caloCrystalHits = caloCrystalHitsHandle.product();
-     nCaloCrystals   = caloCrystalHits->size();
+     CaloHits = CaloHitsHandle.product();
+     nCaloCrystals   = CaloHits->size();
     }
 
 
@@ -456,10 +450,9 @@ namespace mu2e {
 
     //Handle to VD steps
     art::ProductInstanceNameSelector selector_vdhits("virtualdetector");
-    StepMCHandleVector vdStepsHandleVec;
     art::Handle<StepPointMCCollection> *vdStepsHandle;
     const StepPointMCCollection *vdHits;
-    event.getMany(selector_vdhits, vdStepsHandleVec);
+    StepMCHandleVector vdStepsHandleVec = event.getMany<StepPointMCCollection>(selector_vdhits);
 
 
     //Handle to tracks collection
@@ -625,17 +618,17 @@ namespace mu2e {
 
     //some helper variables
     const CaloCluster                       *cluster;
-    const std::vector<CaloCrystalHitPtr>    *crystals;
-    const CaloCrystalHit                    *crystalHit;
+    const std::vector<CaloHitPtr>    *crystals;
+    const CaloHit                    *crystalHit;
     const CaloRecoDigi                      *recoDigi;
     //    const CaloDigi                          *caloDigi;
-    const CaloDigiMC                        *caloDigiMC(0);
+    const CaloHitMC                        *caloDigiMC(0);
     const SimParticle                       *sim;
 
 
     //fill DAQ histograms
     double     amplitude(0);
-    int        roId(0), crystalId(0), diskId(0);
+    int        roId(0), crystalID(0), diskId(0);
 
     int        nThresholds(10), nWords(0);
     int        disk0NCaloDigi       [10] = {0};
@@ -679,11 +672,11 @@ namespace mu2e {
     for (int i=0; i< nCaloRecoDigi; ++i){
       recoDigi   = &recoCaloDigiCol->at(i);
       //amplitude  = recoDigi->amplitude()*ADC2mV;
-      roId       = recoDigi->ROid();
-      crystalId  = _calorimeter->caloInfo().crystalByRO(roId);
-      diskId     = _calorimeter->crystal(crystalId).diskId();
+      roId       = recoDigi->SiPMID();
+      crystalID  = _calorimeter->caloIDMapper().crystalIDFromSiPMID(roId);
+      diskId     = _calorimeter->crystal(crystalID).diskID();
 
-      crystalPos = _calorimeter->geomUtil().mu2eToDiskFF(diskId,_calorimeter->crystal(crystalId).position());
+      crystalPos = _calorimeter->geomUtil().mu2eToDiskFF(diskId,_calorimeter->crystal(crystalID).position());
       radius     = sqrt(crystalPos.x()*crystalPos.x() + crystalPos.y()*crystalPos.y());
 
       if (radius < _caloRmin)               continue;
@@ -715,7 +708,7 @@ namespace mu2e {
         }
       }
 
-      nWordsCrystals[crystalId] += nWords;
+      nWordsCrystals[crystalID] += nWords;
 
       for (int k=0; k<nThresholds; ++k){
         if (amplitude > thresholds[k]){
@@ -773,8 +766,8 @@ namespace mu2e {
     for (int ic=0; ic<nCaloCrystals;++ic) {
 
 
-      CaloCrystalHit const& hit    = caloCrystalHits->at(ic);
-      CLHEP::Hep3Vector crystalPos = _calorimeter->geomUtil().mu2eToDiskFF(diskId,_calorimeter->crystal(crystalId).position());
+      CaloHit const& hit    = CaloHits->at(ic);
+      CLHEP::Hep3Vector crystalPos = _calorimeter->geomUtil().mu2eToDiskFF(diskId,_calorimeter->crystal(crystalID).position());
 
       _cryEtot             += hit.energyDep();
       _cryTime[_nHits]      = hit.time();
@@ -785,8 +778,8 @@ namespace mu2e {
       _cryPosY[_nHits]      = crystalPos.y();
       _cryPosZ[_nHits]      = crystalPos.z();
       _cryPosR[_nHits]      = sqrt( _cryPosX[_nHits]*_cryPosX[_nHits] + crystalPos.y()*crystalPos.y() );
-      _cryId[_nHits]        = hit.id();
-      _crySectionId[_nHits] = _calorimeter->crystal(hit.id()).diskId();
+      _cryId[_nHits]        = hit.crystalID();
+      _crySectionId[_nHits] = _calorimeter->crystal(hit.crystalID()).diskID();
 
       int    indexMC, nParticles(0);
       int    isConversion(0);
@@ -797,11 +790,11 @@ namespace mu2e {
       indexMC          = 0;//caloDigi.index();
 
 
-      if (nCaloDigiMC > 0) {
+      if (nCaloHitMC > 0) {
         caloDigiMC       = &caloDigiMCCol->at(indexMC);
 
-        for (int k=0; k<int(caloDigiMC->nParticles()); ++k){
-          sim =   caloDigiMC->simParticle(k).operator ->();
+        for (unsigned k=0; k<caloDigiMC->nParticles(); ++k){
+          sim =   caloDigiMC->energyDeposit(k).sim().operator ->();
           //    if ( sim->fromGenerator() ){
           const CLHEP::Hep3Vector genPos = sim->startPosition();
 
@@ -818,8 +811,8 @@ namespace mu2e {
           // }
         }//end loop on the particles inside the crystalHit
 
-        _cryMCTime    [_nHits] = caloDigiMC->timeFirst();
-        _cryMCEdep    [_nHits] = caloDigiMC->totalEDep();
+        _cryMCTime    [_nHits] = caloDigiMC->time();
+        _cryMCEdep    [_nHits] = caloDigiMC->totalEnergyDep();
       } else {
         _cryMCTime    [_nHits] = 0;
         _cryMCEdep    [_nHits] = 0;
@@ -837,7 +830,7 @@ namespace mu2e {
     for (int i=0; i<_nCluster; ++i){
       cluster  = &caloClusters->at(i);
 
-      crystals = &cluster->caloCrystalHitsPtrVector();
+      crystals = &cluster->caloHitsPtrVector();
 
       int    nCrystals = crystals->size();
       int    indexMC;
@@ -867,18 +860,18 @@ namespace mu2e {
       	    clusterTime       = crystalTime;
       	    energyMax         = eDep;
 
-	    if (nCaloDigiMC > 0) {
+	    if (nCaloHitMC > 0) {
 	      caloDigiMC        = &caloDigiMCCol->at(indexMC);
-	      clusterMCMeanTime = caloDigiMC->meanTime();
-	      clusterMCTime     = caloDigiMC->timeFirst();
+	      clusterMCMeanTime = caloDigiMC->time();
+	      clusterMCTime     = caloDigiMC->time();
 	    }
   	  }
       	}
 
-	if (nCaloDigiMC > 0) {
+	if (nCaloHitMC > 0) {
 
-	  for (int k=0; k<int(caloDigiMC->nParticles()); ++k){
-	    sim =   caloDigiMC->simParticle(k).operator ->();
+	  for (unsigned k=0; k<caloDigiMC->nParticles(); ++k){
+	    sim =   caloDigiMC->energyDeposit(k).sim().operator ->();
 	    int        pdgId       = sim->pdgId();
 	    double     ceEnergy    = 104.9;
 	    double     startEnergy = sim->startMomentum().e();
@@ -909,7 +902,7 @@ namespace mu2e {
       _cluCogX      [i]     = cluster->cog3Vector().x();
       _cluCogY      [i]     = cluster->cog3Vector().y();
       _cluCogR      [i]     = sqrt(_cluCogX[i]*_cluCogX[i] + _cluCogY[i]*_cluCogY[i]);
-      _cluCogZ      [i]     = cluster->diskId();//cog3Vector().z();
+      _cluCogZ      [i]     = cluster->diskID();//cog3Vector().z();
       _cluConv      [i]     = isConversion;
 
     }//end filling calo clusters info

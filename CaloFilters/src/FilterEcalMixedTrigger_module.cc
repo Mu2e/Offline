@@ -11,34 +11,34 @@
 #include "messagefacility/MessageLogger/MessageLogger.h"
 #include "canvas/Utilities/InputTag.h"
 
-#include "ConditionsService/inc/AcceleratorParams.hh"
-#include "ConditionsService/inc/ConditionsHandle.hh"
-#include "ConditionsService/inc/CalorimeterCalibrations.hh"
+#include "Offline/ConditionsService/inc/AcceleratorParams.hh"
+#include "Offline/ConditionsService/inc/ConditionsHandle.hh"
+#include "Offline/ConditionsService/inc/CalorimeterCalibrations.hh"
 
 //#include "MCDataProducts/inc/SimParticleCollection.hh"
 //#include "Mu2eUtilities/inc/SimParticleTimeOffset.hh"
 
-#include "CalorimeterGeom/inc/Calorimeter.hh"
+#include "Offline/CalorimeterGeom/inc/Calorimeter.hh"
 
-#include "GeometryService/inc/GeomHandle.hh"
-#include "GeometryService/inc/GeometryService.hh"
+#include "Offline/GeometryService/inc/GeomHandle.hh"
+#include "Offline/GeometryService/inc/GeometryService.hh"
 
 //#include "MCDataProducts/inc/GenParticleCollection.hh"
 //#include "DataProducts/inc/VirtualDetectorId.hh"
 
-#include "RecoDataProducts/inc/CaloTrigSeedCollection.hh"
+#include "Offline/RecoDataProducts/inc/CaloTrigSeed.hh"
 
-#include "RecoDataProducts/inc/CaloDigi.hh"
-#include "RecoDataProducts/inc/CaloDigiCollection.hh"
+#include "Offline/RecoDataProducts/inc/CaloDigi.hh"
+#include "Offline/RecoDataProducts/inc/CaloDigi.hh"
 
-#include "RecoDataProducts/inc/ComboHit.hh"
-#include "RecoDataProducts/inc/StrawHitCollection.hh"
-#include "RecoDataProducts/inc/StrawHitIndex.hh"
-#include "RecoDataProducts/inc/StrawHitPositionCollection.hh"
+#include "Offline/RecoDataProducts/inc/ComboHit.hh"
+#include "Offline/RecoDataProducts/inc/StrawHitCollection.hh"
+#include "Offline/RecoDataProducts/inc/StrawHitIndex.hh"
+#include "Offline/RecoDataProducts/inc/StrawHitPositionCollection.hh"
 
-#include "ConfigTools/inc/ConfigFileLookupPolicy.hh"
+#include "Offline/ConfigTools/inc/ConfigFileLookupPolicy.hh"
 
-#include "RecoDataProducts/inc/TriggerInfo.hh"
+#include "Offline/RecoDataProducts/inc/TriggerInfo.hh"
 
 
 // Root includes
@@ -91,7 +91,6 @@ namespace mu2e {
   private:
 
     int _diagLevel;
-    std::string    _trigPath;
 
     std::string _MVAMethodLabel;
     std::string _caloTrigSeedModuleLabel;
@@ -239,7 +238,6 @@ namespace mu2e {
   FilterEcalMixedTrigger::FilterEcalMixedTrigger(fhicl::ParameterSet const& pset):
     art::EDFilter{pset},
     _diagLevel(pset.get<int>("diagLevel",0)),
-    _trigPath(pset.get<std::string>("triggerPath")),
     _MVAMethodLabel(pset.get<std::string>("MVAMethod","BDT")), 
     _caloTrigSeedModuleLabel(pset.get<std::string>("caloTrigSeedModuleLabel")), 
     _ecalweightsfile               (pset.get<std::string>("ecalweightsfile")),
@@ -352,7 +350,7 @@ namespace mu2e {
     _peaklist.clear();
 
     for (CaloTrigSeedCollection::const_iterator seedIt = caloTrigSeeds.begin(); seedIt != caloTrigSeeds.end(); ++seedIt){
-      disk= cal.crystal((int)seedIt->crystalid()).diskId();
+      disk= cal.crystal((int)seedIt->crystalid()).diskID();
       _fdiskpeak   = (float) disk;
       _Epeak   = seedIt->epeak();
       _tpeak   = seedIt->tpeak()+_TOFF;
@@ -735,10 +733,7 @@ namespace mu2e {
 	}
 	if (_rpeak>_MVArpivot){
 	  if (_mixedMVA>_mixedMVAlowcut[peak.disk]) {
-	    //FIX ME!!!!
-	    triginfo->_triggerBits.merge(TriggerFlag::caloTrigSeed);
-	    triginfo->_triggerBits.merge(TriggerFlag::hitCluster);	    
-	    triginfo->_triggerPath = _trigPath;
+	    //FIX ME!
 	    event.put(std::move(triginfo));
     	    return true;
 	  }
@@ -747,9 +742,6 @@ namespace mu2e {
 	  mixedMVAcut=_mixedMVAcutA[peak.disk]+_mixedMVAcutB[peak.disk]*_rpeak;
 	  if (_mixedMVA>mixedMVAcut) {
 	    //FIX ME!!!!
-	    triginfo->_triggerBits.merge(TriggerFlag::caloTrigSeed);
-	    triginfo->_triggerBits.merge(TriggerFlag::hitCluster);	    
-	    triginfo->_triggerPath = _trigPath;
 	    event.put(std::move(triginfo));	    
 	    return true;
 	  }

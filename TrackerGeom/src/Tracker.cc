@@ -6,127 +6,39 @@
 // Original author Rob Kutschke
 //
 
-#include "TrackerGeom/inc/Tracker.hh"
+#include <utility>
+#include "Offline/TrackerGeom/inc/Tracker.hh"
 
 using namespace std;
 
 namespace mu2e {
 
-  Tracker::Tracker(const Tracker& other) {
-    // shallow copy
-    _name = other._name;
-    _z0 = other._z0;
-    _rOut = other._rOut;
-    _envelopeMaterial = other._envelopeMaterial;
-    _strawInnerRadius = other._strawInnerRadius;
-    _strawOuterRadius = other._strawOuterRadius;
-    _strawWallThickness = other._strawWallThickness;
-    _outerMetalThickness = other._outerMetalThickness;
-    _innerMetal1Thickness = other._innerMetal1Thickness;
-    _innerMetal2Thickness = other._innerMetal2Thickness;
-    _wireRadius = other._wireRadius;
-    _wirePlateThickness = other._wirePlateThickness;
-    _wallMaterialName = other._wallMaterialName;
-    _outerMetalMaterial = other._outerMetalMaterial;
-    _innerMetal1Material = other._innerMetal1Material;
-    _innerMetal2Material = other._innerMetal2Material;
-    _gasMaterialName = other._gasMaterialName;
-    _wireMaterialName = other._wireMaterialName;
-    _wirePlateMaterial = other._wirePlateMaterial;
-    _strawHalfLengths = other._strawHalfLengths;
-    _strawActiveHalfLengths = other._strawActiveHalfLengths;
-    _allManifolds = other._allManifolds;
-    _mother = other._mother;
-    _innerTrackerEnvelopeParams = other._innerTrackerEnvelopeParams;
-    _planeEnvelopeParams = other._planeEnvelopeParams;
-    _panelEnvelopeParams = other._panelEnvelopeParams;
-    _supportModel = other._supportModel;
-    _supportParams = other._supportParams;
-    _panelZOffset = other._panelZOffset;
-    _supportStructure = other._supportStructure;
-    _manifoldHalfLengths = other._manifoldHalfLengths;
-    _envelopeInnerRadius = other._envelopeInnerRadius;
-    _planes = other._planes;
-    _panels = other._panels;
-    _allStraws = other._allStraws;
-    _allStraws_p = other._allStraws_p;
-    _strawExists2 = other._strawExists2;
-
-    // now need to complete deep copy by
-    // reseating a lot of pointers
-
-    // update the Plane's pointers to its Panels
-    // and the Panel's pointers to its Straws
-    for(size_t iplane=0; iplane<_planes.size(); iplane++) {
-      Plane& plane = _planes[iplane];
-      plane.fillPointers(this);
-      Plane const& oplane = other._planes[iplane];
-
-      for(size_t ipanel=0; ipanel<plane._panels.size(); ipanel++) {
-	Panel panel = *( plane._panels[ipanel] );
-	Panel const& opanel = *( oplane._panels[ipanel] );
-
-	plane._panels[ipanel] = &_panels[0] + 
-	    (oplane._panels[ipanel] - &other._panels[0]);
-
-	for(size_t i=0; i<panel._straws2_p.size(); i++ ) {
-	  panel._straws2_p[i] = &_allStraws[0] + 
-	    (opanel._straws2_p[i] - &other._allStraws[0]);
-	} // straws
-
-      } // panels
-
-    } // planes
-
-
-    // reseat the non-dense Straw* array
-    for(size_t i=0; i<_allStraws_p.size(); i++ ) {
-      _allStraws_p[i] = &_allStraws[0] + 
-	      (other._allStraws_p[i] - &other._allStraws[0]);
+  Tracker::Tracker(StrawCollection const& straws, StrawProperties const& sprops, 
+      const TrackerG4InfoPtr& g4tracker, PEType const& pexists) :
+    ProditionsEntity(cxname), _strawprops(sprops), _straws(straws) , _strawindex{}, 
+    _planeExists(pexists), _g4tracker(g4tracker) {
+      // create the fast lookup map
+      for(uint16_t plane=0; plane < StrawId::_nplanes; plane++){
+      for(uint16_t panel = 0;panel < StrawId::_npanels; panel++){
+	for(uint16_t straw = 0; straw < StrawId::_nstraws; straw++){
+	  StrawId sid(plane,panel,straw);
+	  _strawindex[sid.asUint16()] = sid.uniqueStraw();
+	}
+      }
+    }
+    // build the panels from the straws
+    for(uint16_t plane=0; plane < StrawId::_nplanes; plane++){
+      for(uint16_t panel = 0;panel < StrawId::_npanels; panel++){
+	StrawId sid(plane,panel,0);
+	_panels[sid.uniquePanel()] = Panel(sid, _straws);
+      }
+    }
+    // build the planes from the panels
+    for(uint16_t plane=0; plane < StrawId::_nplanes; plane++){
+      StrawId sid(plane,0,0);
+      _planes[sid.plane()] = Plane(sid, _panels);
     }
 
-
-  }
-
-  void Tracker::fillPointers () const{
-    for ( size_t i=0; i<StrawId::_nplanes; ++i){
-      _planes[i].fillPointers(this);
-    }
-  }
-
-  TubsParams Tracker::strawOuterTubsParams(StrawId const& id) const {
-    return TubsParams ( 0., strawOuterRadius(), getStrawHalfLength(id.straw()) );
-  }
-  TubsParams Tracker::strawWallMother(StrawId const& id)      const {
-    return TubsParams( strawInnerRadius(), 
-		       strawOuterRadius(), getStrawHalfLength(id.straw()) );
-  }
-  TubsParams Tracker::strawWallOuterMetal(StrawId const& id)  const {
-    double rIn = strawOuterRadius() - outerMetalThickness();
-    return TubsParams( rIn, strawOuterRadius() , 
-		       getStrawHalfLength(id.straw()) );
-  }
-  TubsParams Tracker::strawWallInnerMetal1(StrawId const& id) const {
-    double rIn  = strawInnerRadius() + innerMetal2Thickness();
-    double rOut = rIn + innerMetal1Thickness();
-    return TubsParams (rIn,rOut,
-		       getStrawHalfLength(id.straw()));
-  }
-  TubsParams Tracker::strawWallInnerMetal2(StrawId const& id) const {
-    double rIn  = strawInnerRadius();
-    double rOut = rIn + innerMetal2Thickness();
-    return TubsParams (rIn,rOut,
-		       getStrawHalfLength(id.straw()));
-  }
-  TubsParams Tracker::strawWireMother(StrawId const& id) const {
-    return TubsParams (0.,wireRadius(),
-		       getStrawHalfLength(id.straw()));
-  }
-  TubsParams Tracker::strawWirePlate(StrawId const& id) const {
-    double rIn = wireRadius() - wirePlateThickness();
-    double rOut = wireRadius();
-    return TubsParams (rIn,rOut,
-		       getStrawHalfLength(id.straw()));
   }
 
 } // namespace mu2e
