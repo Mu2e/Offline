@@ -1,21 +1,20 @@
 #include "cetlib_except/exception.h"
 
-#include "DbTables/inc/DbTableFactory.hh"
-#include "DbTables/inc/TstCalib1.hh"
-#include "DbTables/inc/TstCalib2.hh"
-#include "DbTables/inc/TstCalib3.hh"
-#include "DbTables/inc/TrkDelayPanel.hh"
-#include "DbTables/inc/TrkPreampRStraw.hh"
-#include "DbTables/inc/TrkPreampStraw.hh"
-#include "DbTables/inc/TrkThresholdRStraw.hh"
-#include "DbTables/inc/TrkAlignElement.hh"
-#include "DbTables/inc/TrkAlignStraw.hh"
-#include "DbTables/inc/TrkElementStatus.hh"
-#include "DbTables/inc/AnaTrkQualDb.hh"
-#include "DbTables/inc/CalRoIDMapDIRACToOffline.hh"
-#include "DbTables/inc/CalRoIDMapOfflineToDIRAC.hh"
+#include "Offline/DbTables/inc/DbTableFactory.hh"
+#include "Offline/DbTables/inc/TstCalib1.hh"
+#include "Offline/DbTables/inc/TstCalib2.hh"
+#include "Offline/DbTables/inc/TstCalib3.hh"
+#include "Offline/DbTables/inc/TrkDelayPanel.hh"
+#include "Offline/DbTables/inc/TrkDelayRStraw.hh"
+#include "Offline/DbTables/inc/TrkPreampStraw.hh"
+#include "Offline/DbTables/inc/TrkAlignElement.hh"
+#include "Offline/DbTables/inc/TrkAlignStraw.hh"
+#include "Offline/DbTables/inc/TrkElementStatus.hh"
+#include "Offline/DbTables/inc/AnaTrkQualDb.hh"
+#include "Offline/DbTables/inc/CalRoIDMapDIRACToOffline.hh"
+#include "Offline/DbTables/inc/CalRoIDMapOfflineToDIRAC.hh"
 
-#include "DbTables/inc/SimEfficiencies.hh"
+#include "Offline/DbTables/inc/SimEfficiencies.hh"
 
 mu2e::DbTable::ptr_t mu2e::DbTableFactory::newTable(std::string const& name) {
   if (name=="TstCalib1") {
@@ -26,12 +25,10 @@ mu2e::DbTable::ptr_t mu2e::DbTableFactory::newTable(std::string const& name) {
     return std::shared_ptr<mu2e::DbTable>(new mu2e::TstCalib3());
   } else if (name=="TrkDelayPanel") {
     return std::shared_ptr<mu2e::DbTable>(new mu2e::TrkDelayPanel());
-  } else if (name=="TrkPreampRStraw") {
-    return std::shared_ptr<mu2e::DbTable>(new mu2e::TrkPreampRStraw());
+  } else if (name=="TrkDelayRStraw") {
+    return std::shared_ptr<mu2e::DbTable>(new mu2e::TrkDelayRStraw());
   } else if (name=="TrkPreampStraw") {
     return std::shared_ptr<mu2e::DbTable>(new mu2e::TrkPreampStraw());
-  } else if (name=="TrkThresholdRStraw") {
-    return std::shared_ptr<mu2e::DbTable>(new mu2e::TrkThresholdRStraw());
   } else if (name=="TrkAlignTracker") {
     return std::shared_ptr<mu2e::DbTable>(new mu2e::TrkAlignTracker());
   } else if (name=="TrkAlignPlane") {

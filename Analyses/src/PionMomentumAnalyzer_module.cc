@@ -15,10 +15,10 @@
 #include "art_root_io/TFileService.h"
 #include "art/Framework/Services/Registry/ServiceHandle.h"
 
-#include "MCDataProducts/inc/SimParticleCollection.hh"
-#include "GlobalConstantsService/inc/GlobalConstantsHandle.hh"
-#include "GlobalConstantsService/inc/ParticleDataTable.hh"
-#include "Mu2eUtilities/inc/SimParticleCollectionPrinter.hh"
+#include "Offline/MCDataProducts/inc/SimParticleCollection.hh"
+#include "Offline/GlobalConstantsService/inc/GlobalConstantsHandle.hh"
+#include "Offline/GlobalConstantsService/inc/ParticleDataTable.hh"
+#include "Offline/Mu2eUtilities/inc/SimParticleCollectionPrinter.hh"
 
 #include "TH1.h"
 #include "TH2.h"

@@ -51,7 +51,7 @@
 #include "TTree.h"
 #include "TFile.h"
 
-#include "ConfigTools/inc/ConfigFileLookupPolicy.hh"
+#include "Offline/ConfigTools/inc/ConfigFileLookupPolicy.hh"
 
 namespace mu2e {
 

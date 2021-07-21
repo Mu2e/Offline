@@ -16,18 +16,18 @@
 // ... libRIO
 #include <TFile.h>
 //Calorimeter:
-#include "GeometryService/inc/GeomHandle.hh"
-#include "CalorimeterGeom/inc/CaloGeomUtil.hh"
-#include "CalorimeterGeom/inc/CaloInfo.hh"
-#include "CalorimeterGeom/inc/Calorimeter.hh"
-#include "CalorimeterGeom/inc/DiskCalorimeter.hh"
-#include "CalorimeterGeom/inc/DiskGeomInfo.hh"
-#include "CalorimeterGeom/inc/Disk.hh"
+#include "Offline/GeometryService/inc/GeomHandle.hh"
+#include "Offline/CalorimeterGeom/inc/CaloGeomUtil.hh"
+#include "Offline/CalorimeterGeom/inc/CaloInfo.hh"
+#include "Offline/CalorimeterGeom/inc/Calorimeter.hh"
+#include "Offline/CalorimeterGeom/inc/DiskCalorimeter.hh"
+#include "Offline/CalorimeterGeom/inc/DiskGeomInfo.hh"
+#include "Offline/CalorimeterGeom/inc/Disk.hh"
 //TEveMu2e:
-#include "TEveEventDisplay/src/TEveMu2e_base_classes/TEveMu2e2DProjection.h"
-#include "TEveEventDisplay/src/dict_classes/GeomUtils.h"
+#include "Offline/TEveEventDisplay/src/TEveMu2e_base_classes/TEveMu2e2DProjection.h"
+#include "Offline/TEveEventDisplay/src/dict_classes/GeomUtils.h"
 //Mu2e:
-#include "GeometryService/inc/DetectorSystem.hh"
+#include "Offline/GeometryService/inc/DetectorSystem.hh"
 namespace mu2e{
 	class TEveMu2eCalorimeter
 	{

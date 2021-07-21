@@ -6,8 +6,8 @@
 // inside of BTrk, there should only ever be one made
 //
 
-#include "TrackerConditions/inc/Mu2eMaterial.hh"
-#include "TrackerConfig/inc/Mu2eMaterialConfig.hh"
+#include "Offline/TrackerConditions/inc/Mu2eMaterial.hh"
+#include "Offline/TrackerConfig/inc/Mu2eMaterialConfig.hh"
 
 namespace mu2e {
 

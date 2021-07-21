@@ -1,11 +1,11 @@
 // Andrei Gaponenko, 2012
 
-#include "ExtinctionMonitorFNAL/Utilities/inc/EMFRandomizationParticleDefs.hh"
+#include "Offline/ExtinctionMonitorFNAL/Utilities/inc/EMFRandomizationParticleDefs.hh"
 
 #include <cmath>
 #include <cstdlib>
 
-#include "ExtinctionMonitorFNAL/Utilities/inc/getCharge.hh"
+#include "Offline/ExtinctionMonitorFNAL/Utilities/inc/getCharge.hh"
 
 namespace mu2e {
   namespace ExtMonFNAL {

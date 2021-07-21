@@ -6,9 +6,9 @@
 //
 
 // Mu2e includes
-#include "TrackerConditions/inc/TrackerStatus.hh"
-#include "TrackerConfig/inc/TrackerStatusConfig.hh"
-#include "DbTables/inc/TrkElementStatus.hh"
+#include "Offline/TrackerConditions/inc/TrackerStatus.hh"
+#include "Offline/TrackerConfig/inc/TrackerStatusConfig.hh"
+#include "Offline/DbTables/inc/TrkElementStatus.hh"
 
 // C++ includes
 #include <set>

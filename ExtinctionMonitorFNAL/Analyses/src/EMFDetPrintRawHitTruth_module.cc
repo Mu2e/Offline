@@ -2,13 +2,13 @@
 //
 // Andrei Gaponenko, 2012
 
-#include "RecoDataProducts/inc/ExtMonFNALRawHit.hh"
-#include "RecoDataProducts/inc/ExtMonFNALRawHitCollection.hh"
-#include "MCDataProducts/inc/SimParticle.hh"
-#include "MCDataProducts/inc/ExtMonFNALHitTruthAssn.hh"
-#include "MCDataProducts/inc/MARSInfo.hh"
-#include "ExtinctionMonitorFNAL/Geometry/inc/ExtMonFNAL.hh"
-#include "GeometryService/inc/GeomHandle.hh"
+#include "Offline/RecoDataProducts/inc/ExtMonFNALRawHit.hh"
+#include "Offline/RecoDataProducts/inc/ExtMonFNALRawHitCollection.hh"
+#include "Offline/MCDataProducts/inc/SimParticle.hh"
+#include "Offline/MCDataProducts/inc/ExtMonFNALHitTruthAssn.hh"
+#include "Offline/MCDataProducts/inc/MARSInfo.hh"
+#include "Offline/ExtinctionMonitorFNAL/Geometry/inc/ExtMonFNAL.hh"
+#include "Offline/GeometryService/inc/GeomHandle.hh"
 
 #include "fhiclcpp/ParameterSet.h"
 #include "art/Framework/Core/EDAnalyzer.h"

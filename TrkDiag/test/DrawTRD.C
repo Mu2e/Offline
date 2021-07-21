@@ -1,5 +1,5 @@
 #include "LoadChain.C" 
-#include "TrkDiag/test/TrkRecoDiag.C+"
+#include "Offline/TrkDiag/test/TrkRecoDiag.C+"
 #include "TCanvas.h"
 #include <string>
 void DrawTRD(const char* dir){

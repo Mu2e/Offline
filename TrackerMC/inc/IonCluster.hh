@@ -1,7 +1,7 @@
 #ifndef TrackerMC_IonCluster_hh
 #define TrackerMC_IonCluster_hh
-#include "DataProducts/inc/XYZVec.hh"
-#include "TrackerMC/inc/StrawPosition.hh"
+#include "Offline/DataProducts/inc/XYZVec.hh"
+#include "Offline/TrackerMC/inc/StrawPosition.hh"
 #include "Rtypes.h"
 namespace mu2e {
   namespace TrackerMC {

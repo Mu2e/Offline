@@ -1,9 +1,9 @@
 // Cache values of masses by PDG Id to reduce expensive
 // lookups in the particle data table.
 //
-#include "GlobalConstantsService/inc/MassCache.hh"
-#include "GlobalConstantsService/inc/GlobalConstantsHandle.hh"
-#include "GlobalConstantsService/inc/ParticleDataTable.hh"
+#include "Offline/GlobalConstantsService/inc/MassCache.hh"
+#include "Offline/GlobalConstantsService/inc/GlobalConstantsHandle.hh"
+#include "Offline/GlobalConstantsService/inc/ParticleDataTable.hh"
 
 #include "CLHEP/Units/PhysicalConstants.h"
 

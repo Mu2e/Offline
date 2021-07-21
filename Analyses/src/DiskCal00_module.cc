@@ -20,10 +20,10 @@
 #include "art/Framework/Core/ModuleMacros.h"
 
 // Mu2e includes.
-#include "CalorimeterGeom/inc/DiskCalorimeter.hh"
-#include "GeometryService/inc/GeomHandle.hh"
-#include "RecoDataProducts/inc/CaloHit.hh"
-#include "MCDataProducts/inc/PtrStepPointMCVectorCollection.hh"
+#include "Offline/CalorimeterGeom/inc/DiskCalorimeter.hh"
+#include "Offline/GeometryService/inc/GeomHandle.hh"
+#include "Offline/RecoDataProducts/inc/CaloHit.hh"
+#include "Offline/MCDataProducts/inc/PtrStepPointMCVectorCollection.hh"
 
 // Root includes.
 #include "TH1F.h"

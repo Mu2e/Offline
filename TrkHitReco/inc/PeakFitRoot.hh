@@ -4,9 +4,9 @@
 // base class for controlling peak fits
     //  Virtual class providing structure for extracting charge from ADC waveforms
 //
-#include "TrkHitReco/inc/PeakFit.hh"
-#include "TrkHitReco/inc/PeakFitFunction.hh"
-#include "TrackerConditions/inc/StrawResponse.hh"
+#include "Offline/TrkHitReco/inc/PeakFit.hh"
+#include "Offline/TrkHitReco/inc/PeakFitFunction.hh"
+#include "Offline/TrackerConditions/inc/StrawResponse.hh"
 #include <string>
 
 class TGraphErrors;

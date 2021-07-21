@@ -5,7 +5,7 @@
 // collection of AvikPIDNewProduct objects.
 //
 #include <vector>
-#include "RecoDataProducts/inc/AvikPIDNewProduct.hh"
+#include "Offline/RecoDataProducts/inc/AvikPIDNewProduct.hh"
 
 namespace mu2e {
    typedef std::vector<mu2e::AvikPIDNewProduct> AvikPIDNewProductCollection;

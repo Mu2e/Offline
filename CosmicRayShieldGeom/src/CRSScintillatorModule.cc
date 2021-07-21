@@ -8,7 +8,7 @@
 
 #include <sstream>
 
-#include "CosmicRayShieldGeom/inc/CRSScintillatorModule.hh"
+#include "Offline/CosmicRayShieldGeom/inc/CRSScintillatorModule.hh"
 
 using namespace std;
 

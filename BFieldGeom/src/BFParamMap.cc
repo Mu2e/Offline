@@ -14,7 +14,7 @@
 #include "messagefacility/MessageLogger/MessageLogger.h"
 
 // Mu2e includes
-#include "BFieldGeom/inc/BFParamMap.hh"
+#include "Offline/BFieldGeom/inc/BFParamMap.hh"
 
 // Other includes
 #include <gsl/gsl_sf_bessel.h>

@@ -81,11 +81,11 @@
 #include "canvas/Persistency/Common/Ptr.h"
 #include "cetlib/map_vector.h"
 
-#include "MCDataProducts/inc/ProcessCode.hh"
-#include "MCDataProducts/inc/SimParticleCollection.hh"
-#include "DataProducts/inc/VirtualDetectorId.hh"
-#include "DataProducts/inc/StrawId.hh"
-#include "DataProducts/inc/CRSScintillatorBarIndex.hh"
+#include "Offline/MCDataProducts/inc/ProcessCode.hh"
+#include "Offline/MCDataProducts/inc/SimParticleCollection.hh"
+#include "Offline/DataProducts/inc/VirtualDetectorId.hh"
+#include "Offline/DataProducts/inc/StrawId.hh"
+#include "Offline/DataProducts/inc/CRSScintillatorBarIndex.hh"
 
 #include "CLHEP/Vector/ThreeVector.h"
 

@@ -18,9 +18,9 @@
 
 #include "art/Framework/Principal/Handle.h"
 
-#include "MCDataProducts/inc/SimParticle.hh"
-#include "MCDataProducts/inc/ProcessCode.hh"
-#include "DataProducts/inc/PDGCode.hh"
+#include "Offline/MCDataProducts/inc/SimParticle.hh"
+#include "Offline/MCDataProducts/inc/ProcessCode.hh"
+#include "Offline/DataProducts/inc/PDGCode.hh"
 
 namespace mu2e {
 

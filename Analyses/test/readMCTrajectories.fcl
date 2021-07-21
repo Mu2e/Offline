@@ -2,8 +2,8 @@
 # Look at the MCTrajectory Objects.
 #
 
-#include "fcl/minimalMessageService.fcl"
-#include "fcl/standardProducers.fcl"
+#include "Offline/fcl/minimalMessageService.fcl"
+#include "Offline/fcl/standardProducers.fcl"
 
 # Give this job a name.
 process_name : ReadMCTrajectories
@@ -21,9 +21,9 @@ services :
   message      : @local::default_message
   TFileService : { fileName : "readMCTrajectories.root" }
 
-  GeometryService        : { inputFile      : "Mu2eG4/geom/geom_common.txt"       }
-  ConditionsService      : { conditionsfile : "ConditionsService/data/conditions_01.txt" }
-  GlobalConstantsService : { inputFile : "GlobalConstantsService/data/globalConstants_01.txt" }
+  GeometryService        : { inputFile      : "Offline/Mu2eG4/geom/geom_common.txt"       }
+  ConditionsService      : { conditionsfile : "Offline/ConditionsService/data/conditions_01.txt" }
+  GlobalConstantsService : { inputFile : "Offline/GlobalConstantsService/data/globalConstants_01.txt" }
 
 }
 

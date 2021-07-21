@@ -14,11 +14,11 @@
 #include "art/Framework/Principal/Event.h"
 #include "art/Framework/Core/ModuleMacros.h"
 
-#include "RecoDataProducts/inc/ExtMonFNALRawHitCollection.hh"
-#include "ExtinctionMonitorFNAL/Analyses/inc/EMFRawHitHistograms.hh"
+#include "Offline/RecoDataProducts/inc/ExtMonFNALRawHitCollection.hh"
+#include "Offline/ExtinctionMonitorFNAL/Analyses/inc/EMFRawHitHistograms.hh"
 
-#include "ExtinctionMonitorFNAL/Geometry/inc/ExtMonFNAL.hh"
-#include "GeometryService/inc/GeomHandle.hh"
+#include "Offline/ExtinctionMonitorFNAL/Geometry/inc/ExtMonFNAL.hh"
+#include "Offline/GeometryService/inc/GeomHandle.hh"
 
 namespace mu2e {
 

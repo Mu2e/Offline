@@ -13,7 +13,7 @@
 #include "CLHEP/Vector/ThreeVector.h"
 #include "CLHEP/Units/PhysicalConstants.h"
 
-#include "GeomPrimitives/inc/TubsParams.hh"
+#include "Offline/GeomPrimitives/inc/TubsParams.hh"
 
 
 namespace mu2e {

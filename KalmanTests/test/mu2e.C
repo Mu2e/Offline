@@ -16,7 +16,7 @@
 #include <iostream>
 #include <math.h>
 #include <vector>
-#include "KalmanTests/test/DIOCZ.h"
+#include "Offline/KalmanTests/test/DIOCZ.h"
 
 using namespace std;
 

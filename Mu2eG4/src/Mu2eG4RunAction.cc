@@ -6,13 +6,13 @@
 //
 
 //Mu2e includes
-#include "Mu2eG4/inc/Mu2eG4RunAction.hh"
-#include "Mu2eG4/inc/PhysicalVolumeHelper.hh"
-#include "Mu2eG4/inc/PhysicsProcessInfo.hh"
-#include "Mu2eG4/inc/Mu2eG4TrackingAction.hh"
-#include "Mu2eG4/inc/Mu2eG4SteppingAction.hh"
-#include "Mu2eG4/inc/SensitiveDetectorHelper.hh"
-#include "Mu2eG4/inc/SensitiveDetectorName.hh"
+#include "Offline/Mu2eG4/inc/Mu2eG4RunAction.hh"
+#include "Offline/Mu2eG4/inc/PhysicalVolumeHelper.hh"
+#include "Offline/Mu2eG4/inc/PhysicsProcessInfo.hh"
+#include "Offline/Mu2eG4/inc/Mu2eG4TrackingAction.hh"
+#include "Offline/Mu2eG4/inc/Mu2eG4SteppingAction.hh"
+#include "Offline/Mu2eG4/inc/SensitiveDetectorHelper.hh"
+#include "Offline/Mu2eG4/inc/SensitiveDetectorName.hh"
 
 //G4 includes
 #include "Geant4/G4RunManager.hh"

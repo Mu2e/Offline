@@ -4,7 +4,7 @@
 // Original author K. Genser based on the "standard particle Gun"
 // added ParticleGun process
 
-#include "Mu2eG4/g4study/g4studyParticleGun.txt"
+#include "Offline/Mu2eG4/g4study/g4studyParticleGun.txt"
 
 // position
 vector<double> particleGun.point = {0., 0., 0.};

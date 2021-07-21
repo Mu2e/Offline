@@ -5,10 +5,10 @@
 // Date: 2019/07/09
 //
 
-#include "Mu2eG4/inc/Mu2eG4PerThreadStorage.hh"
-#include "Mu2eG4/inc/SimParticleHelper.hh"
-#include "Mu2eG4/inc/SimParticlePrimaryHelper.hh"
-#include "MCDataProducts/inc/StepInstanceName.hh"
+#include "Offline/Mu2eG4/inc/Mu2eG4PerThreadStorage.hh"
+#include "Offline/Mu2eG4/inc/SimParticleHelper.hh"
+#include "Offline/Mu2eG4/inc/SimParticlePrimaryHelper.hh"
+#include "Offline/MCDataProducts/inc/StepInstanceName.hh"
 
 namespace mu2e {
 

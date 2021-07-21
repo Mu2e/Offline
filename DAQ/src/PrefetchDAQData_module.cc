@@ -7,8 +7,8 @@
 #include "art_root_io/TFileService.h"
 
 // data
-#include "RecoDataProducts/inc/CaloDigi.hh"
-#include "RecoDataProducts/inc/StrawDigi.hh"
+#include "Offline/RecoDataProducts/inc/CaloDigi.hh"
+#include "Offline/RecoDataProducts/inc/StrawDigi.hh"
 
 // DAQ data
 //#include "mu2e-artdaq-core/Overlays/FragmentType.hh"

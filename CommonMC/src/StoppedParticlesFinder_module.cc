@@ -27,11 +27,11 @@
 #include "art_root_io/TFileService.h"
 
 // Mu2e includes.
-#include "DataProducts/inc/PDGCode.hh"
-#include "MCDataProducts/inc/SimParticleCollection.hh"
-#include "MCDataProducts/inc/SimParticlePtrCollection.hh"
-#include "MCDataProducts/inc/PhysicalVolumeInfoMultiCollection.hh"
-#include "Mu2eUtilities/inc/PhysicalVolumeMultiHelper.hh"
+#include "Offline/DataProducts/inc/PDGCode.hh"
+#include "Offline/MCDataProducts/inc/SimParticleCollection.hh"
+#include "Offline/MCDataProducts/inc/SimParticlePtrCollection.hh"
+#include "Offline/MCDataProducts/inc/PhysicalVolumeInfoMultiCollection.hh"
+#include "Offline/Mu2eUtilities/inc/PhysicalVolumeMultiHelper.hh"
 
 #include "TH1D.h"
 

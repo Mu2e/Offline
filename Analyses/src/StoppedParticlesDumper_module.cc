@@ -22,14 +22,14 @@
 #include "canvas/Utilities/InputTag.h"
 #include "art_root_io/TFileService.h"
 
-#include "MCDataProducts/inc/SimParticleCollection.hh"
-#include "MCDataProducts/inc/SimParticlePtrCollection.hh"
-#include "MCDataProducts/inc/StepPointMC.hh"
-#include "MCDataProducts/inc/StepPointMCCollection.hh"
-#include "Mu2eUtilities/inc/SimParticleGetTau.hh"
+#include "Offline/MCDataProducts/inc/SimParticleCollection.hh"
+#include "Offline/MCDataProducts/inc/SimParticlePtrCollection.hh"
+#include "Offline/MCDataProducts/inc/StepPointMC.hh"
+#include "Offline/MCDataProducts/inc/StepPointMCCollection.hh"
+#include "Offline/Mu2eUtilities/inc/SimParticleGetTau.hh"
 
-#include "GlobalConstantsService/inc/GlobalConstantsHandle.hh"
-#include "GlobalConstantsService/inc/PhysicsParams.hh"
+#include "Offline/GlobalConstantsService/inc/GlobalConstantsHandle.hh"
+#include "Offline/GlobalConstantsService/inc/PhysicsParams.hh"
 
 #include "TTree.h"
 
@@ -50,21 +50,26 @@ namespace mu2e {
       float z;
       float t;
       float tau; // proper time, for stopped pion weights
+      int pdg;
+      int origin;
+      int term;
 
-      StopInfo() : x(), y(), z(), t(), tau() {}
+      StopInfo() : x(), y(), z(), t(), tau(), pdg(0), origin(0), term(0) {}
 
       StopInfo(const art::Ptr<SimParticle>& p, const VspMC& spMCcolls, float tt)
         : x(p->endPosition().x())
         , y(p->endPosition().y())
         , z(p->endPosition().z())
         , t(p->endGlobalTime())
-        , tau(tt)
-      {
-        if(!p->endDefined()) {
-          throw cet::exception("BADINPUTS")
-            <<"StoppedParticlesDumper: input SimParticle does not have end defined!\n";
-        }
-      }
+	, tau(tt)
+	, pdg(p->pdgId())
+	, origin(p->creationCode())
+	, term(p->stoppingCode()) {
+	  if(!p->endDefined()) {
+	    throw cet::exception("BADINPUTS")
+	      <<"StoppedParticlesDumper: input SimParticle does not have end defined!\n";
+	  }
+	}
     };
 
   }// namespace
@@ -101,6 +106,12 @@ namespace mu2e {
           false
           };
 
+      fhicl::Atom<bool> writeCodes {
+        Name("writeParticleCodes"),
+          Comment("Write out particle codes"),
+          false
+          };
+
       fhicl::Sequence<int> decayOffPDGCodes {
         Name("decayOffPDGCodes"),
           Comment("A list of PDG IDs of particles that had their decay process turned off during\n"
@@ -125,7 +136,7 @@ namespace mu2e {
   private:
     bool dumpSimParticleLeaves_;
     art::InputTag input_;
-    bool writeProperTime_;
+    bool writeProperTime_, writeCodes_;
     std::vector<art::InputTag> hitColls_;
 
     std::vector<int> decayOffCodes_;
@@ -143,12 +154,12 @@ namespace mu2e {
     dumpSimParticleLeaves_(conf().dumpSimParticleLeaves()),
     input_(conf().inputCollection()),
     writeProperTime_(conf().writeProperTime()),
+    writeCodes_(conf().writeCodes()),
     nt_()
   {
     if(writeProperTime_) {
       hitColls_ =  conf().hitCollections();
       decayOffCodes_ = conf().decayOffPDGCodes();
-
       // must sort to use binary_search in SimParticleGetTau
       std::sort(decayOffCodes_.begin(), decayOffCodes_.end());
     }
@@ -158,9 +169,13 @@ namespace mu2e {
   void StoppedParticlesDumper::beginJob() {
     art::ServiceHandle<art::TFileService> tfs;
     std::string branchDesc("x/F:y/F:z/F:time/F");
-    if(writeProperTime_) {
+    if(writeProperTime_ || writeCodes_) {
       branchDesc += ":tauNormalized/F";
     }
+    if(writeCodes_){
+      branchDesc += ":pdg/I:origin/I:term/I";
+    }
+      
     nt_ = tfs->make<TTree>( "stops", "Stopped particles ntuple");
     nt_->Branch("stops", &data_, branchDesc.c_str());
   }

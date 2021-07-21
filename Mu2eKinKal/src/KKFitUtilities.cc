@@ -1,7 +1,7 @@
-#include "Mu2eKinKal/inc/KKFitUtilities.hh"
-#include "RecoDataProducts/inc/ComboHit.hh"
-#include "TrackerConditions/inc/StrawResponse.hh"
-#include "TrackerGeom/inc/Straw.hh"
+#include "Offline/Mu2eKinKal/inc/KKFitUtilities.hh"
+#include "Offline/RecoDataProducts/inc/ComboHit.hh"
+#include "Offline/TrackerConditions/inc/StrawResponse.hh"
+#include "Offline/TrackerGeom/inc/Straw.hh"
 namespace mu2e {
   namespace Mu2eKinKal {
     KinKal::Line hitLine(ComboHit const& ch, Straw const& straw,StrawResponse const& strawresponse) {

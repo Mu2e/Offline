@@ -3,8 +3,8 @@
 //
 // Struct describing displacements of the straw and wire ends
 //
-#include "DataProducts/inc/StrawEnd.hh"
-#include "DataProducts/inc/StrawId.hh"
+#include "Offline/DataProducts/inc/StrawEnd.hh"
+#include "Offline/DataProducts/inc/StrawId.hh"
 #include "CLHEP/Vector/ThreeVector.h"
 
 namespace mu2e {

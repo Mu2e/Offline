@@ -15,10 +15,10 @@
 #include "cetlib_except/exception.h"
 
 // Mu2e includes
-#include "Mu2eG4/inc/constructDummyStoppingTarget.hh"
-#include "Mu2eG4/inc/MaterialFinder.hh"
-#include "ConfigTools/inc/SimpleConfig.hh"
-#include "Mu2eG4/inc/nestTubs.hh"
+#include "Offline/Mu2eG4/inc/constructDummyStoppingTarget.hh"
+#include "Offline/Mu2eG4/inc/MaterialFinder.hh"
+#include "Offline/ConfigTools/inc/SimpleConfig.hh"
+#include "Offline/Mu2eG4/inc/nestTubs.hh"
 
 // G4 includes
 #include "Geant4/G4Material.hh"

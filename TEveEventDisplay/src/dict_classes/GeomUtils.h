@@ -1,12 +1,12 @@
 #ifndef GeomUtils_h
 #define GeomUtils_h
 // Math
-#include "DataProducts/inc/XYZVec.hh"
-#include "ConfigTools/inc/SimpleConfig.hh"
-#include "GeometryService/inc/GeomHandle.hh"
-#include "CalorimeterGeom/inc/Calorimeter.hh"
-#include "TrackerGeom/inc/Tracker.hh"
-#include "GeometryService/inc/DetectorSystem.hh"
+#include "Offline/DataProducts/inc/XYZVec.hh"
+#include "Offline/ConfigTools/inc/SimpleConfig.hh"
+#include "Offline/GeometryService/inc/GeomHandle.hh"
+#include "Offline/CalorimeterGeom/inc/Calorimeter.hh"
+#include "Offline/TrackerGeom/inc/Tracker.hh"
+#include "Offline/GeometryService/inc/DetectorSystem.hh"
 //C++
 #include <vector>
 using namespace CLHEP;

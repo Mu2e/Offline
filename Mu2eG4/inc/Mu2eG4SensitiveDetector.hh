@@ -8,8 +8,8 @@
 //
 
 // Mu2e includes
-#include "Mu2eG4/inc/EventNumberList.hh"
-#include "MCDataProducts/inc/StepPointMCCollection.hh"
+#include "Offline/Mu2eG4/inc/EventNumberList.hh"
+#include "Offline/MCDataProducts/inc/StepPointMCCollection.hh"
 
 // G4 includes
 #include "Geant4/G4VSensitiveDetector.hh"

@@ -6,10 +6,10 @@
 #include "CLHEP/Vector/ThreeVector.h"
 #include "CLHEP/Units/SystemOfUnits.h"
 
-#include "GeometryService/inc/PSEnclosureMaker.hh"
-#include "ProductionSolenoidGeom/inc/PSEnclosure.hh"
+#include "Offline/GeometryService/inc/PSEnclosureMaker.hh"
+#include "Offline/ProductionSolenoidGeom/inc/PSEnclosure.hh"
 
-#include "ConfigTools/inc/SimpleConfig.hh"
+#include "Offline/ConfigTools/inc/SimpleConfig.hh"
 
 namespace mu2e {
 

@@ -12,33 +12,33 @@
 #include <cmath>
 
 //Mu2e Data Prods:
-#include "MCDataProducts/inc/ProtonBunchIntensity.hh"
-#include "MCDataProducts/inc/EventWeight.hh"
-#include "RecoDataProducts/inc/StrawHitFlagCollection.hh"
+#include "Offline/MCDataProducts/inc/ProtonBunchIntensity.hh"
+#include "Offline/MCDataProducts/inc/EventWeight.hh"
+#include "Offline/RecoDataProducts/inc/StrawHitFlagCollection.hh"
 
-#include "RecoDataProducts/inc/StrawHit.hh"
-#include "RecoDataProducts/inc/StrawHitFlag.hh"
-#include "RecoDataProducts/inc/ComboHit.hh"
+#include "Offline/RecoDataProducts/inc/StrawHit.hh"
+#include "Offline/RecoDataProducts/inc/StrawHitFlag.hh"
+#include "Offline/RecoDataProducts/inc/ComboHit.hh"
 
-#include "MCDataProducts/inc/StrawDigiMC.hh"
-#include "MCDataProducts/inc/MCRelationship.hh"
+#include "Offline/MCDataProducts/inc/StrawDigiMC.hh"
+#include "Offline/MCDataProducts/inc/MCRelationship.hh"
 // Mu2e Utilities
-#include "GeometryService/inc/GeomHandle.hh"
-#include "Mu2eUtilities/inc/SimParticleTimeOffset.hh"
-#include "TrkDiag/inc/TrkMCTools.hh"
-#include "Mu2eUtilities/inc/ParametricFit.hh"
+#include "Offline/GeometryService/inc/GeomHandle.hh"
+#include "Offline/Mu2eUtilities/inc/SimParticleTimeOffset.hh"
+#include "Offline/TrkDiag/inc/TrkMCTools.hh"
+#include "Offline/Mu2eUtilities/inc/ParametricFit.hh"
 
 //Mu2e Tracker Geom:
-#include "TrackerGeom/inc/Tracker.hh"
-#include "TrackerGeom/inc/Straw.hh"
+#include "Offline/TrackerGeom/inc/Tracker.hh"
+#include "Offline/TrackerGeom/inc/Straw.hh"
 
 // Mu2e diagnostics
-#include "TrkDiag/inc/ComboHitInfo.hh"
-#include "GeneralUtilities/inc/ParameterSetHelpers.hh"
+#include "Offline/TrkDiag/inc/ComboHitInfo.hh"
+#include "Offline/GeneralUtilities/inc/ParameterSetHelpers.hh"
 
 //Cosmics:
-#include "RecoDataProducts/inc/CosmicTrack.hh"
-#include "RecoDataProducts/inc/CosmicTrackSeed.hh"
+#include "Offline/RecoDataProducts/inc/CosmicTrack.hh"
+#include "Offline/RecoDataProducts/inc/CosmicTrackSeed.hh"
 
 // Framework includes.
 #include "art/Framework/Core/EDAnalyzer.h"

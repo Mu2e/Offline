@@ -3,12 +3,12 @@
 #  about the FHiCL language, please look at
 #  cdcvs.fnal.gov/redmine/documents/327 , the "FHiCL Quick Start Guide"
 
-#include "fcl/minimalMessageService.fcl"
-#include "fcl/standardServices.fcl"
-#include "fcl/standardProducers.fcl"
-#include "TrkDiag/fcl/prolog.fcl"
+#include "Offline/fcl/minimalMessageService.fcl"
+#include "Offline/fcl/standardServices.fcl"
+#include "Offline/fcl/standardProducers.fcl"
+#include "Offline/TrkDiag/fcl/prolog.fcl"
 
-#include "Trigger/fcl/prolog_trigger.fcl"
+#include "Offline/Trigger/fcl/prolog_trigger.fcl"
 
 
 events_to_generate: 5

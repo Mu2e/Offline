@@ -3,28 +3,28 @@
 //Date: August 2019
 //Author: S. Middletin
 //Purpose: Add in drift fit functionality in seperate file for ease
-#include "TrackerConditions/inc/StrawDrift.hh"
-#include "RecoDataProducts/inc/ComboHit.hh"
-#include "DataProducts/inc/XYZVec.hh"
-#include "TrackerGeom/inc/Tracker.hh"
-#include "RecoDataProducts/inc/CosmicTrack.hh"
-#include "RecoDataProducts/inc/CosmicTrackSeed.hh"
-#include "TrackerConditions/inc/StrawDrift.hh"
+#include "Offline/TrackerConditions/inc/StrawDrift.hh"
+#include "Offline/RecoDataProducts/inc/ComboHit.hh"
+#include "Offline/DataProducts/inc/XYZVec.hh"
+#include "Offline/TrackerGeom/inc/Tracker.hh"
+#include "Offline/RecoDataProducts/inc/CosmicTrack.hh"
+#include "Offline/RecoDataProducts/inc/CosmicTrackSeed.hh"
+#include "Offline/TrackerConditions/inc/StrawDrift.hh"
 
 //Tracker Drift Conditions:
-#include "TrackerGeom/inc/Tracker.hh"
-#include "TrackerConditions/inc/StrawResponse.hh"
-#include "TrackerConditions/inc/StrawPhysics.hh"
-#include "TrackerConditions/inc/StrawDrift.hh"
+#include "Offline/TrackerGeom/inc/Tracker.hh"
+#include "Offline/TrackerConditions/inc/StrawResponse.hh"
+#include "Offline/TrackerConditions/inc/StrawPhysics.hh"
+#include "Offline/TrackerConditions/inc/StrawDrift.hh"
 //Utilities:
-#include "Mu2eUtilities/inc/ParametricFit.hh"
+#include "Offline/Mu2eUtilities/inc/ParametricFit.hh"
 //For Drift:
 #include "BTrk/BaBar/BaBar.hh"
 #include "BTrk/BbrGeom/Trajectory.hh"
 #include "BTrk/KalmanTrack/KalRep.hh"
 #include "BTrk/BbrGeom/HepPoint.h"
 #include "BTrk/TrkBase/TrkPoca.hh"
-#include "BTrkData/inc/TrkStrawHit.hh"
+#include "Offline/BTrkData/inc/TrkStrawHit.hh"
 #include "BTrk/BbrGeom/BbrVectorErr.hh"
 #include "BTrk/ProbTools/ChisqConsistency.hh"
 #include "BTrk/TrkBase/TrkMomCalculator.hh"

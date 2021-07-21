@@ -1,7 +1,7 @@
 
 #include <iostream>
 
-#include "TrackerConditions/inc/Mu2eDetector.hh"
+#include "Offline/TrackerConditions/inc/Mu2eDetector.hh"
 #include <sstream>
 #include "cetlib_except/exception.h"
 

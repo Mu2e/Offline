@@ -1,8 +1,8 @@
 
-#include "DbService/inc/DbService.hh"
-#include "DbService/inc/DbIdList.hh"
-#include "DbTables/inc/DbUtil.hh"
-#include "ConfigTools/inc/ConfigFileLookupPolicy.hh"
+#include "Offline/DbService/inc/DbService.hh"
+#include "Offline/DbService/inc/DbIdList.hh"
+#include "Offline/DbTables/inc/DbUtil.hh"
+#include "Offline/ConfigTools/inc/ConfigFileLookupPolicy.hh"
 #include "art/Framework/Services/Registry/ServiceDefinitionMacros.h"
 
 

@@ -6,5 +6,5 @@
 // Contact person Ralf Ehrlich
 //
 
-#include "RecoDataProducts/inc/CrvDigi.hh"
+#include "Offline/RecoDataProducts/inc/CrvDigi.hh"
 #endif /* RecoDataProducts_CrvDigiCollection_hh */

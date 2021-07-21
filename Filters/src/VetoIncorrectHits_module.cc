@@ -15,11 +15,11 @@
 
 #include "CLHEP/Units/SystemOfUnits.h"
 #include "messagefacility/MessageLogger/MessageLogger.h"
-#include "Mu2eUtilities/inc/TwoLinePCA.hh"
-#include "TrackerGeom/inc/Tracker.hh"
-#include "MCDataProducts/inc/StepPointMCCollection.hh"
-#include "GeometryService/inc/GeomHandle.hh"
-#include "CosmicRayShieldGeom/inc/CosmicRayShield.hh"
+#include "Offline/Mu2eUtilities/inc/TwoLinePCA.hh"
+#include "Offline/TrackerGeom/inc/Tracker.hh"
+#include "Offline/MCDataProducts/inc/StepPointMCCollection.hh"
+#include "Offline/GeometryService/inc/GeomHandle.hh"
+#include "Offline/CosmicRayShieldGeom/inc/CosmicRayShield.hh"
 
 namespace mu2e {
 

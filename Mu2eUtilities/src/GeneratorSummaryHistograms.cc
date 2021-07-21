@@ -12,12 +12,12 @@
 
 #include "CLHEP/Vector/ThreeVector.h"
 
-#include "GeneralUtilities/inc/Binning.hh"
-#include "GeometryService/inc/DetectorSystem.hh"
-#include "GeometryService/inc/GeomHandle.hh"
-#include "MCDataProducts/inc/GenId.hh"
-#include "StoppingTargetGeom/inc/StoppingTarget.hh"
-#include "StoppingTargetGeom/inc/zBinningForFoils.hh"
+#include "Offline/GeneralUtilities/inc/Binning.hh"
+#include "Offline/GeometryService/inc/DetectorSystem.hh"
+#include "Offline/GeometryService/inc/GeomHandle.hh"
+#include "Offline/MCDataProducts/inc/GenId.hh"
+#include "Offline/StoppingTargetGeom/inc/StoppingTarget.hh"
+#include "Offline/StoppingTargetGeom/inc/zBinningForFoils.hh"
 #include "TH1.h"
 #include "TH2.h"
 #include "art/Framework/Services/Registry/ServiceHandle.h"
@@ -27,7 +27,7 @@
 #include "canvas/Utilities/Exception.h"
 
 // Mu2e includes
-#include "Mu2eUtilities/inc/GeneratorSummaryHistograms.hh"
+#include "Offline/Mu2eUtilities/inc/GeneratorSummaryHistograms.hh"
 
 namespace mu2e {
 

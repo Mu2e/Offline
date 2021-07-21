@@ -4,7 +4,7 @@
 // See the implementation of usage() for the documentation.
 //
 
-#include "Print/eventCount/FileInfo.hh"
+#include "Offline/Print/eventCount/FileInfo.hh"
 #include "canvas/Persistency/Provenance/EventAuxiliary.h"
 #include "canvas/Persistency/Provenance/SubRunAuxiliary.h"
 

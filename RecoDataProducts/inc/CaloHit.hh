@@ -1,8 +1,8 @@
 #ifndef RecoDataProducts_CaloHit_hh
 #define RecoDataProducts_CaloHit_hh
 
-#include "RecoDataProducts/inc/CaloRecoDigi.hh"
-#include "RecoDataProducts/inc/CaloRecoDigi.hh"
+#include "Offline/RecoDataProducts/inc/CaloRecoDigi.hh"
+#include "Offline/RecoDataProducts/inc/CaloRecoDigi.hh"
 #include "canvas/Persistency/Common/Ptr.h"
 
 #include <vector>

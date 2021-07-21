@@ -1,8 +1,8 @@
 #ifndef MCDataProducts_CaloShowerSim_hh
 #define MCDataProducts_CaloShowerSim_hh
 
-#include "MCDataProducts/inc/CaloShowerStep.hh"
-#include "MCDataProducts/inc/SimParticle.hh"
+#include "Offline/MCDataProducts/inc/CaloShowerStep.hh"
+#include "Offline/MCDataProducts/inc/SimParticle.hh"
 #include <iostream>
 #include <numeric>
 

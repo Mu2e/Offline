@@ -10,7 +10,7 @@
 
 #include <string>
 
-#include "BFieldGeom/inc/BFCacheManager.hh"
+#include "Offline/BFieldGeom/inc/BFCacheManager.hh"
 
 #include "Geant4/G4MagneticField.hh"
 #include "Geant4/G4Types.hh"

@@ -2,7 +2,7 @@
 // Original author Rob Kutschke
 
 // Start with the standard geometry.
-#include "Mu2eG4/test/geom_01.txt"
+#include "Offline/Mu2eG4/test/geom_01.txt"
 
 // Disable all physics except transport.
 string g4.physicsListName = "Minimal";

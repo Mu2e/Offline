@@ -15,7 +15,7 @@
 #include "art/Framework/Principal/Handle.h"
 
 // Mu2e includes.
-#include "RecoDataProducts/inc/KalSeed.hh"
+#include "Offline/RecoDataProducts/inc/KalSeed.hh"
 
 
 

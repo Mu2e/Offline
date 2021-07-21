@@ -2,8 +2,8 @@
 // Base class to resolve hit ambiguities
 //
 //
-#include "TrkReco/inc/AmbigResolver.hh"
-#include "BTrkData/inc/TrkStrawHit.hh"
+#include "Offline/TrkReco/inc/AmbigResolver.hh"
+#include "Offline/BTrkData/inc/TrkStrawHit.hh"
 #include "BTrk/KalmanTrack/KalRep.hh"
 #include "BTrk/KalmanTrack/KalSite.hh"
 #include "BTrk/KalmanTrack/KalHit.hh"

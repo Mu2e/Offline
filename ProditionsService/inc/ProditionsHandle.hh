@@ -7,8 +7,8 @@
 
 #include <string>
 #include "canvas/Persistency/Provenance/EventID.h"
-#include "ProditionsService/inc/ProditionsService.hh"
-#include "DbTables/inc/DbIoV.hh"
+#include "Offline/ProditionsService/inc/ProditionsService.hh"
+#include "Offline/DbTables/inc/DbIoV.hh"
 
 namespace mu2e {
   template <typename ENTITY>

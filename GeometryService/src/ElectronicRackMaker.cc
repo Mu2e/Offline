@@ -10,10 +10,10 @@
 #include "CLHEP/Vector/ThreeVector.h"
 #include "CLHEP/Units/SystemOfUnits.h"
 
-#include "GeometryService/inc/ElectronicRackMaker.hh"
-#include "ServicesGeom/inc/ElectronicRack.hh"
+#include "Offline/GeometryService/inc/ElectronicRackMaker.hh"
+#include "Offline/ServicesGeom/inc/ElectronicRack.hh"
 
-#include "ConfigTools/inc/SimpleConfig.hh"
+#include "Offline/ConfigTools/inc/SimpleConfig.hh"
 
 namespace mu2e {
 

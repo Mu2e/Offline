@@ -1,6 +1,6 @@
 // Andrei Gaponenko, 2012
 
-#include "ExtinctionMonitorFNAL/test/g4detectorDefsCommon.fcl"
+#include "Offline/ExtinctionMonitorFNAL/test/g4detectorDefsCommon.fcl"
 
 process_name : detectorMicrobunch
 

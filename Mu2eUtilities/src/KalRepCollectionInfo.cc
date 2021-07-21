@@ -15,7 +15,7 @@
 #include "fhiclcpp/ParameterSet.h"
 #include "fhiclcpp/exception.h"
 
-#include "Mu2eUtilities/inc/KalRepCollectionInfo.hh"
+#include "Offline/Mu2eUtilities/inc/KalRepCollectionInfo.hh"
 
 namespace {
 

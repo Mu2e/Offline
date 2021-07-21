@@ -4,18 +4,18 @@
 
 #include <memory>
 
-#include "GeometryService/inc/GeometryService.hh"
-#include "GeometryService/inc/GeomHandle.hh"
-#include "GeometryService/inc/WorldG4.hh"
-#include "GeometryService/inc/Mu2eEnvelope.hh"
-#include "Mu2eHallGeom/inc/Mu2eHall.hh"
-#include "ProductionTargetGeom/inc/ProductionTarget.hh"
-#include "ProtonBeamDumpGeom/inc/ProtonBeamDump.hh"
-#include "ExtinctionMonitorFNAL/Geometry/inc/ExtMonFNALBuilding.hh"
-#include "ExtinctionMonitorFNAL/Geometry/inc/ExtMonFNAL.hh"
-#include "ProductionSolenoidGeom/inc/PSEnclosure.hh"
-#include "ProductionSolenoidGeom/inc/PSShield.hh"
-#include "ProductionSolenoidGeom/inc/PSVacuum.hh"
+#include "Offline/GeometryService/inc/GeometryService.hh"
+#include "Offline/GeometryService/inc/GeomHandle.hh"
+#include "Offline/GeometryService/inc/WorldG4.hh"
+#include "Offline/GeometryService/inc/Mu2eEnvelope.hh"
+#include "Offline/Mu2eHallGeom/inc/Mu2eHall.hh"
+#include "Offline/ProductionTargetGeom/inc/ProductionTarget.hh"
+#include "Offline/ProtonBeamDumpGeom/inc/ProtonBeamDump.hh"
+#include "Offline/ExtinctionMonitorFNAL/Geometry/inc/ExtMonFNALBuilding.hh"
+#include "Offline/ExtinctionMonitorFNAL/Geometry/inc/ExtMonFNAL.hh"
+#include "Offline/ProductionSolenoidGeom/inc/PSEnclosure.hh"
+#include "Offline/ProductionSolenoidGeom/inc/PSShield.hh"
+#include "Offline/ProductionSolenoidGeom/inc/PSVacuum.hh"
 
 // art includes.
 #include "fhiclcpp/ParameterSet.h"

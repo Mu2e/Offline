@@ -9,10 +9,10 @@
 #include "CLHEP/Vector/ThreeVector.h"
 #include "CLHEP/Units/SystemOfUnits.h"
 
-#include "GeometryService/inc/PSShieldMaker.hh"
-#include "ProductionSolenoidGeom/inc/PSShield.hh"
+#include "Offline/GeometryService/inc/PSShieldMaker.hh"
+#include "Offline/ProductionSolenoidGeom/inc/PSShield.hh"
 
-#include "ConfigTools/inc/SimpleConfig.hh"
+#include "Offline/ConfigTools/inc/SimpleConfig.hh"
 
 
 namespace mu2e {

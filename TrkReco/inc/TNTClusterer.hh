@@ -8,8 +8,8 @@
 #define TNTClusterer_HH
 
 #include "fhiclcpp/types/Atom.h"
-#include "RecoDataProducts/inc/StrawDigiCollection.hh"
-#include "TrkReco/inc/BkgClusterer.hh"
+#include "Offline/RecoDataProducts/inc/StrawDigiCollection.hh"
+#include "Offline/TrkReco/inc/BkgClusterer.hh"
 #include "fhiclcpp/types/Sequence.h"
 
 #include <string>

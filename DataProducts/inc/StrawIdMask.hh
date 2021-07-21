@@ -4,7 +4,7 @@
 //  This is a helper class that, conjunction with StrawId, allows matching tracker elements at various levels
 //  Original author: Dave Brown (LBNL)
 //
-#include "DataProducts/inc/StrawId.hh"
+#include "Offline/DataProducts/inc/StrawId.hh"
 #include <vector>
 #include <string>
 namespace mu2e {

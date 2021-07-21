@@ -5,7 +5,7 @@ source : {
 
 physics.producers.generate : {
     module_type   : EventGenerator
-    inputfile     : "ExtinctionMonitorFNAL/test/genconfig_extMonFNAL.txt"
+    inputfile     : "Offline/ExtinctionMonitorFNAL/test/genconfig_extMonFNAL.txt"
 }
 
 physics.producers.g4run.generatorModuleLabel : "generate"

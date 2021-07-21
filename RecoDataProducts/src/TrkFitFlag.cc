@@ -5,7 +5,7 @@
 // Original author David Brown
 //
 // Mu2e includes
-#include "RecoDataProducts/inc/TrkFitFlag.hh"
+#include "Offline/RecoDataProducts/inc/TrkFitFlag.hh"
 #include <stdexcept>
 #include <iostream>
 #include <stdio.h>

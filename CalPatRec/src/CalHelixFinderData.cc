@@ -1,7 +1,7 @@
 //
 
-#include "RecoDataProducts/inc/TimeCluster.hh"
-#include "CalPatRec/inc/CalHelixFinderData.hh"
+#include "Offline/RecoDataProducts/inc/TimeCluster.hh"
+#include "Offline/CalPatRec/inc/CalHelixFinderData.hh"
 #include "BTrk/TrkBase/HelixTraj.hh"
 
 using CLHEP::HepVector;

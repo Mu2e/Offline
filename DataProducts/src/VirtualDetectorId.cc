@@ -3,7 +3,7 @@
 //
 // Original author Rob Kutschke
 
-#include "DataProducts/inc/VirtualDetectorId.hh"
+#include "Offline/DataProducts/inc/VirtualDetectorId.hh"
 
 #include <boost/static_assert.hpp>
 

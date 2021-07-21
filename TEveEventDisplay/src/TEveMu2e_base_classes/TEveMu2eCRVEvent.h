@@ -5,11 +5,11 @@
 
 #include <TEvePointSet.h>
 #include <TEveLine.h>
-#include "RecoDataProducts/inc/CrvCoincidenceCluster.hh"
-#include "CosmicRayShieldGeom/inc/CosmicRayShield.hh"
-#include "DataProducts/inc/CRSScintillatorBarIndex.hh"
-#include "GeometryService/inc/GeomHandle.hh"
-#include "RecoDataProducts/inc/CrvRecoPulse.hh"
+#include "Offline/RecoDataProducts/inc/CrvCoincidenceCluster.hh"
+#include "Offline/CosmicRayShieldGeom/inc/CosmicRayShield.hh"
+#include "Offline/DataProducts/inc/CRSScintillatorBarIndex.hh"
+#include "Offline/GeometryService/inc/GeomHandle.hh"
+#include "Offline/RecoDataProducts/inc/CrvRecoPulse.hh"
  
 namespace mu2e {
   class TEveMu2eCRVEvent : public TEvePointSet {

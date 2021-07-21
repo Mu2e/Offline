@@ -6,9 +6,9 @@
 // Original author David Brown (7/2020)
 //
 // Mu2e includes
-#include "GeneralUtilities/inc/BitMap.hh"
-#include "DataProducts/inc/StrawId.hh"
-#include "DataProducts/inc/StrawIdMask.hh"
+#include "Offline/GeneralUtilities/inc/BitMap.hh"
+#include "Offline/DataProducts/inc/StrawId.hh"
+#include "Offline/DataProducts/inc/StrawIdMask.hh"
 #include <string>
 #include <map>
 namespace mu2e {

@@ -8,13 +8,13 @@
 #include <TEvePointSet.h>
 #include <TEveLine.h>
 #include <TMath.h>
-#include "RecoDataProducts/inc/ComboHit.hh"
+#include "Offline/RecoDataProducts/inc/ComboHit.hh"
 //Mu2e General:
-#include "GeometryService/inc/GeomHandle.hh"
-#include "GeometryService/inc/DetectorSystem.hh"
-#include "TEveEventDisplay/src/dict_classes/GeomUtils.h"
-#include "TEveEventDisplay/src/TEveMu2e_base_classes/TEveMu2eCustomHelix.h"
-#include "TrackerGeom/inc/Tracker.hh"
+#include "Offline/GeometryService/inc/GeomHandle.hh"
+#include "Offline/GeometryService/inc/DetectorSystem.hh"
+#include "Offline/TEveEventDisplay/src/dict_classes/GeomUtils.h"
+#include "Offline/TEveEventDisplay/src/TEveMu2e_base_classes/TEveMu2eCustomHelix.h"
+#include "Offline/TrackerGeom/inc/Tracker.hh"
 
 namespace mu2e {
   class TEveMu2eHit : public TEvePointSet {

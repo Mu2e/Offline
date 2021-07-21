@@ -9,7 +9,7 @@
 // Original author David Brown
 //
 // Mu2e includes
-#include "GeneralUtilities/inc/MVAStruct.hh"
+#include "Offline/GeneralUtilities/inc/MVAStruct.hh"
 #include <string>
 #include <map>
 #include <vector>

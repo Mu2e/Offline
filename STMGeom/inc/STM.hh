@@ -7,13 +7,13 @@
 //
 
 #include "CLHEP/Vector/ThreeVector.h"
-#include "Mu2eInterfaces/inc/Detector.hh"
-#include "STMGeom/inc/PermanentMagnet.hh"
-#include "STMGeom/inc/TransportPipe.hh"
-#include "STMGeom/inc/SupportTable.hh"
-#include "STMGeom/inc/STMCollimator.hh"
-#include "STMGeom/inc/GeDetector.hh"
-#include "STMGeom/inc/ShieldPipe.hh"
+#include "Offline/Mu2eInterfaces/inc/Detector.hh"
+#include "Offline/STMGeom/inc/PermanentMagnet.hh"
+#include "Offline/STMGeom/inc/TransportPipe.hh"
+#include "Offline/STMGeom/inc/SupportTable.hh"
+#include "Offline/STMGeom/inc/STMCollimator.hh"
+#include "Offline/STMGeom/inc/GeDetector.hh"
+#include "Offline/STMGeom/inc/ShieldPipe.hh"
 
 namespace mu2e {
 

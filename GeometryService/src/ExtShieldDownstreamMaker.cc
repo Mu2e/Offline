@@ -11,10 +11,10 @@
 #include "CLHEP/Vector/ThreeVector.h"
 #include "CLHEP/Units/SystemOfUnits.h"
 
-#include "GeometryService/inc/ExtShieldDownstreamMaker.hh"
-#include "ExternalShieldingGeom/inc/ExtShieldDownstream.hh"
+#include "Offline/GeometryService/inc/ExtShieldDownstreamMaker.hh"
+#include "Offline/ExternalShieldingGeom/inc/ExtShieldDownstream.hh"
 
-#include "ConfigTools/inc/SimpleConfig.hh"
+#include "Offline/ConfigTools/inc/SimpleConfig.hh"
 
 namespace mu2e {
 

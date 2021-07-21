@@ -4,7 +4,7 @@
 
 #include <iostream>
 
-#include "Mu2eG4/inc/constructPSShield.hh"
+#include "Offline/Mu2eG4/inc/constructPSShield.hh"
 
 #include "cetlib_except/exception.h"
 #include "CLHEP/Vector/ThreeVector.h"
@@ -15,23 +15,23 @@
 #include "Geant4/G4UnionSolid.hh"
 #include "Geant4/G4Color.hh"
 
-#include "Mu2eG4Helper/inc/Mu2eG4Helper.hh"
-#include "Mu2eG4Helper/inc/AntiLeakRegistry.hh"
-#include "Mu2eG4Helper/inc/VolumeInfo.hh"
+#include "Offline/Mu2eG4Helper/inc/Mu2eG4Helper.hh"
+#include "Offline/Mu2eG4Helper/inc/AntiLeakRegistry.hh"
+#include "Offline/Mu2eG4Helper/inc/VolumeInfo.hh"
 
 #include "art/Framework/Services/Registry/ServiceDefinitionMacros.h"
 
-#include "Mu2eG4/inc/findMaterialOrThrow.hh"
-#include "Mu2eG4/inc/finishNesting.hh"
-#include "Mu2eG4/inc/nestPolycone.hh"
-#include "Mu2eG4/inc/nestTubs.hh"
+#include "Offline/Mu2eG4/inc/findMaterialOrThrow.hh"
+#include "Offline/Mu2eG4/inc/finishNesting.hh"
+#include "Offline/Mu2eG4/inc/nestPolycone.hh"
+#include "Offline/Mu2eG4/inc/nestTubs.hh"
 
-#include "ProductionSolenoidGeom/inc/PSShield.hh"
-#include "ProductionSolenoidGeom/inc/ProductionSolenoid.hh"
+#include "Offline/ProductionSolenoidGeom/inc/PSShield.hh"
+#include "Offline/ProductionSolenoidGeom/inc/ProductionSolenoid.hh"
 
-#include "GeometryService/inc/G4GeometryOptions.hh"
-#include "GeometryService/inc/GeometryService.hh"
-#include "GeometryService/inc/GeomHandle.hh"
+#include "Offline/GeometryService/inc/G4GeometryOptions.hh"
+#include "Offline/GeometryService/inc/GeometryService.hh"
+#include "Offline/GeometryService/inc/GeomHandle.hh"
 
 //#define AGDEBUG(stuff) std::cerr<<"AG: "<<__FILE__<<", line "<<__LINE__<<": "<<stuff<<std::endl;
 #define AGDEBUG(stuff)

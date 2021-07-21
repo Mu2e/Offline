@@ -17,14 +17,14 @@
 #include <string>
 
 // Includes from Mu2e
-#include "BFieldGeom/inc/BFCacheManager.hh"
-#include "BFieldGeom/inc/BFGridMap.hh"
-#include "BFieldGeom/inc/BFInterpolationStyle.hh"
-#include "BFieldGeom/inc/BFMap.hh"
-#include "BFieldGeom/inc/BFMapType.hh"
-#include "BFieldGeom/inc/BFParamMap.hh"
-#include "DataProducts/inc/XYZVec.hh"
-#include "Mu2eInterfaces/inc/Detector.hh"
+#include "Offline/BFieldGeom/inc/BFCacheManager.hh"
+#include "Offline/BFieldGeom/inc/BFGridMap.hh"
+#include "Offline/BFieldGeom/inc/BFInterpolationStyle.hh"
+#include "Offline/BFieldGeom/inc/BFMap.hh"
+#include "Offline/BFieldGeom/inc/BFMapType.hh"
+#include "Offline/BFieldGeom/inc/BFParamMap.hh"
+#include "Offline/DataProducts/inc/XYZVec.hh"
+#include "Offline/Mu2eInterfaces/inc/Detector.hh"
 
 namespace mu2e {
 

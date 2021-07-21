@@ -5,7 +5,7 @@
 // Original author Rob Kutschke
 //
 
-#include "MCDataProducts/inc/StatusG4.hh"
+#include "Offline/MCDataProducts/inc/StatusG4.hh"
 
 #include <iostream>
 

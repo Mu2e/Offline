@@ -3,7 +3,7 @@ Author: Ralf Ehrlich
 Based on Paul Rubinov's C# code
 */
 
-#include "CRVResponse/inc/MakeCrvSiPMCharges.hh"
+#include "Offline/CRVResponse/inc/MakeCrvSiPMCharges.hh"
 
 #include <cmath>
 #include <iostream>

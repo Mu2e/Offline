@@ -3,7 +3,7 @@
 // The file that is included will be time dependent.
 //
 
-#include "Mu2eG4/geom/geom_common.txt"
+#include "Offline/Mu2eG4/geom/geom_common.txt"
 double stoppingTarget.holeRadius = 20;
 vector<double> stoppingTarget.xVars = { -5. }; // last will be repeated
 // This tells emacs to view this file in c++ mode.

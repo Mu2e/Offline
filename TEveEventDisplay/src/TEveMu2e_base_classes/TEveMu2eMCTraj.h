@@ -6,11 +6,11 @@
 #include <TEvePointSet.h>
 #include <TEveLine.h>
 #include <TPolyLine3D.h>
-#include "RecoDataProducts/inc/ComboHit.hh"
-#include "TEveEventDisplay/src/dict_classes/GeomUtils.h"
-#include "ConfigTools/inc/SimpleConfig.hh"
-#include "GeometryService/inc/GeomHandle.hh"
-#include "GeometryService/inc/DetectorSystem.hh"
+#include "Offline/RecoDataProducts/inc/ComboHit.hh"
+#include "Offline/TEveEventDisplay/src/dict_classes/GeomUtils.h"
+#include "Offline/ConfigTools/inc/SimpleConfig.hh"
+#include "Offline/GeometryService/inc/GeomHandle.hh"
+#include "Offline/GeometryService/inc/DetectorSystem.hh"
 namespace mu2e {
   class TEveMu2eMCTraj : public TEvePointSet{
     public:

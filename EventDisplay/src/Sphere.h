@@ -8,8 +8,8 @@
 #ifndef EventDisplay_src_Sphere_h
 #define EventDisplay_src_Sphere_h
 
-#include "EventDisplay/src/VirtualShape.h"
-#include "EventDisplay/src/dict_classes/EventDisplayPolyLine3D.h"
+#include "Offline/EventDisplay/src/VirtualShape.h"
+#include "Offline/EventDisplay/src/dict_classes/EventDisplayPolyLine3D.h"
 #include <TMath.h>
 #include <iostream>
 #include <map>

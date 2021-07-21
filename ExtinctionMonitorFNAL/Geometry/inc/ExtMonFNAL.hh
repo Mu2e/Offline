@@ -13,14 +13,14 @@
 
 #include "canvas/Persistency/Common/Wrapper.h"
 
-#include "Mu2eInterfaces/inc/Detector.hh"
+#include "Offline/Mu2eInterfaces/inc/Detector.hh"
 
-#include "ExtinctionMonitorFNAL/Geometry/inc/ExtMonFNALPixelChip.hh"
-#include "ExtinctionMonitorFNAL/Geometry/inc/ExtMonFNALModule.hh"
-#include "ExtinctionMonitorFNAL/Geometry/inc/ExtMonFNALPlane.hh"
-#include "ExtinctionMonitorFNAL/Geometry/inc/ExtMonFNALPlaneStack.hh"
-#include "ExtinctionMonitorFNAL/Geometry/inc/ExtMonFNALMagnet.hh"
-#include "ExtinctionMonitorFNAL/Geometry/inc/ExtMonFNALMuonID.hh"
+#include "Offline/ExtinctionMonitorFNAL/Geometry/inc/ExtMonFNALPixelChip.hh"
+#include "Offline/ExtinctionMonitorFNAL/Geometry/inc/ExtMonFNALModule.hh"
+#include "Offline/ExtinctionMonitorFNAL/Geometry/inc/ExtMonFNALPlane.hh"
+#include "Offline/ExtinctionMonitorFNAL/Geometry/inc/ExtMonFNALPlaneStack.hh"
+#include "Offline/ExtinctionMonitorFNAL/Geometry/inc/ExtMonFNALMagnet.hh"
+#include "Offline/ExtinctionMonitorFNAL/Geometry/inc/ExtMonFNALMuonID.hh"
 
 namespace mu2e {
 

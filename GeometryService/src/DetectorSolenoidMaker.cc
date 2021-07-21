@@ -1,9 +1,9 @@
 // Mu2e includes
-#include "BeamlineGeom/inc/Beamline.hh"
-#include "BeamlineGeom/inc/StraightSection.hh"
-#include "ConfigTools/inc/SimpleConfig.hh"
-#include "DetectorSolenoidGeom/inc/DetectorSolenoid.hh"
-#include "GeometryService/inc/DetectorSolenoidMaker.hh"
+#include "Offline/BeamlineGeom/inc/Beamline.hh"
+#include "Offline/BeamlineGeom/inc/StraightSection.hh"
+#include "Offline/ConfigTools/inc/SimpleConfig.hh"
+#include "Offline/DetectorSolenoidGeom/inc/DetectorSolenoid.hh"
+#include "Offline/GeometryService/inc/DetectorSolenoidMaker.hh"
 
 // Framework includes
 #include "cetlib_except/exception.h"

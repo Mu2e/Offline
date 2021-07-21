@@ -10,7 +10,7 @@
 // designs are #13, #16, and #18.
 
 // First, the base geometry to start from...
-#include "Mu2eG4/geom/geom_common_current.txt"
+#include "Offline/Mu2eG4/geom/geom_common_current.txt"
 // bool hasAlignment = true;  // Likely to be changed
 
 // Now the specific items for version 2 of the Production Target

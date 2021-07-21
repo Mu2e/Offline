@@ -10,7 +10,7 @@
 // designs are #13, #16, and #18.
 
 // This file is not stand-alone - it builds on an earlier version of the target.
-#include "Mu2eG4/geom/ProductionTargetInPS.txt"
+#include "Offline/Mu2eG4/geom/ProductionTargetInPS.txt"
 
 // Next line must come after the #include so that it overrides the definition in there.
 string targetPS_model = "Hayman_v2";

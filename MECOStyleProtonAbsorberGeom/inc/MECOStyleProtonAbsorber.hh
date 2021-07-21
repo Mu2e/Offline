@@ -16,9 +16,9 @@
 #include <memory>
 
 // Includes from Mu2e
-#include "GeomPrimitives/inc/Tube.hh"
-#include "Mu2eInterfaces/inc/Detector.hh"
-#include "MECOStyleProtonAbsorberGeom/inc/MECOStyleProtonAbsorberPart.hh"
+#include "Offline/GeomPrimitives/inc/Tube.hh"
+#include "Offline/Mu2eInterfaces/inc/Detector.hh"
+#include "Offline/MECOStyleProtonAbsorberGeom/inc/MECOStyleProtonAbsorberPart.hh"
 
 namespace mu2e {
 

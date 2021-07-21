@@ -16,10 +16,10 @@
 #include <algorithm>
 
 // Mu2e includes.
-#include "MCDataProducts/inc/GenElHitData.hh"
+#include "Offline/MCDataProducts/inc/GenElHitData.hh"
 //#include "MCDataProducts/inc/SimParticle.hh"
 #include "canvas/Persistency/Common/Ptr.h"
-#include "MCDataProducts/inc/SimParticleCollection.hh"
+#include "Offline/MCDataProducts/inc/SimParticleCollection.hh"
 
 // CLHEP includes.
 #include "CLHEP/Units/PhysicalConstants.h"

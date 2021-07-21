@@ -2,9 +2,9 @@
 //
 // Dave Brown (Lou), based on ExtinctionMonitor work by Andrei Gaponenko, 2011
 
-#include "fcl/minimalMessageService.fcl"
-#include "fcl/standardProducers.fcl"
-#include "fcl/standardServices.fcl"
+#include "Offline/fcl/minimalMessageService.fcl"
+#include "Offline/fcl/standardProducers.fcl"
+#include "Offline/fcl/standardServices.fcl"
 
 // Give this job a name.
 process_name : DNBTest
@@ -21,9 +21,9 @@ services : {
     TFileService           : { fileName : "g4hists_DNBTest.root" }
     RandomNumberGenerator  : {defaultEngineKind: "MixMaxRng"}
 
-    GeometryService        : { inputFile : "Mu2eG4/geom/geom_common_current.txt" }
-    ConditionsService      : { conditionsfile : "ConditionsService/data/conditions_01.txt" }
-    GlobalConstantsService : { inputFile : "GlobalConstantsService/data/globalConstants_01.txt" }
+    GeometryService        : { inputFile : "Offline/Mu2eG4/geom/geom_common_current.txt" }
+    ConditionsService      : { conditionsfile : "Offline/ConditionsService/data/conditions_01.txt" }
+    GlobalConstantsService : { inputFile : "Offline/GlobalConstantsService/data/globalConstants_01.txt" }
     SeedService            : @local::automaticSeeds
     Mu2eG4Helper           : { }
 }
@@ -85,7 +85,7 @@ physics : {
 }
 
 //----------------------------------------------------------------
-//physics.producers.g4run.visMacro : "Analyses/test/vis_DNBTest.mac"
+//physics.producers.g4run.visMacro : "Offline/Analyses/test/vis_DNBTest.mac"
 
 services.SeedService.baseSeed         :  8
 services.SeedService.maxUniqueEngines :  20

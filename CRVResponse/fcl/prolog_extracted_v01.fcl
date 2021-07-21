@@ -1,4 +1,4 @@
-#include "CRVResponse/fcl/prolog.fcl"
+#include "Offline/CRVResponse/fcl/prolog.fcl"
 
 physics.producers.CrvPhotons.crvStepModuleLabels  : ["CrvSteps"]
 physics.producers.CrvPhotons.crvStepProcessNames  : ["CrvStepsConverter"]

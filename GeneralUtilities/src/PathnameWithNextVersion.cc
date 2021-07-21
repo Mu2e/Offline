@@ -18,7 +18,7 @@
 //      b) Strip the leading "./" from each directory entry.
 //
 
-#include "GeneralUtilities/inc/PathnameWithNextVersion.hh"
+#include "Offline/GeneralUtilities/inc/PathnameWithNextVersion.hh"
 
 #include <boost/filesystem.hpp>
 #include <boost/regex.hpp>

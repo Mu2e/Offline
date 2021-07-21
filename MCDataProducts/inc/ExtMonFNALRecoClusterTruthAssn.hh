@@ -7,8 +7,8 @@
 
 #include "canvas/Persistency/Common/Assns.h"
 
-#include "MCDataProducts/inc/SimParticle.hh"
-#include "RecoDataProducts/inc/ExtMonFNALRecoCluster.hh"
+#include "Offline/MCDataProducts/inc/SimParticle.hh"
+#include "Offline/RecoDataProducts/inc/ExtMonFNALRecoCluster.hh"
 
 namespace mu2e {
 

@@ -24,13 +24,13 @@
 #include "art/Framework/Services/Registry/ServiceHandle.h"
 #include "art/Framework/Services/Optional/RandomNumberGenerator.h"
 
-#include "MCDataProducts/inc/GenParticle.hh"
-#include "MCDataProducts/inc/GenParticleCollection.hh"
+#include "Offline/MCDataProducts/inc/GenParticle.hh"
+#include "Offline/MCDataProducts/inc/GenParticleCollection.hh"
 
-#include "GlobalConstantsService/inc/GlobalConstantsHandle.hh"
-#include "GlobalConstantsService/inc/ParticleDataTable.hh"
+#include "Offline/GlobalConstantsService/inc/GlobalConstantsHandle.hh"
+#include "Offline/GlobalConstantsService/inc/ParticleDataTable.hh"
 
-#include "SeedService/inc/SeedService.hh"
+#include "Offline/SeedService/inc/SeedService.hh"
 //#include "CLHEP/Random/RandFlat.h"
 #include "CLHEP/Random/MTwistEngine.h"
 #include "CLHEP/Vector/LorentzVector.h"

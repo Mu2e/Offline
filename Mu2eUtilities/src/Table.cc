@@ -9,7 +9,7 @@
 #include <algorithm>
 #include <numeric>
 
-#include "Mu2eUtilities/inc/Table.hh"
+#include "Offline/Mu2eUtilities/inc/Table.hh"
 
 namespace mu2e {
 

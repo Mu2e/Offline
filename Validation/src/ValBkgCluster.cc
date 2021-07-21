@@ -1,5 +1,5 @@
 
-#include "Validation/inc/ValBkgCluster.hh"
+#include "Offline/Validation/inc/ValBkgCluster.hh"
 
 
 int mu2e::ValBkgCluster::declare(art::TFileDirectory tfs) {

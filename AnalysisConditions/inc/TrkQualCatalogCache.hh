@@ -6,9 +6,9 @@
 //
 
 // Mu2e includes
-#include "AnalysisConditions/inc/MVACatalogCache.hh"
-#include "RecoDataProducts/inc/TrkQual.hh"
-#include "DbTables/inc/AnaTrkQualDb.hh"
+#include "Offline/AnalysisConditions/inc/MVACatalogCache.hh"
+#include "Offline/RecoDataProducts/inc/TrkQual.hh"
+#include "Offline/DbTables/inc/AnaTrkQualDb.hh"
 
 namespace mu2e {
 

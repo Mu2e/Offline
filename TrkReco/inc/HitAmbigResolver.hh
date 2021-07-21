@@ -8,7 +8,7 @@
 #ifndef HitAmbigResolver_HH
 #define HitAmbigResolver_HH
 #include "BTrk/BaBar/BaBar.hh"
-#include "TrkReco/inc/AmbigResolver.hh"
+#include "Offline/TrkReco/inc/AmbigResolver.hh"
 #ifndef __GCCXML__
 #include "fhiclcpp/ParameterSet.h"
 #endif/*__GCCXML__*/

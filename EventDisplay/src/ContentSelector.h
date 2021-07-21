@@ -8,18 +8,18 @@
 #ifndef EventDisplay_src_ContentSelector_h
 #define EventDisplay_src_ContentSelector_h
 
-#include "RecoDataProducts/inc/CaloHit.hh"
-#include "RecoDataProducts/inc/CrvRecoPulse.hh"
-#include "RecoDataProducts/inc/CrvDigiCollection.hh"
-#include "MCDataProducts/inc/PhysicalVolumeInfoMultiCollection.hh"
-#include "MCDataProducts/inc/MCTrajectoryCollection.hh"
-#include "MCDataProducts/inc/SimParticleCollection.hh"
-#include "MCDataProducts/inc/StepPointMCCollection.hh"
-#include "RecoDataProducts/inc/KalSeed.hh"
-#include "RecoDataProducts/inc/ProtonBunchTime.hh"
-#include "RecoDataProducts/inc/StrawHitCollection.hh"
-#include "RecoDataProducts/inc/StrawHitFlagCollection.hh"
-#include "RecoDataProducts/inc/StrawHitPositionCollection.hh"
+#include "Offline/RecoDataProducts/inc/CaloHit.hh"
+#include "Offline/RecoDataProducts/inc/CrvRecoPulse.hh"
+#include "Offline/RecoDataProducts/inc/CrvDigiCollection.hh"
+#include "Offline/MCDataProducts/inc/PhysicalVolumeInfoMultiCollection.hh"
+#include "Offline/MCDataProducts/inc/MCTrajectoryCollection.hh"
+#include "Offline/MCDataProducts/inc/SimParticleCollection.hh"
+#include "Offline/MCDataProducts/inc/StepPointMCCollection.hh"
+#include "Offline/RecoDataProducts/inc/KalSeed.hh"
+#include "Offline/RecoDataProducts/inc/ProtonBunchTime.hh"
+#include "Offline/RecoDataProducts/inc/StrawHitCollection.hh"
+#include "Offline/RecoDataProducts/inc/StrawHitFlagCollection.hh"
+#include "Offline/RecoDataProducts/inc/StrawHitPositionCollection.hh"
 #include "art/Framework/Principal/Event.h"
 #include "art/Framework/Principal/Run.h"
 #include <TGComboBox.h>
@@ -28,8 +28,8 @@
 #include <vector>
 
 using namespace CLHEP;
-#include "RecoDataProducts/inc/KalRepCollection.hh"
-#include "RecoDataProducts/inc/TrkExtTrajCollection.hh"
+#include "Offline/RecoDataProducts/inc/KalRepCollection.hh"
+#include "Offline/RecoDataProducts/inc/TrkExtTrajCollection.hh"
 
 namespace mu2e_eventdisplay
 {

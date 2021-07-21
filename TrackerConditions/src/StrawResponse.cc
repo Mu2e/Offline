@@ -1,5 +1,5 @@
 
-#include "TrackerConditions/inc/StrawResponse.hh"
+#include "Offline/TrackerConditions/inc/StrawResponse.hh"
 #include <cmath>
 #include <algorithm>
 
@@ -128,10 +128,10 @@ namespace mu2e {
     double electronicsTimeDelay = _strawElectronics->electronicsTimeDelay();
     times[StrawEnd::hv] = tdc[StrawEnd::hv]*_strawElectronics->tdcLSB() 
       - electronicsTimeDelay + _timeOffsetPanel[id.getPanel()] 
-      + _timeOffsetStrawHV[id.getStraw()];
+      + _timeOffsetStrawHV[id.uniqueStraw()];
     times[StrawEnd::cal] = tdc[StrawEnd::cal]*_strawElectronics->tdcLSB() 
       - electronicsTimeDelay + _timeOffsetPanel[id.getPanel()] 
-      + _timeOffsetStrawCal[id.getStraw()];
+      + _timeOffsetStrawCal[id.uniqueStraw()];
   }
  
 
@@ -175,10 +175,10 @@ namespace mu2e {
     os << "rres_max = " << _rres_max << endl;
     os << "mint0doca = " << _mint0doca << endl;
     os << "t0shift = " << _t0shift << endl;
-    printVector(os,"pmpEnergyScale",_pmpEnergyScale);
-    printVector(os,"timeOffsetPanel",_timeOffsetPanel);
-    printVector(os,"timeOffsetStrawHV",_timeOffsetStrawHV);
-    printVector(os,"timeOffsetStrawCal",_timeOffsetStrawCal);
+    printArray(os,"pmpEnergyScale",_pmpEnergyScale);
+    printArray(os,"timeOffsetPanel",_timeOffsetPanel);
+    printArray(os,"timeOffsetStrawHV",_timeOffsetStrawHV);
+    printArray(os,"timeOffsetStrawCal",_timeOffsetStrawCal);
     os << "electronicsTimeDelay = " << _electronicsTimeDelay << endl;
     os << "gasGain = " << _gasGain << endl;
 
@@ -209,5 +209,20 @@ namespace mu2e {
 	 << a[n-2] << " " << a[n-1] << endl;
     }
   }
+  template<typename T, size_t SIZE>
+    void StrawResponse::printArray(std::ostream& os, std::string const& name,
+        std::array<T,SIZE> const& a) const {
+      size_t n = a.size();
+      if(n<=4) {
+        os << name << " ("<<n<<") = ";
+        for(auto x : a) os << x << " ";
+        os << endl;
+      } else {
+        os << name <<" ("<<n<<") = " 
+          << a[0] << " " << a[1] << " ... " 
+          << a[n-2] << " " << a[n-1] << endl;
+      }
+
+    }
 
 }

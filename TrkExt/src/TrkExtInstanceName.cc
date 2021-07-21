@@ -20,8 +20,8 @@
 
 // Framework includes.
 
-#include "TrkExt/inc/TrkExtInstanceName.hh"
-#include "RecoDataProducts/inc/TrkFitDirection.hh"
+#include "Offline/TrkExt/inc/TrkExtInstanceName.hh"
+#include "Offline/RecoDataProducts/inc/TrkFitDirection.hh"
 #include "BTrk/TrkBase/TrkParticle.hh"
 
 
