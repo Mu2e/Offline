@@ -9,11 +9,10 @@
 namespace mu2e {
   CaloDAQUtilities::CaloDAQUtilities(std::string ModuleName):moduleName_(ModuleName){}
 
-  void CaloDAQUtilities::printCaloFragmentInfo(const artdaq::Fragment& f, CalorimeterFragment& cc){
+  void CaloDAQUtilities::printCaloFragmentInfo(CalorimeterFragment const& cc){
     std::cout << std::endl;
     std::cout << "ArtFragmentReader: ";
     std::cout << "\tBlock Count: " << std::dec << cc.block_count() << std::endl;
-    std::cout << "\tByte Count: " << f.dataSizeBytes() << std::endl;
     std::cout << std::endl;
     std::cout << "\t"
               << "====== Example Block Sizes ======" << std::endl;
@@ -28,20 +27,20 @@ namespace mu2e {
   }
 
 
-  void CaloDAQUtilities::printCaloFragmentHeader(DTCLib::DTC_DataHeaderPacket &Header){
+  void CaloDAQUtilities::printCaloFragmentHeader(std::shared_ptr<DTCLib::DTC_DataHeaderPacket> Header){
     
-    std::cout << "timestamp: " << static_cast<int>(Header.GetEventWindowTag().GetEventWindowTag(true)) << std::endl;
-    std::cout << "Header->SubsystemID: " << static_cast<int>(Header.GetSubsystemID()) << std::endl;
-    std::cout << "dtcID: " << static_cast<int>(Header.GetID()) << std::endl;
-    std::cout << "rocID: " << static_cast<int>(Header.GetLinkID()) << std::endl;
-    std::cout << "packetCount: " << static_cast<int>(Header.GetPacketCount()) << std::endl;
-    std::cout << "EVB mode: " << static_cast<int>(Header.GetEVBMode()) << std::endl;
+    std::cout << "timestamp: " << static_cast<int>(Header->GetEventWindowTag().GetEventWindowTag(true)) << std::endl;
+    std::cout << "Header->SubsystemID: " << static_cast<int>(Header->GetSubsystemID()) << std::endl;
+    std::cout << "dtcID: " << static_cast<int>(Header->GetID()) << std::endl;
+    std::cout << "rocID: " << static_cast<int>(Header->GetLinkID()) << std::endl;
+    std::cout << "packetCount: " << static_cast<int>(Header->GetPacketCount()) << std::endl;
+    std::cout << "EVB mode: " << static_cast<int>(Header->GetEVBMode()) << std::endl;
 
     std::cout << std::endl;
     
   }
 
-  void CaloDAQUtilities::printCaloPulse(CalorimeterFragment::CalorimeterHitReadoutPacket& Hit){
+  void CaloDAQUtilities::printCaloPulse(CalorimeterFragment::CalorimeterHitReadoutPacket const& Hit){
     std::cout << "[CaloHitsFromFragments] \tChNumber   "
 	      << (int)Hit.ChannelNumber
 	      << std::endl;
@@ -64,7 +63,7 @@ namespace mu2e {
   
   }
 
-  void CaloDAQUtilities::printWaveform(std::vector<uint16_t>& Pulse){
+  void CaloDAQUtilities::printWaveform(std::vector<uint16_t> const& Pulse){
     std::cout << "Waveform: {";
     for (size_t i = 0; i < Pulse.size(); i++) {
       std::cout << Pulse[i];
@@ -76,8 +75,8 @@ namespace mu2e {
   }
 
   void CaloDAQUtilities::printAllHitInfo(int CrystalID, int SiPMID, 
-					 DTCLib::DTC_DataHeaderPacket &Header, 
-					 CalorimeterFragment::CalorimeterHitReadoutPacket& Hit, uint16_t& PulseMax){
+					 std::shared_ptr<DTCLib::DTC_DataHeaderPacket> Header, 
+					 CalorimeterFragment::CalorimeterHitReadoutPacket const& Hit, uint16_t PulseMax){
     
     std::cout << "Crystal ID: " << CrystalID           << std::endl;
     std::cout << "SiPM ID: "    << SiPMID              << std::endl;
@@ -87,7 +86,7 @@ namespace mu2e {
 
     // Text format: timestamp crystalID roID time nsamples samples...
     // Example: 1 201 402 660 18 0 0 0 0 1 17 51 81 91 83 68 60 58 52 42 33 23 16
-    std::cout << "GREPMECAL: "  << Header.GetEventWindowTag().GetEventWindowTag(true) << " ";
+    std::cout << "GREPMECAL: "  << Header->GetEventWindowTag().GetEventWindowTag(true) << " ";
     std::cout << CrystalID      << " ";
     std::cout << SiPMID         << " ";
     std::cout << Hit.Time       << " ";

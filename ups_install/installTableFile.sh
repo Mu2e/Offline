@@ -26,10 +26,10 @@ mu2e_artdaq_core_ver=`ups active | awk '$1 == "mu2e_artdaq_core" {print $2}'`
 # Define them all here and use them in the right spots in the table file.
 
 # Value of the "Qualifiers " keyword, excluding trig and debug/prof/opt
-qualifiers_value=${COMPILER_CODE}:${MU2E_ART_SQUALIFIER}
+qualifiers_value=${COMPILER_CODE}:${MUSE_ART}
 
 # Value that will be put into OFFLINE_FQ, excluding trig and debug/prof/opt
-offline_fq_value=${COMPILER_CODE}.${MU2E_ART_SQUALIFIER}
+offline_fq_value=${COMPILER_CODE}.${MUSE_ART}
 
 # Value that will be put into MU2E_UPS_QUALFIERS, which is used
 # to specify qualifiers for many of the ups products on which
@@ -57,8 +57,8 @@ Qualifiers = "${qualifiers_value}:debug"
       envSet (OFFLINE_FQ, \${\${UPS_PROD_NAME_UC}_FS}.${offline_fq_value}.debug)
       envSet (MU2E_UPS_QUALIFIERS, +${mu2e_ups_qualifiers}:+debug )
       setupRequired( art  ${art_ver} -q +${mu2e_ups_qualifiers}:+debug )
-      setupRequired( BTrk  ${btrk_ver} -q +${mu2e_ups_qualifiers}:+debug:+p383b )
-      setupRequired( KinKal  ${kinkal_ver} -q +${mu2e_ups_qualifiers}:+debug:+p383b )
+      setupRequired( BTrk  ${btrk_ver} -q +${mu2e_ups_qualifiers}:+debug:+p392 )
+      setupRequired( KinKal  ${kinkal_ver} -q +${mu2e_ups_qualifiers}:+debug:+p392 )
       setupRequired( heppdt  ${heppdt_ver} -q +${mu2e_ups_qualifiers}:+debug )
       setupRequired( xerces_c  ${xerces_ver} -q +${mu2e_ups_qualifiers}:+debug )
 
@@ -72,8 +72,8 @@ Qualifiers = "${qualifiers_value}:prof"
       envSet (OFFLINE_FQ, \${\${UPS_PROD_NAME_UC}_FS}.${offline_fq_value}.prof)
       envSet (MU2E_UPS_QUALIFIERS, +\${mu2e_ups_qualifiers}:+prof )
       setupRequired( art  ${art_ver} -q +${mu2e_ups_qualifiers}:+prof )
-      setupRequired( BTrk  ${btrk_ver} -q +${mu2e_ups_qualifiers}:+prof:+p383b )
-      setupRequired( KinKal  ${kinkal_ver} -q +${mu2e_ups_qualifiers}:+prof:+p383b )
+      setupRequired( BTrk  ${btrk_ver} -q +${mu2e_ups_qualifiers}:+prof:+p392 )
+      setupRequired( KinKal  ${kinkal_ver} -q +${mu2e_ups_qualifiers}:+prof:+p392 )
       setupRequired( heppdt  ${heppdt_ver} -q +${mu2e_ups_qualifiers}:+prof )
       setupRequired( xerces_c  ${xerces_ver} -q +${mu2e_ups_qualifiers}:+prof )
 
@@ -87,11 +87,11 @@ Qualifiers = "${qualifiers_value}:trig:debug"
       envSet (OFFLINE_FQ, \${\${UPS_PROD_NAME_UC}_FS}.${offline_fq_value}.trig.debug)
       envSet (MU2E_UPS_QUALIFIERS, +${mu2e_ups_qualifiers}:+debug )
       setupRequired( art  ${art_ver} -q +${mu2e_ups_qualifiers}:+debug )
-      setupRequired( BTrk  ${btrk_ver} -q +${mu2e_ups_qualifiers}:+debug:+p383b )
-      setupRequired( KinKal  ${kinkal_ver} -q +${mu2e_ups_qualifiers}:+debug:+p383b )
+      setupRequired( BTrk  ${btrk_ver} -q +${mu2e_ups_qualifiers}:+debug:+p392 )
+      setupRequired( KinKal  ${kinkal_ver} -q +${mu2e_ups_qualifiers}:+debug:+p392 )
       setupRequired( heppdt  ${heppdt_ver} -q +${mu2e_ups_qualifiers}:+debug )
       setupRequired( xerces_c  ${xerces_ver} -q +${mu2e_ups_qualifiers}:+debug )
-      setupRequired( mu2e_artdaq_core ${mu2e_artdaq_core_ver} -q ${mu2e_ups_qualifiers}:+${MU2E_ART_SQUALIFIER}:+debug )
+      setupRequired( mu2e_artdaq_core ${mu2e_artdaq_core_ver} -q ${mu2e_ups_qualifiers}:+${MUSE_ART}:+debug )
 
 Flavor     = ANY
 Qualifiers = "${qualifiers_value}:trig:prof"
@@ -103,11 +103,11 @@ Qualifiers = "${qualifiers_value}:trig:prof"
       envSet (OFFLINE_FQ, \${\${UPS_PROD_NAME_UC}_FS}.${offline_fq_value}.trig.prof)
       envSet (MU2E_UPS_QUALIFIERS, +\${mu2e_ups_qualifiers}:+prof )
       setupRequired( art  ${art_ver} -q +${mu2e_ups_qualifiers}:+prof )
-      setupRequired( BTrk  ${btrk_ver} -q +${mu2e_ups_qualifiers}:+prof:+p383b )
-      setupRequired( KinKal  ${kinkal_ver} -q +${mu2e_ups_qualifiers}:+prof:+p383b )
+      setupRequired( BTrk  ${btrk_ver} -q +${mu2e_ups_qualifiers}:+prof:+p392 )
+      setupRequired( KinKal  ${kinkal_ver} -q +${mu2e_ups_qualifiers}:+prof:+p392 )
       setupRequired( heppdt  ${heppdt_ver} -q +${mu2e_ups_qualifiers}:+prof )
       setupRequired( xerces_c  ${xerces_ver} -q +${mu2e_ups_qualifiers}:+prof )
-      setupRequired( mu2e_artdaq_core ${mu2e_artdaq_core_ver} -q ${mu2e_ups_qualifiers}:+${MU2E_ART_SQUALIFIER}:+prof )
+      setupRequired( mu2e_artdaq_core ${mu2e_artdaq_core_ver} -q ${mu2e_ups_qualifiers}:+${MUSE_ART}:+prof )
 
 Common:
   Action = setup
