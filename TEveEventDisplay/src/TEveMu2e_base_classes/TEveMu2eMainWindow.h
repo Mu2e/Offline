@@ -46,6 +46,8 @@
 #include "art/Framework/Principal/Run.h"
 #include "ConfigTools/inc/SimpleConfig.hh"
 #include "GeometryService/inc/GeomHandle.hh"
+#include "Offline/ConfigTools/inc/ConfigFileLookupPolicy.hh"
+
 //...TEveMu2e
 #include "TEveEventDisplay/src/TEveMu2e_base_classes/TEveMu2eHit.h"
 #include "TEveEventDisplay/src/TEveMu2e_base_classes/TEveMu2eCluster.h"
