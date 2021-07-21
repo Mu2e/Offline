@@ -9,9 +9,9 @@
 
 #include <string>
 
-#include "Mu2eG4Helper/inc/VolumeInfo.hh"
-#include "GeometryService/inc/G4GeometryOptions.hh"
-#include "GeometryService/inc/GeometryService.hh"
+#include "Offline/Mu2eG4Helper/inc/VolumeInfo.hh"
+#include "Offline/GeometryService/inc/G4GeometryOptions.hh"
+#include "Offline/GeometryService/inc/GeometryService.hh"
 
 #include "Geant4/G4Colour.hh"
 #include "Geant4/G4ThreeVector.hh"

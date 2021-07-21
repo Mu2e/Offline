@@ -8,8 +8,8 @@
 #include <string>
 
 // Mu2e includes
-#include "Mu2eG4/inc/nestCons.hh"
-#include "Mu2eG4/inc/finishNesting.hh"
+#include "Offline/Mu2eG4/inc/nestCons.hh"
+#include "Offline/Mu2eG4/inc/finishNesting.hh"
 
 // G4 includes
 #include "Geant4/G4Cons.hh"

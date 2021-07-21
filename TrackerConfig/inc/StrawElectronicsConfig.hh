@@ -56,8 +56,6 @@ namespace mu2e {
       Name("ADCOffset"), Comment("nsec")};
     fhicl::Atom<unsigned> maxThreshTimeSeparation {
       Name("maxThreshTimeSeparation"), Comment("ADC clock ticks")};
-    fhicl::Atom<unsigned> tCoince {
-      Name("tCoince"), Comment("maxing threshold xing pair time separation to create a digi, in number of ADC clock cycles")};
     fhicl::Atom<double> TDCLSB {
       Name("TDCLSB"), Comment("nsec, least-significant bit of TDC")};
     fhicl::Atom<unsigned> numTDCbits {

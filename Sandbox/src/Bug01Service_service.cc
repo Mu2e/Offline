@@ -6,8 +6,8 @@
 // Contact person Rob Kutschke
 //
 
-#include "ConfigTools/inc/SimpleConfig.hh"
-#include "Sandbox/inc/Bug01Service.hh"
+#include "Offline/ConfigTools/inc/SimpleConfig.hh"
+#include "Offline/Sandbox/inc/Bug01Service.hh"
 
 #include "canvas/Persistency/Provenance/RunID.h"
 #include "art/Framework/Services/Registry/ServiceHandle.h"

@@ -1,4 +1,4 @@
-#include "MCDataProducts/inc/TrackSummaryTruthAssns.hh"
+#include "Offline/MCDataProducts/inc/TrackSummaryTruthAssns.hh"
 #include <ostream>
 
 namespace mu2e {

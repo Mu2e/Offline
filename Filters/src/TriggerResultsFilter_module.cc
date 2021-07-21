@@ -17,7 +17,7 @@
 #include "canvas/Persistency/Common/TriggerResults.h"
 #include "cetlib_except/exception.h"
 // mu2e includes
-#include "Mu2eUtilities/inc/TriggerResultsNavigator.hh"
+#include "Offline/Mu2eUtilities/inc/TriggerResultsNavigator.hh"
 
 using namespace std;
 

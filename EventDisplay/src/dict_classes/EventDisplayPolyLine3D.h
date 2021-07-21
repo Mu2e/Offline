@@ -9,9 +9,9 @@
 #define EventDisplay_src_dict_classes_EventDisplayPolyLine3D_h
 
 #include <TPolyLine3D.h>
-#include "EventDisplay/src/EventDisplayFrame.h"
-#include "EventDisplay/src/dict_classes/ComponentInfoContainer.h"
-#include "EventDisplay/src/dict_classes/HistDraw.h"
+#include "Offline/EventDisplay/src/EventDisplayFrame.h"
+#include "Offline/EventDisplay/src/dict_classes/ComponentInfoContainer.h"
+#include "Offline/EventDisplay/src/dict_classes/HistDraw.h"
 #include <TClass.h>
 #include <TClassMenuItem.h>
 

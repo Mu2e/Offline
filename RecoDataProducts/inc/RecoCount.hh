@@ -4,7 +4,7 @@
 //
 #ifndef RecoDataProducts_RecoCount_HH
 #define RecoDataProducts_RecoCount_HH
-#include "DataProducts/inc/AHist.hh"
+#include "Offline/DataProducts/inc/AHist.hh"
 
 namespace mu2e {
  struct RecoCount {

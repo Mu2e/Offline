@@ -5,7 +5,7 @@
 // Original author Rob Kutschke
 //
 
-#include "Mu2eG4/inc/EventNumberList.hh"
+#include "Offline/Mu2eG4/inc/EventNumberList.hh"
 
 #include "Geant4/G4RunManager.hh"
 

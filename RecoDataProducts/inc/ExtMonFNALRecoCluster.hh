@@ -15,7 +15,7 @@
 
 #include "canvas/Persistency/Common/PtrVector.h"
 
-#include "RecoDataProducts/inc/ExtMonFNALRawCluster.hh"
+#include "Offline/RecoDataProducts/inc/ExtMonFNALRawCluster.hh"
 
 namespace mu2e {
 

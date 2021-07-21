@@ -2,7 +2,7 @@
 // A variant of Random01 in which the intermediate objects are not explicit.
 //
 
-#include "SeedService/inc/SeedService.hh"
+#include "Offline/SeedService/inc/SeedService.hh"
 
 #include "art/Framework/Core/EDAnalyzer.h"
 #include "art/Framework/Core/ModuleMacros.h"

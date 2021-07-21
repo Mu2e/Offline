@@ -4,9 +4,9 @@
 //
 
 // Mu2e include files
-#include "ConditionsService/inc/CalorimeterCalibrations.hh"
-#include "ConfigTools/inc/ConfigFileLookupPolicy.hh"
-#include "ConfigTools/inc/SimpleConfig.hh"
+#include "Offline/ConditionsService/inc/CalorimeterCalibrations.hh"
+#include "Offline/ConfigTools/inc/ConfigFileLookupPolicy.hh"
+#include "Offline/ConfigTools/inc/SimpleConfig.hh"
 
 #include <cmath>
 

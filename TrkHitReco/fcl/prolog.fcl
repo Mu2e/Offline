@@ -20,17 +20,27 @@ makeSH : {
 
 # combine hits in a panel
 makePH : {
-  module_type        : CombineStrawHits
-  TestFlag           : true
-  TestRadius         : true
-  ComboHitCollection : "makeSH"
+  module_type           : CombineStrawHits
+  TestFlag              : true
+  TestRadius            : true
+  ComboHitCollection    : makeSH
+  StrawHitSelectionBits : ["EnergySelection","TimeSelection"] 
+  StrawHitMask          : []
+  MaxDt                 : 40
+  UseTOT                : false
+  MaxWireDistDiffPull   : 4.0
+  TransError            : 8.0
+  MaxDS                 : 3
+  WireError             : 10.0
+  MinimumRadius         : 395.0
+  MaximumRadius         : 650.0
 }
 
 # combine panel hits in a station
 makeSTH : {
   module_type         : MakeStereoHits
   TestFlag            : true
-  MVATool             : { MVAWeights : "TrkHitReco/test/StereoMVA.weights.xml" }
+  MVATool             : { MVAWeights : "Offline/TrkHitReco/test/StereoMVA.weights.xml" }
   ComboHitCollection  : "makePH"
 }
 
@@ -87,7 +97,7 @@ FlagBkgHits : {
   MinActiveHits        : 3
   MinNPlanes           : 2
   ClusterPositionError : 10
-  BkgMVA               : { MVAWeights : "TrkHitReco/data/BkgMVAPanel.weights.xml" }
+  BkgMVA               : { MVAWeights : "Offline/TrkHitReco/data/BkgMVAPanel.weights.xml" }
   BkgMVACut            : 0.5
   FilterOutput         : false
   FlagComboHits        : true

@@ -8,8 +8,8 @@
 // Construct the TS.  Parent volume is the air inside of the hall.
 
 // Mu2e includes.
-#include "Mu2eG4/inc/constructTS.hh"
-#include "Mu2eG4Helper/inc/VolumeInfo.hh"
+#include "Offline/Mu2eG4/inc/constructTS.hh"
+#include "Offline/Mu2eG4Helper/inc/VolumeInfo.hh"
 
 // C++ includes
 #include <array>
@@ -25,25 +25,25 @@
 #include "art/Framework/Services/Registry/ServiceDefinitionMacros.h"
 
 // Mu2e includes.
-#include "BeamlineGeom/inc/Collimator_TS1.hh"
-#include "BeamlineGeom/inc/PbarWindow.hh"
-#include "Mu2eG4Helper/inc/VolumeInfo.hh"
-#include "GeometryService/inc/GeomHandle.hh"
-#include "GeometryService/inc/GeometryService.hh"
-#include "Mu2eG4Helper/inc/Mu2eG4Helper.hh"
-#include "Mu2eG4/inc/findMaterialOrThrow.hh"
-#include "Mu2eG4/inc/MaterialFinder.hh"
-#include "GeomPrimitives/inc/PolyconsParams.hh"
-#include "Mu2eG4/inc/nestBox.hh"
-#include "Mu2eG4/inc/nestPolycone.hh"
-#include "Mu2eG4/inc/nestTubs.hh"
-#include "Mu2eG4/inc/nestTorus.hh"
-#include "Mu2eG4/inc/nestCons.hh"
-#include "Mu2eG4/inc/finishNesting.hh"
-#include "GeometryService/inc/VirtualDetector.hh"
-#include "GeomPrimitives/inc/Tube.hh"
-#include "GeomPrimitives/inc/Polycone.hh"
-#include "ProductionSolenoidGeom/inc/PSVacuum.hh"
+#include "Offline/BeamlineGeom/inc/Collimator_TS1.hh"
+#include "Offline/BeamlineGeom/inc/PbarWindow.hh"
+#include "Offline/Mu2eG4Helper/inc/VolumeInfo.hh"
+#include "Offline/GeometryService/inc/GeomHandle.hh"
+#include "Offline/GeometryService/inc/GeometryService.hh"
+#include "Offline/Mu2eG4Helper/inc/Mu2eG4Helper.hh"
+#include "Offline/Mu2eG4/inc/findMaterialOrThrow.hh"
+#include "Offline/Mu2eG4/inc/MaterialFinder.hh"
+#include "Offline/GeomPrimitives/inc/PolyconsParams.hh"
+#include "Offline/Mu2eG4/inc/nestBox.hh"
+#include "Offline/Mu2eG4/inc/nestPolycone.hh"
+#include "Offline/Mu2eG4/inc/nestTubs.hh"
+#include "Offline/Mu2eG4/inc/nestTorus.hh"
+#include "Offline/Mu2eG4/inc/nestCons.hh"
+#include "Offline/Mu2eG4/inc/finishNesting.hh"
+#include "Offline/GeometryService/inc/VirtualDetector.hh"
+#include "Offline/GeomPrimitives/inc/Tube.hh"
+#include "Offline/GeomPrimitives/inc/Polycone.hh"
+#include "Offline/ProductionSolenoidGeom/inc/PSVacuum.hh"
 
 // G4 includes
 #include "Geant4/G4ThreeVector.hh"

@@ -4,7 +4,7 @@
 //
 //
 
-#include "CosmicRayShieldGeom/inc/CRSAbsorberLayer.hh"
+#include "Offline/CosmicRayShieldGeom/inc/CRSAbsorberLayer.hh"
 
 namespace mu2e 
 {

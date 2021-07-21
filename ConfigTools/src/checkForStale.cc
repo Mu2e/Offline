@@ -11,8 +11,8 @@
 #include "canvas/Utilities/Exception.h"
 
 // Mu2e includes
-#include "ConfigTools/inc/checkForStale.hh"
-#include "ConfigTools/inc/SimpleConfig.hh"
+#include "Offline/ConfigTools/inc/checkForStale.hh"
+#include "Offline/ConfigTools/inc/SimpleConfig.hh"
 
 using namespace std;
 

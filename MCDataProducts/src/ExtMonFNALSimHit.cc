@@ -1,4 +1,4 @@
-#include "MCDataProducts/inc/ExtMonFNALSimHit.hh"
+#include "Offline/MCDataProducts/inc/ExtMonFNALSimHit.hh"
 #include <ostream>
 
 namespace mu2e {

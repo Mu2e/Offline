@@ -1,8 +1,8 @@
 #include <cmath>
-#include "Validation/inc/ValHelixSeed.hh"
-#include "GeometryService/inc/GeomHandle.hh"
-#include "TrackerGeom/inc/Tracker.hh"
-#include "Mu2eUtilities/inc/HelixTool.hh"
+#include "Offline/Validation/inc/ValHelixSeed.hh"
+#include "Offline/GeometryService/inc/GeomHandle.hh"
+#include "Offline/TrackerGeom/inc/Tracker.hh"
+#include "Offline/Mu2eUtilities/inc/HelixTool.hh"
 
 int mu2e::ValHelixSeed::declare(art::TFileDirectory tfs) {
   _hVer = tfs.make<TH1D>( "Ver", "Version Number", 101, -0.5, 100.5);

@@ -1,6 +1,6 @@
-#include "Filters/fcl/prolog.fcl"
-#include "Compression/fcl/prolog.fcl"
-#include "fcl/TrkCaloDt.fcl"
+#include "Offline/Filters/fcl/prolog.fcl"
+#include "Offline/Compression/fcl/prolog.fcl"
+#include "Offline/fcl/TrkCaloDt.fcl"
 BEGIN_PROLOG
 # Diagnostic modules    
   BD : {
@@ -43,8 +43,8 @@ BEGIN_PROLOG
 	HitSelectionBits	    : ["EnergySelection","TimeSelection","RadiusSelection"]
 	HitBackgroundBits	    : ["Background"]
 	TimeOffsets         :  { inputs : [ @sequence::DigiCompression.TimeMaps ] }
-        ClusterMVA : { MVAWeights : "TrkPatRec/data/TimeCluster.weights.xml" }
-        ClusterCaloMVA : { MVAWeights : "TrkPatRec/data/TimeClusterCalo.weights.xml" }
+        ClusterMVA : { MVAWeights : "Offline/TrkPatRec/data/TimeCluster.weights.xml" }
+        ClusterCaloMVA : { MVAWeights : "Offline/TrkPatRec/data/TimeClusterCalo.weights.xml" }
 	PlotTimeSpectra : false
 	VDStepPointMCCollection : "compressDigiMCs:virtualdetector"
         T0Calculator : { CaloT0Offset : @local::TrackCaloMatching.DtOffset }
@@ -112,7 +112,7 @@ BEGIN_PROLOG
     module_type : TrackPID
     MaxDE : 5.0 # MeV
     DeltaTOffset : -1.15 # specific to MDC2018h
-    MVAConfig : { MVAWeights : "TrkDiag/data/TrkCaloHitPID.weights.xml"}
+    MVAConfig : { MVAWeights : "Offline/TrkDiag/data/TrkCaloHitPID.weights.xml"}
   }
 # this module only makes sense for downstream electron fits
   TrkPIDDeM		       : @local::TrkPID
@@ -156,7 +156,7 @@ BEGIN_PROLOG
     genParticleTag : "compressDigiMCs"
     genParticlePdgId : 11
     genParticleGenId : dioTail
-    spectrumFileName : "ConditionsService/data/czarnecki_szafron_Al_2016.tbl"
+    spectrumFileName : "Offline/ConditionsService/data/czarnecki_szafron_Al_2016.tbl"
     BinCenter : false
   }
   genCountLogger: { module_type: GenEventCountReader }

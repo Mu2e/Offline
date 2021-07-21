@@ -2,7 +2,7 @@
 // updates muon beam line internals + shielding, DS internals, 
 // and the production target + supports
 
-#include "Mu2eG4/geom/geom_2019_PhaseI_hayman_v2.txt"
+#include "Offline/Mu2eG4/geom/geom_2019_PhaseI_hayman_v2.txt"
 
 //
 //

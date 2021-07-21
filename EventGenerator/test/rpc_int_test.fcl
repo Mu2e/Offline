@@ -5,9 +5,9 @@
 # for 105 MeV/c electron : E = 105.00124           MeV
 # for 105 MeV/c muon     : E = 148.9584269653785   MeV
 #------------------------------------------------------------------------------
-#include "fcl/minimalMessageService.fcl"
-#include "fcl/standardProducers.fcl"
-#include "fcl/standardServices.fcl"
+#include "Offline/fcl/minimalMessageService.fcl"
+#include "Offline/fcl/standardProducers.fcl"
+#include "Offline/fcl/standardServices.fcl"
 
 BEGIN_PROLOG
   bgHitFiles : @nil
@@ -23,9 +23,9 @@ services : {
     TFileService          : { fileName        : "nts._USER_._DATASET_._DSCONF_.sequencer.root" }
     RandomNumberGenerator : {defaultEngineKind: "MixMaxRng" }
 
-    GeometryService        : { inputFile      : "Mu2eG4/geom/geom_common.txt"   }
-    ConditionsService      : { conditionsfile : "ConditionsService/data/conditions_01.txt"        }
-    GlobalConstantsService : { inputFile      : "GlobalConstantsService/data/globalConstants_01.txt"   }
+    GeometryService        : { inputFile      : "Offline/Mu2eG4/geom/geom_common.txt"   }
+    ConditionsService      : { conditionsfile : "Offline/ConditionsService/data/conditions_01.txt"        }
+    GlobalConstantsService : { inputFile      : "Offline/GlobalConstantsService/data/globalConstants_01.txt"   }
     BTrkHelper             : @local::BTrkHelperDefault
     Mu2eG4Helper           : { }
     SeedService            : { @table::automaticSeeds

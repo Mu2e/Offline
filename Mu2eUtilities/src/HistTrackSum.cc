@@ -3,11 +3,11 @@
 
 #include "CLHEP/Vector/ThreeVector.h"
 
-#include "RecoDataProducts/inc/TrackSummary.hh"
+#include "Offline/RecoDataProducts/inc/TrackSummary.hh"
 #include "TH1.h"
 #include "art_root_io/TFileDirectory.h"
 
-#include "Mu2eUtilities/inc/HistTrackSum.hh"
+#include "Offline/Mu2eUtilities/inc/HistTrackSum.hh"
 
 namespace mu2e {
 

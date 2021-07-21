@@ -54,8 +54,8 @@
 
 #include <cfloat>
 
-#include "TrkDiag/test/TrkFitDiag.C"
-#include "Mu2eG4/test/StepsDiag.C"
+#include "Offline/TrkDiag/test/TrkFitDiag.C"
+#include "Offline/Mu2eG4/test/StepsDiag.C"
 
 // paramenters control the interactivity and the scale
 void g4validate_01(Int_t isLog=1,bool isInteractive=false)

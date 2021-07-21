@@ -1,9 +1,9 @@
 #include "CLHEP/Vector/Rotation.h"
 #include "CLHEP/Vector/ThreeVector.h"
 
-#include "PTMGeom/inc/PTMPWC.hh"
-#include "PTMGeom/inc/PTM.hh"
-#include "GeometryService/inc/PTMMaker.hh"
+#include "Offline/PTMGeom/inc/PTMPWC.hh"
+#include "Offline/PTMGeom/inc/PTM.hh"
+#include "Offline/GeometryService/inc/PTMMaker.hh"
 //
 // construct and return a PTM
 //

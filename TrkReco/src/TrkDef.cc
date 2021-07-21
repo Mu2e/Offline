@@ -4,7 +4,7 @@
 // Original author David Brown, LBNL
 //
 #include "BTrk/BaBar/BaBar.hh"
-#include "TrkReco/inc/TrkDef.hh"
+#include "Offline/TrkReco/inc/TrkDef.hh"
 using CLHEP::Hep3Vector;
 using CLHEP::HepSymMatrix;
 using CLHEP::HepVector;

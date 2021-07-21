@@ -1,6 +1,6 @@
 // Andrei Gaponenko, 2011
 
-#include "GeometryService/inc/ProtonBeamDumpMaker.hh"
+#include "Offline/GeometryService/inc/ProtonBeamDumpMaker.hh"
 
 #include <algorithm>
 #include <cmath>
@@ -14,9 +14,9 @@
 
 #include "CLHEP/Units/SystemOfUnits.h"
 
-#include "ConfigTools/inc/SimpleConfig.hh"
+#include "Offline/ConfigTools/inc/SimpleConfig.hh"
 
-#include "ProtonBeamDumpGeom/inc/ProtonBeamDump.hh"
+#include "Offline/ProtonBeamDumpGeom/inc/ProtonBeamDump.hh"
 
 namespace mu2e {
 

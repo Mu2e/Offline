@@ -25,19 +25,18 @@
 
 #include "fhiclcpp/ParameterSet.h"
 #include "fhiclcpp/types/DelegatedParameter.h"
-#include "fhiclcpp/types/OptionalAtom.h"
 
-#include "ConfigTools/inc/ConfigFileLookupPolicy.hh"
-#include "SeedService/inc/SeedService.hh"
-#include "GlobalConstantsService/inc/GlobalConstantsHandle.hh"
-#include "GlobalConstantsService/inc/ParticleDataTable.hh"
-#include "GlobalConstantsService/inc/PhysicsParams.hh"
-#include "DataProducts/inc/PDGCode.hh"
-#include "MCDataProducts/inc/GenParticle.hh"
-#include "MCDataProducts/inc/GenParticleCollection.hh"
-#include "Mu2eUtilities/inc/RootTreeSampler.hh"
-#include "GeneralUtilities/inc/RSNTIO.hh"
-#include "EventGenerator/inc/ParticleGeneratorTool.hh"
+#include "Offline/ConfigTools/inc/ConfigFileLookupPolicy.hh"
+#include "Offline/SeedService/inc/SeedService.hh"
+#include "Offline/GlobalConstantsService/inc/GlobalConstantsHandle.hh"
+#include "Offline/GlobalConstantsService/inc/ParticleDataTable.hh"
+#include "Offline/GlobalConstantsService/inc/PhysicsParams.hh"
+#include "Offline/DataProducts/inc/PDGCode.hh"
+#include "Offline/MCDataProducts/inc/GenParticle.hh"
+#include "Offline/MCDataProducts/inc/GenParticleCollection.hh"
+#include "Offline/Mu2eUtilities/inc/RootTreeSampler.hh"
+#include "Offline/GeneralUtilities/inc/RSNTIO.hh"
+#include "Offline/EventGenerator/inc/ParticleGeneratorTool.hh"
 
 #include "TH1.h"
 
@@ -56,6 +55,7 @@ namespace mu2e {
       fhicl::DelegatedParameter captureProducts{Name("captureProducts"), Comment("Products coincident with captured muon)")};
       fhicl::DelegatedParameter decayProducts{Name("decayProducts"), Comment("Products coincident with decayed muon)")};
       fhicl::Atom<int> verbosityLevel{Name("verbosityLevel"), Comment("Verbosity Level (default = 0)"), 0};
+      fhicl::Atom<std::string> material{Name("material"), Comment("Material in which muon is stopped"), "Al"};
       fhicl::Table<RTS::Config> stops{Name("stops"), Comment("Stops ntuple config")};
     };
     typedef art::EDProducer::Table<Config> Parameters;
@@ -64,15 +64,15 @@ namespace mu2e {
     Config conf_;
 
     int               verbosityLevel_;
-
+    std::string material_;
     art::RandomNumberGenerator::base_engine_t& eng_;
     CLHEP::RandFlat randomFlat_;
 
     RTS stops_;
 
-  private:
     double _decayFraction;
     double _captureFraction;
+    
 
     std::vector<std::unique_ptr<ParticleGeneratorTool>> _muonDecayGenerators;
     std::vector<std::unique_ptr<ParticleGeneratorTool>> _muonCaptureGenerators;
@@ -88,6 +88,7 @@ namespace mu2e {
     : EDProducer(conf)
     , conf_(conf())
     , verbosityLevel_(conf_.verbosityLevel())
+    , material_ (conf_.material())
     , eng_(createEngine(art::ServiceHandle<SeedService>()->getSeed()))
     , randomFlat_(eng_)
     , stops_(eng_, conf_.stops())
@@ -108,12 +109,12 @@ namespace mu2e {
     const auto cap_psets = conf_.captureProducts.get<std::vector<fhicl::ParameterSet>>();
     for (const auto& i_cap_pset : cap_psets) {
       _muonCaptureGenerators.push_back(art::make_tool<ParticleGeneratorTool>(i_cap_pset));
-      _muonCaptureGenerators.back()->finishInitialization(eng_, "Al");
+      _muonCaptureGenerators.back()->finishInitialization(eng_, material_);
     }
     const auto decay_psets = conf_.decayProducts.get<std::vector<fhicl::ParameterSet>>();
     for (const auto& i_decay_pset : decay_psets) {
       _muonDecayGenerators.push_back(art::make_tool<ParticleGeneratorTool>(i_decay_pset));
-      _muonDecayGenerators.back()->finishInitialization(eng_, "Al");
+      _muonDecayGenerators.back()->finishInitialization(eng_, material_);
     }
   }
 

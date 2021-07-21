@@ -1,5 +1,5 @@
 
-#include "Print/inc/StrawHitFlagPrinter.hh"
+#include "Offline/Print/inc/StrawHitFlagPrinter.hh"
 #include "art/Framework/Principal/Provenance.h"
 #include <string>
 #include <iomanip>

@@ -7,7 +7,7 @@
 // Original author Rob Kutschke
 //
 
-#include "TestTools/inc/TestClass.hh"
+#include "Offline/TestTools/inc/TestClass.hh"
 #include "cetlib/maybe_ref.h"
 
 cet::maybe_ref<mu2e::TestClass const> makeItConst( int i, int j);

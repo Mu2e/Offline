@@ -1,16 +1,16 @@
-#include "GeometryService/inc/WorldG4Maker.hh"
+#include "Offline/GeometryService/inc/WorldG4Maker.hh"
 
 #include <iostream>
 
 #include "CLHEP/Units/SystemOfUnits.h"
 
-#include "ConfigTools/inc/SimpleConfig.hh"
+#include "Offline/ConfigTools/inc/SimpleConfig.hh"
 
-#include "Mu2eHallGeom/inc/Mu2eHall.hh"
-#include "GeometryService/inc/WorldG4.hh"
+#include "Offline/Mu2eHallGeom/inc/Mu2eHall.hh"
+#include "Offline/GeometryService/inc/WorldG4.hh"
 
-#include "GeometryService/inc/GeomHandle.hh"
-#include "GeometryService/inc/Mu2eEnvelope.hh"
+#include "Offline/GeometryService/inc/GeomHandle.hh"
+#include "Offline/GeometryService/inc/Mu2eEnvelope.hh"
 
 namespace mu2e {
 

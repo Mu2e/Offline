@@ -7,7 +7,7 @@
 
 #include <iostream>
 
-#include "Mu2eInterfaces/inc/ConditionsEntity.hh"
+#include "Offline/Mu2eInterfaces/inc/ConditionsEntity.hh"
 
 namespace mu2e
 {

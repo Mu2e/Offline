@@ -1,13 +1,13 @@
 #ifndef CaloConditions_CaloDAQMapCache_hh
 #define CaloConditions_CaloDAQMapCache_hh
 
-#include "Mu2eInterfaces/inc/ProditionsCache.hh"
+#include "Offline/Mu2eInterfaces/inc/ProditionsCache.hh"
 //#include "DbTables/inc/DbIoV.hh"
-#include "DbService/inc/DbHandle.hh"
-#include "DbTables/inc/CalRoIDMapDIRACToOffline.hh"
-#include "DbTables/inc/CalRoIDMapOfflineToDIRAC.hh"
+#include "Offline/DbService/inc/DbHandle.hh"
+#include "Offline/DbTables/inc/CalRoIDMapDIRACToOffline.hh"
+#include "Offline/DbTables/inc/CalRoIDMapOfflineToDIRAC.hh"
 
-#include "CaloConditions/inc/CaloDAQMapMaker.hh"
+#include "Offline/CaloConditions/inc/CaloDAQMapMaker.hh"
 
 
 namespace mu2e {

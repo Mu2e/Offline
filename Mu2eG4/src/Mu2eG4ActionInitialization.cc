@@ -7,20 +7,20 @@
 //
 
 //Mu2e includes
-#include "Mu2eG4/inc/Mu2eG4ActionInitialization.hh"
-#include "Mu2eG4/inc/Mu2eG4PrimaryGeneratorAction.hh"
-#include "Mu2eG4/inc/Mu2eG4StackingAction.hh"
-#include "Mu2eG4/inc/Mu2eG4TrackingAction.hh"
-#include "Mu2eG4/inc/Mu2eG4SteppingAction.hh"
-#include "Mu2eG4/inc/Mu2eG4EventAction.hh"
-#include "Mu2eG4/inc/Mu2eG4RunAction.hh"
-#include "Mu2eG4/inc/Mu2eG4MasterRunAction.hh"
-#include "Mu2eG4/inc/SensitiveDetectorHelper.hh"
-#include "Mu2eG4/inc/IMu2eG4Cut.hh"
-#include "Mu2eG4/inc/Mu2eG4PerThreadStorage.hh"
-#include "Mu2eG4/inc/Mu2eG4SteppingVerbose.hh"
-#include "Mu2eG4/inc/PhysicalVolumeHelper.hh"
-#include "Mu2eG4/inc/PhysicsProcessInfo.hh"
+#include "Offline/Mu2eG4/inc/Mu2eG4ActionInitialization.hh"
+#include "Offline/Mu2eG4/inc/Mu2eG4PrimaryGeneratorAction.hh"
+#include "Offline/Mu2eG4/inc/Mu2eG4StackingAction.hh"
+#include "Offline/Mu2eG4/inc/Mu2eG4TrackingAction.hh"
+#include "Offline/Mu2eG4/inc/Mu2eG4SteppingAction.hh"
+#include "Offline/Mu2eG4/inc/Mu2eG4EventAction.hh"
+#include "Offline/Mu2eG4/inc/Mu2eG4RunAction.hh"
+#include "Offline/Mu2eG4/inc/Mu2eG4MasterRunAction.hh"
+#include "Offline/Mu2eG4/inc/SensitiveDetectorHelper.hh"
+#include "Offline/Mu2eG4/inc/IMu2eG4Cut.hh"
+#include "Offline/Mu2eG4/inc/Mu2eG4PerThreadStorage.hh"
+#include "Offline/Mu2eG4/inc/Mu2eG4SteppingVerbose.hh"
+#include "Offline/Mu2eG4/inc/PhysicalVolumeHelper.hh"
+#include "Offline/Mu2eG4/inc/PhysicsProcessInfo.hh"
 
 //C++ includes
 #include <iostream>

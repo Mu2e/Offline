@@ -4,9 +4,9 @@
 # Original author K.L. Genser
 #
 
-#include "fcl/minimalMessageService.fcl"
-#include "fcl/standardProducers.fcl"
-#include "fcl/standardServices.fcl"
+#include "Offline/fcl/minimalMessageService.fcl"
+#include "Offline/fcl/standardProducers.fcl"
+#include "Offline/fcl/standardServices.fcl"
 
 BEGIN_PROLOG
 stepperout: {
@@ -29,7 +29,7 @@ services : {
   @table::Services.SimAndReco
   TFileService          : { fileName : "g4study.root" }
   GeometryService        : { @table::Services.SimAndReco.GeometryService
-    inputFile            : "Mu2eG4/g4study/g4study_Tube_geom.txt"
+    inputFile            : "Offline/Mu2eG4/g4study/g4study_Tube_geom.txt"
     simulatedDetector    : { tool_type   : "ConstructEnvTube" }
   }
 }
@@ -42,7 +42,7 @@ physics : {
     generate:
     {
       module_type          : EventGenerator
-      inputfile            : "Mu2eG4/g4study/g4studyParticleGun.txt"
+      inputfile            : "Offline/Mu2eG4/g4study/g4studyParticleGun.txt"
       allowReplacement     : true
       messageOnReplacement : true
     }

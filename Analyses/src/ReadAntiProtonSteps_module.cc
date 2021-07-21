@@ -6,15 +6,15 @@
 //
 
 #include "CLHEP/Units/SystemOfUnits.h"
-#include "ConditionsService/inc/ConditionsHandle.hh"
-#include "GeometryService/inc/GeomHandle.hh"
-#include "MCDataProducts/inc/GenParticleCollection.hh"
-#include "MCDataProducts/inc/SimParticleCollection.hh"
-#include "MCDataProducts/inc/StepPointMCCollection.hh"
+#include "Offline/ConditionsService/inc/ConditionsHandle.hh"
+#include "Offline/GeometryService/inc/GeomHandle.hh"
+#include "Offline/MCDataProducts/inc/GenParticleCollection.hh"
+#include "Offline/MCDataProducts/inc/SimParticleCollection.hh"
+#include "Offline/MCDataProducts/inc/StepPointMCCollection.hh"
 #include "TH1F.h"
 #include "TNtuple.h"
 #include "TTree.h"
-#include "GeometryService/inc/VirtualDetector.hh"
+#include "Offline/GeometryService/inc/VirtualDetector.hh"
 #include "art/Framework/Core/EDAnalyzer.h"
 #include "art/Framework/Principal/Event.h"
 #include "art/Framework/Principal/Run.h"
@@ -29,8 +29,8 @@
 #include <iomanip>
 #include <string>
 
-#include "GlobalConstantsService/inc/GlobalConstantsHandle.hh"
-#include "GlobalConstantsService/inc/ParticleDataTable.hh"
+#include "Offline/GlobalConstantsService/inc/GlobalConstantsHandle.hh"
+#include "Offline/GlobalConstantsService/inc/ParticleDataTable.hh"
 
 using namespace std;
 

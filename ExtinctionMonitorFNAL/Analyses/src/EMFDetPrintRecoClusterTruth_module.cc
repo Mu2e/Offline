@@ -2,13 +2,13 @@
 //
 // Andrei Gaponenko, 2012
 
-#include "RecoDataProducts/inc/ExtMonFNALRecoCluster.hh"
-#include "RecoDataProducts/inc/ExtMonFNALRecoClusterCollection.hh"
-#include "RecoDataProducts/inc/ExtMonFNALRawCluster.hh"
-#include "RecoDataProducts/inc/ExtMonFNALRawHit.hh"
-#include "MCDataProducts/inc/ExtMonFNALRecoClusterTruthAssn.hh"
-#include "MCDataProducts/inc/SimParticle.hh"
-#include "MCDataProducts/inc/SimParticleCollection.hh"
+#include "Offline/RecoDataProducts/inc/ExtMonFNALRecoCluster.hh"
+#include "Offline/RecoDataProducts/inc/ExtMonFNALRecoClusterCollection.hh"
+#include "Offline/RecoDataProducts/inc/ExtMonFNALRawCluster.hh"
+#include "Offline/RecoDataProducts/inc/ExtMonFNALRawHit.hh"
+#include "Offline/MCDataProducts/inc/ExtMonFNALRecoClusterTruthAssn.hh"
+#include "Offline/MCDataProducts/inc/SimParticle.hh"
+#include "Offline/MCDataProducts/inc/SimParticleCollection.hh"
 
 #include "fhiclcpp/ParameterSet.h"
 #include "art/Framework/Core/EDAnalyzer.h"

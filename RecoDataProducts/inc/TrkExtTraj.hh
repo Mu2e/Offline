@@ -37,7 +37,7 @@
 
 #include "CLHEP/Vector/ThreeVector.h"
 #include "CLHEP/Matrix/Matrix.h"
-#include "RecoDataProducts/inc/TrkExtTrajPoint.hh"
+#include "Offline/RecoDataProducts/inc/TrkExtTrajPoint.hh"
 #include <utility>
 
 namespace mu2e {

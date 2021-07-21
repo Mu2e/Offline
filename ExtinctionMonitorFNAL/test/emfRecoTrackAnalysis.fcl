@@ -1,7 +1,7 @@
 // Andrei Gaponenko, 2015
 
-#include "fcl/minimalMessageService.fcl"
-#include "fcl/standardServices.fcl"
+#include "Offline/fcl/minimalMessageService.fcl"
+#include "Offline/fcl/standardServices.fcl"
 
 process_name : emfRecoTrackAnalysis
 
@@ -13,9 +13,9 @@ source: {
 services: {
     TFileService: { fileName: "hist_emfRecoTracks.root" }
     message: @local::default_message
-    GeometryService        : { inputFile      : "JobConfig/common/geom_baseline.txt" }
-    ConditionsService      : { conditionsfile : "ConditionsService/data/conditions_01.txt"      }
-    GlobalConstantsService: { inputFile : "GlobalConstantsService/data/globalConstants_01.txt" }
+    GeometryService        : { inputFile      : "Production/JobConfig/common/geom_baseline.txt" }
+    ConditionsService      : { conditionsfile : "Offline/ConditionsService/data/conditions_01.txt"      }
+    GlobalConstantsService: { inputFile : "Offline/GlobalConstantsService/data/globalConstants_01.txt" }
 }
 
 physics: {

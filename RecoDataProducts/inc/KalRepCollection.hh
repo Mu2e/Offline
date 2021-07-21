@@ -7,7 +7,7 @@
 // Original author Rob Kutschke
 //
 #include "BTrk/KalmanTrack/KalRep.hh"
-#include "GeneralUtilities/inc/OwningPointerCollection.hh"
+#include "Offline/GeneralUtilities/inc/OwningPointerCollection.hh"
 
 namespace mu2e {
   typedef mu2e::OwningPointerCollection<KalRep> KalRepCollection;

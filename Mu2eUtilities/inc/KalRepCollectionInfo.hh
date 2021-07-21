@@ -12,14 +12,14 @@
 
 #include <string>
 
-#include "RecoDataProducts/inc/KalRepCollection.hh"
-#include "RecoDataProducts/inc/KalRepPtrCollection.hh"
-#include "RecoDataProducts/inc/TrkFitDirection.hh"
+#include "Offline/RecoDataProducts/inc/KalRepCollection.hh"
+#include "Offline/RecoDataProducts/inc/KalRepPtrCollection.hh"
+#include "Offline/RecoDataProducts/inc/TrkFitDirection.hh"
 #include "art/Framework/Principal/Event.h"
 
-#include "Mu2eUtilities/inc/KalRepInstanceNameDecoder.hh"
-#include "Mu2eUtilities/inc/TrackPatRecType.hh"
-#include "Mu2eUtilities/inc/TrkSpecies.hh"
+#include "Offline/Mu2eUtilities/inc/KalRepInstanceNameDecoder.hh"
+#include "Offline/Mu2eUtilities/inc/TrackPatRecType.hh"
+#include "Offline/Mu2eUtilities/inc/TrkSpecies.hh"
 
 namespace art { class Event; }
 namespace art { class ProductID; }

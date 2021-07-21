@@ -1,5 +1,5 @@
 #include <algorithm>
-#include "DbTables/inc/DbCache.hh"
+#include "Offline/DbTables/inc/DbCache.hh"
 
 void mu2e::DbCache::add(int cid, mu2e::DbTable::cptr_t const& ptr) { 
   _tables[cid] = ptr;

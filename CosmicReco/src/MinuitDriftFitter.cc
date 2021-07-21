@@ -4,15 +4,15 @@
 // parameters from CosmicTrack stored there.
 
 // ROOT:
-#include "CosmicReco/inc/MinuitDriftFitter.hh"
-#include "CosmicReco/inc/PDFFit.hh"
+#include "Offline/CosmicReco/inc/MinuitDriftFitter.hh"
+#include "Offline/CosmicReco/inc/PDFFit.hh"
 #include "Math/Math.h"
 #include "Math/VectorUtil.h"
-#include "Mu2eUtilities/inc/ParametricFit.hh"
-#include "Mu2eUtilities/inc/TwoLinePCA.hh"
-#include "RecoDataProducts/inc/ComboHit.hh"
+#include "Offline/Mu2eUtilities/inc/ParametricFit.hh"
+#include "Offline/Mu2eUtilities/inc/TwoLinePCA.hh"
+#include "Offline/RecoDataProducts/inc/ComboHit.hh"
 #include "TMath.h"
-#include "TrackerGeom/inc/Tracker.hh"
+#include "Offline/TrackerGeom/inc/Tracker.hh"
 
 // For Drift:
 #include "BTrk/BaBar/BaBar.hh"
@@ -23,7 +23,7 @@
 #include "BTrk/ProbTools/ChisqConsistency.hh"
 #include "BTrk/TrkBase/TrkMomCalculator.hh"
 #include "BTrk/TrkBase/TrkPoca.hh"
-#include "BTrkData/inc/TrkStrawHit.hh"
+#include "Offline/BTrkData/inc/TrkStrawHit.hh"
 #include <TObjString.h>
 #include <TROOT.h>
 #include <TSystem.h>

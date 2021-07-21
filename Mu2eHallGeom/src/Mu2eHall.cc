@@ -4,7 +4,7 @@
 // Original author: David No. Brown, Louisville.  August 2015
 
 // This class's header file
-#include "Mu2eHallGeom/inc/Mu2eHall.hh"
+#include "Offline/Mu2eHallGeom/inc/Mu2eHall.hh"
 
 // C++ header files
 #include <iostream>
@@ -12,7 +12,7 @@
 #include <vector>
 
 // other Mu2e include files
-#include "GeomPrimitives/inc/ExtrudedSolid.hh"
+#include "Offline/GeomPrimitives/inc/ExtrudedSolid.hh"
 
 // CLHEP include files
 #include "CLHEP/Units/SystemOfUnits.h"

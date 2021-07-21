@@ -9,10 +9,10 @@
 // Notes: CrystalMap tesselates a plane with square crystals and let you know which 
 //        ones are fully contained inside an annulus
 
-#include "CalorimeterGeom/inc/Disk.hh"
-#include "CalorimeterGeom/inc/SquareMapper.hh"
-#include "CalorimeterGeom/inc/SquareShiftMapper.hh"
-#include "CalorimeterGeom/inc/CrystalCondReader.hh"
+#include "Offline/CalorimeterGeom/inc/Disk.hh"
+#include "Offline/CalorimeterGeom/inc/SquareMapper.hh"
+#include "Offline/CalorimeterGeom/inc/SquareShiftMapper.hh"
+#include "Offline/CalorimeterGeom/inc/CrystalCondReader.hh"
 #include "cetlib_except/exception.h"
 
 #include "CLHEP/Vector/TwoVector.h"

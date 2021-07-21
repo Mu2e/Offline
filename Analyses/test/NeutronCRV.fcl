@@ -9,8 +9,8 @@
 #
 # Original author Gianni Onorato.
 
-#include "fcl/minimalMessageService.fcl"
-#include "fcl/standardProducers.fcl"
+#include "Offline/fcl/minimalMessageService.fcl"
+#include "Offline/fcl/standardProducers.fcl"
 
 # Give this process a name.
 process_name : NeutronRatesCounter
@@ -36,7 +36,7 @@ physics :
     generate:
     {
       module_type   : EventGenerator
-      inputfile     : "Analyses/test/genconfigCRV.txt"
+      inputfile     : "Offline/Analyses/test/genconfigCRV.txt"
       seed          : [7789]
     }
     # Run G4 and add its hits to the event.
@@ -113,6 +113,6 @@ outputs:
 physics.producers.makeSH.diagLevel : 0
 physics.producers.makeSH.maxFullPrint : 5
 services.TFileService.fileName : "NeutronRates.root"
-services.GeometryService.inputFile : "Mu2eG4/test/geom_cosmic.txt"
+services.GeometryService.inputFile : "Offline/Mu2eG4/test/geom_cosmic.txt"
 services.SeedService.baseSeed : 8
 services.SeedService.maxUniqueEngines : 20

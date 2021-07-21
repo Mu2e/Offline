@@ -6,7 +6,7 @@
 #include "TPDF.h"
 #include "TApplication.h"
 #include "TROOT.h"
-#include "Validation/inc/TValCompare.hh"
+#include "Offline/Validation/inc/TValCompare.hh"
 
 //ClassImp(TValCompare)
 

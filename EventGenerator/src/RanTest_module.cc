@@ -5,8 +5,8 @@
 */
 
 // Mu2e includes.
-#include "MCDataProducts/inc/GenParticleCollection.hh"
-#include "SeedService/inc/SeedService.hh"
+#include "Offline/MCDataProducts/inc/GenParticleCollection.hh"
+#include "Offline/SeedService/inc/SeedService.hh"
 
 // Includes from art and its tool chain
 #include "art/Framework/Core/EDProducer.h"

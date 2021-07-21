@@ -1,5 +1,5 @@
 // fit waveform using root TF1
-#include "TrkHitReco/inc/PeakFitRoot.hh"
+#include "Offline/TrkHitReco/inc/PeakFitRoot.hh"
 #include "TF1.h"
 #include "TGraphErrors.h"
 #include "TFitResult.h"

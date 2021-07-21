@@ -1,7 +1,7 @@
 //-----------------------------------------------------------------------------
 // LsqSums2
 //-----------------------------------------------------------------------------
-#include "Mu2eUtilities/inc/LsqSums2.hh"
+#include "Offline/Mu2eUtilities/inc/LsqSums2.hh"
 
 
 LsqSums2::LsqSums2() {

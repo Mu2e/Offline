@@ -33,7 +33,7 @@
   TChain* mychain = new TChain("RKFDeM/trkdiag");
   mychain->Add("genReco.hist");
 
-#include "TrkDiag/test/KalFit.C+"
+#include "Offline/TrkDiag/test/KalFit.C+"
 
   TFile * outFile = new TFile("save_ce.root","NEW");
 

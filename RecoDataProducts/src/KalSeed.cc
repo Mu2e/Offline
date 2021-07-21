@@ -1,4 +1,4 @@
-#include "RecoDataProducts/inc/KalSeed.hh"
+#include "Offline/RecoDataProducts/inc/KalSeed.hh"
 #include <limits>
 namespace mu2e {
   std::vector<KalSegment>::const_iterator KalSeed::nearestSeg(double time)  const {

@@ -2,8 +2,8 @@
 // Geometry file for use with G4_module.cc
 // This vesion can be used to do tracker and calorimeter analysis with tdr era files.
 
-#include "Mu2eG4/geom/geom_common_tdr.txt"
-#include "Mu2eG4/geom/g4_userOptions.txt"
+#include "Offline/Mu2eG4/geom/geom_common_tdr.txt"
+#include "Offline/Mu2eG4/geom/g4_userOptions.txt"
 
 // This tells emacs to view this file in c++ mode.
 // Local Variables:

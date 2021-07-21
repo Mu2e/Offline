@@ -1,11 +1,11 @@
 #ifndef TEveMu2eProjectionInterface_h
 #define TEveMu2eProjectionInterface_h
 
-#include "TEveEventDisplay/src/dict_classes/Geom_Interface.h"
-#include "TEveEventDisplay/src/TEveMu2e_base_classes/TEveMu2e2DProjection.h"
-#include "TEveEventDisplay/src/shape_classes/TEveMu2eCalorimeter.h"
-#include "TEveEventDisplay/src/shape_classes/TEveMu2eTracker.h"
-#include "TEveEventDisplay/src/shape_classes/TEveMu2eCRV.h"
+#include "Offline/TEveEventDisplay/src/dict_classes/Geom_Interface.h"
+#include "Offline/TEveEventDisplay/src/TEveMu2e_base_classes/TEveMu2e2DProjection.h"
+#include "Offline/TEveEventDisplay/src/shape_classes/TEveMu2eCalorimeter.h"
+#include "Offline/TEveEventDisplay/src/shape_classes/TEveMu2eTracker.h"
+#include "Offline/TEveEventDisplay/src/shape_classes/TEveMu2eCRV.h"
 
 namespace mu2e{
 	class TEveMu2eProjectionInterface : public TGMainFrame {

@@ -7,8 +7,8 @@
 // Contact person Rob Kutschke
 //
 
-#include "MCDataProducts/inc/SimParticle.hh"
-#include "MCDataProducts/inc/MCTrajectoryPoint.hh"
+#include "Offline/MCDataProducts/inc/SimParticle.hh"
+#include "Offline/MCDataProducts/inc/MCTrajectoryPoint.hh"
 #include "canvas/Persistency/Common/Ptr.h"
 #include "cetlib/map_vector.h"
 #include <vector>

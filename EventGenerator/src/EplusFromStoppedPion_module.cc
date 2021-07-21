@@ -18,12 +18,12 @@
 //
 
 // Mu2e includes.
-#include "GlobalConstantsService/inc/GlobalConstantsHandle.hh"
-#include "GlobalConstantsService/inc/ParticleDataTable.hh"
-#include "GeneralUtilities/inc/TwoBodyKinematics.hh"
-#include "Mu2eUtilities/inc/RandomUnitSphere.hh"
-#include "MCDataProducts/inc/GenParticleCollection.hh"
-#include "SeedService/inc/SeedService.hh"
+#include "Offline/GlobalConstantsService/inc/GlobalConstantsHandle.hh"
+#include "Offline/GlobalConstantsService/inc/ParticleDataTable.hh"
+#include "Offline/GeneralUtilities/inc/TwoBodyKinematics.hh"
+#include "Offline/Mu2eUtilities/inc/RandomUnitSphere.hh"
+#include "Offline/MCDataProducts/inc/GenParticleCollection.hh"
+#include "Offline/SeedService/inc/SeedService.hh"
 
 // art includes.
 #include "art/Framework/Core/EDProducer.h"

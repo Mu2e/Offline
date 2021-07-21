@@ -6,8 +6,8 @@
 // from fcl or database
 //
 
-#include "DAQConditions/inc/EventTiming.hh"
-#include "DAQConfig/inc/EventTimingConfig.hh"
+#include "Offline/DAQConditions/inc/EventTiming.hh"
+#include "Offline/DAQConfig/inc/EventTimingConfig.hh"
 
 
 namespace mu2e {

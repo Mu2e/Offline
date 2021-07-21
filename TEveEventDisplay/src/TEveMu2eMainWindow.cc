@@ -1,5 +1,5 @@
 //TEveMu2e:
-#include "TEveEventDisplay/src/TEveMu2e_base_classes/TEveMu2eMainWindow.h"
+#include "Offline/TEveEventDisplay/src/TEveMu2e_base_classes/TEveMu2eMainWindow.h"
 
 namespace fhicl
 {
@@ -233,7 +233,8 @@ namespace mu2e{
         Gobutton->Associate(this);
 
         //Add Mu2e logo
-        std::string logoFile = "TEveEventDisplay/src/Icons/mu2e_logo_oval.png";
+        ConfigFileLookupPolicy configFile;
+        std::string logoFile =  configFile("Offline/TEveEventDisplay/src/Icons/mu2e_logo_oval.png");
         const TGPicture *logo = gClient->GetPicture(logoFile.c_str());
         TGIcon *icon = new TGIcon(navFrame,logo,50,50);
         navFrame->AddFrame(icon,new TGLayoutHints(kLHintsLeft,20,0,0,0));
@@ -252,12 +253,12 @@ namespace mu2e{
         centenergyframe->AddFrame(cmaxenergy,new TGLayoutHints(kLHintsExpandX));
         cmaxenergy->Associate(this);
 
-        std::string clusterenergy = "TEveEventDisplay/src/Icons/purplegradient.png";
+        std::string clusterenergy =  configFile("Offline/TEveEventDisplay/src/Icons/purplegradient.png");
         const TGPicture *ce = gClient->GetPicture(clusterenergy.c_str());
         TGIcon *ceicon = new TGIcon(evtidFrame, ce, 40, 8);
 
         helabel = new TGLabel(evtidFrame, "Hit Energy");
-        std::string hitenergy = "TEveEventDisplay/src/Icons/greengradient.png";
+        std::string hitenergy = configFile("Offline/TEveEventDisplay/src/Icons/greengradient.png");;
         const TGPicture *he = gClient->GetPicture(hitenergy.c_str());
         TGIcon *heicon = new TGIcon(evtidFrame, he, 40 ,8);
 
@@ -546,7 +547,9 @@ namespace mu2e{
     gEve->GetGlobalScene()->DestroyElements();
 
     // Import the GDML of entire Mu2e Geometry
-    std::string fn = configFile("Offline/TEveEventDisplay/src/fix.gdml");
+    ConfigFileLookupPolicy configFile;
+    std::string fn =  configFile("Offline/TEveEventDisplay/src/fix.gdml");
+    
     geom = mu2e_geom->Geom_Interface::getGeom(fn);
  
     //Get Top Volume

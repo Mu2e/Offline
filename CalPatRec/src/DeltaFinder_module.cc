@@ -6,40 +6,40 @@
 #include "art/Framework/Principal/Event.h"
 #include "fhiclcpp/ParameterSet.h"
 #include "art/Framework/Principal/Handle.h"
-#include "GeometryService/inc/GeomHandle.hh"
+#include "Offline/GeometryService/inc/GeomHandle.hh"
 #include "art/Framework/Core/EDProducer.h"
-#include "GeometryService/inc/DetectorSystem.hh"
+#include "Offline/GeometryService/inc/DetectorSystem.hh"
 #include "art/Framework/Core/ModuleMacros.h"
 #include "art_root_io/TFileService.h"
 // conditions
-#include "ConditionsService/inc/ConditionsHandle.hh"
-#include "TrackerGeom/inc/Tracker.hh"
-#include "CalorimeterGeom/inc/DiskCalorimeter.hh"
+#include "Offline/ConditionsService/inc/ConditionsHandle.hh"
+#include "Offline/TrackerGeom/inc/Tracker.hh"
+#include "Offline/CalorimeterGeom/inc/DiskCalorimeter.hh"
 // root
 #include "TVector2.h"
 // data
-#include "RecoDataProducts/inc/ComboHit.hh"
-#include "RecoDataProducts/inc/StrawHit.hh"
-#include "RecoDataProducts/inc/StrawHitCollection.hh"
-#include "RecoDataProducts/inc/StrawHitPositionCollection.hh"
-#include "RecoDataProducts/inc/StereoHit.hh"
-#include "RecoDataProducts/inc/StrawHitFlag.hh"
-#include "RecoDataProducts/inc/StrawHitFlagCollection.hh"
-#include "RecoDataProducts/inc/CaloCluster.hh"
+#include "Offline/RecoDataProducts/inc/ComboHit.hh"
+#include "Offline/RecoDataProducts/inc/StrawHit.hh"
+#include "Offline/RecoDataProducts/inc/StrawHitCollection.hh"
+#include "Offline/RecoDataProducts/inc/StrawHitPositionCollection.hh"
+#include "Offline/RecoDataProducts/inc/StereoHit.hh"
+#include "Offline/RecoDataProducts/inc/StrawHitFlag.hh"
+#include "Offline/RecoDataProducts/inc/StrawHitFlagCollection.hh"
+#include "Offline/RecoDataProducts/inc/CaloCluster.hh"
 
 // diagnostics
 
-#include "CalPatRec/inc/DeltaFinder_types.hh"
+#include "Offline/CalPatRec/inc/DeltaFinder_types.hh"
 
 // #include "CalPatRec/inc/LsqSums2.hh"
-#include "Mu2eUtilities/inc/ModuleHistToolBase.hh"
+#include "Offline/Mu2eUtilities/inc/ModuleHistToolBase.hh"
 #include "art/Utilities/make_tool.h"
 
 #include <algorithm>
 #include <cmath>
 #include "CLHEP/Vector/ThreeVector.h"
-#include "Mu2eUtilities/inc/TwoLinePCA.hh"
-#include "Mu2eUtilities/inc/polyAtan2.hh"
+#include "Offline/Mu2eUtilities/inc/TwoLinePCA.hh"
+#include "Offline/Mu2eUtilities/inc/polyAtan2.hh"
 
 using namespace std;
 using CLHEP::Hep3Vector;

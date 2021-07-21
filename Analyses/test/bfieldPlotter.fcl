@@ -2,8 +2,8 @@
 # Example of running BFieldPlotter
 #
 
-#include "fcl/minimalMessageService.fcl"
-#include "fcl/standardServices.fcl"
+#include "Offline/fcl/minimalMessageService.fcl"
+#include "Offline/fcl/standardServices.fcl"
 
 process_name : BFieldPlotter
 
@@ -26,5 +26,5 @@ physics.end_paths      : [e1]
 services.TFileService.fileName: "nts.owner.bfieldplotter.x_-10000.sequencer.root"
 
 #Use file with altered field maps
-services.GeometryService.inputFile : "Analyses/test/geom_bfieldplotter.txt"
+services.GeometryService.inputFile : "Offline/Analyses/test/geom_bfieldplotter.txt"
 

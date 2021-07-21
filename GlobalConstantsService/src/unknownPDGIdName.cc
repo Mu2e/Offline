@@ -6,7 +6,7 @@
 
 #include <sstream>
 
-#include "GlobalConstantsService/inc/unknownPDGIdName.hh"
+#include "Offline/GlobalConstantsService/inc/unknownPDGIdName.hh"
 
 namespace mu2e {
 

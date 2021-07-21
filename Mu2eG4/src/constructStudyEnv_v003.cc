@@ -12,11 +12,11 @@
 
 // Mu2e includes.
 
-#include "Mu2eG4/inc/constructStudyEnv_v003.hh"
-#include "Mu2eG4/inc/findMaterialOrThrow.hh"
-#include "Mu2eG4/inc/nestBox.hh"
-#include "Mu2eG4Helper/inc/VolumeInfo.hh"
-#include "ConfigTools/inc/SimpleConfig.hh"
+#include "Offline/Mu2eG4/inc/constructStudyEnv_v003.hh"
+#include "Offline/Mu2eG4/inc/findMaterialOrThrow.hh"
+#include "Offline/Mu2eG4/inc/nestBox.hh"
+#include "Offline/Mu2eG4Helper/inc/VolumeInfo.hh"
+#include "Offline/ConfigTools/inc/SimpleConfig.hh"
 
 // G4 includes
 #include "Geant4/G4ThreeVector.hh"

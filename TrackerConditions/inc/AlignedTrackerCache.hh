@@ -6,11 +6,11 @@
 // and update them when needed
 //
 
-#include "Mu2eInterfaces/inc/ProditionsCache.hh"
-#include "DbService/inc/DbHandle.hh"
-#include "DbTables/inc/TrkAlignElement.hh"
-#include "DbTables/inc/TrkAlignStraw.hh"
-#include "TrackerConditions/inc/AlignedTrackerMaker.hh"
+#include "Offline/Mu2eInterfaces/inc/ProditionsCache.hh"
+#include "Offline/DbService/inc/DbHandle.hh"
+#include "Offline/DbTables/inc/TrkAlignElement.hh"
+#include "Offline/DbTables/inc/TrkAlignStraw.hh"
+#include "Offline/TrackerConditions/inc/AlignedTrackerMaker.hh"
 
 
 namespace mu2e {

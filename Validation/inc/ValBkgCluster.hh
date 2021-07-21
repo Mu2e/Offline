@@ -4,8 +4,8 @@
 
 #include "art/Framework/Principal/Event.h"
 #include "art_root_io/TFileDirectory.h"
-#include "RecoDataProducts/inc/BkgCluster.hh"
-#include "RecoDataProducts/inc/BkgClusterHit.hh"
+#include "Offline/RecoDataProducts/inc/BkgCluster.hh"
+#include "Offline/RecoDataProducts/inc/BkgClusterHit.hh"
 #include "TH1D.h"
 #include <string>
 

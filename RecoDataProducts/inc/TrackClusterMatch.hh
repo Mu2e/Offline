@@ -5,8 +5,8 @@
 #include <ostream>
 
 #include "canvas/Persistency/Common/Ptr.h"
-#include "RecoDataProducts/inc/TrkCaloIntersect.hh"
-#include "RecoDataProducts/inc/CaloCluster.hh"
+#include "Offline/RecoDataProducts/inc/TrkCaloIntersect.hh"
+#include "Offline/RecoDataProducts/inc/CaloCluster.hh"
 
 namespace mu2e {
 

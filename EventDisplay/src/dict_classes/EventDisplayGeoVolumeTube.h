@@ -11,9 +11,9 @@
 #include <TGeoTube.h>
 #include <TGeoVolume.h>
 #include <TGeoManager.h>
-#include "EventDisplay/src/EventDisplayFrame.h"
-#include "EventDisplay/src/dict_classes/ComponentInfoContainer.h"
-#include "EventDisplay/src/dict_classes/HistDraw.h"
+#include "Offline/EventDisplay/src/EventDisplayFrame.h"
+#include "Offline/EventDisplay/src/dict_classes/ComponentInfoContainer.h"
+#include "Offline/EventDisplay/src/dict_classes/HistDraw.h"
 #include <TClass.h>
 #include <TList.h>
 #include <TClassMenuItem.h>
