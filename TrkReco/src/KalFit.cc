@@ -230,7 +230,7 @@ namespace mu2e
   void KalFit::makeTrack(StrawResponse::cptr_t srep, 
 			 Mu2eDetector::cptr_t detmodel,
 			 KalFitData& kalData){
-
+        std::cout<<"KalFit make Track 1 "<<std::endl;
 // test if fitable
     if(fitable(*kalData.kalSeed)){
       // find the segment at the 0 flight
@@ -241,6 +241,7 @@ namespace mu2e
 	std::cout << "FitType: "<< kalData.fitType<<", number 0f segments = "<<kalData.kalSeed->segments().size()
 		  <<", Helix segment range doesn't cover flt0 = " << flt0 << std::endl;
       }
+      std::cout<<"KalFit make Track 2 "<<std::endl;
       // create a trajectory from the seed. This shoudl be a general utility function that
       // can work with multi-segment seeds FIXME!
       // create CLHEP objects from seed native members.  This will
@@ -272,7 +273,7 @@ namespace mu2e
 	makeTrkCaloHit(kalData, tch);
 	if (tch != 0) thv.push_back(tch);
       }
- 
+ std::cout<<"KalFit make Track 3 "<<std::endl;
       TrkT0 t0(kalData.kalSeed->t0());
       // create Kalman rep
       kalData.krep = new KalRep(htraj, thv, detinter, *this, TrkParticle(TrkParticle::type(kalData.kalSeed->particle())), t0, flt0);
@@ -293,6 +294,7 @@ namespace mu2e
       if(fitstat.success()){
 	fitstat = extendFit(kalData.krep);
 	kalData.krep->addHistory(fitstat,"KalFit extension");
+	std::cout<<"KalFit make Track 4 "<<std::endl;
       }
     }
   }
@@ -302,7 +304,7 @@ namespace mu2e
   //2017-05-02: Gianipez. In this function inten
 // there must be a valid Kalman fit to add hits to
    KalRep* krep = kalData.krep;
-   
+   std::cout<<"KalFit add  hits 1 "<<std::endl;
    if(kalData.krep != 0 && kalData.missingHits.size() > 0 && krep->fitStatus().success()){
       TrkHitVector::iterator ihigh;
       TrkHitVector::reverse_iterator ilow;
@@ -334,6 +336,7 @@ namespace mu2e
         TrkStrawHit* trkhit = new TrkStrawHit(srep,strawhit,*_tracker,istraw,hitt0,hflt,
 					      _maxpull,_strHitW );
         assert(trkhit != 0);
+        std::cout<<"KAL FIT"<<_herr.back()<<std::endl;
 	trkhit->setTemperature(_herr.back()); // give this hit the final annealing temperature
         trkhit->setFlag(TrkHit::addedHit);
 // guess the ambiguity form the sign of the doca
@@ -384,6 +387,7 @@ namespace mu2e
       TrkErrCode fitstat = fitIteration(detmodel,kalData,_herr.size()-1);
       krep->addHistory(fitstat,"AddHits");
     }
+    std::cout<<"KalFit add  hits 2 "<<std::endl;
   }
 //
   TrkErrCode KalFit::fitTrack(Mu2eDetector::cptr_t detmodel, KalFitData&kalData) {

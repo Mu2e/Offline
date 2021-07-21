@@ -28,7 +28,7 @@
 #include "art/Framework/Principal/Event.h"
 #include "art/Framework/Services/Registry/ServiceHandle.h"
 #include "art/Utilities/make_tool.h"
-
+#include "art_root_io/TFileService.h"
 #include "Offline/SeedService/inc/SeedService.hh"
 #include "Offline/GlobalConstantsService/inc/GlobalConstantsHandle.hh"
 #include "Offline/GlobalConstantsService/inc/ParticleDataTable.hh"
@@ -38,6 +38,7 @@
 #include "Offline/Mu2eUtilities/inc/simParticleList.hh"
 #include "Offline/EventGenerator/inc/ParticleGeneratorTool.hh"
 
+#include <TH1F.h>
 namespace mu2e {
   //================================================================
   class Pileup : public art::EDProducer {
@@ -66,6 +67,11 @@ namespace mu2e {
 
     //----------------------------------------------------------------
   private:
+    TH1F *pmag_gen;
+    TH1F *time_gen;
+    TH1F *x_gen;
+    TH1F *y_gen;
+    TH1F *z_gen;
     double muonLifeTime_;
     double decayFraction_;
 
@@ -102,7 +108,15 @@ namespace mu2e {
          <<", decay fraction = "<<decayFraction_
          <<std::endl;
     }
+    
+    art::ServiceHandle<art::TFileService> tfs;
+    art::TFileDirectory tfdir = tfs->mkdir( "IPAGun" );
 
+    pmag_gen     = tfdir.make<TH1F>( "pmag", "Produced Momentum", 100,  0.,  120.  );
+    time_gen     = tfdir.make<TH1F>( "time", "Produced Time", 100,  0.,  1700.  );
+    x_gen     = tfdir.make<TH1F>( "x", "Produced x", 100,  -5000,  5000.  );
+    y_gen     = tfdir.make<TH1F>( "y", "Produced y", 100,  -5000,  5000.  );
+    z_gen     = tfdir.make<TH1F>( "z", "Produced z", 100,  0.,  17000.  );
     if(conf().stoppingTargetMaterial() != "Al" and conf().stoppingTargetMaterial() != "IPA" ) {
       throw   cet::exception("NOT_IMPLEMENTED")
         <<"Pileup_module: emisson spectra for other than Al target are not impelmented\n";
@@ -133,7 +147,7 @@ namespace mu2e {
       // decay or capture time for this muon, should
       // be the same for all its daughters
       const double time = mustop->endGlobalTime() + randExp_.fire(muonLifeTime_);
-
+      std::cout<<mustop->endGlobalTime() <<" "<< randExp_.fire(muonLifeTime_)<<std::endl;
       double rand = randFlat_.fire();
       if (rand < decayFraction_) {
         for (const auto& gen : muonDecayGenerators_) {
@@ -145,11 +159,13 @@ namespace mu2e {
           addParticles(output.get(), mustop, time, gen.get());
         }
       }
-
+      
     }
 
+    
     if(verbosity_ >= 9) {
       std::cout<<"Pileup output: "<<*output<<std::endl;
+      
     }
 
     event.put(std::move(output));
@@ -163,6 +179,7 @@ namespace mu2e {
   {
     auto daughters = gen->generate();
     for(const auto& d: daughters) {
+      time = 1000;
       output->emplace_back(mustop,
                            d.creationCode,
                            d.pdgId,
@@ -170,6 +187,13 @@ namespace mu2e {
                            d.fourmom,
                            time
                            );
+       double mag = sqrt(d.fourmom.px()*d.fourmom.px() + d.fourmom.py()*d.fourmom.py() + d.fourmom.pz()*d.fourmom.pz());
+       pmag_gen->Fill(mag);
+       time_gen->Fill(time);
+       x_gen->Fill(mustop->endPosition().x());
+       y_gen->Fill(mustop->endPosition().y());
+       z_gen->Fill(mustop->endPosition().z());
+
     }
   }
 
