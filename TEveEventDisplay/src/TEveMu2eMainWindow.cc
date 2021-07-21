@@ -546,8 +546,9 @@ namespace mu2e{
     gEve->GetGlobalScene()->DestroyElements();
 
     // Import the GDML of entire Mu2e Geometry
-    geom = mu2e_geom->Geom_Interface::getGeom("TEveEventDisplay/src/fix.gdml");
-
+    std::string fn = configFile("Offline/TEveEventDisplay/src/fix.gdml");
+    geom = mu2e_geom->Geom_Interface::getGeom(fn);
+ 
     //Get Top Volume
     TGeoVolume* topvol = geom->GetTopVolume();
 
