@@ -18,6 +18,7 @@
 #include "fhiclcpp/ParameterSet.h"
 #include "mu2e-artdaq-core/Overlays/CalorimeterFragment.hh"
 #include "mu2e-artdaq-core/Overlays/FragmentType.hh"
+#include "mu2e-artdaq-core/Overlays/Mu2eEventFragment.hh"
 #include "mu2e-artdaq-core/Overlays/TrackerFragment.hh"
 
 #include <artdaq-core/Data/Fragment.hh>
@@ -53,8 +54,8 @@ public:
   virtual void analyze(const art::Event& e) override;
 
 private:
-  void analyze_tracker_(const artdaq::Fragment& f);
-  void analyze_calorimeter_(const artdaq::Fragment& f);
+  void analyze_tracker_(const mu2e::TrackerFragment& cc);
+  void analyze_calorimeter_(const mu2e::CalorimeterFragment& cc);
 
   int diagLevel_;
 
@@ -131,22 +132,66 @@ void FragmentAna::endJob() {}
 void FragmentAna::analyze(const art::Event& event) {
   art::EventNumber_t eventNumber = event.event();
 
-  art::Handle<artdaq::Fragments> trkFragments, calFragments;
-  size_t numTrkFrags(0), numCalFrags(0);
-  if (parseTRK_) {
-    event.getByLabel(trkFragmentsTag_, trkFragments);
-    if (!trkFragments.isValid()) {
-      return;
+  size_t totalSize = 0;
+  size_t numTrkFrags = 0;
+  size_t numCalFrags = 0;
+  std::vector<art::Handle<artdaq::Fragments>> fragmentHandles =
+      event.getMany<std::vector<artdaq::Fragment>>();
+
+  for (const auto& handle : fragmentHandles) {
+    if (!handle.isValid() || handle->empty()) {
+      continue;
     }
-    numTrkFrags = trkFragments->size();
+
+    if (handle->front().type() == mu2e::detail::FragmentType::MU2EEVENT) {
+      for (const auto& cont : *handle) {
+        mu2e::Mu2eEventFragment mef(cont);
+        if (parseTRK_) {
+          for (size_t ii = 0; ii < mef.tracker_block_count(); ++ii) {
+            auto pair = mef.trackerAtPtr(ii);
+            mu2e::TrackerFragment cc(pair);
+            analyze_tracker_(cc);
+
+            totalSize += pair.second;
+            numTrkFrags++;
+          }
+        }
+        if (parseCAL_) {
+          for (size_t ii = 0; ii < mef.calorimeter_block_count(); ++ii) {
+            auto pair = mef.calorimeterAtPtr(ii);
+            mu2e::CalorimeterFragment cc(pair);
+            analyze_calorimeter_(cc);
+
+            totalSize += pair.second;
+            numTrkFrags++;
+          }
+        }
+      }
+    } else {
+      if (handle->front().type() == mu2e::detail::FragmentType::TRK && parseTRK_) {
+        for (auto frag : *handle) {
+          mu2e::TrackerFragment cc(frag.dataBegin(), frag.dataSizeBytes());
+          analyze_tracker_(cc);
+
+          totalSize += frag.dataSizeBytes();
+          numTrkFrags++;
+        }
+      } else if (handle->front().type() == mu2e::detail::FragmentType::CAL && parseCAL_) {
+        for (auto frag : *handle) {
+          mu2e::CalorimeterFragment cc(frag.dataBegin(), frag.dataSizeBytes());
+          analyze_calorimeter_(cc);
+
+          totalSize += frag.dataSizeBytes();
+          numCalFrags++;
+        }
+      }
+    }
+  }
+
+  if (parseTRK_) {
     _hTrkNFragment->Fill(numTrkFrags);
   }
   if (parseCAL_) {
-    event.getByLabel(caloFragmentsTag_, calFragments);
-    if (!calFragments.isValid()) {
-      return;
-    }
-    numCalFrags = calFragments->size();
     _hCalNFragment->Fill(numCalFrags);
   }
 
@@ -156,54 +201,21 @@ void FragmentAna::analyze(const art::Event& event) {
     std::cout << numTrkFrags << " TRK fragments, and ";
     std::cout << numCalFrags << " CAL fragments." << std::endl;
 
-    size_t totalSize = 0;
-    for (size_t idx = 0; idx < numTrkFrags; ++idx) {
-      auto size = ((*trkFragments)[idx]).size(); // * sizeof(artdaq::RawDataType);
-      totalSize += size;
-      //      std::cout << "\tTRK Fragment " << idx << " has size " << size << std::endl;
-    }
-    for (size_t idx = 0; idx < numCalFrags; ++idx) {
-      auto size = ((*calFragments)[idx]).size(); // * sizeof(artdaq::RawDataType);
-      totalSize += size;
-      //      std::cout << "\tCAL Fragment " << idx << " has size " << size << std::endl;
-    }
-    totalSize *= sizeof(artdaq::RawDataType);
-
     std::cout << "\tTotal Size: " << (int)totalSize << " bytes." << std::endl;
   }
-  std::string curMode = "TRK";
 
-  // Loop over the TRK and CAL fragments
-  for (size_t idx = 0; idx < numTrkFrags + numCalFrags; ++idx) {
-
-    auto curHandle = trkFragments;
-    size_t curIdx = idx;
-    if (idx >= numTrkFrags) {
-      curIdx = idx - numTrkFrags;
-      curHandle = calFragments;
-    }
-    const auto& fragment((*curHandle)[curIdx]);
-
-    if (idx < numTrkFrags) {
-      analyze_tracker_(fragment);
-    } else {
-      analyze_calorimeter_(fragment);
-    }
-  }
   if (diagLevel_ > 0) {
     std::cout << "mu2e::FragmentAna::produce exiting eventNumber=" << (int)(event.event())
               << " / timestamp=" << (int)eventNumber << std::endl;
   }
 }
 
-void FragmentAna::analyze_tracker_(const artdaq::Fragment& f) {
-  mu2e::TrackerFragment cc(f);
+void FragmentAna::analyze_tracker_(const mu2e::TrackerFragment& cc) {
 
   if (diagLevel_ > 1) {
     std::cout << std::endl;
     std::cout << "ArtFragment: ";
     std::cout << "\tBlock Count: " << std::dec << cc.block_count() << std::endl;
-    std::cout << "\tByte Count: " << f.dataSizeBytes() << std::endl;
     std::cout << std::endl;
     std::cout << "\t"
               << "====== Example Block Sizes ======" << std::endl;
@@ -227,7 +239,7 @@ void FragmentAna::analyze_tracker_(const artdaq::Fragment& f) {
     auto hdr = block->GetHeader();
 
     // Parse phyiscs information from TRK packets
-    if (hdr.GetPacketCount() > 0 && parseTRK_ > 0) {
+    if (hdr->GetPacketCount() > 0 && parseTRK_ > 0) {
 
       // Create the StrawDigi data products
       auto trkDataVec = cc.GetTrackerData(curBlockIdx);
@@ -264,17 +276,15 @@ void FragmentAna::analyze_tracker_(const artdaq::Fragment& f) {
     }
   }
 
-  cc.ClearUpgradedPackets();
+  // cc.ClearUpgradedPackets();
 }
 
-void FragmentAna::analyze_calorimeter_(const artdaq::Fragment& f) {
-  mu2e::CalorimeterFragment cc(f);
+void FragmentAna::analyze_calorimeter_(const mu2e::CalorimeterFragment& cc) {
 
   if (diagLevel_ > 1) {
     std::cout << std::endl;
     std::cout << "ArtFragment: ";
     std::cout << "\tBlock Count: " << std::dec << cc.block_count() << std::endl;
-    std::cout << "\tByte Count: " << f.dataSizeBytes() << std::endl;
     std::cout << std::endl;
     std::cout << "\t"
               << "====== Example Block Sizes ======" << std::endl;
@@ -297,8 +307,7 @@ void FragmentAna::analyze_calorimeter_(const artdaq::Fragment& f) {
     }
     auto hdr = block->GetHeader();
 
-    if (hdr.GetPacketCount() > 0 &&
-        parseCAL_ > 0) { // Parse phyiscs information from CAL packets
+    if (hdr->GetPacketCount() > 0 && parseCAL_ > 0) { // Parse phyiscs information from CAL packets
 
       auto calData = cc.GetCalorimeterData(curBlockIdx);
       if (calData == nullptr) {
@@ -318,7 +327,7 @@ void FragmentAna::analyze_calorimeter_(const artdaq::Fragment& f) {
       for (auto& hit : hits) {
 
         // Fill the CaloDigiCollection
-        
+
         // IMPORTANT NOTE: we don't have a final
         // mapping yet so for the moment, the BoardID field (described in docdb 4914) is just a
         // placeholder. Because we still need to know which crystal a hit belongs to, we are
