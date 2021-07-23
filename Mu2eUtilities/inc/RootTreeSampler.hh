@@ -39,6 +39,7 @@
 #include "fhiclcpp/types/OptionalAtom.h"
 #include "fhiclcpp/types/TupleAs.h"
 #include "fhiclcpp/ParameterSet.h"
+#include "fhiclcpp/types/Sequence.h"
 
 #include "CLHEP/Random/RandomEngine.h"
 #include "CLHEP/Random/RandFlat.h"
