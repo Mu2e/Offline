@@ -1,6 +1,6 @@
 //TEveMu2e:
 #include "Offline/TEveEventDisplay/src/TEveMu2e_base_classes/TEveMu2eMainWindow.h"
-
+#include "Offline/ConfigTools/inc/ConfigFileLookupPolicy.hh"
 namespace fhicl
 {
   class ParameterSet;
