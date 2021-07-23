@@ -33,7 +33,7 @@ physics.producers.g4run.physics.physicsListName: "Minimal"
 services.SeedService.baseSeed         :  8
 services.SeedService.maxUniqueEngines :  20
 
-physics.producers.generate.inputfile : "EventGenerator/defaultConfigs/surfaceCheck.txt"
+physics.producers.generate.inputfile : "Offline/EventGenerator/defaultConfigs/surfaceCheck.txt"
 
 services.GeometryService.inputFile : "Offline/Mu2eG4/geom/geom_SurfaceCheck.txt"
 services.TFileService.fileName     : "surfaceCheck.root"
