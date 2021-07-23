@@ -15,6 +15,7 @@
 #include "fhiclcpp/ParameterSet.h"
 #include "art/Framework/Services/Registry/ServiceHandle.h"
 #include "messagefacility/MessageLogger/MessageLogger.h"
+#include "fhiclcpp/types/Sequence.h"
 
 #include "Offline/GeometryService/inc/GeomHandle.hh"
 #include "Offline/GeometryService/inc/GeometryService.hh"

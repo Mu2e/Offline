@@ -25,6 +25,7 @@
 
 #include "fhiclcpp/ParameterSet.h"
 #include "fhiclcpp/types/DelegatedParameter.h"
+#include "fhiclcpp/types/Sequence.h"
 
 #include "Offline/ConfigTools/inc/ConfigFileLookupPolicy.hh"
 #include "Offline/SeedService/inc/SeedService.hh"

@@ -3,6 +3,7 @@
 //  on MergeHelixFinder.  P. Murat, D. Brown (LBNL)
 //
 #include "fhiclcpp/types/Atom.h"
+#include "fhiclcpp/types/Sequence.h"
 #include "canvas/Utilities/InputTag.h"
 #include "canvas/Persistency/Common/Ptr.h"
 #include "art/Framework/Core/EDProducer.h"

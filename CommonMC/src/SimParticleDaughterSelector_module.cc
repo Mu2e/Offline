@@ -17,6 +17,7 @@
 #include "art/Framework/Principal/Handle.h"
 #include "art/Framework/Services/Registry/ServiceHandle.h"
 #include "art_root_io/TFileService.h"
+#include "fhiclcpp/types/Sequence.h"
 
 // Mu2e includes.
 #include "Offline/DataProducts/inc/PDGCode.hh"

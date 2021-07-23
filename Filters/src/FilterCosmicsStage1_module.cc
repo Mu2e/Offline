@@ -8,6 +8,7 @@
 
 // art includes.
 #include "fhiclcpp/ParameterSet.h"
+#include "fhiclcpp/types/Sequence.h"
 #include "art/Framework/Core/EDFilter.h"
 #include "art/Framework/Principal/Event.h"
 #include "art/Framework/Principal/Run.h"

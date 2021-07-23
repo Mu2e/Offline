@@ -8,6 +8,7 @@
 #include "art/Framework/Principal/Event.h"
 #include "fhiclcpp/ParameterSet.h"
 #include "art/Framework/Principal/Handle.h"
+#include "art/Framework/Principal/Run.h"
 #include "Offline/GeometryService/inc/GeomHandle.hh"
 #include "art/Framework/Core/EDProducer.h"
 #include "Offline/GeometryService/inc/DetectorSystem.hh"

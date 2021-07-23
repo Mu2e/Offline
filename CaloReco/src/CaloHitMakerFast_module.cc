@@ -3,6 +3,7 @@
 #include "art/Framework/Core/ModuleMacros.h"
 #include "Offline/GeneralUtilities/inc/ParameterSetHelpers.hh"
 #include "art/Framework/Principal/Handle.h"
+#include "fhiclcpp/types/Sequence.h"
 
 #include "Offline/CalorimeterGeom/inc/Calorimeter.hh"
 #include "Offline/ConditionsService/inc/ConditionsHandle.hh"

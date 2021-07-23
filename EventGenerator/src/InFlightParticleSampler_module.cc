@@ -24,6 +24,8 @@
 #include "art/Framework/Principal/Handle.h"
 #include "art/Framework/Services/Registry/ServiceHandle.h"
 
+#include "fhiclcpp/types/Sequence.h"
+
 #include "Offline/SeedService/inc/SeedService.hh"
 #include "Offline/GlobalConstantsService/inc/GlobalConstantsHandle.hh"
 #include "Offline/GlobalConstantsService/inc/ParticleDataTable.hh"

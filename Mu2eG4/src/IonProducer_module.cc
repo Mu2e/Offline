@@ -17,6 +17,7 @@
 #include "art/Framework/Core/EDProducer.h"
 #include "art/Framework/Core/ModuleMacros.h"
 #include "art/Framework/Principal/Event.h"
+#include "art/Framework/Principal/SubRun.h"
 
 #include "Offline/DataProducts/inc/PDGCode.hh"
 #include "Offline/MCDataProducts/inc/SimParticleCollection.hh"
