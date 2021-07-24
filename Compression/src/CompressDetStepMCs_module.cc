@@ -30,6 +30,7 @@
 #include "fhiclcpp/ParameterSet.h"
 #include "messagefacility/MessageLogger/MessageLogger.h"
 #include "art_root_io/TFileService.h"
+#include "fhiclcpp/types/Sequence.h"
 
 #include <memory>
 

@@ -13,6 +13,8 @@
 
 #include "cetlib_except/exception.h"
 
+#include "fhiclcpp/types/Sequence.h"
+
 #include "CLHEP/Vector/ThreeVector.h"
 #include "CLHEP/Vector/LorentzVector.h"
 #include "CLHEP/Random/RandomEngine.h"
