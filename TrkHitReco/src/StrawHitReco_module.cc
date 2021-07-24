@@ -12,6 +12,7 @@
 #include "Offline/GeometryService/inc/DetectorSystem.hh"
 #include "art/Framework/Core/ModuleMacros.h"
 #include "art_root_io/TFileService.h"
+#include "art/Framework/Principal/Run.h"
 
 // conditions
 #include "Offline/ProditionsService/inc/ProditionsHandle.hh"

@@ -7,6 +7,7 @@
 #include <memory>
 
 #include "fhiclcpp/types/OptionalTable.h"
+#include "fhiclcpp/types/Sequence.h"
 #include "messagefacility/MessageLogger/MessageLogger.h"
 
 #include "CLHEP/Random/RandGaussQ.h"

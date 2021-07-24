@@ -27,6 +27,7 @@
 #include "art_root_io/TFileService.h"
 #include "Offline/ConditionsService/inc/ConditionsHandle.hh"
 #include "Offline/ConditionsService/inc/AcceleratorParams.hh"
+#include "fhiclcpp/types/Sequence.h"
 
 // Mu2e includes
 #include "Offline/ConfigTools/inc/ConfigFileLookupPolicy.hh"
