@@ -7,8 +7,8 @@
 //
 
 // Mu2e includes
-#include "Mu2eG4/inc/Mu2eG4SensitiveDetector.hh"
-#include "TrackerGeom/inc/SupportModel.hh"
+#include "Offline/Mu2eG4/inc/Mu2eG4SensitiveDetector.hh"
+#include "Offline/TrackerGeom/inc/SupportModel.hh"
 
 
 namespace mu2e {

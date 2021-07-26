@@ -3,12 +3,17 @@
 ////S. Middleton, Feb 2019 - Cosmic track class, main purpose id to store diagnostics.
 #include "TMath.h"
 #include "TMatrixD.h"
-#include "DataProducts/inc/XYZVec.hh"
-#include "Mu2eUtilities/inc/TwoLinePCA_XYZ.hh"
+
 #include "KinKal/General/Vectors.hh"
 #include <vector>
 #include <bitset>
 #include <tuple>
+
+#include "Offline/DataProducts/inc/XYZVec.hh"
+#include "Offline/Mu2eUtilities/inc/PointLinePCA_XYZ.hh"
+#include "Offline/Mu2eUtilities/inc/TwoLinePCA_XYZ.hh"
+
+
 using CLHEP::Hep3Vector;
 using namespace std;
    //Struct To Hold Covarience Info:

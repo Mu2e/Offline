@@ -11,9 +11,9 @@
 #include <string>
 #include <memory>
 
-#include "CosmicRayShieldGeom/inc/CRSScintillatorBarId.hh"
-#include "CosmicRayShieldGeom/inc/CRSScintillatorBarDetail.hh"
-#include "DataProducts/inc/CRSScintillatorBarIndex.hh"
+#include "Offline/CosmicRayShieldGeom/inc/CRSScintillatorBarId.hh"
+#include "Offline/CosmicRayShieldGeom/inc/CRSScintillatorBarDetail.hh"
+#include "Offline/DataProducts/inc/CRSScintillatorBarIndex.hh"
 
 #include "CLHEP/Vector/ThreeVector.h"
 

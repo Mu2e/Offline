@@ -3,8 +3,8 @@
 //
 //
 
-#include "ConditionsService/inc/CrvParams.hh"
-#include "ConfigTools/inc/SimpleConfig.hh"
+#include "Offline/ConditionsService/inc/CrvParams.hh"
+#include "Offline/ConfigTools/inc/SimpleConfig.hh"
 
 #include <iostream>
 

@@ -25,10 +25,10 @@
 #include "cetlib_except/exception.h"
 
 // Mu2e includes
-#include "GeometryService/inc/MBSMaker.hh"
-#include "MBSGeom/inc/MBS.hh"
+#include "Offline/GeometryService/inc/MBSMaker.hh"
+#include "Offline/MBSGeom/inc/MBS.hh"
 
-#include "ConfigTools/inc/SimpleConfig.hh"
+#include "Offline/ConfigTools/inc/SimpleConfig.hh"
 
 using namespace std;
 

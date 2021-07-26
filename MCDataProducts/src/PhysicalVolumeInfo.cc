@@ -1,4 +1,4 @@
-#include "MCDataProducts/inc/PhysicalVolumeInfo.hh"
+#include "Offline/MCDataProducts/inc/PhysicalVolumeInfo.hh"
 
 #include <iterator>
 

@@ -12,7 +12,7 @@
 
 #include <ostream>
 
-#include "CosmicRayShieldGeom/inc/CRSScintillatorModuleId.hh"
+#include "Offline/CosmicRayShieldGeom/inc/CRSScintillatorModuleId.hh"
 
 namespace mu2e 
 {

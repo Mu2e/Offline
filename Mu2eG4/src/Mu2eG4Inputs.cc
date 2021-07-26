@@ -1,12 +1,12 @@
-#include "Mu2eG4/inc/Mu2eG4Inputs.hh"
+#include "Offline/Mu2eG4/inc/Mu2eG4Inputs.hh"
 
 #include <optional>
 #include "cetlib_except/exception.h"
 #include "canvas/Persistency/Provenance/ProductID.h"
 #include "art/Framework/Principal/Event.h"
 
-#include "MCDataProducts/inc/StepPointMCCollection.hh"
-#include "MCDataProducts/inc/StageParticle.hh"
+#include "Offline/MCDataProducts/inc/StepPointMCCollection.hh"
+#include "Offline/MCDataProducts/inc/StageParticle.hh"
 
 namespace mu2e {
   Mu2eG4Inputs::Mu2eG4Inputs(const Mu2eG4Config::Inputs_& conf)

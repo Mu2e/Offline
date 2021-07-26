@@ -7,8 +7,8 @@
 // art
 #include "canvas/Persistency/Common/Ptr.h"
 // MC data
-#include "MCDataProducts/inc/SimParticle.hh"
-#include "MCDataProducts/inc/StrawDigiMC.hh"
+#include "Offline/MCDataProducts/inc/SimParticle.hh"
+#include "Offline/MCDataProducts/inc/StrawDigiMC.hh"
 namespace mu2e 
 {  
  // some convenient typedefs    

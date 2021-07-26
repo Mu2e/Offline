@@ -1,5 +1,5 @@
 
-#include "Validation/inc/ValGenParticle.hh"
+#include "Offline/Validation/inc/ValGenParticle.hh"
 
 
 int mu2e::ValGenParticle::declare(art::TFileDirectory tfs) {
@@ -14,7 +14,8 @@ int mu2e::ValGenParticle::declare(art::TFileDirectory tfs) {
   _hyt = tfs.make<TH1D>( "Ytgt", "Y stopping target", 100, -120.0, 120.0);
   _hz = tfs.make<TH1D>( "Z", "Z", 100, -20000.0, 25000.0);
   _hzt = tfs.make<TH1D>( "Ztgt", "Z stopping target", 100, 5400, 6350);
-  _t = tfs.make<TH1D>( "t", "t", 100, -300.0, 300.0);
+  _t = tfs.make<TH1D>( "t", "t", 100, -300.0, 2000.0);
+  _t2 = tfs.make<TH1D>( "t2", "t2", 100, -1.0, 1e5);
   return 0;
 }
 
@@ -23,7 +24,7 @@ int mu2e::ValGenParticle::fill(const mu2e::GenParticleCollection & coll,
 
   // increment this by 1 any time the defnitions of the histograms or the 
   // histogram contents change, and will not match previous versions
-  _hVer->Fill(2.0);
+  _hVer->Fill(3.0);
 
   _hN->Fill(coll.size()); 
   for(auto const& sp : coll) {
@@ -38,7 +39,8 @@ int mu2e::ValGenParticle::fill(const mu2e::GenParticleCollection & coll,
     _hz->Fill(sp.position().z());
     _hzt->Fill(sp.position().z());
     _t->Fill(sp.time());
-    
+    _t2->Fill(sp.time());
+
   }
   return 0;
 }

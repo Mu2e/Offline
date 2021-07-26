@@ -5,7 +5,7 @@
 //
 
 // Mu2e includes.
-#include "RecoDataProducts/inc/StrawDigi.hh"
+#include "Offline/RecoDataProducts/inc/StrawDigi.hh"
 
 #include "canvas/Utilities/InputTag.h"
 #include "canvas/Utilities/Exception.h"

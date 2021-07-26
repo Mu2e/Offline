@@ -7,7 +7,7 @@
 // Original author Rob Kutschke
 //
 
-#include "Mu2eG4/inc/Mu2eG4Config.hh"
+#include "Offline/Mu2eG4/inc/Mu2eG4Config.hh"
 
 // Forward declarations
 class G4VUserPhysicsList;

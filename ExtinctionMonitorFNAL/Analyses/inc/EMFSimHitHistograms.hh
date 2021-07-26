@@ -12,8 +12,8 @@
 
 #include "art_root_io/TFileDirectory.h"
 
-#include "DataProducts/inc/ExtMonFNALModuleId.hh"
-#include "MCDataProducts/inc/ExtMonFNALSimHitCollection.hh"
+#include "Offline/DataProducts/inc/ExtMonFNALModuleId.hh"
+#include "Offline/MCDataProducts/inc/ExtMonFNALSimHitCollection.hh"
 
 class TH1D;
 class TH2D;

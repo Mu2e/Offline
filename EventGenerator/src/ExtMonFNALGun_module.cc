@@ -14,11 +14,12 @@
 #include "art/Framework/Principal/Event.h"
 #include "art/Framework/Principal/Handle.h"
 #include "art/Framework/Services/Registry/ServiceHandle.h"
+#include "fhiclcpp/types/Sequence.h"
 
-#include "SeedService/inc/SeedService.hh"
-#include "MCDataProducts/inc/GenParticleCollection.hh"
+#include "Offline/SeedService/inc/SeedService.hh"
+#include "Offline/MCDataProducts/inc/GenParticleCollection.hh"
 
-#include "EventGenerator/inc/ExtMonFNALGunImpl.hh"
+#include "Offline/EventGenerator/inc/ExtMonFNALGunImpl.hh"
 
 namespace mu2e {
 

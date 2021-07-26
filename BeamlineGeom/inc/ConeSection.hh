@@ -6,8 +6,8 @@
 //
 #include <string>
 
-#include "BeamlineGeom/inc/TSSection.hh"
-#include "GeomPrimitives/inc/Cone.hh"
+#include "Offline/BeamlineGeom/inc/TSSection.hh"
+#include "Offline/GeomPrimitives/inc/Cone.hh"
 
 #include "CLHEP/Vector/Rotation.h"
 #include "CLHEP/Vector/ThreeVector.h"

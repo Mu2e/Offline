@@ -4,16 +4,17 @@
 #include <TObject.h>
 #include <string.h>
 #include <string>
+#include <tuple>
 #include <TEvePointSet.h>
 #include <TEveLine.h>
 #include <TMath.h>
-#include "RecoDataProducts/inc/ComboHit.hh"
+#include "Offline/RecoDataProducts/inc/ComboHit.hh"
 //Mu2e General:
-#include "GeometryService/inc/GeomHandle.hh"
-#include "GeometryService/inc/DetectorSystem.hh"
-#include "TEveEventDisplay/src/dict_classes/GeomUtils.h"
-#include "TEveEventDisplay/src/TEveMu2e_base_classes/TEveMu2eCustomHelix.h"
-#include "TrackerGeom/inc/Tracker.hh"
+#include "Offline/GeometryService/inc/GeomHandle.hh"
+#include "Offline/GeometryService/inc/DetectorSystem.hh"
+#include "Offline/TEveEventDisplay/src/dict_classes/GeomUtils.h"
+#include "Offline/TEveEventDisplay/src/TEveMu2e_base_classes/TEveMu2eCustomHelix.h"
+#include "Offline/TrackerGeom/inc/Tracker.hh"
 
 namespace mu2e {
   class TEveMu2eHit : public TEvePointSet {
@@ -26,7 +27,8 @@ namespace mu2e {
       ComboHit fComboHit_; 
       Int_t mSize_ = 3; 
       bool AddErrorBar_ = false;
-
+    
+      std::tuple<CLHEP::Hep3Vector, CLHEP::Hep3Vector, std::string, int> DrawStraw();
       void DrawHit2D(const std::string &pstr, Int_t b,CLHEP::Hep3Vector HitPos, int energylevel, TEveElementList *list, TEveElementList *listz);
       void DrawHit3D(const std::string &pstr, Int_t b,CLHEP::Hep3Vector HitPos, int energylevel, TEveElementList *list); 
       void DrawHitCollection(const std::string &pstr, size_t i, std::vector<CLHEP::Hep3Vector> HitPos, int energylevel, TEveElementList *list); 

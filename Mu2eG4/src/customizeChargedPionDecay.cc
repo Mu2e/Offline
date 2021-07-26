@@ -37,8 +37,8 @@
 //    be incomplete.  Test for those cases and skip them.
 //
 
-#include "Mu2eG4/inc/customizeChargedPionDecay.hh"
-#include "DataProducts/inc/PDGCode.hh"
+#include "Offline/Mu2eG4/inc/customizeChargedPionDecay.hh"
+#include "Offline/DataProducts/inc/PDGCode.hh"
 
 #include "messagefacility/MessageLogger/MessageLogger.h"
 #include "cetlib_except/exception.h"

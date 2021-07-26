@@ -1,10 +1,10 @@
 // Mu2e includes.
-#include "ConfigTools/inc/SimpleConfig.hh"
-#include "ConfigTools/inc/requireUniqueKey.hh"
-#include "MCDataProducts/inc/GenId.hh"
-#include "MCDataProducts/inc/GenParticleCollection.hh"
-#include "MCDataProducts/inc/G4BeamlineInfoCollection.hh"
-#include "SeedService/inc/SeedService.hh"
+#include "Offline/ConfigTools/inc/SimpleConfig.hh"
+#include "Offline/ConfigTools/inc/requireUniqueKey.hh"
+#include "Offline/MCDataProducts/inc/GenId.hh"
+#include "Offline/MCDataProducts/inc/GenParticleCollection.hh"
+#include "Offline/MCDataProducts/inc/G4BeamlineInfoCollection.hh"
+#include "Offline/SeedService/inc/SeedService.hh"
 
 // Includes from art and its toolchain.
 #include "art/Framework/Core/EDProducer.h"
@@ -12,11 +12,12 @@
 #include "art/Framework/Core/ModuleMacros.h"
 #include "art/Framework/Services/Registry/ServiceHandle.h"
 #include "art/Framework/Principal/Handle.h"
+#include "art/Framework/Principal/SubRun.h"
 #include "fhiclcpp/ParameterSet.h"
 #include "messagefacility/MessageLogger/MessageLogger.h"
 
-#include "GlobalConstantsService/inc/GlobalConstantsHandle.hh"
-#include "GlobalConstantsService/inc/ParticleDataTable.hh"
+#include "Offline/GlobalConstantsService/inc/GlobalConstantsHandle.hh"
+#include "Offline/GlobalConstantsService/inc/ParticleDataTable.hh"
 
 // C++ includes.
 #include <iostream>
@@ -25,24 +26,24 @@
 #include <vector>
 #include <memory>
 
-#include "GeometryService/inc/GeomHandle.hh"
-#include "GeometryService/inc/GeometryService.hh"
-#include "GeometryService/inc/WorldG4.hh"
-#include "GeometryService/inc/DetectorSystem.hh"
-#include "GeometryService/inc/Mu2eEnvelope.hh"
-#include "MCDataProducts/inc/GenParticle.hh"
-#include "MCDataProducts/inc/CosmicLivetime.hh"
-#include "MCDataProducts/inc/GenParticleCollection.hh"
-#include "CalorimeterGeom/inc/Calorimeter.hh"
-#include "ExtinctionMonitorFNAL/Geometry/inc/ExtMonFNAL.hh"
-#include "GeneralUtilities/inc/safeSqrt.hh"
+#include "Offline/GeometryService/inc/GeomHandle.hh"
+#include "Offline/GeometryService/inc/GeometryService.hh"
+#include "Offline/GeometryService/inc/WorldG4.hh"
+#include "Offline/GeometryService/inc/DetectorSystem.hh"
+#include "Offline/GeometryService/inc/Mu2eEnvelope.hh"
+#include "Offline/MCDataProducts/inc/GenParticle.hh"
+#include "Offline/MCDataProducts/inc/CosmicLivetime.hh"
+#include "Offline/MCDataProducts/inc/GenParticleCollection.hh"
+#include "Offline/CalorimeterGeom/inc/Calorimeter.hh"
+#include "Offline/ExtinctionMonitorFNAL/Geometry/inc/ExtMonFNAL.hh"
+#include "Offline/GeneralUtilities/inc/safeSqrt.hh"
 
 #include "CLHEP/Units/SystemOfUnits.h"
 #include "CLHEP/Vector/ThreeVector.h"
 #include "CLHEP/Random/RandFlat.h"
 
-#include "Mu2eUtilities/inc/VectorVolume.hh"
-#include "Mu2eUtilities/inc/TwoLinePCA.hh"
+#include "Offline/Mu2eUtilities/inc/VectorVolume.hh"
+#include "Offline/Mu2eUtilities/inc/TwoLinePCA.hh"
 
 using CLHEP::Hep3Vector;
 using CLHEP::HepLorentzVector;

@@ -8,7 +8,7 @@
 //  Original author Rob Kutschke
 //
 
-#include "GeomPrimitives/inc/PlacedTubs.hh"
+#include "Offline/GeomPrimitives/inc/PlacedTubs.hh"
 
 namespace mu2e {
 

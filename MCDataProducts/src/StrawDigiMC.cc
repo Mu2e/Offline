@@ -4,8 +4,8 @@
 // Original author David Brown, LBNL
 //
 // Mu2e includes
-#include "MCDataProducts/inc/StrawDigiMC.hh"
-#include "DataProducts/inc/StrawEnd.hh"
+#include "Offline/MCDataProducts/inc/StrawDigiMC.hh"
+#include "Offline/DataProducts/inc/StrawEnd.hh"
 // Framework includes.
 #include "cetlib_except/exception.h"
 // C++ includes

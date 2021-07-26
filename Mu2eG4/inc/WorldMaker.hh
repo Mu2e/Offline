@@ -22,7 +22,7 @@
 #include "boost/noncopyable.hpp"
 
 // Mu2e includes
-#include "Mu2eG4/inc/ConstructMaterials.hh"
+#include "Offline/Mu2eG4/inc/ConstructMaterials.hh"
 
 // G4 includes
 #include "Geant4/G4GeometryManager.hh"

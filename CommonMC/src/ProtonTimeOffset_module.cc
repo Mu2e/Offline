@@ -17,9 +17,9 @@
 #include "art/Framework/Principal/Event.h"
 #include "art/Framework/Services/Optional/RandomNumberGenerator.h"
 
-#include "MCDataProducts/inc/SimTimeOffset.hh"
-#include "SeedService/inc/SeedService.hh"
-#include "Mu2eUtilities/inc/ProtonPulseRandPDF.hh"
+#include "Offline/MCDataProducts/inc/SimTimeOffset.hh"
+#include "Offline/SeedService/inc/SeedService.hh"
+#include "Offline/Mu2eUtilities/inc/ProtonPulseRandPDF.hh"
 
 namespace mu2e {
 

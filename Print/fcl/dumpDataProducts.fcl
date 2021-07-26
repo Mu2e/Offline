@@ -2,7 +2,7 @@
 # Print information about all data products in a file.
 #
 
-#include "fcl/minimalMessageService.fcl"
+#include "Offline/fcl/minimalMessageService.fcl"
 
 # Give this process a name.
 process_name : DumpDataProducts

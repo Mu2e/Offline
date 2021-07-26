@@ -4,7 +4,7 @@
 
 #include "cetlib_except/exception.h"
 
-#include "Mu2eUtilities/inc/MedianCalculator.hh"
+#include "Offline/Mu2eUtilities/inc/MedianCalculator.hh"
 
 namespace mu2e {
 

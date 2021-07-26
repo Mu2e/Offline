@@ -7,8 +7,8 @@
 #include "art_root_io/TFileService.h"
 
 // data
-#include "RecoDataProducts/inc/CaloDigi.hh"
-#include "RecoDataProducts/inc/StrawDigi.hh"
+#include "Offline/RecoDataProducts/inc/CaloDigi.hh"
+#include "Offline/RecoDataProducts/inc/StrawDigi.hh"
 
 // DAQ data
 //#include "mu2e-artdaq-core/Overlays/FragmentType.hh"
@@ -41,6 +41,7 @@ namespace mu2e {
     int   _fetchStrawDigis;
     int   _fetchCaloFragments;
     int   _fetchTrkFragments;
+    int   _fetchAllFragments;
 
     art::InputTag                  _cdTag;
     art::InputTag                  _sdTag;
@@ -62,6 +63,7 @@ namespace mu2e {
     _fetchStrawDigis   (pset.get<int>        ("fetchStrawDigis")),
     _fetchCaloFragments(pset.get<int>        ("fetchCaloFragments")),
     _fetchTrkFragments (pset.get<int>        ("fetchTrkFragments")),
+    _fetchAllFragments (pset.get<int>        ("fetchAllFragments")),
     _cdTag             (pset.get<std::string>("caloDigiCollectionTag")),
     _sdTag             (pset.get<std::string>("strawDigiCollectionTag")),
     _cfTag             (pset.get<std::string>("caloFragmentTag")),
@@ -112,7 +114,16 @@ namespace mu2e {
       auto sdH = evt.getValidHandle<StrawDigiCollection>(_sdTag);
       _sdcol = sdH.product();
     }
-//-----------------------------------------------------------------------------
+
+    if (_fetchAllFragments) {
+      auto allH = evt.getMany<std::vector<artdaq::Fragment>>();
+      for (auto& fs : allH) {
+        for (auto& frag : *fs) {
+          fake_access(frag);
+        }
+      }
+    }
+      //-----------------------------------------------------------------------------
 // prefetch data
 //-----------------------------------------------------------------------------
     if (_cdcol) {

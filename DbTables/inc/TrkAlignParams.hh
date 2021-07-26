@@ -4,9 +4,9 @@
 #ifndef DbTables_TrkAlignParams_hh
 #define DbTables_TrkAlignParams_hh
 
-#include "GeneralUtilities/inc/HepTransform.hh"
-#include "DataProducts/inc/StrawId.hh"
-#include "DataProducts/inc/StrawIdMask.hh"
+#include "Offline/GeneralUtilities/inc/HepTransform.hh"
+#include "Offline/DataProducts/inc/StrawId.hh"
+#include "Offline/DataProducts/inc/StrawIdMask.hh"
 #include "cetlib_except/exception.h"
 
 namespace mu2e {

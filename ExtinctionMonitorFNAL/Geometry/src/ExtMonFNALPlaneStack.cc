@@ -1,6 +1,6 @@
 // Evan Schiewe, 2013
 
-#include "ExtinctionMonitorFNAL/Geometry/inc/ExtMonFNALPlaneStack.hh"
+#include "Offline/ExtinctionMonitorFNAL/Geometry/inc/ExtMonFNALPlaneStack.hh"
 
 #include <iostream>
 

@@ -16,9 +16,9 @@
 #include <vector>
 
 // Includes from Mu2e
-#include "Mu2eInterfaces/inc/Detector.hh"
-#include "StoppingTargetGeom/inc/TargetFoil.hh"
-#include "StoppingTargetGeom/inc/TargetFoilSupportStructure.hh"
+#include "Offline/Mu2eInterfaces/inc/Detector.hh"
+#include "Offline/StoppingTargetGeom/inc/TargetFoil.hh"
+#include "Offline/StoppingTargetGeom/inc/TargetFoilSupportStructure.hh"
 
 namespace mu2e {
 

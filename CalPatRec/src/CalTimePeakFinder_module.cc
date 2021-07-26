@@ -8,8 +8,8 @@
 ///////////////////////////////////////////////////////////////////////////////
 #include "fhiclcpp/ParameterSet.h"
 
-#include "Mu2eUtilities/inc/ModuleHistToolBase.hh"
-#include "CalPatRec/inc/CalTimePeakFinder_module.hh"
+#include "Offline/Mu2eUtilities/inc/ModuleHistToolBase.hh"
+#include "Offline/CalPatRec/inc/CalTimePeakFinder_module.hh"
 
 // framework
 #include "art/Framework/Principal/Handle.h"
@@ -18,21 +18,21 @@
 #include "art/Utilities/make_tool.h"
 
 // conditions
-#include "ConditionsService/inc/AcceleratorParams.hh"
-#include "ConditionsService/inc/ConditionsHandle.hh"
+#include "Offline/ConditionsService/inc/AcceleratorParams.hh"
+#include "Offline/ConditionsService/inc/ConditionsHandle.hh"
 
-#include "GeometryService/inc/GeomHandle.hh"
-#include "GeometryService/inc/DetectorSystem.hh"
+#include "Offline/GeometryService/inc/GeomHandle.hh"
+#include "Offline/GeometryService/inc/DetectorSystem.hh"
 
-#include "TrackerGeom/inc/Tracker.hh"
-#include "CalorimeterGeom/inc/DiskCalorimeter.hh"
+#include "Offline/TrackerGeom/inc/Tracker.hh"
+#include "Offline/CalorimeterGeom/inc/DiskCalorimeter.hh"
 
-#include "ConfigTools/inc/ConfigFileLookupPolicy.hh"
+#include "Offline/ConfigTools/inc/ConfigFileLookupPolicy.hh"
 
-#include "RecoDataProducts/inc/StrawHitIndex.hh"
-#include "RecoDataProducts/inc/TimeCluster.hh"
+#include "Offline/RecoDataProducts/inc/StrawHitIndex.hh"
+#include "Offline/RecoDataProducts/inc/TimeCluster.hh"
 
-#include "Mu2eUtilities/inc/polyAtan2.hh"
+#include "Offline/Mu2eUtilities/inc/polyAtan2.hh"
 
 using namespace std;
 

@@ -1,4 +1,4 @@
-#include "TEveEventDisplay/src/TEveMu2e_base_classes/TEveMu2eCustomHelix.h"
+#include "Offline/TEveEventDisplay/src/TEveMu2e_base_classes/TEveMu2eCustomHelix.h"
 
 using namespace mu2e;
 namespace mu2e{

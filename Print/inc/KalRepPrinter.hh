@@ -7,9 +7,9 @@
 #include <cstring>
 #include <iostream>
 
-#include "Print/inc/ProductPrinter.hh"
-#include "Print/inc/TrackSummaryPrinter.hh"
-#include "RecoDataProducts/inc/KalRepPtrCollection.hh"
+#include "Offline/Print/inc/ProductPrinter.hh"
+#include "Offline/Print/inc/TrackSummaryPrinter.hh"
+#include "Offline/RecoDataProducts/inc/KalRepPtrCollection.hh"
 #include "art/Framework/Principal/Handle.h"
 #include "canvas/Persistency/Common/Ptr.h"
 

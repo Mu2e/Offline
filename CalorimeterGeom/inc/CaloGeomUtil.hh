@@ -8,8 +8,8 @@
 #ifndef CalorimeterGeom_CaloGeomUtil_hh
 #define CalorimeterGeom_CaloGeomUtil_hh
 
-#include "CalorimeterGeom/inc/CaloGeomUtil.hh"
-#include "CalorimeterGeom/inc/Disk.hh"
+#include "Offline/CalorimeterGeom/inc/CaloGeomUtil.hh"
+#include "Offline/CalorimeterGeom/inc/Disk.hh"
 
 #include "CLHEP/Vector/ThreeVector.h"
 #include "cetlib_except/exception.h"

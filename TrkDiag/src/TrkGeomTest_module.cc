@@ -8,10 +8,10 @@
 #include "art_root_io/TFileService.h"
 #include "art/Framework/Core/EDAnalyzer.h"
 #include "art/Framework/Core/ModuleMacros.h"
-#include "GeometryService/inc/GeomHandle.hh"
-#include "ProditionsService/inc/ProditionsHandle.hh"
-#include "TrackerConditions/inc/TrackerStatus.hh"
-#include "TrackerGeom/inc/Tracker.hh"
+#include "Offline/GeometryService/inc/GeomHandle.hh"
+#include "Offline/ProditionsService/inc/ProditionsHandle.hh"
+#include "Offline/TrackerConditions/inc/TrackerStatus.hh"
+#include "Offline/TrackerGeom/inc/Tracker.hh"
 #include "TTree.h"
 #include <iostream>
 

@@ -1,4 +1,4 @@
-#include "TEveEventDisplay/src/shape_classes/TEveMu2eCalorimeter.h"
+#include "Offline/TEveEventDisplay/src/shape_classes/TEveMu2eCalorimeter.h"
 
 using namespace mu2e;
 namespace mu2e{

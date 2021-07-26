@@ -4,7 +4,7 @@
 // Original author Rob Kutschke
 //
 
-#include "GeneralUtilities/inc/splitLine.hh"
+#include "Offline/GeneralUtilities/inc/splitLine.hh"
 
 using namespace std;
 

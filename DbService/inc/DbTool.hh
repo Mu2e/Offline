@@ -14,14 +14,14 @@
 //
 
 #include <map>
-#include "DbService/inc/DbReader.hh"
-#include "DbService/inc/DbSql.hh"
-#include "DbService/inc/DbEngine.hh"
-#include "DbTables/inc/DbId.hh"
-#include "DbTables/inc/DbUtil.hh"
-#include "DbTables/inc/DbTableCollection.hh"
-#include "DbTables/inc/DbVersion.hh"
-#include "DbTables/inc/DbValCache.hh"
+#include "Offline/DbService/inc/DbReader.hh"
+#include "Offline/DbService/inc/DbSql.hh"
+#include "Offline/DbService/inc/DbEngine.hh"
+#include "Offline/DbTables/inc/DbId.hh"
+#include "Offline/DbTables/inc/DbUtil.hh"
+#include "Offline/DbTables/inc/DbTableCollection.hh"
+#include "Offline/DbTables/inc/DbVersion.hh"
+#include "Offline/DbTables/inc/DbValCache.hh"
 
 
 namespace mu2e {

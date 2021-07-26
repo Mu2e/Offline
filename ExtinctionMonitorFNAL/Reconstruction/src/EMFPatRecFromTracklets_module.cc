@@ -11,7 +11,7 @@
 //
 
 
-#include "ExtinctionMonitorFNAL/Reconstruction/inc/Tracklet.hh"
+#include "Offline/ExtinctionMonitorFNAL/Reconstruction/inc/Tracklet.hh"
 #include <string>
 #include <iostream>
 #include <cmath>
@@ -39,20 +39,20 @@
 #include "art/Framework/Principal/Handle.h"
 #include "canvas/Persistency/Common/Ptr.h"
 
-#include "RecoDataProducts/inc/ExtMonFNALRecoCluster.hh"
-#include "RecoDataProducts/inc/ExtMonFNALRecoClusterCollection.hh"
-#include "RecoDataProducts/inc/ExtMonFNALTrkParam.hh"
-#include "RecoDataProducts/inc/ExtMonFNALTrkFitQuality.hh"
-#include "RecoDataProducts/inc/ExtMonFNALTrkClusterResiduals.hh"
-#include "RecoDataProducts/inc/ExtMonFNALTrkFit.hh"
-#include "RecoDataProducts/inc/ExtMonFNALTrkFitCollection.hh"
+#include "Offline/RecoDataProducts/inc/ExtMonFNALRecoCluster.hh"
+#include "Offline/RecoDataProducts/inc/ExtMonFNALRecoClusterCollection.hh"
+#include "Offline/RecoDataProducts/inc/ExtMonFNALTrkParam.hh"
+#include "Offline/RecoDataProducts/inc/ExtMonFNALTrkFitQuality.hh"
+#include "Offline/RecoDataProducts/inc/ExtMonFNALTrkClusterResiduals.hh"
+#include "Offline/RecoDataProducts/inc/ExtMonFNALTrkFit.hh"
+#include "Offline/RecoDataProducts/inc/ExtMonFNALTrkFitCollection.hh"
 
-#include "GeometryService/inc/GeomHandle.hh"
-#include "ExtinctionMonitorFNAL/Geometry/inc/ExtMonFNAL.hh"
-#include "ExtinctionMonitorFNAL/Reconstruction/inc/TrackExtrapolator.hh"
-#include "ExtinctionMonitorFNAL/Reconstruction/inc/PixelRecoUtils.hh"
-#include "ExtinctionMonitorFNAL/Reconstruction/inc/ClusterOnTrackPrecisionTool.hh"
-#include "ExtinctionMonitorFNAL/Reconstruction/inc/LinearRegression.hh"
+#include "Offline/GeometryService/inc/GeomHandle.hh"
+#include "Offline/ExtinctionMonitorFNAL/Geometry/inc/ExtMonFNAL.hh"
+#include "Offline/ExtinctionMonitorFNAL/Reconstruction/inc/TrackExtrapolator.hh"
+#include "Offline/ExtinctionMonitorFNAL/Reconstruction/inc/PixelRecoUtils.hh"
+#include "Offline/ExtinctionMonitorFNAL/Reconstruction/inc/ClusterOnTrackPrecisionTool.hh"
+#include "Offline/ExtinctionMonitorFNAL/Reconstruction/inc/LinearRegression.hh"
 
 #include "art_root_io/TFileService.h"
 #include "art/Framework/Services/Registry/ServiceHandle.h"

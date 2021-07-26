@@ -6,8 +6,8 @@
 //
 
 //Mu2e includes
-#include "Mu2eG4/inc/MTMasterThread.hh"
-#include "Mu2eG4/inc/Mu2eG4MTRunManager.hh"
+#include "Offline/Mu2eG4/inc/MTMasterThread.hh"
+#include "Offline/Mu2eG4/inc/Mu2eG4MTRunManager.hh"
 
 //art includes
 #include "art/Framework/Principal/Run.h"

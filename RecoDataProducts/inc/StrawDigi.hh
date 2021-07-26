@@ -21,10 +21,10 @@
 #include "canvas/Persistency/Common/Ptr.h"
 
 // Mu2e includes
-#include "DataProducts/inc/StrawId.hh"
-#include "DataProducts/inc/StrawEnd.hh"
-#include "RecoDataProducts/inc/StrawDigiFlag.hh"
-#include "DataProducts/inc/TrkTypes.hh"
+#include "Offline/DataProducts/inc/StrawId.hh"
+#include "Offline/DataProducts/inc/StrawEnd.hh"
+#include "Offline/RecoDataProducts/inc/StrawDigiFlag.hh"
+#include "Offline/DataProducts/inc/TrkTypes.hh"
 // unfortunately the persistence requires this array dimension be
 // instantiated by hand in the classesdef, so this this #define
 // can't be changed without changing that too

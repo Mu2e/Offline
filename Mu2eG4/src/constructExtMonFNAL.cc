@@ -2,7 +2,7 @@
 //
 // Andrei Gaponenko, 2011
 
-#include "Mu2eG4/inc/constructExtMonFNAL.hh"
+#include "Offline/Mu2eG4/inc/constructExtMonFNAL.hh"
 
 #include <iostream>
 
@@ -11,29 +11,29 @@
 #include "Geant4/G4LogicalVolume.hh"
 #include "Geant4/G4SDManager.hh"
 #include "Geant4/G4ExtrudedSolid.hh"
-#include "Mu2eG4Helper/inc/AntiLeakRegistry.hh"
+#include "Offline/Mu2eG4Helper/inc/AntiLeakRegistry.hh"
 
 #include "art/Framework/Services/Registry/ServiceDefinitionMacros.h"
 
-#include "GeometryService/inc/GeomHandle.hh"
-#include "GeometryService/inc/G4GeometryOptions.hh"
-#include "ProtonBeamDumpGeom/inc/ProtonBeamDump.hh"
-#include "Mu2eG4Helper/inc/VolumeInfo.hh"
-#include "Mu2eG4Helper/inc/Mu2eG4Helper.hh"
-#include "ConfigTools/inc/SimpleConfig.hh"
-#include "Mu2eG4/inc/nestBox.hh"
-#include "Mu2eG4/inc/nestExtrudedSolid.hh"
-#include "Mu2eG4/inc/finishNesting.hh"
-#include "Mu2eG4/inc/MaterialFinder.hh"
-#include "Mu2eG4/inc/findMaterialOrThrow.hh"
+#include "Offline/GeometryService/inc/GeomHandle.hh"
+#include "Offline/GeometryService/inc/G4GeometryOptions.hh"
+#include "Offline/ProtonBeamDumpGeom/inc/ProtonBeamDump.hh"
+#include "Offline/Mu2eG4Helper/inc/VolumeInfo.hh"
+#include "Offline/Mu2eG4Helper/inc/Mu2eG4Helper.hh"
+#include "Offline/ConfigTools/inc/SimpleConfig.hh"
+#include "Offline/Mu2eG4/inc/nestBox.hh"
+#include "Offline/Mu2eG4/inc/nestExtrudedSolid.hh"
+#include "Offline/Mu2eG4/inc/finishNesting.hh"
+#include "Offline/Mu2eG4/inc/MaterialFinder.hh"
+#include "Offline/Mu2eG4/inc/findMaterialOrThrow.hh"
 
-#include "DetectorSolenoidGeom/inc/DetectorSolenoid.hh"
-#include "ExtinctionMonitorFNAL/Geometry/inc/ExtMonFNAL.hh"
-#include "ExtinctionMonitorFNAL/Geometry/inc/ExtMonFNALBuilding.hh"
-#include "ExtinctionMonitorFNAL/Geometry/inc/ExtMonFNALModuleIdConverter.hh"
-#include "GeometryService/inc/VirtualDetector.hh"
-#include "DataProducts/inc/VirtualDetectorId.hh"
-#include "Mu2eG4/inc/checkForOverlaps.hh"
+#include "Offline/DetectorSolenoidGeom/inc/DetectorSolenoid.hh"
+#include "Offline/ExtinctionMonitorFNAL/Geometry/inc/ExtMonFNAL.hh"
+#include "Offline/ExtinctionMonitorFNAL/Geometry/inc/ExtMonFNALBuilding.hh"
+#include "Offline/ExtinctionMonitorFNAL/Geometry/inc/ExtMonFNALModuleIdConverter.hh"
+#include "Offline/GeometryService/inc/VirtualDetector.hh"
+#include "Offline/DataProducts/inc/VirtualDetectorId.hh"
+#include "Offline/Mu2eG4/inc/checkForOverlaps.hh"
 
 
 //#define AGDEBUG(stuff) std::cerr<<"AG: "<<__FILE__<<", line "<<__LINE__<<": "<<stuff<<std::endl;

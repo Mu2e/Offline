@@ -8,9 +8,9 @@
 #ifndef RecoDataProducts_KalSegment_HH
 #define RecoDataProducts_KalSegment_HH
 #include <Rtypes.h>
-#include "RecoDataProducts/inc/HelixVal.hh"
-#include "DataProducts/inc/XYZVec.hh"
-#include "RecoDataProducts/inc/HitT0.hh"
+#include "Offline/RecoDataProducts/inc/HelixVal.hh"
+#include "Offline/DataProducts/inc/XYZVec.hh"
+#include "Offline/RecoDataProducts/inc/HitT0.hh"
 #include "KinKal/General/ParticleState.hh"
 #include "KinKal/Trajectory/KinematicLine.hh"
 #include "KinKal/Trajectory/CentralHelix.hh"

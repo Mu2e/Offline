@@ -11,7 +11,7 @@
 #include <vector>
 #include <stdexcept>
 
-#include "BFieldGeom/inc/BFMapType.hh"
+#include "Offline/BFieldGeom/inc/BFMapType.hh"
 
 #include <boost/static_assert.hpp>
 

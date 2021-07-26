@@ -5,5 +5,5 @@
 #include "canvas/Persistency/Common/Wrapper.h"
 
 #include "BTrk/KalmanTrack/KalRep.hh"
-#include "RecoDataProducts/inc/KalRepCollection.hh"
-#include "TrkReco/inc/PanelAmbigStructs.hh"
+#include "Offline/RecoDataProducts/inc/KalRepCollection.hh"
+#include "Offline/TrkReco/inc/PanelAmbigStructs.hh"

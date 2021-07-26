@@ -2,8 +2,8 @@
 #define RecoDataProducts_CosmicTrackMCInfo_hh
 
 #include "TMath.h"
-#include "RecoDataProducts/inc/CosmicTrack.hh"
-#include "DataProducts/inc/XYZVec.hh"
+#include "Offline/RecoDataProducts/inc/CosmicTrack.hh"
+#include "Offline/DataProducts/inc/XYZVec.hh"
 
 struct CosmicTrackMCInfo{
 

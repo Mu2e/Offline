@@ -7,8 +7,8 @@
 //
 
 // Mu2e
-#include "DataProducts/inc/Helicity.hh"
-#include "DataProducts/inc/XYZVec.hh"
+#include "Offline/DataProducts/inc/Helicity.hh"
+#include "Offline/DataProducts/inc/XYZVec.hh"
 // BTrk
 #include "BTrk/TrkBase/HelixParams.hh"
 // CLHEP

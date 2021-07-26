@@ -58,8 +58,8 @@
 #include "art/Framework/Principal/Event.h"
 #include "art/Framework/Services/Registry/ServiceHandle.h"
 #include "fhiclcpp/ParameterSet.h"
-#include "MCDataProducts/inc/ProtonBunchIntensity.hh"
-#include "MCDataProducts/inc/ProtonBunchIntensitySummary.hh"
+#include "Offline/MCDataProducts/inc/ProtonBunchIntensity.hh"
+#include "Offline/MCDataProducts/inc/ProtonBunchIntensitySummary.hh"
 using namespace std;
 
 namespace mu2e {

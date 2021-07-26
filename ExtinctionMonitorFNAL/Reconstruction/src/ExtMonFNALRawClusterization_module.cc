@@ -30,18 +30,18 @@
 #include "art/Framework/Services/Registry/ServiceHandle.h"
 #include "canvas/Persistency/Common/Ptr.h"
 
-#include "RecoDataProducts/inc/ExtMonFNALRawHit.hh"
-#include "RecoDataProducts/inc/ExtMonFNALRawHitCollection.hh"
-#include "RecoDataProducts/inc/ExtMonFNALRawCluster.hh"
-#include "RecoDataProducts/inc/ExtMonFNALRawClusterCollection.hh"
+#include "Offline/RecoDataProducts/inc/ExtMonFNALRawHit.hh"
+#include "Offline/RecoDataProducts/inc/ExtMonFNALRawHitCollection.hh"
+#include "Offline/RecoDataProducts/inc/ExtMonFNALRawCluster.hh"
+#include "Offline/RecoDataProducts/inc/ExtMonFNALRawClusterCollection.hh"
 
-#include "GeometryService/inc/GeomHandle.hh"
+#include "Offline/GeometryService/inc/GeomHandle.hh"
 
-#include "ExtinctionMonitorFNAL/Geometry/inc/ExtMonFNAL.hh"
-#include "ExtinctionMonitorFNAL/Geometry/inc/ExtMonFNALModule.hh"
+#include "Offline/ExtinctionMonitorFNAL/Geometry/inc/ExtMonFNAL.hh"
+#include "Offline/ExtinctionMonitorFNAL/Geometry/inc/ExtMonFNALModule.hh"
 
-#include "ExtinctionMonitorFNAL/Geometry/inc/PixelNeighbors.hh"
-#include "ExtinctionMonitorFNAL/Reconstruction/inc/PixelHitLookup.hh"
+#include "Offline/ExtinctionMonitorFNAL/Geometry/inc/PixelNeighbors.hh"
+#include "Offline/ExtinctionMonitorFNAL/Reconstruction/inc/PixelHitLookup.hh"
 
 namespace mu2e {
 

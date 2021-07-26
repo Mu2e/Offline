@@ -7,11 +7,12 @@
 #include "art/Framework/Principal/Event.h"
 #include "art/Framework/Principal/Handle.h"
 
-#include "RecoDataProducts/inc/TrkFitFlag.hh"
+#include "Offline/RecoDataProducts/inc/TrkFitFlag.hh"
 #include "fhiclcpp/ParameterSet.h"
+#include "fhiclcpp/types/Sequence.h"
 
-#include "RecoDataProducts/inc/CosmicTrackSeed.hh"
-#include "RecoDataProducts/inc/TriggerInfo.hh"
+#include "Offline/RecoDataProducts/inc/CosmicTrackSeed.hh"
+#include "Offline/RecoDataProducts/inc/TriggerInfo.hh"
 
 #include <string>
 #include <vector>
@@ -31,7 +32,6 @@ namespace mu2e
       fhicl::Atom<art::InputTag>   cosmictag {Name("CosmicTrackSeedCollection"),Comment("track collection")};
       fhicl::Sequence<std::string> goodcosmic{Name("cosmicseedFitFlag"),Comment("Required flags"),vector<string>{"HelixOK","HelixConverged"}};
       fhicl::Atom<int>             minnsh    {Name("minnsh"), Comment("minimum number of straw hits ")};
-      fhicl::Atom<std::string>     trigpath  {Name("triggerPath"), Comment("Trigger path")};
       fhicl::Atom<int>             debug     {Name("debugLevel"), Comment("set to 1 for debug prints")};
     };
     typedef art::EDFilter::Table<Config> Parameters;
@@ -45,7 +45,6 @@ namespace mu2e
     art::InputTag   _cosmicTag;
     TrkFitFlag      _goodcosmic; 
     unsigned int    _minnsh;
-    std::string     _trigPath;
     int             _debug;
     unsigned        _nevt, _npass;
   };
@@ -55,7 +54,6 @@ namespace mu2e
     _cosmicTag (conf().cosmictag()),
     _goodcosmic (conf().goodcosmic()),
     _minnsh (conf().minnsh()),
-    _trigPath (conf().trigpath()),
     _debug (conf().debug()),
     _nevt(0), _npass(0)
   {
@@ -69,20 +67,14 @@ namespace mu2e
     // find the collection
     auto cosH = evt.getValidHandle<CosmicTrackSeedCollection>(_cosmicTag);
     const CosmicTrackSeedCollection* coscol = cosH.product();
-    size_t trig_ind(0);
     for(auto icos = coscol->begin(); icos != coscol->end(); ++icos) {
       auto const& cosmic = *icos;
      
       if( cosmic.status().hasAllProperties(_goodcosmic) && cosmic.trkstrawhits().size() > _minnsh ){
        
         ++_npass;        
-	if (trig_ind == 0){
-	  triginfo->_triggerBits.merge(TriggerFlag::track); 
-	  triginfo->_triggerPath = _trigPath;
-	}
         size_t index = std::distance(coscol->begin(),icos);
 	triginfo->_cosmics.push_back(art::Ptr<CosmicTrackSeed>(cosH,index));
-	++trig_ind;
         if(_debug > 1){
           std::cout << moduleDescription().moduleLabel() << " passed event " << evt.id() << std::endl;
         }

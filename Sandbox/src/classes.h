@@ -6,6 +6,6 @@
 
 #include "canvas/Persistency/Common/Wrapper.h"
 
-#include "Sandbox/inc/TransientProduct00Collection.hh"
-#include "Sandbox/inc/TracerProduct.hh"
-#include "Sandbox/inc/TracerProductCollection.hh"
+#include "Offline/Sandbox/inc/TransientProduct00Collection.hh"
+#include "Offline/Sandbox/inc/TracerProduct.hh"
+#include "Offline/Sandbox/inc/TracerProductCollection.hh"

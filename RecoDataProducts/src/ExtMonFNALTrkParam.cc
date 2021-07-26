@@ -1,4 +1,4 @@
-#include "RecoDataProducts/inc/ExtMonFNALTrkParam.hh"
+#include "Offline/RecoDataProducts/inc/ExtMonFNALTrkParam.hh"
 
 namespace mu2e {
 

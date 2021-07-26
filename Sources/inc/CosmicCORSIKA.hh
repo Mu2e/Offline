@@ -6,8 +6,8 @@
 #include <vector>
 
 
-#include "GlobalConstantsService/inc/GlobalConstantsHandle.hh"
-#include "GlobalConstantsService/inc/ParticleDataTable.hh"
+#include "Offline/GlobalConstantsService/inc/GlobalConstantsHandle.hh"
+#include "Offline/GlobalConstantsService/inc/ParticleDataTable.hh"
 
 // Framework includes
 #include "art/Framework/Core/ModuleMacros.h"
@@ -15,18 +15,19 @@
 #include "fhiclcpp/ParameterSet.h"
 #include "art/Framework/Services/Registry/ServiceHandle.h"
 #include "messagefacility/MessageLogger/MessageLogger.h"
+#include "fhiclcpp/types/Sequence.h"
 
-#include "GeometryService/inc/GeomHandle.hh"
-#include "GeometryService/inc/GeometryService.hh"
-#include "GeometryService/inc/WorldG4.hh"
-#include "GeometryService/inc/DetectorSystem.hh"
-#include "GeometryService/inc/Mu2eEnvelope.hh"
-#include "SeedService/inc/SeedService.hh"
-#include "MCDataProducts/inc/GenParticle.hh"
-#include "MCDataProducts/inc/GenParticleCollection.hh"
-#include "CalorimeterGeom/inc/Calorimeter.hh"
-#include "ExtinctionMonitorFNAL/Geometry/inc/ExtMonFNAL.hh"
-#include "GeneralUtilities/inc/safeSqrt.hh"
+#include "Offline/GeometryService/inc/GeomHandle.hh"
+#include "Offline/GeometryService/inc/GeometryService.hh"
+#include "Offline/GeometryService/inc/WorldG4.hh"
+#include "Offline/GeometryService/inc/DetectorSystem.hh"
+#include "Offline/GeometryService/inc/Mu2eEnvelope.hh"
+#include "Offline/SeedService/inc/SeedService.hh"
+#include "Offline/MCDataProducts/inc/GenParticle.hh"
+#include "Offline/MCDataProducts/inc/GenParticleCollection.hh"
+#include "Offline/CalorimeterGeom/inc/Calorimeter.hh"
+#include "Offline/ExtinctionMonitorFNAL/Geometry/inc/ExtMonFNAL.hh"
+#include "Offline/GeneralUtilities/inc/safeSqrt.hh"
 
 #include "CLHEP/Units/SystemOfUnits.h"
 #include "CLHEP/Vector/ThreeVector.h"
@@ -35,7 +36,7 @@
 
 #include "fhiclcpp/types/ConfigurationTable.h"
 
-#include "Mu2eUtilities/inc/VectorVolume.hh"
+#include "Offline/Mu2eUtilities/inc/VectorVolume.hh"
 
 
 namespace art

@@ -22,12 +22,12 @@
 #include "cetlib_except/exception.h"
 #include "fhiclcpp/types/Atom.h"
 
-#include "CaloCluster/inc/ClusterFinder.hh"
-#include "CalorimeterGeom/inc/Calorimeter.hh"
-#include "GeometryService/inc/GeomHandle.hh"
-#include "GeometryService/inc/GeometryService.hh"
-#include "RecoDataProducts/inc/CaloHit.hh"
-#include "RecoDataProducts/inc/CaloProtoCluster.hh"
+#include "Offline/CaloCluster/inc/ClusterFinder.hh"
+#include "Offline/CalorimeterGeom/inc/Calorimeter.hh"
+#include "Offline/GeometryService/inc/GeomHandle.hh"
+#include "Offline/GeometryService/inc/GeometryService.hh"
+#include "Offline/RecoDataProducts/inc/CaloHit.hh"
+#include "Offline/RecoDataProducts/inc/CaloProtoCluster.hh"
 
 #include <iostream>
 #include <string>

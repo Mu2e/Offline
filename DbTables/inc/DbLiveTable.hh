@@ -8,8 +8,8 @@
 #include <ostream>
 #include <cstdint>
 #include <chrono>
-#include "DbTables/inc/DbTable.hh"
-#include "DbTables/inc/DbIoV.hh"
+#include "Offline/DbTables/inc/DbTable.hh"
+#include "Offline/DbTables/inc/DbIoV.hh"
 
 namespace mu2e {
 

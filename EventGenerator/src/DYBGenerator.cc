@@ -1,4 +1,4 @@
-#include "EventGenerator/inc/DYBGenerator.hh"
+#include "Offline/EventGenerator/inc/DYBGenerator.hh"
 
 #include <iostream>
 #include <stdio.h>

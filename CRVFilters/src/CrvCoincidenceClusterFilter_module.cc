@@ -6,19 +6,19 @@
 //
 
 #include "CLHEP/Units/SystemOfUnits.h"
-#include "GlobalConstantsService/inc/GlobalConstantsHandle.hh"
+#include "Offline/GlobalConstantsService/inc/GlobalConstantsHandle.hh"
 
-#include "ConfigTools/inc/ConfigFileLookupPolicy.hh"
+#include "Offline/ConfigTools/inc/ConfigFileLookupPolicy.hh"
 
-#include "CalorimeterGeom/inc/Calorimeter.hh"
-#include "CalorimeterGeom/inc/DiskCalorimeter.hh"
+#include "Offline/CalorimeterGeom/inc/Calorimeter.hh"
+#include "Offline/CalorimeterGeom/inc/DiskCalorimeter.hh"
 
-#include "GeometryService/inc/GeomHandle.hh"
-#include "GeometryService/inc/GeometryService.hh"
+#include "Offline/GeometryService/inc/GeomHandle.hh"
+#include "Offline/GeometryService/inc/GeometryService.hh"
 
-#include "RecoDataProducts/inc/CrvCoincidenceClusterCollection.hh"
-#include "RecoDataProducts/inc/TrkFitFlag.hh"
-#include "RecoDataProducts/inc/TriggerInfo.hh"
+#include "Offline/RecoDataProducts/inc/CrvCoincidenceClusterCollection.hh"
+#include "Offline/RecoDataProducts/inc/TrkFitFlag.hh"
+#include "Offline/RecoDataProducts/inc/TriggerInfo.hh"
 
 // #include "art/Framework/Core/EDAnalyzer.h"
 #include "art/Framework/Core/EDFilter.h"
@@ -62,8 +62,6 @@ namespace mu2e {
 	Comment("CrvCoincidenceClusterFinder producer")};
       fhicl::Atom<size_t> minNCC{ Name("MinNCC"),
 	Comment("Minimum number of cluster of coincidences")};
-      fhicl::Atom<std::string> trgPath{ Name("triggerPath"),
-	Comment("label of the given trigger-path")};
     };
 
     virtual ~CrvCoincidenceClusterFilter() { }
@@ -83,8 +81,6 @@ namespace mu2e {
     int                     _nPass;
     art::InputTag           _clTag;
     size_t                  _minNCC;
-    std::string             _trigPath;
-    
   };
 
 
@@ -94,9 +90,7 @@ namespace mu2e {
     _nProcess                    (0),		     
     _nPass                       (0),		     
     _clTag                       (config().CRVCCF()),
-    _minNCC                      (config().minNCC()),
-    _trigPath                    (config().trgPath()){
-
+    _minNCC                      (config().minNCC()){
     produces<TriggerInfo>();
   }
 

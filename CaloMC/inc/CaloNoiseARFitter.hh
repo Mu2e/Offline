@@ -4,7 +4,7 @@
 // Utility to perform auto-regressive fit of waveform
 
 #include "art/Framework/Services/Optional/RandomNumberGenerator.h"
-#include "SeedService/inc/SeedService.hh"
+#include "Offline/SeedService/inc/SeedService.hh"
 #include "CLHEP/Random/RandGaussQ.h"
 #include <vector>
 

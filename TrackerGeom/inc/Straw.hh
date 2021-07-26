@@ -9,9 +9,9 @@
 #include <vector>
 #include <array>
 #include "cetlib_except/exception.h"
-#include "DataProducts/inc/StrawId.hh"
-#include "DataProducts/inc/StrawEnd.hh"
-#include "GeomPrimitives/inc/TubsParams.hh"
+#include "Offline/DataProducts/inc/StrawId.hh"
+#include "Offline/DataProducts/inc/StrawEnd.hh"
+#include "Offline/GeomPrimitives/inc/TubsParams.hh"
 #include "CLHEP/Vector/ThreeVector.h"
 
 namespace mu2e {

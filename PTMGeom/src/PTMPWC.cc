@@ -1,5 +1,5 @@
-#include "PTMGeom/inc/PTMPWC.hh"
-#include "GeomPrimitives/inc/Box.hh"
+#include "Offline/PTMGeom/inc/PTMPWC.hh"
+#include "Offline/GeomPrimitives/inc/Box.hh"
 
 namespace mu2e {
 

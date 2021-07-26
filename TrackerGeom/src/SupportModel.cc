@@ -6,7 +6,7 @@
 // Contact person, Rob Kutschke
 //
 
-#include "TrackerGeom/inc/SupportModel.hh"
+#include "Offline/TrackerGeom/inc/SupportModel.hh"
 
 namespace mu2e {
 

@@ -3,7 +3,7 @@
 #ifndef MCDataProducts_inc_MARSInfoCollection_hh
 #define MCDataProducts_inc_MARSInfoCollection_hh
 
-#include "MCDataProducts/inc/MARSInfo.hh"
+#include "Offline/MCDataProducts/inc/MARSInfo.hh"
 
 namespace mu2e {
   typedef std::vector<MARSInfo> MARSInfoCollection;

@@ -1,5 +1,5 @@
 
-#include "Validation/inc/ValStrawDigiMC.hh"
+#include "Offline/Validation/inc/ValStrawDigiMC.hh"
 
 int mu2e::ValStrawDigiMC::declare(art::TFileDirectory tfs) {
   _hVer = tfs.make<TH1D>( "Ver", "Version Number", 101, -0.5, 100.0);

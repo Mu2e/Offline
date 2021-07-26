@@ -16,9 +16,9 @@
 #include "cetlib_except/exception.h"
 
 // Mu2e includes
-#include "Mu2eG4/inc/ReflectionProcess.hh"
-#include "DataProducts/inc/PDGCode.hh"
-#include "GeneralUtilities/inc/safeSqrt.hh"
+#include "Offline/Mu2eG4/inc/ReflectionProcess.hh"
+#include "Offline/DataProducts/inc/PDGCode.hh"
+#include "Offline/GeneralUtilities/inc/safeSqrt.hh"
 
 using namespace std;
 

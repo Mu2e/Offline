@@ -1,6 +1,6 @@
 // (Muon) Stoping Target Monitor (STM)
 
-#include "Mu2eG4/geom/STM_v03.txt"
+#include "Offline/Mu2eG4/geom/STM_v03.txt"
 
 //turn off FOV collimator absorber
 bool   stm.FOVcollimator.absorber.build         =   false; //

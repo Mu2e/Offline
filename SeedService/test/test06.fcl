@@ -3,7 +3,7 @@
 #
 #
 
-#include "fcl/messageService.fcl"
+#include "Offline/fcl/messageService.fcl"
 
 # Give this job a name.
 process_name : SeedTest01

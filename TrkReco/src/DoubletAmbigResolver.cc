@@ -4,8 +4,8 @@
 // DoubletAmbigResolver is instantiated from Stntuple/mod/InitTrackBlock.cc
 // thus all parameters need to have defaults in the source
 ///////////////////////////////////////////////////////////////////////////////
-#include "TrkReco/inc/DoubletAmbigResolver.hh"
-#include "BTrkData/inc/TrkStrawHit.hh"
+#include "Offline/TrkReco/inc/DoubletAmbigResolver.hh"
+#include "Offline/BTrkData/inc/TrkStrawHit.hh"
 #include "BTrk/KalmanTrack/KalRep.hh"
 #include "BTrk/KalmanTrack/KalSite.hh"
 #include "BTrk/KalmanTrack/KalHit.hh"

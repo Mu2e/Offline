@@ -1,10 +1,10 @@
 // Andrei Gaponenko, 2011
 
-#include "GeometryService/inc/ExtMonFNALBuildingMaker.hh"
-#include "ExtinctionMonitorFNAL/Geometry/inc/ExtMonFNALBuilding.hh"
-#include "ProtonBeamDumpGeom/inc/ProtonBeamDump.hh"
+#include "Offline/GeometryService/inc/ExtMonFNALBuildingMaker.hh"
+#include "Offline/ExtinctionMonitorFNAL/Geometry/inc/ExtMonFNALBuilding.hh"
+#include "Offline/ProtonBeamDumpGeom/inc/ProtonBeamDump.hh"
 
-#include "GeometryService/inc/ExtMonFNALMagnetMaker.hh"
+#include "Offline/GeometryService/inc/ExtMonFNALMagnetMaker.hh"
 
 #include <algorithm>
 #include <iterator>
@@ -15,7 +15,7 @@
 
 #include "CLHEP/Units/SystemOfUnits.h"
 
-#include "ConfigTools/inc/SimpleConfig.hh"
+#include "Offline/ConfigTools/inc/SimpleConfig.hh"
 
 namespace mu2e {
 

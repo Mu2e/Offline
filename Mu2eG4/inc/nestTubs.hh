@@ -10,8 +10,8 @@
 #include <string>
 #include <vector>
 
-#include "Mu2eG4Helper/inc/VolumeInfo.hh"
-#include "GeomPrimitives/inc/TubsParams.hh"
+#include "Offline/Mu2eG4Helper/inc/VolumeInfo.hh"
+#include "Offline/GeomPrimitives/inc/TubsParams.hh"
 
 class G4CSGSolid;
 class G4LogicalVolume;

@@ -1,6 +1,6 @@
 #ifndef TrkDiag_BkgHitInfo_HH
 #define TrkDiag_BkgHitInfo_HH
-#include "TrkDiag/inc/StrawHitInfo.hh"
+#include "Offline/TrkDiag/inc/StrawHitInfo.hh"
 #include "CLHEP/Vector/ThreeVector.h"
 #include "Rtypes.h"
 namespace mu2e {

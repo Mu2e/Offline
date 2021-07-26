@@ -14,8 +14,8 @@
 #include <string>
 #include <chrono>
 #include <curl/curl.h>
-#include "DbTables/inc/DbId.hh"
-#include "DbTables/inc/DbValCache.hh"
+#include "Offline/DbTables/inc/DbId.hh"
+#include "Offline/DbTables/inc/DbValCache.hh"
 
 
 namespace mu2e {

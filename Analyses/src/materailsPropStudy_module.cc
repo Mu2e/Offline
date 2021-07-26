@@ -11,7 +11,7 @@
 #include "art/Framework/Principal/Handle.h"
 #include "art_root_io/TFileService.h"
 #include "art/Framework/Core/ModuleMacros.h"
-#include "SeedService/inc/SeedService.hh"
+#include "Offline/SeedService/inc/SeedService.hh"
 
 // BaBar
 #include "BTrk/BaBar/BaBar.hh"
