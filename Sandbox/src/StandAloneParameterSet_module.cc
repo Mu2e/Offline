@@ -5,7 +5,7 @@
 // Contact person Rob Kutschke
 //
 
-#include "GeneralUtilities/inc/ParameterSetFromFile.hh"
+#include "Offline/GeneralUtilities/inc/ParameterSetFromFile.hh"
 
 // Framework includes.
 #include "art/Framework/Core/EDAnalyzer.h"

@@ -6,7 +6,7 @@
 
 #include <vector>
 
-#include "RecoDataProducts/inc/ExtMonFNALRawHit.hh"
+#include "Offline/RecoDataProducts/inc/ExtMonFNALRawHit.hh"
 
 namespace mu2e {
   typedef std::vector<mu2e::ExtMonFNALRawHit> ExtMonFNALRawHitCollection;

@@ -1,7 +1,6 @@
 #ifndef RecoDataProducts_TriggerInfo_hh
 #define RecoDataProducts_TriggerInfo_hh
 
-#include "RecoDataProducts/inc/TriggerFlag.hh"
 #include "canvas/Persistency/Common/Ptr.h"
 #include <string>
 #include <vector>
@@ -16,9 +15,6 @@ namespace mu2e {
   class CosmicTrackSeed;
   struct TriggerInfo
   {
-    const TriggerFlag&             triggerBits()     const { return _triggerBits; }
-    const std::string&             triggerPath()     const { return _triggerPath; }
-    
     //accessors
     std::vector<art::Ptr<CaloCluster>>     const&  caloClusters()     const { return _caloClusters; }
     std::vector<art::Ptr<KalSeed>>         const&  tracks()           const { return _tracks; }
@@ -27,8 +23,7 @@ namespace mu2e {
     std::vector<art::Ptr<CaloTrigSeed>>    const&  caloTrigSeeds()    const { return _caloTrigSeeds; }
     std::vector<art::Ptr<CosmicTrackSeed>> const&  cosmics()          const { return _cosmics; }
 
-    TriggerFlag	           _triggerBits{}; 
-    std::string            _triggerPath; 
+    //data members
     std::vector<art::Ptr<CaloCluster>>     _caloClusters; 
     std::vector<art::Ptr<KalSeed>>         _tracks; // associated track
     std::vector<art::Ptr<HelixSeed>>       _helixes; // associated helix

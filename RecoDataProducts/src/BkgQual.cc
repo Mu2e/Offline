@@ -1,7 +1,7 @@
 // Detail class used to implement the MVAStruct for BkgQual, used to
 // estimate the 'quality' of a background cluster (low-E electron)
 // D. Brown, LBNL 1/30/2017
-#include "RecoDataProducts/inc/BkgQual.hh"
+#include "Offline/RecoDataProducts/inc/BkgQual.hh"
 #include <stdexcept>
 #include <iostream>
 #include <stdio.h>

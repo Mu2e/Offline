@@ -1,12 +1,12 @@
 #ifndef _COSMIC_RECO_MINUITDRIFTFITTER_HH
 #define _COSMIC_RECO_MINUITDRIFTFITTER_HH
 
-#include "CosmicReco/inc/PDFFit.hh"
-#include "DataProducts/inc/XYZVec.hh"
-#include "RecoDataProducts/inc/ComboHit.hh"
-#include "RecoDataProducts/inc/CosmicTrackSeed.hh"
-#include "TrackerConditions/inc/StrawDrift.hh"
-#include "TrackerGeom/inc/Tracker.hh"
+#include "Offline/CosmicReco/inc/PDFFit.hh"
+#include "Offline/DataProducts/inc/XYZVec.hh"
+#include "Offline/RecoDataProducts/inc/ComboHit.hh"
+#include "Offline/RecoDataProducts/inc/CosmicTrackSeed.hh"
+#include "Offline/TrackerConditions/inc/StrawDrift.hh"
+#include "Offline/TrackerGeom/inc/Tracker.hh"
 
 // For Drift:
 #include "BTrk/BaBar/BaBar.hh"
@@ -17,7 +17,7 @@
 #include "BTrk/ProbTools/ChisqConsistency.hh"
 #include "BTrk/TrkBase/TrkMomCalculator.hh"
 #include "BTrk/TrkBase/TrkPoca.hh"
-#include "BTrkData/inc/TrkStrawHit.hh"
+#include "Offline/BTrkData/inc/TrkStrawHit.hh"
 
 // ROOT
 #include "TF1.h"

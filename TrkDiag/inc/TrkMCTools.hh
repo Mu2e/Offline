@@ -4,21 +4,17 @@
 //
 #ifndef TrkDiag_TrkMCTools_hh
 #define TrkDiag_TrkMCTools_hh
-#include "RecoDataProducts/inc/StrawHitIndex.hh"
-#include "MCDataProducts/inc/StrawDigiMC.hh"
-#include "MCDataProducts/inc/StrawDigiMCCollection.hh"
-#include "MCDataProducts/inc/StepPointMCCollection.hh"
+#include "Offline/RecoDataProducts/inc/StrawHitIndex.hh"
+#include "Offline/MCDataProducts/inc/StrawDigiMC.hh"
+#include "Offline/MCDataProducts/inc/StrawDigiMCCollection.hh"
+#include "Offline/MCDataProducts/inc/StepPointMCCollection.hh"
 
-#include "RecoDataProducts/inc/KalSeed.hh"
-#include "TrkDiag/inc/TrkInfo.hh"
-#include "TrkDiag/inc/GenInfo.hh"
-#include "TrkDiag/inc/TrkStrawHitInfoMC.hh"
-#include "TrkDiag/inc/CaloClusterInfoMC.hh"
-#include "MCDataProducts/inc/KalSeedMC.hh"
+#include "Offline/RecoDataProducts/inc/KalSeed.hh"
+#include "Offline/MCDataProducts/inc/KalSeedMC.hh"
 #include "BTrk/BbrGeom/HepPoint.h"
-#include "MCDataProducts/inc/PrimaryParticle.hh"
+#include "Offline/MCDataProducts/inc/PrimaryParticle.hh"
 
-#include "Mu2eUtilities/inc/SimParticleTimeOffset.hh"
+#include "Offline/Mu2eUtilities/inc/SimParticleTimeOffset.hh"
 
 #include <vector>
 #include <functional>

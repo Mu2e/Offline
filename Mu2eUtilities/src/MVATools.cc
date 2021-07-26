@@ -11,8 +11,8 @@
 #include <utility>
 #include <vector>
 
-#include "ConfigTools/inc/ConfigFileLookupPolicy.hh"
-#include "DataProducts/inc/MVAMask.hh"
+#include "Offline/ConfigTools/inc/ConfigFileLookupPolicy.hh"
+#include "Offline/DataProducts/inc/MVAMask.hh"
 #include "cetlib_except/exception.h"
 // From the art tool-chain
 #include "fhiclcpp/ParameterSet.h"
@@ -30,7 +30,7 @@
 #include "xercesc/util/XercesDefs.hpp"
 #include "xercesc/util/Xerces_autoconf_config.hpp"
 
-#include "Mu2eUtilities/inc/MVATools.hh"
+#include "Offline/Mu2eUtilities/inc/MVATools.hh"
 
 using namespace xercesc;
 

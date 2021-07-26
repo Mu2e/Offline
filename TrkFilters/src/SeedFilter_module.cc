@@ -7,13 +7,13 @@
 #include "art/Framework/Core/ModuleMacros.h"
 #include "art/Framework/Principal/Event.h"
 #include "art/Framework/Principal/Handle.h"
-#include "RecoDataProducts/inc/TrkFitFlag.hh"
+#include "Offline/RecoDataProducts/inc/TrkFitFlag.hh"
 #include "fhiclcpp/ParameterSet.h"
 // mu2e
 // data
-#include "RecoDataProducts/inc/KalSeed.hh"
-#include "RecoDataProducts/inc/TriggerInfo.hh"
-#include "RecoDataProducts/inc/TrkFitDirection.hh"
+#include "Offline/RecoDataProducts/inc/KalSeed.hh"
+#include "Offline/RecoDataProducts/inc/TriggerInfo.hh"
+#include "Offline/RecoDataProducts/inc/TrkFitDirection.hh"
 
 using namespace CLHEP;
 // c++
@@ -42,7 +42,6 @@ namespace mu2e
     double          _minD0, _maxD0; // impact parameter limits
     double          _minT0;
     TrkFitFlag      _goods; // helix fit flag
-    std::string     _trigPath;
     int             _debug;
     // counters
     unsigned        _nevt, _npass;
@@ -66,7 +65,6 @@ namespace mu2e
     _maxD0     (pset.get<double>("maxD0", 200.)),
     _minT0     (pset.get<double>("minT0", 0.)),
     _goods     (pset.get<std::vector<std::string> >("seedFitFlag",std::vector<std::string>{"SeedOK"})),
-    _trigPath  (pset.get<std::string>("triggerPath")),
     _debug     (pset.get<int>   ("debugLevel",0)),
     _nevt(0), _npass(0)
   {
@@ -80,7 +78,6 @@ namespace mu2e
     // find the collection
     auto ksH = evt.getValidHandle<KalSeedCollection>(_ksTag);
     const KalSeedCollection* kscol = ksH.product();
-    size_t trig_ind(0);
     // loop over the collection: if any pass the selection, pass this event
     for(auto iks = kscol->begin(); iks != kscol->end(); ++iks) {
       auto const& ks = *iks;
@@ -108,15 +105,10 @@ namespace mu2e
         retval = true;
         ++_npass;
         // Fill the trigger info object
-        if (trig_ind == 0){
-	  triginfo->_triggerBits.merge(TriggerFlag::track);
-	  triginfo->_triggerPath = _trigPath;
-	}
         // associate to the helix which triggers.  Note there may be other helices which also pass the filter
         // but filtering is by event!
         size_t index = std::distance(kscol->begin(),iks);
 	triginfo->_tracks.push_back(art::Ptr<KalSeed>(ksH,index));
-	++trig_ind;
         if(_debug > 1){
           std::cout << moduleDescription().moduleLabel() << " passed event " << evt.id() << std::endl;
         }

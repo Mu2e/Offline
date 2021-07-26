@@ -1,7 +1,7 @@
 #ifndef Validation_TValHistE_hh
 #define Validation_TValHistE_hh
 
-#include "Validation/inc/TValHist.hh"
+#include "Offline/Validation/inc/TValHist.hh"
 #include "TEfficiency.h"
 #include "TString.h"
 

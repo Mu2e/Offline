@@ -7,7 +7,7 @@
 //
 // Andrei Gaponenko, 2012
 
-#include "GlobalConstantsService/inc/GlobalConstantsService.hh"
+#include "Offline/GlobalConstantsService/inc/GlobalConstantsService.hh"
 
 #include <iostream>
 #include <typeinfo>
@@ -15,10 +15,10 @@
 
 #include "cetlib_except/exception.h"
 
-#include "ConfigTools/inc/SimpleConfig.hh"
+#include "Offline/ConfigTools/inc/SimpleConfig.hh"
 
-#include "GlobalConstantsService/inc/ParticleDataTable.hh"
-#include "GlobalConstantsService/inc/PhysicsParams.hh"
+#include "Offline/GlobalConstantsService/inc/ParticleDataTable.hh"
+#include "Offline/GlobalConstantsService/inc/PhysicsParams.hh"
 
 namespace mu2e {
 

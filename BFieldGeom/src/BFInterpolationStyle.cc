@@ -6,7 +6,7 @@
 // Contact person, Rob Kutschke
 //
 
-#include "BFieldGeom/inc/BFInterpolationStyle.hh"
+#include "Offline/BFieldGeom/inc/BFInterpolationStyle.hh"
 
 namespace mu2e {
 

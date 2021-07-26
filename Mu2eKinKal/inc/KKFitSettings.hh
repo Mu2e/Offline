@@ -8,8 +8,8 @@
 #include "fhiclcpp/types/Table.h"
 #include "fhiclcpp/types/Tuple.h"
 #include "KinKal/Fit/Config.hh"
-#include "DataProducts/inc/PDGCode.hh"
-#include "RecoDataProducts/inc/TrkFitDirection.hh"
+#include "Offline/DataProducts/inc/PDGCode.hh"
+#include "Offline/RecoDataProducts/inc/TrkFitDirection.hh"
 namespace mu2e {
   namespace Mu2eKinKal{
 

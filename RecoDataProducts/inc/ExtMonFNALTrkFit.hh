@@ -11,9 +11,9 @@
 
 #include "canvas/Persistency/Common/Ptr.h"
 
-#include "RecoDataProducts/inc/ExtMonFNALTrkParam.hh"
-#include "RecoDataProducts/inc/ExtMonFNALTrkFitQuality.hh"
-#include "RecoDataProducts/inc/ExtMonFNALTrkClusterResiduals.hh"
+#include "Offline/RecoDataProducts/inc/ExtMonFNALTrkParam.hh"
+#include "Offline/RecoDataProducts/inc/ExtMonFNALTrkFitQuality.hh"
+#include "Offline/RecoDataProducts/inc/ExtMonFNALTrkClusterResiduals.hh"
 
 namespace mu2e {
 

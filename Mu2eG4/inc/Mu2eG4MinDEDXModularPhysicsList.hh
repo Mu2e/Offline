@@ -51,7 +51,7 @@ public:
 private:
   enum {ok = CompileTimeConstraints::IsA<T, G4VModularPhysicsList>::ok };
 };
-#include "Mu2eG4/inc/Mu2eG4MinDEDXModularPhysicsList.icc"
+#include "Offline/Mu2eG4/inc/Mu2eG4MinDEDXModularPhysicsList.icc"
 typedef TMu2eG4MinDEDXModularPhysicsList<G4VModularPhysicsList> Mu2eG4MinDEDXModularPhysicsList;
 
 #endif

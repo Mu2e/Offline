@@ -11,7 +11,7 @@
 #include "art/Framework/Principal/Event.h"
 #include "art/Framework/Principal/Handle.h"
 // mu2e data products
-#include "RecoDataProducts/inc/TriggerInfo.hh"
+#include "Offline/RecoDataProducts/inc/TriggerInfo.hh"
 // C++
 #include <vector>
 #include <memory>
@@ -50,8 +50,6 @@ namespace mu2e {
     // create the selector
     art::Selector selector(art::ProductInstanceNameSelector("") &&
 			   art::ProcessNameSelector("*")); 
-    //			   art::ModuleLabelSelector(""));// && 
-    //                           art::ProcessNameSelector("*"));
     std::vector<art::Handle<TriggerInfo> > list_of_triggerInfo; 
     event.getMany<TriggerInfo>(selector);
 

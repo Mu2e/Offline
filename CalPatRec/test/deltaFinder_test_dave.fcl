@@ -1,6 +1,6 @@
 # -*- mode:tcl -*-
 
-#include "CalPatRec/test/deltaFinder_test.fcl"
+#include "Offline/CalPatRec/test/deltaFinder_test.fcl"
 
 services.TFileService.fileName                            : "deltaFinder_test_dave.root"
 

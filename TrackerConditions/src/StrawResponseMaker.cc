@@ -1,17 +1,17 @@
 
-#include "TrackerConditions/inc/StrawResponseMaker.hh"
+#include "Offline/TrackerConditions/inc/StrawResponseMaker.hh"
 // data products
 #include <cmath>
 #include <algorithm>
 #include <TMath.h>
 #include "cetlib_except/exception.h"
-#include "DataProducts/inc/StrawId.hh"
-#include "TrackerConditions/inc/StrawDrift.hh"
+#include "Offline/DataProducts/inc/StrawId.hh"
+#include "Offline/TrackerConditions/inc/StrawDrift.hh"
 
-#include "BFieldGeom/inc/BFieldManager.hh"
+#include "Offline/BFieldGeom/inc/BFieldManager.hh"
 #include "BTrk/BField/BField.hh"
-#include "GeometryService/inc/DetectorSystem.hh"
-#include "GeometryService/inc/GeomHandle.hh"
+#include "Offline/GeometryService/inc/DetectorSystem.hh"
+#include "Offline/GeometryService/inc/GeomHandle.hh"
 #include "CLHEP/Matrix/Vector.h"
 
 
@@ -47,7 +47,14 @@ namespace mu2e {
     if(_config.ADCPedestal(x)) ADCped = x;
     
     double pmpEnergyScaleAvg = 0;
-    auto pmpEnergyScale = _config.peakMinusPedestalEnergyScale();
+    std::array<double, StrawId::_nustraws> pmpEnergyScale;
+    if (_config.peakMinusPedestalEnergyScale().size() == 0){
+      pmpEnergyScale.fill(_config.defaultPeakMinusPedestalEnergyScale());
+    }else{
+      for (size_t i=0;i<pmpEnergyScale.size();i++) {
+        pmpEnergyScale[i] = _config.peakMinusPedestalEnergyScale()[i];
+      }
+    }
     for (size_t i=0;i<pmpEnergyScale.size();i++) {
       pmpEnergyScaleAvg += pmpEnergyScale[i];
     }
@@ -114,13 +121,36 @@ namespace mu2e {
 	 _config.linearDriftVelocity(), _config.minDriftRadiusResolution(), 
 	 _config.maxDriftRadiusResolution(), 
 	 _config.driftRadiusResolutionRadius(), _config.minT0DOCA(), 
-	 _config.t0shift(), _config.peakMinusPedestalEnergyScale(), 
-	 _config.timeOffsetPanel(), _config.timeOffsetStrawHV(), 
-	 _config.timeOffsetStrawCal(), electronicsTimeDelay, 
+	 _config.t0shift(), pmpEnergyScale, 
+	 electronicsTimeDelay, 
 	  gasGain, analognoise, dVdI, vsat, ADCped,
 	 pmpEnergyScaleAvg );
 
+    std::array<double, StrawId::_nupanels> timeOffsetPanel;
+    std::array<double, StrawId::_nustraws> timeOffsetStrawHV, timeOffsetStrawCal;
+    if (_config.timeOffsetPanel().size() > 0){
+      for (size_t i=0;i<timeOffsetPanel.size();i++)
+        timeOffsetPanel[i] = _config.timeOffsetPanel()[i];
+    }else{
+      for (size_t i=0;i<timeOffsetPanel.size();i++)
+        timeOffsetPanel[i] = strawElectronics->getTimeOffsetPanel(i);
+    }
+    if (_config.timeOffsetStrawHV().size() > 0){
+      for(size_t i=0;i<timeOffsetStrawHV.size();i++){
+        timeOffsetStrawHV[i] = _config.timeOffsetStrawHV()[i];
+        timeOffsetStrawCal[i] = _config.timeOffsetStrawCal()[i];
+      }
+    }else{
+      for (size_t i=0;i<timeOffsetStrawHV.size();i++){
+        timeOffsetStrawHV[i] = strawElectronics->getTimeOffsetStrawHV(i);
+        timeOffsetStrawCal[i] = strawElectronics->getTimeOffsetStrawCal(i);
+      }
+    }
+    ptr->setOffsets( timeOffsetPanel,
+        timeOffsetStrawHV,
+        timeOffsetStrawCal );
+
     return ptr;
   }
-     
+
 }

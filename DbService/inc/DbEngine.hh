@@ -4,14 +4,14 @@
 #include <shared_mutex>
 #include <chrono>
 
-#include "DbService/inc/DbReader.hh"
-#include "DbTables/inc/DbId.hh"
-#include "DbTables/inc/DbTable.hh"
-#include "DbTables/inc/DbVersion.hh"
-#include "DbTables/inc/DbTableCollection.hh"
-#include "DbTables/inc/DbCache.hh"
-#include "DbTables/inc/DbValCache.hh"
-#include "DbTables/inc/DbLiveTable.hh"
+#include "Offline/DbService/inc/DbReader.hh"
+#include "Offline/DbTables/inc/DbId.hh"
+#include "Offline/DbTables/inc/DbTable.hh"
+#include "Offline/DbTables/inc/DbVersion.hh"
+#include "Offline/DbTables/inc/DbTableCollection.hh"
+#include "Offline/DbTables/inc/DbCache.hh"
+#include "Offline/DbTables/inc/DbValCache.hh"
+#include "Offline/DbTables/inc/DbLiveTable.hh"
 
 
 namespace mu2e {

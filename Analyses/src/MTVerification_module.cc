@@ -6,8 +6,8 @@
 
 
 
-#include "MCDataProducts/inc/GenParticleCollection.hh"
-#include "MCDataProducts/inc/SimParticleCollection.hh"
+#include "Offline/MCDataProducts/inc/GenParticleCollection.hh"
+#include "Offline/MCDataProducts/inc/SimParticleCollection.hh"
 
 
 #include "art/Framework/Core/EDAnalyzer.h"

@@ -1,6 +1,6 @@
 // Andrei Gaponenko, 2014
 
-#include "RecoDataProducts/inc/TrackSummary.hh"
+#include "Offline/RecoDataProducts/inc/TrackSummary.hh"
 
 #include <cmath>
 

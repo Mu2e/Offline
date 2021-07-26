@@ -1,4 +1,4 @@
-#include "CRVResponse/inc/MakeCrvRecoPulses.hh"
+#include "Offline/CRVResponse/inc/MakeCrvRecoPulses.hh"
 #include <TFitResult.h>
 #include <TFitResultPtr.h>
 #include <TMath.h>
@@ -187,21 +187,21 @@ void MakeCrvRecoPulses::SetWaveform(const std::vector<unsigned int> &waveform,
     double peakEndTime2=0;
     double peakTime2=0;
 
-    size_t fitStartBin, fitEndBin;
-    double fitStartTime, fitEndTime;
+    {
+      //first try simple fit (=one Gumbel function)
+      _f1.SetParameter(0, (waveform[peakStartBin]-pedestal)*TMath::E());
+      _f1.SetParameter(1, peakTime);
+      _f1.SetParameter(2, _defaultBeta);
+      _f1.SetParLimits(0,(waveform[peakStartBin]-pedestal)*TMath::E()*_minPulseHeightRatio,(waveform[peakStartBin]-pedestal)*TMath::E()*_maxPulseHeightRatio);
+      _f1.SetParLimits(1,peakStartTime-_maxTimeDifference,peakEndTime+_maxTimeDifference);
+      _f1.SetParLimits(2, _minBeta, _maxBeta);
 
-    //first try simple fit (=one Gumbel function)
-    _f1.SetParameter(0, (waveform[peakStartBin]-pedestal)*TMath::E());
-    _f1.SetParameter(1, peakTime);
-    _f1.SetParameter(2, _defaultBeta);
-    _f1.SetParLimits(0,(waveform[peakStartBin]-pedestal)*TMath::E()*_minPulseHeightRatio,(waveform[peakStartBin]-pedestal)*TMath::E()*_maxPulseHeightRatio);
-    _f1.SetParLimits(1,peakStartTime-_maxTimeDifference,peakEndTime+_maxTimeDifference);
-    _f1.SetParLimits(2, _minBeta, _maxBeta);
-
-    RangeFinderNarrow(waveform, peakStartBin, peakEndBin, fitStartBin, fitEndBin);
-    fitStartTime=(startTDC+fitStartBin)*digitizationPeriod;
-    fitEndTime=(startTDC+fitEndBin)*digitizationPeriod;
-    _f1.SetRange(fitStartTime,fitEndTime);
+      size_t fitStartBin, fitEndBin;
+      RangeFinderNarrow(waveform, peakStartBin, peakEndBin, fitStartBin, fitEndBin);
+      double fitStartTime=(startTDC+fitStartBin)*digitizationPeriod;
+      double fitEndTime=(startTDC+fitEndBin)*digitizationPeriod;
+      _f1.SetRange(fitStartTime,fitEndTime);
+    }
 
     //do the fit
     TFitResultPtr fr = g.Fit(&_f1,"NQSR");

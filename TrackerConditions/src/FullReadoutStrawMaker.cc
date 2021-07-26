@@ -2,9 +2,9 @@
 //
 //
 
-#include "TrackerConditions/inc/FullReadoutStraw.hh"
-#include "TrackerConditions/inc/FullReadoutStrawMaker.hh"
-#include "DataProducts/inc/StrawId.hh"
+#include "Offline/TrackerConditions/inc/FullReadoutStraw.hh"
+#include "Offline/TrackerConditions/inc/FullReadoutStrawMaker.hh"
+#include "Offline/DataProducts/inc/StrawId.hh"
 #include <iostream>
 #include <sstream>
 #include <memory>

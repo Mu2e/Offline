@@ -30,12 +30,12 @@
 #include "messagefacility/MessageLogger/MessageLogger.h"
 
 // Mu2e includes
-#include "Mu2eG4/inc/physicsListDecider.hh"
-#include "Mu2eG4/inc/Mu2eG4DecayMuonsWithSpinPhysicsConstructor.hh"
-#include "Mu2eG4/inc/Mu2eG4MinimalModularPhysicsList.hh"
-#include "Mu2eG4/inc/Mu2eG4MinDEDXModularPhysicsList.hh"
-#include "Mu2eG4/inc/Mu2eG4StepLimiterPhysicsConstructor.hh"
-#include "Mu2eG4/inc/Mu2eG4CustomizationPhysicsConstructor.hh"
+#include "Offline/Mu2eG4/inc/physicsListDecider.hh"
+#include "Offline/Mu2eG4/inc/Mu2eG4DecayMuonsWithSpinPhysicsConstructor.hh"
+#include "Offline/Mu2eG4/inc/Mu2eG4MinimalModularPhysicsList.hh"
+#include "Offline/Mu2eG4/inc/Mu2eG4MinDEDXModularPhysicsList.hh"
+#include "Offline/Mu2eG4/inc/Mu2eG4StepLimiterPhysicsConstructor.hh"
+#include "Offline/Mu2eG4/inc/Mu2eG4CustomizationPhysicsConstructor.hh"
 
 // CLHEP includes
 #include "CLHEP/Units/SystemOfUnits.h"

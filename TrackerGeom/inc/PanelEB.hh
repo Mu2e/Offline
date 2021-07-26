@@ -3,7 +3,7 @@
 //
 // Holds information about the tracker electronics board (used in G4)
 //
-#include "GeomPrimitives/inc/TubsParams.hh"
+#include "Offline/GeomPrimitives/inc/TubsParams.hh"
 #include <string>
 
 namespace mu2e {

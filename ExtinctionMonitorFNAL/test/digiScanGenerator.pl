@@ -42,7 +42,7 @@ sub makeFileName($) {
 #================================================================
 sub header() {
     return <<EOF
-#include "ExtinctionMonitorFNAL/test/digiTuning.fcl"
+#include "Offline/ExtinctionMonitorFNAL/test/digiTuning.fcl"
 EOF
 }
 

@@ -21,7 +21,7 @@ TEveEventDisplayBase : {
       CrvRecoPulseCollection	  :  "CrvRecoPulses"
       CosmicTrackSeedCollection :  NULL
       CaloClusterCollection		  :  "CaloClusterMaker"
-      CaloHitCollection  :  NULL
+      CaloHitCollection         :  NULL
       HelixSeedCollection       :  "HelixFinderDe:Negative"
       KalSeedCollection         :  ["KFFDeM"]
       TrkExtTrajCollection      : NULL

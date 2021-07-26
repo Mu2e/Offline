@@ -19,7 +19,7 @@
 #include "fhiclcpp/types/OptionalDelegatedParameter.h"
 #include "fhiclcpp/ParameterSet.h"
 
-#include "Mu2eUtilities/inc/SimParticleCollectionPrinter.hh"
+#include "Offline/Mu2eUtilities/inc/SimParticleCollectionPrinter.hh"
 
 namespace mu2e {
   namespace Mu2eG4Config {

@@ -18,7 +18,7 @@
 #     straightforward to make; see customizingMessageFacilityFcl.txt 
 #     for simple examples. 
  
-#include "fcl/standardMessageDestinations.fcl"
+#include "Offline/fcl/standardMessageDestinations.fcl"
 
 BEGIN_PROLOG
 

@@ -7,10 +7,10 @@
 //
 #include "canvas/Persistency/Common/Ptr.h"
 
-#include "MCDataProducts/inc/StepPointMC.hh"
-#include "MCDataProducts/inc/SimParticle.hh"
-#include "DataProducts/inc/CRSScintillatorBarIndex.hh"
-#include "DataProducts/inc/XYZVec.hh"
+#include "Offline/MCDataProducts/inc/StepPointMC.hh"
+#include "Offline/MCDataProducts/inc/SimParticle.hh"
+#include "Offline/DataProducts/inc/CRSScintillatorBarIndex.hh"
+#include "Offline/DataProducts/inc/XYZVec.hh"
 #include "CLHEP/Vector/ThreeVector.h"
 #include <Rtypes.h>
 

@@ -10,7 +10,7 @@
 // ***********************************************************
 
 
-#include "GeneralUtilities/inc/OrientationResolver.hh"
+#include "Offline/GeneralUtilities/inc/OrientationResolver.hh"
 #include <string>
 
 namespace mu2e {

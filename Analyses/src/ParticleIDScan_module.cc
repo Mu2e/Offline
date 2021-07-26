@@ -15,9 +15,9 @@
 #include "art_root_io/TFileService.h"
 #include "art/Framework/Services/Registry/ServiceHandle.h"
 
-#include "ParticleID/inc/PIDLogLRatio.hh"
-#include "ParticleID/inc/PIDLogL1D.hh"
-#include "ParticleID/inc/PIDLogLEp.hh"
+#include "Offline/ParticleID/inc/PIDLogLRatio.hh"
+#include "Offline/ParticleID/inc/PIDLogL1D.hh"
+#include "Offline/ParticleID/inc/PIDLogLEp.hh"
 
 #include "TH1.h"
 #include "TH2.h"

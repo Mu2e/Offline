@@ -3,13 +3,13 @@
 #
 #  > mu2e --config TrkFilters/fcl/ReadDigis.fcl --source "your digis file" --TFile ReadDigis.root --nevts=100
 #
-#include "fcl/minimalMessageService.fcl"
-#include "fcl/standardServices.fcl"
-#include "fcl/standardProducers.fcl"
-#include "TrkHitReco/fcl/prolog.fcl"
-#include "TrkPatRec/fcl/prolog_trigger.fcl"
-#include "TrkFilters/fcl/prolog.fcl"
-#include "TrkDiag/fcl/prolog.fcl"
+#include "Offline/fcl/minimalMessageService.fcl"
+#include "Offline/fcl/standardServices.fcl"
+#include "Offline/fcl/standardProducers.fcl"
+#include "Offline/TrkHitReco/fcl/prolog.fcl"
+#include "Offline/TrkPatRec/fcl/prolog_trigger.fcl"
+#include "Offline/TrkFilters/fcl/prolog.fcl"
+#include "Offline/TrkDiag/fcl/prolog.fcl"
 
 process_name : ReadDigis
 
@@ -28,9 +28,9 @@ services : {
     RandomNumberGenerator : {defaultEngineKind: "MixMaxRng" }
     #   Timing                : { }
 
-    GeometryService        : { inputFile      : "Mu2eG4/geom/geom_common.txt"          }
-    ConditionsService      : { conditionsfile : "ConditionsService/data/conditions_01.txt"        }
-    GlobalConstantsService : { inputFile      : "GlobalConstantsService/data/globalConstants_01.txt"   }
+    GeometryService        : { inputFile      : "Offline/Mu2eG4/geom/geom_common.txt"          }
+    ConditionsService      : { conditionsfile : "Offline/ConditionsService/data/conditions_01.txt"        }
+    GlobalConstantsService : { inputFile      : "Offline/GlobalConstantsService/data/globalConstants_01.txt"   }
     Mu2eG4Helper           : { }
     BTrkHelper             : @local::BTrkHelperDefault
     SeedService            : { @table::automaticSeeds

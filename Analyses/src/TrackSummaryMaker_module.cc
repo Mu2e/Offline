@@ -14,20 +14,20 @@
 #include "art/Framework/Principal/Event.h"
 #include "art/Framework/Principal/Handle.h"
 
-#include "RecoDataProducts/inc/KalRepPtrCollection.hh"
+#include "Offline/RecoDataProducts/inc/KalRepPtrCollection.hh"
 #include "BTrk/KalmanTrack/KalRep.hh"
 #include "BTrk/KalmanTrack/KalHit.hh"
 #include "BTrk/TrkBase/TrkHelixUtils.hh"
 #include "BTrk/BbrGeom/BbrVectorErr.hh"
 
-#include "GeometryService/inc/GeomHandle.hh"
-#include "GeometryService/inc/DetectorSystem.hh"
-#include "GeometryService/inc/VirtualDetector.hh"
-#include "DataProducts/inc/VirtualDetectorId.hh"
+#include "Offline/GeometryService/inc/GeomHandle.hh"
+#include "Offline/GeometryService/inc/DetectorSystem.hh"
+#include "Offline/GeometryService/inc/VirtualDetector.hh"
+#include "Offline/DataProducts/inc/VirtualDetectorId.hh"
 
-#include "Mu2eUtilities/inc/toHepPoint.hh"
-#include "RecoDataProducts/inc/TrackSummary.hh"
-#include "RecoDataProducts/inc/TrackSummaryRecoMap.hh"
+#include "Offline/Mu2eUtilities/inc/toHepPoint.hh"
+#include "Offline/RecoDataProducts/inc/TrackSummary.hh"
+#include "Offline/RecoDataProducts/inc/TrackSummaryRecoMap.hh"
 
 namespace mu2e {
 

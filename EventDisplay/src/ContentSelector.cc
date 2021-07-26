@@ -1,4 +1,4 @@
-#include "EventDisplay/src/ContentSelector.h"
+#include "Offline/EventDisplay/src/ContentSelector.h"
 #include "art/Framework/Principal/SubRun.h"
 
 namespace mu2e_eventdisplay

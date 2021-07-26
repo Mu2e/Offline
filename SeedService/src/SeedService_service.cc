@@ -12,7 +12,7 @@
 
 
 // Mu2e include files
-#include "SeedService/inc/SeedService.hh"
+#include "Offline/SeedService/inc/SeedService.hh"
 
 // Art include files
 #include "art/Framework/Principal/Run.h"

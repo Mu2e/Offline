@@ -14,8 +14,8 @@
 #include "art/Framework/Core/ModuleMacros.h"
 
 // Mu2e includes.
-#include "RecoDataProducts/inc/StrawHitCollection.hh"
-#include "Sandbox/inc/TransientProduct00Collection.hh"
+#include "Offline/RecoDataProducts/inc/StrawHitCollection.hh"
+#include "Offline/Sandbox/inc/TransientProduct00Collection.hh"
 
 using namespace std;
 

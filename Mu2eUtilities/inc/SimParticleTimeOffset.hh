@@ -16,7 +16,7 @@
 #include "canvas/Utilities/InputTag.h"
 #include "canvas/Persistency/Common/Ptr.h"
 
-#include "MCDataProducts/inc/SimParticleTimeMap.hh"
+#include "Offline/MCDataProducts/inc/SimParticleTimeMap.hh"
 
 namespace art { class Event; }
 namespace fhicl { class ParameterSet; }

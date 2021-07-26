@@ -1,7 +1,7 @@
-#include "fcl/minimalMessageService.fcl"
-#include "fcl/standardServices.fcl"
-#include "CRVResponse/fcl/prolog.fcl"
-#include "Mu2eG4/fcl/prolog.fcl"
+#include "Offline/fcl/minimalMessageService.fcl"
+#include "Offline/fcl/standardServices.fcl"
+#include "Offline/CRVResponse/fcl/prolog.fcl"
+#include "Offline/Mu2eG4/fcl/prolog.fcl"
 
 process_name : CRVEfficiency
 
@@ -18,8 +18,8 @@ services :
   RandomNumberGenerator : {defaultEngineKind: "MixMaxRng" }
 
   GeometryService        : { inputFile      : "CRVResponse/singleCounter/geom.txt" }
-  ConditionsService      : { conditionsfile : "ConditionsService/data/conditions_01.txt" }
-  GlobalConstantsService : { inputFile      : "GlobalConstantsService/data/globalConstants_01.txt" }
+  ConditionsService      : { conditionsfile : "Offline/ConditionsService/data/conditions_01.txt" }
+  GlobalConstantsService : { inputFile      : "Offline/GlobalConstantsService/data/globalConstants_01.txt" }
   Mu2eG4Helper           : { }
   SeedService            : @local::automaticSeeds
 }

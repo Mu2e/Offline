@@ -3,7 +3,7 @@
 #
 #
 
-#include "fcl/messageService.fcl"
+#include "Offline/fcl/messageService.fcl"
 
 BEGIN_PROLOG
 

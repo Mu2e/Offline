@@ -4,7 +4,7 @@
 
 #include "art/Framework/Principal/Event.h"
 #include "art_root_io/TFileDirectory.h"
-#include "MCDataProducts/inc/CrvStep.hh"
+#include "Offline/MCDataProducts/inc/CrvStep.hh"
 #include "TH1D.h"
 #include <string>
 

@@ -10,7 +10,7 @@
 // KinKal
 #include "KinKal/MatEnv/MatDBInfo.hh"
 #include "KinKal/Detector/StrawMaterial.hh"
-#include "Mu2eKinKal/inc/KKFileFinder.hh"
+#include "Offline/Mu2eKinKal/inc/KKFileFinder.hh"
 #include <string>
 namespace mu2e {
   class KKMaterial {

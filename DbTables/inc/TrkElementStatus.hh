@@ -13,10 +13,10 @@
 #include <map>
 #include <regex>
 #include "cetlib_except/exception.h"
-#include "DataProducts/inc/StrawId.hh"
-#include "DataProducts/inc/StrawIdMask.hh"
-#include "DataProducts/inc/StrawStatus.hh"
-#include "DbTables/inc/DbTable.hh"
+#include "Offline/DataProducts/inc/StrawId.hh"
+#include "Offline/DataProducts/inc/StrawIdMask.hh"
+#include "Offline/DataProducts/inc/StrawStatus.hh"
+#include "Offline/DbTables/inc/DbTable.hh"
 
 namespace mu2e {
 

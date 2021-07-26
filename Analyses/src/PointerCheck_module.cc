@@ -24,15 +24,15 @@
 #include "canvas/Persistency/Common/Ptr.h"
 #include "art/Framework/Core/ModuleMacros.h"
 // the products that can be re-written
-#include "MCDataProducts/inc/SimParticleCollection.hh"
-#include "MCDataProducts/inc/SimParticlePtrCollection.hh"
-#include "MCDataProducts/inc/StepPointMCCollection.hh"
-#include "MCDataProducts/inc/MCTrajectoryCollection.hh"
-#include "MCDataProducts/inc/StrawDigiMCCollection.hh"
-#include "MCDataProducts/inc/CaloShowerStep.hh"
-#include "MCDataProducts/inc/CaloHitMC.hh"
-#include "MCDataProducts/inc/CrvStep.hh"
-#include "MCDataProducts/inc/CrvDigiMC.hh"
+#include "Offline/MCDataProducts/inc/SimParticleCollection.hh"
+#include "Offline/MCDataProducts/inc/SimParticlePtrCollection.hh"
+#include "Offline/MCDataProducts/inc/StepPointMCCollection.hh"
+#include "Offline/MCDataProducts/inc/MCTrajectoryCollection.hh"
+#include "Offline/MCDataProducts/inc/StrawDigiMCCollection.hh"
+#include "Offline/MCDataProducts/inc/CaloShowerStep.hh"
+#include "Offline/MCDataProducts/inc/CaloHitMC.hh"
+#include "Offline/MCDataProducts/inc/CrvStep.hh"
+#include "Offline/MCDataProducts/inc/CrvDigiMC.hh"
 
 
 namespace mu2e {

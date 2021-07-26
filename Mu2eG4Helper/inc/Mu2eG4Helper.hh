@@ -12,8 +12,8 @@
 //
 
 // Mu2e includes
-#include "Mu2eG4Helper/inc/AntiLeakRegistry.hh"
-#include "Mu2eG4Helper/inc/VolumeInfo.hh"
+#include "Offline/Mu2eG4Helper/inc/AntiLeakRegistry.hh"
+#include "Offline/Mu2eG4Helper/inc/VolumeInfo.hh"
 
 // Framework include files
 #include "art/Framework/Services/Registry/ServiceHandle.h"

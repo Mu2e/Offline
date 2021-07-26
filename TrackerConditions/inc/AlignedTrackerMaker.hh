@@ -4,10 +4,10 @@
 // Make AlignedTracker from fcl or (eventually) database
 //
 
-#include "TrackerGeom/inc/Tracker.hh"
-#include "TrackerConfig/inc/AlignedTrackerConfig.hh"
-#include "DbTables/inc/TrkAlignElement.hh"
-#include "DbTables/inc/TrkAlignStraw.hh"
+#include "Offline/TrackerGeom/inc/Tracker.hh"
+#include "Offline/TrackerConfig/inc/AlignedTrackerConfig.hh"
+#include "Offline/DbTables/inc/TrkAlignElement.hh"
+#include "Offline/DbTables/inc/TrkAlignStraw.hh"
 
 namespace mu2e {
 

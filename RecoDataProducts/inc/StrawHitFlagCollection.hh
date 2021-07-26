@@ -3,6 +3,6 @@
 
 // this file is deprecated, please include StrawHitFlag instead
 
-#include "RecoDataProducts/inc/StrawHitFlag.hh"
+#include "Offline/RecoDataProducts/inc/StrawHitFlag.hh"
 
 #endif /* RecoDataProducts_StrawHitFlagCollection_hh */

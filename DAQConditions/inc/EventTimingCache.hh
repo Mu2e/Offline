@@ -1,8 +1,8 @@
 #ifndef DAQConditions_EventTimingCache_hh
 #define DAQConditions_EventTimingCache_hh
 
-#include "Mu2eInterfaces/inc/ProditionsCache.hh"
-#include "DAQConditions/inc/EventTimingMaker.hh"
+#include "Offline/Mu2eInterfaces/inc/ProditionsCache.hh"
+#include "Offline/DAQConditions/inc/EventTimingMaker.hh"
 
 
 namespace mu2e {

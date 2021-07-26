@@ -10,12 +10,12 @@
 #include "art/Framework/Core/ModuleMacros.h"
 #include "art_root_io/TFileService.h"
 
-#include "MCDataProducts/inc/StrawDigiMC.hh"
-#include "Mu2eUtilities/inc/SimParticleTimeOffset.hh"
-#include "DataProducts/inc/IndexMap.hh"
-#include "MCDataProducts/inc/CrvDigiMC.hh"
-#include "MCDataProducts/inc/CaloShowerSim.hh"
-#include "MCDataProducts/inc/CaloClusterMC.hh"
+#include "Offline/MCDataProducts/inc/StrawDigiMC.hh"
+#include "Offline/Mu2eUtilities/inc/SimParticleTimeOffset.hh"
+#include "Offline/DataProducts/inc/IndexMap.hh"
+#include "Offline/MCDataProducts/inc/CrvDigiMC.hh"
+#include "Offline/MCDataProducts/inc/CaloShowerSim.hh"
+#include "Offline/MCDataProducts/inc/CaloClusterMC.hh"
 
 using namespace std;
 

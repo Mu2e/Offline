@@ -1,4 +1,4 @@
-#include "TrkHitReco/inc/PeakFitParams.hh"
+#include "Offline/TrkHitReco/inc/PeakFitParams.hh"
 
 namespace mu2e {
   namespace TrkHitReco {

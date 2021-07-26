@@ -24,7 +24,7 @@
 #include "cetlib_except/exception.h"
 #include "fhiclcpp/ParameterSet.h"
 
-#include "Mu2eUtilities/inc/Table.hh"
+#include "Offline/Mu2eUtilities/inc/Table.hh"
 
 #include "fhiclcpp/ParameterSet.h"
 

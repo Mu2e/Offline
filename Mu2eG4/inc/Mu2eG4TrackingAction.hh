@@ -12,11 +12,11 @@
 
 #include "Geant4/G4UserTrackingAction.hh"
 
-#include "MCDataProducts/inc/SimParticleCollection.hh"
+#include "Offline/MCDataProducts/inc/SimParticleCollection.hh"
 
-#include "Mu2eG4/inc/EventNumberList.hh"
-#include "Mu2eG4/inc/PhysicsProcessInfo.hh"
-#include "DataProducts/inc/PDGCode.hh"
+#include "Offline/Mu2eG4/inc/EventNumberList.hh"
+#include "Offline/Mu2eG4/inc/PhysicsProcessInfo.hh"
+#include "Offline/DataProducts/inc/PDGCode.hh"
 
 #include "art/Framework/Principal/Event.h"
 #include "art/Framework/Principal/Handle.h"

@@ -1,8 +1,8 @@
 #include <iostream>
 #include <fstream>
 #include "cetlib_except/exception.h"
-#include "DbService/inc/DbIdList.hh"
-#include "ConfigTools/inc/ConfigFileLookupPolicy.hh"
+#include "Offline/DbService/inc/DbIdList.hh"
+#include "Offline/ConfigTools/inc/ConfigFileLookupPolicy.hh"
 #include <boost/algorithm/string.hpp>
 #include <boost/algorithm/string/classification.hpp>
 #include <boost/algorithm/string/split.hpp>

@@ -1,7 +1,7 @@
 // Original author Robert Kutschke
 // Modified by mjlee. See docdb-2049
 
-#include "EventGenerator/inc/ParticleGunImpl.hh"
+#include "Offline/EventGenerator/inc/ParticleGunImpl.hh"
 
 #include <iostream>
 
@@ -12,10 +12,10 @@
 #include "messagefacility/MessageLogger/MessageLogger.h"
 
 // Mu2e includes
-#include "GlobalConstantsService/inc/GlobalConstantsHandle.hh"
-#include "GlobalConstantsService/inc/ParticleDataTable.hh"
-#include "GeometryService/inc/GeomHandle.hh"
-#include "GeometryService/inc/DetectorSystem.hh"
+#include "Offline/GlobalConstantsService/inc/GlobalConstantsHandle.hh"
+#include "Offline/GlobalConstantsService/inc/ParticleDataTable.hh"
+#include "Offline/GeometryService/inc/GeomHandle.hh"
+#include "Offline/GeometryService/inc/DetectorSystem.hh"
 
 // Root includes
 #include "TH1F.h"

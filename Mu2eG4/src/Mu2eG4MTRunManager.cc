@@ -14,17 +14,17 @@
 #include "art/Framework/Services/Registry/ServiceDefinitionMacros.h"
 
 //Mu2e includes
-#include "Mu2eG4/inc/Mu2eG4MTRunManager.hh"
-#include "SeedService/inc/SeedService.hh"
-#include "GeometryService/inc/GeometryService.hh"
-#include "GeometryService/inc/GeomHandle.hh"
-#include "Mu2eHallGeom/inc/Mu2eHall.hh"
-#include "GeometryService/inc/WorldG4.hh"
-#include "Mu2eG4/inc/WorldMaker.hh"
-#include "Mu2eG4/inc/Mu2eWorld.hh"
-#include "Mu2eG4/inc/physicsListDecider.hh"
-#include "Mu2eG4/inc/preG4InitializeTasks.hh"
-#include "Mu2eG4/inc/Mu2eG4MasterRunAction.hh"
+#include "Offline/Mu2eG4/inc/Mu2eG4MTRunManager.hh"
+#include "Offline/SeedService/inc/SeedService.hh"
+#include "Offline/GeometryService/inc/GeometryService.hh"
+#include "Offline/GeometryService/inc/GeomHandle.hh"
+#include "Offline/Mu2eHallGeom/inc/Mu2eHall.hh"
+#include "Offline/GeometryService/inc/WorldG4.hh"
+#include "Offline/Mu2eG4/inc/WorldMaker.hh"
+#include "Offline/Mu2eG4/inc/Mu2eWorld.hh"
+#include "Offline/Mu2eG4/inc/physicsListDecider.hh"
+#include "Offline/Mu2eG4/inc/preG4InitializeTasks.hh"
+#include "Offline/Mu2eG4/inc/Mu2eG4MasterRunAction.hh"
 
 //G4 includes
 #include "Geant4/G4Timer.hh"

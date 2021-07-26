@@ -1,6 +1,6 @@
 // Andrei Gaponenko, 2012
 
-#include "ProductionSolenoidGeom/inc/PSShield.hh"
+#include "Offline/ProductionSolenoidGeom/inc/PSShield.hh"
 
 #include <iterator>
 #include <algorithm>

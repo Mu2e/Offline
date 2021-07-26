@@ -25,12 +25,12 @@
 #include "fhiclcpp/types/TupleAs.h"
 #include "canvas/Utilities/InputTag.h"
 
-#include "EventMixing/inc/Mu2eProductMixer.hh"
-#include "Mu2eUtilities/inc/artURBG.hh"
-#include "SeedService/inc/SeedService.hh"
-#include "MCDataProducts/inc/ProtonBunchIntensity.hh"
-#include "ProditionsService/inc/ProditionsHandle.hh"
-#include "SimulationConditions/inc/SimBookkeeper.hh"
+#include "Offline/EventMixing/inc/Mu2eProductMixer.hh"
+#include "Offline/Mu2eUtilities/inc/artURBG.hh"
+#include "Offline/SeedService/inc/SeedService.hh"
+#include "Offline/MCDataProducts/inc/ProtonBunchIntensity.hh"
+#include "Offline/ProditionsService/inc/ProditionsHandle.hh"
+#include "Offline/SimulationConditions/inc/SimBookkeeper.hh"
 //================================================================
 namespace mu2e {
 

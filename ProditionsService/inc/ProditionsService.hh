@@ -18,24 +18,24 @@
 #include "art/Framework/Services/Registry/ServiceDeclarationMacros.h"
 #include "cetlib_except/exception.h"
 
-#include "Mu2eInterfaces/inc/ProditionsEntity.hh"
-#include "Mu2eInterfaces/inc/ProditionsCache.hh"
+#include "Offline/Mu2eInterfaces/inc/ProditionsEntity.hh"
+#include "Offline/Mu2eInterfaces/inc/ProditionsCache.hh"
 
-#include "DAQConfig/inc/EventTimingConfig.hh"
-#include "TrackerConfig/inc/FullReadoutStrawConfig.hh"
-#include "TrackerConfig/inc/TrackerStatusConfig.hh"
-#include "TrackerConfig/inc/StrawDriftConfig.hh"
-#include "TrackerConfig/inc/StrawPhysicsConfig.hh"
-#include "TrackerConfig/inc/StrawElectronicsConfig.hh"
-#include "TrackerConfig/inc/StrawResponseConfig.hh"
-#include "TrackerConfig/inc/AlignedTrackerConfig.hh"
-#include "TrackerConfig/inc/Mu2eMaterialConfig.hh"
-#include "TrackerConfig/inc/Mu2eDetectorConfig.hh"
-#include "CaloConfig/inc/CaloDAQMapConfig.hh"
+#include "Offline/DAQConfig/inc/EventTimingConfig.hh"
+#include "Offline/TrackerConfig/inc/FullReadoutStrawConfig.hh"
+#include "Offline/TrackerConfig/inc/TrackerStatusConfig.hh"
+#include "Offline/TrackerConfig/inc/StrawDriftConfig.hh"
+#include "Offline/TrackerConfig/inc/StrawPhysicsConfig.hh"
+#include "Offline/TrackerConfig/inc/StrawElectronicsConfig.hh"
+#include "Offline/TrackerConfig/inc/StrawResponseConfig.hh"
+#include "Offline/TrackerConfig/inc/AlignedTrackerConfig.hh"
+#include "Offline/TrackerConfig/inc/Mu2eMaterialConfig.hh"
+#include "Offline/TrackerConfig/inc/Mu2eDetectorConfig.hh"
+#include "Offline/CaloConfig/inc/CaloDAQMapConfig.hh"
 
-#include "AnalysisConfig/inc/MVACatalogConfig.hh"
+#include "Offline/AnalysisConfig/inc/MVACatalogConfig.hh"
 
-#include "SimulationConfig/inc/SimBookkeeperConfig.hh"
+#include "Offline/SimulationConfig/inc/SimBookkeeperConfig.hh"
 
 namespace mu2e {
 

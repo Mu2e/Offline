@@ -9,17 +9,17 @@
 //
 
 //Mu2e includes
-#include "Mu2eG4/inc/Mu2eG4IOConfigHelper.hh"
-#include "Mu2eG4/inc/SimParticleHelper.hh"
-#include "Mu2eG4/inc/SimParticlePrimaryHelper.hh"
-#include "Mu2eG4/inc/IMu2eG4Cut.hh"
-#include "MCDataProducts/inc/GenParticleCollection.hh"
-#include "MCDataProducts/inc/StatusG4.hh"
-#include "MCDataProducts/inc/SimParticleCollection.hh"
-#include "MCDataProducts/inc/StepPointMCCollection.hh"
-#include "MCDataProducts/inc/MCTrajectoryCollection.hh"
-#include "MCDataProducts/inc/SimParticleRemapping.hh"
-#include "MCDataProducts/inc/ExtMonFNALSimHitCollection.hh"
+#include "Offline/Mu2eG4/inc/Mu2eG4IOConfigHelper.hh"
+#include "Offline/Mu2eG4/inc/SimParticleHelper.hh"
+#include "Offline/Mu2eG4/inc/SimParticlePrimaryHelper.hh"
+#include "Offline/Mu2eG4/inc/IMu2eG4Cut.hh"
+#include "Offline/MCDataProducts/inc/GenParticleCollection.hh"
+#include "Offline/MCDataProducts/inc/StatusG4.hh"
+#include "Offline/MCDataProducts/inc/SimParticleCollection.hh"
+#include "Offline/MCDataProducts/inc/StepPointMCCollection.hh"
+#include "Offline/MCDataProducts/inc/MCTrajectoryCollection.hh"
+#include "Offline/MCDataProducts/inc/SimParticleRemapping.hh"
+#include "Offline/MCDataProducts/inc/ExtMonFNALSimHitCollection.hh"
 
 
 // C++ includes

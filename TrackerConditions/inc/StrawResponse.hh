@@ -8,12 +8,13 @@
 #include <iostream>
 #include <vector>
 #include <array>
-#include "TrackerGeom/inc/Straw.hh"
-#include "DataProducts/inc/TrkTypes.hh"
-#include "TrackerConditions/inc/StrawDrift.hh"
-#include "TrackerConditions/inc/StrawElectronics.hh"
-#include "TrackerConditions/inc/StrawPhysics.hh"
-#include "Mu2eInterfaces/inc/ProditionsEntity.hh"
+#include "Offline/TrackerGeom/inc/Straw.hh"
+#include "Offline/DataProducts/inc/TrkTypes.hh"
+#include "Offline/DataProducts/inc/StrawId.hh"
+#include "Offline/TrackerConditions/inc/StrawDrift.hh"
+#include "Offline/TrackerConditions/inc/StrawElectronics.hh"
+#include "Offline/TrackerConditions/inc/StrawPhysics.hh"
+#include "Offline/Mu2eInterfaces/inc/ProditionsEntity.hh"
 
 
 namespace mu2e {
@@ -41,10 +42,7 @@ namespace mu2e {
         double wbuf, double slfac, double errfac, bool usenonlindrift, 
         double lindriftvel, double rres_min, double rres_max, 
         double rres_rad, double mint0doca, double t0shift, 
-        std::vector<double> pmpEnergyScale, 
-        std::vector<double> timeOffsetPanel, 
-        std::vector<double> timeOffsetStrawHV, 
-        std::vector<double> timeOffsetStrawCal, 
+        std::array<double, StrawId::_nustraws> pmpEnergyScale, 
 	double electronicsTimeDelay, double gasGain, 
         std::array<double,StrawElectronics::npaths> analognoise, 
 	std::array<double,StrawElectronics::npaths> dVdI, 
@@ -64,9 +62,7 @@ namespace mu2e {
       _usenonlindrift(usenonlindrift), _lindriftvel(lindriftvel), 
       _rres_min(rres_min), _rres_max(rres_max), _rres_rad(rres_rad), 
       _mint0doca(mint0doca), _t0shift(t0shift), 
-      _pmpEnergyScale(pmpEnergyScale), _timeOffsetPanel(timeOffsetPanel), 
-      _timeOffsetStrawHV(timeOffsetStrawHV), 
-      _timeOffsetStrawCal(timeOffsetStrawCal), 
+      _pmpEnergyScale(pmpEnergyScale),  
       _electronicsTimeDelay(electronicsTimeDelay), 
       _gasGain(gasGain), _analognoise(analognoise), 
       _dVdI(dVdI), _vsat(vsat), _ADCped(ADCped), 
@@ -84,6 +80,15 @@ namespace mu2e {
 
     double halfPropV(StrawId strawId, double kedep) const;
 
+    // this is used to update values from the database
+    void setOffsets( std::array<double, StrawId::_nupanels> timeOffsetPanel,
+		     std::array<double, StrawId::_nustraws> timeOffsetStrawHV,
+		     std::array<double, StrawId::_nustraws> timeOffsetStrawCal ) {
+      _timeOffsetPanel = timeOffsetPanel;
+      _timeOffsetStrawHV = timeOffsetStrawHV;
+      _timeOffsetStrawCal = timeOffsetStrawCal;
+    }
+
     double driftDistanceToTime(StrawId strawId, double ddist, double phi) const;
     double driftTimeToDistance(StrawId strawId, double dtime, double phi) const;
     double driftInstantSpeed(StrawId strawId, double ddist, double phi) const;
@@ -96,7 +101,7 @@ namespace mu2e {
     double driftTimeOffset(StrawId strawId, double ddist, double phi, double DOCA) const;
 
     double peakMinusPedestalEnergyScale() const { return _pmpEnergyScaleAvg; }
-    double peakMinusPedestalEnergyScale(StrawId sid) const { return _pmpEnergyScale[sid.getStraw()]; }
+    double peakMinusPedestalEnergyScale(StrawId sid) const { return _pmpEnergyScale[sid.uniqueStraw()]; }
     double analogNoise(StrawElectronics::Path ipath) const { return _analognoise[ipath]; }  // incoherent noise
     double fallTime(StrawElectronics::Path ipath) const { return 22.;} //FIXME
     double currentToVoltage(StrawElectronics::Path ipath) const { return _dVdI[ipath]; }
@@ -115,6 +120,10 @@ namespace mu2e {
     void print(std::ostream& os) const;
     void printVector(std::ostream& os, std::string const& name, 
 		    std::vector<double> const& a) const;
+
+    template<typename T, size_t SIZE>
+      void printArray(std::ostream& os, std::string const& name,
+        std::array<T,SIZE> const& a) const;
 
     // StrawElectronics functions we are allowed to use
     inline size_t nADCPreSamples() const { return _strawElectronics->nADCPreSamples(); }
@@ -171,10 +180,10 @@ namespace mu2e {
     double _mint0doca;  // minimum doca for t0 calculation.  Note this is a SIGNED QUANTITITY
     
     double _t0shift;
-    std::vector<double> _pmpEnergyScale;
-    std::vector<double> _timeOffsetPanel;
-    std::vector<double> _timeOffsetStrawHV;
-    std::vector<double> _timeOffsetStrawCal;
+    std::array<double, StrawId::_nustraws> _pmpEnergyScale;
+    std::array<double, StrawId::_nupanels> _timeOffsetPanel;
+    std::array<double, StrawId::_nustraws> _timeOffsetStrawHV;
+    std::array<double, StrawId::_nustraws> _timeOffsetStrawCal;
     double _electronicsTimeDelay;
     double _gasGain;
     std::array<double,StrawElectronics::npaths> _analognoise; //noise (mVolt) from the straw itself

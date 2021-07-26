@@ -2,20 +2,20 @@
 // Namespace for collecting tools used in MC truth evaluation
 // Original author: Dave Brown (LBNL) 8/10/2016
 //
-#include "TrkDiag/inc/TrkMCTools.hh"
-#include "MCDataProducts/inc/StepPointMC.hh"
-#include "MCDataProducts/inc/SimParticle.hh"
-#include "MCDataProducts/inc/MCRelationship.hh"
+#include "Offline/TrkDiag/inc/TrkMCTools.hh"
+#include "Offline/MCDataProducts/inc/StepPointMC.hh"
+#include "Offline/MCDataProducts/inc/SimParticle.hh"
+#include "Offline/MCDataProducts/inc/MCRelationship.hh"
 
-#include "TrackerGeom/inc/Tracker.hh"
-#include "Mu2eUtilities/inc/TwoLinePCA.hh"
+#include "Offline/TrackerGeom/inc/Tracker.hh"
+#include "Offline/Mu2eUtilities/inc/TwoLinePCA.hh"
 #include "BTrk/TrkBase/TrkHelixUtils.hh"
 
-#include "GlobalConstantsService/inc/GlobalConstantsHandle.hh"
-#include "GlobalConstantsService/inc/ParticleDataTable.hh"
-#include "GeometryService/inc/GeomHandle.hh"
-#include "GeometryService/inc/DetectorSystem.hh"
-#include "BFieldGeom/inc/BFieldManager.hh"
+#include "Offline/GlobalConstantsService/inc/GlobalConstantsHandle.hh"
+#include "Offline/GlobalConstantsService/inc/ParticleDataTable.hh"
+#include "Offline/GeometryService/inc/GeomHandle.hh"
+#include "Offline/GeometryService/inc/DetectorSystem.hh"
+#include "Offline/BFieldGeom/inc/BFieldManager.hh"
 
 #include <map>
 

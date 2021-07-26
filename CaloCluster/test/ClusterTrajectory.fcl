@@ -3,9 +3,9 @@
 #
 # Original author Giovanni Onoratto
 
-#include "fcl/minimalMessageService.fcl"
-#include "fcl/standardProducers.fcl"
-#include "fcl/standardServices.fcl"
+#include "Offline/fcl/minimalMessageService.fcl"
+#include "Offline/fcl/standardProducers.fcl"
+#include "Offline/fcl/standardServices.fcl"
 
 
 # Give this job a name.  
@@ -32,16 +32,16 @@ services :
 	
   GeometryService :
   {
-    inputFile : "Mu2eG4/geom/geom_common.txt"
+    inputFile : "Offline/Mu2eG4/geom/geom_common.txt"
   }  
 
   ConditionsService :
   {
-    conditionsfile : "ConditionsService/data/conditions_01.txt"
+    conditionsfile : "Offline/ConditionsService/data/conditions_01.txt"
   }
   		
   GlobalConstantsService : { 
-    inputFile : "GlobalConstantsService/data/globalConstants_01.txt" 
+    inputFile : "Offline/GlobalConstantsService/data/globalConstants_01.txt" 
   }
   
   		

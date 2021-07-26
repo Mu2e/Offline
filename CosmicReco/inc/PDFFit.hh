@@ -1,15 +1,15 @@
 #ifndef _COSMIC_RECO_PDFFit_HH
 #define _COSMIC_RECO_PDFFit_HH
 
-#include "DataProducts/inc/XYZVec.hh"
-#include "RecoDataProducts/inc/ComboHit.hh"
-#include "RecoDataProducts/inc/CosmicTrack.hh"
-#include "RecoDataProducts/inc/CosmicTrackSeed.hh"
+#include "Offline/DataProducts/inc/XYZVec.hh"
+#include "Offline/RecoDataProducts/inc/ComboHit.hh"
+#include "Offline/RecoDataProducts/inc/CosmicTrack.hh"
+#include "Offline/RecoDataProducts/inc/CosmicTrackSeed.hh"
 
 // Tracker Details:
-#include "TrackerConditions/inc/StrawDrift.hh"
-#include "TrackerConditions/inc/StrawResponse.hh"
-#include "TrackerGeom/inc/Tracker.hh"
+#include "Offline/TrackerConditions/inc/StrawDrift.hh"
+#include "Offline/TrackerConditions/inc/StrawResponse.hh"
+#include "Offline/TrackerGeom/inc/Tracker.hh"
 
 // ROOT
 #include "TF1.h"

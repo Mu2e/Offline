@@ -17,10 +17,10 @@
 
 // Mu2e includes.
 
-#include "Mu2eG4/inc/Mu2eG4UserHelpers.hh"
-#include "Mu2eG4/inc/Mu2eG4UserTrackInformation.hh"
-#include "MCDataProducts/inc/ProcessCode.hh"
-#include "GeneralUtilities/inc/sqrtOrThrow.hh"
+#include "Offline/Mu2eG4/inc/Mu2eG4UserHelpers.hh"
+#include "Offline/Mu2eG4/inc/Mu2eG4UserTrackInformation.hh"
+#include "Offline/MCDataProducts/inc/ProcessCode.hh"
+#include "Offline/GeneralUtilities/inc/sqrtOrThrow.hh"
 
 // G4 includes
 

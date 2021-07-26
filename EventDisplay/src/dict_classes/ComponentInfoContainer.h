@@ -9,7 +9,7 @@
 #define EventDisplay_src_dict_classes_ComponentInfoContainer_h
 
 
-#include "EventDisplay/src/dict_classes/ComponentInfo.h"
+#include "Offline/EventDisplay/src/dict_classes/ComponentInfo.h"
 #ifndef __CINT__
 #include "boost/shared_ptr.hpp"
 #endif

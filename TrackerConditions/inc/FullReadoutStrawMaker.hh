@@ -4,10 +4,10 @@
 // Initialize a list of straws with full readout
 //
 
-#include "TrackerConditions/inc/FullReadoutStraw.hh"
-#include "DataProducts/inc/PanelId.hh"
-#include "DataProducts/inc/PlaneId.hh"
-#include "TrackerConfig/inc/FullReadoutStrawConfig.hh"
+#include "Offline/TrackerConditions/inc/FullReadoutStraw.hh"
+#include "Offline/DataProducts/inc/PanelId.hh"
+#include "Offline/DataProducts/inc/PlaneId.hh"
+#include "Offline/TrackerConfig/inc/FullReadoutStrawConfig.hh"
 #include <set>
 #include <iosfwd>
 

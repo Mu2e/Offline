@@ -18,7 +18,7 @@
 #include "art_root_io/TFileService.h"
 #include "art/Framework/Services/Registry/ServiceHandle.h"
 
-#include "MCDataProducts/inc/GenEventCount.hh"
+#include "Offline/MCDataProducts/inc/GenEventCount.hh"
 
 #include "TH1D.h"
 

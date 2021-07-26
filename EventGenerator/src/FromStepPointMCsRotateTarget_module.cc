@@ -24,16 +24,16 @@
 #include "CLHEP/Vector/ThreeVector.h"
 #include "CLHEP/Vector/Rotation.h"
 
-#include "GlobalConstantsService/inc/GlobalConstantsHandle.hh"
-#include "GlobalConstantsService/inc/ParticleDataTable.hh"
-#include "MCDataProducts/inc/GenParticle.hh"
-#include "MCDataProducts/inc/GenParticleCollection.hh"
-#include "MCDataProducts/inc/StepPointMC.hh"
-#include "MCDataProducts/inc/StepPointMCCollection.hh"
-#include "MCDataProducts/inc/GenParticleSPMHistory.hh"
-#include "SeedService/inc/SeedService.hh"
-#include "GeometryService/inc/GeomHandle.hh"
-#include "ProductionTargetGeom/inc/ProductionTarget.hh"
+#include "Offline/GlobalConstantsService/inc/GlobalConstantsHandle.hh"
+#include "Offline/GlobalConstantsService/inc/ParticleDataTable.hh"
+#include "Offline/MCDataProducts/inc/GenParticle.hh"
+#include "Offline/MCDataProducts/inc/GenParticleCollection.hh"
+#include "Offline/MCDataProducts/inc/StepPointMC.hh"
+#include "Offline/MCDataProducts/inc/StepPointMCCollection.hh"
+#include "Offline/MCDataProducts/inc/GenParticleSPMHistory.hh"
+#include "Offline/SeedService/inc/SeedService.hh"
+#include "Offline/GeometryService/inc/GeomHandle.hh"
+#include "Offline/ProductionTargetGeom/inc/ProductionTarget.hh"
 
 namespace mu2e {
 

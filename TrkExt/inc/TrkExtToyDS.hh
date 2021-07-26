@@ -11,8 +11,8 @@
 #include <string>
 #include <vector>
 #include "CLHEP/Vector/ThreeVector.h"
-#include "TrkExt/inc/TrkExtShape.hh"
-#include "TrkExt/inc/TrkExtMaterial.hh"
+#include "Offline/TrkExt/inc/TrkExtShape.hh"
+#include "Offline/TrkExt/inc/TrkExtMaterial.hh"
 
 namespace mu2e {
 

@@ -4,8 +4,8 @@
 //
 
 // Mu2e include files
-#include "ConditionsService/inc/AcceleratorParams.hh"
-#include "ConfigTools/inc/SimpleConfig.hh"
+#include "Offline/ConditionsService/inc/AcceleratorParams.hh"
+#include "Offline/ConfigTools/inc/SimpleConfig.hh"
 
 #include <iostream>
 

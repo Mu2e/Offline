@@ -13,7 +13,7 @@
 #include <string>
 #include <ostream>
 
-#include "GeomPrimitives/inc/TubsParams.hh"
+#include "Offline/GeomPrimitives/inc/TubsParams.hh"
 
 #include "CLHEP/Vector/ThreeVector.h"
 #include "CLHEP/Vector/Rotation.h"

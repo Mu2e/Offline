@@ -2,12 +2,12 @@
 //
 // Andrei Gaponenko, 2012
 
-#include "MCDataProducts/inc/ExtMonFNALSimHit.hh"
-#include "MCDataProducts/inc/ExtMonFNALSimHitCollection.hh"
+#include "Offline/MCDataProducts/inc/ExtMonFNALSimHit.hh"
+#include "Offline/MCDataProducts/inc/ExtMonFNALSimHitCollection.hh"
 
 #include "art/Framework/Core/ModuleMacros.h"
 
-#include "ExtinctionMonitorFNAL/Analyses/inc/GenericCollectionPrinter.hh"
+#include "Offline/ExtinctionMonitorFNAL/Analyses/inc/GenericCollectionPrinter.hh"
 
 namespace mu2e {
 

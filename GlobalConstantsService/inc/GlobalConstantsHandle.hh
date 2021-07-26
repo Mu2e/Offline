@@ -3,7 +3,7 @@
 
 #include <string>
 
-#include "GlobalConstantsService/inc/GlobalConstantsService.hh"
+#include "Offline/GlobalConstantsService/inc/GlobalConstantsService.hh"
 #include "art/Framework/Services/Registry/ServiceHandle.h"
 
 namespace mu2e {

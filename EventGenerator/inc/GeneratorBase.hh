@@ -14,7 +14,7 @@
 #include "art/Framework/Services/Optional/RandomNumberGenerator.h"
 
 // Mu2e includes
-#include "MCDataProducts/inc/GenParticleCollection.hh"
+#include "Offline/MCDataProducts/inc/GenParticleCollection.hh"
 
 // CLHEP includes
 #include "CLHEP/Random/RandomEngine.h"

@@ -1,8 +1,8 @@
 #ifndef MCDataProducts_CaloEDepMC_hh
 #define MCDataProducts_CaloEDepMC_hh
 
-#include "MCDataProducts/inc/SimParticle.hh"
-#include "MCDataProducts/inc/MCRelationship.hh"
+#include "Offline/MCDataProducts/inc/SimParticle.hh"
+#include "Offline/MCDataProducts/inc/MCRelationship.hh"
 
 namespace mu2e {
  

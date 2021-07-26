@@ -1,4 +1,4 @@
-#include "Mu2eG4/inc/Mu2eG4TrajectoryControl.hh"
+#include "Offline/Mu2eG4/inc/Mu2eG4TrajectoryControl.hh"
 
 #include "cetlib_except/exception.h"
 

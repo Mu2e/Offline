@@ -22,10 +22,10 @@
 #include <utility>
 #include <vector>
 
-#include "GeneralUtilities/inc/EnumToStringSparse.hh"
+#include "Offline/GeneralUtilities/inc/EnumToStringSparse.hh"
 // Mu2e includes
-#include "GlobalConstantsService/inc/GlobalConstantsHandle.hh"
-#include "GlobalConstantsService/inc/PhysicsParams.hh"
+#include "Offline/GlobalConstantsService/inc/GlobalConstantsHandle.hh"
+#include "Offline/GlobalConstantsService/inc/PhysicsParams.hh"
 
 namespace mu2e {
 

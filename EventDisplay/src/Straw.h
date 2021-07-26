@@ -8,8 +8,8 @@
 #ifndef EventDisplay_src_Straw_h
 #define EventDisplay_src_Straw_h
 
-#include "EventDisplay/src/VirtualShape.h"
-#include "EventDisplay/src/dict_classes/EventDisplayPolyLine3D.h"
+#include "Offline/EventDisplay/src/VirtualShape.h"
+#include "Offline/EventDisplay/src/dict_classes/EventDisplayPolyLine3D.h"
 #include <TMath.h>
 #include <TPad.h>
 #include <iostream>

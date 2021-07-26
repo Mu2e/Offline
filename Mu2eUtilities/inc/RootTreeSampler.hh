@@ -39,6 +39,7 @@
 #include "fhiclcpp/types/OptionalAtom.h"
 #include "fhiclcpp/types/TupleAs.h"
 #include "fhiclcpp/ParameterSet.h"
+#include "fhiclcpp/types/Sequence.h"
 
 #include "CLHEP/Random/RandomEngine.h"
 #include "CLHEP/Random/RandFlat.h"
@@ -51,7 +52,7 @@
 #include "TTree.h"
 #include "TFile.h"
 
-#include "ConfigTools/inc/ConfigFileLookupPolicy.hh"
+#include "Offline/ConfigTools/inc/ConfigFileLookupPolicy.hh"
 
 namespace mu2e {
 
