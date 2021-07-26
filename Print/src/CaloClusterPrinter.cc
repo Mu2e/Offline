@@ -74,6 +74,9 @@ mu2e::CaloClusterPrinter::Print(const mu2e::CaloCluster& obj, int ind, std::ostr
       << " " 
       << " " << std::setw(8) << std::setprecision(1) << obj.time()
       << " " << std::setw(8) << std::setprecision(1) << obj.energyDep()
+      << " " << std::setw(8) << std::setprecision(1) << obj.cog3Vector().x()
+      << " " << std::setw(8) << std::setprecision(1) << obj.cog3Vector().y()
+      << " " << std::setw(8) << std::setprecision(1) << obj.cog3Vector().z()
       << std::endl;
   } else if(verbose()==2) {
      os 
