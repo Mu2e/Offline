@@ -2,7 +2,7 @@
 // Create a two dimensional histogram of the magnetic field
 //
 // Original author Michael MacKenzie (March 2020)
-//
+// 
 
 // Mu2e includes
 #include "Offline/BFieldGeom/inc/BFieldManager.hh"
